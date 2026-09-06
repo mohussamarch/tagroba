@@ -25,3 +25,6 @@ firestore-debug.log
 .DS_Store
 Thumbs.db
 coverage/
+
+# مخرجات بناء TypeScript
+*.tsbuildinfo
