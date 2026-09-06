@@ -1,0 +1,40 @@
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--c-background);
+  color: var(--c-text);
+  font-family: 'Segoe UI', 'Noto Sans Arabic', 'Tahoma', system-ui, sans-serif;
+  font-size: var(--t-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--motion), color var(--motion);
+}
+
+button { font: inherit; color: inherit; }
+
+/* هدف اللمس لا يقل عن 48px — spec/04 */
+button, a, input, select { min-height: var(--touch-min); }
+
+/* المبالغ: أرقام متراصة واتجاه مستقل عن RTL — spec/04 */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-action);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

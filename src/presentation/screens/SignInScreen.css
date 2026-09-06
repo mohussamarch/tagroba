@@ -1,0 +1,207 @@
+.signin {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--s-page);
+  padding-top: max(var(--s-page), env(safe-area-inset-top));
+  padding-bottom: max(var(--s-page), env(safe-area-inset-bottom));
+}
+
+.signin__card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  padding: calc(var(--s-card) * 1.5) var(--s-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-section);
+  transition: background var(--motion), border-color var(--motion);
+}
+
+.signin__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-section);
+}
+
+.signin__mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--c-action);
+  color: var(--c-surface);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.signin__title {
+  font-size: var(--t-title);
+  font-weight: 700;
+  margin: 0;
+}
+
+.signin__subtitle {
+  font-size: var(--t-body);
+  color: var(--c-muted);
+  margin: 4px 0 0;
+}
+
+.signin__themeBtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  min-height: var(--touch-min);
+  border-radius: 50%;
+  border: 1px solid var(--c-border);
+  background: var(--c-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--motion), border-color var(--motion);
+}
+
+.signin__themeBtn:hover {
+  background: var(--c-border);
+}
+
+.signin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signin__label {
+  font-size: var(--t-body);
+  font-weight: 500;
+}
+
+.signin__input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 12px;
+  font-size: var(--t-input);
+  color: var(--c-text);
+  background: var(--c-background);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  transition: border-color var(--motion), background var(--motion);
+}
+
+.signin__input::placeholder {
+  color: var(--c-muted);
+}
+
+.signin__input[aria-invalid='true'] {
+  border-color: var(--c-outgoing);
+}
+
+/* الخطأ بجانب الحقل بنص عربي محدد — spec/04، لا Toast وحده */
+.signin__error {
+  font-size: var(--t-body);
+  color: var(--c-outgoing);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.signin__notice {
+  font-size: var(--t-body);
+  color: var(--c-incoming);
+  background: var(--c-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.signin__submit {
+  min-height: var(--touch-min);
+  border: none;
+  border-radius: 12px;
+  background: var(--c-text);
+  color: var(--c-surface);
+  font-size: var(--t-input);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--motion);
+}
+
+.signin__submit:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.signin__google {
+  min-height: var(--touch-min);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: var(--t-input);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background var(--motion);
+}
+
+.signin__google:hover:not(:disabled) {
+  background: var(--c-soft);
+}
+
+.signin__google:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.signin__divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--c-muted);
+  font-size: var(--t-body);
+}
+
+.signin__divider::before,
+.signin__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--c-border);
+}
+
+.signin__links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.signin__link {
+  background: none;
+  border: none;
+  padding: 8px;
+  min-height: var(--touch-min);
+  color: var(--c-muted);
+  font-size: var(--t-body);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.signin__link:hover {
+  color: var(--c-text);
+}
+
+.signin__foot {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  text-align: center;
+  line-height: 1.7;
+  margin: 0;
+}

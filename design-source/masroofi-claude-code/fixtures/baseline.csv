@@ -1,0 +1,8 @@
+﻿date,name,amount,type,source,reference
+2026-09-01,راتب تجريبي,7000.00,income,حساب تجريبي,DEMO-SALARY-001
+2026-09-20,البيك,32.00,expense,حساب تجريبي,DEMO-ALBAIK-001
+2026-09-20,Amazon,720.00,expense,حساب تجريبي,DEMO-AMAZON-001
+2026-09-20,نقل إلى الكاش,500.00,transfer,حساب تجريبي,DEMO-CASH-001
+2026-09-20,مشتريات كاش,100.00,expense,كاش,DEMO-CASH-BUY-001
+2026-09-20,قرض تجريبي مستلم,500.00,transfer,حساب تجريبي,DEMO-LOAN-001
+2026-09-20,أمانة تجريبية,200.00,transfer,حساب تجريبي,DEMO-CUSTODY-001

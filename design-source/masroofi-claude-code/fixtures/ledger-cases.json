@@ -1,0 +1,104 @@
+{
+  "synthetic": true,
+  "currency": "SAR",
+  "walletOpeningMinor": {
+    "حساب تجريبي": 0,
+    "كاش": 0
+  },
+  "people": [
+    {
+      "id": "demo-abdel",
+      "name": "عبد الفتاح"
+    },
+    {
+      "id": "demo-ahmed",
+      "name": "أحمد"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "demo-salary",
+      "name": "راتب تجريبي",
+      "amountMinor": 700000,
+      "economicKind": "salary",
+      "date": "2026-09-01",
+      "source": "حساب تجريبي",
+      "reference": "DEMO-SALARY-001"
+    },
+    {
+      "id": "demo-albaik",
+      "name": "البيك",
+      "amountMinor": 3200,
+      "economicKind": "purchase",
+      "date": "2026-09-20",
+      "source": "حساب تجريبي",
+      "reference": "DEMO-ALBAIK-001",
+      "category": "مطاعم وقهوة"
+    },
+    {
+      "id": "demo-amazon",
+      "name": "Amazon",
+      "amountMinor": 72000,
+      "economicKind": "purchase",
+      "date": "2026-09-20",
+      "source": "حساب تجريبي",
+      "reference": "DEMO-AMAZON-001",
+      "category": "تسوق إلكتروني",
+      "tags": [
+        "هدية"
+      ]
+    },
+    {
+      "id": "demo-cash-transfer",
+      "name": "نقل إلى الكاش",
+      "amountMinor": 50000,
+      "economicKind": "internal_transfer",
+      "date": "2026-09-20",
+      "source": "حساب تجريبي",
+      "destination": "كاش",
+      "reference": "DEMO-CASH-001"
+    },
+    {
+      "id": "demo-cash-purchase",
+      "name": "مشتريات كاش",
+      "amountMinor": 10000,
+      "economicKind": "purchase",
+      "date": "2026-09-20",
+      "source": "كاش",
+      "reference": "DEMO-CASH-BUY-001",
+      "category": "متفرقات",
+      "cash": true
+    },
+    {
+      "id": "demo-loan",
+      "name": "قرض تجريبي مستلم",
+      "amountMinor": 50000,
+      "economicKind": "loan_received",
+      "date": "2026-09-20",
+      "source": "حساب تجريبي",
+      "reference": "DEMO-LOAN-001",
+      "personId": "demo-ahmed"
+    },
+    {
+      "id": "demo-custody",
+      "name": "أمانة تجريبية",
+      "amountMinor": 20000,
+      "economicKind": "custody_received",
+      "date": "2026-09-20",
+      "source": "حساب تجريبي",
+      "reference": "DEMO-CUSTODY-001",
+      "personId": "demo-ahmed"
+    }
+  ],
+  "expected": {
+    "incomeMinor": 700000,
+    "personalExpenseMinor": 85200,
+    "remainingMinor": 614800,
+    "walletClosingMinor": {
+      "حساب تجريبي": 644800,
+      "كاش": 40000
+    },
+    "payableLoanMinor": 50000,
+    "payableCustodyMinor": 20000
+  }
+}

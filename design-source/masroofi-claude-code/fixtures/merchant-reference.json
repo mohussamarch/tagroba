@@ -1,0 +1,1597 @@
+[
+  {
+    "name": "KIWI.COM SRO",
+    "cat": "سفر",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MF",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "110",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "RETAIL CO",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "MOFA-SERVICES RIYADH",
+    "cat": "حكومي ورسوم",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "KIWI.COM BRNO -",
+    "cat": "سفر",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALKIFAH TRADING ES",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "GOOGLE ONE 650-",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "PAYMOB*ESAAL DWC",
+    "cat": "صحة وصيدليات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALKMBYWTR LLHASB",
+    "cat": "إلكترونيات وأجهزة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ECONOMIC HALL",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "GOOGLE*TOPTOP",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ABDULLAH SALEH ALHAMAM",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "PAYPAL",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ALTBYAT ALTJARYT",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "JAWAHER DHAFER HASSAN",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALNASR COMPANY",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ZYOAAT EST",
+    "cat": "وقود ومواصلات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "DESIGN ADVERTISI",
+    "cat": "مكتبات وطباعة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MOHAMMED HASSAN AL-BUN",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "SHOWNAH LIMITED COMPAN",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "SADAF TRADING COMPA",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "RS5",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ALTAWFIR CO",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALDAHRAN EST",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ALMASDAR ALMUTAMAYIZ A",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ABDULRAHMAN ABDUL",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ALKANDEI EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE*GOOGLE ONE",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ANTHROPIC* CLAUDE",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "TEMU.COM DUBLIN 4",
+    "cat": "تسوق إلكتروني",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "POINT 21233 AL",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALSHYT COMPANY",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "LLTSHGHYL WALSY",
+    "cat": "خدمات منزلية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "SHIHON TRADING CO",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "BILL",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "CAMERA TIME TRADING ES",
+    "cat": "إلكترونيات وأجهزة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "R13",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "GOOGLE MOBILEALPHALIM",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE MUSLIMA MUSLIM",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "EFAA",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "GOOGLE ALKHATTABA MUS",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ELM",
+    "cat": "حكومي ورسوم",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALTAWFER CO",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "BAZAR",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "MOJAZ",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "FAMILY",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALAFDAL7463",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ESTABLISHMENT DEM AL-M",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "ALHASB LLNSKH W",
+    "cat": "مكتبات وطباعة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALSAHRA COMPANY",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "OPENAI *CHATGPT",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALHATABT CO",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "TECH",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "CONTACT OPTIMUM CO",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "CENTREPOINT 21036 KING",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "PAYPAL *SUFORYOU",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "NMC7454",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "NO 1",
+    "cat": "يحتاج تأكيد",
+    "confidence": ""
+  },
+  {
+    "name": "GOOGLE MAWADA MUSLIM",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "COMPANY MASDAR ALZAYOU",
+    "cat": "وقود ومواصلات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ADVANCED INFORMATION T",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "CENTERPOINT 21481 RIYA",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "NASEEM AL MOUJ TRADING",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ABDUL AZIZ SAUD A",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MUSADDIR ALZYWT LLTJAR",
+    "cat": "وقود ومواصلات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALMASABI TRADING COMPA",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TRADING COMPANY",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "CUT",
+    "cat": "عناية شخصية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALSAADA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALALAMI COMPAN",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ABUTARIQ",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALKALEEJ CO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FACEBK",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "WAHMI",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "PIXERY ROTTERDAM",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FOODICS",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "VIZACADEMY SP. Z O.",
+    "cat": "تعليم وتدريب",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "PERSONALITY.CO",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALFAHS ALMTAQDM CENTER",
+    "cat": "وقود ومواصلات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE MUZZ MUSLIM",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MUQAYBIL ALMUTAIR",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "VF WORLDWIDE HOLDI",
+    "cat": "حكومي ورسوم",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "CCA*VF WORLDWIDE",
+    "cat": "حكومي ورسوم",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "TAG",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "YASALAM COMPANY",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AND BASICS FASHIO",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE THATEK",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "NASSER ALJFN CENTER FO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ORIGINAL RAYQ COMPANY",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FNMKSTORE",
+    "cat": "تسوق إلكتروني",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "EXTRA",
+    "cat": "إلكترونيات وأجهزة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AROMATIC FAMILIES EST",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MARAN AL-ENEZI T",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ASRAR-CO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALSKARYAH4010",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "COMPANY FOR THE",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "HB ALABDAA LLHLA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "BUSINESS DEVELOPMENT C",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALHAILL EST",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALRUKN ALKHALEJI EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "RASHED ALRASHED CO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MOKAB",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "BOOKSTORE",
+    "cat": "مكتبات وطباعة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FOR SAFETY AND",
+    "cat": "خدمات منزلية",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SHURAKA AL-ARAB LIL",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALWROOD EST",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "NOURA COMPANY",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALKHER CO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ABDULLAH AL HABS TRADI",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "LOOK",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "DOTT JEANS TALAAT",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE YAZIO FOOD CAL",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE OSN 650-",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MARKETING CO",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALNASEEM ESTABL",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "POPEYES",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "PADDLE.NET*",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ESTABLISHMENT FARIS HA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TRENDYOL",
+    "cat": "تسوق إلكتروني",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE TINDER DATING",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE LASTSEEN 650-",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "NINE FOR TRADIN",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE EATR 650-",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "NORA",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SNEF",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AL ARAB BEVERAG",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "SARAH",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "US MYIQ.",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALJOMAIH BOTTLING PLAN",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ZAMEL ALAJMI FOU",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ADVANCED CO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ZAWEAH MSHWAR CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "LTQDYM ALWJBAT",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "NAJID EST",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TTR - 00770000000",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALKHALIG ALARABI C",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "KAYS",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALOSAIMI",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE BUMBLE DATING",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MINISTRY OF INTERIOR",
+    "cat": "حكومي ورسوم",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AWQAF SERVICE",
+    "cat": "تبرعات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "BALALM",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FUTURE COMPANY LI",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AND HALF",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "CENTREPOINT 21040 EXIT",
+    "cat": "ملابس وعطور",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "RESYTAURANT SHEIKH FAT",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "BELDRES CO",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "DAMASCUS RAYAHIN MARKE",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "NAKHATI ARTISAN GELATO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALKHALEJ",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALAGHSAN EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "COMMERCIAL INSTANT CAR",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "CONSUMER DEDICATIONS M",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "LAYN",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE MBC GROUP",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "LLTJART COMPANY S",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "OPERATION CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "WORLD 711",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TALQIMAH LTQDEAM A",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FAST FOOD EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "SHAY SMSEM FOR M",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ZON EST.",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "NOURA JUIE CENTER",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "BADRIAH SULAIMAN ALMUT",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALSAMMAR COMPANY",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "HDAEQ ROAZ AL RAYA",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOLDEN SPECIALIZATION",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ABDULLAH BIN ALI",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "HAMZAH ALSAYALI CONTRA",
+    "cat": "خدمات منزلية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MADBYKOM",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TIME",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE VCFC 650-",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "HELO LLMWAD ALGH",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "STREET SUP",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALWADI COMPANYE",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SAMULJI",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "COMPANY",
+    "cat": "متفرقات",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ANANINJA.COM",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MATEAM KAL QUT LITAQDI",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "KHIZANAT TAWFIR ALTIJA",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "DIRIYAH COMPANY",
+    "cat": "ترفيه",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALIBDAA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MANSOUR BIN ABD",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AYSHAN EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "LKHDMAT ALAAAS",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE TICO LIVE VIDE",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AL ALGEYAD FOR C",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "EID RAGHIAN AL R",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GINAN",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE MICROSOFT APPS",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ELHAMRA STREET",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TAMWINAT AMWAJ ALRIYAD",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "JAWDAH EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AYED ALOTAIBI GAS",
+    "cat": "وقود ومواصلات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MOASSAH SARAH",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SAAD HAMDAN ALSH",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TEA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "KEY EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SIGNATURE",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FACEBK *278FRSY3G2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "SULEIMAN SAFAR",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALKER",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FUTURK WA SHAHI COMPAN",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALTALEEM7059",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FOOD COMPANY",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SATTAM ALQAN AL",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALTAMAYZ TRADING",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MUHAMMAD NAFEH ALMUTAI",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ABSHARBI EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AL WAFA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "RASHID 3058",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "WLAWZ EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SPINNEYS U WALK",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GRAMS FOODSTUFF",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "SHEIKHA MUJAHID NASSER",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALQRYYAT CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "WORLD 962",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ZONE",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ICE CREAM",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "KHALEEJ 2E2 CON2 ST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "INTERNATIONAL LIGHTING",
+    "cat": "خدمات منزلية",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE SEEN WA",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AISHAA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ETEHAD NAMAR",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "RUMAAN W TOT",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "HALF A MILLION",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GIZA EG",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "NATIONAL",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ESTABLISHMENT MOKANK A",
+    "cat": "خدمات منزلية",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ADVANCE DISTRUBUTION C",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALNAJMAH MARKET",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "LABUZA ALSHAMIAH",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AND AVOCADO ESTA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE TRUECALLER",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ASYL ALNABLSYT L",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALDAEAR CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MOHAMMED BIN KHALA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AHMED SUFYANI ES",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALDAKHNA FOR SELLING I",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "BASTA RES",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "TWMANAT RAN ALQHATNYI",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MAWASEM AL ASEER COMPA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TASTE FAST FOOD B",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ABDULRAHMAN AL BQUMI",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "WD CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALNAWAEM EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALTAYR RES",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AIR COMPANY",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SHARIKAT ZAD ALEAWALI",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "LAMASAT ALHAZAZ",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "OF BDOOR AL-BEN",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALWARDA ALALAMIYA EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ADDRESS AGENCY COMPANY",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AL SAADA FOR PRO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ONLY HIKING",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AMER HASSAN ALMUAY",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "BEIRUT CO. LTD.",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "WORLD 704",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AL DHAHERI",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALHRM LLTJART E",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "DHAFER AHMED AL-",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FACEBK *PTMVBPUFN2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FACEBK *9MZY4P4FN2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FACEBK *926L5MCFN2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FACEBK *VJCHPQUFN2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FACEBK *VY5F7Q8FN2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE TANGO LIVE STR",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALAWALI EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ARBANEH TRADING COMPAN",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "NASAMAT ALBADIA CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE SAHM STOCK TRA",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AMAL BUFFET FOR",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ATTRACTIVE ELEGANT SIN",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALTAWFIR LILTIJAR",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "PAYMOB",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "TRADING CO",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SAHEL INTERNATIONAL",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SAFA BASKET ES",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "TROLLEY 6058",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FACEBK *TYMDCQLFN2",
+    "cat": "إعلانات وتسويق",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "CATRINA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AHMED HAZAZI COM",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALMADA COMPANY",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "COMPANY FOR TRAD",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "KHAYRAT RAMA MARKET",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "FOODSTUFF GROCE",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MOHAMMED ALKULAIB",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "HARAJ STORE",
+    "cat": "تسوق إلكتروني",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "JAWHARAT ALKHALIJ",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FLWAH",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "AL GHARB TRADING",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MARZOUQ BIN DHA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALTBY COMPANY",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALNARJAS",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MOHAMMED ALOBAID",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MURABA",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "MEP*PLAYERMATRIX",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "DIGIMAX FOR",
+    "cat": "مكتبات وطباعة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALATHAR",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "FOODSTUFF CART",
+    "cat": "بقالة وسوبرماركت",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "ALMOSAFER COFFE",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "SHABT DHY LLTJAR",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALWDAD EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "ALSHARQ EST",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "IBRAHIM ABDULRHMAN ALE",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "SAEED MOHAMMED",
+    "cat": "مطاعم وقهوة",
+    "confidence": "مبدئي"
+  },
+  {
+    "name": "GOOGLE DRAHIM MANAGE",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE MBC SHAHID",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "GOOGLE TOPTOP GAMES",
+    "cat": "اشتراكات رقمية",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MY STC",
+    "cat": "اتصالات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "MY STC RIYADH SA",
+    "cat": "اتصالات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "STC CHANNEL",
+    "cat": "اتصالات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "STC CHANNELS",
+    "cat": "اتصالات",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "DRAHIM APP",
+    "cat": "استثمار",
+    "confidence": "مؤكد"
+  },
+  {
+    "name": "AWAED CO.",
+    "cat": "استثمار",
+    "confidence": "مؤكد"
+  }
+]

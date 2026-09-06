@@ -1,0 +1,914 @@
+[
+  {
+    "word": "BARQ",
+    "cat": "محافظ رقمية"
+  },
+  {
+    "word": "STC PAY",
+    "cat": "محافظ رقمية"
+  },
+  {
+    "word": "STC BANK",
+    "cat": "محافظ رقمية"
+  },
+  {
+    "word": "URPAY",
+    "cat": "محافظ رقمية"
+  },
+  {
+    "word": "ALINMA PAY",
+    "cat": "محافظ رقمية"
+  },
+  {
+    "word": "TABBY",
+    "cat": "تقسيط"
+  },
+  {
+    "word": "TAMARA",
+    "cat": "تقسيط"
+  },
+  {
+    "word": "MADFU",
+    "cat": "تقسيط"
+  },
+  {
+    "word": "SPOTII",
+    "cat": "تقسيط"
+  },
+  {
+    "word": "DRAHIM",
+    "cat": "استثمار"
+  },
+  {
+    "word": "AWAED",
+    "cat": "استثمار"
+  },
+  {
+    "word": "DERAYAH",
+    "cat": "استثمار"
+  },
+  {
+    "word": "SAVINGS CO",
+    "cat": "استثمار"
+  },
+  {
+    "word": "STC",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "SAUDI TELECOM",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "MOBILY",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "ZAIN",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "TOP UP",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "CHANNELS -",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "ELECTRICITY",
+    "cat": "فواتير ومرافق"
+  },
+  {
+    "word": "WATER",
+    "cat": "فواتير ومرافق"
+  },
+  {
+    "word": "GAS CO",
+    "cat": "فواتير ومرافق"
+  },
+  {
+    "word": "AMDAD ALAMEN",
+    "cat": "فواتير ومرافق"
+  },
+  {
+    "word": "GROCERY",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "PANDA",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "TAMIMI",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "OTHAIM",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "HYPER",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "MART",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "BAQALA",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "FALIH",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "KEEMART",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "SUPERMARKET",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "NAJD",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "VEGETABLE",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "LLHWM",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "FOR FOOD",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "FALAFEL",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "SHAWARM",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "SHAWERMA",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ROMANSIAH",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "KEETA",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "EXPRESS FOOD",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "HUNGERSTATION",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "REST",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MANDEE",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MANDI",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "COFFEE",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "CAFE",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "TEA ",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "BLABAN",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "FURUJ",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "SBAROO",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "TAHINAH",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MAHASHI",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "BEVERAGE",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "SWEETS",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "DYAFH",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "KANARI",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "BURGER",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "PIZZA",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "JUICE",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "BAKER",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "PHARMAC",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "NAHDI",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "DAWA",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "MEDICAL",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "CLINIC",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "HOSPITAL",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "DENTAL",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "ALDREES",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "SASCO",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "PETRO",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "PARKING",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "UBER",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "CAREEM",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "TAXI",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "STATION",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "FLYNAS",
+    "cat": "سفر"
+  },
+  {
+    "word": "ALMATAR",
+    "cat": "سفر"
+  },
+  {
+    "word": "ALTAYAR",
+    "cat": "سفر"
+  },
+  {
+    "word": "AIRPORT",
+    "cat": "سفر"
+  },
+  {
+    "word": "AIRLINE",
+    "cat": "سفر"
+  },
+  {
+    "word": "HOTEL",
+    "cat": "سفر"
+  },
+  {
+    "word": "BOOKING",
+    "cat": "سفر"
+  },
+  {
+    "word": "TRAVEL",
+    "cat": "سفر"
+  },
+  {
+    "word": "HARAMAIN",
+    "cat": "سفر"
+  },
+  {
+    "word": "MUVI",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "CINEMA",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "WEBOOK",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "GAME",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "NETFLIX",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "SPOTIFY",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "SHAHID",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "SALLA",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "CART FOUNDATION",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "NOON",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "AMAZON",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "SHEIN",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "ALIEXPRESS",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "APP EST",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "SHORY",
+    "cat": "تأمين"
+  },
+  {
+    "word": "TAWUNIYA",
+    "cat": "تأمين"
+  },
+  {
+    "word": "INSURANCE",
+    "cat": "تأمين"
+  },
+  {
+    "word": "BUPA",
+    "cat": "تأمين"
+  },
+  {
+    "word": "LAUNDRY",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "LAUNDRIES",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "CLEAN",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "MAINTENANCE",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "BUILDING MANAG",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "CONTRACTIN",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "EHSAN",
+    "cat": "تبرعات"
+  },
+  {
+    "word": "CHARITY",
+    "cat": "تبرعات"
+  },
+  {
+    "word": "JAM'IYYA",
+    "cat": "تبرعات"
+  },
+  {
+    "word": "WAQF",
+    "cat": "تبرعات"
+  },
+  {
+    "word": "OUD",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "PERFUM",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "MODA",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "FASHION",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "MALL",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "JENNY",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "OMAYA",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "CONSULATE",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "MUNICIPAL",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "ABSHER",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "DIRIYAH GATE",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "GOOGLE",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "ANTHROPIC",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "OPENAI",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "PADDLE.NET",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "PIXERY",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "PERSONALITY.CO",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "MYIQ",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "MEP*PLAYERMATRIX",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "ANANINJA",
+    "cat": "اشتراكات رقمية"
+  },
+  {
+    "word": "FACEBK",
+    "cat": "إعلانات وتسويق"
+  },
+  {
+    "word": "META PLATFORMS",
+    "cat": "إعلانات وتسويق"
+  },
+  {
+    "word": "TIKTOK ADS",
+    "cat": "إعلانات وتسويق"
+  },
+  {
+    "word": "SNAP INC",
+    "cat": "إعلانات وتسويق"
+  },
+  {
+    "word": "VIZACADEMY",
+    "cat": "تعليم وتدريب"
+  },
+  {
+    "word": "ACADEMY",
+    "cat": "تعليم وتدريب"
+  },
+  {
+    "word": "UDEMY",
+    "cat": "تعليم وتدريب"
+  },
+  {
+    "word": "COURSERA",
+    "cat": "تعليم وتدريب"
+  },
+  {
+    "word": "TRAINING",
+    "cat": "تعليم وتدريب"
+  },
+  {
+    "word": "ALKMBYWTR",
+    "cat": "إلكترونيات وأجهزة"
+  },
+  {
+    "word": "CAMERA TIME",
+    "cat": "إلكترونيات وأجهزة"
+  },
+  {
+    "word": "JARIR",
+    "cat": "إلكترونيات وأجهزة"
+  },
+  {
+    "word": "LLHASB",
+    "cat": "إلكترونيات وأجهزة"
+  },
+  {
+    "word": "BOOKSTORE",
+    "cat": "مكتبات وطباعة"
+  },
+  {
+    "word": "LLNSKH",
+    "cat": "مكتبات وطباعة"
+  },
+  {
+    "word": "DESIGN ADVERTISI",
+    "cat": "مكتبات وطباعة"
+  },
+  {
+    "word": "DIGIMAX",
+    "cat": "مكتبات وطباعة"
+  },
+  {
+    "word": "PRINT",
+    "cat": "مكتبات وطباعة"
+  },
+  {
+    "word": "MAKTABA",
+    "cat": "مكتبات وطباعة"
+  },
+  {
+    "word": "BARBER",
+    "cat": "عناية شخصية"
+  },
+  {
+    "word": "SALON",
+    "cat": "عناية شخصية"
+  },
+  {
+    "word": "HALAQ",
+    "cat": "عناية شخصية"
+  },
+  {
+    "word": "SPA",
+    "cat": "عناية شخصية"
+  },
+  {
+    "word": "MOFA-SERVICES",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "MINISTRY OF",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "VF WORLDWIDE",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "TAMEENI",
+    "cat": "حكومي ورسوم"
+  },
+  {
+    "word": "ESAAL",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "LABORATOR",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "OPTIC",
+    "cat": "صحة وصيدليات"
+  },
+  {
+    "word": "TEMU",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "TRENDYOL",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "FNMKSTORE",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "HARAJ STORE",
+    "cat": "تسوق إلكتروني"
+  },
+  {
+    "word": "KIWI.COM",
+    "cat": "سفر"
+  },
+  {
+    "word": "CENTREPOINT",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "CENTERPOINT",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "POINT 21",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "BASICS FASHIO",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "JEANS",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "AROMATIC",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "SPINNEYS",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "FOODSTUFF",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "TAMWINAT",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "TROLLEY",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "BASKET",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "ALTAWFIR",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "ALTAWFER",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "TAWFIR",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "LLMWAD ALGH",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "NAJID",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "RAYAHIN",
+    "cat": "بقالة وسوبرماركت"
+  },
+  {
+    "word": "POPEYES",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "FOODICS",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "GELATO",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "TALQIMAH",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "LTQDYM ALWJBAT",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MATEAM",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "RESYTAURANT",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "LLHLA",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "SHAY ",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "BUFFET",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "FAST FOOD",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "HALF A MILLION",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "SHAMIAH",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "NABLSYT",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "AVOCADO",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "RUMAAN",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ICE CREAM",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ALKANDEI",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ALTAYR RES",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "BASTA RES",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MOSAFER COFFE",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ALRUKN ALKHALEJI",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MADBYKOM",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ABUTARIQ",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "WLAWZ",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "MAWASEM AL ASEER",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ZAWEAH MSHWAR",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "ALFAHS",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "ZYOAAT",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "ALZYWT",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "ALZAYOU",
+    "cat": "وقود ومواصلات"
+  },
+  {
+    "word": "LLTSHGHYL",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "CONTRA",
+    "cat": "خدمات منزلية"
+  },
+  {
+    "word": "DIRIYAH",
+    "cat": "ترفيه"
+  },
+  {
+    "word": "AWQAF",
+    "cat": "تبرعات"
+  },
+  {
+    "word": "ALBAIK",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "AL BAIK",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "CHEFS",
+    "cat": "مطاعم وقهوة"
+  },
+  {
+    "word": "VIRGIN MOBILE",
+    "cat": "اتصالات"
+  },
+  {
+    "word": "ZARA",
+    "cat": "ملابس وعطور"
+  },
+  {
+    "word": "SACO",
+    "cat": "خدمات منزلية"
+  }
+]

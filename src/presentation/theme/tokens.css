@@ -1,0 +1,56 @@
+/* ألوان ومقاسات مصروفي — منقولة حرفيًا من design/tokens.json و spec/04-design-handoff.md
+   لا تُكتب قيمة لون في أي ملف آخر. المتغيرات هنا هي المصدر الوحيد. */
+
+:root {
+  /* الوضع الفاتح — الافتراضي (spec/01) */
+  --c-background: #F7F8F9;
+  --c-surface:    #FFFFFF;
+  --c-text:       #20272B;
+  --c-muted:      #637078;
+  --c-border:     #E5E9EC;
+  --c-action:     #283A40;
+  --c-soft:       #EDF1F2;
+  --c-incoming:   #087849;
+  --c-outgoing:   #C52D3D;
+
+  /* المسافات — dp في spec/04 تُقرأ كبكسل منطقي (OVERRIDES §1) */
+  --s-page: 16px;
+  --s-page-compact: 12px;
+  --s-card: 16px;
+  --s-section: 14px;
+  --s-metric-gap: 6px;
+
+  --r-card: 20px;
+  --r-metric: 15px;
+  --touch-min: 48px;
+
+  /* أحجام الخط — sp تُقرأ كـ rem (OVERRIDES §1)، الأساس 16px */
+  --t-title: 1.25rem;   /* 20sp */
+  --t-section: 1rem;    /* 16sp */
+  --t-body: 0.875rem;   /* 14sp */
+  --t-input: 1rem;      /* 16sp */
+  --t-amount: 2.5rem;   /* 40sp */
+  --t-badge: 0.75rem;   /* 12sp */
+
+  --motion: 180ms cubic-bezier(0.2, 0, 0, 1);
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --c-background: #141719;
+  --c-surface:    #202427;
+  --c-text:       #F2F4F5;
+  --c-muted:      #ADB6BC;
+  --c-border:     #363E43;
+  --c-action:     #D1DCE1;
+  --c-soft:       #333D42;
+  --c-incoming:   #65DCA4;
+  --c-outgoing:   #FF8792;
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion: 1ms linear; }
+}

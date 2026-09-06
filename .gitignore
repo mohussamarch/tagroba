@@ -1,0 +1,27 @@
+# اعتماديات
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# أسرار وإعدادات محلية
+.env.local
+.env.*.local
+
+# بيانات شخصية حقيقية — لا تُرفع إطلاقًا
+# files/ فيه كشف حساب حقيقي وأرقام حسابات كاملة (counterparties.csv)
+files/
+*.pdf
+document_*.pdf
+
+# فايربيز
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# أدوات
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+coverage/
