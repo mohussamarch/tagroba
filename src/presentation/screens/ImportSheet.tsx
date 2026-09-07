@@ -3,10 +3,12 @@ import { formatAmount } from '../../domain/formatMoney'
 import { guessSourceType } from '../../infrastructure/import/detectSourceType'
 import { inspectFile } from '../../infrastructure/import/inspectFile'
 import type { ImportPreview } from '../../application/useCases/importStatement'
+import type { ParsedRow } from '../../infrastructure/import/schemas'
 import type { Wallet } from '../../domain/entities/types'
 import type { UserContainer } from '../../app/container'
 import { Count } from '../components/Count'
 import { ImportLine } from '../components/ImportLine'
+import { StatementPicker } from '../components/StatementPicker'
 import './ImportSheet.css'
 
 interface Props {
@@ -26,9 +28,13 @@ interface Props {
 export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
   const [fileName, setFileName] = useState('')
   const [content, setContent] = useState('')
+  /** صفوف الـPDF المحلَّلة. فاضية في مسار الـCSV. */
+  const [pdfRows, setPdfRows] = useState<ParsedRow[] | null>(null)
+  const [pdfNote, setPdfNote] = useState<string | null>(null)
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? '')
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState<'none' | 'reading' | 'previewing' | 'committing'>('none')
+  const [readProgress, setReadProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
 
@@ -45,6 +51,8 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
     if (!file) return
     setError(null)
     setPreview(null)
+    setPdfRows(null)
+    setPdfNote(null)
     setBusy('reading')
     try {
       const text = await file.text()
@@ -54,6 +62,22 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
        * تخفي السبب الحقيقي عن المستخدم.
        */
       const check = inspectFile(file.name, text)
+
+      if (check.kind === 'pdf') {
+        // مسار مختلف تمامًا: بايتات لا نص، وقارئ PDF لا قارئ CSV
+        const result = await user.readPdfStatement(await file.arrayBuffer(), (p) =>
+          setReadProgress(`بنقرا صفحة ${p.page} من ${p.total}`),
+        )
+        setFileName(file.name)
+        setContent(result.content)
+        setPdfRows(result.rows)
+        setPdfNote(
+          `قرينا ${result.pagesRead} صفحة ولقينا ${result.rows.length} عملية` +
+            (result.errors.length > 0 ? ` · ${result.errors.length} سطر مش واضح واتساب` : ''),
+        )
+        return
+      }
+
       if (!check.ok) {
         setError(check.message)
         setContent('')
@@ -62,10 +86,32 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
       }
       setFileName(file.name)
       setContent(text)
-    } catch {
-      setError('مقدرناش نقرأ الملف. اتأكد إنه ملف موجود ومش متقفول في تطبيق تاني.')
+    } catch (cause) {
+      // سبب القارئ بيتقال زي ما هو — أوضح من رسالة عامة
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'مقدرناش نقرأ الملف. اتأكد إنه ملف موجود ومش متقفول في تطبيق تاني.',
+      )
     } finally {
+      setReadProgress(null)
       setBusy('none')
+    }
+  }
+
+  /**
+   * الطلب يُبنى **مرة واحدة** ويُستعمل في المعاينة والتثبيت.
+   * لما كان بيتكتب مرتين، كان سهل ينسى حقل في واحدة منهم —
+   * وبصمة الملف بتتغير فيتحسب الكشف الواحد كشفين.
+   */
+  function buildRequest() {
+    return {
+      fileName,
+      content,
+      accountIdentity: walletName,
+      sourceType: guessSourceType(content),
+      walletId,
+      ...(pdfRows ? { parsedRows: pdfRows, schema: 'alrajhi_pdf' as const } : {}),
     }
   }
 
@@ -77,13 +123,7 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
     setError(null)
     setBusy('previewing')
     try {
-      const result = await user.importStatement.preview({
-        fileName,
-        content,
-        accountIdentity: walletName,
-        sourceType: guessSourceType(content),
-        walletId,
-      })
+      const result = await user.importStatement.preview(buildRequest())
       setPreview(result)
       setSelected(new Set(result.lines.filter((l) => l.selectedByDefault).map((l) => l.row.lineNumber)))
     } catch (cause) {
@@ -98,17 +138,7 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
     setError(null)
     setBusy('committing')
     try {
-      await user.importStatement.commit(
-        {
-          fileName,
-          content,
-          accountIdentity: walletName,
-          sourceType: guessSourceType(content),
-          walletId,
-        },
-        preview,
-        [...selected],
-      )
+      await user.importStatement.commit(buildRequest(), preview, [...selected])
       onImported()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
@@ -151,43 +181,16 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
         <div className="sheet__body">
           {!preview && (
             <>
-              <label className="sheet__field">
-                <span className="sheet__label">المحفظة</span>
-                <select
-                  className="sheet__input"
-                  value={walletId}
-                  onChange={(e) => setWalletId(e.target.value)}
-                  disabled={working}
-                >
-                  {wallets.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name}
-                    </option>
-                  ))}
-                </select>
-                <span className="sheet__hint">
-                  الكشف ده بتاع أنهي محفظة؟ ده اللي بيربط العمليات بيها عشان
-                  مطابقة الرصيد تشتغل، وبيمنع اعتبار نفس المرجع من حسابين تكرارًا.
-                </span>
-              </label>
-
-              <label className="sheet__field">
-                <span className="sheet__label">ملف CSV</span>
-                <input
-                  className="sheet__input"
-                  type="file"
-                  accept=".csv,text/csv"
-                  onChange={onFile}
-                  disabled={working}
-                />
-                {fileName ? (
-                  <span className="sheet__hint">اخترت: {fileName}</span>
-                ) : (
-                  <span className="sheet__hint">
-                    ملف CSV بس. الـPDF لسه مش مدعوم.
-                  </span>
-                )}
-              </label>
+              <StatementPicker
+                wallets={wallets}
+                walletId={walletId}
+                onWalletChange={setWalletId}
+                onFile={onFile}
+                fileName={fileName}
+                note={pdfNote}
+                progress={readProgress}
+                disabled={working}
+              />
 
               <button type="button" className="btn" onClick={runPreview} disabled={working || !content}>
                 {busy === 'previewing' ? 'بنستخرج…' : 'استخراج ومراجعة'}

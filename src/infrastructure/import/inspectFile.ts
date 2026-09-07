@@ -53,14 +53,16 @@ export function inspectFile(fileName: string, content: string): FileCheck {
 
   const lowerName = fileName.toLowerCase()
 
+  /*
+   * الـPDF بقى مقروءًا (ARCHITECTURE §19)، لكن **مش عبر قارئ CSV**:
+   * `ok: false` هنا معناها «متكملش لقارئ النصوص»، والمتصل بيوجّهه
+   * لقارئ الـPDF على أساس `kind`. الرسالة إرشاد مش خطأ.
+   */
   if (trimmedStart.startsWith(PDF_SIGNATURE) || lowerName.endsWith('.pdf')) {
     return {
       kind: 'pdf',
       ok: false,
-      message:
-        'ده ملف PDF مش CSV. التطبيق لسه بيقرا ملفات CSV بس — قراءة كشف الـPDF ' +
-        'مبنتش لحد دلوقتي. لو عندك الكشف كـCSV استعمله، وقولّي لو محتاج ' +
-        'إني أبني قراءة الـPDF.',
+      message: 'ده ملف PDF — بنقراه بقارئ مختلف عن الـCSV.',
     }
   }
 

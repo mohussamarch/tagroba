@@ -14,7 +14,7 @@ import type { IsoDate } from '../../domain/entities/types'
  * (ParsedRow) تعمل عليه بقية المنظومة.
  */
 
-export type SchemaId = 'preview' | 'legacy'
+export type SchemaId = 'preview' | 'legacy' | 'alrajhi_pdf'
 
 /** الصف بعد التحويل — الشكل الموحّد الذي لا يعرف من أي مخطط جاء. */
 export interface ParsedRow {

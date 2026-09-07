@@ -29,6 +29,7 @@ import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRep
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
 import { buildCategories, loadReferences } from '../infrastructure/import/referenceLoader'
 import { makeImportStatement } from '../application/useCases/importStatement'
+import { makeReadPdfStatement } from '../application/useCases/readPdfStatement'
 import { makeCategorizeTransactions } from '../application/useCases/categorizeTransactions'
 import { makeRevertImportBatch } from '../application/useCases/revertImportBatch'
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
@@ -96,6 +97,8 @@ export interface UserContainer {
   setEconomicKind: ReturnType<typeof makeSetEconomicKind>
   loadTransactionsScreen: ReturnType<typeof makeLoadTransactionsScreen>
   importStatement: ReturnType<typeof makeImportStatement>
+  /** يقرأ كشف الراجحي PDF لصفوف موحّدة — ARCHITECTURE §19. */
+  readPdfStatement: ReturnType<typeof makeReadPdfStatement>
   categorizeTransactions: ReturnType<typeof makeCategorizeTransactions>
   revertImportBatch: ReturnType<typeof makeRevertImportBatch>
   /** ينظّف الدفعات المعلّقة عند فتح التطبيق — ARCHITECTURE.md §10.5. */
@@ -170,6 +173,7 @@ export function createContainer(): Container {
         setBudget: makeSetBudget({ budgets, uow, ids: new RandomIdGenerator(), clock: systemClock }),
         setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock: systemClock }),
         loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
+        readPdfStatement: makeReadPdfStatement(),
         importStatement: makeImportStatement({
           txns,
           sources,

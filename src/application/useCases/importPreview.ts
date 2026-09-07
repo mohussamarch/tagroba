@@ -91,8 +91,14 @@ export async function runPreview(
   // ─── الدرجة ١: بصمة ملف سبق استيراده ───
   const previousBatch = await deps.batches.findByFileHash(fileHash)
 
-  const doc = parseCsv(request.content)
-  const outcome = parseRows(doc, request.schema)
+  /*
+   * الصفوف الجاهزة (مسار الـPDF) بتتخطى قارئ الـCSV وبس — كل اللي بعد
+   * كده واحد: منع التكرار والتصنيف والحفظ على مرحلتين. خط موازي للـPDF
+   * كان معناه قاعدتين لمنع التكرار، وواحدة هتتأخر عن التانية حتمًا.
+   */
+  const outcome = request.parsedRows
+    ? { schema: request.schema ?? 'alrajhi_pdf', rows: request.parsedRows, errors: [] }
+    : parseRows(parseCsv(request.content), request.schema)
 
   const index = buildDedupeIndex(await loadExisting(deps, request.accountIdentity))
   const catDeps = await buildCategorizeDeps(deps)
