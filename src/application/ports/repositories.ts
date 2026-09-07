@@ -15,6 +15,7 @@ import type {
   Wallet,
 } from '../../domain/entities/types'
 import type { Asset, AssetLot, AssetPrice, AssetSale } from '../../domain/entities/assets'
+import type { NotificationReceipt } from '../../domain/notifications'
 
 /**
  * واجهات المستودعات (ports) — **تعريفات بلا تنفيذ**.
@@ -165,4 +166,14 @@ export interface AssetSaleRepository {
 export interface AssetPriceRepository {
   listAll(): Promise<AssetPrice[]>
   save(price: AssetPrice): Promise<void>
+}
+
+/**
+ * إيصالات التنبيه — `spec/03`: «لمنع تكرار التنبيه».
+ * المفتاح هو `eventKey` نفسه، فالكتابة المكررة بتدهس نفسها بلا ضرر.
+ */
+export interface NotificationReceiptRepository {
+  listAll(): Promise<NotificationReceipt[]>
+  saveMany(receipts: readonly NotificationReceipt[]): Promise<void>
+  deleteMany(eventKeys: readonly string[]): Promise<void>
 }

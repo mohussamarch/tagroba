@@ -5,6 +5,7 @@ import type { TransactionsScreenData } from '../application/useCases/loadTransac
 import type { BudgetScreenData } from '../application/useCases/loadBudgetScreen'
 import type { PersonRow } from '../application/useCases/managePeople'
 import type { PortfolioView } from '../application/useCases/manageAssets'
+import type { NotificationsView } from '../application/useCases/loadNotifications'
 import type { Wallet } from '../domain/entities/types'
 import type { Container, UserContainer } from './container'
 
@@ -27,6 +28,7 @@ export function useAppData(container: Container, uid: string) {
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [people, setPeople] = useState<PersonRow[]>([])
   const [portfolio, setPortfolio] = useState<PortfolioView | null>(null)
+  const [notifications, setNotifications] = useState<NotificationsView | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>(null)
   const [recovery, setRecovery] = useState<string | null>(null)
@@ -73,6 +75,9 @@ export function useAppData(container: Container, uid: string) {
       const walletList = await user.wallets.listAll()
       const peopleRows = await user.managePeople.listWithBalances()
       const portfolioView = await user.manageAssets.listPortfolio(today)
+      // التنبيهات بتتبنى من **نفس** حالة الميزانية المحسوبة فوق،
+      // فمستحيل تعرض رقمًا مخالفًا لشاشة الميزانية
+      const notificationsView = await user.loadNotifications.load(budget)
 
       if (id !== requestId.current) return
       setHome(homeData)
@@ -81,6 +86,7 @@ export function useAppData(container: Container, uid: string) {
       setWallets(walletList)
       setPeople(peopleRows)
       setPortfolio(portfolioView)
+      setNotifications(notificationsView)
     } catch (cause) {
       if (id !== requestId.current) return
       setError(cause)
@@ -105,6 +111,7 @@ export function useAppData(container: Container, uid: string) {
     wallets,
     people,
     portfolio,
+    notifications,
     loading,
     error,
     recovery,

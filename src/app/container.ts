@@ -23,6 +23,7 @@ import {
   FirestoreAssetRepository,
   FirestoreAssetSaleRepository,
 } from '../infrastructure/firestore/assetRepositories'
+import { FirestoreNotificationReceiptRepository } from '../infrastructure/firestore/notificationRepository'
 import { FirestoreBudgetRepository } from '../infrastructure/firestore/budgetRepository'
 import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRepository'
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
@@ -44,6 +45,7 @@ import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
+import { makeLoadNotifications } from '../application/useCases/loadNotifications'
 import { loadPriceFeed } from '../infrastructure/prices/loadPriceFeed'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock, WalletRepository } from '../application/ports/repositories'
@@ -83,6 +85,7 @@ export interface UserContainer {
   managePeople: ReturnType<typeof makeManagePeople>
   manageAssets: ReturnType<typeof makeManageAssets>
   syncAssetPrices: ReturnType<typeof makeSyncAssetPrices>
+  loadNotifications: ReturnType<typeof makeLoadNotifications>
   /** يجيب ملف الأسعار — الشبكة هنا فقط، والشاشة ما تعرفش مكانه. */
   loadPriceFeed: typeof loadPriceFeed
   reconcileBalance: ReturnType<typeof makeReconcileBalance>
@@ -121,6 +124,7 @@ export function createContainer(): Container {
       const budgets = new FirestoreBudgetRepository(db, uid)
       const wallets = new FirestoreWalletRepository(db, uid)
       // الاستثمار (المرحلة السابعة) — أصول ودفعات ومبيعات وأسعار
+      const notificationReceipts = new FirestoreNotificationReceiptRepository(db, uid)
       const assets = new FirestoreAssetRepository(db, uid)
       const assetLots = new FirestoreAssetLotRepository(db, uid)
       const assetSales = new FirestoreAssetSaleRepository(db, uid)
@@ -148,6 +152,10 @@ export function createContainer(): Container {
           sales: assetSales,
           prices: assetPrices,
           ids: new RandomIdGenerator(),
+          clock: systemClock,
+        }),
+        loadNotifications: makeLoadNotifications({
+          receipts: notificationReceipts,
           clock: systemClock,
         }),
         syncAssetPrices: makeSyncAssetPrices({ assets, prices: assetPrices }),

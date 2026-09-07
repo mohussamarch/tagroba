@@ -7,10 +7,12 @@ import { InvestmentScreen } from '../presentation/screens/InvestmentScreen'
 import { SettingsScreen } from '../presentation/screens/SettingsScreen'
 import { ImportSheet } from '../presentation/screens/ImportSheet'
 import { KindsSheet } from '../presentation/screens/KindsSheet'
+import { NotificationsSheet } from '../presentation/screens/NotificationsSheet'
 import { AddTransactionSheet } from '../presentation/screens/AddTransactionSheet'
 import { LinkPersonSheet } from '../presentation/screens/LinkPersonSheet'
 import { AddMenu } from '../presentation/components/AddMenu'
 import { TabButton } from '../presentation/components/TabButton'
+import { ShellHeader } from '../presentation/components/ShellHeader'
 import { useTheme } from '../presentation/theme/useTheme'
 import { useAppData } from './useAppData'
 import type { Transaction } from '../domain/entities/types'
@@ -47,45 +49,25 @@ export function AppShell({
   const [addTxOpen, setAddTxOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [kindsOpen, setKindsOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
   const [linking, setLinking] = useState<Transaction | null>(null)
 
   const reload = () => void app.reload()
+  const unseenCount = app.notifications?.unseen.length ?? 0
 
   return (
     <div className="shell">
-      <header className="shell__head">
-        <h1 className="shell__title">{TAB_TITLES[tab]}</h1>
-        <div className="shell__actions">
-          <button
-            type="button"
-            className="iconBtn iconBtn--primary"
-            onClick={() => setAddMenuOpen(true)}
-            aria-label="إضافة"
-          >
-            <span aria-hidden="true">＋</span>
-          </button>
-          <button
-            type="button"
-            className="iconBtn"
-            onClick={() => setAmountsHidden((v) => !v)}
-            aria-label={amountsHidden ? 'إظهار المبالغ' : 'إخفاء المبالغ'}
-            aria-pressed={amountsHidden}
-          >
-            <span aria-hidden="true">{amountsHidden ? '🙈' : '👁'}</span>
-          </button>
-          <button
-            type="button"
-            className="iconBtn"
-            onClick={toggleTheme}
-            aria-label={theme === 'light' ? 'تحويل للوضع الغامق' : 'تحويل للوضع الفاتح'}
-          >
-            <span aria-hidden="true">{theme === 'light' ? '🌙' : '☀️'}</span>
-          </button>
-          <button type="button" className="iconBtn" onClick={onSignOut} aria-label="تسجيل الخروج">
-            <span aria-hidden="true">⎋</span>
-          </button>
-        </div>
-      </header>
+      <ShellHeader
+        title={TAB_TITLES[tab]}
+        unseenCount={unseenCount}
+        amountsHidden={amountsHidden}
+        theme={theme}
+        onAdd={() => setAddMenuOpen(true)}
+        onOpenNotifications={() => setNotifOpen(true)}
+        onToggleAmounts={() => setAmountsHidden((v) => !v)}
+        onToggleTheme={toggleTheme}
+        onSignOut={onSignOut}
+      />
 
       <main className="shell__body">
         {app.recovery && (
@@ -257,6 +239,15 @@ export function AppShell({
             setLinking(null)
             reload()
           }}
+        />
+      )}
+
+      {notifOpen && (
+        <NotificationsSheet
+          user={app.user}
+          view={app.notifications}
+          onClose={() => setNotifOpen(false)}
+          onSeen={reload}
         />
       )}
 

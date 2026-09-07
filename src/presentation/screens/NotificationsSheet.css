@@ -1,0 +1,61 @@
+.notif__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+
+.notif__row {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--r-card, 12px);
+  background: var(--c-surface);
+  border-inline-start: 3px solid var(--c-border);
+}
+
+/* الخطورة في الشكل مش في الرقم بس */
+.notif__row--info { border-inline-start-color: var(--c-accent); }
+.notif__row--warn { border-inline-start-color: var(--c-warn, var(--c-outgoing)); }
+.notif__row--over { border-inline-start-color: var(--c-outgoing); }
+
+.notif__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.notif__title {
+  font-weight: 700;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notif__body { font-size: var(--t-label); color: var(--c-text-muted); }
+
+.notif__limit {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+  border-block-start: 1px solid var(--c-border);
+  padding-block-start: 12px;
+}
+
+/* عدّاد الجديد على جرس الرأس */
+.bellWrap { position: relative; display: inline-flex; }
+
+.bellWrap__count {
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-end: -2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--c-outgoing);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
