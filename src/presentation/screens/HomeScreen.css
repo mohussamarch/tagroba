@@ -1,0 +1,202 @@
+.home {
+  display: grid;
+  gap: var(--s-section);
+  align-content: start;
+}
+
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  padding: var(--s-card);
+  display: grid;
+  gap: 10px;
+}
+
+.card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card__title {
+  font-size: var(--t-section);
+  font-weight: 600;
+  margin: 0;
+}
+
+.link {
+  background: none;
+  border: none;
+  min-height: auto;
+  padding: 4px;
+  color: var(--c-muted);
+  font-size: var(--t-body);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link:hover { color: var(--c-text); }
+
+/* ─────────── المصروف الشخصي: الرقم الأبرز ─────────── */
+
+.home__hero {
+  place-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.home__heroLabel {
+  font-size: var(--t-body);
+  color: var(--c-muted);
+}
+
+.home__heroValue {
+  font-size: var(--t-amount);
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+/* «غير متاح» نص لا رقم، فلا يأخذ حجم المبلغ الضخم */
+.home__heroValue--na {
+  font-size: var(--t-title);
+  color: var(--c-muted);
+}
+
+.home__heroSub {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+}
+
+.home__hint {
+  margin: 0;
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+}
+
+/* ─────────── المتاح اليومي والتوقع ─────────── */
+
+.home__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-metric-gap);
+}
+
+.home__box {
+  gap: 3px;
+  align-content: start;
+}
+
+.home__boxLabel {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+}
+
+.home__boxValue {
+  font-size: var(--t-section);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* السبب مكتوب دائمًا تحت الرقم أو تحت «غير متاح» */
+.home__boxNote {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  line-height: 1.5;
+}
+
+/* ─────────── توزيع التصنيفات ─────────── */
+
+.dist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.dist__row { display: grid; gap: 4px; }
+
+.dist__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.dist__name {
+  font-size: var(--t-body);
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dist__amount {
+  font-size: var(--t-body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dist__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--c-soft);
+  overflow: hidden;
+}
+
+.dist__fill {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 3px;
+  transition: width var(--motion);
+}
+
+.dist__meta {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+}
+
+/* ─────────── آخر ست فترات ─────────── */
+
+.periods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.periods__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.periods__row:last-child { border-bottom: none; }
+
+.periods__name { font-size: var(--t-body); font-weight: 500; }
+.periods__count { font-size: var(--t-badge); color: var(--c-muted); white-space: nowrap; }
+.periods__value { font-size: var(--t-body); font-weight: 700; white-space: nowrap; }
+
+/* ─────────── تنبيه فيه إجراء ─────────── */
+
+.notice--action {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.notice--action .btn { justify-self: start; }
+
+/* وسم الرقم الجزئي — لا يعتمد على اللون وحده، النص نفسه يقول إنه ناقص */
+.badge--partial {
+  background: var(--c-soft);
+  border-color: var(--c-outgoing);
+  color: var(--c-outgoing);
+  font-size: var(--t-badge);
+}

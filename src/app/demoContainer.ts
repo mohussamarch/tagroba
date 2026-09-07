@@ -17,6 +17,8 @@ import { makeRevertImportBatch } from '../application/useCases/revertImportBatch
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
 import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
 import { makeSeedUserReferences } from '../application/useCases/seedUserReferences'
+import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
+import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -80,6 +82,8 @@ export function createDemoContainer(): Container {
   const userContainer: UserContainer = {
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
+    loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
+    setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock }),
     loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
     importStatement: makeImportStatement({
       txns, sources, batches, merchants, categories, rules, uow, ids, clock,

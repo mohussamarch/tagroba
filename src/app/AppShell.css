@@ -1,0 +1,93 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-background);
+}
+
+.shell__head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--c-background);
+  border-bottom: 1px solid var(--c-border);
+  padding: var(--s-page);
+  padding-top: max(var(--s-page), env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.shell__title {
+  font-size: var(--t-title);
+  font-weight: 700;
+  margin: 0;
+  min-width: 0;
+}
+
+.shell__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.shell__body {
+  flex: 1;
+  padding: var(--s-page);
+  display: grid;
+  gap: var(--s-section);
+  align-content: start;
+}
+
+/* ─────────── الشريط السفلي ─────────── */
+
+.shell__tabs {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-border);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab {
+  min-height: 56px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  place-items: center;
+  color: var(--c-muted);
+  padding: 8px 4px;
+  transition: color var(--motion);
+}
+
+.tab:hover { color: var(--c-text); }
+
+/* التبويب النشط لا يعتمد على اللون وحده: معه aria-current ووزن خط أثقل */
+.tab--on {
+  color: var(--c-text);
+  font-weight: 700;
+  box-shadow: inset 0 2px 0 0 var(--c-text);
+}
+
+.tab__icon { font-size: 1.15rem; line-height: 1; }
+.tab__label { font-size: var(--t-badge); }
+
+/* ─────────── شاشة العمليات داخل القشرة ─────────── */
+
+.txns {
+  display: grid;
+  gap: var(--s-section);
+  align-content: start;
+}
+
+@media (max-width: 360px) {
+  .shell__head, .shell__body { padding-inline: var(--s-page-compact); }
+  .shell__title { font-size: 1.1875rem; } /* 19 في العرض الضيق — spec/04 */
+}

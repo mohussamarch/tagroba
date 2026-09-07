@@ -20,6 +20,8 @@ import { makeRevertImportBatch } from '../application/useCases/revertImportBatch
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
 import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
 import { makeSeedUserReferences, type SeedOutcome } from '../application/useCases/seedUserReferences'
+import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
+import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock } from '../application/ports/repositories'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -52,6 +54,8 @@ export interface Container {
 export interface UserContainer {
   /** يزرع المراجع الأولية عند أول دخول فقط — ARCHITECTURE.md §10.6. */
   seedUserReferences: () => Promise<SeedOutcome>
+  loadHomeScreen: ReturnType<typeof makeLoadHomeScreen>
+  setEconomicKind: ReturnType<typeof makeSetEconomicKind>
   loadTransactionsScreen: ReturnType<typeof makeLoadTransactionsScreen>
   importStatement: ReturnType<typeof makeImportStatement>
   categorizeTransactions: ReturnType<typeof makeCategorizeTransactions>
@@ -86,6 +90,8 @@ export function createContainer(): Container {
       return {
         seedUserReferences: () =>
           makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
+        loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
+        setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock: systemClock }),
         loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
         importStatement: makeImportStatement({
           txns,

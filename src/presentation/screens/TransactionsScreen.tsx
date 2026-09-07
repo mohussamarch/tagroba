@@ -1,28 +1,30 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TransactionRow } from '../components/TransactionRow'
-import { useTheme } from '../theme/useTheme'
+import { PeriodPicker } from '../components/PeriodPicker'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
 import { parseQuery, searchTransactions, AMOUNT_TOLERANCE_PER_THOUSAND } from '../../domain/search'
 import type { SearchableTransaction } from '../../domain/search'
 import type { TransactionsScreenData } from '../../application/useCases/loadTransactionsScreen'
+import type { Period } from '../../domain/period'
 import './TransactionsScreen.css'
 
 interface Props {
   loading: boolean
   error: string | null
   data: TransactionsScreenData | null
-  /** رسالة تعافٍ من استيراد سابق لم يكتمل — تُعرض ولا تُخفى. */
-  recovery: string | null
-  onDismissRecovery: () => void
-  onSignOut: () => void
+  amountsHidden: boolean
+  period: Period
+  payday: number
+  onPeriodChange: (period: Period) => void
   onImport: () => void
+  onFixKinds: () => void
   onRetry: () => void
 }
 
 /**
  * شاشة العمليات — spec/01 و spec/04.
  *
- * الشاشة **لا تحسب مبلغًا ولا تكلّم مستودعًا**. تستقبل ViewModel محسوبًا
+ * الشاشة **لا تحسب مبلغًا ولا تكلّم مستودعًا**. تستقبل بيانات محسوبة
  * من حالة الاستخدام، وتنادي formatAmount للعرض فقط.
  * البحث محلي بالكامل في domain/search — لا تُرسل بيانات البحث للخارج.
  */
@@ -30,18 +32,18 @@ export function TransactionsScreen({
   loading,
   error,
   data,
-  recovery,
-  onDismissRecovery,
-  onSignOut,
+  amountsHidden,
+  period,
+  payday,
+  onPeriodChange,
   onImport,
+  onFixKinds,
   onRetry,
 }: Props) {
-  const { theme, toggleTheme } = useTheme()
   const [rawQuery, setRawQuery] = useState('')
   const [debounced, setDebounced] = useState('')
-  const [amountsHidden, setAmountsHidden] = useState(false)
 
-  // بحث مؤجل قصير — spec/04: «بحث مؤجل قصير، وإلغاء الاستعلام السابق»
+  // بحث مؤجل قصير — spec/04
   useEffect(() => {
     const id = setTimeout(() => setDebounced(rawQuery), 200)
     return () => clearTimeout(id)
@@ -56,7 +58,9 @@ export function TransactionsScreen({
     () =>
       (data?.transactions ?? []).map((transaction) => {
         const item: SearchableTransaction = { transaction }
-        const name = transaction.categoryId ? categoryNameById.get(transaction.categoryId) : undefined
+        const name = transaction.categoryId
+          ? categoryNameById.get(transaction.categoryId)
+          : undefined
         if (name) item.categoryName = name
         return item
       }),
@@ -71,101 +75,55 @@ export function TransactionsScreen({
   const query = useMemo(() => parseQuery(debounced), [debounced])
 
   return (
-    <div className="screen">
-      <header className="screen__head">
-        <div className="screen__topRow">
-          <h1 className="screen__title">العمليات</h1>
-          <div className="screen__actions">
-            {/*
-              زر الاستيراد في الرأس — spec/01: «الرأس: البحث، المظهر، الإضافة».
-              بدونه لا يمكن استيراد كشف ثانٍ بعد أول استيراد،
-              لأن زر الحالة الفارغة يختفي بمجرد وجود عمليات.
-            */}
-            <button
-              type="button"
-              className="iconBtn iconBtn--primary"
-              onClick={onImport}
-              aria-label="استيراد كشف حساب"
-            >
-              <span aria-hidden="true">＋</span>
-            </button>
-            <button
-              type="button"
-              className="iconBtn"
-              onClick={() => setAmountsHidden((v) => !v)}
-              aria-label={amountsHidden ? 'إظهار المبالغ' : 'إخفاء المبالغ'}
-              aria-pressed={amountsHidden}
-            >
-              <span aria-hidden="true">{amountsHidden ? '🙈' : '👁'}</span>
-            </button>
-            <button
-              type="button"
-              className="iconBtn"
-              onClick={toggleTheme}
-              aria-label={theme === 'light' ? 'تحويل للوضع الغامق' : 'تحويل للوضع الفاتح'}
-            >
-              <span aria-hidden="true">{theme === 'light' ? '🌙' : '☀️'}</span>
-            </button>
-            <button type="button" className="iconBtn" onClick={onSignOut} aria-label="تسجيل الخروج">
-              <span aria-hidden="true">⎋</span>
-            </button>
+    <div className="txns">
+      <PeriodPicker period={period} payday={payday} onChange={onPeriodChange} />
+
+      <div className="search">
+        <input
+          className="search__input"
+          type="search"
+          value={rawQuery}
+          onChange={(e) => setRawQuery(e.target.value)}
+          placeholder="ابحث باسم أو مبلغ أو تصنيف…"
+          aria-label="البحث في العمليات"
+          aria-describedby="search-hint"
+        />
+        <p className="search__hint" id="search-hint">
+          {query.amount
+            ? `بحث بالمبلغ ${formatAmount(query.amount.targetMinor)} ± ${AMOUNT_TOLERANCE_PER_THOUSAND / 10}٪ — ${visible.length} نتيجة`
+            : 'الأرقام تبحث بالمبلغ ±٥٪. البحث محلي على جهازك ومش بيتبعت لأي مكان.'}
+        </p>
+      </div>
+
+      {data && (
+        <>
+          {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
+          <div className="metrics">
+            <Metric label="الدخل" amount={data.incomeMinor} hidden={amountsHidden} tone="in" />
+            <Metric
+              label="المتبقي"
+              amount={data.remainingMinor}
+              hidden={amountsHidden}
+              tone={data.remainingMinor !== null && data.remainingMinor < 0 ? 'out' : 'none'}
+            />
+            <div className="metric">
+              <span className="metric__label">معدل الادخار</span>
+              <span className="metric__value">
+                {data.savingsRatePercent === null
+                  ? NOT_AVAILABLE
+                  : `${data.savingsRatePercent.toFixed(1)}%`}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {data && (
-          <>
-            <div className="search">
-              <input
-                className="search__input"
-                type="search"
-                value={rawQuery}
-                onChange={(e) => setRawQuery(e.target.value)}
-                placeholder="ابحث باسم أو مبلغ أو تصنيف…"
-                aria-label="البحث في العمليات"
-                aria-describedby="search-hint"
-              />
-              <p className="search__hint" id="search-hint">
-                {query.amount
-                  ? `بحث بالمبلغ ${formatAmount(query.amount.targetMinor)} ± ${AMOUNT_TOLERANCE_PER_THOUSAND / 10}٪ — ${visible.length} نتيجة`
-                  : 'الأرقام تبحث بالمبلغ ±٥٪. البحث محلي على جهازك ومش بيتبعت لأي مكان.'}
-              </p>
-            </div>
-
-            {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
-            <div className="metrics">
-              <Metric
-                label="الدخل"
-                amount={data.incomeMinor}
-                hidden={amountsHidden}
-                tone="in"
-              />
-              <Metric
-                label="المتبقي"
-                amount={data.remainingMinor}
-                hidden={amountsHidden}
-                tone={data.remainingMinor !== null && data.remainingMinor < 0 ? 'out' : 'none'}
-              />
-              <div className="metric">
-                <span className="metric__label">معدل الادخار</span>
-                <span className="metric__value">
-                  {data.savingsRatePercent === null
-                    ? NOT_AVAILABLE
-                    : `${data.savingsRatePercent.toFixed(1)}%`}
-                </span>
-              </div>
-            </div>
-
-            {/*
-              لا رقم بلا مصدر (CLAUDE.md #10): لما يكون فيه عمليات نوعها
-              الاقتصادي غير محدد، الأرقام ناقصة والمستخدم لازم يعرف السبب.
-            */}
-            {data.unclassifiedCount > 0 && (
-              <p className="notice" role="status">
+          {/* لا رقم بلا مصدر (CLAUDE.md #10) */}
+          {data.unclassifiedCount > 0 && (
+            <div className="notice notice--action" role="status">
+              <div>
                 {data.unclassifiedCount === data.totalCount ? (
                   <>
-                    <strong>الأرقام لسه غير متاحة.</strong> كل الـ{data.totalCount} عملية
-                    محتاجة تحدد نوعها (دخل؟ تحويل؟ قرض؟). الكشف بيقول الفلوس دخلت ولا خرجت بس،
-                    وده مش كفاية عشان نعرف دي دخل ولا نقل فلوس.
+                    <strong>الأرقام لسه غير متاحة.</strong> كل الـ{data.totalCount} عملية محتاجة
+                    تحدد نوعها (دخل؟ تحويل؟ قرض؟).
                   </>
                 ) : (
                   <>
@@ -173,81 +131,70 @@ export function TransactionsScreen({
                     {data.totalCount} لسه محتاجة تحدد نوعها.
                   </>
                 )}
-              </p>
-            )}
+              </div>
+              <button type="button" className="btn" onClick={onFixKinds}>
+                حدّد الأنواع
+              </button>
+            </div>
+          )}
+        </>
+      )}
 
-            <p className="search__hint">الفترة: {data.periodRange}</p>
-          </>
-        )}
-      </header>
+      {loading && !data && (
+        <p className="notice" role="status">
+          بنحمّل العمليات…
+        </p>
+      )}
 
-      <main className="screen__body">
-        {recovery && (
-          <div className="notice" role="status">
-            {recovery}
-            <br />
-            <button
-              type="button"
-              className="btn btn--quiet"
-              onClick={onDismissRecovery}
-              style={{ marginTop: 10 }}
-            >
-              تمام، فهمت
-            </button>
-          </div>
-        )}
+      {error && (
+        <div className="notice" role="alert">
+          <strong>مقدرناش نحمّل العمليات.</strong>
+          <br />
+          {error}
+          <br />
+          <button
+            type="button"
+            className="btn btn--quiet"
+            onClick={onRetry}
+            style={{ marginTop: 10 }}
+          >
+            جرّب تاني
+          </button>
+        </div>
+      )}
 
-        {loading && (
-          <p className="notice" role="status">
-            بنحمّل العمليات…
-          </p>
-        )}
+      {!loading && !error && data && visible.length === 0 && (
+        <div className="empty">
+          {debounced.trim() ? (
+            <>
+              <span className="empty__title">مفيش نتايج للبحث ده</span>
+              <span>جرّب كلمة تانية، أو امسح البحث عشان تشوف كل العمليات.</span>
+            </>
+          ) : (
+            <>
+              <span className="empty__title">مفيش عمليات في الفترة دي</span>
+              <span>غيّر الفترة من فوق، أو استورد كشف حساب.</span>
+              <button type="button" className="btn" onClick={onImport}>
+                استيراد كشف
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
-        {error && (
-          <div className="notice" role="alert">
-            <strong>مقدرناش نحمّل العمليات.</strong>
-            <br />
-            {error}
-            <br />
-            <button type="button" className="btn btn--quiet" onClick={onRetry} style={{ marginTop: 10 }}>
-              جرّب تاني
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && data && visible.length === 0 && (
-          <div className="empty">
-            {debounced.trim() ? (
-              <>
-                <span className="empty__title">مفيش نتايج للبحث ده</span>
-                <span>جرّب كلمة تانية، أو امسح البحث عشان تشوف كل العمليات.</span>
-              </>
-            ) : (
-              <>
-                <span className="empty__title">مفيش عمليات في الفترة دي</span>
-                <span>استورد كشف حساب عشان تبدأ.</span>
-                <button type="button" className="btn" onClick={onImport}>
-                  استيراد كشف
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {!loading && !error && visible.length > 0 && (
-          <ul className="list">
-            {visible.map((t) => {
-              const props: Parameters<typeof TransactionRow>[0] = {
-                transaction: t,
-                amountsHidden,
-              }
-              const name = t.categoryId ? categoryNameById.get(t.categoryId) : undefined
-              if (name) props.categoryName = name
-              return <TransactionRow key={t.id} {...props} />
-            })}
-          </ul>
-        )}
-      </main>
+      {!error && visible.length > 0 && (
+        <ul className="list">
+          {visible.map((t) => {
+            const props: Parameters<typeof TransactionRow>[0] = {
+              transaction: t,
+              amountsHidden,
+            }
+            const name = t.categoryId ? categoryNameById.get(t.categoryId) : undefined
+            if (name) props.categoryName = name
+            return <TransactionRow key={t.id} {...props} />
+          })}
+        </ul>
+      )}
     </div>
   )
 }

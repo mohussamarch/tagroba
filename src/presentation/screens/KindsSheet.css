@@ -1,0 +1,108 @@
+.kinds__group {
+  display: grid;
+  gap: 8px;
+}
+
+.kinds__title {
+  font-size: var(--t-section);
+  font-weight: 600;
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.kinds__sub {
+  font-size: var(--t-badge);
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+.kinds__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.kinds__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: start;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 10px var(--s-card);
+}
+
+/* صف القرار الفردي بلا خانة اختيار ولا مبلغ جانبي */
+.kinds__row--pick {
+  grid-template-columns: 1fr;
+  border-color: var(--c-outgoing);
+}
+
+.kinds__row input[type='checkbox'] {
+  min-height: 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.kinds__main {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.kinds__name {
+  font-size: var(--t-body);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.kinds__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+}
+
+.kinds__reason {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.kinds__amount {
+  font-size: var(--t-body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.kinds__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.kinds__option {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  border-radius: 999px;
+  font-size: var(--t-body);
+  cursor: pointer;
+  transition: background var(--motion), border-color var(--motion);
+}
+
+.kinds__option:hover {
+  background: var(--c-text);
+  color: var(--c-surface);
+  border-color: var(--c-text);
+}
