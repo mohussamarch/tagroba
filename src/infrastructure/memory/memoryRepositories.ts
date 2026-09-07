@@ -22,8 +22,31 @@ import type {
 
 const clone = <T>(value: T): T => structuredClone(value)
 
-export class MemoryTransactionRepository implements TransactionRepository {
-  private items = new Map<Id, Transaction>()
+/**
+ * مستودع يقدر يرجّع حالته لِما كانت عليه.
+ * هو ما يجعل MemoryUnitOfWork ذرّية فعليًا لا اسمًا،
+ * ويثبت حالة spec/06: «انقطاع أثناء حفظ دفعة ⇒ صفر أو كامل الدفعة».
+ */
+export interface Snapshotable<S = unknown> {
+  snapshot(): S
+  restore(state: S): void
+}
+
+/** أساس مشترك لمستودعات الذاكرة المفتاحية. */
+abstract class KeyedStore<T> implements Snapshotable<Map<Id, T>> {
+  protected items = new Map<Id, T>()
+
+  snapshot(): Map<Id, T> {
+    // نسخة عميقة: التراجع لازم يرجّع محتوى المستندات لا مفاتيحها فقط
+    return new Map([...this.items].map(([k, v]) => [k, clone(v)]))
+  }
+
+  restore(state: Map<Id, T>): void {
+    this.items = new Map([...state].map(([k, v]) => [k, clone(v)]))
+  }
+}
+
+export class MemoryTransactionRepository extends KeyedStore<Transaction> implements TransactionRepository {
 
   async listByDateRange(fromIso: string, toIso: string): Promise<Transaction[]> {
     return [...this.items.values()]
@@ -70,8 +93,7 @@ export class MemoryTransactionRepository implements TransactionRepository {
   }
 }
 
-export class MemorySourceRecordRepository implements SourceRecordRepository {
-  private items = new Map<Id, SourceRecord>()
+export class MemorySourceRecordRepository extends KeyedStore<SourceRecord> implements SourceRecordRepository {
 
   async listByBatch(batchId: Id): Promise<SourceRecord[]> {
     return [...this.items.values()].filter((r) => r.batchId === batchId).map(clone)
@@ -103,8 +125,7 @@ export class MemorySourceRecordRepository implements SourceRecordRepository {
   }
 }
 
-export class MemoryImportBatchRepository implements ImportBatchRepository {
-  private items = new Map<Id, ImportBatch>()
+export class MemoryImportBatchRepository extends KeyedStore<ImportBatch> implements ImportBatchRepository {
 
   async findById(id: Id): Promise<ImportBatch | null> {
     const found = this.items.get(id)

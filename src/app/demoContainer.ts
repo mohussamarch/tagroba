@@ -15,6 +15,8 @@ import { makeImportStatement } from '../application/useCases/importStatement'
 import { makeCategorizeTransactions } from '../application/useCases/categorizeTransactions'
 import { makeRevertImportBatch } from '../application/useCases/revertImportBatch'
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
+import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
+import { makeSeedUserReferences } from '../application/useCases/seedUserReferences'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -73,7 +75,11 @@ export function createDemoContainer(): Container {
   const ids = new SequentialIdGenerator()
   const clock = new FixedClock(new Date().toISOString())
 
+  const seedSource = { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
+
   const userContainer: UserContainer = {
+    // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
+    seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
     importStatement: makeImportStatement({
       txns, sources, batches, merchants, categories, rules, uow, ids, clock,
@@ -96,6 +102,7 @@ export function createDemoContainer(): Container {
       },
       uow,
     }),
+    resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),
   }
 
   return {

@@ -84,6 +84,15 @@ export function makeImportStatement(deps: ImportStatementDeps) {
       const transactions: Transaction[] = []
       const records: SourceRecord[] = []
 
+      const counts = {
+        total: previewResult.counts.total,
+        imported: 0, // يُملأ بعد البناء
+        duplicates: previewResult.counts.duplicates,
+        similar: previewResult.counts.similar,
+        conflicts: previewResult.counts.conflicts,
+        invalid: previewResult.counts.invalid,
+      }
+
       for (const line of previewResult.lines) {
         const included = selection.has(line.row.lineNumber)
         const txnId = included ? deps.ids.next('txn') : null
@@ -103,27 +112,43 @@ export function makeImportStatement(deps: ImportStatementDeps) {
         })
       }
 
-      await deps.txns.saveMany(transactions)
-      await deps.sources.saveMany(records)
+      counts.imported = transactions.length
 
+      /*
+       * بروتوكول علامة الالتزام — يحقق «صفر أو كامل الدفعة» (spec/06)
+       * حتى على Firestore حيث لا تغطي المعاملة الواحدة مئات المستندات.
+       *
+       *   ١. الدفعة تُكتب `staged` **قبل** أي شيء
+       *   ٢. **سجلات المصدر أولًا** ثم العمليات (الانقطاع المحتمل هنا)
+       *   ٣. التحويل إلى `committed` بكتابة واحدة ذرّية بطبيعتها
+       *
+       * ⚠️ **ترتيب الخطوة ٢ ليس تفصيلًا.** سجل المصدر هو الفهرس الوحيد
+       * الذي يربط العملية بدفعتها. لو كُتبت العمليات أولًا وانقطع الاتصال
+       * قبل السجلات، تصير العمليات **يتيمة**: موجودة في قاعدة البيانات
+       * ولا سبيل للوصول إليها من الدفعة، فيستحيل تنظيفها.
+       *
+       * بهذا الترتيب أي انقطاع يترك سجلات تُشير إلى عمليات قد لا تكون
+       * كُتبت بعد — وحذف معرّف غير موجود لا يضر — فالتنظيف يعمل دائمًا.
+       *
+       * أي انقطاع يترك دفعة `staged`، و findByFileHash لا يرى إلا
+       * `committed`، فما تحتها غير معتمد ويُنظَّف بـ ResumeStagedBatch.
+       */
       const batch: ImportBatch = {
         id: batchId,
         sourceType: request.sourceType,
         fileHash: previewResult.fileHash,
         fileName: request.fileName,
         importedAt: now,
-        state: 'committed',
-        counts: {
-          total: previewResult.counts.total,
-          imported: transactions.length,
-          duplicates: previewResult.counts.duplicates,
-          similar: previewResult.counts.similar,
-          conflicts: previewResult.counts.conflicts,
-          invalid: previewResult.counts.invalid,
-        },
+        state: 'staged',
+        counts,
       }
-      await deps.batches.save(batch)
-      return batch
+
+      await deps.batches.save(batch) // ١
+      await deps.sources.saveMany(records) // ٢ — الفهرس أولًا
+      await deps.txns.saveMany(transactions) //     ثم العمليات
+      await deps.batches.updateState(batchId, 'committed') // ٣
+
+      return { ...batch, state: 'committed' }
     })
   }
 

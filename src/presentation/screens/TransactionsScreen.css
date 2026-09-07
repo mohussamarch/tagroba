@@ -249,3 +249,17 @@
   .screen__head, .screen__body { padding-inline: var(--s-page-compact); }
   .screen__title { font-size: 1.1875rem; } /* 19 في العرض الضيق — spec/04 */
 }
+
+/* زر الإجراء الرئيسي: text خلفية و surface نص — spec/04 */
+.iconBtn--primary {
+  background: var(--c-text);
+  color: var(--c-surface);
+  border-color: var(--c-text);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.iconBtn--primary:hover {
+  background: var(--c-action);
+  border-color: var(--c-action);
+}

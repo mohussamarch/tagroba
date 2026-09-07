@@ -53,13 +53,42 @@ function SignedIn({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [recovery, setRecovery] = useState<string | null>(null)
   const requestId = useRef(0)
+  const cleanedUp = useRef(false)
 
   const load = useCallback(async () => {
     const id = ++requestId.current
     setLoading(true)
     setError(null)
     try {
+      /*
+       * تنظيف الدفعات المعلّقة **قبل** أي قراءة، مرة واحدة لكل جلسة.
+       * دفعة معلّقة تعني استيرادًا انقطع قبل اعتماده (ARCHITECTURE.md §10.5)،
+       * وما تحتها غير معتمد فلا يجوز أن يظهر في الشاشة كأنه بيانات حقيقية.
+       */
+      if (!cleanedUp.current) {
+        cleanedUp.current = true
+
+        /*
+         * زرع المراجع الأولية عند أول دخول (ARCHITECTURE.md §10.6).
+         * آمن التكرار: لو كانت مزروعة لا يُكتب شيء فوق تعديلات المستخدم.
+         * يسبق التصنيف لأن الاستيراد يحتاج القواعد موجودة.
+         */
+        await user.seedUserReferences()
+
+        const outcomes = await user.resumeStagedBatch.cleanupAll()
+        if (outcomes.length > 0) {
+          const total = outcomes.reduce((sum, o) => sum + o.deletedTransactions, 0)
+          // لا يُخفى ما حدث: المستخدم يعرف أن استيرادًا سابقًا لم يكتمل
+          setRecovery(
+            `فيه استيراد سابق ماكملش (${outcomes.map((o) => o.fileName).join('، ')}) ` +
+              `فشلناه بالكامل عشان مايسيبش بيانات ناقصة. ` +
+              `${total > 0 ? `اتشال ${total} سطر. ` : ''}تقدر تستورد الملف تاني.`,
+          )
+        }
+      }
+
       const today = new Date().toISOString().slice(0, 10)
       const result = await user.loadTransactionsScreen({ today })
       if (id === requestId.current) setData(result)
@@ -82,6 +111,8 @@ function SignedIn({
         loading={loading}
         error={error}
         data={data}
+        recovery={recovery}
+        onDismissRecovery={() => setRecovery(null)}
         onSignOut={onSignOut}
         onImport={() => setImportOpen(true)}
         onRetry={() => void load()}

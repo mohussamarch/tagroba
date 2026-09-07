@@ -11,6 +11,9 @@ interface Props {
   loading: boolean
   error: string | null
   data: TransactionsScreenData | null
+  /** رسالة تعافٍ من استيراد سابق لم يكتمل — تُعرض ولا تُخفى. */
+  recovery: string | null
+  onDismissRecovery: () => void
   onSignOut: () => void
   onImport: () => void
   onRetry: () => void
@@ -23,7 +26,16 @@ interface Props {
  * من حالة الاستخدام، وتنادي formatAmount للعرض فقط.
  * البحث محلي بالكامل في domain/search — لا تُرسل بيانات البحث للخارج.
  */
-export function TransactionsScreen({ loading, error, data, onSignOut, onImport, onRetry }: Props) {
+export function TransactionsScreen({
+  loading,
+  error,
+  data,
+  recovery,
+  onDismissRecovery,
+  onSignOut,
+  onImport,
+  onRetry,
+}: Props) {
   const { theme, toggleTheme } = useTheme()
   const [rawQuery, setRawQuery] = useState('')
   const [debounced, setDebounced] = useState('')
@@ -64,6 +76,19 @@ export function TransactionsScreen({ loading, error, data, onSignOut, onImport, 
         <div className="screen__topRow">
           <h1 className="screen__title">العمليات</h1>
           <div className="screen__actions">
+            {/*
+              زر الاستيراد في الرأس — spec/01: «الرأس: البحث، المظهر، الإضافة».
+              بدونه لا يمكن استيراد كشف ثانٍ بعد أول استيراد،
+              لأن زر الحالة الفارغة يختفي بمجرد وجود عمليات.
+            */}
+            <button
+              type="button"
+              className="iconBtn iconBtn--primary"
+              onClick={onImport}
+              aria-label="استيراد كشف حساب"
+            >
+              <span aria-hidden="true">＋</span>
+            </button>
             <button
               type="button"
               className="iconBtn"
@@ -157,6 +182,21 @@ export function TransactionsScreen({ loading, error, data, onSignOut, onImport, 
       </header>
 
       <main className="screen__body">
+        {recovery && (
+          <div className="notice" role="status">
+            {recovery}
+            <br />
+            <button
+              type="button"
+              className="btn btn--quiet"
+              onClick={onDismissRecovery}
+              style={{ marginTop: 10 }}
+            >
+              تمام، فهمت
+            </button>
+          </div>
+        )}
+
         {loading && (
           <p className="notice" role="status">
             بنحمّل العمليات…
