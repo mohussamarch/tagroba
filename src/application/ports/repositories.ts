@@ -14,6 +14,7 @@ import type {
   Transaction,
   Wallet,
 } from '../../domain/entities/types'
+import type { Asset, AssetLot, AssetPrice, AssetSale } from '../../domain/entities/assets'
 
 /**
  * واجهات المستودعات (ports) — **تعريفات بلا تنفيذ**.
@@ -133,4 +134,35 @@ export interface BudgetRepository {
   listCategoryBudgets(budgetId: Id): Promise<CategoryBudget[]>
   saveCategoryBudget(line: CategoryBudget): Promise<void>
   removeCategoryBudget(id: Id): Promise<void>
+}
+
+/**
+ * الاستثمار — `spec/01`. الأصول ودفعات الشراء وعمليات البيع والأسعار.
+ *
+ * الاستعلام كله **بحقل واحد** (`assetId`) أو بالمجموعة كاملة،
+ * فلا فهرس مركّب (ARCHITECTURE §12). الترتيب الزمني في الذاكرة.
+ */
+export interface AssetRepository {
+  listAll(): Promise<Asset[]>
+  save(asset: Asset): Promise<void>
+}
+
+export interface AssetLotRepository {
+  listByAsset(assetId: Id): Promise<AssetLot[]>
+  listAll(): Promise<AssetLot[]>
+  saveMany(lots: readonly AssetLot[]): Promise<void>
+  deleteMany(ids: readonly Id[]): Promise<void>
+}
+
+export interface AssetSaleRepository {
+  listByAsset(assetId: Id): Promise<AssetSale[]>
+  listAll(): Promise<AssetSale[]>
+  saveMany(sales: readonly AssetSale[]): Promise<void>
+  deleteMany(ids: readonly Id[]): Promise<void>
+}
+
+/** سعر واحد محفوظ لكل أصل — الأحدث. التاريخ محفوظ معه دائمًا. */
+export interface AssetPriceRepository {
+  listAll(): Promise<AssetPrice[]>
+  save(price: AssetPrice): Promise<void>
 }

@@ -3,6 +3,7 @@ import { HomeScreen } from '../presentation/screens/HomeScreen'
 import { TransactionsScreen } from '../presentation/screens/TransactionsScreen'
 import { BudgetScreen } from '../presentation/screens/BudgetScreen'
 import { PeopleScreen } from '../presentation/screens/PeopleScreen'
+import { InvestmentScreen } from '../presentation/screens/InvestmentScreen'
 import { SettingsScreen } from '../presentation/screens/SettingsScreen'
 import { ImportSheet } from '../presentation/screens/ImportSheet'
 import { KindsSheet } from '../presentation/screens/KindsSheet'
@@ -16,13 +17,14 @@ import type { Transaction } from '../domain/entities/types'
 import type { Container } from './container'
 import './AppShell.css'
 
-type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'settings'
+type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings'
 
 const TAB_TITLES: Record<Tab, string> = {
   home: 'مصروفي',
   budget: 'الميزانية',
   transactions: 'العمليات',
   people: 'الأشخاص',
+  invest: 'الاستثمار',
   settings: 'الإعدادات',
 }
 
@@ -172,6 +174,18 @@ export function AppShell({
           />
         )}
 
+        {tab === 'invest' && (
+          <InvestmentScreen
+            user={app.user}
+            data={app.portfolio}
+            loading={app.loading}
+            error={app.error}
+            amountsHidden={amountsHidden}
+            onChanged={reload}
+            onRetry={reload}
+          />
+        )}
+
         {tab === 'settings' && (
           <SettingsScreen
             user={app.user}
@@ -189,6 +203,7 @@ export function AppShell({
         <TabButton label="الميزانية" icon="◱" active={tab === 'budget'} onClick={() => setTab('budget')} />
         <TabButton label="العمليات" icon="☰" active={tab === 'transactions'} onClick={() => setTab('transactions')} />
         <TabButton label="الأشخاص" icon="◎" active={tab === 'people'} onClick={() => setTab('people')} />
+        <TabButton label="الاستثمار" icon="◈" active={tab === 'invest'} onClick={() => setTab('invest')} />
         <TabButton label="الإعدادات" icon="⚙" active={tab === 'settings'} onClick={() => setTab('settings')} />
       </nav>
 

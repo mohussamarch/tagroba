@@ -17,6 +17,12 @@ import {
   FirestorePersonRepository,
   FirestoreSettlementRepository,
 } from '../infrastructure/firestore/peopleRepositories'
+import {
+  FirestoreAssetLotRepository,
+  FirestoreAssetPriceRepository,
+  FirestoreAssetRepository,
+  FirestoreAssetSaleRepository,
+} from '../infrastructure/firestore/assetRepositories'
 import { FirestoreBudgetRepository } from '../infrastructure/firestore/budgetRepository'
 import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRepository'
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
@@ -36,6 +42,7 @@ import { makeExportBackup } from '../application/useCases/exportBackup'
 import { makeSeedWallets } from '../application/useCases/seedWallets'
 import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
+import { makeManageAssets } from '../application/useCases/manageAssets'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock, WalletRepository } from '../application/ports/repositories'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -72,6 +79,7 @@ export interface UserContainer {
   loadBudgetScreen: ReturnType<typeof makeLoadBudgetScreen>
   addTransaction: ReturnType<typeof makeAddTransaction>
   managePeople: ReturnType<typeof makeManagePeople>
+  manageAssets: ReturnType<typeof makeManageAssets>
   reconcileBalance: ReturnType<typeof makeReconcileBalance>
   exportBackup: ReturnType<typeof makeExportBackup>
   seedWallets: ReturnType<typeof makeSeedWallets>
@@ -107,6 +115,11 @@ export function createContainer(): Container {
       const settlements = new FirestoreSettlementRepository(db, uid)
       const budgets = new FirestoreBudgetRepository(db, uid)
       const wallets = new FirestoreWalletRepository(db, uid)
+      // الاستثمار (المرحلة السابعة) — أصول ودفعات ومبيعات وأسعار
+      const assets = new FirestoreAssetRepository(db, uid)
+      const assetLots = new FirestoreAssetLotRepository(db, uid)
+      const assetSales = new FirestoreAssetSaleRepository(db, uid)
+      const assetPrices = new FirestoreAssetPriceRepository(db, uid)
 
       /** المرجع الأولي يُبنى من الملفات، ويُزرع مرة واحدة عند أول دخول. */
       const buildSeedSource = () => {
@@ -123,6 +136,14 @@ export function createContainer(): Container {
         managePeople: makeManagePeople({
           people, obligations, settlements, allocations, txns, uow,
           ids: new RandomIdGenerator(), clock: systemClock,
+        }),
+        manageAssets: makeManageAssets({
+          assets,
+          lots: assetLots,
+          sales: assetSales,
+          prices: assetPrices,
+          ids: new RandomIdGenerator(),
+          clock: systemClock,
         }),
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),

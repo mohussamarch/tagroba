@@ -1,0 +1,164 @@
+.invest { display: grid; gap: var(--s-section); align-content: start; }
+
+.invest__totals { gap: 12px; }
+
+.invest__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-metric-gap);
+}
+
+.investMetric { display: grid; gap: 2px; min-width: 0; }
+
+.investMetric__label {
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+}
+
+.investMetric__value {
+  font-size: var(--t-metric);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.investMetric__value--up { color: var(--c-incoming); }
+.investMetric__value--down { color: var(--c-outgoing); }
+
+/* السبب مكتوب لا مخفي — الناقص لا يُعرض كأنه كامل */
+.invest__warn {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+  border-inline-start: 3px solid var(--c-warn, var(--c-outgoing));
+  padding-inline-start: 10px;
+}
+
+.invest__note {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+}
+
+.invest__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.invest__row { padding: 0; }
+.invest__row--archived { opacity: .62; }
+
+.invest__open {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: var(--s-card-pad, 14px);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.invest__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.invest__name {
+  font-size: var(--t-section);
+  font-weight: 700;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.invest__value { font-weight: 700; white-space: nowrap; }
+
+.invest__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+}
+
+.invest__gain--up { color: var(--c-incoming); }
+.invest__gain--down { color: var(--c-outgoing); }
+
+/* حالة السعر مكتوبة دائمًا — لا رقم بلا مصدر */
+.invest__price {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+}
+
+.invest__price--missing,
+.invest__price--stale { color: var(--c-outgoing); }
+
+/* ── الأوراق ── */
+
+.investKinds { border: 0; margin: 0; padding: 0; }
+
+.investKinds__row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font: inherit;
+  font-size: var(--t-label);
+  cursor: pointer;
+}
+
+.chip--on {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-on-accent, #fff);
+  font-weight: 700;
+}
+
+.investSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+}
+
+.investForm { display: grid; gap: var(--s-field-gap, 12px); }
+
+.investHistory { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.investHistory__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-block-end: 1px solid var(--c-border);
+}
+
+.investHistory__main { display: grid; gap: 2px; min-width: 0; }
+.investHistory__label { font-weight: 600; overflow-wrap: anywhere; }
+.investHistory__date { font-size: var(--t-label); color: var(--c-text-muted); }
+
+.investHistory__amount {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.investHistory__row--buy .investHistory__amount { color: var(--c-outgoing); }
+.investHistory__row--sell .investHistory__amount { color: var(--c-incoming); }
+
+.investHistory__fee { font-size: var(--t-label); color: var(--c-text-muted); }
+
+@media (min-width: 520px) {
+  .invest__metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
