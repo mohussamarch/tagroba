@@ -164,3 +164,5 @@ export class MemoryImportBatchRepository extends KeyedStore<ImportBatch> impleme
 
 export * from './memoryReferenceRepositories'
 export * from './memorySupport'
+export * from './memoryBudgetRepository'
+export * from './memoryWalletRepository'

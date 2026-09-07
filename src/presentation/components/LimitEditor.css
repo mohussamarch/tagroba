@@ -1,0 +1,48 @@
+.limitEditor {
+  display: grid;
+  gap: 10px;
+  background: var(--c-background);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: var(--s-card);
+}
+
+.limitEditor__field { display: grid; gap: 5px; }
+
+.limitEditor__label { font-size: var(--t-body); font-weight: 500; }
+
+.limitEditor__input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 12px;
+  font-size: var(--t-input);
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.limitEditor__input[aria-invalid='true'] { border-color: var(--c-outgoing); }
+
+.limitEditor__hint { font-size: var(--t-badge); color: var(--c-muted); }
+
+.limitEditor__error {
+  margin: 0;
+  font-size: var(--t-body);
+  color: var(--c-outgoing);
+}
+
+.limitEditor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.limitEditor__actions .btn { flex: 1; min-width: 90px; justify-self: stretch; }
+
+.btn--danger {
+  background: var(--c-surface);
+  color: var(--c-outgoing);
+  border: 1px solid var(--c-outgoing);
+}

@@ -11,6 +11,8 @@ import {
   FirestoreMerchantRepository,
   FirestoreRuleRepository,
 } from '../infrastructure/firestore/referenceRepositories'
+import { FirestoreBudgetRepository } from '../infrastructure/firestore/budgetRepository'
+import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRepository'
 import { MemoryAllocationRepository } from '../infrastructure/memory/memoryRepositories'
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
 import { buildCategories, loadReferences } from '../infrastructure/import/referenceLoader'
@@ -22,8 +24,13 @@ import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch
 import { makeSeedUserReferences, type SeedOutcome } from '../application/useCases/seedUserReferences'
 import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
 import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
+import { makeLoadBudgetScreen } from '../application/useCases/loadBudgetScreen'
+import { makeSetBudget } from '../application/useCases/setBudget'
+import { makeReconcileBalance } from '../application/useCases/reconcileBalance'
+import { makeExportBackup } from '../application/useCases/exportBackup'
+import { makeSeedWallets } from '../application/useCases/seedWallets'
 import type { AuthPort } from '../application/ports/AuthPort'
-import type { Clock } from '../application/ports/repositories'
+import type { Clock, WalletRepository } from '../application/ports/repositories'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
 import rawRules from '../../design-source/masroofi-claude-code/fixtures/rule-reference.json'
 import rawMerchants from '../../design-source/masroofi-claude-code/fixtures/merchant-reference.json'
@@ -55,6 +62,12 @@ export interface UserContainer {
   /** يزرع المراجع الأولية عند أول دخول فقط — ARCHITECTURE.md §10.6. */
   seedUserReferences: () => Promise<SeedOutcome>
   loadHomeScreen: ReturnType<typeof makeLoadHomeScreen>
+  loadBudgetScreen: ReturnType<typeof makeLoadBudgetScreen>
+  reconcileBalance: ReturnType<typeof makeReconcileBalance>
+  exportBackup: ReturnType<typeof makeExportBackup>
+  seedWallets: ReturnType<typeof makeSeedWallets>
+  wallets: WalletRepository
+  setBudget: ReturnType<typeof makeSetBudget>
   setEconomicKind: ReturnType<typeof makeSetEconomicKind>
   loadTransactionsScreen: ReturnType<typeof makeLoadTransactionsScreen>
   importStatement: ReturnType<typeof makeImportStatement>
@@ -79,6 +92,8 @@ export function createContainer(): Container {
       const merchants = new FirestoreMerchantRepository(db, uid)
       const rules = new FirestoreRuleRepository(db, uid)
       const allocations = new MemoryAllocationRepository()
+      const budgets = new FirestoreBudgetRepository(db, uid)
+      const wallets = new FirestoreWalletRepository(db, uid)
 
       /** المرجع الأولي يُبنى من الملفات، ويُزرع مرة واحدة عند أول دخول. */
       const buildSeedSource = () => {
@@ -91,6 +106,14 @@ export function createContainer(): Container {
         seedUserReferences: () =>
           makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
         loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
+        loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
+        reconcileBalance: makeReconcileBalance({ txns, wallets }),
+        exportBackup: makeExportBackup({
+          txns, sources, batches, wallets, categories, rules, merchants, budgets,
+        }),
+        seedWallets: makeSeedWallets({ wallets }),
+        wallets,
+        setBudget: makeSetBudget({ budgets, uow, ids: new RandomIdGenerator(), clock: systemClock }),
         setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock: systemClock }),
         loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
         importStatement: makeImportStatement({

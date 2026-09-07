@@ -1,31 +1,17 @@
 import { useState, type ChangeEvent } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
-import { stripBom } from '../../infrastructure/import/csvReader'
+import { guessSourceType } from '../../infrastructure/import/detectSourceType'
 import type { ImportPreview } from '../../application/useCases/importStatement'
-import type { ImportSourceType, MatchingState } from '../../domain/entities/types'
+import type { MatchingState, Wallet } from '../../domain/entities/types'
 import type { UserContainer } from '../../app/container'
+import { Count } from '../components/Count'
 import './ImportSheet.css'
 
 interface Props {
   user: UserContainer
+  wallets: Wallet[]
   onClose: () => void
   onImported: () => void
-}
-
-/** علامات مميِّزة لكل مخطط، من spec/05. */
-const PREVIEW_HEADER_START = 'date,name,amount'
-const LEGACY_DATE = 'التاريخ'
-const LEGACY_DEBIT = 'مدين'
-
-/**
- * نوع المصدر للتسجيل في الدفعة. المخطط نفسه يُكتشف من الترويسة داخل
- * parseRows؛ ده وسم للدفعة عشان نعرف بعدين الملف جه منين.
- */
-function guessSourceType(content: string): ImportSourceType {
-  const header = stripBom(content).slice(0, 200)
-  if (header.startsWith(PREVIEW_HEADER_START)) return 'csv_preview'
-  if (header.includes(LEGACY_DATE) && header.includes(LEGACY_DEBIT)) return 'csv_legacy'
-  return 'csv_preview'
 }
 
 const STATE_LABEL: Record<MatchingState, string> = {
@@ -43,16 +29,22 @@ const STATE_LABEL: Record<MatchingState, string> = {
  *
  * الشاشة لا تحلّل ولا تحسب: تنادي user.importStatement.preview ثم commit.
  */
-export function ImportSheet({ user, onClose, onImported }: Props) {
+export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
   const [fileName, setFileName] = useState('')
   const [content, setContent] = useState('')
-  const [accountIdentity, setAccountIdentity] = useState('الراجحي')
+  const [walletId, setWalletId] = useState(wallets[0]?.id ?? '')
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [busy, setBusy] = useState<'none' | 'reading' | 'previewing' | 'committing'>('none')
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
 
   const working = busy !== 'none'
+  /*
+   * هوية الحساب تُشتق من اسم المحفظة لا يكتبها المستخدم:
+   * هي نطاق تفرّد المرجع البنكي (spec/03)، وكتابتها يدويًا كانت تسمح
+   * بخطأ مطبعي يجعل نفس الكشف يُستورد مرتين كأنه حسابان.
+   */
+  const walletName = wallets.find((w) => w.id === walletId)?.name ?? 'غير محدد'
 
   async function onFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -82,8 +74,9 @@ export function ImportSheet({ user, onClose, onImported }: Props) {
       const result = await user.importStatement.preview({
         fileName,
         content,
-        accountIdentity: accountIdentity.trim() || 'غير محدد',
+        accountIdentity: walletName,
         sourceType: guessSourceType(content),
+        walletId,
       })
       setPreview(result)
       setSelected(new Set(result.lines.filter((l) => l.selectedByDefault).map((l) => l.row.lineNumber)))
@@ -103,8 +96,9 @@ export function ImportSheet({ user, onClose, onImported }: Props) {
         {
           fileName,
           content,
-          accountIdentity: accountIdentity.trim() || 'غير محدد',
+          accountIdentity: walletName,
           sourceType: guessSourceType(content),
+          walletId,
         },
         preview,
         [...selected],
@@ -152,15 +146,22 @@ export function ImportSheet({ user, onClose, onImported }: Props) {
           {!preview && (
             <>
               <label className="sheet__field">
-                <span className="sheet__label">اسم الحساب أو المصدر</span>
-                <input
+                <span className="sheet__label">المحفظة</span>
+                <select
                   className="sheet__input"
-                  value={accountIdentity}
-                  onChange={(e) => setAccountIdentity(e.target.value)}
+                  value={walletId}
+                  onChange={(e) => setWalletId(e.target.value)}
                   disabled={working}
-                />
+                >
+                  {wallets.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
                 <span className="sheet__hint">
-                  ده اللي بيحدد إن نفس المرجع من حسابين مختلفين مش تكرار.
+                  الكشف ده بتاع أنهي محفظة؟ ده اللي بيربط العمليات بيها عشان
+                  مطابقة الرصيد تشتغل، وبيمنع اعتبار نفس المرجع من حسابين تكرارًا.
                 </span>
               </label>
 
@@ -280,15 +281,6 @@ export function ImportSheet({ user, onClose, onImported }: Props) {
           )}
         </div>
       </div>
-    </div>
-  )
-}
-
-function Count({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="count">
-      <span className="count__value">{value}</span>
-      <span className="count__label">{label}</span>
     </div>
   )
 }

@@ -1,4 +1,6 @@
 import type {
+  Budget,
+  CategoryBudget,
   ClassificationRule,
   Category,
   Id,
@@ -117,4 +119,18 @@ export interface IdGenerator {
 /** ساعة تُمرَّر كاعتماد — لا Date.now() داخل المنطق. */
 export interface Clock {
   nowIso(): string
+}
+
+/**
+ * الميزانيات — spec/03.
+ * الاستعلام بمفتاح الفترة: حد واحد لكل فترة، والقراءة محدودة (§5.6).
+ */
+export interface BudgetRepository {
+  findByPeriod(periodKey: string): Promise<Budget | null>
+  save(budget: Budget): Promise<void>
+  /** حذف السقف الإجمالي وسقوف تصنيفاته معًا. */
+  remove(periodKey: string): Promise<void>
+  listCategoryBudgets(budgetId: Id): Promise<CategoryBudget[]>
+  saveCategoryBudget(line: CategoryBudget): Promise<void>
+  removeCategoryBudget(id: Id): Promise<void>
 }

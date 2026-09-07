@@ -7,7 +7,6 @@ import type {
   Person,
   PersonAllocation,
   Settlement,
-  Wallet,
 } from '../../domain/entities/types'
 import { normalizeText } from '../../domain/normalize'
 import type {
@@ -18,7 +17,6 @@ import type {
   PersonRepository,
   RuleRepository,
   SettlementRepository,
-  WalletRepository,
 } from '../../application/ports/repositories'
 
 /**
@@ -27,23 +25,6 @@ import type {
  */
 
 const clone = <T>(value: T): T => structuredClone(value)
-export class MemoryWalletRepository implements WalletRepository {
-  private items = new Map<Id, Wallet>()
-  constructor(seed: readonly Wallet[] = []) {
-    for (const w of seed) this.items.set(w.id, clone(w))
-  }
-  async listAll(): Promise<Wallet[]> {
-    return [...this.items.values()].map(clone)
-  }
-  async findById(id: Id): Promise<Wallet | null> {
-    const found = this.items.get(id)
-    return found ? clone(found) : null
-  }
-  async save(wallet: Wallet): Promise<void> {
-    this.items.set(wallet.id, clone(wallet))
-  }
-}
-
 export class MemoryCategoryRepository implements CategoryRepository {
   private items = new Map<Id, Category>()
   constructor(seed: readonly Category[] = []) {

@@ -1,5 +1,7 @@
 import {
   MemoryAllocationRepository,
+  MemoryBudgetRepository,
+  MemoryWalletRepository,
   MemoryCategoryRepository,
   MemoryImportBatchRepository,
   MemoryMerchantRepository,
@@ -19,6 +21,11 @@ import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch
 import { makeSeedUserReferences } from '../application/useCases/seedUserReferences'
 import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
 import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
+import { makeLoadBudgetScreen } from '../application/useCases/loadBudgetScreen'
+import { makeSetBudget } from '../application/useCases/setBudget'
+import { makeReconcileBalance } from '../application/useCases/reconcileBalance'
+import { makeExportBackup } from '../application/useCases/exportBackup'
+import { makeSeedWallets } from '../application/useCases/seedWallets'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -67,6 +74,8 @@ export function createDemoContainer(): Container {
   const sources = new MemorySourceRecordRepository()
   const batches = new MemoryImportBatchRepository()
   const allocations = new MemoryAllocationRepository()
+  const budgets = new MemoryBudgetRepository()
+  const wallets = new MemoryWalletRepository()
 
   const categoryList = buildCategories(tokens.categories)
   const refs = loadReferences(rawRules, rawMerchants, categoryList)
@@ -83,6 +92,14 @@ export function createDemoContainer(): Container {
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
+    loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
+    reconcileBalance: makeReconcileBalance({ txns, wallets }),
+    exportBackup: makeExportBackup({
+      txns, sources, batches, wallets, categories, rules, merchants, budgets,
+    }),
+    seedWallets: makeSeedWallets({ wallets }),
+    wallets,
+    setBudget: makeSetBudget({ budgets, uow, ids, clock }),
     setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock }),
     loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
     importStatement: makeImportStatement({

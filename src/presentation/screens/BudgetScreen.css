@@ -1,0 +1,150 @@
+.budget {
+  display: grid;
+  gap: var(--s-section);
+  align-content: start;
+}
+
+.budget__empty {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.budget__emptyText {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--t-body);
+}
+
+.budget__hint {
+  margin: 0;
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  line-height: 1.6;
+}
+
+.budget__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-metric-gap);
+}
+
+.fact {
+  background: var(--c-background);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-metric);
+  padding: 10px;
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  min-width: 0;
+}
+
+.fact__label { font-size: var(--t-badge); color: var(--c-muted); }
+
+.fact__value {
+  font-size: var(--t-section);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.fact__value--warn { color: var(--c-outgoing); }
+
+.fact__note {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  line-height: 1.5;
+}
+
+.budget__excluded {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  border-top: 1px solid var(--c-border);
+  padding-top: 8px;
+}
+
+.budget__excluded summary { cursor: pointer; }
+.budget__excluded ul { margin: 6px 0 0; padding-inline-start: 18px; display: grid; gap: 4px; }
+
+/* ─────────── شريط السقف ─────────── */
+
+.bar { display: grid; gap: 5px; }
+
+.bar__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.bar__label { font-size: var(--t-body); font-weight: 600; }
+.bar__label--under { color: var(--c-incoming); }
+.bar__label--near { color: var(--c-text); }
+.bar__label--over { color: var(--c-outgoing); }
+
+.bar__numbers { font-size: var(--t-body); color: var(--c-muted); }
+
+.bar__track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--c-soft);
+  overflow: hidden;
+}
+
+.bar--compact .bar__track { height: 7px; }
+
+.bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 3px;
+  transition: width var(--motion);
+}
+
+.bar__fill--under { background: var(--c-incoming); }
+.bar__fill--near { background: var(--c-action); }
+.bar__fill--over { background: var(--c-outgoing); }
+
+.bar__foot { font-size: var(--t-badge); color: var(--c-muted); }
+
+/* ─────────── سطور التصنيفات ─────────── */
+
+.budget__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.budget__line {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.budget__line:last-child { border-bottom: none; padding-bottom: 0; }
+
+.budget__lineHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.budget__lineName { font-size: var(--t-body); font-weight: 600; overflow-wrap: anywhere; }
+.budget__lineSpent { font-size: var(--t-body); font-weight: 700; white-space: nowrap; }
+
+.budget__noLimit { font-size: var(--t-badge); color: var(--c-muted); }
+
+.budget__lineFoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.budget__lineNote { font-size: var(--t-badge); color: var(--c-muted); }

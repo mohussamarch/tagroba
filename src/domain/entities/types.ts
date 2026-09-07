@@ -112,6 +112,24 @@ export interface Transaction {
   reviewState: ReviewState
   isCashTagged: boolean
 
+  /**
+   * المحفظة التي وقعت عليها الحركة.
+   *
+   * اختياري لأن عمليات استُوردت قبل إضافة المحافظ لا تحمله؛ تلك
+   * تُعرض «غير منسوبة لمحفظة» ولا تدخل مطابقة رصيد أي محفظة،
+   * بدل أن تُنسب لواحدة بالتخمين.
+   */
+  walletId?: Id
+
+  /**
+   * الرصيد الذي أعلنه المصدر **بعد** هذه الحركة، إن وُجد في الكشف.
+   *
+   * هذا هو ما تُقارَن به السلسلة المحسوبة في مطابقة الرصيد
+   * (OVERRIDES §7-ب). بدون تخزينه تصير المطابقة داخل التطبيق مستحيلة،
+   * ويبقى معيار القبول مثبتًا في الاختبارات وحدها لا في المنتج.
+   */
+  statedBalanceMinor?: Halalas
+
   /** النص الأصلي من الكشف — يُحفظ للمراجعة ولا يُقص (spec/05). */
   rawDescription?: string
   rawMerchantName?: string
@@ -211,4 +229,31 @@ export interface SourceRecord {
   matchingState: MatchingState
   /** سبب الحالة بلغة المستخدم — لا حالة بلا تفسير (spec/04). */
   reason: string
+}
+
+/**
+ * ميزانية فترة — spec/03: «حدود صريحة».
+ * لا تُنشأ تلقائيًا من متوسط؛ المستخدم يحددها (spec/01).
+ */
+export interface Budget {
+  /** مفتاح الفترة نفسه: "2026-09". فترة واحدة = ميزانية واحدة. */
+  id: Id
+  periodKey: string
+  periodStart: IsoDate
+  periodEnd: IsoDate
+  /** السقف الإجمالي، أو null لو المستخدم حدد سقوف تصنيفات فقط. */
+  totalLimitMinor: Halalas | null
+  /** عتبة التنبيه بالمئة (80 = ٨٠٪)، أو null فلا تنبيه (spec/06). */
+  thresholdPercent: number | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CategoryBudget {
+  id: Id
+  budgetId: Id
+  categoryId: Id
+  limitMinor: Halalas
+  notifyEnabled: boolean
+  thresholdPercent: number | null
 }

@@ -1,0 +1,142 @@
+.settings {
+  display: grid;
+  gap: var(--s-section);
+  align-content: start;
+}
+
+.settings__hint {
+  margin: 0;
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  line-height: 1.65;
+}
+
+.settings__field { display: grid; gap: 5px; }
+.settings__label { font-size: var(--t-body); font-weight: 500; }
+
+.settings__input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 10px;
+  font-size: var(--t-body);
+  color: var(--c-text);
+  background: var(--c-background);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+}
+
+.settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings__row .btn { flex: 1; min-width: 150px; justify-self: stretch; }
+
+.settings__error {
+  margin: 0;
+  color: var(--c-outgoing);
+  font-size: var(--t-body);
+}
+
+/* ─────────── تقرير المطابقة ─────────── */
+
+.recon { display: grid; gap: 10px; }
+
+.recon__verdict {
+  padding: 11px var(--s-card);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: var(--t-body);
+  line-height: 1.6;
+}
+
+/* الحكم بالنص أولًا، واللون تأكيد لا مصدر وحيد — spec/04 */
+.recon__verdict--ok {
+  background: var(--c-soft);
+  color: var(--c-incoming);
+  border: 1px solid var(--c-incoming);
+}
+
+.recon__verdict--bad {
+  background: var(--c-soft);
+  color: var(--c-outgoing);
+  border: 1px solid var(--c-outgoing);
+}
+
+.recon__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 12px;
+  margin: 0;
+  font-size: var(--t-body);
+}
+
+.recon__label { color: var(--c-muted); font-size: var(--t-badge); }
+.recon__value { margin: 0; font-weight: 600; text-align: start; }
+
+.recon__note {
+  margin: 0;
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  background: var(--c-soft);
+  border-radius: 10px;
+  padding: 9px var(--s-card);
+  line-height: 1.6;
+}
+
+.recon__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.recon__item {
+  border: 1px solid var(--c-outgoing);
+  border-radius: 10px;
+  padding: 9px var(--s-card);
+  display: grid;
+  gap: 3px;
+}
+
+.recon__itemHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+}
+
+.recon__itemBody { font-size: var(--t-body); font-weight: 600; }
+
+.recon__itemNote { font-size: var(--t-badge); color: var(--c-muted); }
+
+.settings__wallets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.settings__wallet {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.settings__wallet:last-child { border-bottom: none; padding-bottom: 0; }
+
+.settings__walletHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: var(--t-body);
+}
+
+.settings__walletName { font-weight: 600; }

@@ -30,7 +30,12 @@ export function makeImportStatement(deps: ImportStatementDeps) {
     return runPreview(deps, request)
   }
 
-  function buildTransaction(id: Id, line: ImportPreviewLine, now: string): Transaction {
+  function buildTransaction(
+    id: Id,
+    line: ImportPreviewLine,
+    now: string,
+    request: ImportRequest,
+  ): Transaction {
     const txn: Transaction = {
       id,
       occurredAt: line.row.date,
@@ -53,6 +58,11 @@ export function makeImportStatement(deps: ImportStatementDeps) {
       updatedAt: now,
     }
     if (line.categoryId) txn.categoryId = line.categoryId
+    // الرصيد المعلن يُحفظ كما ورد — هو مرجع المطابقة (OVERRIDES §7-ب)
+    if (line.row.statedBalanceMinor !== undefined) {
+      txn.statedBalanceMinor = line.row.statedBalanceMinor
+    }
+    if (request.walletId) txn.walletId = request.walletId
     if (line.row.sourceCategory) txn.sourceCategory = line.row.sourceCategory
     if (line.row.sourceOperationType) txn.sourceOperationType = line.row.sourceOperationType
     return txn
@@ -96,7 +106,7 @@ export function makeImportStatement(deps: ImportStatementDeps) {
       for (const line of previewResult.lines) {
         const included = selection.has(line.row.lineNumber)
         const txnId = included ? deps.ids.next('txn') : null
-        if (txnId) transactions.push(buildTransaction(txnId, line, now))
+        if (txnId) transactions.push(buildTransaction(txnId, line, now, request))
 
         records.push({
           id: deps.ids.next('src'),

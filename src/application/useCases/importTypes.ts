@@ -70,5 +70,7 @@ export interface ImportRequest {
   /** هوية الحساب/المصدر — نطاق تفرّد المرجع البنكي (spec/03). */
   accountIdentity: string
   sourceType: ImportSourceType
+  /** المحفظة التي يخص هذا الكشف — تربط العمليات بها لمطابقة الرصيد. */
+  walletId?: Id
   schema?: SchemaId
 }
