@@ -10,6 +10,8 @@ import { KindsSheet } from '../presentation/screens/KindsSheet'
 import { NotificationsSheet } from '../presentation/screens/NotificationsSheet'
 import { AddTransactionSheet } from '../presentation/screens/AddTransactionSheet'
 import { LinkPersonSheet } from '../presentation/screens/LinkPersonSheet'
+import { TransactionSheet } from '../presentation/screens/TransactionSheet'
+import { RulesScreen } from '../presentation/screens/RulesScreen'
 import { AddMenu } from '../presentation/components/AddMenu'
 import { TabButton } from '../presentation/components/TabButton'
 import { ShellHeader } from '../presentation/components/ShellHeader'
@@ -51,6 +53,9 @@ export function AppShell({
   const [kindsOpen, setKindsOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [linking, setLinking] = useState<Transaction | null>(null)
+  /** العملية المفتوحة للتفاصيل — التصنيف والملاحظة والوسوم. */
+  const [opened, setOpened] = useState<Transaction | null>(null)
+  const [rulesOpen, setRulesOpen] = useState(false)
 
   const reload = () => void app.reload()
   const unseenCount = app.notifications?.unseen.length ?? 0
@@ -139,7 +144,7 @@ export function AppShell({
             onPeriodChange={app.setPeriod}
             onImport={() => setImportOpen(true)}
             onFixKinds={() => setKindsOpen(true)}
-            onOpenTransaction={setLinking}
+            onOpenTransaction={setOpened}
             onRetry={reload}
           />
         )}
@@ -175,6 +180,8 @@ export function AppShell({
             today={app.today}
             payday={app.payday}
             onWalletsChanged={reload}
+            onRestored={reload}
+            onOpenRules={() => setRulesOpen(true)}
           />
         )}
       </main>
@@ -226,6 +233,28 @@ export function AppShell({
             setImportOpen(false)
             reload()
           }}
+        />
+      )}
+
+      {opened && (
+        <TransactionSheet
+          user={app.user}
+          transaction={opened}
+          categories={app.home?.categories ?? []}
+          onClose={() => setOpened(null)}
+          onChanged={reload}
+          onLinkPerson={() => {
+            setLinking(opened)
+            setOpened(null)
+          }}
+        />
+      )}
+
+      {rulesOpen && (
+        <RulesScreen
+          user={app.user}
+          categories={app.home?.categories ?? []}
+          onClose={() => setRulesOpen(false)}
         />
       )}
 

@@ -31,6 +31,25 @@ import { makeExportBackup } from '../application/useCases/exportBackup'
 import { makeSeedWallets } from '../application/useCases/seedWallets'
 import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
+import { makeEditTransaction } from '../application/useCases/editTransaction'
+import { makeManageRules } from '../application/useCases/manageRules'
+import { makeRestoreBackup } from '../application/useCases/restoreBackup'
+import { makeManageAssets } from '../application/useCases/manageAssets'
+import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
+import { makeLoadNotifications } from '../application/useCases/loadNotifications'
+import { makeReadPdfStatement } from '../application/useCases/readPdfStatement'
+import { loadPriceFeed } from '../infrastructure/prices/loadPriceFeed'
+import {
+  MemoryAssetLotRepository,
+  MemoryAssetPriceRepository,
+  MemoryAssetRepository,
+  MemoryAssetSaleRepository,
+} from '../infrastructure/memory/memoryAssetRepositories'
+import {
+  MemoryTagRepository,
+  MemoryTransactionTagRepository,
+} from '../infrastructure/memory/memoryTagRepositories'
+import { MemoryNotificationReceiptRepository } from '../infrastructure/memory/memoryNotificationRepository'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -90,6 +109,13 @@ export function createDemoContainer(): Container {
   const categories = new MemoryCategoryRepository(categoryList)
   const merchants = new MemoryMerchantRepository(refs.merchants)
   const rules = new MemoryRuleRepository(refs.rules)
+  const tags = new MemoryTagRepository()
+  const transactionTags = new MemoryTransactionTagRepository()
+  const assets = new MemoryAssetRepository()
+  const assetLots = new MemoryAssetLotRepository()
+  const assetSales = new MemoryAssetSaleRepository()
+  const assetPrices = new MemoryAssetPriceRepository()
+  const notificationReceipts = new MemoryNotificationReceiptRepository()
   const uow = new PassthroughUnitOfWork()
   const ids = new SequentialIdGenerator()
   const clock = new FixedClock(new Date().toISOString())
@@ -130,6 +156,16 @@ export function createDemoContainer(): Container {
       uow,
     }),
     resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),
+    editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock }),
+    manageRules: makeManageRules({ rules, merchants, categories, ids }),
+    restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),
+    manageAssets: makeManageAssets({
+      assets, lots: assetLots, sales: assetSales, prices: assetPrices, ids, clock,
+    }),
+    syncAssetPrices: makeSyncAssetPrices({ assets, prices: assetPrices }),
+    loadNotifications: makeLoadNotifications({ receipts: notificationReceipts, clock }),
+    readPdfStatement: makeReadPdfStatement(),
+    loadPriceFeed,
   }
 
   return {

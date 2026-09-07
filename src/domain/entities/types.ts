@@ -77,6 +77,19 @@ export interface Tag {
   displayName: string
 }
 
+/**
+ * ربط وسم بعملية — جدول مستقل لأن العملية بتاخد أكتر من وسم.
+ *
+ * `spec/02`: «انضمام جدول الوسوم **لا يجوز أن يضاعف SUM**» —
+ * ولذلك الجمع في `domain/ledger.ts` بيجمع **العمليات المميزة**
+ * بمعرّفها، فوسمان على عملية واحدة بيدوا مبلغها مرة واحدة.
+ */
+export interface TransactionTag {
+  id: Id
+  transactionId: Id
+  tagId: Id
+}
+
 export interface Transaction {
   id: Id
   occurredAt: IsoDate

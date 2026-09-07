@@ -83,6 +83,16 @@ export class FirestoreRuleRepository implements RuleRepository {
       await batch.commit()
     }
   }
+
+  async deleteMany(ids: readonly string[]): Promise<void> {
+    for (let i = 0; i < ids.length; i += BATCH_LIMIT) {
+      const batch = writeBatch(this.db)
+      for (const id of ids.slice(i, i + BATCH_LIMIT)) {
+        batch.delete(doc(this.db, userPath(this.uid, 'rules', id)))
+      }
+      await batch.commit()
+    }
+  }
 }
 
 export class FirestoreMerchantRepository implements MerchantRepository {

@@ -11,6 +11,8 @@ import type {
   PersonAllocation,
   Settlement,
   SourceRecord,
+  Tag,
+  TransactionTag,
   Transaction,
   Wallet,
 } from '../../domain/entities/types'
@@ -74,7 +76,9 @@ export interface MerchantRepository {
 
 export interface RuleRepository {
   listAll(): Promise<ClassificationRule[]>
+  /** تحديث بالمعرّف (upsert) — **مش استبدال للقايمة**. */
   saveMany(rules: readonly ClassificationRule[]): Promise<void>
+  deleteMany(ids: readonly Id[]): Promise<void>
 }
 
 export interface PersonRepository {
@@ -176,4 +180,25 @@ export interface NotificationReceiptRepository {
   listAll(): Promise<NotificationReceipt[]>
   saveMany(receipts: readonly NotificationReceipt[]): Promise<void>
   deleteMany(eventKeys: readonly string[]): Promise<void>
+}
+
+/**
+ * الوسوم وربطها بالعمليات — `spec/02`:
+ * «انضمام جدول الوسوم **لا يجوز أن يضاعف SUM**».
+ *
+ * الربط في مجموعة مستقلة لأن العملية الواحدة بتاخد أكتر من وسم،
+ * والقراءة بمعرّفات العمليات (حقل واحد) فلا فهرس مركّب (§12).
+ */
+export interface TagRepository {
+  listAll(): Promise<Tag[]>
+  save(tag: Tag): Promise<void>
+  remove(id: Id): Promise<void>
+}
+
+export interface TransactionTagRepository {
+  /** روابط عمليات محددة — مقيّدة بعددها لا بكل السجل. */
+  listByTransactionIds(ids: readonly Id[]): Promise<TransactionTag[]>
+  listByTag(tagId: Id): Promise<TransactionTag[]>
+  saveMany(links: readonly TransactionTag[]): Promise<void>
+  deleteMany(ids: readonly Id[]): Promise<void>
 }

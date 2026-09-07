@@ -86,6 +86,13 @@ describe('زرع المراجع الأولية — ARCHITECTURE.md §10.6', () =
 
     // المستخدم عطّل قاعدة وأضاف واحدة خاصة به
     const original = await sys.rules.listAll()
+    /*
+     * الحذف بيتم بـ`deleteMany` لا بحفظ قايمة أقصر.
+     * `saveMany` **تحديث بالمعرّف** لا استبدال — والاختبار ده كان
+     * بيعتمد على استبدال في نسخة الذاكرة وحدها، وهو سلوك مكانش
+     * موجود في Firestore أصلًا.
+     */
+    await sys.rules.deleteMany(original.filter((r) => r.matchText === 'BARQ').map((r) => r.id))
     const edited = original
       .filter((r) => r.matchText !== 'BARQ')
       .concat({

@@ -1,0 +1,46 @@
+.rules__order {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+  border-inline-start: 3px solid var(--c-accent);
+  padding-inline-start: 10px;
+}
+
+.rules__tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.rules__add {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card, 12px);
+}
+
+.rules__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.rules__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-block-end: 1px solid var(--c-border);
+}
+
+/* المقفولة باهتة بس ظاهرة — القفل مش حذف */
+.rules__row--off { opacity: .55; }
+
+.rules__main { display: grid; gap: 2px; min-width: 0; }
+
+.rules__text { font-weight: 600; overflow-wrap: anywhere; }
+
+.rules__cat { font-size: var(--t-label); color: var(--c-text-muted); }
+
+/* التصنيف المحذوف بيتقال مش بيختفي */
+.rules__cat--missing { color: var(--c-outgoing); }
+
+.rules__pick { max-width: 150px; }
+
+@media (min-width: 520px) {
+  .rules__add { grid-template-columns: 1fr auto auto auto; align-items: center; }
+}

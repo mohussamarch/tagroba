@@ -1,0 +1,72 @@
+.txnFacts {
+  display: grid;
+  gap: 4px;
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--c-border);
+}
+
+.txnFacts__amount { font-size: var(--t-metric); font-weight: 700; }
+.txnFacts__meta { font-size: var(--t-label); color: var(--c-text-muted); }
+
+.txnFacts__raw {
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.txnNote { min-height: 76px; resize: vertical; font: inherit; }
+
+.txnToggle { gap: 4px; }
+
+.txnToggle__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.txnToggle__row input { inline-size: 18px; block-size: 18px; }
+
+/* ── الوسوم ── */
+
+.tagEditor { display: grid; gap: 8px; }
+
+.tagEditor__row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.tagEditor__add {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: var(--t-label);
+}
+
+.tagChip--suggest {
+  cursor: pointer;
+  color: var(--c-text-muted);
+  border-style: dashed;
+  font: inherit;
+  font-size: var(--t-label);
+}
+
+.tagChip__x {
+  border: 0;
+  background: none;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tagChip__x:disabled { opacity: .5; cursor: default; }

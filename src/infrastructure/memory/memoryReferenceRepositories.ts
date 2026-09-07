@@ -54,16 +54,29 @@ export class MemoryMerchantRepository implements MerchantRepository {
   }
 }
 
+/**
+ * ⚠️ كان هنا تعارض حقيقي بين التنفيذين، كشفه اختبار إدارة القواعد:
+ * نسخة الذاكرة كانت **بتستبدل القايمة كلها** ونسخة Firestore
+ * **بتحدّث بالمعرّف**. يعني حفظ قاعدة واحدة كان بيمسح الباقي في
+ * الاختبار وما بيمسحهمش في التشغيل — أسوأ نوع اختلاف: بيخفي الخلل
+ * لحد ما يظهر عند المستخدم.
+ *
+ * العقد المعتمد هو **التحديث بالمعرّف** (upsert)، زي كل المستودعات.
+ */
 export class MemoryRuleRepository implements RuleRepository {
-  private items: ClassificationRule[] = []
+  private items = new Map<Id, ClassificationRule>()
   constructor(seed: readonly ClassificationRule[] = []) {
-    this.items = seed.map(clone)
+    for (const r of seed) this.items.set(r.id, clone(r))
   }
   async listAll(): Promise<ClassificationRule[]> {
-    return this.items.map(clone)
+    // نفس ترتيب Firestore: الأولوية الأصغر أولًا
+    return [...this.items.values()].map(clone).sort((a, b) => a.priority - b.priority)
   }
   async saveMany(rules: readonly ClassificationRule[]): Promise<void> {
-    this.items = rules.map(clone)
+    for (const r of rules) this.items.set(r.id, clone(r))
+  }
+  async deleteMany(ids: readonly Id[]): Promise<void> {
+    for (const id of ids) this.items.delete(id)
   }
 }
 

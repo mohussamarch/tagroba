@@ -24,6 +24,10 @@ import {
   FirestoreAssetSaleRepository,
 } from '../infrastructure/firestore/assetRepositories'
 import { FirestoreNotificationReceiptRepository } from '../infrastructure/firestore/notificationRepository'
+import {
+  FirestoreTagRepository,
+  FirestoreTransactionTagRepository,
+} from '../infrastructure/firestore/tagRepositories'
 import { FirestoreBudgetRepository } from '../infrastructure/firestore/budgetRepository'
 import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRepository'
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
@@ -44,6 +48,9 @@ import { makeExportBackup } from '../application/useCases/exportBackup'
 import { makeSeedWallets } from '../application/useCases/seedWallets'
 import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
+import { makeEditTransaction } from '../application/useCases/editTransaction'
+import { makeManageRules } from '../application/useCases/manageRules'
+import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
 import { makeLoadNotifications } from '../application/useCases/loadNotifications'
@@ -84,6 +91,9 @@ export interface UserContainer {
   loadBudgetScreen: ReturnType<typeof makeLoadBudgetScreen>
   addTransaction: ReturnType<typeof makeAddTransaction>
   managePeople: ReturnType<typeof makeManagePeople>
+  editTransaction: ReturnType<typeof makeEditTransaction>
+  manageRules: ReturnType<typeof makeManageRules>
+  restoreBackup: ReturnType<typeof makeRestoreBackup>
   manageAssets: ReturnType<typeof makeManageAssets>
   syncAssetPrices: ReturnType<typeof makeSyncAssetPrices>
   loadNotifications: ReturnType<typeof makeLoadNotifications>
@@ -126,6 +136,9 @@ export function createContainer(): Container {
       const settlements = new FirestoreSettlementRepository(db, uid)
       const budgets = new FirestoreBudgetRepository(db, uid)
       const wallets = new FirestoreWalletRepository(db, uid)
+      // الوسوم وروابطها (spec/02 — الوسم مبيضاعفش المبلغ)
+      const tags = new FirestoreTagRepository(db, uid)
+      const transactionTags = new FirestoreTransactionTagRepository(db, uid)
       // الاستثمار (المرحلة السابعة) — أصول ودفعات ومبيعات وأسعار
       const notificationReceipts = new FirestoreNotificationReceiptRepository(db, uid)
       const assets = new FirestoreAssetRepository(db, uid)
@@ -163,6 +176,24 @@ export function createContainer(): Container {
         }),
         syncAssetPrices: makeSyncAssetPrices({ assets, prices: assetPrices }),
         loadPriceFeed,
+        editTransaction: makeEditTransaction({
+          txns,
+          categories,
+          tags,
+          transactionTags,
+          uow,
+          ids: new RandomIdGenerator(),
+          clock: systemClock,
+        }),
+        manageRules: makeManageRules({
+          rules,
+          merchants,
+          categories,
+          ids: new RandomIdGenerator(),
+        }),
+        restoreBackup: makeRestoreBackup({
+          txns, wallets, categories, rules, merchants, budgets, uow,
+        }),
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),
         exportBackup: makeExportBackup({

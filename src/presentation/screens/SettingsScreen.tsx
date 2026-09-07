@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { WalletEditor } from '../components/WalletEditor'
+import { RestorePanel } from '../components/RestorePanel'
+import { RulesCard } from '../components/RulesCard'
 import type { ReconcileOutcome } from '../../application/useCases/reconcileBalance'
 import type { UserContainer } from '../../app/container'
 import type { Wallet } from '../../domain/entities/types'
@@ -12,6 +14,10 @@ interface Props {
   today: string
   payday: number
   onWalletsChanged: () => void
+  /** بعد الاستعادة لازم كل الشاشات تعيد التحميل. */
+  onRestored: () => void
+  /** فتح شاشة القواعد والتجار. */
+  onOpenRules: () => void
 }
 
 /**
@@ -22,7 +28,15 @@ interface Props {
  * ⚠️ التنزيل يتم بـ Blob محلي — الملف **لا يمر بأي خادم**، وهو شرط
  * «لا تُرفع البيانات لأي خدمة أخرى غير فايربيز» (OVERRIDES §2).
  */
-export function SettingsScreen({ user, wallets, today, payday, onWalletsChanged }: Props) {
+export function SettingsScreen({
+  user,
+  wallets,
+  today,
+  payday,
+  onWalletsChanged,
+  onRestored,
+  onOpenRules,
+}: Props) {
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? '')
   const [outcome, setOutcome] = useState<ReconcileOutcome | null>(null)
   const [busy, setBusy] = useState<'none' | 'reconcile' | 'backup' | 'csv'>('none')
@@ -187,7 +201,11 @@ export function SettingsScreen({ user, wallets, today, payday, onWalletsChanged 
             {done}
           </p>
         )}
+
+        <RestorePanel user={user} onDone={onRestored} />
       </section>
+
+      <RulesCard onOpen={onOpenRules} />
 
       {error && (
         <p className="settings__error" role="alert">
