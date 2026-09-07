@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { guessSourceType } from '../../infrastructure/import/detectSourceType'
+import { inspectFile } from '../../infrastructure/import/inspectFile'
 import type { ImportPreview } from '../../application/useCases/importStatement'
 import type { MatchingState, Wallet } from '../../domain/entities/types'
 import type { UserContainer } from '../../app/container'
@@ -54,10 +55,22 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
     setBusy('reading')
     try {
       const text = await file.text()
+      /*
+       * الفحص **قبل** أي تحليل. File.text() ينجح على أي ملف، فبدونه
+       * يصل PDF إلى قارئ CSV فيشتكي من «اقتباس مفتوح» — رسالة مضلِّلة
+       * تخفي السبب الحقيقي عن المستخدم.
+       */
+      const check = inspectFile(file.name, text)
+      if (!check.ok) {
+        setError(check.message)
+        setContent('')
+        setFileName('')
+        return
+      }
       setFileName(file.name)
       setContent(text)
     } catch {
-      setError('مقدرناش نقرأ الملف. اتأكد إنه ملف CSV نصي.')
+      setError('مقدرناش نقرأ الملف. اتأكد إنه ملف موجود ومش متقفول في تطبيق تاني.')
     } finally {
       setBusy('none')
     }
@@ -174,7 +187,13 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
                   onChange={onFile}
                   disabled={working}
                 />
-                {fileName && <span className="sheet__hint">اخترت: {fileName}</span>}
+                {fileName ? (
+                  <span className="sheet__hint">اخترت: {fileName}</span>
+                ) : (
+                  <span className="sheet__hint">
+                    ملف CSV بس. الـPDF لسه مش مدعوم.
+                  </span>
+                )}
               </label>
 
               <button type="button" className="btn" onClick={runPreview} disabled={working || !content}>
