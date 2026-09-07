@@ -3,9 +3,10 @@ import { formatAmount } from '../../domain/formatMoney'
 import { guessSourceType } from '../../infrastructure/import/detectSourceType'
 import { inspectFile } from '../../infrastructure/import/inspectFile'
 import type { ImportPreview } from '../../application/useCases/importStatement'
-import type { MatchingState, Wallet } from '../../domain/entities/types'
+import type { Wallet } from '../../domain/entities/types'
 import type { UserContainer } from '../../app/container'
 import { Count } from '../components/Count'
+import { ImportLine } from '../components/ImportLine'
 import './ImportSheet.css'
 
 interface Props {
@@ -13,14 +14,6 @@ interface Props {
   wallets: Wallet[]
   onClose: () => void
   onImported: () => void
-}
-
-const STATE_LABEL: Record<MatchingState, string> = {
-  new: 'جديد',
-  duplicate: 'مكرر',
-  similar: 'متشابه',
-  conflict: 'تعارض',
-  invalid: 'غير صالح',
 }
 
 /**
@@ -251,35 +244,13 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
 
               <ul className="lines">
                 {preview.lines.slice(0, 200).map((line) => (
-                  <li key={line.row.lineNumber} className={`line line--${line.state}`}>
-                    <label className="line__check">
-                      <input
-                        type="checkbox"
-                        checked={selected.has(line.row.lineNumber)}
-                        onChange={() => toggle(line.row.lineNumber)}
-                        disabled={line.state === 'conflict' || working}
-                        aria-label={`تضمين سطر ${line.row.lineNumber}`}
-                      />
-                    </label>
-                    <div className="line__main">
-                      <div className="line__name">
-                        {line.row.merchantName || line.row.description || 'بلا اسم'}
-                      </div>
-                      <div className="line__meta">
-                        <span>{line.row.date}</span>
-                        <span className="badge">{STATE_LABEL[line.state]}</span>
-                      </div>
-                      <div className="line__reason">{line.reason}</div>
-                    </div>
-                    <div
-                      className="line__amount num"
-                      style={{
-                        color: line.row.direction === 'in' ? 'var(--c-incoming)' : 'var(--c-outgoing)',
-                      }}
-                    >
-                      {formatAmount(line.row.amountMinor)}
-                    </div>
-                  </li>
+                  <ImportLine
+                    key={line.row.lineNumber}
+                    line={line}
+                    checked={selected.has(line.row.lineNumber)}
+                    disabled={line.state === 'conflict' || working}
+                    onToggle={() => toggle(line.row.lineNumber)}
+                  />
                 ))}
               </ul>
               {preview.lines.length > 200 && (

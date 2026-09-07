@@ -2,6 +2,9 @@ import {
   MemoryAllocationRepository,
   MemoryBudgetRepository,
   MemoryWalletRepository,
+  MemoryPersonRepository,
+  MemoryObligationRepository,
+  MemorySettlementRepository,
   MemoryCategoryRepository,
   MemoryImportBatchRepository,
   MemoryMerchantRepository,
@@ -27,6 +30,7 @@ import { makeReconcileBalance } from '../application/useCases/reconcileBalance'
 import { makeExportBackup } from '../application/useCases/exportBackup'
 import { makeSeedWallets } from '../application/useCases/seedWallets'
 import { makeAddTransaction } from '../application/useCases/addTransaction'
+import { makeManagePeople } from '../application/useCases/managePeople'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -77,6 +81,9 @@ export function createDemoContainer(): Container {
   const allocations = new MemoryAllocationRepository()
   const budgets = new MemoryBudgetRepository()
   const wallets = new MemoryWalletRepository()
+  const people = new MemoryPersonRepository()
+  const obligations = new MemoryObligationRepository()
+  const settlements = new MemorySettlementRepository()
 
   const categoryList = buildCategories(tokens.categories)
   const refs = loadReferences(rawRules, rawMerchants, categoryList)
@@ -94,6 +101,9 @@ export function createDemoContainer(): Container {
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
     loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
+    managePeople: makeManagePeople({
+      people, obligations, settlements, allocations, txns, uow, ids, clock,
+    }),
     addTransaction: makeAddTransaction({ txns, wallets, ids, clock }),
     reconcileBalance: makeReconcileBalance({ txns, wallets }),
     exportBackup: makeExportBackup({
@@ -114,15 +124,9 @@ export function createDemoContainer(): Container {
       txns,
       sources,
       batches,
-      settlements: {
-        listByObligations: async () => [], listByTransactionIds: async () => [],
-        saveMany: async () => {}, deleteMany: async () => {},
-      },
+      settlements,
       allocations,
-      obligations: {
-        listByPerson: async () => [], listByTransactionIds: async () => [],
-        saveMany: async () => {}, deleteMany: async () => {},
-      },
+      obligations,
       uow,
     }),
     resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),

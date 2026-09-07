@@ -1,0 +1,88 @@
+.people { display: grid; gap: var(--s-section); align-content: start; }
+
+.people__add {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.people__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+
+.people__row { gap: 12px; }
+.people__row--archived { opacity: .62; }
+
+.people__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.people__name {
+  font-size: var(--t-section);
+  font-weight: 700;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ثلاثة أرصدة منفصلة — الدمج البصري يخفي منع السداد المتبادل */
+.people__balances {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-metric-gap);
+}
+
+.peopleBal {
+  background: var(--c-background);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-metric);
+  padding: 9px 10px;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.peopleBal__label { font-size: var(--t-badge); color: var(--c-muted); overflow-wrap: anywhere; }
+.peopleBal__value { font-size: var(--t-body); font-weight: 700; overflow-wrap: anywhere; }
+.peopleBal__value--in { color: var(--c-incoming); }
+.peopleBal__value--out { color: var(--c-outgoing); }
+.peopleBal__value--zero { color: var(--c-muted); }
+
+.people__none { margin: 0; font-size: var(--t-badge); color: var(--c-muted); }
+
+.people__obligations { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.people__obligation {
+  border: 1px solid var(--c-border);
+  border-radius: 11px;
+  padding: 10px var(--s-card);
+  display: grid;
+  gap: 6px;
+}
+
+.people__obHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: var(--t-body);
+}
+
+.people__settle { display: grid; gap: 8px; }
+
+.people__settleRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+}
+
+@media (max-width: 420px) {
+  .people__balances { grid-template-columns: 1fr; }
+  .people__settleRow { grid-template-columns: 1fr; }
+}

@@ -19,6 +19,7 @@ interface Props {
   onPeriodChange: (period: Period) => void
   onImport: () => void
   onFixKinds: () => void
+  onOpenTransaction: (transaction: TransactionsScreenData["transactions"][number]) => void
   onRetry: () => void
 }
 
@@ -39,6 +40,7 @@ export function TransactionsScreen({
   onPeriodChange,
   onImport,
   onFixKinds,
+  onOpenTransaction,
   onRetry,
 }: Props) {
   const [rawQuery, setRawQuery] = useState('')
@@ -174,6 +176,7 @@ export function TransactionsScreen({
             const props: Parameters<typeof TransactionRow>[0] = {
               transaction: t,
               amountsHidden,
+              onOpen: () => onOpenTransaction(t),
             }
             const name = t.categoryId ? categoryNameById.get(t.categoryId) : undefined
             if (name) props.categoryName = name

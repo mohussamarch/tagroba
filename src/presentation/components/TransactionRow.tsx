@@ -6,6 +6,8 @@ interface Props {
   categoryName?: string
   /** إخفاء المبالغ — إعداد الخصوصية في spec/01. */
   amountsHidden?: boolean
+  /** يُمرَّر حين يكون الصف قابلًا للفتح. */
+  onOpen?: () => void
 }
 
 /**
@@ -14,7 +16,7 @@ interface Props {
  * المكوّن **لا يحسب أي مبلغ**؛ يعرض ما جاءه ويستدعي formatAmount فقط
  * (ARCHITECTURE.md §3، القاعدة 4).
  */
-export function TransactionRow({ transaction, categoryName, amountsHidden = false }: Props) {
+export function TransactionRow({ transaction, categoryName, amountsHidden = false, onOpen }: Props) {
   const isIncoming = transaction.observedDirection === 'in'
   const name = transaction.rawMerchantName?.trim() || transaction.rawDescription?.trim() || 'بلا اسم'
 
@@ -25,7 +27,16 @@ export function TransactionRow({ transaction, categoryName, amountsHidden = fals
   const directionLabel = isIncoming ? 'وارد' : 'صادر'
 
   return (
-    <li className="row">
+    <li className={`row${onOpen ? ' row--clickable' : ''}`}>
+      {/* زر يغطي الصف: الفتح بالنقر وبلوحة المفاتيح معًا */}
+      {onOpen && (
+        <button
+          type="button"
+          className="row__hit"
+          onClick={onOpen}
+          aria-label={`افتح تفاصيل ${name}`}
+        />
+      )}
       <div className="row__icon" aria-hidden="true">
         {initials}
       </div>

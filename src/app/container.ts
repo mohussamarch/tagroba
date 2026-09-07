@@ -11,9 +11,14 @@ import {
   FirestoreMerchantRepository,
   FirestoreRuleRepository,
 } from '../infrastructure/firestore/referenceRepositories'
+import {
+  FirestoreAllocationRepository,
+  FirestoreObligationRepository,
+  FirestorePersonRepository,
+  FirestoreSettlementRepository,
+} from '../infrastructure/firestore/peopleRepositories'
 import { FirestoreBudgetRepository } from '../infrastructure/firestore/budgetRepository'
 import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRepository'
-import { MemoryAllocationRepository } from '../infrastructure/memory/memoryRepositories'
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
 import { buildCategories, loadReferences } from '../infrastructure/import/referenceLoader'
 import { makeImportStatement } from '../application/useCases/importStatement'
@@ -30,6 +35,7 @@ import { makeReconcileBalance } from '../application/useCases/reconcileBalance'
 import { makeExportBackup } from '../application/useCases/exportBackup'
 import { makeSeedWallets } from '../application/useCases/seedWallets'
 import { makeAddTransaction } from '../application/useCases/addTransaction'
+import { makeManagePeople } from '../application/useCases/managePeople'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock, WalletRepository } from '../application/ports/repositories'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -65,6 +71,7 @@ export interface UserContainer {
   loadHomeScreen: ReturnType<typeof makeLoadHomeScreen>
   loadBudgetScreen: ReturnType<typeof makeLoadBudgetScreen>
   addTransaction: ReturnType<typeof makeAddTransaction>
+  managePeople: ReturnType<typeof makeManagePeople>
   reconcileBalance: ReturnType<typeof makeReconcileBalance>
   exportBackup: ReturnType<typeof makeExportBackup>
   seedWallets: ReturnType<typeof makeSeedWallets>
@@ -93,7 +100,11 @@ export function createContainer(): Container {
       const categories = new FirestoreCategoryRepository(db, uid)
       const merchants = new FirestoreMerchantRepository(db, uid)
       const rules = new FirestoreRuleRepository(db, uid)
-      const allocations = new MemoryAllocationRepository()
+      // الأشخاص والديون محفوظون في تخزين المستخدم (المرحلة الخامسة)
+      const allocations = new FirestoreAllocationRepository(db, uid)
+      const people = new FirestorePersonRepository(db, uid)
+      const obligations = new FirestoreObligationRepository(db, uid)
+      const settlements = new FirestoreSettlementRepository(db, uid)
       const budgets = new FirestoreBudgetRepository(db, uid)
       const wallets = new FirestoreWalletRepository(db, uid)
 
@@ -109,6 +120,10 @@ export function createContainer(): Container {
           makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
         loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
         loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
+        managePeople: makeManagePeople({
+          people, obligations, settlements, allocations, txns, uow,
+          ids: new RandomIdGenerator(), clock: systemClock,
+        }),
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),
         exportBackup: makeExportBackup({
@@ -142,9 +157,9 @@ export function createContainer(): Container {
           txns,
           sources,
           batches,
-          settlements: { listByObligations: async () => [], listByTransactionIds: async () => [], saveMany: async () => {}, deleteMany: async () => {} },
+          settlements,
           allocations,
-          obligations: { listByPerson: async () => [], listByTransactionIds: async () => [], saveMany: async () => {}, deleteMany: async () => {} },
+          obligations,
           uow,
         }),
         resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),

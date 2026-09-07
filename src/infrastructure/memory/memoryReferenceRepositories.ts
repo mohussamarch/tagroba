@@ -4,7 +4,6 @@ import type {
   Id,
   Merchant,
   Obligation,
-  Person,
   PersonAllocation,
   Settlement,
 } from '../../domain/entities/types'
@@ -14,7 +13,6 @@ import type {
   CategoryRepository,
   MerchantRepository,
   ObligationRepository,
-  PersonRepository,
   RuleRepository,
   SettlementRepository,
 } from '../../application/ports/repositories'
@@ -66,19 +64,6 @@ export class MemoryRuleRepository implements RuleRepository {
   }
   async saveMany(rules: readonly ClassificationRule[]): Promise<void> {
     this.items = rules.map(clone)
-  }
-}
-
-export class MemoryPersonRepository implements PersonRepository {
-  private items = new Map<Id, Person>()
-  constructor(seed: readonly Person[] = []) {
-    for (const p of seed) this.items.set(p.id, clone(p))
-  }
-  async listAll(): Promise<Person[]> {
-    return [...this.items.values()].map(clone)
-  }
-  async save(person: Person): Promise<void> {
-    this.items.set(person.id, clone(person))
   }
 }
 

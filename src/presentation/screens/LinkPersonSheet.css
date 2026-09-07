@@ -1,0 +1,53 @@
+.linkPerson__txn {
+  background: var(--c-soft);
+  border-radius: 12px;
+  padding: 11px var(--s-card);
+  display: grid;
+  gap: 3px;
+  font-size: var(--t-body);
+}
+
+.linkPerson__name { font-weight: 600; overflow-wrap: anywhere; }
+
+.linkPerson__modes {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.linkPerson__modes legend { padding: 0 0 6px; }
+
+/* الفرق بين الدين والهدية مكتوب لا مستنتَج من الاسم */
+.linkPerson__mode {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px var(--s-card);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color var(--motion), background var(--motion);
+}
+
+.linkPerson__mode:hover { background: var(--c-soft); }
+
+.linkPerson__mode--on {
+  border-color: var(--c-action);
+  border-width: 2px;
+  padding: 11px calc(var(--s-card) - 1px);
+}
+
+.linkPerson__mode input {
+  min-height: 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.linkPerson__mode span { display: grid; gap: 2px; min-width: 0; }
+.linkPerson__mode b { font-size: var(--t-body); font-weight: 600; }
+.linkPerson__mode small { font-size: var(--t-badge); color: var(--c-muted); line-height: 1.55; }

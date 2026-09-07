@@ -1,4 +1,5 @@
 import { addMoney, subtractMoney, type Halalas } from './money'
+import { formatMoney } from './formatMoney'
 import { countsAsIncome, countsAsPersonalExpense } from './entities/economicKind'
 import type {
   Obligation,
@@ -38,7 +39,8 @@ export function personalShareOf(
 
   if (allocatedTotal > transaction.amountMinor) {
     throw new LedgerError(
-      `مجموع التخصيصات (${allocatedTotal}) أكبر من قيمة العملية (${transaction.amountMinor})`,
+      `مجموع التخصيصات (${formatMoney(allocatedTotal)}) أكبر من قيمة العملية ` +
+        `(${formatMoney(transaction.amountMinor)})`,
     )
   }
 
@@ -221,8 +223,11 @@ export function checkSettlement(
   return {
     allowed: false,
     reason:
-      `المبلغ أكبر من المتبقي. ${kindLabel} المتبقي ${remaining} هللة والمبلغ ${amountMinor}. ` +
-      `تقدر تسوّي ${remaining} وتسجّل الباقي ${amountMinor - remaining} كأمانة مستقلة بإجراء صريح.`,
+      // بالريال لا بالهللة: الوحدة الداخلية لا تظهر للمستخدم أبدًا
+      `المبلغ أكبر من المتبقي. ${kindLabel} المتبقي ${formatMoney(remaining)} ` +
+        `والمبلغ اللي كتبته ${formatMoney(amountMinor)}. ` +
+        `تقدر تسوّي ${formatMoney(remaining)} وتسجّل الباقي ` +
+        `${formatMoney(subtractMoney(amountMinor, remaining))} كأمانة مستقلة بإجراء صريح.`,
     settledMinor: remaining,
     surplusMinor: subtractMoney(amountMinor, remaining),
   }
