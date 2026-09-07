@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TransactionRow } from '../components/TransactionRow'
 import { PeriodPicker } from '../components/PeriodPicker'
+import { ErrorNotice } from '../components/ErrorNotice'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
 import { parseQuery, searchTransactions, AMOUNT_TOLERANCE_PER_THOUSAND } from '../../domain/search'
 import type { SearchableTransaction } from '../../domain/search'
@@ -10,7 +11,7 @@ import './TransactionsScreen.css'
 
 interface Props {
   loading: boolean
-  error: string | null
+  error: unknown
   data: TransactionsScreenData | null
   amountsHidden: boolean
   period: Period
@@ -146,22 +147,7 @@ export function TransactionsScreen({
         </p>
       )}
 
-      {error && (
-        <div className="notice" role="alert">
-          <strong>مقدرناش نحمّل العمليات.</strong>
-          <br />
-          {error}
-          <br />
-          <button
-            type="button"
-            className="btn btn--quiet"
-            onClick={onRetry}
-            style={{ marginTop: 10 }}
-          >
-            جرّب تاني
-          </button>
-        </div>
-      )}
+      {error ? <ErrorNotice cause={error} onRetry={onRetry} /> : null}
 
       {!loading && !error && data && visible.length === 0 && (
         <div className="empty">

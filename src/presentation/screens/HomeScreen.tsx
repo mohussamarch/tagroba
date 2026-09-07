@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
+import { ErrorNotice } from '../components/ErrorNotice'
 import { formatAmount, formatMoneyOrNA, NOT_AVAILABLE } from '../../domain/formatMoney'
 import type { HomeScreenData } from '../../application/useCases/loadHomeScreen'
 import type { Period } from '../../domain/period'
@@ -9,7 +10,7 @@ import './HomeScreen.css'
 interface Props {
   data: HomeScreenData | null
   loading: boolean
-  error: string | null
+  error: unknown
   payday: number
   amountsHidden: boolean
   onPeriodChange: (period: Period) => void
@@ -48,19 +49,7 @@ export function HomeScreen({
     )
   }
 
-  if (error) {
-    return (
-      <div className="notice" role="alert">
-        <strong>مقدرناش نحمّل الرئيسية.</strong>
-        <br />
-        {error}
-        <br />
-        <button type="button" className="btn btn--quiet" onClick={onRetry} style={{ marginTop: 10 }}>
-          جرّب تاني
-        </button>
-      </div>
-    )
-  }
+  if (error) return <ErrorNotice cause={error} onRetry={onRetry} />
 
   if (!data) return null
 

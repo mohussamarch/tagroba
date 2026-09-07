@@ -1,0 +1,37 @@
+.addTx { gap: var(--s-section); }
+
+/* المبلغ هو الحقل الأهم، فبيبان أكبر */
+.addTx__amount {
+  font-size: 1.6rem;
+  font-weight: 700;
+  min-height: 58px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.addTx__note {
+  min-height: 62px;
+  padding: 10px 12px;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* أثر النوع على الحساب — مقروء قبل الحفظ لا بعده */
+.addTx__effect {
+  font-size: var(--t-badge);
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
+  justify-self: start;
+}
+
+.addTx__effect--exp {
+  color: var(--c-outgoing);
+  background: var(--c-soft);
+}
+
+.addTx__effect--neutral {
+  color: var(--c-muted);
+  background: var(--c-soft);
+}

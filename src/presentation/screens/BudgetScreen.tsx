@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PeriodPicker } from '../components/PeriodPicker'
 import { LimitEditor } from '../components/LimitEditor'
+import { ErrorNotice } from '../components/ErrorNotice'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
 import type { BudgetScreenData } from '../../application/useCases/loadBudgetScreen'
 import type { Period } from '../../domain/period'
@@ -11,7 +12,7 @@ import './BudgetScreen.css'
 interface Props {
   data: BudgetScreenData | null
   loading: boolean
-  error: string | null
+  error: unknown
   period: Period
   payday: number
   amountsHidden: boolean
@@ -66,19 +67,7 @@ export function BudgetScreen({
     )
   }
 
-  if (error) {
-    return (
-      <div className="notice" role="alert">
-        <strong>مقدرناش نحمّل الميزانية.</strong>
-        <br />
-        {error}
-        <br />
-        <button type="button" className="btn btn--quiet" onClick={onRetry} style={{ marginTop: 10 }}>
-          جرّب تاني
-        </button>
-      </div>
-    )
-  }
+  if (error) return <ErrorNotice cause={error} onRetry={onRetry} />
 
   if (!data) return null
 

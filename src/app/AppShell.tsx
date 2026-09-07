@@ -5,6 +5,8 @@ import { ImportSheet } from '../presentation/screens/ImportSheet'
 import { KindsSheet } from '../presentation/screens/KindsSheet'
 import { BudgetScreen } from '../presentation/screens/BudgetScreen'
 import { SettingsScreen } from '../presentation/screens/SettingsScreen'
+import { AddTransactionSheet } from '../presentation/screens/AddTransactionSheet'
+import { AddMenu } from '../presentation/components/AddMenu'
 import { useTheme } from '../presentation/theme/useTheme'
 import { DEFAULT_PAYDAY, periodForDate, type Period } from '../domain/period'
 import type { HomeScreenData } from '../application/useCases/loadHomeScreen'
@@ -56,11 +58,13 @@ export function AppShell({
   const [budgetData, setBudgetData] = useState<BudgetScreenData | null>(null)
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const [recovery, setRecovery] = useState<string | null>(null)
 
   const [importOpen, setImportOpen] = useState(false)
   const [kindsOpen, setKindsOpen] = useState(false)
+  const [addMenuOpen, setAddMenuOpen] = useState(false)
+  const [addTxOpen, setAddTxOpen] = useState(false)
 
   const requestId = useRef(0)
   const bootstrapped = useRef(false)
@@ -109,7 +113,7 @@ export function AppShell({
       setWallets(walletList)
     } catch (cause) {
       if (id !== requestId.current) return
-      setError(cause instanceof Error ? cause.message : String(cause))
+      setError(cause)
     } finally {
       if (id === requestId.current) setLoading(false)
     }
@@ -127,8 +131,8 @@ export function AppShell({
           <button
             type="button"
             className="iconBtn iconBtn--primary"
-            onClick={() => setImportOpen(true)}
-            aria-label="استيراد كشف حساب"
+            onClick={() => setAddMenuOpen(true)}
+            aria-label="إضافة"
           >
             <span aria-hidden="true">＋</span>
           </button>
@@ -262,6 +266,34 @@ export function AppShell({
           onClick={() => setTab('settings')}
         />
       </nav>
+
+      {addMenuOpen && (
+        <AddMenu
+          onClose={() => setAddMenuOpen(false)}
+          onAddTransaction={() => {
+            setAddMenuOpen(false)
+            setAddTxOpen(true)
+          }}
+          onImport={() => {
+            setAddMenuOpen(false)
+            setImportOpen(true)
+          }}
+        />
+      )}
+
+      {addTxOpen && (
+        <AddTransactionSheet
+          user={user}
+          wallets={wallets}
+          categories={home?.categories ?? []}
+          today={today}
+          onClose={() => setAddTxOpen(false)}
+          onAdded={() => {
+            setAddTxOpen(false)
+            void load()
+          }}
+        />
+      )}
 
       {importOpen && (
         <ImportSheet

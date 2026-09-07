@@ -1,0 +1,31 @@
+.addMenu .sheet__body { gap: 10px; }
+
+.addMenu__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 72px;
+  padding: 14px var(--s-card);
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  background: var(--c-surface);
+  cursor: pointer;
+  text-align: start;
+  transition: background var(--motion), border-color var(--motion);
+}
+
+.addMenu__item:hover {
+  background: var(--c-soft);
+  border-color: var(--c-action);
+}
+
+.addMenu__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.addMenu__text { display: grid; gap: 2px; min-width: 0; }
+.addMenu__text b { font-size: var(--t-section); font-weight: 600; }
+.addMenu__text small { font-size: var(--t-badge); color: var(--c-muted); line-height: 1.5; }

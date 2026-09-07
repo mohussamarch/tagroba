@@ -26,6 +26,7 @@ import { makeSetBudget } from '../application/useCases/setBudget'
 import { makeReconcileBalance } from '../application/useCases/reconcileBalance'
 import { makeExportBackup } from '../application/useCases/exportBackup'
 import { makeSeedWallets } from '../application/useCases/seedWallets'
+import { makeAddTransaction } from '../application/useCases/addTransaction'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -93,6 +94,7 @@ export function createDemoContainer(): Container {
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
     loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
+    addTransaction: makeAddTransaction({ txns, wallets, ids, clock }),
     reconcileBalance: makeReconcileBalance({ txns, wallets }),
     exportBackup: makeExportBackup({
       txns, sources, batches, wallets, categories, rules, merchants, budgets,
