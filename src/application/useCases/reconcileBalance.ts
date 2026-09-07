@@ -55,6 +55,8 @@ export function makeReconcileBalance(deps: ReconcileDeps) {
     if (!wallet) throw new Error(`محفظة غير موجودة: ${options.walletId}`)
 
     const collected: Transaction[] = []
+    /** تحويلات داخلية جاية **إلى** هذه المحفظة — تُعامَل دخولًا. */
+    const incomingLegs: Transaction[] = []
     let unassignedCount = 0
     let periodsRead = 0
 
@@ -67,6 +69,17 @@ export function makeReconcileBalance(deps: ReconcileDeps) {
       periodsRead++
       for (const row of rows) {
         if (row.occurredAt < wallet.openingAt || row.occurredAt > options.until) continue
+
+        /*
+         * التحويل الداخلي له **طرفان** (spec/02): خصم من `walletId`
+         * وإضافة إلى `transferToWalletId`. المحفظة المستقبِلة تراه
+         * دخولًا، وبدون هذا الفرع يبقى رصيدها ناقصًا أبدًا.
+         */
+        if (row.transferToWalletId === wallet.id) {
+          incomingLegs.push(row)
+          continue
+        }
+
         if (row.walletId === undefined) {
           unassignedCount++
           continue
@@ -78,24 +91,41 @@ export function makeReconcileBalance(deps: ReconcileDeps) {
       period = nextPeriod(period, options.payday)
     }
 
+    // الطرف الداخل يُضاف كحركة وارد قبل الترتيب، فيدخل السلسلة بترتيبه
+    const all: { txn: Transaction; incoming: boolean }[] = [
+      ...collected.map((txn) => ({ txn, incoming: false })),
+      ...incomingLegs.map((txn) => ({ txn, incoming: true })),
+    ]
+
     // الترتيب بترتيب المصدر: التاريخ ثم رقم السطر — لا يُعاد ترتيب اليوم
-    collected.sort((a, b) =>
-      a.occurredAt === b.occurredAt
+    all.sort((x, y) => {
+      const a = x.txn
+      const b = y.txn
+      return a.occurredAt === b.occurredAt
         ? a.sourceOrder - b.sourceOrder
         : a.occurredAt < b.occurredAt
           ? -1
-          : 1,
-    )
+          : 1
+    })
 
-    const movements: LedgerMovement[] = collected.map((t) => {
+    const movements: LedgerMovement[] = all.map(({ txn, incoming }) => {
       const movement: LedgerMovement = {
-        date: t.occurredAt,
-        sourceOrder: t.sourceOrder,
-        debitMinor: t.observedDirection === 'out' ? t.amountMinor : 0,
-        creditMinor: t.observedDirection === 'in' ? t.amountMinor : 0,
-        label: t.rawMerchantName || t.rawDescription || t.sourceCategory || '',
+        date: txn.occurredAt,
+        sourceOrder: txn.sourceOrder,
+        // الطرف الداخل دائمًا دائن على هذه المحفظة مهما كان اتجاه العملية
+        debitMinor: incoming ? 0 : txn.observedDirection === 'out' ? txn.amountMinor : 0,
+        creditMinor: incoming ? txn.amountMinor : txn.observedDirection === 'in' ? txn.amountMinor : 0,
+        label:
+          (incoming ? 'وارد تحويل — ' : '') +
+          (txn.rawMerchantName || txn.rawDescription || txn.sourceCategory || ''),
       }
-      if (t.statedBalanceMinor !== undefined) movement.statedBalanceMinor = t.statedBalanceMinor
+      /*
+       * الرصيد المعلن يخص محفظة **المصدر** في كشفها، فلا يُقارَن به
+       * الطرف الداخل — وإلا قُورن رصيد محفظة برصيد محفظة أخرى.
+       */
+      if (!incoming && txn.statedBalanceMinor !== undefined) {
+        movement.statedBalanceMinor = txn.statedBalanceMinor
+      }
       return movement
     })
 

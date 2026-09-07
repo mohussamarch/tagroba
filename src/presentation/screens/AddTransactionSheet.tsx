@@ -48,6 +48,7 @@ export function AddTransactionSheet({
   const [walletId, setWalletId] = useState(wallets.find((w) => w.kind === 'cash')?.id ?? wallets[0]?.id ?? '')
   const [kind, setKind] = useState<EconomicKind>('purchase')
   const [merchantName, setMerchantName] = useState('')
+  const [transferToWalletId, setTransferToWalletId] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
@@ -56,6 +57,8 @@ export function AddTransactionSheet({
 
   const wallet = wallets.find((w) => w.id === walletId)
   const isExpense = ruleFor(kind).countsAsPersonalExpense
+  const isTransfer = kind === 'internal_transfer'
+  const targets = wallets.filter((w) => w.id !== walletId)
   const selectedHint = KINDS.find((k) => k.kind === kind)?.hint ?? ''
 
   async function submit(event: FormEvent) {
@@ -69,12 +72,18 @@ export function AddTransactionSheet({
       return
     }
 
+    if (isTransfer && !transferToWalletId) {
+      setFieldError('اختار راح لأنهي محفظة')
+      return
+    }
+
     setBusy(true)
     try {
       await user.addTransaction({
         amountMinor,
         occurredAt: date,
         walletId,
+        ...(isTransfer ? { transferToWalletId } : {}),
         economicKind: kind,
         merchantName,
         ...(categoryId ? { categoryId } : {}),
@@ -159,6 +168,31 @@ export function AddTransactionSheet({
               <span className="sheet__hint">هتتوسم «كاش» تلقائيًا وتبان في كل العروض.</span>
             )}
           </label>
+
+          {/*
+            التحويل الداخلي **لازم له طرفان** (spec/02). الحقل ده بيظهر
+            للتحويل بس، وبدونه الفلوس بتتخصم من محفظة ومتظهرش في التانية.
+          */}
+          {isTransfer && (
+            <label className="sheet__field">
+              <span className="sheet__label">راح لأنهي محفظة</span>
+              <select
+                className="sheet__input"
+                value={transferToWalletId}
+                onChange={(e) => setTransferToWalletId(e.target.value)}
+              >
+                <option value="">اختار المحفظة</option>
+                {targets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+              <span className="sheet__hint">
+                المبلغ هيتخصم من فوق ويتضاف هنا. مجموع محافظك مش هيتغير.
+              </span>
+            </label>
+          )}
 
           <label className="sheet__field">
             <span className="sheet__label">التاريخ</span>

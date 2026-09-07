@@ -25,6 +25,8 @@ export interface NewTransactionInput {
   currency?: Currency
   occurredAt: string
   walletId: Id
+  /** المحفظة المستقبِلة — إلزامية للتحويل الداخلي وحده. */
+  transferToWalletId?: Id
   economicKind: EconomicKind
   merchantName: string
   categoryId?: Id
@@ -64,14 +66,38 @@ export function makeAddTransaction(deps: AddTransactionDeps) {
     /*
      * الاتجاه الملاحظ يُشتق من النوع هنا — عكس الاستيراد تمامًا.
      * في الاستيراد الكشف يعطي الاتجاه والنوع مجهول؛ هنا المستخدم يعطي
-     * النوع والاتجاه نتيجته. `internal_transfer` يُعامل صادرًا من محفظة
-     * المصدر، وطرفه الثاني عمل لم يُبنَ بعد (ARCHITECTURE §14).
+     * النوع والاتجاه نتيجته.
      */
     const liquidity = liquidityOf(input.economicKind)
     const observedDirection: 'in' | 'out' = liquidity === 'in' ? 'in' : 'out'
 
     if (!isConsistentWithObservedDirection(input.economicKind, observedDirection)) {
       throw new AddTransactionError('النوع ده ما يتوافقش مع اتجاه الحركة')
+    }
+
+    /*
+     * التحويل الداخلي **لازم له طرفان** (spec/02). بدون المحفظة
+     * المستقبِلة يُخصم المبلغ من محفظة ولا يظهر في أي محفظة أخرى —
+     * فلوس تختفي من الحساب بلا أثر. يُرفض بدل أن يُحفظ ناقصًا.
+     */
+    let transferTo: Id | undefined
+    if (input.economicKind === 'internal_transfer') {
+      if (!input.transferToWalletId) {
+        throw new AddTransactionError('التحويل الداخلي لازم تحدد راح لأنهي محفظة')
+      }
+      if (input.transferToWalletId === input.walletId) {
+        throw new AddTransactionError('مينفعش تحوّل من محفظة لنفسها')
+      }
+      const target = await deps.wallets.findById(input.transferToWalletId)
+      if (!target) throw new AddTransactionError('المحفظة المستقبِلة مش موجودة')
+      if (target.currency !== wallet.currency) {
+        throw new AddTransactionError(
+          'التحويل بين عملتين مختلفتين محتاج سعر صرف موثّق — لسه مش مدعوم (spec/02)',
+        )
+      }
+      transferTo = target.id
+    } else if (input.transferToWalletId) {
+      throw new AddTransactionError('المحفظة المستقبِلة تتحدد للتحويل الداخلي بس')
     }
 
     const name = input.merchantName.trim()
@@ -106,6 +132,7 @@ export function makeAddTransaction(deps: AddTransactionDeps) {
       updatedAt: now,
     }
 
+    if (transferTo) transaction.transferToWalletId = transferTo
     if (input.categoryId) transaction.categoryId = input.categoryId
     if (input.note?.trim()) transaction.note = input.note.trim()
 

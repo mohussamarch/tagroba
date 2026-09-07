@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { makeReconcileBalance } from '../../src/application/useCases/reconcileBalance'
 import { makeImportStatement } from '../../src/application/useCases/importStatement'
 import { makeSeedWallets, BANK_WALLET_ID } from '../../src/application/useCases/seedWallets'
+import { makeAddTransaction } from '../../src/application/useCases/addTransaction'
 import {
   MemoryCategoryRepository,
   MemoryImportBatchRepository,
@@ -218,4 +219,95 @@ describe.skipIf(!existsSync(CSV_PATH))('المطابقة الكاملة على �
     expect(outcome.result.closingAt).toBe('2026-09-04')
     expect(outcome.result.ambiguityNote).toBeNull()
   }, 60_000)
+})
+
+/**
+ * spec/02: «عملية اقتصادية واحدة لها **طرف خصم وطرف إضافة**…
+ *           وعرض الدخل والمصروف لا يعيد حساب الطرفين.»
+ *
+ * الخلل الذي أغلقه هذا الاختبار: التحويل الداخلي كان يُخصم من محفظة
+ * **ولا يظهر في المحفظة الأخرى إطلاقًا** — فلوس تختفي من الحساب.
+ */
+describe('التحويل الداخلي بطرفين', () => {
+  async function makeTwoWallets() {
+    const txns = new MemoryTransactionRepository()
+    const wallets = new MemoryWalletRepository()
+    await wallets.save({
+      id: 'w-bank', name: 'الراجحي', currency: 'SAR', kind: 'bank',
+      openingBalanceMinor: parseMoney('1000.00'), openingAt: '2026-09-01',
+    })
+    await wallets.save({
+      id: 'w-cash', name: 'كاش', currency: 'SAR', kind: 'cash',
+      openingBalanceMinor: parseMoney('200.00'), openingAt: '2026-09-01',
+    })
+    return {
+      txns,
+      wallets,
+      add: makeAddTransaction({
+        txns, wallets,
+        ids: new SequentialIdGenerator(),
+        clock: new FixedClock('2026-09-07T00:00:00.000Z'),
+      }),
+      reconcile: makeReconcileBalance({ txns, wallets }),
+    }
+  }
+
+  it('يخصم من المصدر ويزيد الهدف بنفس المبلغ', async () => {
+    const sys = await makeTwoWallets()
+    await sys.add({
+      amountMinor: parseMoney('500.00'),
+      occurredAt: '2026-09-05',
+      walletId: 'w-bank',
+      transferToWalletId: 'w-cash',
+      economicKind: 'internal_transfer',
+      merchantName: 'سحب للكاش',
+    })
+
+    const bank = await sys.reconcile({ walletId: 'w-bank', until: '2026-09-30', payday: 28 })
+    const cash = await sys.reconcile({ walletId: 'w-cash', until: '2026-09-30', payday: 28 })
+
+    // 1000 − 500 = 500
+    expect(formatAmount(bank.result.closingMinor)).toBe('500.00')
+    expect(formatAmount(bank.result.totalDebitMinor)).toBe('500.00')
+
+    // 200 + 500 = 700 — دي اللي كانت ناقصة
+    expect(formatAmount(cash.result.closingMinor)).toBe('700.00')
+    expect(formatAmount(cash.result.totalCreditMinor)).toBe('500.00')
+
+    // مجموع المحفظتين ثابت: التحويل نقل فلوس ولا خلقها ولا فقدها
+    const before = parseMoney('1000.00') + parseMoney('200.00')
+    expect(bank.result.closingMinor + cash.result.closingMinor).toBe(before)
+  })
+
+  it('الطرف الداخل لا يُقارَن برصيد معلن يخص محفظة تانية', async () => {
+    const sys = await makeTwoWallets()
+    await sys.add({
+      amountMinor: parseMoney('500.00'),
+      occurredAt: '2026-09-05',
+      walletId: 'w-bank',
+      transferToWalletId: 'w-cash',
+      economicKind: 'internal_transfer',
+      merchantName: 'سحب',
+    })
+    const cash = await sys.reconcile({ walletId: 'w-cash', until: '2026-09-30', payday: 28 })
+    expect(cash.result.mismatches).toHaveLength(0)
+    expect(cash.withoutStatedBalance).toBe(1) // بلا رصيد معلن، فلا يُقارَن
+  })
+
+  it('صرف الكاش بعد التحويل يخصم من رصيده الجديد — spec/02', async () => {
+    const sys = await makeTwoWallets()
+    await sys.add({
+      amountMinor: parseMoney('500.00'), occurredAt: '2026-09-05',
+      walletId: 'w-bank', transferToWalletId: 'w-cash',
+      economicKind: 'internal_transfer', merchantName: 'سحب',
+    })
+    await sys.add({
+      amountMinor: parseMoney('100.00'), occurredAt: '2026-09-06',
+      walletId: 'w-cash', economicKind: 'purchase', merchantName: 'مشتريات كاش',
+    })
+
+    const cash = await sys.reconcile({ walletId: 'w-cash', until: '2026-09-30', payday: 28 })
+    // 200 + 500 − 100 = 600
+    expect(formatAmount(cash.result.closingMinor)).toBe('600.00')
+  })
 })

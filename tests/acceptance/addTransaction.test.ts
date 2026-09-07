@@ -103,6 +103,7 @@ describe('النوع الاقتصادي يحدد الاتجاه والأثر', (
       amountMinor: parseMoney('500.00'),
       occurredAt: '2026-09-07',
       walletId: BANK.id,
+      transferToWalletId: CASH.id,
       economicKind: 'internal_transfer',
       merchantName: 'سحب للكاش',
     })
@@ -110,6 +111,48 @@ describe('النوع الاقتصادي يحدد الاتجاه والأثر', (
     const data = await sys.home({ period: PERIOD, today: '2026-09-07', payday: 28 })
     expect(data.expenseMinor).toBe(0)
     expect(data.incomeMinor).toBe(0)
+  })
+
+  it('التحويل بلا محفظة مستقبِلة **مرفوض** — الفلوس متختفيش', async () => {
+    const sys = makeSystem()
+    await expect(
+      sys.add({
+        amountMinor: parseMoney('500.00'),
+        occurredAt: '2026-09-07',
+        walletId: BANK.id,
+        economicKind: 'internal_transfer',
+        merchantName: 'سحب',
+      }),
+    ).rejects.toThrow(/راح لأنهي محفظة/)
+    expect(sys.txns.size()).toBe(0)
+  })
+
+  it('التحويل لنفس المحفظة مرفوض', async () => {
+    const sys = makeSystem()
+    await expect(
+      sys.add({
+        amountMinor: parseMoney('100.00'),
+        occurredAt: '2026-09-07',
+        walletId: BANK.id,
+        transferToWalletId: BANK.id,
+        economicKind: 'internal_transfer',
+        merchantName: 'x',
+      }),
+    ).rejects.toThrow(/لنفسها/)
+  })
+
+  it('المحفظة المستقبِلة تتحدد للتحويل بس', async () => {
+    const sys = makeSystem()
+    await expect(
+      sys.add({
+        amountMinor: parseMoney('30.00'),
+        occurredAt: '2026-09-07',
+        walletId: CASH.id,
+        transferToWalletId: BANK.id,
+        economicKind: 'purchase',
+        merchantName: 'قهوة',
+      }),
+    ).rejects.toThrow(/للتحويل الداخلي بس/)
   })
 
   it('الراتب وارد ويزيد الدخل', async () => {
