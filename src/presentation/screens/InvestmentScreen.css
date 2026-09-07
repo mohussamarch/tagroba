@@ -162,3 +162,23 @@
 @media (min-width: 520px) {
   .invest__metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+.priceSync { display: grid; gap: 8px; justify-items: start; }
+
+.priceSync__result { display: grid; gap: 4px; }
+
+.priceSync__line {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-text-muted);
+}
+
+.priceSync__line--warn { color: var(--c-outgoing); }
+
+.feedLink { display: grid; gap: 8px; }
+
+.feedLink__price {
+  display: block;
+  font-size: var(--t-label);
+  opacity: .8;
+}

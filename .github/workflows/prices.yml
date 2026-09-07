@@ -1,0 +1,49 @@
+# تحديث أسعار الذهب والفضة وأسهم تداول.
+#
+# ليه هنا مش في التطبيق؟ Cloud Functions مش متاحة في باقة Spark
+# (CLAUDE.md #12)، فالتحديث بيحصل بره تمامًا والتطبيق بيقرا الناتج
+# كملف عادي من الريبو.
+#
+# لو مصدر فشل، سعره بيختفي من الملف ويتسجل سبب اختفائه —
+# ما بيتكتبش صفر ولا سعر إمبارح كأنه سعر النهارده.
+
+name: تحديث الأسعار
+
+on:
+  schedule:
+    # 5:00 صباحًا بتوقيت السعودية (02:00 UTC) كل يوم
+    - cron: '0 2 * * *'
+  # زر تشغيل يدوي من تبويب Actions
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prices
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: جلب الأسعار
+        run: node scripts/fetch-prices.mjs
+
+      - name: حفظ الملف لو اتغير
+        run: |
+          if git diff --quiet -- public/prices.json; then
+            echo "مفيش تغيير في الأسعار"
+            exit 0
+          fi
+          git config user.name "masroufy-price-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add public/prices.json
+          git commit -m "تحديث الأسعار $(date -u +%Y-%m-%d)"
+          git push

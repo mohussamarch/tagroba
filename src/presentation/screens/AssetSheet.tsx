@@ -5,6 +5,7 @@ import { formatQuantity, parseQuantity } from '../../domain/quantity'
 import { describePriceState } from '../../domain/assets'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { AssetHistory } from '../components/AssetHistory'
+import { FeedLink } from '../components/FeedLink'
 import type { AssetRow } from '../../application/useCases/manageAssets'
 import type { UserContainer } from '../../app/container'
 import './InvestmentScreen.css'
@@ -13,7 +14,10 @@ interface Props {
   user: UserContainer
   row: AssetRow
   onClose: () => void
+  /** بعد تسجيل حركة — بيقفل الورقة ويعيد التحميل. */
   onChanged: () => void
+  /** إعادة تحميل بلا قفل — لتغييرات ما تستاهلش تخرج المستخدم. */
+  onRefresh: () => void
 }
 
 type Mode = 'buy' | 'sell' | 'price' | 'history'
@@ -33,7 +37,7 @@ const today = () => new Date().toISOString().slice(0, 10)
  * `spec/01`: «**البيع تسجيل فقط**» — الكلمة مكتوبة في الشاشة نفسها
  * فما حدش يفتكر إن فيه أمر بيع بيتنفذ.
  */
-export function AssetSheet({ user, row, onClose, onChanged }: Props) {
+export function AssetSheet({ user, row, onClose, onChanged, onRefresh }: Props) {
   const [mode, setMode] = useState<Mode>('buy')
   const [date, setDate] = useState(today())
   const [quantity, setQuantity] = useState('')
@@ -213,6 +217,10 @@ export function AssetSheet({ user, row, onClose, onChanged }: Props) {
                       : 'رسوم البيع بتتخصم من الحصيلة قبل حساب الربح.'}
                   </span>
                 </label>
+              )}
+
+              {mode === 'price' && (
+                <FeedLink user={user} asset={asset} onChanged={onRefresh} />
               )}
 
               {error ? <ErrorNotice cause={error} /> : null}

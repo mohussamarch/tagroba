@@ -37,6 +37,11 @@ export interface Asset {
   /** «جرام»، «سهم»… يظهر جنب الكمية فلا تبقى رقمًا بلا وحدة. */
   unitLabel: string
   currency: Currency
+  /**
+   * رمز الأصل في ملف الأسعار، لو المستخدم ربطه بيه.
+   * غيابه مش عيب — الأصل بسعر يدوي شغّال زي أي أصل.
+   */
+  feedSymbol?: string
   /** لا حذف لأصل له سجل — أرشفة فقط، مثل الأشخاص. */
   archived: boolean
   note?: string

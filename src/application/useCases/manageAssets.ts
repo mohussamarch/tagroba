@@ -105,6 +105,7 @@ export function makeManageAssets(deps: ManageAssetsDeps) {
     name: string
     kind: AssetKind
     unitLabel?: string
+    feedSymbol?: string
     currency?: Currency
     note?: string
   }): Promise<Asset> {
@@ -124,10 +125,25 @@ export function makeManageAssets(deps: ManageAssetsDeps) {
       unitLabel: input.unitLabel?.trim() || ASSET_UNIT_DEFAULTS[input.kind],
       currency: input.currency ?? 'SAR',
       archived: false,
+      ...(input.feedSymbol ? { feedSymbol: input.feedSymbol } : {}),
       ...(input.note?.trim() ? { note: input.note.trim() } : {}),
     }
     await deps.assets.save(asset)
     return asset
+  }
+
+  /**
+   * يربط أصلًا برمز في ملف الأسعار، أو يفكّ الربط.
+   * فكّ الربط **ما بيمسحش** آخر سعر — الرقم القديم بتاريخه أنفع من فراغ.
+   */
+  async function linkToFeed(assetId: Id, feedSymbol: string | null): Promise<Asset> {
+    const asset = (await deps.assets.listAll()).find((a) => a.id === assetId)
+    if (!asset) throw new AssetsError('الأصل ده مش موجود')
+    const next: Asset = { ...asset }
+    if (feedSymbol) next.feedSymbol = feedSymbol
+    else delete next.feedSymbol
+    await deps.assets.save(next)
+    return next
   }
 
   /** أرشفة لا حذف — الأصل ذو السجل يفضل ظاهرًا (نفس قاعدة الأشخاص). */
@@ -230,5 +246,13 @@ export function makeManageAssets(deps: ManageAssetsDeps) {
     return price
   }
 
-  return { listPortfolio, addAsset, archiveAsset, recordPurchase, recordSale, setPrice }
+  return {
+    listPortfolio,
+    addAsset,
+    archiveAsset,
+    linkToFeed,
+    recordPurchase,
+    recordSale,
+    setPrice,
+  }
 }

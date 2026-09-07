@@ -6,6 +6,7 @@ import { ASSET_KIND_LABELS } from '../../domain/entities/assets'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { AssetSheet } from './AssetSheet'
 import { AddAssetSheet } from './AddAssetSheet'
+import { PriceSync } from '../components/PriceSync'
 import type { AssetRow, PortfolioView } from '../../application/useCases/manageAssets'
 import type { UserContainer } from '../../app/container'
 import './InvestmentScreen.css'
@@ -81,6 +82,8 @@ export function InvestmentScreen({
             متسجل. حط السعر من داخل الأصل عشان يظهر الإجمالي.
           </p>
         )}
+
+        <PriceSync user={user} onChanged={onChanged} />
 
         {/* البيع تسجيل فقط — مكتوب صراحة فلا يتوقع المستخدم تداولًا */}
         <p className="invest__note">
@@ -161,6 +164,8 @@ export function InvestmentScreen({
           user={user}
           row={openAsset}
           onClose={() => setOpenAsset(null)}
+          /* ربط السعر يحدّث البيانات بلا ما يقفل الورقة في وش المستخدم */
+          onRefresh={onChanged}
           onChanged={() => {
             setOpenAsset(null)
             onChanged()

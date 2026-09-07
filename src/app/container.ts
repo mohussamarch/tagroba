@@ -43,6 +43,8 @@ import { makeSeedWallets } from '../application/useCases/seedWallets'
 import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
 import { makeManageAssets } from '../application/useCases/manageAssets'
+import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
+import { loadPriceFeed } from '../infrastructure/prices/loadPriceFeed'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock, WalletRepository } from '../application/ports/repositories'
 import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
@@ -80,6 +82,9 @@ export interface UserContainer {
   addTransaction: ReturnType<typeof makeAddTransaction>
   managePeople: ReturnType<typeof makeManagePeople>
   manageAssets: ReturnType<typeof makeManageAssets>
+  syncAssetPrices: ReturnType<typeof makeSyncAssetPrices>
+  /** يجيب ملف الأسعار — الشبكة هنا فقط، والشاشة ما تعرفش مكانه. */
+  loadPriceFeed: typeof loadPriceFeed
   reconcileBalance: ReturnType<typeof makeReconcileBalance>
   exportBackup: ReturnType<typeof makeExportBackup>
   seedWallets: ReturnType<typeof makeSeedWallets>
@@ -145,6 +150,8 @@ export function createContainer(): Container {
           ids: new RandomIdGenerator(),
           clock: systemClock,
         }),
+        syncAssetPrices: makeSyncAssetPrices({ assets, prices: assetPrices }),
+        loadPriceFeed,
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),
         exportBackup: makeExportBackup({
