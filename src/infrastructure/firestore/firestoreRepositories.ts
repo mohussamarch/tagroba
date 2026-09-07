@@ -62,16 +62,34 @@ export class FirestoreTransactionRepository implements TransactionRepository {
     return collection(this.db, userPath(this.uid, 'transactions'))
   }
 
+  /**
+   * عمليات فترة واحدة.
+   *
+   * ⚠️ **لا يوجد orderBy على sourceOrder هنا عمدًا.**
+   * الترتيب بحقلين مع مدى (range) يفرض على Firestore **فهرسًا مركّبًا**
+   * (composite index) لا يُنشأ تلقائيًا، فيفشل الاستعلام على أي مشروع
+   * جديد حتى يُنشر الفهرس يدويًا — وهو عبء إعداد بلا فائدة هنا.
+   *
+   * المدى وحده يكفيه الفهرس أحادي الحقل الذي ينشئه Firestore تلقائيًا،
+   * والترتيب داخل الفترة يتم في الذاكرة: الفترة الواحدة مئات العمليات
+   * لا آلاف، وقيد «كل استعلام محدود بفترة» (§5.6) هو ما يضمن ذلك.
+   */
   async listByDateRange(fromIso: string, toIso: string): Promise<Transaction[]> {
     const q = query(
       this.col(),
       where('occurredAt', '>=', fromIso),
       where('occurredAt', '<=', toIso),
-      orderBy('occurredAt'),
-      orderBy('sourceOrder'),
     )
     const snap = await getDocs(q)
-    return snap.docs.map((d) => d.data() as Transaction)
+    return snap.docs
+      .map((d) => d.data() as Transaction)
+      .sort((a, b) =>
+        a.occurredAt === b.occurredAt
+          ? a.sourceOrder - b.sourceOrder
+          : a.occurredAt < b.occurredAt
+            ? -1
+            : 1,
+      )
   }
 
   async listByBatch(): Promise<Transaction[]> {
@@ -194,16 +212,22 @@ export class FirestoreImportBatchRepository implements ImportBatchRepository {
     return snap.exists() ? (snap.data() as ImportBatch) : null
   }
 
+  /**
+   * الدرجة ١ من منع التكرار: هل هذا الملف بعينه اعتُمد قبل ذلك؟
+   *
+   * ⚠️ الترشيح على `state` يتم **في الذاكرة لا في الاستعلام**: شرطا مساواة
+   * على حقلين مختلفين يفرضان فهرسًا مركّبًا، وبصمة الملف انتقائية أصلًا
+   * (صفر أو مستند أو مستندان)، فالفرق في التكلفة معدوم والمكسب إعداد أبسط.
+   *
+   * `committed` فقط: الدفعة المعلّقة (staged) **غير معتمدة** ولا تُحسب
+   * استيرادًا سابقًا — ARCHITECTURE.md §11.1.
+   */
   async findByFileHash(fileHash: string): Promise<ImportBatch | null> {
-    const snap = await getDocs(
-      query(
-        this.col(),
-        where('fileHash', '==', fileHash),
-        where('state', '==', 'committed'),
-        fbLimit(1),
-      ),
-    )
-    return snap.empty ? null : (snap.docs[0].data() as ImportBatch)
+    const snap = await getDocs(query(this.col(), where('fileHash', '==', fileHash)))
+    const committed = snap.docs
+      .map((d) => d.data() as ImportBatch)
+      .filter((b) => b.state === 'committed')
+    return committed[0] ?? null
   }
 
   async listRecent(count: number): Promise<ImportBatch[]> {
