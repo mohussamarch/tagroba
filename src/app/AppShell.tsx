@@ -1,3 +1,6 @@
+import { CategoriesScreen } from '../presentation/screens/CategoriesScreen'
+import { HistoryReviewScreen } from '../presentation/screens/HistoryReviewScreen'
+import { RecurringScreen } from '../presentation/screens/RecurringScreen'
 import { useState } from 'react'
 import { HomeScreen } from '../presentation/screens/HomeScreen'
 import { TransactionsScreen } from '../presentation/screens/TransactionsScreen'
@@ -13,7 +16,7 @@ import { LinkPersonSheet } from '../presentation/screens/LinkPersonSheet'
 import { TransactionSheet } from '../presentation/screens/TransactionSheet'
 import { RulesScreen } from '../presentation/screens/RulesScreen'
 import { AddMenu } from '../presentation/components/AddMenu'
-import { TabButton } from '../presentation/components/TabButton'
+import { ShellTabs } from '../presentation/components/ShellTabs'
 import { ShellHeader } from '../presentation/components/ShellHeader'
 import { useTheme } from '../presentation/theme/useTheme'
 import { useAppData } from './useAppData'
@@ -56,6 +59,9 @@ export function AppShell({
   /** العملية المفتوحة للتفاصيل — التصنيف والملاحظة والوسوم. */
   const [opened, setOpened] = useState<Transaction | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const [recurringOpen,setRecurringOpen] = useState(false)
+  const [historyOpen,setHistoryOpen] = useState(false)
+  const [categoriesOpen,setCategoriesOpen] = useState(false)
 
   const reload = () => void app.reload()
   const unseenCount = app.notifications?.unseen.length ?? 0
@@ -75,6 +81,9 @@ export function AppShell({
       />
 
       <main className="shell__body">
+        {tab === 'settings' && <button className="btn btn--quiet" onClick={()=>setCategoriesOpen(true)}>التصنيفات وألوانها</button>}
+        {tab === 'transactions' && <button className="btn btn--quiet" onClick={()=>setHistoryOpen(true)}>مراجعة وتصنيف العمليات القديمة</button>}
+        {tab === 'home' && <button className="btn btn--quiet" onClick={()=>setRecurringOpen(true)}>الاشتراكات والفواتير</button>}
         {app.recovery && (
           <div className="notice" role="status">
             {app.recovery}
@@ -187,14 +196,7 @@ export function AppShell({
       </main>
 
       {/* الشريط السفلي — spec/01 */}
-      <nav className="shell__tabs" aria-label="التنقل الرئيسي">
-        <TabButton label="الرئيسية" icon="⌂" active={tab === 'home'} onClick={() => setTab('home')} />
-        <TabButton label="الميزانية" icon="◱" active={tab === 'budget'} onClick={() => setTab('budget')} />
-        <TabButton label="العمليات" icon="☰" active={tab === 'transactions'} onClick={() => setTab('transactions')} />
-        <TabButton label="الأشخاص" icon="◎" active={tab === 'people'} onClick={() => setTab('people')} />
-        <TabButton label="الاستثمار" icon="◈" active={tab === 'invest'} onClick={() => setTab('invest')} />
-        <TabButton label="الإعدادات" icon="⚙" active={tab === 'settings'} onClick={() => setTab('settings')} />
-      </nav>
+      <ShellTabs tab={tab} onChange={setTab}/>
 
       {addMenuOpen && (
         <AddMenu
@@ -249,6 +251,10 @@ export function AppShell({
           }}
         />
       )}
+
+      {categoriesOpen && <CategoriesScreen user={app.user} onClose={()=>setCategoriesOpen(false)} onChanged={reload}/>}
+      {historyOpen && <HistoryReviewScreen user={app.user} today={app.today} categories={app.home?.categories??[]} onClose={()=>setHistoryOpen(false)} onChanged={reload}/>}
+      {recurringOpen && <RecurringScreen user={app.user} today={app.today} hidden={amountsHidden} onClose={()=>setRecurringOpen(false)}/>}
 
       {rulesOpen && (
         <RulesScreen

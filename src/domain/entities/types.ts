@@ -42,6 +42,8 @@ export interface Category {
 }
 
 export interface Merchant {
+  /** أسماء بديلة مؤكدة يدويًا، تبقى مع التاجر في النسخ الاحتياطية. */
+  aliases?: string[]
   id: Id
   displayName: string
   normalizedName: string

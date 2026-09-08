@@ -73,6 +73,8 @@ describe('الحالات الثلاث للمجاميع', () => {
     expect(data.remainingMinor).toBeNull()
     expect(data.savingsRatePercent).toBeNull()
     expect(data.partial).toBe(false) // ليست جزئية، بل مجهولة كليًا
+    expect(data.forecast.projectedMinor).toBeNull()
+    expect(data.allowance.amountMinor).toBeNull()
     expect(formatMoneyOrNA(data.expenseMinor)).toBe(NOT_AVAILABLE)
   })
 
@@ -92,6 +94,8 @@ describe('الحالات الثلاث للمجاميع', () => {
     expect(data.remainingMinor).toBeNull()
     expect(data.savingsRatePercent).toBeNull()
 
+    expect(data.forecast.projectedMinor).toBeNull()
+    expect(data.allowance.amountMinor).toBeNull()
     expect(data.coverage.totalsReliable).toBe(false)
     expect(data.coverage.note).toContain('1 عملية من 3')
   })

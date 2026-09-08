@@ -191,7 +191,18 @@ export function makeManageRules(deps: ManageRulesDeps) {
     await deps.merchants.saveMany([{ ...merchant, displayName: name }])
   }
 
+  async function addAlias(id:Id,raw:string) {
+    const alias=normalizeText(raw)
+    if(!alias||alias.length>120) throw new RulesError('اكتب اسمًا بحد أقصى ١٢٠ حرف.')
+    const all=await deps.merchants.listAll()
+    const merchant=all.find(m=>m.id===id)
+    if(!merchant) throw new RulesError('اختار تاجرًا موجودًا.')
+    if(all.some(m=>m.id!==id&&(m.normalizedName===alias||m.aliases?.includes(alias))))
+      throw new RulesError('الاسم مربوط بتاجر تاني بالفعل؛ مش هنغيّر الربط القديم ضمنيًا.')
+    await deps.merchants.saveMany([{...merchant,aliases:[...new Set([...(merchant.aliases??[]),alias])]}])
+  }
   return {
+    addAlias,
     listRules,
     listMerchants,
     addRule,

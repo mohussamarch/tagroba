@@ -1,3 +1,4 @@
+import { merchantIndex } from '../../domain/merchantIndex'
 import { parseCsv } from '../../infrastructure/import/csvReader'
 import { parseRows } from '../../infrastructure/import/schemas'
 import type { ParsedRow } from '../../infrastructure/import/schemas'
@@ -34,7 +35,7 @@ export async function buildCategorizeDeps(deps: ImportStatementDeps): Promise<Ca
     deps.rules.listAll(),
   ])
   return {
-    merchantsByNormalizedName: new Map(merchants.map((m) => [m.normalizedName, m])),
+    merchantsByNormalizedName: merchantIndex(merchants),
     categoryIdByName: new Map(categories.map((c) => [normalizeText(c.name), c.id])),
     rules: prepareRules(rules),
   }

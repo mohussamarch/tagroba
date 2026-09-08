@@ -1,3 +1,4 @@
+import { merchantIndex } from '../../domain/merchantIndex'
 import { normalizeText } from '../../domain/normalize'
 import type { Category, ClassificationRule, Merchant } from '../../domain/entities/types'
 import type {
@@ -87,7 +88,7 @@ export async function loadCategorizeMaps(deps: {
     deps.rules.listAll(),
   ])
   return {
-    merchantsByNormalizedName: new Map(merchants.map((m) => [m.normalizedName, m])),
+    merchantsByNormalizedName: merchantIndex(merchants),
     categoryIdByName: new Map(categories.map((c) => [normalizeText(c.name), c.id])),
     rules,
   }

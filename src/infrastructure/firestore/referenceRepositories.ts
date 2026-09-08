@@ -118,7 +118,9 @@ export class FirestoreMerchantRepository implements MerchantRepository {
     const snap = await getDocs(
       query(this.col(), where('normalizedName', '==', normalizeText(name)), fbLimit(1)),
     )
-    return snap.empty ? null : (snap.docs[0].data() as Merchant)
+    if(!snap.empty) return snap.docs[0].data() as Merchant
+    const aliases=await getDocs(query(this.col(),where('aliases','array-contains',normalizeText(name)),fbLimit(1)))
+    return aliases.empty ? null : aliases.docs[0].data() as Merchant
   }
 
   async saveMany(merchants: readonly Merchant[]): Promise<void> {

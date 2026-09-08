@@ -225,7 +225,7 @@ export function AddTransactionSheet({
               onChange={(e) => setCategoryId(e.target.value)}
             >
               <option value="">بلا تصنيف</option>
-              {categories.map((c) => (
+              {categories.filter(c=>c.active).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>

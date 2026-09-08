@@ -1,3 +1,4 @@
+import { MerchantAliasEditor } from '../components/MerchantAliasEditor'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ErrorNotice } from '../components/ErrorNotice'
 import type { RuleMatchMode, Category } from '../../domain/entities/types'
@@ -191,6 +192,7 @@ export function RulesScreen({ user, categories, onClose }: Props) {
             </>
           ) : (
             <>
+              <MerchantAliasEditor merchants={merchants.map(r=>r.merchant)} busy={busy} onSave={(id,alias)=>run(()=>user.manageRules.addAlias(id,alias))}/>
               <p className="sheet__hint">
                 تصنيف التاجر هنا <strong>أقوى من كل القواعد</strong>. الاسم بيتغيّر للعرض
                 بس — الربط بعملياته القديمة بيفضل زي ما هو.

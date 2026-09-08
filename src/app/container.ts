@@ -1,3 +1,7 @@
+import { makeManageCategories } from '../application/useCases/manageCategories'
+import { makeReviewHistory } from '../application/useCases/reviewHistory'
+import { makeManageRecurring } from '../application/useCases/manageRecurring'
+import { FirestoreRecurringRepository } from '../infrastructure/firestore/recurringRepository'
 import { db } from '../infrastructure/firestore/firebase'
 import { FirebaseAuthAdapter } from '../infrastructure/firestore/FirebaseAuthAdapter'
 import {
@@ -85,6 +89,9 @@ export interface Container {
 }
 
 export interface UserContainer {
+  manageCategories: ReturnType<typeof makeManageCategories>
+  reviewHistory: ReturnType<typeof makeReviewHistory>
+  manageRecurring: ReturnType<typeof makeManageRecurring>
   /** يزرع المراجع الأولية عند أول دخول فقط — ARCHITECTURE.md §10.6. */
   seedUserReferences: () => Promise<SeedOutcome>
   loadHomeScreen: ReturnType<typeof makeLoadHomeScreen>
@@ -154,6 +161,9 @@ export function createContainer(): Container {
       }
 
       return {
+        manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
+        reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
+        manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),
         seedUserReferences: () =>
           makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
         loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
@@ -203,7 +213,7 @@ export function createContainer(): Container {
         wallets,
         setBudget: makeSetBudget({ budgets, uow, ids: new RandomIdGenerator(), clock: systemClock }),
         setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock: systemClock }),
-        loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
+        loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations, tags, transactionTags, merchants }),
         readPdfStatement: makeReadPdfStatement(),
         importStatement: makeImportStatement({
           txns,

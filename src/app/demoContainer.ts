@@ -1,3 +1,7 @@
+import { makeManageCategories } from '../application/useCases/manageCategories'
+import { makeReviewHistory } from '../application/useCases/reviewHistory'
+import { makeManageRecurring } from '../application/useCases/manageRecurring'
+import { MemoryRecurringRepository } from '../infrastructure/memory/memoryRecurringRepository'
 import {
   MemoryAllocationRepository,
   MemoryBudgetRepository,
@@ -123,6 +127,9 @@ export function createDemoContainer(): Container {
   const seedSource = { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
 
   const userContainer: UserContainer = {
+    manageCategories: makeManageCategories({categories,ids}),
+    reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
+    manageRecurring: makeManageRecurring({items:new MemoryRecurringRepository(),txns,categories,ids}),
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
@@ -139,7 +146,7 @@ export function createDemoContainer(): Container {
     wallets,
     setBudget: makeSetBudget({ budgets, uow, ids, clock }),
     setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock }),
-    loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations }),
+    loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations, tags, transactionTags, merchants }),
     importStatement: makeImportStatement({
       txns, sources, batches, merchants, categories, rules, uow, ids, clock,
     }),

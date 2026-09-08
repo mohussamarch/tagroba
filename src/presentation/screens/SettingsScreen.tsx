@@ -1,3 +1,4 @@
+import { InstallGuide } from '../components/InstallGuide'
 import { useState } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { WalletEditor } from '../components/WalletEditor'
@@ -117,6 +118,7 @@ export function SettingsScreen({
 
   return (
     <div className="settings">
+      <InstallGuide/>
       <section className="card" aria-label="المحافظ">
         <h2 className="card__title">المحافظ والرصيد الافتتاحي</h2>
         <p className="settings__hint">
@@ -185,8 +187,8 @@ export function SettingsScreen({
       <section className="card" aria-label="التصدير والنسخ الاحتياطي">
         <h2 className="card__title">التصدير والنسخة الاحتياطية</h2>
         <p className="settings__hint">
-          الملف بيتعمل على جهازك ومبيعدّيش على أي سيرفر. النسخة فيها كل حاجة
-          بمعرفاتها وعلاقاتها، فتقدر ترجّعها زي ما هي.
+          الملف بيتعمل على جهازك. النسخة الحالية تشمل العمليات والمحافظ والتصنيفات والقواعد والتجار والميزانيات.
+          لا تشمل حاليًا الأشخاص والديون والاستثمارات والوسوم والاشتراكات، فلا تعتمد عليها لاستعادة الحساب بالكامل.
         </p>
         <div className="settings__row">
           <button type="button" className="btn" onClick={runBackup} disabled={working}>

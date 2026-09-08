@@ -1,3 +1,5 @@
+import { merchantIndex } from '../../domain/merchantIndex'
+import { normalizeText } from '../../domain/normalize'
 import { computePeriodTotals } from '../../domain/ledger'
 import { savingsRatePercent } from '../../domain/formatMoney'
 import { buildPeriod, formatPeriodRange, periodForDate, type Period } from '../../domain/period'
@@ -5,6 +7,9 @@ import type { Category, Transaction } from '../../domain/entities/types'
 import type {
   AllocationRepository,
   CategoryRepository,
+  MerchantRepository,
+  TagRepository,
+  TransactionTagRepository,
   TransactionRepository,
 } from '../ports/repositories'
 
@@ -22,6 +27,8 @@ export interface TransactionsScreenData {
   periodRange: string
   transactions: Transaction[]
   categories: Category[]
+  tagNamesByTransaction: Record<string,string[]>
+  merchantNamesByTransaction: Record<string,string[]>
 
   /**
    * المبالغ **قابلة لأن تكون null**، وهذا مقصود.
@@ -47,6 +54,9 @@ export interface LoadTransactionsScreenDeps {
   txns: TransactionRepository
   categories: CategoryRepository
   allocations: AllocationRepository
+  merchants?: MerchantRepository
+  tags?: TagRepository
+  transactionTags?: TransactionTagRepository
 }
 
 export function makeLoadTransactionsScreen(deps: LoadTransactionsScreenDeps) {
@@ -66,9 +76,23 @@ export function makeLoadTransactionsScreen(deps: LoadTransactionsScreenDeps) {
       deps.categories.listAll(),
     ])
 
-    const allocations = await deps.allocations.listByTransactionIds(transactions.map((t) => t.id))
+    const ids = transactions.map(t=>t.id)
+    const [allocations,tags,links] = await Promise.all([
+      deps.allocations.listByTransactionIds(ids),deps.tags?.listAll()??[],deps.transactionTags?.listByTransactionIds(ids)??[]])
+    const tagNames = new Map(tags.map(t=>[t.id,t.displayName]))
+    const tagNamesByTransaction: Record<string,string[]> = {}
+    for (const link of links) {
+      const name = tagNames.get(link.tagId)
+      if (name) tagNamesByTransaction[link.transactionId] = [...new Set([...(tagNamesByTransaction[link.transactionId]??[]),name])]
+    }
     const totals = computePeriodTotals(transactions, allocations)
 
+    const merchantMap=merchantIndex(await deps.merchants?.listAll()??[])
+    const merchantNamesByTransaction:Record<string,string[]>={}
+    for(const t of transactions) {
+      const m=merchantMap.get(normalizeText(t.rawMerchantName??''))
+      if(m) merchantNamesByTransaction[t.id]=[m.displayName,...(m.aliases??[])]
+    }
     const unclassifiedCount = transactions.filter((t) => t.economicKind === 'unclassified').length
     const totalCount = transactions.length
 
@@ -78,6 +102,8 @@ export function makeLoadTransactionsScreen(deps: LoadTransactionsScreenDeps) {
     return {
       period,
       periodRange: formatPeriodRange(period),
+      tagNamesByTransaction,
+      merchantNamesByTransaction,
       transactions,
       categories,
       incomeMinor: allUnknown ? null : totals.incomeMinor,

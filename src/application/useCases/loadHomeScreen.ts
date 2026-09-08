@@ -174,8 +174,10 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
       categories,
       latest,
       transactionCount: transactions.length,
-      allowance: dailyAllowance(budgetLimitMinor, totals.personalExpenseMinor, today, period),
-      forecast: forecastPeriodSpend(totals.personalExpenseMinor, today, period),
+      allowance: { ...dailyAllowance(budgetLimitMinor, totals.personalExpenseMinor, today, period),
+        ...(allUnknown || partial ? { amountMinor:null, reason:'المصروف لسه ناقص تصنيف؛ حدّد أنواع العمليات قبل حساب المتاح اليومي.' } : {}) },
+      forecast: { ...forecastPeriodSpend(totals.personalExpenseMinor, today, period),
+        ...(allUnknown || partial ? { projectedMinor:null, caveat:'التوقع غير متاح لحد ما تحدّد أنواع العمليات؛ المصروف الحالي ناقص.' } : {}) },
       coverage,
       recentPeriods,
     }

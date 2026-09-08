@@ -119,7 +119,7 @@ export function TransactionSheet({
               }}
             >
               <option value="">بلا تصنيف</option>
-              {categories.map((c) => (
+              {categories.filter(c=>c.active||c.id===categoryId).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>

@@ -44,6 +44,8 @@ export function TransactionsScreen({
   onRetry,
 }: Props) {
   const [rawQuery, setRawQuery] = useState('')
+  const [tagFilter,setTagFilter] = useState('')
+  const availableTags=[...new Set(Object.values(data?.tagNamesByTransaction??{}).flat())].sort()
   const [debounced, setDebounced] = useState('')
 
   // بحث مؤجل قصير — spec/04
@@ -60,20 +62,21 @@ export function TransactionsScreen({
   const searchable: SearchableTransaction[] = useMemo(
     () =>
       (data?.transactions ?? []).map((transaction) => {
-        const item: SearchableTransaction = { transaction }
+        const item: SearchableTransaction = { transaction, tagNames:data?.tagNamesByTransaction?.[transaction.id]??[],merchantNames:data?.merchantNamesByTransaction?.[transaction.id]??[] }
         const name = transaction.categoryId
           ? categoryNameById.get(transaction.categoryId)
           : undefined
         if (name) item.categoryName = name
         return item
       }),
-    [data?.transactions, categoryNameById],
+    [data?.transactions, data?.tagNamesByTransaction, data?.merchantNamesByTransaction, categoryNameById],
   )
 
   const visible = useMemo(() => {
-    if (!debounced.trim()) return searchable.map((s) => s.transaction)
-    return searchTransactions(searchable, parseQuery(debounced)).map((h) => h.transaction)
-  }, [searchable, debounced])
+    const filtered = searchable.filter(s=>!tagFilter||s.tagNames?.includes(tagFilter))
+    if (!debounced.trim()) return filtered.map((s) => s.transaction)
+    return searchTransactions(filtered, parseQuery(debounced)).map((h) => h.transaction)
+  }, [searchable, debounced, tagFilter])
 
   const query = useMemo(() => parseQuery(debounced), [debounced])
 
@@ -81,6 +84,7 @@ export function TransactionsScreen({
     <div className="txns">
       <PeriodPicker period={period} payday={payday} onChange={onPeriodChange} />
 
+      <label className="sheet__field">تصفية بالوسم<select className="sheet__input" value={tagFilter} onChange={e=>setTagFilter(e.target.value)}><option value="">كل الوسوم</option>{availableTags.map(t=><option key={t}>{t}</option>)}{tagFilter&&!availableTags.includes(tagFilter)&&<option>{tagFilter}</option>}</select></label>
       <div className="search">
         <input
           className="search__input"

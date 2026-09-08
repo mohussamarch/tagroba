@@ -46,7 +46,8 @@ export class MemoryMerchantRepository implements MerchantRepository {
   }
   async findByNormalizedName(normalizedName: string): Promise<Merchant | null> {
     const key = normalizeText(normalizedName)
-    const found = [...this.items.values()].find((m) => m.normalizedName === key)
+    const all=[...this.items.values()]
+    const found = all.find(m=>m.normalizedName===key) ?? all.find(m=>m.aliases?.includes(key))
     return found ? clone(found) : null
   }
   async saveMany(merchants: readonly Merchant[]): Promise<void> {

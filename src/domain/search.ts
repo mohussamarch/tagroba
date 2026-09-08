@@ -21,6 +21,7 @@ export interface SearchableTransaction {
   transaction: Transaction
   categoryName?: string
   tagNames?: readonly string[]
+  merchantNames?: readonly string[]
 }
 
 export interface SearchHit {
@@ -94,7 +95,7 @@ export function searchTransactions(
     const matched: SearchMatchField[] = []
 
     if (needleNormalized) {
-      if (textMatches(t.rawMerchantName, needleNormalized, needleCompact)) matched.push('merchant')
+      if (textMatches(t.rawMerchantName, needleNormalized, needleCompact) || item.merchantNames?.some(n=>textMatches(n,needleNormalized,needleCompact))) matched.push('merchant')
       if (textMatches(t.rawDescription, needleNormalized, needleCompact)) matched.push('description')
       if (textMatches(t.note, needleNormalized, needleCompact)) matched.push('note')
       if (textMatches(item.categoryName, needleNormalized, needleCompact)) matched.push('category')
