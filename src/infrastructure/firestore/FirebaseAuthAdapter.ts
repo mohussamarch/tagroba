@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core'
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -45,11 +46,13 @@ function toAuthUser(user: User): AuthUser {
 }
 
 export class FirebaseAuthAdapter implements AuthPort {
+  readonly googleUnavailableReason = Capacitor.isNativePlatform() ? "دخول جوجل لسه قيد التجهيز في نسخة أندرويد. الدخول بالإيميل وكلمة السر متاح." : undefined
   observe(callback: (user: AuthUser | null) => void): () => void {
     return onAuthStateChanged(auth, (user) => callback(user ? toAuthUser(user) : null))
   }
 
   async signInWithGoogle(): Promise<AuthUser> {
+    if (this.googleUnavailableReason) throw new AuthError(this.googleUnavailableReason, "app/native-google-pending", "form")
     await authPersistenceReady
     try {
       const result = await signInWithPopup(auth, googleProvider)

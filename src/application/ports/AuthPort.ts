@@ -23,6 +23,7 @@ export class AuthError extends Error {
 }
 
 export interface AuthPort {
+  readonly googleUnavailableReason?: string
   /** يراقب حالة الدخول. يرجّع دالة إلغاء الاشتراك. */
   observe(callback: (user: AuthUser | null) => void): () => void
   signInWithGoogle(): Promise<AuthUser>

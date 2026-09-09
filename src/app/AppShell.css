@@ -12,7 +12,7 @@
   background: var(--c-background);
   border-bottom: 1px solid var(--c-border);
   padding: var(--s-page);
-  padding-top: max(var(--s-page), env(safe-area-inset-top));
+  padding-top: max(var(--s-page), var(--safe-area-inset-top, env(safe-area-inset-top)));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -51,7 +51,7 @@
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
 }
 
 .tab {

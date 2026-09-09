@@ -2,10 +2,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  build: { outDir: mode === "android" ? "dist-android" : "dist" },
   plugins: [
     react(),
     VitePWA({
+      disable: mode === "android",
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
@@ -43,4 +45,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

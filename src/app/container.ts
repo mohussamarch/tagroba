@@ -1,3 +1,5 @@
+import { saveTextFile } from '../infrastructure/saveTextFile'
+import { coalesceReads } from '../infrastructure/coalesceReads'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
 import { makeManageRecurring } from '../application/useCases/manageRecurring'
@@ -89,6 +91,7 @@ export interface Container {
 }
 
 export interface UserContainer {
+  saveTextFile: typeof saveTextFile
   manageCategories: ReturnType<typeof makeManageCategories>
   reviewHistory: ReturnType<typeof makeReviewHistory>
   manageRecurring: ReturnType<typeof makeManageRecurring>
@@ -127,17 +130,17 @@ export function createContainer(): Container {
     auth: new FirebaseAuthAdapter(),
 
     forUser(uid: string): UserContainer {
-      const txns = new FirestoreTransactionRepository(db, uid)
+      const txns = coalesceReads(new FirestoreTransactionRepository(db, uid))
       const sources = new FirestoreSourceRecordRepository(db, uid)
       const batches = new FirestoreImportBatchRepository(db, uid)
       const uow = new FirestoreUnitOfWork()
 
       // المراجع محفوظة في تخزين المستخدم فتبقى **قابلة للتحرير** (spec/05)
-      const categories = new FirestoreCategoryRepository(db, uid)
+      const categories = coalesceReads(new FirestoreCategoryRepository(db, uid))
       const merchants = new FirestoreMerchantRepository(db, uid)
       const rules = new FirestoreRuleRepository(db, uid)
       // الأشخاص والديون محفوظون في تخزين المستخدم (المرحلة الخامسة)
-      const allocations = new FirestoreAllocationRepository(db, uid)
+      const allocations = coalesceReads(new FirestoreAllocationRepository(db, uid))
       const people = new FirestorePersonRepository(db, uid)
       const obligations = new FirestoreObligationRepository(db, uid)
       const settlements = new FirestoreSettlementRepository(db, uid)
@@ -161,6 +164,7 @@ export function createContainer(): Container {
       }
 
       return {
+        saveTextFile,
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),

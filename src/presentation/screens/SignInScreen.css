@@ -3,8 +3,8 @@
   display: grid;
   place-items: center;
   padding: var(--s-page);
-  padding-top: max(var(--s-page), env(safe-area-inset-top));
-  padding-bottom: max(var(--s-page), env(safe-area-inset-bottom));
+  padding-top: max(var(--s-page), var(--safe-area-inset-top, env(safe-area-inset-top)));
+  padding-bottom: max(var(--s-page), var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
 }
 
 .signin__card {

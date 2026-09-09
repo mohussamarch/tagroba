@@ -47,15 +47,6 @@ export function SettingsScreen({
 
   const working = busy !== 'none'
 
-  function download(content: string, filename: string, type: string) {
-    const blob = new Blob([content], { type })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = filename
-    anchor.click()
-    URL.revokeObjectURL(url)
-  }
 
   async function runReconcile() {
     if (!walletId) return
@@ -83,7 +74,7 @@ export function SettingsScreen({
         payday,
         exportedAt: new Date().toISOString(),
       })
-      download(
+      await user.saveTextFile(
         JSON.stringify(file, null, 2),
         `masroufy-backup-${today}.json`,
         'application/json',
@@ -107,7 +98,7 @@ export function SettingsScreen({
         to: today,
         payday,
       })
-      download(csv, `masroufy-${today}.csv`, 'text/csv;charset=utf-8')
+      await user.saveTextFile(csv, `masroufy-${today}.csv`, 'text/csv;charset=utf-8')
       setDone('اتنزّل ملف CSV. تقدر تفتحه في Excel أو تعيد استيراده.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))

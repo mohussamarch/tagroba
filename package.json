@@ -9,15 +9,20 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "android:sync": "tsc -b && vite build --mode android && cap sync android",
+    "android:open": "cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
     "firebase": "^11.10.0",
     "pdfjs-dist": "^4.10.38",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

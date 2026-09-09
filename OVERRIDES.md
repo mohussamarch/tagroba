@@ -262,3 +262,6 @@ Firestore)، فقائمة الأسهم **ثابتة في السكربت**. أي 
 لا تُعتبر النسخة الاحتياطية شاملة حتى تُستكمل علاقات الأشخاص والأصول والوسوم
 والاشتراكات. لا تُصنف تجربة المتصفح كتجربة تثبيت فعلية على هاتف المالك.
 
+
+## 15. Android request (2026-09-10)
+The user explicitly requested an APK for Samsung S24 Ultra and future SMS permissions. This supersedes the earlier web-only delivery decision. Reuse the React/domain implementation with Capacitor 8 and bundled assets. Keep web delivery available. SMS is future work, not enabled by adding an APK shell. First Android trial supports email/password; native Google login remains pending and is disclosed in the UI.

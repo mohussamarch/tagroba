@@ -11,7 +11,7 @@
   z-index: 10;
   background: var(--c-background);
   padding: var(--s-page);
-  padding-top: max(var(--s-page), env(safe-area-inset-top));
+  padding-top: max(var(--s-page), var(--safe-area-inset-top, env(safe-area-inset-top)));
   border-bottom: 1px solid var(--c-border);
   display: grid;
   gap: var(--s-section);
@@ -114,7 +114,7 @@
 .screen__body {
   flex: 1;
   padding: var(--s-page);
-  padding-bottom: max(var(--s-page), env(safe-area-inset-bottom));
+  padding-bottom: max(var(--s-page), var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
   display: grid;
   gap: var(--s-section);
   align-content: start;

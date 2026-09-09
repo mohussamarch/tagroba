@@ -28,3 +28,11 @@ coverage/
 
 # مخرجات بناء TypeScript
 *.tsbuildinfo
+
+# Android generated assets and signing material
+dist-android/
+*.apk
+*.aab
+*.jks
+*.keystore
+android/local.properties

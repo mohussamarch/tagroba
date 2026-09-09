@@ -532,3 +532,25 @@ PATH="/c/Program Files/nodejs:$PATH" npm run typecheck
 النشر اكتمل، وطلب HTTP أعاد 200 وملف index-Bem5kpeV.js المطابق للبناء المختبر.
 437 اختبارًا ناجحًا؛ لا تغيير لقواعد Firestore ولا بيانات المستخدم أثناء النشر.
 التثبيت على جهاز S24 Ultra ما زال يحتاج تجربة المالك.
+## 15. Android trial and loading — 2026-09-10
+
+User asked for an APK and future SMS access. Capacitor 8 Android project now exists.
+`npm run android:sync` passes. Gradle `assembleDebug` succeeded (93 tasks).
+APK signature v2 verified; app ID app.masroufy.personal; min SDK24, target36.
+APK includes local index + PDF reader, no service worker, no statement/CSV/.env filenames.
+Only Internet and AndroidX private receiver permission declared; SMS is not implemented.
+No device listed by adb: runtime/physical S24 validation has NOT occurred.
+Android Google sign-in is unfinished and explicitly explained in the sign-in screen;
+email/password is available. Native export uses ACTION_CREATE_DOCUMENT through LocalFilesPlugin.
+See ANDROID.md for rebuild instructions and limitations. Debug signing is for trial only.
+
+Loading fixes: per-screen loading/errors, retryable shared startup barrier, stale period response guards,
+parallel historical period reads, per-user matching in-flight repository requests coalesced with cloned results.
+No change to money logic or TTL cache. All 442 tests passed after app changes; an additional historical
+parallel-start regression also passed (443 total test cases). Typecheck and web production build pass.
+No mobile speed measurement is claimed. Web build exists locally; this slice was not deployed to Firebase.
+
+Build tools are outside the repo under C:/Users/atgs0/Documents/Codex/android-build-tools:
+Java21, SDK36, Gradle8.14.3; Android Gradle plugin also fetched build-tools35 automatically.
+Set JAVA_HOME to the extracted JDK folder, ANDROID_HOME to its sdk folder, and GRADLE_USER_HOME
+to its gradle folder before invoking android/gradlew.bat. Do not commit signing keys or local SDK paths.

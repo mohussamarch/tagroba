@@ -119,10 +119,10 @@ export function SignInScreen({ auth }: Props) {
           </button>
         </header>
 
-        <button type="button" className="signin__google" onClick={onGoogle} disabled={working}>
+        {auth.googleUnavailableReason ? <p role="note">{auth.googleUnavailableReason}</p> : <button type="button" className="signin__google" onClick={onGoogle} disabled={working}>
           <GoogleMark />
           {busy === 'google' ? 'بنفتح جوجل…' : 'الدخول بحساب جوجل'}
-        </button>
+        </button>}
 
         <div className="signin__divider">أو</div>
 

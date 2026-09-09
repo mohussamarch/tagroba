@@ -42,7 +42,7 @@
 
 .sheet__body {
   padding: var(--s-card);
-  padding-bottom: max(var(--s-card), env(safe-area-inset-bottom));
+  padding-bottom: max(var(--s-card), var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
   overflow-y: auto;
   display: grid;
   gap: var(--s-section);

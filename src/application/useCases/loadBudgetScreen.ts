@@ -103,10 +103,14 @@ export function makeLoadBudgetScreen(deps: LoadBudgetScreenDeps) {
     const history: CompletedPeriodSpend[] = []
     const historyByCategory = new Map<Id, Halalas[]>()
 
-    for (let i = 1; i <= HISTORY_PERIODS; i++) {
+    const historyRows = await Promise.all(Array.from({ length: HISTORY_PERIODS }, async (_, index) => {
+      const i = index + 1
       const p = shiftPeriod(period, -i, payday)
       const rows = await deps.txns.listByDateRange(p.start, p.end)
       const rowAllocations = await deps.allocations.listByTransactionIds(rows.map((r) => r.id))
+      return { p, rows, rowAllocations }
+    }))
+    for (const { p, rows, rowAllocations } of historyRows) {
       const t = computePeriodTotals(rows, rowAllocations)
       const c = assessCoverage(rows)
 

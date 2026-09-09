@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">مصروفي</string>
+    <string name="title_activity_main">مصروفي</string>
+    <string name="package_name">app.masroufy.personal</string>
+    <string name="custom_url_scheme">app.masroufy.personal</string>
+</resources>

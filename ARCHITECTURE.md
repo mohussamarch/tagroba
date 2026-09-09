@@ -990,3 +990,7 @@ orderBy('occurredAt'), orderBy('sourceOrder')   // ← يفرض فهرسًا م�
   تثبيت S24 Ultra والتشغيل دون اتصال ودورة تحديث نسخة مثبتة غير مختبرة.
   الكود محلي؛ لم يتم النشر أو تغيير بيانات المستخدم على Firestore.
 
+
+## 21. Android and loading (2026-09-10)
+Capacitor core/android/cli 8 added to reuse the existing application as an installable Android package and support native adapters. Distinct dist-android build disables the PWA service worker. No hosted server URL is embedded. LocalFilesPlugin uses ACTION_CREATE_DOCUMENT; saveTextFile is injected by the composition root into both containers. Firebase remains authoritative; no new financial cache or TTL was added.
+Screen results now publish independently after shared, retryable bootstrap/recovery. Date changes reject stale screen results. Home/budget historical windows load concurrently. coalesceReads shares matching in-flight reads per repository/user, clones results, removes successes/failures and invalidates on writes. Domain calculations are unchanged. Native Google auth and SMS are explicitly unfinished; see ANDROID.md.

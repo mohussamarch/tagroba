@@ -102,8 +102,8 @@ export function AppShell({
         {tab === 'home' && (
           <HomeScreen
             data={app.home}
-            loading={app.loading}
-            error={app.error}
+            loading={app.pending.home}
+            error={app.errors.home}
             payday={app.payday}
             amountsHidden={amountsHidden}
             onPeriodChange={app.setPeriod}
@@ -116,8 +116,8 @@ export function AppShell({
         {tab === 'budget' && (
           <BudgetScreen
             data={app.budgetData}
-            loading={app.loading}
-            error={app.error}
+            loading={app.pending.budget}
+            error={app.errors.budget}
             period={app.period}
             payday={app.payday}
             amountsHidden={amountsHidden}
@@ -144,8 +144,8 @@ export function AppShell({
 
         {tab === 'transactions' && (
           <TransactionsScreen
-            loading={app.loading}
-            error={app.error}
+            loading={app.pending.transactions}
+            error={app.errors.transactions}
             data={app.txnData}
             amountsHidden={amountsHidden}
             period={app.period}
@@ -162,8 +162,8 @@ export function AppShell({
           <PeopleScreen
             user={app.user}
             rows={app.people}
-            loading={app.loading}
-            error={app.error}
+            loading={app.pending.people}
+            error={app.errors.people}
             amountsHidden={amountsHidden}
             onChanged={reload}
             onRetry={reload}
@@ -174,8 +174,8 @@ export function AppShell({
           <InvestmentScreen
             user={app.user}
             data={app.portfolio}
-            loading={app.loading}
-            error={app.error}
+            loading={app.pending.portfolio}
+            error={app.errors.portfolio}
             amountsHidden={amountsHidden}
             onChanged={reload}
             onRetry={reload}

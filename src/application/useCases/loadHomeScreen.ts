@@ -137,8 +137,7 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
       .slice(0, LATEST_COUNT)
 
     // آخر ست فترات — كل واحدة استعلام محدود بمداها (ARCHITECTURE.md §5.6)
-    const recentPeriods: PeriodSummary[] = []
-    for (let i = 0; i < RECENT_PERIOD_COUNT; i++) {
+    const recentPeriods: PeriodSummary[] = await Promise.all(Array.from({ length: RECENT_PERIOD_COUNT }, async (_, i) => {
       const p = i === 0 ? period : shiftPeriod(period, -i, payday)
       const rows =
         i === 0 ? transactions : await deps.txns.listByDateRange(p.start, p.end)
@@ -147,13 +146,13 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
       const t = computePeriodTotals(rows, rowAllocations)
       const c = assessCoverage(rows)
       const unknown = c.total > 0 && c.unclassified === c.total
-      recentPeriods.push({
+      return {
         period: p,
         expenseMinor: unknown ? null : t.personalExpenseMinor,
         incomeMinor: unknown ? null : t.incomeMinor,
         transactionCount: rows.length,
-      })
-    }
+      }
+    }))
 
     // التأكد أن التاريخ صالح قبل استعماله في التوقع والمتاح اليومي
     parseIsoDate(today)
