@@ -1,4 +1,4 @@
-import { hashContent } from '../../domain/dedupe'
+import { hashContent, importFingerprint } from '../../domain/dedupe'
 import type { Id, ImportBatch, SourceRecord, Transaction } from '../../domain/entities/types'
 import { runPreview } from './importPreview'
 import type {
@@ -72,7 +72,7 @@ export function makeImportStatement(deps: ImportStatementDeps) {
    * المرحلة الثانية: الالتزام الذري.
    * `selectedLineNumbers` تسمح بتضمين متشابه أو استبعاد جديد **بقرار صريح**.
    */
-  async function commit(
+  async function commitPrepared(
     request: ImportRequest,
     previewResult: ImportPreview,
     selectedLineNumbers?: readonly number[],
@@ -160,6 +160,30 @@ export function makeImportStatement(deps: ImportStatementDeps) {
 
       return { ...batch, state: 'committed' }
     })
+  }
+
+
+  let committing = false
+  async function commit(request:ImportRequest, previous:ImportPreview, selected?:readonly number[]):Promise<ImportBatch> {
+    if (committing) throw new Error('فيه استيراد بيتحفظ حاليًا؛ استنى اكتماله')
+    committing = true
+    try {
+      if (importFingerprint(request.content, request.accountIdentity) !== previous.fileHash || request.accountIdentity !== previous.accountIdentity) {
+        throw new Error('بيانات الاستيراد اتغيرت؛ اعمل معاينة جديدة')
+      }
+      const fresh = await preview(request)
+      if (fresh.previousBatch) return fresh.previousBatch
+      const selection = selected ?? previous.lines.filter(line=>line.selectedByDefault).map(line=>line.row.lineNumber)
+      for (const number of selection) {
+        const before = previous.lines.find(line=>line.row.lineNumber===number)
+        const now = fresh.lines.find(line=>line.row.lineNumber===number)
+        if (!before || !now || JSON.stringify(before.row)!==JSON.stringify(now.row) || now.state!==before.state || now.matchedTransactionId!==before.matchedTransactionId) {
+          throw new Error('فيه بيانات اتغيرت بعد المعاينة؛ اعمل معاينة جديدة علشان نمنع التكرار')
+        }
+        if (now.state === 'duplicate' || now.state === 'invalid') throw new Error('العملية المكررة أو غير الصالحة مش قابلة للإضافة')
+      }
+      return await commitPrepared(request, fresh, selection)
+    } finally { committing = false }
   }
 
   return { preview, commit }

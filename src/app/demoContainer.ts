@@ -1,3 +1,5 @@
+import { makeReadBankSms } from '../application/useCases/readBankSms'
+import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
@@ -128,6 +130,7 @@ export function createDemoContainer(): Container {
   const seedSource = { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
 
   const userContainer: UserContainer = {
+    readBankSms: makeReadBankSms({ available: false, read: async () => ({messages:[],truncated:false}) }, parseBankSms),
     saveTextFile,
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),

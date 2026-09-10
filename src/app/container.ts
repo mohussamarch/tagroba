@@ -1,3 +1,6 @@
+import { makeReadBankSms } from '../application/useCases/readBankSms'
+import { androidBankSms } from '../infrastructure/androidBankSms'
+import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { coalesceReads } from '../infrastructure/coalesceReads'
 import { makeManageCategories } from '../application/useCases/manageCategories'
@@ -91,6 +94,7 @@ export interface Container {
 }
 
 export interface UserContainer {
+  readBankSms: ReturnType<typeof makeReadBankSms>
   saveTextFile: typeof saveTextFile
   manageCategories: ReturnType<typeof makeManageCategories>
   reviewHistory: ReturnType<typeof makeReviewHistory>
@@ -164,6 +168,7 @@ export function createContainer(): Container {
       }
 
       return {
+        readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
         saveTextFile,
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),

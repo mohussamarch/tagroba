@@ -1,3 +1,4 @@
+import { SmsImportFlow } from '../presentation/screens/SmsImportFlow'
 import { CategoriesScreen } from '../presentation/screens/CategoriesScreen'
 import { HistoryReviewScreen } from '../presentation/screens/HistoryReviewScreen'
 import { RecurringScreen } from '../presentation/screens/RecurringScreen'
@@ -23,9 +24,7 @@ import { useAppData } from './useAppData'
 import type { Transaction } from '../domain/entities/types'
 import type { Container } from './container'
 import './AppShell.css'
-
 type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings'
-
 const TAB_TITLES: Record<Tab, string> = {
   home: 'مصروفي',
   budget: 'الميزانية',
@@ -34,7 +33,6 @@ const TAB_TITLES: Record<Tab, string> = {
   invest: 'الاستثمار',
   settings: 'الإعدادات',
 }
-
 /** قشرة التطبيق بعد الدخول: التنقل والأوراق. التحميل في `useAppData`. */
 export function AppShell({
   container,
@@ -47,12 +45,12 @@ export function AppShell({
 }) {
   const app = useAppData(container, uid)
   const { theme, toggleTheme } = useTheme()
-
   const [tab, setTab] = useState<Tab>('home')
   const [amountsHidden, setAmountsHidden] = useState(false)
   const [addMenuOpen, setAddMenuOpen] = useState(false)
   const [addTxOpen, setAddTxOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
+  const [smsOpen, setSmsOpen] = useState(false)
   const [kindsOpen, setKindsOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [linking, setLinking] = useState<Transaction | null>(null)
@@ -62,10 +60,8 @@ export function AppShell({
   const [recurringOpen,setRecurringOpen] = useState(false)
   const [historyOpen,setHistoryOpen] = useState(false)
   const [categoriesOpen,setCategoriesOpen] = useState(false)
-
   const reload = () => void app.reload()
   const unseenCount = app.notifications?.unseen.length ?? 0
-
   return (
     <div className="shell">
       <ShellHeader
@@ -79,7 +75,6 @@ export function AppShell({
         onToggleTheme={toggleTheme}
         onSignOut={onSignOut}
       />
-
       <main className="shell__body">
         {tab === 'settings' && <button className="btn btn--quiet" onClick={()=>setCategoriesOpen(true)}>التصنيفات وألوانها</button>}
         {tab === 'transactions' && <button className="btn btn--quiet" onClick={()=>setHistoryOpen(true)}>مراجعة وتصنيف العمليات القديمة</button>}
@@ -98,7 +93,6 @@ export function AppShell({
             </button>
           </div>
         )}
-
         {tab === 'home' && (
           <HomeScreen
             data={app.home}
@@ -112,7 +106,6 @@ export function AppShell({
             onFixKinds={() => setKindsOpen(true)}
           />
         )}
-
         {tab === 'budget' && (
           <BudgetScreen
             data={app.budgetData}
@@ -141,7 +134,6 @@ export function AppShell({
             onRetry={reload}
           />
         )}
-
         {tab === 'transactions' && (
           <TransactionsScreen
             loading={app.pending.transactions}
@@ -157,7 +149,6 @@ export function AppShell({
             onRetry={reload}
           />
         )}
-
         {tab === 'people' && (
           <PeopleScreen
             user={app.user}
@@ -169,7 +160,6 @@ export function AppShell({
             onRetry={reload}
           />
         )}
-
         {tab === 'invest' && (
           <InvestmentScreen
             user={app.user}
@@ -181,7 +171,6 @@ export function AppShell({
             onRetry={reload}
           />
         )}
-
         {tab === 'settings' && (
           <SettingsScreen
             user={app.user}
@@ -194,12 +183,10 @@ export function AppShell({
           />
         )}
       </main>
-
       {/* الشريط السفلي — spec/01 */}
       <ShellTabs tab={tab} onChange={setTab}/>
-
       {addMenuOpen && (
-        <AddMenu
+        <AddMenu onSms={() => { setAddMenuOpen(false); setSmsOpen(true) }}
           onClose={() => setAddMenuOpen(false)}
           onAddTransaction={() => {
             setAddMenuOpen(false)
@@ -211,7 +198,6 @@ export function AppShell({
           }}
         />
       )}
-
       {addTxOpen && (
         <AddTransactionSheet
           user={app.user}
@@ -225,7 +211,7 @@ export function AppShell({
           }}
         />
       )}
-
+      {smsOpen && <SmsImportFlow user={app.user} wallets={app.wallets} today={app.today} onClose={()=>setSmsOpen(false)} onImported={()=>{setSmsOpen(false);void app.reload()}}/>}
       {importOpen && (
         <ImportSheet
           user={app.user}
@@ -237,7 +223,6 @@ export function AppShell({
           }}
         />
       )}
-
       {opened && (
         <TransactionSheet
           user={app.user}
@@ -251,11 +236,9 @@ export function AppShell({
           }}
         />
       )}
-
       {categoriesOpen && <CategoriesScreen user={app.user} onClose={()=>setCategoriesOpen(false)} onChanged={reload}/>}
       {historyOpen && <HistoryReviewScreen user={app.user} today={app.today} categories={app.home?.categories??[]} onClose={()=>setHistoryOpen(false)} onChanged={reload}/>}
       {recurringOpen && <RecurringScreen user={app.user} today={app.today} hidden={amountsHidden} onClose={()=>setRecurringOpen(false)}/>}
-
       {rulesOpen && (
         <RulesScreen
           user={app.user}
@@ -263,7 +246,6 @@ export function AppShell({
           onClose={() => setRulesOpen(false)}
         />
       )}
-
       {linking && (
         <LinkPersonSheet
           user={app.user}
@@ -276,7 +258,6 @@ export function AppShell({
           }}
         />
       )}
-
       {notifOpen && (
         <NotificationsSheet
           user={app.user}
@@ -285,7 +266,6 @@ export function AppShell({
           onSeen={reload}
         />
       )}
-
       {kindsOpen && app.txnData && (
         <KindsSheet
           user={app.user}

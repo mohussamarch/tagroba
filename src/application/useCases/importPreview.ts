@@ -6,6 +6,7 @@ import {
   buildDedupeIndex,
   classifyCandidate,
   hashContent,
+  importFingerprint,
   type DedupeCandidate,
   type ExistingRecord,
 } from '../../domain/dedupe'
@@ -69,6 +70,7 @@ async function loadExisting(
     const txn = byId.get(record.transactionId)
     if (!txn) continue
     existing.push({
+      smsSource: record.sourceReference?.startsWith("SMS:") ?? false,
       accountIdentity: record.accountIdentity,
       sourceReference: record.sourceReference,
       date: txn.occurredAt,
@@ -87,10 +89,17 @@ export async function runPreview(
   deps: ImportStatementDeps,
   request: ImportRequest,
 ): Promise<ImportPreview> {
-  const fileHash = hashContent(request.content)
+  const fileHash = importFingerprint(request.content, request.accountIdentity)
 
   // ─── الدرجة ١: بصمة ملف سبق استيراده ───
-  const previousBatch = await deps.batches.findByFileHash(fileHash)
+  let previousBatch = await deps.batches.findByFileHash(fileHash)
+  if (!previousBatch) {
+    const legacy = await deps.batches.findByFileHash(hashContent(request.content))
+    if (legacy) {
+      const records = await deps.sources.listByBatch(legacy.id)
+      if (records.length && records.every(record => record.accountIdentity === request.accountIdentity)) previousBatch = legacy
+    }
+  }
 
   /*
    * الصفوف الجاهزة (مسار الـPDF) بتتخطى قارئ الـCSV وبس — كل اللي بعد
@@ -109,7 +118,7 @@ export async function runPreview(
   const seenInBatch = new Map<string, number>()
 
   for (const row of outcome.rows) {
-    const candidate = toCandidate(row, request.accountIdentity)
+    const candidate = { ...toCandidate(row, request.accountIdentity), smsSource: request.sourceType === "sms" }
     let verdict = classifyCandidate(candidate, index)
 
     const ref = candidate.sourceReference?.trim()

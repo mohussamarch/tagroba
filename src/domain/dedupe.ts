@@ -18,6 +18,7 @@ import type { IsoDate, MatchingState } from './entities/types'
 /** بصمة سطر واردة من الاستيراد. */
 export interface DedupeCandidate {
   /** نطاق تفرّد المرجع: مصدر + حساب. مرجع من حسابين مختلفين ليس تكرارًا. */
+  smsSource?: boolean
   accountIdentity: string
   sourceReference: string | null
   date: IsoDate
@@ -67,14 +68,18 @@ function diffFields(a: DedupeCandidate, b: DedupeCandidate): string[] {
 
 /** فهرس للمقارنة السريعة، يُبنى مرة قبل فحص الدفعة. */
 export interface DedupeIndex {
+  byAmountDay: Map<string, ExistingRecord[]>
   byReference: Map<string, ExistingRecord>
   byDetail: Map<string, ExistingRecord[]>
 }
 
 export function buildDedupeIndex(existing: readonly ExistingRecord[]): DedupeIndex {
+  const byAmountDay = new Map<string, ExistingRecord[]>()
   const byReference = new Map<string, ExistingRecord>()
   const byDetail = new Map<string, ExistingRecord[]>()
   for (const record of existing) {
+    const dayKey = amountDayKey(record)
+    byAmountDay.set(dayKey, [...(byAmountDay.get(dayKey) ?? []), record])
     const ref = referenceKey(record)
     if (ref) byReference.set(ref, record)
     const key = detailKey(record)
@@ -82,7 +87,7 @@ export function buildDedupeIndex(existing: readonly ExistingRecord[]): DedupeInd
     if (list) list.push(record)
     else byDetail.set(key, [record])
   }
-  return { byReference, byDetail }
+  return { byReference, byDetail, byAmountDay }
 }
 
 /**
@@ -117,10 +122,14 @@ export function classifyCandidate(
         conflictFields: differences,
       }
     }
+    const related = smsSimilarity(candidate, index)
+    if (related) return related
     // مرجع جديد بالكامل — لا يُفحص التشابه لأن المرجع دليل موثوق
     return { state: 'new', reason: 'مرجع جديد مش موجود قبل كده' }
   }
 
+  const related = smsSimilarity(candidate, index)
+  if (related) return related
   // ─── الدرجة ٤: بلا مرجع موثوق — تشابه يحتاج قرارًا، لا حذفًا ───
   const similar = index.byDetail.get(detailKey(candidate))
   if (similar && similar.length > 0) {
@@ -154,4 +163,18 @@ export function hashContent(content: string): string {
     hi = h
   }
   return (hi.toString(16).padStart(8, '0') + lo.toString(16).padStart(8, '0')).toUpperCase()
+}
+
+function amountDayKey(c:DedupeCandidate):string {
+ return [c.accountIdentity,c.date,c.amountMinor,c.direction].join('|')
+}
+function smsSimilarity(c:DedupeCandidate,index:DedupeIndex):DedupeVerdict|null {
+ const matches=index.byAmountDay.get(amountDayKey(c))??[]
+ const match=matches.find(r=>c.smsSource||r.smsSource)
+ if(!match)return null
+ return {state:'similar',matchedTransactionId:match.transactionId,reason:'فيه عملية بنفس اليوم والمبلغ والاتجاه في نفس المحفظة، وأحد المصدرين رسالة بنك. قد تكون نفس العملية باسم مختلف؛ غير مختارة للإضافة حتى تراجعها.'}
+}
+
+export function importFingerprint(content:string,accountIdentity:string):string {
+ return hashContent(JSON.stringify([accountIdentity,content]))
 }

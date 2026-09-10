@@ -1,3 +1,6 @@
+# Current status: Android 1.1 trial (versionCode 2)
+See HANDOVER section 16 for SMS implementation and verification limits. The original 1.0 notes below are historical. Use scripts/build-android.ps1 -PreviousApk <old-apk> for update compatibility verification.
+
 # Android trial build
 
 Date: 2026-09-10. User requested an installable Android APK for Samsung S24 Ultra.

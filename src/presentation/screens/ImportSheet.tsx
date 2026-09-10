@@ -12,6 +12,7 @@ import { StatementPicker } from '../components/StatementPicker'
 import './ImportSheet.css'
 
 interface Props {
+  initialSms?: { rows: ParsedRow[]; content: string }
   user: UserContainer
   wallets: Wallet[]
   onClose: () => void
@@ -25,11 +26,11 @@ interface Props {
  *
  * الشاشة لا تحلّل ولا تحسب: تنادي user.importStatement.preview ثم commit.
  */
-export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
-  const [fileName, setFileName] = useState('')
+export function ImportSheet({ user, wallets, onClose, onImported, initialSms }: Props) {
+  const [fileName, setFileName] = useState(initialSms ? 'bank-sms.json' : '')
   const [content, setContent] = useState('')
   /** صفوف الـPDF المحلَّلة. فاضية في مسار الـCSV. */
-  const [pdfRows, setPdfRows] = useState<ParsedRow[] | null>(null)
+  const [pdfRows, setPdfRows] = useState<ParsedRow[] | null>(initialSms?.rows ?? null)
   const [pdfNote, setPdfNote] = useState<string | null>(null)
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? '')
   const [preview, setPreview] = useState<ImportPreview | null>(null)
@@ -109,9 +110,9 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
       fileName,
       content,
       accountIdentity: walletName,
-      sourceType: guessSourceType(content),
+      sourceType: initialSms ? 'sms' as const : guessSourceType(content),
       walletId,
-      ...(pdfRows ? { parsedRows: pdfRows, schema: 'alrajhi_pdf' as const } : {}),
+      ...(pdfRows ? { parsedRows: pdfRows, schema: initialSms ? 'sms' as const : 'alrajhi_pdf' as const } : {}),
     }
   }
 
@@ -181,7 +182,7 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
         <div className="sheet__body">
           {!preview && (
             <>
-              <StatementPicker
+              {initialSms ? <label>المحفظة المرتبطة برسائل البنك<select value={walletId} onChange={e=>setWalletId(e.target.value)} disabled={working}>{wallets.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></label> : <StatementPicker
                 wallets={wallets}
                 walletId={walletId}
                 onWalletChange={setWalletId}
@@ -190,7 +191,7 @@ export function ImportSheet({ user, wallets, onClose, onImported }: Props) {
                 note={pdfNote}
                 progress={readProgress}
                 disabled={working}
-              />
+              />}
 
               <button type="button" className="btn" onClick={runPreview} disabled={working || !content}>
                 {busy === 'previewing' ? 'بنستخرج…' : 'استخراج ومراجعة'}

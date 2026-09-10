@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "android:sync": "tsc -b && vite build --mode android && cap sync android",
-    "android:open": "cap open android"
+    "android:open": "cap open android",
+    "android:apk": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android.ps1"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",

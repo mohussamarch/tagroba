@@ -4,6 +4,7 @@ interface Props {
   onClose: () => void
   onAddTransaction: () => void
   onImport: () => void
+  onSms: () => void
 }
 
 /**
@@ -14,7 +15,7 @@ interface Props {
  * عملية يدويًا — والكاش تحديدًا لا يصل من أي كشف.
  * اكتشفه المالك بالاستعمال: اشترى قهوة بالكاش ولم يجد أين يسجّلها.
  */
-export function AddMenu({ onClose, onAddTransaction, onImport }: Props) {
+export function AddMenu({ onClose, onAddTransaction, onImport, onSms }: Props) {
   return (
     <div className="sheet" role="dialog" aria-modal="true" aria-label="إضافة">
       <div className="sheet__panel addMenu">
@@ -26,6 +27,7 @@ export function AddMenu({ onClose, onAddTransaction, onImport }: Props) {
         </header>
 
         <div className="sheet__body">
+          <button className="addMenu__item" onClick={onSms}><span className="addMenu__icon" aria-hidden="true">✉</span><span className="addMenu__text"><b>رسائل البنك</b><small>قراءة الرسائل أو لصق رسالة، ثم مراجعتها قبل الحفظ</small></span></button>
           <button type="button" className="addMenu__item" onClick={onAddTransaction}>
             <span className="addMenu__icon" aria-hidden="true">🧾</span>
             <span className="addMenu__text">

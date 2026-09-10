@@ -36,3 +36,5 @@ dist-android/
 *.jks
 *.keystore
 android/local.properties
+
+dist-android-apk/
