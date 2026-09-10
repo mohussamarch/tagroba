@@ -1,5 +1,5 @@
-# Current status: Android 1.1 trial (versionCode 2)
-See HANDOVER section 16 for SMS implementation and verification limits. The original 1.0 notes below are historical. Use scripts/build-android.ps1 -PreviousApk <old-apk> for update compatibility verification.
+# Current status: Android 1.2 trial (versionCode 3)
+See HANDOVER section 21 for automatic SMS review inbox, mobile feedback, and verification limits. APK built from a3adcc9. SHA256: 6732810F3A1DA3DF1C678997C0D24CA7274F2AE5FB98BC7A9E5B40A478DC752D. Same signature and application ID as 1.1 verified by scripts/build-android.ps1 -PreviousApk dist-android-apk/masroufy-trial-v2.apk. Physical installation and runtime SMS testing remain outstanding. Earlier 1.0 notes below are historical.
 
 # Android trial build
 
