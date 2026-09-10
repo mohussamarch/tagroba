@@ -21,7 +21,7 @@ export function SmsImportFlow({user,wallets,today,onClose,onImported}:{user:User
   <div className="sheet__panel"><header className="sheet__head"><h2>رسائل البنك</h2><button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق">✕</button></header>
    <div className="sheet__body" style={{display:'grid',gap:16}}>
     <p>هنحلّل الرسائل على جهازك، وبعد مراجعتك وتأكيدك نحفظ العمليات في حسابك. رسائل التحقق وكلمات السر يتم تجاهلها.</p>
-    <p>القراءة بتبدأ بطلبك فقط؛ مفيش متابعة تلقائية في الخلفية. أول إصدار يدعم صيغًا محددة بالريال، وأي رسالة غير واضحة يتم تخطيها مع توضيح السبب.</p>
+    <p>القراءة هنا للفترة اللي تختارها. تقدر تفعّل المتابعة التلقائية من «رسائل جديدة» في التطبيق. ندعم صيغًا محددة بالريال، وأي رسالة غير واضحة يتم تخطيها مع توضيح السبب.</p>
     {user.readBankSms.available ? <>
      <label>اسم مرسل البنك كما يظهر في الرسائل<input value={senders} onChange={e=>setSenders(e.target.value)} disabled={busy} placeholder="AlRajhiBank" style={{width:'100%'}}/></label>
      <div style={{display:'flex',gap:12,flexWrap:'wrap'}}><label>من<input type="date" value={from} onChange={e=>setFrom(e.target.value)} disabled={busy}/></label><label>إلى<input type="date" value={to} onChange={e=>setTo(e.target.value)} disabled={busy}/></label></div>

@@ -33,7 +33,7 @@ Keep the same signing identity for subsequent in-place updates. Do not commit ke
   The trial explains this and offers email/password; web Google login remains unchanged.
   Do not create a different account to access existing data.
 - (Outdated for 1.0 — since 1.1) READ_SMS is declared and on-demand SMS import exists; owner approved it
-  as top priority (OVERRIDES §16). RECEIVE_SMS/background import is NOT declared and not decided.
+  as top priority (OVERRIDES §16). RECEIVE_SMS local collection is now implemented for review (OVERRIDES §17, HANDOVER §21); physical validation remains pending.
   Never import OTP/personal messages as transactions.
 - Firestore is still the primary store; this is not a complete local-first/offline rewrite.
 - Physical S24 Ultra validation is outstanding: login, cold start, imports, save picker,

@@ -13,6 +13,7 @@ import './ImportSheet.css'
 
 interface Props {
   initialSms?: { rows: ParsedRow[]; content: string }
+  onRowsImported?: (lines: number[]) => Promise<void>
   user: UserContainer
   wallets: Wallet[]
   onClose: () => void
@@ -26,9 +27,9 @@ interface Props {
  *
  * الشاشة لا تحلّل ولا تحسب: تنادي user.importStatement.preview ثم commit.
  */
-export function ImportSheet({ user, wallets, onClose, onImported, initialSms }: Props) {
+export function ImportSheet({ user, wallets, onClose, onImported, initialSms, onRowsImported }: Props) {
   const [fileName, setFileName] = useState(initialSms ? 'bank-sms.json' : '')
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState(initialSms?.content ?? '')
   /** صفوف الـPDF المحلَّلة. فاضية في مسار الـCSV. */
   const [pdfRows, setPdfRows] = useState<ParsedRow[] | null>(initialSms?.rows ?? null)
   const [pdfNote, setPdfNote] = useState<string | null>(null)
@@ -140,6 +141,7 @@ export function ImportSheet({ user, wallets, onClose, onImported, initialSms }: 
     setBusy('committing')
     try {
       await user.importStatement.commit(buildRequest(), preview, [...selected])
+      await onRowsImported?.([...selected])
       onImported()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))

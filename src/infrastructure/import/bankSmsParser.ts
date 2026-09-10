@@ -6,9 +6,13 @@ import type { BankSmsMessage, SmsParseResult } from '../../application/ports/Ban
 
 const sensitive = /\bOTP\b|verification\s*code|one.time\s*(?:password|code)|رمز\s*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة\s*(?:المرور|السر)/i
 export function redactSms(text:string):string {
- return text.replace(/SA[\d\s]{20,}/gi, value=>'••••'+value.replace(/\s/g,'').slice(-4))
+ const redact=(value:string)=>value.replace(/SA[\d\s]{20,}/gi, value=>'••••'+value.replace(/\s/g,'').slice(-4))
   .replace(/\b(?:\d[ -]*){12,34}\b/g,value=>'••••'+value.replace(/\D/g,'').slice(-4))
   .replace(/\d{5,}/g,value=>'••••'+value.slice(-4))
+ const amounts=/(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\s*[:：]?\s*(?:(?:SAR|ريال|ر\.?س\.?)\s*[\d,٬]+(?:[.٫]\d{1,2})?|[\d,٬]+(?:[.٫]\d{1,2})?\s*(?:SAR|ريال|ر\.?س\.?))/gi
+ let result='',end=0
+ for(const match of text.matchAll(amounts)){result+=redact(text.slice(end,match.index))+match[0];end=match.index!+match[0].length}
+ return result+redact(text.slice(end))
 }
 /** Conservative Saudi transaction templates; unknown formats require manual entry. */
 export function parseBankSms(message:BankSmsMessage,lineNumber:number):SmsParseResult {
@@ -29,7 +33,7 @@ export function parseBankSms(message:BankSmsMessage,lineNumber:number):SmsParseR
  const short=body.match(/(?:في|بتاريخ|التاريخ|on|date)\s*[:：]?\s*(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?!\d)/i)
  const date=match?match[1]+'-'+match[2].padStart(2,'0')+'-'+match[3].padStart(2,'0'):short?short[3]+'-'+short[2].padStart(2,'0')+'-'+short[1].padStart(2,'0'):''
  if(!isValidIsoDate(date))return {ok:false,reason:'تاريخ العملية غير واضح؛ تاريخ وصول الرسالة لا يكفي'}
- const merchant=body.match(/(?:لدى|عند|تاجر|merchant|at)\s*[:：]?\s*([^\n]+?)(?=\s+(?:في|بتاريخ|on|الرصيد|balance)\b|$)/im)?.[1]?.trim()??''
+ const merchant=body.match(/(?:لدى|عند|تاجر|merchant|at)\s*[:：]?\s*([^\n]+?)(?=\s+(?:في|بتاريخ|on|الرصيد|balance)(?:\s|[:：])|$)/im)?.[1]?.trim()??''
  const safeBody=redactSms(body)
  return {ok:true,row:{lineNumber,date,amountMinor:amount,direction:incoming?'in':'out',merchantName:redactSms(merchant),reference:'SMS:'+hashContent(message.sender+'|'+message.receivedAt+'|'+body),sourceName:message.sender,description:safeBody,raw:safeBody}}
 }

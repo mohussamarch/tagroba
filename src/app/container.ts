@@ -1,6 +1,8 @@
 import { makeLoadHomeHistory } from '../application/useCases/loadHomeHistory'
 import { createHomeSnapshot } from '../infrastructure/homeSnapshot'
 import { makeReadBankSms } from '../application/useCases/readBankSms'
+import { makeManageSmsInbox } from '../application/useCases/manageSmsInbox'
+import { androidSmsInbox } from '../infrastructure/androidSmsInbox'
 import { androidBankSms } from '../infrastructure/androidBankSms'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
@@ -99,6 +101,7 @@ export interface UserContainer {
   homeSnapshot: ReturnType<typeof createHomeSnapshot>
   loadHomeHistory: ReturnType<typeof makeLoadHomeHistory>
   readBankSms: ReturnType<typeof makeReadBankSms>
+  smsInbox: ReturnType<typeof makeManageSmsInbox>
   saveTextFile: typeof saveTextFile
   manageCategories: ReturnType<typeof makeManageCategories>
   reviewHistory: ReturnType<typeof makeReviewHistory>
@@ -173,6 +176,7 @@ export function createContainer(): Container {
 
       return {
         readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
+        smsInbox: makeManageSmsInbox(androidSmsInbox(uid), parseBankSms),
         homeSnapshot: createHomeSnapshot(uid),
         loadHomeHistory: makeLoadHomeHistory({txns,allocations}),
         saveTextFile,

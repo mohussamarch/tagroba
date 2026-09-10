@@ -1,5 +1,7 @@
 import { makeLoadHomeHistory } from '../application/useCases/loadHomeHistory'
 import { makeReadBankSms } from '../application/useCases/readBankSms'
+import { makeManageSmsInbox } from '../application/useCases/manageSmsInbox'
+import { memorySmsInbox } from '../infrastructure/memory/smsInbox'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { makeManageCategories } from '../application/useCases/manageCategories'
@@ -134,6 +136,11 @@ export function createDemoContainer(): Container {
     homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},
     loadHomeHistory: makeLoadHomeHistory({txns,allocations}),
     readBankSms: makeReadBankSms({ available: false, read: async () => ({messages:[],truncated:false}) }, parseBankSms),
+    smsInbox: makeManageSmsInbox(memorySmsInbox([
+      {id:'demo-sms-one',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 25.50 SAR لدى DEMO ALBAIK في '+new Date().toISOString().slice(0,10)},
+      {id:'demo-sms-two',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 10 SAR لدى DEMO SHOP في '+new Date().toISOString().slice(0,10)},
+      {id:'demo-sms-unknown',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 20 SAR'},
+    ],true), parseBankSms),
     saveTextFile,
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
