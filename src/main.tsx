@@ -4,6 +4,7 @@ import { App } from './app/App'
 import { createContainer, type Container } from './app/container'
 import './presentation/theme/tokens.css'
 import './presentation/theme/base.css'
+import './presentation/theme/feedback.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('عنصر #root مش موجود في index.html')

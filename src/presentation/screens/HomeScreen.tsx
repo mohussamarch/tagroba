@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
 import { ErrorNotice } from '../components/ErrorNotice'
+import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { formatAmount, formatMoneyOrNA, NOT_AVAILABLE } from '../../domain/formatMoney'
 import type { HomeScreenData } from '../../application/useCases/loadHomeScreen'
 import type { Period } from '../../domain/period'
@@ -46,11 +47,7 @@ export function HomeScreen({
   )
 
   if (loading && !data) {
-    return (
-      <p className="notice" role="status">
-        بنحمّل الرئيسية…
-      </p>
-    )
+    return <LoadingSkeleton label="بنحمّل الرئيسية…"/>
   }
 
   if (error && !data) return <ErrorNotice cause={error} onRetry={onRetry} />

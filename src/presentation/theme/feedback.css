@@ -1,0 +1,47 @@
+/* Small transform/opacity transitions; no layout animation or persistent GPU layers. */
+button, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button { transition: transform var(--motion), background-color var(--motion), color var(--motion); }
+button:active:not(:disabled) { transform: scale(.97); }
+button:disabled { cursor: default; opacity: .55; }
+.shell__body > :is(.home, .txns, .budget, .people, .invest, .settings) {
+  animation: screenAppear var(--motion);
+}
+@keyframes screenAppear {
+  from { opacity: .45; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.syncStatus {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 48px; color: var(--c-muted); font-size: var(--t-badge);
+}
+.syncStatus > span { min-width: 0; overflow-wrap: anywhere; }
+.syncStatus > button { flex-shrink: 0; }
+.shell__body { padding-bottom: calc(80px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
+.shell__tabs { position: fixed; inset-inline: 0; bottom: 0; }
+.tab__icon { min-width: 36px; border-radius: 12px; padding: 4px; transition: background-color var(--motion); }
+.tab--on .tab__icon { background: var(--c-soft); }
+html:has(.sheet) { overflow: hidden; }
+.sheet__body { overscroll-behavior-y: contain; }
+.sheet__panel { box-shadow: 0 -8px 36px color-mix(in srgb, var(--c-text) 12%, transparent); }
+.loadingSkeleton { display: grid; gap: var(--s-section); }
+.loadingSkeleton__line, .loadingSkeleton__hero, .loadingSkeleton__metrics > i {
+  background: var(--c-soft); border-radius: var(--r-card);
+  animation: skeletonPulse 1.6s ease-in-out infinite alternate;
+}
+.loadingSkeleton__line { height: 32px; width: 44%; }
+.loadingSkeleton__hero { height: 156px; }
+.loadingSkeleton__metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.loadingSkeleton__metrics > i { height: 80px; }
+@keyframes skeletonPulse { from { opacity: .45; } to { opacity: 1; } }
+.appSplash { min-height: 100dvh; display: grid; place-content: center; text-align: center; gap: 12px; }
+.appSplash strong { color: var(--c-text); font-size: 2rem; }
+.appSplash p { color: var(--c-muted); margin: 0; }
+.appSplash__line { height: 4px; background: var(--c-soft); border-radius: 4px; animation: skeletonPulse 1.2s ease-in-out infinite alternate; }
+@media (max-width: 390px) {
+  .shell__head { flex-wrap: wrap; }
+  .shell__actions { gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  button:active:not(:disabled) { transform: none; }
+}

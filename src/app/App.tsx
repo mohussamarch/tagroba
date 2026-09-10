@@ -33,10 +33,10 @@ export function App({ container }: { container: Container }) {
 function Splash() {
   useTheme()
   return (
-    <main
-      style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', color: 'var(--c-muted)' }}
-    >
+    <main className="appSplash">
+      <strong>مصروفي</strong>
       <p role="status">بنفتح مصروفي…</p>
+      <div className="appSplash__line" aria-hidden="true"/>
     </main>
   )
 }

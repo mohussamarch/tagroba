@@ -35,14 +35,17 @@ export function SmsInboxSheet({user,wallets,onClose,onImported}: {
     <div className="sheet__panel"><header className="sheet__head"><h2 className="sheet__title">رسائل جديدة</h2>
       <button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق">✕</button></header>
       <div className="sheet__body" style={{display:'grid',gap:16}}>
-        <p>بعد منح الإذن، نجمع رسائل المرسلين اللي تحددهم على الهاتف. تفضل هنا لحد ما تراجعها وتؤكد حفظها في حسابك.</p>
-        <label>أسماء مرسلي البنك (افصل بفاصلة)<input value={senders} onChange={e=>setSenders(e.target.value)} disabled={busy} style={{width:'100%'}}/></label>
-        <p>التفعيل الأول يبدأ من دلوقتي. الرسائل الأقدم متاحة من «إضافة ← رسائل البنك». الإيقاف يحافظ على الرسائل المعلقة؛ تسجيل الخروج يوقف الجمع لحماية حسابك.</p>
+        <p>راجع الرسائل هنا، واختار اللي تحب تسجله. مفيش عملية بتتحفظ قبل تأكيدك.</p>
         {view?.enabled&&view.permission?<p role="status">القراءة التلقائية مفعّلة</p>:view?.enabled?<p role="alert">إذن أندرويد غير متاح. الرسائل المعلقة محفوظة؛ أعد تفعيل الإذن لاستكمال القراءة.</p>:<p>القراءة التلقائية متوقفة</p>}
+        <details open={view?.count===0&&!view.enabled}>
+        <summary>إعداد القراءة التلقائية وإيقافها</summary>
+        <label>أسماء مرسلي البنك (افصل بفاصلة)<input className="sheet__input" value={senders} onChange={e=>setSenders(e.target.value)} disabled={busy} style={{width:'100%'}}/></label>
+        <p>التفعيل الأول يبدأ من دلوقتي. الرسائل الأقدم متاحة من «إضافة ← رسائل البنك». الإيقاف يحافظ على الرسائل المعلقة؛ تسجيل الخروج يوقف الجمع لحماية حسابك.</p>
         <button className="btn" disabled={busy} onClick={()=>void run(()=>user.smsInbox.enable(senders.split(/[,،\n]/)))}>
           {view?.enabled&&view.permission?'حفظ المرسلين':'موافقة وتفعيل القراءة التلقائية'}</button>
         {view?.enabled&&<button className="btn btn--quiet" disabled={busy} onClick={()=>void run(()=>user.smsInbox.disable())}>إيقاف القراءة التلقائية</button>}
         <p className="notice">الرسائل اللي توصل والتطبيق مقفول تظهر للمراجعة عند فتحه. لو أندرويد أوقف التطبيق، بنحاول استكمال الرسائل الفائتة وقت الفتح.</p>
+        </details>
         <button className="btn btn--quiet" disabled={busy} onClick={()=>void run(()=>user.smsInbox.refresh())}>{busy?'بنراجع الرسائل…':'تحديث الرسائل'}</button>
         {error&&<p role="alert">{error}</p>}
         {view&&<>
