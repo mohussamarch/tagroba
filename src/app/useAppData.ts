@@ -39,9 +39,11 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const prepare=useCallback(()=>{
   if(!bootstrap.current){
    bootstrap.current=(async()=>{
-    const [,walletSeed,outcomes]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll()])
+    // تنظيف الاستيراد المعلّق لا يمنع فتح الشاشات أبدًا — فشله كان يوقف التطبيق كله
+    const [,walletSeed,outcomes]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null)])
     setWallets(walletSeed.wallets)
-    if(outcomes.length)setRecovery('اتنضّف استيراد سابق لم يكتمل. تقدر تستورد الملف تاني.')
+    if(outcomes===null||outcomes.some(o=>o.error))setRecovery('فيه استيراد سابق لم يكتمل ومقدرناش ننظّفه. الشاشات شغالة، لكن إعادة استيراد نفس الكشف ممكن تعتبر صفوفه مكررة لحد ما يتعمل إصلاح البيانات.')
+    else if(outcomes.length)setRecovery('اتنضّف استيراد سابق لم يكتمل. تقدر تستورد الملف تاني.')
    })().catch(error=>{bootstrap.current=null;throw error})
   }
   return bootstrap.current

@@ -30,6 +30,8 @@ export interface StagedCleanupOutcome {
   fileName: string
   deletedTransactions: number
   deletedRecords: number
+  /** سبب تعذر التنظيف، لو تعذر. الدفعة تبقى معلّقة ولا تُحذف منها حاجة. */
+  error?: string
 }
 
 export interface ResumeStagedBatchDeps {
@@ -81,11 +83,30 @@ export function makeResumeStagedBatch(deps: ResumeStagedBatchDeps) {
     }
   }
 
-  /** ينظّف كل ما هو معلّق. يُستدعى عند فتح التطبيق. */
+  /**
+   * ينظّف كل ما هو معلّق. يُستدعى عند فتح التطبيق.
+   *
+   * ⚠️ دفعة واحدة تعذر تنظيفها **لا توقف الباقي ولا تفتح التطبيق على خطأ**:
+   * عطل sanitize القديم ترك حقل `id` مختلفًا عن مسار الوثيقة، فكان
+   * `findById` يرمي فتتوقف كل الشاشات (بلاغ المالك 2026-09-11،
+   * tests/acceptance/importVisibility.test.ts).
+   */
   async function cleanupAll(): Promise<StagedCleanupOutcome[]> {
     const staged = await findStaged()
     const outcomes: StagedCleanupOutcome[] = []
-    for (const batch of staged) outcomes.push(await cleanup(batch.id))
+    for (const batch of staged) {
+      try {
+        outcomes.push(await cleanup(batch.id))
+      } catch (error) {
+        outcomes.push({
+          batchId: batch.id,
+          fileName: batch.fileName,
+          deletedTransactions: 0,
+          deletedRecords: 0,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
     return outcomes
   }
 
