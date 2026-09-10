@@ -134,12 +134,22 @@ export class FirestoreTransactionRepository implements TransactionRepository {
   }
 }
 
-/** يقص أرقام الحسابات الكاملة من كل الحقول النصية قبل الكتابة. */
+/**
+ * المعرّفات والروابط **ليست نصًا حرًا** ولا تحمل رقم حساب — تُحفظ كما هي.
+ * قصّها كان يفصل حقل `id` عن مسار الوثيقة (~30% من المعرّفات المولَّدة فيها
+ * 5 أرقام متتالية) فيفشل التعديل، ويكسر روابط `merch-00001`
+ * (tests/acceptance/firestoreIdIntegrity.test.ts).
+ */
+function isIdentifierField(key: string): boolean {
+  return key === 'id' || key.endsWith('Id')
+}
+
+/** يقص أرقام الحسابات الكاملة من الحقول النصية الحرة قبل الكتابة. */
 function sanitize<T extends object>(value: T): T {
   const out: Record<string, unknown> = {}
   for (const [key, v] of Object.entries(value)) {
     if (v === undefined) continue // Firestore يرفض undefined
-    out[key] = typeof v === 'string' ? sanitizeAccountNumbers(v) : v
+    out[key] = typeof v === 'string' && !isIdentifierField(key) ? sanitizeAccountNumbers(v) : v
   }
   return out as T
 }

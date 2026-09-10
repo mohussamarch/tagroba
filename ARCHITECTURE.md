@@ -493,8 +493,13 @@ GitHub Actions (مجدولة مرتين يومياً)
 ### 10.7 حماية أرقام الحسابات عند الكتابة
 
 `sanitizeAccountNumbers` في `firestoreRepositories.ts` يقص أي تتابع من خمسة
-أرقام فأكثر إلى `****` + آخر أربعة، ويُطبَّق على كل حقل نصي قبل الكتابة.
+أرقام فأكثر إلى `****` + آخر أربعة، ويُطبَّق على كل حقل نصي **حر** قبل الكتابة.
 تنفيذ لقاعدة CLAUDE.md #11 و OVERRIDES §2 عند حدود الطبقة لا بالاعتماد على الانضباط.
+
+> **تصحيح 2026-09-10:** كان يُطبَّق على `id` والروابط أيضًا، فانفصل حقل `id` عن مسار
+> الوثيقة في ~30% من المعرّفات المولَّدة وانكسرت روابط `merch-00001`. الآن `id` وكل
+> حقل ينتهي بـ`Id` مستثنى (معرّفات لا تحمل رقم حساب). البيانات المكتوبة قبل التصحيح
+> ما زالت تالفة — HANDOVER §23. الاختبار: `tests/acceptance/firestoreIdIntegrity.test.ts`.
 
 ---
 
@@ -1005,3 +1010,9 @@ ScreenRequests caches screen results within a signed-in session; mutation invali
 Owner decision OVERRIDES §17. SmsInboxPlugin requests READ_SMS+RECEIVE_SMS only on explicit enable. Manifest receiver is protected by BROADCAST_SMS, joins multipart messages and only queues configured exact senders after filtering/redaction. Native private SQLite stores per-user pending messages; acknowledgements erase text but retain hashes to prevent requeue. No receiver writes to Firestore. Foreground scans at most 500 rows per pass using persisted (date,_id), checkpointing after durable filtering/enqueue. Same-date boundaries retain _id ordering. Initial enable/re-enable after stop starts now; older history uses explicit date import. Receiver uses SMS timestamp; inbox uses date_sent when available (date fallback); different provider timestamps may still produce review candidates, never silent automatic financial entries.
 SmsInboxPort and makeManageSmsInbox prepare the existing parser output for ImportSheet. Only confirmed line IDs are acknowledged after successful import; unselected/unsupported items remain until reviewed/dismissed. There is a memory adapter for dev-only demo and tests. Device settings/queue are scoped by uid, one active collector; explicit logout stops it. Revoked permission does not trigger surprise prompts. Poll while foreground every 60 seconds, plus initial open/visibility; no home loading dependency. No new dependency or Cloud Function. Native SQLite durability/receiver lifecycle need S24 or instrumentation testing; JVM tests alone do not prove them.
 Android API references reviewed: https://developer.android.com/reference/android/provider/Telephony.Sms.Intents and https://developer.android.com/develop/background-work/background-tasks/broadcasts . No 100% background-delivery guarantee.
+
+## 25. Full account backup v2 — 2026-09-10
+FullBackupPort is a dedicated maintenance boundary over the 21 account collections, distinct from date-limited screen repositories. Firestore reads use document-ID ordered server pages of 200, no composite index or silent cache fallback. This explicitly supersedes the old export path's 60-period/200-batch limits for JSON backups; CSV stays date-scoped. Snapshot adapters connect the actual demo repositories, alongside an isolated memory adapter for acceptance tests.
+Version 2 includes sources/batches, people/obligations/allocations/settlements, assets/lots/sales/prices, tags/links, all budgets/category budgets, recurring items and notification receipts. Native pending SMS, permissions, UI cache/theme and credentials are not account data and are excluded. SHA256 detects file corruption, not authenticity or encryption. Runtime checks reject malformed money/enums, missing references, incomplete staged imports and inconsistent allocation/settlement amounts. Keys are canonicalized for hashing.
+Merge preserves existing IDs and category limits, remaps dependent transaction references for semantic duplicates, and separates currencies. Identical but distinct records inside the incoming backup are retained; only existing target records are eligible for content matching. Firestore writes use add-if-absent transactions of 100 documents, parents before children. A whole account restore is NOT atomic; interrupted runs may be partially applied and are resumed by replanning the same file. UI warns before confirmation, including avoiding concurrent edits on another device. Server pagination is not a cross-collection point-in-time snapshot. Bank free-text fields are redacted before restore writes without mutating IDs.
+Legacy v1 restoration remains a separate compatibility path; its coverage is explicitly limited. See HANDOVER §22 for actual tests, remaining limitations and delivery version.
