@@ -175,7 +175,7 @@ export function createContainer(): Container {
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),
         seedUserReferences: () =>
           makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
-        loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
+        loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
         loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
         managePeople: makeManagePeople({
           people, obligations, settlements, allocations, txns, uow,

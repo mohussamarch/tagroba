@@ -15,6 +15,7 @@ import type { Halalas } from '../../domain/money'
 import type { Category, Transaction } from '../../domain/entities/types'
 import type {
   AllocationRepository,
+  BudgetRepository,
   CategoryRepository,
   TransactionRepository,
 } from '../ports/repositories'
@@ -69,6 +70,7 @@ export interface HomeScreenData {
 }
 
 export interface LoadHomeScreenDeps {
+  budgets?: BudgetRepository
   txns: TransactionRepository
   categories: CategoryRepository
   allocations: AllocationRepository
@@ -93,12 +95,14 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
     budgetLimitMinor?: Halalas | null
   }): Promise<HomeScreenData> {
     const { period, today, payday } = options
-    const budgetLimitMinor = options.budgetLimitMinor ?? null
 
-    const [transactions, categories] = await Promise.all([
+
+    const [transactions, categories, savedBudget] = await Promise.all([
       deps.txns.listByDateRange(period.start, period.end),
       deps.categories.listAll(),
+      deps.budgets?.findByPeriod(period.key) ?? Promise.resolve(null),
     ])
+    const budgetLimitMinor = deps.budgets ? savedBudget?.totalLimitMinor ?? null : options.budgetLimitMinor ?? null
     const allocations = await deps.allocations.listByTransactionIds(transactions.map((t) => t.id))
 
     const totals = computePeriodTotals(transactions, allocations)

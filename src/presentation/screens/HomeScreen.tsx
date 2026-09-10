@@ -64,7 +64,7 @@ export function HomeScreen({
       <section className="card home__hero" aria-label="المصروف الشخصي">
         <span className="home__heroLabel">المصروف الشخصي</span>
         <span className={`home__heroValue${data.expenseMinor === null ? ' home__heroValue--na' : ' num'}`}>
-          {hide(data.expenseMinor)}
+          {data.expenseMinor === null ? 'بانتظار المراجعة' : hide(data.expenseMinor)}
         </span>
         {/* الرقم الجزئي يُقال إنه جزئي، ولا يُعرض كأنه نهائي */}
         {data.partial && data.expenseMinor !== null && (
@@ -78,7 +78,7 @@ export function HomeScreen({
       {/* تنبيه التغطية: لا رقم بلا بيان نقصه */}
       {data.coverage.note && (
         <div className="notice notice--action" role="status">
-          <div>{data.coverage.note}</div>
+          <div><strong>بياناتك موجودة: {data.transactionCount} عملية في الفترة دي.</strong><p>{data.coverage.note}</p><p>نوع العملية بيحدد هل هي مصروف، دخل، سلفة أو تحويل بين محافظ. مراجعتها بتكمل الأرقام، ومش محتاج تستورد الكشف تاني.</p></div>
           <button type="button" className="btn" onClick={onFixKinds}>
             حدّد الأنواع
           </button>
@@ -106,7 +106,7 @@ export function HomeScreen({
                 : ` num${data.remainingMinor < 0 ? ' metric__value--out' : ''}`
             }`}
           >
-            {hide(data.remainingMinor)}
+            {data.remainingMinor === null ? 'يحتاج مراجعة' : hide(data.remainingMinor)}
           </span>
         </div>
         <div className="metric">

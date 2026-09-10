@@ -244,3 +244,19 @@ describe('دورة كاملة: استيراد ⇒ اقتراح ⇒ تأكيد �
     expect(stored.economicKindConfirmed).toBe(true)
   })
 })
+
+import { MemoryBudgetRepository } from '../../src/infrastructure/memory/memoryBudgetRepository'
+it('uses the saved budget for the selected period, including edits and removal',async()=>{
+ const budgets=new MemoryBudgetRepository(), txns=new MemoryTransactionRepository()
+ const load=makeLoadHomeScreen({txns,budgets,categories:new MemoryCategoryRepository(),allocations:new MemoryAllocationRepository()})
+ const budget={id:'budget',periodKey:PERIOD.key,periodStart:PERIOD.start,periodEnd:PERIOD.end,totalLimitMinor:30000,thresholdPercent:80,createdAt:'',updatedAt:''}
+ await budgets.save(budget)
+ const options={period:PERIOD,today:PERIOD.end,payday:28}
+ expect((await load(options)).allowance.amountMinor).toBe(30000)
+ await budgets.save({...budget,totalLimitMinor:12000})
+ expect((await load(options)).allowance.amountMinor).toBe(12000)
+ const other=buildPeriod(2026,8,28)
+ expect((await load({...options,period:other,today:other.end})).allowance.amountMinor).toBeNull()
+ await budgets.remove(PERIOD.key)
+ expect((await load(options)).allowance.amountMinor).toBeNull()
+})

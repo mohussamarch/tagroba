@@ -137,7 +137,7 @@ export function createDemoContainer(): Container {
     manageRecurring: makeManageRecurring({items:new MemoryRecurringRepository(),txns,categories,ids}),
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
-    loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations }),
+    loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
     loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
     managePeople: makeManagePeople({
       people, obligations, settlements, allocations, txns, uow, ids, clock,
