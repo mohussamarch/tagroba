@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { NotificationEvent } from '../../domain/notifications'
 import type { NotificationsView } from '../../application/useCases/loadNotifications'
 import type { UserContainer } from '../../app/container'
@@ -7,6 +7,8 @@ import './NotificationsSheet.css'
 interface Props {
   user: UserContainer
   view: NotificationsView | null
+  loading?: boolean
+  error?: unknown
   onClose: () => void
   onSeen: () => void
 }
@@ -24,12 +26,14 @@ const SEVERITY_LABEL = {
  * والموبايل مقفول: ده محتاج Cloud Functions وهي مش متاحة في باقة Spark
  * (CLAUDE.md #12). الإخفاء هنا كان هيخلي محمد يستنى تنبيه عمره ما هييجي.
  */
-export function NotificationsSheet({ user, view, onClose, onSeen }: Props) {
+export function NotificationsSheet({ user, view, onClose, onSeen, loading, error }: Props) {
   const [unseenKeys, setUnseenKeys] = useState<Set<string>>(new Set())
 
+  const marked = useRef(false)
   // التعليم كمقروء بيحصل **بعد** ما تتعرض فعلًا لا قبلها
   useEffect(() => {
-    if (!view || view.unseen.length === 0) return
+    if (!view || loading || marked.current || view.unseen.length === 0) return
+    marked.current = true
     setUnseenKeys(new Set(view.unseen.map((e) => e.eventKey)))
     let alive = true
     user.loadNotifications
@@ -42,7 +46,7 @@ export function NotificationsSheet({ user, view, onClose, onSeen }: Props) {
     }
     // مرة واحدة لكل فتح — الاعتماد على `view` هيعلّم في كل إعادة تحميل
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [view, loading])
 
   const events = view?.all ?? []
 
@@ -57,7 +61,7 @@ export function NotificationsSheet({ user, view, onClose, onSeen }: Props) {
         </header>
 
         <div className="sheet__body">
-          {events.length === 0 ? (
+          {loading ? <p role="status">بنراجع التنبيهات…</p> : error ? <p role="alert">تعذر تحميل التنبيهات. اقفل النافذة وجرّب تاني.</p> : events.length === 0 ? (
             <div className="empty">
               <span className="empty__title">مفيش تنبيهات</span>
               <span>

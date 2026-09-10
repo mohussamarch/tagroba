@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
 import { ErrorNotice } from '../components/ErrorNotice'
@@ -10,6 +10,8 @@ interface Props {
   user: UserContainer
   transaction: Transaction
   people: Person[]
+  loading?: boolean
+  loadError?: unknown
   onClose: () => void
   onLinked: () => void
 }
@@ -26,10 +28,11 @@ type Mode = 'receivable' | 'gift'
  *
  * ولذلك الفرق مكتوب في الشاشة لا مستنتَجًا من اسم الخيار.
  */
-export function LinkPersonSheet({ user, transaction, people, onClose, onLinked }: Props) {
+export function LinkPersonSheet({ user, transaction, people, onClose, onLinked, loading, loadError }: Props) {
   const active = people.filter((p) => !p.archived)
 
   const [personId, setPersonId] = useState(active[0]?.id ?? '')
+  useEffect(()=>{if(!personId&&people.length)setPersonId(people.find(p=>!p.archived)?.id??'')},[people,personId])
   const [mode, setMode] = useState<Mode>('receivable')
   const [amountText, setAmountText] = useState(
     formatAmount(transaction.amountMinor, transaction.currency, { grouping: false }),
@@ -99,7 +102,7 @@ export function LinkPersonSheet({ user, transaction, people, onClose, onLinked }
             </span>
           </div>
 
-          {active.length === 0 ? (
+          {loading ? <p role="status">بنحمّل الأشخاص…</p> : loadError ? <p role="alert">تعذر تحميل الأشخاص. اقفل النافذة وجرّب تاني.</p> : active.length === 0 ? (
             <p className="notice">
               مفيش أشخاص لسه. روح لشاشة «الأشخاص» وضيف شخص، وبعدين ارجع هنا.
             </p>

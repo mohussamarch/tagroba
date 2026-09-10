@@ -11,6 +11,8 @@ interface Props {
   data: HomeScreenData | null
   loading: boolean
   error: unknown
+  historyLoading?: boolean
+  historyError?: unknown
   payday: number
   amountsHidden: boolean
   onPeriodChange: (period: Period) => void
@@ -29,6 +31,8 @@ export function HomeScreen({
   data,
   loading,
   error,
+  historyLoading,
+  historyError,
   payday,
   amountsHidden,
   onPeriodChange,
@@ -49,7 +53,7 @@ export function HomeScreen({
     )
   }
 
-  if (error) return <ErrorNotice cause={error} onRetry={onRetry} />
+  if (error && !data) return <ErrorNotice cause={error} onRetry={onRetry} />
 
   if (!data) return null
 
@@ -58,6 +62,7 @@ export function HomeScreen({
 
   return (
     <div className="home">
+      {Boolean(error) && <ErrorNotice cause={error} onRetry={onRetry} />}
       <PeriodPicker period={data.period} payday={payday} onChange={onPeriodChange} />
 
       {/* المصروف الشخصي — الرقم الأبرز (spec/01) */}
@@ -214,6 +219,8 @@ export function HomeScreen({
       {/* آخر ست فترات */}
       <section className="card" aria-label="آخر ست فترات">
         <h2 className="card__title">آخر ست فترات</h2>
+        {historyLoading && <p role="status">بنحمّل تاريخ الفترات في الخلفية…</p>}
+        {Boolean(historyError) && <p role="alert">تعذر تحميل الفترات السابقة. بيانات الفترة الحالية متاحة.<button className="btn" onClick={onRetry}>إعادة المحاولة</button></p>}
         <ul className="periods">
           {data.recentPeriods.map((p) => (
             <li key={p.period.key} className="periods__row">

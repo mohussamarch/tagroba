@@ -85,3 +85,39 @@ it('starts all five historic home reads before any historic response resolves', 
  expect(result.recentPeriods).toHaveLength(6)
  expect(result.recentPeriods[0].period.key).toBe(period.key)
 })
+
+import { ScreenRequests } from '../../src/app/ScreenRequests'
+import { makeLoadHomeHistory } from '../../src/application/useCases/loadHomeHistory'
+it('serves a visited screen without another request until invalidated',async()=>{
+ const cache=new ScreenRequests(),work=vi.fn(async()=>({amount:100}))
+ await cache.load('home:2026-09',work);await cache.load('home:2026-09',work)
+ expect(work).toHaveBeenCalledTimes(1)
+ cache.invalidate();await cache.load('home:2026-09',work)
+ expect(work).toHaveBeenCalledTimes(2)
+})
+it('an old request cannot repopulate a cache after a financial mutation',async()=>{
+ const cache=new ScreenRequests(),old=deferred<string>()
+ const pending=cache.load('home',()=>old.promise)
+ await Promise.resolve();cache.invalidate()
+ await cache.load('home',async()=>'new')
+ old.resolve('old');await pending
+ expect(cache.peek('home')).toBe('new')
+})
+it('isolates months and retries failed screen loads',async()=>{
+ const cache=new ScreenRequests()
+ await cache.load('home:aug',async()=>1);await cache.load('home:sep',async()=>2)
+ expect(cache.peek('home:aug')).toBe(1);expect(cache.peek('home:sep')).toBe(2)
+ await expect(cache.load('people',async()=>{throw Error('offline')})).rejects.toThrow()
+ expect(await cache.load('people',async()=>3)).toBe(3)
+})
+it('core home returns without asking for old months and history reuses current data',async()=>{
+ const txns=new MemoryTransactionRepository(),categories=new MemoryCategoryRepository(),allocations=new MemoryAllocationRepository()
+ const list=vi.spyOn(txns,'listByDateRange')
+ const period=buildPeriod(2026,9,28)
+ const current=await makeLoadHomeScreen({txns,categories,allocations})({period,payday:28,today:'2026-10-01',includeHistory:false})
+ expect(list).toHaveBeenCalledTimes(1)
+ expect(current.recentPeriods).toEqual([])
+ const history=await makeLoadHomeHistory({txns,allocations})({period,payday:28,current})
+ expect(list).toHaveBeenCalledTimes(6)
+ expect(history.map(x=>x.period.key)).toEqual(['2026-09','2026-08','2026-07','2026-06','2026-05','2026-04'])
+})

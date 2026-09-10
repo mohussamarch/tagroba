@@ -93,6 +93,7 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
     payday: number
     /** سقف الميزانية للفترة، أو null لو لم يحدده المستخدم. */
     budgetLimitMinor?: Halalas | null
+    includeHistory?: boolean
   }): Promise<HomeScreenData> {
     const { period, today, payday } = options
 
@@ -141,7 +142,7 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
       .slice(0, LATEST_COUNT)
 
     // آخر ست فترات — كل واحدة استعلام محدود بمداها (ARCHITECTURE.md §5.6)
-    const recentPeriods: PeriodSummary[] = await Promise.all(Array.from({ length: RECENT_PERIOD_COUNT }, async (_, i) => {
+    const recentPeriods: PeriodSummary[] = options.includeHistory === false ? [] : await Promise.all(Array.from({ length: RECENT_PERIOD_COUNT }, async (_, i) => {
       const p = i === 0 ? period : shiftPeriod(period, -i, payday)
       const rows =
         i === 0 ? transactions : await deps.txns.listByDateRange(p.start, p.end)

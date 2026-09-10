@@ -43,9 +43,9 @@ export function AppShell({
   uid: string
   onSignOut: () => void
 }) {
-  const app = useAppData(container, uid)
-  const { theme, toggleTheme } = useTheme()
   const [tab, setTab] = useState<Tab>('home')
+  const app = useAppData(container, uid, tab)
+  const { theme, toggleTheme } = useTheme()
   const [amountsHidden, setAmountsHidden] = useState(false)
   const [addMenuOpen, setAddMenuOpen] = useState(false)
   const [addTxOpen, setAddTxOpen] = useState(false)
@@ -70,12 +70,13 @@ export function AppShell({
         amountsHidden={amountsHidden}
         theme={theme}
         onAdd={() => setAddMenuOpen(true)}
-        onOpenNotifications={() => setNotifOpen(true)}
+        onOpenNotifications={() => {setNotifOpen(true);void app.ensure('notifications')}}
         onToggleAmounts={() => setAmountsHidden((v) => !v)}
         onToggleTheme={toggleTheme}
-        onSignOut={onSignOut}
+        onSignOut={()=>{void app.clearSnapshot().finally(onSignOut)}}
       />
       <main className="shell__body">
+        <div className="syncStatus" role="status"><span>{app.snapshotAt ? "آخر عرض محفوظ: "+new Date(app.snapshotAt).toLocaleString("ar-SA")+(app.pending.home ? " — بيتم تحديثه…" : " — تعذر تحديثه") : app.activePending ? "بيتم تحديث البيانات…" : Object.values(app.errors).some(Boolean) ? "تعذر تحديث بعض البيانات" : "بيانات الفترة جاهزة"}</span><button className="btn btn--quiet" onClick={reload} disabled={app.activePending}>تحديث</button></div>
         {tab === 'settings' && <button className="btn btn--quiet" onClick={()=>setCategoriesOpen(true)}>التصنيفات وألوانها</button>}
         {tab === 'transactions' && <button className="btn btn--quiet" onClick={()=>setHistoryOpen(true)}>مراجعة وتصنيف العمليات القديمة</button>}
         {tab === 'home' && <button className="btn btn--quiet" onClick={()=>setRecurringOpen(true)}>الاشتراكات والفواتير</button>}
@@ -98,12 +99,14 @@ export function AppShell({
             data={app.home}
             loading={app.pending.home}
             error={app.errors.home}
+            historyLoading={app.pending.history}
+            historyError={app.errors.history}
             payday={app.payday}
             amountsHidden={amountsHidden}
             onPeriodChange={app.setPeriod}
             onRetry={reload}
             onOpenTransactions={() => setTab('transactions')}
-            onFixKinds={() => setKindsOpen(true)}
+            onFixKinds={() => {setKindsOpen(true);void app.ensure('transactions')}}
           />
         )}
         {tab === 'budget' && (
@@ -231,6 +234,7 @@ export function AppShell({
           onClose={() => setOpened(null)}
           onChanged={reload}
           onLinkPerson={() => {
+            void app.ensure('people')
             setLinking(opened)
             setOpened(null)
           }}
@@ -251,6 +255,8 @@ export function AppShell({
           user={app.user}
           transaction={linking}
           people={app.people.map((row) => row.person)}
+          loading={app.pending.people}
+          loadError={app.errors.people}
           onClose={() => setLinking(null)}
           onLinked={() => {
             setLinking(null)
@@ -262,6 +268,8 @@ export function AppShell({
         <NotificationsSheet
           user={app.user}
           view={app.notifications}
+          loading={app.pending.notifications}
+          error={app.errors.notifications}
           onClose={() => setNotifOpen(false)}
           onSeen={reload}
         />

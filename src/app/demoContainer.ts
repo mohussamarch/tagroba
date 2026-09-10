@@ -1,3 +1,4 @@
+import { makeLoadHomeHistory } from '../application/useCases/loadHomeHistory'
 import { makeReadBankSms } from '../application/useCases/readBankSms'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
@@ -130,6 +131,8 @@ export function createDemoContainer(): Container {
   const seedSource = { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
 
   const userContainer: UserContainer = {
+    homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},
+    loadHomeHistory: makeLoadHomeHistory({txns,allocations}),
     readBankSms: makeReadBankSms({ available: false, read: async () => ({messages:[],truncated:false}) }, parseBankSms),
     saveTextFile,
     manageCategories: makeManageCategories({categories,ids}),
