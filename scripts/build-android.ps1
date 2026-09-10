@@ -12,30 +12,38 @@ if (!$env:MASROUFY_TRIAL_KEYSTORE) { $env:MASROUFY_TRIAL_KEYSTORE = "$taskTools/
 if (!(Test-Path -LiteralPath $env:MASROUFY_TRIAL_KEYSTORE)) { throw 'Trial signing key missing. Restore the original key; never generate a replacement for an update.' }
 $env:PATH = "$env:JAVA_HOME/bin;C:/Program Files/nodejs;" + $env:PATH
 if (!$OutputDirectory) { $OutputDirectory = Join-Path $taskProject 'dist-android-apk' }
+# Windows PowerShell 5.1 turns ANY stderr line of a native command (e.g. Vite's chunk-size
+# warning) into a terminating error under 'Stop'. Run natives with 'Continue', return text
+# lines, and judge success by $LASTEXITCODE only (checked after every call below).
+function Invoke-Native([scriptblock]$Command) {
+  $previous = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try { & $Command 2>&1 | ForEach-Object { "$_" } } finally { $ErrorActionPreference = $previous }
+}
 Push-Location $taskProject
 try {
-  & npm.cmd run android:sync
+  Invoke-Native { npm.cmd run android:sync } | Out-Host
   if ($LASTEXITCODE -ne 0) { throw 'Android web build failed' }
   Push-Location android
   try {
-    & ./gradlew.bat :app:assembleDebug --no-daemon --console=plain
+    Invoke-Native { ./gradlew.bat :app:assembleDebug --no-daemon --console=plain } | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'APK build failed' }
   } finally { Pop-Location }
   $taskApk = Join-Path $taskProject 'android/app/build/outputs/apk/debug/app-debug.apk'
   $taskBuildTools = Join-Path $env:ANDROID_HOME 'build-tools/36.0.0'
-  $taskSignature = & "$taskBuildTools/apksigner.bat" verify --print-certs $taskApk
+  $taskSignature = Invoke-Native { & "$taskBuildTools/apksigner.bat" verify --print-certs $taskApk }
   if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed' }
   $taskCert = ($taskSignature | Select-String '^Signer #1 certificate SHA-256 digest:').Line
-  $taskBadging = & "$taskBuildTools/aapt.exe" dump badging $taskApk
+  $taskBadging = Invoke-Native { & "$taskBuildTools/aapt.exe" dump badging $taskApk }
   if ($LASTEXITCODE -ne 0) { throw 'APK manifest check failed' }
   $taskPackage = ($taskBadging | Select-String '^package:').Line
   $taskVersionCode = [int]([regex]::Match($taskPackage, "versionCode='(\d+)'").Groups[1].Value)
   if ($PreviousApk) {
-    $taskOldSignature = & "$taskBuildTools/apksigner.bat" verify --print-certs $PreviousApk
+    $taskOldSignature = Invoke-Native { & "$taskBuildTools/apksigner.bat" verify --print-certs $PreviousApk }
     if ($LASTEXITCODE -ne 0) { throw 'Previous APK signature invalid' }
     $taskOldCert = ($taskOldSignature | Select-String '^Signer #1 certificate SHA-256 digest:').Line
-    if ($taskCert -ne $taskOldCert) { throw 'Signing certificate differs: cannot update the installed APK' }
-    $taskOldBadging = & "$taskBuildTools/aapt.exe" dump badging $PreviousApk
+    if (!$taskCert -or $taskCert -ne $taskOldCert) { throw 'Signing certificate differs: cannot update the installed APK' }
+    $taskOldBadging = Invoke-Native { & "$taskBuildTools/aapt.exe" dump badging $PreviousApk }
     if ($LASTEXITCODE -ne 0) { throw 'Previous APK manifest invalid' }
     $taskOldPackage = ($taskOldBadging | Select-String '^package:').Line
     $taskOldCode = [int]([regex]::Match($taskOldPackage, "versionCode='(\d+)'").Groups[1].Value)

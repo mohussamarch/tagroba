@@ -1,6 +1,9 @@
 import { makeLoadHomeHistory } from '../application/useCases/loadHomeHistory'
 import { makeReadBankSms } from '../application/useCases/readBankSms'
 import { makeFullBackup } from '../application/useCases/fullBackup'
+import { makeRepairStoredIds } from '../application/useCases/repairStoredIds'
+import { memoryIdRepair } from '../infrastructure/memory/idRepair'
+import { sanitizeAccountNumbers } from '../infrastructure/firestore/firestoreRepositories'
 import { snapshotFullBackup } from '../infrastructure/memory/snapshotFullBackup'
 import { backupDigest } from '../infrastructure/backupDigest'
 import type { BackupRow } from '../domain/fullBackup'
@@ -154,6 +157,7 @@ export function createDemoContainer(): Container {
       categoryBudgets:{read:async()=>budgets.snapshot().lines as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),lines:rows as unknown as CategoryBudget[]})},
       recurringItems:{read:async()=>await recurringItems.listAll() as unknown as BackupRow[],write:async rows=>{for(const row of rows)await recurringItems.save(row as unknown as RecurringItem)}},
     }),backupDigest),
+    repairStoredIds: makeRepairStoredIds(memoryIdRepair(),sanitizeAccountNumbers),
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
     manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),

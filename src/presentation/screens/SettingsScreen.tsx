@@ -4,6 +4,7 @@ import { formatAmount } from '../../domain/formatMoney'
 import { WalletEditor } from '../components/WalletEditor'
 import { RestorePanel } from '../components/RestorePanel'
 import { FullRestorePanel } from '../components/FullRestorePanel'
+import { IdRepairPanel } from '../components/IdRepairPanel'
 import { RulesCard } from '../components/RulesCard'
 import type { ReconcileOutcome } from '../../application/useCases/reconcileBalance'
 import type { UserContainer } from '../../app/container'
@@ -191,6 +192,7 @@ export function SettingsScreen({
         )}
 
         <FullRestorePanel user={user} onDone={onRestored}/>
+        <IdRepairPanel user={user} today={today} onDone={onRestored}/>
         <details><summary>استعادة نسخة قديمة (إصدار 1)</summary><RestorePanel user={user} onDone={onRestored}/></details>
       </section>
 

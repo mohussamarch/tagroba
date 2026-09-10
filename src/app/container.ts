@@ -2,6 +2,9 @@ import { makeLoadHomeHistory } from '../application/useCases/loadHomeHistory'
 import { createHomeSnapshot } from '../infrastructure/homeSnapshot'
 import { makeReadBankSms } from '../application/useCases/readBankSms'
 import { makeFullBackup } from '../application/useCases/fullBackup'
+import { makeRepairStoredIds } from '../application/useCases/repairStoredIds'
+import { firestoreIdRepair } from '../infrastructure/firestore/idRepairRepository'
+import { sanitizeAccountNumbers } from '../infrastructure/firestore/firestoreRepositories'
 import { firestoreFullBackup } from '../infrastructure/firestore/fullBackupRepository'
 import { backupDigest } from '../infrastructure/backupDigest'
 import { makeManageSmsInbox } from '../application/useCases/manageSmsInbox'
@@ -102,6 +105,7 @@ export interface Container {
 
 export interface UserContainer {
   fullBackup: ReturnType<typeof makeFullBackup>
+  repairStoredIds: ReturnType<typeof makeRepairStoredIds>
   homeSnapshot: ReturnType<typeof createHomeSnapshot>
   loadHomeHistory: ReturnType<typeof makeLoadHomeHistory>
   readBankSms: ReturnType<typeof makeReadBankSms>
@@ -185,6 +189,7 @@ export function createContainer(): Container {
         loadHomeHistory: makeLoadHomeHistory({txns,allocations}),
         saveTextFile,
         fullBackup: makeFullBackup(firestoreFullBackup(db,uid),backupDigest),
+        repairStoredIds: makeRepairStoredIds(firestoreIdRepair(db,uid),sanitizeAccountNumbers),
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),
