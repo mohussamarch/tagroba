@@ -120,6 +120,10 @@ Cloud Functions غير متاحة على الباقة المجانية. الأس
 
 ## 8. الرسائل البنكية (SMS) — قرار 2026-09-07
 
+> ⚠️ **تعدَّل في §16 (2026-09-10):** بعد التحول لتطبيق أندرويد (§15) اعتمد المالك
+> قراءة الرسائل بإذن `READ_SMS` عند الطلب، وجعلها **الأولوية الأولى**. ما يلي سجل تاريخي
+> لقرار PWA؛ جدول الحدود التقنية ما زال صحيحًا للويب وiOS.
+
 ### الحقيقة التقنية أولًا
 
 **التطبيق لن يقرأ الرسائل تلقائيًا. هذا حدّ في المنصة لا تأجيل.**
@@ -265,3 +269,10 @@ Firestore)، فقائمة الأسهم **ثابتة في السكربت**. أي 
 
 ## 15. Android request (2026-09-10)
 The user explicitly requested an APK for Samsung S24 Ultra and future SMS permissions. This supersedes the earlier web-only delivery decision. Reuse the React/domain implementation with Capacitor 8 and bundled assets. Keep web delivery available. SMS is future work, not enabled by adding an APK shell. First Android trial supports email/password; native Google login remains pending and is disclosed in the UI.
+
+## 16. قراءة الرسائل البنكية بإذن READ_SMS — قرار المالك 2026-09-10
+نص المالك: «قراءة الرسايل مهمة الأول». هذا يعلو على §8.
+- **معتمد:** على أندرويد، قراءة الرسائل **عند الطلب** بإذن `READ_SMS` بعد موافقة واضحة داخل الشاشة، من مرسلين وفترة يحددهم المستخدم (المنفَّذ في `ARCHITECTURE §22`). ويبقى لصق رسالة واحدة يدويًا (الويب وiOS).
+- **الأولوية:** شغل الرسائل قبل P3 وقبل باقي النواقص.
+- كل رسالة تمر بمسار الاستيراد نفسه: معاينة ← منع تكرار ← تأكيد. **لا حفظ قبل التأكيد.** رسائل التحقق وكلمات السر والعروض لا تُستورد أبدًا. لا يُخزَّن رقم حساب كامل.
+- **غير محسوم (اسأل المالك):** الاستقبال التلقائي في الخلفية (`RECEIVE_SMS`)، وهدف المشاركة من تطبيق الرسائل (Share Target). لا يُبنى أيهما بلا قرار.

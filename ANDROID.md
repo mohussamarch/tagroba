@@ -32,9 +32,9 @@ Keep the same signing identity for subsequent in-place updates. Do not commit ke
 - Google login requires a native authentication integration and Firebase Android/OAuth registration.
   The trial explains this and offers email/password; web Google login remains unchanged.
   Do not create a different account to access existing data.
-- READ_SMS/RECEIVE_SMS are not declared and SMS import is not implemented.
-  Future work: explicit in-app opt-in, local financial-message parsing, review and duplicate matching
-  against existing statement transactions. Never import OTP/personal messages as transactions.
+- (Outdated for 1.0 — since 1.1) READ_SMS is declared and on-demand SMS import exists; owner approved it
+  as top priority (OVERRIDES §16). RECEIVE_SMS/background import is NOT declared and not decided.
+  Never import OTP/personal messages as transactions.
 - Firestore is still the primary store; this is not a complete local-first/offline rewrite.
 - Physical S24 Ultra validation is outstanding: login, cold start, imports, save picker,
   keyboard/insets, back gesture and account persistence.
