@@ -25,6 +25,8 @@ import type {
 const clone = <T>(value: T): T => structuredClone(value)
 export class MemoryCategoryRepository implements CategoryRepository {
   private items = new Map<Id, Category>()
+  snapshot(){return clone(this.items)}
+  restore(state:Map<Id,Category>){this.items=clone(state)}
   constructor(seed: readonly Category[] = []) {
     for (const c of seed) this.items.set(c.id, clone(c))
   }
@@ -38,6 +40,8 @@ export class MemoryCategoryRepository implements CategoryRepository {
 
 export class MemoryMerchantRepository implements MerchantRepository {
   private items = new Map<Id, Merchant>()
+  snapshot(){return clone(this.items)}
+  restore(state:Map<Id,Merchant>){this.items=clone(state)}
   constructor(seed: readonly Merchant[] = []) {
     for (const m of seed) this.items.set(m.id, clone(m))
   }
@@ -66,6 +70,8 @@ export class MemoryMerchantRepository implements MerchantRepository {
  */
 export class MemoryRuleRepository implements RuleRepository {
   private items = new Map<Id, ClassificationRule>()
+  snapshot(){return clone(this.items)}
+  restore(state:Map<Id,ClassificationRule>){this.items=clone(state)}
   constructor(seed: readonly ClassificationRule[] = []) {
     for (const r of seed) this.items.set(r.id, clone(r))
   }
@@ -83,6 +89,8 @@ export class MemoryRuleRepository implements RuleRepository {
 
 export class MemoryObligationRepository implements ObligationRepository {
   private items = new Map<Id, Obligation>()
+  snapshot(){return clone(this.items)}
+  restore(state:Map<Id,Obligation>){this.items=clone(state)}
   async listByPerson(personId: Id): Promise<Obligation[]> {
     return [...this.items.values()].filter((o) => o.personId === personId).map(clone)
   }
@@ -103,6 +111,8 @@ export class MemoryObligationRepository implements ObligationRepository {
 
 export class MemorySettlementRepository implements SettlementRepository {
   private items = new Map<Id, Settlement>()
+  snapshot(){return clone(this.items)}
+  restore(state:Map<Id,Settlement>){this.items=clone(state)}
   async listByObligations(obligationIds: readonly Id[]): Promise<Settlement[]> {
     const wanted = new Set(obligationIds)
     return [...this.items.values()].filter((s) => wanted.has(s.obligationId)).map(clone)
@@ -124,6 +134,8 @@ export class MemorySettlementRepository implements SettlementRepository {
 
 export class MemoryAllocationRepository implements AllocationRepository {
   private items = new Map<Id, PersonAllocation>()
+  snapshot(){return clone(this.items)}
+  restore(state:Map<Id,PersonAllocation>){this.items=clone(state)}
   async listByTransactionIds(ids: readonly Id[]): Promise<PersonAllocation[]> {
     const wanted = new Set(ids)
     return [...this.items.values()].filter((a) => wanted.has(a.transactionId)).map(clone)
@@ -138,4 +150,3 @@ export class MemoryAllocationRepository implements AllocationRepository {
     return [...this.items.values()].map(clone)
   }
 }
-

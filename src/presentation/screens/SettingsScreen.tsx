@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { WalletEditor } from '../components/WalletEditor'
 import { RestorePanel } from '../components/RestorePanel'
+import { FullRestorePanel } from '../components/FullRestorePanel'
 import { RulesCard } from '../components/RulesCard'
 import type { ReconcileOutcome } from '../../application/useCases/reconcileBalance'
 import type { UserContainer } from '../../app/container'
@@ -67,13 +68,7 @@ export function SettingsScreen({
     setError(null)
     setDone(null)
     try {
-      const wallet = wallets.find((w) => w.id === walletId) ?? wallets[0]
-      const file = await user.exportBackup.backup({
-        from: wallet?.openingAt ?? today,
-        to: today,
-        payday,
-        exportedAt: new Date().toISOString(),
-      })
+      const file = await user.fullBackup.create(new Date().toISOString())
       await user.saveTextFile(
         JSON.stringify(file, null, 2),
         `masroufy-backup-${today}.json`,
@@ -178,12 +173,12 @@ export function SettingsScreen({
       <section className="card" aria-label="التصدير والنسخ الاحتياطي">
         <h2 className="card__title">التصدير والنسخة الاحتياطية</h2>
         <p className="settings__hint">
-          الملف بيتعمل على جهازك. النسخة الحالية تشمل العمليات والمحافظ والتصنيفات والقواعد والتجار والميزانيات.
-          لا تشمل حاليًا الأشخاص والديون والاستثمارات والوسوم والاشتراكات، فلا تعتمد عليها لاستعادة الحساب بالكامل.
+          نسخة بيانات الحساب تشمل العمليات والمصادر والمحافظ والتصنيفات والأشخاص والديون والاستثمارات والوسوم والاشتراكات والميزانيات، مع بصمة لفحص سلامة الملف.
+          تحتاج اتصالًا لجلب كل البيانات. أذونات الهاتف والرسائل المعلقة محليًا وإعدادات المظهر لا تدخل النسخة. الملف غير مشفّر؛ احتفظ به في مكان خاص.
         </p>
         <div className="settings__row">
           <button type="button" className="btn" onClick={runBackup} disabled={working}>
-            {busy === 'backup' ? 'بنجهّز…' : 'نسخة احتياطية (JSON)'}
+            {busy === 'backup' ? 'بنجهّز النسخة الشاملة…' : 'نسخة شاملة (JSON)'}
           </button>
           <button type="button" className="btn btn--quiet" onClick={runCsv} disabled={working}>
             {busy === 'csv' ? 'بنجهّز…' : 'تصدير CSV'}
@@ -195,7 +190,8 @@ export function SettingsScreen({
           </p>
         )}
 
-        <RestorePanel user={user} onDone={onRestored} />
+        <FullRestorePanel user={user} onDone={onRestored}/>
+        <details><summary>استعادة نسخة قديمة (إصدار 1)</summary><RestorePanel user={user} onDone={onRestored}/></details>
       </section>
 
       <RulesCard onOpen={onOpenRules} />

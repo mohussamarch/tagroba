@@ -83,13 +83,14 @@ export function mergeById<T extends { id: string }>(
  */
 export function transactionContentKey(txn: Transaction): string {
   return [
+    txn.currency,
     detailKey({
       accountIdentity: '',
       sourceReference: null,
       date: txn.occurredAt,
       amountMinor: txn.amountMinor,
       direction: txn.observedDirection,
-      merchantName: txn.merchantId ?? '',
+      merchantName: txn.merchantId ?? txn.rawMerchantName ?? '',
       rowIndex: 0,
     }),
     txn.walletId ?? '',

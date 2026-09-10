@@ -1,5 +1,11 @@
 import { makeLoadHomeHistory } from '../application/useCases/loadHomeHistory'
 import { makeReadBankSms } from '../application/useCases/readBankSms'
+import { makeFullBackup } from '../application/useCases/fullBackup'
+import { snapshotFullBackup } from '../infrastructure/memory/snapshotFullBackup'
+import { backupDigest } from '../infrastructure/backupDigest'
+import type { BackupRow } from '../domain/fullBackup'
+import type { Budget, CategoryBudget } from '../domain/entities/types'
+import type { RecurringItem } from '../domain/entities/recurring'
 import { makeManageSmsInbox } from '../application/useCases/manageSmsInbox'
 import { memorySmsInbox } from '../infrastructure/memory/smsInbox'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
@@ -126,6 +132,7 @@ export function createDemoContainer(): Container {
   const assetSales = new MemoryAssetSaleRepository()
   const assetPrices = new MemoryAssetPriceRepository()
   const notificationReceipts = new MemoryNotificationReceiptRepository()
+  const recurringItems = new MemoryRecurringRepository()
   const uow = new PassthroughUnitOfWork()
   const ids = new SequentialIdGenerator()
   const clock = new FixedClock(new Date().toISOString())
@@ -142,9 +149,14 @@ export function createDemoContainer(): Container {
       {id:'demo-sms-unknown',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 20 SAR'},
     ],true), parseBankSms),
     saveTextFile,
+    fullBackup: makeFullBackup(snapshotFullBackup({transactions:txns,sourceRecords:sources,importBatches:batches,wallets,categories,merchants,rules,people,obligations,allocations,settlements,tags,transactionTags,assets,assetLots,assetSales,assetPrices,notificationReceipts},{
+      budgets:{read:async()=>budgets.snapshot().budgets as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),budgets:rows as unknown as Budget[]})},
+      categoryBudgets:{read:async()=>budgets.snapshot().lines as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),lines:rows as unknown as CategoryBudget[]})},
+      recurringItems:{read:async()=>await recurringItems.listAll() as unknown as BackupRow[],write:async rows=>{for(const row of rows)await recurringItems.save(row as unknown as RecurringItem)}},
+    }),backupDigest),
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
-    manageRecurring: makeManageRecurring({items:new MemoryRecurringRepository(),txns,categories,ids}),
+    manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
