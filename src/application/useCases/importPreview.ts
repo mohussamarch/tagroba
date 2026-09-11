@@ -51,6 +51,7 @@ function toCandidate(row: ParsedRow, accountIdentity: string): DedupeCandidate {
     direction: row.direction,
     merchantName: row.merchantName,
     rowIndex: row.lineNumber,
+    ...(row.statedBalanceMinor !== undefined ? { statedBalanceMinor: row.statedBalanceMinor } : {}),
   }
 }
 
@@ -79,6 +80,7 @@ async function loadExisting(
       direction: txn.observedDirection,
       merchantName: txn.rawMerchantName ?? '',
       rowIndex: record.originalRowIndex,
+      ...(txn.statedBalanceMinor !== undefined ? { statedBalanceMinor: txn.statedBalanceMinor } : {}),
       transactionId: record.transactionId,
     })
   }

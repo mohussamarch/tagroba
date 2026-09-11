@@ -40,7 +40,9 @@ export function latinizeDigits(text: string): string {
  */
 export function normalizeText(text: string): string {
   if (!text) return ''
-  return unifyArabicLetters(latinizeDigits(text))
+  // NFKC أولًا: أشكال العرض العربية (U+FB50–U+FEFF، مثل «ﺔﻈﺣﻼﻣ» من قارئ PDF قديم)
+  // ترجع حروفها الأصلية؛ من غيرها نفس الكلمة كانت تُعد نصًا مختلفًا (HANDOVER §29)
+  return unifyArabicLetters(latinizeDigits(text.normalize('NFKC')))
     .replace(DIACRITICS, '')
     .toUpperCase()
     .replace(/[^\p{L}\p{N}]+/gu, ' ') // كل ما ليس حرفًا أو رقمًا يصير مسافة

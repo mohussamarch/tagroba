@@ -13,6 +13,11 @@ import type { IsoDate, MatchingState } from './entities/types'
  *
  * ملاحظة حاسمة على الدرجة ٤: «عمليتا مطعم بالمبلغ نفسه قد تكونان حقيقتين» —
  * لذلك التشابه **لا يحذف أبدًا**، يعرض للقرار فقط.
+ *
+ * بلا مرجع، **سطر الكشف نفسه** يُعرف بالحساب + اليوم + المبلغ + الاتجاه + **الرصيد
+ * المعلن بعد الحركة**: عمليتان حقيقيتان متتاليتان لا يتساوى رصيدهما بعدهما. ده بيمسك
+ * إعادة استيراد نفس الكشف لما اسم التاجر يتقرا مختلف (HANDOVER §29)، ومن غير رصيد
+ * معلن لا يُحكم بالتكرار من اليوم والمبلغ وحدهما.
  */
 
 /** بصمة سطر واردة من الاستيراد. */
@@ -26,6 +31,8 @@ export interface DedupeCandidate {
   direction: 'in' | 'out'
   merchantName: string
   rowIndex: number
+  /** الرصيد المعلن بعد الحركة في الكشف، إن وُجد. */
+  statedBalanceMinor?: Halalas
 }
 
 /** سجل موجود مسبقًا للمقارنة. */
@@ -57,6 +64,12 @@ export function referenceKey(c: DedupeCandidate): string | null {
   return `${c.accountIdentity}|${c.sourceReference.trim()}`
 }
 
+/** مفتاح سطر الكشف بالرصيد المعلن — null لو مفيش رصيد (رسالة، أو مخطط بلا عمود رصيد). */
+export function balanceKey(c: DedupeCandidate): string | null {
+  if (c.smsSource || c.statedBalanceMinor === undefined) return null
+  return [c.accountIdentity, c.date, c.amountMinor, c.direction, c.statedBalanceMinor].join('|')
+}
+
 function diffFields(a: DedupeCandidate, b: DedupeCandidate): string[] {
   const out: string[] = []
   if (a.date !== b.date) out.push('التاريخ')
@@ -71,23 +84,27 @@ export interface DedupeIndex {
   byAmountDay: Map<string, ExistingRecord[]>
   byReference: Map<string, ExistingRecord>
   byDetail: Map<string, ExistingRecord[]>
+  byBalance: Map<string, ExistingRecord>
 }
 
 export function buildDedupeIndex(existing: readonly ExistingRecord[]): DedupeIndex {
   const byAmountDay = new Map<string, ExistingRecord[]>()
   const byReference = new Map<string, ExistingRecord>()
   const byDetail = new Map<string, ExistingRecord[]>()
+  const byBalance = new Map<string, ExistingRecord>()
   for (const record of existing) {
     const dayKey = amountDayKey(record)
     byAmountDay.set(dayKey, [...(byAmountDay.get(dayKey) ?? []), record])
     const ref = referenceKey(record)
     if (ref) byReference.set(ref, record)
+    const balance = balanceKey(record)
+    if (balance && !byBalance.has(balance)) byBalance.set(balance, record)
     const key = detailKey(record)
     const list = byDetail.get(key)
     if (list) list.push(record)
     else byDetail.set(key, [record])
   }
-  return { byReference, byDetail, byAmountDay }
+  return { byReference, byDetail, byAmountDay, byBalance }
 }
 
 /**
@@ -122,6 +139,22 @@ export function classifyCandidate(
         conflictFields: differences,
       }
     }
+  }
+
+  // ─── نفس سطر الكشف بالرصيد المعلن، حتى لو اسم التاجر اتقرا مختلف ───
+  const sameLine = balanceKey(candidate)
+  const lineMatch = sameLine ? index.byBalance.get(sameLine) : undefined
+  if (lineMatch) {
+    return {
+      state: 'duplicate',
+      reason:
+        'نفس سطر الكشف: نفس اليوم والمبلغ والاتجاه والرصيد بعد العملية في نفس الحساب — ' +
+        'متسجلة قبل كده حتى لو الاسم مقروء بشكل مختلف',
+      matchedTransactionId: lineMatch.transactionId,
+    }
+  }
+
+  if (ref) {
     const related = smsSimilarity(candidate, index)
     if (related) return related
     // مرجع جديد بالكامل — لا يُفحص التشابه لأن المرجع دليل موثوق
