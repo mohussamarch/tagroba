@@ -1,4 +1,4 @@
-import type { Id } from '../../domain/entities/types'
+import type { Id, ImportBatch } from '../../domain/entities/types'
 import type {
   AllocationRepository,
   ImportBatchRepository,
@@ -38,6 +38,16 @@ export interface RevertPlan {
   outcomes: RevertLineOutcome[]
   /** هل التراجع نظيف تمامًا (لا شيء محتفظ به)؟ */
   isClean: boolean
+  /** عدد العمليات اللي الدفعة سجّلتها وقت الاستيراد. */
+  expectedCount: number
+  /** عدد سجلات المصدر اللي اتلقت فعلًا للدفعة دي. */
+  recordsFound: number
+  /**
+   * الدفعة سجّلت عمليات لكن ولا سجل مصدر اتلقى لها — غالبًا معرّفات تالفة من
+   * الحفظ القديم (HANDOVER §23). التراجع يُرفض لحد ما تتصلح، وإلا كان هيعلّم الدفعة
+   * «متراجَع عنها» من غير ما يشيل ولا عملية.
+   */
+  blocked: boolean
 }
 
 export interface RevertDeps {
@@ -50,7 +60,17 @@ export interface RevertDeps {
   uow: UnitOfWork
 }
 
+export const REVERT_BLOCKED_MESSAGE =
+  'مقدرناش نلاقي عمليات الاستيراد ده. غالبًا معرّفاته اتحفظت ناقصة في نسخة قديمة. ' +
+  'من الإعدادات دوس «افحص البيانات القديمة» وصلّح، وبعدين جرّب التراجع تاني.'
+
 export function makeRevertImportBatch(deps: RevertDeps) {
+  /** سجل الاستيرادات، الأحدث أولًا — للعرض فقط. */
+  async function history(limit = 50): Promise<ImportBatch[]> {
+    const recent = await deps.batches.listRecent(limit)
+    return [...recent].sort((a, b) => b.importedAt.localeCompare(a.importedAt))
+  }
+
   /** يحسب الأثر بلا أي كتابة — يُعرض للمستخدم قبل التأكيد (spec/03). */
   async function plan(batchId: Id): Promise<RevertPlan> {
     const batch = await deps.batches.findById(batchId)
@@ -58,12 +78,15 @@ export function makeRevertImportBatch(deps: RevertDeps) {
     if (batch.state === 'reverted') throw new Error('الدفعة دي متراجَع عنها قبل كده')
 
     const batchRecords = await deps.sources.listByBatch(batchId)
+    const expectedCount = batch.counts.imported
+    const recordsFound = batchRecords.length
+    const blocked = expectedCount > 0 && recordsFound === 0
     const txnIds = batchRecords
       .map((r) => r.transactionId)
       .filter((id): id is Id => id !== null)
 
     if (txnIds.length === 0) {
-      return { batchId, toDelete: [], toKeep: [], outcomes: [], isClean: true }
+      return { batchId, toDelete: [], toKeep: [], outcomes: [], isClean: true, expectedCount, recordsFound, blocked }
     }
 
     const [allSources, settlements, allocations, obligations] = await Promise.all([
@@ -121,12 +144,13 @@ export function makeRevertImportBatch(deps: RevertDeps) {
       if (outcome.decision !== 'deleted') toKeep.push(outcome)
     }
 
-    return { batchId, toDelete, toKeep, outcomes, isClean: toKeep.length === 0 }
+    return { batchId, toDelete, toKeep, outcomes, isClean: toKeep.length === 0, expectedCount, recordsFound, blocked }
   }
 
   /** ينفّذ الخطة ذريًا. سجلات المصدر الخاصة بالدفعة تُحذف دائمًا. */
   async function execute(batchId: Id): Promise<RevertPlan> {
     const revertPlan = await plan(batchId)
+    if (revertPlan.blocked) throw new Error(REVERT_BLOCKED_MESSAGE)
 
     return deps.uow.run(async () => {
       if (revertPlan.toDelete.length > 0) {
@@ -139,5 +163,5 @@ export function makeRevertImportBatch(deps: RevertDeps) {
     })
   }
 
-  return { plan, execute }
+  return { plan, execute, history }
 }
