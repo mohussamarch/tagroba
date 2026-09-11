@@ -68,6 +68,10 @@ export function TransactionsScreen({
     return () => clearTimeout(id)
   }, [rawQuery])
 
+  const categoryById = useMemo(
+    () => new Map((data?.categories ?? []).map((c) => [c.id, c])),
+    [data?.categories],
+  )
   const categoryNameById = useMemo(
     () => new Map((data?.categories ?? []).map((c) => [c.id, c.name])),
     [data?.categories],
@@ -150,18 +154,23 @@ export function TransactionsScreen({
 
           {/* لا رقم بلا مصدر (CLAUDE.md #10): السطر يقول ليه الخانات غير متاحة */}
           <div className="txnsSummary" role="status">
+            {/* العدد نفسه هو الرابط — الأزرار التقيلة فوق القايمة اتشالت
+                (إعادة تصميم 2026-09-11: «الأزرار فوق المحتوى») */}
             <span>
               {data.totalCount} عملية
-              {data.unclassifiedCount > 0 && ` · ${data.unclassifiedCount} محتاجة تأكيد`}
-              {data.estimatedCount > 0 && ` · الأرقام تقريبية`}
+              {data.estimatedCount > 0 && ' · الأرقام تقريبية'}
             </span>
             <span className="txnsSummary__actions">
               {data.unclassifiedCount > 0 && (
-                <button type="button" className="btn txnsSummary__btn" onClick={onFixKinds}>
-                  حدّد الأنواع
+                <button type="button" className="txnsSummary__link" onClick={onFixKinds}>
+                  {data.unclassifiedCount} محتاجة تأكيد ‹
                 </button>
               )}
-              <button type="button" className="btn btn--quiet txnsSummary__btn" onClick={onOpenHistory}>
+              <button
+                type="button"
+                className="txnsSummary__link txnsSummary__link--quiet"
+                onClick={onOpenHistory}
+              >
                 مراجعة القديم
               </button>
             </span>
@@ -215,8 +224,9 @@ export function TransactionsScreen({
                     amountsHidden,
                     onOpen: () => onOpenTransaction(t),
                   }
-                  const name = t.categoryId ? categoryNameById.get(t.categoryId) : undefined
-                  if (name) props.categoryName = name
+                  const category = t.categoryId ? categoryById.get(t.categoryId) : undefined
+                  if (category?.name) props.categoryName = category.name
+                  if (category?.lightColor) props.categoryColor = category.lightColor
                   return <TransactionRow key={t.id} {...props} />
                 })}
               </ul>

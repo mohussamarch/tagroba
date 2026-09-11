@@ -209,8 +209,9 @@ export function HomeScreen({
           <ul className="list">
             {data.latest.map((t) => {
               const props: Parameters<typeof TransactionRow>[0] = { transaction: t, amountsHidden }
-              const name = t.categoryId ? categoryById.get(t.categoryId)?.name : undefined
-              if (name) props.categoryName = name
+              const category = t.categoryId ? categoryById.get(t.categoryId) : undefined
+              if (category?.name) props.categoryName = category.name
+              if (category?.lightColor) props.categoryColor = category.lightColor
               return <TransactionRow key={t.id} {...props} />
             })}
           </ul>
