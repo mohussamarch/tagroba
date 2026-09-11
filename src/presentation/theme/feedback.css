@@ -12,10 +12,14 @@ button:disabled { cursor: default; opacity: .55; }
 }
 .syncStatus {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  min-height: 48px; color: var(--c-muted); font-size: var(--t-badge);
+  min-height: 32px; color: var(--c-muted); font-size: var(--t-badge);
 }
 .syncStatus > span { min-width: 0; overflow-wrap: anywhere; }
-.syncStatus > button { flex-shrink: 0; }
+/* one quiet line, not a card row: the refresh stays reachable without pushing content down */
+.syncStatus > button {
+  flex-shrink: 0; min-height: 36px; padding: 0 12px; font-size: var(--t-badge);
+  border: none; background: none; color: var(--c-text); text-decoration: underline;
+}
 .shell__body { padding-bottom: calc(80px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 .shell__tabs { position: fixed; inset-inline: 0; bottom: 0; }
 .tab__icon { min-width: 36px; border-radius: 12px; padding: 4px; transition: background-color var(--motion); }

@@ -19,6 +19,7 @@ interface Props {
   onPeriodChange: (period: Period) => void
   onImport: () => void
   onFixKinds: () => void
+  onOpenHistory: () => void
   onOpenTransaction: (transaction: TransactionsScreenData["transactions"][number]) => void
   onRetry: () => void
 }
@@ -29,6 +30,9 @@ interface Props {
  * الشاشة **لا تحسب مبلغًا ولا تكلّم مستودعًا**. تستقبل بيانات محسوبة
  * من حالة الاستخدام، وتنادي formatAmount للعرض فقط.
  * البحث محلي بالكامل في domain/search — لا تُرسل بيانات البحث للخارج.
+ *
+ * ترتيب مضغوط (HANDOVER §27): القائمة كانت تحت 9 عناصر فلا تظهر عملية بلا تمرير.
+ * الفلترة مطوية، والخانات الثلاث شريط واحد (لا تختفي — spec/04)، والتنبيه سطر واحد.
  */
 export function TransactionsScreen({
   loading,
@@ -40,11 +44,13 @@ export function TransactionsScreen({
   onPeriodChange,
   onImport,
   onFixKinds,
+  onOpenHistory,
   onOpenTransaction,
   onRetry,
 }: Props) {
   const [rawQuery, setRawQuery] = useState('')
   const [tagFilter,setTagFilter] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const availableTags=[...new Set(Object.values(data?.tagNamesByTransaction??{}).flat())].sort()
   const [debounced, setDebounced] = useState('')
 
@@ -84,28 +90,39 @@ export function TransactionsScreen({
     <div className="txns">
       <PeriodPicker period={period} payday={payday} onChange={onPeriodChange} />
 
-      <label className="sheet__field">تصفية بالوسم<select className="sheet__input" value={tagFilter} onChange={e=>setTagFilter(e.target.value)}><option value="">كل الوسوم</option>{availableTags.map(t=><option key={t}>{t}</option>)}{tagFilter&&!availableTags.includes(tagFilter)&&<option>{tagFilter}</option>}</select></label>
       <div className="search">
-        <input
-          className="search__input"
-          type="search"
-          value={rawQuery}
-          onChange={(e) => setRawQuery(e.target.value)}
-          placeholder="ابحث باسم أو مبلغ أو تصنيف…"
-          aria-label="البحث في العمليات"
-          aria-describedby="search-hint"
-        />
-        <p className="search__hint" id="search-hint">
-          {query.amount
-            ? `بحث بالمبلغ ${formatAmount(query.amount.targetMinor)} ± ${AMOUNT_TOLERANCE_PER_THOUSAND / 10}٪ — ${visible.length} نتيجة`
-            : 'الأرقام تبحث بالمبلغ ±٥٪. البحث محلي على جهازك ومش بيتبعت لأي مكان.'}
-        </p>
+        <div className="search__row">
+          <input
+            className="search__input"
+            type="search"
+            value={rawQuery}
+            onChange={(e) => setRawQuery(e.target.value)}
+            placeholder="ابحث باسم أو مبلغ أو تصنيف…"
+            aria-label="البحث في العمليات (محلي على جهازك)"
+          />
+          <button
+            type="button"
+            className={`btn btn--quiet search__filter${tagFilter ? ' search__filter--on' : ''}`}
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            {tagFilter ? `وسم: ${tagFilter}` : 'فلترة'}
+          </button>
+        </div>
+        {filtersOpen && (
+          <label className="sheet__field">تصفية بالوسم<select className="sheet__input" value={tagFilter} onChange={e=>setTagFilter(e.target.value)}><option value="">كل الوسوم</option>{availableTags.map(t=><option key={t}>{t}</option>)}{tagFilter&&!availableTags.includes(tagFilter)&&<option>{tagFilter}</option>}</select></label>
+        )}
+        {query.amount && (
+          <p className="search__hint" role="status">
+            {`بحث بالمبلغ ${formatAmount(query.amount.targetMinor)} ± ${AMOUNT_TOLERANCE_PER_THOUSAND / 10}٪ — ${visible.length} نتيجة`}
+          </p>
+        )}
       </div>
 
       {data && (
         <>
           {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
-          <div className="metrics">
+          <div className="metrics metrics--compact">
             <Metric label="الدخل" amount={data.incomeMinor} hidden={amountsHidden} tone="in" />
             <Metric
               label="المتبقي"
@@ -123,27 +140,23 @@ export function TransactionsScreen({
             </div>
           </div>
 
-          {/* لا رقم بلا مصدر (CLAUDE.md #10) */}
-          {data.unclassifiedCount > 0 && (
-            <div className="notice notice--action" role="status">
-              <div>
-                {data.unclassifiedCount === data.totalCount ? (
-                  <>
-                    <strong>الأرقام لسه غير متاحة.</strong> كل الـ{data.totalCount} عملية محتاجة
-                    تحدد نوعها (دخل؟ تحويل؟ قرض؟).
-                  </>
-                ) : (
-                  <>
-                    <strong>الأرقام دي ناقصة.</strong> فيه {data.unclassifiedCount} عملية من{' '}
-                    {data.totalCount} لسه محتاجة تحدد نوعها.
-                  </>
-                )}
-              </div>
-              <button type="button" className="btn" onClick={onFixKinds}>
-                حدّد الأنواع
+          {/* لا رقم بلا مصدر (CLAUDE.md #10): السطر يقول ليه الخانات غير متاحة */}
+          <div className="txnsSummary" role="status">
+            <span>
+              {data.totalCount} عملية
+              {data.unclassifiedCount > 0 && ` · ${data.unclassifiedCount} محتاجة تحديد نوع`}
+            </span>
+            <span className="txnsSummary__actions">
+              {data.unclassifiedCount > 0 && (
+                <button type="button" className="btn txnsSummary__btn" onClick={onFixKinds}>
+                  حدّد الأنواع
+                </button>
+              )}
+              <button type="button" className="btn btn--quiet txnsSummary__btn" onClick={onOpenHistory}>
+                مراجعة القديم
               </button>
-            </div>
-          )}
+            </span>
+          </div>
         </>
       )}
 
@@ -157,10 +170,10 @@ export function TransactionsScreen({
 
       {!loading && !error && data && visible.length === 0 && (
         <div className="empty">
-          {debounced.trim() ? (
+          {debounced.trim() || tagFilter ? (
             <>
               <span className="empty__title">مفيش نتايج للبحث ده</span>
-              <span>جرّب كلمة تانية، أو امسح البحث عشان تشوف كل العمليات.</span>
+              <span>جرّب كلمة تانية، أو امسح البحث والفلترة عشان تشوف كل العمليات.</span>
             </>
           ) : (
             <>

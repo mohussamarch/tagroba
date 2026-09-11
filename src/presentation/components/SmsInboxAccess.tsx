@@ -3,8 +3,12 @@ import type { UserContainer } from '../../app/container'
 import type { Wallet } from '../../domain/entities/types'
 import { SmsInboxSheet } from '../screens/SmsInboxSheet'
 
-/** Mounted once in the shell: catches up after foreground without blocking home. */
-export function SmsInboxAccess({user,wallets,onImported}:{user:UserContainer;wallets:Wallet[];onImported:()=>void}) {
+/**
+ * Mounted once in the shell: catches up after foreground without blocking home.
+ * The button shows only when there is something to review or an error, so it never pushes
+ * content down with «(0)»; `showWhenEmpty` keeps setup reachable (Settings tab).
+ */
+export function SmsInboxAccess({user,wallets,onImported,showWhenEmpty=false}:{user:UserContainer;wallets:Wallet[];onImported:()=>void;showWhenEmpty?:boolean}) {
   const [open,setOpen]=useState(false),[count,setCount]=useState(0),[error,setError]=useState('')
   useEffect(()=>{
     if(!user.smsInbox.available)return
@@ -23,7 +27,7 @@ export function SmsInboxAccess({user,wallets,onImported}:{user:UserContainer;wal
   },[user,open])
   if(!user.smsInbox.available)return null
   return <>
-    <button className="btn btn--quiet" onClick={()=>setOpen(true)}>رسائل جديدة ({count}) · إعداد القراءة التلقائية{error?' — '+error:''}</button>
+    {(count>0||error||showWhenEmpty)&&<button className="btn btn--quiet" onClick={()=>setOpen(true)}>رسائل جديدة ({count}) · إعداد القراءة التلقائية{error?' — '+error:''}</button>}
     {open&&<SmsInboxSheet user={user} wallets={wallets} onClose={()=>setOpen(false)} onImported={onImported}/>}
   </>
 }

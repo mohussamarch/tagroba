@@ -78,6 +78,28 @@
   margin: 0;
 }
 
+/*
+ * البحث والفلترة في سطر واحد؛ الفلترة مطوية حتى الطلب (HANDOVER §27).
+ * البادئة `.txns` مقصودة: القواعد دي فوق `.metric` و`.btn` في نفس الملف، فمن غيرها
+ * القواعد الأقدم تكسبها في الترتيب (اتلاحظ على المحاكي).
+ */
+.txns .search__row { display: flex; gap: 8px; align-items: stretch; }
+.txns .search__row .search__input { flex: 1; min-width: 0; }
+.txns .search__filter { justify-self: auto; padding: 0 14px; white-space: nowrap; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
+.txns .search__filter--on { border-color: var(--c-text); font-weight: 700; }
+
+/* الخانات الثلاث شريط مضغوط بدل بطاقات كبيرة — لا تختفي (spec/04) */
+.txns .metrics--compact .metric { padding: 4px 10px; gap: 0; }
+.txns .metrics--compact .metric__value { font-size: var(--t-body); }
+
+/* سطر ملخص واحد بدل صندوق تنبيه */
+.txns .txnsSummary {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  font-size: var(--t-badge); color: var(--c-muted);
+}
+.txns .txnsSummary__actions { display: flex; gap: 6px; flex-shrink: 0; }
+.txns .txnsSummary__btn { min-height: 36px; padding: 0 12px; font-size: var(--t-badge); justify-self: auto; }
+
 /* ملخص الفترة: ثلاث خانات متساوية — spec/04 */
 .metrics {
   display: grid;

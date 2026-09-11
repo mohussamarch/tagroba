@@ -77,10 +77,9 @@ export function AppShell({
         onSignOut={()=>{void (async()=>{if(app.user.smsInbox.available)await app.user.smsInbox.disable();await app.clearSnapshot();onSignOut()})().catch(()=>window.alert('تعذر إيقاف قراءة الرسائل. جرّب تسجيل الخروج تاني.'))}}
       />
       <main className="shell__body">
-        <SmsInboxAccess user={app.user} wallets={app.wallets} onImported={reload}/>
+        <SmsInboxAccess user={app.user} wallets={app.wallets} onImported={reload} showWhenEmpty={tab === 'settings'}/>
         <div className="syncStatus" role="status"><span>{app.snapshotAt ? "آخر عرض محفوظ: "+new Date(app.snapshotAt).toLocaleString("ar-SA")+(app.pending.home ? " — بيتم تحديثه…" : " — تعذر تحديثه") : app.activePending ? "بيتم تحديث البيانات…" : Object.values(app.errors).some(Boolean) ? "تعذر تحديث بعض البيانات" : "بيانات الفترة جاهزة"}</span><button className="btn btn--quiet" onClick={reload} disabled={app.activePending}>تحديث</button></div>
         {tab === 'settings' && <button className="btn btn--quiet" onClick={()=>setCategoriesOpen(true)}>التصنيفات وألوانها</button>}
-        {tab === 'transactions' && <button className="btn btn--quiet" onClick={()=>setHistoryOpen(true)}>مراجعة وتصنيف العمليات القديمة</button>}
         {tab === 'home' && <button className="btn btn--quiet" onClick={()=>setRecurringOpen(true)}>الاشتراكات والفواتير</button>}
         {app.recovery && (
           <div className="notice" role="status">
@@ -150,6 +149,7 @@ export function AppShell({
             onPeriodChange={app.setPeriod}
             onImport={() => setImportOpen(true)}
             onFixKinds={() => setKindsOpen(true)}
+            onOpenHistory={() => setHistoryOpen(true)}
             onOpenTransaction={setOpened}
             onRetry={reload}
           />
