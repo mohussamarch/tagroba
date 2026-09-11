@@ -79,6 +79,21 @@
 .tab__icon { font-size: 1.15rem; line-height: 1; }
 .tab__label { font-size: var(--t-badge); }
 
+/* زر الإضافة في نص الشريط — قرار المالك 2026-09-11 (OVERRIDES §20) */
+.tab--add { padding: 4px; }
+
+.tab__add {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--c-action);
+  color: var(--c-surface);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 /* ─────────── شاشة العمليات داخل القشرة ─────────── */
 
 .txns {

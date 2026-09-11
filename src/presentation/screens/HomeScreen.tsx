@@ -3,7 +3,7 @@ import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
-import { formatAmount, formatMoneyOrNA, NOT_AVAILABLE } from '../../domain/formatMoney'
+import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
 import type { HomeScreenData } from '../../application/useCases/loadHomeScreen'
 import type { Period } from '../../domain/period'
 import './HomeScreen.css'
@@ -12,8 +12,6 @@ interface Props {
   data: HomeScreenData | null
   loading: boolean
   error: unknown
-  historyLoading?: boolean
-  historyError?: unknown
   payday: number
   amountsHidden: boolean
   onPeriodChange: (period: Period) => void
@@ -32,8 +30,6 @@ export function HomeScreen({
   data,
   loading,
   error,
-  historyLoading,
-  historyError,
   payday,
   amountsHidden,
   onPeriodChange,
@@ -62,7 +58,9 @@ export function HomeScreen({
       {Boolean(error) && <ErrorNotice cause={error} onRetry={onRetry} />}
       <PeriodPicker period={data.period} payday={payday} onChange={onPeriodChange} />
 
-      {/* المصروف الشخصي — الرقم الأبرز (spec/01) */}
+      {/* بطاقة المصروف: الرقم الأبرز، وتحته الخانات الثلاث في نفس البطاقة.
+          إعادة تصميم 2026-09-11: صندوق التنبيه بفقراته الثلاث اتشال، وبقى
+          سطر واحد يتضغط يودّي لمراجعة الأنواع. */}
       <section className="card home__hero" aria-label="المصروف الشخصي">
         <span className="home__heroLabel">المصروف الشخصي</span>
         <span className={`home__heroValue${data.expenseMinor === null ? ' home__heroValue--na' : ' num'}`}>
@@ -74,59 +72,56 @@ export function HomeScreen({
         )}
         {data.estimatedCount > 0 && data.expenseMinor !== null && (
           <span className="badge badge--partial">
-            {data.needsReviewCount > 0
-              ? `تقريبي — ${data.needsReviewCount} عملية محتاجة تأكيد`
-              : `تقريبي — ${data.estimatedCount} عملية نوعها اتحدد تلقائي`}
+            {data.needsReviewCount > 0 ? 'تقريبي' : 'تقريبي — الأنواع اتحددت تلقائي'}
           </span>
         )}
         <span className="home__heroSub">
           {data.transactionCount} عملية في {monthLabel(data.period)}
         </span>
+
+        {data.needsReviewCount > 0 && (
+          <button type="button" className="home__review" onClick={onFixKinds}>
+            {data.needsReviewCount} عملية محتاجة تأكيد ‹
+          </button>
+        )}
+
+        {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
+        <div className="metrics home__metrics">
+          <div className="metric">
+            <span className="metric__label">
+              الدخل{data.partial && data.incomeMinor !== null ? ' (ناقص)' : ''}
+            </span>
+            <span
+              className={`metric__value${data.incomeMinor === null ? '' : ' num metric__value--in'}`}
+            >
+              {hide(data.incomeMinor)}
+            </span>
+          </div>
+          <div className="metric">
+            <span className="metric__label">المتبقي</span>
+            <span
+              className={`metric__value${
+                data.remainingMinor === null
+                  ? ''
+                  : ` num${data.remainingMinor < 0 ? ' metric__value--out' : ''}`
+              }`}
+            >
+              {data.remainingMinor === null ? 'يحتاج مراجعة' : hide(data.remainingMinor)}
+            </span>
+          </div>
+          <div className="metric">
+            <span className="metric__label">معدل الادخار</span>
+            <span className="metric__value">
+              {data.savingsRatePercent === null
+                ? NOT_AVAILABLE
+                : `${data.savingsRatePercent.toFixed(1)}%`}
+            </span>
+          </div>
+        </div>
       </section>
 
-      {/* تنبيه التغطية: لا رقم بلا بيان نقصه */}
-      {data.coverage.note && (
-        <div className="notice notice--action" role="status">
-          <div><strong>بياناتك موجودة: {data.transactionCount} عملية في الفترة دي.</strong><p>{data.coverage.note}</p><p>نوع العملية بيحدد هل هي مصروف، دخل، سلفة أو تحويل بين محافظ. مراجعتها بتكمل الأرقام، ومش محتاج تستورد الكشف تاني.</p></div>
-          <button type="button" className="btn" onClick={onFixKinds}>
-            حدّد الأنواع
-          </button>
-        </div>
-      )}
-
-      {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
-      <div className="metrics">
-        <div className="metric">
-          <span className="metric__label">
-            الدخل{data.partial && data.incomeMinor !== null ? ' (ناقص)' : ''}
-          </span>
-          <span
-            className={`metric__value${data.incomeMinor === null ? '' : ' num metric__value--in'}`}
-          >
-            {hide(data.incomeMinor)}
-          </span>
-        </div>
-        <div className="metric">
-          <span className="metric__label">المتبقي</span>
-          <span
-            className={`metric__value${
-              data.remainingMinor === null
-                ? ''
-                : ` num${data.remainingMinor < 0 ? ' metric__value--out' : ''}`
-            }`}
-          >
-            {data.remainingMinor === null ? 'يحتاج مراجعة' : hide(data.remainingMinor)}
-          </span>
-        </div>
-        <div className="metric">
-          <span className="metric__label">معدل الادخار</span>
-          <span className="metric__value">
-            {data.savingsRatePercent === null
-              ? NOT_AVAILABLE
-              : `${data.savingsRatePercent.toFixed(1)}%`}
-          </span>
-        </div>
-      </div>
+      {/* سبب نقص التغطية سطر واحد هادي، مش صندوق — لا رقم بلا بيان نقصه */}
+      {data.coverage.note && <p className="home__hint">{data.coverage.note}</p>}
 
       {data.excludedExpenseMinor !== null && data.excludedExpenseMinor > 0 && (
         <p className="home__hint">
@@ -163,7 +158,7 @@ export function HomeScreen({
         <section className="card" aria-label="توزيع التصنيفات">
           <h2 className="card__title">التصنيفات</h2>
           <ul className="dist">
-            {data.distribution.slice(0, 8).map((slice) => {
+            {data.distribution.slice(0, 5).map((slice) => {
               const category = slice.categoryId ? categoryById.get(slice.categoryId) : undefined
               const name = category?.name ?? 'بلا تصنيف'
               const percent = (slice.shareTenthPercent / 10).toFixed(1)
@@ -220,27 +215,7 @@ export function HomeScreen({
         )}
       </section>
 
-      {/* آخر ست فترات */}
-      <section className="card" aria-label="آخر ست فترات">
-        <h2 className="card__title">آخر ست فترات</h2>
-        {historyLoading && <p role="status">بنحمّل تاريخ الفترات في الخلفية…</p>}
-        {Boolean(historyError) && <p role="alert">تعذر تحميل الفترات السابقة. بيانات الفترة الحالية متاحة.<button className="btn" onClick={onRetry}>إعادة المحاولة</button></p>}
-        <ul className="periods">
-          {data.recentPeriods.map((p) => (
-            <li key={p.period.key} className="periods__row">
-              <span className="periods__name">{monthLabel(p.period)}</span>
-              <span className="periods__count">{p.transactionCount} عملية</span>
-              <span className={`periods__value${p.expenseMinor === null ? '' : ' num'}`}>
-                {p.expenseMinor === null
-                  ? NOT_AVAILABLE
-                  : amountsHidden
-                    ? '••••'
-                    : formatMoneyOrNA(p.expenseMinor, 'SAR', { showCurrency: false })}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* «آخر ست فترات» خرجت من الرئيسية لشاشة «المزيد» — قرار المالك 2026-09-11 */}
     </div>
   )
 }

@@ -5,39 +5,28 @@ interface Props {
   /** عدد التنبيهات غير المقروءة — صفر يعني لا عدّاد أصلًا. */
   unseenCount: number
   amountsHidden: boolean
-  theme: 'light' | 'dark'
-  onAdd: () => void
   onOpenNotifications: () => void
   onToggleAmounts: () => void
-  onToggleTheme: () => void
-  onSignOut: () => void
 }
 
-/** رأس التطبيق — مفصول عن `AppShell` لحد الملف 300 سطر. */
+/**
+ * رأس التطبيق — مفصول عن `AppShell` لحد الملف 300 سطر.
+ *
+ * إعادة تصميم 2026-09-11 (OVERRIDES §20): الرأس فيه **الإشعارات وإخفاء
+ * المبالغ بس**. زر الإضافة نزل لنص شريط التنقل، والوضع الغامق وتسجيل
+ * الخروج راحوا للإعدادات — الشكوى كانت «الأزرار فوق المحتوى».
+ */
 export function ShellHeader({
   title,
   unseenCount,
   amountsHidden,
-  theme,
-  onAdd,
   onOpenNotifications,
   onToggleAmounts,
-  onToggleTheme,
-  onSignOut,
 }: Props) {
   return (
     <header className="shell__head">
       <h1 className="shell__title">{title}</h1>
       <div className="shell__actions">
-        <button
-          type="button"
-          className="iconBtn iconBtn--primary"
-          onClick={onAdd}
-          aria-label="إضافة"
-        >
-          <span aria-hidden="true">＋</span>
-        </button>
-
         <span className="bellWrap">
           <button
             type="button"
@@ -63,19 +52,6 @@ export function ShellHeader({
           aria-pressed={amountsHidden}
         >
           <span aria-hidden="true">{amountsHidden ? '🙈' : '👁'}</span>
-        </button>
-
-        <button
-          type="button"
-          className="iconBtn"
-          onClick={onToggleTheme}
-          aria-label={theme === 'light' ? 'تحويل للوضع الغامق' : 'تحويل للوضع الفاتح'}
-        >
-          <span aria-hidden="true">{theme === 'light' ? '🌙' : '☀️'}</span>
-        </button>
-
-        <button type="button" className="iconBtn" onClick={onSignOut} aria-label="تسجيل الخروج">
-          <span aria-hidden="true">⎋</span>
         </button>
       </div>
     </header>

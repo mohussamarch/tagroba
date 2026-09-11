@@ -7,6 +7,7 @@ import { FullRestorePanel } from '../components/FullRestorePanel'
 import { IdRepairPanel } from '../components/IdRepairPanel'
 import { ImportHistoryPanel } from '../components/ImportHistoryPanel'
 import { RulesCard } from '../components/RulesCard'
+import { AppearanceCard } from '../components/AppearanceCard'
 import type { ReconcileOutcome } from '../../application/useCases/reconcileBalance'
 import type { UserContainer } from '../../app/container'
 import type { Wallet } from '../../domain/entities/types'
@@ -22,6 +23,10 @@ interface Props {
   onRestored: () => void
   /** فتح شاشة القواعد والتجار. */
   onOpenRules: () => void
+  /** المظهر الحالي — الزر بينقل للمظهر التاني. */
+  theme: 'light' | 'dark'
+  onToggleTheme: () => void
+  onSignOut: () => void
 }
 
 /**
@@ -40,6 +45,9 @@ export function SettingsScreen({
   onWalletsChanged,
   onRestored,
   onOpenRules,
+  theme,
+  onToggleTheme,
+  onSignOut,
 }: Props) {
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? '')
   const [outcome, setOutcome] = useState<ReconcileOutcome | null>(null)
@@ -107,6 +115,8 @@ export function SettingsScreen({
   return (
     <div className="settings">
       <InstallGuide/>
+      <AppearanceCard theme={theme} onToggleTheme={onToggleTheme} onSignOut={onSignOut} />
+
       <section className="card" aria-label="المحافظ">
         <h2 className="card__title">المحافظ والرصيد الافتتاحي</h2>
         <p className="settings__hint">

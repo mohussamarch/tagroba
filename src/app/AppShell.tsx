@@ -1,8 +1,6 @@
 import { SmsImportFlow } from '../presentation/screens/SmsImportFlow'
 import { SmsInboxAccess } from '../presentation/components/SmsInboxAccess'
-import { CategoriesScreen } from '../presentation/screens/CategoriesScreen'
-import { HistoryReviewScreen } from '../presentation/screens/HistoryReviewScreen'
-import { RecurringScreen } from '../presentation/screens/RecurringScreen'
+import { ShellOverlays } from './ShellOverlays'
 import { useState } from 'react'
 import { HomeScreen } from '../presentation/screens/HomeScreen'
 import { TransactionsScreen } from '../presentation/screens/TransactionsScreen'
@@ -11,28 +9,26 @@ import { PeopleScreen } from '../presentation/screens/PeopleScreen'
 import { InvestmentScreen } from '../presentation/screens/InvestmentScreen'
 import { SettingsScreen } from '../presentation/screens/SettingsScreen'
 import { ImportSheet } from '../presentation/screens/ImportSheet'
-import { KindsSheet } from '../presentation/screens/KindsSheet'
-import { NotificationsSheet } from '../presentation/screens/NotificationsSheet'
 import { AddTransactionSheet } from '../presentation/screens/AddTransactionSheet'
-import { LinkPersonSheet } from '../presentation/screens/LinkPersonSheet'
 import { TransactionSheet } from '../presentation/screens/TransactionSheet'
-import { RulesScreen } from '../presentation/screens/RulesScreen'
 import { AddMenu } from '../presentation/components/AddMenu'
 import { ShellTabs } from '../presentation/components/ShellTabs'
 import { ShellHeader } from '../presentation/components/ShellHeader'
+import { MoreScreen } from '../presentation/screens/MoreScreen'
 import { useTheme } from '../presentation/theme/useTheme'
 import { useAppData } from './useAppData'
 import type { Transaction } from '../domain/entities/types'
 import type { Container } from './container'
 import './AppShell.css'
-type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings'
+type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings' | 'more'
 const TAB_TITLES: Record<Tab, string> = {
-  home: 'مصروفي',
+  home: 'الرئيسية',
   budget: 'الميزانية',
   transactions: 'العمليات',
   people: 'الأشخاص',
   invest: 'الاستثمار',
   settings: 'الإعدادات',
+  more: 'المزيد',
 }
 /** قشرة التطبيق بعد الدخول: التنقل والأوراق. التحميل في `useAppData`. */
 export function AppShell({
@@ -63,24 +59,40 @@ export function AppShell({
   const [categoriesOpen,setCategoriesOpen] = useState(false)
   const reload = () => void app.reload()
   const unseenCount = app.notifications?.unseen.length ?? 0
+  const signOut = () => {
+    void (async () => {
+      if (app.user.smsInbox.available) await app.user.smsInbox.disable()
+      await app.clearSnapshot()
+      onSignOut()
+    })().catch(() => window.alert('تعذر إيقاف قراءة الرسائل. جرّب تسجيل الخروج تاني.'))
+  }
+  /* السطر ده كان بيظهر دايمًا فوق المحتوى. بقى يظهر بس لما يكون فيه فعلًا
+     عرض محفوظ قديم أو تحديث شغال أو خطأ — إعادة تصميم 2026-09-11. */
+  const syncNote = app.snapshotAt
+    ? 'آخر عرض محفوظ: ' + new Date(app.snapshotAt).toLocaleString('ar-SA') +
+      (app.pending.home ? ' — بيتم تحديثه…' : ' — تعذر تحديثه')
+    : app.activePending
+      ? 'بيتم تحديث البيانات…'
+      : Object.values(app.errors).some(Boolean)
+        ? 'تعذر تحديث بعض البيانات'
+        : null
   return (
     <div className="shell">
       <ShellHeader
         title={TAB_TITLES[tab]}
         unseenCount={unseenCount}
         amountsHidden={amountsHidden}
-        theme={theme}
-        onAdd={() => setAddMenuOpen(true)}
         onOpenNotifications={() => {setNotifOpen(true);void app.ensure('notifications')}}
         onToggleAmounts={() => setAmountsHidden((v) => !v)}
-        onToggleTheme={toggleTheme}
-        onSignOut={()=>{void (async()=>{if(app.user.smsInbox.available)await app.user.smsInbox.disable();await app.clearSnapshot();onSignOut()})().catch(()=>window.alert('تعذر إيقاف قراءة الرسائل. جرّب تسجيل الخروج تاني.'))}}
       />
       <main className="shell__body">
         <SmsInboxAccess user={app.user} wallets={app.wallets} onImported={reload} showWhenEmpty={tab === 'settings'}/>
-        <div className="syncStatus" role="status"><span>{app.snapshotAt ? "آخر عرض محفوظ: "+new Date(app.snapshotAt).toLocaleString("ar-SA")+(app.pending.home ? " — بيتم تحديثه…" : " — تعذر تحديثه") : app.activePending ? "بيتم تحديث البيانات…" : Object.values(app.errors).some(Boolean) ? "تعذر تحديث بعض البيانات" : "بيانات الفترة جاهزة"}</span><button className="btn btn--quiet" onClick={reload} disabled={app.activePending}>تحديث</button></div>
-        {tab === 'settings' && <button className="btn btn--quiet" onClick={()=>setCategoriesOpen(true)}>التصنيفات وألوانها</button>}
-        {tab === 'home' && <button className="btn btn--quiet" onClick={()=>setRecurringOpen(true)}>الاشتراكات والفواتير</button>}
+        {syncNote && (
+          <div className="syncStatus" role="status">
+            <span>{syncNote}</span>
+            <button className="btn btn--quiet" onClick={reload} disabled={app.activePending}>تحديث</button>
+          </div>
+        )}
         {app.recovery && (
           <div className="notice" role="status">
             {app.recovery}
@@ -100,8 +112,6 @@ export function AppShell({
             data={app.home}
             loading={app.pending.home}
             error={app.errors.home}
-            historyLoading={app.pending.history}
-            historyError={app.errors.history}
             payday={app.payday}
             amountsHidden={amountsHidden}
             onPeriodChange={app.setPeriod}
@@ -176,6 +186,20 @@ export function AppShell({
             onRetry={reload}
           />
         )}
+        {tab === 'more' && (
+          <MoreScreen
+            periods={app.home?.recentPeriods ?? []}
+            periodsLoading={app.pending.history}
+            periodsError={app.errors.history}
+            amountsHidden={amountsHidden}
+            onRetry={reload}
+            onOpenPeople={() => setTab('people')}
+            onOpenInvest={() => setTab('invest')}
+            onOpenSettings={() => setTab('settings')}
+            onOpenRecurring={() => setRecurringOpen(true)}
+            onOpenCategories={() => setCategoriesOpen(true)}
+          />
+        )}
         {tab === 'settings' && (
           <SettingsScreen
             user={app.user}
@@ -185,11 +209,14 @@ export function AppShell({
             onWalletsChanged={reload}
             onRestored={reload}
             onOpenRules={() => setRulesOpen(true)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            onSignOut={signOut}
           />
         )}
       </main>
-      {/* الشريط السفلي — spec/01 */}
-      <ShellTabs tab={tab} onChange={setTab}/>
+      {/* الشريط السفلي — خمس خانات وزر الإضافة في النص (OVERRIDES §20) */}
+      <ShellTabs tab={tab} onChange={setTab} onAdd={() => setAddMenuOpen(true)}/>
       {addMenuOpen && (
         <AddMenu onSms={() => { setAddMenuOpen(false); setSmsOpen(true) }}
           onClose={() => setAddMenuOpen(false)}
@@ -242,48 +269,30 @@ export function AppShell({
           }}
         />
       )}
-      {categoriesOpen && <CategoriesScreen user={app.user} onClose={()=>setCategoriesOpen(false)} onChanged={reload}/>}
-      {historyOpen && <HistoryReviewScreen user={app.user} today={app.today} categories={app.home?.categories??[]} onClose={()=>setHistoryOpen(false)} onChanged={reload}/>}
-      {recurringOpen && <RecurringScreen user={app.user} today={app.today} hidden={amountsHidden} onClose={()=>setRecurringOpen(false)}/>}
-      {rulesOpen && (
-        <RulesScreen
-          user={app.user}
-          categories={app.home?.categories ?? []}
-          onClose={() => setRulesOpen(false)}
-        />
-      )}
-      {linking && (
-        <LinkPersonSheet
-          user={app.user}
-          transaction={linking}
-          people={app.people.map((row) => row.person)}
-          loading={app.pending.people}
-          loadError={app.errors.people}
-          onClose={() => setLinking(null)}
-          onLinked={() => {
-            setLinking(null)
-            reload()
-          }}
-        />
-      )}
-      {notifOpen && (
-        <NotificationsSheet
-          user={app.user}
-          view={app.notifications}
-          loading={app.pending.notifications}
-          error={app.errors.notifications}
-          onClose={() => setNotifOpen(false)}
-          onSeen={reload}
-        />
-      )}
-      {kindsOpen && app.txnData && (
-        <KindsSheet
-          user={app.user}
-          transactions={app.txnData.transactions}
-          onClose={() => setKindsOpen(false)}
-          onDone={reload}
-        />
-      )}
+      <ShellOverlays
+        app={app}
+        amountsHidden={amountsHidden}
+        reload={reload}
+        open={{
+          categories: categoriesOpen,
+          history: historyOpen,
+          recurring: recurringOpen,
+          rules: rulesOpen,
+          notifications: notifOpen,
+          kinds: kindsOpen,
+        }}
+        close={(key) => {
+          const setters = { categories: setCategoriesOpen, history: setHistoryOpen,
+            recurring: setRecurringOpen, rules: setRulesOpen,
+            notifications: setNotifOpen, kinds: setKindsOpen }
+          setters[key](false)
+        }}
+        linking={linking}
+        onCloseLinking={(linked) => {
+          setLinking(null)
+          if (linked) reload()
+        }}
+      />
     </div>
   )
 }

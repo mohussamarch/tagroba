@@ -9,11 +9,11 @@ import type { NotificationsView } from '../application/useCases/loadNotification
 import type { Wallet } from '../domain/entities/types'
 import type { Container } from './container'
 import { ScreenRequests } from './ScreenRequests'
-export type AppTab='home'|'transactions'|'budget'|'people'|'invest'|'settings'
+export type AppTab='home'|'transactions'|'budget'|'people'|'invest'|'settings'|'more'
 const SECTIONS=['home','transactions','budget','wallets','people','portfolio','history','notifications'] as const
 type Section=typeof SECTIONS[number]
 const initialLoading=Object.fromEntries(SECTIONS.map(key=>[key,true])) as Record<Section,boolean>
-const tabSection:Record<AppTab,Section>={home:'home',transactions:'transactions',budget:'budget',people:'people',invest:'portfolio',settings:'wallets'}
+const tabSection:Record<AppTab,Section>={home:'home',transactions:'transactions',budget:'budget',people:'people',invest:'portfolio',settings:'wallets',more:'wallets'}
 
 export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const user=useMemo(()=>container.forUser(uid),[container,uid])

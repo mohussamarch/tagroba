@@ -76,6 +76,25 @@
   color: var(--c-muted);
 }
 
+/* سطر «N عملية محتاجة تأكيد» — بديل صندوق التنبيه القديم */
+.home__review {
+  background: none;
+  border: none;
+  padding: 6px 4px;
+  color: var(--c-action);
+  font-size: var(--t-body);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* الخانات الثلاث جوه بطاقة المصروف */
+.home__metrics {
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--c-border);
+}
+
 /* ─────────── المتاح اليومي والتوقع ─────────── */
 
 .home__pair {
