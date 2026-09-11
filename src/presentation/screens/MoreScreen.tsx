@@ -51,13 +51,15 @@ export function MoreScreen({
       <ul className="more__list">
         {items.map((item) => (
           <li key={item.label}>
+            {/* النص الأول في الترتيب عشان يقع على اليمين في العربي،
+                والسهم يقع على الشمال — اتصلح بعد ما ظهر بالعكس على المحاكي */}
             <button type="button" className="more__item" onClick={item.onClick}>
-              <span className="more__chevron" aria-hidden="true">
-                ‹
-              </span>
               <span className="more__text">
                 <span className="more__label">{item.label}</span>
                 <span className="more__note">{item.note}</span>
+              </span>
+              <span className="more__chevron" aria-hidden="true">
+                ‹
               </span>
             </button>
           </li>
