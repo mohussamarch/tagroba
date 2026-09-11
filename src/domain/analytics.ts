@@ -176,7 +176,7 @@ export function forecastPeriodSpend(
       projectedMinor: null,
       elapsedDays,
       totalDays,
-      caveat: `عدى ${elapsedDays} يوم بس من الفترة. التوقع محتاج ${MIN_DAYS_FOR_FORECAST} أيام على الأقل عشان يبقى ليه معنى.`,
+      caveat: `عدى ${elapsedDays} يوم بس — التوقع محتاج ${MIN_DAYS_FOR_FORECAST} أيام على الأقل.`,
     }
   }
 
@@ -196,9 +196,8 @@ export function forecastPeriodSpend(
     projectedMinor: projected,
     elapsedDays,
     totalDays,
-    caveat:
-      `محسوب من معدل ${elapsedDays} يوم عدوا، ومفروض إن باقي الفترة هيمشي بنفس المعدل. ` +
-      `أي مصروف كبير غير متوقع هيغيّر الرقم ده.`,
+    // قصور التوقع مذكور دايمًا (spec/02) لكن في سطر واحد — إعادة تصميم 2026-09-11
+    caveat: `لو باقي الفترة مشي بنفس المعدل (${elapsedDays} يوم عدوا).`,
   }
 }
 

@@ -1,3 +1,20 @@
+/* مجموعات الأيام — إعادة تصميم 2026-09-11.
+   بادئة `.txns` عشان ما تتصادمش مع قواعد عامة (درس HANDOVER §29). */
+.txns__days { display: grid; gap: var(--s-section); }
+
+.txns__day { display: grid; gap: 6px; }
+
+.txns__dayHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.txns__dayName { font-size: var(--t-badge); color: var(--c-muted); font-weight: 500; }
+.txns__dayTotal { font-size: var(--t-badge); color: var(--c-muted); }
+
 .screen {
   min-height: 100dvh;
   display: flex;

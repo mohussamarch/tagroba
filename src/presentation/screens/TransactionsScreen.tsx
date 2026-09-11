@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TransactionRow } from '../components/TransactionRow'
-import { PeriodPicker } from '../components/PeriodPicker'
+import { PeriodPicker, MONTH_NAMES } from '../components/PeriodPicker'
+import { groupByDay } from '../../domain/dayGroups'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
 import { parseQuery, searchTransactions, AMOUNT_TOLERANCE_PER_THOUSAND } from '../../domain/search'
@@ -22,6 +23,13 @@ interface Props {
   onOpenHistory: () => void
   onOpenTransaction: (transaction: TransactionsScreenData["transactions"][number]) => void
   onRetry: () => void
+}
+
+/** «2026-09-11» ⇒ «11 سبتمبر». عرض فقط — مفيش حساب. */
+function dayLabel(iso: string): string {
+  const [, month, day] = iso.split('-')
+  const name = MONTH_NAMES[Number(month) - 1]
+  return name ? `${Number(day)} ${name}` : iso
 }
 
 /**
@@ -188,19 +196,33 @@ export function TransactionsScreen({
         </div>
       )}
 
+      {/* مجمّعة بالأيام، ومجموع صادر اليوم جنب اسمه — إعادة تصميم 2026-09-11.
+          الحساب في domain/dayGroups، والشاشة بتعرض بس. */}
       {!error && visible.length > 0 && (
-        <ul className="list">
-          {visible.map((t) => {
-            const props: Parameters<typeof TransactionRow>[0] = {
-              transaction: t,
-              amountsHidden,
-              onOpen: () => onOpenTransaction(t),
-            }
-            const name = t.categoryId ? categoryNameById.get(t.categoryId) : undefined
-            if (name) props.categoryName = name
-            return <TransactionRow key={t.id} {...props} />
-          })}
-        </ul>
+        <div className="txns__days">
+          {groupByDay(visible).map((group) => (
+            <section key={group.date} className="txns__day" aria-label={dayLabel(group.date)}>
+              <div className="txns__dayHead">
+                <span className="txns__dayName">{dayLabel(group.date)}</span>
+                <span className="txns__dayTotal num">
+                  {amountsHidden ? '••••' : `−${formatAmount(group.outgoingMinor)}`}
+                </span>
+              </div>
+              <ul className="list">
+                {group.transactions.map((t) => {
+                  const props: Parameters<typeof TransactionRow>[0] = {
+                    transaction: t,
+                    amountsHidden,
+                    onOpen: () => onOpenTransaction(t),
+                  }
+                  const name = t.categoryId ? categoryNameById.get(t.categoryId) : undefined
+                  if (name) props.categoryName = name
+                  return <TransactionRow key={t.id} {...props} />
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
     </div>
   )

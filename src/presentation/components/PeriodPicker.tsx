@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { buildPeriod, type Period } from '../../domain/period'
 import './PeriodPicker.css'
 
-const MONTH_NAMES = [
+export const MONTH_NAMES = [
   'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
   'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
 ]
