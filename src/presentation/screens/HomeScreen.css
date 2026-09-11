@@ -87,6 +87,15 @@
   cursor: pointer;
 }
 
+/* الشارة جوه بطاقة (المتاح اليومي/التوقع) تفضل بحجم نصها لا عرض البطاقة */
+.home__box .badge,
+.home__hero .badge {
+  justify-self: start;
+  width: fit-content;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
 /* الخانات الثلاث جوه بطاقة المصروف */
 .home__metrics {
   width: 100%;

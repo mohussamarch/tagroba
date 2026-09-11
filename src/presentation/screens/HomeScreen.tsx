@@ -139,6 +139,8 @@ export function HomeScreen({
               ? NOT_AVAILABLE
               : formatAmount(data.allowance.amountMinor)}
           </span>
+          {/* الرقم المبني على المتبقي بدل السقف يُقال إنه تقريبي — OVERRIDES §19 */}
+          {data.allowance.approximate && <span className="badge badge--partial">تقريبي</span>}
           <span className="home__boxNote">{data.allowance.reason}</span>
         </section>
 

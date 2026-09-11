@@ -100,10 +100,13 @@ describe('لا سقف بلا اختيار المستخدم — spec/01', () => {
     expect(data.average.averageMinor).not.toBeNull() // المتوسط موجود
     expect(formatAmount(data.average.averageMinor!)).toBe('1,000.00')
 
-    // ومع ذلك: لا سقف، ولا متاح يومي
+    /* ومع ذلك: لا سقف، ولا متاح يومي **في شاشة الميزانية**.
+       OVERRIDES §19 (التقريبي من المتبقي) خاص بالرئيسية: شاشة الميزانية
+       بتتكلم عن السقف نفسه، فمن غير سقف الرقم هنا يفضل غير متاح. */
     expect(data.totalStatus).toBeNull()
     expect(data.allowance.amountMinor).toBeNull()
-    expect(data.allowance.reason).toContain('سقف تحدده انت')
+    expect(data.allowance.approximate).toBe(false)
+    expect(data.allowance.reason).toContain('مفيش سقف')
   })
 
   it('السقف يُضبط بمبلغ يكتبه المستخدم فيظهر المتاح اليومي', async () => {

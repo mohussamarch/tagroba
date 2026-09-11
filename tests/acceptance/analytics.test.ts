@@ -123,10 +123,46 @@ describe('توزيع التصنيفات — لا مضاعفة ولا فجوة', 
 describe('المتاح اليومي — لا 30 يومًا ثابتة', () => {
   const period = buildPeriod(2026, 9, 28) // 2026-09-28 → 2026-10-27، 30 يومًا
 
-  it('بلا سقف ⇒ غير متاح، ولا سقف مخترع من المتوسط', () => {
+  /* OVERRIDES §19 (قرار المالك 2026-09-11): من غير سقف ما نقولش «غير متاح».
+     نحسب تقريبيًا من المتبقي ونعلّمه approximate وسببه مكتوب. */
+  it('بلا سقف ومعاه متبقي ⇒ رقم تقريبي = المتبقي ÷ الأيام الباقية', () => {
+    // في 2026-10-01 باقي 27 يوم من 30؛ المتبقي 2700 ⇒ 100.00 في اليوم
+    const result = dailyAllowance(
+      null,
+      parseMoney('500.00'),
+      '2026-10-01',
+      period,
+      parseMoney('2700.00'),
+    )
+    expect(result.approximate).toBe(true)
+    expect(result.remainingDays).toBe(27)
+    expect(formatAmount(result.amountMinor!)).toBe('100.00')
+    expect(result.reason).toContain('تقريبي')
+  })
+
+  it('بلا سقف والمتبقي سالب ⇒ صفر لا سالب، وبرضه تقريبي', () => {
+    const result = dailyAllowance(null, parseMoney('500.00'), '2026-10-01', period, -25000)
+    expect(result.amountMinor).toBe(0)
+    expect(result.approximate).toBe(true)
+  })
+
+  it('بلا سقف وبلا متبقي معروف ⇒ غير متاح، ولا رقم مخترع', () => {
     const result = dailyAllowance(null, parseMoney('500.00'), '2026-10-01', period)
     expect(result.amountMinor).toBeNull()
-    expect(result.reason).toContain('سقف تحدده انت')
+    expect(result.approximate).toBe(false)
+    expect(result.reason).toContain('غير معروف')
+  })
+
+  it('وجود السقف يعلو على التقريبي', () => {
+    const result = dailyAllowance(
+      parseMoney('2700.00'),
+      0,
+      '2026-10-01',
+      period,
+      parseMoney('99999.00'),
+    )
+    expect(result.approximate).toBe(false)
+    expect(formatAmount(result.amountMinor!)).toBe('100.00')
   })
 
   it('يقسّم المتبقي على الأيام الباقية فعلًا', () => {

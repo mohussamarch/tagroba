@@ -2,59 +2,60 @@
   position: relative;
 }
 
+/* شريحة واحدة هادية بدل الشريط العريض — إعادة تصميم 2026-09-11.
+   الأزرار فضلت 48 للمس (spec/04) لكن بلا حدود ولا خلفيات تقيلة. */
 .periodPicker__bar {
   display: flex;
-  align-items: stretch;
-  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  background: var(--c-soft);
+  border-radius: 999px;
+  padding: 0 2px;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .periodPicker__arrow {
   width: var(--touch-min);
   min-height: var(--touch-min);
-  border: 1px solid var(--c-border);
-  background: var(--c-surface);
-  border-radius: 12px;
+  border: none;
+  background: none;
+  border-radius: 999px;
   cursor: pointer;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   line-height: 1;
   color: var(--c-muted);
   flex-shrink: 0;
-  transition: background var(--motion), color var(--motion);
+  transition: color var(--motion);
 }
 
-.periodPicker__arrow:hover {
-  background: var(--c-soft);
-  color: var(--c-text);
-}
+.periodPicker__arrow:hover { color: var(--c-text); }
 
 .periodPicker__label {
-  flex: 1;
   min-width: 0;
   min-height: var(--touch-min);
-  border: 1px solid var(--c-border);
-  background: var(--c-surface);
-  border-radius: 12px;
+  border: none;
+  background: none;
+  border-radius: 999px;
   cursor: pointer;
-  display: grid;
-  gap: 1px;
-  place-items: center;
-  padding: 6px 10px;
-  transition: background var(--motion);
-}
-
-.periodPicker__label:hover {
-  background: var(--c-soft);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 6px;
 }
 
 .periodPicker__month {
-  font-size: var(--t-section);
-  font-weight: 700;
+  font-size: var(--t-body);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* النطاق الكامل ظاهر دائمًا — spec/04 */
 .periodPicker__range {
   font-size: var(--t-badge);
   color: var(--c-muted);
+  white-space: nowrap;
 }
 
 .periodPicker__panel {

@@ -135,10 +135,12 @@ describe('محتويات الشاشة', () => {
     expect(data.periodRange).toBe(`${PERIOD.start} ← ${PERIOD.end}`)
   })
 
-  it('المتاح اليومي غير متاح بلا سقف، والتوقع يذكر قصوره', async () => {
+  /* OVERRIDES §19: بلا سقف الرقم بيظهر تقريبي من المتبقي — مش «غير متاح». */
+  it('المتاح اليومي تقريبي بلا سقف، والتوقع يذكر قصوره', async () => {
     const data = await loadWith([txn('purchase', '752.00', 'cat-food')])
-    expect(data.allowance.amountMinor).toBeNull()
-    expect(data.allowance.reason).toContain('سقف')
+    expect(data.allowance.amountMinor).not.toBeNull()
+    expect(data.allowance.approximate).toBe(true)
+    expect(data.allowance.reason).toContain('تقريبي')
     expect(data.forecast.projectedMinor).not.toBeNull()
     expect(data.forecast.caveat.length).toBeGreaterThan(20)
   })
@@ -251,8 +253,13 @@ it('uses the saved budget for the selected period, including edits and removal',
  expect((await load(options)).allowance.amountMinor).toBe(30000)
  await budgets.save({...budget,totalLimitMinor:12000})
  expect((await load(options)).allowance.amountMinor).toBe(12000)
+ // فترة تانية بلا سقف: مفيش عمليات ⇒ المتبقي صفر ⇒ رقم تقريبي صفر (OVERRIDES §19)
  const other=buildPeriod(2026,8,28)
- expect((await load({...options,period:other,today:other.end})).allowance.amountMinor).toBeNull()
+ const otherAllowance=(await load({...options,period:other,today:other.end})).allowance
+ expect(otherAllowance.amountMinor).toBe(0)
+ expect(otherAllowance.approximate).toBe(true)
  await budgets.remove(PERIOD.key)
- expect((await load(options)).allowance.amountMinor).toBeNull()
+ const afterRemove=(await load(options)).allowance
+ expect(afterRemove.amountMinor).toBe(0)
+ expect(afterRemove.approximate).toBe(true)
 })

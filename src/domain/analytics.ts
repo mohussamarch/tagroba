@@ -69,39 +69,63 @@ export function categoryDistribution(
 /* ───────────────────────── المتاح اليومي ───────────────────────── */
 
 export interface DailyAllowance {
-  /** null = غير متاح (لا سقف محدد). لا يُخترع سقف من المتوسط. */
+  /** null = غير متاح فعلًا (الفترة خلصت، أو مفيش سقف ولا متبقي معروف). */
   amountMinor: Halalas | null
   remainingDays: number
+  /**
+   * الرقم مبني على **المتبقي** لا على سقف محدد — OVERRIDES §19.
+   * لازم يتعرض بشارة «تقريبي» وسببه مكتوب.
+   */
+  approximate: boolean
   reason: string
 }
 
 /**
- * المتاح اليومي = max(0، المتبقي من الميزانية) ÷ الأيام المتبقية.
+ * المتاح اليومي = max(0، المتبقي) ÷ الأيام المتبقية.
  *
  * spec/02: «بحسب نطاق الفترة المعلن. **لا تستخدم 11 يومًا أو 30 يومًا ثابتة**.»
- * spec/06: «تصنيف بلا سقف/تاريخ ⇒ لا سقف أو متوسط مخترع».
+ *
+ * OVERRIDES §19 (قرار المالك 2026-09-11): من غير سقف ميزانية **ما نقولش
+ * «غير متاح»** — نحسب تقريبيًا من المتبقي (الدخل ناقص المصروف) ونكتب
+ * «تقريبي» وسببه. وجود السقف يعلو: ساعتها الحساب من السقف زي ما هو.
  */
 export function dailyAllowance(
   budgetLimitMinor: Halalas | null,
   spentMinor: Halalas,
   today: string,
   period: Period,
+  /** المتبقي في الفترة — يُستعمل بس لما مفيش سقف. */
+  remainingMinor: Halalas | null = null,
 ): DailyAllowance {
   const remainingDays = remainingDaysInPeriod(today, period)
-
-  if (budgetLimitMinor === null) {
-    return {
-      amountMinor: null,
-      remainingDays,
-      reason: 'مفيش سقف محدد للفترة دي. المتاح اليومي محتاج سقف تحدده انت.',
-    }
-  }
 
   if (remainingDays === 0) {
     return {
       amountMinor: null,
       remainingDays: 0,
+      approximate: false,
       reason: 'الفترة دي خلصت، فمفيش أيام باقية يتوزع عليها.',
+    }
+  }
+
+  if (budgetLimitMinor === null) {
+    if (remainingMinor === null) {
+      return {
+        amountMinor: null,
+        remainingDays,
+        approximate: false,
+        reason: 'مفيش سقف للفترة دي، والمتبقي نفسه لسه غير معروف.',
+      }
+    }
+    const left = Math.max(0, remainingMinor)
+    return {
+      amountMinor: Math.floor(left / remainingDays),
+      remainingDays,
+      approximate: true,
+      reason:
+        left === 0
+          ? 'تقريبي — مفيش سقف ميزانية، والمتبقي خلص.'
+          : `تقريبي — مفيش سقف ميزانية، فده المتبقي موزّع على ${remainingDays} يوم باقيين.`,
     }
   }
 
@@ -109,6 +133,7 @@ export function dailyAllowance(
   return {
     amountMinor: Math.floor(left / remainingDays),
     remainingDays,
+    approximate: false,
     reason:
       left === 0
         ? 'خلصت السقف بتاع الفترة دي.'
