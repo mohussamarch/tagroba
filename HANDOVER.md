@@ -1108,3 +1108,4 @@ node scripts/webview-devtools.mjs --eval "document.body.innerText.slice(0,150)" 
 
 ### ⚠️ غلطة وقعت في Figma — لا تكررها (2026-09-11)
 - **استعمال رقم عنصر (node id) متوقّع بدل البحث بالاسم** رمى `no such property 'appendChild' on TEXT node`: افترضت إن رقم «رف المكوّنات» هو اللي بعد القسم، وطلع رقم عنوان نصي. **الصح:** `page.query('FRAME[name=…]').first()`. والأخطر إن الأمر بيفضل نصّه منفّذ لحد نقطة الخطأ ⇒ ممكن يسيب عناصر ناقصة، فالمحاولة التانية لازم تنضف الأول (اتعمل: حذف أي مكوّن بنفس الاسم داخل الصفحة دي بس).
+- **`node.query('TYPE[name=اسم عربي]')` بيفشل** بـ`Invalid selector: unexpected character (0xd8)` — أداة البحث بالنص في Figma ما بتقبلش حروف عربية في قيمة الاسم. **الصح:** `node.findOne(n => n.type === 'FRAME' && n.name === 'الاسم')`.
