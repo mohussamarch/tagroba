@@ -1,4 +1,5 @@
 import { computePeriodTotals } from '../../domain/ledger'
+import { withEstimatedKinds } from '../../domain/estimatedKinds'
 import { savingsRatePercent } from '../../domain/formatMoney'
 import {
   assessCoverage,
@@ -54,6 +55,10 @@ export interface HomeScreenData {
    * لم تُحدَّد بعد. الرقم صحيح «لحد دلوقتي» لا نهائي، ولازم يُقال ذلك.
    */
   partial: boolean
+  /** كام عملية اتحسبت بنوع تقديري (OVERRIDES §18). */
+  estimatedCount: number
+  /** منها: كام عملية التطبيق مش متأكد منها — محتاجة تأكيد. */
+  needsReviewCount: number
 
   distribution: CategorySlice[]
   categories: Category[]
@@ -106,9 +111,13 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
     const budgetLimitMinor = deps.budgets ? savedBudget?.totalLimitMinor ?? null : options.budgetLimitMinor ?? null
     const allocations = await deps.allocations.listByTransactionIds(transactions.map((t) => t.id))
 
-    const totals = computePeriodTotals(transactions, allocations)
-    const coverage = assessCoverage(transactions)
-    const { slices } = categoryDistribution(transactions, allocations)
+    // الواضح يتحسب بنوعه المقترح «تقديري» (OVERRIDES §18)؛ «أحدث العمليات» تفضل بالعمليات الأصلية
+    const names = new Map(categories.map((c) => [c.id, c.name]))
+    const estimated = withEstimatedKinds(transactions, names)
+    const counted = estimated.transactions
+    const totals = computePeriodTotals(counted, allocations)
+    const coverage = assessCoverage(counted)
+    const { slices } = categoryDistribution(counted, allocations)
 
     /*
      * ثلاث حالات لا اثنتان — CLAUDE.md #10:
@@ -145,7 +154,7 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
     const recentPeriods: PeriodSummary[] = options.includeHistory === false ? [] : await Promise.all(Array.from({ length: RECENT_PERIOD_COUNT }, async (_, i) => {
       const p = i === 0 ? period : shiftPeriod(period, -i, payday)
       const rows =
-        i === 0 ? transactions : await deps.txns.listByDateRange(p.start, p.end)
+        i === 0 ? counted : withEstimatedKinds(await deps.txns.listByDateRange(p.start, p.end), names).transactions
       const rowAllocations =
         i === 0 ? allocations : await deps.allocations.listByTransactionIds(rows.map((r) => r.id))
       const t = computePeriodTotals(rows, rowAllocations)
@@ -174,6 +183,8 @@ export function makeLoadHomeScreen(deps: LoadHomeScreenDeps) {
           : savingsRatePercent(totals.incomeMinor, totals.remainingMinor),
       excludedExpenseMinor: allUnknown ? null : totals.excludedExpenseMinor,
       partial,
+      estimatedCount: estimated.estimatedCount,
+      needsReviewCount: estimated.needsReviewCount,
       distribution: slices,
       categories,
       latest,

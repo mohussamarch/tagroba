@@ -13,6 +13,7 @@ import { computePeriodTotals } from '../../domain/ledger'
 import { dailyAllowance, type DailyAllowance } from '../../domain/analytics'
 import { buildPeriod, type Period } from '../../domain/period'
 import type { Halalas } from '../../domain/money'
+import { withEstimatedKinds } from '../../domain/estimatedKinds'
 import type { Budget, Category, CategoryBudget, Id } from '../../domain/entities/types'
 import type {
   AllocationRepository,
@@ -90,9 +91,13 @@ export function makeLoadBudgetScreen(deps: LoadBudgetScreenDeps) {
       deps.budgets.findByPeriod(period.key),
     ])
     const allocations = await deps.allocations.listByTransactionIds(transactions.map((t) => t.id))
+    // الواضح يتحسب بنوعه المقترح، بنفس قاعدة الرئيسية (OVERRIDES §18)
+    const names = new Map(categories.map((c) => [c.id, c.name]))
+    const estimated = withEstimatedKinds(transactions, names)
+    const counted = estimated.transactions
 
-    const totals = computePeriodTotals(transactions, allocations)
-    const coverage = assessCoverage(transactions)
+    const totals = computePeriodTotals(counted, allocations)
+    const coverage = assessCoverage(counted)
     const spentMinor = totals.personalExpenseMinor
     // مجهول لا صفر: فيه عمليات وولا واحدة محددة النوع
     const spentKnown = !(coverage.total > 0 && coverage.unclassified === coverage.total)
@@ -110,7 +115,8 @@ export function makeLoadBudgetScreen(deps: LoadBudgetScreenDeps) {
       const rowAllocations = await deps.allocations.listByTransactionIds(rows.map((r) => r.id))
       return { p, rows, rowAllocations }
     }))
-    for (const { p, rows, rowAllocations } of historyRows) {
+    for (const { p, rows: rawRows, rowAllocations } of historyRows) {
+      const rows = withEstimatedKinds(rawRows, names).transactions
       const t = computePeriodTotals(rows, rowAllocations)
       const c = assessCoverage(rows)
 
@@ -152,7 +158,7 @@ export function makeLoadBudgetScreen(deps: LoadBudgetScreenDeps) {
       )
     }
 
-    const { slices } = categoryDistribution(transactions, allocations)
+    const { slices } = categoryDistribution(counted, allocations)
     const spendByCategory = new Map<Id, Halalas>()
     for (const slice of slices) {
       if (slice.categoryId !== null) spendByCategory.set(slice.categoryId, slice.amountMinor)
@@ -176,8 +182,12 @@ export function makeLoadBudgetScreen(deps: LoadBudgetScreenDeps) {
           ? null
           : budgetStatus(totalLimit, spentMinor, budget!.thresholdPercent),
       spentMinor,
-      spentReliable: coverage.totalsReliable,
-      spentNote: coverage.note,
+      spentReliable: coverage.totalsReliable && estimated.estimatedCount === 0,
+      spentNote: estimated.needsReviewCount > 0
+        ? `تقريبي: ${estimated.needsReviewCount} عملية محتاجة تأكيد نوعها، والرقم هيتظبط لما تأكدها.`
+        : estimated.estimatedCount > 0
+          ? `تقريبي: ${estimated.estimatedCount} عملية نوعها اتحدد تلقائي.`
+          : coverage.note,
       spentKnown,
       average,
       anomaly: detectAnomaly(

@@ -186,7 +186,7 @@ export function createContainer(): Container {
         readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
         smsInbox: makeManageSmsInbox(androidSmsInbox(uid), parseBankSms),
         homeSnapshot: createHomeSnapshot(uid),
-        loadHomeHistory: makeLoadHomeHistory({txns,allocations}),
+        loadHomeHistory: makeLoadHomeHistory({txns,allocations,categories}),
         saveTextFile,
         fullBackup: makeFullBackup(firestoreFullBackup(db,uid),backupDigest),
         repairStoredIds: makeRepairStoredIds(firestoreIdRepair(db,uid),sanitizeAccountNumbers),

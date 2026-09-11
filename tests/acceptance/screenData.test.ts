@@ -88,9 +88,10 @@ describe('بيانات شاشة العمليات — لا صفر مكان الم
     expect(data.totalCount).toBe(2)
 
     expect(data.incomeMinor).toBe(parseMoney('7000.00'))
-    // غير المحدد لا يُحسب مصروفًا — ولذلك العدّاد بيقول للمستخدم إنها ناقصة
-    expect(data.expenseMinor).toBe(0)
-    expect(data.remainingMinor).toBe(parseMoney('7000.00'))
+    // OVERRIDES §18: غير المحدد يتحسب تقريبي (صادر بلا دليل ⇒ مصروف) ومعدود «محتاج تأكيد»
+    expect(data.expenseMinor).toBe(parseMoney('32.00'))
+    expect(data.remainingMinor).toBe(parseMoney('6968.00'))
+    expect(data).toMatchObject({ estimatedCount: 1, needsReviewCount: 1 })
   })
 
   it('كل العمليات محددة ⇒ لا تنبيه نقص', async () => {

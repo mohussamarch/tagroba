@@ -72,6 +72,13 @@ export function HomeScreen({
         {data.partial && data.expenseMinor !== null && (
           <span className="badge badge--partial">لحد دلوقتي — الرقم لسه ناقص</span>
         )}
+        {data.estimatedCount > 0 && data.expenseMinor !== null && (
+          <span className="badge badge--partial">
+            {data.needsReviewCount > 0
+              ? `تقريبي — ${data.needsReviewCount} عملية محتاجة تأكيد`
+              : `تقريبي — ${data.estimatedCount} عملية نوعها اتحدد تلقائي`}
+          </span>
+        )}
         <span className="home__heroSub">
           {data.transactionCount} عملية في {monthLabel(data.period)}
         </span>

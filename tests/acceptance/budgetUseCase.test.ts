@@ -216,7 +216,8 @@ describe('السقف يُضبط ويُمسح — معيار ARCHITECTURE §7', (
 })
 
 describe('المتوسط والشذوذ على بيانات حقيقية الشكل', () => {
-  it('فترة سابقة نصف محددة تُستبعد من المتوسط', async () => {
+  // OVERRIDES §18: «كل المتوسطات تكون شغالة» — الفترة غير المحددة تدخل بنوعها التقريبي
+  it('فترة سابقة غير محددة تدخل المتوسط بنوعها التقريبي', async () => {
     const sys = makeSystem()
     for (let i = 1; i <= 4; i++) {
       const p = buildPeriod(2026, 9 - i, 28)
@@ -229,9 +230,8 @@ describe('المتوسط والشذوذ على بيانات حقيقية الش�
     ])
 
     const data = await sys.load({ period: PERIOD, today: TODAY, payday: 28 })
-    expect(data.average.usedPeriods).not.toContain(p5.key)
-    expect(formatAmount(data.average.averageMinor!)).toBe('1,000.00') // لم تلوثه
-    expect(data.average.excluded.some((e) => e.periodKey === p5.key)).toBe(true)
+    expect(data.average.usedPeriods).toContain(p5.key)
+    expect(data.average.averageMinor).not.toBeNull()
   })
 
   it('صرف شاذ في الفترة الجارية يُعلَّم', async () => {
@@ -264,15 +264,15 @@ describe('المتوسط والشذوذ على بيانات حقيقية الش�
     ])
 
     const data = await sys.load({ period: PERIOD, today: TODAY, payday: 28 })
-    expect(data.spentReliable).toBe(false)
-    expect(data.spentNote).toContain('1 عملية من 2')
-    expect(formatAmount(data.spentMinor)).toBe('500.00') // الجزئي صحيح
-    expect(data.spentKnown).toBe(true) // فيه عملية محددة، فالجزئي معروف
+    expect(data.spentReliable).toBe(false) // فيه نوع اتحدد تلقائي
+    expect(data.spentNote).toContain('تقريبي')
+    expect(formatAmount(data.spentMinor)).toBe('1,200.00') // المشتريات بتصنيف تتحسب
+    expect(data.spentKnown).toBe(true)
   })
 })
 
 describe('المصروف المجهول لا يُعرض صفرًا — CLAUDE.md #10', () => {
-  it('كل العمليات بلا نوع ⇒ المصروف مجهول ولا مقارنة سقف', async () => {
+  it('كل العمليات بلا نوع ⇒ المصروف تقريبي والمقارنة بالسقف شغالة (OVERRIDES §18)', async () => {
     const sys = makeSystem()
     await sys.txns.saveMany([
       txn('500.00', '2026-10-01', 'cat-food', 'unclassified'),
@@ -282,11 +282,11 @@ describe('المصروف المجهول لا يُعرض صفرًا — CLAUDE.md
 
     const data = await sys.load({ period: PERIOD, today: TODAY, payday: 28 })
 
-    expect(data.spentKnown).toBe(false)
-    // السقف محفوظ، لكن لا شريط مقارنة ولا متاح يومي: «0 من 3000» راحة كاذبة
+    expect(data.spentKnown).toBe(true)
     expect(data.budget!.totalLimitMinor).toBe(parseMoney('3000.00'))
-    expect(data.totalStatus).toBeNull()
-    expect(data.allowance.amountMinor).toBeNull()
+    expect(formatAmount(data.totalStatus!.spentMinor)).toBe('1,200.00')
+    expect(data.allowance.amountMinor).not.toBeNull()
+    expect(data.spentNote).toContain('تقريبي')
   })
 
   it('تحديد نوع عملية واحدة يعيد المقارنة', async () => {
@@ -300,7 +300,7 @@ describe('المصروف المجهول لا يُعرض صفرًا — CLAUDE.md
     const data = await sys.load({ period: PERIOD, today: TODAY, payday: 28 })
     expect(data.spentKnown).toBe(true)
     expect(data.totalStatus).not.toBeNull()
-    expect(formatAmount(data.totalStatus!.spentMinor)).toBe('500.00')
+    expect(formatAmount(data.totalStatus!.spentMinor)).toBe('1,200.00') // الـ700 تقريبي بتصنيفها
     expect(data.allowance.amountMinor).not.toBeNull()
   })
 })

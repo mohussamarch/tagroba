@@ -144,7 +144,7 @@ export function createDemoContainer(): Container {
 
   const userContainer: UserContainer = {
     homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},
-    loadHomeHistory: makeLoadHomeHistory({txns,allocations}),
+    loadHomeHistory: makeLoadHomeHistory({txns,allocations,categories}),
     readBankSms: makeReadBankSms({ available: false, read: async () => ({messages:[],truncated:false}) }, parseBankSms),
     smsInbox: makeManageSmsInbox(memorySmsInbox([
       {id:'demo-sms-one',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 25.50 SAR لدى DEMO ALBAIK في '+new Date().toISOString().slice(0,10)},

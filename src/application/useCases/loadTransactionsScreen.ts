@@ -1,6 +1,7 @@
 import { merchantIndex } from '../../domain/merchantIndex'
 import { normalizeText } from '../../domain/normalize'
 import { computePeriodTotals } from '../../domain/ledger'
+import { withEstimatedKinds } from '../../domain/estimatedKinds'
 import { savingsRatePercent } from '../../domain/formatMoney'
 import { buildPeriod, formatPeriodRange, periodForDate, type Period } from '../../domain/period'
 import type { Category, Transaction } from '../../domain/entities/types'
@@ -46,6 +47,10 @@ export interface TransactionsScreenData {
 
   /** عدد العمليات التي لم يُحدَّد نوعها الاقتصادي بعد. */
   unclassifiedCount: number
+  /** كام عملية اتحسبت بنوع تقديري (OVERRIDES §18). */
+  estimatedCount: number
+  /** منها: كام عملية التطبيق مش متأكد منها — محتاجة تأكيد. */
+  needsReviewCount: number
   /** عدد عمليات الفترة كلها. */
   totalCount: number
 }
@@ -85,7 +90,9 @@ export function makeLoadTransactionsScreen(deps: LoadTransactionsScreenDeps) {
       const name = tagNames.get(link.tagId)
       if (name) tagNamesByTransaction[link.transactionId] = [...new Set([...(tagNamesByTransaction[link.transactionId]??[]),name])]
     }
-    const totals = computePeriodTotals(transactions, allocations)
+    // المجاميع بالأنواع التقديرية للواضح (OVERRIDES §18)؛ القائمة المعروضة تفضل بالعمليات الأصلية
+    const estimated = withEstimatedKinds(transactions, new Map(categories.map((c) => [c.id, c.name])))
+    const totals = computePeriodTotals(estimated.transactions, allocations)
 
     const merchantMap=merchantIndex(await deps.merchants?.listAll()??[])
     const merchantNamesByTransaction:Record<string,string[]>={}
@@ -93,7 +100,8 @@ export function makeLoadTransactionsScreen(deps: LoadTransactionsScreenDeps) {
       const m=merchantMap.get(normalizeText(t.rawMerchantName??''))
       if(m) merchantNamesByTransaction[t.id]=[m.displayName,...(m.aliases??[])]
     }
-    const unclassifiedCount = transactions.filter((t) => t.economicKind === 'unclassified').length
+    // «محتاجة تحديد نوع» = اللي التطبيق مش متأكد منها؛ المجاميع نفسها متاحة دايمًا (OVERRIDES §18)
+    const unclassifiedCount = estimated.needsReviewCount
     const totalCount = transactions.length
 
     // فيه عمليات، لكن ولا واحدة محددة النوع ⇒ المجاميع مجهولة لا صفر
@@ -113,6 +121,8 @@ export function makeLoadTransactionsScreen(deps: LoadTransactionsScreenDeps) {
         ? null
         : savingsRatePercent(totals.incomeMinor, totals.remainingMinor),
       unclassifiedCount,
+      estimatedCount: estimated.estimatedCount,
+      needsReviewCount: estimated.needsReviewCount,
       totalCount,
     }
   }

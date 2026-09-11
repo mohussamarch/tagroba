@@ -63,41 +63,34 @@ async function loadWith(transactions: Transaction[], today = '2026-10-08') {
 }
 
 describe('الحالات الثلاث للمجاميع', () => {
-  it('١. ولا عملية محددة ⇒ كل شيء غير متاح', async () => {
+  // OVERRIDES §18 (تعديل المالك): الأرقام دايمًا ظاهرة «تقريبي» مع عدد المحتاج تأكيد
+  it('١. ولا عملية محددة ⇒ الأرقام تقريبية ومتاحة، ومعروض كام عملية محتاجة تأكيد', async () => {
     const data = await loadWith([
       txn('unclassified', '7000.00'),
       txn('unclassified', '720.00', 'cat-shop'),
     ])
-    expect(data.expenseMinor).toBeNull()
-    expect(data.incomeMinor).toBeNull()
-    expect(data.remainingMinor).toBeNull()
-    expect(data.savingsRatePercent).toBeNull()
-    expect(data.partial).toBe(false) // ليست جزئية، بل مجهولة كليًا
-    expect(data.forecast.projectedMinor).toBeNull()
-    expect(data.allowance.amountMinor).toBeNull()
-    expect(formatMoneyOrNA(data.expenseMinor)).toBe(NOT_AVAILABLE)
+    expect(data.expenseMinor).not.toBeNull()
+    expect(data.incomeMinor).not.toBeNull()
+    expect(data.remainingMinor).not.toBeNull()
+    expect(formatMoneyOrNA(data.expenseMinor)).not.toBe(NOT_AVAILABLE)
+    expect(data.estimatedCount).toBe(2)
+    expect(data.needsReviewCount).toBe(1) // المشتريات بتصنيف واضحة؛ الـ7000 بلا دليل
+    expect(data.forecast.caveat ?? '').not.toContain('تحدّد أنواع')
+    expect(data.allowance.reason ?? '').not.toContain('حدّد أنواع')
   })
 
-  it('٢. بعضها محدد ⇒ الدخل والمصروف جزئيان، والمتبقي **null** لا رقم مضلِّل', async () => {
+  it('٢. بعضها محدد ⇒ كل الأرقام متاحة، والمؤكَّد محسوب بنوعه، والباقي تقريبي معدود', async () => {
     const data = await loadWith([
       txn('unclassified', '7000.00'), // راتب لم يُحدَّد بعد
       txn('purchase', '720.00', 'cat-shop'),
       txn('purchase', '32.00', 'cat-food'),
     ])
 
-    expect(data.partial).toBe(true)
-    expect(formatAmount(data.expenseMinor!)).toBe('752.00') // صحيح لحد دلوقتي
-    expect(data.incomeMinor).toBe(0) // لا دخل مؤكد بعد
-
-    // الحاسم: المتبقي ومعدل الادخار **لا يُعرضان**، لأن الدخل ناقص
-    // وعرض «−752.00» يوحي بعجز غير موجود
-    expect(data.remainingMinor).toBeNull()
-    expect(data.savingsRatePercent).toBeNull()
-
-    expect(data.forecast.projectedMinor).toBeNull()
-    expect(data.allowance.amountMinor).toBeNull()
-    expect(data.coverage.totalsReliable).toBe(false)
-    expect(data.coverage.note).toContain('1 عملية من 3')
+    expect(data.partial).toBe(false) // مفيش حاجة مجهولة في الحساب
+    expect(data.expenseMinor! >= 75200).toBe(true) // المحدد محسوب دايمًا
+    expect(data.remainingMinor).not.toBeNull()
+    expect(data.estimatedCount).toBe(1)
+    expect(data.needsReviewCount).toBe(1)
   })
 
   it('٣. كلها محددة ⇒ كل شيء متاح وصحيح', async () => {
@@ -152,7 +145,7 @@ describe('محتويات الشاشة', () => {
 })
 
 describe('دورة كاملة: استيراد ⇒ اقتراح ⇒ تأكيد ⇒ أرقام متاحة', () => {
-  it('التأكيد الجماعي يحوّل «غير متاح» إلى رقم حقيقي', async () => {
+  it('التأكيد الجماعي يحوّل الرقم التقريبي إلى مؤكد', async () => {
     const txns = new MemoryTransactionRepository()
     const categories = new MemoryCategoryRepository(CATEGORIES)
     const allocations = new MemoryAllocationRepository()
@@ -165,7 +158,9 @@ describe('دورة كاملة: استيراد ⇒ اقتراح ⇒ تأكيد �
 
     const load = makeLoadHomeScreen({ txns, categories, allocations })
     const before = await load({ period: PERIOD, today: '2026-10-08', payday: 28 })
-    expect(before.expenseMinor).toBeNull()
+    // تقريبي قبل التأكيد: الرقم ظاهر ومعلَّم إن نوعه اتحدد تلقائي (OVERRIDES §18)
+    expect(formatAmount(before.expenseMinor!)).toBe('752.00')
+    expect(before.estimatedCount).toBe(2)
 
     const kinds = makeSetEconomicKind({
       txns,
@@ -179,9 +174,9 @@ describe('دورة كاملة: استيراد ⇒ اقتراح ⇒ تأكيد �
     expect(summary.confirmable).toHaveLength(2)
     expect(summary.confirmable.every((l) => l.suggestion.kind === 'purchase')).toBe(true)
 
-    // لا شيء يُطبَّق قبل موافقة صريحة
-    const stillNull = await load({ period: PERIOD, today: '2026-10-08', payday: 28 })
-    expect(stillNull.expenseMinor).toBeNull()
+    // لا شيء يُكتب في العمليات قبل موافقة صريحة — التقريبي للعرض فقط
+    const stored = await txns.listByDateRange(PERIOD.start, PERIOD.end)
+    expect(stored.every((t) => t.economicKind === 'unclassified')).toBe(true)
 
     const result = await kinds.confirmBulk(
       rows,
@@ -191,6 +186,7 @@ describe('دورة كاملة: استيراد ⇒ اقتراح ⇒ تأكيد �
 
     const after = await load({ period: PERIOD, today: '2026-10-08', payday: 28 })
     expect(formatAmount(after.expenseMinor!)).toBe('752.00')
+    expect(after.estimatedCount).toBe(0) // بعد التأكيد الرقم مؤكد مش تقريبي
     expect(after.partial).toBe(false)
     expect(after.coverage.totalsReliable).toBe(true)
   })

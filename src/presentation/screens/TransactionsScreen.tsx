@@ -144,7 +144,8 @@ export function TransactionsScreen({
           <div className="txnsSummary" role="status">
             <span>
               {data.totalCount} عملية
-              {data.unclassifiedCount > 0 && ` · ${data.unclassifiedCount} محتاجة تحديد نوع`}
+              {data.unclassifiedCount > 0 && ` · ${data.unclassifiedCount} محتاجة تأكيد`}
+              {data.estimatedCount > 0 && ` · الأرقام تقريبية`}
             </span>
             <span className="txnsSummary__actions">
               {data.unclassifiedCount > 0 && (
