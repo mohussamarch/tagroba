@@ -71,7 +71,7 @@ export function HomeScreen({
           <span className="badge badge--partial">لحد دلوقتي — الرقم لسه ناقص</span>
         )}
         {data.estimatedCount > 0 && data.expenseMinor !== null && (
-          <span className="badge badge--partial">
+          <span className="badge badge--approx">
             {data.needsReviewCount > 0 ? 'تقريبي' : 'تقريبي — الأنواع اتحددت تلقائي'}
           </span>
         )}
@@ -140,7 +140,7 @@ export function HomeScreen({
               : formatAmount(data.allowance.amountMinor)}
           </span>
           {/* الرقم المبني على المتبقي بدل السقف يُقال إنه تقريبي — OVERRIDES §19 */}
-          {data.allowance.approximate && <span className="badge badge--partial">تقريبي</span>}
+          {data.allowance.approximate && <span className="badge badge--approx">تقريبي</span>}
           <span className="home__boxNote">{data.allowance.reason}</span>
         </section>
 

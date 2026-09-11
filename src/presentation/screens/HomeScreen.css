@@ -221,6 +221,15 @@
 
 .notice--action .btn { justify-self: start; }
 
+/* «تقريبي» حالة عادية مش تحذير — لون هادي، والنص نفسه هو الدلالة.
+   (الأحمر كان بيخلي الرقم الطبيعي يبان كأنه غلط — اتشاف على المحاكي 2026-09-11) */
+.badge--approx {
+  background: var(--c-soft);
+  border: 1px solid var(--c-border);
+  color: var(--c-muted);
+  font-size: var(--t-badge);
+}
+
 /* وسم الرقم الجزئي — لا يعتمد على اللون وحده، النص نفسه يقول إنه ناقص */
 .badge--partial {
   background: var(--c-soft);
