@@ -85,13 +85,18 @@
   margin: 0;
 }
 
+/* شريط الأفعال تحت الورقة: حد فاصل فوقه عشان يبان إنه شريط، مش أزرار
+   عايمة فوق النص — إعادة تصميم 2026-09-11 (شكوى «الأزرار فوق المحتوى»). */
 .sheet__foot {
   display: flex;
   gap: 10px;
   position: sticky;
   bottom: 0;
   background: var(--c-surface);
+  border-top: 1px solid var(--c-border);
   padding-top: 10px;
+  padding-bottom: max(4px, var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+  margin-top: 4px;
 }
 
 .sheet__foot .btn { flex: 1; justify-self: stretch; }

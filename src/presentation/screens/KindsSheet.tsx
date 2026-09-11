@@ -233,6 +233,8 @@ function KindRow({
         className="kinds__amount num"
         style={{ color: t.observedDirection === 'in' ? 'var(--c-incoming)' : 'var(--c-outgoing)' }}
       >
+        {/* الإشارة جوه الخانة المعزولة زي صف العملية — مش لون وحده (spec/04) */}
+        {t.observedDirection === 'in' ? '+' : '−'}
         {formatAmount(t.amountMinor)}
       </span>
     </li>
@@ -264,21 +266,27 @@ function AmbiguousRow({
               fontWeight: 700,
             }}
           >
+            {t.observedDirection === 'in' ? '+' : '−'}
             {formatAmount(t.amountMinor)}
           </span>
         </div>
         <div className="kinds__reason">{line.suggestion.reason}</div>
         <div className="kinds__options">
-          {options.map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              className="kinds__option"
-              onClick={() => onPick(t.id, kind)}
-            >
-              {ruleFor(kind).label}
-            </button>
-          ))}
+          {options.map((kind, index) => {
+            // أول اختيار هو اقتراح التطبيق — لما يكون فيه اقتراح أصلًا
+            const isSuggested = index === 0 && Boolean(line.suggestion.kind)
+            return (
+              <button
+                key={kind}
+                type="button"
+                className={`kinds__option${isSuggested ? ' kinds__option--suggested' : ''}`}
+                onClick={() => onPick(t.id, kind)}
+              >
+                {ruleFor(kind).label}
+                {isSuggested && <span className="kinds__optionTag">الاقتراح</span>}
+              </button>
+            )
+          })}
         </div>
       </div>
     </li>

@@ -30,16 +30,16 @@
   grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: start;
+  background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-radius: 12px;
-  padding: 10px var(--s-card);
+  border-radius: var(--r-metric);
+  padding: 12px var(--s-card);
 }
 
-/* صف القرار الفردي بلا خانة اختيار ولا مبلغ جانبي */
-.kinds__row--pick {
-  grid-template-columns: 1fr;
-  border-color: var(--c-outgoing);
-}
+/* صف القرار الفردي بلا خانة اختيار ولا مبلغ جانبي.
+   الحد الأحمر اتشال: اللون لوحده مش دلالة (spec/04)، والدلالة الحقيقية
+   هي وجود الاختيارات نفسها وشارة «الاقتراح» — إعادة تصميم 2026-09-11. */
+.kinds__row--pick { grid-template-columns: 1fr; }
 
 .kinds__row input[type='checkbox'] {
   min-height: 20px;
@@ -91,14 +91,29 @@
 }
 
 .kinds__option {
-  min-height: 40px;
-  padding: 0 12px;
+  min-height: var(--touch-min);
+  padding: 0 14px;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   border-radius: 999px;
   font-size: var(--t-body);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   transition: background var(--motion), border-color var(--motion);
+}
+
+/* الاقتراح متعلّم بإطار **ومكتوب جنبه «الاقتراح»** — مش باللون وحده */
+.kinds__option--suggested {
+  border: 2px solid var(--c-action);
+  font-weight: 600;
+}
+
+.kinds__optionTag {
+  font-size: var(--t-badge);
+  color: var(--c-muted);
+  font-weight: 400;
 }
 
 .kinds__option:hover {
