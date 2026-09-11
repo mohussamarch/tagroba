@@ -839,3 +839,47 @@ to its gradle folder before invoking android/gradlew.bat. Do not commit signing 
 - **🟡 اكتشاف منتج مهم:** الـPDF **بلا عمود تصنيف البنك**، فالفصل المعتمد (مصروف حقيقي 100,468.27 / ليس مصروفًا 201,703.18) **لا ينتج من PDF**. بتصنيف التطبيق (القواعد والتجار): مصروف 63,934.36 · ليس مصروفًا 86,201.55 (محافظ رقمية/تقسيط/استثمار) · **غير مصنّف 152,035.54 في 524 عملية** — أغلبها بأوصاف بنكية ثابتة: «عملية تحويل داخلية»، «تحويل بين حسابات العميل»، «فواتير نظام سداد»، «سحب - الصراف الآلي»، «تحويل الى محفظة…». **لا توجد قواعد تصنّف التحويلات والسحب والسداد** من نص الـPDF. (تفاصيل المبالغ لكل جهة عمدًا خارج هذا الملف — الريبو علني.)
 - كل الـ1912 نوعها الاقتصادي `unclassified` ⇒ الرئيسية تعرض المصروف والدخل «بانتظار المراجعة» (سلوك مقصود، لا عطل).
 - **مقترح لم يُنفَّذ (يحتاج قرار المالك):** قواعد لأنواع العمليات البنكية الواضحة في نص الـPDF (تحويل داخلي/بين حسابات العميل/سحب صراف/سداد) تصنّفها «تحويلات»/«سحب نقدي»/«فواتير»، مع مراجعة تعارض «سداد» (ARCHITECTURE §9.6)، ثم مقارنة النتيجة بالفصل المعتمد على الـCSV.
+
+## 27. 🤖 بروتوكول محاكي أندرويد — اقرأه قبل أي «APK تمام» (2026-09-11)
+**لماذا:** المالك لاحظ أن مشاكل الـAPK على جواله غير اللي بتظهر في الاختبارات (ذاكرة + متصفح). **لا تقل إن APK شغال قبل ما تجرّبه على المحاكي بالخطوات دي.**
+
+### الموجود (خارج الريبو، على جهاز المالك)
+- الأدوات: `C:\Users\atgs0\Documents\Codex\android-build-tools\` — `sdk\emulator\` (37.1.11)، `sdk\system-images\android-35\google_apis\x86_64\` (Android 15)، `sdk\platform-tools\adb.exe`، `java\jdk-21…`.
+- الموبايل الافتراضي: `masroufy-pixel8` في `C:\Users\atgs0\.android\avd\` (1080×2400، 4GB RAM، 6GB بيانات، كيبورد الكمبيوتر مفعّل).
+- التسريع: `WHPX is installed and usable` — لا يحتاج تغيير في ويندوز.
+- المالك وافق (2026-09-11) على التحميل، والتجربة على **حسابه الحقيقي**: قراءة فقط، وأي كتابة (استيراد/إصلاح/تعديل) **بسؤاله أولًا**.
+
+### الأوامر (PowerShell، من جذر المشروع)
+```powershell
+$e = "scripts\android-emulator.ps1"
+& $e -Action setup      # ينشئ AVD لو مش موجود + فحص التسريع
+& $e -Action start      # يشغّل الشباك وينتظر الإقلاع (حتى 6 دقائق)
+& $e -Action install    # أحدث dist-android-apk\masroufy-trial-vN.apk بـ adb install -r (تحديث بلا مسح البيانات — زي جوال المالك)
+& $e -Action launch     # يفتح التطبيق ويطبع pid
+& $e -Action shot       # صورة PNG في %TEMP%\masroufy-emulator\ — افتحها بأداة القراءة وشوفها فعلًا
+& $e -Action tap -X 540 -Y 1200   # ضغطة بإحداثيات بكسل
+& $e -Action back
+& $e -Action log        # logcat للتطبيق (pid)؛ logclear يمسحه
+& $e -Action status     # الأجهزة، نسخة التطبيق المثبتة، pid
+& $e -Action stop
+```
+```bash
+node scripts/webview-devtools.mjs --watch 15 --reload   # أخطاء JS/console من داخل الـWebView من أول الفتح
+node scripts/webview-devtools.mjs --eval "document.body.innerText.slice(0,150)"   # قراءة حالة الشاشة
+```
+- **لا يوجد أمر كتابة نص عمدًا.** كلمة السر يكتبها المالك بنفسه في شباك المحاكي. الجلسة تبقى محفوظة في AVD بعدها.
+- `--eval` للقراءة فقط، وممنوع تفريغ أرقام مالية في الشات — اقرأ أعدادًا وحالات، لا محتوى.
+
+### أخطاء وقعت أثناء الإعداد — لا تكررها
+1. `sdkmanager "system-images;android-35;…"` من bash/PowerShell **فشل**: ملفات `.bat` بتقسم على `;`. استعمل `--package_file=<ملف فيه اسم الحزمة>`.
+2. `avdmanager create avd` **فشل** («Valid system image paths are: null») لأنه في `cmdline-tools\unpacked` مش `latest`. السكربت بيكتب `config.ini` و`.ini` مباشرة.
+3. Windows PowerShell 5.1 مع `ErrorActionPreference=Stop` بيعتبر أي stderr من برنامج خارجي خطأ قاتل (ده اللي كسر `build-android.ps1`). السكربتات بتستعمل `Invoke-Native` وتحكم بـ`$LASTEXITCODE`.
+4. **صورة بعد 3 ثواني من الفتح طلعت بيضا بالكامل** والتطبيق كان سليم (شاشة الدخول ظهرت بعدها). لا تحكم من صورة واحدة مبكرة: خد صورة تانية أو `--eval` لنص الشاشة.
+5. `-Action ui` (uiautomator) **ما رجّعش نصوص الـWebView**. للنصوص استعمل `webview-devtools.mjs --eval`.
+
+### ملاحظات من أول تشغيل (APK 1.3، versionCode 4)
+- التثبيت `Success`، الفتح بلا crash في logcat، الـWebView على `https://localhost/`، قابل للفحص بـDevTools (بناء debug).
+- **الفتح: شاشة فاضية ~3 ثواني قبل أي رسم.** قياس (force-stop ثم `am start -W`، صور على فترات، عدّ ألوان منطقة المحتوى): الـActivity جاهزة 1292ms؛ 1.5s فاضية تمامًا (لون واحد)؛ 3.0s رسم بسيط؛ 4.5s الشاشة كاملة. يعني التأخير **داخل صفحة الويب** قبل أول رسم React. (المحاكي على كمبيوتر، مش S24 — الرقم على الجوال مختلف.) مرتبط غالبًا بشكوى المالك عن ثقل الفتح.
+- `--watch 15 --reload`: **لا أخطاء JS ولا console** أثناء الفتح.
+- iframe تسجيل دخول Firebase (`firebaseapp.com/__/auth/iframe`) أخذ ~5.3 ثانية.
+- logcat: `W/Capacitor: Unable to read file at path public/plugins` (تحذير Capacitor معروف غالبًا بلا أثر — غير مُتحقق).
