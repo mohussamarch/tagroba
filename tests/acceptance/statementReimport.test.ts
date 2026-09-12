@@ -92,6 +92,41 @@ describe('إعادة استيراد نفس الكشف بقراءة مختلفة'
     expect(preview.counts.duplicates).toBe(1)
   })
 
+  /*
+   * نفس البلاغ: الكشف اتستورد مرتين قبل كده، فالعملية الواحدة بقى ليها أكتر
+   * من `sourceRecord`. فهرس التكرار كان بيتبني من **سجلات المصدر**، فالعملية
+   * كانت تتعد مرتين وتبتلع صفين واردين — وعملية حقيقية تتحسب «مكرر».
+   */
+  it('عملية ليها سجلَّي مصدر تتعد مرة واحدة — ما تبتلعش صفين', async () => {
+    const sources = new MemorySourceRecordRepository()
+    const imports = makeImportStatement({
+      txns: new MemoryTransactionRepository(), sources,
+      batches: new MemoryImportBatchRepository(), categories: new MemoryCategoryRepository(),
+      merchants: new MemoryMerchantRepository(), rules: new MemoryRuleRepository(),
+      uow: new PassthroughUnitOfWork(), ids: new SequentialIdGenerator(),
+      clock: new FixedClock('2026-09-11T00:00:00Z'),
+    })
+    const base = {
+      reference: null, sourceName: 'الراجحي', description: 'قهوة', direction: 'out' as const,
+      date: '2026-08-26', amountMinor: 500, statedBalanceMinor: 400000,
+    }
+    const first = request('first.pdf', [{ ...base, lineNumber: 1, merchantName: 'CAFE', raw: 'r1' }])
+    await imports.commit(first, await imports.preview(first))
+
+    // سجل مصدر تاني لنفس العملية — زي ما بيحصل لما نفس الكشف يتستورد مرتين
+    const records = await sources.listByAccountIdentity('الراجحي')
+    expect(records).toHaveLength(1)
+    await sources.saveMany([{ ...records[0], id: 'source-record-2' }])
+
+    const second = request('second.pdf', [
+      { ...base, lineNumber: 1, merchantName: 'CAFE', raw: 'r1' },
+      { ...base, lineNumber: 2, merchantName: 'CAFE', raw: 'r2' },
+    ])
+    const preview = await imports.preview(second)
+    expect(preview.counts.duplicates).toBe(1)
+    expect(preview.lines[1].state).not.toBe('duplicate')
+  })
+
   it('توحيد النص يطبّع أشكال العرض العربية بالترتيب المنطقي (NFKC)', () => {
     expect(normalizeText('ﻣﻼﺣﻈﺔ')).toBe(normalizeText('ملاحظة'))
     expect(normalizeText('ﻣﺤﻤﺪ')).toBe(normalizeText('محمد'))

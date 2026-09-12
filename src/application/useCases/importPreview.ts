@@ -65,11 +65,21 @@ async function loadExisting(
   const txns = await deps.txns.findByIds(txnIds)
   const byId = new Map(txns.map((t) => [t.id, t]))
 
+  /*
+   * **سجل واحد لكل عملية، مش لكل سجل مصدر.** العملية اللي اتسجلت من
+   * مصدرين (كشف مستورد مرتين، أو رسالة + كشف) ليها أكتر من `sourceRecord`،
+   * وكانت بتتعد أكتر من مرة في فهرس التكرار ⇒ تبتلع أكتر من صف وارد
+   * وتخلي عمليات حقيقية تتحسب «مكرر» (اتشاف على بيانات المالك 2026-09-12:
+   * 835 «مكرر» مقابل 768 عملية موجودة).
+   */
   const existing: ExistingRecord[] = []
+  const seenTransactions = new Set<string>()
   for (const record of records) {
     if (!record.transactionId) continue
+    if (seenTransactions.has(record.transactionId)) continue
     const txn = byId.get(record.transactionId)
     if (!txn) continue
+    seenTransactions.add(record.transactionId)
     existing.push({
       smsSource: record.sourceReference?.startsWith("SMS:") ?? false,
       accountIdentity: record.accountIdentity,
