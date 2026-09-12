@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { formatAmount } from '../../domain/formatMoney'
-import { ruleFor, type EconomicKind } from '../../domain/entities/economicKind'
-import type { SuggestionLine, SuggestionSummary } from '../../application/useCases/setEconomicKind'
+import { type EconomicKind } from '../../domain/entities/economicKind'
+import type { SuggestionSummary } from '../../application/useCases/setEconomicKind'
 import type { UserContainer } from '../../app/container'
 import type { Transaction } from '../../domain/entities/types'
+import { KindRow, AmbiguousRow } from './KindsRows'
 import './KindsSheet.css'
 
 interface Props {
@@ -29,6 +29,8 @@ export function KindsSheet({ user, transactions, onClose, onDone }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
+  /** العمليات اللي المالك قال عليها «سيبها دلوقتي» — بتتخطى في الدور بس ما تتغيرش. */
+  const [skipped, setSkipped] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     let cancelled = false
@@ -76,6 +78,16 @@ export function KindsSheet({ user, transactions, onClose, onDone }: Props) {
       setBusy(false)
     }
   }
+
+  /*
+   * قرار المالك 2026-09-12: «الاتنين مع بعض» — الواضح يتأكد بضغطة واحدة
+   * (القايمة تحت)، والغامض يتعرض **عملية واحدة في المرة** بزراير كبيرة.
+   */
+  const queue = summary
+    ? [...summary.needsLook, ...summary.ambiguous].filter(
+        (line) => !skipped.has(line.transaction.id),
+      )
+    : []
 
   const toggle = (id: string) =>
     setSelected((current) => {
@@ -141,36 +153,30 @@ export function KindsSheet({ user, transactions, onClose, onDone }: Props) {
                 </section>
               )}
 
-              {summary.needsLook.length > 0 && (
+              {queue.length > 0 && (
                 <section className="kinds__group">
                   <h3 className="kinds__title">
-                    محتاجة نظرة ({summary.needsLook.length})
-                    <span className="kinds__sub">مرجّحة مش مؤكدة — حدّدها واحدة واحدة</span>
-                  </h3>
-                  <ul className="kinds__list">
-                    {summary.needsLook.slice(0, 30).map((line) => (
-                      <AmbiguousRow key={line.transaction.id} line={line} onPick={setOne} />
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {summary.ambiguous.length > 0 && (
-                <section className="kinds__group">
-                  <h3 className="kinds__title">
-                    محتاجة قرارك ({summary.ambiguous.length})
+                    محتاجة قرارك ({queue.length})
                     <span className="kinds__sub">
-                      الكشف مش كفاية — دي الفلوس اللي مش واضح راحت فين
+                      عملية واحدة في المرة — اختار نوعها، أو سيبها وهتيجي تاني
                     </span>
                   </h3>
                   <ul className="kinds__list">
-                    {summary.ambiguous.slice(0, 30).map((line) => (
-                      <AmbiguousRow key={line.transaction.id} line={line} onPick={setOne} />
-                    ))}
+                    <AmbiguousRow
+                      key={queue[0].transaction.id}
+                      line={queue[0]}
+                      onPick={setOne}
+                    />
                   </ul>
-                  {summary.ambiguous.length > 30 && (
-                    <p className="sheet__hint">بنعرض أول 30 من {summary.ambiguous.length}.</p>
-                  )}
+                  <button
+                    type="button"
+                    className="btn btn--quiet"
+                    onClick={() =>
+                      setSkipped((current) => new Set(current).add(queue[0].transaction.id))
+                    }
+                  >
+                    مش متأكد — سيبها دلوقتي
+                  </button>
                 </section>
               )}
 
@@ -180,115 +186,30 @@ export function KindsSheet({ user, transactions, onClose, onDone }: Props) {
                   <p className="notice">كل عمليات الفترة دي محددة النوع. مفيش حاجة مطلوبة.</p>
                 )}
 
-              <div className="sheet__foot">
-                {/* الإغلاق متاح دائمًا — لا يُحبس المستخدم داخل الورقة */}
-                <button type="button" className="btn btn--quiet" onClick={onClose}>
-                  إغلاق
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={applyBulk}
-                  disabled={busy || selected.size === 0}
-                >
-                  {busy ? 'بنحفظ…' : `وافق على ${selected.size}`}
-                </button>
-              </div>
             </>
           )}
         </div>
+
+        {/* شريط الأفعال **بره** الجزء اللي بيتمرر: ثابت تحت الورقة، فما
+            يعومش فوق آخر سطر — إصلاح 2026-09-11 بعد ما اتشاف على المحاكي */}
+        {summary && (
+          <div className="sheet__foot">
+            {/* الإغلاق متاح دائمًا — لا يُحبس المستخدم داخل الورقة */}
+            <button type="button" className="btn btn--quiet" onClick={onClose}>
+              إغلاق
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={applyBulk}
+              disabled={busy || selected.size === 0}
+            >
+              {busy ? 'بنحفظ…' : `وافق على ${selected.size}`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-function KindRow({
-  line,
-  checked,
-  onToggle,
-}: {
-  line: SuggestionLine
-  checked: boolean
-  onToggle: () => void
-}) {
-  const t = line.transaction
-  const kind = line.suggestion.kind!
-  return (
-    <li className="kinds__row">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onToggle}
-        aria-label={`تأكيد ${t.rawMerchantName ?? 'العملية'} كـ${ruleFor(kind).label}`}
-      />
-      <div className="kinds__main">
-        <div className="kinds__name">{t.rawMerchantName || t.rawDescription || 'بلا اسم'}</div>
-        <div className="kinds__meta">
-          <span>{t.occurredAt}</span>
-          <span className="badge">{ruleFor(kind).label}</span>
-        </div>
-        <div className="kinds__reason">{line.suggestion.reason}</div>
-      </div>
-      <span
-        className="kinds__amount num"
-        style={{ color: t.observedDirection === 'in' ? 'var(--c-incoming)' : 'var(--c-outgoing)' }}
-      >
-        {/* الإشارة جوه الخانة المعزولة زي صف العملية — مش لون وحده (spec/04) */}
-        {t.observedDirection === 'in' ? '+' : '−'}
-        {formatAmount(t.amountMinor)}
-      </span>
-    </li>
-  )
-}
-
-function AmbiguousRow({
-  line,
-  onPick,
-}: {
-  line: SuggestionLine
-  onPick: (id: string, kind: EconomicKind) => void
-}) {
-  const t = line.transaction
-  const options = line.suggestion.kind
-    ? [line.suggestion.kind, ...line.suggestion.alternatives]
-    : line.suggestion.alternatives
-
-  return (
-    <li className="kinds__row kinds__row--pick">
-      <div className="kinds__main">
-        <div className="kinds__name">{t.rawMerchantName || t.rawDescription || 'بلا اسم'}</div>
-        <div className="kinds__meta">
-          <span>{t.occurredAt}</span>
-          <span
-            className="num"
-            style={{
-              color: t.observedDirection === 'in' ? 'var(--c-incoming)' : 'var(--c-outgoing)',
-              fontWeight: 700,
-            }}
-          >
-            {t.observedDirection === 'in' ? '+' : '−'}
-            {formatAmount(t.amountMinor)}
-          </span>
-        </div>
-        <div className="kinds__reason">{line.suggestion.reason}</div>
-        <div className="kinds__options">
-          {options.map((kind, index) => {
-            // أول اختيار هو اقتراح التطبيق — لما يكون فيه اقتراح أصلًا
-            const isSuggested = index === 0 && Boolean(line.suggestion.kind)
-            return (
-              <button
-                key={kind}
-                type="button"
-                className={`kinds__option${isSuggested ? ' kinds__option--suggested' : ''}`}
-                onClick={() => onPick(t.id, kind)}
-              >
-                {ruleFor(kind).label}
-                {isSuggested && <span className="kinds__optionTag">الاقتراح</span>}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </li>
-  )
-}

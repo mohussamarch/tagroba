@@ -85,18 +85,17 @@
   margin: 0;
 }
 
-/* شريط الأفعال تحت الورقة: حد فاصل فوقه عشان يبان إنه شريط، مش أزرار
-   عايمة فوق النص — إعادة تصميم 2026-09-11 (شكوى «الأزرار فوق المحتوى»). */
+/* شريط الأفعال تحت الورقة — إعادة تصميم 2026-09-11 (شكوى «الأزرار فوق المحتوى»).
+   **مش sticky**: اللزق كان بيخليه يعوم فوق آخر سطر في القايمة. دلوقتي هو
+   عنصر ثابت في آخر الورقة (أو في آخر المحتوى في الأوراق اللي لسه جواها). */
 .sheet__foot {
   display: flex;
   gap: 10px;
-  position: sticky;
-  bottom: 0;
+  flex-shrink: 0;
   background: var(--c-surface);
   border-top: 1px solid var(--c-border);
-  padding-top: 10px;
-  padding-bottom: max(4px, var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
-  margin-top: 4px;
+  padding: 10px var(--s-card);
+  padding-bottom: max(10px, var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
 }
 
 .sheet__foot .btn { flex: 1; justify-self: stretch; }
