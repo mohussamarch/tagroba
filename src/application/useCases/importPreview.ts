@@ -118,10 +118,18 @@ export async function runPreview(
   const lines: ImportPreviewLine[] = []
   // الدفعة تُفحص ضد نفسها أيضًا: repeated-import.csv فيه سطران بنفس المرجع
   const seenInBatch = new Map<string, number>()
+  /* كل سجل موجود يبتلع صفًا واردًا واحدًا بس — من غير العدّاد ده، كشف فيه
+     عمليتين بنفس اليوم والمبلغ ورصيد نهاية اليوم كان بيتحسب مكرر مرتين
+     وتضيع عملية حقيقية (اتشاف على بيانات المالك 2026-09-12). */
+  const balanceUsed = new Map<string, number>()
 
   for (const row of outcome.rows) {
     const candidate = { ...toCandidate(row, request.accountIdentity), smsSource: request.sourceType === "sms" }
-    let verdict = classifyCandidate(candidate, index)
+    let verdict = classifyCandidate(candidate, index, balanceUsed)
+    if (verdict.matchedBalanceKey) {
+      const key = verdict.matchedBalanceKey
+      balanceUsed.set(key, (balanceUsed.get(key) ?? 0) + 1)
+    }
 
     const ref = candidate.sourceReference?.trim()
     if (verdict.state === 'new' && ref) {

@@ -65,6 +65,33 @@ describe('إعادة استيراد نفس الكشف بقراءة مختلفة'
     expect(preview.lines.every((l) => l.state !== 'duplicate')).toBe(true)
   })
 
+  /*
+   * بلاغ 2026-09-12 على بيانات المالك: كشف الراجحي بيطبع **رصيد نهاية اليوم**
+   * على كل سطور اليوم، فعمليتين حقيقيتين بنفس اليوم والمبلغ والاتجاه بيبقى
+   * ليهم نفس مفتاح الرصيد. فهرس التكرار كان بيخزّن سجلًا واحدًا لكل مفتاح،
+   * فالاتنين كانوا يتعلّموا «مكرر» وتضيع عملية حقيقية في صمت.
+   */
+  it('صفّان بنفس رصيد اليوم مقابل عملية واحدة موجودة ⇒ واحد مكرر والتاني حقيقي', async () => {
+    const imports = system()
+    const base = {
+      reference: null, sourceName: 'الراجحي', description: 'قهوة', direction: 'out' as const,
+      date: '2026-08-26', amountMinor: 500, statedBalanceMinor: 400000,
+    }
+    // الموجود: عملية واحدة بس
+    const first = request('first.pdf', [{ ...base, lineNumber: 1, merchantName: 'CAFE', raw: 'r1' }])
+    await imports.commit(first, await imports.preview(first))
+
+    // الوارد: نفس اليوم والمبلغ والرصيد مرتين — قهوتين حقيقيتين
+    const second = request('second.pdf', [
+      { ...base, lineNumber: 1, merchantName: 'CAFE', raw: 'r1' },
+      { ...base, lineNumber: 2, merchantName: 'CAFE', raw: 'r2' },
+    ])
+    const preview = await imports.preview(second)
+    expect(preview.lines[0].state).toBe('duplicate')
+    expect(preview.lines[1].state).not.toBe('duplicate')
+    expect(preview.counts.duplicates).toBe(1)
+  })
+
   it('توحيد النص يطبّع أشكال العرض العربية بالترتيب المنطقي (NFKC)', () => {
     expect(normalizeText('ﻣﻼﺣﻈﺔ')).toBe(normalizeText('ملاحظة'))
     expect(normalizeText('ﻣﺤﻤﺪ')).toBe(normalizeText('محمد'))

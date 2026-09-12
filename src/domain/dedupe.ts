@@ -48,6 +48,11 @@ export interface DedupeVerdict {
   matchedTransactionId?: string
   /** تفاصيل الاختلاف عند التعارض. */
   conflictFields?: string[]
+  /**
+   * مفتاح الرصيد اللي اتطابق عليه. المستدعي بيزوّد عدّاده عشان **كل سجل
+   * موجود يبتلع صفًا واردًا واحدًا بس** — مطابقة واحد لواحد.
+   */
+  matchedBalanceKey?: string
 }
 
 /**
@@ -84,21 +89,27 @@ export interface DedupeIndex {
   byAmountDay: Map<string, ExistingRecord[]>
   byReference: Map<string, ExistingRecord>
   byDetail: Map<string, ExistingRecord[]>
-  byBalance: Map<string, ExistingRecord>
+  /**
+   * **قائمة** لكل مفتاح رصيد، مش سجل واحد: كشف الراجحي بيطبع رصيد نهاية
+   * اليوم على كل سطور اليوم، فعمليتين حقيقيتين بنفس اليوم والمبلغ والاتجاه
+   * بيبقى ليهم نفس المفتاح. تخزين سجل واحد كان بيخلي الاتنين «مكرر»
+   * ويضيّع عملية حقيقية (اتشاف على بيانات المالك 2026-09-12).
+   */
+  byBalance: Map<string, ExistingRecord[]>
 }
 
 export function buildDedupeIndex(existing: readonly ExistingRecord[]): DedupeIndex {
   const byAmountDay = new Map<string, ExistingRecord[]>()
   const byReference = new Map<string, ExistingRecord>()
   const byDetail = new Map<string, ExistingRecord[]>()
-  const byBalance = new Map<string, ExistingRecord>()
+  const byBalance = new Map<string, ExistingRecord[]>()
   for (const record of existing) {
     const dayKey = amountDayKey(record)
     byAmountDay.set(dayKey, [...(byAmountDay.get(dayKey) ?? []), record])
     const ref = referenceKey(record)
     if (ref) byReference.set(ref, record)
     const balance = balanceKey(record)
-    if (balance && !byBalance.has(balance)) byBalance.set(balance, record)
+    if (balance) byBalance.set(balance, [...(byBalance.get(balance) ?? []), record])
     const key = detailKey(record)
     const list = byDetail.get(key)
     if (list) list.push(record)
@@ -114,6 +125,8 @@ export function buildDedupeIndex(existing: readonly ExistingRecord[]): DedupeInd
 export function classifyCandidate(
   candidate: DedupeCandidate,
   index: DedupeIndex,
+  /** كام صف وارد استهلك كل مفتاح رصيد قبل كده في نفس الدفعة. القراءة فقط. */
+  consumedBalance?: ReadonlyMap<string, number>,
 ): DedupeVerdict {
   const ref = referenceKey(candidate)
 
@@ -141,16 +154,22 @@ export function classifyCandidate(
     }
   }
 
-  // ─── نفس سطر الكشف بالرصيد المعلن، حتى لو اسم التاجر اتقرا مختلف ───
+  /* ─── نفس سطر الكشف بالرصيد المعلن، حتى لو اسم التاجر اتقرا مختلف ───
+     مطابقة **واحد لواحد**: لو الموجود سجل واحد بالمفتاح ده وجه في الملف
+     صفين، الأول بس هو المكرر والتاني عملية حقيقية تانية (الراجحي بيطبع
+     رصيد نهاية اليوم على كل سطور اليوم). */
   const sameLine = balanceKey(candidate)
-  const lineMatch = sameLine ? index.byBalance.get(sameLine) : undefined
-  if (lineMatch) {
+  const lineMatches = sameLine ? index.byBalance.get(sameLine) ?? [] : []
+  const alreadyUsed = sameLine ? consumedBalance?.get(sameLine) ?? 0 : 0
+  const lineMatch = lineMatches[alreadyUsed]
+  if (sameLine && lineMatch) {
     return {
       state: 'duplicate',
       reason:
         'نفس سطر الكشف: نفس اليوم والمبلغ والاتجاه والرصيد بعد العملية في نفس الحساب — ' +
         'متسجلة قبل كده حتى لو الاسم مقروء بشكل مختلف',
       matchedTransactionId: lineMatch.transactionId,
+      matchedBalanceKey: sameLine,
     }
   }
 
