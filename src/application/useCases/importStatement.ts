@@ -172,8 +172,20 @@ export function makeImportStatement(deps: ImportStatementDeps) {
         throw new Error('بيانات الاستيراد اتغيرت؛ اعمل معاينة جديدة')
       }
       const fresh = await preview(request)
-      if (fresh.previousBatch) return fresh.previousBatch
       const selection = selected ?? previous.lines.filter(line=>line.selectedByDefault).map(line=>line.row.lineNumber)
+      /*
+       * الملف ده اتستورد قبل كده؟ نرجّع الدفعة القديمة **بس لو مفيش حاجة
+       * جديدة تتضاف**. قرار المالك 2026-09-12: الناس بترفع ملفات كتير
+       * متداخلة، والملف اللي اتستورد منه جزء لازم يكمل. منع التكرار بيشتغل
+       * **صف بصف** أصلًا، فمفيش خطر تكرار من إكمال الملف.
+       * (قبل كده: أي ملف بصمته متسجلة كان بيترفض بصمت — 1077 عملية حقيقية
+       * ما دخلتش والورقة قفلت كأنها نجحت.)
+       */
+      const addable = selection.filter((number) => {
+        const line = fresh.lines.find((l) => l.row.lineNumber === number)
+        return line !== undefined && line.state !== 'duplicate' && line.state !== 'invalid'
+      })
+      if (fresh.previousBatch && addable.length === 0) return fresh.previousBatch
       for (const number of selection) {
         const before = previous.lines.find(line=>line.row.lineNumber===number)
         const now = fresh.lines.find(line=>line.row.lineNumber===number)

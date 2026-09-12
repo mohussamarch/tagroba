@@ -140,7 +140,14 @@ export function ImportSheet({ user, wallets, onClose, onImported, initialSms, on
     setError(null)
     setBusy('committing')
     try {
-      await user.importStatement.commit(buildRequest(), preview, [...selected])
+      const result = await user.importStatement.commit(buildRequest(), preview, [...selected])
+      /* لو رجع نفس الدفعة القديمة يبقى مفيش حاجة اتكتبت — نقول كده بدل ما
+         نقفل الورقة كأنها نجحت (فشل صامت اتشاف على بيانات المالك 2026-09-12). */
+      if (preview.previousBatch && result.id === preview.previousBatch.id) {
+        setError('الملف ده اتستورد قبل كده ومفيش فيه حاجة جديدة تتضاف.')
+        setBusy('none')
+        return
+      }
       await onRowsImported?.([...selected])
       onImported()
     } catch (cause) {

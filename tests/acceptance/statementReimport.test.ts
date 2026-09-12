@@ -127,6 +127,38 @@ describe('إعادة استيراد نفس الكشف بقراءة مختلفة'
     expect(preview.lines[1].state).not.toBe('duplicate')
   })
 
+  /*
+   * بلاغ 2026-09-12: نفس الملف اتستورد منه 14 صف قبل كده، وبعدين اتستورد
+   * كامل (1912 صف). الحارس القديم كان بيرجّع الدفعة القديمة ويعتبر نفسه نجح
+   * **من غير ما يكتب ولا عملية** — 1077 عملية حقيقية ضاعت في صمت.
+   * قرار المالك: يكمل طول ما فيه جديد؛ منع التكرار بيشتغل صف بصف.
+   */
+  it('ملف اتستورد منه جزء قبل كده ⇒ الصفوف الجديدة تتضاف مش تترفض', async () => {
+    const txns = new MemoryTransactionRepository()
+    const imports = makeImportStatement({
+      txns, sources: new MemorySourceRecordRepository(),
+      batches: new MemoryImportBatchRepository(), categories: new MemoryCategoryRepository(),
+      merchants: new MemoryMerchantRepository(), rules: new MemoryRuleRepository(),
+      uow: new PassthroughUnitOfWork(), ids: new SequentialIdGenerator(),
+      clock: new FixedClock('2026-09-12T00:00:00Z'),
+    })
+    const rows = statementRows(['A', 'B', 'C'], 'وصف')
+
+    // نفس اسم الملف ⇒ نفس البصمة. الأول: صف واحد بس
+    const partial = request('same.pdf', [rows[0]])
+    await imports.commit(partial, await imports.preview(partial))
+
+    // بعدين: نفس الملف كامل — المفروض الصفين الجداد يتضافوا
+    const full = request('same.pdf', rows)
+    const preview = await imports.preview(full)
+    expect(preview.previousBatch).not.toBeNull()
+    expect(preview.counts.newCount).toBe(2)
+
+    const committed = await imports.commit(full, preview)
+    expect(committed.counts.imported).toBe(2)
+    expect((await txns.listByDateRange('2026-08-01', '2026-08-31')).length).toBe(3)
+  })
+
   it('توحيد النص يطبّع أشكال العرض العربية بالترتيب المنطقي (NFKC)', () => {
     expect(normalizeText('ﻣﻼﺣﻈﺔ')).toBe(normalizeText('ملاحظة'))
     expect(normalizeText('ﻣﺤﻤﺪ')).toBe(normalizeText('محمد'))
