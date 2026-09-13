@@ -8,6 +8,7 @@ import { IdRepairPanel } from '../components/IdRepairPanel'
 import { ImportHistoryPanel } from '../components/ImportHistoryPanel'
 import { RulesCard } from '../components/RulesCard'
 import { AppearanceCard } from '../components/AppearanceCard'
+import { AccountCard } from '../components/AccountCard'
 import type { ReconcileOutcome } from '../../application/useCases/reconcileBalance'
 import type { UserContainer } from '../../app/container'
 import type { Wallet } from '../../domain/entities/types'
@@ -114,6 +115,7 @@ export function SettingsScreen({
 
   return (
     <div className="settings">
+      <AccountCard user={user} onSaved={onRestored}/>
       <InstallGuide/>
       <AppearanceCard theme={theme} onToggleTheme={onToggleTheme} onSignOut={onSignOut} />
 

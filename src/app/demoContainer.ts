@@ -15,6 +15,9 @@ import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { deviceRepairBackup } from '../infrastructure/repairBackup'
 import { makeCleanupOrphans } from '../application/useCases/cleanupOrphans'
+import { makeManageProfile } from '../application/useCases/manageProfile'
+import { MemoryProfileRepository } from '../infrastructure/memory/memoryProfileRepository'
+import { memoryAccount } from '../infrastructure/memory/memoryAccount'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
 import { makeManageRecurring } from '../application/useCases/manageRecurring'
@@ -161,6 +164,7 @@ export function createDemoContainer(): Container {
     }),backupDigest),
     repairStoredIds: makeRepairStoredIds({port:memoryIdRepair(),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}),
     cleanupOrphans: (() => { const store = memoryIdRepair(); return makeCleanupOrphans({port:store,remover:store,redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}) })(),
+    manageProfile: makeManageProfile({ profiles: new MemoryProfileRepository(), account: memoryAccount(), clock }),
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
     manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),

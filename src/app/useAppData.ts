@@ -18,8 +18,10 @@ const tabSection:Record<AppTab,Section>={home:'home',transactions:'transactions'
 export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const user=useMemo(()=>container.forUser(uid),[container,uid])
  const today=useMemo(()=>new Date().toISOString().slice(0,10),[])
- const payday=DEFAULT_PAYDAY
- const [period,changePeriod]=useState(()=>periodForDate(today,payday))
+ // يوم الراتب من ملف المستخدم (OVERRIDES §26) — 28 لحد ما الملف يتقري في prepare()
+ const [payday,setPayday]=useState(DEFAULT_PAYDAY)
+ const paydayRef=useRef(DEFAULT_PAYDAY)
+ const [period,changePeriod]=useState(()=>periodForDate(today,DEFAULT_PAYDAY))
  const [home,setHome]=useState<HomeScreenData|null>(null)
  const [txnData,setTxnData]=useState<TransactionsScreenData|null>(null)
  const [budgetData,setBudgetData]=useState<BudgetScreenData|null>(null)
@@ -36,18 +38,28 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const bootstrap=useRef<Promise<void>|null>(null)
  const keyFor=useCallback((section:Section)=>section+':'+(['wallets','people','portfolio'].includes(section)?today:period.key),[today,period.key])
 
+ /** يوم راتب جديد ⇒ كل اللي متخزن بمفتاح الفترة القديمة بيتلغي والفترة بتتحسب من تاني (HANDOVER §37). */
+ const applyPayday=useCallback((next:number)=>{
+  if(next===paydayRef.current)return false
+  paydayRef.current=next;generation.current++;requests.current.invalidate();void user.homeSnapshot.clear()
+  setHome(null);setTxnData(null);setBudgetData(null);setNotifications(null);setSnapshotAt(null)
+  setErrors({});setPending({...initialLoading});setPayday(next);changePeriod(periodForDate(today,next))
+  return true
+ },[user,today])
+
  const prepare=useCallback(()=>{
   if(!bootstrap.current){
    bootstrap.current=(async()=>{
     // تنظيف الاستيراد المعلّق لا يمنع فتح الشاشات أبدًا — فشله كان يوقف التطبيق كله
-    const [,walletSeed,outcomes]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null)])
+    const [,walletSeed,outcomes,profile]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null),user.manageProfile.load().catch(()=>null)])
+    if(profile)applyPayday(profile.payday)
     setWallets(walletSeed.wallets)
     if(outcomes===null||outcomes.some(o=>o.error))setRecovery('فيه استيراد سابق لم يكتمل ومقدرناش ننظّفه. الشاشات شغالة، لكن إعادة استيراد نفس الكشف ممكن تعتبر صفوفه مكررة لحد ما يتعمل إصلاح البيانات.')
     else if(outcomes.length)setRecovery('اتنضّف استيراد سابق لم يكتمل. تقدر تستورد الملف تاني.')
    })().catch(error=>{bootstrap.current=null;throw error})
   }
   return bootstrap.current
- },[user])
+ },[user,applyPayday])
 
  const ensure=useCallback(async function loadSection(section:Section):Promise<void>{
   const version=generation.current
@@ -106,11 +118,14 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  useEffect(()=>{void ensure(tabSection[activeTab]);void ensure('wallets')},[ensure,activeTab])
 
  const reload=useCallback(async()=>{
+  // يوم الراتب اتغير من قسم الحساب ⇒ الفترة الجديدة بتتحمّل لوحدها؛ ما نحمّلش بحدود الشهر القديمة
+  const profile=await user.manageProfile.load().catch(()=>null)
+  if(profile&&applyPayday(profile.payday))return
   generation.current++
   requests.current.invalidate()
   await user.homeSnapshot.clear()
   await Promise.all([ensure(tabSection[activeTab]),...(activeTab==='home'?[]:[ensure('home')])])
- },[user,ensure,activeTab])
+ },[user,ensure,activeTab,applyPayday])
  useEffect(()=>{
   let backgroundAt=Date.now()
   const onVisibility=()=>{if(document.hidden)backgroundAt=Date.now();else if(Date.now()-backgroundAt>30000)void reload()}

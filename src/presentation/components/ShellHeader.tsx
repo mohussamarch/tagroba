@@ -7,6 +7,8 @@ interface Props {
   amountsHidden: boolean
   onOpenNotifications: () => void
   onToggleAmounts: () => void
+  /** أيقونة الإعدادات في الرأس — OVERRIDES §23. */
+  onOpenSettings?: () => void
 }
 
 /**
@@ -22,6 +24,7 @@ export function ShellHeader({
   amountsHidden,
   onOpenNotifications,
   onToggleAmounts,
+  onOpenSettings,
 }: Props) {
   return (
     <header className="shell__head">
@@ -53,6 +56,12 @@ export function ShellHeader({
         >
           <span aria-hidden="true">{amountsHidden ? '🙈' : '👁'}</span>
         </button>
+
+        {onOpenSettings && (
+          <button type="button" className="iconBtn" onClick={onOpenSettings} aria-label="الإعدادات">
+            <span aria-hidden="true">⚙️</span>
+          </button>
+        )}
       </div>
     </header>
   )

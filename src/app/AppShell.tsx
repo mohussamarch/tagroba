@@ -84,6 +84,7 @@ export function AppShell({
         amountsHidden={amountsHidden}
         onOpenNotifications={() => {setNotifOpen(true);void app.ensure('notifications')}}
         onToggleAmounts={() => setAmountsHidden((v) => !v)}
+        onOpenSettings={() => setTab('settings')}
       />
       <main className="shell__body">
         <SmsInboxAccess user={app.user} wallets={app.wallets} onImported={reload} showWhenEmpty={tab === 'settings'}/>

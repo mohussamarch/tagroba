@@ -30,7 +30,7 @@ const MESSAGES: Record<string, { text: string; field: 'email' | 'password' | 'fo
   'auth/unauthorized-domain': { text: 'النطاق ده مش مصرّح له في إعدادات فايربيز', field: 'form' },
 }
 
-function toAuthError(error: unknown): AuthError {
+export function toAuthError(error: unknown): AuthError {
   const code =
     typeof error === 'object' && error !== null && 'code' in error
       ? String((error as { code: unknown }).code)
