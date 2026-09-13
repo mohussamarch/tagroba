@@ -63,14 +63,26 @@ describe('تقرير الكسور الباقية', () => {
     expect(reportChainBreaks(s, redact, new Set(['manual']))).toEqual([])
   })
 
-  it('من المعاينة: مكرر إكسل متربط بشخص بيبان «متربط» عشان يبان ليه ما اتمسحش', async () => {
+  it('من المعاينة: مكرر إكسل متربط بشخص ليه نسخة مطابقة بالرصيد ⇒ الربط يتنقل وهو يتمسح، والكسر يختفي', async () => {
     const s = account()
     s.transactions.push({ docId: 'x2', data: { id: 'x2', ...line('2026-08-02', 1, 500, 8500, LEFTOVER_AT) } })
     s.allocations.push({ docId: 'a1', data: { id: 'a1', transactionId: 'x2', personId: 'person' } })
     const store = memoryIdRepair(s)
     const preview = await makeCleanupOrphans({ port: store, remover: store, redact, backup: memoryRepairBackup(), clock: { nowIso: () => PDF_AT } }).preview()
+    expect(preview.transactions.map((i) => i.docId)).toEqual(['x2'])
+    expect(preview.relinks).toEqual([{ group: 'allocations', docId: 'a1', fields: { transactionId: 'p2' } }])
+    expect(preview.remainingBreaks).toEqual([])
+  })
+
+  it('من المعاينة: نفس المكرر بس نسخته الحقيقية عليها ربط أصلًا ⇒ بيفضل، والتقرير بيقول «متربط»', async () => {
+    const s = account()
+    s.transactions.push({ docId: 'x2', data: { id: 'x2', ...line('2026-08-02', 1, 500, 8500, LEFTOVER_AT) } })
+    s.allocations.push({ docId: 'a1', data: { id: 'a1', transactionId: 'x2', personId: 'person' } })
+    s.allocations.push({ docId: 'a0', data: { id: 'a0', transactionId: 'p2', personId: 'person' } })
+    const store = memoryIdRepair(s)
+    const preview = await makeCleanupOrphans({ port: store, remover: store, redact, backup: memoryRepairBackup(), clock: { nowIso: () => PDF_AT } }).preview()
     expect(preview.transactions).toEqual([])
-    expect(preview.linked.map((i) => i.docId)).toEqual(['x2'])
+    expect(preview.relinkBlocked.map((i) => i.docId)).toEqual(['x2'])
     expect(preview.remainingBreaks).toEqual([
       { origin: 'revertedLeftover', previousOrigin: 'statement', batch: null, sameDayAsPrevious: true, hasExactTwin: true,
         cleanupStatus: 'linked', twinOrigin: 'statement', twinCleanupStatus: 'notLeftover', count: 1 },

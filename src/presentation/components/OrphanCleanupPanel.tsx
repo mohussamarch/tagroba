@@ -29,7 +29,7 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
     setBusy(true); setMessage(''); setPlan(null)
     try {
       const result = await user.cleanupOrphans.preview()
-      const nothing = result.transactions.length === 0 && result.records.length === 0
+      const nothing = result.transactions.length === 0 && result.records.length === 0 && result.relinks.length === 0
       if (nothing && result.keptLinked === 0 && result.keptNoEvidence === 0) {
         setMessage('مفيش بقايا من استيرادات متراجَع عنها.')
       } else setPlan(result)
@@ -47,6 +47,7 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
       setMessage((saved
         ? saved.bytes === null ? 'النسخة اتبعتت لتنزيلات المتصفح (المتصفح مش بيأكد حجمها). ' : `النسخة اتحفظت (${kb(saved.bytes)}) في مجلد التطبيق. `
         : '')
+        + (outcome.relinked ? `اتنقل ${outcome.relinked} ربط لعملياتهم الحقيقية، و` : '')
         + `اتمسح ${outcome.removed} مستند.`
         + (outcome.skipped ? ` و${outcome.skipped} ظهروا بعد المعاينة فما اتلمسوش — افحص تاني.` : ''))
       setPlan(null)
@@ -71,6 +72,12 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
         <p>المعاينة بس — لسه ما اتمسحش حاجة.</p>
         <ul>
           <li>عمليات مكررة هتتمسح (التوأم ورصيد الكشف متفقين): {plan.transactions.length}</li>
+          {plan.relinks.length > 0 && (
+            <li>ربط بشخص أو تسوية أو وسم هيتنقل لنسخته الحقيقية من الكشف قبل المسح: {plan.relinks.length}</li>
+          )}
+          {plan.relinkBlocked.length > 0 && (
+            <li>متربطة ونسختها الحقيقية عليها ربط من نفس النوع — مش هتتلمس: {plan.relinkBlocked.length}</li>
+          )}
           {plan.chainUnconfirmed.length > 0 && (
             <li>ليها توأم بس رصيد الكشف ما أكدش إنها زيادة — هتفضل: {plan.chainUnconfirmed.length}</li>
           )}

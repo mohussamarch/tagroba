@@ -8,7 +8,7 @@ import { memoryRepairBackup } from '../../src/infrastructure/memory/repairBackup
 import { sanitizeAccountNumbers as redact } from '../../src/infrastructure/firestore/firestoreRepositories'
 
 /**
- * بقايا التراجع عن دفعة الإكسل (قرار المالك 2026-09-13). الحساب هنا بيمثّل اللي حصل:
+ * بقايا التراجع عن دفعة الإكسل (قرار المالك 2026-09-13، OVERRIDES §22). الحساب هنا بيمثّل اللي حصل:
  * كشف إكسل اتستورد، وبعدين اتراجعنا عنه بحذف بمعرّفات مقصوصة، وبعدين نفس الكشف اتستورد PDF.
  *
  * رصيد الكشف (يبدأ 10000): 06-01 −700 ⇒ 9300 · 07-15 −900 ⇒ 8400 · 08-01 −1500 ⇒ 6900.
@@ -39,7 +39,7 @@ function account(): StoredData {
   put('sourceRecords', 'rec-pdf-1', { batchId: PDF, transactionId: 'pdf-1', matchingState: 'new' })
   put('sourceRecords', 'rec-pdf-2', { batchId: PDF, transactionId: 'pdf-2', matchingState: 'new' })
 
-  // بقايا الإكسل: مكررة ليها توأم، ومتربطة بشخص، ومن غير توأم (تاريخها في الإكسل مختلف)
+  // بقايا الإكسل: مكررة ليها توأم، ومكررة متربطة بشخص، ومن غير توأم (تاريخها في الإكسل مختلف)
   put('transactions', 'excel-dup', txn('2026-08-01', 1500, 6900, '2026-09-07T10:34:00.000Z'))
   put('transactions', 'excel-linked', txn('2026-07-15', 900, 8400, '2026-09-07T10:34:00.000Z'))
   put('allocations', 'alloc-1', { transactionId: 'excel-linked', personId: 'p1' })
@@ -56,16 +56,28 @@ function account(): StoredData {
 const clock = { nowIso: () => '2026-09-13T11:00:00.000Z' }
 
 describe('تنظيف بقايا دفعة متراجَع عنها', () => {
-  it('يمسح سجلات الدفعة المتراجَع عنها والمكررة اللي التوأم والرصيد متفقين عليها بس', () => {
+  it('يمسح المكررة المؤكدة، وينقل ربط المتربطة لنسختها الحقيقية ويمسحها، ويسيب اللي من غير دليل', () => {
     const plan = planOrphanCleanup(account(), redact)
-    expect(plan.transactions.map((i) => i.docId)).toEqual(['excel-dup'])
+    expect(plan.transactions.map((i) => i.docId)).toEqual(['excel-dup', 'excel-linked'])
+    expect(plan.relinks).toEqual([{ group: 'allocations', docId: 'alloc-1', fields: { transactionId: 'pdf-2' } }])
     expect(plan.records.map((i) => i.docId).sort()).toEqual(['rec-excel-dup', 'rec-excel-gone'])
-    expect(plan.byMonth).toEqual({ '2026-08': 1 })
-    expect(plan.keptLinked).toBe(1)
+    expect(plan.byMonth).toEqual({ '2026-08': 1, '2026-07': 1 })
+    expect(plan.keptLinked).toBe(0)
+    expect(plan.relinkBlocked).toEqual([])
     expect(plan.chainUnconfirmed).toEqual([])
     expect(plan.keptNoEvidence).toBe(1)
-    // «excel-alone» نسخة بتاريخ مختلف من «pdf-0»: الرصيد بيقول إنها مكررة، بس مش بتتمسح
+    // «excel-alone» نسخة بتاريخ مختلف من «pdf-0»: الرصيد بيقول إنها مكررة، بس مالهاش نسخة مطابقة فمش بتتمسح
     expect(plan.unprovenVerdict).toEqual({ looksDuplicate: 1, looksReal: 0, unclear: 0 })
+  })
+
+  it('المتربطة ونسختها الحقيقية عليها ربط من نفس النوع ⇒ ما تتلمسش (الدين كان هيتحسب مرتين)', () => {
+    const s = account()
+    s.allocations.push({ docId: 'alloc-real', data: { id: 'alloc-real', transactionId: 'pdf-2', personId: 'p1' } })
+    const plan = planOrphanCleanup(s, redact)
+    expect(plan.transactions.map((i) => i.docId)).toEqual(['excel-dup'])
+    expect(plan.relinks).toEqual([])
+    expect(plan.relinkBlocked.map((i) => i.docId)).toEqual(['excel-linked'])
+    expect(plan.keptLinked).toBe(1)
   })
 
   it('ليها توأم بس رصيد الكشف بيقول إنها حقيقية ⇒ مش بتتمسح', () => {
@@ -73,8 +85,6 @@ describe('تنظيف بقايا دفعة متراجَع عنها', () => {
     // الـPDF ناقصه سطر 07-15 (استيراد اتقطع مثلًا)، والتوأم الوحيد في نفس اليوم عملية تانية بنفس المبلغ
     s.transactions = s.transactions.filter((r) => r.docId !== 'excel-linked')
     s.allocations = []
-    const real = s.transactions.find((r) => r.docId === 'pdf-2')!
-    real.data.statedBalanceMinor = 8400
     s.transactions.push({ docId: 'excel-real', data: { id: 'excel-real', ...txn('2026-07-15', 900, 7500, '2026-09-07T10:34:00.000Z', { sourceOrder: 2 }) } })
     // دلوقتي 07-15 فيها سطرين حقيقيين (8400 ثم 7500)، و08-01 لازم يبدأ من 7500
     s.transactions.find((r) => r.docId === 'pdf-1')!.data.statedBalanceMinor = 6000
@@ -84,18 +94,19 @@ describe('تنظيف بقايا دفعة متراجَع عنها', () => {
     expect(plan.chainUnconfirmed.map((i) => i.docId)).toEqual(['excel-real'])
   })
 
-  it('ما يمسحش أكتر من عدد التوائم: عمليتين مكررتين قصاد توأم واحد ⇒ واحدة بس', () => {
+  it('ما يمسحش أكتر من عدد النسخ الحقيقية: مكررتين قصاد سطر حقيقي واحد ⇒ واحدة بس', () => {
     const s = account()
     s.transactions.push({ docId: 'excel-dup-2', data: { id: 'excel-dup-2', ...txn('2026-08-01', 1500, 6900, '2026-09-07T10:34:30.000Z') } })
     const plan = planOrphanCleanup(s, redact)
-    expect(plan.transactions).toHaveLength(1)
+    expect(plan.transactions.map((i) => i.docId)).toContain('excel-dup')
+    expect(plan.transactions.map((i) => i.docId)).not.toContain('excel-dup-2')
     expect(plan.keptNoEvidence).toBe(2)
   })
 
-  it('محفظة مختلفة مش توأم', () => {
+  it('محفظة مختلفة مش توأم بقاعدة اليوم، بس نسخة مطابقة حتى في الرصيد والسلسلة بتأكد ⇒ بتتمسح', () => {
     const s = account()
     s.transactions.find((r) => r.docId === 'excel-dup')!.data.walletId = 'wallet-cash'
-    expect(planOrphanCleanup(s, redact).transactions).toEqual([])
+    expect(planOrphanCleanup(s, redact).transactions.map((i) => i.docId)).toContain('excel-dup')
   })
 
   it('العملية اللي عليها سجل من دفعة سليمة — حتى بشكل معرّفها المقصوص — مش بقايا', () => {
@@ -106,38 +117,53 @@ describe('تنظيف بقايا دفعة متراجَع عنها', () => {
     expect(planOrphanCleanup(s, redact).transactions.map((i) => i.docId)).not.toContain(id)
   })
 
-  it('التطبيق: نسخة مؤكدة الحجم فيها المستندات بالظبط ⇒ حذف ⇒ الفحص التاني فاضي', async () => {
+  it('التطبيق: نسخة فيها المتمسح ومستند الربط قبل تعديله ⇒ الربط يتنقل ⇒ الحذف ⇒ الفحص التاني فاضي', async () => {
     const store = memoryIdRepair(account())
     const backup = memoryRepairBackup()
     const cleanup = makeCleanupOrphans({ port: store, remover: store, redact, backup, clock })
     const outcome = await cleanup.apply(await cleanup.preview())
-    expect(outcome.removed).toBe(3)
+    expect(outcome).toMatchObject({ removed: 4, relinked: 1, skipped: 0 })
     expect(outcome.backup?.bytes).toBe(outcome.backup?.expectedBytes)
     const saved = JSON.parse([...backup.files.values()][0])
-    expect(saved.documents.map((d: { docId: string }) => d.docId).sort()).toEqual(['excel-dup', 'rec-excel-dup', 'rec-excel-gone'])
+    expect(saved.documents.map((d: { docId: string }) => d.docId).sort()).toEqual(['alloc-1', 'excel-dup', 'excel-linked', 'rec-excel-dup', 'rec-excel-gone'])
+    expect(saved.documents.find((d: { docId: string }) => d.docId === 'alloc-1').data.transactionId).toBe('excel-linked')
     const after = await cleanup.preview()
-    expect(after.transactions).toEqual([])
-    expect(after.records).toEqual([])
-    const left = store.snapshot().transactions.map((r) => r.docId).sort()
-    expect(left).toEqual(['excel-alone', 'excel-linked', 'manual', 'pdf-0', 'pdf-1', 'pdf-2'])
+    expect([after.transactions, after.records, after.relinks]).toEqual([[], [], []])
+    const snap = store.snapshot()
+    expect(snap.transactions.map((r) => r.docId).sort()).toEqual(['excel-alone', 'manual', 'pdf-0', 'pdf-1', 'pdf-2'])
+    expect(snap.allocations[0].data.transactionId).toBe('pdf-2')
   })
 
-  it('نسخة ناقصة ⇒ ما يتمسحش ولا مستند', async () => {
+  it('نسخة ناقصة ⇒ ما يتنقلش ربط ولا يتمسح مستند', async () => {
     const store = memoryIdRepair(account())
     const cleanup = makeCleanupOrphans({ port: store, remover: store, redact, backup: memoryRepairBackup({ truncate: true }), clock })
     await expect(cleanup.apply(await cleanup.preview())).rejects.toThrow('ناقصة')
     expect(store.snapshot().transactions).toHaveLength(7)
     expect(store.snapshot().sourceRecords).toHaveLength(5)
+    expect(store.snapshot().allocations[0].data.transactionId).toBe('excel-linked')
+  })
+
+  it('الربط اتنقل والحذف اتقطع ⇒ الفحص التاني بيلاقي البقية مش متربطة ويكمّل', async () => {
+    const store = memoryIdRepair(account())
+    const broken = { remove: async () => { throw new Error('انقطع الاتصال') } }
+    const first = makeCleanupOrphans({ port: store, remover: broken, redact, backup: memoryRepairBackup(), clock })
+    await expect(first.apply(await first.preview())).rejects.toThrow('اتمسح 0 من 4 قبل الانقطاع')
+    expect(store.snapshot().allocations[0].data.transactionId).toBe('pdf-2')
+    const second = makeCleanupOrphans({ port: store, remover: store, redact, backup: memoryRepairBackup(), clock })
+    const rest = await second.preview()
+    expect(rest.relinks).toEqual([])
+    expect(rest.transactions.map((i) => i.docId).sort()).toEqual(['excel-dup', 'excel-linked'])
+    expect(await second.apply(rest)).toMatchObject({ removed: 4, relinked: 0 })
   })
 
   it('الحذف نجح بس الرد ضاع ⇒ خطأ واضح، والفحص التاني فاضي ومفيش حذف مرتين', async () => {
     const store = memoryIdRepair(account())
     const lostReply = { remove: async (items: Parameters<typeof store.remove>[0]) => { await store.remove(items); throw new Error('انقطع الاتصال') } }
     const first = makeCleanupOrphans({ port: store, remover: lostReply, redact, backup: memoryRepairBackup(), clock })
-    await expect(first.apply(await first.preview())).rejects.toThrow('اتمسح 0 من 3 قبل الانقطاع')
+    await expect(first.apply(await first.preview())).rejects.toThrow('اتمسح 0 من 4 قبل الانقطاع')
     const second = makeCleanupOrphans({ port: store, remover: store, redact, backup: memoryRepairBackup(), clock })
     const rest = await second.preview()
-    expect(rest.transactions.length + rest.records.length).toBe(0)
-    expect(await second.apply(rest)).toEqual({ removed: 0, skipped: 0, backup: null })
+    expect(rest.transactions.length + rest.records.length + rest.relinks.length).toBe(0)
+    expect(await second.apply(rest)).toEqual({ removed: 0, relinked: 0, skipped: 0, backup: null })
   })
 })

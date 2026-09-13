@@ -1,6 +1,7 @@
 import { BACKUP_GROUPS } from '../../domain/fullBackup'
 import { statementChainBreaks, type ChainScenario } from '../../domain/balanceChainCheck'
 import { reportChainBreaks, type BreakGroup, type CleanupStatus } from '../../domain/chainBreakReport'
+import type { IdPatch } from '../../domain/idRepair'
 import { planOrphanCleanup, type CleanupItem, type OrphanCleanupPlan } from '../../domain/orphanCleanup'
 import type { IdRepairPort } from '../ports/IdRepairPort'
 import type { RemoveDocsPort } from '../ports/RemoveDocsPort'
@@ -14,6 +15,8 @@ export const CLEANUP_CHUNK = 100
 
 export interface CleanupOutcome {
   removed: number
+  /** ربط اتنقل من بقايا لنسختها الحقيقية قبل المسح. */
+  relinked: number
   skipped: number
   backup: VerifiedBackup | null
 }
@@ -39,14 +42,15 @@ export interface CleanupDeps {
 }
 
 const keyOf = (item: CleanupItem) => `${item.group}/${item.docId}`
+const relinkKey = (patch: IdPatch) => `${patch.group}/${patch.docId}/${JSON.stringify(patch.fields)}`
 
-/** حالة كل عملية في خطة التنظيف — للتقرير بس. */
+/** حالة كل عملية في خطة التنظيف — للتقرير بس. «هتتمسح» بتغلب أي حالة تانية. */
 function statusFrom(plan: OrphanCleanupPlan): (docId: string) => CleanupStatus {
   const status = new Map<string, CleanupStatus>()
-  for (const item of plan.transactions) status.set(item.docId, 'willDelete')
-  for (const item of plan.chainUnconfirmed) status.set(item.docId, 'chainUnconfirmed')
-  for (const item of plan.unproven) status.set(item.docId, 'noTwin')
   for (const item of plan.linked) status.set(item.docId, 'linked')
+  for (const item of plan.unproven) status.set(item.docId, 'noTwin')
+  for (const item of plan.chainUnconfirmed) status.set(item.docId, 'chainUnconfirmed')
+  for (const item of plan.transactions) status.set(item.docId, 'willDelete')
   return (docId) => status.get(docId) ?? 'notLeftover'
 }
 
@@ -54,8 +58,10 @@ function statusFrom(plan: OrphanCleanupPlan): (docId: string) => CleanupStatus {
  * CleanupOrphans — تنظيف بقايا دفعة متراجَع عنها (domain/orphanCleanup.ts).
  *
  * نفس بروتوكول إصلاح المعرّفات: معاينة بلا كتابة ← إعادة قراءة وقت التطبيق ←
- * حذف **اللي ظهر في المعاينة بس** ← نسخة كاملة من المستندات دي بحجم مؤكد قبل أول حذف ←
- * حذف على دفعات. الانقطاع آمن: الفحص التاني بيلاقي الباقي بس.
+ * **اللي ظهر في المعاينة بس** ← نسخة كاملة بحجم مؤكد (العمليات والسجلات اللي هتتمسح
+ * **ومستندات الربط قبل تعديلها**) ← نقل الربط ← الحذف على دفعات.
+ * الانقطاع آمن: لو الربط اتنقل والحذف ما حصلش، الفحص التاني بيلاقي البقية مش متربطة
+ * وبيمسحها بقاعدة اليوم.
  */
 export function makeCleanupOrphans({ port, remover, redact, backup, clock }: CleanupDeps) {
   async function preview(): Promise<OrphanCleanupPreview> {
@@ -77,19 +83,35 @@ export function makeCleanupOrphans({ port, remover, redact, backup, clock }: Cle
   async function apply(previewed: OrphanCleanupPlan, onProgress?: (progress: RepairProgress) => void): Promise<CleanupOutcome> {
     const stored = await port.readAll()
     const fresh = planOrphanCleanup(stored, redact)
+    const approvedRelinks = new Set(previewed.relinks.map(relinkKey))
+    if (fresh.relinks.some((patch) => !approvedRelinks.has(relinkKey(patch)))) {
+      throw new Error('ربط العمليات اتغيّر بعد المعاينة — ما اتكتبش ولا اتمسح حاجة. افحص تاني')
+    }
+    const relinks = fresh.relinks
     const approved = new Set([...previewed.transactions, ...previewed.records].map(keyOf))
     const candidates = [...fresh.transactions, ...fresh.records]
     const items = candidates.filter((item) => approved.has(keyOf(item)))
     const skipped = candidates.length - items.length
-    if (items.length === 0) return { removed: 0, skipped, backup: null }
+    if (items.length === 0 && relinks.length === 0) return { removed: 0, relinked: 0, skipped, backup: null }
 
-    const wanted = new Set(items.map(keyOf))
+    const wanted = new Set([...items.map(keyOf), ...relinks.map((patch) => `${patch.group}/${patch.docId}`)])
     const documents = BACKUP_GROUPS.flatMap((group) =>
       stored[group].filter((row) => wanted.has(`${group}/${row.docId}`)).map((row) => ({ group, ...row })))
     const saved = await saveVerifiedBackup(backup, clock, 'before-cleanup', documents)
 
+    const total = relinks.length + items.length
+    onProgress?.({ written: 0, total })
+    if (relinks.length > 0) {
+      try {
+        await port.apply(relinks)
+      } catch (error) {
+        const cause = error instanceof Error ? error.message : String(error)
+        throw new Error(`نقل الربط ما كملش (${cause}) — ما اتمسحش ولا عملية`)
+      }
+      onProgress?.({ written: relinks.length, total })
+    }
+
     let removed = 0
-    onProgress?.({ written: removed, total: items.length })
     for (let i = 0; i < items.length; i += CLEANUP_CHUNK) {
       try {
         removed += await remover.remove(items.slice(i, i + CLEANUP_CHUNK))
@@ -97,9 +119,9 @@ export function makeCleanupOrphans({ port, remover, redact, backup, clock }: Cle
         const cause = error instanceof Error ? error.message : String(error)
         throw new Error(`اتمسح ${removed} من ${items.length} قبل الانقطاع (${cause})`)
       }
-      onProgress?.({ written: removed, total: items.length })
+      onProgress?.({ written: relinks.length + removed, total })
     }
-    return { removed, skipped, backup: saved }
+    return { removed, relinked: relinks.length, skipped, backup: saved }
   }
 
   return { preview, apply }
