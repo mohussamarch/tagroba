@@ -1,6 +1,9 @@
+import { AppLockToggle } from './AppLockToggle'
+
 /**
  * المظهر والحساب — نزلوا من رأس التطبيق للإعدادات بقرار المالك
  * 2026-09-11 (OVERRIDES §20). مكوّن مستقل عشان حد الـ300 سطر.
+ * وقفل البصمة هنا كمان (OVERRIDES §21).
  */
 export function AppearanceCard({
   theme,
@@ -22,6 +25,7 @@ export function AppearanceCard({
           تسجيل الخروج
         </button>
       </div>
+      <AppLockToggle />
     </section>
   )
 }

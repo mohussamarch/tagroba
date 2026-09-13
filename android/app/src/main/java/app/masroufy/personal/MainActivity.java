@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(LocalFilesPlugin.class);
         registerPlugin(BankSmsPlugin.class);
         registerPlugin(SmsInboxPlugin.class);
+        registerPlugin(DeviceLockPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

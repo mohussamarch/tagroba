@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { SignInScreen } from '../presentation/screens/SignInScreen'
+import { AppLockContext } from '../presentation/components/AppLockContext'
+import { AppLockGate } from '../presentation/components/AppLockGate'
 import { AppShell } from './AppShell'
+import { appLock } from './appLock'
 import { useTheme } from '../presentation/theme/useTheme'
 import type { AuthUser } from '../application/ports/AuthPort'
 import type { Container } from './container'
@@ -18,15 +21,20 @@ export function App({ container }: { container: Container }) {
     [container],
   )
 
-  if (session.status === 'loading') return <Splash />
-  if (session.status === 'out') return <SignInScreen auth={container.auth} />
+  // القفل بيغطي كل حاجة بما فيها شاشة الفتح، من غير ما يشيل اللي تحته (OVERRIDES §21)
   return (
-    <AppShell
-      key={session.user.uid}
-      container={container}
-      uid={session.user.uid}
-      onSignOut={() => void container.auth.signOut()}
-    />
+    <AppLockContext.Provider value={appLock}>
+      <AppLockGate lock={appLock}>
+        {session.status === 'loading' ? <Splash />
+          : session.status === 'out' ? <SignInScreen auth={container.auth} />
+          : <AppShell
+              key={session.user.uid}
+              container={container}
+              uid={session.user.uid}
+              onSignOut={() => void container.auth.signOut()}
+            />}
+      </AppLockGate>
+    </AppLockContext.Provider>
   )
 }
 

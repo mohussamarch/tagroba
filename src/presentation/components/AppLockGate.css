@@ -1,0 +1,37 @@
+/* بوابة القفل — بتغطي الشاشة كلها بلون الخلفية المعتم عشان مفيش مبلغ يبان من تحتها */
+.appLock {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--safe-area-inset-top, env(safe-area-inset-top)) var(--pad-screen, 16px)
+    var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
+  background: var(--c-bg);
+}
+
+.appLock__card {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 360px);
+  padding: 24px;
+  border-radius: var(--r-card, 20px);
+  background: var(--c-surface);
+  text-align: center;
+}
+
+.appLock__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.appLock__hint {
+  margin: 0;
+  color: var(--c-muted);
+}
+
+.appLock .btn {
+  min-height: 48px;
+}

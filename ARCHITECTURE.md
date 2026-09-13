@@ -1027,3 +1027,16 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 **الاستئناف:** مفيش حالة محفوظة. كل تعديل بيرجّع الحقل لقيمته الصحيحة، فالفحص بعد الانقطاع بيلاقي الباقي بس. كل تشغيل ليه ملف نسخة باسم فيه الوقت، فمفيش نسخة بتكتب فوق التانية.
 **حدود معلنة:** الملف في مجلد التطبيق **بيتمسح لو التطبيق اتشال**، وبيتشاف من الكمبيوتر بكابل (`Android/data/app.masroufy.personal/files/backups`). مش مشفّر.
 **التشخيص:** `domain/idRepairDiagnosis.ts` (دالة نقية، قراءة فقط) بيرجّع أعداد الروابط التايهة متجمّعة (المجموعة، الحقل، شكل القيمة، حالة الدفعة، حالة المطابقة) و«العمليات اليتيمة» اللي مفيش سجل مصدر بيشاور عليها، متجمّعة بدقيقة الإنشاء وأقرب دفعة ووجود توأم. **مفيش مبالغ ولا أوصاف ولا معرّفات في الناتج** — عشان يتعرض ويتكتب في HANDOVER.
+
+## 27. قفل التطبيق بالبصمة — اعتماد `androidx.biometric` — 2026-09-13
+**الطلب:** OVERRIDES §21 (اختياري، عند الفتح وبعد خمس دقايق في الخلفية، ورمز الجوال بديل للبصمة).
+**الاعتماد الجديد — السبب (قاعدة 8):** `androidx.biometric:biometric:1.1.0` في `android/app/build.gradle` بس. ده مكتبة جوجل الرسمية لـ`BiometricPrompt`، وهي اللي بتعرض حوار النظام وبتنزل لرمز الجوال لوحدها. **1.1.0 آخر نسخة مستقرة** (1.4 لسه alpha). مفيش بديل في أندرويد نفسه يغطي من API 24 لحد 36 بنفس الحوار.
+**ليه مش إضافة Capacitor جاهزة** (`@aparajita/capacitor-biometric-auth` أو `@capgo/capacitor-native-biometric` أو `@capawesome-team/capacitor-biometrics` — كلهم بيدعموا Capacitor 8): كلهم فوق نفس المكتبة، وبيضيفوا اعتماد npm من طرف تالت، وبعضهم فيه تخزين بيانات دخول مش محتاجينه. إضافتنا `DeviceLockPlugin.java` ~110 سطر مقروءة، على نفس نمط `LocalFilesPlugin` و`SmsInboxPlugin`.
+**الخصوصية:** التطبيق **ما بيستلمش البصمة ولا الرمز** — `BiometricPrompt` بيرجّع نجح/فشل بس. مفيش مفاتيح ولا تشفير مربوط بالبصمة.
+**المصادقات:** أندرويد 11+ `BIOMETRIC_STRONG | DEVICE_CREDENTIAL`؛ قبله `BIOMETRIC_WEAK | DEVICE_CREDENTIAL` (الجمع القوي + الرمز مش مدعوم على 9 و10 — توثيق androidx.biometric).
+**الطبقات:**
+- `domain/appLock.ts`: `shouldLock` دالة نقية (الوقت من برّه). ساعة رجعت لورا ⇒ يقفل.
+- `application/ports/DeviceLockPort.ts` + `useCases/appLock.ts`: التشغيل **والإيقاف** محتاجين تأكيد صاحب الجوال.
+- `infrastructure/androidDeviceLock.ts` (أندرويد) و`localAppLockSettings.ts` (`localStorage` — **إعداد جهاز مش بيانات حساب**، مش بيتزامن) و`memory/deviceLock.ts` للاختبار.
+- `presentation/components/AppLockGate.tsx`: بتغطي التطبيق **من غير ما تشيله** (`inert` + `aria-hidden`)، فأي استيراد أو إصلاح شغال ما يتقطعش.
+**حدود معلنة:** الويب وiOS مالهمش قفل. ومفيش `FLAG_SECURE`، فصورة التطبيق في قايمة التطبيقات الأخيرة ممكن تبين المحتوى.
