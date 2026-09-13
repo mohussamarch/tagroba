@@ -111,7 +111,8 @@ export function ImportSheet({ user, wallets, onClose, onImported, initialSms, on
       fileName,
       content,
       accountIdentity: walletName,
-      sourceType: initialSms ? 'sms' as const : guessSourceType(content),
+      // قارئ الـPDF بيحوّل الكشف لنص CSV، فالتخمين من النص كان بيسجّل دفعة PDF «ملف CSV»
+      sourceType: initialSms ? 'sms' as const : pdfRows ? 'pdf_alrajhi' as const : guessSourceType(content),
       walletId,
       ...(pdfRows ? { parsedRows: pdfRows, schema: initialSms ? 'sms' as const : 'alrajhi_pdf' as const } : {}),
     }

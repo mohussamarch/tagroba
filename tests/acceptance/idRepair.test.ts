@@ -6,6 +6,11 @@ import { BACKUP_GROUPS, type BackupGroup, type BackupRow, type FullBackupData } 
 import { makeRepairStoredIds } from '../../src/application/useCases/repairStoredIds'
 import { memoryIdRepair } from '../../src/infrastructure/memory/idRepair'
 import { sanitizeAccountNumbers as redact } from '../../src/infrastructure/firestore/firestoreRepositories'
+import { memoryRepairBackup } from '../../src/infrastructure/memory/repairBackup'
+import type { IdRepairPort } from '../../src/application/ports/IdRepairPort'
+
+const clock = { nowIso: () => '2026-09-13T00:00:00.000Z' }
+const repairWith = (port: IdRepairPort) => makeRepairStoredIds({ port, redact, backup: memoryRepairBackup(), clock })
 
 /**
  * إصلاح البيانات التي كتبها الحفظ القديم (HANDOVER §23). التلف هنا مصنوع
@@ -64,9 +69,9 @@ describe('إصلاح المعرّفات التالفة', () => {
   it('بعد التطبيق: لا شيء يحتاج إصلاحًا، والنسخة الشاملة تقبل الحساب — وكانت ترفضه قبله', async () => {
     const store = memoryIdRepair(damagedAccount())
     expect(() => { const d = asBackup(store.snapshot()); checkFullBackupData(d); checkBackupFinance(d) }).toThrow()
-    const repair = makeRepairStoredIds(store, redact)
+    const repair = repairWith(store)
     const preview = await repair.preview()
-    expect(preview.before).toHaveLength(5)
+    expect(preview.plan.patches).toHaveLength(5)
     expect((await repair.apply(preview.plan)).written).toBe(5)
     expect(planIdRepair(store.snapshot(), redact).patches).toEqual([])
     const repaired = asBackup(store.snapshot())
@@ -95,13 +100,13 @@ describe('إصلاح المعرّفات التالفة', () => {
 
   it('يكتب ما ظهر في المعاينة فقط؛ تلف ظهر بعدها يتخطى', async () => {
     const store = memoryIdRepair(damagedAccount())
-    const repair = makeRepairStoredIds(store, redact)
+    const repair = repairWith(store)
     const preview = await repair.preview()
     const later = 'txn-0mtqh4w99999-aaaaaaaaaaaa'
     await store.apply([]) // لا شيء
     const raw = store.snapshot(); raw.transactions.push({ docId: later, data: txn(later) })
     const changed = memoryIdRepair(raw)
-    const outcome = await makeRepairStoredIds(changed, redact).apply(preview.plan)
+    const outcome = await repairWith(changed).apply(preview.plan)
     expect(outcome.written).toBe(5)
     expect(outcome.skipped).toBe(1)
   })

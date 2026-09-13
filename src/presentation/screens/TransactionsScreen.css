@@ -267,6 +267,9 @@
   padding: 12px var(--s-card);
   font-size: var(--t-body);
   color: var(--c-muted);
+  /* كلمة طويلة من غير مسافات (مسار ملف) كانت بتوسّع الصفحة كلها لبره الشاشة
+     وتزق شريط التنقل تحت — اتشاف على المحاكي 2026-09-13 */
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 360px) {

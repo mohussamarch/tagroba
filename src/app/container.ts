@@ -12,6 +12,7 @@ import { androidSmsInbox } from '../infrastructure/androidSmsInbox'
 import { androidBankSms } from '../infrastructure/androidBankSms'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
+import { deviceRepairBackup } from '../infrastructure/repairBackup'
 import { coalesceReads } from '../infrastructure/coalesceReads'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
@@ -189,7 +190,7 @@ export function createContainer(): Container {
         loadHomeHistory: makeLoadHomeHistory({txns,allocations,categories}),
         saveTextFile,
         fullBackup: makeFullBackup(firestoreFullBackup(db,uid),backupDigest),
-        repairStoredIds: makeRepairStoredIds(firestoreIdRepair(db,uid),sanitizeAccountNumbers),
+        repairStoredIds: makeRepairStoredIds({port:firestoreIdRepair(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),

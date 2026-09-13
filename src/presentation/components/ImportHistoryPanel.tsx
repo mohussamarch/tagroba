@@ -6,12 +6,15 @@ import { REVERT_BLOCKED_MESSAGE } from '../../application/useCases/revertImportB
 
 type Plan = Awaited<ReturnType<UserContainer['revertImportBatch']['plan']>>
 
-const SOURCE_LABEL: Record<ImportBatch['sourceType'], string> = {
+export const SOURCE_LABEL: Record<ImportBatch['sourceType'], string> = {
   csv_preview: 'ملف CSV', csv_legacy: 'ملف CSV قديم', pdf_alrajhi: 'PDF الراجحي', sms: 'رسائل البنك',
 }
-const STATE_LABEL: Record<ImportBatch['state'], string> = {
+export const STATE_LABEL: Record<ImportBatch['state'], string> = {
   committed: 'مسجّل', staged: 'لم يكتمل', reverted: 'متراجَع عنه',
 }
+/** دفعات PDF قبل التصحيح اتسجلت «csv_preview» — اسم الملف دليلها. */
+const sourceLabel = (batch: ImportBatch) =>
+  batch.sourceType === 'csv_preview' && /\.pdf$/i.test(batch.fileName) ? SOURCE_LABEL.pdf_alrajhi : SOURCE_LABEL[batch.sourceType]
 const KEEP_LABEL: Record<Exclude<RevertDecision, 'deleted'>, string> = {
   kept_other_source: 'ليها مصدر تاني', kept_has_settlement: 'عليها تسوية', kept_has_allocation: 'متربطة بشخص',
 }
@@ -81,7 +84,7 @@ export function ImportHistoryPanel({ user, onDone }: { user: UserContainer; onDo
                 <span>{STATE_LABEL[batch.state]}</span>
               </div>
               <span className="settings__hint">
-                {when(batch.importedAt)} · {SOURCE_LABEL[batch.sourceType]} · {batch.counts.imported} عملية
+                {when(batch.importedAt)} · {sourceLabel(batch)} · {batch.counts.imported} عملية
               </span>
               {batch.state === 'committed' && (
                 <button type="button" className="link" onClick={() => void preview(batch)} disabled={busy}>

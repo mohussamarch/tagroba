@@ -13,6 +13,7 @@ import { makeManageSmsInbox } from '../application/useCases/manageSmsInbox'
 import { memorySmsInbox } from '../infrastructure/memory/smsInbox'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
+import { deviceRepairBackup } from '../infrastructure/repairBackup'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
 import { makeManageRecurring } from '../application/useCases/manageRecurring'
@@ -157,7 +158,7 @@ export function createDemoContainer(): Container {
       categoryBudgets:{read:async()=>budgets.snapshot().lines as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),lines:rows as unknown as CategoryBudget[]})},
       recurringItems:{read:async()=>await recurringItems.listAll() as unknown as BackupRow[],write:async rows=>{for(const row of rows)await recurringItems.save(row as unknown as RecurringItem)}},
     }),backupDigest),
-    repairStoredIds: makeRepairStoredIds(memoryIdRepair(),sanitizeAccountNumbers),
+    repairStoredIds: makeRepairStoredIds({port:memoryIdRepair(),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}),
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
     manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),

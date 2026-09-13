@@ -42,18 +42,16 @@ export function emptyStoredData(): StoredData {
   return Object.fromEntries(BACKUP_GROUPS.map((group) => [group, [] as StoredRow[]])) as StoredData
 }
 
-export function planIdRepair(stored: StoredData, redact: (text: string) => string): IdRepairPlan {
-  const patches = new Map<string, IdPatch>()
-  const setField = (group: BackupGroup, docId: string, field: string, value: string) => {
-    const key = `${group}/${docId}`
-    const entry = patches.get(key) ?? { group, docId, fields: {} }
-    entry.fields[field] = value
-    patches.set(key, entry)
-  }
+export interface IdIndex {
+  trueIds: Record<BackupGroup, Set<string>>
+  /** «الشكل المقصوص ← الأصل»؛ null = أكتر من أصل بيدي نفس الشكل. */
+  byDamaged: Record<BackupGroup, Map<string, string | null>>
+}
 
-  // المعرّفات الحقيقية لكل مجموعة، وفهرس «الشكل المقصوص ← الأصل» (null = غير وحيد)
-  const trueIds = {} as Record<BackupGroup, Set<string>>
-  const byDamaged = {} as Record<BackupGroup, Map<string, string | null>>
+/** المعرّفات الحقيقية لكل مجموعة وفهرس أشكالها المقصوصة — مشترك بين الخطة والتشخيص. */
+export function buildIdIndex(stored: StoredData, redact: (text: string) => string): IdIndex {
+  const trueIds = {} as IdIndex['trueIds']
+  const byDamaged = {} as IdIndex['byDamaged']
   for (const group of BACKUP_GROUPS) {
     const ids = new Set<string>()
     const index = new Map<string, string | null>()
@@ -67,6 +65,19 @@ export function planIdRepair(stored: StoredData, redact: (text: string) => strin
     trueIds[group] = ids
     byDamaged[group] = index
   }
+  return { trueIds, byDamaged }
+}
+
+export function planIdRepair(stored: StoredData, redact: (text: string) => string): IdRepairPlan {
+  const patches = new Map<string, IdPatch>()
+  const setField = (group: BackupGroup, docId: string, field: string, value: string) => {
+    const key = `${group}/${docId}`
+    const entry = patches.get(key) ?? { group, docId, fields: {} }
+    entry.fields[field] = value
+    patches.set(key, entry)
+  }
+
+  const { trueIds, byDamaged } = buildIdIndex(stored, redact)
 
   for (const group of SANITIZED_GROUPS) {
     for (const row of stored[group]) {
