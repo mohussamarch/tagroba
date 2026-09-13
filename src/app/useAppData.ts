@@ -54,9 +54,8 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
     // تنظيف الاستيراد المعلّق لا يمنع فتح الشاشات أبدًا — فشله كان يوقف التطبيق كله
     const [,walletSeed,outcomes,profile]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null),user.manageProfile.load().catch(()=>null)])
     if(profile)applyPayday(profile.payday)
-    // أسئلة البداية للحساب الجديد بس: المحافظ اتزرعت دلوقتي لأول مرة (OVERRIDES §26)
-    if(walletSeed.seeded)setNeedsOnboarding(await user.manageProfile.markOnboardingPending().catch(()=>false))
-    else if(profile)setNeedsOnboarding(user.manageProfile.needsOnboarding(profile))
+    // أسئلة البداية لأي حساب ما خلصهاش قبل كده (OVERRIDES §26). الملف ما اتقراش ⇒ ما تظهرش
+    if(profile)setNeedsOnboarding(user.manageProfile.needsOnboarding(profile))
     setWallets(walletSeed.wallets)
     if(outcomes===null||outcomes.some(o=>o.error))setRecovery('فيه استيراد سابق لم يكتمل ومقدرناش ننظّفه. الشاشات شغالة، لكن إعادة استيراد نفس الكشف ممكن تعتبر صفوفه مكررة لحد ما يتعمل إصلاح البيانات.')
     else if(outcomes.length)setRecovery('اتنضّف استيراد سابق لم يكتمل. تقدر تستورد الملف تاني.')

@@ -13,29 +13,51 @@ export interface OpeningDebtInput {
 
 export interface OnboardingInput {
   profile: UserProfile
-  /** «الكاش اللي معايا دلوقتي»؛ null = اتخطى السؤال فمحفظة الكاش ما تتلمسش. */
+  /**
+   * «الكاش اللي معايا دلوقتي». null = اتخطى السؤال، أو نفس رصيد البداية الحالي بالظبط
+   * ⇒ محفظة الكاش ما تتلمسش.
+   */
   cashMinor: Halalas | null
   debts: OpeningDebtInput[]
+}
+
+/** اللي الأسئلة بتبدأ بيه: بيانات الملف المتحفظة، ورصيد بداية محفظة الكاش لو اتحدد قبل كده. */
+export interface OnboardingStart {
+  profile: UserProfile
+  /** null = مفيش محفظة كاش، أو رصيد بدايتها لسه صفر (حساب جديد). */
+  cashOpening: { amountMinor: Halalas; openingAt: string } | null
 }
 
 export type OnboardingStep = 'profile' | 'cash' | 'debts'
 export type OnboardingResult = { ok: true } | { ok: false; step: OnboardingStep; message: string }
 
 /**
- * OnboardNewAccount — أسئلة البداية للحساب الجديد (OVERRIDES §26–27).
+ * أسئلة البداية — لأي حساب ما خلصهاش قبل كده، جديد أو قديم (OVERRIDES §26–27).
  *
+ * - `start` بيرجّع الموجود فعلًا عشان يتكتب في الخانات: حساب قديم ما يتكتبش فوق بياناته بقيم فاضية.
  * - **كل القيم بتتأكد الأول، قبل أي كتابة.** غلطة في أي خطوة ⇒ مفيش حاجة اتكتبت، والخطأ بيقول الخطوة.
  * - الكاش = **رصيد افتتاح لمحفظة الكاش** بتاريخ النهارده (مش عملية، فمش دخل).
+ *   **نفس الرصيد الحالي بالظبط ⇒ ما بيتغيرش حاجة** (رد المالك: «يوريه الرصيد ويسيبه يغيّر»).
  * - الديون = شخص (بيتعاد استعماله لو موجود بنفس الاسم) + **دين قديم من غير عملية**.
  * - تسجيل انتهاء الأسئلة **آخر حاجة**: لو اتقطع في النص الأسئلة بترجع، والتكرار ما بيضاعفش شخص ولا دين.
  */
-export function makeOnboardNewAccount(deps: {
+export function makeOnboardAccount(deps: {
   profile: ReturnType<typeof makeManageProfile>
   people: ReturnType<typeof makeManagePeople>
   wallets: WalletRepository
   clock: Clock
 }) {
-  return async function onboard(input: OnboardingInput): Promise<OnboardingResult> {
+  const findCashWallet = async () => (await deps.wallets.listAll()).find((wallet) => wallet.kind === 'cash') ?? null
+
+  async function start(): Promise<OnboardingStart> {
+    const [profile, cash] = await Promise.all([deps.profile.load(), findCashWallet()])
+    const cashOpening = cash && cash.openingBalanceMinor !== 0
+      ? { amountMinor: cash.openingBalanceMinor, openingAt: cash.openingAt }
+      : null
+    return { profile, cashOpening }
+  }
+
+  async function finish(input: OnboardingInput): Promise<OnboardingResult> {
     const check = checkProfile(input.profile)
     if (!check.ok) return { ok: false, step: 'profile', message: check.message }
     if (input.cashMinor !== null && (!Number.isSafeInteger(input.cashMinor) || input.cashMinor < 0)) {
@@ -51,11 +73,11 @@ export function makeOnboardNewAccount(deps: {
 
     let cashWallet = null
     if (input.cashMinor !== null) {
-      cashWallet = (await deps.wallets.listAll()).find((wallet) => wallet.kind === 'cash') ?? null
+      cashWallet = await findCashWallet()
       if (!cashWallet) return { ok: false, step: 'cash', message: 'مفيش محفظة كاش في الحساب' }
     }
 
-    if (cashWallet && input.cashMinor !== null) {
+    if (cashWallet && input.cashMinor !== null && input.cashMinor !== cashWallet.openingBalanceMinor) {
       await deps.wallets.save({ ...cashWallet, openingBalanceMinor: input.cashMinor, openingAt: deps.clock.nowIso().slice(0, 10) })
     }
 
@@ -79,4 +101,6 @@ export function makeOnboardNewAccount(deps: {
     const done = await deps.profile.completeOnboarding(check.profile)
     return done.ok ? { ok: true } : { ok: false, step: 'profile', message: done.message }
   }
+
+  return { start, finish }
 }

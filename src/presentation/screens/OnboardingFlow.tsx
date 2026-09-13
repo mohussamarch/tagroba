@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { UserContainer } from '../../app/container'
-import type { OnboardingStep, OpeningDebtInput } from '../../application/useCases/onboardNewAccount'
+import type { OnboardingStart, OnboardingStep, OpeningDebtInput } from '../../application/useCases/onboardAccount'
+import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
 import { emptyProfile, type Gender, type UserProfile } from '../../domain/userProfile'
 import './OnboardingFlow.css'
@@ -11,11 +12,15 @@ type Step = typeof STEPS[number]
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 const FOR_RESULT: Record<OnboardingStep, Step> = { profile: 'salary', cash: 'cash', debts: 'debts' }
 
+const asInput = (minor: number) => formatAmount(minor, 'SAR', { grouping: false })
+
 /**
- * أسئلة البداية للحساب الجديد — OVERRIDES §26–27. شاشة كاملة بخطوات؛ الاختياري فيه «تخطي».
- * الشاشة ما بتحسبش ولا بتكتب: بتجمع الإجابات وتنادي `onboardNewAccount` مرة واحدة في الآخر.
+ * أسئلة البداية لأي حساب ما خلصهاش — OVERRIDES §26–27. شاشة كاملة بخطوات؛ الاختياري ممكن يتساب فاضي.
+ * الخانات بتبدأ بالموجود فعلًا (`onboarding.start`)، فحساب قديم ما يتكتبش فوق بياناته بقيم فاضية.
+ * الشاشة ما بتحسبش ولا بتكتب: بتجمع الإجابات وتنادي `onboarding.finish` مرة واحدة في الآخر.
  */
 export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: () => void }) {
+  const [start, setStart] = useState<OnboardingStart | null>(null)
   const [step, setStep] = useState<Step>('name')
   const [profile, setProfile] = useState<UserProfile>(emptyProfile())
   const [salaryText, setSalaryText] = useState('')
@@ -23,6 +28,17 @@ export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: 
   const [debts, setDebts] = useState<DebtRow[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  const load = useCallback(() => {
+    setError(null)
+    user.onboarding.start().then((loaded) => {
+      setProfile(loaded.profile)
+      setSalaryText(loaded.profile.salaryMinor === null ? '' : asInput(loaded.profile.salaryMinor))
+      setCashText(loaded.cashOpening ? asInput(loaded.cashOpening.amountMinor) : '')
+      setStart(loaded)
+    }).catch((cause) => setError('مقدرناش نقرا بياناتك: ' + (cause instanceof Error ? cause.message : String(cause))))
+  }, [user])
+  useEffect(load, [load])
 
   const index = STEPS.indexOf(step)
   const go = (next: Step) => { setError(null); setStep(next) }
@@ -56,7 +72,7 @@ export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: 
     }
     setBusy(true); setError(null)
     try {
-      const result = await user.onboardNewAccount({ profile: { ...profile, salaryMinor }, cashMinor, debts: parsed })
+      const result = await user.onboarding.finish({ profile: { ...profile, salaryMinor }, cashMinor, debts: parsed })
       if (result.ok) { onDone(); return }
       setStep(FOR_RESULT[result.step]); setError(result.message)
     } catch (cause) {
@@ -65,6 +81,19 @@ export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: 
   }
 
   const setDebt = (i: number, patch: Partial<DebtRow>) => setDebts((rows) => rows.map((row, j) => (j === i ? { ...row, ...patch } : row)))
+
+  if (!start) {
+    return (
+      <div className="onboarding" role="dialog" aria-modal="true" aria-label="أهلًا بيك في مصروفي">
+        <div className="onboarding__card">
+          {error
+            ? <><p className="settings__error" role="alert">{error}</p>
+                <div className="onboarding__actions"><button type="button" className="btn" onClick={load}>جرّب تاني</button></div></>
+            : <p className="onboarding__hint">بنجهّز الأسئلة…</p>}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="onboarding" role="dialog" aria-modal="true" aria-label="أهلًا بيك في مصروفي">
@@ -114,7 +143,12 @@ export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: 
 
         {step === 'cash' && <>
           <h2 className="onboarding__title">الكاش اللي معاك دلوقتي</h2>
-          <p className="onboarding__hint">ده بيبقى رصيد البداية لمحفظة الكاش من النهارده — مش بيتحسب دخل.</p>
+          {start.cashOpening
+            ? <p className="onboarding__hint">
+                المكتوب هو رصيد البداية الحالي لمحفظة الكاش (من {start.cashOpening.openingAt}). لو سبته زي ما هو، مش هيتغير حاجة.
+                لو غيّرته، بيبقى رصيد بداية جديد من النهارده، وعمليات الكاش اللي قبل النهارده ما تتحسبش في رصيد الكاش.
+              </p>
+            : <p className="onboarding__hint">ده بيبقى رصيد البداية لمحفظة الكاش من النهارده — مش بيتحسب دخل.</p>}
           <label className="onboarding__field">
             <span>المبلغ بالريال (اختياري)</span>
             <input className="settings__input" inputMode="decimal" placeholder="مثلًا 500" value={cashText} onChange={(e) => setCashText(e.target.value)} />

@@ -23,30 +23,21 @@ export function makeManageProfile(deps: { profiles: ProfileRepository; account: 
   }
 
   async function completeOnboarding(input: UserProfile): Promise<ProfileCheck> {
-    return save({ ...input, onboardedAt: input.onboardedAt ?? deps.clock.nowIso(), onboardingPending: false })
+    return save({ ...input, onboardedAt: input.onboardedAt ?? deps.clock.nowIso() })
   }
 
   /**
-   * حساب جديد (المحافظ اتزرعت لأول مرة) ⇒ أسئلة البداية مستنية. ما بيلمسش ملف خلّص الأسئلة.
-   * بيرجّع هل الأسئلة لازم تظهر.
+   * هل أسئلة البداية لازم تظهر (من غير ما يكتب حاجة): **أي حساب ما خلصهاش قبل كده**،
+   * جديد أو قديم — نص المالك «خليهم يتسألوا لأي حد عادي مدام متسألش قبل كده» (OVERRIDES §26).
    */
-  async function markOnboardingPending(): Promise<boolean> {
-    const stored = await deps.profiles.load()
-    if (stored?.onboardedAt) return false
-    if (!stored?.onboardingPending) await deps.profiles.save({ ...(stored ?? emptyProfile()), onboardingPending: true })
-    return true
-  }
-
-  /** هل أسئلة البداية مستنية (من غير ما يكتب حاجة). */
   function needsOnboarding(profile: UserProfile): boolean {
-    return profile.onboardingPending && !profile.onboardedAt
+    return !profile.onboardedAt
   }
 
   return {
     load,
     save,
     completeOnboarding,
-    markOnboardingPending,
     needsOnboarding,
     email: () => deps.account.email(),
     sendPasswordReset: () => deps.account.sendPasswordReset(),

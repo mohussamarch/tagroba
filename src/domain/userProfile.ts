@@ -20,19 +20,17 @@ export interface UserProfile {
   gender: Gender | null
   /** هل بيعول حد. بعدين هيتضاف مين بالظبط (HANDOVER §37). */
   supportsDependents: boolean | null
-  /** وقت ما خلّص أسئلة البداية؛ null = لسه ما خلصهاش. */
-  onboardedAt: string | null
   /**
-   * حساب جديد لسه ما خلصش أسئلة البداية (OVERRIDES §26). بيتعلّم لما المحافظ تتزرع لأول مرة،
-   * فالحسابات القديمة عمرها ما بتشوف الأسئلة وما يتكتبش فوق أرصدتها.
+   * وقت ما خلّص أسئلة البداية؛ null = لسه ما خلصهاش ⇒ الأسئلة بتظهر له
+   * (أي حساب، جديد أو قديم — OVERRIDES §26).
    */
-  onboardingPending: boolean
+  onboardedAt: string | null
 }
 
 export const MAX_NAME_LENGTH = 60
 
 export function emptyProfile(): UserProfile {
-  return { displayName: null, salaryMinor: null, payday: DEFAULT_PAYDAY, gender: null, supportsDependents: null, onboardedAt: null, onboardingPending: false }
+  return { displayName: null, salaryMinor: null, payday: DEFAULT_PAYDAY, gender: null, supportsDependents: null, onboardedAt: null }
 }
 
 export type ProfileField = 'displayName' | 'salaryMinor' | 'payday' | 'gender' | 'supportsDependents'
@@ -56,7 +54,6 @@ export function parseStoredProfile(raw: unknown): UserProfile {
   if (data.gender === 'male' || data.gender === 'female') profile.gender = data.gender
   if (typeof data.supportsDependents === 'boolean') profile.supportsDependents = data.supportsDependents
   if (typeof data.onboardedAt === 'string' && data.onboardedAt) profile.onboardedAt = data.onboardedAt
-  if (data.onboardingPending === true) profile.onboardingPending = true
   return profile
 }
 
