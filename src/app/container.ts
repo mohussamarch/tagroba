@@ -13,6 +13,8 @@ import { androidBankSms } from '../infrastructure/androidBankSms'
 import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { deviceRepairBackup } from '../infrastructure/repairBackup'
+import { makeCleanupOrphans } from '../application/useCases/cleanupOrphans'
+import { firestoreRemoveDocs } from '../infrastructure/firestore/removeDocs'
 import { coalesceReads } from '../infrastructure/coalesceReads'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
@@ -107,6 +109,8 @@ export interface Container {
 export interface UserContainer {
   fullBackup: ReturnType<typeof makeFullBackup>
   repairStoredIds: ReturnType<typeof makeRepairStoredIds>
+  /** بقايا استيراد متراجَع عنه — HANDOVER §36. */
+  cleanupOrphans: ReturnType<typeof makeCleanupOrphans>
   homeSnapshot: ReturnType<typeof createHomeSnapshot>
   loadHomeHistory: ReturnType<typeof makeLoadHomeHistory>
   readBankSms: ReturnType<typeof makeReadBankSms>
@@ -191,6 +195,7 @@ export function createContainer(): Container {
         saveTextFile,
         fullBackup: makeFullBackup(firestoreFullBackup(db,uid),backupDigest),
         repairStoredIds: makeRepairStoredIds({port:firestoreIdRepair(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
+        cleanupOrphans: makeCleanupOrphans({port:firestoreIdRepair(db,uid),remover:firestoreRemoveDocs(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),

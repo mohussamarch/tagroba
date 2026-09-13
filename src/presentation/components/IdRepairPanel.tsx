@@ -3,6 +3,7 @@ import type { UserContainer } from '../../app/container'
 import { BACKUP_LABELS, type BackupGroup } from '../../domain/fullBackup'
 import type { RepairProgress } from '../../application/useCases/repairStoredIds'
 import { IdRepairDetails } from './IdRepairDetails'
+import { OrphanCleanupPanel } from './OrphanCleanupPanel'
 
 type Preview = Awaited<ReturnType<UserContainer['repairStoredIds']['preview']>>
 
@@ -61,7 +62,7 @@ export function IdRepairPanel({ user, onDone }: { user: UserContainer; onDone: (
   }
 
   const plan = preview?.plan
-  return (
+  return (<>
     <section className="sheet__field" aria-label="إصلاح بيانات قديمة">
       <p className="settings__hint">
         لو تعديل بعض العمليات بيفشل، أو الشاشات مش بتفتح، أو النسخة الشاملة رافضة الحساب: نسخة قديمة من
@@ -103,5 +104,7 @@ export function IdRepairPanel({ user, onDone }: { user: UserContainer; onDone: (
         <button type="button" className="btn btn--quiet" onClick={() => setPreview(null)}>إلغاء</button>
       </>}
     </section>
-  )
+    {/* جنب الإصلاح عشان SettingsScreen على حد الـ300 سطر */}
+    <OrphanCleanupPanel user={user} onDone={onDone}/>
+  </>)
 }
