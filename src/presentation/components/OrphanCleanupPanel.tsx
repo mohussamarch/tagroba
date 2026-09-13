@@ -63,22 +63,48 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
       {plan && <>
         <p>المعاينة بس — لسه ما اتمسحش حاجة.</p>
         <ul>
-          <li>عمليات مكررة هتتمسح: {plan.transactions.length}</li>
+          <li>عمليات مكررة هتتمسح (التوأم ورصيد الكشف متفقين): {plan.transactions.length}</li>
+          {plan.chainUnconfirmed.length > 0 && (
+            <li>ليها توأم بس رصيد الكشف ما أكدش إنها زيادة — هتفضل: {plan.chainUnconfirmed.length}</li>
+          )}
           <li>سجلات مصدر من غير عملية هتتمسح: {plan.records.length}</li>
         </ul>
         {months.length > 0 && <details>
           <summary>العمليات المكررة حسب الشهر</summary>
           <ul>{months.map(([month, count]) => <li key={month}>{month}: {count}</li>)}</ul>
         </details>}
+        <div className="notice">
+          <p>
+            دليل من رصيد الكشف ({plan.chain.now.checked} سطر فيه رصيد): كل «كسر» سطر رصيده مش مساوي لرصيد اللي قبله
+            بزيادة أو نقص مبلغه. صفر كسر يعني مفيش مكرر فاضل ومفيش عملية حقيقية اتشالت.
+          </p>
+          <ul>
+            <li>دلوقتي: {plan.chain.now.breaks} كسر</li>
+            <li>بعد التنظيف: {plan.chain.afterCleanup.breaks} كسر</li>
+            {plan.keptNoEvidence > 0 && (
+              <li>لو اللي من غير توأم ({plan.keptNoEvidence}) اتشالوا كمان — افتراض بس، مش هيتمسحوا: {plan.chain.ifUnprovenRemovedToo.breaks} كسر</li>
+            )}
+          </ul>
+          {plan.chain.afterCleanup.breaks > 0 && <details>
+            <summary>الكسور اللي هتفضل بعد التنظيف حسب الشهر</summary>
+            <ul>{Object.entries(plan.chain.afterCleanup.breakMonths).sort(([a], [b]) => b.localeCompare(a))
+              .map(([month, count]) => <li key={month}>{month}: {count}</li>)}</ul>
+          </details>}
+        </div>
         {plan.keptLinked > 0 && (
           <p className="notice">{plan.keptLinked} عملية من نفس الاستيراد متربطة بشخص أو تسوية أو وسم — مش هتتمسح.</p>
         )}
         {plan.keptNoEvidence > 0 && (
-          <p className="notice">{plan.keptNoEvidence} عملية من نفس الاستيراد مالهاش توأم مسجّل يثبت إنها مكررة — مش هتتمسح.</p>
+          <p className="notice">
+            {plan.keptNoEvidence} عملية من نفس الاستيراد مالهاش توأم مسجّل يثبت إنها مكررة — مش هتتمسح.
+            رصيد الكشف بيقول: {plan.unprovenVerdict.looksReal} شكلها حقيقية ·
+            {' '}{plan.unprovenVerdict.looksDuplicate} شكلها مكررة بتاريخ مختلف · {plan.unprovenVerdict.unclear} مش واضحة.
+          </p>
         )}
         {total > 0 && <>
           <p className="settings__hint">
-            العملية بتتمسح بس لو ليها توأم بنفس اليوم والمبلغ والاتجاه من كشف مسجّل، ومفيش عليها أي ارتباط.
+            العملية بتتمسح بس لو ليها توأم بنفس اليوم والمبلغ والاتجاه من كشف مسجّل، ومفيش عليها أي ارتباط،
+            ورصيد الكشف بيأكد إن وجودها بيكسر السلسلة.
             قبل الحذف هيتحفظ ملف فيه المستندات دي كاملة. خليك جوه التطبيق لحد ما يخلص.
           </p>
           <button type="button" className="btn" onClick={() => void clean()} disabled={busy}>

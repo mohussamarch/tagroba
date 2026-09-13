@@ -1,4 +1,5 @@
 import { BACKUP_GROUPS } from '../../domain/fullBackup'
+import { statementChainBreaks, type ChainScenario } from '../../domain/balanceChainCheck'
 import { planOrphanCleanup, type CleanupItem, type OrphanCleanupPlan } from '../../domain/orphanCleanup'
 import type { IdRepairPort } from '../ports/IdRepairPort'
 import type { RemoveDocsPort } from '../ports/RemoveDocsPort'
@@ -13,6 +14,16 @@ export interface CleanupOutcome {
   removed: number
   skipped: number
   backup: (SavedBackup & { fileName: string; expectedBytes: number }) | null
+}
+
+/** دليل سلسلة رصيد الكشف في تلات حالات — أعداد بس (domain/balanceChainCheck.ts). */
+export interface OrphanCleanupPreview extends OrphanCleanupPlan {
+  chain: {
+    now: ChainScenario
+    afterCleanup: ChainScenario
+    /** افتراض بس: لو اللي من غير توأم اتشالوا كمان. **مش بيتمسحوا.** */
+    ifUnprovenRemovedToo: ChainScenario
+  }
 }
 
 export interface CleanupDeps {
@@ -33,8 +44,19 @@ const keyOf = (item: CleanupItem) => `${item.group}/${item.docId}`
  * حذف على دفعات. الانقطاع آمن: الفحص التاني بيلاقي الباقي بس.
  */
 export function makeCleanupOrphans({ port, remover, redact, backup, clock }: CleanupDeps) {
-  async function preview(): Promise<OrphanCleanupPlan> {
-    return planOrphanCleanup(await port.readAll(), redact)
+  async function preview(): Promise<OrphanCleanupPreview> {
+    const stored = await port.readAll()
+    const plan = planOrphanCleanup(stored, redact)
+    const cleaned = new Set(plan.transactions.map((item) => item.docId))
+    const alsoUnproven = new Set([...cleaned, ...plan.unproven.map((item) => item.docId)])
+    return {
+      ...plan,
+      chain: {
+        now: statementChainBreaks(stored.transactions, new Set()),
+        afterCleanup: statementChainBreaks(stored.transactions, cleaned),
+        ifUnprovenRemovedToo: statementChainBreaks(stored.transactions, alsoUnproven),
+      },
+    }
   }
 
   async function apply(previewed: OrphanCleanupPlan, onProgress?: (progress: RepairProgress) => void): Promise<CleanupOutcome> {

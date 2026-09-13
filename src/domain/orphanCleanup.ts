@@ -1,3 +1,4 @@
+import { judgeCandidates } from './balanceChainCheck'
 import type { BackupGroup, BackupRow } from './fullBackup'
 import type { StoredData } from './idRepair'
 
@@ -15,6 +16,8 @@ import type { StoredData } from './idRepair'
  *   - ليها توأم (نفس اليوم والمبلغ والاتجاه، والمحفظة متوافقة) عليه مصدر من دفعة سليمة،
  *     وعدد اللي بيتمسح لكل توأم ما يزيدش عن عدد التوائم
  *   - مفيش عليها ارتباط: شخص، التزام، تسوية، وسم، أو استثمار
+ *   - **رصيد الكشف بيأكد إنها زيادة**: رجوعها للسلسلة بيكسرها (domain/balanceChainCheck.ts).
+ *     اتضاف بعد ما المعاينة على حساب المالك طلعت 18 كسر بدل 14 المتوقعين (HANDOVER §36).
  * أي عملية ناقصها دليل بتتعد وتتعرض، ومش بتتمسح.
  */
 
@@ -28,11 +31,19 @@ export interface OrphanCleanupPlan {
   byMonth: Record<string, number>
   /** من الدفعة المتراجَع عنها وعليها ارتباط — مش هتتمسح. */
   keptLinked: number
+  /** ليها توأم بس رصيد الكشف ما أكدش إنها زيادة — مش هتتمسح. */
+  chainUnconfirmed: CleanupItem[]
   /** من الدفعة المتراجَع عنها بس من غير توأم كفاية — مش هتتمسح. */
   keptNoEvidence: number
+  /** نفس اللي فوق بمعرّفاتهم — للتشخيص بس، **مش للحذف**. */
+  unproven: CleanupItem[]
+  /** حكم رصيد الكشف على اللي من غير توأم — أعداد بس، **ومحدش منهم بيتمسح**. */
+  unprovenVerdict: { looksDuplicate: number; looksReal: number; unclear: number }
 }
 
 const NEAR_BATCH_MS = 10 * 60_000
+/** حد أمان لتكرار تثبيت حكم السلسلة (بيثبت عادةً من أول أو تاني لفة). */
+const MAX_CHAIN_ROUNDS = 5
 
 const DEPENDENTS: readonly [BackupGroup, string][] = [
   ['allocations', 'transactionId'], ['obligations', 'originTransactionId'], ['settlements', 'transactionId'],
@@ -81,10 +92,9 @@ export function planOrphanCleanup(stored: StoredData, redact: (text: string) => 
     twins.set(twinKey(row.data), entry)
   }
 
-  const transactions: CleanupItem[] = []
-  const byMonth: Record<string, number> = {}
+  const twinned: CleanupItem[] = []
+  const unproven: CleanupItem[] = []
   let keptLinked = 0
-  let keptNoEvidence = 0
   for (const row of stored.transactions) {
     if (has(liveRefs, row.docId)) continue
     const created = Date.parse(String(row.data.createdAt ?? ''))
@@ -93,12 +103,37 @@ export function planOrphanCleanup(stored: StoredData, redact: (text: string) => 
     const twin = twins.get(twinKey(row.data))
     const wallet = row.data.walletId as string | undefined
     const walletFits = twin?.wallets.some((w) => w === undefined || wallet === undefined || w === wallet)
-    if (!twin || twin.available === 0 || !walletFits) { keptNoEvidence++; continue }
+    if (!twin || twin.available === 0 || !walletFits) { unproven.push({ group: 'transactions', docId: row.docId }); continue }
     twin.available--
-    transactions.push({ group: 'transactions', docId: row.docId })
-    const month = String(row.data.occurredAt ?? '').slice(0, 7)
+    twinned.push({ group: 'transactions', docId: row.docId })
+  }
+
+  // رصيد الكشف: اللي بيتمسح لازم رجوعه للسلسلة يكسرها، والحكم بيتعاد لحد ما يثبت
+  const twinnedIds = twinned.map((item) => item.docId)
+  let removed = new Set(twinnedIds)
+  for (let round = 0; round < MAX_CHAIN_ROUNDS; round++) {
+    const next = new Set(judgeCandidates(stored.transactions, removed, twinnedIds).breaksChain)
+    if (next.size === removed.size && [...next].every((id) => removed.has(id))) break
+    removed = next
+  }
+  const transactions = twinned.filter((item) => removed.has(item.docId))
+  const chainUnconfirmed = twinned.filter((item) => !removed.has(item.docId))
+
+  const byMonth: Record<string, number> = {}
+  const occurred = new Map(stored.transactions.map((row) => [row.docId, String(row.data.occurredAt ?? '')]))
+  for (const item of transactions) {
+    const month = (occurred.get(item.docId) ?? '').slice(0, 7)
     byMonth[month] = (byMonth[month] ?? 0) + 1
   }
 
-  return { transactions, records, byMonth, keptLinked, keptNoEvidence }
+  const verdict = judgeCandidates(stored.transactions, removed, unproven.map((item) => item.docId))
+  return {
+    transactions, records, byMonth, keptLinked, chainUnconfirmed,
+    keptNoEvidence: unproven.length, unproven,
+    unprovenVerdict: {
+      looksDuplicate: verdict.breaksChain.length,
+      looksReal: verdict.neededByChain.length,
+      unclear: verdict.unclear.length,
+    },
+  }
 }
