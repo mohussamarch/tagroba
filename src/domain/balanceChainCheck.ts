@@ -23,7 +23,7 @@ export interface ChainScenario {
   breakMonths: Record<string, number>
 }
 
-interface Line {
+export interface Line {
   docId: string
   date: string
   order: number
@@ -32,7 +32,8 @@ interface Line {
   incoming: boolean
 }
 
-function toLines(rows: readonly StoredRow[]): Line[] {
+/** السطور اللي فيها رصيد معلن، بترتيب الكشف. */
+export function toLines(rows: readonly StoredRow[]): Line[] {
   return rows
     .filter((row) => Number.isInteger(row.data.statedBalanceMinor)
       && Number.isInteger(row.data.amountMinor)
@@ -51,7 +52,7 @@ function toLines(rows: readonly StoredRow[]): Line[] {
 }
 
 /** السطر `line` مش مساوي لرصيد `previous` ± مبلغه. */
-function isBreak(previous: Line | null, line: Line | null): 0 | 1 {
+export function isBreak(previous: Line | null, line: Line | null): 0 | 1 {
   if (!previous || !line) return 0
   const expected = line.incoming ? addMoney(previous.stated, line.amount) : subtractMoney(previous.stated, line.amount)
   return expected === line.stated ? 0 : 1

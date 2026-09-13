@@ -1,5 +1,6 @@
 import { BACKUP_GROUPS } from '../../domain/fullBackup'
 import { statementChainBreaks, type ChainScenario } from '../../domain/balanceChainCheck'
+import { reportChainBreaks, type BreakGroup } from '../../domain/chainBreakReport'
 import { planOrphanCleanup, type CleanupItem, type OrphanCleanupPlan } from '../../domain/orphanCleanup'
 import type { IdRepairPort } from '../ports/IdRepairPort'
 import type { RemoveDocsPort } from '../ports/RemoveDocsPort'
@@ -24,6 +25,8 @@ export interface OrphanCleanupPreview extends OrphanCleanupPlan {
     /** افتراض بس: لو اللي من غير توأم اتشالوا كمان. **مش بيتمسحوا.** */
     ifUnprovenRemovedToo: ChainScenario
   }
+  /** الكسور اللي هتفضل بعد التنظيف — جاية منين (قرار المالك «حقق فيهم»). أعداد بس. */
+  remainingBreaks: BreakGroup[]
 }
 
 export interface CleanupDeps {
@@ -56,6 +59,7 @@ export function makeCleanupOrphans({ port, remover, redact, backup, clock }: Cle
         afterCleanup: statementChainBreaks(stored.transactions, cleaned),
         ifUnprovenRemovedToo: statementChainBreaks(stored.transactions, alsoUnproven),
       },
+      remainingBreaks: reportChainBreaks(stored, redact, cleaned),
     }
   }
 

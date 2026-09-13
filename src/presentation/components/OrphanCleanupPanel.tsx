@@ -5,6 +5,9 @@ import type { RepairProgress } from '../../application/useCases/repairStoredIds'
 type Plan = Awaited<ReturnType<UserContainer['cleanupOrphans']['preview']>>
 
 const kb = (bytes: number) => `${Math.max(1, Math.round(bytes / 1024))} ك.ب`
+const ORIGIN = { statement: 'من كشف مسجّل', revertedLeftover: 'من بقايا الإكسل اللي فضلت', noSource: 'من غير مصدر (يدوي أو رسالة)' } as const
+const BATCH_TYPE: Record<string, string> = { pdf_alrajhi: 'PDF', csv_preview: 'CSV', csv_legacy: 'CSV قديم', sms: 'رسائل' }
+const batchText = (batch: string) => { const [type, day] = batch.split(' '); return `${BATCH_TYPE[type] ?? type} ${day ?? ''}`.trim() }
 const text = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
 /**
@@ -85,6 +88,17 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
               <li>لو اللي من غير توأم ({plan.keptNoEvidence}) اتشالوا كمان — افتراض بس، مش هيتمسحوا: {plan.chain.ifUnprovenRemovedToo.breaks} كسر</li>
             )}
           </ul>
+          {plan.remainingBreaks.length > 0 && <details>
+            <summary>الكسور اللي هتفضل — جاية منين</summary>
+            <ul>{plan.remainingBreaks.map((g, i) => (
+              <li key={i}>
+                {g.count} · السطر {ORIGIN[g.origin]}{g.batch && ` (${batchText(g.batch)})`}
+                {g.previousOrigin && ` · اللي قبله ${ORIGIN[g.previousOrigin]}`}
+                {' · '}{g.sameDayAsPrevious ? 'نفس اليوم' : 'يوم تاني'}
+                {g.hasExactTwin && ' · ليه نسخة مطابقة حتى في الرصيد'}
+              </li>
+            ))}</ul>
+          </details>}
           {plan.chain.afterCleanup.breaks > 0 && <details>
             <summary>الكسور اللي هتفضل بعد التنظيف حسب الشهر</summary>
             <ul>{Object.entries(plan.chain.afterCleanup.breakMonths).sort(([a], [b]) => b.localeCompare(a))
