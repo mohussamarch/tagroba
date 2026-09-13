@@ -1,6 +1,7 @@
 import type { Id, ImportBatch } from '../../domain/entities/types'
 import type {
   AllocationRepository,
+  Clock,
   ImportBatchRepository,
   ObligationRepository,
   SettlementRepository,
@@ -8,6 +9,8 @@ import type {
   TransactionRepository,
   UnitOfWork,
 } from '../ports/repositories'
+import type { RepairBackupPort } from '../ports/RepairBackupPort'
+import { saveVerifiedBackup, type VerifiedBackup } from './verifiedBackup'
 
 /**
  * RevertImportBatch — التراجع عن دفعة استيراد.
@@ -58,6 +61,16 @@ export interface RevertDeps {
   allocations: AllocationRepository
   obligations: ObligationRepository
   uow: UnitOfWork
+  /**
+   * نسخة مؤكدة الحجم للعمليات وسجلات المصدر اللي هتتمسح، **قبل** الحذف (HANDOVER §36).
+   * اختيارية عشان الاختبارات القديمة؛ التطبيق بيوصّلها دايمًا في `container.ts`.
+   */
+  backup?: RepairBackupPort
+  clock?: Clock
+}
+
+export interface RevertOutcome extends RevertPlan {
+  backup: VerifiedBackup | null
 }
 
 export const REVERT_BLOCKED_MESSAGE =
@@ -147,10 +160,29 @@ export function makeRevertImportBatch(deps: RevertDeps) {
     return { batchId, toDelete, toKeep, outcomes, isClean: toKeep.length === 0, expectedCount, recordsFound, blocked }
   }
 
-  /** ينفّذ الخطة ذريًا. سجلات المصدر الخاصة بالدفعة تُحذف دائمًا. */
-  async function execute(batchId: Id): Promise<RevertPlan> {
+  /**
+   * ينفّذ الخطة ذريًا. سجلات المصدر الخاصة بالدفعة تُحذف دائمًا.
+   * لو فيه نسخة متوصلة: العمليات والسجلات بتتقرا **بالعدد** الأول (عملية ناقصة = معرّف
+   * مش مطابق = الحذف كان هيروح لمسار غلط بصمت زي تراجع الإكسل)، وبعدين تتحفظ، وبعدين تتمسح.
+   */
+  async function execute(batchId: Id): Promise<RevertOutcome> {
     const revertPlan = await plan(batchId)
     if (revertPlan.blocked) throw new Error(REVERT_BLOCKED_MESSAGE)
+
+    let saved: VerifiedBackup | null = null
+    if (deps.backup && deps.clock) {
+      const [found, records] = await Promise.all([
+        deps.txns.findByIds(revertPlan.toDelete),
+        deps.sources.listByBatch(batchId),
+      ])
+      if (found.length !== revertPlan.toDelete.length) {
+        throw new Error(`لقينا ${found.length} عملية بس من ${revertPlan.toDelete.length} — ما اتمسحش حاجة. افحص البيانات القديمة الأول.`)
+      }
+      saved = await saveVerifiedBackup(deps.backup, deps.clock, 'before-revert', [
+        ...found.map((data) => ({ group: 'transactions', data })),
+        ...records.map((data) => ({ group: 'sourceRecords', data })),
+      ])
+    }
 
     return deps.uow.run(async () => {
       if (revertPlan.toDelete.length > 0) {
@@ -159,7 +191,7 @@ export function makeRevertImportBatch(deps: RevertDeps) {
       const batchRecords = await deps.sources.listByBatch(batchId)
       await deps.sources.deleteMany(batchRecords.map((r) => r.id))
       await deps.batches.updateState(batchId, 'reverted')
-      return revertPlan
+      return { ...revertPlan, backup: saved }
     })
   }
 

@@ -7,10 +7,11 @@ import {
   MemoryTransactionRepository, PassthroughUnitOfWork, SequentialIdGenerator, FixedClock,
 } from '../../src/infrastructure/memory/memoryRepositories'
 import type { ParsedRow } from '../../src/infrastructure/import/schemas'
+import { memoryRepairBackup } from '../../src/infrastructure/memory/repairBackup'
 
 /** سجل الاستيرادات + التراجع بمعاينة (HANDOVER §30، بند 1-ب). */
 
-function system() {
+function system(backup?: ReturnType<typeof memoryRepairBackup>) {
   const txns = new MemoryTransactionRepository()
   const sources = new MemorySourceRecordRepository()
   const batches = new MemoryImportBatchRepository()
@@ -22,6 +23,7 @@ function system() {
   const revert = makeRevertImportBatch({
     txns, sources, batches, settlements: new MemorySettlementRepository(),
     allocations: new MemoryAllocationRepository(), obligations: new MemoryObligationRepository(), uow: shared.uow,
+    ...(backup ? { backup, clock: new FixedClock('2026-09-13T12:00:00.000Z') } : {}),
   })
   return { txns, sources, batches, importAt, revert }
 }
@@ -60,6 +62,34 @@ it('المعاينة لا تكتب شيئًا، والتنفيذ يشيل عمل
   const left = await s.txns.listByDateRange('2026-08-01', '2026-08-31')
   expect(left.map((t) => t.occurredAt)).toEqual(['2026-08-26', '2026-08-26'])
   expect((await s.batches.findById(batch.id))?.state).toBe('reverted')
+})
+
+it('التراجع بيحفظ نسخة مؤكدة الحجم فيها العمليات والسجلات اللي هتتمسح بالظبط، قبل الحذف', async () => {
+  const backup = memoryRepairBackup()
+  const s = system(backup)
+  const keep = statement('keep.pdf', '2026-08-26')
+  await s.importAt('2026-09-08T06:30:00Z').commit(keep, await s.importAt('2026-09-08T06:30:00Z').preview(keep))
+  const dup = statement('dup.pdf', '2026-08-25')
+  const batch = await s.importAt('2026-09-07T10:34:00Z').commit(dup, await s.importAt('2026-09-07T10:34:00Z').preview(dup))
+  const plan = await s.revert.plan(batch.id)
+
+  const done = await s.revert.execute(batch.id)
+  expect(done.backup?.fileName).toMatch(/^masroufy-before-revert-2026-09-13T12-00-00-000Z\.json$/)
+  expect(done.backup?.bytes).toBe(done.backup?.expectedBytes)
+  const saved = JSON.parse([...backup.files.values()][0])
+  const ids = (group: string) => saved.documents.filter((d: { group: string }) => d.group === group).map((d: { data: { id: string } }) => d.data.id).sort()
+  expect(ids('transactions')).toEqual([...plan.toDelete].sort())
+  expect(ids('sourceRecords')).toHaveLength(2)
+  expect(await s.txns.listByDateRange('2026-08-01', '2026-08-31')).toHaveLength(2)
+})
+
+it('نسخة التراجع ناقصة ⇒ ولا عملية اتمسحت والدفعة فضلت مسجّلة', async () => {
+  const s = system(memoryRepairBackup({ truncate: true }))
+  const req = statement('dup.pdf', '2026-08-25')
+  const batch = await s.importAt('2026-09-07T10:34:00Z').commit(req, await s.importAt('2026-09-07T10:34:00Z').preview(req))
+  await expect(s.revert.execute(batch.id)).rejects.toThrow('ناقصة')
+  expect(await s.txns.listByDateRange('2026-08-01', '2026-08-31')).toHaveLength(2)
+  expect((await s.batches.findById(batch.id))?.state).toBe('committed')
 })
 
 it('دفعة سجّلت عمليات ومفيش ولا سجل مصدر ليها ⇒ التراجع مرفوض ولا يعلّمها متراجَع عنها', async () => {

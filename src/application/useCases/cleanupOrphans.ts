@@ -4,9 +4,10 @@ import { reportChainBreaks, type BreakGroup } from '../../domain/chainBreakRepor
 import { planOrphanCleanup, type CleanupItem, type OrphanCleanupPlan } from '../../domain/orphanCleanup'
 import type { IdRepairPort } from '../ports/IdRepairPort'
 import type { RemoveDocsPort } from '../ports/RemoveDocsPort'
-import type { RepairBackupPort, SavedBackup } from '../ports/RepairBackupPort'
+import type { RepairBackupPort } from '../ports/RepairBackupPort'
 import type { Clock } from '../ports/repositories'
 import type { RepairProgress } from './repairStoredIds'
+import { saveVerifiedBackup, type VerifiedBackup } from './verifiedBackup'
 
 /** مستندات لكل حذف: الانقطاع يضيّع أقل شغل، وكل دفعة ذرية لوحدها. */
 export const CLEANUP_CHUNK = 100
@@ -14,7 +15,7 @@ export const CLEANUP_CHUNK = 100
 export interface CleanupOutcome {
   removed: number
   skipped: number
-  backup: (SavedBackup & { fileName: string; expectedBytes: number }) | null
+  backup: VerifiedBackup | null
 }
 
 /** دليل سلسلة رصيد الكشف في تلات حالات — أعداد بس (domain/balanceChainCheck.ts). */
@@ -75,14 +76,7 @@ export function makeCleanupOrphans({ port, remover, redact, backup, clock }: Cle
     const wanted = new Set(items.map(keyOf))
     const documents = BACKUP_GROUPS.flatMap((group) =>
       stored[group].filter((row) => wanted.has(`${group}/${row.docId}`)).map((row) => ({ group, ...row })))
-    const savedAt = clock.nowIso()
-    const content = JSON.stringify({ app: 'masroufy', kind: 'before-cleanup', savedAt, documents }, null, 2)
-    const fileName = `masroufy-before-cleanup-${savedAt.replace(/[:.]/g, '-')}.json`
-    const expectedBytes = new TextEncoder().encode(content).length
-    const saved = await backup.save(fileName, content)
-    if (saved.bytes !== null && saved.bytes !== expectedBytes) {
-      throw new Error(`النسخة الاحتياطية اتحفظت ناقصة (${saved.bytes} من ${expectedBytes} بايت) — ما اتمسحش ولا مستند`)
-    }
+    const saved = await saveVerifiedBackup(backup, clock, 'before-cleanup', documents)
 
     let removed = 0
     onProgress?.({ written: removed, total: items.length })
@@ -95,7 +89,7 @@ export function makeCleanupOrphans({ port, remover, redact, backup, clock }: Cle
       }
       onProgress?.({ written: removed, total: items.length })
     }
-    return { removed, skipped, backup: { ...saved, fileName, expectedBytes } }
+    return { removed, skipped, backup: saved }
   }
 
   return { preview, apply }

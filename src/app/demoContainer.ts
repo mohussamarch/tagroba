@@ -195,6 +195,8 @@ export function createDemoContainer(): Container {
       allocations,
       obligations,
       uow,
+      backup: deviceRepairBackup,
+      clock,
     }),
     resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),
     editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock }),

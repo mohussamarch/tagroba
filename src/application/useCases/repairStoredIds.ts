@@ -2,8 +2,9 @@ import { BACKUP_GROUPS } from '../../domain/fullBackup'
 import { planIdRepair, type IdPatch, type IdRepairPlan, type StoredData } from '../../domain/idRepair'
 import { diagnoseLinks, type LinkDiagnosis } from '../../domain/idRepairDiagnosis'
 import type { IdRepairPort } from '../ports/IdRepairPort'
-import type { RepairBackupPort, SavedBackup } from '../ports/RepairBackupPort'
+import type { RepairBackupPort } from '../ports/RepairBackupPort'
 import type { Clock } from '../ports/repositories'
+import { saveVerifiedBackup, type VerifiedBackup } from './verifiedBackup'
 
 export interface IdRepairPreview {
   plan: IdRepairPlan
@@ -17,7 +18,7 @@ export interface RepairProgress { written: number; total: number }
 export interface RepairOutcome {
   written: number
   skipped: number
-  backup: (SavedBackup & { fileName: string; expectedBytes: number }) | null
+  backup: VerifiedBackup | null
 }
 
 /** مستندات لكل كتابة: صغيرة كفاية إن الانقطاع يضيّع أقل شغل، وكل دفعة ذرية لوحدها. */
@@ -60,15 +61,7 @@ export function makeRepairStoredIds({ port, redact, backup, clock }: RepairDeps)
     const skipped = fresh.patches.length - patches.length
     if (patches.length === 0) return { written: 0, skipped, backup: null }
 
-    const savedAt = clock.nowIso()
-    const content = JSON.stringify(
-      { app: 'masroufy', kind: 'before-id-repair', savedAt, documents: rowsBefore(stored, patches) }, null, 2)
-    const fileName = `masroufy-before-repair-${savedAt.replace(/[:.]/g, '-')}.json`
-    const expectedBytes = new TextEncoder().encode(content).length
-    const saved = await backup.save(fileName, content)
-    if (saved.bytes !== null && saved.bytes !== expectedBytes) {
-      throw new Error(`النسخة الاحتياطية اتحفظت ناقصة (${saved.bytes} من ${expectedBytes} بايت) — ما اتكتبش ولا مستند`)
-    }
+    const saved = await saveVerifiedBackup(backup, clock, 'before-repair', rowsBefore(stored, patches))
 
     let written = 0
     onProgress?.({ written, total: patches.length })
@@ -81,7 +74,7 @@ export function makeRepairStoredIds({ port, redact, backup, clock }: RepairDeps)
       }
       onProgress?.({ written, total: patches.length })
     }
-    return { written, skipped, backup: { ...saved, fileName, expectedBytes } }
+    return { written, skipped, backup: saved }
   }
 
   return { preview, apply }

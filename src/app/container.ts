@@ -277,6 +277,9 @@ export function createContainer(): Container {
           allocations,
           obligations,
           uow,
+          // نسخة مؤكدة الحجم قبل الحذف — HANDOVER §36
+          backup: deviceRepairBackup,
+          clock: systemClock,
         }),
         resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),
       }

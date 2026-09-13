@@ -51,7 +51,10 @@ export function ImportHistoryPanel({ user, onDone }: { user: UserContainer; onDo
     setBusy(true); setMessage('')
     try {
       const done = await user.revertImportBatch.execute(pending.batch.id)
-      setMessage(`اتشال ${done.toDelete.length} عملية` + (done.toKeep.length ? ` وفضل ${done.toKeep.length} ليها سند تاني.` : '.'))
+      setMessage(`اتشال ${done.toDelete.length} عملية` + (done.toKeep.length ? ` وفضل ${done.toKeep.length} ليها سند تاني.` : '.')
+        + (done.backup ? done.backup.bytes === null
+          ? ' النسخة اتبعتت لتنزيلات المتصفح قبل الحذف.'
+          : ` النسخة اتحفظت قبل الحذف (${Math.max(1, Math.round(done.backup.bytes / 1024))} ك.ب) في مجلد التطبيق.` : ''))
       setPending(null)
       onDone()
       setBatches(await user.revertImportBatch.history())
