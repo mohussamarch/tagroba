@@ -31,6 +31,8 @@ export interface OrphanCleanupPlan {
   byMonth: Record<string, number>
   /** من الدفعة المتراجَع عنها وعليها ارتباط — مش هتتمسح. */
   keptLinked: number
+  /** نفس اللي فوق بمعرّفاتهم — للتشخيص بس، **مش للحذف**. */
+  linked: CleanupItem[]
   /** ليها توأم بس رصيد الكشف ما أكدش إنها زيادة — مش هتتمسح. */
   chainUnconfirmed: CleanupItem[]
   /** من الدفعة المتراجَع عنها بس من غير توأم كفاية — مش هتتمسح. */
@@ -94,12 +96,12 @@ export function planOrphanCleanup(stored: StoredData, redact: (text: string) => 
 
   const twinned: CleanupItem[] = []
   const unproven: CleanupItem[] = []
-  let keptLinked = 0
+  const linkedItems: CleanupItem[] = []
   for (const row of stored.transactions) {
     if (has(liveRefs, row.docId)) continue
     const created = Date.parse(String(row.data.createdAt ?? ''))
     if (Number.isNaN(created) || !revertedTimes.some((at) => Math.abs(created - at) <= NEAR_BATCH_MS)) continue
-    if (has(linked, row.docId)) { keptLinked++; continue }
+    if (has(linked, row.docId)) { linkedItems.push({ group: 'transactions', docId: row.docId }); continue }
     const twin = twins.get(twinKey(row.data))
     const wallet = row.data.walletId as string | undefined
     const walletFits = twin?.wallets.some((w) => w === undefined || wallet === undefined || w === wallet)
@@ -128,7 +130,7 @@ export function planOrphanCleanup(stored: StoredData, redact: (text: string) => 
 
   const verdict = judgeCandidates(stored.transactions, removed, unproven.map((item) => item.docId))
   return {
-    transactions, records, byMonth, keptLinked, chainUnconfirmed,
+    transactions, records, byMonth, keptLinked: linkedItems.length, linked: linkedItems, chainUnconfirmed,
     keptNoEvidence: unproven.length, unproven,
     unprovenVerdict: {
       looksDuplicate: verdict.breaksChain.length,

@@ -7,6 +7,10 @@ type Plan = Awaited<ReturnType<UserContainer['cleanupOrphans']['preview']>>
 const kb = (bytes: number) => `${Math.max(1, Math.round(bytes / 1024))} ك.ب`
 const ORIGIN = { statement: 'من كشف مسجّل', revertedLeftover: 'من بقايا الإكسل اللي فضلت', noSource: 'من غير مصدر (يدوي أو رسالة)' } as const
 const BATCH_TYPE: Record<string, string> = { pdf_alrajhi: 'PDF', csv_preview: 'CSV', csv_legacy: 'CSV قديم', sms: 'رسائل' }
+const STATUS = {
+  willDelete: 'هتتمسح في التنظيف', chainUnconfirmed: 'ليها توأم والرصيد ما أكدهاش', noTwin: 'من غير توأم مسجّل',
+  linked: 'متربطة بشخص أو تسوية أو وسم', notLeftover: 'مش من البقايا',
+} as const
 const batchText = (batch: string) => { const [type, day] = batch.split(' '); return `${BATCH_TYPE[type] ?? type} ${day ?? ''}`.trim() }
 const text = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
@@ -95,7 +99,9 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
                 {g.count} · السطر {ORIGIN[g.origin]}{g.batch && ` (${batchText(g.batch)})`}
                 {g.previousOrigin && ` · اللي قبله ${ORIGIN[g.previousOrigin]}`}
                 {' · '}{g.sameDayAsPrevious ? 'نفس اليوم' : 'يوم تاني'}
+                {g.cleanupStatus && ` · حالته: ${STATUS[g.cleanupStatus]}`}
                 {g.hasExactTwin && ' · ليه نسخة مطابقة حتى في الرصيد'}
+                {g.twinOrigin && ` · النسخة ${ORIGIN[g.twinOrigin]}${g.twinCleanupStatus ? ` (${STATUS[g.twinCleanupStatus]})` : ''}`}
               </li>
             ))}</ul>
           </details>}
@@ -112,7 +118,7 @@ export function OrphanCleanupPanel({ user, onDone }: { user: UserContainer; onDo
           <p className="notice">
             {plan.keptNoEvidence} عملية من نفس الاستيراد مالهاش توأم مسجّل يثبت إنها مكررة — مش هتتمسح.
             رصيد الكشف بيقول: {plan.unprovenVerdict.looksReal} شكلها حقيقية ·
-            {' '}{plan.unprovenVerdict.looksDuplicate} شكلها مكررة بتاريخ مختلف · {plan.unprovenVerdict.unclear} مش واضحة.
+            {' '}{plan.unprovenVerdict.looksDuplicate} شكلها مكررة · {plan.unprovenVerdict.unclear} مش واضحة.
           </p>
         )}
         {total > 0 && <>

@@ -1,6 +1,6 @@
 import { BACKUP_GROUPS } from '../../domain/fullBackup'
 import { statementChainBreaks, type ChainScenario } from '../../domain/balanceChainCheck'
-import { reportChainBreaks, type BreakGroup } from '../../domain/chainBreakReport'
+import { reportChainBreaks, type BreakGroup, type CleanupStatus } from '../../domain/chainBreakReport'
 import { planOrphanCleanup, type CleanupItem, type OrphanCleanupPlan } from '../../domain/orphanCleanup'
 import type { IdRepairPort } from '../ports/IdRepairPort'
 import type { RemoveDocsPort } from '../ports/RemoveDocsPort'
@@ -40,6 +40,16 @@ export interface CleanupDeps {
 
 const keyOf = (item: CleanupItem) => `${item.group}/${item.docId}`
 
+/** حالة كل عملية في خطة التنظيف — للتقرير بس. */
+function statusFrom(plan: OrphanCleanupPlan): (docId: string) => CleanupStatus {
+  const status = new Map<string, CleanupStatus>()
+  for (const item of plan.transactions) status.set(item.docId, 'willDelete')
+  for (const item of plan.chainUnconfirmed) status.set(item.docId, 'chainUnconfirmed')
+  for (const item of plan.unproven) status.set(item.docId, 'noTwin')
+  for (const item of plan.linked) status.set(item.docId, 'linked')
+  return (docId) => status.get(docId) ?? 'notLeftover'
+}
+
 /**
  * CleanupOrphans — تنظيف بقايا دفعة متراجَع عنها (domain/orphanCleanup.ts).
  *
@@ -60,7 +70,7 @@ export function makeCleanupOrphans({ port, remover, redact, backup, clock }: Cle
         afterCleanup: statementChainBreaks(stored.transactions, cleaned),
         ifUnprovenRemovedToo: statementChainBreaks(stored.transactions, alsoUnproven),
       },
-      remainingBreaks: reportChainBreaks(stored, redact, cleaned),
+      remainingBreaks: reportChainBreaks(stored, redact, cleaned, statusFrom(plan)),
     }
   }
 
