@@ -5,6 +5,7 @@ import { RulesScreen } from '../presentation/screens/RulesScreen'
 import { LinkPersonSheet } from '../presentation/screens/LinkPersonSheet'
 import { NotificationsSheet } from '../presentation/screens/NotificationsSheet'
 import { KindsSheet } from '../presentation/screens/KindsSheet'
+import { OnboardingFlow } from '../presentation/screens/OnboardingFlow'
 import type { Transaction } from '../domain/entities/types'
 import type { useAppData } from './useAppData'
 
@@ -87,6 +88,8 @@ export function ShellOverlays({
           onSeen={reload}
         />
       )}
+      {/* أسئلة البداية للحساب الجديد بس (OVERRIDES §26) — فوق أي حاجة تانية */}
+      {app.needsOnboarding && <OnboardingFlow user={app.user} onDone={app.finishOnboarding} />}
       {open.kinds && app.txnData && (
         <KindsSheet
           user={app.user}

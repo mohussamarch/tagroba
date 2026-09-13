@@ -149,6 +149,9 @@ export function PeopleScreen({
                     <li key={obligation.id} className="people__obligation">
                       <div className="people__obHead">
                         <span className="badge">{OBLIGATION_LABEL[obligation.kind]}</span>
+                        {obligation.originTransactionId === null && (
+                          <span className="badge badge--approx">دين قديم من قبل التطبيق</span>
+                        )}
                         <span className="num">
                           باقي {money(remainingMinor)} من {money(obligation.originalMinor)}
                         </span>

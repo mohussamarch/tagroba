@@ -1,0 +1,63 @@
+/* أسئلة البداية — شاشة كاملة فوق التطبيق، بألوان نظام التصميم */
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow-y: auto;
+  display: grid;
+  place-items: start center;
+  padding: calc(var(--safe-area-inset-top, env(safe-area-inset-top)) + 24px) var(--s-page)
+    calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) + 24px);
+  background: var(--c-background);
+}
+
+.onboarding__card {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 440px);
+  padding: 24px var(--s-card);
+  border-radius: var(--r-card);
+  background: var(--c-surface);
+}
+
+.onboarding__progress {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--t-badge);
+}
+
+.onboarding__title {
+  margin: 0;
+  font-size: var(--t-title);
+  color: var(--c-text);
+  text-wrap: balance;
+}
+
+.onboarding__hint {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--t-body);
+}
+
+.onboarding__field {
+  display: grid;
+  gap: 6px;
+  color: var(--c-text);
+}
+
+.onboarding__debt {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-metric);
+}
+
+.onboarding__actions {
+  display: grid;
+  gap: 8px;
+}
+
+.onboarding__actions .btn {
+  min-height: var(--touch-min);
+}

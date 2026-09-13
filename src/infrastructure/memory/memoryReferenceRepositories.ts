@@ -96,7 +96,7 @@ export class MemoryObligationRepository implements ObligationRepository {
   }
   async listByTransactionIds(ids: readonly Id[]): Promise<Obligation[]> {
     const wanted = new Set(ids)
-    return [...this.items.values()].filter((o) => wanted.has(o.originTransactionId)).map(clone)
+    return [...this.items.values()].filter((o) => o.originTransactionId !== null && wanted.has(o.originTransactionId)).map(clone)
   }
   async saveMany(obligations: readonly Obligation[]): Promise<void> {
     for (const o of obligations) this.items.set(o.id, clone(o))

@@ -195,5 +195,33 @@ export function makeManagePeople(deps: ManagePeopleDeps) {
     return settlement
   }
 
-  return { listWithBalances, addPerson, archivePerson, linkToPerson, settle }
+  /**
+   * دين قديم من غير عملية — OVERRIDES §27: «لازم نفترض إن في عمليات كاش ملهاش سجل قبل كده».
+   * الالتزام بيتسجل بـ`originTransactionId = null` ويتسدد عادي، و**مفيش عملية وهمية**:
+   * مش بيدخل في المصروف ولا الدخل ولا رصيد الكاش.
+   */
+  async function addOpeningDebt(input: {
+    personId: Id
+    /** «ليا عنده» = receivable، «عليا ليه» = loan_payable. الأمانة من شاشة الأشخاص. */
+    kind: Extract<ObligationKind, 'receivable' | 'loan_payable'>
+    amountMinor: Halalas
+  }): Promise<Obligation> {
+    if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) {
+      throw new PeopleError('المبلغ لازم يكون أكبر من صفر')
+    }
+    const people = await deps.people.listAll()
+    if (!people.some((p) => p.id === input.personId)) throw new PeopleError('الشخص ده مش موجود')
+    const obligation: Obligation = {
+      id: deps.ids.next('obl'),
+      personId: input.personId,
+      originTransactionId: null,
+      kind: input.kind,
+      originalMinor: input.amountMinor,
+      currency: 'SAR',
+    }
+    await deps.obligations.saveMany([obligation])
+    return obligation
+  }
+
+  return { listWithBalances, addPerson, archivePerson, linkToPerson, settle, addOpeningDebt }
 }

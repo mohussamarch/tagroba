@@ -43,7 +43,11 @@ export function checkFullBackupData(data:unknown):asserts data is FullBackupData
 }
 function validateFields(row:BackupRow,group:string){
   const special=new Set([...numeric,...booleans,'counts','parentId','threshold'])
-  for(const key of required[group])if(!special.has(key)&&!key.endsWith('Minor')&&typeof row[key]!=='string')throw Error('نص غير صالح: '+group+'.'+key)
+  for(const key of required[group]){
+    // دين قديم من غير عملية (OVERRIDES §27)
+    if(group==='obligations'&&key==='originTransactionId'&&row[key]===null)continue
+    if(!special.has(key)&&!key.endsWith('Minor')&&typeof row[key]!=='string')throw Error('نص غير صالح: '+group+'.'+key)
+  }
   for(const [key,value] of Object.entries(row)){
     if(key.endsWith('Minor')||numeric.has(key)){
       if(value===null&&['totalLimitMinor','thresholdPercent'].includes(key))continue

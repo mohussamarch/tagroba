@@ -195,7 +195,11 @@ export type ObligationKind = 'receivable' | 'loan_payable' | 'custody_payable'
 export interface Obligation {
   id: Id
   personId: Id
-  originTransactionId: Id
+  /**
+   * العملية اللي ولّدت الالتزام. `null` = دين قديم من عمليات كاش قبل التطبيق ملهاش سجل
+   * (OVERRIDES §27 — بيعدّل spec/03). مفيش عملية وهمية بتتعمل له.
+   */
+  originTransactionId: Id | null
   kind: ObligationKind
   originalMinor: Halalas
   currency: Currency

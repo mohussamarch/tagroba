@@ -32,6 +32,7 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const [pending,setPending]=useState(initialLoading)
  const [errors,setErrors]=useState<Partial<Record<Section,unknown>>>({})
  const [recovery,setRecovery]=useState<string|null>(null)
+ const [needsOnboarding,setNeedsOnboarding]=useState(false)
  const [snapshotAt,setSnapshotAt]=useState<string|null>(null)
  const requests=useRef(new ScreenRequests())
  const generation=useRef(0)
@@ -53,6 +54,9 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
     // تنظيف الاستيراد المعلّق لا يمنع فتح الشاشات أبدًا — فشله كان يوقف التطبيق كله
     const [,walletSeed,outcomes,profile]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null),user.manageProfile.load().catch(()=>null)])
     if(profile)applyPayday(profile.payday)
+    // أسئلة البداية للحساب الجديد بس: المحافظ اتزرعت دلوقتي لأول مرة (OVERRIDES §26)
+    if(walletSeed.seeded)setNeedsOnboarding(await user.manageProfile.markOnboardingPending().catch(()=>false))
+    else if(profile)setNeedsOnboarding(user.manageProfile.needsOnboarding(profile))
     setWallets(walletSeed.wallets)
     if(outcomes===null||outcomes.some(o=>o.error))setRecovery('فيه استيراد سابق لم يكتمل ومقدرناش ننظّفه. الشاشات شغالة، لكن إعادة استيراد نفس الكشف ممكن تعتبر صفوفه مكررة لحد ما يتعمل إصلاح البيانات.')
     else if(outcomes.length)setRecovery('اتنضّف استيراد سابق لم يكتمل. تقدر تستورد الملف تاني.')
@@ -140,5 +144,6 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  }
  return {user,today,payday,period,setPeriod,home,txnData,budgetData,wallets,people,portfolio,notifications,
   pending,errors,recovery,snapshotAt,activePending:pending[tabSection[activeTab]],
-  dismissRecovery:()=>setRecovery(null),reload,ensure,clearSnapshot:()=>user.homeSnapshot.clear()}
+  dismissRecovery:()=>setRecovery(null),reload,ensure,clearSnapshot:()=>user.homeSnapshot.clear(),
+  needsOnboarding,finishOnboarding:()=>{setNeedsOnboarding(false);void reload()}}
 }

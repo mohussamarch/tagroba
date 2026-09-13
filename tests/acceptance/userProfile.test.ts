@@ -5,7 +5,7 @@ import { checkProfile, emptyProfile, MAX_NAME_LENGTH } from '../../src/domain/us
 describe('ملف المستخدم', () => {
   it('الملف الفاضي صالح: يوم الراتب 28 والباقي «ما اتجاوبش» مش صفر', () => {
     const profile = emptyProfile()
-    expect(profile).toEqual({ displayName: null, salaryMinor: null, payday: 28, gender: null, supportsDependents: null, onboardedAt: null })
+    expect(profile).toEqual({ displayName: null, salaryMinor: null, payday: 28, gender: null, supportsDependents: null, onboardedAt: null, onboardingPending: false })
     expect(checkProfile(profile)).toEqual({ ok: true, profile })
   })
 

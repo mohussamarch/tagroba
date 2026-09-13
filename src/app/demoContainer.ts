@@ -18,6 +18,7 @@ import { makeCleanupOrphans } from '../application/useCases/cleanupOrphans'
 import { makeManageProfile } from '../application/useCases/manageProfile'
 import { MemoryProfileRepository } from '../infrastructure/memory/memoryProfileRepository'
 import { memoryAccount } from '../infrastructure/memory/memoryAccount'
+import { makeOnboardNewAccount } from '../application/useCases/onboardNewAccount'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
 import { makeManageRecurring } from '../application/useCases/manageRecurring'
@@ -147,6 +148,9 @@ export function createDemoContainer(): Container {
 
   const seedSource = { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
 
+  const manageProfile = makeManageProfile({ profiles: new MemoryProfileRepository(), account: memoryAccount(), clock })
+  const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids, clock })
+
   const userContainer: UserContainer = {
     homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},
     loadHomeHistory: makeLoadHomeHistory({txns,allocations,categories}),
@@ -164,7 +168,8 @@ export function createDemoContainer(): Container {
     }),backupDigest),
     repairStoredIds: makeRepairStoredIds({port:memoryIdRepair(),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}),
     cleanupOrphans: (() => { const store = memoryIdRepair(); return makeCleanupOrphans({port:store,remover:store,redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}) })(),
-    manageProfile: makeManageProfile({ profiles: new MemoryProfileRepository(), account: memoryAccount(), clock }),
+    manageProfile,
+    onboardNewAccount: makeOnboardNewAccount({ profile: manageProfile, people: managePeople, wallets, clock }),
     manageCategories: makeManageCategories({categories,ids}),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
     manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),
@@ -172,9 +177,7 @@ export function createDemoContainer(): Container {
     seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
     loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
-    managePeople: makeManagePeople({
-      people, obligations, settlements, allocations, txns, uow, ids, clock,
-    }),
+    managePeople,
     addTransaction: makeAddTransaction({ txns, wallets, ids, clock }),
     reconcileBalance: makeReconcileBalance({ txns, wallets }),
     exportBackup: makeExportBackup({

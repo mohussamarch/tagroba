@@ -18,6 +18,7 @@ import { firestoreRemoveDocs } from '../infrastructure/firestore/removeDocs'
 import { makeManageProfile } from '../application/useCases/manageProfile'
 import { FirestoreProfileRepository } from '../infrastructure/firestore/firestoreProfileRepository'
 import { firebaseAccount } from '../infrastructure/firestore/firebaseAccount'
+import { makeOnboardNewAccount } from '../application/useCases/onboardNewAccount'
 import { coalesceReads } from '../infrastructure/coalesceReads'
 import { makeManageCategories } from '../application/useCases/manageCategories'
 import { makeReviewHistory } from '../application/useCases/reviewHistory'
@@ -116,6 +117,7 @@ export interface UserContainer {
   cleanupOrphans: ReturnType<typeof makeCleanupOrphans>
   /** قسم الحساب وأسئلة البداية — OVERRIDES §26. */
   manageProfile: ReturnType<typeof makeManageProfile>
+  onboardNewAccount: ReturnType<typeof makeOnboardNewAccount>
   homeSnapshot: ReturnType<typeof createHomeSnapshot>
   loadHomeHistory: ReturnType<typeof makeLoadHomeHistory>
   readBankSms: ReturnType<typeof makeReadBankSms>
@@ -192,6 +194,10 @@ export function createContainer(): Container {
         return { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
       }
 
+      // مبنيين مرة واحدة لأن أسئلة البداية بتستعملهم كمان
+      const manageProfile = makeManageProfile({profiles:new FirestoreProfileRepository(db,uid),account:firebaseAccount,clock:systemClock})
+      const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids: new RandomIdGenerator(), clock: systemClock })
+
       return {
         readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
         smsInbox: makeManageSmsInbox(androidSmsInbox(uid), parseBankSms),
@@ -201,7 +207,8 @@ export function createContainer(): Container {
         fullBackup: makeFullBackup(firestoreFullBackup(db,uid),backupDigest),
         repairStoredIds: makeRepairStoredIds({port:firestoreIdRepair(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
         cleanupOrphans: makeCleanupOrphans({port:firestoreIdRepair(db,uid),remover:firestoreRemoveDocs(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
-        manageProfile: makeManageProfile({profiles:new FirestoreProfileRepository(db,uid),account:firebaseAccount,clock:systemClock}),
+        manageProfile,
+        onboardNewAccount: makeOnboardNewAccount({ profile: manageProfile, people: managePeople, wallets, clock: systemClock }),
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),
@@ -209,10 +216,7 @@ export function createContainer(): Container {
           makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
         loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
         loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
-        managePeople: makeManagePeople({
-          people, obligations, settlements, allocations, txns, uow,
-          ids: new RandomIdGenerator(), clock: systemClock,
-        }),
+        managePeople,
         manageAssets: makeManageAssets({
           assets,
           lots: assetLots,

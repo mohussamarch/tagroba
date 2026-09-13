@@ -12,6 +12,11 @@ export function checkBackupFinance(data:FullBackupData){
     allocations.set(row.transactionId,sum)
   }
   for(const row of data.obligations){
+    // دين قديم من غير عملية (OVERRIDES §27): مفيش عملية نقارن بيها — بس المبلغ لازم موجب
+    if(row.originTransactionId===null){
+      if(!(Number(row.originalMinor)>0))throw Error('الدين القديم لازم مبلغه يكون موجب')
+      continue
+    }
     const txn=transactions.get(row.originTransactionId)
     if(txn?.currency!==row.currency||Number(row.originalMinor)>Number(txn?.amountMinor))throw Error('الدين غير متوافق مع العملية الأصلية')
   }
