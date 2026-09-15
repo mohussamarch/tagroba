@@ -243,3 +243,7 @@
 .home__heroLabel svg, .home__boxLabel svg, .card__title svg { flex: none; color: var(--c-action); }
 .home__heroValue--out { color: var(--c-outgoing); }
 .home__review svg { vertical-align: -2px; }
+
+/* طلب المالك 2026-09-15: «ما تم صرفه» و«تقريبي» شارة جنبه على نفس السطر */
+.home__heroHead { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.home__heroHead .badge { margin: 0; }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ChevronLeft, TrendingUp, Wallet } from 'lucide-react'
+import { BanknoteArrowDown, ChevronLeft, Wallet } from 'lucide-react'
 import { TransactionRow } from '../components/TransactionRow'
 import { PeriodPicker, MONTH_NAMES } from '../components/PeriodPicker'
 import { groupByDay } from '../../domain/dayGroups'
@@ -142,7 +142,7 @@ export function TransactionsScreen({
         <>
           {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
           <div className="metrics metrics--compact">
-            <Metric label="الدخل" icon={<TrendingUp size={14} aria-hidden="true" />} amount={data.incomeMinor} hidden={amountsHidden} tone="in" />
+            <Metric label="الدخل" icon={<BanknoteArrowDown size={14} aria-hidden="true" className="metric__icon--in" />} amount={data.incomeMinor} hidden={amountsHidden} tone="in" />
             <Metric
               label="المتبقي"
               icon={<Wallet size={14} aria-hidden="true" />}

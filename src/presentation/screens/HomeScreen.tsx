@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CalendarDays, ChartLine, ChevronLeft, ListOrdered, Receipt, TrendingUp, Wallet } from 'lucide-react'
+import { CalendarDays, ChartLine, ChevronLeft, ListOrdered, BanknoteArrowDown, Receipt, Wallet } from 'lucide-react'
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
 import { GroupDistribution } from '../components/GroupDistribution'
@@ -69,19 +69,22 @@ export function HomeScreen({
       {/* بطاقة المصروف: الرقم الأبرز، وتحته الخانات الثلاث في نفس البطاقة.
           إعادة تصميم 2026-09-11: صندوق التنبيه بفقراته الثلاث اتشال، وبقى
           سطر واحد يتضغط يودّي لمراجعة الأنواع. */}
-      <section className="card home__hero" aria-label="المصروف الشخصي">
-        <span className="home__heroLabel"><Receipt size={16} aria-hidden="true" />المصروف الشخصي</span>
+      <section className="card home__hero" aria-label="ما تم صرفه">
+        {/* طلب المالك 2026-09-15: «ما تم صرفه» بدل «المصروف الشخصي»، و«تقريبي» شارة جنبه على نفس السطر */}
+        <span className="home__heroHead">
+          <span className="home__heroLabel"><Receipt size={16} aria-hidden="true" />ما تم صرفه</span>
+          {data.estimatedCount > 0 && data.expenseMinor !== null && (
+            <span className="badge badge--approx">
+              {data.needsReviewCount > 0 ? 'تقريبي' : 'تقريبي — الأنواع اتحددت تلقائي'}
+            </span>
+          )}
+        </span>
         <span className={`home__heroValue${data.expenseMinor === null ? ' home__heroValue--na' : ' num home__heroValue--out'}`}>
           {data.expenseMinor === null ? 'بانتظار المراجعة' : hide(data.expenseMinor)}
         </span>
         {/* الرقم الجزئي يُقال إنه جزئي، ولا يُعرض كأنه نهائي */}
         {data.partial && data.expenseMinor !== null && (
           <span className="badge badge--partial">لحد دلوقتي — الرقم لسه ناقص</span>
-        )}
-        {data.estimatedCount > 0 && data.expenseMinor !== null && (
-          <span className="badge badge--approx">
-            {data.needsReviewCount > 0 ? 'تقريبي' : 'تقريبي — الأنواع اتحددت تلقائي'}
-          </span>
         )}
         <span className="home__heroSub">
           {data.transactionCount} عملية في {monthLabel(data.period)}
@@ -97,7 +100,7 @@ export function HomeScreen({
         <div className="metrics home__metrics">
           <div className="metric">
             <span className="metric__label">
-              <TrendingUp size={14} aria-hidden="true" />
+              <BanknoteArrowDown size={14} aria-hidden="true" className="metric__icon--in" />
               الدخل{data.partial && data.incomeMinor !== null ? ' (ناقص)' : ''}
             </span>
             <span

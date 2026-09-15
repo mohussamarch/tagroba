@@ -299,3 +299,5 @@
 .metric__label svg { flex: none; color: var(--c-action); }
 .txns__dayTotal--out { color: var(--c-outgoing); font-weight: 700; }
 .txnsSummary__link svg { vertical-align: -2px; }
+/* علامة الدخل: فلوس نازلة بلون الوارد الأخضر (طلب المالك 2026-09-15) */
+.metric__label .metric__icon--in { color: var(--c-incoming); }
