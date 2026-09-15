@@ -36,6 +36,8 @@ export function TransactionSheet({
 }: Props) {
   const [note, setNote] = useState(transaction.note ?? '')
   const [categoryId, setCategoryId] = useState(transaction.categoryId ?? '')
+  // التصنيف المقترح (من قاعدة أو تاجر) محتاج زرار يأكده زي ما هو — spec/04 «مقترح يحتاج تأكيد»
+  const [categoryConfirmed, setCategoryConfirmed] = useState(transaction.categoryConfirmed)
   const [isCash, setIsCash] = useState(transaction.isCashTagged)
   const [excluded, setExcluded] = useState(transaction.excludedFromBudget)
   const [tags, setTags] = useState<Tag[]>([])
@@ -115,15 +117,31 @@ export function TransactionSheet({
               onChange={(e) => {
                 const next = e.target.value
                 setCategoryId(next)
-                void run('اتحفظ التصنيف', () =>
-                  user.editTransaction.setCategory(transaction.id, next || null),
-                )
+                void run('اتحفظ التصنيف', async () => {
+                  await user.editTransaction.setCategory(transaction.id, next || null)
+                  setCategoryConfirmed(!!next)
+                })
               }}
             >
               <option value="">بلا تصنيف</option>
               <CategoryOptions groups={groupCategoryOptions(categories, { keepId: categoryId })} />
             </select>
           </label>
+          {categoryId && !categoryConfirmed ? (
+            <button
+              type="button"
+              className="btn btn--quiet"
+              disabled={busy}
+              onClick={() =>
+                void run('اتأكد التصنيف', async () => {
+                  await user.editTransaction.setCategory(transaction.id, categoryId)
+                  setCategoryConfirmed(true)
+                })
+              }
+            >
+              أكّد التصنيف ده
+            </button>
+          ) : null}
 
           <label className="sheet__field">
             <span className="sheet__label">ملاحظة</span>

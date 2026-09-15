@@ -97,6 +97,17 @@ describe('تعديل التصنيف', () => {
     expect(transaction.reviewState).toBe('needs_review')
   })
 
+  it('تأكيد التصنيف بيبعت للقاعدة المشتركة، والشيل لأ، وفشل المشاركة ما بيفشّلش التعديل (OVERRIDES §25.1)', async () => {
+    const calls: string[] = []
+    const { deps } = await build()
+    const shared = makeEditTransaction({ ...deps, onCategoryConfirmed: async (t, c) => { calls.push(`${t.id}:${c}`); throw new Error('offline') } })
+    await shared.setCategory('t1', FOOD.id)
+    await shared.setCategory('t1', null)
+    await new Promise((r) => setTimeout(r, 0))
+    expect(calls).toEqual([`t1:${FOOD.id}`])
+    expect((await shared.load('t1')).transaction.reviewState).toBe('needs_review')
+  })
+
   it('تصنيف مش موجود بيترفض', async () => {
     const { useCase } = await build()
     await expect(useCase.setCategory('t1', 'مش-موجود')).rejects.toThrow(EditTransactionError)
