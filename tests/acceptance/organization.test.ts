@@ -2,6 +2,7 @@ import {it,expect} from 'vitest'
 import {makeLoadTransactionsScreen} from '../../src/application/useCases/loadTransactionsScreen'
 import {makeManageCategories} from '../../src/application/useCases/manageCategories'
 import {makeManageRules} from '../../src/application/useCases/manageRules'
+import {swatchColors} from '../../src/domain/categoryPalette'
 import {merchantIndex} from '../../src/domain/merchantIndex'
 import {categorize} from '../../src/domain/categorize'
 import {parseQuery,searchTransactions} from '../../src/domain/search'
@@ -28,9 +29,9 @@ it('الوسوم والأسماء البديلة تدخل البحث دون مض
 it('إخفاء وتغيير لون تصنيف يحتفظ بالمعرف والفرع',async()=>{
  const categories=new MemoryCategoryRepository([c,{...c,id:'p',name:'لون آخر',lightColor:'blue'}])
  const use=makeManageCategories({categories,ids:new SequentialIdGenerator()})
- const result=await use.save({id:'c',name:'تسوق',active:false,paletteId:'p'})
- expect(result).toMatchObject({id:'c',active:false,lightColor:'blue',parentId:null})
- await expect(use.save({name:'تسوق',active:true,paletteId:'p'})).rejects.toThrow('نفس الاسم')
+ const result=await use.save({id:'c',name:'تسوق',active:false,swatchKey:'blue'})
+ expect(result).toMatchObject({id:'c',active:false,...swatchColors('blue'),parentId:null})
+ await expect(use.save({name:'تسوق',active:true})).rejects.toThrow('نفس الاسم')
 })
 it('الاسم البديل المؤكد يحفظ ويمنع الاستيلاء على هوية تاجر آخر',async()=>{
  const merchants=new MemoryMerchantRepository([{id:'a',displayName:'Amazon',normalizedName:'AMAZON'},{id:'b',displayName:'Other',normalizedName:'OTHER'}])

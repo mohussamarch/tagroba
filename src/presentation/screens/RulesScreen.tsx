@@ -2,6 +2,8 @@ import { X } from 'lucide-react'
 import { MerchantAliasEditor } from '../components/MerchantAliasEditor'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ErrorNotice } from '../components/ErrorNotice'
+import { CategoryOptions } from '../components/CategoryOptions'
+import { groupCategoryOptions } from '../../domain/categoryOptions'
 import type { RuleMatchMode, Category } from '../../domain/entities/types'
 import type { MerchantRow, RuleRow } from '../../application/useCases/manageRules'
 import type { UserContainer } from '../../app/container'
@@ -35,7 +37,10 @@ export function RulesScreen({ user, categories, onClose }: Props) {
 
   const [text, setText] = useState('')
   const [mode, setMode] = useState<RuleMatchMode>('contains')
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '')
+  // أول اختيار ظاهر في القايمة، مش أول تصنيف متخزن (ممكن يكون مخفي فالقاعدة تروح لتصنيف مش باين)
+  const [categoryId, setCategoryId] = useState(
+    () => groupCategoryOptions(categories)[0]?.options[0]?.id ?? '',
+  )
 
   async function reload() {
     try {
@@ -146,11 +151,7 @@ export function RulesScreen({ user, categories, onClose }: Props) {
                   disabled={busy}
                   onChange={(e) => setCategoryId(e.target.value)}
                 >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
+                  <CategoryOptions groups={groupCategoryOptions(categories)} />
                 </select>
                 <button type="submit" className="btn" disabled={busy || !text.trim()}>
                   ضيف قاعدة
@@ -221,11 +222,11 @@ export function RulesScreen({ user, categories, onClose }: Props) {
                       }
                     >
                       <option value="">بلا تثبيت</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
+                      <CategoryOptions
+                        groups={groupCategoryOptions(categories, {
+                          keepId: row.merchant.verifiedCategoryId ?? null,
+                        })}
+                      />
                     </select>
                   </li>
                 ))}

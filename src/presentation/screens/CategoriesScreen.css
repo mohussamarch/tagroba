@@ -1,0 +1,182 @@
+/* شاشة التصنيفات — OVERRIDES §33.1. لون كل تصنيف من `--cat-light`/`--cat-dark` (catColorStyle). */
+
+.catScreen__form { scroll-margin-top: 12px; }
+.catScreen__form > .btn { display: inline-flex; align-items: center; gap: 6px; }
+
+.catGroup { display: grid; gap: 8px; }
+
+.catGroup__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-size: 1rem;
+  color: var(--c-action);
+}
+
+.catGroup__list,
+.catGroup__subs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.catGroup__subs {
+  margin-top: 6px;
+  margin-inline-start: 16px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--c-border);
+}
+
+.catChip,
+.catRow,
+.catForm__swatch {
+  --cat: var(--cat-light, var(--c-muted));
+}
+[data-theme='dark'] .catChip,
+[data-theme='dark'] .catRow,
+[data-theme='dark'] .catForm__swatch {
+  --cat: var(--cat-dark, var(--c-muted));
+}
+
+.catChip {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--cat);
+  background: color-mix(in srgb, var(--cat) 18%, transparent);
+}
+
+.catRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--cat) 30%, var(--c-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cat) 8%, var(--c-surface));
+  color: var(--c-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  animation: rowIn 240ms ease both;
+}
+.catRow:focus-visible { outline: 2px solid var(--c-action); outline-offset: 2px; }
+.catRow:disabled { cursor: default; }
+.catRow--off { opacity: 0.6; }
+
+.catRow__name { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+
+.catRow__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+
+/* ── الفورم ── */
+
+.catForm { display: grid; gap: 12px; }
+.catForm__head { display: flex; align-items: center; gap: 10px; }
+.catForm__title { margin: 0; font-size: 1rem; }
+
+.catForm__fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.catForm__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.catForm__chip {
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+.catForm__chip[aria-pressed='true'] {
+  background: var(--c-action);
+  border-color: var(--c-action);
+  color: var(--c-surface);
+  font-weight: 700;
+}
+.catForm__chip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.catForm__swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.catForm__swatch {
+  /* الزراير عليها min-height عام 48px (لمسة الإصبع) — كان بيطوّل الدايرة لبيضاوي */
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+  border: 3px solid var(--c-surface);
+  background: var(--cat);
+  box-shadow: 0 0 0 1px var(--c-border);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.catForm__swatch[aria-checked='true'] { box-shadow: 0 0 0 2px var(--cat); transform: scale(1.12); }
+.catForm__swatch:focus-visible { outline: 2px solid var(--c-action); outline-offset: 3px; }
+
+.catForm__iconsSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--c-action);
+  font-weight: 600;
+}
+.catForm__iconNow {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--c-accent-soft);
+}
+
+.catForm__iconGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 232px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.catForm__icon {
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+}
+.catForm__icon[aria-checked='true'] {
+  background: var(--c-accent-soft);
+  border-color: var(--c-action);
+  color: var(--c-action);
+}
+
+.catForm__check { display: flex; align-items: center; gap: 8px; }
+.catForm__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .catRow { animation: none; }
+  .catForm__swatch { transition: none; }
+}
