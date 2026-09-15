@@ -167,3 +167,10 @@
 }
 .bar--cat .bar__track { background: color-mix(in srgb, var(--cat) 16%, var(--c-surface)); }
 .bar--cat .bar__fill { background: var(--cat); }
+
+/* OVERRIDES §31: علامة جنب التسمية، وشريط نصيب التصنيف اللي مالوش سقف بلونه */
+.fact__label { display: inline-flex; align-items: center; gap: 6px; }
+.fact__label svg { flex: none; color: var(--c-action); }
+.budget__line--cat .budget__shareBar { background: color-mix(in srgb, var(--cat) 16%, var(--c-surface)); }
+.budget__line--cat .budget__shareFill { background: var(--cat); }
+.budget__shareFill { background: var(--c-muted); }

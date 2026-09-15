@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { ChartLine, ChartPie, PiggyBank } from 'lucide-react'
+import { CalendarDays, ChartLine, ChartPie, PiggyBank, Receipt, Scale } from 'lucide-react'
 import { PeriodPicker } from '../components/PeriodPicker'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { LimitEditor } from '../components/LimitEditor'
@@ -133,11 +133,13 @@ export function BudgetScreen({
         <div className="budget__facts">
           <Fact
             label="المصروف"
+            icon={<Receipt size={14} aria-hidden="true" />}
             value={money(data.spentKnown ? data.spentMinor : null)}
             note={data.spentNote}
           />
           <Fact
             label="المتاح اليومي"
+            icon={<CalendarDays size={14} aria-hidden="true" />}
             value={money(data.allowance.amountMinor)}
             note={data.allowance.reason}
           />
@@ -150,11 +152,13 @@ export function BudgetScreen({
         <div className="budget__facts">
           <Fact
             label="متوسط الفترات المكتملة"
+            icon={<ChartLine size={14} aria-hidden="true" />}
             value={money(data.average.averageMinor)}
             note={data.average.reason}
           />
           <Fact
             label="مقارنة بالمعتاد"
+            icon={<Scale size={14} aria-hidden="true" />}
             value={
               data.anomaly.isAnomaly === null
                 ? NOT_AVAILABLE
@@ -231,7 +235,13 @@ export function BudgetScreen({
                       {line.status ? (
                         <BudgetBar status={line.status} hidden={amountsHidden} compact tinted={!!category} />
                       ) : (
-                        <span className="budget__noLimit">{line.noLimitReason}</span>
+                        <>
+                          {/* من غير سقف: شريط نصيبه من مصروف التصنيفات بلونه (OVERRIDES §31) — النسبة من domain */}
+                          <div className="dist__bar budget__shareBar" role="img" aria-label={`${(line.shareTenthPercent / 10).toFixed(1)} بالمئة من مصروف التصنيفات`}>
+                            <div className="dist__fill budget__shareFill" style={{ width: `${line.shareTenthPercent / 10}%` }} />
+                          </div>
+                          <span className="budget__noLimit">{(line.shareTenthPercent / 10).toFixed(1)}% من مصروف التصنيفات · {line.noLimitReason}</span>
+                        </>
                       )}
 
                       <div className="budget__lineFoot">

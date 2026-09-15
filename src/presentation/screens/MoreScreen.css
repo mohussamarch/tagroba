@@ -50,3 +50,38 @@
 .periods__name { font-size: var(--t-body); font-weight: 500; }
 .periods__count { font-size: var(--t-badge); color: var(--c-muted); white-space: nowrap; }
 .periods__value { font-size: var(--t-body); font-weight: 700; white-space: nowrap; }
+
+/* OVERRIDES §31: علامة مرسومة جنب كل قسم، والسهم مرسوم */
+.more__item .more__text { flex: 1; }
+.more__icon {
+  width: 36px; height: 36px; flex: none; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--c-accent-soft); color: var(--c-action);
+}
+
+/* أعمدة آخر ست فترات — ارتفاع كل عمود نسبة من أكبر فترة (المحسوبة في domain) */
+.periodBars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: end;
+  gap: 8px;
+  height: 150px;
+  margin: 6px 0 12px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--c-border);
+}
+.periodBars__col { display: grid; grid-template-rows: 1fr auto; height: 100%; gap: 6px; min-width: 0; }
+.periodBars__track { display: flex; align-items: flex-end; justify-content: center; }
+.periodBars__bar {
+  width: min(28px, 100%);
+  border-radius: 8px 8px 3px 3px;
+  background: color-mix(in srgb, var(--c-action) 55%, var(--c-surface));
+  transform-origin: bottom center;
+  animation: periodBarGrow 650ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+.periodBars__col--current .periodBars__bar { background: var(--c-action); }
+.periodBars__bar--na { height: 4px; background: var(--c-soft); animation: none; }
+.periodBars__label { font-size: var(--t-badge); color: var(--c-muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes periodBarGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .periodBars__bar { animation: none; } }

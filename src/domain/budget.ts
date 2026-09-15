@@ -242,6 +242,8 @@ export interface CategoryBudgetLine {
   /** null = المستخدم لم يضع سقفًا لهذا التصنيف. */
   status: BudgetStatus | null
   spentMinor: Halalas
+  /** نصيبه من مجموع مصروف التصنيفات بالعُشر في المية (125 = 12.5%) — شريط اللي مالوش سقف (OVERRIDES §31). */
+  shareTenthPercent: number
   averageMinor: Halalas | null
   anomaly: AnomalyResult
   /** سبب غياب السقف — يُعرض ولا يُترك فراغًا. */
@@ -261,6 +263,8 @@ export function buildCategoryLines(
   historyByCategory: ReadonlyMap<Id, readonly Halalas[]>,
 ): CategoryBudgetLine[] {
   const ids = new Set<Id>([...spendByCategory.keys(), ...limitByCategory.keys()])
+  let totalMinor: Halalas = 0
+  for (const spent of spendByCategory.values()) if (spent > 0) totalMinor = addMoney(totalMinor, spent)
 
   return [...ids]
     .map((categoryId) => {
@@ -269,6 +273,7 @@ export function buildCategoryLines(
       return {
         categoryId,
         spentMinor,
+        shareTenthPercent: totalMinor > 0 && spentMinor > 0 ? rateOfMoney(spentMinor, 1000, totalMinor) : 0,
         status: limit ? budgetStatus(limit.limitMinor, spentMinor, limit.thresholdPercent) : null,
         averageMinor: averageByCategory.get(categoryId) ?? null,
         anomaly: detectAnomaly(spentMinor, historyByCategory.get(categoryId) ?? []),

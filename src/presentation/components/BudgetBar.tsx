@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import type { BudgetStatus } from '../../domain/budget'
 import '../screens/BudgetScreen.css'
@@ -50,18 +51,21 @@ export function BudgetBar({
 
 export function Fact({
   label,
+  icon,
   value,
   note,
   tone = 'plain',
 }: {
   label: string
+  /** علامة مرسومة جنب التسمية — OVERRIDES §31. */
+  icon?: ReactNode
   value: string
   note?: string | null
   tone?: 'plain' | 'warn'
 }) {
   return (
     <div className="fact">
-      <span className="fact__label">{label}</span>
+      <span className="fact__label">{icon}{label}</span>
       <span className={`fact__value${tone === 'warn' ? ' fact__value--warn' : ''}`}>{value}</span>
       {note && <span className="fact__note">{note}</span>}
     </div>
