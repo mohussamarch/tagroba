@@ -1,8 +1,11 @@
 import { normalizeText } from '../../domain/normalize'
+import { planAmountEdit } from '../../domain/amountEdit'
 import type { Id, Tag, Transaction, TransactionTag } from '../../domain/entities/types'
 import type {
+  AllocationRepository,
   CategoryRepository,
   Clock,
+  SettlementRepository,
   IdGenerator,
   TagRepository,
   TransactionRepository,
@@ -41,6 +44,9 @@ export interface EditTransactionDeps {
    * **ما بتأخرش ولا بتفشّل** تعديل المستخدم: من غير نت أو لو اترفضت، التعديل في حسابه بيفضل.
    */
   onCategoryConfirmed?: (transaction: Transaction, categoryId: Id) => Promise<unknown>
+  /** لتعديل المبلغ: ما ينزلش تحت المتوزع على أشخاص أو المتسوّى بيه (OVERRIDES §32). */
+  allocations?: AllocationRepository
+  settlements?: SettlementRepository
 }
 
 export interface TransactionDetail {
@@ -87,6 +93,21 @@ export function makeEditTransaction(deps: EditTransactionDeps) {
     })
     const share = deps.onCategoryConfirmed
     if (categoryId !== null && share) void Promise.resolve().then(() => share(transaction, categoryId)).catch(() => undefined)
+  }
+
+  /**
+   * يعدّل المبلغ — OVERRIDES §32 (بيعلو على «المبلغ ما بيتعدلش» في الوصف فوق).
+   * الأصلي من المصدر بيتحفظ مرة واحدة، والتاريخ والاتجاه لسه ما بيتعدلوش.
+   */
+  async function setAmount(transactionId: Id, amountMinor: number): Promise<void> {
+    const [transaction] = await deps.txns.findByIds([transactionId])
+    if (!transaction) throw new EditTransactionError('العملية دي مش موجودة')
+    const [allocations, settlements] = await Promise.all([
+      deps.allocations?.listByTransactionIds([transactionId]) ?? Promise.resolve([]),
+      deps.settlements?.listByTransactionIds([transactionId]) ?? Promise.resolve([]),
+    ])
+    const fields = planAmountEdit(transaction, amountMinor, allocations, settlements)
+    await deps.txns.update(transactionId, { ...fields, updatedAt: deps.clock.nowIso() })
   }
 
   /** يكتب ملاحظة أو يشيلها. الفاضي بيشيلها بدل ما يحفظ نصًا فاضيًا. */
@@ -194,6 +215,7 @@ export function makeEditTransaction(deps: EditTransactionDeps) {
   return {
     load,
     setCategory,
+    setAmount,
     setNote,
     setCashTag,
     setExcludedFromBudget,

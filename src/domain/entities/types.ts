@@ -121,8 +121,13 @@ export interface Transaction {
    */
   observedDirection: 'in' | 'out'
 
-  /** المبلغ **موجب دائمًا**. الاتجاه في WalletPosting (spec/03). */
+  /** المبلغ **موجب دائمًا**. الاتجاه في WalletPosting (spec/03). المستخدم يقدر يعدّله (OVERRIDES §32). */
   amountMinor: Halalas
+  /**
+   * المبلغ الأصلي من المصدر — بيتحفظ مرة واحدة لما المستخدم يعدّل المبلغ (OVERRIDES §32 «أحتفظ بيه مستخبي»).
+   * مطابقة التكرار عند إعادة الاستيراد والدمج بتستعمله (`domain/amountEdit.ts`)؛ كل الحسابات بتستعمل `amountMinor`.
+   */
+  originalAmountMinor?: Halalas
   currency: Currency
 
   merchantId?: Id
@@ -275,29 +280,5 @@ export interface SourceRecord {
   reason: string
 }
 
-/**
- * ميزانية فترة — spec/03: «حدود صريحة».
- * لا تُنشأ تلقائيًا من متوسط؛ المستخدم يحددها (spec/01).
- */
-export interface Budget {
-  /** مفتاح الفترة نفسه: "2026-09". فترة واحدة = ميزانية واحدة. */
-  id: Id
-  periodKey: string
-  periodStart: IsoDate
-  periodEnd: IsoDate
-  /** السقف الإجمالي، أو null لو المستخدم حدد سقوف تصنيفات فقط. */
-  totalLimitMinor: Halalas | null
-  /** عتبة التنبيه بالمئة (80 = ٨٠٪)، أو null فلا تنبيه (spec/06). */
-  thresholdPercent: number | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CategoryBudget {
-  id: Id
-  budgetId: Id
-  categoryId: Id
-  limitMinor: Halalas
-  notifyEnabled: boolean
-  thresholdPercent: number | null
-}
+/** الميزانية وسقوف التصنيفات — في ملف لوحدها عشان حد الـ300 سطر (قاعدة 7). */
+export type { Budget, CategoryBudget } from './budgetEntities'

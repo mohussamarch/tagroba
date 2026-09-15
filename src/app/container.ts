@@ -241,7 +241,7 @@ export function createContainer(): Container {
         syncAssetPrices: makeSyncAssetPrices({ assets, prices: assetPrices }),
         loadPriceFeed,
         sharedMerchants,
-        editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids: new RandomIdGenerator(), clock: systemClock, onCategoryConfirmed: sharedMerchants.contribute }),
+        editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids: new RandomIdGenerator(), clock: systemClock, onCategoryConfirmed: sharedMerchants.contribute, allocations, settlements }),
         manageRules: makeManageRules({
           rules,
           merchants,

@@ -1,4 +1,5 @@
 import { detailKey } from './dedupe'
+import { sourceAmountMinor } from './amountEdit'
 import type { Transaction } from './entities/types'
 
 /**
@@ -88,7 +89,8 @@ export function transactionContentKey(txn: Transaction): string {
       accountIdentity: '',
       sourceReference: null,
       date: txn.occurredAt,
-      amountMinor: txn.amountMinor,
+      // الأصلي من المصدر لو المبلغ اتعدل (OVERRIDES §32) — نفس العملية تفضل نفس العملية في الدمج
+      amountMinor: sourceAmountMinor(txn),
       direction: txn.observedDirection,
       merchantName: txn.merchantId ?? txn.rawMerchantName ?? '',
       rowIndex: 0,

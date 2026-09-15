@@ -13,6 +13,7 @@ import {
 import { categorize, prepareRules, type CategorizeDeps } from '../../domain/categorize'
 import { normalizeText } from '../../domain/normalize'
 import { addMoney } from '../../domain/money'
+import { sourceAmountMinor } from '../../domain/amountEdit'
 import type { Id } from '../../domain/entities/types'
 import type {
   ImportPreview,
@@ -85,7 +86,8 @@ async function loadExisting(
       accountIdentity: record.accountIdentity,
       sourceReference: record.sourceReference,
       date: txn.occurredAt,
-      amountMinor: txn.amountMinor,
+      // المبلغ الأصلي من الكشف لو المستخدم عدّله (OVERRIDES §32) — فنفس السطر ما يتضافش تاني
+      amountMinor: sourceAmountMinor(txn),
       // الاتجاه الملاحظ حقيقة بنكية محفوظة، لا يُستنتج من النوع الاقتصادي
       direction: txn.observedDirection,
       merchantName: txn.rawMerchantName ?? '',

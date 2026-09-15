@@ -226,7 +226,7 @@ export function createDemoContainer(): Container {
     sharedMerchants,
     // المعاينة: شعار تجريبي واحد هو أيقونة التطبيق نفسه (مش شعار شركة) على محل وهمي، ومفيش أونلاين
     merchantLogos: createMerchantLogos({ entries: [{ names: ['DEMO SHOP'], file: 'demo.svg' }], files: new Map([['demo.svg', '/favicon.svg']]) }),
-    editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock, onCategoryConfirmed: sharedMerchants.contribute }),
+    editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock, onCategoryConfirmed: sharedMerchants.contribute, allocations, settlements }),
     manageRules: makeManageRules({ rules, merchants, categories, ids }),
     restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),
     manageAssets: makeManageAssets({

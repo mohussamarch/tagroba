@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { TagEditor } from '../components/TagEditor'
+import { AmountEditor } from '../components/AmountEditor'
 import type { Category, Tag, Transaction } from '../../domain/entities/types'
 import { groupCategoryOptions } from '../../domain/categoryOptions'
 import { CategoryOptions } from '../components/CategoryOptions'
@@ -39,6 +40,8 @@ export function TransactionSheet({
   const [categoryId, setCategoryId] = useState(transaction.categoryId ?? '')
   // التصنيف المقترح (من قاعدة أو تاجر) محتاج زرار يأكده زي ما هو — spec/04 «مقترح يحتاج تأكيد»
   const [categoryConfirmed, setCategoryConfirmed] = useState(transaction.categoryConfirmed)
+  // المبلغ ممكن يتعدل من هنا (OVERRIDES §32) — بنعرض آخر قيمة اتحفظت من غير ما نستنى إعادة التحميل
+  const [amountMinor, setAmountMinor] = useState(transaction.amountMinor)
   const [isCash, setIsCash] = useState(transaction.isCashTagged)
   const [excluded, setExcluded] = useState(transaction.excludedFromBudget)
   const [tags, setTags] = useState<Tag[]>([])
@@ -93,7 +96,7 @@ export function TransactionSheet({
               className="txnFacts__amount num"
               style={{ color: isIncoming ? 'var(--c-incoming)' : 'var(--c-outgoing)' }}
             >
-              {formatAmount(transaction.amountMinor, transaction.currency)}
+              {formatAmount(amountMinor, transaction.currency)}
             </span>
             <span className="txnFacts__meta">
               {transaction.occurredAt} · {isIncoming ? 'وارد' : 'صادر'}
@@ -104,9 +107,20 @@ export function TransactionSheet({
               </span>
             ) : null}
             <span className="sheet__hint">
-              المبلغ والتاريخ والاتجاه جايين من الكشف وما بيتعدلوش — تعديلهم بيكسر
-              مطابقة الرصيد ومنع التكرار.
+              التاريخ والاتجاه جايين من الكشف وما بيتعدلوش. المبلغ تقدر تعدّله، والأرقام كلها بتتحدث.
             </span>
+            <AmountEditor
+              amountMinor={amountMinor}
+              {...(transaction.originalAmountMinor !== undefined ? { originalAmountMinor: transaction.originalAmountMinor } : {})}
+              currency={transaction.currency}
+              disabled={busy}
+              onSave={async (next) => {
+                await user.editTransaction.setAmount(transaction.id, next)
+                setAmountMinor(next)
+                setSaved('اتحفظ المبلغ')
+                onChanged()
+              }}
+            />
           </section>
 
           <label className="sheet__field">
