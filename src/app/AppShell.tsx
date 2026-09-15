@@ -79,7 +79,7 @@ export function AppShell({
   return (
     <div className="shell">
       <ShellHeader
-        title={TAB_TITLES[tab]}
+        screenName={TAB_TITLES[tab]}
         unseenCount={unseenCount}
         amountsHidden={amountsHidden}
         onOpenNotifications={() => {setNotifOpen(true);void app.ensure('notifications')}}

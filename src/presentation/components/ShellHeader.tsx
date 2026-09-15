@@ -1,7 +1,8 @@
 import '../screens/NotificationsSheet.css'
 
 interface Props {
-  title: string
+  /** اسم الشاشة الحالية — لقارئ الشاشة بس؛ الظاهر فوق اسم البرنامج (طلب المالك 2026-09-15). */
+  screenName: string
   /** عدد التنبيهات غير المقروءة — صفر يعني لا عدّاد أصلًا. */
   unseenCount: number
   amountsHidden: boolean
@@ -17,9 +18,12 @@ interface Props {
  * إعادة تصميم 2026-09-11 (OVERRIDES §20): الرأس فيه **الإشعارات وإخفاء
  * المبالغ بس**. زر الإضافة نزل لنص شريط التنقل، والوضع الغامق وتسجيل
  * الخروج راحوا للإعدادات — الشكوى كانت «الأزرار فوق المحتوى».
+ *
+ * 2026-09-15 (نص المالك): «على اليمين فوق يتحط اسم البرنامج فقط ونشيل كلمة (الرئيسية)، ونكتفي إنه عارف هو واقف
+ * فين من تحت». اسم الشاشة بقى لقارئ الشاشة بس.
  */
 export function ShellHeader({
-  title,
+  screenName,
   unseenCount,
   amountsHidden,
   onOpenNotifications,
@@ -28,7 +32,7 @@ export function ShellHeader({
 }: Props) {
   return (
     <header className="shell__head">
-      <h1 className="shell__title">{title}</h1>
+      <h1 className="shell__title">مصروفي<span className="visually-hidden"> — {screenName}</span></h1>
       <div className="shell__actions">
         <span className="bellWrap">
           <button

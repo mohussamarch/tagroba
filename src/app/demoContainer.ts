@@ -17,6 +17,7 @@ import { saveTextFile } from '../infrastructure/saveTextFile'
 import { deviceRepairBackup } from '../infrastructure/repairBackup'
 import { makeCleanupOrphans } from '../application/useCases/cleanupOrphans'
 import { makeMigrateCategories } from '../application/useCases/migrateCategories'
+import { makeRestoreDefaultReferences } from '../application/useCases/restoreDefaultReferences'
 import { LEGACY_CATEGORY_NAMES } from '../infrastructure/import/legacyCategoryNames'
 import { makeManageProfile } from '../application/useCases/manageProfile'
 import { MemoryProfileRepository } from '../infrastructure/memory/memoryProfileRepository'
@@ -175,6 +176,8 @@ export function createDemoContainer(): Container {
     repairStoredIds: makeRepairStoredIds({port:memoryIdRepair(),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}),
     cleanupOrphans: (() => { const store = memoryIdRepair(); return makeCleanupOrphans({port:store,remover:store,redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}) })(),
     // المعاينة بتقرا تصنيفاتها الحقيقية (حسابها على الشجرة من الأول) عشان الفحص ما يقولش إن كله ناقص
+    // المعاينة بتقرا تصنيفاتها وقواعدها وتجارها وعملياتها الحقيقية من الذاكرة
+    restoreDefaultReferences: makeRestoreDefaultReferences({port:{readAll:async()=>({...emptyStoredData(),categories:(await categories.listAll()).map((c)=>({docId:c.id,data:{...c}})),rules:(await rules.listAll()).map((r)=>({docId:r.id,data:{...r}})),merchants:(await merchants.listAll()).map((m)=>({docId:m.id,data:{...m}})),transactions:(await txns.listByDateRange('2000-01-01','2100-12-31')).map((t)=>({docId:t.id,data:{...t}}))}),apply:async(patches)=>{for(const p of patches)await txns.update(p.docId,p.fields);return patches.length}},rules,merchants,backup:deviceRepairBackup,clock,defaults:refs}),
     migrateCategories: makeMigrateCategories({port:{readAll:async()=>({...emptyStoredData(),categories:(await categories.listAll()).map((c)=>({docId:c.id,data:{...c}}))}),apply:async(patches)=>patches.length},categories,backup:deviceRepairBackup,clock,tree:categoryTree,legacyNames:LEGACY_CATEGORY_NAMES}),
     manageProfile,
     onboarding: makeOnboardAccount({ profile: manageProfile, people: managePeople, wallets, clock }),
