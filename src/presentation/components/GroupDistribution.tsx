@@ -1,4 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
+import { ChartPie } from 'lucide-react'
+import { DonutChart } from './DonutChart'
 import { formatAmount } from '../../domain/formatMoney'
 import { CATEGORY_GROUPS } from '../../domain/categoryTree'
 import { groupDistribution, type GroupSliceKey } from '../../domain/groupDistribution'
@@ -28,6 +30,9 @@ export function GroupDistribution({ distribution, categories, amountsHidden }: {
   const view = useMemo(() => groupDistribution(distribution, categories), [distribution, categories])
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
   const [open, setOpen] = useState<GroupSliceKey | null>(null)
+  // لون المجموعة = لون أكبر تصنيف جواها (OVERRIDES §31: ألوان التصنيفات في كل مكان)؛ «بلا تصنيف» رمادي
+  const groupColor = (group: { mains: readonly { categoryId: string }[] }) =>
+    group.mains[0] ? byId.get(group.mains[0].categoryId) : undefined
   const money = (minor: number) => (amountsHidden ? '••••' : formatAmount(minor))
 
   if (distribution.length === 0) return null
@@ -35,7 +40,19 @@ export function GroupDistribution({ distribution, categories, amountsHidden }: {
   if (!view.grouped) {
     return (
       <section className="card" aria-label="توزيع التصنيفات">
-        <h2 className="card__title">التصنيفات</h2>
+        <h2 className="card__title"><ChartPie size={16} aria-hidden="true" />التصنيفات</h2>
+        <DonutChart
+          label={`توزيع المصروف على أكبر ${Math.min(distribution.length, 5)} تصنيفات`}
+          segments={distribution.slice(0, 5).map((slice) => ({
+            key: slice.categoryId ?? '—',
+            shareTenthPercent: slice.shareTenthPercent,
+            style: catStyle(slice.categoryId ? byId.get(slice.categoryId) : undefined),
+          }))}
+          center={<>
+            <span className="donut__centerValue">{percentOf(distribution[0].shareTenthPercent)}%</span>
+            <span className="donut__centerLabel">{(distribution[0].categoryId ? byId.get(distribution[0].categoryId)?.name : undefined) ?? 'بلا تصنيف'}</span>
+          </>}
+        />
         <ul className="dist">
           {distribution.slice(0, 5).map((slice) => {
             const category = slice.categoryId ? byId.get(slice.categoryId) : undefined
@@ -61,23 +78,34 @@ export function GroupDistribution({ distribution, categories, amountsHidden }: {
 
   return (
     <section className="card" aria-label="توزيع المصروف على المجموعات">
-      <h2 className="card__title">المصروف بالمجموعات</h2>
+      <h2 className="card__title"><ChartPie size={16} aria-hidden="true" />المصروف بالمجموعات</h2>
+      {view.groups.length > 0 && (
+        <DonutChart
+          label={`توزيع المصروف على ${view.groups.length} مجموعات`}
+          segments={view.groups.map((group) => ({ key: group.key, shareTenthPercent: group.shareTenthPercent, style: catStyle(groupColor(group)) }))}
+          center={<>
+            <span className="donut__centerValue">{percentOf(view.groups[0].shareTenthPercent)}%</span>
+            <span className="donut__centerLabel">{groupName(view.groups[0].key)}</span>
+          </>}
+        />
+      )}
       <ul className="dist">
         {view.groups.map((group) => {
           const name = groupName(group.key)
           const percent = percentOf(group.shareTenthPercent)
+          const color = catStyle(groupColor(group))
           const expandable = group.mains.length > 0
           const isOpen = open === group.key
           return (
             <li key={group.key} className="dist__row groupDist__row">
               <button type="button" className="groupDist__toggle" disabled={!expandable} aria-expanded={expandable ? isOpen : undefined}
                 onClick={() => setOpen(isOpen ? null : group.key)}>
-                <span className="groupDist__icon" aria-hidden="true"><CategoryIcon iconKey={GROUP_ICONS.get(group.key) ?? 'tag'} size={18} /></span>
+                <span className={`groupDist__icon${color ? ' groupDist__icon--cat' : ''}`} aria-hidden="true" style={color}><CategoryIcon iconKey={GROUP_ICONS.get(group.key) ?? 'tag'} size={18} /></span>
                 <span className="dist__name">{name}</span>
                 <span className="dist__amount num">{money(group.amountMinor)}</span>
               </button>
               <div className="dist__bar" role="img" aria-label={`${name}: ${percent} بالمئة، ${group.count} عملية`}>
-                <div className="dist__fill groupDist__fill" style={{ width: `${percent}%` }} />
+                <div className={`dist__fill ${color ? 'groupDist__fill--cat' : 'groupDist__fill'}`} style={{ width: `${percent}%`, ...color }} />
               </div>
               <span className="dist__meta">{percent}% · {group.count} عملية{expandable ? (isOpen ? ' · دوس للقفل' : ' · دوس للتفاصيل') : ''}</span>
               {isOpen && (

@@ -58,3 +58,7 @@
 }
 .groupDist__mains .dist__head { display: flex; align-items: center; gap: 8px; }
 .groupDist__mains .dist__name { flex: 1; }
+
+/* OVERRIDES §31: المجموعة بلون أكبر تصنيف جواها */
+.groupDist__icon--cat { --cat: var(--cat-light, var(--c-muted)); background: color-mix(in srgb, var(--cat) 16%, transparent); color: var(--cat); }
+[data-theme='dark'] .groupDist__icon--cat { --cat: var(--cat-dark, var(--c-muted)); }
