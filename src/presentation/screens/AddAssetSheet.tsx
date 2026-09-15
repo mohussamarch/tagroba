@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { ASSET_KIND_LABELS, ASSET_UNIT_DEFAULTS, type AssetKind } from '../../domain/entities/assets'
 import { ErrorNotice } from '../components/ErrorNotice'
@@ -49,7 +50,7 @@ export function AddAssetSheet({ user, onClose, onAdded }: Props) {
           <h2 className="sheet__title">أصل جديد</h2>
           {/* زر الإغلاق ما يتعطّلش أبدًا — المستخدم ما يتحبسش */}
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 

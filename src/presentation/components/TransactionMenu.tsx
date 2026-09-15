@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { formatAmount } from '../../domain/formatMoney'
 import type { Transaction } from '../../domain/entities/types'
 import './TransactionMenu.css'
@@ -38,7 +39,7 @@ export function TransactionMenu({ transaction, amountsHidden, onChoose, onClose 
             </span>
           </div>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
         <ul className="txnMenu__list">

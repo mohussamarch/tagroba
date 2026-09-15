@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { UserPlus } from 'lucide-react'
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
 import { ErrorNotice } from '../components/ErrorNotice'
@@ -76,7 +77,7 @@ export function PeopleScreen({
   return (
     <div className="people">
       <section className="card">
-        <h2 className="card__title">شخص جديد</h2>
+        <h2 className="card__title"><UserPlus size={16} aria-hidden="true" />شخص جديد</h2>
         <form className="people__add" onSubmit={addPerson} noValidate>
           <input
             className="sheet__input"

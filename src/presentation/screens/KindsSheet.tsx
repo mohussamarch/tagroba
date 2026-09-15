@@ -1,3 +1,4 @@
+import { TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { type EconomicKind } from '../../domain/entities/economicKind'
 import type { SuggestionSummary } from '../../application/useCases/setEconomicKind'
@@ -103,7 +104,7 @@ export function KindsSheet({ user, transactions, onClose, onDone }: Props) {
         <header className="sheet__head">
           <h2 className="sheet__title">تحديد الأنواع</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 
@@ -115,7 +116,7 @@ export function KindsSheet({ user, transactions, onClose, onDone }: Props) {
 
           {error && (
             <p className="sheet__error" role="alert">
-              <span aria-hidden="true">⚠</span> {error}
+              <TriangleAlert size={16} aria-hidden="true" /> {error}
             </p>
           )}
 

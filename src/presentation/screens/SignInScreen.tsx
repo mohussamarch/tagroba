@@ -1,3 +1,4 @@
+import { Moon, Sun, TriangleAlert } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { AuthError, type AuthPort } from '../../application/ports/AuthPort'
 import { useTheme } from '../theme/useTheme'
@@ -115,7 +116,7 @@ export function SignInScreen({ auth }: Props) {
             onClick={toggleTheme}
             aria-label={theme === 'light' ? 'تحويل للوضع الغامق' : 'تحويل للوضع الفاتح'}
           >
-            <span aria-hidden="true">{theme === 'light' ? '🌙' : '☀️'}</span>
+            <span aria-hidden="true">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</span>
           </button>
         </header>
 
@@ -147,7 +148,7 @@ export function SignInScreen({ auth }: Props) {
             />
             {fieldError('email') && (
               <p className="signin__error" id="email-error" role="alert">
-                <span aria-hidden="true">⚠</span> {error!.message}
+                <TriangleAlert size={16} aria-hidden="true" /> {error!.message}
               </p>
             )}
           </div>
@@ -170,14 +171,14 @@ export function SignInScreen({ auth }: Props) {
             />
             {fieldError('password') && (
               <p className="signin__error" id="password-error" role="alert">
-                <span aria-hidden="true">⚠</span> {error!.message}
+                <TriangleAlert size={16} aria-hidden="true" /> {error!.message}
               </p>
             )}
           </div>
 
           {error?.field === 'form' && (
             <p className="signin__error" role="alert">
-              <span aria-hidden="true">⚠</span> {error.message}
+              <TriangleAlert size={16} aria-hidden="true" /> {error.message}
             </p>
           )}
 

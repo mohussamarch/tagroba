@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CalendarDays, ChartLine, ListOrdered, Receipt, TrendingUp, Wallet } from 'lucide-react'
+import { CalendarDays, ChartLine, ChevronLeft, ListOrdered, Receipt, TrendingUp, Wallet } from 'lucide-react'
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
 import { GroupDistribution } from '../components/GroupDistribution'
@@ -89,7 +89,7 @@ export function HomeScreen({
 
         {data.needsReviewCount > 0 && (
           <button type="button" className="home__review" onClick={onFixKinds}>
-            {data.needsReviewCount} عملية محتاجة تأكيد ‹
+            {data.needsReviewCount} عملية محتاجة تأكيد <ChevronLeft size={14} aria-hidden="true" />
           </button>
         )}
 

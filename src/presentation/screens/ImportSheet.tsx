@@ -1,3 +1,4 @@
+import { TriangleAlert, X } from 'lucide-react'
 import { useState, type ChangeEvent } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { guessSourceType } from '../../infrastructure/import/detectSourceType'
@@ -185,7 +186,7 @@ export function ImportSheet({ user, wallets, onClose, onImported, initialSms, on
         <header className="sheet__head">
           <h2 className="sheet__title">استيراد كشف</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق" disabled={working}>
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 
@@ -211,7 +212,7 @@ export function ImportSheet({ user, wallets, onClose, onImported, initialSms, on
 
           {error && (
             <p className="sheet__error" role="alert">
-              <span aria-hidden="true">⚠</span> {error}
+              <TriangleAlert size={16} aria-hidden="true" /> {error}
             </p>
           )}
 

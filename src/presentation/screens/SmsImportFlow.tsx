@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useState } from 'react'
 import type { UserContainer } from '../../app/container'
 import type { Wallet } from '../../domain/entities/types'
@@ -18,7 +19,7 @@ export function SmsImportFlow({user,wallets,today,onClose,onImported}:{user:User
  function paste(){setError(null);setResult(user.readBankSms.paste(text))}
  if(review&&result)return <ImportSheet user={user} wallets={wallets} onClose={onClose} onImported={onImported} initialSms={result}/>
  return <div className="sheet" role="dialog" aria-modal="true" aria-label="رسائل البنك">
-  <div className="sheet__panel"><header className="sheet__head"><h2>رسائل البنك</h2><button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق">✕</button></header>
+  <div className="sheet__panel"><header className="sheet__head"><h2>رسائل البنك</h2><button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق"><X size={18} aria-hidden="true" /></button></header>
    <div className="sheet__body" style={{display:'grid',gap:16}}>
     <p>هنحلّل الرسائل على جهازك، وبعد مراجعتك وتأكيدك نحفظ العمليات في حسابك. رسائل التحقق وكلمات السر يتم تجاهلها.</p>
     <p>القراءة هنا للفترة اللي تختارها. تقدر تفعّل المتابعة التلقائية من «رسائل جديدة» في التطبيق. ندعم صيغًا محددة بالريال، وأي رسالة غير واضحة يتم تخطيها مع توضيح السبب.</p>

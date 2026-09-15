@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UserRound } from 'lucide-react'
 import type { UserContainer } from '../../app/container'
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
@@ -77,7 +78,7 @@ export function AccountCard({ user, onSaved }: { user: UserContainer; onSaved: (
 
   return (
     <section className="card" aria-label="الحساب">
-      <h2 className="card__title">الحساب</h2>
+      <h2 className="card__title"><UserRound size={16} aria-hidden="true" />الحساب</h2>
 
       <div className="settings__field">
         <span className="settings__label">الإيميل</span>

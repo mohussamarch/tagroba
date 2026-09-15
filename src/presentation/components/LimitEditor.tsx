@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
@@ -104,7 +105,7 @@ export function LimitEditor({
 
       {error && (
         <p className="limitEditor__error" role="alert">
-          <span aria-hidden="true">⚠</span> {error}
+          <TriangleAlert size={16} aria-hidden="true" /> {error}
         </p>
       )}
 

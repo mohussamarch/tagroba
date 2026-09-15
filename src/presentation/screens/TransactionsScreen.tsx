@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { TrendingUp, Wallet } from 'lucide-react'
+import { ChevronLeft, TrendingUp, Wallet } from 'lucide-react'
 import { TransactionRow } from '../components/TransactionRow'
 import { PeriodPicker, MONTH_NAMES } from '../components/PeriodPicker'
 import { groupByDay } from '../../domain/dayGroups'
@@ -163,7 +163,7 @@ export function TransactionsScreen({
             <span className="txnsSummary__actions">
               {data.unclassifiedCount > 0 && (
                 <button type="button" className="txnsSummary__link" onClick={onFixKinds}>
-                  {data.unclassifiedCount} محتاجة تأكيد ‹
+                  {data.unclassifiedCount} محتاجة تأكيد <ChevronLeft size={14} aria-hidden="true" />
                 </button>
               )}
               <button

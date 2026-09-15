@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import type { UserContainer } from '../../app/container'
 import type { PersonRow } from '../../application/useCases/managePeople'
@@ -61,7 +62,7 @@ export function SettleWithTransactionSheet({ user, transaction, rows, loading, o
       <form className="sheet__panel" onSubmit={(e) => void submit(e)}>
         <header className="sheet__head">
           <h2 className="sheet__title">اربطها بدين موجود</h2>
-          <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق"><span aria-hidden="true">✕</span></button>
+          <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق"><X size={18} aria-hidden="true" /></button>
         </header>
         <div className="sheet__body">
           <p className="sheet__hint">

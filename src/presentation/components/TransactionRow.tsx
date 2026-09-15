@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react'
-import { CircleDashed, Tag } from 'lucide-react'
+import { CircleDashed, Ellipsis, Tag } from 'lucide-react'
 import { formatAmount } from '../../domain/formatMoney'
 import type { Transaction } from '../../domain/entities/types'
 import { CategoryIcon } from './CategoryIcon'
@@ -130,7 +130,7 @@ export function TransactionRow({
       {/* «النقط التلاتة» على شمال العملية — OVERRIDES §30. فوق زر فتح الصف عشان الدوسة ما تفتحش التفاصيل */}
       {onMenu && (
         <button type="button" className="row__menu" onClick={onMenu} aria-label={`خيارات ${name}`}>
-          <span aria-hidden="true">⋯</span>
+          <Ellipsis size={20} aria-hidden="true" />
         </button>
       )}
     </li>

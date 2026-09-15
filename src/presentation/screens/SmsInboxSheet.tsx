@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { UserContainer } from '../../app/container'
 import type { Wallet } from '../../domain/entities/types'
@@ -33,7 +34,7 @@ export function SmsInboxSheet({user,wallets,onClose,onImported}: {
   const valid=view?.items.filter(item=>item.parsed.ok)??[]
   return <div className="sheet" role="dialog" aria-modal="true" aria-label="رسائل جديدة">
     <div className="sheet__panel"><header className="sheet__head"><h2 className="sheet__title">رسائل جديدة</h2>
-      <button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق">✕</button></header>
+      <button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق"><X size={18} aria-hidden="true" /></button></header>
       <div className="sheet__body" style={{display:'grid',gap:16}}>
         <p>راجع الرسائل هنا، واختار اللي تحب تسجله. مفيش عملية بتتحفظ قبل تأكيدك.</p>
         {view?.enabled&&view.permission?<p role="status">القراءة التلقائية مفعّلة</p>:view?.enabled?<p role="alert">إذن أندرويد غير متاح. الرسائل المعلقة محفوظة؛ أعد تفعيل الإذن لاستكمال القراءة.</p>:<p>القراءة التلقائية متوقفة</p>}

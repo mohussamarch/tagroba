@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Briefcase, Plus } from 'lucide-react'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
 import { formatQuantity } from '../../domain/quantity'
 import { describePriceState } from '../../domain/assets'
@@ -59,7 +60,7 @@ export function InvestmentScreen({
   return (
     <div className="invest">
       <section className="card invest__totals">
-        <h2 className="card__title">المحفظة</h2>
+        <h2 className="card__title"><Briefcase size={16} aria-hidden="true" />المحفظة</h2>
         <div className="invest__metrics">
           <Metric label="التكلفة" value={money(totals?.costBasisMinor ?? 0)} />
           <Metric label="القيمة الحالية" value={money(totals?.marketValueMinor ?? null)} />
@@ -92,7 +93,7 @@ export function InvestmentScreen({
       </section>
 
       <button type="button" className="btn" onClick={() => setAddOpen(true)}>
-        ＋ أصل جديد
+        <Plus size={16} aria-hidden="true" /> أصل جديد
       </button>
 
       {rows.length === 0 ? (

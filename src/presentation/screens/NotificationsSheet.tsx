@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { NotificationEvent } from '../../domain/notifications'
 import type { NotificationsView } from '../../application/useCases/loadNotifications'
@@ -56,7 +57,7 @@ export function NotificationsSheet({ user, view, onClose, onSeen, loading, error
         <header className="sheet__head">
           <h2 className="sheet__title">الإشعارات</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 

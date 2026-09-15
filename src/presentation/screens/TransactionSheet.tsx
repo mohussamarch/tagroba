@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { ErrorNotice } from '../components/ErrorNotice'
@@ -81,7 +82,7 @@ export function TransactionSheet({
           <h2 className="sheet__title">تفاصيل العملية</h2>
           {/* الإغلاق ما يتعطّلش أبدًا */}
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 

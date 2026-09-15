@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react'
 import { toUserFacingError } from '../../infrastructure/firestore/firestoreErrors'
 import './ErrorNotice.css'
 
@@ -21,7 +22,7 @@ export function ErrorNotice({ cause, onRetry }: Props) {
   return (
     <div className="errNotice" role="alert">
       <div className="errNotice__head">
-        <span aria-hidden="true">⚠</span>
+        <TriangleAlert size={16} aria-hidden="true" />
         <strong>{error.message}</strong>
       </div>
 

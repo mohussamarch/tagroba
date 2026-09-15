@@ -1,10 +1,11 @@
+import { Sparkles } from 'lucide-react'
 import '../screens/SettingsScreen.css'
 
 /** مدخل شاشة القواعد والتجار — مفصول لحد الملف 300 سطر. */
 export function RulesCard({ onOpen }: { onOpen: () => void }) {
   return (
     <section className="card" aria-label="القواعد والتجار">
-      <h2 className="card__title">التصنيف التلقائي</h2>
+      <h2 className="card__title"><Sparkles size={16} aria-hidden="true" />التصنيف التلقائي</h2>
       <p className="settings__hint">
         القواعد اللي بتصنّف عملياتك، والتجار اللي ثبّتّ تصنيفهم. تقدر تعدّلهم وتقفل
         اللي مش عاجبك — والقاعدة عمرها ما بتكتب فوق حاجة أكّدتها بنفسك.

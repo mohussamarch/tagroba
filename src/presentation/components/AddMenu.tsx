@@ -1,3 +1,4 @@
+import { FileText, MessageSquareText, ReceiptText, X } from 'lucide-react'
 import './AddMenu.css'
 
 interface Props {
@@ -22,14 +23,14 @@ export function AddMenu({ onClose, onAddTransaction, onImport, onSms }: Props) {
         <header className="sheet__head">
           <h2 className="sheet__title">تضيف إيه؟</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 
         <div className="sheet__body">
-          <button className="addMenu__item" onClick={onSms}><span className="addMenu__icon" aria-hidden="true">✉</span><span className="addMenu__text"><b>رسائل البنك</b><small>قراءة الرسائل أو لصق رسالة، ثم مراجعتها قبل الحفظ</small></span></button>
+          <button className="addMenu__item" onClick={onSms}><span className="addMenu__icon" aria-hidden="true"><MessageSquareText size={20} /></span><span className="addMenu__text"><b>رسائل البنك</b><small>قراءة الرسائل أو لصق رسالة، ثم مراجعتها قبل الحفظ</small></span></button>
           <button type="button" className="addMenu__item" onClick={onAddTransaction}>
-            <span className="addMenu__icon" aria-hidden="true">🧾</span>
+            <span className="addMenu__icon" aria-hidden="true"><ReceiptText size={20} /></span>
             <span className="addMenu__text">
               <b>عملية واحدة</b>
               <small>قهوة، بنزين، تحويل — أي حاجة عملتها دلوقتي</small>
@@ -37,7 +38,7 @@ export function AddMenu({ onClose, onAddTransaction, onImport, onSms }: Props) {
           </button>
 
           <button type="button" className="addMenu__item" onClick={onImport}>
-            <span className="addMenu__icon" aria-hidden="true">📄</span>
+            <span className="addMenu__icon" aria-hidden="true"><FileText size={20} /></span>
             <span className="addMenu__text">
               <b>كشف حساب</b>
               <small>ملف CSV فيه عمليات كتير مرة واحدة</small>

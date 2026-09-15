@@ -1,3 +1,4 @@
+import { Plus, X } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ErrorNotice } from './ErrorNotice'
 import type { Tag } from '../../domain/entities/types'
@@ -90,7 +91,7 @@ export function TagEditor({ user, transactionId, tags, onChanged }: Props) {
                 disabled={busy}
                 aria-label={`شيل وسم ${tag.displayName}`}
               >
-                ✕
+                <X size={14} aria-hidden="true" />
               </button>
             </span>
           ))}
@@ -125,7 +126,7 @@ export function TagEditor({ user, transactionId, tags, onChanged }: Props) {
               onClick={() => void add(tag.displayName)}
               disabled={busy}
             >
-              ＋ {tag.displayName}
+              <Plus size={14} aria-hidden="true" /> {tag.displayName}
             </button>
           ))}
         </div>

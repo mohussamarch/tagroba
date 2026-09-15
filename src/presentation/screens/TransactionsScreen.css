@@ -298,3 +298,4 @@
 .metric__label { display: inline-flex; align-items: center; gap: 6px; }
 .metric__label svg { flex: none; color: var(--c-action); }
 .txns__dayTotal--out { color: var(--c-outgoing); font-weight: 700; }
+.txnsSummary__link svg { vertical-align: -2px; }

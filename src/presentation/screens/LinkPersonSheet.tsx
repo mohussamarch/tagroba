@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
@@ -88,7 +89,7 @@ export function LinkPersonSheet({ user, transaction, people, onClose, onLinked, 
         <header className="sheet__head">
           <h2 className="sheet__title">ربط بشخص</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 

@@ -1,3 +1,4 @@
+import { TriangleAlert, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { tryParseMoney } from '../../domain/money'
 import { ruleFor, type EconomicKind } from '../../domain/entities/economicKind'
@@ -105,7 +106,7 @@ export function AddTransactionSheet({
         <header className="sheet__head">
           <h2 className="sheet__title">عملية جديدة</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 
@@ -124,7 +125,7 @@ export function AddTransactionSheet({
             />
             {fieldError && (
               <span className="sheet__error" role="alert">
-                <span aria-hidden="true">⚠</span> {fieldError}
+                <TriangleAlert size={16} aria-hidden="true" /> {fieldError}
               </span>
             )}
           </label>

@@ -1,5 +1,6 @@
 import { InstallGuide } from '../components/InstallGuide'
 import { useState } from 'react'
+import { DatabaseBackup, Scale, TriangleAlert, Wallet as WalletIcon } from 'lucide-react'
 import { formatAmount } from '../../domain/formatMoney'
 import { WalletEditor } from '../components/WalletEditor'
 import { RestorePanel } from '../components/RestorePanel'
@@ -120,7 +121,7 @@ export function SettingsScreen({
       <AppearanceCard theme={theme} onToggleTheme={onToggleTheme} onSignOut={onSignOut} />
 
       <section className="card" aria-label="المحافظ">
-        <h2 className="card__title">المحافظ والرصيد الافتتاحي</h2>
+        <h2 className="card__title"><WalletIcon size={16} aria-hidden="true" />المحافظ والرصيد الافتتاحي</h2>
         <p className="settings__hint">
           الرصيد الافتتاحي هو نقطة بداية سلسلة المطابقة. للراجحي هو الرصيد قبل أول
           عملية في الكشف. من غيره المطابقة هتطلع غلط بفرق ثابت.
@@ -155,7 +156,7 @@ export function SettingsScreen({
       </section>
 
       <section className="card" aria-label="مطابقة الرصيد">
-        <h2 className="card__title">مطابقة الرصيد</h2>
+        <h2 className="card__title"><Scale size={16} aria-hidden="true" />مطابقة الرصيد</h2>
         <p className="settings__hint">
           بنبدأ من الرصيد الافتتاحي للمحفظة ونطبّق كل عملية بترتيبها، وبنقارن
           الناتج بعمود الرصيد اللي في الكشف — سطر بسطر بدقة الهللة.
@@ -185,7 +186,7 @@ export function SettingsScreen({
       </section>
 
       <section className="card" aria-label="التصدير والنسخ الاحتياطي">
-        <h2 className="card__title">التصدير والنسخة الاحتياطية</h2>
+        <h2 className="card__title"><DatabaseBackup size={16} aria-hidden="true" />التصدير والنسخة الاحتياطية</h2>
         <p className="settings__hint">
           نسخة بيانات الحساب تشمل العمليات والمصادر والمحافظ والتصنيفات والأشخاص والديون والاستثمارات والوسوم والاشتراكات والميزانيات، مع بصمة لفحص سلامة الملف.
           تحتاج اتصالًا لجلب كل البيانات. أذونات الهاتف والرسائل المعلقة محليًا وإعدادات المظهر لا تدخل النسخة. الملف غير مشفّر؛ احتفظ به في مكان خاص.
@@ -214,7 +215,7 @@ export function SettingsScreen({
 
       {error && (
         <p className="settings__error" role="alert">
-          <span aria-hidden="true">⚠</span> {error}
+          <TriangleAlert size={16} aria-hidden="true" /> {error}
         </p>
       )}
     </div>

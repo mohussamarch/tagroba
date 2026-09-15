@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { MerchantAliasEditor } from '../components/MerchantAliasEditor'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ErrorNotice } from '../components/ErrorNotice'
@@ -81,7 +82,7 @@ export function RulesScreen({ user, categories, onClose }: Props) {
         <header className="sheet__head">
           <h2 className="sheet__title">القواعد والتجار</h2>
           <button type="button" className="iconBtn" onClick={onClose} aria-label="إغلاق">
-            <span aria-hidden="true">✕</span>
+            <X size={18} aria-hidden="true" />
           </button>
         </header>
 
