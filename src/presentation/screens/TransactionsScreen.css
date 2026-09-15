@@ -246,7 +246,7 @@
   min-height: var(--touch-min);
   border: none;
   border-radius: 12px;
-  background: var(--c-text);
+  background: var(--c-action);
   color: var(--c-surface);
   font-weight: 600;
   font-size: var(--t-input);

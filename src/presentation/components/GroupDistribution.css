@@ -27,7 +27,8 @@
   flex: none;
 }
 
-.groupDist__fill { background: var(--c-text); }
+/* «بلا تصنيف» رمادي هادي — كان بلون الكلام فبيبان أسود تقيل (اتشاف على المحاكي 2026-09-15) */
+.groupDist__fill { background: var(--c-muted); }
 
 /* لون التصنيف بنسختين زي صف العملية */
 .groupDist__fill--cat,
