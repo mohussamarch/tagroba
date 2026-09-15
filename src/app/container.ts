@@ -14,6 +14,7 @@ import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { deviceRepairBackup } from '../infrastructure/repairBackup'
 import { makeCleanupOrphans } from '../application/useCases/cleanupOrphans'
+import { makeMigrateCategories } from '../application/useCases/migrateCategories'
 import { firestoreRemoveDocs } from '../infrastructure/firestore/removeDocs'
 import { makeManageProfile } from '../application/useCases/manageProfile'
 import { FirestoreProfileRepository } from '../infrastructure/firestore/firestoreProfileRepository'
@@ -85,6 +86,7 @@ import { loadPriceFeed } from '../infrastructure/prices/loadPriceFeed'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock, WalletRepository } from '../application/ports/repositories'
 import categoryTreeData from '../infrastructure/import/categoryTree.json'
+import { LEGACY_CATEGORY_NAMES } from '../infrastructure/import/legacyCategoryNames'
 import rawRules from '../../design-source/masroofi-claude-code/fixtures/rule-reference.json'
 import rawMerchants from '../../design-source/masroofi-claude-code/fixtures/merchant-reference.json'
 
@@ -116,6 +118,7 @@ export interface UserContainer {
   repairStoredIds: ReturnType<typeof makeRepairStoredIds>
   /** بقايا استيراد متراجَع عنه — HANDOVER §36. */
   cleanupOrphans: ReturnType<typeof makeCleanupOrphans>
+  /** نقل الحساب القديم لشجرة التصنيفات — OVERRIDES §28.1. */ migrateCategories: ReturnType<typeof makeMigrateCategories>
   /** قسم الحساب وأسئلة البداية — OVERRIDES §26. */
   manageProfile: ReturnType<typeof makeManageProfile>
   onboarding: ReturnType<typeof makeOnboardAccount>
@@ -188,13 +191,9 @@ export function createContainer(): Container {
       const assetSales = new FirestoreAssetSaleRepository(db, uid)
       const assetPrices = new FirestoreAssetPriceRepository(db, uid)
 
-      /** المرجع الأولي يُبنى من الملفات (شجرة التصنيفات OVERRIDES §28.1)، ويُزرع مرة واحدة عند أول دخول. */
-      const buildSeedSource = () => {
-        const categoryTree = buildCategoryTree(categoryTreeData)
-        const categoryList = categoryTree.categories
-        const refs = loadReferences(rawRules, rawMerchants, categoryList, categoryTree)
-        return { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
-      }
+      /** المرجع الأولي من الملفات (شجرة التصنيفات OVERRIDES §28.1): يُزرع مرة واحدة عند أول دخول، ويتنقل ليه الحساب القديم. */
+      const categoryTree = buildCategoryTree(categoryTreeData)
+      const buildSeedSource = () => { const refs = loadReferences(rawRules, rawMerchants, categoryTree.categories, categoryTree); return { categories: categoryTree.categories, rules: refs.rules, merchants: refs.merchants } }
 
       // مبنيين مرة واحدة لأن أسئلة البداية بتستعملهم كمان
       const manageProfile = makeManageProfile({profiles:new FirestoreProfileRepository(db,uid),account:firebaseAccount,clock:systemClock})
@@ -209,6 +208,7 @@ export function createContainer(): Container {
         fullBackup: makeFullBackup(firestoreFullBackup(db,uid),backupDigest),
         repairStoredIds: makeRepairStoredIds({port:firestoreIdRepair(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
         cleanupOrphans: makeCleanupOrphans({port:firestoreIdRepair(db,uid),remover:firestoreRemoveDocs(db,uid),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock:systemClock}),
+        migrateCategories: makeMigrateCategories({port:firestoreIdRepair(db,uid),categories,backup:deviceRepairBackup,clock:systemClock,tree:categoryTree,legacyNames:LEGACY_CATEGORY_NAMES}),
         manageProfile,
         onboarding: makeOnboardAccount({ profile: manageProfile, people: managePeople, wallets, clock: systemClock }),
         manageCategories: makeManageCategories({categories,ids:new RandomIdGenerator()}),

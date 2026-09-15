@@ -4,6 +4,7 @@ import { BACKUP_LABELS, type BackupGroup } from '../../domain/fullBackup'
 import type { RepairProgress } from '../../application/useCases/repairStoredIds'
 import { IdRepairDetails } from './IdRepairDetails'
 import { OrphanCleanupPanel } from './OrphanCleanupPanel'
+import { CategoryMigrationPanel } from './CategoryMigrationPanel'
 
 type Preview = Awaited<ReturnType<UserContainer['repairStoredIds']['preview']>>
 
@@ -106,5 +107,6 @@ export function IdRepairPanel({ user, onDone }: { user: UserContainer; onDone: (
     </section>
     {/* جنب الإصلاح عشان SettingsScreen على حد الـ300 سطر */}
     <OrphanCleanupPanel user={user} onDone={onDone}/>
+    <CategoryMigrationPanel user={user} onDone={onDone}/>
   </>)
 }

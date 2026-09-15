@@ -3,6 +3,7 @@ import { makeReadBankSms } from '../application/useCases/readBankSms'
 import { makeFullBackup } from '../application/useCases/fullBackup'
 import { makeRepairStoredIds } from '../application/useCases/repairStoredIds'
 import { memoryIdRepair } from '../infrastructure/memory/idRepair'
+import { emptyStoredData } from '../domain/idRepair'
 import { sanitizeAccountNumbers } from '../infrastructure/firestore/firestoreRepositories'
 import { snapshotFullBackup } from '../infrastructure/memory/snapshotFullBackup'
 import { backupDigest } from '../infrastructure/backupDigest'
@@ -15,6 +16,8 @@ import { parseBankSms } from '../infrastructure/import/bankSmsParser'
 import { saveTextFile } from '../infrastructure/saveTextFile'
 import { deviceRepairBackup } from '../infrastructure/repairBackup'
 import { makeCleanupOrphans } from '../application/useCases/cleanupOrphans'
+import { makeMigrateCategories } from '../application/useCases/migrateCategories'
+import { LEGACY_CATEGORY_NAMES } from '../infrastructure/import/legacyCategoryNames'
 import { makeManageProfile } from '../application/useCases/manageProfile'
 import { MemoryProfileRepository } from '../infrastructure/memory/memoryProfileRepository'
 import { memoryAccount } from '../infrastructure/memory/memoryAccount'
@@ -171,6 +174,8 @@ export function createDemoContainer(): Container {
     }),backupDigest),
     repairStoredIds: makeRepairStoredIds({port:memoryIdRepair(),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}),
     cleanupOrphans: (() => { const store = memoryIdRepair(); return makeCleanupOrphans({port:store,remover:store,redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}) })(),
+    // المعاينة بتقرا تصنيفاتها الحقيقية (حسابها على الشجرة من الأول) عشان الفحص ما يقولش إن كله ناقص
+    migrateCategories: makeMigrateCategories({port:{readAll:async()=>({...emptyStoredData(),categories:(await categories.listAll()).map((c)=>({docId:c.id,data:{...c}}))}),apply:async(patches)=>patches.length},categories,backup:deviceRepairBackup,clock,tree:categoryTree,legacyNames:LEGACY_CATEGORY_NAMES}),
     manageProfile,
     onboarding: makeOnboardAccount({ profile: manageProfile, people: managePeople, wallets, clock }),
     manageCategories: makeManageCategories({categories,ids}),
