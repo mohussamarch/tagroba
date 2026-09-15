@@ -63,6 +63,8 @@ import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
 import { makeEditTransaction } from '../application/useCases/editTransaction'
 import { makeManageRules } from '../application/useCases/manageRules'
+import { makeSharedMerchants } from '../application/useCases/sharedMerchants'
+import { MemorySharedMerchantCatalog, MemorySyncCursor } from '../infrastructure/memory/memorySharedMerchantCatalog'
 import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
@@ -157,6 +159,8 @@ export function createDemoContainer(): Container {
 
   const manageProfile = makeManageProfile({ profiles: new MemoryProfileRepository(), account: memoryAccount(), clock })
   const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids, clock })
+  // قاعدة التجار المشتركة في الذاكرة — المعاينة ما بتكلمش فايربيز (OVERRIDES §25)
+  const sharedMerchants = makeSharedMerchants({ catalog: new MemorySharedMerchantCatalog(), merchants, baseline: refs.merchants, treeCategoryIds: new Set(categoryList.map((c) => c.id)), cursor: new MemorySyncCursor() })
 
   const userContainer: UserContainer = {
     homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},
@@ -217,7 +221,8 @@ export function createDemoContainer(): Container {
       clock,
     }),
     resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),
-    editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock }),
+    sharedMerchants,
+    editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock, onCategoryConfirmed: sharedMerchants.contribute }),
     manageRules: makeManageRules({ rules, merchants, categories, ids }),
     restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),
     manageAssets: makeManageAssets({

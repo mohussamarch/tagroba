@@ -79,6 +79,9 @@ import { makeAddTransaction } from '../application/useCases/addTransaction'
 import { makeManagePeople } from '../application/useCases/managePeople'
 import { makeEditTransaction } from '../application/useCases/editTransaction'
 import { makeManageRules } from '../application/useCases/manageRules'
+import { makeSharedMerchants } from '../application/useCases/sharedMerchants'
+import { FirestoreSharedMerchantCatalog } from '../infrastructure/firestore/sharedMerchantCatalogRepository'
+import { localSyncCursor } from '../infrastructure/localSyncCursor'
 import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
@@ -118,6 +121,7 @@ export interface UserContainer {
   cleanupOrphans: ReturnType<typeof makeCleanupOrphans>
   /** نقل الحساب القديم لشجرة التصنيفات — OVERRIDES §28.1. */ migrateCategories: ReturnType<typeof makeMigrateCategories>
   /** رجوع القواعد والتجار الافتراضيين بمعاينة — OVERRIDES §28.1. */ restoreDefaultReferences: ReturnType<typeof makeRestoreDefaultReferences>
+  /** قاعدة التجار المشتركة — OVERRIDES §25. */ sharedMerchants: ReturnType<typeof makeSharedMerchants>
   /** قسم الحساب وأسئلة البداية — OVERRIDES §26. */
   manageProfile: ReturnType<typeof makeManageProfile>
   onboarding: ReturnType<typeof makeOnboardAccount>
@@ -197,6 +201,7 @@ export function createContainer(): Container {
       // مبنيين مرة واحدة لأن أسئلة البداية بتستعملهم كمان
       const manageProfile = makeManageProfile({profiles:new FirestoreProfileRepository(db,uid),account:firebaseAccount,clock:systemClock})
       const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids: new RandomIdGenerator(), clock: systemClock })
+      const sharedMerchants = makeSharedMerchants({ catalog: new FirestoreSharedMerchantCatalog(db), merchants, baseline: seedRefs.merchants, treeCategoryIds: new Set(categoryTree.categories.map((c) => c.id)), cursor: localSyncCursor(uid) })
 
       return {
         readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
@@ -233,15 +238,8 @@ export function createContainer(): Container {
         }),
         syncAssetPrices: makeSyncAssetPrices({ assets, prices: assetPrices }),
         loadPriceFeed,
-        editTransaction: makeEditTransaction({
-          txns,
-          categories,
-          tags,
-          transactionTags,
-          uow,
-          ids: new RandomIdGenerator(),
-          clock: systemClock,
-        }),
+        sharedMerchants,
+        editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids: new RandomIdGenerator(), clock: systemClock, onCategoryConfirmed: sharedMerchants.contribute }),
         manageRules: makeManageRules({
           rules,
           merchants,

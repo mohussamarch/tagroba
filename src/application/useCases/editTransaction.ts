@@ -36,6 +36,11 @@ export interface EditTransactionDeps {
   uow: UnitOfWork
   ids: IdGenerator
   clock: Clock
+  /**
+   * بعد ما المستخدم يأكد تصنيف — مساهمة قاعدة التجار المشتركة (OVERRIDES §25.1).
+   * **ما بتأخرش ولا بتفشّل** تعديل المستخدم: من غير نت أو لو اترفضت، التعديل في حسابه بيفضل.
+   */
+  onCategoryConfirmed?: (transaction: Transaction, categoryId: Id) => Promise<unknown>
 }
 
 export interface TransactionDetail {
@@ -80,6 +85,8 @@ export function makeEditTransaction(deps: EditTransactionDeps) {
       reviewState: categoryId !== null ? 'confirmed' : 'needs_review',
       updatedAt: deps.clock.nowIso(),
     })
+    const share = deps.onCategoryConfirmed
+    if (categoryId !== null && share) void Promise.resolve().then(() => share(transaction, categoryId)).catch(() => undefined)
   }
 
   /** يكتب ملاحظة أو يشيلها. الفاضي بيشيلها بدل ما يحفظ نصًا فاضيًا. */
