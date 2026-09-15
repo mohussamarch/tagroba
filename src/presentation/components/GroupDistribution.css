@@ -1,0 +1,60 @@
+/* المصروف بالمجموعات «من برا» — OVERRIDES §28.1 */
+.groupDist__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.groupDist__toggle:disabled { cursor: default; }
+.groupDist__toggle .dist__name { flex: 1; }
+
+.groupDist__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--c-soft);
+  color: var(--c-text);
+  flex: none;
+}
+
+.groupDist__fill { background: var(--c-text); }
+
+/* لون التصنيف بنسختين زي صف العملية */
+.groupDist__fill--cat,
+.groupDist__catIcon { --cat: var(--cat-light, var(--c-muted)); }
+[data-theme='dark'] .groupDist__fill--cat,
+[data-theme='dark'] .groupDist__catIcon { --cat: var(--cat-dark, var(--c-muted)); }
+.groupDist__fill--cat { background: var(--cat); }
+
+.groupDist__catIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--cat);
+  background: color-mix(in srgb, var(--cat) 16%, transparent);
+  flex: none;
+}
+
+.groupDist__mains {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  padding-inline-start: 12px;
+  border-top: 1px dashed var(--c-line, var(--c-soft));
+  display: grid;
+  gap: 12px;
+}
+.groupDist__mains .dist__head { display: flex; align-items: center; gap: 8px; }
+.groupDist__mains .dist__name { flex: 1; }

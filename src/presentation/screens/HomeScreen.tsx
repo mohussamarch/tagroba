@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
+import { GroupDistribution } from '../components/GroupDistribution'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
@@ -155,45 +156,8 @@ export function HomeScreen({
         </section>
       </div>
 
-      {/* توزيع التصنيفات — مع بديل قائمة للرسم (spec/04، الوصول) */}
-      {data.distribution.length > 0 && (
-        <section className="card" aria-label="توزيع التصنيفات">
-          <h2 className="card__title">التصنيفات</h2>
-          <ul className="dist">
-            {data.distribution.slice(0, 5).map((slice) => {
-              const category = slice.categoryId ? categoryById.get(slice.categoryId) : undefined
-              const name = category?.name ?? 'بلا تصنيف'
-              const percent = (slice.shareTenthPercent / 10).toFixed(1)
-              return (
-                <li key={slice.categoryId ?? '—'} className="dist__row">
-                  <div className="dist__head">
-                    <span className="dist__name">{name}</span>
-                    <span className="dist__amount num">
-                      {amountsHidden ? '••••' : formatAmount(slice.amountMinor)}
-                    </span>
-                  </div>
-                  <div
-                    className="dist__bar"
-                    role="img"
-                    aria-label={`${name}: ${percent} بالمئة، ${slice.count} عملية`}
-                  >
-                    <div
-                      className="dist__fill"
-                      style={{
-                        width: `${percent}%`,
-                        background: category?.lightColor ?? 'var(--c-muted)',
-                      }}
-                    />
-                  </div>
-                  <span className="dist__meta">
-                    {percent}% · {slice.count} عملية
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-      )}
+      {/* المصروف بالمجموعات «من برا» ودوسة بتفتح التصنيفات — OVERRIDES §28.1 (مع بديل قائمة للرسم، spec/04) */}
+      <GroupDistribution distribution={data.distribution} categories={data.categories} amountsHidden={amountsHidden} />
 
       {/* أحدث العمليات */}
       <section className="card" aria-label="أحدث العمليات">
