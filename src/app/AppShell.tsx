@@ -17,6 +17,8 @@ import { ShellHeader } from '../presentation/components/ShellHeader'
 import { MoreScreen } from '../presentation/screens/MoreScreen'
 import { useTheme } from '../presentation/theme/useTheme'
 import { useAppData } from './useAppData'
+import { useAndroidBack } from './androidBack'
+import { usePopOrigin } from './popOrigin'
 import type { Container } from './container'
 import './AppShell.css'
 type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings' | 'more'
@@ -56,6 +58,9 @@ export function AppShell({
   const reload = () => void app.reload()
   /** قايمة «النقط التلاتة» وأوراق العملية (OVERRIDES §30). */
   const txnActions = useTransactionActions({ app, amountsHidden, reload })
+  // رجوع أندرويد: يقفل النافذة المفتوحة أو يرجع للرئيسية بدل ما يطلّع برا التطبيق (HANDOVER بند 18)
+  useAndroidBack(tab, () => setTab('home'))
+  usePopOrigin()
   const unseenCount = app.notifications?.unseen.length ?? 0
   const signOut = () => {
     void (async () => {
