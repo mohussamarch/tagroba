@@ -9,6 +9,7 @@ import type { NotificationsView } from '../application/useCases/loadNotification
 import type { Wallet } from '../domain/entities/types'
 import type { Container } from './container'
 import { ScreenRequests } from './ScreenRequests'
+import { factsFromProfile,presentCategories,UNKNOWN_FACTS } from '../domain/categoryVisibility'
 export type AppTab='home'|'transactions'|'budget'|'people'|'invest'|'settings'|'more'
 const SECTIONS=['home','transactions','budget','wallets','people','portfolio','history','notifications'] as const
 type Section=typeof SECTIONS[number]
@@ -33,6 +34,8 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const [errors,setErrors]=useState<Partial<Record<Section,unknown>>>({})
  const [recovery,setRecovery]=useState<string|null>(null)
  const [needsOnboarding,setNeedsOnboarding]=useState(false)
+ // معلومات الشخص اللي بتظهر التصنيفات المشروطة (OVERRIDES §28.1) — مجهول لحد ما الملف يتقري
+ const [facts,setFacts]=useState(UNKNOWN_FACTS)
  const [snapshotAt,setSnapshotAt]=useState<string|null>(null)
  const requests=useRef(new ScreenRequests())
  const generation=useRef(0)
@@ -54,6 +57,7 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
     // تنظيف الاستيراد المعلّق لا يمنع فتح الشاشات أبدًا — فشله كان يوقف التطبيق كله
     const [,walletSeed,outcomes,profile]=await Promise.all([user.seedUserReferences(),user.seedWallets(false),user.resumeStagedBatch.cleanupAll().catch(()=>null),user.manageProfile.load().catch(()=>null)])
     if(profile)applyPayday(profile.payday)
+    if(profile)setFacts(factsFromProfile(profile))
     // أسئلة البداية لأي حساب ما خلصهاش قبل كده (OVERRIDES §26). الملف ما اتقراش ⇒ ما تظهرش
     if(profile)setNeedsOnboarding(user.manageProfile.needsOnboarding(profile))
     setWallets(walletSeed.wallets)
@@ -123,6 +127,7 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
  const reload=useCallback(async()=>{
   // يوم الراتب اتغير من قسم الحساب ⇒ الفترة الجديدة بتتحمّل لوحدها؛ ما نحمّلش بحدود الشهر القديمة
   const profile=await user.manageProfile.load().catch(()=>null)
+  if(profile)setFacts(factsFromProfile(profile))
   if(profile&&applyPayday(profile.payday))return
   generation.current++
   requests.current.invalidate()
@@ -141,7 +146,11 @@ export function useAppData(container:Container,uid:string,activeTab:AppTab){
   setHome(null);setTxnData(null);setBudgetData(null);setNotifications(null);setSnapshotAt(null)
   setErrors({});setPending({...initialLoading});changePeriod(next)
  }
- return {user,today,payday,period,setPeriod,home,txnData,budgetData,wallets,people,portfolio,notifications,
+ // الشاشات بتاخد التصنيفات بعد قاعدة الإظهار: الاسم البديل لو مالوش سيارة، والمشروط غير المتأكد مش في الاختيارات
+ const shownHome=useMemo(()=>home&&{...home,categories:presentCategories(home.categories,facts)},[home,facts])
+ const shownTxnData=useMemo(()=>txnData&&{...txnData,categories:presentCategories(txnData.categories,facts)},[txnData,facts])
+ const shownBudgetData=useMemo(()=>budgetData&&{...budgetData,categories:presentCategories(budgetData.categories,facts)},[budgetData,facts])
+ return {user,today,payday,period,setPeriod,home:shownHome,txnData:shownTxnData,budgetData:shownBudgetData,wallets,people,portfolio,notifications,
   pending,errors,recovery,snapshotAt,activePending:pending[tabSection[activeTab]],
   dismissRecovery:()=>setRecovery(null),reload,ensure,clearSnapshot:()=>user.homeSnapshot.clear(),
   needsOnboarding,finishOnboarding:()=>{setNeedsOnboarding(false);void reload()}}

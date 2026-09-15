@@ -3,14 +3,17 @@ import type { UserContainer } from '../../app/container'
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
 import type { Gender, ProfileField, UserProfile } from '../../domain/userProfile'
+import { DependentKindsField, YesNoField } from './ProfileAnswerFields'
 
 const text = (error: unknown) => (error instanceof Error ? error.message : String(error))
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
+const FIELD = { fieldClass: 'settings__field', labelClass: 'settings__label', inputClass: 'settings__input' }
 
 /**
  * قسم «الحساب» — أول حاجة في الإعدادات (OVERRIDES §26، طلب المالك 2026-09-13).
  * يوم الراتب لكل مستخدم والفترات بتتحسب منه؛ الاسم والمرتب والنوع و«بيعول حد» اختياريين
  * (فاضي = «مش عايز أحدد»، مش صفر). تغيير كلمة السر بإيميل — التطبيق ما بيشوفش كلمة السر.
+ * المعلومات اللي بتظهر تصنيفات (سيارة، بتعول مين، إيجار، عمالة، شغل خاص) — OVERRIDES §28.1.
  * مكوّن مستقل عشان حد الـ300 سطر في SettingsScreen.
  */
 export function AccountCard({ user, onSaved }: { user: UserContainer; onSaved: () => void }) {
@@ -124,16 +127,25 @@ export function AccountCard({ user, onSaved }: { user: UserContainer; onSaved: (
           {errorFor('gender')}
         </label>
 
-        <label className="settings__field">
-          <span className="settings__label">بتعول حد؟ (اختياري)</span>
-          <select className="settings__input" value={profile.supportsDependents === null ? '' : profile.supportsDependents ? 'yes' : 'no'}
-            onChange={(e) => update({ supportsDependents: e.target.value === '' ? null : e.target.value === 'yes' })}>
-            <option value="">مش عايز أحدد</option>
-            <option value="yes">أيوه</option>
-            <option value="no">لأ</option>
-          </select>
-          {errorFor('supportsDependents')}
-        </label>
+        <YesNoField {...FIELD} label="بتعول حد؟ (اختياري)" value={profile.supportsDependents}
+          onChange={(supportsDependents) => update({ supportsDependents })} />
+        {errorFor('supportsDependents')}
+        {profile.supportsDependents === true && (
+          <DependentKindsField fieldClass={FIELD.fieldClass} labelClass={FIELD.labelClass} value={profile.dependentKinds}
+            gender={profile.gender} onChange={(dependentKinds) => update({ dependentKinds })} />
+        )}
+        {errorFor('dependentKinds')}
+
+        <p className="settings__hint">الإجابات دي بتظهر التصنيفات اللي تخصك بس. أي سؤال سايبه فاضي، تصنيفاته بتفضل مخفية.</p>
+        <YesNoField {...FIELD} label="عندك سيارة؟" value={profile.hasCar} onChange={(hasCar) => update({ hasCar })} />
+        {errorFor('hasCar')}
+        <YesNoField {...FIELD} label="ساكن بإيجار؟" value={profile.renter} onChange={(renter) => update({ renter })} />
+        {errorFor('renter')}
+        <YesNoField {...FIELD} label="عندك عمالة منزلية؟" value={profile.domesticWorker}
+          onChange={(domesticWorker) => update({ domesticWorker })} />
+        {errorFor('domesticWorker')}
+        <YesNoField {...FIELD} label="عندك شغل خاص أو بيزنس؟" value={profile.business} onChange={(business) => update({ business })} />
+        {errorFor('business')}
 
         <button type="button" className="btn" onClick={() => void save()} disabled={busy !== 'none'}>
           {busy === 'save' ? 'بنحفظ…' : 'احفظ بيانات الحساب'}

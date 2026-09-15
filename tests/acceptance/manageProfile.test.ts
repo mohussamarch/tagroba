@@ -45,7 +45,7 @@ describe('ملف المستخدم — حالة الاستخدام', () => {
     expect(parseStoredProfile({ displayName: 42, salaryMinor: -5, payday: 99, gender: 'x', supportsDependents: 'yes', onboardedAt: '' }))
       .toEqual(emptyProfile())
     expect(parseStoredProfile({ displayName: 'منى', salaryMinor: 900000, payday: 1, gender: 'female', supportsDependents: false, onboardedAt: 't' }))
-      .toEqual({ displayName: 'منى', salaryMinor: 900000, payday: 1, gender: 'female', supportsDependents: false, onboardedAt: 't' })
+      .toEqual({ ...emptyProfile(), displayName: 'منى', salaryMinor: 900000, payday: 1, gender: 'female', supportsDependents: false, onboardedAt: 't' })
   })
 
   it('أسئلة البداية لأي حساب ما خلصهاش: من غير ملف، أو ملف متحفظ من قسم الحساب — وبعد الإنهاء ما تظهرش تاني', async () => {

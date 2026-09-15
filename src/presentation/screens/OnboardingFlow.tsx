@@ -4,19 +4,22 @@ import type { OnboardingStart, OnboardingStep, OpeningDebtInput } from '../../ap
 import { formatAmount } from '../../domain/formatMoney'
 import { tryParseMoney } from '../../domain/money'
 import { emptyProfile, type Gender, type UserProfile } from '../../domain/userProfile'
+import { DependentKindsField, YesNoField } from '../components/ProfileAnswerFields'
 import './OnboardingFlow.css'
 
 type DebtRow = { name: string; amount: string; kind: OpeningDebtInput['kind'] }
-const STEPS = ['name', 'salary', 'about', 'cash', 'debts'] as const
+const STEPS = ['name', 'salary', 'about', 'life', 'cash', 'debts'] as const
 type Step = typeof STEPS[number]
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 const FOR_RESULT: Record<OnboardingStep, Step> = { profile: 'salary', cash: 'cash', debts: 'debts' }
+const FIELD = { fieldClass: 'onboarding__field', inputClass: 'settings__input' }
 
 const asInput = (minor: number) => formatAmount(minor, 'SAR', { grouping: false })
 
 /**
  * أسئلة البداية لأي حساب ما خلصهاش — OVERRIDES §26–27. شاشة كاملة بخطوات؛ الاختياري ممكن يتساب فاضي.
  * الخانات بتبدأ بالموجود فعلًا (`onboarding.start`)، فحساب قديم ما يتكتبش فوق بياناته بقيم فاضية.
+ * خطوة «حياتك» + «بتعول مين» بيظهروا التصنيفات اللي تخص الشخص بس (OVERRIDES §28.1).
  * الشاشة ما بتحسبش ولا بتكتب: بتجمع الإجابات وتنادي `onboarding.finish` مرة واحدة في الآخر.
  */
 export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: () => void }) {
@@ -132,13 +135,20 @@ export function OnboardingFlow({ user, onDone }: { user: UserContainer; onDone: 
               <option value="">مش عايز أحدد</option><option value="male">ذكر</option><option value="female">أنثى</option>
             </select>
           </label>
-          <label className="onboarding__field">
-            <span>بتعول حد؟</span>
-            <select className="settings__input" value={profile.supportsDependents === null ? '' : profile.supportsDependents ? 'yes' : 'no'}
-              onChange={(e) => update({ supportsDependents: e.target.value === '' ? null : e.target.value === 'yes' })}>
-              <option value="">مش عايز أحدد</option><option value="yes">أيوه</option><option value="no">لأ</option>
-            </select>
-          </label>
+          <YesNoField {...FIELD} label="بتعول حد؟" value={profile.supportsDependents} onChange={(supportsDependents) => update({ supportsDependents })} />
+          {profile.supportsDependents === true && (
+            <DependentKindsField fieldClass={FIELD.fieldClass} value={profile.dependentKinds} gender={profile.gender}
+              onChange={(dependentKinds) => update({ dependentKinds })} />
+          )}
+        </>}
+
+        {step === 'life' && <>
+          <h2 className="onboarding__title">حياتك (اختياري)</h2>
+          <p className="onboarding__hint">الإجابات دي بتظهر التصنيفات اللي تخصك بس. أي سؤال تسيبه فاضي، تصنيفاته بتفضل مخفية لحد ما تجاوبه من الإعدادات.</p>
+          <YesNoField {...FIELD} label="عندك سيارة؟" value={profile.hasCar} onChange={(hasCar) => update({ hasCar })} />
+          <YesNoField {...FIELD} label="ساكن بإيجار؟" value={profile.renter} onChange={(renter) => update({ renter })} />
+          <YesNoField {...FIELD} label="عندك عمالة منزلية؟" value={profile.domesticWorker} onChange={(domesticWorker) => update({ domesticWorker })} />
+          <YesNoField {...FIELD} label="عندك شغل خاص أو بيزنس؟" value={profile.business} onChange={(business) => update({ business })} />
         </>}
 
         {step === 'cash' && <>
