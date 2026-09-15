@@ -9,6 +9,8 @@ import type { IdPatch, StoredData } from './idRepair'
  *
  * **دالة قراءة بس** — مش بتكتب حاجة. بترجع:
  * - `create`: تصنيفات الشجرة اللي مش موجودة في الحساب (بالمعرّف).
+ * - `update`: تصنيفات موجودة بنفس معرّف الشجرة، ياخدوا مجموعتها ورمزها وألوانها وشروط ظهورها **والاسم و`active` زي ما هم**
+ *   (§28: «يضيف الفروع والرموز والألوان الجديدة، من غير تغيير اسم تصنيف عدّله»).
  * - `moves`: كل تصنيف قديم اتدمج ← وجهته، ومعاه عدد العمليات والقواعد والتجار وسقوف الميزانية اللي هتتنقل.
  * - `patches`: تعديل حقل التصنيف بس (`categoryId` / `verifiedCategoryId`) — **ولا تأكيد ولا مبلغ ولا تاريخ بيتلمس**.
  * - `ambiguous`: اسم قديم ليه أكتر من وجهة («تأمين») — **ما بيتنقلش** وبيتسأل عنه المالك بالأعداد.
@@ -35,6 +37,7 @@ export interface CategoryMove extends MoveCounts {
 
 export interface CategoryMigrationPlan {
   create: Category[]
+  update: { id: Id; name: string; category: Category }[]
   moves: CategoryMove[]
   patches: IdPatch[]
   ambiguous: (MoveCounts & { id: Id; name: string })[]
@@ -72,6 +75,22 @@ export function planCategoryMigration(
   const treeById = new Map(tree.categories.map((c) => [c.id, c]))
 
   const create = tree.categories.filter((c) => !accountIds.has(c.id))
+
+  const TREE_FIELDS = ['parentId', 'groupKey', 'iconKey', 'lightColor', 'darkColor', 'requires', 'noCarName', 'noCarIconKey'] as const
+  const update = stored.categories.flatMap((row) => {
+    const target = treeById.get(row.docId)
+    if (!target) return []
+    const differs = TREE_FIELDS.some((field) => (row.data[field] ?? null) !== (target[field] ?? null))
+    if (!differs) return []
+    const current = row.data as Partial<Category>
+    const category: Category = {
+      ...target,
+      name: typeof current.name === 'string' && current.name ? current.name : target.name,
+      active: typeof current.active === 'boolean' ? current.active : target.active,
+      order: typeof current.order === 'number' ? current.order : target.order,
+    }
+    return [{ id: row.docId, name: category.name, category }]
+  })
 
   // تصنيف قديم (من المرجع) اسمه اتغير في الشجرة ⇒ وجهة واحدة أو غامض
   const destination = new Map<Id, Id>()
@@ -127,14 +146,18 @@ export function planCategoryMigration(
   }
 
   const nameOf = (id: Id) => accountCategories.find((c) => c.id === id)?.name ?? id
-  const moves: CategoryMove[] = [...destination.entries()].map(([fromId, toId]) => ({
-    fromId, fromName: nameOf(fromId), toId, toName: treeById.get(toId)!.name,
-    ...(counts.get(fromId) ?? { transactions: 0, rules: 0, merchants: 0, budgets: 0 }),
+  const empty: MoveCounts = { transactions: 0, rules: 0, merchants: 0, budgets: 0 }
+  const total = (c: MoveCounts) => c.transactions + c.rules + c.merchants + c.budgets
+  // تصنيف قديم اتخفى خلاص ومفيش حاجة عليه ⇒ النقل خلص، ما يتعرضش تاني
+  const hidden = new Set(stored.categories.filter((row) => row.data.active === false).map((row) => row.docId))
+  const pending = (id: Id) => !hidden.has(id) || total(counts.get(id) ?? empty) > 0
+  const moves: CategoryMove[] = [...destination.entries()].filter(([fromId]) => pending(fromId)).map(([fromId, toId]) => ({
+    fromId, fromName: nameOf(fromId), toId, toName: treeById.get(toId)!.name, ...(counts.get(fromId) ?? empty),
   }))
-  const ambiguous = [...ambiguousIds].map((id) => ({
-    id, name: nameOf(id), ...(counts.get(id) ?? { transactions: 0, rules: 0, merchants: 0, budgets: 0 }),
+  const ambiguous = [...ambiguousIds].filter(pending).map((id) => ({
+    id, name: nameOf(id), ...(counts.get(id) ?? empty),
   }))
   const untouched = accountCategories.filter((c) => !legacyIds.has(c.id) && !treeById.has(c.id))
 
-  return { create, moves, patches, ambiguous, untouched, budgetConflicts }
+  return { create, update, moves, patches, ambiguous, untouched, budgetConflicts }
 }

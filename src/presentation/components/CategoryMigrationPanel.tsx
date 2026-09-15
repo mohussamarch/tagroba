@@ -29,7 +29,7 @@ export function CategoryMigrationPanel({ user, onDone }: { user: UserContainer; 
     setBusy(true); setMessage('')
     try {
       const result = await user.migrateCategories.preview(choices)
-      const nothing = result.create.length === 0 && result.patches.length === 0 && result.moves.length === 0 && result.ambiguous.length === 0
+      const nothing = result.create.length === 0 && result.update.length === 0 && result.patches.length === 0 && result.moves.length === 0 && result.ambiguous.length === 0
       if (nothing) { setPreview(null); setMessage('حسابك على شجرة التصنيفات الجديدة — مفيش حاجة تتنقل.') }
       else setPreview(result)
     } catch (error) {
@@ -56,7 +56,7 @@ export function CategoryMigrationPanel({ user, onDone }: { user: UserContainer; 
           ? 'النسخة اتبعتت لتنزيلات المتصفح (المتصفح مش بيأكد حجمها). '
           : `النسخة اتحفظت (${kb(saved.bytes)}) في ${shortPath(saved.location)}. `
         : '')
-        + `اتضاف ${outcome.created} تصنيف، واتنقل ${outcome.written} مستند، واتخفى ${outcome.hidden} تصنيف قديم.`
+        + `اتضاف ${outcome.created} تصنيف، واتحدث ${outcome.updated} تصنيف موجود، واتنقل ${outcome.written} مستند، واتخفى ${outcome.hidden} تصنيف قديم.`
         + (outcome.skipped ? ` و${outcome.skipped} اتغيروا بعد المعاينة فما اتلمسوش — افحص تاني.` : ''))
       setPreview(null)
       onDone()
@@ -80,7 +80,8 @@ export function CategoryMigrationPanel({ user, onDone }: { user: UserContainer; 
       {message && <p className="notice" role="status">{message}</p>}
       {preview && <>
         <p>المعاينة بس — لسه ما اتكتبش حاجة.</p>
-        <p>هيتضاف {preview.create.length} تصنيف (أساسي وفرعي) ناقصين. تصنيفاتك اللي اسمها ما اتغيرش بتفضل زي ما هي.</p>
+        <p>هيتضاف {preview.create.length} تصنيف (أساسي وفرعي) ناقصين.</p>
+        {preview.update.length > 0 && <p>هياخد {preview.update.length} تصنيف موجود مجموعته ورمزه ولونه الجديد — اسمه وظهوره زي ما هم.</p>}
         {preview.moves.length > 0 && <>
           <p>التصنيفات القديمة اللي اتدمجت، وهتتخفي بعد النقل (مش هتتمسح):</p>
           <ul>

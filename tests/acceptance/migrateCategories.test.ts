@@ -49,7 +49,8 @@ describe('نقل التصنيفات على الحساب', () => {
     const s = system()
     const plan = await s.migrate.preview()
     const outcome = await s.migrate.apply(plan)
-    expect(outcome).toMatchObject({ created: plan.create.length, written: plan.patches.length, skipped: 0 })
+    expect(outcome).toMatchObject({ created: plan.create.length, updated: plan.update.length, written: plan.patches.length, skipped: 0 })
+    expect(plan.update.length).toBeGreaterThan(0)
     expect(outcome.backup?.fileName).toMatch(/^masroufy-before-category-move-/)
 
     const after = s.store.snapshot()
@@ -61,7 +62,7 @@ describe('نقل التصنيفات على الحساب', () => {
     expect(stored.find((c) => c.id === homeId)).toMatchObject({ name: 'المنزل', groupKey: 'home' })
     expect(stored.find((c) => c.id === idOf('فواتير ومرافق'))?.active).toBe(false)
     expect(stored.find((c) => c.id === idOf('تأمين'))?.active).toBe(true) // الغامض بيفضل ظاهر
-    expect(stored.find((c) => c.id === idOf('مطاعم وقهوة'))?.active).toBe(true)
+    expect(stored.find((c) => c.id === idOf('مطاعم وقهوة'))).toMatchObject({ active: true, name: 'مطاعم وقهوة', groupKey: 'food' })
     expect(outcome.hidden).toBe(plan.moves.length)
 
     const backupContent = JSON.parse([...s.backup.files.values()][0])
@@ -108,6 +109,7 @@ describe('نقل التصنيفات على الحساب', () => {
     const second = await migrate.preview()
     expect(second.create).toEqual([])
     expect(second.patches).toEqual([])
-    expect(await migrate.apply(second)).toEqual({ created: 0, written: 0, hidden: 0, skipped: 0, backup: null })
+    expect(second.update).toEqual([])
+    expect(await migrate.apply(second)).toEqual({ created: 0, updated: 0, written: 0, hidden: 0, skipped: 0, backup: null })
   })
 })

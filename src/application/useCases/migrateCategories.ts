@@ -9,6 +9,8 @@ import { saveVerifiedBackup, type VerifiedBackup } from './verifiedBackup'
 
 export interface CategoryMigrationOutcome {
   created: number
+  /** تصنيفات موجودة خدت مجموعتها ورمزها وألوانها (اسمها زي ما هو). */
+  updated: number
   written: number
   hidden: number
   /** تعديلات اتغيرت على الخادم بعد المعاينة فاتخطت. */
@@ -63,24 +65,27 @@ export function makeMigrateCategories(deps: MigrateCategoriesDeps) {
     const skipped = fresh.patches.length - patches.length
     const approvedCreate = new Set(previewed.create.map((c) => c.id))
     const create = fresh.create.filter((c) => approvedCreate.has(c.id))
+    const approvedUpdate = new Set(previewed.update.map((u) => u.id))
+    const update = fresh.update.filter((u) => approvedUpdate.has(u.id))
     const approvedMoves = new Set(previewed.moves.map((m) => `${m.fromId}>${m.toId}`))
     const hideIds = fresh.moves.filter((m) => approvedMoves.has(`${m.fromId}>${m.toId}`)).map((m) => m.fromId)
 
     const current = await deps.categories.listAll()
     const toHide = current.filter((c) => hideIds.includes(c.id) && c.active)
-    if (patches.length === 0 && create.length === 0 && toHide.length === 0) {
-      return { created: 0, written: 0, hidden: 0, skipped, backup: null }
+    if (patches.length === 0 && create.length === 0 && update.length === 0 && toHide.length === 0) {
+      return { created: 0, updated: 0, written: 0, hidden: 0, skipped, backup: null }
     }
 
     const touched = new Set(patches.map(patchKey))
     const before = [
       ...Object.entries(stored).flatMap(([group, rows]) =>
         rows.filter((row) => touched.has(`${group}/${row.docId}`)).map((row) => ({ group, ...row }))),
-      ...toHide.map((category) => ({ group: 'categories', docId: category.id, data: category })),
+      ...[...toHide, ...current.filter((c) => update.some((u) => u.id === c.id))].map((category) => ({ group: 'categories', docId: category.id, data: category })),
     ]
     const saved = await saveVerifiedBackup(deps.backup, deps.clock, 'before-category-move', before)
 
     for (const category of create) await deps.categories.save(category)
+    for (const { category } of update) await deps.categories.save(category)
 
     let written = 0
     onProgress?.({ written, total: patches.length })
@@ -96,7 +101,7 @@ export function makeMigrateCategories(deps: MigrateCategoriesDeps) {
 
     for (const category of toHide) await deps.categories.save({ ...category, active: false })
 
-    return { created: create.length, written, hidden: toHide.length, skipped, backup: saved }
+    return { created: create.length, updated: update.length, written, hidden: toHide.length, skipped, backup: saved }
   }
 
   return { preview, apply }

@@ -92,10 +92,36 @@ describe('خطة نقل الحساب القديم', () => {
       Object.assign(row.data, patch.fields)
     }
     for (const c of plan.create) account.categories.push({ docId: c.id, data: { ...c } })
+    for (const u of plan.update) account.categories.find((r) => r.docId === u.id)!.data = { ...u.category }
     const again = planCategoryMigration(account, built, legacyNames)
     expect(again.create).toEqual([])
+    expect(again.update).toEqual([])
     expect(again.patches).toEqual([])
     expect(again.moves.every((m) => m.transactions + m.rules + m.merchants + m.budgets === 0)).toBe(true)
+
+    // بعد إخفاء المدموج (آخر خطوة في التطبيق) الفحص ما بيعرضش نقل فاضي ولا الغامض المخفي
+    const moved = new Set([...plan.moves.map((m) => m.fromId), idOf('تأمين')])
+    for (const row of account.categories) if (moved.has(row.docId)) row.data.active = false
+    const t6 = account.transactions.find((r) => r.docId === 't6')!
+    const r2 = account.rules.find((r) => r.docId === 'r2')!
+    t6.data.categoryId = newId('السيارة', 'تأمين السيارة'); r2.data.categoryId = newId('السيارة', 'تأمين السيارة')
+    const done = planCategoryMigration(account, built, legacyNames)
+    expect(done).toMatchObject({ create: [], moves: [], patches: [], ambiguous: [] })
+    // لو حاجة رجعت على تصنيف قديم مخفي، بيظهر تاني عشان يتنقل
+    t6.data.categoryId = idOf('تأمين')
+    expect(planCategoryMigration(account, built, legacyNames).ambiguous.map((a) => a.transactions)).toEqual([1])
+  })
+
+  it('التصنيف الموجود بنفس المعرّف بياخد مجموعة الشجرة ورمزها وألوانها، واسمه اللي المستخدم غيّره بيفضل', () => {
+    const account = oldAccount()
+    const food = account.categories.find((r) => r.docId === idOf('مطاعم وقهوة'))!
+    food.data.name = 'أكل برا'
+    food.data.active = false
+    const result = planCategoryMigration(account, built, legacyNames)
+    const item = result.update.find((u) => u.id === idOf('مطاعم وقهوة'))!
+    const target = built.categories.find((c) => c.id === idOf('مطاعم وقهوة'))!
+    expect(item.category).toMatchObject({ name: 'أكل برا', active: false, groupKey: 'food', iconKey: target.iconKey, lightColor: target.lightColor, darkColor: target.darkColor })
+    expect(result.update.some((u) => u.id === idOf('فواتير ومرافق'))).toBe(false) // مش في الشجرة ⇒ ده نقل مش تحديث
   })
 
   it('اختيار المستخدم لوجهة الغامض بيحوّله نقل عادي، ووجهة مش في الشجرة بتتجاهل', () => {
