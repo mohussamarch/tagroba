@@ -252,7 +252,7 @@ export function createContainer(): Container {
         }),
         restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),
         merchantLogos: createMerchantLogos({ clientId: import.meta.env.VITE_BRANDFETCH_CLIENT_ID as string | undefined }),
-        loadCashSummary: makeLoadCashSummary({ wallets, txns, allocations }),
+        loadCashSummary: makeLoadCashSummary({ wallets, txns, allocations, categories }),
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),
         exportBackup: makeExportBackup({

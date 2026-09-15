@@ -1,7 +1,9 @@
-/* كارت الكاش — OVERRIDES §32 */
-.cashCard {
+/* كارت الكاش — OVERRIDES §32.
+   `.card.cashCard` مش `.cashCard` بس: قاعدة `.card` العامة كانت بتغلب وتخلي المحتوى تحت بعض (اتشاف على المحاكي 1.34). */
+.card.cashCard {
   width: 100%;
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
   text-align: start;

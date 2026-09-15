@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { summarizeCash } from '../../src/domain/cashSummary'
 import { makeLoadCashSummary } from '../../src/application/useCases/loadCashSummary'
-import { MemoryAllocationRepository, MemoryTransactionRepository, MemoryWalletRepository } from '../../src/infrastructure/memory/memoryRepositories'
+import { MemoryAllocationRepository, MemoryCategoryRepository, MemoryTransactionRepository, MemoryWalletRepository } from '../../src/infrastructure/memory/memoryRepositories'
 import { buildPeriod } from '../../src/domain/period'
 import { parseMoney } from '../../src/domain/money'
 import type { Transaction, Wallet } from '../../src/domain/entities/types'
@@ -45,7 +45,7 @@ describe('ملخص الكاش', () => {
   })
 
   it('حساب من غير محفظة كاش ⇒ null مش صفر', async () => {
-    const load = makeLoadCashSummary({ wallets: new MemoryWalletRepository(), txns: new MemoryTransactionRepository(), allocations: new MemoryAllocationRepository() })
+    const load = makeLoadCashSummary({ wallets: new MemoryWalletRepository(), txns: new MemoryTransactionRepository(), allocations: new MemoryAllocationRepository(), categories: new MemoryCategoryRepository() })
     expect(await load({ period, today: '2026-09-15' })).toBeNull()
   })
 })
