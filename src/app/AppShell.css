@@ -19,11 +19,19 @@
   gap: 8px;
 }
 
+/* اسم التطبيق — OVERRIDES §32: خط «تشانجا» المضلّع، كبير بعرض نص الرأس تقريبًا، بلون التطبيق، ومش بيتداس */
 .shell__title {
-  font-size: var(--t-title);
-  font-weight: 700;
+  font-family: 'Changa', var(--font-body, system-ui), sans-serif;
+  font-size: 2.375rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--c-action);
   margin: 0;
   min-width: 0;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .shell__actions {
@@ -104,5 +112,5 @@
 
 @media (max-width: 360px) {
   .shell__head, .shell__body { padding-inline: var(--s-page-compact); }
-  .shell__title { font-size: 1.1875rem; } /* 19 في العرض الضيق — spec/04 */
+  .shell__title { font-size: 2rem; } /* أصغر شوية في العرض الضيق — الاسم بخط تشانجا (OVERRIDES §32) */
 }
