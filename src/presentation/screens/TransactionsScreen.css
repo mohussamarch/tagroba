@@ -161,7 +161,7 @@
 /* ملخص الفترة: ثلاث خانات متساوية — spec/04 */
 .metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-metric-gap);
 }
 
@@ -292,3 +292,8 @@
 }
 
 /* الصف القابل للفتح: زر يغطيه كله، فالنقر ولوحة المفاتيح يشتغلوا */
+
+/* OVERRIDES §31: الكلام جنبه علامة مرسومة، والصادر بالأحمر */
+.metric__label { display: inline-flex; align-items: center; gap: 6px; }
+.metric__label svg { flex: none; color: var(--c-action); }
+.txns__dayTotal--out { color: var(--c-outgoing); font-weight: 700; }

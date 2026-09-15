@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { buildPeriod, type Period } from '../../domain/period'
+import { buildPeriod, periodForDate, periodIndex, shiftPeriodWithin, type Period } from '../../domain/period'
 import './PeriodPicker.css'
 
 export const MONTH_NAMES = [
@@ -40,11 +40,13 @@ interface Props {
 export function PeriodPicker({ period, payday, onChange }: Props) {
   const [open, setOpen] = useState(false)
   const [year, month] = period.key.split('-').map(Number)
+  // OVERRIDES §31: آخر شهر مسموح هو الفترة المالية الحالية (بتاريخ الجوال المحلي)
+  const now = new Date()
+  const latest = periodForDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`, payday)
+  const maxIndex = periodIndex(latest)
+  const atLatest = periodIndex(period) >= maxIndex
 
-  const shift = (delta: number) => {
-    const total = year * 12 + (month - 1) + delta
-    onChange(buildPeriod(Math.floor(total / 12), (total % 12) + 1, payday))
-  }
+  const shift = (delta: number) => onChange(shiftPeriodWithin(period, delta, latest, payday))
 
   return (
     <div className="periodPicker">
@@ -64,7 +66,7 @@ export function PeriodPicker({ period, payday, onChange }: Props) {
           <span className="periodPicker__range">{shortRange(period)}</span>
         </button>
 
-        <button type="button" className="periodPicker__arrow" onClick={() => shift(1)} aria-label="الشهر الجاي">
+        <button type="button" className="periodPicker__arrow" onClick={() => shift(1)} aria-label="الشهر الجاي" disabled={atLatest}>
           <ChevronLeft size={22} aria-hidden="true" />
         </button>
       </div>
@@ -72,7 +74,7 @@ export function PeriodPicker({ period, payday, onChange }: Props) {
       {open && (
         <div className="periodPicker__panel">
           <div className="periodPicker__years">
-            <button type="button" className="periodPicker__yearBtn" onClick={() => shift(12)}>
+            <button type="button" className="periodPicker__yearBtn" onClick={() => shift(12)} disabled={(year + 1) * 12 > maxIndex}>
               {year + 1}
             </button>
             <span className="periodPicker__yearCurrent">{year}</span>
@@ -90,6 +92,7 @@ export function PeriodPicker({ period, payday, onChange }: Props) {
                   type="button"
                   className={`periodPicker__monthBtn${isCurrent ? ' periodPicker__monthBtn--on' : ''}`}
                   aria-current={isCurrent ? 'true' : undefined}
+                  disabled={year * 12 + index > maxIndex}
                   onClick={() => {
                     onChange(buildPeriod(year, index + 1, payday))
                     setOpen(false)

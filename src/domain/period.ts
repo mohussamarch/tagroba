@@ -187,3 +187,18 @@ export function remainingDaysInPeriod(today: IsoDate, period: Period): number {
 export function formatPeriodRange(period: Period): string {
   return `${period.start} ← ${period.end}`
 }
+
+/** ترتيب الفترة كرقم (سنة × 12 + الشهر) — للمقارنة بين الفترات بس. */
+export function periodIndex(period: Period): number {
+  const [year, month] = period.key.split('-').map(Number)
+  return year * 12 + (month - 1)
+}
+
+/**
+ * الفترة بعد إزاحة شهور، **من غير ما تعدّي آخر فترة مسموحة** — OVERRIDES §31:
+ * منتقي الشهر ما يروحش للمستقبل، وآخره الفترة المالية الحالية.
+ */
+export function shiftPeriodWithin(period: Period, delta: number, latest: Period, payday = DEFAULT_PAYDAY): Period {
+  const target = Math.min(periodIndex(period) + delta, periodIndex(latest))
+  return buildPeriod(Math.floor(target / 12), (target % 12) + 1, payday)
+}

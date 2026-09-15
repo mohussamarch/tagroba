@@ -25,7 +25,8 @@ export function createMerchantLogos(options: {
       const source = logoSourceFor(merchantName, index, { onlineEnabled: !!clientId, bundledFiles })
       if (!source) return undefined
       if (source.kind === 'bundled') return files.get(source.file)
-      return `https://cdn.brandfetch.io/domain/${encodeURIComponent(source.domain)}?c=${encodeURIComponent(clientId!)}`
+      // fallback=404: لو مالقوش شعار المحل يرجعوا خطأ بدل شعارهم البديل، فالصف يرجع لرمز التصنيف (OVERRIDES §31)
+      return `https://cdn.brandfetch.io/domain/${encodeURIComponent(source.domain)}?c=${encodeURIComponent(clientId!)}&fallback=404`
     },
   }
 }

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { TrendingUp, Wallet } from 'lucide-react'
 import { TransactionRow } from '../components/TransactionRow'
 import { PeriodPicker, MONTH_NAMES } from '../components/PeriodPicker'
 import { groupByDay } from '../../domain/dayGroups'
@@ -141,21 +142,14 @@ export function TransactionsScreen({
         <>
           {/* الخانات الثلاث بالترتيب RTL، ولا تختفي أي خانة — spec/04 */}
           <div className="metrics metrics--compact">
-            <Metric label="الدخل" amount={data.incomeMinor} hidden={amountsHidden} tone="in" />
+            <Metric label="الدخل" icon={<TrendingUp size={14} aria-hidden="true" />} amount={data.incomeMinor} hidden={amountsHidden} tone="in" />
             <Metric
               label="المتبقي"
+              icon={<Wallet size={14} aria-hidden="true" />}
               amount={data.remainingMinor}
               hidden={amountsHidden}
               tone={data.remainingMinor !== null && data.remainingMinor < 0 ? 'out' : 'none'}
             />
-            <div className="metric">
-              <span className="metric__label">معدل الادخار</span>
-              <span className="metric__value">
-                {data.savingsRatePercent === null
-                  ? NOT_AVAILABLE
-                  : `${data.savingsRatePercent.toFixed(1)}%`}
-              </span>
-            </div>
           </div>
 
           {/* لا رقم بلا مصدر (CLAUDE.md #10): السطر يقول ليه الخانات غير متاحة */}
@@ -219,7 +213,7 @@ export function TransactionsScreen({
             <section key={group.date} className="txns__day" aria-label={dayLabel(group.date)}>
               <div className="txns__dayHead">
                 <span className="txns__dayName">{dayLabel(group.date)}</span>
-                <span className="txns__dayTotal num">
+                <span className={`txns__dayTotal num${amountsHidden ? '' : ' txns__dayTotal--out'}`}>
                   {amountsHidden ? '••••' : `−${formatAmount(group.outgoingMinor)}`}
                 </span>
               </div>
@@ -255,11 +249,14 @@ export function TransactionsScreen({
  */
 function Metric({
   label,
+  icon,
   amount,
   hidden,
   tone,
 }: {
   label: string
+  /** علامة مرسومة جنب التسمية — OVERRIDES §31. */
+  icon: ReactNode
   amount: number | null
   hidden: boolean
   tone: 'in' | 'out' | 'none'
@@ -272,7 +269,7 @@ function Metric({
         : ' metric__value--out'
   return (
     <div className="metric">
-      <span className="metric__label">{label}</span>
+      <span className="metric__label">{icon}{label}</span>
       <span className={`metric__value${amount === null ? '' : ' num'}${toneClass}`}>
         {amount === null ? NOT_AVAILABLE : hidden ? '••••' : formatAmount(amount)}
       </span>

@@ -34,7 +34,7 @@ html:has(.sheet) { overflow: hidden; }
 }
 .loadingSkeleton__line { height: 32px; width: 44%; }
 .loadingSkeleton__hero { height: 156px; }
-.loadingSkeleton__metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.loadingSkeleton__metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 .loadingSkeleton__metrics > i { height: 80px; }
 @keyframes skeletonPulse { from { opacity: .45; } to { opacity: 1; } }
 .appSplash { min-height: 100dvh; display: grid; place-content: center; text-align: center; gap: 12px; }

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { CalendarDays, ChartLine, ListOrdered, Receipt, TrendingUp, Wallet } from 'lucide-react'
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
 import { GroupDistribution } from '../components/GroupDistribution'
@@ -69,8 +70,8 @@ export function HomeScreen({
           إعادة تصميم 2026-09-11: صندوق التنبيه بفقراته الثلاث اتشال، وبقى
           سطر واحد يتضغط يودّي لمراجعة الأنواع. */}
       <section className="card home__hero" aria-label="المصروف الشخصي">
-        <span className="home__heroLabel">المصروف الشخصي</span>
-        <span className={`home__heroValue${data.expenseMinor === null ? ' home__heroValue--na' : ' num'}`}>
+        <span className="home__heroLabel"><Receipt size={16} aria-hidden="true" />المصروف الشخصي</span>
+        <span className={`home__heroValue${data.expenseMinor === null ? ' home__heroValue--na' : ' num home__heroValue--out'}`}>
           {data.expenseMinor === null ? 'بانتظار المراجعة' : hide(data.expenseMinor)}
         </span>
         {/* الرقم الجزئي يُقال إنه جزئي، ولا يُعرض كأنه نهائي */}
@@ -96,6 +97,7 @@ export function HomeScreen({
         <div className="metrics home__metrics">
           <div className="metric">
             <span className="metric__label">
+              <TrendingUp size={14} aria-hidden="true" />
               الدخل{data.partial && data.incomeMinor !== null ? ' (ناقص)' : ''}
             </span>
             <span
@@ -105,7 +107,7 @@ export function HomeScreen({
             </span>
           </div>
           <div className="metric">
-            <span className="metric__label">المتبقي</span>
+            <span className="metric__label"><Wallet size={14} aria-hidden="true" />المتبقي</span>
             <span
               className={`metric__value${
                 data.remainingMinor === null
@@ -114,14 +116,6 @@ export function HomeScreen({
               }`}
             >
               {data.remainingMinor === null ? 'يحتاج مراجعة' : hide(data.remainingMinor)}
-            </span>
-          </div>
-          <div className="metric">
-            <span className="metric__label">معدل الادخار</span>
-            <span className="metric__value">
-              {data.savingsRatePercent === null
-                ? NOT_AVAILABLE
-                : `${data.savingsRatePercent.toFixed(1)}%`}
             </span>
           </div>
         </div>
@@ -140,7 +134,7 @@ export function HomeScreen({
       {/* المتاح اليومي والتوقع — كل واحد بسببه لو غير متاح */}
       <div className="home__pair">
         <section className="card home__box" aria-label="المتاح اليومي">
-          <span className="home__boxLabel">المتاح اليومي</span>
+          <span className="home__boxLabel"><CalendarDays size={14} aria-hidden="true" />المتاح اليومي</span>
           <span className={`home__boxValue${data.allowance.amountMinor === null ? '' : ' num'}`}>
             {data.allowance.amountMinor === null
               ? NOT_AVAILABLE
@@ -152,7 +146,7 @@ export function HomeScreen({
         </section>
 
         <section className="card home__box" aria-label="توقع نهاية الفترة">
-          <span className="home__boxLabel">توقع نهاية الفترة</span>
+          <span className="home__boxLabel"><ChartLine size={14} aria-hidden="true" />توقع نهاية الفترة</span>
           <span className={`home__boxValue${data.forecast.projectedMinor === null ? '' : ' num'}`}>
             {data.forecast.projectedMinor === null
               ? NOT_AVAILABLE
@@ -168,7 +162,7 @@ export function HomeScreen({
       {/* أحدث العمليات */}
       <section className="card" aria-label="أحدث العمليات">
         <div className="card__head">
-          <h2 className="card__title">أحدث العمليات</h2>
+          <h2 className="card__title"><ListOrdered size={16} aria-hidden="true" />أحدث العمليات</h2>
           <button type="button" className="link" onClick={onOpenTransactions}>
             كلها
           </button>

@@ -1,3 +1,4 @@
+import { Bell, Eye, EyeOff, Settings } from 'lucide-react'
 import '../screens/NotificationsSheet.css'
 
 interface Props {
@@ -41,7 +42,7 @@ export function ShellHeader({
             onClick={onOpenNotifications}
             aria-label={unseenCount > 0 ? `الإشعارات، ${unseenCount} جديد` : 'الإشعارات'}
           >
-            <span aria-hidden="true">🔔</span>
+            <Bell size={20} aria-hidden="true" />
           </button>
           {/* العدّاد بيظهر بس لما يكون فيه جديد فعلًا */}
           {unseenCount > 0 && (
@@ -58,12 +59,12 @@ export function ShellHeader({
           aria-label={amountsHidden ? 'إظهار المبالغ' : 'إخفاء المبالغ'}
           aria-pressed={amountsHidden}
         >
-          <span aria-hidden="true">{amountsHidden ? '🙈' : '👁'}</span>
+          {amountsHidden ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
         </button>
 
         {onOpenSettings && (
           <button type="button" className="iconBtn" onClick={onOpenSettings} aria-label="الإعدادات">
-            <span aria-hidden="true">⚙️</span>
+            <Settings size={20} aria-hidden="true" />
           </button>
         )}
       </div>

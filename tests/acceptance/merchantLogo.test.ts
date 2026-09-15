@@ -38,7 +38,7 @@ describe('روابط الشعارات', () => {
   it('الملف ⇒ رابطه جوه التطبيق، والأونلاين ⇒ رابط براند فيتش المباشر بالدومين ورقم التعريف بس', () => {
     const logos = createMerchantLogos({ clientId: 'demo-id', entries, files: new Map([['demo-cafe.png', '/assets/demo-cafe.png']]) })
     expect(logos.urlFor('DEMO CAFE')).toBe('/assets/demo-cafe.png')
-    expect(logos.urlFor('Online Only')).toBe('https://cdn.brandfetch.io/domain/onlineonly.example?c=demo-id')
+    expect(logos.urlFor('Online Only')).toBe('https://cdn.brandfetch.io/domain/onlineonly.example?c=demo-id&fallback=404')
   })
 
   it('من غير رقم التعريف: مفيش أي رابط برا التطبيق', () => {

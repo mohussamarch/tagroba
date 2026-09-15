@@ -237,3 +237,8 @@
   color: var(--c-outgoing);
   font-size: var(--t-badge);
 }
+
+/* OVERRIDES §31: الكلام جنبه علامة مرسومة، والمصروف بالأحمر */
+.home__heroLabel, .home__boxLabel, .card__title { display: inline-flex; align-items: center; gap: 6px; }
+.home__heroLabel svg, .home__boxLabel svg, .card__title svg { flex: none; color: var(--c-action); }
+.home__heroValue--out { color: var(--c-outgoing); }

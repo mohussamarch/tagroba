@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import '../../app/AppShell.css'
 
 /** زر تبويب في الشريط السفلي — مستخرج من AppShell لحد الـ300 سطر. */
@@ -8,7 +9,8 @@ export function TabButton({
   onClick,
 }: {
   label: string
-  icon: string
+  /** علامة مرسومة بلون واحد (OVERRIDES §31) — مش حرف ولا إيموجي. */
+  icon: ReactNode
   active: boolean
   onClick: () => void
 }) {
