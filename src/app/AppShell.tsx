@@ -10,14 +10,13 @@ import { InvestmentScreen } from '../presentation/screens/InvestmentScreen'
 import { SettingsScreen } from '../presentation/screens/SettingsScreen'
 import { ImportSheet } from '../presentation/screens/ImportSheet'
 import { AddTransactionSheet } from '../presentation/screens/AddTransactionSheet'
-import { TransactionSheet } from '../presentation/screens/TransactionSheet'
+import { useTransactionActions } from './TransactionActions'
 import { AddMenu } from '../presentation/components/AddMenu'
 import { ShellTabs } from '../presentation/components/ShellTabs'
 import { ShellHeader } from '../presentation/components/ShellHeader'
 import { MoreScreen } from '../presentation/screens/MoreScreen'
 import { useTheme } from '../presentation/theme/useTheme'
 import { useAppData } from './useAppData'
-import type { Transaction } from '../domain/entities/types'
 import type { Container } from './container'
 import './AppShell.css'
 type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings' | 'more'
@@ -50,14 +49,13 @@ export function AppShell({
   const [smsOpen, setSmsOpen] = useState(false)
   const [kindsOpen, setKindsOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
-  const [linking, setLinking] = useState<Transaction | null>(null)
-  /** العملية المفتوحة للتفاصيل — التصنيف والملاحظة والوسوم. */
-  const [opened, setOpened] = useState<Transaction | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
   const [recurringOpen,setRecurringOpen] = useState(false)
   const [historyOpen,setHistoryOpen] = useState(false)
   const [categoriesOpen,setCategoriesOpen] = useState(false)
   const reload = () => void app.reload()
+  /** قايمة «النقط التلاتة» وأوراق العملية (OVERRIDES §30). */
+  const txnActions = useTransactionActions({ app, amountsHidden, reload })
   const unseenCount = app.notifications?.unseen.length ?? 0
   const signOut = () => {
     void (async () => {
@@ -119,6 +117,7 @@ export function AppShell({
             onRetry={reload}
             onOpenTransactions={() => setTab('transactions')}
             onFixKinds={() => {setKindsOpen(true);void app.ensure('transactions')}}
+            onTransactionMenu={txnActions.openMenu}
           />
         )}
         {tab === 'budget' && (
@@ -161,7 +160,8 @@ export function AppShell({
             onImport={() => setImportOpen(true)}
             onFixKinds={() => setKindsOpen(true)}
             onOpenHistory={() => setHistoryOpen(true)}
-            onOpenTransaction={setOpened}
+            onOpenTransaction={txnActions.openDetails}
+            onTransactionMenu={txnActions.openMenu}
             onRetry={reload}
           />
         )}
@@ -256,20 +256,7 @@ export function AppShell({
           }}
         />
       )}
-      {opened && (
-        <TransactionSheet
-          user={app.user}
-          transaction={opened}
-          categories={app.home?.categories ?? []}
-          onClose={() => setOpened(null)}
-          onChanged={reload}
-          onLinkPerson={() => {
-            void app.ensure('people')
-            setLinking(opened)
-            setOpened(null)
-          }}
-        />
-      )}
+      {txnActions.element}
       <ShellOverlays
         app={app}
         amountsHidden={amountsHidden}
@@ -287,11 +274,6 @@ export function AppShell({
             recurring: setRecurringOpen, rules: setRulesOpen,
             notifications: setNotifOpen, kinds: setKindsOpen }
           setters[key](false)
-        }}
-        linking={linking}
-        onCloseLinking={(linked) => {
-          setLinking(null)
-          if (linked) reload()
         }}
       />
     </div>

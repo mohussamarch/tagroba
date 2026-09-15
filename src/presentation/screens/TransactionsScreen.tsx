@@ -22,6 +22,8 @@ interface Props {
   onFixKinds: () => void
   onOpenHistory: () => void
   onOpenTransaction: (transaction: TransactionsScreenData["transactions"][number]) => void
+  /** قايمة «النقط التلاتة» لعملية — OVERRIDES §30. */
+  onTransactionMenu?: (transaction: TransactionsScreenData["transactions"][number]) => void
   onRetry: () => void
 }
 
@@ -54,6 +56,7 @@ export function TransactionsScreen({
   onFixKinds,
   onOpenHistory,
   onOpenTransaction,
+  onTransactionMenu,
   onRetry,
 }: Props) {
   const [rawQuery, setRawQuery] = useState('')
@@ -224,6 +227,7 @@ export function TransactionsScreen({
                     amountsHidden,
                     onOpen: () => onOpenTransaction(t),
                   }
+                  if (onTransactionMenu) props.onMenu = () => onTransactionMenu(t)
                   const category = t.categoryId ? categoryById.get(t.categoryId) : undefined
                   if (category?.name) props.categoryName = category.name
                   if (category?.lightColor) props.categoryColor = category.lightColor

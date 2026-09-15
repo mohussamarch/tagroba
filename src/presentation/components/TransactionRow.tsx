@@ -17,6 +17,8 @@ interface Props {
   amountsHidden?: boolean
   /** يُمرَّر حين يكون الصف قابلًا للفتح. */
   onOpen?: () => void
+  /** قايمة «النقط التلاتة» لإعدادات العملية — OVERRIDES §30. */
+  onMenu?: () => void
 }
 
 /**
@@ -39,6 +41,7 @@ export function TransactionRow({
   categoryIconKey,
   amountsHidden = false,
   onOpen,
+  onMenu,
 }: Props) {
   const isIncoming = transaction.observedDirection === 'in'
   const name = transaction.rawMerchantName?.trim() || transaction.rawDescription?.trim() || 'بلا اسم'
@@ -66,7 +69,7 @@ export function TransactionRow({
     : undefined
 
   return (
-    <li className={`row${onOpen ? ' row--clickable' : ''}`}>
+    <li className={`row${onOpen ? ' row--clickable' : ''}${onMenu ? ' row--menu' : ''}`}>
       {/* زر يغطي الصف: الفتح بالنقر وبلوحة المفاتيح معًا */}
       {onOpen && (
         <button
@@ -114,6 +117,13 @@ export function TransactionRow({
           ريال سعودي، {directionLabel}
         </span>
       </div>
+
+      {/* «النقط التلاتة» على شمال العملية — OVERRIDES §30. فوق زر فتح الصف عشان الدوسة ما تفتحش التفاصيل */}
+      {onMenu && (
+        <button type="button" className="row__menu" onClick={onMenu} aria-label={`خيارات ${name}`}>
+          <span aria-hidden="true">⋯</span>
+        </button>
+      )}
     </li>
   )
 }

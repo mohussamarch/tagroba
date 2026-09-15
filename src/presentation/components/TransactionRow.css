@@ -82,3 +82,29 @@
 }
 
 .row__hit:focus-visible { outline: 2px solid var(--c-action); outline-offset: 2px; }
+
+/* «النقط التلاتة» — عمود رابع على شمال الصف (OVERRIDES §30) */
+.row--menu {
+  grid-template-columns: 40px 1fr auto var(--touch-min);
+  padding-inline-end: 4px;
+  position: relative;
+}
+
+.row__menu {
+  position: relative;
+  z-index: 1;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--c-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.row__menu:hover { background: var(--c-soft); color: var(--c-text); }
+.row__menu:focus-visible { outline: 2px solid var(--c-action); outline-offset: 2px; }

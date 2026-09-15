@@ -19,6 +19,8 @@ interface Props {
   onRetry: () => void
   onOpenTransactions: () => void
   onFixKinds: () => void
+  /** قايمة «النقط التلاتة» لعملية — OVERRIDES §30. */
+  onTransactionMenu?: (transaction: HomeScreenData['latest'][number]) => void
 }
 
 /**
@@ -37,6 +39,7 @@ export function HomeScreen({
   onRetry,
   onOpenTransactions,
   onFixKinds,
+  onTransactionMenu,
 }: Props) {
   const categoryById = useMemo(
     () => new Map((data?.categories ?? []).map((c) => [c.id, c])),
@@ -173,6 +176,7 @@ export function HomeScreen({
           <ul className="list">
             {data.latest.map((t) => {
               const props: Parameters<typeof TransactionRow>[0] = { transaction: t, amountsHidden }
+              if (onTransactionMenu) props.onMenu = () => onTransactionMenu(t)
               const category = t.categoryId ? categoryById.get(t.categoryId) : undefined
               if (category?.name) props.categoryName = category.name
               if (category?.lightColor) props.categoryColor = category.lightColor
