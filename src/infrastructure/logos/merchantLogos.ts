@@ -3,12 +3,13 @@ import { buildLogoIndex, logoSourceFor, type MerchantLogoEntry } from '../../dom
 import manifest from './manifest.json'
 
 /**
- * الشعارات: ملفات جوه التطبيق من `files/` (المالك بيضيفها ويسجلها في `manifest.json`)،
+ * الشعارات: ملفات جوه التطبيق من `images/` (المالك بيضيفها ويسجلها في `manifest.json`)،
+ * ⚠️ مش `files/`: `.gitignore` بيتجاهل أي فولدر اسمه `files` (عشان الكشف الحقيقي) فالشعارات ما كانتش هتترفع.
  * والأونلاين من براند فيتش بالرابط المباشر بتاعهم — **من غير تحميل ولا حفظ** (شروطهم، OVERRIDES §25.1).
  * الأونلاين مقفول لحد ما `VITE_BRANDFETCH_CLIENT_ID` يتحط في `.env.local`.
  */
-const bundled = import.meta.glob('./files/*.{png,svg,webp,jpg}', { eager: true, import: 'default' }) as Record<string, string>
-const bundledUrls = new Map(Object.entries(bundled).map(([path, url]) => [path.replace('./files/', ''), url]))
+const bundled = import.meta.glob('./images/*.{png,svg,webp,jpg}', { eager: true, import: 'default' }) as Record<string, string>
+const bundledUrls = new Map(Object.entries(bundled).map(([path, url]) => [path.replace('./images/', ''), url]))
 
 export function createMerchantLogos(options: {
   clientId?: string | undefined

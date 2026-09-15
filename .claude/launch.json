@@ -6,6 +6,12 @@
       "runtimeExecutable": "C:/Program Files/nodejs/npm.cmd",
       "runtimeArgs": ["run", "dev", "--", "--port", "5173"],
       "port": 5173
+    },
+    {
+      "name": "logo-review",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": ["C:/Users/atgs0/AppData/Local/Temp/claude/E--work-masroufy/67f53b14-d5af-43a3-9cdb-75d5a68c8e9b/scratchpad/serve-review.mjs"],
+      "port": 5180
     }
   ]
 }
