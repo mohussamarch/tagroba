@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
+import { ChartLine, ChartPie, PiggyBank } from 'lucide-react'
 import { PeriodPicker } from '../components/PeriodPicker'
+import { CategoryIcon } from '../components/CategoryIcon'
 import { LimitEditor } from '../components/LimitEditor'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
@@ -78,7 +80,7 @@ export function BudgetScreen({
       {/* ─── السقف الإجمالي ─── */}
       <section className="card" aria-label="السقف الإجمالي">
         <div className="card__head">
-          <h2 className="card__title">السقف الإجمالي</h2>
+          <h2 className="card__title"><PiggyBank size={16} aria-hidden="true" />السقف الإجمالي</h2>
           {data.totalStatus && !editingTotal && (
             <button type="button" className="link" onClick={() => setEditingTotal(true)}>
               تعديل
@@ -144,7 +146,7 @@ export function BudgetScreen({
 
       {/* ─── المتوسط: معلومة منفصلة، ليست سقفًا ─── */}
       <section className="card" aria-label="المتوسط والمقارنة">
-        <h2 className="card__title">المتوسط</h2>
+        <h2 className="card__title"><ChartLine size={16} aria-hidden="true" />المتوسط</h2>
         <div className="budget__facts">
           <Fact
             label="متوسط الفترات المكتملة"
@@ -184,7 +186,7 @@ export function BudgetScreen({
 
       {/* ─── سقوف التصنيفات ─── */}
       <section className="card" aria-label="سقوف التصنيفات">
-        <h2 className="card__title">التصنيفات</h2>
+        <h2 className="card__title"><ChartPie size={16} aria-hidden="true" />التصنيفات</h2>
         {data.lines.length === 0 ? (
           <p className="budget__hint">مفيش مصروف ولا سقوف في الفترة دي.</p>
         ) : (
@@ -192,10 +194,17 @@ export function BudgetScreen({
             {data.lines.map((line) => {
               const category = categoryById.get(line.categoryId)
               const isEditing = editingCategory === line.categoryId
+              // OVERRIDES §31: كل تصنيف بلونه ورمزه، والشريط من نفس العيلة
+              const catStyle = category
+                ? ({ '--cat-light': category.lightColor, '--cat-dark': category.darkColor } as CSSProperties)
+                : undefined
               return (
-                <li key={line.categoryId} className="budget__line">
+                <li key={line.categoryId} className={`budget__line${category ? ' budget__line--cat' : ''}`} style={catStyle}>
                   <div className="budget__lineHead">
-                    <span className="budget__lineName">{category?.name ?? line.categoryId}</span>
+                    <span className="budget__lineName">
+                      {category && <span className="budget__lineIcon" aria-hidden="true"><CategoryIcon iconKey={category.iconKey} size={16} /></span>}
+                      {category?.name ?? line.categoryId}
+                    </span>
                     <span className="budget__lineSpent num">{money(line.spentMinor)}</span>
                   </div>
 
@@ -220,7 +229,7 @@ export function BudgetScreen({
                   ) : (
                     <>
                       {line.status ? (
-                        <BudgetBar status={line.status} hidden={amountsHidden} compact />
+                        <BudgetBar status={line.status} hidden={amountsHidden} compact tinted={!!category} />
                       ) : (
                         <span className="budget__noLimit">{line.noLimitReason}</span>
                       )}

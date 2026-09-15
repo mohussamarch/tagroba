@@ -9,6 +9,8 @@ import './AppLockGate.css'
  */
 export function AppLockGate({ lock, children }: { lock: AppLock; children: ReactNode }) {
   const [locked, setLocked] = useState(() => lock.needsUnlock(null))
+  // OVERRIDES §31: أول ما التطبيق يروح الخلفية بيتغطى ببلور، فلما يرجع ما يبانش وراه حاجة لحد ما القرار يتاخد
+  const [covered, setCovered] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const hiddenAt = useRef<number | null>(null)
@@ -24,9 +26,9 @@ export function AppLockGate({ lock, children }: { lock: AppLock; children: React
     setBusy(true); setMessage(null)
     try {
       const { result, message: why } = await lock.unlock()
-      if (result === 'ok') { setLocked(false); return }
+      if (result === 'ok') { setLocked(false); setCovered(false); return }
       if (result === 'unavailable' && await lock.releaseIfDeviceHasNoLock()) {
-        setLocked(false)
+        setLocked(false); setCovered(false)
         window.alert('القفل اتوقف لأن الجوال مبقاش عليه قفل شاشة ولا بصمة. تقدر تشغّله تاني من الإعدادات بعد ما تعمل قفل للجوال.')
         return
       }
@@ -45,17 +47,21 @@ export function AppLockGate({ lock, children }: { lock: AppLock; children: React
   useEffect(() => {
     const onVisibility = () => {
       // حوار رمز الجوال نفسه بيخفي الصفحة؛ ما نسجلش خروج للخلفية وإحنا اللي فاتحينه
-      if (document.hidden) { if (!prompting.current) hiddenAt.current = lock.now(); return }
+      if (document.hidden) {
+        if (!prompting.current) { hiddenAt.current = lock.now(); if (lock.isEnabled()) setCovered(true) }
+        return
+      }
       const since = hiddenAt.current
       hiddenAt.current = null
       if (since !== null && lock.needsUnlock(since)) { setLocked(true); void unlock() }
+      else setCovered(false)
     }
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [lock, unlock])
 
   return <>
-    <div ref={content} aria-hidden={locked || undefined}>{children}</div>
+    <div ref={content} className={`appLock__content${locked || covered ? ' appLock__content--covered' : ''}`} aria-hidden={locked || undefined}>{children}</div>
     {locked && (
       <div className="appLock" role="dialog" aria-modal="true" aria-label="مصروفي مقفول">
         <div className="appLock__card">

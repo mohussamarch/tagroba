@@ -1,4 +1,6 @@
-/* بوابة القفل — بتغطي الشاشة كلها بلون الخلفية المعتم عشان مفيش مبلغ يبان من تحتها */
+/* بوابة القفل — بتغطي الشاشة كلها عشان مفيش مبلغ يبان من تحتها.
+   🔴 كانت `var(--c-bg)` — متغير مش موجود (الاسم الصح `--c-background`) فالخلفية كانت شفافة
+   والتطبيق كان باين ورا القفل (شكوى المالك 2026-09-15). دلوقتي: التطبيق نفسه متغطي ببلور + طبقة من لون الخلفية. */
 .appLock {
   position: fixed;
   inset: 0;
@@ -7,7 +9,15 @@
   place-items: center;
   padding: var(--safe-area-inset-top, env(safe-area-inset-top)) var(--pad-screen, 16px)
     var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
-  background: var(--c-bg);
+  background: color-mix(in srgb, var(--c-background) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.appLock__content--covered {
+  filter: blur(18px);
+  pointer-events: none;
+  user-select: none;
 }
 
 .appLock__card {

@@ -8,10 +8,13 @@ export function BudgetBar({
   status,
   hidden,
   compact = false,
+  tinted = false,
 }: {
   status: BudgetStatus
   hidden: boolean
   compact?: boolean
+  /** الشريط بلون التصنيف (المتغيرات من الأب) — OVERRIDES §31. التجاوز بيفضل بلون التحذير. */
+  tinted?: boolean
 }) {
   const percent = status.usedTenthPercent / 10
   const width = Math.min(100, percent)
@@ -19,7 +22,7 @@ export function BudgetBar({
     status.level === 'over' ? 'تجاوزت' : status.level === 'near' ? 'قربت تخلص' : 'في حدود السقف'
 
   return (
-    <div className={`bar${compact ? ' bar--compact' : ''}`}>
+    <div className={`bar${compact ? ' bar--compact' : ''}${tinted && status.level !== 'over' ? ' bar--cat' : ''}`}>
       <div className="bar__row">
         {/* الحالة بالنص أيضًا لا باللون وحده — spec/04 */}
         <span className={`bar__label bar__label--${status.level}`}>{label}</span>

@@ -120,3 +120,12 @@
 
 .row__menu:hover { background: var(--c-soft); color: var(--c-text); }
 .row__menu:focus-visible { outline: 2px solid var(--c-action); outline-offset: 2px; }
+
+/* OVERRIDES §31: الصف كله من عيلة لون تصنيفه — درجة خفيفة جدًا عشان الكلام يفضل مقروء */
+.row--cat {
+  --cat: var(--cat-light);
+  background: color-mix(in srgb, var(--cat) 7%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--cat) 22%, var(--c-border));
+}
+[data-theme='dark'] .row--cat { --cat: var(--cat-dark); }
+.row--clickable.row--cat:hover { background: color-mix(in srgb, var(--cat) 13%, var(--c-surface)); }

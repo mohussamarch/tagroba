@@ -107,6 +107,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
+  color: var(--c-action);
   font-size: 1.1rem;
   transition: background var(--motion);
 }

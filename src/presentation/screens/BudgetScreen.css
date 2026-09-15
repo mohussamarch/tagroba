@@ -103,7 +103,7 @@
 }
 
 .bar__fill--under { background: var(--c-incoming); }
-.bar__fill--near { background: var(--c-action); }
+.bar__fill--near { background: var(--c-warning); }
 .bar__fill--over { background: var(--c-outgoing); }
 
 .bar__foot { font-size: var(--t-badge); color: var(--c-muted); }
@@ -148,3 +148,22 @@
 }
 
 .budget__lineNote { font-size: var(--t-badge); color: var(--c-muted); }
+
+/* OVERRIDES §31: كل تصنيف بلونه في الميزانية، والشريط من نفس العيلة بدرجة أخف */
+.budget__line.budget__line--cat {
+  --cat: var(--cat-light);
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--cat) 22%, var(--c-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cat) 7%, var(--c-surface));
+}
+[data-theme='dark'] .budget__line.budget__line--cat { --cat: var(--cat-dark); }
+.budget__lineName { display: inline-flex; align-items: center; gap: 8px; }
+.budget__lineIcon {
+  width: 28px; height: 28px; flex: none; border-radius: 999px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--cat) 16%, transparent);
+  color: var(--cat);
+}
+.bar--cat .bar__track { background: color-mix(in srgb, var(--cat) 16%, var(--c-surface)); }
+.bar--cat .bar__fill { background: var(--cat); }

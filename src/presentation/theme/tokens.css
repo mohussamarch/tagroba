@@ -1,15 +1,20 @@
-/* ألوان ومقاسات مصروفي — منقولة حرفيًا من design/tokens.json و spec/04-design-handoff.md
-   لا تُكتب قيمة لون في أي ملف آخر. المتغيرات هنا هي المصدر الوحيد. */
+/* ألوان ومقاسات مصروفي — الأصل من design/tokens.json و spec/04-design-handoff.md
+   لا تُكتب قيمة لون في أي ملف آخر. المتغيرات هنا هي المصدر الوحيد.
+   2026-09-15 (OVERRIDES §31): **الأخضر لون التطبيق الرسمي** — «الثيم كله بالأخضر المخفف جدًا»:
+   الخلفيات والحدود بلمسة أخضر خفيفة، و`--c-action` (الأزرار المهمة وعلامات الرأس والتبويب) أخضر غامق.
+   الوارد والصادر زي ما هما (أخضر/أحمر). */
 
 :root {
   /* الوضع الفاتح — الافتراضي (spec/01) */
-  --c-background: #F7F8F9;
+  --c-background: #F1F7F3;
   --c-surface:    #FFFFFF;
-  --c-text:       #20272B;
-  --c-muted:      #637078;
-  --c-border:     #E5E9EC;
-  --c-action:     #283A40;
-  --c-soft:       #EDF1F2;
+  --c-text:       #1B2621;
+  --c-muted:      #5C6E65;
+  --c-border:     #DCE8E0;
+  --c-action:     #1E6B4A;
+  --c-soft:       #E4F1E9;
+  --c-accent-soft:#D9EEE1;
+  --c-warning:    #A15C00;
   --c-incoming:   #087849;
   --c-outgoing:   #C52D3D;
 
@@ -38,13 +43,15 @@
 }
 
 [data-theme='dark'] {
-  --c-background: #141719;
-  --c-surface:    #202427;
-  --c-text:       #F2F4F5;
-  --c-muted:      #ADB6BC;
-  --c-border:     #363E43;
-  --c-action:     #D1DCE1;
-  --c-soft:       #333D42;
+  --c-background: #101714;
+  --c-surface:    #18211C;
+  --c-text:       #EEF5F1;
+  --c-muted:      #A5B8AE;
+  --c-border:     #2B3832;
+  --c-action:     #8ED3B0;
+  --c-soft:       #22302A;
+  --c-accent-soft:#1F3A2C;
+  --c-warning:    #F2B460;
   --c-incoming:   #65DCA4;
   --c-outgoing:   #FF8792;
 

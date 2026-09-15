@@ -71,9 +71,9 @@
 
 /* التبويب النشط لا يعتمد على اللون وحده: معه aria-current ووزن خط أثقل */
 .tab--on {
-  color: var(--c-text);
+  color: var(--c-action);
   font-weight: 700;
-  box-shadow: inset 0 2px 0 0 var(--c-text);
+  box-shadow: inset 0 2px 0 0 var(--c-action);
 }
 
 .tab__icon { font-size: 1.15rem; line-height: 1; }

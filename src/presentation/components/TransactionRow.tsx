@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { CircleDashed, Tag } from 'lucide-react'
 import { formatAmount } from '../../domain/formatMoney'
 import type { Transaction } from '../../domain/entities/types'
 import { CategoryIcon } from './CategoryIcon'
@@ -7,11 +8,11 @@ import './TransactionRow.css'
 interface Props {
   transaction: Transaction
   categoryName?: string
-  /** لون التصنيف من `Category.lightColor` — الدايرة بتتلون بيه بشفافية. */
+  /** لون التصنيف من `Category.lightColor` — الصف كله والدايرة بيتلونوا بيه بشفافية. */
   categoryColor?: string
   /** نسخة اللون المقروءة في الوضع الغامق (`Category.darkColor`). */
   categoryDarkColor?: string
-  /** رمز التصنيف (OVERRIDES §28). `tag` العام = أول حرف زي الأول. */
+  /** رمز التصنيف (OVERRIDES §28). */
   categoryIconKey?: string
   /** شعار المحل (OVERRIDES §25.1) — لو فشل تحميله بيرجع رمز التصنيف. */
   logoUrl?: string
@@ -26,11 +27,10 @@ interface Props {
 /**
  * صف عملية — spec/04: أيقونة، اسم وسطر ثانوي، مبلغ.
  *
- * إعادة تصميم 2026-09-11 (معتمدة من المالك في Figma):
- * الدايرة بلون التصنيف وأول حرف من اسمه بالعربي بدل حروف لاتينية،
- * السطر التاني نص هادي واحد بدل شارات متناثرة، والمبلغ بإشارة − أو +
- * بدل سهم. **الإشارة واللون مش لوحدهم**: فيه تسمية كاملة لقارئ الشاشة.
- * 2026-09-14 (OVERRIDES §28): رمز التصنيف المرسوم مكان الحرف لما يكون ليه رمز خاص.
+ * إعادة تصميم 2026-09-11 (معتمدة من المالك في Figma): السطر التاني نص هادي واحد،
+ * والمبلغ بإشارة − أو + بدل سهم. **الإشارة واللون مش لوحدهم**: فيه تسمية كاملة لقارئ الشاشة.
+ * 2026-09-15 (OVERRIDES §31): **الصف كله من عيلة لون التصنيف**، ومفيش حروف جوه الدايرة —
+ * شعار المحل، أو رمز التصنيف، أو علامة وسم عامة، أو علامة «بلا تصنيف».
  *
  * المكوّن **لا يحسب أي مبلغ**؛ يعرض ما جاءه ويستدعي formatAmount فقط
  * (ARCHITECTURE.md §3، القاعدة 4).
@@ -50,12 +50,6 @@ export function TransactionRow({
   const showLogo = Boolean(logoUrl && failedLogo !== logoUrl)
   const isIncoming = transaction.observedDirection === 'in'
   const name = transaction.rawMerchantName?.trim() || transaction.rawDescription?.trim() || 'بلا اسم'
-
-  // حرف التصنيف أولًا، وإلا أول حرف من الاسم — لا مساحة مكسورة (spec/04)
-  const glyph =
-    categoryName?.trim().charAt(0) ||
-    name.replace(/[^\p{L}\p{N}]/gu, '').charAt(0).toUpperCase() ||
-    '؟'
   const showIcon = Boolean(categoryIconKey && categoryIconKey !== 'tag')
 
   const amountText = amountsHidden ? '••••' : formatAmount(transaction.amountMinor)
@@ -69,12 +63,15 @@ export function TransactionRow({
     transaction.occurredAt,
   ].filter(Boolean) as string[]
 
-  const iconStyle = categoryColor
+  const catStyle = categoryColor
     ? ({ '--cat-light': categoryColor, '--cat-dark': categoryDarkColor ?? categoryColor } as CSSProperties)
     : undefined
 
   return (
-    <li className={`row${onOpen ? ' row--clickable' : ''}${onMenu ? ' row--menu' : ''}`}>
+    <li
+      className={`row${categoryColor ? ' row--cat' : ''}${onOpen ? ' row--clickable' : ''}${onMenu ? ' row--menu' : ''}`}
+      style={catStyle}
+    >
       {/* زر يغطي الصف: الفتح بالنقر وبلوحة المفاتيح معًا */}
       {onOpen && (
         <button
@@ -87,11 +84,16 @@ export function TransactionRow({
       <div
         className={`row__icon${showLogo ? ' row__icon--logo' : categoryColor ? ' row__icon--cat' : ''}`}
         aria-hidden="true"
-        style={showLogo ? undefined : iconStyle}
       >
         {showLogo ? (
           <img src={logoUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailedLogo(logoUrl!)} />
-        ) : showIcon ? <CategoryIcon iconKey={categoryIconKey!} size={20} /> : glyph}
+        ) : showIcon ? (
+          <CategoryIcon iconKey={categoryIconKey!} size={20} />
+        ) : categoryName ? (
+          <Tag size={18} />
+        ) : (
+          <CircleDashed size={18} />
+        )}
       </div>
 
       <div className="row__main">
