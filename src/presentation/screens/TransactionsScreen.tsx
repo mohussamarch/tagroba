@@ -227,6 +227,8 @@ export function TransactionsScreen({
                   const category = t.categoryId ? categoryById.get(t.categoryId) : undefined
                   if (category?.name) props.categoryName = category.name
                   if (category?.lightColor) props.categoryColor = category.lightColor
+                  if (category?.darkColor) props.categoryDarkColor = category.darkColor
+                  if (category?.iconKey) props.categoryIconKey = category.iconKey
                   return <TransactionRow key={t.id} {...props} />
                 })}
               </ul>

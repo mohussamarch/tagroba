@@ -1,5 +1,7 @@
+import type { CSSProperties } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import type { Transaction } from '../../domain/entities/types'
+import { CategoryIcon } from './CategoryIcon'
 import './TransactionRow.css'
 
 interface Props {
@@ -7,6 +9,10 @@ interface Props {
   categoryName?: string
   /** لون التصنيف من `Category.lightColor` — الدايرة بتتلون بيه بشفافية. */
   categoryColor?: string
+  /** نسخة اللون المقروءة في الوضع الغامق (`Category.darkColor`). */
+  categoryDarkColor?: string
+  /** رمز التصنيف (OVERRIDES §28). `tag` العام = أول حرف زي الأول. */
+  categoryIconKey?: string
   /** إخفاء المبالغ — إعداد الخصوصية في spec/01. */
   amountsHidden?: boolean
   /** يُمرَّر حين يكون الصف قابلًا للفتح. */
@@ -20,6 +26,7 @@ interface Props {
  * الدايرة بلون التصنيف وأول حرف من اسمه بالعربي بدل حروف لاتينية،
  * السطر التاني نص هادي واحد بدل شارات متناثرة، والمبلغ بإشارة − أو +
  * بدل سهم. **الإشارة واللون مش لوحدهم**: فيه تسمية كاملة لقارئ الشاشة.
+ * 2026-09-14 (OVERRIDES §28): رمز التصنيف المرسوم مكان الحرف لما يكون ليه رمز خاص.
  *
  * المكوّن **لا يحسب أي مبلغ**؛ يعرض ما جاءه ويستدعي formatAmount فقط
  * (ARCHITECTURE.md §3، القاعدة 4).
@@ -28,6 +35,8 @@ export function TransactionRow({
   transaction,
   categoryName,
   categoryColor,
+  categoryDarkColor,
+  categoryIconKey,
   amountsHidden = false,
   onOpen,
 }: Props) {
@@ -39,6 +48,7 @@ export function TransactionRow({
     categoryName?.trim().charAt(0) ||
     name.replace(/[^\p{L}\p{N}]/gu, '').charAt(0).toUpperCase() ||
     '؟'
+  const showIcon = Boolean(categoryIconKey && categoryIconKey !== 'tag')
 
   const amountText = amountsHidden ? '••••' : formatAmount(transaction.amountMinor)
   const directionLabel = isIncoming ? 'وارد' : 'صادر'
@@ -50,6 +60,10 @@ export function TransactionRow({
     transaction.isCashTagged ? 'كاش' : null,
     transaction.occurredAt,
   ].filter(Boolean) as string[]
+
+  const iconStyle = categoryColor
+    ? ({ '--cat-light': categoryColor, '--cat-dark': categoryDarkColor ?? categoryColor } as CSSProperties)
+    : undefined
 
   return (
     <li className={`row${onOpen ? ' row--clickable' : ''}`}>
@@ -63,15 +77,11 @@ export function TransactionRow({
         />
       )}
       <div
-        className="row__icon"
+        className={`row__icon${categoryColor ? ' row__icon--cat' : ''}`}
         aria-hidden="true"
-        style={
-          categoryColor
-            ? { background: `color-mix(in srgb, ${categoryColor} 16%, transparent)`, color: categoryColor }
-            : undefined
-        }
+        style={iconStyle}
       >
-        {glyph}
+        {showIcon ? <CategoryIcon iconKey={categoryIconKey!} size={20} /> : glyph}
       </div>
 
       <div className="row__main">

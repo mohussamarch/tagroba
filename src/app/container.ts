@@ -57,7 +57,8 @@ import {
 import { FirestoreBudgetRepository } from '../infrastructure/firestore/budgetRepository'
 import { FirestoreWalletRepository } from '../infrastructure/firestore/walletRepository'
 import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator'
-import { buildCategories, loadReferences } from '../infrastructure/import/referenceLoader'
+import { loadReferences } from '../infrastructure/import/referenceLoader'
+import { buildCategoryTree } from '../infrastructure/import/categoryTreeLoader'
 import { makeImportStatement } from '../application/useCases/importStatement'
 import { makeReadPdfStatement } from '../application/useCases/readPdfStatement'
 import { makeCategorizeTransactions } from '../application/useCases/categorizeTransactions'
@@ -83,7 +84,7 @@ import { makeLoadNotifications } from '../application/useCases/loadNotifications
 import { loadPriceFeed } from '../infrastructure/prices/loadPriceFeed'
 import type { AuthPort } from '../application/ports/AuthPort'
 import type { Clock, WalletRepository } from '../application/ports/repositories'
-import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
+import categoryTreeData from '../infrastructure/import/categoryTree.json'
 import rawRules from '../../design-source/masroofi-claude-code/fixtures/rule-reference.json'
 import rawMerchants from '../../design-source/masroofi-claude-code/fixtures/merchant-reference.json'
 
@@ -187,10 +188,11 @@ export function createContainer(): Container {
       const assetSales = new FirestoreAssetSaleRepository(db, uid)
       const assetPrices = new FirestoreAssetPriceRepository(db, uid)
 
-      /** المرجع الأولي يُبنى من الملفات، ويُزرع مرة واحدة عند أول دخول. */
+      /** المرجع الأولي يُبنى من الملفات (شجرة التصنيفات OVERRIDES §28.1)، ويُزرع مرة واحدة عند أول دخول. */
       const buildSeedSource = () => {
-        const categoryList = buildCategories(tokens.categories)
-        const refs = loadReferences(rawRules, rawMerchants, categoryList)
+        const categoryTree = buildCategoryTree(categoryTreeData)
+        const categoryList = categoryTree.categories
+        const refs = loadReferences(rawRules, rawMerchants, categoryList, categoryTree)
         return { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
       }
 

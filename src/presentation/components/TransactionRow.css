@@ -26,6 +26,14 @@
   overflow: hidden;
 }
 
+/* لون التصنيف بنسختين: الفاتح والمقروء في الغامق (OVERRIDES §28) */
+.row__icon--cat {
+  --cat: var(--cat-light);
+  background: color-mix(in srgb, var(--cat) 16%, transparent);
+  color: var(--cat);
+}
+[data-theme='dark'] .row__icon--cat { --cat: var(--cat-dark); }
+
 .row__main { min-width: 0; }
 
 .row__name {

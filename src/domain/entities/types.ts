@@ -1,4 +1,5 @@
 import type { Currency, Halalas } from '../money'
+import type { CategoryGroupKey, CategoryRequirement } from '../categoryTree'
 import type { EconomicKind } from './economicKind'
 
 /**
@@ -39,6 +40,13 @@ export interface Category {
   darkColor: string
   active: boolean
   order: number
+  /** المجموعة اللي بيتعرض تحتها الأساسي (OVERRIDES §28.1). الفرعي بياخدها من أبوه؛ الحسابات القديمة من غير مجموعة. */
+  groupKey?: CategoryGroupKey
+  /** مخفي لحد ما ملف المستخدم يأكد المعلومة دي (مثلًا عنده سيارة). */
+  requires?: CategoryRequirement
+  /** اسم ورمز بديلين لو المستخدم مالوش سيارة: «السيارة» ← «المواصلات». */
+  noCarName?: string
+  noCarIconKey?: string
 }
 
 export interface Merchant {

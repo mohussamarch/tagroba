@@ -40,7 +40,8 @@ import {
   SequentialIdGenerator,
   FixedClock,
 } from '../infrastructure/memory/memoryRepositories'
-import { buildCategories, loadReferences } from '../infrastructure/import/referenceLoader'
+import { loadReferences } from '../infrastructure/import/referenceLoader'
+import { buildCategoryTree } from '../infrastructure/import/categoryTreeLoader'
 import { makeImportStatement } from '../application/useCases/importStatement'
 import { makeCategorizeTransactions } from '../application/useCases/categorizeTransactions'
 import { makeRevertImportBatch } from '../application/useCases/revertImportBatch'
@@ -77,7 +78,7 @@ import {
 import { MemoryNotificationReceiptRepository } from '../infrastructure/memory/memoryNotificationRepository'
 import type { AuthPort, AuthUser } from '../application/ports/AuthPort'
 import type { Container, UserContainer } from './container'
-import tokens from '../../design-source/masroofi-claude-code/design/tokens.json'
+import categoryTreeData from '../infrastructure/import/categoryTree.json'
 import rawRules from '../../design-source/masroofi-claude-code/fixtures/rule-reference.json'
 import rawMerchants from '../../design-source/masroofi-claude-code/fixtures/merchant-reference.json'
 
@@ -129,8 +130,10 @@ export function createDemoContainer(): Container {
   const obligations = new MemoryObligationRepository()
   const settlements = new MemorySettlementRepository()
 
-  const categoryList = buildCategories(tokens.categories)
-  const refs = loadReferences(rawRules, rawMerchants, categoryList)
+  // شجرة التصنيفات الجديدة بالمجموعات والفروع (OVERRIDES §28.1)
+  const categoryTree = buildCategoryTree(categoryTreeData)
+  const categoryList = categoryTree.categories
+  const refs = loadReferences(rawRules, rawMerchants, categoryList, categoryTree)
   const categories = new MemoryCategoryRepository(categoryList)
   const merchants = new MemoryMerchantRepository(refs.merchants)
   const rules = new MemoryRuleRepository(refs.rules)

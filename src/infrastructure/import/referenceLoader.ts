@@ -46,8 +46,14 @@ export function loadReferences(
   rawRules: readonly RawRule[],
   rawMerchants: readonly RawMerchant[],
   categories: readonly Category[],
+  /**
+   * شجرة التصنيفات الجديدة (OVERRIDES §28.1): أسماء قديمة ⇒ معرّف جديد، وكلمات قاعدة ⇒ فرعي بعينه.
+   * الاسم الموجود فعلًا في `categories` بيفضل هو الأساس.
+   */
+  tree?: { aliases?: ReadonlyMap<string, string>; wordOverrides?: ReadonlyMap<string, string> },
 ): LoadedReferences {
-  const categoryIdByName = new Map(categories.map((c) => [normalizeText(c.name), c.id]))
+  const categoryIdByName = new Map(tree?.aliases ?? [])
+  for (const c of categories) categoryIdByName.set(normalizeText(c.name), c.id)
   const unknown = new Set<string>()
 
   const rules: ClassificationRule[] = []
@@ -55,7 +61,7 @@ export function loadReferences(
     const word = raw.word?.trim()
     const cat = raw.cat?.trim()
     if (!word || !cat) return
-    const categoryId = categoryIdByName.get(normalizeText(cat))
+    const categoryId = tree?.wordOverrides?.get(normalizeText(word)) ?? categoryIdByName.get(normalizeText(cat))
     if (!categoryId) {
       unknown.add(cat)
       return // لا يُخترع تصنيف غير معرّف

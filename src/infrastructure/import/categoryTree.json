@@ -1,0 +1,64 @@
+{
+  "groups": [
+    { "key": "food", "mains": [
+      { "name": "مطاعم وقهوة", "icon": "utensils", "h": 22, "s": 78, "l": 46, "from": ["مطاعم وقهوة"],
+        "subs": [["مطاعم", "soup"], ["قهوة ومشروبات", "coffee"], ["حلويات ومخبوزات", "croissant"]] },
+      { "name": "بقالة وسوبرماركت", "icon": "shopping-basket", "h": 135, "s": 55, "l": 34, "from": ["بقالة وسوبرماركت"],
+        "subs": [["سوبرماركت", "shopping-cart"], ["خضار وفواكه", "carrot"], ["لحوم ودواجن وأسماك", "fish"], ["مياه ومشروبات", "cup-soda"], ["بقالة الحي", "store"]] }
+    ]},
+    { "key": "home", "mains": [
+      { "name": "المنزل", "icon": "house", "h": 40, "s": 90, "l": 38, "from": ["فواتير ومرافق", "خدمات منزلية"],
+        "subs": [["كهرباء", "zap"], ["مياه", "droplets"], ["غاز", "flame"], ["إيجار", "key-round", "renter"], ["صيانة وسباكة", "hammer"], ["تنظيف", "brush"], ["عمالة منزلية", "users", "domesticWorker"]] },
+      { "name": "اتصالات", "icon": "wifi", "h": 190, "s": 80, "l": 33, "from": ["اتصالات"],
+        "subs": [["جوال", "phone"], ["إنترنت منزلي", "router"]] },
+      { "name": "اشتراكات رقمية", "icon": "repeat", "h": 285, "s": 50, "l": 48, "from": ["اشتراكات رقمية"],
+        "subs": [["بث وأفلام", "tv"], ["موسيقى", "music"], ["تخزين وبرامج", "cloud"]] },
+      { "name": "الالتزامات", "icon": "calendar-clock", "h": 232, "s": 30, "l": 36, "from": [],
+        "subs": [["تقسيط", "credit-card"]] },
+      { "name": "حكومي ورسوم", "icon": "building-complex", "h": 174, "s": 70, "l": 29, "from": ["حكومي ورسوم"],
+        "subs": [["رسوم وخدمات حكومية", "file-text"], ["مخالفات", "gavel"], ["تجديد وثائق", "id-card"]] },
+      { "name": "الأسرة والأطفال", "icon": "baby", "h": 305, "s": 50, "l": 42, "requires": "dependents", "from": [],
+        "subs": [["مصروف البيت", "wallet"], ["مدارس ورسوم دراسية", "school"], ["حضانة", "blocks"], ["مستلزمات أطفال", "milk"]] }
+    ]},
+    { "key": "transport", "mains": [
+      { "name": "السيارة", "icon": "car", "noCar": { "name": "المواصلات", "icon": "bus-front" }, "h": 210, "s": 70, "l": 42, "from": ["وقود ومواصلات"],
+        "subs": [["وقود", "fuel", "hasCar"], ["مواقف وسايس", "square-parking", "hasCar"], ["صيانة السيارة", "wrench", "hasCar"], ["تأمين السيارة", "shield-check", "hasCar"], ["مخالفات السيارة", "siren", "hasCar"], ["تاكسي وتطبيقات", "car-taxi-front"], ["مواصلات عامة", "train-front"]] }
+    ]},
+    { "key": "personal", "mains": [
+      { "name": "التسوق", "icon": "shopping-bag", "h": 322, "s": 62, "l": 40, "from": ["مكتبات وطباعة"],
+        "subs": [["تسوق إلكتروني", "package"], ["إلكترونيات وأجهزة", "monitor"]] },
+      { "name": "العناية الشخصية", "icon": "sparkles", "h": 340, "s": 65, "l": 48, "from": ["عناية شخصية", "ملابس وعطور"],
+        "subs": [["حلاقة", "scissors"], ["تجميل", "wand-sparkles"], ["منتجات عناية", "bath"], ["ملابس", "shirt"], ["أحذية", "footprints"], ["عطور", "spray-can"], ["إكسسوارات", "gem"]] },
+      { "name": "صحة وصيدليات", "icon": "heart-pulse", "h": 2, "s": 70, "l": 44, "from": ["صحة وصيدليات"],
+        "subs": [["صيدلية", "pill"], ["مستشفى وعيادة", "stethoscope"], ["أسنان", "face-slightly-smiling"], ["نظارات", "glasses"], ["تأمين صحي", "shield-plus"]] },
+      { "name": "ترفيه", "icon": "party-popper", "h": 85, "s": 65, "l": 30, "from": ["ترفيه"],
+        "subs": [["سينما", "popcorn"], ["ألعاب", "gamepad-2"], ["فعاليات ومباريات", "ticket"], ["رياضة ونوادي", "dumbbell"]] },
+      { "name": "سفر", "icon": "plane", "h": 250, "s": 55, "l": 50, "from": ["سفر"],
+        "subs": [["طيران", "plane-takeoff"], ["فنادق وسكن", "hotel"], ["تأشيرات ورسوم سفر", "stamp"], ["أنشطة سياحية", "map-pin"]] },
+      { "name": "تعليم وتدريب", "icon": "graduation-cap", "h": 268, "s": 40, "l": 40, "from": ["تعليم وتدريب"],
+        "subs": [["دورات أونلاين", "laptop"], ["كتب", "book-open"], ["جامعة ودراسة", "library"]] },
+      { "name": "تبرعات", "icon": "heart-handshake", "h": 112, "s": 50, "l": 33, "from": ["تبرعات"],
+        "subs": [["صدقة", "hand-heart"], ["زكاة", "hand-coins"]] },
+      { "name": "مصاريف الشغل", "icon": "briefcase-business", "h": 60, "s": 80, "l": 28, "requires": "business", "from": [],
+        "subs": [["إعلانات وتسويق", "megaphone"], ["أدوات وبرامج للشغل", "wrench"]] },
+      { "name": "متفرقات", "icon": "ellipsis", "h": 210, "s": 8, "l": 45, "from": ["متفرقات"], "subs": [] }
+    ]},
+    { "key": "saving", "mains": [
+      { "name": "استثمار", "icon": "trending-up", "h": 158, "s": 65, "l": 30, "from": ["استثمار"],
+        "subs": [["أسهم وصناديق", "badge-dollar-sign"], ["ذهب", "coins"], ["ادخار", "piggy-bank"], ["محافظ رقمية", "wallet-cards"]] }
+    ]},
+    { "key": "movement", "mains": [
+      { "name": "تحويلات", "icon": "arrow-left-right", "h": 200, "s": 22, "l": 32, "from": ["تحويلات"],
+        "subs": [["حوالات للخارج", "send"], ["تحويل لأشخاص", "users"]] },
+      { "name": "سحب نقدي", "icon": "banknote", "h": 120, "s": 18, "l": 30, "from": ["سحب نقدي"], "subs": [] }
+    ]}
+  ],
+  "ruleWordOverrides": {
+    "SHORY": ["السيارة", "تأمين السيارة"],
+    "BUPA": ["صحة وصيدليات", "تأمين صحي"],
+    "ALDREES": ["السيارة", "وقود"], "SASCO": ["السيارة", "وقود"], "PETRO": ["السيارة", "وقود"], "STATION": ["السيارة", "وقود"],
+    "ALFAHS": ["السيارة", "وقود"], "ZYOAAT": ["السيارة", "وقود"], "ALZYWT": ["السيارة", "وقود"], "ALZAYOU": ["السيارة", "وقود"],
+    "PARKING": ["السيارة", "مواقف وسايس"],
+    "UBER": ["السيارة", "تاكسي وتطبيقات"], "CAREEM": ["السيارة", "تاكسي وتطبيقات"], "TAXI": ["السيارة", "تاكسي وتطبيقات"]
+  }
+}

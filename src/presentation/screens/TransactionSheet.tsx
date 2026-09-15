@@ -3,6 +3,8 @@ import { formatAmount } from '../../domain/formatMoney'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { TagEditor } from '../components/TagEditor'
 import type { Category, Tag, Transaction } from '../../domain/entities/types'
+import { groupCategoryOptions } from '../../domain/categoryOptions'
+import { CategoryOptions } from '../components/CategoryOptions'
 import type { UserContainer } from '../../app/container'
 import './TransactionSheet.css'
 
@@ -119,11 +121,7 @@ export function TransactionSheet({
               }}
             >
               <option value="">بلا تصنيف</option>
-              {categories.filter(c=>c.active||c.id===categoryId).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              <CategoryOptions groups={groupCategoryOptions(categories, { keepId: categoryId })} />
             </select>
           </label>
 

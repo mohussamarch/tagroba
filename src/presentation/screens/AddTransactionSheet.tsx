@@ -3,6 +3,8 @@ import { tryParseMoney } from '../../domain/money'
 import { ruleFor, type EconomicKind } from '../../domain/entities/economicKind'
 import { ErrorNotice } from '../components/ErrorNotice'
 import type { Category, Wallet } from '../../domain/entities/types'
+import { groupCategoryOptions } from '../../domain/categoryOptions'
+import { CategoryOptions } from '../components/CategoryOptions'
 import type { UserContainer } from '../../app/container'
 import './AddTransactionSheet.css'
 
@@ -225,11 +227,7 @@ export function AddTransactionSheet({
               onChange={(e) => setCategoryId(e.target.value)}
             >
               <option value="">بلا تصنيف</option>
-              {categories.filter(c=>c.active).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              <CategoryOptions groups={groupCategoryOptions(categories)} />
             </select>
           </label>
 
