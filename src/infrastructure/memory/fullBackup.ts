@@ -1,7 +1,8 @@
-import { BACKUP_GROUPS,backupRowId,emptyBackupData,type FullBackupData } from '../../domain/fullBackup'
+import { BACKUP_GROUPS,backupRowId,emptyBackupData,type BackupRow,type FullBackupData } from '../../domain/fullBackup'
 import type { FullBackupPort } from '../../application/ports/FullBackupPort'
-export function memoryFullBackup(initial:FullBackupData=emptyBackupData()):FullBackupPort {
+export function memoryFullBackup(initial:FullBackupData=emptyBackupData(),profile:BackupRow|null=null):FullBackupPort {
   const data=structuredClone(initial)
+  let storedProfile=profile?structuredClone(profile):null
   return {read:async()=>structuredClone(data),addMissing:async incoming=>{
     const added:Record<string,number>={}
     for(const group of BACKUP_GROUPS){
@@ -10,5 +11,9 @@ export function memoryFullBackup(initial:FullBackupData=emptyBackupData()):FullB
       data[group].push(...structuredClone(rows));added[group]=rows.length
     }
     return added
+  },readProfile:async()=>storedProfile?structuredClone(storedProfile):null,
+  addProfileIfMissing:async incoming=>{
+    if(storedProfile)return false
+    storedProfile=structuredClone(incoming);return true
   }}
 }

@@ -158,7 +158,8 @@ export function createDemoContainer(): Container {
 
   const seedSource = { categories: categoryList, rules: refs.rules, merchants: refs.merchants }
 
-  const manageProfile = makeManageProfile({ profiles: new MemoryProfileRepository(), account: memoryAccount(), clock })
+  const profiles = new MemoryProfileRepository()
+  const manageProfile = makeManageProfile({ profiles, account: memoryAccount(), clock })
   const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids, clock })
   // قاعدة التجار المشتركة في الذاكرة — المعاينة ما بتكلمش فايربيز (OVERRIDES §25)
   const sharedMerchants = makeSharedMerchants({ catalog: new MemorySharedMerchantCatalog(), merchants, baseline: refs.merchants, treeCategoryIds: new Set(categoryList.map((c) => c.id)), cursor: new MemorySyncCursor() })
@@ -177,7 +178,7 @@ export function createDemoContainer(): Container {
       budgets:{read:async()=>budgets.snapshot().budgets as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),budgets:rows as unknown as Budget[]})},
       categoryBudgets:{read:async()=>budgets.snapshot().lines as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),lines:rows as unknown as CategoryBudget[]})},
       recurringItems:{read:async()=>await recurringItems.listAll() as unknown as BackupRow[],write:async rows=>{for(const row of rows)await recurringItems.save(row as unknown as RecurringItem)}},
-    }),backupDigest),
+    },profiles),backupDigest),
     repairStoredIds: makeRepairStoredIds({port:memoryIdRepair(),redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}),
     cleanupOrphans: (() => { const store = memoryIdRepair(); return makeCleanupOrphans({port:store,remover:store,redact:sanitizeAccountNumbers,backup:deviceRepairBackup,clock}) })(),
     // المعاينة بتقرا تصنيفاتها الحقيقية (حسابها على الشجرة من الأول) عشان الفحص ما يقولش إن كله ناقص

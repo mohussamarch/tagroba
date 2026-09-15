@@ -21,7 +21,8 @@ export function FullRestorePanel({user,onDone}:{user:UserContainer;onDone:()=>vo
     {message&&<p role="status">{message}</p>}
     {plan&&<>
       <p>المعاينة فقط — لم يُحفظ شيء. الإضافات: {plan.totalToAdd}</p>
-      <ul>{plan.lines.filter(line=>line.incoming>0).map(line=><li key={line.key}>{line.label}: {line.toAdd} إضافة · {line.skipped} موجود</li>)}</ul>
+      <ul>{plan.lines.filter(line=>line.incoming>0).map(line=><li key={line.key}>{line.label}: {line.toAdd} إضافة · {line.skipped} موجود</li>)}
+        {plan.profile.incoming&&<li>ملف الحساب: {plan.profile.toAdd?'هيتضاف':'موجود — مش هيتكتب فوقه'}</li>}</ul>
       {plan.warnings.map(warning=><p className="notice" key={warning}>{warning}</p>)}
       <button className="btn" disabled={busy||plan.totalToAdd===0} onClick={()=>void apply()}>تأكيد دمج النسخة الشاملة</button>
       <button className="btn btn--quiet" disabled={busy} onClick={()=>setPlan(null)}>إلغاء</button>

@@ -2,8 +2,10 @@ import {BACKUP_GROUPS,backupRowId,emptyBackupData,type BackupGroup,type BackupRo
 import type {FullBackupPort} from '../../application/ports/FullBackupPort'
 interface SnapshotStore {snapshot():unknown;restore(state:never):void}
 interface Binding {read():Promise<BackupRow[]>;write(rows:BackupRow[]):Promise<void>}
+/** مستودع ملف الحساب اللي بتستعمله المعاينة نفسها (OVERRIDES §26). */
+interface ProfileStore {load():Promise<unknown>;save(profile:never):Promise<void>}
 /** Connect the same repositories used by demo screens, rather than an unrelated empty backup store. */
-export function snapshotFullBackup(stores:Partial<Record<BackupGroup,SnapshotStore>>,extras:Partial<Record<BackupGroup,Binding>>):FullBackupPort {
+export function snapshotFullBackup(stores:Partial<Record<BackupGroup,SnapshotStore>>,extras:Partial<Record<BackupGroup,Binding>>,profileStore?:ProfileStore):FullBackupPort {
   const bindings={...extras}
   for(const group of BACKUP_GROUPS){
     const store=stores[group];if(!store)continue
@@ -25,5 +27,9 @@ export function snapshotFullBackup(stores:Partial<Record<BackupGroup,SnapshotSto
       await binding.write([...old,...fresh]);added[group]=fresh.length
     }
     return added
+  },readProfile:async()=>profileStore?((await profileStore.load()) as BackupRow|null):null,
+  addProfileIfMissing:async profile=>{
+    if(!profileStore||await profileStore.load())return false
+    await profileStore.save(profile as never);return true
   }}
 }

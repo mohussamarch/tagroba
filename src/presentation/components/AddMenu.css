@@ -29,3 +29,6 @@
 .addMenu__text { display: grid; gap: 2px; min-width: 0; }
 .addMenu__text b { font-size: var(--t-section); font-weight: 600; }
 .addMenu__text small { font-size: var(--t-badge); color: var(--c-muted); line-height: 1.5; }
+
+/* OVERRIDES §31: العلامات بلون التطبيق الأخضر */
+.addMenu__icon { color: var(--c-action); display: grid; place-items: center; }

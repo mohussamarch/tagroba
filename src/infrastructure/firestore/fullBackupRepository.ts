@@ -1,4 +1,4 @@
-import { collection,doc,documentId,getDocsFromServer,limit,orderBy,query,runTransaction,startAfter,type Firestore,type QueryDocumentSnapshot } from 'firebase/firestore'
+import { collection,doc,documentId,getDocFromServer,getDocsFromServer,limit,orderBy,query,runTransaction,startAfter,type Firestore,type QueryDocumentSnapshot } from 'firebase/firestore'
 import { BACKUP_GROUPS,backupRowId,emptyBackupData,type FullBackupData } from '../../domain/fullBackup'
 import type { FullBackupPort } from '../../application/ports/FullBackupPort'
 import {redactSms} from '../import/bankSmsParser'
@@ -40,6 +40,18 @@ export function firestoreFullBackup(db:Firestore,uid:string):FullBackupPort {
         }
       }
       return added
+    },
+    // ملف الحساب: مستند واحد `users/{uid}/profile/main` (OVERRIDES §26) — من السيرفر بس زي باقي النسخة
+    async readProfile(){
+      const snap=await getDocFromServer(doc(db,'users',uid,'profile','main'))
+      return snap.exists()?snap.data():null
+    },
+    async addProfileIfMissing(profile:BackupRow){
+      const ref=doc(db,'users',uid,'profile','main')
+      return runTransaction(db,async tx=>{
+        if((await tx.get(ref)).exists())return false
+        tx.set(ref,profile);return true
+      })
     },
   }
 }

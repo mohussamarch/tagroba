@@ -8,6 +8,8 @@ export type FullBackupData = Record<BackupGroup, BackupRow[]>
 export interface FullBackupFile {
   app:'masroufy'; schemaVersion:2; exportedAt:string; checksum:string
   counts:Record<string,number>; data:FullBackupData
+  /** ملف الحساب — `backupProfile.ts`. مش موجود في النسخ القديمة، و`null` = الحساب مالوش ملف. */
+  profile?:BackupRow|null
 }
 export function emptyBackupData():FullBackupData {
   return Object.fromEntries(BACKUP_GROUPS.map(group=>[group,[] as BackupRow[]])) as FullBackupData
