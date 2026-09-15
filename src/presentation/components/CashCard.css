@@ -1,0 +1,37 @@
+/* كارت الكاش — OVERRIDES §32 */
+.cashCard {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: start;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  border: 1px solid color-mix(in srgb, var(--c-action) 22%, var(--c-border));
+  background: color-mix(in srgb, var(--c-accent-soft) 45%, var(--c-surface));
+}
+.cashCard__icon {
+  width: 44px; height: 44px; flex: none; border-radius: 14px;
+  display: grid; place-items: center;
+  background: var(--c-accent-soft); color: var(--c-action);
+}
+.cashCard__text { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.cashCard__label { font-size: var(--t-badge); color: var(--c-muted); }
+.cashCard__value { font-size: var(--t-title); font-weight: 700; }
+.cashCard__value--out { color: var(--c-outgoing); }
+.cashCard__sub { font-size: var(--t-badge); color: var(--c-muted); }
+.cashCard__chevron { color: var(--c-muted); flex: none; }
+
+.cashSheet__hero { display: grid; gap: 4px; justify-items: center; text-align: center; }
+.cashSheet__value { font-size: var(--t-amount); font-weight: 700; line-height: 1.15; }
+.cashSheet__facts { margin: 0; display: grid; gap: 6px; }
+.cashSheet__fact {
+  display: flex; justify-content: space-between; gap: 12px; align-items: baseline;
+  padding: 10px 12px; border-radius: 12px; background: var(--c-soft);
+}
+.cashSheet__fact dt { font-size: var(--t-body); color: var(--c-muted); }
+.cashSheet__fact dd { margin: 0; font-weight: 700; }
+.cashSheet__fact--spent { background: color-mix(in srgb, var(--c-outgoing) 10%, var(--c-surface)); }
+.cashSheet__fact--spent dd { color: var(--c-outgoing); }
+.cashSheet__listTitle { margin: 6px 0 0; font-size: var(--t-section); }

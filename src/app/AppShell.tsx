@@ -19,6 +19,8 @@ import { useTheme } from '../presentation/theme/useTheme'
 import { useAppData } from './useAppData'
 import { useAndroidBack } from './androidBack'
 import { usePopOrigin } from './popOrigin'
+import { useCashSummary } from './useCashSummary'
+import { CashSheet } from '../presentation/components/CashCard'
 import type { Container } from './container'
 import './AppShell.css'
 type Tab = 'home' | 'budget' | 'transactions' | 'people' | 'invest' | 'settings' | 'more'
@@ -55,12 +57,15 @@ export function AppShell({
   const [recurringOpen,setRecurringOpen] = useState(false)
   const [historyOpen,setHistoryOpen] = useState(false)
   const [categoriesOpen,setCategoriesOpen] = useState(false)
+  const [cashOpen, setCashOpen] = useState(false)
   const reload = () => void app.reload()
   /** قايمة «النقط التلاتة» وأوراق العملية (OVERRIDES §30). */
   const txnActions = useTransactionActions({ app, amountsHidden, reload })
   // رجوع أندرويد: يقفل النافذة المفتوحة أو يرجع للرئيسية بدل ما يطلّع برا التطبيق (HANDOVER بند 18)
   useAndroidBack(tab, () => setTab('home'))
   usePopOrigin()
+  // كارت الكاش في الرئيسية وتفاصيله (OVERRIDES §32، رد المالك «الاتنين»)
+  const cash = useCashSummary(app, tab === 'home')
   const unseenCount = app.notifications?.unseen.length ?? 0
   const signOut = () => {
     void (async () => {
@@ -124,6 +129,8 @@ export function AppShell({
             onFixKinds={() => {setKindsOpen(true);void app.ensure('transactions')}}
             onTransactionMenu={txnActions.openMenu}
             logoFor={app.user.merchantLogos.urlFor}
+            cash={cash}
+            onOpenCash={() => setCashOpen(true)}
           />
         )}
         {tab === 'budget' && (
@@ -264,6 +271,7 @@ export function AppShell({
         />
       )}
       {txnActions.element}
+      {cashOpen && cash && <CashSheet cash={cash} amountsHidden={amountsHidden} onClose={() => setCashOpen(false)} />}
       <ShellOverlays
         app={app}
         amountsHidden={amountsHidden}

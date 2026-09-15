@@ -3,6 +3,8 @@ import { CalendarDays, ChartLine, ChevronLeft, ListOrdered, BanknoteArrowDown, R
 import { PeriodPicker, monthLabel } from '../components/PeriodPicker'
 import { TransactionRow } from '../components/TransactionRow'
 import { GroupDistribution } from '../components/GroupDistribution'
+import { CashCard } from '../components/CashCard'
+import type { CashSummary } from '../../domain/cashSummary'
 import { ErrorNotice } from '../components/ErrorNotice'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { formatAmount, NOT_AVAILABLE } from '../../domain/formatMoney'
@@ -24,6 +26,9 @@ interface Props {
   onTransactionMenu?: (transaction: HomeScreenData['latest'][number]) => void
   /** رابط شعار المحل لو موجود — OVERRIDES §25.1. */
   logoFor?: (merchantName: string | undefined) => string | undefined
+  /** كارت الكاش — OVERRIDES §32. `null` = مفيش محفظة كاش أو لسه ما اتحملش. */
+  cash?: CashSummary | null
+  onOpenCash?: () => void
 }
 
 /**
@@ -44,6 +49,8 @@ export function HomeScreen({
   onFixKinds,
   onTransactionMenu,
   logoFor,
+  cash = null,
+  onOpenCash,
 }: Props) {
   const categoryById = useMemo(
     () => new Map((data?.categories ?? []).map((c) => [c.id, c])),
@@ -89,6 +96,8 @@ export function HomeScreen({
         <span className="home__heroSub">
           {data.transactionCount} عملية في {monthLabel(data.period)}
         </span>
+        {/* تنويه طلبه المالك (OVERRIDES §32): الرقم الكبير مجموع كل اللي اتصرف، والكاش جواه */}
+        <span className="home__heroSub">الرقم ده بيشمل اللي اتصرف كاش</span>
 
         {data.needsReviewCount > 0 && (
           <button type="button" className="home__review" onClick={onFixKinds}>
@@ -123,6 +132,8 @@ export function HomeScreen({
           </div>
         </div>
       </section>
+
+      <CashCard cash={cash} amountsHidden={amountsHidden} onOpen={() => onOpenCash?.()} />
 
       {/* سبب نقص التغطية سطر واحد هادي، مش صندوق — لا رقم بلا بيان نقصه */}
       {data.coverage.note && <p className="home__hint">{data.coverage.note}</p>}
