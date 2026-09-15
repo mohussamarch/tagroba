@@ -10,7 +10,9 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
@@ -20,32 +22,56 @@ public class LocalFilesPlugin extends Plugin {
     /** اسم ملف بسيط بس — لا مسارات ولا «..». */
     private static final Pattern SAFE_NAME = Pattern.compile("^[A-Za-z0-9._-]{1,120}$");
 
+    /**
+     * نافذة «حفظ باسم» بتاعة النظام.
+     *
+     * المحتوى **ما بيتبعتش هنا**: بيتكتب الأول في ملف مؤقت جوه مجلد التطبيق (`writeAppFile`)
+     * وده بياخد اسمه بس (`sourceName`). السبب (اتشاف على المحاكي 2026-09-15): Capacitor بيحفظ خيارات
+     * آخر نداء في حالة النشاط لما نافذة النظام بترمي التطبيق للخلفية، والنسخة الشاملة (~8 ميجا)
+     * كانت بتعدّي حد أندرويد ⇒ `TransactionTooLargeException` والتطبيق بيقع.
+     */
     @PluginMethod
     public void save(PluginCall call) {
-        if (call.getString("content") == null || call.getString("filename") == null) {
+        String filename = call.getString("filename");
+        String sourceName = call.getString("sourceName");
+        if (filename == null || sourceName == null || !SAFE_NAME.matcher(sourceName).matches() || !new File(backupDir(), sourceName).isFile()) {
             call.reject("بيانات الملف غير مكتملة");
             return;
         }
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType(call.getString("mimeType", "text/plain"));
-        intent.putExtra(Intent.EXTRA_TITLE, call.getString("filename"));
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
         startActivityForResult(call, intent, "saved");
     }
 
     @ActivityCallback
     private void saved(PluginCall call, ActivityResult result) {
         if (call == null) return;
-        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
-            call.reject("تم إلغاء حفظ الملف");
-            return;
-        }
-        try (OutputStream stream = getContext().getContentResolver().openOutputStream(result.getData().getData())) {
-            if (stream == null) throw new IllegalStateException("No output stream");
-            stream.write(call.getString("content", "").getBytes(StandardCharsets.UTF_8));
-            call.resolve();
-        } catch (Exception error) {
-            call.reject("تعذر حفظ الملف في المكان المختار", error);
+        String sourceName = call.getString("sourceName", "");
+        File source = SAFE_NAME.matcher(sourceName).matches() ? new File(backupDir(), sourceName) : null;
+        try {
+            if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
+                call.reject("تم إلغاء حفظ الملف");
+                return;
+            }
+            if (source == null || !source.isFile()) {
+                call.reject("الملف المؤقت مش موجود — جرّب تاني");
+                return;
+            }
+            try (InputStream in = new FileInputStream(source);
+                 OutputStream stream = getContext().getContentResolver().openOutputStream(result.getData().getData())) {
+                if (stream == null) throw new IllegalStateException("No output stream");
+                byte[] buffer = new byte[64 * 1024];
+                int read;
+                while ((read = in.read(buffer)) != -1) stream.write(buffer, 0, read);
+                call.resolve();
+            } catch (Exception error) {
+                call.reject("تعذر حفظ الملف في المكان المختار", error);
+            }
+        } finally {
+            // الملف المؤقت فيه بيانات الحساب — بيتمسح سواء اتحفظ أو اتلغى
+            if (source != null && source.isFile()) source.delete();
         }
     }
 
