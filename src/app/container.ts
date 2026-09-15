@@ -84,6 +84,7 @@ import { FirestoreSharedMerchantCatalog } from '../infrastructure/firestore/shar
 import { localSyncCursor } from '../infrastructure/localSyncCursor'
 import { createMerchantLogos } from '../infrastructure/logos/merchantLogos'
 import { makeLoadCashSummary } from '../application/useCases/loadCashSummary'
+import { makeRepairBudgetIds } from '../application/useCases/repairBudgetIds'
 import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
@@ -126,6 +127,7 @@ export interface UserContainer {
   /** قاعدة التجار المشتركة — OVERRIDES §25. */ sharedMerchants: ReturnType<typeof makeSharedMerchants>
   /** شعارات التجار — OVERRIDES §25.1. */ merchantLogos: ReturnType<typeof createMerchantLogos>
   /** كارت الكاش وتفاصيله — OVERRIDES §32. */ loadCashSummary: ReturnType<typeof makeLoadCashSummary>
+  /** تصليح معرّف الميزانيات القديمة بنسخة — موافقة المالك 2026-09-15. */ repairBudgetIds: ReturnType<typeof makeRepairBudgetIds>
   /** قسم الحساب وأسئلة البداية — OVERRIDES §26. */
   manageProfile: ReturnType<typeof makeManageProfile>
   onboarding: ReturnType<typeof makeOnboardAccount>
@@ -253,6 +255,7 @@ export function createContainer(): Container {
         restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),
         merchantLogos: createMerchantLogos({ clientId: import.meta.env.VITE_BRANDFETCH_CLIENT_ID as string | undefined }),
         loadCashSummary: makeLoadCashSummary({ wallets, txns, allocations, categories }),
+        repairBudgetIds: makeRepairBudgetIds({ port: firestoreIdRepair(db, uid), backup: deviceRepairBackup, clock: systemClock }),
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),
         exportBackup: makeExportBackup({

@@ -6,6 +6,7 @@ import { IdRepairDetails } from './IdRepairDetails'
 import { OrphanCleanupPanel } from './OrphanCleanupPanel'
 import { CategoryMigrationPanel } from './CategoryMigrationPanel'
 import { DefaultRulesPanel } from './DefaultRulesPanel'
+import { BudgetIdRepairPanel } from './BudgetIdRepairPanel'
 
 type Preview = Awaited<ReturnType<UserContainer['repairStoredIds']['preview']>>
 
@@ -110,5 +111,6 @@ export function IdRepairPanel({ user, onDone }: { user: UserContainer; onDone: (
     <OrphanCleanupPanel user={user} onDone={onDone}/>
     <CategoryMigrationPanel user={user} onDone={onDone}/>
     <DefaultRulesPanel user={user} onDone={onDone}/>
+    <BudgetIdRepairPanel user={user} onDone={onDone}/>
   </>)
 }
