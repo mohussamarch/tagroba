@@ -61,6 +61,8 @@ export function planCategoryMigration(
   stored: StoredData,
   tree: { categories: readonly Category[]; aliases: ReadonlyMap<string, Id> },
   legacyNames: readonly string[],
+  /** وجهة يختارها المستخدم لتصنيف غامض (مثلًا «تأمين» ← تأمين السيارة). وجهة مش في الشجرة بتتجاهل. */
+  choices: ReadonlyMap<Id, Id> = new Map(),
 ): CategoryMigrationPlan {
   const accountCategories = stored.categories.map((row) => ({
     id: row.docId,
@@ -80,7 +82,9 @@ export function planCategoryMigration(
     legacyIds.add(oldId)
     if (!accountIds.has(oldId) || treeById.has(oldId)) return
     const target = tree.aliases.get(normalizeText(name))
+    const chosen = choices.get(oldId)
     if (target && target !== oldId && treeById.has(target)) destination.set(oldId, target)
+    else if (chosen && treeById.has(chosen)) destination.set(oldId, chosen)
     else ambiguousIds.add(oldId)
   })
 

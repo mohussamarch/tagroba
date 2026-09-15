@@ -68,6 +68,18 @@ describe('نقل التصنيفات على الحساب', () => {
     expect(backupContent.documents.some((d: { docId: string }) => d.docId === 't1')).toBe(true)
   })
 
+  it('وجهة مختارة للغامض: بتتنقل وتتخفي، والاختيار بيفضل مع التطبيق', async () => {
+    const s = system()
+    const carInsurance = built.categories.find((c) => c.name === 'تأمين السيارة')!.id
+    const plan = await s.migrate.preview({ [idOf('تأمين')]: carInsurance })
+    expect(plan.ambiguous).toEqual([])
+    expect(plan.choices).toEqual({ [idOf('تأمين')]: carInsurance })
+    expect(plan.targets.length).toBe(built.categories.length)
+    await s.migrate.apply(plan)
+    expect(s.store.snapshot().transactions.find((r) => r.docId === 't2')!.data).toEqual({ id: 't2', categoryId: carInsurance, categoryConfirmed: false, amountMinor: 50 })
+    expect((await s.categories.listAll()).find((c) => c.id === idOf('تأمين'))?.active).toBe(false)
+  })
+
   it('نسخة ناقصة ⇒ ولا تصنيف اتضاف ولا حقل اتعدل ولا حاجة اتخفت', async () => {
     const s = system({ truncate: true })
     const before = JSON.stringify(s.store.snapshot())

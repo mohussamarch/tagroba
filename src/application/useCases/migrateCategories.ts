@@ -16,6 +16,12 @@ export interface CategoryMigrationOutcome {
   backup: VerifiedBackup | null
 }
 
+/** المعاينة + الشجرة كلها (عشان اختيار وجهة الغامض) + الاختيارات اللي اتعملت عليها. */
+export interface CategoryMigrationPreview extends CategoryMigrationPlan {
+  targets: readonly Category[]
+  choices: Readonly<Record<Id, Id>>
+}
+
 export interface MigrateCategoriesDeps {
   port: IdRepairPort
   categories: CategoryRepository
@@ -38,18 +44,19 @@ const patchKey = (p: IdPatch) => `${p.group}/${p.docId}`
  * الترتيب الملزم: نسخة متأكدة (المستندات اللي هتتعدل + التصنيفات اللي هتتخفي) ← إضافة الناقص ←
  * تعديل حقل التصنيف على دفعات ← **إخفاء المدموج بس بعد ما كل التعديلات تنجح** (`active: false`، مش مسح).
  * لو النسخة ناقصة ما يتكتبش ولا حرف. انقطاع في النص ⇒ المعاينة التانية بتلاقي الباقي بس.
- * «تأمين» والتعارضات ما بيتلمسوش لحد ما المالك يقرر.
+ * التصنيف الغامض («تأمين») ما بيتنقلش إلا لو المستخدم اختار وجهته (`choices`)؛ والتعارضات ما بتتلمسش.
  */
 export function makeMigrateCategories(deps: MigrateCategoriesDeps) {
-  const plan = async () => planCategoryMigration(await deps.port.readAll(), deps.tree, deps.legacyNames)
+  const planWith = (stored: Awaited<ReturnType<IdRepairPort['readAll']>>, choices: Readonly<Record<Id, Id>>) =>
+    planCategoryMigration(stored, deps.tree, deps.legacyNames, new Map(Object.entries(choices)))
 
-  async function preview(): Promise<CategoryMigrationPlan> {
-    return plan()
+  async function preview(choices: Readonly<Record<Id, Id>> = {}): Promise<CategoryMigrationPreview> {
+    return { ...planWith(await deps.port.readAll(), choices), targets: deps.tree.categories, choices }
   }
 
-  async function apply(previewed: CategoryMigrationPlan, onProgress?: (progress: RepairProgress) => void): Promise<CategoryMigrationOutcome> {
+  async function apply(previewed: CategoryMigrationPreview, onProgress?: (progress: RepairProgress) => void): Promise<CategoryMigrationOutcome> {
     const stored = await deps.port.readAll()
-    const fresh = planCategoryMigration(stored, deps.tree, deps.legacyNames)
+    const fresh = planWith(stored, previewed.choices)
 
     const approved = new Map(previewed.patches.map((p) => [patchKey(p), JSON.stringify(p.fields)]))
     const patches = fresh.patches.filter((p) => approved.get(patchKey(p)) === JSON.stringify(p.fields))

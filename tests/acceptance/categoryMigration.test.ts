@@ -98,6 +98,17 @@ describe('خطة نقل الحساب القديم', () => {
     expect(again.moves.every((m) => m.transactions + m.rules + m.merchants + m.budgets === 0)).toBe(true)
   })
 
+  it('اختيار المستخدم لوجهة الغامض بيحوّله نقل عادي، ووجهة مش في الشجرة بتتجاهل', () => {
+    const carInsurance = newId('السيارة', 'تأمين السيارة')
+    const chosen = planCategoryMigration(oldAccount(), built, legacyNames, new Map([[idOf('تأمين'), carInsurance]]))
+    expect(chosen.ambiguous).toEqual([])
+    expect(chosen.moves.find((m) => m.fromId === idOf('تأمين'))).toMatchObject({ toId: carInsurance, toName: 'تأمين السيارة', transactions: 1, rules: 1 })
+    expect(chosen.patches.find((p) => p.docId === 't6')).toEqual({ group: 'transactions', docId: 't6', fields: { categoryId: carInsurance } })
+    expect(chosen.patches.find((p) => p.docId === 'r2')).toEqual({ group: 'rules', docId: 'r2', fields: { categoryId: carInsurance } })
+    const ignored = planCategoryMigration(oldAccount(), built, legacyNames, new Map([[idOf('تأمين'), 'cat-مش-موجود']]))
+    expect(ignored.ambiguous.map((a) => a.id)).toEqual([idOf('تأمين')])
+  })
+
   it('معرّف التصنيف القديم بنفس طريقة البناء القديمة', () => {
     for (const [i, c] of tokens.categories.entries()) expect(legacyCategoryId(c.name, i)).toBe(legacy[i].id)
   })
