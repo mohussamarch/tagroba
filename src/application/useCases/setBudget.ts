@@ -44,7 +44,9 @@ export function makeSetBudget(deps: SetBudgetDeps) {
 
     const now = deps.clock.nowIso()
     const budget: Budget = {
-      id: deps.ids.next('budget'),
+      // معرّف الميزانية = مفتاح الفترة، زي معرّف مستندها في Firestore (`budgetRepository.ts`) وفحص النسخة الشاملة.
+      // كان معرّف عشوائي فالنسخة الشاملة كانت بترفض أي حساب عمل سقف («معرّف الميزانية مختلف عن الفترة»، اتشاف 2026-09-15).
+      id: period.key,
       periodKey: period.key,
       periodStart: period.start,
       periodEnd: period.end,

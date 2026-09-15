@@ -3,6 +3,7 @@ import { checkFullBackupData } from '../../domain/checkFullBackup'
 import { mergeFullBackup } from '../../domain/mergeFullBackup'
 import { checkBackupFinance } from '../../domain/checkBackupFinance'
 import { backupChecksumText,checkBackupProfile } from '../../domain/backupProfile'
+import { normalizeBudgetIds,pointLinesAtLiveBudgets } from '../../domain/backupBudgetIds'
 import type {FullBackupData} from '../../domain/fullBackup'
 import type { FullBackupPort,BackupDigest } from '../ports/FullBackupPort'
 export function makeFullBackup(port:FullBackupPort,digest:BackupDigest){
@@ -19,12 +20,13 @@ export function makeFullBackup(port:FullBackupPort,digest:BackupDigest){
     return file
   }
   async function create(exportedAt:string):Promise<FullBackupFile>{
-    const data=await port.read();checkFullBackupData(data);checkBackupFinance(data)
+    // ميزانيات قديمة بمعرّف عشوائي بتاخد مفتاح فترتها في النسخة بس (backupBudgetIds.ts)
+    const data=normalizeBudgetIds(await port.read());checkFullBackupData(data);checkBackupFinance(data)
     const profile=await port.readProfile();checkBackupProfile(profile)
     return {app:'masroufy',schemaVersion:2,exportedAt,data,profile,checksum:await digest(backupChecksumText(data,profile)),counts:Object.fromEntries(BACKUP_GROUPS.map(key=>[key,data[key].length]))}
   }
   async function plan(raw:string){
-    const file=await check(raw),existing=await port.read(),additions=mergeFullBackup(file.data,existing)
+    const file=await check(raw),existing=normalizeBudgetIds(await port.read()),additions=mergeFullBackup(file.data,existing)
     validateMerge(existing,additions)
     const lines=BACKUP_GROUPS.map(key=>({key,label:BACKUP_LABELS[key],incoming:file.data[key].length,toAdd:additions[key].length,skipped:file.data[key].length-additions[key].length,note:null}))
     const profile={incoming:!!file.profile,toAdd:!!file.profile&&!(await port.readProfile())}
@@ -36,12 +38,14 @@ export function makeFullBackup(port:FullBackupPort,digest:BackupDigest){
     ]}
   }
   async function apply(input:FullBackupFile){
-    const file=await check(JSON.stringify(input)),existing=await port.read()
+    const file=await check(JSON.stringify(input)),live=await port.read(),existing=normalizeBudgetIds(live)
     const additions=mergeFullBackup(file.data,existing);validateMerge(existing,additions)
-    const added=await port.addMissing(additions)
+    // سقوف التصنيفات المضافة لحساب ميزانيته بالمعرّف القديم بتشاور على معرّفه الحقيقي عشان تبان
+    const added=await port.addMissing({...additions,categoryBudgets:pointLinesAtLiveBudgets(additions.categoryBudgets,live.budgets)})
     // ملف الحساب آخر حاجة، ولو موجود ما يتكتبش فوقه (OVERRIDES §26)
     const profileAdded=file.profile?await port.addProfileIfMissing(file.profile):false
-    return {added:{...added,profile:profileAdded?1:0},totalAdded:Object.values(added).reduce((a,b)=>a+b,0)+(profileAdded?1:0)}
+    const addedByGroup:Record<string,number>={...added,profile:profileAdded?1:0}
+    return {added:addedByGroup,totalAdded:Object.values(added).reduce((a,b)=>a+b,0)+(profileAdded?1:0)}
   }
   return {create,plan,apply}
 }
