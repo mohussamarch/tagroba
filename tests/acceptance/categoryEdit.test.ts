@@ -90,31 +90,43 @@ describe('حفظ تصنيف', () => {
 })
 
 describe('شاشة إدارة التصنيفات', () => {
-  it('المخفي بيظهر، واللي من غير مجموعة الأول، والفرعي اللي أبوه مش موجود بيبقى أساسي', () => {
+  it('الأساسي المخفي ليه قسم لوحده، واللي من غير مجموعة الأول، والفرعي المخفي بيفضل تحت أبوه', () => {
     const view = manageCategoryView([
       ...all,
       cat('old', 0),
       cat('lost', 9, { parentId: 'gone' }),
       cat('hiddenSub', 8, { parentId: 'car', active: false }),
+      cat('merged', 7, { active: false }),
+      cat('mergedKid', 10, { parentId: 'merged' }),
     ])
-    expect(view.map((g) => g.key)).toEqual(['ungrouped', 'food', 'transport'])
-    expect(view[0]!.mains.map((m) => m.category.id)).toEqual(['old', 'lost'])
-    expect(view[1]!.mains[0]!.subs.map((c) => c.id)).toEqual(['cafe', 'bakery'])
-    expect(view[2]!).toMatchObject({ label: 'التنقل', iconKey: 'route' })
-    expect(view[2]!.mains[0]!.subs.map((c) => c.id)).toEqual(['hiddenSub'])
+    expect(view.groups.map((g) => g.key)).toEqual(['ungrouped', 'food', 'transport'])
+    expect(view.groups[0]!.mains.map((m) => m.category.id)).toEqual(['old', 'lost'])
+    expect(view.groups[1]!.mains[0]!.subs.map((c) => c.id)).toEqual(['cafe', 'bakery'])
+    expect(view.groups[2]!).toMatchObject({ label: 'التنقل', iconKey: 'route' })
+    expect(view.groups[2]!.mains[0]!.subs.map((c) => c.id)).toEqual(['hiddenSub'])
+    expect(view.hidden.map((m) => [m.category.id, m.subs.map((c) => c.id)])).toEqual([['merged', ['mergedKid']]])
   })
 
-  it('اختيارات المكان: «بلا مجموعة» للحساب القديم بس، والتصنيف اللي تحته فرعيات ما يبقاش فرعي', () => {
+  it('حساب المالك: القديم المدموج مخفي ومن غير مجموعة ⇒ الشاشة بتبدأ بالمجموعات', () => {
+    const view = manageCategoryView([...all, cat('merged', 0, { active: false })])
+    expect(view.groups.map((g) => g.key)).toEqual(['food', 'transport'])
+    expect(view.hidden.map((m) => m.category.id)).toEqual(['merged'])
+  })
+
+  it('اختيارات المكان: «بلا مجموعة» لو محتاجينها بس، والمخفية آخر القايمة، واللي تحته فرعيات ما يبقاش فرعي', () => {
     const fresh = categoryPlaceChoices(all, 'car')
     expect(fresh.groups.map((g) => g.key)).toEqual(['food', 'home', 'transport', 'personal', 'saving', 'movement'])
     expect(fresh.parentGroups).toEqual([{ key: 'food', label: 'الأكل والشرب', options: [{ id: 'food', label: 'food' }] }])
     expect(fresh.hasSubs).toBe(false)
 
-    const legacy = [...all, cat('old', 0, { active: false })]
+    const withHidden = [...all, cat('merged', 0, { active: false })]
+    expect(categoryPlaceChoices(withHidden, 'car').groups[0]!.key).toBe('food')
+    expect(categoryPlaceChoices(withHidden, 'merged').groups[0]).toEqual({ key: null, label: 'بلا مجموعة' })
+    const parents = categoryPlaceChoices(withHidden, 'car').parentGroups
+    expect(parents[parents.length - 1]).toEqual({ key: 'hidden', label: 'المخفية', options: [{ id: 'merged', label: 'merged' }] })
+
+    const legacy = [...all, cat('old', 0)]
     expect(categoryPlaceChoices(legacy, 'car').groups[0]).toEqual({ key: null, label: 'بلا مجموعة' })
-    expect(categoryPlaceChoices(legacy, 'car').parentGroups[0]).toEqual({
-      key: 'ungrouped', label: 'التصنيفات', options: [{ id: 'old', label: 'old (مخفي)' }],
-    })
     const withSubs = categoryPlaceChoices(legacy, 'food')
     expect(withSubs.hasSubs).toBe(true)
     expect(withSubs.parentGroups).toEqual([])

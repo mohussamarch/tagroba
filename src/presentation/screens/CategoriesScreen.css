@@ -176,6 +176,11 @@
 .catForm__check { display: flex; align-items: center; gap: 8px; }
 .catForm__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* قسم المخفية — مقفول تحت الشاشة */
+.catHidden { margin-top: 4px; }
+.catHidden__summary { cursor: pointer; color: var(--c-muted); }
+.catHidden[open] > .catHidden__summary { margin-bottom: 8px; }
+
 @media (prefers-reduced-motion: reduce) {
   .catRow { animation: none; }
   .catForm__swatch { transition: none; }

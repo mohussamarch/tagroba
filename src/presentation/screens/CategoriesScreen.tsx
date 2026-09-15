@@ -3,7 +3,7 @@ import { EyeOff, Plus, X } from 'lucide-react'
 import type { UserContainer } from '../../app/container'
 import type { Category } from '../../domain/entities/types'
 import type { CategorySaveInput } from '../../domain/categoryEdit'
-import { manageCategoryView } from '../../domain/categoryManageView'
+import { manageCategoryView, type ManagedMain } from '../../domain/categoryManageView'
 import { REQUIREMENT_LABELS } from '../../domain/categoryTree'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { ErrorNotice } from '../components/ErrorNotice'
@@ -14,7 +14,7 @@ import './CategoriesScreen.css'
 
 /**
  * إدارة التصنيفات — OVERRIDES §33.1: بالمجموعات، والفرعي تحت أبوه، وكل تصنيف بلونه ورمزه.
- * المخفي بيظهر هنا بس (عشان يترجع)، والإخفاء ما بيمسحش سجل ولا مبالغ ولا قواعد.
+ * المخفي بيظهر هنا بس (عشان يترجع) في قسم مقفول تحت، والإخفاء ما بيمسحش سجل ولا مبالغ ولا قواعد.
  */
 export function CategoriesScreen({ user, onClose, onChanged }: { user: UserContainer; onClose: () => void; onChanged: () => void }) {
   const [items, setItems] = useState<Category[]>([])
@@ -100,33 +100,49 @@ export function CategoriesScreen({ user, onClose, onChanged }: { user: UserConta
               {message}
             </p>
           )}
-          {view.map((group) => (
+          {view.groups.map((group) => (
             <section key={group.key} className="catGroup" aria-label={group.label}>
               <h3 className="catGroup__title">
                 <CategoryIcon iconKey={group.iconKey} size={18} />
                 {group.label}
               </h3>
-              <ul className="catGroup__list">
-                {group.mains.map(({ category, subs }) => (
-                  <li key={category.id}>
-                    <CategoryRow category={category} busy={busy} onEdit={open} />
-                    {subs.length > 0 && (
-                      <ul className="catGroup__subs">
-                        {subs.map((sub) => (
-                          <li key={sub.id}>
-                            <CategoryRow category={sub} busy={busy} onEdit={open} />
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <MainList mains={group.mains} busy={busy} onEdit={open} />
             </section>
           ))}
+          {/* المخفي (زي التصنيفات القديمة اللي اتدمجت في الشجرة) تحت ومقفول، عشان ما يزاحمش اللي شغال */}
+          {view.hidden.length > 0 && (
+            <details className="catGroup catHidden">
+              <summary className="catGroup__title catHidden__summary">
+                <EyeOff size={18} aria-hidden="true" />
+                المخفية ({view.hidden.length})
+              </summary>
+              <MainList mains={view.hidden} busy={busy} onEdit={open} />
+            </details>
+          )}
         </div>
       </section>
     </div>
+  )
+}
+
+function MainList({ mains, busy, onEdit }: { mains: readonly ManagedMain[]; busy: boolean; onEdit: (c: Category) => void }) {
+  return (
+    <ul className="catGroup__list">
+      {mains.map(({ category, subs }) => (
+        <li key={category.id}>
+          <CategoryRow category={category} busy={busy} onEdit={onEdit} />
+          {subs.length > 0 && (
+            <ul className="catGroup__subs">
+              {subs.map((sub) => (
+                <li key={sub.id}>
+                  <CategoryRow category={sub} busy={busy} onEdit={onEdit} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
   )
 }
 
