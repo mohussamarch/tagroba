@@ -118,6 +118,7 @@ export function AppShell({
             onOpenTransactions={() => setTab('transactions')}
             onFixKinds={() => {setKindsOpen(true);void app.ensure('transactions')}}
             onTransactionMenu={txnActions.openMenu}
+            logoFor={app.user.merchantLogos.urlFor}
           />
         )}
         {tab === 'budget' && (
@@ -162,6 +163,7 @@ export function AppShell({
             onOpenHistory={() => setHistoryOpen(true)}
             onOpenTransaction={txnActions.openDetails}
             onTransactionMenu={txnActions.openMenu}
+            logoFor={app.user.merchantLogos.urlFor}
             onRetry={reload}
           />
         )}

@@ -21,6 +21,8 @@ interface Props {
   onFixKinds: () => void
   /** قايمة «النقط التلاتة» لعملية — OVERRIDES §30. */
   onTransactionMenu?: (transaction: HomeScreenData['latest'][number]) => void
+  /** رابط شعار المحل لو موجود — OVERRIDES §25.1. */
+  logoFor?: (merchantName: string | undefined) => string | undefined
 }
 
 /**
@@ -40,6 +42,7 @@ export function HomeScreen({
   onOpenTransactions,
   onFixKinds,
   onTransactionMenu,
+  logoFor,
 }: Props) {
   const categoryById = useMemo(
     () => new Map((data?.categories ?? []).map((c) => [c.id, c])),
@@ -182,6 +185,8 @@ export function HomeScreen({
               if (category?.lightColor) props.categoryColor = category.lightColor
               if (category?.darkColor) props.categoryDarkColor = category.darkColor
               if (category?.iconKey) props.categoryIconKey = category.iconKey
+              const logoUrl = logoFor?.(t.rawMerchantName)
+              if (logoUrl) props.logoUrl = logoUrl
               return <TransactionRow key={t.id} {...props} />
             })}
           </ul>

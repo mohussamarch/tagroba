@@ -65,6 +65,7 @@ import { makeEditTransaction } from '../application/useCases/editTransaction'
 import { makeManageRules } from '../application/useCases/manageRules'
 import { makeSharedMerchants } from '../application/useCases/sharedMerchants'
 import { MemorySharedMerchantCatalog, MemorySyncCursor } from '../infrastructure/memory/memorySharedMerchantCatalog'
+import { createMerchantLogos } from '../infrastructure/logos/merchantLogos'
 import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
@@ -222,6 +223,8 @@ export function createDemoContainer(): Container {
     }),
     resumeStagedBatch: makeResumeStagedBatch({ txns, sources, batches }),
     sharedMerchants,
+    // المعاينة: شعار تجريبي واحد هو أيقونة التطبيق نفسه (مش شعار شركة) على محل وهمي، ومفيش أونلاين
+    merchantLogos: createMerchantLogos({ entries: [{ names: ['DEMO SHOP'], file: 'demo.svg' }], files: new Map([['demo.svg', '/favicon.svg']]) }),
     editTransaction: makeEditTransaction({ txns, categories, tags, transactionTags, uow, ids, clock, onCategoryConfirmed: sharedMerchants.contribute }),
     manageRules: makeManageRules({ rules, merchants, categories, ids }),
     restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),

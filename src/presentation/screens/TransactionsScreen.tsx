@@ -24,6 +24,8 @@ interface Props {
   onOpenTransaction: (transaction: TransactionsScreenData["transactions"][number]) => void
   /** قايمة «النقط التلاتة» لعملية — OVERRIDES §30. */
   onTransactionMenu?: (transaction: TransactionsScreenData["transactions"][number]) => void
+  /** رابط شعار المحل لو موجود — OVERRIDES §25.1. */
+  logoFor?: (merchantName: string | undefined) => string | undefined
   onRetry: () => void
 }
 
@@ -57,6 +59,7 @@ export function TransactionsScreen({
   onOpenHistory,
   onOpenTransaction,
   onTransactionMenu,
+  logoFor,
   onRetry,
 }: Props) {
   const [rawQuery, setRawQuery] = useState('')
@@ -233,6 +236,8 @@ export function TransactionsScreen({
                   if (category?.lightColor) props.categoryColor = category.lightColor
                   if (category?.darkColor) props.categoryDarkColor = category.darkColor
                   if (category?.iconKey) props.categoryIconKey = category.iconKey
+                  const logoUrl = logoFor?.(t.rawMerchantName)
+                  if (logoUrl) props.logoUrl = logoUrl
                   return <TransactionRow key={t.id} {...props} />
                 })}
               </ul>

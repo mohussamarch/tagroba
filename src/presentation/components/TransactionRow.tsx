@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { formatAmount } from '../../domain/formatMoney'
 import type { Transaction } from '../../domain/entities/types'
 import { CategoryIcon } from './CategoryIcon'
@@ -13,6 +13,8 @@ interface Props {
   categoryDarkColor?: string
   /** رمز التصنيف (OVERRIDES §28). `tag` العام = أول حرف زي الأول. */
   categoryIconKey?: string
+  /** شعار المحل (OVERRIDES §25.1) — لو فشل تحميله بيرجع رمز التصنيف. */
+  logoUrl?: string
   /** إخفاء المبالغ — إعداد الخصوصية في spec/01. */
   amountsHidden?: boolean
   /** يُمرَّر حين يكون الصف قابلًا للفتح. */
@@ -39,10 +41,13 @@ export function TransactionRow({
   categoryColor,
   categoryDarkColor,
   categoryIconKey,
+  logoUrl,
   amountsHidden = false,
   onOpen,
   onMenu,
 }: Props) {
+  const [failedLogo, setFailedLogo] = useState<string | null>(null)
+  const showLogo = Boolean(logoUrl && failedLogo !== logoUrl)
   const isIncoming = transaction.observedDirection === 'in'
   const name = transaction.rawMerchantName?.trim() || transaction.rawDescription?.trim() || 'بلا اسم'
 
@@ -80,11 +85,13 @@ export function TransactionRow({
         />
       )}
       <div
-        className={`row__icon${categoryColor ? ' row__icon--cat' : ''}`}
+        className={`row__icon${showLogo ? ' row__icon--logo' : categoryColor ? ' row__icon--cat' : ''}`}
         aria-hidden="true"
-        style={iconStyle}
+        style={showLogo ? undefined : iconStyle}
       >
-        {showIcon ? <CategoryIcon iconKey={categoryIconKey!} size={20} /> : glyph}
+        {showLogo ? (
+          <img src={logoUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailedLogo(logoUrl!)} />
+        ) : showIcon ? <CategoryIcon iconKey={categoryIconKey!} size={20} /> : glyph}
       </div>
 
       <div className="row__main">

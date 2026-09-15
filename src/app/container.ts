@@ -82,6 +82,7 @@ import { makeManageRules } from '../application/useCases/manageRules'
 import { makeSharedMerchants } from '../application/useCases/sharedMerchants'
 import { FirestoreSharedMerchantCatalog } from '../infrastructure/firestore/sharedMerchantCatalogRepository'
 import { localSyncCursor } from '../infrastructure/localSyncCursor'
+import { createMerchantLogos } from '../infrastructure/logos/merchantLogos'
 import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
@@ -122,6 +123,7 @@ export interface UserContainer {
   /** نقل الحساب القديم لشجرة التصنيفات — OVERRIDES §28.1. */ migrateCategories: ReturnType<typeof makeMigrateCategories>
   /** رجوع القواعد والتجار الافتراضيين بمعاينة — OVERRIDES §28.1. */ restoreDefaultReferences: ReturnType<typeof makeRestoreDefaultReferences>
   /** قاعدة التجار المشتركة — OVERRIDES §25. */ sharedMerchants: ReturnType<typeof makeSharedMerchants>
+  /** شعارات التجار — OVERRIDES §25.1. */ merchantLogos: ReturnType<typeof createMerchantLogos>
   /** قسم الحساب وأسئلة البداية — OVERRIDES §26. */
   manageProfile: ReturnType<typeof makeManageProfile>
   onboarding: ReturnType<typeof makeOnboardAccount>
@@ -246,9 +248,8 @@ export function createContainer(): Container {
           categories,
           ids: new RandomIdGenerator(),
         }),
-        restoreBackup: makeRestoreBackup({
-          txns, wallets, categories, rules, merchants, budgets, uow,
-        }),
+        restoreBackup: makeRestoreBackup({ txns, wallets, categories, rules, merchants, budgets, uow }),
+        merchantLogos: createMerchantLogos({ clientId: import.meta.env.VITE_BRANDFETCH_CLIENT_ID as string | undefined }),
         addTransaction: makeAddTransaction({ txns, wallets, ids: new RandomIdGenerator(), clock: systemClock }),
         reconcileBalance: makeReconcileBalance({ txns, wallets }),
         exportBackup: makeExportBackup({
