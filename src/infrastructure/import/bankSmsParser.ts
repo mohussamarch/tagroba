@@ -6,6 +6,8 @@ import type { BankSmsMessage, SmsParseResult } from '../../application/ports/Ban
 
 const sensitive = /\bOTP\b|verification\s*code|one.time\s*(?:password|code)|رمز\s*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة\s*(?:المرور|السر)/i
 export function redactSms(text:string):string {
+ // Direct callers (including backup export) do not pass through parseBankSms.
+ text=latinizeDigits(text)
  const redact=(value:string)=>value.replace(/SA[\d\s]{20,}/gi, value=>'••••'+value.replace(/\s/g,'').slice(-4))
   .replace(/\b(?:\d[ -]*){12,34}\b/g,value=>'••••'+value.replace(/\D/g,'').slice(-4))
   .replace(/\d{5,}/g,value=>'••••'+value.slice(-4))

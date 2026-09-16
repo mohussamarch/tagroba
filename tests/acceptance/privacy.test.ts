@@ -12,6 +12,21 @@ import { sanitizeAccountNumbers } from '../../src/infrastructure/firestore/fires
  */
 
 describe('قص أرقام الحسابات قبل الكتابة', () => {
+  it.each([
+    ['حساب ١٢٣٤٥٦٧٨٩٠', 'حساب ****٧٨٩٠'],
+    ['حساب ۱۲۳۴۵۶۷۸۹۰', 'حساب ****۷۸۹۰'],
+    ['حساب 12٣۴5٦۷٨۹0', 'حساب ****۷٨۹0'],
+    ['SA٠٣٨٠٠٠٠٠٠٠٦٠٨٠١٠١٦٧٥١٩', 'SA****٧٥١٩'],
+  ])('يحمي الأرقام العربية والفارسية والمختلطة: %s', (input, expected) => {
+    expect(sanitizeAccountNumbers(input)).toBe(expected)
+    expect(sanitizeAccountNumbers(expected)).toBe(expected)
+  })
+
+  it('يحافظ على الأرقام القصيرة وشكل التاريخ والمبلغ العربي', () => {
+    const text = '٩٩٩٩٫٩٩ في ٢٠٢٦-٠٩-١٦ حساب ١٢٣٤'
+    expect(sanitizeAccountNumbers(text)).toBe(text)
+  })
+
   it('يقص أرقام الحسابات الكاملة إلى آخر أربعة', () => {
     expect(sanitizeAccountNumbers('FRACCT/67800608010143577FR')).toBe('FRACCT/****3577FR')
     expect(sanitizeAccountNumbers('TOACCT/18100608016091127TOABDUL')).toBe('TOACCT/****1127TOABDUL')

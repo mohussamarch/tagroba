@@ -5,6 +5,18 @@ import { parseBankSms } from '../../src/infrastructure/import/bankSmsParser'
 
 const message = {id:'one', sender:'AlRajhiBank', receivedAt:'2026-09-10T09:00:00Z', body:'شراء بمبلغ 25.00 SAR لدى ALBAIK في 2026-09-10'}
 describe('رسائل معلقة — لا حفظ أو إزالة قبل اختيار المستخدم', () => {
+  it.each(['١٢٣٤٥٦٧٨٩٠', '۱۲۳۴۵۶۷۸۹۰', '12٣۴5٦۷٨۹0'])(
+    'direct redaction protects account %s without losing a large Arabic amount', async account => {
+      const {redactSms}=await import('../../src/infrastructure/import/bankSmsParser')
+      const body=redactSms(`حوالة واردة بمبلغ ١٥٠٠٠٫٥٠ SAR في ٢٠٢٦-٠٩-١٠ حساب ${account}`)
+      expect(body).not.toContain(account)
+      expect(body).not.toContain('1234567890')
+      expect(body).toContain('••••7890')
+      const parsed=parseBankSms({...message,body},1)
+      expect(parsed.ok&&parsed.row.amountMinor).toBe(1500050)
+      expect(redactSms(body)).toBe(body)
+    },
+  )
   it('keeps the full amount after native-style redaction, including five-digit transfers', async () => {
     const {redactSms}=await import('../../src/infrastructure/import/bankSmsParser')
     const body=redactSms('حوالة واردة بمبلغ 15000.50 SAR في 2026-09-10 حساب 1234567890')

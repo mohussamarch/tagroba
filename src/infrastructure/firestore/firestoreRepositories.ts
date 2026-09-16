@@ -45,7 +45,7 @@ const BATCH_LIMIT = 500
  * أي تتابع من 5 أرقام فأكثر يُقص إلى آخر أربعة مسبوقة بنجوم.
  */
 export function sanitizeAccountNumbers(text: string): string {
-  return text.replace(/\d{5,}/g, (match) => `****${match.slice(-4)}`)
+  return text.replace(/[0-9٠-٩۰-۹]{5,}/g, (match) => `****${match.slice(-4)}`)
 }
 
 function userPath(uid: string, ...segments: string[]): string {
