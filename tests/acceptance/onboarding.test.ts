@@ -65,6 +65,30 @@ describe('الدين القديم من غير عملية', () => {
 })
 
 describe('أسئلة البداية', () => {
+  it('إعادة شاشة قديمة بعد تسوية الدين بالكامل لا تعيد إنشاء الدين', async () => {
+    const s = system()
+    const input = { profile: emptyProfile(), cashMinor: null, debts: [{ name: 'شخص تجربة', kind: 'receivable' as const, amountMinor: 10000 }] }
+    await s.onboarding.finish(input)
+    const [row] = await s.people.listWithBalances()
+    await s.people.settle({ obligationId: row.obligations[0].obligation.id, personId: row.person.id, amountMinor: 10000 })
+    await s.onboarding.finish(input)
+    expect((await s.people.listWithBalances())[0].balance.receivableMinor).toBe(0)
+    expect(await s.obligations.listByPerson(row.person.id)).toHaveLength(1)
+  })
+
+  it('إعادة إعداد مكتمل لا تكتب فوق تعديلات الحساب والكاش اللاحقة', async () => {
+    const s = system()
+    const input = { profile: emptyProfile(), cashMinor: 5000, debts: [] }
+    await s.onboarding.finish(input)
+    const saved = { ...await s.profile.load(), displayName: 'اسم جديد', payday: 25 }
+    await s.profile.save(saved)
+    const cash = { ...CASH, openingBalanceMinor: 9000, openingAt: '2026-09-16' }
+    await s.wallets.save(cash)
+    expect(await s.onboarding.finish(input)).toEqual({ ok: true })
+    expect(await s.profile.load()).toEqual(saved)
+    expect(await s.wallets.findById(CASH.id)).toEqual(cash)
+  })
+
   it('الكاش رصيد افتتاح بتاريخ النهارده، والديون في الأشخاص، والملف بيتعلّم خلصان', async () => {
     const s = system()
     const result = await s.onboarding.finish({

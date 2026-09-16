@@ -58,6 +58,8 @@ export function makeOnboardAccount(deps: {
   }
 
   async function finish(input: OnboardingInput): Promise<OnboardingResult> {
+    // A stale setup screen must not reset cash/profile or recreate a settled opening debt.
+    if (!deps.profile.needsOnboarding(await deps.profile.load())) return { ok: true }
     const check = checkProfile(input.profile)
     if (!check.ok) return { ok: false, step: 'profile', message: check.message }
     if (input.cashMinor !== null && (!Number.isSafeInteger(input.cashMinor) || input.cashMinor < 0)) {
