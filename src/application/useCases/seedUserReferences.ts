@@ -1,11 +1,11 @@
 import { merchantIndex } from '../../domain/merchantIndex'
 import { normalizeText } from '../../domain/normalize'
-import type { Category, ClassificationRule, Merchant } from '../../domain/entities/types'
+import type { ReferenceSeedPort, SeedSource } from '../ports/ReferenceSeedPort'
+export type { SeedSource } from '../ports/ReferenceSeedPort'
 import type {
   CategoryRepository,
   MerchantRepository,
   RuleRepository,
-  UnitOfWork,
 } from '../ports/repositories'
 
 /**
@@ -16,9 +16,8 @@ import type {
  * `spec/05`: «ملفات القواعد مرجع أولي **قابل للتحرير**، وليست سياسة لا تتغير.»
  * القابلية للتحرير تستلزم أن تُخزَّن، وإلا ضاع التعديل عند إعادة الفتح.
  *
- * القاعدة الحاكمة: **الزرع مرة واحدة فقط.**
- * لو وُجدت تصنيفات محفوظة، فالمستخدم عدّلها أو حذف منها، ولا يجوز
- * أن يُعاد المرجع الأصلي فوقها فيُلغى تعديله بلا علمه.
+ * الزرع له علامة دائمة: pending قبل أي كتابة، complete بعد اكتمالها.
+ * الاستئناف يضيف الناقص فقط. الحساب القديم بلا علامة ومعه تصنيفات لا يُغيَّر.
  */
 
 export interface SeedOutcome {
@@ -34,20 +33,14 @@ export interface SeedUserReferencesDeps {
   categories: CategoryRepository
   rules: RuleRepository
   merchants: MerchantRepository
-  uow: UnitOfWork
-}
-
-export interface SeedSource {
-  categories: readonly Category[]
-  rules: readonly ClassificationRule[]
-  merchants: readonly Merchant[]
+  progress: ReferenceSeedPort
 }
 
 export function makeSeedUserReferences(deps: SeedUserReferencesDeps) {
   return async function seed(source: SeedSource): Promise<SeedOutcome> {
     const existing = await deps.categories.listAll()
 
-    if (existing.length > 0) {
+    if (await deps.progress.begin(existing.length > 0) === 'complete') {
       return {
         seeded: false,
         categories: existing.length,
@@ -57,19 +50,16 @@ export function makeSeedUserReferences(deps: SeedUserReferencesDeps) {
       }
     }
 
-    return deps.uow.run(async () => {
-      for (const category of source.categories) await deps.categories.save(category)
-      await deps.rules.saveMany(source.rules)
-      await deps.merchants.saveMany(source.merchants)
+    await deps.progress.insertMissing(source)
+    await deps.progress.complete()
 
-      return {
-        seeded: true,
-        categories: source.categories.length,
-        rules: source.rules.length,
-        merchants: source.merchants.length,
-        reason: 'أول دخول: زرعنا التصنيفات والقواعد والتجار كمرجع أولي تقدر تعدّله.',
-      }
-    })
+    return {
+      seeded: true,
+      categories: source.categories.length,
+      rules: source.rules.length,
+      merchants: source.merchants.length,
+      reason: 'اكتمل تجهيز التصنيفات والقواعد والتجار كمرجع أولي تقدر تعدّله.',
+    }
   }
 }
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { makeSeedUserReferences } from '../../src/application/useCases/seedUserReferences'
+import { memoryReferenceSeed } from '../../src/infrastructure/memory/referenceSeed'
 import { makeCategorizeTransactions } from '../../src/application/useCases/categorizeTransactions'
 import {
   MemoryCategoryRepository,
@@ -39,7 +40,7 @@ function makeSystem() {
   const categories = new MemoryCategoryRepository([]) // فاضي: مستخدم جديد
   const rules = new MemoryRuleRepository([])
   const merchants = new MemoryMerchantRepository([])
-  const uow = new PassthroughUnitOfWork()
+  const progress = memoryReferenceSeed({ categories, rules, merchants })
 
   const categoryList = buildCategories(tokens.categories)
   const refs = loadReferences(rawRules, rawMerchants, categoryList)
@@ -50,7 +51,7 @@ function makeSystem() {
     rules,
     merchants,
     source,
-    seed: makeSeedUserReferences({ categories, rules, merchants, uow }),
+    seed: makeSeedUserReferences({ categories, rules, merchants, progress }),
   }
 }
 

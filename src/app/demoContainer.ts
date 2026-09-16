@@ -52,6 +52,7 @@ import { makeRevertImportBatch } from '../application/useCases/revertImportBatch
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
 import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
 import { makeSeedUserReferences } from '../application/useCases/seedUserReferences'
+import { memoryReferenceSeed } from '../infrastructure/memory/referenceSeed'
 import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
 import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
 import { makeLoadBudgetScreen } from '../application/useCases/loadBudgetScreen'
@@ -146,6 +147,7 @@ export function createDemoContainer(): Container {
   const categories = new MemoryCategoryRepository(categoryList)
   const merchants = new MemoryMerchantRepository(refs.merchants)
   const rules = new MemoryRuleRepository(refs.rules)
+  const seedProgress = memoryReferenceSeed({ categories, rules, merchants })
   const tags = new MemoryTagRepository()
   const transactionTags = new MemoryTransactionTagRepository()
   const assets = new MemoryAssetRepository()
@@ -193,7 +195,7 @@ export function createDemoContainer(): Container {
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
     manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»
-    seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, uow })(seedSource),
+    seedUserReferences: () => makeSeedUserReferences({ categories, rules, merchants, progress: seedProgress })(seedSource),
     loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
     loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
     managePeople,

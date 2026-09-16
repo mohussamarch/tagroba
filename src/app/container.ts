@@ -68,6 +68,7 @@ import { makeRevertImportBatch } from '../application/useCases/revertImportBatch
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
 import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
 import { makeSeedUserReferences, type SeedOutcome } from '../application/useCases/seedUserReferences'
+import { firestoreReferenceSeed } from '../infrastructure/firestore/referenceSeed'
 import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
 import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
 import { makeLoadBudgetScreen } from '../application/useCases/loadBudgetScreen'
@@ -226,7 +227,7 @@ export function createContainer(): Container {
         reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock:systemClock}),
         manageRecurring: makeManageRecurring({items:new FirestoreRecurringRepository(db,uid),txns,categories,ids:new RandomIdGenerator()}),
         seedUserReferences: () =>
-          makeSeedUserReferences({ categories, rules, merchants, uow })(buildSeedSource()),
+          makeSeedUserReferences({ categories, rules, merchants, progress: firestoreReferenceSeed(db, uid) })(buildSeedSource()),
         loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
         loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
         managePeople,
