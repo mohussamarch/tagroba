@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ChartColumn, ChevronLeft, Repeat, Settings, Shapes, TrendingUp, Users } from 'lucide-react'
+import { ChartColumn, ChevronLeft, FolderKanban, Repeat, Settings, Shapes, TrendingUp, Users } from 'lucide-react'
 import { MONTH_NAMES, monthLabel } from '../components/PeriodPicker'
 import { relativeTenths } from '../../domain/periodBars'
 import { formatMoneyOrNA, NOT_AVAILABLE } from '../../domain/formatMoney'
@@ -31,6 +31,7 @@ export function MoreScreen({
   onOpenSettings,
   onOpenRecurring,
   onOpenCategories,
+  onOpenProjects,
   onRetry,
 }: {
   periods: PeriodSummary[]
@@ -42,6 +43,7 @@ export function MoreScreen({
   onOpenSettings: () => void
   onOpenRecurring: () => void
   onOpenCategories: () => void
+  onOpenProjects: () => void
   onRetry: () => void
 }) {
   const items: Item[] = [
@@ -49,6 +51,7 @@ export function MoreScreen({
     { label: 'الاستثمار', note: 'الأصول وقيمتها', icon: <TrendingUp size={20} />, onClick: onOpenInvest },
     { label: 'الاشتراكات والفواتير', note: 'اللي بيتخصم كل شهر', icon: <Repeat size={20} />, onClick: onOpenRecurring },
     { label: 'التصنيفات وألوانها', note: 'إدارة التصنيفات', icon: <Shapes size={20} />, onClick: onOpenCategories },
+    { label: 'المشاريع', note: 'صرفت قد إيه وجالك قد إيه في كل مشروع', icon: <FolderKanban size={20} />, onClick: onOpenProjects },
     { label: 'الإعدادات', note: 'المحافظ والنسخ الاحتياطي والمظهر', icon: <Settings size={20} />, onClick: onOpenSettings },
   ]
   return (

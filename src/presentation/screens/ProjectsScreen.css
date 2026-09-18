@@ -1,0 +1,98 @@
+/* المشاريع — OVERRIDES §34. ألوان التطبيق الأخضر (tokens.css). */
+
+.projectCreate { display: flex; gap: 8px; align-items: stretch; }
+.projectCreate .sheet__input { flex: 1; min-width: 0; }
+.projectCreate .btn { display: inline-flex; align-items: center; gap: 6px; }
+
+.projectList, .projectChecks, .projectRules { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.projectCard {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  animation: rowIn 240ms ease both;
+}
+.projectCard:focus-visible { outline: 2px solid var(--c-action); outline-offset: 2px; }
+.projectCard__icon {
+  width: 40px; height: 40px; flex: none; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--c-accent-soft); color: var(--c-action);
+}
+.projectCard__main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.projectCard__name { font-weight: 700; overflow-wrap: anywhere; }
+.projectCard__meta { color: var(--c-muted); font-size: 0.8125rem; }
+.projectCard__nums { display: grid; gap: 2px; justify-items: end; font-weight: 700; }
+.projectCard__out { color: var(--c-outgoing); }
+.projectCard__in { color: var(--c-incoming); font-size: 0.875rem; }
+
+.projectArchived > summary { cursor: pointer; color: var(--c-muted); margin-bottom: 8px; }
+
+.projectBadge {
+  display: inline-block;
+  margin-inline-start: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--c-soft);
+  color: var(--c-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: 2px;
+}
+
+.projectDetail { display: grid; gap: 14px; }
+.projectDetail__back { display: inline-flex; align-items: center; gap: 4px; justify-self: start; }
+.projectDetail__head { display: flex; align-items: center; gap: 8px; }
+.projectDetail__name { margin: 0; font-size: 1.25rem; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.projectDetail__rename { display: flex; flex-wrap: wrap; gap: 8px; }
+.projectDetail__rename .sheet__input { flex: 1 1 180px; }
+.projectDetail > .btn { display: inline-flex; align-items: center; gap: 6px; justify-self: start; }
+
+.projectMetrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.projectMetric {
+  display: grid; gap: 2px; padding: 12px;
+  border: 1px solid var(--c-border); border-radius: 14px; background: var(--c-surface);
+}
+.projectMetric__label { color: var(--c-muted); font-size: 0.8125rem; }
+.projectMetric__value { font-size: 1.125rem; font-weight: 700; overflow-wrap: anywhere; }
+.projectMetric__value--out { color: var(--c-outgoing); }
+.projectMetric__value--in { color: var(--c-incoming); }
+
+.projectSection { display: grid; gap: 10px; }
+.projectSection__title { margin: 6px 0 0; display: flex; align-items: center; gap: 6px; font-size: 1rem; color: var(--c-action); }
+.projectSection > .btn { display: inline-flex; align-items: center; gap: 6px; justify-self: start; }
+
+.projectRules__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--c-border); border-radius: 12px; background: var(--c-surface);
+}
+.projectRules__row--off { opacity: 0.6; }
+
+.projectRule { display: grid; gap: 10px; }
+.projectRule__row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.projectRule__ask { display: grid; gap: 10px; }
+.projectRule__ask p { margin: 0; }
+.projectRule__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.projectTxn { margin: 0; overflow-wrap: anywhere; }
+.projectCheck {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--c-border); border-radius: 12px; background: var(--c-surface);
+}
+.projectAuto > summary { cursor: pointer; color: var(--c-action); font-weight: 600; margin-bottom: 8px; }
+.projectAuto { display: grid; gap: 8px; }
+
+@media (max-width: 420px) {
+  .projectMetrics { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .projectCard { animation: none; }
+}

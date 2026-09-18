@@ -57,6 +57,7 @@ export function AppShell({
   const [recurringOpen,setRecurringOpen] = useState(false)
   const [historyOpen,setHistoryOpen] = useState(false)
   const [categoriesOpen,setCategoriesOpen] = useState(false)
+  const [projectsOpen,setProjectsOpen] = useState(false)
   const [cashOpen, setCashOpen] = useState(false)
   const reload = () => void app.reload()
   /** قايمة «النقط التلاتة» وأوراق العملية (OVERRIDES §30). */
@@ -213,6 +214,7 @@ export function AppShell({
             onOpenSettings={() => setTab('settings')}
             onOpenRecurring={() => setRecurringOpen(true)}
             onOpenCategories={() => setCategoriesOpen(true)}
+            onOpenProjects={() => setProjectsOpen(true)}
           />
         )}
         {tab === 'settings' && (
@@ -277,7 +279,7 @@ export function AppShell({
         amountsHidden={amountsHidden}
         reload={reload}
         open={{
-          categories: categoriesOpen,
+          categories: categoriesOpen, projects: projectsOpen,
           history: historyOpen,
           recurring: recurringOpen,
           rules: rulesOpen,
@@ -285,7 +287,7 @@ export function AppShell({
           kinds: kindsOpen,
         }}
         close={(key) => {
-          const setters = { categories: setCategoriesOpen, history: setHistoryOpen,
+          const setters = { categories: setCategoriesOpen, projects: setProjectsOpen, history: setHistoryOpen,
             recurring: setRecurringOpen, rules: setRulesOpen,
             notifications: setNotifOpen, kinds: setKindsOpen }
           setters[key](false)

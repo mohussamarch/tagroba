@@ -3,13 +3,14 @@ import { formatAmount } from '../../domain/formatMoney'
 import type { Transaction } from '../../domain/entities/types'
 import './TransactionMenu.css'
 
-export type TransactionMenuAction = 'category' | 'note' | 'flags' | 'person' | 'settle' | 'details'
+export type TransactionMenuAction = 'category' | 'note' | 'flags' | 'person' | 'settle' | 'project' | 'details'
 
 const ITEMS: { action: TransactionMenuAction; label: string; hint: string }[] = [
   { action: 'category', label: 'غيّر التصنيف', hint: 'اختار تصنيف أو فرعي — اختيارك بيتحسب تأكيد' },
   { action: 'note', label: 'ضيف ملاحظة', hint: 'مثلًا: قهوة مع أحمد' },
   { action: 'person', label: 'على شخص كدين أو هدية', hint: 'دفعت عنه أو سلّفته، أو استلمت منه' },
   { action: 'settle', label: 'اربطها بدين موجود', hint: 'الفلوس دي سداد أو تحصيل لدين متسجل قبل كده' },
+  { action: 'project', label: 'ضيف لمشروع', hint: 'اجمعها مع عمليات تانية لهدف واحد — المبلغ ما يتحسبش مرتين' },
   { action: 'flags', label: 'كاش واستبعاد ووسوم', hint: 'علامات للتقارير — المبلغ ما بيتغيرش' },
   { action: 'details', label: 'كل التفاصيل', hint: 'كل إعدادات العملية في صفحة واحدة' },
 ]

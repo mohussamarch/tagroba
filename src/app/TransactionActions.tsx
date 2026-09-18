@@ -4,6 +4,7 @@ import { TransactionMenu, type TransactionMenuAction } from '../presentation/com
 import { TransactionSheet } from '../presentation/screens/TransactionSheet'
 import { LinkPersonSheet } from '../presentation/screens/LinkPersonSheet'
 import { SettleWithTransactionSheet } from '../presentation/screens/SettleWithTransactionSheet'
+import { AddToProjectSheet } from '../presentation/screens/AddToProjectSheet'
 import type { useAppData } from './useAppData'
 
 /**
@@ -19,6 +20,7 @@ export function useTransactionActions({ app, amountsHidden, reload }: {
   const [opened, setOpened] = useState<Transaction | null>(null)
   const [linking, setLinking] = useState<Transaction | null>(null)
   const [settling, setSettling] = useState<Transaction | null>(null)
+  const [projectFor, setProjectFor] = useState<Transaction | null>(null)
 
   function choose(action: TransactionMenuAction) {
     const transaction = menuFor
@@ -26,6 +28,7 @@ export function useTransactionActions({ app, amountsHidden, reload }: {
     if (!transaction) return
     if (action === 'person') { void app.ensure('people'); setLinking(transaction) }
     else if (action === 'settle') { void app.ensure('people'); setSettling(transaction) }
+    else if (action === 'project') setProjectFor(transaction)
     else setOpened(transaction)
   }
 
@@ -68,6 +71,9 @@ export function useTransactionActions({ app, amountsHidden, reload }: {
           onClose={() => setSettling(null)}
           onSettled={() => { setSettling(null); reload() }}
         />
+      )}
+      {projectFor && (
+        <AddToProjectSheet user={app.user} transaction={projectFor} amountsHidden={amountsHidden} onClose={() => setProjectFor(null)} onChanged={reload} />
       )}
     </>
   )

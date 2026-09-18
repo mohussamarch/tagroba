@@ -1,4 +1,5 @@
 import { CategoriesScreen } from '../presentation/screens/CategoriesScreen'
+import { ProjectsScreen } from '../presentation/screens/ProjectsScreen'
 import { HistoryReviewScreen } from '../presentation/screens/HistoryReviewScreen'
 import { RecurringScreen } from '../presentation/screens/RecurringScreen'
 import { RulesScreen } from '../presentation/screens/RulesScreen'
@@ -9,6 +10,7 @@ import type { useAppData } from './useAppData'
 
 export type OverlayKey =
   | 'categories'
+  | 'projects'
   | 'history'
   | 'recurring'
   | 'rules'
@@ -36,6 +38,9 @@ export function ShellOverlays({
     <>
       {open.categories && (
         <CategoriesScreen user={app.user} onClose={() => close('categories')} onChanged={reload} />
+      )}
+      {open.projects && (
+        <ProjectsScreen user={app.user} categories={app.home?.categories ?? []} amountsHidden={amountsHidden} onClose={() => close('projects')} />
       )}
       {open.history && (
         <HistoryReviewScreen
