@@ -25,7 +25,10 @@ export function useAndroidBack(tab: string, goHome: () => void): void {
     const listener = App.addListener('backButton', () => {
       const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]')
       const top = dialogs[dialogs.length - 1]
-      const close = top?.querySelector<HTMLButtonElement>('button[aria-label="إغلاق"]:not(:disabled)') ?? null
+      // بالعلامة المخفية الأول، وبعدين زرار كلامه «إغلاق» — شاشة الاشتراكات كانت كده فالرجوع ما كانش بيقفلها (2026-09-18)
+      const buttons = top ? [...top.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')] : []
+      const close = buttons.find((b) => b.getAttribute('aria-label') === 'إغلاق')
+        ?? buttons.find((b) => b.textContent?.trim() === 'إغلاق') ?? null
       const action = decideBack({ topDialog: !!top, topDialogCanClose: !!close, tab: latest.current.tab })
       if (action === 'closeDialog') close!.click()
       else if (action === 'home') latest.current.goHome()

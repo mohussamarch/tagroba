@@ -26,7 +26,7 @@ export function RecurringScreen({user,today,hidden,onClose}: {
   return <div className="sheet" role="dialog" aria-modal="true" aria-label="الاشتراكات والفواتير">
     <section className="sheet__panel">
       <header className="sheet__head"><h2 className="sheet__title">الاشتراكات والفواتير</h2>
-        <button className="btn btn--quiet" onClick={onClose}>إغلاق</button></header>
+        <button className="btn btn--quiet" onClick={onClose} aria-label="إغلاق">إغلاق</button></header>
       <div className="sheet__body">
         <p>تأكيد الاشتراك مش بيسجّل مصروف جديد. المدفوع بيتحسب من العمليات الموجودة فقط.</p>
         {error!=null && <ErrorNotice cause={error}/>}

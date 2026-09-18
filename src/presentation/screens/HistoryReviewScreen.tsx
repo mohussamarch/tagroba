@@ -21,7 +21,7 @@ export function HistoryReviewScreen({user,today,categories,onClose,onChanged}:{
  const label=(id:string|undefined)=>categories.find(c=>c.id===id)?.name??'بلا تصنيف'
  return <div className="sheet" role="dialog" aria-modal="true" aria-label="مراجعة العمليات القديمة">
   <section className="sheet__panel"><header className="sheet__head"><h2 className="sheet__title">مراجعة العمليات القديمة</h2>
-   <button className="btn btn--quiet" onClick={onClose}>إغلاق</button></header>
+   <button className="btn btn--quiet" onClick={onClose} aria-label="إغلاق">إغلاق</button></header>
   <div className="sheet__body">
    <label className="sheet__field">من<input className="sheet__input" type="date" disabled={busy} value={from} onChange={e=>{setFrom(e.target.value);setView(null)}}/></label>
    <label className="sheet__field">إلى<input className="sheet__input" type="date" disabled={busy} value={to} onChange={e=>{setTo(e.target.value);setView(null)}}/></label>
