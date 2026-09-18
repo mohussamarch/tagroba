@@ -1,5 +1,5 @@
 import { normalizeText, normalizedContains } from './normalize'
-import type { ClassificationRule, Id, Merchant, ReviewState } from './entities/types'
+import type { ClassificationRule, Id, Merchant, ReviewState, RuleMatchMode } from './entities/types'
 
 /**
  * محرك التصنيف — ترتيب الأولوية في spec/05:
@@ -57,18 +57,23 @@ export function prepareRules(rules: readonly ClassificationRule[]): Classificati
   return rules.filter((r) => r.enabled).sort((a, b) => a.priority - b.priority)
 }
 
-function ruleMatches(rule: ClassificationRule, haystack: string): boolean {
-  const target = normalizeText(rule.matchText)
+/** مطابقة نص قاعدة على اسم أو وصف — نفس المطابقة لقواعد التصنيف وقواعد المشاريع (OVERRIDES §34). */
+export function matchesText(matchText: string, matchMode: RuleMatchMode, haystack: string): boolean {
+  const target = normalizeText(matchText)
   if (!target) return false
   const text = normalizeText(haystack)
-  switch (rule.matchMode) {
+  switch (matchMode) {
     case 'exact':
       return text === target
     case 'startsWith':
       return text.startsWith(target)
     case 'contains':
-      return normalizedContains(haystack, rule.matchText)
+      return normalizedContains(haystack, matchText)
   }
+}
+
+function ruleMatches(rule: ClassificationRule, haystack: string): boolean {
+  return matchesText(rule.matchText, rule.matchMode, haystack)
 }
 
 export function categorize(

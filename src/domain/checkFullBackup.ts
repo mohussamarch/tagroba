@@ -14,6 +14,8 @@ const required:Record<string,string[]>={
   transactionTags:['transactionId','tagId'],categoryBudgets:['budgetId','categoryId','limitMinor','notifyEnabled','thresholdPercent'],
   assetLots:['assetId','purchasedAt','quantity','principalMinor','feeMinor'],assetSales:['assetId','soldAt','quantity','grossProceedsMinor','feeMinor'],
   assetPrices:['assetId','pricePerUnitMinor','asOf','source'],notificationReceipts:['eventKey','threshold','periodStart','sentAt'],
+  projects:['name','normalizedName','archived','createdAt'],projectLinks:['projectId','transactionId','source','createdAt'],
+  projectRules:['projectId','matchText','matchMode','direction','enabled','createdAt'],
 }
 const booleans=new Set(['active','archived','enabled','confirmed','economicKindConfirmed','categoryConfirmed','excludedFromBudget','isCashTagged','notifyEnabled'])
 const numeric=new Set(['order','priority','sourceOrder','cycleMonths','originalRowIndex','quantity','thresholdPercent'])

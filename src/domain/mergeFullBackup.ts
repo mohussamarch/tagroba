@@ -3,7 +3,7 @@ import { transactionContentKey } from './mergeBackup'
 import type { Transaction } from './entities/types'
 const naturalKeys:Partial<Record<BackupGroup,string[]>>={budgets:['periodKey'],categoryBudgets:['budgetId','categoryId'],
   obligations:['personId','originTransactionId','kind','currency'],allocations:['personId','transactionId','allocationKind','currency'],
-  settlements:['obligationId','transactionId'],transactionTags:['transactionId','tagId']}
+  settlements:['obligationId','transactionId'],transactionTags:['transactionId','tagId'],projectLinks:['projectId','transactionId']}
 function semantic(group:BackupGroup,row:BackupRow):string|undefined {
   if(group==='transactions')return transactionContentKey(row as unknown as Transaction)
   const keys=naturalKeys[group]

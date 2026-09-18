@@ -32,6 +32,8 @@ import type { NotificationReceipt } from '../../domain/notifications'
 
 export interface TransactionRepository {
   listByDateRange(fromIso: string, toIso: string): Promise<Transaction[]>
+  /** اللي اتسجل بعد لحظة معينة (`createdAt`) — محدود بالوقت؛ لقواعد المشاريع (OVERRIDES §34). */
+  listCreatedAfter(iso: string): Promise<Transaction[]>
   listByBatch(batchId: Id): Promise<Transaction[]>
   findByIds(ids: readonly Id[]): Promise<Transaction[]>
   saveMany(transactions: readonly Transaction[]): Promise<void>

@@ -1,4 +1,4 @@
-import { BACKUP_GROUPS,BACKUP_LABELS,type FullBackupFile } from '../../domain/fullBackup'
+import { BACKUP_GROUPS,BACKUP_LABELS,LATER_BACKUP_GROUPS,type FullBackupFile } from '../../domain/fullBackup'
 import { checkFullBackupData } from '../../domain/checkFullBackup'
 import { mergeFullBackup } from '../../domain/mergeFullBackup'
 import { checkBackupFinance } from '../../domain/checkBackupFinance'
@@ -12,11 +12,17 @@ export function makeFullBackup(port:FullBackupPort,digest:BackupDigest){
     let file:FullBackupFile
     try{file=JSON.parse(raw)}catch{throw Error('الملف مش JSON صالح')}
     if(!file||file.app!=='masroufy'||file.schemaVersion!==2)throw Error('اختر نسخة شاملة بإصدار 2؛ للنسخ القديمة استخدم استعادة النسخة القديمة')
+    // البصمة على اللي اتصدّر فعلًا؛ نسخة أقدم من المشاريع مالهاش مجموعاتها فبتتقري فاضية (OVERRIDES §34)
+    const signed=backupChecksumText(file.data,file.profile)
+    const missing=file.data&&typeof file.data==='object'?LATER_BACKUP_GROUPS.filter(key=>!(key in file.data)):[]
+    for(const key of missing){file.data[key]=[];file.counts={...file.counts,[key]:0}}
     checkFullBackupData(file.data)
     checkBackupFinance(file.data)
     checkBackupProfile(file.profile)
     for(const key of BACKUP_GROUPS)if(file.counts?.[key]!==file.data[key].length)throw Error('عدد السجلات غير مطابق: '+BACKUP_LABELS[key])
-    if(await digest(backupChecksumText(file.data,file.profile))!==file.checksum)throw Error('بصمة سلامة النسخة غير مطابقة؛ الملف اتغير أو اتلف')
+    if(await digest(signed)!==file.checksum)throw Error('بصمة سلامة النسخة غير مطابقة؛ الملف اتغير أو اتلف')
+    // النسخة اتأكدت؛ النسخة المكمّلة بتتبصم تاني عشان التطبيق بعد المعاينة يتأكد منها هي
+    if(missing.length)file.checksum=await digest(backupChecksumText(file.data,file.profile))
     return file
   }
   async function create(exportedAt:string):Promise<FullBackupFile>{

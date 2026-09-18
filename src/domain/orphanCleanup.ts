@@ -56,6 +56,7 @@ const MAX_CHAIN_ROUNDS = 5
 const DEPENDENTS: readonly [BackupGroup, string][] = [
   ['allocations', 'transactionId'], ['obligations', 'originTransactionId'], ['settlements', 'transactionId'],
   ['transactionTags', 'transactionId'], ['assetLots', 'transactionId'], ['assetSales', 'transactionId'],
+  ['projectLinks', 'transactionId'],
 ]
 
 interface Dependent { group: BackupGroup; docId: string; field: string }

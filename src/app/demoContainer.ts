@@ -70,6 +70,8 @@ import { MemorySharedMerchantCatalog, MemorySyncCursor } from '../infrastructure
 import { createMerchantLogos } from '../infrastructure/logos/merchantLogos'
 import { makeLoadCashSummary } from '../application/useCases/loadCashSummary'
 import { makeRepairBudgetIds } from '../application/useCases/repairBudgetIds'
+import { makeManageProjects } from '../application/useCases/manageProjects'
+import { MemoryProjectLinkRepository, MemoryProjectRepository, MemoryProjectRuleRepository } from '../infrastructure/memory/memoryProjectRepositories'
 import { makeRestoreBackup } from '../application/useCases/restoreBackup'
 import { makeManageAssets } from '../application/useCases/manageAssets'
 import { makeSyncAssetPrices } from '../application/useCases/syncAssetPrices'
@@ -151,6 +153,8 @@ export function createDemoContainer(): Container {
   const seedProgress = memoryReferenceSeed({ categories, rules, merchants })
   const tags = new MemoryTagRepository()
   const transactionTags = new MemoryTransactionTagRepository()
+  // المشاريع (OVERRIDES §34) — نفس المستودعات في الشاشات والنسخة الشاملة
+  const projects = new MemoryProjectRepository(), projectLinks = new MemoryProjectLinkRepository(), projectRules = new MemoryProjectRuleRepository()
   const assets = new MemoryAssetRepository()
   const assetLots = new MemoryAssetLotRepository()
   const assetSales = new MemoryAssetSaleRepository()
@@ -179,7 +183,7 @@ export function createDemoContainer(): Container {
       {id:'demo-sms-unknown',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 20 SAR'},
     ],true), parseBankSms),
     saveTextFile,
-    fullBackup: makeFullBackup(snapshotFullBackup({transactions:txns,sourceRecords:sources,importBatches:batches,wallets,categories,merchants,rules,people,obligations,allocations,settlements,tags,transactionTags,assets,assetLots,assetSales,assetPrices,notificationReceipts},{
+    fullBackup: makeFullBackup(snapshotFullBackup({transactions:txns,sourceRecords:sources,importBatches:batches,wallets,categories,merchants,rules,people,obligations,allocations,settlements,tags,transactionTags,assets,assetLots,assetSales,assetPrices,notificationReceipts,projects,projectLinks,projectRules},{
       budgets:{read:async()=>budgets.snapshot().budgets as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),budgets:rows as unknown as Budget[]})},
       categoryBudgets:{read:async()=>budgets.snapshot().lines as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),lines:rows as unknown as CategoryBudget[]})},
       recurringItems:{read:async()=>await recurringItems.listAll() as unknown as BackupRow[],write:async rows=>{for(const row of rows)await recurringItems.save(row as unknown as RecurringItem)}},
@@ -193,6 +197,7 @@ export function createDemoContainer(): Container {
     manageProfile,
     onboarding: makeOnboardAccount({ profile: manageProfile, people: managePeople, wallets, clock }),
     manageCategories: makeManageCategories({categories,ids}),
+    manageProjects: makeManageProjects({ projects, links: projectLinks, rules: projectRules, txns, allocations, categories, ids, clock: { nowIso: () => new Date().toISOString() }, cursor: new MemorySyncCursor() }),
     reviewHistory: makeReviewHistory({txns,merchants,categories,rules,uow,clock}),
     manageRecurring: makeManageRecurring({items:recurringItems,txns,categories,ids}),
     // في المعاينة المستودعات مزروعة من البداية، فالزرع بيرجع «موجودة قبل كده»

@@ -1,7 +1,8 @@
 import {describe,it,expect} from 'vitest'
 import {makeFullBackup} from '../../src/application/useCases/fullBackup'
 import {memoryFullBackup} from '../../src/infrastructure/memory/fullBackup'
-import {emptyBackupData,canonicalBackup} from '../../src/domain/fullBackup'
+import {emptyBackupData,canonicalBackup,LATER_BACKUP_GROUPS,BACKUP_GROUPS} from '../../src/domain/fullBackup'
+import {backupChecksumText} from '../../src/domain/backupProfile'
 import {backupDigest} from '../../src/infrastructure/backupDigest'
 import {mergeFullBackup} from '../../src/domain/mergeFullBackup'
 const now='2026-09-10T00:00:00Z'
@@ -28,19 +29,35 @@ function fixture(){
   data.importBatches=[{id:'batch',sourceType:'sms',fileHash:'test',fileName:'test',importedAt:now,state:'committed',counts:{total:1,imported:1,duplicates:0,similar:0,conflicts:0,invalid:0}}]
   data.sourceRecords=[{id:'source',batchId:'batch',accountIdentity:'bank',sourceReference:null,sourceHash:'hash',originalRowIndex:1,rawLine:'redacted',transactionId:'t',matchingState:'new',reason:'new'}]
   data.notificationReceipts=[{eventKey:'budget|2030-01',threshold:80,periodStart:'2030-01-28',sentAt:now}]
+  data.projects=[{id:'proj',name:'مشروع',normalizedName:'مشروع',archived:false,createdAt:now}]
+  data.projectLinks=[{id:'plink-proj-t',projectId:'proj',transactionId:'t',source:'manual',createdAt:now}]
+  data.projectRules=[{id:'prule',projectId:'proj',matchText:'shop',matchMode:'contains',direction:'out',enabled:true,createdAt:now}]
   return data
 }
 describe('نسخة شاملة',()=>{
-  it('round-trips all 21 groups, old history, empty future budgets and more than 200 batches',async()=>{
+  it('round-trips all 24 groups, old history, empty future budgets and more than 200 batches',async()=>{
     const data=fixture()
     data.importBatches=Array.from({length:205},(_,i)=>({...data.importBatches[0],id:i===0?'batch':'batch'+i}))
     const file=await makeFullBackup(memoryFullBackup(data),backupDigest).create(now)
     const target=memoryFullBackup(),service=makeFullBackup(target,backupDigest)
     const plan=await service.plan(JSON.stringify(file))
-    expect(plan.lines).toHaveLength(21);expect((await target.read()).transactions).toHaveLength(0)
+    expect(plan.lines).toHaveLength(BACKUP_GROUPS.length);expect(BACKUP_GROUPS).toHaveLength(24);expect((await target.read()).transactions).toHaveLength(0)
     await service.apply(plan.file)
     expect(await target.read()).toEqual(data)
     expect((await service.apply(file)).totalAdded).toBe(0)
+  })
+  it('a backup made before projects existed still restores, and its checksum still protects it',async()=>{
+    const file=await makeFullBackup(memoryFullBackup(fixture()),backupDigest).create(now)
+    for(const group of LATER_BACKUP_GROUPS){delete (file.data as Record<string,unknown>)[group];delete (file.counts as Record<string,unknown>)[group]}
+    file.checksum=await backupDigest(backupChecksumText(file.data,file.profile))
+    const target=memoryFullBackup(),service=makeFullBackup(target,backupDigest)
+    const plan=await service.plan(JSON.stringify(file))
+    await service.apply(plan.file)
+    const restored=await target.read()
+    expect(restored.transactions).toHaveLength(1)
+    expect(restored.projects).toEqual([])
+    const tampered=JSON.parse(JSON.stringify(file));tampered.data.merchants[0].displayName='Changed'
+    await expect(service.plan(JSON.stringify(tampered))).rejects.toThrow('بصمة')
   })
   it('does not collapse two legitimate identical transactions within the backup',()=>{
     const data=fixture();data.transactions.push({...data.transactions[0],id:'t2'})
@@ -50,7 +67,7 @@ describe('نسخة شاملة',()=>{
   })
   it('remaps all transaction links when matching existing content under another ID',async()=>{
     const incoming=fixture(),existing=fixture();existing.transactions[0].id='existing'
-    for(const group of ['allocations','settlements','sourceRecords','transactionTags'] as const)existing[group]=[]
+    for(const group of ['allocations','settlements','sourceRecords','transactionTags','projectLinks'] as const)existing[group]=[]
     existing.obligations=[]
     const target=memoryFullBackup(existing),service=makeFullBackup(target,backupDigest)
     const file=await makeFullBackup(memoryFullBackup(incoming),backupDigest).create(now)
@@ -60,6 +77,7 @@ describe('نسخة شاملة',()=>{
     expect(result.allocations[0].transactionId).toBe('existing')
     expect(result.obligations[0].originTransactionId).toBe('existing')
     expect(result.sourceRecords[0].transactionId).toBe('existing')
+    expect(result.projectLinks[0].transactionId).toBe('existing')
   })
   it('preserves existing budget/category limits and never merges different currencies',()=>{
     const incoming=fixture(),existing=fixture()

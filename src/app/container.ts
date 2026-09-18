@@ -84,6 +84,7 @@ import { makeManageRules } from '../application/useCases/manageRules'
 import { makeSharedMerchants } from '../application/useCases/sharedMerchants'
 import { FirestoreSharedMerchantCatalog } from '../infrastructure/firestore/sharedMerchantCatalogRepository'
 import { localSyncCursor } from '../infrastructure/localSyncCursor'
+import { firestoreProjects } from './projectsWiring'
 import { createMerchantLogos } from '../infrastructure/logos/merchantLogos'
 import { makeLoadCashSummary } from '../application/useCases/loadCashSummary'
 import { makeRepairBudgetIds } from '../application/useCases/repairBudgetIds'
@@ -141,6 +142,7 @@ export interface UserContainer {
   manageCategories: ReturnType<typeof makeManageCategories>
   reviewHistory: ReturnType<typeof makeReviewHistory>
   manageRecurring: ReturnType<typeof makeManageRecurring>
+  manageProjects: ReturnType<typeof firestoreProjects>
   /** يزرع المراجع الأولية عند أول دخول فقط — ARCHITECTURE.md §10.6. */
   seedUserReferences: () => Promise<SeedOutcome>
   loadHomeScreen: ReturnType<typeof makeLoadHomeScreen>
@@ -232,14 +234,8 @@ export function createContainer(): Container {
         loadHomeScreen: makeLoadHomeScreen({ txns, categories, allocations, budgets }),
         loadBudgetScreen: makeLoadBudgetScreen({ txns, categories, allocations, budgets }),
         managePeople,
-        manageAssets: makeManageAssets({
-          assets,
-          lots: assetLots,
-          sales: assetSales,
-          prices: assetPrices,
-          ids: new RandomIdGenerator(),
-          clock: systemClock,
-        }),
+        manageAssets: makeManageAssets({ assets, lots: assetLots, sales: assetSales, prices: assetPrices, ids: new RandomIdGenerator(), clock: systemClock }),
+        manageProjects: firestoreProjects(db, uid, { txns, allocations, categories }),
         loadNotifications: makeLoadNotifications({
           receipts: notificationReceipts,
           clock: systemClock,

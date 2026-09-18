@@ -92,6 +92,12 @@ export class FirestoreTransactionRepository implements TransactionRepository {
       )
   }
 
+  /** حقل واحد بمدى ⇒ الفهرس الأحادي التلقائي يكفيه (نفس سبب `listByDateRange`). */
+  async listCreatedAfter(iso: string): Promise<Transaction[]> {
+    const snap = await getDocs(query(this.col(), where('createdAt', '>', iso)))
+    return snap.docs.map((d) => d.data() as Transaction)
+  }
+
   async listByBatch(): Promise<Transaction[]> {
     // العلاقة بالدفعة عبر SourceRecord — batchId ليس ملكية مطلقة (spec/03)
     return []

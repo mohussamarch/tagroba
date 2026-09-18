@@ -61,6 +61,10 @@ export class MemoryTransactionRepository extends KeyedStore<Transaction> impleme
       .map(clone)
   }
 
+  async listCreatedAfter(iso: string): Promise<Transaction[]> {
+    return [...this.items.values()].filter((t) => t.createdAt > iso).map(clone)
+  }
+
   async listByBatch(): Promise<Transaction[]> {
     return [] // العلاقة بالدفعة عبر SourceRecord — ليست ملكية مطلقة (spec/03)
   }
