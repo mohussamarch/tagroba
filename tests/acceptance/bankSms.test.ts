@@ -43,6 +43,29 @@ it('ignores balance and fee lines and reads an incoming transfer sender',()=>{
  const bill=parseBankSms(at('2026-09-11T08:00:00Z','سداد فاتورة\nمبلغ: 300 SAR\nرسوم: 1.15 SAR\nفي: 2026-09-10'),1)
  expect(bill).toMatchObject({ok:true,row:{amountMinor:30000}})
 })
+/*
+ * نفس شكل رسايل الراجحي اللي بعتها المالك (صورة، 2026-09-18) **بأرقام بطاقة وأسماء محلات وهمية**:
+ * «بـSR 24» من غير «مبلغ»، والمحل في سطر «لـاسم»، والتاريخ بسنة برقمين: «26/9/18 09:35» (سنة أول)
+ * و«16:47 17/9/26» (يوم أول). رسالة الشراء بالدولار بتترفض لأن المبلغ بالريال مش مكتوب فيها.
+ */
+it('reads the owner bank point-of-sale layout: «بـSR», «لـ» merchant and a year-first date',()=>{
+ const body='شراء PoS\nعبر1111;مدى-سامسونج باي\nبـSR 24\nلـTEST STORE\n26/9/18 09:35'
+ expect(parseBankSms(at('2026-09-18T06:35:00Z',body),1)).toMatchObject({ok:true,row:{amountMinor:2400,date:'2026-09-18',direction:'out',merchantName:'TEST STORE'}})
+ const cents=parseBankSms(at('2026-09-18T06:37:00Z','شراء PoS\nعبر1111;مدى-سامسونج باي\nبـSR 12.75\nلـTEST PERSON\n26/9/18 09:37'),1)
+ expect(cents).toMatchObject({ok:true,row:{amountMinor:1275,merchantName:'TEST PERSON'}})
+})
+it('reads a day-first date after the time and skips an account number as merchant',()=>{
+ const result=parseBankSms(at('2026-09-17T13:47:00Z','شراء\nعبر:1111;مدى\nمن:2222\nبـSR 50\nلـTEST WALLET\n16:47 17/9/26'),1)
+ expect(result).toMatchObject({ok:true,row:{amountMinor:5000,date:'2026-09-17',merchantName:'TEST WALLET'}})
+ const noName=parseBankSms(at('2026-09-17T13:47:00Z','شراء\nمن:2222\nبـSR 50\n16:47 17/9/26'),1)
+ expect(noName.ok&&noName.row.merchantName).toBe('')
+})
+it('ignores hidden direction marks around numbers and refuses a dollar-only internet purchase',()=>{
+ const marked=parseBankSms(at('2026-09-18T06:35:00Z','شراء PoS\nبـ‏SR‎ 24\nلـ‎TEST STORE\n‎26/9/18 09:35'),1)
+ expect(marked).toMatchObject({ok:true,row:{amountMinor:2400,merchantName:'TEST STORE'}})
+ const dollars=parseBankSms(at('2026-09-18T07:15:00Z','شراء انترنت\nبطاقة:1111;مدى\nمن:2222\nمبلغ:USD 5.30\nلدى:TEST AI\nفي:26/9/18 10:15'),1)
+ expect(dollars).toMatchObject({ok:false,reason:expect.stringContaining('الريال')})
+})
 it.each([
  ['two different amounts','شراء\nبـ:25 SAR\nمبلغ:30 SAR\nفي:26-9-16','أكثر من مبلغ'],
  ['balance only','شراء\nالرصيد: 500 SAR\nفي: 2026-09-10','مبلغ العملية غير واضح'],

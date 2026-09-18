@@ -71,14 +71,18 @@ function transactionDate(body:string,receivedAt:string):string|null {
  return candidates.size===1?[...candidates][0]!:null
 }
 
+/** «لدى:»/«عند» جوه السطر، أو سطر بيبدأ بـ«لـ» (رسايل الراجحي: «لـاسم المحل»)، أو «من:/إلى:». الأرقام بس (حساب) مش تاجر. */
 function merchantOf(body:string):string {
- const labeled=body.match(/(?:لدى|عند|تاجر|\bmerchant\b|\bat\b)\s*[:：]?\s*([^\n]+?)(?=\s+(?:في|بتاريخ|\bon\b|الرصيد|\bbalance\b)(?:\s|[:：])|$)/im)?.[1]?.trim()
- return labeled||body.match(/^\s*(?:من|إلى|الى|\bfrom\b|\bto\b)\s*[:：]\s*([^\n]+)$/im)?.[1]?.trim()||''
+ const clean=(value:string|undefined)=>{const text=value?.trim()??'';return /^[\d\s*•.:-]*$/.test(text)?'':text}
+ return clean(body.match(/(?:لدى|عند|تاجر|\bmerchant\b|\bat\b)\s*[:：]?\s*([^\n]+?)(?=\s+(?:في|بتاريخ|\bon\b|الرصيد|\bbalance\b)(?:\s|[:：])|$)/im)?.[1])
+  ||clean(body.match(/^\s*لـ\s*[:：]?\s*([^\n]+)$/m)?.[1])
+  ||clean(body.match(/^\s*(?:من|إلى|الى|\bfrom\b|\bto\b)\s*[:：]\s*([^\n]+)$/im)?.[1])
 }
 
 /** Conservative Saudi transaction templates; unknown formats require manual entry. */
 export function parseBankSms(message:BankSmsMessage,lineNumber:number):SmsParseResult {
- const body=latinizeDigits(message.body).replace(/\r/g,'')
+ // علامات الاتجاه المخفية (بتيجي حوالين الأرقام والإنجليزي في رسايل البنوك) بتقطع الأنماط من غير ما تبان
+ const body=latinizeDigits(message.body).replace(/\r/g,'').replace(/[‎‏‪-‮⁦-⁩؜]/g,'')
  if(/عرض|سيتم|عرض خاص|offer|will be|scheduled/i.test(body))return {ok:false,reason:'عرض أو حركة مستقبلية وليست عملية مكتملة'}
  if(sensitive.test(body))return {ok:false,reason:'رسالة تحقق أو كلمة سر؛ تم تجاهلها'}
  if(/مرفوض|رفض العملية|لم تتم|غير ناجح|declined|failed|unsuccessful/i.test(body))return {ok:false,reason:'عملية مرفوضة أو غير مكتملة'}
