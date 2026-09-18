@@ -69,6 +69,7 @@ import { makeLoadTransactionsScreen } from '../application/useCases/loadTransact
 import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
 import { makeSeedUserReferences, type SeedOutcome } from '../application/useCases/seedUserReferences'
 import { firestoreReferenceSeed } from '../infrastructure/firestore/referenceSeed'
+import { firestoreSettlementWriter } from '../infrastructure/firestore/settlementWriter'
 import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
 import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
 import { makeLoadBudgetScreen } from '../application/useCases/loadBudgetScreen'
@@ -207,7 +208,7 @@ export function createContainer(): Container {
 
       // مبنيين مرة واحدة لأن أسئلة البداية بتستعملهم كمان
       const manageProfile = makeManageProfile({profiles:new FirestoreProfileRepository(db,uid),account:firebaseAccount,clock:systemClock})
-      const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids: new RandomIdGenerator(), clock: systemClock })
+      const managePeople = makeManagePeople({ people, obligations, settlements, settlementWriter: firestoreSettlementWriter(db, uid), allocations, txns, uow, ids: new RandomIdGenerator(), clock: systemClock })
       const sharedMerchants = makeSharedMerchants({ catalog: new FirestoreSharedMerchantCatalog(db), merchants, baseline: seedRefs.merchants, treeCategoryIds: new Set(categoryTree.categories.map((c) => c.id)), cursor: localSyncCursor(uid) })
 
       return {

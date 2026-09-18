@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { makeManagePeople } from '../../src/application/useCases/managePeople'
+import { memorySettlementWriter } from '../../src/infrastructure/memory/settlementWriter'
 import { makeManageProfile } from '../../src/application/useCases/manageProfile'
 import { makeOnboardAccount } from '../../src/application/useCases/onboardAccount'
 import {
@@ -24,10 +25,12 @@ function system(cash: Wallet = CASH) {
   const txns = new MemoryTransactionRepository()
   const wallets = new MemoryWalletRepository([BANK, cash])
   const obligations = new MemoryObligationRepository()
+  const settlements = new MemorySettlementRepository()
   const profiles = new MemoryProfileRepository()
   const profile = makeManageProfile({ profiles, account: memoryAccount(), clock })
   const people = makeManagePeople({
-    people: new MemoryPersonRepository(), obligations, settlements: new MemorySettlementRepository(),
+    people: new MemoryPersonRepository(), obligations, settlements,
+    settlementWriter: memorySettlementWriter(obligations, settlements),
     allocations: new MemoryAllocationRepository(), txns, uow: new PassthroughUnitOfWork(), ids: new SequentialIdGenerator(), clock,
   })
   return { txns, wallets, obligations, profiles, profile, people, onboarding: makeOnboardAccount({ profile, people, wallets, clock }) }

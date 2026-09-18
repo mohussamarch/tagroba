@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { makeManagePeople } from '../../src/application/useCases/managePeople'
+import { memorySettlementWriter } from '../../src/infrastructure/memory/settlementWriter'
 import { makeAddTransaction } from '../../src/application/useCases/addTransaction'
 import { makeLoadHomeScreen } from '../../src/application/useCases/loadHomeScreen'
 import {
@@ -48,6 +49,7 @@ function makeSystem() {
     allocations,
     manage: makeManagePeople({
       people, obligations, settlements, allocations, txns,
+      settlementWriter: memorySettlementWriter(obligations, settlements),
       uow: new PassthroughUnitOfWork(), ids, clock,
     }),
     add: makeAddTransaction({ txns, wallets, ids, clock }),

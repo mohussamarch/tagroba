@@ -162,11 +162,12 @@ export function PeopleScreen({
                         <SettleForm
                           maxMinor={remainingMinor}
                           onCancel={() => setSettling(null)}
-                          onSettle={async (amountMinor) => {
+                          onSettle={async (amountMinor, requestId) => {
                             await user.managePeople.settle({
                               obligationId: obligation.id,
                               personId: row.person.id,
                               amountMinor,
+                              requestId,
                             })
                             setSettling(null)
                             onChanged()
@@ -216,10 +217,11 @@ function SettleForm({
   onCancel,
 }: {
   maxMinor: number
-  onSettle: (amountMinor: number) => Promise<void>
+  onSettle: (amountMinor: number, requestId: string) => Promise<void>
   onCancel: () => void
 }) {
   const [text, setText] = useState(formatAmount(maxMinor, 'SAR', { grouping: false }))
+  const [requestId] = useState(() => crypto.randomUUID())
   const [error, setError] = useState<unknown>(null)
   const [busy, setBusy] = useState(false)
 
@@ -236,7 +238,7 @@ function SettleForm({
         }
         setBusy(true)
         try {
-          await onSettle(amountMinor)
+          await onSettle(amountMinor, requestId)
         } catch (cause) {
           setError(cause)
         } finally {

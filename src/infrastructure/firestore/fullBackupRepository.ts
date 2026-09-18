@@ -1,4 +1,5 @@
-import { collection,doc,documentId,getDocFromServer,getDocsFromServer,limit,orderBy,query,runTransaction,startAfter,type Firestore,type QueryDocumentSnapshot } from 'firebase/firestore'
+import { collection,doc,documentId,getDocFromServer,getDocsFromServer,increment,limit,orderBy,query,runTransaction,startAfter,type Firestore,type QueryDocumentSnapshot } from 'firebase/firestore'
+import { settlementRevision } from './settlementWriter'
 import { BACKUP_GROUPS,backupRowId,emptyBackupData,type FullBackupData } from '../../domain/fullBackup'
 import type { FullBackupPort } from '../../application/ports/FullBackupPort'
 import {redactSms} from '../import/bankSmsParser'
@@ -34,6 +35,7 @@ export function firestoreFullBackup(db:Firestore,uid:string):FullBackupPort {
             const current=await Promise.all(refs.map(ref=>tx.get(ref)))
             let written=0
             current.forEach((snap,index)=>{if(!snap.exists()){tx.set(refs[index],protectBankText(rows[index]));written++}})
+            if(group==='settlements'&&written)tx.set(settlementRevision(db,uid),{revision:increment(1)},{merge:true})
             return written
           })
           added[group]+=count

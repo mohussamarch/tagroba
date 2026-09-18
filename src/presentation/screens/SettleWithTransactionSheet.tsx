@@ -31,6 +31,7 @@ export function SettleWithTransactionSheet({ user, transaction, rows, loading, o
   }, [rows, transaction.observedDirection])
 
   const [choice, setChoice] = useState('')
+  const [requestId] = useState(() => crypto.randomUUID())
   const [amountText, setAmountText] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
@@ -49,7 +50,7 @@ export function SettleWithTransactionSheet({ user, transaction, rows, loading, o
     if (amountMinor === null || amountMinor <= 0) { setError(new Error('اكتب مبلغ صحيح أكبر من صفر، زي 150 أو 150.50')); return }
     setBusy(true); setError(null)
     try {
-      await user.managePeople.settle({ obligationId: chosen.obligation.id, personId: chosen.row.person.id, amountMinor, transactionId: transaction.id })
+      await user.managePeople.settle({ obligationId: chosen.obligation.id, personId: chosen.row.person.id, amountMinor, transactionId: transaction.id, requestId })
       onSettled()
     } catch (cause) {
       setError(cause)

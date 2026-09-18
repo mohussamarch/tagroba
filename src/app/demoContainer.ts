@@ -53,6 +53,7 @@ import { makeLoadTransactionsScreen } from '../application/useCases/loadTransact
 import { makeResumeStagedBatch } from '../application/useCases/resumeStagedBatch'
 import { makeSeedUserReferences } from '../application/useCases/seedUserReferences'
 import { memoryReferenceSeed } from '../infrastructure/memory/referenceSeed'
+import { memorySettlementWriter } from '../infrastructure/memory/settlementWriter'
 import { makeLoadHomeScreen } from '../application/useCases/loadHomeScreen'
 import { makeSetEconomicKind } from '../application/useCases/setEconomicKind'
 import { makeLoadBudgetScreen } from '../application/useCases/loadBudgetScreen'
@@ -164,7 +165,7 @@ export function createDemoContainer(): Container {
 
   const profiles = new MemoryProfileRepository()
   const manageProfile = makeManageProfile({ profiles, account: memoryAccount(), clock })
-  const managePeople = makeManagePeople({ people, obligations, settlements, allocations, txns, uow, ids, clock })
+  const managePeople = makeManagePeople({ people, obligations, settlements, settlementWriter: memorySettlementWriter(obligations, settlements), allocations, txns, uow, ids, clock })
   // قاعدة التجار المشتركة في الذاكرة — المعاينة ما بتكلمش فايربيز (OVERRIDES §25)
   const sharedMerchants = makeSharedMerchants({ catalog: new MemorySharedMerchantCatalog(), merchants, baseline: refs.merchants, treeCategoryIds: new Set(categoryList.map((c) => c.id)), cursor: new MemorySyncCursor() })
 

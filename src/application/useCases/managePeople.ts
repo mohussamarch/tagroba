@@ -1,10 +1,10 @@
 import {
-  checkSettlement,
   computePersonBalance,
   remainingOfObligation,
   type PersonBalance,
 } from '../../domain/ledger'
 import { formatMoney } from '../../domain/formatMoney'
+import type { SettlementWriter } from '../ports/SettlementWriter'
 import type { Halalas } from '../../domain/money'
 import type {
   Id,
@@ -47,6 +47,7 @@ export interface ManagePeopleDeps {
   people: PersonRepository
   obligations: ObligationRepository
   settlements: SettlementRepository
+  settlementWriter: SettlementWriter
   allocations: AllocationRepository
   txns: TransactionRepository
   uow: UnitOfWork
@@ -176,23 +177,17 @@ export function makeManagePeople(deps: ManagePeopleDeps) {
     amountMinor: Halalas
     /** العملية التي تمثل السداد، إن وُجدت. */
     transactionId?: Id
+    /** Stable for retries of one submitted form, different for a new intentional payment. */
+    requestId?: string
   }): Promise<Settlement> {
-    const obligations = await deps.obligations.listByPerson(input.personId)
-    const obligation = obligations.find((o) => o.id === input.obligationId)
-    if (!obligation) throw new PeopleError('الالتزام ده مش موجود')
-
-    const settlements = await deps.settlements.listByObligations([obligation.id])
-    const check = checkSettlement(obligation, settlements, input.amountMinor)
-    if (!check.allowed) throw new PeopleError(check.reason ?? 'التسوية مرفوضة')
-
-    const settlement: Settlement = {
-      id: deps.ids.next('stl'),
+    if (input.requestId && !/^[a-zA-Z0-9_-]{1,100}$/.test(input.requestId)) throw new PeopleError('معرّف طلب التسوية غير سليم')
+    return deps.settlementWriter.settle({
+      id: input.requestId ? `stl-${input.obligationId}-${input.requestId}` : deps.ids.next('stl'),
       transactionId: input.transactionId ?? '',
-      obligationId: obligation.id,
-      amountMinor: check.settledMinor,
-    }
-    await deps.settlements.saveMany([settlement])
-    return settlement
+      obligationId: input.obligationId,
+      personId: input.personId,
+      amountMinor: input.amountMinor,
+    })
   }
 
   /**

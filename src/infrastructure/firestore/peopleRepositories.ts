@@ -3,12 +3,14 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  increment,
   query,
   setDoc,
   where,
   writeBatch,
   type Firestore,
 } from 'firebase/firestore'
+import { settlementRevision } from './settlementWriter'
 import type {
   Id,
   Obligation,
@@ -50,11 +52,13 @@ async function saveAll<T extends { id: Id }>(
   name: string,
   items: readonly T[],
 ): Promise<void> {
-  for (let i = 0; i < items.length; i += BATCH_LIMIT) {
+  const pageSize = name === 'settlements' ? BATCH_LIMIT - 1 : BATCH_LIMIT
+  for (let i = 0; i < items.length; i += pageSize) {
     const batch = writeBatch(db)
-    for (const item of items.slice(i, i + BATCH_LIMIT)) {
+    for (const item of items.slice(i, i + pageSize)) {
       batch.set(doc(db, userPath(uid, name, item.id)), clean(item))
     }
+    if (name === 'settlements') batch.set(settlementRevision(db, uid), { revision: increment(1) }, { merge: true })
     await batch.commit()
   }
 }
@@ -65,9 +69,11 @@ async function deleteAll(
   name: string,
   ids: readonly Id[],
 ): Promise<void> {
-  for (let i = 0; i < ids.length; i += BATCH_LIMIT) {
+  const pageSize = name === 'settlements' ? BATCH_LIMIT - 1 : BATCH_LIMIT
+  for (let i = 0; i < ids.length; i += pageSize) {
     const batch = writeBatch(db)
-    for (const id of ids.slice(i, i + BATCH_LIMIT)) batch.delete(doc(db, userPath(uid, name, id)))
+    for (const id of ids.slice(i, i + pageSize)) batch.delete(doc(db, userPath(uid, name, id)))
+    if (name === 'settlements') batch.set(settlementRevision(db, uid), { revision: increment(1) }, { merge: true })
     await batch.commit()
   }
 }
