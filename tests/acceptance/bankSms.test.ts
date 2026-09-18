@@ -24,6 +24,34 @@ it('supports Arabic digits and incoming transfer without assigning an economic t
  expect(result.ok&&result.row.direction).toBe('in')
  expect(result.ok&&('economicKind' in result.row)).toBe(false)
 })
+/*
+ * 2026-09-18: رسايل المالك الحقيقية كلها اترفضت بـ«مبلغ العملية غير واضح». الحالات دي بنفس أشكال رسايل البنوك
+ * (كلمة «بـ» أو العملة قبل الرقم من غير «مبلغ»، وسنة برقمين) **بأرقام وأسماء وهمية** — المستودع عام.
+ */
+const at = (receivedAt:string, body:string) => ({ sender:'AlRajhiBank', receivedAt, body })
+it('reads a purchase whose amount has the currency first and a two digit year',()=>{
+ const result=parseBankSms(at('2026-09-16T10:56:00Z','شراء إنترنت\nبطاقة:4321;مدى-ابل باي\nمن:TEST SHOP\nمبلغ:SAR 199\nفي:26-9-16 13:55'),1)
+ expect(result).toMatchObject({ok:true,row:{amountMinor:19900,date:'2026-09-16',direction:'out',merchantName:'TEST SHOP'}})
+})
+it('reads «بـ» without the word amount and a day-first two digit year',()=>{
+ const result=parseBankSms(at('2026-09-16T11:00:00Z','شراء عبر نقاط البيع\nعبر:*4321\nبـ:25.50 SAR\nلدى:STORE ONE\nفي:16/9/26 13:55'),1)
+ expect(result).toMatchObject({ok:true,row:{amountMinor:2550,date:'2026-09-16',merchantName:'STORE ONE'}})
+})
+it('ignores balance and fee lines and reads an incoming transfer sender',()=>{
+ const incoming=parseBankSms(at('2026-09-16T08:00:00Z','حوالة واردة\nمن: TEST PERSON\nالمبلغ: 1,250.00 ر.س\nالرصيد: 3,000 ر.س\nفي: 26/9/15'),1)
+ expect(incoming).toMatchObject({ok:true,row:{amountMinor:125000,date:'2026-09-15',direction:'in',merchantName:'TEST PERSON'}})
+ const bill=parseBankSms(at('2026-09-11T08:00:00Z','سداد فاتورة\nمبلغ: 300 SAR\nرسوم: 1.15 SAR\nفي: 2026-09-10'),1)
+ expect(bill).toMatchObject({ok:true,row:{amountMinor:30000}})
+})
+it.each([
+ ['two different amounts','شراء\nبـ:25 SAR\nمبلغ:30 SAR\nفي:26-9-16','أكثر من مبلغ'],
+ ['balance only','شراء\nالرصيد: 500 SAR\nفي: 2026-09-10','مبلغ العملية غير واضح'],
+ ['a two digit date far from arrival','شراء\nبـ:25 SAR\nفي:10-1-1','تاريخ العملية غير واضح'],
+])('still refuses unclear messages: %s',(_,body,reason)=>{
+ const result=parseBankSms(at('2026-09-16T10:00:00Z',body),1)
+ expect(result.ok).toBe(false)
+ expect(!result.ok&&result.reason).toContain(reason)
+})
 it('redacts IBANs and long account identifiers',()=>{
  const text=redactSms('SA0380000000608010167519 حساب 1234567890')
  expect(text).not.toContain('SA038000')
