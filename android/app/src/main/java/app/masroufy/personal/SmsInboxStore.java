@@ -36,7 +36,26 @@ public class SmsInboxStore extends SQLiteOpenHelper {
         boolean changedOwner = !uid.equals(owner());
         var edit = prefs.edit().putString("owner", uid).putStringSet("senders", senders).putBoolean("enabled", true);
         // First enable starts now; manual import remains available for older messages.
-        if (changedOwner || !enabled(uid) || !prefs.contains("cursorDate")) edit.putLong("cursorDate", System.currentTimeMillis()).putLong("cursorId", -1);
+        if (changedOwner || !enabled(uid) || !prefs.contains("cursorDate")) {
+            edit.putLong("cursorDate", System.currentTimeMillis()).putLong("cursorId", -1).putInt("filterVersion", FILTER_VERSION);
+        }
+        if (!edit.commit()) throw new IllegalStateException("settings write failed");
+    }
+
+    /**
+     * 2026-09-19: الفلتر القديم (SmsSafety) كان بيرمي رسايل «SR» بصمت، و`checkpoint` كان بيعدّي المؤشر عليها ⇒
+     * «تحديث الرسائل» ما كانش بيرجعلها. مرة واحدة بعد التحديث: المؤشر بيرجع 14 يوم (ومش قبل 10 سبتمبر، أول
+     * نسخة فيها القراية التلقائية). الإضافة بمعرّف ثابت، فاللي اتسجل أو اتشال قبل كده ما بيتكررش.
+     */
+    public static final int FILTER_VERSION = 2;
+    public void upgradeFilter(long now) {
+        if (prefs.getInt("filterVersion", 1) >= FILTER_VERSION) return;
+        var edit = prefs.edit().putInt("filterVersion", FILTER_VERSION);
+        if (prefs.getBoolean("enabled", false)) {
+            long floor = java.time.LocalDate.of(2026, 9, 10).atStartOfDay(java.time.ZoneId.of("Asia/Riyadh")).toInstant().toEpochMilli();
+            long rewind = Math.max(now - 14L * 24 * 60 * 60 * 1000, floor);
+            if (rewind < cursorDate()) edit.putLong("cursorDate", rewind).putLong("cursorId", -1);
+        }
         if (!edit.commit()) throw new IllegalStateException("settings write failed");
     }
     public void disable(String uid) {

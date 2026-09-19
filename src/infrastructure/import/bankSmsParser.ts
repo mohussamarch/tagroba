@@ -11,7 +11,8 @@ export function redactSms(text:string):string {
  const redact=(value:string)=>value.replace(/SA[\d\s]{20,}/gi, value=>'••••'+value.replace(/\s/g,'').slice(-4))
   .replace(/\b(?:\d[ -]*){12,34}\b/g,value=>'••••'+value.replace(/\D/g,'').slice(-4))
   .replace(/\d{5,}/g,value=>'••••'+value.slice(-4))
- const amounts=/(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\s*[:：]?\s*(?:(?:SAR|ريال|ر\.?س\.?)\s*[\d,٬]+(?:[.٫]\d{1,2})?|[\d,٬]+(?:[.٫]\d{1,2})?\s*(?:SAR|ريال|ر\.?س\.?))/gi
+ // المبلغ اللي جنبه عملة (وكمان «SR» بتاعة الراجحي) ما بيتحجبش حتى من غير «مبلغ» قبله — زي SmsSafety.java
+ const amounts=/(?:(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\s*[:：]?\s*)?(?:(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ريال|ر\.?س\.?)\s*[:：]?\s*[\d,٬]+(?:[.٫]\d{1,2})?|[\d,٬]+(?:[.٫]\d{1,2})?\s*(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ريال|ر\.?س\.?))/gi
  let result='',end=0
  for(const match of text.matchAll(amounts)){result+=redact(text.slice(end,match.index))+match[0];end=match.index!+match[0].length}
  return result+redact(text.slice(end))

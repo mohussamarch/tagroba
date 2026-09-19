@@ -47,6 +47,8 @@ public class SmsInboxPlugin extends Plugin {
     @PluginMethod public void sync(PluginCall call) {
         execute(call, store -> {
             String owner=uid(call);
+            // مراجعة مرة واحدة للرسايل اللي الفلتر القديم رماها (SmsInboxStore.upgradeFilter)
+            store.upgradeFilter(System.currentTimeMillis());
             // Permission checks never open Android's permission dialog automatically.
             boolean more=store.enabled(owner)&&granted()&&catchUp(store,owner);
             return store.snapshot(owner,granted(),more);

@@ -9,12 +9,20 @@ public final class SmsSafety {
     private static final Pattern IGNORE = Pattern.compile(
         "\\bOTP\\b|verification\\s*code|one.time\\s*(password|code)|رمز\\s*(التحقق|التوثيق|التفعيل|الدخول)|كلمة\\s*(المرور|السر)|عرض|سيتم|offer|will be|scheduled|مرفوض|لم تتم|declined|failed",
         Pattern.CASE_INSENSITIVE);
+    // 2026-09-19: رسايل الراجحي الحقيقية بتكتب العملة «SR» («بـSR 24») — الفلتر القديم كان بيطلب SAR/ريال/ر.س
+    // فكان بيرمي كل رسايل المالك بصمت قبل ما تتحفظ. دلوقتي SR، والعملات التانية كمان عشان الرسالة تظهر بسبب
+    // رفضها («الريال بس») بدل ما تختفي. كلمات الحركة زي محلل التطبيق (bankSmsParser.ts).
+    private static final String CURRENCY =
+        "(?:(?<![A-Za-z])(?:SAR|SR|USD|EUR|GBP|AED|EGP)(?![A-Za-z])|ريال|ر\\.?س\\.?|دولار|يورو|جنيه)";
     private static final Pattern MOVEMENT = Pattern.compile(
-        "شراء|سحب نقدي|حوالة|تحويل|سداد|إيداع|ايداع|راتب|استرداد|purchase|withdrawal|transfer|deposit|refund",
+        "شراء|سحب|خصم|سداد|مدفوعات|دفع|حوالة|تحويل|إيداع|ايداع|راتب|استرداد|مرتجع|purchase|withdrawal|transfer|deposit|refund|salary|payment",
         Pattern.CASE_INSENSITIVE);
-    private static final Pattern MONEY = Pattern.compile("SAR|ريال|ر\\.?س\\.?", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MONEY = Pattern.compile(CURRENCY, Pattern.CASE_INSENSITIVE);
     private static final Pattern NUMBERS = Pattern.compile("SA[\\d\\s]{20,}|\\b(?:\\d[ -]*){12,34}\\b|\\d{5,}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern FINANCIAL = Pattern.compile("(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\\s*[:：]?\\s*(?:(?:SAR|ريال|ر\\.?س\\.?)\\s*[\\d,٬]+(?:[.٫]\\d{1,2})?|[\\d,٬]+(?:[.٫]\\d{1,2})?\\s*(?:SAR|ريال|ر\\.?س\\.?))", Pattern.CASE_INSENSITIVE);
+    // المبلغ اللي جنبه عملة ما بيتحجبش حتى من غير «مبلغ» قبله (مبلغ 5 أرقام زي «بـSR 12500» كان بيتحجب ويضيع)
+    private static final Pattern FINANCIAL = Pattern.compile(
+        "(?:(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\\s*[:：]?\\s*)?(?:" + CURRENCY + "\\s*[:：]?\\s*[\\d,٬]+(?:[.٫]\\d{1,2})?|[\\d,٬]+(?:[.٫]\\d{1,2})?\\s*" + CURRENCY + ")",
+        Pattern.CASE_INSENSITIVE);
 
     public static String sanitize(String body) {
         if (body == null || body.length() > 8000) return null;

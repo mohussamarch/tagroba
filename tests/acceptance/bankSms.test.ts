@@ -75,6 +75,13 @@ it.each([
  expect(result.ok).toBe(false)
  expect(!result.ok&&result.reason).toContain(reason)
 })
+it('keeps a five digit amount next to SR readable while hiding the account number',()=>{
+ const text=redactSms('حوالة واردة\nمن حساب 1234567890\nبـSR 12500\n26/9/18 09:35')
+ expect(text).toContain('SR 12500')
+ expect(text).not.toContain('1234567890')
+ const parsed=parseBankSms(at('2026-09-18T06:35:00Z','شراء PoS\nعبر1111;مدى\nبـSR 12500\nلـTEST STORE\n26/9/18 09:35'),1)
+ expect(parsed).toMatchObject({ok:true,row:{amountMinor:1250000,description:expect.stringContaining('SR 12500')}})
+})
 it('redacts IBANs and long account identifiers',()=>{
  const text=redactSms('SA0380000000608010167519 حساب 1234567890')
  expect(text).not.toContain('SA038000')
