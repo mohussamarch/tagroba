@@ -8,18 +8,24 @@ import { resolve } from 'node:path'
 import { moneyGolden } from './moneyGolden'
 import { normalizeGolden } from './normalizeGolden'
 import { periodGolden } from './periodGolden'
+import { ledgerGolden } from './ledgerGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
 const modules: Record<string, () => unknown> = {
   money: moneyGolden,
   normalize: normalizeGolden,
   period: periodGolden,
+  ledger: ledgerGolden,
 }
 
 mkdirSync(OUT, { recursive: true })
 for (const [name, build] of Object.entries(modules)) {
-  const data = build()
-  writeFileSync(resolve(OUT, `${name}.json`), JSON.stringify(data, null, 1) + '\n', 'utf8')
-  const count = Object.values(data as Record<string, unknown[]>).reduce((n, list) => n + list.length, 0)
+  const data = build() as Record<string, unknown[]>
+  // حالة في كل سطر: الملف أصغر، والفرق في git بيبان على الحالة اللي اتغيرت بس
+  const body = Object.entries(data)
+    .map(([fn, list]) => `${JSON.stringify(fn)}: [\n${list.map((c) => JSON.stringify(c)).join(',\n')}\n]`)
+    .join(',\n')
+  writeFileSync(resolve(OUT, `${name}.json`), `{\n${body}\n}\n`, 'utf8')
+  const count = Object.values(data).reduce((n, list) => n + list.length, 0)
   console.log(`${name}.json — ${count} حالة`)
 }

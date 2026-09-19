@@ -1,541 +1,136 @@
 {
- "latinizeDigits": [
-  {
-   "in": "",
-   "out": ""
-  },
-  {
-   "in": "   ",
-   "out": "   "
-  },
-  {
-   "in": "عبد الفتاح",
-   "out": "عبد الفتاح"
-  },
-  {
-   "in": "عبدالفتاح",
-   "out": "عبدالفتاح"
-  },
-  {
-   "in": "عبد الفتّاح",
-   "out": "عبد الفتّاح"
-  },
-  {
-   "in": "أحمد",
-   "out": "أحمد"
-  },
-  {
-   "in": "إبراهيم",
-   "out": "إبراهيم"
-  },
-  {
-   "in": "آمنة",
-   "out": "آمنة"
-  },
-  {
-   "in": "ٱلبيت",
-   "out": "ٱلبيت"
-  },
-  {
-   "in": "مستشفى",
-   "out": "مستشفى"
-  },
-  {
-   "in": "مدرسة",
-   "out": "مدرسة"
-  },
-  {
-   "in": "مؤسسة",
-   "out": "مؤسسة"
-  },
-  {
-   "in": "مسائل",
-   "out": "مسائل"
-  },
-  {
-   "in": "مـــحـــل",
-   "out": "مـــحـــل"
-  },
-  {
-   "in": "مَحَلٌّ",
-   "out": "مَحَلٌّ"
-  },
-  {
-   "in": "ﺔﻈﺣﻼﻣ",
-   "out": "ﺔﻈﺣﻼﻣ"
-  },
-  {
-   "in": "ﷲ",
-   "out": "ﷲ"
-  },
-  {
-   "in": "ﻻ",
-   "out": "ﻻ"
-  },
-  {
-   "in": "TEST MART",
-   "out": "TEST MART"
-  },
-  {
-   "in": "test  mart",
-   "out": "test  mart"
-  },
-  {
-   "in": "Test-Mart #12",
-   "out": "Test-Mart #12"
-  },
-  {
-   "in": "café",
-   "out": "café"
-  },
-  {
-   "in": "straße",
-   "out": "straße"
-  },
-  {
-   "in": "İstanbul",
-   "out": "İstanbul"
-  },
-  {
-   "in": "شراء ٢٥ ريال",
-   "out": "شراء 25 ريال"
-  },
-  {
-   "in": "۱۲۳ متجر",
-   "out": "123 متجر"
-  },
-  {
-   "in": "A.B.C",
-   "out": "A.B.C"
-  },
-  {
-   "in": "  leading and trailing  ",
-   "out": "  leading and trailing  "
-  },
-  {
-   "in": "emoji 🙂 shop",
-   "out": "emoji 🙂 shop"
-  },
-  {
-   "in": "x²",
-   "out": "x²"
-  },
-  {
-   "in": "½ price",
-   "out": "½ price"
-  },
-  {
-   "in": "①②",
-   "out": "①②"
-  },
-  {
-   "in": "ALRAJHI‏BANK",
-   "out": "ALRAJHI‏BANK"
-  },
-  {
-   "in": "mixed عربي and English",
-   "out": "mixed عربي and English"
-  },
-  {
-   "in": "قهوة/كافيه",
-   "out": "قهوة/كافيه"
-  },
-  {
-   "in": "Ｆｕｌｌ ｗｉｄｔｈ",
-   "out": "Ｆｕｌｌ ｗｉｄｔｈ"
-  },
-  {
-   "in": "ـــ",
-   "out": "ـــ"
-  },
-  {
-   "in": "٫٬",
-   "out": "٫٬"
-  },
-  {
-   "in": "ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ",
-   "out": "ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ"
-  }
- ],
- "normalizeText": [
-  {
-   "in": "",
-   "out": ""
-  },
-  {
-   "in": "   ",
-   "out": ""
-  },
-  {
-   "in": "عبد الفتاح",
-   "out": "عبد الفتاح"
-  },
-  {
-   "in": "عبدالفتاح",
-   "out": "عبدالفتاح"
-  },
-  {
-   "in": "عبد الفتّاح",
-   "out": "عبد الفتاح"
-  },
-  {
-   "in": "أحمد",
-   "out": "احمد"
-  },
-  {
-   "in": "إبراهيم",
-   "out": "ابراهيم"
-  },
-  {
-   "in": "آمنة",
-   "out": "امنه"
-  },
-  {
-   "in": "ٱلبيت",
-   "out": "البيت"
-  },
-  {
-   "in": "مستشفى",
-   "out": "مستشفي"
-  },
-  {
-   "in": "مدرسة",
-   "out": "مدرسه"
-  },
-  {
-   "in": "مؤسسة",
-   "out": "موسسه"
-  },
-  {
-   "in": "مسائل",
-   "out": "مسايل"
-  },
-  {
-   "in": "مـــحـــل",
-   "out": "محل"
-  },
-  {
-   "in": "مَحَلٌّ",
-   "out": "محل"
-  },
-  {
-   "in": "ﺔﻈﺣﻼﻣ",
-   "out": "هظحلام"
-  },
-  {
-   "in": "ﷲ",
-   "out": "الله"
-  },
-  {
-   "in": "ﻻ",
-   "out": "لا"
-  },
-  {
-   "in": "TEST MART",
-   "out": "TEST MART"
-  },
-  {
-   "in": "test  mart",
-   "out": "TEST MART"
-  },
-  {
-   "in": "Test-Mart #12",
-   "out": "TEST MART 12"
-  },
-  {
-   "in": "café",
-   "out": "CAFÉ"
-  },
-  {
-   "in": "straße",
-   "out": "STRASSE"
-  },
-  {
-   "in": "İstanbul",
-   "out": "İSTANBUL"
-  },
-  {
-   "in": "شراء ٢٥ ريال",
-   "out": "شراء 25 ريال"
-  },
-  {
-   "in": "۱۲۳ متجر",
-   "out": "123 متجر"
-  },
-  {
-   "in": "A.B.C",
-   "out": "A B C"
-  },
-  {
-   "in": "  leading and trailing  ",
-   "out": "LEADING AND TRAILING"
-  },
-  {
-   "in": "emoji 🙂 shop",
-   "out": "EMOJI SHOP"
-  },
-  {
-   "in": "x²",
-   "out": "X2"
-  },
-  {
-   "in": "½ price",
-   "out": "1 2 PRICE"
-  },
-  {
-   "in": "①②",
-   "out": "12"
-  },
-  {
-   "in": "ALRAJHI‏BANK",
-   "out": "ALRAJHI BANK"
-  },
-  {
-   "in": "mixed عربي and English",
-   "out": "MIXED عربي AND ENGLISH"
-  },
-  {
-   "in": "قهوة/كافيه",
-   "out": "قهوه كافيه"
-  },
-  {
-   "in": "Ｆｕｌｌ ｗｉｄｔｈ",
-   "out": "FULL WIDTH"
-  },
-  {
-   "in": "ـــ",
-   "out": ""
-  },
-  {
-   "in": "٫٬",
-   "out": ""
-  },
-  {
-   "in": "ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ",
-   "out": "مطعم البيت"
-  }
- ],
- "normalizeCompact": [
-  {
-   "in": "",
-   "out": ""
-  },
-  {
-   "in": "   ",
-   "out": ""
-  },
-  {
-   "in": "عبد الفتاح",
-   "out": "عبدالفتاح"
-  },
-  {
-   "in": "عبدالفتاح",
-   "out": "عبدالفتاح"
-  },
-  {
-   "in": "عبد الفتّاح",
-   "out": "عبدالفتاح"
-  },
-  {
-   "in": "أحمد",
-   "out": "احمد"
-  },
-  {
-   "in": "إبراهيم",
-   "out": "ابراهيم"
-  },
-  {
-   "in": "آمنة",
-   "out": "امنه"
-  },
-  {
-   "in": "ٱلبيت",
-   "out": "البيت"
-  },
-  {
-   "in": "مستشفى",
-   "out": "مستشفي"
-  },
-  {
-   "in": "مدرسة",
-   "out": "مدرسه"
-  },
-  {
-   "in": "مؤسسة",
-   "out": "موسسه"
-  },
-  {
-   "in": "مسائل",
-   "out": "مسايل"
-  },
-  {
-   "in": "مـــحـــل",
-   "out": "محل"
-  },
-  {
-   "in": "مَحَلٌّ",
-   "out": "محل"
-  },
-  {
-   "in": "ﺔﻈﺣﻼﻣ",
-   "out": "هظحلام"
-  },
-  {
-   "in": "ﷲ",
-   "out": "الله"
-  },
-  {
-   "in": "ﻻ",
-   "out": "لا"
-  },
-  {
-   "in": "TEST MART",
-   "out": "TESTMART"
-  },
-  {
-   "in": "test  mart",
-   "out": "TESTMART"
-  },
-  {
-   "in": "Test-Mart #12",
-   "out": "TESTMART12"
-  },
-  {
-   "in": "café",
-   "out": "CAFÉ"
-  },
-  {
-   "in": "straße",
-   "out": "STRASSE"
-  },
-  {
-   "in": "İstanbul",
-   "out": "İSTANBUL"
-  },
-  {
-   "in": "شراء ٢٥ ريال",
-   "out": "شراء25ريال"
-  },
-  {
-   "in": "۱۲۳ متجر",
-   "out": "123متجر"
-  },
-  {
-   "in": "A.B.C",
-   "out": "ABC"
-  },
-  {
-   "in": "  leading and trailing  ",
-   "out": "LEADINGANDTRAILING"
-  },
-  {
-   "in": "emoji 🙂 shop",
-   "out": "EMOJISHOP"
-  },
-  {
-   "in": "x²",
-   "out": "X2"
-  },
-  {
-   "in": "½ price",
-   "out": "12PRICE"
-  },
-  {
-   "in": "①②",
-   "out": "12"
-  },
-  {
-   "in": "ALRAJHI‏BANK",
-   "out": "ALRAJHIBANK"
-  },
-  {
-   "in": "mixed عربي and English",
-   "out": "MIXEDعربيANDENGLISH"
-  },
-  {
-   "in": "قهوة/كافيه",
-   "out": "قهوهكافيه"
-  },
-  {
-   "in": "Ｆｕｌｌ ｗｉｄｔｈ",
-   "out": "FULLWIDTH"
-  },
-  {
-   "in": "ـــ",
-   "out": ""
-  },
-  {
-   "in": "٫٬",
-   "out": ""
-  },
-  {
-   "in": "ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ",
-   "out": "مطعمالبيت"
-  }
- ],
- "normalizedContains": [
-  {
-   "in": {
-    "haystack": "عبد الفتاح للتجارة",
-    "needle": "عبدالفتاح"
-   },
-   "out": true
-  },
-  {
-   "in": {
-    "haystack": "TEST MART 1265",
-    "needle": "test mart"
-   },
-   "out": true
-  },
-  {
-   "in": {
-    "haystack": "مطعم البيت",
-    "needle": "البيت"
-   },
-   "out": true
-  },
-  {
-   "in": {
-    "haystack": "مطعم البيت",
-    "needle": ""
-   },
-   "out": false
-  },
-  {
-   "in": {
-    "haystack": "HUNGER STATION",
-    "needle": "hungerstation"
-   },
-   "out": true
-  },
-  {
-   "in": {
-    "haystack": "كافيه ريف",
-    "needle": "كافية"
-   },
-   "out": true
-  },
-  {
-   "in": {
-    "haystack": "ABC",
-    "needle": "abcd"
-   },
-   "out": false
-  },
-  {
-   "in": {
-    "haystack": "متجر ١٢",
-    "needle": "12"
-   },
-   "out": true
-  },
-  {
-   "in": {
-    "haystack": "a-b-c",
-    "needle": "a b"
-   },
-   "out": true
-  }
- ]
+"latinizeDigits": [
+{"in":"","out":""},
+{"in":"   ","out":"   "},
+{"in":"عبد الفتاح","out":"عبد الفتاح"},
+{"in":"عبدالفتاح","out":"عبدالفتاح"},
+{"in":"عبد الفتّاح","out":"عبد الفتّاح"},
+{"in":"أحمد","out":"أحمد"},
+{"in":"إبراهيم","out":"إبراهيم"},
+{"in":"آمنة","out":"آمنة"},
+{"in":"ٱلبيت","out":"ٱلبيت"},
+{"in":"مستشفى","out":"مستشفى"},
+{"in":"مدرسة","out":"مدرسة"},
+{"in":"مؤسسة","out":"مؤسسة"},
+{"in":"مسائل","out":"مسائل"},
+{"in":"مـــحـــل","out":"مـــحـــل"},
+{"in":"مَحَلٌّ","out":"مَحَلٌّ"},
+{"in":"ﺔﻈﺣﻼﻣ","out":"ﺔﻈﺣﻼﻣ"},
+{"in":"ﷲ","out":"ﷲ"},
+{"in":"ﻻ","out":"ﻻ"},
+{"in":"TEST MART","out":"TEST MART"},
+{"in":"test  mart","out":"test  mart"},
+{"in":"Test-Mart #12","out":"Test-Mart #12"},
+{"in":"café","out":"café"},
+{"in":"straße","out":"straße"},
+{"in":"İstanbul","out":"İstanbul"},
+{"in":"شراء ٢٥ ريال","out":"شراء 25 ريال"},
+{"in":"۱۲۳ متجر","out":"123 متجر"},
+{"in":"A.B.C","out":"A.B.C"},
+{"in":"  leading and trailing  ","out":"  leading and trailing  "},
+{"in":"emoji 🙂 shop","out":"emoji 🙂 shop"},
+{"in":"x²","out":"x²"},
+{"in":"½ price","out":"½ price"},
+{"in":"①②","out":"①②"},
+{"in":"ALRAJHI‏BANK","out":"ALRAJHI‏BANK"},
+{"in":"mixed عربي and English","out":"mixed عربي and English"},
+{"in":"قهوة/كافيه","out":"قهوة/كافيه"},
+{"in":"Ｆｕｌｌ ｗｉｄｔｈ","out":"Ｆｕｌｌ ｗｉｄｔｈ"},
+{"in":"ـــ","out":"ـــ"},
+{"in":"٫٬","out":"٫٬"},
+{"in":"ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ","out":"ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ"}
+],
+"normalizeText": [
+{"in":"","out":""},
+{"in":"   ","out":""},
+{"in":"عبد الفتاح","out":"عبد الفتاح"},
+{"in":"عبدالفتاح","out":"عبدالفتاح"},
+{"in":"عبد الفتّاح","out":"عبد الفتاح"},
+{"in":"أحمد","out":"احمد"},
+{"in":"إبراهيم","out":"ابراهيم"},
+{"in":"آمنة","out":"امنه"},
+{"in":"ٱلبيت","out":"البيت"},
+{"in":"مستشفى","out":"مستشفي"},
+{"in":"مدرسة","out":"مدرسه"},
+{"in":"مؤسسة","out":"موسسه"},
+{"in":"مسائل","out":"مسايل"},
+{"in":"مـــحـــل","out":"محل"},
+{"in":"مَحَلٌّ","out":"محل"},
+{"in":"ﺔﻈﺣﻼﻣ","out":"هظحلام"},
+{"in":"ﷲ","out":"الله"},
+{"in":"ﻻ","out":"لا"},
+{"in":"TEST MART","out":"TEST MART"},
+{"in":"test  mart","out":"TEST MART"},
+{"in":"Test-Mart #12","out":"TEST MART 12"},
+{"in":"café","out":"CAFÉ"},
+{"in":"straße","out":"STRASSE"},
+{"in":"İstanbul","out":"İSTANBUL"},
+{"in":"شراء ٢٥ ريال","out":"شراء 25 ريال"},
+{"in":"۱۲۳ متجر","out":"123 متجر"},
+{"in":"A.B.C","out":"A B C"},
+{"in":"  leading and trailing  ","out":"LEADING AND TRAILING"},
+{"in":"emoji 🙂 shop","out":"EMOJI SHOP"},
+{"in":"x²","out":"X2"},
+{"in":"½ price","out":"1 2 PRICE"},
+{"in":"①②","out":"12"},
+{"in":"ALRAJHI‏BANK","out":"ALRAJHI BANK"},
+{"in":"mixed عربي and English","out":"MIXED عربي AND ENGLISH"},
+{"in":"قهوة/كافيه","out":"قهوه كافيه"},
+{"in":"Ｆｕｌｌ ｗｉｄｔｈ","out":"FULL WIDTH"},
+{"in":"ـــ","out":""},
+{"in":"٫٬","out":""},
+{"in":"ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ","out":"مطعم البيت"}
+],
+"normalizeCompact": [
+{"in":"","out":""},
+{"in":"   ","out":""},
+{"in":"عبد الفتاح","out":"عبدالفتاح"},
+{"in":"عبدالفتاح","out":"عبدالفتاح"},
+{"in":"عبد الفتّاح","out":"عبدالفتاح"},
+{"in":"أحمد","out":"احمد"},
+{"in":"إبراهيم","out":"ابراهيم"},
+{"in":"آمنة","out":"امنه"},
+{"in":"ٱلبيت","out":"البيت"},
+{"in":"مستشفى","out":"مستشفي"},
+{"in":"مدرسة","out":"مدرسه"},
+{"in":"مؤسسة","out":"موسسه"},
+{"in":"مسائل","out":"مسايل"},
+{"in":"مـــحـــل","out":"محل"},
+{"in":"مَحَلٌّ","out":"محل"},
+{"in":"ﺔﻈﺣﻼﻣ","out":"هظحلام"},
+{"in":"ﷲ","out":"الله"},
+{"in":"ﻻ","out":"لا"},
+{"in":"TEST MART","out":"TESTMART"},
+{"in":"test  mart","out":"TESTMART"},
+{"in":"Test-Mart #12","out":"TESTMART12"},
+{"in":"café","out":"CAFÉ"},
+{"in":"straße","out":"STRASSE"},
+{"in":"İstanbul","out":"İSTANBUL"},
+{"in":"شراء ٢٥ ريال","out":"شراء25ريال"},
+{"in":"۱۲۳ متجر","out":"123متجر"},
+{"in":"A.B.C","out":"ABC"},
+{"in":"  leading and trailing  ","out":"LEADINGANDTRAILING"},
+{"in":"emoji 🙂 shop","out":"EMOJISHOP"},
+{"in":"x²","out":"X2"},
+{"in":"½ price","out":"12PRICE"},
+{"in":"①②","out":"12"},
+{"in":"ALRAJHI‏BANK","out":"ALRAJHIBANK"},
+{"in":"mixed عربي and English","out":"MIXEDعربيANDENGLISH"},
+{"in":"قهوة/كافيه","out":"قهوهكافيه"},
+{"in":"Ｆｕｌｌ ｗｉｄｔｈ","out":"FULLWIDTH"},
+{"in":"ـــ","out":""},
+{"in":"٫٬","out":""},
+{"in":"ﻣﻄﻌﻢ ﺍﻟﺒﻴﺖ","out":"مطعمالبيت"}
+],
+"normalizedContains": [
+{"in":{"haystack":"عبد الفتاح للتجارة","needle":"عبدالفتاح"},"out":true},
+{"in":{"haystack":"TEST MART 1265","needle":"test mart"},"out":true},
+{"in":{"haystack":"مطعم البيت","needle":"البيت"},"out":true},
+{"in":{"haystack":"مطعم البيت","needle":""},"out":false},
+{"in":{"haystack":"HUNGER STATION","needle":"hungerstation"},"out":true},
+{"in":{"haystack":"كافيه ريف","needle":"كافية"},"out":true},
+{"in":{"haystack":"ABC","needle":"abcd"},"out":false},
+{"in":{"haystack":"متجر ١٢","needle":"12"},"out":true},
+{"in":{"haystack":"a-b-c","needle":"a b"},"out":true}
+]
 }
