@@ -1,70 +1,157 @@
-import { X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { RefreshCw, Settings, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import type { UserContainer } from '../../app/container'
-import type { Wallet } from '../../domain/entities/types'
-import type { SmsRow } from '../../application/ports/BankSmsPort'
-import { formatAmount } from '../../domain/formatMoney'
-import { ImportSheet } from './ImportSheet'
+import type { SmsReview, SmsReviewLine, SmsReviewTarget } from '../../application/useCases/reviewSmsInbox'
+import { groupCategoryOptions } from '../../domain/categoryOptions'
+import type { Id, Wallet } from '../../domain/entities/types'
+import { SmsInboxSettings } from '../components/SmsInboxSettings'
+import { SmsReviewRow } from '../components/SmsReviewRow'
+import './ImportSheet.css'
+import './SmsInboxSheet.css'
 
-type View = Awaited<ReturnType<UserContainer['smsInbox']['refresh']>>
-export function SmsInboxSheet({user,wallets,onClose,onImported}: {
-  user:UserContainer;wallets:Wallet[];onClose:()=>void;onImported:()=>void
+/**
+ * رسايل البنك — OVERRIDES §36 (قرار المالك 2026-09-19): قايمة واحدة بكل عملية وتصنيفها، وزرار «سجّل الكل».
+ * تختار تصنيف لمحل جديد ⇒ سؤال واحد «نفتكره؟». الإعداد ورا الترس. مفيش حاجة بتتسجل من غير الضغطة.
+ */
+type Ask = { merchant: string; categoryId: Id; categoryName: string; direction: 'in' | 'out' }
+const sameStore = (a: string, b: string) => a.trim().toLowerCase().replace(/\s+/g, ' ') === b.trim().toLowerCase().replace(/\s+/g, ' ')
+const dayLabel = (iso: string) =>
+  new Date(iso + 'T12:00:00').toLocaleDateString('ar-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' })
+
+export function SmsInboxSheet({ user, wallets, onClose, onImported }: {
+  user: UserContainer; wallets: Wallet[]; onClose: () => void; onImported: () => void
 }) {
-  const [view,setView]=useState<View|null>(null), [error,setError]=useState('')
-  const [busy,setBusy]=useState(false), [senders,setSenders]=useState('AlRajhiBank')
-  const [selected,setSelected]=useState<Set<string>>(new Set())
-  const [review,setReview]=useState<{rows:SmsRow[];content:string;items:{id:string;lineNumber:number}[]}|null>(null)
-  async function run(action:()=>Promise<View>) {
-    setBusy(true);setError('')
-    try {const next=await action();setView(next);if(next.senders.length)setSenders(next.senders.join(', '))}
-    catch(cause){setError(cause instanceof Error?cause.message:String(cause))}
-    finally{setBusy(false)}
+  const [walletId, setWalletId] = useState(() => (wallets.find((w) => w.kind === 'bank') ?? wallets[0])?.id ?? '')
+  const [view, setView] = useState<SmsReview | null>(null)
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [done, setDone] = useState('')
+  const [settings, setSettings] = useState(false), [openRow, setOpenRow] = useState<string | null>(null)
+  /** اختيارات المستخدم بمعرّف الرسالة (رقم السطر ممكن يتغير لو وصلت رسالة جديدة). */
+  const [chosen, setChosen] = useState<Map<string, Id>>(new Map())
+  const [include, setInclude] = useState<Set<string>>(new Set())
+  const [ask, setAsk] = useState<Ask | null>(null)
+
+  const target: SmsReviewTarget = { walletId, accountIdentity: wallets.find((w) => w.id === walletId)?.name ?? 'غير محدد' }
+  async function run(action: () => Promise<SmsReview>) {
+    setBusy(true); setError('')
+    try { setView(await action()) } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) } finally { setBusy(false) }
   }
-  useEffect(()=>{void run(()=>user.smsInbox.refresh())},[user])
-  function startReview() {
-    const rows:SmsRow[]=[],items:{id:string;lineNumber:number}[]=[]
-    for(const item of view?.items??[])if(selected.has(item.id)&&item.parsed.ok){
-      rows.push(item.parsed.row);items.push({id:item.id,lineNumber:item.parsed.row.lineNumber})
-    }
-    if(rows.length)setReview({rows,items,content:JSON.stringify(rows)})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void run(() => user.smsReview.load(target)) }, [user, walletId])
+
+  const byId = useMemo(() => new Map((view?.categories ?? []).map((c) => [c.id, c])), [view])
+  const groups = useMemo(() => groupCategoryOptions(view?.categories ?? []), [view])
+  const categoryOf = (line: SmsReviewLine) => byId.get(chosen.get(line.messageId) ?? line.categoryId ?? '')
+  const all = [...(view?.ready ?? []), ...(view?.similar ?? [])]
+  const toRecord = (view?.ready.length ?? 0) + (view?.similar.filter((l) => include.has(l.messageId)).length ?? 0)
+  const uncategorized = all.filter((l) => (l.state === 'new' || include.has(l.messageId)) && !categoryOf(l)).length
+
+  function pick(line: SmsReviewLine, categoryId: Id) {
+    const next = new Map(chosen)
+    for (const other of all) if (other.messageId === line.messageId || (line.merchant && sameStore(other.merchant, line.merchant))) next.set(other.messageId, categoryId)
+    setChosen(next); setOpenRow(null)
+    if (line.merchant && !line.remembered) setAsk({ merchant: line.merchant, categoryId, categoryName: byId.get(categoryId)?.name ?? '', direction: line.direction })
   }
-  if(review)return <ImportSheet user={user} wallets={wallets} initialSms={review}
-    onClose={()=>setReview(null)} onImported={()=>{setReview(null);setSelected(new Set());onImported();void run(()=>user.smsInbox.refresh())}}
-    onRowsImported={lines=>user.smsInbox.imported(review.items,lines)}/>
-  const valid=view?.items.filter(item=>item.parsed.ok)??[]
-  return <div className="sheet" role="dialog" aria-modal="true" aria-label="رسائل جديدة">
-    <div className="sheet__panel"><header className="sheet__head"><h2 className="sheet__title">رسائل جديدة</h2>
-      <button className="iconBtn" onClick={onClose} disabled={busy} aria-label="إغلاق"><X size={18} aria-hidden="true" /></button></header>
-      <div className="sheet__body" style={{display:'grid',gap:16}}>
-        <p>راجع الرسائل هنا، واختار اللي تحب تسجله. مفيش عملية بتتحفظ قبل تأكيدك.</p>
-        {view?.enabled&&view.permission?<p role="status">القراءة التلقائية مفعّلة</p>:view?.enabled?<p role="alert">إذن أندرويد غير متاح. الرسائل المعلقة محفوظة؛ أعد تفعيل الإذن لاستكمال القراءة.</p>:<p>القراءة التلقائية متوقفة</p>}
-        <details open={view?.count===0&&!view.enabled}>
-        <summary>إعداد القراءة التلقائية وإيقافها</summary>
-        <label>أسماء مرسلي البنك (افصل بفاصلة)<input className="sheet__input" value={senders} onChange={e=>setSenders(e.target.value)} disabled={busy} style={{width:'100%'}}/></label>
-        <p>التفعيل الأول يبدأ من دلوقتي. الرسائل الأقدم متاحة من «إضافة ← رسائل البنك». الإيقاف يحافظ على الرسائل المعلقة؛ تسجيل الخروج يوقف الجمع لحماية حسابك.</p>
-        <button className="btn" disabled={busy} onClick={()=>void run(()=>user.smsInbox.enable(senders.split(/[,،\n]/)))}>
-          {view?.enabled&&view.permission?'حفظ المرسلين':'موافقة وتفعيل القراءة التلقائية'}</button>
-        {view?.enabled&&<button className="btn btn--quiet" disabled={busy} onClick={()=>void run(()=>user.smsInbox.disable())}>إيقاف القراءة التلقائية</button>}
-        <p className="notice">الرسائل اللي توصل والتطبيق مقفول تظهر للمراجعة عند فتحه. لو أندرويد أوقف التطبيق، بنحاول استكمال الرسائل الفائتة وقت الفتح.</p>
-        </details>
-        <button className="btn btn--quiet" disabled={busy} onClick={()=>void run(()=>user.smsInbox.refresh())}>{busy?'بنراجع الرسائل…':'تحديث الرسائل'}</button>
-        {error&&<p role="alert">{error}</p>}
-        {view&&<>
-          <h3>{view.count} رسالة معلقة</h3>
-          {(view.more||view.count>200)&&<p>نعرض حتى 200 رسالة للمراجعة. راجعها ثم حدّث لعرض الباقي؛ لا نحذف الرسائل غير المعروضة.</p>}
-          <button className="btn btn--quiet" disabled={busy||!valid.length} onClick={()=>setSelected(new Set(valid.map(item=>item.id)))}>تحديد كل القابل للمراجعة</button>
-          {view.items.map(item=><section className="card" key={item.id}>
-            <strong>{item.sender}</strong><span> · {item.receivedAt.slice(0,10)}</span>
-            {item.parsed.ok?<label style={{display:'block'}}><input type="checkbox" checked={selected.has(item.id)} disabled={busy}
-              onChange={e=>setSelected(old=>{const next=new Set(old);if(e.target.checked)next.add(item.id);else next.delete(item.id);return next})}/>
-              {item.parsed.row.merchantName||'عملية بنكية'} · <span className="num" style={{color:item.parsed.row.direction==='out'?'var(--c-outgoing)':'var(--c-incoming)'}}>{formatAmount(item.parsed.row.amountMinor)}</span>
-            </label>:<p>{item.parsed.reason}</p>}
-            <button className="btn btn--quiet" disabled={busy} onClick={()=>void run(()=>user.smsInbox.dismiss([item.id]))}>استبعاد من المراجعة بدون تسجيل</button>
-          </section>)}
-          <button className="btn" disabled={busy||!selected.size} onClick={startReview}>مراجعة المحدد ومنع التكرار</button>
-          {view.count===0&&!busy&&<p>مفيش رسائل معلقة حاليًا.</p>}
-        </>}
+  async function remember(a: Ask) {
+    setAsk(null)
+    await run(async () => { await user.smsReview.remember(a.merchant, a.categoryId, a.direction); return user.smsReview.load(target) })
+  }
+  async function recordAll() {
+    if (!view) return
+    const categories = new Map<number, Id>()
+    for (const line of all) { const id = chosen.get(line.messageId); if (id) categories.set(line.lineNumber, id) }
+    const includeSimilar = view.similar.filter((l) => include.has(l.messageId)).map((l) => l.lineNumber)
+    setBusy(true); setError(''); setDone('')
+    try {
+      const { recorded } = await user.smsReview.recordAll({ categories, includeSimilar })
+      setChosen(new Map()); setInclude(new Set()); setAsk(null)
+      setDone(recorded ? `اتسجلت ${recorded} عملية.` : 'مفيش عمليات جديدة — اللي كان موجود قبل كده اتشال من القايمة.')
+      onImported()
+      setView(await user.smsReview.load(target))
+    } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)) } finally { setBusy(false) }
+  }
+
+  const days = [...new Set(view?.ready.map((l) => l.date))]
+  const row = (line: SmsReviewLine, similar = false) => (
+    <SmsReviewRow key={line.messageId} line={line} category={categoryOf(line)} groups={groups} busy={busy}
+      open={openRow === line.messageId} onOpen={() => setOpenRow(openRow === line.messageId ? null : line.messageId)}
+      onPick={(id) => pick(line, id)} onDismiss={() => void run(() => user.smsReview.dismiss([line.messageId], target))}
+      similar={similar} included={include.has(line.messageId)}
+      onInclude={(on) => setInclude((old) => { const next = new Set(old); if (on) next.add(line.messageId); else next.delete(line.messageId); return next })} />
+  )
+
+  return (
+    <div className="sheet smsSheet" role="dialog" aria-modal="true" aria-label="رسايل البنك">
+      <div className="sheet__panel">
+        <header className="sheet__head">
+          <h2 className="sheet__title">رسايل البنك</h2>
+          <div className="smsSheet__tools">
+            <button type="button" className="iconBtn" aria-label="اقرا الرسايل تاني" disabled={busy} onClick={() => void run(() => user.smsReview.load(target))}><RefreshCw size={18} aria-hidden="true" /></button>
+            <button type="button" className="iconBtn" aria-label="الإعداد" aria-pressed={settings} onClick={() => setSettings((v) => !v)}><Settings size={18} aria-hidden="true" /></button>
+            <button type="button" className="iconBtn" aria-label="إغلاق" disabled={busy} onClick={onClose}><X size={18} aria-hidden="true" /></button>
+          </div>
+        </header>
+        <div className="sheet__body smsSheet__body">
+          {view && (settings || !view.enabled || !view.permission) && (
+            <SmsInboxSettings enabled={view.enabled} permission={view.permission} senders={view.senders} wallets={wallets} walletId={walletId} busy={busy}
+              onWallet={setWalletId} onEnable={(s) => void run(() => user.smsReview.enable(s, target))} onDisable={() => void run(() => user.smsReview.disable(target))} />
+          )}
+          {error && <p className="sheet__error" role="alert">{error}</p>}
+          {done && <p className="notice" role="status">{done}</p>}
+          {!view && !error && <p role="status">بنقرا الرسايل…</p>}
+          {view && (
+            <>
+              <p className="smsSheet__summary">
+                {view.ready.length ? `${view.ready.length} عملية جديدة · اضغط على أي واحدة تغيّر تصنيفها` : 'مفيش عمليات جديدة'}
+                {uncategorized > 0 && ` · ${uncategorized} من غير تصنيف هتتسجل «غير مصنف»`}
+              </p>
+              {days.map((day) => (
+                <section key={day} className="smsDay" aria-label={dayLabel(day)}>
+                  <h3 className="smsDay__title">{dayLabel(day)}</h3>
+                  <ul className="smsList">{view.ready.filter((l) => l.date === day).map((l) => row(l))}</ul>
+                </section>
+              ))}
+              {view.similar.length > 0 && (
+                <details className="smsFold">
+                  <summary>{view.similar.length} شبه عمليات متسجلة قبل كده — مش هتتسجل إلا لو اخترتها</summary>
+                  <ul className="smsList">{view.similar.map((l) => row(l, true))}</ul>
+                </details>
+              )}
+              {view.duplicates.length > 0 && <p className="sheet__hint">{view.duplicates.length} رسالة متسجلة قبل كده — هتتشال من القايمة مع التسجيل.</p>}
+              {view.failed.length > 0 && (
+                <details className="smsFold">
+                  <summary>{view.failed.length} رسالة ما اتفهمتش</summary>
+                  <ul className="smsFailed">
+                    {view.failed.map((f) => (
+                      <li key={f.messageId}>
+                        <span>{f.date} · {f.reason}</span>
+                        <button type="button" className="link" disabled={busy} onClick={() => void run(() => user.smsReview.dismiss([f.messageId], target))}>شيلها</button>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="sheet__hint">ابعت لنا صورة الرسالة دي عشان نعلّم التطبيق يقراها. تقدر تضيف العملية بإيدك من «إضافة».</p>
+                </details>
+              )}
+              {view.more && <p className="sheet__hint">فيه رسايل أكتر — سجّل دول الأول وهتظهر الباقية.</p>}
+            </>
+          )}
+        </div>
+        {ask && (
+          <div className="smsAsk" role="group" aria-label="نفتكر المحل؟">
+            <p>نفتكر «{ask.merchant}» على طول إنه <strong>{ask.categoryName}</strong>؟</p>
+            <div className="smsAsk__actions">
+              <button type="button" className="btn" disabled={busy} onClick={() => void remember(ask)}>أيوه افتكره</button>
+              <button type="button" className="btn btn--quiet" disabled={busy} onClick={() => setAsk(null)}>المرة دي بس</button>
+            </div>
+          </div>
+        )}
+        {view && (toRecord > 0 || view.duplicates.length > 0) && (
+          <footer className="sheet__foot">
+            <button type="button" className="btn" disabled={busy || !!ask} onClick={() => void recordAll()}>
+              {busy ? 'بنسجّل…' : toRecord ? `سجّل الـ${toRecord} عملية` : 'شيل المتسجل قبل كده'}
+            </button>
+          </footer>
+        )}
       </div>
     </div>
-  </div>
+  )
 }

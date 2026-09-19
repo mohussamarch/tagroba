@@ -1,0 +1,62 @@
+/* رسايل البنك — OVERRIDES §36: قايمة بسيطة زي صفوف العمليات، والزرار تحت ثابت */
+.smsSheet__tools { display: flex; gap: 4px; }
+.smsSheet__body { gap: 12px; }
+.smsSheet__summary { margin: 0; color: var(--c-muted); font-size: var(--t-label); }
+
+.smsDay { display: grid; gap: 2px; }
+.smsDay__title { margin: 6px 0 0; font-size: var(--t-label); font-weight: 600; color: var(--c-muted); }
+
+.smsList { list-style: none; margin: 0; padding: 0; display: grid; }
+.smsRow { border-bottom: 1px solid var(--c-border); }
+.smsRow:last-child { border-bottom: 0; }
+.smsRow--muted .smsRow__main { opacity: 0.7; }
+
+.smsRow__main {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 2px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.smsRow__icon {
+  width: 38px; height: 38px; border-radius: 999px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--c-warning) 14%, transparent);
+  color: var(--c-warning);
+}
+.smsRow__icon--cat { --cat: var(--cat-light); background: color-mix(in srgb, var(--cat) 16%, transparent); color: var(--cat); }
+[data-theme='dark'] .smsRow__icon--cat { --cat: var(--cat-dark); }
+
+.smsRow__text { display: grid; min-width: 0; }
+.smsRow__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.smsRow__cat { font-size: var(--t-label); color: var(--c-muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.smsRow__cat--none { color: var(--c-warning); }
+.smsRow__flag { font-size: 0.75rem; padding: 0 8px; border-radius: 999px; background: var(--c-soft); color: var(--c-muted); }
+
+.smsRow__amount { font-weight: 600; white-space: nowrap; }
+.smsRow__amount--out { color: var(--c-outgoing); }
+.smsRow__amount--in { color: var(--c-incoming); }
+
+.smsRow__edit { display: grid; gap: 8px; padding: 0 2px 12px; }
+.smsRow__edit label { font-size: var(--t-label); color: var(--c-muted); }
+.smsRow__include { display: flex; gap: 6px; align-items: center; margin-top: 6px; color: var(--c-text, inherit); }
+
+.smsAsk { display: grid; gap: 10px; flex-shrink: 0; padding: 12px var(--s-card); border-top: 1px solid var(--c-border); background: var(--c-soft); }
+.smsAsk p { margin: 0; }
+.smsAsk__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.smsFold { border: 1px dashed var(--c-border); border-radius: var(--r-metric); padding: 10px 12px; }
+.smsFold summary { cursor: pointer; color: var(--c-muted); font-size: var(--t-label); }
+.smsFailed { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; font-size: var(--t-label); }
+.smsFailed li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+
+.smsSettings { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--c-border); border-radius: var(--r-metric); background: var(--c-soft); }
+.smsSettings label { display: grid; gap: 4px; font-size: var(--t-label); }
+.smsSettings__state { margin: 0; font-weight: 600; }

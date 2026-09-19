@@ -1,5 +1,6 @@
 import type { ParsedRow, RowError, SchemaId } from '../../infrastructure/import/schemas'
 import type { Halalas } from '../../domain/money'
+import type { CategorizationSource } from '../../domain/categorize'
 import type { Id, ImportBatch, ImportSourceType, MatchingState } from '../../domain/entities/types'
 import type {
   CategoryRepository,
@@ -23,6 +24,8 @@ export interface ImportPreviewLine {
   matchedTransactionId?: string
   categoryId?: Id
   categoryReason: string
+  /** مصدر التصنيف — «التاجر المؤكد» معناه إن المستخدم افتكره قبل كده (شاشة رسايل البنك، OVERRIDES §36). */
+  categorySource?: CategorizationSource
   /** مختار للاستيراد افتراضيًا؟ الجديد نعم، وما عداه يحتاج قرارًا. */
   selectedByDefault: boolean
 }

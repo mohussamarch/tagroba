@@ -27,7 +27,7 @@ export function SmsInboxAccess({user,wallets,onImported,showWhenEmpty=false}:{us
   },[user,open])
   if(!user.smsInbox.available)return null
   return <>
-    {(count>0||error||showWhenEmpty)&&<button className="btn btn--quiet" onClick={()=>setOpen(true)}>رسائل جديدة ({count}) · إعداد القراءة التلقائية{error?' — '+error:''}</button>}
+    {(count>0||error||showWhenEmpty)&&<button className="btn btn--quiet" onClick={()=>setOpen(true)}>{count>0?`${count} رسالة من البنك مستنية تتسجل`:'رسايل البنك'}{error?' — '+error:''}</button>}
     {open&&<SmsInboxSheet user={user} wallets={wallets} onClose={()=>setOpen(false)} onImported={onImported}/>}
   </>
 }

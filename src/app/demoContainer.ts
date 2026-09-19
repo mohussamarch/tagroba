@@ -47,6 +47,7 @@ import {
 import { loadReferences } from '../infrastructure/import/referenceLoader'
 import { buildCategoryTree } from '../infrastructure/import/categoryTreeLoader'
 import { makeImportStatement } from '../application/useCases/importStatement'
+import { makeReviewSmsInbox } from '../application/useCases/reviewSmsInbox'
 import { makeCategorizeTransactions } from '../application/useCases/categorizeTransactions'
 import { makeRevertImportBatch } from '../application/useCases/revertImportBatch'
 import { makeLoadTransactionsScreen } from '../application/useCases/loadTransactionsScreen'
@@ -173,15 +174,18 @@ export function createDemoContainer(): Container {
   // قاعدة التجار المشتركة في الذاكرة — المعاينة ما بتكلمش فايربيز (OVERRIDES §25)
   const sharedMerchants = makeSharedMerchants({ catalog: new MemorySharedMerchantCatalog(), merchants, baseline: refs.merchants, treeCategoryIds: new Set(categoryList.map((c) => c.id)), cursor: new MemorySyncCursor(), confirmedCursor: new MemorySyncCursor(), clock })
 
+  const demoImport = makeImportStatement({ txns, sources, batches, merchants, categories, rules, uow, ids, clock })
+  const demoInbox = makeManageSmsInbox(memorySmsInbox([
+      {id:'demo-sms-one',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 25.50 SAR لدى DEMO ALBAIK في '+new Date().toISOString().slice(0,10)},
+      {id:'demo-sms-two',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 10 SAR لدى DEMO SHOP في '+new Date().toISOString().slice(0,10)},
+      {id:'demo-sms-unknown',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 20 SAR'},
+    ],true), parseBankSms)
   const userContainer: UserContainer = {
     homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},
     loadHomeHistory: makeLoadHomeHistory({txns,allocations,categories}),
     readBankSms: makeReadBankSms({ available: false, read: async () => ({messages:[],truncated:false}) }, parseBankSms),
-    smsInbox: makeManageSmsInbox(memorySmsInbox([
-      {id:'demo-sms-one',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 25.50 SAR لدى DEMO ALBAIK في '+new Date().toISOString().slice(0,10)},
-      {id:'demo-sms-two',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 10 SAR لدى DEMO SHOP في '+new Date().toISOString().slice(0,10)},
-      {id:'demo-sms-unknown',sender:'DemoBank',receivedAt:new Date().toISOString(),body:'شراء بمبلغ 20 SAR'},
-    ],true), parseBankSms),
+    smsInbox: demoInbox,
+    smsReview: makeReviewSmsInbox({ inbox: demoInbox, importer: demoImport, merchants, categories, ids, contribute: sharedMerchants.contribute }),
     saveTextFile,
     fullBackup: makeFullBackup(snapshotFullBackup({transactions:txns,sourceRecords:sources,importBatches:batches,wallets,categories,merchants,rules,people,obligations,allocations,settlements,tags,transactionTags,assets,assetLots,assetSales,assetPrices,notificationReceipts,projects,projectLinks,projectRules},{
       budgets:{read:async()=>budgets.snapshot().budgets as unknown as BackupRow[],write:async rows=>budgets.restore({...budgets.snapshot(),budgets:rows as unknown as Budget[]})},
@@ -215,9 +219,7 @@ export function createDemoContainer(): Container {
     setBudget: makeSetBudget({ budgets, uow, ids, clock }),
     setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock }),
     loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations, tags, transactionTags, merchants }),
-    importStatement: makeImportStatement({
-      txns, sources, batches, merchants, categories, rules, uow, ids, clock,
-    }),
+    importStatement: demoImport,
     categorizeTransactions: makeCategorizeTransactions({
       txns, merchants, categories, rules, uow, clock,
     }),

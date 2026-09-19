@@ -62,6 +62,7 @@ import { RandomIdGenerator } from '../infrastructure/firestore/randomIdGenerator
 import { loadReferences } from '../infrastructure/import/referenceLoader'
 import { buildCategoryTree } from '../infrastructure/import/categoryTreeLoader'
 import { makeImportStatement } from '../application/useCases/importStatement'
+import { makeReviewSmsInbox } from '../application/useCases/reviewSmsInbox'
 import { makeReadPdfStatement } from '../application/useCases/readPdfStatement'
 import { makeCategorizeTransactions } from '../application/useCases/categorizeTransactions'
 import { makeRevertImportBatch } from '../application/useCases/revertImportBatch'
@@ -138,6 +139,7 @@ export interface UserContainer {
   loadHomeHistory: ReturnType<typeof makeLoadHomeHistory>
   readBankSms: ReturnType<typeof makeReadBankSms>
   smsInbox: ReturnType<typeof makeManageSmsInbox>
+  /** شاشة رسايل البنك — OVERRIDES §36. */ smsReview: ReturnType<typeof makeReviewSmsInbox>
   saveTextFile: typeof saveTextFile
   manageCategories: ReturnType<typeof makeManageCategories>
   reviewHistory: ReturnType<typeof makeReviewHistory>
@@ -213,9 +215,12 @@ export function createContainer(): Container {
       const managePeople = makeManagePeople({ people, obligations, settlements, settlementWriter: firestoreSettlementWriter(db, uid), allocations, txns, uow, ids: new RandomIdGenerator(), clock: systemClock })
       const sharedMerchants = makeSharedMerchants({ catalog: new FirestoreSharedMerchantCatalog(db), merchants, baseline: seedRefs.merchants, treeCategoryIds: new Set(categoryTree.categories.map((c) => c.id)), cursor: localSyncCursor(uid), confirmedCursor: localSyncCursor(uid, 'shared-merchants-confirmed'), clock: systemClock })
 
+      const importStatement = makeImportStatement({ txns, sources, batches, merchants, categories, rules, uow, ids: new RandomIdGenerator(), clock: systemClock })
+      const smsInbox = makeManageSmsInbox(androidSmsInbox(uid), parseBankSms)
       return {
         readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
-        smsInbox: makeManageSmsInbox(androidSmsInbox(uid), parseBankSms),
+        smsInbox,
+        smsReview: makeReviewSmsInbox({ inbox: smsInbox, importer: importStatement, merchants, categories, ids: new RandomIdGenerator(), contribute: sharedMerchants.contribute }),
         homeSnapshot: createHomeSnapshot(uid),
         loadHomeHistory: makeLoadHomeHistory({txns,allocations,categories}),
         saveTextFile,
@@ -265,17 +270,7 @@ export function createContainer(): Container {
         setEconomicKind: makeSetEconomicKind({ txns, categories, uow, clock: systemClock }),
         loadTransactionsScreen: makeLoadTransactionsScreen({ txns, categories, allocations, tags, transactionTags, merchants }),
         readPdfStatement: makeReadPdfStatement(),
-        importStatement: makeImportStatement({
-          txns,
-          sources,
-          batches,
-          merchants,
-          categories,
-          rules,
-          uow,
-          ids: new RandomIdGenerator(),
-          clock: systemClock,
-        }),
+        importStatement,
         categorizeTransactions: makeCategorizeTransactions({ txns, merchants, categories, rules, uow, clock: systemClock }),
         revertImportBatch: makeRevertImportBatch({
           txns,

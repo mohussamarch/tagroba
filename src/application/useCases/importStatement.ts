@@ -35,6 +35,7 @@ export function makeImportStatement(deps: ImportStatementDeps) {
     line: ImportPreviewLine,
     now: string,
     request: ImportRequest,
+    chosenCategoryId?: Id,
   ): Transaction {
     const txn: Transaction = {
       id,
@@ -58,6 +59,8 @@ export function makeImportStatement(deps: ImportStatementDeps) {
       updatedAt: now,
     }
     if (line.categoryId) txn.categoryId = line.categoryId
+    // تصنيف اختاره المستخدم بنفسه وقت المراجعة = مؤكد، زي `categorizeTransactions.confirm`
+    if (chosenCategoryId) Object.assign(txn, { categoryId: chosenCategoryId, categoryConfirmed: true, reviewState: 'confirmed' })
     // الرصيد المعلن يُحفظ كما ورد — هو مرجع المطابقة (OVERRIDES §7-ب)
     if (line.row.statedBalanceMinor !== undefined) {
       txn.statedBalanceMinor = line.row.statedBalanceMinor
@@ -76,6 +79,7 @@ export function makeImportStatement(deps: ImportStatementDeps) {
     request: ImportRequest,
     previewResult: ImportPreview,
     selectedLineNumbers?: readonly number[],
+    chosenCategories?: ReadonlyMap<number, Id>,
   ): Promise<ImportBatch> {
     const selection = selectedLineNumbers
       ? new Set(selectedLineNumbers)
@@ -106,7 +110,7 @@ export function makeImportStatement(deps: ImportStatementDeps) {
       for (const line of previewResult.lines) {
         const included = selection.has(line.row.lineNumber)
         const txnId = included ? deps.ids.next('txn') : null
-        if (txnId) transactions.push(buildTransaction(txnId, line, now, request))
+        if (txnId) transactions.push(buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber)))
 
         records.push({
           id: deps.ids.next('src'),
@@ -164,7 +168,8 @@ export function makeImportStatement(deps: ImportStatementDeps) {
 
 
   let committing = false
-  async function commit(request:ImportRequest, previous:ImportPreview, selected?:readonly number[]):Promise<ImportBatch> {
+  /** `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد. */
+  async function commit(request:ImportRequest, previous:ImportPreview, selected?:readonly number[], chosenCategories?:ReadonlyMap<number, Id>):Promise<ImportBatch> {
     if (committing) throw new Error('فيه استيراد بيتحفظ حاليًا؛ استنى اكتماله')
     committing = true
     try {
@@ -194,7 +199,7 @@ export function makeImportStatement(deps: ImportStatementDeps) {
         }
         if (now.state === 'duplicate' || now.state === 'invalid') throw new Error('العملية المكررة أو غير الصالحة مش قابلة للإضافة')
       }
-      return await commitPrepared(request, fresh, selection)
+      return await commitPrepared(request, fresh, selection, chosenCategories)
     } finally { committing = false }
   }
 

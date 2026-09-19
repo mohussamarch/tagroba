@@ -172,6 +172,7 @@ export async function runPreview(
       state: verdict.state,
       reason: verdict.reason,
       categoryReason: categorization.reason,
+      categorySource: categorization.source,
       // «أضف الجديد فقط» — fixtures/README. المتشابه والتعارض يحتاجان قرارًا
       selectedByDefault: verdict.state === 'new',
     }
