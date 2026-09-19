@@ -14,6 +14,41 @@ internal object JsText {
     /** نفس `\s` في جافاسكربت: WhiteSpace + LineTerminator. */
     fun isWhitespace(c: Char): Boolean = c.code in SPACE_CODES || c.code in 0x2000..0x200A
 
+    /**
+     * جوه Regex: `S` = نفس `\s` بتاع جافاسكربت (في Java/Kotlin `\s` إنجليزي بس)،
+     * و`B` = نفس `\b` بتاع جافاسكربت (حدود كلمة إنجليزية بس — Java بتعتبر الحروف العربية جزء من الكلمة).
+     */
+    val S: String = buildString {
+        append('[')
+        for (code in SPACE_CODES) append(code.toChar())
+        append(0x2000.toChar()).append('-').append(0x200A.toChar())
+        append(']')
+    }
+    const val B = "(?:(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])|(?<![A-Za-z0-9_])(?=[A-Za-z0-9_]))"
+
+    /** نفس `Date.parse` للصيغ اللي بنستعملها (ISO كامل بمنطقة زمنية، أو تاريخ بس = UTC) — وإلا null زي NaN. */
+    fun parseIsoMillis(text: String): Long? {
+        val m = ISO_INSTANT.matchEntire(text) ?: return null
+        val (y, mo, d, time) = m.destructured
+        if (!isValidIsoDate("$y-$mo-$d")) return null
+        val day = toDayNumber(DateParts(y.toInt(), mo.toInt(), d.toInt())).toLong() * 86_400_000L
+        if (time.isEmpty()) return day
+        val t = ISO_TIME.matchEntire(time) ?: return null
+        val (hh, mm, ss, frac, zone) = t.destructured
+        if (hh.toInt() > 24 || mm.toInt() > 59 || (ss.isNotEmpty() && ss.toInt() > 59)) return null
+        val millis = (frac.ifEmpty { "0" } + "00").take(3).toLong()
+        var total = day + hh.toLong() * 3_600_000 + mm.toLong() * 60_000 + (ss.ifEmpty { "0" }).toLong() * 1000 + millis
+        if (zone.isEmpty()) return null // من غير منطقة زمنية جافاسكربت بتاخد توقيت الجهاز — مش بنستعملها
+        if (zone != "Z") {
+            val sign = if (zone[0] == '-') -1 else 1
+            total -= sign * (zone.substring(1, 3).toLong() * 3_600_000 + zone.substring(4, 6).toLong() * 60_000)
+        }
+        return total
+    }
+
+    private val ISO_INSTANT = Regex("(\\d{4})-(\\d{2})-(\\d{2})(?:T(.*))?")
+    private val ISO_TIME = Regex("(\\d{2}):(\\d{2})(?::(\\d{2})(?:\\.(\\d{1,9}))?)?(Z|[+-]\\d{2}:\\d{2})?")
+
     /** نفس `String.prototype.trim`. */
     fun trim(text: String): String {
         var start = 0
