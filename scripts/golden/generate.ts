@@ -16,6 +16,7 @@ import { smsGolden } from './smsGolden'
 import { budgetGolden } from './budgetGolden'
 import { categoriesGolden } from './categoriesGolden'
 import { miscGolden } from './miscGolden'
+import { investGolden } from './investGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
 const modules: Record<string, () => unknown> = {
@@ -30,6 +31,7 @@ const modules: Record<string, () => unknown> = {
   budget: budgetGolden,
   categories: categoriesGolden,
   misc: miscGolden,
+  invest: investGolden,
 }
 
 mkdirSync(OUT, { recursive: true })
