@@ -21,6 +21,10 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
+        jvmMain.dependencies {
+            // ترتيب الحروف العربي بنفس ICU اللي في التطبيق الحالي وأندرويد والآيفون (ARCHITECTURE §31)
+            implementation("com.ibm.icu:icu4j:78.3")
+        }
         jvmTest.dependencies {
             // قراية ملفات المرجع JSON — للاختبارات بس (ARCHITECTURE §31)
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")

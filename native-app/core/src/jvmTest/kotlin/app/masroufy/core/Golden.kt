@@ -42,11 +42,28 @@ object Golden {
                 val error = result.exceptionOrNull() ?: fail("$function($input): كان المفروض خطأ «$expectedError» وطلع ${result.getOrNull()}")
                 assertEquals(expectedError, error.message, "$function($input)")
             } else {
-                val actual = result.getOrElse { fail("$function($input): خطأ مش متوقع «${it.message}»") }
-                assertTrue(same(case["out"] ?: JsonNull, actual), "$function($input): المتوقع ${case["out"]} والناتج $actual")
+                val actual = result.getOrElse { fail("$function(${short(input)}): خطأ مش متوقع «${it.message}»") }
+                val diff = firstDiff(case["out"] ?: JsonNull, actual, "")
+                if (diff != null) fail("$function(${short(input)}): أول فرق عند $diff")
             }
         }
         return list.size
+    }
+
+    private fun short(e: JsonElement) = e.toString().let { if (it.length > 300) it.take(300) + "…" else it }
+
+    /** مكان أول فرق والقيمتين هناك — عشان الفشل يبان على طول بدل ما يطبع الناتج كله. */
+    fun firstDiff(a: JsonElement, b: JsonElement, path: String): String? {
+        if (a is JsonArray && b is JsonArray) {
+            for (i in 0 until minOf(a.size, b.size)) firstDiff(a[i], b[i], "$path[$i]")?.let { return it }
+            return if (a.size != b.size) "$path: الطول المتوقع ${a.size} والناتج ${b.size}" else null
+        }
+        if (a is JsonObject && b is JsonObject) {
+            if (a.keys != b.keys) return "$path: المفاتيح المتوقعة ${a.keys} والناتجة ${b.keys}"
+            for (k in a.keys) firstDiff(a[k]!!, b[k]!!, "$path.$k")?.let { return it }
+            return null
+        }
+        return if (same(a, b)) null else "$path: المتوقع ${short(a)} والناتج ${short(b)}"
     }
 
     /** الأرقام بتتقارن بقيمتها (0 من جافاسكربت = 0.0 هنا)، والباقي بالحرف. */
