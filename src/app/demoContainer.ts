@@ -171,7 +171,7 @@ export function createDemoContainer(): Container {
   const manageProfile = makeManageProfile({ profiles, account: memoryAccount(), clock })
   const managePeople = makeManagePeople({ people, obligations, settlements, settlementWriter: memorySettlementWriter(obligations, settlements), allocations, txns, uow, ids, clock })
   // قاعدة التجار المشتركة في الذاكرة — المعاينة ما بتكلمش فايربيز (OVERRIDES §25)
-  const sharedMerchants = makeSharedMerchants({ catalog: new MemorySharedMerchantCatalog(), merchants, baseline: refs.merchants, treeCategoryIds: new Set(categoryList.map((c) => c.id)), cursor: new MemorySyncCursor() })
+  const sharedMerchants = makeSharedMerchants({ catalog: new MemorySharedMerchantCatalog(), merchants, baseline: refs.merchants, treeCategoryIds: new Set(categoryList.map((c) => c.id)), cursor: new MemorySyncCursor(), confirmedCursor: new MemorySyncCursor(), clock })
 
   const userContainer: UserContainer = {
     homeSnapshot: {read:async()=>null,save:async()=>{},clear:async()=>{}},

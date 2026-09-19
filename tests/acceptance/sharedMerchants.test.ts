@@ -82,7 +82,7 @@ describe('المزامنة لحساب المستخدم', () => {
     const catalog = new MemorySharedMerchantCatalog()
     const merchants = new MemoryMerchantRepository()
     const cursor = new MemorySyncCursor()
-    const shared = makeSharedMerchants({ catalog, merchants, baseline: [], treeCategoryIds: tree, cursor })
+    const shared = makeSharedMerchants({ catalog, merchants, baseline: [], treeCategoryIds: tree, cursor, confirmedCursor: new MemorySyncCursor(), clock: { nowIso: () => '2026-09-18T00:00:00.000Z' } })
 
     expect(await shared.contribute(purchase, 'cat-food--coffee')).toBe('shared')
     expect(await shared.sync()).toEqual({ changes: 1, added: 0, filled: 0 }) // مش مؤكد ⇒ ما يوصلش الحساب
@@ -99,12 +99,38 @@ describe('المزامنة لحساب المستخدم', () => {
     expect((await catalog.get('CAFE NOUR RIYADH'))?.categoryId).toBe('cat-food--coffee')
   })
 
+  it('تأكيد من اللوحة من غير ما وقت التعديل يتغير بيوصل في المراجعة اليومية للمؤكدين (بند Codex §38-3)', async () => {
+    const catalog = new MemorySharedMerchantCatalog()
+    const merchants = new MemoryMerchantRepository()
+    const clock = { now: '2026-09-18T08:00:00.000Z', nowIso() { return this.now } }
+    let confirmedReads = 0
+    const counted = {
+      listChangedSince: catalog.listChangedSince.bind(catalog), get: catalog.get.bind(catalog), save: catalog.save.bind(catalog),
+      listConfirmed: async () => { confirmedReads++; return catalog.listConfirmed() },
+    }
+    const shared = makeSharedMerchants({ catalog: counted, merchants, baseline: [], treeCategoryIds: tree, cursor: new MemorySyncCursor(), confirmedCursor: new MemorySyncCursor(), clock })
+    await shared.contribute(purchase, 'cat-food--coffee')
+    await shared.sync()
+    expect(confirmedReads).toBe(0) // أول مزامنة بتقرا كله أصلًا
+    const stamp = (await catalog.get('CAFE NOUR RIYADH'))!.updatedAt!
+    catalog.confirmFromConsole('CAFE NOUR RIYADH', 'cat-food--coffee', stamp) // التأكيد ما غيّرش الوقت
+    clock.now = '2026-09-18T20:00:00.000Z'
+    expect(await shared.sync()).toMatchObject({ added: 0 })
+    expect(confirmedReads).toBe(0) // لسه ما عداش يوم
+    clock.now = '2026-09-19T08:00:01.000Z'
+    expect(await shared.sync()).toMatchObject({ added: 1 })
+    expect(confirmedReads).toBe(1)
+    expect(await shared.sync()).toMatchObject({ added: 0 })
+    expect(confirmedReads).toBe(1)
+  })
+
   it('تاجر مؤكد في المرجع ⇒ تغيير المستخدم ما بيتبعتش ولا بيقرا من السيرفر لغير الشراء', async () => {
     const catalog = new MemorySharedMerchantCatalog()
     let reads = 0
-    const counted = { ...catalog, listChangedSince: catalog.listChangedSince.bind(catalog), save: catalog.save.bind(catalog), get: async (n: string) => { reads++; return catalog.get(n) } }
+    const counted = { ...catalog, listChangedSince: catalog.listChangedSince.bind(catalog), listConfirmed: catalog.listConfirmed.bind(catalog), save: catalog.save.bind(catalog), get: async (n: string) => { reads++; return catalog.get(n) } }
     const shared = makeSharedMerchants({
       catalog: counted, merchants: new MemoryMerchantRepository(), cursor: new MemorySyncCursor(), treeCategoryIds: tree,
+      confirmedCursor: new MemorySyncCursor(), clock: { nowIso: () => '2026-09-18T00:00:00.000Z' },
       baseline: [{ id: 'm1', displayName: 'Cafe Nour Riyadh', normalizedName: 'CAFE NOUR RIYADH', verifiedCategoryId: 'cat-food--coffee' }],
     })
     expect(await shared.contribute(purchase, 'cat-home')).toBe('skipped')

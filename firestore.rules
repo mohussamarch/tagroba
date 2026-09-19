@@ -18,6 +18,18 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // كل اسم بديل نص من 1 لـ80 حرف، وحتى 10 — القواعد مفيهاش لفّ، فكل خانة بتتفحص لوحدها (بند Codex §38-3)
+    function validAlias(list, i) {
+      return list.size() <= i || (list[i] is string && list[i].size() > 0 && list[i].size() <= 80);
+    }
+
+    function validAliases(list) {
+      return list is list && list.size() <= 10
+          && validAlias(list, 0) && validAlias(list, 1) && validAlias(list, 2) && validAlias(list, 3)
+          && validAlias(list, 4) && validAlias(list, 5) && validAlias(list, 6) && validAlias(list, 7)
+          && validAlias(list, 8) && validAlias(list, 9);
+    }
+
     function validSharedMerchant(key) {
       let d = request.resource.data;
       return d.keys().hasOnly(['normalizedName', 'displayName', 'aliases', 'categoryId', 'confirmed', 'updatedAt'])
@@ -25,7 +37,7 @@ service cloud.firestore {
           && d.normalizedName is string && d.normalizedName.size() > 0 && d.normalizedName.size() <= 80
           && d.normalizedName.replace(' ', '-') == key
           && d.displayName is string && d.displayName.size() <= 80
-          && d.aliases is list && d.aliases.size() <= 10
+          && validAliases(d.aliases)
           && (d.categoryId == null || (d.categoryId is string && d.categoryId.size() <= 120))
           && d.confirmed == false
           && d.updatedAt == request.time;

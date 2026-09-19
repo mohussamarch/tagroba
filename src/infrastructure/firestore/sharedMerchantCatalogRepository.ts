@@ -48,6 +48,12 @@ export class FirestoreSharedMerchantCatalog implements SharedMerchantCatalogPort
     return snap.docs.map((d) => fromDoc(d.data())).filter((e): e is SharedMerchantEntry => !!e)
   }
 
+  /** حقل واحد بمساواة ⇒ فهرس تلقائي. بيتنادى مرة في اليوم على الأكتر من `sync`. */
+  async listConfirmed(): Promise<SharedMerchantEntry[]> {
+    const snap = await getDocs(query(collection(this.db, COLLECTION), where('confirmed', '==', true)))
+    return snap.docs.map((d) => fromDoc(d.data())).filter((e): e is SharedMerchantEntry => !!e)
+  }
+
   async get(normalizedName: string): Promise<SharedMerchantEntry | undefined> {
     const snap = await getDoc(doc(this.db, COLLECTION, sharedMerchantKey(normalizedName)))
     return snap.exists() ? fromDoc(snap.data()) : undefined

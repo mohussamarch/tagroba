@@ -19,6 +19,10 @@ export class MemorySharedMerchantCatalog implements SharedMerchantCatalogPort {
       .map((e) => structuredClone(e))
   }
 
+  async listConfirmed(): Promise<SharedMerchantEntry[]> {
+    return [...this.items.values()].filter((e) => e.confirmed).map((e) => structuredClone(e))
+  }
+
   async get(normalizedName: string): Promise<SharedMerchantEntry | undefined> {
     const found = this.items.get(sharedMerchantKey(normalizedName))
     return found && structuredClone(found)

@@ -4,6 +4,8 @@ import type { SharedMerchantEntry } from '../../domain/sharedMerchantCatalog'
 export interface SharedMerchantCatalogPort {
   /** المستندات اللي اتعدلت **بعد** الوقت ده (`null` = كله). */
   listChangedSince(sinceIso: string | null): Promise<SharedMerchantEntry[]>
+  /** كل المؤكدين — مراجعة يومية، لأن التأكيد من اللوحة ممكن ما يغيّرش `updatedAt`. */
+  listConfirmed(): Promise<SharedMerchantEntry[]>
   get(normalizedName: string): Promise<SharedMerchantEntry | undefined>
   /** بيكتب مستند مش مؤكد — القواعد بترفض أي `confirmed: true` أو تعديل على مؤكد. */
   save(entry: SharedMerchantEntry): Promise<void>

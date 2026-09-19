@@ -211,7 +211,7 @@ export function createContainer(): Container {
       // مبنيين مرة واحدة لأن أسئلة البداية بتستعملهم كمان
       const manageProfile = makeManageProfile({profiles:new FirestoreProfileRepository(db,uid),account:firebaseAccount,clock:systemClock})
       const managePeople = makeManagePeople({ people, obligations, settlements, settlementWriter: firestoreSettlementWriter(db, uid), allocations, txns, uow, ids: new RandomIdGenerator(), clock: systemClock })
-      const sharedMerchants = makeSharedMerchants({ catalog: new FirestoreSharedMerchantCatalog(db), merchants, baseline: seedRefs.merchants, treeCategoryIds: new Set(categoryTree.categories.map((c) => c.id)), cursor: localSyncCursor(uid) })
+      const sharedMerchants = makeSharedMerchants({ catalog: new FirestoreSharedMerchantCatalog(db), merchants, baseline: seedRefs.merchants, treeCategoryIds: new Set(categoryTree.categories.map((c) => c.id)), cursor: localSyncCursor(uid), confirmedCursor: localSyncCursor(uid, 'shared-merchants-confirmed'), clock: systemClock })
 
       return {
         readBankSms: makeReadBankSms(androidBankSms, parseBankSms),
