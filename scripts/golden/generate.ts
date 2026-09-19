@@ -7,11 +7,13 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { moneyGolden } from './moneyGolden'
 import { normalizeGolden } from './normalizeGolden'
+import { periodGolden } from './periodGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
 const modules: Record<string, () => unknown> = {
   money: moneyGolden,
   normalize: normalizeGolden,
+  period: periodGolden,
 }
 
 mkdirSync(OUT, { recursive: true })
