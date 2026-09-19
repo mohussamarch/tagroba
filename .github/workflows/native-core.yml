@@ -1,0 +1,32 @@
+# قلب تطبيق كوتلن للجهازين — KOTLIN_PLAN §4-أ٥
+# على جهاز ماك من GitHub (مجاني للمستودع العام): اختبارات ملفات المرجع + بناء كود الآيفون.
+# ⚠️ من غير أي أسرار. الكشف الحقيقي مش موجود هنا، فاختباره ما بيشتغلش (بيشتغل على جهاز المالك بس).
+name: native-core
+
+on:
+  push:
+    paths:
+      - 'native-app/**'
+      - '.github/workflows/native-core.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: native-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: اختبارات ملفات المرجع (JVM)
+        run: chmod +x gradlew && ./gradlew :core:jvmTest --console=plain
+      - name: بناء كود الآيفون (جهاز حقيقي + المحاكي)
+        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 --console=plain

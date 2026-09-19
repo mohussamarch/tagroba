@@ -37,6 +37,10 @@ tasks.withType<Test>().configureEach {
     // ملفات المرجع مدخل للاختبار: لو اتولدت تاني، الاختبارات لازم تشتغل تاني (مش «up-to-date»)
     inputs.dir(golden).withPropertyName("golden")
     systemProperty("golden.dir", golden.absolutePath)
+    // الكشف الحقيقي على جهاز المالك بس (مش في Git): الاختبار بيشتغل لما الملف موجود، وإلا ما بيتشغلش خالص
+    val realStatement = rootProject.file("../files/transactions_full.csv")
+    if (realStatement.exists()) systemProperty("masroufy.realStatement", realStatement.absolutePath)
+    else filter { excludeTestsMatching("app.masroufy.core.RealStatementTest") }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
