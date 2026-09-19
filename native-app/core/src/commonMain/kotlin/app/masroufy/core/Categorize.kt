@@ -126,24 +126,10 @@ fun categorize(input: CategorizationInput, deps: CategorizeDeps): Categorization
  * null لو الاسم فاضي أو أرقام بس.
  */
 fun rememberMerchant(all: List<Merchant>, rawName: String, categoryId: Id, newId: Id): Merchant? {
-    val displayName = collapseSpaces(JsText.trim(rawName))
+    val displayName = JsText.collapseWhitespace(JsText.trim(rawName))
     val normalizedName = normalizeText(displayName)
     if (normalizedName.isEmpty() || displayName.all { it in '0'..'9' || JsText.isWhitespace(it) || it in "*•.:-" }) return null
     val existing = merchantIndex(all)[normalizedName]
     if (existing != null) return existing.copy(verifiedCategoryId = categoryId)
     return Merchant(newId, displayName.take(120), normalizedName, verifiedCategoryId = categoryId)
-}
-
-/** نفس استبدال المسافات المتتالية (بكل أنواعها) بمسافة واحدة في جافاسكربت. */
-private fun collapseSpaces(text: String): String = buildString {
-    var inSpace = false
-    for (c in text) {
-        if (JsText.isWhitespace(c)) {
-            if (!inSpace) append(' ')
-            inSpace = true
-        } else {
-            append(c)
-            inSpace = false
-        }
-    }
 }

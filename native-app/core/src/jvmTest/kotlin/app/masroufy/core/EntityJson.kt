@@ -32,6 +32,18 @@ object EntityJson {
 
     fun transactions(e: JsonElement) = e.jsonArray.map(::transaction)
 
+    /** العملية بأسماء التخزين، والحقل الاختياري الفاضي مش موجود (زي جافاسكربت). */
+    fun transactionJson(t: Transaction) = obj(
+        "id" to t.id, "occurredAt" to t.occurredAt, "datePrecision" to t.datePrecision, "sourceOrder" to t.sourceOrder,
+        "economicKind" to t.economicKind.wire, "economicKindConfirmed" to t.economicKindConfirmed, "observedDirection" to t.observedDirection.wire,
+        "amountMinor" to t.amountMinor, "currency" to t.currency.name, "categoryConfirmed" to t.categoryConfirmed,
+        "excludedFromBudget" to t.excludedFromBudget, "reviewState" to t.reviewState.wire, "isCashTagged" to t.isCashTagged,
+        "createdAt" to t.createdAt, "updatedAt" to t.updatedAt, "sourceTime" to t.sourceTime, "originalAmountMinor" to t.originalAmountMinor,
+        "merchantId" to t.merchantId, "categoryId" to t.categoryId, "note" to t.note, "walletId" to t.walletId,
+        "transferToWalletId" to t.transferToWalletId, "statedBalanceMinor" to t.statedBalanceMinor, "rawDescription" to t.rawDescription,
+        "rawMerchantName" to t.rawMerchantName, "sourceCategory" to t.sourceCategory, "sourceOperationType" to t.sourceOperationType,
+    )
+
     fun allocations(e: JsonElement) = e.jsonArray.map {
         PersonAllocation(
             it.field("id").str, it.field("transactionId").str, it.field("personId").str,

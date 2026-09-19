@@ -66,6 +66,20 @@ internal object JsText {
 
     fun isAsciiDigit(c: Char): Boolean = c in '0'..'9'
 
+    /** نفس استبدال `\s+` بمسافة في جافاسكربت — كل مسافات متتالية (بكل أنواعها) بمسافة واحدة. */
+    fun collapseWhitespace(text: String): String = buildString {
+        var inSpace = false
+        for (c in text) {
+            if (isWhitespace(c)) {
+                if (!inSpace) append(' ')
+                inSpace = true
+            } else {
+                append(c)
+                inSpace = false
+            }
+        }
+    }
+
     /** نفس `JSON.stringify(نص)` بالحرف — للبصمات اللي بتتحسب على نص JSON. */
     fun jsonString(text: String): String {
         val out = StringBuilder(text.length + 2).append('"')
