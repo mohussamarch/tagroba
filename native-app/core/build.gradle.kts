@@ -29,7 +29,10 @@ kotlin {
 }
 
 tasks.withType<Test>().configureEach {
-    systemProperty("golden.dir", rootProject.file("golden").absolutePath)
+    val golden = rootProject.file("golden")
+    // ملفات المرجع مدخل للاختبار: لو اتولدت تاني، الاختبارات لازم تشتغل تاني (مش «up-to-date»)
+    inputs.dir(golden).withPropertyName("golden")
+    systemProperty("golden.dir", golden.absolutePath)
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

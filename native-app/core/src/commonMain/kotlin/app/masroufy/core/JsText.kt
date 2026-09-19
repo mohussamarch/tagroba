@@ -31,6 +31,32 @@ internal object JsText {
 
     fun isAsciiDigit(c: Char): Boolean = c in '0'..'9'
 
+    /** نفس `JSON.stringify(نص)` بالحرف — للبصمات اللي بتتحسب على نص JSON. */
+    fun jsonString(text: String): String {
+        val out = StringBuilder(text.length + 2).append('"')
+        for ((i, c) in text.withIndex()) {
+            when {
+                c == '"' -> out.append('\\').append('"')
+                c == '\\' -> out.append('\\').append('\\')
+                c == '\b' -> out.append('\\').append('b')
+                c == '\t' -> out.append('\\').append('t')
+                c == '\n' -> out.append('\\').append('n')
+                c.code == 0x0C -> out.append('\\').append('f')
+                c == '\r' -> out.append('\\').append('r')
+                c.code < 0x20 || isLoneSurrogate(text, i) -> out.append('\\').append('u').append(c.code.toString(16).padStart(4, '0'))
+                else -> out.append(c)
+            }
+        }
+        return out.append('"').toString()
+    }
+
+    private fun isLoneSurrogate(text: String, i: Int): Boolean {
+        val c = text[i]
+        if (c.isHighSurrogate()) return i + 1 >= text.length || !text[i + 1].isLowSurrogate()
+        if (c.isLowSurrogate()) return i == 0 || !text[i - 1].isHighSurrogate()
+        return false
+    }
+
     /** الأرقام العربية الهندية (U+0660…) والفارسية (U+06F0…) ⇒ رقمها اللاتيني، وإلا null. */
     fun easternDigit(c: Char): Char? = when (c.code) {
         in 0x0660..0x0669 -> '0' + (c.code - 0x0660)
