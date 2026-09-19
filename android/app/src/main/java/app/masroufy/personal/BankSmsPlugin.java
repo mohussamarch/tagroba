@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class BankSmsPlugin extends Plugin {
     private static final int MAX_MESSAGES = 500;
     private static final Pattern SENSITIVE = Pattern.compile(
-        "\\bOTP\\b|verification\\s*code|one.time\\s*(password|code)|رمز\\s*(التحقق|التوثيق|التفعيل|الدخول)|كلمة\\s*(المرور|السر)",
+        "\\bOTP\\b|verification\\s*code|one.time\\s*(password|code)|رمز\\s*(التحقق|التوثيق|التفعيل|الدخول)|كلمة\\s*(المرور|السر)|مشاركة\\s*الرمز|الرمز\\s*[:：]?\\s*\\d{4,8}",
         Pattern.CASE_INSENSITIVE
     );
 

@@ -4,7 +4,8 @@ import { isValidIsoDate } from '../../domain/period'
 import { hashContent } from '../../domain/dedupe'
 import type { BankSmsMessage, SmsParseResult } from '../../application/ports/BankSmsPort'
 
-const sensitive = /\bOTP\b|verification\s*code|one.time\s*(?:password|code)|رمز\s*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة\s*(?:المرور|السر)/i
+// «ننصح بعدم مشاركة الرمز… الرمز:123456» — رسالة التحقق اللي بتيجي قبل كل شراء إنترنت (مش عملية)
+const sensitive = /\bOTP\b|verification\s*code|one.time\s*(?:password|code)|رمز\s*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة\s*(?:المرور|السر)|مشاركة\s*الرمز|الرمز\s*[:：]?\s*\d{4,8}/i
 export function redactSms(text:string):string {
  // Direct callers (including backup export) do not pass through parseBankSms.
  text=latinizeDigits(text)
@@ -87,8 +88,9 @@ export function parseBankSms(message:BankSmsMessage,lineNumber:number):SmsParseR
  if(/عرض|سيتم|عرض خاص|offer|will be|scheduled/i.test(body))return {ok:false,reason:'عرض أو حركة مستقبلية وليست عملية مكتملة'}
  if(sensitive.test(body))return {ok:false,reason:'رسالة تحقق أو كلمة سر؛ تم تجاهلها'}
  if(/مرفوض|رفض العملية|لم تتم|غير ناجح|declined|failed|unsuccessful/i.test(body))return {ok:false,reason:'عملية مرفوضة أو غير مكتملة'}
- const out=/شراء|سحب|خصم|سداد|مدفوعات|دفع|حوالة\s*(?:صادرة|محلية صادرة|دولية صادرة)|تحويل\s*صادر|purchase|withdrawal|outgoing transfer/i.test(body)
- const incoming=/حوالة\s*(?:واردة|داخلية واردة|محلية واردة)|تحويل\s*وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund/i.test(body)
+ // «حوالة داخلية صادرة» و«حوالة محلية واردة»…: كلمة الاتجاه ممكن تيجي بعد نوع الحوالة
+ const out=/شراء|سحب|خصم|سداد|مدفوعات|دفع|(?:حوالة|تحويل)[^\n]{0,20}صادر|purchase|withdrawal|outgoing transfer/i.test(body)
+ const incoming=/(?:حوالة|تحويل)[^\n]{0,20}وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund/i.test(body)
  if(out===incoming)return {ok:false,reason:'اتجاه الحركة غير واضح؛ لم نفترض أنها دخل أو مصروف'}
  if(/\b(?:USD|EUR|EGP|AED|GBP)\b|دولار|يورو|جنيه/i.test(body))return {ok:false,reason:'النسخة الحالية تدعم رسائل الريال السعودي فقط'}
  const amount=transactionAmount(body)

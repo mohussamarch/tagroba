@@ -75,6 +75,21 @@ it.each([
  expect(result.ok).toBe(false)
  expect(!result.ok&&result.reason).toContain(reason)
 })
+// صور المالك التانية (2026-09-19) — بأرقام وأسماء وهمية
+it('reads an online purchase with the amount on the first line and the time before the date',()=>{
+ const result=parseBankSms(at('2026-09-16T15:57:00Z','شراء انترنت بـSR 35.62\nعبر1111;مدى\nمن2222\nلـTEST INSURANCE\n18:57 16/9/26'),1)
+ expect(result).toMatchObject({ok:true,row:{amountMinor:3562,date:'2026-09-16',direction:'out',merchantName:'TEST INSURANCE'}})
+})
+it('skips the verification code message that comes before every online purchase',()=>{
+ const result=parseBankSms(at('2026-09-16T15:56:00Z','ننصح بعدم مشاركة الرمز لحمايتك من الاحتيال\nالرمز:111111\nبطاقة:*1111\nمبلغ:SAR 35.62\nلدى:TEST INSURANCE CO\nفي:18:56 26/09/16'),1)
+ expect(result).toMatchObject({ok:false,reason:expect.stringContaining('تحقق')})
+})
+it('reads the direction of transfers whose type comes before the direction',()=>{
+ const out=parseBankSms(at('2026-09-16T14:55:00Z','حوالة داخلية صادرة\nمن:2222\nبـSR 100\nلـTEST PERSON\n26/9/16 17:55'),1)
+ expect(out).toMatchObject({ok:true,row:{direction:'out',amountMinor:10000}})
+ const incoming=parseBankSms(at('2026-09-16T14:55:00Z','حوالة محلية واردة\nمن:TEST PERSON\nبـSR 250\n26/9/16 17:55'),1)
+ expect(incoming).toMatchObject({ok:true,row:{direction:'in',amountMinor:25000}})
+})
 it('keeps a five digit amount next to SR readable while hiding the account number',()=>{
  const text=redactSms('حوالة واردة\nمن حساب 1234567890\nبـSR 12500\n26/9/18 09:35')
  expect(text).toContain('SR 12500')

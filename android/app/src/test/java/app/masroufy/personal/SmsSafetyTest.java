@@ -31,6 +31,13 @@ public class SmsSafetyTest {
         assertNotNull(iban); assertFalse(iban.contains("608010167519")); assertTrue(iban.contains("SR 100"));
         assertNull(SmsSafety.sanitize("رمز التحقق 123456 لعملية شراء بـSR 20"));
     }
+    // رسالة الرمز اللي بتيجي قبل كل شراء إنترنت — ما تتحفظش أبدًا حتى لو فيها كلمة شراء
+    @Test public void dropsTheOnlinePurchaseCodeMessage() {
+        assertNull(SmsSafety.sanitize("ننصح بعدم مشاركة الرمز لحمايتك من الاحتيال\nالرمز:111111\nبطاقة:*1111\nمبلغ:SAR 35.62\nلدى:TEST INSURANCE CO\nفي:18:56 26/09/16"));
+        assertNull(SmsSafety.sanitize("الرمز:222222 لعملية شراء انترنت بـSR 10"));
+        String online = "شراء انترنت بـSR 35.62\nعبر1111;مدى\nمن2222\nلـTEST INSURANCE\n18:57 16/9/26";
+        assertEquals(online, SmsSafety.sanitize(online));
+    }
     @Test public void keepsLargeFinancialAmountsButHidesAccountNumbers() {
         String safe=SmsSafety.sanitize("حوالة واردة بمبلغ 15000.50 SAR في 2026-09-10 حساب 1234567890");
         assertTrue(safe.contains("15000.50")); assertFalse(safe.contains("1234567890"));

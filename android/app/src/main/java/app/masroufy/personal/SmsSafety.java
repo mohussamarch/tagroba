@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 /** No Android dependencies: filtering happens before local persistence. */
 public final class SmsSafety {
     private static final Pattern IGNORE = Pattern.compile(
-        "\\bOTP\\b|verification\\s*code|one.time\\s*(password|code)|رمز\\s*(التحقق|التوثيق|التفعيل|الدخول)|كلمة\\s*(المرور|السر)|عرض|سيتم|offer|will be|scheduled|مرفوض|لم تتم|declined|failed",
+        "\\bOTP\\b|verification\\s*code|one.time\\s*(password|code)|رمز\\s*(التحقق|التوثيق|التفعيل|الدخول)|كلمة\\s*(المرور|السر)|عرض|سيتم|offer|will be|scheduled|مرفوض|لم تتم|declined|failed|مشاركة\\s*الرمز|الرمز\\s*[:：]?\\s*\\d{4,8}",
         Pattern.CASE_INSENSITIVE);
     // 2026-09-19: رسايل الراجحي الحقيقية بتكتب العملة «SR» («بـSR 24») — الفلتر القديم كان بيطلب SAR/ريال/ر.س
     // فكان بيرمي كل رسايل المالك بصمت قبل ما تتحفظ. دلوقتي SR، والعملات التانية كمان عشان الرسالة تظهر بسبب
