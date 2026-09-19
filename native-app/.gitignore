@@ -1,0 +1,6 @@
+# مخرجات البناء بتاعة Gradle وKotlin
+.gradle/
+.kotlin/
+build/
+*/build/
+local.properties
