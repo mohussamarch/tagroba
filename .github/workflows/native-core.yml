@@ -37,8 +37,16 @@ jobs:
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             grep -E "^e: |error:|FAILED|expected|Caused by" ios-test.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
+            exit "$status"
           fi
-          exit "$status"
+          # «نجح» من غير ما يشغّل حاجة = مش نجاح. العدد بيتطبع كملاحظة عشان يتقرا من برا.
+          count=$(grep -ho 'tests="[0-9]*"' core/build/test-results/iosSimulatorArm64Test/*.xml 2>/dev/null | grep -o '[0-9]*' | paste -sd+ - | bc)
+          count=${count:-0}
+          echo "::notice::اختبارات اتشغلت على محاكي الآيفون: $count"
+          if [ "$count" -lt 1 ]; then
+            echo "::error::مفيش ولا اختبار اتشغل على المحاكي — النجاح ده فاضي"
+            exit 1
+          fi
       - name: بناء كود الآيفون (جهاز حقيقي + المحاكي)
         # أخطاء المترجم بتتطبع كـ«error annotations» كمان، عشان تبان من برا من غير ما حد يفتح السجل
         run: |
