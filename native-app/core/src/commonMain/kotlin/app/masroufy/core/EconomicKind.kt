@@ -23,7 +23,7 @@ enum class EconomicKind(val wire: String) {
     ASSET_BUY("asset_buy"), ASSET_SELL("asset_sell"),
     // وارد جديد — قرارات المالك 2026-09-20 (OVERRIDES §42)
     GIFT_RECEIVED("gift_received"), SUPPORT_RECEIVED("support_received"), BENEFIT_RECEIVED("benefit_received"),
-    INVESTMENT_INCOME("investment_income"),
+    INVESTMENT_INCOME("investment_income"), EVENT_GIFT("event_gift"),
     // وارد بس مش دخل
     ROSCA_PAYOUT("rosca_payout"), REFUND_RECEIVED("refund_received"), ADVANCE_RECEIVED("advance_received"),
     // لسه ما اتحددش
@@ -109,6 +109,8 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         rule(BENEFIT_RECEIVED, TextKey.KIND_BENEFIT_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
         // عايد الاستثمار المتكرر — غير بيع الأصل نفسه
         rule(INVESTMENT_INCOME, TextKey.KIND_INVESTMENT_INCOME, Liquidity.IN, true, false, PersonEffect.NONE),
+        // النقوط: دخل **متميز** (قرار المالك §44) — نوع لوحده عشان ما يخربطش متوسط الدخل الشهري
+        rule(EVENT_GIFT, TextKey.KIND_EVENT_GIFT, Liquidity.IN, true, false, PersonEffect.NONE),
         // دور الجمعية: جزء فلوسك راجعة وجزء دين عليك ⇒ مش دخل
         rule(ROSCA_PAYOUT, TextKey.KIND_ROSCA_PAYOUT, Liquidity.IN, false, false, PersonEffect.NONE),
         // الاسترداد بينقّص المصروف، ما بيزودش الدخل

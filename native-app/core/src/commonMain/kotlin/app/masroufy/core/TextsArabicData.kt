@@ -125,6 +125,7 @@ internal val ARABIC_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_SUPPORT_RECEIVED to "مساعدة",
     TextKey.KIND_BENEFIT_RECEIVED to "دعم أو تعويض",
     TextKey.KIND_INVESTMENT_INCOME to "أرباح استثمار",
+    TextKey.KIND_EVENT_GIFT to "نقوط",
     TextKey.KIND_ROSCA_PAYOUT to "دور جمعية",
     TextKey.KIND_REFUND_RECEIVED to "استرداد فلوس",
     TextKey.KIND_ADVANCE_RECEIVED to "سلفة من الشغل",

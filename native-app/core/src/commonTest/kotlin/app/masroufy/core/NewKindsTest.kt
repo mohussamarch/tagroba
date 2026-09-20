@@ -87,11 +87,20 @@ class NewKindsTest {
     }
 
     @Test
+    fun `النقوط دخل بس نوعه لوحده عشان يتميز`() {
+        // قرار المالك §44: يتحسب دخل، بس يفضل نوع مستقل عشان ما يخربطش متوسط الدخل الشهري
+        assertTrue(countsAsIncome(EconomicKind.EVENT_GIFT))
+        assertTrue(EconomicKind.EVENT_GIFT != EconomicKind.GIFT_RECEIVED)
+        val totals = computePeriodTotals(listOf(txn(EconomicKind.EVENT_GIFT, 1_500_000)), emptyList())
+        assertEquals(1_500_000, totals.incomeMinor)
+    }
+
+    @Test
     fun `الأنواع الجديدة كلها ليها اسم معروض بالعربي وبالإنجليزي`() {
         val added = listOf(
             EconomicKind.GIFT_RECEIVED, EconomicKind.SUPPORT_RECEIVED, EconomicKind.BENEFIT_RECEIVED,
             EconomicKind.INVESTMENT_INCOME, EconomicKind.ROSCA_PAYOUT, EconomicKind.REFUND_RECEIVED,
-            EconomicKind.ADVANCE_RECEIVED,
+            EconomicKind.ADVANCE_RECEIVED, EconomicKind.EVENT_GIFT,
         )
         for (kind in added) {
             assertTrue(ruleFor(kind).label.isNotBlank(), kind.wire)

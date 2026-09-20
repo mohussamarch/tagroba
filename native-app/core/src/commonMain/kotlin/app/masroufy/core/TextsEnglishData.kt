@@ -136,6 +136,7 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_SUPPORT_RECEIVED to "Support received",
     TextKey.KIND_BENEFIT_RECEIVED to "Benefit or compensation",
     TextKey.KIND_INVESTMENT_INCOME to "Investment income",
+    TextKey.KIND_EVENT_GIFT to "Event gift",
     TextKey.KIND_ROSCA_PAYOUT to "Savings circle payout",
     TextKey.KIND_REFUND_RECEIVED to "Refund",
     TextKey.KIND_ADVANCE_RECEIVED to "Salary advance",
