@@ -18,17 +18,20 @@ class CountryPackTest {
     @Test
     fun `البلد المش مدعومة بترجع الافتراضية مش استثناء`() {
         assertSame(SAUDI_PACK, countryPack("sa"))
-        assertSame(SAUDI_PACK, countryPack("EG"))
+        assertSame(EGYPT_PACK, countryPack("eg"))
+        assertSame(SAUDI_PACK, countryPack("XX"))
         assertSame(SAUDI_PACK, countryPack(null))
     }
 
     @Test
-    fun `مصر لسه مش مدعومة — لو اتضافت لازم يبقى معاها محتوى مش مكان فاضي`() {
-        val egypt = COUNTRY_PACKS["EG"]
-        if (egypt != null) {
-            assertTrue(egypt.categoryTreeAsset.isNotBlank(), "حزمة مصر من غير شجرة تصنيفات")
-            assertEquals(Currency.EGP, egypt.currency)
+    fun `أي حزمة ناقصة لازم تقول ناقصها إيه`() {
+        for (pack in COUNTRY_PACKS.values) {
+            assertTrue(pack.categoryTreeAsset.isNotBlank(), "حزمة ${pack.code} من غير شجرة تصنيفات")
+            assertTrue(pack.statementSchemas.isNotEmpty(), "حزمة ${pack.code} من غير مخطط كشوف")
+            if (!pack.ready) assertTrue(pack.gaps.isNotEmpty())
         }
+        // مصر: قارئ الرسايل خلص، والشجرة وقارئ الكشف لسه
+        assertEquals(listOf("categoryTree", "statementReader"), EGYPT_PACK.gaps)
     }
 
     @Test

@@ -129,4 +129,6 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
         "The first gap is on {0}, and that day has {1} movements. The order of movements inside one day is not fixed in the statement, so it is not certain that this one in particular is the first transaction with a problem.",
     TextKey.RECONCILE_FIRST_GAP_ONE to
         "The first gap is on {0}, and that day has a single movement, so the gap belongs to it.",
+
+    TextKey.SMS_NOT_EGP to "This version only supports Egyptian pound messages",
 )

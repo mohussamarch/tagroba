@@ -118,4 +118,6 @@ internal val ARABIC_DATA_TEXTS: Map<TextKey, String> = mapOf(
 
     TextKey.RECONCILE_FIRST_GAP_MANY to "أول فرق في {0}، واليوم ده فيه {1} حركة. ترتيب حركات اليوم الواحد مش مثبت في الكشف، فمش أكيد إن دي بالذات هي أول عملية فيها مشكلة.",
     TextKey.RECONCILE_FIRST_GAP_ONE to "أول فرق في {0}، واليوم ده فيه حركة واحدة، فالفرق يخصها هي.",
+
+    TextKey.SMS_NOT_EGP to "النسخة الحالية تدعم رسائل الجنيه المصري فقط",
 )

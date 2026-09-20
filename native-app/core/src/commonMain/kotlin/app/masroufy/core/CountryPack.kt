@@ -28,7 +28,14 @@ data class CountryPack(
     /** الاسم المبدئي لمحفظة البنك في حساب جديد — المستخدم بيغيره. */
     val bankWalletName: String,
     val cashWalletName: String,
-)
+    /**
+     * اللي لسه ناقص في الحزمة دي بالاسم (للمطور) — الحزمة الجاهزة قايمتها فاضية.
+     * **ممنوع** تسيبها فاضية وحاجة ناقصة: ده بيخلي التطبيق يدّعي إنه بيدعم بلد وهو لأ (CLAUDE.md #15).
+     */
+    val gaps: List<String> = emptyList(),
+) {
+    val ready: Boolean get() = gaps.isEmpty()
+}
 
 /**
  * قارئ رسايل البنك. بلد جديدة = تنفيذ جديد، من غير ما أي شاشة تتغير.
@@ -62,10 +69,24 @@ val SAUDI_PACK = CountryPack(
 )
 
 /**
- * البلاد الجاهزة. مصر **مش هنا** عن قصد: محتاجة شجرة تصنيفات مصرية، وقارئ رسايل لبنوكها،
- * ومخطط لكشوفها — وكل ده محتاج عينات حقيقية. زود الحزمة هنا لما تجهز، مش قبل.
+ * مصر — **ناقصة لسه**: قارئ الرسايل خلص من عينات QNB اللي بعتها المالك (OVERRIDES §40.3)،
+ * لكن شجرة التصنيفات المصرية (باركنج، سايس…) وقارئ كشف QNB لسه ما اتعملوش.
  */
-val COUNTRY_PACKS: Map<String, CountryPack> = mapOf(SAUDI_PACK.code to SAUDI_PACK)
+val EGYPT_PACK = CountryPack(
+    code = "EG",
+    currency = Currency.EGP,
+    defaultLanguage = Language.AR,
+    // ⚠️ دي شجرة السعودية لحد ما تتعمل شجرة مصر
+    categoryTreeAsset = "categoryTree.json",
+    smsReader = EgyptBankSmsReader,
+    statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.SMS),
+    bankWalletName = "البنك",
+    cashWalletName = "كاش",
+    gaps = listOf("categoryTree", "statementReader"),
+)
+
+/** البلاد اللي التطبيق يعرف عنها حاجة. اللي مش جاهزة بتقول ناقصها إيه في `gaps`. */
+val COUNTRY_PACKS: Map<String, CountryPack> = mapOf(SAUDI_PACK.code to SAUDI_PACK, EGYPT_PACK.code to EGYPT_PACK)
 
 val DEFAULT_COUNTRY_PACK: CountryPack = SAUDI_PACK
 

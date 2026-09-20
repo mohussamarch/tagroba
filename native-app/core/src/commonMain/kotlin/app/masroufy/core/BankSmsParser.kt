@@ -32,9 +32,9 @@ private val I = setOf(RegexOption.IGNORE_CASE)
 private val IM = setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
 
 // «ننصح بعدم مشاركة الرمز… الرمز:123456» — رسالة التحقق اللي قبل كل شراء إنترنت (مش عملية)
-private val SENSITIVE = Regex("${B}OTP$B|verification${S}*code|one.time$S*(?:password|code)|رمز$S*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة$S*(?:المرور|السر)|مشاركة$S*الرمز|الرمز$S*[:：]?$S*\\d{4,8}", I)
-private val OFFER = Regex("عرض|سيتم|عرض خاص|offer|will be|scheduled", I)
-private val DECLINED = Regex("مرفوض|رفض العملية|لم تتم|غير ناجح|declined|failed|unsuccessful", I)
+internal val SMS_SENSITIVE_PATTERN = Regex("${B}OTP$B|verification${S}*code|one.time$S*(?:password|code)|رمز$S*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة$S*(?:المرور|السر)|مشاركة$S*الرمز|الرمز$S*[:：]?$S*\\d{4,8}", I)
+internal val SMS_OFFER_PATTERN = Regex("عرض|سيتم|عرض خاص|offer|will be|scheduled", I)
+internal val SMS_DECLINED_PATTERN = Regex("مرفوض|رفض العملية|لم تتم|غير ناجح|declined|failed|unsuccessful", I)
 private val OUT = Regex("شراء|سحب|خصم|سداد|مدفوعات|دفع|(?:حوالة|تحويل)[^\\n]{0,20}صادر|purchase|withdrawal|outgoing transfer", I)
 private val INCOMING = Regex("(?:حوالة|تحويل)[^\\n]{0,20}وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund", I)
 private val FOREIGN = Regex("$B(?:USD|EUR|EGP|AED|GBP)$B|دولار|يورو|جنيه", I)
@@ -44,10 +44,10 @@ private const val NUMBER = "\\d(?:[\\d,٬]*\\d)?(?:[.٫]\\d{1,2})?"
 private val CURRENCY_AMOUNT = Regex("$CURRENCY$S*[:：]?$S*($NUMBER)|($NUMBER)$S*$CURRENCY", I)
 private val NOT_TRANSACTION_AMOUNT = Regex("الرصيد|رصيد|balance|المتاح|متاح|available|الحد|limit|رسوم|${B}fees?$B|عمولة|المتبقي", I)
 private val BARE_AMOUNT = Regex("(?:بمبلغ|المبلغ|مبلغ|amount|بـ|قيمة)$S*[:：]?$S*\\d", I)
-private const val DAY_MS = 86_400_000L
+internal const val DAY_MS = 86_400_000L
 
 /** علامات الاتجاه المخفية حوالين الأرقام والإنجليزي — بتقطع الأنماط من غير ما تبان. */
-private val BIDI_CODES = setOf(0x200E, 0x200F, 0x202A, 0x202B, 0x202C, 0x202D, 0x202E, 0x2066, 0x2067, 0x2068, 0x2069, 0x061C)
+internal val BIDI_CODES = setOf(0x200E, 0x200F, 0x202A, 0x202B, 0x202C, 0x202D, 0x202E, 0x2066, 0x2067, 0x2068, 0x2069, 0x061C)
 
 /** `SA[\d\s]{20,}` — الأرقام والمسافات (بمعنى جافاسكربت) في فئة واحدة. */
 private val REDACT_IBAN = Regex("SA[\\d" + S.substring(1, S.length - 1) + "]{20,}", I)
@@ -142,9 +142,9 @@ private fun merchantOf(body: String): String {
 /** قوالب سعودية محافظة؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */
 fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = latinizeDigits(message.body).filterNot { it == '\r' || it.code in BIDI_CODES }
-    if (OFFER.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OFFER))
-    if (SENSITIVE.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_SENSITIVE))
-    if (DECLINED.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DECLINED))
+    if (SMS_OFFER_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OFFER))
+    if (SMS_SENSITIVE_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_SENSITIVE))
+    if (SMS_DECLINED_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DECLINED))
     // «حوالة داخلية صادرة» و«حوالة محلية واردة»: كلمة الاتجاه ممكن تيجي بعد نوع الحوالة
     val out = OUT.containsMatchIn(body)
     val incoming = INCOMING.containsMatchIn(body)

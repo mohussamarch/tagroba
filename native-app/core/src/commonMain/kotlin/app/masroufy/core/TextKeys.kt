@@ -332,4 +332,7 @@ enum class TextKey {
     // شرح أول فرق في سلسلة الرصيد
     RECONCILE_FIRST_GAP_MANY,
     RECONCILE_FIRST_GAP_ONE,
+
+    /** رسايل مصر: العملة مش جنيه */
+    SMS_NOT_EGP,
 }
