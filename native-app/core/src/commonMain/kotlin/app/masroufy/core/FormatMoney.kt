@@ -8,12 +8,12 @@ import kotlin.math.abs
  */
 
 private fun currencyLabel(currency: Currency): String = when (currency) {
-    Currency.SAR -> "ر.س"
-    Currency.EGP -> "ج.م"
-    Currency.USD -> "$"
-    Currency.EUR -> "€"
-    Currency.GBP -> "£"
-    Currency.AED -> "د.إ"
+    Currency.SAR -> uiText(TextKey.CURRENCY_SAR)
+    Currency.EGP -> uiText(TextKey.CURRENCY_EGP)
+    Currency.USD -> uiText(TextKey.CURRENCY_USD)
+    Currency.EUR -> uiText(TextKey.CURRENCY_EUR)
+    Currency.GBP -> uiText(TextKey.CURRENCY_GBP)
+    Currency.AED -> uiText(TextKey.CURRENCY_AED)
 }
 
 private fun groupThousands(digits: String): String {
@@ -33,7 +33,7 @@ fun formatAmount(
     alwaysSign: Boolean = false,
     grouping: Boolean = true,
 ): String {
-    assertHalalas(amount, "مبلغ للعرض")
+    assertHalalas(amount, uiText(TextKey.AMOUNT_CONTEXT_DISPLAY))
     val scale = minorUnitsOf(currency)
     val decimals = scale.toString().length - 1
     val total = abs(amount)
@@ -60,7 +60,7 @@ fun formatMoney(
 }
 
 /** القيمة المجهولة نص صريح مش صفر (CLAUDE.md #10). */
-const val NOT_AVAILABLE = "غير متاح"
+val NOT_AVAILABLE: String get() = uiText(TextKey.NOT_AVAILABLE)
 
 fun formatMoneyOrNA(amount: Halalas?, currency: Currency = Currency.SAR): String =
     if (amount == null) NOT_AVAILABLE else formatMoney(amount, currency)
@@ -70,8 +70,8 @@ fun formatMoneyOrNA(amount: Halalas?, currency: Currency = Currency.SAR): String
  * نسبة للعرض مش مبلغ — نفس حساب التطبيق الحالي بالظبط (قسمة double ثم تقريب جافاسكربت).
  */
 fun savingsRatePercent(incomeMinor: Halalas, remainingMinor: Halalas): Double? {
-    assertHalalas(incomeMinor, "الدخل")
-    assertHalalas(remainingMinor, "المتبقي")
+    assertHalalas(incomeMinor, uiText(TextKey.AMOUNT_CONTEXT_INCOME))
+    assertHalalas(remainingMinor, uiText(TextKey.AMOUNT_CONTEXT_REMAINING))
     if (incomeMinor == 0L) return null
     val tenths = JsText.round((remainingMinor.toDouble() * 1000.0) / incomeMinor.toDouble())
     return tenths / 10.0

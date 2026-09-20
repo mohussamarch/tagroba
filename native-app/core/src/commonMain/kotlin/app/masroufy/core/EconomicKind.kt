@@ -26,7 +26,7 @@ enum class EconomicKind(val wire: String) {
 
     companion object {
         fun fromWire(wire: String): EconomicKind =
-            entries.firstOrNull { it.wire == wire } ?: throw IllegalArgumentException("نوع اقتصادي غير معروف: $wire")
+            entries.firstOrNull { it.wire == wire } ?: throw IllegalArgumentException(uiText(TextKey.KIND_UNKNOWN_WIRE, wire))
     }
 }
 
@@ -50,40 +50,43 @@ enum class PersonEffect(val wire: String) {
 
 data class EconomicKindRule(
     val kind: EconomicKind,
-    val label: String,
+    val labelKey: TextKey,
     val liquidity: Liquidity,
     /** بيزود الدخل الاقتصادي للفترة؟ */
     val countsAsIncome: Boolean,
     /** بيزود المصروف الشخصي؟ (نصيب المستخدم بس بعد فصل اللي على غيره) */
     val countsAsPersonalExpense: Boolean,
     val personEffect: PersonEffect,
-)
+) {
+    /** الاسم المعروض باللغة الحالية (OVERRIDES §40) — بيتقرا وقت العرض مش وقت التحميل. */
+    val label: String get() = uiText(labelKey)
+}
 
-private fun rule(kind: EconomicKind, label: String, liquidity: Liquidity, income: Boolean, expense: Boolean, effect: PersonEffect) =
-    kind to EconomicKindRule(kind, label, liquidity, income, expense, effect)
+private fun rule(kind: EconomicKind, labelKey: TextKey, liquidity: Liquidity, income: Boolean, expense: Boolean, effect: PersonEffect) =
+    kind to EconomicKindRule(kind, labelKey, liquidity, income, expense, effect)
 
 private val RULES: Map<EconomicKind, EconomicKindRule> =
     mapOf(
-        rule(SALARY, "مرتب", Liquidity.IN, true, false, PersonEffect.NONE),
-        rule(BONUS, "بونص", Liquidity.IN, true, false, PersonEffect.NONE),
-        rule(COMMISSION, "عمولة", Liquidity.IN, true, false, PersonEffect.NONE),
-        rule(OVERTIME, "أوفر تايم", Liquidity.IN, true, false, PersonEffect.NONE),
-        rule(FREELANCE, "فري لانس", Liquidity.IN, true, false, PersonEffect.NONE),
-        rule(PERSONAL_SALE, "بيع شخصي", Liquidity.IN, true, false, PersonEffect.NONE),
-        rule(LOAN_RECEIVED, "قرض مستلم", Liquidity.IN, false, false, PersonEffect.PAYABLE_LOAN_UP),
-        rule(DEBT_COLLECTED, "تحصيل دين لك", Liquidity.IN, false, false, PersonEffect.RECEIVABLE_DOWN),
-        rule(CUSTODY_RECEIVED, "أمانة مستلمة", Liquidity.IN, false, false, PersonEffect.PAYABLE_CUSTODY_UP),
-        rule(PURCHASE, "شراء / فاتورة", Liquidity.OUT, false, true, PersonEffect.RECEIVABLE_UP),
-        rule(SUPPORT_GIFT, "دعم / هدية", Liquidity.OUT, false, true, PersonEffect.BENEFICIARY_INFO),
-        rule(FEE, "رسوم", Liquidity.OUT, false, true, PersonEffect.NONE),
-        rule(LOAN_GRANTED, "قرض ممنوح", Liquidity.OUT, false, false, PersonEffect.RECEIVABLE_UP),
-        rule(DEBT_REPAID, "سداد دين عليك", Liquidity.OUT, false, false, PersonEffect.PAYABLE_LOAN_DOWN),
-        rule(CUSTODY_RETURNED, "رد أمانة", Liquidity.OUT, false, false, PersonEffect.PAYABLE_CUSTODY_DOWN),
-        rule(INTERNAL_TRANSFER, "تحويل داخلي", Liquidity.INTERNAL, false, false, PersonEffect.NONE),
-        rule(ASSET_BUY, "شراء أصل", Liquidity.OUT, false, false, PersonEffect.NONE),
+        rule(SALARY, TextKey.KIND_SALARY, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(BONUS, TextKey.KIND_BONUS, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(COMMISSION, TextKey.KIND_COMMISSION, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(OVERTIME, TextKey.KIND_OVERTIME, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(FREELANCE, TextKey.KIND_FREELANCE, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(PERSONAL_SALE, TextKey.KIND_PERSONAL_SALE, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(LOAN_RECEIVED, TextKey.KIND_LOAN_RECEIVED, Liquidity.IN, false, false, PersonEffect.PAYABLE_LOAN_UP),
+        rule(DEBT_COLLECTED, TextKey.KIND_DEBT_COLLECTED, Liquidity.IN, false, false, PersonEffect.RECEIVABLE_DOWN),
+        rule(CUSTODY_RECEIVED, TextKey.KIND_CUSTODY_RECEIVED, Liquidity.IN, false, false, PersonEffect.PAYABLE_CUSTODY_UP),
+        rule(PURCHASE, TextKey.KIND_PURCHASE, Liquidity.OUT, false, true, PersonEffect.RECEIVABLE_UP),
+        rule(SUPPORT_GIFT, TextKey.KIND_SUPPORT_GIFT, Liquidity.OUT, false, true, PersonEffect.BENEFICIARY_INFO),
+        rule(FEE, TextKey.KIND_FEE, Liquidity.OUT, false, true, PersonEffect.NONE),
+        rule(LOAN_GRANTED, TextKey.KIND_LOAN_GRANTED, Liquidity.OUT, false, false, PersonEffect.RECEIVABLE_UP),
+        rule(DEBT_REPAID, TextKey.KIND_DEBT_REPAID, Liquidity.OUT, false, false, PersonEffect.PAYABLE_LOAN_DOWN),
+        rule(CUSTODY_RETURNED, TextKey.KIND_CUSTODY_RETURNED, Liquidity.OUT, false, false, PersonEffect.PAYABLE_CUSTODY_DOWN),
+        rule(INTERNAL_TRANSFER, TextKey.KIND_INTERNAL_TRANSFER, Liquidity.INTERNAL, false, false, PersonEffect.NONE),
+        rule(ASSET_BUY, TextKey.KIND_ASSET_BUY, Liquidity.OUT, false, false, PersonEffect.NONE),
         // بيع الأصل: الربح المحقق بس هو المكسب، ويتحسب في الاستثمار — مش دخل معيشة
-        rule(ASSET_SELL, "بيع أصل", Liquidity.IN, false, false, PersonEffect.NONE),
-        rule(UNCLASSIFIED, "غير محدد", Liquidity.OUT, false, false, PersonEffect.NONE),
+        rule(ASSET_SELL, TextKey.KIND_ASSET_SELL, Liquidity.IN, false, false, PersonEffect.NONE),
+        rule(UNCLASSIFIED, TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
     )
 
 fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)
