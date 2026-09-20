@@ -1,47 +1,47 @@
 {
-  "generatedAt": "2026-09-19T02:05:49.298Z",
+  "generatedAt": "2026-09-20T02:06:25.742Z",
   "baseCurrency": "SAR",
   "prices": {
     "USD_SAR": {
       "name": "الدولار الأمريكي",
       "unit": "دولار",
       "pricePerUnitMinor": 376,
-      "asOf": "2026-09-19",
+      "asOf": "2026-09-20",
       "source": "Yahoo Finance — SAR=X"
     },
     "GOLD_24K_GRAM": {
       "name": "ذهب عيار 24",
       "unit": "جرام",
       "pricePerUnitMinor": 52883,
-      "asOf": "2026-09-19",
+      "asOf": "2026-09-20",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_22K_GRAM": {
       "name": "ذهب عيار 22",
       "unit": "جرام",
       "pricePerUnitMinor": 48476,
-      "asOf": "2026-09-19",
+      "asOf": "2026-09-20",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_21K_GRAM": {
       "name": "ذهب عيار 21",
       "unit": "جرام",
       "pricePerUnitMinor": 46272,
-      "asOf": "2026-09-19",
+      "asOf": "2026-09-20",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_18K_GRAM": {
       "name": "ذهب عيار 18",
       "unit": "جرام",
       "pricePerUnitMinor": 39662,
-      "asOf": "2026-09-19",
+      "asOf": "2026-09-20",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "SILVER_GRAM": {
       "name": "فضة",
       "unit": "جرام",
       "pricePerUnitMinor": 802,
-      "asOf": "2026-09-19",
+      "asOf": "2026-09-20",
       "source": "gold-api.com (XAG) + Yahoo (SAR=X)"
     },
     "2222.SR": {
