@@ -5,7 +5,27 @@ package app.masroufy.core
  * «صرفت» = نصيبك + المستبعد من الميزانية؛ «جالك» = الدخل؛ غير المؤكد «تقريبي» زي الرئيسية.
  * القاعدة بتضيف لوحدها اللي **اتسجل بعدها** بس؛ القديم بسؤال وقت عملها.
  */
-data class Project(val id: Id, val name: String, val normalizedName: String, val archived: Boolean, val createdAt: String)
+/**
+ * شخصي ولا شغل — أول سؤال وقت عمل مشروع (قرار المالك 2026-09-20، OVERRIDES §47).
+ * الفرق مش في الشكل: **الرقم المهم بيتقلب**. الشخصي بيتقاس بكلفته، والشغل بيتقاس بصافيه.
+ */
+enum class ProjectKind(val wire: String) {
+    PERSONAL("personal"), WORK("work");
+
+    companion object {
+        /** المشاريع القديمة (من التطبيق الحالي) مالهاش نوع ⇒ شخصية. */
+        fun fromWire(wire: String?): ProjectKind = entries.firstOrNull { it.wire == wire } ?: PERSONAL
+    }
+}
+
+data class Project(
+    val id: Id,
+    val name: String,
+    val normalizedName: String,
+    val archived: Boolean,
+    val createdAt: String,
+    val kind: ProjectKind = ProjectKind.PERSONAL,
+)
 
 /** "manual" / "rule" / "excluded" (المستخدم شالها — بتفضل عشان قاعدة ما ترجعهاش). */
 data class ProjectLink(val id: Id, val projectId: Id, val transactionId: Id, val source: String, val createdAt: String)
@@ -91,6 +111,12 @@ fun membershipChanges(existing: List<ProjectLink>, projectId: Id, transactionId:
 }
 
 data class ProjectSummary(val spentMinor: Halalas, val receivedMinor: Halalas, val count: Int, val estimatedCount: Int, val needsReviewCount: Int)
+
+/**
+ * صافي مشروع الشغل = اللي جالك منه − اللي صرفته عليه. بيطلع **سالب** لو المشروع خسران —
+ * ومفيش سبب يخبّي ده (القاعدة 10). لمشروع شخصي الرقم ده معناه «كلّفك كام بعد اللي جالك».
+ */
+fun projectNetMinor(summary: ProjectSummary): Halalas = subtractMoney(summary.receivedMinor, summary.spentMinor)
 
 fun summarizeProject(transactions: List<Transaction>, allocations: List<PersonAllocation>, categoryNameById: Map<String, String>): ProjectSummary {
     val view = withEstimatedKinds(transactions, categoryNameById)
