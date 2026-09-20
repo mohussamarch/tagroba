@@ -17,6 +17,16 @@ export function record(input: unknown, run: () => unknown): GoldenCase {
   }
 }
 
+/** زي `record` بس لحالات الاستخدام (async). */
+export async function recordAsync(input: unknown, run: () => Promise<unknown>): Promise<GoldenCase> {
+  try {
+    const out = await run()
+    return { in: input, out: out === undefined ? null : out }
+  } catch (cause) {
+    return { in: input, error: cause instanceof Error ? cause.message : String(cause) }
+  }
+}
+
 /** مولّد أرقام شبه عشوائية ثابت البذرة (mulberry32) — نفس الحالات في كل مرة. */
 export function seeded(seed: number) {
   let a = seed >>> 0

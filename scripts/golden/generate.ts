@@ -21,9 +21,10 @@ import { noticeGolden } from './noticeGolden'
 import { backupGolden } from './backupGolden'
 import { seedsGolden } from './seedsGolden'
 import { pdfGolden } from './pdfGolden'
+import { homeGolden } from './homeGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
-const modules: Record<string, () => unknown> = {
+const modules: Record<string, () => unknown | Promise<unknown>> = {
   money: moneyGolden,
   normalize: normalizeGolden,
   period: periodGolden,
@@ -40,11 +41,12 @@ const modules: Record<string, () => unknown> = {
   backup: backupGolden,
   seeds: seedsGolden,
   pdf: pdfGolden,
+  home: homeGolden,
 }
 
 mkdirSync(OUT, { recursive: true })
 for (const [name, build] of Object.entries(modules)) {
-  const data = build() as Record<string, unknown[]>
+  const data = (await build()) as Record<string, unknown[]>
   // حالة في كل سطر: الملف أصغر، والفرق في git بيبان على الحالة اللي اتغيرت بس
   const body = Object.entries(data)
     .map(([fn, list]) => `${JSON.stringify(fn)}: [\n${list.map((c) => JSON.stringify(c)).join(',\n')}\n]`)

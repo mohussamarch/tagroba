@@ -131,4 +131,7 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
         "The first gap is on {0}, and that day has a single movement, so the gap belongs to it.",
 
     TextKey.SMS_NOT_EGP to "This version only supports Egyptian pound messages",
+
+    TextKey.FORECAST_NEEDS_KINDS to
+        "A forecast is not available until you set the kinds of the transactions; the spending so far is incomplete.",
 )
