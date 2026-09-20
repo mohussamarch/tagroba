@@ -121,5 +121,13 @@ internal val ARABIC_DATA_TEXTS: Map<TextKey, String> = mapOf(
 
     TextKey.SMS_NOT_EGP to "النسخة الحالية تدعم رسائل الجنيه المصري فقط",
 
+    TextKey.KIND_GIFT_RECEIVED to "هدية أو عيدية",
+    TextKey.KIND_SUPPORT_RECEIVED to "مساعدة",
+    TextKey.KIND_BENEFIT_RECEIVED to "دعم أو تعويض",
+    TextKey.KIND_INVESTMENT_INCOME to "أرباح استثمار",
+    TextKey.KIND_ROSCA_PAYOUT to "دور جمعية",
+    TextKey.KIND_REFUND_RECEIVED to "استرداد فلوس",
+    TextKey.KIND_ADVANCE_RECEIVED to "سلفة من الشغل",
+
     TextKey.FORECAST_NEEDS_KINDS to "التوقع غير متاح لحد ما تحدّد أنواع العمليات؛ المصروف الحالي ناقص.",
 )

@@ -21,6 +21,11 @@ enum class EconomicKind(val wire: String) {
     INTERNAL_TRANSFER("internal_transfer"),
     // استثمار
     ASSET_BUY("asset_buy"), ASSET_SELL("asset_sell"),
+    // وارد جديد — قرارات المالك 2026-09-20 (OVERRIDES §42)
+    GIFT_RECEIVED("gift_received"), SUPPORT_RECEIVED("support_received"), BENEFIT_RECEIVED("benefit_received"),
+    INVESTMENT_INCOME("investment_income"),
+    // وارد بس مش دخل
+    ROSCA_PAYOUT("rosca_payout"), REFUND_RECEIVED("refund_received"), ADVANCE_RECEIVED("advance_received"),
     // لسه ما اتحددش
     UNCLASSIFIED("unclassified");
 
@@ -57,13 +62,25 @@ data class EconomicKindRule(
     /** بيزود المصروف الشخصي؟ (نصيب المستخدم بس بعد فصل اللي على غيره) */
     val countsAsPersonalExpense: Boolean,
     val personEffect: PersonEffect,
+    /**
+     * بيـ**نقّص** المصروف بدل ما يزوده — الاسترداد بس (OVERRIDES §42).
+     * فلوس رجعتلك عن حاجة دفعتها مش دخل جديد؛ لو اتحسبت دخل يبقى الشهر ده دخله كذب.
+     */
+    val reducesExpense: Boolean = false,
 ) {
     /** الاسم المعروض باللغة الحالية (OVERRIDES §40) — بيتقرا وقت العرض مش وقت التحميل. */
     val label: String get() = uiText(labelKey)
 }
 
-private fun rule(kind: EconomicKind, labelKey: TextKey, liquidity: Liquidity, income: Boolean, expense: Boolean, effect: PersonEffect) =
-    kind to EconomicKindRule(kind, labelKey, liquidity, income, expense, effect)
+private fun rule(
+    kind: EconomicKind,
+    labelKey: TextKey,
+    liquidity: Liquidity,
+    income: Boolean,
+    expense: Boolean,
+    effect: PersonEffect,
+    reducesExpense: Boolean = false,
+) = kind to EconomicKindRule(kind, labelKey, liquidity, income, expense, effect, reducesExpense)
 
 private val RULES: Map<EconomicKind, EconomicKindRule> =
     mapOf(
@@ -86,6 +103,18 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         rule(ASSET_BUY, TextKey.KIND_ASSET_BUY, Liquidity.OUT, false, false, PersonEffect.NONE),
         // بيع الأصل: الربح المحقق بس هو المكسب، ويتحسب في الاستثمار — مش دخل معيشة
         rule(ASSET_SELL, TextKey.KIND_ASSET_SELL, Liquidity.IN, false, false, PersonEffect.NONE),
+        // وارد جديد بيزود الدخل — مش من شغل، عشان كده منفصل عن المرتب (OVERRIDES §42)
+        rule(GIFT_RECEIVED, TextKey.KIND_GIFT_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(SUPPORT_RECEIVED, TextKey.KIND_SUPPORT_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(BENEFIT_RECEIVED, TextKey.KIND_BENEFIT_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
+        // عايد الاستثمار المتكرر — غير بيع الأصل نفسه
+        rule(INVESTMENT_INCOME, TextKey.KIND_INVESTMENT_INCOME, Liquidity.IN, true, false, PersonEffect.NONE),
+        // دور الجمعية: جزء فلوسك راجعة وجزء دين عليك ⇒ مش دخل
+        rule(ROSCA_PAYOUT, TextKey.KIND_ROSCA_PAYOUT, Liquidity.IN, false, false, PersonEffect.NONE),
+        // الاسترداد بينقّص المصروف، ما بيزودش الدخل
+        rule(REFUND_RECEIVED, TextKey.KIND_REFUND_RECEIVED, Liquidity.IN, false, false, PersonEffect.NONE, reducesExpense = true),
+        // سلفة الشغل دين هيتخصم من المرتب
+        rule(ADVANCE_RECEIVED, TextKey.KIND_ADVANCE_RECEIVED, Liquidity.IN, false, false, PersonEffect.PAYABLE_LOAN_UP),
         rule(UNCLASSIFIED, TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
     )
 
@@ -95,6 +124,9 @@ val ALL_ECONOMIC_KINDS: List<EconomicKind> = EconomicKind.entries.toList()
 
 fun countsAsIncome(kind: EconomicKind): Boolean = ruleFor(kind).countsAsIncome
 fun countsAsPersonalExpense(kind: EconomicKind): Boolean = ruleFor(kind).countsAsPersonalExpense
+
+/** بينقّص المصروف بدل ما يزوده — الاسترداد (OVERRIDES §42). */
+fun reducesExpense(kind: EconomicKind): Boolean = ruleFor(kind).reducesExpense
 
 /** للتحذير في المراجعة، مش للرفض — الكشف بيعرف الاتجاه بس مش النية. */
 fun isConsistentWithObservedDirection(kind: EconomicKind, observed: Direction): Boolean = when (ruleFor(kind).liquidity) {

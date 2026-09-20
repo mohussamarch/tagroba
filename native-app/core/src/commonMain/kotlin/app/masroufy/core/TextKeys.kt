@@ -336,6 +336,15 @@ enum class TextKey {
     /** رسايل مصر: العملة مش جنيه */
     SMS_NOT_EGP,
 
+    // أنواع وارد جديدة — OVERRIDES §42
+    KIND_GIFT_RECEIVED,
+    KIND_SUPPORT_RECEIVED,
+    KIND_BENEFIT_RECEIVED,
+    KIND_INVESTMENT_INCOME,
+    KIND_ROSCA_PAYOUT,
+    KIND_REFUND_RECEIVED,
+    KIND_ADVANCE_RECEIVED,
+
     /** الشاشة الرئيسية: التوقع مش متاح لحد ما الأنواع تتحدد */
     FORECAST_NEEDS_KINDS,
 }

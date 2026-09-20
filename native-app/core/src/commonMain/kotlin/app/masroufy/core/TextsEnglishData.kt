@@ -132,6 +132,14 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
 
     TextKey.SMS_NOT_EGP to "This version only supports Egyptian pound messages",
 
+    TextKey.KIND_GIFT_RECEIVED to "Gift",
+    TextKey.KIND_SUPPORT_RECEIVED to "Support received",
+    TextKey.KIND_BENEFIT_RECEIVED to "Benefit or compensation",
+    TextKey.KIND_INVESTMENT_INCOME to "Investment income",
+    TextKey.KIND_ROSCA_PAYOUT to "Savings circle payout",
+    TextKey.KIND_REFUND_RECEIVED to "Refund",
+    TextKey.KIND_ADVANCE_RECEIVED to "Salary advance",
+
     TextKey.FORECAST_NEEDS_KINDS to
         "A forecast is not available until you set the kinds of the transactions; the spending so far is incomplete.",
 )

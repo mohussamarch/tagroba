@@ -40,6 +40,11 @@ fun computePeriodTotals(transactions: List<Transaction>, allocations: List<Perso
             income = addMoney(income, t.amountMinor)
             continue
         }
+        // الاسترداد فلوس رجعت عن حاجة اتدفعت ⇒ بتنقّص المصروف نفسه، مش بتتحسب دخل (OVERRIDES §42)
+        if (reducesExpense(t.economicKind)) {
+            if (t.excludedFromBudget) excluded = subtractMoney(excluded, t.amountMinor) else expense = subtractMoney(expense, t.amountMinor)
+            continue
+        }
         if (!countsAsPersonalExpense(t.economicKind)) continue
         val share = personalShareOf(t, allocations)
         if (t.excludedFromBudget) excluded = addMoney(excluded, share) else expense = addMoney(expense, share)
