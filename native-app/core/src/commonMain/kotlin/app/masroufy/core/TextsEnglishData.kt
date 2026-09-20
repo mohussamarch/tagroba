@@ -137,6 +137,13 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_BENEFIT_RECEIVED to "Benefit or compensation",
     TextKey.KIND_INVESTMENT_INCOME to "Investment income",
     TextKey.KIND_EVENT_GIFT to "Event gift",
+
+    TextKey.INCOME_SOURCE_NAME_LENGTH to "Enter the company or client name, {0} characters at most.",
+    TextKey.INCOME_SOURCE_DUPLICATE to "An income source with the same name already exists.",
+    TextKey.INCOME_SOURCE_BAD_START to "The start date is not valid.",
+    TextKey.INCOME_SOURCE_BAD_END to "The end date has to be after the start.",
+    TextKey.INCOME_SOURCE_BAD_DAY to "The expected day has to be from 1 to 31.",
+    TextKey.INCOME_SOURCE_BAD_AMOUNT to "The expected amount has to be greater than zero.",
     TextKey.KIND_ROSCA_PAYOUT to "Savings circle payout",
     TextKey.KIND_REFUND_RECEIVED to "Refund",
     TextKey.KIND_ADVANCE_RECEIVED to "Salary advance",

@@ -126,6 +126,13 @@ internal val ARABIC_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_BENEFIT_RECEIVED to "دعم أو تعويض",
     TextKey.KIND_INVESTMENT_INCOME to "أرباح استثمار",
     TextKey.KIND_EVENT_GIFT to "نقوط",
+
+    TextKey.INCOME_SOURCE_NAME_LENGTH to "اكتب اسم الشركة أو العميل بحد أقصى {0} حرف.",
+    TextKey.INCOME_SOURCE_DUPLICATE to "فيه مصدر دخل بنفس الاسم.",
+    TextKey.INCOME_SOURCE_BAD_START to "تاريخ البداية مش صالح.",
+    TextKey.INCOME_SOURCE_BAD_END to "تاريخ النهاية لازم يكون بعد البداية.",
+    TextKey.INCOME_SOURCE_BAD_DAY to "اليوم المتوقع لازم يكون من 1 لـ 31.",
+    TextKey.INCOME_SOURCE_BAD_AMOUNT to "المبلغ المتوقع لازم يكون أكبر من صفر.",
     TextKey.KIND_ROSCA_PAYOUT to "دور جمعية",
     TextKey.KIND_REFUND_RECEIVED to "استرداد فلوس",
     TextKey.KIND_ADVANCE_RECEIVED to "سلفة من الشغل",
