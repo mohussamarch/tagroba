@@ -29,4 +29,12 @@ jobs:
       - name: اختبارات ملفات المرجع (JVM)
         run: chmod +x gradlew && ./gradlew :core:jvmTest --console=plain
       - name: بناء كود الآيفون (جهاز حقيقي + المحاكي)
-        run: ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 --console=plain
+        # أخطاء المترجم بتتطبع كـ«error annotations» كمان، عشان تبان من برا من غير ما حد يفتح السجل
+        run: |
+          set +e
+          ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 --console=plain 2>&1 | tee ios-build.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -E "^e: |error:|Caused by|FAILURE:" ios-build.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
+          fi
+          exit "$status"
