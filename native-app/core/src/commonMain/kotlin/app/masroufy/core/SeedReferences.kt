@@ -5,6 +5,8 @@ package app.masroufy.core
  * **المعرّفات لازم تطلع نفسها بالظبط** (`cat-<الاسم>`, `rule-0001`, `merch-00001`): الحسابين (القديم والجديد)
  * بيقروا نفس فايربيز، وقاعدة التجار المشتركة بتستعمل معرّفات الشجرة.
  */
+// النصوص في الملف ده كلها **مطابقة** لملفات المراجع المرفقة مع التطبيق، أو رسايل سلامة
+// بتظهر للمطور لو الملفات دي اتكسرت — مش نصوص واجهة، وما تتترجمش (Texts.kt)
 data class RawSub(val name: String, val icon: String, val requires: String? = null)
 data class RawMain(
     val name: String,

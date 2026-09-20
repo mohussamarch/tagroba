@@ -29,6 +29,10 @@ enum class Language(val wire: String) {
  * `language` بتتظبط **مرة واحدة** عند بداية التطبيق من إعدادات المستخدم، وبعدها ما تتغيرش
  * جوه حساب واحد وسط الشغل. الافتراضي عربي.
  */
+// الجداول مقسومة على ملفين لكل لغة عشان حد الـ300 سطر (CLAUDE.md #7)
+internal val ARABIC_TEXTS: Map<TextKey, String> = ARABIC_SCREEN_TEXTS + ARABIC_DATA_TEXTS
+internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS
+
 object Texts {
     var language: Language = Language.AR
 

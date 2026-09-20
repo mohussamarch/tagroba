@@ -14,14 +14,14 @@ const val QUANTITY_DECIMALS = 8
 
 class QuantityError(message: String) : IllegalArgumentException(message)
 
-fun assertQuantity(value: Long, context: String = "كمية") {
-    if (value > MAX_SAFE_HALALAS || value < -MAX_SAFE_HALALAS) throw QuantityError("$context: الكمية أكبر من الحد الآمن للحساب")
+fun assertQuantity(value: Long, context: String = uiText(TextKey.QUANTITY_CONTEXT_DEFAULT)) {
+    if (value > MAX_SAFE_HALALAS || value < -MAX_SAFE_HALALAS) throw QuantityError(uiText(TextKey.QUANTITY_OUT_OF_RANGE_CONTEXT, context))
 }
 
 /** بيقرا كمية مكتوبة (أرقام عربية وفواصل)، وبيرفض أكتر من 8 أرقام عشرية **بدل ما يقرّب بصمت**. */
 fun parseQuantity(raw: String): Quantity {
     var text = JsText.trim(normalizeDigits(raw)).filterNot { JsText.isWhitespace(it) || it == ',' || it.code == 0x066C }
-    if (text.isEmpty()) throw QuantityError("اكتب الكمية")
+    if (text.isEmpty()) throw QuantityError(uiText(TextKey.QUANTITY_EMPTY))
     var negative = false
     if (text.startsWith('-')) {
         negative = true
@@ -30,18 +30,18 @@ fun parseQuantity(raw: String): Quantity {
         text = text.substring(1)
     }
     val parts = text.split('.', '٫')
-    if (parts.size > 2) throw QuantityError("الكمية فيها أكتر من علامة عشرية")
+    if (parts.size > 2) throw QuantityError(uiText(TextKey.QUANTITY_TWO_POINTS))
     val intPart = parts[0].ifEmpty { "0" }
     val fracRaw = parts.getOrElse(1) { "" }
     val shown = JsText.trim(raw)
-    if (!intPart.all(JsText::isAsciiDigit) || !fracRaw.all(JsText::isAsciiDigit)) throw QuantityError("«$shown» مش كمية صالحة")
+    if (!intPart.all(JsText::isAsciiDigit) || !fracRaw.all(JsText::isAsciiDigit)) throw QuantityError(uiText(TextKey.QUANTITY_INVALID, shown))
     if (fracRaw.length > QUANTITY_DECIMALS) {
-        throw QuantityError("الكمية بأكتر من $QUANTITY_DECIMALS أرقام عشرية. " + "التطبيق مش هيقرّبها من ورا ظهرك — قصّرها بنفسك.")
+        throw QuantityError(uiText(TextKey.QUANTITY_TOO_MANY_DECIMALS, QUANTITY_DECIMALS.toString()))
     }
     val digits = (intPart + fracRaw.padEnd(QUANTITY_DECIMALS, '0')).trimStart('0')
     // نفس رسايل جافاسكربت: رقم بحجم ما ينفعش ⇒ «مش رقم صالح»، وأكبر من الحد الآمن ⇒ «أكبر من الحد»
-    if (digits.length > 309) throw QuantityError("«$shown»: القيمة مش رقم صالح")
-    if (digits.length > 16 || (digits.isNotEmpty() && digits.toLong() > MAX_SAFE_HALALAS)) throw QuantityError("«$shown»: الكمية أكبر من الحد الآمن للحساب")
+    if (digits.length > 309) throw QuantityError(uiText(TextKey.QUANTITY_NOT_A_NUMBER, shown))
+    if (digits.length > 16 || (digits.isNotEmpty() && digits.toLong() > MAX_SAFE_HALALAS)) throw QuantityError(uiText(TextKey.QUANTITY_OUT_OF_RANGE, shown))
     val value = if (digits.isEmpty()) 0L else digits.toLong()
     return if (negative) -value else value
 }
@@ -62,7 +62,7 @@ fun addQuantity(vararg values: Quantity): Quantity {
         assertQuantity(v)
         total += v
     }
-    assertQuantity(total, "مجموع الكميات")
+    assertQuantity(total, uiText(TextKey.QUANTITY_CONTEXT_TOTAL))
     return total
 }
 
@@ -116,11 +116,11 @@ private object Wide {
 
 /** قسمة عددين بتقريب نص لفوق بعيد عن الصفر **مرة واحدة** — الحد الوحيد للتقريب في الاستثمار. */
 private fun divideRounded(a: Long, b: Long, denominator: Long): Long {
-    if (denominator == 0L) throw QuantityError("قسمة على صفر")
+    if (denominator == 0L) throw QuantityError(uiText(TextKey.QUANTITY_DIVIDE_BY_ZERO))
     val negative = ((a < 0) != (b < 0) && a != 0L && b != 0L) != (denominator < 0)
     val (hi, lo) = Wide.multiply(abs(a), abs(b))
     val q = Wide.divideRounded(hi, lo, abs(denominator).toULong())
-    if (q == null || q > MAX_SAFE_HALALAS.toULong()) throw QuantityError("النتيجة أكبر من الحد الآمن للحساب")
+    if (q == null || q > MAX_SAFE_HALALAS.toULong()) throw QuantityError(uiText(TextKey.QUANTITY_RESULT_OUT_OF_RANGE))
     val result = q.toLong()
     return if (negative) -result else result
 }
@@ -133,12 +133,12 @@ fun valueOfQuantity(quantity: Quantity, pricePerUnitMinor: Halalas): Halalas {
 
 /** حصة من مبلغ بنسبة كمية لكمية — تكلفة الجزء المباع. المتبقي بيتحسب بالطرح (مفيش هللة بتضيع). */
 fun shareOfAmount(amountMinor: Halalas, partQuantity: Quantity, wholeQuantity: Quantity): Halalas {
-    assertQuantity(partQuantity, "الكمية الجزئية")
-    assertQuantity(wholeQuantity, "الكمية الكلية")
-    if (wholeQuantity <= 0) throw QuantityError("الكمية الكلية لازم تكون أكبر من صفر")
-    if (partQuantity < 0) throw QuantityError("الكمية الجزئية لا تكون سالبة")
+    assertQuantity(partQuantity, uiText(TextKey.QUANTITY_CONTEXT_PART))
+    assertQuantity(wholeQuantity, uiText(TextKey.QUANTITY_CONTEXT_WHOLE))
+    if (wholeQuantity <= 0) throw QuantityError(uiText(TextKey.QUANTITY_WHOLE_POSITIVE))
+    if (partQuantity < 0) throw QuantityError(uiText(TextKey.QUANTITY_PART_NEGATIVE))
     if (partQuantity > wholeQuantity) {
-        throw QuantityError("الكمية الجزئية (${formatQuantity(partQuantity)}) أكبر من الكلية " + "(${formatQuantity(wholeQuantity)})")
+        throw QuantityError(uiText(TextKey.QUANTITY_PART_OVER_WHOLE, formatQuantity(partQuantity), formatQuantity(wholeQuantity)))
     }
     if (partQuantity == wholeQuantity) return amountMinor
     return divideRounded(amountMinor, partQuantity, wholeQuantity)

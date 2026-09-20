@@ -155,11 +155,12 @@ fun parseAlrajhiPdf(pages: List<PdfPage>): AlrajhiPdfOutcome {
         val hits = lines.mapIndexedNotNull { index, line -> readAmountLine(line)?.let { index to it } }
         hits.forEachIndexed { order, (index, amounts) ->
             lineNumber += 1
-            val raw = "صفحة ${page.pageNumber} · ${amounts.date}"
+            // نص الدليل بيتخزن مع العملية، فبيفضل بلغة الكشف نفسه ومايتترجمش
+        val raw = "صفحة ${page.pageNumber} · ${amounts.date}"
             val isDebit = amounts.debitMinor > 0
             val isCredit = amounts.creditMinor > 0
             if (isDebit == isCredit) {
-                errors += RowError(lineNumber, "المبلغ", if (isDebit) "العملية فيها مدين ودائن مع بعض — مش واضح اتجاهها" else "العملية مبلغها صفر في المدين والدائن", raw)
+                errors += RowError(lineNumber, "المبلغ", if (isDebit) uiText(TextKey.PDF_DEBIT_AND_CREDIT) else uiText(TextKey.PDF_ZERO_AMOUNT), raw)
                 return@forEachIndexed
             }
             val typeLine = if (index > 0) detailsOf(lines[index - 1]) else ""

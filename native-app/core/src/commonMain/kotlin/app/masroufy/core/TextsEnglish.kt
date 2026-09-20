@@ -4,7 +4,7 @@ package app.masroufy.core
  * النصوص بالإنجليزي — كتابة Claude ومراجعة المالك (OVERRIDES §40).
  * أي مفتاح ناقص هنا بيرجع بالعربي، فالشاشة ما بتفضاش أبدًا.
  */
-internal val ENGLISH_TEXTS: Map<TextKey, String> = mapOf(
+internal val ENGLISH_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_SALARY to "Salary",
     TextKey.KIND_BONUS to "Bonus",
     TextKey.KIND_COMMISSION to "Commission",

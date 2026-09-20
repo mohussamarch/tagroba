@@ -101,6 +101,7 @@ fun parseQuery(raw: String, tolerancePerThousand: Long = AMOUNT_TOLERANCE_PER_TH
     return ParsedQuery(text, if (amount != null && amount > 0) AmountQuery(amount, tolerancePerThousand) else null)
 }
 
+// كلمات بيتطابق بيها جوه أسماء المحافظ — لغة بيانات وما تتترجمش (Texts.kt)
 private val CASH_WORDS = setOf(normalizeText("كاش"), normalizeText("نقدي"), "CASH")
 
 private fun textMatches(haystack: String?, needle: String, compact: String): Boolean =

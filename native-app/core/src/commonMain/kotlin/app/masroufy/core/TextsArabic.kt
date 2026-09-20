@@ -4,7 +4,7 @@ package app.masroufy.core
  * النصوص بالعربي — **الأصل**. أي قيمة هنا هي نفس النص اللي كان مكتوب جوه الكود بالحرف،
  * فملفات المرجع (golden) بتفضل مطابقة. تغيير أي نص هنا = تغيير في شاشة المالك.
  */
-internal val ARABIC_TEXTS: Map<TextKey, String> = mapOf(
+internal val ARABIC_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_SALARY to "مرتب",
     TextKey.KIND_BONUS to "بونص",
     TextKey.KIND_COMMISSION to "عمولة",

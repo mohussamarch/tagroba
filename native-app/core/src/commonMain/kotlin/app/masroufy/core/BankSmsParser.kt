@@ -88,13 +88,13 @@ private fun transactionAmount(body: String): AmountResult {
             if (NOT_TRANSACTION_AMOUNT.containsMatchIn(line.substring(0, match.range.first))) continue
             val number = match.groups[1]?.value ?: match.groups[2]!!.value
             val amount = tryParseMoney(number.replace('٬', ',').replace('٫', '.'))
-            if (amount == null || amount <= 0) return AmountResult.Fail("المبلغ غير صالح")
+            if (amount == null || amount <= 0) return AmountResult.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
             values.add(amount)
         }
     }
     if (values.size == 1) return AmountResult.Ok(values.first())
-    if (values.size > 1) return AmountResult.Fail("يوجد أكثر من مبلغ عملية في الرسالة")
-    return AmountResult.Fail(if (BARE_AMOUNT.containsMatchIn(body)) "عملة المبلغ غير مذكورة بوضوح" else "مبلغ العملية غير واضح")
+    if (values.size > 1) return AmountResult.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
+    return AmountResult.Fail(if (BARE_AMOUNT.containsMatchIn(body)) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
 }
 
 private fun iso(y: Int, m: Int, d: Int) = "$y-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}"
@@ -142,19 +142,19 @@ private fun merchantOf(body: String): String {
 /** قوالب سعودية محافظة؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */
 fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = latinizeDigits(message.body).filterNot { it == '\r' || it.code in BIDI_CODES }
-    if (OFFER.containsMatchIn(body)) return SmsParseResult.Rejected("عرض أو حركة مستقبلية وليست عملية مكتملة")
-    if (SENSITIVE.containsMatchIn(body)) return SmsParseResult.Rejected("رسالة تحقق أو كلمة سر؛ تم تجاهلها")
-    if (DECLINED.containsMatchIn(body)) return SmsParseResult.Rejected("عملية مرفوضة أو غير مكتملة")
+    if (OFFER.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OFFER))
+    if (SENSITIVE.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_SENSITIVE))
+    if (DECLINED.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DECLINED))
     // «حوالة داخلية صادرة» و«حوالة محلية واردة»: كلمة الاتجاه ممكن تيجي بعد نوع الحوالة
     val out = OUT.containsMatchIn(body)
     val incoming = INCOMING.containsMatchIn(body)
-    if (out == incoming) return SmsParseResult.Rejected("اتجاه الحركة غير واضح؛ لم نفترض أنها دخل أو مصروف")
-    if (FOREIGN.containsMatchIn(body)) return SmsParseResult.Rejected("النسخة الحالية تدعم رسائل الريال السعودي فقط")
+    if (out == incoming) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    if (FOREIGN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_FOREIGN_CURRENCY))
     val amount = when (val a = transactionAmount(body)) {
         is AmountResult.Fail -> return SmsParseResult.Rejected(a.reason)
         is AmountResult.Ok -> a.amountMinor
     }
-    val date = transactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected("تاريخ العملية غير واضح؛ تاريخ وصول الرسالة لا يكفي")
+    val date = transactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val safeBody = redactSms(body)
     return SmsParseResult.Ok(
         SmsRow(

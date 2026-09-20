@@ -23,9 +23,9 @@ const val MAX_SAFE_HALALAS: Long = 9_007_199_254_740_991L
 
 class MoneyError(message: String, val input: String? = null) : IllegalArgumentException(message)
 
-fun assertHalalas(value: Long, context: String = "مبلغ") {
+fun assertHalalas(value: Long, context: String = uiText(TextKey.AMOUNT_CONTEXT_DEFAULT)) {
     if (value > MAX_SAFE_HALALAS || value < -MAX_SAFE_HALALAS) {
-        throw MoneyError("$context: المبلغ خارج المدى الآمن", value.toString())
+        throw MoneyError(uiText(TextKey.MONEY_OUT_OF_RANGE_CONTEXT, context), value.toString())
     }
 }
 
@@ -50,7 +50,7 @@ fun normalizeDigits(text: String): String {
  */
 fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
     var s = JsText.trim(normalizeDigits(raw))
-    if (s.isEmpty()) throw MoneyError("المبلغ فارغ", raw)
+    if (s.isEmpty()) throw MoneyError(uiText(TextKey.MONEY_EMPTY), raw)
 
     // فواصل الآلاف والمسافات بأنواعها
     s = s.filterNot { JsText.isWhitespace(it) || it == ',' }
@@ -76,13 +76,13 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
     val intRaw = if (dot < 0) s else s.substring(0, dot)
     val fracRaw = if (dot < 0) "" else s.substring(dot + 1)
     val valid = intRaw.all(JsText::isAsciiDigit) && fracRaw.all(JsText::isAsciiDigit)
-    if (!valid || (intRaw.isEmpty() && fracRaw.isEmpty())) throw MoneyError("صيغة المبلغ غير صالحة", raw)
+    if (!valid || (intRaw.isEmpty() && fracRaw.isEmpty())) throw MoneyError(uiText(TextKey.MONEY_BAD_FORMAT), raw)
 
     val intPart = intRaw.ifEmpty { "0" }
     val decimals = minorUnitsOf(currency).toString().length - 1 // 100 ⇒ 2
 
     if (fracRaw.length > decimals && fracRaw.substring(decimals).any { it != '0' }) {
-        throw MoneyError("المبلغ فيه أكثر من $decimals خانة كسرية غير صفرية — لا يُقرَّب بصمت", raw)
+        throw MoneyError(uiText(TextKey.MONEY_TOO_MANY_DECIMALS, decimals.toString()), raw)
     }
     val frac = fracRaw.take(decimals).padEnd(decimals, '0')
 
@@ -104,7 +104,7 @@ fun addMoney(vararg amounts: Halalas): Halalas {
         assertHalalas(a)
         total += a
     }
-    assertHalalas(total, "المجموع")
+    assertHalalas(total, uiText(TextKey.AMOUNT_CONTEXT_TOTAL))
     return total
 }
 
@@ -115,7 +115,7 @@ fun subtractMoney(a: Halalas, b: Halalas): Halalas {
     assertHalalas(a)
     assertHalalas(b)
     val r = a - b
-    assertHalalas(r, "الفرق")
+    assertHalalas(r, uiText(TextKey.AMOUNT_CONTEXT_DIFFERENCE))
     return r
 }
 
@@ -127,7 +127,7 @@ fun absMoney(a: Halalas): Halalas { assertHalalas(a); return abs(a) }
 fun multiplyMoneyByInt(a: Halalas, times: Long): Halalas {
     assertHalalas(a)
     if (times != 0L && abs(a) > MAX_SAFE_HALALAS / abs(times)) {
-        throw MoneyError("الناتج: المبلغ خارج المدى الآمن", "$a×$times")
+        throw MoneyError(uiText(TextKey.MONEY_RESULT_OUT_OF_RANGE), "$a×$times")
     }
     return a * times
 }
@@ -135,7 +135,7 @@ fun multiplyMoneyByInt(a: Halalas, times: Long): Halalas {
 /** نسبة (بسط/مقام) بتقريب النص لفوق بعيد عن الصفر عند حد واحد معلن. عددين صحيحين — مفيش عشري. */
 fun rateOfMoney(a: Halalas, numerator: Long, denominator: Long): Halalas {
     assertHalalas(a)
-    if (denominator == 0L) throw MoneyError("القسمة على صفر")
+    if (denominator == 0L) throw MoneyError(uiText(TextKey.MONEY_DIVIDE_BY_ZERO))
     val sign = if ((a < 0) != (numerator < 0)) -1L else 1L
     val num = abs(a) * abs(numerator)
     val den = abs(denominator)
@@ -143,14 +143,14 @@ fun rateOfMoney(a: Halalas, numerator: Long, denominator: Long): Halalas {
     val rem = num - q * den
     val rounded = if (rem * 2 >= den) q + 1 else q
     val r = sign * rounded
-    assertHalalas(r, "النسبة")
+    assertHalalas(r, uiText(TextKey.AMOUNT_CONTEXT_SHARE))
     return r
 }
 
 /** تقسيم على n حصة **من غير ما هللة تضيع أو تتخلق**؛ الباقي هللة هللة على الأوائل. */
 fun splitMoney(a: Halalas, parts: Int): List<Halalas> {
     assertHalalas(a)
-    if (parts <= 0) throw MoneyError("عدد الحصص يجب أن يكون عددًا صحيحًا موجبًا", parts.toString())
+    if (parts <= 0) throw MoneyError(uiText(TextKey.MONEY_PARTS_POSITIVE), parts.toString())
     val sign = if (a < 0) -1L else 1L
     val total = abs(a)
     val base = total / parts

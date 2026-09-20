@@ -65,9 +65,8 @@ fun reconcileBalance(openingMinor: Halalas, openingAt: IsoDate, movements: List<
     val note = when {
         first == null -> null
         first.sameDayCount > 1 ->
-            "أول فرق في ${first.date}، واليوم ده فيه ${first.sameDayCount} حركة. " +
-                "ترتيب حركات اليوم الواحد مش مثبت في الكشف، فمش أكيد إن دي بالذات هي أول عملية فيها مشكلة."
-        else -> "أول فرق في ${first.date}، واليوم ده فيه حركة واحدة، فالفرق يخصها هي."
+            uiText(TextKey.RECONCILE_FIRST_GAP_MANY, first.date, first.sameDayCount.toString())
+        else -> uiText(TextKey.RECONCILE_FIRST_GAP_ONE, first.date)
     }
     return ReconcileResult(
         openingMinor, openingAt, balance, movements.lastOrNull()?.date, totalDebit, totalCredit,

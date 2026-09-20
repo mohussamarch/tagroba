@@ -17,15 +17,34 @@ val BACKUP_GROUPS = listOf(
 /** اتضافت بعد أول نسخ الإصدار 2 (المشاريع §34): النسخة القديمة من غيرها بتتقري فاضية. */
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules")
 
-val BACKUP_LABELS = mapOf(
-    "wallets" to "المحافظ", "categories" to "التصنيفات", "merchants" to "التجار", "rules" to "القواعد", "people" to "الأشخاص",
-    "assets" to "الأصول", "tags" to "الوسوم", "budgets" to "الميزانيات", "recurringItems" to "الاشتراكات والفواتير",
-    "importBatches" to "دفعات الاستيراد", "transactions" to "العمليات", "obligations" to "الديون والأمانات",
-    "allocations" to "تخصيصات الأشخاص", "settlements" to "التسويات", "sourceRecords" to "مصادر العمليات",
-    "transactionTags" to "روابط الوسوم", "categoryBudgets" to "سقوف التصنيفات", "assetLots" to "مشتريات الأصول",
-    "assetSales" to "مبيعات الأصول", "assetPrices" to "أسعار الأصول", "notificationReceipts" to "حالات قراءة التنبيهات",
-    "projects" to "المشاريع", "projectLinks" to "روابط المشاريع", "projectRules" to "قواعد المشاريع",
-)
+/** أسماء المجموعات للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
+val BACKUP_LABELS: Map<String, String>
+    get() = mapOf(
+        "wallets" to uiText(TextKey.BACKUP_GROUP_WALLETS),
+        "categories" to uiText(TextKey.BACKUP_GROUP_CATEGORIES),
+        "merchants" to uiText(TextKey.BACKUP_GROUP_MERCHANTS),
+        "rules" to uiText(TextKey.BACKUP_GROUP_RULES),
+        "people" to uiText(TextKey.BACKUP_GROUP_PEOPLE),
+        "assets" to uiText(TextKey.BACKUP_GROUP_ASSETS),
+        "tags" to uiText(TextKey.BACKUP_GROUP_TAGS),
+        "budgets" to uiText(TextKey.BACKUP_GROUP_BUDGETS),
+        "recurringItems" to uiText(TextKey.BACKUP_GROUP_RECURRING_ITEMS),
+        "importBatches" to uiText(TextKey.BACKUP_GROUP_IMPORT_BATCHES),
+        "transactions" to uiText(TextKey.BACKUP_GROUP_TRANSACTIONS),
+        "obligations" to uiText(TextKey.BACKUP_GROUP_OBLIGATIONS),
+        "allocations" to uiText(TextKey.BACKUP_GROUP_ALLOCATIONS),
+        "settlements" to uiText(TextKey.BACKUP_GROUP_SETTLEMENTS),
+        "sourceRecords" to uiText(TextKey.BACKUP_GROUP_SOURCE_RECORDS),
+        "transactionTags" to uiText(TextKey.BACKUP_GROUP_TRANSACTION_TAGS),
+        "categoryBudgets" to uiText(TextKey.BACKUP_GROUP_CATEGORY_BUDGETS),
+        "assetLots" to uiText(TextKey.BACKUP_GROUP_ASSET_LOTS),
+        "assetSales" to uiText(TextKey.BACKUP_GROUP_ASSET_SALES),
+        "assetPrices" to uiText(TextKey.BACKUP_GROUP_ASSET_PRICES),
+        "notificationReceipts" to uiText(TextKey.BACKUP_GROUP_NOTIFICATION_RECEIPTS),
+        "projects" to uiText(TextKey.BACKUP_GROUP_PROJECTS),
+        "projectLinks" to uiText(TextKey.BACKUP_GROUP_PROJECT_LINKS),
+        "projectRules" to uiText(TextKey.BACKUP_GROUP_PROJECT_RULES),
+    )
 
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
@@ -140,8 +159,8 @@ internal fun numberOf(value: Any?): Double? = when (value) {
 /** ملف الحساب في النسخة (OVERRIDES §26) — مش جوه المجموعات عن قصد. */
 fun checkBackupProfile(profile: Any?) {
     if (profile == null) return
-    val row = profile as? Map<*, *> ?: throw BackupError("ملف الحساب في النسخة غير صالح")
-    fun bad(field: String): Nothing = throw BackupError("ملف الحساب في النسخة غير صالح: $field")
+    val row = profile as? Map<*, *> ?: throw BackupError(uiText(TextKey.BACKUP_PROFILE_INVALID))
+    fun bad(field: String): Nothing = throw BackupError(uiText(TextKey.BACKUP_PROFILE_INVALID_FIELD, field))
     fun has(field: String) = row.containsKey(field) && row[field] != null
     if (has("displayName")) {
         val name = row["displayName"] as? String ?: bad("displayName")

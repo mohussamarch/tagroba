@@ -8,7 +8,10 @@ import kotlin.math.abs
  */
 data class CategoryColorPair(val lightColor: String, val darkColor: String)
 
-data class CategorySwatch(val key: String, val name: String, val h: Double, val s: Double, val l: Double)
+data class CategorySwatch(val key: String, val nameKey: TextKey, val h: Double, val s: Double, val l: Double) {
+    /** الاسم المعروض باللغة الحالية (Texts.kt). */
+    val name: String get() = uiText(nameKey)
+}
 
 val SUB_LIGHTNESS_OFFSETS: List<Double> = listOf(7.0, -6.0, 12.0, -10.0, 16.0, -3.0, 10.0)
 
@@ -33,15 +36,15 @@ fun subCategoryColors(h: Double, s: Double, l: Double, index: Int): CategoryColo
     categoryColors(h, s, l + SUB_LIGHTNESS_OFFSETS[index % SUB_LIGHTNESS_OFFSETS.size])
 
 val CATEGORY_SWATCHES: List<CategorySwatch> = listOf(
-    CategorySwatch("red", "أحمر", 2.0, 70.0, 44.0), CategorySwatch("orange", "برتقالي", 22.0, 78.0, 46.0),
-    CategorySwatch("amber", "كهرماني", 40.0, 90.0, 38.0), CategorySwatch("olive", "زيتوني", 60.0, 80.0, 28.0),
-    CategorySwatch("lime", "ليموني", 85.0, 65.0, 30.0), CategorySwatch("green", "أخضر", 135.0, 55.0, 34.0),
-    CategorySwatch("mint", "نعناعي", 158.0, 65.0, 30.0), CategorySwatch("teal", "فيروزي", 174.0, 70.0, 29.0),
-    CategorySwatch("cyan", "سماوي", 190.0, 80.0, 33.0), CategorySwatch("blue", "أزرق", 210.0, 70.0, 42.0),
-    CategorySwatch("indigo", "نيلي", 250.0, 55.0, 50.0), CategorySwatch("purple", "بنفسجي", 268.0, 40.0, 40.0),
-    CategorySwatch("lilac", "ليلكي", 285.0, 50.0, 48.0), CategorySwatch("magenta", "أرجواني", 305.0, 50.0, 42.0),
-    CategorySwatch("fuchsia", "فوشيا", 322.0, 62.0, 40.0), CategorySwatch("rose", "وردي", 340.0, 65.0, 48.0),
-    CategorySwatch("slate", "رمادي مزرق", 200.0, 22.0, 32.0), CategorySwatch("gray", "رمادي", 210.0, 8.0, 45.0),
+    CategorySwatch("red", TextKey.COLOR_RED, 2.0, 70.0, 44.0), CategorySwatch("orange", TextKey.COLOR_ORANGE, 22.0, 78.0, 46.0),
+    CategorySwatch("amber", TextKey.COLOR_AMBER, 40.0, 90.0, 38.0), CategorySwatch("olive", TextKey.COLOR_OLIVE, 60.0, 80.0, 28.0),
+    CategorySwatch("lime", TextKey.COLOR_LIME, 85.0, 65.0, 30.0), CategorySwatch("green", TextKey.COLOR_GREEN, 135.0, 55.0, 34.0),
+    CategorySwatch("mint", TextKey.COLOR_MINT, 158.0, 65.0, 30.0), CategorySwatch("teal", TextKey.COLOR_TEAL, 174.0, 70.0, 29.0),
+    CategorySwatch("cyan", TextKey.COLOR_CYAN, 190.0, 80.0, 33.0), CategorySwatch("blue", TextKey.COLOR_BLUE, 210.0, 70.0, 42.0),
+    CategorySwatch("indigo", TextKey.COLOR_INDIGO, 250.0, 55.0, 50.0), CategorySwatch("purple", TextKey.COLOR_PURPLE, 268.0, 40.0, 40.0),
+    CategorySwatch("lilac", TextKey.COLOR_LILAC, 285.0, 50.0, 48.0), CategorySwatch("magenta", TextKey.COLOR_MAGENTA, 305.0, 50.0, 42.0),
+    CategorySwatch("fuchsia", TextKey.COLOR_FUCHSIA, 322.0, 62.0, 40.0), CategorySwatch("rose", TextKey.COLOR_ROSE, 340.0, 65.0, 48.0),
+    CategorySwatch("slate", TextKey.COLOR_SLATE, 200.0, 22.0, 32.0), CategorySwatch("gray", TextKey.COLOR_GRAY, 210.0, 8.0, 45.0),
 )
 
 private fun CategorySwatch.colors() = categoryColors(h, s, l)

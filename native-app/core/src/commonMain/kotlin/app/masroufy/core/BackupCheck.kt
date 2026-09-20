@@ -53,19 +53,19 @@ private val LAST_FOUR = Regex("[0-9]{4}")
 
 /** فحص وقت التشغيل: `data` جاية من ملف، فكل حاجة بتتأكد (نفس الترتيب والرسايل). */
 fun checkFullBackupData(data: Any?) {
-    val value = data as? Map<*, *> ?: throw BackupError("بيانات النسخة غير صالحة")
+    val value = data as? Map<*, *> ?: throw BackupError(uiText(TextKey.BACKUP_DATA_INVALID))
     for (group in BACKUP_GROUPS) {
-        val rows = value[group] as? List<*> ?: throw BackupError("مجموعة ناقصة: " + BACKUP_LABELS.getValue(group))
+        val rows = value[group] as? List<*> ?: throw BackupError(uiText(TextKey.BACKUP_GROUP_MISSING, BACKUP_LABELS.getValue(group)))
         val ids = HashSet<String>()
         for (raw in rows) {
             @Suppress("UNCHECKED_CAST")
-            val row = raw as? Map<String, Any?> ?: throw BackupError("سجل غير صالح: $group")
+            val row = raw as? Map<String, Any?> ?: throw BackupError(uiText(TextKey.BACKUP_ROW_INVALID, group))
             val id = backupRowId(group, row)
-            if (id.isEmpty() || id.length > 1000 || (group != "notificationReceipts" && '/' in id) || !ids.add(id)) throw BackupError("معرّف غير صالح أو مكرر: $group")
-            for (field in REQUIRED.getValue(group)) if (!row.containsKey(field)) throw BackupError("حقل ناقص: $group.$field")
+            if (id.isEmpty() || id.length > 1000 || (group != "notificationReceipts" && '/' in id) || !ids.add(id)) throw BackupError(uiText(TextKey.BACKUP_ID_INVALID, group))
+            for (field in REQUIRED.getValue(group)) if (!row.containsKey(field)) throw BackupError(uiText(TextKey.BACKUP_FIELD_MISSING, group, field))
             validateFields(row, group)
-            if (group == "importBatches" && row["state"] == "staged") throw BackupError("فيه استيراد غير مكتمل. افتح التطبيق واستكمل تنظيفه قبل النسخ")
-            if (group == "budgets" && row["id"] != row["periodKey"]) throw BackupError("معرّف الميزانية مختلف عن الفترة")
+            if (group == "importBatches" && row["state"] == "staged") throw BackupError(uiText(TextKey.BACKUP_IMPORT_UNFINISHED))
+            if (group == "budgets" && row["id"] != row["periodKey"]) throw BackupError(uiText(TextKey.BACKUP_BUDGET_ID))
         }
     }
     @Suppress("UNCHECKED_CAST")
@@ -73,7 +73,7 @@ fun checkFullBackupData(data: Any?) {
     val ids = groups.mapValues { (g, rows) -> rows.map { backupRowId(g, it) }.toSet() }
     for (group in BACKUP_GROUPS) for (row in groups.getValue(group)) for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
         val v = row[field]
-        if (v != null && jsString(v) !in ids.getValue(target)) throw BackupError("علاقة ناقصة: $group.$field")
+        if (v != null && jsString(v) !in ids.getValue(target)) throw BackupError(uiText(TextKey.BACKUP_RELATION_MISSING, group, field))
     }
 }
 
@@ -82,31 +82,31 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     for (key in REQUIRED.getValue(group)) {
         // دين قديم من غير عملية (OVERRIDES §27)
         if (group == "obligations" && key == "originTransactionId" && row[key] == null) continue
-        if (key !in special && !key.endsWith("Minor") && row[key] !is String) throw BackupError("نص غير صالح: $group.$key")
+        if (key !in special && !key.endsWith("Minor") && row[key] !is String) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, group, key))
     }
     for ((key, value) in row) {
         if (key.endsWith("Minor") || key in NUMERIC) {
             if (value == null && key in listOf("totalLimitMinor", "thresholdPercent")) continue
-            if (!isSafeInteger(value)) throw BackupError("مبلغ أو عدد غير صحيح: $key")
-            if (key.endsWith("Minor") && key !in listOf("openingBalanceMinor", "statedBalanceMinor") && numberOf(value)!! < 0) throw BackupError("مبلغ سالب: $key")
+            if (!isSafeInteger(value)) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, key))
+            if (key.endsWith("Minor") && key !in listOf("openingBalanceMinor", "statedBalanceMinor") && numberOf(value)!! < 0) throw BackupError(uiText(TextKey.BACKUP_NEGATIVE_AMOUNT, key))
         } else if (key in BOOLEANS && value !is Boolean) {
-            throw BackupError("قيمة منطقية غير صالحة: $key")
+            throw BackupError(uiText(TextKey.BACKUP_BOOLEAN_INVALID, key))
         } else if (key in DATES && (value !is String || !isValidIsoDate(value))) {
-            throw BackupError("تاريخ غير صالح: $key")
+            throw BackupError(uiText(TextKey.BACKUP_DATE_INVALID, key))
         }
     }
-    if (row.containsKey("currency") && (row["currency"] !is String || !CURRENCY_CODE.matches(row["currency"] as String))) throw BackupError("عملة غير صالحة")
-    if (row.containsKey("accountLast4") && (row["accountLast4"] !is String || !LAST_FOUR.matches(row["accountLast4"] as String))) throw BackupError("المسموح آخر أربعة أرقام فقط")
-    if (group == "transactions" && jsString(row["observedDirection"]) !in listOf("in", "out")) throw BackupError("اتجاه عملية غير صالح")
-    if (group == "transactions" && (numberOf(row["amountMinor"]) ?: Double.NaN) <= 0) throw BackupError("مبلغ العملية لازم يكون موجبًا")
-    if (group == "recurringItems" && numberOf(row["cycleMonths"]) !in listOf(1.0, 3.0, 12.0)) throw BackupError("دورة اشتراك غير صالحة")
-    if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError("نوع اقتصادي غير صالح")
-    for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError("قيمة غير مدعومة: $group.$field")
+    if (row.containsKey("currency") && (row["currency"] !is String || !CURRENCY_CODE.matches(row["currency"] as String))) throw BackupError(uiText(TextKey.BACKUP_CURRENCY_INVALID))
+    if (row.containsKey("accountLast4") && (row["accountLast4"] !is String || !LAST_FOUR.matches(row["accountLast4"] as String))) throw BackupError(uiText(TextKey.BACKUP_LAST_FOUR_ONLY))
+    if (group == "transactions" && jsString(row["observedDirection"]) !in listOf("in", "out")) throw BackupError(uiText(TextKey.BACKUP_DIRECTION_INVALID))
+    if (group == "transactions" && (numberOf(row["amountMinor"]) ?: Double.NaN) <= 0) throw BackupError(uiText(TextKey.BACKUP_AMOUNT_POSITIVE))
+    if (group == "recurringItems" && numberOf(row["cycleMonths"]) !in listOf(1.0, 3.0, 12.0)) throw BackupError(uiText(TextKey.BACKUP_CYCLE_INVALID))
+    if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
+    for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     if (group == "importBatches") {
         val counts = row["counts"] as? Map<*, *>
         for (key in listOf("total", "imported", "duplicates", "similar", "conflicts", "invalid")) {
             val v = counts?.get(key)
-            if (!isSafeInteger(v) || numberOf(v)!! < 0) throw BackupError("عداد استيراد غير صالح")
+            if (!isSafeInteger(v) || numberOf(v)!! < 0) throw BackupError(uiText(TextKey.BACKUP_COUNTER_INVALID))
         }
     }
 }
@@ -120,25 +120,25 @@ fun checkBackupFinance(data: FullBackupData) {
     fun num(v: Any?) = numberOf(v) ?: Double.NaN
     for (row in data.getValue("allocations")) {
         val txn = transactions[row["transactionId"]]
-        if (txn?.get("currency") != row["currency"]) throw BackupError("عملة تخصيص الشخص مختلفة عن العملية")
+        if (txn?.get("currency") != row["currency"]) throw BackupError(uiText(TextKey.BACKUP_ALLOCATION_CURRENCY))
         val sum = (allocations[row["transactionId"]] ?: 0.0) + num(row["amountMinor"])
-        if (!isSafeInteger(sum) || sum > num(txn?.get("amountMinor"))) throw BackupError("تخصيصات الأشخاص تتجاوز مبلغ العملية")
+        if (!isSafeInteger(sum) || sum > num(txn?.get("amountMinor"))) throw BackupError(uiText(TextKey.BACKUP_ALLOCATIONS_EXCEED))
         allocations[row["transactionId"]] = sum
     }
     for (row in data.getValue("obligations")) {
         if (row.containsKey("originTransactionId") && row["originTransactionId"] == null) {
-            if (!(num(row["originalMinor"]) > 0)) throw BackupError("الدين القديم لازم مبلغه يكون موجب")
+            if (!(num(row["originalMinor"]) > 0)) throw BackupError(uiText(TextKey.BACKUP_OBLIGATION_POSITIVE))
             continue
         }
         val txn = transactions[row["originTransactionId"]]
-        if (txn?.get("currency") != row["currency"] || num(row["originalMinor"]) > num(txn?.get("amountMinor"))) throw BackupError("الدين غير متوافق مع العملية الأصلية")
+        if (txn?.get("currency") != row["currency"] || num(row["originalMinor"]) > num(txn?.get("amountMinor"))) throw BackupError(uiText(TextKey.BACKUP_OBLIGATION_MISMATCH))
     }
     for (row in data.getValue("settlements")) {
         val obligation = obligations[row["obligationId"]]
         val txn = transactions[row["transactionId"]]
-        if (txn?.get("currency") != obligation?.get("currency") || num(row["amountMinor"]) > num(txn?.get("amountMinor"))) throw BackupError("تسوية غير متوافقة مع عملة أو مبلغ العملية")
+        if (txn?.get("currency") != obligation?.get("currency") || num(row["amountMinor"]) > num(txn?.get("amountMinor"))) throw BackupError(uiText(TextKey.BACKUP_SETTLEMENT_MISMATCH))
         val sum = (settlements[row["obligationId"]] ?: 0.0) + num(row["amountMinor"])
-        if (!isSafeInteger(sum) || sum > num(obligation?.get("originalMinor"))) throw BackupError("التسويات تتجاوز الدين الأصلي")
+        if (!isSafeInteger(sum) || sum > num(obligation?.get("originalMinor"))) throw BackupError(uiText(TextKey.BACKUP_SETTLEMENTS_EXCEED))
         settlements[row["obligationId"]] = sum
     }
 }
