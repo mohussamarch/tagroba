@@ -48,8 +48,8 @@ data class CategoryBudgetForNotice(val categoryId: Id, val categoryName: String,
 private fun describeStatus(status: BudgetStatus): String {
     val spent = formatMoney(status.spentMinor)
     val limit = formatMoney(status.limitMinor)
-    return if (status.remainingMinor < 0) "صرفت $spent من $limit — زيادة ${formatMoney(-status.remainingMinor)}"
-    else "صرفت $spent من $limit — فاضل ${formatMoney(status.remainingMinor)}"
+    return if (status.remainingMinor < 0) uiText(TextKey.NOTICE_SPENT_OVER, spent, limit, formatMoney(-status.remainingMinor))
+    else uiText(TextKey.NOTICE_SPENT_LEFT, spent, limit, formatMoney(status.remainingMinor))
 }
 
 /** تنبيهات الميزانية. المصروف مش معروف (عمليات من غير نوع) ⇒ مفيش تنبيه على رقم ناقص (CLAUDE.md #10). */
@@ -66,7 +66,7 @@ fun buildBudgetNotifications(
         for (t in crossedThresholds(totalStatus, totalThresholdPercent)) {
             events += NotificationEvent(
                 "$periodStart|total|$t", "budget_total", severityFor(t),
-                if (t >= 100) "عدّيت الميزانية" else "وصلت $t٪ من الميزانية", describeStatus(totalStatus), periodStart, threshold = t,
+                if (t >= 100) uiText(TextKey.NOTICE_BUDGET_EXCEEDED) else uiText(TextKey.NOTICE_BUDGET_THRESHOLD, t.toString()), describeStatus(totalStatus), periodStart, threshold = t,
             )
         }
     }
@@ -74,7 +74,7 @@ fun buildBudgetNotifications(
         for (t in crossedThresholds(c.status, c.thresholdPercent)) {
             events += NotificationEvent(
                 "$periodStart|cat:${c.categoryId}|$t", "budget_category", severityFor(t),
-                if (t >= 100) "عدّيت سقف «${c.categoryName}»" else "«${c.categoryName}» وصل $t٪", describeStatus(c.status), periodStart,
+                if (t >= 100) uiText(TextKey.NOTICE_CATEGORY_EXCEEDED, c.categoryName) else uiText(TextKey.NOTICE_CATEGORY_THRESHOLD, c.categoryName, t.toString()), describeStatus(c.status), periodStart,
                 categoryId = c.categoryId, threshold = t,
             )
         }

@@ -77,7 +77,7 @@ fun detectRecurring(rows: List<Transaction>, categories: List<Category>): List<R
         val last = recent[2]
         out += RecurringCandidate(
             last.rawMerchantName!!, recurringKey(last), last.currency, median, shiftMonths(last.occurredAt, cycle), cycle, group.map { it.id },
-            "٣ دورات متتابعة لخدمة مناسبة، بمبلغ متقارب ±٥٪ وموعد متقارب ±٧ أيام.",
+            uiText(TextKey.RECURRING_DETECTED),
         )
     }
     return out
@@ -103,12 +103,12 @@ fun recurringSummary(item: RecurringItem, rows: List<Transaction>, today: IsoDat
 class RecurringError(message: String) : IllegalArgumentException(message)
 
 fun validateRecurring(item: RecurringItem) {
-    if (JsText.trim(item.name).isEmpty() || item.name.length > 120) throw RecurringError("اكتب اسم الخدمة، بحد أقصى ١٢٠ حرف.")
-    if (item.cycleMonths !in listOf(1, 3, 12)) throw RecurringError("اختار دورة شهرية أو كل ٣ شهور أو سنوية.")
-    if (item.kind !in listOf("subscription", "bill")) throw RecurringError("نوع الالتزام غير صالح.")
+    if (JsText.trim(item.name).isEmpty() || item.name.length > 120) throw RecurringError(uiText(TextKey.RECURRING_NAME))
+    if (item.cycleMonths !in listOf(1, 3, 12)) throw RecurringError(uiText(TextKey.RECURRING_CYCLE))
+    if (item.kind !in listOf("subscription", "bill")) throw RecurringError(uiText(TextKey.RECURRING_KIND))
     assertHalalas(item.expectedMinor)
-    if (item.expectedMinor <= 0) throw RecurringError("قيمة الدورة لازم تكون أكبر من صفر.")
+    if (item.expectedMinor <= 0) throw RecurringError(uiText(TextKey.RECURRING_AMOUNT))
     parseIsoDate(item.nextDueAt)
     assertHalalas(item.expectedMinor * (12 / item.cycleMonths))
-    if (item.merchantKey.isEmpty() || item.merchantKey.length > 240) throw RecurringError("ربط الخدمة غير صالح.")
+    if (item.merchantKey.isEmpty() || item.merchantKey.length > 240) throw RecurringError(uiText(TextKey.RECURRING_LINK))
 }

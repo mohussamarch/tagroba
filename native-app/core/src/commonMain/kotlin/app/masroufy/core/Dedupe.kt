@@ -58,10 +58,10 @@ fun balanceKey(c: DedupeCandidate): String? {
 private fun amountDayKey(c: DedupeCandidate) = listOf(c.accountIdentity, c.date, c.amountMinor, c.direction.wire).joinToString("|")
 
 private fun diffFields(a: DedupeCandidate, b: DedupeCandidate): List<String> = buildList {
-    if (a.date != b.date) add("التاريخ")
-    if (a.amountMinor != b.amountMinor) add("المبلغ")
-    if (a.direction != b.direction) add("اتجاه الحركة")
-    if (normalizeText(a.merchantName) != normalizeText(b.merchantName)) add("اسم التاجر")
+    if (a.date != b.date) add(uiText(TextKey.DIFF_DATE))
+    if (a.amountMinor != b.amountMinor) add(uiText(TextKey.DIFF_AMOUNT))
+    if (a.direction != b.direction) add(uiText(TextKey.DIFF_DIRECTION))
+    if (normalizeText(a.merchantName) != normalizeText(b.merchantName)) add(uiText(TextKey.DIFF_MERCHANT))
 }
 
 class DedupeIndex internal constructor(
@@ -91,7 +91,7 @@ private fun smsSimilarity(c: DedupeCandidate, index: DedupeIndex): DedupeVerdict
     val match = index.byAmountDay[amountDayKey(c)].orEmpty().firstOrNull { c.smsSource || it.candidate.smsSource } ?: return null
     return DedupeVerdict(
         MatchingState.SIMILAR,
-        "فيه عملية بنفس اليوم والمبلغ والاتجاه في نفس المحفظة، وأحد المصدرين رسالة بنك. قد تكون نفس العملية باسم مختلف؛ غير مختارة للإضافة حتى تراجعها.",
+        uiText(TextKey.DEDUPE_SMS_SIMILAR),
         matchedTransactionId = match.transactionId,
     )
 }
@@ -106,13 +106,13 @@ fun classifyCandidate(candidate: DedupeCandidate, index: DedupeIndex, consumedBa
             if (differences.isEmpty()) {
                 return DedupeVerdict(
                     MatchingState.DUPLICATE,
-                    "نفس المرجع «${candidate.sourceReference}» ونفس التفاصيل — العملية دي متسجلة قبل كده",
+                    uiText(TextKey.DEDUPE_SAME_REFERENCE, candidate.sourceReference ?: ""),
                     matchedTransactionId = existing.transactionId,
                 )
             }
             return DedupeVerdict(
                 MatchingState.CONFLICT,
-                "نفس المرجع «${candidate.sourceReference}» بس ${differences.joinToString(" و")} مختلف. " + "مش هنكتب فوق القديم من غير قرارك.",
+                uiText(TextKey.DEDUPE_REFERENCE_CONFLICT, candidate.sourceReference ?: "", differences.joinToString(uiText(TextKey.JOIN_AND))),
                 matchedTransactionId = existing.transactionId,
                 conflictFields = differences,
             )
@@ -126,8 +126,7 @@ fun classifyCandidate(candidate: DedupeCandidate, index: DedupeIndex, consumedBa
         if (lineMatch != null) {
             return DedupeVerdict(
                 MatchingState.DUPLICATE,
-                "نفس سطر الكشف: نفس اليوم والمبلغ والاتجاه والرصيد بعد العملية في نفس الحساب — " +
-                    "متسجلة قبل كده حتى لو الاسم مقروء بشكل مختلف",
+                uiText(TextKey.DEDUPE_SAME_STATEMENT_LINE),
                 matchedTransactionId = lineMatch.transactionId,
                 matchedBalanceKey = sameLine,
             )
@@ -135,18 +134,17 @@ fun classifyCandidate(candidate: DedupeCandidate, index: DedupeIndex, consumedBa
     }
 
     smsSimilarity(candidate, index)?.let { return it }
-    if (ref != null) return DedupeVerdict(MatchingState.NEW, "مرجع جديد مش موجود قبل كده")
+    if (ref != null) return DedupeVerdict(MatchingState.NEW, uiText(TextKey.DEDUPE_NEW_REFERENCE))
 
     val similar = index.byDetail[detailKey(candidate)]
     if (!similar.isNullOrEmpty()) {
         return DedupeVerdict(
             MatchingState.SIMILAR,
-            "نفس التاجر والمبلغ والتاريخ والاتجاه، ومفيش مرجع بنكي يأكد. " +
-                "ممكن تكون نفس العملية وممكن تكون عملية تانية حقيقية — محتاجة قرارك.",
+            uiText(TextKey.DEDUPE_SIMILAR_NO_REFERENCE),
             matchedTransactionId = similar[0].transactionId,
         )
     }
-    return DedupeVerdict(MatchingState.NEW, "عملية جديدة، مفيش ما يشبهها")
+    return DedupeVerdict(MatchingState.NEW, uiText(TextKey.DEDUPE_NEW))
 }
 
 /**

@@ -13,8 +13,7 @@ fun personalShareOf(transaction: Transaction, allocations: List<PersonAllocation
     val allocatedTotal = sumMoney(mine.map { it.amountMinor })
     if (allocatedTotal > transaction.amountMinor) {
         throw LedgerError(
-            "مجموع التخصيصات (${formatMoney(allocatedTotal)}) أكبر من قيمة العملية " +
-                "(${formatMoney(transaction.amountMinor)})",
+            uiText(TextKey.LEDGER_ALLOCATIONS_EXCEED, formatMoney(allocatedTotal), formatMoney(transaction.amountMinor)),
         )
     }
     val receivable = sumMoney(mine.filter { it.allocationKind == AllocationKind.RECEIVABLE }.map { it.amountMinor })
@@ -74,7 +73,7 @@ data class PersonBalance(
 fun remainingOfObligation(obligation: Obligation, settlements: List<Settlement>): Halalas {
     val paid = sumMoney(settlements.filter { it.obligationId == obligation.id }.map { it.amountMinor })
     val remaining = subtractMoney(obligation.originalMinor, paid)
-    if (remaining < 0) throw LedgerError("تسويات الالتزام ${obligation.id} تجاوزت أصله — رصيد سالب صامت ممنوع")
+    if (remaining < 0) throw LedgerError(uiText(TextKey.LEDGER_SETTLEMENTS_EXCEED, obligation.id))
     return remaining
 }
 
@@ -97,23 +96,20 @@ data class SettlementCheck(
 
 /** فحص تسوية قبل تطبيقها — الزيادة ما بتتبلعش ولا بتتسحب من التزام تاني (spec/06). */
 fun checkSettlement(obligation: Obligation, settlements: List<Settlement>, amountMinor: Halalas): SettlementCheck {
-    if (amountMinor <= 0) return SettlementCheck(false, "مبلغ التسوية لازم يكون أكبر من صفر", 0, 0)
+    if (amountMinor <= 0) return SettlementCheck(false, uiText(TextKey.SETTLEMENT_AMOUNT_POSITIVE), 0, 0)
     val remaining = remainingOfObligation(obligation, settlements)
-    if (remaining == 0L) return SettlementCheck(false, "الالتزام ده متسدد بالكامل. مفيش متبقي يتسوّى", 0, amountMinor)
+    if (remaining == 0L) return SettlementCheck(false, uiText(TextKey.SETTLEMENT_FULLY_PAID), 0, amountMinor)
     if (amountMinor <= remaining) return SettlementCheck(true, null, amountMinor, 0)
     val kindLabel = when (obligation.kind) {
-        ObligationKind.CUSTODY_PAYABLE -> "الأمانة"
-        ObligationKind.LOAN_PAYABLE -> "الدين"
-        ObligationKind.RECEIVABLE -> "المستحق"
+        ObligationKind.CUSTODY_PAYABLE -> uiText(TextKey.OBLIGATION_CUSTODY)
+        ObligationKind.LOAN_PAYABLE -> uiText(TextKey.OBLIGATION_LOAN)
+        ObligationKind.RECEIVABLE -> uiText(TextKey.OBLIGATION_RECEIVABLE)
     }
     val surplus = subtractMoney(amountMinor, remaining)
     return SettlementCheck(
         allowed = false,
         // بالريال مش بالهللة: الوحدة الداخلية ما تظهرش للمستخدم أبدًا
-        reason = "المبلغ أكبر من المتبقي. $kindLabel المتبقي ${formatMoney(remaining)} " +
-            "والمبلغ اللي كتبته ${formatMoney(amountMinor)}. " +
-            "تقدر تسوّي ${formatMoney(remaining)} وتسجّل الباقي " +
-            "${formatMoney(surplus)} كأمانة مستقلة بإجراء صريح.",
+        reason = uiText(TextKey.SETTLEMENT_OVER_REMAINING, kindLabel, formatMoney(remaining), formatMoney(amountMinor), formatMoney(surplus)),
         settledMinor = remaining,
         surplusMinor = surplus,
     )
@@ -123,7 +119,7 @@ data class GrossSplit(val principalMinor: Halalas, val feeMinor: Halalas)
 
 /** «رسوم 20 ضمن خصم 1020 ⇒ أصل 1000 + رسوم 20؛ مش 1040» (spec/06). */
 fun splitGrossIntoPrincipalAndFee(grossMinor: Halalas, feeMinor: Halalas): GrossSplit {
-    if (feeMinor < 0) throw LedgerError("الرسوم لا تكون سالبة")
-    if (feeMinor > grossMinor) throw LedgerError("الرسوم ($feeMinor) أكبر من الإجمالي المخصوم ($grossMinor)")
+    if (feeMinor < 0) throw LedgerError(uiText(TextKey.LEDGER_FEE_NEGATIVE))
+    if (feeMinor > grossMinor) throw LedgerError(uiText(TextKey.LEDGER_FEE_OVER_GROSS, feeMinor.toString(), grossMinor.toString()))
     return GrossSplit(subtractMoney(grossMinor, feeMinor), feeMinor)
 }

@@ -44,20 +44,20 @@ data class DailyAllowance(
 /** المتاح اليومي = max(0، المتبقي) ÷ الأيام الباقية — مش 30 يوم ثابتة (spec/02). */
 fun dailyAllowance(budgetLimitMinor: Halalas?, spentMinor: Halalas, today: IsoDate, period: Period, remainingMinor: Halalas? = null): DailyAllowance {
     val days = remainingDaysInPeriod(today, period)
-    if (days == 0) return DailyAllowance(null, 0, false, "الفترة دي خلصت، فمفيش أيام باقية يتوزع عليها.")
+    if (days == 0) return DailyAllowance(null, 0, false, uiText(TextKey.ALLOWANCE_PERIOD_ENDED))
     if (budgetLimitMinor == null) {
-        if (remainingMinor == null) return DailyAllowance(null, days, false, "مفيش سقف للفترة دي، والمتبقي نفسه لسه غير معروف.")
+        if (remainingMinor == null) return DailyAllowance(null, days, false, uiText(TextKey.ALLOWANCE_NO_LIMIT_NO_REMAINING))
         val left = maxOf(0L, remainingMinor)
         return DailyAllowance(
             left / days, days, true,
-            if (left == 0L) "تقريبي — مفيش سقف ميزانية، والمتبقي خلص."
-            else "تقريبي — مفيش سقف ميزانية، فده المتبقي موزّع على $days يوم باقيين.",
+            if (left == 0L) uiText(TextKey.ALLOWANCE_NO_LIMIT_SPENT)
+            else uiText(TextKey.ALLOWANCE_NO_LIMIT, days.toString()),
         )
     }
     val left = maxOf(0L, budgetLimitMinor - spentMinor)
     return DailyAllowance(
         left / days, days, false,
-        if (left == 0L) "خلصت السقف بتاع الفترة دي." else "المتبقي من السقف موزّع على $days يوم باقيين.",
+        if (left == 0L) uiText(TextKey.ALLOWANCE_LIMIT_SPENT) else uiText(TextKey.ALLOWANCE_LIMIT, days.toString()),
     )
 }
 
@@ -77,10 +77,10 @@ fun forecastPeriodSpend(spentMinor: Halalas, today: IsoDate, period: Period): Fo
     val totalDays = period.days
     val elapsed = maxOf(0, minOf(daysBetween(period.start, today) + 1, totalDays))
     if (elapsed < MIN_DAYS_FOR_FORECAST) {
-        return Forecast(null, elapsed, totalDays, "عدى $elapsed يوم بس — التوقع محتاج $MIN_DAYS_FOR_FORECAST أيام على الأقل.")
+        return Forecast(null, elapsed, totalDays, uiText(TextKey.FORECAST_TOO_EARLY, elapsed.toString(), MIN_DAYS_FOR_FORECAST.toString()))
     }
-    if (elapsed >= totalDays) return Forecast(spentMinor, elapsed, totalDays, "الفترة خلصت، فده المصروف الفعلي مش توقع.")
-    return Forecast(rateOfMoney(spentMinor, totalDays.toLong(), elapsed.toLong()), elapsed, totalDays, "لو باقي الفترة مشي بنفس المعدل ($elapsed يوم عدوا).")
+    if (elapsed >= totalDays) return Forecast(spentMinor, elapsed, totalDays, uiText(TextKey.FORECAST_PERIOD_ENDED))
+    return Forecast(rateOfMoney(spentMinor, totalDays.toLong(), elapsed.toLong()), elapsed, totalDays, uiText(TextKey.FORECAST_RATE, elapsed.toString()))
 }
 
 data class DataCoverage(val total: Int, val unclassified: Int, val totalsReliable: Boolean, val note: String?)
@@ -91,8 +91,8 @@ fun assessCoverage(transactions: List<Transaction>): DataCoverage {
     val unclassified = transactions.count { it.economicKind == EconomicKind.UNCLASSIFIED }
     return when {
         total == 0 -> DataCoverage(0, 0, true, null)
-        unclassified == total -> DataCoverage(total, unclassified, false, "كل الـ$total عملية لسه محتاجة تحديد نوعها، فالمجاميع غير متاحة.")
-        unclassified > 0 -> DataCoverage(total, unclassified, false, "$unclassified عملية من $total لسه محتاجة تحديد نوعها، فالأرقام دي ناقصة.")
+        unclassified == total -> DataCoverage(total, unclassified, false, uiText(TextKey.COVERAGE_ALL_UNCLASSIFIED, total.toString()))
+        unclassified > 0 -> DataCoverage(total, unclassified, false, uiText(TextKey.COVERAGE_SOME_UNCLASSIFIED, unclassified.toString(), total.toString()))
         else -> DataCoverage(total, 0, true, null)
     }
 }

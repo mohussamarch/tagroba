@@ -89,14 +89,14 @@ fun matchesText(matchText: String, matchMode: RuleMatchMode, haystack: String): 
 
 fun categorize(input: CategorizationInput, deps: CategorizeDeps): CategorizationResult {
     if (input.currentConfirmed && input.currentCategoryId != null) {
-        return CategorizationResult(input.currentCategoryId, CategorizationSource.USER_CONFIRMED, ReviewState.CONFIRMED, "أنت أكّدت التصنيف ده بنفسك")
+        return CategorizationResult(input.currentCategoryId, CategorizationSource.USER_CONFIRMED, ReviewState.CONFIRMED, uiText(TextKey.CATEGORIZED_USER_CONFIRMED))
     }
     if (!input.merchantName.isNullOrEmpty()) {
         val merchant = deps.merchantsByNormalizedName[normalizeText(input.merchantName)]
         if (merchant?.verifiedCategoryId != null) {
             return CategorizationResult(
                 merchant.verifiedCategoryId, CategorizationSource.VERIFIED_MERCHANT, ReviewState.CONFIRMED,
-                "التاجر «${merchant.displayName}» له تصنيف مؤكد", merchant.displayName,
+                uiText(TextKey.CATEGORIZED_MERCHANT, merchant.displayName), merchant.displayName,
             )
         }
     }
@@ -105,7 +105,7 @@ fun categorize(input: CategorizationInput, deps: CategorizeDeps): Categorization
     for (rule in deps.rules) {
         for (haystack in haystacks) {
             if (matchesText(rule.matchText, rule.matchMode, haystack)) {
-                return CategorizationResult(rule.categoryId, CategorizationSource.RULE, ReviewState.SUGGESTED, "قاعدة «${rule.matchText}» طابقت", rule.matchText)
+                return CategorizationResult(rule.categoryId, CategorizationSource.RULE, ReviewState.SUGGESTED, uiText(TextKey.CATEGORIZED_RULE, rule.matchText), rule.matchText)
             }
         }
     }
@@ -114,11 +114,11 @@ fun categorize(input: CategorizationInput, deps: CategorizeDeps): Categorization
         if (id != null) {
             return CategorizationResult(
                 id, CategorizationSource.SOURCE_CATEGORY, ReviewState.SUGGESTED,
-                "التصنيف جه من عمود التصنيف في الملف: «${input.sourceCategory}»", input.sourceCategory,
+                uiText(TextKey.CATEGORIZED_SOURCE_COLUMN, input.sourceCategory), input.sourceCategory,
             )
         }
     }
-    return CategorizationResult(null, CategorizationSource.NONE, ReviewState.NEEDS_REVIEW, "مفيش قاعدة ولا تاجر مؤكد طابق العملية دي")
+    return CategorizationResult(null, CategorizationSource.NONE, ReviewState.NEEDS_REVIEW, uiText(TextKey.CATEGORIZED_NONE))
 }
 
 /**

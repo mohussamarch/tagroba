@@ -46,11 +46,7 @@ fun detectSchema(doc: CsvDocument): SchemaId {
     if (headerMatches(doc.header, PREVIEW_HEADER)) return SchemaId.PREVIEW
     if (headerMatches(doc.header, LEGACY_HEADER)) return SchemaId.LEGACY
     throw SchemaError(
-        "الأعمدة مش متطابقة مع أي مخطط معروف.\n" +
-            "الموجود: ${doc.header.joinToString(" , ")}\n" +
-            "المتوقع إما: ${PREVIEW_HEADER.joinToString(" , ")}\n" +
-            "أو: ${LEGACY_HEADER.joinToString(" , ")}\n" +
-            "لو الملف بأعمدة مختلفة، محتاج تعيين أعمدة يدوي — مش هنخمّن أعمدة مالية.",
+        uiText(TextKey.SCHEMA_UNKNOWN_COLUMNS, doc.header.joinToString(" , "), PREVIEW_HEADER.joinToString(" , "), LEGACY_HEADER.joinToString(" , ")),
     )
 }
 
@@ -73,15 +69,15 @@ private fun parsePreviewRow(row: CsvRow): ParsedRow {
     fun fail(field: String, message: String): Nothing = throw RowFail(RowError(row.lineNumber, field, message, row.raw))
     val dateRaw = c.getOrNull(0)
     val date = JsText.trim(dateRaw ?: "")
-    if (!isValidIsoDate(date)) fail("date", "التاريخ «${shown(dateRaw)}» مش صالح. المتوقع YYYY-MM-DD بتاريخ موجود فعلًا")
+    if (!isValidIsoDate(date)) fail("date", uiText(TextKey.ROW_DATE_INVALID, shown(dateRaw)))
     val amountRaw = c.getOrNull(2)
-    val amountMinor = tryParseMoney(amountRaw ?: "") ?: fail("amount", "المبلغ «${shown(amountRaw)}» مش رقم صالح")
-    if (amountMinor < 0) fail("amount", "المبلغ «${shown(amountRaw)}» سالب. الاتجاه بيتحدد من عمود type")
-    if (amountMinor == 0L) fail("amount", "المبلغ صفر — العملية دي مالهاش أثر مالي")
+    val amountMinor = tryParseMoney(amountRaw ?: "") ?: fail("amount", uiText(TextKey.ROW_AMOUNT_INVALID, shown(amountRaw)))
+    if (amountMinor < 0) fail("amount", uiText(TextKey.ROW_AMOUNT_NEGATIVE, shown(amountRaw)))
+    if (amountMinor == 0L) fail("amount", uiText(TextKey.ROW_AMOUNT_ZERO))
     val typeRaw = c.getOrNull(3)
     val type = JsText.trim(typeRaw ?: "").lowercase()
     if (type !in listOf("expense", "income", "transfer")) {
-        fail("type", "نوع العملية «${shown(typeRaw)}» مش معروف. المتوقع expense أو income أو transfer")
+        fail("type", uiText(TextKey.ROW_TYPE_UNKNOWN, shown(typeRaw)))
     }
     // العمود ده بيحدد **اتجاه السيولة** بس — «transfer» مش معناه تحويل داخلي تلقائي
     val name = JsText.trim(c.getOrNull(1) ?: "")
@@ -98,16 +94,16 @@ private fun parseLegacyRow(row: CsvRow): ParsedRow {
     val c = row.cells
     fun fail(field: String, message: String): Nothing = throw RowFail(RowError(row.lineNumber, field, message, row.raw))
     val dateRaw = c.getOrNull(0)
-    val date = legacyDateToIso(dateRaw ?: "") ?: fail("التاريخ", "التاريخ «${shown(dateRaw)}» مش صالح. المتوقع YYYY/MM/DD بتاريخ موجود")
+    val date = legacyDateToIso(dateRaw ?: "") ?: fail("التاريخ", uiText(TextKey.ROW_LEGACY_DATE_INVALID, shown(dateRaw)))
     val debitRaw = c.getOrNull(1)
     val creditRaw = c.getOrNull(2)
     val debit = tryParseMoney(debitRaw ?: "0")
     val credit = tryParseMoney(creditRaw ?: "0")
-    if (debit == null) fail("مدين", "قيمة المدين «${shown(debitRaw)}» مش رقم صالح")
-    if (credit == null) fail("دائن", "قيمة الدائن «${shown(creditRaw)}» مش رقم صالح")
-    if (debit < 0 || credit < 0) fail("المبلغ", "المدين والدائن لازم يكونوا موجبين")
-    if (debit > 0 && credit > 0) fail("المبلغ", "الصف فيه مدين ودائن في نفس الوقت — مش واضح اتجاه الحركة")
-    if (debit == 0L && credit == 0L) fail("المبلغ", "الصف مفيهوش مدين ولا دائن — مالهوش أثر مالي")
+    if (debit == null) fail("مدين", uiText(TextKey.ROW_DEBIT_INVALID, shown(debitRaw)))
+    if (credit == null) fail("دائن", uiText(TextKey.ROW_CREDIT_INVALID, shown(creditRaw)))
+    if (debit < 0 || credit < 0) fail("المبلغ", uiText(TextKey.ROW_DEBIT_CREDIT_NEGATIVE))
+    if (debit > 0 && credit > 0) fail("المبلغ", uiText(TextKey.ROW_DEBIT_AND_CREDIT))
+    if (debit == 0L && credit == 0L) fail("المبلغ", uiText(TextKey.ROW_NO_DEBIT_NO_CREDIT))
     // الرصيد اختياري: غيابه ما بيمنعش الاستيراد، بس بيمنع مقارنة السطر ده
     val balanceRaw = c.getOrNull(3)
     val balance = if (balanceRaw == null || JsText.trim(balanceRaw).isEmpty()) null else tryParseMoney(balanceRaw)

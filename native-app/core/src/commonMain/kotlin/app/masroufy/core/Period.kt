@@ -29,7 +29,7 @@ fun isLeapYear(year: Int): Boolean = (year % 4 == 0 && year % 100 != 0) || year 
 private val MONTH_LENGTHS = intArrayOf(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
 fun daysInMonth(year: Int, month: Int): Int {
-    if (month < 1 || month > 12) throw PeriodError("شهر غير صالح: $month")
+    if (month < 1 || month > 12) throw PeriodError(uiText(TextKey.PERIOD_BAD_MONTH, month.toString()))
     if (month == 2 && isLeapYear(year)) return 29
     return MONTH_LENGTHS[month - 1]
 }
@@ -38,13 +38,13 @@ fun daysInMonth(year: Int, month: Int): Int {
 fun parseIsoDate(value: String): DateParts {
     val ok = value.length == 10 && value[4] == '-' && value[7] == '-' &&
         (0 until 10).all { it == 4 || it == 7 || JsText.isAsciiDigit(value[it]) }
-    if (!ok) throw PeriodError("صيغة التاريخ غير صالحة: $value")
+    if (!ok) throw PeriodError(uiText(TextKey.PERIOD_BAD_DATE_FORMAT, value))
     val year = value.substring(0, 4).toInt()
     val month = value.substring(5, 7).toInt()
     val day = value.substring(8, 10).toInt()
-    if (month < 1 || month > 12) throw PeriodError("شهر غير صالح في: $value")
+    if (month < 1 || month > 12) throw PeriodError(uiText(TextKey.PERIOD_BAD_MONTH_IN, value))
     val max = daysInMonth(year, month)
-    if (day < 1 || day > max) throw PeriodError("يوم غير موجود: $value ($month فيه $max يوم)")
+    if (day < 1 || day > max) throw PeriodError(uiText(TextKey.PERIOD_BAD_DAY, value, month.toString(), max.toString()))
     return DateParts(year, month, day)
 }
 
@@ -83,7 +83,7 @@ fun daysBetween(from: IsoDate, to: IsoDate): Int = toDayNumber(parseIsoDate(to))
 
 /** فبراير 2028 ويوم راتب 31 ⇒ 29 فبراير، مش «31 فبراير». */
 fun clampPaydayToMonth(year: Int, month: Int, payday: Int): Int {
-    if (payday < 1 || payday > 31) throw PeriodError("يوم الراتب لازم يكون بين 1 و31، مش $payday")
+    if (payday < 1 || payday > 31) throw PeriodError(uiText(TextKey.PERIOD_BAD_PAYDAY, payday.toString()))
     return minOf(payday, daysInMonth(year, month))
 }
 

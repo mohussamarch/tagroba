@@ -31,12 +31,12 @@ private val ICON_KEY = Regex("^[a-z0-9-]{1,40}$")
 
 fun planCategorySave(all: List<Category>, input: CategorySaveInput, newId: () -> Id): CategorySavePlan {
     val old = input.id?.let { id -> all.firstOrNull { it.id == id } }
-    if (input.id != null && old == null) throw CategoryEditError("التصنيف مش موجود.")
+    if (input.id != null && old == null) throw CategoryEditError(uiText(TextKey.CATEGORY_NOT_FOUND))
     val name = JsText.trim(input.name)
-    if (name.isEmpty() || name.length > 80) throw CategoryEditError("اكتب اسم التصنيف بحد أقصى ٨٠ حرف.")
-    if (all.any { it.id != old?.id && normalizeText(it.name) == normalizeText(name) }) throw CategoryEditError("فيه تصنيف بنفس الاسم.")
+    if (name.isEmpty() || name.length > 80) throw CategoryEditError(uiText(TextKey.CATEGORY_NAME_LENGTH))
+    if (all.any { it.id != old?.id && normalizeText(it.name) == normalizeText(name) }) throw CategoryEditError(uiText(TextKey.CATEGORY_NAME_DUPLICATE))
     val iconKey = input.iconKey ?: old?.iconKey ?: "tag"
-    if (!ICON_KEY.matches(iconKey)) throw CategoryEditError("اختار رمز من القايمة.")
+    if (!ICON_KEY.matches(iconKey)) throw CategoryEditError(uiText(TextKey.CATEGORY_ICON_REQUIRED))
 
     val byId = all.associateBy { it.id }
     val currentParentId = old?.parentId
@@ -48,16 +48,16 @@ fun planCategorySave(all: List<Category>, input: CategorySaveInput, newId: () ->
     // فرعي أبوه مش موجود بيتعامل كأساسي
     val parent = parentId?.let { byId[it] }
     if (moved && parentId != null) {
-        if (parentId == old?.id) throw CategoryEditError("التصنيف مينفعش يبقى فرعي تحت نفسه.")
-        if (parent == null) throw CategoryEditError("التصنيف الأساسي اللي اخترته مش موجود.")
-        if (parent.parentId != null && parent.parentId in byId) throw CategoryEditError("اختار تصنيف أساسي، مش فرعي.")
-        if (old != null && all.any { it.parentId == old.id }) throw CategoryEditError("التصنيف ده تحته فرعيات، فمينفعش يتنقل تحت تصنيف تاني.")
+        if (parentId == old?.id) throw CategoryEditError(uiText(TextKey.CATEGORY_SELF_PARENT))
+        if (parent == null) throw CategoryEditError(uiText(TextKey.CATEGORY_PARENT_MISSING))
+        if (parent.parentId != null && parent.parentId in byId) throw CategoryEditError(uiText(TextKey.CATEGORY_PARENT_NOT_MAIN))
+        if (old != null && all.any { it.parentId == old.id }) throw CategoryEditError(uiText(TextKey.CATEGORY_HAS_SUBS))
     }
 
     val groupKey: String? = when {
         parent != null -> null
         input.groupKey is Field.Set -> (input.groupKey as Field.Set<String?>).value?.also {
-            if (!isCategoryGroupKey(it)) throw CategoryEditError("المجموعة اللي اخترتها مش معروفة.")
+            if (!isCategoryGroupKey(it)) throw CategoryEditError(uiText(TextKey.CATEGORY_GROUP_UNKNOWN))
         }
         // فرعي بقى أساسي من غير ما يختار مجموعة ⇒ بيفضل في مجموعة أبوه القديم
         else -> old?.groupKey ?: currentParentId?.let { byId[it]?.groupKey }
@@ -66,7 +66,7 @@ fun planCategorySave(all: List<Category>, input: CategorySaveInput, newId: () ->
     val colors: CategoryColorPair = when {
         parent != null -> if (old != null && !moved) CategoryColorPair(old.lightColor, old.darkColor)
         else childColors(CategoryColorPair(parent.lightColor, parent.darkColor), all.count { it.parentId == parent.id && it.id != old?.id })
-        input.swatchKey != null -> swatchColors(input.swatchKey) ?: throw CategoryEditError("اختار لون من القايمة.")
+        input.swatchKey != null -> swatchColors(input.swatchKey) ?: throw CategoryEditError(uiText(TextKey.CATEGORY_COLOR_REQUIRED))
         old != null -> CategoryColorPair(old.lightColor, old.darkColor)
         else -> swatchColors(firstFreeSwatch(all))!!
     }

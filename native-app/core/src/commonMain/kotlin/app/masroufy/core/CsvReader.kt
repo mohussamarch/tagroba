@@ -25,7 +25,7 @@ object CsvLimits {
 fun stripBom(text: String): String = if (text.isNotEmpty() && text[0].code == 0xFEFF) text.substring(1) else text
 
 fun parseCsv(input: String): CsvDocument {
-    if (input.length > CsvLimits.MAX_BYTES) throw CsvError("الملف أكبر من الحد المسموح (12 ميجابايت)")
+    if (input.length > CsvLimits.MAX_BYTES) throw CsvError(uiText(TextKey.CSV_TOO_LARGE))
     val text = stripBom(input)
     val rows = mutableListOf<CsvRow>()
     var cells = mutableListOf<String>()
@@ -39,7 +39,7 @@ fun parseCsv(input: String): CsvDocument {
         // السطر الفاضي تمامًا بيتجاهل
         if (!(cells.size == 1 && cells[0].isEmpty())) {
             rows.add(CsvRow(lineNumber, cells, text.substring(rawStart, endIndex)))
-            if (rows.size > CsvLimits.MAX_ROWS) throw CsvError("الملف فيه أكتر من ${CsvLimits.MAX_ROWS} صف")
+            if (rows.size > CsvLimits.MAX_ROWS) throw CsvError(uiText(TextKey.CSV_TOO_MANY_ROWS, CsvLimits.MAX_ROWS.toString()))
         }
         cells = mutableListOf()
         field.clear()
@@ -78,15 +78,15 @@ fun parseCsv(input: String): CsvDocument {
             }
             else -> {
                 field.append(ch)
-                if (field.length > CsvLimits.MAX_CELL_LENGTH) throw CsvError("خانة في السطر $lineNumber أطول من الحد المسموح")
+                if (field.length > CsvLimits.MAX_CELL_LENGTH) throw CsvError(uiText(TextKey.CSV_CELL_TOO_LONG, lineNumber.toString()))
             }
         }
         i++
     }
 
-    if (inQuotes) throw CsvError("اقتباس مفتوح ولم يُغلق — الملف ناقص أو تالف عند السطر $lineNumber")
+    if (inQuotes) throw CsvError(uiText(TextKey.CSV_UNCLOSED_QUOTE, lineNumber.toString()))
     if (field.isNotEmpty() || cells.isNotEmpty()) pushRow(text.length)
-    if (rows.isEmpty()) throw CsvError("الملف فاضي")
+    if (rows.isEmpty()) throw CsvError(uiText(TextKey.CSV_EMPTY))
 
     return CsvDocument(rows[0].cells.map { JsText.trim(it) }, rows.drop(1))
 }

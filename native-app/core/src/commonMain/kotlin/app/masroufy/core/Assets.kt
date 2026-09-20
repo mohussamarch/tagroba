@@ -16,7 +16,17 @@ data class Asset(
     val note: String? = null,
 )
 
-val ASSET_KIND_LABELS = linkedMapOf("gold" to "ذهب", "stock" to "سهم", "fund" to "صندوق", "digital" to "أصل رقمي", "other" to "أصل آخر")
+/** أسماء أنواع الأصول للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
+val ASSET_KIND_LABELS: Map<String, String>
+    get() = linkedMapOf(
+        "gold" to uiText(TextKey.ASSET_KIND_GOLD),
+        "stock" to uiText(TextKey.ASSET_KIND_STOCK),
+        "fund" to uiText(TextKey.ASSET_KIND_FUND),
+        "digital" to uiText(TextKey.ASSET_KIND_DIGITAL),
+        "other" to uiText(TextKey.ASSET_KIND_OTHER),
+    )
+
+// وحدات الأصول **بتتخزن** مع الأصل نفسه، فما تتترجمش — ترجمتها بتغيّر بيانات متخزنة
 val ASSET_UNIT_DEFAULTS = linkedMapOf("gold" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", "other" to "وحدة")
 
 data class AssetLot(val id: Id, val assetId: Id, val purchasedAt: IsoDate, val quantity: Quantity, val principalMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
@@ -61,15 +71,15 @@ fun computePosition(assetId: Id, lots: List<AssetLot>, sales: List<AssetSale> = 
     var proceeds = 0L
     for (e in events) {
         if (e.lot != null) {
-            if (e.lot.quantity <= 0) throw AssetError("كمية الشراء لازم تكون أكبر من صفر")
+            if (e.lot.quantity <= 0) throw AssetError(uiText(TextKey.ASSET_BUY_QUANTITY_POSITIVE))
             held = addQuantity(held, e.lot.quantity)
             cost = addMoney(cost, e.lot.principalMinor, e.lot.feeMinor)
             fees = addMoney(fees, e.lot.feeMinor)
             continue
         }
         val sale = e.sale!!
-        if (sale.quantity <= 0) throw AssetError("كمية البيع لازم تكون أكبر من صفر")
-        if (sale.quantity > held) throw AssetError("بيع ${formatQuantity(sale.quantity)} والمملوك وقتها " + "${formatQuantity(held)} فقط. مفيش رصيد سالب صامت.")
+        if (sale.quantity <= 0) throw AssetError(uiText(TextKey.ASSET_SELL_QUANTITY_POSITIVE))
+        if (sale.quantity > held) throw AssetError(uiText(TextKey.ASSET_SELL_OVER_HELD, formatQuantity(sale.quantity), formatQuantity(held)))
         val costOfSold = shareOfAmount(cost, sale.quantity, held)
         val net = subtractMoney(sale.grossProceedsMinor, sale.feeMinor)
         realized = addMoney(realized, subtractMoney(net, costOfSold))
@@ -98,11 +108,11 @@ fun assessPrice(price: AssetPrice?, today: IsoDate?): PriceState {
 }
 
 fun describePriceState(state: PriceState): String = when (state) {
-    PriceState.Missing -> "مفيش سعر متسجل. القيمة الحالية غير متاحة"
-    is PriceState.Fresh -> "السعر ${formatMoney(state.price.pricePerUnitMinor)} بتاريخ ${state.price.asOf}"
+    PriceState.Missing -> uiText(TextKey.PRICE_MISSING)
+    is PriceState.Fresh -> uiText(TextKey.PRICE_FRESH, formatMoney(state.price.pricePerUnitMinor), state.price.asOf)
     is PriceState.Stale ->
-        if (state.ageDays < 0) "السعر بتاريخ ${state.price.asOf} — تاريخ في المستقبل، راجعه"
-        else "السعر ${formatMoney(state.price.pricePerUnitMinor)} بتاريخ ${state.price.asOf} — بقاله ${state.ageDays} يوم"
+        if (state.ageDays < 0) uiText(TextKey.PRICE_FUTURE, state.price.asOf)
+        else uiText(TextKey.PRICE_STALE, formatMoney(state.price.pricePerUnitMinor), state.price.asOf, state.ageDays.toString())
 }
 
 data class PortfolioTotals(
@@ -161,25 +171,25 @@ private fun feedAmount(value: Any?): Long? = when (value) {
  * المدخل الغلط بيترفض لوحده بسببه ومش بيوقف الباقي — **مفيش صفر مكان المجهول**.
  */
 fun parsePriceFeed(raw: Any?): PriceFeed {
-    val root = raw as? Map<*, *> ?: throw PriceFeedError("ملف الأسعار مش بالشكل المتوقع")
-    val generatedAt = feedText(root["generatedAt"]) ?: throw PriceFeedError("ملف الأسعار مالوش تاريخ توليد")
-    val baseCurrency = feedText(root["baseCurrency"]) ?: throw PriceFeedError("ملف الأسعار مش قايل عملته")
-    val entries = root["prices"] as? Map<*, *> ?: throw PriceFeedError("ملف الأسعار مفيهوش أسعار")
+    val root = raw as? Map<*, *> ?: throw PriceFeedError(uiText(TextKey.FEED_BAD_SHAPE))
+    val generatedAt = feedText(root["generatedAt"]) ?: throw PriceFeedError(uiText(TextKey.FEED_NO_GENERATED_AT))
+    val baseCurrency = feedText(root["baseCurrency"]) ?: throw PriceFeedError(uiText(TextKey.FEED_NO_CURRENCY))
+    val entries = root["prices"] as? Map<*, *> ?: throw PriceFeedError(uiText(TextKey.FEED_NO_PRICES))
     val prices = mutableListOf<FeedPrice>()
     val rejected = mutableListOf<FeedIssue>()
     for ((key, entry) in entries) {
         val symbol = key.toString()
-        if (entry !is Map<*, *>) { rejected += FeedIssue(symbol, "المدخل مش كائن"); continue }
+        if (entry !is Map<*, *>) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_ENTRY_NOT_OBJECT)); continue }
         val amount = feedAmount(entry["pricePerUnitMinor"])
-        if (amount == null) { rejected += FeedIssue(symbol, "السعر مش عددًا صحيحًا موجبًا بالهللة"); continue }
+        if (amount == null) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_PRICE_NOT_INTEGER)); continue }
         val asOf = feedText(entry["asOf"])
-        if (asOf == null || !isValidIsoDate(asOf)) { rejected += FeedIssue(symbol, "مفيش تاريخ صالح للسعر"); continue }
+        if (asOf == null || !isValidIsoDate(asOf)) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_NO_VALID_DATE)); continue }
         val source = feedText(entry["source"])
-        if (source == null) { rejected += FeedIssue(symbol, "مفيش مصدر مكتوب للسعر"); continue }
+        if (source == null) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_NO_SOURCE)); continue }
         prices += FeedPrice(symbol, feedText(entry["name"]) ?: symbol, feedText(entry["unit"]) ?: "", amount, asOf, source)
     }
     val failures = (root["failures"] as? List<*>).orEmpty().filterIsInstance<Map<*, *>>()
-        .map { FeedIssue(feedText(it["source"]) ?: "مصدر غير معروف", feedText(it["reason"]) ?: "سبب غير مكتوب") }
+        .map { FeedIssue(feedText(it["source"]) ?: uiText(TextKey.FEED_UNKNOWN_SOURCE), feedText(it["reason"]) ?: uiText(TextKey.FEED_NO_REASON)) }
     return PriceFeed(generatedAt, baseCurrency, prices, rejected, failures)
 }
 
@@ -189,6 +199,6 @@ fun indexFeed(feed: PriceFeed): Map<String, FeedPrice> = feed.prices.associateBy
 fun describeFeed(feed: PriceFeed): String {
     val day = feed.generatedAt.take(10)
     val missing = feed.failures.size + feed.rejected.size
-    val base = "${feed.prices.size} سعر محدَّث يوم $day"
-    return if (missing == 0) base else "$base، و$missing مصدر مجابش سعر"
+    val base = uiText(TextKey.FEED_SUMMARY, feed.prices.size.toString(), day)
+    return if (missing == 0) base else uiText(TextKey.FEED_SUMMARY_WITH_MISSING, base, missing.toString())
 }

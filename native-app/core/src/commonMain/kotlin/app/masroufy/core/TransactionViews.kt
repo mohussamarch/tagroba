@@ -175,15 +175,15 @@ class SettlementError(message: String) : IllegalStateException(message)
 
 /** تجهيز تسوية على لقطة متسقة من التخزين (مش رصيد شاشة متخزن). نفس الطلب مرتين = نفس التسوية. */
 fun prepareSettlement(input: Settlement, personId: String, obligation: Obligation?, rows: List<Settlement>): Settlement {
-    if (obligation == null || obligation.personId != personId) throw SettlementError("الالتزام ده مش موجود للشخص ده")
-    if (input.amountMinor > MAX_SAFE_HALALAS || input.amountMinor <= 0) throw SettlementError("مبلغ التسوية لازم يكون عدد صحيح بالهللة وأكبر من صفر")
+    if (obligation == null || obligation.personId != personId) throw SettlementError(uiText(TextKey.SETTLEMENT_OBLIGATION_MISSING))
+    if (input.amountMinor > MAX_SAFE_HALALAS || input.amountMinor <= 0) throw SettlementError(uiText(TextKey.SETTLEMENT_AMOUNT_HALALAS))
     rows.firstOrNull { it.id == input.id }?.let { existing ->
         if (existing.obligationId != input.obligationId || existing.amountMinor != input.amountMinor || existing.transactionId != input.transactionId) {
-            throw SettlementError("الطلب ده اتحفظ قبل كده ببيانات مختلفة. راجع التسوية المسجلة")
+            throw SettlementError(uiText(TextKey.SETTLEMENT_REQUEST_CONFLICT))
         }
         return existing
     }
     val check = checkSettlement(obligation, rows, input.amountMinor)
-    if (!check.allowed) throw SettlementError(check.reason ?: "التسوية مرفوضة")
+    if (!check.allowed) throw SettlementError(check.reason ?: uiText(TextKey.SETTLEMENT_REJECTED))
     return input
 }

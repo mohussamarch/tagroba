@@ -61,16 +61,16 @@ sealed interface ProfileCheck {
 /** تأكيد قيم الملف قبل الحفظ — الخطأ جنب حقله (spec/04). */
 fun checkProfile(input: UserProfile): ProfileCheck {
     val name = input.displayName?.let(JsText::trim)
-    if (name != null && name.length > MAX_NAME_LENGTH) return ProfileCheck.Invalid("displayName", "الاسم أطول من $MAX_NAME_LENGTH حرف")
+    if (name != null && name.length > MAX_NAME_LENGTH) return ProfileCheck.Invalid("displayName", uiText(TextKey.PROFILE_NAME_TOO_LONG, MAX_NAME_LENGTH.toString()))
     if (input.salaryMinor != null && (input.salaryMinor > MAX_SAFE_HALALAS || input.salaryMinor < 0)) {
-        return ProfileCheck.Invalid("salaryMinor", "المرتب لازم يكون مبلغ صحيح مش سالب")
+        return ProfileCheck.Invalid("salaryMinor", uiText(TextKey.PROFILE_SALARY_INVALID))
     }
-    if (input.payday < 1 || input.payday > 31) return ProfileCheck.Invalid("payday", "يوم الراتب لازم يكون من 1 لـ 31")
+    if (input.payday < 1 || input.payday > 31) return ProfileCheck.Invalid("payday", uiText(TextKey.PROFILE_PAYDAY_RANGE))
     if (input.gender != null && input.gender != "male" && input.gender != "female") {
-        return ProfileCheck.Invalid("gender", "اختار ذكر أو أنثى، أو سيبها فاضية")
+        return ProfileCheck.Invalid("gender", uiText(TextKey.PROFILE_GENDER))
     }
     if (input.dependentKinds != null && !input.dependentKinds.all { it in DEPENDENT_KINDS }) {
-        return ProfileCheck.Invalid("dependentKinds", "اختار الزوج أو الزوجة أو الأولاد أو الأهل، أو سيبها فاضية")
+        return ProfileCheck.Invalid("dependentKinds", uiText(TextKey.PROFILE_DEPENDENTS))
     }
     // «لأ» على بيعول حد ⇒ مفيش حد بيعوله؛ الترتيب ثابت ومن غير تكرار
     val kinds = if (input.supportsDependents == false || input.dependentKinds == null) null else DEPENDENT_KINDS.filter { it in input.dependentKinds }

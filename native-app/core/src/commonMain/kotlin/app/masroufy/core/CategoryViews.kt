@@ -32,7 +32,7 @@ fun groupCategoryOptions(categories: List<Category>, keepId: Id? = null): List<C
     }
     val groups = mutableListOf<CategoryOptionGroup>()
     val ungrouped = optionsFor(mains.filter { !isCategoryGroupKey(it.groupKey) })
-    if (ungrouped.isNotEmpty()) groups += CategoryOptionGroup("ungrouped", "التصنيفات", ungrouped)
+    if (ungrouped.isNotEmpty()) groups += CategoryOptionGroup("ungrouped", uiText(TextKey.GROUP_UNGROUPED), ungrouped)
     for (group in CATEGORY_GROUPS) {
         val list = optionsFor(mains.filter { it.groupKey == group.key })
         if (list.isNotEmpty()) groups += CategoryOptionGroup(group.key, group.name, list)
@@ -55,7 +55,7 @@ fun manageCategoryView(categories: List<Category>): ManagedCategoryView {
     val shown = mains.filter { it.active }
     val groups = mutableListOf<ManagedGroup>()
     val loose = shown.filter(::ungroupedCategory)
-    if (loose.isNotEmpty()) groups += ManagedGroup("ungrouped", "التصنيفات", "tag", loose.map(::toMain))
+    if (loose.isNotEmpty()) groups += ManagedGroup("ungrouped", uiText(TextKey.GROUP_UNGROUPED), "tag", loose.map(::toMain))
     for (group in CATEGORY_GROUPS) {
         val list = shown.filter { it.groupKey == group.key }
         if (list.isNotEmpty()) groups += ManagedGroup(group.key, group.name, group.iconKey, list.map(::toMain))
@@ -80,12 +80,12 @@ fun categoryPlaceChoices(categories: List<Category>, editingId: Id?): CategoryPl
     val hasSubs = editingId != null && categories.any { it.parentId == editingId }
     val editingLoose = editing != null && isMainIn(ids, editing) && ungroupedCategory(editing)
     val groups = buildList<Pair<String?, String>> {
-        if (view.groups.any { it.key == "ungrouped" } || editingLoose) add(null to "بلا مجموعة")
+        if (view.groups.any { it.key == "ungrouped" } || editingLoose) add(null to uiText(TextKey.GROUP_NO_GROUP))
         CATEGORY_GROUPS.forEach { add(it.key to it.name) }
     }
     fun options(mains: List<ManagedMain>) = mains.filter { it.category.id != editingId }.map { PlaceOption(it.category.id, it.category.name) }
     val parentGroups = if (hasSubs) emptyList() else
-        (view.groups.map { PlaceGroup(it.key, it.label, options(it.mains)) } + PlaceGroup("hidden", "المخفية", options(view.hidden))).filter { it.options.isNotEmpty() }
+        (view.groups.map { PlaceGroup(it.key, it.label, options(it.mains)) } + PlaceGroup("hidden", uiText(TextKey.GROUP_HIDDEN), options(view.hidden))).filter { it.options.isNotEmpty() }
     return CategoryPlaceChoices(groups, parentGroups, hasSubs)
 }
 

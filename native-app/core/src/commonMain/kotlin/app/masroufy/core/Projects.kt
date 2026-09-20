@@ -30,9 +30,9 @@ data class CheckedName(val name: String, val normalizedName: String)
 
 fun checkProjectName(name: String, projects: List<Project>, selfId: Id? = null): CheckedName {
     val clean = JsText.collapseWhitespace(JsText.trim(name))
-    if (clean.isEmpty() || clean.length > PROJECT_NAME_MAX) throw ProjectError("اكتب اسم المشروع بحد أقصى $PROJECT_NAME_MAX حرف.")
+    if (clean.isEmpty() || clean.length > PROJECT_NAME_MAX) throw ProjectError(uiText(TextKey.PROJECT_NAME_LENGTH, PROJECT_NAME_MAX.toString()))
     val normalized = normalizeText(clean)
-    if (projects.any { it.id != selfId && it.normalizedName == normalized }) throw ProjectError("فيه مشروع بنفس الاسم.")
+    if (projects.any { it.id != selfId && it.normalizedName == normalized }) throw ProjectError(uiText(TextKey.PROJECT_NAME_DUPLICATE))
     return CheckedName(clean, normalized)
 }
 
@@ -40,8 +40,8 @@ data class CheckedRule(val matchText: String, val matchMode: RuleMatchMode, val 
 
 fun checkProjectRule(matchText: String, matchMode: RuleMatchMode, direction: String): CheckedRule {
     val text = JsText.collapseWhitespace(JsText.trim(matchText))
-    if (text.length < 2 || text.length > PROJECT_RULE_TEXT_MAX) throw ProjectError("اكتب نص القاعدة من حرفين لـ $PROJECT_RULE_TEXT_MAX حرف.")
-    if (direction !in listOf("out", "in", "any")) throw ProjectError("الاتجاه مش معروف.")
+    if (text.length < 2 || text.length > PROJECT_RULE_TEXT_MAX) throw ProjectError(uiText(TextKey.PROJECT_RULE_TEXT_LENGTH, PROJECT_RULE_TEXT_MAX.toString()))
+    if (direction !in listOf("out", "in", "any")) throw ProjectError(uiText(TextKey.PROJECT_RULE_DIRECTION))
     return CheckedRule(text, matchMode, direction)
 }
 

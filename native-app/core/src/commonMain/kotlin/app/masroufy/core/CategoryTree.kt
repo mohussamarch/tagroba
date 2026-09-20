@@ -22,28 +22,35 @@ data class Category(
     val noCarIconKey: String? = null,
 )
 
-data class CategoryGroup(val key: String, val name: String, val iconKey: String, val kind: String)
+data class CategoryGroup(val key: String, val nameKey: TextKey, val iconKey: String, val kind: String) {
+    /** الاسم المعروض باللغة الحالية (Texts.kt). */
+    val name: String get() = uiText(nameKey)
+}
 
 /** رد المالك «الخمسة اللي اقترحتهم»؛ التحويلات والسحب برا الخمسة. */
 val CATEGORY_GROUPS: List<CategoryGroup> = listOf(
-    CategoryGroup("food", "الأكل والشرب", "chef-hat", "spend"),
-    CategoryGroup("home", "البيت والالتزامات", "house-heart", "spend"),
-    CategoryGroup("transport", "التنقل", "route", "spend"),
-    CategoryGroup("personal", "الحياة الشخصية", "user-round", "spend"),
-    CategoryGroup("saving", "الادخار والاستثمار", "piggy-bank", "saving"),
-    CategoryGroup("movement", "حركة فلوس مش مصروف", "arrow-left-right", "movement"),
+    CategoryGroup("food", TextKey.GROUP_FOOD, "chef-hat", "spend"),
+    CategoryGroup("home", TextKey.GROUP_HOME, "house-heart", "spend"),
+    CategoryGroup("transport", TextKey.GROUP_TRANSPORT, "route", "spend"),
+    CategoryGroup("personal", TextKey.GROUP_PERSONAL, "user-round", "spend"),
+    CategoryGroup("saving", TextKey.GROUP_SAVING, "piggy-bank", "saving"),
+    CategoryGroup("movement", TextKey.GROUP_MOVEMENT, "arrow-left-right", "movement"),
 )
 
-val REQUIREMENT_LABELS: Map<String, String> = linkedMapOf(
-    "hasCar" to "لو عنده سيارة",
-    "dependents" to "لو بيعول زوجة أو أولاد",
-    "renter" to "لو ساكن بإيجار",
-    "domesticWorker" to "لو عنده عمالة منزلية",
-    "business" to "لو عنده شغل خاص",
-)
+/** أسماء الشروط للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
+val REQUIREMENT_LABELS: Map<String, String>
+    get() = linkedMapOf(
+        "hasCar" to uiText(TextKey.REQ_HAS_CAR),
+        "dependents" to uiText(TextKey.REQ_DEPENDENTS),
+        "renter" to uiText(TextKey.REQ_RENTER),
+        "domesticWorker" to uiText(TextKey.REQ_DOMESTIC_WORKER),
+        "business" to uiText(TextKey.REQ_BUSINESS),
+    )
+
+private val REQUIREMENT_KEYS = setOf("hasCar", "dependents", "renter", "domesticWorker", "business")
 
 fun isCategoryGroupKey(value: String?): Boolean = CATEGORY_GROUPS.any { it.key == value }
-fun isCategoryRequirement(value: String?): Boolean = value != null && value in REQUIREMENT_LABELS
+fun isCategoryRequirement(value: String?): Boolean = value != null && value in REQUIREMENT_KEYS
 
 /** ترتيب التصنيفات: الترتيب المحفوظ، وبعده الاسم بترتيب الحروف العربي (زي `localeCompare(…, 'ar')`). */
 internal val categoryOrder = Comparator<Category> { a, b -> if (a.order != b.order) a.order.compareTo(b.order) else compareArabic(a.name, b.name) }

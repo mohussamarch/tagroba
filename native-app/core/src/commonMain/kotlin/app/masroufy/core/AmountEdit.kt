@@ -20,15 +20,15 @@ fun planAmountEdit(
     settled: List<Halalas>,
 ): AmountEdit {
     if (newAmountMinor > MAX_SAFE_HALALAS || newAmountMinor <= 0) {
-        throw AmountEditError("اكتب مبلغ صحيح أكبر من صفر، زي 180 أو 180.50")
+        throw AmountEditError(uiText(TextKey.AMOUNT_EDIT_INVALID))
     }
     val allocatedTotal = allocated.fold(0L) { sum, a -> addMoney(sum, a) }
     if (newAmountMinor < allocatedTotal) {
-        throw AmountEditError("المبلغ أقل من اللي متوزع على أشخاص من العملية دي (${formatMoney(allocatedTotal)}). عدّل التوزيع الأول.")
+        throw AmountEditError(uiText(TextKey.AMOUNT_EDIT_BELOW_ALLOCATIONS, formatMoney(allocatedTotal)))
     }
     val settledTotal = settled.fold(0L) { sum, s -> addMoney(sum, s) }
     if (newAmountMinor < settledTotal) {
-        throw AmountEditError("المبلغ أقل من اللي اتسدد بيه دين من العملية دي (${formatMoney(settledTotal)}). عدّل التسوية الأول.")
+        throw AmountEditError(uiText(TextKey.AMOUNT_EDIT_BELOW_SETTLEMENTS, formatMoney(settledTotal)))
     }
     return AmountEdit(newAmountMinor, sourceAmountMinor(amountMinor, originalAmountMinor))
 }

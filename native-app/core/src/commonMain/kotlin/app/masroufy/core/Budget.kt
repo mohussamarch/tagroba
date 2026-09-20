@@ -24,7 +24,7 @@ data class BudgetStatus(
 class BudgetError(message: String) : IllegalArgumentException(message)
 
 fun budgetStatus(limitMinor: Halalas, spentMinor: Halalas, thresholdPercent: Int?): BudgetStatus {
-    if (limitMinor <= 0) throw BudgetError("السقف لازم يكون أكبر من صفر")
+    if (limitMinor <= 0) throw BudgetError(uiText(TextKey.BUDGET_LIMIT_POSITIVE))
     val used = rateOfMoney(spentMinor, 1000, limitMinor)
     val level = when {
         used >= 1000 -> BudgetLevel.OVER
@@ -60,19 +60,19 @@ fun averageCompletedSpend(periods: List<CompletedPeriodSpend>): AverageResult {
     val used = mutableListOf<CompletedPeriodSpend>()
     for (p in periods) {
         when {
-            !p.reliable -> excluded += ExcludedPeriod(p.periodKey, "فيها عمليات لسه محتاجة تحديد نوعها، فمصروفها ناقص")
-            p.transactionCount == 0 -> excluded += ExcludedPeriod(p.periodKey, "مفيش فيها عمليات — مش واضح ده صفر حقيقي ولا بيانات ناقصة")
+            !p.reliable -> excluded += ExcludedPeriod(p.periodKey, uiText(TextKey.PERIOD_EXCLUDED_UNRELIABLE))
+            p.transactionCount == 0 -> excluded += ExcludedPeriod(p.periodKey, uiText(TextKey.PERIOD_EXCLUDED_EMPTY))
             else -> used += p
         }
     }
     if (used.size < MIN_PERIODS_FOR_AVERAGE) {
         return AverageResult(
             null, used.map { it.periodKey }, excluded,
-            "المتوسط محتاج $MIN_PERIODS_FOR_AVERAGE فترات مكتملة على الأقل، " + "والمتاح ${used.size}.",
+            uiText(TextKey.AVERAGE_NEEDS_PERIODS, MIN_PERIODS_FOR_AVERAGE.toString(), used.size.toString()),
         )
     }
     val total = sumMoney(used.map { it.spentMinor })
-    return AverageResult(JsText.round(total.toDouble() / used.size).toLong(), used.map { it.periodKey }, excluded, "متوسط ${used.size} فترة مكتملة.")
+    return AverageResult(JsText.round(total.toDouble() / used.size).toLong(), used.map { it.periodKey }, excluded, uiText(TextKey.AVERAGE_OF_PERIODS, used.size.toString()))
 }
 
 const val MIN_HISTORY_FOR_ANOMALY = 3
@@ -99,26 +99,26 @@ fun detectAnomaly(valueMinor: Halalas, historyMinor: List<Halalas>): AnomalyResu
     if (historyMinor.size < MIN_HISTORY_FOR_ANOMALY) {
         return AnomalyResult(
             null, null, null,
-            "الحكم على الشذوذ محتاج $MIN_HISTORY_FOR_ANOMALY فترات سابقة على الأقل، " + "والمتاح ${historyMinor.size}.",
+            uiText(TextKey.ANOMALY_NEEDS_HISTORY, MIN_HISTORY_FOR_ANOMALY.toString(), historyMinor.size.toString()),
         )
     }
     val med = median(historyMinor)
     val deviation = valueMinor - med
     val absDeviation = abs(deviation)
-    if (med == 0L) return AnomalyResult(null, 0, deviation, "الوسيط التاريخي صفر، فالمقارنة النسبية مالهاش معنى.")
+    if (med == 0L) return AnomalyResult(null, 0, deviation, uiText(TextKey.ANOMALY_MEDIAN_ZERO))
     val relative = rateOfMoney(absDeviation, 1000, abs(med))
     if (relative < MIN_RELATIVE_DEVIATION_PER_THOUSAND) {
-        return AnomalyResult(false, med, deviation, "الفرق عن المعتاد أقل من ٢٠٪، فمش شذوذ.")
+        return AnomalyResult(false, med, deviation, uiText(TextKey.ANOMALY_WITHIN_TWENTY))
     }
     val mad = median(historyMinor.map { abs(it - med) })
     val isAnomaly = mad == 0L || absDeviation >= mad * ROBUST_MULTIPLIER
-    val direction = if (deviation > 0) "أعلى" else "أقل"
+    val direction = if (deviation > 0) uiText(TextKey.ANOMALY_HIGHER) else uiText(TextKey.ANOMALY_LOWER)
     // نفس `(n / 10).toFixed(0)`: قيمة بخانة عشرية واحدة، والنص بيروح لفوق
     val percent = (relative + 5) / 10
     return AnomalyResult(
         isAnomaly, med, deviation,
-        if (isAnomaly) "$direction من المعتاد بـ$percent٪ — خارج تقلب الفترات السابقة."
-        else "$direction من المعتاد بـ$percent٪، لكن ده داخل تقلب الفترات السابقة العادي.",
+        if (isAnomaly) uiText(TextKey.ANOMALY_OUTSIDE, direction, percent.toString())
+        else uiText(TextKey.ANOMALY_INSIDE, direction, percent.toString()),
     )
 }
 
@@ -157,7 +157,7 @@ fun buildCategoryLines(
             shareTenthPercent = if (total > 0 && spent > 0) rateOfMoney(spent, 1000, total) else 0,
             averageMinor = averageByCategory[id],
             anomaly = detectAnomaly(spent, historyByCategory[id].orEmpty()),
-            noLimitReason = if (limit != null) null else "مفيش سقف للتصنيف ده. تقدر تحدده من هنا.",
+            noLimitReason = if (limit != null) null else uiText(TextKey.CATEGORY_NO_LIMIT),
         )
     }.sortedByDescending { it.spentMinor }
 }
