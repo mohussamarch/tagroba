@@ -19,3 +19,8 @@ interface IdGenerator {
 interface Clock {
     fun nowIso(): String
 }
+
+/** كتابة تسوية: قراءة وفحص وكتابة ذرّيًا — نفس الطلب مرتين بعد رد ضايع = نفس التسوية. */
+interface SettlementWriter {
+    suspend fun settle(input: app.masroufy.core.Settlement, personId: Id): app.masroufy.core.Settlement
+}
