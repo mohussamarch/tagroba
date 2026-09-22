@@ -83,6 +83,8 @@ internal val ENGLISH_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.COVERAGE_ALL_UNCLASSIFIED to "All {0} transactions still need their kind set, so the totals are not available.",
     TextKey.COVERAGE_SOME_UNCLASSIFIED to "{0} of {1} transactions still need their kind set, so these figures are incomplete.",
     TextKey.BUDGET_LIMIT_POSITIVE to "The limit has to be greater than zero",
+    TextKey.BUDGET_SPENT_NEEDS_REVIEW to "Approximate: {0} transactions still need their kind confirmed; the figure will settle once you confirm them.",
+    TextKey.BUDGET_SPENT_ESTIMATED to "Approximate: {0} transactions had their kind set automatically.",
     TextKey.PERIOD_EXCLUDED_UNRELIABLE to "It has transactions that still need their kind set, so its spending is incomplete",
     TextKey.PERIOD_EXCLUDED_EMPTY to "It has no transactions — unclear whether that is a real zero or missing data",
     TextKey.AVERAGE_NEEDS_PERIODS to "An average needs at least {0} complete periods, and {1} are available.",

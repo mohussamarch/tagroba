@@ -79,6 +79,8 @@ internal val ARABIC_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.COVERAGE_ALL_UNCLASSIFIED to "كل الـ{0} عملية لسه محتاجة تحديد نوعها، فالمجاميع غير متاحة.",
     TextKey.COVERAGE_SOME_UNCLASSIFIED to "{0} عملية من {1} لسه محتاجة تحديد نوعها، فالأرقام دي ناقصة.",
     TextKey.BUDGET_LIMIT_POSITIVE to "السقف لازم يكون أكبر من صفر",
+    TextKey.BUDGET_SPENT_NEEDS_REVIEW to "تقريبي: {0} عملية محتاجة تأكيد نوعها، والرقم هيتظبط لما تأكدها.",
+    TextKey.BUDGET_SPENT_ESTIMATED to "تقريبي: {0} عملية نوعها اتحدد تلقائي.",
     TextKey.PERIOD_EXCLUDED_UNRELIABLE to "فيها عمليات لسه محتاجة تحديد نوعها، فمصروفها ناقص",
     TextKey.PERIOD_EXCLUDED_EMPTY to "مفيش فيها عمليات — مش واضح ده صفر حقيقي ولا بيانات ناقصة",
     TextKey.AVERAGE_NEEDS_PERIODS to "المتوسط محتاج {0} فترات مكتملة على الأقل، والمتاح {1}.",

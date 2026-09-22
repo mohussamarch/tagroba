@@ -10,7 +10,6 @@ import app.masroufy.core.Period
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.assessCoverage
-import app.masroufy.core.buildPeriod
 import app.masroufy.core.categoryDistribution
 import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.dailyAllowance
@@ -91,17 +90,6 @@ data class LoadHomeScreenRequest(
 /** عدد الفترات في الشريط السفلي — spec/01. */
 private const val RECENT_PERIOD_COUNT = 6
 private const val LATEST_COUNT = 5
-
-private fun shiftPeriod(period: Period, delta: Int, payday: Int): Period {
-    val parts = period.key.split("-")
-    val year = parts[0].toInt()
-    val month = parts[1].toInt()
-    val total = year * 12 + (month - 1) + delta
-    // قسمة جافاسكربت `Math.floor` على السالب: -1/12 ⇒ -1 مش 0
-    val years = if (total >= 0) total / 12 else -((-total + 11) / 12)
-    val monthIndex = total - years * 12
-    return buildPeriod(years, monthIndex + 1, payday)
-}
 
 class LoadHomeScreen(private val deps: LoadHomeScreenDeps) {
     suspend fun load(request: LoadHomeScreenRequest): HomeScreenData {
