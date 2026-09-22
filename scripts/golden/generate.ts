@@ -30,6 +30,7 @@ import { txnEditGolden } from './txnEditGolden'
 import { editDetailGolden } from './editDetailGolden'
 import { peopleFlowGolden } from './peopleFlowGolden'
 import { rulesFlowGolden } from './rulesFlowGolden'
+import { projectsFlowGolden } from './projectsFlowGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
 const modules: Record<string, () => unknown | Promise<unknown>> = {
@@ -58,6 +59,7 @@ const modules: Record<string, () => unknown | Promise<unknown>> = {
   editDetail: editDetailGolden,
   peopleFlow: peopleFlowGolden,
   rulesFlow: rulesFlowGolden,
+  projectsFlow: projectsFlowGolden,
 }
 
 mkdirSync(OUT, { recursive: true })
