@@ -2,10 +2,12 @@ package app.masroufy.memory
 
 import app.masroufy.core.Id
 import app.masroufy.core.Merchant
+import app.masroufy.core.RecurringItem
 import app.masroufy.core.Tag
 import app.masroufy.core.TransactionTag
 import app.masroufy.core.normalizeText
 import app.masroufy.port.MerchantRepository
+import app.masroufy.port.RecurringRepository
 import app.masroufy.port.TagRepository
 import app.masroufy.port.TransactionTagRepository
 
@@ -31,6 +33,20 @@ class MemoryMerchantRepository(seed: List<Merchant> = emptyList()) : MerchantRep
 
     override suspend fun saveMany(merchants: List<Merchant>) {
         for (m in merchants) items[m.id] = m
+    }
+}
+
+class MemoryRecurringRepository(seed: List<RecurringItem> = emptyList()) : RecurringRepository {
+    private val items = LinkedHashMap<String, RecurringItem>()
+
+    init {
+        for (i in seed) items[i.id] = i
+    }
+
+    override suspend fun listAll(): List<RecurringItem> = items.values.toList()
+
+    override suspend fun save(item: RecurringItem) {
+        items[item.id] = item
     }
 }
 

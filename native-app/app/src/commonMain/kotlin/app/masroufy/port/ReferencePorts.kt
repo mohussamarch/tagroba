@@ -93,6 +93,12 @@ interface NotificationReceiptRepository {
     suspend fun deleteMany(eventKeys: List<String>)
 }
 
+interface RecurringRepository {
+    suspend fun listAll(): List<app.masroufy.core.RecurringItem>
+
+    suspend fun save(item: app.masroufy.core.RecurringItem)
+}
+
 interface TagRepository {
     suspend fun listAll(): List<Tag>
 
