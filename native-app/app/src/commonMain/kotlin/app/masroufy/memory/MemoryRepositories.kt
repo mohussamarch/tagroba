@@ -19,8 +19,8 @@ import app.masroufy.port.TransactionRepository
  *
  * الكيانات في كوتلن `data class` (مش بتتغير)، فمفيش نسخ زي `clone` بتاعة جافاسكربت.
  */
-class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : TransactionRepository {
-    private val items = LinkedHashMap<Id, Transaction>()
+class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : TransactionRepository, Snapshotable {
+    private var items = LinkedHashMap<Id, Transaction>()
 
     init {
         for (t in seed) items[t.id] = t
@@ -64,6 +64,15 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
 
     override suspend fun deleteMany(ids: List<Id>) {
         for (id in ids) items.remove(id)
+    }
+
+    fun all(): List<Transaction> = items.values.toList()
+
+    override fun snapshot(): Any = LinkedHashMap(items)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        items = LinkedHashMap(state as LinkedHashMap<Id, Transaction>)
     }
 }
 
