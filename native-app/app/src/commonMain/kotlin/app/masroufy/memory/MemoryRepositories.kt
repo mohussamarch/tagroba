@@ -111,9 +111,9 @@ class MemoryAllocationRepository(seed: List<PersonAllocation> = emptyList()) : A
     }
 }
 
-class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<CategoryBudget> = emptyList()) : BudgetRepository {
-    private val budgets = LinkedHashMap<String, Budget>()
-    private val categoryLines = LinkedHashMap<Id, CategoryBudget>()
+class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<CategoryBudget> = emptyList()) : BudgetRepository, Snapshotable {
+    private var budgets = LinkedHashMap<String, Budget>()
+    private var categoryLines = LinkedHashMap<Id, CategoryBudget>()
 
     init {
         for (b in seed) budgets[b.periodKey] = b
@@ -140,5 +140,18 @@ class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<Categ
 
     override suspend fun removeCategoryBudget(id: Id) {
         categoryLines.remove(id)
+    }
+
+    fun allBudgets(): List<Budget> = budgets.values.toList()
+
+    fun allLines(): List<CategoryBudget> = categoryLines.values.toList()
+
+    override fun snapshot(): Any = LinkedHashMap(budgets) to LinkedHashMap(categoryLines)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        val (b, l) = state as Pair<LinkedHashMap<String, Budget>, LinkedHashMap<Id, CategoryBudget>>
+        budgets = LinkedHashMap(b)
+        categoryLines = LinkedHashMap(l)
     }
 }

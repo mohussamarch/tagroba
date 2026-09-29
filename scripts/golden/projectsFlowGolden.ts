@@ -6,7 +6,7 @@ import { MemorySyncCursor } from '../../src/infrastructure/memory/memorySharedMe
 import { SequentialIdGenerator, FixedClock } from '../../src/infrastructure/memory/memorySupport'
 import type { Project, ProjectLink, ProjectRule } from '../../src/domain/entities/projectEntities'
 import type { Category, PersonAllocation, Transaction } from '../../src/domain/entities/types'
-import { recordAsync } from './goldenKit'
+import { recordAsync, type GoldenCase } from './goldenKit'
 
 /**
  * المشاريع — OVERRIDES §34. ⚠️ بيانات وهمية بالكامل.
@@ -48,7 +48,7 @@ type Action =
   | { kind: 'applyRuleToOld' | 'setRuleEnabled'; ruleId: string; enabled?: boolean }
 
 export async function projectsFlowGolden() {
-  const cases = []
+  const cases: GoldenCase[] = []
 
   async function run(seed: Seed, action: Action) {
     cases.push(await recordAsync({ seed, categories: cats, action }, async () => {
