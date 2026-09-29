@@ -26,6 +26,8 @@ enum class EconomicKind(val wire: String) {
     INVESTMENT_INCOME("investment_income"), EVENT_GIFT("event_gift"),
     // وارد بس مش دخل
     ROSCA_PAYOUT("rosca_payout"), REFUND_RECEIVED("refund_received"), ADVANCE_RECEIVED("advance_received"),
+    // صادر مش مصروف — «المستحقات» (OVERRIDES §50)
+    ROSCA_CONTRIBUTION("rosca_contribution"), INSTALLMENT_PAID("installment_paid"),
     // لسه ما اتحددش
     UNCLASSIFIED("unclassified");
 
@@ -117,7 +119,11 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         rule(REFUND_RECEIVED, TextKey.KIND_REFUND_RECEIVED, Liquidity.IN, false, false, PersonEffect.NONE, reducesExpense = true),
         // سلفة الشغل دين هيتخصم من المرتب
         rule(ADVANCE_RECEIVED, TextKey.KIND_ADVANCE_RECEIVED, Liquidity.IN, false, false, PersonEffect.PAYABLE_LOAN_UP),
-        rule(UNCLASSIFIED, TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
+        // قسط الجمعية: قبل دورك ادخار وبعده سداد ⇒ مش مصروف (قرار المالك §50)
+        rule(ROSCA_CONTRIBUTION, TextKey.KIND_ROSCA_CONTRIBUTION, Liquidity.OUT, false, false, PersonEffect.NONE),
+        // قسط تمويل: الأصل مش مصروف، والأرباح بتتحسب مصروف من خطة الأقساط نفسها (`financingCostInPeriod`)
+        rule(INSTALLMENT_PAID, TextKey.KIND_INSTALLMENT_PAID, Liquidity.OUT, false, false, PersonEffect.NONE),
+        rule(UNCLASSIFIED,TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
     )
 
 fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)
