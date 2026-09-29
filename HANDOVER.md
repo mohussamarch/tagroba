@@ -2122,7 +2122,7 @@ cd /e/work/masroufy/native-app && JAVA_HOME="C:\Users\atgs0\Documents\Codex\andr
 
 ## روابط
 - **صفحة مراجعة النصوص:** https://claude.ai/artifact/V1G2UZL1WkcrxK18YdbEem
-- **خريطة الفيتشرز — المرجع الوحيد (اتحدثت 2026-09-29، مشاركة برابط عام):** https://claude.ai/artifact/DzK9qLohxX6mTwPtsWw6mp
+- **خريطة الفيتشرز — المرجع الوحيد (النسخة 3 اتنشرت 2026-09-30 بموافقة المالك، مشاركة برابط عام):** https://claude.ai/artifact/DzK9qLohxX6mTwPtsWw6mp — كل الفيتشرز اللي منطقها اتنقل بقت «شغال واتنقل»، وسؤال تصدير CSV اتضاف في «مستني قرارك». مصدرها HTML في مجلد الجلسة المؤقت (مش في المستودع)؛ اللي يعدّلها يقراها الأول بأداة Artifact
 - ~~شجرة البرنامج~~ — اندمجت في الخريطة (2026-09-29) ومش بتتحدث
 - **المستودع:** https://github.com/mohussamarch/tagroba — التطبيق الحالي على `main`، وشغل كوتلن على فرع `claude/masroufy-kotlin-setup-c02bd8` (مرفوع، **مش مدموج في main**)
 
