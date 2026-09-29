@@ -14,7 +14,7 @@ import app.masroufy.port.TransactionRepository
  * المبالغ بالريال نص عبر `formatAmount` (المحوِّل الوحيد)، والاقتباس بيتهرّب فالفاصلة في الاسم ما بتكسرش السطر.
  */
 
-/** أقصى عدد فترات بيتقرا — كل استعلام محدود (ARCHITECTURE §5.6). المدى الأطول **بيتقص** زي التطبيق الحالي. */
+/** أقصى عدد فترات بيتقرا — كل استعلام محدود (ARCHITECTURE §5.6). المدى الأطول **بيتقص** (قرار المالك، OVERRIDES §49). */
 private const val MAX_PERIODS = 60
 
 /** علامة ترتيب البايت (U+FEFF) بالرقم — الحرف نفسه مش بيبان في الكود. */
@@ -42,8 +42,12 @@ class ExportCsv(private val txns: TransactionRepository) {
 
     private fun escape(value: String): String = if (NEEDS_QUOTES.containsMatchIn(value)) "\"" + value.replace("\"", "\"\"") + "\"" else value
 
+    /**
+     * **بالظبط من `from` لـ`to`** (قرار المالك، OVERRIDES §49) — التطبيق الحالي كان بيطلّع الفترات كاملة فبيعدّي التاريخين.
+     * المدى الأطول من [MAX_PERIODS] فترة بيتقص من غير رسالة — ده كمان قرار المالك، زي التطبيق الحالي.
+     */
     suspend fun export(from: String, to: String, payday: Int): String {
-        val rows = readAll(from, to, payday).sortedWith { a, b ->
+        val rows = readAll(from, to, payday).filter { it.occurredAt in from..to }.sortedWith { a, b ->
             if (a.occurredAt == b.occurredAt) a.sourceOrder - b.sourceOrder else if (a.occurredAt < b.occurredAt) -1 else 1
         }
         val lines = mutableListOf("date,name,amount,type,source,reference")
