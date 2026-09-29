@@ -166,3 +166,17 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
         ),
     )
 }
+
+/** صف الرسالة كصف استيراد عادي — منع التكرار والتصنيف والحفظ بعدها زي الكشف بالظبط. */
+fun SmsRow.toParsedRow() = ParsedRow(lineNumber, date, amountMinor, direction, merchantName, reference, sourceName, description, raw)
+
+/**
+ * نفس `JSON.stringify(rows)` بالحرف وبترتيب مفاتيح التطبيق الحالي — النص ده محتوى «ملف» الرسايل،
+ * وبصمته هي اللي بتعرّف إن نفس الرسايل اتسجلت قبل كده.
+ */
+fun smsRowsJson(rows: List<SmsRow>): String = rows.joinToString(",", "[", "]") { r ->
+    "{\"lineNumber\":${r.lineNumber},\"date\":${JsText.jsonString(r.date)},\"amountMinor\":${r.amountMinor}," +
+        "\"direction\":${JsText.jsonString(r.direction.wire)},\"merchantName\":${JsText.jsonString(r.merchantName)}," +
+        "\"reference\":${r.reference?.let(JsText::jsonString) ?: "null"},\"sourceName\":${JsText.jsonString(r.sourceName)}," +
+        "\"description\":${JsText.jsonString(r.description)},\"raw\":${JsText.jsonString(r.raw)}}"
+}
