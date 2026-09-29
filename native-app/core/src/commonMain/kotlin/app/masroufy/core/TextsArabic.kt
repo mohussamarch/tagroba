@@ -182,6 +182,8 @@ internal val ARABIC_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.PROJECT_NAME_DUPLICATE to "فيه مشروع بنفس الاسم.",
     TextKey.PROJECT_RULE_TEXT_LENGTH to "اكتب نص القاعدة من حرفين لـ {0} حرف.",
     TextKey.PROJECT_RULE_DIRECTION to "الاتجاه مش معروف.",
+    TextKey.PROJECT_NOT_FOUND to "المشروع مش موجود.",
+    TextKey.PROJECT_RULE_NOT_FOUND to "القاعدة مش موجودة.",
     TextKey.PROFILE_NAME_TOO_LONG to "الاسم أطول من {0} حرف",
     TextKey.PROFILE_SALARY_INVALID to "المرتب لازم يكون مبلغ صحيح مش سالب",
     TextKey.PROFILE_PAYDAY_RANGE to "يوم الراتب لازم يكون من 1 لـ 31",

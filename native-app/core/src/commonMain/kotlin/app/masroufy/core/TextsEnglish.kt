@@ -186,6 +186,8 @@ internal val ENGLISH_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.PROJECT_NAME_DUPLICATE to "A project with the same name already exists.",
     TextKey.PROJECT_RULE_TEXT_LENGTH to "Enter rule text between two and {0} characters.",
     TextKey.PROJECT_RULE_DIRECTION to "The direction is not known.",
+    TextKey.PROJECT_NOT_FOUND to "The project does not exist.",
+    TextKey.PROJECT_RULE_NOT_FOUND to "The rule does not exist.",
     TextKey.PROFILE_NAME_TOO_LONG to "The name is longer than {0} characters",
     TextKey.PROFILE_SALARY_INVALID to "The salary has to be a whole amount that is not negative",
     TextKey.PROFILE_PAYDAY_RANGE to "Payday has to be from 1 to 31",
