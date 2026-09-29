@@ -119,24 +119,30 @@ class SetBudget(private val deps: SetBudgetDeps) {
 
     /**
      * بينسخ سقوف فترة سابقة للفترة دي — **بطلب صريح من المستخدم**، ومصدرها سقوف هو كاتبها.
-     * السطور بتتضاف جنب اللي في الفترة الهدف **حتى لو لنفس التصنيف** — نفس سلوك التطبيق الحالي، ومستني قرار المالك.
+     * **الموجود في الفترة الهدف ما يتلمسش** (قرار المالك، OVERRIDES §49): سقف التصنيف الموجود بيفضل، والسقف
+     * الإجمالي الموجود بيفضل؛ اللي بيتنسخ هو الناقص بس. بيرجّع عدد سقوف التصنيفات اللي اتضافت فعلًا.
+     * (التطبيق الحالي كان بيضيف سقف تاني لنفس التصنيف جنب الموجود.)
      */
     suspend fun copyFrom(sourcePeriodKey: String, target: Period): Int {
         val source = deps.budgets.findByPeriod(sourcePeriodKey) ?: throw BudgetError("مفيش ميزانية للفترة $sourcePeriodKey تتنسخ")
         val sourceLines = deps.budgets.listCategoryBudgets(source.id)
         return deps.uow.run {
             val budget = ensureBudget(target)
-            deps.budgets.save(
-                budget.copy(
-                    totalLimitMinor = source.totalLimitMinor,
-                    thresholdPercent = source.thresholdPercent,
-                    updatedAt = deps.clock.nowIso(),
-                ),
-            )
-            for (line in sourceLines) {
+            if (budget.totalLimitMinor == null) {
+                deps.budgets.save(
+                    budget.copy(
+                        totalLimitMinor = source.totalLimitMinor,
+                        thresholdPercent = source.thresholdPercent,
+                        updatedAt = deps.clock.nowIso(),
+                    ),
+                )
+            }
+            val present = deps.budgets.listCategoryBudgets(budget.id).map { it.categoryId }.toSet()
+            val missing = sourceLines.filter { it.categoryId !in present }
+            for (line in missing) {
                 deps.budgets.saveCategoryBudget(line.copy(id = deps.ids.next("catbudget"), budgetId = budget.id))
             }
-            sourceLines.size
+            missing.size
         }
     }
 }

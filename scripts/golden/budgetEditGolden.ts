@@ -94,9 +94,9 @@ async function setBudgetCases() {
   // مسح الكل بيشيل سطور الفترة دي بس
   await run(withSeptember, [...baseLines, septemberLine], { kind: 'clearAll', month: 8 })
   await run(baseBudgets, baseLines, { kind: 'clearAll', month: 9 })
-  // النسخ: لفترة فاضية · لفترة ليها سطر لنفس التصنيف (التطبيق الحالي بيضيف سطر تاني جنبه) · من فترة مش موجودة
+  // النسخ: لفترة فاضية · من فترة مش موجودة. النسخ لفترة فيها سقوف **مش هنا عن قصد**: كوتلن بتسيب الموجود
+  // (قرار المالك، OVERRIDES §49) والتطبيق الحالي بيضيف سقف تاني جنبه — اختباره مكتوب بالإيد في `SetBudgetCopyTest.kt`.
   await run(baseBudgets, baseLines, { kind: 'copyFrom', sourceKey: august.key, month: 9 })
-  await run(withSeptember, [...baseLines, septemberLine], { kind: 'copyFrom', sourceKey: august.key, month: 9 })
   await run(baseBudgets, baseLines, { kind: 'copyFrom', sourceKey: '2026-07', month: 9 })
   return cases
 }
