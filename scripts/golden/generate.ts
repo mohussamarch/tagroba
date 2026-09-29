@@ -38,6 +38,7 @@ import { accountFlowGolden } from './accountFlowGolden'
 import { reviewFlowGolden } from './reviewFlowGolden'
 import { settingsFlowGolden } from './settingsFlowGolden'
 import { fullBackupFlowGolden } from './fullBackupFlowGolden'
+import { csvExportGolden } from './csvExportGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
 const modules: Record<string, () => unknown | Promise<unknown>> = {
@@ -74,6 +75,7 @@ const modules: Record<string, () => unknown | Promise<unknown>> = {
   reviewFlow: reviewFlowGolden,
   settingsFlow: settingsFlowGolden,
   fullBackupFlow: fullBackupFlowGolden,
+  csvExport: csvExportGolden,
 }
 
 mkdirSync(OUT, { recursive: true })
