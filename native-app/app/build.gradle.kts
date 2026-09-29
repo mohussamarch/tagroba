@@ -19,6 +19,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core"))
+            // قراية نص ملف JSON بس (النسخة الشاملة) — قرار المالك OVERRIDES §49، السبب ARCHITECTURE §31.2
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

@@ -118,6 +118,18 @@ internal fun jsJson(value: Any?): String = when (value) {
     else -> JsText.jsonString(value.toString())
 }
 
+/** `JSON.stringify(value)` بالحرف — لنص ملف بيتكتب أو بيتبصم. المفاتيح بترتيب الخريطة. */
+fun jsonStringify(value: Any?): String = jsJson(value)
+
+/** `JSON.stringify(value, null, 2)` بالحرف: مسافتين لكل مستوى، والفاضي `[]` و`{}`. */
+fun jsonStringifyPretty(value: Any?, indent: String = ""): String = when (value) {
+    is List<*> -> if (value.isEmpty()) "[]" else value.joinToString(",\n", "[\n", "\n$indent]") { "$indent  " + jsonStringifyPretty(it, "$indent  ") }
+    is Map<*, *> -> if (value.isEmpty()) "{}" else value.entries.joinToString(",\n", "{\n", "\n$indent}") { (k, v) ->
+        "$indent  " + JsText.jsonString(k.toString()) + ": " + jsonStringifyPretty(v, "$indent  ")
+    }
+    else -> jsJson(value)
+}
+
 fun backupRowId(group: String, row: BackupRow): String {
     val key = when (group) {
         "assetPrices" -> "assetId"

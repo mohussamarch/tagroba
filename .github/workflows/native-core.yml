@@ -27,7 +27,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: اختبارات ملفات المرجع (JVM)
-        run: chmod +x gradlew && ./gradlew :core:jvmTest --console=plain
+        run: chmod +x gradlew && ./gradlew :core:jvmTest :app:jvmTest --console=plain
       - name: اختبار اللي بيختلف من جهاز للتاني على محاكي الآيفون
         # `nfkc` و`compareArabic` بس هما اللي كودهم بيختلف؛ القيم المتوقعة من التطبيق الحالي.
         # ملفات المرجع بتتقرا من القرص فاختباراتها على الكمبيوتر بس.
@@ -47,11 +47,11 @@ jobs:
             echo "::error::مفيش ولا اختبار اتشغل على المحاكي — النجاح ده فاضي"
             exit 1
           fi
-      - name: بناء كود الآيفون (جهاز حقيقي + المحاكي)
+      - name: بناء كود الآيفون (جهاز حقيقي + المحاكي) — القلب وطبقة الاستخدامات
         # أخطاء المترجم بتتطبع كـ«error annotations» كمان، عشان تبان من برا من غير ما حد يفتح السجل
         run: |
           set +e
-          ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 --console=plain 2>&1 | tee ios-build.log
+          ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :app:compileKotlinIosArm64 :app:compileKotlinIosSimulatorArm64 --console=plain 2>&1 | tee ios-build.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             grep -E "^e: |error:|Caused by|FAILURE:" ios-build.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
