@@ -29,6 +29,8 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
                 implementation("com.ibm.icu:icu4j:78.3")
+                // `runBlocking` لاختبار الكشف الحقيقي (حالات الاستخدام `suspend`)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
         }
     }
@@ -38,6 +40,10 @@ tasks.withType<Test>().configureEach {
     val golden = rootProject.file("golden")
     inputs.dir(golden).withPropertyName("golden")
     systemProperty("golden.dir", golden.absolutePath)
+    // الكشف الحقيقي على جهاز المالك بس — مكانه بيتدوّر عليه في `build.gradle.kts` الرئيسي
+    val ownerFiles = rootProject.extra["ownerFiles"] as File?
+    if (ownerFiles != null && File(ownerFiles, "alrajhi-pdf-pages.json").isFile) systemProperty("masroufy.ownerFiles", ownerFiles.absolutePath)
+    else filter { excludeTestsMatching("app.masroufy.data.RealDataFlowTest") }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

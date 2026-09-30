@@ -131,6 +131,12 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         }
     }
 
+    private fun firstByLineNumber(lines: List<ImportPreviewLine>): Map<Int, ImportPreviewLine> {
+        val out = HashMap<Int, ImportPreviewLine>(lines.size * 2)
+        for (line in lines) out.getOrPut(line.row.lineNumber) { line }
+        return out
+    }
+
     private var committing = false
 
     /** `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد. */
@@ -153,14 +159,17 @@ class ImportStatement(private val deps: ImportStatementDeps) {
              * (قرار المالك 2026-09-12: الملف اللي اتستورد منه جزء لازم يكمل — منع التكرار
              * بيشتغل صف بصف أصلًا).
              */
+            // فهرس برقم السطر بدل `find` جوه الحلقة: كان 20,000 صف × 20,000 = 6 ثواني حفظ (ScaleTest). أول سطر بالرقم يكسب — زي `find`
+            val freshByNumber = firstByLineNumber(fresh.lines)
+            val previousByNumber = firstByLineNumber(previous.lines)
             val addable = selection.filter { number ->
-                val line = fresh.lines.find { it.row.lineNumber == number }
+                val line = freshByNumber[number]
                 line != null && line.state != MatchingState.DUPLICATE && line.state != MatchingState.INVALID
             }
             if (fresh.previousBatch != null && addable.isEmpty()) return fresh.previousBatch
             for (number in selection) {
-                val before = previous.lines.find { it.row.lineNumber == number }
-                val now = fresh.lines.find { it.row.lineNumber == number }
+                val before = previousByNumber[number]
+                val now = freshByNumber[number]
                 if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId) {
                     throw IllegalStateException("فيه بيانات اتغيرت بعد المعاينة؛ اعمل معاينة جديدة علشان نمنع التكرار")
                 }
