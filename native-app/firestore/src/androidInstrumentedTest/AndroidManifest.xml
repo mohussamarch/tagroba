@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- الاختبار بيكلّم Firestore Emulator على الكمبيوتر (10.0.2.2) من غير تشفير — اختبار بس، مش بيتنشر -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>
