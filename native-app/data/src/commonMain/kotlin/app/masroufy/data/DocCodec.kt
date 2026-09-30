@@ -27,3 +27,6 @@ fun <T> codec(group: String, id: (T) -> String, encode: (T) -> Doc, decode: (Doc
 
 /** المستند اللي بيتكتب فعلًا (بعد القص) — ده اللي المستودع يبعته لفايربيز. */
 fun <T> DocCodec<T>.toStore(value: T): Doc = storeForm(group, encode(value))
+
+/** الحقول الاختيارية الفاضية في [value] — اللي المستودع لازم يمسحها لو كانت موجودة قبل كده. */
+fun <T> DocCodec<T>.omittedFields(value: T): Set<String> = encode(value).omittedFields

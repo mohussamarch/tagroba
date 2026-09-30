@@ -87,17 +87,27 @@ class DocReader(private val group: String, private val doc: Doc) {
     }
 }
 
+/**
+ * المستند المكتوب + أسماء الحقول الاختيارية اللي **ما اتكتبتش** لأنها فاضية — المستودع بيمسحها صريح
+ * لما بيكتب بـ«merge» (ARCHITECTURE §31.4)، عشان الحقل اللي المستخدم فضّاه ما يفضلش بقيمته القديمة.
+ */
+class WrittenDoc(val omitted: Set<String>) : LinkedHashMap<String, Any?>()
+
+/** الحقول الاختيارية الفاضية في مستند اتبنى بـ[doc] (فاضية لو المستند جاي من مكان تاني). */
+val Doc.omittedFields: Set<String> get() = (this as? WrittenDoc)?.omitted ?: emptySet()
+
 /** بناء مستند بترتيب الحقول. [opt] = ما يتكتبش لو فاضي، [nul] = يتكتب `null` صريح لو فاضي. */
 class DocWriter {
     private val out = LinkedHashMap<String, Any?>()
+    private val omitted = LinkedHashSet<String>()
 
     fun req(name: String, value: Any): DocWriter = apply { out[name] = norm(value) }
 
-    fun opt(name: String, value: Any?): DocWriter = apply { if (value != null) out[name] = norm(value) }
+    fun opt(name: String, value: Any?): DocWriter = apply { if (value != null) out[name] = norm(value) else omitted += name }
 
     fun nul(name: String, value: Any?): DocWriter = apply { out[name] = value?.let(::norm) }
 
-    fun build(): Doc = out
+    fun build(): Doc = WrittenDoc(omitted).also { it.putAll(out) }
 
     private fun norm(value: Any): Any = when (value) {
         is Int -> value.toLong()
