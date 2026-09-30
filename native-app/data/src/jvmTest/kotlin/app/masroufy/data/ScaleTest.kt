@@ -125,11 +125,11 @@ class ScaleTest {
 
         val reconciled = timed("مطابقة رصيد 20,000 عملية") { ReconcileBalance(ReconcileDeps(txns, MemoryWalletRepository(listOf(wallet)))).run(wallet.id, "2025-12-31", 28) }
         /*
-         * ⚠️ اكتشاف (2026-09-30): المطابقة بتقرا **60 فترة بس** من تاريخ الرصيد الافتتاحي (`MAX_PERIODS`، زي التطبيق الحالي)،
-         * فبعد 5 سنين الرصيد اللي بيطلع **غلط من غير رسالة**. الاختبار بيثبّت السلوك الحالي لحد ما المالك يقرر.
+         * المطابقة كانت بتقف بعد 60 فترة (زي التطبيق الحالي) فالرصيد بعد 5 سنين كان بيطلع غلط من غير رسالة —
+         * اتشال السقف بقرار المالك (OVERRIDES §53). دلوقتي بتقرا الـ10 سنين كلهم والرصيد لازم يتقفل صح.
          */
-        assertEquals(60, reconciled.periodsRead)
-        report.appendLine("⚠️ المطابقة قرت ${reconciled.periodsRead} فترة بس من $periods — الرصيد الناتج ${if (reconciled.result.closingMinor == closing) "صح" else "غلط"} ومفيش رسالة")
+        assertEquals(periods, reconciled.periodsRead)
+        assertEquals(formatAmount(closing), formatAmount(reconciled.result.closingMinor))
         assertEquals(0, reconciled.result.mismatches.size)
         File("build/scale-report.txt").writeText(report.toString())
     }

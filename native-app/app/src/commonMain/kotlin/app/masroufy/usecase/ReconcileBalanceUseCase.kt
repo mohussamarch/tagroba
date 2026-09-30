@@ -33,8 +33,11 @@ data class ReconcileDeps(
     val wallets: WalletRepository,
 )
 
-/** سقف الفترات المقروءة في مرة — حماية من قراية ما تخلصش. */
-private const val MAX_PERIODS = 60
+/*
+ * **مفيش سقف فترات** (قرار المالك 2026-10-01، OVERRIDES §53): التطبيق الحالي كان بيقف بعد 60 فترة، فبعد 5 سنين من
+ * الرصيد الافتتاحي الرصيد كان بيطلع غلط من غير رسالة (`ScaleTest`). الحلقة بتخلص لوحدها عند [until]، والقراية من
+ * النسخة اللي على الجوال — 10 سنين أقل من ثانية.
+ */
 
 class ReconcileBalance(private val deps: ReconcileDeps) {
     suspend fun run(walletId: Id, until: String, payday: Int): ReconcileOutcome {
@@ -49,7 +52,7 @@ class ReconcileBalance(private val deps: ReconcileDeps) {
         // الفترة اللي **بتحوي** تاريخ الافتتاح، مش اللي بتبدأ في شهره (ARCHITECTURE §14.4)
         var period = periodForDate(wallet.openingAt, payday)
 
-        while (period.start <= until && periodsRead < MAX_PERIODS) {
+        while (period.start <= until) {
             val rows = deps.txns.listByDateRange(period.start, period.end)
             periodsRead++
             for (row in rows) {
