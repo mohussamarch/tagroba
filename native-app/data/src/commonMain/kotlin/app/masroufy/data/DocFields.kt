@@ -91,7 +91,14 @@ class DocReader(private val group: String, private val doc: Doc) {
  * المستند المكتوب + أسماء الحقول الاختيارية اللي **ما اتكتبتش** لأنها فاضية — المستودع بيمسحها صريح
  * لما بيكتب بـ«merge» (ARCHITECTURE §31.4)، عشان الحقل اللي المستخدم فضّاه ما يفضلش بقيمته القديمة.
  */
-class WrittenDoc(val omitted: Set<String>) : LinkedHashMap<String, Any?>()
+class WrittenDoc(private val fields: Map<String, Any?>, val omitted: Set<String>) : Map<String, Any?> by fields {
+    // ⚠️ مش `LinkedHashMap` بالوراثة: على الآيفون (Kotlin/Native) الكلاس ده final. والمساواة بالمحتوى زي أي `Map`
+    override fun equals(other: Any?): Boolean = fields == other
+
+    override fun hashCode(): Int = fields.hashCode()
+
+    override fun toString(): String = fields.toString()
+}
 
 /** الحقول الاختيارية الفاضية في مستند اتبنى بـ[doc] (فاضية لو المستند جاي من مكان تاني). */
 val Doc.omittedFields: Set<String> get() = (this as? WrittenDoc)?.omitted ?: emptySet()
@@ -107,7 +114,7 @@ class DocWriter {
 
     fun nul(name: String, value: Any?): DocWriter = apply { out[name] = value?.let(::norm) }
 
-    fun build(): Doc = WrittenDoc(omitted).also { it.putAll(out) }
+    fun build(): Doc = WrittenDoc(out, omitted)
 
     private fun norm(value: Any): Any = when (value) {
         is Int -> value.toLong()
