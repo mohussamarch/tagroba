@@ -1,0 +1,11 @@
+rules_version = '2';
+// ⚠️ لاختبار المستودعات الحقيقية على Firestore Emulator بس (مشروع demo-masroufy-kt، من محاكي أندرويد) — **ممنوع تتنشر**.
+// قواعد التطبيق الحقيقية في firestore.rules، واتجربت على نفس شكل المستندات في scripts/golden/documentsGolden.ts.
+// التشغيل: من native-app/firestore/emulator: firebase emulators:start --only firestore --project demo-masroufy-kt
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

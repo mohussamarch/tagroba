@@ -18,3 +18,4 @@ rootProject.name = "masroufy-native"
 include(":core")
 include(":app")
 include(":data")
+include(":firestore")
