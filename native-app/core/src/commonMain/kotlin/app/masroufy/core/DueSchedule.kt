@@ -10,17 +10,28 @@ package app.masroufy.core
 data class DueSchedule(
     /** ميعاد القسط الأول. */
     val firstDueAt: IsoDate,
-    /** كل كام شهر (1 = شهري). */
-    val cycleMonths: Int,
+    /** كل كام [unit] (1 = كل شهر أو كل أسبوع). */
+    val every: Int,
     /** القسط العادي. */
     val installmentMinor: Halalas,
     /** الإجمالي. آخر قسط = الباقي، فممكن يكون أصغر من القسط العادي. */
     val totalMinor: Halalas,
     /** للرسايل بس — الحساب نفسه ما بيخلطش عملات. */
     val currency: Currency = Currency.SAR,
+    /** الجمعية بس ممكن تبقى بالأسبوع (قرار المالك: سؤال «كل قد إيه» — OVERRIDES §50). */
+    val unit: CycleUnit = CycleUnit.MONTH,
 )
 
+enum class CycleUnit(val wire: String) {
+    WEEK("week"), MONTH("month");
+
+    companion object {
+        fun fromWire(wire: String): CycleUnit = entries.first { it.wire == wire }
+    }
+}
+
 const val DUE_MAX_CYCLE_MONTHS = 12
+const val DUE_MAX_CYCLE_WEEKS = 4
 
 /** أقصى عدد أقساط — تمويل 30 سنة شهري. أكتر من كده غالبًا رقم مكتوب غلط. */
 const val DUE_MAX_INSTALLMENTS = 360
@@ -29,7 +40,10 @@ class DueScheduleError(message: String) : IllegalArgumentException(message)
 
 fun checkDueSchedule(s: DueSchedule) {
     if (!isValidIsoDate(s.firstDueAt)) throw DueScheduleError(uiText(TextKey.DUE_BAD_FIRST_DATE))
-    if (s.cycleMonths !in 1..DUE_MAX_CYCLE_MONTHS) throw DueScheduleError(uiText(TextKey.DUE_BAD_CYCLE, DUE_MAX_CYCLE_MONTHS.toString()))
+    when (s.unit) {
+        CycleUnit.MONTH -> if (s.every !in 1..DUE_MAX_CYCLE_MONTHS) throw DueScheduleError(uiText(TextKey.DUE_BAD_CYCLE, DUE_MAX_CYCLE_MONTHS.toString()))
+        CycleUnit.WEEK -> if (s.every !in 1..DUE_MAX_CYCLE_WEEKS) throw DueScheduleError(uiText(TextKey.DUE_BAD_CYCLE_WEEKS, DUE_MAX_CYCLE_WEEKS.toString()))
+    }
     assertHalalas(s.installmentMinor)
     assertHalalas(s.totalMinor)
     if (s.installmentMinor <= 0) throw DueScheduleError(uiText(TextKey.DUE_INSTALLMENT_POSITIVE))
@@ -40,8 +54,14 @@ fun checkDueSchedule(s: DueSchedule) {
 /** عدد الأقساط = الإجمالي ÷ القسط لفوق. */
 fun installmentCount(s: DueSchedule): Int = ((s.totalMinor + s.installmentMinor - 1) / s.installmentMinor).toInt()
 
-/** ميعاد القسط رقم [n] (من 1). يوم 31 في شهر أقصر بيبقى آخر الشهر. */
-fun dueDateOf(s: DueSchedule, n: Int): IsoDate = shiftMonths(s.firstDueAt, (n - 1) * s.cycleMonths)
+/** تاريخ بعد [cycles] دورة. بالشهر: يوم 31 في شهر أقصر بيبقى آخر الشهر. بالأسبوع: 7 أيام بالظبط. */
+fun shiftCycles(date: IsoDate, unit: CycleUnit, cycles: Int): IsoDate = when (unit) {
+    CycleUnit.MONTH -> shiftMonths(date, cycles)
+    CycleUnit.WEEK -> dayNumberToIso(toDayNumber(parseIsoDate(date)) + 7 * cycles)
+}
+
+/** ميعاد القسط رقم [n] (من 1) — محسوب من **أول** ميعاد مش من اللي قبله، فيوم 31 ما بيزحفش. */
+fun dueDateOf(s: DueSchedule, n: Int): IsoDate = shiftCycles(s.firstDueAt, s.unit, (n - 1) * s.every)
 
 /** اللي لازم يكون اتدفع **لحد آخر** القسط رقم [n] — تراكمي. */
 private fun cumulativeThrough(s: DueSchedule, n: Int): Halalas = minOf(multiplyMoneyByInt(s.installmentMinor, n.toLong()), s.totalMinor)

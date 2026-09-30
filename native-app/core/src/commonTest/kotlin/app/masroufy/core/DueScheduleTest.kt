@@ -66,7 +66,7 @@ class DueScheduleTest {
 
     @Test
     fun `الجدول الغلط بيترفض`() {
-        assertFailsWith<DueScheduleError> { checkDueSchedule(s.copy(cycleMonths = 0)) }
+        assertFailsWith<DueScheduleError> { checkDueSchedule(s.copy(every = 0)) }
         assertFailsWith<DueScheduleError> { checkDueSchedule(s.copy(installmentMinor = 0)) }
         assertFailsWith<DueScheduleError> { checkDueSchedule(s.copy(firstDueAt = "2026-02-30")) }
         // 361 قسط

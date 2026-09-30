@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class RoscaInstallmentsTest {
     // 10 أدوار، قسطي 1000 شهري، دوري الرابع ⇒ هقبض 10,000
     private val rosca = Rosca(
-        id = "rc-1", name = "جمعية وهمية", currency = Currency.SAR, contributionMinor = 100_000, cycleMonths = 1,
+        id = "rc-1", name = "جمعية وهمية", currency = Currency.SAR, contributionMinor = 100_000, every = 1,
         firstDueAt = "2026-01-01", cycleCount = 10, myTurns = listOf(4), payoutMinor = 1_000_000,
     )
 
@@ -78,7 +78,9 @@ class RoscaInstallmentsTest {
     fun `الجمعية الغلط بتترفض`() {
         assertFailsWith<RoscaError> { checkRosca(rosca.copy(myTurns = listOf(4, 4))) }
         assertFailsWith<RoscaError> { checkRosca(rosca.copy(myTurns = listOf(11))) }
-        assertFailsWith<RoscaError> { checkRosca(rosca.copy(myTurns = emptyList())) }
+        // دور لسه ما اتحددش مسموح (قيمة الدور صفر)، بس قيمة دور بالسالب لأ
+        checkRosca(rosca.copy(myTurns = emptyList(), payoutMinor = 0))
+        assertFailsWith<RoscaError> { checkRosca(rosca.copy(myTurns = emptyList(), payoutMinor = -1)) }
         assertFailsWith<RoscaError> { checkRosca(rosca.copy(cycleCount = 1)) }
         assertFailsWith<RoscaError> { checkRosca(rosca.copy(name = "  ")) }
         assertFailsWith<RoscaError> { checkRosca(rosca.copy(members = listOf(RoscaMember(12, "عضو وهمي")))) }

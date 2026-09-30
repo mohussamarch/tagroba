@@ -24,20 +24,21 @@ data class Rosca(
     val currency: Currency,
     /** قسطك إنت كل دور — لو ماسك نص سهم يبقى نص القسط، ولو سهمين يبقى الضعف. */
     val contributionMinor: Halalas,
-    /** كل كام شهر (1 = شهري). */
-    val cycleMonths: Int,
+    /** كل كام [unit] (1 = كل شهر أو كل أسبوع). */
+    val every: Int,
     /** ميعاد أول قسط، وهو نفسه ميعاد قبض الدور الأول. */
     val firstDueAt: IsoDate,
     /** عدد الأدوار = مدة الجمعية. */
     val cycleCount: Int,
-    /** أدوارك (من 1). غالبًا دور واحد. */
+    /** أدوارك (من 1). غالبًا دور واحد. **فاضية = لسه ما اتحددش** (قرعة مثلًا) — القبض بيبان «غير متاح» مش صفر. */
     val myTurns: List<Int>,
-    /** اللي هتقبضه في كل دور من أدوارك. */
+    /** اللي هتقبضه في كل دور من أدوارك. صفر لو دورك لسه ما اتحددش. */
     val payoutMinor: Halalas,
     val members: List<RoscaMember> = emptyList(),
     /** المسؤول اللي بيلم الفلوس — لو متسجل. */
     val organizerPersonId: Id? = null,
     val createdAt: String = "",
+    val unit: CycleUnit = CycleUnit.MONTH,
 )
 
 enum class RoscaEntryKind(val wire: String) {
@@ -70,11 +71,11 @@ fun checkRosca(r: Rosca): CheckedName {
     val clean = JsText.collapseWhitespace(JsText.trim(r.name))
     if (clean.isEmpty() || clean.length > ROSCA_NAME_MAX) throw RoscaError(uiText(TextKey.ROSCA_NAME_LENGTH, ROSCA_NAME_MAX.toString()))
     if (r.cycleCount !in 2..ROSCA_MAX_CYCLES) throw RoscaError(uiText(TextKey.ROSCA_CYCLE_COUNT, ROSCA_MAX_CYCLES.toString()))
-    if (r.myTurns.isEmpty() || r.myTurns.toSet().size != r.myTurns.size || r.myTurns.any { it !in 1..r.cycleCount }) {
+    if (r.myTurns.toSet().size != r.myTurns.size || r.myTurns.any { it !in 1..r.cycleCount }) {
         throw RoscaError(uiText(TextKey.ROSCA_TURNS, r.cycleCount.toString()))
     }
     assertHalalas(r.payoutMinor)
-    if (r.payoutMinor <= 0) throw RoscaError(uiText(TextKey.ROSCA_PAYOUT_POSITIVE))
+    if (if (r.myTurns.isEmpty()) r.payoutMinor < 0 else r.payoutMinor <= 0) throw RoscaError(uiText(TextKey.ROSCA_PAYOUT_POSITIVE))
     for (m in r.members) {
         if (m.turn !in 1..r.cycleCount) throw RoscaError(uiText(TextKey.ROSCA_MEMBER_TURN, m.name, r.cycleCount.toString()))
     }
@@ -84,7 +85,7 @@ fun checkRosca(r: Rosca): CheckedName {
 
 /** أقساطك: قسط كل دور لحد آخر الجمعية. */
 fun contributionSchedule(r: Rosca): DueSchedule =
-    DueSchedule(r.firstDueAt, r.cycleMonths, r.contributionMinor, multiplyMoneyByInt(r.contributionMinor, r.cycleCount.toLong()), r.currency)
+    DueSchedule(r.firstDueAt, r.every, r.contributionMinor, multiplyMoneyByInt(r.contributionMinor, r.cycleCount.toLong()), r.currency, r.unit)
 
 fun totalPayoutOf(r: Rosca): Halalas = multiplyMoneyByInt(r.payoutMinor, r.myTurns.size.toLong())
 
@@ -110,8 +111,8 @@ data class RoscaStatus(
     val receivedMinor: Halalas,
     /** اللي دفعته − اللي قبضته. موجب = الجمعية شايلالك، سالب = عليك للجمعية. */
     val positionMinor: Halalas,
-    /** الفرق بين كل اللي هتقبضه وكل اللي هتدفعه — صفر في الجمعية العادية؛ سالب = رسوم عليك. */
-    val gainMinor: Halalas,
+    /** الفرق بين كل اللي هتقبضه وكل اللي هتدفعه — صفر في الجمعية العادية؛ سالب = رسوم عليك. null = دورك لسه ما اتحددش. */
+    val gainMinor: Halalas?,
     val phase: RoscaPhase,
 )
 
@@ -145,13 +146,16 @@ fun roscaStatus(r: Rosca, entries: List<RoscaEntry>, today: IsoDate): RoscaStatu
         received > 0 -> RoscaPhase.REPAYING
         else -> RoscaPhase.SAVING
     }
-    return RoscaStatus(contributions, payouts, paid, received, subtractMoney(paid, received), subtractMoney(totalPayout, schedule.totalMinor), phase)
+    return RoscaStatus(contributions, payouts, paid, received, subtractMoney(paid, received),
+        if (r.myTurns.isEmpty()) null else subtractMoney(totalPayout, schedule.totalMinor), phase,
+    )
 }
 
 /** السبب لو مرفوض، أو null لو المبلغ ينفع يتربط. الزيادة **ما بتتبلعش** — نفس قاعدة التسوية. */
 fun checkRoscaEntry(r: Rosca, entries: List<RoscaEntry>, kind: RoscaEntryKind, amountMinor: Halalas): String? {
     assertHalalas(amountMinor)
     if (amountMinor <= 0) return uiText(TextKey.DUE_AMOUNT_POSITIVE)
+    if (kind == RoscaEntryKind.PAYOUT && r.myTurns.isEmpty()) return uiText(TextKey.ROSCA_TURN_UNKNOWN)
     val mine = entries.filter { it.roscaId == r.id && it.kind == kind }
     val done = sumMoney(mine.map { it.amountMinor })
     val cap = if (kind == RoscaEntryKind.CONTRIBUTION) contributionSchedule(r).totalMinor else totalPayoutOf(r)

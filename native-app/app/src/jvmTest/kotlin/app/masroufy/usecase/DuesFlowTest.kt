@@ -96,6 +96,30 @@ class DuesFlowTest {
     }
 
     @Test
+    fun `جمعية جديدة بالأسئلة — التحليل قبل الحفظ وبعده`() = runBlocking<Unit> {
+        val setup = RoscaSetup()
+        val answers = listOf(
+            app.masroufy.core.RoscaAnswer.Name("جمعية وهمية"), app.masroufy.core.RoscaAnswer.TurnsCount(10),
+            app.masroufy.core.RoscaAnswer.ShareAmount(100_000), app.masroufy.core.RoscaAnswer.Frequency(app.masroufy.core.RoscaFrequency.MONTHLY),
+            app.masroufy.core.RoscaAnswer.FirstDate("2026-01-01"), app.masroufy.core.RoscaAnswer.Share(app.masroufy.core.RoscaShare.ONE),
+            app.masroufy.core.RoscaAnswer.MyTurns(listOf(4)),
+        )
+        var state = setup.begin(Currency.SAR)
+        for (a in answers) {
+            assertEquals(null, state.preview)
+            state = setup.answer(state.draft, a)
+        }
+        assertEquals(app.masroufy.core.RoscaQuestion.PAYOUT, state.prompt?.question)
+        state = setup.answer(state.draft, app.masroufy.core.RoscaAnswer.Payout(null))
+        assertEquals(null, state.prompt)
+        assertEquals(listOf("2026-04-01"), state.preview?.payoutDates)
+
+        val manage = roscas()
+        val saved = manage.createFromDraft(state.draft)
+        assertEquals(state.preview, manage.forecast(saved.id))
+    }
+
+    @Test
     fun `الربط الغلط بيترفض بسبب`() = runBlocking<Unit> {
         val manage = roscas()
         val rosca = manage.save(input)

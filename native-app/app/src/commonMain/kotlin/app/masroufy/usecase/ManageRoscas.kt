@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Currency
+import app.masroufy.core.CycleUnit
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
@@ -9,13 +10,17 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.Rosca
 import app.masroufy.core.RoscaEntry
 import app.masroufy.core.RoscaEntryKind
+import app.masroufy.core.RoscaDraft
 import app.masroufy.core.RoscaError
+import app.masroufy.core.RoscaForecast
 import app.masroufy.core.RoscaMember
 import app.masroufy.core.RoscaStatus
 import app.masroufy.core.TextKey
 import app.masroufy.core.checkRosca
 import app.masroufy.core.checkRoscaEntry
 import app.masroufy.core.defaultRoscaPayout
+import app.masroufy.core.roscaForecast
+import app.masroufy.core.roscaFromDraft
 import app.masroufy.core.roscaStatus
 import app.masroufy.core.uiText
 import app.masroufy.port.Clock
@@ -35,7 +40,9 @@ data class RoscaInput(
     val name: String,
     val currency: Currency,
     val contributionMinor: Halalas,
-    val cycleMonths: Int = 1,
+    /** كل كام [unit]. */
+    val every: Int = 1,
+    val unit: CycleUnit = CycleUnit.MONTH,
     val firstDueAt: IsoDate,
     val cycleCount: Int,
     val myTurns: List<Int>,
@@ -78,7 +85,8 @@ class ManageRoscas(private val deps: ManageRoscasDeps) {
             name = input.name,
             currency = input.currency,
             contributionMinor = input.contributionMinor,
-            cycleMonths = input.cycleMonths,
+            every = input.every,
+            unit = input.unit,
             firstDueAt = input.firstDueAt,
             cycleCount = input.cycleCount,
             myTurns = input.myTurns.sorted(),
@@ -97,6 +105,16 @@ class ManageRoscas(private val deps: ManageRoscasDeps) {
         deps.roscas.save(rosca)
         return rosca
     }
+
+    /** نهاية الأسئلة بالخطوات ([RoscaSetup]): المسودة الكاملة بتتحفظ جمعية. */
+    suspend fun createFromDraft(draft: RoscaDraft): Rosca {
+        val rosca = roscaFromDraft(draft, deps.ids.next("rosca"), deps.clock.nowIso())
+        deps.roscas.save(rosca)
+        return rosca
+    }
+
+    /** التحليل: هتقبض إمتى وهتدفع إيه (من الجمعية نفسها، مش من الكشف). */
+    suspend fun forecast(roscaId: Id): RoscaForecast = roscaForecast(find(roscaId))
 
     /** ربط قسط (فلوس طالعة) أو قبض دور (فلوس داخلة). [amountMinor] null = مبلغ العملية كله. */
     suspend fun link(roscaId: Id, transactionId: Id, kind: RoscaEntryKind, amountMinor: Halalas? = null): RoscaEntry {
