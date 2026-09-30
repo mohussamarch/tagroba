@@ -32,7 +32,7 @@ import kotlin.test.assertNull
 class ImportOnFirestoreTest {
     private fun space() = FirestoreSpace.forUser(Emulator.firestore(), "kt-" + java.util.UUID.randomUUID())
 
-    private fun <T> run(block: suspend () -> T): T = runBlocking { withTimeout(120_000) { block() } }
+    private fun run(block: suspend () -> Unit) = runBlocking { withTimeout(120_000) { block() } }
 
     /** كشف وهمي بشكل CSV الراجحي — الرصيد متسلسل صح. */
     private fun statement(rows: Int, startDay: Int = 1): String {

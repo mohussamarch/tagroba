@@ -27,7 +27,7 @@ import kotlin.test.assertNull
 class ReferenceAndPeopleRepositoriesTest {
     private fun space() = FirestoreSpace.forUser(Emulator.firestore(), "kt-" + java.util.UUID.randomUUID())
 
-    private fun <T> run(block: suspend () -> T): T = runBlocking { withTimeout(60_000) { block() } }
+    private fun run(block: suspend () -> Unit) = runBlocking { withTimeout(60_000) { block() } }
 
     @Test fun categoriesAndRulesComeBackInTheCurrentAppOrder() = run {
         val s = space()

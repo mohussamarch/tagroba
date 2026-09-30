@@ -39,7 +39,7 @@ import kotlin.test.assertNull
 class RemainingRepositoriesTest {
     private fun space() = FirestoreSpace.forUser(Emulator.firestore(), "kt-" + java.util.UUID.randomUUID())
 
-    private fun <T> run(block: suspend () -> T): T = runBlocking { withTimeout(90_000) { block() } }
+    private fun run(block: suspend () -> Unit) = runBlocking { withTimeout(90_000) { block() } }
 
     @Test fun budgetRemovesItsLinesFirst() = run {
         val repo = FirestoreBudgetRepository(space())

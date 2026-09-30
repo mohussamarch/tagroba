@@ -30,7 +30,7 @@ class FirestoreTransactionRepositoryTest {
         updatedAt = "2026-09-30T00:00:00.000Z", note = note,
     )
 
-    private fun <T> run(block: suspend () -> T): T = runBlocking { withTimeout(60_000) { block() } }
+    private fun run(block: suspend () -> Unit) = runBlocking { withTimeout(60_000) { block() } }
 
     @Test fun periodReadIsSortedLikeTheCurrentApp() = run {
         val repo = FirestoreTransactionRepository(space())
