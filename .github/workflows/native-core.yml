@@ -57,3 +57,32 @@ jobs:
             grep -E "^e: |error:|Caused by|FAILURE:" ios-build.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
           fi
           exit "$status"
+
+  # تجربة مكتبة فايربيز (KOTLIN_PLAN §4-أ4): هل قارئ GitLive — نفس الملف اللي اتجرب على محاكي أندرويد — بيتبني للآيفون؟
+  # job لوحده: لو فشل، نتيجة القلب فوق ما بتتأثرش، والفشل بيبان باسمه. بناء بس (مفيش ربط بمكتبات فايربيز للآيفون ولا تشغيل).
+  firebase-trial:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: native-app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: بناء قارئ GitLive للآيفون (جهاز حقيقي + المحاكي)
+        run: |
+          set +e
+          chmod +x gradlew
+          ./gradlew -p firebase-trial :gitlive:compileKotlinIosArm64 :gitlive:compileKotlinIosSimulatorArm64 --console=plain 2>&1 | tee trial-ios.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -E "^e: |error:|Caused by|FAILURE:" trial-ios.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
+            exit "$status"
+          fi
+          # لازم المهمتين يكونوا اشتغلوا فعلًا مش «اتخطوا»
+          ran=$(grep -cE "> Task :gitlive:compileKotlinIos(Arm64|SimulatorArm64)$" trial-ios.log)
+          echo "::notice::مهام بناء GitLive للآيفون اللي اشتغلت: $ran"
+          [ "$ran" -eq 2 ] || { echo "::error::المفروض مهمتين — النجاح ده مش مضمون"; exit 1; }

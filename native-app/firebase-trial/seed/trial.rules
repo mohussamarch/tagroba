@@ -1,0 +1,9 @@
+rules_version = '2';
+// ⚠️ قواعد مفتوحة للتجربة بس — على المحاكي ومشروع demo-masroufy-trial. **ممنوع تتنشر**: قواعد التطبيق الحقيقية في firestore.rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/trial-user/{document=**} {
+      allow read: if true;
+    }
+  }
+}
