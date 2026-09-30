@@ -29,19 +29,9 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
     /** العلاقة بالدفعة بتيجي من `SourceRecord` مش من العملية نفسها (spec/03) — زي التطبيق الحالي. */
     override suspend fun listByBatch(batchId: Id): List<Transaction> = emptyList()
 
-    override suspend fun findByIds(ids: List<Id>): List<Transaction> {
-        val out = mutableListOf<Transaction>()
-        for (chunk in ids.chunked(IN_LIMIT)) out += codec.decodeAll(col().where { "id" inArray chunk }.get())
-        return out
-    }
+    override suspend fun findByIds(ids: List<Id>): List<Transaction> = space.findIn(codec, "id", ids)
 
-    override suspend fun saveMany(transactions: List<Transaction>) {
-        for (chunk in transactions.chunked(BATCH_LIMIT)) {
-            val batch = space.db.batch()
-            for (t in chunk) batch.set(col().document(codec.id(t)), codec.mergeForm(t), merge = true)
-            batch.commit()
-        }
-    }
+    override suspend fun saveMany(transactions: List<Transaction>) = space.saveAll(codec, transactions)
 
     /** تعديل حقول بعينها — `clear…` = مسح الحقل. النصوص الحرة بتتقص زي أي كتابة للعمليات. */
     override suspend fun update(id: Id, patch: TransactionPatch) {
@@ -64,11 +54,5 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         col().document(id).update(*safe.map { (k, v) -> k to v }.toTypedArray())
     }
 
-    override suspend fun deleteMany(ids: List<Id>) {
-        for (chunk in ids.chunked(BATCH_LIMIT)) {
-            val batch = space.db.batch()
-            for (id in chunk) batch.delete(col().document(id))
-            batch.commit()
-        }
-    }
+    override suspend fun deleteMany(ids: List<Id>) = space.deleteAll(codec.group, ids)
 }

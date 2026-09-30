@@ -12,6 +12,7 @@ import platform.Foundation.NSNumber
  * على الآيفون: `FIRDocumentSnapshot.data()`. ⚠️ **لسه ما اتجربش على آيفون شغال** (محتاج ماك) — اتبنى بس.
  * الخطر المعروف: الرقم بييجي `NSNumber` والـ`true/false` كمان `NSNumber` ⇒ النوع بيتعرف من `objCType`.
  */
+@OptIn(ExperimentalForeignApi::class)
 actual fun DocumentSnapshot.rawData(): Doc? = ios.data()?.entries?.associate { (k, v) -> k.toString() to normalizeValue(v) }
 
 @OptIn(ExperimentalForeignApi::class)

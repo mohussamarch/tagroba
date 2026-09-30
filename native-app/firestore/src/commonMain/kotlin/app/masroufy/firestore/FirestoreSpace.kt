@@ -38,3 +38,27 @@ internal fun <T> DocCodec<T>.mergeForm(value: T): Doc {
 }
 
 internal fun <T> DocCodec<T>.decodeAll(snapshot: QuerySnapshot): List<T> = snapshot.documents.mapNotNull { it.rawData() }.map(::decode)
+
+/** حفظ كيانات بدفعات 500 بـmerge — نفس `writeBatch` في التطبيق الحالي. */
+internal suspend fun <T> FirestoreSpace.saveAll(codec: DocCodec<T>, items: List<T>) {
+    for (chunk in items.chunked(BATCH_LIMIT)) {
+        val batch = db.batch()
+        for (item in chunk) batch.set(collection(codec.group).document(codec.id(item)), codec.mergeForm(item), merge = true)
+        batch.commit()
+    }
+}
+
+internal suspend fun FirestoreSpace.deleteAll(group: String, ids: List<String>) {
+    for (chunk in ids.chunked(BATCH_LIMIT)) {
+        val batch = db.batch()
+        for (id in chunk) batch.delete(collection(group).document(id))
+        batch.commit()
+    }
+}
+
+/** قراية بـ`in` على حقل بحد 30 قيمة في الاستعلام — والقايمة الفاضية ما بتعملش استعلام. */
+internal suspend fun <T> FirestoreSpace.findIn(codec: DocCodec<T>, field: String, values: List<String>): List<T> {
+    val out = mutableListOf<T>()
+    for (chunk in values.chunked(IN_LIMIT)) out += codec.decodeAll(collection(codec.group).where { field inArray chunk }.get())
+    return out
+}
