@@ -30,8 +30,8 @@ enum class Language(val wire: String) {
  * جوه حساب واحد وسط الشغل. الافتراضي عربي.
  */
 // الجداول مقسومة على ملفين لكل لغة عشان حد الـ300 سطر (CLAUDE.md #7)
-internal val ARABIC_TEXTS: Map<TextKey, String> = ARABIC_SCREEN_TEXTS + ARABIC_DATA_TEXTS + ARABIC_DUES_TEXTS
-internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS + ENGLISH_DUES_TEXTS
+internal val ARABIC_TEXTS: Map<TextKey, String> = ARABIC_SCREEN_TEXTS + ARABIC_DATA_TEXTS + ARABIC_DUES_TEXTS + ARABIC_STORAGE_TEXTS
+internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS + ENGLISH_DUES_TEXTS + ENGLISH_STORAGE_TEXTS
 
 object Texts {
     var language: Language = Language.AR
