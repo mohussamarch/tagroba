@@ -18,6 +18,7 @@ actual fun DocumentSnapshot.rawData(): Doc? = ios.data()?.entries?.associate { (
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun platformValue(value: Any): Any? = when (value) {
     is NSNull -> null
+    is cocoapods.FirebaseFirestoreInternal.FIRTimestamp -> isoOfEpoch(value.seconds, value.nanoseconds)
     is NSNumber -> when (value.objCType?.toKString()) {
         "c", "B" -> value.boolValue
         "f", "d" -> value.doubleValue

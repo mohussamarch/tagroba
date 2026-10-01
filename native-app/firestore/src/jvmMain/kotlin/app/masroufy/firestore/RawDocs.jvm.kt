@@ -8,6 +8,8 @@ import dev.gitlive.firebase.firestore.android
 actual fun DocumentSnapshot.rawData(): Doc? = android.data?.let { data -> data.entries.associate { (k, v) -> k to normalizeValue(v) } }
 
 internal actual fun platformValue(value: Any): Any? = when (value) {
+    // وقت فايربيز ⇒ نص ISO زي `toDate().toISOString()` (قاعدة التجار المشتركة)
+    is com.google.firebase.Timestamp -> isoOfEpoch(value.seconds, value.nanoseconds)
     is Number -> value.toLong()
     else -> value.toString()
 }
