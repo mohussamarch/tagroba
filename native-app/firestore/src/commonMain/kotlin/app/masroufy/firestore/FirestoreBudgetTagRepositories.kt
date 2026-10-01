@@ -21,7 +21,7 @@ import app.masroufy.port.TransactionTagRepository
 class FirestoreTagRepository(private val space: FirestoreSpace) : TagRepository {
     private val codec = ReferenceCodecs.tags
 
-    override suspend fun listAll(): List<Tag> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
+    override suspend fun listAll(): List<Tag> = space.select(codec)
 
     override suspend fun save(tag: Tag) = space.saveAll(codec, listOf(tag))
 
@@ -57,7 +57,7 @@ class FirestoreBudgetRepository(private val space: FirestoreSpace) : BudgetRepos
     }
 
     override suspend fun listCategoryBudgets(budgetId: Id): List<CategoryBudget> =
-        lines.decodeAll(space.collection(lines.group).where { "budgetId" equalTo budgetId }.get(space.sourceFor(lines.group)))
+        space.select(lines, DocQuery(listOf(Cond.Eq("budgetId", budgetId))))
 
     override suspend fun saveCategoryBudget(line: CategoryBudget) = space.saveAll(lines, listOf(line))
 
@@ -67,7 +67,7 @@ class FirestoreBudgetRepository(private val space: FirestoreSpace) : BudgetRepos
 class FirestoreRecurringRepository(private val space: FirestoreSpace) : RecurringRepository {
     private val codec = ReferenceCodecs.recurringItems
 
-    override suspend fun listAll(): List<RecurringItem> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
+    override suspend fun listAll(): List<RecurringItem> = space.select(codec)
 
     override suspend fun save(item: RecurringItem) = space.saveAll(codec, listOf(item))
 }
@@ -76,7 +76,7 @@ class FirestoreRecurringRepository(private val space: FirestoreSpace) : Recurrin
 class FirestoreNotificationReceiptRepository(private val space: FirestoreSpace) : NotificationReceiptRepository {
     private val codec = ReferenceCodecs.notificationReceipts
 
-    override suspend fun listAll(): List<NotificationReceipt> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
+    override suspend fun listAll(): List<NotificationReceipt> = space.select(codec)
 
     override suspend fun saveMany(receipts: List<NotificationReceipt>) = space.saveAll(codec, receipts)
 

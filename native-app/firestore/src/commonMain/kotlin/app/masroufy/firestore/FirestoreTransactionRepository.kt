@@ -16,15 +16,13 @@ import dev.gitlive.firebase.firestore.FieldValue
  */
 class FirestoreTransactionRepository(private val space: FirestoreSpace) : TransactionRepository {
     private val codec = LedgerCodecs.transactions
-    private fun col() = space.collection(codec.group)
 
     override suspend fun listByDateRange(fromIso: String, toIso: String): List<Transaction> {
-        val snap = col().where { "occurredAt" greaterThanOrEqualTo fromIso }.where { "occurredAt" lessThanOrEqualTo toIso }.get(space.sourceFor(codec.group))
-        return codec.decodeAll(snap).sortedWith(compareBy({ it.occurredAt }, { it.sourceOrder }))
+        return space.select(codec, DocQuery(listOf(Cond.AtLeast("occurredAt", fromIso), Cond.AtMost("occurredAt", toIso)))).sortedWith(compareBy({ it.occurredAt }, { it.sourceOrder }))
     }
 
     override suspend fun listCreatedAfter(iso: String): List<Transaction> =
-        codec.decodeAll(col().where { "createdAt" greaterThan iso }.get(space.sourceFor(codec.group)))
+        space.select(codec, DocQuery(listOf(Cond.After("createdAt", iso))))
 
     /** العلاقة بالدفعة بتيجي من `SourceRecord` مش من العملية نفسها (spec/03) — زي التطبيق الحالي. */
     override suspend fun listByBatch(batchId: Id): List<Transaction> = emptyList()
@@ -51,7 +49,7 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         patch.updatedAt?.let { fields["updatedAt"] = it }
         if (fields.isEmpty()) return
         val safe = storeForm(codec.group, fields)
-        space.write { col().document(id).update(*safe.map { (k, v) -> k to v }.toTypedArray()) }
+        space.updateDoc(codec.group, id, safe)
     }
 
     override suspend fun deleteMany(ids: List<Id>) = space.deleteAll(codec.group, ids)

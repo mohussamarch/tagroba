@@ -20,7 +20,7 @@ import app.masroufy.port.WalletRepository
 class FirestoreCategoryRepository(private val space: FirestoreSpace) : CategoryRepository {
     private val codec = ReferenceCodecs.categories
 
-    override suspend fun listAll(): List<Category> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group))).sortedBy { it.order }
+    override suspend fun listAll(): List<Category> = space.select(codec).sortedBy { it.order }
 
     override suspend fun save(category: Category) = space.saveAll(codec, listOf(category))
 }
@@ -29,7 +29,7 @@ class FirestoreCategoryRepository(private val space: FirestoreSpace) : CategoryR
 class FirestoreRuleRepository(private val space: FirestoreSpace) : RuleRepository {
     private val codec = ReferenceCodecs.rules
 
-    override suspend fun listAll(): List<ClassificationRule> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group))).sortedBy { it.priority }
+    override suspend fun listAll(): List<ClassificationRule> = space.select(codec).sortedBy { it.priority }
 
     override suspend fun saveMany(rules: List<ClassificationRule>) = space.saveAll(codec, rules)
 
@@ -38,15 +38,14 @@ class FirestoreRuleRepository(private val space: FirestoreSpace) : RuleRepositor
 
 class FirestoreMerchantRepository(private val space: FirestoreSpace) : MerchantRepository {
     private val codec = ReferenceCodecs.merchants
-    private fun col() = space.collection(codec.group)
 
-    override suspend fun listAll(): List<Merchant> = codec.decodeAll(col().get(space.sourceFor(codec.group)))
+    override suspend fun listAll(): List<Merchant> = space.select(codec)
 
     /** الاسم الأساسي الأول وبعده الأسماء البديلة — نفس الترتيب ونفس التطبيع بتاع التطبيق الحالي. */
     override suspend fun findByNormalizedName(normalizedName: String): Merchant? {
         val key = normalizeText(normalizedName)
-        codec.decodeAll(col().where { "normalizedName" equalTo key }.limit(1).get(space.sourceFor(codec.group))).firstOrNull()?.let { return it }
-        return codec.decodeAll(col().where { "aliases" contains key }.limit(1).get(space.sourceFor(codec.group))).firstOrNull()
+        space.select(codec, DocQuery(listOf(Cond.Eq("normalizedName", key)), limit = 1)).firstOrNull()?.let { return it }
+        return space.select(codec, DocQuery(listOf(Cond.Contains("aliases", key)), limit = 1)).firstOrNull()
     }
 
     override suspend fun saveMany(merchants: List<Merchant>) = space.saveAll(codec, merchants)
@@ -59,7 +58,7 @@ class FirestoreMerchantRepository(private val space: FirestoreSpace) : MerchantR
 class FirestoreWalletRepository(private val space: FirestoreSpace) : WalletRepository {
     private val codec = ReferenceCodecs.wallets
 
-    override suspend fun listAll(): List<Wallet> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
+    override suspend fun listAll(): List<Wallet> = space.select(codec)
 
     override suspend fun findById(id: Id): Wallet? = space.readDoc(codec.group, id)?.let(codec::decode)
 
@@ -71,7 +70,7 @@ internal fun last4Only(value: String?): String? = value?.filter { it in '0'..'9'
 class FirestorePersonRepository(private val space: FirestoreSpace) : PersonRepository {
     private val codec = ReferenceCodecs.people
 
-    override suspend fun listAll(): List<Person> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
+    override suspend fun listAll(): List<Person> = space.select(codec)
 
     override suspend fun save(person: Person) = space.saveAll(codec, listOf(person))
 }

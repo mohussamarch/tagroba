@@ -31,7 +31,7 @@ class FirestoreSettlementWriter(private val space: FirestoreSpace) : SettlementW
                 space.collection(settlements.group).where { "obligationId" equalTo input.obligationId }.get(Source.SERVER),
             )
             try {
-                return space.db.runTransaction {
+                val settled = space.db.runTransaction {
                     val current = revisionOf(get(revisionRef()).rawData())
                     if (current != revision) throw SnapshotMoved()
                     val obligation = get(space.collection(obligations.group).document(input.obligationId)).rawData()?.let(obligations::decode)
@@ -43,6 +43,9 @@ class FirestoreSettlementWriter(private val space: FirestoreSpace) : SettlementW
                     }
                     result
                 }
+                // نفس التسوية تبان في الذاكرة لحظتها (المستمع هيجيبها كمان) — ولو كانت موجودة قبل كده، نفس المحتوى
+                space.mirror?.applySet(settlements.group, settled.id, settlements.toStore(settled))
+                return settled
             } catch (_: SnapshotMoved) {
                 // جهاز تاني سوّى في النص — نقرا تاني من الأول
             }

@@ -60,3 +60,20 @@ if (withAndroid) {
         }
     }
 }
+
+/*
+ * كشف المالك الحقيقي لاختبار `RealStatementOnFirestoreTest` — بيتنسخ من `files/` (برا Git) لـ`build/ownerTestAssets`
+ * ويدخل الـAPK بتاع الاختبار **بس**، على جهاز المالك. مش موجود ⇒ الاختبار بيتخطّى بسطر في السجل.
+ */
+if (withAndroid) {
+    val ownerCsv = (rootProject.extra["ownerFiles"] as File?)?.let { File(it, "transactions_full.csv") }?.takeIf { it.isFile }
+    val ownerAssets = layout.buildDirectory.dir("ownerTestAssets")
+    val copyOwnerStatement = tasks.register<Copy>("copyOwnerStatement") {
+        if (ownerCsv != null) from(ownerCsv) { into("owner") }
+        into(ownerAssets)
+    }
+    extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
+        sourceSets.getByName("androidTest").assets.srcDir(ownerAssets)
+    }
+    tasks.matching { it.name.startsWith("merge") && it.name.contains("AndroidTestAssets") }.configureEach { dependsOn(copyOwnerStatement) }
+}

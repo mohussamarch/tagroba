@@ -7,10 +7,7 @@ import app.masroufy.data.toStore
 import dev.gitlive.firebase.firestore.CollectionReference
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.FirebaseFirestore
-import dev.gitlive.firebase.firestore.FirebaseFirestoreException
-import dev.gitlive.firebase.firestore.FirestoreExceptionCode
 import dev.gitlive.firebase.firestore.QuerySnapshot
-import dev.gitlive.firebase.firestore.Source
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -27,10 +24,10 @@ class FirestoreSpace(val db: FirebaseFirestore, val root: String) {
     fun collection(group: String): CollectionReference = db.collection("$root/$group")
 
     /**
-     * منين المستودعات تقرا المجموعة: النسخة المحلية (`CACHE`) لما [FirestoreSync] يقول إنها كاملة، وإلا العادي
-     * (`DEFAULT` = السيرفر لو فيه نت، والنسخة المحلية لو مفيش). من غير مزامنة شغالة: العادي دايمًا.
+     * النسخة اللي في الذاكرة ([LocalMirror]) لما [FirestoreSync] شغال — المستودعات بتقرا منها للمجموعات اللي اتزامنت،
+     * وكتابة التطبيق بتتطبّق عليها لحظتها. `null` = كل قراية من فايربيز.
      */
-    var sourceFor: (group: String) -> Source = { Source.DEFAULT }
+    var mirror: LocalMirror? = null
 
     /**
      * الكتابة من غير ما نستنى السيرفر (وضع «بيشتغل من غير نت» — §54). `null` = استنى تأكيد السيرفر (الاختبارات والوضع العادي).
@@ -88,8 +85,10 @@ internal fun <T> DocCodec<T>.decodeAll(snapshot: QuerySnapshot): List<T> = snaps
 internal suspend fun <T> FirestoreSpace.saveAll(codec: DocCodec<T>, items: List<T>) {
     for (chunk in items.chunked(BATCH_LIMIT)) {
         val batch = db.batch()
-        for (item in chunk) batch.set(collection(codec.group).document(codec.id(item)), codec.mergeForm(item), merge = true)
+        val forms = chunk.map { codec.id(it) to codec.mergeForm(it) }
+        for ((id, form) in forms) batch.set(collection(codec.group).document(id), form, merge = true)
         write { batch.commit() }
+        mirror?.let { m -> forms.forEach { (id, form) -> m.applySet(codec.group, id, form) } }
     }
 }
 
@@ -98,25 +97,28 @@ internal suspend fun FirestoreSpace.deleteAll(group: String, ids: List<String>) 
         val batch = db.batch()
         for (id in chunk) batch.delete(collection(group).document(id))
         write { batch.commit() }
+        mirror?.applyDelete(group, chunk)
     }
+}
+
+/** مستند واحد بمعرّفه — من الذاكرة لو المجموعة اتزامنت، وإلا من فايربيز. */
+internal suspend fun FirestoreSpace.readDoc(group: String, id: String): Doc? {
+    mirror?.docsOf(group)?.let { return it[id]?.doc }
+    return collection(group).document(id).get().rawData()
+}
+
+/** تعديل حقول بعينها في مستند موجود (`update()`) — ويتطبّق على الذاكرة لحظتها. */
+internal suspend fun FirestoreSpace.updateDoc(group: String, id: String, fields: Map<String, Any?>) {
+    write { collection(group).document(id).update(*fields.map { (k, v) -> k to v }.toTypedArray()) }
+    mirror?.applyUpdate(group, id, fields)
 }
 
 /**
- * مستند واحد بمعرّفه. ⚠️ من النسخة المحلية، المستند **مش موجود** بيرمي «UNAVAILABLE» بدل ما يرجع فاضي — ولما المجموعة
- * متزامنة كاملة ([FirestoreSync]) ده معناه إنه مش موجود فعلًا ⇒ `null`. أي خطأ تاني بيطلع زي ما هو.
+ * قراية بـ`in` على حقل بحد 30 قيمة في الاستعلام — والقايمة الفاضية ما بتعملش استعلام.
+ * من الذاكرة كمان بدفعات 30: النتيجة **بنفس ترتيب فايربيز** (كل دفعة مترتبة لوحدها) — `MirrorParityTest` مسك الفرق ده.
  */
-internal suspend fun FirestoreSpace.readDoc(group: String, id: String): Doc? {
-    val source = sourceFor(group)
-    return try {
-        collection(group).document(id).get(source).rawData()
-    } catch (e: FirebaseFirestoreException) {
-        if (source == Source.CACHE && e.code == FirestoreExceptionCode.UNAVAILABLE) null else throw e
-    }
-}
-
-/** قراية بـ`in` على حقل بحد 30 قيمة في الاستعلام — والقايمة الفاضية ما بتعملش استعلام. */
 internal suspend fun <T> FirestoreSpace.findIn(codec: DocCodec<T>, field: String, values: List<String>): List<T> {
     val out = mutableListOf<T>()
-    for (chunk in values.chunked(IN_LIMIT)) out += codec.decodeAll(collection(codec.group).where { field inArray chunk }.get(sourceFor(codec.group)))
+    for (chunk in values.chunked(IN_LIMIT)) out += select(codec, DocQuery(listOf(Cond.In(field, chunk))))
     return out
 }

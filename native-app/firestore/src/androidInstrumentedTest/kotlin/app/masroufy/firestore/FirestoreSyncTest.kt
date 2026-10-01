@@ -53,10 +53,10 @@ class FirestoreSyncTest {
             sync.start(scope)
             sync.awaitComplete()
             assertEquals(29, sync.syncedGroups.value.size)
-            assertEquals(dev.gitlive.firebase.firestore.Source.CACHE, a.sourceFor("transactions"), "بعد التزامن القراية من النسخة المحلية")
+            assertTrue(a.mirror?.isSynced("transactions") == true, "بعد التزامن القراية من الذاكرة")
             val repoA = FirestoreTransactionRepository(a)
             assertEquals(listOf("t-before"), repoA.listByDateRange("2026-09-01", "2026-09-30").map { it.id })
-            // مستند مش موجود من النسخة المحلية = مش موجود (مش خطأ)
+            // مستند مش موجود في الذاكرة = مش موجود (مش خطأ)
             assertNull(FirestoreWalletRepository(a).findById("w-مش-موجودة"))
 
             // جهاز «ب» بيضيف عملية ⇒ لازم توصل نسخة «أ» المحلية لوحدها

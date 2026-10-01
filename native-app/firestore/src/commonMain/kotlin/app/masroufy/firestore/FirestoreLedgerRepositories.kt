@@ -18,7 +18,7 @@ class FirestoreObligationRepository(private val space: FirestoreSpace) : Obligat
     private val codec = LedgerCodecs.obligations
 
     override suspend fun listByPerson(personId: Id): List<Obligation> =
-        codec.decodeAll(space.collection(codec.group).where { "personId" equalTo personId }.get(space.sourceFor(codec.group)))
+        space.select(codec, DocQuery(listOf(Cond.Eq("personId", personId))))
 
     override suspend fun listByTransactionIds(ids: List<Id>): List<Obligation> = space.findIn(codec, "originTransactionId", ids)
 
