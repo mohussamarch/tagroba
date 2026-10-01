@@ -56,6 +56,9 @@ if (withAndroid) {
             minSdk = 24
             testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
+        // قياس الأداء ببناء نهائي (مش debug): `./gradlew :firestore:connectedReleaseAndroidTest -Pmasroufy.releaseTests=true`
+        // بناء الاختبار debug بيشغّل الكود أبطأ بكتير من التطبيق الحقيقي — ده بيقيس الفرق
+        if (providers.gradleProperty("masroufy.releaseTests").isPresent) testBuildType = "release"
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
