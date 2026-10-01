@@ -132,7 +132,7 @@ class RoscaInstallmentsTest {
     }
 
     @Test
-    fun `المستحقات — الأقساط مصروف والقبض ومبلغ التمويل دخل (قرار المالك 56)`() {
+    fun `المستحقات — الأقساط مصروف والقبض ومبلغ التمويل دخل — قرار المالك 56`() {
         for (kind in listOf(EconomicKind.ROSCA_CONTRIBUTION, EconomicKind.INSTALLMENT_PAID)) {
             assertEquals(Liquidity.OUT, ruleFor(kind).liquidity)
             assertTrue(!countsAsIncome(kind) && countsAsPersonalExpense(kind), kind.wire)
