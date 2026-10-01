@@ -1,6 +1,8 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.CashMovement
 import app.masroufy.core.Category
+import app.masroufy.core.cashMovement
 import app.masroufy.core.CategorySlice
 import app.masroufy.core.DailyAllowance
 import app.masroufy.core.DataCoverage
@@ -69,6 +71,8 @@ data class HomeScreenData(
     val coverage: DataCoverage,
     /** آخر ست فترات، الأحدث الأول. */
     val recentPeriods: List<PeriodSummary>,
+    /** «حركة الفلوس» (اللي دخل واللي خرج فعلًا) — جنب الدخل الحقيقي، مش بداله (§58). السلفة هنا، مش في الدخل. */
+    val cash: CashMovement = CashMovement(0, 0),
 )
 
 data class LoadHomeScreenDeps(
@@ -171,6 +175,7 @@ class LoadHomeScreen(private val deps: LoadHomeScreenDeps) {
             },
             coverage = coverage,
             recentPeriods = recentPeriods,
+            cash = cashMovement(transactions),
         )
     }
 }
