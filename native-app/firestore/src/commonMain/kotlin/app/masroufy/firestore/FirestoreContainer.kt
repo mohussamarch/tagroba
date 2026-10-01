@@ -48,4 +48,5 @@ class FirestoreContainer(space: FirestoreSpace) {
     val installmentPlans = FirestoreInstallmentPlanRepository(space)
     val installmentPayments = FirestoreInstallmentPaymentRepository(space)
     val debtTerms = FirestoreDebtTermsRepository(space)
+    val fullBackup = FirestoreFullBackup(space)
 }

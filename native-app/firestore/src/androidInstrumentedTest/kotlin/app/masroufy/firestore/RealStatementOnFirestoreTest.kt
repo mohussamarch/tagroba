@@ -26,6 +26,7 @@ import app.masroufy.port.CategoryRepository
 import app.masroufy.port.MerchantRepository
 import app.masroufy.port.TransactionRepository
 import app.masroufy.memory.SequentialIdGenerator
+import app.masroufy.usecase.FullBackup
 import app.masroufy.usecase.ImportRequest
 import app.masroufy.usecase.ImportStatement
 import app.masroufy.usecase.ImportStatementDeps
@@ -167,6 +168,17 @@ class RealStatementOnFirestoreTest {
             spaceB.db.disableNetwork()
             assertEquals(1912, screens(b, "من غير نت"))
             spaceB.db.enableNetwork()
+
+            // النسخة الشاملة من السيرفر ⇒ استعادة في حساب فاضي ⇒ نفس البصمة
+            val file = timed("إنشاء النسخة الشاملة من فايربيز") { FullBackup(a.fullBackup).create("2026-10-01T00:00:00.000Z") }
+            val text = file.toJsonText()
+            log("حجم النسخة الشاملة: ${text.length / 1024} KB")
+            val fresh = FirestoreContainer(FirestoreSpace.forUser(Emulator.firestore("real-restore"), uid + "-restore"))
+            val restore = FullBackup(fresh.fullBackup)
+            val plan = timed("فحص النسخة وخطة الاستعادة") { restore.plan(text) }
+            val outcome = timed("الاستعادة على فايربيز") { restore.apply(plan.file) }
+            assertEquals(plan.totalToAdd, outcome.totalAdded)
+            assertEquals(file.checksum, FullBackup(fresh.fullBackup).create("2026-10-01T00:00:00.000Z").checksum, "اللي اترجع = الأصل")
 
             sync.stop()
             scope.cancel()
