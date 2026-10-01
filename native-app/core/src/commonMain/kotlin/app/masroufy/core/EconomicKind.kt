@@ -24,10 +24,10 @@ enum class EconomicKind(val wire: String) {
     // وارد جديد — قرارات المالك 2026-09-20 (OVERRIDES §42)
     GIFT_RECEIVED("gift_received"), SUPPORT_RECEIVED("support_received"), BENEFIT_RECEIVED("benefit_received"),
     INVESTMENT_INCOME("investment_income"), EVENT_GIFT("event_gift"),
-    // وارد بس مش دخل
+    // وارد بس مش دخل (`ROSCA_PAYOUT` بقى دخل — §56)
     ROSCA_PAYOUT("rosca_payout"), REFUND_RECEIVED("refund_received"), ADVANCE_RECEIVED("advance_received"),
-    // صادر مش مصروف — «المستحقات» (OVERRIDES §50)
-    ROSCA_CONTRIBUTION("rosca_contribution"), INSTALLMENT_PAID("installment_paid"),
+    // «المستحقات» (OVERRIDES §50 و§56): الأقساط مصروف، والقبض ومبلغ التمويل دخل
+    ROSCA_CONTRIBUTION("rosca_contribution"), INSTALLMENT_PAID("installment_paid"), FINANCING_RECEIVED("financing_received"),
     // لسه ما اتحددش
     UNCLASSIFIED("unclassified");
 
@@ -113,16 +113,18 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         rule(INVESTMENT_INCOME, TextKey.KIND_INVESTMENT_INCOME, Liquidity.IN, true, false, PersonEffect.NONE),
         // النقوط: دخل **متميز** (قرار المالك §44) — نوع لوحده عشان ما يخربطش متوسط الدخل الشهري
         rule(EVENT_GIFT, TextKey.KIND_EVENT_GIFT, Liquidity.IN, true, false, PersonEffect.NONE),
-        // دور الجمعية: جزء فلوسك راجعة وجزء دين عليك ⇒ مش دخل
-        rule(ROSCA_PAYOUT, TextKey.KIND_ROSCA_PAYOUT, Liquidity.IN, false, false, PersonEffect.NONE),
+        // قبض الجمعية: دخل تحت «المستحقات» — قرار المالك §56 (كان «مش دخل» في §50). على الدورة كلها بيتظبط مع الأقساط
+        rule(ROSCA_PAYOUT, TextKey.KIND_ROSCA_PAYOUT, Liquidity.IN, true, false, PersonEffect.NONE),
         // الاسترداد بينقّص المصروف، ما بيزودش الدخل
         rule(REFUND_RECEIVED, TextKey.KIND_REFUND_RECEIVED, Liquidity.IN, false, false, PersonEffect.NONE, reducesExpense = true),
         // سلفة الشغل دين هيتخصم من المرتب
         rule(ADVANCE_RECEIVED, TextKey.KIND_ADVANCE_RECEIVED, Liquidity.IN, false, false, PersonEffect.PAYABLE_LOAN_UP),
-        // قسط الجمعية: قبل دورك ادخار وبعده سداد ⇒ مش مصروف (قرار المالك §50)
-        rule(ROSCA_CONTRIBUTION, TextKey.KIND_ROSCA_CONTRIBUTION, Liquidity.OUT, false, false, PersonEffect.NONE),
-        // قسط تمويل: الأصل مش مصروف، والأرباح بتتحسب مصروف من خطة الأقساط نفسها (`financingCostInPeriod`)
-        rule(INSTALLMENT_PAID, TextKey.KIND_INSTALLMENT_PAID, Liquidity.OUT, false, false, PersonEffect.NONE),
+        // «أي حاجة بتتصرف تظهر في المصروف الشهري تحت تصنيف خاص بيه» — قرار المالك §56 (كان «مش مصروف» في §50)
+        rule(ROSCA_CONTRIBUTION, TextKey.KIND_ROSCA_CONTRIBUTION, Liquidity.OUT, false, true, PersonEffect.NONE),
+        // قسط التمويل **كله** مصروف (§56). الأرباح تفاصيل في لوحة الديون بس (`financingCostInPeriod`) — مش بتتضاف تاني
+        rule(INSTALLMENT_PAID, TextKey.KIND_INSTALLMENT_PAID, Liquidity.OUT, false, true, PersonEffect.NONE),
+        // مبلغ التمويل يوم ما تستلمه: دخل تحت «المستحقات» (§56)
+        rule(FINANCING_RECEIVED, TextKey.KIND_FINANCING_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
         rule(UNCLASSIFIED,TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
     )
 

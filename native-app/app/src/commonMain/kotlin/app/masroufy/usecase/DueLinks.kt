@@ -11,6 +11,8 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.assertHalalas
 import app.masroufy.core.formatMoney
 import app.masroufy.core.uiText
+import app.masroufy.core.DuesCategories
+import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.InstallmentPaymentRepository
 import app.masroufy.port.RoscaEntryRepository
@@ -27,6 +29,7 @@ internal class DueLinks(
     private val txns: TransactionRepository,
     private val roscaEntries: RoscaEntryRepository,
     private val payments: InstallmentPaymentRepository,
+    private val categories: CategoryRepository,
     private val clock: Clock,
 ) {
     /** العملية بعد الفحص + المبلغ اللي هيتربط (المبلغ كله لو ما اتحددش). */
@@ -48,19 +51,34 @@ internal class DueLinks(
         return txn to amount
     }
 
-    /** النوع بيتأكد عشان محدش يرجع يسأل عليه، والعملية بتخرج من «محتاجة مراجعة». */
-    suspend fun markKind(transactionId: Id, kind: EconomicKind) {
+    /**
+     * النوع والتصنيف بيتأكدوا عشان محدش يرجع يسأل عليهم، والعملية بتخرج من «محتاجة مراجعة».
+     * التصنيف = فرع «المستحقات» بتاعها (قرار المالك §56) — والتصنيفات دي بتتعمل لو مش موجودة بس (اللي المستخدم غيّره ما يتكتبش فوقه).
+     */
+    suspend fun markKind(transactionId: Id, kind: EconomicKind, categoryId: Id) {
+        ensureDuesCategories()
         txns.update(
             transactionId,
-            TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = clock.nowIso()),
+            TransactionPatch(
+                economicKind = kind, economicKindConfirmed = true, categoryId = categoryId, categoryConfirmed = true,
+                reviewState = ReviewState.CONFIRMED, updatedAt = clock.nowIso(),
+            ),
         )
     }
 
-    /** فك الربط: النوع بيرجع «لسه ما اتحددش» ويتسأل تاني — ما بنخمّنش النوع القديم. */
+    private suspend fun ensureDuesCategories() {
+        val existing = categories.listAll().map { it.id }.toSet()
+        for (c in DuesCategories.defaults()) if (c.id !in existing) categories.save(c)
+    }
+
+    /** فك الربط: النوع والتصنيف بيرجعوا «لسه ما اتحددش» ويتسألوا تاني — ما بنخمّنش القديم. */
     suspend fun clearKind(transactionId: Id) {
         txns.update(
             transactionId,
-            TransactionPatch(economicKind = EconomicKind.UNCLASSIFIED, economicKindConfirmed = false, reviewState = ReviewState.NEEDS_REVIEW, updatedAt = clock.nowIso()),
+            TransactionPatch(
+                economicKind = EconomicKind.UNCLASSIFIED, economicKindConfirmed = false, clearCategoryId = true, categoryConfirmed = false,
+                reviewState = ReviewState.NEEDS_REVIEW, updatedAt = clock.nowIso(),
+            ),
         )
     }
 }

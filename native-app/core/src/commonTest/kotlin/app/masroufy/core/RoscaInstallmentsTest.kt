@@ -132,11 +132,25 @@ class RoscaInstallmentsTest {
     }
 
     @Test
-    fun `قسط الجمعية وقسط التمويل مش مصروف ومش دخل`() {
+    fun `المستحقات — الأقساط مصروف والقبض ومبلغ التمويل دخل (قرار المالك 56)`() {
         for (kind in listOf(EconomicKind.ROSCA_CONTRIBUTION, EconomicKind.INSTALLMENT_PAID)) {
             assertEquals(Liquidity.OUT, ruleFor(kind).liquidity)
-            assertTrue(!countsAsIncome(kind) && !countsAsPersonalExpense(kind), kind.wire)
+            assertTrue(!countsAsIncome(kind) && countsAsPersonalExpense(kind), kind.wire)
         }
+        for (kind in listOf(EconomicKind.ROSCA_PAYOUT, EconomicKind.FINANCING_RECEIVED)) {
+            assertEquals(Liquidity.IN, ruleFor(kind).liquidity)
+            assertTrue(countsAsIncome(kind) && !countsAsPersonalExpense(kind), kind.wire)
+        }
+        // مثال المالك: أكل 1,500 · قسط جمعية 1,000 · قسط تمويل 1,000 ⇒ مصروف الشهر 3,500 (الأرباح جوه القسط، مش بتتضاف تاني)
+        fun t(id: String, kind: EconomicKind, minor: Long, dir: Direction = Direction.OUT) = Transaction(
+            id = id, occurredAt = "2026-03-05", datePrecision = "day", sourceOrder = 0, economicKind = kind, economicKindConfirmed = true,
+            observedDirection = dir, amountMinor = minor, currency = Currency.SAR, categoryConfirmed = true, excludedFromBudget = false,
+            reviewState = ReviewState.CONFIRMED, isCashTagged = false, createdAt = "x", updatedAt = "x",
+        )
+        val month = listOf(t("food", EconomicKind.PURCHASE, 150_000), t("rc", EconomicKind.ROSCA_CONTRIBUTION, 100_000), t("ip", EconomicKind.INSTALLMENT_PAID, 100_000))
+        assertEquals(350_000, computePeriodTotals(month, emptyList()).personalExpenseMinor)
+        val payoutMonth = listOf(t("po", EconomicKind.ROSCA_PAYOUT, 1_000_000, Direction.IN), t("fr", EconomicKind.FINANCING_RECEIVED, 1_000_000, Direction.IN))
+        assertEquals(2_000_000, computePeriodTotals(payoutMonth, emptyList()).incomeMinor)
     }
 
     @Test

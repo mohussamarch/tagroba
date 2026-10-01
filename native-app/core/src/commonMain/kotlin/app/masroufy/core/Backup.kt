@@ -176,7 +176,7 @@ fun checkBackupProfile(profile: Any?) {
         if (n == null || n % 1.0 != 0.0 || n < 1 || n > 31) bad("payday")
     }
     if (has("gender") && row["gender"] != "male" && row["gender"] != "female") bad("gender")
-    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business")) if (has(field) && row[field] !is Boolean) bad(field)
+    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business", "duesInBudget")) if (has(field) && row[field] !is Boolean) bad(field)
     if (has("dependentKinds")) {
         val kinds = row["dependentKinds"] as? List<*> ?: bad("dependentKinds")
         if (!kinds.all { it in DEPENDENT_KINDS }) bad("dependentKinds")

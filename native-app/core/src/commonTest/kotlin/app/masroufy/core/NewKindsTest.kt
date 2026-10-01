@@ -39,13 +39,10 @@ class NewKindsTest {
     }
 
     @Test
-    fun `دور الجمعية وسلفة الشغل بيدخلوا الحساب من غير ما يزودوا الدخل`() {
-        for (kind in listOf(EconomicKind.ROSCA_PAYOUT, EconomicKind.ADVANCE_RECEIVED)) {
-            assertTrue(!countsAsIncome(kind), "${kind.wire} مش المفروض يتحسب دخل")
-            val totals = computePeriodTotals(listOf(txn(kind, 300_000)), emptyList())
-            assertEquals(0, totals.incomeMinor, kind.wire)
-            assertEquals(0, totals.personalExpenseMinor, kind.wire)
-        }
+    fun `سلفة الشغل بتدخل الحساب من غير ما تزود الدخل`() {
+        val totals = computePeriodTotals(listOf(txn(EconomicKind.ADVANCE_RECEIVED, 300_000)), emptyList())
+        assertEquals(0, totals.incomeMinor)
+        assertEquals(0, totals.personalExpenseMinor)
         // السلفة دين على المستخدم زي القرض
         assertEquals(PersonEffect.PAYABLE_LOAN_UP, ruleFor(EconomicKind.ADVANCE_RECEIVED).personEffect)
         assertEquals(PersonEffect.NONE, ruleFor(EconomicKind.ROSCA_PAYOUT).personEffect)

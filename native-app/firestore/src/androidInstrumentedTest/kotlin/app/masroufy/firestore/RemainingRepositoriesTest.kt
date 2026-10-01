@@ -89,11 +89,14 @@ class RemainingRepositoriesTest {
         )))
         val entries = FirestoreRoscaEntryRepository(s)
         val roscas = ManageRoscas(
-            ManageRoscasDeps(FirestoreRoscaRepository(s), entries, FirestoreInstallmentPaymentRepository(s), txns, PassthroughUnitOfWork(), SequentialIdGenerator(), FixedClock("x")),
+            ManageRoscasDeps(FirestoreRoscaRepository(s), entries, FirestoreInstallmentPaymentRepository(s), txns, PassthroughUnitOfWork(), SequentialIdGenerator(), FixedClock("x"), FirestoreCategoryRepository(s)),
         )
         val rosca = roscas.save(RoscaInput(name = "جمعية وهمية", currency = Currency.SAR, contributionMinor = 100_000, firstDueAt = "2026-01-01", cycleCount = 10, myTurns = listOf(4)))
         roscas.link(rosca.id, "t-c1", RoscaEntryKind.CONTRIBUTION)
         assertEquals(EconomicKind.ROSCA_CONTRIBUTION, txns.findByIds(listOf("t-c1")).single().economicKind)
+        // فرع «المستحقات ← جمعيات» اتعمل على فايربيز واتحط على العملية (§56)
+        assertEquals(app.masroufy.core.DuesCategories.ROSCAS, txns.findByIds(listOf("t-c1")).single().categoryId)
+        assertEquals(4, FirestoreCategoryRepository(s).listAll().count { it.id.startsWith("cat-dues") })
         assertEquals(100_000, roscas.list("2026-01-15").single().status.positionMinor)
 
         val dues = LoadDues(

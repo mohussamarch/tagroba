@@ -9,6 +9,8 @@ import app.masroufy.core.CategoryBudgetLine
 import app.masroufy.core.CategoryLimit
 import app.masroufy.core.CompletedPeriodSpend
 import app.masroufy.core.DailyAllowance
+import app.masroufy.core.DuesCategories
+import app.masroufy.core.subtractMoney
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.Period
@@ -72,6 +74,8 @@ data class LoadBudgetScreenRequest(
     val period: Period,
     val today: String,
     val payday: Int,
+    /** من ملف الحساب (`duesInBudget`؛ `null` ⇒ `true`) — `false` = أقساط «المستحقات» برا الحد (§56). */
+    val duesInBudget: Boolean = true,
 )
 
 class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
@@ -89,7 +93,9 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
 
         val totals = computePeriodTotals(counted, allocations)
         val coverage = assessCoverage(counted)
-        val spentMinor = totals.personalExpenseMinor
+        // «المستحقات» برا الحد لو صاحب الحساب اختار كده — المصروف الشهري نفسه (الرئيسية) فيها دايمًا
+        val duesIds = if (request.duesInBudget) emptySet() else DuesCategories.idsIn(categories)
+        val spentMinor = subtractMoney(totals.personalExpenseMinor, DuesCategories.spendMinor(counted, allocations, duesIds))
         // مجهول مش صفر: فيه عمليات وولا واحدة محددة النوع
         val spentKnown = !(coverage.total > 0 && coverage.unclassified == coverage.total)
 
@@ -109,7 +115,7 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
 
             history += CompletedPeriodSpend(
                 periodKey = p.key,
-                spentMinor = t.personalExpenseMinor,
+                spentMinor = subtractMoney(t.personalExpenseMinor, DuesCategories.spendMinor(rows, rowAllocations, duesIds)),
                 // فترة فيها عملية واحدة غير محددة **مش موثوقة**
                 reliable = c.unclassified == 0,
                 transactionCount = rows.size,

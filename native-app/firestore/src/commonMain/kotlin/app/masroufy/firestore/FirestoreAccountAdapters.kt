@@ -33,7 +33,10 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             "gender" to profile.gender, "supportsDependents" to profile.supportsDependents, "dependentKinds" to profile.dependentKinds,
             "hasCar" to profile.hasCar, "renter" to profile.renter, "domesticWorker" to profile.domesticWorker, "business" to profile.business,
             "onboardedAt" to profile.onboardedAt,
-        )
+        ).apply {
+            // حقل التطبيق الجديد بس (§56) — ما بيتكتبش لو ما اتسألش، عشان ملف الحساب يفضل زي التطبيق الحالي
+            profile.duesInBudget?.let { put("duesInBudget", it) }
+        }
         space.write { ref().set(doc) }
     }
 }

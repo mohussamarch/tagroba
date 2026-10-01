@@ -8,6 +8,7 @@ package app.masroufy.core
 internal val ARABIC_DUES_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_ROSCA_CONTRIBUTION to "قسط جمعية",
     TextKey.KIND_INSTALLMENT_PAID to "قسط تمويل",
+    TextKey.KIND_FINANCING_RECEIVED to "مبلغ تمويل مستلم",
     TextKey.DUE_BAD_FIRST_DATE to "تاريخ أول قسط مش صحيح.",
     TextKey.DUE_BAD_CYCLE to "القسط لازم يكون كل شهر لحد كل {0} شهر.",
     TextKey.DUE_INSTALLMENT_POSITIVE to "القسط لازم يكون أكبر من صفر.",
@@ -68,6 +69,7 @@ internal val ARABIC_DUES_TEXTS: Map<TextKey, String> = mapOf(
 internal val ENGLISH_DUES_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_ROSCA_CONTRIBUTION to "Savings circle contribution",
     TextKey.KIND_INSTALLMENT_PAID to "Financing installment",
+    TextKey.KIND_FINANCING_RECEIVED to "Financing received",
     TextKey.DUE_BAD_FIRST_DATE to "The first due date is not valid.",
     TextKey.DUE_BAD_CYCLE to "Installments can be monthly up to every {0} months.",
     TextKey.DUE_INSTALLMENT_POSITIVE to "The installment has to be greater than zero.",

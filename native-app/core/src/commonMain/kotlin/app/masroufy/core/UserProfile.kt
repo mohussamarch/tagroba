@@ -19,6 +19,11 @@ data class UserProfile(
     val business: Boolean?,
     /** null = لسه ما خلّصش أسئلة البداية. */
     val onboardedAt: String?,
+    /**
+     * أقساط «المستحقات» بتاكل من حد الميزانية؟ — «صاحب الحساب هو يحدد» (قرار المالك §56).
+     * `null` = لسه ما اتسألش ⇒ بتتحسب في الحد (الأحوط: التحذير بيجي بدري مش متأخر — اختيار Claude). المصروف الشهري نفسه فيه الأقساط دايمًا.
+     */
+    val duesInBudget: Boolean? = null,
 )
 
 val DEPENDENT_KINDS = listOf("spouse", "children", "parents")
@@ -50,6 +55,7 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         dependentKinds = kinds?.takeIf { list -> list.all { it is String && it in DEPENDENT_KINDS } }?.let { list -> DEPENDENT_KINDS.filter { it in list } },
         hasCar = bool("hasCar"), renter = bool("renter"), domesticWorker = bool("domesticWorker"), business = bool("business"),
         onboardedAt = (data["onboardedAt"] as? String)?.takeIf { it.isNotEmpty() },
+        duesInBudget = bool("duesInBudget"),
     )
 }
 

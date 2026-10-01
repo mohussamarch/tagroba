@@ -22,6 +22,8 @@ import app.masroufy.core.installmentSchedule
 import app.masroufy.core.subtractMoney
 import app.masroufy.core.sumMoney
 import app.masroufy.core.uiText
+import app.masroufy.core.DuesCategories
+import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.DebtTermsRepository
 import app.masroufy.port.IdGenerator
@@ -62,10 +64,12 @@ data class ManageInstallmentsDeps(
     val uow: UnitOfWork,
     val ids: IdGenerator,
     val clock: Clock,
+    /** فرع «المستحقات ← تمويل / تقسيط مشتريات» بيتحط على العملية المربوطة (§56). */
+    val categories: CategoryRepository,
 )
 
 class ManageInstallments(private val deps: ManageInstallmentsDeps) {
-    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.payments, deps.clock)
+    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.payments, deps.categories, deps.clock)
 
     private suspend fun find(id: Id): InstallmentPlan =
         deps.plans.listAll().firstOrNull { it.id == id } ?: throw InstallmentError(uiText(TextKey.INSTALLMENT_NOT_FOUND))
@@ -112,7 +116,7 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         val payment = InstallmentPayment(deps.ids.next("installmentpay"), planId, transactionId, amount)
         deps.uow.run {
             deps.payments.saveMany(listOf(payment))
-            links.markKind(transactionId, installmentPaymentKind(plan))
+            links.markKind(transactionId, installmentPaymentKind(plan), DuesCategories.forInstallment(plan.kind))
         }
         return payment
     }

@@ -23,6 +23,8 @@ import app.masroufy.core.roscaForecast
 import app.masroufy.core.roscaFromDraft
 import app.masroufy.core.roscaStatus
 import app.masroufy.core.uiText
+import app.masroufy.core.DuesCategories
+import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.InstallmentPaymentRepository
@@ -62,10 +64,12 @@ data class ManageRoscasDeps(
     val uow: UnitOfWork,
     val ids: IdGenerator,
     val clock: Clock,
+    /** فرع «المستحقات ← جمعيات» بيتحط على العملية المربوطة (§56). */
+    val categories: CategoryRepository,
 )
 
 class ManageRoscas(private val deps: ManageRoscasDeps) {
-    private val links = DueLinks(deps.txns, deps.entries, deps.payments, deps.clock)
+    private val links = DueLinks(deps.txns, deps.entries, deps.payments, deps.categories, deps.clock)
 
     private suspend fun find(id: Id): Rosca = deps.roscas.listAll().firstOrNull { it.id == id } ?: throw RoscaError(uiText(TextKey.ROSCA_NOT_FOUND))
 
@@ -125,7 +129,7 @@ class ManageRoscas(private val deps: ManageRoscasDeps) {
         val entry = RoscaEntry(deps.ids.next("roscaentry"), roscaId, transactionId, kind, amount)
         deps.uow.run {
             deps.entries.saveMany(listOf(entry))
-            links.markKind(transactionId, if (kind == RoscaEntryKind.CONTRIBUTION) EconomicKind.ROSCA_CONTRIBUTION else EconomicKind.ROSCA_PAYOUT)
+            links.markKind(transactionId, if (kind == RoscaEntryKind.CONTRIBUTION) EconomicKind.ROSCA_CONTRIBUTION else EconomicKind.ROSCA_PAYOUT, DuesCategories.ROSCAS)
         }
         return entry
     }
