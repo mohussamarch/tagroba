@@ -33,7 +33,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             economicKindConfirmed = false,
             observedDirection = line.row.direction,
             amountMinor = line.row.amountMinor,
-            currency = Currency.SAR,
+            currency = request.currency,
             categoryConfirmed = chosenCategoryId != null,
             excludedFromBudget = false,
             reviewState = when {

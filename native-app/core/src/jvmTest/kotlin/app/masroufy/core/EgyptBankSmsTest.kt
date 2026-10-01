@@ -117,7 +117,7 @@ class EgyptBankSmsTest {
         assertEquals(Currency.EGP, egypt.currency)
         assertEquals(EgyptBankSmsReader, egypt.smsReader)
         assertTrue(!egypt.ready, "حزمة مصر لسه ناقصة، المفروض تقول كده")
-        assertEquals(listOf("categoryTree", "statementReader"), egypt.gaps)
+        assertEquals(listOf("categoryTree"), egypt.gaps)
         assertTrue(SAUDI_PACK.ready, "حزمة السعودية المفروض جاهزة")
     }
 }

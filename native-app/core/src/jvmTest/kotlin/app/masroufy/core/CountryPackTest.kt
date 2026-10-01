@@ -12,7 +12,8 @@ class CountryPackTest {
     fun `الحزمة السعودية هي الافتراضية ومعاها كل مخططات الاستيراد`() {
         assertEquals("SA", DEFAULT_COUNTRY_PACK.code)
         assertEquals(Currency.SAR, DEFAULT_COUNTRY_PACK.currency)
-        assertEquals(SchemaId.entries.toSet(), DEFAULT_COUNTRY_PACK.statementSchemas.toSet())
+        // كل المخططات ما عدا كشف QNB مصر (حزمة مصر بس)
+        assertEquals(SchemaId.entries.toSet() - SchemaId.QNB_PDF, DEFAULT_COUNTRY_PACK.statementSchemas.toSet())
     }
 
     @Test
@@ -31,7 +32,9 @@ class CountryPackTest {
             if (!pack.ready) assertTrue(pack.gaps.isNotEmpty())
         }
         // مصر: قارئ الرسايل خلص، والشجرة وقارئ الكشف لسه
-        assertEquals(listOf("categoryTree", "statementReader"), EGYPT_PACK.gaps)
+        // قارئ كشف QNB اتعمل 2026-10-01 — الناقص شجرة التصنيفات بس
+        assertEquals(listOf("categoryTree"), EGYPT_PACK.gaps)
+        assertTrue(SchemaId.QNB_PDF in EGYPT_PACK.statementSchemas)
     }
 
     @Test

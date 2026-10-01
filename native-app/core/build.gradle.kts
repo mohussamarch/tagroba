@@ -51,6 +51,11 @@ tasks.withType<Test>().configureEach {
         filter { excludeTestsMatching("app.masroufy.core.RealPdfStatementTest") }
         logger.lifecycle("⚠️ كلمات كشف الـPDF (files/alrajhi-pdf-pages.json) مش موجودة — اختبار قارئ الـPDF الحقيقي مش هيشتغل")
     }
+    // كشف QNB مصر الحقيقي (نفس السكربت ⇒ files/qnb-pdf-pages.json)
+    if (ownerFiles == null || !File(ownerFiles, "qnb-pdf-pages.json").isFile) {
+        filter { excludeTestsMatching("app.masroufy.core.RealQnbPdfTest") }
+        logger.lifecycle("⚠️ كلمات كشف QNB (files/qnb-pdf-pages.json) مش موجودة — اختبار قارئ QNB الحقيقي مش هيشتغل")
+    }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

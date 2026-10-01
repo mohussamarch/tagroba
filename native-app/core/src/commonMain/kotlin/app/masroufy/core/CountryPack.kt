@@ -79,10 +79,10 @@ val EGYPT_PACK = CountryPack(
     // ⚠️ دي شجرة السعودية لحد ما تتعمل شجرة مصر
     categoryTreeAsset = "categoryTree.json",
     smsReader = EgyptBankSmsReader,
-    statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.SMS),
+    statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.QNB_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
     cashWalletName = "كاش",
-    gaps = listOf("categoryTree", "statementReader"),
+    gaps = listOf("categoryTree"),
 )
 
 /** البلاد اللي التطبيق يعرف عنها حاجة. اللي مش جاهزة بتقول ناقصها إيه في `gaps`. */

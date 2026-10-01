@@ -14,7 +14,9 @@ data class Tag(val id: Id, val normalizedName: String, val displayName: String)
 data class TransactionTag(val id: Id, val transactionId: Id, val tagId: Id)
 
 enum class ImportSourceType(val wire: String) {
-    CSV_PREVIEW("csv_preview"), CSV_LEGACY("csv_legacy"), PDF_ALRAJHI("pdf_alrajhi"), SMS("sms");
+    CSV_PREVIEW("csv_preview"), CSV_LEGACY("csv_legacy"), PDF_ALRAJHI("pdf_alrajhi"), SMS("sms"),
+    /** كشف QNB مصر PDF — التطبيق الجديد بس. */
+    PDF_QNB("pdf_qnb");
 
     companion object {
         fun fromWire(wire: String): ImportSourceType = entries.first { it.wire == wire }

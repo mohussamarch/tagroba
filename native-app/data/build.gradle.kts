@@ -42,8 +42,10 @@ tasks.withType<Test>().configureEach {
     systemProperty("golden.dir", golden.absolutePath)
     // الكشف الحقيقي على جهاز المالك بس — مكانه بيتدوّر عليه في `build.gradle.kts` الرئيسي
     val ownerFiles = rootProject.extra["ownerFiles"] as File?
-    if (ownerFiles != null && File(ownerFiles, "alrajhi-pdf-pages.json").isFile) systemProperty("masroufy.ownerFiles", ownerFiles.absolutePath)
-    else filter { excludeTestsMatching("app.masroufy.data.RealDataFlowTest") }
+    if (ownerFiles != null) systemProperty("masroufy.ownerFiles", ownerFiles.absolutePath)
+    if (ownerFiles == null || !File(ownerFiles, "alrajhi-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealDataFlowTest") }
+    // كشف QNB مصر الحقيقي (scripts/real/exportPdfPages.mjs ⇒ files/qnb-pdf-pages.json)
+    if (ownerFiles == null || !File(ownerFiles, "qnb-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealQnbImportTest") }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

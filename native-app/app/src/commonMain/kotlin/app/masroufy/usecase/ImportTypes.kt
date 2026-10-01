@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.Currency
 import app.masroufy.core.CategorizationSource
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -90,4 +91,9 @@ data class ImportRequest(
      * (منع التكرار والتصنيف والحفظ على مرحلتين) بتشتغل زي ما هي بالظبط.
      */
     val parsedRows: List<ParsedRow>? = null,
+    /**
+     * عملة الكشف (عملة المحفظة). ⚠️ كانت مثبتة ريال جوه الاستيراد ⇒ كشف QNB مصر كان هيتسجل بالريال من غير رسالة
+     * (اتكشف 2026-10-01). الافتراضي ريال عشان الراجحي والتطبيق الحالي ما يتغيروش.
+     */
+    val currency: Currency = Currency.SAR,
 )

@@ -52,7 +52,7 @@ class ReadPdfStatementTest {
             if (expectedRows.isEmpty()) {
                 val error = assertFailsWith<PdfReadError> { runBlocking { ReadPdfStatement(port).read(ByteArray(0)) } }
                 assertEquals(
-                    "قرينا ${expected.field("pagesRead").jsonPrimitive.int} صفحة بس ملقيناش أي عملية. القارئ متظبط على كشف حساب مصرف الراجحي — لو ده كشف بنك تاني، مش هينفع دلوقتي.",
+                    "قرينا ${expected.field("pagesRead").jsonPrimitive.int} صفحة بس ملقيناش أي عملية. القارئ بيعرف كشف مصرف الراجحي وكشف QNB مصر بس — لو ده كشف بنك تاني، مش هينفع دلوقتي.",
                     error.message,
                 )
                 failures++

@@ -1,9 +1,12 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ImportSourceType
 import app.masroufy.core.ParsedRow
 import app.masroufy.core.PdfPage
 import app.masroufy.core.RowError
+import app.masroufy.core.SchemaId
 import app.masroufy.core.parseAlrajhiPdf
+import app.masroufy.core.parseQnbPdf
 
 /**
  * ReadPdfStatement — نقل `readPdfStatement.ts`: كشف PDF ⇒ صفوف موحّدة **من نفس نوع صفوف الـCSV**، فمنع التكرار
@@ -30,20 +33,27 @@ data class PdfStatementResult(
      * (وقت التوليد جوه الملف). البصمة على **محتوى العمليات** بتمسك التكرار الحقيقي.
      */
     val content: String,
+    /** الكشف اتقرا بأنهي قارئ — بيتبعت للاستيراد عشان دفعة الاستيراد تعرف مصدرها. */
+    val schema: SchemaId = SchemaId.ALRAJHI_PDF,
+    val sourceType: ImportSourceType = ImportSourceType.PDF_ALRAJHI,
 )
 
 class ReadPdfStatement(private val pages: PdfPagesPort) {
     suspend fun read(data: ByteArray, onProgress: ((page: Int, total: Int) -> Unit)? = null): PdfStatementResult {
-        val outcome = parseAlrajhiPdf(pages.read(data, onProgress))
-        if (outcome.rows.isEmpty()) {
-            // الفشل بيتقال بسببه — «مفيش عمليات» لوحدها بتخلي المستخدم تايه
-            throw PdfReadError(
-                "قرينا ${outcome.pagesRead} صفحة بس ملقيناش أي عملية. " +
-                    "القارئ متظبط على كشف حساب مصرف الراجحي — لو ده كشف بنك تاني، " +
-                    "مش هينفع دلوقتي.",
-            )
+        val read = pages.read(data, onProgress)
+        val alrajhi = parseAlrajhiPdf(read)
+        if (alrajhi.rows.isNotEmpty()) return PdfStatementResult(alrajhi.rows, alrajhi.errors, alrajhi.pagesRead, canonicalContent(alrajhi.rows))
+        // مش الراجحي ⇒ QNB مصر (§40.3) — كل قارئ بيرفض شكل التاني، فمفيش كشف بيتقري بالغلط
+        val qnb = parseQnbPdf(read)
+        if (qnb.rows.isNotEmpty()) {
+            return PdfStatementResult(qnb.rows, qnb.errors, qnb.pagesRead, canonicalContent(qnb.rows), SchemaId.QNB_PDF, ImportSourceType.PDF_QNB)
         }
-        return PdfStatementResult(outcome.rows, outcome.errors, outcome.pagesRead, canonicalContent(outcome.rows))
+        // الفشل بيتقال بسببه — «مفيش عمليات» لوحدها بتخلي المستخدم تايه
+        throw PdfReadError(
+            "قرينا ${alrajhi.pagesRead} صفحة بس ملقيناش أي عملية. " +
+                "القارئ بيعرف كشف مصرف الراجحي وكشف QNB مصر بس — لو ده كشف بنك تاني، " +
+                "مش هينفع دلوقتي.",
+        )
     }
 
     /** سطر لكل عملية بالحقول اللي بتعرّفها. */

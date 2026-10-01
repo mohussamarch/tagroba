@@ -51,7 +51,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "assetPrices" to mapOf("source" to listOf("manual", "feed")),
     "recurringItems" to mapOf("kind" to listOf("subscription", "bill")),
     "rules" to mapOf("matchMode" to listOf("contains", "startsWith", "exact")),
-    "importBatches" to linkedMapOf("state" to listOf("staged", "committed", "reverted"), "sourceType" to listOf("csv_preview", "csv_legacy", "pdf_alrajhi", "sms")),
+    "importBatches" to linkedMapOf("state" to listOf("staged", "committed", "reverted"), "sourceType" to listOf("csv_preview", "csv_legacy", "pdf_alrajhi", "sms", "pdf_qnb")),
     "sourceRecords" to mapOf("matchingState" to listOf("new", "duplicate", "similar", "conflict", "invalid")),
     "roscas" to mapOf("unit" to listOf("week", "month")),
     "roscaEntries" to mapOf("kind" to listOf("contribution", "payout")),
