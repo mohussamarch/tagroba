@@ -58,3 +58,18 @@ class AndroidAppLockSettings(context: Context) : AppLockSettingsPort {
         const val KEY = "masroufy.appLock.enabled"
     }
 }
+
+/**
+ * آخر مزامنة لقاعدة التجار المشتركة على الجهاز ده — نقل `localSyncCursor.ts` (OVERRIDES §25.1). مش بيانات مالية:
+ * لو اتمسحت أو فشلت، المزامنة الجاية بتقرا كله (المعرّفات ثابتة فمفيش تكرار). لكل حساب ([uid]) مفتاح لوحده.
+ */
+class AndroidSyncCursor(context: Context, uid: String, name: String = "shared-merchants") : app.masroufy.port.SyncCursorPort {
+    private val prefs = context.getSharedPreferences("sync-cursors", Context.MODE_PRIVATE)
+    private val key = "masroufy-sync-v1:$uid:$name"
+
+    override fun read(): String? = runCatching { prefs.getString(key, null)?.takeIf { runCatching { java.time.Instant.parse(it) }.isSuccess } }.getOrNull()
+
+    override fun write(iso: String) {
+        runCatching { prefs.edit().putString(key, iso).apply() }
+    }
+}

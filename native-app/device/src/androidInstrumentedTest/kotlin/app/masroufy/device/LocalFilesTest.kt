@@ -37,4 +37,15 @@ class LocalFilesTest {
         settings.write(false)
         assertTrue(!AndroidAppLockSettings(context).read())
     }
+
+    @Test fun syncCursorIsPerAccountAndIgnoresGarbage() {
+        val a = AndroidSyncCursor(context, "kt-a-" + System.nanoTime())
+        val b = AndroidSyncCursor(context, "kt-b-" + System.nanoTime())
+        kotlin.test.assertNull(a.read(), "حساب جديد: مفيش مزامنة قبل كده")
+        a.write("2026-10-01T10:00:00.123Z")
+        assertEquals("2026-10-01T10:00:00.123Z", a.read())
+        kotlin.test.assertNull(b.read(), "كل حساب ليه مؤشره")
+        a.write("مش وقت")
+        kotlin.test.assertNull(a.read(), "قيمة بايظة = مزامنة كاملة، مش وقع")
+    }
 }
