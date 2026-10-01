@@ -28,6 +28,8 @@ data class CountryPack(
     /** الاسم المبدئي لمحفظة البنك في حساب جديد — المستخدم بيغيره. */
     val bankWalletName: String,
     val cashWalletName: String,
+    /** منطقة الوقت (IANA) — حدود اليوم في قراية رسايل البنك. التطبيق الحالي كان مثبّت الرياض لكل البلاد. */
+    val timeZone: String = "Asia/Riyadh",
     /**
      * اللي لسه ناقص في الحزمة دي بالاسم (للمطور) — الحزمة الجاهزة قايمتها فاضية.
      * **ممنوع** تسيبها فاضية وحاجة ناقصة: ده بيخلي التطبيق يدّعي إنه بيدعم بلد وهو لأ (CLAUDE.md #15).
@@ -82,6 +84,7 @@ val EGYPT_PACK = CountryPack(
     statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.QNB_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
     cashWalletName = "كاش",
+    timeZone = "Africa/Cairo",
     gaps = listOf("categoryTree"),
 )
 

@@ -24,6 +24,9 @@ kotlin {
         commonMain.dependencies {
             api(project(":app"))
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
         if (withAndroid) {
             getByName("androidMain").dependencies {
                 // قارئ PDF على أندرويد (Apache 2.0) — ARCHITECTURE §31.7
@@ -35,6 +38,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation("androidx.test:runner:1.7.0")
                 implementation("androidx.test.ext:junit:1.3.0")
+                implementation("androidx.test:rules:1.7.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
             }

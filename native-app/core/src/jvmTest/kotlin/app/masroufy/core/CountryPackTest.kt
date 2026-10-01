@@ -35,6 +35,7 @@ class CountryPackTest {
         // قارئ كشف QNB اتعمل 2026-10-01 — الناقص شجرة التصنيفات بس
         assertEquals(listOf("categoryTree"), EGYPT_PACK.gaps)
         assertTrue(SchemaId.QNB_PDF in EGYPT_PACK.statementSchemas)
+        assertEquals("Africa/Cairo", EGYPT_PACK.timeZone, "حدود اليوم في رسايل البنك بتوقيت مصر")
     }
 
     @Test
