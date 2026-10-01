@@ -34,6 +34,8 @@ kotlin {
         commonMain.dependencies {
             api(project(":data"))
             implementation("dev.gitlive:firebase-firestore:2.7.0")
+            // تسجيل الدخول — نفس عيلة GitLive (§31.3)، ARCHITECTURE §31.6
+            implementation("dev.gitlive:firebase-auth:2.7.0")
         }
         if (withAndroid) {
             getByName("androidInstrumentedTest").dependencies {

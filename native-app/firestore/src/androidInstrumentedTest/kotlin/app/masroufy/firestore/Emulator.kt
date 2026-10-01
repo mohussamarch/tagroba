@@ -4,6 +4,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseApp
 import dev.gitlive.firebase.FirebaseOptions
+import dev.gitlive.firebase.auth.FirebaseAuth
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.initialize
@@ -31,4 +33,28 @@ object Emulator {
         apps[device] = created
         return Firebase.firestore(created).also { it.useEmulator(HOST, PORT) }
     }
+}
+
+/**
+ * دخول + Firestore **بقواعد المشروع الحقيقية** (`emulator-auth/` — منافذ 9099 و8089، مشروع `demo-masroufy-auth`).
+ * كل [device] تطبيق فايربيز لوحده بدخوله ونسخته المحلية.
+ */
+object AuthEmulator {
+    const val PROJECT = "demo-masroufy-auth"
+    private val apps = mutableMapOf<String, FirebaseApp>()
+
+    private fun app(device: String): FirebaseApp = apps.getOrPut(device) {
+        Firebase.initialize(
+            InstrumentationRegistry.getInstrumentation().targetContext,
+            FirebaseOptions(applicationId = "1:000000000000:android:0000000000000001", apiKey = "emulator-only", projectId = PROJECT),
+            "auth-$device",
+        ).also { created ->
+            Firebase.auth(created).useEmulator("10.0.2.2", 9099)
+            Firebase.firestore(created).useEmulator("10.0.2.2", 8089)
+        }
+    }
+
+    fun auth(device: String): FirebaseAuth = Firebase.auth(app(device))
+
+    fun firestore(device: String): FirebaseFirestore = Firebase.firestore(app(device))
 }

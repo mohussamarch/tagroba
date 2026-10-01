@@ -48,6 +48,9 @@ class LocalMirror(groups: Collection<String>) {
 
     internal fun markSynced(group: String) = synced.update { it + group }
 
+    /** المستمع وقف ⇒ الذاكرة للمجموعة دي ممكن تبقى قديمة، فالقراية ترجع لفايربيز. */
+    internal fun markStale(group: String) = synced.update { it - group }
+
     /** مستندات المجموعة (معرّف ⇐ مستند) لو اتزامنت، وإلا `null` ⇒ القراية تروح لفايربيز. */
     internal fun docsOf(group: String): Map<String, Entry>? = if (isSynced(group)) docs[group]?.value else null
 
@@ -75,6 +78,8 @@ class LocalMirror(groups: Collection<String>) {
     internal fun applyDelete(group: String, ids: Collection<String>) {
         docs[group]?.update { current -> current - ids.toSet() }
     }
+
+    internal fun documentCount(): Int = docs.values.sumOf { it.value.size }
 
     internal fun clear() {
         synced.value = emptySet()
