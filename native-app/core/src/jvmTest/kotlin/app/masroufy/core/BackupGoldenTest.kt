@@ -38,11 +38,21 @@ class BackupGoldenTest {
         is Double -> JsonPrimitive(v)
         else -> JsonPrimitive(v.toString())
     }
+    /**
+     * ملفات المرجع من التطبيق الحالي (24 مجموعة) — «المستحقات» (§55) مش فيها، فبتتكمّل فاضية في المدخل
+     * (زي ما `FullBackup` بيكمّلها من الملف) وبتتشال من الناتج لو فاضية. المقارنة كده على الـ24 بالظبط.
+     */
     @Suppress("UNCHECKED_CAST")
-    private fun data(e: JsonElement) = plain(e) as FullBackupData
+    private fun withDues(v: Any?): Any? = (v as? Map<String, Any?>)?.let { m -> LinkedHashMap(m).apply { for (g in DUES_BACKUP_GROUPS) putIfAbsent(g, emptyList<BackupRow>()) } } ?: v
+
+    @Suppress("UNCHECKED_CAST")
+    private fun data(e: JsonElement) = withDues(plain(e)) as FullBackupData
+
+    @Suppress("UNCHECKED_CAST")
+    private fun exported(d: FullBackupData) = exportedBackupData(d)
 
     @Test fun validation() {
-        check("checkFullBackupData") { checkFullBackupData(plain(it.field("data"))); true }
+        check("checkFullBackupData") { checkFullBackupData(withDues(plain(it.field("data")))); true }
         check("checkBackupFinance") { checkBackupFinance(data(it.field("data"))); true }
         check("checkBackupProfile") { checkBackupProfile(if (it is JsonPrimitive && it.content == "__absent__") null else plain(it)); true }
     }
@@ -55,23 +65,23 @@ class BackupGoldenTest {
             val absent = raw is JsonPrimitive && raw.content == "__absent__"
             val profile = if (absent) null else plain(raw)
             val base = Golden.cases("backup", "normalizeBudgetIds").first()["in"]!!
-            val text = backupChecksumText(data(base), profile, hasProfile = !absent)
+            val text = backupChecksumText(exported(data(base)), profile, hasProfile = !absent)
             back(mapOf("length" to text.length.toLong(), "checksum" to backupChecksum(text)))
         }
     }
 
     @Test fun mergeAndBudgets() {
-        check("normalizeBudgetIds") { back(normalizeBudgetIds(data(it))) }
+        check("normalizeBudgetIds") { back(exported(normalizeBudgetIds(data(it)))) }
         @Suppress("UNCHECKED_CAST")
         fun rows(e: JsonElement) = plain(e) as List<BackupRow>
         check("pointLinesAtLiveBudgets") { back(pointLinesAtLiveBudgets(rows(it.field("additions")), rows(it.field("live")))) }
-        check("mergeFullBackup") { back(mergeFullBackup(data(it.field("incoming")), data(it.field("existing")))) }
-        check("groups") { BACKUP_GROUPS }
+        check("mergeFullBackup") { back(exported(mergeFullBackup(data(it.field("incoming")), data(it.field("existing"))))) }
+        check("groups") { BACKUP_GROUPS - DUES_BACKUP_GROUPS }
     }
 
     @Test fun backupBaseIsTheSameAccount() {
         // الحساب الوهمي في حالة «ok» لازم يعدّي الفحصين — لو اتكسر، كل الحالات التانية بتفقد معناها
         val ok = Golden.cases("backup", "checkFullBackupData").first { it["in"]!!.jsonObject["name"]!!.str == "ok" }
-        checkFullBackupData(plain(ok["in"]!!.field("data")))
+        checkFullBackupData(withDues(plain(ok["in"]!!.field("data"))))
     }
 }

@@ -12,39 +12,18 @@ val BACKUP_GROUPS = listOf(
     "wallets", "categories", "merchants", "rules", "people", "assets", "tags", "budgets", "recurringItems", "importBatches",
     "transactions", "obligations", "allocations", "settlements", "sourceRecords", "transactionTags", "categoryBudgets",
     "assetLots", "assetSales", "assetPrices", "notificationReceipts", "projects", "projectLinks", "projectRules",
+    // «المستحقات» — التطبيق الجديد بس (OVERRIDES §50 و§55). التطبيق الحالي بيقبل الملف ويتجاهلها
+    "roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms",
 )
 
-/** اتضافت بعد أول نسخ الإصدار 2 (المشاريع §34): النسخة القديمة من غيرها بتتقري فاضية. */
-val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules")
+/** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
+val DUES_BACKUP_GROUPS = listOf("roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms")
 
-/** أسماء المجموعات للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
-val BACKUP_LABELS: Map<String, String>
-    get() = mapOf(
-        "wallets" to uiText(TextKey.BACKUP_GROUP_WALLETS),
-        "categories" to uiText(TextKey.BACKUP_GROUP_CATEGORIES),
-        "merchants" to uiText(TextKey.BACKUP_GROUP_MERCHANTS),
-        "rules" to uiText(TextKey.BACKUP_GROUP_RULES),
-        "people" to uiText(TextKey.BACKUP_GROUP_PEOPLE),
-        "assets" to uiText(TextKey.BACKUP_GROUP_ASSETS),
-        "tags" to uiText(TextKey.BACKUP_GROUP_TAGS),
-        "budgets" to uiText(TextKey.BACKUP_GROUP_BUDGETS),
-        "recurringItems" to uiText(TextKey.BACKUP_GROUP_RECURRING_ITEMS),
-        "importBatches" to uiText(TextKey.BACKUP_GROUP_IMPORT_BATCHES),
-        "transactions" to uiText(TextKey.BACKUP_GROUP_TRANSACTIONS),
-        "obligations" to uiText(TextKey.BACKUP_GROUP_OBLIGATIONS),
-        "allocations" to uiText(TextKey.BACKUP_GROUP_ALLOCATIONS),
-        "settlements" to uiText(TextKey.BACKUP_GROUP_SETTLEMENTS),
-        "sourceRecords" to uiText(TextKey.BACKUP_GROUP_SOURCE_RECORDS),
-        "transactionTags" to uiText(TextKey.BACKUP_GROUP_TRANSACTION_TAGS),
-        "categoryBudgets" to uiText(TextKey.BACKUP_GROUP_CATEGORY_BUDGETS),
-        "assetLots" to uiText(TextKey.BACKUP_GROUP_ASSET_LOTS),
-        "assetSales" to uiText(TextKey.BACKUP_GROUP_ASSET_SALES),
-        "assetPrices" to uiText(TextKey.BACKUP_GROUP_ASSET_PRICES),
-        "notificationReceipts" to uiText(TextKey.BACKUP_GROUP_NOTIFICATION_RECEIPTS),
-        "projects" to uiText(TextKey.BACKUP_GROUP_PROJECTS),
-        "projectLinks" to uiText(TextKey.BACKUP_GROUP_PROJECT_LINKS),
-        "projectRules" to uiText(TextKey.BACKUP_GROUP_PROJECT_RULES),
-    )
+/**
+ * اتضافت بعد أول نسخ الإصدار 2: المشاريع (§34) و«المستحقات» (§55) — النسخة الأقدم من غيرها بتتقري فاضية.
+ * (نسخة التطبيق الحالي عمرها ما هيبقى فيها «المستحقات».)
+ */
+val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + DUES_BACKUP_GROUPS
 
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
@@ -61,9 +40,20 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "assetPrices" to mapOf("assetId" to "assets"),
     "projectLinks" to linkedMapOf("projectId" to "projects", "transactionId" to "transactions"),
     "projectRules" to mapOf("projectId" to "projects"),
+    "roscas" to mapOf("organizerPersonId" to "people"),
+    "roscaEntries" to linkedMapOf("roscaId" to "roscas", "transactionId" to "transactions"),
+    "installmentPayments" to linkedMapOf("planId" to "installmentPlans", "transactionId" to "transactions"),
+    "debtTerms" to linkedMapOf("obligationId" to "obligations", "personId" to "people"),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
+
+/**
+ * اللي بيتكتب في الملف (وعليه البصمة): لو «المستحقات» كلها فاضية، مجموعاتها **ما بتتكتبش** ⇒ الملف هو هو حرف بحرف
+ * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
+ */
+fun exportedBackupData(data: FullBackupData): FullBackupData =
+    if (DUES_BACKUP_GROUPS.all { data[it].isNullOrEmpty() }) data.filterKeys { it !in DUES_BACKUP_GROUPS } else data
 
 /** نفس `String(x)` في جافاسكربت للقيم اللي بتيجي من JSON. */
 internal fun jsString(value: Any?): String = when (value) {
@@ -134,6 +124,7 @@ fun backupRowId(group: String, row: BackupRow): String {
     val key = when (group) {
         "assetPrices" -> "assetId"
         "notificationReceipts" -> "eventKey"
+        "debtTerms" -> "obligationId"
         else -> "id"
     }
     return row[key]?.let(::jsString) ?: ""

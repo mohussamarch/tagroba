@@ -6,6 +6,9 @@ import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.NotificationReceipt
 import app.masroufy.core.ReviewState
+import app.masroufy.core.Rosca
+import app.masroufy.core.RoscaEntry
+import app.masroufy.core.RoscaEntryKind
 import app.masroufy.core.Transaction
 import app.masroufy.core.emptyBackupData
 import app.masroufy.port.TransactionPatch
@@ -41,16 +44,21 @@ class FirestoreFullBackupTest {
             val a = FirestoreContainer(space())
             a.transactions.saveMany((0 until 450).map(::txn)) // 3 صفحات (200 · 200 · 50)
             a.notificationReceipts.saveMany(listOf(NotificationReceipt("budget|2026.09|total|80", 80, "2026-08-28", "x")))
+            // «المستحقات» (§55): جمعية + قسط مربوط بعملية
+            a.roscas.save(Rosca("rc-1", "جمعية وهمية", Currency.SAR, 100_000, 1, "2026-01-01", 10, listOf(4), 1_000_000, createdAt = "x"))
+            a.roscaEntries.saveMany(listOf(RoscaEntry("e-1", "rc-1", "t-0001", RoscaEntryKind.CONTRIBUTION, 1_001)))
             val file = FullBackup(a.fullBackup).create("2026-10-01T00:00:00.000Z")
             assertEquals(450L, file.counts["transactions"], "كل الصفحات اتقرت")
             assertEquals(1L, file.counts["notificationReceipts"])
+            assertEquals(1L, file.counts["roscaEntries"])
 
             // حساب فاضي ⇒ استعادة ⇒ نفس البصمة بالظبط
             val b = FirestoreContainer(space())
             val restore = FullBackup(b.fullBackup)
             val plan = restore.plan(file.toJsonText())
-            assertEquals(451, plan.totalToAdd)
-            assertEquals(451, restore.apply(plan.file).totalAdded)
+            assertEquals(453, plan.totalToAdd)
+            assertEquals(453, restore.apply(plan.file).totalAdded)
+            assertEquals(listOf("e-1"), b.roscaEntries.listByRosca("rc-1").map { it.id })
             assertEquals(file.checksum, FullBackup(b.fullBackup).create("2026-10-01T00:00:00.000Z").checksum, "اللي اترجع لازم يبقى هو هو")
             assertEquals(0, restore.apply(plan.file).totalAdded, "إعادة الاستعادة ما بتضيفش حاجة")
 
@@ -58,7 +66,7 @@ class FirestoreFullBackupTest {
             val c = FirestoreContainer(space())
             c.transactions.saveMany(listOf(txn(7)))
             c.transactions.update("t-0007", TransactionPatch(note = "بتاعتي", updatedAt = "2026-10-01T00:00:00.000Z"))
-            assertEquals(450, FullBackup(c.fullBackup).apply(plan.file).totalAdded)
+            assertEquals(452, FullBackup(c.fullBackup).apply(plan.file).totalAdded)
             assertEquals("بتاعتي", c.transactions.findByIds(listOf("t-0007")).single().note, "الموجود يفضل زي ما هو")
         }
     }

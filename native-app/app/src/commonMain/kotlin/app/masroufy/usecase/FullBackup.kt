@@ -4,7 +4,9 @@ import app.masroufy.core.BACKUP_GROUPS
 import app.masroufy.core.BACKUP_LABELS
 import app.masroufy.core.BackupRow
 import app.masroufy.core.FullBackupData
+import app.masroufy.core.DUES_BACKUP_GROUPS
 import app.masroufy.core.LATER_BACKUP_GROUPS
+import app.masroufy.core.exportedBackupData
 import app.masroufy.core.backupChecksum
 import app.masroufy.core.canonicalBackup
 import app.masroufy.core.checkBackupFinance
@@ -31,14 +33,17 @@ data class FullBackupFile(
     val checksum: String,
     val counts: Map<String, Any?>,
 ) {
-    /** نص الملف زي `JSON.stringify` بالظبط. */
-    fun toJsonText(): String = jsonStringify(
-        LinkedHashMap<String, Any?>().apply {
-            put("app", "masroufy"); put("schemaVersion", 2L); put("exportedAt", exportedAt); put("data", data)
-            if (hasProfile) put("profile", profile)
-            put("checksum", checksum); put("counts", counts)
-        },
-    )
+    /** نص الملف زي `JSON.stringify` بالظبط — و«المستحقات» الفاضية ما بتتكتبش (`exportedBackupData`). */
+    fun toJsonText(): String {
+        val shown = exportedBackupData(data)
+        return jsonStringify(
+            LinkedHashMap<String, Any?>().apply {
+                put("app", "masroufy"); put("schemaVersion", 2L); put("exportedAt", exportedAt); put("data", shown)
+                if (hasProfile) put("profile", profile)
+                put("checksum", checksum); put("counts", counts.filterKeys { it !in DUES_BACKUP_GROUPS || it in shown })
+            },
+        )
+    }
 }
 
 data class BackupPlanLine(val key: String, val label: String, val incoming: Int, val toAdd: Int, val skipped: Int, val note: String?)
@@ -100,8 +105,9 @@ class FullBackup(private val port: FullBackupPort) {
             if (!sameNumber(counts[key], typed.getValue(key).size)) throw IllegalArgumentException("عدد السجلات غير مطابق: " + BACKUP_LABELS.getValue(key))
         }
         if (backupChecksum(signed) != file["checksum"]) throw IllegalArgumentException("بصمة سلامة النسخة غير مطابقة؛ الملف اتغير أو اتلف")
-        // النسخة اتأكدت؛ المكمّلة بتتبصم تاني عشان التطبيق بعد المعاينة يتأكد منها هي
-        val checksum = if (missing.isNotEmpty()) backupChecksum(signedText(typed, profile, hasProfile)) else file["checksum"] as String
+        // النسخة اتأكدت؛ المكمّلة بتتبصم تاني (على اللي هيتكتب فعلًا) عشان التطبيق بعد المعاينة يتأكد منها هي
+        val exported = exportedBackupData(typed)
+        val checksum = if (missing.isNotEmpty() || exported.keys != typed.keys) backupChecksum(signedText(exported, profile, hasProfile)) else file["checksum"] as String
         return FullBackupFile(file["exportedAt"] as? String ?: "", typed, profile as BackupRow?, hasProfile, checksum, counts)
     }
 
@@ -120,7 +126,7 @@ class FullBackup(private val port: FullBackupPort) {
         checkBackupProfile(profile)
         return FullBackupFile(
             exportedAt, data, profile, hasProfile = true,
-            checksum = backupChecksum(signedText(data, profile, hasProfile = true)),
+            checksum = backupChecksum(signedText(exportedBackupData(data), profile, hasProfile = true)),
             counts = BACKUP_GROUPS.associateWith { data.getValue(it).size.toLong() },
         )
     }

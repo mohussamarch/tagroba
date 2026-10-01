@@ -32,10 +32,16 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "projects" to listOf("name", "normalizedName", "archived", "createdAt"),
     "projectLinks" to listOf("projectId", "transactionId", "source", "createdAt"),
     "projectRules" to listOf("projectId", "matchText", "matchMode", "direction", "enabled", "createdAt"),
+    // «المستحقات» — نفس الحقول الإجبارية في `DuesCodecs`
+    "roscas" to listOf("name", "currency", "contributionMinor", "every", "unit", "firstDueAt", "cycleCount", "myTurns", "payoutMinor", "members", "createdAt"),
+    "roscaEntries" to listOf("roscaId", "transactionId", "kind", "amountMinor"),
+    "installmentPlans" to listOf("name", "provider", "kind", "currency", "principalMinor", "totalMinor", "installmentMinor", "cycleMonths", "firstDueAt", "createdAt"),
+    "installmentPayments" to listOf("planId", "transactionId", "amountMinor"),
+    "debtTerms" to listOf("personId", "firstDueAt", "cycleMonths"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent")
-private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount")
+private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
     "transactions" to linkedMapOf("reviewState" to listOf("confirmed", "suggested", "needs_review"), "datePrecision" to listOf("day", "minute")),
@@ -47,6 +53,9 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "rules" to mapOf("matchMode" to listOf("contains", "startsWith", "exact")),
     "importBatches" to linkedMapOf("state" to listOf("staged", "committed", "reverted"), "sourceType" to listOf("csv_preview", "csv_legacy", "pdf_alrajhi", "sms")),
     "sourceRecords" to mapOf("matchingState" to listOf("new", "duplicate", "similar", "conflict", "invalid")),
+    "roscas" to mapOf("unit" to listOf("week", "month")),
+    "roscaEntries" to mapOf("kind" to listOf("contribution", "payout")),
+    "installmentPlans" to mapOf("kind" to listOf("purchase_plan", "financing")),
 )
 private val CURRENCY_CODE = Regex("[A-Z]{3}")
 private val LAST_FOUR = Regex("[0-9]{4}")
@@ -78,7 +87,7 @@ fun checkFullBackupData(data: Any?) {
 }
 
 private fun validateFields(row: Map<String, Any?>, group: String) {
-    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold")
+    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members")
     for (key in REQUIRED.getValue(group)) {
         // دين قديم من غير عملية (OVERRIDES §27)
         if (group == "obligations" && key == "originTransactionId" && row[key] == null) continue

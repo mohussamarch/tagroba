@@ -1,0 +1,35 @@
+package app.masroufy.core
+
+/** أسماء المجموعات للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
+val BACKUP_LABELS: Map<String, String>
+    get() = mapOf(
+        "wallets" to uiText(TextKey.BACKUP_GROUP_WALLETS),
+        "categories" to uiText(TextKey.BACKUP_GROUP_CATEGORIES),
+        "merchants" to uiText(TextKey.BACKUP_GROUP_MERCHANTS),
+        "rules" to uiText(TextKey.BACKUP_GROUP_RULES),
+        "people" to uiText(TextKey.BACKUP_GROUP_PEOPLE),
+        "assets" to uiText(TextKey.BACKUP_GROUP_ASSETS),
+        "tags" to uiText(TextKey.BACKUP_GROUP_TAGS),
+        "budgets" to uiText(TextKey.BACKUP_GROUP_BUDGETS),
+        "recurringItems" to uiText(TextKey.BACKUP_GROUP_RECURRING_ITEMS),
+        "importBatches" to uiText(TextKey.BACKUP_GROUP_IMPORT_BATCHES),
+        "transactions" to uiText(TextKey.BACKUP_GROUP_TRANSACTIONS),
+        "obligations" to uiText(TextKey.BACKUP_GROUP_OBLIGATIONS),
+        "allocations" to uiText(TextKey.BACKUP_GROUP_ALLOCATIONS),
+        "settlements" to uiText(TextKey.BACKUP_GROUP_SETTLEMENTS),
+        "sourceRecords" to uiText(TextKey.BACKUP_GROUP_SOURCE_RECORDS),
+        "transactionTags" to uiText(TextKey.BACKUP_GROUP_TRANSACTION_TAGS),
+        "categoryBudgets" to uiText(TextKey.BACKUP_GROUP_CATEGORY_BUDGETS),
+        "assetLots" to uiText(TextKey.BACKUP_GROUP_ASSET_LOTS),
+        "assetSales" to uiText(TextKey.BACKUP_GROUP_ASSET_SALES),
+        "assetPrices" to uiText(TextKey.BACKUP_GROUP_ASSET_PRICES),
+        "notificationReceipts" to uiText(TextKey.BACKUP_GROUP_NOTIFICATION_RECEIPTS),
+        "projects" to uiText(TextKey.BACKUP_GROUP_PROJECTS),
+        "projectLinks" to uiText(TextKey.BACKUP_GROUP_PROJECT_LINKS),
+        "projectRules" to uiText(TextKey.BACKUP_GROUP_PROJECT_RULES),
+        "roscas" to uiText(TextKey.BACKUP_GROUP_ROSCAS),
+        "roscaEntries" to uiText(TextKey.BACKUP_GROUP_ROSCA_ENTRIES),
+        "installmentPlans" to uiText(TextKey.BACKUP_GROUP_INSTALLMENT_PLANS),
+        "installmentPayments" to uiText(TextKey.BACKUP_GROUP_INSTALLMENT_PAYMENTS),
+        "debtTerms" to uiText(TextKey.BACKUP_GROUP_DEBT_TERMS),
+    )

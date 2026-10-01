@@ -2,6 +2,8 @@ package app.masroufy.usecase
 
 import app.masroufy.core.BACKUP_GROUPS
 import app.masroufy.core.BackupRow
+import app.masroufy.core.DUES_BACKUP_GROUPS
+import app.masroufy.core.exportedBackupData
 import app.masroufy.core.FullBackupData
 import app.masroufy.core.Golden
 import app.masroufy.core.field
@@ -50,8 +52,10 @@ class FullBackupFlowGoldenTest {
         else -> error("نوع مش مدعوم: ${value::class}")
     }
 
+    /** حسابات المرجع من التطبيق الحالي ما فيهاش «المستحقات» (§55) ⇒ فاضية. */
     @Suppress("UNCHECKED_CAST")
-    private fun data(e: JsonElement): FullBackupData = BACKUP_GROUPS.associateWith { (plain(e.field(it)) as List<BackupRow>) }
+    private fun data(e: JsonElement): FullBackupData =
+        BACKUP_GROUPS.associateWith { g -> if (g in DUES_BACKUP_GROUPS && g !in e.jsonObject) emptyList() else (plain(e.field(g)) as List<BackupRow>) }
 
     @Suppress("UNCHECKED_CAST")
     private fun profile(e: JsonElement?): BackupRow? = e?.takeIf { it !is JsonNull }?.let { plain(it) as BackupRow }
@@ -62,7 +66,8 @@ class FullBackupFlowGoldenTest {
         mapOf(
             "file" to fileJson(p.file),
             "lines" to JsonArray(
-                p.lines.map {
+                // سطور «المستحقات» الفاضية مش في التطبيق الحالي
+                p.lines.filter { it.key !in DUES_BACKUP_GROUPS || it.incoming > 0 }.map {
                     JsonObject(
                         mapOf(
                             "key" to JsonPrimitive(it.key), "label" to JsonPrimitive(it.label), "incoming" to JsonPrimitive(it.incoming),
@@ -93,8 +98,8 @@ class FullBackupFlowGoldenTest {
                         JsonObject(
                             mapOf(
                                 "plan" to planJson(plan),
-                                "outcome" to JsonObject(mapOf("added" to tree(outcome.added), "totalAdded" to JsonPrimitive(outcome.totalAdded))),
-                                "storedData" to tree(port.read()),
+                                "outcome" to JsonObject(mapOf("added" to tree(outcome.added.filter { (k, v) -> k !in DUES_BACKUP_GROUPS || v > 0 }), "totalAdded" to JsonPrimitive(outcome.totalAdded))),
+                                "storedData" to tree(exportedBackupData(port.read())),
                                 "storedProfile" to tree(port.readProfile()),
                             ),
                         )
