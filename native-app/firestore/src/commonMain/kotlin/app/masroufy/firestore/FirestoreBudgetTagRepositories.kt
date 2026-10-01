@@ -21,7 +21,7 @@ import app.masroufy.port.TransactionTagRepository
 class FirestoreTagRepository(private val space: FirestoreSpace) : TagRepository {
     private val codec = ReferenceCodecs.tags
 
-    override suspend fun listAll(): List<Tag> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<Tag> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(tag: Tag) = space.saveAll(codec, listOf(tag))
 
@@ -45,7 +45,7 @@ class FirestoreBudgetRepository(private val space: FirestoreSpace) : BudgetRepos
     private val budgets = ReferenceCodecs.budgets
     private val lines = ReferenceCodecs.categoryBudgets
 
-    override suspend fun findByPeriod(periodKey: String): Budget? = space.collection(budgets.group).document(periodKey).get().rawData()?.let(budgets::decode)
+    override suspend fun findByPeriod(periodKey: String): Budget? = space.readDoc(budgets.group, periodKey)?.let(budgets::decode)
 
     override suspend fun save(budget: Budget) = space.saveAll(budgets, listOf(budget))
 
@@ -57,7 +57,7 @@ class FirestoreBudgetRepository(private val space: FirestoreSpace) : BudgetRepos
     }
 
     override suspend fun listCategoryBudgets(budgetId: Id): List<CategoryBudget> =
-        lines.decodeAll(space.collection(lines.group).where { "budgetId" equalTo budgetId }.get())
+        lines.decodeAll(space.collection(lines.group).where { "budgetId" equalTo budgetId }.get(space.sourceFor(lines.group)))
 
     override suspend fun saveCategoryBudget(line: CategoryBudget) = space.saveAll(lines, listOf(line))
 
@@ -67,7 +67,7 @@ class FirestoreBudgetRepository(private val space: FirestoreSpace) : BudgetRepos
 class FirestoreRecurringRepository(private val space: FirestoreSpace) : RecurringRepository {
     private val codec = ReferenceCodecs.recurringItems
 
-    override suspend fun listAll(): List<RecurringItem> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<RecurringItem> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(item: RecurringItem) = space.saveAll(codec, listOf(item))
 }
@@ -76,7 +76,7 @@ class FirestoreRecurringRepository(private val space: FirestoreSpace) : Recurrin
 class FirestoreNotificationReceiptRepository(private val space: FirestoreSpace) : NotificationReceiptRepository {
     private val codec = ReferenceCodecs.notificationReceipts
 
-    override suspend fun listAll(): List<NotificationReceipt> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<NotificationReceipt> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun saveMany(receipts: List<NotificationReceipt>) = space.saveAll(codec, receipts)
 

@@ -33,7 +33,7 @@ import app.masroufy.port.RoscaRepository
 class FirestoreAssetRepository(private val space: FirestoreSpace) : AssetRepository {
     private val codec = AssetProjectCodecs.assets
 
-    override suspend fun listAll(): List<Asset> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<Asset> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(asset: Asset) = space.saveAll(codec, listOf(asset))
 }
@@ -41,9 +41,9 @@ class FirestoreAssetRepository(private val space: FirestoreSpace) : AssetReposit
 class FirestoreAssetLotRepository(private val space: FirestoreSpace) : AssetLotRepository {
     private val codec = AssetProjectCodecs.assetLots
 
-    override suspend fun listByAsset(assetId: Id): List<AssetLot> = codec.decodeAll(space.collection(codec.group).where { "assetId" equalTo assetId }.get())
+    override suspend fun listByAsset(assetId: Id): List<AssetLot> = codec.decodeAll(space.collection(codec.group).where { "assetId" equalTo assetId }.get(space.sourceFor(codec.group)))
 
-    override suspend fun listAll(): List<AssetLot> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<AssetLot> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun saveMany(lots: List<AssetLot>) = space.saveAll(codec, lots)
 
@@ -53,9 +53,9 @@ class FirestoreAssetLotRepository(private val space: FirestoreSpace) : AssetLotR
 class FirestoreAssetSaleRepository(private val space: FirestoreSpace) : AssetSaleRepository {
     private val codec = AssetProjectCodecs.assetSales
 
-    override suspend fun listByAsset(assetId: Id): List<AssetSale> = codec.decodeAll(space.collection(codec.group).where { "assetId" equalTo assetId }.get())
+    override suspend fun listByAsset(assetId: Id): List<AssetSale> = codec.decodeAll(space.collection(codec.group).where { "assetId" equalTo assetId }.get(space.sourceFor(codec.group)))
 
-    override suspend fun listAll(): List<AssetSale> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<AssetSale> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun saveMany(sales: List<AssetSale>) = space.saveAll(codec, sales)
 
@@ -66,7 +66,7 @@ class FirestoreAssetSaleRepository(private val space: FirestoreSpace) : AssetSal
 class FirestoreAssetPriceRepository(private val space: FirestoreSpace) : AssetPriceRepository {
     private val codec = AssetProjectCodecs.assetPrices
 
-    override suspend fun listAll(): List<AssetPrice> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<AssetPrice> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(price: AssetPrice) = space.saveAll(codec, listOf(price))
 }
@@ -74,7 +74,7 @@ class FirestoreAssetPriceRepository(private val space: FirestoreSpace) : AssetPr
 class FirestoreProjectRepository(private val space: FirestoreSpace) : ProjectRepository {
     private val codec = AssetProjectCodecs.projects
 
-    override suspend fun listAll(): List<Project> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<Project> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(project: Project) = space.saveAll(codec, listOf(project))
 }
@@ -82,7 +82,7 @@ class FirestoreProjectRepository(private val space: FirestoreSpace) : ProjectRep
 class FirestoreProjectRuleRepository(private val space: FirestoreSpace) : ProjectRuleRepository {
     private val codec = AssetProjectCodecs.projectRules
 
-    override suspend fun listAll(): List<ProjectRule> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<ProjectRule> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(rule: ProjectRule) = space.saveAll(codec, listOf(rule))
 }
@@ -90,10 +90,10 @@ class FirestoreProjectRuleRepository(private val space: FirestoreSpace) : Projec
 class FirestoreProjectLinkRepository(private val space: FirestoreSpace) : ProjectLinkRepository {
     private val codec = AssetProjectCodecs.projectLinks
 
-    override suspend fun listAll(): List<ProjectLink> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<ProjectLink> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun listByTransaction(transactionId: Id): List<ProjectLink> =
-        codec.decodeAll(space.collection(codec.group).where { "transactionId" equalTo transactionId }.get())
+        codec.decodeAll(space.collection(codec.group).where { "transactionId" equalTo transactionId }.get(space.sourceFor(codec.group)))
 
     override suspend fun saveMany(links: List<ProjectLink>) = space.saveAll(codec, links)
 }
@@ -102,7 +102,7 @@ class FirestoreProjectLinkRepository(private val space: FirestoreSpace) : Projec
 class FirestoreRoscaRepository(private val space: FirestoreSpace) : RoscaRepository {
     private val codec = DuesCodecs.roscas
 
-    override suspend fun listAll(): List<Rosca> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<Rosca> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(rosca: Rosca) = space.saveAll(codec, listOf(rosca))
 }
@@ -110,7 +110,7 @@ class FirestoreRoscaRepository(private val space: FirestoreSpace) : RoscaReposit
 class FirestoreRoscaEntryRepository(private val space: FirestoreSpace) : RoscaEntryRepository {
     private val codec = DuesCodecs.roscaEntries
 
-    override suspend fun listByRosca(roscaId: Id): List<RoscaEntry> = codec.decodeAll(space.collection(codec.group).where { "roscaId" equalTo roscaId }.get())
+    override suspend fun listByRosca(roscaId: Id): List<RoscaEntry> = codec.decodeAll(space.collection(codec.group).where { "roscaId" equalTo roscaId }.get(space.sourceFor(codec.group)))
 
     override suspend fun listByTransactionIds(ids: List<Id>): List<RoscaEntry> = space.findIn(codec, "transactionId", ids)
 
@@ -122,7 +122,7 @@ class FirestoreRoscaEntryRepository(private val space: FirestoreSpace) : RoscaEn
 class FirestoreInstallmentPlanRepository(private val space: FirestoreSpace) : InstallmentPlanRepository {
     private val codec = DuesCodecs.installmentPlans
 
-    override suspend fun listAll(): List<InstallmentPlan> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<InstallmentPlan> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(plan: InstallmentPlan) = space.saveAll(codec, listOf(plan))
 }
@@ -130,7 +130,7 @@ class FirestoreInstallmentPlanRepository(private val space: FirestoreSpace) : In
 class FirestoreInstallmentPaymentRepository(private val space: FirestoreSpace) : InstallmentPaymentRepository {
     private val codec = DuesCodecs.installmentPayments
 
-    override suspend fun listByPlan(planId: Id): List<InstallmentPayment> = codec.decodeAll(space.collection(codec.group).where { "planId" equalTo planId }.get())
+    override suspend fun listByPlan(planId: Id): List<InstallmentPayment> = codec.decodeAll(space.collection(codec.group).where { "planId" equalTo planId }.get(space.sourceFor(codec.group)))
 
     override suspend fun listByTransactionIds(ids: List<Id>): List<InstallmentPayment> = space.findIn(codec, "transactionId", ids)
 
@@ -143,7 +143,7 @@ class FirestoreInstallmentPaymentRepository(private val space: FirestoreSpace) :
 class FirestoreDebtTermsRepository(private val space: FirestoreSpace) : DebtTermsRepository {
     private val codec = DuesCodecs.debtTerms
 
-    override suspend fun listAll(): List<DebtTerms> = codec.decodeAll(space.collection(codec.group).get())
+    override suspend fun listAll(): List<DebtTerms> = codec.decodeAll(space.collection(codec.group).get(space.sourceFor(codec.group)))
 
     override suspend fun save(terms: DebtTerms) = space.saveAll(codec, listOf(terms))
 

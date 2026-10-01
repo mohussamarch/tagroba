@@ -18,16 +18,17 @@ object Emulator {
     /** 10.0.2.2 = الكمبيوتر نفسه من جوه محاكي أندرويد. */
     private const val HOST = "10.0.2.2"
     private const val PORT = 8088
-    private var app: FirebaseApp? = null
+    private val apps = mutableMapOf<String, FirebaseApp>()
 
-    fun firestore(): FirebaseFirestore {
-        app?.let { return Firebase.firestore(it) }
+    /** [device] = اسم «جهاز» — كل اسم ليه تطبيق فايربيز ونسخة محلية لوحده، فاختبار الجهازين بيشتغل على محاكي واحد. */
+    fun firestore(device: String = "masroufy-kt-test"): FirebaseFirestore {
+        apps[device]?.let { return Firebase.firestore(it) }
         val created = Firebase.initialize(
             InstrumentationRegistry.getInstrumentation().targetContext,
             FirebaseOptions(applicationId = "1:000000000000:android:0000000000000000", apiKey = "emulator-only", projectId = PROJECT),
-            "masroufy-kt-test",
+            device,
         )
-        app = created
+        apps[device] = created
         return Firebase.firestore(created).also { it.useEmulator(HOST, PORT) }
     }
 }
