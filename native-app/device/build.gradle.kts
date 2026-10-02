@@ -47,6 +47,8 @@ kotlin {
                 implementation("com.tom-roush:pdfbox-android:2.0.27.0")
                 // القراية في الخلفية (`withContext`) — نفس النسخة اللي في باقي الموديولات
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                // قفل التطبيق بالبصمة أو رمز الجوال — نفس مكتبة التطبيق الحالي (ARCHITECTURE §27 و§31.9)
+                implementation("androidx.biometric:biometric:1.1.0")
             }
             getByName("androidInstrumentedTest").kotlin.srcDir("src/sharedTest/kotlin")
             getByName("androidInstrumentedTest").dependencies {
