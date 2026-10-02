@@ -27,22 +27,30 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: اختبارات ملفات المرجع (JVM)
-        run: chmod +x gradlew && ./gradlew :core:jvmTest :app:jvmTest :data:jvmTest --console=plain
+        run: chmod +x gradlew && ./gradlew :core:jvmTest :app:jvmTest :data:jvmTest :device:jvmTest --console=plain
       - name: اختبار اللي بيختلف من جهاز للتاني على محاكي الآيفون
         # `nfkc` و`compareArabic` بس هما اللي كودهم بيختلف؛ القيم المتوقعة من التطبيق الحالي.
         # ملفات المرجع بتتقرا من القرص فاختباراتها على الكمبيوتر بس.
+        # `:device`: منافذ الجهاز (PDFKit · الملفات · القفل) على كشف مخترع — مفيش ماك غير هنا.
         run: |
           set +e
-          ./gradlew :core:iosSimulatorArm64Test :data:iosSimulatorArm64Test --console=plain 2>&1 | tee ios-test.log
+          ./gradlew :core:iosSimulatorArm64Test :data:iosSimulatorArm64Test :device:iosSimulatorArm64Test --console=plain 2>&1 | tee ios-test.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             grep -E "^e: |error:|FAILED|expected|Caused by" ios-test.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
             exit "$status"
           fi
           # «نجح» من غير ما يشغّل حاجة = مش نجاح. العدد بيتطبع كملاحظة عشان يتقرا من برا.
-          count=$(grep -ho 'tests="[0-9]*"' core/build/test-results/iosSimulatorArm64Test/*.xml data/build/test-results/iosSimulatorArm64Test/*.xml 2>/dev/null | grep -o '[0-9]*' | paste -sd+ - | bc)
+          count=$(grep -ho 'tests="[0-9]*"' core/build/test-results/iosSimulatorArm64Test/*.xml data/build/test-results/iosSimulatorArm64Test/*.xml device/build/test-results/iosSimulatorArm64Test/*.xml 2>/dev/null | grep -o '[0-9]*' | paste -sd+ - | bc)
           count=${count:-0}
           echo "::notice::اختبارات اتشغلت على محاكي الآيفون: $count"
+          device=$(grep -ho 'tests="[0-9]*"' device/build/test-results/iosSimulatorArm64Test/*.xml 2>/dev/null | grep -o '[0-9]*' | paste -sd+ - | bc)
+          echo "::notice::منهم منافذ الجهاز (:device): ${device:-0}"
+          grep -h "محاكي الآيفون: القفل" device/build/test-results/iosSimulatorArm64Test/*.xml 2>/dev/null | head -1 | sed 's/^ */::notice::/'
+          if [ "${device:-0}" -lt 6 ]; then
+            echo "::error::اختبارات :device على المحاكي أقل من 6 — النجاح ده مش مضمون"
+            exit 1
+          fi
           if [ "$count" -lt 1 ]; then
             echo "::error::مفيش ولا اختبار اتشغل على المحاكي — النجاح ده فاضي"
             exit 1
@@ -51,7 +59,7 @@ jobs:
         # أخطاء المترجم بتتطبع كـ«error annotations» كمان، عشان تبان من برا من غير ما حد يفتح السجل
         run: |
           set +e
-          ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :app:compileKotlinIosArm64 :app:compileKotlinIosSimulatorArm64 :data:compileKotlinIosArm64 :data:compileKotlinIosSimulatorArm64 :firestore:compileKotlinIosArm64 :firestore:compileKotlinIosSimulatorArm64 --console=plain 2>&1 | tee ios-build.log
+          ./gradlew :core:compileKotlinIosArm64 :core:compileKotlinIosSimulatorArm64 :app:compileKotlinIosArm64 :app:compileKotlinIosSimulatorArm64 :data:compileKotlinIosArm64 :data:compileKotlinIosSimulatorArm64 :firestore:compileKotlinIosArm64 :firestore:compileKotlinIosSimulatorArm64 :device:compileKotlinIosArm64 --console=plain 2>&1 | tee ios-build.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             grep -E "^e: |error:|Caused by|FAILURE:" ios-build.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done

@@ -2,7 +2,8 @@ import java.util.Properties
 
 /*
  * device — منافذ الجهاز نفسه (طبقة infrastructure): قراية كشف PDF دلوقتي، ورسايل البنك والتنبيهات بعدين.
- * أندرويد: PdfBox-Android (KOTLIN_PLAN §2، ARCHITECTURE §31.7). الآيفون (PDFKit) لسه — محتاج ماك.
+ * أندرويد: PdfBox-Android (KOTLIN_PLAN §2، ARCHITECTURE §31.7). الآيفون: PDFKit وLocalAuthentication من النظام (مفيش مكتبة)
+ * — هدف الآيفون **على ماك بس** (زي باقي الموديولات)، فبيتبني ويتختبر على GitHub.
  * هدف أندرويد بيتفعّل **بس لو Android SDK موجود** (زي `:firestore`)، وهدف JVM فاضي عشان الموديول يتبني من غيره.
  * ⚠️ اختبار الكشف الحقيقي بياخد الملفات من `files/` (برا Git) لـ`build/ownerTestAssets` وقت البناء — على جهاز المالك بس.
  */
@@ -13,12 +14,17 @@ plugins {
 val androidSdk: String? = System.getenv("ANDROID_HOME")
     ?: rootProject.file("local.properties").takeIf { it.isFile }?.let { f -> Properties().apply { f.inputStream().use(::load) }.getProperty("sdk.dir") }
 val withAndroid = androidSdk != null
+val onMac = System.getProperty("os.name").lowercase().contains("mac")
 if (withAndroid) apply(plugin = "com.android.library")
 else logger.lifecycle("⚠️ Android SDK مش موجود — هدف أندرويد في :device مش هيتبني")
 
 kotlin {
     jvm()
     if (withAndroid) androidTarget()
+    if (onMac) {
+        iosArm64()
+        iosSimulatorArm64()
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -27,6 +33,14 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
+        // الكشف المخترع (`SyntheticStatement`) — مصدر واحد لاختبارات الكمبيوتر وأندرويد والآيفون
+        jvmTest { kotlin.srcDir("src/sharedTest/kotlin") }
+        if (onMac) {
+            getByName("iosMain").dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+            }
+            getByName("iosTest").kotlin.srcDir("src/sharedTest/kotlin")
+        }
         if (withAndroid) {
             getByName("androidMain").dependencies {
                 // قارئ PDF على أندرويد (Apache 2.0) — ARCHITECTURE §31.7
@@ -34,6 +48,7 @@ kotlin {
                 // القراية في الخلفية (`withContext`) — نفس النسخة اللي في باقي الموديولات
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
+            getByName("androidInstrumentedTest").kotlin.srcDir("src/sharedTest/kotlin")
             getByName("androidInstrumentedTest").dependencies {
                 implementation(kotlin("test"))
                 implementation("androidx.test:runner:1.7.0")
