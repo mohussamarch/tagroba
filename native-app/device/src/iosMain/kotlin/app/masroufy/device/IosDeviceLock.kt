@@ -21,7 +21,9 @@ import kotlin.coroutines.resume
  * «البصمة أو الرمز» بتاع `DeviceLockPlugin.java` في التطبيق الحالي). التطبيق ما بيشوفش البصمة ولا الرمز — نتيجة بس.
  * الأكواد نفس أكواد أندرويد عشان رسايل `AppLock` تفضل واحدة.
  * ⚠️ تطبيق الآيفون لما يتعمل لازم يحط `NSFaceIDUsageDescription` في Info.plist، وإلا Face ID بيرفض.
- * على المحاكي من غير رمز: `availability` بيرجع `NONE_ENROLLED` (اتختبر). نافذة التأكيد نفسها **ما اتجربتش** (محتاجة إيد).
+ * على محاكي الآيفون في GitHub: `availability` رجّع «مش متاح» بكود `UNSUPPORTED` (مش `NONE_ENROLLED` — المحاكي بيرد بكود
+ * غير «مفيش رمز»)، والتأكيد رجّع `UNAVAILABLE` فورًا. على جهاز حقيقي من غير رمز المتوقع `NONE_ENROLLED` (-5) — **ما اتجربش**،
+ * ولا نافذة التأكيد نفسها (محتاجة إيد).
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class IosDeviceLock(private val newContext: () -> LAContext = { LAContext() }) : DeviceLockPort {
