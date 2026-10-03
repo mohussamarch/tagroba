@@ -97,7 +97,7 @@ object SyntheticStatement {
             }
             missing.firstOrNull()?.let { m ->
                 val near = actual.words.minByOrNull { abs(it.y - m.y) + abs(it.x - m.x) }
-                fail("صفحة ${expected.pageNumber}: ${missing.size} كلمة مش في مكانها — أولها $m · الأقرب ليها $near")
+                fail("صفحة ${expected.pageNumber}: ${missing.size} من ${expected.words.size} كلمة مش في مكانها — أولها $m · الأقرب ليها $near · أول اللي اتقرا ${actual.words.take(8)}")
             }
             assertEquals(expected.words.size, actual.words.size, "صفحة ${expected.pageNumber}: كلمات زيادة ${actual.words.map { it.text } - expected.words.map { it.text }.toSet()}")
         }

@@ -34,6 +34,8 @@ class PdfKitPages : PdfPagesPort {
         val doc = (if (data.isEmpty()) null else PDFDocument(data = data.toNSData())) ?: throw PdfReadError("الملف ده مش PDF أو تالف")
         if (doc.isLocked) throw PdfReadError("الملف محمي بكلمة سر — افتحه واحفظه من غير كلمة سر وجرّب تاني")
         val total = doc.pageCount.toInt()
+        // PDFKit بيقبل ملف بايظ أحيانًا ويرجّع مستند من غير صفحات — ده مش «كشف فاضي»
+        if (total == 0) throw PdfReadError("الملف ده مش PDF أو تالف")
         (0 until total).map { i ->
             val page = doc.pageAtIndex(i.toULong()) ?: throw PdfReadError("الملف ده مش PDF أو تالف")
             val words = toWords(glyphsOf(page))
