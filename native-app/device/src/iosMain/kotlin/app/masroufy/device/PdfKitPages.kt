@@ -17,6 +17,7 @@ import platform.Foundation.attribute
 import platform.Foundation.create
 import platform.PDFKit.PDFDocument
 import platform.PDFKit.PDFPage
+import platform.PDFKit.PDFSelection
 import platform.UIKit.NSFontAttributeName
 import platform.UIKit.UIFont
 import kotlin.math.round
@@ -24,7 +25,10 @@ import kotlin.math.round
 /**
  * كلمات صفحات الـPDF بأماكنها على الآيفون (PDFKit — من النظام نفسه، مفيش مكتبة) — نفس الشكل اللي القارئين بياخدوه،
  * ونفس طريقة التجميع بتاعة أندرويد ([PdfBoxPages]): حروف ⇒ قطع على نفس السطر بفراغ [GAP_SPLIT] × عرض المسافة.
- * PDFKit بيدّي **مستطيل** كل حرف (مش خط القاعدة زي pdfjs وPdfBox) ⇒ خط القاعدة = تحت المستطيل − `descender` الخط.
+ * **مكان الحرف من «تحديد» الحرف** (`selectionForRange`) مش من `characterBoundsAtIndex`: التاني مستطيل الحبر نفسه (كل حرف
+ * على ارتفاع شكل — «Date» اتقرت «D te» في أول تجربة)، والأول مستطيل الخط: `x` = بداية الحرف (زي pdfjs وPdfBox) والعرض = تقدّم
+ * الحرف وتحته = خط القاعدة + `descender` ⇒ خط القاعدة = تحته − `descender`. (اتقاس على ماك GitHub 2026-10-03: «A» عند 21.0
+ * بالظبط، وتحت كل حروف السطر 795.16 = 797 − 1.84.)
  * ⚠️ **اتجرب على كشف مخترع بس** (`SyntheticStatement` على محاكي الآيفون في GitHub) — كشفين المالك ما اتجربوش عليه
  * (مفيش ماك هنا، والكشف الحقيقي ما بيطلعش على GitHub). لما يبقى فيه ماك: نفس مقارنة `RealPdfPagesTest`.
  */
@@ -57,20 +61,21 @@ class PdfKitPages : PdfPagesPort {
         for (idx in 0 until count) {
             val ch = text[idx]
             if (ch.isWhitespace() || ch.isLowSurrogate()) continue
-            val (x, bottom, width, height) = page.characterBoundsAtIndex(idx.toLong()).useContents { listOf(origin.x, origin.y, size.width, size.height) }
+            val selection = page.selectionForRange(NSMakeRange(idx.toULong(), 1uL))
+            val (x, bottom, width, height) = (selection?.boundsForPage(page) ?: page.characterBoundsAtIndex(idx.toLong()))
+                .useContents { listOf(origin.x, origin.y, size.width, size.height) }
             if (width <= 0 && height <= 0) continue
-            val (descender, space) = fonts.getOrPut(bottom to height) { fontMetrics(page, idx, height) }
+            val (descender, space) = fonts.getOrPut(bottom to height) { fontMetrics(selection, height) }
             val unit = if (ch.isHighSurrogate() && idx + 1 < text.length) text.substring(idx, idx + 2) else ch.toString()
             out += Glyph(unit, x, x + width, bottom - descender, space)
         }
         return out
     }
 
-    /** `descender` (بالسالب) وعرض المسافة من خط الحرف نفسه؛ لو مش متاح ⇒ نسب Helvetica من الارتفاع. */
-    private fun fontMetrics(page: PDFPage, idx: Int, height: Double): Pair<Double, Double> {
-        val font = page.selectionForRange(NSMakeRange(idx.toULong(), 1uL))?.attributedString
-            ?.attribute(NSFontAttributeName, 0uL, null) as? UIFont
-        return if (font != null) font.descender to 0.278 * font.pointSize else -0.207 * height / 1.2 to 0.278 * height / 1.2
+    /** `descender` (بالسالب) وعرض المسافة من خط الحرف نفسه؛ لو مش متاح ⇒ نسب Helvetica من ارتفاع مستطيل الخط (= حجم الخط). */
+    private fun fontMetrics(selection: PDFSelection?, height: Double): Pair<Double, Double> {
+        val font = selection?.attributedString?.attribute(NSFontAttributeName, 0uL, null) as? UIFont
+        return if (font != null) font.descender to 0.278 * font.pointSize else -0.23 * height to 0.278 * height
     }
 
     internal companion object {
