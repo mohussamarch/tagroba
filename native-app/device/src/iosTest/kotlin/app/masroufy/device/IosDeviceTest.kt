@@ -4,6 +4,7 @@ import app.masroufy.memory.FixedClock
 import app.masroufy.port.LockResult
 import app.masroufy.usecase.PdfReadError
 import app.masroufy.usecase.saveVerifiedBackup
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import platform.Foundation.NSFileManager
@@ -19,6 +20,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** منافذ الجهاز على **محاكي الآيفون** (GitHub — مفيش ماك هنا). نفس حالات اختبارات أندرويد، ببيانات وهمية. */
+@OptIn(ExperimentalForeignApi::class)
 class IosDeviceTest {
     @Test fun pdfKitReadsTheSyntheticStatementLikeTheWordsItWasWrittenWith() = runBlocking<Unit> {
         val progress = mutableListOf<Pair<Int, Int>>()
