@@ -36,10 +36,11 @@ kotlin {
         // الكشف المخترع (`SyntheticStatement`) — مصدر واحد لاختبارات الكمبيوتر وأندرويد والآيفون
         jvmTest { kotlin.srcDir("src/sharedTest/kotlin") }
         if (onMac) {
-            getByName("iosMain").dependencies {
+            // `iosMain`/`iosTest` بيتعملوا من القالب الافتراضي — بالاسم (`getByName`) مش موجودين لسه هنا، فبالـaccessor
+            iosMain.dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
-            getByName("iosTest").kotlin.srcDir("src/sharedTest/kotlin")
+            iosTest { kotlin.srcDir("src/sharedTest/kotlin") }
         }
         if (withAndroid) {
             getByName("androidMain").dependencies {
