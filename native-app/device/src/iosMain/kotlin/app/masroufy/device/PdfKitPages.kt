@@ -31,7 +31,8 @@ import kotlin.math.round
 @OptIn(ExperimentalForeignApi::class)
 class PdfKitPages : PdfPagesPort {
     override suspend fun read(data: ByteArray, onProgress: ((page: Int, total: Int) -> Unit)?): List<PdfPage> = withContext(Dispatchers.IO) {
-        val doc = (if (data.isEmpty()) null else PDFDocument(data = data.toNSData())) ?: throw PdfReadError("الملف ده مش PDF أو تالف")
+        // ملف مش PDF: `initWithData` بيرجّع nil، وكوتلن بتحوّله NullPointerException من الـconstructor (اتشاف على ماك GitHub)
+        val doc = (if (data.isEmpty()) null else runCatching { PDFDocument(data = data.toNSData()) }.getOrNull()) ?: throw PdfReadError("الملف ده مش PDF أو تالف")
         if (doc.isLocked) throw PdfReadError("الملف محمي بكلمة سر — افتحه واحفظه من غير كلمة سر وجرّب تاني")
         val total = doc.pageCount.toInt()
         // PDFKit بيقبل ملف بايظ أحيانًا ويرجّع مستند من غير صفحات — ده مش «كشف فاضي»

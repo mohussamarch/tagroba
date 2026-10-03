@@ -36,6 +36,7 @@ jobs:
           set +e
           ./gradlew :core:iosSimulatorArm64Test :data:iosSimulatorArm64Test :device:iosSimulatorArm64Test --console=plain 2>&1 | tee ios-test.log
           status=${PIPESTATUS[0]}
+          grep -h "PROBE" ios-test.log device/build/test-results/iosSimulatorArm64Test/*.xml 2>/dev/null | head -60 || true
           if [ "$status" -ne 0 ]; then
             grep -E "^e: |error:|FAILED|expected|Caused by" ios-test.log | head -20 | while IFS= read -r line; do echo "::error::$line"; done
             # رسالة الفشل نفسها مش بتطلع في السجل على Kotlin/Native — من ملفات النتايج
