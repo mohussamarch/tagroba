@@ -66,11 +66,12 @@ class DuesFlowTest {
     private val entries = MemoryRoscaEntryRepository()
     private val categories = app.masroufy.memory.MemoryCategoryRepository()
     private val payments = MemoryInstallmentPaymentRepository()
+    private val plans = MemoryInstallmentPlanRepository()
     private val ids = SequentialIdGenerator()
     private val clock = FixedClock("2026-02-15T09:00:00.000Z")
 
     private fun roscas(tx: TransactionRepository = txns, uowStores: List<app.masroufy.memory.Snapshotable> = listOf(entries, txns)) =
-        ManageRoscas(ManageRoscasDeps(MemoryRoscaRepository(), entries, payments, tx, MemoryUnitOfWork(uowStores), ids, clock, categories))
+        ManageRoscas(ManageRoscasDeps(MemoryRoscaRepository(), entries, payments, tx, MemoryUnitOfWork(uowStores), ids, clock, categories, plans))
 
     private val input = RoscaInput(
         name = "  جمعية   وهمية ", currency = Currency.SAR, contributionMinor = 100_000, firstDueAt = "2026-01-01", cycleCount = 10, myTurns = listOf(4),
@@ -163,8 +164,8 @@ class DuesFlowTest {
 
     private fun installments() = ManageInstallments(
         ManageInstallmentsDeps(
-            MemoryInstallmentPlanRepository(), payments, entries, MemoryDebtTermsRepository(), obligations, txns,
-            MemoryUnitOfWork(listOf(payments, txns)), ids, clock, categories,
+            plans, payments, entries, MemoryDebtTermsRepository(), obligations, txns,
+            MemoryUnitOfWork(listOf(payments, txns, plans)), ids, clock, categories,
         ),
     )
 

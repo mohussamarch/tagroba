@@ -55,7 +55,7 @@ class DuesSpendingTest {
     private val period = periodForDate("2026-01-10", 28)
 
     private suspend fun linkAll() {
-        val roscas = ManageRoscas(ManageRoscasDeps(MemoryRoscaRepository(), entries, payments, txns, MemoryUnitOfWork(listOf(entries, txns)), ids, clock, categories))
+        val roscas = ManageRoscas(ManageRoscasDeps(MemoryRoscaRepository(), entries, payments, txns, MemoryUnitOfWork(listOf(entries, txns)), ids, clock, categories, MemoryInstallmentPlanRepository()))
         val rosca = roscas.save(RoscaInput(name = "جمعية وهمية", currency = Currency.SAR, contributionMinor = 100_000, firstDueAt = "2025-10-01", cycleCount = 10, myTurns = listOf(4)))
         roscas.link(rosca.id, "rc", RoscaEntryKind.CONTRIBUTION)
         roscas.link(rosca.id, "po", RoscaEntryKind.PAYOUT)
@@ -103,7 +103,7 @@ class DuesSpendingTest {
 
     @Test fun unlinkingClearsTheDuesCategory() = runBlocking<Unit> {
         linkAll()
-        ManageRoscas(ManageRoscasDeps(MemoryRoscaRepository(), entries, payments, txns, MemoryUnitOfWork(listOf(entries, txns)), ids, clock, categories)).unlink("rc")
+        ManageRoscas(ManageRoscasDeps(MemoryRoscaRepository(), entries, payments, txns, MemoryUnitOfWork(listOf(entries, txns)), ids, clock, categories, MemoryInstallmentPlanRepository())).unlink("rc")
         val t = txns.findByIds(listOf("rc")).single()
         assertNull(t.categoryId)
         assertEquals(EconomicKind.UNCLASSIFIED, t.economicKind)

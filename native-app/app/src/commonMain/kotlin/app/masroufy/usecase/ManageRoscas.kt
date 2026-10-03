@@ -28,6 +28,7 @@ import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.InstallmentPaymentRepository
+import app.masroufy.port.InstallmentPlanRepository
 import app.masroufy.port.RoscaEntryRepository
 import app.masroufy.port.RoscaRepository
 import app.masroufy.port.TransactionRepository
@@ -66,10 +67,12 @@ data class ManageRoscasDeps(
     val clock: Clock,
     /** فرع «المستحقات ← جمعيات» بيتحط على العملية المربوطة (§56). */
     val categories: CategoryRepository,
+    /** عشان عملية «مبلغ تمويل مستلم» ما تتربطش بجمعية كمان (§59). */
+    val plans: InstallmentPlanRepository,
 )
 
 class ManageRoscas(private val deps: ManageRoscasDeps) {
-    private val links = DueLinks(deps.txns, deps.entries, deps.payments, deps.categories, deps.clock)
+    private val links = DueLinks(deps.txns, deps.entries, deps.payments, deps.plans, deps.categories, deps.clock)
 
     private suspend fun find(id: Id): Rosca = deps.roscas.listAll().firstOrNull { it.id == id } ?: throw RoscaError(uiText(TextKey.ROSCA_NOT_FOUND))
 

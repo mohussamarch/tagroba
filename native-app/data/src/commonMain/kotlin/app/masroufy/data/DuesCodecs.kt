@@ -52,13 +52,14 @@ object DuesCodecs {
                 req("id", p.id); req("name", p.name); req("provider", p.provider); req("kind", p.kind.wire); req("currency", p.currency.name)
                 req("principalMinor", p.principalMinor); req("totalMinor", p.totalMinor); req("installmentMinor", p.installmentMinor)
                 req("cycleMonths", p.cycleMonths); req("firstDueAt", p.firstDueAt); opt("hasInterest", p.hasInterest); req("createdAt", p.createdAt)
+                opt("receivedTransactionId", p.receivedTransactionId)
             }
         },
         { d ->
             InstallmentPlan(
                 d.str("id"), d.str("name"), d.str("provider"), d.wire("kind", InstallmentKind::fromWire), d.wire("currency", Currency::valueOf),
                 d.long("principalMinor"), d.long("totalMinor"), d.long("installmentMinor"), d.int("cycleMonths"), d.str("firstDueAt"),
-                d.boolOrNull("hasInterest"), d.str("createdAt"),
+                d.boolOrNull("hasInterest"), d.str("createdAt"), d.strOrNull("receivedTransactionId"),
             )
         },
     )

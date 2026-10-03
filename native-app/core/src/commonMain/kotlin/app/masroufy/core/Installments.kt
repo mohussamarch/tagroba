@@ -35,6 +35,11 @@ data class InstallmentPlan(
     /** «فيها فوايد؟» (OVERRIDES §46) — null = المستخدم ما قالش. ميزة «حلال تشك» بعدين بتقرا منه. */
     val hasInterest: Boolean? = null,
     val createdAt: String = "",
+    /**
+     * عملية «مبلغ تمويل مستلم» من الكشف (تمويل بس) — قرار المالك 2026-10-03 (OVERRIDES §59): لوحة الديون بتحسب من اللي
+     * استلمته فعلًا، مش من الرقم المكتوب في الخطة بس. null = لسه ما اتربطش.
+     */
+    val receivedTransactionId: Id? = null,
 )
 
 /** ربط عملية من الكشف بخطة الأقساط. */

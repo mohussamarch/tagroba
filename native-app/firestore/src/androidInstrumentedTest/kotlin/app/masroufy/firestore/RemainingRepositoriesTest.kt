@@ -89,7 +89,7 @@ class RemainingRepositoriesTest {
         )))
         val entries = FirestoreRoscaEntryRepository(s)
         val roscas = ManageRoscas(
-            ManageRoscasDeps(FirestoreRoscaRepository(s), entries, FirestoreInstallmentPaymentRepository(s), txns, PassthroughUnitOfWork(), SequentialIdGenerator(), FixedClock("x"), FirestoreCategoryRepository(s)),
+            ManageRoscasDeps(FirestoreRoscaRepository(s), entries, FirestoreInstallmentPaymentRepository(s), txns, PassthroughUnitOfWork(), SequentialIdGenerator(), FixedClock("x"), FirestoreCategoryRepository(s), FirestoreInstallmentPlanRepository(s)),
         )
         val rosca = roscas.save(RoscaInput(name = "جمعية وهمية", currency = Currency.SAR, contributionMinor = 100_000, firstDueAt = "2026-01-01", cycleCount = 10, myTurns = listOf(4)))
         roscas.link(rosca.id, "t-c1", RoscaEntryKind.CONTRIBUTION)

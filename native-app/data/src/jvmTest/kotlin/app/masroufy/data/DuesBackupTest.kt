@@ -84,6 +84,29 @@ class DuesBackupTest {
         assertEquals(3, FullBackup(MemoryFullBackup()).plan(text).totalToAdd)
     }
 
+    /**
+     * مبلغ التمويل المستلم (§59): نفس العملية متخزنة على الجهاز التاني بمعرّف تاني ⇒ الخطة المسترجعة بتشاور على **الموجودة**
+     * (مش على معرّف مالوش عملية). ولو العملية مش في الملف أصلًا ⇒ النسخة بترفض.
+     */
+    @Test fun receivedFinancingFollowsTheTransactionOnRestore() = runBlocking<Unit> {
+        val got = txn(EconomicKind.FINANCING_RECEIVED).copy(id = "t-got", observedDirection = Direction.IN, amountMinor = 980_000)
+        val plan = InstallmentPlan("ip-1", "تمويل وهمي", "بنك وهمي", InstallmentKind.FINANCING, Currency.SAR, 1_000_000, 1_200_000, 100_000, 1, "2026-01-10", true, "x", receivedTransactionId = "t-got")
+        val source = emptyBackupData().also {
+            it.getValue("transactions") += LedgerCodecs.transactions.toStore(got)
+            it.getValue("installmentPlans") += DuesCodecs.installmentPlans.toStore(plan)
+        }
+        val text = FullBackup(MemoryFullBackup(source)).create("2026-10-01T00:00:00.000Z").toJsonText()
+        val target = MemoryFullBackup(emptyBackupData().also { it.getValue("transactions") += LedgerCodecs.transactions.toStore(got.copy(id = "t-other-device")) })
+        val restore = FullBackup(target)
+        restore.apply(restore.plan(text).file)
+        assertEquals(listOf("t-other-device"), target.read().getValue("transactions").map { it["id"] }, "العملية ما اتكررتش")
+        assertEquals("t-other-device", target.read().getValue("installmentPlans").single()["receivedTransactionId"])
+
+        val broken = emptyBackupData().also { it.getValue("installmentPlans") += DuesCodecs.installmentPlans.toStore(plan) }
+        val e = assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(broken)).create("2026-10-01T00:00:00.000Z") }
+        assertTrue("installmentPlans" in (e.message ?: ""), e.message)
+    }
+
     @Test fun brokenDuesLinkIsRefused() = runBlocking<Unit> {
         val broken = account(withDues = true).also { it.getValue("roscas").clear() }
         val e = assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(broken)).create("2026-10-01T00:00:00.000Z") }

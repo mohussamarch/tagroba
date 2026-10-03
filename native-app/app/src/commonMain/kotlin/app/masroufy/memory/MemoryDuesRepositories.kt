@@ -51,13 +51,21 @@ class MemoryRoscaEntryRepository(seed: List<RoscaEntry> = emptyList()) : RoscaEn
     }
 }
 
-class MemoryInstallmentPlanRepository(seed: List<InstallmentPlan> = emptyList()) : InstallmentPlanRepository {
-    private val items = LinkedHashMap<Id, InstallmentPlan>().apply { seed.forEach { put(it.id, it) } }
+/** `Snapshotable`: ربط «مبلغ تمويل مستلم» بيكتب الخطة والعملية مع بعض (§59) — لازم يرجعوا مع بعض لو حاجة فشلت. */
+class MemoryInstallmentPlanRepository(seed: List<InstallmentPlan> = emptyList()) : InstallmentPlanRepository, Snapshotable {
+    private var items = LinkedHashMap<Id, InstallmentPlan>().apply { seed.forEach { put(it.id, it) } }
 
     override suspend fun listAll(): List<InstallmentPlan> = items.values.toList()
 
     override suspend fun save(plan: InstallmentPlan) {
         items[plan.id] = plan
+    }
+
+    override fun snapshot(): Any = LinkedHashMap(items)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        items = LinkedHashMap(state as Map<Id, InstallmentPlan>)
     }
 }
 

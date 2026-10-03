@@ -15,13 +15,14 @@ import app.masroufy.core.DuesCategories
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.InstallmentPaymentRepository
+import app.masroufy.port.InstallmentPlanRepository
 import app.masroufy.port.RoscaEntryRepository
 import app.masroufy.port.TransactionPatch
 import app.masroufy.port.TransactionRepository
 
 /**
  * ربط عملية من الكشف بجمعية أو بخطة أقساط — الفحص المشترك قبل الكتابة.
- * العملية الواحدة **ما تتربطش بحاجتين**: لو اتربطت بجمعية وبقسط، نفس الفلوس هتتعد مرتين في «المستحقات».
+ * العملية الواحدة **ما تتربطش بحاجتين**: لو اتربطت بجمعية وبقسط (أو بمبلغ تمويل مستلم)، نفس الفلوس هتتعد مرتين في «المستحقات».
  */
 class DueLinkError(message: String) : IllegalArgumentException(message)
 
@@ -29,18 +30,28 @@ internal class DueLinks(
     private val txns: TransactionRepository,
     private val roscaEntries: RoscaEntryRepository,
     private val payments: InstallmentPaymentRepository,
+    private val plans: InstallmentPlanRepository,
     private val categories: CategoryRepository,
     private val clock: Clock,
 ) {
     /** العملية بعد الفحص + المبلغ اللي هيتربط (المبلغ كله لو ما اتحددش). */
-    suspend fun check(transactionId: Id, direction: Direction, currency: Currency, ownerName: String, amountMinor: Halalas?): Pair<Transaction, Halalas> {
+    suspend fun check(
+        transactionId: Id,
+        direction: Direction,
+        currency: Currency,
+        ownerName: String,
+        amountMinor: Halalas?,
+        needsIn: TextKey = TextKey.DUE_TXN_NEEDS_IN,
+    ): Pair<Transaction, Halalas> {
         val txn = txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw DueLinkError(uiText(TextKey.DUE_TXN_NOT_FOUND))
         if (txn.observedDirection != direction) {
-            throw DueLinkError(uiText(if (direction == Direction.OUT) TextKey.DUE_TXN_NEEDS_OUT else TextKey.DUE_TXN_NEEDS_IN))
+            throw DueLinkError(uiText(if (direction == Direction.OUT) TextKey.DUE_TXN_NEEDS_OUT else needsIn))
         }
         if (txn.currency != currency) throw DueLinkError(uiText(TextKey.DUE_TXN_CURRENCY, ownerName))
         val ids = listOf(transactionId)
-        if (roscaEntries.listByTransactionIds(ids).isNotEmpty() || payments.listByTransactionIds(ids).isNotEmpty()) {
+        if (roscaEntries.listByTransactionIds(ids).isNotEmpty() || payments.listByTransactionIds(ids).isNotEmpty() ||
+            plans.listAll().any { it.receivedTransactionId == transactionId }
+        ) {
             throw DueLinkError(uiText(TextKey.DUE_TXN_ALREADY_LINKED))
         }
         val amount = amountMinor ?: txn.amountMinor

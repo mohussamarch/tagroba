@@ -4,6 +4,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.DebtTerms
 import app.masroufy.core.Direction
 import app.masroufy.core.DueProgress
+import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.InstallmentError
@@ -36,7 +37,8 @@ import app.masroufy.port.UnitOfWork
 
 /**
  * الأقساط للبنوك والشركات + مواعيد الديون بين الناس (OVERRIDES §50).
- * ربط قسط بيغيّر نوع العملية: تقسيط المشتريات ⇒ «شراء» (مصروف)، التمويل ⇒ «قسط تمويل» (مش مصروف، وأرباحه بتتحسب من الخطة).
+ * ربط قسط بيغيّر نوع العملية ويحطها تحت «المستحقات» (§56 — القسط كله مصروف): تقسيط المشتريات ⇒ «شراء»، التمويل ⇒ «قسط تمويل».
+ * ومبلغ التمويل نفسه يوم ما ينزل في الحساب بيتربط بخطته (§59) ⇒ «مبلغ تمويل مستلم» (دخل تحت «المستحقات ← تمويل»).
  */
 data class InstallmentInput(
     val id: Id? = null,
@@ -52,7 +54,8 @@ data class InstallmentInput(
     val hasInterest: Boolean? = null,
 )
 
-data class InstallmentView(val plan: InstallmentPlan, val progress: DueProgress)
+/** [receivedMinor]: مبلغ عملية «مبلغ تمويل مستلم» المربوطة (null = لسه ما اتربطتش — مش صفر). */
+data class InstallmentView(val plan: InstallmentPlan, val progress: DueProgress, val receivedMinor: Halalas? = null)
 
 data class ManageInstallmentsDeps(
     val plans: InstallmentPlanRepository,
@@ -69,15 +72,18 @@ data class ManageInstallmentsDeps(
 )
 
 class ManageInstallments(private val deps: ManageInstallmentsDeps) {
-    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.payments, deps.categories, deps.clock)
+    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.payments, deps.plans, deps.categories, deps.clock)
 
     private suspend fun find(id: Id): InstallmentPlan =
         deps.plans.listAll().firstOrNull { it.id == id } ?: throw InstallmentError(uiText(TextKey.INSTALLMENT_NOT_FOUND))
 
     private suspend fun paidOf(planId: Id): Halalas = sumMoney(deps.payments.listByPlan(planId).map { it.amountMinor })
 
-    suspend fun list(today: IsoDate): List<InstallmentView> =
-        deps.plans.listAll().map { InstallmentView(it, dueProgress(installmentSchedule(it), paidOf(it.id), today)) }
+    suspend fun list(today: IsoDate): List<InstallmentView> {
+        val plans = deps.plans.listAll()
+        val received = deps.txns.findByIds(plans.mapNotNull { it.receivedTransactionId }).associate { it.id to it.amountMinor }
+        return plans.map { InstallmentView(it, dueProgress(installmentSchedule(it), paidOf(it.id), today), it.receivedTransactionId?.let(received::get)) }
+    }
 
     suspend fun save(input: InstallmentInput): InstallmentPlan {
         val existing = input.id?.let { find(it) }
@@ -94,11 +100,13 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             firstDueAt = input.firstDueAt,
             hasInterest = input.hasInterest,
             createdAt = existing?.createdAt ?: deps.clock.nowIso(),
+            receivedTransactionId = existing?.receivedTransactionId,
         )
         val plan = draft.copy(name = checkInstallmentPlan(draft).name)
         if (existing != null) {
             val paid = paidOf(plan.id)
-            if (paid > 0 && (existing.currency != plan.currency || existing.kind != plan.kind)) {
+            val linked = paid > 0 || existing.receivedTransactionId != null
+            if (linked && (existing.currency != plan.currency || existing.kind != plan.kind)) {
                 throw InstallmentError(uiText(TextKey.DUE_LOCKED_AFTER_LINK))
             }
             // الإجمالي الجديد أقل من اللي اتدفع ⇒ مرفوض
@@ -121,11 +129,28 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         return payment
     }
 
+    /** مبلغ التمويل اللي نزل في الحساب (§59) — مرة واحدة لكل خطة تمويل، وبالعملية كلها. */
+    suspend fun linkReceived(planId: Id, transactionId: Id): InstallmentPlan {
+        val plan = find(planId)
+        if (plan.kind != InstallmentKind.FINANCING) throw InstallmentError(uiText(TextKey.INSTALLMENT_RECEIVED_NEEDS_FINANCING))
+        if (plan.receivedTransactionId != null) throw InstallmentError(uiText(TextKey.INSTALLMENT_ALREADY_RECEIVED))
+        links.check(transactionId, Direction.IN, plan.currency, plan.name, null, TextKey.DUE_RECEIVED_NEEDS_IN)
+        val linked = plan.copy(receivedTransactionId = transactionId)
+        deps.uow.run {
+            deps.plans.save(linked)
+            links.markKind(transactionId, EconomicKind.FINANCING_RECEIVED, DuesCategories.FINANCING)
+        }
+        return linked
+    }
+
+    /** فك أي ربط على العملية (قسط أو مبلغ مستلم) — النوع والتصنيف بيرجعوا يتسألوا. */
     suspend fun unlink(transactionId: Id) {
         val found = deps.payments.listByTransactionIds(listOf(transactionId))
-        if (found.isEmpty()) return
+        val receivedBy = deps.plans.listAll().filter { it.receivedTransactionId == transactionId }
+        if (found.isEmpty() && receivedBy.isEmpty()) return
         deps.uow.run {
-            deps.payments.deleteMany(found.map { it.id })
+            if (found.isNotEmpty()) deps.payments.deleteMany(found.map { it.id })
+            for (plan in receivedBy) deps.plans.save(plan.copy(receivedTransactionId = null))
             links.clearKind(transactionId)
         }
     }
