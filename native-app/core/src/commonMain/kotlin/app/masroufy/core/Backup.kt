@@ -14,6 +14,8 @@ val BACKUP_GROUPS = listOf(
     "assetLots", "assetSales", "assetPrices", "notificationReceipts", "projects", "projectLinks", "projectRules",
     // «المستحقات» — التطبيق الجديد بس (OVERRIDES §50 و§55). التطبيق الحالي بيقبل الملف ويتجاهلها
     "roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms",
+    // «زون التحويلات» (§60) — التطبيق الجديد بس
+    "transferParties",
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -23,7 +25,13 @@ val DUES_BACKUP_GROUPS = listOf("roscas", "roscaEntries", "installmentPlans", "i
  * اتضافت بعد أول نسخ الإصدار 2: المشاريع (§34) و«المستحقات» (§55) — النسخة الأقدم من غيرها بتتقري فاضية.
  * (نسخة التطبيق الحالي عمرها ما هيبقى فيها «المستحقات».)
  */
-val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + DUES_BACKUP_GROUPS
+/** قرارات «زون التحويلات» (§60) — مش في نسخ التطبيق الحالي، وبتتكتب بس لو فيها حاجة. */
+const val TRANSFER_PARTIES_GROUP = "transferParties"
+
+/** كل اللي في التطبيق الجديد بس (مش في ملف التطبيق الحالي) — كل مجموعة منهم بتتكتب بس لو فيها حاجة (`exportedBackupData`). */
+val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP
+
+val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP
 
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
@@ -45,6 +53,7 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "installmentPlans" to mapOf("receivedTransactionId" to "transactions"),
     "installmentPayments" to linkedMapOf("planId" to "installmentPlans", "transactionId" to "transactions"),
     "debtTerms" to linkedMapOf("obligationId" to "obligations", "personId" to "people"),
+    "transferParties" to mapOf("personId" to "people"),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
@@ -53,8 +62,11 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * اللي بيتكتب في الملف (وعليه البصمة): لو «المستحقات» كلها فاضية، مجموعاتها **ما بتتكتبش** ⇒ الملف هو هو حرف بحرف
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
-fun exportedBackupData(data: FullBackupData): FullBackupData =
-    if (DUES_BACKUP_GROUPS.all { data[it].isNullOrEmpty() }) data.filterKeys { it !in DUES_BACKUP_GROUPS } else data
+fun exportedBackupData(data: FullBackupData): FullBackupData {
+    val dropDues = DUES_BACKUP_GROUPS.all { data[it].isNullOrEmpty() }
+    val dropParties = data[TRANSFER_PARTIES_GROUP].isNullOrEmpty()
+    return if (!dropDues && !dropParties) data else data.filterKeys { (!dropDues || it !in DUES_BACKUP_GROUPS) && (!dropParties || it != TRANSFER_PARTIES_GROUP) }
+}
 
 /** نفس `String(x)` في جافاسكربت للقيم اللي بتيجي من JSON. */
 internal fun jsString(value: Any?): String = when (value) {
@@ -126,6 +138,7 @@ fun backupRowId(group: String, row: BackupRow): String {
         "assetPrices" -> "assetId"
         "notificationReceipts" -> "eventKey"
         "debtTerms" -> "obligationId"
+        "transferParties" -> "key"
         else -> "id"
     }
     return row[key]?.let(::jsString) ?: ""

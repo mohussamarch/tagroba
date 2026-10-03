@@ -75,6 +75,11 @@ data class ImportStatementDeps(
     val uow: UnitOfWork,
     val ids: IdGenerator,
     val clock: Clock,
+    /**
+     * قرارات «زون التحويلات» (§60): تحويل جديد لطرف اتقرر فيه بياخد القرار لوحده وهو بيتحفظ.
+     * `null` = من غيرها (زي التطبيق الحالي — ملفات المرجع بتتعمل كده).
+     */
+    val transferParties: app.masroufy.port.TransferPartyRepository? = null,
 )
 
 data class ImportRequest(

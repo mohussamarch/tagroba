@@ -53,6 +53,7 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_INSTALLMENT_PLANS to "Installment and financing plans",
     TextKey.BACKUP_GROUP_INSTALLMENT_PAYMENTS to "Installment payments",
     TextKey.BACKUP_GROUP_DEBT_TERMS to "Debt due dates",
+    TextKey.BACKUP_GROUP_TRANSFER_PARTIES to "Transfer parties",
 
     TextKey.AMOUNT_CONTEXT_DEFAULT to "amount",
     TextKey.MONEY_OUT_OF_RANGE_CONTEXT to "{0}: the amount is outside the safe range",

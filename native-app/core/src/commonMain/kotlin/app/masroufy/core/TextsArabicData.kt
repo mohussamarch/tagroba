@@ -52,6 +52,7 @@ internal val ARABIC_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_INSTALLMENT_PLANS to "خطط التقسيط والتمويل",
     TextKey.BACKUP_GROUP_INSTALLMENT_PAYMENTS to "أقساط التقسيط المدفوعة",
     TextKey.BACKUP_GROUP_DEBT_TERMS to "مواعيد الديون",
+    TextKey.BACKUP_GROUP_TRANSFER_PARTIES to "أطراف التحويلات",
     TextKey.AMOUNT_CONTEXT_DEFAULT to "مبلغ",
     TextKey.MONEY_OUT_OF_RANGE_CONTEXT to "{0}: المبلغ خارج المدى الآمن",
     TextKey.MONEY_EMPTY to "المبلغ فارغ",

@@ -28,6 +28,8 @@ import app.masroufy.usecase.InstallmentInput
 import app.masroufy.usecase.LoadDuesDeps
 import app.masroufy.usecase.ManageInstallments
 import app.masroufy.usecase.ManageInstallmentsDeps
+import app.masroufy.usecase.ManageTransfers
+import app.masroufy.usecase.ManageTransfersDeps
 import app.masroufy.usecase.ManageRoscas
 import app.masroufy.usecase.ManageRoscasDeps
 import app.masroufy.usecase.RoscaInput
@@ -37,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /** باقي المستودعات على محاكي أندرويد قدام Firestore Emulator + الجمعية بحالات الاستخدام نفسها على فايربيز. بيانات وهمية. */
 @RunWith(AndroidJUnit4::class)
@@ -140,5 +143,35 @@ class RemainingRepositoriesTest {
         assertEquals(980_000L, manage.list("2026-01-06").single().receivedMinor)
         manage.unlink("t-got")
         assertNull(FirestoreInstallmentPlanRepository(s).listAll().single().receivedTransactionId)
+    }
+
+    /**
+     * «زون التحويلات» (§60) على فايربيز: الوصف بيتخزن **والرقم متقص** (`****4567`) — وبعد ما يتقري تاني الطرف هو هو،
+     * والقرار بيصلّح العمليات على السيرفر، وفكّه بيرجعها. أسماء وأرقام مخترعة.
+     */
+    @Test fun transferZoneWorksOnTheStoredMaskedDescription() = run {
+        val s = space()
+        val txns = FirestoreTransactionRepository(s)
+        val ali = "\uFEF2\uFEE0\uFECB"
+        txns.saveMany((1..5).map { i ->
+            Transaction(
+                id = "t-$i", occurredAt = "2026-02-0$i", datePrecision = "day", sourceOrder = i, economicKind = EconomicKind.UNCLASSIFIED,
+                economicKindConfirmed = false, observedDirection = if (i % 2 == 0) Direction.IN else Direction.OUT, amountMinor = 10_000, currency = Currency.SAR,
+                categoryConfirmed = false, excludedFromBudget = false, reviewState = ReviewState.NEEDS_REVIEW, isCashTagged = false, createdAt = "x", updatedAt = "x",
+                rawDescription = "${ali}W-/TOACCT/12345678901234567TO:ملاحظة", sourceOperationType = "عملية تحويل داخلية",
+            )
+        })
+        val stored = txns.findByIds(listOf("t-1")).single().rawDescription.orEmpty()
+        assertTrue("12345678901234567" !in stored && "4567" in stored, "الرقم الكامل ما وصلش السيرفر")
+        val parties = FirestoreTransferPartyRepository(s)
+        val manage = ManageTransfers(ManageTransfersDeps(txns, parties, FirestorePersonRepository(s), PassthroughUnitOfWork(), FixedClock("2026-03-01T00:00:00.000Z")))
+        val question = manage.zone().questions.single()
+        assertEquals("علي#4567" to 5, question.party.key to question.count)
+        assertEquals(5, manage.markOwnAccount(question.party))
+        assertEquals(setOf(EconomicKind.INTERNAL_TRANSFER), txns.findByIds((1..5).map { "t-$it" }).map { it.economicKind }.toSet())
+        assertEquals(app.masroufy.core.TransferVerdict.OWN_ACCOUNT, FirestoreTransferPartyRepository(s).listAll().single().verdict)
+        assertEquals(5, manage.forget(question.party.key))
+        assertTrue(FirestoreTransferPartyRepository(s).listAll().isEmpty())
+        assertEquals(setOf(EconomicKind.UNCLASSIFIED), txns.findByIds((1..5).map { "t-$it" }).map { it.economicKind }.toSet())
     }
 }

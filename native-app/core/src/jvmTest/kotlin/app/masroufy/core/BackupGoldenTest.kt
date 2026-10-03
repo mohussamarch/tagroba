@@ -43,7 +43,7 @@ class BackupGoldenTest {
      * (زي ما `FullBackup` بيكمّلها من الملف) وبتتشال من الناتج لو فاضية. المقارنة كده على الـ24 بالظبط.
      */
     @Suppress("UNCHECKED_CAST")
-    private fun withDues(v: Any?): Any? = (v as? Map<String, Any?>)?.let { m -> LinkedHashMap(m).apply { for (g in DUES_BACKUP_GROUPS) putIfAbsent(g, emptyList<BackupRow>()) } } ?: v
+    private fun withDues(v: Any?): Any? = (v as? Map<String, Any?>)?.let { m -> LinkedHashMap(m).apply { for (g in NEW_APP_BACKUP_GROUPS) putIfAbsent(g, emptyList<BackupRow>()) } } ?: v
 
     @Suppress("UNCHECKED_CAST")
     private fun data(e: JsonElement) = withDues(plain(e)) as FullBackupData
@@ -76,7 +76,7 @@ class BackupGoldenTest {
         fun rows(e: JsonElement) = plain(e) as List<BackupRow>
         check("pointLinesAtLiveBudgets") { back(pointLinesAtLiveBudgets(rows(it.field("additions")), rows(it.field("live")))) }
         check("mergeFullBackup") { back(exported(mergeFullBackup(data(it.field("incoming")), data(it.field("existing"))))) }
-        check("groups") { BACKUP_GROUPS - DUES_BACKUP_GROUPS }
+        check("groups") { BACKUP_GROUPS - NEW_APP_BACKUP_GROUPS }
     }
 
     @Test fun backupBaseIsTheSameAccount() {

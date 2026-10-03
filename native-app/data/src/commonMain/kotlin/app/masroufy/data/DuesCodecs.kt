@@ -85,7 +85,7 @@ object DuesCodecs {
     )
 }
 
-/** كل المحوّلات بالمجموعة — الـ24 بتوع التطبيق الحالي (نفس ترتيب `BACKUP_GROUPS`) + «المستحقات». */
+/** كل المحوّلات بالمجموعة — الـ24 بتوع التطبيق الحالي (نفس ترتيب `BACKUP_GROUPS`) + «المستحقات» + «زون التحويلات». */
 object DocumentCodecs {
     val current: List<DocCodec<*>> = listOf(
         ReferenceCodecs.wallets, ReferenceCodecs.categories, ReferenceCodecs.merchants, ReferenceCodecs.rules, ReferenceCodecs.people,
@@ -98,5 +98,8 @@ object DocumentCodecs {
 
     val dues: List<DocCodec<*>> = listOf(DuesCodecs.roscas, DuesCodecs.roscaEntries, DuesCodecs.installmentPlans, DuesCodecs.installmentPayments, DuesCodecs.debtTerms)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues).associateBy { it.group }
+    /** «زون التحويلات» (§60). */
+    val transfers: List<DocCodec<*>> = listOf(TransferCodecs.transferParties)
+
+    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers).associateBy { it.group }
 }

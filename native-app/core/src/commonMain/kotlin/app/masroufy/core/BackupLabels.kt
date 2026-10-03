@@ -32,4 +32,5 @@ val BACKUP_LABELS: Map<String, String>
         "installmentPlans" to uiText(TextKey.BACKUP_GROUP_INSTALLMENT_PLANS),
         "installmentPayments" to uiText(TextKey.BACKUP_GROUP_INSTALLMENT_PAYMENTS),
         "debtTerms" to uiText(TextKey.BACKUP_GROUP_DEBT_TERMS),
+        "transferParties" to uiText(TextKey.BACKUP_GROUP_TRANSFER_PARTIES),
     )

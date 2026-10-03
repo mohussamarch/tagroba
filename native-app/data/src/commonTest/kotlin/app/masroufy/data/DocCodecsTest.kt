@@ -74,7 +74,18 @@ class DocCodecsTest {
         val terms = DebtTerms("o-1", "p-1", "2026-02-01", 1, 50_000, false)
         assertEquals("o-1", DuesCodecs.debtTerms.id(terms))
         assertEquals(setOf("obligationId", "personId", "firstDueAt", "cycleMonths"), roundTrip(DuesCodecs.debtTerms, terms.copy(installmentMinor = null, hasInterest = null)).keys)
-        assertEquals(29, DocumentCodecs.byGroup.size)
+        assertEquals(30, DocumentCodecs.byGroup.size)
+    }
+
+    @Test
+    fun `قرار طرف التحويل بيتكتب ويتقرا وآخر 4 أرقام بس`() {
+        val party = app.masroufy.core.TransferParty("سامي#4567", "سامي", "4567", app.masroufy.core.TransferVerdict.PERSON, "p-1", "2026-10-03T00:00:00.000Z")
+        val d = roundTrip(TransferCodecs.transferParties, party)
+        assertEquals("person", d["verdict"])
+        assertEquals("4567", d["accountLast4"])
+        val own = party.copy(verdict = app.masroufy.core.TransferVerdict.OWN_ACCOUNT, personId = null, last4 = null)
+        assertEquals(setOf("key", "label", "verdict", "decidedAt"), roundTrip(TransferCodecs.transferParties, own).keys)
+        assertEquals("سامي#4567", TransferCodecs.transferParties.id(party))
     }
 
     @Test

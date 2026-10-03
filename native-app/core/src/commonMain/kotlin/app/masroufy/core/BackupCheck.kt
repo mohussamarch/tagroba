@@ -38,6 +38,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "installmentPlans" to listOf("name", "provider", "kind", "currency", "principalMinor", "totalMinor", "installmentMinor", "cycleMonths", "firstDueAt", "createdAt"),
     "installmentPayments" to listOf("planId", "transactionId", "amountMinor"),
     "debtTerms" to listOf("personId", "firstDueAt", "cycleMonths"),
+    "transferParties" to listOf("label", "verdict", "decidedAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount")
@@ -56,6 +57,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "roscas" to mapOf("unit" to listOf("week", "month")),
     "roscaEntries" to mapOf("kind" to listOf("contribution", "payout")),
     "installmentPlans" to mapOf("kind" to listOf("purchase_plan", "financing")),
+    "transferParties" to mapOf("verdict" to listOf("own_account", "person", "dismissed")),
 )
 private val CURRENCY_CODE = Regex("[A-Z]{3}")
 private val LAST_FOUR = Regex("[0-9]{4}")

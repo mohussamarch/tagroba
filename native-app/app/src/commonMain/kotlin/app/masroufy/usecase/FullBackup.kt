@@ -4,7 +4,7 @@ import app.masroufy.core.BACKUP_GROUPS
 import app.masroufy.core.BACKUP_LABELS
 import app.masroufy.core.BackupRow
 import app.masroufy.core.FullBackupData
-import app.masroufy.core.DUES_BACKUP_GROUPS
+import app.masroufy.core.NEW_APP_BACKUP_GROUPS
 import app.masroufy.core.LATER_BACKUP_GROUPS
 import app.masroufy.core.exportedBackupData
 import app.masroufy.core.backupChecksum
@@ -40,7 +40,7 @@ data class FullBackupFile(
             LinkedHashMap<String, Any?>().apply {
                 put("app", "masroufy"); put("schemaVersion", 2L); put("exportedAt", exportedAt); put("data", shown)
                 if (hasProfile) put("profile", profile)
-                put("checksum", checksum); put("counts", counts.filterKeys { it !in DUES_BACKUP_GROUPS || it in shown })
+                put("checksum", checksum); put("counts", counts.filterKeys { it !in NEW_APP_BACKUP_GROUPS || it in shown })
             },
         )
     }

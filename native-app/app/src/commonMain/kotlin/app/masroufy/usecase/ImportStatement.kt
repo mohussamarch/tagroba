@@ -10,6 +10,8 @@ import app.masroufy.core.MatchingState
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
+import app.masroufy.core.applyTransferVerdict
+import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
 import app.masroufy.core.importFingerprint
 
@@ -121,6 +123,14 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                     invalid = previewResult.counts.invalid,
                 ),
             )
+
+            val decided = deps.transferParties?.listAll()?.associateBy { it.key }.orEmpty()
+            if (decided.isNotEmpty()) {
+                for (i in transactions.indices) {
+                    val party = transferPartyOf(transactions[i])?.let { decided[it.key] } ?: continue
+                    transactions[i] = applyTransferVerdict(transactions[i], party, now)
+                }
+            }
 
             deps.batches.save(batch) // ١
             deps.sources.saveMany(records) // ٢ — الفهرس الأول

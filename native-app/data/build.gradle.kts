@@ -46,6 +46,8 @@ tasks.withType<Test>().configureEach {
     if (ownerFiles == null || !File(ownerFiles, "alrajhi-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealDataFlowTest") }
     // كشف QNB مصر الحقيقي (scripts/real/exportPdfPages.mjs ⇒ files/qnb-pdf-pages.json)
     if (ownerFiles == null || !File(ownerFiles, "qnb-pdf-pages.json").isFile) filter { excludeTestsMatching("app.masroufy.data.RealQnbImportTest") }
+    // «زون التحويلات» على الكشفين الحقيقيين (§60)
+    if (ownerFiles == null || !File(ownerFiles, "qnb-pdf-pages.json").isFile || !File(ownerFiles, "transactions_full.csv").isFile) filter { excludeTestsMatching("app.masroufy.data.RealTransferPartiesTest") }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
