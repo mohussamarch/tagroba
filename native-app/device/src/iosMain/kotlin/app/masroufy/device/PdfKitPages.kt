@@ -13,6 +13,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
 import platform.Foundation.NSMakeRange
+import platform.Foundation.attribute
 import platform.Foundation.create
 import platform.PDFKit.PDFDocument
 import platform.PDFKit.PDFPage

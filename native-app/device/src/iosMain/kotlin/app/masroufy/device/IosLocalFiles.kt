@@ -17,6 +17,7 @@ import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.writeToFile
 
 /**
  * نسخة «قبل الإصلاح» على الآيفون **من غير نافذة** — زي [AndroidRepairBackup]: مجلد `Documents/backups` بتاع التطبيق
