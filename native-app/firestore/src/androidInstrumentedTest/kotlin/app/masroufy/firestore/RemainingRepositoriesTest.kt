@@ -9,6 +9,7 @@ import app.masroufy.core.CategoryBudget
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
+import app.masroufy.core.InstallmentKind
 import app.masroufy.core.NotificationReceipt
 import app.masroufy.core.Period
 import app.masroufy.core.Project
@@ -23,7 +24,10 @@ import app.masroufy.memory.FixedClock
 import app.masroufy.memory.PassthroughUnitOfWork
 import app.masroufy.memory.SequentialIdGenerator
 import app.masroufy.usecase.LoadDues
+import app.masroufy.usecase.InstallmentInput
 import app.masroufy.usecase.LoadDuesDeps
+import app.masroufy.usecase.ManageInstallments
+import app.masroufy.usecase.ManageInstallmentsDeps
 import app.masroufy.usecase.ManageRoscas
 import app.masroufy.usecase.ManageRoscasDeps
 import app.masroufy.usecase.RoscaInput
@@ -108,5 +112,33 @@ class RemainingRepositoriesTest {
         // قسط فبراير (متأخر) عليك لسه، وقسط يناير اتربط فمش ظاهر
         assertEquals(100_000, dues.month.toPayMinor)
         assertEquals(400_000, dues.month.remainingAfterMinor)
+    }
+
+    /** مبلغ التمويل المستلم (OVERRIDES §59) على فايربيز: الربط بيتكتب، والفك **بيمسح الحقل من المستند** (الكتابة merge — §31.4). */
+    @Test fun financingReceivedIsWrittenAndClearedOnFirestore() = run {
+        val s = space()
+        val txns = FirestoreTransactionRepository(s)
+        txns.saveMany(listOf(Transaction(
+            id = "t-got", occurredAt = "2026-01-05", datePrecision = "day", sourceOrder = 1, economicKind = EconomicKind.UNCLASSIFIED,
+            economicKindConfirmed = false, observedDirection = Direction.IN, amountMinor = 980_000, currency = Currency.SAR, categoryConfirmed = false,
+            excludedFromBudget = false, reviewState = ReviewState.NEEDS_REVIEW, isCashTagged = false, createdAt = "x", updatedAt = "x",
+        )))
+        val plans = FirestoreInstallmentPlanRepository(s)
+        val manage = ManageInstallments(
+            ManageInstallmentsDeps(
+                plans, FirestoreInstallmentPaymentRepository(s), FirestoreRoscaEntryRepository(s), FirestoreDebtTermsRepository(s), FirestoreObligationRepository(s),
+                txns, PassthroughUnitOfWork(), SequentialIdGenerator(), FixedClock("x"), FirestoreCategoryRepository(s),
+            ),
+        )
+        val plan = manage.save(InstallmentInput(
+            name = "تمويل وهمي", provider = "بنك وهمي", kind = InstallmentKind.FINANCING, currency = Currency.SAR,
+            principalMinor = 1_000_000, totalMinor = 1_200_000, installmentMinor = 100_000, firstDueAt = "2026-02-10",
+        ))
+        manage.linkReceived(plan.id, "t-got")
+        assertEquals("t-got", FirestoreInstallmentPlanRepository(s).listAll().single().receivedTransactionId)
+        assertEquals(EconomicKind.FINANCING_RECEIVED, txns.findByIds(listOf("t-got")).single().economicKind)
+        assertEquals(980_000L, manage.list("2026-01-06").single().receivedMinor)
+        manage.unlink("t-got")
+        assertNull(FirestoreInstallmentPlanRepository(s).listAll().single().receivedTransactionId)
     }
 }
