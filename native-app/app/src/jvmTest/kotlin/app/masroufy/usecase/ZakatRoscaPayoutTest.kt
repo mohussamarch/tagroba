@@ -52,7 +52,7 @@ class ZakatRoscaPayoutTest {
         excludedFromBudget = false, reviewState = ReviewState.NEEDS_REVIEW, isCashTagged = false, createdAt = "x", updatedAt = "x", walletId = "w-bank",
     )
 
-    private fun zakat(country: String, currency: Currency, payout: Boolean = true): ManageZakat {
+    private fun zakat(country: String, currency: Currency, payout: Boolean = true, opening: String = "2025-01-01"): ManageZakat {
         val txns = listOf(
             txn("t-c1", "2025-04-01", Direction.OUT, 100_000, currency), txn("t-c2", "2025-05-01", Direction.OUT, 100_000, currency),
             txn("t-c3", "2025-06-01", Direction.OUT, 100_000, currency), txn("t-p", "2025-09-15", Direction.IN, 1_000_000, currency),
@@ -67,7 +67,7 @@ class ZakatRoscaPayoutTest {
         return ManageZakat(
             ManageZakatDeps(
                 countryCode = country, currency = currency, profile = MemoryProfileRepository(emptyProfile()),
-                wallets = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", currency, "bank", 3_000_000, "2025-01-01"))),
+                wallets = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", currency, "bank", 3_000_000, opening))),
                 txns = MemoryTransactionRepository(txns), assets = MemoryAssetRepository(), lots = MemoryAssetLotRepository(),
                 sales = MemoryAssetSaleRepository(), prices = MemoryAssetPriceRepository(), people = MemoryPersonRepository(),
                 obligations = MemoryObligationRepository(), settlements = MemorySettlementRepository(),
@@ -111,6 +111,33 @@ class ZakatRoscaPayoutTest {
         assertEquals(400_000L, rosca.valueMinor)
         assertTrue(a.notComputed.none { it.holding.id == "r-1" }, "مش «المرجع ما حددش» تاني")
         assertTrue(a.lines.none { it.kind == ZakatLineKind.COLLECTED_RECEIVABLES || it.kind == ZakatLineKind.ROSCA })
+    }
+
+    /**
+     * سنة قديمة ميعادها قبل يونيو 2025 (الحول من 2024-06-01): يوم الميعاد كنت دفعت قسطين بس (أبريل · مايو)، والقبض والأقساط اللي بعده
+     * **ما بيغيّروش موقفها** (عيب `roscaStatus` اللي كان بياخد كل الحركات — جلسة 11، اتصلح في 13).
+     */
+    private suspend fun pastYear(country: String, currency: Currency): ZakatAssessment {
+        val m = zakat(country, currency, opening = "2024-01-01")
+        val year = m.confirmDate("2024-06-01")
+        assertTrue(year.dueAt > "2025-05-01" && year.dueAt < "2025-06-01", year.dueAt)
+        return m.assess(year.id, "2026-02-18", prices)
+    }
+
+    @Test
+    fun `السعودية — موقف الجمعية في سنة قديمة بحركاتها لحد يوم الميعاد بس`() = runBlocking<Unit> {
+        val a = pastYear("SA", Currency.SAR)
+        val rosca = a.items.single { it.holding.id == "r-1" }
+        assertEquals(200_000L to 200_000L, rosca.valueMinor to rosca.zakatableMinor, "قسطين قبل الميعاد — مش 400,000 − 1,000,000 بعده")
+        assertTrue(a.items.none { it.holding.id == "e-p" })
+    }
+
+    @Test
+    fun `مصر — موقف الجمعية في سنة قديمة بحركاتها لحد يوم الميعاد بس`() = runBlocking<Unit> {
+        val a = pastYear("EG", Currency.EGP)
+        val rosca = a.items.single { it.holding.id == "r-1" }
+        assertEquals(ZakatItemStatus.EXEMPT to 200_000L, rosca.status to rosca.valueMinor, "اللي دفعته لحد الميعاد — والقبض بعده مش دين عليك")
+        assertTrue(a.items.none { it.holding.id == "e-p" }, "القبض بعد الميعاد ما بيطلّعش سطر «اتحصّل» في السنة دي")
     }
 
     @Test

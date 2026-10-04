@@ -88,13 +88,16 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
         for (r in deps.roscas.listAll()) {
             if (r.currency != currency) continue
             val entries = deps.roscaEntries.listByRosca(r.id)
-            val position = roscaStatus(r, entries, asOf).positionMinor
+            // كل حركة بتاريخ عمليتها. **الموقف يوم الحساب** = من غير الحركات اللي عمليتها **بعد** [asOf] — دفع أو قبض بعد ميعاد سنة
+            // قديمة ما بيغيّرش زكاتها (عيب اتلقى في جلسة 11 واتصلح في 13). حركة عمليتها مش موجودة (مالهاش تاريخ) بتفضل محسوبة زي
+            // ما كانت قبل التصليح — ما بنشيلش فلوس من غير ما نعرف تاريخها (اختيار Claude)
+            val dates = deps.txns.findByIds(entries.map { it.transactionId }.distinct()).associate { it.id to it.occurredAt }
+            val dated = entries.mapNotNull { e -> dates[e.transactionId]?.let { e to it } }
+            val position = roscaStatus(r, entries.filter { e -> dates[e.transactionId]?.let { it <= asOf } ?: true }, asOf).positionMinor
             if (position > 0) out += ZakatHolding.RoscaCredit(r.id, r.name, position, r.firstDueAt)
             if (position < 0) out += ZakatHolding.Debt(r.id, r.name, -position)
-            // القبض جوه السنة: الجزء اللي كان من فلوسك (مصر — زي الدين اللي اتحصّل، 4399). حركة من غير عملية معروفة ⇒ مالهاش تاريخ ⇒ بتتساب
+            // القبض جوه السنة: الجزء اللي كان من فلوسك (مصر — زي الدين اللي اتحصّل، 4399)
             if (collectedAfter != null) {
-                val dates = deps.txns.findByIds(entries.map { it.transactionId }.distinct()).associate { it.id to it.occurredAt }
-                val dated = entries.mapNotNull { e -> dates[e.transactionId]?.let { e to it } }
                 for (receipt in roscaOwnMoneyReceipts(dated)) {
                     if (receipt.date > collectedAfter && receipt.date <= asOf) {
                         out += ZakatHolding.CollectedRosca(receipt.entryId, r.id, r.name, receipt.ownMinor, receipt.date)
