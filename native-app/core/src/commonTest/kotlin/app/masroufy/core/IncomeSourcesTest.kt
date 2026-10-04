@@ -70,13 +70,15 @@ class IncomeSourcesTest {
     }
 
     @Test
-    fun weeklyPayTakesAWeekdayAndAJobIsMonthly() {
+    fun weeklyPayTakesAWeekdayAndAJobMayBeWeeklyToo() {
         val ok = checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 4)
         assertEquals("محل", ok.name)
         assertFailsWith<IncomeSourceError> { checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 0) }
         assertFailsWith<IncomeSourceError> { checkIncomeSource("محل", "2026-01-01", null, 5, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 4) }
         assertFailsWith<IncomeSourceError> { checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payWeekday = 4) }
-        assertFailsWith<IncomeSourceError> { checkIncomeSource("شركة", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.JOB, payFrequency = PayFrequency.WEEKLY, payWeekday = 4) }
+        // رد المالك §64-٤: الوظيفة ينفع تكون بقبض أسبوعي — بيوم في الأسبوع ومن غير يوم في الشهر
+        assertEquals("شركة", checkIncomeSource("شركة", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.JOB, payFrequency = PayFrequency.WEEKLY, payWeekday = 4).name)
+        assertFailsWith<IncomeSourceError> { checkIncomeSource("شركة", "2026-01-01", null, 28, null, emptyList(), kind = IncomeSourceKind.JOB, payFrequency = PayFrequency.WEEKLY, payWeekday = 4) }
         assertEquals(IncomeSourceKind.PENSION, IncomeSourceKind.fromWire("pension"))
         assertEquals(PayFrequency.MONTHLY, PayFrequency.fromWire(null), "القديم من غير الحقل = شهري")
         assertEquals(PayFrequency.MONTHLY, source("s", "x", "2026-01-01").payFrequency)

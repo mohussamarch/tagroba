@@ -107,7 +107,10 @@ class ManageIncomeSourcesTest {
         val monthly = manage.answerPayFrequency(pt.id, PayFrequency.MONTHLY, 15)
         assertEquals(Triple(PayFrequency.MONTHLY, null as Int?, 15), Triple(monthly.payFrequency, monthly.payWeekday, monthly.expectedDayOfMonth))
         assertFailsWith<IncomeSourceError> { manage.answerPayFrequency(pt.id, PayFrequency.WEEKLY, 8) }
-        assertFailsWith<IncomeSourceError>("الوظيفة شهري") { manage.add(IncomeSourceInput("شركة وهمية", "2026-10-01", payFrequency = PayFrequency.WEEKLY, payWeekday = 2)) }
+        // رد المالك §64-٤: الوظيفة ينفع تكون بقبض أسبوعي — يومها معروف ⇒ لا «بينزل يوم كام؟» ولا «تغيّر بداية شهرك؟»
+        val weeklyJob = manage.changeJob(JobChange(starting = IncomeSourceInput("شركة وهمية", "2026-10-01", payFrequency = PayFrequency.WEEKLY, payWeekday = 2)))
+        assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.AskExpectedSalary(weeklyJob.opened!!.id)), weeklyJob.followUps)
+        assertEquals(28, profile.load().payday)
         val pension = manage.changeJob(JobChange(starting = IncomeSourceInput("معاش وهمي", "2026-10-01", IncomeSourceKind.PENSION)))
         assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.AskPayday(pension.opened!!.id)), pension.followUps)
         assertTrue(manage.answerPayday(pension.opened!!.id, 1).isEmpty(), "المعاش ما بيسألش عن بداية الشهر")

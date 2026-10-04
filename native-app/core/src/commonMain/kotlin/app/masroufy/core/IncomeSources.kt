@@ -81,8 +81,8 @@ class IncomeSourceError(message: String) : IllegalArgumentException(message)
 /**
  * الاسم بعد التنضيف + المطبّع، زي المشاريع. **نفس الاسم مسموح لو الفترات ما بتتقابلش** (رد المالك §64: الرجوع لشركة قديمة =
  * فترة جديدة بنفس الاسم، والقديمة بتفضل بتاريخها) — المرفوض بس فترتين بنفس الاسم في نفس الوقت.
- * الأسبوعي يومه في الأسبوع (1–7) ومن غير يوم في الشهر، والشهري العكس. **الوظيفة شهري بس** (يوم مرتبها = يوم المرتب في الملف،
- * واحد للحساب — §64) — اختيار Claude.
+ * الأسبوعي يومه في الأسبوع (1–7) ومن غير يوم في الشهر، والشهري العكس. **الوظيفة ينفع تكون أسبوعي** زي البارت تايم (رد المالك
+ * §64-٤ — بيلغي «الوظيفة شهري بس»)؛ الوظيفة الشهري يومها يوم المرتب في الملف (واحد للحساب — §64).
  */
 fun checkIncomeSource(
     name: String,
@@ -114,7 +114,7 @@ fun checkIncomeSource(
     if (payWeekday != null && payWeekday !in 1..7) throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_BAD_WEEKDAY))
     val mismatch = when (payFrequency) {
         PayFrequency.MONTHLY -> payWeekday != null
-        PayFrequency.WEEKLY -> expectedDayOfMonth != null || kind == IncomeSourceKind.JOB
+        PayFrequency.WEEKLY -> expectedDayOfMonth != null
     }
     if (mismatch) throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH))
     if (expectedMinor != null && expectedMinor <= 0) throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_BAD_AMOUNT))

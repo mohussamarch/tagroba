@@ -50,13 +50,14 @@ fun isSalaried(sources: List<IncomeSource>, today: IsoDate): Boolean = sourcesAc
 fun isoWeekday(date: IsoDate): Int = (toDayNumber(parseIsoDate(date)) + 3).mod(7) + 1
 
 /**
- * القبض الجاي من المصدر ده **بعد** النهارده (null = ميعاده مش معروف). **الوظيفة** يومها = يوم المرتب في الملف ([accountPayday]،
- * واحد للحساب كله §64) · الباقي يومه هو: الشهري يوم في الشهر (29–31 بيتقيد بآخر الشهر) والأسبوعي يوم في الأسبوع.
+ * القبض الجاي من المصدر ده **بعد** النهارده (null = ميعاده مش معروف). **الوظيفة الشهري** يومها = يوم المرتب في الملف ([accountPayday]،
+ * واحد للحساب كله §64) · الباقي يومه هو (ومنه **الوظيفة الأسبوعي** — رد المالك §64-٤): الشهري يوم في الشهر (29–31 بيتقيد بآخر
+ * الشهر) والأسبوعي يوم في الأسبوع.
  * القبض بعد ما المصدر يتقفل ما بيتعدش.
  */
 fun nextPayDate(s: IncomeSource, today: IsoDate, accountPayday: Int?): IsoDate? {
     val next = when {
-        s.kind == IncomeSourceKind.JOB -> accountPayday?.let { nextPaydayAfter(today, it) }
+        s.kind == IncomeSourceKind.JOB && s.payFrequency == PayFrequency.MONTHLY -> accountPayday?.let { nextPaydayAfter(today, it) }
         s.payFrequency == PayFrequency.WEEKLY -> s.payWeekday?.let { w -> addDaysIso(today, (w - isoWeekday(today) - 1).mod(7) + 1) }
         else -> s.expectedDayOfMonth?.let { nextPaydayAfter(today, it) }
     } ?: return null
@@ -68,12 +69,15 @@ data class LeftoverHorizon(val until: IsoDate, val monthEnd: Boolean)
 
 /**
  * أقرب قبض جاي من المصادر اللي بتخلّيك «بمرتب» والشغالة النهارده **بعملة المساحة**. null = مش «بمرتب» أو مفيش ميعاد معروف.
- * «آخر الشهر» بس لو أقرب قبض هو يوم مرتب الحساب؛ غير كده «لحد القبض الجاي» (اختيار Claude — المالك يقدر يغيّره).
+ * «آخر الشهر» بس لو أقرب قبض هو يوم مرتب الحساب **من مصدر شهري**؛ غير كده «لحد القبض الجاي» (اختيار Claude — المالك يقدر يغيّره).
+ * قبض أسبوعي (وظيفة أو بارت تايم) وقع صدفة يوم مرتب الحساب ⇒ برضه «لحد القبض الجاي» — مش آخر شهر (§64-٤).
  */
 fun leftoverHorizon(sources: List<IncomeSource>, today: IsoDate, accountPayday: Int?, currency: Currency): LeftoverHorizon? {
-    val dates = sourcesActiveOn(sources, today).filter { it.currency == currency && countsAsSalaried(it) }.mapNotNull { nextPayDate(it, today, accountPayday) }
-    val until = dates.minOrNull() ?: return null
-    return LeftoverHorizon(until, accountPayday != null && until == nextPaydayAfter(today, accountPayday))
+    val pays = sourcesActiveOn(sources, today).filter { it.currency == currency && countsAsSalaried(it) }
+        .mapNotNull { s -> nextPayDate(s, today, accountPayday)?.let { it to s.payFrequency } }
+    val until = pays.minOfOrNull { it.first } ?: return null
+    val monthly = pays.any { it.first == until && it.second == PayFrequency.MONTHLY }
+    return LeftoverHorizon(until, monthly && accountPayday != null && until == nextPaydayAfter(today, accountPayday))
 }
 
 /**

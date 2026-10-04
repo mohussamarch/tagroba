@@ -192,6 +192,19 @@ class CalendarFlowTest {
         assertEquals(uiText(TextKey.LEFTOVER_NEXT_PAY), leftoverLabel(p))
     }
 
+    @Test fun weeklyJobLeftoverRunsUntilTheNextPayAndShowsItsPayDays() = runBlocking<Unit> {
+        counting.countUpcomingItem(CalendarItemType.EVENT, "ev-1", "2026-10-15", today, 25_000)
+        // رد المالك §64-٤: وظيفة بقبض أسبوعي يوم الاتنين ⇒ «فاضلك تقريبًا لحد القبض الجاي» (2026-10-05)، مش آخر الشهر
+        incomes.saveMany(listOf(source("job-w", IncomeSourceKind.JOB, weekly = 1)))
+        val p = leftover.load(today)
+        assertEquals(LeftoverMode.UNTIL_NEXT_PAY to "2026-10-05", p.mode to p.until)
+        assertEquals(uiText(TextKey.LEFTOVER_NEXT_PAY), leftoverLabel(p))
+        assertEquals(
+            listOf("2026-10-05", "2026-10-12", "2026-10-19", "2026-10-26"),
+            calendar.items("2026-10-01", "2026-10-31", today).filter { it.type == CalendarItemType.INCOME_PAY }.map { it.date },
+        )
+    }
+
     @Test fun pensionAndMonthlyRentCountAsSalariedButWeeklyRentAndOtherCurrencyDoNot() = runBlocking<Unit> {
         counting.countUpcomingItem(CalendarItemType.EVENT, "ev-1", "2026-10-15", today, 25_000)
         incomes.saveMany(listOf(source("rent-w", IncomeSourceKind.RENT, weekly = 1), source("job-eg", IncomeSourceKind.JOB, currency = Currency.EGP)))

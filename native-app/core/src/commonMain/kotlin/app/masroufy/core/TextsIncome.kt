@@ -25,7 +25,7 @@ internal val ARABIC_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_INCOME_LATE_TITLE to "لسه ما وصلش من «{0}»",
     TextKey.ALERT_INCOME_LATE_BODY to "ميعاده المعتاد {0} — ساعات بيتأخر، ومفيش حاجة مطلوبة منك",
     TextKey.INCOME_SOURCE_BAD_WEEKDAY to "يوم القبض في الأسبوع لازم يكون من 1 (الاتنين) لـ 7 (الحد)",
-    TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "القبض الشهري بيوم في الشهر والأسبوعي بيوم في الأسبوع — والوظيفة شهري",
+    TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "القبض الشهري بيوم في الشهر والأسبوعي بيوم في الأسبوع",
     TextKey.INCOME_Q_PAY_FREQUENCY to "بتقبض من الشغل ده إمتى؟ كل شهر ولا كل أسبوع؟",
 )
 
@@ -48,6 +48,6 @@ internal val ENGLISH_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_INCOME_LATE_TITLE to "Nothing yet from “{0}”",
     TextKey.ALERT_INCOME_LATE_BODY to "Its usual date was {0} — it is sometimes late, and nothing is needed from you",
     TextKey.INCOME_SOURCE_BAD_WEEKDAY to "The weekly pay day has to be from 1 (Monday) to 7 (Sunday)",
-    TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "Monthly pay takes a day of the month and weekly pay a day of the week — and a job is monthly",
+    TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "Monthly pay takes a day of the month and weekly pay a day of the week",
     TextKey.INCOME_Q_PAY_FREQUENCY to "When are you paid for this work? Every month or every week?",
 )

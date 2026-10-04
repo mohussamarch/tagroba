@@ -51,6 +51,17 @@ class LeftoverHorizonTest {
         assertEquals(LeftoverHorizon("2026-10-10", false), leftoverHorizon(listOf(src("p", IncomeSourceKind.PENSION, day = 10)), today, 28, Currency.SAR))
     }
 
+    @Test fun aWeeklyJobUsesItsOwnWeekdayAndIsNeverTheMonthEnd() {
+        // رد المالك §64-٤: وظيفة أسبوعي ⇒ «لحد القبض الجاي» بيومها، مش يوم مرتب الحساب
+        val weeklyJob = src("jw", IncomeSourceKind.JOB, weekday = 4)
+        assertEquals("2026-10-08", nextPayDate(weeklyJob, today, 28), "الخميس الجاي — مش يوم 28")
+        assertEquals(LeftoverHorizon("2026-10-08", false), leftoverHorizon(listOf(weeklyJob), today, 28, Currency.SAR))
+        assertNull(nextPayDate(src("jw", IncomeSourceKind.JOB).copy(payFrequency = PayFrequency.WEEKLY), today, 28), "يومها في الأسبوع لسه ما اتقالش")
+        // يوم مرتب الحساب 8 = الخميس الجاي صدفة: القبض الأسبوعي لوحده مش «آخر الشهر»، ومعاه وظيفة شهري ⇒ «آخر الشهر»
+        assertEquals(LeftoverHorizon("2026-10-08", false), leftoverHorizon(listOf(weeklyJob), today, 8, Currency.SAR))
+        assertEquals(LeftoverHorizon("2026-10-08", true), leftoverHorizon(listOf(weeklyJob, src("j", IncomeSourceKind.JOB)), today, 8, Currency.SAR))
+    }
+
     @Test fun noHorizonWithoutASalariedSourceOrAKnownDayOrInAnotherCurrency() {
         assertNull(leftoverHorizon(listOf(src("c", IncomeSourceKind.CLIENT, day = 5)), today, 28, Currency.SAR))
         assertNull(leftoverHorizon(listOf(src("r", IncomeSourceKind.RENT, weekday = 2)), today, 28, Currency.SAR), "الإيجار الأسبوعي مش «بمرتب»")

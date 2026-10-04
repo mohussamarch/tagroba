@@ -44,6 +44,14 @@ class IncomeChangesTest {
         assertEquals(uiText(TextKey.INCOME_Q_PAY_FREQUENCY), incomeFollowUpText(IncomeFollowUp.AskPayFrequency("p")))
     }
 
+    @Test fun aWeeklyJobAsksItsWeekdayAndNeverToMoveTheFinancialMonth() {
+        // رد المالك §64-٤: الوظيفة ينفع تكون أسبوعي — بتتسأل يومها في الأسبوع، و«تغيّر بداية شهرك؟» مالوش معنى من غير يوم في الشهر
+        val weekly = src("w").copy(payFrequency = PayFrequency.WEEKLY)
+        assertEquals(listOf(IncomeFollowUp.AskPayFrequency("w"), IncomeFollowUp.AskExpectedSalary("w")), newSourceFollowUps(weekly, 28))
+        assertEquals(emptyList(), newSourceFollowUps(weekly.copy(payWeekday = 4, expectedMinor = 300_000), 28))
+        assertNull(monthStartFollowUp(weekly.copy(payWeekday = 4), 28))
+    }
+
     @Test fun aDifferentPaydayAsksToMoveTheFinancialMonthOnlyForAJob() {
         assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.ChangeMonthStart("n", 25)), newSourceFollowUps(src("n", day = 25, amount = 900_000), 28))
         assertEquals(emptyList(), newSourceFollowUps(src("n", day = 28, amount = 900_000), 28), "نفس اليوم ⇒ مفيش سؤال")

@@ -54,8 +54,12 @@ fun jobChangeOutcome(closed: IncomeSource?, opened: IncomeSource?, monthStartDay
 fun newSourceFollowUps(source: IncomeSource, monthStartDay: Int): List<IncomeFollowUp> {
     val out = mutableListOf<IncomeFollowUp>()
     when (source.kind) {
-        IncomeSourceKind.JOB ->
-            if (source.expectedDayOfMonth == null) out += IncomeFollowUp.AskPayday(source.id) else monthStartFollowUp(source, monthStartDay)?.let { out += it }
+        // الوظيفة الأسبوعي (§64-٤) بتتسأل يومها في الأسبوع لو مش مكتوب، ومن غير «تغيّر بداية شهرك؟» (مالهاش يوم في الشهر)
+        IncomeSourceKind.JOB -> when {
+            source.payFrequency == PayFrequency.WEEKLY -> if (source.payWeekday == null) out += IncomeFollowUp.AskPayFrequency(source.id)
+            source.expectedDayOfMonth == null -> out += IncomeFollowUp.AskPayday(source.id)
+            else -> monthStartFollowUp(source, monthStartDay)?.let { out += it }
+        }
         IncomeSourceKind.PART_TIME -> if (!hasKnownPayDay(source)) out += IncomeFollowUp.AskPayFrequency(source.id)
         IncomeSourceKind.PENSION -> if (source.expectedDayOfMonth == null) out += IncomeFollowUp.AskPayday(source.id)
         else -> return emptyList()
