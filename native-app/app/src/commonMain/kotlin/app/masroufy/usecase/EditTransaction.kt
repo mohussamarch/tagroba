@@ -47,6 +47,8 @@ data class EditTransactionDeps(
     /** لتعديل المبلغ: ما ينزلش تحت المتوزع أو المتسوّى بيه (OVERRIDES §32). */
     val allocations: AllocationRepository? = null,
     val settlements: SettlementRepository? = null,
+    /** رجول التحويل لنفسك (§64): مبلغ الرجل متسجل في الزوج ⇒ ما يتعدلش غير بعد الفك. التشغيل الحقيقي بيدّيه. */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 class EditTransaction(private val deps: EditTransactionDeps) {
@@ -85,6 +87,7 @@ class EditTransaction(private val deps: EditTransactionDeps) {
     /** بيعدّل المبلغ — OVERRIDES §32. الأصلي من المصدر بيتحفظ مرة واحدة. */
     suspend fun setAmount(transactionId: Id, amountMinor: Long) {
         val transaction = find(transactionId)
+        if (deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
         val allocations = deps.allocations?.listByTransactionIds(listOf(transactionId)) ?: emptyList()
         val settlements = deps.settlements?.listByTransactionIds(listOf(transactionId)) ?: emptyList()
         val fields = planAmountEdit(

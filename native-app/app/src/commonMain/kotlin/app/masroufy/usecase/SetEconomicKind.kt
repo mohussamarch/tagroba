@@ -42,6 +42,8 @@ data class SetEconomicKindDeps(
     val categories: CategoryRepository,
     val uow: UnitOfWork,
     val clock: Clock,
+    /** رجول التحويل لنفسك (§64): نوعها ما يتغيرش غير بالفك (وإلا تبقى مصروف أو دخل وهي فلوسك رايحة بلد تانية). */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 class SetEconomicKind(private val deps: SetEconomicKindDeps) {
@@ -94,6 +96,9 @@ class SetEconomicKind(private val deps: SetEconomicKindDeps) {
         if (!isConsistentWithObservedDirection(kind, transaction.observedDirection)) {
             val observed = if (transaction.observedDirection == Direction.IN) "وارد" else "صادر"
             throw IllegalStateException("النوع ده ما يتوافقش مع اتجاه الحركة. الكشف بيقول العملية دي «$observed».")
+        }
+        if (kind != transaction.economicKind && deps.spaceLegs?.isLeg(transactionId) == true) {
+            throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
         }
 
         deps.txns.update(

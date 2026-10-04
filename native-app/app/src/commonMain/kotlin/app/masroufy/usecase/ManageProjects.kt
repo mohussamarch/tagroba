@@ -48,6 +48,8 @@ data class ProjectsDeps(
     val clock: Clock,
     /** آخر مراجعة للعمليات الجديدة على الجهاز ده (ضياعها = مراجعة تانية من أقدم قاعدة، من غير تكرار). */
     val cursor: SyncCursorPort,
+    /** رجول التحويل لنفسك (§64) — ما تدخلش مشروع لا بإيدك ولا بقاعدة. التشغيل الحقيقي بيدّيه. */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 data class ProjectRow(val project: Project, val summary: ProjectSummary)
@@ -86,10 +88,15 @@ class ManageProjects(private val deps: ProjectsDeps) {
         val since = syncStart(rules, deps.cursor.read()) ?: return 0
         val fresh = deps.txns.listCreatedAfter(since)
         if (fresh.isEmpty()) return 0
-        val planned = planSyncLinks(rules, fresh, deps.links.listAll(), deps.clock.nowIso())
+        val planned = withoutLegs(planSyncLinks(rules, fresh, deps.links.listAll(), deps.clock.nowIso()))
         if (planned.isNotEmpty()) deps.links.saveMany(planned)
         deps.cursor.write(fresh.fold(since) { max, t -> if (t.createdAt > max) t.createdAt else max })
         return planned.size
+    }
+
+    private suspend fun withoutLegs(planned: List<ProjectLink>): List<ProjectLink> {
+        val legs = deps.spaceLegs?.legsAmong(planned.map { it.transactionId }).orEmpty()
+        return if (legs.isEmpty()) planned else planned.filter { it.transactionId !in legs }
     }
 
     private suspend fun load(projectId: Id? = null): Loaded {
@@ -188,6 +195,7 @@ class ManageProjects(private val deps: ProjectsDeps) {
     /** إضافة أو شيل بإيد المستخدم؛ الشيل بيسيبها «مستبعدة» عشان قاعدة ما ترجعهاش. */
     suspend fun setMember(transactionId: Id, projectId: Id, member: Boolean) {
         findProject(projectId)
+        if (member && deps.spaceLegs?.isLeg(transactionId) == true) throw ProjectError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
         val existing = deps.links.listByTransaction(transactionId).filter { it.projectId == projectId }
         val changes = membershipChanges(existing, projectId, transactionId, member, deps.clock.nowIso())
         if (changes.isNotEmpty()) deps.links.saveMany(changes)
@@ -207,7 +215,7 @@ class ManageProjects(private val deps: ProjectsDeps) {
     suspend fun applyRuleToOld(ruleId: Id): Int {
         val rule = findRule(ruleId)
         val links = deps.links.listAll()
-        val planned = planRuleLinks(rule, oldCandidates(rule, links), links, deps.clock.nowIso())
+        val planned = withoutLegs(planRuleLinks(rule, oldCandidates(rule, links), links, deps.clock.nowIso()))
         if (planned.isNotEmpty()) deps.links.saveMany(planned)
         return planned.size
     }

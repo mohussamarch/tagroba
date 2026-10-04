@@ -24,7 +24,10 @@ class FirestoreUnitOfWork : UnitOfWork {
  * السعودية ([DEFAULT_SPACE_ID]) = نفس المكان `users/{uid}` (بيانات التطبيق الحالي) بكائنين منفصلين. في أي بلد تانية تصنيف التاجر
  * بيتخزن في البلد نفسها (`SpaceMerchantRepository`) ومش بيلمس التاجر المشترك.
  */
-class FirestoreContainer(account: FirestoreSpace, space: FirestoreSpace, val spaceId: String) {
+class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: FirestoreSpace, val spaceId: String) {
+    private val account = accountRoot
+    private val space = spaceRoot
+
     /** حساب بمساحة واحدة (السعودية) في نفس المكان — زي ما كان قبل البلاد. */
     constructor(root: FirestoreSpace) : this(root, root, DEFAULT_SPACE_ID)
 
@@ -79,4 +82,7 @@ class FirestoreContainer(account: FirestoreSpace, space: FirestoreSpace, val spa
     val referenceSeed = FirestoreReferenceSeed(space, merchantsAt = account)
     val sharedMerchants = FirestoreSharedMerchantCatalog(space.db)
     val spaces = FirestoreSpaceRegistry(account)
+
+    /** أزواج التحويل لنفسك (على مستوى الحساب). الكتابة الذرّية (`FirestoreSpaceTransferWriter`) محتاجة كل البلاد ⇒ بتتعمل من الجلسة. */
+    val spaceTransfers = FirestoreSpaceTransferRepository(account)
 }

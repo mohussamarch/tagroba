@@ -49,6 +49,8 @@ data class ManagePeopleDeps(
     val uow: UnitOfWork,
     val ids: IdGenerator,
     val clock: Clock,
+    /** رجول التحويل لنفسك (§64) — الرجل ما تتربطش بشخص (تخصيص أو دين أو تسوية). التشغيل الحقيقي بيدّيه. */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 data class LinkResult(val obligation: Obligation?, val allocation: PersonAllocation)
@@ -113,6 +115,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
 
         val transaction = deps.txns.findByIds(listOf(transactionId)).firstOrNull()
             ?: throw IllegalStateException("العملية دي مش موجودة")
+        if (deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
 
         val already = deps.allocations.listByTransactionIds(listOf(transactionId)).fold(0L) { sum, a -> sum + a.amountMinor }
         if (already + amountMinor > transaction.amountMinor) {
@@ -156,6 +159,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         requestId: String? = null,
     ): Settlement {
         if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException("معرّف طلب التسوية غير سليم")
+        if (transactionId != null && deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
         return deps.settlementWriter.settle(
             Settlement(
                 id = if (requestId != null) "stl-$obligationId-$requestId" else deps.ids.next("stl"),

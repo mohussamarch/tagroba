@@ -30,7 +30,7 @@ import app.masroufy.port.ZakatPaymentRepository
  * اتلقت في جلسة 6): كل حاجة بتشاور على عملية بمعرّفها اتبصّ عليها ([RevertLinkDeps]) —
  * - **فلوس اتسجلت عليها بعد الاستيراد** (زي التسوية بالظبط): جمعية · قسط · مبلغ تمويل مستلم · دفعة زكاة ⇒ العملية **بتفضل**.
  * - **شراء أو بيع أصل** (استثمار) ⇒ بتفضل. · **نقطة في حدث** (متربطة بشخص — زي التخصيص) ⇒ بتفضل.
- * - **علامات بس** (ربط مشروع · مصروف على حدث · وسم) ⇒ الربط **بيتشال مع العملية في نفس وحدة العمل** — ولا ربط بيفضل
+ * - **علامات بس** (ربط مشروع · مصروف على حدث · وسم · تحويل لنفسك لبلد تانية) ⇒ الربط **بيتشال مع العملية في نفس وحدة العمل** — ولا ربط بيفضل
  *   بيشاور على عملية مش موجودة (النسخة الشاملة كانت بترفض العلاقة).
  * اختيار Claude (OVERRIDES §64 «قرارات تنفيذ») — المالك يقدر يغيّره.
  *
@@ -80,11 +80,16 @@ data class RevertLinkDeps(
     val zakatPayments: ZakatPaymentRepository,
     val assetLots: AssetLotRepository,
     val assetSales: AssetSaleRepository,
+    /**
+     * رجول التحويل لنفسك في البلد دي (§64): الرجل اللي هتتمسح ⇒ **الزوج بيتفك** والرجل التانية (في البلد التانية) بترجع «لسه ما اتحددش» —
+     * ولا زوج بيفضل بيشاور على عملية مش موجودة. التشغيل الحقيقي بيدّيه.
+     */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 /** الروابط اللي هتتشال مع العمليات اللي هتتمسح. */
-private data class Detach(val projectLinks: List<Id>, val eventLinks: List<Id>, val tags: List<Id>) {
-    val count: Int get() = projectLinks.size + eventLinks.size + tags.size
+private data class Detach(val projectLinks: List<Id>, val eventLinks: List<Id>, val tags: List<Id>, val spacePairs: List<app.masroufy.core.SpaceTransfer> = emptyList()) {
+    val count: Int get() = projectLinks.size + eventLinks.size + tags.size + spacePairs.size
 }
 
 data class RevertDeps(
@@ -184,6 +189,7 @@ class RevertImportBatch(private val deps: RevertDeps) {
             l.projectLinks.listAll().filter { it.transactionId in wanted }.map { it.id },
             l.eventLinks.listByTransactionIds(ids).map { it.id },
             l.transactionTags.listByTransactionIds(ids).map { it.id },
+            l.spaceLegs?.pairsOf(ids).orEmpty(),
         )
     }
 
@@ -199,6 +205,7 @@ class RevertImportBatch(private val deps: RevertDeps) {
                 if (detach.projectLinks.isNotEmpty()) deps.links.projectLinks.deleteMany(detach.projectLinks)
                 if (detach.eventLinks.isNotEmpty()) deps.links.eventLinks.deleteMany(detach.eventLinks)
                 if (detach.tags.isNotEmpty()) deps.links.transactionTags.deleteMany(detach.tags)
+                if (detach.spacePairs.isNotEmpty()) deps.links.spaceLegs?.detach(detach.spacePairs)
                 deps.txns.deleteMany(revertPlan.toDelete)
             }
             val batchRecords = deps.sources.listByBatch(batchId)

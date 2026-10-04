@@ -4,7 +4,9 @@ import app.masroufy.core.Currency
 import app.masroufy.core.MERCHANT_CATEGORIES_GROUP
 import app.masroufy.core.MerchantCategory
 import app.masroufy.core.SPACES_GROUP
+import app.masroufy.core.SPACE_TRANSFERS_GROUP
 import app.masroufy.core.Space
+import app.masroufy.core.SpaceTransfer
 
 /**
  * «حساب لكل بلد» (OVERRIDES §41 · §64) — مجموعات جديدة في كوتلن بس، على نفس قواعد الباقي.
@@ -23,6 +25,25 @@ object SpaceCodecs {
             }
         },
         { d -> Space(d.str("id"), d.str("name"), d.str("countryCode"), d.wire("currency", Currency::valueOf), d.str("createdAt"), d.bool("archived")) },
+    )
+
+    /** التحويل لنفسك (§64) على مستوى الحساب — كل رجل بعملتها ومبلغها زي الكشف، **ومفيش سعر متخزن**. */
+    val spaceTransfers: DocCodec<SpaceTransfer> = codec(
+        SPACE_TRANSFERS_GROUP, { it.id },
+        { t ->
+            doc {
+                req("id", t.id)
+                req("fromSpaceId", t.fromSpaceId); req("fromTransactionId", t.fromTransactionId); req("fromAmountMinor", t.fromAmountMinor); req("fromCurrency", t.fromCurrency.name)
+                req("toSpaceId", t.toSpaceId); req("toTransactionId", t.toTransactionId); req("toAmountMinor", t.toAmountMinor); req("toCurrency", t.toCurrency.name)
+                req("createdAt", t.createdAt); opt("note", t.note)
+            }
+        },
+        { d ->
+            SpaceTransfer(
+                d.str("id"), d.str("fromSpaceId"), d.str("fromTransactionId"), d.long("fromAmountMinor"), d.wire("fromCurrency", Currency::valueOf),
+                d.str("toSpaceId"), d.str("toTransactionId"), d.long("toAmountMinor"), d.wire("toCurrency", Currency::valueOf), d.str("createdAt"), d.strOrNull("note"),
+            )
+        },
     )
 
     val merchantCategories: DocCodec<MerchantCategory> = codec(

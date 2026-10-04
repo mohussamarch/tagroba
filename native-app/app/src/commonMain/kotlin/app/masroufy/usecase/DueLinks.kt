@@ -40,6 +40,8 @@ internal class DueLinks(
     private val zakatPayments: ZakatPaymentRepository? = null,
     /** روابط الأحداث (§64) — العملية اللي بقت نقطة ما تتربطش بالمستحقات أو الزكاة (نوعها كان هيتكتب فوقه). */
     private val eventLinks: EventLinkRepository? = null,
+    /** رجول التحويل لنفسك في البلد دي (§64) — الرجل ما تبقاش قسط ولا جمعية ولا زكاة. التشغيل الحقيقي بيدّيه. */
+    private val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 ) {
     /** العملية بعد الفحص + المبلغ اللي هيتربط (المبلغ كله لو ما اتحددش). */
     suspend fun check(
@@ -56,6 +58,7 @@ internal class DueLinks(
         }
         if (txn.currency != currency) throw DueLinkError(uiText(TextKey.DUE_TXN_CURRENCY, ownerName))
         val ids = listOf(transactionId)
+        if (spaceLegs?.isLeg(transactionId) == true) throw DueLinkError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
         if (roscaEntries.listByTransactionIds(ids).isNotEmpty() || payments.listByTransactionIds(ids).isNotEmpty() ||
             plans.listAll().any { it.receivedTransactionId == transactionId } ||
             zakatPayments?.listByTransactionIds(ids).orEmpty().isNotEmpty() ||

@@ -57,6 +57,8 @@ data class EventGiftsDeps(
     val installmentPayments: InstallmentPaymentRepository? = null,
     val plans: InstallmentPlanRepository? = null,
     val zakatPayments: ZakatPaymentRepository? = null,
+    /** رجول التحويل لنفسك (§64) — الرجل ما تتربطش بحدث خالص (لا مصروف ولا نقطة). */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 /** نقطة لاسم واحد. */
@@ -89,6 +91,7 @@ class EventGifts(private val deps: EventGiftsDeps) {
         if (personId != null && deps.people.listAll().none { it.id == personId }) throw EventError(uiText(TextKey.EVENT_PERSON_NOT_FOUND))
         checkEventLink(event, role, personId, txn, deps.links.listByTransactionIds(listOf(transactionId)), sharePercent)
         if (role.isGift && inDues(transactionId)) throw EventError(uiText(TextKey.EVENT_TXN_IN_DUES))
+        if (deps.spaceLegs?.isLeg(transactionId) == true) throw EventError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
         val now = deps.clock.nowIso()
         val link = EventLink(eventLinkId(txn.id), event.id, txn.id, role, personId, now, sharePercent)
         deps.uow.run {

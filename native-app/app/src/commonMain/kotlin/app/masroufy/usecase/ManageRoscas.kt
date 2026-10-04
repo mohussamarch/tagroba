@@ -73,10 +73,12 @@ data class ManageRoscasDeps(
     val zakatPayments: app.masroufy.port.ZakatPaymentRepository? = null,
     /** عشان عملية اتسجلت نقطة في حدث ما تتربطش هنا كمان (§64). */
     val eventLinks: app.masroufy.port.EventLinkRepository? = null,
+    /** رجول التحويل لنفسك (§64) — الرجل ما تتربطش هنا. */
+    val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
 )
 
 class ManageRoscas(private val deps: ManageRoscasDeps) {
-    private val links = DueLinks(deps.txns, deps.entries, deps.payments, deps.plans, deps.categories, deps.clock, deps.zakatPayments, deps.eventLinks)
+    private val links = DueLinks(deps.txns, deps.entries, deps.payments, deps.plans, deps.categories, deps.clock, deps.zakatPayments, deps.eventLinks, deps.spaceLegs)
 
     private suspend fun find(id: Id): Rosca = deps.roscas.listAll().firstOrNull { it.id == id } ?: throw RoscaError(uiText(TextKey.ROSCA_NOT_FOUND))
 

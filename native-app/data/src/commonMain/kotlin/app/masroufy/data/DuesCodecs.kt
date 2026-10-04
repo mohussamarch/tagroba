@@ -111,7 +111,7 @@ object DocumentCodecs {
     val income: List<DocCodec<*>> = listOf(IncomeCodecs.incomeSources)
 
     /** حساب لكل بلد (§41 · §64): سجل المساحات (حساب) + تصنيف التاجر جوه البلد (مساحة). */
-    val spaces: List<DocCodec<*>> = listOf(SpaceCodecs.spaces, SpaceCodecs.merchantCategories)
+    val spaces: List<DocCodec<*>> = listOf(SpaceCodecs.spaces, SpaceCodecs.spaceTransfers, SpaceCodecs.merchantCategories)
 
     val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + spaces).associateBy { it.group }
 }
