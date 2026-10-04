@@ -110,5 +110,8 @@ object DocumentCodecs {
     /** مصادر الدخل (§48 · §64). */
     val income: List<DocCodec<*>> = listOf(IncomeCodecs.incomeSources)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income).associateBy { it.group }
+    /** التقويم: المبالغ المحجوزة وتجهيزات الأحداث (§65). */
+    val calendar: List<DocCodec<*>> = listOf(CalendarCodecs.reservations, CalendarCodecs.eventPrep)
+
+    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + calendar).associateBy { it.group }
 }

@@ -18,6 +18,8 @@ val BACKUP_GROUPS = listOf(
     "transferParties", "zakatFacts", "zakatYears", "zakatPayments", "lifeEvents", "eventLinks", "occasions",
     // مصادر الدخل (§48 · §64) — التطبيق الجديد بس
     "incomeSources",
+    // التقويم: المبالغ المحجوزة وتجهيزات الأحداث (§65) — التطبيق الجديد بس
+    "reservations", "eventPrep",
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -40,7 +42,11 @@ val EVENT_BACKUP_GROUPS = listOf("lifeEvents", "eventLinks", "occasions")
 /** مصادر الدخل (§48 · §64) — بتتكتب بس لو فيها حاجة. */
 const val INCOME_SOURCES_GROUP = "incomeSources"
 
-val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP
+/** المبالغ المحجوزة في التقويم وبنود تجهيز الأحداث (§65) — بيتكتبوا مع بعض لو أي واحدة فيها حاجة. */
+val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
+
+val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
+    CALENDAR_BACKUP_GROUPS
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -68,8 +74,9 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "zakatFacts" to linkedMapOf("assetId" to "assets", "obligationId" to "obligations"),
     "zakatPayments" to linkedMapOf("yearId" to "zakatYears", "transactionId" to "transactions"),
     "lifeEvents" to mapOf("hostPersonId" to "people"),
-    "eventLinks" to linkedMapOf("eventId" to "lifeEvents", "transactionId" to "transactions", "personId" to "people"),
+    "eventLinks" to linkedMapOf("eventId" to "lifeEvents", "transactionId" to "transactions", "personId" to "people", "prepItemId" to "eventPrep"),
     "occasions" to linkedMapOf("personId" to "people", "sourceEventId" to "lifeEvents"),
+    "eventPrep" to mapOf("eventId" to "lifeEvents"),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
@@ -79,7 +86,8 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP)).filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), CALENDAR_BACKUP_GROUPS)
+        .filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
 

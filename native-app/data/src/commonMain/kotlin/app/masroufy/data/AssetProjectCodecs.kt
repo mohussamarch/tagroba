@@ -73,9 +73,16 @@ object AssetProjectCodecs {
             doc {
                 req("id", p.id); req("name", p.name); req("normalizedName", p.normalizedName); req("archived", p.archived); req("createdAt", p.createdAt)
                 opt("kind", p.kind.takeIf { it != ProjectKind.PERSONAL }?.wire)
+                // آخر ميعاد (§65) — حقل كوتلن بس، وما بيتكتبش لو فاضي ⇒ مستند التطبيق الحالي هو هو
+                opt("deadline", p.deadline)
             }
         },
-        { r -> Project(r.str("id"), r.str("name"), r.str("normalizedName"), r.bool("archived"), r.str("createdAt"), ProjectKind.fromWire(r.strOrNull("kind"))) },
+        { r ->
+            Project(
+                r.str("id"), r.str("name"), r.str("normalizedName"), r.bool("archived"), r.str("createdAt"), ProjectKind.fromWire(r.strOrNull("kind")),
+                r.strOrNull("deadline"),
+            )
+        },
     )
 
     val projectLinks: DocCodec<ProjectLink> = codec(
