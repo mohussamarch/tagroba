@@ -55,7 +55,7 @@ class ManageSpacesTest {
                 val r = MemoryRuleRepository()
                 created[space.id] = c to r
                 // التجار في المساحة الجديدة = المشتركين + تصنيف البلد — التجهيز ما يكتبش تجار خالص
-                SpaceSeedTargets(c, r, MemoryReferenceSeed(c, r, SpaceMerchantRepository(sharedMerchants, MemoryMerchantCategoryRepository())))
+                SpaceSeedTargets(c, r, MemoryReferenceSeed(c, r, SpaceMerchantRepository(sharedMerchants, MemoryMerchantCategoryRepository(), c)))
             },
             seeds = { pack ->
                 loads++

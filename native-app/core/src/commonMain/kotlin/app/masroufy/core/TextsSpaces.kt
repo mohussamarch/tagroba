@@ -29,6 +29,7 @@ internal val ARABIC_SPACE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_SPACE_TRANSFERS to "التحويل لنفسك بين البلاد",
     TextKey.SPACE_TRANSFER_NOTE_LONG to "الملاحظة أطول من 1000 حرف",
     TextKey.SPACE_TRANSFER_LEG_LOCKED to "العملية دي تحويل لنفسك لبلد تانية — فك الربط الأول لو عايز تغيّر نوعها أو تربطها بحاجة تانية",
+    TextKey.CATEGORIZED_MERCHANT_OTHER_COUNTRY to "التاجر «{0}» متصنف كده في بلدك التانية — اقتراح، أكّده لو صح",
 )
 
 internal val ENGLISH_SPACE_TEXTS: Map<TextKey, String> = mapOf(
@@ -56,4 +57,5 @@ internal val ENGLISH_SPACE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_SPACE_TRANSFERS to "Transfers to yourself between countries",
     TextKey.SPACE_TRANSFER_NOTE_LONG to "The note is longer than 1000 characters",
     TextKey.SPACE_TRANSFER_LEG_LOCKED to "This transaction is a transfer to yourself in another country — unlink it first to change its kind or link it to something else",
+    TextKey.CATEGORIZED_MERCHANT_OTHER_COUNTRY to "The store “{0}” has this category in your other country — a suggestion, confirm it if right",
 )

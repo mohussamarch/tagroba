@@ -42,7 +42,7 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     val sharedMerchantRecords = FirestoreMerchantRepository(account)
     val merchantCategories = FirestoreMerchantCategoryRepository(space)
     val merchants: MerchantRepository =
-        if (spaceId == DEFAULT_SPACE_ID) sharedMerchantRecords else SpaceMerchantRepository(sharedMerchantRecords, merchantCategories)
+        if (spaceId == DEFAULT_SPACE_ID) sharedMerchantRecords else SpaceMerchantRepository(sharedMerchantRecords, merchantCategories, categories)
     val people = FirestorePersonRepository(account)
     val obligations = FirestoreObligationRepository(space)
     val settlements = FirestoreSettlementRepository(space)
