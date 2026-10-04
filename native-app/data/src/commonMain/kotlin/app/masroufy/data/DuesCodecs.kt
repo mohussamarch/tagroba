@@ -85,7 +85,7 @@ object DuesCodecs {
     )
 }
 
-/** كل المحوّلات بالمجموعة — الـ24 بتوع التطبيق الحالي (نفس ترتيب `BACKUP_GROUPS`) + «المستحقات» + «زون التحويلات» + الزكاة + الأحداث. */
+/** كل المحوّلات بالمجموعة — الـ24 بتوع التطبيق الحالي (نفس ترتيب `BACKUP_GROUPS`) + «المستحقات» + «زون التحويلات» + الزكاة + الأحداث + مصادر الدخل. */
 object DocumentCodecs {
     val current: List<DocCodec<*>> = listOf(
         ReferenceCodecs.wallets, ReferenceCodecs.categories, ReferenceCodecs.merchants, ReferenceCodecs.rules, ReferenceCodecs.people,
@@ -107,5 +107,8 @@ object DocumentCodecs {
     /** الأحداث ومناسبات الشخص (§64). */
     val events: List<DocCodec<*>> = listOf(EventCodecs.lifeEvents, EventCodecs.eventLinks, EventCodecs.occasions)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events).associateBy { it.group }
+    /** مصادر الدخل (§48 · §64). */
+    val income: List<DocCodec<*>> = listOf(IncomeCodecs.incomeSources)
+
+    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income).associateBy { it.group }
 }

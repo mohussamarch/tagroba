@@ -37,6 +37,7 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             // حقل التطبيق الجديد بس (§56) — ما بيتكتبش لو ما اتسألش، عشان ملف الحساب يفضل زي التطبيق الحالي
             profile.duesInBudget?.let { put("duesInBudget", it) }
             profile.islamicContentVisible?.let { put("islamicContentVisible", it) }
+            profile.carToWork?.let { put("carToWork", it) }
         }
         space.write { ref().set(doc) }
     }
