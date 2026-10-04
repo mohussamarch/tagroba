@@ -121,6 +121,17 @@ fun checkIncomeSource(
     return CheckedName(clean, normalized)
 }
 
+/**
+ * الرجوع لنفس الشركة **يوم الخروج نفسه** (رد المالك §64-٨): الفترة الجديدة بتبدأ **تاني يوم** لوحدها من غير رسالة غلط — لو فيه
+ * فترة بنفس الاسم (بعد التنضيف) بتخلص يوم [startedAt] بالظبط. غير كده التاريخ زي ما هو (والتداخل الحقيقي بيترفض في [checkIncomeSource]).
+ * للفترة **الجديدة** بس (إضافة · «غيّرت شغلي») — تعديل تاريخ مصدر موجود بيفضل زي ما المستخدم كتبه (اختيار Claude).
+ */
+fun rejoinStart(name: String, startedAt: IsoDate, sources: List<IncomeSource>): IsoDate {
+    if (!isValidIsoDate(startedAt)) return startedAt
+    val normalized = normalizeText(JsText.collapseWhitespace(JsText.trim(name)))
+    return if (sources.any { it.normalizedName == normalized && it.endedAt == startedAt }) addDaysIso(startedAt, 1) else startedAt
+}
+
 /** المصدر عنده ميعاد قبض معروف (يوم في الشهر للشهري · يوم في الأسبوع للأسبوعي). */
 fun hasKnownPayDay(s: IncomeSource): Boolean = when (s.payFrequency) {
     PayFrequency.MONTHLY -> s.expectedDayOfMonth != null

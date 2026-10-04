@@ -98,6 +98,22 @@ class ManageIncomeSourcesTest {
         assertEquals(3, repo.listAll().size)
     }
 
+    @Test fun rejoiningTheSameCompanyOnTheDayYouLeftStartsTheNextDayWithoutAnError() = runBlocking<Unit> {
+        // رد المالك §64-٨: سبت النجمة يوم 30 سبتمبر ورجعتلها نفس اليوم ⇒ الفترة الجديدة من 1 أكتوبر لوحدها
+        val old = manage.add(IncomeSourceInput("شركة النجمة الوهمية", "2024-01-01"))
+        val back = manage.changeJob(JobChange(old.id, "2026-09-30", IncomeSourceInput("شركة النجمة الوهمية", "2026-09-30")))
+        assertTrue(back.congratulate)
+        assertEquals("2026-10-01", back.opened!!.startedAt)
+        assertEquals(listOf("2024-01-01" to "2026-09-30", "2026-10-01" to null), repo.listAll().sortedBy { it.startedAt }.map { it.startedAt to it.endedAt })
+        // نفس الشيء بالإضافة بعد قفل لوحده
+        manage.close(back.opened!!.id, "2026-12-31")
+        assertEquals("2027-01-01", manage.add(IncomeSourceInput(" شركة  النجمة الوهمية ", "2026-12-31")).startedAt)
+        // التعديل بيفضل زي ما المستخدم كتبه: يوم الخروج نفسه جوه الفترة القديمة ⇒ مرفوض
+        val latest = repo.listAll().single { it.endedAt == null }
+        assertFailsWith<IncomeSourceError> { manage.edit(latest.id, IncomeSourceInput("شركة النجمة الوهمية", "2026-12-31")) }
+        assertEquals(3, repo.listAll().size)
+    }
+
     @Test fun partTimeAsksPayFrequencySeparatelyAndPensionAsksItsDay() = runBlocking<Unit> {
         val started = manage.changeJob(JobChange(starting = IncomeSourceInput("محل وهمي", "2026-10-01", IncomeSourceKind.PART_TIME)))
         val pt = started.opened!!

@@ -70,6 +70,19 @@ class IncomeSourcesTest {
     }
 
     @Test
+    fun rejoiningOnTheEndDayStartsTheNextDay() {
+        // رد المالك §64-٨: الرجوع لنفس الشركة يوم الخروج ⇒ الفترة الجديدة بتبدأ تاني يوم لوحدها
+        val closed = listOf(source("s1", "الشركة", "2024-01-01").copy(endedAt = "2025-06-30"))
+        assertEquals("2025-07-01", rejoinStart("  الشركة ", "2025-06-30", closed))
+        assertEquals("الشركة", checkIncomeSource("الشركة", rejoinStart("الشركة", "2025-06-30", closed), null, null, null, closed).name)
+        assertEquals("2025-06-30", rejoinStart("شركة تانية", "2025-06-30", closed), "اسم تاني ⇒ زي ما هو")
+        assertEquals("2025-06-29", rejoinStart("الشركة", "2025-06-29", closed), "قبل الخروج ⇒ زي ما هو (والتداخل بيترفض في الفحص)")
+        assertEquals("2026-01-01", rejoinStart("الشركة", "2026-01-01", closed))
+        assertEquals("2024-12-31", rejoinStart("الشركة", "2024-12-31", listOf(source("s2", "الشركة", "2024-01-01").copy(endedAt = "2024-12-30"))))
+        assertEquals("2025-01-01", rejoinStart("الشركة", "2024-12-31", listOf(source("s2", "الشركة", "2024-01-01").copy(endedAt = "2024-12-31"))), "آخر السنة ⇒ أول السنة الجاية")
+    }
+
+    @Test
     fun weeklyPayTakesAWeekdayAndAJobMayBeWeeklyToo() {
         val ok = checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 4)
         assertEquals("محل", ok.name)

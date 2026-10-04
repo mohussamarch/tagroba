@@ -14,6 +14,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.checkIncomeSource
 import app.masroufy.core.jobChangeOutcome
 import app.masroufy.core.monthStartFollowUp
+import app.masroufy.core.rejoinStart
 import app.masroufy.core.uiText
 import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
@@ -24,7 +25,8 @@ import app.masroufy.port.UnitOfWork
  * مصادر الدخل (OVERRIDES §48 · §64): إضافة (الاسم وتاريخ البداية بس إجباريين) · تعديل · قفل بتاريخ · «غيّرت شغلي».
  * **مفيش مسح**: المصدر اللي خلص بيتقفل بتاريخ عشان المقارنة مع الشهور القديمة تفضل صح. الشاشات مستنية تصميم المالك.
  * «مبروك» على **بداية** شغل جديد بس؛ القفل لوحده من غير أي كلام (سؤال الأثر بس). **المواصلات ما بتتسألش هنا**.
- * الرجوع لشركة قديمة = **فترة جديدة بنفس الاسم** (رد المالك §64) — المرفوض بس فترتين بنفس الاسم بيتقابلوا.
+ * الرجوع لشركة قديمة = **فترة جديدة بنفس الاسم** (رد المالك §64) — المرفوض بس فترتين بنفس الاسم بيتقابلوا. الرجوع **يوم الخروج نفسه**
+ * ⇒ الفترة الجديدة من تاني يوم لوحدها من غير غلط (رد المالك §64-٨).
  */
 data class ManageIncomeSourcesDeps(
     val sources: IncomeSourceRepository,
@@ -78,9 +80,11 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
         return s.copy(name = name.name, normalizedName = name.normalizedName)
     }
 
+    /** فترة جديدة — ولو بتبدأ يوم ما فترة بنفس الاسم خلصت ⇒ من تاني يوم لوحدها (رد المالك §64-٨). */
     private fun build(input: IncomeSourceInput, all: List<IncomeSource>, id: Id, createdAt: String): IncomeSource = checked(
         IncomeSource(
-            id, input.name, "", input.kind, input.currency, input.startedAt, null, input.expectedDayOfMonth, input.expectedMinor, createdAt,
+            id, input.name, "", input.kind, input.currency, rejoinStart(input.name, input.startedAt, all), null, input.expectedDayOfMonth,
+            input.expectedMinor, createdAt,
             payFrequency = input.payFrequency, payWeekday = input.payWeekday,
         ),
         all,
