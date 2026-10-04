@@ -13,6 +13,8 @@ import app.masroufy.core.alertGroupLabel
 import app.masroufy.core.alertReasonText
 import app.masroufy.core.decideAlert
 import app.masroufy.core.digestNotice
+import app.masroufy.core.muted
+import app.masroufy.core.mutedAlertDecision
 import app.masroufy.core.systemNoticeFor
 import app.masroufy.port.AlertInboxEntry
 import app.masroufy.port.AlertInboxStore
@@ -24,7 +26,9 @@ import app.masroufy.port.UsualHoursStore
 
 /**
  * محرك التنبيهات على الجوال (OVERRIDES §61): بياخد مرشحين النهارده (`GatherAlerts`) ويقرر لكل واحد، ويحدّث صفحة الإشعارات.
- * - **المجموعة المقفولة** ما بيطلعش منها حاجة خالص (لا شريط ولا صفحة)، والمحرك **عمره ما بيفتحها**.
+ * - **المجموعة المقفولة بتفضل في الصفحة بس** (رد المالك §61): سطورها بتظهر في صفحة الإشعارات معلّمة «مقفولة» (`GROUP_OFF`)،
+ *   **ولا شريط ولا نافذة**، ومن غير إيصال (ما اتبعتش) ولا عدّ في «بتفتحه/بتتجاهله». لو المستخدم فتحها تاني، الدرجة اللي لسه
+ *   ما اتبعتتش بتتبعت عادي. والمحرك **عمره ما بيفتحها** بنفسه.
  * - **ما يتبعتش مرتين**: إيصال لكل `eventKey`. كل درجة تصعيد ليها مفتاح ⇒ قرّب ⇒ النهارده ⇒ عدّى، كل واحدة مرة.
  * - **اتحل ⇒ بيختفي**: سطر في الصفحة موضوعه مابقاش مرشح (القسط اتربط · الطرف اتقرر · السنة اتدفعت) بيتشال.
  * - الشريط بياخد **نص عام بس** ([SystemNotice]) — التفاصيل في الصفحة.
@@ -50,13 +54,13 @@ data class AlertRun(
     val resolved: List<String>,
 )
 
-/** سطر جاهز للعرض: التفاصيل + «ليه اتبعت دلوقتي» + اسم المجموعة. */
-data class AlertInboxView(val entry: AlertInboxEntry, val reason: String, val group: String)
+/** سطر جاهز للعرض: التفاصيل + «ليه اتبعت دلوقتي» + اسم المجموعة + [muted] = مجموعته مقفولة (في الصفحة بس). */
+data class AlertInboxView(val entry: AlertInboxEntry, val reason: String, val group: String, val muted: Boolean = false)
 
 class RunAlertEngine(private val deps: AlertEngineDeps) {
     suspend fun run(candidates: List<AlertCandidate>, now: LocalMoment): AlertRun {
         val off = deps.settings.disabledGroups()
-        val live = candidates.filter { !it.kind.needsServer && it.kind.group !in off }.distinctBy { it.eventKey }
+        val live = candidates.filter { !it.kind.needsServer }.distinctBy { it.eventKey }
         val liveThreads = live.map { it.threadKey }.toSet()
 
         val resolved = deps.inbox.listAll().map { it.threadKey }.filter { it !in liveThreads }
@@ -73,6 +77,15 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
 
         val kept = deps.inbox.listAll().map { it.threadKey }.toMutableSet()
         for (c in live) {
+            if (c.kind.group in off) {
+                // مقفولة ⇒ الصفحة بس: السطر بيتكتب (أو بيتحدث لدرجة أعلى) من غير شريط ولا إيصال ولا عدّ
+                val current = deps.inbox.listAll().firstOrNull { it.threadKey == c.threadKey }
+                if (current == null || current.eventKey != c.eventKey) {
+                    deps.inbox.save(AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, mutedAlertDecision(c.kind), nowIso))
+                }
+                kept += c.threadKey
+                continue
+            }
             if (c.eventKey in sent) {
                 // اتبعت قبل كده واترجع تاني (دفعة اتفكت · مجموعة اتفتحت تاني) ⇒ يرجع للصفحة بس، من غير شريط
                 if (kept.add(c.threadKey)) {
@@ -102,10 +115,12 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
         return AlertRun(posts, windows, resolved)
     }
 
-    /** صفحة الإشعارات: الأحدث الأول، وكل سطر معاه «ليه اتبعت دلوقتي». */
-    suspend fun inbox(): List<AlertInboxView> =
-        deps.inbox.listAll().sortedWith(compareByDescending<AlertInboxEntry> { it.createdAt }.thenBy { it.threadKey })
-            .map { AlertInboxView(it, alertReasonText(it.decision), alertGroupLabel(it.kind.group)) }
+    /** صفحة الإشعارات: الأحدث الأول، وكل سطر معاه «ليه اتبعت دلوقتي»، و«مقفولة» لو مجموعته مقفولة دلوقتي. */
+    suspend fun inbox(): List<AlertInboxView> {
+        val off = deps.settings.disabledGroups()
+        return deps.inbox.listAll().sortedWith(compareByDescending<AlertInboxEntry> { it.createdAt }.thenBy { it.threadKey })
+            .map { AlertInboxView(it, alertReasonText(it.decision), alertGroupLabel(it.kind.group), it.decision.muted || it.kind.group in off) }
+    }
 
     /** المستخدم فتح التنبيه (من الشريط أو الصفحة) ⇒ النوع ده «بيتفتح» — مرة واحدة لكل سطر. */
     suspend fun opened(threadKey: String) {

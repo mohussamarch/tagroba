@@ -163,4 +163,16 @@ class AlertEngineTest {
         val m = BalanceMismatch(3, "2026-01-05", 100, 200, -100, null, null, 1)
         assertEquals(AlertKind.BALANCE_MISMATCH, balanceMismatchCandidate("w-1", "بنك وهمي", listOf(m))?.kind)
     }
+
+    @Test fun mutedGroupDecisionIsPageOnlyWithNoBarAndNoWindow() {
+        for (kind in AlertKind.entries) {
+            val d = mutedAlertDecision(kind)
+            assertEquals(AlertDelivery.INBOX_ONLY, d.delivery, kind.wire)
+            assertNull(d.deliverAt)
+            assertFalse(d.inAppWindow, "المتأخر في مجموعة مقفولة ما بيفتحش نافذة")
+            assertTrue(d.muted)
+            assertTrue(alertReasonText(d).contains(uiText(TextKey.ALERT_FACTOR_GROUP_OFF)))
+            assertFalse(decideAlert(cand(kind), KindStats(), UsualHours(), noon).muted, "المحرك نفسه عمره ما بيقفل")
+        }
+    }
 }

@@ -76,6 +76,8 @@ data class UsualHours(val opens: List<Int> = List(24) { 0 }) {
 enum class AlertFactor {
     URGENT, MONEY_COMING_IN, BIG_FOR_MONTH, SMALL_FOR_MONTH, NEEDS_DECISION, YOU_OPEN_THESE, YOU_SKIP_THESE,
     USUAL_HOUR_NOW, WAIT_FOR_USUAL_HOUR, HOURS_NOT_LEARNED, BUNDLED, PAGE_ONLY,
+    /** مجموعته مقفولة من الإعدادات ⇒ في الصفحة بس، من غير شريط ولا نافذة (رد المالك §61). */
+    GROUP_OFF,
 }
 
 data class AlertDecision(
@@ -98,6 +100,14 @@ private const val INBOX = 0
 private const val DIGEST = 1
 private const val TIMELY = 2
 private const val NOW = 3
+
+/**
+ * المجموعة المقفولة (رد المالك §61 — «بتفضل في الصفحة بس»): السطر بيظهر في صفحة الإشعارات، **ولا شريط ولا نافذة**،
+ * ومعلّم إنه مقفول (`GROUP_OFF`) عشان الصفحة تقدر توضح ده.
+ */
+fun mutedAlertDecision(kind: AlertKind): AlertDecision = AlertDecision(kind, AlertDelivery.INBOX_ONLY, null, false, listOf(AlertFactor.GROUP_OFF))
+
+val AlertDecision.muted: Boolean get() = AlertFactor.GROUP_OFF in factors
 
 fun decideAlert(c: AlertCandidate, stats: KindStats, hours: UsualHours, now: LocalMoment): AlertDecision {
     val kind = c.kind

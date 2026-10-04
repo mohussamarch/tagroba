@@ -15,10 +15,13 @@ import app.masroufy.core.LocalMoment
 import app.masroufy.core.Period
 import app.masroufy.core.Person
 import app.masroufy.core.ReviewState
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.ZakatYear
 import app.masroufy.core.digestNotice
 import app.masroufy.core.isLockSafe
+import app.masroufy.core.muted
+import app.masroufy.core.uiText
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAlertInbox
 import app.masroufy.memory.MemoryAlertInteractions
@@ -130,17 +133,33 @@ class AlertEngineFlowTest {
         assertEquals(emptyList(), engine.run(list, LocalMoment("2026-10-10", 20)).posts)
     }
 
-    @Test fun groupTurnedOffIsNeverSentAndNeverReEnabled() = runBlocking<Unit> {
+    @Test fun groupTurnedOffStaysOnThePageOnlyAndIsNeverReEnabled() = runBlocking<Unit> {
         runDay("2026-10-07")
         assertTrue(dueEntries().isNotEmpty())
         engine.setGroupEnabled(AlertGroup.DUES, false)
-        for (day in listOf("2026-10-08", "2026-10-10", "2026-10-11", "2026-10-15")) {
+        val statsBefore = interactions.load()[AlertKind.DUE_TODAY]
+        for ((day, kind) in listOf("2026-10-08" to AlertKind.DUE_SOON, "2026-10-10" to AlertKind.DUE_TODAY, "2026-10-11" to AlertKind.DUE_OVERDUE, "2026-10-15" to AlertKind.DUE_OVERDUE)) {
             val run = runDay(day)
-            assertEquals(emptyList(), run.dueKeys(), day)
-            assertTrue(dueEntries().isEmpty(), "المقفولة مش في الصفحة كمان")
+            assertEquals(emptyList(), run.dueKeys(), "$day: مفيش شريط للمجموعة المقفولة")
+            assertTrue(run.inAppWindows.none { it.kind.group == AlertGroup.DUES }, "$day: ولا نافذة")
+            assertEquals(listOf(kind), dueEntries().map { it.kind }, "$day: السطر في الصفحة (رد المالك §61) — سطر واحد للموضوع")
         }
+        val view = engine.inbox().single { it.entry.kind.group == AlertGroup.DUES }
+        assertTrue(view.muted, "الصفحة تقدر تقول إنها مقفولة")
+        assertTrue(view.reason.contains(uiText(TextKey.ALERT_FACTOR_GROUP_OFF)), view.reason)
+        assertEquals(statsBefore, interactions.load()[AlertKind.DUE_TODAY], "المقفول ما بيتعدّش «اتعرض»")
         assertEquals(setOf(AlertGroup.DUES), settings.disabledGroups(), "المحرك ما فتحهاش")
-        assertTrue(inbox.listAll().any { it.kind.group == AlertGroup.ZAKAT }, "باقي المجموعات شغالة")
+        assertTrue(inbox.listAll().any { it.kind.group == AlertGroup.ZAKAT && !it.decision.muted }, "باقي المجموعات شغالة")
+        // اتفتحت تاني ⇒ الدرجة اللي ما اتبعتتش (المتأخر) بتتبعت عادي — مفيش إيصال كان اتكتب وهي مقفولة
+        engine.setGroupEnabled(AlertGroup.DUES, true)
+        val back = runDay("2026-10-16")
+        assertEquals(1, back.dueKeys().size)
+        assertFalse(engine.inbox().single { it.entry.kind.group == AlertGroup.DUES }.muted)
+        // اتحل وهي مقفولة ⇒ بيختفي برضه
+        engine.setGroupEnabled(AlertGroup.DUES, false)
+        payments.saveMany(listOf(InstallmentPayment("pay-1", "ip-1", payTxn.id, 50_000)))
+        runDay("2026-10-17")
+        assertTrue(dueEntries().isEmpty())
     }
 
     @Test fun ignoredTypeGoesToTheDigestWhileAnOpenedTypeStaysImmediate() = runBlocking<Unit> {

@@ -80,6 +80,7 @@ private fun factorText(f: AlertFactor, decision: AlertDecision): String = when (
     AlertFactor.HOURS_NOT_LEARNED -> uiText(TextKey.ALERT_FACTOR_NOT_LEARNED)
     AlertFactor.BUNDLED -> uiText(TextKey.ALERT_FACTOR_BUNDLED)
     AlertFactor.PAGE_ONLY -> uiText(TextKey.ALERT_FACTOR_PAGE_ONLY)
+    AlertFactor.GROUP_OFF -> uiText(TextKey.ALERT_FACTOR_GROUP_OFF)
 }
 
 /** «ليه اتبعت دلوقتي» — جوه التطبيق بس (§61): السبب الأساسي من النوع، وبعده كل عامل غيّر القرار بالترتيب. */
