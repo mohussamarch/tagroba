@@ -38,10 +38,10 @@ fun walletBalancesOn(wallets: List<Wallet>, transactions: List<Transaction>, dat
 
 /** سلسلة من حركات (اليوم، التغيير): نقطة لكل يوم فيه تغيير برصيد آخره، بالترتيب. */
 fun balanceSeries(changes: List<Pair<IsoDate, Halalas>>): List<DayBalance> {
-    val perDay = changes.groupBy({ it.first }, { it.second }).toSortedMap()
+    val perDay = changes.groupBy({ it.first }, { it.second })
     var running = 0L
-    return perDay.map { (day, deltas) ->
-        running = addMoney(running, sumMoney(deltas))
+    return perDay.keys.sorted().map { day ->
+        running = addMoney(running, sumMoney(perDay.getValue(day)))
         DayBalance(day, running)
     }
 }
