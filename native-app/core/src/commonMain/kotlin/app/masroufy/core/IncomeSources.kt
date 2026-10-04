@@ -1,7 +1,8 @@
 package app.masroufy.core
 
 /**
- * مصادر الدخل — المكان بس (OVERRIDES §48). الميزة والشاشات بعدين.
+ * مصادر الدخل (OVERRIDES §48 · §64). المنطق هنا وفي `IncomeChanges.kt` (تغيير الشغل وأسئلته) و`IncomeSignals.kt`
+ * (مين بيحوّل المرتب · المرتب المتأخر) و`IncomeComparison.kt` (قبل وبعد المصدر الجديد). الشاشات مستنية تصميم المالك.
  *
  * **المستخدم هو اللي بيقول**: اشتغلت فين ومن إمتى وسبت إمتى. البرنامج **ما يستنتجش**
  * إن المرتب زاد لما المبلغ يزيد — نفس التغيير ممكن يكون زيادة أو خصم أو إجازة أو سلفة،
@@ -39,7 +40,17 @@ data class IncomeSource(
     /** المبلغ المتوقع لو المستخدم كتبه. **اختياري** — مفيش فورم إجباري. */
     val expectedMinor: Halalas? = null,
     val createdAt: String = "",
+    /**
+     * مفاتيح أطراف التحويل (الاسم + آخر 4 — زي `TransferParty.key`) اللي المستخدم **أكد** إنها بتحوّل مرتب المصدر ده
+     * («ده مرتب من …؟» ⇒ أيوه). الإيداع الجاي منها بيتنسب للمصدر لوحده من غير سؤال (§48 · §64).
+     */
+    val payerKeys: List<String> = emptyList(),
+    /** أطراف قال عليها «لأ، مش مرتب من المصدر ده» ⇒ ما يتسألش عنها تاني للمصدر ده. */
+    val declinedPayerKeys: List<String> = emptyList(),
 )
+
+/** الأنواع اللي ليها «مرتب» (يوم مرتب · مرتب متوقع · «هتروح بيها الشغل؟»). */
+val SALARIED_KINDS: Set<IncomeSourceKind> = setOf(IncomeSourceKind.JOB, IncomeSourceKind.PART_TIME)
 
 const val INCOME_SOURCE_NAME_MAX = 80
 

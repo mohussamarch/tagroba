@@ -45,10 +45,11 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "lifeEvents" to listOf("name", "normalizedName", "kind", "date", "mine", "archived", "createdAt"),
     "eventLinks" to listOf("eventId", "transactionId", "role", "createdAt"),
     "occasions" to listOf("kind", "month", "day", "yearly", "createdAt"),
+    "incomeSources" to listOf("name", "normalizedName", "kind", "currency", "startedAt", "createdAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent")
-private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth")
+private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
     "transactions" to linkedMapOf("reviewState" to listOf("confirmed", "suggested", "needs_review"), "datePrecision" to listOf("day", "minute")),
@@ -68,6 +69,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "lifeEvents" to mapOf("kind" to LifeEventKind.entries.map { it.wire }),
     "eventLinks" to mapOf("role" to EventRole.entries.map { it.wire }),
     "occasions" to mapOf("kind" to OccasionKind.entries.map { it.wire }),
+    "incomeSources" to mapOf("kind" to IncomeSourceKind.entries.map { it.wire }),
 )
 /** قيم اختيارية بتتفحص لو موجودة بس (وقائع الزكاة — §62). */
 private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(
@@ -132,6 +134,7 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
             throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, "sharePercent"))
         }
     }
+    if (group == "incomeSources") checkIncomeSourceRow(row)
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
@@ -173,5 +176,14 @@ fun checkBackupFinance(data: FullBackupData) {
         val sum = (settlements[row["obligationId"]] ?: 0.0) + num(row["amountMinor"])
         if (!isSafeInteger(sum) || sum > num(obligation?.get("originalMinor"))) throw BackupError(uiText(TextKey.BACKUP_SETTLEMENTS_EXCEED))
         settlements[row["obligationId"]] = sum
+    }
+}
+
+/** مصدر الدخل (§48 · §64): اليوم المتوقع من 1 لـ31، ومفاتيح الأطراف قايمة نصوص (اسم + آخر 4 بس — مفيش رقم حساب كامل). */
+private fun checkIncomeSourceRow(row: Map<String, Any?>) {
+    row["expectedDayOfMonth"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..31.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "expectedDayOfMonth")) }
+    for (field in listOf("payerKeys", "declinedPayerKeys")) {
+        val list = row[field] ?: continue
+        if (list !is List<*> || list.any { it !is String }) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, "incomeSources", field))
     }
 }

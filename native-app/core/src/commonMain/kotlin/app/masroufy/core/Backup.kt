@@ -16,6 +16,8 @@ val BACKUP_GROUPS = listOf(
     "roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms",
     // «زون التحويلات» (§60) والزكاة (§62) والأحداث ومناسبات الشخص (§64) — التطبيق الجديد بس
     "transferParties", "zakatFacts", "zakatYears", "zakatPayments", "lifeEvents", "eventLinks", "occasions",
+    // مصادر الدخل (§48 · §64) — التطبيق الجديد بس
+    "incomeSources",
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -35,7 +37,10 @@ val ZAKAT_BACKUP_GROUPS = listOf("zakatFacts", "zakatYears", "zakatPayments")
 /** الأحداث وروابطها ومناسبات الشخص (§64) — بيتكتبوا مع بعض لو أي واحدة فيها حاجة. */
 val EVENT_BACKUP_GROUPS = listOf("lifeEvents", "eventLinks", "occasions")
 
-val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS
+/** مصادر الدخل (§48 · §64) — بتتكتب بس لو فيها حاجة. */
+const val INCOME_SOURCES_GROUP = "incomeSources"
+
+val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -74,7 +79,7 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS).filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP)).filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
 
@@ -135,7 +140,7 @@ fun checkBackupProfile(profile: Any?) {
         if (n == null || n % 1.0 != 0.0 || n < 1 || n > 31) bad("payday")
     }
     if (has("gender") && row["gender"] != "male" && row["gender"] != "female") bad("gender")
-    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business", "duesInBudget", "islamicContentVisible")) if (has(field) && row[field] !is Boolean) bad(field)
+    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business", "duesInBudget", "islamicContentVisible", "carToWork")) if (has(field) && row[field] !is Boolean) bad(field)
     if (has("dependentKinds")) {
         val kinds = row["dependentKinds"] as? List<*> ?: bad("dependentKinds")
         if (!kinds.all { it in DEPENDENT_KINDS }) bad("dependentKinds")

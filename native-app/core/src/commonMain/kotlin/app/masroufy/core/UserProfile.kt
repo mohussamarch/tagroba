@@ -29,6 +29,11 @@ data class UserProfile(
      * حقل التطبيق الجديد بس — ما بيتكتبش لو `null` عشان ملف الحساب يفضل زي التطبيق الحالي.
      */
     val islamicContentVisible: Boolean? = null,
+    /**
+     * رد «هتروح بيها الشغل؟» — بيتسأل لما يقول إنه اشترى عربية وعنده شغل شغال (§64)، ومش بيتسأل عند تغيير الشغل.
+     * `null` = ما اتسألش أو مالوش عربية. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
+     */
+    val carToWork: Boolean? = null,
 )
 
 val DEPENDENT_KINDS = listOf("spouse", "children", "parents")
@@ -62,6 +67,7 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         onboardedAt = (data["onboardedAt"] as? String)?.takeIf { it.isNotEmpty() },
         duesInBudget = bool("duesInBudget"),
         islamicContentVisible = bool("islamicContentVisible"),
+        carToWork = bool("carToWork"),
     )
 }
 
@@ -86,5 +92,7 @@ fun checkProfile(input: UserProfile): ProfileCheck {
     }
     // «لأ» على بيعول حد ⇒ مفيش حد بيعوله؛ الترتيب ثابت ومن غير تكرار
     val kinds = if (input.supportsDependents == false || input.dependentKinds == null) null else DEPENDENT_KINDS.filter { it in input.dependentKinds }
-    return ProfileCheck.Ok(input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds))
+    // «هتروح بيها الشغل؟» مالوش معنى من غير عربية ⇒ بيتمسح، والعربية الجاية بتتسأل من جديد
+    val carToWork = if (input.hasCar == true) input.carToWork else null
+    return ProfileCheck.Ok(input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds, carToWork = carToWork))
 }

@@ -34,6 +34,7 @@ private fun lockKey(kind: AlertKind, flow: DueFlow): TextKey {
         AlertKind.PROFILE_INCOMPLETE -> TextKey.ALERT_LOCK_PROFILE
         AlertKind.OCCASION_SOON -> TextKey.ALERT_LOCK_OCCASION_SOON
         AlertKind.OCCASION_TODAY -> TextKey.ALERT_LOCK_OCCASION_TODAY
+        AlertKind.INCOME_LATE -> TextKey.ALERT_LOCK_INCOME_LATE
         AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_LOCK_GENERIC
     }
 }
@@ -64,6 +65,7 @@ private fun whyKey(kind: AlertKind): Pair<TextKey, List<String>> = when (kind) {
     AlertKind.PROFILE_INCOMPLETE -> TextKey.ALERT_WHY_PROFILE to emptyList()
     AlertKind.OCCASION_SOON -> TextKey.ALERT_WHY_OCCASION_SOON to emptyList()
     AlertKind.OCCASION_TODAY -> TextKey.ALERT_WHY_OCCASION_TODAY to emptyList()
+    AlertKind.INCOME_LATE -> TextKey.ALERT_WHY_INCOME_LATE to listOf(LATE_INCOME_GRACE_DAYS.toString())
     AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_WHY_SERVER to emptyList()
 }
 
@@ -102,5 +104,6 @@ fun alertGroupLabel(group: AlertGroup): String = uiText(
         AlertGroup.SECURITY -> TextKey.ALERT_GROUP_SECURITY
         AlertGroup.LINKED_ACCOUNTS -> TextKey.ALERT_GROUP_LINKED_ACCOUNTS
         AlertGroup.EMAIL -> TextKey.ALERT_GROUP_EMAIL
+        AlertGroup.INCOME -> TextKey.ALERT_GROUP_INCOME
     },
 )
