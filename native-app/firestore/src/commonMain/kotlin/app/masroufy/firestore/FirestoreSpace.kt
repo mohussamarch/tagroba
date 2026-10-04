@@ -1,5 +1,7 @@
 package app.masroufy.firestore
 
+import app.masroufy.core.DEFAULT_SPACE_ID
+import app.masroufy.core.SPACES_GROUP
 import app.masroufy.data.Doc
 import app.masroufy.data.DocCodec
 import app.masroufy.data.omittedFields
@@ -17,8 +19,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 /**
- * مكان بيانات الحساب في فايربيز: `users/{uid}` النهارده، و`users/{uid}/spaces/{spaceId}` لما البلاد تتبني (OVERRIDES §41).
- * المستودعات بتاخد المكان ده، فحالات الاستخدام ما تعرفش عنه حاجة.
+ * مكان بيانات في فايربيز: الحساب `users/{uid}`، والبلد السعودية `users/{uid}` نفسه، والبلاد التانية `users/{uid}/spaces/{spaceId}`
+ * (OVERRIDES §41 · §64). المستودعات بتاخد المكان ده، فحالات الاستخدام ما تعرفش عنه حاجة.
  */
 class FirestoreSpace(val db: FirebaseFirestore, val root: String) {
     fun collection(group: String): CollectionReference = db.collection("$root/$group")
@@ -60,6 +62,16 @@ class FirestoreSpace(val db: FirebaseFirestore, val root: String) {
 
     companion object {
         fun forUser(db: FirebaseFirestore, uid: String) = FirestoreSpace(db, "users/$uid")
+
+        /** مكان بيانات الحساب المشتركة (الملف · الأشخاص · التجار · الوسوم · المناسبات · سجل البلاد · التحويل لنفسك) — §64. */
+        fun forAccount(db: FirebaseFirestore, uid: String) = FirestoreSpace(db, "users/$uid")
+
+        /**
+         * مكان بيانات بلد: السعودية = `users/{uid}` نفسه (بيانات التطبيق الحالي في مكانها، من غير نقل)، والباقي `users/{uid}/spaces/{id}`.
+         * ⚠️ حتى لو المكان هو هو، ده **كائن تاني** غير [forAccount] — لكل واحد نسخته في الذاكرة ومستمعينه.
+         */
+        fun forSpace(db: FirebaseFirestore, uid: String, spaceId: String) =
+            FirestoreSpace(db, if (spaceId == DEFAULT_SPACE_ID) "users/$uid" else "users/$uid/$SPACES_GROUP/$spaceId")
     }
 }
 

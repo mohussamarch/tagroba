@@ -80,6 +80,22 @@ class SeedsGoldenTest {
         }
     }
 
+    /** شجرة مصر (§64) = شجرة التطبيق الحقيقية + الفروق — بتتبني، والقواعد بتلاقي تصنيفاتها زي السعودية بالظبط. */
+    @Test fun egyptTreeFromTheRealAppTree() {
+        val saudi = buildCountryCategoryTree(appTree, SAUDI_PACK)
+        val egypt = buildCountryCategoryTree(appTree, EGYPT_PACK)
+        kotlin.test.assertEquals(buildCategoryTree(appTree), saudi)
+        kotlin.test.assertEquals(saudi.categories.size + 1, egypt.categories.size, "فرعي واحد زيادة («سايس»)")
+        for (name in listOf("باركنج", "سايس", "موبايل")) kotlin.test.assertEquals(1, egypt.categories.count { it.name == name }, name)
+        for (name in listOf("مواقف وسايس", "جوال")) kotlin.test.assertEquals(0, egypt.categories.count { it.name == name }, name)
+        val rawRules = rules(readJson("design-source/masroofi-claude-code/fixtures/rule-reference.json"))
+        val rawMerchants = merchants(readJson("design-source/masroofi-claude-code/fixtures/merchant-reference.json"))
+        val inSaudi = loadReferences(rawRules, rawMerchants, saudi.categories, saudi)
+        val inEgypt = loadReferences(rawRules, rawMerchants, egypt.categories, egypt)
+        kotlin.test.assertEquals(inSaudi.unknownCategoryNames, inEgypt.unknownCategoryNames, "ولا قاعدة ضاعت بسبب تغيير الاسم")
+        kotlin.test.assertEquals(inSaudi.rules.size, inEgypt.rules.size)
+    }
+
     @Test fun files() {
         check("guessSourceType") { guessSourceType(it.str) }
         check("inspectFile") { val c = inspectFile(it.field("name").str, it.field("content").str); obj("kind" to c.kind, "ok" to c.ok, "message" to c.message).let { o -> JsonObject(o + ("message" to nullable(c.message))) } }

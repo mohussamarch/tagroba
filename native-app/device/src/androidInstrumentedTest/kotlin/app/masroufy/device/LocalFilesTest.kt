@@ -48,4 +48,16 @@ class LocalFilesTest {
         a.write("مش وقت")
         kotlin.test.assertNull(a.read(), "قيمة بايظة = مزامنة كاملة، مش وقع")
     }
+
+    @Test fun activeSpaceIsPerAccountAndIgnoresGarbage() {
+        val uid = "kt-a-" + System.nanoTime()
+        val a = AndroidActiveSpaceStore(context, uid)
+        val b = AndroidActiveSpaceStore(context, "kt-b-" + System.nanoTime())
+        kotlin.test.assertNull(a.read(), "حساب جديد على الجهاز: مفيش بلد متخزنة (⇒ السعودية)")
+        a.write("eg")
+        assertEquals("eg", AndroidActiveSpaceStore(context, uid).read(), "بتفضل بعد ما التطبيق يتقفل ويتفتح")
+        kotlin.test.assertNull(b.read(), "كل حساب ليه بلده الشغالة")
+        a.write("../مش بلد")
+        kotlin.test.assertNull(a.read(), "قيمة بايظة = السعودية، مش وقع")
+    }
 }

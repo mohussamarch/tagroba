@@ -20,7 +20,11 @@ import dev.gitlive.firebase.firestore.Source
  *   وإعادتها بعد انقطاع آمنة. نصوص البنك بتتقص (`redactSms`). تسوية جديدة ⇒ عدّاد التسويات +1 (عشان `SettlementWriter`).
  * - ملف الحساب مستند واحد `profile/main` (OVERRIDES §26).
  */
-class FirestoreFullBackup(private val space: FirestoreSpace) : FullBackupPort {
+class FirestoreFullBackup(
+    private val space: FirestoreSpace,
+    /** نفس المكان بكائن تاني (الحساب ومساحة السعودية الاتنين `users/{uid}`) — اللي اتكتب يبان في ذاكرة كل واحد فيهم. */
+    private val alsoMirrored: List<FirestoreSpace> = emptyList(),
+) : FullBackupPort {
     private fun profileRef() = space.db.document("${space.root}/profile/main")
 
     private fun revisionRef() = space.db.document("${space.root}/concurrency/settlements")
@@ -65,7 +69,7 @@ class FirestoreFullBackup(private val space: FirestoreSpace) : FullBackupPort {
                     fresh
                 }
                 // اللي اتكتب يبان في الذاكرة لحظتها (المستمع هيجيبه كمان)
-                space.mirror?.let { m -> written.forEach { (id, row) -> m.applySet(group, id, row) } }
+                (listOf(space) + alsoMirrored).forEach { s -> s.mirror?.let { m -> written.forEach { (id, row) -> m.applySet(group, id, row) } } }
                 added[group] = added.getValue(group) + written.size
             }
         }

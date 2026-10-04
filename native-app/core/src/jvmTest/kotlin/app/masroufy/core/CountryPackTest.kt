@@ -32,8 +32,10 @@ class CountryPackTest {
             if (!pack.ready) assertTrue(pack.gaps.isNotEmpty())
         }
         // مصر: قارئ الرسايل خلص، والشجرة وقارئ الكشف لسه
-        // قارئ كشف QNB اتعمل 2026-10-01 — الناقص شجرة التصنيفات بس
-        assertEquals(listOf("categoryTree"), EGYPT_PACK.gaps)
+        // قارئ كشف QNB اتعمل 2026-10-01، والشجرة = شجرة السعودية + فروق مصر (رد المالك §64-٣) — مفيش ناقص في الحزمة
+        assertEquals(emptyList(), EGYPT_PACK.gaps)
+        assertEquals(EGYPT_CATEGORY_DELTA, EGYPT_PACK.categoryDelta)
+        assertTrue(SAUDI_PACK.categoryDelta.isEmpty(), "السعودية من غير فروق")
         assertTrue(SchemaId.QNB_PDF in EGYPT_PACK.statementSchemas)
         assertEquals("Africa/Cairo", EGYPT_PACK.timeZone, "حدود اليوم في رسايل البنك بتوقيت مصر")
     }

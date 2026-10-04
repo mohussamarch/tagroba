@@ -73,3 +73,18 @@ class AndroidSyncCursor(context: Context, uid: String, name: String = "shared-me
         runCatching { prefs.edit().putString(key, iso).apply() }
     }
 }
+
+/**
+ * البلد الشغالة على الجهاز ده (§64) — إعداد جهاز مش بيانات حساب، ومش بيتزامن. لكل حساب ([uid]) مفتاح لوحده،
+ * والقيمة البايظة = مفيش (⇒ السعودية — `activeSpaceOf`).
+ */
+class AndroidActiveSpaceStore(context: Context, uid: String) : app.masroufy.port.ActiveSpaceStore {
+    private val prefs = context.getSharedPreferences("active-space", Context.MODE_PRIVATE)
+    private val key = "masroufy-space-v1:$uid"
+
+    override fun read(): String? = runCatching { prefs.getString(key, null)?.takeIf { app.masroufy.core.isSpaceId(it) } }.getOrNull()
+
+    override fun write(spaceId: String) {
+        runCatching { prefs.edit().putString(key, spaceId).apply() }
+    }
+}

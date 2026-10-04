@@ -1,6 +1,8 @@
 package app.masroufy.device
 
+import app.masroufy.core.isSpaceId
 import app.masroufy.core.isValidIsoDate
+import app.masroufy.port.ActiveSpaceStore
 import app.masroufy.port.AppLockSettingsPort
 import app.masroufy.port.RepairBackupPort
 import app.masroufy.port.SavedBackup
@@ -73,5 +75,16 @@ class IosSyncCursor(uid: String, name: String = "shared-merchants", private val 
         val INSTANT = Regex("^(\\d{4}-\\d{2}-\\d{2})T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(\\.\\d{1,9})?Z$")
 
         fun isIsoInstant(text: String): Boolean = INSTANT.matchEntire(text)?.let { isValidIsoDate(it.groupValues[1]) } == true
+    }
+}
+
+/** البلد الشغالة على الجهاز (§64) — نفس [AndroidActiveSpaceStore]: مفتاح لكل حساب، والقيمة البايظة = مفيش (⇒ السعودية). */
+class IosActiveSpaceStore(uid: String, private val defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults) : ActiveSpaceStore {
+    private val key = "masroufy-space-v1:$uid"
+
+    override fun read(): String? = runCatching { defaults.stringForKey(key)?.takeIf(::isSpaceId) }.getOrNull()
+
+    override fun write(spaceId: String) {
+        runCatching { defaults.setObject(spaceId, key) }
     }
 }

@@ -52,7 +52,7 @@ class FirestoreSyncTest {
             val sync = FirestoreSync(a, DocumentCodecs.byGroup.keys.toList())
             sync.start(scope)
             sync.awaitComplete()
-            assertEquals(29, sync.syncedGroups.value.size)
+            assertEquals(DocumentCodecs.byGroup.size, sync.syncedGroups.value.size)
             assertTrue(a.mirror?.isSynced("transactions") == true, "بعد التزامن القراية من الذاكرة")
             val repoA = FirestoreTransactionRepository(a)
             assertEquals(listOf("t-before"), repoA.listByDateRange("2026-09-01", "2026-09-30").map { it.id })

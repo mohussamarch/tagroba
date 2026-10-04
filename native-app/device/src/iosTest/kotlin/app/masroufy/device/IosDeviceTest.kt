@@ -70,6 +70,19 @@ class IosDeviceTest {
             .forEach { NSUserDefaults.standardUserDefaults.removeObjectForKey(it) }
     }
 
+    @Test fun activeSpaceIsPerAccountAndIgnoresGarbage() {
+        val a = IosActiveSpaceStore("kt-a-${kotlin.random.Random.nextLong()}")
+        val b = IosActiveSpaceStore("kt-b-${kotlin.random.Random.nextLong()}")
+        assertNull(a.read(), "حساب جديد على الجهاز: مفيش بلد متخزنة")
+        a.write("eg")
+        assertEquals("eg", a.read())
+        assertNull(b.read(), "كل حساب ليه بلده الشغالة")
+        a.write("../مش بلد")
+        assertNull(a.read(), "قيمة بايظة = السعودية، مش وقع")
+        NSUserDefaults.standardUserDefaults.dictionaryRepresentation().keys.filterIsInstance<String>().filter { it.startsWith("masroufy-space-v1:kt-") }
+            .forEach { NSUserDefaults.standardUserDefaults.removeObjectForKey(it) }
+    }
+
     @Test fun deviceLockOnASimulatorWithoutPasscodeIsUnavailableNotStuck() = runBlocking<Unit> {
         val lock = IosDeviceLock()
         val availability = lock.availability()

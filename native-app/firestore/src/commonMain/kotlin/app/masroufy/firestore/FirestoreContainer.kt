@@ -1,6 +1,9 @@
 package app.masroufy.firestore
 
+import app.masroufy.core.DEFAULT_SPACE_ID
+import app.masroufy.port.MerchantRepository
 import app.masroufy.port.UnitOfWork
+import app.masroufy.usecase.SpaceMerchantRepository
 
 /**
  * وحدة العمل على فايربيز — نفس `FirestoreUnitOfWork` في التطبيق الحالي: **بتمرّر الشغل زي ما هو**.
@@ -14,10 +17,17 @@ class FirestoreUnitOfWork : UnitOfWork {
 }
 
 /**
- * كل المستودعات الحقيقية لحساب واحد — التجميع يدوي من غير مكتبة حقن (CLAUDE.md #6)، زي `app/container.ts`.
+ * كل المستودعات الحقيقية لبلد واحدة في حساب — التجميع يدوي من غير مكتبة حقن (CLAUDE.md #6)، زي `app/container.ts`.
  * الشاشات بتاخد حالات الاستخدام من التجميع ده، مش المستودعات نفسها.
+ *
+ * **حساب لكل بلد (§41 · §64):** الملف والأشخاص والتجار والوسوم والمناسبات وسجل البلاد على [account]؛ الباقي كله على [space].
+ * السعودية ([DEFAULT_SPACE_ID]) = نفس المكان `users/{uid}` (بيانات التطبيق الحالي) بكائنين منفصلين. في أي بلد تانية تصنيف التاجر
+ * بيتخزن في البلد نفسها (`SpaceMerchantRepository`) ومش بيلمس التاجر المشترك.
  */
-class FirestoreContainer(space: FirestoreSpace) {
+class FirestoreContainer(account: FirestoreSpace, space: FirestoreSpace, val spaceId: String) {
+    /** حساب بمساحة واحدة (السعودية) في نفس المكان — زي ما كان قبل البلاد. */
+    constructor(root: FirestoreSpace) : this(root, root, DEFAULT_SPACE_ID)
+
     val uow = FirestoreUnitOfWork()
     val transactions = FirestoreTransactionRepository(space)
     val sourceRecords = FirestoreSourceRecordRepository(space)
@@ -25,13 +35,17 @@ class FirestoreContainer(space: FirestoreSpace) {
     val wallets = FirestoreWalletRepository(space)
     val categories = FirestoreCategoryRepository(space)
     val rules = FirestoreRuleRepository(space)
-    val merchants = FirestoreMerchantRepository(space)
-    val people = FirestorePersonRepository(space)
+    /** التاجر المشترك على مستوى الحساب (§41). */
+    val sharedMerchantRecords = FirestoreMerchantRepository(account)
+    val merchantCategories = FirestoreMerchantCategoryRepository(space)
+    val merchants: MerchantRepository =
+        if (spaceId == DEFAULT_SPACE_ID) sharedMerchantRecords else SpaceMerchantRepository(sharedMerchantRecords, merchantCategories)
+    val people = FirestorePersonRepository(account)
     val obligations = FirestoreObligationRepository(space)
     val settlements = FirestoreSettlementRepository(space)
     val settlementWriter = FirestoreSettlementWriter(space)
     val allocations = FirestoreAllocationRepository(space)
-    val tags = FirestoreTagRepository(space)
+    val tags = FirestoreTagRepository(account)
     val transactionTags = FirestoreTransactionTagRepository(space)
     val budgets = FirestoreBudgetRepository(space)
     val recurring = FirestoreRecurringRepository(space)
@@ -54,10 +68,15 @@ class FirestoreContainer(space: FirestoreSpace) {
     val zakatPayments = FirestoreZakatPaymentRepository(space)
     val lifeEvents = FirestoreLifeEventRepository(space)
     val eventLinks = FirestoreEventLinkRepository(space)
-    val occasions = FirestoreOccasionRepository(space)
+    val occasions = FirestoreOccasionRepository(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
-    val fullBackup = FirestoreFullBackup(space)
-    val profile = FirestoreProfileRepository(space)
-    val referenceSeed = FirestoreReferenceSeed(space)
+
+    /** النسخة الشاملة للحساب كله (§41.1) — من `users/{uid}` (الحساب + السعودية). البلاد التانية في الإصدار 3. */
+    val fullBackup = FirestoreFullBackup(account, if (spaceId == DEFAULT_SPACE_ID && space !== account) listOf(space) else emptyList())
+
+    /** يوم المرتب واحد للحساب كله (رد المالك §64-١) ⇒ الملف على مستوى الحساب. */
+    val profile = FirestoreProfileRepository(account)
+    val referenceSeed = FirestoreReferenceSeed(space, merchantsAt = account)
     val sharedMerchants = FirestoreSharedMerchantCatalog(space.db)
+    val spaces = FirestoreSpaceRegistry(account)
 }

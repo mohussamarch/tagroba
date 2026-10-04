@@ -116,8 +116,9 @@ class EgyptBankSmsTest {
         val egypt = countryPack("EG")
         assertEquals(Currency.EGP, egypt.currency)
         assertEquals(EgyptBankSmsReader, egypt.smsReader)
-        assertTrue(!egypt.ready, "حزمة مصر لسه ناقصة، المفروض تقول كده")
-        assertEquals(listOf("categoryTree"), egypt.gaps)
+        // الشجرة = شجرة السعودية + فروق مصر (رد المالك §64-٣) ⇒ الحزمة مابقاش ناقصها حاجة
+        assertTrue(egypt.ready, "حزمة مصر بقت جاهزة بالفروق")
+        assertEquals(emptyList(), egypt.gaps)
         assertTrue(SAUDI_PACK.ready, "حزمة السعودية المفروض جاهزة")
     }
 }

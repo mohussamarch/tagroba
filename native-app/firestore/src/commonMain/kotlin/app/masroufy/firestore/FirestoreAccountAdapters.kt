@@ -47,7 +47,11 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
  * علامة «المراجع اتجهزت» (`users/{uid}/initialization/references-v1`) — مش طريقة لاسترجاع افتراضيات اتمسحت.
  * التجهيز بمعاملات: كل صفحة 100 بتتأكد إن العلامة لسه «pending» وبتكتب الناقص بس — جهازين بيجهزوا مع بعض ما يكرروش.
  */
-class FirestoreReferenceSeed(private val space: FirestoreSpace) : ReferenceSeedPort {
+class FirestoreReferenceSeed(
+    private val space: FirestoreSpace,
+    /** التجار مشتركين على مستوى الحساب (§41) — بيتكتبوا هناك حتى لو العلامة والتصنيفات في مساحة البلد. */
+    private val merchantsAt: FirestoreSpace = space,
+) : ReferenceSeedPort {
     private fun marker() = space.db.document("${space.root}/initialization/references-v1")
 
     private fun stateOf(data: Doc?): SeedState = when (data?.get("state")) {
@@ -70,17 +74,17 @@ class FirestoreReferenceSeed(private val space: FirestoreSpace) : ReferenceSeedP
     }
 
     override suspend fun insertMissing(source: SeedSource) {
-        insert(ReferenceCodecs.categories, source.categories)
-        insert(ReferenceCodecs.rules, source.rules)
-        insert(ReferenceCodecs.merchants, source.merchants)
+        insert(ReferenceCodecs.categories, source.categories, space)
+        insert(ReferenceCodecs.rules, source.rules, space)
+        insert(ReferenceCodecs.merchants, source.merchants, merchantsAt)
     }
 
-    private suspend fun <T> insert(codec: DocCodec<T>, rows: List<T>) {
+    private suspend fun <T> insert(codec: DocCodec<T>, rows: List<T>, target: FirestoreSpace) {
         for (page in rows.chunked(100)) {
             val written = space.db.runTransaction {
                 val current = get(marker()).rawData() ?: throw IllegalStateException("تجهيز المراجع لم يبدأ")
                 if (stateOf(current) == SeedState.COMPLETE) return@runTransaction emptyList()
-                val refs = page.map { space.collection(codec.group).document(codec.id(it)) }
+                val refs = page.map { target.collection(codec.group).document(codec.id(it)) }
                 val snaps = refs.map { get(it) }
                 val fresh = mutableListOf<Pair<String, Doc>>()
                 snaps.forEachIndexed { i, snap ->
@@ -92,7 +96,7 @@ class FirestoreReferenceSeed(private val space: FirestoreSpace) : ReferenceSeedP
                 }
                 fresh
             }
-            space.mirror?.let { m -> written.forEach { (id, doc) -> m.applySet(codec.group, id, doc) } }
+            target.mirror?.let { m -> written.forEach { (id, doc) -> m.applySet(codec.group, id, doc) } }
         }
     }
 

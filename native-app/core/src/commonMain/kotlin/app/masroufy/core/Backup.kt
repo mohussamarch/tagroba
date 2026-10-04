@@ -18,6 +18,8 @@ val BACKUP_GROUPS = listOf(
     "transferParties", "zakatFacts", "zakatYears", "zakatPayments", "lifeEvents", "eventLinks", "occasions",
     // مصادر الدخل (§48 · §64) — التطبيق الجديد بس
     "incomeSources",
+    // تصنيف التاجر جوه مساحة غير السعودية (§64) — فاضية دايمًا في مساحة السعودية
+    MERCHANT_CATEGORIES_GROUP,
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -40,7 +42,7 @@ val EVENT_BACKUP_GROUPS = listOf("lifeEvents", "eventLinks", "occasions")
 /** مصادر الدخل (§48 · §64) — بتتكتب بس لو فيها حاجة. */
 const val INCOME_SOURCES_GROUP = "incomeSources"
 
-val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP
+val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP + MERCHANT_CATEGORIES_GROUP
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -70,6 +72,7 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "lifeEvents" to mapOf("hostPersonId" to "people"),
     "eventLinks" to linkedMapOf("eventId" to "lifeEvents", "transactionId" to "transactions", "personId" to "people"),
     "occasions" to linkedMapOf("personId" to "people", "sourceEventId" to "lifeEvents"),
+    MERCHANT_CATEGORIES_GROUP to linkedMapOf("merchantId" to "merchants", "categoryId" to "categories"),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
@@ -79,7 +82,7 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP)).filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP)).filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
 
@@ -89,6 +92,7 @@ fun backupRowId(group: String, row: BackupRow): String {
         "notificationReceipts" -> "eventKey"
         "debtTerms" -> "obligationId"
         "transferParties" -> "key"
+        MERCHANT_CATEGORIES_GROUP -> "merchantId"
         else -> "id"
     }
     return row[key]?.let(::jsString) ?: ""

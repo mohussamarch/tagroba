@@ -48,6 +48,6 @@ class RawRoundTripTest {
         val back = withTimeout(30_000) { ref.get() }.rawData()!!
         assertEquals(true, back.containsKey("parentId"), "parentId لازم يتخزن null صريح")
         assertEquals(category, ReferenceCodecs.categories.decode(back))
-        assertEquals(36, DocumentCodecs.byGroup.size)
+        assertEquals(39, DocumentCodecs.byGroup.size, "37 + سجل البلاد + تصنيف التاجر جوه البلد (§64)")
     }
 }

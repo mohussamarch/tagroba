@@ -40,4 +40,5 @@ val BACKUP_LABELS: Map<String, String>
         "eventLinks" to uiText(TextKey.BACKUP_GROUP_EVENT_LINKS),
         "occasions" to uiText(TextKey.BACKUP_GROUP_OCCASIONS),
         "incomeSources" to uiText(TextKey.BACKUP_GROUP_INCOME_SOURCES),
+        MERCHANT_CATEGORIES_GROUP to uiText(TextKey.BACKUP_GROUP_MERCHANT_CATEGORIES),
     )
