@@ -6,6 +6,7 @@ package app.masroufy.core
  */
 internal val ARABIC_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CAL_TITLE_PAYDAY to "يوم المرتب",
+    TextKey.CAL_TITLE_SOURCE_PAY to "قبض «{0}»",
     TextKey.CAL_TITLE_ZAKAT to "ميعاد الزكاة",
     TextKey.CAL_TITLE_PROJECT_DEADLINE to "آخر ميعاد «{0}»",
     TextKey.PUBLIC_RAMADAN_START to "بداية رمضان",
@@ -70,6 +71,7 @@ internal val ARABIC_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
 
 internal val ENGLISH_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CAL_TITLE_PAYDAY to "Payday",
+    TextKey.CAL_TITLE_SOURCE_PAY to "Pay from “{0}”",
     TextKey.CAL_TITLE_ZAKAT to "Zakat due",
     TextKey.CAL_TITLE_PROJECT_DEADLINE to "“{0}” deadline",
     TextKey.PUBLIC_RAMADAN_START to "Start of Ramadan",

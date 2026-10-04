@@ -21,6 +21,7 @@ import app.masroufy.core.smartSummary
 import app.masroufy.core.toDayNumber
 import app.masroufy.core.zakatVisible
 import app.masroufy.core.zakatYearStatus
+import app.masroufy.port.IncomeSourceRepository
 import app.masroufy.port.LifeEventRepository
 import app.masroufy.port.OccasionRepository
 import app.masroufy.port.PersonRepository
@@ -51,6 +52,8 @@ data class LoadCalendarDeps(
     /** null = الزكاة مش متوصلة. */
     val zakatYears: ZakatYearRepository? = null,
     val zakatPayments: ZakatPaymentRepository? = null,
+    /** مصادر الدخل في المساحة — أيام قبض البارت تايم والمعاش والإيجار والوظيفة الأسبوعي (رد المالك §64-٣). */
+    val incomeSources: IncomeSourceRepository,
 )
 
 data class CalendarMonth(val year: Int, val month: Int, val items: List<CalendarItem>, val summary: SmartSummary)
@@ -74,6 +77,7 @@ class LoadCalendar(private val deps: LoadCalendarDeps) {
             zakat = if (islamic) zakatYears() else emptyList(),
             publicOccasions = if (islamic) publicOccasions(from, to, deps.countryCode) else emptyList(),
             islamicVisible = islamic,
+            incomeSources = deps.incomeSources.listAll(),
         )
         return buildCalendar(from, to, today, deps.currency, sources, deps.reservations.listAll())
     }

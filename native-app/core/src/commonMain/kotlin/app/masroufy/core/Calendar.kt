@@ -8,8 +8,11 @@ package app.masroufy.core
  */
 enum class CalendarItemType(val wire: String) {
     RECURRING("recurring"), INSTALLMENT("installment"), ROSCA_CONTRIBUTION("rosca_contribution"), ROSCA_PAYOUT("rosca_payout"),
-    DEBT("debt"), PROJECT("project"), EVENT("event"), OCCASION("occasion"), PAYDAY("payday"), ZAKAT("zakat"),
-    PUBLIC_OCCASION("public_occasion"),
+    DEBT("debt"), PROJECT("project"), EVENT("event"), OCCASION("occasion"), PAYDAY("payday"),
+
+    /** يوم قبض مصدر دخل بيومه هو (رد المالك §64-٣): بارت تايم · معاش · إيجار · وظيفة أسبوعي. */
+    INCOME_PAY("income_pay"),
+    ZAKAT("zakat"), PUBLIC_OCCASION("public_occasion"),
     ;
 
     companion object {
@@ -61,7 +64,36 @@ data class CalendarSources(
     val publicOccasions: List<PublicOccasion> = emptyList(),
     /** «المحتوى الإسلامي: ظاهر» (§46) — مقفول ⇒ لا زكاة ولا رمضان والعيدين. */
     val islamicVisible: Boolean = true,
+    /** مصادر الدخل في المساحة — أيام قبض اللي ليه سطر لوحده ([hasOwnPayLine]). */
+    val incomeSources: List<IncomeSource> = emptyList(),
 )
+
+/**
+ * المصدر ليه سطر قبض لوحده في التقويم (رد المالك §64-٣): **بارت تايم · معاش · إيجار** (شهري أو أسبوعي) و**الوظيفة الأسبوعي**
+ * (§64-٤). **الوظيفة الشهري لأ** — يومها يوم مرتب الحساب (§64) وسطر المرتب موجود، فما يتكررش. العميل والاستثمار و«غيره» لأ.
+ */
+fun hasOwnPayLine(s: IncomeSource): Boolean = when (s.kind) {
+    IncomeSourceKind.PART_TIME, IncomeSourceKind.PENSION, IncomeSourceKind.RENT -> true
+    IncomeSourceKind.JOB -> s.payFrequency == PayFrequency.WEEKLY
+    IncomeSourceKind.CLIENT, IncomeSourceKind.INVESTMENT, IncomeSourceKind.OTHER -> false
+}
+
+/**
+ * أيام قبض المصدر في الفترة (شاملين) **جوه مدته** — من يوم بدايته لحد يوم قفله (المصدر الشغال يوم القبض بس). الشهري بيومه في الشهر
+ * (29–31 بيتقيد بآخر الشهر — زي يوم المرتب) والأسبوعي بيومه في الأسبوع. يوم مش معروف ⇒ مفيش سطور (ما بنخترعش ميعاد).
+ */
+fun sourcePayDatesIn(s: IncomeSource, from: IsoDate, to: IsoDate): List<IsoDate> {
+    val a = maxOf(from, s.startedAt)
+    val b = s.endedAt?.let { minOf(to, it) } ?: to
+    if (a > b) return emptyList()
+    return when (s.payFrequency) {
+        PayFrequency.MONTHLY -> s.expectedDayOfMonth?.let { paydaysIn(a, b, it) }.orEmpty()
+        PayFrequency.WEEKLY -> {
+            val weekday = s.payWeekday ?: return emptyList()
+            generateSequence(addDaysIso(a, (weekday - isoWeekday(a)).mod(7))) { addDaysIso(it, 7) }.takeWhile { it <= b }.toList()
+        }
+    }
+}
 
 /** أيام المرتب في الفترة: يوم [payday] من كل شهر (29–31 بيتقيد بآخر الشهر — نفس `buildPeriod`). */
 fun paydaysIn(from: IsoDate, to: IsoDate, payday: Int): List<IsoDate> {
@@ -127,6 +159,12 @@ fun buildCalendar(
     }
     sources.payday?.let { day ->
         for (date in paydaysIn(from, to, day)) add(CalendarItemType.PAYDAY, PAYDAY_SOURCE_ID, uiText(TextKey.CAL_TITLE_PAYDAY), date, null, currency, DueFlow.RECEIVE)
+    }
+    // أيام قبض المصادر التانية — كل مصدر بيومه وبعملته، **من غير مبلغ** زي المرتب (رد المالك §64-٣)
+    for (s in sources.incomeSources) {
+        if (!hasOwnPayLine(s)) continue
+        val title = uiText(TextKey.CAL_TITLE_SOURCE_PAY, s.name)
+        for (date in sourcePayDatesIn(s, from, to)) add(CalendarItemType.INCOME_PAY, s.id, title, date, null, s.currency, DueFlow.RECEIVE)
     }
     if (sources.islamicVisible) {
         for ((year, remaining) in sources.zakat) {

@@ -57,7 +57,7 @@ class CalendarRepositoriesTest {
         c.lifeEvents.save(LifeEvent("ev-1", "فرحي الوهمي", "y", LifeEventKind.WEDDING, "2026-10-15", mine = true, createdAt = "c"))
         c.profile.save(emptyProfile().copy(payday = 28))
         val dues = LoadDues(LoadDuesDeps(c.roscas, c.roscaEntries, c.installmentPlans, c.installmentPayments, c.debtTerms, c.people, c.obligations, c.settlements, c.recurring, c.transactions))
-        val calendar = LoadCalendar(LoadCalendarDeps(dues, c.projects, c.lifeEvents, c.eventPrep, c.occasions, c.people, c.profile, c.reservations, "SA", Currency.SAR, c.zakatYears, c.zakatPayments))
+        val calendar = LoadCalendar(LoadCalendarDeps(dues, c.projects, c.lifeEvents, c.eventPrep, c.occasions, c.people, c.profile, c.reservations, "SA", Currency.SAR, c.zakatYears, c.zakatPayments, c.incomeSources))
         assertEquals(listOf("recurring", "event", "project", "payday"), calendar.month(2026, 10, today).items.map { it.type.wire })
         assertEquals("2026-10-20", c.projects.listAll().single().deadline, "آخر ميعاد المشروع بيرجع من التخزين")
 

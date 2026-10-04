@@ -87,16 +87,17 @@ class CalendarFlowTest {
     private val prep = MemoryPrepItemRepository()
     private val profile = MemoryProfileRepository(emptyProfile().copy(payday = 28))
     private val reservations = MemoryReservationRepository()
+    private val incomes = MemoryIncomeSourceRepository()
     private val calendar = LoadCalendar(
         LoadCalendarDeps(
             dues, MemoryProjectRepository(listOf(Project("pr-1", "تجديد وهمي", "x", false, "c", deadline = "2026-10-20"))), events, prep,
             MemoryOccasionRepository(listOf(Occasion("occ-1", "p-1", OccasionKind.BIRTHDAY, month = 10, day = 12, yearly = true, createdAt = "c"))),
             people, profile, reservations, "SA", Currency.SAR,
             zakatYears = MemoryZakatYearRepository(listOf(ZakatYear("2026-10-22", "2025-10-30", "2026-10-22", Currency.SAR, "c"))),
+            incomeSources = incomes,
         ),
     )
     private val counting = ManageReservations(calendar, reservations, FixedClock("2026-10-04T09:00:00.000Z"))
-    private val incomes = MemoryIncomeSourceRepository()
     private val leftover = LoadLeftover(LoadLeftoverDeps(calendar, wallets, txns, reservations, profile, Currency.SAR, incomes))
 
     private fun source(id: String, kind: IncomeSourceKind, day: Int? = null, weekly: Int? = null, currency: Currency = Currency.SAR) = IncomeSource(
@@ -203,6 +204,21 @@ class CalendarFlowTest {
         val rent = leftover.load(today)
         assertEquals(LeftoverMode.UNTIL_NEXT_PAY to "2026-10-18", rent.mode to rent.until)
         assertEquals(825_000L, rent.leftoverMinor, "الحدث يوم 15 قبل الإيجار")
+    }
+
+    @Test fun incomePayDaysComeFromTheIncomeSourcesRepository() = runBlocking<Unit> {
+        // رد المالك §64-٣: بارت تايم يوم 10 · معاش يوم 15 · وظيفة شهري (= سطر مرتب الحساب بس) — كل واحد بيومه ومن غير مبلغ
+        incomes.saveMany(
+            listOf(source("job", IncomeSourceKind.JOB), source("pt", IncomeSourceKind.PART_TIME, day = 10), source("pension", IncomeSourceKind.PENSION, day = 15)),
+        )
+        val month = calendar.month(2026, 10, today)
+        assertEquals(
+            listOf("2026-10-10 income_pay pt", "2026-10-15 income_pay pension", "2026-10-28 payday payday"),
+            month.items.filter { it.type == CalendarItemType.INCOME_PAY || it.type == CalendarItemType.PAYDAY }.map { "${it.date} ${it.type.wire} ${it.sourceId}" },
+        )
+        assertTrue(month.items.filter { it.type == CalendarItemType.INCOME_PAY }.all { it.amountMinor == null })
+        assertFailsWith<ReservationError>("فلوس جاية ليك") { counting.countUpcomingItem(CalendarItemType.INCOME_PAY, "pt", "2026-10-10", today, 1_000) }
+        assertEquals(850_000L, leftover.load(today).onHandMinor, "أيام القبض ما بتغيّرش الفلوس اللي معاك")
     }
 
     @Test fun walletNotOpenedYetMakesItNotAvailable() = runBlocking<Unit> {
