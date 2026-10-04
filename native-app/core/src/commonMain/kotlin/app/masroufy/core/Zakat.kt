@@ -118,7 +118,7 @@ private val GUIDE_RECEIVABLES = zatca("3.4", "19–20")
 private val GUIDE_SHARES = zatca("3.6", "22–23")
 
 /**
- * الجدول نفسه. مصر: النصاب 11653 · الحلي 22484 · الدين عليك **15532 (2020) — الأحدث** وبتلغي 17652 (1996) ·
+ * الجدول نفسه. مصر: النصاب فتوى 2279 (2007) · الحلي 8848 (2025) · الدين عليك **5025 (2020) — الأحدث** وبتلغي 7004 (1996) — الأرقام دي أرقام الفتاوى، وأرقام الصفحات على الموقع (11653 · 22484 · 15532 · 17652) في `pageId` ·
  * **البحث التكميلي (§62):** اليوم الثابت 413 (2008؛ والتعجيل 7503 سنة 2023) · النصاب أول السنة وآخرها 5890 (1985) ·
  * الدين ليك عند التحصيل 4399 (2002) · الأسهم 8767 (2025 — الأحدث، بتلغي 3133 سنة 1996).
  * السعودية: دليل الهيئة، وجنب اللي البحث حدد بنده: الحول ص14 و19 و27 · النزول §3.2.1 ص18 · الديون ليك §3.4 ص19–20 ·
@@ -144,14 +144,14 @@ val ZAKAT_RULES: List<ZakatRule> = listOf(
     ZakatRule(ZakatCountry.SA, ZakatTopic.PENSION, ZakatEffect.NO_RULING, TextKey.ZAKAT_RULE_NO_RULING, ZATCA_GUIDE),
     ZakatRule(ZakatCountry.SA, ZakatTopic.CUSTODY, ZakatEffect.NO_RULING, TextKey.ZAKAT_RULE_NO_RULING, ZATCA_GUIDE),
 
-    ZakatRule(ZakatCountry.EG, ZakatTopic.RATE, ZakatEffect.METHOD, TextKey.ZAKAT_RULE_RATE, iftaa("11653")),
-    ZakatRule(ZakatCountry.EG, ZakatTopic.CASH, ZakatEffect.COUNT, TextKey.ZAKAT_RULE_CASH, iftaa("11653")),
-    ZakatRule(ZakatCountry.EG, ZakatTopic.NISAB, ZakatEffect.METHOD, TextKey.ZAKAT_RULE_NISAB_EG, iftaa("11653")),
+    ZakatRule(ZakatCountry.EG, ZakatTopic.RATE, ZakatEffect.METHOD, TextKey.ZAKAT_RULE_RATE, iftaa("2279", "2007", pageId = "11653")),
+    ZakatRule(ZakatCountry.EG, ZakatTopic.CASH, ZakatEffect.COUNT, TextKey.ZAKAT_RULE_CASH, iftaa("2279", "2007", pageId = "11653")),
+    ZakatRule(ZakatCountry.EG, ZakatTopic.NISAB, ZakatEffect.METHOD, TextKey.ZAKAT_RULE_NISAB_EG, iftaa("2279", "2007", pageId = "11653")),
     ZakatRule(ZakatCountry.EG, ZakatTopic.HAWL, ZakatEffect.METHOD, TextKey.ZAKAT_RULE_HAWL_FIXED, IFTAA_HAWL_413),
     ZakatRule(ZakatCountry.EG, ZakatTopic.MID_YEAR_DIP, ZakatEffect.METHOD, TextKey.ZAKAT_RULE_DIP_START_END, IFTAA_DIP_5890),
-    ZakatRule(ZakatCountry.EG, ZakatTopic.WORN_JEWELRY, ZakatEffect.EXEMPT, TextKey.ZAKAT_RULE_WORN_EXEMPT, iftaa("22484")),
-    ZakatRule(ZakatCountry.EG, ZakatTopic.SAVED_METAL, ZakatEffect.COUNT, TextKey.ZAKAT_RULE_SAVED_COUNTED, iftaa("22484")),
-    ZakatRule(ZakatCountry.EG, ZakatTopic.DEBTS_OWED, ZakatEffect.NOT_DEDUCTED, TextKey.ZAKAT_RULE_DEBTS_NOT_DEDUCTED, iftaa("15532", "2020")),
+    ZakatRule(ZakatCountry.EG, ZakatTopic.WORN_JEWELRY, ZakatEffect.EXEMPT, TextKey.ZAKAT_RULE_WORN_EXEMPT, iftaa("8848", "2025", pageId = "22484")),
+    ZakatRule(ZakatCountry.EG, ZakatTopic.SAVED_METAL, ZakatEffect.COUNT, TextKey.ZAKAT_RULE_SAVED_COUNTED, iftaa("8848", "2025", pageId = "22484")),
+    ZakatRule(ZakatCountry.EG, ZakatTopic.DEBTS_OWED, ZakatEffect.NOT_DEDUCTED, TextKey.ZAKAT_RULE_DEBTS_NOT_DEDUCTED, iftaa("5025", "2020", pageId = "15532")),
     // 8767: شركة تجارية أو نية بيع ⇒ القيمة السوقية · شركة إنتاج/خدمات للاستثمار ⇒ الأرباح بس
     ZakatRule(ZakatCountry.EG, ZakatTopic.TRADING_SHARES, ZakatEffect.COUNT, TextKey.ZAKAT_RULE_TRADING_FULL, IFTAA_SHARES_8767),
     // ⚠️ «الأرباح بس»: الأرباح نفسها مش متسجلة في الأصول لسه ⇒ قيمة السهم على الزكاة صفر، والأرباح شغل جاي (HANDOVER)

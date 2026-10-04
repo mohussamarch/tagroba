@@ -81,9 +81,9 @@ class ZakatAssessTest {
         val sharesSource = zakatRule(ZakatCountry.EG, ZakatTopic.TRADING_SHARES).source
         assertEquals(Triple("8767", "2025", "https://www.dar-alifta.org/ar/fatwa/details/22181"), Triple(sharesSource.fatwaNumber, sharesSource.issued, sharesSource.url))
         assertEquals(sharesSource, zakatRule(ZakatCountry.EG, ZakatTopic.LONG_TERM_SHARES).source)
-        // الدين عليك: أحدث فتوى 15532 (2020)
+        // الدين عليك: أحدث فتوى 5025 (2020 — صفحة 15532 على الموقع)
         val source = zakatRule(ZakatCountry.EG, ZakatTopic.DEBTS_OWED).source
-        assertEquals("15532" to "2020", source.fatwaNumber to source.issued)
+        assertEquals("5025" to "2020", source.fatwaNumber to source.issued)
         assertEquals(ZakatItemStatus.NOT_DEDUCTED, a.items.first { it.holding.id == "o-2" }.status)
     }
 

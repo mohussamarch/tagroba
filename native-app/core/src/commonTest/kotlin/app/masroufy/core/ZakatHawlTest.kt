@@ -140,7 +140,7 @@ class ZakatHawlTest {
             assertEquals(true, r.ruling.isNotBlank() && r.source.document.isNotBlank())
         }
         assertEquals(ZakatAuthority.ZATCA, zakatRule(ZakatCountry.SA, ZakatTopic.NISAB).source.authority)
-        assertEquals("11653", zakatRule(ZakatCountry.EG, ZakatTopic.NISAB).source.fatwaNumber)
+        assertEquals("2279", zakatRule(ZakatCountry.EG, ZakatTopic.NISAB).source.fatwaNumber)
         assertEquals(ZakatEffect.NO_RULING, zakatRule(ZakatCountry.SA, ZakatTopic.PENSION).effect)
         assertEquals(ZakatEffect.NO_RULING, zakatRule(ZakatCountry.EG, ZakatTopic.CRYPTO).effect)
         assertEquals(ZakatCountry.SA, ZakatCountry.of("sa"))
