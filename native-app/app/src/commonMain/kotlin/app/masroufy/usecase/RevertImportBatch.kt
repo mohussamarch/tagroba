@@ -3,17 +3,36 @@ package app.masroufy.usecase
 import app.masroufy.core.Id
 import app.masroufy.core.ImportBatch
 import app.masroufy.core.ImportBatchState
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.port.AllocationRepository
+import app.masroufy.port.AssetLotRepository
+import app.masroufy.port.AssetSaleRepository
+import app.masroufy.port.EventLinkRepository
 import app.masroufy.port.ImportBatchRepository
+import app.masroufy.port.InstallmentPaymentRepository
+import app.masroufy.port.InstallmentPlanRepository
 import app.masroufy.port.ObligationRepository
+import app.masroufy.port.ProjectLinkRepository
+import app.masroufy.port.RoscaEntryRepository
 import app.masroufy.port.SettlementRepository
 import app.masroufy.port.SourceRecordRepository
 import app.masroufy.port.TransactionRepository
+import app.masroufy.port.TransactionTagRepository
 import app.masroufy.port.UnitOfWork
+import app.masroufy.port.ZakatPaymentRepository
 
 /**
  * RevertImportBatch — نقل `revertImportBatch.ts`. قيد spec/03: التراجع **مش حذف أعمى** —
  * العملية اللي تؤيدها مصادر تانية، أو دخلت عليها تسوية، أو متربطة بشخص، بتفضل ويتشرح ليه.
+ *
+ * **زيادة على التطبيق الحالي** (التطبيق الحالي كان بيمسح العملية ويسيب الوسوم وروابط المشاريع بتشاور عليها — نفس الغلطة اللي
+ * اتلقت في جلسة 6): كل حاجة بتشاور على عملية بمعرّفها اتبصّ عليها ([RevertLinkDeps]) —
+ * - **فلوس اتسجلت عليها بعد الاستيراد** (زي التسوية بالظبط): جمعية · قسط · مبلغ تمويل مستلم · دفعة زكاة ⇒ العملية **بتفضل**.
+ * - **شراء أو بيع أصل** (استثمار) ⇒ بتفضل. · **نقطة في حدث** (متربطة بشخص — زي التخصيص) ⇒ بتفضل.
+ * - **علامات بس** (ربط مشروع · مصروف على حدث · وسم) ⇒ الربط **بيتشال مع العملية في نفس وحدة العمل** — ولا ربط بيفضل
+ *   بيشاور على عملية مش موجودة (النسخة الشاملة كانت بترفض العلاقة).
+ * اختيار Claude (OVERRIDES §64 «قرارات تنفيذ») — المالك يقدر يغيّره.
  *
  * ⚠️ مسار «نسخة قبل الحذف» (`RepairBackupPort`, HANDOVER §36) **مش هنا لسه** — محتاج منفذ
  * ملفات الجهاز، وبيتوصّل مع طبقة التخزين. السلوك الحالي = التطبيق الحالي لما `deps.backup` غايبة.
@@ -21,6 +40,12 @@ import app.masroufy.port.UnitOfWork
 
 enum class RevertDecision(val wire: String) {
     DELETED("deleted"), KEPT_OTHER_SOURCE("kept_other_source"), KEPT_HAS_SETTLEMENT("kept_has_settlement"), KEPT_HAS_ALLOCATION("kept_has_allocation"),
+    /** متربطة بالمستحقات (جمعية · قسط · مبلغ تمويل مستلم) أو بدفعة زكاة. */
+    KEPT_HAS_DUE("kept_has_due"),
+    /** متربطة بشراء أو بيع أصل. */
+    KEPT_HAS_INVESTMENT("kept_has_investment"),
+    /** نقطة في حدث متربطة بشخص (§64). */
+    KEPT_HAS_GIFT("kept_has_gift"),
 }
 
 data class RevertLineOutcome(val transactionId: Id, val decision: RevertDecision, val reason: String)
@@ -40,7 +65,27 @@ data class RevertPlan(
     val recordsFound: Int,
     /** عمليات متسجلة وولا سجل مصدر — معرّفات تالفة غالبًا؛ التراجع بيترفض لحد ما تتصلح. */
     val blocked: Boolean,
+    /** روابط (مشروع · مصروف على حدث · وسم) هتتشال مع العمليات اللي هتتمسح. */
+    val unlinkCount: Int = 0,
 )
+
+/** كل اللي بيشاور على عملية بمعرّفها غير التسويات والتخصيصات والالتزامات — التراجع بيبص عليهم كلهم. */
+data class RevertLinkDeps(
+    val projectLinks: ProjectLinkRepository,
+    val eventLinks: EventLinkRepository,
+    val transactionTags: TransactionTagRepository,
+    val roscaEntries: RoscaEntryRepository,
+    val installmentPayments: InstallmentPaymentRepository,
+    val installmentPlans: InstallmentPlanRepository,
+    val zakatPayments: ZakatPaymentRepository,
+    val assetLots: AssetLotRepository,
+    val assetSales: AssetSaleRepository,
+)
+
+/** الروابط اللي هتتشال مع العمليات اللي هتتمسح. */
+private data class Detach(val projectLinks: List<Id>, val eventLinks: List<Id>, val tags: List<Id>) {
+    val count: Int get() = projectLinks.size + eventLinks.size + tags.size
+}
 
 data class RevertDeps(
     val txns: TransactionRepository,
@@ -50,6 +95,7 @@ data class RevertDeps(
     val allocations: AllocationRepository,
     val obligations: ObligationRepository,
     val uow: UnitOfWork,
+    val links: RevertLinkDeps,
 )
 
 const val REVERT_BLOCKED_MESSAGE =
@@ -84,6 +130,15 @@ class RevertImportBatch(private val deps: RevertDeps) {
         val settledIds = settlements.map { it.transactionId }.toSet()
         val allocatedIds = allocations.map { it.transactionId }.toSet()
         val obligationOriginIds = obligations.mapNotNull { it.originTransactionId }.toSet()
+        val l = deps.links
+        val dueIds = (
+            l.roscaEntries.listByTransactionIds(txnIds).map { it.transactionId } +
+                l.installmentPayments.listByTransactionIds(txnIds).map { it.transactionId } +
+                l.installmentPlans.listAll().mapNotNull { it.receivedTransactionId } +
+                l.zakatPayments.listByTransactionIds(txnIds).mapNotNull { it.transactionId }
+            ).toSet()
+        val investmentIds = (l.assetLots.listAll().mapNotNull { it.transactionId } + l.assetSales.listAll().mapNotNull { it.transactionId }).toSet()
+        val giftIds = l.eventLinks.listByTransactionIds(txnIds).filter { it.role.isGift }.map { it.transactionId }.toSet()
 
         val sourceCountByTxn = mutableMapOf<Id, Int>()
         for (record in allSources) {
@@ -100,6 +155,9 @@ class RevertImportBatch(private val deps: RevertDeps) {
                 id in settledIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_SETTLEMENT, "العملية دي دخلت عليها تسوية بعد الاستيراد، فمش هتتحذف")
                 id in allocatedIds || id in obligationOriginIds ->
                     RevertLineOutcome(id, RevertDecision.KEPT_HAS_ALLOCATION, "العملية دي متربطة بشخص (تخصيص أو التزام)، فمش هتتحذف")
+                id in dueIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_DUE, uiText(TextKey.REVERT_KEPT_DUE))
+                id in investmentIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_INVESTMENT, uiText(TextKey.REVERT_KEPT_INVESTMENT))
+                id in giftIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_GIFT, uiText(TextKey.REVERT_KEPT_GIFT))
                 (sourceCountByTxn[id] ?: 0) > 1 ->
                     RevertLineOutcome(id, RevertDecision.KEPT_OTHER_SOURCE, "العملية دي ليها مصدر تاني غير الدفعة دي (رسالة مثلًا)، فمش هتتحذف")
                 else -> {
@@ -111,7 +169,22 @@ class RevertImportBatch(private val deps: RevertDeps) {
             if (outcome.decision != RevertDecision.DELETED) toKeep += outcome
         }
 
-        return RevertPlan(batchId, toDelete, toKeep, outcomes, isClean = toKeep.isEmpty(), expectedCount = expectedCount, recordsFound = recordsFound, blocked = blocked)
+        return RevertPlan(
+            batchId, toDelete, toKeep, outcomes, isClean = toKeep.isEmpty(), expectedCount = expectedCount, recordsFound = recordsFound, blocked = blocked,
+            unlinkCount = detachFor(toDelete).count,
+        )
+    }
+
+    /** الروابط اللي بتشاور على [ids] (المشاريع: «مئات مش آلاف» ⇒ قراية الكل أرخص من سؤال لكل عملية). */
+    private suspend fun detachFor(ids: List<Id>): Detach {
+        if (ids.isEmpty()) return Detach(emptyList(), emptyList(), emptyList())
+        val wanted = ids.toSet()
+        val l = deps.links
+        return Detach(
+            l.projectLinks.listAll().filter { it.transactionId in wanted }.map { it.id },
+            l.eventLinks.listByTransactionIds(ids).map { it.id },
+            l.transactionTags.listByTransactionIds(ids).map { it.id },
+        )
     }
 
     /** بينفّذ الخطة ذريًا. سجلات المصدر بتاعة الدفعة بتتمسح دايمًا. */
@@ -120,7 +193,14 @@ class RevertImportBatch(private val deps: RevertDeps) {
         if (revertPlan.blocked) throw IllegalStateException(REVERT_BLOCKED_MESSAGE)
 
         return deps.uow.run {
-            if (revertPlan.toDelete.isNotEmpty()) deps.txns.deleteMany(revertPlan.toDelete)
+            if (revertPlan.toDelete.isNotEmpty()) {
+                // الروابط الأول وبعدين العمليات — كله في نفس وحدة العمل (فشل في النص ⇒ ولا حاجة اتشالت)
+                val detach = detachFor(revertPlan.toDelete)
+                if (detach.projectLinks.isNotEmpty()) deps.links.projectLinks.deleteMany(detach.projectLinks)
+                if (detach.eventLinks.isNotEmpty()) deps.links.eventLinks.deleteMany(detach.eventLinks)
+                if (detach.tags.isNotEmpty()) deps.links.transactionTags.deleteMany(detach.tags)
+                deps.txns.deleteMany(revertPlan.toDelete)
+            }
             val batchRecords = deps.sources.listByBatch(batchId)
             deps.sources.deleteMany(batchRecords.map { it.id })
             deps.batches.updateState(batchId, ImportBatchState.REVERTED)

@@ -212,4 +212,7 @@ internal val ARABIC_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SETTLEMENT_AMOUNT_HALALAS to "مبلغ التسوية لازم يكون عدد صحيح بالهللة وأكبر من صفر",
     TextKey.SETTLEMENT_REQUEST_CONFLICT to "الطلب ده اتحفظ قبل كده ببيانات مختلفة. راجع التسوية المسجلة",
     TextKey.SETTLEMENT_REJECTED to "التسوية مرفوضة",
+    TextKey.REVERT_KEPT_DUE to "العملية دي متربطة بالمستحقات أو بدفعة زكاة اتسجلت بعد الاستيراد، فمش هتتحذف",
+    TextKey.REVERT_KEPT_INVESTMENT to "العملية دي متربطة بشراء أو بيع استثمار، فمش هتتحذف",
+    TextKey.REVERT_KEPT_GIFT to "العملية دي نقطة متربطة بشخص في حدث، فمش هتتحذف",
 )

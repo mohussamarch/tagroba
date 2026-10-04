@@ -68,8 +68,8 @@ class MemoryTagRepository(seed: List<Tag> = emptyList()) : TagRepository {
     }
 }
 
-class MemoryTransactionTagRepository(seed: List<TransactionTag> = emptyList()) : TransactionTagRepository {
-    private val items = LinkedHashMap<Id, TransactionTag>()
+class MemoryTransactionTagRepository(seed: List<TransactionTag> = emptyList()) : TransactionTagRepository, Snapshotable {
+    private var items = LinkedHashMap<Id, TransactionTag>()
 
     init {
         for (l in seed) items[l.id] = l
@@ -88,5 +88,12 @@ class MemoryTransactionTagRepository(seed: List<TransactionTag> = emptyList()) :
 
     override suspend fun deleteMany(ids: List<Id>) {
         for (id in ids) items.remove(id)
+    }
+
+    override fun snapshot(): Any = LinkedHashMap(items)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        items = LinkedHashMap(state as Map<Id, TransactionTag>)
     }
 }

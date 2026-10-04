@@ -216,4 +216,7 @@ internal val ENGLISH_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SETTLEMENT_AMOUNT_HALALAS to "The settlement amount has to be a whole number in the smallest currency unit and greater than zero",
     TextKey.SETTLEMENT_REQUEST_CONFLICT to "This request was already saved with different details. Check the settlement that is recorded",
     TextKey.SETTLEMENT_REJECTED to "The settlement was rejected",
+    TextKey.REVERT_KEPT_DUE to "This transaction is linked to dues or to a zakat payment recorded after the import, so it will not be deleted",
+    TextKey.REVERT_KEPT_INVESTMENT to "This transaction is linked to an investment purchase or sale, so it will not be deleted",
+    TextKey.REVERT_KEPT_GIFT to "This transaction is a gift linked to a person at an event, so it will not be deleted",
 )

@@ -96,6 +96,8 @@ class FirestoreProjectLinkRepository(private val space: FirestoreSpace) : Projec
         space.select(codec, DocQuery(listOf(Cond.Eq("transactionId", transactionId))))
 
     override suspend fun saveMany(links: List<ProjectLink>) = space.saveAll(codec, links)
+
+    override suspend fun deleteMany(ids: List<Id>) = space.deleteAll(codec.group, ids)
 }
 
 /** «المستحقات» (OVERRIDES §50) — مجموعات كوتلن بس، والقواعد بتسمح بيها من غير نشر (`DuesCodecs`). */

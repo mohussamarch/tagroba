@@ -19,6 +19,9 @@ interface ProjectLinkRepository {
     suspend fun listByTransaction(transactionId: Id): List<ProjectLink>
 
     suspend fun saveMany(links: List<ProjectLink>)
+
+    /** التراجع عن دفعة استيراد بيشيل روابط العمليات اللي اتمسحت (ما يسيبش ربط بيشاور على عملية مش موجودة). */
+    suspend fun deleteMany(ids: List<Id>)
 }
 
 interface ProjectRuleRepository {

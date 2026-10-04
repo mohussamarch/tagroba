@@ -114,6 +114,14 @@ class RevertFlowGoldenTest {
                     allocations = MemoryAllocationRepository(EntityJson.allocations(seed.field("allocations"))),
                     obligations = MemoryObligationRepository(EntityJson.obligations(seed.field("obligations"))),
                     uow = MemoryUnitOfWork(listOf(r.txns, r.sources, r.batches)),
+                    // التطبيق الحالي ما كانش بيبص على الروابط دي — فاضيين هنا ⇒ نفس المخرجات بالحرف
+                    links = RevertLinkDeps(
+                        app.masroufy.memory.MemoryProjectLinkRepository(), app.masroufy.memory.MemoryEventLinkRepository(),
+                        app.masroufy.memory.MemoryTransactionTagRepository(), app.masroufy.memory.MemoryRoscaEntryRepository(),
+                        app.masroufy.memory.MemoryInstallmentPaymentRepository(), app.masroufy.memory.MemoryInstallmentPlanRepository(),
+                        app.masroufy.memory.MemoryZakatPaymentRepository(), app.masroufy.memory.MemoryAssetLotRepository(),
+                        app.masroufy.memory.MemoryAssetSaleRepository(),
+                    ),
                 ),
             )
             runBlocking {

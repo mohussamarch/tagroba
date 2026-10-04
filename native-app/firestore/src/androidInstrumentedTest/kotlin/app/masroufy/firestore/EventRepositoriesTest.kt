@@ -25,6 +25,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
 import org.junit.runner.RunWith
+import app.masroufy.core.GiftCategories
+import app.masroufy.usecase.AddTransaction
+import app.masroufy.usecase.AddTransactionDeps
+import app.masroufy.usecase.NewTransactionInput
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -58,6 +62,15 @@ class EventRepositoriesTest {
         assertEquals(250_000, events.detail(mine.id).summary.totals.single().giftsInMinor)
         assertNull(events.detail(theirs.id).summary.totals.single().giftsInMinor)
         assertEquals(listOf(Direction.OUT, Direction.IN), events.personBadges("p-2").map { it.direction })
+        // النقطة بتاخد «هدايا › نقوط» على فايربيز كمان (§64)
+        assertEquals(setOf(GiftCategories.EVENT_GIFTS), c.transactions.findByIds(recorded.map { it.transaction.id }).map { it.categoryId }.toSet())
+        assertTrue(c.categories.listAll().map { it.id }.containsAll(listOf(GiftCategories.ROOT, GiftCategories.EVENT_GIFTS)))
+        // مصروف بنسبة: النسبة بتتخزن في المستند وبترجع زي ما هي
+        val hall = AddTransaction(AddTransactionDeps(c.transactions, c.wallets, ids, clock))
+            .add(NewTransactionInput(amountMinor = 1_000_001, occurredAt = "2025-10-09", walletId = "w-cash", economicKind = EconomicKind.PURCHASE, merchantName = "قاعة وهمية"))
+        gifts.link(mine.id, hall.id, EventRole.SPEND, sharePercent = 25)
+        assertEquals(25, FirestoreEventLinkRepository(s).listByTransactionIds(listOf(hall.id)).single().sharePercent)
+        assertEquals(250_000, events.detail(mine.id).summary.totals.single().spentMinor, "25% من 10,000.01 ⇒ 2,500.00")
         // فك النقطة: الربط اتمسح والنوع رجع يتسأل
         gifts.unlink(mine.id, recorded[1].transaction.id)
         assertTrue(c.eventLinks.listByTransactionIds(listOf(recorded[1].transaction.id)).isEmpty())

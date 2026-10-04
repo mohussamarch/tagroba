@@ -84,6 +84,9 @@ class RemainingRepositoriesTest {
         assertEquals(ProjectKind.WORK, FirestoreProjectRepository(s).listAll().single().kind)
         FirestoreProjectLinkRepository(s).saveMany(listOf(ProjectLink("pl-1", "pr-1", "t-1", "manual", "x")))
         assertEquals(listOf("pl-1"), FirestoreProjectLinkRepository(s).listByTransaction("t-1").map { it.id })
+        // التراجع عن دفعة بيمسح روابط المشاريع (deleteMany الجديدة)
+        FirestoreProjectLinkRepository(s).deleteMany(listOf("pl-1"))
+        assertTrue(FirestoreProjectLinkRepository(s).listAll().isEmpty())
     }
 
     @Test fun roscaFlowRunsOnFirestore() = run {

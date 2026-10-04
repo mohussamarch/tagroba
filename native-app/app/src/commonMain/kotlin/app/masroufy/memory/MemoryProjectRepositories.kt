@@ -41,8 +41,8 @@ class MemoryProjectRuleRepository(seed: List<ProjectRule> = emptyList()) : Proje
     }
 }
 
-class MemoryProjectLinkRepository(seed: List<ProjectLink> = emptyList()) : ProjectLinkRepository {
-    private val items = LinkedHashMap<Id, ProjectLink>()
+class MemoryProjectLinkRepository(seed: List<ProjectLink> = emptyList()) : ProjectLinkRepository, Snapshotable {
+    private var items = LinkedHashMap<Id, ProjectLink>()
 
     init {
         for (l in seed) items[l.id] = l
@@ -55,6 +55,17 @@ class MemoryProjectLinkRepository(seed: List<ProjectLink> = emptyList()) : Proje
 
     override suspend fun saveMany(links: List<ProjectLink>) {
         for (l in links) items[l.id] = l
+    }
+
+    override suspend fun deleteMany(ids: List<Id>) {
+        for (id in ids) items.remove(id)
+    }
+
+    override fun snapshot(): Any = LinkedHashMap(items)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        items = LinkedHashMap(state as Map<Id, ProjectLink>)
     }
 }
 
