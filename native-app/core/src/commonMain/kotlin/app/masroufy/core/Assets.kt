@@ -7,7 +7,7 @@ package app.masroufy.core
 data class Asset(
     val id: Id,
     val name: String,
-    /** "gold" / "stock" / "fund" / "digital" / "other". */
+    /** "gold" / "silver" / "stock" / "fund" / "digital" / "other" («فضة» اتضافت للزكاة — §62؛ التطبيق الحالي ما يعرفهاش). */
     val kind: String,
     val unitLabel: String,
     val currency: Currency,
@@ -20,6 +20,7 @@ data class Asset(
 val ASSET_KIND_LABELS: Map<String, String>
     get() = linkedMapOf(
         "gold" to uiText(TextKey.ASSET_KIND_GOLD),
+        "silver" to uiText(TextKey.ASSET_KIND_SILVER),
         "stock" to uiText(TextKey.ASSET_KIND_STOCK),
         "fund" to uiText(TextKey.ASSET_KIND_FUND),
         "digital" to uiText(TextKey.ASSET_KIND_DIGITAL),
@@ -27,7 +28,7 @@ val ASSET_KIND_LABELS: Map<String, String>
     )
 
 // وحدات الأصول **بتتخزن** مع الأصل نفسه، فما تتترجمش — ترجمتها بتغيّر بيانات متخزنة
-val ASSET_UNIT_DEFAULTS = linkedMapOf("gold" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", "other" to "وحدة")
+val ASSET_UNIT_DEFAULTS = linkedMapOf("gold" to "جرام", "silver" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", "other" to "وحدة")
 
 data class AssetLot(val id: Id, val assetId: Id, val purchasedAt: IsoDate, val quantity: Quantity, val principalMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
 data class AssetSale(val id: Id, val assetId: Id, val soldAt: IsoDate, val quantity: Quantity, val grossProceedsMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)

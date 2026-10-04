@@ -14,8 +14,8 @@ val BACKUP_GROUPS = listOf(
     "assetLots", "assetSales", "assetPrices", "notificationReceipts", "projects", "projectLinks", "projectRules",
     // «المستحقات» — التطبيق الجديد بس (OVERRIDES §50 و§55). التطبيق الحالي بيقبل الملف ويتجاهلها
     "roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms",
-    // «زون التحويلات» (§60) — التطبيق الجديد بس
-    "transferParties",
+    // «زون التحويلات» (§60) والزكاة (§62) — التطبيق الجديد بس
+    "transferParties", "zakatFacts", "zakatYears", "zakatPayments",
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -28,10 +28,13 @@ val DUES_BACKUP_GROUPS = listOf("roscas", "roscaEntries", "installmentPlans", "i
 /** قرارات «زون التحويلات» (§60) — مش في نسخ التطبيق الحالي، وبتتكتب بس لو فيها حاجة. */
 const val TRANSFER_PARTIES_GROUP = "transferParties"
 
-/** كل اللي في التطبيق الجديد بس (مش في ملف التطبيق الحالي) — كل مجموعة منهم بتتكتب بس لو فيها حاجة (`exportedBackupData`). */
-val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP
+/** الزكاة (§62) — وقائع وسنين ودفعات؛ بتتكتب مع بعض لو أي واحدة فيها حاجة (زي «المستحقات»). */
+val ZAKAT_BACKUP_GROUPS = listOf("zakatFacts", "zakatYears", "zakatPayments")
 
-val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP
+/** كل اللي في التطبيق الجديد بس (مش في ملف التطبيق الحالي) — كل مجموعة منهم بتتكتب بس لو فيها حاجة (`exportedBackupData`). */
+val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS
+
+val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
@@ -54,6 +57,8 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "installmentPayments" to linkedMapOf("planId" to "installmentPlans", "transactionId" to "transactions"),
     "debtTerms" to linkedMapOf("obligationId" to "obligations", "personId" to "people"),
     "transferParties" to mapOf("personId" to "people"),
+    "zakatFacts" to linkedMapOf("assetId" to "assets", "obligationId" to "obligations"),
+    "zakatPayments" to linkedMapOf("yearId" to "zakatYears", "transactionId" to "transactions"),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
@@ -63,9 +68,8 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropDues = DUES_BACKUP_GROUPS.all { data[it].isNullOrEmpty() }
-    val dropParties = data[TRANSFER_PARTIES_GROUP].isNullOrEmpty()
-    return if (!dropDues && !dropParties) data else data.filterKeys { (!dropDues || it !in DUES_BACKUP_GROUPS) && (!dropParties || it != TRANSFER_PARTIES_GROUP) }
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS).filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
+    return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
 
 /** نفس `String(x)` في جافاسكربت للقيم اللي بتيجي من JSON. */
@@ -190,7 +194,7 @@ fun checkBackupProfile(profile: Any?) {
         if (n == null || n % 1.0 != 0.0 || n < 1 || n > 31) bad("payday")
     }
     if (has("gender") && row["gender"] != "male" && row["gender"] != "female") bad("gender")
-    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business", "duesInBudget")) if (has(field) && row[field] !is Boolean) bad(field)
+    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business", "duesInBudget", "islamicContentVisible")) if (has(field) && row[field] !is Boolean) bad(field)
     if (has("dependentKinds")) {
         val kinds = row["dependentKinds"] as? List<*> ?: bad("dependentKinds")
         if (!kinds.all { it in DEPENDENT_KINDS }) bad("dependentKinds")

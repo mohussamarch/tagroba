@@ -39,16 +39,19 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "installmentPayments" to listOf("planId", "transactionId", "amountMinor"),
     "debtTerms" to listOf("personId", "firstDueAt", "cycleMonths"),
     "transferParties" to listOf("label", "verdict", "decidedAt"),
+    "zakatFacts" to listOf("subject", "updatedAt"),
+    "zakatYears" to listOf("hawlStart", "dueAt", "currency", "confirmedAt"),
+    "zakatPayments" to listOf("yearId", "amountMinor", "lines", "paidAt", "createdAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount")
-private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness")
+private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
     "transactions" to linkedMapOf("reviewState" to listOf("confirmed", "suggested", "needs_review"), "datePrecision" to listOf("day", "minute")),
     "obligations" to mapOf("kind" to listOf("receivable", "loan_payable", "custody_payable")),
     "allocations" to mapOf("allocationKind" to listOf("receivable", "gift")),
-    "assets" to mapOf("kind" to listOf("gold", "stock", "fund", "digital", "other")),
+    "assets" to mapOf("kind" to listOf("gold", "silver", "stock", "fund", "digital", "other")),
     "assetPrices" to mapOf("source" to listOf("manual", "feed")),
     "recurringItems" to mapOf("kind" to listOf("subscription", "bill")),
     "rules" to mapOf("matchMode" to listOf("contains", "startsWith", "exact")),
@@ -58,6 +61,11 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "roscaEntries" to mapOf("kind" to listOf("contribution", "payout")),
     "installmentPlans" to mapOf("kind" to listOf("purchase_plan", "financing")),
     "transferParties" to mapOf("verdict" to listOf("own_account", "person", "dismissed")),
+    "zakatFacts" to mapOf("subject" to listOf("asset", "obligation")),
+)
+/** قيم اختيارية بتتفحص لو موجودة بس (وقائع الزكاة — §62). */
+private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(
+    "zakatFacts" to linkedMapOf("purpose" to listOf("wear", "saving"), "holding" to listOf("trading", "long_term"), "collectability" to listOf("strong", "doubtful")),
 )
 private val CURRENCY_CODE = Regex("[A-Z]{3}")
 private val LAST_FOUR = Regex("[0-9]{4}")
@@ -89,7 +97,7 @@ fun checkFullBackupData(data: Any?) {
 }
 
 private fun validateFields(row: Map<String, Any?>, group: String) {
-    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members")
+    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members", "lines")
     for (key in REQUIRED.getValue(group)) {
         // دين قديم من غير عملية (OVERRIDES §27)
         if (group == "obligations" && key == "originTransactionId" && row[key] == null) continue
@@ -113,6 +121,7 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (group == "recurringItems" && numberOf(row["cycleMonths"]) !in listOf(1.0, 3.0, 12.0)) throw BackupError(uiText(TextKey.BACKUP_CYCLE_INVALID))
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
+    for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     if (group == "importBatches") {
         val counts = row["counts"] as? Map<*, *>
         for (key in listOf("total", "imported", "duplicates", "similar", "conflicts", "invalid")) {

@@ -24,6 +24,11 @@ data class UserProfile(
      * `null` = لسه ما اتسألش ⇒ بتتحسب في الحد (الأحوط: التحذير بيجي بدري مش متأخر — اختيار Claude). المصروف الشهري نفسه فيه الأقساط دايمًا.
      */
     val duesInBudget: Boolean? = null,
+    /**
+     * «المحتوى الإسلامي: ظاهر» (§46 و§62-د) — الزكاة بتظهر معاه. `null` = ما اتغيرش ⇒ ظاهر (مشغّل من الأول).
+     * حقل التطبيق الجديد بس — ما بيتكتبش لو `null` عشان ملف الحساب يفضل زي التطبيق الحالي.
+     */
+    val islamicContentVisible: Boolean? = null,
 )
 
 val DEPENDENT_KINDS = listOf("spouse", "children", "parents")
@@ -56,6 +61,7 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         hasCar = bool("hasCar"), renter = bool("renter"), domesticWorker = bool("domesticWorker"), business = bool("business"),
         onboardedAt = (data["onboardedAt"] as? String)?.takeIf { it.isNotEmpty() },
         duesInBudget = bool("duesInBudget"),
+        islamicContentVisible = bool("islamicContentVisible"),
     )
 }
 
