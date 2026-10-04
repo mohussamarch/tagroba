@@ -18,24 +18,32 @@ import app.masroufy.port.NotificationReceiptRepository
 /** `all` = كل اللي متولد دلوقتي (لصفحة الإشعارات)؛ `unseen` = اللي المستخدم ماشافهوش. */
 data class NotificationsView(val unseen: List<NotificationEvent>, val all: List<NotificationEvent>)
 
+/**
+ * تنبيهات الميزانية من ناتج شاشة الميزانية — مشتركة بين الصفحة دي ومحرك التنبيهات (§61).
+ * المصروف مش معروف ⇒ ولا تنبيه (§9 — رقم ناقص مش أساس لتخويف).
+ */
+fun budgetNotificationEvents(budget: BudgetScreenData): List<NotificationEvent> {
+    val nameOf = budget.categories.associate { it.id to it.name }
+    val limitOf = budget.categoryBudgets.associateBy { it.categoryId }
+    return buildBudgetNotifications(
+        periodStart = budget.period.start,
+        totalStatus = budget.totalStatus,
+        totalThresholdPercent = budget.budget?.thresholdPercent,
+        // التصنيف من غير سقف ما بيدخلش أصلًا (spec/06)، واللي المستخدم قافل تنبيهه كمان
+        categories = budget.lines.mapNotNull { line ->
+            val status = line.status ?: return@mapNotNull null
+            val limit = limitOf[line.categoryId]
+            if (limit != null && !limit.notifyEnabled) return@mapNotNull null
+            CategoryBudgetForNotice(line.categoryId, nameOf[line.categoryId] ?: line.categoryId, status, limit?.thresholdPercent)
+        },
+        spentKnown = budget.spentKnown,
+    )
+}
+
 class LoadNotifications(private val receipts: NotificationReceiptRepository, private val clock: Clock) {
     /** بيبني التنبيهات الحالية من غير ما يعلّم حاجة مقروءة. */
     suspend fun load(budget: BudgetScreenData): NotificationsView {
-        val nameOf = budget.categories.associate { it.id to it.name }
-        val limitOf = budget.categoryBudgets.associateBy { it.categoryId }
-        val all = buildBudgetNotifications(
-            periodStart = budget.period.start,
-            totalStatus = budget.totalStatus,
-            totalThresholdPercent = budget.budget?.thresholdPercent,
-            // التصنيف من غير سقف ما بيدخلش أصلًا (spec/06)، واللي المستخدم قافل تنبيهه كمان
-            categories = budget.lines.mapNotNull { line ->
-                val status = line.status ?: return@mapNotNull null
-                val limit = limitOf[line.categoryId]
-                if (limit != null && !limit.notifyEnabled) return@mapNotNull null
-                CategoryBudgetForNotice(line.categoryId, nameOf[line.categoryId] ?: line.categoryId, status, limit?.thresholdPercent)
-            },
-            spentKnown = budget.spentKnown,
-        )
+        val all = budgetNotificationEvents(budget)
         return NotificationsView(filterUnseen(all, receipts.listAll()), all)
     }
 
