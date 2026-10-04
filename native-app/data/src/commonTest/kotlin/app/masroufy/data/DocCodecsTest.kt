@@ -74,7 +74,7 @@ class DocCodecsTest {
         val terms = DebtTerms("o-1", "p-1", "2026-02-01", 1, 50_000, false)
         assertEquals("o-1", DuesCodecs.debtTerms.id(terms))
         assertEquals(setOf("obligationId", "personId", "firstDueAt", "cycleMonths"), roundTrip(DuesCodecs.debtTerms, terms.copy(installmentMinor = null, hasInterest = null)).keys)
-        assertEquals(36, DocumentCodecs.byGroup.size)
+        assertEquals(38, DocumentCodecs.byGroup.size)
     }
 
     @Test
@@ -93,6 +93,9 @@ class DocCodecsTest {
         val p = Project("pr-1", "مشروع وهمي", "مشروع وهمي", false, "x")
         assertFalse("kind" in roundTrip(AssetProjectCodecs.projects, p))
         assertEquals("work", roundTrip(AssetProjectCodecs.projects, p.copy(kind = ProjectKind.WORK))["kind"])
+        // آخر ميعاد (§65): اختياري — الفاضي ما بيتكتبش، والمكتوب بيرجع زي ما هو
+        assertEquals(setOf("id", "name", "normalizedName", "archived", "createdAt"), roundTrip(AssetProjectCodecs.projects, p).keys)
+        assertEquals("2026-12-31", roundTrip(AssetProjectCodecs.projects, p.copy(deadline = "2026-12-31"))["deadline"])
     }
 
     @Test

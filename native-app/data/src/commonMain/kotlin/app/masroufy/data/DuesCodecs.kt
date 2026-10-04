@@ -107,5 +107,8 @@ object DocumentCodecs {
     /** الأحداث ومناسبات الشخص (§64). */
     val events: List<DocCodec<*>> = listOf(EventCodecs.lifeEvents, EventCodecs.eventLinks, EventCodecs.occasions)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events).associateBy { it.group }
+    /** التقويم: المبالغ المحجوزة وتجهيزات الأحداث (§65). */
+    val calendar: List<DocCodec<*>> = listOf(CalendarCodecs.reservations, CalendarCodecs.eventPrep)
+
+    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + calendar).associateBy { it.group }
 }

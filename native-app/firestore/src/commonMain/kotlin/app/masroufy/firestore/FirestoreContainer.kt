@@ -55,6 +55,8 @@ class FirestoreContainer(space: FirestoreSpace) {
     val lifeEvents = FirestoreLifeEventRepository(space)
     val eventLinks = FirestoreEventLinkRepository(space)
     val occasions = FirestoreOccasionRepository(space)
+    val reservations = FirestoreReservationRepository(space)
+    val eventPrep = FirestorePrepItemRepository(space)
     val fullBackup = FirestoreFullBackup(space)
     val profile = FirestoreProfileRepository(space)
     val referenceSeed = FirestoreReferenceSeed(space)
