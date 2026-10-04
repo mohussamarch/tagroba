@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Id
+import app.masroufy.core.IsoDate
 import app.masroufy.core.PersonAllocation
 import app.masroufy.core.Project
 import app.masroufy.core.ProjectError
@@ -14,6 +15,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.arabicCompare
 import app.masroufy.core.checkProjectName
 import app.masroufy.core.checkProjectRule
+import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.memberIds
 import app.masroufy.core.membershipChanges
 import app.masroufy.core.planRuleLinks
@@ -160,6 +162,12 @@ class ManageProjects(private val deps: ProjectsDeps) {
         val project = findProject(id, all)
         val checked = checkProjectName(name, all, id)
         deps.projects.save(project.copy(name = checked.name, normalizedName = checked.normalizedName))
+    }
+
+    /** آخر ميعاد للمشروع (§65 — بيظهر في التقويم)، وnull بيشيله. */
+    suspend fun setDeadline(id: Id, deadline: IsoDate?) {
+        if (deadline != null && !isValidIsoDate(deadline)) throw ProjectError(uiText(TextKey.PROJECT_DEADLINE_INVALID))
+        deps.projects.save(findProject(id).copy(deadline = deadline))
     }
 
     /** مفيش مسح للمشروع — أرشفة، وعملياته ومجاميعه بتفضل. */

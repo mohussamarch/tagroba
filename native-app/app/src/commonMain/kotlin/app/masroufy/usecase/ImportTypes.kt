@@ -80,6 +80,11 @@ data class ImportStatementDeps(
      * `null` = من غيرها (زي التطبيق الحالي — ملفات المرجع بتتعمل كده).
      */
     val transferParties: app.masroufy.port.TransferPartyRepository? = null,
+    /**
+     * مصادر الدخل (رد المالك §64): إيداع جديد من طرف اتأكد إنه بيحوّل المرتب بياخد «مرتب» مؤكد لوحده وهو بيتحفظ.
+     * `null` = من غيرها (زي التطبيق الحالي).
+     */
+    val incomeSources: app.masroufy.port.IncomeSourceRepository? = null,
 )
 
 data class ImportRequest(

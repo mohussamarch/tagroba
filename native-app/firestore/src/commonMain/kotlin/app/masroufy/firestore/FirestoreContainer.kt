@@ -73,6 +73,8 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     val eventLinks = FirestoreEventLinkRepository(space)
     val occasions = FirestoreOccasionRepository(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
+    val reservations = FirestoreReservationRepository(space)
+    val eventPrep = FirestorePrepItemRepository(space)
 
     /** النسخة الشاملة للحساب كله (§41.1) — من `users/{uid}` (الحساب + السعودية). البلاد التانية في الإصدار 3. */
     val fullBackup = FirestoreFullBackup(account, if (spaceId == DEFAULT_SPACE_ID && space !== account) listOf(space) else emptyList())

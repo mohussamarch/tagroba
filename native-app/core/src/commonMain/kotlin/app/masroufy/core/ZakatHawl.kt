@@ -53,8 +53,11 @@ fun balanceSeries(changes: List<Pair<IsoDate, Halalas>>): List<DayBalance> {
 fun zakatWealthSeries(wallets: List<Wallet>, transactions: List<Transaction>, items: List<ZakatItem>): List<DayBalance> {
     val cash = walletEvents(wallets, transactions).map { (_, day, delta) -> day to delta }
     val first = cash.minOfOrNull { it.first }
-    // الدين اللي اتحصّل فلوسه دخلت المحفظة فعلًا (موجودة في الكاش) ⇒ ما بيتضافش تاني
-    val others = items.filter { it.status == ZakatItemStatus.COUNTED && it.holding !is ZakatHolding.Cash && it.holding !is ZakatHolding.CollectedReceivable }
+    // الدين اللي اتحصّل وقبض الجمعية فلوسهم دخلت المحفظة فعلًا (موجودة في الكاش) ⇒ ما بيتضافوش تاني
+    val others = items.filter {
+        it.status == ZakatItemStatus.COUNTED && it.holding !is ZakatHolding.Cash && it.holding !is ZakatHolding.CollectedReceivable &&
+            it.holding !is ZakatHolding.CollectedRosca
+    }
         .mapNotNull { i -> (i.holding.heldSince ?: first)?.let { it to i.zakatableMinor!! } }
     return balanceSeries(cash + others)
 }

@@ -47,10 +47,12 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "occasions" to listOf("kind", "month", "day", "yearly", "createdAt"),
     "incomeSources" to listOf("name", "normalizedName", "kind", "currency", "startedAt", "createdAt"),
     MERCHANT_CATEGORIES_GROUP to listOf("merchantId", "categoryId"),
+    "reservations" to listOf("itemType", "sourceId", "occurrenceDate", "amountMinor", "currency", "createdAt"),
+    "eventPrep" to listOf("eventId", "name", "order", "done", "createdAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth")
-private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
+private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt", "occurrenceDate", "deadline")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
     "transactions" to linkedMapOf("reviewState" to listOf("confirmed", "suggested", "needs_review"), "datePrecision" to listOf("day", "minute")),
@@ -71,6 +73,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "eventLinks" to mapOf("role" to EventRole.entries.map { it.wire }),
     "occasions" to mapOf("kind" to OccasionKind.entries.map { it.wire }),
     "incomeSources" to mapOf("kind" to IncomeSourceKind.entries.map { it.wire }),
+    "reservations" to mapOf("itemType" to CalendarItemType.entries.map { it.wire }),
 )
 /** قيم اختيارية بتتفحص لو موجودة بس (وقائع الزكاة — §62). */
 private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(
@@ -131,6 +134,9 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (row.containsKey("accountLast4") && (row["accountLast4"] !is String || !LAST_FOUR.matches(row["accountLast4"] as String))) throw BackupError(uiText(TextKey.BACKUP_LAST_FOUR_ONLY))
     if (group == "transactions" && jsString(row["observedDirection"]) !in listOf("in", "out")) throw BackupError(uiText(TextKey.BACKUP_DIRECTION_INVALID))
     if (group == "transactions" && (numberOf(row["amountMinor"]) ?: Double.NaN) <= 0) throw BackupError(uiText(TextKey.BACKUP_AMOUNT_POSITIVE))
+    // الحجز (§65) والبند اللي ليه مبلغ: أكبر من صفر (البند من غير مبلغ = الحقل مش مكتوب)
+    if (group == "reservations" && (numberOf(row["amountMinor"]) ?: Double.NaN) <= 0) throw BackupError(uiText(TextKey.BACKUP_AMOUNT_POSITIVE))
+    if (group == "eventPrep" && row["plannedMinor"] != null && numberOf(row["plannedMinor"])!! <= 0) throw BackupError(uiText(TextKey.BACKUP_AMOUNT_POSITIVE))
     if (group == "recurringItems" && numberOf(row["cycleMonths"]) !in listOf(1.0, 3.0, 12.0)) throw BackupError(uiText(TextKey.BACKUP_CYCLE_INVALID))
     // نسبة الحدث (§64): 1..100، والنقطة العملية كلها — من غير الحقل = 100 (الروابط القديمة)
     if (group == "eventLinks" && row["sharePercent"] != null) {
@@ -184,9 +190,16 @@ fun checkBackupFinance(data: FullBackupData) {
     }
 }
 
-/** مصدر الدخل (§48 · §64): اليوم المتوقع من 1 لـ31، ومفاتيح الأطراف قايمة نصوص (اسم + آخر 4 بس — مفيش رقم حساب كامل). */
+/**
+ * مصدر الدخل (§48 · §64 · §65): اليوم المتوقع من 1 لـ31، ويوم القبض الأسبوعي من 1 لـ7، ومفاتيح الأطراف قايمة نصوص (اسم + آخر 4 بس —
+ * مفيش رقم حساب كامل). الدورية اختيارية (من غيرها = شهري)، ولو مكتوبة لازم تبقى قيمة معروفة.
+ */
 private fun checkIncomeSourceRow(row: Map<String, Any?>) {
+    row["payFrequency"]?.let { f ->
+        if (PayFrequency.entries.none { it.wire == f }) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, "incomeSources", "payFrequency"))
+    }
     row["expectedDayOfMonth"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..31.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "expectedDayOfMonth")) }
+    row["payWeekday"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..7.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "payWeekday")) }
     for (field in listOf("payerKeys", "declinedPayerKeys")) {
         val list = row[field] ?: continue
         if (list !is List<*> || list.any { it !is String }) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, "incomeSources", field))

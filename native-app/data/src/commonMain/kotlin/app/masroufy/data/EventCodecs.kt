@@ -40,12 +40,13 @@ object EventCodecs {
             doc {
                 req("id", l.id); req("eventId", l.eventId); req("transactionId", l.transactionId); req("role", l.role.wire)
                 opt("personId", l.personId); req("createdAt", l.createdAt); req("sharePercent", l.sharePercent)
+                opt("prepItemId", l.prepItemId)
             }
         },
         { d ->
             EventLink(
                 d.str("id"), d.str("eventId"), d.str("transactionId"), d.wire("role", EventRole::fromWire), d.strOrNull("personId"),
-                d.str("createdAt"), d.intOrNull("sharePercent") ?: EVENT_SHARE_WHOLE,
+                d.str("createdAt"), d.intOrNull("sharePercent") ?: EVENT_SHARE_WHOLE, d.strOrNull("prepItemId"),
             )
         },
     )

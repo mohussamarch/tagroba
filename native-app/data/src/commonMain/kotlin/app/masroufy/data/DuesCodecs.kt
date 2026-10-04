@@ -113,5 +113,8 @@ object DocumentCodecs {
     /** حساب لكل بلد (§41 · §64): سجل المساحات (حساب) + تصنيف التاجر جوه البلد (مساحة). */
     val spaces: List<DocCodec<*>> = listOf(SpaceCodecs.spaces, SpaceCodecs.spaceTransfers, SpaceCodecs.merchantCategories)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + spaces).associateBy { it.group }
+    /** التقويم: المبالغ المحجوزة وتجهيزات الأحداث (§65). */
+    val calendar: List<DocCodec<*>> = listOf(CalendarCodecs.reservations, CalendarCodecs.eventPrep)
+
+    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + spaces + calendar).associateBy { it.group }
 }

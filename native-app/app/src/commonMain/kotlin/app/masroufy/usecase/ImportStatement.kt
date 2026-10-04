@@ -10,6 +10,7 @@ import app.masroufy.core.MatchingState
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
+import app.masroufy.core.applyKnownPayerSalary
 import app.masroufy.core.applyTransferVerdict
 import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
@@ -130,6 +131,11 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                     val party = transferPartyOf(transactions[i])?.let { decided[it.key] } ?: continue
                     transactions[i] = applyTransferVerdict(transactions[i], party, now)
                 }
+            }
+            // بعد قرارات زون التحويلات («حسابي التاني» بيأكد النوع ⇒ ما بيتلمسش هنا)
+            val payers = deps.incomeSources?.listAll().orEmpty().filter { it.payerKeys.isNotEmpty() }
+            if (payers.isNotEmpty()) {
+                for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now)
             }
 
             deps.batches.save(batch) // ١

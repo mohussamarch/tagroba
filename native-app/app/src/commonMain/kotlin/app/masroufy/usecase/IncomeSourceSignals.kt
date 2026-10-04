@@ -1,16 +1,16 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.AlertCandidate
-import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
 import app.masroufy.core.IncomeSourceError
 import app.masroufy.core.IsoDate
 import app.masroufy.core.PayerQuestion
-import app.masroufy.core.ReviewState
 import app.masroufy.core.SourceStartComparison
 import app.masroufy.core.TextKey
 import app.masroufy.core.TransferVerdict
 import app.masroufy.core.answerPayerQuestion
+import app.masroufy.core.applyKnownPayerSalary
+import app.masroufy.core.transferPartyOf
 import app.masroufy.core.compareAroundSourceStart
 import app.masroufy.core.comparisonPeriods
 import app.masroufy.core.dayNumberToIso
@@ -52,24 +52,39 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
     suspend fun payerQuestions(): List<PayerQuestion> = app.masroufy.core.payerQuestions(everything(), deps.sources.listAll(), skipParties())
 
     /**
-     * الرد: أيوه ⇒ الطرف بيتسجل على المصدر (الإيداعات الجاية منه بتتنسب لوحدها من غير سؤال)، والإيداع اللي اتسأل عنه بياخد
-     * «مرتب» مؤكد لو نوعه لسه ما اتأكدش. لأ ⇒ ما يتسألش عنه تاني للمصدر ده. **ولا رقم بيتغير** (المرتب المتوقع زي ما هو).
+     * الرد: أيوه ⇒ الطرف بيتسجل على المصدر، و**كل** إيداع منه نوعه لسه ما اتأكدش (اللي اتسأل عنه واللي بعده) بياخد «مرتب» مؤكد —
+     * والجاي بعد كده بياخده لوحده وهو بيتحفظ (رد المالك §64). اللي المستخدم غيّره بإيده ما بيتلمسش. لأ ⇒ ما يتسألش عنه تاني
+     * للمصدر ده. **ولا رقم بيتغير** (المرتب المتوقع زي ما هو). بيرجّع عدد العمليات اللي بقت «مرتب».
      */
-    suspend fun answerPayer(question: PayerQuestion, yes: Boolean) {
+    suspend fun answerPayer(question: PayerQuestion, yes: Boolean): Int {
         val current = payerQuestions().firstOrNull { it.party.key == question.party.key && it.sourceId == question.sourceId }
             ?: throw IncomeSourceError(uiText(TextKey.INCOME_PAYER_NOT_ASKED))
-        val source = deps.sources.listAll().first { it.id == current.sourceId }
-        val updated = answerPayerQuestion(source, current.party.key, yes)
-        val txn = if (yes) deps.txns.findByIds(listOf(current.transactionId)).firstOrNull()?.takeIf { !it.economicKindConfirmed } else null
+        val all = deps.sources.listAll()
+        val updated = answerPayerQuestion(all.first { it.id == current.sourceId }, current.party.key, yes)
         val now = deps.clock.nowIso()
+        val changed = if (!yes) emptyList() else {
+            val after = all.map { if (it.id == updated.id) updated else it }
+            everything().filter { transferPartyOf(it)?.key == current.party.key }
+                .mapNotNull { t -> applyKnownPayerSalary(t, after, now).takeIf { it != t } }
+        }
         deps.uow.run {
             deps.sources.saveMany(listOf(updated))
-            txn?.let {
-                deps.txns.saveMany(
-                    listOf(it.copy(economicKind = EconomicKind.SALARY, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now)),
-                )
-            }
+            if (changed.isNotEmpty()) deps.txns.saveMany(changed)
         }
+        return changed.size
+    }
+
+    /**
+     * الإيداعات اللي اتسجلت من طريق تاني (رسالة بنك · إضافة) من طرف متأكد إنه بيحوّل المرتب ⇒ «مرتب» مؤكد، لو نوعها لسه
+     * ما اتأكدش. الاستيراد بيعمل ده لوحده وهو بيحفظ. بيرجّع عدد العمليات اللي اتغيرت.
+     */
+    suspend fun applyKnownPayers(): Int {
+        val sources = deps.sources.listAll()
+        if (sources.none { it.payerKeys.isNotEmpty() }) return 0
+        val now = deps.clock.nowIso()
+        val changed = everything().mapNotNull { t -> applyKnownPayerSalary(t, sources, now).takeIf { it != t } }
+        if (changed.isNotEmpty()) deps.uow.run { deps.txns.saveMany(changed) }
+        return changed.size
     }
 
     /** المرتب المتأخر النهارده (مهلة 3 أيام) — بيختفي لوحده لما الإيداع يوصل. */

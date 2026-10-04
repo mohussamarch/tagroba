@@ -75,6 +75,11 @@ data class EventLink(
     val personId: Id? = null,
     val createdAt: String,
     val sharePercent: Int = EVENT_SHARE_WHOLE,
+    /**
+     * بند التجهيز اللي المصروف ده اتصرف عليه (§65) — للمصروف بس، واختياري: الربط القديم من غيره = «مش على بند».
+     * ما بيتكتبش لو null ⇒ مستند الربط القديم هو هو.
+     */
+    val prepItemId: Id? = null,
 )
 
 const val EVENT_NAME_MAX = 60

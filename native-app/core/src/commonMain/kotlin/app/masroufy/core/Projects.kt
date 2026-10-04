@@ -25,6 +25,11 @@ data class Project(
     val archived: Boolean,
     val createdAt: String,
     val kind: ProjectKind = ProjectKind.PERSONAL,
+    /**
+     * آخر ميعاد للمشروع (اختياري — §65: المشروع بيظهر في التقويم بآخر ميعاده). حقل كوتلن بس، **ما بيتكتبش لو null** ⇒ مستند
+     * المشروع القديم هو هو، والقديم من غيره = من غير ميعاد (مش بيظهر في التقويم).
+     */
+    val deadline: IsoDate? = null,
 )
 
 /** "manual" / "rule" / "excluded" (المستخدم شالها — بتفضل عشان قاعدة ما ترجعهاش). */

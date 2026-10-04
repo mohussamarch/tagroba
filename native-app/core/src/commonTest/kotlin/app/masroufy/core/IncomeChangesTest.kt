@@ -31,6 +31,19 @@ class IncomeChangesTest {
         assertTrue(IncomeFollowUp.CarToWork !in both.followUps)
     }
 
+    @Test fun partTimeAsksPayFrequencySeparatelyAndPensionAsksItsDay() {
+        // رد المالك §65: البارت تايم «يتسأل بشكل منفصل بيقبضه امتي» (شهري أو أسبوعي)
+        assertEquals(
+            listOf(IncomeFollowUp.AskPayFrequency("p"), IncomeFollowUp.AskExpectedSalary("p")),
+            jobChangeOutcome(null, src("p", IncomeSourceKind.PART_TIME), 28).followUps,
+        )
+        val weekly = src("w", IncomeSourceKind.PART_TIME, amount = 50_000).copy(payFrequency = PayFrequency.WEEKLY, payWeekday = 4)
+        assertEquals(emptyList(), newSourceFollowUps(weekly, 28), "الأسبوعي ويومه معروف ⇒ مفيش سؤال")
+        assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.AskPayday("m")), newSourceFollowUps(src("m", IncomeSourceKind.PENSION), 28))
+        assertEquals(emptyList(), newSourceFollowUps(src("m", IncomeSourceKind.PENSION, day = 1), 28), "المعاش ما بيحرّكش شهرك")
+        assertEquals(uiText(TextKey.INCOME_Q_PAY_FREQUENCY), incomeFollowUpText(IncomeFollowUp.AskPayFrequency("p")))
+    }
+
     @Test fun aDifferentPaydayAsksToMoveTheFinancialMonthOnlyForAJob() {
         assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.ChangeMonthStart("n", 25)), newSourceFollowUps(src("n", day = 25, amount = 900_000), 28))
         assertEquals(emptyList(), newSourceFollowUps(src("n", day = 28, amount = 900_000), 28), "نفس اليوم ⇒ مفيش سؤال")

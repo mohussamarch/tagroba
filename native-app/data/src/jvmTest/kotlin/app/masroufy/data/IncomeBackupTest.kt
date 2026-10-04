@@ -4,6 +4,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.INCOME_SOURCES_GROUP
 import app.masroufy.core.IncomeSource
 import app.masroufy.core.IncomeSourceKind
+import app.masroufy.core.PayFrequency
 import app.masroufy.core.emptyBackupData
 import app.masroufy.memory.MemoryFullBackup
 import app.masroufy.usecase.FullBackup
@@ -37,6 +38,17 @@ class IncomeBackupTest {
         assertTrue("endedAt" in IncomeCodecs.incomeSources.omittedFields(open))
         val bad = IncomeCodecs.incomeSources.toStore(open) + ("kind" to "lottery")
         assertTrue("lottery" in assertFailsWith<DocumentError> { IncomeCodecs.incomeSources.decode(bad) }.message!!)
+    }
+
+    @Test
+    fun weeklyPayAndPensionTravelAndOldDocumentsStayMonthly() {
+        // §65: الأسبوعي بيكتب دوريته ويومه، والشهري (الافتراضي) ما بيكتبش حاجة ⇒ مستند المصدر القديم هو هو
+        val weekly = open.copy(id = "inc-3", kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 4)
+        val d = roundTrip(weekly)
+        assertEquals("weekly" to 4L, d["payFrequency"] to d["payWeekday"])
+        assertEquals("pension", roundTrip(open.copy(kind = IncomeSourceKind.PENSION))["kind"])
+        assertFalse("payFrequency" in roundTrip(closed).keys)
+        assertEquals(PayFrequency.MONTHLY, IncomeCodecs.incomeSources.decode(IncomeCodecs.incomeSources.toStore(closed) - "payFrequency").payFrequency)
     }
 
     private fun account(withSources: Boolean) = emptyBackupData().also {
@@ -75,6 +87,8 @@ class IncomeBackupTest {
             { it["payerKeys"] = listOf(1L) },
             { it.remove("startedAt") },
             { it["expectedMinor"] = -5L },
+            { it["payFrequency"] = "daily" },
+            { it["payWeekday"] = 8L },
         )) {
             assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(broken(b))).create("2026-10-04T00:00:00.000Z") }
         }

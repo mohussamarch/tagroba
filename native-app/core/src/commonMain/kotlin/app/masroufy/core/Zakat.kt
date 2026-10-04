@@ -120,7 +120,7 @@ private val GUIDE_SHARES = zatca("3.6", "22–23")
 /**
  * الجدول نفسه. مصر: النصاب فتوى 2279 (2007) · الحلي 8848 (2025) · الدين عليك **5025 (2020) — الأحدث** وبتلغي 7004 (1996) — الأرقام دي أرقام الفتاوى، وأرقام الصفحات على الموقع (11653 · 22484 · 15532 · 17652) في `pageId` ·
  * **البحث التكميلي (§62):** اليوم الثابت 413 (2008؛ والتعجيل 7503 سنة 2023) · النصاب أول السنة وآخرها 5890 (1985) ·
- * الدين ليك عند التحصيل 4399 (2002) · الأسهم 8767 (2025 — الأحدث، بتلغي 3133 سنة 1996).
+ * الدين ليك عند التحصيل 4399 (2002) — **والجمعية زيه** (رد المالك) · الأسهم 8767 (2025 — الأحدث، بتلغي 3133 سنة 1996).
  * السعودية: دليل الهيئة، وجنب اللي البحث حدد بنده: الحول ص14 و19 و27 · النزول §3.2.1 ص18 · الديون ليك §3.4 ص19–20 ·
  * الأسهم §3.6 ص22–23. **الأمانة والسهم الأجنبي: الدليل ساكت** ⇒ «المرجع الرسمي ما حددش».
  */
@@ -162,7 +162,9 @@ val ZAKAT_RULES: List<ZakatRule> = listOf(
     ZakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_STRONG, ZakatEffect.EXEMPT, TextKey.ZAKAT_RULE_RECEIVABLE_ON_COLLECTION, IFTAA_DEBT_4399),
     ZakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_DOUBTFUL, ZakatEffect.EXEMPT, TextKey.ZAKAT_RULE_RECEIVABLE_ON_COLLECTION, IFTAA_DEBT_4399),
     ZakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_COLLECTED, ZakatEffect.COUNT, TextKey.ZAKAT_RULE_RECEIVABLE_COLLECTED, IFTAA_DEBT_4399),
-    ZakatRule(ZakatCountry.EG, ZakatTopic.ROSCA_CREDIT, ZakatEffect.NO_RULING, TextKey.ZAKAT_RULE_NO_RULING, iftaa(null, pending = true)),
+    // الجمعية = زي الدين ليك (رد المالك §62 على فتوى 4399): اللي دفعته وما قبضتوش برا الحساب السنوي، ولما تقبض دورك سطر
+    // «اتحصّل» مرة واحدة على اللي كان من فلوسك (`ZakatHolding.CollectedRosca`)
+    ZakatRule(ZakatCountry.EG, ZakatTopic.ROSCA_CREDIT, ZakatEffect.EXEMPT, TextKey.ZAKAT_RULE_ROSCA_ON_PAYOUT, IFTAA_DEBT_4399),
     ZakatRule(ZakatCountry.EG, ZakatTopic.CRYPTO, ZakatEffect.NO_RULING, TextKey.ZAKAT_RULE_NO_RULING, iftaa(null)),
     ZakatRule(ZakatCountry.EG, ZakatTopic.PENSION, ZakatEffect.NO_RULING, TextKey.ZAKAT_RULE_NO_RULING, iftaa(null)),
     ZakatRule(ZakatCountry.EG, ZakatTopic.CUSTODY, ZakatEffect.NO_RULING, TextKey.ZAKAT_RULE_NO_RULING, iftaa(null)),

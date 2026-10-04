@@ -65,6 +65,24 @@ data class LoadDuesDeps(
 )
 
 class LoadDues(private val deps: LoadDuesDeps) {
+    /**
+     * المواعيد بس (من غير أرصدة) لحد [until] — للتقويم (§65). نفس بُناة `DuesAgenda` اللي `load` بيستعملهم، فمفيش حساب جدول تاني.
+     * الدين اللي صاحبه مش في قايمة الأشخاص ما بيظهرش (زي `load`).
+     */
+    suspend fun dueItems(today: IsoDate, until: IsoDate): List<DueItem> {
+        val items = mutableListOf<DueItem>()
+        for (r in deps.roscas.listAll()) items += roscaDueItems(r, deps.roscaEntries.listByRosca(r.id), today, until)
+        for (p in deps.plans.listAll()) items += installmentDueItems(p, deps.payments.listByPlan(p.id), today, until)
+        val names = deps.people.listAll().associate { it.id to it.name }
+        val obligations = names.keys.flatMap { deps.obligations.listByPerson(it) }.associateBy { it.id }
+        for (terms in deps.terms.listAll()) {
+            val o = obligations[terms.obligationId] ?: continue
+            items += debtDueItems(terms, o, deps.settlements.listByObligations(listOf(o.id)), names.getValue(o.personId), today, until)
+        }
+        for (r in deps.recurring.listAll()) items += recurringDueItems(r, today, until)
+        return sortDues(items)
+    }
+
     /** [remainingMinor] = «المتبقي» من الرئيسية (null لو غير متاح) — سطر الشهر بيطرح منه اللي عليك. */
     suspend fun load(today: IsoDate, period: Period, currency: Currency, remainingMinor: Halalas?): DuesView {
         val nextMonth = shiftMonths(today, 1)

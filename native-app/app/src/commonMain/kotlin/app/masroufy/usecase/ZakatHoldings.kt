@@ -12,6 +12,7 @@ import app.masroufy.core.ZakatLineKind
 import app.masroufy.core.ZakatMetal
 import app.masroufy.core.computePosition
 import app.masroufy.core.remainingOfObligation
+import app.masroufy.core.roscaOwnMoneyReceipts
 import app.masroufy.core.roscaStatus
 import app.masroufy.core.walletBalancesOn
 
@@ -86,9 +87,20 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
 
         for (r in deps.roscas.listAll()) {
             if (r.currency != currency) continue
-            val position = roscaStatus(r, deps.roscaEntries.listByRosca(r.id), asOf).positionMinor
+            val entries = deps.roscaEntries.listByRosca(r.id)
+            val position = roscaStatus(r, entries, asOf).positionMinor
             if (position > 0) out += ZakatHolding.RoscaCredit(r.id, r.name, position, r.firstDueAt)
             if (position < 0) out += ZakatHolding.Debt(r.id, r.name, -position)
+            // القبض جوه السنة: الجزء اللي كان من فلوسك (مصر — زي الدين اللي اتحصّل، 4399). حركة من غير عملية معروفة ⇒ مالهاش تاريخ ⇒ بتتساب
+            if (collectedAfter != null) {
+                val dates = deps.txns.findByIds(entries.map { it.transactionId }.distinct()).associate { it.id to it.occurredAt }
+                val dated = entries.mapNotNull { e -> dates[e.transactionId]?.let { e to it } }
+                for (receipt in roscaOwnMoneyReceipts(dated)) {
+                    if (receipt.date > collectedAfter && receipt.date <= asOf) {
+                        out += ZakatHolding.CollectedRosca(receipt.entryId, r.id, r.name, receipt.ownMinor, receipt.date)
+                    }
+                }
+            }
         }
         return GatheredHoldings(out, wallets, txns)
     }

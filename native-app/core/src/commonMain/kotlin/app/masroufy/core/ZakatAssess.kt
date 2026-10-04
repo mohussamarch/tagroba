@@ -53,6 +53,13 @@ sealed interface ZakatHolding {
     /** موقفك الموجب في جمعية (دفعت أكتر ما قبضت). */
     data class RoscaCredit(override val id: Id, override val name: String, val positionMinor: Halalas, override val heldSince: IsoDate? = null) : ZakatHolding
 
+    /**
+     * قبض من جمعية **جوه السنة** — [id] = حركة القبض، [amountMinor] الجزء اللي كان من فلوسك (`roscaOwnMoneyReceipts`).
+     * بيطلع سطر «اتحصّل» بس لو الجمعية ما كانتش بتدخل الحساب السنوي (مصر — زي الدين ليك، 4399).
+     */
+    data class CollectedRosca(override val id: Id, val roscaId: Id, override val name: String, val amountMinor: Halalas, val collectedOn: IsoDate) :
+        ZakatHolding { override val heldSince: IsoDate? get() = collectedOn }
+
     /** دين عليك (سلفة · جمعية قبضت فيها أكتر ما دفعت) — بيتعرض وما بيتخصمش. */
     data class Debt(override val id: Id, override val name: String?, val remainingMinor: Halalas) : ZakatHolding { override val heldSince: IsoDate? get() = null }
 }
@@ -188,6 +195,10 @@ fun zakatItems(country: ZakatCountry, holdings: List<ZakatHolding>, prices: Zaka
         }
         is ZakatHolding.Custody -> item(h, null, ZakatTopic.CUSTODY, country, h.remainingMinor)
         is ZakatHolding.RoscaCredit -> item(h, ZakatLineKind.ROSCA, ZakatTopic.ROSCA_CREDIT, country, h.positionMinor)
+        // السعودية: الجمعية بتتحسب كل سنة ⇒ القبض ما بيطلّعش حاجة جديدة · مصر: سطر «اتحصّل» مرة واحدة على فلوسك
+        is ZakatHolding.CollectedRosca ->
+            if (zakatRule(country, ZakatTopic.ROSCA_CREDIT).effect == ZakatEffect.COUNT) null
+            else item(h, ZakatLineKind.COLLECTED_RECEIVABLES, ZakatTopic.RECEIVABLE_COLLECTED, country, h.amountMinor)
         is ZakatHolding.Debt -> item(h, null, ZakatTopic.DEBTS_OWED, country, h.remainingMinor)
     }
 }
