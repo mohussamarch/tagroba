@@ -11,6 +11,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.assertHalalas
 import app.masroufy.core.formatMoney
 import app.masroufy.core.uiText
+import app.masroufy.core.Category
 import app.masroufy.core.DuesCategories
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
@@ -19,10 +20,11 @@ import app.masroufy.port.InstallmentPlanRepository
 import app.masroufy.port.RoscaEntryRepository
 import app.masroufy.port.TransactionPatch
 import app.masroufy.port.TransactionRepository
+import app.masroufy.port.ZakatPaymentRepository
 
 /**
  * ربط عملية من الكشف بجمعية أو بخطة أقساط — الفحص المشترك قبل الكتابة.
- * العملية الواحدة **ما تتربطش بحاجتين**: لو اتربطت بجمعية وبقسط (أو بمبلغ تمويل مستلم)، نفس الفلوس هتتعد مرتين في «المستحقات».
+ * العملية الواحدة **ما تتربطش بحاجتين**: لو اتربطت بجمعية وبقسط (أو بمبلغ تمويل مستلم، أو بدفعة زكاة — §62)، نفس الفلوس هتتعد مرتين.
  */
 class DueLinkError(message: String) : IllegalArgumentException(message)
 
@@ -33,6 +35,8 @@ internal class DueLinks(
     private val plans: InstallmentPlanRepository,
     private val categories: CategoryRepository,
     private val clock: Clock,
+    /** دفعات الزكاة (§62) — اختياري عشان اللي ما بيستعملش الزكاة يفضل زي ما هو؛ التشغيل الحقيقي بيدّيه دايمًا. */
+    private val zakatPayments: ZakatPaymentRepository? = null,
 ) {
     /** العملية بعد الفحص + المبلغ اللي هيتربط (المبلغ كله لو ما اتحددش). */
     suspend fun check(
@@ -50,7 +54,8 @@ internal class DueLinks(
         if (txn.currency != currency) throw DueLinkError(uiText(TextKey.DUE_TXN_CURRENCY, ownerName))
         val ids = listOf(transactionId)
         if (roscaEntries.listByTransactionIds(ids).isNotEmpty() || payments.listByTransactionIds(ids).isNotEmpty() ||
-            plans.listAll().any { it.receivedTransactionId == transactionId }
+            plans.listAll().any { it.receivedTransactionId == transactionId } ||
+            zakatPayments?.listByTransactionIds(ids).orEmpty().isNotEmpty()
         ) {
             throw DueLinkError(uiText(TextKey.DUE_TXN_ALREADY_LINKED))
         }
@@ -66,8 +71,8 @@ internal class DueLinks(
      * النوع والتصنيف بيتأكدوا عشان محدش يرجع يسأل عليهم، والعملية بتخرج من «محتاجة مراجعة».
      * التصنيف = فرع «المستحقات» بتاعها (قرار المالك §56) — والتصنيفات دي بتتعمل لو مش موجودة بس (اللي المستخدم غيّره ما يتكتبش فوقه).
      */
-    suspend fun markKind(transactionId: Id, kind: EconomicKind, categoryId: Id) {
-        ensureDuesCategories()
+    suspend fun markKind(transactionId: Id, kind: EconomicKind, categoryId: Id, ensure: List<Category> = DuesCategories.defaults()) {
+        ensureCategories(ensure)
         txns.update(
             transactionId,
             TransactionPatch(
@@ -77,9 +82,9 @@ internal class DueLinks(
         )
     }
 
-    private suspend fun ensureDuesCategories() {
+    private suspend fun ensureCategories(wanted: List<Category>) {
         val existing = categories.listAll().map { it.id }.toSet()
-        for (c in DuesCategories.defaults()) if (c.id !in existing) categories.save(c)
+        for (c in wanted) if (c.id !in existing) categories.save(c)
     }
 
     /** فك الربط: النوع والتصنيف بيرجعوا «لسه ما اتحددش» ويتسألوا تاني — ما بنخمّنش القديم. */

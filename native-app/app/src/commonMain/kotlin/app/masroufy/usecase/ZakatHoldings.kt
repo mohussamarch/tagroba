@@ -1,0 +1,85 @@
+package app.masroufy.usecase
+
+import app.masroufy.core.Currency
+import app.masroufy.core.Id
+import app.masroufy.core.IsoDate
+import app.masroufy.core.ObligationKind
+import app.masroufy.core.Transaction
+import app.masroufy.core.Wallet
+import app.masroufy.core.ZakatFact
+import app.masroufy.core.ZakatHolding
+import app.masroufy.core.ZakatLineKind
+import app.masroufy.core.ZakatMetal
+import app.masroufy.core.computePosition
+import app.masroufy.core.remainingOfObligation
+import app.masroufy.core.roscaStatus
+import app.masroufy.core.walletBalancesOn
+
+/** اللي بتملكه يوم الحساب + المحافظ والعمليات (للحول). */
+internal data class GatheredHoldings(val holdings: List<ZakatHolding>, val wallets: List<Wallet>, val transactions: List<Transaction>)
+
+/**
+ * بيجمع «اللي بتملكه» من بياناتك نفسها يوم [asOf] (OVERRIDES §62): أرصدة المحافظ · الأصول بالكمية والسعر · الديون ليك وعليك · الجمعيات.
+ * **بعملة الحساب بس** — المساحة لكل بلد (§41)، والمبالغ ما بتتجمعش بين عملتين. الوقائع من `zakatFacts`.
+ */
+internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
+    suspend fun read(asOf: IsoDate): GatheredHoldings {
+        val currency: Currency = deps.currency
+        val facts: Map<Id, ZakatFact> = deps.facts.listAll().associateBy { it.subjectId }
+        val wallets = deps.wallets.listAll().filter { it.currency == currency }
+        val from = wallets.minOfOrNull { it.openingAt }
+        val txns = if (from == null || from > asOf) emptyList() else deps.txns.listByDateRange(from, asOf).filter { it.currency == currency }
+        val out = mutableListOf<ZakatHolding>()
+
+        val balances = walletBalancesOn(wallets, txns, asOf)
+        for (w in wallets) out += ZakatHolding.Cash(w.id, w.name, balances[w.id], w.openingAt)
+
+        val lots = deps.lots.listAll().filter { it.purchasedAt <= asOf }.groupBy { it.assetId }
+        val sales = deps.sales.listAll().filter { it.soldAt <= asOf }.groupBy { it.assetId }
+        val prices = deps.prices.listAll().associateBy { it.assetId }
+        for (a in deps.assets.listAll()) {
+            if (a.archived || a.currency != currency) continue
+            val mine = lots[a.id].orEmpty()
+            val position = computePosition(a.id, mine, sales[a.id].orEmpty(), prices[a.id], asOf)
+            if (position.heldQuantity <= 0) continue
+            val since = mine.minOfOrNull { it.purchasedAt }
+            val fact = facts[a.id]
+            out += when (a.kind) {
+                "gold", "silver" -> ZakatHolding.Metal(
+                    a.id, a.name, if (a.kind == "gold") ZakatMetal.GOLD else ZakatMetal.SILVER, position.heldQuantity,
+                    fact?.karat, fact?.fineness, fact?.purpose, prices[a.id]?.pricePerUnitMinor, since,
+                )
+                "stock", "fund" -> ZakatHolding.Security(
+                    a.id, a.name, if (a.kind == "stock") ZakatLineKind.STOCKS else ZakatLineKind.FUNDS, position.marketValueMinor, fact?.holding, since,
+                )
+                "digital" -> ZakatHolding.Digital(a.id, a.name, position.marketValueMinor)
+                else -> ZakatHolding.Other(a.id, a.name, position.marketValueMinor)
+            }
+        }
+
+        for (person in deps.people.listAll()) {
+            val obligations = deps.obligations.listByPerson(person.id).filter { it.currency == currency }
+            if (obligations.isEmpty()) continue
+            val settled = deps.settlements.listByObligations(obligations.map { it.id })
+            val origins = deps.txns.findByIds(obligations.mapNotNull { it.originTransactionId }).associate { it.id to it.occurredAt }
+            for (o in obligations) {
+                val remaining = remainingOfObligation(o, settled)
+                if (remaining <= 0) continue
+                when (o.kind) {
+                    ObligationKind.RECEIVABLE -> out += ZakatHolding.Receivable(o.id, person.name, remaining, facts[o.id]?.collectability, o.originTransactionId?.let(origins::get))
+                    ObligationKind.LOAN_PAYABLE -> out += ZakatHolding.Debt(o.id, person.name, remaining)
+                    // الأمانة فلوس حد تاني معاك — مش دين عليك ولا ليك (سؤال مفتوح للمالك: تتخصم من الكاش ولا لأ؟)
+                    ObligationKind.CUSTODY_PAYABLE -> Unit
+                }
+            }
+        }
+
+        for (r in deps.roscas.listAll()) {
+            if (r.currency != currency) continue
+            val position = roscaStatus(r, deps.roscaEntries.listByRosca(r.id), asOf).positionMinor
+            if (position > 0) out += ZakatHolding.RoscaCredit(r.id, r.name, position, r.firstDueAt)
+            if (position < 0) out += ZakatHolding.Debt(r.id, r.name, -position)
+        }
+        return GatheredHoldings(out, wallets, txns)
+    }
+}
