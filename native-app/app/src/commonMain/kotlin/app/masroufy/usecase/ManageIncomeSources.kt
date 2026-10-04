@@ -8,6 +8,7 @@ import app.masroufy.core.IncomeSource
 import app.masroufy.core.IncomeSourceError
 import app.masroufy.core.IncomeSourceKind
 import app.masroufy.core.IsoDate
+import app.masroufy.core.PayFrequency
 import app.masroufy.core.ProfileCheck
 import app.masroufy.core.TextKey
 import app.masroufy.core.checkIncomeSource
@@ -23,6 +24,7 @@ import app.masroufy.port.UnitOfWork
  * مصادر الدخل (OVERRIDES §48 · §64): إضافة (الاسم وتاريخ البداية بس إجباريين) · تعديل · قفل بتاريخ · «غيّرت شغلي».
  * **مفيش مسح**: المصدر اللي خلص بيتقفل بتاريخ عشان المقارنة مع الشهور القديمة تفضل صح. الشاشات مستنية تصميم المالك.
  * «مبروك» على **بداية** شغل جديد بس؛ القفل لوحده من غير أي كلام (سؤال الأثر بس). **المواصلات ما بتتسألش هنا**.
+ * الرجوع لشركة قديمة = **فترة جديدة بنفس الاسم** (رد المالك §64) — المرفوض بس فترتين بنفس الاسم بيتقابلوا.
  */
 data class ManageIncomeSourcesDeps(
     val sources: IncomeSourceRepository,
@@ -33,7 +35,10 @@ data class ManageIncomeSourcesDeps(
     val clock: Clock,
 )
 
-/** اللي المستخدم بيكتبه: الاسم وتاريخ البداية بس إجباريين، والباقي اختياري (مفيش فورم طويل). */
+/**
+ * اللي المستخدم بيكتبه: الاسم وتاريخ البداية بس إجباريين، والباقي اختياري (مفيش فورم طويل). [payFrequency] شهري افتراضيًا؛
+ * الأسبوعي يومه [payWeekday] (1 = الاتنين … 7 = الحد) — §65.
+ */
 data class IncomeSourceInput(
     val name: String,
     val startedAt: IsoDate,
@@ -41,6 +46,8 @@ data class IncomeSourceInput(
     val currency: Currency = Currency.SAR,
     val expectedDayOfMonth: Int? = null,
     val expectedMinor: Halalas? = null,
+    val payFrequency: PayFrequency = PayFrequency.MONTHLY,
+    val payWeekday: Int? = null,
 )
 
 /** «غيّرت شغلي»: [endingId] بيتقفل يوم [endedAt]، و/أو [starting] بيتفتح. واحد منهم على الأقل. */
@@ -62,13 +69,22 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
     private suspend fun find(id: Id): IncomeSource =
         deps.sources.listAll().firstOrNull { it.id == id } ?: throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_NOT_FOUND))
 
-    private fun build(input: IncomeSourceInput, all: List<IncomeSource>, id: Id, createdAt: String): IncomeSource {
-        val checked = checkIncomeSource(input.name, input.startedAt, null, input.expectedDayOfMonth, input.expectedMinor, all)
-        return IncomeSource(
-            id, checked.name, checked.normalizedName, input.kind, input.currency, input.startedAt, null,
-            input.expectedDayOfMonth, input.expectedMinor, createdAt,
+    /** فحص المصدر كله (الاسم · الفترة · اليوم · الدورية) قدام الباقيين. */
+    private fun checked(s: IncomeSource, all: List<IncomeSource>): IncomeSource {
+        val name = checkIncomeSource(
+            s.name, s.startedAt, s.endedAt, s.expectedDayOfMonth, s.expectedMinor, all, selfId = s.id,
+            kind = s.kind, payFrequency = s.payFrequency, payWeekday = s.payWeekday,
         )
+        return s.copy(name = name.name, normalizedName = name.normalizedName)
     }
+
+    private fun build(input: IncomeSourceInput, all: List<IncomeSource>, id: Id, createdAt: String): IncomeSource = checked(
+        IncomeSource(
+            id, input.name, "", input.kind, input.currency, input.startedAt, null, input.expectedDayOfMonth, input.expectedMinor, createdAt,
+            payFrequency = input.payFrequency, payWeekday = input.payWeekday,
+        ),
+        all,
+    )
 
     /** تسجيل مصدر (شغلك الحالي مثلًا) — من غير «مبروك» ولا أسئلة؛ الشغل **الجديد** بيعدّي على [changeJob]. */
     suspend fun add(input: IncomeSourceInput): IncomeSource {
@@ -79,12 +95,14 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
 
     /** التعديل بيسيب تاريخ النهاية والأطراف المتعلَّمة زي ما هم. */
     suspend fun edit(id: Id, input: IncomeSourceInput): IncomeSource {
-        val all = deps.sources.listAll()
         val old = find(id)
-        val checked = checkIncomeSource(input.name, input.startedAt, old.endedAt, input.expectedDayOfMonth, input.expectedMinor, all, selfId = id)
-        val updated = old.copy(
-            name = checked.name, normalizedName = checked.normalizedName, kind = input.kind, currency = input.currency,
-            startedAt = input.startedAt, expectedDayOfMonth = input.expectedDayOfMonth, expectedMinor = input.expectedMinor,
+        val updated = checked(
+            old.copy(
+                name = input.name, kind = input.kind, currency = input.currency, startedAt = input.startedAt,
+                expectedDayOfMonth = input.expectedDayOfMonth, expectedMinor = input.expectedMinor,
+                payFrequency = input.payFrequency, payWeekday = input.payWeekday,
+            ),
+            deps.sources.listAll(),
         )
         deps.sources.saveMany(listOf(updated))
         return updated
@@ -95,7 +113,8 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
 
     /**
      * «غيّرت شغلي» في خطوة واحدة: القديم بيتقفل والجديد بيتفتح مع بعض أو ولا واحد (وحدة عمل). الأسئلة: مكافأة نهاية الخدمة
-     * (وظيفة في السعودية) · يوم المرتب الجديد · «تغيّر بداية شهرك المالي؟» لو مختلف · المرتب المتوقع (اختياري). **مفيش سؤال مواصلات.**
+     * (وظيفة في السعودية) · يوم المرتب الجديد (والبارت تايم: دورية القبض) · «تغيّر بداية شهرك المالي؟» لو مختلف · المرتب المتوقع
+     * (اختياري). **مفيش سؤال مواصلات.** الجديد بيتفحص بعد قفل القديم ⇒ ينفع ترجع لنفس الاسم من بعد يوم القفل.
      */
     suspend fun changeJob(change: JobChange): JobChangeResult {
         if (change.endingId == null && change.starting == null) throw IncomeSourceError(uiText(TextKey.INCOME_CHANGE_EMPTY))
@@ -104,10 +123,10 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
             val old = all.firstOrNull { it.id == id } ?: throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_NOT_FOUND))
             if (old.endedAt != null) throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_ALREADY_CLOSED))
             val end = change.endedAt ?: throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_BAD_END))
-            checkIncomeSource(old.name, old.startedAt, end, old.expectedDayOfMonth, old.expectedMinor, all, selfId = old.id)
-            old.copy(endedAt = end)
+            checked(old.copy(endedAt = end), all)
         }
-        val opened = change.starting?.let { build(it, all, deps.ids.next("inc"), deps.clock.nowIso()) }
+        val afterClose = all.map { if (it.id == closed?.id) closed else it }
+        val opened = change.starting?.let { build(it, afterClose, deps.ids.next("inc"), deps.clock.nowIso()) }
         deps.uow.run { deps.sources.saveMany(listOfNotNull(closed, opened)) }
         val outcome = jobChangeOutcome(closed, opened, deps.profile.load().payday)
         return JobChangeResult(closed, opened, outcome.congratulate, outcome.followUps)
@@ -115,20 +134,29 @@ class ManageIncomeSources(private val deps: ManageIncomeSourcesDeps) {
 
     /** رد «المرتب الجديد بينزل يوم كام؟» ⇒ لو مختلف عن بداية الشهر المالي بيرجع «تغيّر بداية شهرك المالي؟». */
     suspend fun answerPayday(sourceId: Id, day: Int): List<IncomeFollowUp> {
-        val all = deps.sources.listAll()
-        val s = find(sourceId)
-        checkIncomeSource(s.name, s.startedAt, s.endedAt, day, s.expectedMinor, all, selfId = s.id)
-        val updated = s.copy(expectedDayOfMonth = day)
+        val updated = checked(find(sourceId).copy(expectedDayOfMonth = day, payFrequency = PayFrequency.MONTHLY, payWeekday = null), deps.sources.listAll())
         deps.sources.saveMany(listOf(updated))
         return listOfNotNull(monthStartFollowUp(updated, deps.profile.load().payday))
     }
 
+    /**
+     * رد «بتقبض إمتى؟ كل شهر ولا كل أسبوع؟» (البارت تايم — §65): [day] يوم في الشهر للشهري (1–31) أو يوم في الأسبوع للأسبوعي
+     * (1 = الاتنين … 7 = الحد). **ما بيحرّكش بداية شهرك المالي** (شغل جنب).
+     */
+    suspend fun answerPayFrequency(sourceId: Id, frequency: PayFrequency, day: Int): IncomeSource {
+        val s = find(sourceId)
+        val candidate = when (frequency) {
+            PayFrequency.MONTHLY -> s.copy(payFrequency = frequency, expectedDayOfMonth = day, payWeekday = null)
+            PayFrequency.WEEKLY -> s.copy(payFrequency = frequency, expectedDayOfMonth = null, payWeekday = day)
+        }
+        val updated = checked(candidate, deps.sources.listAll())
+        deps.sources.saveMany(listOf(updated))
+        return updated
+    }
+
     /** رد «المرتب المتوقع كام؟» (اختياري — التخطي = ما تناديش). مش بيتقارن بأي إيداع (§48: ما بنستنتجش زيادة ولا خصم). */
     suspend fun answerExpectedSalary(sourceId: Id, amountMinor: Halalas): IncomeSource {
-        val all = deps.sources.listAll()
-        val s = find(sourceId)
-        checkIncomeSource(s.name, s.startedAt, s.endedAt, s.expectedDayOfMonth, amountMinor, all, selfId = s.id)
-        val updated = s.copy(expectedMinor = amountMinor)
+        val updated = checked(find(sourceId).copy(expectedMinor = amountMinor), deps.sources.listAll())
         deps.sources.saveMany(listOf(updated))
         return updated
     }

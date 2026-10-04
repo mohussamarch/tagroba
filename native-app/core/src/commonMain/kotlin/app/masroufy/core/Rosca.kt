@@ -164,3 +164,28 @@ fun checkRoscaEntry(r: Rosca, entries: List<RoscaEntry>, kind: RoscaEntryKind, a
     val key = if (kind == RoscaEntryKind.CONTRIBUTION) TextKey.ROSCA_CONTRIBUTION_OVER else TextKey.ROSCA_PAYOUT_OVER
     return uiText(key, formatMoney(room, r.currency), formatMoney(amountMinor - room, r.currency))
 }
+
+/** قبض من الجمعية: [ownMinor] الجزء اللي كان **من فلوسك** (اللي دفعته قبله وما رجعلكش لسه). */
+data class RoscaOwnReceipt(val entryId: Id, val date: IsoDate, val ownMinor: Halalas)
+
+/**
+ * الجمعية في مصر = زي الدين ليك (رد المالك §62، فتوى 4399): اللي دفعته وما قبضتوش ما بيدخلش الحساب السنوي، ولما تقبض بيتزكّى
+ * **مرة واحدة على اللي كان من فلوسك** بس — الباقي من القبض فلوس الناس (سلفة عليك). [entries] كل حركة بتاريخها (عمليتها).
+ * الترتيب بالتاريخ، وفي نفس اليوم الدفع قبل القبض (القسط اللي دفعته يوم القبض من فلوسك) — اختيار Claude. كل قبض بياخد من
+ * اللي دفعته ولسه ما رجعلكش، فما يتعدش مبلغ مرتين. القبض اللي مفيش قبله فلوس ليك ⇒ مش في القايمة.
+ */
+fun roscaOwnMoneyReceipts(entries: List<Pair<RoscaEntry, IsoDate>>): List<RoscaOwnReceipt> {
+    var outstanding = 0L
+    val out = mutableListOf<RoscaOwnReceipt>()
+    for ((e, date) in entries.sortedWith(compareBy({ it.second }, { it.first.kind != RoscaEntryKind.CONTRIBUTION }, { it.first.id }))) {
+        if (e.kind == RoscaEntryKind.CONTRIBUTION) {
+            outstanding = addMoney(outstanding, e.amountMinor)
+            continue
+        }
+        val own = minOf(e.amountMinor, outstanding)
+        if (own <= 0) continue
+        outstanding = subtractMoney(outstanding, own)
+        out += RoscaOwnReceipt(e.id, date, own)
+    }
+    return out
+}

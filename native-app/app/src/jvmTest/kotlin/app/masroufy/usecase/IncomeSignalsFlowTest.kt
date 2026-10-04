@@ -86,6 +86,56 @@ class IncomeSignalsFlowTest {
         assertFailsWith<IncomeSourceError> { signals.answerPayer(q, yes = false) }
     }
 
+    @Test fun afterOneYesEveryDepositFromThatCompanyIsSalaryButAHandChangeIsNeverOverwritten() = runBlocking<Unit> {
+        // رد المالك §64: بعد ما يأكد مرة ⇒ أي تحويل من الشركة «مرتب» لوحده (المكافأة كمان) — واللي غيّره بإيده ما يتلمسش
+        manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
+        val first = deposit(star, "2026-01-27")
+        val bonus = deposit(star, "2026-02-10", 300_000)
+        val byHand = deposit(star, "2026-03-05", 50_000, EconomicKind.REFUND_RECEIVED, confirmed = true)
+        val other = deposit(moon, "2026-02-01")
+        txns.saveMany(listOf(first, bonus, byHand, other))
+        val q = signals.payerQuestions().first { it.party.key == transferPartyOf(first)!!.key }
+        assertEquals(2, signals.answerPayer(q, yes = true))
+        suspend fun kindOf(id: String) = txns.findByIds(listOf(id)).single().let { it.economicKind to it.economicKindConfirmed }
+        assertEquals(EconomicKind.SALARY to true, kindOf(first.id))
+        assertEquals(EconomicKind.SALARY to true, kindOf(bonus.id), "المكافأة مرتب (اختيار المالك)")
+        assertEquals(EconomicKind.REFUND_RECEIVED to true, kindOf(byHand.id), "اللي اتغيّر بإيده ما بيتكتبش فوقه")
+        assertEquals(EconomicKind.UNCLASSIFIED to false, kindOf(other.id), "شركة تانية ما اتأكدتش")
+        // إيداع جديد من طريق تاني (رسالة بنك) ⇒ «مرتب» لوحده، والمستخدم يقدر يغيّره بعدها ومحدش يرجّعه
+        val later = deposit(star, "2026-04-27")
+        txns.saveMany(listOf(later))
+        assertEquals(1, signals.applyKnownPayers())
+        assertEquals(EconomicKind.SALARY to true, kindOf(later.id))
+        txns.saveMany(listOf(txns.findByIds(listOf(later.id)).single().copy(economicKind = EconomicKind.SUPPORT_RECEIVED)))
+        assertEquals(0, signals.applyKnownPayers())
+        assertEquals(EconomicKind.SUPPORT_RECEIVED to true, kindOf(later.id))
+    }
+
+    @Test fun anImportedDepositFromAKnownPayerIsSalaryByItself() = runBlocking<Unit> {
+        manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
+        txns.saveMany(listOf(deposit(star, "2026-01-27")))
+        signals.answerPayer(signals.payerQuestions().single(), yes = true)
+        val records = app.masroufy.memory.MemorySourceRecordRepository()
+        val batches = app.masroufy.memory.MemoryImportBatchRepository()
+        val importer = ImportStatement(
+            ImportStatementDeps(
+                txns, records, batches, app.masroufy.memory.MemoryMerchantRepository(), app.masroufy.memory.MemoryCategoryRepository(),
+                app.masroufy.memory.MemoryRuleRepository(), MemoryUnitOfWork(listOf(txns, records, batches)), app.masroufy.memory.SequentialIdGenerator(), clock,
+                incomeSources = sources,
+            ),
+        )
+        val description = deposit(star, "2026-02-27").rawDescription
+        val csv = "التاريخ,مدين,دائن,الرصيد,التاجر,التصنيف,نوع العملية,التفاصيل\n" +
+            "2026/02/27,0.00,10000.00,10000.00,,,حواالت سريع الواردة,$description\n" +
+            "2026/02/28,0.00,500.00,10500.00,,,حواالت سريع الواردة,${deposit(moon, "2026-02-28").rawDescription}\n"
+        val request = ImportRequest("t.csv", csv, "a", app.masroufy.core.ImportSourceType.CSV_LEGACY, "w-1", app.masroufy.core.SchemaId.LEGACY)
+        importer.commit(request, importer.preview(request))
+        val added = txns.all().filter { it.occurredAt >= "2026-02-27" }
+        assertEquals(2, added.size)
+        assertEquals(EconomicKind.SALARY to true, added.single { it.amountMinor == 1_000_000L }.let { it.economicKind to it.economicKindConfirmed })
+        assertFalse(added.single { it.amountMinor == 50_000L }.economicKindConfirmed, "شركة ما اتأكدتش ⇒ زي ما هي")
+    }
+
     @Test fun noStopsTheQuestionAndAPartyDecidedInTheTransferZoneIsNeverAsked() = runBlocking<Unit> {
         manage.add(IncomeSourceInput("مصدر وهمي", "2026-01-01"))
         val fromMoon = deposit(moon, "2026-02-03")

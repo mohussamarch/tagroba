@@ -107,11 +107,25 @@ class CalendarSummaryTest {
         assertTrue(short.leftoverMinor!! < 0, "السالب بيبان")
     }
 
-    @Test fun salariedMeansAnActiveJobSource() {
-        fun src(kind: IncomeSourceKind, ended: String? = null) = IncomeSource("s", "جهة وهمية", "x", kind, Currency.SAR, "2025-01-01", ended)
-        assertTrue(isSalaried(listOf(src(IncomeSourceKind.JOB)), today))
+    @Test fun salariedMeansAnActiveJobPartTimePensionOrMonthlyRent() {
+        fun src(kind: IncomeSourceKind, ended: String? = null, weekly: Boolean = false) = IncomeSource(
+            "s", "جهة وهمية", "x", kind, Currency.SAR, "2025-01-01", ended,
+            payFrequency = if (weekly) PayFrequency.WEEKLY else PayFrequency.MONTHLY, payWeekday = if (weekly) 4 else null,
+        )
+        for (kind in listOf(IncomeSourceKind.JOB, IncomeSourceKind.PART_TIME, IncomeSourceKind.PENSION, IncomeSourceKind.RENT)) {
+            assertTrue(isSalaried(listOf(src(kind)), today), kind.name)
+        }
+        assertTrue(isSalaried(listOf(src(IncomeSourceKind.PART_TIME, weekly = true)), today), "البارت تايم الأسبوعي بمرتب")
+        assertFalse(isSalaried(listOf(src(IncomeSourceKind.RENT, weekly = true)), today), "الإيجار الشهري بس")
         assertFalse(isSalaried(listOf(src(IncomeSourceKind.JOB, ended = "2026-01-01")), today))
-        assertFalse(isSalaried(listOf(src(IncomeSourceKind.CLIENT)), today))
+        for (kind in listOf(IncomeSourceKind.CLIENT, IncomeSourceKind.INVESTMENT, IncomeSourceKind.OTHER)) assertFalse(isSalaried(listOf(src(kind)), today), kind.name)
         assertFalse(isSalaried(emptyList(), today))
+    }
+
+    @Test fun nextPayLabelWhenAnotherSourcePaysBeforeTheAccountPayday() {
+        val p = projectLeftover(listOf(500_000, 200_000), reserved, today, Currency.SAR, salaried = true, nextPayday = "2026-10-08", unreconciled = false, monthEnd = false)
+        assertEquals(LeftoverMode.UNTIL_NEXT_PAY to "2026-10-08", p.mode to p.until)
+        assertEquals(uiText(TextKey.LEFTOVER_NEXT_PAY), leftoverLabel(p))
+        assertFalse("آخر الشهر" in leftoverLabel(p))
     }
 }

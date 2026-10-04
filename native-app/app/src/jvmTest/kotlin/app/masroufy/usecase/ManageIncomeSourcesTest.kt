@@ -4,6 +4,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.IncomeFollowUp
 import app.masroufy.core.IncomeSourceError
 import app.masroufy.core.IncomeSourceKind
+import app.masroufy.core.PayFrequency
 import app.masroufy.core.ProfileCheck
 import app.masroufy.core.emptyProfile
 import app.masroufy.memory.FixedClock
@@ -73,10 +74,43 @@ class ManageIncomeSourcesTest {
 
     @Test fun aRejectedNewJobLeavesTheOldOneOpen() = runBlocking<Unit> {
         val old = manage.add(IncomeSourceInput("شركة النجمة الوهمية", "2024-01-01"))
-        assertFailsWith<IncomeSourceError> { manage.changeJob(JobChange(old.id, "2026-09-30", IncomeSourceInput("شركة النجمة الوهمية", "2026-10-01"))) }
+        // نفس الاسم بفترة بتقابل القديمة (بيبدأ قبل ما القديم يتقفل) ⇒ مرفوض
+        assertFailsWith<IncomeSourceError> { manage.changeJob(JobChange(old.id, "2026-09-30", IncomeSourceInput("شركة النجمة الوهمية", "2026-09-15"))) }
         assertNull(repo.listAll().single().endedAt, "الاتنين مع بعض أو ولا واحد")
         assertFailsWith<IncomeSourceError> { manage.changeJob(JobChange(old.id, null, IncomeSourceInput("شركة القمر الوهمية", "2026-10-01"))) }
         assertNull(repo.listAll().single().endedAt)
+    }
+
+    @Test fun rejoiningTheSameCompanyIsANewPeriodWithTheSameName() = runBlocking<Unit> {
+        // رد المالك §64: الرجوع لشركة قديمة = فترة جديدة بنفس الاسم، والقديمة بتفضل بتاريخها
+        val old = manage.add(IncomeSourceInput("شركة النجمة الوهمية", "2024-01-01"))
+        manage.changeJob(JobChange(old.id, "2025-06-30", IncomeSourceInput("شركة القمر الوهمية", "2025-07-01")))
+        val back = manage.changeJob(JobChange(repo.listAll().single { it.endedAt == null }.id, "2025-12-31", IncomeSourceInput(" شركة  النجمة الوهمية", "2026-01-01")))
+        assertTrue(back.congratulate)
+        val sameName = repo.listAll().filter { it.normalizedName == old.normalizedName }.sortedBy { it.startedAt }
+        assertEquals(listOf("2024-01-01" to "2025-06-30", "2026-01-01" to null), sameName.map { it.startedAt to it.endedAt })
+        // فترة بتقابل واحدة منهم ⇒ مرفوض (حتى المقفولة)
+        assertFailsWith<IncomeSourceError> { manage.add(IncomeSourceInput("شركة النجمة الوهمية", "2025-03-01")) }
+        assertFailsWith<IncomeSourceError> { manage.add(IncomeSourceInput("شركة النجمة الوهمية", "2026-05-01")) }
+        // يوم القفل نفسه جوه الفترة (الحدود شاملة)
+        assertFailsWith<IncomeSourceError> { manage.edit(back.opened!!.id, IncomeSourceInput("شركة النجمة الوهمية", "2025-06-30")) }
+        assertEquals(3, repo.listAll().size)
+    }
+
+    @Test fun partTimeAsksPayFrequencySeparatelyAndPensionAsksItsDay() = runBlocking<Unit> {
+        val started = manage.changeJob(JobChange(starting = IncomeSourceInput("محل وهمي", "2026-10-01", IncomeSourceKind.PART_TIME)))
+        val pt = started.opened!!
+        assertEquals(listOf(IncomeFollowUp.AskPayFrequency(pt.id), IncomeFollowUp.AskExpectedSalary(pt.id)), started.followUps, "مش «بينزل يوم كام؟» — شهري ولا أسبوعي الأول")
+        val weekly = manage.answerPayFrequency(pt.id, PayFrequency.WEEKLY, 4)
+        assertEquals(Triple(PayFrequency.WEEKLY, 4, null as Int?), Triple(weekly.payFrequency, weekly.payWeekday, weekly.expectedDayOfMonth))
+        assertEquals(28, profile.load().payday, "البارت تايم ما بيحرّكش بداية الشهر")
+        val monthly = manage.answerPayFrequency(pt.id, PayFrequency.MONTHLY, 15)
+        assertEquals(Triple(PayFrequency.MONTHLY, null as Int?, 15), Triple(monthly.payFrequency, monthly.payWeekday, monthly.expectedDayOfMonth))
+        assertFailsWith<IncomeSourceError> { manage.answerPayFrequency(pt.id, PayFrequency.WEEKLY, 8) }
+        assertFailsWith<IncomeSourceError>("الوظيفة شهري") { manage.add(IncomeSourceInput("شركة وهمية", "2026-10-01", payFrequency = PayFrequency.WEEKLY, payWeekday = 2)) }
+        val pension = manage.changeJob(JobChange(starting = IncomeSourceInput("معاش وهمي", "2026-10-01", IncomeSourceKind.PENSION)))
+        assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.AskPayday(pension.opened!!.id)), pension.followUps)
+        assertTrue(manage.answerPayday(pension.opened!!.id, 1).isEmpty(), "المعاش ما بيسألش عن بداية الشهر")
     }
 
     @Test fun aNewPaydayOffersToMoveTheFinancialMonthThroughTheProfile() = runBlocking<Unit> {

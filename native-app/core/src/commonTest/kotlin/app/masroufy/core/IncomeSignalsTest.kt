@@ -76,6 +76,24 @@ class IncomeSignalsTest {
         assertNull(attributedSourceId(deposit(star, "2026-03-27", currency = Currency.EGP), sources))
     }
 
+    @Test fun everyDepositFromAConfirmedPayerBecomesSalaryUnlessChangedByHand() {
+        // رد المالك §64 (اختياره): بعد ما يأكد مرة ⇒ أي تحويل من الشركة «مرتب» — حتى بعد ما المصدر يتقفل (المكافأة)
+        val sources = listOf(src("a", to = "2026-06-30", payers = listOf(starKey)))
+        val auto = applyKnownPayerSalary(deposit(star, "2026-07-27", 2_000_000), sources, "now")
+        assertEquals(Triple(EconomicKind.SALARY, true, ReviewState.CONFIRMED), Triple(auto.economicKind, auto.economicKindConfirmed, auto.reviewState))
+        assertEquals("now", auto.updatedAt)
+        val byHand = deposit(star, "2026-03-27", kind = EconomicKind.REFUND_RECEIVED, confirmed = true)
+        assertEquals(byHand, applyKnownPayerSalary(byHand, sources, "now"), "اللي اتغيّر بإيده ما بيتلمسش")
+        val unknown = deposit(moon, "2026-03-27")
+        assertEquals(unknown, applyKnownPayerSalary(unknown, sources, "now"))
+        val out = deposit(star, "2026-03-27", dir = Direction.OUT)
+        assertEquals(out, applyKnownPayerSalary(out, sources, "now"), "الطالع مش مرتب")
+        val declinedOnly = listOf(src("a", declined = listOf(starKey)))
+        assertEquals(unknown.copy(id = "x"), applyKnownPayerSalary(unknown.copy(id = "x"), declinedOnly, "now"))
+        val fromStar = deposit(star, "2026-03-27")
+        assertEquals(fromStar, applyKnownPayerSalary(fromStar, declinedOnly, "now"), "«لأ» مش تأكيد")
+    }
+
     private val paid = src("a", from = "2026-01-01", payers = listOf(starKey), day = 25, amount = 900_000)
 
     @Test fun lateSalaryWaitsThreeDaysAfterTheUsualDayThenGoesAwayWhenAnyAmountArrives() {

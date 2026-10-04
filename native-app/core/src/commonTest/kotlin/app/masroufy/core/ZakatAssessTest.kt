@@ -58,15 +58,24 @@ class ZakatAssessTest {
     }
 
     @Test
-    fun `مصر — نفس الوقائع على دار الإفتاء ⇒ الديون ليك عند التحصيل والجمعية ما حددش`() {
+    fun `مصر — نفس الوقائع على دار الإفتاء ⇒ الديون ليك والجمعية عند التحصيل`() {
         val a = assess(ZakatCountry.EG, example())
         assertEquals(2_231_250L, a.nisabMinor, "85 جم عيار 21 × 300")
         assertEquals(ZakatOutcome.DUE, a.outcome)
         assertEquals(6_625_000L, a.totalZakatableMinor)
         assertEquals(165_625L, a.dueMinor)
         assertEquals(listOf(ZakatLineKind.CASH, ZakatLineKind.GOLD), a.lines.map { it.kind })
-        assertEquals(setOf("r-1"), a.notComputed.map { it.holding.id }.toSet())
-        assertTrue(a.notComputed.all { it.status == ZakatItemStatus.NO_RULING && it.zakatableMinor == null })
+        assertTrue(a.notComputed.isEmpty(), "الجمعية مش «ما حددش» تاني — رد المالك على فتوى 4399")
+        // الجمعية زي الدين ليك: اللي دفعته وما قبضتوش معفي من الحساب السنوي، ومصدرها 4399 بصفحتها
+        val rosca = a.items.first { it.holding.id == "r-1" }
+        assertEquals(ZakatItemStatus.EXEMPT to 0L, rosca.status to rosca.zakatableMinor)
+        assertEquals(200_000L, rosca.valueMinor)
+        val roscaRule = zakatRule(ZakatCountry.EG, ZakatTopic.ROSCA_CREDIT)
+        assertEquals(TextKey.ZAKAT_RULE_ROSCA_ON_PAYOUT, roscaRule.rulingKey)
+        assertEquals(Triple("4399", "https://www.dar-alifta.org/ar/fatwa/details/14460", false), Triple(roscaRule.source.fatwaNumber, roscaRule.source.url, roscaRule.source.pending))
+        // السعودية ما اتغيرتش
+        assertEquals(ZakatEffect.COUNT to TextKey.ZAKAT_RULE_ROSCA_RECEIVABLE, zakatRule(ZakatCountry.SA, ZakatTopic.ROSCA_CREDIT).let { it.effect to it.rulingKey })
+        assertEquals(ZakatAuthority.ZATCA, zakatRule(ZakatCountry.SA, ZakatTopic.ROSCA_CREDIT).source.authority)
         // الدين ليك (4399): ما بيدخلش الحساب السنوي — بيتزكّى لما يتحصّل، ومن غير سؤال «هيرجع؟»
         val owed = a.items.first { it.holding.id == "o-1" }
         assertEquals(ZakatItemStatus.EXEMPT to 0L, owed.status to owed.zakatableMinor)

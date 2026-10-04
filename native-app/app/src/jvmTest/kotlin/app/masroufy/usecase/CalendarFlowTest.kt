@@ -5,6 +5,8 @@ import app.masroufy.core.Currency
 import app.masroufy.core.DebtTerms
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
+import app.masroufy.core.IncomeSource
+import app.masroufy.core.IncomeSourceKind
 import app.masroufy.core.InstallmentKind
 import app.masroufy.core.InstallmentPayment
 import app.masroufy.core.InstallmentPlan
@@ -15,19 +17,24 @@ import app.masroufy.core.Obligation
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.Occasion
 import app.masroufy.core.OccasionKind
+import app.masroufy.core.PayFrequency
 import app.masroufy.core.Person
 import app.masroufy.core.PrepItem
 import app.masroufy.core.Project
 import app.masroufy.core.RecurringItem
 import app.masroufy.core.ReservationError
 import app.masroufy.core.ReviewState
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.core.ZakatYear
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.emptyProfile
+import app.masroufy.core.leftoverLabel
+import app.masroufy.core.uiText
 import app.masroufy.memory.FixedClock
+import app.masroufy.memory.MemoryIncomeSourceRepository
 import app.masroufy.memory.MemoryDebtTermsRepository
 import app.masroufy.memory.MemoryInstallmentPaymentRepository
 import app.masroufy.memory.MemoryInstallmentPlanRepository
@@ -89,7 +96,13 @@ class CalendarFlowTest {
         ),
     )
     private val counting = ManageReservations(calendar, reservations, FixedClock("2026-10-04T09:00:00.000Z"))
-    private val leftover = LoadLeftover(LoadLeftoverDeps(calendar, wallets, txns, reservations, profile, Currency.SAR))
+    private val incomes = MemoryIncomeSourceRepository()
+    private val leftover = LoadLeftover(LoadLeftoverDeps(calendar, wallets, txns, reservations, profile, Currency.SAR, incomes))
+
+    private fun source(id: String, kind: IncomeSourceKind, day: Int? = null, weekly: Int? = null, currency: Currency = Currency.SAR) = IncomeSource(
+        id, "مصدر وهمي $id", "n-$id", kind, currency, "2025-01-01", expectedDayOfMonth = day,
+        payFrequency = if (weekly != null) PayFrequency.WEEKLY else PayFrequency.MONTHLY, payWeekday = weekly,
+    )
 
     @Test fun monthShowsEverySourceAndTheSummaryCountsUnknownsApart() = runBlocking<Unit> {
         val month = calendar.month(2026, 10, today)
@@ -150,21 +163,51 @@ class CalendarFlowTest {
         counting.countUpcomingItem(CalendarItemType.INSTALLMENT, "ip-1", "2026-10-25", today)
         counting.countUpcomingItem(CalendarItemType.EVENT, "ev-1", "2026-10-15", today, 25_000)
         counting.countUpcomingItem(CalendarItemType.INSTALLMENT, "ip-1", "2026-11-25", today)
-        val salaried = leftover.load(today, salaried = true)
-        assertEquals(LeftoverMode.UNTIL_MONTH_END, salaried.mode)
-        assertEquals(850_000L, salaried.onHandMinor, "1,000,000 − 200,000 + 50,000")
-        assertEquals(725_000L, salaried.leftoverMinor, "قسط نوفمبر بعد المرتب ما بيتطرحش")
-        val free = leftover.load(today, salaried = false)
+        // مفيش مصدر دخل ⇒ مش «بمرتب»
+        val free = leftover.load(today)
         assertEquals(LeftoverMode.FROM_WHAT_YOU_HAVE, free.mode)
         assertEquals(625_000L, free.leftoverMinor)
-        assertTrue(leftover.load(today, salaried = true, unreconciledWalletIds = setOf("w-cash")).approximate)
+        // وظيفة شغالة ⇒ «بمرتب» من مستودع مصادر الدخل، لحد يوم المرتب في الملف (28)
+        incomes.saveMany(listOf(source("job", IncomeSourceKind.JOB)))
+        val salaried = leftover.load(today)
+        assertEquals(LeftoverMode.UNTIL_MONTH_END to "2026-10-28", salaried.mode to salaried.until)
+        assertEquals(850_000L, salaried.onHandMinor, "1,000,000 − 200,000 + 50,000")
+        assertEquals(725_000L, salaried.leftoverMinor, "قسط نوفمبر بعد المرتب ما بيتطرحش")
+        assertEquals(uiText(TextKey.LEFTOVER_MONTH_END), leftoverLabel(salaried))
+        assertTrue(leftover.load(today, unreconciledWalletIds = setOf("w-cash")).approximate)
         // قسط أكتوبر اتدفع ⇒ مش في التقويم ⇒ حجزه ما بيتطرحش تاني (الفلوس خرجت خلاص)
         payments.saveMany(listOf(InstallmentPayment("pay-1", "ip-1", "t-out", 100_000)))
-        assertEquals(25_000L, leftover.load(today, salaried = true).countedMinor)
+        assertEquals(25_000L, leftover.load(today).countedMinor)
+    }
+
+    @Test fun weeklyPartTimeMovesTheHorizonToTheNextPay() = runBlocking<Unit> {
+        counting.countUpcomingItem(CalendarItemType.EVENT, "ev-1", "2026-10-15", today, 25_000)
+        counting.countUpcomingItem(CalendarItemType.INSTALLMENT, "ip-1", "2026-10-25", today)
+        // بارت تايم أسبوعي يوم الخميس (4) — النهارده الحد 2026-10-04 ⇒ القبض الجاي الخميس 2026-10-08، قبل المرتب
+        incomes.saveMany(listOf(source("job", IncomeSourceKind.JOB), source("pt", IncomeSourceKind.PART_TIME, weekly = 4)))
+        val p = leftover.load(today)
+        assertEquals(LeftoverMode.UNTIL_NEXT_PAY to "2026-10-08", p.mode to p.until)
+        assertEquals(850_000L, p.leftoverMinor, "مفيش محسوب قبل الخميس")
+        assertEquals(uiText(TextKey.LEFTOVER_NEXT_PAY), leftoverLabel(p))
+    }
+
+    @Test fun pensionAndMonthlyRentCountAsSalariedButWeeklyRentAndOtherCurrencyDoNot() = runBlocking<Unit> {
+        counting.countUpcomingItem(CalendarItemType.EVENT, "ev-1", "2026-10-15", today, 25_000)
+        incomes.saveMany(listOf(source("rent-w", IncomeSourceKind.RENT, weekly = 1), source("job-eg", IncomeSourceKind.JOB, currency = Currency.EGP)))
+        assertEquals(LeftoverMode.FROM_WHAT_YOU_HAVE, leftover.load(today).mode, "إيجار أسبوعي · وظيفة بعملة تانية ⇒ مش «بمرتب» هنا")
+        incomes.saveMany(listOf(source("pension", IncomeSourceKind.PENSION, day = 10)))
+        val pension = leftover.load(today)
+        assertEquals(LeftoverMode.UNTIL_NEXT_PAY to "2026-10-10", pension.mode to pension.until)
+        assertEquals(850_000L, pension.leftoverMinor)
+        incomes.saveMany(listOf(source("pension", IncomeSourceKind.PENSION, day = 20).copy(endedAt = "2026-01-01"), source("rent-m", IncomeSourceKind.RENT, day = 18)))
+        val rent = leftover.load(today)
+        assertEquals(LeftoverMode.UNTIL_NEXT_PAY to "2026-10-18", rent.mode to rent.until)
+        assertEquals(825_000L, rent.leftoverMinor, "الحدث يوم 15 قبل الإيجار")
     }
 
     @Test fun walletNotOpenedYetMakesItNotAvailable() = runBlocking<Unit> {
+        incomes.saveMany(listOf(source("job", IncomeSourceKind.JOB)))
         wallets.save(Wallet("w-new", "محفظة جاية", Currency.SAR, "digital_wallet", 0, "2026-12-01"))
-        assertNull(leftover.load(today, salaried = true).leftoverMinor)
+        assertNull(leftover.load(today).leftoverMinor)
     }
 }

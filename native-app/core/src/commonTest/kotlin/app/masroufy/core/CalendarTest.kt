@@ -118,7 +118,16 @@ class CalendarTest {
         assertFailsWith<ReservationError>("ميعاد عدّى") { countedAmount(items.getValue(CalendarItemType.INSTALLMENT), null, "2026-10-26") }
     }
 
-    @Test fun publicOccasionsFromUmmAlQuraAndNoSchoolStartWithoutASource() {
+    @Test fun schoolStartIsAnEventTheUserAddsNotAPublicOccasion() {
+        // رد المالك §65: بداية الدراسة المستخدم بيحطها بإيده كحدث نوعه «دخول مدرسة» — بتظهر سطر حدث عادي
+        val school = LifeEvent("ev-s", "دخول مدرسة وهمي", "s", LifeEventKind.SCHOOL, "2026-10-18", mine = true, createdAt = "c")
+        val items = buildCalendar("2026-10-01", "2026-10-31", today, Currency.SAR, sources().copy(events = listOf(school)))
+        val line = items.single { it.sourceId == "ev-s" }
+        assertEquals(CalendarItemType.EVENT to "2026-10-18", line.type to line.date)
+        assertEquals(listOf("eid_al_adha-1448"), items.filter { it.type == CalendarItemType.PUBLIC_OCCASION }.map { it.sourceId })
+    }
+
+    @Test fun publicOccasionsFromUmmAlQuraAndNoSchoolStart() {
         val year = publicOccasions("2026-01-01", "2026-12-31", "SA")
         assertEquals(
             listOf("ramadan_start 2026-02-18 1447", "eid_al_fitr 2026-03-20 1447", "eid_al_adha 2026-05-27 1447"),
@@ -127,6 +136,7 @@ class CalendarTest {
         assertEquals(year, publicOccasions("2026-01-01", "2026-12-31", "eg"))
         assertTrue(publicOccasions("2026-01-01", "2026-12-31", "US").isEmpty())
         assertTrue(publicOccasions("2026-01-01", "2026-12-31", null).isEmpty())
-        assertTrue(PublicOccasionKind.entries.none { "school" in it.wire }, "بداية الدراسة محتاجة جدول رسمي بمصدره")
+        assertTrue(PublicOccasionKind.entries.none { "school" in it.wire }, "بداية الدراسة مش مناسبة عامة — المستخدم بيحطها بإيده كحدث")
+        assertTrue(publicOccasions("2026-08-01", "2026-09-30", "SA").isEmpty(), "موسم الدراسة مافيهوش أي مناسبة عامة")
     }
 }

@@ -17,6 +17,9 @@ sealed interface IncomeFollowUp {
     /** «المرتب الجديد بينزل يوم كام؟» */
     data class AskPayday(val sourceId: Id) : IncomeFollowUp
 
+    /** «بتقبض إمتى؟ كل شهر ولا كل أسبوع؟» — للبارت تايم بدل [AskPayday] (رد المالك §65: «يتسأل بشكل منفصل»). */
+    data class AskPayFrequency(val sourceId: Id) : IncomeFollowUp
+
     /** «تغيّر بداية شهرك المالي ليوم [day]؟» — الموافقة بتعدّي على استخدام الملف. */
     data class ChangeMonthStart(val sourceId: Id, val day: Int) : IncomeFollowUp
 
@@ -43,13 +46,21 @@ fun jobChangeOutcome(closed: IncomeSource?, opened: IncomeSource?, monthStartDay
     return JobChangeOutcome(congratulate = opened != null, followUps = out)
 }
 
-/** أسئلة مصدر لسه متفتح (أو اتجاوب فيه يوم المرتب): اليوم ⇒ بداية الشهر ⇒ المرتب المتوقع. */
+/**
+ * أسئلة مصدر لسه متفتح (أو اتجاوب فيه يوم المرتب): اليوم ⇒ بداية الشهر ⇒ المرتب المتوقع.
+ * **البارت تايم بيتسأل دورية القبض** (شهري ولا أسبوعي، وإمتى) بدل يوم المرتب (رد المالك §65). **المعاش** بيتسأل يومه بس
+ * (عشان «فاضلك تقريبًا» يعرف القبض الجاي) — اختيار Claude.
+ */
 fun newSourceFollowUps(source: IncomeSource, monthStartDay: Int): List<IncomeFollowUp> {
-    if (source.kind !in SALARIED_KINDS) return emptyList()
     val out = mutableListOf<IncomeFollowUp>()
-    val day = source.expectedDayOfMonth
-    if (day == null) out += IncomeFollowUp.AskPayday(source.id) else monthStartFollowUp(source, monthStartDay)?.let { out += it }
-    if (source.expectedMinor == null) out += IncomeFollowUp.AskExpectedSalary(source.id)
+    when (source.kind) {
+        IncomeSourceKind.JOB ->
+            if (source.expectedDayOfMonth == null) out += IncomeFollowUp.AskPayday(source.id) else monthStartFollowUp(source, monthStartDay)?.let { out += it }
+        IncomeSourceKind.PART_TIME -> if (!hasKnownPayDay(source)) out += IncomeFollowUp.AskPayFrequency(source.id)
+        IncomeSourceKind.PENSION -> if (source.expectedDayOfMonth == null) out += IncomeFollowUp.AskPayday(source.id)
+        else -> return emptyList()
+    }
+    if (source.kind in SALARIED_KINDS && source.expectedMinor == null) out += IncomeFollowUp.AskExpectedSalary(source.id)
     return out
 }
 
@@ -71,6 +82,7 @@ fun shouldAskCarToWork(before: UserProfile?, after: UserProfile, sources: List<I
 fun incomeFollowUpText(f: IncomeFollowUp): String = when (f) {
     is IncomeFollowUp.EndOfServiceBenefit -> uiText(TextKey.INCOME_Q_END_OF_SERVICE)
     is IncomeFollowUp.AskPayday -> uiText(TextKey.INCOME_Q_PAYDAY)
+    is IncomeFollowUp.AskPayFrequency -> uiText(TextKey.INCOME_Q_PAY_FREQUENCY)
     is IncomeFollowUp.ChangeMonthStart -> uiText(TextKey.INCOME_Q_MONTH_START, f.day.toString())
     is IncomeFollowUp.AskExpectedSalary -> uiText(TextKey.INCOME_Q_EXPECTED_SALARY)
     IncomeFollowUp.CarToWork -> uiText(TextKey.INCOME_Q_CAR_TO_WORK)

@@ -11,13 +11,14 @@ import app.masroufy.core.Reservation
 import app.masroufy.core.ReservationError
 import app.masroufy.core.TextKey
 import app.masroufy.core.countedAmount
-import app.masroufy.core.nextPaydayAfter
+import app.masroufy.core.leftoverHorizon
 import app.masroufy.core.projectLeftover
 import app.masroufy.core.reservationId
 import app.masroufy.core.reservationIdOf
 import app.masroufy.core.uiText
 import app.masroufy.core.walletBalancesOn
 import app.masroufy.port.Clock
+import app.masroufy.port.IncomeSourceRepository
 import app.masroufy.port.ProfileRepository
 import app.masroufy.port.ReservationRepository
 import app.masroufy.port.TransactionRepository
@@ -63,22 +64,28 @@ data class LoadLeftoverDeps(
     val profile: ProfileRepository,
     /** عملة المساحة — المحافظ والمحسوب بعملة تانية ما بيدخلوش. */
     val currency: Currency,
+    /** مصادر الدخل — «بمرتب» ولحد إمتى بيتحسبوا منها (رد المالك §65). */
+    val incomeSources: IncomeSourceRepository,
 )
 
 /**
  * «فاضلك تقريبًا» في قسم الميزانيات: أرصدة المحافظ النهارده (نفس `walletBalancesOn` بتاع الزكاة) − المحسوب الجاي.
- * [salaried] من برا: مصادر الدخل لسه مالهاش مستودع في الفرع ده — لما تتوصل ⇒ `isSalaried(sources, today)`.
+ * **«بمرتب» من مصادر الدخل** (وظيفة · بارت تايم · معاش · إيجار شهري شغال النهارده بعملة المساحة)، ولحد أقرب قبض جاي منهم:
+ * الوظيفة بيوم المرتب في الملف والباقي بيومه (`leftoverHorizon`). من غير ⇒ «فاضلك تصرف من اللي معاك».
  * [unreconciledWalletIds] محافظ رصيدها مش متطابق مع الكشف (من المطابقة) ⇒ الرقم بيتعلّم تقريبي.
  */
 class LoadLeftover(private val deps: LoadLeftoverDeps) {
-    suspend fun load(today: IsoDate, salaried: Boolean, unreconciledWalletIds: Set<Id> = emptySet()): LeftoverProjection {
+    suspend fun load(today: IsoDate, unreconciledWalletIds: Set<Id> = emptySet()): LeftoverProjection {
         val wallets = deps.wallets.listAll().filter { it.currency == deps.currency }
         val from = wallets.minOfOrNull { it.openingAt }
         val txns = if (from == null || from > today) emptyList() else deps.txns.listByDateRange(from, today).filter { it.currency == deps.currency }
         val balances = walletBalancesOn(wallets, txns, today).values.toList()
-        val next = deps.profile.load()?.payday?.let { nextPaydayAfter(today, it) }
-        val until = (listOfNotNull(today, next) + deps.reservations.listAll().map { it.occurrenceDate }).max()
+        val horizon = leftoverHorizon(deps.incomeSources.listAll(), today, deps.profile.load()?.payday, deps.currency)
+        val until = (listOfNotNull(today, horizon?.until) + deps.reservations.listAll().map { it.occurrenceDate }).max()
         val items = deps.calendar.items(today, until, today)
-        return projectLeftover(balances, items, today, deps.currency, salaried, next, wallets.any { it.id in unreconciledWalletIds })
+        return projectLeftover(
+            balances, items, today, deps.currency, salaried = horizon != null, nextPayday = horizon?.until,
+            unreconciled = wallets.any { it.id in unreconciledWalletIds }, monthEnd = horizon?.monthEnd ?: false,
+        )
     }
 }

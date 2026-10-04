@@ -50,7 +50,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "eventPrep" to listOf("eventId", "name", "order", "done", "createdAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt", "occurrenceDate", "deadline")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
@@ -185,9 +185,16 @@ fun checkBackupFinance(data: FullBackupData) {
     }
 }
 
-/** مصدر الدخل (§48 · §64): اليوم المتوقع من 1 لـ31، ومفاتيح الأطراف قايمة نصوص (اسم + آخر 4 بس — مفيش رقم حساب كامل). */
+/**
+ * مصدر الدخل (§48 · §64 · §65): اليوم المتوقع من 1 لـ31، ويوم القبض الأسبوعي من 1 لـ7، ومفاتيح الأطراف قايمة نصوص (اسم + آخر 4 بس —
+ * مفيش رقم حساب كامل). الدورية اختيارية (من غيرها = شهري)، ولو مكتوبة لازم تبقى قيمة معروفة.
+ */
 private fun checkIncomeSourceRow(row: Map<String, Any?>) {
+    row["payFrequency"]?.let { f ->
+        if (PayFrequency.entries.none { it.wire == f }) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, "incomeSources", "payFrequency"))
+    }
     row["expectedDayOfMonth"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..31.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "expectedDayOfMonth")) }
+    row["payWeekday"]?.let { if ((numberOf(it) ?: 0.0) !in 1.0..7.0) throw BackupError(uiText(TextKey.BACKUP_NUMBER_INVALID, "payWeekday")) }
     for (field in listOf("payerKeys", "declinedPayerKeys")) {
         val list = row[field] ?: continue
         if (list !is List<*> || list.any { it !is String }) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, "incomeSources", field))

@@ -178,11 +178,12 @@ class ManageZakatTest {
         assertNull(missing.dueMinor)
         assertNull(acc.manage.suggestDate("2026-02-18", ZakatPrices(null, null)))
         assertFailsWith<ZakatError> { acc.manage.close(year.id, "2026-02-18", ZakatPrices(null, null)) }
-        // بسعر (مخترع) بالجنيه: الكاش والدهب بس — الدين ليك عند التحصيل (4399) والجمعية «المرجع ما حددش»
+        // بسعر (مخترع) بالجنيه: الكاش والدهب بس — الدين ليك والجمعية عند التحصيل (4399، رد المالك على الجمعية)
         val a = acc.manage.assess(year.id, "2026-02-18", sa)
         assertEquals(165_625L, a.dueMinor)
-        assertEquals(setOf("r-1", "a-coin"), a.notComputed.map { it.holding.id }.toSet())
+        assertEquals(setOf("a-coin"), a.notComputed.map { it.holding.id }.toSet())
         assertEquals(ZakatItemStatus.EXEMPT, a.items.first { it.holding.id == "o-1" }.status)
+        assertEquals(ZakatItemStatus.EXEMPT to 0L, a.items.first { it.holding.id == "r-1" }.let { it.status to it.zakatableMinor })
         assertEquals(Currency.EGP, a.currency)
     }
 

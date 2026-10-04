@@ -37,6 +37,7 @@ internal val ARABIC_ZAKAT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ZAKAT_RULE_RECEIVABLE_STRONG to "الدين ليك اللي هيرجع عليه زكاة كل سنة.",
     TextKey.ZAKAT_RULE_RECEIVABLE_DOUBTFUL to "الدين ليك المشكوك فيه بيتزكّى لما يتحصّل.",
     TextKey.ZAKAT_RULE_ROSCA_RECEIVABLE to "الجمعية: اللي دفعته وما قبضتوش دين ليك هيرجع.",
+    TextKey.ZAKAT_RULE_ROSCA_ON_PAYOUT to "الجمعية زي الدين ليك: اللي دفعته وما قبضتوش ما بيدخلش الحساب السنوي — لما تقبض دورك، 2.5% مرة واحدة على اللي كان من فلوسك.",
     TextKey.ZAKAT_RULE_NO_RULING to "المرجع الرسمي ما حددش — راجع جهة الفتوى.",
     TextKey.ZAKAT_LINE_CASH to "الكاش وحسابات البنك",
     TextKey.ZAKAT_LINE_GOLD to "دهب ادخار",
@@ -98,6 +99,8 @@ internal val ENGLISH_ZAKAT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ZAKAT_RULE_RECEIVABLE_STRONG to "Money owed to you that will be repaid is zakatable every year.",
     TextKey.ZAKAT_RULE_RECEIVABLE_DOUBTFUL to "Doubtful money owed to you is zakatable when collected.",
     TextKey.ZAKAT_RULE_ROSCA_RECEIVABLE to "Savings circle: what you paid and have not received back is money owed to you.",
+    TextKey.ZAKAT_RULE_ROSCA_ON_PAYOUT to
+        "A savings circle is like money owed to you: what you paid in and have not received is not part of the yearly calculation — when you receive your turn, 2.5% once on the part that was your own money.",
     TextKey.ZAKAT_RULE_NO_RULING to "The official reference has not ruled on this — ask the fatwa authority.",
     TextKey.ZAKAT_LINE_CASH to "Cash and bank accounts",
     TextKey.ZAKAT_LINE_GOLD to "Gold savings",
