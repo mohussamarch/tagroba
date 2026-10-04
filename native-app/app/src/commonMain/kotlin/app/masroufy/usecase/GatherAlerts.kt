@@ -19,7 +19,7 @@ import app.masroufy.port.ZakatYearRepository
 /**
  * بيجمع المرشحين للتنبيه النهارده من البيانات الموجودة (OVERRIDES §61) — من غير ما يقرر حاجة؛ القرار في `RunAlertEngine`.
  * المصادر: المستحقات (`LoadDues`) · الميزانية (نفس منطق `LoadNotifications`) · أسئلة «زون التحويلات» · ميعاد الزكاة ·
- * اختلاف المطابقة · كارت «ملفك X%» (§63).
+ * اختلاف المطابقة · كارت «ملفك X%» (§63) · مناسبات الشخص (§64).
  * **مش بيتولد:** الإيميل · الحسابات المربوطة · الدخول من جهاز جديد — محتاجين سيرفر («الجوال الأول»).
  */
 data class GatherAlertsDeps(
@@ -29,6 +29,8 @@ data class GatherAlertsDeps(
     val zakatYears: ZakatYearRepository? = null,
     val zakatPayments: ZakatPaymentRepository? = null,
     val profile: ProfileRepository? = null,
+    /** مناسبات الشخص (§64) — null = مش متوصلة. */
+    val occasions: ManageOccasions? = null,
 )
 
 data class AlertGatherInput(
@@ -64,6 +66,7 @@ class GatherAlerts(private val deps: GatherAlertsDeps) {
         }
 
         for (r in input.reconcile) balanceMismatchCandidate(r.wallet.id, r.wallet.name, r.result.mismatches)?.let { out += it }
+        deps.occasions?.let { out += it.alertCandidates(input.today) }
         profileCompletionCandidate(input.profileCompletionPercent)?.let { out += it }
         return out
     }

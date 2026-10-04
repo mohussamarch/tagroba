@@ -44,13 +44,15 @@ data class PayZakatDeps(
     val uow: UnitOfWork,
     val ids: IdGenerator,
     val clock: Clock,
+    /** عشان عملية اتسجلت نقطة في حدث ما تبقاش دفعة زكاة كمان (§64). */
+    val eventLinks: app.masroufy.port.EventLinkRepository? = null,
 )
 
 /** عملية من الكشف + الجزء اللي منها زكاة (null = العملية كلها). */
 data class ZakatPaymentSource(val transactionId: Id, val amountMinor: Halalas? = null)
 
 class PayZakat(private val deps: PayZakatDeps) {
-    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.installmentPayments, deps.plans, deps.categories, deps.clock, deps.payments)
+    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.installmentPayments, deps.plans, deps.categories, deps.clock, deps.payments, deps.eventLinks)
 
     private suspend fun closedYear(yearId: Id): ZakatYear {
         val year = deps.years.listAll().firstOrNull { it.id == yearId } ?: throw ZakatError(uiText(TextKey.ZAKAT_YEAR_NOT_FOUND))

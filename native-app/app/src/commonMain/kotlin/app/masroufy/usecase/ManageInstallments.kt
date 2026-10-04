@@ -71,10 +71,12 @@ data class ManageInstallmentsDeps(
     val categories: CategoryRepository,
     /** عشان عملية دفعة زكاة ما تتربطش بقسط كمان (§62). */
     val zakatPayments: app.masroufy.port.ZakatPaymentRepository? = null,
+    /** عشان عملية اتسجلت نقطة في حدث ما تتربطش هنا كمان (§64). */
+    val eventLinks: app.masroufy.port.EventLinkRepository? = null,
 )
 
 class ManageInstallments(private val deps: ManageInstallmentsDeps) {
-    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.payments, deps.plans, deps.categories, deps.clock, deps.zakatPayments)
+    private val links = DueLinks(deps.txns, deps.roscaEntries, deps.payments, deps.plans, deps.categories, deps.clock, deps.zakatPayments, deps.eventLinks)
 
     private suspend fun find(id: Id): InstallmentPlan =
         deps.plans.listAll().firstOrNull { it.id == id } ?: throw InstallmentError(uiText(TextKey.INSTALLMENT_NOT_FOUND))

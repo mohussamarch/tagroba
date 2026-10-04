@@ -15,6 +15,7 @@ import app.masroufy.core.Category
 import app.masroufy.core.DuesCategories
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
+import app.masroufy.port.EventLinkRepository
 import app.masroufy.port.InstallmentPaymentRepository
 import app.masroufy.port.InstallmentPlanRepository
 import app.masroufy.port.RoscaEntryRepository
@@ -37,6 +38,8 @@ internal class DueLinks(
     private val clock: Clock,
     /** دفعات الزكاة (§62) — اختياري عشان اللي ما بيستعملش الزكاة يفضل زي ما هو؛ التشغيل الحقيقي بيدّيه دايمًا. */
     private val zakatPayments: ZakatPaymentRepository? = null,
+    /** روابط الأحداث (§64) — العملية اللي بقت نقطة ما تتربطش بالمستحقات أو الزكاة (نوعها كان هيتكتب فوقه). */
+    private val eventLinks: EventLinkRepository? = null,
 ) {
     /** العملية بعد الفحص + المبلغ اللي هيتربط (المبلغ كله لو ما اتحددش). */
     suspend fun check(
@@ -55,7 +58,8 @@ internal class DueLinks(
         val ids = listOf(transactionId)
         if (roscaEntries.listByTransactionIds(ids).isNotEmpty() || payments.listByTransactionIds(ids).isNotEmpty() ||
             plans.listAll().any { it.receivedTransactionId == transactionId } ||
-            zakatPayments?.listByTransactionIds(ids).orEmpty().isNotEmpty()
+            zakatPayments?.listByTransactionIds(ids).orEmpty().isNotEmpty() ||
+            eventLinks?.listByTransactionIds(ids).orEmpty().any { it.role.isGift }
         ) {
             throw DueLinkError(uiText(TextKey.DUE_TXN_ALREADY_LINKED))
         }
