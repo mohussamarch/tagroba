@@ -54,6 +54,8 @@ class AlertEngineTest {
         assertEquals(AlertDelivery.AT_USUAL_TIME, today.delivery, "ميعاد النهارده ما بيتدفنش — بيستنى وقتك")
         assertTrue(AlertFactor.YOU_SKIP_THESE in today.factors)
         assertEquals(AlertDelivery.SEND_NOW, decideAlert(cand(AlertKind.DUE_TODAY), KindStats(), learned, noon).delivery)
+        val owedToYou = decideAlert(cand(AlertKind.DUE_OVERDUE, flow = DueFlow.RECEIVE), ignored(), learned, noon)
+        assertEquals(AlertDelivery.AT_USUAL_TIME, owedToYou.delivery, "فلوس ليك متأخرة وبتتجاهلها ⇒ برضه ما بتتدفنش في ملخص")
     }
 
     @Test fun engagedLowTypeIsLiftedOutOfTheDigest() {
