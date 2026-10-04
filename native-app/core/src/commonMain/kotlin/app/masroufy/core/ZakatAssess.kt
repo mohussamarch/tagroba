@@ -22,9 +22,10 @@ sealed interface ZakatHolding {
         val karat: Int?, val fineness: Int?, val purpose: ZakatPurpose?, val ownUnitPriceMinor: Halalas?, override val heldSince: IsoDate? = null,
     ) : ZakatHolding
 
+    /** [saudiCompany] الشركة (أو الصندوق) سعودية؟ — واقعة بتتسأل بس في البلد اللي قاعدتها بتفرّق (السعودية، للطويل الأجل). */
     data class Security(
         override val id: Id, override val name: String, val line: ZakatLineKind, val valueMinor: Halalas?,
-        val holding: ZakatShareHolding?, override val heldSince: IsoDate? = null,
+        val holding: ZakatShareHolding?, override val heldSince: IsoDate? = null, val saudiCompany: Boolean? = null,
     ) : ZakatHolding
 
     /** عملات رقمية — مالهاش فتوى من الجهتين ⇒ ما بتتحسبش. */
@@ -36,6 +37,18 @@ sealed interface ZakatHolding {
     data class Receivable(
         override val id: Id, override val name: String?, val remainingMinor: Halalas, val collectability: ZakatCollectability?, override val heldSince: IsoDate? = null,
     ) : ZakatHolding
+
+    /**
+     * دين ليك **اتحصّل** جوه السنة (تسوية على الدين) — [id] = معرّف التسوية، [obligationId] الدين نفسه (لواقعته).
+     * بيطلع عليه سطر لوحده لو الدين ما كانش بيدخل الحساب السنوي (مصر كله · السعودية المشكوك فيه) — §62.
+     */
+    data class CollectedReceivable(
+        override val id: Id, val obligationId: Id, override val name: String?, val amountMinor: Halalas, val collectedOn: IsoDate,
+        val collectability: ZakatCollectability?,
+    ) : ZakatHolding { override val heldSince: IsoDate? get() = collectedOn }
+
+    /** أمانة: فلوس حد تاني معاك — المرجع ما حددش في البلدين ⇒ بتظهر لوحدها ومش بتتخصم من الكاش. */
+    data class Custody(override val id: Id, override val name: String?, val remainingMinor: Halalas) : ZakatHolding { override val heldSince: IsoDate? get() = null }
 
     /** موقفك الموجب في جمعية (دفعت أكتر ما قبضت). */
     data class RoscaCredit(override val id: Id, override val name: String, val positionMinor: Halalas, override val heldSince: IsoDate? = null) : ZakatHolding
@@ -116,8 +129,21 @@ private fun item(h: ZakatHolding, line: ZakatLineKind?, topic: ZakatTopic?, coun
     }
 }
 
-/** القاعدة على كل واقعة لوحدها. */
-fun zakatItems(country: ZakatCountry, holdings: List<ZakatHolding>, prices: ZakatPrices): List<ZakatItem> = holdings.map { h ->
+/** القاعدتين بيفرقوا في البلد دي؟ لو لأ (مصر في الديون ليك وفي جنسية الشركة) ⇒ الواقعة ما بتتسألش (ما بنسألش سؤال ملوش لازمة). */
+private fun distinguishes(country: ZakatCountry, a: ZakatTopic, b: ZakatTopic): Boolean = zakatRule(country, a).effect != zakatRule(country, b).effect
+
+/** قاعدة الدين ليك السنوية اللي بتنطبق (null = الواقعة لسه ما اتسألتش في بلد بتفرّق). */
+private fun receivableTopic(country: ZakatCountry, collectability: ZakatCollectability?): ZakatTopic? = when {
+    !distinguishes(country, ZakatTopic.RECEIVABLE_STRONG, ZakatTopic.RECEIVABLE_DOUBTFUL) -> ZakatTopic.RECEIVABLE_STRONG
+    collectability == ZakatCollectability.STRONG -> ZakatTopic.RECEIVABLE_STRONG
+    collectability == ZakatCollectability.DOUBTFUL -> ZakatTopic.RECEIVABLE_DOUBTFUL
+    else -> null
+}
+
+/**
+ * القاعدة على كل واقعة لوحدها. الدين اللي اتحصّل وكان بيتحسب كل سنة (السعودية — هيرجع) **ما بيطلعش سطر** (اتزكّى في سنينه).
+ */
+fun zakatItems(country: ZakatCountry, holdings: List<ZakatHolding>, prices: ZakatPrices): List<ZakatItem> = holdings.mapNotNull { h ->
     when (h) {
         is ZakatHolding.Cash -> item(h, ZakatLineKind.CASH, ZakatTopic.CASH, country, h.balanceMinor)
         is ZakatHolding.Metal -> {
@@ -136,19 +162,31 @@ fun zakatItems(country: ZakatCountry, holdings: List<ZakatHolding>, prices: Zaka
         is ZakatHolding.Security -> when (h.holding) {
             null -> item(h, h.line, null, country, h.valueMinor, "holding")
             ZakatShareHolding.TRADING -> item(h, h.line, ZakatTopic.TRADING_SHARES, country, h.valueMinor)
-            ZakatShareHolding.LONG_TERM -> item(h, h.line, ZakatTopic.LONG_TERM_SHARES, country, h.valueMinor)
+            ZakatShareHolding.LONG_TERM -> when {
+                !distinguishes(country, ZakatTopic.LONG_TERM_SHARES, ZakatTopic.FOREIGN_LONG_TERM_SHARES) || h.saudiCompany == true ->
+                    item(h, h.line, ZakatTopic.LONG_TERM_SHARES, country, h.valueMinor)
+                h.saudiCompany == false -> item(h, h.line, ZakatTopic.FOREIGN_LONG_TERM_SHARES, country, h.valueMinor)
+                else -> item(h, h.line, null, country, h.valueMinor, "saudiCompany")
+            }
         }
         is ZakatHolding.Digital -> item(h, null, ZakatTopic.CRYPTO, country, h.valueMinor)
         is ZakatHolding.Other -> ZakatItem(h, null, null, ZakatItemStatus.NOT_COVERED, h.valueMinor, null)
         is ZakatHolding.Receivable -> {
-            // مصر مالهاش فتوى في الديون ليك ⇒ ما بيتحسبش مهما كانت الواقعة (ما بنسألش سؤال ملوش لازمة)
-            if (zakatRule(country, ZakatTopic.RECEIVABLE_STRONG).effect == ZakatEffect.NO_RULING) item(h, ZakatLineKind.RECEIVABLES, ZakatTopic.RECEIVABLE_STRONG, country, h.remainingMinor)
-            else when (h.collectability) {
-                null -> item(h, ZakatLineKind.RECEIVABLES, null, country, h.remainingMinor, "collectability")
-                ZakatCollectability.STRONG -> item(h, ZakatLineKind.RECEIVABLES, ZakatTopic.RECEIVABLE_STRONG, country, h.remainingMinor)
-                ZakatCollectability.DOUBTFUL -> item(h, ZakatLineKind.RECEIVABLES, ZakatTopic.RECEIVABLE_DOUBTFUL, country, h.remainingMinor)
+            // مصر (4399) ما بتفرّقش بين هيرجع ومشكوك ⇒ الواقعة ما بتتسألش
+            val topic = receivableTopic(country, h.collectability)
+            if (topic == null) item(h, ZakatLineKind.RECEIVABLES, null, country, h.remainingMinor, "collectability")
+            else item(h, ZakatLineKind.RECEIVABLES, topic, country, h.remainingMinor)
+        }
+        is ZakatHolding.CollectedReceivable -> {
+            val yearly = receivableTopic(country, h.collectability)
+            when {
+                yearly == null -> item(h, ZakatLineKind.COLLECTED_RECEIVABLES, null, country, h.amountMinor, "collectability")
+                // كان بيتحسب كل سنة ⇒ اتزكّى في سنينه، والتحصيل ما بيطلّعش حاجة جديدة
+                zakatRule(country, yearly).effect == ZakatEffect.COUNT -> null
+                else -> item(h, ZakatLineKind.COLLECTED_RECEIVABLES, ZakatTopic.RECEIVABLE_COLLECTED, country, h.amountMinor)
             }
         }
+        is ZakatHolding.Custody -> item(h, null, ZakatTopic.CUSTODY, country, h.remainingMinor)
         is ZakatHolding.RoscaCredit -> item(h, ZakatLineKind.ROSCA, ZakatTopic.ROSCA_CREDIT, country, h.positionMinor)
         is ZakatHolding.Debt -> item(h, null, ZakatTopic.DEBTS_OWED, country, h.remainingMinor)
     }
@@ -166,7 +204,7 @@ enum class ZakatOutcome {
     /** فوق النصاب بس فيه سطور مجهولة ⇒ المعروف ليه مطلوبه، والإجمالي «غير متاح». */
     PARTIAL,
     BELOW_NISAB,
-    /** (السعودية) نزلت تحت النصاب جوه السنة ⇒ الحول بدأ من جديد. */
+    /** الحول ما كملش: (السعودية) نزلت تحت النصاب جوه السنة · (مصر) كانت تحت النصاب أول السنة ⇒ الحول بدأ من جديد. */
     HAWL_RESTARTED,
     /** النصاب مجهول، أو تحت النصاب وفيه مجهول ممكن يعدّيه. */
     UNAVAILABLE,

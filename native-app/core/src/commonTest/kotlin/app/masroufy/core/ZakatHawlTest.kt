@@ -56,8 +56,14 @@ class ZakatHawlTest {
     }
 
     @Test
-    fun `مصر — اليوم الثابت ومفيش فحص للنزول`() {
-        assertEquals(HawlState.Complete(true), checkHawl(ZakatCountry.EG, series(), nisab, "2025-01-01", "2025-12-21"))
+    fun `مصر — النزول في نص السنة ما بيقطعش والعبرة بأولها وآخرها (5890)`() {
+        assertEquals(HawlState.Complete(true), checkHawl(ZakatCountry.EG, series(), nisab, "2025-01-01", "2025-12-21"), "نزل في فبراير ورجع ⇒ كمّل")
+        // أول السنة كان تحت النصاب ⇒ الحول بيبدأ من أول يوم وصله بعدها
+        assertEquals(HawlState.Restarted("2025-03-01"), checkHawl(ZakatCountry.EG, series(), nisab, "2025-02-15", "2026-02-04"))
+        assertEquals(HawlState.Restarted(null), checkHawl(ZakatCountry.EG, series(dipTxns.take(1)), nisab, "2025-02-15", "2026-02-04"))
+        assertEquals(HawlState.Complete(false), checkHawl(ZakatCountry.EG, series(), nisab, "2024-06-01", "2025-05-20"), "قبل أول البيانات ⇒ مش متأكد")
+        // آخر السنة تحت النصاب: الحول نفسه ما بيتقطعش هنا — الحساب يوم الميعاد هو اللي بيقول «تحت النصاب»
+        assertEquals(HawlState.Complete(true), checkHawl(ZakatCountry.EG, series(dipTxns.take(1)), nisab, "2025-01-01", "2025-12-21"))
     }
 
     @Test
@@ -76,7 +82,7 @@ class ZakatHawlTest {
     @Test
     fun `اقتراح الميعاد — السعودية من آخر رجوع ومصر من أول يوم`() {
         assertEquals("2025-03-01", suggestHawlStart(ZakatCountry.SA, series(), nisab))
-        assertEquals("2025-01-01", suggestHawlStart(ZakatCountry.EG, series(), nisab))
+        assertEquals("2025-01-01", suggestHawlStart(ZakatCountry.EG, series(), nisab), "مصر: النزول في النص ما بيقطعش")
         assertNull(suggestHawlStart(ZakatCountry.SA, series(dipTxns.take(1)), nisab), "تحت النصاب دلوقتي ⇒ مفيش اقتراح")
         assertEquals("2025-01-01", suggestHawlStart(ZakatCountry.SA, series(emptyList()), nisab), "عمره ما نزل ⇒ من أول البيانات")
         assertNull(suggestHawlStart(ZakatCountry.SA, emptyList(), nisab))
@@ -150,5 +156,21 @@ class ZakatHawlTest {
         assertNull(parseStoredProfile(mapOf("islamicContentVisible" to "لأ")).islamicContentVisible)
         checkBackupProfile(mapOf("payday" to 28L, "islamicContentVisible" to true))
         assertFailsWith<BackupError> { checkBackupProfile(mapOf("payday" to 28L, "islamicContentVisible" to "yes")) }
+    }
+
+    @Test
+    fun `مصر — اقتراح الميعاد بيتقطع بس لو يوم الميعاد كان تحت النصاب`() {
+        // 30,000 من 2025-01-01 ⇒ ينزل 1,500 في 2025-12-01 (قبل الميعاد 2025-12-21 بشوية) ⇒ يرجع 43,000 في 2026-01-10
+        val txns = listOf(txn("t-1", "2025-12-01", Direction.OUT, 2_850_000), txn("t-2", "2026-01-10", Direction.IN, 4_150_000))
+        assertEquals("2026-01-10", suggestHawlStart(ZakatCountry.EG, series(txns), nisab, "2026-02-18"), "يوم الميعاد كان تحت النصاب ⇒ السلسلة اتقطعت")
+        // نفس النزول بس رجع قبل الميعاد ⇒ السلسلة كاملة من الأول
+        val back = listOf(txn("t-1", "2025-12-01", Direction.OUT, 2_850_000), txn("t-2", "2025-12-10", Direction.IN, 4_150_000))
+        assertEquals("2025-01-01", suggestHawlStart(ZakatCountry.EG, series(back), nisab, "2026-02-18"))
+        // نزل ولسه تحت النصاب يوم الميعاد ومفيش رجوع ⇒ مفيش اقتراح
+        assertNull(suggestHawlStart(ZakatCountry.EG, series(txns.take(1)), nisab, "2026-02-18"))
+        // لسه ما جاش يوم الميعاد ⇒ النزول في النص ما بيفرقش
+        assertEquals("2025-01-01", suggestHawlStart(ZakatCountry.EG, series(txns.take(1)), nisab, "2025-12-15"))
+        // السعودية على نفس البيانات: من آخر رجوع
+        assertEquals("2025-12-10", suggestHawlStart(ZakatCountry.SA, series(back), nisab, "2026-02-18"))
     }
 }

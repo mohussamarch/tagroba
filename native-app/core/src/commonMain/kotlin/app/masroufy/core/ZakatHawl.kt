@@ -53,7 +53,8 @@ fun balanceSeries(changes: List<Pair<IsoDate, Halalas>>): List<DayBalance> {
 fun zakatWealthSeries(wallets: List<Wallet>, transactions: List<Transaction>, items: List<ZakatItem>): List<DayBalance> {
     val cash = walletEvents(wallets, transactions).map { (_, day, delta) -> day to delta }
     val first = cash.minOfOrNull { it.first }
-    val others = items.filter { it.status == ZakatItemStatus.COUNTED && it.holding !is ZakatHolding.Cash }
+    // الدين اللي اتحصّل فلوسه دخلت المحفظة فعلًا (موجودة في الكاش) ⇒ ما بيتضافش تاني
+    val others = items.filter { it.status == ZakatItemStatus.COUNTED && it.holding !is ZakatHolding.Cash && it.holding !is ZakatHolding.CollectedReceivable }
         .mapNotNull { i -> (i.holding.heldSince ?: first)?.let { it to i.zakatableMinor!! } }
     return balanceSeries(cash + others)
 }
@@ -61,13 +62,25 @@ fun zakatWealthSeries(wallets: List<Wallet>, transactions: List<Transaction>, it
 /** الرصيد آخر يوم [date] — null لو قبل أول نقطة (مش معروف). */
 fun balanceOn(series: List<DayBalance>, date: IsoDate): Halalas? = series.lastOrNull { it.date <= date }?.balanceMinor
 
+/** السعودية: النزول جوه السنة بيقطع الحول (§3.2.1) · مصر: العبرة بأول السنة وآخرها بس (فتوى 5890). */
+private fun dipRestarts(country: ZakatCountry): Boolean = when (zakatRule(country, ZakatTopic.MID_YEAR_DIP).rulingKey) {
+    TextKey.ZAKAT_RULE_DIP_RESTART -> true
+    TextKey.ZAKAT_RULE_DIP_START_END -> false
+    else -> error("unknown MID_YEAR_DIP rule")
+}
+
 /**
  * السعودية: لو الرصيد نزل تحت النصاب في أي يوم من [from] لـ[to] ⇒ الحول بدأ من جديد من أول يوم رجع فيه فوقه.
- * مصر: الميعاد الثابت والرصيد يومها (لسه بندوّر على فتوى صريحة في النزول — §62) ⇒ مفيش فحص.
+ * مصر (فتوى 5890): **أول السنة وآخرها بس** — النزول في النص ما بيقطعش؛ لو أول السنة كان تحت النصاب ⇒ الحول بيبدأ من أول يوم
+ * وصله بعدها. آخر السنة بيتفحص في الحساب نفسه (تحت النصاب يوم الميعاد ⇒ مفيش زكاة).
  * [HawlState.Complete.verified] = البيانات غطّت السنة كلها (فيه رصيد معروف يوم [from]).
  */
 fun checkHawl(country: ZakatCountry, series: List<DayBalance>, nisab: Halalas, from: IsoDate, to: IsoDate): HawlState {
-    if (zakatRule(country, ZakatTopic.MID_YEAR_DIP).rulingKey != TextKey.ZAKAT_RULE_DIP_RESTART) return HawlState.Complete(true)
+    if (!dipRestarts(country)) {
+        val start = balanceOn(series, from) ?: return HawlState.Complete(false)
+        if (start >= nisab) return HawlState.Complete(true)
+        return HawlState.Restarted(series.firstOrNull { it.date > from && it.date <= to && it.balanceMinor >= nisab }?.date)
+    }
     val start = balanceOn(series, from)
     val points = listOfNotNull(start?.let { DayBalance(from, it) }) + series.filter { it.date > from && it.date <= to }
     val lastBelow = points.indexOfLast { it.balanceMinor < nisab }
@@ -78,11 +91,26 @@ fun checkHawl(country: ZakatCountry, series: List<DayBalance>, nisab: Halalas, f
 /**
  * اقتراح بداية الحول (المستخدم بيأكد أو يغيّر — قرار المالك §62-ج): «أول يوم الفلوس وصلت النصاب».
  * السعودية: بداية **آخر فترة متصلة** فوق النصاب (النزول بيبدأ الحول من جديد) — null لو تحت النصاب دلوقتي.
- * مصر: أول يوم وصل فيه النصاب.
+ * مصر (5890): بداية **آخر سلسلة سنين ما اتقطعتش** — من أول يوم وصل النصاب، والسلسلة بتتقطع بس لو يوم ميعاد (نفس اليوم الهجري
+ * كل سنة لحد [today]) كان تحت النصاب؛ ساعتها البداية الجديدة = أول يوم وصله بعدها. النزول في نص السنة ما بيقطعش.
+ * [today] null ⇒ آخر يوم في السلسلة.
  */
-fun suggestHawlStart(country: ZakatCountry, series: List<DayBalance>, nisab: Halalas): IsoDate? {
+fun suggestHawlStart(country: ZakatCountry, series: List<DayBalance>, nisab: Halalas, today: IsoDate? = null): IsoDate? {
     if (series.isEmpty()) return null
-    if (zakatRule(country, ZakatTopic.MID_YEAR_DIP).rulingKey != TextKey.ZAKAT_RULE_DIP_RESTART) return series.firstOrNull { it.balanceMinor >= nisab }?.date
+    if (!dipRestarts(country)) {
+        val until = today ?: series.last().date
+        var start = series.firstOrNull { it.balanceMinor >= nisab }?.date ?: return null
+        var anniversary = nextZakatDate(start)
+        while (anniversary <= until) {
+            if ((balanceOn(series, anniversary) ?: 0L) < nisab) {
+                start = series.firstOrNull { it.date > anniversary && it.balanceMinor >= nisab }?.date ?: return null
+                anniversary = nextZakatDate(start)
+            } else {
+                anniversary = nextZakatDate(anniversary)
+            }
+        }
+        return start
+    }
     if (series.last().balanceMinor < nisab) return null
     val lastBelow = series.indexOfLast { it.balanceMinor < nisab }
     return series[lastBelow + 1].date

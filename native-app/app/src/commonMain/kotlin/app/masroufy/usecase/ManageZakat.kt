@@ -86,21 +86,25 @@ class ManageZakat(private val deps: ManageZakatDeps) {
     /** القواعد اللي بتتطبق على الحساب ده بمصادرها — لشاشة «ليه الرقم ده؟». */
     fun rules(): List<ZakatRule> = ZAKAT_RULES.filter { it.country == country }
 
-    /** وقائع أصل: الغرض والعيار للدهب والفضة، ومضاربة ولا طويل للسهم والصندوق. `null` = ما يتغيرش. */
+    /**
+     * وقائع أصل: الغرض والعيار للدهب والفضة · مضاربة ولا طويل، و«الشركة سعودية؟» ([saudiCompany]) للسهم والصندوق.
+     * `null` = ما يتغيرش.
+     */
     suspend fun setAssetFacts(
         assetId: Id, purpose: ZakatPurpose? = null, holding: ZakatShareHolding? = null, karat: Int? = null, fineness: Int? = null,
+        saudiCompany: Boolean? = null,
     ): ZakatFact {
         val asset = deps.assets.listAll().firstOrNull { it.id == assetId } ?: throw ZakatError(uiText(TextKey.ZAKAT_ASSET_NOT_FOUND))
         val metal = asset.kind == "gold" || asset.kind == "silver"
         val share = asset.kind == "stock" || asset.kind == "fund"
-        if ((purpose != null && !metal) || (holding != null && !share)) throw ZakatError(uiText(TextKey.ZAKAT_FACT_WRONG_KIND))
+        if ((purpose != null && !metal) || ((holding != null || saudiCompany != null) && !share)) throw ZakatError(uiText(TextKey.ZAKAT_FACT_WRONG_KIND))
         if ((karat != null && asset.kind != "gold") || (fineness != null && asset.kind != "silver")) throw ZakatError(uiText(TextKey.ZAKAT_FACT_WRONG_KIND))
         if (karat != null && karat !in 1..24) throw ZakatError(uiText(TextKey.ZAKAT_KARAT_RANGE))
         if (fineness != null && fineness !in 1..1000) throw ZakatError(uiText(TextKey.ZAKAT_FINENESS_RANGE))
         val old = deps.facts.listAll().firstOrNull { it.subjectId == assetId }
         val fact = ZakatFact(
             assetId, ZakatSubject.ASSET, purpose ?: old?.purpose, holding ?: old?.holding, null,
-            karat ?: old?.karat, fineness ?: old?.fineness, deps.clock.nowIso(),
+            karat ?: old?.karat, fineness ?: old?.fineness, deps.clock.nowIso(), saudiCompany ?: old?.saudiCompany,
         )
         deps.facts.save(fact)
         return fact
@@ -120,7 +124,7 @@ class ManageZakat(private val deps: ManageZakatDeps) {
         val nisab = nisabMinor(country, prices) ?: return null
         val gathered = reader.read(today)
         val series = zakatWealthSeries(gathered.wallets, gathered.transactions, zakatItems(country, gathered.holdings, prices))
-        val start = suggestHawlStart(country, series, nisab) ?: return null
+        val start = suggestHawlStart(country, series, nisab, today) ?: return null
         return ZakatDateSuggestion(start, nextZakatDate(start))
     }
 
@@ -149,7 +153,7 @@ class ManageZakat(private val deps: ManageZakatDeps) {
     suspend fun assess(yearId: Id, today: IsoDate, prices: ZakatPrices): ZakatAssessment {
         val year = find(yearId)
         val asOf = minOf(today, year.dueAt)
-        val gathered = reader.read(asOf)
+        val gathered = reader.read(asOf, collectedAfter = year.hawlStart)
         val items = zakatItems(country, gathered.holdings, prices)
         val nisab = nisabMinor(country, prices)
         val hawl = if (nisab == null) app.masroufy.core.HawlState.Complete(false)

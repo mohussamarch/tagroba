@@ -46,7 +46,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "eventLinks" to listOf("eventId", "transactionId", "role", "createdAt"),
     "occasions" to listOf("kind", "month", "day", "yearly", "createdAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(

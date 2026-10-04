@@ -45,6 +45,8 @@ enum class ZakatSubject(val wire: String) {
 /**
  * وقائع أصل أو دين ليك. المعرّف = معرّف الأصل أو الدين. `null` = لسه ما اتسألش (مش «لأ» — قاعدة 10).
  * [karat] للدهب (1–24) · [fineness] للفضة في الألف (925 مثلًا).
+ * [saudiCompany] للسهم والصندوق: الشركة (أو الصندوق) سعودية؟ — بيتسأل في السعودية بس، للطويل الأجل (§62: الإعفاء في الدليل
+ * مربوط بالشركات المساهمة في المملكة، والأجنبية الدليل ساكت عنها).
  */
 data class ZakatFact(
     val subjectId: Id,
@@ -55,6 +57,7 @@ data class ZakatFact(
     val karat: Int? = null,
     val fineness: Int? = null,
     val updatedAt: String,
+    val saudiCompany: Boolean? = null,
 )
 
 /** سطور الدفع — بالترتيب ده بتتعرض وبيتوزع عليها المدفوع. */
@@ -65,6 +68,8 @@ enum class ZakatLineKind(val wire: String, val labelKey: TextKey) {
     STOCKS("stocks", TextKey.ZAKAT_LINE_STOCKS),
     FUNDS("funds", TextKey.ZAKAT_LINE_FUNDS),
     RECEIVABLES("receivables", TextKey.ZAKAT_LINE_RECEIVABLES),
+    /** ديون ليك اتحصّلت في السنة دي — 2.5% مرة واحدة على اللي اتحصّل (مصر 4399 · السعودية المشكوك فيه §3.4). */
+    COLLECTED_RECEIVABLES("collected_receivables", TextKey.ZAKAT_LINE_COLLECTED_RECEIVABLES),
     ROSCA("rosca", TextKey.ZAKAT_LINE_ROSCA);
 
     val label: String get() = uiText(labelKey)

@@ -19,11 +19,13 @@ import app.masroufy.core.walletBalancesOn
 internal data class GatheredHoldings(val holdings: List<ZakatHolding>, val wallets: List<Wallet>, val transactions: List<Transaction>)
 
 /**
- * بيجمع «اللي بتملكه» من بياناتك نفسها يوم [asOf] (OVERRIDES §62): أرصدة المحافظ · الأصول بالكمية والسعر · الديون ليك وعليك · الجمعيات.
- * **بعملة الحساب بس** — المساحة لكل بلد (§41)، والمبالغ ما بتتجمعش بين عملتين. الوقائع من `zakatFacts`.
+ * بيجمع «اللي بتملكه» من بياناتك نفسها يوم [asOf] (OVERRIDES §62): أرصدة المحافظ · الأصول بالكمية والسعر · الديون ليك وعليك ·
+ * الأمانات · الجمعيات. **بعملة الحساب بس** — المساحة لكل بلد (§41)، والمبالغ ما بتتجمعش بين عملتين. الوقائع من `zakatFacts`.
+ * [collectedAfter] بداية السنة: كل تسوية على دين ليك عمليتها **بعدها لحد [asOf]** بتطلع «دين اتحصّل» (§62 — 4399 و§3.4)؛
+ * null = من غير (اقتراح الميعاد). الحد ده بيخلّي التحصيل يتعد في سنة واحدة بس: السنة اللي قبلها بتقف عند يوم ميعادها.
  */
 internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
-    suspend fun read(asOf: IsoDate): GatheredHoldings {
+    suspend fun read(asOf: IsoDate, collectedAfter: IsoDate? = null): GatheredHoldings {
         val currency: Currency = deps.currency
         val facts: Map<Id, ZakatFact> = deps.facts.listAll().associateBy { it.subjectId }
         val wallets = deps.wallets.listAll().filter { it.currency == currency }
@@ -51,6 +53,7 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
                 )
                 "stock", "fund" -> ZakatHolding.Security(
                     a.id, a.name, if (a.kind == "stock") ZakatLineKind.STOCKS else ZakatLineKind.FUNDS, position.marketValueMinor, fact?.holding, since,
+                    fact?.saudiCompany,
                 )
                 "digital" -> ZakatHolding.Digital(a.id, a.name, position.marketValueMinor)
                 else -> ZakatHolding.Other(a.id, a.name, position.marketValueMinor)
@@ -61,15 +64,22 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
             val obligations = deps.obligations.listByPerson(person.id).filter { it.currency == currency }
             if (obligations.isEmpty()) continue
             val settled = deps.settlements.listByObligations(obligations.map { it.id })
-            val origins = deps.txns.findByIds(obligations.mapNotNull { it.originTransactionId }).associate { it.id to it.occurredAt }
+            val dates = deps.txns.findByIds((obligations.mapNotNull { it.originTransactionId } + settled.map { it.transactionId }).distinct())
+                .associate { it.id to it.occurredAt }
             for (o in obligations) {
+                if (collectedAfter != null && o.kind == ObligationKind.RECEIVABLE) {
+                    for (s in settled.filter { it.obligationId == o.id }) {
+                        val on = dates[s.transactionId] ?: continue
+                        if (on > collectedAfter && on <= asOf) out += ZakatHolding.CollectedReceivable(s.id, o.id, person.name, s.amountMinor, on, facts[o.id]?.collectability)
+                    }
+                }
                 val remaining = remainingOfObligation(o, settled)
                 if (remaining <= 0) continue
                 when (o.kind) {
-                    ObligationKind.RECEIVABLE -> out += ZakatHolding.Receivable(o.id, person.name, remaining, facts[o.id]?.collectability, o.originTransactionId?.let(origins::get))
+                    ObligationKind.RECEIVABLE -> out += ZakatHolding.Receivable(o.id, person.name, remaining, facts[o.id]?.collectability, o.originTransactionId?.let(dates::get))
                     ObligationKind.LOAN_PAYABLE -> out += ZakatHolding.Debt(o.id, person.name, remaining)
-                    // الأمانة فلوس حد تاني معاك — مش دين عليك ولا ليك (سؤال مفتوح للمالك: تتخصم من الكاش ولا لأ؟)
-                    ObligationKind.CUSTODY_PAYABLE -> Unit
+                    // الأمانة: المرجع ما حددش في البلدين (§62) ⇒ سطر لوحده «ما حددش»، ومش بتتخصم من الكاش
+                    ObligationKind.CUSTODY_PAYABLE -> out += ZakatHolding.Custody(o.id, person.name, remaining)
                 }
             }
         }

@@ -84,4 +84,25 @@ class ZakatBackupTest {
         val wrongPurpose = account(withZakat = true).also { it.getValue("zakatFacts")[0] = it.getValue("zakatFacts")[0] + ("purpose" to "gift") }
         assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(wrongPurpose)).create("2026-02-20T00:00:00.000Z") }
     }
+
+    @Test
+    fun `واقعة الشركة السعودية بتتكتب وتسافر وسطر الدين اللي اتحصّل بيتقرا`() = runBlocking<Unit> {
+        val share = ZakatFact("a-1", ZakatSubject.ASSET, holding = ZakatShareHolding.LONG_TERM, updatedAt = "x", saudiCompany = false)
+        assertEquals(false, roundTrip(ZakatCodecs.zakatFacts, share)["saudiCompany"])
+        assertFalse("saudiCompany" in roundTrip(ZakatCodecs.zakatFacts, fact), "الفاضي ما بيتكتبش")
+        val collected = closed.copy(lines = closed.lines + ZakatYearLine(ZakatLineKind.COLLECTED_RECEIVABLES, 200_000, 5_000))
+        assertEquals("collected_receivables", (roundTrip(ZakatCodecs.zakatYears, collected)["lines"] as List<*>).map { (it as Map<*, *>)["kind"] }.last())
+        val source = account(withZakat = true).also {
+            it.getValue("zakatFacts")[0] = ZakatCodecs.zakatFacts.toStore(share)
+            it.getValue("zakatYears")[0] = ZakatCodecs.zakatYears.toStore(collected)
+        }
+        val text = FullBackup(MemoryFullBackup(source)).create("2026-02-20T00:00:00.000Z").toJsonText()
+        val target = MemoryFullBackup()
+        val restore = FullBackup(target)
+        restore.apply(restore.plan(text).file)
+        assertEquals(share, ZakatCodecs.zakatFacts.decode(target.read().getValue("zakatFacts").single()))
+        assertEquals(collected, ZakatCodecs.zakatYears.decode(target.read().getValue("zakatYears").single()))
+        val notBool = account(withZakat = true).also { it.getValue("zakatFacts")[0] = it.getValue("zakatFacts")[0] + ("saudiCompany" to "yes") }
+        assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(notBool)).create("2026-02-20T00:00:00.000Z") }
+    }
 }

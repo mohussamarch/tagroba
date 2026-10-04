@@ -32,7 +32,7 @@ object ZakatCodecs {
                 opt("assetId", f.subjectId.takeIf { f.subject == ZakatSubject.ASSET })
                 opt("obligationId", f.subjectId.takeIf { f.subject == ZakatSubject.OBLIGATION })
                 opt("purpose", f.purpose?.wire); opt("holding", f.holding?.wire); opt("collectability", f.collectability?.wire)
-                opt("karat", f.karat); opt("fineness", f.fineness); req("updatedAt", f.updatedAt)
+                opt("karat", f.karat); opt("fineness", f.fineness); opt("saudiCompany", f.saudiCompany); req("updatedAt", f.updatedAt)
             }
         },
         { d ->
@@ -44,6 +44,7 @@ object ZakatCodecs {
                 holding = d.wireOrNull("holding", ZakatShareHolding::fromWire),
                 collectability = d.wireOrNull("collectability", ZakatCollectability::fromWire),
                 karat = d.intOrNull("karat"), fineness = d.intOrNull("fineness"), updatedAt = d.str("updatedAt"),
+                saudiCompany = d.boolOrNull("saudiCompany"),
             )
         },
     )

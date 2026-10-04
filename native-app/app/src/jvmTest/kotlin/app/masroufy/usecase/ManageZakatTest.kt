@@ -15,6 +15,7 @@ import app.masroufy.core.ReviewState
 import app.masroufy.core.Rosca
 import app.masroufy.core.RoscaEntry
 import app.masroufy.core.RoscaEntryKind
+import app.masroufy.core.Settlement
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
@@ -26,6 +27,7 @@ import app.masroufy.core.ZakatOutcome
 import app.masroufy.core.ZakatPrices
 import app.masroufy.core.ZakatPurpose
 import app.masroufy.core.ZakatShareHolding
+import app.masroufy.core.ZakatTopic
 import app.masroufy.core.ZakatYearLine
 import app.masroufy.core.emptyProfile
 import app.masroufy.core.uiText
@@ -68,7 +70,14 @@ class ManageZakatTest {
         excludedFromBudget = false, reviewState = ReviewState.NEEDS_REVIEW, isCashTagged = false, createdAt = "x", updatedAt = "x", walletId = "w-bank",
     )
 
-    private inner class Account(country: String = "SA", val currency: Currency = Currency.SAR, profile: Boolean? = null) {
+    private inner class Account(
+        country: String = "SA",
+        val currency: Currency = Currency.SAR,
+        profile: Boolean? = null,
+        extraTxns: List<Transaction> = emptyList(),
+        extraObligations: List<Obligation> = emptyList(),
+        settled: List<Settlement> = emptyList(),
+    ) {
         val years = MemoryZakatYearRepository()
         val facts = MemoryZakatFactRepository()
         private val g = QUANTITY_SCALE
@@ -81,7 +90,7 @@ class ManageZakatTest {
                     listOf(
                         txn("t-1", "2025-02-10", Direction.OUT, 2_850_000, currency), txn("t-2", "2025-03-01", Direction.IN, 4_150_000, currency),
                         txn("t-4", "2025-04-15", Direction.OUT, 300_000, currency),
-                    ),
+                    ) + extraTxns,
                 ),
                 assets = MemoryAssetRepository(
                     listOf(
@@ -99,9 +108,9 @@ class ManageZakatTest {
                 prices = MemoryAssetPriceRepository(listOf(AssetPrice("a-shares", 2_000_000, "2026-02-17", "manual"), AssetPrice("a-coin", 900_000, "2026-02-17", "manual"))),
                 people = MemoryPersonRepository(listOf(Person("p-1", "شخص وهمي"))),
                 obligations = MemoryObligationRepository(
-                    listOf(Obligation("o-1", "p-1", "t-4", ObligationKind.RECEIVABLE, 300_000, currency), Obligation("o-2", "p-1", null, ObligationKind.LOAN_PAYABLE, 1_000_000, currency)),
+                    listOf(Obligation("o-1", "p-1", "t-4", ObligationKind.RECEIVABLE, 300_000, currency), Obligation("o-2", "p-1", null, ObligationKind.LOAN_PAYABLE, 1_000_000, currency)) + extraObligations,
                 ),
-                settlements = MemorySettlementRepository(),
+                settlements = MemorySettlementRepository(settled),
                 roscas = MemoryRoscaRepository(listOf(Rosca("r-1", "جمعية وهمية", currency, 100_000, 1, "2025-04-01", 10, listOf(10), 1_000_000, createdAt = "x"))),
                 roscaEntries = MemoryRoscaEntryRepository(
                     listOf(RoscaEntry("e-1", "r-1", "t-r1", RoscaEntryKind.CONTRIBUTION, 100_000), RoscaEntry("e-2", "r-1", "t-r2", RoscaEntryKind.CONTRIBUTION, 100_000)),
@@ -113,7 +122,7 @@ class ManageZakatTest {
         suspend fun answerFacts() {
             manage.setAssetFacts("a-bar", purpose = ZakatPurpose.SAVING, karat = 21)
             manage.setAssetFacts("a-ring", purpose = ZakatPurpose.WEAR, karat = 21)
-            manage.setAssetFacts("a-shares", holding = ZakatShareHolding.LONG_TERM)
+            manage.setAssetFacts("a-shares", holding = ZakatShareHolding.LONG_TERM, saudiCompany = true)
             if (currency == Currency.SAR) manage.setReceivableFact("p-1", "o-1", ZakatCollectability.STRONG)
         }
     }
@@ -169,10 +178,11 @@ class ManageZakatTest {
         assertNull(missing.dueMinor)
         assertNull(acc.manage.suggestDate("2026-02-18", ZakatPrices(null, null)))
         assertFailsWith<ZakatError> { acc.manage.close(year.id, "2026-02-18", ZakatPrices(null, null)) }
-        // بسعر (مخترع) بالجنيه: الكاش والدهب بس — الدين ليك والجمعية «المرجع ما حددش»
+        // بسعر (مخترع) بالجنيه: الكاش والدهب بس — الدين ليك عند التحصيل (4399) والجمعية «المرجع ما حددش»
         val a = acc.manage.assess(year.id, "2026-02-18", sa)
         assertEquals(165_625L, a.dueMinor)
-        assertEquals(setOf("o-1", "r-1", "a-coin"), a.notComputed.map { it.holding.id }.toSet())
+        assertEquals(setOf("r-1", "a-coin"), a.notComputed.map { it.holding.id }.toSet())
+        assertEquals(ZakatItemStatus.EXEMPT, a.items.first { it.holding.id == "o-1" }.status)
         assertEquals(Currency.EGP, a.currency)
     }
 
@@ -210,6 +220,59 @@ class ManageZakatTest {
         val other = Account("AE")
         assertFalse(other.manage.visible())
         assertEquals(uiText(TextKey.ZAKAT_COUNTRY_UNSUPPORTED), assertFailsWith<ZakatError> { other.manage.confirmDate("2025-03-01") }.message)
-        assertEquals(15, Account().manage.rules().size)
+        assertEquals(18, Account().manage.rules().size)
+    }
+
+    @Test
+    fun `مصر — الدين ليك اللي اتحصّل جوه السنة سطر مرة واحدة · واللي قبلها ما بيتعدّش`() = runBlocking<Unit> {
+        // الشخص رجّع 2,000 من الـ3,000 يوم 2025-09-01 (جوه السنة) — و500 قبل بداية السنة (2025-02-20) — و100 يوم البداية نفسه
+        // (يوم بداية السنة = يوم ميعاد السنة اللي قبلها ⇒ بيتعد هناك مش هنا)
+        val acc = Account(
+            "EG", Currency.EGP,
+            extraTxns = listOf(
+                txn("t-back", "2025-09-01", Direction.IN, 200_000, Currency.EGP), txn("t-early", "2025-02-20", Direction.IN, 50_000, Currency.EGP),
+                txn("t-edge", "2025-03-01", Direction.IN, 10_000, Currency.EGP),
+            ),
+            settled = listOf(Settlement("s-1", "t-back", "o-1", 200_000), Settlement("s-0", "t-early", "o-1", 50_000), Settlement("s-2", "t-edge", "o-1", 10_000)),
+        )
+        acc.answerFacts()
+        val year = acc.manage.confirmDate("2025-03-01")
+        val a = acc.manage.assess(year.id, "2026-02-18", sa)
+        val line = a.lines.single { it.kind == ZakatLineKind.COLLECTED_RECEIVABLES }
+        assertEquals(200_000L to 5_000L, line.zakatableMinor to line.dueMinor, "2.5% على اللي اتحصّل جوه السنة بس")
+        assertEquals(ZakatTopic.RECEIVABLE_COLLECTED, a.items.single { it.holding.id == "s-1" }.topic)
+        assertTrue(a.items.none { it.holding.id == "s-0" || it.holding.id == "s-2" }, "التحصيل قبل بداية السنة (أو يومها) مش في السنة دي")
+        // الكاش زاد بالمحصّل (40,000 + 2,600 = 42,600) والباقي من الدين (400) لسه عند التحصيل
+        assertEquals(4_260_000L, a.lines.single { it.kind == ZakatLineKind.CASH }.zakatableMinor)
+        assertEquals(40_000L, (a.items.single { it.holding.id == "o-1" }.valueMinor))
+        val closed = acc.manage.close(year.id, "2026-02-18", sa)
+        assertTrue(closed.lines.any { it.kind == ZakatLineKind.COLLECTED_RECEIVABLES && it.dueMinor == 5_000L })
+        // السنة الجاية (بتبدأ يوم الميعاد) ما بتعدّش نفس التحصيل تاني
+        val next = acc.manage.openYear()!!
+        assertTrue(acc.manage.assess(next.id, "2026-06-01", sa).items.none { it.holding.id == "s-1" })
+    }
+
+    @Test
+    fun `السعودية — المشكوك فيه بيطلع لما يتحصّل · الأمانة ما حددش · السهم الأجنبي ما حددش`() = runBlocking<Unit> {
+        val acc = Account(
+            extraTxns = listOf(txn("t-back", "2025-09-01", Direction.IN, 100_000, Currency.SAR), txn("t-keep", "2025-05-01", Direction.IN, 70_000, Currency.SAR)),
+            extraObligations = listOf(Obligation("o-3", "p-1", "t-keep", ObligationKind.CUSTODY_PAYABLE, 70_000, Currency.SAR)),
+            settled = listOf(Settlement("s-1", "t-back", "o-1", 100_000)),
+        )
+        acc.answerFacts()
+        acc.manage.setReceivableFact("p-1", "o-1", ZakatCollectability.DOUBTFUL)
+        acc.manage.setAssetFacts("a-shares", saudiCompany = false)
+        val year = acc.manage.confirmDate("2025-03-01")
+        val a = acc.manage.assess(year.id, "2026-02-18", sa)
+        assertEquals(2_500L, a.lines.single { it.kind == ZakatLineKind.COLLECTED_RECEIVABLES }.dueMinor, "§3.4: بعد ما يتحصّل سنة واحدة")
+        assertEquals(ZakatItemStatus.EXEMPT, a.items.single { it.holding.id == "o-1" }.status, "الباقي المشكوك فيه لسه مستني التحصيل")
+        val custody = a.items.single { it.holding.id == "o-3" }
+        assertEquals(ZakatItemStatus.NO_RULING to 70_000L, custody.status to custody.valueMinor)
+        assertEquals(ZakatTopic.FOREIGN_LONG_TERM_SHARES, a.items.single { it.holding.id == "a-shares" }.topic)
+        assertEquals(setOf("o-3", "a-shares", "a-coin"), a.notComputed.map { it.holding.id }.toSet())
+        assertEquals(ZakatOutcome.DUE, a.outcome, "ما حددش ما بيمنعش التثبيت")
+        // الواقعة اتحفظت وما مسحتش «طويل الأجل»
+        assertEquals(ZakatShareHolding.LONG_TERM to false, acc.facts.listAll().single { it.subjectId == "a-shares" }.let { it.holding to it.saudiCompany })
+        assertFailsWith<ZakatError> { acc.manage.setAssetFacts("a-bar", saudiCompany = true) }
     }
 }

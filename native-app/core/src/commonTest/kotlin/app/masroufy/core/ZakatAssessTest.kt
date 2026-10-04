@@ -22,7 +22,7 @@ class ZakatAssessTest {
         ZakatHolding.Cash("w-1", "بنك وهمي", 4_000_000),
         ZakatHolding.Metal("a-gold", "سبيكة وهمية", ZakatMetal.GOLD, g(100), 21, null, ZakatPurpose.SAVING, null),
         ZakatHolding.Metal("a-ring", "شبكة وهمية", ZakatMetal.GOLD, g(50), 21, null, ZakatPurpose.WEAR, null),
-        ZakatHolding.Security("a-shares", "سهم وهمي", ZakatLineKind.STOCKS, 2_000_000, ZakatShareHolding.LONG_TERM),
+        ZakatHolding.Security("a-shares", "سهم وهمي", ZakatLineKind.STOCKS, 2_000_000, ZakatShareHolding.LONG_TERM, saudiCompany = true),
         ZakatHolding.Receivable("o-1", "شخص وهمي", 300_000, receivable),
         ZakatHolding.RoscaCredit("r-1", "جمعية وهمية", 200_000),
         ZakatHolding.Debt("o-2", "شخص تاني", 1_000_000),
@@ -58,19 +58,29 @@ class ZakatAssessTest {
     }
 
     @Test
-    fun `مصر — نفس الوقائع على دار الإفتاء ⇒ الديون ليك والجمعية ما بيتحسبوش`() {
+    fun `مصر — نفس الوقائع على دار الإفتاء ⇒ الديون ليك عند التحصيل والجمعية ما حددش`() {
         val a = assess(ZakatCountry.EG, example())
         assertEquals(2_231_250L, a.nisabMinor, "85 جم عيار 21 × 300")
         assertEquals(ZakatOutcome.DUE, a.outcome)
         assertEquals(6_625_000L, a.totalZakatableMinor)
         assertEquals(165_625L, a.dueMinor)
         assertEquals(listOf(ZakatLineKind.CASH, ZakatLineKind.GOLD), a.lines.map { it.kind })
-        assertEquals(setOf("o-1", "r-1"), a.notComputed.map { it.holding.id }.toSet())
+        assertEquals(setOf("r-1"), a.notComputed.map { it.holding.id }.toSet())
         assertTrue(a.notComputed.all { it.status == ZakatItemStatus.NO_RULING && it.zakatableMinor == null })
-        assertEquals(TextKey.ZAKAT_RULE_NO_RULING, zakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_STRONG).rulingKey)
+        // الدين ليك (4399): ما بيدخلش الحساب السنوي — بيتزكّى لما يتحصّل، ومن غير سؤال «هيرجع؟»
+        val owed = a.items.first { it.holding.id == "o-1" }
+        assertEquals(ZakatItemStatus.EXEMPT to 0L, owed.status to owed.zakatableMinor)
+        assertEquals(TextKey.ZAKAT_RULE_RECEIVABLE_ON_COLLECTION, zakatRule(ZakatCountry.EG, owed.topic!!).rulingKey)
+        assertEquals(owed.status, assess(ZakatCountry.EG, example(null)).items.first { it.holding.id == "o-1" }.status, "مصر ما بتسألش الواقعة")
+        val debtSource = zakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_STRONG).source
+        assertEquals(Triple("4399", "2002", "https://www.dar-alifta.org/ar/fatwa/details/14460"), Triple(debtSource.fatwaNumber, debtSource.issued, debtSource.url))
         // الأسهم طويلة الأجل: «الأرباح بس» ⇒ القيمة نفسها صفر
         val shares = a.items.first { it.holding.id == "a-shares" }
         assertEquals(ZakatItemStatus.EXEMPT to TextKey.ZAKAT_RULE_LONG_TERM_DIVIDENDS, shares.status to zakatRule(ZakatCountry.EG, shares.topic!!).rulingKey)
+        // أحدث فتوى في الأسهم 8767 (2025)، وصفحتها على موقع الدار 22181
+        val sharesSource = zakatRule(ZakatCountry.EG, ZakatTopic.TRADING_SHARES).source
+        assertEquals(Triple("8767", "2025", "https://www.dar-alifta.org/ar/fatwa/details/22181"), Triple(sharesSource.fatwaNumber, sharesSource.issued, sharesSource.url))
+        assertEquals(sharesSource, zakatRule(ZakatCountry.EG, ZakatTopic.LONG_TERM_SHARES).source)
         // الدين عليك: أحدث فتوى 15532 (2020)
         val source = zakatRule(ZakatCountry.EG, ZakatTopic.DEBTS_OWED).source
         assertEquals("15532" to "2020", source.fatwaNumber to source.issued)
@@ -178,5 +188,74 @@ class ZakatAssessTest {
         )
         assertEquals(ZakatPrices(30_000, 350, "2026-10-03"), zakatPricesFromFeed(feed, Currency.SAR))
         assertEquals(ZakatPrices(null, null), zakatPricesFromFeed(feed, Currency.EGP), "مفيش تحويل بسعر صرف — الجنيه ناقص")
+    }
+
+    @Test
+    fun `السعودية — سهم طويل لشركة مش سعودية ما حددش ومن غير الواقعة ناقص · ومصر ما بتسألش`() {
+        val foreign = example().map { if (it is ZakatHolding.Security) it.copy(saudiCompany = false) else it }
+        val a = assess(ZakatCountry.SA, foreign)
+        val shares = a.items.first { it.holding.id == "a-shares" }
+        assertEquals(ZakatItemStatus.NO_RULING to ZakatTopic.FOREIGN_LONG_TERM_SHARES, shares.status to shares.topic)
+        assertEquals(2_000_000L to null, shares.valueMinor to shares.zakatableMinor, "بيتعرض بقيمته ومش محسوب")
+        assertEquals(178_125L, a.dueMinor, "الباقي زي ما هو")
+        assertEquals(ZakatEffect.NO_RULING, zakatRule(ZakatCountry.SA, ZakatTopic.FOREIGN_LONG_TERM_SHARES).effect)
+        val unknown = example().map { if (it is ZakatHolding.Security) it.copy(saudiCompany = null) else it }
+        assertEquals("saudiCompany", assess(ZakatCountry.SA, unknown).blockers.single().missingFact)
+        for (company in listOf(true, false, null)) {
+            val eg = assess(ZakatCountry.EG, example().map { if (it is ZakatHolding.Security) it.copy(saudiCompany = company) else it })
+            assertEquals(ZakatTopic.LONG_TERM_SHARES, eg.items.first { it.holding.id == "a-shares" }.topic, "مصر: الجنسية ما بتفرقش (8767)")
+        }
+        // المضاربة: القيمة السوقية مهما كانت الجنسية
+        val trading = foreign.map { if (it is ZakatHolding.Security) it.copy(holding = ZakatShareHolding.TRADING) else it }
+        assertEquals(ZakatItemStatus.COUNTED, assess(ZakatCountry.SA, trading).items.first { it.holding.id == "a-shares" }.status)
+    }
+
+    @Test
+    fun `الأمانة في البلدين ما حددش — بتظهر لوحدها والكاش ما بيتخصمش منه`() {
+        for (country in ZakatCountry.entries) {
+            val a = assess(country, listOf(ZakatHolding.Cash("w-1", "بنك", 4_000_000), ZakatHolding.Custody("o-9", "شخص وهمي", 500_000)))
+            val custody = a.items.first { it.holding.id == "o-9" }
+            assertEquals(ZakatItemStatus.NO_RULING to ZakatTopic.CUSTODY, custody.status to custody.topic, country.name)
+            assertEquals(500_000L, custody.valueMinor)
+            assertEquals(listOf("o-9"), a.notComputed.map { it.holding.id })
+            assertEquals(4_000_000L, a.totalZakatableMinor, "الكاش كله زي ما هو")
+            assertEquals(TextKey.ZAKAT_RULE_NO_RULING, zakatRule(country, ZakatTopic.CUSTODY).rulingKey)
+        }
+    }
+
+    @Test
+    fun `الدين اللي اتحصّل — مصر والمشكوك فيه في السعودية سطر مرة واحدة · اللي هيرجع اتزكّى في سنينه`() {
+        fun collected(c: ZakatCollectability?) = ZakatHolding.CollectedReceivable("s-1", "o-1", "شخص وهمي", 1_000_000, "2025-09-01", c)
+        val cash = ZakatHolding.Cash("w-1", "بنك", 4_000_000)
+        val eg = assess(ZakatCountry.EG, listOf(cash, collected(null)))
+        assertEquals(ZakatLine(ZakatLineKind.COLLECTED_RECEIVABLES, 1_000_000, 25_000), eg.lines.single { it.kind == ZakatLineKind.COLLECTED_RECEIVABLES })
+        assertEquals(125_000L, eg.dueMinor, "100,000 كاش + 25,000 مرة واحدة على اللي اتحصّل")
+        assertEquals(ZakatTopic.RECEIVABLE_COLLECTED, eg.items.last().topic)
+        assertEquals("4399", zakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_COLLECTED).source.fatwaNumber)
+        val doubtful = assess(ZakatCountry.SA, listOf(cash, collected(ZakatCollectability.DOUBTFUL)))
+        assertEquals(25_000L, doubtful.lines.single { it.kind == ZakatLineKind.COLLECTED_RECEIVABLES }.dueMinor, "§3.4: بعد ما يتحصّل سنة واحدة")
+        val strong = assess(ZakatCountry.SA, listOf(cash, collected(ZakatCollectability.STRONG)))
+        assertTrue(strong.items.none { it.holding.id == "s-1" }, "هيرجع ⇒ كان بيتحسب كل سنة ⇒ مفيش سطر جديد")
+        assertEquals(100_000L, strong.dueMinor)
+        assertEquals("collectability", assess(ZakatCountry.SA, listOf(cash, collected(null))).blockers.single().missingFact)
+        // اتحصّل وكل اللي معاك تحت النصاب ⇒ زي أي سطر: مفيش مطلوب
+        assertEquals(ZakatOutcome.BELOW_NISAB, assess(ZakatCountry.EG, listOf(ZakatHolding.Cash("w-1", "بنك", 1_000), collected(null).copy(amountMinor = 10_000))).outcome)
+        // الدين اللي اتحصّل فلوسه في المحفظة أصلًا ⇒ ما بيتضافش على سلسلة الحول
+        val bank = Wallet("w-1", "بنك", Currency.SAR, "bank", 4_000_000, "2025-01-01")
+        assertEquals(4_000_000L, balanceOn(zakatWealthSeries(listOf(bank), emptyList(), eg.items), "2025-12-01"))
+    }
+
+    @Test
+    fun `مصادر البحث التكميلي جنب كل سطر — بنود الدليل وأرقام الفتاوى`() {
+        assertEquals("3.4" to "19–20", zakatRule(ZakatCountry.SA, ZakatTopic.RECEIVABLE_STRONG).source.let { it.section to it.pages })
+        assertEquals("3.2.1" to "18", zakatRule(ZakatCountry.SA, ZakatTopic.MID_YEAR_DIP).source.let { it.section to it.pages })
+        assertEquals("3.6" to "22–23", zakatRule(ZakatCountry.SA, ZakatTopic.LONG_TERM_SHARES).source.let { it.section to it.pages })
+        assertEquals(null to "14, 19, 27", zakatRule(ZakatCountry.SA, ZakatTopic.HAWL).source.let { it.section to it.pages })
+        assertTrue(zakatRule(ZakatCountry.SA, ZakatTopic.RECEIVABLE_DOUBTFUL).source.document.contains("3.4"))
+        assertEquals("5890" to "1985", zakatRule(ZakatCountry.EG, ZakatTopic.MID_YEAR_DIP).source.let { it.fatwaNumber to it.issued })
+        assertEquals("413" to "2008", zakatRule(ZakatCountry.EG, ZakatTopic.HAWL).source.let { it.fatwaNumber to it.issued })
+        assertEquals(TextKey.ZAKAT_RULE_DIP_START_END, zakatRule(ZakatCountry.EG, ZakatTopic.MID_YEAR_DIP).rulingKey)
+        assertTrue(ZAKAT_RULES.filter { it.topic in listOf(ZakatTopic.MID_YEAR_DIP, ZakatTopic.RECEIVABLE_STRONG, ZakatTopic.RECEIVABLE_DOUBTFUL, ZakatTopic.HAWL) }.none { it.source.pending }, "اتقفلوا بالبحث")
+        assertEquals("فتوى رقم 4399", zakatRule(ZakatCountry.EG, ZakatTopic.RECEIVABLE_COLLECTED).source.document)
     }
 }
