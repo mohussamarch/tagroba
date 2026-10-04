@@ -3,17 +3,14 @@ package app.masroufy.core
 /**
  * «غيّرت شغلي» وأسئلته (OVERRIDES §48 · §64) — دوال نقية؛ الحفظ في `ManageIncomeSources`.
  *
- * - **«مبروك» على بداية مصدر جديد بس.** قفل مصدر لوحده **ما بيتقالش معاه أي كلام** (ممكن يكون اتفصل) —
- *   سؤال عن الأثر بس: وظيفة في السعودية ⇒ «فيه مكافأة نهاية خدمة جاية؟» (سؤال راجع، مش التزام بيتخزن).
+ * - **«مبروك» على بداية مصدر جديد بس.** قفل مصدر لوحده **ما بيتقالش معاه أي كلام ولا سؤال** (ممكن يكون اتفصل).
+ *   سؤال «مكافأة نهاية الخدمة» **اتشال** (رد المالك §64-٧) — بقت اختيار على الإيداع نفسه من الشركة (`EconomicKind.END_OF_SERVICE`).
  * - **المواصلات ما بتتسألش هنا أبدًا** (نص المالك §64: بتتستنتج من قبل كده). سؤال «هتروح بيها الشغل؟» بيطلع بس
  *   لما الملف يقول إنه اشترى عربية وعنده شغل شغال ([shouldAskCarToWork]).
  * - يوم المرتب الجديد: لو مش مكتوب ⇒ يتسأل؛ لو مختلف عن بداية الشهر المالي ⇒ «تغيّر بداية شهرك المالي؟».
  * - المرتب المتوقع اختياري ويتعدّى.
  */
 sealed interface IncomeFollowUp {
-    /** «فيه مكافأة نهاية خدمة جاية؟» — معلومة للشاشة بس، مفيش التزام بيتعمل. */
-    data class EndOfServiceBenefit(val sourceId: Id) : IncomeFollowUp
-
     /** «المرتب الجديد بينزل يوم كام؟» */
     data class AskPayday(val sourceId: Id) : IncomeFollowUp
 
@@ -35,13 +32,12 @@ data class JobChangeOutcome(val congratulate: Boolean, val followUps: List<Incom
 
 /**
  * الأسئلة بعد قفل [closed] و/أو فتح [opened]. [monthStartDay] = بداية الشهر المالي في الملف (يوم المرتب).
- * اختيارات Claude (§64 «قرارات تنفيذ»): «السعودية» = عملة المصدر ريال سعودي · المكافأة بتتسأل للوظيفة ([IncomeSourceKind.JOB])
- * حتى لو فيه شغل جديد (المكافأة بتاعة القديم) · يوم المرتب والمرتب المتوقع للوظيفة والبارت تايم بس · تغيير بداية الشهر للوظيفة بس
+ * القفل **ما بيطلّعش أي سؤال** (سؤال المكافأة اتشال — رد المالك §64-٧). اختيارات Claude (§64 «قرارات تنفيذ»): يوم المرتب والمرتب
+ * المتوقع للوظيفة والبارت تايم بس · تغيير بداية الشهر للوظيفة بس
  * (شغل جنب ما يحرّكش شهرك).
  */
 fun jobChangeOutcome(closed: IncomeSource?, opened: IncomeSource?, monthStartDay: Int): JobChangeOutcome {
     val out = mutableListOf<IncomeFollowUp>()
-    if (closed != null && closed.kind == IncomeSourceKind.JOB && closed.currency == Currency.SAR) out += IncomeFollowUp.EndOfServiceBenefit(closed.id)
     if (opened != null) out += newSourceFollowUps(opened, monthStartDay)
     return JobChangeOutcome(congratulate = opened != null, followUps = out)
 }
@@ -84,7 +80,6 @@ fun shouldAskCarToWork(before: UserProfile?, after: UserProfile, sources: List<I
 
 /** نص السؤال للشاشة. */
 fun incomeFollowUpText(f: IncomeFollowUp): String = when (f) {
-    is IncomeFollowUp.EndOfServiceBenefit -> uiText(TextKey.INCOME_Q_END_OF_SERVICE)
     is IncomeFollowUp.AskPayday -> uiText(TextKey.INCOME_Q_PAYDAY)
     is IncomeFollowUp.AskPayFrequency -> uiText(TextKey.INCOME_Q_PAY_FREQUENCY)
     is IncomeFollowUp.ChangeMonthStart -> uiText(TextKey.INCOME_Q_MONTH_START, f.day.toString())

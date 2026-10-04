@@ -50,12 +50,13 @@ class ManageIncomeSourcesTest {
         assertEquals(listOf(b.id, a.id), manage.list().map { it.id }, "الشغال الأول")
     }
 
-    @Test fun endingAloneSaysNothingButAsksAboutTheBenefit() = runBlocking<Unit> {
+    @Test fun endingAloneSaysNothingAndAsksNothing() = runBlocking<Unit> {
+        // رد المالك §64-٧: سؤال مكافأة نهاية الخدمة اتشال من القفل
         val a = manage.add(IncomeSourceInput("شركة النجمة الوهمية", "2024-01-01"))
         val r = manage.close(a.id, "2026-09-30")
         assertFalse(r.congratulate)
         assertNull(r.opened)
-        assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.EndOfServiceBenefit(a.id)), r.followUps)
+        assertEquals(emptyList(), r.followUps)
     }
 
     @Test fun changingJobsClosesAndOpensTogetherCongratulatesAndNeverAsksTransport() = runBlocking<Unit> {
@@ -66,7 +67,7 @@ class ManageIncomeSourcesTest {
         assertTrue(r.congratulate)
         assertEquals("2026-09-30", r.closed!!.endedAt)
         val new = r.opened!!
-        assertEquals(listOf(IncomeFollowUp.EndOfServiceBenefit(old.id), IncomeFollowUp.AskPayday(new.id), IncomeFollowUp.AskExpectedSalary(new.id)), r.followUps)
+        assertEquals(listOf(IncomeFollowUp.AskPayday(new.id), IncomeFollowUp.AskExpectedSalary(new.id)), r.followUps)
         assertTrue(r.followUps.none { it == IncomeFollowUp.CarToWork })
         assertEquals(2, repo.listAll().size)
         assertFailsWith<IncomeSourceError> { manage.changeJob(JobChange()) }

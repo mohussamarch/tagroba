@@ -28,6 +28,8 @@ enum class EconomicKind(val wire: String) {
     ROSCA_PAYOUT("rosca_payout"), REFUND_RECEIVED("refund_received"), ADVANCE_RECEIVED("advance_received"),
     // «المستحقات» (OVERRIDES §50 و§56): الأقساط مصروف، والقبض ومبلغ التمويل دخل
     ROSCA_CONTRIBUTION("rosca_contribution"), INSTALLMENT_PAID("installment_paid"), FINANCING_RECEIVED("financing_received"),
+    // مكافأة نهاية الخدمة — رد المالك §64-٧ (اختيار Claude: نوع لوحده، دخل مرة واحدة)
+    END_OF_SERVICE("end_of_service"),
     // لسه ما اتحددش
     UNCLASSIFIED("unclassified");
 
@@ -126,6 +128,9 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         // مبلغ التمويل يوم ما تستلمه: دخل تحت «المستحقات» (§56)
         rule(FINANCING_RECEIVED, TextKey.KIND_FINANCING_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
         rule(UNCLASSIFIED,TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
+        // مكافأة نهاية الخدمة (رد المالك §64-٧): دخل، بس **مرة واحدة** زي النقوط ⇒ برا متوسطات الدخل ([NOT_IN_INCOME_AVERAGES]).
+        // وارد بس — الصادر بيترفض بفحص الاتجاه
+        rule(END_OF_SERVICE, TextKey.KIND_END_OF_SERVICE, Liquidity.IN, true, false, PersonEffect.NONE),
     )
 
 fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)
@@ -133,6 +138,12 @@ fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)
 val ALL_ECONOMIC_KINDS: List<EconomicKind> = EconomicKind.entries.toList()
 
 fun countsAsIncome(kind: EconomicKind): Boolean = ruleFor(kind).countsAsIncome
+
+/**
+ * دخل **مرة واحدة** — بيتحسب دخل في شهره، بس **برا متوسطات الدخل والمقارنة** وما بيتنسبش لمصدر شغل كمرتب:
+ * النقوط (§44.1) ومكافأة نهاية الخدمة (§64-٧).
+ */
+val NOT_IN_INCOME_AVERAGES: Set<EconomicKind> = setOf(EVENT_GIFT, END_OF_SERVICE)
 fun countsAsPersonalExpense(kind: EconomicKind): Boolean = ruleFor(kind).countsAsPersonalExpense
 
 /** بينقّص المصروف بدل ما يزوده — الاسترداد (OVERRIDES §42). */

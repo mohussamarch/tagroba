@@ -54,6 +54,14 @@ class IncomeComparisonTest {
         assertEquals(200, c.incomeChangeTenthPercent)
     }
 
+    @Test fun endOfServiceBenefitStaysOutOfTheIncomeAverage() {
+        // رد المالك §64-٧ (اختيار Claude): المكافأة دخل مرة واحدة زي النقوط ⇒ برا متوسط الدخل
+        val withBenefit = history + t("2026-05-10", 9_000_000, EconomicKind.END_OF_SERVICE)
+        val c = assertNotNull(compareAroundSourceStart(newJob, withBenefit, emptyList(), 28, "2026-07-28"))
+        assertEquals(1_200_000, c.incomeAfterAvgMinor)
+        assertEquals(200, c.incomeChangeTenthPercent)
+    }
+
     @Test fun aMonthWithoutDataMeansNoNumberAtAll() {
         val gap = history.filterNot { it.occurredAt.startsWith("2026-02-28") || it.occurredAt == "2026-03-05" }
         assertNull(compareAroundSourceStart(newJob, gap, emptyList(), 28, "2026-07-28"))

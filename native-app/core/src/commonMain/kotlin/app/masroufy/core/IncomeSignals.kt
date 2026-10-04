@@ -18,10 +18,11 @@ private fun salariedActiveOn(sources: List<IncomeSource>, day: IsoDate, currency
 
 /**
  * المصدر اللي الإيداع ده **منسوب** ليه: الطرف اتأكد إنه بيحوّل مرتبه، والمصدر كان شغال يوم الإيداع وبنفس العملة.
- * الإيداع اللي المستخدم أكد إنه حاجة مش دخل (سلفة · تحويل داخلي …) ما بيتنسبش. والنقوط عمرها ما بتتنسب لشغل.
+ * الإيداع اللي المستخدم أكد إنه حاجة مش دخل (سلفة · تحويل داخلي …) ما بيتنسبش. والنقوط ومكافأة نهاية الخدمة عمرهم ما بيتنسبوا
+ * (مش مرتب الشهر ده — المكافأة ما بتقفلش تنبيه «المرتب اتأخر»).
  */
 fun attributedSourceId(t: Transaction, sources: List<IncomeSource>): Id? {
-    if (t.observedDirection != Direction.IN || t.economicKind == EconomicKind.EVENT_GIFT) return null
+    if (t.observedDirection != Direction.IN || t.economicKind in NOT_IN_INCOME_AVERAGES) return null
     if (t.economicKindConfirmed && !countsAsIncome(t.economicKind)) return null
     val key = transferPartyOf(t)?.key ?: return null
     return sourcesActiveOn(sources, t.occurredAt).firstOrNull { key in it.payerKeys && it.currency == t.currency }?.id

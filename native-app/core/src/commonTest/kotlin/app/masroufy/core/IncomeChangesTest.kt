@@ -11,11 +11,10 @@ class IncomeChangesTest {
     private fun src(id: String, kind: IncomeSourceKind = IncomeSourceKind.JOB, from: String = "2024-01-01", to: String? = null, day: Int? = null, amount: Long? = null, currency: Currency = Currency.SAR) =
         IncomeSource(id, "شركة $id الوهمية", "شركة $id الوهمية", kind, currency, from, to, day, amount)
 
-    @Test fun endingAloneSaysNothingAndOnlyAsksAboutTheBenefitForASaudiJob() {
+    @Test fun endingAloneSaysNothingAndAsksNothing() {
+        // رد المالك §64-٧: سؤال «مكافأة نهاية الخدمة» اتشال — بقت اختيار على الإيداع نفسه من الشركة
         val ended = jobChangeOutcome(src("a", to = "2026-09-30"), null, 28)
-        assertFalse(ended.congratulate, "قفل مصدر لوحده: ولا كلمة (ممكن يكون اتفصل)")
-        assertEquals(listOf<IncomeFollowUp>(IncomeFollowUp.EndOfServiceBenefit("a")), ended.followUps)
-        // عميل أو وظيفة برا السعودية: ولا سؤال حتى
+        assertEquals(JobChangeOutcome(false, emptyList()), ended, "قفل وظيفة في السعودية: ولا كلمة ولا سؤال")
         assertEquals(JobChangeOutcome(false, emptyList()), jobChangeOutcome(src("b", IncomeSourceKind.CLIENT, to = "2026-09-30"), null, 28))
         assertEquals(JobChangeOutcome(false, emptyList()), jobChangeOutcome(src("c", to = "2026-09-30", currency = Currency.EGP), null, 28))
     }
@@ -24,10 +23,10 @@ class IncomeChangesTest {
         val opened = jobChangeOutcome(null, src("n", from = "2026-10-01"), 28)
         assertTrue(opened.congratulate)
         assertEquals(listOf(IncomeFollowUp.AskPayday("n"), IncomeFollowUp.AskExpectedSalary("n")), opened.followUps)
-        // القديم والجديد مع بعض: سؤال المكافأة (بتاعة القديم) + أسئلة الجديد — ومفيش «هتروح بيها الشغل؟»
+        // القديم والجديد مع بعض: أسئلة الجديد بس (مفيش سؤال مكافأة — §64-٧) — ومفيش «هتروح بيها الشغل؟»
         val both = jobChangeOutcome(src("a", to = "2026-09-30"), src("n", from = "2026-10-01"), 28)
         assertTrue(both.congratulate)
-        assertEquals(listOf(IncomeFollowUp.EndOfServiceBenefit("a"), IncomeFollowUp.AskPayday("n"), IncomeFollowUp.AskExpectedSalary("n")), both.followUps)
+        assertEquals(listOf(IncomeFollowUp.AskPayday("n"), IncomeFollowUp.AskExpectedSalary("n")), both.followUps)
         assertTrue(IncomeFollowUp.CarToWork !in both.followUps)
     }
 
@@ -88,7 +87,7 @@ class IncomeChangesTest {
     }
 
     @Test fun textsExistInBothLanguagesAndCongratsNamesTheNewJob() {
-        val all = listOf(IncomeFollowUp.EndOfServiceBenefit("a"), IncomeFollowUp.AskPayday("a"), IncomeFollowUp.ChangeMonthStart("a", 25), IncomeFollowUp.AskExpectedSalary("a"), IncomeFollowUp.CarToWork)
+        val all = listOf(IncomeFollowUp.AskPayday("a"), IncomeFollowUp.ChangeMonthStart("a", 25), IncomeFollowUp.AskExpectedSalary("a"), IncomeFollowUp.CarToWork)
         try {
             for (lang in Language.entries) {
                 Texts.language = lang
@@ -98,8 +97,7 @@ class IncomeChangesTest {
             }
             Texts.language = Language.AR
             assertEquals("هتروح بيها الشغل؟", incomeFollowUpText(IncomeFollowUp.CarToWork))
-            assertEquals("فيه مكافأة نهاية خدمة جاية؟", incomeFollowUpText(IncomeFollowUp.EndOfServiceBenefit("a")))
-            assertFalse(incomeFollowUpText(IncomeFollowUp.EndOfServiceBenefit("a")).contains("مبروك"))
+            assertEquals("مكافأة نهاية خدمة", ruleFor(EconomicKind.END_OF_SERVICE).label)
         } finally {
             Texts.language = Language.AR
         }

@@ -5,7 +5,7 @@ package app.masroufy.core
  *
  * بعد ما المصدر الجديد يكمّل **3 شهور مالية كاملة**: متوسط الدخل الشهري ومتوسط المصروف الحقيقي في الـ3 شهور اللي قبل البداية
  * والـ3 اللي بعدها، والفرق **بالعُشر من المية** (125 = 12.5٪) بأعداد صحيحة من غير كسور عائمة.
- * - **النقوط برا متوسط الدخل** (§44.1 — مرة واحدة مش دخل شهري).
+ * - **النقوط ومكافأة نهاية الخدمة برا متوسط الدخل** (§44.1 · §64-٧ — مرة واحدة مش دخل شهري).
  * - الشهر اللي فيه البداية لو مش من أوله **ما بيدخلش** لا قبل ولا بعد (نصه قديم ونصه جديد).
  * - أي شهر من الستة **مفيهوش ولا عملية** بعملة المصدر ⇒ `null` كله (مفيش رقم من غير مصدر — قاعدة 10).
  * - مفيش دخل قبل (أول شغل) ⇒ المتوسطات موجودة والنسبة `null` (القسمة على صفر مش رقم).
@@ -71,7 +71,7 @@ fun compareAroundSourceStart(
     fun inPeriod(p: Period) = mine.filter { it.occurredAt >= p.start && it.occurredAt <= p.end }
     val months = (before + after).map(::inPeriod)
     if (months.any { it.isEmpty() }) return null
-    fun income(txns: List<Transaction>) = computePeriodTotals(txns.filter { it.economicKind != EconomicKind.EVENT_GIFT }, allocations).incomeMinor
+    fun income(txns: List<Transaction>) = computePeriodTotals(txns.filter { it.economicKind !in NOT_IN_INCOME_AVERAGES }, allocations).incomeMinor
     fun expense(txns: List<Transaction>) = computePeriodTotals(txns, allocations).let { addMoney(it.personalExpenseMinor, it.excludedExpenseMinor) }
     val b = months.take(COMPARISON_MONTHS)
     val a = months.drop(COMPARISON_MONTHS)

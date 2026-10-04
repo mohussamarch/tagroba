@@ -73,6 +73,7 @@ class IncomeSignalsTest {
         assertNull(attributedSourceId(deposit(star, "2026-07-27"), sources), "بعد ما المصدر اتقفل")
         assertNull(attributedSourceId(deposit(star, "2026-03-27", kind = EconomicKind.LOAN_RECEIVED, confirmed = true), sources), "قال إنها سلفة")
         assertNull(attributedSourceId(deposit(star, "2026-03-27", kind = EconomicKind.EVENT_GIFT, confirmed = true), sources))
+        assertNull(attributedSourceId(deposit(star, "2026-03-27", kind = EconomicKind.END_OF_SERVICE, confirmed = true), sources), "المكافأة مش مرتب الشهر")
         assertNull(attributedSourceId(deposit(star, "2026-03-27", currency = Currency.EGP), sources))
     }
 
@@ -84,6 +85,8 @@ class IncomeSignalsTest {
         assertEquals("now", auto.updatedAt)
         val byHand = deposit(star, "2026-03-27", kind = EconomicKind.REFUND_RECEIVED, confirmed = true)
         assertEquals(byHand, applyKnownPayerSalary(byHand, sources, "now"), "اللي اتغيّر بإيده ما بيتلمسش")
+        val benefit = deposit(star, "2026-07-27", 9_000_000, kind = EconomicKind.END_OF_SERVICE, confirmed = true)
+        assertEquals(benefit, applyKnownPayerSalary(benefit, sources, "now"), "مكافأة نهاية الخدمة المتعلّمة بإيده ما بتبقاش «مرتب» تاني (§64-٧)")
         val unknown = deposit(moon, "2026-03-27")
         assertEquals(unknown, applyKnownPayerSalary(unknown, sources, "now"))
         val out = deposit(star, "2026-03-27", dir = Direction.OUT)

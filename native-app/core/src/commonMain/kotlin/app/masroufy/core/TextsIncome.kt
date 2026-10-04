@@ -11,7 +11,6 @@ internal val ARABIC_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_SOURCE_ALREADY_CLOSED to "المصدر ده متقفل قبل كده",
     TextKey.INCOME_CHANGE_EMPTY to "اختار المصدر اللي خلص أو اكتب الشغل الجديد",
     TextKey.INCOME_CONGRATS to "مبروك الشغل الجديد في «{0}»!",
-    TextKey.INCOME_Q_END_OF_SERVICE to "فيه مكافأة نهاية خدمة جاية؟",
     TextKey.INCOME_Q_PAYDAY to "المرتب الجديد بينزل يوم كام في الشهر؟",
     TextKey.INCOME_Q_MONTH_START to "تغيّر بداية شهرك المالي ليوم {0}؟",
     TextKey.INCOME_Q_EXPECTED_SALARY to "المرتب المتوقع كام؟ (اختياري — تقدر تعدّيه)",
@@ -27,6 +26,11 @@ internal val ARABIC_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_SOURCE_BAD_WEEKDAY to "يوم القبض في الأسبوع لازم يكون من 1 (الاتنين) لـ 7 (الحد)",
     TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "القبض الشهري بيوم في الشهر والأسبوعي بيوم في الأسبوع",
     TextKey.INCOME_Q_PAY_FREQUENCY to "بتقبض من الشغل ده إمتى؟ كل شهر ولا كل أسبوع؟",
+    TextKey.KIND_END_OF_SERVICE to "مكافأة نهاية خدمة",
+    TextKey.INCOME_EOS_NOT_FROM_COMPANY to "الإيداع ده مش من شركة إنت أكدت إنها بتحوّلك المرتب",
+    TextKey.INCOME_EOS_NEEDS_IN to "مكافأة نهاية الخدمة بتتعلّم على فلوس داخلة بس",
+    TextKey.INCOME_EOS_NOT_MARKED to "الإيداع ده مش متعلّم مكافأة نهاية خدمة",
+    TextKey.INCOME_EOS_TXN_NOT_FOUND to "العملية مش موجودة",
 )
 
 internal val ENGLISH_INCOME_TEXTS: Map<TextKey, String> = mapOf(
@@ -34,7 +38,6 @@ internal val ENGLISH_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_SOURCE_ALREADY_CLOSED to "This source is already closed",
     TextKey.INCOME_CHANGE_EMPTY to "Pick the source that ended or enter the new job",
     TextKey.INCOME_CONGRATS to "Congratulations on the new job at “{0}”!",
-    TextKey.INCOME_Q_END_OF_SERVICE to "Is an end-of-service benefit coming?",
     TextKey.INCOME_Q_PAYDAY to "On which day of the month does the new salary arrive?",
     TextKey.INCOME_Q_MONTH_START to "Move the start of your financial month to day {0}?",
     TextKey.INCOME_Q_EXPECTED_SALARY to "What salary do you expect? (optional — you can skip it)",
@@ -50,4 +53,9 @@ internal val ENGLISH_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_SOURCE_BAD_WEEKDAY to "The weekly pay day has to be from 1 (Monday) to 7 (Sunday)",
     TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "Monthly pay takes a day of the month and weekly pay a day of the week",
     TextKey.INCOME_Q_PAY_FREQUENCY to "When are you paid for this work? Every month or every week?",
+    TextKey.KIND_END_OF_SERVICE to "End-of-service benefit",
+    TextKey.INCOME_EOS_NOT_FROM_COMPANY to "This deposit is not from a company you confirmed pays your salary",
+    TextKey.INCOME_EOS_NEEDS_IN to "An end-of-service benefit can only be marked on incoming money",
+    TextKey.INCOME_EOS_NOT_MARKED to "This deposit is not marked as an end-of-service benefit",
+    TextKey.INCOME_EOS_TXN_NOT_FOUND to "The transaction was not found",
 )

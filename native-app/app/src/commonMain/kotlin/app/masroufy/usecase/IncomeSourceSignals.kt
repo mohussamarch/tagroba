@@ -1,6 +1,11 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.AlertCandidate
+import app.masroufy.core.Direction
+import app.masroufy.core.EconomicKind
+import app.masroufy.core.ReviewState
+import app.masroufy.port.SpaceTransferLegs
+import app.masroufy.port.TransactionPatch
 import app.masroufy.core.Id
 import app.masroufy.core.IncomeSourceError
 import app.masroufy.core.IsoDate
@@ -40,6 +45,8 @@ data class IncomeSignalsDeps(
     val clock: Clock,
     /** قرارات «زون التحويلات» (§60) — الطرف اللي اتقال عليه «حسابي التاني» أو «شخص» ما يتسألش عنه. null = مش متوصل. */
     val parties: TransferPartyRepository? = null,
+    /** رجول التحويل لنفسك (§64): نوعها ما يتغيرش غير بالفك. null = مش متوصل. */
+    val spaceLegs: SpaceTransferLegs? = null,
 )
 
 class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
@@ -85,6 +92,26 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
         val changed = everything().mapNotNull { t -> applyKnownPayerSalary(t, sources, now).takeIf { it != t } }
         if (changed.isNotEmpty()) deps.uow.run { deps.txns.saveMany(changed) }
         return changed.size
+    }
+
+    /**
+     * «مكافأة نهاية خدمة» على إيداع (رد المالك §64-٧ — بدل السؤال عند قفل الشغل): الإيداع **داخل** ومن طرف **المستخدم أكد** إنه
+     * بيحوّل مرتب مصدر (حتى لو المصدر اتقفل — المكافأة بتيجي بعد ما تسيب). النوع بيبقى [EconomicKind.END_OF_SERVICE] **مؤكد**،
+     * فـ«مرتب لوحده» (`applyKnownPayerSalary`) عمره ما يكتب فوقه. [yes] = لأ ⇒ الإيداع المتعلّم بيرجع «مرتب» مؤكد (قاعدة الشركة
+     * المؤكدة — رد المالك §64-١). التصنيف ما بيتغيرش.
+     */
+    suspend fun markEndOfService(transactionId: Id, yes: Boolean = true) {
+        val t = deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw IncomeSourceError(uiText(TextKey.INCOME_EOS_TXN_NOT_FOUND))
+        if (t.observedDirection != Direction.IN) throw IncomeSourceError(uiText(TextKey.INCOME_EOS_NEEDS_IN))
+        val key = transferPartyOf(t)?.key
+        if (key == null || deps.sources.listAll().none { key in it.payerKeys }) throw IncomeSourceError(uiText(TextKey.INCOME_EOS_NOT_FROM_COMPANY))
+        if (!yes && t.economicKind != EconomicKind.END_OF_SERVICE) throw IncomeSourceError(uiText(TextKey.INCOME_EOS_NOT_MARKED))
+        val kind = if (yes) EconomicKind.END_OF_SERVICE else EconomicKind.SALARY
+        if (kind != t.economicKind && deps.spaceLegs?.isLeg(transactionId) == true) throw IncomeSourceError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
+        deps.txns.update(
+            transactionId,
+            TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = deps.clock.nowIso()),
+        )
     }
 
     /** المرتب المتأخر النهارده (مهلة 3 أيام) — بيختفي لوحده لما الإيداع يوصل. */

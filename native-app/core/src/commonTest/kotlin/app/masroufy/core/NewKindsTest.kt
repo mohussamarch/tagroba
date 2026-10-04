@@ -93,11 +93,33 @@ class NewKindsTest {
     }
 
     @Test
+    fun `مكافأة نهاية الخدمة دخل وارد بس ومرة واحدة`() {
+        // رد المالك §64-٧ — اختيار Claude: نوع لوحده، دخل، وبرا متوسطات الدخل زي النقوط
+        assertTrue(countsAsIncome(EconomicKind.END_OF_SERVICE))
+        assertEquals(Liquidity.IN, ruleFor(EconomicKind.END_OF_SERVICE).liquidity)
+        assertTrue(isConsistentWithObservedDirection(EconomicKind.END_OF_SERVICE, Direction.IN))
+        assertTrue(!isConsistentWithObservedDirection(EconomicKind.END_OF_SERVICE, Direction.OUT), "صادر ما ينفعش يبقى مكافأة")
+        assertEquals(setOf(EconomicKind.EVENT_GIFT, EconomicKind.END_OF_SERVICE), NOT_IN_INCOME_AVERAGES)
+        val totals = computePeriodTotals(listOf(txn(EconomicKind.END_OF_SERVICE, 4_000_000)), emptyList())
+        assertEquals(4_000_000, totals.incomeMinor, "في شهره دخل")
+        assertEquals(0, totals.personalExpenseMinor)
+        assertEquals(PersonEffect.NONE, ruleFor(EconomicKind.END_OF_SERVICE).personEffect)
+        try {
+            Texts.language = Language.EN
+            assertEquals("End-of-service benefit", ruleFor(EconomicKind.END_OF_SERVICE).label)
+            Texts.language = Language.AR
+            assertEquals("مكافأة نهاية خدمة", ruleFor(EconomicKind.END_OF_SERVICE).label)
+        } finally {
+            Texts.language = Language.AR
+        }
+    }
+
+    @Test
     fun `الأنواع الجديدة كلها ليها اسم معروض بالعربي وبالإنجليزي`() {
         val added = listOf(
             EconomicKind.GIFT_RECEIVED, EconomicKind.SUPPORT_RECEIVED, EconomicKind.BENEFIT_RECEIVED,
             EconomicKind.INVESTMENT_INCOME, EconomicKind.ROSCA_PAYOUT, EconomicKind.REFUND_RECEIVED,
-            EconomicKind.ADVANCE_RECEIVED, EconomicKind.EVENT_GIFT,
+            EconomicKind.ADVANCE_RECEIVED, EconomicKind.EVENT_GIFT, EconomicKind.END_OF_SERVICE,
         )
         for (kind in added) {
             assertTrue(ruleFor(kind).label.isNotBlank(), kind.wire)
