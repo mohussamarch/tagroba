@@ -56,7 +56,7 @@ class ZakatHawlTest {
     }
 
     @Test
-    fun `مصر — النزول في نص السنة ما بيقطعش والعبرة بأولها وآخرها (5890)`() {
+    fun `مصر — النزول في نص السنة ما بيقطعش والعبرة بأولها وآخرها — 5890`() {
         assertEquals(HawlState.Complete(true), checkHawl(ZakatCountry.EG, series(), nisab, "2025-01-01", "2025-12-21"), "نزل في فبراير ورجع ⇒ كمّل")
         // أول السنة كان تحت النصاب ⇒ الحول بيبدأ من أول يوم وصله بعدها
         assertEquals(HawlState.Restarted("2025-03-01"), checkHawl(ZakatCountry.EG, series(), nisab, "2025-02-15", "2026-02-04"))
