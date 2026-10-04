@@ -16,7 +16,7 @@ class CalendarTest {
     private val dues = listOf(
         due(DueSource.RECURRING, "r-1", "2026-10-10", 5_000),
         due(DueSource.INSTALLMENT, "ip-1", "2026-10-25", 100_000),
-        due(DueSource.ROSCA_PAYOUT, "rc-1", "2026-10-25", 1_000_000, DueFlow.RECEIVE),
+        due(DueSource.ROSCA_PAYOUT, "a-rosca", "2026-10-25", 1_000_000, DueFlow.RECEIVE),
         due(DueSource.DEBT, "o-1", "2026-10-26", 30_000),
         due(DueSource.INSTALLMENT, "ip-2", "2026-09-01", 100_000),
     )
