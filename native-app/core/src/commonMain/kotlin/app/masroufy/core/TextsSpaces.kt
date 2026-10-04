@@ -23,6 +23,9 @@ internal val ARABIC_SPACE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SPACE_TRANSFER_NOT_FOUND to "التحويل ده مش موجود",
     TextKey.SPACE_TRANSFER_TXN_NOT_FOUND to "العملية مش موجودة في البلد دي",
     TextKey.SPACE_TRANSFER_DATE to "التاريخ مش صالح",
+    TextKey.BACKUP_SPACE_INVALID to "بيانات البلد «{0}» في النسخة مش سليمة",
+    TextKey.BACKUP_SPACE_TRANSFER_INVALID to "تحويل لنفسك في النسخة مش سليم ({0})",
+    TextKey.BACKUP_GROUP_SPACE_TRANSFERS to "التحويل لنفسك بين البلاد",
     TextKey.SPACE_TRANSFER_NOTE_LONG to "الملاحظة أطول من 1000 حرف",
     TextKey.SPACE_TRANSFER_LEG_LOCKED to "العملية دي تحويل لنفسك لبلد تانية — فك الربط الأول لو عايز تغيّر نوعها أو تربطها بحاجة تانية",
 )
@@ -46,6 +49,9 @@ internal val ENGLISH_SPACE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SPACE_TRANSFER_NOT_FOUND to "This transfer was not found",
     TextKey.SPACE_TRANSFER_TXN_NOT_FOUND to "The transaction was not found in this country",
     TextKey.SPACE_TRANSFER_DATE to "The date is not valid",
+    TextKey.BACKUP_SPACE_INVALID to "The country “{0}” in the backup is not valid",
+    TextKey.BACKUP_SPACE_TRANSFER_INVALID to "A transfer to yourself in the backup is not valid ({0})",
+    TextKey.BACKUP_GROUP_SPACE_TRANSFERS to "Transfers to yourself between countries",
     TextKey.SPACE_TRANSFER_NOTE_LONG to "The note is longer than 1000 characters",
     TextKey.SPACE_TRANSFER_LEG_LOCKED to "This transaction is a transfer to yourself in another country — unlink it first to change its kind or link it to something else",
 )

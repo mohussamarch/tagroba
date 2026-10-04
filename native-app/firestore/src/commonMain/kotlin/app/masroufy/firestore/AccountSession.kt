@@ -55,6 +55,10 @@ class AccountSession(
             val repos: FirestoreContainer get() = active.repos
             val sync: FirestoreSync get() = active.sync
 
+            /** البلاد التانية في النسخة الشاملة بأماكن الجلسة (اللي بيتضاف يبان في ذاكرتها لحظتها). */
+            fun spacesBackup(): FirestoreSpacesBackup =
+                FirestoreSpacesBackup(account) { id -> spaces[id]?.repos?.spaceRoot ?: FirestoreSpace.forSpace(account.db, user.uid, id) }
+
             /** كتابة التحويل لنفسك ذرّيًا على البلدين — بأماكن الجلسة نفسها (بذاكرتها). البلد المؤرشفة بمكانها من غير ذاكرة. */
             fun spaceTransferWriter(): FirestoreSpaceTransferWriter =
                 FirestoreSpaceTransferWriter(account) { id -> spaces[id]?.repos?.spaceRoot ?: FirestoreSpace.forSpace(account.db, user.uid, id) }

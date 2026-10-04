@@ -79,10 +79,14 @@ private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(
 private val CURRENCY_CODE = Regex("[A-Z]{3}")
 private val LAST_FOUR = Regex("[0-9]{4}")
 
-/** فحص وقت التشغيل: `data` جاية من ملف، فكل حاجة بتتأكد (نفس الترتيب والرسايل). */
-fun checkFullBackupData(data: Any?) {
+/**
+ * فحص وقت التشغيل: `data` جاية من ملف، فكل حاجة بتتأكد (نفس الترتيب والرسايل).
+ * بلد غير السعودية في الإصدار 3 (§64): [groups] = مجموعات البلد بس، والعلاقات لمجموعات الحساب (الأشخاص · التجار · الوسوم · …)
+ * بتتفحص على معرّفات الحساب [external] (من بيانات الجذر في نفس الملف).
+ */
+fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, external: Map<String, Set<String>> = emptyMap()) {
     val value = data as? Map<*, *> ?: throw BackupError(uiText(TextKey.BACKUP_DATA_INVALID))
-    for (group in BACKUP_GROUPS) {
+    for (group in groups) {
         val rows = value[group] as? List<*> ?: throw BackupError(uiText(TextKey.BACKUP_GROUP_MISSING, BACKUP_LABELS.getValue(group)))
         val ids = HashSet<String>()
         for (raw in rows) {
@@ -97,11 +101,11 @@ fun checkFullBackupData(data: Any?) {
         }
     }
     @Suppress("UNCHECKED_CAST")
-    val groups = BACKUP_GROUPS.associateWith { g -> (value[g] as List<Map<String, Any?>>) }
-    val ids = groups.mapValues { (g, rows) -> rows.map { backupRowId(g, it) }.toSet() }
-    for (group in BACKUP_GROUPS) for (row in groups.getValue(group)) for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
+    val rowsByGroup = groups.associateWith { g -> (value[g] as List<Map<String, Any?>>) }
+    val ids = rowsByGroup.mapValues { (g, rows) -> rows.map { backupRowId(g, it) }.toSet() }
+    for (group in groups) for (row in rowsByGroup.getValue(group)) for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
         val v = row[field]
-        if (v != null && jsString(v) !in ids.getValue(target)) throw BackupError(uiText(TextKey.BACKUP_RELATION_MISSING, group, field))
+        if (v != null && jsString(v) !in (ids[target] ?: external[target].orEmpty())) throw BackupError(uiText(TextKey.BACKUP_RELATION_MISSING, group, field))
     }
 }
 

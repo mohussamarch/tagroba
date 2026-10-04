@@ -19,6 +19,25 @@ interface FullBackupPort {
     suspend fun addProfileIfMissing(profile: BackupRow): Boolean
 }
 
+/**
+ * البلاد غير السعودية في النسخة الشاملة (الإصدار 3 — §41.1 · §64). السعودية والحساب في [FullBackupPort] زي الإصدار 2.
+ * كل قراية **من السيرفر** وكل كتابة **بتضيف الناقص بس** — زي [FullBackupPort] بالظبط.
+ */
+interface SpacesBackupPort {
+    /** سجل البلاد كله (المؤرشف كمان — النسخة للحساب كله). */
+    suspend fun registry(): List<app.masroufy.core.Space>
+
+    suspend fun addSpaceIfMissing(space: app.masroufy.core.Space): Boolean
+
+    /** بيانات بلد: مجموعاتها بس (مجموعات الحساب فاضية). */
+    fun dataOf(spaceId: String): FullBackupPort
+
+    suspend fun readSpaceTransfers(): List<BackupRow>
+
+    /** بيضيف الأزواج اللي معرّفها مش موجود بس. بيرجّع كام اتضاف. */
+    suspend fun addMissingSpaceTransfers(rows: List<BackupRow>): Int
+}
+
 /** `bytes` = الحجم الفعلي بالبايت كما التخزين قراه **بعد** الكتابة؛ null = التخزين ما يقدرش يأكد (ويتقال للمستخدم). */
 data class SavedBackup(val location: String, val bytes: Long?)
 

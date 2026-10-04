@@ -214,10 +214,24 @@ private fun semantic(group: String, row: BackupRow): String? {
  * الدمج: الموجود ما يتدهسش — نفس المعرّف أو نفس المحتوى ⇒ يتخطى، والروابط بتتحوّل لمعرّف الموجود
  * (نفس العملية ممكن تكون متخزنة بمعرّف تاني على جهاز تاني).
  */
-fun mergeFullBackup(incoming: FullBackupData, existing: FullBackupData): Map<String, List<BackupRow>> {
+fun mergeFullBackup(incoming: FullBackupData, existing: FullBackupData): Map<String, List<BackupRow>> = mergeFullBackupDetailed(incoming, existing).additions
+
+/** نتيجة الدمج + المعرّف الأصلي في الملف ⇐ المعرّف اللي اتكتب أو الموجود (لكل مجموعة). */
+class BackupMerge(val additions: Map<String, List<BackupRow>>, val remaps: Map<String, Map<String, String>>)
+
+/**
+ * الدمج على [groups] بس. [inherited] = تحويلات معرّفات من دمج قبله (بلد في الإصدار 3 بتورث تحويلات الأشخاص والتجار من الجذر — §64)،
+ * عشان علاقة عملية مصرية بشخص اتدمج في شخص موجود تشاور على الموجود.
+ */
+fun mergeFullBackupDetailed(
+    incoming: FullBackupData,
+    existing: FullBackupData,
+    groups: List<String> = BACKUP_GROUPS,
+    inherited: Map<String, Map<String, String>> = emptyMap(),
+): BackupMerge {
     val additions = emptyBackupData()
-    val maps = HashMap<String, HashMap<String, String>>()
-    for (group in BACKUP_GROUPS) {
+    val maps = HashMap<String, HashMap<String, String>>().apply { for ((g, m) in inherited) put(g, HashMap(m)) }
+    for (group in groups) {
         val remap = HashMap<String, String>().also { maps[group] = it }
         val byId = LinkedHashMap<String, BackupRow>().apply { existing.getValue(group).forEach { put(backupRowId(group, it), it) } }
         val byContent = LinkedHashMap<String, MutableList<BackupRow>>()
@@ -243,5 +257,5 @@ fun mergeFullBackup(incoming: FullBackupData, existing: FullBackupData): Map<Str
             remap[originalId] = id
         }
     }
-    return additions
+    return BackupMerge(additions, maps)
 }

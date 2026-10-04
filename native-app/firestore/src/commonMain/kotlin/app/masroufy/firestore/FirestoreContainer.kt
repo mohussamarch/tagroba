@@ -83,6 +83,9 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     val sharedMerchants = FirestoreSharedMerchantCatalog(space.db)
     val spaces = FirestoreSpaceRegistry(account)
 
+    /** البلاد التانية في النسخة الشاملة (الإصدار 3): `FullBackup(fullBackup, spacesBackup)`. */
+    val spacesBackup = FirestoreSpacesBackup(account)
+
     /** أزواج التحويل لنفسك (على مستوى الحساب). الكتابة الذرّية (`FirestoreSpaceTransferWriter`) محتاجة كل البلاد ⇒ بتتعمل من الجلسة. */
     val spaceTransfers = FirestoreSpaceTransferRepository(account)
 }

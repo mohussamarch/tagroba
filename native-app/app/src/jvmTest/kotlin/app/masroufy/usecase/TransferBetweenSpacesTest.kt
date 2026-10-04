@@ -64,9 +64,16 @@ class TransferBetweenSpacesTest {
         )
         val book = SpaceBook(space, txns, wallets, links)
 
-        suspend fun home() = LoadHomeScreen(LoadHomeScreenDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository(), MemoryBudgetRepository()))
-            .load(LoadHomeScreenRequest(periodForDate("2026-09-10", 28), "2026-09-20", 28, includeHistory = false))
-            .let { Triple(it.expenseMinor, it.incomeMinor, it.excludedExpenseMinor) }
+        /** الرئيسية (مصروف · دخل · مستبعد) + الميزانية (المصروف) + التحليل (توزيع التصنيفات). */
+        suspend fun home(): List<Any?> {
+            val period = periodForDate("2026-09-10", 28)
+            val h = LoadHomeScreen(LoadHomeScreenDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository(), MemoryBudgetRepository()))
+                .load(LoadHomeScreenRequest(period, "2026-09-20", 28, includeHistory = false))
+            val budget = LoadBudgetScreen(LoadBudgetScreenDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository(), MemoryBudgetRepository()))
+                .load(LoadBudgetScreenRequest(period, "2026-09-20", 28))
+            val distribution = app.masroufy.core.categoryDistribution(txns.listByDateRange(period.start, period.end))
+            return listOf(h.expenseMinor, h.incomeMinor, h.excludedExpenseMinor, budget.spentMinor, distribution.totalMinor)
+        }
 
         suspend fun money() = LoadMoneySummary(LoadMoneySummaryDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository())).load("2026-01-01", "2026-12-31")
             .let { Triple(it.expenseMinor, it.incomeMinor, it.cash) }

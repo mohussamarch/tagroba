@@ -24,6 +24,8 @@ class FirestoreFullBackup(
     private val space: FirestoreSpace,
     /** نفس المكان بكائن تاني (الحساب ومساحة السعودية الاتنين `users/{uid}`) — اللي اتكتب يبان في ذاكرة كل واحد فيهم. */
     private val alsoMirrored: List<FirestoreSpace> = emptyList(),
+    /** المجموعات اللي بتتقرا وتتكتب هنا — بلد غير السعودية (الإصدار 3) = مجموعاتها بس. */
+    private val groups: List<String> = BACKUP_GROUPS,
 ) : FullBackupPort {
     private fun profileRef() = space.db.document("${space.root}/profile/main")
 
@@ -31,7 +33,7 @@ class FirestoreFullBackup(
 
     override suspend fun read(): FullBackupData {
         val data = emptyBackupData()
-        for (group in BACKUP_GROUPS) {
+        for (group in groups) {
             var cursor: DocumentSnapshot? = null
             while (true) {
                 var query = space.collection(group).orderBy(FieldPath.documentId).limit(PAGE)
@@ -47,7 +49,7 @@ class FirestoreFullBackup(
 
     override suspend fun addMissing(data: FullBackupData): Map<String, Int> {
         val added = LinkedHashMap<String, Int>()
-        for (group in BACKUP_GROUPS) {
+        for (group in groups) {
             added[group] = 0
             for (rows in data.getValue(group).chunked(TRANSACTION_ROWS)) {
                 val written = space.db.runTransaction {

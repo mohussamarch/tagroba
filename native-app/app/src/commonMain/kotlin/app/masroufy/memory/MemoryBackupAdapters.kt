@@ -36,6 +36,31 @@ class MemoryFullBackup(initial: FullBackupData = emptyBackupData(), private var 
     }
 }
 
+/** البلاد غير السعودية في النسخة الشاملة (الإصدار 3) في الذاكرة: سجل + بيانات لكل بلد + أزواج التحويل لنفسك. */
+class MemorySpacesBackup(
+    val registry: MemorySpaceRegistry = MemorySpaceRegistry(),
+    private val spaces: MutableMap<String, MemoryFullBackup> = LinkedHashMap(),
+    transfers: List<BackupRow> = emptyList(),
+) : app.masroufy.port.SpacesBackupPort {
+    private val pairs = LinkedHashMap<String, BackupRow>().apply { transfers.forEach { put(it["id"] as String, it) } }
+
+    override suspend fun registry(): List<app.masroufy.core.Space> = registry.listAll()
+
+    override suspend fun addSpaceIfMissing(space: app.masroufy.core.Space): Boolean = registry.addIfMissing(space)
+
+    override fun dataOf(spaceId: String): MemoryFullBackup = spaces.getOrPut(spaceId) { MemoryFullBackup() }
+
+    override suspend fun readSpaceTransfers(): List<BackupRow> = pairs.values.toList()
+
+    override suspend fun addMissingSpaceTransfers(rows: List<BackupRow>): Int = rows.count { row ->
+        val id = row["id"] as String
+        if (id in pairs) false else {
+            pairs[id] = row
+            true
+        }
+    }
+}
+
 /** نسخ ما قبل الصيانة في الذاكرة. `truncate` بيقلّد كتابة ناقصة (نص الوحدات بس). */
 class MemoryRepairBackup(private val truncate: Boolean = false) : RepairBackupPort {
     val files = LinkedHashMap<String, String>()
