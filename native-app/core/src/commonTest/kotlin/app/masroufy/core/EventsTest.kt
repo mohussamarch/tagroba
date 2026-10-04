@@ -94,4 +94,35 @@ class EventsTest {
         assertTrue(giftBadgeText(badges[0]).startsWith("نقّطته"))
         assertTrue(personGiftBadges("p-9", listOf(myWedding), links, txns).isEmpty())
     }
+
+    @Test fun eventShareIsIntegerMathRoundedHalfUpOnTheMinorUnit() {
+        assertEquals(3_000_000, eventShareMinor(3_000_000, EVENT_SHARE_WHOLE), "100 = العملية كلها بالظبط")
+        assertEquals(1_200_000, eventShareMinor(3_000_000, 40))
+        assertEquals(33, eventShareMinor(101, 33), "33.33 ⇒ 33")
+        assertEquals(1, eventShareMinor(1, 50), "0.5 هللة ⇒ 1 (النص لفوق)")
+        assertEquals(1, eventShareMinor(149, 1), "1.49 ⇒ 1")
+        assertEquals(2, eventShareMinor(150, 1), "1.50 ⇒ 2")
+        assertEquals(66, eventShareMinor(99, 67), "66.33 ⇒ 66")
+        assertEquals(50, eventShareMinor(99, 50), "49.5 ⇒ 50")
+        assertEquals(EVENT_SHARE_WHOLE, link("x", "ev-1", EventRole.SPEND).sharePercent, "الربط من غير نسبة = العملية كلها")
+        checkEventShare(EventRole.SPEND, 1)
+        checkEventShare(EventRole.SPEND, 100)
+        assertFailsWith<EventError> { checkEventShare(EventRole.SPEND, 0) }
+        assertFailsWith<EventError> { checkEventShare(EventRole.SPEND, 101) }
+        assertFailsWith<EventError> { checkEventShare(EventRole.GIFT_IN, 50) }
+        assertFailsWith<EventError> { checkEventShare(EventRole.GIFT_OUT, 99) }
+        assertFailsWith<EventError> { checkEventLink(myWedding, EventRole.SPEND, null, txn("t", Direction.OUT, 100), emptyList(), sharePercent = 0) }
+    }
+
+    @Test fun spendingUsesTheStoredShareAndGiftsStayWhole() {
+        val txns = listOf(txn("s-1", Direction.OUT, 1_000_001), txn("s-2", Direction.OUT, 200_000), txn("g-1", Direction.IN, 300_000))
+        val links = listOf(
+            link("s-1", "ev-1", EventRole.SPEND).copy(sharePercent = 25),
+            link("s-2", "ev-1", EventRole.SPEND),
+            link("g-1", "ev-1", EventRole.GIFT_IN, "p-1"),
+        )
+        val total = summarizeEvent(myWedding, links, txns).totals.single()
+        assertEquals(250_000 + 200_000, total.spentMinor, "25% من 10,000.01 = 2,500.0025 ⇒ 2,500.00 + العملية التانية كلها")
+        assertEquals(300_000, total.giftsInMinor, "النقطة العملية كلها")
+    }
 }

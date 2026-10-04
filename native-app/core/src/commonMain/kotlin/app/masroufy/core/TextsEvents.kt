@@ -56,6 +56,10 @@ internal val ARABIC_EVENT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_LIFE_EVENTS to "الأحداث",
     TextKey.BACKUP_GROUP_EVENT_LINKS to "روابط الأحداث",
     TextKey.BACKUP_GROUP_OCCASIONS to "المناسبات",
+    TextKey.CATEGORY_GIFTS to "هدايا",
+    TextKey.CATEGORY_EVENT_GIFTS to "نقوط",
+    TextKey.EVENT_SHARE_RANGE to "نسبة الحدث من العملية لازم تبقى من 1 لـ100",
+    TextKey.EVENT_GIFT_SHARE_WHOLE to "النقطة بتتربط بالعملية كلها — النسبة للمصروف بس",
 )
 
 internal val ENGLISH_EVENT_TEXTS: Map<TextKey, String> = mapOf(
@@ -109,4 +113,8 @@ internal val ENGLISH_EVENT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_LIFE_EVENTS to "Events",
     TextKey.BACKUP_GROUP_EVENT_LINKS to "Event links",
     TextKey.BACKUP_GROUP_OCCASIONS to "Occasions",
+    TextKey.CATEGORY_GIFTS to "Gifts",
+    TextKey.CATEGORY_EVENT_GIFTS to "Event gifts",
+    TextKey.EVENT_SHARE_RANGE to "The event share of a transaction must be 1 to 100 percent",
+    TextKey.EVENT_GIFT_SHARE_WHOLE to "A gift is linked as the whole transaction — the percentage is for spending only",
 )

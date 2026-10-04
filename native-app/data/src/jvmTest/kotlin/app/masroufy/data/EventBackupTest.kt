@@ -97,4 +97,31 @@ class EventBackupTest {
         val badMonth = account(withEvents = true).also { it.getValue("occasions")[0] = it.getValue("occasions")[0] + ("month" to "May") }
         assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(badMonth)).create("2026-06-02T00:00:00.000Z") }
     }
+
+    @Test
+    fun `نسبة المصروف بتتخزن وبتسافر والربط القديم من غيرها العملية كلها`() = runBlocking<Unit> {
+        val spend = EventLink(eventLinkId("t-2"), "ev-1", "t-2", EventRole.SPEND, null, "c", sharePercent = 40)
+        assertEquals(40L, roundTrip(EventCodecs.eventLinks, spend)["sharePercent"])
+        assertEquals(100L, roundTrip(EventCodecs.eventLinks, link)["sharePercent"], "بتتكتب دايمًا — حتى الكاملة")
+        val old = EventCodecs.eventLinks.toStore(link) - "sharePercent"
+        assertEquals(100, EventCodecs.eventLinks.decode(old).sharePercent, "مستند قديم من غير الحقل = 100")
+        val out = gift.copy(id = "t-2", observedDirection = Direction.OUT, economicKind = EconomicKind.PURCHASE)
+        val source = account(withEvents = true).also {
+            it.getValue("transactions") += LedgerCodecs.transactions.toStore(out)
+            it.getValue("eventLinks") += EventCodecs.eventLinks.toStore(spend)
+            it.getValue("eventLinks")[0] = it.getValue("eventLinks")[0] - "sharePercent"
+        }
+        val text = FullBackup(MemoryFullBackup(source)).create("2026-06-02T00:00:00.000Z").toJsonText()
+        val target = MemoryFullBackup()
+        val restore = FullBackup(target)
+        restore.apply(restore.plan(text).file)
+        val back = target.read().getValue("eventLinks").map(EventCodecs.eventLinks::decode).associateBy { it.transactionId }
+        assertEquals(mapOf("t-1" to 100, "t-2" to 40), back.mapValues { it.value.sharePercent })
+        for (bad in listOf(0L, 101L)) {
+            val wrong = account(withEvents = true).also { it.getValue("eventLinks")[0] = it.getValue("eventLinks")[0] + ("role" to "spend") + ("personId" to null) + ("sharePercent" to bad) }
+            assertFailsWith<IllegalArgumentException>("$bad") { FullBackup(MemoryFullBackup(wrong)).create("2026-06-02T00:00:00.000Z") }
+        }
+        val partGift = account(withEvents = true).also { it.getValue("eventLinks")[0] = it.getValue("eventLinks")[0] + ("sharePercent" to 50L) }
+        assertFailsWith<IllegalArgumentException>("النقطة العملية كلها") { FullBackup(MemoryFullBackup(partGift)).create("2026-06-02T00:00:00.000Z") }
+    }
 }

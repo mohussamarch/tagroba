@@ -1,5 +1,6 @@
 package app.masroufy.data
 
+import app.masroufy.core.EVENT_SHARE_WHOLE
 import app.masroufy.core.EventLink
 import app.masroufy.core.EventRole
 import app.masroufy.core.LifeEvent
@@ -30,15 +31,23 @@ object EventCodecs {
         },
     )
 
+    /**
+     * `sharePercent` (§64) بيتكتب دايمًا — النسبة متخزنة ومش بتتحسب من جديد. المستند القديم من غيرها = 100 (العملية كلها).
+     */
     val eventLinks: DocCodec<EventLink> = codec(
         "eventLinks", { it.id },
         { l ->
             doc {
                 req("id", l.id); req("eventId", l.eventId); req("transactionId", l.transactionId); req("role", l.role.wire)
-                opt("personId", l.personId); req("createdAt", l.createdAt)
+                opt("personId", l.personId); req("createdAt", l.createdAt); req("sharePercent", l.sharePercent)
             }
         },
-        { d -> EventLink(d.str("id"), d.str("eventId"), d.str("transactionId"), d.wire("role", EventRole::fromWire), d.strOrNull("personId"), d.str("createdAt")) },
+        { d ->
+            EventLink(
+                d.str("id"), d.str("eventId"), d.str("transactionId"), d.wire("role", EventRole::fromWire), d.strOrNull("personId"),
+                d.str("createdAt"), d.intOrNull("sharePercent") ?: EVENT_SHARE_WHOLE,
+            )
+        },
     )
 
     /** مناسبتك إنت: `personId` ما بيتكتبش. السنة والمدة والاسم اختياريين. */

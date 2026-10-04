@@ -48,7 +48,7 @@ class EventRepositoriesTest {
         val ids = SequentialIdGenerator()
         val clock = FixedClock("2026-10-01T10:00:00.000Z")
         val events = ManageEvents(ManageEventsDeps(c.lifeEvents, c.eventLinks, c.transactions, c.people, ids, clock))
-        val gifts = EventGifts(EventGiftsDeps(c.lifeEvents, c.eventLinks, c.transactions, c.wallets, c.people, PassthroughUnitOfWork(), ids, clock))
+        val gifts = EventGifts(EventGiftsDeps(c.lifeEvents, c.eventLinks, c.transactions, c.wallets, c.people, PassthroughUnitOfWork(), ids, clock, c.categories))
         val mine = events.create(EventInput("فرحي الوهمي", LifeEventKind.WEDDING, "2025-10-10", mine = true))
         val theirs = events.create(EventInput("فرح وهمي لخالد", LifeEventKind.WEDDING, "2026-08-01", mine = false, hostPersonId = "p-2"))
         val recorded = gifts.recordGifts(mine.id, Direction.IN, "w-cash", "2025-10-10", listOf(GiftEntry("p-1", 200_000), GiftEntry("p-2", 50_000)))

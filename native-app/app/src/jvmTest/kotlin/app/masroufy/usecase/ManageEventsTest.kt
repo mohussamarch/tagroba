@@ -5,6 +5,7 @@ import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.EventError
 import app.masroufy.core.EventRole
+import app.masroufy.core.GiftCategories
 import app.masroufy.core.InstallmentKind
 import app.masroufy.core.InstallmentPlan
 import app.masroufy.core.LifeEventKind
@@ -52,11 +53,12 @@ class ManageEventsTest {
     private val links = MemoryEventLinkRepository()
     private val plans = MemoryInstallmentPlanRepository(listOf(InstallmentPlan("ip-1", "تقسيط وهمي", "جهة وهمية", InstallmentKind.PURCHASE_PLAN, Currency.SAR, 500_000, 500_000, 50_000, 1, "2026-05-01")))
     private val installmentPayments = MemoryInstallmentPaymentRepository()
+    private val categories = MemoryCategoryRepository()
     private val ids = SequentialIdGenerator()
     private val clock = FixedClock("2026-05-02T10:00:00.000Z")
     private val manage = ManageEvents(ManageEventsDeps(events, links, txns, people, ids, clock))
     private val gifts = EventGifts(
-        EventGiftsDeps(events, links, txns, wallets, people, MemoryUnitOfWork(listOf(txns, links)), ids, clock, installmentPayments = installmentPayments, plans = plans),
+        EventGiftsDeps(events, links, txns, wallets, people, MemoryUnitOfWork(listOf(txns, links)), ids, clock, categories, installmentPayments = installmentPayments, plans = plans),
     )
     private val installments = ManageInstallments(
         ManageInstallmentsDeps(
@@ -172,5 +174,51 @@ class ManageEventsTest {
         assertEquals(listOf("فرح أخو خالد" to Direction.OUT, "فرحي الوهمي" to Direction.IN), badges.map { it.eventName to it.direction })
         assertEquals(listOf(100_000L, 200_000L), badges.map { it.amountMinor })
         assertTrue(manage.personBadges("p-3").isEmpty())
+    }
+
+    @Test fun everyGiftTakesTheFixedEventGiftsCategoryUnderGifts() = runBlocking<Unit> {
+        val ev = myWedding()
+        val theirs = brothersWedding()
+        val recorded = gifts.recordGifts(ev.id, Direction.IN, "w-cash", "2026-05-01", listOf(GiftEntry("p-1", 200_000))) +
+            gifts.recordGifts(theirs.id, Direction.OUT, "w-cash", "2026-08-01", listOf(GiftEntry("p-2", 100_000)))
+        for (r in recorded) {
+            assertEquals(GiftCategories.EVENT_GIFTS, r.transaction.categoryId)
+            assertEquals(ReviewState.CONFIRMED, r.transaction.reviewState, "النقطة ما بتظهرش «محتاجة مراجعة» (رد المالك §64)")
+            assertTrue(r.transaction.categoryConfirmed)
+        }
+        val tree = categories.listAll().associateBy { it.id }
+        assertEquals("نقوط", tree.getValue(GiftCategories.EVENT_GIFTS).name)
+        assertEquals(GiftCategories.ROOT, tree.getValue(GiftCategories.EVENT_GIFTS).parentId)
+        assertEquals("هدايا", tree.getValue(GiftCategories.ROOT).name)
+        assertEquals("personal", tree.getValue(GiftCategories.ROOT).groupKey)
+        // اسم غيّره المستخدم ما يتكتبش فوقه
+        categories.save(tree.getValue(GiftCategories.EVENT_GIFTS).copy(name = "نقطة الأفراح"))
+        gifts.link(ev.id, "bank-in", EventRole.GIFT_IN, "p-3")
+        assertEquals("نقطة الأفراح", categories.listAll().single { it.id == GiftCategories.EVENT_GIFTS }.name)
+        val linked = txns.findByIds(listOf("bank-in")).single()
+        assertEquals(GiftCategories.EVENT_GIFTS to ReviewState.CONFIRMED, linked.categoryId to linked.reviewState, "عملية بنك اتربطت نقطة بتاخد نفس التصنيف")
+        gifts.unlink(ev.id, "bank-in")
+        val back = txns.findByIds(listOf("bank-in")).single()
+        assertNull(back.categoryId, "الفك بيرجّع التصنيف يتسأل تاني")
+        assertEquals(ReviewState.NEEDS_REVIEW, back.reviewState)
+        // المصروف على الحدث ما بيلمسش التصنيف
+        gifts.link(ev.id, "hall", EventRole.SPEND)
+        assertNull(txns.findByIds(listOf("hall")).single().categoryId)
+    }
+
+    @Test fun spendingLinkStoresItsPercentageAndTheEventCountsThatShare() = runBlocking<Unit> {
+        val ev = myWedding()
+        val link = gifts.link(ev.id, "hall", EventRole.SPEND, sharePercent = 40)
+        assertEquals(40, link.sharePercent)
+        assertEquals(40, links.listByTransactionIds(listOf("hall")).single().sharePercent, "النسبة متخزنة على الربط")
+        gifts.link(ev.id, "bank-out", EventRole.SPEND)
+        val detail = manage.detail(ev.id)
+        assertEquals(1_200_000 + 80_000, detail.summary.totals.single().spentMinor, "40% من 30,000 + العملية التانية كلها")
+        assertEquals(1_200_000, detail.transactions.single { it.transaction.id == "hall" }.shareMinor)
+        assertEquals(3_000_000, detail.transactions.single { it.transaction.id == "hall" }.transaction.amountMinor, "العملية نفسها ما اتغيرتش")
+        assertFailsWith<EventError>("النسبة من 1 لـ100") { gifts.link(ev.id, "loan", EventRole.SPEND, sharePercent = 0) }
+        assertFailsWith<EventError> { gifts.link(ev.id, "loan", EventRole.SPEND, sharePercent = 101) }
+        assertFailsWith<EventError>("النقطة العملية كلها") { gifts.link(ev.id, "bank-in", EventRole.GIFT_IN, "p-1", sharePercent = 50) }
+        assertTrue(links.listByTransactionIds(listOf("loan", "bank-in")).isEmpty())
     }
 }

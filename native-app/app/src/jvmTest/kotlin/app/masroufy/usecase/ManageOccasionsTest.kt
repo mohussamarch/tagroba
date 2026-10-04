@@ -18,6 +18,7 @@ import app.masroufy.memory.MemoryAlertInbox
 import app.masroufy.memory.MemoryAlertInteractions
 import app.masroufy.memory.MemoryAlertReceipts
 import app.masroufy.memory.MemoryAlertSettings
+import app.masroufy.memory.MemoryCategoryRepository
 import app.masroufy.memory.MemoryDebtTermsRepository
 import app.masroufy.memory.MemoryEventLinkRepository
 import app.masroufy.memory.MemoryInstallmentPaymentRepository
@@ -56,7 +57,7 @@ class ManageOccasionsTest {
     private val gifts = EventGifts(
         EventGiftsDeps(
             events, links, txns, MemoryWalletRepository(listOf(Wallet("w-cash", "كاش وهمي", Currency.SAR, "cash", 0, "2026-01-01"))), people,
-            MemoryUnitOfWork(listOf(txns, links)), ids, clock,
+            MemoryUnitOfWork(listOf(txns, links)), ids, clock, MemoryCategoryRepository(),
         ),
     )
     private val gather = GatherAlerts(

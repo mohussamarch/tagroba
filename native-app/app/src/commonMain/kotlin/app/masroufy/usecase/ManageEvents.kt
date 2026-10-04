@@ -5,6 +5,7 @@ import app.masroufy.core.EventLink
 import app.masroufy.core.EventRole
 import app.masroufy.core.EventSummary
 import app.masroufy.core.GiftBadge
+import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.LifeEvent
@@ -13,6 +14,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.checkEventFields
 import app.masroufy.core.checkEventName
+import app.masroufy.core.eventShareMinor
 import app.masroufy.core.personGiftBadges
 import app.masroufy.core.summarizeEvent
 import app.masroufy.core.uiText
@@ -41,7 +43,8 @@ data class EventRow(val event: LifeEvent, val summary: EventSummary)
 
 data class EventLists(val active: List<EventRow>, val archived: List<EventRow>)
 
-data class EventLinkedTransaction(val link: EventLink, val transaction: Transaction, val personName: String?)
+/** [shareMinor] نصيب الحدث من العملية بالنسبة المتخزنة على الربط (العملية كلها للنقطة). */
+data class EventLinkedTransaction(val link: EventLink, val transaction: Transaction, val personName: String?, val shareMinor: Halalas)
 
 data class EventDetail(
     val event: LifeEvent,
@@ -126,7 +129,7 @@ class ManageEvents(private val deps: ManageEventsDeps) {
         val (links, txns) = linked(event)
         val names = deps.people.listAll().associate { it.id to it.name }
         val byId = txns.associateBy { it.id }
-        val rows = links.mapNotNull { l -> byId[l.transactionId]?.let { EventLinkedTransaction(l, it, l.personId?.let(names::get)) } }
+        val rows = links.mapNotNull { l -> byId[l.transactionId]?.let { EventLinkedTransaction(l, it, l.personId?.let(names::get), eventShareMinor(it.amountMinor, l.sharePercent)) } }
             .sortedWith(compareByDescending<EventLinkedTransaction> { it.transaction.occurredAt }.thenByDescending { it.transaction.sourceOrder })
         return EventDetail(event, summarizeEvent(event, links, txns), event.hostPersonId?.let(names::get), rows)
     }

@@ -76,7 +76,7 @@ internal class DueLinks(
      * التصنيف = فرع «المستحقات» بتاعها (قرار المالك §56) — والتصنيفات دي بتتعمل لو مش موجودة بس (اللي المستخدم غيّره ما يتكتبش فوقه).
      */
     suspend fun markKind(transactionId: Id, kind: EconomicKind, categoryId: Id, ensure: List<Category> = DuesCategories.defaults()) {
-        ensureCategories(ensure)
+        categories.ensureAll(ensure)
         txns.update(
             transactionId,
             TransactionPatch(
@@ -84,11 +84,6 @@ internal class DueLinks(
                 reviewState = ReviewState.CONFIRMED, updatedAt = clock.nowIso(),
             ),
         )
-    }
-
-    private suspend fun ensureCategories(wanted: List<Category>) {
-        val existing = categories.listAll().map { it.id }.toSet()
-        for (c in wanted) if (c.id !in existing) categories.save(c)
     }
 
     /** فك الربط: النوع والتصنيف بيرجعوا «لسه ما اتحددش» ويتسألوا تاني — ما بنخمّنش القديم. */
@@ -101,4 +96,13 @@ internal class DueLinks(
             ),
         )
     }
+}
+
+/**
+ * التصنيفات الثابتة (المستحقات · الزكاة · النقوط) بتتعمل **لو مش موجودة بس** — اللي المستخدم غيّره ما يتكتبش فوقه.
+ * [wanted] بالترتيب: الأب قبل الفرع.
+ */
+internal suspend fun CategoryRepository.ensureAll(wanted: List<Category>) {
+    val existing = listAll().map { it.id }.toSet()
+    for (c in wanted) if (c.id !in existing) save(c)
 }

@@ -61,7 +61,12 @@ enum class EventRole(val wire: String) {
     }
 }
 
-/** ربط عملية بحدث. [personId] إجباري للنقوط (مين نقّط/مين نقّطته)، واختياري للمصروف. */
+/**
+ * ربط عملية بحدث. [personId] إجباري للنقوط (مين نقّط/مين نقّطته)، واختياري للمصروف.
+ * [sharePercent] نصيب الحدث من العملية (1..100) — **للمصروف بس**؛ النقطة دايمًا العملية كلها (100).
+ * رد المالك §64: «نحددها بالنسبة المئوية و يفضل التصنيفين دول ملازمين العملية دايما» ⇒ النسبة **بتتخزن على الربط
+ * ومش بتتحسب من جديد أبدًا**، والربط القديم اللي مافيهوش الحقل = 100 (العملية كلها، زي ما كان).
+ */
 data class EventLink(
     val id: Id,
     val eventId: Id,
@@ -69,9 +74,26 @@ data class EventLink(
     val role: EventRole,
     val personId: Id? = null,
     val createdAt: String,
+    val sharePercent: Int = EVENT_SHARE_WHOLE,
 )
 
 const val EVENT_NAME_MAX = 60
+
+/** النسبة الكاملة = العملية كلها للحدث (الافتراضي، والقديم من غير الحقل). */
+const val EVENT_SHARE_WHOLE = 100
+
+/**
+ * نصيب الحدث من العملية بالهللة: المبلغ × النسبة ÷ 100 **بأعداد صحيحة** وتقريب النص لفوق على الهللة (`rateOfMoney`) —
+ * اختيار Claude (§64): 33% من 1.01 ⇒ 0.3333 ⇒ 0.33 · 50% من 0.01 ⇒ 0.005 ⇒ 0.01. 100 ⇒ المبلغ نفسه بالظبط.
+ */
+fun eventShareMinor(amountMinor: Halalas, sharePercent: Int): Halalas =
+    if (sharePercent == EVENT_SHARE_WHOLE) amountMinor else rateOfMoney(amountMinor, sharePercent.toLong(), EVENT_SHARE_WHOLE.toLong())
+
+/** النسبة عدد صحيح من 1 لـ100، والنقطة (جاتلك أو اديتها) العملية كلها بس. */
+fun checkEventShare(role: EventRole, sharePercent: Int) {
+    if (sharePercent !in 1..EVENT_SHARE_WHOLE) throw EventError(uiText(TextKey.EVENT_SHARE_RANGE))
+    if (role.isGift && sharePercent != EVENT_SHARE_WHOLE) throw EventError(uiText(TextKey.EVENT_GIFT_SHARE_WHOLE))
+}
 
 class EventError(message: String) : IllegalArgumentException(message)
 
@@ -103,8 +125,9 @@ fun checkEventFields(date: IsoDate, mine: Boolean, hostPersonId: Id?) {
  * - النقطة (رايحة أو جاية) لازم ليها شخص.
  * - النقطة اللي جاتلك **في حدثك إنت بس** (اختيار Claude — §64: مجموعها بيظهر في حدثك بس، فتسجيلها في حدث حد تاني رقم مستخبي).
  */
-fun checkEventLink(event: LifeEvent, role: EventRole, personId: Id?, txn: Transaction, existing: List<EventLink>) {
+fun checkEventLink(event: LifeEvent, role: EventRole, personId: Id?, txn: Transaction, existing: List<EventLink>, sharePercent: Int = EVENT_SHARE_WHOLE) {
     if (existing.any { it.transactionId == txn.id }) throw EventError(uiText(TextKey.EVENT_TXN_ALREADY_LINKED))
+    checkEventShare(role, sharePercent)
     val needed = if (role == EventRole.GIFT_IN) Direction.IN else Direction.OUT
     if (txn.observedDirection != needed) throw EventError(uiText(if (needed == Direction.IN) TextKey.EVENT_TXN_NEEDS_IN else TextKey.EVENT_TXN_NEEDS_OUT))
     if (role.isGift && personId == null) throw EventError(uiText(TextKey.EVENT_GIFT_NEEDS_PERSON))
@@ -114,7 +137,7 @@ fun checkEventLink(event: LifeEvent, role: EventRole, personId: Id?, txn: Transa
 /** مجاميع حدث بعملة واحدة — **مفيش جمع بين عملتين** (زي الدين في بلدين §64). */
 data class EventCurrencyTotals(
     val currency: Currency,
-    /** المصروف على الحدث — رقم لوحده، **عمره ما بيتنقّص منه النقوط**. */
+    /** المصروف على الحدث (نصيبه من كل عملية حسب النسبة المتخزنة) — رقم لوحده، **عمره ما بيتنقّص منه النقوط**. */
     val spentMinor: Halalas,
     /** النقوط اللي جاتلك — **null لو الحدث مش بتاعك** (مش صفر — مش بيظهر خالص). */
     val giftsInMinor: Halalas?,
@@ -132,7 +155,8 @@ data class EventSummary(
 )
 
 /**
- * ملخص الحدث من روابطه وعملياتها. المبلغ = مبلغ العملية كله (اختيار Claude — الربط على العملية كاملة).
+ * ملخص الحدث من روابطه وعملياتها. المصروف = نصيب الحدث من كل عملية بالنسبة **المتخزنة على الربط** ([eventShareMinor]) ·
+ * النقطة = العملية كلها.
  * ⚠️ **مفيش دالة «صافي» ولا «كلفة بعد النقوط» — عن قصد** (قرار المالك §64).
  */
 fun summarizeEvent(event: LifeEvent, links: List<EventLink>, transactions: List<Transaction>): EventSummary {
@@ -140,7 +164,7 @@ fun summarizeEvent(event: LifeEvent, links: List<EventLink>, transactions: List<
     val mine = links.filter { it.eventId == event.id }.mapNotNull { l -> byId[l.transactionId]?.let { l to it } }
     val currencies = mine.map { it.second.currency }.distinct().sortedBy { it.name }
     val totals = currencies.map { c ->
-        fun sum(role: EventRole) = sumMoney(mine.filter { it.first.role == role && it.second.currency == c }.map { it.second.amountMinor })
+        fun sum(role: EventRole) = sumMoney(mine.filter { it.first.role == role && it.second.currency == c }.map { (l, t) -> eventShareMinor(t.amountMinor, l.sharePercent) })
         EventCurrencyTotals(c, sum(EventRole.SPEND), if (event.mine) sum(EventRole.GIFT_IN) else null, sum(EventRole.GIFT_OUT))
     }
     fun count(role: EventRole) = mine.count { it.first.role == role }
@@ -184,3 +208,21 @@ fun giftBadgeText(badge: GiftBadge): String = uiText(
     formatMoney(badge.amountMinor, badge.currency),
     badge.eventName,
 )
+
+/**
+ * تصنيف «نقوط» جوه أساسي «هدايا» — رد المالك §64: «ما تتصنف ك نقوط عادي ايه المشكلة ؟ وتكون جوا قسم هدايا».
+ * نفس آلية `ZakatCategory` و`DuesCategories`: المعرّفات ثابتة عشان الجهازين يلاقوا نفس التصنيف، وبيتعملوا **لو مش موجودين بس**
+ * (اللي المستخدم غيّره ما يتكتبش فوقه). الاسم بلغة الواجهة وقت الإنشاء — زي بذور الحساب (§40: بتتخزن في بيانات المستخدم).
+ * «هدايا» أساسي في مجموعة «الحياة الشخصية» (§28.1) — المجموعة للعرض بس، والمصروف/الدخل من نوع العملية.
+ * ⚠️ الرمز والألوان مؤقتة لحد تصميم المالك (§55).
+ */
+object GiftCategories {
+    const val ROOT = "cat-gifts"
+    const val EVENT_GIFTS = "cat-gifts-nuqoot"
+
+    /** بالترتيب: الأب الأول (عشان الفرع ما يتحفظش قبل أبوه). */
+    fun defaults(): List<Category> = listOf(
+        Category(ROOT, null, uiText(TextKey.CATEGORY_GIFTS), "gift", "#9b3d6b", "#e8a3c4", true, 920, groupKey = "personal"),
+        Category(EVENT_GIFTS, ROOT, uiText(TextKey.CATEGORY_EVENT_GIFTS), "hand-coins", "#9b3d6b", "#e8a3c4", true, 921),
+    )
+}

@@ -47,7 +47,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "occasions" to listOf("kind", "month", "day", "yearly", "createdAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
@@ -125,6 +125,13 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (group == "transactions" && jsString(row["observedDirection"]) !in listOf("in", "out")) throw BackupError(uiText(TextKey.BACKUP_DIRECTION_INVALID))
     if (group == "transactions" && (numberOf(row["amountMinor"]) ?: Double.NaN) <= 0) throw BackupError(uiText(TextKey.BACKUP_AMOUNT_POSITIVE))
     if (group == "recurringItems" && numberOf(row["cycleMonths"]) !in listOf(1.0, 3.0, 12.0)) throw BackupError(uiText(TextKey.BACKUP_CYCLE_INVALID))
+    // نسبة الحدث (§64): 1..100، والنقطة العملية كلها — من غير الحقل = 100 (الروابط القديمة)
+    if (group == "eventLinks" && row["sharePercent"] != null) {
+        val p = numberOf(row["sharePercent"])!!
+        if (p < 1 || p > EVENT_SHARE_WHOLE || (row["role"] != EventRole.SPEND.wire && p != EVENT_SHARE_WHOLE.toDouble())) {
+            throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, "sharePercent"))
+        }
+    }
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
