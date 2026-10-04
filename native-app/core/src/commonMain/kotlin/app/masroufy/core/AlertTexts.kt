@@ -32,6 +32,8 @@ private fun lockKey(kind: AlertKind, flow: DueFlow): TextKey {
         AlertKind.ZAKAT_OVERDUE -> TextKey.ALERT_LOCK_ZAKAT_OVERDUE
         AlertKind.BALANCE_MISMATCH -> TextKey.ALERT_LOCK_BALANCE
         AlertKind.PROFILE_INCOMPLETE -> TextKey.ALERT_LOCK_PROFILE
+        AlertKind.OCCASION_SOON -> TextKey.ALERT_LOCK_OCCASION_SOON
+        AlertKind.OCCASION_TODAY -> TextKey.ALERT_LOCK_OCCASION_TODAY
         AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_LOCK_GENERIC
     }
 }
@@ -60,6 +62,8 @@ private fun whyKey(kind: AlertKind): Pair<TextKey, List<String>> = when (kind) {
     AlertKind.ZAKAT_OVERDUE -> TextKey.ALERT_WHY_ZAKAT_OVERDUE to emptyList()
     AlertKind.BALANCE_MISMATCH -> TextKey.ALERT_WHY_BALANCE to emptyList()
     AlertKind.PROFILE_INCOMPLETE -> TextKey.ALERT_WHY_PROFILE to emptyList()
+    AlertKind.OCCASION_SOON -> TextKey.ALERT_WHY_OCCASION_SOON to emptyList()
+    AlertKind.OCCASION_TODAY -> TextKey.ALERT_WHY_OCCASION_TODAY to emptyList()
     AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_WHY_SERVER to emptyList()
 }
 
@@ -93,6 +97,7 @@ fun alertGroupLabel(group: AlertGroup): String = uiText(
         AlertGroup.ZAKAT -> TextKey.ALERT_GROUP_ZAKAT
         AlertGroup.BALANCE -> TextKey.ALERT_GROUP_BALANCE
         AlertGroup.PROFILE -> TextKey.ALERT_GROUP_PROFILE
+        AlertGroup.OCCASIONS -> TextKey.ALERT_GROUP_OCCASIONS
         AlertGroup.SECURITY -> TextKey.ALERT_GROUP_SECURITY
         AlertGroup.LINKED_ACCOUNTS -> TextKey.ALERT_GROUP_LINKED_ACCOUNTS
         AlertGroup.EMAIL -> TextKey.ALERT_GROUP_EMAIL

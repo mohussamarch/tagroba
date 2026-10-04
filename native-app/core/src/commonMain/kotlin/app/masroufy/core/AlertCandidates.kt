@@ -84,3 +84,27 @@ fun profileCompletionCandidate(percent: Int?): AlertCandidate? {
     val p = percent.coerceAtLeast(0)
     return AlertCandidate(AlertKind.PROFILE_INCOMPLETE, "profile|$p", uiText(TextKey.ALERT_PROFILE_TITLE, p.toString()), uiText(TextKey.ALERT_PROFILE_BODY))
 }
+
+/**
+ * مناسبة الشخص (§64): «قرّب» من [occasionSoonDays] يوم (مدتك أو أسبوع) ⇒ النهارده. مفيش «عدّى» — بعدها المرة الجاية
+ * بموضوع جديد (الموضوع = المناسبة + يومها). السطر جوه التطبيق فيه اسم الشخص، ولو نقّطك أو نقّطته قبل كده
+ * بيتكتب **للمعلومية** («نقّطك 2,000 في فرحك») — آخر مرة في كل اتجاه. [personName] null = مناسبتك إنت.
+ * الشريط بياخد نص عام من النوع بس («عندك مناسبة قريبة») زي كل التنبيهات.
+ */
+fun occasionAlertCandidate(
+    occasion: Occasion,
+    today: IsoDate,
+    personName: String?,
+    eventName: String?,
+    badges: List<GiftBadge> = emptyList(),
+): AlertCandidate? {
+    val next = nextOccurrence(occasion, today) ?: return null
+    val days = daysBetween(today, next)
+    if (days > occasionSoonDays(occasion)) return null
+    val what = occasionTitle(occasion, personName, eventName)
+    val kind = if (days == 0) AlertKind.OCCASION_TODAY else AlertKind.OCCASION_SOON
+    val title = if (days == 0) uiText(TextKey.ALERT_OCCASION_TODAY_TITLE, what) else uiText(TextKey.ALERT_OCCASION_SOON_TITLE, what, days.toString())
+    val when_ = uiText(if (personName == null && occasion.sourceEventId != null) TextKey.ALERT_OCCASION_BODY_OWN else TextKey.ALERT_OCCASION_BODY, next)
+    val reciprocity = listOf(Direction.IN, Direction.OUT).mapNotNull { d -> badges.firstOrNull { it.direction == d } }.map(::giftBadgeText)
+    return AlertCandidate(kind, "occasion|${occasion.id}|$next", title, (listOf(when_) + reciprocity).joinToString(" · "))
+}

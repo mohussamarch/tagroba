@@ -42,10 +42,13 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "zakatFacts" to listOf("subject", "updatedAt"),
     "zakatYears" to listOf("hawlStart", "dueAt", "currency", "confirmedAt"),
     "zakatPayments" to listOf("yearId", "amountMinor", "lines", "paidAt", "createdAt"),
+    "lifeEvents" to listOf("name", "normalizedName", "kind", "date", "mine", "archived", "createdAt"),
+    "eventLinks" to listOf("eventId", "transactionId", "role", "createdAt"),
+    "occasions" to listOf("kind", "month", "day", "yearly", "createdAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest")
-private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness")
-private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly")
+private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays")
+private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "wallets" to mapOf("kind" to listOf("bank", "cash", "own_abroad", "digital_wallet")),
     "transactions" to linkedMapOf("reviewState" to listOf("confirmed", "suggested", "needs_review"), "datePrecision" to listOf("day", "minute")),
@@ -62,6 +65,9 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "installmentPlans" to mapOf("kind" to listOf("purchase_plan", "financing")),
     "transferParties" to mapOf("verdict" to listOf("own_account", "person", "dismissed")),
     "zakatFacts" to mapOf("subject" to listOf("asset", "obligation")),
+    "lifeEvents" to mapOf("kind" to LifeEventKind.entries.map { it.wire }),
+    "eventLinks" to mapOf("role" to EventRole.entries.map { it.wire }),
+    "occasions" to mapOf("kind" to OccasionKind.entries.map { it.wire }),
 )
 /** قيم اختيارية بتتفحص لو موجودة بس (وقائع الزكاة — §62). */
 private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(

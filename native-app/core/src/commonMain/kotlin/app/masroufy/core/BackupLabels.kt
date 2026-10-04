@@ -36,4 +36,7 @@ val BACKUP_LABELS: Map<String, String>
         "zakatFacts" to uiText(TextKey.BACKUP_GROUP_ZAKAT_FACTS),
         "zakatYears" to uiText(TextKey.BACKUP_GROUP_ZAKAT_YEARS),
         "zakatPayments" to uiText(TextKey.BACKUP_GROUP_ZAKAT_PAYMENTS),
+        "lifeEvents" to uiText(TextKey.BACKUP_GROUP_LIFE_EVENTS),
+        "eventLinks" to uiText(TextKey.BACKUP_GROUP_EVENT_LINKS),
+        "occasions" to uiText(TextKey.BACKUP_GROUP_OCCASIONS),
     )
