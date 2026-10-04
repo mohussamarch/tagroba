@@ -60,6 +60,8 @@ data class AlertInboxEntry(
     val decision: AlertDecision,
     val createdAt: String,
     val openedAt: String? = null,
+    /** اسم البلد جوه الصفحة (§64) — `null` = بلد واحدة أو تنبيه على مستوى الحساب. **مش في نص شاشة القفل.** */
+    val spaceLabel: String? = null,
 )
 
 interface AlertInboxStore {

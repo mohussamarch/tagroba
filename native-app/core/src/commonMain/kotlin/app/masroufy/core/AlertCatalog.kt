@@ -105,8 +105,22 @@ data class AlertCandidate(
     /** المبلغ وحجم الشهر (سقف الميزانية) **بنفس العملة** — للحكم على «كبير بالنسبة لشهرك». null = مش معروف ⇒ مفيش حكم. */
     val amountMinor: Halalas? = null,
     val monthScaleMinor: Halalas? = null,
+    /** البلد اللي التنبيه منها (§64) — السعودية افتراضي. */
+    val spaceId: String = DEFAULT_SPACE_ID,
+    /** اسم البلد **جوه التطبيق بس** (مش على شاشة القفل) — `null` = حساب ببلد واحدة أو تنبيه على مستوى الحساب. */
+    val spaceLabel: String? = null,
 ) {
     val eventKey: String get() = "$threadKey|${kind.wire}"
 }
+
+/**
+ * تنبيه من بلد (§64): موضوع البلاد غير السعودية بيبدأ بمعرّفها (`eg:`) عشان قسط في مصر وقسط في السعودية بنفس المعرّف ما يبقوش موضوع واحد.
+ * **موضوع السعودية ما بيتغيرش** — الإيصالات القديمة («اتبعت») بتفضل شغالة. [labelled] = عنده أكتر من بلد ⇒ اسم البلد بيظهر جوه التطبيق.
+ */
+fun AlertCandidate.inSpace(space: Space, labelled: Boolean): AlertCandidate = copy(
+    threadKey = if (space.id == DEFAULT_SPACE_ID) threadKey else "${space.id}:$threadKey",
+    spaceId = space.id,
+    spaceLabel = if (labelled) space.name else null,
+)
 
 internal fun addDaysIso(date: IsoDate, days: Int): IsoDate = dayNumberToIso(toDayNumber(parseIsoDate(date)) + days)

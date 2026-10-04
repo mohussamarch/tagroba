@@ -81,7 +81,7 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
                 // مقفولة ⇒ الصفحة بس: السطر بيتكتب (أو بيتحدث لدرجة أعلى) من غير شريط ولا إيصال ولا عدّ
                 val current = deps.inbox.listAll().firstOrNull { it.threadKey == c.threadKey }
                 if (current == null || current.eventKey != c.eventKey) {
-                    deps.inbox.save(AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, mutedAlertDecision(c.kind), nowIso))
+                    deps.inbox.save(AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, mutedAlertDecision(c.kind), nowIso, spaceLabel = c.spaceLabel))
                 }
                 kept += c.threadKey
                 continue
@@ -90,13 +90,13 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
                 // اتبعت قبل كده واترجع تاني (دفعة اتفكت · مجموعة اتفتحت تاني) ⇒ يرجع للصفحة بس، من غير شريط
                 if (kept.add(c.threadKey)) {
                     val quiet = AlertDecision(c.kind, AlertDelivery.INBOX_ONLY, null, false, listOf(AlertFactor.PAGE_ONLY))
-                    deps.inbox.save(AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, quiet, nowIso))
+                    deps.inbox.save(AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, quiet, nowIso, spaceLabel = c.spaceLabel))
                 }
                 continue
             }
             val kindStats = stats[c.kind] ?: KindStats()
             val decision = decideAlert(c, kindStats, hours, now)
-            val entry = AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, decision, nowIso)
+            val entry = AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, decision, nowIso, spaceLabel = c.spaceLabel)
             deps.inbox.save(entry)
             receipts += NotificationReceipt(c.eventKey, null, now.date, nowIso)
             stats[c.kind] = kindStats.copy(shown = kindStats.shown + 1)

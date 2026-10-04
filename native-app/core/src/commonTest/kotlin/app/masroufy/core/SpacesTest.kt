@@ -49,6 +49,21 @@ class SpacesTest {
         assertEquals(listOf(DEFAULT_SPACE_ID, "eg"), allSpaces(listOf(egypt)).map { it.id }, "السعودية الأول")
     }
 
+    @Test fun alertThreadsOfOtherCountriesArePrefixedAndSaudiStaysAsItWas() {
+        val c = AlertCandidate(AlertKind.DUE_SOON, "due|plan|ip-1|2026-10-10", "عنوان", "تفاصيل")
+        val egypt = newSpaceFor("EG", emptyList(), "2026-10-04T10:00:00.000Z")
+        val sa = c.inSpace(defaultSpace(), labelled = true)
+        assertEquals(c.threadKey, sa.threadKey, "موضوع السعودية زي ما هو")
+        assertEquals(c.eventKey, sa.eventKey, "إيصالات «اتبعت» القديمة شغالة")
+        assertEquals(defaultSpace().name, sa.spaceLabel)
+        val eg = c.inSpace(egypt, labelled = true)
+        assertEquals("eg:due|plan|ip-1|2026-10-10", eg.threadKey)
+        assertEquals("eg", eg.spaceId)
+        assertEquals(egypt.name, eg.spaceLabel)
+        assertEquals(null, c.inSpace(egypt, labelled = false).spaceLabel, "بلد واحدة ⇒ من غير اسم")
+        assertEquals(c.title to c.body, eg.title to eg.body, "النص هو هو — الاسم حقل لوحده")
+    }
+
     private val raw = RawCategoryTree(
         listOf(
             RawGroup(

@@ -54,6 +54,28 @@ class SpaceTransfersTest {
         assertEquals(ReviewState.NEEDS_REVIEW, back.reviewState)
     }
 
+    @Test fun backupPairsMustMatchTheirTransactionsExactly() {
+        val txns = mapOf(
+            DEFAULT_SPACE_ID to mapOf("t-1" to mapOf<String, Any?>("id" to "t-1", "observedDirection" to "out", "amountMinor" to 100_000L, "currency" to "SAR")),
+            "eg" to mapOf("t-1" to mapOf<String, Any?>("id" to "t-1", "observedDirection" to "in", "amountMinor" to 1_234_560L, "currency" to "EGP")),
+        )
+        val ok = mapOf<String, Any?>(
+            "id" to "stx-default-t-1", "fromSpaceId" to DEFAULT_SPACE_ID, "fromTransactionId" to "t-1", "fromAmountMinor" to 100_000L, "fromCurrency" to "SAR",
+            "toSpaceId" to "eg", "toTransactionId" to "t-1", "toAmountMinor" to 1_234_560L, "toCurrency" to "EGP", "createdAt" to "c",
+        )
+        checkSpaceTransferRows(listOf(ok), txns)
+        fun rejects(why: String, row: Map<String, Any?>, rows: List<Map<String, Any?>> = listOf(row)) =
+            assertFailsWith<BackupError>(why) { checkSpaceTransferRows(rows, txns) }
+        rejects("مبلغ غير العملية", ok + ("toAmountMinor" to 1_234_561L))
+        rejects("عملة غير العملية", ok + ("toCurrency" to "SAR"))
+        rejects("الاتجاهين معكوسين", ok + mapOf("fromSpaceId" to "eg", "toSpaceId" to DEFAULT_SPACE_ID, "id" to "stx-eg-t-1"))
+        rejects("عملية مش موجودة", ok + ("toTransactionId" to "t-9"))
+        rejects("معرّف مش من الرجل الطالعة", ok + ("id" to "stx-x"))
+        rejects("نفس البلد", ok + ("toSpaceId" to DEFAULT_SPACE_ID))
+        rejects("مبلغ سالب", ok + ("fromAmountMinor" to -1L))
+        rejects("نفس الرجل في زوجين", ok, listOf(ok, ok + ("id" to "stx-default-t-1")))
+    }
+
     @Test fun theRateIsTextOnlyFromIntegers() {
         val pair = SpaceTransfer("stx", "default", "t-1", 100_000, Currency.SAR, "eg", "t-1", 1_234_560, Currency.EGP, "c")
         assertEquals("1 SAR = 12.3456 EGP", spaceTransferRateText(pair))

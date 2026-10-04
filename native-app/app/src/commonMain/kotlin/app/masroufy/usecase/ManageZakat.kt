@@ -69,6 +69,8 @@ data class ManageZakatDeps(
     val years: ZakatYearRepository,
     val uow: UnitOfWork,
     val clock: Clock,
+    /** سجل البلاد (§64) — عشان جملة «الحساب ده على فلوسك في البلد دي بس». التشغيل الحقيقي بيدّيه. */
+    val spaces: app.masroufy.port.SpaceRegistry? = null,
 )
 
 /** اقتراح الميعاد: بداية الحول (أول يوم وصلت النصاب) وأول ميعاد زكاة (نفس اليوم الهجري بعد سنة). */
@@ -82,6 +84,12 @@ class ManageZakat(private val deps: ManageZakatDeps) {
 
     /** «المحتوى الإسلامي: ظاهر» + بلد ليها قواعد. */
     suspend fun visible(): Boolean = zakatVisible(deps.profile.load()) && ZakatCountry.of(deps.countryCode) != null
+
+    /**
+     * الزكاة **لكل بلد لوحدها** (اختيار المالك §64): لو عنده بلد تانية (حتى مؤرشفة — فلوسها لسه موجودة) الصفحة بتقول جملة ثابتة
+     * إن الحساب على فلوس البلد دي بس. `null` = بلد واحدة ⇒ مفيش جملة.
+     */
+    suspend fun scopeNote(): String? = if (deps.spaces?.listAll().orEmpty().isNotEmpty()) uiText(TextKey.ZAKAT_THIS_COUNTRY_ONLY) else null
 
     /** القواعد اللي بتتطبق على الحساب ده بمصادرها — لشاشة «ليه الرقم ده؟». */
     fun rules(): List<ZakatRule> = ZAKAT_RULES.filter { it.country == country }
