@@ -14,7 +14,11 @@ import app.masroufy.core.ZakatItemStatus
 import app.masroufy.core.ZakatLineKind
 import app.masroufy.core.ZakatPrices
 import app.masroufy.core.ZakatTopic
+import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.emptyProfile
+import app.masroufy.core.nextZakatDate
+import app.masroufy.core.parseIsoDate
+import app.masroufy.core.toDayNumber
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAssetLotRepository
 import app.masroufy.memory.MemoryAssetPriceRepository
@@ -130,6 +134,16 @@ class ZakatRoscaPayoutTest {
         val rosca = a.items.single { it.holding.id == "r-1" }
         assertEquals(200_000L to 200_000L, rosca.valueMinor to rosca.zakatableMinor, "قسطين قبل الميعاد — مش 400,000 − 1,000,000 بعده")
         assertTrue(a.items.none { it.holding.id == "e-p" })
+    }
+
+    @Test
+    fun `القسط اللي يوم الميعاد نفسه محسوب في موقف الجمعية`() = runBlocking<Unit> {
+        // سنة ميعادها 2025-05-01 بالظبط = يوم القسط التاني ⇒ الموقف قسطين (اليوم نفسه جوه الحساب)
+        val first = toDayNumber(parseIsoDate("2024-04-20"))
+        val start = (0..30).map { dayNumberToIso(first + it) }.first { nextZakatDate(it) == "2025-05-01" }
+        val m = zakat("SA", Currency.SAR, opening = "2024-01-01")
+        val a = m.assess(m.confirmDate(start).id, "2026-02-18", prices)
+        assertEquals(200_000L, a.items.single { it.holding.id == "r-1" }.valueMinor)
     }
 
     @Test
