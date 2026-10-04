@@ -10,6 +10,8 @@ package app.masroufy.core
 enum class AlertGroup(val wire: String) {
     DUES("dues"), BUDGET("budget"), QUESTIONS("questions"), ZAKAT("zakat"), BALANCE("balance"), PROFILE("profile"),
     OCCASIONS("occasions"), SECURITY("security"), LINKED_ACCOUNTS("linked_accounts"), EMAIL("email"),
+    // مصادر الدخل (§48 · §64) — مجموعة لوحدها عشان تتقفل لوحدها
+    INCOME("income"),
     ;
 
     companion object {
@@ -48,6 +50,8 @@ enum class AlertKind(
     // مناسبات الشخص (§64): متوسط الاتنين ⇒ وقتك المعتاد، ومفيش «عدّى» (المناسبة اللي عدّت بتستنى السنة الجاية)
     OCCASION_SOON("occasion_soon", AlertGroup.OCCASIONS, AlertUrgency.MEDIUM),
     OCCASION_TODAY("occasion_today", AlertGroup.OCCASIONS, AlertUrgency.MEDIUM),
+    // المرتب المتأخر (§64): هادي — وقتك المعتاد، من غير «عدّى» ولا نافذة (اختيار Claude)
+    INCOME_LATE("income_late", AlertGroup.INCOME, AlertUrgency.MEDIUM),
     NEW_DEVICE_LOGIN("new_device_login", AlertGroup.SECURITY, AlertUrgency.HIGH, needsServer = true),
     LINKED_ACCOUNT_ACTIVITY("linked_account_activity", AlertGroup.LINKED_ACCOUNTS, AlertUrgency.MEDIUM, needsServer = true),
     MONTHLY_EMAIL("monthly_email", AlertGroup.EMAIL, AlertUrgency.NONE, needsServer = true),
