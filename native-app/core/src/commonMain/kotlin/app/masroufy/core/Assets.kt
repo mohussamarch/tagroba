@@ -14,6 +14,21 @@ data class Asset(
     val archived: Boolean,
     val feedSymbol: String? = null,
     val note: String? = null,
+    /**
+     * «هتوصل لكام؟» (OVERRIDES §69.6) — حقول كوتلن بس، **بتتكتب لو موجودة بس** ⇒ مستند التطبيق الحالي ونسخه هي هي.
+     * [valuation] موجودة = الأصل ده **عقار** (النوع بيفضل زي ما هو عشان التطبيق الحالي): بسعر المتر × المساحة ولا القيمة كلها.
+     * [areaSqm] المساحة بالمتر مضروبة في 10^8 (زي الكمية) · [pricePerSqmMinor] سعر المتر بالهللة وتاريخه [pricePerSqmAsOf].
+     * الإيجار: [monthlyRentMinor] + [rentIncreaseBp] زيادة سنوية + [vacantMonthsPerYear] شهور فاضية — كل خانة اختيارية (مش مكتوبة = صفر).
+     * [expectedRateBp] الزيادة السنوية اللي المستخدم متوقعها للأصل ده (بتغلب الافتراضي).
+     */
+    val valuation: RealEstateValuation? = null,
+    val areaSqm: Quantity? = null,
+    val pricePerSqmMinor: Halalas? = null,
+    val pricePerSqmAsOf: IsoDate? = null,
+    val monthlyRentMinor: Halalas? = null,
+    val rentIncreaseBp: Int? = null,
+    val vacantMonthsPerYear: Int? = null,
+    val expectedRateBp: Int? = null,
 )
 
 /** أسماء أنواع الأصول للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */

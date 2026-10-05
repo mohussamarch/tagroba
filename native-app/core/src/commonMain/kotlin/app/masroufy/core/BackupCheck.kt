@@ -157,6 +157,8 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
         }
     }
     if (group == "incomeSources") checkIncomeSourceRow(row)
+    // حقول «هتوصل لكام؟» على الأصل (§69.6) — بتتفحص لو موجودة بس
+    if (group == "assets") checkAssetGrowthRow(row)?.let { throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, it)) }
     if (group == PERSON_PROFILES_GROUP || group == PERSON_RELATIONS_GROUP) checkPeopleRow(group, row)
     if (group == SAVINGS_GOALS_GROUP || group == GOAL_CONTRIBUTIONS_GROUP) checkGoalRow(group, row)
     if (group == ALERT_INBOX_GROUP && (row["factors"] as? List<*>)?.all { it is String } != true) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, group, "factors"))
