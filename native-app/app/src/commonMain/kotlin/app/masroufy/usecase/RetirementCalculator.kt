@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.CalcReason
 import app.masroufy.core.Currency
+import app.masroufy.core.EgyptContributionWageLimits
 import app.masroufy.core.EgyptPensionInput
 import app.masroufy.core.EosEnd
 import app.masroufy.core.EosPart
@@ -15,6 +16,7 @@ import app.masroufy.core.PensionEstimate
 import app.masroufy.core.SaudiPensionInput
 import app.masroufy.core.TextKey
 import app.masroufy.core.countryPack
+import app.masroufy.core.egyptLatestContributionWageLimits
 import app.masroufy.core.egyptPensionEstimate
 import app.masroufy.core.retirementGap
 import app.masroufy.core.saudiEndOfService
@@ -33,7 +35,8 @@ import app.masroufy.port.IncomeSourceRepository
  * - **مكافأة نهاية الخدمة داخلة** (نظام العمل م84–87 — `EndOfService.kt`) لحد يوم التقاعد بنفس الأجر. إزاي الشغل هيخلص **بيتسأل كل مرة**
  *   حتى مع المعاش المبكر (قرار المالك §69.3 — زي ما كان).
  * - **مصر:** المعاش من قانون 148/2019 (`RetirementEgypt.kt` — جدول 5 اتقرا من صورة الصفحة الرسمية) بأجر التسوية **اللي المستخدم بيكتبه**
- *   (من غير اقتراح من المرتب: أجر التسوية متوسط من 2020 زايد بالتضخم، مش مرتب النهارده)، والمكافأة «لا تنطبق».
+ *   (من غير اقتراح من المرتب: أجر التسوية متوسط من 2020 زايد بالتضخم، مش مرتب النهارده)، والمكافأة «لا تنطبق». الحدين الأدنى والأقصى
+ *   لأجر الاشتراك يوم التقاعد من الجدول الرسمي لو السنة معلنة، وإلا اللي المستخدم يكتبه — وآخر رقم رسمي اقتراح بس (§69.8).
  * - الفلوس المتحوشة **من غير أرباح** (اختيار المالك).
  */
 data class RetirementDefaults(
@@ -48,6 +51,11 @@ data class RetirementDefaults(
     val jobStartedAt: IsoDate?,
     /** عدد الوظايف الشغالة بعملة البلد — 0 = مالكش شغل حالي في مصادر الدخل. */
     val activeJobs: Int,
+    /**
+     * مصر بس: آخر حد أدنى/أقصى لأجر الاشتراك **معلن رسميًا** (§69.8) — **اقتراح** يتعرض جنب الخانتين ونص «غير متاح»
+     * (`CALC_EGYPT_FLOOR_UNKNOWN` · `CALC_EGYPT_MAX_CAP_UNKNOWN`)، **مش** بيتحط لوحده: رقم سنة معينة، مش رقم يوم التقاعد.
+     */
+    val egyptLatestLimits: EgyptContributionWageLimits? = null,
 )
 
 data class RetirementRequest(
@@ -96,7 +104,8 @@ class RetirementCalculator(private val deps: RetirementCalculatorDeps) {
         val jobs = deps.incomeSources.listAll().filter { isActiveJob(it, currency, today) }
         val only = jobs.singleOrNull()
         val salary = only?.expectedMinor
-        return RetirementDefaults(salary, suggestedBasicMinor = salary, suggestedHousingMinor = null, sourceId = only?.id, jobStartedAt = only?.startedAt, activeJobs = jobs.size)
+        val egyptLimits = if (countryPack(countryCode).code == "EG") egyptLatestContributionWageLimits() else null
+        return RetirementDefaults(salary, suggestedBasicMinor = salary, suggestedHousingMinor = null, sourceId = only?.id, jobStartedAt = only?.startedAt, activeJobs = jobs.size, egyptLatestLimits = egyptLimits)
     }
 
     suspend fun calculate(request: RetirementRequest, today: IsoDate): RetirementOutcome {

@@ -5,6 +5,7 @@ import app.masroufy.core.CalcReason
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
+import app.masroufy.core.EgyptContributionWageLimits
 import app.masroufy.core.EgyptPensionInput
 import app.masroufy.core.EosEnd
 import app.masroufy.core.EosPart
@@ -172,6 +173,11 @@ class CalculatorsFlowTest {
         assertEquals(EosPart.NotApplicable(TextKey.CALC_EOS_EGYPT_NOT_APPLICABLE), out.endOfService)
         assertEquals(139_773L, out.gap!!.gap!!.perMonthMinor)
         assertEquals(1_000_000L, out.defaults.salaryMinor, "المرتب بيتقري، بس أجر التسوية مش بيتاخد منه")
+        // §69.8: آخر حد أدنى/أقصى معلن (NOSI 2025-11-30: 2,700 / 16,700 لسنة 2026) اقتراح بس — التقاعد 2050 ⇒ الحدين مش معروفين في الحسبة
+        assertEquals(EgyptContributionWageLimits(2026, 270_000L, 1_670_000L), out.defaults.egyptLatestLimits)
+        assertNull(out.pension.egyptDetail!!.minContributionWageMinor, "الاقتراح ما بيتحطش لوحده")
+        assertNull(out.pension.egyptDetail!!.maxContributionWageMinor)
+        assertNull(calc.defaults("SA", today).egyptLatestLimits, "السعودية مالهاش")
         val noWage = calc.calculate(RetirementRequest("EG", egypt = input.copy(settlementWageMinor = null), eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END, desiredMonthlyMinor = 800_000, years = 20), today)
         assertEquals(CalcReason.NEED_SETTLEMENT_WAGE, noWage.pension.reason)
         assertEquals(CalcReason.NEED_SETTLEMENT_WAGE, noWage.gap!!.reason)
