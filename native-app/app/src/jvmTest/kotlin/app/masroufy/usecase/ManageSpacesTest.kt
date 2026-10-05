@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Category
 import app.masroufy.core.ClassificationRule
 import app.masroufy.core.DEFAULT_SPACE_ID
@@ -10,7 +11,10 @@ import app.masroufy.core.RawMain
 import app.masroufy.core.RawSub
 import app.masroufy.core.RuleMatchMode
 import app.masroufy.core.SpaceError
+import app.masroufy.core.TextKey
+import app.masroufy.core.Texts
 import app.masroufy.core.buildCountryCategoryTree
+import app.masroufy.core.uiText
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryActiveSpaceStore
 import app.masroufy.memory.MemoryCategoryRepository
@@ -113,6 +117,29 @@ class ManageSpacesTest {
         assertFailsWith<SpaceError> { manage.archive(DEFAULT_SPACE_ID) }
         assertFailsWith<SpaceError> { manage.switchTo("ae") }
         assertEquals(DEFAULT_SPACE_ID, manage.switchTo(DEFAULT_SPACE_ID).id)
+    }
+
+    /** نسخة العربي بتتبع البلد الشغالة (§66): السعودية ⇒ فصحى · مصر ⇒ المصري الحالي · رجوع ⇒ فصحى · أرشفة الشغالة ⇒ فصحى. */
+    @Test fun arabicVariantFollowsTheActiveCountry() = runBlocking<Unit> {
+        try {
+            Texts.arabicVariant = ArabicVariant.MSA
+            manage.create("EG")
+            assertEquals(ArabicVariant.MSA, Texts.arabicVariant, "الإنشاء ما بيبدّلش ⇒ النسخة ما بتتغيرش")
+            manage.switchTo("eg")
+            assertEquals(ArabicVariant.EGYPTIAN, Texts.arabicVariant)
+            assertEquals("مرتب", uiText(TextKey.KIND_SALARY))
+            manage.switchTo(DEFAULT_SPACE_ID)
+            assertEquals(ArabicVariant.MSA, Texts.arabicVariant)
+            assertEquals("راتب", uiText(TextKey.KIND_SALARY))
+            manage.switchTo("eg")
+            assertEquals(ArabicVariant.EGYPTIAN, Texts.arabicVariant)
+            assertFailsWith<SpaceError> { manage.switchTo("ae") }
+            assertEquals(ArabicVariant.EGYPTIAN, Texts.arabicVariant, "التبديل المرفوض ما بيغيّرش النسخة")
+            manage.archive("eg")
+            assertEquals(ArabicVariant.MSA, Texts.arabicVariant, "أرشفة الشغالة ⇒ السعودية ⇒ فصحى")
+        } finally {
+            Texts.arabicVariant = ArabicVariant.MSA
+        }
     }
 
     @Test fun anInterruptedCreationIsRetriedNotDuplicated() = runBlocking<Unit> {

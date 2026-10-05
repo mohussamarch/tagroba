@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
@@ -7,6 +8,7 @@ import app.masroufy.core.Obligation
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.Person
 import app.masroufy.core.ProfileCheck
+import app.masroufy.core.Texts
 import app.masroufy.core.UserProfile
 import app.masroufy.core.Wallet
 import app.masroufy.core.field
@@ -41,10 +43,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** الملف الشخصي + أسئلة البداية + المحافظ والمراجع الأولى على `accountFlow.json`. */
 class AccountFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private val now = "2026-09-22T10:00:00.000Z"
 
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)

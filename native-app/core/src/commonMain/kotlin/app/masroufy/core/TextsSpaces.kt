@@ -1,10 +1,10 @@
 package app.masroufy.core
 
 /**
- * نصوص «حساب لكل بلد» (OVERRIDES §41 · §64) باللغتين — بيتدمجوا في `ARABIC_TEXTS` و`ENGLISH_TEXTS`.
+ * نصوص «حساب لكل بلد» (OVERRIDES §41 · §64) باللغتين — بيتدمجوا في `EGYPTIAN_TEXTS` و`ENGLISH_TEXTS`.
  * اسم البلد بيظهر **جوه التطبيق بس** — نصوص شاشة القفل ما اتغيرتش (مفيش اسم بلد عليها). الإنجليزي كتابة Claude ومستني مراجعة المالك (§40).
  */
-internal val ARABIC_SPACE_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_SPACE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.COUNTRY_SA to "السعودية",
     TextKey.COUNTRY_EG to "مصر",
     TextKey.SPACE_COUNTRY_UNKNOWN to "البلد دي لسه مش مدعومة",
@@ -58,4 +58,33 @@ internal val ENGLISH_SPACE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SPACE_TRANSFER_NOTE_LONG to "The note is longer than 1000 characters",
     TextKey.SPACE_TRANSFER_LEG_LOCKED to "This transaction is a transfer to yourself in another country — unlink it first to change its kind or link it to something else",
     TextKey.CATEGORIZED_MERCHANT_OTHER_COUNTRY to "The store “{0}” has this category in your other country — a suggestion, confirm it if right",
+)
+
+/** «حساب لكل بلد» بالفصحى المختصرة (OVERRIDES §66). */
+internal val MSA_SPACE_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.COUNTRY_SA to "السعودية",
+    TextKey.COUNTRY_EG to "مصر",
+    TextKey.SPACE_COUNTRY_UNKNOWN to "هذا البلد غير مدعوم بعد",
+    TextKey.SPACE_COUNTRY_TAKEN to "لديك حساب «{0}» سابقًا — لكل بلد حساب واحد",
+    TextKey.SPACE_NOT_FOUND to "هذا الحساب غير موجود",
+    TextKey.SPACE_DEFAULT_FIXED to "حساب السعودية الأساسي لا يُؤرشف",
+    TextKey.BACKUP_GROUP_MERCHANT_CATEGORIES to "تصنيفات التجار في البلد",
+    TextKey.SPACE_TRANSFER_SAME_SPACE to "التحويل لنفسك يكون بين بلدين مختلفين",
+    TextKey.SPACE_TRANSFER_NEEDS_OUT to "يجب أن تكون العملية في بلد الإرسال صادرة",
+    TextKey.SPACE_TRANSFER_NEEDS_IN to "يجب أن تكون العملية في بلد الاستلام واردة",
+    TextKey.SPACE_TRANSFER_AMOUNT to "يجب أن يكون المبلغ أكبر من صفر",
+    TextKey.SPACE_TRANSFER_WALLET to "اختر محفظة موجودة في هذا البلد",
+    TextKey.SPACE_TRANSFER_CURRENCY to "يجب أن تطابق عملة العملية عملة محفظتها",
+    TextKey.SPACE_TRANSFER_ALREADY to "هذه العملية مرتبطة بتحويل لنفسك سابقًا",
+    TextKey.SPACE_TRANSFER_LINKED to "هذه العملية مرتبطة بشيء آخر (مستحقات أو زكاة أو حدث أو مشروع أو شخص) — فُكّ الربط أولًا",
+    TextKey.SPACE_TRANSFER_NOT_FOUND to "هذا التحويل غير موجود",
+    TextKey.SPACE_TRANSFER_TXN_NOT_FOUND to "العملية غير موجودة في هذا البلد",
+    TextKey.SPACE_TRANSFER_DATE to "التاريخ غير صالح",
+    TextKey.ZAKAT_THIS_COUNTRY_ONLY to "هذا الحساب لأموالك في هذا البلد فقط",
+    TextKey.BACKUP_SPACE_INVALID to "بيانات البلد «{0}» في النسخة غير سليمة",
+    TextKey.BACKUP_SPACE_TRANSFER_INVALID to "تحويل لنفسك في النسخة غير سليم ({0})",
+    TextKey.BACKUP_GROUP_SPACE_TRANSFERS to "التحويل لنفسك بين البلدان",
+    TextKey.SPACE_TRANSFER_NOTE_LONG to "الملاحظة أطول من 1000 حرف",
+    TextKey.SPACE_TRANSFER_LEG_LOCKED to "هذه العملية تحويل لنفسك إلى بلد آخر — فُكّ الربط أولًا لتغيير نوعها أو ربطها بشيء آخر",
+    TextKey.CATEGORIZED_MERCHANT_OTHER_COUNTRY to "التاجر «{0}» مصنَّف هكذا في بلدك الآخر — اقتراح، أكّده إن كان صحيحًا",
 )

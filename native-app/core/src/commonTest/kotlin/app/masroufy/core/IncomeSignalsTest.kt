@@ -1,5 +1,7 @@
 package app.masroufy.core
 
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -10,6 +12,17 @@ import kotlin.test.assertTrue
  * مين بيحوّل المرتب، والمرتب المتأخر (OVERRIDES §48 · §64) — كل الأسامي والمبالغ مخترعة، بنفس شكل «سريع وارد» في كشف الراجحي.
  */
 class IncomeSignalsTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private var seq = 0
 
     private fun deposit(company: String, date: String, amount: Long = 1_000_000, kind: EconomicKind = EconomicKind.UNCLASSIFIED, confirmed: Boolean = false, currency: Currency = Currency.SAR, dir: Direction = Direction.IN) =
@@ -142,21 +155,17 @@ class IncomeSignalsTest {
     }
 
     @Test fun lockScreenSaysNothingAboutTheSourceOrTheAmount() {
-        try {
-            for (lang in Language.entries) {
-                Texts.language = lang
-                val c = lateIncomeCandidates(listOf(paid), emptyList(), "2026-10-28").single()
-                assertTrue(c.title.contains("مصدر a"), "التفاصيل جوه التطبيق فيها الاسم")
-                val notice = systemNoticeFor(c.kind)
-                for (text in listOf(notice.title, notice.body)) {
-                    assertTrue(isLockSafe(text), "[$lang] $text")
-                    assertFalse(text.contains("مصدر a") || text.contains("2026"), "[$lang] $text")
-                }
-                assertEquals(AlertGroup.INCOME, c.kind.group)
-                assertTrue(alertGroupLabel(AlertGroup.INCOME).isNotBlank())
+        // كل نصوص العرض: الفصحى والمصري والإنجليزي (§66)
+        forEachTextVariant { lang ->
+            val c = lateIncomeCandidates(listOf(paid), emptyList(), "2026-10-28").single()
+            assertTrue(c.title.contains("مصدر a"), "التفاصيل جوه التطبيق فيها الاسم")
+            val notice = systemNoticeFor(c.kind)
+            for (text in listOf(notice.title, notice.body)) {
+                assertTrue(isLockSafe(text), "[$lang] $text")
+                assertFalse(text.contains("مصدر a") || text.contains("2026"), "[$lang] $text")
             }
-        } finally {
-            Texts.language = Language.AR
+            assertEquals(AlertGroup.INCOME, c.kind.group)
+            assertTrue(alertGroupLabel(AlertGroup.INCOME).isNotBlank())
         }
     }
 }

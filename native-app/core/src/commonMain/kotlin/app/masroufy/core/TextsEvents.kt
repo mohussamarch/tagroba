@@ -1,11 +1,11 @@
 package app.masroufy.core
 
 /**
- * نصوص الأحداث ومناسبات الشخص (OVERRIDES §44.1 و§64) باللغتين — بيتدمجوا في `ARABIC_TEXTS` و`ENGLISH_TEXTS`.
+ * نصوص الأحداث ومناسبات الشخص (OVERRIDES §44.1 و§64) باللغتين — بيتدمجوا في `EGYPTIAN_TEXTS` و`ENGLISH_TEXTS`.
  * التنبيهات بتاعتهم (`ALERT_*OCCASION*`) في `TextsAlerts.kt` مع باقي نصوص المحرك.
  * الإنجليزي كتابة Claude ومستني مراجعة المالك زي باقي الجدول (§40).
  */
-internal val ARABIC_EVENT_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_EVENT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.EVENT_KIND_WEDDING to "فرح",
     TextKey.EVENT_KIND_ENGAGEMENT to "خطوبة",
     TextKey.EVENT_KIND_CONDOLENCE to "عزا",
@@ -117,4 +117,62 @@ internal val ENGLISH_EVENT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CATEGORY_EVENT_GIFTS to "Event gifts",
     TextKey.EVENT_SHARE_RANGE to "The event share of a transaction must be 1 to 100 percent",
     TextKey.EVENT_GIFT_SHARE_WHOLE to "A gift is linked as the whole transaction — the percentage is for spending only",
+)
+
+/** الأحداث ومناسبات الشخص بالفصحى المختصرة (OVERRIDES §66). «النقوط» كلمة المالك وتبقى كما هي. */
+internal val MSA_EVENT_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.EVENT_KIND_WEDDING to "زواج",
+    TextKey.EVENT_KIND_ENGAGEMENT to "خطوبة",
+    TextKey.EVENT_KIND_CONDOLENCE to "عزاء",
+    TextKey.EVENT_KIND_BIRTH to "ولادة",
+    TextKey.EVENT_KIND_TRAVEL to "سفر",
+    TextKey.EVENT_KIND_MEDICAL to "عملية جراحية",
+    TextKey.EVENT_KIND_EID to "عيد",
+    TextKey.EVENT_KIND_SCHOOL to "بداية الدراسة",
+    TextKey.EVENT_KIND_OTHER to "أخرى",
+    TextKey.EVENT_NAME_LENGTH to "اسم الحدث من حرف إلى {0} حرفًا",
+    TextKey.EVENT_NAME_DUPLICATE to "يوجد حدث بالاسم نفسه",
+    TextKey.EVENT_NOT_FOUND to "الحدث غير موجود",
+    TextKey.EVENT_DATE_INVALID to "تاريخ الحدث غير صالح",
+    TextKey.EVENT_HOST_ONLY_OTHERS to "صاحب الحدث يُحدَّد لحدث شخص آخر فقط — هذا حدثك أنت",
+    TextKey.EVENT_PERSON_NOT_FOUND to "الشخص غير موجود",
+    TextKey.EVENT_TXN_NOT_FOUND to "العملية غير موجودة",
+    TextKey.EVENT_TXN_ALREADY_LINKED to "هذه العملية مرتبطة بحدث سابقًا — العملية تُربط بحدث واحد فقط",
+    TextKey.EVENT_TXN_NEEDS_IN to "يجب أن تكون النقوط التي وصلتك عملية واردة",
+    TextKey.EVENT_TXN_NEEDS_OUT to "يجب أن يكون المصروف والنقوط التي قدّمتها عملية صادرة",
+    TextKey.EVENT_GIFT_NEEDS_PERSON to "حدّد الشخص مع النقوط",
+    TextKey.EVENT_GIFT_IN_NOT_MINE to "النقوط الواردة تُسجَّل في حدثك أنت فقط",
+    TextKey.EVENT_TXN_IN_DUES to "هذه العملية مرتبطة بالمستحقات أو بالزكاة — فلا تكون نقوطًا أيضًا",
+    TextKey.EVENT_LINK_NOT_FOUND to "هذه العملية غير مرتبطة بالحدث",
+    TextKey.EVENT_GIFTS_EMPTY to "أضف نقوط شخص واحد على الأقل بمبلغ أكبر من صفر",
+    TextKey.EVENT_GIFT_PERSON_TWICE to "الشخص نفسه مكرر — سجّل نقوط كل شخص مرة واحدة",
+    TextKey.EVENT_BADGE_IN to "نقوطه لك {0} في «{1}»",
+    TextKey.EVENT_BADGE_OUT to "نقوطك له {0} في «{1}»",
+    TextKey.OCCASION_KIND_BIRTHDAY to "عيد ميلاد",
+    TextKey.OCCASION_KIND_WEDDING_ANNIVERSARY to "ذكرى الزواج",
+    TextKey.OCCASION_KIND_WEDDING to "زواج",
+    TextKey.OCCASION_KIND_OTHER to "مناسبة أخرى",
+    TextKey.OCCASION_DATE_INVALID to "تاريخ المناسبة غير صالح",
+    TextKey.OCCASION_YEAR_REQUIRED to "المناسبة التي تحدث مرة واحدة تحتاج السنة",
+    TextKey.OCCASION_LEAD_RANGE to "التذكير قبلها بيوم إلى {0} يومًا",
+    TextKey.OCCASION_LABEL_LENGTH to "اسم المناسبة أطول من {0} حرفًا",
+    TextKey.OCCASION_NOT_FOUND to "المناسبة غير موجودة",
+    TextKey.OCCASION_EVENT_NOT_MINE to "التذكير السنوي لحدثك أنت فقط",
+    TextKey.OCCASION_TITLE_LABEL_OF to "{0} — {1}",
+    TextKey.OCCASION_TITLE_FROM_EVENT to "ذكرى «{0}»",
+    TextKey.OCCASION_TITLE_BIRTHDAY_OF to "عيد ميلاد {0}",
+    TextKey.OCCASION_TITLE_BIRTHDAY_OWN to "عيد ميلادك",
+    TextKey.OCCASION_TITLE_ANNIVERSARY_OF to "ذكرى زواج {0}",
+    TextKey.OCCASION_TITLE_ANNIVERSARY_OWN to "ذكرى زواجك",
+    TextKey.OCCASION_TITLE_WEDDING_OF to "زواج {0}",
+    TextKey.OCCASION_TITLE_WEDDING_OWN to "زواجك",
+    TextKey.OCCASION_TITLE_OTHER_OF to "مناسبة {0}",
+    TextKey.OCCASION_TITLE_OTHER_OWN to "مناسبتك",
+    TextKey.BACKUP_GROUP_LIFE_EVENTS to "الأحداث",
+    TextKey.BACKUP_GROUP_EVENT_LINKS to "روابط الأحداث",
+    TextKey.BACKUP_GROUP_OCCASIONS to "المناسبات",
+    TextKey.CATEGORY_GIFTS to "هدايا",
+    TextKey.CATEGORY_EVENT_GIFTS to "نقوط",
+    TextKey.EVENT_SHARE_RANGE to "نسبة الحدث من العملية من 1 إلى 100",
+    TextKey.EVENT_GIFT_SHARE_WHOLE to "النقوط تُربط بالعملية كاملة — النسبة للمصروف فقط",
 )

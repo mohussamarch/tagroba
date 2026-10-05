@@ -1,5 +1,7 @@
 package app.masroufy.core
 
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -8,6 +10,17 @@ import kotlin.test.assertTrue
 
 /** «الأحداث» — القلب النقي (OVERRIDES §64). كل الأسامي والمبالغ مخترعة. */
 class EventsTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun txn(id: String, dir: Direction, amount: Long, currency: Currency = Currency.SAR) = Transaction(
         id = id, occurredAt = "2026-05-01", datePrecision = "day", sourceOrder = 1, economicKind = EconomicKind.UNCLASSIFIED,
         economicKindConfirmed = false, observedDirection = dir, amountMinor = amount, currency = currency, categoryConfirmed = false,

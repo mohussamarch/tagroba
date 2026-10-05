@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.AlertGroup
 import app.masroufy.core.AlertKind
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.LifeEventKind
@@ -10,6 +11,7 @@ import app.masroufy.core.OccasionError
 import app.masroufy.core.OccasionKind
 import app.masroufy.core.Period
 import app.masroufy.core.Person
+import app.masroufy.core.Texts
 import app.masroufy.core.Wallet
 import app.masroufy.core.formatMoney
 import app.masroufy.core.isLockSafe
@@ -37,6 +39,8 @@ import app.masroufy.memory.MemoryUsualHours
 import app.masroufy.memory.MemoryWalletRepository
 import app.masroufy.memory.SequentialIdGenerator
 import kotlinx.coroutines.runBlocking
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -45,6 +49,17 @@ import kotlin.test.assertTrue
 
 /** مناسبات الشخص من التسجيل للتنبيه (OVERRIDES §64 + §61) — كل الأسامي والمبالغ مخترعة. */
 class ManageOccasionsTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private val txns = MemoryTransactionRepository()
     private val people = MemoryPersonRepository(listOf(Person("p-1", "سامي الوهمي"), Person("p-2", "قديم وهمي", archived = true)))
     private val events = MemoryLifeEventRepository()

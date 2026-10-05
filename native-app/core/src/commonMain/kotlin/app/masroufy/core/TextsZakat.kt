@@ -1,11 +1,11 @@
 package app.masroufy.core
 
 /**
- * نصوص الزكاة (OVERRIDES §62) باللغتين. ملف لوحده عشان حد الـ300 سطر؛ بيتدمج في `ARABIC_TEXTS` و`ENGLISH_TEXTS`.
+ * نصوص الزكاة (OVERRIDES §62) باللغتين. ملف لوحده عشان حد الـ300 سطر؛ بيتدمج في `EGYPTIAN_TEXTS` و`ENGLISH_TEXTS`.
  * **الصياغة:** «حسب …» + «إرشادي، مش فتوى» — التطبيق ما بيقولش «لازم» ولا «حرام» (§46)، وما بيقولش حاجة المرجع ما قالهاش.
  * الإنجليزي كتابة Claude ومستني مراجعة المالك زي باقي الجدول (§40).
  */
-internal val ARABIC_ZAKAT_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_ZAKAT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_KIND_SILVER to "فضة",
     TextKey.BACKUP_GROUP_ZAKAT_FACTS to "وقائع الزكاة",
     TextKey.BACKUP_GROUP_ZAKAT_YEARS to "سنين الزكاة",
@@ -128,4 +128,70 @@ internal val ENGLISH_ZAKAT_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ZAKAT_RECEIVABLE_NOT_FOUND to "The money owed to you does not exist.",
     TextKey.ZAKAT_DATE_INVALID to "The date is not valid.",
     TextKey.ZAKAT_PAYMENT_NAME to "Zakat {0}",
+)
+
+/**
+ * الزكاة بالفصحى المختصرة (OVERRIDES §66): دقيقة ومحايدة — «وفق …» و«إرشادي، وليس فتوى»، بلا «يجب» ولا «حرام» (§46)،
+ * ولا شيء لم يقله المرجع.
+ */
+internal val MSA_ZAKAT_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.ASSET_KIND_SILVER to "فضة",
+    TextKey.BACKUP_GROUP_ZAKAT_FACTS to "وقائع الزكاة",
+    TextKey.BACKUP_GROUP_ZAKAT_YEARS to "سنوات الزكاة",
+    TextKey.BACKUP_GROUP_ZAKAT_PAYMENTS to "دفعات الزكاة",
+    TextKey.ZAKAT_AUTH_ZATCA to "هيئة الزكاة والضريبة والجمارك",
+    TextKey.ZAKAT_AUTH_IFTAA to "دار الإفتاء المصرية",
+    TextKey.ZAKAT_DOC_ZATCA_GUIDE to "دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)",
+    TextKey.ZAKAT_DOC_FATWA to "فتوى رقم {0}",
+    TextKey.ZAKAT_DOC_IFTAA_GENERAL to "فتاوى دار الإفتاء",
+    TextKey.ZAKAT_GUIDANCE to "إرشادي، وليس فتوى.",
+    TextKey.ZAKAT_RULE_RATE to "النسبة 2.5% (ربع العشر).",
+    TextKey.ZAKAT_RULE_CASH to "النقد والحسابات البنكية كاملةً برصيدها يوم الزكاة.",
+    TextKey.ZAKAT_RULE_NISAB_SA to "النصاب هو الأقل من نصاب الذهب (85 جم خالص) والفضة (595 جم خالص).",
+    TextKey.ZAKAT_RULE_NISAB_EG to "النصاب 85 جم ذهب عيار 21.",
+    TextKey.ZAKAT_RULE_HAWL_FIXED to "يوم ثابت كل سنة هجرية.",
+    TextKey.ZAKAT_RULE_DIP_RESTART to "إن نقص المال عن النصاب أثناء الحول، يبدأ الحول من جديد.",
+    TextKey.ZAKAT_RULE_DIP_START_END to "العبرة بالنصاب في أول الحول وآخره — النقص عنه أثناءه لا يقطع الحول.",
+    TextKey.ZAKAT_RULE_RECEIVABLE_ON_COLLECTION to "الدين الذي لك لا يدخل الحساب السنوي — يُزكّى عند قبضه لسنة واحدة.",
+    TextKey.ZAKAT_RULE_RECEIVABLE_COLLECTED to "الدين المقبوض: 2.5% مرة واحدة على المبلغ المقبوض.",
+    TextKey.ZAKAT_LINE_COLLECTED_RECEIVABLES to "ديون قُبضت هذه السنة",
+    TextKey.ZAKAT_DOC_SECTION_PAGES to "{0} — البند {1}، ص {2}",
+    TextKey.ZAKAT_DOC_PAGES to "{0} — ص {1}",
+    TextKey.ZAKAT_RULE_WORN_EXEMPT to "الذهب والفضة المعدّان للبس معفيان.",
+    TextKey.ZAKAT_RULE_SAVED_COUNTED to "الذهب والفضة المعدّان للادخار تُزكّى قيمتهما.",
+    TextKey.ZAKAT_RULE_DEBTS_NOT_DEDUCTED to "الديون التي عليك لا تُخصم.",
+    TextKey.ZAKAT_RULE_TRADING_FULL to "الأسهم والصناديق المعدّة للمضاربة تُزكّى بكامل قيمتها السوقية.",
+    TextKey.ZAKAT_RULE_LONG_TERM_COMPANY_PAYS to "الأسهم طويلة الأجل: الشركة السعودية تزكّي عنها.",
+    TextKey.ZAKAT_RULE_LONG_TERM_DIVIDENDS to "الأسهم طويلة الأجل: الزكاة على الأرباح فقط.",
+    TextKey.ZAKAT_RULE_RECEIVABLE_STRONG to "الدين الذي لك ويُرجى سداده يُزكّى كل سنة.",
+    TextKey.ZAKAT_RULE_RECEIVABLE_DOUBTFUL to "الدين الذي لك ويُشك في سداده يُزكّى عند قبضه.",
+    TextKey.ZAKAT_RULE_ROSCA_RECEIVABLE to "الجمعية: ما دفعته ولم تقبضه دين لك يُرجى سداده.",
+    TextKey.ZAKAT_RULE_ROSCA_ON_PAYOUT to "الجمعية كالدين الذي لك: ما دفعته ولم تقبضه لا يدخل الحساب السنوي — عند قبض دورك، 2.5% مرة واحدة على ما كان من مالك.",
+    TextKey.ZAKAT_RULE_NO_RULING to "لم يحدد المرجع الرسمي ذلك — راجع جهة الفتوى.",
+    TextKey.ZAKAT_LINE_CASH to "النقد والحسابات البنكية",
+    TextKey.ZAKAT_LINE_GOLD to "ذهب للادخار",
+    TextKey.ZAKAT_LINE_SILVER to "فضة للادخار",
+    TextKey.ZAKAT_LINE_STOCKS to "أسهم",
+    TextKey.ZAKAT_LINE_FUNDS to "صناديق",
+    TextKey.ZAKAT_LINE_RECEIVABLES to "ديون لك",
+    TextKey.ZAKAT_LINE_ROSCA to "الجمعيات",
+    TextKey.ZAKAT_EXTRA_CHARITY to "صدقة إضافية",
+    TextKey.ZAKAT_NOT_COVERED to "هذا النوع غير مشمول في حساب الزكاة بالتطبيق — راجعه بنفسك.",
+    TextKey.ZAKAT_COUNTRY_UNSUPPORTED to "حساب الزكاة غير متاح بعد لبلد هذا الحساب.",
+    TextKey.ZAKAT_YEAR_NOT_FOUND to "سنة الزكاة هذه غير موجودة.",
+    TextKey.ZAKAT_YEAR_NOT_CLOSED to "ثبّت حساب هذه السنة أولًا، ثم سجّل الدفع.",
+    TextKey.ZAKAT_YEAR_ALREADY_CLOSED to "حساب هذه السنة مثبّت سابقًا.",
+    TextKey.ZAKAT_YEAR_HAS_PAYMENTS to "على هذه السنة دفعات — فُكّها أولًا.",
+    TextKey.ZAKAT_CANNOT_CLOSE to "الحساب ناقص — أكمل الوقائع أو الأسعار الناقصة أولًا.",
+    TextKey.ZAKAT_LINES_INVALID to "اختر سطرًا واحدًا على الأقل من سطور هذه السنة.",
+    TextKey.ZAKAT_NOTHING_DUE to "لا زكاة مستحقة في هذه السنة.",
+    TextKey.ZAKAT_PAYMENT_NOT_FOUND to "الدفعة غير موجودة.",
+    TextKey.ZAKAT_TXN_TWICE to "العملية مكررة في الدفعة نفسها.",
+    TextKey.ZAKAT_FACT_WRONG_KIND to "هذا السؤال لا يخص هذا النوع من الأصول.",
+    TextKey.ZAKAT_KARAT_RANGE to "يجب أن يكون العيار من 1 إلى 24.",
+    TextKey.ZAKAT_FINENESS_RANGE to "يجب أن تكون نقاوة الفضة من 1 إلى 1000 (في الألف).",
+    TextKey.ZAKAT_ASSET_NOT_FOUND to "الأصل غير موجود.",
+    TextKey.ZAKAT_RECEIVABLE_NOT_FOUND to "الدين الذي لك غير موجود.",
+    TextKey.ZAKAT_DATE_INVALID to "التاريخ غير صحيح.",
+    TextKey.ZAKAT_PAYMENT_NAME to "زكاة {0}",
 )

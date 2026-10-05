@@ -1,10 +1,10 @@
 package app.masroufy.core
 
 /**
- * نصوص التقويم والمبالغ المحجوزة وتجهيزات الحدث (OVERRIDES §65) باللغتين — بيتدمجوا في `ARABIC_TEXTS` و`ENGLISH_TEXTS`.
+ * نصوص التقويم والمبالغ المحجوزة وتجهيزات الحدث (OVERRIDES §65) باللغتين — بيتدمجوا في `EGYPTIAN_TEXTS` و`ENGLISH_TEXTS`.
  * أسامي البنود المقترحة اختيار Claude (المالك يزود أو يشيل)، والإنجليزي كتابة Claude ومستني مراجعة المالك (§40).
  */
-internal val ARABIC_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CAL_TITLE_PAYDAY to "يوم المرتب",
     TextKey.CAL_TITLE_SOURCE_PAY to "قبض «{0}»",
     TextKey.CAL_TITLE_ZAKAT to "ميعاد الزكاة",
@@ -132,4 +132,70 @@ internal val ENGLISH_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.PREP_BOOKS to "Books and supplies",
     TextKey.PREP_UNIFORM to "Uniform",
     TextKey.PREP_CELEBRATION to "Celebration",
+)
+
+/** التقويم والمبالغ المحجوزة وتجهيزات الحدث بالفصحى المختصرة (OVERRIDES §66). */
+internal val MSA_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.CAL_TITLE_PAYDAY to "يوم الراتب",
+    TextKey.CAL_TITLE_SOURCE_PAY to "قبض «{0}»",
+    TextKey.CAL_TITLE_ZAKAT to "موعد الزكاة",
+    TextKey.CAL_TITLE_PROJECT_DEADLINE to "آخر موعد «{0}»",
+    TextKey.PUBLIC_RAMADAN_START to "بداية رمضان",
+    TextKey.PUBLIC_EID_AL_FITR to "عيد الفطر",
+    TextKey.PUBLIC_EID_AL_ADHA to "عيد الأضحى",
+    TextKey.PUBLIC_OCCASION_SOURCE to "وفق تقويم أم القرى — الموعد الرسمي يُعلن بالرؤية وقد يختلف يومًا",
+    TextKey.RESERVATION_NONE to "غير محتسب",
+    TextKey.RESERVATION_ONLY to "محتسب {0}",
+    TextKey.RESERVATION_OF to "محتسب {0} من {1}",
+    TextKey.RESERVATION_AMOUNT to "يجب أن يكون المبلغ المحتسب أكبر من صفر",
+    TextKey.RESERVATION_RECEIVE to "الاحتساب لمواعيد الدفع فقط — وهذا مبلغ مستحق لك",
+    TextKey.RESERVATION_ITEM_NOT_FOUND to "هذا الموعد ليس في التقويم",
+    TextKey.RESERVATION_NOT_FOUND to "هذا الموعد غير محتسب من أموالك",
+    TextKey.RESERVATION_PAST to "فات هذا الموعد — يُحتسب القادم فقط",
+    TextKey.RESERVATION_AMOUNT_NEEDED to "لا مبلغ معروف لهذا الموعد — أدخل المبلغ المحتسب",
+    TextKey.LEFTOVER_MONTH_END to "المتبقي تقريبًا آخر الشهر",
+    TextKey.LEFTOVER_FROM_WHAT_YOU_HAVE to "المتاح للصرف مما لديك",
+    TextKey.LEFTOVER_NEXT_PAY to "المتبقي تقريبًا حتى القبض القادم",
+    TextKey.PREP_NAME_LENGTH to "اسم البند من حرف إلى {0} حرفًا",
+    TextKey.PREP_NAME_DUPLICATE to "يوجد بند بالاسم نفسه في هذا الحدث",
+    TextKey.PREP_NOT_ALLOWED to "لا تجهيزات للعزاء",
+    TextKey.PREP_ITEM_NOT_FOUND to "البند غير موجود",
+    TextKey.PREP_PLANNED_POSITIVE to "يجب أن يكون مبلغ البند أكبر من صفر — أو اتركه فارغًا",
+    TextKey.PREP_LINK_SPEND_ONLY to "البند يُربط بمصروف الحدث فقط — النقوط ليست تجهيزًا",
+    TextKey.PREP_ITEM_OTHER_EVENT to "هذا البند من حدث آخر",
+    TextKey.PROJECT_DEADLINE_INVALID to "آخر موعد للمشروع ليس تاريخًا صالحًا",
+    TextKey.BACKUP_GROUP_RESERVATIONS to "المبالغ المحجوزة",
+    TextKey.BACKUP_GROUP_EVENT_PREP to "تجهيزات الأحداث",
+    TextKey.PREP_HALL to "القاعة",
+    TextKey.PREP_OUTFIT to "الملابس",
+    TextKey.PREP_CATERING to "الطعام والضيافة",
+    TextKey.PREP_PHOTOGRAPHY to "التصوير",
+    TextKey.PREP_INVITATIONS to "الدعوات",
+    TextKey.PREP_SALON to "صالون التجميل",
+    TextKey.PREP_HONEYMOON to "شهر العسل",
+    TextKey.PREP_ENGAGEMENT_GOLD to "الشبكة",
+    TextKey.PREP_VENUE to "المكان",
+    TextKey.PREP_HOSPITAL to "المستشفى",
+    TextKey.PREP_BABY_SUPPLIES to "مستلزمات المولود",
+    TextKey.PREP_SEBOU to "العقيقة",
+    TextKey.PREP_GUESTS to "ضيافة الزوار",
+    TextKey.PREP_TICKETS to "التذاكر",
+    TextKey.PREP_LODGING to "السكن",
+    TextKey.PREP_VISA to "التأشيرة",
+    TextKey.PREP_LOCAL_TRANSPORT to "التنقل هناك",
+    TextKey.PREP_FOOD to "الطعام",
+    TextKey.PREP_GIFTS_TO_BRING to "الهدايا",
+    TextKey.PREP_SURGERY to "العملية الجراحية",
+    TextKey.PREP_TESTS to "التحاليل والأشعة",
+    TextKey.PREP_MEDICINE to "الأدوية",
+    TextKey.PREP_FOLLOW_UP to "المتابعة بعدها",
+    TextKey.PREP_TRANSPORT to "التنقل",
+    TextKey.PREP_EID_CLOTHES to "ملابس العيد",
+    TextKey.PREP_EIDIYA to "العيدية",
+    TextKey.PREP_SWEETS to "الحلويات والضيافة",
+    TextKey.PREP_OUTINGS to "النزهات",
+    TextKey.PREP_TUITION to "الرسوم الدراسية",
+    TextKey.PREP_BOOKS to "الكتب والأدوات",
+    TextKey.PREP_UNIFORM to "الزي المدرسي",
+    TextKey.PREP_CELEBRATION to "الحفل",
 )

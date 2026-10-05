@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
 import app.masroufy.core.Obligation
@@ -7,6 +8,7 @@ import app.masroufy.core.ObligationKind
 import app.masroufy.core.Person
 import app.masroufy.core.PersonAllocation
 import app.masroufy.core.Settlement
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import app.masroufy.core.json
 import app.masroufy.core.str
@@ -29,10 +31,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** الأشخاص والديون والأمانات على `peopleFlow.json`. */
 class PeopleFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.optStr(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content

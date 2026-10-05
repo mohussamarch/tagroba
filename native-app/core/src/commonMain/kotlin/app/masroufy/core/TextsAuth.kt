@@ -4,7 +4,7 @@ package app.masroufy.core
  * رسايل تسجيل الدخول باللغتين — العربي **نفس نص التطبيق الحالي** (`FirebaseAuthAdapter.ts`) حرف بحرف.
  * ملف لوحده عشان حد الـ300 سطر؛ بيتدمج في `Texts.kt`.
  */
-internal val ARABIC_AUTH_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_AUTH_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.AUTH_INVALID_EMAIL to "الإيميل مش مكتوب صح",
     TextKey.AUTH_USER_DISABLED to "الحساب ده متوقف",
     TextKey.AUTH_USER_NOT_FOUND to "مفيش حساب بالإيميل ده",
@@ -34,4 +34,21 @@ internal val ENGLISH_AUTH_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.AUTH_NOT_ALLOWED to "This sign-in method isn't enabled for the project",
     TextKey.AUTH_UNEXPECTED to "Something unexpected went wrong ({0})",
     TextKey.AUTH_GOOGLE_PENDING to "Google sign-in isn't ready in the new app yet. Email and password sign-in works.",
+)
+
+/** رسائل الدخول بالفصحى المختصرة (OVERRIDES §66). */
+internal val MSA_AUTH_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.AUTH_INVALID_EMAIL to "البريد الإلكتروني غير صحيح",
+    TextKey.AUTH_USER_DISABLED to "هذا الحساب موقوف",
+    TextKey.AUTH_USER_NOT_FOUND to "لا حساب بهذا البريد",
+    TextKey.AUTH_WRONG_PASSWORD to "كلمة المرور خاطئة",
+    TextKey.AUTH_INVALID_CREDENTIAL to "البريد أو كلمة المرور خاطئة",
+    TextKey.AUTH_EMAIL_IN_USE to "البريد مسجّل سابقًا — جرّب تسجيل الدخول",
+    TextKey.AUTH_WEAK_PASSWORD to "كلمة المرور قصيرة — ٦ أحرف على الأقل",
+    TextKey.AUTH_MISSING_PASSWORD to "أدخل كلمة المرور",
+    TextKey.AUTH_TOO_MANY_REQUESTS to "محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة",
+    TextKey.AUTH_NETWORK to "لا اتصال بالإنترنت. تحقق من الاتصال وأعد المحاولة",
+    TextKey.AUTH_NOT_ALLOWED to "طريقة الدخول هذه غير مفعّلة في المشروع",
+    TextKey.AUTH_UNEXPECTED to "حدث خطأ غير متوقع ({0})",
+    TextKey.AUTH_GOOGLE_PENDING to "الدخول بحساب Google قيد التجهيز في التطبيق الجديد. الدخول بالبريد وكلمة المرور متاح.",
 )

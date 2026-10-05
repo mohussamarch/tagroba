@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Language
 import app.masroufy.core.Texts
 import app.masroufy.memory.MemoryAuth
@@ -8,6 +9,8 @@ import app.masroufy.port.AuthField
 import app.masroufy.port.AuthUser
 import app.masroufy.port.authError
 import kotlinx.coroutines.runBlocking
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -15,6 +18,17 @@ import kotlin.test.assertNull
 
 /** جدول أخطاء الدخول = جدول التطبيق الحالي (`FirebaseAuthAdapter.ts`)، وتسجيل الدخول في الذاكرة. */
 class AuthTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     @Test fun errorTableMatchesTheCurrentApp() {
         Texts.language = Language.AR
         // نفس النص ونفس الحقل اللي في `MESSAGES` بتاع التطبيق الحالي

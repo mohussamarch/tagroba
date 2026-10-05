@@ -1,12 +1,12 @@
 package app.masroufy.core
 
 /**
- * نصوص مصادر الدخل (OVERRIDES §48 · §64) باللغتين — بيتدمجوا في `ARABIC_TEXTS` و`ENGLISH_TEXTS`.
+ * نصوص مصادر الدخل (OVERRIDES §48 · §64) باللغتين — بيتدمجوا في `EGYPTIAN_TEXTS` و`ENGLISH_TEXTS`.
  * تنبيه المرتب المتأخر هنا كمان (مش في `TextsAlerts.kt`) عشان الشريحة تفضل في ملفها؛ **`ALERT_LOCK_INCOME_LATE` نص شاشة القفل:**
  * من غير اسم ولا رقم ولا عملة (`systemNoticeFor` بيتأكد، واختبار القفل بيمر على كل الأنواع باللغتين).
  * **مفيش أي كلام عند قفل مصدر** — مفيش مفتاح لده عن قصد (ممكن يكون اتفصل). الإنجليزي كتابة Claude ومستني مراجعة المالك (§40).
  */
-internal val ARABIC_INCOME_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_SOURCE_NOT_FOUND to "مصدر الدخل مش موجود",
     TextKey.INCOME_SOURCE_ALREADY_CLOSED to "المصدر ده متقفل قبل كده",
     TextKey.INCOME_CHANGE_EMPTY to "اختار المصدر اللي خلص أو اكتب الشغل الجديد",
@@ -58,4 +58,32 @@ internal val ENGLISH_INCOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_EOS_NEEDS_IN to "An end-of-service benefit can only be marked on incoming money",
     TextKey.INCOME_EOS_NOT_MARKED to "This deposit is not marked as an end-of-service benefit",
     TextKey.INCOME_EOS_TXN_NOT_FOUND to "The transaction was not found",
+)
+
+/** مصادر الدخل بالفصحى المختصرة (OVERRIDES §66). `ALERT_LOCK_INCOME_LATE` بلا اسم ولا رقم ولا عملة. */
+internal val MSA_INCOME_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.INCOME_SOURCE_NOT_FOUND to "مصدر الدخل غير موجود",
+    TextKey.INCOME_SOURCE_ALREADY_CLOSED to "هذا المصدر مغلق سابقًا",
+    TextKey.INCOME_CHANGE_EMPTY to "اختر المصدر المنتهي أو أدخل العمل الجديد",
+    TextKey.INCOME_CONGRATS to "مبارك العمل الجديد في «{0}»!",
+    TextKey.INCOME_Q_PAYDAY to "في أي يوم من الشهر ينزل الراتب الجديد؟",
+    TextKey.INCOME_Q_MONTH_START to "أتغيّر بداية شهرك المالي إلى يوم {0}؟",
+    TextKey.INCOME_Q_EXPECTED_SALARY to "كم الراتب المتوقع؟ (اختياري — يمكنك تخطيه)",
+    TextKey.INCOME_Q_CAR_TO_WORK to "أتذهب بها إلى العمل؟",
+    TextKey.INCOME_Q_PAYER to "أهذا راتب من «{0}»؟",
+    TextKey.INCOME_PAYER_NOT_ASKED to "أُجيب هذا السؤال سابقًا أو لم تعد له حاجة",
+    TextKey.BACKUP_GROUP_INCOME_SOURCES to "مصادر الدخل",
+    TextKey.ALERT_GROUP_INCOME to "الدخل",
+    TextKey.ALERT_LOCK_INCOME_LATE to "دخل متوقع لم يصل بعد — التفاصيل داخل التطبيق",
+    TextKey.ALERT_WHY_INCOME_LATE to "لم يصل إيداع من هذا المصدر بعد {0} أيام من موعده المعتاد",
+    TextKey.ALERT_INCOME_LATE_TITLE to "لم يصل بعد من «{0}»",
+    TextKey.ALERT_INCOME_LATE_BODY to "موعده المعتاد {0} — قد يتأخر أحيانًا، ولا مطلوب منك شيء",
+    TextKey.INCOME_SOURCE_BAD_WEEKDAY to "يوم القبض في الأسبوع من 1 (الاثنين) إلى 7 (الأحد)",
+    TextKey.INCOME_SOURCE_FREQUENCY_MISMATCH to "القبض الشهري بيوم من الشهر، والأسبوعي بيوم من الأسبوع",
+    TextKey.INCOME_Q_PAY_FREQUENCY to "متى تقبض من هذا العمل؟ شهريًا أم أسبوعيًا؟",
+    TextKey.KIND_END_OF_SERVICE to "مكافأة نهاية الخدمة",
+    TextKey.INCOME_EOS_NOT_FROM_COMPANY to "هذا الإيداع ليس من شركة أكّدت أنها تحوّل لك الراتب",
+    TextKey.INCOME_EOS_NEEDS_IN to "مكافأة نهاية الخدمة تُعلَّم على مبلغ وارد فقط",
+    TextKey.INCOME_EOS_NOT_MARKED to "هذا الإيداع غير معلَّم مكافأة نهاية خدمة",
+    TextKey.INCOME_EOS_TXN_NOT_FOUND to "العملية غير موجودة",
 )

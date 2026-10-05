@@ -1,8 +1,10 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.BACKUP_GROUPS
 import app.masroufy.core.BackupRow
 import app.masroufy.core.NEW_APP_BACKUP_GROUPS
+import app.masroufy.core.Texts
 import app.masroufy.core.exportedBackupData
 import app.masroufy.core.FullBackupData
 import app.masroufy.core.Golden
@@ -25,10 +27,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** النسخة الشاملة (الإصدار 2) ونسخة ما قبل الصيانة على `fullBackupFlow.json`. */
 class FullBackupFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     /** JSON ⇒ Map/List/أرقام/نصوص — زي اللي طبقة البيانات هتدّيه للمنفذ. */
     private fun plain(e: JsonElement): Any? = when (e) {
         is JsonNull -> null

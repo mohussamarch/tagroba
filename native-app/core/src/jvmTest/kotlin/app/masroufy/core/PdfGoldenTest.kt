@@ -8,10 +8,23 @@ import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** كشف الراجحي PDF بعد قراية النص — صفحات مصنوعة (native-app/golden/pdf.json). */
 class PdfGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun check(fn: String, run: (JsonElement) -> Any?) = Golden.check("pdf", fn) { json(run(it)) }
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
     private fun words(e: JsonElement) = e.jsonArray.map { PositionedWord(it.field("x").jsonPrimitive.double, it.field("y").jsonPrimitive.double, it.field("text").str) }

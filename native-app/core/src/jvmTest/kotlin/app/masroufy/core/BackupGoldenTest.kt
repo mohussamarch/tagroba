@@ -9,10 +9,23 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.longOrNull
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** النسخة الشاملة: الفحص والدمج وبصمة السلامة (native-app/golden/backup.json). */
 class BackupGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun check(fn: String, run: (JsonElement) -> Any?) = Golden.check("backup", fn) { json(run(it)) }
 
     /** JSON ⇒ بيانات مرنة (Map/List/Long/Double/…) زي اللي طبقة البيانات هتدّيها. */

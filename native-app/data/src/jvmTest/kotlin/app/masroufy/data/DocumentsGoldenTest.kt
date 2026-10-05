@@ -1,6 +1,8 @@
 package app.masroufy.data
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Golden
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -11,6 +13,8 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,6 +28,17 @@ import kotlin.test.fail
  * 3. تقرا المستند المتخزن وتكتبه تاني **من غير ما يتغير حرف** — عشان التطبيقين يشتغلوا على نفس البيانات.
  */
 class DocumentsGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     /** JSON الكيان (زي ما التطبيق الحالي بيبعته) ⇒ شكل محايد: العدد الصحيح `Long` والكسر `Double`. */
     private fun plain(e: JsonElement): Any? = when (e) {
         is JsonNull -> null

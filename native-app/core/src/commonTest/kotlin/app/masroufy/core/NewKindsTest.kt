@@ -1,5 +1,7 @@
 package app.masroufy.core
 
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -10,6 +12,17 @@ import kotlin.test.assertTrue
  * الضمان هنا اختبارات مكتوبة بالإيد على المعنى المحاسبي.
  */
 class NewKindsTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun txn(kind: EconomicKind, amount: Halalas, excluded: Boolean = false) = Transaction(
         id = "t-${kind.wire}-$amount",
         occurredAt = "2026-09-30",

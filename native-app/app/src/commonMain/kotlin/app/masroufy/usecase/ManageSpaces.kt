@@ -4,9 +4,11 @@ import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Space
 import app.masroufy.core.SpaceError
 import app.masroufy.core.TextKey
+import app.masroufy.core.Texts
 import app.masroufy.core.activeSpaceOf
 import app.masroufy.core.allSpaces
 import app.masroufy.core.countryPack
+import app.masroufy.core.defaultSpace
 import app.masroufy.core.newSpaceFor
 import app.masroufy.core.uiText
 import app.masroufy.port.ActiveSpaceStore
@@ -23,6 +25,7 @@ import app.masroufy.port.SpaceSeedTargets
  * - الترتيب: التصنيفات الأول وبعدين السجل **آخر حاجة** — لو اتقطع في النص، المحاولة التانية بتكمّل الناقص (علامة التجهيز)
  *   والبلد ما تبانش في القايمة بنص شجرة.
  * - **مفيش مسح** لبلد — أرشفة بس، والأرشيف بيرجع.
+ * - **نسخة العربي بتتبع البلد الشغالة** (§66): التبديل أو أرشفة الشغالة ⇒ [Texts.followCountry] (مصر ⇒ المصري، غيرها ⇒ الفصحى).
  */
 data class ManageSpacesDeps(
     val registry: SpaceRegistry,
@@ -44,6 +47,7 @@ class ManageSpaces(private val deps: ManageSpacesDeps) {
         val target = find(spaceId)
         if (target.archived) throw SpaceError(uiText(TextKey.SPACE_NOT_FOUND))
         deps.active.write(target.id)
+        Texts.followCountry(target.countryCode)
         return target
     }
 
@@ -57,7 +61,12 @@ class ManageSpaces(private val deps: ManageSpacesDeps) {
     }
 
     /** الأرشفة بتخبي البلد من غير ما تمسح حاجة. لو كانت الشغالة، الجهاز بيرجع للسعودية. */
-    suspend fun archive(spaceId: String): Space = setArchived(spaceId, true).also { if (deps.active.read() == spaceId) deps.active.write(DEFAULT_SPACE_ID) }
+    suspend fun archive(spaceId: String): Space = setArchived(spaceId, true).also {
+        if (deps.active.read() == spaceId) {
+            deps.active.write(DEFAULT_SPACE_ID)
+            Texts.followCountry(defaultSpace().countryCode)
+        }
+    }
 
     suspend fun unarchive(spaceId: String): Space = setArchived(spaceId, false)
 

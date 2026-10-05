@@ -1,12 +1,14 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.AnomalyResult
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Budget
 import app.masroufy.core.BudgetStatus
 import app.masroufy.core.Category
 import app.masroufy.core.CategoryBudget
 import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
+import app.masroufy.core.Texts
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.field
 import app.masroufy.core.json
@@ -25,6 +27,8 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /**
@@ -32,6 +36,17 @@ import kotlin.test.Test
  * المدخل فيه الفترة الجارية **وست فترات سابقة** — المتوسط والشذوذ بيتحسبوا منهم.
  */
 class BudgetScreenGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.optStr(name: String): String? =

@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Budget
 import app.masroufy.core.CategoryBudget
 import app.masroufy.core.EconomicKind
@@ -7,6 +8,7 @@ import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
 import app.masroufy.core.NotificationEvent
 import app.masroufy.core.NotificationReceipt
+import app.masroufy.core.Texts
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.field
 import app.masroufy.core.json
@@ -31,10 +33,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** التنبيهات جوه التطبيق + مراجعة السجل القديم على `reviewFlow.json`. */
 class ReviewFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private val now = "2026-09-22T10:00:00.000Z"
 
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)

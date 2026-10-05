@@ -1,10 +1,12 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
 import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
 import app.masroufy.core.Tag
+import app.masroufy.core.Texts
 import app.masroufy.core.TransactionTag
 import app.masroufy.core.Wallet
 import app.masroufy.core.buildPeriod
@@ -31,10 +33,23 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** تعديل العملية + ملخص الكاش + مطابقة الرصيد على `editDetail.json`. */
 class EditDetailGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.optStr(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content

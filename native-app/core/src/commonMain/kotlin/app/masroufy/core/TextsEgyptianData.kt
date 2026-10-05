@@ -4,7 +4,7 @@ package app.masroufy.core
  * نصوص الفلوس والكميات ورسايل البنك والنسخة الاحتياطية والألوان بالعربي — **الأصل** زي ما كان في الكود بالحرف.
  * (الجدول اتقسم لملفين عشان حد الـ300 سطر — CLAUDE.md #7.)
  */
-internal val ARABIC_DATA_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.COLOR_RED to "أحمر",
     TextKey.COLOR_ORANGE to "برتقالي",
     TextKey.COLOR_AMBER to "كهرماني",

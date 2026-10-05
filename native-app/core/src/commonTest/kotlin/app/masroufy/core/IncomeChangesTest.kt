@@ -1,5 +1,7 @@
 package app.masroufy.core
 
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -8,6 +10,17 @@ import kotlin.test.assertTrue
 
 /** «غيّرت شغلي» وأسئلته (OVERRIDES §48 · §64) — أسماء ومبالغ مخترعة. */
 class IncomeChangesTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun src(id: String, kind: IncomeSourceKind = IncomeSourceKind.JOB, from: String = "2024-01-01", to: String? = null, day: Int? = null, amount: Long? = null, currency: Currency = Currency.SAR) =
         IncomeSource(id, "شركة $id الوهمية", "شركة $id الوهمية", kind, currency, from, to, day, amount)
 

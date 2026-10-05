@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.BankSmsMessage
 import app.masroufy.core.Direction
 import app.masroufy.core.EntityJson
@@ -8,6 +9,7 @@ import app.masroufy.core.ImportSourceType
 import app.masroufy.core.SchemaId
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import app.masroufy.core.json
 import app.masroufy.core.parseBankSms
@@ -37,10 +39,23 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** قراية رسايل البنك + صندوق الرسايل + شاشة المراجعة على `smsFlow.json`. */
 class SmsFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.optStr(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content

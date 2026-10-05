@@ -3,6 +3,7 @@ package app.masroufy.firestore
 import app.masroufy.core.ACCOUNT_GROUPS
 import app.masroufy.core.SPACE_GROUPS
 import app.masroufy.core.Space
+import app.masroufy.core.Texts
 import app.masroufy.core.activeSpaceOf
 import app.masroufy.core.defaultSpace
 import app.masroufy.memory.MemoryActiveSpaceStore
@@ -21,6 +22,8 @@ import kotlinx.coroutines.launch
  * - حد دخل ⇒ مزامنة للحساب (المجموعات المشتركة — [ACCOUNT_GROUPS]) + مزامنة لكل بلد مش مؤرشفة ([SPACE_GROUPS] — §64)
  *   ⇒ «بيفتح» لحد التنزيل الأول ما يخلص ⇒ «جاهز».
  * - **البلد الشغالة** من الجهاز ([ActiveSpaceStore]) — بلد مش موجودة أو مؤرشفة ⇒ السعودية. التبديل ([switchSpace]) بيغيّر المعرّف بس.
+ * - **نسخة العربي بتتبع البلد الشغالة** (§66): «جاهز» والتبديل والتحديث ⇒ [Texts.followCountry] ببلدها (مصر ⇒ المصري، غيرها ⇒ الفصحى)،
+ *   والخروج ⇒ الافتراضي (الفصحى). فحالات الاستخدام والشاشات ما تعرفش عنها حاجة.
  * - خرج أو حساب تاني دخل ⇒ **كل** المزامنات بتقف و**الذاكرة بتتمسح** قبل أي حاجة للحساب الجديد — حساب ما يشوفش بيانات حساب تاني.
  * ⚠️ نسخة المكتبة على الجهاز نفسه **ما بتتمسحش** عند الخروج (زي التطبيق الحالي) — القواعد على السيرفر هي اللي بتمنع،
  *    وقراية الشاشة بتبقى تحت `users/{uid}` للحساب الداخل بس.
@@ -85,7 +88,9 @@ class AccountSession(
         val ready = current.value as? State.Ready ?: return false
         if (spaceId !in ready.spaces) return false
         activeStore(ready.user.uid).write(spaceId)
-        return current.compareAndSet(ready, ready.copy(activeSpaceId = spaceId))
+        val switched = current.compareAndSet(ready, ready.copy(activeSpaceId = spaceId))
+        if (switched) Texts.followCountry(ready.spaces.getValue(spaceId).space.countryCode)
+        return switched
     }
 
     /** بعد ما بلد اتعملت أو اترجعت من الأرشيف (هنا أو من جهاز تاني): مزامنة للبلاد الجديدة، والجلسة بتفضل «جاهز». */
@@ -96,7 +101,8 @@ class AccountSession(
         added.forEach { it.sync.awaitComplete() }
         val spaces = ready.spaces + added.associateBy { it.space.id }
         val active = activeSpaceOf(activeStore(ready.user.uid).read(), registry.filter { it.id in spaces })
-        if (!current.compareAndSet(ready, ready.copy(spaces = spaces, activeSpaceId = active.id))) added.forEach { it.sync.stop() }
+        if (current.compareAndSet(ready, ready.copy(spaces = spaces, activeSpaceId = active.id))) Texts.followCountry(active.countryCode)
+        else added.forEach { it.sync.stop() }
     }
 
     private fun switchTo(user: AuthUser?) {
@@ -106,6 +112,8 @@ class AccountSession(
         stopAll(before)
         if (user == null) {
             current.value = State.SignedOut
+            // مفيش بلد شغالة ⇒ الافتراضي (الفصحى) — اختيار Claude §66، المالك يقدر يغيّره
+            Texts.followCountry(null)
             return
         }
         val account = spaceOf(user.uid, null)
@@ -123,7 +131,8 @@ class AccountSession(
             val spaces = (listOf(saudi) + others).associateBy { it.space.id }
             val active = activeSpaceOf(activeStore(user.uid).read(), registry)
             // لو الحساب اتغير في النص، ما نعلّمش الحساب القديم «جاهز»
-            if (!current.compareAndSet(opening, State.Ready(user, account, accountSync, spaces, active.id))) others.forEach { it.sync.stop() }
+            if (current.compareAndSet(opening, State.Ready(user, account, accountSync, spaces, active.id))) Texts.followCountry(active.countryCode)
+            else others.forEach { it.sync.stop() }
         }
     }
 

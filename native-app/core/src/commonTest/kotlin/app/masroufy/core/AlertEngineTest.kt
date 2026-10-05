@@ -115,24 +115,20 @@ class AlertEngineTest {
 
     @Test fun lockScreenTextNeverCarriesNumbersAmountsOrNames() {
         val names = listOf("مطعم الوهم", "شركة تقسيط وهمية", "Fake Store", "سامي الوهمي")
-        try {
-            for (lang in Language.entries) {
-                Texts.language = lang
-                for (kind in AlertKind.entries) for (flow in DueFlow.entries) for ((i, name) in names.withIndex()) {
-                    val amount = 1_234L * (i + 1) * (kind.ordinal + 1)
-                    val item = DueItem(DueSource.RECURRING, "r-$i", name, "2026-10-12", amount, Currency.entries[i % Currency.entries.size], flow, DueStatus.SOON)
-                    val detail = dueAlertCandidates(listOf(item), "2026-10-10") { null }.single()
-                    val notice = systemNoticeFor(kind, flow)
-                    for (text in listOf(notice.title, notice.body)) {
-                        assertTrue(isLockSafe(text), "[$lang] $kind: $text")
-                        assertFalse(text.contains(name) || text.contains(formatMoney(amount, item.currency, showCurrency = false)), "[$lang] $kind: $text")
-                    }
-                    assertTrue(detail.title.contains(name), "التفاصيل نفسها فيها الاسم — عشان الاختبار يبقى له معنى")
+        // كل نصوص العرض: الفصحى والمصري والإنجليزي (§66)
+        forEachTextVariant { lang ->
+            for (kind in AlertKind.entries) for (flow in DueFlow.entries) for ((i, name) in names.withIndex()) {
+                val amount = 1_234L * (i + 1) * (kind.ordinal + 1)
+                val item = DueItem(DueSource.RECURRING, "r-$i", name, "2026-10-12", amount, Currency.entries[i % Currency.entries.size], flow, DueStatus.SOON)
+                val detail = dueAlertCandidates(listOf(item), "2026-10-10") { null }.single()
+                val notice = systemNoticeFor(kind, flow)
+                for (text in listOf(notice.title, notice.body)) {
+                    assertTrue(isLockSafe(text), "[$lang] $kind: $text")
+                    assertFalse(text.contains(name) || text.contains(formatMoney(amount, item.currency, showCurrency = false)), "[$lang] $kind: $text")
                 }
-                assertTrue(isLockSafe(digestNotice().body))
+                assertTrue(detail.title.contains(name), "التفاصيل نفسها فيها الاسم — عشان الاختبار يبقى له معنى")
             }
-        } finally {
-            Texts.language = Language.AR
+            assertTrue(isLockSafe(digestNotice().body))
         }
         assertFalse(isLockSafe("عندك قسط بعد 3 أيام"))
         assertFalse(isLockSafe("بعد ٣ أيام"))

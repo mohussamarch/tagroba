@@ -1,10 +1,12 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
 import app.masroufy.core.SharedMerchantEntry
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import app.masroufy.core.json
 import app.masroufy.core.str
@@ -26,10 +28,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** قاعدة التجار المشتركة + قفل التطبيق على `settingsFlow.json`. */
 class SettingsFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.orNull(name: String): JsonElement? = jsonObject[name]?.takeIf { it !is JsonNull }

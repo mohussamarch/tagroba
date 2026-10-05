@@ -32,6 +32,8 @@ data class CountryPack(
     val timeZone: String = "Asia/Riyadh",
     /** فروق شجرة التصنيفات عن السعودية (§64 — [buildCountryCategoryTree]). السعودية من غير فروق. */
     val categoryDelta: List<CategoryDeltaEdit> = emptyList(),
+    /** نسخة العربي في البلد دي (OVERRIDES §66): فصحى مختصرة إلا لو اتحدد غير كده (مصر ⇒ المصري الحالي بالحرف). */
+    val arabicVariant: ArabicVariant = ArabicVariant.MSA,
     /**
      * اللي لسه ناقص في الحزمة دي بالاسم (للمطور) — الحزمة الجاهزة قايمتها فاضية.
      * **ممنوع** تسيبها فاضية وحاجة ناقصة: ده بيخلي التطبيق يدّعي إنه بيدعم بلد وهو لأ (CLAUDE.md #15).
@@ -70,6 +72,7 @@ val SAUDI_PACK = CountryPack(
     statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.ALRAJHI_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
     cashWalletName = "كاش",
+    arabicVariant = ArabicVariant.MSA,
 )
 
 /**
@@ -89,6 +92,8 @@ val EGYPT_PACK = CountryPack(
     cashWalletName = "كاش",
     timeZone = "Africa/Cairo",
     categoryDelta = EGYPT_CATEGORY_DELTA,
+    // نص مصر = النص المصري الحالي بالحرف، وبذورها ما اتغيرتش (§66)
+    arabicVariant = ArabicVariant.EGYPTIAN,
 )
 
 /** البلاد اللي التطبيق يعرف عنها حاجة. اللي مش جاهزة بتقول ناقصها إيه في `gaps`. */

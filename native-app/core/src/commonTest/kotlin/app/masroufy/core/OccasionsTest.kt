@@ -1,5 +1,7 @@
 package app.masroufy.core
 
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -9,6 +11,17 @@ import kotlin.test.assertTrue
 
 /** مناسبات الشخص + تنبيهها (OVERRIDES §64). كل الأسامي والمبالغ مخترعة. */
 class OccasionsTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun occ(month: Int, day: Int, year: Int? = null, yearly: Boolean = true, lead: Int? = null, person: String? = "p-1", kind: OccasionKind = OccasionKind.BIRTHDAY) =
         Occasion("o-$month-$day", person, kind, null, month, day, year, yearly, lead, null, "c")
 
@@ -82,19 +95,15 @@ class OccasionsTest {
         assertTrue(c.body.contains("نقّطك ${formatMoney(200_000, Currency.SAR)} في «فرحي الوهمي»"), c.body)
         assertTrue(c.body.contains("نقّطته"), c.body)
         assertFalse(c.body.contains("خطوبة قديمة"), "آخر مرة في كل اتجاه بس")
-        try {
-            for (lang in Language.entries) {
-                Texts.language = lang
-                for (kind in listOf(AlertKind.OCCASION_SOON, AlertKind.OCCASION_TODAY)) {
-                    val n = systemNoticeFor(kind)
-                    for (text in listOf(n.title, n.body)) {
-                        assertTrue(isLockSafe(text), "[$lang] $kind: $text")
-                        assertFalse(text.contains("سامي") || text.contains("فرح") || text.contains("2,000"), "[$lang] $kind: $text")
-                    }
+        // كل نصوص العرض: الفصحى والمصري والإنجليزي (§66)
+        forEachTextVariant { lang ->
+            for (kind in listOf(AlertKind.OCCASION_SOON, AlertKind.OCCASION_TODAY)) {
+                val n = systemNoticeFor(kind)
+                for (text in listOf(n.title, n.body)) {
+                    assertTrue(isLockSafe(text), "[$lang] $kind: $text")
+                    assertFalse(text.contains("سامي") || text.contains("فرح") || text.contains("زواج") || text.contains("2,000"), "[$lang] $kind: $text")
                 }
             }
-        } finally {
-            Texts.language = Language.AR
         }
         assertEquals("عندك مناسبة قريبة", systemNoticeFor(AlertKind.OCCASION_SOON).body)
     }

@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Asset
 import app.masroufy.core.AssetLot
 import app.masroufy.core.AssetPosition
@@ -10,6 +11,7 @@ import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
 import app.masroufy.core.PortfolioTotals
 import app.masroufy.core.PriceState
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import app.masroufy.core.json
 import app.masroufy.core.parsePriceFeed
@@ -34,10 +36,23 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.longOrNull
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** إدارة الأصول وتحديث الأسعار على `investFlow.json`. */
 class InvestFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.optStr(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content

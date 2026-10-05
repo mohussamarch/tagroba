@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Category
 import app.masroufy.core.ClassificationRule
 import app.masroufy.core.Direction
@@ -17,6 +18,7 @@ import app.masroufy.core.RowError
 import app.masroufy.core.RuleMatchMode
 import app.masroufy.core.SchemaId
 import app.masroufy.core.SourceRecord
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import app.masroufy.core.json
 import app.masroufy.core.str
@@ -39,10 +41,23 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** تدفق الاستيراد (معاينة → التزام) على `importFlow.json` — الحقول الفاضية بتتكتب null صراحةً زي جافاسكربت. */
 class ImportFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
 
     private fun JsonElement.optStr(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content

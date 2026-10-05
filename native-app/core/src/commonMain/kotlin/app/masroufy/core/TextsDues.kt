@@ -2,10 +2,10 @@ package app.masroufy.core
 
 /**
  * نصوص «المستحقات» (الجمعيات والأقساط ومواعيد الديون — OVERRIDES §50) باللغتين.
- * ملف لوحده عشان حد الـ300 سطر؛ بيتدمج في `ARABIC_TEXTS` و`ENGLISH_TEXTS` في `Texts.kt`.
+ * ملف لوحده عشان حد الـ300 سطر؛ بيتدمج في `EGYPTIAN_TEXTS` و`ENGLISH_TEXTS` في `Texts.kt`.
  * الإنجليزي كتابة Claude ومستني مراجعة المالك زي باقي الجدول (§40).
  */
-internal val ARABIC_DUES_TEXTS: Map<TextKey, String> = mapOf(
+internal val EGYPTIAN_DUES_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_ROSCA_CONTRIBUTION to "قسط جمعية",
     TextKey.KIND_INSTALLMENT_PAID to "قسط تمويل",
     TextKey.KIND_FINANCING_RECEIVED to "مبلغ تمويل مستلم",
@@ -133,4 +133,70 @@ internal val ENGLISH_DUES_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ROSCA_HALF_UNEVEN to "Half the payment has to come out in whole halalas — check the amount.",
     TextKey.ROSCA_TURNS_FOR_SHARE to "Pick {0} turns.",
     TextKey.ROSCA_DRAFT_INCOMPLETE to "Some questions are still unanswered.",
+)
+
+/** «المستحقات» بالفصحى المختصرة (OVERRIDES §66) — نفس المفاتيح والمتغيرات. */
+internal val MSA_DUES_TEXTS: Map<TextKey, String> = mapOf(
+    TextKey.KIND_ROSCA_CONTRIBUTION to "قسط جمعية",
+    TextKey.KIND_INSTALLMENT_PAID to "قسط تمويل",
+    TextKey.KIND_FINANCING_RECEIVED to "مبلغ تمويل مستلم",
+    TextKey.DUE_BAD_FIRST_DATE to "تاريخ أول قسط غير صحيح.",
+    TextKey.DUE_BAD_CYCLE to "يكون القسط من كل شهر إلى كل {0} شهرًا.",
+    TextKey.DUE_INSTALLMENT_POSITIVE to "يجب أن يكون القسط أكبر من صفر.",
+    TextKey.DUE_TOTAL_POSITIVE to "يجب أن يكون الإجمالي أكبر من صفر.",
+    TextKey.DUE_TOO_MANY to "عدد الأقساط يتجاوز {0} — راجع القسط والإجمالي.",
+    TextKey.DUE_PAID_NEGATIVE to "المدفوع لا يكون سالبًا.",
+    TextKey.DUE_OVERPAID to "المدفوع ({0}) أكبر من الإجمالي ({1}).",
+    TextKey.DUE_AMOUNT_POSITIVE to "يجب أن يكون المبلغ أكبر من صفر.",
+    TextKey.ROSCA_NAME_LENGTH to "اسم الجمعية من حرف إلى {0} حرفًا.",
+    TextKey.ROSCA_CYCLE_COUNT to "عدد الأدوار من 2 إلى {0}.",
+    TextKey.ROSCA_TURNS to "اختر دورك: رقم من 1 إلى {0}، دون تكرار.",
+    TextKey.ROSCA_PAYOUT_POSITIVE to "يجب أن تكون قيمة الدور أكبر من صفر.",
+    TextKey.ROSCA_PAYOUT_UNEVEN to "قيمة الدور لا تنقسم بالتساوي على أدوارك — أدخلها بنفسك.",
+    TextKey.ROSCA_MEMBER_TURN to "دور «{0}» من 1 إلى {1}.",
+    TextKey.ROSCA_CONTRIBUTION_OVER to "المبلغ أكبر من المتبقي عليك في الجمعية ({0}). الزيادة {1}.",
+    TextKey.ROSCA_PAYOUT_OVER to "المبلغ أكبر من المتبقي لك قبضه ({0}). الزيادة {1}.",
+    TextKey.ROSCA_NOT_FOUND to "الجمعية غير موجودة.",
+    TextKey.INSTALLMENT_NAME_LENGTH to "الاسم من حرف إلى {0} حرفًا.",
+    TextKey.INSTALLMENT_TOTAL_BELOW_PRINCIPAL to "لا يقل إجمالي ما ستدفعه عن المبلغ الأصلي.",
+    TextKey.INSTALLMENT_OVER to "المبلغ أكبر من المتبقي في الأقساط ({0}). الزيادة {1}.",
+    TextKey.INSTALLMENT_NOT_FOUND to "خطة الأقساط غير موجودة.",
+    TextKey.INSTALLMENT_RECEIVED_NEEDS_FINANCING to "المبلغ المستلم يُربط بخطة تمويل فقط — تقسيط المشتريات لا تستلم فيه مبلغًا.",
+    TextKey.INSTALLMENT_ALREADY_RECEIVED to "هذه الخطة مربوط بها مبلغ مستلم سابقًا — فُكّ الربط أولًا.",
+    TextKey.DUE_RECEIVED_NEEDS_IN to "يجب أن يكون مبلغ التمويل المستلم واردًا إلى حسابك.",
+    TextKey.TRANSFER_PERSON_NOT_FOUND to "هذا الشخص غير موجود — أنشئ ملفه أولًا.",
+    TextKey.DEBT_NOT_FOUND to "الدين غير موجود.",
+    TextKey.DUE_TXN_NOT_FOUND to "العملية غير موجودة.",
+    TextKey.DUE_TXN_NEEDS_OUT to "يجب أن يكون القسط صادرًا من حسابك.",
+    TextKey.DUE_TXN_NEEDS_IN to "يجب أن يكون قبض الدور واردًا إلى حسابك.",
+    TextKey.DUE_TXN_CURRENCY to "عملة العملية تختلف عن عملة {0}.",
+    TextKey.DUE_TXN_ALREADY_LINKED to "هذه العملية مربوطة سابقًا.",
+    TextKey.DUE_AMOUNT_OVER_TXN to "المبلغ أكبر من مبلغ العملية نفسها ({0}).",
+    TextKey.DUE_LOCKED_AFTER_LINK to "لا يمكن تغيير العملة أو النوع بعد ربط عمليات — فُكّ الربط أولًا.",
+    TextKey.DUE_BAD_CYCLE_WEEKS to "يكون القسط من كل أسبوع إلى كل {0} أسابيع.",
+    TextKey.ROSCA_Q_NAME to "ما اسم الجمعية؟",
+    TextKey.ROSCA_Q_NAME_HINT to "مثلًا: جمعية العمل",
+    TextKey.ROSCA_Q_TURNS_COUNT to "كم دورًا في الجمعية؟",
+    TextKey.ROSCA_Q_TURNS_COUNT_HINT to "غالبًا بعدد الأعضاء",
+    TextKey.ROSCA_Q_SHARE_AMOUNT to "كم القسط كل مرة؟",
+    TextKey.ROSCA_Q_SHARE_AMOUNT_HINT to "قسط السهم الكامل — أي «الجمعية بكم»",
+    TextKey.ROSCA_Q_FREQUENCY to "كل كم تدفعون؟",
+    TextKey.ROSCA_Q_FIRST_DATE to "متى أول دفعة؟",
+    TextKey.ROSCA_Q_SHARE to "كم سهمًا لك؟",
+    TextKey.ROSCA_Q_MY_TURN to "ما رقم دورك؟",
+    TextKey.ROSCA_Q_PAYOUT to "كم ستقبض في دورك؟",
+    TextKey.ROSCA_Q_PAYOUT_HINT to "المحتسب: {0}",
+    TextKey.ROSCA_FREQ_WEEKLY to "كل أسبوع",
+    TextKey.ROSCA_FREQ_BIWEEKLY to "كل أسبوعين",
+    TextKey.ROSCA_FREQ_MONTHLY to "كل شهر",
+    TextKey.ROSCA_FREQ_BIMONTHLY to "كل شهرين",
+    TextKey.ROSCA_FREQ_QUARTERLY to "كل 3 أشهر",
+    TextKey.ROSCA_SHARE_HALF to "نصف سهم",
+    TextKey.ROSCA_SHARE_ONE to "سهم واحد",
+    TextKey.ROSCA_SHARE_TWO to "سهمان",
+    TextKey.ROSCA_TURN_UNKNOWN_CHOICE to "غير معروف بعد",
+    TextKey.ROSCA_TURN_UNKNOWN to "حدّد دورك أولًا.",
+    TextKey.ROSCA_HALF_UNEVEN to "يجب أن يكون نصف القسط بالهللة — راجع المبلغ.",
+    TextKey.ROSCA_TURNS_FOR_SHARE to "اختر {0} من الأدوار.",
+    TextKey.ROSCA_DRAFT_INCOMPLETE to "بقيت أسئلة بلا إجابة.",
 )

@@ -10,10 +10,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** المراجع الأولية بنفس المعرّفات بالظبط + كشف نوع الملف (native-app/golden/seeds.json). */
 class SeedsGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun check(fn: String, run: (JsonElement) -> Any?) = Golden.check("seeds", fn) { json(run(it)) }
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
     private val root = File(System.getProperty("golden.dir")).parentFile.parentFile

@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.EntityJson
 import app.masroufy.core.Golden
 import app.masroufy.core.ImportBatch
@@ -8,6 +9,7 @@ import app.masroufy.core.ImportCounts
 import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SourceRecord
+import app.masroufy.core.Texts
 import app.masroufy.core.field
 import app.masroufy.core.json
 import app.masroufy.core.str
@@ -27,10 +29,23 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** التراجع عن دفعة + تنظيف المعلّق على `revertFlow.json`. */
 class RevertFlowGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun JsonElement.optStr(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content
 
     private fun sourceRecord(e: JsonElement) = SourceRecord(

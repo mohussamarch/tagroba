@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.AlertKind
+import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.InstallmentKind
@@ -15,6 +16,7 @@ import app.masroufy.core.Person
 import app.masroufy.core.Settlement
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
+import app.masroufy.core.Texts
 import app.masroufy.core.defaultSpace
 import app.masroufy.core.isLockSafe
 import app.masroufy.core.uiText
@@ -40,6 +42,8 @@ import app.masroufy.memory.MemoryTransactionRepository
 import app.masroufy.memory.MemoryUsualHours
 import app.masroufy.memory.SequentialIdGenerator
 import kotlinx.coroutines.runBlocking
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -47,6 +51,17 @@ import kotlin.test.assertTrue
 
 /** اللي بيبص على البلدين مع بعض (§64): التنبيهات · ديون نفس الشخص · جملة الزكاة — أسماء ومبالغ مخترعة. */
 class AcrossSpacesTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private val egypt = Space("eg", "مصر", "EG", Currency.EGP, "2026-10-04T10:00:00.000Z")
     private val period = Period("2026-09", "2026-09-28", "2026-10-27", 30)
     private val person = Person("p-1", "شخص في البلدين")
