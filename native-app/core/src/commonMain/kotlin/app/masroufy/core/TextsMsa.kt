@@ -141,7 +141,7 @@ internal val MSA_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.NOTICE_BUDGET_THRESHOLD to "بلغت {0}٪ من الميزانية",
     TextKey.NOTICE_CATEGORY_EXCEEDED to "تجاوزت سقف «{0}»",
     TextKey.NOTICE_CATEGORY_THRESHOLD to "«{0}» بلغ {1}٪",
-    TextKey.LEDGER_ALLOCATIONS_EXCEED to "مجموع ما قُسّم على الأشخاص ({0}) أكبر من قيمة العملية ({1})",
+    TextKey.LEDGER_ALLOCATIONS_EXCEED to "مجموع ما تم تقسيمه على الأشخاص ({0}) أكبر من قيمة العملية ({1})",
     TextKey.LEDGER_SETTLEMENTS_EXCEED to "المسدَّد من الالتزام {0} تجاوز أصله — لا يُسمح برصيد سالب دون تنبيه",
     TextKey.SETTLEMENT_AMOUNT_POSITIVE to "يجب أن يكون مبلغ التسوية أكبر من صفر",
     TextKey.SETTLEMENT_FULLY_PAID to "هذا الالتزام مسدد بالكامل. لا متبقي للتسوية",

@@ -87,8 +87,10 @@ class AlertCodecsTest {
         val alertGroups = listOf(ALERT_SETTINGS_GROUP, ALERT_INBOX_GROUP, ALERT_RECEIPTS_GROUP)
         assertTrue(ACCOUNT_GROUPS.containsAll(alertGroups), "على مستوى الحساب — مش جوه بلد")
         assertTrue(alertGroups.none { it in SPACE_GROUPS })
-        assertEquals(listOf(ALERT_SETTINGS_GROUP), alertGroups.filter { it in BACKUP_GROUPS }, "النسخة فيها الإعدادات بس — الصفحة والإيصالات بتتولد تاني")
-        assertTrue(ALERT_SETTINGS_GROUP in ACCOUNT_DATA_GROUPS)
+        // اختيار المالك (§69): النسخة فيها الإعدادات **وصفحة الإشعارات بقرايتها** — الإيصالات بس اللي بتتولد تاني
+        assertEquals(listOf(ALERT_SETTINGS_GROUP, ALERT_INBOX_GROUP), alertGroups.filter { it in BACKUP_GROUPS })
+        assertTrue(ALERT_SETTINGS_GROUP in ACCOUNT_DATA_GROUPS && ALERT_INBOX_GROUP in ACCOUNT_DATA_GROUPS)
+        assertFalse(ALERT_RECEIPTS_GROUP in BACKUP_GROUPS)
         // التعلّم على الجوال بس (قرار المالك): ولا مجموعة متزامنة ولا محوّل بيخزن ساعاتك أو تفاعلك
         val stored = (ACCOUNT_GROUPS + BACKUP_GROUPS + DocumentCodecs.byGroup.keys).map { it.lowercase() }
         assertTrue(stored.none { "learn" in it || "hour" in it || "interaction" in it || "engagement" in it || "stats" in it }, stored.toString())
