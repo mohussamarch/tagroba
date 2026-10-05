@@ -1,10 +1,14 @@
 package app.masroufy.core
 
 /**
- * نتيجة حاسبة الورث (OVERRIDES §69). **تحت كل نتيجة** ([disclaimer]): «حساب تقريبي للتخطيط، والقسمة الرسمية بصك حصر الورثة من المحكمة».
+ * نتيجة حاسبة الورث (OVERRIDES §69). **تحت كل نتيجة** ([disclaimer]) نص المالك بالبلد (§69.3):
+ * السعودية «… بصك حصر الورثة من المحكمة» · مصر «… بإعلام الوراثة من المحكمة». بلد مش معروفة ⇒ النص السعودي (الأصل).
  */
 sealed interface InheritanceResult {
-    val disclaimer: String get() = uiText(TextKey.INHERIT_DISCLAIMER)
+    /** قانون النتيجة — null لو البلد مالهاش قانون هنا. */
+    val resultLaw: InheritanceLaw?
+
+    val disclaimer: String get() = inheritanceDisclaimer(resultLaw)
 
     /**
      * اتحسبت. المبالغ بالوحدة الصغرى وكل قسمة مجموعها **بالظبط** قد الكل:
@@ -25,27 +29,47 @@ sealed interface InheritanceResult {
         val items: List<ItemSplit>,
         val notes: List<InheritanceNote>,
     ) : InheritanceResult {
+        override val resultLaw: InheritanceLaw get() = law
+
         fun heir(kind: HeirKind): HeirShare? = heirs.firstOrNull { it.kind == kind }
     }
 
     /** النص ساكت ⇒ «لا نص — اسأل المحكمة» (السعودية م251 · مصر: المادة اللي في [citation]). */
     data class NoText(val reason: NoTextReason, val citation: Citation) : InheritanceResult {
+        override val resultLaw: InheritanceLaw get() = if (citation.source == LawSource.SA_PERSONAL_STATUS) InheritanceLaw.SA else InheritanceLaw.EG
+
         val text: String get() = uiText(TextKey.INHERIT_NO_TEXT, uiText(reason.textKey))
     }
 
-    /** النسخة دي ما بتحسبش الحالة دي — من غير تخمين. */
-    data class Unsupported(val reason: UnsupportedReason) : InheritanceResult {
-        val text: String get() = uiText(reason.textKey)
+    /** النسخة دي ما بتحسبش الحالة دي — من غير تخمين. [args] قيم النص (الشخص في [UnsupportedReason.ASK_DISTANT_BRANCHES]). */
+    data class Unsupported(val reason: UnsupportedReason, val law: InheritanceLaw? = null, val args: List<String> = emptyList()) : InheritanceResult {
+        override val resultLaw: InheritanceLaw? get() = law
+
+        val text: String get() = uiText(reason.textKey, *args.toTypedArray())
     }
 
     /** المدخلات غلط (5 زوجات · زوج وزوجة مع بعض · مبلغ بالسالب …). [args] قيم النص. */
-    data class Invalid(val reason: InvalidReason, val args: List<String> = emptyList()) : InheritanceResult {
+    data class Invalid(val reason: InvalidReason, val args: List<String> = emptyList(), val law: InheritanceLaw? = null) : InheritanceResult {
+        override val resultLaw: InheritanceLaw? get() = law
+
         val text: String get() = uiText(reason.textKey, *args.toTypedArray())
     }
 }
 
+/** التنبيه تحت النتيجة بالبلد (رد المالك §69.3): مصر «إعلام الوراثة» · السعودية وأي بلد تانية «صك حصر الورثة». */
+fun inheritanceDisclaimer(law: InheritanceLaw?): String =
+    uiText(if (law == InheritanceLaw.EG) TextKey.INHERIT_DISCLAIMER_EG else TextKey.INHERIT_DISCLAIMER)
+
+/** نفس النتيجة بقانون البلد (عشان التنبيه تحتها يبقى بتاع بلدها). المحسوبة و«لا نص» قانونهم معروف أصلًا. */
+internal fun InheritanceResult.withLaw(law: InheritanceLaw?): InheritanceResult = when (this) {
+    is InheritanceResult.Unsupported -> if (this.law == null) copy(law = law) else this
+    is InheritanceResult.Invalid -> if (this.law == null) copy(law = law) else this
+    else -> this
+}
+
 /**
- * نصيب نوع وارث. [share] نصيبهم كلهم من نصيب الورثة · [perPerson] نصيب الواحد · [amountsMinor] مبلغ كل واحد بالترتيب
+ * نصيب نوع وارث. [share] نصيبهم كلهم من نصيب الورثة · [personShares] نصيب كل واحد بالترتيب · [perPerson] نصيب الواحد لو كلهم
+ * متساويين (في السعودية أولاد ذوي الأرحام من أشخاص مختلفين ممكن يختلفوا — م235 — ⇒ null) · [amountsMinor] مبلغ كل واحد بالترتيب
  * (ممكن يفرق هللة بين اتنين متساويين — الهللة ما بتتقسمش) · [names] الأسامي لو اتكتبت.
  */
 data class HeirShare(
@@ -53,10 +77,12 @@ data class HeirShare(
     val count: Int,
     val basis: ShareBasis,
     val share: Frac,
-    val perPerson: Frac,
+    val personShares: List<Frac>,
     val amountsMinor: List<Halalas>,
     val names: List<String?>,
 ) {
+    val perPerson: Frac? get() = personShares.distinct().singleOrNull()
+
     val totalMinor: Halalas get() = amountsMinor.sum()
 }
 

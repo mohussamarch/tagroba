@@ -60,18 +60,24 @@ class InheritanceInputsTest {
         assertEquals(UnsupportedReason.DISTANT_RELATIVES, assertIs<InheritanceResult.Unsupported>(distant).reason)
     }
 
-    // النص تحت كل نتيجة (§69) بنص المالك بالحرف
+    // النص تحت كل نتيجة (§69) بنص المالك بالحرف — ومصر «إعلام الوراثة» (رد المالك §69.3)
     @Test
     fun disclaimerUnderEveryResult() {
-        val owner = "حساب تقريبي للتخطيط، والقسمة الرسمية بصك حصر الورثة من المحكمة"
+        val saudi = "حساب تقريبي للتخطيط، والقسمة الرسمية بصك حصر الورثة من المحكمة"
+        val egypt = "حساب تقريبي للتخطيط، والقسمة الرسمية بإعلام الوراثة من المحكمة"
         val results = listOf(
-            calculateInheritance(inheritanceCase("SA", SON to 1)),
-            calculateInheritance(inheritanceCase("SA", WIFE to 5)),
-            calculateInheritance(inheritanceCase("AE", SON to 1)),
-            calculateInheritance(inheritanceCase("EG", HeirKind.GRANDFATHER to 1, HeirKind.FULL_SISTER to 1, HeirKind.PATERNAL_SISTER to 1)),
+            calculateInheritance(inheritanceCase("SA", SON to 1)) to saudi,
+            calculateInheritance(inheritanceCase("SA", WIFE to 5)) to saudi,
+            calculateInheritance(inheritanceCase("AE", SON to 1)) to saudi,
+            calculateInheritance(inheritanceCase("SA", HeirKind.DAUGHTER_SON to 1, HeirKind.MATERNAL_UNCLE_FULL to 1, HeirKind.MATERNAL_UNCLE_PATERNAL to 1)) to saudi,
+            calculateInheritance(inheritanceCase("EG", SON to 1)) to egypt,
+            calculateInheritance(inheritanceCase("EG", WIFE to 5)) to egypt,
+            calculateInheritance(inheritanceCase("EG", WIFE to 1)) to egypt,
+            calculateInheritance(inheritanceCase("EG", HeirKind.GRANDFATHER to 1, HeirKind.FULL_SISTER to 1, HeirKind.PATERNAL_SISTER to 1)) to egypt,
         )
-        assertEquals(setOf("Computed", "Invalid", "Unsupported", "NoText"), results.map { it::class.simpleName }.toSet())
-        for (r in results) assertEquals(owner, r.disclaimer)
+        assertEquals(setOf("Computed", "Invalid", "Unsupported", "NoText"), results.map { it.first::class.simpleName }.toSet())
+        assertEquals(setOf("Computed", "Invalid", "Unsupported", "NoText"), results.filter { it.second == egypt }.map { it.first::class.simpleName }.toSet())
+        for ((r, text) in results) assertEquals(text, r.disclaimer, r.toString())
     }
 
     // كل ملاحظة ونتيجة ليها نص في الفصحى والمصري والإنجليزي، ومفيش متغير فاضل من غير ما يتملي
@@ -93,7 +99,8 @@ class InheritanceInputsTest {
                 for (part in r.items.flatMap { it.parts }) assertTrue(part.claimant.label.isNotBlank())
                 assertTrue(r.disclaimer.isNotBlank())
             }
-            for (reason in UnsupportedReason.entries) assertFalse(InheritanceResult.Unsupported(reason).text.contains('{'))
+            for (reason in UnsupportedReason.entries) assertFalse(InheritanceResult.Unsupported(reason, args = listOf("x")).text.contains('{'))
+            for (reason in InvalidReason.entries) assertFalse(InheritanceResult.Invalid(reason, listOf("x", "100")).text.contains('{'))
             for (reason in NoTextReason.entries) assertFalse(InheritanceResult.NoText(reason, Citation(LawSource.EG_INHERITANCE, "22")).text.contains('{'))
             assertFalse(InheritanceResult.Invalid(InvalidReason.COUNT_RANGE, listOf("x", "100")).text.contains('{'))
         }

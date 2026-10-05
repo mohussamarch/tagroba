@@ -37,7 +37,7 @@ class TextsTest {
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68) · حاسبة الورث (§69)
         val newer = TextKey.entries.map { it.name }.filter { it !in snapshot }
         val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_FEED_ALERT_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys +
-            EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys + EGYPTIAN_CALC_TEXTS.keys
+            EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys + EGYPTIAN_CALC_TEXTS.keys + EGYPTIAN_INHERITANCE_DISTANT_TEXTS.keys
         assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 

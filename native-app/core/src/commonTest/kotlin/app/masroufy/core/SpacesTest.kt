@@ -12,8 +12,12 @@ class SpacesTest {
         assertTrue(ACCOUNT_GROUPS.intersect(SPACE_GROUPS.toSet()).isEmpty(), "مجموعة في الحساب والمساحة مع بعض")
         assertEquals(BACKUP_GROUPS.toSet(), (ACCOUNT_DATA_GROUPS + SPACE_GROUPS).toSet(), "كل مجموعة في النسخة ليها مكان واحد")
         assertEquals(
-            listOf("merchants", "people", "tags", "occasions", "personProfiles", "personRelations", "alertSettings", "savingsGoals", "goalContributions", "alertInbox"),
-            ACCOUNT_DATA_GROUPS, "المشترك بقرار §41 و§64 + دواير الأشخاص وصلاتهم (جلسة 16) + إعدادات التنبيهات (جلسة 18) + خطط الادخار (§68) + صفحة الإشعارات (§69) بس",
+            listOf(
+                "merchants", "people", "tags", "occasions", "personProfiles", "personRelations", "alertSettings", "savingsGoals", "goalContributions", "alertInbox",
+                "inheritanceScenarios",
+            ),
+            ACCOUNT_DATA_GROUPS,
+            "المشترك بقرار §41 و§64 + دواير الأشخاص وصلاتهم (جلسة 16) + إعدادات التنبيهات (جلسة 18) + خطط الادخار (§68) + صفحة الإشعارات (§69) + حسابات الورث (§69.4) بس",
         )
         for (g in listOf("transactions", "wallets", "categories", "rules", "budgets", "obligations", "settlements", "allocations", "incomeSources", "lifeEvents", "eventLinks", "zakatYears", MERCHANT_CATEGORIES_GROUP)) {
             assertTrue(g in SPACE_GROUPS, "$g لازم يبقى جوه البلد")

@@ -19,6 +19,7 @@ internal fun inheritanceCase(
     predeceased: List<PredeceasedChild> = emptyList(),
     distantRelatives: Boolean? = null,
     special: Set<SpecialCircumstance> = emptySet(),
+    branches: List<DistantBranch> = emptyList(),
 ) = InheritanceCase(
     countryCode = country,
     heirs = heirs.toMap(),
@@ -29,6 +30,7 @@ internal fun inheritanceCase(
     predeceasedChildren = predeceased,
     distantRelatives = distantRelatives,
     special = special,
+    distantBranches = branches,
 )
 
 internal fun computed(case: InheritanceCase): InheritanceResult.Computed {
@@ -59,12 +61,14 @@ internal fun assertExact(r: InheritanceResult.Computed) {
     val shareSum = r.heirs.map { it.share }.sumFrac()
     if (r.heirs.any { it.share.isPositive }) assertEquals(Frac.ONE, shareSum, "مجموع الأنصبة")
     for (h in r.heirs) {
-        assertEquals(h.share, h.perPerson * h.count, "نصيب الفرد × العدد")
+        assertEquals(h.share, h.personShares.sumFrac(), "مجموع أنصبة الأفراد = نصيب النوع")
+        assertEquals(h.count, h.personShares.size)
         assertEquals(h.count, h.amountsMinor.size)
-        for (a in h.amountsMinor) {
+        h.amountsMinor.forEachIndexed { i, a ->
             assertTrue(a >= 0, "مبلغ سالب")
-            val (q, _) = mulDivRem(r.heirsMinor, h.perPerson.num, h.perPerson.den)
-            assertTrue(a == q || a == q + 1, "${h.kind}: $a بعيد عن ${h.perPerson} × ${r.heirsMinor}")
+            val p = h.personShares[i]
+            val (q, _) = mulDivRem(r.heirsMinor, p.num, p.den)
+            assertTrue(a == q || a == q + 1, "${h.kind}: $a بعيد عن $p × ${r.heirsMinor}")
         }
     }
     assertEquals(r.heirsMinor, r.heirs.sumOf { it.totalMinor }, "مجموع مبالغ الورثة")

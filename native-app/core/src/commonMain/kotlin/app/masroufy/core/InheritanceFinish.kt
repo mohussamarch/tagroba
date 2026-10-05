@@ -22,13 +22,16 @@ private val SPOUSES = setOf(HUSBAND, WIFE)
  * 3. **الباقي للعصبة** — لو الفروض استغرقت التركة العاصب بيسقط (السعودية م227 و229 · مصر م16)، **إلا المُشَرَّكة في مصر** (م10):
  *    الأشقاء بيشاركوا الإخوة لأم في الثلث بالتساوي. السعودية م227 بتسقطهم نصًا (الحِمارية).
  * 4. **الرد** (السعودية م231 · مصر م30): الباقي من غير عصبة بيرجع لأصحاب الفروض غير الزوجين بنسبة فروضهم. الزوج/الزوجة بياخدوا الرد
- *    بس لو مفيش غيرهم **ولا ذوي أرحام** — وذوي الأرحام مش في النسخة دي ⇒ بنسأل ([InheritanceCase.distantRelatives]).
+ *    بس لو مفيش غيرهم **ولا ذوي أرحام** ⇒ لو ذوو الأرحام مكتوبين بياخدوا الباقي ([distantOutcome])، ولو مش مكتوبين بنسأل
+ *    ([InheritanceCase.distantRelatives]).
  * 5. **العول** (السعودية م230 · مصر م15): الفروض أكتر من التركة ⇒ كل واحد بينقص بنفس النسبة. الملاحظة فيها أصل المسألة قبل وبعد.
+ * 6. **ذوو الأرحام** مع صاحب فرض أو عاصب ⇒ نصيبهم صفر بملاحظة (السعودية م234 · مصر م31).
  */
-internal fun ShareState.finish(distantRelatives: Boolean?): SharesOutcome {
+internal fun ShareState.finish(distantRelatives: Boolean?, distant: Map<HeirKind, Int>, branches: List<DistantBranch>): SharesOutcome {
     umariyya()
     applyGrandfatherSixthFloor(SIXTH)
     val inheriting = inheriting()
+    if (distant.isNotEmpty() && inheriting.all { it in SPOUSES }) return distantOutcome(distant, branches)
     if (inheriting.isEmpty()) {
         val reason = if (distantRelatives == true) UnsupportedReason.DISTANT_RELATIVES else UnsupportedReason.NO_HEIRS
         return SharesOutcome.Stop(InheritanceResult.Unsupported(reason))
@@ -71,6 +74,13 @@ internal fun ShareState.finish(distantRelatives: Boolean?): SharesOutcome {
     for (k in blocked.keys) {
         shares[k] = Frac.ZERO
         basis[k] = ShareBasis.BLOCKED
+    }
+    if (distant.isNotEmpty()) {
+        for (k in distant.keys) {
+            shares[k] = Frac.ZERO
+            basis[k] = ShareBasis.BLOCKED
+        }
+        note(InheritanceNoteKind.DISTANT_EXCLUDED, cite("234", "31"))
     }
     return SharesOutcome.Shares(shares, basis, notes.toList())
 }
