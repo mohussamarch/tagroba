@@ -1,6 +1,8 @@
 package app.masroufy.device
 
 import android.content.Context
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.port.AppLockSettingsPort
 import app.masroufy.port.RepairBackupPort
 import app.masroufy.port.SavedBackup
@@ -17,7 +19,7 @@ import java.io.FileOutputStream
  */
 class AndroidRepairBackup(private val context: Context) : RepairBackupPort {
     override suspend fun save(fileName: String, content: String): SavedBackup = withContext(Dispatchers.IO) {
-        if (!SAFE_NAME.matches(fileName)) throw IllegalArgumentException("اسم الملف أو محتواه غير صالح")
+        if (!SAFE_NAME.matches(fileName)) throw IllegalArgumentException(uiText(TextKey.FILE_NAME_INVALID))
         val file = File(backupDir(), fileName)
         try {
             FileOutputStream(file).use { out ->
@@ -25,7 +27,7 @@ class AndroidRepairBackup(private val context: Context) : RepairBackupPort {
                 out.fd.sync()
             }
         } catch (e: Exception) {
-            throw IllegalStateException("تعذر حفظ النسخة على الجهاز", e)
+            throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED), e)
         }
         SavedBackup(file.absolutePath, if (file.isFile) file.length() else 0)
     }

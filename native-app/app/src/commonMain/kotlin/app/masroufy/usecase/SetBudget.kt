@@ -6,6 +6,8 @@ import app.masroufy.core.CategoryBudget
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.Period
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.port.BudgetRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
@@ -30,11 +32,11 @@ class SetBudget(private val deps: SetBudgetDeps) {
     /** عتبة التنبيه: نسبة بين 1 و100، أو null فمفيش تنبيه. */
     private fun validateThreshold(percent: Int?) {
         if (percent == null) return
-        if (percent < 1 || percent > 100) throw BudgetError("عتبة التنبيه لازم تكون رقم صحيح بين 1 و100")
+        if (percent < 1 || percent > 100) throw BudgetError(uiText(TextKey.BUDGET_THRESHOLD_RANGE))
     }
 
     private fun validateLimit(limitMinor: Halalas) {
-        if (limitMinor <= 0) throw BudgetError("السقف لازم يكون أكبر من صفر")
+        if (limitMinor <= 0) throw BudgetError(uiText(TextKey.BUDGET_LIMIT_POSITIVE))
     }
 
     /** بتعمل ميزانية الفترة لو مش موجودة — من غير أي سقف من عندها. */
@@ -124,7 +126,7 @@ class SetBudget(private val deps: SetBudgetDeps) {
      * (التطبيق الحالي كان بيضيف سقف تاني لنفس التصنيف جنب الموجود.)
      */
     suspend fun copyFrom(sourcePeriodKey: String, target: Period): Int {
-        val source = deps.budgets.findByPeriod(sourcePeriodKey) ?: throw BudgetError("مفيش ميزانية للفترة $sourcePeriodKey تتنسخ")
+        val source = deps.budgets.findByPeriod(sourcePeriodKey) ?: throw BudgetError(uiText(TextKey.BUDGET_NOTHING_TO_COPY, sourcePeriodKey))
         val sourceLines = deps.budgets.listCategoryBudgets(source.id)
         return deps.uow.run {
             val budget = ensureBudget(target)

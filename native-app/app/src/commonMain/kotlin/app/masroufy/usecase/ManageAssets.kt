@@ -13,12 +13,14 @@ import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.PortfolioTotals
 import app.masroufy.core.Quantity
+import app.masroufy.core.TextKey
 import app.masroufy.core.assertQuantity
 import app.masroufy.core.computePortfolioTotals
 import app.masroufy.core.computePosition
 import app.masroufy.core.formatMoney
 import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.jsTrim
+import app.masroufy.core.uiText
 import app.masroufy.port.AssetLotRepository
 import app.masroufy.port.AssetPriceRepository
 import app.masroufy.port.AssetRepository
@@ -79,24 +81,24 @@ private const val MAX_ASSET_NAME = 80
 /** «رقم مش صحيح» مالوش حالة هنا: `Long` بيمنعه وقت الترجمة. */
 class ManageAssets(private val deps: ManageAssetsDeps) {
     private fun requireDate(value: String, label: String): IsoDate {
-        if (!isValidIsoDate(value)) throw AssetError("$label مش تاريخ صالح")
+        if (!isValidIsoDate(value)) throw AssetError(uiText(TextKey.ASSET_FIELD_NOT_DATE, label))
         return value
     }
 
     private fun requireAmount(value: Halalas, label: String, allowZero: Boolean = false): Halalas {
-        if (value < 0) throw AssetError("$label لا يكون سالبًا")
-        if (!allowZero && value == 0L) throw AssetError("$label لازم يكون أكبر من صفر")
+        if (value < 0) throw AssetError(uiText(TextKey.ASSET_FIELD_NEGATIVE, label))
+        if (!allowZero && value == 0L) throw AssetError(uiText(TextKey.ASSET_FIELD_POSITIVE, label))
         return value
     }
 
     private fun requireQuantity(value: Quantity): Quantity {
         assertQuantity(value)
-        if (value <= 0) throw AssetError("الكمية لازم تكون أكبر من صفر")
+        if (value <= 0) throw AssetError(uiText(TextKey.ASSET_QUANTITY_POSITIVE))
         return value
     }
 
     private suspend fun findAsset(id: Id): Asset =
-        deps.assets.listAll().find { it.id == id } ?: throw AssetError("الأصل ده مش موجود")
+        deps.assets.listAll().find { it.id == id } ?: throw AssetError(uiText(TextKey.ASSET_NOT_FOUND))
 
     /** كل الأصول بمراكزها — تلات مجموعات كاملة والتجميع في الذاكرة، من غير استعلام لكل أصل. */
     suspend fun listPortfolio(today: IsoDate? = null): PortfolioView {
@@ -123,9 +125,9 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
 
     suspend fun addAsset(input: NewAsset): Asset {
         val name = jsTrim(input.name)
-        if (name.isEmpty()) throw AssetError("اكتب اسم الأصل")
-        if (name.length > MAX_ASSET_NAME) throw AssetError("الاسم أطول من $MAX_ASSET_NAME حرف")
-        if (deps.assets.listAll().any { jsTrim(it.name) == name }) throw AssetError("فيه أصل اسمه «$name» موجود قبل كده")
+        if (name.isEmpty()) throw AssetError(uiText(TextKey.ASSET_NAME_REQUIRED))
+        if (name.length > MAX_ASSET_NAME) throw AssetError(uiText(TextKey.PROFILE_NAME_TOO_LONG, "$MAX_ASSET_NAME"))
+        if (deps.assets.listAll().any { jsTrim(it.name) == name }) throw AssetError(uiText(TextKey.ASSET_NAME_DUPLICATE, name))
 
         val asset = Asset(
             id = deps.ids.next("asset"),
@@ -160,10 +162,10 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         val lot = AssetLot(
             id = id,
             assetId = asset.id,
-            purchasedAt = requireDate(input.purchasedAt, "تاريخ الشراء"),
+            purchasedAt = requireDate(input.purchasedAt, uiText(TextKey.ASSET_LABEL_PURCHASE_DATE)),
             quantity = requireQuantity(input.quantity),
-            principalMinor = requireAmount(input.principalMinor, "قيمة الشراء"),
-            feeMinor = requireAmount(input.feeMinor ?: 0, "الرسوم", allowZero = true),
+            principalMinor = requireAmount(input.principalMinor, uiText(TextKey.ASSET_LABEL_PURCHASE_VALUE)),
+            feeMinor = requireAmount(input.feeMinor ?: 0, uiText(TextKey.ASSET_LABEL_FEES), allowZero = true),
             transactionId = input.transactionId?.takeIf { it.isNotEmpty() },
         )
         deps.lots.saveMany(listOf(lot))
@@ -180,14 +182,14 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         val sale = AssetSale(
             id = id,
             assetId = asset.id,
-            soldAt = requireDate(input.soldAt, "تاريخ البيع"),
+            soldAt = requireDate(input.soldAt, uiText(TextKey.ASSET_LABEL_SALE_DATE)),
             quantity = requireQuantity(input.quantity),
-            grossProceedsMinor = requireAmount(input.grossProceedsMinor, "حصيلة البيع"),
-            feeMinor = requireAmount(input.feeMinor ?: 0, "الرسوم", allowZero = true),
+            grossProceedsMinor = requireAmount(input.grossProceedsMinor, uiText(TextKey.ASSET_LABEL_PROCEEDS)),
+            feeMinor = requireAmount(input.feeMinor ?: 0, uiText(TextKey.ASSET_LABEL_FEES), allowZero = true),
             transactionId = input.transactionId?.takeIf { it.isNotEmpty() },
         )
         if (sale.feeMinor > sale.grossProceedsMinor) {
-            throw AssetError("الرسوم (${formatMoney(sale.feeMinor)}) أكبر من الحصيلة (${formatMoney(sale.grossProceedsMinor)})")
+            throw AssetError(uiText(TextKey.ASSET_FEES_OVER_PROCEEDS, formatMoney(sale.feeMinor), formatMoney(sale.grossProceedsMinor)))
         }
         val position = computePosition(asset.id, deps.lots.listByAsset(asset.id), deps.sales.listByAsset(asset.id) + sale)
         deps.sales.saveMany(listOf(sale))
@@ -199,8 +201,8 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         val asset = findAsset(assetId)
         val price = AssetPrice(
             assetId = asset.id,
-            pricePerUnitMinor = requireAmount(pricePerUnitMinor, "السعر"),
-            asOf = requireDate(asOf ?: deps.clock.nowIso().take(10), "تاريخ السعر"),
+            pricePerUnitMinor = requireAmount(pricePerUnitMinor, uiText(TextKey.ASSET_LABEL_PRICE)),
+            asOf = requireDate(asOf ?: deps.clock.nowIso().take(10), uiText(TextKey.ASSET_LABEL_PRICE_DATE)),
             source = "manual",
         )
         deps.prices.save(price)

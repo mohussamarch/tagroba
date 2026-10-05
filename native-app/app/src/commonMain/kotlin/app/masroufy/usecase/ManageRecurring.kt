@@ -5,6 +5,7 @@ import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
 import app.masroufy.core.RecurringCandidate
 import app.masroufy.core.RecurringItem
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.detectRecurring
@@ -13,6 +14,7 @@ import app.masroufy.core.recurringKey
 import app.masroufy.core.recurringSummary
 import app.masroufy.core.shiftMonths
 import app.masroufy.core.toDayNumber
+import app.masroufy.core.uiText
 import app.masroufy.core.validateRecurring
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.IdGenerator
@@ -105,9 +107,9 @@ class ManageRecurring(private val deps: ManageRecurringDeps) {
 
     suspend fun save(input: RecurringSaveInput): RecurringItem {
         val items = deps.items.listAll()
-        if (input.id != null && items.none { it.id == input.id }) throw IllegalStateException("الالتزام مش موجود. حدّث الصفحة.")
+        if (input.id != null && items.none { it.id == input.id }) throw IllegalStateException(uiText(TextKey.RECURRING_NOT_FOUND))
         if (items.any { it.merchantKey == input.merchantKey && it.currency == input.currency && it.id != input.id }) {
-            throw IllegalStateException("الخدمة دي مسجلة بالفعل بنفس العملة. عدّلها من قائمتك.")
+            throw IllegalStateException(uiText(TextKey.RECURRING_DUPLICATE))
         }
         val item = RecurringItem(
             id = input.id ?: "recurring:${input.merchantKey}|${input.currency.name}",

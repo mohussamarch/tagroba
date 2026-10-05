@@ -2,7 +2,9 @@ package app.masroufy.firestore
 
 import app.masroufy.core.Id
 import app.masroufy.core.Settlement
+import app.masroufy.core.TextKey
 import app.masroufy.core.prepareSettlement
+import app.masroufy.core.uiText
 import app.masroufy.data.LedgerCodecs
 import app.masroufy.data.toStore
 import app.masroufy.port.SettlementWriter
@@ -50,12 +52,12 @@ class FirestoreSettlementWriter(private val space: FirestoreSpace) : SettlementW
                 // جهاز تاني سوّى في النص — نقرا تاني من الأول
             }
         }
-        throw IllegalStateException("التسويات اتغيرت أثناء الحفظ. جرّب تاني بنفس الطلب")
+        throw IllegalStateException(uiText(TextKey.SETTLEMENT_CHANGED_DURING_SAVE))
     }
 
     private fun revisionOf(doc: Map<String, Any?>?): Long {
         val value = doc?.get("revision") ?: return 0
-        if (value !is Long || value < 0) throw IllegalStateException("حالة التسويات غير سليمة وتحتاج مراجعة")
+        if (value !is Long || value < 0) throw IllegalStateException(uiText(TextKey.SETTLEMENT_STATE_INVALID))
         return value
     }
 

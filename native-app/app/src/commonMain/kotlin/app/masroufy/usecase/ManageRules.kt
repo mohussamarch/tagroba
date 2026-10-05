@@ -5,9 +5,11 @@ import app.masroufy.core.ClassificationRule
 import app.masroufy.core.Id
 import app.masroufy.core.Merchant
 import app.masroufy.core.RuleMatchMode
+import app.masroufy.core.TextKey
 import app.masroufy.core.arabicCompare
 import app.masroufy.core.jsTrim
 import app.masroufy.core.normalizeText
+import app.masroufy.core.uiText
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.MerchantRepository
@@ -59,7 +61,7 @@ class ManageRules(private val deps: ManageRulesDeps) {
             .sortedWith { a, b -> if (a.priority != b.priority) a.priority - b.priority else arabicCompare(a.matchText, b.matchText) }
             .map { rule ->
                 val category = categories[rule.categoryId]
-                RuleRow(rule, category?.name ?: "تصنيف محذوف", categoryMissing = category == null)
+                RuleRow(rule, category?.name ?: uiText(TextKey.CATEGORY_DELETED), categoryMissing = category == null)
             }
     }
 
@@ -70,25 +72,25 @@ class ManageRules(private val deps: ManageRulesDeps) {
             .map { merchant ->
                 MerchantRow(
                     merchant,
-                    merchant.verifiedCategoryId?.let { categories[it]?.name ?: "تصنيف محذوف" },
+                    merchant.verifiedCategoryId?.let { categories[it]?.name ?: uiText(TextKey.CATEGORY_DELETED) },
                 )
             }
     }
 
     private suspend fun requireCategory(categoryId: Id) {
-        if (deps.categories.listAll().none { it.id == categoryId }) throw IllegalStateException("التصنيف ده مش موجود")
+        if (deps.categories.listAll().none { it.id == categoryId }) throw IllegalStateException(uiText(TextKey.CATEGORY_THIS_NOT_FOUND))
     }
 
     suspend fun addRule(matchText: String, matchMode: RuleMatchMode, categoryId: Id, priority: Int? = null): ClassificationRule {
         val text = jsTrim(matchText)
-        if (text.isEmpty()) throw IllegalStateException("اكتب النص اللي القاعدة تدوّر عليه")
-        if (text.length > MAX_MATCH_TEXT) throw IllegalStateException("النص أطول من $MAX_MATCH_TEXT حرف")
+        if (text.isEmpty()) throw IllegalStateException(uiText(TextKey.RULE_TEXT_REQUIRED))
+        if (text.length > MAX_MATCH_TEXT) throw IllegalStateException(uiText(TextKey.TEXT_TOO_LONG, "$MAX_MATCH_TEXT"))
         requireCategory(categoryId)
 
         val existing = deps.rules.listAll()
         val normalized = normalizeText(text)
         if (existing.any { normalizeText(it.matchText) == normalized && it.matchMode == matchMode }) {
-            throw IllegalStateException("فيه قاعدة بنفس النص «$text» ونفس طريقة المطابقة")
+            throw IllegalStateException(uiText(TextKey.RULE_DUPLICATE, text))
         }
 
         // الجديدة بتيجي في الآخر فما تسبقش قاعدة موجودة من غير ما المستخدم يطلب
@@ -107,14 +109,14 @@ class ManageRules(private val deps: ManageRulesDeps) {
     }
 
     suspend fun updateRule(id: Id, patch: RulePatch) {
-        val rule = deps.rules.listAll().find { it.id == id } ?: throw IllegalStateException("القاعدة دي مش موجودة")
+        val rule = deps.rules.listAll().find { it.id == id } ?: throw IllegalStateException(uiText(TextKey.RULE_NOT_FOUND))
 
         if (patch.categoryId != null) requireCategory(patch.categoryId)
         var matchText = patch.matchText
         if (matchText != null) {
             matchText = jsTrim(matchText)
-            if (matchText.isEmpty()) throw IllegalStateException("نص القاعدة مايبقاش فاضي")
-            if (matchText.length > MAX_MATCH_TEXT) throw IllegalStateException("النص أطول من $MAX_MATCH_TEXT حرف")
+            if (matchText.isEmpty()) throw IllegalStateException(uiText(TextKey.RULE_TEXT_EMPTY))
+            if (matchText.length > MAX_MATCH_TEXT) throw IllegalStateException(uiText(TextKey.TEXT_TOO_LONG, "$MAX_MATCH_TEXT"))
         }
 
         deps.rules.saveMany(
@@ -135,7 +137,7 @@ class ManageRules(private val deps: ManageRulesDeps) {
 
     /** تثبيت تصنيف تاجر — **أقوى من كل القواعد** (spec/05). `null` بيشيل التثبيت فيرجع للقواعد. */
     suspend fun setMerchantCategory(merchantId: Id, categoryId: Id?) {
-        val merchant = deps.merchants.listAll().find { it.id == merchantId } ?: throw IllegalStateException("التاجر ده مش موجود")
+        val merchant = deps.merchants.listAll().find { it.id == merchantId } ?: throw IllegalStateException(uiText(TextKey.MERCHANT_NOT_FOUND))
         if (categoryId != null) requireCategory(categoryId)
         deps.merchants.saveMany(listOf(merchant.copy(verifiedCategoryId = categoryId)))
     }
@@ -143,18 +145,18 @@ class ManageRules(private val deps: ManageRulesDeps) {
     /** الاسم المطبّع **ما بيتغيّرش** مع إعادة التسمية — هو مفتاح المطابقة مع الكشوف الجاية. */
     suspend fun renameMerchant(merchantId: Id, displayName: String) {
         val name = jsTrim(displayName)
-        if (name.isEmpty()) throw IllegalStateException("اكتب اسم التاجر")
-        val merchant = deps.merchants.listAll().find { it.id == merchantId } ?: throw IllegalStateException("التاجر ده مش موجود")
+        if (name.isEmpty()) throw IllegalStateException(uiText(TextKey.MERCHANT_NAME_REQUIRED))
+        val merchant = deps.merchants.listAll().find { it.id == merchantId } ?: throw IllegalStateException(uiText(TextKey.MERCHANT_NOT_FOUND))
         deps.merchants.saveMany(listOf(merchant.copy(displayName = name)))
     }
 
     suspend fun addAlias(merchantId: Id, raw: String) {
         val alias = normalizeText(raw)
-        if (alias.isEmpty() || alias.length > 120) throw IllegalStateException("اكتب اسمًا بحد أقصى ١٢٠ حرف.")
+        if (alias.isEmpty() || alias.length > 120) throw IllegalStateException(uiText(TextKey.MERCHANT_ALIAS_LENGTH))
         val all = deps.merchants.listAll()
-        val merchant = all.find { it.id == merchantId } ?: throw IllegalStateException("اختار تاجرًا موجودًا.")
+        val merchant = all.find { it.id == merchantId } ?: throw IllegalStateException(uiText(TextKey.MERCHANT_PICK_EXISTING))
         if (all.any { it.id != merchantId && (it.normalizedName == alias || it.aliases.orEmpty().contains(alias)) }) {
-            throw IllegalStateException("الاسم مربوط بتاجر تاني بالفعل؛ مش هنغيّر الربط القديم ضمنيًا.")
+            throw IllegalStateException(uiText(TextKey.MERCHANT_ALIAS_TAKEN))
         }
         deps.merchants.saveMany(listOf(merchant.copy(aliases = LinkedHashSet(merchant.aliases.orEmpty() + alias).toList())))
     }

@@ -9,6 +9,7 @@ import app.masroufy.core.MatchingState
 import app.masroufy.core.ParseOutcome
 import app.masroufy.core.ParsedRow
 import app.masroufy.core.SchemaId
+import app.masroufy.core.TextKey
 import app.masroufy.core.addMoney
 import app.masroufy.core.buildDedupeIndex
 import app.masroufy.core.categorize
@@ -23,6 +24,7 @@ import app.masroufy.core.parseRows
 import app.masroufy.core.prepareRules
 import app.masroufy.core.sourceAmountMinor
 import app.masroufy.core.Direction
+import app.masroufy.core.uiText
 
 /**
  * مرحلة المعاينة من ImportStatement — نقل `importPreview.ts`.
@@ -127,7 +129,7 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
             if (priorLine != null) {
                 verdict = verdict.copy(
                     state = MatchingState.DUPLICATE,
-                    reason = "نفس المرجع «$ref» اتكرر في الملف ده نفسه (صف $priorLine)",
+                    reason = uiText(TextKey.IMPORT_SAME_REFERENCE_IN_FILE, "$ref", "$priorLine"),
                     matchedTransactionId = null,
                     conflictFields = null,
                     matchedBalanceKey = null,

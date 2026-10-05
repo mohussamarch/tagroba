@@ -5,9 +5,11 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.MAX_SAFE_HALALAS
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.ProfileCheck
+import app.masroufy.core.TextKey
 import app.masroufy.core.UserProfile
 import app.masroufy.core.checkProfile
 import app.masroufy.core.jsTrim
+import app.masroufy.core.uiText
 import app.masroufy.port.Clock
 import app.masroufy.port.WalletRepository
 
@@ -59,15 +61,15 @@ class OnboardAccount(private val deps: OnboardAccountDeps) {
         val check = checkProfile(input.profile)
         if (check is ProfileCheck.Invalid) return OnboardingResult.Failed("profile", check.message)
         val cashMinor = input.cashMinor
-        if (cashMinor != null && (cashMinor < 0 || cashMinor > MAX_SAFE_HALALAS)) return OnboardingResult.Failed("cash", "مبلغ الكاش لازم يكون رقم مش سالب")
+        if (cashMinor != null && (cashMinor < 0 || cashMinor > MAX_SAFE_HALALAS)) return OnboardingResult.Failed("cash", uiText(TextKey.ONBOARD_CASH_INVALID))
         for (debt in input.debts) {
             val name = jsTrim(debt.name)
-            if (name.isEmpty()) return OnboardingResult.Failed("debts", "اكتب اسم كل شخص")
-            if (name.length > 80) return OnboardingResult.Failed("debts", "الاسم أطول من 80 حرف")
-            if (debt.amountMinor <= 0 || debt.amountMinor > MAX_SAFE_HALALAS) return OnboardingResult.Failed("debts", "مبلغ دين «$name» لازم يكون أكبر من صفر")
+            if (name.isEmpty()) return OnboardingResult.Failed("debts", uiText(TextKey.ONBOARD_DEBT_NAME_REQUIRED))
+            if (name.length > 80) return OnboardingResult.Failed("debts", uiText(TextKey.PROFILE_NAME_TOO_LONG, "80"))
+            if (debt.amountMinor <= 0 || debt.amountMinor > MAX_SAFE_HALALAS) return OnboardingResult.Failed("debts", uiText(TextKey.ONBOARD_DEBT_AMOUNT, name))
         }
 
-        val cashWallet = if (cashMinor != null) findCashWallet() ?: return OnboardingResult.Failed("cash", "مفيش محفظة كاش في الحساب") else null
+        val cashWallet = if (cashMinor != null) findCashWallet() ?: return OnboardingResult.Failed("cash", uiText(TextKey.ONBOARD_NO_CASH_WALLET)) else null
         if (cashWallet != null && cashMinor != cashWallet.openingBalanceMinor) {
             deps.wallets.save(cashWallet.copy(openingBalanceMinor = cashMinor!!, openingAt = deps.clock.nowIso().take(10)))
         }

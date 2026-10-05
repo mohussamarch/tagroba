@@ -3,6 +3,8 @@ package app.masroufy.device
 import android.content.Context
 import app.masroufy.core.PdfPage
 import app.masroufy.core.PositionedWord
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.usecase.PdfPagesPort
 import app.masroufy.usecase.PdfReadError
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -26,9 +28,9 @@ class PdfBoxPages(private val context: Context) : PdfPagesPort {
         val doc = try {
             PDDocument.load(data)
         } catch (_: InvalidPasswordException) {
-            throw PdfReadError("الملف محمي بكلمة سر — افتحه واحفظه من غير كلمة سر وجرّب تاني")
+            throw PdfReadError(uiText(TextKey.PDF_PASSWORD))
         } catch (e: Exception) {
-            throw PdfReadError("الملف ده مش PDF أو تالف")
+            throw PdfReadError(uiText(TextKey.PDF_INVALID))
         }
         doc.use { pdf ->
             (1..pdf.numberOfPages).map { n ->

@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.Telephony
 import app.masroufy.core.BankSmsMessage
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.port.BankSmsPort
 import app.masroufy.port.BankSmsRead
 import kotlinx.coroutines.Dispatchers
@@ -30,10 +32,10 @@ class AndroidBankSms(private val context: Context, private val zone: ZoneId) : B
         val names = senders.map { it.trim() }
         val days = if (start != null && end != null) ChronoUnit.DAYS.between(start, end) else -1
         if (days < 0 || days > 366 || names.isEmpty() || names.size > 10 || names.any { it.isEmpty() || it.length > 50 }) {
-            throw IllegalArgumentException("اختار فترة لا تتجاوز سنة واسم مرسل البنك")
+            throw IllegalArgumentException(uiText(TextKey.SMS_READ_ARGS))
         }
         if (context.checkSelfPermission(Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
-            throw SmsPermissionError("إذن قراءة الرسائل مش متاح. تقدر تلصق رسالة واحدة بدل القراءة.")
+            throw SmsPermissionError(uiText(TextKey.SMS_PERMISSION_MISSING))
         }
         val fromMs = start!!.atStartOfDay(zone).toInstant().toEpochMilli()
         val untilMs = end!!.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
@@ -54,7 +56,7 @@ class AndroidBankSms(private val context: Context, private val zone: ZoneId) : B
                 }
             }
         } catch (_: SecurityException) {
-            throw SmsPermissionError("إذن الرسائل اتسحب. راجع أذونات التطبيق أو استخدم اللصق.")
+            throw SmsPermissionError(uiText(TextKey.SMS_PERMISSION_REVOKED))
         }
         BankSmsRead(out, truncated)
     }

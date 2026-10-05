@@ -3,10 +3,12 @@ package app.masroufy.usecase
 import app.masroufy.core.BankSmsMessage
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
+import app.masroufy.core.TextKey
 import app.masroufy.core.daysBetween
 import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.jsTrim
 import app.masroufy.core.smsRowsJson
+import app.masroufy.core.uiText
 import app.masroufy.port.BankSmsParser
 import app.masroufy.port.BankSmsPort
 
@@ -38,10 +40,10 @@ class ReadBankSms(private val port: BankSmsPort, private val parse: BankSmsParse
     }
 
     suspend fun read(from: String, to: String, senders: List<String>): SmsBatch {
-        if (!isValidIsoDate(from) || !isValidIsoDate(to) || from > to) throw IllegalArgumentException("اختار فترة صحيحة")
-        if (daysBetween(from, to) > 366) throw IllegalArgumentException("اختار سنة واحدة بحد أقصى")
+        if (!isValidIsoDate(from) || !isValidIsoDate(to) || from > to) throw IllegalArgumentException(uiText(TextKey.SMS_PERIOD_INVALID))
+        if (daysBetween(from, to) > 366) throw IllegalArgumentException(uiText(TextKey.SMS_PERIOD_TOO_LONG))
         if (senders.isEmpty() || senders.size > 10 || senders.any { jsTrim(it).isEmpty() || it.length > 50 }) {
-            throw IllegalArgumentException("اكتب اسم مرسل البنك كما يظهر في الرسائل")
+            throw IllegalArgumentException(uiText(TextKey.SMS_SENDER_REQUIRED))
         }
         val result = port.read(from, to, senders)
         return prepare(result.messages, result.truncated)

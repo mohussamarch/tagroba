@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.Telephony
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
 import kotlinx.coroutines.Dispatchers
@@ -24,14 +26,14 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         try {
             synchronized(SmsInboxStore.LOCK) { SmsInboxStore(context).use(block) }
         } catch (_: SecurityException) {
-            throw SmsPermissionError("إذن الرسائل اتسحب. راجع أذونات أندرويد؛ الرسائل المعلقة محفوظة.")
+            throw SmsPermissionError(uiText(TextKey.SMS_INBOX_PERMISSION_REVOKED))
         }
     }
 
     override suspend fun enable(senders: List<String>): SmsInboxState {
         val names = senders.map { it.trim() }.toSet()
-        if (names.isEmpty() || names.size > 10 || names.any { it.isEmpty() || it.length > 50 }) throw IllegalArgumentException("اكتب أسماء مرسلي البنك (حتى 10)")
-        if (!granted()) throw SmsPermissionError("إذن الرسائل غير متاح. فعّله من أذونات أندرويد أو استخدم اللصق.")
+        if (names.isEmpty() || names.size > 10 || names.any { it.isEmpty() || it.length > 50 }) throw IllegalArgumentException(uiText(TextKey.SMS_SENDERS_REQUIRED))
+        if (!granted()) throw SmsPermissionError(uiText(TextKey.SMS_INBOX_PERMISSION_MISSING))
         return withStore {
             it.configure(uid, names)
             it.snapshot(uid, true, false)

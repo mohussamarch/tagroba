@@ -103,9 +103,7 @@ data class RevertDeps(
     val links: RevertLinkDeps,
 )
 
-const val REVERT_BLOCKED_MESSAGE =
-    "مقدرناش نلاقي عمليات الاستيراد ده. غالبًا معرّفاته اتحفظت ناقصة في نسخة قديمة. " +
-        "من الإعدادات دوس «افحص البيانات القديمة» وصلّح، وبعدين جرّب التراجع تاني."
+val REVERT_BLOCKED_MESSAGE: String get() = uiText(TextKey.REVERT_BLOCKED)
 
 class RevertImportBatch(private val deps: RevertDeps) {
     /** سجل الاستيرادات، الأحدث الأول — للعرض بس. */
@@ -114,8 +112,8 @@ class RevertImportBatch(private val deps: RevertDeps) {
 
     /** بيحسب الأثر من غير أي كتابة — بيتعرض للمستخدم قبل التأكيد (spec/03). */
     suspend fun plan(batchId: Id): RevertPlan {
-        val batch = deps.batches.findById(batchId) ?: throw IllegalStateException("دفعة غير موجودة: $batchId")
-        if (batch.state == ImportBatchState.REVERTED) throw IllegalStateException("الدفعة دي متراجَع عنها قبل كده")
+        val batch = deps.batches.findById(batchId) ?: throw IllegalStateException(uiText(TextKey.BATCH_NOT_FOUND, batchId))
+        if (batch.state == ImportBatchState.REVERTED) throw IllegalStateException(uiText(TextKey.BATCH_ALREADY_REVERTED))
 
         val batchRecords = deps.sources.listByBatch(batchId)
         val expectedCount = batch.counts.imported
@@ -157,17 +155,17 @@ class RevertImportBatch(private val deps: RevertDeps) {
 
         for (id in txnIds) {
             val outcome = when {
-                id in settledIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_SETTLEMENT, "العملية دي دخلت عليها تسوية بعد الاستيراد، فمش هتتحذف")
+                id in settledIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_SETTLEMENT, uiText(TextKey.REVERT_KEPT_SETTLEMENT))
                 id in allocatedIds || id in obligationOriginIds ->
-                    RevertLineOutcome(id, RevertDecision.KEPT_HAS_ALLOCATION, "العملية دي متربطة بشخص (تخصيص أو التزام)، فمش هتتحذف")
+                    RevertLineOutcome(id, RevertDecision.KEPT_HAS_ALLOCATION, uiText(TextKey.REVERT_KEPT_ALLOCATION))
                 id in dueIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_DUE, uiText(TextKey.REVERT_KEPT_DUE))
                 id in investmentIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_INVESTMENT, uiText(TextKey.REVERT_KEPT_INVESTMENT))
                 id in giftIds -> RevertLineOutcome(id, RevertDecision.KEPT_HAS_GIFT, uiText(TextKey.REVERT_KEPT_GIFT))
                 (sourceCountByTxn[id] ?: 0) > 1 ->
-                    RevertLineOutcome(id, RevertDecision.KEPT_OTHER_SOURCE, "العملية دي ليها مصدر تاني غير الدفعة دي (رسالة مثلًا)، فمش هتتحذف")
+                    RevertLineOutcome(id, RevertDecision.KEPT_OTHER_SOURCE, uiText(TextKey.REVERT_KEPT_OTHER_SOURCE))
                 else -> {
                     toDelete += id
-                    RevertLineOutcome(id, RevertDecision.DELETED, "الدفعة دي هي المصدر الوحيد ومفيش عليها تسويات")
+                    RevertLineOutcome(id, RevertDecision.DELETED, uiText(TextKey.REVERT_DELETED))
                 }
             }
             outcomes += outcome

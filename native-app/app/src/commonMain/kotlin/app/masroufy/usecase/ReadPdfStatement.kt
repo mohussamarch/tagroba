@@ -5,8 +5,10 @@ import app.masroufy.core.ParsedRow
 import app.masroufy.core.PdfPage
 import app.masroufy.core.RowError
 import app.masroufy.core.SchemaId
+import app.masroufy.core.TextKey
 import app.masroufy.core.parseAlrajhiPdf
 import app.masroufy.core.parseQnbPdf
+import app.masroufy.core.uiText
 
 /**
  * ReadPdfStatement — نقل `readPdfStatement.ts`: كشف PDF ⇒ صفوف موحّدة **من نفس نوع صفوف الـCSV**، فمنع التكرار
@@ -49,11 +51,7 @@ class ReadPdfStatement(private val pages: PdfPagesPort) {
             return PdfStatementResult(qnb.rows, qnb.errors, qnb.pagesRead, canonicalContent(qnb.rows), SchemaId.QNB_PDF, ImportSourceType.PDF_QNB)
         }
         // الفشل بيتقال بسببه — «مفيش عمليات» لوحدها بتخلي المستخدم تايه
-        throw PdfReadError(
-            "قرينا ${alrajhi.pagesRead} صفحة بس ملقيناش أي عملية. " +
-                "القارئ بيعرف كشف مصرف الراجحي وكشف QNB مصر بس — لو ده كشف بنك تاني، " +
-                "مش هينفع دلوقتي.",
-        )
+        throw PdfReadError(uiText(TextKey.PDF_NO_TRANSACTIONS, "${alrajhi.pagesRead}"))
     }
 
     /** سطر لكل عملية بالحقول اللي بتعرّفها. */

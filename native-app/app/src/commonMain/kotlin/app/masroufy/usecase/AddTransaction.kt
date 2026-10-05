@@ -7,12 +7,14 @@ import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.Liquidity
 import app.masroufy.core.ReviewState
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.assertHalalas
 import app.masroufy.core.isConsistentWithObservedDirection
 import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.jsTrim
 import app.masroufy.core.ruleFor
+import app.masroufy.core.uiText
 import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.TransactionRepository
@@ -51,23 +53,23 @@ data class AddTransactionDeps(
 class AddTransaction(private val deps: AddTransactionDeps) {
     suspend fun add(input: NewTransactionInput): Transaction {
         if (input.amountMinor <= 0) {
-            throw IllegalArgumentException("المبلغ لازم يكون أكبر من صفر. الاتجاه بيتحدد من نوع العملية.")
+            throw IllegalArgumentException(uiText(TextKey.TXN_AMOUNT_POSITIVE))
         }
-        assertHalalas(input.amountMinor, "مبلغ العملية")
+        assertHalalas(input.amountMinor, uiText(TextKey.TXN_AMOUNT_LABEL))
 
-        if (!isValidIsoDate(input.occurredAt)) throw IllegalArgumentException("التاريخ مش صالح")
+        if (!isValidIsoDate(input.occurredAt)) throw IllegalArgumentException(uiText(TextKey.TXN_DATE_INVALID))
 
-        val wallet = deps.wallets.findById(input.walletId) ?: throw IllegalArgumentException("اختار محفظة موجودة")
+        val wallet = deps.wallets.findById(input.walletId) ?: throw IllegalArgumentException(uiText(TextKey.TXN_WALLET_REQUIRED))
 
         if (input.economicKind == EconomicKind.UNCLASSIFIED) {
-            throw IllegalArgumentException("لازم تحدد نوع العملية — انت عارف اشتريت ولا حوّلت")
+            throw IllegalArgumentException(uiText(TextKey.TXN_KIND_REQUIRED))
         }
 
         // الاتجاه الملاحظ بيشتق من النوع هنا — في الاستيراد الكشف بيدي الاتجاه والنوع مجهول
         val observedDirection = if (ruleFor(input.economicKind).liquidity == Liquidity.IN) Direction.IN else Direction.OUT
 
         if (!isConsistentWithObservedDirection(input.economicKind, observedDirection)) {
-            throw IllegalArgumentException("النوع ده ما يتوافقش مع اتجاه الحركة")
+            throw IllegalArgumentException(uiText(TextKey.TXN_KIND_DIRECTION))
         }
 
         /*
@@ -77,20 +79,20 @@ class AddTransaction(private val deps: AddTransactionDeps) {
         var transferTo: Id? = null
         if (input.economicKind == EconomicKind.INTERNAL_TRANSFER) {
             val targetId = input.transferToWalletId
-                ?: throw IllegalArgumentException("التحويل الداخلي لازم تحدد راح لأنهي محفظة")
-            if (targetId == input.walletId) throw IllegalArgumentException("مينفعش تحوّل من محفظة لنفسها")
-            val target = deps.wallets.findById(targetId) ?: throw IllegalArgumentException("المحفظة المستقبِلة مش موجودة")
+                ?: throw IllegalArgumentException(uiText(TextKey.TXN_TRANSFER_TARGET_REQUIRED))
+            if (targetId == input.walletId) throw IllegalArgumentException(uiText(TextKey.TXN_TRANSFER_SAME_WALLET))
+            val target = deps.wallets.findById(targetId) ?: throw IllegalArgumentException(uiText(TextKey.TXN_TRANSFER_TARGET_MISSING))
             if (target.currency != wallet.currency) {
-                throw IllegalArgumentException("التحويل بين عملتين مختلفتين محتاج سعر صرف موثّق — لسه مش مدعوم (spec/02)")
+                throw IllegalArgumentException(uiText(TextKey.TXN_TRANSFER_CURRENCY))
             }
             transferTo = target.id
         } else if (input.transferToWalletId != null) {
-            throw IllegalArgumentException("المحفظة المستقبِلة تتحدد للتحويل الداخلي بس")
+            throw IllegalArgumentException(uiText(TextKey.TXN_TRANSFER_TARGET_ONLY_INTERNAL))
         }
 
         val name = jsTrim(input.merchantName)
-        if (name.length > 120) throw IllegalArgumentException("اسم المتجر أطول من 120 حرف")
-        if ((input.note ?: "").length > 1000) throw IllegalArgumentException("الملاحظة أطول من 1000 حرف")
+        if (name.length > 120) throw IllegalArgumentException(uiText(TextKey.TXN_MERCHANT_TOO_LONG))
+        if ((input.note ?: "").length > 1000) throw IllegalArgumentException(uiText(TextKey.NOTE_TOO_LONG, "1000"))
 
         val now = deps.clock.nowIso()
         val note = input.note?.let { jsTrim(it) }?.takeIf { it.isNotEmpty() }

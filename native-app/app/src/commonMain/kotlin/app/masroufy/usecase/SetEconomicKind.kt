@@ -5,10 +5,12 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
 import app.masroufy.core.KindSuggestion
 import app.masroufy.core.SuggestionInput
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.isBulkConfirmable
 import app.masroufy.core.isConsistentWithObservedDirection
 import app.masroufy.core.suggestEconomicKind
+import app.masroufy.core.uiText
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.TransactionPatch
@@ -91,11 +93,11 @@ class SetEconomicKind(private val deps: SetEconomicKindDeps) {
      */
     suspend fun setOne(transactionId: Id, kind: EconomicKind) {
         val transaction = deps.txns.findByIds(listOf(transactionId)).firstOrNull()
-            ?: throw IllegalStateException("عملية غير موجودة: $transactionId")
+            ?: throw IllegalStateException(uiText(TextKey.TXN_NOT_FOUND_ID, transactionId))
 
         if (!isConsistentWithObservedDirection(kind, transaction.observedDirection)) {
-            val observed = if (transaction.observedDirection == Direction.IN) "وارد" else "صادر"
-            throw IllegalStateException("النوع ده ما يتوافقش مع اتجاه الحركة. الكشف بيقول العملية دي «$observed».")
+            val observed = if (transaction.observedDirection == Direction.IN) uiText(TextKey.DIRECTION_IN_WORD) else uiText(TextKey.DIRECTION_OUT_WORD)
+            throw IllegalStateException(uiText(TextKey.KIND_DIRECTION_OBSERVED, observed))
         }
         if (kind != transaction.economicKind && deps.spaceLegs?.isLeg(transactionId) == true) {
             throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))

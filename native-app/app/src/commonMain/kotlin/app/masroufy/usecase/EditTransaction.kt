@@ -3,12 +3,14 @@ package app.masroufy.usecase
 import app.masroufy.core.Id
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Tag
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.TransactionTag
 import app.masroufy.core.arabicCompare
 import app.masroufy.core.jsTrim
 import app.masroufy.core.normalizeText
 import app.masroufy.core.planAmountEdit
+import app.masroufy.core.uiText
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
@@ -53,7 +55,7 @@ data class EditTransactionDeps(
 
 class EditTransaction(private val deps: EditTransactionDeps) {
     private suspend fun find(transactionId: Id): Transaction =
-        deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw IllegalStateException("العملية دي مش موجودة")
+        deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw IllegalStateException(uiText(TextKey.TXN_NOT_FOUND))
 
     suspend fun load(transactionId: Id): TransactionDetail {
         val transaction = find(transactionId)
@@ -67,7 +69,7 @@ class EditTransaction(private val deps: EditTransactionDeps) {
         val transaction = find(transactionId)
 
         if (categoryId != null && deps.categories.listAll().none { it.id == categoryId }) {
-            throw IllegalStateException("التصنيف ده مش موجود")
+            throw IllegalStateException(uiText(TextKey.CATEGORY_THIS_NOT_FOUND))
         }
 
         deps.txns.update(
@@ -103,7 +105,7 @@ class EditTransaction(private val deps: EditTransactionDeps) {
     /** بيكتب ملاحظة أو بيشيلها — الفاضية بتتشال بدل ما نص فاضي يتحفظ. */
     suspend fun setNote(transactionId: Id, note: String) {
         val trimmed = jsTrim(note)
-        if (trimmed.length > MAX_NOTE) throw IllegalStateException("الملاحظة أطول من $MAX_NOTE حرف")
+        if (trimmed.length > MAX_NOTE) throw IllegalStateException(uiText(TextKey.NOTE_TOO_LONG, "$MAX_NOTE"))
         deps.txns.update(
             transactionId,
             TransactionPatch(note = trimmed.ifEmpty { null }, clearNote = trimmed.isEmpty(), updatedAt = deps.clock.nowIso()),
@@ -126,8 +128,8 @@ class EditTransaction(private val deps: EditTransactionDeps) {
      */
     suspend fun addTag(transactionId: Id, displayName: String): Tag {
         val name = jsTrim(displayName)
-        if (name.isEmpty()) throw IllegalStateException("اكتب اسم الوسم")
-        if (name.length > MAX_TAG_NAME) throw IllegalStateException("اسم الوسم أطول من $MAX_TAG_NAME حرف")
+        if (name.isEmpty()) throw IllegalStateException(uiText(TextKey.TAG_NAME_REQUIRED))
+        if (name.length > MAX_TAG_NAME) throw IllegalStateException(uiText(TextKey.TAG_NAME_TOO_LONG, "$MAX_TAG_NAME"))
 
         find(transactionId)
         val normalized = normalizeText(name)

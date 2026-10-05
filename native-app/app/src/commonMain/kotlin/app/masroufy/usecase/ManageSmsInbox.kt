@@ -1,7 +1,9 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.SmsParseResult
+import app.masroufy.core.TextKey
 import app.masroufy.core.jsTrim
+import app.masroufy.core.uiText
 import app.masroufy.port.BankSmsParser
 import app.masroufy.port.QueuedSms
 import app.masroufy.port.SmsInboxPort
@@ -43,7 +45,7 @@ class ManageSmsInbox(private val port: SmsInboxPort, private val parse: BankSmsP
     suspend fun enable(senders: List<String>): InboxView {
         val clean = senders.map(::jsTrim).filter { it.isNotEmpty() }.distinct()
         if (clean.isEmpty() || clean.size > 10 || clean.any { it.length > 50 }) {
-            throw IllegalArgumentException("اكتب اسم مرسل البنك كما يظهر في الرسائل (حتى 10 أسماء)")
+            throw IllegalArgumentException(uiText(TextKey.SMS_SENDER_REQUIRED_MANY))
         }
         port.enable(clean)
         return prepare(port.sync())

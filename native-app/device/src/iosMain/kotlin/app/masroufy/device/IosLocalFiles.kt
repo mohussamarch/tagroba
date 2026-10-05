@@ -1,7 +1,9 @@
 package app.masroufy.device
 
+import app.masroufy.core.TextKey
 import app.masroufy.core.isSpaceId
 import app.masroufy.core.isValidIsoDate
+import app.masroufy.core.uiText
 import app.masroufy.port.ActiveSpaceStore
 import app.masroufy.port.AppLockSettingsPort
 import app.masroufy.port.RepairBackupPort
@@ -29,15 +31,15 @@ import platform.Foundation.writeToFile
 @OptIn(ExperimentalForeignApi::class)
 class IosRepairBackup : RepairBackupPort {
     override suspend fun save(fileName: String, content: String): SavedBackup = withContext(Dispatchers.IO) {
-        if (!SAFE_NAME.matches(fileName)) throw IllegalArgumentException("اسم الملف أو محتواه غير صالح")
+        if (!SAFE_NAME.matches(fileName)) throw IllegalArgumentException(uiText(TextKey.FILE_NAME_INVALID))
         val files = NSFileManager.defaultManager
         val docs = files.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask).firstOrNull() as? NSURL
-            ?: throw IllegalStateException("تعذر حفظ النسخة على الجهاز")
-        val dir = docs.URLByAppendingPathComponent("backups") ?: throw IllegalStateException("تعذر حفظ النسخة على الجهاز")
-        val path = dir.URLByAppendingPathComponent(fileName)?.path ?: throw IllegalStateException("تعذر حفظ النسخة على الجهاز")
+            ?: throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED))
+        val dir = docs.URLByAppendingPathComponent("backups") ?: throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED))
+        val path = dir.URLByAppendingPathComponent(fileName)?.path ?: throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED))
         val ok = files.createDirectoryAtURL(dir, withIntermediateDirectories = true, attributes = null, error = null) &&
             content.encodeToByteArray().toNSData().writeToFile(path, options = NSDataWritingAtomic, error = null)
-        if (!ok) throw IllegalStateException("تعذر حفظ النسخة على الجهاز")
+        if (!ok) throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED))
         val size = (files.attributesOfItemAtPath(path, error = null)?.get(NSFileSize) as? NSNumber)?.longLongValue ?: 0
         SavedBackup(path, size)
     }

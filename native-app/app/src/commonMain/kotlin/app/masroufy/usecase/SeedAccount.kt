@@ -1,7 +1,9 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Currency
+import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
+import app.masroufy.core.uiText
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.ReferenceSeedPort
@@ -27,13 +29,13 @@ data class SeedWalletsOutcome(val seeded: Boolean, val wallets: List<Wallet>, va
 class SeedWallets(private val wallets: WalletRepository, private val clock: Clock) {
     suspend fun seed(): SeedWalletsOutcome {
         val existing = wallets.listAll()
-        if (existing.isNotEmpty()) return SeedWalletsOutcome(false, existing, "المحافظ موجودة قبل كده. مش هنكتب فوق تعديلاتك.")
+        if (existing.isNotEmpty()) return SeedWalletsOutcome(false, existing, uiText(TextKey.SEED_WALLETS_EXIST))
         val today = clock.nowIso().take(10)
         val bank = Wallet(BANK_WALLET_ID, "الراجحي", Currency.SAR, "bank", 0, today)
         val cash = Wallet(CASH_WALLET_ID, "كاش", Currency.SAR, "cash", 0, today)
         wallets.save(bank)
         wallets.save(cash)
-        return SeedWalletsOutcome(true, listOf(bank, cash), "اتزرعت محفظتان برصيد صفر — عدّل الرصيد الافتتاحي من الإعدادات.")
+        return SeedWalletsOutcome(true, listOf(bank, cash), uiText(TextKey.SEED_WALLETS_DONE))
     }
 }
 
@@ -59,13 +61,13 @@ class SeedUserReferences(
         val existing = categories.listAll()
         if (progress.begin(existing.isNotEmpty()) == SeedState.COMPLETE) {
             // التجار ما بيتعدّوش: القايمة كبيرة والعدّ قراية من غير داعي
-            return SeedOutcome(false, existing.size, rules.listAll().size, 0, "المراجع متزروعة قبل كده. مش هنكتب فوق تعديلاتك.")
+            return SeedOutcome(false, existing.size, rules.listAll().size, 0, uiText(TextKey.SEED_REFS_EXIST))
         }
         progress.insertMissing(source)
         progress.complete()
         return SeedOutcome(
             true, source.categories.size, source.rules.size, source.merchants.size,
-            "اكتمل تجهيز التصنيفات والقواعد والتجار كمرجع أولي تقدر تعدّله.",
+            uiText(TextKey.SEED_REFS_DONE),
         )
     }
 }

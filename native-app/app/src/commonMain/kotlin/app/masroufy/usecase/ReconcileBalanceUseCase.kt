@@ -4,11 +4,13 @@ import app.masroufy.core.Direction
 import app.masroufy.core.Id
 import app.masroufy.core.LedgerMovement
 import app.masroufy.core.ReconcileResult
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.core.daysBetween
 import app.masroufy.core.periodForDate
 import app.masroufy.core.reconcileBalance
+import app.masroufy.core.uiText
 import app.masroufy.port.TransactionRepository
 import app.masroufy.port.WalletRepository
 
@@ -41,7 +43,7 @@ data class ReconcileDeps(
 
 class ReconcileBalance(private val deps: ReconcileDeps) {
     suspend fun run(walletId: Id, until: String, payday: Int): ReconcileOutcome {
-        val wallet = deps.wallets.findById(walletId) ?: throw IllegalStateException("محفظة غير موجودة: $walletId")
+        val wallet = deps.wallets.findById(walletId) ?: throw IllegalStateException(uiText(TextKey.WALLET_NOT_FOUND_ID, walletId))
 
         val collected = mutableListOf<Transaction>()
         /** تحويلات داخلية جاية **إلى** المحفظة دي — بتتعامل دخولًا. */
@@ -85,7 +87,7 @@ class ReconcileBalance(private val deps: ReconcileDeps) {
                 creditMinor = if (incoming) txn.amountMinor else if (txn.observedDirection == Direction.IN) txn.amountMinor else 0,
                 // الرصيد المعلن بيخص محفظة **المصدر** في كشفها — ما يتقارنش بيه الطرف الداخل
                 statedBalanceMinor = if (!incoming) txn.statedBalanceMinor else null,
-                label = (if (incoming) "وارد تحويل — " else "") +
+                label = (if (incoming) uiText(TextKey.RECONCILE_INCOMING_PREFIX) else "") +
                     (
                         txn.rawMerchantName?.takeIf { it.isNotEmpty() }
                             ?: txn.rawDescription?.takeIf { it.isNotEmpty() }

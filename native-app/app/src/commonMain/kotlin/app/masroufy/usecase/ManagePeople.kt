@@ -11,10 +11,12 @@ import app.masroufy.core.Person
 import app.masroufy.core.PersonAllocation
 import app.masroufy.core.PersonBalance
 import app.masroufy.core.Settlement
+import app.masroufy.core.TextKey
 import app.masroufy.core.computePersonBalance
 import app.masroufy.core.formatMoney
 import app.masroufy.core.jsTrim
 import app.masroufy.core.remainingOfObligation
+import app.masroufy.core.uiText
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
@@ -80,12 +82,12 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
 
     suspend fun addPerson(name: String): Person {
         val trimmed = jsTrim(name)
-        if (trimmed.isEmpty()) throw IllegalStateException("اكتب اسم الشخص")
+        if (trimmed.isEmpty()) throw IllegalStateException(uiText(TextKey.PERSON_NAME_REQUIRED))
         // spec/04: حد اسم الشخص 80 حرف، معلن ومتحقَّق منه
-        if (trimmed.length > 80) throw IllegalStateException("الاسم أطول من 80 حرف")
+        if (trimmed.length > 80) throw IllegalStateException(uiText(TextKey.PROFILE_NAME_TOO_LONG, "80"))
 
         if (deps.people.listAll().any { jsTrim(it.name) == trimmed }) {
-            throw IllegalStateException("فيه شخص اسمه «$trimmed» موجود قبل كده")
+            throw IllegalStateException(uiText(TextKey.PERSON_NAME_DUPLICATE, trimmed))
         }
 
         val person = Person(id = deps.ids.next("person"), name = trimmed, archived = false)
@@ -95,7 +97,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
 
     /** أرشفة — **مفيش حذف** (spec/03: «لا حذف للحساب ذي سجل»). */
     suspend fun archivePerson(personId: Id, archived: Boolean) {
-        val person = deps.people.listAll().find { it.id == personId } ?: throw IllegalStateException("الشخص ده مش موجود")
+        val person = deps.people.listAll().find { it.id == personId } ?: throw IllegalStateException(uiText(TextKey.PERSON_NOT_FOUND))
         deps.people.save(person.copy(archived = archived))
     }
 
@@ -111,16 +113,16 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         amountMinor: Halalas,
         asGift: Boolean = false,
     ): LinkResult {
-        if (amountMinor <= 0) throw IllegalStateException("المبلغ لازم يكون أكبر من صفر")
+        if (amountMinor <= 0) throw IllegalStateException(uiText(TextKey.AMOUNT_POSITIVE))
 
         val transaction = deps.txns.findByIds(listOf(transactionId)).firstOrNull()
-            ?: throw IllegalStateException("العملية دي مش موجودة")
+            ?: throw IllegalStateException(uiText(TextKey.TXN_NOT_FOUND))
         if (deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
 
         val already = deps.allocations.listByTransactionIds(listOf(transactionId)).fold(0L) { sum, a -> sum + a.amountMinor }
         if (already + amountMinor > transaction.amountMinor) {
             throw IllegalStateException(
-                "مجموع التخصيصات (${formatMoney(already + amountMinor)}) أكبر من قيمة العملية (${formatMoney(transaction.amountMinor)})",
+                uiText(TextKey.LEDGER_ALLOCATIONS_EXCEED, formatMoney(already + amountMinor), formatMoney(transaction.amountMinor)),
             )
         }
 
@@ -158,7 +160,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         transactionId: Id? = null,
         requestId: String? = null,
     ): Settlement {
-        if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException("معرّف طلب التسوية غير سليم")
+        if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException(uiText(TextKey.SETTLEMENT_REQUEST_ID_INVALID))
         if (transactionId != null && deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
         return deps.settlementWriter.settle(
             Settlement(
@@ -176,8 +178,8 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
      * وبيتسدد عادي، و**مفيش عملية وهمية**: مش بيدخل المصروف ولا الدخل ولا رصيد الكاش.
      */
     suspend fun addOpeningDebt(personId: Id, kind: ObligationKind, amountMinor: Halalas): Obligation {
-        if (amountMinor <= 0 || amountMinor > MAX_SAFE_HALALAS) throw IllegalStateException("المبلغ لازم يكون أكبر من صفر")
-        if (deps.people.listAll().none { it.id == personId }) throw IllegalStateException("الشخص ده مش موجود")
+        if (amountMinor <= 0 || amountMinor > MAX_SAFE_HALALAS) throw IllegalStateException(uiText(TextKey.AMOUNT_POSITIVE))
+        if (deps.people.listAll().none { it.id == personId }) throw IllegalStateException(uiText(TextKey.PERSON_NOT_FOUND))
         val obligation = Obligation(
             id = deps.ids.next("obl"),
             personId = personId,

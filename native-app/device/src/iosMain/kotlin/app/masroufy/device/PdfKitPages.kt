@@ -2,6 +2,8 @@ package app.masroufy.device
 
 import app.masroufy.core.PdfPage
 import app.masroufy.core.PositionedWord
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.usecase.PdfPagesPort
 import app.masroufy.usecase.PdfReadError
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -36,13 +38,13 @@ import kotlin.math.round
 class PdfKitPages : PdfPagesPort {
     override suspend fun read(data: ByteArray, onProgress: ((page: Int, total: Int) -> Unit)?): List<PdfPage> = withContext(Dispatchers.IO) {
         // ملف مش PDF: `initWithData` بيرجّع nil، وكوتلن بتحوّله NullPointerException من الـconstructor (اتشاف على ماك GitHub)
-        val doc = (if (data.isEmpty()) null else runCatching { PDFDocument(data = data.toNSData()) }.getOrNull()) ?: throw PdfReadError("الملف ده مش PDF أو تالف")
-        if (doc.isLocked) throw PdfReadError("الملف محمي بكلمة سر — افتحه واحفظه من غير كلمة سر وجرّب تاني")
+        val doc = (if (data.isEmpty()) null else runCatching { PDFDocument(data = data.toNSData()) }.getOrNull()) ?: throw PdfReadError(uiText(TextKey.PDF_INVALID))
+        if (doc.isLocked) throw PdfReadError(uiText(TextKey.PDF_PASSWORD))
         val total = doc.pageCount.toInt()
         // PDFKit بيقبل ملف بايظ أحيانًا ويرجّع مستند من غير صفحات — ده مش «كشف فاضي»
-        if (total == 0) throw PdfReadError("الملف ده مش PDF أو تالف")
+        if (total == 0) throw PdfReadError(uiText(TextKey.PDF_INVALID))
         (0 until total).map { i ->
-            val page = doc.pageAtIndex(i.toULong()) ?: throw PdfReadError("الملف ده مش PDF أو تالف")
+            val page = doc.pageAtIndex(i.toULong()) ?: throw PdfReadError(uiText(TextKey.PDF_INVALID))
             val words = toWords(glyphsOf(page))
             onProgress?.invoke(i + 1, total)
             PdfPage(i + 1, words)

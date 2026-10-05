@@ -9,12 +9,14 @@ import app.masroufy.core.ImportCounts
 import app.masroufy.core.MatchingState
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SourceRecord
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.applyKnownPayerSalary
 import app.masroufy.core.applyTransferVerdict
 import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
 import app.masroufy.core.importFingerprint
+import app.masroufy.core.uiText
 
 /**
  * ImportStatement — نقل `importStatement.ts`: قراءة الكشف، منع التكرار، إنشاء الدفعة.
@@ -71,7 +73,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         // التعارض ما بيتكتبش أبدًا من غير حسم صريح — لا استبدال صامت (spec/05)
         for (line in previewResult.lines) {
             if (line.row.lineNumber in selection && line.state == MatchingState.CONFLICT) {
-                throw IllegalStateException("الصف ${line.row.lineNumber} فيه تعارض ولازم تحسمه الأول. ${line.reason}")
+                throw IllegalStateException(uiText(TextKey.IMPORT_ROW_CONFLICT, "${line.row.lineNumber}", "${line.reason}"))
             }
         }
 
@@ -162,11 +164,11 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         selected: List<Int>? = null,
         chosenCategories: Map<Int, Id>? = null,
     ): ImportBatch {
-        if (committing) throw IllegalStateException("فيه استيراد بيتحفظ حاليًا؛ استنى اكتماله")
+        if (committing) throw IllegalStateException(uiText(TextKey.IMPORT_COMMIT_RUNNING))
         committing = true
         try {
             if (importFingerprint(request.content, request.accountIdentity) != previous.fileHash || request.accountIdentity != previous.accountIdentity) {
-                throw IllegalStateException("بيانات الاستيراد اتغيرت؛ اعمل معاينة جديدة")
+                throw IllegalStateException(uiText(TextKey.IMPORT_DATA_CHANGED))
             }
             val fresh = preview(request)
             val selection = selected ?: previous.lines.filter { it.selectedByDefault }.map { it.row.lineNumber }
@@ -187,10 +189,10 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 val before = previousByNumber[number]
                 val now = freshByNumber[number]
                 if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId) {
-                    throw IllegalStateException("فيه بيانات اتغيرت بعد المعاينة؛ اعمل معاينة جديدة علشان نمنع التكرار")
+                    throw IllegalStateException(uiText(TextKey.IMPORT_CHANGED_AFTER_PREVIEW))
                 }
                 if (now.state == MatchingState.DUPLICATE || now.state == MatchingState.INVALID) {
-                    throw IllegalStateException("العملية المكررة أو غير الصالحة مش قابلة للإضافة")
+                    throw IllegalStateException(uiText(TextKey.IMPORT_LINE_NOT_ADDABLE))
                 }
             }
             return commitPrepared(request, fresh, selection, chosenCategories)

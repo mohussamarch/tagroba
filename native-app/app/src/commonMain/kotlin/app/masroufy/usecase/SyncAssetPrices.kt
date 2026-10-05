@@ -2,7 +2,9 @@ package app.masroufy.usecase
 
 import app.masroufy.core.AssetPrice
 import app.masroufy.core.PriceFeed
+import app.masroufy.core.TextKey
 import app.masroufy.core.indexFeed
+import app.masroufy.core.uiText
 import app.masroufy.port.AssetPriceRepository
 import app.masroufy.port.AssetRepository
 
@@ -42,7 +44,7 @@ class SyncAssetPrices(private val deps: SyncAssetPricesDeps) {
             }
             val feedPrice = bySymbol[symbol]
             if (feedPrice == null) {
-                skipped += PriceSkipped(asset.name, "الرمز «$symbol» مش موجود في ملف الأسعار النهارده")
+                skipped += PriceSkipped(asset.name, uiText(TextKey.PRICE_SYMBOL_MISSING, symbol))
                 continue
             }
             deps.prices.save(AssetPrice(asset.id, feedPrice.pricePerUnitMinor, feedPrice.asOf, "feed"))

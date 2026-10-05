@@ -1,6 +1,8 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.TextKey
 import app.masroufy.core.jsonStringifyPretty
+import app.masroufy.core.uiText
 import app.masroufy.port.Clock
 import app.masroufy.port.RepairBackupPort
 
@@ -18,7 +20,7 @@ suspend fun saveVerifiedBackup(backup: RepairBackupPort, clock: Clock, kind: Str
     val expectedBytes = content.encodeToByteArray().size.toLong()
     val saved = backup.save(fileName, content)
     if (saved.bytes != null && saved.bytes != expectedBytes) {
-        throw IllegalStateException("النسخة الاحتياطية اتحفظت ناقصة (${saved.bytes} من $expectedBytes بايت) — ما اتلمسش ولا مستند")
+        throw IllegalStateException(uiText(TextKey.BACKUP_SAVED_PARTIAL, "${saved.bytes}", "$expectedBytes"))
     }
     return VerifiedBackup(saved.location, saved.bytes, fileName, expectedBytes)
 }

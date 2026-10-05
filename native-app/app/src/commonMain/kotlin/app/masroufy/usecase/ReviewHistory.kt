@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
+import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.daysBetween
@@ -9,6 +10,7 @@ import app.masroufy.core.isConsistentWithObservedDirection
 import app.masroufy.core.normalizeText
 import app.masroufy.core.parseIsoDate
 import app.masroufy.core.toDayNumber
+import app.masroufy.core.uiText
 
 /**
  * ReviewHistory — نقل `reviewHistory.ts`: مراجعة السجل القديم (لحد خمس سنين) على دفعات شهرية،
@@ -36,7 +38,7 @@ class ReviewHistory(private val deps: CategorizeTransactionsDeps) {
         parseIsoDate(from)
         parseIsoDate(to)
         val length = daysBetween(from, to)
-        if (length < 0 || length > 1830) throw IllegalArgumentException("اختار نطاق صحيح لا يزيد عن خمس سنين.")
+        if (length < 0 || length > 1830) throw IllegalArgumentException(uiText(TextKey.REVIEW_RANGE))
         val rows = LinkedHashMap<Id, Transaction>()
         var start = from
         var i = 0
@@ -72,20 +74,20 @@ class ReviewHistory(private val deps: CategorizeTransactionsDeps) {
             skippedConfirmed = r.skippedConfirmed.sorted(),
             stillNeedsReview = r.stillNeedsReview.sorted(),
         )
-        if (signature(fresh) != signature(expected)) throw IllegalStateException("العمليات أو القواعد اتغيرت بعد المعاينة. اعرض المعاينة من جديد.")
+        if (signature(fresh) != signature(expected)) throw IllegalStateException(uiText(TextKey.REVIEW_CHANGED))
         return categorize.apply(rows)
     }
 
     suspend fun setGroup(ids: List<Id>, kind: EconomicKind): BulkConfirmResult {
-        if (kind !in BULK_KINDS) throw IllegalArgumentException("الديون والتحويلات تحتاج ربط الشخص أو المحفظة لكل عملية.")
+        if (kind !in BULK_KINDS) throw IllegalArgumentException(uiText(TextKey.REVIEW_KIND_NOT_BULK))
         val rows = deps.txns.findByIds(ids.distinct())
-        if (rows.isEmpty()) throw IllegalArgumentException("اختار عمليات للمراجعة.")
+        if (rows.isEmpty()) throw IllegalArgumentException(uiText(TextKey.REVIEW_PICK_ROWS))
         val first = rows.first()
         val firstName = normalizeText(first.rawMerchantName ?: "")
         if (rows.any { normalizeText(it.rawMerchantName ?: "") != firstName || it.currency != first.currency || it.observedDirection != first.observedDirection }) {
-            throw IllegalArgumentException("المجموعة لازم تكون لنفس الاسم والعملة والاتجاه.")
+            throw IllegalArgumentException(uiText(TextKey.REVIEW_SAME_GROUP))
         }
-        if (!isConsistentWithObservedDirection(kind, first.observedDirection)) throw IllegalArgumentException("النوع لا يطابق اتجاه الحركة.")
+        if (!isConsistentWithObservedDirection(kind, first.observedDirection)) throw IllegalArgumentException(uiText(TextKey.REVIEW_KIND_DIRECTION))
         var applied = 0
         for (row in rows) {
             val current = deps.txns.findByIds(listOf(row.id)).firstOrNull()

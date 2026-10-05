@@ -3,6 +3,8 @@ package app.masroufy.usecase
 import app.masroufy.core.Id
 import app.masroufy.core.ImportBatch
 import app.masroufy.core.ImportBatchState
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
 import app.masroufy.port.ImportBatchRepository
 import app.masroufy.port.SourceRecordRepository
 import app.masroufy.port.TransactionRepository
@@ -40,9 +42,9 @@ class ResumeStagedBatch(private val deps: ResumeStagedBatchDeps) {
      * آمن التكرار: لو التنظيف نفسه اتقطع، الدفعة بتفضل `staged` وبيتعاد التنظيف بلا ضرر.
      */
     suspend fun cleanup(batchId: Id): StagedCleanupOutcome {
-        val batch = deps.batches.findById(batchId) ?: throw IllegalStateException("دفعة غير موجودة: $batchId")
+        val batch = deps.batches.findById(batchId) ?: throw IllegalStateException(uiText(TextKey.BATCH_NOT_FOUND, batchId))
         if (batch.state != ImportBatchState.STAGED) {
-            throw IllegalStateException("الدفعة دي حالتها «${batch.state.wire}» مش «staged». التنظيف بيشتغل على المعلّق بس.")
+            throw IllegalStateException(uiText(TextKey.BATCH_NOT_STAGED, batch.state.wire))
         }
 
         val records = deps.sources.listByBatch(batchId)

@@ -102,13 +102,13 @@ internal fun checkSpacesPart(file: Map<String, Any?>, root: FullBackupData, coun
         checkFullBackupData(data, SPACE_GROUPS, external)
         val typed = data as FullBackupData
         checkBackupFinance(typed)
-        for (g in SPACE_GROUPS) if (!sameNumber(spaceCounts[g], typed.getValue(g).size)) throw IllegalArgumentException("عدد السجلات غير مطابق: " + BACKUP_LABELS.getValue(g))
+        for (g in SPACE_GROUPS) if (!sameNumber(spaceCounts[g], typed.getValue(g).size)) throw IllegalArgumentException(uiText(TextKey.BACKUP_COUNT_MISMATCH, BACKUP_LABELS.getValue(g)))
         SpaceBackupEntry(space, spaceBackupData(typed), spaceCounts)
     }
     val transfers = (file["spaceTransfers"] as? List<*> ?: throw BackupError(uiText(TextKey.BACKUP_DATA_INVALID))).map {
         it as? Map<String, Any?> ?: throw BackupError(uiText(TextKey.BACKUP_SPACE_TRANSFER_INVALID, "row"))
     }
-    if (!sameNumber(counts[SPACE_TRANSFERS_COUNT], transfers.size)) throw IllegalArgumentException("عدد السجلات غير مطابق: " + uiText(TextKey.BACKUP_GROUP_SPACE_TRANSFERS))
+    if (!sameNumber(counts[SPACE_TRANSFERS_COUNT], transfers.size)) throw IllegalArgumentException(uiText(TextKey.BACKUP_COUNT_MISMATCH, uiText(TextKey.BACKUP_GROUP_SPACE_TRANSFERS)))
     checkSpaceTransferRows(transfers, transactionsBySpace(root, entries))
     return entries to transfers
 }

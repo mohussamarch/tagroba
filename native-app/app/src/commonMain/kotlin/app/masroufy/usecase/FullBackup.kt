@@ -7,6 +7,7 @@ import app.masroufy.core.BackupRow
 import app.masroufy.core.FullBackupData
 import app.masroufy.core.NEW_APP_BACKUP_GROUPS
 import app.masroufy.core.LATER_BACKUP_GROUPS
+import app.masroufy.core.TextKey
 import app.masroufy.core.exportedBackupData
 import app.masroufy.core.backupChecksum
 import app.masroufy.core.canonicalBackup
@@ -17,6 +18,7 @@ import app.masroufy.core.jsonStringify
 import app.masroufy.core.mergeFullBackupDetailed
 import app.masroufy.core.normalizeBudgetIds
 import app.masroufy.core.pointLinesAtLiveBudgets
+import app.masroufy.core.uiText
 import app.masroufy.port.FullBackupPort
 import app.masroufy.port.SpacesBackupPort
 
@@ -90,17 +92,17 @@ internal fun sameNumber(value: Any?, expected: Int): Boolean = when (value) {
 class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBackupPort? = null) {
     @Suppress("UNCHECKED_CAST")
     private fun check(raw: String): FullBackupFile {
-        if (raw.length > MAX_BACKUP_CHARS) throw IllegalArgumentException("النسخة أكبر من الحد المدعوم (40 ميجابايت)")
+        if (raw.length > MAX_BACKUP_CHARS) throw IllegalArgumentException(uiText(TextKey.BACKUP_TOO_LARGE))
         val parsed = try {
             JsonText.parse(raw)
         } catch (_: JsonText.InvalidJson) {
-            throw IllegalArgumentException("الملف مش JSON صالح")
+            throw IllegalArgumentException(uiText(TextKey.BACKUP_NOT_JSON))
         }
         val file = parsed as? Map<String, Any?>
         val version = file?.get("schemaVersion")
         val v3 = sameNumber(version, BACKUP_SPACES_VERSION)
         if (file == null || file["app"] != "masroufy" || !(sameNumber(version, 2) || v3)) {
-            throw IllegalArgumentException("اختر نسخة شاملة بإصدار 2؛ للنسخ القديمة استخدم استعادة النسخة القديمة")
+            throw IllegalArgumentException(uiText(TextKey.BACKUP_NEEDS_V2))
         }
         val hasProfile = file.containsKey("profile")
         val profile = file["profile"]
@@ -118,10 +120,10 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
         checkBackupFinance(typed)
         checkBackupProfile(profile)
         for (key in BACKUP_GROUPS) {
-            if (!sameNumber(counts[key], typed.getValue(key).size)) throw IllegalArgumentException("عدد السجلات غير مطابق: " + BACKUP_LABELS.getValue(key))
+            if (!sameNumber(counts[key], typed.getValue(key).size)) throw IllegalArgumentException(uiText(TextKey.BACKUP_COUNT_MISMATCH, BACKUP_LABELS.getValue(key)))
         }
         val spaceParts = if (v3) checkSpacesPart(file, typed, counts) else null
-        if (backupChecksum(signed) != file["checksum"]) throw IllegalArgumentException("بصمة سلامة النسخة غير مطابقة؛ الملف اتغير أو اتلف")
+        if (backupChecksum(signed) != file["checksum"]) throw IllegalArgumentException(uiText(TextKey.BACKUP_CHECKSUM_MISMATCH))
         // النسخة اتأكدت؛ المكمّلة بتتبصم تاني (على اللي هيتكتب فعلًا) عشان التطبيق بعد المعاينة يتأكد منها هي
         val exported = exportedBackupData(typed)
         if (spaceParts != null) {
@@ -174,10 +176,10 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
         return FullBackupPlan(
             file, lines, profile, lines.sumOf { it.toAdd } + (if (profile.toAdd) 1 else 0) + (spacePlans?.total ?: 0),
             listOf(
-                "الموجود يفضل كما هو. روابط العمليات المتكررة تُنقل لمعرّفات العمليات الموجودة.",
-                "ملف الحساب (الاسم والمرتب ويوم الراتب) بيتضاف بس لو الحساب مالوش ملف — ما بيتكتبش فوق الموجود.",
-                "الاستعادة على دفعات: لو الاتصال انقطع قد يُحفظ جزء؛ أعد نفس النسخة لاستكمال الناقص دون الكتابة فوق الموجود. تجنب التعديل من جهاز آخر أثناء النسخ والاستعادة.",
-                "النسخة تشمل بيانات الحساب؛ أذونات الهاتف ورسائل المراجعة المحلية وإعدادات المظهر لا تُستعاد منها.",
+                uiText(TextKey.BACKUP_NOTE_KEEP_EXISTING),
+                uiText(TextKey.BACKUP_NOTE_PROFILE),
+                uiText(TextKey.BACKUP_NOTE_BATCHES),
+                uiText(TextKey.BACKUP_NOTE_SCOPE),
             ),
             spacePlans?.spaces.orEmpty(), spacePlans?.transfersToAdd ?: 0,
         )
@@ -201,5 +203,5 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
         return FullBackupOutcome(byGroup, added.values.sum() + (if (profileAdded) 1 else 0) + byGroup.filterKeys { '/' in it || it == SPACE_TRANSFERS_COUNT }.values.sum())
     }
 
-    private fun requireSpaces(): SpacesBackupPort = spaces ?: throw IllegalStateException("النسخة دي فيها بلاد تانية — الاستعادة محتاجة مكان البلاد")
+    private fun requireSpaces(): SpacesBackupPort = spaces ?: throw IllegalStateException(uiText(TextKey.BACKUP_NEEDS_SPACES))
 }
