@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * معاش السعودية (§69) — حالات مرجعية محسوبة على الورق من نص النظام (م/273 ومرسومه، وصفحة التأمينات للنظام القديم). أرقام مخترعة.
@@ -66,8 +67,50 @@ class RetirementSaudiTest {
         assertEquals(795_000L, p.pensionMinor)
     }
 
-    private fun input(birth: String, before2024: Boolean, soFar: Int, wage: Long?, atEff: Int? = null, retireAt: Int? = null, pre1422: Int = 0) =
-        SaudiPensionInput(birth, "2026-10-05", before2024, soFar, atEff, pre1422, wage, retireAt)
+    @Test fun newLawEarlyReductionComesAfterTheMinimumAndCanGoBelowIt() {
+        // قرار المالك §69.3 «الخصم بعد الحد الأدنى»: 3,000 × 2.25% × 360 ÷ 12 = 2,025 · الحد الأدنى 4,000 × 360 ÷ 480 = 3,000 ⇒ 3,000
+        // 36 شهر بدري: الأقل من (36) و(480 − 360 = 120) = 36 ⇒ 9% من 3,000 = 270 ⇒ 2,730 — تحت الحد الأدنى وبيفضل تحته
+        // (الترتيب القديم كان 2,025 − 182.25 = 1,842.75 ⇒ يترفع لـ3,000)
+        val p = saudiNewPension(300_000, 360, 36, 0)
+        assertEquals(202_500L, p.baseMinor)
+        assertEquals(300_000L, p.minimumMinor)
+        assertEquals(300_000L, p.flooredMinor)
+        assertEquals(27_000L, p.reductionMinor)
+        assertEquals(273_000L, p.pensionMinor)
+        assertTrue(p.pensionMinor < p.minimumMinor, "المبكر ممكن ينزل تحت الحد الأدنى")
+        // نفس الشيء من التواريخ: مولود 1971-10-05 (55 النهارده)، 360 شهر، يتقاعد النهارده عند 55 ⇒ 120 شهر بدري، والتخفيض على الأقل من
+        // (120) و(480 − 360 = 120) = 120 ⇒ 30% من 3,000 = 900 ⇒ 2,100 (الترتيب القديم: 2,025 − 607.50 = 1,417.50 ⇒ 3,000)
+        val e = saudiPensionEstimate(input("1971-10-05", false, 360, 300_000, retireAt = 55 * 12))
+        assertEquals(210_000L, e.pensionMinor)
+        assertEquals(300_000L, e.newDetail!!.minimumMinor)
+    }
+
+    @Test fun newLawLateIncreaseIsOnTheFlooredAmount() {
+        // 3,000 × 2.25% × 200 ÷ 12 = 1,125 · الحد الأدنى 4,000 × 200 ÷ 480 = 1,666.67 ⇒ الأرضية 2,000 · 24 شهر بعد السن ⇒ 6% من 2,000 = 120 ⇒ 2,120
+        // (الترتيب القديم: 1,125 + 67.50 = 1,192.50 ⇒ 2,000)
+        val p = saudiNewPension(300_000, 200, 0, 24)
+        assertEquals(200_000L, p.flooredMinor)
+        assertEquals(12_000L, p.increaseMinor)
+        assertEquals(212_000L, p.pensionMinor)
+    }
+
+    @Test fun contributionWageIsBasicPlusHousingEnteredSeparately() {
+        // أساسي 6,000 + سكن 1,500 = 7,500 · مولود 1990-03-15 ⇒ 365 شهر: 7,500 × 2.25% × 365 ÷ 12 = 5,132.8125 ⇒ 5,132.81
+        val e = saudiPensionEstimate(input("1990-03-15", false, 24, 600_000, housing = 150_000))
+        assertEquals(750_000L, e.newDetail!!.averageWageMinor)
+        assertEquals(513_281L, e.pensionMinor)
+        // السكن ما اتكتبش ⇒ «غير متاح» (مش صفر مؤكد) · الأساسي ما اتكتبش ⇒ سببه هو
+        assertEquals(CalcReason.NEED_HOUSING, saudiPensionEstimate(input("1990-03-15", false, 24, 600_000, housing = null)).reason)
+        assertEquals(CalcReason.NEED_BASIC, saudiPensionEstimate(input("1990-03-15", false, 24, null, housing = 150_000)).reason)
+        // سكن صفر مكتوب صراحة ⇒ الأساسي لوحده: 6,000 × 2.25% × 365 ÷ 12 = 4,106.25
+        assertEquals(410_625L, saudiPensionEstimate(input("1990-03-15", false, 24, 600_000, housing = 0)).pensionMinor)
+        // القديم بنفس المجموع: 7,500 × 338 ÷ 480 = 5,281.25
+        assertEquals(528_125L, saudiPensionEstimate(input("1970-01-01", true, 300, 600_000, housing = 150_000)).pensionMinor)
+        assertFailsWith<RetirementCalcError> { saudiPensionEstimate(input("1990-03-15", false, 24, 600_000, housing = -1)) }
+    }
+
+    private fun input(birth: String, before2024: Boolean, soFar: Int, wage: Long?, atEff: Int? = null, retireAt: Int? = null, pre1422: Int = 0, housing: Long? = 0) =
+        SaudiPensionInput(birth, "2026-10-05", before2024, soFar, atEff, pre1422, wage, housing, retireAt)
 
     @Test fun newLawEstimateFromDatesAssumesContributionContinues() {
         // مولود 1990-03-15 ⇒ 65 يوم 2055-03-15. من 2026-10-05: 341 شهر كامل (2055-03-05 ≤ 03-15، والـ342 = 04-05 بعدها)
@@ -82,7 +125,7 @@ class RetirementSaudiTest {
         // من غير أجر ⇒ «غير متاح» بالسبب، مش صفر
         val noWage = saudiPensionEstimate(input("1990-03-15", false, 24, null))
         assertEquals(PensionStatus.UNAVAILABLE, noWage.status)
-        assertEquals(CalcReason.NEED_WAGE, noWage.reason)
+        assertEquals(CalcReason.NEED_BASIC, noWage.reason)
         assertNull(noWage.pensionMinor)
     }
 

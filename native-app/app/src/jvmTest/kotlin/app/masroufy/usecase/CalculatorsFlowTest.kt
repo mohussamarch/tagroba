@@ -5,6 +5,7 @@ import app.masroufy.core.CalcReason
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
+import app.masroufy.core.EgyptPensionInput
 import app.masroufy.core.EosEnd
 import app.masroufy.core.EosPart
 import app.masroufy.core.IncomeSource
@@ -112,13 +113,16 @@ class CalculatorsFlowTest {
     private fun job(id: String, kind: IncomeSourceKind = IncomeSourceKind.JOB, start: String = "2015-01-01", end: String? = null, expected: Long? = 1_000_000) =
         IncomeSource(id, "شركة وهمية $id", "شركه وهميه $id", kind, Currency.SAR, start, end, expectedMinor = expected)
 
-    private val saudi = SaudiPensionInput("1990-03-15", today, false, 24, averageWageMinor = null)
+    /** المستخدم كتب بدل السكن صفر صراحة؛ الأساسي null ⇒ المقترح من مصادر الدخل. */
+    private val saudi = SaudiPensionInput("1990-03-15", today, false, 24, basicWageMinor = null, housingAllowanceMinor = 0)
 
     @Test fun retirementTakesTheSalaryAndJobStartFromIncomeSources() = runBlocking<Unit> {
         val sources = MemoryIncomeSourceRepository(listOf(job("j-1"), job("p-1", IncomeSourceKind.PART_TIME), job("old", start = "2010-01-01", end = "2014-12-31")))
         val calc = RetirementCalculator(RetirementCalculatorDeps(sources))
         val out = calc.calculate(RetirementRequest("SA", saudi, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END, desiredMonthlyMinor = 1_500_000, years = 20), today)
         assertEquals(1_000_000L, out.defaults.salaryMinor)
+        assertEquals(1_000_000L, out.defaults.suggestedBasicMinor, "مفيش تقسيم في مصادر الدخل ⇒ المرتب كله أساسي")
+        assertNull(out.defaults.suggestedHousingMinor, "السكن فاضي لحد ما المستخدم يكتبه")
         assertEquals(1, out.defaults.activeJobs, "البارت تايم والشغل اللي خلص برا")
         // 10,000 × 2.25% × 365 ÷ 12 = 6,843.75
         assertEquals(684_375L, out.pension.pensionMinor)
@@ -127,20 +131,28 @@ class CalculatorsFlowTest {
         assertEquals(37_700_000L, eos.result.payableMinor)
         // (15,000 − 6,843.75) × 240 = 1,957,500 − 377,000 = 1,580,500 ÷ 341 = 4,634.897… ⇒ 4,634.90
         assertEquals(463_490L, out.gap!!.gap!!.perMonthMinor)
-        // المستخدم عدّل المرتب ⇒ رقمه هو اللي بيتحسب
-        val edited = calc.calculate(RetirementRequest("SA", saudi.copy(averageWageMinor = 800_000), eosWageMinor = 800_000, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
-        assertEquals(547_500L, edited.pension.pensionMinor)
-        assertEquals(30_160_000L, (edited.endOfService as EosPart.Known).result.payableMinor, "8,000 × 37.7")
+        // المستخدم عدّل: أساسي 6,000 + سكن 2,000 = 8,000 للمعاش · والمكافأة على الأجر الفعلي 10,000 من مصادر الدخل (م2 — أجر تاني)
+        val edited = calc.calculate(RetirementRequest("SA", saudi.copy(basicWageMinor = 600_000, housingAllowanceMinor = 200_000), eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
+        assertEquals(547_500L, edited.pension.pensionMinor, "8,000 × 2.25% × 365 ÷ 12")
+        assertEquals(37_700_000L, (edited.endOfService as EosPart.Known).result.payableMinor, "10,000 × 37.7 — مش 8,000")
         assertNull(edited.gap, "من غير المبلغ المطلوب ⇒ المعاش بس")
+        // أجر المكافأة مكتوب لوحده ⇒ هو اللي بيتحسب
+        val eosEdited = calc.calculate(RetirementRequest("SA", saudi.copy(basicWageMinor = 600_000, housingAllowanceMinor = 200_000), eosWageMinor = 900_000, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
+        assertEquals(33_930_000L, (eosEdited.endOfService as EosPart.Known).result.payableMinor, "9,000 × 37.7")
+        // السكن ما اتكتبش ⇒ المعاش «غير متاح» بسببه (مش صفر مؤكد)، والمكافأة شغالة عادي
+        val noHousing = calc.calculate(RetirementRequest("SA", saudi.copy(housingAllowanceMinor = null), eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
+        assertEquals(CalcReason.NEED_HOUSING, noHousing.pension.reason)
     }
 
     @Test fun missingInputsAreUnavailableWithReasons() = runBlocking<Unit> {
         val none = RetirementCalculator(RetirementCalculatorDeps(MemoryIncomeSourceRepository()))
         val out = none.calculate(RetirementRequest("SA", saudi, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END, desiredMonthlyMinor = 1_500_000, years = 20), today)
-        assertEquals(CalcReason.NEED_WAGE, out.pension.reason)
+        assertEquals(CalcReason.NEED_BASIC, out.pension.reason)
         assertEquals(EosPart.Unavailable(CalcReason.NEED_JOB_START), out.endOfService)
-        assertEquals(CalcReason.NEED_WAGE, out.gap!!.reason)
-        val noJob = none.calculate(RetirementRequest("SA", saudi.copy(averageWageMinor = 800_000), noCurrentJob = true, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
+        assertEquals(CalcReason.NEED_BASIC, out.gap!!.reason)
+        val noEosWage = none.calculate(RetirementRequest("SA", saudi.copy(basicWageMinor = 800_000), jobStartedAt = "2015-01-01", eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
+        assertEquals(EosPart.Unavailable(CalcReason.NEED_WAGE), noEosWage.endOfService, "أجر المكافأة الفعلي مش الأساسي — مالوش اقتراح من غير مصادر الدخل")
+        val noJob = none.calculate(RetirementRequest("SA", saudi.copy(basicWageMinor = 800_000), noCurrentJob = true, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END), today)
         assertEquals(EosPart.NotApplicable(TextKey.CALC_EOS_NO_JOB), noJob.endOfService)
         val two = RetirementCalculator(RetirementCalculatorDeps(MemoryIncomeSourceRepository(listOf(job("j-1"), job("j-2", start = "2020-01-01")))))
         val d = two.defaults("SA", today)
@@ -149,12 +161,19 @@ class CalculatorsFlowTest {
         assertNull(d.jobStartedAt)
     }
 
-    @Test fun egyptIsUnavailableAndHasNoEndOfServiceAward() = runBlocking<Unit> {
-        val calc = RetirementCalculator(RetirementCalculatorDeps(MemoryIncomeSourceRepository()))
-        val out = calc.calculate(RetirementRequest("EG", eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END, desiredMonthlyMinor = 1_500_000, years = 20), today)
-        assertEquals(PensionStatus.UNAVAILABLE, out.pension.status)
-        assertEquals(CalcReason.EGYPT_PENSION_NOT_READY, out.pension.reason)
+    @Test fun egyptPensionFromTheTypedSettlementWageAndNoEndOfServiceAward() = runBlocking<Unit> {
+        val calc = RetirementCalculator(RetirementCalculatorDeps(MemoryIncomeSourceRepository(listOf(job("e-1").copy(currency = Currency.EGP)))))
+        // مولود 1985-06-01 ⇒ سن الشيخوخة 65 (يتم 60 بعد يوليو 2040) · 60 + 283 = 343 شهر · جدول 5 عمود 65 سطر 65 = 45.0
+        // 10,000 × (343 ÷ 12) ÷ 45 = 6,351.85 · الفجوة (8,000 − 6,351.85) × 240 = 395,556 ÷ 283 = 1,397.72… ⇒ 1,397.73
+        val input = EgyptPensionInput("1985-06-01", "2000-01-02", 60, settlementWageMinor = 1_000_000)
+        val out = calc.calculate(RetirementRequest("EG", egypt = input, eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END, desiredMonthlyMinor = 800_000, years = 20), today)
+        assertEquals(PensionStatus.ESTIMATED, out.pension.status)
+        assertEquals(635_185L, out.pension.pensionMinor)
         assertEquals(EosPart.NotApplicable(TextKey.CALC_EOS_EGYPT_NOT_APPLICABLE), out.endOfService)
-        assertEquals(CalcReason.EGYPT_PENSION_NOT_READY, out.gap!!.reason)
+        assertEquals(139_773L, out.gap!!.gap!!.perMonthMinor)
+        assertEquals(1_000_000L, out.defaults.salaryMinor, "المرتب بيتقري، بس أجر التسوية مش بيتاخد منه")
+        val noWage = calc.calculate(RetirementRequest("EG", egypt = input.copy(settlementWageMinor = null), eosEnd = EosEnd.EMPLOYER_OR_CONTRACT_END, desiredMonthlyMinor = 800_000, years = 20), today)
+        assertEquals(CalcReason.NEED_SETTLEMENT_WAGE, noWage.pension.reason)
+        assertEquals(CalcReason.NEED_SETTLEMENT_WAGE, noWage.gap!!.reason)
     }
 }

@@ -102,7 +102,9 @@ class EndOfServiceTest {
         assertNull(noYears.gap)
         assertEquals(CalcReason.NEED_YEARS, noYears.reason, "مفيش مدة افتراضية للتقاعد")
         assertEquals(CalcReason.TOO_FEW_MONTHS, retirementGap(900_000, pension(null, PensionStatus.NOT_ELIGIBLE, CalcReason.TOO_FEW_MONTHS), known, 0, 20, null).reason)
-        assertEquals(CalcReason.EGYPT_PENSION_NOT_READY, retirementGap(900_000, egyptPensionEstimate(), known, 0, 20, null).reason)
+        // مصر من غير أجر التسوية ⇒ الفجوة «غير متاح» بنفس السبب (مولود 1985 ⇒ يتم 60 بعد يوليو 2040 ⇒ سن الشيخوخة 65 تلقائي)
+        val egypt = egyptPensionEstimate(EgyptPensionInput("1985-06-01", "2026-10-05", 60, settlementWageMinor = null))
+        assertEquals(CalcReason.NEED_SETTLEMENT_WAGE, retirementGap(900_000, egypt, known, 0, 20, null).reason)
         assertEquals(CalcReason.NEED_JOB_START, retirementGap(900_000, pension(547_500), EosPart.Unavailable(CalcReason.NEED_JOB_START), 0, 20, null).reason)
         assertEquals(CalcReason.NO_MONTHS_TO_SAVE, retirementGap(900_000, pension(547_500, monthsLeft = 0), known, 0, 20, null).reason)
         assertFailsWith<RetirementCalcError> { retirementGap(0, pension(547_500), known, 0, 20, null) }
