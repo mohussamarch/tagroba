@@ -3,6 +3,11 @@ package app.masroufy.firestore
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.port.MerchantRepository
 import app.masroufy.port.UnitOfWork
+import app.masroufy.usecase.AdvisorSignals
+import app.masroufy.usecase.AdvisorSignalsDeps
+import app.masroufy.usecase.LoadCalendar
+import app.masroufy.usecase.LoadGoalsOverview
+import app.masroufy.usecase.LoadLeftover
 import app.masroufy.usecase.SpaceMerchantRepository
 
 /**
@@ -75,6 +80,13 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     /** دواير الأشخاص والصلات بينهم (جلسة 16) — على الحساب زي الأشخاص. */
     val personProfiles = FirestorePersonProfileRepository(account)
     val personRelations = FirestorePersonRelationRepository(account)
+    /**
+     * محرك التنبيهات (§61، جلسة 18): الإعدادات والصفحة والإيصالات **على الحساب** وبتتزامن. التعلّم (ساعاتك وتفاعلك) **مش هنا** —
+     * على الجوال (`AndroidAlertInteractionStore`/`IosAlertInteractionStore` · `…UsualHoursStore`).
+     */
+    val alertSettings = FirestoreAlertSettings(account)
+    val alertInbox = FirestoreAlertInbox(account)
+    val alertReceipts = FirestoreAlertReceipts(account)
     /** خطط الادخار وإيداعاتها (§68) — على الحساب. */
     val savingsGoals = FirestoreSavingsGoalRepository(account)
     val goalContributions = FirestoreGoalContributionRepository(account)
@@ -96,4 +108,15 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
 
     /** أزواج التحويل لنفسك (على مستوى الحساب). الكتابة الذرّية (`FirestoreSpaceTransferWriter`) محتاجة كل البلاد ⇒ بتتعمل من الجلسة. */
     val spaceTransfers = FirestoreSpaceTransferRepository(account)
+
+    /**
+     * المساعد المالي (§68) للبلد دي — بالإيصالات **المتزامنة** ([alertReceipts]، نفس اللي المحرك بيكتب فيها) ⇒ «النقص كبر»
+     * ومنع التكرار شغالين بين الجوالين. الخطط و«فاضلك» والتقويم حالات استخدام بتتبني برا (محتاجة بلاد ومصادر تانية).
+     */
+    fun advisorSignals(goals: LoadGoalsOverview? = null, leftover: LoadLeftover? = null, calendar: LoadCalendar? = null): AdvisorSignals = AdvisorSignals(
+        AdvisorSignalsDeps(
+            transactions, allocations, categories, profile, goals = goals, leftover = leftover, receipts = alertReceipts, spaceId = spaceId,
+            recurring = recurring, calendar = calendar,
+        ),
+    )
 }

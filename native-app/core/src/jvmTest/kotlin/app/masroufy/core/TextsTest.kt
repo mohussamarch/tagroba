@@ -6,6 +6,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /**
@@ -26,12 +27,36 @@ class TextsTest {
         val snapshot = Json.parseToJsonElement(raw).jsonObject.mapValues { it.value.jsonPrimitive.content }
         assertEquals(710, snapshot.size, "اللقطة فيها كل مفاتيح ما قبل الفصحى")
         for ((name, old) in snapshot) {
-            assertEquals(old, EGYPTIAN_TEXTS[TextKey.valueOf(name)], "المصري اتغير في $name")
+            val key = TextKey.valueOf(name)
+            // تبسيط الكلمات الثقيلة (جلسة 18 — `PlainWords.kt`): المفاتيح دي بس اتغيرت، وبالمقاطع المعتمدة بالظبط
+            val expected = if (key in EGYPTIAN_PLAIN_WORDS_KEYS) plainEgyptian(old) else old
+            if (key in EGYPTIAN_PLAIN_WORDS_KEYS) assertNotEquals(old, expected, "التبسيط ما غيّرش $name")
+            else assertEquals(old, plainEgyptian(old), "مقطع تبسيط بيلمس نص مش في القايمة: $name")
+            assertEquals(expected, EGYPTIAN_TEXTS[key], "المصري اتغير في $name")
         }
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68)
         val newer = TextKey.entries.map { it.name }.filter { it !in snapshot }
-        val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys + EGYPTIAN_ADVISOR_MORE_TEXTS.keys
+        val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_FEED_ALERT_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys +
+            EGYPTIAN_ADVISOR_MORE_TEXTS.keys
         assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
+    }
+
+    /**
+     * تبسيط الكلمات الثقيلة (جلسة 18): رسايل حالات الاستخدام (مش في اللقطة) — النص القديم هنا بالحرف من التطبيق الحالي،
+     * والجديد = القديم بعد المقاطع المعتمدة. وولا نص في الجدول لسه فيه مقطع قديم (المصري والفصحى).
+     */
+    @Test
+    fun plainWordsReplacedTheHeavyTermsAndNothingElse() {
+        val oldUseCaseTexts = mapOf(
+            TextKey.ASSET_LABEL_PROCEEDS to "حصيلة البيع",
+            TextKey.ASSET_FEES_OVER_PROCEEDS to "الرسوم ({0}) أكبر من الحصيلة ({1})",
+            TextKey.REVERT_KEPT_ALLOCATION to "العملية دي متربطة بشخص (تخصيص أو التزام)، فمش هتتحذف",
+            TextKey.BACKUP_CHECKSUM_MISMATCH to "بصمة سلامة النسخة غير مطابقة؛ الملف اتغير أو اتلف",
+        )
+        for ((key, old) in oldUseCaseTexts) assertEquals(plainEgyptian(old), EGYPTIAN_TEXTS[key], key.name)
+        for ((key, text) in EGYPTIAN_TEXTS) assertEquals(text, plainEgyptian(text), "فاضل مقطع قديم في المصري: $key")
+        val heavy = listOf("حصيلة", "الحصيلة", "عدّ مزدوج", "الوسيط", "شذوذ", "تقلب", "تقلّب", "التخصيصات", "بصمة سلامة", "تسويات الالتزام", "الربح المحقق")
+        for (text in EGYPTIAN_TEXTS.values + MSA_TEXTS.values) assertTrue(heavy.none { it in text }, "كلمة ثقيلة لسه: $text")
     }
 
     @Test

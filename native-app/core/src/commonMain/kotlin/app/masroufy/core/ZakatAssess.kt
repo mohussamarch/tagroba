@@ -88,17 +88,24 @@ data class ZakatItem(
     val missingFact: String? = null,
 )
 
-/** أسعار الجرام **الصافي** بعملة الحساب (من ملف الأسعار اليومي) — null = مش متاح (مصر بالجنيه ناقصة لسه). */
+/** أسعار الجرام **الصافي** بعملة الحساب (من ملف الأسعار اليومي) — null = مش متاح (السطر بعملة الحساب مش في الملف). */
 data class ZakatPrices(val goldPureGramMinor: Halalas?, val silverPureGramMinor: Halalas?, val asOf: IsoDate? = null)
 
-/** من ملف الأسعار: `GOLD_24K_GRAM` و`SILVER_GRAM` — بس لو عملة الملف هي عملة الحساب (مفيش تحويل بسعر صرف — §41). */
+/**
+ * من ملف الأسعار: الدهب عيار 24 (الجرام الصافي) والفضة **بعملة الحساب بالظبط** — الريال من `GOLD_24K_GRAM`/`SILVER_GRAM`،
+ * والجنيه من `GOLD_24K_GRAM_EGP`/`SILVER_GRAM_EGP` (§62). مفيش تحويل بسعر صرف (§41): سطر بعملة تانية عمره ما بيتاخد،
+ * والناقص بيفضل null ⇒ «غير متاح».
+ */
 fun zakatPricesFromFeed(feed: PriceFeed?, currency: Currency): ZakatPrices {
-    if (feed == null || feed.baseCurrency != currency.name) return ZakatPrices(null, null)
-    val bySymbol = indexFeed(feed)
-    val gold = bySymbol["GOLD_24K_GRAM"]
-    val silver = bySymbol["SILVER_GRAM"]
+    if (feed == null) return ZakatPrices(null, null)
+    val gold = feedPriceIn(feed, ZAKAT_GOLD_SYMBOL, currency)
+    val silver = feedPriceIn(feed, ZAKAT_SILVER_SYMBOL, currency)
     return ZakatPrices(gold?.pricePerUnitMinor, silver?.pricePerUnitMinor, listOfNotNull(gold?.asOf, silver?.asOf).minOrNull())
 }
+
+/** رمز الجرام الصافي في ملف الأسعار (عيار 24) — نسخة الجنيه بنفس الاسم + `_EGP`. */
+const val ZAKAT_GOLD_SYMBOL = "GOLD_24K_GRAM"
+const val ZAKAT_SILVER_SYMBOL = "SILVER_GRAM"
 
 private fun grams(whole: Long): Quantity = whole * QUANTITY_SCALE
 

@@ -43,7 +43,7 @@ internal val EGYPTIAN_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SUGGEST_INVESTMENT_BUY to "«{0}»: شراء أصل استثماري، مش استهلاك",
     TextKey.SUGGEST_BANK_FEES to "رسوم بنكية: مصروف مستقل",
     TextKey.SUGGEST_INSTALLMENT to
-        "تقسيط: سداد جزء من التزام سابق. لو الشراء الأصلي مسجَّل كمصروف، احتسابه تاني هيبقى عدّ مزدوج.",
+        "تقسيط: سداد جزء من التزام سابق. لو الشراء الأصلي مسجَّل كمصروف، حسابه تاني هيكرّر نفس المبلغ.",
     TextKey.SUGGEST_DEBT_PAYMENT to
         "سداد: ممكن يكون سداد دين عليك (مش مصروف) وممكن يكون دفع فاتورة (مصروف). الكشف مش بيفرّق، فمحتاج قرارك.",
     TextKey.SUGGEST_DIGITAL_WALLET to
@@ -53,7 +53,7 @@ internal val EGYPTIAN_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SUGGEST_BARQ to "برق وسيلة تحويل مش نوع مصروف. لازم تحدد الغرض: حسابك، دعم، قرض، ولا سداد.",
     TextKey.SUGGEST_PURCHASE to "«{0}»: شراء أو فاتورة",
     TextKey.SUGGEST_OUT_NO_CATEGORY to "صادر بلا تصنيف واضح. محتاج تحدد ده شراء ولا نقل فلوس.",
-    TextKey.SUGGEST_INVESTMENT_SELL to "وارد من الاستثمار: حصيلة بيع أصل، والربح المحقق فقط هو المكسب",
+    TextKey.SUGGEST_INVESTMENT_SELL to "وارد من الاستثمار: فلوس بيع أصل، والمكسب بس هو اللي زاد عن تكلفة الشراء",
     TextKey.SUGGEST_REFUND to
         "استرداد: ده رجوع فلوس دفعتها، مش دخل جديد. الأنسب تربطه بالعملية الأصلية بدل ما تعدّه دخلًا.",
     TextKey.SUGGEST_IN_UNKNOWN to
@@ -85,13 +85,13 @@ internal val EGYPTIAN_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.PERIOD_EXCLUDED_EMPTY to "مفيش فيها عمليات — مش واضح ده صفر حقيقي ولا بيانات ناقصة",
     TextKey.AVERAGE_NEEDS_PERIODS to "المتوسط محتاج {0} فترات مكتملة على الأقل، والمتاح {1}.",
     TextKey.AVERAGE_OF_PERIODS to "متوسط {0} فترة مكتملة.",
-    TextKey.ANOMALY_NEEDS_HISTORY to "الحكم على الشذوذ محتاج {0} فترات سابقة على الأقل، والمتاح {1}.",
-    TextKey.ANOMALY_MEDIAN_ZERO to "الوسيط التاريخي صفر، فالمقارنة النسبية مالهاش معنى.",
-    TextKey.ANOMALY_WITHIN_TWENTY to "الفرق عن المعتاد أقل من ٢٠٪، فمش شذوذ.",
+    TextKey.ANOMALY_NEEDS_HISTORY to "الحكم على الصرف غير العادي محتاج {0} فترات سابقة على الأقل، والمتاح {1}.",
+    TextKey.ANOMALY_MEDIAN_ZERO to "المبلغ المعتاد في الفترات اللي فاتت صفر، فالمقارنة بالنسبة مالهاش معنى.",
+    TextKey.ANOMALY_WITHIN_TWENTY to "الفرق عن المعتاد أقل من ٢٠٪، فده في حدود المعتاد.",
     TextKey.ANOMALY_HIGHER to "أعلى",
     TextKey.ANOMALY_LOWER to "أقل",
-    TextKey.ANOMALY_OUTSIDE to "{0} من المعتاد بـ{1}٪ — خارج تقلب الفترات السابقة.",
-    TextKey.ANOMALY_INSIDE to "{0} من المعتاد بـ{1}٪، لكن ده داخل تقلب الفترات السابقة العادي.",
+    TextKey.ANOMALY_OUTSIDE to "{0} من المعتاد بـ{1}٪ — أكتر من التغيير العادي بين الفترات اللي فاتت.",
+    TextKey.ANOMALY_INSIDE to "{0} من المعتاد بـ{1}٪، لكن ده في حدود التغيير العادي بين الفترات اللي فاتت.",
     TextKey.CATEGORY_NO_LIMIT to "مفيش سقف للتصنيف ده. تقدر تحدده من هنا.",
     TextKey.CATEGORIZED_USER_CONFIRMED to "أنت أكّدت التصنيف ده بنفسك",
     TextKey.CATEGORIZED_MERCHANT to "التاجر «{0}» له تصنيف مؤكد",
@@ -146,8 +146,8 @@ internal val EGYPTIAN_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.NOTICE_BUDGET_THRESHOLD to "وصلت {0}٪ من الميزانية",
     TextKey.NOTICE_CATEGORY_EXCEEDED to "عدّيت سقف «{0}»",
     TextKey.NOTICE_CATEGORY_THRESHOLD to "«{0}» وصل {1}٪",
-    TextKey.LEDGER_ALLOCATIONS_EXCEED to "مجموع التخصيصات ({0}) أكبر من قيمة العملية ({1})",
-    TextKey.LEDGER_SETTLEMENTS_EXCEED to "تسويات الالتزام {0} تجاوزت أصله — رصيد سالب صامت ممنوع",
+    TextKey.LEDGER_ALLOCATIONS_EXCEED to "مجموع اللي اتقسم على الأشخاص ({0}) أكبر من قيمة العملية ({1})",
+    TextKey.LEDGER_SETTLEMENTS_EXCEED to "المتسدد من الالتزام {0} زاد عن أصله — ممنوع الرصيد يبقى بالسالب من غير تنبيه",
     TextKey.SETTLEMENT_AMOUNT_POSITIVE to "مبلغ التسوية لازم يكون أكبر من صفر",
     TextKey.SETTLEMENT_FULLY_PAID to "الالتزام ده متسدد بالكامل. مفيش متبقي يتسوّى",
     TextKey.OBLIGATION_CUSTODY to "الأمانة",

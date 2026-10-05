@@ -12,7 +12,7 @@ import app.masroufy.port.AlertReceiptStore
 import app.masroufy.port.AlertSettingsStore
 import app.masroufy.port.UsualHoursStore
 
-/** مخازن محرك التنبيهات في الذاكرة (§61) — للاختبار، ولحد ما تخزين الجوال يتبني. */
+/** مخازن محرك التنبيهات في الذاكرة (§61) — للاختبار. التشغيل: فايربيز للمتزامن (`FirestoreAlerts.kt`) والجهاز للتعلّم. */
 class MemoryAlertSettings(disabled: Set<AlertGroup> = emptySet()) : AlertSettingsStore {
     private val off = disabled.toMutableSet()
 

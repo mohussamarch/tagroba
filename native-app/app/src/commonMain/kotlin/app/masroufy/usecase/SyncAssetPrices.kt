@@ -20,7 +20,7 @@ data class PriceSkipped(val assetName: String, val reason: String)
 
 data class SyncOutcome(
     val updated: List<PriceUpdated>,
-    /** أصول مربوطة برمز مش موجود في الملف. */
+    /** أصول مربوطة برمز مش موجود في الملف، أو سعره بعملة غير عملة الأصل. */
     val skipped: List<PriceSkipped>,
     /** أصول من غير ربط أصلًا — سعرها يدوي. */
     val manualCount: Int,
@@ -45,6 +45,11 @@ class SyncAssetPrices(private val deps: SyncAssetPricesDeps) {
             val feedPrice = bySymbol[symbol]
             if (feedPrice == null) {
                 skipped += PriceSkipped(asset.name, uiText(TextKey.PRICE_SYMBOL_MISSING, symbol))
+                continue
+            }
+            // سعر بالجنيه ما يتحطش على أصل بالريال ولا العكس (§62) — مفيش تحويل بسعر صرف (§41)، والسعر القديم بيفضل زي ما هو
+            if (feedPrice.currency != asset.currency.name) {
+                skipped += PriceSkipped(asset.name, uiText(TextKey.PRICE_CURRENCY_MISMATCH, symbol, feedPrice.currency, asset.currency.name))
                 continue
             }
             deps.prices.save(AssetPrice(asset.id, feedPrice.pricePerUnitMinor, feedPrice.asOf, "feed"))

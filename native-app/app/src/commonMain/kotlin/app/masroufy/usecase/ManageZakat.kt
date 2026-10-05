@@ -4,6 +4,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.ObligationKind
+import app.masroufy.core.PriceFeed
 import app.masroufy.core.TextKey
 import app.masroufy.core.ZAKAT_RULES
 import app.masroufy.core.ZakatAssessment
@@ -27,6 +28,7 @@ import app.masroufy.core.nisabMinor
 import app.masroufy.core.suggestHawlStart
 import app.masroufy.core.uiText
 import app.masroufy.core.zakatItems
+import app.masroufy.core.zakatPricesFromFeed
 import app.masroufy.core.zakatVisible
 import app.masroufy.core.zakatWealthSeries
 import app.masroufy.port.AssetLotRepository
@@ -90,6 +92,12 @@ class ManageZakat(private val deps: ManageZakatDeps) {
      * إن الحساب على فلوس البلد دي بس. `null` = بلد واحدة ⇒ مفيش جملة.
      */
     suspend fun scopeNote(): String? = if (deps.spaces?.listAll().orEmpty().isNotEmpty()) uiText(TextKey.ZAKAT_THIS_COUNTRY_ONLY) else null
+
+    /**
+     * أسعار الدهب والفضة من ملف الأسعار **بعملة البلد دي** (§62): السعودية ⇒ سطور الريال · مصر ⇒ سطور الجنيه (`*_EGP`).
+     * سطر بعملة تانية عمره ما بيتاخد — الناقص بيفضل «غير متاح». الشاشة بتدّي الناتج لـ[suggestDate]/[assess]/[close].
+     */
+    fun pricesFrom(feed: PriceFeed?): ZakatPrices = zakatPricesFromFeed(feed, deps.currency)
 
     /** القواعد اللي بتتطبق على الحساب ده بمصادرها — لشاشة «ليه الرقم ده؟». */
     fun rules(): List<ZakatRule> = ZAKAT_RULES.filter { it.country == country }
