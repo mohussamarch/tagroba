@@ -33,6 +33,8 @@ data class GatherAlertsDeps(
     val occasions: ManageOccasions? = null,
     /** المرتب المتأخر (§64) — null = مصادر الدخل مش متوصلة. */
     val income: IncomeSourceSignals? = null,
+    /** المساعد المالي (§68): habitVsGoal · overcommitted · capPace — null = مش متوصل. */
+    val advisor: AdvisorSignals? = null,
 )
 
 data class AlertGatherInput(
@@ -70,6 +72,7 @@ class GatherAlerts(private val deps: GatherAlertsDeps) {
         for (r in input.reconcile) balanceMismatchCandidate(r.wallet.id, r.wallet.name, r.result.mismatches)?.let { out += it }
         deps.occasions?.let { out += it.alertCandidates(input.today) }
         deps.income?.let { out += it.alertCandidates(input.today) }
+        deps.advisor?.let { out += it.alertCandidates(input) }
         profileCompletionCandidate(input.profileCompletionPercent)?.let { out += it }
         return out
     }

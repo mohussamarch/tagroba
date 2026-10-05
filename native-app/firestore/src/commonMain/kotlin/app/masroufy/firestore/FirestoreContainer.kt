@@ -75,6 +75,9 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     /** دواير الأشخاص والصلات بينهم (جلسة 16) — على الحساب زي الأشخاص. */
     val personProfiles = FirestorePersonProfileRepository(account)
     val personRelations = FirestorePersonRelationRepository(account)
+    /** خطط الادخار وإيداعاتها (§68) — على الحساب. */
+    val savingsGoals = FirestoreSavingsGoalRepository(account)
+    val goalContributions = FirestoreGoalContributionRepository(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
     val reservations = FirestoreReservationRepository(space)
     val eventPrep = FirestorePrepItemRepository(space)

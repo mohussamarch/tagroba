@@ -28,9 +28,9 @@ class TextsTest {
         for ((name, old) in snapshot) {
             assertEquals(old, EGYPTIAN_TEXTS[TextKey.valueOf(name)], "المصري اتغير في $name")
         }
-        // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16)
+        // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68)
         val newer = TextKey.entries.map { it.name }.filter { it !in snapshot }
-        val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys
+        val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys
         assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 

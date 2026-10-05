@@ -12,6 +12,8 @@ enum class AlertGroup(val wire: String) {
     OCCASIONS("occasions"), SECURITY("security"), LINKED_ACCOUNTS("linked_accounts"), EMAIL("email"),
     // مصادر الدخل (§48 · §64) — مجموعة لوحدها عشان تتقفل لوحدها
     INCOME("income"),
+    // المساعد المالي (§68) — مجموعة لوحدها عشان تتقفل كلها مرة واحدة
+    ADVISOR("advisor"),
     ;
 
     companion object {
@@ -52,6 +54,10 @@ enum class AlertKind(
     OCCASION_TODAY("occasion_today", AlertGroup.OCCASIONS, AlertUrgency.MEDIUM),
     // المرتب المتأخر (§64): هادي — وقتك المعتاد، من غير «عدّى» ولا نافذة (اختيار Claude)
     INCOME_LATE("income_late", AlertGroup.INCOME, AlertUrgency.MEDIUM),
+    // المساعد المالي (§68): العادة والمعدل نصيحة ⇒ ملخص · الحجز أكتر من اللي معاك محتاج قرار ⇒ وقتك المعتاد على الأقل
+    HABIT_VS_GOAL("habit_vs_goal", AlertGroup.ADVISOR, AlertUrgency.LOW),
+    OVERCOMMITTED("overcommitted", AlertGroup.ADVISOR, AlertUrgency.MEDIUM, needsDecision = true),
+    CAP_PACE("cap_pace", AlertGroup.ADVISOR, AlertUrgency.LOW),
     NEW_DEVICE_LOGIN("new_device_login", AlertGroup.SECURITY, AlertUrgency.HIGH, needsServer = true),
     LINKED_ACCOUNT_ACTIVITY("linked_account_activity", AlertGroup.LINKED_ACCOUNTS, AlertUrgency.MEDIUM, needsServer = true),
     MONTHLY_EMAIL("monthly_email", AlertGroup.EMAIL, AlertUrgency.NONE, needsServer = true),

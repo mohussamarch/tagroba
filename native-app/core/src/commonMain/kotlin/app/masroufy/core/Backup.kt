@@ -24,6 +24,8 @@ val BACKUP_GROUPS = listOf(
     "reservations", "eventPrep",
     // شاشة الأشخاص: الدواير والصلات بين الأشخاص (جلسة 16) — على مستوى الحساب، التطبيق الجديد بس
     PERSON_PROFILES_GROUP, PERSON_RELATIONS_GROUP,
+    // المساعد المالي: خطط الادخار وإيداعاتها (§68) — على مستوى الحساب، التطبيق الجديد بس
+    SAVINGS_GOALS_GROUP, GOAL_CONTRIBUTIONS_GROUP,
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -50,7 +52,7 @@ const val INCOME_SOURCES_GROUP = "incomeSources"
 val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
 
 val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
-    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS
+    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS + GOAL_BACKUP_GROUPS
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -84,6 +86,8 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "eventPrep" to mapOf("eventId" to "lifeEvents"),
     PERSON_PROFILES_GROUP to mapOf("personId" to "people"),
     PERSON_RELATIONS_GROUP to linkedMapOf("personAId" to "people", "personBId" to "people"),
+    // المحفظة المربوطة جوه بلد والخطة على الحساب ⇒ ما بتتفحصش هنا (زي المحفظة في بلد تانية)
+    GOAL_CONTRIBUTIONS_GROUP to mapOf("goalId" to SAVINGS_GOALS_GROUP),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
@@ -93,7 +97,7 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS)
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, GOAL_BACKUP_GROUPS)
         .filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }

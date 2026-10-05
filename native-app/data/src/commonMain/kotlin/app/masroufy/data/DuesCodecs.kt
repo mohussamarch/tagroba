@@ -119,5 +119,8 @@ object DocumentCodecs {
     /** دواير الأشخاص والصلات بينهم (جلسة 16) — على مستوى الحساب. */
     val circles: List<DocCodec<*>> = listOf(PersonCircleCodecs.personProfiles, PersonCircleCodecs.personRelations)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + spaces + calendar + circles).associateBy { it.group }
+    /** خطط الادخار وإيداعاتها (§68) — على مستوى الحساب. */
+    val goals: List<DocCodec<*>> = listOf(SavingsGoalCodecs.savingsGoals, SavingsGoalCodecs.goalContributions)
+
+    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + spaces + calendar + circles + goals).associateBy { it.group }
 }

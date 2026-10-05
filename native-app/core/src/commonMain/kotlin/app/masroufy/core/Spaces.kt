@@ -24,9 +24,11 @@ const val MERCHANT_CATEGORIES_GROUP = "merchantCategories"
 
 /**
  * مجموعات بيانات **مشتركة** بين البلاد (§41): التجار · الأشخاص · الوسوم · مناسبات الشخص (§64) · دواير الأشخاص والصلات بينهم
- * (جلسة 16 — الشخص مشترك فدايرته وصلاته مشتركة).
+ * (جلسة 16 — الشخص مشترك فدايرته وصلاته مشتركة) · خطط الادخار وإيداعاتها (§68 — الخطة للشخص مش للبلد).
  */
-val ACCOUNT_DATA_GROUPS: List<String> = listOf("merchants", "people", "tags", "occasions", PERSON_PROFILES_GROUP, PERSON_RELATIONS_GROUP)
+val ACCOUNT_DATA_GROUPS: List<String> = listOf(
+    "merchants", "people", "tags", "occasions", PERSON_PROFILES_GROUP, PERSON_RELATIONS_GROUP, SAVINGS_GOALS_GROUP, GOAL_CONTRIBUTIONS_GROUP,
+)
 
 /** كل اللي على مستوى الحساب: البيانات المشتركة + سجل المساحات + أزواج التحويل لنفسك. (ملف الحساب `profile/main` مستند لوحده.) */
 val ACCOUNT_GROUPS: List<String> = ACCOUNT_DATA_GROUPS + SPACES_GROUP + SPACE_TRANSFERS_GROUP
