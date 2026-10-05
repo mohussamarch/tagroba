@@ -30,9 +30,9 @@ enum class RealEstateValuation(val wire: String) {
 /** أقصى سنين لقدام في التوقّع. */
 const val MAX_PROJECTION_YEARS = 100
 
-/** نوع الأصل في المقارنة (عشان المعدل الافتراضي): العقار من [Asset.valuation] · الذهب · الأسهم والصناديق بعملة البلد بس. غير كده null. */
+/** نوع الأصل في المقارنة (عشان المعدل الافتراضي): العقار ([isRealEstate] — العلامة أو طريقة القيمة) · الذهب · الأسهم والصناديق بعملة البلد بس. غير كده null. */
 fun growthClassOf(asset: Asset, countryCurrency: Currency): GrowthClass? = when {
-    asset.valuation != null -> GrowthClass.REAL_ESTATE
+    asset.isRealEstate -> GrowthClass.REAL_ESTATE
     asset.kind == "gold" -> GrowthClass.GOLD
     (asset.kind == "stock" || asset.kind == "fund") && asset.currency == countryCurrency -> GrowthClass.LOCAL_STOCKS
     else -> null
@@ -42,14 +42,15 @@ fun growthClassOf(asset: Asset, countryCurrency: Currency): GrowthClass? = when 
  * قيمة الأصل النهارده:
  * - بسعر المتر ⇒ المساحة × سعر المتر (null لو ناقص واحد).
  * - فيه شراء متسجل ([lotsRecorded]) ⇒ القيمة من سعر الأصل × الكمية ([AssetPosition.marketValueMinor] — صفر لو اتباع كله).
- * - عقار «القيمة كلها» من غير شراء متسجل ⇒ السعر نفسه هو قيمة العقار (وحدة واحدة) · غير كده ⇒ null («غير متاح» — **مش صفر**:
+ * - عقار «القيمة كلها» (أو عقار بالعلامة من غير طريقة قيمة لسه — §69.7) من غير شراء متسجل ⇒ السعر نفسه هو قيمة العقار (وحدة واحدة)
+ *   · غير كده ⇒ null («غير متاح» — **مش صفر**:
  *   من غير شراء الكمية مش معروفة).
  */
 fun currentValueOf(asset: Asset, position: AssetPosition, lotsRecorded: Boolean = true): Halalas? = when {
     asset.valuation == RealEstateValuation.AREA ->
         if (asset.areaSqm != null && asset.pricePerSqmMinor != null) valueOfQuantity(asset.areaSqm, asset.pricePerSqmMinor) else null
     lotsRecorded -> position.marketValueMinor
-    asset.valuation == RealEstateValuation.WHOLE -> when (val s = position.priceState) {
+    asset.isRealEstate -> when (val s = position.priceState) {
         is PriceState.Fresh -> s.price.pricePerUnitMinor
         is PriceState.Stale -> s.price.pricePerUnitMinor
         PriceState.Missing -> null
@@ -157,6 +158,8 @@ internal fun checkAssetGrowthRow(row: Map<String, Any?>): String? {
         row[field]?.let { if (!isSafeInteger(it) || numberOf(it)!! !in MIN_ANNUAL_RATE_BP.toDouble()..MAX_ANNUAL_RATE_BP.toDouble()) return field }
     }
     row["vacantMonthsPerYear"]?.let { if (!isSafeInteger(it) || numberOf(it)!! !in 0.0..12.0) return "vacantMonthsPerYear" }
+    // علامة العقار (§69.7): منطقية، ومعاها النوع المتخزن "other" بس (العقار مش دهب ولا سهم)
+    row["realEstate"]?.let { if (it !is Boolean || (it && row["kind"] != "other")) return "realEstate" }
     // سعر المتر من غير المساحة (أو العكس) في طريقة «سعر المتر» مسموح — القيمة «غير متاح» لحد ما الاتنين يتكتبوا
     return null
 }

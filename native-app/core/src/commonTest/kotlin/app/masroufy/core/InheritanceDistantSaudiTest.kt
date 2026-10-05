@@ -113,14 +113,13 @@ class InheritanceDistantSaudiTest {
         assertShares(r, FULL_SISTER_DAUGHTER to "3/4", PATERNAL_SISTER_SON to "1/4")
     }
 
-    // «إرثاً وحجباً» (م235): ابن الأخ لأم في مكان الأخ لأم، والبنت بتحجبه (م219) ⇒ ابن البنت كله، حتى لو من جهة تانية
+    // «إرثاً وحجباً» (م235) من **نفس الجهة**: العمة (مكان الأب) والأب بيحجب الأخت (م217) ⇒ ابن الأخت الشقيقة ما بيورثش
+    // (الاتنين جهة الأبوة ونفس القرب بالطريقتين ⇒ م236 ما بتقولش حاجة). من جهة تانية ⇒ «لا نص» (InheritanceDistantSidesTest)
     @Test
     fun theTanzilBlocksToo() {
-        val r = sa(DAUGHTER_SON to 1, MATERNAL_BROTHER_SON to 1)
-        assertShares(r, DAUGHTER_SON to "1", MATERNAL_BROTHER_SON to "0")
-        assertTrue(r.notes.any { it.kind == InheritanceNoteKind.BLOCKED && it.citation?.article == "235" && it.heirs == listOf(MATERNAL_BROTHER_SON, DAUGHTER_SON) })
-        // العمة (مكان الأب) والأب بيحجب الأخت ⇒ ابن الأخت الشقيقة ما بيورثش (نفس الجهة ونفس القرب بالطريقتين)
-        assertShares(sa(PATERNAL_AUNT_FULL to 1, FULL_SISTER_SON to 1), PATERNAL_AUNT_FULL to "1", FULL_SISTER_SON to "0")
+        val r = sa(PATERNAL_AUNT_FULL to 1, FULL_SISTER_SON to 1)
+        assertShares(r, PATERNAL_AUNT_FULL to "1", FULL_SISTER_SON to "0")
+        assertTrue(r.notes.any { it.kind == InheritanceNoteKind.BLOCKED && it.citation?.article == "235" && it.heirs == listOf(FULL_SISTER_SON, PATERNAL_AUNT_FULL) })
     }
 
     // الخال والخالة الشقيقين (نفس الصلة بالأم) ⇒ ½ · ½. ابن الأخ لأم + بنت الأخت لأم ⇒ الثلث بينهم ثم الرد ⇒ ½ · ½

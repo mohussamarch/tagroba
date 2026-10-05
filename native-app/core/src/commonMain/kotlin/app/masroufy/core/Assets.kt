@@ -29,9 +29,29 @@ data class Asset(
     val rentIncreaseBp: Int? = null,
     val vacantMonthsPerYear: Int? = null,
     val expectedRateBp: Int? = null,
+    /** علامة «عقار» المتخزنة (§69.7) — النوع المتخزن معاها "other". بتتكتب لو true بس. استخدم [isRealEstate] مش الحقل ده. */
+    val realEstate: Boolean = false,
 )
 
-/** أسماء أنواع الأصول للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
+/**
+ * **العقار نوع لوحده** (رد المالك §69.7 «أيوه، نوع عقار») — **في كوتلن بس**. التطبيق الحالي (`src/`، نفس مستندات `users/{uid}`)
+ * بيرفض أي نوع أصل مش في قايمته وهو بيعمل النسخة الشاملة أو بيرجّعها (`src/domain/checkFullBackup.ts` سطر 71 و76 — بيتنادى من
+ * `src/application/useCases/fullBackup.ts` سطر 30 «create» و60 «validateMerge») ⇒ **النوع المتخزن بيفضل "other"** ومعاه علامة
+ * [Asset.realEstate]. التطبيق الحالي بيعرضه «أصل آخر» وبيحتفظ بالعلامة لو عدّله (`{ ...asset }` في `manageAssets.ts` ·
+ * `d.data() as Asset` من غير تحويل في `assetRepositories.ts` سطر 76).
+ */
+const val ASSET_KIND_REAL_ESTATE = "realEstate"
+
+/** عقار = عليه العلامة، **أو** اتحددت له طريقة قيمة (سعر المتر / القيمة كلها — §69.6، قبل العلامة). */
+val Asset.isRealEstate: Boolean get() = realEstate || valuation != null
+
+/** النوع اللي بيتعرض ويتحسب بيه في كوتلن ([ASSET_KIND_REAL_ESTATE] للعقار) — مش اللي بيتخزن ([Asset.kind]). */
+val Asset.displayKind: String get() = if (isRealEstate) ASSET_KIND_REAL_ESTATE else kind
+
+/** النوع اللي اتختار ⇒ (النوع المتخزن، علامة العقار): العقار ⇒ ("other"، true) · غيره زي ما هو. */
+fun storedAssetKind(kind: String): Pair<String, Boolean> = if (kind == ASSET_KIND_REAL_ESTATE) "other" to true else kind to false
+
+/** أسماء أنواع الأصول للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). المفتاح = [displayKind]. */
 val ASSET_KIND_LABELS: Map<String, String>
     get() = linkedMapOf(
         "gold" to uiText(TextKey.ASSET_KIND_GOLD),
@@ -39,11 +59,14 @@ val ASSET_KIND_LABELS: Map<String, String>
         "stock" to uiText(TextKey.ASSET_KIND_STOCK),
         "fund" to uiText(TextKey.ASSET_KIND_FUND),
         "digital" to uiText(TextKey.ASSET_KIND_DIGITAL),
+        ASSET_KIND_REAL_ESTATE to uiText(TextKey.ASSET_KIND_REAL_ESTATE),
         "other" to uiText(TextKey.ASSET_KIND_OTHER),
     )
 
 // وحدات الأصول **بتتخزن** مع الأصل نفسه، فما تتترجمش — ترجمتها بتغيّر بيانات متخزنة
-val ASSET_UNIT_DEFAULTS = linkedMapOf("gold" to "جرام", "silver" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", "other" to "وحدة")
+val ASSET_UNIT_DEFAULTS = linkedMapOf(
+    "gold" to "جرام", "silver" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", ASSET_KIND_REAL_ESTATE to "وحدة", "other" to "وحدة",
+)
 
 data class AssetLot(val id: Id, val assetId: Id, val purchasedAt: IsoDate, val quantity: Quantity, val principalMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
 data class AssetSale(val id: Id, val assetId: Id, val soldAt: IsoDate, val quantity: Quantity, val grossProceedsMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)

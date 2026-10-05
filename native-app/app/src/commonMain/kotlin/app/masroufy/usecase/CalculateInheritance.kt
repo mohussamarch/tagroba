@@ -7,6 +7,9 @@ import app.masroufy.core.InheritanceCase
 import app.masroufy.core.InheritanceResult
 import app.masroufy.core.calculateInheritance
 import app.masroufy.core.computePosition
+import app.masroufy.core.currentValueOf
+import app.masroufy.core.displayKind
+import app.masroufy.core.isRealEstate
 import app.masroufy.core.walletBalancesOn
 import app.masroufy.port.AssetLotRepository
 import app.masroufy.port.AssetPriceRepository
@@ -43,7 +46,14 @@ enum class EstateItemSource { WALLET, ASSET }
  * حاجة مقترحة للتركة. [valueMinor] null = مش معروف (أصل من غير سعر) — **مش صفر** (القاعدة #10)، والمستخدم لازم يكتبه قبل الحساب.
  * كل رقم بيتعدّل في الشاشة قبل ما يتحوّل لـ`EstateItem`.
  */
-data class EstateItemDraft(val name: String, val valueMinor: Halalas?, val source: EstateItemSource, val sourceId: Id)
+data class EstateItemDraft(
+    val name: String,
+    val valueMinor: Halalas?,
+    val source: EstateItemSource,
+    val sourceId: Id,
+    /** نوع الأصل للعرض (`displayKind` — "realEstate" للعقار، §69.7) · null للمحافظ. */
+    val assetKind: String? = null,
+)
 
 /**
  * **حاسبة الورث** (OVERRIDES §69): من غير تخزين في النسخة دي (حفظ السيناريو سؤال مفتوح للمالك — HANDOVER).
@@ -51,6 +61,7 @@ data class EstateItemDraft(val name: String, val valueMinor: Halalas?, val sourc
  * - [prefillMyEstate]: لتركة المستخدم **نفسه** بس — أرصدة المحافظ (بعملة المساحة، رصيد النهارده من سلسلة الرصيد) + الأصول
  *   (دهب · فضة · أسهم · صناديق · …) بقيمتها بأسعار النهارده (`computePosition`، نفس قراية الزكاة). الرصيد صفر أو بالسالب ما بيتجابش
  *   (السالب دين — المستخدم يكتبه في الديون — اختيار Claude). الأصل المؤرشف أو اللي اتباع كله ما بيتجابش.
+ *   **العقار** (`isRealEstate` — §69.7) بقيمته بطريقته (`currentValueOf`) وبيتجاب حتى من غير شراء متسجل.
  */
 class CalculateInheritance(private val deps: CalculateInheritanceDeps) {
     fun calculate(case: InheritanceCase): InheritanceResult = calculateInheritance(case.copy(countryCode = deps.countryCode))
@@ -72,9 +83,17 @@ class CalculateInheritance(private val deps: CalculateInheritanceDeps) {
         val prices = h.prices.listAll().associateBy { it.assetId }
         for (a in h.assets.listAll()) {
             if (a.archived || a.currency != deps.currency) continue
-            val position = computePosition(a.id, lots[a.id].orEmpty(), sales[a.id].orEmpty(), prices[a.id], today)
+            val mine = lots[a.id].orEmpty()
+            val position = computePosition(a.id, mine, sales[a.id].orEmpty(), prices[a.id], today)
+            if (a.isRealEstate) {
+                // العقار نوع لوحده (§69.7): قيمته بطريقته (سعر المتر × المساحة · القيمة كلها — نفس «هتوصل لكام»)، وبيتجاب حتى
+                // من غير شراء متسجل (شقة اتورثت أو اتسجلت بسعرها بس). اتباع كله ⇒ ما بيتجابش
+                if (mine.isNotEmpty() && position.heldQuantity <= 0) continue
+                out += EstateItemDraft(a.name, currentValueOf(a, position, lotsRecorded = mine.isNotEmpty()), EstateItemSource.ASSET, a.id, a.displayKind)
+                continue
+            }
             if (position.heldQuantity <= 0) continue
-            out += EstateItemDraft(a.name, position.marketValueMinor, EstateItemSource.ASSET, a.id)
+            out += EstateItemDraft(a.name, position.marketValueMinor, EstateItemSource.ASSET, a.id, a.displayKind)
         }
         return out
     }
