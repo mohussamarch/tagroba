@@ -72,6 +72,9 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     val lifeEvents = FirestoreLifeEventRepository(space)
     val eventLinks = FirestoreEventLinkRepository(space)
     val occasions = FirestoreOccasionRepository(account)
+    /** دواير الأشخاص والصلات بينهم (جلسة 16) — على الحساب زي الأشخاص. */
+    val personProfiles = FirestorePersonProfileRepository(account)
+    val personRelations = FirestorePersonRelationRepository(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
     val reservations = FirestoreReservationRepository(space)
     val eventPrep = FirestorePrepItemRepository(space)

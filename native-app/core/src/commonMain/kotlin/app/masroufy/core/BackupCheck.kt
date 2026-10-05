@@ -49,6 +49,8 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     MERCHANT_CATEGORIES_GROUP to listOf("merchantId", "categoryId"),
     "reservations" to listOf("itemType", "sourceId", "occurrenceDate", "amountMinor", "currency", "createdAt"),
     "eventPrep" to listOf("eventId", "name", "order", "done", "createdAt"),
+    PERSON_PROFILES_GROUP to listOf("personId", "updatedAt"),
+    PERSON_RELATIONS_GROUP to listOf("personAId", "personBId", "createdAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
@@ -78,6 +80,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
 /** قيم اختيارية بتتفحص لو موجودة بس (وقائع الزكاة — §62). */
 private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "zakatFacts" to linkedMapOf("purpose" to listOf("wear", "saving"), "holding" to listOf("trading", "long_term"), "collectability" to listOf("strong", "doubtful")),
+    PERSON_PROFILES_GROUP to mapOf("circle" to PersonCircle.entries.map { it.wire }),
 )
 private val CURRENCY_CODE = Regex("[A-Z]{3}")
 private val LAST_FOUR = Regex("[0-9]{4}")
@@ -146,6 +149,7 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
         }
     }
     if (group == "incomeSources") checkIncomeSourceRow(row)
+    if (group == PERSON_PROFILES_GROUP || group == PERSON_RELATIONS_GROUP) checkPeopleRow(group, row)
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
@@ -188,6 +192,13 @@ fun checkBackupFinance(data: FullBackupData) {
         if (!isSafeInteger(sum) || sum > num(obligation?.get("originalMinor"))) throw BackupError(uiText(TextKey.BACKUP_SETTLEMENTS_EXCEED))
         settlements[row["obligationId"]] = sum
     }
+}
+
+/** الدايرة والصلة (جلسة 16): نص الصلة نص لحد [RELATION_LABEL_MAX]، ومفيش صلة لنفس الشخص. */
+private fun checkPeopleRow(group: String, row: Map<String, Any?>) {
+    val labelField = if (group == PERSON_PROFILES_GROUP) "relationLabel" else "label"
+    row[labelField]?.let { if (it !is String || it.isEmpty() || it.length > RELATION_LABEL_MAX) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, labelField)) }
+    if (group == PERSON_RELATIONS_GROUP && row["personAId"] == row["personBId"]) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, "personBId"))
 }
 
 /**

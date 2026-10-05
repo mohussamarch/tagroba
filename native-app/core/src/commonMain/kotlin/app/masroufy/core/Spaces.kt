@@ -22,8 +22,11 @@ const val SPACE_TRANSFERS_GROUP = "spaceTransfers"
  */
 const val MERCHANT_CATEGORIES_GROUP = "merchantCategories"
 
-/** مجموعات بيانات **مشتركة** بين البلاد (§41): التجار · الأشخاص · الوسوم · مناسبات الشخص (§64). */
-val ACCOUNT_DATA_GROUPS: List<String> = listOf("merchants", "people", "tags", "occasions")
+/**
+ * مجموعات بيانات **مشتركة** بين البلاد (§41): التجار · الأشخاص · الوسوم · مناسبات الشخص (§64) · دواير الأشخاص والصلات بينهم
+ * (جلسة 16 — الشخص مشترك فدايرته وصلاته مشتركة).
+ */
+val ACCOUNT_DATA_GROUPS: List<String> = listOf("merchants", "people", "tags", "occasions", PERSON_PROFILES_GROUP, PERSON_RELATIONS_GROUP)
 
 /** كل اللي على مستوى الحساب: البيانات المشتركة + سجل المساحات + أزواج التحويل لنفسك. (ملف الحساب `profile/main` مستند لوحده.) */
 val ACCOUNT_GROUPS: List<String> = ACCOUNT_DATA_GROUPS + SPACES_GROUP + SPACE_TRANSFERS_GROUP
