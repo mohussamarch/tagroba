@@ -143,7 +143,18 @@ fun formatAssetValue(value: Halalas?): String = if (value == null) NOT_AVAILABLE
 
 /* ───────────────────────── ملف الأسعار (بيتولد برا التطبيق — CLAUDE.md #12) ───────────────────────── */
 
-data class FeedPrice(val symbol: String, val name: String, val unit: String, val pricePerUnitMinor: Halalas, val asOf: IsoDate, val source: String)
+/**
+ * سطر سعر من الملف. [currency] عملة السعر — السطر من غير حقل `currency` = عملة الملف ([PriceFeed.baseCurrency] = ريال) زي ما كان؛
+ * سطور الجنيه (`GOLD_24K_GRAM_EGP` · `SILVER_GRAM_EGP` …) عليها `"currency": "EGP"` والسعر **بالقرش** (OVERRIDES §62 — زكاة مصر).
+ */
+data class FeedPrice(
+    val symbol: String, val name: String, val unit: String, val pricePerUnitMinor: Halalas, val asOf: IsoDate, val source: String,
+    val currency: String = DEFAULT_FEED_CURRENCY,
+)
+
+/** عملة الملف لما ما تتكتبش — الملف بيتولد بالريال من الأول (`scripts/fetch-prices.mjs`). */
+const val DEFAULT_FEED_CURRENCY = "SAR"
+
 data class FeedIssue(val key: String, val reason: String)
 data class PriceFeed(
     val generatedAt: String,
@@ -187,14 +198,28 @@ fun parsePriceFeed(raw: Any?): PriceFeed {
         if (asOf == null || !isValidIsoDate(asOf)) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_NO_VALID_DATE)); continue }
         val source = feedText(entry["source"])
         if (source == null) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_NO_SOURCE)); continue }
-        prices += FeedPrice(symbol, feedText(entry["name"]) ?: symbol, feedText(entry["unit"]) ?: "", amount, asOf, source)
+        // العملة اختيارية: مش مكتوبة ⇒ عملة الملف (السطور القديمة = ريال). مكتوبة غلط ⇒ السطر بيترفض — ما نخمّنش عملة سعر
+        val currency = if (entry["currency"] == null) baseCurrency.uppercase() else feedText(entry["currency"])?.uppercase()?.takeIf { FEED_CURRENCY.matches(it) }
+        if (currency == null) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_BAD_CURRENCY)); continue }
+        prices += FeedPrice(symbol, feedText(entry["name"]) ?: symbol, feedText(entry["unit"]) ?: "", amount, asOf, source, currency)
     }
     val failures = (root["failures"] as? List<*>).orEmpty().filterIsInstance<Map<*, *>>()
         .map { FeedIssue(feedText(it["source"]) ?: uiText(TextKey.FEED_UNKNOWN_SOURCE), feedText(it["reason"]) ?: uiText(TextKey.FEED_NO_REASON)) }
     return PriceFeed(generatedAt, baseCurrency, prices, rejected, failures)
 }
 
+private val FEED_CURRENCY = Regex("^[A-Z]{3}$")
+
 fun indexFeed(feed: PriceFeed): Map<String, FeedPrice> = feed.prices.associateBy { it.symbol }
+
+/**
+ * سعر [symbol] **بعملة [currency] بالظبط**: السطر نفسه لو عملته هي، وإلا السطر `<symbol>_<العملة>` (زي `GOLD_24K_GRAM_EGP`) لو عملته هي.
+ * مفيش تحويل بسعر صرف (§41) — ولا سطر بعملة تانية بيتاخد مكانه. null = مش موجود بالعملة دي.
+ */
+fun feedPriceIn(feed: PriceFeed, symbol: String, currency: Currency): FeedPrice? {
+    val bySymbol = indexFeed(feed)
+    return listOf(symbol, symbol + "_" + currency.name).firstNotNullOfOrNull { s -> bySymbol[s]?.takeIf { it.currency == currency.name } }
+}
 
 /** جملة واحدة للمستخدم: كام سعر وإمتى، وكام مصدر ما جابش. */
 fun describeFeed(feed: PriceFeed): String {
