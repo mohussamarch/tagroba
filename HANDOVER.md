@@ -3121,3 +3121,25 @@ cd /e/work/masroufy/native-app && JAVA_HOME="C:\Users\atgs0\Documents\Codex\andr
 - **صفحات المالك المستنية:** تفاصيل الورث https://claude.ai/artifact/W5EFAPDJzHnmN4gqhicJFq (مجموعة `inherit`) · تفاصيل التقاعد https://claude.ai/artifact/BnPo2oVQzye98Pj8NVaceH (مجموعة `retire`) · متوسطات الزيادة https://claude.ai/artifact/Wc5LGRZMT6EtQtcW1pffUZ (`rates`) · باقي ضبط المساعد https://claude.ai/artifact/TXUGJxXenWrpoyj5hX9dZd (`advisorTune`: الخبطة 50% و130% اتردّوا).
 - **الجاي:** (١) ردود الصفحات دي ⇒ تعديلات صغيرة. (٢) التوقّع والمقارنات (ذهب/عقار/وديعة/أسهم/كاش + شاشة الأصل بسعر المتر والإيجار) على `projectMonthly` بعد رد صفحة المتوسطات. (٣) ذوو الأرحام لو المالك وافق.
 
+
+## جلسة 2026-10-05 (22) — ردود المالك على صفحة ضبط المساعد: الخبطة 50% · اليوم التالت · الهدايا والصالون · النجمة ⭐ (Claude Opus 5.5) — OVERRIDES §68
+
+> اتعملت في worktree لوحدها فوق `fd7e5aa` (فرع `advisor-tune`). **ما اترفعش.** منطق + تخزين، من غير شاشات.
+
+**اتعمل إيه (ردود المالك اللي المنسّق وصّلها — التفاصيل في OVERRIDES §68 سطر «ردود المالك على صفحة الضبط»):**
+1. **الخبطة الواحدة (lump) 50%** مش 40% ⇒ `LUMP_PERCENT_OF_BASE = 50`.
+2. **«أعلى بوضوح» يفضل 130%** — ما اتلمسش.
+3. **المعدل من اليوم التالت** ⇒ `PACE_MIN_ELAPSED_DAYS = 3`. الثابت ده بيستخدمه `readPace` بس (capPace · habitVsGoal · unusual — نفس المعنى). `MIN_DAYS_FOR_FORECAST` (توقّع شاشة الميزانية) معنى تاني وفاضل 5، وفيه اختبار بيثبّته.
+4. **البنود الاختيارية زادت:** هدايا `cat-gifts` (وفروعها) · حلاقة `cat-العنايه-الشخصيه--حلاقه` · تجميل/الصالون `cat-العنايه-الشخصيه--تجميل`. **النقوط `cat-gifts-nuqoot` مستثناة** هي وفروعها (`NOT_DISCRETIONARY_CATEGORY_IDS` — ارتباط متبادل §44 · §64). نفس المعرّفات في شجرة مصر. ⚠️ «صالون نسائي» اللي اتغيّر في الفصحى ده بند تجهيز فرح (`PREP_SALON`) مش تصنيف.
+5. **النجمة ⭐:** `SavingsGoal.starred` (بيتكتب بس لو true ⇒ المستندات والنسخ القديمة هي هي) · `ManageSavingsGoals.star(id, starred)` (نجمة واحدة في الحساب، والشيل من الباقيين في نفس الدفعة عبر `SavingsGoalRepository.saveMany` الجديدة) · `goalForHabit` في `AdvisorRules.kt` بدل `pickGoal`: النجمة لو الخطة شغالة، وإلا **أقرب خطة شغالة** (**اختيار Claude — المالك يقدر يغيّره**). `BackupCheck` بقى بيفحص إن `starred` true/false.
+
+**اتفحص إزاي:**
+- `bash ./gradlew jvmTest --rerun-tasks :firestore:assembleDebugAndroidTest --continue` من `native-app` (العدّ من ملفات JUnit XML): **760 اختبار صفر فشل** (core 484 · app 198 · data 66 · device 12 — كانوا 749، وتشغيلة البداية من غير تغيير طلعت 749 صفر فشل). بناء `firestore-debug-androidTest.apk` ✅.
+- جداد: `AdvisorTuningTest` 5 (commonTest ⇒ هيشتغل على الآيفون كمان) · `AdvisorDiscretionaryRealTreeTest` 1 (المعرّفات موجودة في **شجرة التطبيق الحقيقية** للسعودية ومصر) · `AdvisorPaceFlowTest` +2 (اليوم التالت · النجمة من البيانات للتنبيه: الأقرب ساكتة والبعيدة اللي عليها نجمة بتنبّه، والمؤرشفة ⇒ رجوع للأقرب) · `SavingsGoalsFlowTest` +1 (نجمة واحدة بس) · `SavingsGoalBackupTest` +2 (الحقل بيتكتب بس لو true · المستند القديم ⇒ false · النسخة الشاملة). اتعدّل: `AdvisorRulesTest` (حدود 40 ⇒ 50 واليوم الخامس ⇒ التالت).
+- **تحويرات (mutation): 6 من 6 اتمسكت** باختبار فاشل (مش بناء واقع) — تشغيلة control من غير تغيير الأول عدّت: الخبطة 40 · اليوم الخامس · الهدايا برا القايمة · النقوط جوه · النجمة متجاهلة · أكتر من نجمة مسموح. الأداة `scratchpad/mutate.js`.
+
+**إيه اللي ما اتجربش:** اختبار المحاكي الجديد `SavingsGoalsOnFirestoreTest.theStarMovesAndTheOldDocumentLosesTheField` (اتبنى بس — محتاج Firestore Emulator) · الشاشات · الآيفون · بيانات المالك الحقيقية.
+
+**الخطوة الجاية:** شغّل اختبار المحاكي الجديد · الشاشة لما تصميم المالك ييجي (مكان النجمة ⭐ على كارت الخطة).
+
+**❓ أسئلة لسه مستنية المالك (على صفحة الضبط — ما تتحسمش من غير رده):** (٦) المحفظة المربوطة: رصيدها كله ولا الزيادة من البداية بس؟ (٧) overcommitted: المحجوز بس ولا كمان المستحقات اللي ليها مبلغ؟ وكمان: النجمة على خطة مش شغالة ⇒ الأقرب (اختيار Claude) — يحب كده ولا يسكت؟
