@@ -125,5 +125,9 @@ object DocumentCodecs {
     /** خطط الادخار وإيداعاتها (§68) — على مستوى الحساب. */
     val goals: List<DocCodec<*>> = listOf(SavingsGoalCodecs.savingsGoals, SavingsGoalCodecs.goalContributions)
 
-    val byGroup: Map<String, DocCodec<*>> = (current + dues + transfers + zakat + events + income + spaces + calendar + circles + alerts + goals).associateBy { it.group }
+    /** حسابات الورث المحفوظة (§69.4) — على مستوى الحساب. */
+    val inheritance: List<DocCodec<*>> = listOf(InheritanceCodecs.scenarios)
+
+    val byGroup: Map<String, DocCodec<*>> =
+        (current + dues + transfers + zakat + events + income + spaces + calendar + circles + alerts + goals + inheritance).associateBy { it.group }
 }

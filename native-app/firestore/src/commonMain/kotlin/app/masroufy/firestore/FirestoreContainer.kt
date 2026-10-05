@@ -90,6 +90,8 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     /** خطط الادخار وإيداعاتها (§68) — على الحساب. */
     val savingsGoals = FirestoreSavingsGoalRepository(account)
     val goalContributions = FirestoreGoalContributionRepository(account)
+    /** حسابات الورث المحفوظة (§69.4) — على الحساب (تبان على كل الأجهزة ومن أي بلد). */
+    val inheritanceScenarios = FirestoreInheritanceScenarioRepository(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
     val reservations = FirestoreReservationRepository(space)
     val eventPrep = FirestorePrepItemRepository(space)

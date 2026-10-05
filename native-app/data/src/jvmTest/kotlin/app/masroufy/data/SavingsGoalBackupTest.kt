@@ -35,7 +35,7 @@ class SavingsGoalBackupTest {
         assertEquals("w-1", roundTrip(SavingsGoalCodecs.savingsGoals, linked)["linkedWalletId"])
         assertEquals("إيداع وهمي", roundTrip(SavingsGoalCodecs.goalContributions, deposit)["note"])
         assertFalse("note" in roundTrip(SavingsGoalCodecs.goalContributions, deposit.copy(note = null)))
-        assertEquals(49, DocumentCodecs.byGroup.size)
+        assertEquals(50, DocumentCodecs.byGroup.size)
     }
 
     @Test

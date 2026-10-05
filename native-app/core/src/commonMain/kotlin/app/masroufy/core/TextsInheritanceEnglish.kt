@@ -59,7 +59,6 @@ internal val ENGLISH_INHERITANCE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INHERIT_NO_TEXT to "No text — ask the court: {0}",
     TextKey.INHERIT_NO_TEXT_GF_MIXED to "The grandfather is with full siblings and siblings through the father together, and Article 22 does not say how to divide in this case",
     TextKey.INHERIT_UNSUPPORTED_COUNTRY to "The inheritance calculator is available for Saudi Arabia and Egypt only",
-    TextKey.INHERIT_UNSUPPORTED_DISTANT to "Other relatives inherit here (such as daughters' children, maternal uncles and aunts), and this version does not calculate their shares",
     TextKey.INHERIT_UNSUPPORTED_ASK_DISTANT to "Did the deceased leave other relatives, such as daughters' children or maternal uncles or aunts? The answer changes the division",
     TextKey.INHERIT_UNSUPPORTED_NO_HEIRS to "None of the listed relatives inherits; the estate goes to other relatives or the treasury, which this version does not calculate",
     TextKey.INHERIT_UNSUPPORTED_PREGNANCY to "A pregnancy requires keeping a share until the birth, which this version does not calculate",

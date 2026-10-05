@@ -56,6 +56,8 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     GOAL_CONTRIBUTIONS_GROUP to listOf("goalId", "date", "amountMinor", "createdAt"),
     // صفحة الإشعارات (§69) — نفس الحقول الإجبارية في `AlertCodecs.alertInbox`. النوع المجهول ما بيترفضش هنا (بيتخطّى في الدمج)
     ALERT_INBOX_GROUP to listOf("threadKey", "eventKey", "kind", "flow", "title", "body", "delivery", "inAppWindow", "factors", "createdAt"),
+    // حسابات الورث المحفوظة (§69.4) — نفس الحقول الإجبارية في `InheritanceCodecs`، والمتداخل بيتفحص في `checkInheritanceScenarioRow`
+    INHERITANCE_SCENARIOS_GROUP to listOf("name", "estateOf", "countryCode", "heirs", "items", "funeralMinor", "debtsMinor", "createdAt", "updatedAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
@@ -124,7 +126,7 @@ fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, extern
 }
 
 private fun validateFields(row: Map<String, Any?>, group: String) {
-    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members", "lines", "factors")
+    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members", "lines", "factors", "heirs", "items")
     for (key in REQUIRED.getValue(group)) {
         // دين قديم من غير عملية (OVERRIDES §27)
         if (group == "obligations" && key == "originTransactionId" && row[key] == null) continue
@@ -161,6 +163,7 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (group == "assets") checkAssetGrowthRow(row)?.let { throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, it)) }
     if (group == PERSON_PROFILES_GROUP || group == PERSON_RELATIONS_GROUP) checkPeopleRow(group, row)
     if (group == SAVINGS_GOALS_GROUP || group == GOAL_CONTRIBUTIONS_GROUP) checkGoalRow(group, row)
+    if (group == INHERITANCE_SCENARIOS_GROUP) checkInheritanceScenarioRow(row)
     if (group == ALERT_INBOX_GROUP && (row["factors"] as? List<*>)?.all { it is String } != true) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, group, "factors"))
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))

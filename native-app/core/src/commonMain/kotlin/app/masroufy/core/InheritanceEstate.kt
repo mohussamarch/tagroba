@@ -12,19 +12,25 @@ const val INHERIT_MAX_COUNT = 100
  * - **الوصية الواجبة (مصر بس — 71/1946 م76–79، وطريقة دار الإفتاء في الفتوى 8330):** نصيب الابن/البنت اللي مات قبله **لو كان عايش**،
  *   في حدود الثلث، بيطلع من التركة **قبل** قسمة الباقي على الورثة، وبيتقسم على أولاده للذكر مثل حظ الأنثيين. السعودية: مفيش وصية واجبة.
  *   أولاد **ابن** مات قبله من غير ابن عايش بيورثوا بنفسهم (ابن ابن · بنت ابن) أو جزء منهم ⇒ «غير مدعوم» في النسخة دي.
- * - الكسور مضبوطة والمبالغ بأكبر باقي — `InheritanceAllocation.kt`.
+ * - **ذوو الأرحام** (§69.4 — `InheritanceDistant.kt`): بيورثوا بس لو مفيش غير الزوج/الزوجة. مصر: ابن/بنت مات قبله وذوو الأرحام هم
+ *   اللي بيورثوا ⇒ «غير مدعوم» (أولاد البنت ممكن يبقوا هم نفسهم ذوو الأرحام الوارثين، والواجبة شرطها إن الفرع «غير وارث» — م76).
+ * - الكسور مضبوطة والمبالغ بأكبر باقي — `InheritanceAllocation.kt`. القانون بيتحط على كل نتيجة (عشان التنبيه تحتها بتاع بلدها).
  */
 fun calculateInheritance(case: InheritanceCase): InheritanceResult = try {
     compute(case)
 } catch (_: InheritanceOverflow) {
     InheritanceResult.Invalid(InvalidReason.TOO_LARGE)
-}
+}.withLaw(InheritanceLaw.of(case.countryCode))
 
 private fun compute(case: InheritanceCase): InheritanceResult {
     validateInheritance(case)?.let { return it }
     val law = InheritanceLaw.of(case.countryCode) ?: return InheritanceResult.Unsupported(UnsupportedReason.COUNTRY)
     unsupportedCircumstance(case.special)?.let { return InheritanceResult.Unsupported(it) }
     val counts = case.heirs.filterValues { it > 0 }
+    val onlySpousesBesidesDistant = counts.keys.all { it.isDistant || it == HeirKind.HUSBAND || it == HeirKind.WIFE }
+    if (law == InheritanceLaw.EG && case.predeceasedChildren.isNotEmpty() && counts.keys.any { it.isDistant } && onlySpousesBesidesDistant) {
+        return InheritanceResult.Unsupported(UnsupportedReason.WAJIBA_WITH_DISTANT)
+    }
     val currency = countryPack(case.countryCode).currency
     fun money(v: Halalas) = formatMoney(v, currency)
     fun cite(sa: String, eg: String, egSource: LawSource = LawSource.EG_INHERITANCE) =
@@ -39,7 +45,7 @@ private fun compute(case: InheritanceCase): InheritanceResult {
     val claimed = addChecked(case.funeralMinor, case.debtsMinor)
     if (claimed > gross) notes += InheritanceNote(InheritanceNoteKind.DEBTS_EXCEED, cite("198", "4"), values = listOf(money(claimed), money(gross)))
 
-    val outcome = computeShares(law, counts, case.distantRelatives)
+    val outcome = computeShares(law, counts, case.distantRelatives, case.distantBranches)
     if (outcome is SharesOutcome.Stop) return outcome.result
     val shares = outcome as SharesOutcome.Shares
     notes += shares.notes
@@ -61,13 +67,15 @@ private fun compute(case: InheritanceCase): InheritanceResult {
 
     // الأشخاص بالترتيب: كل نوع بعدد أفراده
     val persons = HeirKind.entries.filter { (counts[it] ?: 0) > 0 }.flatMap { k -> (0 until counts.getValue(k)).map { k to it } }
-    val perPerson = persons.map { (k, _) -> (shares.shares[k] ?: Frac.ZERO) / counts.getValue(k) }
+    // نصيب كل فرد: النصيب ÷ العدد، إلا ذوي الأرحام في السعودية من أشخاص مختلفين (كل واحد نصيب اللي بيوصله — م235)
+    val perPerson = persons.map { (k, i) -> shares.personShares[k]?.get(i) ?: ((shares.shares[k] ?: Frac.ZERO) / counts.getValue(k)) }
     val amounts = largestRemainder(heirsTotal, perPerson)
     val heirShares = HeirKind.entries.filter { (counts[it] ?: 0) > 0 }.map { k ->
         val n = counts.getValue(k)
         val share = shares.shares[k] ?: Frac.ZERO
         HeirShare(
-            kind = k, count = n, basis = shares.basis[k] ?: ShareBasis.NOTHING_LEFT, share = share, perPerson = share / n,
+            kind = k, count = n, basis = shares.basis[k] ?: ShareBasis.NOTHING_LEFT, share = share,
+            personShares = persons.indices.filter { persons[it].first == k }.map { perPerson[it] },
             amountsMinor = persons.indices.filter { persons[it].first == k }.map { amounts[it] },
             names = (0 until n).map { case.names[k]?.getOrNull(it)?.takeIf { s -> s.isNotBlank() } },
         )
@@ -111,6 +119,7 @@ internal fun validateInheritance(case: InheritanceCase): InheritanceResult.Inval
     if (n(HeirKind.HUSBAND) > 0 && n(HeirKind.WIFE) > 0) return invalid(InvalidReason.HUSBAND_AND_WIFE)
     val single = listOf(
         HeirKind.HUSBAND, HeirKind.FATHER, HeirKind.MOTHER, HeirKind.GRANDFATHER, HeirKind.PATERNAL_GRANDMOTHER, HeirKind.MATERNAL_GRANDMOTHER,
+        HeirKind.MATERNAL_GRANDFATHER,
     )
     single.firstOrNull { n(it) > 1 }?.let { return invalid(InvalidReason.ONLY_ONE, it.label) }
     if (case.items.isEmpty()) return invalid(InvalidReason.NO_ITEMS)
@@ -126,7 +135,7 @@ internal fun validateInheritance(case: InheritanceCase): InheritanceResult.Inval
         }
         if (p.sons + p.daughters == 0) return invalid(InvalidReason.PREDECEASED_NO_CHILDREN)
     }
-    return null
+    return validateDistantBranches(case)
 }
 
 internal data class BequestPlan(val amountMinor: Halalas, val notes: List<InheritanceNote>)

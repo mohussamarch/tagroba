@@ -18,9 +18,17 @@ import app.masroufy.core.HeirKind.SON_DAUGHTER
 import app.masroufy.core.HeirKind.SON_SON
 import app.masroufy.core.HeirKind.WIFE
 
-/** نتيجة تحديد الأنصبة (من غير فلوس): نصيب كل نوع من نصيب الورثة · ورث بإيه · الملاحظات. */
+/**
+ * نتيجة تحديد الأنصبة (من غير فلوس): نصيب كل نوع من نصيب الورثة · ورث بإيه · الملاحظات.
+ * [personShares] نصيب كل فرد لما أفراد نفس النوع مختلفين (ذوو الأرحام في السعودية من أشخاص مختلفين) — غير كده النصيب ÷ العدد.
+ */
 internal sealed interface SharesOutcome {
-    data class Shares(val shares: Map<HeirKind, Frac>, val basis: Map<HeirKind, ShareBasis>, val notes: List<InheritanceNote>) : SharesOutcome
+    data class Shares(
+        val shares: Map<HeirKind, Frac>,
+        val basis: Map<HeirKind, ShareBasis>,
+        val notes: List<InheritanceNote>,
+        val personShares: Map<HeirKind, List<Frac>> = emptyMap(),
+    ) : SharesOutcome
     data class Stop(val result: InheritanceResult) : SharesOutcome
 }
 
@@ -36,9 +44,16 @@ private fun halfOrTwoThirds(count: Int): Frac = if (count == 1) HALF else TWO_TH
 /**
  * أنصبة الورثة بالقانون [law] — الترتيب: الفروع ⇒ الزوجين ⇒ الأصول ⇒ الإخوة لأم ⇒ الإخوة والأخوات ⇒ العصبة البعيدة ⇒ الإكمال
  * (العُمَرية · الباقي · المُشَرَّكة · الرد · العول — `InheritanceFinish.kt`).
+ * ذوو الأرحام ([isDistant]) ما بيدخلوش في أي خطوة من دول — بيورثوا في الإكمال بس لو مفيش غير الزوج/الزوجة (`InheritanceDistant.kt`).
  */
-internal fun computeShares(law: InheritanceLaw, counts: Map<HeirKind, Int>, distantRelatives: Boolean?): SharesOutcome {
-    val s = ShareState(law, counts)
+internal fun computeShares(
+    law: InheritanceLaw,
+    counts: Map<HeirKind, Int>,
+    distantRelatives: Boolean?,
+    branches: List<DistantBranch> = emptyList(),
+): SharesOutcome {
+    val distant = counts.filter { it.key.isDistant && it.value > 0 }
+    val s = ShareState(law, counts.filterKeys { !it.isDistant })
     s.descendants()
     s.spouses()
     s.father()
@@ -47,7 +62,7 @@ internal fun computeShares(law: InheritanceLaw, counts: Map<HeirKind, Int>, dist
     s.maternalSiblings()
     s.siblingsAndGrandfather()?.let { return SharesOutcome.Stop(it) }
     s.farResiduaries()
-    return s.finish(distantRelatives)
+    return s.finish(distantRelatives, distant, branches)
 }
 
 /** الأبناء والبنات وأولاد الابن (السعودية م215–216 · مصر م12 و19 و27). */

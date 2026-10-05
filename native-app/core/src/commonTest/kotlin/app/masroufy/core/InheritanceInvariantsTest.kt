@@ -24,7 +24,8 @@ class InheritanceInvariantsTest {
         repeat(3000) { n ->
             val country = if (n % 2 == 0) "SA" else "EG"
             val heirs = mutableMapOf<HeirKind, Int>()
-            for (k in HeirKind.entries) {
+            // الأنواع الأصلية بس (نفس المسائل اللي قبل ذوي الأرحام) — ذوو الأرحام ليهم اختبار عشوائي لوحده (`InheritanceDistantInvariantsTest`)
+            for (k in HeirKind.entries.filter { !it.isDistant }) {
                 if (next(4) != 0) continue
                 heirs[k] = when (k) {
                     HeirKind.WIFE -> 1 + next(4)
