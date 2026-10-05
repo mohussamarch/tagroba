@@ -37,7 +37,7 @@ class TextsTest {
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68) · حاسبة الورث (§69)
         val newer = TextKey.entries.map { it.name }.filter { it !in snapshot }
         val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_FEED_ALERT_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys +
-            EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys
+            EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys + EGYPTIAN_CALC_TEXTS.keys
         assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 
@@ -57,6 +57,15 @@ class TextsTest {
         for ((key, text) in EGYPTIAN_TEXTS) assertEquals(text, plainEgyptian(text), "فاضل مقطع قديم في المصري: $key")
         val heavy = listOf("حصيلة", "الحصيلة", "عدّ مزدوج", "الوسيط", "شذوذ", "تقلب", "تقلّب", "التخصيصات", "بصمة سلامة", "تسويات الالتزام", "الربح المحقق")
         for (text in EGYPTIAN_TEXTS.values + MSA_TEXTS.values) assertTrue(heavy.none { it in text }, "كلمة ثقيلة لسه: $text")
+    }
+
+    /** كلمة المالك في الفصحى (§69): بالحرف، والمصري بتاع جلسة 18 زي ما هو. */
+    @Test
+    fun msaUsesTheOwnersOwnWords() {
+        for ((key, text) in MSA_OWNER_WORDS) assertEquals(text, MSA_TEXTS[key], key.name)
+        assertEquals("مجموع اللي اتقسم على الأشخاص ({0}) أكبر من قيمة العملية ({1})", EGYPTIAN_TEXTS[TextKey.LEDGER_ALLOCATIONS_EXCEED])
+        Texts.arabicVariant = ArabicVariant.MSA
+        assertEquals("مجموع ما تم تقسيمه على الأشخاص (12.00 ر.س) أكبر من قيمة العملية (10.00 ر.س)", uiText(TextKey.LEDGER_ALLOCATIONS_EXCEED, formatMoney(1200), formatMoney(1000)))
     }
 
     @Test

@@ -31,5 +31,13 @@ val EGYPTIAN_PLAIN_WORDS_KEYS: Set<TextKey> = setOf(
     TextKey.BACKUP_CHECKSUM_MISMATCH,
 )
 
+/**
+ * كلمات **الفصحى** اللي المالك اختارها بنفسه (صفحة الكلمات — OVERRIDES §69، جلسة 20): النص بالحرف. `TextsTest` بيتأكد إن الجدول
+ * فيه النص ده بالظبط وإن المتغيرات زي المصري. المصري ما اتلمسش (فضل زي جلسة 18).
+ */
+val MSA_OWNER_WORDS: Map<TextKey, String> = mapOf(
+    TextKey.LEDGER_ALLOCATIONS_EXCEED to "مجموع ما تم تقسيمه على الأشخاص ({0}) أكبر من قيمة العملية ({1})",
+)
+
 /** النص القديم (من التطبيق الحالي) بعد التبسيط المعتمد. */
 fun plainEgyptian(old: String): String = EGYPTIAN_PLAIN_WORDS.fold(old) { s, (from, to) -> s.replace(from, to) }

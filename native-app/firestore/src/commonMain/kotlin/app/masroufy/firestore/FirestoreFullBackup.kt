@@ -1,5 +1,6 @@
 package app.masroufy.firestore
 
+import app.masroufy.core.ALERT_INBOX_GROUP
 import app.masroufy.core.BACKUP_GROUPS
 import app.masroufy.core.BackupRow
 import app.masroufy.core.FullBackupData
@@ -7,6 +8,7 @@ import app.masroufy.core.backupRowId
 import app.masroufy.core.emptyBackupData
 import app.masroufy.core.redactSms
 import app.masroufy.data.receiptDocId
+import app.masroufy.data.sanitizeAccountNumbers
 import app.masroufy.port.FullBackupPort
 import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FieldPath
@@ -60,7 +62,7 @@ class FirestoreFullBackup(
                     val fresh = mutableListOf<Pair<String, BackupRow>>()
                     current.forEachIndexed { i, snap ->
                         if (!snap.exists) {
-                            val safe = protectBankText(rows[i])
+                            val safe = protectBankText(group, rows[i])
                             set(refs[i], safe)
                             fresh += refs[i].id to safe
                         }
@@ -91,8 +93,18 @@ class FirestoreFullBackup(
         const val TRANSACTION_ROWS = 100
         val BANK_TEXT_FIELDS = listOf("accountIdentity", "rawLine", "rawDescription", "rawMerchantName")
 
-        fun docIdOf(group: String, row: BackupRow): String = backupRowId(group, row).let { if (group == "notificationReceipts") receiptDocId(it) else it }
+        /** الإيصالات وصفحة الإشعارات (§69) مفاتيحها فيها «|» و«/» ⇒ معرّف المستند متشفّر — نفس اللي `AlertCodecs` بيكتبه، فالاسترجاع ما بيكررش السطر. */
+        fun docIdOf(group: String, row: BackupRow): String =
+            backupRowId(group, row).let { if (group == "notificationReceipts" || group == ALERT_INBOX_GROUP) receiptDocId(it) else it }
 
-        fun protectBankText(row: BackupRow): BackupRow = row.mapValues { (key, value) -> if (key in BANK_TEXT_FIELDS && value is String) redactSms(value) else value }
+        /** نصوص البنك بتتقص، وعنوان وتفاصيل سطر صفحة الإشعارات بيتقصوا زي ما المحوّل بيعمل (أي رقم طويل ⇒ آخر 4). */
+        fun protectBankText(group: String, row: BackupRow): BackupRow = row.mapValues { (key, value) ->
+            when {
+                value !is String -> value
+                key in BANK_TEXT_FIELDS -> redactSms(value)
+                group == ALERT_INBOX_GROUP && (key == "title" || key == "body") -> sanitizeAccountNumbers(value)
+                else -> value
+            }
+        }
     }
 }

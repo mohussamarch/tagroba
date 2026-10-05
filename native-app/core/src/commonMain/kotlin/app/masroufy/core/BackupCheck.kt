@@ -54,8 +54,10 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     ALERT_SETTINGS_GROUP to listOf("group", "enabled"),
     SAVINGS_GOALS_GROUP to listOf("name", "targetMinor", "currency", "startedAt", "deadline", "archived", "createdAt", "updatedAt"),
     GOAL_CONTRIBUTIONS_GROUP to listOf("goalId", "date", "amountMinor", "createdAt"),
+    // صفحة الإشعارات (§69) — نفس الحقول الإجبارية في `AlertCodecs.alertInbox`. النوع المجهول ما بيترفضش هنا (بيتخطّى في الدمج)
+    ALERT_INBOX_GROUP to listOf("threadKey", "eventKey", "kind", "flow", "title", "body", "delivery", "inAppWindow", "factors", "createdAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt", "occurrenceDate", "deadline")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
@@ -103,7 +105,9 @@ fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, extern
             @Suppress("UNCHECKED_CAST")
             val row = raw as? Map<String, Any?> ?: throw BackupError(uiText(TextKey.BACKUP_ROW_INVALID, group))
             val id = backupRowId(group, row)
-            if (id.isEmpty() || id.length > 1000 || (group != "notificationReceipts" && '/' in id) || !ids.add(id)) throw BackupError(uiText(TextKey.BACKUP_ID_INVALID, group))
+            // مفاتيح الإيصالات وصفحة الإشعارات ممكن يبقى فيها «/» (أسامي أطراف) — معرّف المستند بيتشفّر (`receiptDocId`)
+            val slashOk = group == "notificationReceipts" || group == ALERT_INBOX_GROUP
+            if (id.isEmpty() || id.length > 1000 || (!slashOk && '/' in id) || !ids.add(id)) throw BackupError(uiText(TextKey.BACKUP_ID_INVALID, group))
             for (field in REQUIRED.getValue(group)) if (!row.containsKey(field)) throw BackupError(uiText(TextKey.BACKUP_FIELD_MISSING, group, field))
             validateFields(row, group)
             if (group == "importBatches" && row["state"] == "staged") throw BackupError(uiText(TextKey.BACKUP_IMPORT_UNFINISHED))
@@ -120,7 +124,7 @@ fun checkFullBackupData(data: Any?, groups: List<String> = BACKUP_GROUPS, extern
 }
 
 private fun validateFields(row: Map<String, Any?>, group: String) {
-    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members", "lines")
+    val special = NUMERIC + BOOLEANS + setOf("counts", "parentId", "threshold", "myTurns", "members", "lines", "factors")
     for (key in REQUIRED.getValue(group)) {
         // دين قديم من غير عملية (OVERRIDES §27)
         if (group == "obligations" && key == "originTransactionId" && row[key] == null) continue
@@ -155,6 +159,7 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (group == "incomeSources") checkIncomeSourceRow(row)
     if (group == PERSON_PROFILES_GROUP || group == PERSON_RELATIONS_GROUP) checkPeopleRow(group, row)
     if (group == SAVINGS_GOALS_GROUP || group == GOAL_CONTRIBUTIONS_GROUP) checkGoalRow(group, row)
+    if (group == ALERT_INBOX_GROUP && (row["factors"] as? List<*>)?.all { it is String } != true) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, group, "factors"))
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))

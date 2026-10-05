@@ -28,6 +28,8 @@ val BACKUP_GROUPS = listOf(
     ALERT_SETTINGS_GROUP,
     // المساعد المالي: خطط الادخار وإيداعاتها (§68) — على مستوى الحساب، التطبيق الجديد بس
     SAVINGS_GOALS_GROUP, GOAL_CONTRIBUTIONS_GROUP,
+    // صفحة الإشعارات بقرايتها (اختيار المالك §69) — على مستوى الحساب، بتتكتب بس لو فيها حاجة. الإيصالات لسه برا (بتتولد تاني)
+    ALERT_INBOX_GROUP,
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -54,7 +56,7 @@ const val INCOME_SOURCES_GROUP = "incomeSources"
 val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
 
 val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
-    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS + ALERT_SETTINGS_GROUP + GOAL_BACKUP_GROUPS
+    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS + ALERT_SETTINGS_GROUP + GOAL_BACKUP_GROUPS + ALERT_INBOX_GROUP
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -99,7 +101,7 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS)
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS, listOf(ALERT_INBOX_GROUP))
         .filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
@@ -113,6 +115,7 @@ fun backupRowId(group: String, row: BackupRow): String {
         MERCHANT_CATEGORIES_GROUP -> "merchantId"
         PERSON_PROFILES_GROUP -> "personId"
         ALERT_SETTINGS_GROUP -> "group"
+        ALERT_INBOX_GROUP -> "threadKey"
         else -> "id"
     }
     return row[key]?.let(::jsString) ?: ""
@@ -260,6 +263,8 @@ fun mergeFullBackupDetailed(
         val consumed = HashSet<String>()
         for (row in existing.getValue(group)) semantic(group, row)?.let { byContent.getOrPut(it) { mutableListOf() }.add(row) }
         for (original in incoming.getValue(group)) {
+            // سطر صفحة إشعارات من نسخة أحدث (نوع مش معروف) ⇒ بيتخطّى، والباقي بيترجع (§69)
+            if (group == ALERT_INBOX_GROUP && !isRestorableInboxRow(original)) continue
             val row = LinkedHashMap(original)
             val originalId = backupRowId(group, original)
             for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {

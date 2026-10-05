@@ -35,7 +35,7 @@ class AlertSettingsBackupTest {
         val file = FullBackup(MemoryFullBackup(source)).create("2026-10-05T12:00:00.000Z")
         val text = file.toJsonText()
         assertTrue("\"$ALERT_SETTINGS_GROUP\"" in text)
-        for (g in listOf(ALERT_INBOX_GROUP, ALERT_RECEIPTS_GROUP)) assertFalse("\"$g\"" in text, "$g مش في النسخة")
+        for (g in listOf(ALERT_INBOX_GROUP, ALERT_RECEIPTS_GROUP)) assertFalse("\"$g\"" in text, "$g مش في النسخة (الصفحة فاضية هنا — §69 في AlertInboxBackupTest)")
         val target = MemoryFullBackup()
         val restore = FullBackup(target)
         assertEquals(2, restore.apply(restore.plan(text).file).added[ALERT_SETTINGS_GROUP])
