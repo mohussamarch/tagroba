@@ -28,6 +28,7 @@ class RenameSeedCategoriesTest {
         assertEquals(
             listOf(
                 CategoryRename("cat-السيارة--مواقف-وسايس", "مواقف وسايس", "مواقف"),
+                CategoryRename("cat-السيارة--وقود", "وقود", "بنزين"),
                 CategoryRename("cat-تعليم-وتدريب--دورات-أونلاين", "دورات أونلاين", "دورات إلكترونية"),
             ),
             plan,
@@ -40,7 +41,7 @@ class RenameSeedCategoriesTest {
         val after = repo.listAll()
         assertEquals(before.map { it.id }, after.map { it.id }, "المعرّفات زي ما هي")
         assertEquals(before.map { it.copy(name = "") }, after.map { it.copy(name = "") }, "الاسم بس اللي اتغير")
-        assertEquals(listOf("السيارة", "مواقف", "وقود", "تعليم وتدريب", "دورات إلكترونية", "تصنيف وهمي"), after.map { it.name })
+        assertEquals(listOf("السيارة", "مواقف", "بنزين", "تعليم وتدريب", "دورات إلكترونية", "تصنيف وهمي"), after.map { it.name })
         assertTrue(use.plan().isEmpty(), "بعد التنفيذ مفيش حاجة تانية")
     }
 
@@ -51,7 +52,7 @@ class RenameSeedCategoriesTest {
         // المستخدم غيّر الاسم بنفسه بعد ما الخطة اتعرضت ⇒ ما نكتبش فوقه
         repo.save(before[1].copy(name = "جراج وهمي"))
         val result = use.apply(plan + CategoryRename("cat-مش-موجود", "قديم", "جديد"))
-        assertEquals(listOf(plan[1]), result.applied)
+        assertEquals(listOf(plan[1], plan[2]), result.applied)
         assertEquals(listOf(plan[0], CategoryRename("cat-مش-موجود", "قديم", "جديد")), result.skipped)
         assertEquals("جراج وهمي", repo.listAll().single { it.id == before[1].id }.name)
     }

@@ -185,7 +185,7 @@ internal val MSA_DUES_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ROSCA_Q_SHARE to "كم سهمًا لك؟",
     TextKey.ROSCA_Q_MY_TURN to "ما رقم دورك؟",
     TextKey.ROSCA_Q_PAYOUT to "كم ستقبض في دورك؟",
-    TextKey.ROSCA_Q_PAYOUT_HINT to "المحتسب: {0}",
+    TextKey.ROSCA_Q_PAYOUT_HINT to "المحسوب: {0}",
     TextKey.ROSCA_FREQ_WEEKLY to "كل أسبوع",
     TextKey.ROSCA_FREQ_BIWEEKLY to "كل أسبوعين",
     TextKey.ROSCA_FREQ_MONTHLY to "كل شهر",

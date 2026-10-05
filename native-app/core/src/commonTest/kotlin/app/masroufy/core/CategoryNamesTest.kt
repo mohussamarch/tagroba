@@ -25,9 +25,9 @@ class CategoryNamesTest {
         val old = buildCategoryTree(raw)
         val msa = buildCountryCategoryTree(raw, SAUDI_PACK)
         assertEquals(old.categories.map { it.id }, msa.categories.map { it.id })
-        assertEquals(listOf("السيارة", "وقود", "مواقف", "اتصالات", "جوال", "مصاريف الدوام", "أدوات وبرامج الدوام"), msa.categories.map { it.name })
+        assertEquals(listOf("السيارة", "بنزين", "مواقف", "اتصالات", "جوال", "مصاريف الدوام", "أدوات وبرامج الدوام"), msa.categories.map { it.name })
         assertEquals(old.wordOverrides, msa.wordOverrides, "كلمة PARKING على نفس التصنيف")
-        for (pair in listOf("مواقف وسايس" to "مواقف", "مصاريف الشغل" to "مصاريف الدوام", "أدوات وبرامج للشغل" to "أدوات وبرامج الدوام")) {
+        for (pair in listOf("وقود" to "بنزين", "مواقف وسايس" to "مواقف", "مصاريف الشغل" to "مصاريف الدوام", "أدوات وبرامج للشغل" to "أدوات وبرامج الدوام")) {
             assertEquals(msa.aliases[normalizeText(pair.first)], msa.aliases[normalizeText(pair.second)], pair.toString())
         }
         assertEquals("كاش", SAUDI_PACK.cashWalletName)
@@ -41,15 +41,17 @@ class CategoryNamesTest {
     }
 
     @Test fun matchingAcceptsTheOldAndTheNewName() {
-        assertTrue(sameCategoryName("مصروف البيت", "مصروف المنزل"))
-        assertTrue(sameCategoryName(" مصروف  المنزل ", "مصروف البيت"))
+        assertTrue(sameCategoryName("وقود", "بنزين"))
+        assertTrue(sameCategoryName(" بنزين ", "وقود"))
+        // «مصروف البيت» و«تاكسي وتطبيقات» رجعوا زي ما هم (رد المالك §66) ⇒ مالهمش اسم تاني
+        assertFalse(sameCategoryName("مصروف البيت", "مصروف المنزل"))
         assertTrue(sameCategoryName("مواقف", "مواقف وسايس"))
         assertTrue(sameCategoryName("سحب نقدي", "سحب نقدي"))
         assertFalse(sameCategoryName("مواقف", "وقود"))
         assertFalse(sameCategoryName(null, "مواقف"))
         // الكود اللي بيطابق بالاسم ما اتأثرش بالأسماء اللي ما اتغيرتش
         assertTrue(isNonExpenseSourceCategory("سحب نقدي") && isNonExpenseSourceCategory("محافظ رقمية"))
-        assertFalse(isNonExpenseSourceCategory("مصروف المنزل"))
+        assertFalse(isNonExpenseSourceCategory("بنزين"))
         assertEquals(EconomicKind.INTERNAL_TRANSFER, suggestEconomicKind(SuggestionInput(Direction.OUT, categoryName = "سحب نقدي")).kind)
         assertEquals(EconomicKind.PURCHASE, suggestEconomicKind(SuggestionInput(Direction.OUT, categoryName = "مواقف")).kind)
         assertEquals(EconomicKind.PURCHASE, suggestEconomicKind(SuggestionInput(Direction.OUT, categoryName = "مواقف وسايس")).kind)
@@ -65,9 +67,11 @@ class CategoryNamesTest {
             cat("c-mine", null, "تصنيفي"),
             cat("c-mine-park", "c-mine", "مواقف وسايس"),
             // الاسم الجديد موجود عند أخ ⇒ ما يتغيرش (كان هيعمل اسمين متطابقين)
+            cat("c-fuel", "c-car", "وقود"),
+            cat("c-fuel2", "c-car", "بنزين"),
+            // «مصروف البيت» ما بقاش في القايمة ⇒ ما يتلمسش
             cat("c-family", null, "الأسرة والأطفال"),
             cat("c-house", "c-family", "مصروف البيت"),
-            cat("c-house2", "c-family", "مصروف المنزل"),
         )
         val plan = planCategoryRename(categories)
         assertEquals(
