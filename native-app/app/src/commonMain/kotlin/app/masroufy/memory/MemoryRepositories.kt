@@ -19,8 +19,8 @@ import app.masroufy.port.TransactionRepository
  *
  * الكيانات في كوتلن `data class` (مش بتتغير)، فمفيش نسخ زي `clone` بتاعة جافاسكربت.
  */
-class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : TransactionRepository {
-    private val items = LinkedHashMap<Id, Transaction>()
+class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : TransactionRepository, Snapshotable {
+    private var items = LinkedHashMap<Id, Transaction>()
 
     init {
         for (t in seed) items[t.id] = t
@@ -65,6 +65,15 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
     override suspend fun deleteMany(ids: List<Id>) {
         for (id in ids) items.remove(id)
     }
+
+    fun all(): List<Transaction> = items.values.toList()
+
+    override fun snapshot(): Any = LinkedHashMap(items)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        items = LinkedHashMap(state as LinkedHashMap<Id, Transaction>)
+    }
 }
 
 class MemoryCategoryRepository(seed: List<Category> = emptyList()) : CategoryRepository {
@@ -102,9 +111,9 @@ class MemoryAllocationRepository(seed: List<PersonAllocation> = emptyList()) : A
     }
 }
 
-class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<CategoryBudget> = emptyList()) : BudgetRepository {
-    private val budgets = LinkedHashMap<String, Budget>()
-    private val categoryLines = LinkedHashMap<Id, CategoryBudget>()
+class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<CategoryBudget> = emptyList()) : BudgetRepository, Snapshotable {
+    private var budgets = LinkedHashMap<String, Budget>()
+    private var categoryLines = LinkedHashMap<Id, CategoryBudget>()
 
     init {
         for (b in seed) budgets[b.periodKey] = b
@@ -131,5 +140,18 @@ class MemoryBudgetRepository(seed: List<Budget> = emptyList(), lines: List<Categ
 
     override suspend fun removeCategoryBudget(id: Id) {
         categoryLines.remove(id)
+    }
+
+    fun allBudgets(): List<Budget> = budgets.values.toList()
+
+    fun allLines(): List<CategoryBudget> = categoryLines.values.toList()
+
+    override fun snapshot(): Any = LinkedHashMap(budgets) to LinkedHashMap(categoryLines)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun restore(state: Any) {
+        val (b, l) = state as Pair<LinkedHashMap<String, Budget>, LinkedHashMap<Id, CategoryBudget>>
+        budgets = LinkedHashMap(b)
+        categoryLines = LinkedHashMap(l)
     }
 }

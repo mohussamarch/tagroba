@@ -58,6 +58,9 @@ internal val categoryOrder = Comparator<Category> { a, b -> if (a.order != b.ord
 /** مقارنة نصين بترتيب الحروف العربي — خاصة بكل جهاز. */
 internal expect fun compareArabic(a: String, b: String): Int
 
+/** ترتيب حروف عربي زي `localeCompare(…, 'ar')` — للطبقات اللي فوق `core` (الدالة الأصلية داخلية). */
+fun arabicCompare(a: String, b: String): Int = compareArabic(a, b)
+
 /** معلومات الشخص اللي بتظهر تصنيفات — null = ما اتجاوبش ⇒ التصنيف المشروط مخفي. */
 data class ProfileFacts(
     val hasCar: Boolean?,

@@ -6,7 +6,9 @@ package app.masroufy.core
  * ومش بيوقّف باقي الملف. **مفيش تخمين لأعمدة مالية.**
  */
 enum class SchemaId(val wire: String) {
-    PREVIEW("preview"), LEGACY("legacy"), ALRAJHI_PDF("alrajhi_pdf"), SMS("sms");
+    PREVIEW("preview"), LEGACY("legacy"), ALRAJHI_PDF("alrajhi_pdf"), SMS("sms"),
+    /** كشف QNB مصر PDF — التطبيق الجديد بس (§40.3). */
+    QNB_PDF("qnb_pdf");
 
     companion object {
         fun fromWire(wire: String): SchemaId = entries.first { it.wire == wire }

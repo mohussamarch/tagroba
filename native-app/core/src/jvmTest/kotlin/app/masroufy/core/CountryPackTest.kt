@@ -12,7 +12,8 @@ class CountryPackTest {
     fun `الحزمة السعودية هي الافتراضية ومعاها كل مخططات الاستيراد`() {
         assertEquals("SA", DEFAULT_COUNTRY_PACK.code)
         assertEquals(Currency.SAR, DEFAULT_COUNTRY_PACK.currency)
-        assertEquals(SchemaId.entries.toSet(), DEFAULT_COUNTRY_PACK.statementSchemas.toSet())
+        // كل المخططات ما عدا كشف QNB مصر (حزمة مصر بس)
+        assertEquals(SchemaId.entries.toSet() - SchemaId.QNB_PDF, DEFAULT_COUNTRY_PACK.statementSchemas.toSet())
     }
 
     @Test
@@ -31,7 +32,12 @@ class CountryPackTest {
             if (!pack.ready) assertTrue(pack.gaps.isNotEmpty())
         }
         // مصر: قارئ الرسايل خلص، والشجرة وقارئ الكشف لسه
-        assertEquals(listOf("categoryTree", "statementReader"), EGYPT_PACK.gaps)
+        // قارئ كشف QNB اتعمل 2026-10-01، والشجرة = شجرة السعودية + فروق مصر (رد المالك §64-٣) — مفيش ناقص في الحزمة
+        assertEquals(emptyList(), EGYPT_PACK.gaps)
+        assertEquals(EGYPT_CATEGORY_DELTA, EGYPT_PACK.categoryDelta)
+        assertTrue(SAUDI_PACK.categoryDelta.isEmpty(), "السعودية من غير فروق")
+        assertTrue(SchemaId.QNB_PDF in EGYPT_PACK.statementSchemas)
+        assertEquals("Africa/Cairo", EGYPT_PACK.timeZone, "حدود اليوم في رسايل البنك بتوقيت مصر")
     }
 
     @Test

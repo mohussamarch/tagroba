@@ -1,0 +1,1788 @@
+{
+ "wallets": [
+  {
+   "in": {
+    "id": "w-bank",
+    "name": "البنك الوهمي",
+    "currency": "SAR",
+    "kind": "bank",
+    "openingBalanceMinor": 123456,
+    "openingAt": "2025-01-01",
+    "accountLast4": "4321"
+   },
+   "out": {
+    "id": "w-bank",
+    "fields": {
+     "id": {
+      "stringValue": "w-bank"
+     },
+     "name": {
+      "stringValue": "البنك الوهمي"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "kind": {
+      "stringValue": "bank"
+     },
+     "openingBalanceMinor": {
+      "integerValue": "123456"
+     },
+     "openingAt": {
+      "stringValue": "2025-01-01"
+     },
+     "accountLast4": {
+      "stringValue": "4321"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "w-cash",
+    "name": "كاش",
+    "currency": "SAR",
+    "kind": "cash",
+    "openingBalanceMinor": -500,
+    "openingAt": "2026-09-06"
+   },
+   "out": {
+    "id": "w-cash",
+    "fields": {
+     "id": {
+      "stringValue": "w-cash"
+     },
+     "name": {
+      "stringValue": "كاش"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "kind": {
+      "stringValue": "cash"
+     },
+     "openingBalanceMinor": {
+      "integerValue": "-500"
+     },
+     "openingAt": {
+      "stringValue": "2026-09-06"
+     }
+    }
+   }
+  }
+ ],
+ "categories": [
+  {
+   "in": {
+    "id": "c-food",
+    "parentId": null,
+    "name": "أكل",
+    "iconKey": "utensils",
+    "lightColor": "#AA3344",
+    "darkColor": "#FF8899",
+    "active": true,
+    "order": 1,
+    "groupKey": "food",
+    "requires": "hasCar",
+    "noCarName": "مواصلات",
+    "noCarIconKey": "bus"
+   },
+   "out": {
+    "id": "c-food",
+    "fields": {
+     "id": {
+      "stringValue": "c-food"
+     },
+     "parentId": {
+      "nullValue": null
+     },
+     "name": {
+      "stringValue": "أكل"
+     },
+     "iconKey": {
+      "stringValue": "utensils"
+     },
+     "lightColor": {
+      "stringValue": "#AA3344"
+     },
+     "darkColor": {
+      "stringValue": "#FF8899"
+     },
+     "active": {
+      "booleanValue": true
+     },
+     "order": {
+      "integerValue": "1"
+     },
+     "groupKey": {
+      "stringValue": "food"
+     },
+     "requires": {
+      "stringValue": "hasCar"
+     },
+     "noCarName": {
+      "stringValue": "مواصلات"
+     },
+     "noCarIconKey": {
+      "stringValue": "bus"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "c-cafe",
+    "parentId": "c-food",
+    "name": "قهوة",
+    "iconKey": "coffee",
+    "lightColor": "#112233",
+    "darkColor": "#445566",
+    "active": false,
+    "order": 12
+   },
+   "out": {
+    "id": "c-cafe",
+    "fields": {
+     "id": {
+      "stringValue": "c-cafe"
+     },
+     "parentId": {
+      "stringValue": "c-food"
+     },
+     "name": {
+      "stringValue": "قهوة"
+     },
+     "iconKey": {
+      "stringValue": "coffee"
+     },
+     "lightColor": {
+      "stringValue": "#112233"
+     },
+     "darkColor": {
+      "stringValue": "#445566"
+     },
+     "active": {
+      "booleanValue": false
+     },
+     "order": {
+      "integerValue": "12"
+     }
+    }
+   }
+  }
+ ],
+ "merchants": [
+  {
+   "in": {
+    "id": "m-1",
+    "displayName": "متجر وهمي",
+    "normalizedName": "متجر وهمي",
+    "aliases": [
+     "TEST MART",
+     "تست مارت"
+    ],
+    "logoAsset": "logos/test.png",
+    "logoSource": "manual",
+    "verifiedCategoryId": "c-food"
+   },
+   "out": {
+    "id": "m-1",
+    "fields": {
+     "id": {
+      "stringValue": "m-1"
+     },
+     "displayName": {
+      "stringValue": "متجر وهمي"
+     },
+     "normalizedName": {
+      "stringValue": "متجر وهمي"
+     },
+     "aliases": {
+      "arrayValue": {
+       "values": [
+        {
+         "stringValue": "TEST MART"
+        },
+        {
+         "stringValue": "تست مارت"
+        }
+       ]
+      }
+     },
+     "logoAsset": {
+      "stringValue": "logos/test.png"
+     },
+     "logoSource": {
+      "stringValue": "manual"
+     },
+     "verifiedCategoryId": {
+      "stringValue": "c-food"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "m-2",
+    "displayName": "Test Cafe",
+    "normalizedName": "test cafe"
+   },
+   "out": {
+    "id": "m-2",
+    "fields": {
+     "id": {
+      "stringValue": "m-2"
+     },
+     "displayName": {
+      "stringValue": "Test Cafe"
+     },
+     "normalizedName": {
+      "stringValue": "test cafe"
+     }
+    }
+   }
+  }
+ ],
+ "rules": [
+  {
+   "in": {
+    "id": "r-1",
+    "priority": 10,
+    "matchText": "test mart",
+    "matchMode": "contains",
+    "categoryId": "c-food",
+    "enabled": true
+   },
+   "out": {
+    "id": "r-1",
+    "fields": {
+     "id": {
+      "stringValue": "r-1"
+     },
+     "priority": {
+      "integerValue": "10"
+     },
+     "matchText": {
+      "stringValue": "test mart"
+     },
+     "matchMode": {
+      "stringValue": "contains"
+     },
+     "categoryId": {
+      "stringValue": "c-food"
+     },
+     "enabled": {
+      "booleanValue": true
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "r-2",
+    "priority": 0,
+    "matchText": "cafe",
+    "matchMode": "exact",
+    "categoryId": "c-cafe",
+    "enabled": false
+   },
+   "out": {
+    "id": "r-2",
+    "fields": {
+     "id": {
+      "stringValue": "r-2"
+     },
+     "priority": {
+      "integerValue": "0"
+     },
+     "matchText": {
+      "stringValue": "cafe"
+     },
+     "matchMode": {
+      "stringValue": "exact"
+     },
+     "categoryId": {
+      "stringValue": "c-cafe"
+     },
+     "enabled": {
+      "booleanValue": false
+     }
+    }
+   }
+  }
+ ],
+ "people": [
+  {
+   "in": {
+    "id": "p-1",
+    "name": "شخص وهمي",
+    "archived": false
+   },
+   "out": {
+    "id": "p-1",
+    "fields": {
+     "id": {
+      "stringValue": "p-1"
+     },
+     "name": {
+      "stringValue": "شخص وهمي"
+     },
+     "archived": {
+      "booleanValue": false
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "p-2",
+    "name": "Test Person",
+    "archived": true
+   },
+   "out": {
+    "id": "p-2",
+    "fields": {
+     "id": {
+      "stringValue": "p-2"
+     },
+     "name": {
+      "stringValue": "Test Person"
+     },
+     "archived": {
+      "booleanValue": true
+     }
+    }
+   }
+  }
+ ],
+ "assets": [
+  {
+   "in": {
+    "id": "a-gold",
+    "name": "ذهب وهمي",
+    "kind": "gold",
+    "unitLabel": "جرام",
+    "currency": "SAR",
+    "archived": false,
+    "feedSymbol": "XAU",
+    "note": "ملاحظة"
+   },
+   "out": {
+    "id": "a-gold",
+    "fields": {
+     "id": {
+      "stringValue": "a-gold"
+     },
+     "name": {
+      "stringValue": "ذهب وهمي"
+     },
+     "kind": {
+      "stringValue": "gold"
+     },
+     "unitLabel": {
+      "stringValue": "جرام"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "archived": {
+      "booleanValue": false
+     },
+     "feedSymbol": {
+      "stringValue": "XAU"
+     },
+     "note": {
+      "stringValue": "ملاحظة"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "a-fund",
+    "name": "صندوق وهمي",
+    "kind": "fund",
+    "unitLabel": "وحدة",
+    "currency": "SAR",
+    "archived": true
+   },
+   "out": {
+    "id": "a-fund",
+    "fields": {
+     "id": {
+      "stringValue": "a-fund"
+     },
+     "name": {
+      "stringValue": "صندوق وهمي"
+     },
+     "kind": {
+      "stringValue": "fund"
+     },
+     "unitLabel": {
+      "stringValue": "وحدة"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "archived": {
+      "booleanValue": true
+     }
+    }
+   }
+  }
+ ],
+ "tags": [
+  {
+   "in": {
+    "id": "tag-1",
+    "normalizedName": "سفر",
+    "displayName": "سفر"
+   },
+   "out": {
+    "id": "tag-1",
+    "fields": {
+     "id": {
+      "stringValue": "tag-1"
+     },
+     "normalizedName": {
+      "stringValue": "سفر"
+     },
+     "displayName": {
+      "stringValue": "سفر"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "tag-2",
+    "normalizedName": "trip 2026",
+    "displayName": "Trip 2026"
+   },
+   "out": {
+    "id": "tag-2",
+    "fields": {
+     "id": {
+      "stringValue": "tag-2"
+     },
+     "normalizedName": {
+      "stringValue": "trip 2026"
+     },
+     "displayName": {
+      "stringValue": "Trip 2026"
+     }
+    }
+   }
+  }
+ ],
+ "budgets": [
+  {
+   "in": {
+    "id": "2026-09",
+    "periodKey": "2026-09",
+    "periodStart": "2026-08-28",
+    "periodEnd": "2026-09-27",
+    "totalLimitMinor": 800000,
+    "thresholdPercent": 80,
+    "createdAt": "2026-09-30T08:00:00.000Z",
+    "updatedAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "2026-09",
+    "fields": {
+     "id": {
+      "stringValue": "2026-09"
+     },
+     "periodKey": {
+      "stringValue": "2026-09"
+     },
+     "periodStart": {
+      "stringValue": "2026-08-28"
+     },
+     "periodEnd": {
+      "stringValue": "2026-09-27"
+     },
+     "totalLimitMinor": {
+      "integerValue": "800000"
+     },
+     "thresholdPercent": {
+      "integerValue": "80"
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "updatedAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "2026-10",
+    "periodKey": "2026-10",
+    "periodStart": "2026-09-28",
+    "periodEnd": "2026-10-27",
+    "totalLimitMinor": null,
+    "thresholdPercent": null,
+    "createdAt": "2026-09-30T08:00:00.000Z",
+    "updatedAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "2026-10",
+    "fields": {
+     "id": {
+      "stringValue": "2026-10"
+     },
+     "periodKey": {
+      "stringValue": "2026-10"
+     },
+     "periodStart": {
+      "stringValue": "2026-09-28"
+     },
+     "periodEnd": {
+      "stringValue": "2026-10-27"
+     },
+     "totalLimitMinor": {
+      "nullValue": null
+     },
+     "thresholdPercent": {
+      "nullValue": null
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "updatedAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  }
+ ],
+ "recurringItems": [
+  {
+   "in": {
+    "id": "rec-1",
+    "name": "اشتراك وهمي",
+    "merchantKey": "id:m-2",
+    "kind": "subscription",
+    "cycleMonths": 1,
+    "expectedMinor": 4500,
+    "currency": "SAR",
+    "nextDueAt": "2026-10-05",
+    "active": true,
+    "confirmed": true
+   },
+   "out": {
+    "id": "rec-1",
+    "fields": {
+     "id": {
+      "stringValue": "rec-1"
+     },
+     "name": {
+      "stringValue": "اشتراك وهمي"
+     },
+     "merchantKey": {
+      "stringValue": "id:m-2"
+     },
+     "kind": {
+      "stringValue": "subscription"
+     },
+     "cycleMonths": {
+      "integerValue": "1"
+     },
+     "expectedMinor": {
+      "integerValue": "4500"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "nextDueAt": {
+      "stringValue": "2026-10-05"
+     },
+     "active": {
+      "booleanValue": true
+     },
+     "confirmed": {
+      "booleanValue": true
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "rec-2",
+    "name": "فاتورة وهمية",
+    "merchantKey": "manual:bill",
+    "kind": "bill",
+    "cycleMonths": 12,
+    "expectedMinor": 120000,
+    "currency": "SAR",
+    "nextDueAt": "2027-01-01",
+    "active": false,
+    "confirmed": false
+   },
+   "out": {
+    "id": "rec-2",
+    "fields": {
+     "id": {
+      "stringValue": "rec-2"
+     },
+     "name": {
+      "stringValue": "فاتورة وهمية"
+     },
+     "merchantKey": {
+      "stringValue": "manual:bill"
+     },
+     "kind": {
+      "stringValue": "bill"
+     },
+     "cycleMonths": {
+      "integerValue": "12"
+     },
+     "expectedMinor": {
+      "integerValue": "120000"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "nextDueAt": {
+      "stringValue": "2027-01-01"
+     },
+     "active": {
+      "booleanValue": false
+     },
+     "confirmed": {
+      "booleanValue": false
+     }
+    }
+   }
+  }
+ ],
+ "importBatches": [
+  {
+   "in": {
+    "id": "b-1",
+    "sourceType": "csv_preview",
+    "fileHash": "hash-1",
+    "fileName": "statement-9988776655443322.csv",
+    "importedAt": "2026-09-30T08:00:00.000Z",
+    "state": "committed",
+    "counts": {
+     "total": 10,
+     "imported": 7,
+     "duplicates": 1,
+     "similar": 1,
+     "conflicts": 0,
+     "invalid": 1
+    }
+   },
+   "out": {
+    "id": "b-1",
+    "fields": {
+     "id": {
+      "stringValue": "b-1"
+     },
+     "sourceType": {
+      "stringValue": "csv_preview"
+     },
+     "fileHash": {
+      "stringValue": "hash-1"
+     },
+     "fileName": {
+      "stringValue": "statement-****3322.csv"
+     },
+     "importedAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "state": {
+      "stringValue": "committed"
+     },
+     "counts": {
+      "mapValue": {
+       "fields": {
+        "total": {
+         "integerValue": "10"
+        },
+        "imported": {
+         "integerValue": "7"
+        },
+        "duplicates": {
+         "integerValue": "1"
+        },
+        "similar": {
+         "integerValue": "1"
+        },
+        "conflicts": {
+         "integerValue": "0"
+        },
+        "invalid": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "b-2",
+    "sourceType": "sms",
+    "fileHash": "hash-2",
+    "fileName": "sms",
+    "importedAt": "2026-09-30T08:00:00.000Z",
+    "state": "staged",
+    "counts": {
+     "total": 0,
+     "imported": 0,
+     "duplicates": 0,
+     "similar": 0,
+     "conflicts": 0,
+     "invalid": 0
+    }
+   },
+   "out": {
+    "id": "b-2",
+    "fields": {
+     "id": {
+      "stringValue": "b-2"
+     },
+     "sourceType": {
+      "stringValue": "sms"
+     },
+     "fileHash": {
+      "stringValue": "hash-2"
+     },
+     "fileName": {
+      "stringValue": "sms"
+     },
+     "importedAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "state": {
+      "stringValue": "staged"
+     },
+     "counts": {
+      "mapValue": {
+       "fields": {
+        "total": {
+         "integerValue": "0"
+        },
+        "imported": {
+         "integerValue": "0"
+        },
+        "duplicates": {
+         "integerValue": "0"
+        },
+        "similar": {
+         "integerValue": "0"
+        },
+        "conflicts": {
+         "integerValue": "0"
+        },
+        "invalid": {
+         "integerValue": "0"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ ],
+ "transactions": [
+  {
+   "in": {
+    "id": "t-full",
+    "occurredAt": "2026-09-15",
+    "datePrecision": "day",
+    "sourceTime": "14:05",
+    "sourceOrder": 3,
+    "economicKind": "purchase",
+    "economicKindConfirmed": true,
+    "observedDirection": "out",
+    "amountMinor": 9007199254740991,
+    "originalAmountMinor": 10000,
+    "currency": "SAR",
+    "merchantId": "m-1",
+    "categoryId": "c-food",
+    "categoryConfirmed": true,
+    "excludedFromBudget": true,
+    "reviewState": "confirmed",
+    "note": "ملاحظة فيها رقم 9988776655443322",
+    "walletId": "w-bank",
+    "transferToWalletId": "w-cash",
+    "statedBalanceMinor": -2500,
+    "rawDescription": "شراء من حساب 9988776655443322",
+    "rawMerchantName": "TEST MART",
+    "isCashTagged": true,
+    "sourceCategory": "مشتريات",
+    "sourceOperationType": "POS",
+    "createdAt": "2026-09-30T08:00:00.000Z",
+    "updatedAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "t-full",
+    "fields": {
+     "id": {
+      "stringValue": "t-full"
+     },
+     "occurredAt": {
+      "stringValue": "2026-09-15"
+     },
+     "datePrecision": {
+      "stringValue": "day"
+     },
+     "sourceTime": {
+      "stringValue": "14:05"
+     },
+     "sourceOrder": {
+      "integerValue": "3"
+     },
+     "economicKind": {
+      "stringValue": "purchase"
+     },
+     "economicKindConfirmed": {
+      "booleanValue": true
+     },
+     "observedDirection": {
+      "stringValue": "out"
+     },
+     "amountMinor": {
+      "integerValue": "9007199254740991"
+     },
+     "originalAmountMinor": {
+      "integerValue": "10000"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "merchantId": {
+      "stringValue": "m-1"
+     },
+     "categoryId": {
+      "stringValue": "c-food"
+     },
+     "categoryConfirmed": {
+      "booleanValue": true
+     },
+     "excludedFromBudget": {
+      "booleanValue": true
+     },
+     "reviewState": {
+      "stringValue": "confirmed"
+     },
+     "note": {
+      "stringValue": "ملاحظة فيها رقم ****3322"
+     },
+     "walletId": {
+      "stringValue": "w-bank"
+     },
+     "transferToWalletId": {
+      "stringValue": "w-cash"
+     },
+     "statedBalanceMinor": {
+      "integerValue": "-2500"
+     },
+     "rawDescription": {
+      "stringValue": "شراء من حساب ****3322"
+     },
+     "rawMerchantName": {
+      "stringValue": "TEST MART"
+     },
+     "isCashTagged": {
+      "booleanValue": true
+     },
+     "sourceCategory": {
+      "stringValue": "مشتريات"
+     },
+     "sourceOperationType": {
+      "stringValue": "POS"
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "updatedAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "t-min",
+    "occurredAt": "2026-09-01",
+    "datePrecision": "minute",
+    "sourceOrder": 0,
+    "economicKind": "unclassified",
+    "economicKindConfirmed": false,
+    "observedDirection": "in",
+    "amountMinor": 0,
+    "currency": "SAR",
+    "categoryConfirmed": false,
+    "excludedFromBudget": false,
+    "reviewState": "needs_review",
+    "isCashTagged": false,
+    "createdAt": "2026-09-30T08:00:00.000Z",
+    "updatedAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "t-min",
+    "fields": {
+     "id": {
+      "stringValue": "t-min"
+     },
+     "occurredAt": {
+      "stringValue": "2026-09-01"
+     },
+     "datePrecision": {
+      "stringValue": "minute"
+     },
+     "sourceOrder": {
+      "integerValue": "0"
+     },
+     "economicKind": {
+      "stringValue": "unclassified"
+     },
+     "economicKindConfirmed": {
+      "booleanValue": false
+     },
+     "observedDirection": {
+      "stringValue": "in"
+     },
+     "amountMinor": {
+      "integerValue": "0"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     },
+     "categoryConfirmed": {
+      "booleanValue": false
+     },
+     "excludedFromBudget": {
+      "booleanValue": false
+     },
+     "reviewState": {
+      "stringValue": "needs_review"
+     },
+     "isCashTagged": {
+      "booleanValue": false
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "updatedAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  }
+ ],
+ "obligations": [
+  {
+   "in": {
+    "id": "o-1",
+    "personId": "p-1",
+    "originTransactionId": "t-full",
+    "kind": "receivable",
+    "originalMinor": 50000,
+    "currency": "SAR"
+   },
+   "out": {
+    "id": "o-1",
+    "fields": {
+     "id": {
+      "stringValue": "o-1"
+     },
+     "personId": {
+      "stringValue": "p-1"
+     },
+     "originTransactionId": {
+      "stringValue": "t-full"
+     },
+     "kind": {
+      "stringValue": "receivable"
+     },
+     "originalMinor": {
+      "integerValue": "50000"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "o-2",
+    "personId": "p-2",
+    "originTransactionId": null,
+    "kind": "custody_payable",
+    "originalMinor": 1,
+    "currency": "SAR"
+   },
+   "out": {
+    "id": "o-2",
+    "fields": {
+     "id": {
+      "stringValue": "o-2"
+     },
+     "personId": {
+      "stringValue": "p-2"
+     },
+     "originTransactionId": {
+      "nullValue": null
+     },
+     "kind": {
+      "stringValue": "custody_payable"
+     },
+     "originalMinor": {
+      "integerValue": "1"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     }
+    }
+   }
+  }
+ ],
+ "allocations": [
+  {
+   "in": {
+    "id": "al-1",
+    "transactionId": "t-full",
+    "personId": "p-1",
+    "allocationKind": "receivable",
+    "amountMinor": 50000,
+    "currency": "SAR"
+   },
+   "out": {
+    "id": "al-1",
+    "fields": {
+     "id": {
+      "stringValue": "al-1"
+     },
+     "transactionId": {
+      "stringValue": "t-full"
+     },
+     "personId": {
+      "stringValue": "p-1"
+     },
+     "allocationKind": {
+      "stringValue": "receivable"
+     },
+     "amountMinor": {
+      "integerValue": "50000"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "al-2",
+    "transactionId": "t-full",
+    "personId": "p-2",
+    "allocationKind": "gift",
+    "amountMinor": 1000,
+    "currency": "SAR"
+   },
+   "out": {
+    "id": "al-2",
+    "fields": {
+     "id": {
+      "stringValue": "al-2"
+     },
+     "transactionId": {
+      "stringValue": "t-full"
+     },
+     "personId": {
+      "stringValue": "p-2"
+     },
+     "allocationKind": {
+      "stringValue": "gift"
+     },
+     "amountMinor": {
+      "integerValue": "1000"
+     },
+     "currency": {
+      "stringValue": "SAR"
+     }
+    }
+   }
+  }
+ ],
+ "settlements": [
+  {
+   "in": {
+    "id": "s-1",
+    "transactionId": "t-min",
+    "obligationId": "o-1",
+    "amountMinor": 20000
+   },
+   "out": {
+    "id": "s-1",
+    "fields": {
+     "id": {
+      "stringValue": "s-1"
+     },
+     "transactionId": {
+      "stringValue": "t-min"
+     },
+     "obligationId": {
+      "stringValue": "o-1"
+     },
+     "amountMinor": {
+      "integerValue": "20000"
+     }
+    }
+   }
+  }
+ ],
+ "sourceRecords": [
+  {
+   "in": {
+    "id": "sr-1",
+    "batchId": "b-1",
+    "accountIdentity": "acct-9988776655443322",
+    "sourceReference": "ref-9988776655443322",
+    "sourceHash": "sh-1",
+    "originalRowIndex": 4,
+    "rawLine": "2026-09-15,شراء,9988776655443322,100.00",
+    "transactionId": "t-full",
+    "matchingState": "new",
+    "reason": "جديد"
+   },
+   "out": {
+    "id": "sr-1",
+    "fields": {
+     "id": {
+      "stringValue": "sr-1"
+     },
+     "batchId": {
+      "stringValue": "b-1"
+     },
+     "accountIdentity": {
+      "stringValue": "acct-****3322"
+     },
+     "sourceReference": {
+      "stringValue": "ref-****3322"
+     },
+     "sourceHash": {
+      "stringValue": "sh-1"
+     },
+     "originalRowIndex": {
+      "integerValue": "4"
+     },
+     "rawLine": {
+      "stringValue": "2026-09-15,شراء,****3322,100.00"
+     },
+     "transactionId": {
+      "stringValue": "t-full"
+     },
+     "matchingState": {
+      "stringValue": "new"
+     },
+     "reason": {
+      "stringValue": "جديد"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "sr-2",
+    "batchId": "b-1",
+    "accountIdentity": "acct-****3322",
+    "sourceReference": null,
+    "sourceHash": "sh-2",
+    "originalRowIndex": 0,
+    "rawLine": "",
+    "transactionId": null,
+    "matchingState": "invalid",
+    "reason": "صف غير صالح"
+   },
+   "out": {
+    "id": "sr-2",
+    "fields": {
+     "id": {
+      "stringValue": "sr-2"
+     },
+     "batchId": {
+      "stringValue": "b-1"
+     },
+     "accountIdentity": {
+      "stringValue": "acct-****3322"
+     },
+     "sourceReference": {
+      "nullValue": null
+     },
+     "sourceHash": {
+      "stringValue": "sh-2"
+     },
+     "originalRowIndex": {
+      "integerValue": "0"
+     },
+     "rawLine": {
+      "stringValue": ""
+     },
+     "transactionId": {
+      "nullValue": null
+     },
+     "matchingState": {
+      "stringValue": "invalid"
+     },
+     "reason": {
+      "stringValue": "صف غير صالح"
+     }
+    }
+   }
+  }
+ ],
+ "transactionTags": [
+  {
+   "in": {
+    "id": "tt-1",
+    "transactionId": "t-full",
+    "tagId": "tag-1"
+   },
+   "out": {
+    "id": "tt-1",
+    "fields": {
+     "id": {
+      "stringValue": "tt-1"
+     },
+     "transactionId": {
+      "stringValue": "t-full"
+     },
+     "tagId": {
+      "stringValue": "tag-1"
+     }
+    }
+   }
+  }
+ ],
+ "categoryBudgets": [
+  {
+   "in": {
+    "id": "cb-1",
+    "budgetId": "2026-09",
+    "categoryId": "c-food",
+    "limitMinor": 150000,
+    "notifyEnabled": true,
+    "thresholdPercent": 90
+   },
+   "out": {
+    "id": "cb-1",
+    "fields": {
+     "id": {
+      "stringValue": "cb-1"
+     },
+     "budgetId": {
+      "stringValue": "2026-09"
+     },
+     "categoryId": {
+      "stringValue": "c-food"
+     },
+     "limitMinor": {
+      "integerValue": "150000"
+     },
+     "notifyEnabled": {
+      "booleanValue": true
+     },
+     "thresholdPercent": {
+      "integerValue": "90"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "cb-2",
+    "budgetId": "2026-09",
+    "categoryId": "c-cafe",
+    "limitMinor": 30000,
+    "notifyEnabled": false,
+    "thresholdPercent": null
+   },
+   "out": {
+    "id": "cb-2",
+    "fields": {
+     "id": {
+      "stringValue": "cb-2"
+     },
+     "budgetId": {
+      "stringValue": "2026-09"
+     },
+     "categoryId": {
+      "stringValue": "c-cafe"
+     },
+     "limitMinor": {
+      "integerValue": "30000"
+     },
+     "notifyEnabled": {
+      "booleanValue": false
+     },
+     "thresholdPercent": {
+      "nullValue": null
+     }
+    }
+   }
+  }
+ ],
+ "assetLots": [
+  {
+   "in": {
+    "id": "lot-1",
+    "assetId": "a-gold",
+    "purchasedAt": "2026-01-10",
+    "quantity": 1250000000,
+    "principalMinor": 300000,
+    "feeMinor": 1500,
+    "transactionId": "t-full"
+   },
+   "out": {
+    "id": "lot-1",
+    "fields": {
+     "id": {
+      "stringValue": "lot-1"
+     },
+     "assetId": {
+      "stringValue": "a-gold"
+     },
+     "purchasedAt": {
+      "stringValue": "2026-01-10"
+     },
+     "quantity": {
+      "integerValue": "1250000000"
+     },
+     "principalMinor": {
+      "integerValue": "300000"
+     },
+     "feeMinor": {
+      "integerValue": "1500"
+     },
+     "transactionId": {
+      "stringValue": "t-full"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "lot-2",
+    "assetId": "a-fund",
+    "purchasedAt": "2026-02-01",
+    "quantity": 1,
+    "principalMinor": 100,
+    "feeMinor": 0
+   },
+   "out": {
+    "id": "lot-2",
+    "fields": {
+     "id": {
+      "stringValue": "lot-2"
+     },
+     "assetId": {
+      "stringValue": "a-fund"
+     },
+     "purchasedAt": {
+      "stringValue": "2026-02-01"
+     },
+     "quantity": {
+      "integerValue": "1"
+     },
+     "principalMinor": {
+      "integerValue": "100"
+     },
+     "feeMinor": {
+      "integerValue": "0"
+     }
+    }
+   }
+  }
+ ],
+ "assetSales": [
+  {
+   "in": {
+    "id": "sale-1",
+    "assetId": "a-gold",
+    "soldAt": "2026-06-01",
+    "quantity": 250000000,
+    "grossProceedsMinor": 70000,
+    "feeMinor": 200,
+    "transactionId": "t-min"
+   },
+   "out": {
+    "id": "sale-1",
+    "fields": {
+     "id": {
+      "stringValue": "sale-1"
+     },
+     "assetId": {
+      "stringValue": "a-gold"
+     },
+     "soldAt": {
+      "stringValue": "2026-06-01"
+     },
+     "quantity": {
+      "integerValue": "250000000"
+     },
+     "grossProceedsMinor": {
+      "integerValue": "70000"
+     },
+     "feeMinor": {
+      "integerValue": "200"
+     },
+     "transactionId": {
+      "stringValue": "t-min"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "sale-2",
+    "assetId": "a-gold",
+    "soldAt": "2026-07-01",
+    "quantity": 100000000,
+    "grossProceedsMinor": 28000,
+    "feeMinor": 0
+   },
+   "out": {
+    "id": "sale-2",
+    "fields": {
+     "id": {
+      "stringValue": "sale-2"
+     },
+     "assetId": {
+      "stringValue": "a-gold"
+     },
+     "soldAt": {
+      "stringValue": "2026-07-01"
+     },
+     "quantity": {
+      "integerValue": "100000000"
+     },
+     "grossProceedsMinor": {
+      "integerValue": "28000"
+     },
+     "feeMinor": {
+      "integerValue": "0"
+     }
+    }
+   }
+  }
+ ],
+ "assetPrices": [
+  {
+   "in": {
+    "assetId": "a-gold",
+    "pricePerUnitMinor": 28550,
+    "asOf": "2026-09-29",
+    "source": "feed"
+   },
+   "out": {
+    "id": "a-gold",
+    "fields": {
+     "assetId": {
+      "stringValue": "a-gold"
+     },
+     "pricePerUnitMinor": {
+      "integerValue": "28550"
+     },
+     "asOf": {
+      "stringValue": "2026-09-29"
+     },
+     "source": {
+      "stringValue": "feed"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "assetId": "a-fund",
+    "pricePerUnitMinor": 1050,
+    "asOf": "2026-09-01",
+    "source": "manual"
+   },
+   "out": {
+    "id": "a-fund",
+    "fields": {
+     "assetId": {
+      "stringValue": "a-fund"
+     },
+     "pricePerUnitMinor": {
+      "integerValue": "1050"
+     },
+     "asOf": {
+      "stringValue": "2026-09-01"
+     },
+     "source": {
+      "stringValue": "manual"
+     }
+    }
+   }
+  }
+ ],
+ "notificationReceipts": [
+  {
+   "in": {
+    "eventKey": "budget|2026-08-28|total|80",
+    "threshold": 80,
+    "periodStart": "2026-08-28",
+    "sentAt": "2026-09-30T08:00:00.000Z",
+    "categoryId": "c-food",
+    "recurringId": "rec-1"
+   },
+   "out": {
+    "id": "budget%7C2026-08-28%7Ctotal%7C80",
+    "fields": {
+     "eventKey": {
+      "stringValue": "budget|2026-08-28|total|80"
+     },
+     "threshold": {
+      "integerValue": "80"
+     },
+     "periodStart": {
+      "stringValue": "2026-08-28"
+     },
+     "sentAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     },
+     "categoryId": {
+      "stringValue": "c-food"
+     },
+     "recurringId": {
+      "stringValue": "rec-1"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "eventKey": "recurring|2026-08-28|rec-2",
+    "threshold": null,
+    "periodStart": "2026-08-28",
+    "sentAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "recurring%7C2026-08-28%7Crec-2",
+    "fields": {
+     "eventKey": {
+      "stringValue": "recurring|2026-08-28|rec-2"
+     },
+     "threshold": {
+      "nullValue": null
+     },
+     "periodStart": {
+      "stringValue": "2026-08-28"
+     },
+     "sentAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  }
+ ],
+ "projects": [
+  {
+   "in": {
+    "id": "pr-1",
+    "name": "فرح وهمي",
+    "normalizedName": "فرح وهمي",
+    "archived": false,
+    "createdAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "pr-1",
+    "fields": {
+     "id": {
+      "stringValue": "pr-1"
+     },
+     "name": {
+      "stringValue": "فرح وهمي"
+     },
+     "normalizedName": {
+      "stringValue": "فرح وهمي"
+     },
+     "archived": {
+      "booleanValue": false
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "pr-2",
+    "name": "Trip",
+    "normalizedName": "trip",
+    "archived": true,
+    "createdAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "pr-2",
+    "fields": {
+     "id": {
+      "stringValue": "pr-2"
+     },
+     "name": {
+      "stringValue": "Trip"
+     },
+     "normalizedName": {
+      "stringValue": "trip"
+     },
+     "archived": {
+      "booleanValue": true
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  }
+ ],
+ "projectLinks": [
+  {
+   "in": {
+    "id": "pl-1",
+    "projectId": "pr-1",
+    "transactionId": "t-full",
+    "source": "manual",
+    "createdAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "pl-1",
+    "fields": {
+     "id": {
+      "stringValue": "pl-1"
+     },
+     "projectId": {
+      "stringValue": "pr-1"
+     },
+     "transactionId": {
+      "stringValue": "t-full"
+     },
+     "source": {
+      "stringValue": "manual"
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "pl-2",
+    "projectId": "pr-1",
+    "transactionId": "t-min",
+    "source": "excluded",
+    "createdAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "pl-2",
+    "fields": {
+     "id": {
+      "stringValue": "pl-2"
+     },
+     "projectId": {
+      "stringValue": "pr-1"
+     },
+     "transactionId": {
+      "stringValue": "t-min"
+     },
+     "source": {
+      "stringValue": "excluded"
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  }
+ ],
+ "projectRules": [
+  {
+   "in": {
+    "id": "prr-1",
+    "projectId": "pr-1",
+    "matchText": "قاعة",
+    "matchMode": "startsWith",
+    "direction": "out",
+    "enabled": true,
+    "createdAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "prr-1",
+    "fields": {
+     "id": {
+      "stringValue": "prr-1"
+     },
+     "projectId": {
+      "stringValue": "pr-1"
+     },
+     "matchText": {
+      "stringValue": "قاعة"
+     },
+     "matchMode": {
+      "stringValue": "startsWith"
+     },
+     "direction": {
+      "stringValue": "out"
+     },
+     "enabled": {
+      "booleanValue": true
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  },
+  {
+   "in": {
+    "id": "prr-2",
+    "projectId": "pr-2",
+    "matchText": "hotel",
+    "matchMode": "contains",
+    "direction": "any",
+    "enabled": false,
+    "createdAt": "2026-09-30T08:00:00.000Z"
+   },
+   "out": {
+    "id": "prr-2",
+    "fields": {
+     "id": {
+      "stringValue": "prr-2"
+     },
+     "projectId": {
+      "stringValue": "pr-2"
+     },
+     "matchText": {
+      "stringValue": "hotel"
+     },
+     "matchMode": {
+      "stringValue": "contains"
+     },
+     "direction": {
+      "stringValue": "any"
+     },
+     "enabled": {
+      "booleanValue": false
+     },
+     "createdAt": {
+      "stringValue": "2026-09-30T08:00:00.000Z"
+     }
+    }
+   }
+  }
+ ]
+}

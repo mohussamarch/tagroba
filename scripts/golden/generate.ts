@@ -22,6 +22,23 @@ import { backupGolden } from './backupGolden'
 import { seedsGolden } from './seedsGolden'
 import { pdfGolden } from './pdfGolden'
 import { homeGolden } from './homeGolden'
+import { transactionsGolden } from './transactionsGolden'
+import { budgetScreenGolden } from './budgetScreenGolden'
+import { importFlowGolden } from './importFlowGolden'
+import { revertFlowGolden } from './revertFlowGolden'
+import { txnEditGolden } from './txnEditGolden'
+import { editDetailGolden } from './editDetailGolden'
+import { peopleFlowGolden } from './peopleFlowGolden'
+import { rulesFlowGolden } from './rulesFlowGolden'
+import { projectsFlowGolden } from './projectsFlowGolden'
+import { budgetEditGolden } from './budgetEditGolden'
+import { investFlowGolden } from './investFlowGolden'
+import { smsFlowGolden } from './smsFlowGolden'
+import { accountFlowGolden } from './accountFlowGolden'
+import { reviewFlowGolden } from './reviewFlowGolden'
+import { settingsFlowGolden } from './settingsFlowGolden'
+import { fullBackupFlowGolden } from './fullBackupFlowGolden'
+import { csvExportGolden } from './csvExportGolden'
 
 const OUT = resolve(__dirname, '../../native-app/golden')
 const modules: Record<string, () => unknown | Promise<unknown>> = {
@@ -42,6 +59,23 @@ const modules: Record<string, () => unknown | Promise<unknown>> = {
   seeds: seedsGolden,
   pdf: pdfGolden,
   home: homeGolden,
+  transactions: transactionsGolden,
+  budgetScreen: budgetScreenGolden,
+  importFlow: importFlowGolden,
+  revertFlow: revertFlowGolden,
+  txnEdit: txnEditGolden,
+  editDetail: editDetailGolden,
+  peopleFlow: peopleFlowGolden,
+  rulesFlow: rulesFlowGolden,
+  projectsFlow: projectsFlowGolden,
+  budgetEdit: budgetEditGolden,
+  investFlow: investFlowGolden,
+  smsFlow: smsFlowGolden,
+  accountFlow: accountFlowGolden,
+  reviewFlow: reviewFlowGolden,
+  settingsFlow: settingsFlowGolden,
+  fullBackupFlow: fullBackupFlowGolden,
+  csvExport: csvExportGolden,
 }
 
 mkdirSync(OUT, { recursive: true })

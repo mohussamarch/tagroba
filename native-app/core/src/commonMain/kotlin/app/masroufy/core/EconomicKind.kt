@@ -24,8 +24,12 @@ enum class EconomicKind(val wire: String) {
     // وارد جديد — قرارات المالك 2026-09-20 (OVERRIDES §42)
     GIFT_RECEIVED("gift_received"), SUPPORT_RECEIVED("support_received"), BENEFIT_RECEIVED("benefit_received"),
     INVESTMENT_INCOME("investment_income"), EVENT_GIFT("event_gift"),
-    // وارد بس مش دخل
+    // وارد بس مش دخل (`ROSCA_PAYOUT` بقى دخل — §56)
     ROSCA_PAYOUT("rosca_payout"), REFUND_RECEIVED("refund_received"), ADVANCE_RECEIVED("advance_received"),
+    // «المستحقات» (OVERRIDES §50 و§56): الأقساط مصروف، والقبض ومبلغ التمويل دخل
+    ROSCA_CONTRIBUTION("rosca_contribution"), INSTALLMENT_PAID("installment_paid"), FINANCING_RECEIVED("financing_received"),
+    // مكافأة نهاية الخدمة — رد المالك §64-٧ (اختيار Claude: نوع لوحده، دخل مرة واحدة)
+    END_OF_SERVICE("end_of_service"),
     // لسه ما اتحددش
     UNCLASSIFIED("unclassified");
 
@@ -111,13 +115,22 @@ private val RULES: Map<EconomicKind, EconomicKindRule> =
         rule(INVESTMENT_INCOME, TextKey.KIND_INVESTMENT_INCOME, Liquidity.IN, true, false, PersonEffect.NONE),
         // النقوط: دخل **متميز** (قرار المالك §44) — نوع لوحده عشان ما يخربطش متوسط الدخل الشهري
         rule(EVENT_GIFT, TextKey.KIND_EVENT_GIFT, Liquidity.IN, true, false, PersonEffect.NONE),
-        // دور الجمعية: جزء فلوسك راجعة وجزء دين عليك ⇒ مش دخل
-        rule(ROSCA_PAYOUT, TextKey.KIND_ROSCA_PAYOUT, Liquidity.IN, false, false, PersonEffect.NONE),
+        // قبض الجمعية: دخل تحت «المستحقات» — قرار المالك §56 (كان «مش دخل» في §50). على الدورة كلها بيتظبط مع الأقساط
+        rule(ROSCA_PAYOUT, TextKey.KIND_ROSCA_PAYOUT, Liquidity.IN, true, false, PersonEffect.NONE),
         // الاسترداد بينقّص المصروف، ما بيزودش الدخل
         rule(REFUND_RECEIVED, TextKey.KIND_REFUND_RECEIVED, Liquidity.IN, false, false, PersonEffect.NONE, reducesExpense = true),
         // سلفة الشغل دين هيتخصم من المرتب
         rule(ADVANCE_RECEIVED, TextKey.KIND_ADVANCE_RECEIVED, Liquidity.IN, false, false, PersonEffect.PAYABLE_LOAN_UP),
-        rule(UNCLASSIFIED, TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
+        // «أي حاجة بتتصرف تظهر في المصروف الشهري تحت تصنيف خاص بيه» — قرار المالك §56 (كان «مش مصروف» في §50)
+        rule(ROSCA_CONTRIBUTION, TextKey.KIND_ROSCA_CONTRIBUTION, Liquidity.OUT, false, true, PersonEffect.NONE),
+        // قسط التمويل **كله** مصروف (§56). الأرباح تفاصيل في لوحة الديون بس (`financingCostInPeriod`) — مش بتتضاف تاني
+        rule(INSTALLMENT_PAID, TextKey.KIND_INSTALLMENT_PAID, Liquidity.OUT, false, true, PersonEffect.NONE),
+        // مبلغ التمويل يوم ما تستلمه: دخل تحت «المستحقات» (§56)
+        rule(FINANCING_RECEIVED, TextKey.KIND_FINANCING_RECEIVED, Liquidity.IN, true, false, PersonEffect.NONE),
+        rule(UNCLASSIFIED,TextKey.KIND_UNCLASSIFIED, Liquidity.OUT, false, false, PersonEffect.NONE),
+        // مكافأة نهاية الخدمة (رد المالك §64-٧): دخل، بس **مرة واحدة** زي النقوط ⇒ برا متوسطات الدخل ([NOT_IN_INCOME_AVERAGES]).
+        // وارد بس — الصادر بيترفض بفحص الاتجاه
+        rule(END_OF_SERVICE, TextKey.KIND_END_OF_SERVICE, Liquidity.IN, true, false, PersonEffect.NONE),
     )
 
 fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)
@@ -125,6 +138,12 @@ fun ruleFor(kind: EconomicKind): EconomicKindRule = RULES.getValue(kind)
 val ALL_ECONOMIC_KINDS: List<EconomicKind> = EconomicKind.entries.toList()
 
 fun countsAsIncome(kind: EconomicKind): Boolean = ruleFor(kind).countsAsIncome
+
+/**
+ * دخل **مرة واحدة** — بيتحسب دخل في شهره، بس **برا متوسطات الدخل والمقارنة** وما بيتنسبش لمصدر شغل كمرتب:
+ * النقوط (§44.1) ومكافأة نهاية الخدمة (§64-٧).
+ */
+val NOT_IN_INCOME_AVERAGES: Set<EconomicKind> = setOf(EVENT_GIFT, END_OF_SERVICE)
 fun countsAsPersonalExpense(kind: EconomicKind): Boolean = ruleFor(kind).countsAsPersonalExpense
 
 /** بينقّص المصروف بدل ما يزوده — الاسترداد (OVERRIDES §42). */

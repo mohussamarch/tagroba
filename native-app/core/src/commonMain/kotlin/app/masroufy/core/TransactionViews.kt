@@ -102,7 +102,8 @@ fun parseQuery(raw: String, tolerancePerThousand: Long = AMOUNT_TOLERANCE_PER_TH
 }
 
 // كلمات بيتطابق بيها جوه أسماء المحافظ — لغة بيانات وما تتترجمش (Texts.kt)
-private val CASH_WORDS = setOf(normalizeText("كاش"), normalizeText("نقدي"), "CASH")
+// «النقد» = اسم محفظة النقد في بذور السعودية بالفصحى (§66)، فالبحث بيه بيلاقي عمليات النقد زي «كاش»
+private val CASH_WORDS = setOf(normalizeText("كاش"), normalizeText("نقدي"), normalizeText("النقد"), normalizeText("نقد"), "CASH")
 
 private fun textMatches(haystack: String?, needle: String, compact: String): Boolean =
     !haystack.isNullOrEmpty() && (normalizeText(haystack).contains(needle) || normalizeCompact(haystack).contains(compact))
@@ -133,9 +134,10 @@ fun searchTransactions(items: List<SearchableTransaction>, query: ParsedQuery): 
 
 /** تصنيفات المصدر اللي معناها فلوس «انتقلت» مش «اتصرفت» — اتشتقت من البيانات (معيار القبول). */
 val NON_EXPENSE_SOURCE_CATEGORIES = listOf("تحويلات", "محافظ رقمية", "تقسيط", "استثمار", "سحب نقدي", "ذهب")
-private val NON_EXPENSE_NORMALIZED = NON_EXPENSE_SOURCE_CATEGORIES.map(::normalizeText).toSet()
+// بالاسم القانوني: الاسم القديم والجديد للتصنيف بيتقبلوا الاتنين (بذور الفصحى §66)
+private val NON_EXPENSE_NORMALIZED = NON_EXPENSE_SOURCE_CATEGORIES.map(::canonicalCategoryName).toSet()
 
-fun isNonExpenseSourceCategory(category: String?): Boolean = !category.isNullOrEmpty() && normalizeText(category) in NON_EXPENSE_NORMALIZED
+fun isNonExpenseSourceCategory(category: String?): Boolean = !category.isNullOrEmpty() && canonicalCategoryName(category) in NON_EXPENSE_NORMALIZED
 
 data class ClassifiableRow(val debitMinor: Halalas, val creditMinor: Halalas, val sourceCategory: String? = null)
 data class ExpenseBreakdown(

@@ -7,7 +7,7 @@ import kotlin.math.abs
  * بقسمة صحيحة وباقي (مفيش 96.46999 أبدًا).
  */
 
-private fun currencyLabel(currency: Currency): String = when (currency) {
+internal fun currencyLabel(currency: Currency): String = when (currency) {
     Currency.SAR -> uiText(TextKey.CURRENCY_SAR)
     Currency.EGP -> uiText(TextKey.CURRENCY_EGP)
     Currency.USD -> uiText(TextKey.CURRENCY_USD)

@@ -88,9 +88,9 @@ fun parseMoney(raw: String, currency: Currency = Currency.SAR): Halalas {
 
     // البنا من الأرقام مباشرة — لا ضرب ولا قسمة عشرية
     val digits = intPart + frac
-    if (digits.length > 16) throw MoneyError("المبلغ خارج المدى الآمن", raw)
+    if (digits.length > 16) throw MoneyError(uiText(TextKey.MONEY_OUT_OF_SAFE_RANGE), raw)
     val value = digits.toLong()
-    if (value > MAX_SAFE_HALALAS) throw MoneyError("المبلغ خارج المدى الآمن", raw)
+    if (value > MAX_SAFE_HALALAS) throw MoneyError(uiText(TextKey.MONEY_OUT_OF_SAFE_RANGE), raw)
     return if (negative) -value else value
 }
 

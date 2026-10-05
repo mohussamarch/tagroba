@@ -36,18 +36,27 @@ object Golden {
         assertTrue(list.isNotEmpty(), "$module.$function فاضية")
         for (case in list) {
             val input = case["in"] ?: JsonNull
-            val expectedError = case["error"]?.jsonPrimitive?.content
+            // النص المتوقع من التطبيق الحالي بعد تبسيط الكلمات الثقيلة المعتمد بس (جلسة 18 — `PlainWords.kt`)
+            val expectedError = case["error"]?.jsonPrimitive?.content?.let(::plainEgyptian)
             val result = runCatching { run(input) }
             if (expectedError != null) {
                 val error = result.exceptionOrNull() ?: fail("$function($input): كان المفروض خطأ «$expectedError» وطلع ${result.getOrNull()}")
                 assertEquals(expectedError, error.message, "$function($input)")
             } else {
                 val actual = result.getOrElse { fail("$function(${short(input)}): خطأ مش متوقع «${it.message}»") }
-                val diff = firstDiff(case["out"] ?: JsonNull, actual, "")
+                val diff = firstDiff(plainJson(case["out"] ?: JsonNull), actual, "")
                 if (diff != null) fail("$function(${short(input)}): أول فرق عند $diff")
             }
         }
         return list.size
+    }
+
+    /** كل نص في الناتج المتوقع بعد التبسيط المعتمد ([plainEgyptian]) — الأرقام والمفاتيح زي ما هي. */
+    private fun plainJson(e: JsonElement): JsonElement = when (e) {
+        is JsonArray -> JsonArray(e.map(::plainJson))
+        is JsonObject -> JsonObject(e.mapValues { plainJson(it.value) })
+        is JsonPrimitive -> if (e.isString) JsonPrimitive(plainEgyptian(e.content)) else e
+        else -> e
     }
 
     private fun short(e: JsonElement) = e.toString().let { if (it.length > 300) it.take(300) + "…" else it }

@@ -28,6 +28,14 @@ data class CountryPack(
     /** الاسم المبدئي لمحفظة البنك في حساب جديد — المستخدم بيغيره. */
     val bankWalletName: String,
     val cashWalletName: String,
+    /** منطقة الوقت (IANA) — حدود اليوم في قراية رسايل البنك. التطبيق الحالي كان مثبّت الرياض لكل البلاد. */
+    val timeZone: String = "Asia/Riyadh",
+    /** فروق شجرة التصنيفات عن السعودية (§64 — [buildCountryCategoryTree]). السعودية من غير فروق. */
+    val categoryDelta: List<CategoryDeltaEdit> = emptyList(),
+    /** نسخة العربي في البلد دي (OVERRIDES §66): فصحى مختصرة إلا لو اتحدد غير كده (مصر ⇒ المصري الحالي بالحرف). */
+    val arabicVariant: ArabicVariant = ArabicVariant.MSA,
+    /** أسماء بذور التصنيفات بالفصحى (§66 — [SAUDI_MSA_SEED_NAMES]) — **المعرّف ما بيتغيرش**. فاضية = أسماء الشجرة زي ما هي. */
+    val seedNames: List<SeedNameChange> = emptyList(),
     /**
      * اللي لسه ناقص في الحزمة دي بالاسم (للمطور) — الحزمة الجاهزة قايمتها فاضية.
      * **ممنوع** تسيبها فاضية وحاجة ناقصة: ده بيخلي التطبيق يدّعي إنه بيدعم بلد وهو لأ (CLAUDE.md #15).
@@ -65,24 +73,31 @@ val SAUDI_PACK = CountryPack(
     smsReader = SaudiBankSmsReader,
     statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.ALRAJHI_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
+    // فصحى (§66 — اختيار Claude، المالك يقدر يغيّره). مصر بتفضل «كاش».
     cashWalletName = "كاش",
+    arabicVariant = ArabicVariant.MSA,
+    seedNames = SAUDI_MSA_SEED_NAMES,
 )
 
 /**
- * مصر — **ناقصة لسه**: قارئ الرسايل خلص من عينات QNB اللي بعتها المالك (OVERRIDES §40.3)،
- * لكن شجرة التصنيفات المصرية (باركنج، سايس…) وقارئ كشف QNB لسه ما اتعملوش.
+ * مصر: قارئ الرسايل من عينات QNB (OVERRIDES §40.3) وقارئ كشف QNB (§40.4)، والشجرة = **شجرة السعودية + فروق بسيطة**
+ * ([EGYPT_CATEGORY_DELTA] — رد المالك §64-٣؛ الفروق اختيار Claude والمالك بيزود أو يشيل).
+ * ⚠️ سعر الدهب والفضة بالجنيه لسه مش في ملف الأسعار ⇒ نصاب الزكاة في مصر «غير متاح» (فجوة الزكاة §31.10، مش فجوة الحزمة).
  */
 val EGYPT_PACK = CountryPack(
     code = "EG",
     currency = Currency.EGP,
     defaultLanguage = Language.AR,
-    // ⚠️ دي شجرة السعودية لحد ما تتعمل شجرة مصر
+    // نفس ملف شجرة السعودية + فروق مصر (`categoryDelta`)
     categoryTreeAsset = "categoryTree.json",
     smsReader = EgyptBankSmsReader,
-    statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.SMS),
+    statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.QNB_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
     cashWalletName = "كاش",
-    gaps = listOf("categoryTree", "statementReader"),
+    timeZone = "Africa/Cairo",
+    categoryDelta = EGYPT_CATEGORY_DELTA,
+    // نص مصر = النص المصري الحالي بالحرف، وبذورها ما اتغيرتش (§66)
+    arabicVariant = ArabicVariant.EGYPTIAN,
 )
 
 /** البلاد اللي التطبيق يعرف عنها حاجة. اللي مش جاهزة بتقول ناقصها إيه في `gaps`. */

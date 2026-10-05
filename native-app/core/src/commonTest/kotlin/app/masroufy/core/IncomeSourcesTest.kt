@@ -3,6 +3,7 @@ package app.masroufy.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -54,6 +55,46 @@ class IncomeSourcesTest {
         // وتعديل نفس المصدر باسمه ما يعتبرش تكرار
         val checked = checkIncomeSource("الشركة", "2026-01-01", null, null, null, existing, selfId = "s1")
         assertEquals("الشركة", checked.name)
+    }
+
+    @Test
+    fun sameNameIsAllowedOnlyForPeriodsThatDoNotOverlap() {
+        // رد المالك §64: الرجوع لشركة قديمة = فترة جديدة بنفس الاسم
+        val closed = listOf(source("s1", "الشركة", "2024-01-01").copy(endedAt = "2025-06-30"))
+        assertEquals("الشركة", checkIncomeSource("الشركة", "2025-07-01", null, null, null, closed).name)
+        assertFailsWith<IncomeSourceError>("بتبدأ يوم القفل") { checkIncomeSource("الشركة", "2025-06-30", null, null, null, closed) }
+        assertFailsWith<IncomeSourceError>("فترة قديمة جواها") { checkIncomeSource("الشركة", "2023-01-01", "2024-02-01", null, null, closed) }
+        assertEquals("الشركة", checkIncomeSource("الشركة", "2023-01-01", "2023-12-31", null, null, closed).name, "فترة قبلها خالص")
+        assertTrue(periodsOverlap("2024-01-01", null, "2030-01-01", "2030-02-01"))
+        assertFalse(periodsOverlap("2024-01-01", "2024-12-31", "2025-01-01", null))
+    }
+
+    @Test
+    fun rejoiningOnTheEndDayStartsTheNextDay() {
+        // رد المالك §64-٨: الرجوع لنفس الشركة يوم الخروج ⇒ الفترة الجديدة بتبدأ تاني يوم لوحدها
+        val closed = listOf(source("s1", "الشركة", "2024-01-01").copy(endedAt = "2025-06-30"))
+        assertEquals("2025-07-01", rejoinStart("  الشركة ", "2025-06-30", closed))
+        assertEquals("الشركة", checkIncomeSource("الشركة", rejoinStart("الشركة", "2025-06-30", closed), null, null, null, closed).name)
+        assertEquals("2025-06-30", rejoinStart("شركة تانية", "2025-06-30", closed), "اسم تاني ⇒ زي ما هو")
+        assertEquals("2025-06-29", rejoinStart("الشركة", "2025-06-29", closed), "قبل الخروج ⇒ زي ما هو (والتداخل بيترفض في الفحص)")
+        assertEquals("2026-01-01", rejoinStart("الشركة", "2026-01-01", closed))
+        assertEquals("2024-12-31", rejoinStart("الشركة", "2024-12-31", listOf(source("s2", "الشركة", "2024-01-01").copy(endedAt = "2024-12-30"))))
+        assertEquals("2025-01-01", rejoinStart("الشركة", "2024-12-31", listOf(source("s2", "الشركة", "2024-01-01").copy(endedAt = "2024-12-31"))), "آخر السنة ⇒ أول السنة الجاية")
+    }
+
+    @Test
+    fun weeklyPayTakesAWeekdayAndAJobMayBeWeeklyToo() {
+        val ok = checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 4)
+        assertEquals("محل", ok.name)
+        assertFailsWith<IncomeSourceError> { checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 0) }
+        assertFailsWith<IncomeSourceError> { checkIncomeSource("محل", "2026-01-01", null, 5, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payFrequency = PayFrequency.WEEKLY, payWeekday = 4) }
+        assertFailsWith<IncomeSourceError> { checkIncomeSource("محل", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.PART_TIME, payWeekday = 4) }
+        // رد المالك §64-٤: الوظيفة ينفع تكون بقبض أسبوعي — بيوم في الأسبوع ومن غير يوم في الشهر
+        assertEquals("شركة", checkIncomeSource("شركة", "2026-01-01", null, null, null, emptyList(), kind = IncomeSourceKind.JOB, payFrequency = PayFrequency.WEEKLY, payWeekday = 4).name)
+        assertFailsWith<IncomeSourceError> { checkIncomeSource("شركة", "2026-01-01", null, 28, null, emptyList(), kind = IncomeSourceKind.JOB, payFrequency = PayFrequency.WEEKLY, payWeekday = 4) }
+        assertEquals(IncomeSourceKind.PENSION, IncomeSourceKind.fromWire("pension"))
+        assertEquals(PayFrequency.MONTHLY, PayFrequency.fromWire(null), "القديم من غير الحقل = شهري")
+        assertEquals(PayFrequency.MONTHLY, source("s", "x", "2026-01-01").payFrequency)
     }
 
     @Test

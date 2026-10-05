@@ -6,6 +6,10 @@
 #
 # لو مصدر فشل، سعره بيختفي من الملف ويتسجل سبب اختفائه —
 # ما بيتكتبش صفر ولا سعر إمبارح كأنه سعر النهارده.
+#
+# المتوسطات (`public/averages.json` — OVERRIDES §69.6) في نفس المهمة، بس بتتحسب
+# مرة في الشهر (السكربت بيقرر لوحده). ⚠️ المهام المجدولة بتشتغل من الفرع الرئيسي
+# (main) بس — فالملف ما بيتعملش لحد ما الفرع ده يتدمج.
 
 name: تحديث الأسعار
 
@@ -36,14 +40,23 @@ jobs:
       - name: جلب الأسعار
         run: node scripts/fetch-prices.mjs
 
+      # يوم 1 في الشهر أو لو الملف أقدم من 28 يوم — غير كده السكربت بيخرج من غير تغيير.
+      # فشله ما يوقفش حفظ الأسعار (الرقم القديم بيفضل في الملف وعليه «قديم»).
+      - name: المتوسطات الشهرية
+        continue-on-error: true
+        run: |
+          node --test scripts/averages/averages.test.mjs
+          node scripts/fetch-averages.mjs
+
       - name: حفظ الملف لو اتغير
         run: |
-          if git diff --quiet -- public/prices.json; then
-            echo "مفيش تغيير في الأسعار"
+          if git diff --quiet -- public/prices.json && [ -z "$(git status --porcelain -- public/averages.json)" ]; then
+            echo "مفيش تغيير في الأسعار ولا المتوسطات"
             exit 0
           fi
           git config user.name "masroufy-price-bot"
           git config user.email "bot@users.noreply.github.com"
           git add public/prices.json
+          if [ -f public/averages.json ]; then git add public/averages.json; fi
           git commit -m "تحديث الأسعار $(date -u +%Y-%m-%d)"
           git push

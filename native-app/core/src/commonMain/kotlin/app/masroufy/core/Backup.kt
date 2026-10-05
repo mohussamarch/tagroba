@@ -12,39 +12,56 @@ val BACKUP_GROUPS = listOf(
     "wallets", "categories", "merchants", "rules", "people", "assets", "tags", "budgets", "recurringItems", "importBatches",
     "transactions", "obligations", "allocations", "settlements", "sourceRecords", "transactionTags", "categoryBudgets",
     "assetLots", "assetSales", "assetPrices", "notificationReceipts", "projects", "projectLinks", "projectRules",
+    // «المستحقات» — التطبيق الجديد بس (OVERRIDES §50 و§55). التطبيق الحالي بيقبل الملف ويتجاهلها
+    "roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms",
+    // «زون التحويلات» (§60) والزكاة (§62) والأحداث ومناسبات الشخص (§64) — التطبيق الجديد بس
+    "transferParties", "zakatFacts", "zakatYears", "zakatPayments", "lifeEvents", "eventLinks", "occasions",
+    // مصادر الدخل (§48 · §64) — التطبيق الجديد بس
+    "incomeSources",
+    // تصنيف التاجر جوه مساحة غير السعودية (§64) — فاضية دايمًا في مساحة السعودية
+    MERCHANT_CATEGORIES_GROUP,
+    // التقويم: المبالغ المحجوزة وتجهيزات الأحداث (§65) — التطبيق الجديد بس
+    "reservations", "eventPrep",
+    // شاشة الأشخاص: الدواير والصلات بين الأشخاص (جلسة 16) — على مستوى الحساب، التطبيق الجديد بس
+    PERSON_PROFILES_GROUP, PERSON_RELATIONS_GROUP,
+    // المجموعات المقفولة من التنبيهات (جلسة 18، §61) — على مستوى الحساب، التطبيق الجديد بس. صفحة الإشعارات وإيصالاتها مش هنا (بتتولد تاني)
+    ALERT_SETTINGS_GROUP,
+    // المساعد المالي: خطط الادخار وإيداعاتها (§68) — على مستوى الحساب، التطبيق الجديد بس
+    SAVINGS_GOALS_GROUP, GOAL_CONTRIBUTIONS_GROUP,
+    // صفحة الإشعارات بقرايتها (اختيار المالك §69) — على مستوى الحساب، بتتكتب بس لو فيها حاجة. الإيصالات لسه برا (بتتولد تاني)
+    ALERT_INBOX_GROUP,
+    // حسابات الورث المحفوظة (رد المالك §69.3) — على مستوى الحساب، بتتكتب بس لو فيها حاجة
+    INHERITANCE_SCENARIOS_GROUP,
 )
 
-/** اتضافت بعد أول نسخ الإصدار 2 (المشاريع §34): النسخة القديمة من غيرها بتتقري فاضية. */
-val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules")
+/** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
+val DUES_BACKUP_GROUPS = listOf("roscas", "roscaEntries", "installmentPlans", "installmentPayments", "debtTerms")
 
-/** أسماء المجموعات للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
-val BACKUP_LABELS: Map<String, String>
-    get() = mapOf(
-        "wallets" to uiText(TextKey.BACKUP_GROUP_WALLETS),
-        "categories" to uiText(TextKey.BACKUP_GROUP_CATEGORIES),
-        "merchants" to uiText(TextKey.BACKUP_GROUP_MERCHANTS),
-        "rules" to uiText(TextKey.BACKUP_GROUP_RULES),
-        "people" to uiText(TextKey.BACKUP_GROUP_PEOPLE),
-        "assets" to uiText(TextKey.BACKUP_GROUP_ASSETS),
-        "tags" to uiText(TextKey.BACKUP_GROUP_TAGS),
-        "budgets" to uiText(TextKey.BACKUP_GROUP_BUDGETS),
-        "recurringItems" to uiText(TextKey.BACKUP_GROUP_RECURRING_ITEMS),
-        "importBatches" to uiText(TextKey.BACKUP_GROUP_IMPORT_BATCHES),
-        "transactions" to uiText(TextKey.BACKUP_GROUP_TRANSACTIONS),
-        "obligations" to uiText(TextKey.BACKUP_GROUP_OBLIGATIONS),
-        "allocations" to uiText(TextKey.BACKUP_GROUP_ALLOCATIONS),
-        "settlements" to uiText(TextKey.BACKUP_GROUP_SETTLEMENTS),
-        "sourceRecords" to uiText(TextKey.BACKUP_GROUP_SOURCE_RECORDS),
-        "transactionTags" to uiText(TextKey.BACKUP_GROUP_TRANSACTION_TAGS),
-        "categoryBudgets" to uiText(TextKey.BACKUP_GROUP_CATEGORY_BUDGETS),
-        "assetLots" to uiText(TextKey.BACKUP_GROUP_ASSET_LOTS),
-        "assetSales" to uiText(TextKey.BACKUP_GROUP_ASSET_SALES),
-        "assetPrices" to uiText(TextKey.BACKUP_GROUP_ASSET_PRICES),
-        "notificationReceipts" to uiText(TextKey.BACKUP_GROUP_NOTIFICATION_RECEIPTS),
-        "projects" to uiText(TextKey.BACKUP_GROUP_PROJECTS),
-        "projectLinks" to uiText(TextKey.BACKUP_GROUP_PROJECT_LINKS),
-        "projectRules" to uiText(TextKey.BACKUP_GROUP_PROJECT_RULES),
-    )
+/**
+ * اتضافت بعد أول نسخ الإصدار 2: المشاريع (§34) و«المستحقات» (§55) — النسخة الأقدم من غيرها بتتقري فاضية.
+ * (نسخة التطبيق الحالي عمرها ما هيبقى فيها «المستحقات».)
+ */
+/** قرارات «زون التحويلات» (§60) — مش في نسخ التطبيق الحالي، وبتتكتب بس لو فيها حاجة. */
+const val TRANSFER_PARTIES_GROUP = "transferParties"
+
+/** الزكاة (§62) — وقائع وسنين ودفعات؛ بتتكتب مع بعض لو أي واحدة فيها حاجة (زي «المستحقات»). */
+val ZAKAT_BACKUP_GROUPS = listOf("zakatFacts", "zakatYears", "zakatPayments")
+
+/** كل اللي في التطبيق الجديد بس (مش في ملف التطبيق الحالي) — كل مجموعة منهم بتتكتب بس لو فيها حاجة (`exportedBackupData`). */
+/** الأحداث وروابطها ومناسبات الشخص (§64) — بيتكتبوا مع بعض لو أي واحدة فيها حاجة. */
+val EVENT_BACKUP_GROUPS = listOf("lifeEvents", "eventLinks", "occasions")
+
+/** مصادر الدخل (§48 · §64) — بتتكتب بس لو فيها حاجة. */
+const val INCOME_SOURCES_GROUP = "incomeSources"
+
+/** المبالغ المحجوزة في التقويم وبنود تجهيز الأحداث (§65) — بيتكتبوا مع بعض لو أي واحدة فيها حاجة. */
+val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
+
+val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
+    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS + ALERT_SETTINGS_GROUP + GOAL_BACKUP_GROUPS + ALERT_INBOX_GROUP +
+    INHERITANCE_SCENARIOS_GROUP
+
+val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
@@ -61,67 +78,47 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "assetPrices" to mapOf("assetId" to "assets"),
     "projectLinks" to linkedMapOf("projectId" to "projects", "transactionId" to "transactions"),
     "projectRules" to mapOf("projectId" to "projects"),
+    "roscas" to mapOf("organizerPersonId" to "people"),
+    "roscaEntries" to linkedMapOf("roscaId" to "roscas", "transactionId" to "transactions"),
+    "installmentPlans" to mapOf("receivedTransactionId" to "transactions"),
+    "installmentPayments" to linkedMapOf("planId" to "installmentPlans", "transactionId" to "transactions"),
+    "debtTerms" to linkedMapOf("obligationId" to "obligations", "personId" to "people"),
+    "transferParties" to mapOf("personId" to "people"),
+    "zakatFacts" to linkedMapOf("assetId" to "assets", "obligationId" to "obligations"),
+    "zakatPayments" to linkedMapOf("yearId" to "zakatYears", "transactionId" to "transactions"),
+    "lifeEvents" to mapOf("hostPersonId" to "people"),
+    "eventLinks" to linkedMapOf("eventId" to "lifeEvents", "transactionId" to "transactions", "personId" to "people", "prepItemId" to "eventPrep"),
+    "occasions" to linkedMapOf("personId" to "people", "sourceEventId" to "lifeEvents"),
+    MERCHANT_CATEGORIES_GROUP to linkedMapOf("merchantId" to "merchants", "categoryId" to "categories"),
+    "eventPrep" to mapOf("eventId" to "lifeEvents"),
+    PERSON_PROFILES_GROUP to mapOf("personId" to "people"),
+    PERSON_RELATIONS_GROUP to linkedMapOf("personAId" to "people", "personBId" to "people"),
+    // المحفظة المربوطة جوه بلد والخطة على الحساب ⇒ ما بتتفحصش هنا (زي المحفظة في بلد تانية)
+    GOAL_CONTRIBUTIONS_GROUP to mapOf("goalId" to SAVINGS_GOALS_GROUP),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
 
-/** نفس `String(x)` في جافاسكربت للقيم اللي بتيجي من JSON. */
-internal fun jsString(value: Any?): String = when (value) {
-    null -> "null"
-    is String -> value
-    is Boolean -> value.toString()
-    is Int, is Long -> value.toString()
-    is Double -> jsNumber(value)
-    is List<*> -> value.joinToString(",") { if (it == null) "" else jsString(it) }
-    is Map<*, *> -> "[object Object]"
-    else -> value.toString()
-}
-
-/** نفس `Number.prototype.toString()` (الأرقام في النسخ أعداد صحيحة؛ الكسور نادرة). */
-internal fun jsNumber(d: Double): String {
-    if (d.isNaN()) return "NaN"
-    if (d.isInfinite()) return if (d > 0) "Infinity" else "-Infinity"
-    if (d == 0.0) return "0"
-    if (d % 1.0 == 0.0 && kotlin.math.abs(d) < 1e21) return d.toLong().toString()
-    // أقصر أرقام من toString، وبعدين شكل جافاسكربت (أُس لو ≥ 1e21 أو < 1e-6)
-    val raw = kotlin.math.abs(d).toString().lowercase()
-    val mantissa = raw.substringBefore('e')
-    val exp = raw.substringAfter('e', "0").toInt()
-    val intPart = mantissa.substringBefore('.')
-    val fracPart = mantissa.substringAfter('.', "")
-    var digits = (intPart + fracPart).trimStart('0')
-    val lead = (intPart + fracPart).length - (intPart + fracPart).trimStart('0').length
-    var n = intPart.length + exp - lead
-    digits = digits.trimEnd('0').ifEmpty { "0" }
-    val k = digits.length
-    val body = when {
-        n in k..21 -> digits + "0".repeat(n - k)
-        n in 1..21 -> digits.substring(0, n) + "." + digits.substring(n)
-        n in -5..0 -> "0." + "0".repeat(-n) + digits
-        else -> {
-            val e = n - 1
-            (if (k == 1) digits else digits[0] + "." + digits.substring(1)) + "e" + (if (e >= 0) "+" else "-") + kotlin.math.abs(e)
-        }
-    }
-    return if (d < 0) "-$body" else body
-}
-
-/** نفس `JSON.stringify` لقيمة بسيطة أو مركبة (المفاتيح بترتيبها). */
-internal fun jsJson(value: Any?): String = when (value) {
-    null -> "null"
-    is String -> JsText.jsonString(value)
-    is Boolean -> value.toString()
-    is Int, is Long -> value.toString()
-    is Double -> if (value.isFinite()) jsNumber(value) else "null"
-    is List<*> -> value.joinToString(",", "[", "]") { jsJson(it) }
-    is Map<*, *> -> value.entries.joinToString(",", "{", "}") { (k, v) -> JsText.jsonString(k.toString()) + ":" + jsJson(v) }
-    else -> JsText.jsonString(value.toString())
+/**
+ * اللي بيتكتب في الملف (وعليه البصمة): لو «المستحقات» كلها فاضية، مجموعاتها **ما بتتكتبش** ⇒ الملف هو هو حرف بحرف
+ * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
+ */
+fun exportedBackupData(data: FullBackupData): FullBackupData {
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS, listOf(ALERT_INBOX_GROUP), listOf(INHERITANCE_SCENARIOS_GROUP))
+        .filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
+    return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
 
 fun backupRowId(group: String, row: BackupRow): String {
     val key = when (group) {
         "assetPrices" -> "assetId"
         "notificationReceipts" -> "eventKey"
+        "debtTerms" -> "obligationId"
+        "transferParties" -> "key"
+        MERCHANT_CATEGORIES_GROUP -> "merchantId"
+        PERSON_PROFILES_GROUP -> "personId"
+        ALERT_SETTINGS_GROUP -> "group"
+        ALERT_INBOX_GROUP -> "threadKey"
         else -> "id"
     }
     return row[key]?.let(::jsString) ?: ""
@@ -173,7 +170,7 @@ fun checkBackupProfile(profile: Any?) {
         if (n == null || n % 1.0 != 0.0 || n < 1 || n > 31) bad("payday")
     }
     if (has("gender") && row["gender"] != "male" && row["gender"] != "female") bad("gender")
-    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business")) if (has(field) && row[field] !is Boolean) bad(field)
+    for (field in listOf("supportsDependents", "hasCar", "renter", "domesticWorker", "business", "duesInBudget", "islamicContentVisible", "carToWork")) if (has(field) && row[field] !is Boolean) bad(field)
     if (has("dependentKinds")) {
         val kinds = row["dependentKinds"] as? List<*> ?: bad("dependentKinds")
         if (!kinds.all { it in DEPENDENT_KINDS }) bad("dependentKinds")
@@ -229,10 +226,14 @@ private val NATURAL_KEYS = mapOf(
     "allocations" to listOf("personId", "transactionId", "allocationKind", "currency"),
     "settlements" to listOf("obligationId", "transactionId"), "transactionTags" to listOf("transactionId", "tagId"),
     "projectLinks" to listOf("projectId", "transactionId"),
+    // العملية الواحدة ليها ربط واحد بحدث (§64) ⇒ نفس العملية على جهاز تاني = نفس الربط
+    "eventLinks" to listOf("transactionId"),
 )
 
 private fun semantic(group: String, row: BackupRow): String? {
     if (group == "transactions") return transactionRowContentKey(row)
+    // الصلة من غير ترتيب: نفس الزوج بعد دمج الأشخاص = نفس الصلة حتى لو الترتيب اتقلب
+    if (group == PERSON_RELATIONS_GROUP) return jsJson(listOf(jsString(row["personAId"]), jsString(row["personBId"])).sorted())
     val keys = NATURAL_KEYS[group] ?: return null
     return jsJson(keys.map { row[it] })
 }
@@ -241,16 +242,32 @@ private fun semantic(group: String, row: BackupRow): String? {
  * الدمج: الموجود ما يتدهسش — نفس المعرّف أو نفس المحتوى ⇒ يتخطى، والروابط بتتحوّل لمعرّف الموجود
  * (نفس العملية ممكن تكون متخزنة بمعرّف تاني على جهاز تاني).
  */
-fun mergeFullBackup(incoming: FullBackupData, existing: FullBackupData): Map<String, List<BackupRow>> {
+fun mergeFullBackup(incoming: FullBackupData, existing: FullBackupData): Map<String, List<BackupRow>> = mergeFullBackupDetailed(incoming, existing).additions
+
+/** نتيجة الدمج + المعرّف الأصلي في الملف ⇐ المعرّف اللي اتكتب أو الموجود (لكل مجموعة). */
+class BackupMerge(val additions: Map<String, List<BackupRow>>, val remaps: Map<String, Map<String, String>>)
+
+/**
+ * الدمج على [groups] بس. [inherited] = تحويلات معرّفات من دمج قبله (بلد في الإصدار 3 بتورث تحويلات الأشخاص والتجار من الجذر — §64)،
+ * عشان علاقة عملية مصرية بشخص اتدمج في شخص موجود تشاور على الموجود.
+ */
+fun mergeFullBackupDetailed(
+    incoming: FullBackupData,
+    existing: FullBackupData,
+    groups: List<String> = BACKUP_GROUPS,
+    inherited: Map<String, Map<String, String>> = emptyMap(),
+): BackupMerge {
     val additions = emptyBackupData()
-    val maps = HashMap<String, HashMap<String, String>>()
-    for (group in BACKUP_GROUPS) {
+    val maps = HashMap<String, HashMap<String, String>>().apply { for ((g, m) in inherited) put(g, HashMap(m)) }
+    for (group in groups) {
         val remap = HashMap<String, String>().also { maps[group] = it }
         val byId = LinkedHashMap<String, BackupRow>().apply { existing.getValue(group).forEach { put(backupRowId(group, it), it) } }
         val byContent = LinkedHashMap<String, MutableList<BackupRow>>()
         val consumed = HashSet<String>()
         for (row in existing.getValue(group)) semantic(group, row)?.let { byContent.getOrPut(it) { mutableListOf() }.add(row) }
         for (original in incoming.getValue(group)) {
+            // سطر صفحة إشعارات من نسخة أحدث (نوع مش معروف) ⇒ بيتخطّى، والباقي بيترجع (§69)
+            if (group == ALERT_INBOX_GROUP && !isRestorableInboxRow(original)) continue
             val row = LinkedHashMap(original)
             val originalId = backupRowId(group, original)
             for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
@@ -270,5 +287,5 @@ fun mergeFullBackup(incoming: FullBackupData, existing: FullBackupData): Map<Str
             remap[originalId] = id
         }
     }
-    return additions
+    return BackupMerge(additions, maps)
 }
