@@ -87,6 +87,18 @@ fun lastDueWithGracePassed(expectedDay: Int, today: IsoDate): IsoDate {
     return formatIsoDate(DateParts(py, pm, minOf(expectedDay, daysInMonth(py, pm))))
 }
 
+/** مهلة القبض الأسبوعي: يومين (رد المالك 2026-10-05، §64) — الأسبوع قصير على 3 أيام. */
+const val LATE_WEEKLY_GRACE_DAYS = 2
+
+/** الإيداع اللي بيوصل لحد 3 أيام قبل يوم القبض الأسبوعي بيتحسب لنفس الأسبوع — اختيار Claude. */
+const val WEEKLY_EARLY_WINDOW_DAYS = 3
+
+/** آخر يوم قبض أسبوعي ([weekday] 1=الاتنين … 7=الحد) عدّت مهلته لحد [today]. */
+fun lastWeeklyDueWithGracePassed(weekday: Int, today: IsoDate): IsoDate {
+    val cutoff = addDaysIso(today, -LATE_WEEKLY_GRACE_DAYS)
+    return addDaysIso(cutoff, -((isoWeekday(cutoff) - weekday).mod(7)))
+}
+
 /**
  * المرتب المتأخر: مصدر شغال النهارده، ليه يوم متوقع، **ومعروف مين بيحوّله** (من غير ده مانقدرش نقول «ما وصلش» — قاعدة 10)،
  * وما فيش إيداع منسوب ليه من [INCOME_EARLY_WINDOW_DAYS] يوم قبل اليوم المتوقع لحد النهارده. **أي مبلغ** بيحل التنبيه
@@ -94,11 +106,14 @@ fun lastDueWithGracePassed(expectedDay: Int, today: IsoDate): IsoDate {
  */
 fun lateIncomeCandidates(sources: List<IncomeSource>, transactions: List<Transaction>, today: IsoDate): List<AlertCandidate> =
     sourcesActiveOn(sources, today).mapNotNull { s ->
-        val day = s.expectedDayOfMonth ?: return@mapNotNull null
         if (s.payerKeys.isEmpty()) return@mapNotNull null
-        val due = lastDueWithGracePassed(day, today)
+        // الأسبوعي (رد المالك §64): يومين مهلة، والإيداع اللي قبل اليوم بـ3 أيام بيتحسب لنفس الأسبوع
+        val (due, early) = when (s.payFrequency) {
+            PayFrequency.MONTHLY -> lastDueWithGracePassed(s.expectedDayOfMonth ?: return@mapNotNull null, today) to INCOME_EARLY_WINDOW_DAYS
+            PayFrequency.WEEKLY -> lastWeeklyDueWithGracePassed(s.payWeekday ?: return@mapNotNull null, today) to WEEKLY_EARLY_WINDOW_DAYS
+        }
         if (due < s.startedAt) return@mapNotNull null
-        val from = addDaysIso(due, -INCOME_EARLY_WINDOW_DAYS)
+        val from = addDaysIso(due, -early)
         val arrived = transactions.any { it.occurredAt in from..today && attributedSourceId(it, sources) == s.id }
         if (arrived) return@mapNotNull null
         AlertCandidate(

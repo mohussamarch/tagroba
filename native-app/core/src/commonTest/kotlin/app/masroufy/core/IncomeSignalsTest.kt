@@ -129,6 +129,18 @@ class IncomeSignalsTest {
         assertEquals("2026-09-25", lastDueWithGracePassed(25, "2026-10-27"))
     }
 
+    @Test fun weeklyPayGetsALateAlertTwoDaysAfterItsWeekday() {
+        // رد المالك (§64): الأسبوعي بيتنبه بعد يومين. الخميس = 4، و22 أكتوبر 2026 خميس
+        val weekly = paid.copy(expectedDayOfMonth = null, payFrequency = PayFrequency.WEEKLY, payWeekday = 4)
+        val lastWeek = deposit(star, "2026-10-15")
+        assertTrue(lateIncomeCandidates(listOf(weekly), listOf(lastWeek), "2026-10-23").isEmpty(), "يوم بعد الخميس ⇒ لسه في المهلة")
+        val late = lateIncomeCandidates(listOf(weekly), listOf(lastWeek), "2026-10-24").single()
+        assertTrue(late.threadKey.endsWith("2026-10-22"), "الموضوع = خميس الأسبوع ده")
+        assertTrue(lateIncomeCandidates(listOf(weekly), listOf(lastWeek, deposit(star, "2026-10-19")), "2026-10-24").isEmpty(), "قبلها بـ3 أيام بيتحسب")
+        assertEquals(1, lateIncomeCandidates(listOf(weekly), listOf(deposit(star, "2026-10-18")), "2026-10-24").size, "قبلها بـ4 أيام ⇒ الأسبوع اللي فات")
+        assertTrue(lateIncomeCandidates(listOf(weekly.copy(payWeekday = null)), emptyList(), "2026-10-24").isEmpty(), "من غير يوم ⇒ مفيش تنبيه")
+    }
+
     @Test fun lockScreenSaysNothingAboutTheSourceOrTheAmount() {
         try {
             for (lang in Language.entries) {
