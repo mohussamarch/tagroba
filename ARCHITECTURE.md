@@ -1211,3 +1211,11 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **`firestore`:** `FirestoreContainer` بيدّي `categories` للتجار في البلاد التانية. **قواعد فايربيز ما اتغيرتش ⇒ مفيش نشر.**
 - النوع الجديد بيعدّي فحص النسخة الشاملة لوحده (`ALL_ECONOMIC_KINDS`)؛ **التطبيق الحالي (المتوقف §55) ما يعرفوش** زي النقوط.
 - `TextKeys.kt` بقى 460 سطر (enum واحد — فوق حد الـ300 زي ما هو من قبل).
+
+### 31.19 نسختين من العربي: فصحى للسعودية ومصري لمصر (2026-10-05، OVERRIDES §66)
+- **مفيش مكتبة جديدة، ومفيش مجموعة ولا حقل جديد بيتخزن، وقواعد فايربيز ما اتغيرتش.**
+- **`core`:** `Texts.kt` — `ArabicVariant` (`MSA` · `EGYPTIAN`) جنب `Language`، و`Texts.arabicVariant` + `Texts.followCountry(country)` (من `CountryPack.arabicVariant`). البحث: النسخة الشغالة ⇒ التانية ⇒ اسم المفتاح. الجداول: `EGYPTIAN_*` (القديمة بالاسم الجديد) و`MSA_*` (`TextsMsa.kt` · `TextsMsaData.kt` · وجوه ملفات المواضيع) و`TextsUseCases.kt`/`TextsUseCasesEnglish.kt` (130 رسالة اتنقلت من الكود). `CategoryNames.kt` — `SAUDI_MSA_SEED_NAMES` (أسماء البذور بالفصحى **بنفس المعرّف**، بتتطبق في `buildCountryCategoryTree` بعد البناء) · `CATEGORY_NAME_ALIASES`/`sameCategoryName`/`canonicalCategoryName` (المطابقة بالاسمين — `SuggestEconomicKind` و`isNonExpenseSourceCategory`) · `planCategoryRename` (دالة نقية).
+- **`app`:** `ManageSpaces` بيغيّر النسخة عند التبديل وأرشفة الشغالة · `RenameSeedCategories` (`plan`/`apply` — **ما يتشغلش على فايربيز من غير موافقة المالك**) · حالات الاستخدام بتاخد رسايلها من الجدول (`AppLock` رسايل الجهاز بقت دالة بتتبني وقت الطلب مش جدول ثابت).
+- **`firestore`:** `AccountSession` بيغيّر النسخة مع البلد الشغالة (والخروج ⇒ الفصحى).
+- **الاختبارات:** ملفات المرجع (golden) واللي بتقارن بنص التطبيق الحالي بتشتغل على `EGYPTIAN` (`@BeforeTest`). لقطة المصري `core/src/jvmTest/resources/egyptian-texts-snapshot.json` (710 نص اتاخدت من الكود قبل التغيير). `forEachTextVariant` (commonTest) لاختبارات «كل لغة» زي شاشة القفل.
+- `TextKeys.kt` بقى 484 سطر (enum واحد — فوق حد الـ300 زي ما هو من قبل).

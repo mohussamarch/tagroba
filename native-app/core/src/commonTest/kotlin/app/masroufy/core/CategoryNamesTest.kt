@@ -85,6 +85,18 @@ class CategoryNamesTest {
         assertEquals(listOf(CategoryRename("c-tools", "أدوات وبرامج للشغل", "أدوات وبرامج العمل")), planCategoryRename(categories))
     }
 
+    /** «النقد» اسم محفظة النقد في بذور السعودية بالفصحى ⇒ البحث بيه بيلاقي عمليات النقد زي «كاش». */
+    @Test fun searchingTheMsaCashWordFindsCashTransactions() {
+        val cash = Transaction(
+            id = "t-1", occurredAt = "2026-10-01", datePrecision = "day", sourceOrder = 1, economicKind = EconomicKind.PURCHASE,
+            economicKindConfirmed = true, observedDirection = Direction.OUT, amountMinor = 1_000, currency = Currency.SAR, categoryConfirmed = false,
+            excludedFromBudget = false, reviewState = ReviewState.CONFIRMED, isCashTagged = true, createdAt = "x", updatedAt = "x",
+        )
+        for (word in listOf("كاش", "النقد", "نقد")) {
+            assertEquals(listOf("cash"), searchTransactions(listOf(SearchableTransaction(cash)), parseQuery(word)).single().matchedFields, word)
+        }
+    }
+
     @Test fun planIsEmptyForAnAccountWithTheNewNames() {
         assertTrue(planCategoryRename(buildCountryCategoryTree(raw, SAUDI_PACK).categories).isEmpty())
         assertTrue(planCategoryRename(emptyList()).isEmpty())
