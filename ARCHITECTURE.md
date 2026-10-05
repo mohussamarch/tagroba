@@ -1306,3 +1306,13 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **`firestore`:** `FirestoreInheritanceScenarioRepository` على `account` · `FirestoreContainer.inheritanceScenarios` · اختبار المحاكي `InheritanceScenariosOnFirestoreTest`.
 - **النصوص:** `TextsInheritanceDistant.kt` (فصحى · مصري · إنجليزي) + بلوك في آخر `TextKeys.kt`. المفتاح القديم `INHERIT_UNSUPPORTED_DISTANT` اتشال (بقى `INHERIT_UNSUPPORTED_DISTANT_UNLISTED` برسالة «اكتبهم في القايمة»). `TextsTest` بيقبل الجدول الجديد بعد اللقطة، والمصري القديم ما اتلمسش.
 - **مصر على الجريدة الرسمية:** الاستشهادات في KDoc بقت من الوقائع المصرية (77/1943 عدد 92 · 71/1946 عدد 65 — manshurat.org) بدل qadaya.net. اختبار لكل مادة كانت مختلفة (`InheritanceEgyptGazetteTest`).
+
+### 31.28 معاش مصر — أرقام اللائحة التنفيذية (2026-10-05، جلسة 27 — OVERRIDES §69.8)
+- **مفيش مكتبة جديدة ولا تخزين ولا شاشات.** كله أعداد صحيحة (قرش · نقاط أساس).
+- **`core`:**
+  - **`RetirementEgyptLimits.kt` (جديد):** `EgyptContributionWageLimits(year, minMinor, maxMinor)` · `EG_CONTRIBUTION_WAGE_LIMITS` (2020–2026، كل سطر جنبه مصدره) · `egyptContributionWageLimits(date)` (بالسنة الميلادية؛ برا الجدول ⇒ null) · `egyptLatestContributionWageLimits()` · `EG_MIN_PENSION_NUMERIC_MINOR` (900 جنيه — اللائحة م105 ثالثًا(4)) · `EG_MAX_PENSION_OF_MAX_WAGE_BP` (80% من الحد الأقصى — القانون م24). ⚠️ **سطر جديد كل يناير** من خبر الهيئة الرسمي — ما يتحسبش من القاعدة.
+  - `RetirementEgypt.kt`: `EgyptPensionInput.maxContributionWageMinor` (في **آخر** الـconstructor عشان النداءات بالترتيب ما تتكسرش). الحدين يوم التقاعد = المكتوب ⇒ الجدول ⇒ null. `EgyptPension` اتزود: `settlementCappedToMax` · `minContributionWageMinor` · `maxContributionWageMinor` · `limitsYear` · `maxWageCapMinor`، و`floorMinor` بقى max(65%، 900). الترتيب: أجر التسوية ⇒ قص للحد الأقصى ⇒ المتراكم ⇒ أقل واحد من (المتراكم · 80% من الأجر · 80% من الحد الأقصى) ⇒ شرط المبكر (50% · 65% بس) ⇒ الرفع للأرضية (أو 900 لو الحد الأدنى مش معروف) **لغير المبكر بس**.
+  - نصوص: 4 مفاتيح في بلوك جديد جوه بلوك التقاعد في `TextKeys.kt` + `TextsRetirement.kt` (فصحى · مصري · إنجليزي)، و`CALC_EGYPT_FLOOR_UNKNOWN` بقى بـ`{0}` (آخر رقم رسمي) و`{1}` (سنته).
+- **`app`:** `RetirementDefaults.egyptLatestLimits` (مصر بس) — اقتراح للشاشة، **مش بيدخل الحسبة لوحده**.
+- **ليه الجدول نادرًا ما بيدخل الحسبة النهارده:** الحسبة بتقبل مدد من 2020 بس و180 شهر ⇒ التقاعد 2035+ ⇒ برا الجدول. (السؤال في OVERRIDES §69.8.)
+- **أداة القراية (برا المستودع):** نفس `pdfjs-dist/legacy` + `@napi-rs/canvas` من §31.25، وسكريبت مقارنة القرايتين + فحص قاعدة م53 (`scratchpad/egregs/diff.mjs`) وسكريبت التحويرات (`mutate.mjs`).
