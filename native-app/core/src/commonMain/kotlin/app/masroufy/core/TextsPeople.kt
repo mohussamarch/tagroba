@@ -8,7 +8,7 @@ package app.masroufy.core
 internal val MSA_PEOPLE_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.PERSON_CIRCLE_FAMILY to "العائلة",
     TextKey.PERSON_CIRCLE_FRIEND to "الأصدقاء",
-    TextKey.PERSON_CIRCLE_WORK to "العمل",
+    TextKey.PERSON_CIRCLE_WORK to "الدوام",
     TextKey.PERSON_CIRCLE_OTHER to "آخرون",
     TextKey.PERSON_RELATION_LABEL_LENGTH to "وصف الصلة {0} حرفًا على الأكثر",
     TextKey.PERSON_RELATION_SELF to "لا يمكن ربط الشخص بنفسه",

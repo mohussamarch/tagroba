@@ -9,7 +9,7 @@ internal val MSA_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_SALARY to "راتب",
     TextKey.KIND_BONUS to "مكافأة",
     TextKey.KIND_COMMISSION to "عمولة",
-    TextKey.KIND_OVERTIME to "عمل إضافي",
+    TextKey.KIND_OVERTIME to "دوام إضافي",
     TextKey.KIND_FREELANCE to "عمل حر",
     TextKey.KIND_PERSONAL_SALE to "بيع شخصي",
     TextKey.KIND_LOAN_RECEIVED to "قرض مستلم",

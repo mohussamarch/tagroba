@@ -171,7 +171,7 @@ internal val MSA_CALENDAR_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.PREP_CATERING to "الطعام والضيافة",
     TextKey.PREP_PHOTOGRAPHY to "التصوير",
     TextKey.PREP_INVITATIONS to "الدعوات",
-    TextKey.PREP_SALON to "صالون التجميل",
+    TextKey.PREP_SALON to "صالون نسائي",
     TextKey.PREP_HONEYMOON to "شهر العسل",
     TextKey.PREP_ENGAGEMENT_GOLD to "الشبكة",
     TextKey.PREP_VENUE to "المكان",

@@ -141,7 +141,7 @@ internal val MSA_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.INCOME_SOURCE_BAD_AMOUNT to "يجب أن يكون المبلغ المتوقع أكبر من صفر.",
     TextKey.KIND_ROSCA_PAYOUT to "دور جمعية",
     TextKey.KIND_REFUND_RECEIVED to "استرداد مبلغ",
-    TextKey.KIND_ADVANCE_RECEIVED to "سلفة من العمل",
+    TextKey.KIND_ADVANCE_RECEIVED to "سلفة من الشركة",
 
     TextKey.FORECAST_NEEDS_KINDS to "التوقع غير متاح حتى تحدّد أنواع العمليات؛ المصروف الحالي ناقص.",
 )

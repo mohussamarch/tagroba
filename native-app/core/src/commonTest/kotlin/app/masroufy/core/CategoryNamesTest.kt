@@ -25,12 +25,12 @@ class CategoryNamesTest {
         val old = buildCategoryTree(raw)
         val msa = buildCountryCategoryTree(raw, SAUDI_PACK)
         assertEquals(old.categories.map { it.id }, msa.categories.map { it.id })
-        assertEquals(listOf("السيارة", "وقود", "مواقف", "اتصالات", "جوال", "مصاريف العمل", "أدوات وبرامج العمل"), msa.categories.map { it.name })
+        assertEquals(listOf("السيارة", "وقود", "مواقف", "اتصالات", "جوال", "مصاريف الدوام", "أدوات وبرامج الدوام"), msa.categories.map { it.name })
         assertEquals(old.wordOverrides, msa.wordOverrides, "كلمة PARKING على نفس التصنيف")
-        for (pair in listOf("مواقف وسايس" to "مواقف", "مصاريف الشغل" to "مصاريف العمل", "أدوات وبرامج للشغل" to "أدوات وبرامج العمل")) {
+        for (pair in listOf("مواقف وسايس" to "مواقف", "مصاريف الشغل" to "مصاريف الدوام", "أدوات وبرامج للشغل" to "أدوات وبرامج الدوام")) {
             assertEquals(msa.aliases[normalizeText(pair.first)], msa.aliases[normalizeText(pair.second)], pair.toString())
         }
-        assertEquals("النقد", SAUDI_PACK.cashWalletName)
+        assertEquals("كاش", SAUDI_PACK.cashWalletName)
     }
 
     @Test fun egyptSeedKeepsTheEgyptianNames() {
@@ -73,16 +73,16 @@ class CategoryNamesTest {
         assertEquals(
             listOf(
                 CategoryRename("c-park", "مواقف وسايس", "مواقف"),
-                CategoryRename("c-work", "مصاريف الشغل", "مصاريف العمل"),
-                CategoryRename("c-tools", "أدوات وبرامج للشغل", "أدوات وبرامج العمل"),
+                CategoryRename("c-work", "مصاريف الشغل", "مصاريف الدوام"),
+                CategoryRename("c-tools", "أدوات وبرامج للشغل", "أدوات وبرامج الدوام"),
             ),
             plan,
         )
     }
 
     @Test fun planFindsASubWhoseMainWasAlreadyRenamed() {
-        val categories = listOf(cat("c-work", null, "مصاريف العمل"), cat("c-tools", "c-work", "أدوات وبرامج للشغل"))
-        assertEquals(listOf(CategoryRename("c-tools", "أدوات وبرامج للشغل", "أدوات وبرامج العمل")), planCategoryRename(categories))
+        val categories = listOf(cat("c-work", null, "مصاريف الدوام"), cat("c-tools", "c-work", "أدوات وبرامج للشغل"))
+        assertEquals(listOf(CategoryRename("c-tools", "أدوات وبرامج للشغل", "أدوات وبرامج الدوام")), planCategoryRename(categories))
     }
 
     /** «النقد» اسم محفظة النقد في بذور السعودية بالفصحى ⇒ البحث بيه بيلاقي عمليات النقد زي «كاش». */

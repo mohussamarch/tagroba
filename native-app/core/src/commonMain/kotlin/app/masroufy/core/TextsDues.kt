@@ -175,7 +175,7 @@ internal val MSA_DUES_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.DUE_LOCKED_AFTER_LINK to "لا يمكن تغيير العملة أو النوع بعد ربط عمليات — فُكّ الربط أولًا.",
     TextKey.DUE_BAD_CYCLE_WEEKS to "يكون القسط من كل أسبوع إلى كل {0} أسابيع.",
     TextKey.ROSCA_Q_NAME to "ما اسم الجمعية؟",
-    TextKey.ROSCA_Q_NAME_HINT to "مثلًا: جمعية العمل",
+    TextKey.ROSCA_Q_NAME_HINT to "مثلًا: جمعية الدوام",
     TextKey.ROSCA_Q_TURNS_COUNT to "كم دورًا في الجمعية؟",
     TextKey.ROSCA_Q_TURNS_COUNT_HINT to "غالبًا بعدد الأعضاء",
     TextKey.ROSCA_Q_SHARE_AMOUNT to "كم القسط كل مرة؟",

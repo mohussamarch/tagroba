@@ -74,7 +74,7 @@ val SAUDI_PACK = CountryPack(
     statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.ALRAJHI_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
     // فصحى (§66 — اختيار Claude، المالك يقدر يغيّره). مصر بتفضل «كاش».
-    cashWalletName = "النقد",
+    cashWalletName = "كاش",
     arabicVariant = ArabicVariant.MSA,
     seedNames = SAUDI_MSA_SEED_NAMES,
 )
