@@ -43,4 +43,6 @@ val BACKUP_LABELS: Map<String, String>
         MERCHANT_CATEGORIES_GROUP to uiText(TextKey.BACKUP_GROUP_MERCHANT_CATEGORIES),
         "reservations" to uiText(TextKey.BACKUP_GROUP_RESERVATIONS),
         "eventPrep" to uiText(TextKey.BACKUP_GROUP_EVENT_PREP),
+        PERSON_PROFILES_GROUP to uiText(TextKey.BACKUP_GROUP_PERSON_PROFILES),
+        PERSON_RELATIONS_GROUP to uiText(TextKey.BACKUP_GROUP_PERSON_RELATIONS),
     )

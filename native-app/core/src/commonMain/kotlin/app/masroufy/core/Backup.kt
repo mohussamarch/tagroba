@@ -22,6 +22,8 @@ val BACKUP_GROUPS = listOf(
     MERCHANT_CATEGORIES_GROUP,
     // التقويم: المبالغ المحجوزة وتجهيزات الأحداث (§65) — التطبيق الجديد بس
     "reservations", "eventPrep",
+    // شاشة الأشخاص: الدواير والصلات بين الأشخاص (جلسة 16) — على مستوى الحساب، التطبيق الجديد بس
+    PERSON_PROFILES_GROUP, PERSON_RELATIONS_GROUP,
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -48,7 +50,7 @@ const val INCOME_SOURCES_GROUP = "incomeSources"
 val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
 
 val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
-    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS
+    MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -80,6 +82,8 @@ val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "occasions" to linkedMapOf("personId" to "people", "sourceEventId" to "lifeEvents"),
     MERCHANT_CATEGORIES_GROUP to linkedMapOf("merchantId" to "merchants", "categoryId" to "categories"),
     "eventPrep" to mapOf("eventId" to "lifeEvents"),
+    PERSON_PROFILES_GROUP to mapOf("personId" to "people"),
+    PERSON_RELATIONS_GROUP to linkedMapOf("personAId" to "people", "personBId" to "people"),
 )
 
 fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.associateWith { mutableListOf() }
@@ -89,7 +93,7 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS)
+    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS)
         .filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
@@ -101,6 +105,7 @@ fun backupRowId(group: String, row: BackupRow): String {
         "debtTerms" -> "obligationId"
         "transferParties" -> "key"
         MERCHANT_CATEGORIES_GROUP -> "merchantId"
+        PERSON_PROFILES_GROUP -> "personId"
         else -> "id"
     }
     return row[key]?.let(::jsString) ?: ""
@@ -214,6 +219,8 @@ private val NATURAL_KEYS = mapOf(
 
 private fun semantic(group: String, row: BackupRow): String? {
     if (group == "transactions") return transactionRowContentKey(row)
+    // الصلة من غير ترتيب: نفس الزوج بعد دمج الأشخاص = نفس الصلة حتى لو الترتيب اتقلب
+    if (group == PERSON_RELATIONS_GROUP) return jsJson(listOf(jsString(row["personAId"]), jsString(row["personBId"])).sorted())
     val keys = NATURAL_KEYS[group] ?: return null
     return jsJson(keys.map { row[it] })
 }
