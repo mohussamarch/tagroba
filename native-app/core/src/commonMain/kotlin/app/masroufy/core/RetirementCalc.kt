@@ -12,11 +12,27 @@ enum class PensionLaw { SA_NEW, SA_OLD, EG_148_2019 }
 
 /** ليه الرقم «غير متاح» أو ليه مفيش معاش — كل سبب ليه نص للشاشة. */
 enum class CalcReason(val key: TextKey) {
+    /** مكافأة نهاية الخدمة: الأجر الفعلي (نظام العمل م2) مش معروف. */
     NEED_WAGE(TextKey.CALC_REASON_NEED_WAGE),
+    /** المعاش في السعودية: الأجر الأساسي مش معروف (§69.3). */
+    NEED_BASIC(TextKey.CALC_REASON_NEED_BASIC),
+    /** المعاش في السعودية: بدل السكن ما اتكتبش (صفر لازم يتكتب صراحة — القاعدة 10). */
+    NEED_HOUSING(TextKey.CALC_REASON_NEED_HOUSING),
     NEED_MONTHS_AT_2024(TextKey.CALC_REASON_NEED_MONTHS_AT_2024),
     TOO_FEW_MONTHS(TextKey.CALC_REASON_TOO_FEW_MONTHS),
     EARLY_NOT_ALLOWED(TextKey.CALC_REASON_EARLY_NOT_ALLOWED),
-    EGYPT_PENSION_NOT_READY(TextKey.CALC_REASON_EGYPT_NOT_READY),
+    /** مصر م21(6)(أ): المعاش المبكر أقل من 50% من أجر التسوية. */
+    EGYPT_EARLY_BELOW_HALF(TextKey.CALC_REASON_EGYPT_EARLY_BELOW_HALF),
+    /** مصر م21(6)(أ) + م24 آخر فقرة: المعاش المبكر أقل من 65% من الحد الأدنى لأجر الاشتراك (لما المستخدم كتبه). */
+    EGYPT_EARLY_BELOW_MINIMUM(TextKey.CALC_REASON_EGYPT_EARLY_BELOW_MINIMUM),
+    /** مصر م22: متوسط أجر التسوية ما اتكتبش (معدلات التضخم الرسمية مش في القانون). */
+    NEED_SETTLEMENT_WAGE(TextKey.CALC_REASON_NEED_SETTLEMENT_WAGE),
+    /** مصر م41: سن الشيخوخة بيتحدد بقرار رئيس الوزراء لحد يوليو 2040 — الجدول مش في نص القانون. */
+    NEED_EGYPT_LEGAL_AGE(TextKey.CALC_REASON_NEED_EGYPT_LEGAL_AGE),
+    /** مصر م156: مدد قبل 2020 (أجرها بقانون 79/1975 ومعدلات التضخم) — مش متحسبة. */
+    EGYPT_PRE_2020(TextKey.CALC_REASON_EGYPT_PRE_2020),
+    /** مصر: جدول 5 مفيهوش سطور بعد سن الشيخوخة. */
+    EGYPT_AFTER_LEGAL_AGE(TextKey.CALC_REASON_EGYPT_AFTER_LEGAL_AGE),
     NEED_YEARS(TextKey.CALC_REASON_NEED_YEARS),
     NEED_PENSION(TextKey.CALC_REASON_NEED_PENSION),
     NEED_JOB_START(TextKey.CALC_REASON_NEED_JOB_START),
@@ -42,8 +58,14 @@ data class SaudiPensionInput(
     val monthsAtEffective: Int? = null,
     /** القديم بس (اختياري): كام شهر من [monthsSoFar] كان **قبل 1/1/1422هـ** (بتتقسم على 600 بدل 480). */
     val monthsBefore1422: Int = 0,
-    /** الجديد: متوسط أعلى 180 شهر · القديم: متوسط آخر سنتين. null ⇒ «غير متاح». */
-    val averageWageMinor: Halalas?,
+    /**
+     * **الأجر الأساسي** الشهري (قرار المالك §69.3: «الأساسي والسكن لوحدهم»). الأجر الخاضع للاشتراك = الأساسي + بدل السكن، وبيتاخد
+     * كمتوسط ثابت (الجديد: أعلى 180 شهر — م26(1) · القديم: آخر سنتين). null ⇒ «غير متاح» ([CalcReason.NEED_BASIC]).
+     * ⚠️ إن الخاضع للاشتراك = الأساسي + السكن بس ده قرار المالك؛ النسخة الإنجليزية من م/273 ما اتراجعتش على تعريف الأجر بالحرف هنا.
+     */
+    val basicWageMinor: Halalas?,
+    /** **بدل السكن** الشهري. null ⇒ «غير متاح» ([CalcReason.NEED_HOUSING]) — لو مفيش بدل سكن يتكتب صفر صراحة (القاعدة 10). */
+    val housingAllowanceMinor: Halalas?,
     /** السن اللي ناوي تتقاعد فيه بالشهور — null = السن النظامية بتاعتك. */
     val retireAtAgeMonths: Int? = null,
 )
@@ -62,19 +84,28 @@ data class PensionEstimate(
     val monthsUntilRetirement: Int?,
     val newDetail: SaudiNewPension? = null,
     val oldDetail: SaudiOldPension? = null,
+    val egyptDetail: EgyptPension? = null,
 )
 
 class RetirementCalcError(message: String) : IllegalArgumentException(message)
 
-private const val MAX_AGE_MONTHS = 100 * 12
+internal const val MAX_AGE_MONTHS = 100 * 12
 
 private fun checkInput(i: SaudiPensionInput) {
     if (!isValidIsoDate(i.birthDate) || !isValidIsoDate(i.today) || i.birthDate >= i.today) throw RetirementCalcError(uiText(TextKey.CALC_BIRTH_DATE))
     if (i.monthsSoFar < 0 || i.monthsSoFar > MAX_CALC_MONTHS) throw RetirementCalcError(uiText(TextKey.CALC_MONTHS_RANGE, MAX_CALC_MONTHS.toString()))
     if (i.monthsBefore1422 < 0 || i.monthsBefore1422 > i.monthsSoFar) throw RetirementCalcError(uiText(TextKey.CALC_MONTHS_1422))
     if (i.monthsAtEffective != null && (i.monthsAtEffective < 0 || i.monthsAtEffective > i.monthsSoFar)) throw RetirementCalcError(uiText(TextKey.CALC_MONTHS_AT_2024))
-    if (i.averageWageMinor != null && (i.averageWageMinor <= 0 || i.averageWageMinor > MAX_SAFE_HALALAS)) throw RetirementCalcError(uiText(TextKey.CALC_WAGE_POSITIVE))
+    if (i.basicWageMinor != null && (i.basicWageMinor <= 0 || i.basicWageMinor > MAX_SAFE_HALALAS)) throw RetirementCalcError(uiText(TextKey.CALC_WAGE_POSITIVE))
+    if (i.housingAllowanceMinor != null && (i.housingAllowanceMinor < 0 || i.housingAllowanceMinor > MAX_SAFE_HALALAS)) throw RetirementCalcError(uiText(TextKey.CALC_HOUSING_NOT_NEGATIVE))
     if (i.retireAtAgeMonths != null && i.retireAtAgeMonths !in 1..MAX_AGE_MONTHS) throw RetirementCalcError(uiText(TextKey.CALC_RETIRE_AGE))
+}
+
+/** الأجر الخاضع للاشتراك = الأساسي + بدل السكن (§69.3) — أو سبب «غير متاح» لو واحد منهم ناقص. */
+private fun contributionWage(i: SaudiPensionInput): Pair<Halalas?, CalcReason?> {
+    val basic = i.basicWageMinor ?: return null to CalcReason.NEED_BASIC
+    val housing = i.housingAllowanceMinor ?: return null to CalcReason.NEED_HOUSING
+    return addMoney(basic, housing) to null
 }
 
 /** المعاش المتوقع في السعودية. */
@@ -95,28 +126,20 @@ fun saudiPensionEstimate(i: SaudiPensionInput): PensionEstimate {
     val after = maxOf(0, retireAge - legal)
     fun result(status: PensionStatus, reason: CalcReason?, pension: Halalas?, nd: SaudiNewPension? = null, od: SaudiOldPension? = null) =
         PensionEstimate(law, status, reason, pension, legal, retireAge, retirementDate, months, future, nd, od)
-    val wage = i.averageWageMinor
+    val (wage, wageMissing) = contributionWage(i)
     if (law == PensionLaw.SA_NEW) {
         if (before > 0 && (before > SA_NEW_EARLY_MAX_MONTHS || months < SA_NEW_EARLY_MIN_CONTRIB_MONTHS)) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.EARLY_NOT_ALLOWED, null)
         if (months < SA_NEW_MIN_CONTRIB_MONTHS) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.TOO_FEW_MONTHS, null)
-        wage ?: return result(PensionStatus.UNAVAILABLE, CalcReason.NEED_WAGE, null)
+        wage ?: return result(PensionStatus.UNAVAILABLE, wageMissing, null)
         val d = saudiNewPension(wage, months, before, after)
         return result(PensionStatus.ESTIMATED, null, d.pensionMinor, nd = d)
     }
     if (before > 0 && months < saudiOldLawEarlyMonths(i.birthDate, atEffective)) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.EARLY_NOT_ALLOWED, null)
     if (months < SA_OLD_MIN_CONTRIB_MONTHS) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.TOO_FEW_MONTHS, null)
-    wage ?: return result(PensionStatus.UNAVAILABLE, CalcReason.NEED_WAGE, null)
+    wage ?: return result(PensionStatus.UNAVAILABLE, wageMissing, null)
     val d = saudiOldPension(wage, months - i.monthsBefore1422, i.monthsBefore1422)
     return result(PensionStatus.ESTIMATED, null, d.pensionMinor, od = d)
 }
-
-/**
- * مصر (قانون 148/2019): **«غير متاح» لحد ما الأرقام تتقري من النص الرسمي** — جدول 5 (معامل حساب المعاش) طالع من ملف NOSI الرسمي
- * ناقص خانات وأعمدته متلخبطة، وأجر التسوية (م22) محتاج معدلات التضخم الرسمية لكل سنة، والأرضية (65% من الحد الأدنى لأجر الاشتراك — م24)
- * محتاجة الحد الأدنى لكل سنة. مفيش تخمين — مكتوب في HANDOVER كسؤال مفتوح.
- */
-fun egyptPensionEstimate(): PensionEstimate =
-    PensionEstimate(PensionLaw.EG_148_2019, PensionStatus.UNAVAILABLE, CalcReason.EGYPT_PENSION_NOT_READY, null, null, null, null, null, null)
 
 /** المكافأة في حسبة التقاعد: معروفة · مش منطبقة (مصر · مالكش شغل) · مش معروفة (ناقص تاريخ بداية الشغل أو الأجر). */
 sealed interface EosPart {

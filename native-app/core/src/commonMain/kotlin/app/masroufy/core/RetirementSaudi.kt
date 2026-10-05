@@ -119,14 +119,17 @@ data class SaudiNewPension(
     val accruedMinor: Halalas,
     /** بعد سقف 100% من المتوسط. */
     val baseMinor: Halalas,
+    /** 17(2): الحد الأدنى لمدته. */
+    val minimumMinor: Halalas,
+    /** الأساس بعد الحد الأدنى = الأكبر من [baseMinor] و[minimumMinor] — ده اللي التخفيض والزيادة بيتحسبوا عليه (ترتيب المالك §69.3). */
+    val flooredMinor: Halalas,
     /** 17(3): شهور التخفيض = الأقل من (الشهور قبل السن) و(480 − مدة الاشتراك). */
     val reductionMonths: Int,
     val reductionMinor: Halalas,
     /** 17(4): شهور الاشتراك بعد السن. */
     val increaseMonths: Int,
     val increaseMinor: Halalas,
-    /** 17(2): الحد الأدنى لمدته. */
-    val minimumMinor: Halalas,
+    /** النهائي = [flooredMinor] − التخفيض + الزيادة — **ممكن ينزل تحت [minimumMinor]** مع المبكر. */
     val pensionMinor: Halalas,
 )
 
@@ -135,10 +138,11 @@ data class SaudiNewPension(
  * [monthsAfterAge] شهور الاشتراك بعدها (متأخر) — واحد بس منهم أكبر من صفر.
  *
  * **الترتيب والتقريب (لأقرب هللة، النص لفوق):** (1) الأجر يتقص عند 45,000 (م8(2)) ⇒ (2) الأساس = المتوسط × 225 × الشهور ÷ 120,000
- * ⇒ (3) سقف 100% من المتوسط (17(1)) ⇒ (4) التخفيض المبكر = الأساس × 300 × شهور التخفيض ÷ 120,000 (17(3))، أو الزيادة المتأخرة
- * بنفس الطريقة (17(4)) ⇒ (5) **الحد الأدنى على الناتج النهائي** (17(2)): 4,000 × الشهور ÷ 480 (بحد أقصى 4,000) وبأرضية 2,000.
- * ⚠️ اختيار Claude في (5): الحد الأدنى بيتطبق **بعد** التخفيض والزيادة (النص بيقول إن معاش 17(1) «يخضع» للحد الأدنى، وبيقول برضه إن
- * التخفيض على معاش 17(1) — الترتيب مش صريح). مكتوب كسؤال للمالك.
+ * ⇒ (3) سقف 100% من المتوسط (17(1)) ⇒ (4) **الحد الأدنى** (17(2)): الأكبر من الأساس و(4,000 × الشهور ÷ 480، بحد أقصى 4,000، وبأرضية 2,000)
+ * ⇒ (5) التخفيض المبكر = ناتج (4) × 300 × شهور التخفيض ÷ 120,000 (17(3))، أو الزيادة المتأخرة بنفس الطريقة (17(4)).
+ * **قرار المالك (OVERRIDES §69.3، 2026-10-05): «الخصم بعد الحد الأدنى» — المعاش المبكر ممكن ينزل تحت الحد الأدنى (الأضمن).** والزيادة
+ * المتأخرة بنفس الترتيب (على ناتج الحد الأدنى) عشان الاتنين يمشوا بقاعدة واحدة. ⚠️ النص نفسه مش صريح في الترتيب: 17(1) «يخضع» للحد الأدنى،
+ * و17(3) بيخفّض «معاش 17(1)» — الترتيب ده اختيار المالك، مش قراية مؤكدة للنص.
  * ⚠️ 17(2)(ب) بيقول «يُخفّض عن كل 12 شهر أقل من 480 — وكل شهر بنسبته» من غير ما يقول بكام: فهمناه **بالتناسب** (4,000 × الشهور ÷ 480)
  * — يعني 100 ر.س عن كل سنة ناقصة (ثقة B).
  */
@@ -147,12 +151,13 @@ fun saudiNewPension(averageWageMinor: Halalas, contributionMonths: Int, monthsBe
     val wage = minOf(averageWageMinor, SA_MAX_CONTRIB_WAGE_MINOR)
     val accrued = mulDivHalfUp(wage, SA_NEW_ACCRUAL_BP.toLong() * contributionMonths, 12 * BASIS_POINTS)
     val base = minOf(accrued, wage)
-    val reductionMonths = minOf(monthsBeforeAge, maxOf(0, SA_NEW_FULL_MONTHS - contributionMonths))
-    val reduction = mulDivHalfUp(base, SA_ADJUST_BP_PER_YEAR.toLong() * reductionMonths, 12 * BASIS_POINTS)
-    val increase = mulDivHalfUp(base, SA_ADJUST_BP_PER_YEAR.toLong() * monthsAfterAge, 12 * BASIS_POINTS)
     val minimum = maxOf(SA_NEW_MIN_PENSION_FLOOR_MINOR, mulDivHalfUp(SA_NEW_MIN_PENSION_FULL_MINOR, minOf(contributionMonths, SA_NEW_FULL_MONTHS).toLong(), SA_NEW_FULL_MONTHS.toLong()))
-    val adjusted = addMoney(subtractMoney(base, reduction), increase)
-    return SaudiNewPension(wage, contributionMonths, accrued, base, reductionMonths, reduction, monthsAfterAge, increase, minimum, maxOf(adjusted, minimum))
+    val floored = maxOf(base, minimum)
+    val reductionMonths = minOf(monthsBeforeAge, maxOf(0, SA_NEW_FULL_MONTHS - contributionMonths))
+    val reduction = mulDivHalfUp(floored, SA_ADJUST_BP_PER_YEAR.toLong() * reductionMonths, 12 * BASIS_POINTS)
+    val increase = mulDivHalfUp(floored, SA_ADJUST_BP_PER_YEAR.toLong() * monthsAfterAge, 12 * BASIS_POINTS)
+    val pension = addMoney(subtractMoney(floored, reduction), increase)
+    return SaudiNewPension(wage, contributionMonths, accrued, base, minimum, floored, reductionMonths, reduction, monthsAfterAge, increase, pension)
 }
 
 /** المعاش القديم بالتفصيل. */
@@ -170,7 +175,8 @@ data class SaudiOldPension(
  * معاش النظام القديم (صفحة التأمينات): **متوسط أجر آخر سنتين** × الشهور ÷ 480، والشهور قبل 1/1/1422هـ ÷ 600 (اختياري).
  * حسبة واحدة بتقريب واحد: ÷480 = 5/2400 و÷600 = 4/2400. السقف 100% من المتوسط (المرسوم م/273 بند «ثامنًا» بيشير لـ«100% من
  * الأجر الذي يحسب على أساسه المعاش» حسب المادة 38 من نظام م/33). الحد الأدنى 1,983.75.
- * ⚠️ مش متحسب: إضافات المُعالين (10% · 15% · 20% — نفس الصفحة) ولا سقف الأجر في النظام القديم (ما اتراجعش على نص رسمي).
+ * **مش متحسب:** إضافات المُعالين (10% · 15% · 20% — نفس الصفحة) — **قرار المالك (OVERRIDES §69.3): «من غيرها»**.
+ * ⚠️ ولا سقف الأجر في النظام القديم (ما اتراجعش على نص رسمي).
  */
 fun saudiOldPension(averageWageMinor: Halalas, monthsAfter1422: Int, monthsBefore1422: Int): SaudiOldPension {
     require(averageWageMinor >= 0 && monthsAfter1422 >= 0 && monthsBefore1422 >= 0)

@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.CalcReason
 import app.masroufy.core.Currency
+import app.masroufy.core.EgyptPensionInput
 import app.masroufy.core.EosEnd
 import app.masroufy.core.EosPart
 import app.masroufy.core.GapOutcome
@@ -24,13 +25,24 @@ import app.masroufy.port.IncomeSourceRepository
  * «حاسبة التقاعد» (قرار المالك §69) — حالة استخدام من غير شاشة. بتجاوب الاتنين: **المعاش المتوقع** و**كام تحوّش في الشهر**.
  * - **الراتب تلقائي من مصادر الدخل ويتعدّل** ([defaults]): الوظيفة الشغالة الوحيدة بعملة البلد اللي ليها مبلغ متوقع. أكتر من وظيفة شغالة
  *   ⇒ مفيش اختيار من عندنا («غير متاح» لحد ما يكتبه). نفس الوظيفة بتدّي **تاريخ بداية الشغل** لمكافأة نهاية الخدمة.
- * - **مكافأة نهاية الخدمة داخلة** (نظام العمل م84–87 — `EndOfService.kt`) لحد يوم التقاعد بنفس الأجر.
- * - **مصر:** المعاش «غير متاح» بالسبب (الجداول الرسمية ما اتقرتش)، والمكافأة «لا تنطبق».
+ * - **أجرين مختلفين (قرار المالك §69.3):**
+ *   - **المعاش (السعودية) = الأساسي + بدل السكن**، كل واحد لوحده. مصادر الدخل ما فيهاش تقسيم ⇒ الاقتراح: **المرتب كله أساسي**
+ *     و**السكن فاضي** ([RetirementDefaults.suggestedHousingMinor] = null) لحد ما المستخدم يكتبه (صفر لو مفيش) — والاتنين بيتعدّلوا.
+ *   - **مكافأة نهاية الخدمة = الأجر الفعلي** (نظام العمل م2: الأساسي + كل البدلات) — مدخل لوحده ([RetirementRequest.eosWageMinor])
+ *     واقتراحه **المرتب كله**.
+ * - **مكافأة نهاية الخدمة داخلة** (نظام العمل م84–87 — `EndOfService.kt`) لحد يوم التقاعد بنفس الأجر. إزاي الشغل هيخلص **بيتسأل كل مرة**
+ *   حتى مع المعاش المبكر (قرار المالك §69.3 — زي ما كان).
+ * - **مصر:** المعاش من قانون 148/2019 (`RetirementEgypt.kt` — جدول 5 اتقرا من صورة الصفحة الرسمية) بأجر التسوية **اللي المستخدم بيكتبه**
+ *   (من غير اقتراح من المرتب: أجر التسوية متوسط من 2020 زايد بالتضخم، مش مرتب النهارده)، والمكافأة «لا تنطبق».
  * - الفلوس المتحوشة **من غير أرباح** (اختيار المالك).
  */
 data class RetirementDefaults(
-    /** المرتب المتوقع من الوظيفة الشغالة الوحيدة — null = مش معروف (مفيش · أكتر من واحدة · من غير مبلغ). */
+    /** المرتب المتوقع من الوظيفة الشغالة الوحيدة — null = مش معروف (مفيش · أكتر من واحدة · من غير مبلغ). اقتراح أجر المكافأة. */
     val salaryMinor: Halalas?,
+    /** اقتراح **الأساسي** للمعاش = [salaryMinor] كله (مصادر الدخل ما فيهاش تقسيم أساسي/سكن). */
+    val suggestedBasicMinor: Halalas?,
+    /** اقتراح **بدل السكن** — دايمًا null (المستخدم بيكتبه؛ مش صفر مؤكد — القاعدة 10). */
+    val suggestedHousingMinor: Halalas?,
     val sourceId: Id?,
     /** بداية الوظيفة الشغالة الوحيدة (لمكافأة نهاية الخدمة). */
     val jobStartedAt: IsoDate?,
@@ -41,9 +53,14 @@ data class RetirementDefaults(
 data class RetirementRequest(
     /** بلد الحساب الشغال ("SA" · "EG"). */
     val countryCode: String,
-    /** السعودية: مدخلات المعاش. [SaudiPensionInput.averageWageMinor] null ⇒ المرتب من مصادر الدخل. */
+    /**
+     * السعودية: مدخلات المعاش. [SaudiPensionInput.basicWageMinor] null ⇒ المرتب من مصادر الدخل كأساسي؛ [SaudiPensionInput.housingAllowanceMinor]
+     * مالوش اقتراح (null ⇒ «غير متاح» لحد ما يتكتب).
+     */
     val saudi: SaudiPensionInput? = null,
-    /** الأجر الفعلي الأخير لمكافأة نهاية الخدمة (م2: الأساسي + البدلات). null ⇒ المرتب من مصادر الدخل. */
+    /** مصر: مدخلات المعاش (أجر التسوية بيكتبه المستخدم — م22). */
+    val egypt: EgyptPensionInput? = null,
+    /** الأجر **الفعلي** الأخير لمكافأة نهاية الخدمة (نظام العمل م2: الأساسي + البدلات) — **مش** الأساسي + السكن. null ⇒ المرتب من مصادر الدخل. */
     val eosWageMinor: Halalas? = null,
     /** بداية الشغل الحالي. null ⇒ من مصادر الدخل. */
     val jobStartedAt: IsoDate? = null,
@@ -78,18 +95,21 @@ class RetirementCalculator(private val deps: RetirementCalculatorDeps) {
         val currency = countryPack(countryCode).currency
         val jobs = deps.incomeSources.listAll().filter { isActiveJob(it, currency, today) }
         val only = jobs.singleOrNull()
-        return RetirementDefaults(only?.expectedMinor, only?.id, only?.startedAt, jobs.size)
+        val salary = only?.expectedMinor
+        return RetirementDefaults(salary, suggestedBasicMinor = salary, suggestedHousingMinor = null, sourceId = only?.id, jobStartedAt = only?.startedAt, activeJobs = jobs.size)
     }
 
     suspend fun calculate(request: RetirementRequest, today: IsoDate): RetirementOutcome {
         val defaults = defaults(request.countryCode, today)
         if (countryPack(request.countryCode).code != "SA") {
-            val pension = egyptPensionEstimate()
-            val gap = request.desiredMonthlyMinor?.let { retirementGap(it, pension, EosPart.NotApplicable(TextKey.CALC_EOS_EGYPT_NOT_APPLICABLE), request.savedNowMinor, request.years, request.untilAgeMonths) }
-            return RetirementOutcome(defaults, pension, EosPart.NotApplicable(TextKey.CALC_EOS_EGYPT_NOT_APPLICABLE), gap)
+            val input = requireNotNull(request.egypt) { "egypt pension input missing" }
+            val pension = egyptPensionEstimate(input.copy(today = today))
+            val eos = EosPart.NotApplicable(TextKey.CALC_EOS_EGYPT_NOT_APPLICABLE)
+            val gap = request.desiredMonthlyMinor?.let { retirementGap(it, pension, eos, request.savedNowMinor, request.years, request.untilAgeMonths) }
+            return RetirementOutcome(defaults, pension, eos, gap)
         }
         val input = requireNotNull(request.saudi) { "saudi pension input missing" }
-        val pension = saudiPensionEstimate(input.copy(today = today, averageWageMinor = input.averageWageMinor ?: defaults.salaryMinor))
+        val pension = saudiPensionEstimate(input.copy(today = today, basicWageMinor = input.basicWageMinor ?: defaults.suggestedBasicMinor))
         val eos = endOfService(request, defaults, pension)
         val gap = request.desiredMonthlyMinor?.let { retirementGap(it, pension, eos, request.savedNowMinor, request.years, request.untilAgeMonths) }
         return RetirementOutcome(defaults, pension, eos, gap)
