@@ -12,6 +12,9 @@ interface SavingsGoalRepository {
     suspend fun listAll(): List<SavingsGoal>
 
     suspend fun save(goal: SavingsGoal)
+
+    /** كذا خطة في كتابة واحدة (النجمة ⭐: الجديدة والقديمة مع بعض — يا الاتنين يتكتبوا يا ولا واحدة). */
+    suspend fun saveMany(goals: List<SavingsGoal>)
 }
 
 interface GoalContributionRepository {

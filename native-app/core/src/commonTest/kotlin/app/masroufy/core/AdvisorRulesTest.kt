@@ -15,9 +15,11 @@ class AdvisorRulesTest {
         Texts.arabicVariant = ArabicVariant.MSA
     }
 
-    // الشهر المالي من يوم الراتب 28: 28 سبتمبر ⇒ 27 أكتوبر (30 يوم). اليوم الخامس = 2 أكتوبر
+    // الشهر المالي من يوم الراتب 28: 28 سبتمبر ⇒ 27 أكتوبر (30 يوم). المعدل بيبدأ اليوم التالت = 30 سبتمبر (رد المالك)
     private val period = Period("2026-09", "2026-09-28", "2026-10-27", 30)
     private val day1 = "2026-09-28"
+    private val day2 = "2026-09-29"
+    private val day3 = "2026-09-30"
     private val day4 = "2026-10-01"
     private val day5 = "2026-10-02"
     private val day6 = "2026-10-03"
@@ -41,7 +43,9 @@ class AdvisorRulesTest {
         assertEquals("cappace|2026-09-28|cat:x", c.threadKey)
         // 800 في 5 أيام ⇒ 4,800 للشهر؛ الباقي 200 ÷ 160 في اليوم ⇒ بعد يومين
         assertEquals(uiText(TextKey.ADVISOR_CAP_PACE_BODY, formatMoney(80_000), formatMoney(100_000), formatMoney(480_000), "2026-10-04"), c.body)
-        assertNull(cap(List(4) { 20_000L }, 100_000, day4), "قبل اليوم الخامس ما بنحكمش")
+        assertNull(cap(List(4) { 20_000L }, 100_000, day2), "قبل اليوم التالت ما بنحكمش")
+        assertNotNull(cap(List(4) { 20_000L }, 100_000, day3), "اليوم التالت ⇒ بنحكم (رد المالك — كانت الخامس)")
+        assertNotNull(cap(List(4) { 20_000L }, 100_000, day4))
     }
 
     @Test fun paceNeedsThreeRepeatsAndCrossesStrictly() {
@@ -57,8 +61,9 @@ class AdvisorRulesTest {
         assertEquals(86_000L, r.projectedMinor)
         assertEquals(56_000L, r.spentMinor)
         assertNull(cap(listOf(50_000, 2_000, 2_000, 2_000), 100_000, day5))
-        assertTrue(isLump(40_000, 100_000))
-        assertFalse(isLump(39_999, 100_000))
+        assertTrue(isLump(50_000, 100_000), "النص بالظبط ⇒ خبطة (رد المالك)")
+        assertFalse(isLump(49_999, 100_000))
+        assertFalse(isLump(40_000, 100_000), "الـ40% القديمة مابقتش خبطة")
         assertFalse(isLump(90_000, null), "مفيش أساس ⇒ مفيش حكم")
     }
 
@@ -91,8 +96,10 @@ class AdvisorRulesTest {
         assertNull(habit(listOf(15_000, 15_000, 15_000), 40_000, progress = null), "مفيش خطة")
         assertNull(habit(listOf(15_000, 15_000, 15_000), 40_000, progress = goalProgress(goal, null, 0, day5)), "رصيد الخطة مش معروف")
         assertNull(habit(listOf(15_000, 15_000, 15_000), 40_000, progress = goalProgress(goal, 10_000, 0, "2026-01-20")), "الخطة جديدة — معدلها مش معروف")
-        assertNull(habit(listOf(15_000, 15_000, 15_000), 40_000, today = day4), "قبل اليوم الخامس")
-        assertNull(habit(listOf(20_000, 20_000, 20_000), 40_000), "كل واحدة خبطة (≥ 40% من المعتاد) ⇒ مفيش معدل")
+        assertNull(habit(listOf(15_000, 15_000, 15_000), 40_000, today = day2), "قبل اليوم التالت")
+        assertNotNull(habit(listOf(15_000, 15_000, 15_000), 40_000, today = day3), "اليوم التالت")
+        assertNull(habit(listOf(20_000, 20_000, 20_000), 40_000), "كل واحدة خبطة (≥ 50% من المعتاد) ⇒ مفيش معدل")
+        assertNotNull(habit(listOf(18_000, 18_000, 18_000), 40_000), "45% من المعتاد مابقتش خبطة ⇒ معدل")
     }
 
     @Test fun habitTextFollowsTheOwnerShapeAndCountsTimesNotItems() {

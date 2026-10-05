@@ -57,7 +57,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     // صفحة الإشعارات (§69) — نفس الحقول الإجبارية في `AlertCodecs.alertInbox`. النوع المجهول ما بيترفضش هنا (بيتخطّى في الدمج)
     ALERT_INBOX_GROUP to listOf("threadKey", "eventKey", "kind", "flow", "title", "body", "delivery", "inAppWindow", "factors", "createdAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt", "occurrenceDate", "deadline")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(

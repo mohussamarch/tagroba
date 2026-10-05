@@ -58,4 +58,22 @@ class SavingsGoalsOnFirestoreTest {
         assertEquals(true, saudi.savingsGoals.listAll().single().archived)
         assertEquals(1, overview.load("2026-10-05", includeArchived = true).size)
     }
+
+    /** النجمة ⭐ (رد المالك، صفحة الضبط): خطة واحدة بس — النقل بيمسح الحقل من القديمة في نفس الدفعة، والمستند من غير نجمة من غير الحقل. */
+    @Test fun theStarMovesAndTheOldDocumentLosesTheField() = run {
+        val uid = "kt-goal-star-" + java.util.UUID.randomUUID()
+        val db = Emulator.firestore()
+        val account = FirestoreSpace.forAccount(db, uid)
+        val app = FirestoreContainer(FirestoreSpace.forUser(db, uid))
+        val manage = ManageSavingsGoals(ManageSavingsGoalsDeps(app.savingsGoals, app.goalContributions, SequentialIdGenerator(), FixedClock("2026-10-05T10:00:00.000Z")))
+        val a = manage.create(GoalInput("سفر وهمي", 1_200_000, Currency.SAR, "2026-01-01", "2026-12-31"))
+        val b = manage.create(GoalInput("سيارة وهمية", 2_000_000, Currency.SAR, "2026-01-01", "2027-06-30"))
+        val group = SavingsGoalCodecs.savingsGoals.group
+        assertNull(assertNotNull(account.readDoc(group, a.id))["starred"], "من غير نجمة ⇒ الحقل مش موجود")
+        manage.star(a.id)
+        assertEquals(true, assertNotNull(account.readDoc(group, a.id))["starred"])
+        manage.star(b.id)
+        assertTrue("starred" !in assertNotNull(account.readDoc(group, a.id)), "النجمة اتشالت ⇒ الحقل اتمسح")
+        assertEquals(listOf(b.id), app.savingsGoals.listAll().filter { it.starred }.map { it.id })
+    }
 }

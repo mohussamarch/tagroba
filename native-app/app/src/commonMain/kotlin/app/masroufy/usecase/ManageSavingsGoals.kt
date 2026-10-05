@@ -91,6 +91,22 @@ class ManageSavingsGoals(private val deps: ManageSavingsGoalsDeps) {
         return goal
     }
 
+    /**
+     * النجمة ⭐ (رد المالك، صفحة الضبط 2026-10-05): الخطة اللي habitVsGoal بيقيس عليها. **خطة واحدة بس في الحساب** — النجمة على
+     * خطة بتشيلها من أي خطة تانية في نفس الكتابة. [starred] false ⇒ بتتشال من الخطة دي بس. الخطة المؤرشفة ما تاخدش نجمة
+     * (ولو اتأرشفت وهي عليها نجمة، النجمة بتفضل بس المساعد بيتجاهلها لحد ما ترجع — `goalForHabit`).
+     */
+    suspend fun star(id: Id, starred: Boolean = true): SavingsGoal {
+        val all = deps.goals.listAll()
+        val goal = all.firstOrNull { it.id == id } ?: throw SavingsGoalError(uiText(TextKey.GOAL_NOT_FOUND))
+        if (starred && goal.archived) throw SavingsGoalError(uiText(TextKey.GOAL_ARCHIVED))
+        val now = deps.clock.nowIso()
+        val updated = goal.copy(starred = starred, updatedAt = now)
+        val others = if (!starred) emptyList() else all.filter { it.id != id && it.starred }.map { it.copy(starred = false, updatedAt = now) }
+        deps.goals.saveMany(listOf(updated) + others)
+        return updated
+    }
+
     /** إيداع يدوي (الخطة اليدوية بس، ومش مؤرشفة). موجب دايمًا. */
     suspend fun recordContribution(goalId: Id, date: IsoDate, amountMinor: Halalas, note: String? = null): GoalContribution {
         val goal = find(goalId)

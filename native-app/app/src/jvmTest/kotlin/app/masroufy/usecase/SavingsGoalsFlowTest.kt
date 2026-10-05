@@ -86,6 +86,31 @@ class SavingsGoalsFlowTest {
         assertFailsWith<SavingsGoalError>("بلد مش موجودة") { manage.create(manual.copy(linkedWalletId = "w-save", linkedSpaceId = "eg")) }
     }
 
+    @Test fun onlyOneGoalCarriesTheStar() = runBlocking<Unit> {
+        val a = manage.create(manual)
+        val b = manage.create(manual.copy(name = "سيارة وهمية"))
+        val c = manage.create(manual.copy(name = "بيت وهمي"))
+        assertEquals(emptyList(), goals.listAll().filter { it.starred }, "الجديدة من غير نجمة")
+        manage.star(a.id)
+        assertEquals(listOf(a.id), goals.listAll().filter { it.starred }.map { it.id })
+        manage.star(b.id)
+        assertEquals(listOf(b.id), goals.listAll().filter { it.starred }.map { it.id }, "النجمة اتنقلت — مش اتنين")
+        manage.star(b.id)
+        assertEquals(listOf(b.id), goals.listAll().filter { it.starred }.map { it.id }, "نفس الخطة تاني ⇒ زي ما هي")
+        manage.star(c.id, starred = false)
+        assertEquals(listOf(b.id), goals.listAll().filter { it.starred }.map { it.id }, "شيل النجمة من خطة مش عليها ⇒ ولا حاجة اتغيرت")
+        manage.star(b.id, starred = false)
+        assertEquals(emptyList(), goals.listAll().filter { it.starred }, "شيلها ⇒ ولا خطة")
+        // التعديل والأرشفة بيسيبوا النجمة؛ المؤرشفة ما تاخدش نجمة جديدة
+        manage.star(a.id)
+        assertEquals(true, manage.edit(a.id, manual.copy(targetMinor = 1_300_000)).starred)
+        assertEquals(true, manage.archive(a.id).starred)
+        assertFailsWith<SavingsGoalError> { manage.star(a.id) }
+        assertFailsWith<SavingsGoalError> { manage.star("g-404") }
+        manage.star(c.id)
+        assertEquals(listOf(c.id), goals.listAll().filter { it.starred }.map { it.id }, "النجمة اتشالت من المؤرشفة كمان")
+    }
+
     @Test fun unknownBalanceIsUnavailableNotZero() = runBlocking<Unit> {
         manage.create(manual.copy(linkedWalletId = "w-save", linkedSpaceId = "default"))
         val noLedger = LoadGoalsOverview(LoadGoalsOverviewDeps(goals, contributions))

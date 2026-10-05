@@ -19,12 +19,15 @@ object SavingsGoalCodecs {
                 req("id", g.id); req("name", g.name); req("targetMinor", g.targetMinor); req("currency", g.currency.name)
                 req("startedAt", g.startDate); req("deadline", g.targetDate); opt("linkedWalletId", g.linkedWalletId); opt("linkedSpaceId", g.linkedSpaceId)
                 req("archived", g.archived); req("createdAt", g.createdAt); req("updatedAt", g.updatedAt)
+                // النجمة ⭐ بتتكتب بس لو true — المستند والنسخة الشاملة من غيرها هما هما زي قبلها، وشيلها بيمسح الحقل (merge)
+                opt("starred", g.starred.takeIf { it })
             }
         },
         { d ->
             SavingsGoal(
                 d.str("id"), d.str("name"), d.long("targetMinor"), d.wire("currency", Currency::valueOf), d.str("startedAt"), d.str("deadline"),
                 d.strOrNull("linkedWalletId"), d.strOrNull("linkedSpaceId"), d.bool("archived"), d.str("createdAt"), d.str("updatedAt"),
+                d.boolOrNull("starred") ?: false,
             )
         },
     )

@@ -24,6 +24,8 @@ const val GOAL_PACE_MIN_DAYS = 30
 /**
  * الخطة. [startDate] و[targetDate] بيتخزنوا باسم `startedAt` و`deadline` (أسماء تواريخ النسخة الشاملة بتفحصها أصلًا).
  * [linkedWalletId] + [linkedSpaceId] = المدّخر من رصيد المحفظة دي (في البلد دي)؛ null = يدوي من [GoalContribution].
+ * [starred] = الخطة اللي عليها نجمة ⭐ — habitVsGoal بيقيس عليها (رد المالك، صفحة الضبط 2026-10-05). **خطة واحدة بس في الحساب**
+ * (`ManageSavingsGoals.star` بيشيل النجمة من الباقيين). بيتكتب في المستند **بس لو true** ⇒ المستندات والنسخ القديمة هي هي.
  */
 data class SavingsGoal(
     val id: Id,
@@ -37,6 +39,7 @@ data class SavingsGoal(
     val archived: Boolean = false,
     val createdAt: String,
     val updatedAt: String,
+    val starred: Boolean = false,
 ) {
     val manual: Boolean get() = linkedWalletId == null
 }

@@ -13,6 +13,7 @@ import app.masroufy.core.SavingsGoal
 import app.masroufy.core.Transaction
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.emptyProfile
+import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAllocationRepository
 import app.masroufy.memory.MemoryBudgetRepository
 import app.masroufy.memory.MemoryCategoryRepository
@@ -29,6 +30,7 @@ import app.masroufy.memory.MemoryRoscaRepository
 import app.masroufy.memory.MemorySavingsGoalRepository
 import app.masroufy.memory.MemorySettlementRepository
 import app.masroufy.memory.MemoryTransactionRepository
+import app.masroufy.memory.SequentialIdGenerator
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -75,6 +77,7 @@ class AdvisorPaceFlowTest {
         past: List<Transaction> = history(),
         withGoal: Boolean = true,
         withBudget: Boolean = true,
+        overview: LoadGoalsOverview = goals,
     ): List<app.masroufy.core.AlertCandidate> {
         val txns = MemoryTransactionRepository(past + current)
         val cats = MemoryCategoryRepository(categories)
@@ -85,7 +88,7 @@ class AdvisorPaceFlowTest {
         )
         val budget = if (!withBudget) null else LoadBudgetScreen(LoadBudgetScreenDeps(txns, cats, allocations, budgets)).load(LoadBudgetScreenRequest(period, today, 28))
         val advisor = AdvisorSignals(
-            AdvisorSignalsDeps(txns, allocations, cats, MemoryProfileRepository(emptyProfile().copy(payday = 28)), goals = if (withGoal) goals else null),
+            AdvisorSignalsDeps(txns, allocations, cats, MemoryProfileRepository(emptyProfile().copy(payday = 28)), goals = if (withGoal) overview else null),
         )
         val dues = LoadDues(
             LoadDuesDeps(
@@ -121,7 +124,34 @@ class AdvisorPaceFlowTest {
         assertTrue(AlertKind.CAP_PACE in found.kinds(), "$found")
         assertEquals("cappace|2026-09-28|cat:$fun_", found.single { it.kind == AlertKind.CAP_PACE }.threadKey)
         assertTrue(AlertKind.HABIT_VS_GOAL in found.kinds(), "والترفيه اختياري وأعلى من معتاده بكتير ⇒ الخطة مش هتكمل")
-        assertEquals(emptySet(), candidates(split, "2026-10-01").kinds(), "قبل اليوم الخامس")
+    }
+
+    @Test fun thePaceStartsOnTheThirdDay() = runBlocking<Unit> {
+        // رد المالك (صفحة الضبط): من اليوم التالت مش الخامس — 3 مرات في أول يومين
+        val early = listOf("2026-09-28", "2026-09-28", "2026-09-29").map { txn(it, 20_000, fun_) }
+        assertEquals(emptySet(), candidates(early, "2026-09-29").kinds(), "اليوم التاني ⇒ بدري")
+        assertTrue(AlertKind.CAP_PACE in candidates(early, "2026-09-30").kinds(), "اليوم التالت ⇒ بنحكم")
+    }
+
+    @Test fun habitMeasuresAgainstTheStarredGoal() = runBlocking<Unit> {
+        // خطة قريبة فايضها كبير (ساكتة) وخطة أبعد متأخرة (بتنبّه) — بيانات مخترعة
+        val repo = MemorySavingsGoalRepository(
+            listOf(
+                SavingsGoal("g-near", "خطة قريبة وهمية", 1_200_000, Currency.SAR, "2026-01-01", "2026-12-31", createdAt = "c", updatedAt = "c"),
+                SavingsGoal("g-far", "خطة بعيدة وهمية", 2_000_000, Currency.SAR, "2026-01-01", "2027-06-30", createdAt = "c", updatedAt = "c"),
+            ),
+        )
+        val deposits = MemoryGoalContributionRepository(listOf(GoalContribution("c-n", "g-near", "2026-02-01", 1_190_000, "x"), GoalContribution("c-f", "g-far", "2026-02-01", 500_000, "x")))
+        val overview = LoadGoalsOverview(LoadGoalsOverviewDeps(repo, deposits))
+        val manage = ManageSavingsGoals(ManageSavingsGoalsDeps(repo, deposits, SequentialIdGenerator(), FixedClock("2026-10-03T08:00:00.000Z")))
+        val coffees = listOf("2026-09-29", "2026-10-01", "2026-10-02").map { txn(it, 10_000, coffee) }
+        assertEquals(emptySet(), candidates(coffees, "2026-10-03", overview = overview).kinds(), "من غير نجمة ⇒ الأقرب (لسه هتكمل) ⇒ ساكت")
+        manage.star("g-far")
+        val c = candidates(coffees, "2026-10-03", overview = overview).single()
+        assertEquals(AlertKind.HABIT_VS_GOAL, c.kind)
+        assertTrue(c.body.contains("بدل 20,000.00 ر.س بحلول 2027-06-30"), "على الخطة اللي عليها نجمة رغم إن التانية أقرب: ${c.body}")
+        manage.archive("g-far")
+        assertEquals(emptySet(), candidates(coffees, "2026-10-03", overview = overview).kinds(), "النجمة على مؤرشفة ⇒ الأقرب تاني")
     }
 
     @Test fun twoCoffeesStayQuietThreeCoffeesWarn() = runBlocking<Unit> {

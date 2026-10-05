@@ -15,6 +15,10 @@ class MemorySavingsGoalRepository(seed: List<SavingsGoal> = emptyList()) : Savin
     override suspend fun save(goal: SavingsGoal) {
         items[goal.id] = goal
     }
+
+    override suspend fun saveMany(goals: List<SavingsGoal>) {
+        goals.forEach { items[it.id] = it }
+    }
 }
 
 class MemoryGoalContributionRepository(seed: List<GoalContribution> = emptyList()) : GoalContributionRepository {

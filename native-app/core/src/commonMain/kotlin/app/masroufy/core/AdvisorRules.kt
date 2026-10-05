@@ -11,14 +11,17 @@ package app.masroufy.core
  * **القاعدة 10:** أي مدخل مش معروف (معتاد · رصيد · خطة) ⇒ مفيش تنبيه — مش تنبيه غلط.
  */
 
-/** المعدل ما بيتحسبش قبل اليوم الخامس من الشهر المالي (اليوم الأول = 1). */
-const val PACE_MIN_ELAPSED_DAYS = 5
+/**
+ * رد المالك (صفحة الضبط 2026-10-05): تنبيهات المعدل بتبدأ من **اليوم التالت** في الشهر المالي (اليوم الأول = 1).
+ * بيستخدمه [readPace] بس ⇒ capPace وhabitVsGoal وunusual. مش هو `MIN_DAYS_FOR_FORECAST` (توقّع شاشة الميزانية — معنى تاني وفاضل 5).
+ */
+const val PACE_MIN_ELAPSED_DAYS = 3
 
 /** قرار المالك (§68): تنبيه المعدل محتاج 3 عمليات أو أكتر في الشهر (من غير الخبطات). */
 const val MIN_REPEATS_FOR_PACE = 3
 
-/** الخبطة الواحدة: عملية ≥ 40% من سقف البند (أو من معتاده لو مفيش سقف) — ⚠️ مستني تأكيد المالك (§68). */
-const val LUMP_PERCENT_OF_BASE = 40
+/** الخبطة الواحدة: عملية ≥ 50% من سقف البند (أو من معتاده لو مفيش سقف) — رد المالك (صفحة الضبط 2026-10-05، كانت 40%). */
+const val LUMP_PERCENT_OF_BASE = 50
 
 /** «أعلى من المعتاد بوضوح»: المتوقع للشهر ≥ 130% من المعتاد. */
 const val HABIT_ABOVE_USUAL_PERCENT = 130
@@ -31,7 +34,9 @@ const val OVERCOMMIT_REGROW_PERCENT = 25
 
 /**
  * البنود «الاختيارية» (discretionary) — قايمة ثابتة مكتوبة بمعرّفات شجرة التصنيفات (المعرّف ما بيتغيرش لما الاسم يتغير §66):
- * مطاعم وقهوة (وفروعها) · ترفيه (وفروعه) · التسوق (وفروعه) · عطور · إكسسوارات. أي فرع المستخدم ضافه تحت واحد منهم بيتحسب كمان.
+ * مطاعم وقهوة (وفروعها) · ترفيه (وفروعه) · التسوق (وفروعه) · عطور · إكسسوارات · **هدايا** · **حلاقة** · **تجميل (الصالون)** —
+ * الأخيرين رد المالك (صفحة الضبط 2026-10-05: «الهدايا والصالون/الحلاق»). أي فرع المستخدم ضافه تحت واحد منهم بيتحسب كمان.
+ * المعرّفات نفسها في شجرة مصر (شجرة السعودية + فروق ما بتلمسش العناية الشخصية ولا الهدايا).
  * البقالة والبيت والسيارة والصحة والتعليم والتبرعات **مش اختيارية** (اختيار Claude — المالك يقدر يغيّره).
  */
 val DISCRETIONARY_CATEGORY_IDS: Set<Id> = setOf(
@@ -40,13 +45,23 @@ val DISCRETIONARY_CATEGORY_IDS: Set<Id> = setOf(
     "cat-التسوق",
     "cat-العنايه-الشخصيه--عطور",
     "cat-العنايه-الشخصيه--اكسسوارات",
+    GiftCategories.ROOT,
+    "cat-العنايه-الشخصيه--حلاقه",
+    "cat-العنايه-الشخصيه--تجميل",
 )
 
-/** التصنيف أو أي أب ليه في [DISCRETIONARY_CATEGORY_IDS]. [parentOf] = أب كل تصنيف. */
+/**
+ * مستثنى حتى لو أبوه اختياري: «هدايا › نقوط» ([GiftCategories.EVENT_GIFTS]) — النقوط **ارتباط متبادل** (§44 · §64) مش صرف بمزاجك،
+ * فالنقطة اللي اديتها في فرح ما بتطلعش «قلّل N مرات». أي فرع تحتها مستثنى كمان. (اختيار Claude — المالك يقدر يغيّره.)
+ */
+val NOT_DISCRETIONARY_CATEGORY_IDS: Set<Id> = setOf(GiftCategories.EVENT_GIFTS)
+
+/** أول تصنيف في السلسلة (التصنيف ثم أبوه …) موجود في واحدة من القايمتين هو اللي بيحكم. [parentOf] = أب كل تصنيف. */
 fun isDiscretionary(categoryId: Id?, parentOf: Map<Id, Id?>): Boolean {
     var id = categoryId
     var depth = 0
     while (id != null && depth++ < 8) {
+        if (id in NOT_DISCRETIONARY_CATEGORY_IDS) return false
         if (id in DISCRETIONARY_CATEGORY_IDS) return true
         id = parentOf[id]
     }
@@ -117,6 +132,21 @@ fun capPaceCandidate(label: String, targetKey: String, capMinor: Halalas, readin
             formatMoney(projected, currency), crossing,
         ),
     )
+}
+
+/**
+ * الخطة اللي habitVsGoal بيقيس عليها. **رد المالك (صفحة الضبط 2026-10-05): الخطة اللي عليها نجمة ⭐** ([SavingsGoal.starred]).
+ * الخطة لازم تبقى «شغالة»: مش مؤرشفة · بعملة المساحة · النهارده بين البداية والهدف ومعدلها معروف (ماشي/ورا).
+ * مفيش نجمة، أو اللي عليها نجمة مش شغالة (مؤرشفة · خلصت · عملة تانية · لسه جديدة) ⇒ **أقرب خطة شغالة تاريخًا**
+ * — **اختيار Claude — المالك يقدر يغيّره.** (لو نسخة قديمة جابت نجمتين، الأقرب منهم.)
+ */
+fun goalForHabit(all: List<GoalProgress>, currency: Currency): GoalProgress? {
+    val running = all.filter {
+        !it.goal.archived && it.goal.currency == currency && it.projectedAtTargetMinor != null &&
+            (it.state == GoalState.ON_TRACK || it.state == GoalState.BEHIND)
+    }
+    val nearest = compareBy<GoalProgress> { it.goal.targetDate }.thenBy { it.goal.id }
+    return running.filter { it.goal.starred }.minWithOrNull(nearest) ?: running.minWithOrNull(nearest)
 }
 
 /** بند اختياري في الشهر ده + الخطة اللي بنقيس عليها. */

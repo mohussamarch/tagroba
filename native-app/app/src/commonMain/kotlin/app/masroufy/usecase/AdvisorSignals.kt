@@ -6,7 +6,6 @@ import app.masroufy.core.DEFAULT_PAYDAY
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.DuesCategories
 import app.masroufy.core.GoalProgress
-import app.masroufy.core.GoalState
 import app.masroufy.core.HABIT_BASELINE_MONTHS
 import app.masroufy.core.Halalas
 import app.masroufy.core.HabitCheck
@@ -18,6 +17,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.assessCoverage
 import app.masroufy.core.capPaceCandidate
 import app.masroufy.core.countsAsPersonalExpense
+import app.masroufy.core.goalForHabit
 import app.masroufy.core.habitVsGoalCandidate
 import app.masroufy.core.isDiscretionary
 import app.masroufy.core.overcommitCandidate
@@ -134,7 +134,7 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
 
     private fun habits(goals: List<GoalProgress>, ctx: AdvisorContext): List<AlertCandidate> {
         val input = ctx.input
-        val goal = pickGoal(goals, input) ?: return emptyList()
+        val goal = goalForHabit(goals, input.currency) ?: return emptyList()
         val parentOf = ctx.categories.associate { it.id to it.parentId }
         val discretionary = ctx.lines.mapNotNull { it.categoryId }.distinct().filter { isDiscretionary(it, parentOf) }
         val caps = input.budget?.categoryBudgets.orEmpty().associate { it.categoryId to it.limitMinor }
@@ -144,15 +144,6 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
             habitVsGoalCandidate(HabitCheck(id, ctx.names[id] ?: return@mapNotNull null, reading, usual, goal, input.period, input.currency))
         }
     }
-
-    /**
-     * الخطة اللي بنقيس عليها: شغالة (مش مؤرشفة · النهارده بين البداية والهدف · معدلها معروف) وبعملة المساحة — **الأقرب تاريخًا**
-     * (اختيار Claude: صرف واحد بيأثر على كل الخطط، فبنقيس على أقرب واحدة بدل تنبيه لكل خطة).
-     */
-    private fun pickGoal(all: List<GoalProgress>, input: AlertGatherInput): GoalProgress? = all
-        .filter { !it.goal.archived && it.goal.currency == input.currency && it.projectedAtTargetMinor != null }
-        .filter { it.state == GoalState.ON_TRACK || it.state == GoalState.BEHIND }
-        .minWithOrNull(compareBy<GoalProgress> { it.goal.targetDate }.thenBy { it.goal.id })
 
     /**
      * آخر [HABIT_BASELINE_MONTHS] شهور مالية **مكتملة** (من يوم الراتب): سطور مصروف كل شهر، أو null لو الشهر مش معروف

@@ -38,6 +38,30 @@ class SavingsGoalBackupTest {
         assertEquals(49, DocumentCodecs.byGroup.size)
     }
 
+    @Test
+    fun `النجمة بتتكتب بس لو موجودة والمستند القديم بيتقري من غيرها`() {
+        val starred = roundTrip(SavingsGoalCodecs.savingsGoals, manual.copy(starred = true))
+        assertEquals(true, starred["starred"])
+        assertFalse("starred" in roundTrip(SavingsGoalCodecs.savingsGoals, manual), "من غير نجمة ⇒ المستند هو هو زي قبلها")
+        assertEquals(setOf("linkedWalletId", "linkedSpaceId", "starred"), SavingsGoalCodecs.savingsGoals.omittedFields(manual), "شيل النجمة بيمسح الحقل (merge)")
+        // مستند اتكتب قبل النجمة (من غير الحقل خالص) ⇒ false
+        val old = SavingsGoalCodecs.savingsGoals.toStore(manual).filterKeys { it != "starred" }
+        assertEquals(false, SavingsGoalCodecs.savingsGoals.decode(old).starred)
+        assertEquals(manual, SavingsGoalCodecs.savingsGoals.decode(old))
+    }
+
+    @Test
+    fun `النجمة بتسافر في النسخة الشاملة ونوعها بيتفحص`() = runBlocking<Unit> {
+        val source = account(withGoals = true).also { it.getValue("savingsGoals")[0] = SavingsGoalCodecs.savingsGoals.toStore(manual.copy(starred = true)) }
+        val file = FullBackup(MemoryFullBackup(source)).create("2026-10-05T12:00:00.000Z")
+        val target = MemoryFullBackup()
+        val restore = FullBackup(target)
+        restore.apply(restore.plan(file.toJsonText()).file)
+        assertEquals(listOf(true, false), target.read().getValue("savingsGoals").map { SavingsGoalCodecs.savingsGoals.decode(it).starred })
+        val broken = account(withGoals = true).also { it.getValue("savingsGoals")[0] = it.getValue("savingsGoals")[0] + ("starred" to "yes") }
+        assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(broken)).create("2026-10-05T12:00:00.000Z") }
+    }
+
     private fun account(withGoals: Boolean) = emptyBackupData().also {
         if (withGoals) {
             it.getValue("savingsGoals") += SavingsGoalCodecs.savingsGoals.toStore(manual)
