@@ -8,6 +8,8 @@ import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.IncomeSource
 import app.masroufy.core.IncomeSourceKind
+import app.masroufy.core.InstallmentKind
+import app.masroufy.core.InstallmentPlan
 import app.masroufy.core.LifeEvent
 import app.masroufy.core.LifeEventKind
 import app.masroufy.core.LocalMoment
@@ -68,7 +70,9 @@ class AdvisorOvercommitFlowTest {
     private val people = MemoryPersonRepository()
     private val dues = LoadDues(
         LoadDuesDeps(
-            MemoryRoscaRepository(), MemoryRoscaEntryRepository(), MemoryInstallmentPlanRepository(), MemoryInstallmentPaymentRepository(), MemoryDebtTermsRepository(),
+            MemoryRoscaRepository(), MemoryRoscaEntryRepository(),
+            MemoryInstallmentPlanRepository(listOf(InstallmentPlan("ip-1", "تقسيط وهمي", "جهة وهمية", InstallmentKind.PURCHASE_PLAN, Currency.SAR, 100_000, 100_000, 100_000, 1, "2026-10-26"))),
+            MemoryInstallmentPaymentRepository(), MemoryDebtTermsRepository(),
             people, MemoryObligationRepository(), MemorySettlementRepository(), MemoryRecurringRepository(), txns,
         ),
     )
@@ -86,6 +90,7 @@ class AdvisorOvercommitFlowTest {
             txns, MemoryAllocationRepository(), MemoryCategoryRepository(), profile,
             leftover = LoadLeftover(LoadLeftoverDeps(calendar, leftoverWallets, txns, reservations, profile, Currency.SAR, incomes)),
             receipts = receipts,
+            calendar = calendar,
         ),
     )
 
@@ -127,6 +132,15 @@ class AdvisorOvercommitFlowTest {
         val solved = runDay()
         assertEquals(emptyList(), advisorLines(), "اتحل ⇒ اختفى")
         assertEquals(1, solved.resolved.size)
+    }
+
+    @Test fun beforePaydayCountsTheDuesStillAhead() = runBlocking<Unit> {
+        // 180 في الحساب، والقسط 1,000 يوم 26، والراتب يوم 28
+        val low = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 18_000, "2026-01-01")))
+        val near = advisor(low).alertCandidates(AlertGatherInput("2026-10-25", period, Currency.SAR)).filter { it.kind == AlertKind.BEFORE_PAYDAY }
+        assertEquals("الراتب بعد 3 يومًا ومعك 180.00 ر.س — وعليك 1,000.00 ر.س مستحقات قبله", near.single().body)
+        assertEquals(emptyList(), advisor(low).alertCandidates(AlertGatherInput("2026-10-22", period, Currency.SAR)).filter { it.kind == AlertKind.BEFORE_PAYDAY }, "6 أيام ⇒ بدري")
+        assertEquals(emptyList(), advisor().alertCandidates(AlertGatherInput("2026-10-25", period, Currency.SAR)).filter { it.kind == AlertKind.BEFORE_PAYDAY }, "معاك 4,100 ⇒ مكفي")
     }
 
     @Test fun unknownBalanceGivesNoAlert() = runBlocking<Unit> {

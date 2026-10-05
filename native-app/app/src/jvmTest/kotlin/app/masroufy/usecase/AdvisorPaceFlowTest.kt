@@ -95,7 +95,8 @@ class AdvisorPaceFlowTest {
         )
         // من نفس خط التنبيهات (GatherAlerts) — المساعد مصدر زي الباقي
         return GatherAlerts(GatherAlertsDeps(dues, advisor = advisor)).gather(AlertGatherInput(today, period, Currency.SAR, budget))
-            .filter { it.kind.group == app.masroufy.core.AlertGroup.ADVISOR }
+            // القواعد التلاتة الأولى بس — unusual وbigOne والملخص الأسبوعي ليهم اختباراتهم (`AdvisorMoreFlowTest`)
+            .filter { it.kind in setOf(AlertKind.CAP_PACE, AlertKind.HABIT_VS_GOAL, AlertKind.OVERCOMMITTED) }
     }
 
     private fun List<app.masroufy.core.AlertCandidate>.kinds() = map { it.kind }.toSet()

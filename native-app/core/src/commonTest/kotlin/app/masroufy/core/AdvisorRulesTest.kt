@@ -164,7 +164,10 @@ class AdvisorRulesTest {
     @Test fun advisorTextsNameVisitsNotItems() {
         val banned = listOf("أكواب", "كوب", "كاسات", "وجبات", "علب")
         val english = Regex("""\bcups?\b""", RegexOption.IGNORE_CASE)
-        for ((name, table) in listOf("فصحى" to MSA_ADVISOR_TEXTS, "مصري" to EGYPTIAN_ADVISOR_TEXTS, "إنجليزي" to ENGLISH_ADVISOR_TEXTS)) {
+        for ((name, table) in listOf(
+            "فصحى" to MSA_ADVISOR_TEXTS + MSA_ADVISOR_MORE_TEXTS, "مصري" to EGYPTIAN_ADVISOR_TEXTS + EGYPTIAN_ADVISOR_MORE_TEXTS,
+            "إنجليزي" to ENGLISH_ADVISOR_TEXTS + ENGLISH_ADVISOR_MORE_TEXTS,
+        )) {
             for ((key, text) in table) {
                 assertTrue(banned.none { text.contains(it) } && !english.containsMatchIn(text), "[$name] $key فيه وحدة صنف: $text")
             }

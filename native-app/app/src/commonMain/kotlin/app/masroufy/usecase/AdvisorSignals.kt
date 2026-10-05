@@ -11,6 +11,7 @@ import app.masroufy.core.HABIT_BASELINE_MONTHS
 import app.masroufy.core.Halalas
 import app.masroufy.core.HabitCheck
 import app.masroufy.core.Id
+import app.masroufy.core.IsoDate
 import app.masroufy.core.Period
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
@@ -23,6 +24,7 @@ import app.masroufy.core.overcommitCandidate
 import app.masroufy.core.overcommitSentGaps
 import app.masroufy.core.personalShareOf
 import app.masroufy.core.readPace
+import app.masroufy.core.recurringKey
 import app.masroufy.core.sumMoney
 import app.masroufy.core.uiText
 import app.masroufy.core.usualMonthMinor
@@ -31,13 +33,14 @@ import app.masroufy.port.AlertReceiptStore
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.ProfileRepository
+import app.masroufy.port.RecurringRepository
 import app.masroufy.port.TransactionRepository
 
 /**
- * «المساعد المالي» (OVERRIDES §68) — المرشحين للتنبيه من القواعد الثلاثة اللي المالك فعّلها: habitVsGoal · overcommitted · capPace.
- * من غير ما يقرر حاجة — القرار والإيصالات في `RunAlertEngine` زي باقي التنبيهات. كل مصدر null = القاعدة دي مش متوصلة ⇒ ساكتة.
+ * «المساعد المالي» (OVERRIDES §68) — المرشحين للتنبيه من الأفكار الـ12 اللي المالك شغّلها. من غير ما يقرر حاجة — القرار والإيصالات
+ * في `RunAlertEngine` زي باقي التنبيهات. كل مصدر null = الأفكار اللي محتاجاه ساكتة.
  * المصروف بنفس قواعد شاشة الميزانية: النوع المقترح للواضح (`withEstimatedKinds`) · نصيبك من العملية · المستبعد من الميزانية برا ·
- * «المستحقات» برا السقف الإجمالي لو صاحب الحساب اختار كده (§56).
+ * «المستحقات» برا السقف الإجمالي لو صاحب الحساب اختار كده (§56). الثمانية التانية في `AdvisorMoreSignals.kt`.
  */
 data class AdvisorSignalsDeps(
     val txns: TransactionRepository,
@@ -45,15 +48,38 @@ data class AdvisorSignalsDeps(
     val categories: CategoryRepository,
     /** يوم الراتب (بداية الشهر المالي) و«المستحقات في الميزانية» — null ⇒ الافتراضي. */
     val profile: ProfileRepository? = null,
-    /** خطط الادخار (habitVsGoal) — null = مش متوصلة. */
+    /** خطط الادخار (habitVsGoal · payFirst · goalNear) — null = مش متوصلة. */
     val goals: LoadGoalsOverview? = null,
-    /** «فاضلك تقريبًا» (overcommitted) — null = مش متوصل. */
+    /** «فاضلك تقريبًا» (overcommitted · beforePayday) — null = مش متوصل. */
     val leftover: LoadLeftover? = null,
     /** إيصالات المحرك — عشان «تاني بس لو النقص كبر». null ⇒ مرة واحدة للفترة. */
     val receipts: AlertReceiptStore? = null,
     /** البلد (بادئة الموضوع `eg:` في الإيصالات). */
     val spaceId: String = DEFAULT_SPACE_ID,
+    /** الاشتراكات والفواتير الدورية (billJump · dupSubs) — null = مش متوصلة. */
+    val recurring: RecurringRepository? = null,
+    /** التقويم — مستحقات قبل الراتب (beforePayday). null ⇒ بنقارن بالصرف المعتاد بس. */
+    val calendar: LoadCalendar? = null,
 )
+
+/** نصيبك من عملية مصروف واحدة. [key] = مفتاح التاجر للاشتراكات (`recurringKey`). */
+internal data class SpendLine(val id: Id, val date: IsoDate, val categoryId: Id?, val amountMinor: Halalas, val key: String)
+
+/** اللي كل الأفكار محتاجاه، متحسب مرة واحدة. [baseline] = آخر 3 شهور مالية مكتملة (null = الشهر مش معروف). */
+internal class AdvisorContext(
+    val input: AlertGatherInput,
+    val categories: List<Category>,
+    val names: Map<Id, String>,
+    val lines: List<SpendLine>,
+    val baseline: List<List<SpendLine>?>,
+    val payday: Int,
+    val duesIds: Set<Id>,
+    val goals: List<GoalProgress>?,
+) {
+    /** المعتاد للبند (أو للشهر كله لو [categoryId] = null وفي [all]). */
+    fun usual(categoryId: Id?, all: Boolean = false): Halalas? =
+        usualMonthMinor(baseline.map { m -> m?.let { rows -> sumMoney(rows.filter { all || it.categoryId == categoryId }.map { it.amountMinor }) } })
+}
 
 class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
     suspend fun alertCandidates(input: AlertGatherInput): List<AlertCandidate> {
@@ -62,69 +88,60 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
         val categories = deps.categories.listAll()
         val names = categories.associate { it.id to it.name }
         val period = input.period
-        val lines = spendLines(period.start, input.today, input, names)
+        val payday = profile?.payday ?: DEFAULT_PAYDAY
+        val ctx = AdvisorContext(
+            input, categories, names, lines(period.start, input.today, input, names), baselineMonths(input, payday, names), payday,
+            DuesCategories.idsIn(categories), deps.goals?.load(input.today),
+        )
 
         input.budget?.let { budget ->
-            if (budget.spentKnown) out += capPace(budget, lines, input, categories, duesInBudget = profile?.duesInBudget ?: true)
+            if (budget.spentKnown) out += capPace(budget, ctx, duesInBudget = profile?.duesInBudget ?: true)
         }
-        deps.goals?.let { goals -> out += habits(goals, lines, input, categories, profile?.payday ?: DEFAULT_PAYDAY, names) }
-        deps.leftover?.let { leftover ->
-            val p = leftover.load(input.today)
+        ctx.goals?.let { goals -> out += habits(goals, ctx) }
+        val leftover = deps.leftover?.load(input.today)
+        leftover?.let { p ->
             val prefix = if (deps.spaceId == DEFAULT_SPACE_ID) "" else "${deps.spaceId}:"
             val sent = deps.receipts?.listAll()?.let { r -> overcommitSentGaps(r.map { it.eventKey }, prefix, period.start) }
             overcommitCandidate(p, input.currency, period.start, sent, input.budget?.totalStatus?.limitMinor)?.let { out += it }
         }
+        out += moreAdvisorCandidates(ctx, out, leftover, deps)
         return out
     }
 
-    /** نصيبك من كل عملية مصروف في [from]..[to] بعملة المساحة: (التصنيف، المبلغ). */
-    private suspend fun spendLines(from: String, to: String, input: AlertGatherInput, names: Map<Id, String>): List<Pair<Id?, Halalas>> =
-        expenseLines(deps.txns.listByDateRange(from, to).filter { it.currency == input.currency }, names)
+    /** سطور مصروف [from]..[to] بعملة المساحة. */
+    private suspend fun lines(from: String, to: String, input: AlertGatherInput, names: Map<Id, String>): List<SpendLine> =
+        spendLinesOf(deps.txns.listByDateRange(from, to).filter { it.currency == input.currency }, names, deps.allocations)
 
-    private suspend fun expenseLines(rows: List<Transaction>, names: Map<Id, String>): List<Pair<Id?, Halalas>> {
-        val counted = withEstimatedKinds(rows, names).transactions
-        val allocations = deps.allocations.listByTransactionIds(counted.map { it.id })
-        return counted.filter { countsAsPersonalExpense(it.economicKind) && !it.excludedFromBudget }
-            .map { it.categoryId to personalShareOf(it, allocations) }.filter { it.second > 0 }
-    }
-
-    private fun capPace(budget: BudgetScreenData, lines: List<Pair<Id?, Halalas>>, input: AlertGatherInput, categories: List<Category>, duesInBudget: Boolean): List<AlertCandidate> {
+    private fun capPace(budget: BudgetScreenData, ctx: AdvisorContext, duesInBudget: Boolean): List<AlertCandidate> {
         val out = mutableListOf<AlertCandidate>()
-        val byId = categories.associateBy { it.id }
+        val input = ctx.input
+        val byId = ctx.categories.associateBy { it.id }
         // سقف التصنيف: نفس مطابقة شاشة الميزانية (التصنيف نفسه)، والتصنيف اللي المستخدم قفل تنبيهه ما بيتنبهش
         for (cb in budget.categoryBudgets) {
             if (!cb.notifyEnabled) continue
-            val amounts = lines.filter { it.first == cb.categoryId }.map { it.second }
+            val amounts = ctx.lines.filter { it.categoryId == cb.categoryId }.map { it.amountMinor }
             val reading = readPace(amounts, cb.limitMinor, input.today, input.period)
             val label = byId[cb.categoryId]?.name ?: continue
             capPaceCandidate(label, "cat:${cb.categoryId}", cb.limitMinor, reading, input.today, input.period, input.currency)?.let { out += it }
         }
         val total = budget.budget?.totalLimitMinor ?: return out
-        val dues = if (duesInBudget) emptySet() else DuesCategories.idsIn(categories)
-        val amounts = lines.filter { it.first !in dues }.map { it.second }
+        val dues = if (duesInBudget) emptySet() else ctx.duesIds
+        val amounts = ctx.lines.filter { it.categoryId !in dues }.map { it.amountMinor }
         val reading = readPace(amounts, total, input.today, input.period)
         capPaceCandidate(uiText(TextKey.ADVISOR_TOTAL_BUDGET), "total", total, reading, input.today, input.period, input.currency)?.let { out += it }
         return out
     }
 
-    private suspend fun habits(
-        goals: LoadGoalsOverview,
-        lines: List<Pair<Id?, Halalas>>,
-        input: AlertGatherInput,
-        categories: List<Category>,
-        payday: Int,
-        names: Map<Id, String>,
-    ): List<AlertCandidate> {
-        val goal = pickGoal(goals.load(input.today), input) ?: return emptyList()
-        val parentOf = categories.associate { it.id to it.parentId }
-        val discretionary = lines.mapNotNull { it.first }.distinct().filter { isDiscretionary(it, parentOf) }
-        if (discretionary.isEmpty()) return emptyList()
-        val history = baselineMonths(input, payday, names)
+    private fun habits(goals: List<GoalProgress>, ctx: AdvisorContext): List<AlertCandidate> {
+        val input = ctx.input
+        val goal = pickGoal(goals, input) ?: return emptyList()
+        val parentOf = ctx.categories.associate { it.id to it.parentId }
+        val discretionary = ctx.lines.mapNotNull { it.categoryId }.distinct().filter { isDiscretionary(it, parentOf) }
         val caps = input.budget?.categoryBudgets.orEmpty().associate { it.categoryId to it.limitMinor }
         return discretionary.mapNotNull { id ->
-            val usual = usualMonthMinor(history.map { month -> month?.let { m -> sumMoney(m.filter { it.first == id }.map { it.second }) } })
-            val reading = readPace(lines.filter { it.first == id }.map { it.second }, caps[id] ?: usual, input.today, input.period)
-            habitVsGoalCandidate(HabitCheck(id, names[id] ?: return@mapNotNull null, reading, usual, goal, input.period, input.currency))
+            val usual = ctx.usual(id)
+            val reading = readPace(ctx.lines.filter { it.categoryId == id }.map { it.amountMinor }, caps[id] ?: usual, input.today, input.period)
+            habitVsGoalCandidate(HabitCheck(id, ctx.names[id] ?: return@mapNotNull null, reading, usual, goal, input.period, input.currency))
         }
     }
 
@@ -141,11 +158,18 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
      * آخر [HABIT_BASELINE_MONTHS] شهور مالية **مكتملة** (من يوم الراتب): سطور مصروف كل شهر، أو null لو الشهر مش معروف
      * (مفيش ولا عملية فيه، أو فيه عملية من غير نوع — زي شاشة الميزانية).
      */
-    private suspend fun baselineMonths(input: AlertGatherInput, payday: Int, names: Map<Id, String>): List<List<Pair<Id?, Halalas>>?> =
+    private suspend fun baselineMonths(input: AlertGatherInput, payday: Int, names: Map<Id, String>): List<List<SpendLine>?> =
         (1..HABIT_BASELINE_MONTHS).map { i ->
             val p: Period = shiftPeriod(input.period, -i, payday)
             val rows = deps.txns.listByDateRange(p.start, p.end).filter { it.currency == input.currency }
-            val coverage = assessCoverage(withEstimatedKinds(rows, names).transactions)
-            if (rows.isEmpty() || coverage.unclassified > 0) null else expenseLines(rows, names)
+            if (rows.isEmpty() || assessCoverage(withEstimatedKinds(rows, names).transactions).unclassified > 0) null else spendLinesOf(rows, names, deps.allocations)
         }
+}
+
+/** نصيبك من كل عملية مصروف (نفس قواعد `categoryDistribution`). */
+internal suspend fun spendLinesOf(rows: List<Transaction>, names: Map<Id, String>, allocations: AllocationRepository): List<SpendLine> {
+    val counted = withEstimatedKinds(rows, names).transactions
+    val shares = allocations.listByTransactionIds(counted.map { it.id })
+    return counted.filter { countsAsPersonalExpense(it.economicKind) && !it.excludedFromBudget }
+        .map { SpendLine(it.id, it.occurredAt, it.categoryId, personalShareOf(it, shares), recurringKey(it)) }.filter { it.amountMinor > 0 }
 }

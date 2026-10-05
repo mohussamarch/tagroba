@@ -38,6 +38,14 @@ private fun lockKey(kind: AlertKind, flow: DueFlow): TextKey {
         AlertKind.HABIT_VS_GOAL -> TextKey.ALERT_LOCK_HABIT
         AlertKind.OVERCOMMITTED -> TextKey.ALERT_LOCK_OVERCOMMITTED
         AlertKind.CAP_PACE -> TextKey.ALERT_LOCK_CAP_PACE
+        AlertKind.UNUSUAL_SPEND -> TextKey.ALERT_LOCK_UNUSUAL
+        AlertKind.BEFORE_PAYDAY -> TextKey.ALERT_LOCK_BEFORE_PAYDAY
+        AlertKind.PAY_FIRST -> TextKey.ALERT_LOCK_PAY_FIRST
+        AlertKind.BILL_JUMP -> TextKey.ALERT_LOCK_BILL_JUMP
+        AlertKind.DUP_SUBS -> TextKey.ALERT_LOCK_DUP_SUBS
+        AlertKind.BIG_ONE -> TextKey.ALERT_LOCK_BIG_ONE
+        AlertKind.GOAL_NEAR -> TextKey.ALERT_LOCK_GOAL_NEAR
+        AlertKind.WEEKLY_SUMMARY -> TextKey.ALERT_LOCK_WEEKLY
         AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_LOCK_GENERIC
     }
 }
@@ -72,6 +80,14 @@ private fun whyKey(kind: AlertKind): Pair<TextKey, List<String>> = when (kind) {
     AlertKind.HABIT_VS_GOAL -> TextKey.ALERT_WHY_HABIT to emptyList()
     AlertKind.OVERCOMMITTED -> TextKey.ALERT_WHY_OVERCOMMITTED to emptyList()
     AlertKind.CAP_PACE -> TextKey.ALERT_WHY_CAP_PACE to emptyList()
+    AlertKind.UNUSUAL_SPEND -> TextKey.ALERT_WHY_UNUSUAL to emptyList()
+    AlertKind.BEFORE_PAYDAY -> TextKey.ALERT_WHY_BEFORE_PAYDAY to emptyList()
+    AlertKind.PAY_FIRST -> TextKey.ALERT_WHY_PAY_FIRST to emptyList()
+    AlertKind.BILL_JUMP -> TextKey.ALERT_WHY_BILL_JUMP to emptyList()
+    AlertKind.DUP_SUBS -> TextKey.ALERT_WHY_DUP_SUBS to emptyList()
+    AlertKind.BIG_ONE -> TextKey.ALERT_WHY_BIG_ONE to emptyList()
+    AlertKind.GOAL_NEAR -> TextKey.ALERT_WHY_GOAL_NEAR to emptyList()
+    AlertKind.WEEKLY_SUMMARY -> TextKey.ALERT_WHY_WEEKLY to emptyList()
     AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_WHY_SERVER to emptyList()
 }
 
