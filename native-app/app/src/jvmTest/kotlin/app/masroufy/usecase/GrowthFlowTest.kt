@@ -91,6 +91,11 @@ class GrowthFlowTest {
         assertEquals(10_098_664L, out.comparison.lines.last().todayMoneyMinor)
         assertTrue(out.inflationText!!.startsWith("التضخم — الهيئة العامة للإحصاء"))
         assertNull(out.todayMoneyReason)
+        // رقم كتبه فوق رقم افتراضي موجود (الذهب 14.88%) ⇒ رقمه هو اللي بيتحسب
+        val typedGold = CompareSavingsGrowth().compare(100_000, 120, 0, "2026-10-05", feed, "SA", userRates = mapOf(GrowthClass.GOLD to 1000))
+        val g = typedGold.choices.first()
+        assertEquals(1000 to true, g.line.rateBp to g.typedByUser)
+        assertEquals(1488, g.default.rateBp, "الافتراضي بيفضل ظاهر جنبه")
         // من غير ما يكتب فايدة بنكه ⇒ السطر «اكتب فائدة بنكك» مش صفر
         val untyped = CompareSavingsGrowth().compare(100_000, 120, 0, "2026-10-05", feed, "SA")
         val d = untyped.choices.first { it.line.growthClass == GrowthClass.DEPOSIT }
