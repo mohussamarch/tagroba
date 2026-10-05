@@ -34,6 +34,8 @@ data class CountryPack(
     val categoryDelta: List<CategoryDeltaEdit> = emptyList(),
     /** نسخة العربي في البلد دي (OVERRIDES §66): فصحى مختصرة إلا لو اتحدد غير كده (مصر ⇒ المصري الحالي بالحرف). */
     val arabicVariant: ArabicVariant = ArabicVariant.MSA,
+    /** أسماء بذور التصنيفات بالفصحى (§66 — [SAUDI_MSA_SEED_NAMES]) — **المعرّف ما بيتغيرش**. فاضية = أسماء الشجرة زي ما هي. */
+    val seedNames: List<SeedNameChange> = emptyList(),
     /**
      * اللي لسه ناقص في الحزمة دي بالاسم (للمطور) — الحزمة الجاهزة قايمتها فاضية.
      * **ممنوع** تسيبها فاضية وحاجة ناقصة: ده بيخلي التطبيق يدّعي إنه بيدعم بلد وهو لأ (CLAUDE.md #15).
@@ -71,8 +73,10 @@ val SAUDI_PACK = CountryPack(
     smsReader = SaudiBankSmsReader,
     statementSchemas = listOf(SchemaId.PREVIEW, SchemaId.LEGACY, SchemaId.ALRAJHI_PDF, SchemaId.SMS),
     bankWalletName = "البنك",
-    cashWalletName = "كاش",
+    // فصحى (§66 — اختيار Claude، المالك يقدر يغيّره). مصر بتفضل «كاش».
+    cashWalletName = "النقد",
     arabicVariant = ArabicVariant.MSA,
+    seedNames = SAUDI_MSA_SEED_NAMES,
 )
 
 /**

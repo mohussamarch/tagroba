@@ -55,7 +55,8 @@ fun applyCategoryDelta(raw: RawCategoryTree, edits: List<CategoryDeltaEdit>): Ra
  * (القواعد والتجار في ملفات المراجع بيشاوروا على التصنيف **بالاسم**).
  */
 fun buildCountryCategoryTree(saudiRaw: RawCategoryTree, pack: CountryPack): BuiltCategoryTree {
-    val built = buildCategoryTree(applyCategoryDelta(saudiRaw, pack.categoryDelta))
+    // الأسماء بالفصحى (§66) بعد البناء: المعرّف من الاسم القديم ما بيتغيرش، والاسم القديم بيفضل يوصل للتصنيف
+    val built = applySeedNames(buildCategoryTree(applyCategoryDelta(saudiRaw, pack.categoryDelta)), pack.seedNames)
     val renames = pack.categoryDelta.filterIsInstance<CategoryDeltaEdit.RenameSub>()
     if (renames.isEmpty()) return built
     val aliases = LinkedHashMap(built.aliases)

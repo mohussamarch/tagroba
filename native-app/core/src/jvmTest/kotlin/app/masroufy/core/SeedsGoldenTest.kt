@@ -97,7 +97,8 @@ class SeedsGoldenTest {
     @Test fun egyptTreeFromTheRealAppTree() {
         val saudi = buildCountryCategoryTree(appTree, SAUDI_PACK)
         val egypt = buildCountryCategoryTree(appTree, EGYPT_PACK)
-        kotlin.test.assertEquals(buildCategoryTree(appTree), saudi)
+        // السعودية من غير فروق شجرة — نفس المعرّفات، والأسماء بس بالفصحى (§66 — `SeedNamesRealTreeTest`)
+        kotlin.test.assertEquals(buildCategoryTree(appTree).categories.map { it.id }, saudi.categories.map { it.id })
         kotlin.test.assertEquals(saudi.categories.size + 1, egypt.categories.size, "فرعي واحد زيادة («سايس»)")
         for (name in listOf("باركنج", "سايس", "موبايل")) kotlin.test.assertEquals(1, egypt.categories.count { it.name == name }, name)
         for (name in listOf("مواقف وسايس", "جوال")) kotlin.test.assertEquals(0, egypt.categories.count { it.name == name }, name)

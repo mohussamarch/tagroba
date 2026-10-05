@@ -77,7 +77,11 @@ class SpacesTest {
 
     @Test fun egyptTreeIsTheSaudiTreePlusTheListedDelta() {
         val saudi = buildCountryCategoryTree(raw, SAUDI_PACK)
-        assertEquals(buildCategoryTree(raw), saudi, "السعودية من غير أي فرق")
+        // السعودية من غير فروق شجرة — بس أسماء البذور بالفصحى (§66): نفس المعرّفات، و«مواقف وسايس» ⇒ «مواقف»
+        val plain = buildCategoryTree(raw)
+        assertEquals(plain.categories.map { it.id }, saudi.categories.map { it.id }, "المعرّفات زي ما هي")
+        assertEquals(plain.categories.map { if (it.name == "مواقف وسايس") it.copy(name = "مواقف") else it }, saudi.categories)
+        assertEquals(saudi.aliases[normalizeText("مواقف")], saudi.aliases[normalizeText("مواقف وسايس")], "الاسم القديم والجديد بيوصلوا لنفس التصنيف")
         val egypt = buildCountryCategoryTree(raw, EGYPT_PACK)
         fun subsOf(tree: BuiltCategoryTree, main: String): List<Category> {
             val parent = tree.categories.single { it.parentId == null && it.name == main }
@@ -94,7 +98,7 @@ class SpacesTest {
         // باقي التصنيفات بنفس المعرّفات بالظبط — الفرق 3 فرعيات بس
         val changed = setOf("باركنج", "سايس", "موبايل")
         assertEquals(
-            saudi.categories.filter { it.name != "مواقف وسايس" && it.name != "جوال" }.map { it.id },
+            saudi.categories.filter { it.name != "مواقف" && it.name != "جوال" }.map { it.id },
             egypt.categories.filter { it.name !in changed }.map { it.id },
         )
     }
