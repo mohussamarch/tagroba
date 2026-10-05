@@ -20,6 +20,7 @@ import app.masroufy.core.computePosition
 import app.masroufy.core.formatMoney
 import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.jsTrim
+import app.masroufy.core.storedAssetKind
 import app.masroufy.core.uiText
 import app.masroufy.port.AssetLotRepository
 import app.masroufy.port.AssetPriceRepository
@@ -129,10 +130,13 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
         if (name.length > MAX_ASSET_NAME) throw AssetError(uiText(TextKey.PROFILE_NAME_TOO_LONG, "$MAX_ASSET_NAME"))
         if (deps.assets.listAll().any { jsTrim(it.name) == name }) throw AssetError(uiText(TextKey.ASSET_NAME_DUPLICATE, name))
 
+        // العقار (§69.7) بيتخزن "other" + علامة — عشان التطبيق الحالي (`storedAssetKind`)
+        val (storedKind, realEstate) = storedAssetKind(input.kind)
         val asset = Asset(
             id = deps.ids.next("asset"),
             name = name,
-            kind = input.kind,
+            kind = storedKind,
+            realEstate = realEstate,
             unitLabel = input.unitLabel?.let(::jsTrim)?.takeIf { it.isNotEmpty() } ?: ASSET_UNIT_DEFAULTS.getValue(input.kind),
             currency = input.currency ?: Currency.SAR,
             archived = false,

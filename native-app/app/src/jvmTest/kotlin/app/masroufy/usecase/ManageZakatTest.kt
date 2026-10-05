@@ -11,6 +11,7 @@ import app.masroufy.core.Obligation
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.Person
 import app.masroufy.core.QUANTITY_SCALE
+import app.masroufy.core.RealEstateValuation
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Rosca
 import app.masroufy.core.RoscaEntry
@@ -77,6 +78,9 @@ class ManageZakatTest {
         extraTxns: List<Transaction> = emptyList(),
         extraObligations: List<Obligation> = emptyList(),
         settled: List<Settlement> = emptyList(),
+        extraAssets: List<Asset> = emptyList(),
+        extraLots: List<AssetLot> = emptyList(),
+        extraPrices: List<AssetPrice> = emptyList(),
     ) {
         val years = MemoryZakatYearRepository()
         val facts = MemoryZakatFactRepository()
@@ -96,16 +100,16 @@ class ManageZakatTest {
                     listOf(
                         Asset("a-bar", "سبيكة وهمية", "gold", "جرام", currency, false), Asset("a-ring", "شبكة وهمية", "gold", "جرام", currency, false),
                         Asset("a-shares", "سهم وهمي", "stock", "سهم", currency, false), Asset("a-coin", "عملة وهمية", "digital", "وحدة", currency, false),
-                    ),
+                    ) + extraAssets,
                 ),
                 lots = MemoryAssetLotRepository(
                     listOf(
                         AssetLot("l-1", "a-bar", "2025-03-05", 100 * g, 2_500_000, 0), AssetLot("l-2", "a-ring", "2024-05-01", 50 * g, 1_200_000, 0),
                         AssetLot("l-3", "a-shares", "2025-03-10", g, 1_800_000, 0), AssetLot("l-4", "a-coin", "2025-05-01", g, 800_000, 0),
-                    ),
+                    ) + extraLots,
                 ),
                 sales = MemoryAssetSaleRepository(),
-                prices = MemoryAssetPriceRepository(listOf(AssetPrice("a-shares", 2_000_000, "2026-02-17", "manual"), AssetPrice("a-coin", 900_000, "2026-02-17", "manual"))),
+                prices = MemoryAssetPriceRepository(listOf(AssetPrice("a-shares", 2_000_000, "2026-02-17", "manual"), AssetPrice("a-coin", 900_000, "2026-02-17", "manual")) + extraPrices),
                 people = MemoryPersonRepository(listOf(Person("p-1", "شخص وهمي"))),
                 obligations = MemoryObligationRepository(
                     listOf(Obligation("o-1", "p-1", "t-4", ObligationKind.RECEIVABLE, 300_000, currency), Obligation("o-2", "p-1", null, ObligationKind.LOAN_PAYABLE, 1_000_000, currency)) + extraObligations,
@@ -149,6 +153,23 @@ class ManageZakatTest {
         val next = acc.manage.openYear()!!
         assertEquals(Triple("2027-02-08", "2026-02-18", false), Triple(next.dueAt, next.hawlStart, next.closed), "السنة الجاية اتفتحت لوحدها")
         assertFailsWith<ZakatError> { acc.manage.close(year.id, "2026-02-18", sa) }
+    }
+
+    // العقار (§69.7 — بالعلامة أو بطريقة القيمة) زي ما كان: NOT_COVERED «راجعه بنفسك» ومش بيتجمع (عقار السكن مالوش زكاة إلا للتجارة)
+    @Test
+    fun `العقار ما بيتجمعش في الزكاة زي ما كان`() = runBlocking<Unit> {
+        val acc = Account(
+            extraAssets = listOf(
+                Asset("a-flat", "شقة وهمية", "other", "وحدة", Currency.SAR, false, realEstate = true),
+                Asset("a-land", "أرض وهمية", "other", "وحدة", Currency.SAR, false, valuation = RealEstateValuation.WHOLE),
+            ),
+            extraLots = listOf(AssetLot("l-f", "a-flat", "2020-01-01", QUANTITY_SCALE, 50_000_000, 0), AssetLot("l-l", "a-land", "2020-01-01", QUANTITY_SCALE, 30_000_000, 0)),
+            extraPrices = listOf(AssetPrice("a-flat", 60_000_000, "2026-02-17", "manual"), AssetPrice("a-land", 35_000_000, "2026-02-17", "manual")),
+        ).also { it.answerFacts() }
+        val a = acc.manage.assess(acc.manage.confirmDate("2025-03-01").id, "2026-02-18", sa)
+        assertEquals(7_125_000L to 178_125L, a.totalZakatableMinor to a.dueMinor, "نفس الأرقام من غير العقارين")
+        for (id in listOf("a-flat", "a-land")) assertEquals(ZakatItemStatus.NOT_COVERED, a.items.single { it.holding.id == id }.status, id)
+        assertEquals(60_000_000L, a.items.single { it.holding.id == "a-flat" }.valueMinor, "القيمة بتبان جنبه للمراجعة")
     }
 
     @Test

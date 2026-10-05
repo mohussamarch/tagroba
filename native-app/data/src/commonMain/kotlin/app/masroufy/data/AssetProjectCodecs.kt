@@ -24,6 +24,8 @@ object AssetProjectCodecs {
                 opt("valuation", a.valuation?.wire); opt("areaSqm", a.areaSqm); opt("pricePerSqmMinor", a.pricePerSqmMinor)
                 opt("pricePerSqmAsOf", a.pricePerSqmAsOf); opt("monthlyRentMinor", a.monthlyRentMinor); opt("rentIncreaseBp", a.rentIncreaseBp)
                 opt("vacantMonthsPerYear", a.vacantMonthsPerYear); opt("expectedRateBp", a.expectedRateBp)
+                // علامة العقار (§69.7) — النوع المتخزن بيفضل "other" عشان التطبيق الحالي؛ بتتكتب لو true بس
+                opt("realEstate", a.realEstate.takeIf { it })
             }
         },
         { r ->
@@ -38,6 +40,7 @@ object AssetProjectCodecs {
                 rentIncreaseBp = r.intOrNull("rentIncreaseBp"),
                 vacantMonthsPerYear = r.intOrNull("vacantMonthsPerYear"),
                 expectedRateBp = r.intOrNull("expectedRateBp"),
+                realEstate = r.boolOrNull("realEstate") ?: false,
             )
         },
     )

@@ -83,9 +83,9 @@ class CalculateInheritanceTest {
         assertEquals(
             listOf(
                 EstateItemDraft("بنك وهمي", 1_500_000, EstateItemSource.WALLET, "w-bank"),
-                EstateItemDraft("سبيكة وهمية", 3_000_000, EstateItemSource.ASSET, "a-gold"),
+                EstateItemDraft("سبيكة وهمية", 3_000_000, EstateItemSource.ASSET, "a-gold", "gold"),
                 // من غير سعر ⇒ «مش معروف» مش صفر — المستخدم يكتبه
-                EstateItemDraft("سهم وهمي", null, EstateItemSource.ASSET, "a-stock"),
+                EstateItemDraft("سهم وهمي", null, EstateItemSource.ASSET, "a-stock", "stock"),
             ),
             drafts,
         )

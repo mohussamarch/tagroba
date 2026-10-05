@@ -57,6 +57,7 @@ internal val MSA_GROWTH_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.GROWTH_AREA_NEEDS_REAL_ESTATE to "المساحة وسعر المتر للعقار فقط — اختر طريقة قيمة العقار أولًا",
     TextKey.GROWTH_AREA_POSITIVE to "المساحة تكون أكبر من صفر",
     TextKey.GROWTH_NOT_AREA_VALUED to "قيمة هذا العقار مكتوبة كاملة وليست بسعر المتر",
+    TextKey.ASSET_KIND_REAL_ESTATE to "عقار",
 )
 
 internal val EGYPTIAN_GROWTH_TEXTS: Map<TextKey, String> = mapOf(
@@ -111,6 +112,7 @@ internal val EGYPTIAN_GROWTH_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.GROWTH_AREA_NEEDS_REAL_ESTATE to "المساحة وسعر المتر للعقار بس — اختار طريقة قيمة العقار الأول",
     TextKey.GROWTH_AREA_POSITIVE to "المساحة لازم تبقى أكبر من صفر",
     TextKey.GROWTH_NOT_AREA_VALUED to "العقار ده قيمته مكتوبة كلها مش بسعر المتر",
+    TextKey.ASSET_KIND_REAL_ESTATE to "عقار",
 )
 
 internal val ENGLISH_GROWTH_TEXTS: Map<TextKey, String> = mapOf(
@@ -165,4 +167,5 @@ internal val ENGLISH_GROWTH_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.GROWTH_AREA_NEEDS_REAL_ESTATE to "Area and price per square metre are for property only — choose how the property is valued first",
     TextKey.GROWTH_AREA_POSITIVE to "The area must be more than zero",
     TextKey.GROWTH_NOT_AREA_VALUED to "This property's value is entered as a whole, not by the square metre",
+    TextKey.ASSET_KIND_REAL_ESTATE to "Real estate",
 )

@@ -220,6 +220,8 @@ enum class NoTextReason(val textKey: TextKey) {
     DISTANT_NEARNESS(TextKey.INHERIT_NO_TEXT_DISTANT_NEARNESS),
     /** السعودية م235: أكتر من قريب بصلات مختلفة في مكان نفس الشخص (خال شقيق وخال لأب …) — المادة ما بتقولش نصيبه يتقسم بينهم إزاي. */
     DISTANT_SAME_PLACE(TextKey.INHERIT_NO_TEXT_DISTANT_SAME_PLACE),
+    /** السعودية م235 «حجباً» × م236 «الجهات المختلفة يرث بعضها مع بعض»: قريب من جهة اتمنع بسبب قريب من جهة تانية (رد المالك §69.7). */
+    DISTANT_SIDES_BLOCKING(TextKey.INHERIT_NO_TEXT_DISTANT_SIDES_BLOCKING),
 }
 
 /** سبب «غير مدعوم في النسخة دي». */

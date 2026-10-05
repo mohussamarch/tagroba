@@ -57,6 +57,8 @@ internal class ZakatHoldingsReader(private val deps: ManageZakatDeps) {
                     fact?.saudiCompany,
                 )
                 "digital" -> ZakatHolding.Digital(a.id, a.name, position.marketValueMinor)
+                // العقار (`isRealEstate` — §69.7، النوع المتخزن "other") بيفضل هنا زي ما كان ⇒ «مش داخل في حساب الزكاة — راجعه بنفسك»
+                // (NOT_COVERED) ومش بيتجمع في الزكاة: عقار السكن مالوش زكاة إلا لو للتجارة، والتطبيق ما بيسألش عن نية التجارة في العقار
                 else -> ZakatHolding.Other(a.id, a.name, position.marketValueMinor)
             }
         }
