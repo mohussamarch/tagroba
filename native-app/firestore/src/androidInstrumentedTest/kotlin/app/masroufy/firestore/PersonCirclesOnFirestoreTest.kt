@@ -45,7 +45,10 @@ class PersonCirclesOnFirestoreTest {
         val overview = LoadPeopleOverview(
             LoadPeopleOverviewDeps(c.people, c.personProfiles, c.personRelations, c.occasions, listOf(PeopleSpaceSource(space, c.obligations, c.settlements, c.lifeEvents, c.eventLinks, c.transactions))),
         ).forSpace("2026-10-05", "eg")
-        assertEquals(listOf("p-1", "p-2"), overview.rings.getValue(PersonCircle.FAMILY) + overview.rings.getValue(PersonCircle.OTHER))
+        // «آخرون» برا الدواير (رد المالك §67 — جلسة 17): اللي من غير دايرة في القايمة بس
+        assertEquals(listOf("p-1"), overview.rings.getValue(PersonCircle.FAMILY))
+        assertEquals(false, PersonCircle.OTHER in overview.rings)
+        assertEquals(setOf("p-1", "p-2"), overview.rows.map { it.person.id }.toSet())
         assertEquals(1, overview.relations.size)
         circles.unrelate("p-1", "p-2")
         circles.setProfile("p-1", null, null)

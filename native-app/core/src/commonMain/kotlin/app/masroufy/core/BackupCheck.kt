@@ -51,6 +51,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     "eventPrep" to listOf("eventId", "name", "order", "done", "createdAt"),
     PERSON_PROFILES_GROUP to listOf("personId", "updatedAt"),
     PERSON_RELATIONS_GROUP to listOf("personAId", "personBId", "createdAt"),
+    ALERT_SETTINGS_GROUP to listOf("group", "enabled"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")
@@ -76,6 +77,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "occasions" to mapOf("kind" to OccasionKind.entries.map { it.wire }),
     "incomeSources" to mapOf("kind" to IncomeSourceKind.entries.map { it.wire }),
     "reservations" to mapOf("itemType" to CalendarItemType.entries.map { it.wire }),
+    ALERT_SETTINGS_GROUP to mapOf("group" to AlertGroup.entries.map { it.wire }),
 )
 /** قيم اختيارية بتتفحص لو موجودة بس (وقائع الزكاة — §62). */
 private val OPTIONAL_ENUMS: Map<String, Map<String, List<String>>> = mapOf(

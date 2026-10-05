@@ -75,6 +75,13 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     /** دواير الأشخاص والصلات بينهم (جلسة 16) — على الحساب زي الأشخاص. */
     val personProfiles = FirestorePersonProfileRepository(account)
     val personRelations = FirestorePersonRelationRepository(account)
+    /**
+     * محرك التنبيهات (§61، جلسة 18): الإعدادات والصفحة والإيصالات **على الحساب** وبتتزامن. التعلّم (ساعاتك وتفاعلك) **مش هنا** —
+     * على الجوال (`AndroidAlertInteractionStore`/`IosAlertInteractionStore` · `…UsualHoursStore`).
+     */
+    val alertSettings = FirestoreAlertSettings(account)
+    val alertInbox = FirestoreAlertInbox(account)
+    val alertReceipts = FirestoreAlertReceipts(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
     val reservations = FirestoreReservationRepository(space)
     val eventPrep = FirestorePrepItemRepository(space)
