@@ -160,6 +160,9 @@ internal fun checkAssetGrowthRow(row: Map<String, Any?>): String? {
     row["vacantMonthsPerYear"]?.let { if (!isSafeInteger(it) || numberOf(it)!! !in 0.0..12.0) return "vacantMonthsPerYear" }
     // علامة العقار (§69.7): منطقية، ومعاها النوع المتخزن "other" بس (العقار مش دهب ولا سهم)
     row["realEstate"]?.let { if (it !is Boolean || (it && row["kind"] != "other")) return "realEstate" }
+    // علامة الفضة (§69.9): منطقية، ومعاها النوع المتخزن "other" بس، ومش مع علامة العقار. "silver" القديم من غير علامة مقبول
+    // (بيتحوّل بـ`normalizeLegacySilverAssets`)
+    row[SILVER_MARKER_FIELD]?.let { if (it !is Boolean || (it && (row["kind"] != "other" || row["realEstate"] == true))) return SILVER_MARKER_FIELD }
     // سعر المتر من غير المساحة (أو العكس) في طريقة «سعر المتر» مسموح — القيمة «غير متاح» لحد ما الاتنين يتكتبوا
     return null
 }

@@ -17,6 +17,7 @@ import app.masroufy.core.checkFullBackupData
 import app.masroufy.core.jsonStringify
 import app.masroufy.core.mergeFullBackupDetailed
 import app.masroufy.core.normalizeBudgetIds
+import app.masroufy.core.normalizeLegacySilverAssets
 import app.masroufy.core.pointLinesAtLiveBudgets
 import app.masroufy.core.uiText
 import app.masroufy.port.FullBackupPort
@@ -142,8 +143,8 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
     }
 
     suspend fun create(exportedAt: String): FullBackupFile {
-        // ميزانيات قديمة بمعرّف عشوائي بتاخد مفتاح فترتها في النسخة بس
-        val data = normalizeBudgetIds(port.read())
+        // ميزانيات قديمة بمعرّف عشوائي بتاخد مفتاح فترتها في النسخة بس · وفضة قديمة بتتصدّر «other» + العلامة (§69.9)
+        val data = normalizeLegacySilverAssets(normalizeBudgetIds(port.read()))
         checkFullBackupData(data)
         checkBackupFinance(data)
         val profile = port.readProfile()
@@ -162,7 +163,7 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
     suspend fun plan(raw: String): FullBackupPlan {
         val file = check(raw)
         val existing = normalizeBudgetIds(port.read())
-        val merge = mergeFullBackupDetailed(file.data, existing)
+        val merge = mergeFullBackupDetailed(normalizeLegacySilverAssets(file.data), existing)
         val additions = merge.additions
         validateMerge(existing, additions)
         val lines = BACKUP_GROUPS.map { key ->
@@ -190,7 +191,8 @@ class FullBackup(private val port: FullBackupPort, private val spaces: SpacesBac
         val file = check(input.toJsonText())
         val live = port.read()
         val existing = normalizeBudgetIds(live)
-        val merge = mergeFullBackupDetailed(file.data, existing)
+        // فضة قديمة في الملف («silver» من غير علامة) بتتقبل، وبتتكتب «other» + `silver: true` (§69.9). الملف نفسه وبصمته زي ما هما
+        val merge = mergeFullBackupDetailed(normalizeLegacySilverAssets(file.data), existing)
         val additions = merge.additions
         validateMerge(existing, additions)
         // سقوف التصنيفات المضافة لحساب ميزانيته بالمعرّف القديم بتشاور على معرّفه الحقيقي عشان تبان

@@ -7,7 +7,10 @@ package app.masroufy.core
 data class Asset(
     val id: Id,
     val name: String,
-    /** "gold" / "silver" / "stock" / "fund" / "digital" / "other" («فضة» اتضافت للزكاة — §62؛ التطبيق الحالي ما يعرفهاش). */
+    /**
+     * "gold" / "silver" / "stock" / "fund" / "digital" / "other" («فضة» اتضافت للزكاة — §62؛ التطبيق الحالي ما يعرفهاش).
+     * **الفضة بتتخزن "other" + علامة `silver`** (§69.9 — [ASSET_KIND_SILVER])؛ التحويل في المحوّل بس، وهنا بتفضل "silver".
+     */
     val kind: String,
     val unitLabel: String,
     val currency: Currency,
