@@ -50,6 +50,10 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
                 // قفل التطبيق بالبصمة أو رمز الجوال — نفس مكتبة التطبيق الحالي (ARCHITECTURE §27 و§31.9)
                 implementation("androidx.biometric:biometric:1.1.0")
+                // رسايل البنك بتتسجل لوحدها في الخلفية + الدورة الدورية + الإشعار المتأجل (OVERRIDES §72) — السبب ARCHITECTURE §31.29
+                implementation("androidx.work:work-runtime-ktx:2.10.5")
+                // `NotificationCompat` (القناة · شاشة القفل · أندرويد 13) — جاية أصلًا مع WorkManager والبصمة؛ مكتوبة صريح لأننا بنستعملها
+                implementation("androidx.core:core:1.12.0")
             }
             getByName("androidInstrumentedTest").kotlin.srcDir("src/sharedTest/kotlin")
             getByName("androidInstrumentedTest").dependencies {
@@ -59,6 +63,8 @@ kotlin {
                 implementation("androidx.test:rules:1.7.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+                // تشغيل العامل في الاختبار (TestListenableWorkerBuilder) — نفس نسخة WorkManager
+                implementation("androidx.work:work-testing:2.10.5")
             }
         }
     }
