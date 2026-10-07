@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اسأل مصروفي — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.k-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.k-press:active{transform:scale(.97)}
+.k-veil{animation:k-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.k-rise{animation:k-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+.k-pop{animation:k-pop 420ms cubic-bezier(.18,.9,.28,1.08) both}
+.k-dot{animation:k-dot 900ms cubic-bezier(.2,.7,.3,1) infinite alternate}
+.k-dot:nth-child(2){animation-delay:150ms}.k-dot:nth-child(3){animation-delay:300ms}
+.k-wave{animation:k-wave 700ms cubic-bezier(.2,.7,.3,1) infinite alternate;transform-origin:center}
+.k-wave:nth-child(2){animation-delay:120ms}.k-wave:nth-child(3){animation-delay:240ms}.k-wave:nth-child(4){animation-delay:360ms}.k-wave:nth-child(5){animation-delay:480ms}
+.k-scroll{scrollbar-width:none}.k-scroll::-webkit-scrollbar{display:none}
+@keyframes k-fade{from{opacity:0}to{opacity:1}}
+@keyframes k-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes k-pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes k-dot{from{opacity:.3;transform:translateY(0)}to{opacity:1;transform:translateY(-3px)}}
+@keyframes k-wave{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){.k-press{transition:none}.k-press:active{transform:none}.k-rise,.k-pop{animation:k-fade 150ms both}.k-dot,.k-wave{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; pointer-events: none; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+
+  <sc-if value="{{closed}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 20px; right: 20px; bottom: 88px; height: 48px; display: flex; align-items: center; gap: 8px; pointer-events: auto">
+      <button type="button" class="k-press" onClick="{{openIt}}" style="flex: 1 1 auto; min-width: 0; height: 48px; border: 0; padding: 4px 0; background: transparent; font: inherit; cursor: pointer; display: flex">
+        <span style="flex: 1 1 auto; height: 40px; box-sizing: border-box; padding: 0 14px; border-radius: 18px; display: flex; align-items: center; gap: 8px; color: #637570; font-size: 13px; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -3px 5px rgba(255,255,255,0.85), 0 10px 24px rgba(29,54,53,0.14), 0 0 0 0.5px rgba(155,179,179,0.25)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg>
+          <span style="flex: 1 1 auto; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{barText}}</span>
+        </span>
+      </button>
+      <button type="button" class="k-press" onClick="{{listenNow}}" aria-label="أضف بالصوت" style="width: 48px; height: 48px; flex-shrink: 0; border: 0; padding: 4px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <span style="width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>
+        </span>
+      </button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isOpen}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="محادثة مع مصروفي" style="position: absolute; inset: 0; pointer-events: auto">
+      <div class="k-veil" style="position: absolute; inset: 0; background: rgba(250,249,243,0.66); backdrop-filter: blur(18px) saturate(1.1); -webkit-backdrop-filter: blur(18px) saturate(1.1)"></div>
+
+      <div class="k-rise" style="position: absolute; top: 20px; left: 20px; right: 20px; height: 48px; display: flex; align-items: center; gap: 12px">
+        <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #DAF8E9; background: linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 18px rgba(6,75,64,0.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <span style="font-size: 16px; font-weight: 700">مصروفي</span>
+          <span style="font-size: 12px; color: #637570">محادثة جديدة · {{contextLine}}</span>
+        </span>
+        <button type="button" class="k-press" onClick="{{closeIt}}" aria-label="إغلاق المحادثة" style="width: 48px; height: 48px; border: 0; border-radius: 18px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.09)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <div class="k-scroll" ref="{{setLog}}" style="position: absolute; top: 82px; bottom: 92px; left: 0; right: 0; overflow-y: auto; padding: 8px 20px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+        <div class="k-rise" style="align-self: flex-start; max-width: 86%; border-radius: 18px 18px 18px 6px; padding: 10px 14px; font-size: 14px; line-height: 1.7; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.08)">{{greeting}}</div>
+        <sc-if value="{{showChips}}" hint-placeholder-val="{{ true }}">
+          <div class="k-rise" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+              <button type="button" class="k-press" onClick="{{c.pick}}" style="border: 0; min-height: 40px; padding: 8px 14px; border-radius: 18px; font: inherit; font-size: 13px; font-weight: 500; color: #08634F; cursor: pointer; text-align: right; background: rgba(255,255,255,0.78); box-shadow: inset 0 0 0 1px rgba(8,99,79,0.18), 0 4px 10px rgba(29,54,53,0.06)">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-for list="{{msgs}}" as="m" hint-placeholder-count="0">
+          <div class="k-pop" style="{{m.wrap}}">
+            <sc-if value="{{m.hasText}}" hint-placeholder-val="{{ true }}"><span style="white-space: pre-line">{{m.text}}</span></sc-if>
+
+            <sc-if value="{{m.isTxn}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.55)">
+                  <span style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(163,106,33,0.12); color: #A36A21; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"></path><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"></path><path d="M6 2v2M10 2v2M14 2v2"></path></svg></span>
+                  <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{m.txnTitle}}</span><span style="font-size: 12px; color: #637570">{{m.txnSub}}</span></span>
+                  <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{m.txnAmount}}</span>
+                </div>
+                <sc-if value="{{m.pending}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; gap: 8px">
+                    <button type="button" class="k-press" onClick="{{m.confirm}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.24)">{{m.confirmLabel}}</button>
+                    <button type="button" class="k-press" onClick="{{m.edit}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.20)">عدّل</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{m.isSplit}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+                <div style="border-radius: 16px; padding: 4px 12px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.55)">
+                  <sc-for list="{{m.shares}}" as="s" hint-placeholder-count="3">
+                    <div style="{{s.style}}">
+                      <span style="width: 32px; height: 32px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: #DCEBD6; color: #08634F">{{s.initial}}</span>
+                      <span style="flex: 1 1 auto; font-size: 14px; font-weight: 500">{{s.name}}</span>
+                      <span dir="ltr" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{s.amount}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{m.pending}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" class="k-press" onClick="{{m.confirm}}" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.24)">{{m.confirmLabel}}</button>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{typing}}" hint-placeholder-val="{{ false }}">
+          <div aria-label="مصروفي يكتب" style="align-self: flex-start; display: flex; gap: 5px; padding: 12px 14px; border-radius: 18px 18px 18px 6px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 10px 22px rgba(29,54,53,0.08)">
+            <span class="k-dot" style="width: 7px; height: 7px; border-radius: 4px; background: #637570"></span><span class="k-dot" style="width: 7px; height: 7px; border-radius: 4px; background: #637570"></span><span class="k-dot" style="width: 7px; height: 7px; border-radius: 4px; background: #637570"></span>
+          </div>
+        </sc-if>
+      </div>
+
+      <div class="k-rise" style="position: absolute; left: 20px; right: 20px; bottom: 24px; height: 56px; box-sizing: border-box; padding: 0 6px 0 8px; border-radius: 26px; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(236,242,238,0.84) 50%, rgba(255,255,255,0.94)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -3px 5px rgba(255,255,255,0.85), 0 14px 32px rgba(29,54,53,0.16), 0 0 0 0.5px rgba(155,179,179,0.25)">
+        <sc-if value="{{listening}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="flex: 1 1 auto; display: flex; align-items: center; gap: 10px; padding: 0 10px; color: #08634F; font-size: 14px; font-weight: 700">
+            <span aria-hidden="true" style="display: flex; align-items: center; gap: 3px; height: 24px">
+              <span class="k-wave" style="width: 3px; height: 14px; border-radius: 2px; background: #08634F"></span><span class="k-wave" style="width: 3px; height: 22px; border-radius: 2px; background: #08634F"></span><span class="k-wave" style="width: 3px; height: 18px; border-radius: 2px; background: #08634F"></span><span class="k-wave" style="width: 3px; height: 24px; border-radius: 2px; background: #08634F"></span><span class="k-wave" style="width: 3px; height: 12px; border-radius: 2px; background: #08634F"></span>
+            </span>
+            {{listeningText}}
+          </div>
+        </sc-if>
+        <sc-if value="{{notListening}}" hint-placeholder-val="{{ true }}">
+          <label for="k-input" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">رسالتك</label>
+          <input id="k-input" type="text" value="{{draft}}" onChange="{{typeDraft}}" onKeyDown="{{enterSend}}" placeholder="{{inputHint}}" style="flex: 1 1 auto; min-width: 0; height: 44px; border: 0; background: transparent; font: inherit; font-size: 14px; color: #193D33; outline: none; padding: 0 8px">
+        </sc-if>
+        <button type="button" class="k-press" onClick="{{listenNow}}" aria-label="تكلّم" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: #DCEBD6">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>
+        </button>
+        <button type="button" class="k-press" onClick="{{sendDraft}}" aria-label="أرسل" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"startOpen":{"editor":"boolean","default":false,"section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: !!props.startOpen, msgs: [], typing: false, listening: false, draft: '' };
+    this.timers = [];
+    this.setLog = (el) => { this.log = el; };
+  }
+  componentDidUpdate(prev) {
+    if (prev.startOpen !== this.props.startOpen) this.setState({ open: !!this.props.startOpen });
+    if (this.log) this.log.scrollTop = this.log.scrollHeight;
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  later(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  cur() { return this.eg() ? 'ج.م' : 'ر.س'; }
+  push(m) { this.setState((s) => ({ msgs: s.msgs.concat([m]) })); }
+  reply(r) {
+    this.setState({ typing: true });
+    this.later(900, () => { this.setState({ typing: false }); this.push(Object.assign({ from: 'bot', id: Date.now() + Math.random() }, r)); });
+  }
+  answerFor(key) {
+    const eg = this.eg(), c = this.cur();
+    const A = {
+      lak: { text: eg ? 'ليك عند خالد 1,500 ' + c + ' من سلفة من ٤٥ يوم. تحب أفكّره؟' : 'لك عند خالد 500 ' + c + ' من سلفة قبل ٤٥ يومًا. هل أذكّره؟' },
+      split: { text: eg ? 'قسّمت فاتورة العشاء 1,080 ' + c + ' عليكم انتم التلاتة:' : 'قسمت فاتورة العشاء 360 ' + c + ' بينكم أنتم الثلاثة:', kind: 'split' },
+      voice: { text: eg ? 'فهمت: «دفعت ٨٥ جنيه قهوة». أسجّلها كده؟' : 'فهمت: «دفعت ٤٢ ريال قهوة». أسجّلها هكذا؟', kind: 'txn' },
+      spent: { text: eg ? 'صرفت على الأكل الشهر ده 2,640 ' + c + '، أقل من الشهر اللي فات بـ ٨٪.' : 'صرفت على المطاعم هذا الشهر 640 ' + c + '، أقل من الشهر الماضي بـ ٨٪.' },
+      plan: { text: eg ? 'إنت ماشي على الخطة تقريبًا: فاضلك ١٢٪ من ميزانية الشهر و٢١ يوم.' : 'أنت على الخطة تقريبًا: بقي ١٢٪ من ميزانية الشهر و٢١ يومًا.' },
+      lock: { text: eg ? 'القفل في «المزيد ← الإعدادات ← القفل». أفتحهولك؟' : 'القفل في «المزيد ← الإعدادات ← القفل». هل أفتحه لك؟' }
+    };
+    return A[key] || { text: eg ? 'ده نموذج تجريبي، والرد الحقيقي هييجي لما المساعد يشتغل.' : 'هذا نموذج تجريبي، والرد الحقيقي يأتي عند تفعيل المساعد.' };
+  }
+  ask(text, key) { this.push({ from: 'me', text, id: Date.now() }); this.reply(this.answerFor(key)); }
+  chipsFor(ctx) {
+    const eg = this.eg();
+    const all = {
+      lak: eg ? 'ليّا كام عند خالد؟' : 'كم لي عند خالد؟',
+      split: eg ? 'قسّم فاتورة العشاء مع أحمد وسارة' : 'قسّم فاتورة العشاء مع أحمد وسارة',
+      voice: eg ? 'ضيف عملية بصوتي' : 'أضف عملية بصوتي',
+      spent: eg ? 'صرفت كام على الأكل؟' : 'كم صرفت على المطاعم؟',
+      plan: eg ? 'أنا ماشي على الخطة؟' : 'هل أنا على الخطة؟',
+      lock: eg ? 'فين أغيّر القفل؟' : 'أين أغيّر القفل؟'
+    };
+    const pick = { 'الرئيسية': ['spent', 'voice', 'split', 'plan'], 'العمليات': ['voice', 'spent', 'split'], 'الأشخاص': ['lak', 'split', 'voice'], 'الاستثمار': ['plan', 'spent', 'voice'], 'المزيد': ['lock', 'voice', 'split'] }[ctx] || ['spent', 'voice', 'split'];
+    return pick.map((k) => ({ label: all[k], pick: () => (k === 'voice' ? this.listen() : this.ask(all[k], k)) }));
+  }
+  listen() {
+    if (this.state.listening) return;
+    this.setState({ open: true, listening: true });
+    this.later(1800, () => {
+      this.setState({ listening: false });
+      this.ask(this.eg() ? '«دفعت ٨٥ جنيه قهوة»' : '«دفعت ٤٢ ريال قهوة»', 'voice');
+    });
+  }
+  renderVals() {
+    const eg = this.eg(), c = this.cur();
+    const ctx = this.props.context ?? 'الرئيسية';
+    const confirm = (id) => () => {
+      this.setState((s) => ({ msgs: s.msgs.map((m) => (m.id === id ? Object.assign({}, m, { done: true }) : m)) }));
+      const m = this.state.msgs.find((x) => x.id === id);
+      this.reply({ text: m && m.kind === 'split' ? (eg ? 'اتسجّل: أحمد عليه 360 وسارة عليها 360، وهيبانوا في «ليك».' : 'تم: على أحمد 120 وعلى سارة 120، وتظهر في «لك».') : (eg ? 'اتسجّلت في عمليات النهارده.' : 'سُجّلت في عمليات اليوم.') });
+    };
+    const msgs = this.state.msgs.map((m) => {
+      const me = m.from === 'me';
+      const share = (n, i, a, last) => ({ name: n, initial: i, amount: a + ' ' + c, style: 'display: flex; align-items: center; gap: 10px; min-height: 48px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') });
+      return {
+        hasText: !!m.text, text: m.text,
+        isTxn: m.kind === 'txn', isSplit: m.kind === 'split', pending: !m.done,
+        confirmLabel: m.kind === 'split' ? (eg ? 'سجّل التقسيم' : 'سجّل التقسيم') : (eg ? 'سجّلها' : 'احفظ'),
+        confirm: confirm(m.id), edit: () => this.reply({ text: eg ? 'قولّي تعدّل إيه: المبلغ، التصنيف ولا المحفظة؟' : 'ماذا أعدّل: المبلغ أم التصنيف أم المحفظة؟' }),
+        txnTitle: 'قهوة', txnSub: eg ? 'مطاعم وقهوة · كاش · النهارده' : 'مطاعم وقهوة · نقدًا · اليوم', txnAmount: eg ? '−85.00' : '−42.00',
+        shares: eg ? [share('إنت', 'م', '360.00'), share('أحمد', 'أ', '360.00'), share('سارة', 'س', '360.00', true)] : [share('أنت', 'م', '120.00'), share('أحمد', 'أ', '120.00'), share('سارة', 'س', '120.00', true)],
+        wrap: me
+          ? 'align-self: flex-end; max-width: 80%; border-radius: 18px 18px 6px 18px; padding: 10px 14px; font-size: 14px; line-height: 1.7; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 8px 18px rgba(8,99,79,0.22)'
+          : 'align-self: flex-start; width: ' + (m.kind ? '86%' : 'auto') + '; max-width: 86%; box-sizing: border-box; border-radius: 18px 18px 18px 6px; padding: 10px 14px; font-size: 14px; line-height: 1.7; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.08)'
+      };
+    });
+    return {
+      setLog: this.setLog,
+      closed: !this.state.open, isOpen: this.state.open,
+      openIt: () => this.setState({ open: true }),
+      closeIt: () => { this.timers.forEach(clearTimeout); this.timers = []; this.setState({ open: false, msgs: [], typing: false, listening: false, draft: '' }); },
+      listenNow: () => this.listen(),
+      barText: eg ? 'اسأل مصروفي أو اطلب منه أي حاجة…' : 'اسأل مصروفي أو اطلب منه أي شيء…',
+      contextLine: eg ? 'إنت في «' + ctx + '»' : 'أنت في «' + ctx + '»',
+      greeting: eg ? 'أهلًا يا محمد. اسألني عن فلوسك، أو قولّي أعمل حاجة: أضيف عملية بصوتك، أقسّم فاتورة مع صحابك، أو أفكّرك بحاجة.' : 'أهلًا محمد. اسألني عن مالك، أو اطلب مني تنفيذ شيء: إضافة عملية بصوتك، تقسيم فاتورة مع أصدقائك، أو تذكيرك بموعد.',
+      showChips: this.state.msgs.length === 0,
+      chips: this.chipsFor(ctx),
+      msgs,
+      typing: this.state.typing,
+      listening: this.state.listening, notListening: !this.state.listening,
+      listeningText: eg ? 'بسمعك…' : 'أستمع إليك…',
+      inputHint: eg ? 'اكتب أو اضغط الميكروفون' : 'اكتب أو اضغط الميكروفون',
+      draft: this.state.draft,
+      typeDraft: (e) => this.setState({ draft: e.target.value }),
+      enterSend: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.sendText(); } },
+      sendDraft: () => this.sendText()
+    };
+  }
+  sendText() {
+    const t = (this.state.draft || '').trim();
+    if (!t) return;
+    this.setState({ draft: '' });
+    this.ask(t, null);
+  }
+}
+</script>
+</body>
+</html>

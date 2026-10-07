@@ -12,111 +12,131 @@
 <style>
 body{margin:0}
 a{color:#08634F}a:hover{color:#064B40}
-.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-scroll{scrollbar-width:none;scroll-snap-type:y proximity}.m-scroll::-webkit-scrollbar{display:none}
+.m-snap{scroll-snap-align:start}
 .m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
 .m-press:active{transform:scale(.97)}
-.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+.m-thread{animation:m-draw 1100ms cubic-bezier(.2,.7,.3,1) 200ms forwards}
 .m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
-@keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes m-draw{to{stroke-dashoffset:0}}
 @keyframes m-pulse{from{opacity:.5}to{opacity:1}}
-@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-rise{animation:m-fade 150ms both}}
-@keyframes m-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-thread{animation:none;stroke-dashoffset:0!important}.m-skel{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
 <div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
-  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 14px">
+  <div class="m-scroll" ref="{{setScroller}}" onScroll="{{onScroll}}" style="height: 844px; overflow-y: auto; overflow-x: hidden">
+    <div style="{{trackStyle}}">
+      <div class="m-snap" style="position: absolute; top: 0; height: 1px; width: 1px"></div>
+      <div class="m-snap" style="{{snapEndStyle}}"></div>
+      <div style="position: sticky; top: 0; height: 844px; overflow: hidden">
 
-    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px">
-      <h1 style="margin: 0; font-size: 24px; font-weight: 700">الأشخاص</h1>
-      <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 13px; color: #08634F; font-weight: 700; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">القائمة كاملة (١٦)</button>
+        <div style="position: absolute; top: 20px; left: 20px; right: 20px; display: flex; align-items: center; justify-content: space-between; min-height: 48px">
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700">الأشخاص</h1>
+          <button type="button" class="m-press" onClick="{{toggleAll}}" style="border: 0; height: 48px; padding: 0 16px; border-radius: 18px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">{{allLabel}}</button>
+        </div>
+
+        <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+          <div aria-busy="true" aria-label="جارٍ التحميل" style="position: absolute; top: 82px; left: 20px; right: 20px; display: flex; flex-direction: column; gap: 14px">
+            <div class="m-skel" style="height: 360px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; justify-items: center">
+              <div class="m-skel" style="width: 56px; height: 56px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+              <div class="m-skel" style="width: 56px; height: 56px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+              <div class="m-skel" style="width: 56px; height: 56px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+              <div class="m-skel" style="width: 56px; height: 56px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+              <div class="m-skel" style="width: 56px; height: 56px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showStage}}" hint-placeholder-val="{{ true }}">
+          <div style="{{heroStyle}}">
+            <div style="position: absolute; inset: 0; border-radius: 28px; overflow: hidden; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+              <svg width="350" height="360" viewBox="0 0 350 360" aria-hidden="true" style="position: absolute; left: 0; top: 0" fill="none" stroke-linecap="round">
+                <sc-for list="{{threads}}" as="t" hint-placeholder-count="5">
+                  <path class="m-thread" d="{{t.d}}" stroke="rgba(220,235,214,0.55)" stroke-width="1.5" style="{{t.dash}}"></path>
+                </sc-for>
+              </svg>
+              <span style="position: absolute; right: 16px; top: 14px; font-size: 12px; color: #DCEBD6">المُعالون أولًا · ثم الأكثر تعاملًا</span>
+              <sc-for list="{{orbit}}" as="p" hint-placeholder-count="5">
+                <a href="PersonProfile.dc.html" class="m-press" aria-label="{{p.name}}" style="{{p.pos}}">
+                  <span style="font-size: 12px; font-weight: 700; color: #FFFFFF">{{p.name}}</span>
+                  <span style="{{p.circle}}">{{p.initial}}</span>
+                </a>
+              </sc-for>
+              <div aria-label="أنت" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none">
+                <div style="width: 96px; height: 96px; border-radius: 48px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06) 48%, rgba(150,243,204,0.20)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
+                  <span style="position: absolute; top: 3px; left: 18%; width: 52%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span>
+                  <span style="font-size: 34px; font-weight: 700; color: #FFFFFF">م</span>
+                </div>
+                <div style="margin-top: -8px; width: 220px; height: 96px; border-radius: 110px 110px 0 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.05) 75%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 2px 2px rgba(200,255,235,0.40), inset -1px 0 3px rgba(0,47,48,0.20)">
+                  <span style="font-size: 11px; color: #DCEBD6; padding: 2px 10px; border-radius: 12px; background: rgba(0,47,48,0.28)">مكان الكاركتر بتاعك</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; top: 458px; left: 20px; right: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+            <span style="font-size: 14px; font-weight: 700">لم تُضف أحدًا بعد</span>
+            <span style="font-size: 13px; color: #637570">أضف من تتعامل معهم لتتابع ما لك وما عليك.</span>
+            <button type="button" class="m-press" style="margin-top: 8px; border: 0; height: 48px; padding: 0 28px; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">إضافة شخص</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showPeople}}" hint-placeholder-val="{{ true }}">
+          <div style="{{drumStyle}}">
+            <sc-for list="{{rows}}" as="row" hint-placeholder-count="4">
+              <div style="{{row.style}}">
+                <sc-for list="{{row.cells}}" as="c" hint-placeholder-count="5">
+                  <sc-if value="{{c.isPerson}}" hint-placeholder-val="{{ true }}">
+                    <a href="PersonProfile.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #193D33; min-width: 0">
+                      <span style="{{c.circle}}">{{c.initial}}</span>
+                      <span style="font-size: 12px; font-weight: 700; max-width: 66px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{c.name}}</span>
+                      <span style="{{c.chipStyle}}">{{c.chip}}</span>
+                    </a>
+                  </sc-if>
+                  <sc-if value="{{c.isAdd}}" hint-placeholder-val="{{ false }}">
+                    <button type="button" class="m-press" style="border: 0; background: transparent; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #08634F">
+                      <span style="width: 56px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1.5px dashed rgba(8,99,79,0.45); display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
+                      <span style="font-size: 12px; font-weight: 700">إضافة</span>
+                    </button>
+                  </sc-if>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="{{boxesStyle}}">
+            <a href="OwedToYou.dc.html" class="m-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+              <span style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700">لك<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+              <span dir="ltr" style="text-align: right; font-size: 22px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{lakTotal}}</span>
+              <span style="font-size: 12px; color: #637570">{{lakCount}}</span>
+            </a>
+            <a href="YouOwe.dc.html" class="m-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+              <span style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700">عليك<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+              <span dir="ltr" style="text-align: right; font-size: 22px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{alekTotal}}</span>
+              <span style="font-size: 12px; color: #637570">{{alekCount}}</span>
+            </a>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="position: absolute; top: 588px; left: 20px; right: 20px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: #FBF0DD; color: #956000">
+            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 14px; font-weight: 700">تعذّر تحميل الأرصدة</span>
+              <span style="font-size: 12px">الأشخاص ظاهرون، والأرقام تظهر بعد التحديث.</span>
+            </div>
+            <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 16px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 6px 14px rgba(29,54,53,0.08)">أعد المحاولة</button>
+          </div>
+        </sc-if>
+      </div>
     </div>
+  </div>
 
-    <label style="display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 16px; border-radius: 18px; color: #637570; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg>
-      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">اسأل مصروفي</span>
-      <input type="text" placeholder="اسأل مصروفي… كم لي عند خالد؟" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: #193D33; outline: none">
-    </label>
-
-    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
-      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px">
-        <div class="m-skel" style="height: 290px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
-        <div class="m-skel" style="height: 112px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
-      <div role="alert" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: #FBF0DD; color: #956000">
-        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
-          <span style="font-size: 14px; font-weight: 700">تعذّر تحميل الأشخاص</span>
-          <span style="font-size: 12px">أعد المحاولة بعد قليل.</span>
-        </div>
-        <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 16px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 6px 14px rgba(29,54,53,0.08)">أعد المحاولة</button>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px 8px; text-align: center">
-        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
-        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">لم تُضف أحدًا بعد</span>
-        <span style="font-size: 13px; color: #637570">أضف من تتعامل معهم لتتابع ما لك وما عليك.</span>
-        <button type="button" class="m-press" style="margin-top: 10px; border: 0; height: 48px; padding: 0 28px; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">إضافة شخص</button>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{showContent}}" hint-placeholder-val="{{ true }}">
-      <div style="display: flex; flex-direction: column; gap: 14px">
-        <div class="m-rise" dir="ltr" aria-label="دوائرك: المُعالون أولًا ثم الأكثر تعاملًا" style="position: relative; height: 290px; border-radius: 28px; overflow: hidden; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
-          <svg width="350" height="290" viewBox="0 0 350 290" aria-hidden="true" style="position: absolute; left: 0; top: 0" fill="none" stroke="rgba(220,235,214,0.45)" stroke-width="1.5" stroke-linecap="round">
-            <path d="M175 236 Q 260 230 308 197"></path>
-            <path d="M175 236 Q 230 180 257 127"></path>
-            <path d="M175 236 Q 168 160 175 100"></path>
-            <path d="M175 236 Q 110 180 93 127"></path>
-            <path d="M175 236 Q 80 230 42 197"></path>
-          </svg>
-          <span dir="rtl" style="position: absolute; right: 16px; top: 14px; font-size: 12px; color: #DCEBD6">المُعالون أولًا · ثم الأكثر تعاملًا</span>
-          <sc-for list="{{orbit}}" as="p" hint-placeholder-count="5">
-            <button type="button" class="m-press" style="{{p.pos}}">
-              <span style="{{p.circle}}">{{p.initial}}</span>
-              <span style="font-size: 12px; color: #FFFFFF; font-weight: 700">{{p.name}}</span>
-            </button>
-          </sc-for>
-          <div aria-label="أنت" style="position: absolute; left: 137px; top: 198px; width: 76px; height: 76px; border-radius: 26px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.03) 48%, rgba(150,243,204,0.16)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
-            <span aria-hidden="true" style="position: absolute; top: 2px; left: 14%; width: 56%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span><span aria-hidden="true" style="position: absolute; bottom: 2px; right: 12%; width: 46%; height: 3px; border-radius: 50%; background: linear-gradient(90deg, transparent, rgba(170,252,219,0.70), transparent); filter: blur(1px)"></span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <div style="display: flex; justify-content: space-between; align-items: baseline">
-            <h2 style="margin: 0; font-size: 18px; font-weight: 700">لك</h2>
-            <span style="font-size: 12px; color: #637570">{{currencyName}} · بدون مقاصة مع «عليك»</span>
-          </div>
-          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-            <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px; border-bottom: 1px solid rgba(204,216,204,0.55)">
-              <div style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #DCEBD6; color: #08634F">خ</div>
-              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">خالد</span><span style="font-size: 12px; color: #637570">سلفة · منذ ١٢ يومًا</span></div>
-              <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{oweA}}</span>
-            </div>
-            <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px">
-              <div style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #DCEBD6; color: #08634F">أ</div>
-              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">أحمد</span><span style="font-size: 12px; color: #637570">نصيبه من فاتورة العشاء</span></div>
-              <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{oweB}}</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px">
-          <h2 style="margin: 0; font-size: 18px; font-weight: 700">عليك</h2>
-          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-            <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px">
-              <div style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #DCEBD6; color: #08634F">ع</div>
-              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">عمر</span><span style="font-size: 12px; color: #637570">سلفة · موعدها ١ نوفمبر</span></div>
-              <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{debtA}}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </sc-if>
+  <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
+    <dc-import name="AskBar" context="الأشخاص" space="{{spaceName}}" hint-size="390px,844px"></dc-import>
   </div>
 
   <nav aria-label="التنقل" style="position: absolute; left: 20px; right: 20px; bottom: 14px; z-index: 5; height: 70px; border-radius: 26px; display: flex; align-items: center; justify-content: space-around; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -4px 6px rgba(255,255,255,0.85), 0 18px 44px rgba(29,54,53,0.18), 0 0 0 0.5px rgba(155,179,179,0.25)">
@@ -133,25 +153,122 @@ a{color:#08634F}a:hover{color:#064B40}
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { p: 0 };
+    this.RANGE = 420;
+    this.setScroller = (el) => { this.scroller = el; };
+    this.onScroll = () => {
+      if (!this.scroller || this.raf) return;
+      this.raf = setTimeout(() => {
+        this.raf = 0;
+        const p = Math.max(0, Math.min(1, this.scroller.scrollTop / this.RANGE));
+        if (Math.abs(p - this.state.p) > 0.002) this.setState({ p });
+      }, 16);
+    };
+    this.toggleAll = () => {
+      if (!this.scroller) return;
+      this.scroller.scrollTo({ top: this.state.p > 0.5 ? 0 : this.RANGE, behavior: this.reduced() ? 'auto' : 'smooth' });
+    };
+  }
+  componentWillUnmount() { if (this.raf) clearTimeout(this.raf); }
+  reduced() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+  people(eg) {
+    // مخترعة بالكامل. b = الرصيد مع الشخص بالوحدة الصغرى: موجب = لك، سالب = عليك (من غير مقاصة)
+    const base = [
+      ['ليلى', true, 0], ['يوسف', true, 0], ['سارة', false, 0], ['خالد', false, 50000], ['أحمد', false, 18500],
+      ['عمر', false, -200000], ['نورة', false, 30000], ['فهد', false, 120000], ['ريم', false, 0], ['سلمان', false, -45000],
+      ['هند', false, 0], ['ماجد', false, 0], ['لمى', false, 0], ['بدر', false, 0], ['دانة', false, 0], ['تركي', false, 0]
+    ];
+    const k = eg ? 3 : 1;
+    return base.map(([name, dep, b]) => ({ name, dep, b: b * k, initial: name.charAt(0) }));
+  }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const spots = [[280, 169, 'ل', 'ليلى', true], [229, 99, 'ي', 'يوسف', true], [147, 72, 'س', 'سارة', false], [65, 99, 'خ', 'خالد', false], [14, 169, 'أ', 'أحمد', false]];
-    const orbit = spots.map(([x, y, initial, name, dep]) => ({
-      initial, name,
-      pos: 'position: absolute; left: ' + x + 'px; top: ' + y + 'px; width: 60px; padding: 0; border: 0; background: transparent; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px',
-      circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; background: #FFFDF9; color: #08634F; box-shadow: ' + (dep ? '0 0 0 3px #A6DEC1, ' : '') + '0 8px 18px rgba(0,30,25,0.30)'
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const p = this.state.p;
+    const reduced = this.reduced();
+    const smooth = (x) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
+    const all = this.people(eg);
+    const top = all.slice(0, 5);
+    const rest = all.slice(5);
+
+    // أهم ٥ فوق الكاركتر، وخيوط ملتوية من راسه لكل واحد
+    const spots = [[298, 184], [250, 112], [175, 82], [100, 112], [52, 184]];
+    const head = [175, 196];
+    const orbit = top.map((q, i) => ({
+      name: q.name, initial: q.initial,
+      pos: 'position: absolute; left: ' + (spots[i][0] - 32) + 'px; top: ' + (spots[i][1] - 48) + 'px; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none',
+      circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; background: #FFFDF9; color: #08634F; box-shadow: ' + (q.dep ? '0 0 0 3px #A6DEC1, ' : '') + '0 8px 18px rgba(0,30,25,0.30)'
     }));
+    const threads = spots.map(([x, y], i) => {
+      const ex = x, ey = y + 30;
+      const dx = ex - head[0], dy = ey - head[1];
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len;
+      const amp = (i % 2 ? 1 : -1) * Math.min(26, len * 0.22);
+      const c1 = [head[0] + dx * 0.3 + nx * amp, head[1] + dy * 0.3 + ny * amp];
+      const c2 = [head[0] + dx * 0.7 - nx * amp, head[1] + dy * 0.7 - ny * amp];
+      const L = Math.round(len * 1.3 + 24);
+      return {
+        d: 'M' + head[0] + ' ' + head[1] + ' C' + c1[0].toFixed(1) + ' ' + c1[1].toFixed(1) + ' ' + c2[0].toFixed(1) + ' ' + c2[1].toFixed(1) + ' ' + ex + ' ' + ey,
+        dash: 'stroke-dasharray: ' + L + '; stroke-dashoffset: ' + L
+      };
+    });
+
+    // الأسطوانة: صف أهم ٥ مطوي فوق (بيظهر في الصفحة الكاملة بس)، وتحته الباقيين؛ السحب لفوق بيلف الصفوف ناحيتك
+    const cell = (q) => ({
+      isPerson: true, isAdd: false, name: q.name, initial: q.initial,
+      circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #08634F; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: ' + (q.dep ? '0 0 0 3px #A6DEC1, ' : '') + 'inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.10)',
+      chip: q.b > 0 ? 'لك ' + this.fmt(q.b) : q.b < 0 ? 'عليك ' + this.fmt(q.b) : '',
+      chipStyle: 'min-height: 16px; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: ' + (q.b > 0 ? '#13764D' : q.b < 0 ? '#BE3D48' : 'transparent')
+    });
+    const groups = [top.map(cell), rest.slice(0, 5).map(cell), rest.slice(5, 10).map(cell), rest.slice(10).map(cell).concat([{ isPerson: false, isAdd: true }])];
+    const ROW = 106, GAP = 8;
+    const ease = [smooth((p - 0.35) / 0.5), 1, smooth((p - 0.05) / 0.5), smooth((p - 0.2) / 0.5)];
+    let y = 0;
+    const rows = groups.map((cells, k) => {
+      const e = ease[k];
+      let transform, h, opacity;
+      if (k === 0) { h = (ROW + GAP) * e; opacity = e; transform = 'scale(' + (0.6 + 0.4 * e).toFixed(3) + ')'; }
+      else if (k === 1) { h = ROW + GAP; opacity = 1; transform = 'none'; }
+      else {
+        const angle = reduced ? 0 : -84 * (1 - e);
+        h = reduced ? (ROW + GAP) * e : ROW * Math.cos(angle * Math.PI / 180) + GAP * e;
+        opacity = 0.14 + 0.86 * e;
+        transform = 'rotateX(' + angle.toFixed(1) + 'deg)';
+      }
+      const style = 'position: absolute; left: 0; right: 0; top: ' + y.toFixed(1) + 'px; height: ' + ROW + 'px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: start; transform-origin: center top; transform: ' + transform + '; opacity: ' + opacity.toFixed(3) + '; pointer-events: ' + (opacity > 0.6 ? 'auto' : 'none');
+      y += h;
+      return { cells, style };
+    });
+    const drumTop = 456 - 374 * p;
+    const lak = all.filter((q) => q.b > 0), alek = all.filter((q) => q.b < 0);
+    const sum = (xs) => xs.reduce((s, q) => s + Math.abs(q.b), 0);
+    const showPeople = st === 'عادي' || st === 'خطأ';
+    const heroO = Math.max(0, 1 - 2.2 * p);
+    const n = (x) => x.toLocaleString('ar-EG');
     return {
-      isLoading: st === 'بيحمّل', isError: st === 'خطأ', isEmpty: st === 'فاضي',
-      showContent: st === 'عادي' || st === 'خطأ' || st === 'غير متاح',
-      orbit,
-      currencyName: eg ? 'جنيه' : 'ريال',
-      oweA: eg ? '1,500.00' : '500.00',
-      oweB: eg ? '420.00' : '185.00',
-      debtA: eg ? '6,000.00' : '2,000.00'
+      setScroller: this.setScroller, onScroll: this.onScroll, toggleAll: this.toggleAll,
+      spaceName: eg ? 'مصر' : 'السعودية',
+      allLabel: p > 0.5 ? 'رجوع' : 'الكل (' + n(all.length) + ')',
+      trackStyle: 'position: relative; height: ' + (showPeople ? 844 + this.RANGE : 844) + 'px',
+      snapEndStyle: 'position: absolute; top: ' + this.RANGE + 'px; height: 1px; width: 1px',
+      isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isError: st === 'خطأ',
+      showStage: st !== 'بيحمّل',
+      showPeople,
+      heroStyle: 'position: absolute; top: 82px; left: 20px; right: 20px; height: 360px; transform-origin: center top; transform: translateY(' + (-70 * p).toFixed(1) + 'px) scale(' + (1 - 0.18 * p).toFixed(3) + '); opacity: ' + heroO.toFixed(3) + '; pointer-events: ' + (heroO > 0.5 ? 'auto' : 'none'),
+      threads, orbit, rows,
+      drumStyle: 'position: absolute; left: 20px; right: 20px; top: ' + drumTop.toFixed(1) + 'px; height: ' + y.toFixed(1) + 'px; perspective: 700px; perspective-origin: center top',
+      boxesStyle: 'position: absolute; left: 20px; right: 20px; top: ' + (drumTop + y + 4).toFixed(1) + 'px; display: flex; gap: 10px; opacity: ' + Math.max(0, 1 - 2.4 * p).toFixed(3) + '; pointer-events: ' + (p < 0.3 ? 'auto' : 'none'),
+      lakTotal: (st === 'خطأ' ? '—' : this.fmt(sum(lak))) + ' ' + cur,
+      alekTotal: (st === 'خطأ' ? '—' : this.fmt(sum(alek))) + ' ' + cur,
+      lakCount: 'عند ' + n(lak.length) + ' أشخاص',
+      alekCount: alek.length === 2 ? (eg ? 'لاتنين' : 'لشخصين') : 'لـ ' + n(alek.length) + ' أشخاص'
     };
   }
 }

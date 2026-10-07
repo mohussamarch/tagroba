@@ -25,7 +25,7 @@ a{color:#08634F}a:hover{color:#064B40}
 </style>
 </helmet>
 <div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
-  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 14px">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 156px; display: flex; flex-direction: column; gap: 14px">
 
     <div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px">
       <h1 style="margin: 0; font-size: 24px; font-weight: 700">العمليات</h1>
@@ -33,11 +33,6 @@ a{color:#08634F}a:hover{color:#064B40}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>أكتوبر</button>
     </div>
 
-    <label style="display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 16px; border-radius: 18px; color: #637570; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg>
-      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">اسأل مصروفي</span>
-      <input type="text" placeholder="{{askPlaceholder}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: #193D33; outline: none">
-    </label>
 
     <div role="tablist" aria-label="أقسام العمليات" style="display: flex; gap: 4px; padding: 4px; border-radius: 18px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
       <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
@@ -127,6 +122,10 @@ a{color:#08634F}a:hover{color:#064B40}
     </sc-if>
   </div>
 
+  <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
+    <dc-import name="AskBar" context="العمليات" space="{{spaceName}}" hint-size="390px,844px"></dc-import>
+  </div>
+
   <nav aria-label="التنقل" style="position: absolute; left: 20px; right: 20px; bottom: 14px; z-index: 5; height: 70px; border-radius: 26px; display: flex; align-items: center; justify-content: space-around; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -4px 6px rgba(255,255,255,0.85), 0 18px 44px rgba(29,54,53,0.18), 0 0 0 0.5px rgba(155,179,179,0.25)">
     <a href="Main.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
       <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg></span>الرئيسية</a>
@@ -182,7 +181,7 @@ class Component extends DCLogic {
     });
     const list = st === 'عادي' || st === 'خطأ' || st === 'غير متاح';
     return {
-      askPlaceholder: eg ? 'اسأل مصروفي… صرفت كام على الأكل؟' : 'اسأل مصروفي… كم صرفت على المطاعم؟',
+      spaceName: (this.props.space ?? "السعودية") === "مصر" ? "مصر" : "السعودية",
       tabs,
       onOps: this.state.tab === 'ops',
       onOther: this.state.tab !== 'ops',

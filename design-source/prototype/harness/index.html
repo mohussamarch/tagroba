@@ -9,8 +9,52 @@
 <body>
 <iframe id="f" title="الشاشة"></iframe>
 <script>
+  // ?a=People.dc.html            الشاشة
+  // &set=state:فاضي,space:مصر    قيم الرافعات (بتتكتب مكان القيم الافتراضية)
+  // &scroll=210                  تمرير أول قايمة بتتمرر جوه الشاشة
+  // &click=كم لي|احفظ            ضغطات متتالية على أزرار/روابط فيها النص ده
   var q = new URLSearchParams(location.search);
-  document.getElementById('f').src = '/' + (q.get('a') || 'Main.dc.html');
+  var name = q.get('a') || 'Main.dc.html';
+  var f = document.getElementById('f');
+  function after(ms, fn) { setTimeout(fn, ms); }
+  function act() {
+    var d = f.contentDocument;
+    if (q.get('scroll')) {
+      var s = d.querySelector('.m-scroll') || d.querySelector('[style*="overflow-y: auto"]');
+      if (!s) { after(200, act); return; }
+      if (q.get('nosnap')) s.style.scrollSnapType = 'none';
+      s.scrollTop = Number(q.get('scroll'));
+      s.dispatchEvent(new Event('scroll'));
+    }
+    var clicks = (q.get('click') || '').split('|').filter(Boolean);
+    clicks.forEach(function (t, i) {
+      after(400 + i * 1600, function () {
+        var el = Array.prototype.find.call(d.querySelectorAll('button, a'), function (b) {
+          return (b.textContent || '').indexOf(t) >= 0 || (b.getAttribute('aria-label') || '').indexOf(t) >= 0;
+        });
+        if (el) el.click(); else console.warn('no element with text', t);
+      });
+    });
+  }
+  f.addEventListener('load', function () { after(900, act); });
+  if (q.get('set')) {
+    fetch('/' + name).then(function (r) { return r.text(); }).then(function (html) {
+      var m = html.match(/data-props='([^']*)'/);
+      if (m) {
+        var props = JSON.parse(m[1].replace(/&#39;/g, "'").replace(/&amp;/g, '&'));
+        q.get('set').split(',').forEach(function (kv) {
+          var i = kv.indexOf(':'), k = kv.slice(0, i), v = kv.slice(i + 1);
+          if (!props[k]) props[k] = {};
+          props[k].default = v === 'true' ? true : v === 'false' ? false : v;
+        });
+        html = html.replace(m[0], "data-props='" + JSON.stringify(props).replace(/&/g, '&amp;').replace(/'/g, '&#39;') + "'");
+      }
+      html = html.replace('<head>', '<head><base href="' + location.origin + '/">');
+      f.srcdoc = html;
+    });
+  } else {
+    f.src = '/' + name;
+  }
 </script>
 </body>
 </html>

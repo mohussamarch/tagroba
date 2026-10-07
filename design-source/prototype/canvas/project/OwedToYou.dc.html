@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>لك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}a:hover{color:#064B40}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-rise{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 40px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="People.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <div class="m-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+      <span style="font-size: 14px; color: #DCEBD6">{{totalLabel}}</span>
+      <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px">
+        <span style="font-size: 16px">{{currency}}</span>
+        <span style="font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{totalText}}</span>
+      </div>
+      <span style="font-size: 12px; color: #DCEBD6">{{totalSub}}</span>
+    </div>
+
+    <span style="font-size: 13px; font-weight: 700; color: #637570">{{orderNote}}</span>
+
+    <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+        <a href="PersonProfile.dc.html" class="m-press" style="{{r.rowStyle}}">
+          <span style="width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; background: #DCEBD6; color: #08634F">{{r.initial}}</span>
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; font-weight: 700">{{r.name}}</span>
+            <span style="font-size: 12px; color: #637570">{{r.reason}}</span>
+            <span style="{{r.signalStyle}}">{{r.signal}}</span>
+          </span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+            <span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span>
+            <span style="font-size: 11px; color: #637570">{{r.due}}</span>
+          </span>
+        </a>
+      </sc-for>
+    </div>
+    <span style="font-size: 12px; color: #637570">{{footNote}}</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  side() { return 'lak'; }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const k = eg ? 3 : 1;
+    const lak = this.side() === 'lak';
+    // مخترعة. اليوم في النموذج = ٧ أكتوبر. الإشارة: فات موعدها > منتظر من زمان (٣٠ يومًا فأكثر — مقترح) > قرّب موعدها (٧ أيام) > عادي
+    const S = {
+      overdue: { color: '#BE3D48', bg: 'rgba(190,61,72,0.10)' },
+      waiting: { color: '#956000', bg: '#FBF0DD' },
+      soon: { color: '#08634F', bg: '#DCEBD6' },
+      calm: { color: '#637570', bg: 'rgba(99,117,112,0.10)' }
+    };
+    const data = lak ? [
+      ['فهد', 120000, eg ? 'سلفة · ٢ سبتمبر' : 'سلفة · ٢ سبتمبر', eg ? 'ميعادها ٢٠ سبتمبر' : 'موعدها ٢٠ سبتمبر', 'overdue', eg ? 'ميعادها فات من ١٧ يوم' : 'فات موعدها منذ ١٧ يومًا'],
+      ['خالد', 50000, eg ? 'سلفة · ٢٣ أغسطس' : 'سلفة · ٢٣ أغسطس', eg ? 'من غير ميعاد' : 'بلا موعد', 'waiting', eg ? 'بقاله كتير مستني · ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا'],
+      ['نورة', 30000, eg ? 'نصيبها من هدية ليلى' : 'نصيبها من هدية ليلى', eg ? 'ميعادها ١٥ أكتوبر' : 'موعدها ١٥ أكتوبر', 'soon', eg ? 'ميعادها قرّب · بعد ٨ أيام' : 'اقترب موعدها · بعد ٨ أيام'],
+      ['أحمد', 18500, eg ? 'نصيبه من فاتورة العشاء' : 'نصيبه من فاتورة العشاء', eg ? 'من غير ميعاد' : 'بلا موعد', 'calm', eg ? 'من ٣ أيام' : 'منذ ٣ أيام']
+    ] : [
+      ['عمر', 200000, eg ? 'سلفة منه · ١ سبتمبر' : 'سلفة منه · ١ سبتمبر', eg ? 'ميعادها ١ نوفمبر' : 'موعدها ١ نوفمبر', 'calm', eg ? 'بعد ٢٥ يوم' : 'بعد ٢٥ يومًا'],
+      ['سلمان', 45000, eg ? 'نصيبك من رحلة البحر' : 'نصيبك من رحلة البحر', eg ? 'من غير ميعاد' : 'بلا موعد', 'calm', eg ? 'من ١٠ أيام' : 'منذ ١٠ أيام']
+    ];
+    const total = data.reduce((s, d) => s + d[1] * k, 0);
+    const n = (x) => x.toLocaleString('ar-EG');
+    const rows = data.map(([name, minor, reason, due, sig, signal], i) => ({
+      name, initial: name.charAt(0), reason, due, signal,
+      amount: this.fmt(minor * k),
+      amountStyle: 'font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (lak ? '#13764D' : '#BE3D48'),
+      signalStyle: 'align-self: flex-start; margin-top: 2px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; color: ' + S[sig].color + '; background: ' + S[sig].bg,
+      rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 12px 0; text-decoration: none; color: #193D33;' + (i === data.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+    }));
+    return {
+      title: lak ? (eg ? 'ليك' : 'لك') : 'عليك',
+      totalLabel: lak ? (eg ? 'مجموع اللي ليك' : 'مجموع ما لك') : (eg ? 'مجموع اللي عليك' : 'مجموع ما عليك'),
+      currency: cur, totalText: this.fmt(total).replace(/\.00$/, ''),
+      totalSub: (lak ? 'عند ' + n(data.length) + ' أشخاص' : (eg ? 'لاتنين' : 'لشخصين')) + (eg ? ' · من غير مقاصة مع «' + (lak ? 'عليك' : 'ليك') + '»' : ' · بلا مقاصة مع «' + (lak ? 'عليك' : 'لك') + '»'),
+      orderNote: eg ? 'الأهم الأول: اللي ميعاده فات، وبعده اللي مستني من زمان' : 'الأهم أولًا: ما فات موعده، ثم ما طال انتظاره',
+      rows,
+      footNote: eg ? 'اضغط على أي حد عشان تشوف السجل بينكم وتسجّل سداد.' : 'اضغط على أي شخص لترى السجل بينكما وتسجّل سدادًا.'
+    };
+  }
+}
+</script>
+</body>
+</html>

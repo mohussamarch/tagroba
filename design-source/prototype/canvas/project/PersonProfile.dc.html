@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ملف الشخص — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}a:hover{color:#064B40}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-veil{animation:m-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.m-sheet{animation:m-up 450ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+@keyframes m-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-sheet{animation:m-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding-bottom: 40px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="height: 168px; border-radius: 0 0 28px 28px; padding: 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 -1px 0 rgba(255,255,255,0.12), 0 20px 44px rgba(6,75,64,0.22)">
+      <a href="People.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #DAF8E9; text-decoration: none; background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.03) 48%, rgba(150,243,204,0.16)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+      <span style="font-size: 12px; color: #DCEBD6; padding-top: 14px">{{circleLine}}</span>
+    </div>
+
+    <div style="margin-top: -66px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 20px">
+      <div aria-hidden="true" style="width: 104px; height: 104px; border-radius: 52px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; color: #08634F; background: #FFFDF9; box-shadow: 0 0 0 4px #FAF9F3, 0 12px 28px rgba(0,30,25,0.22)">خ</div>
+      <h1 style="margin: 6px 0 0; font-size: 22px; font-weight: 700">خالد</h1>
+      <span style="font-size: 13px; color: #637570">{{relLine}}</span>
+      <span style="margin-top: 4px; font-size: 12px; font-weight: 700; color: #956000; padding: 4px 12px; border-radius: 12px; background: #FBF0DD">{{occasionLine}}</span>
+    </div>
+
+    <div style="display: flex; gap: 10px; padding: 0 20px">
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 12px; color: #637570">{{lakLabel}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{lakAmount}}</span>
+        <span style="align-self: flex-start; font-size: 11px; font-weight: 700; color: #956000; padding: 2px 8px; border-radius: 12px; background: #FBF0DD">{{waitingSignal}}</span>
+      </div>
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 12px; color: #637570">{{alekLabel}}</span>
+        <span style="font-size: 20px; font-weight: 700; color: #637570">{{alekNone}}</span>
+        <span style="font-size: 11px; color: #637570">بلا مقاصة بين الرقمين</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{actionsTitle}}</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{actions}}" as="a" hint-placeholder-count="4">
+          <button type="button" class="m-press" onClick="{{a.open}}" style="border: 0; min-height: 84px; border-radius: 18px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 700; line-height: 1.4; color: #193D33; cursor: pointer; text-align: center; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(8,99,79,0.10); color: #08634F; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)">
+              <sc-if value="{{a.i.rosca}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="M16.71 13.88l.7.71-2.82 2.82"></path></svg></sc-if>
+              <sc-if value="{{a.i.project}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg></sc-if>
+              <sc-if value="{{a.i.link}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg></sc-if>
+              <sc-if value="{{a.i.split}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></sc-if>
+            </span>
+            {{a.label}}
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #637570">{{futureNote}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{historyTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{history}}" as="h" hint-placeholder-count="4">
+          <div style="{{h.rowStyle}}">
+            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 14px; font-weight: 700">{{h.title}}</span>
+              <span style="font-size: 12px; color: #637570">{{h.sub}}</span>
+            </div>
+            <span dir="ltr" style="{{h.amountStyle}}">{{h.amount}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 8">
+      <button type="button" class="m-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px) saturate(0.88); -webkit-backdrop-filter: blur(8px) saturate(0.88)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheet.title}}" class="m-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 32px 32px 0 0; padding: 10px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 -14px 40px rgba(29,54,53,0.16)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(99,117,112,0.35)"></span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{sheet.title}}</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #637570">{{sheet.body}}</p>
+        <sc-if value="{{sheet.hasAmount}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="p-amount" style="font-size: 13px; font-weight: 700">{{sheet.amountLabel}}</label>
+            <div style="display: flex; align-items: center; height: 48px; border-radius: 18px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+              <input id="p-amount" type="text" inputmode="decimal" dir="ltr" value="{{amountText}}" onChange="{{typeAmount}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 18px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+              <span style="font-size: 14px; color: #637570">{{currency}}</span>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{sheet.isSplit}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 16px; background: #DCEBD6; font-size: 14px">
+            <span>{{splitLine}}</span>
+            <span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{splitShare}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{sheet.needsLink}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; font-weight: 700; color: #956000; padding: 8px 12px; border-radius: 12px; background: #FBF0DD">{{linkNote}}</span>
+        </sc-if>
+        <div style="display: flex; gap: 10px; margin-top: 4px">
+          <button type="button" class="m-press" onClick="{{sheet.go}}" style="{{sheet.goStyle}}">{{sheet.goLabel}}</button>
+          <button type="button" class="m-press" onClick="{{closeSheet}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.09)">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sheet: null, amount: '' }; }
+  toMinor(text) {
+    const t = String(text || '').replace(/[^0-9.]/g, '');
+    if (!t) return null;
+    const [w, f = ''] = t.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const k = eg ? 3 : 1;
+    const close = () => this.setState({ sheet: null, amount: '' });
+    const primary = (enabled) => 'flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: ' + (enabled ? 'pointer' : 'default') + '; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: ' + (enabled ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)' : 'none') + '; opacity: ' + (enabled ? 1 : 0.45);
+    const S = {
+      rosca: { title: eg ? 'جمعية مع خالد' : 'جمعية مع خالد', body: eg ? 'حدّد القسط الشهري، وهتتسجّل الجمعية عندك. الدعوة بتوصل لخالد لما ربط الحسابات يشتغل.' : 'حدّد القسط الشهري لتُسجَّل الجمعية عندك. تصل الدعوة لخالد عند تفعيل ربط الحسابات.', hasAmount: true, amountLabel: 'القسط الشهري', goLabel: 'سجّل الجمعية', needsLink: false },
+      project: { title: eg ? 'مشروع مع خالد' : 'مشروع مع خالد', body: eg ? 'افتح مشروع تجمع فيه مصاريفكم المشتركة، وكل واحد يشوف نصيبه.' : 'أنشئ مشروعًا يجمع مصروفاتكم المشتركة، مع نصيب كل منكما.', hasAmount: false, goLabel: 'أنشئ المشروع', needsLink: false },
+      link: { title: eg ? 'اربط حسابك بحساب خالد' : 'اربط حسابك بحساب خالد', body: eg ? 'لما تتربطوا، السلف والفواتير بتتسجّل عندكم انتم الاتنين مرة واحدة.' : 'بعد الربط تُسجَّل السلف والفواتير لدى الطرفين مرة واحدة.', hasAmount: false, goLabel: 'أرسل الطلب', needsLink: true },
+      split: { title: eg ? 'قسّم فاتورة مع خالد' : 'قسّم فاتورة مع خالد', body: eg ? 'اكتب مبلغ الفاتورة، وهتتقسم بالتساوي بينك وبينه، ونصيبه يتسجّل في «ليك».' : 'اكتب مبلغ الفاتورة لتُقسَم بالتساوي، ويُسجَّل نصيبه في «لك».', hasAmount: true, amountLabel: 'مبلغ الفاتورة', goLabel: 'سجّل التقسيم', needsLink: false, isSplit: true }
+    };
+    const key = this.state.sheet;
+    const minor = this.toMinor(this.state.amount);
+    const sheet = key ? Object.assign({ isSplit: false, amountLabel: '' }, S[key], {
+      go: key === 'link' ? () => {} : close,
+      goStyle: primary(key !== 'link' && (!S[key].hasAmount || (minor || 0) > 0))
+    }) : { title: '', body: '', hasAmount: false, amountLabel: '', isSplit: false, needsLink: false, goLabel: '', go: close, goStyle: '' };
+    const half = minor ? Math.floor(minor / 2) : 0;
+    const actions = [
+      ['rosca', eg ? 'جمعية' : 'دعوة لجمعية'], ['project', 'مشروع مشترك'], ['link', 'طلب اتصال'], ['split', 'تقسيم فاتورة']
+    ].map(([id, label]) => ({ label, i: { [id]: true }, open: () => this.setState({ sheet: id, amount: '' }) }));
+    const row = (title, sub, amountMinor, dir, last) => ({
+      title, sub,
+      amount: (dir === 'out' ? '−' : '+') + this.fmt(amountMinor * k),
+      rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+      amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (dir === 'out' ? '#BE3D48' : '#13764D')
+    });
+    return {
+      circleLine: eg ? 'الصحاب' : 'الأصدقاء',
+      relLine: eg ? 'صاحبك من الجامعة · بتتعاملوا كتير' : 'صديقك من الجامعة · تعامل متكرر',
+      occasionLine: eg ? 'فرحه ١٨ أكتوبر · بعد ١١ يوم' : 'زواجه ١٨ أكتوبر · بعد ١١ يومًا',
+      lakLabel: eg ? 'ليك عنده' : 'لك عنده',
+      lakAmount: this.fmt(50000 * k) + ' ' + cur,
+      waitingSignal: eg ? 'بقاله كتير مستني · ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا',
+      alekLabel: eg ? 'عليك ليه' : 'عليك له',
+      alekNone: eg ? 'ولا حاجة' : 'لا شيء',
+      actionsTitle: eg ? 'اعملوا سوا' : 'معًا',
+      actions,
+      futureNote: eg ? 'قريب: لما خالد يستخدم مصروفي، هتقدروا تبنوا حاجات سوا من الحسابين.' : 'قريبًا: عندما يستخدم خالد مصروفي، تبنيان أشياء معًا من الحسابين.',
+      historyTitle: eg ? 'السجل بينكم' : 'السجل بينكما',
+      history: [
+        row(eg ? 'سلفة منك' : 'سلفة منك', eg ? '٢٣ أغسطس · لسه ما رجعتش' : '٢٣ أغسطس · لم تُسدَّد', 50000, 'out'),
+        row(eg ? 'رجّع سلفة' : 'سداد سلفة', '١٢ يوليو', 30000, 'in'),
+        row('سلفة منك', '٢ يوليو', 30000, 'out'),
+        row(eg ? 'نصيبه من رحلة البحر' : 'نصيبه من رحلة البحر', '١٨ يونيو', 42000, 'in', true)
+      ],
+      sheetOpen: !!key, sheet, closeSheet: close,
+      currency: cur,
+      amountText: this.state.amount,
+      typeAmount: (e) => this.setState({ amount: e.target.value }),
+      splitLine: eg ? 'نصيب خالد' : 'نصيب خالد',
+      splitShare: minor ? this.fmt(half) + ' ' + cur : '—',
+      linkNote: eg ? 'محتاج ربط الحسابات، وده جاي في مرحلة بعدين.' : 'يحتاج ربط الحسابات، وهو في مرحلة قادمة.'
+    };
+  }
+}
+</script>
+</body>
+</html>
