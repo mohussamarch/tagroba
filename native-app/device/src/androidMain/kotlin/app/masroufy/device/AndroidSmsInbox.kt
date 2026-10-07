@@ -50,6 +50,10 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         it.snapshot(uid, granted(), false)
     }
 
+    override suspend fun autoTarget(spaceId: String): String? = withStore { it.autoTarget(uid, spaceId) }
+
+    override suspend fun setAutoTarget(spaceId: String, walletId: String?) = withStore { it.setAutoTarget(uid, spaceId, walletId) }
+
     override suspend fun sync(): SmsInboxState = withStore { store ->
         // التحقق من الإذن ما بيفتحش نافذة أندرويد لوحده أبدًا
         val more = store.enabled(uid) && granted() && catchUp(store)

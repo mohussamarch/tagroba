@@ -36,4 +36,17 @@ class MemorySmsInbox(messages: List<QueuedSms> = emptyList(), override val avail
         queue = queue.filter { it.id !in ids }
         return state()
     }
+
+    private val targets = mutableMapOf<String, String>()
+
+    override suspend fun autoTarget(spaceId: String): String? = targets[spaceId]
+
+    override suspend fun setAutoTarget(spaceId: String, walletId: String?) {
+        if (walletId == null) targets.remove(spaceId) else targets[spaceId] = walletId
+    }
+
+    /** للاختبار: رسالة وصلت (زي الاستقبال في الخلفية). */
+    fun receive(message: QueuedSms) {
+        if (queue.none { it.id == message.id }) queue = queue + message
+    }
 }

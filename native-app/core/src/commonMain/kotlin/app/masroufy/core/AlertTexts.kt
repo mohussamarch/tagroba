@@ -46,6 +46,7 @@ private fun lockKey(kind: AlertKind, flow: DueFlow): TextKey {
         AlertKind.BIG_ONE -> TextKey.ALERT_LOCK_BIG_ONE
         AlertKind.GOAL_NEAR -> TextKey.ALERT_LOCK_GOAL_NEAR
         AlertKind.WEEKLY_SUMMARY -> TextKey.ALERT_LOCK_WEEKLY
+        AlertKind.SMS_CONFIRM -> TextKey.ALERT_LOCK_SMS_CONFIRM
         AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_LOCK_GENERIC
     }
 }
@@ -88,6 +89,7 @@ private fun whyKey(kind: AlertKind): Pair<TextKey, List<String>> = when (kind) {
     AlertKind.BIG_ONE -> TextKey.ALERT_WHY_BIG_ONE to emptyList()
     AlertKind.GOAL_NEAR -> TextKey.ALERT_WHY_GOAL_NEAR to emptyList()
     AlertKind.WEEKLY_SUMMARY -> TextKey.ALERT_WHY_WEEKLY to emptyList()
+    AlertKind.SMS_CONFIRM -> TextKey.ALERT_WHY_SMS_CONFIRM to emptyList()
     AlertKind.NEW_DEVICE_LOGIN, AlertKind.LINKED_ACCOUNT_ACTIVITY, AlertKind.MONTHLY_EMAIL -> TextKey.ALERT_WHY_SERVER to emptyList()
 }
 

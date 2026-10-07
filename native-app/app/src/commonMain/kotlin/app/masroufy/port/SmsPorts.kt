@@ -45,4 +45,13 @@ interface SmsInboxPort {
 
     /** الرسايل دي خلصت (اتسجلت أو اتشالت) — تتشال من الصندوق. */
     suspend fun acknowledge(ids: List<String>): SmsInboxState
+
+    /**
+     * المحفظة اللي رسايل البلد [spaceId] بتتسجل فيها لوحدها (OVERRIDES §72) — على الجهاز، لصاحب الصندوق، لكل بلد.
+     * null = لسه ما اتختارتش (`AutoRecordSms` بياخد أول محفظة بنك زي الشاشة §36).
+     */
+    suspend fun autoTarget(spaceId: String): String?
+
+    /** null = يرجع للافتراضي. */
+    suspend fun setAutoTarget(spaceId: String, walletId: String?)
 }

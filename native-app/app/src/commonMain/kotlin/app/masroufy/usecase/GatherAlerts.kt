@@ -8,6 +8,7 @@ import app.masroufy.core.balanceMismatchCandidate
 import app.masroufy.core.budgetAlertCandidates
 import app.masroufy.core.dueAlertCandidates
 import app.masroufy.core.profileCompletionCandidate
+import app.masroufy.core.smsConfirmCandidate
 import app.masroufy.core.transferQuestionCandidates
 import app.masroufy.core.zakatAlertCandidate
 import app.masroufy.core.zakatVisible
@@ -19,7 +20,7 @@ import app.masroufy.port.ZakatYearRepository
 /**
  * بيجمع المرشحين للتنبيه النهارده من البيانات الموجودة (OVERRIDES §61) — من غير ما يقرر حاجة؛ القرار في `RunAlertEngine`.
  * المصادر: المستحقات (`LoadDues`) · الميزانية (نفس منطق `LoadNotifications`) · أسئلة «زون التحويلات» · ميعاد الزكاة ·
- * اختلاف المطابقة · كارت «ملفك X%» (§63) · مناسبات الشخص (§64) · المرتب المتأخر (§64).
+ * اختلاف المطابقة · كارت «ملفك X%» (§63) · مناسبات الشخص (§64) · المرتب المتأخر (§64) · رسايل البنك المستنية تأكيدك (§72).
  * **مش بيتولد:** الإيميل · الحسابات المربوطة · الدخول من جهاز جديد — محتاجين سيرفر («الجوال الأول»).
  */
 data class GatherAlertsDeps(
@@ -35,6 +36,8 @@ data class GatherAlertsDeps(
     val income: IncomeSourceSignals? = null,
     /** المساعد المالي (§68): habitVsGoal · overcommitted · capPace — null = مش متوصل. */
     val advisor: AdvisorSignals? = null,
+    /** رسايل البنك المستنية تأكيدك (§72) — على مستوى الحساب (الصندوق واحد على الجهاز). null = مش متوصل (الآيفون مثلًا). */
+    val sms: AutoRecordSms? = null,
 )
 
 data class AlertGatherInput(
@@ -73,6 +76,7 @@ class GatherAlerts(private val deps: GatherAlertsDeps) {
         deps.occasions?.let { out += it.alertCandidates(input.today) }
         deps.income?.let { out += it.alertCandidates(input.today) }
         deps.advisor?.let { out += it.alertCandidates(input) }
+        deps.sms?.let { s -> smsConfirmCandidate(s.waiting().messageIds)?.let { out += it } }
         profileCompletionCandidate(input.profileCompletionPercent)?.let { out += it }
         return out
     }

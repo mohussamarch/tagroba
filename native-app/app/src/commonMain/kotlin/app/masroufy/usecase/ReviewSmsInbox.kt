@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.CategorizationSource
 import app.masroufy.core.Category
+import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
@@ -18,12 +19,25 @@ import app.masroufy.core.toParsedRow
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.MerchantRepository
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * شاشة رسايل البنك — نقل `reviewSmsInbox.ts` (OVERRIDES §36): قايمة واحدة فيها كل عملية بتصنيفها المقترح،
- * وزرار واحد «سجّل الكل». مفيش حاجة بتتسجل من غير ضغطة. منع التكرار والتصنيف هما نفس خط استيراد الكشف.
+ * وزرار واحد «سجّل الكل». منع التكرار والتصنيف هما نفس خط استيراد الكشف.
+ * **§72 (قرار المالك 2026-10-08) لغى «مفيش حاجة بتتسجل من غير ضغطة»:** الجديد بيتسجل لوحده في الخلفية (`AutoRecordSms`) بنفس
+ * الكلاس ده، والشاشة بتعرض اللي مستني بس. الاتنين بيسجّلوا تحت [SMS_RECORD_LOCK].
  */
+
+/**
+ * قفل واحد للبرنامج كله على **تسجيل رسايل البنك** (الخلفية + «سجّل الكل»): منع التكرار في الاستيراد «اقرا وبعدين اكتب»، فتسجيلين
+ * في نفس اللحظة كانوا ممكن يشوفوا نفس الرسالة جديدة ويسجلوها مرتين. مش قابل للدخول مرتين (`Mutex`) ⇒ جوه القفل بننادي [ReviewSmsInbox.recordLocked].
+ */
+internal val SMS_RECORD_LOCK = Mutex()
+
+/** نتيجة التسجيل لحالات الاستخدام — [batchId] بس لو اتسجل حاجة فعلًا. */
+internal class SmsRecordOutcome(val recorded: Int, val duplicates: Int, val batchId: Id?)
 
 data class SmsReviewLine(
     val messageId: String,
@@ -57,8 +71,11 @@ data class SmsReview(
     val categories: List<Category>,
 )
 
-/** `accountIdentity` = اسم المحفظة — نطاق تفرّد المرجع، زي شاشة الاستيراد. */
-data class SmsReviewTarget(val walletId: Id, val accountIdentity: String)
+/**
+ * `accountIdentity` = اسم المحفظة — نطاق تفرّد المرجع، زي شاشة الاستيراد. [currency] = عملة المحفظة: من غيرها رسايل QNB مصر
+ * كانت هتتسجل بالريال (الاستيراد افتراضيه ريال) — اتكشف في جلسة 31. الافتراضي ريال عشان ملفات المرجع والتطبيق الحالي.
+ */
+data class SmsReviewTarget(val walletId: Id, val accountIdentity: String, val currency: Currency = Currency.SAR)
 
 /** اللي بيترفع للقايمة المشتركة (OVERRIDES §25) — المصروف بس. */
 data class MerchantContribution(val economicKind: EconomicKind, val observedDirection: Direction, val rawMerchantName: String)
@@ -107,6 +124,7 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
             walletId = target.walletId,
             schema = SchemaId.SMS,
             parsedRows = rows.map { it.toParsedRow() },
+            currency = target.currency,
         )
         val preview = deps.importer.preview(request)
         session = Session(request, preview, messageByLine)
@@ -144,23 +162,32 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
      * «سجّل الكل»: الجديد كله + الشبيه اللي المستخدم اختاره. التصنيف اللي اختاره المستخدم بيتحفظ مؤكد.
      * اللي اتسجل والمكرر بيتشالوا من الصندوق؛ الباقي (المرفوض والشبيه اللي ما اتختارش) بيفضل.
      */
-    suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>): Int {
-        val current = session ?: return 0
+    suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>): Int =
+        SMS_RECORD_LOCK.withLock { recordLocked(categories, includeSimilar).recorded }
+
+    /** «سجّل الكل» من غير القفل — للي ماسك [SMS_RECORD_LOCK] بالفعل (`AutoRecordSms`). */
+    internal suspend fun recordLocked(categories: Map<Int, Id>, includeSimilar: List<Int>): SmsRecordOutcome {
+        val current = session ?: return SmsRecordOutcome(0, 0, null)
         val allowed = includeSimilar.toSet()
         val selection = current.preview.lines
             .filter { it.state == MatchingState.NEW || (it.state == MatchingState.SIMILAR && it.row.lineNumber in allowed) }
             .map { it.row.lineNumber }
         var recorded = 0
+        var batchId: Id? = null
         if (selection.isNotEmpty()) {
             val batch = deps.importer.commit(current.request, current.preview, selection, categories)
-            if (current.preview.previousBatch?.id != batch.id) recorded = selection.size
+            if (current.preview.previousBatch?.id != batch.id) {
+                recorded = selection.size
+                batchId = batch.id
+            }
         }
         val lines = if (recorded > 0) selection else emptyList()
         val duplicates = current.preview.lines.filter { it.state == MatchingState.DUPLICATE }.map { it.row.lineNumber }
         val done = lines + duplicates
+        // بعد الحفظ بس: لو الشيل وقع، الرسالة بتفضل وبتطلع «مكررة» المرة الجاية (مش بتتسجل تاني)
         deps.inbox.imported(done.map { InboxLine(current.messageByLine.getValue(it), it) }, done)
         session = null
-        return recorded
+        return SmsRecordOutcome(recorded, duplicates.size, batchId)
     }
 
     /** «أيوه افتكره»: تصنيف المحل بيتثبت على الجهاز، ويترفع اقتراح للقايمة المشتركة لو مصروف. */

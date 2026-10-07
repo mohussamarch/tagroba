@@ -21,6 +21,9 @@ kotlin {
             api(project(":core"))
             // قراية نص ملف JSON بس (النسخة الشاملة) — قرار المالك OVERRIDES §49، السبب ARCHITECTURE §31.2
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+            // قفل واحد (`Mutex`) لتسجيل رسايل البنك من الخلفية والشاشة مع بعض — OVERRIDES §72، السبب ARCHITECTURE §31.29
+            // (نفس النسخة اللي في `data`/`firestore`/`device` والاختبارات — مش مكتبة جديدة على التطبيق)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

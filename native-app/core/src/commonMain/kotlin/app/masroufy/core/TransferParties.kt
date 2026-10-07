@@ -116,10 +116,44 @@ private fun ref(label: String, last4: String?): TransferPartyRef? {
     return TransferPartyRef(compact + (last4?.let { "#$it" } ?: ""), clean.ifEmpty { "••••$last4" }, last4)
 }
 
+/*
+ * رسايل البنك (§72): الوصف المتخزن = نص الرسالة بعد قص الأرقام. **الأشكال من الرسايل المخترعة اللي في المستودع بس** (`golden/sms.json`
+ * · تعليق `EgyptBankSms.kt`) — ما اخترعناش شكل بنك:
+ *   - سطر «إلى:»/«من:» (أو to:/from:) — الصادر: الطرف في «إلى» (و«من» = حسابك إنت)، والوارد: الطرف في «من». الاسم ⇒ اسم؛ أرقام بس ⇒ آخر 4.
+ *   - سطر «من حساب»/«إلى حساب» + رقم (الآيبان بيتقص لـ`••••`+آخر 4 قبل الحفظ) ⇒ آخر 4.
+ *   - QNB مصر «IPN transfer sent/received with amount of …» **مفيهاش الطرف أصلًا** («from 1234» = حسابك) ⇒ مالهاش طرف — كانت بتعدّي
+ *     لنمط الكشف الصادر وتطلع «طرف» من أول الرسالة لحد التاريخ (اتكشف في الجلسة دي).
+ * الرسالة بتتعرف إنها رسالة من سطورها (أكتر من سطر — وصف الكشف سطر واحد) أو من شكل QNB — وساعتها أشكال الكشف ما بتتجربش (تاريخ
+ * «26/09/16» كان ممكن يتقري «اسم/أرقام»)، ورسالة من غير سطر طرف ⇒ مالهاش طرف. شكل رسالة من سطر واحد بـ«to:» جوه الكلام ما بيتقريش (مفيش عينة طرف حقيقية — سؤال مفتوح للمالك).
+ */
+private val SMS_PARTY_LINE = Regex("^[ \\t]*(من|إلى|الى|from|to)[ \\t]*[:：][ \\t]*([^\\n]+?)[ \\t]*$", setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE))
+private val SMS_ACCOUNT_LINE = Regex("^[ \\t]*(من|إلى|الى)[ \\t]+حساب[ \\t]+([^\\n]+?)[ \\t]*$", RegexOption.MULTILINE)
+private val QNB_SMS_TRANSFER = Regex("^IPN transfer (?:sent|received) with amount of")
+private val SMS_OUT_SIDE = setOf("إلى", "الى", "to")
+private val SMS_IN_SIDE = setOf("من", "from")
+
+/** وصف الكشف سطر واحد دايمًا (CSV/PDF)؛ الرسالة سطور. */
+private fun looksLikeSms(text: String): Boolean = QNB_SMS_TRANSFER.containsMatchIn(text) || '\n' in text
+
+private fun smsPartyOf(text: String, direction: Direction): TransferPartyRef? {
+    if (QNB_SMS_TRANSFER.containsMatchIn(text)) return null
+    val side = if (direction == Direction.OUT) SMS_OUT_SIDE else SMS_IN_SIDE
+    SMS_ACCOUNT_LINE.findAll(text).firstOrNull { it.groupValues[1] in side }?.let { m ->
+        // قص الآيبان بياكل السطر الجديد اللي بعده («••••7519بـSR 100») ⇒ الرقم من أول السطر بس
+        return SMS_LEADING_NUMBER.find(m.groupValues[2])?.value?.let(::lastFour)?.let { ref("", it) }
+    }
+    val match = SMS_PARTY_LINE.findAll(text).firstOrNull { it.groupValues[1].lowercase() in side } ?: return null
+    val value = match.groupValues[2]
+    return if (value.all { it in '0'..'9' || it in "*•xX -" }) lastFour(value)?.let { ref("", it) } else ref(value, null)
+}
+
+private val SMS_LEADING_NUMBER = Regex("^[0-9*•xX -]+")
+
 /** الطرف التاني في التحويل، أو `null` لو مش تحويل أو مفيش اسم ولا رقم يتعرف بيه (ما بنخمّنش). */
 fun transferPartyOf(t: Transaction): TransferPartyRef? {
     if (!isTransferLike(t)) return null
     val text = nfkc(logicalArabic(latinizeDigits(t.rawDescription.orEmpty())))
+    if (looksLikeSms(text)) return smsPartyOf(text, t.observedDirection)
     val op = t.sourceOperationType?.let { nfkc(logicalArabic(it)) }.orEmpty()
     if (WALLET_TOPUP.containsMatchIn(op)) return ref("محفظة دراهم", null)
     ACCOUNT.find(text)?.let { m ->

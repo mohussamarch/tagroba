@@ -67,6 +67,9 @@ enum class AlertKind(
     BIG_ONE("big_one", AlertGroup.ADVISOR, AlertUrgency.LOW),
     GOAL_NEAR("goal_near", AlertGroup.ADVISOR, AlertUrgency.LOW),
     WEEKLY_SUMMARY("weekly_summary", AlertGroup.ADVISOR, AlertUrgency.MEDIUM),
+    // رسايل البنك اللي ما اتسجلتش لوحدها ومستنية قرارك (§72): محتاج قرار ⇒ ما بيتدفنش في ملخص؛ متوسط ⇒ وقتك المعتاد أو دلوقتي.
+    // في مجموعة «الأسئلة» زي سؤال التحويلات (اختيار Claude — المالك يقدر يغيّره) ⇒ قفل الأسئلة بيقفله كمان.
+    SMS_CONFIRM("sms_confirm", AlertGroup.QUESTIONS, AlertUrgency.MEDIUM, needsDecision = true),
     NEW_DEVICE_LOGIN("new_device_login", AlertGroup.SECURITY, AlertUrgency.HIGH, needsServer = true),
     LINKED_ACCOUNT_ACTIVITY("linked_account_activity", AlertGroup.LINKED_ACCOUNTS, AlertUrgency.MEDIUM, needsServer = true),
     MONTHLY_EMAIL("monthly_email", AlertGroup.EMAIL, AlertUrgency.NONE, needsServer = true),

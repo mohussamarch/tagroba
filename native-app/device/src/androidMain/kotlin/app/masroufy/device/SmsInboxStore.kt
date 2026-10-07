@@ -49,9 +49,21 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
 
     fun checkpoint(date: Long, id: Long) = check(prefs.edit().putLong("cursorDate", date).putLong("cursorId", id).commit()) { "checkpoint failed" }
 
-    fun enqueue(uid: String, sender: String, timestamp: Long, originalBody: String) {
-        if (!enabled(uid) || !accepts(sender)) return
-        val body = SmsSafety.sanitize(originalBody) ?: return
+    /** المحفظة اللي رسايل البلد بتتسجل فيها لوحدها (OVERRIDES §72) — لكل صاحب صندوق ولكل بلد. */
+    fun autoTarget(uid: String, spaceId: String): String? = prefs.getString(targetKey(uid, spaceId), null)
+
+    fun setAutoTarget(uid: String, spaceId: String, walletId: String?) {
+        val edit = prefs.edit()
+        if (walletId == null) edit.remove(targetKey(uid, spaceId)) else edit.putString(targetKey(uid, spaceId), walletId)
+        check(edit.commit()) { "settings write failed" }
+    }
+
+    private fun targetKey(uid: String, spaceId: String) = "autoTarget|$uid|$spaceId"
+
+    /** `true` = رسالة جديدة دخلت الصندوق (مش مكررة ولا متفلترة) ⇒ الاستقبال يطلب تسجيلها في الخلفية. */
+    fun enqueue(uid: String, sender: String, timestamp: Long, originalBody: String): Boolean {
+        if (!enabled(uid) || !accepts(sender)) return false
+        val body = SmsSafety.sanitize(originalBody) ?: return false
         val row = ContentValues().apply {
             put("owner", uid)
             put("id", SmsSafety.key(sender, timestamp, body))
@@ -59,7 +71,7 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
             put("body", body)
             put("received", timestamp)
         }
-        writableDatabase.insertWithOnConflict("messages", null, row, SQLiteDatabase.CONFLICT_IGNORE)
+        return writableDatabase.insertWithOnConflict("messages", null, row, SQLiteDatabase.CONFLICT_IGNORE) != -1L
     }
 
     fun snapshot(uid: String, permission: Boolean, more: Boolean): SmsInboxState {

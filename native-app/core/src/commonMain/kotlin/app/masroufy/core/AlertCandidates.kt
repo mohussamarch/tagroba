@@ -44,6 +44,21 @@ fun budgetAlertCandidates(events: List<NotificationEvent>): List<AlertCandidate>
         )
     }
 
+/**
+ * رسايل البنك اللي **ما اتسجلتش لوحدها** ومستنية قرار المالك (§72): مرفوضة من القارئ · شبه عملية موجودة · بلد مالهاش محفظة.
+ * [waitingMessageIds] بترتيب الصندوق (الأقدم الأول). الموضوع = **أحدث رسالة مستنية** (ببصمتها) ⇒ رسالة جديدة بتستنى = إشعار جديد
+ * مرة واحدة، والسطر القديم في الصفحة بيتشال لوحده. المسجّل لوحده **مش هنا خالص** ⇒ مالوش إشعار (رد المالك ٢).
+ */
+fun smsConfirmCandidate(waitingMessageIds: List<String>): AlertCandidate? {
+    val newest = waitingMessageIds.lastOrNull() ?: return null
+    return AlertCandidate(
+        kind = AlertKind.SMS_CONFIRM,
+        threadKey = "sms-confirm|${hashContent(newest)}",
+        title = uiText(TextKey.ALERT_SMS_CONFIRM_TITLE, waitingMessageIds.size.toString()),
+        body = uiText(TextKey.ALERT_SMS_CONFIRM_BODY),
+    )
+}
+
 /** «زون التحويلات»: طرف التحويلات معاه كترت ومالوش قرار (§60). */
 fun transferQuestionCandidates(questions: List<SuspiciousParty>): List<AlertCandidate> = questions.map { q ->
     AlertCandidate(

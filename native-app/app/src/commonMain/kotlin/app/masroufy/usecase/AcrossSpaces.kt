@@ -9,6 +9,7 @@ import app.masroufy.core.Space
 import app.masroufy.core.computePersonBalance
 import app.masroufy.core.inSpace
 import app.masroufy.core.profileCompletionCandidate
+import app.masroufy.core.smsConfirmCandidate
 import app.masroufy.port.ObligationRepository
 import app.masroufy.port.SettlementRepository
 
@@ -24,15 +25,21 @@ data class SpaceAlertSource(val space: Space, val deps: GatherAlertsDeps, val in
  * (السعودية زي ما هي — `inSpace`)، واسم البلد **جوه التطبيق بس** لو عنده أكتر من بلد. **مصادر الحساب** (مناسبات الشخص · كارت الملف)
  * **مرة واحدة** — مش من كل بلد (كانت هتتكرر). نص شاشة القفل من النوع بس زي الأول.
  */
-class GatherAllSpaceAlerts(private val sources: List<SpaceAlertSource>, private val occasions: ManageOccasions? = null) {
+class GatherAllSpaceAlerts(
+    private val sources: List<SpaceAlertSource>,
+    private val occasions: ManageOccasions? = null,
+    /** رسايل البنك المستنية (§72) — مرة واحدة على مستوى الحساب (الصندوق واحد على الجهاز لكل البلاد). */
+    private val sms: AutoRecordSms? = null,
+) {
     suspend fun gather(today: IsoDate, profileCompletionPercent: Int? = null): List<AlertCandidate> {
         val labelled = sources.size > 1
         val out = mutableListOf<AlertCandidate>()
         for (s in sources) {
-            val perSpace = GatherAlerts(s.deps.copy(occasions = null)).gather(s.input.copy(profileCompletionPercent = null))
+            val perSpace = GatherAlerts(s.deps.copy(occasions = null, sms = null)).gather(s.input.copy(profileCompletionPercent = null))
             out += perSpace.map { it.inSpace(s.space, labelled) }
         }
         occasions?.let { out += it.alertCandidates(today) }
+        sms?.let { s -> smsConfirmCandidate(s.waiting().messageIds)?.let { out += it } }
         profileCompletionCandidate(profileCompletionPercent)?.let { out += it }
         return out
     }
