@@ -131,6 +131,19 @@ fun valueOfQuantity(quantity: Quantity, pricePerUnitMinor: Halalas): Halalas {
     return divideRounded(quantity, pricePerUnitMinor, QUANTITY_SCALE)
 }
 
+/**
+ * قيمة وزن بنقاوته (الزكاة — §62): الكمية × (البسط ÷ المقام) × سعر الوحدة الصافية ÷ المقياس.
+ * عيار 21 ⇒ 21/24 · فضة 925 ⇒ 925/1000. حساب صحيح كله (128 بت) و**تقريب واحد** في الآخر: نص لفوق بعيد عن الصفر — زي `valueOfQuantity`.
+ */
+fun valueOfPureQuantity(quantity: Quantity, purityNumerator: Long, purityDenominator: Long, pricePerPureUnitMinor: Halalas): Halalas {
+    assertQuantity(quantity)
+    if (purityDenominator <= 0 || purityNumerator < 0 || purityNumerator > purityDenominator || purityDenominator > 1000) {
+        throw QuantityError(uiText(TextKey.QUANTITY_DIVIDE_BY_ZERO))
+    }
+    // الكمية ≤ 2^53 والبسط ≤ 1000 ⇒ الضرب جوه 64 بت؛ والمقام × المقياس ≤ 10^11
+    return divideRounded(quantity * purityNumerator, pricePerPureUnitMinor, QUANTITY_SCALE * purityDenominator)
+}
+
 /** حصة من مبلغ بنسبة كمية لكمية — تكلفة الجزء المباع. المتبقي بيتحسب بالطرح (مفيش هللة بتضيع). */
 fun shareOfAmount(amountMinor: Halalas, partQuantity: Quantity, wholeQuantity: Quantity): Halalas {
     assertQuantity(partQuantity, uiText(TextKey.QUANTITY_CONTEXT_PART))

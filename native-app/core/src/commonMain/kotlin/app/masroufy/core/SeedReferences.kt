@@ -153,9 +153,9 @@ data class FileCheck(
 /** فحص نوع الملف **قبل** التحليل — عشان PDF ما يوصلش قارئ CSV ويطلع رسالة كذب. */
 fun inspectFile(fileName: String, content: String): FileCheck {
     val trimmedStart = if (content.startsWith(0xFEFF.toChar())) content.substring(1) else content
-    if (JsText.trim(trimmedStart).isEmpty()) return FileCheck("empty", false, "الملف فاضي.")
+    if (JsText.trim(trimmedStart).isEmpty()) return FileCheck("empty", false, uiText(TextKey.FILE_EMPTY))
     val lowerName = fileName.lowercase()
-    if (trimmedStart.startsWith("%PDF-") || lowerName.endsWith(".pdf")) return FileCheck("pdf", false, "ده ملف PDF — بنقراه بقارئ مختلف عن الـCSV.")
+    if (trimmedStart.startsWith("%PDF-") || lowerName.endsWith(".pdf")) return FileCheck("pdf", false, uiText(TextKey.FILE_IS_PDF))
     val sample = trimmedStart.take(4000)
     var control = 0
     for (ch in sample) {
@@ -167,7 +167,7 @@ fun inspectFile(fileName: String, content: String): FileCheck {
     if (0.toChar() in sample || ratio > 0.02) {
         val dot = lowerName.lastIndexOf('.')
         val ext = if (dot > 0) lowerName.substring(dot) else ""
-        return FileCheck("binary", false, "الملف ده مش ملف نصي${if (ext.isNotEmpty()) " ($ext)" else ""}. " + "المتوقع ملف CSV — يعني نص فيه أعمدة مفصولة بفواصل.")
+        return FileCheck("binary", false, uiText(TextKey.FILE_NOT_TEXT, if (ext.isNotEmpty()) " ($ext)" else ""))
     }
     return FileCheck("csv", true, null)
 }

@@ -48,6 +48,12 @@ internal val ENGLISH_DATA_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKUP_GROUP_PROJECTS to "Projects",
     TextKey.BACKUP_GROUP_PROJECT_LINKS to "Project links",
     TextKey.BACKUP_GROUP_PROJECT_RULES to "Project rules",
+    TextKey.BACKUP_GROUP_ROSCAS to "Savings circles",
+    TextKey.BACKUP_GROUP_ROSCA_ENTRIES to "Savings circle payments and payouts",
+    TextKey.BACKUP_GROUP_INSTALLMENT_PLANS to "Installment and financing plans",
+    TextKey.BACKUP_GROUP_INSTALLMENT_PAYMENTS to "Installment payments",
+    TextKey.BACKUP_GROUP_DEBT_TERMS to "Debt due dates",
+    TextKey.BACKUP_GROUP_TRANSFER_PARTIES to "Transfer parties",
 
     TextKey.AMOUNT_CONTEXT_DEFAULT to "amount",
     TextKey.MONEY_OUT_OF_RANGE_CONTEXT to "{0}: the amount is outside the safe range",

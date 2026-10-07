@@ -7,27 +7,69 @@ package app.masroufy.core
 data class Asset(
     val id: Id,
     val name: String,
-    /** "gold" / "stock" / "fund" / "digital" / "other". */
+    /**
+     * "gold" / "silver" / "stock" / "fund" / "digital" / "other" («فضة» اتضافت للزكاة — §62؛ التطبيق الحالي ما يعرفهاش).
+     * **الفضة بتتخزن "other" + علامة `silver`** (§69.9 — [ASSET_KIND_SILVER])؛ التحويل في المحوّل بس، وهنا بتفضل "silver".
+     */
     val kind: String,
     val unitLabel: String,
     val currency: Currency,
     val archived: Boolean,
     val feedSymbol: String? = null,
     val note: String? = null,
+    /**
+     * «هتوصل لكام؟» (OVERRIDES §69.6) — حقول كوتلن بس، **بتتكتب لو موجودة بس** ⇒ مستند التطبيق الحالي ونسخه هي هي.
+     * [valuation] موجودة = الأصل ده **عقار** (النوع بيفضل زي ما هو عشان التطبيق الحالي): بسعر المتر × المساحة ولا القيمة كلها.
+     * [areaSqm] المساحة بالمتر مضروبة في 10^8 (زي الكمية) · [pricePerSqmMinor] سعر المتر بالهللة وتاريخه [pricePerSqmAsOf].
+     * الإيجار: [monthlyRentMinor] + [rentIncreaseBp] زيادة سنوية + [vacantMonthsPerYear] شهور فاضية — كل خانة اختيارية (مش مكتوبة = صفر).
+     * [expectedRateBp] الزيادة السنوية اللي المستخدم متوقعها للأصل ده (بتغلب الافتراضي).
+     */
+    val valuation: RealEstateValuation? = null,
+    val areaSqm: Quantity? = null,
+    val pricePerSqmMinor: Halalas? = null,
+    val pricePerSqmAsOf: IsoDate? = null,
+    val monthlyRentMinor: Halalas? = null,
+    val rentIncreaseBp: Int? = null,
+    val vacantMonthsPerYear: Int? = null,
+    val expectedRateBp: Int? = null,
+    /** علامة «عقار» المتخزنة (§69.7) — النوع المتخزن معاها "other". بتتكتب لو true بس. استخدم [isRealEstate] مش الحقل ده. */
+    val realEstate: Boolean = false,
 )
 
-/** أسماء أنواع الأصول للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). */
+/**
+ * **العقار نوع لوحده** (رد المالك §69.7 «أيوه، نوع عقار») — **في كوتلن بس**. التطبيق الحالي (`src/`، نفس مستندات `users/{uid}`)
+ * بيرفض أي نوع أصل مش في قايمته وهو بيعمل النسخة الشاملة أو بيرجّعها (`src/domain/checkFullBackup.ts` سطر 71 و76 — بيتنادى من
+ * `src/application/useCases/fullBackup.ts` سطر 30 «create» و60 «validateMerge») ⇒ **النوع المتخزن بيفضل "other"** ومعاه علامة
+ * [Asset.realEstate]. التطبيق الحالي بيعرضه «أصل آخر» وبيحتفظ بالعلامة لو عدّله (`{ ...asset }` في `manageAssets.ts` ·
+ * `d.data() as Asset` من غير تحويل في `assetRepositories.ts` سطر 76).
+ */
+const val ASSET_KIND_REAL_ESTATE = "realEstate"
+
+/** عقار = عليه العلامة، **أو** اتحددت له طريقة قيمة (سعر المتر / القيمة كلها — §69.6، قبل العلامة). */
+val Asset.isRealEstate: Boolean get() = realEstate || valuation != null
+
+/** النوع اللي بيتعرض ويتحسب بيه في كوتلن ([ASSET_KIND_REAL_ESTATE] للعقار) — مش اللي بيتخزن ([Asset.kind]). */
+val Asset.displayKind: String get() = if (isRealEstate) ASSET_KIND_REAL_ESTATE else kind
+
+/** النوع اللي اتختار ⇒ (النوع المتخزن، علامة العقار): العقار ⇒ ("other"، true) · غيره زي ما هو. */
+fun storedAssetKind(kind: String): Pair<String, Boolean> = if (kind == ASSET_KIND_REAL_ESTATE) "other" to true else kind to false
+
+/** أسماء أنواع الأصول للعرض — بتتقرا وقت العرض عشان تتغير مع اللغة (Texts.kt). المفتاح = [displayKind]. */
 val ASSET_KIND_LABELS: Map<String, String>
     get() = linkedMapOf(
         "gold" to uiText(TextKey.ASSET_KIND_GOLD),
+        "silver" to uiText(TextKey.ASSET_KIND_SILVER),
         "stock" to uiText(TextKey.ASSET_KIND_STOCK),
         "fund" to uiText(TextKey.ASSET_KIND_FUND),
         "digital" to uiText(TextKey.ASSET_KIND_DIGITAL),
+        ASSET_KIND_REAL_ESTATE to uiText(TextKey.ASSET_KIND_REAL_ESTATE),
         "other" to uiText(TextKey.ASSET_KIND_OTHER),
     )
 
 // وحدات الأصول **بتتخزن** مع الأصل نفسه، فما تتترجمش — ترجمتها بتغيّر بيانات متخزنة
-val ASSET_UNIT_DEFAULTS = linkedMapOf("gold" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", "other" to "وحدة")
+val ASSET_UNIT_DEFAULTS = linkedMapOf(
+    "gold" to "جرام", "silver" to "جرام", "stock" to "سهم", "fund" to "وحدة", "digital" to "وحدة", ASSET_KIND_REAL_ESTATE to "وحدة", "other" to "وحدة",
+)
 
 data class AssetLot(val id: Id, val assetId: Id, val purchasedAt: IsoDate, val quantity: Quantity, val principalMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
 data class AssetSale(val id: Id, val assetId: Id, val soldAt: IsoDate, val quantity: Quantity, val grossProceedsMinor: Halalas, val feeMinor: Halalas, val transactionId: Id? = null)
@@ -142,7 +184,18 @@ fun formatAssetValue(value: Halalas?): String = if (value == null) NOT_AVAILABLE
 
 /* ───────────────────────── ملف الأسعار (بيتولد برا التطبيق — CLAUDE.md #12) ───────────────────────── */
 
-data class FeedPrice(val symbol: String, val name: String, val unit: String, val pricePerUnitMinor: Halalas, val asOf: IsoDate, val source: String)
+/**
+ * سطر سعر من الملف. [currency] عملة السعر — السطر من غير حقل `currency` = عملة الملف ([PriceFeed.baseCurrency] = ريال) زي ما كان؛
+ * سطور الجنيه (`GOLD_24K_GRAM_EGP` · `SILVER_GRAM_EGP` …) عليها `"currency": "EGP"` والسعر **بالقرش** (OVERRIDES §62 — زكاة مصر).
+ */
+data class FeedPrice(
+    val symbol: String, val name: String, val unit: String, val pricePerUnitMinor: Halalas, val asOf: IsoDate, val source: String,
+    val currency: String = DEFAULT_FEED_CURRENCY,
+)
+
+/** عملة الملف لما ما تتكتبش — الملف بيتولد بالريال من الأول (`scripts/fetch-prices.mjs`). */
+const val DEFAULT_FEED_CURRENCY = "SAR"
+
 data class FeedIssue(val key: String, val reason: String)
 data class PriceFeed(
     val generatedAt: String,
@@ -186,14 +239,28 @@ fun parsePriceFeed(raw: Any?): PriceFeed {
         if (asOf == null || !isValidIsoDate(asOf)) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_NO_VALID_DATE)); continue }
         val source = feedText(entry["source"])
         if (source == null) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_NO_SOURCE)); continue }
-        prices += FeedPrice(symbol, feedText(entry["name"]) ?: symbol, feedText(entry["unit"]) ?: "", amount, asOf, source)
+        // العملة اختيارية: مش مكتوبة ⇒ عملة الملف (السطور القديمة = ريال). مكتوبة غلط ⇒ السطر بيترفض — ما نخمّنش عملة سعر
+        val currency = if (entry["currency"] == null) baseCurrency.uppercase() else feedText(entry["currency"])?.uppercase()?.takeIf { FEED_CURRENCY.matches(it) }
+        if (currency == null) { rejected += FeedIssue(symbol, uiText(TextKey.FEED_BAD_CURRENCY)); continue }
+        prices += FeedPrice(symbol, feedText(entry["name"]) ?: symbol, feedText(entry["unit"]) ?: "", amount, asOf, source, currency)
     }
     val failures = (root["failures"] as? List<*>).orEmpty().filterIsInstance<Map<*, *>>()
         .map { FeedIssue(feedText(it["source"]) ?: uiText(TextKey.FEED_UNKNOWN_SOURCE), feedText(it["reason"]) ?: uiText(TextKey.FEED_NO_REASON)) }
     return PriceFeed(generatedAt, baseCurrency, prices, rejected, failures)
 }
 
+private val FEED_CURRENCY = Regex("^[A-Z]{3}$")
+
 fun indexFeed(feed: PriceFeed): Map<String, FeedPrice> = feed.prices.associateBy { it.symbol }
+
+/**
+ * سعر [symbol] **بعملة [currency] بالظبط**: السطر نفسه لو عملته هي، وإلا السطر `<symbol>_<العملة>` (زي `GOLD_24K_GRAM_EGP`) لو عملته هي.
+ * مفيش تحويل بسعر صرف (§41) — ولا سطر بعملة تانية بيتاخد مكانه. null = مش موجود بالعملة دي.
+ */
+fun feedPriceIn(feed: PriceFeed, symbol: String, currency: Currency): FeedPrice? {
+    val bySymbol = indexFeed(feed)
+    return listOf(symbol, symbol + "_" + currency.name).firstNotNullOfOrNull { s -> bySymbol[s]?.takeIf { it.currency == currency.name } }
+}
 
 /** جملة واحدة للمستخدم: كام سعر وإمتى، وكام مصدر ما جابش. */
 fun describeFeed(feed: PriceFeed): String {

@@ -10,10 +10,23 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** الكاش والأيام والبحث والفصل والتسويات والمشاريع والاشتراكات (native-app/golden/misc.json). */
 class MiscGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun check(fn: String, run: (JsonElement) -> Any?) = Golden.check("misc", fn) { json(run(it)) }
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
     private fun JsonElement.opt(name: String): String? = jsonObject[name]?.takeIf { it !is JsonNull }?.str

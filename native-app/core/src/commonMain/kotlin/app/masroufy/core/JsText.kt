@@ -113,3 +113,6 @@ internal object JsText {
         else -> null
     }
 }
+
+/** `trim()` بسلوك جافاسكربت بالظبط — للطبقات اللي فوق `core` (الكائن نفسه بيفضل داخلي). */
+fun jsTrim(text: String): String = JsText.trim(text)

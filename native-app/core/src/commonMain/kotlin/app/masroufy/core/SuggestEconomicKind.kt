@@ -38,7 +38,8 @@ private const val BANK_FEES = "رسوم بنكية"
 private const val DEPOSIT = "إيداع"
 private const val REFUND = "استرداد"
 
-private fun eq(a: String?, b: String) = a != null && normalizeText(a) == normalizeText(b)
+// بيقبل الاسم القديم والجديد للتصنيف (بذور الفصحى §66 — CategoryNames.kt)
+private fun eq(a: String?, b: String) = sameCategoryName(a, b)
 private fun oneOf(a: String?, list: List<String>) = list.any { eq(a, it) }
 private fun ambiguous(reason: String, vararg alternatives: EconomicKind) =
     KindSuggestion(null, SuggestionConfidence.AMBIGUOUS, reason, alternatives.toList())

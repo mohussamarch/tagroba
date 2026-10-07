@@ -38,9 +38,24 @@ tasks.withType<Test>().configureEach {
     inputs.dir(golden).withPropertyName("golden")
     systemProperty("golden.dir", golden.absolutePath)
     // الكشف الحقيقي على جهاز المالك بس (مش في Git): الاختبار بيشتغل لما الملف موجود، وإلا ما بيتشغلش خالص
-    val realStatement = rootProject.file("../files/transactions_full.csv")
-    if (realStatement.exists()) systemProperty("masroufy.realStatement", realStatement.absolutePath)
+    // مكان الملف بيتدوّر عليه في `build.gradle.kts` الرئيسي (بيطلع لفوق للمشروع الأصلي من أي worktree)
+    val ownerFiles = rootProject.extra["ownerFiles"] as File?
+    val realStatement = ownerFiles?.let { File(it, "transactions_full.csv") }
+    if (realStatement != null) {
+        systemProperty("masroufy.realStatement", realStatement.absolutePath)
+        systemProperty("masroufy.ownerFiles", ownerFiles.absolutePath)
+    }
     else filter { excludeTestsMatching("app.masroufy.core.RealStatementTest") }
+    // كلمات الـPDF الحقيقي بتتطلع بـ`scripts/real/exportPdfPages.mjs` — لو مش موجودة الاختبار ما بيشتغلش
+    if (ownerFiles == null || !File(ownerFiles, "alrajhi-pdf-pages.json").isFile) {
+        filter { excludeTestsMatching("app.masroufy.core.RealPdfStatementTest") }
+        logger.lifecycle("⚠️ كلمات كشف الـPDF (files/alrajhi-pdf-pages.json) مش موجودة — اختبار قارئ الـPDF الحقيقي مش هيشتغل")
+    }
+    // كشف QNB مصر الحقيقي (نفس السكربت ⇒ files/qnb-pdf-pages.json)
+    if (ownerFiles == null || !File(ownerFiles, "qnb-pdf-pages.json").isFile) {
+        filter { excludeTestsMatching("app.masroufy.core.RealQnbPdfTest") }
+        logger.lifecycle("⚠️ كلمات كشف QNB (files/qnb-pdf-pages.json) مش موجودة — اختبار قارئ QNB الحقيقي مش هيشتغل")
+    }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

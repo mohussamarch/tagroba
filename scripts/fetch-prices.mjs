@@ -72,6 +72,10 @@ const asOf = new Date().toISOString().slice(0, 10)
 /** سعر صرف الدولار بالريال، عدد صحيح بمقياس 10^6. */
 let usdToSarScaled = null
 
+/** سعر الأونصة بالدولار (×10^6) — بيتحفظ عشان يتحوّل للجنيه كمان (زكاة مصر، OVERRIDES §62). */
+let goldUsdPerOunceScaled = null
+let silverUsdPerOunceScaled = null
+
 await collect('USD/SAR', async () => {
   const data = await getJson(
     'https://query1.finance.yahoo.com/v8/finance/chart/SAR=X?interval=1d&range=1d',
@@ -107,6 +111,7 @@ await collect('الذهب', async () => {
   if (typeof data?.price !== 'number' || data.price <= 0) throw new Error('مفيش سعر في الرد')
 
   const usdPerOunceScaled = toScaled(data.price, 6) // 10^6
+  goldUsdPerOunceScaled = usdPerOunceScaled
   for (const karat of KARATS) {
     // الضرب كله قبل أي قسمة، والتقريب مرة واحدة في الآخر
     const numerator =
@@ -128,6 +133,7 @@ await collect('الفضة', async () => {
   if (typeof data?.price !== 'number' || data.price <= 0) throw new Error('مفيش سعر في الرد')
 
   const usdPerOunceScaled = toScaled(data.price, 6)
+  silverUsdPerOunceScaled = usdPerOunceScaled
   results.SILVER_GRAM = {
     name: 'فضة',
     unit: 'جرام',
@@ -136,6 +142,52 @@ await collect('الفضة', async () => {
     ),
     asOf,
     source: 'gold-api.com (XAG) + Yahoo (SAR=X)',
+  }
+})
+
+/**
+ * الذهب والفضة **بالجنيه المصري** — قرار المالك 2026-10-05 (صفحة الاختيارات): زكاة الدهب في مصر
+ * محتاجة سعر بالجنيه، وإلا بتفضل «غير متاح». نفس سعر الأونصة × صرف الدولار بالجنيه، بأعداد صحيحة.
+ * كل سطر عليه `currency: "EGP"` والسعر **بالقرش**؛ السطور القديمة من غير الحقل = ريال زي ما هي.
+ */
+let usdToEgpScaled = null
+
+await collect('USD/EGP', async () => {
+  const data = await getJson('https://query1.finance.yahoo.com/v8/finance/chart/EGP=X?interval=1d&range=1d')
+  const rate = data?.chart?.result?.[0]?.meta?.regularMarketPrice
+  if (typeof rate !== 'number' || !Number.isFinite(rate) || rate <= 0) throw new Error('مفيش سعر صرف الجنيه في الرد')
+  usdToEgpScaled = toScaled(rate, 6)
+})
+
+await collect('الذهب بالجنيه', async () => {
+  if (usdToEgpScaled === null) throw new Error('سعر صرف الجنيه فشل')
+  if (goldUsdPerOunceScaled === null) throw new Error('سعر الذهب بالدولار فشل')
+  for (const karat of KARATS) {
+    const numerator = goldUsdPerOunceScaled * usdToEgpScaled * 100n * karat.numerator * GRAM_SCALE
+    const denominator = GRAM_SCALE * GRAM_SCALE * GRAMS_PER_OUNCE_SCALED * 24n
+    results[`${karat.key}_EGP`] = {
+      name: `${karat.name} بالجنيه`,
+      unit: 'جرام',
+      currency: 'EGP',
+      pricePerUnitMinor: Number(divideRounded(numerator, denominator)),
+      asOf,
+      source: 'gold-api.com (XAU) + Yahoo (EGP=X)',
+    }
+  }
+})
+
+await collect('الفضة بالجنيه', async () => {
+  if (usdToEgpScaled === null) throw new Error('سعر صرف الجنيه فشل')
+  if (silverUsdPerOunceScaled === null) throw new Error('سعر الفضة بالدولار فشل')
+  results.SILVER_GRAM_EGP = {
+    name: 'فضة بالجنيه',
+    unit: 'جرام',
+    currency: 'EGP',
+    pricePerUnitMinor: Number(
+      divideRounded(silverUsdPerOunceScaled * usdToEgpScaled * 100n, GRAM_SCALE * GRAMS_PER_OUNCE_SCALED),
+    ),
+    asOf,
+    source: 'gold-api.com (XAG) + Yahoo (EGP=X)',
   }
 })
 

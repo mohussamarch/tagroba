@@ -10,10 +10,23 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /** المراجع الأولية بنفس المعرّفات بالظبط + كشف نوع الملف (native-app/golden/seeds.json). */
 class SeedsGoldenTest {
+    // النص المتوقع هنا = نص التطبيق الحالي = النسخة المصرية (OVERRIDES §66)
+    @BeforeTest
+    fun egyptianText() {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+    }
+
+    @AfterTest
+    fun defaultText() {
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
     private fun check(fn: String, run: (JsonElement) -> Any?) = Golden.check("seeds", fn) { json(run(it)) }
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)
     private val root = File(System.getProperty("golden.dir")).parentFile.parentFile
@@ -78,6 +91,23 @@ class SeedsGoldenTest {
                 ).toJson()
             }
         }
+    }
+
+    /** شجرة مصر (§64) = شجرة التطبيق الحقيقية + الفروق — بتتبني، والقواعد بتلاقي تصنيفاتها زي السعودية بالظبط. */
+    @Test fun egyptTreeFromTheRealAppTree() {
+        val saudi = buildCountryCategoryTree(appTree, SAUDI_PACK)
+        val egypt = buildCountryCategoryTree(appTree, EGYPT_PACK)
+        // السعودية من غير فروق شجرة — نفس المعرّفات، والأسماء بس بالفصحى (§66 — `SeedNamesRealTreeTest`)
+        kotlin.test.assertEquals(buildCategoryTree(appTree).categories.map { it.id }, saudi.categories.map { it.id })
+        kotlin.test.assertEquals(saudi.categories.size + 1, egypt.categories.size, "فرعي واحد زيادة («سايس»)")
+        for (name in listOf("باركنج", "سايس", "موبايل")) kotlin.test.assertEquals(1, egypt.categories.count { it.name == name }, name)
+        for (name in listOf("مواقف وسايس", "جوال")) kotlin.test.assertEquals(0, egypt.categories.count { it.name == name }, name)
+        val rawRules = rules(readJson("design-source/masroofi-claude-code/fixtures/rule-reference.json"))
+        val rawMerchants = merchants(readJson("design-source/masroofi-claude-code/fixtures/merchant-reference.json"))
+        val inSaudi = loadReferences(rawRules, rawMerchants, saudi.categories, saudi)
+        val inEgypt = loadReferences(rawRules, rawMerchants, egypt.categories, egypt)
+        kotlin.test.assertEquals(inSaudi.unknownCategoryNames, inEgypt.unknownCategoryNames, "ولا قاعدة ضاعت بسبب تغيير الاسم")
+        kotlin.test.assertEquals(inSaudi.rules.size, inEgypt.rules.size)
     }
 
     @Test fun files() {

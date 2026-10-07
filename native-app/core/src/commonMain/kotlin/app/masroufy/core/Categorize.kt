@@ -2,7 +2,8 @@ package app.masroufy.core
 
 /**
  * محرك التصنيف — نقل `src/domain/categorize.ts` + `merchantIndex.ts` + `merchantMemory.ts` (الأولوية في spec/05):
- *   ١. تأكيد المستخدم (ما يتكتبش فوقه) ← ٢. التاجر المؤكد ← ٣. القواعد بالأولوية ← ٤. عمود الملف ← وإلا من غير تصنيف.
+ *   ١. تأكيد المستخدم (ما يتكتبش فوقه) ← ٢. التاجر المؤكد ← ٢ب. تصنيفه في بلدك التانية (اقتراح — §64) ← ٣. القواعد بالأولوية ←
+ *   ٤. عمود الملف ← وإلا من غير تصنيف.
  */
 data class Merchant(
     val id: Id,
@@ -13,6 +14,12 @@ data class Merchant(
     val logoSource: String? = null,
     /** التصنيف المؤكد من المستخدم — أقوى من القواعد. */
     val verifiedCategoryId: Id? = null,
+    /**
+     * **اقتراح مش تأكيد** (رد المالك §64-٢): في بلد غير السعودية، التاجر اللي مالوش تصنيف هناك وتصنيفه المؤكد في السعودية موجود
+     * في شجرة البلد دي ⇒ تصنيف السعودية بييجي هنا اقتراح. **عمره ما بيتخزن** (المحوّل ما بيكتبوش، و`SpaceMerchantRepository` بيشيله
+     * قبل أي حفظ).
+     */
+    val suggestedCategoryId: Id? = null,
 )
 
 enum class RuleMatchMode(val wire: String) {
@@ -35,6 +42,9 @@ data class ClassificationRule(
 
 enum class CategorizationSource(val wire: String) {
     USER_CONFIRMED("user_confirmed"), VERIFIED_MERCHANT("verified_merchant"), RULE("rule"), SOURCE_CATEGORY("source_category"), NONE("none"),
+
+    /** تصنيف التاجر في بلدك التانية — اقتراح بس (رد المالك §64-٢). */
+    OTHER_COUNTRY_MERCHANT("other_country_merchant"),
 }
 
 data class CategorizationInput(
@@ -97,6 +107,13 @@ fun categorize(input: CategorizationInput, deps: CategorizeDeps): Categorization
             return CategorizationResult(
                 merchant.verifiedCategoryId, CategorizationSource.VERIFIED_MERCHANT, ReviewState.CONFIRMED,
                 uiText(TextKey.CATEGORIZED_MERCHANT, merchant.displayName), merchant.displayName,
+            )
+        }
+        // تصنيفه في بلدك التانية: **مقترح** والمستخدم يأكد (رد المالك §64-٢). قبل القواعد — معرفتك بالتاجر نفسه أدق من قاعدة عامة
+        if (merchant?.suggestedCategoryId != null) {
+            return CategorizationResult(
+                merchant.suggestedCategoryId, CategorizationSource.OTHER_COUNTRY_MERCHANT, ReviewState.SUGGESTED,
+                uiText(TextKey.CATEGORIZED_MERCHANT_OTHER_COUNTRY, merchant.displayName), merchant.displayName,
             )
         }
     }

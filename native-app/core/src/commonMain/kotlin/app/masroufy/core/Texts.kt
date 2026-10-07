@@ -1,8 +1,7 @@
 package app.masroufy.core
 
 /**
- * لغة العرض — OVERRIDES §40. **العربي هو الأصل**: قيمة أي مفتاح بالعربي هي نفس النص القديم
- * بالحرف، عشان ملفات المرجع (golden) تفضل مطابقة وما يتغيرش أي رقم ولا أي نص عند المالك.
+ * لغة العرض — OVERRIDES §40. العربي له **نسختين** (§66) بتتحدد من بلد الحساب الشغال ([ArabicVariant]).
  */
 enum class Language(val wire: String) {
     AR("ar"),
@@ -11,6 +10,23 @@ enum class Language(val wire: String) {
 
     companion object {
         fun fromWire(wire: String): Language = entries.firstOrNull { it.wire == wire } ?: AR
+    }
+}
+
+/**
+ * نسخة العربي (OVERRIDES §66 — قرار المالك 2026-10-05):
+ * - [MSA] **فصحى مختصرة** — للسعودية، و**الافتراضي لأي بلد تانية**.
+ * - [EGYPTIAN] **النص المصري الحالي بالحرف** — لمصر. ده نفس نص التطبيق الحالي، فملفات المرجع (golden) بتشتغل عليه.
+ * النسخة بتيجي من حزمة البلد ([CountryPack.arabicVariant]) — مش اختيار في الشاشة.
+ */
+enum class ArabicVariant {
+    MSA,
+    EGYPTIAN,
+    ;
+
+    companion object {
+        /** بلد الحساب الشغال ⇒ النسخة. بلد مش معروفة (أو مفيش) ⇒ الحزمة الافتراضية (السعودية) ⇒ فصحى. */
+        fun forCountry(countryCode: String?): ArabicVariant = countryPack(countryCode).arabicVariant
     }
 }
 
@@ -26,26 +42,58 @@ enum class Language(val wire: String) {
  * وكمان **بذور** الحساب الجديد (أسماء التصنيفات والمحافظ) — دي بتتخزن في بيانات المستخدم
  * وقت الإنشاء، فمكانها حزمة البلد في `CountryPack`.
  *
- * `language` بتتظبط **مرة واحدة** عند بداية التطبيق من إعدادات المستخدم، وبعدها ما تتغيرش
- * جوه حساب واحد وسط الشغل. الافتراضي عربي.
+ * `language` بتتظبط **مرة واحدة** عند بداية التطبيق من إعدادات المستخدم. `arabicVariant` بتتبع **بلد الحساب الشغال**
+ * ([Texts.followCountry] — من الجلسة وإدارة البلاد)، فحالات الاستخدام والشاشات ما تعرفش عنها حاجة.
  */
-// الجداول مقسومة على ملفين لكل لغة عشان حد الـ300 سطر (CLAUDE.md #7)
-internal val ARABIC_TEXTS: Map<TextKey, String> = ARABIC_SCREEN_TEXTS + ARABIC_DATA_TEXTS
-internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS
+// كل نسخة مقسومة على كذا ملف عشان حد الـ300 سطر (CLAUDE.md #7). المصري = الجداول القديمة **بالاسم الجديد بس** (من غير ولا حرف اتغير).
+internal val EGYPTIAN_TEXTS: Map<TextKey, String> = EGYPTIAN_SCREEN_TEXTS + EGYPTIAN_DATA_TEXTS + EGYPTIAN_DUES_TEXTS + EGYPTIAN_STORAGE_TEXTS + EGYPTIAN_AUTH_TEXTS + EGYPTIAN_ZAKAT_TEXTS + EGYPTIAN_ALERT_TEXTS +
+    EGYPTIAN_EVENT_TEXTS + EGYPTIAN_INCOME_TEXTS + EGYPTIAN_SPACE_TEXTS + EGYPTIAN_CALENDAR_TEXTS + EGYPTIAN_USECASE_TEXTS + EGYPTIAN_PEOPLE_TEXTS +
+    EGYPTIAN_FEED_ALERT_TEXTS + EGYPTIAN_ADVISOR_TEXTS + EGYPTIAN_ADVISOR_MORE_TEXTS + EGYPTIAN_INHERITANCE_TEXTS + EGYPTIAN_CALC_TEXTS + EGYPTIAN_RETIRE_TEXTS + EGYPTIAN_GROWTH_TEXTS +
+    EGYPTIAN_INHERITANCE_DISTANT_TEXTS
+internal val MSA_TEXTS: Map<TextKey, String> = MSA_SCREEN_TEXTS + MSA_DATA_TEXTS + MSA_DUES_TEXTS + MSA_STORAGE_TEXTS + MSA_AUTH_TEXTS + MSA_ZAKAT_TEXTS + MSA_ALERT_TEXTS +
+    MSA_EVENT_TEXTS + MSA_INCOME_TEXTS + MSA_SPACE_TEXTS + MSA_CALENDAR_TEXTS + MSA_USECASE_TEXTS + MSA_PEOPLE_TEXTS + MSA_FEED_ALERT_TEXTS + MSA_ADVISOR_TEXTS +
+    MSA_ADVISOR_MORE_TEXTS + MSA_INHERITANCE_TEXTS + MSA_CALC_TEXTS + MSA_RETIRE_TEXTS + MSA_GROWTH_TEXTS +
+    MSA_INHERITANCE_DISTANT_TEXTS
+internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS + ENGLISH_DUES_TEXTS + ENGLISH_STORAGE_TEXTS + ENGLISH_AUTH_TEXTS + ENGLISH_ZAKAT_TEXTS + ENGLISH_ALERT_TEXTS +
+    ENGLISH_EVENT_TEXTS + ENGLISH_INCOME_TEXTS + ENGLISH_SPACE_TEXTS + ENGLISH_CALENDAR_TEXTS + ENGLISH_USECASE_TEXTS + ENGLISH_PEOPLE_TEXTS +
+    ENGLISH_FEED_ALERT_TEXTS + ENGLISH_ADVISOR_TEXTS + ENGLISH_ADVISOR_MORE_TEXTS + ENGLISH_INHERITANCE_TEXTS + ENGLISH_CALC_TEXTS + ENGLISH_RETIRE_TEXTS + ENGLISH_GROWTH_TEXTS +
+    ENGLISH_INHERITANCE_DISTANT_TEXTS
+
+/** جدول نسخة العربي. */
+internal fun arabicTable(variant: ArabicVariant): Map<TextKey, String> = when (variant) {
+    ArabicVariant.MSA -> MSA_TEXTS
+    ArabicVariant.EGYPTIAN -> EGYPTIAN_TEXTS
+}
 
 object Texts {
     var language: Language = Language.AR
 
+    /** الافتراضي فصحى (السعودية والافتراضي لأي بلد — §66) لحد ما الجلسة تعرف بلد الحساب الشغال. */
+    var arabicVariant: ArabicVariant = ArabicVariant.MSA
+
+    /** نسخة العربي من بلد الحساب الشغال (مصر ⇒ المصري، أي بلد تانية أو مفيش ⇒ الفصحى). الإنجليزي ما بيتأثرش. */
+    fun followCountry(countryCode: String?) {
+        arabicVariant = ArabicVariant.forCountry(countryCode)
+    }
+
     fun of(key: TextKey, vararg args: String): String {
-        val table = when (language) {
-            Language.AR -> ARABIC_TEXTS
-            Language.EN -> ENGLISH_TEXTS
+        // لو مفتاح لسه ماتترجمش للإنجليزي، بيرجع بالعربي بدل ما يختفي من الشاشة
+        val pattern = when (language) {
+            Language.AR -> arabic(key)
+            Language.EN -> ENGLISH_TEXTS[key] ?: arabic(key)
         }
-        // لو مفتاح لسه ماتترجمش، بيرجع بالعربي بدل ما يختفي من الشاشة
-        val pattern = table[key] ?: ARABIC_TEXTS.getValue(key)
         return fill(pattern, args)
     }
+
+    private fun arabic(key: TextKey): String {
+        val other = if (arabicVariant == ArabicVariant.MSA) ArabicVariant.EGYPTIAN else ArabicVariant.MSA
+        return resolveArabic(key, arabicTable(arabicVariant), arabicTable(other))
+    }
 }
+
+/** النسخة الشغالة ⇒ النسخة التانية ⇒ اسم المفتاح (ما بيوقعش أبدًا — واختبار الاكتمال بيمنع إن ده يحصل أصلًا). */
+internal fun resolveArabic(key: TextKey, primary: Map<TextKey, String>, other: Map<TextKey, String>): String =
+    primary[key] ?: other[key] ?: key.name
 
 /** النص المعروض للمفتاح باللغة الحالية. `{0}` و`{1}` بيتبدلوا بالمتغيرات بالترتيب. */
 fun uiText(key: TextKey, vararg args: String): String = Texts.of(key, *args)

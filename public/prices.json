@@ -1,82 +1,122 @@
 {
-  "generatedAt": "2026-09-24T02:05:44.704Z",
+  "generatedAt": "2026-10-07T02:07:18.318Z",
   "baseCurrency": "SAR",
   "prices": {
     "USD_SAR": {
       "name": "الدولار الأمريكي",
       "unit": "دولار",
-      "pricePerUnitMinor": 376,
-      "asOf": "2026-09-24",
+      "pricePerUnitMinor": 375,
+      "asOf": "2026-10-07",
       "source": "Yahoo Finance — SAR=X"
     },
     "GOLD_24K_GRAM": {
       "name": "ذهب عيار 24",
       "unit": "جرام",
-      "pricePerUnitMinor": 51625,
-      "asOf": "2026-09-24",
+      "pricePerUnitMinor": 50001,
+      "asOf": "2026-10-07",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_22K_GRAM": {
       "name": "ذهب عيار 22",
       "unit": "جرام",
-      "pricePerUnitMinor": 47323,
-      "asOf": "2026-09-24",
+      "pricePerUnitMinor": 45834,
+      "asOf": "2026-10-07",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_21K_GRAM": {
       "name": "ذهب عيار 21",
       "unit": "جرام",
-      "pricePerUnitMinor": 45172,
-      "asOf": "2026-09-24",
+      "pricePerUnitMinor": 43751,
+      "asOf": "2026-10-07",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "GOLD_18K_GRAM": {
       "name": "ذهب عيار 18",
       "unit": "جرام",
-      "pricePerUnitMinor": 38719,
-      "asOf": "2026-09-24",
+      "pricePerUnitMinor": 37500,
+      "asOf": "2026-10-07",
       "source": "gold-api.com (XAU) + Yahoo (SAR=X)"
     },
     "SILVER_GRAM": {
       "name": "فضة",
       "unit": "جرام",
-      "pricePerUnitMinor": 774,
-      "asOf": "2026-09-24",
+      "pricePerUnitMinor": 735,
+      "asOf": "2026-10-07",
       "source": "gold-api.com (XAG) + Yahoo (SAR=X)"
+    },
+    "GOLD_24K_GRAM_EGP": {
+      "name": "ذهب عيار 24 بالجنيه",
+      "unit": "جرام",
+      "currency": "EGP",
+      "pricePerUnitMinor": 695740,
+      "asOf": "2026-10-07",
+      "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
+    },
+    "GOLD_22K_GRAM_EGP": {
+      "name": "ذهب عيار 22 بالجنيه",
+      "unit": "جرام",
+      "currency": "EGP",
+      "pricePerUnitMinor": 637762,
+      "asOf": "2026-10-07",
+      "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
+    },
+    "GOLD_21K_GRAM_EGP": {
+      "name": "ذهب عيار 21 بالجنيه",
+      "unit": "جرام",
+      "currency": "EGP",
+      "pricePerUnitMinor": 608773,
+      "asOf": "2026-10-07",
+      "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
+    },
+    "GOLD_18K_GRAM_EGP": {
+      "name": "ذهب عيار 18 بالجنيه",
+      "unit": "جرام",
+      "currency": "EGP",
+      "pricePerUnitMinor": 521805,
+      "asOf": "2026-10-07",
+      "source": "gold-api.com (XAU) + Yahoo (EGP=X)"
+    },
+    "SILVER_GRAM_EGP": {
+      "name": "فضة بالجنيه",
+      "unit": "جرام",
+      "currency": "EGP",
+      "pricePerUnitMinor": 10232,
+      "asOf": "2026-10-07",
+      "source": "gold-api.com (XAG) + Yahoo (EGP=X)"
     },
     "2222.SR": {
       "name": "أرامكو السعودية",
       "unit": "سهم",
-      "pricePerUnitMinor": 2564,
-      "asOf": "2026-09-22",
+      "pricePerUnitMinor": 2580,
+      "asOf": "2026-10-06",
       "source": "Yahoo Finance — 2222.SR"
     },
     "1120.SR": {
       "name": "الراجحي",
       "unit": "سهم",
-      "pricePerUnitMinor": 6445,
-      "asOf": "2026-09-22",
+      "pricePerUnitMinor": 6375,
+      "asOf": "2026-10-06",
       "source": "Yahoo Finance — 1120.SR"
     },
     "2010.SR": {
       "name": "سابك",
       "unit": "سهم",
-      "pricePerUnitMinor": 4790,
-      "asOf": "2026-09-22",
+      "pricePerUnitMinor": 4664,
+      "asOf": "2026-10-06",
       "source": "Yahoo Finance — 2010.SR"
     },
     "7010.SR": {
       "name": "الاتصالات السعودية",
       "unit": "سهم",
-      "pricePerUnitMinor": 4366,
-      "asOf": "2026-09-22",
+      "pricePerUnitMinor": 4280,
+      "asOf": "2026-10-06",
       "source": "Yahoo Finance — 7010.SR"
     },
     "1180.SR": {
       "name": "الأهلي السعودي",
       "unit": "سهم",
-      "pricePerUnitMinor": 4026,
-      "asOf": "2026-09-22",
+      "pricePerUnitMinor": 3902,
+      "asOf": "2026-10-06",
       "source": "Yahoo Finance — 1180.SR"
     }
   },

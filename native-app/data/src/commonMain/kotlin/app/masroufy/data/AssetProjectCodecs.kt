@@ -1,0 +1,133 @@
+package app.masroufy.data
+
+import app.masroufy.core.Asset
+import app.masroufy.core.AssetLot
+import app.masroufy.core.AssetPrice
+import app.masroufy.core.AssetSale
+import app.masroufy.core.Currency
+import app.masroufy.core.Project
+import app.masroufy.core.ProjectKind
+import app.masroufy.core.ProjectLink
+import app.masroufy.core.ProjectRule
+import app.masroufy.core.RealEstateValuation
+import app.masroufy.core.RuleMatchMode
+import app.masroufy.core.SILVER_MARKER_FIELD
+import app.masroufy.core.kindFromStored
+import app.masroufy.core.storedSilverForm
+
+/** الأصول والمشاريع. */
+object AssetProjectCodecs {
+    val assets: DocCodec<Asset> = codec(
+        "assets", { it.id },
+        { a ->
+            // الفضة (§69.9): النوع المتخزن "other" + علامة `silver` (التطبيق الحالي بيرفض "silver") — في كوتلن بتفضل "silver"
+            val (storedKind, silver) = storedSilverForm(a.kind)
+            doc {
+                req("id", a.id); req("name", a.name); req("kind", storedKind); req("unitLabel", a.unitLabel); req("currency", a.currency.name)
+                opt("feedSymbol", a.feedSymbol); req("archived", a.archived); opt("note", a.note)
+                // «هتوصل لكام؟» (§69.6) — حقول كوتلن بس، ما بتتكتبش لو فاضية ⇒ مستند التطبيق الحالي ونسخه هي هي
+                opt("valuation", a.valuation?.wire); opt("areaSqm", a.areaSqm); opt("pricePerSqmMinor", a.pricePerSqmMinor)
+                opt("pricePerSqmAsOf", a.pricePerSqmAsOf); opt("monthlyRentMinor", a.monthlyRentMinor); opt("rentIncreaseBp", a.rentIncreaseBp)
+                opt("vacantMonthsPerYear", a.vacantMonthsPerYear); opt("expectedRateBp", a.expectedRateBp)
+                // علامة العقار (§69.7) — النوع المتخزن بيفضل "other" عشان التطبيق الحالي؛ بتتكتب لو true بس
+                opt("realEstate", a.realEstate.takeIf { it })
+                // علامة الفضة — بتتكتب لو true بس ⇒ مستند أي أصل تاني هو هو بالحرف
+                opt(SILVER_MARKER_FIELD, silver.takeIf { it })
+            }
+        },
+        { r ->
+            Asset(
+                // "other" + العلامة ⇒ فضة · "silver" القديم ⇒ فضة (وأول حفظ بيكتبه بالشكل الجديد)
+                r.str("id"), r.str("name"), kindFromStored(r.str("kind"), r.boolOrNull(SILVER_MARKER_FIELD) ?: false), r.str("unitLabel"), r.wire("currency", Currency::valueOf), r.bool("archived"),
+                r.strOrNull("feedSymbol"), r.strOrNull("note"),
+                valuation = r.strOrNull("valuation")?.let(RealEstateValuation::fromWire),
+                areaSqm = r.longOrNull("areaSqm"),
+                pricePerSqmMinor = r.longOrNull("pricePerSqmMinor"),
+                pricePerSqmAsOf = r.strOrNull("pricePerSqmAsOf"),
+                monthlyRentMinor = r.longOrNull("monthlyRentMinor"),
+                rentIncreaseBp = r.intOrNull("rentIncreaseBp"),
+                vacantMonthsPerYear = r.intOrNull("vacantMonthsPerYear"),
+                expectedRateBp = r.intOrNull("expectedRateBp"),
+                realEstate = r.boolOrNull("realEstate") ?: false,
+            )
+        },
+    )
+
+    /** الكمية عدد صحيح مضروب في 10⁸ (`Quantity`) — زي التطبيق الحالي، مش عشري. */
+    val assetLots: DocCodec<AssetLot> = codec(
+        "assetLots", { it.id },
+        { l ->
+            doc {
+                req("id", l.id); req("assetId", l.assetId); req("purchasedAt", l.purchasedAt); req("quantity", l.quantity)
+                req("principalMinor", l.principalMinor); req("feeMinor", l.feeMinor); opt("transactionId", l.transactionId)
+            }
+        },
+        { r ->
+            AssetLot(r.str("id"), r.str("assetId"), r.str("purchasedAt"), r.long("quantity"), r.long("principalMinor"), r.long("feeMinor"), r.strOrNull("transactionId"))
+        },
+    )
+
+    val assetSales: DocCodec<AssetSale> = codec(
+        "assetSales", { it.id },
+        { s ->
+            doc {
+                req("id", s.id); req("assetId", s.assetId); req("soldAt", s.soldAt); req("quantity", s.quantity)
+                req("grossProceedsMinor", s.grossProceedsMinor); req("feeMinor", s.feeMinor); opt("transactionId", s.transactionId)
+            }
+        },
+        { r ->
+            AssetSale(r.str("id"), r.str("assetId"), r.str("soldAt"), r.long("quantity"), r.long("grossProceedsMinor"), r.long("feeMinor"), r.strOrNull("transactionId"))
+        },
+    )
+
+    /** سعر واحد لكل أصل ⇒ معرّف المستند = معرّف الأصل. */
+    val assetPrices: DocCodec<AssetPrice> = codec(
+        "assetPrices", { it.assetId },
+        { p -> doc { req("assetId", p.assetId); req("pricePerUnitMinor", p.pricePerUnitMinor); req("asOf", p.asOf); req("source", p.source) } },
+        { r -> AssetPrice(r.str("assetId"), r.long("pricePerUnitMinor"), r.str("asOf"), r.str("source")) },
+    )
+
+    /**
+     * `kind` حقل كوتلن بس (OVERRIDES §47). **الشخصي ما بيتكتبش** — ده نفس شكل مشاريع التطبيق الحالي، فالمستند
+     * بيفضل زي ما هو لو اتحفظ من الجديد، والمشروع من غير نوع بيتقرا شخصي.
+     */
+    val projects: DocCodec<Project> = codec(
+        "projects", { it.id },
+        { p ->
+            doc {
+                req("id", p.id); req("name", p.name); req("normalizedName", p.normalizedName); req("archived", p.archived); req("createdAt", p.createdAt)
+                opt("kind", p.kind.takeIf { it != ProjectKind.PERSONAL }?.wire)
+                // آخر ميعاد (§65) — حقل كوتلن بس، وما بيتكتبش لو فاضي ⇒ مستند التطبيق الحالي هو هو
+                opt("deadline", p.deadline)
+            }
+        },
+        { r ->
+            Project(
+                r.str("id"), r.str("name"), r.str("normalizedName"), r.bool("archived"), r.str("createdAt"), ProjectKind.fromWire(r.strOrNull("kind")),
+                r.strOrNull("deadline"),
+            )
+        },
+    )
+
+    val projectLinks: DocCodec<ProjectLink> = codec(
+        "projectLinks", { it.id },
+        { l -> doc { req("id", l.id); req("projectId", l.projectId); req("transactionId", l.transactionId); req("source", l.source); req("createdAt", l.createdAt) } },
+        { r -> ProjectLink(r.str("id"), r.str("projectId"), r.str("transactionId"), r.str("source"), r.str("createdAt")) },
+    )
+
+    val projectRules: DocCodec<ProjectRule> = codec(
+        "projectRules", { it.id },
+        { p ->
+            doc {
+                req("id", p.id); req("projectId", p.projectId); req("matchText", p.matchText); req("matchMode", p.matchMode.wire)
+                req("direction", p.direction); req("enabled", p.enabled); req("createdAt", p.createdAt)
+            }
+        },
+        { r ->
+            ProjectRule(
+                r.str("id"), r.str("projectId"), r.str("matchText"), r.wire("matchMode", RuleMatchMode::fromWire), r.str("direction"),
+                r.bool("enabled"), r.str("createdAt"),
+            )
+        },
+    )
+}
