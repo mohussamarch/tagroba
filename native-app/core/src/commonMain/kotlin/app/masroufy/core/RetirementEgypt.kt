@@ -21,14 +21,20 @@ package app.masroufy.core
  * - **م1(10):** سن الشيخوخة **60** للبندين أولًا وثالثًا من م2 (العاملين)، و**65** للبندين ثانيًا ورابعًا (أصحاب الأعمال والمصريين في
  *   الخارج) «مع مراعاة حكم المادة 41». **م41:** رئيس الوزراء يصدر قرار بتوحيده **تدريجيًا** ليكون **65 من أول يوليو 2040**.
  *
+ * **اللائحة التنفيذية (قرار رئيس الوزراء 2437/2021 — `RetirementEgyptLimits.kt`، OVERRIDES §69.8) — متنفّذ:**
+ * - **الحد الأدنى والأقصى لأجر الاشتراك يوم الاستحقاق:** من الجدول الرسمي بالسنة (2020–2026)، أو اللي المستخدم كتبه (بيعلى على الجدول).
+ *   سنة التقاعد لسه ما اتعلنتش (2027 وبعدها) ⇒ «غير متاح» إلا لو اتكتب — و[egyptLatestContributionWageLimits] اقتراح بس.
+ * - **الأرضية:** 65% من الحد الأدنى «**وبما لا يقل عن 900 جنيه**» (م105 ثالثًا(4)). الـ900 بتتطبق حتى لو الحد الأدنى مش معروف.
+ * - **سقف تاني:** 80% من **الحد الأقصى** لأجر الاشتراك (م24 آخر فقرة + م105) لما يبقى معروف.
+ * - **أجر التسوية ما يزيدش عن الحد الأقصى لأجر الاشتراك** (م22 + م103 أولًا(4)) لما يبقى معروف.
+ * - **شرط المبكر** بيتقارن بـ65% من الحد الأدنى بس (م102(7)(ب) — من غير الـ900).
+ *
  * **اللي مش متحسب (والسبب — من غير تخمين):**
- * - **أجر التسوية (م22):** المتوسط الشهري لأجور الاشتراك من 2020، **زايد** بمتوسط نسب التضخم عن كل سنة كاملة، وبحد أقصى الحد الأقصى
- *   لأجر الاشتراك، و«تحدد اللائحة التنفيذية قواعد وأحكام تنفيذ هذه المادة» ⇒ المعدلات مش في القانون ⇒ **المستخدم بيكتبه**
- *   (من كشف التأمينات أو تقديره) — [EgyptPensionInput.settlementWageMinor].
- * - **الحد الأدنى والأقصى لأجر الاشتراك:** «تحدد اللائحة التنفيذية لهذا القانون الحدين الأدنى والأقصى لأجر الاشتراك» (م1(8)) ⇒ مش في
- *   القانون ⇒ أرضية الـ65% **«غير متاح»** إلا لو المستخدم كتب الحد الأدنى بنفسه، وسقف «80% من الحد الأقصى لأجر الاشتراك» (م24) **مش متطبّق**.
- * - **جدول التدرّج لحد 2040 (م41):** في قرار رئيس الوزراء مش في القانون ⇒ السن **تلقائي** بس لو مؤكد (65 لأصحاب الأعمال، أو العامل اللي
- *   يتم 60 في يوليو 2040 أو بعده)، وغير كده المستخدم بيكتبه ([CalcReason.NEED_EGYPT_LEGAL_AGE]).
+ * - **أجر التسوية (م22):** المتوسط الشهري لأجور الاشتراك من 2020، **زايد** بمتوسط نسب التضخم عن كل سنة كاملة. نسب التضخم بقرار من رئيس
+ *   الهيئة و**ما لقيناهاش منشورة** (القانون م1(6) يوليو · اللائحة م1(7) أبريل) ⇒ **المستخدم بيكتبه** — [EgyptPensionInput.settlementWageMinor].
+ * - **جدول التدرّج لحد 2040 (م41):** في قرار رئيس الوزراء — **ما اتنشرش** (اللائحة م303(3): الوزير «يعرض مشروع قرار») ⇒ السن **تلقائي**
+ *   بس لو مؤكد (65 لأصحاب الأعمال، أو العامل اللي يتم 60 في يوليو 2040 أو بعده)، وغير كده المستخدم بيكتبه ([CalcReason.NEED_EGYPT_LEGAL_AGE]).
+ * - **زيادة م163** (الفرق بين 450 جنيه و33%): النص مش واضح ⇒ مش محسوبة، والشاشة تعرض [TextKey.CALC_EGYPT_ART163_NOTE] مع كل نتيجة لمصر.
  * - **مدد قبل 2020 (م156):** أجرها «عن كل من الأجر الأساسي والأجر المتغير وفقًا لأحكام قانون التأمين الاجتماعي» القديم (79/1975) +
  *   التضخم ⇒ **«غير متاح»** ([CalcReason.EGYPT_PRE_2020]).
  * - **بعد سن الشيخوخة:** جدول 5 مفيهوش سطور ⇒ «غير متاح» ([CalcReason.EGYPT_AFTER_LEGAL_AGE]).
@@ -111,15 +117,25 @@ data class EgyptPensionInput(
     val category: EgyptInsuredCategory = EgyptInsuredCategory.EMPLOYEE,
     /** سن الشيخوخة لو المستخدم كتبه (60–65) — لازم لما مش مؤكد من القانون (م41). */
     val legalAgeYears: Int? = null,
-    /** الحد الأدنى لأجر الاشتراك يوم الاستحقاق لو المستخدم كتبه (من اللائحة) — من غيره أرضية الـ65% «غير متاح». */
+    /** الحد الأدنى لأجر الاشتراك يوم الاستحقاق لو المستخدم كتبه — بيعلى على الجدول الرسمي. null + سنة مش في الجدول ⇒ أرضية الـ65% «غير متاح». */
     val minContributionWageMinor: Halalas? = null,
     /** السن اللي ناوي تتقاعد فيه بالشهور — null = سن الشيخوخة. */
     val retireAtAgeMonths: Int? = null,
+    /** الحد الأقصى لأجر الاشتراك يوم الاستحقاق لو المستخدم كتبه — بيعلى على الجدول. null + سنة مش في الجدول ⇒ سقفه مش متطبّق. */
+    val maxContributionWageMinor: Halalas? = null,
 )
 
 /** معاش مصر بالتفصيل — كل خطوة لوحدها عشان الشاشة تشرحها. */
 data class EgyptPension(
+    /** أجر التسوية اللي اتحسب بيه — بعد سقف الحد الأقصى لأجر الاشتراك (م22) لو معروف. */
     val settlementWageMinor: Halalas,
+    /** أجر التسوية المكتوب كان أكبر من الحد الأقصى لأجر الاشتراك واتقص (م22). */
+    val settlementCappedToMax: Boolean,
+    /** الحد الأدنى/الأقصى لأجر الاشتراك يوم الاستحقاق — المكتوب أو الجدول الرسمي، null = مش معروف. */
+    val minContributionWageMinor: Halalas?,
+    val maxContributionWageMinor: Halalas?,
+    /** سنة الجدول الرسمي لو حد منهم جه منه (مش مكتوب) — null = الاتنين مكتوبين أو مش معروفين. */
+    val limitsYear: Int?,
     val contributionMonths: Int,
     /** السن يوم التقاعد بالسنين الكاملة (جدول 5 ملاحظة 1). */
     val ageYears: Int,
@@ -130,7 +146,9 @@ data class EgyptPension(
     val accruedMinor: Halalas,
     /** 80% من أجر التسوية (م24). */
     val capMinor: Halalas,
-    /** 65% من الحد الأدنى لأجر الاشتراك — null = مش معروف (اللائحة). */
+    /** 80% من الحد الأقصى لأجر الاشتراك (م24 آخر فقرة) — null = الحد الأقصى مش معروف. */
+    val maxWageCapMinor: Halalas?,
+    /** max(65% من الحد الأدنى لأجر الاشتراك، 900 جنيه) (م105 ثالثًا(4)) — null = الحد الأدنى مش معروف (والـ900 لوحدها بتتطبق). */
     val floorMinor: Halalas?,
     val early: Boolean,
     val pensionMinor: Halalas,
@@ -142,6 +160,8 @@ private fun checkEgyptInput(i: EgyptPensionInput) {
     if (i.monthsBefore2020 < 0 || i.monthsBefore2020 > i.monthsSoFar) throw RetirementCalcError(uiText(TextKey.CALC_MONTHS_2020))
     if (i.settlementWageMinor != null && (i.settlementWageMinor <= 0 || i.settlementWageMinor > MAX_SAFE_HALALAS)) throw RetirementCalcError(uiText(TextKey.CALC_WAGE_POSITIVE))
     if (i.minContributionWageMinor != null && (i.minContributionWageMinor <= 0 || i.minContributionWageMinor > MAX_SAFE_HALALAS)) throw RetirementCalcError(uiText(TextKey.CALC_WAGE_POSITIVE))
+    if (i.maxContributionWageMinor != null && (i.maxContributionWageMinor <= 0 || i.maxContributionWageMinor > MAX_SAFE_HALALAS)) throw RetirementCalcError(uiText(TextKey.CALC_WAGE_POSITIVE))
+    if (i.minContributionWageMinor != null && i.maxContributionWageMinor != null && i.maxContributionWageMinor < i.minContributionWageMinor) throw RetirementCalcError(uiText(TextKey.CALC_EGYPT_MAX_BELOW_MIN))
     if (i.legalAgeYears != null && i.legalAgeYears !in EG_EMPLOYEE_LEGAL_AGE..EG_UNIFIED_LEGAL_AGE) throw RetirementCalcError(uiText(TextKey.CALC_EGYPT_LEGAL_AGE_RANGE))
     if (i.retireAtAgeMonths != null && i.retireAtAgeMonths !in 1..MAX_AGE_MONTHS) throw RetirementCalcError(uiText(TextKey.CALC_RETIRE_AGE))
 }
@@ -173,17 +193,30 @@ fun egyptPensionEstimate(i: EgyptPensionInput): PensionEstimate {
     if (early && months < (if (after2025) EG_EARLY_MONTHS else EG_EARLY_MONTHS_BEFORE_2025)) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.EARLY_NOT_ALLOWED)
     if (months < (if (after2025) EG_MIN_MONTHS else EG_MIN_MONTHS_BEFORE_2025)) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.TOO_FEW_MONTHS)
     if (i.monthsBefore2020 > 0) return result(PensionStatus.UNAVAILABLE, CalcReason.EGYPT_PRE_2020)
-    val wage = i.settlementWageMinor ?: return result(PensionStatus.UNAVAILABLE, CalcReason.NEED_SETTLEMENT_WAGE)
+    val typedWage = i.settlementWageMinor ?: return result(PensionStatus.UNAVAILABLE, CalcReason.NEED_SETTLEMENT_WAGE)
+    // الحدين يوم الاستحقاق: المكتوب ⇒ الجدول الرسمي لسنة التقاعد (اللائحة م53 + أخبار الهيئة) ⇒ مش معروف
+    val table = egyptContributionWageLimits(retirementDate)
+    val minWage = i.minContributionWageMinor ?: table?.minMinor
+    val maxWage = i.maxContributionWageMinor ?: table?.maxMinor
+    val limitsYear = table?.year?.takeIf { i.minContributionWageMinor == null || i.maxContributionWageMinor == null }
+    // م22 + اللائحة م103 أولًا(4): أجر التسوية (بعد زيادة التضخم) ما يزيدش عن الحد الأقصى لأجر الاشتراك
+    val wage = maxWage?.let { minOf(typedWage, it) } ?: typedWage
     val accrued = mulDivHalfUp(wage, months * 10L, 12L * coefficient)
     val cap = mulDivHalfUp(wage, EG_MAX_PENSION_BP, BASIS_POINTS)
-    val base = minOf(accrued, cap)
-    val floor = i.minContributionWageMinor?.let { mulDivHalfUp(it, EG_FLOOR_OF_MIN_WAGE_BP, BASIS_POINTS) }
+    val maxWageCap = maxWage?.let { mulDivHalfUp(it, EG_MAX_PENSION_OF_MAX_WAGE_BP, BASIS_POINTS) }
+    // سقف الحد الأقصى (م24 آخر فقرة) ما يقدرش يقفل لوحده هنا طول ما الأجر متقص لنفس الحد الأقصى (80% من أجر ≤ 80% من الحد) —
+    // متساب بنص القانون عشان يشتغل لو مدد ما قبل 2020 اتبنت («أجر التسوية الأكبر» — اللائحة م105 ثالثًا). تحوير بيشيله = مكافئ (§69.8)
+    val base = minOf(accrued, cap, maxWageCap ?: Long.MAX_VALUE)
+    val minWageShare = minWage?.let { mulDivHalfUp(it, EG_FLOOR_OF_MIN_WAGE_BP, BASIS_POINTS) }
+    val floor = minWageShare?.let { maxOf(it, EG_MIN_PENSION_NUMERIC_MINOR) }
     if (early) {
-        // م21(6)(أ): شرط استحقاق مش رفع — المبكر ما بيترفعش للأرضية (م24 آخر فقرة للبنود 1–5 بس)
+        // م21(6)(أ) + اللائحة م102(7)(ب): شرط استحقاق مش رفع (50% من الأجر و65% من الحد الأدنى — من غير الـ900)
         if (base < mulDivHalfUp(wage, EG_EARLY_MIN_SHARE_BP, BASIS_POINTS)) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.EGYPT_EARLY_BELOW_HALF)
-        if (floor != null && base < floor) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.EGYPT_EARLY_BELOW_MINIMUM)
+        if (minWageShare != null && base < minWageShare) return result(PensionStatus.NOT_ELIGIBLE, CalcReason.EGYPT_EARLY_BELOW_MINIMUM)
     }
-    // م24 آخر فقرة (البنود 1–5): يترفع للأرضية. المبكر (البند 6) ما بيترفعش — بس شرطه فوق بيضمن إنه أصلًا مش تحتها
-    val pension = floor?.let { maxOf(base, it) } ?: base
-    return result(PensionStatus.ESTIMATED, null, EgyptPension(wage, months, ageYears, legal, coefficient, accrued, cap, floor, early, pension))
+    // م24 آخر فقرة (البنود 1–5) + اللائحة م105 ثالثًا(4): يترفع للأرضية، و900 جنيه على الأقل حتى لو الحد الأدنى مش معروف.
+    // المبكر (البند 6) ما بيترفعش — شرطه فوق بيضمن إنه مش تحت الـ65%
+    val pension = if (early) base else maxOf(base, floor ?: EG_MIN_PENSION_NUMERIC_MINOR)
+    val detail = EgyptPension(wage, wage < typedWage, minWage, maxWage, limitsYear, months, ageYears, legal, coefficient, accrued, cap, maxWageCap, floor, early, pension)
+    return result(PensionStatus.ESTIMATED, null, detail)
 }

@@ -11,24 +11,34 @@ import app.masroufy.core.ProjectLink
 import app.masroufy.core.ProjectRule
 import app.masroufy.core.RealEstateValuation
 import app.masroufy.core.RuleMatchMode
+import app.masroufy.core.SILVER_MARKER_FIELD
+import app.masroufy.core.kindFromStored
+import app.masroufy.core.storedSilverForm
 
 /** الأصول والمشاريع. */
 object AssetProjectCodecs {
     val assets: DocCodec<Asset> = codec(
         "assets", { it.id },
         { a ->
+            // الفضة (§69.9): النوع المتخزن "other" + علامة `silver` (التطبيق الحالي بيرفض "silver") — في كوتلن بتفضل "silver"
+            val (storedKind, silver) = storedSilverForm(a.kind)
             doc {
-                req("id", a.id); req("name", a.name); req("kind", a.kind); req("unitLabel", a.unitLabel); req("currency", a.currency.name)
+                req("id", a.id); req("name", a.name); req("kind", storedKind); req("unitLabel", a.unitLabel); req("currency", a.currency.name)
                 opt("feedSymbol", a.feedSymbol); req("archived", a.archived); opt("note", a.note)
                 // «هتوصل لكام؟» (§69.6) — حقول كوتلن بس، ما بتتكتبش لو فاضية ⇒ مستند التطبيق الحالي ونسخه هي هي
                 opt("valuation", a.valuation?.wire); opt("areaSqm", a.areaSqm); opt("pricePerSqmMinor", a.pricePerSqmMinor)
                 opt("pricePerSqmAsOf", a.pricePerSqmAsOf); opt("monthlyRentMinor", a.monthlyRentMinor); opt("rentIncreaseBp", a.rentIncreaseBp)
                 opt("vacantMonthsPerYear", a.vacantMonthsPerYear); opt("expectedRateBp", a.expectedRateBp)
+                // علامة العقار (§69.7) — النوع المتخزن بيفضل "other" عشان التطبيق الحالي؛ بتتكتب لو true بس
+                opt("realEstate", a.realEstate.takeIf { it })
+                // علامة الفضة — بتتكتب لو true بس ⇒ مستند أي أصل تاني هو هو بالحرف
+                opt(SILVER_MARKER_FIELD, silver.takeIf { it })
             }
         },
         { r ->
             Asset(
-                r.str("id"), r.str("name"), r.str("kind"), r.str("unitLabel"), r.wire("currency", Currency::valueOf), r.bool("archived"),
+                // "other" + العلامة ⇒ فضة · "silver" القديم ⇒ فضة (وأول حفظ بيكتبه بالشكل الجديد)
+                r.str("id"), r.str("name"), kindFromStored(r.str("kind"), r.boolOrNull(SILVER_MARKER_FIELD) ?: false), r.str("unitLabel"), r.wire("currency", Currency::valueOf), r.bool("archived"),
                 r.strOrNull("feedSymbol"), r.strOrNull("note"),
                 valuation = r.strOrNull("valuation")?.let(RealEstateValuation::fromWire),
                 areaSqm = r.longOrNull("areaSqm"),
@@ -38,6 +48,7 @@ object AssetProjectCodecs {
                 rentIncreaseBp = r.intOrNull("rentIncreaseBp"),
                 vacantMonthsPerYear = r.intOrNull("vacantMonthsPerYear"),
                 expectedRateBp = r.intOrNull("expectedRateBp"),
+                realEstate = r.boolOrNull("realEstate") ?: false,
             )
         },
     )

@@ -15,8 +15,9 @@ package app.masroufy.core
  *    أولاد أكتر من شخص (بنتين ماتوا …) ⇒ كل شخص وارث لوحده ([DistantBranch])؛ لو مش معروف من كام شخص ⇒ «غير مدعوم» بسؤال.
  * 3. **«دون تفاضل»:** نصيب الشخص بيتقسم على اللي في مكانه **بالتساوي** (ذكر وأنثى). أكتر من صلة في مكان نفس الشخص (خال شقيق وخال لأب،
  *    عمة وعم لأم من غير نفس الصلة …) ⇒ المادة ما بتقولش نصيبه يتقسم بينهم إزاي ⇒ **«لا نص»** (م251).
- * 4. **«حجباً»:** اللي اتنزّل مكان وارث محجوب (ابن الأخ لأم مع ابن البنت: البنت بتحجب الأخ لأم — م219) ما بيورثش، حتى لو من جهة تانية.
- *    ⚠️ قراية Claude لنص م235 «إرثاً وحجباً» — م236 بتقول «يرث البعيد مع وجود القريب» عن القرب بس. مكتوب في الأسئلة المفتوحة.
+ * 4. **«حجباً» من نفس الجهة:** اللي اتنزّل مكان وارث محجوب بوارث من **نفس جهته** (العمة مع ابن الأخت الشقيقة: الأب بيحجب الأخت —
+ *    الاتنين جهة الأبوة) ما بيورثش — م235 لوحدها، وم236 ما بتقولش حاجة عن اللي قربهم واحد.
+ * 5. **«حجباً» بسبب جهة تانية ⇒ «لا نص — اسأل المحكمة»** (رد المالك §69.7 — كان «ابن البنت كله» مع ابن الأخ لأم): [sidesConflict].
  */
 internal fun saudiDistant(distant: Map<HeirKind, Int>, branches: List<DistantBranch>): DistantSplit {
     fun sa(article: String) = Citation(LawSource.SA_PERSONAL_STATUS, article)
@@ -65,13 +66,15 @@ internal fun saudiDistant(distant: Map<HeirKind, Int>, branches: List<DistantBra
         is SharesOutcome.Stop -> return DistantSplit.Stop(o.result)
         is SharesOutcome.Shares -> o
     }
+    // 5. م235 × م236: اللي منعه من الورث موجود في جهة تانية ⇒ «لا نص»
+    sidesConflict(byVia, hypothetical, tanzil)?.let { return DistantSplit.Stop(it) }
 
     val persons = LinkedHashMap<HeirKind, MutableList<Frac>>()
     fun add(k: HeirKind, share: Frac, n: Int) = repeat(n) { persons.getOrPut(k) { mutableListOf() } += share }
     for ((via, kinds) in byVia) {
         val viaShare = tanzil.shares[via] ?: Frac.ZERO
         if (!viaShare.isPositive) {
-            // 4. «حجباً»: الوارث اللي اتنزّلوا مكانه محجوب (أو ما فضلش له حاجة) ⇒ ما بيورثوش
+            // 4. «حجباً» من نفس الجهة (الجهات التانية اتفحصت في الخطوة 5): الوارث اللي اتنزّلوا مكانه محجوب ⇒ ما بيورثوش
             val by = tanzil.notes.firstOrNull { it.kind == InheritanceNoteKind.BLOCKED && it.heirs.firstOrNull() == via }?.heirs?.getOrNull(1)
             val byRelative = by?.let { byVia[it]?.firstOrNull() }
             for (k in kinds) {
@@ -104,4 +107,37 @@ internal fun saudiDistant(distant: Map<HeirKind, Int>, branches: List<DistantBra
         if (!shares.getValue(k).isPositive) excluded += k
     }
     return DistantSplit.Done(shares, personShares, excluded, notes)
+}
+
+/**
+ * **م235 «إرثاً وحجباً» × م236 «وإذا اختلفت الجهات فيرث البعيد مع وجود القريب»** — رد المالك (§69.7): لما المادتين يشاوروا على
+ * نتيجتين مختلفتين ⇒ **«لا نص — اسأل المحكمة»** ([NoTextReason.DISTANT_SIDES_BLOCKING]، مستشهد بـم236).
+ *
+ * **الشرط بالظبط:** فيه وارث `via` اتنزّل مكانه قريب من الجهة J (م233: البنوة · الأبوة · الأمومة) — بعد ما م236 شالت الأبعد من نفس الجهة —
+ * - (أ) في مسألة التنزيل الكاملة (ورثة كل الجهات) نصيب `via` = **صفر**، و
+ * - (ب) في نفس المسألة بالورثة اللي اتنزّل مكانهم أقارب من **الجهة J لوحدها** (بنفس الأعداد) نصيب `via` **أكبر من صفر**.
+ *
+ * يعني اللي منع القريب ده من الورث موجود في جهة تانية: م235 بتقول ما يورثش («حجباً»)، وم236 بتقول يورث مع القريب من الجهة التانية.
+ * ده بيشمل الحجب المباشر (ابن البنت + ابن الأخ لأم: البنت بتحجب الأخ لأم — م219) **وغير المباشر** (ابن البنت + بنت الأخت الشقيقة +
+ * ابن الأخت لأب: البنت بتخلّي الشقيقة عصبة فتحجب الأخت لأب — م218؛ من غير ابن البنت الأخت لأب بتاخد السدس).
+ *
+ * **مش داخل:** المنع من نفس الجهة (الشرط (ب) مش متحقق ⇒ م235 لوحدها، زي ما هو) · النصيب اللي بيقل من غير ما يبقى صفر (ده «يرث مع»
+ * نفسه) · مسألة الجهة J لوحدها وقفت (`Stop`) ⇒ مفيش تعارض متأكدين منه ⇒ بيكمل زي ما هو.
+ */
+private fun sidesConflict(
+    byVia: Map<HeirKind, List<HeirKind>>,
+    counts: Map<HeirKind, Int>,
+    tanzil: SharesOutcome.Shares,
+): InheritanceResult.NoText? {
+    val sideOf = byVia.mapValues { (_, kinds) -> distantInfo(kinds.first()).side }
+    for ((via, side) in sideOf) {
+        if ((tanzil.shares[via] ?: Frac.ZERO).isPositive) continue
+        val sameSide = counts.filterKeys { sideOf[it] == side }
+        if (sameSide.size == counts.size) continue
+        val alone = computeShares(InheritanceLaw.SA, sameSide, false)
+        if (alone is SharesOutcome.Shares && (alone.shares[via] ?: Frac.ZERO).isPositive) {
+            return InheritanceResult.NoText(NoTextReason.DISTANT_SIDES_BLOCKING, Citation(LawSource.SA_PERSONAL_STATUS, "236"))
+        }
+    }
+    return null
 }
