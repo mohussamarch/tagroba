@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>العمليات — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}a:hover{color:#064B40}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),color 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-rise{animation:m-fade 150ms both}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">العمليات</h1>
+      <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 18px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>أكتوبر</button>
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 16px; border-radius: 18px; color: #637570; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">اسأل مصروفي</span>
+      <input type="text" placeholder="{{askPlaceholder}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: #193D33; outline: none">
+    </label>
+
+    <div role="tablist" aria-label="أقسام العمليات" style="display: flex; gap: 4px; padding: 4px; border-radius: 18px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+        <button type="button" role="tab" aria-selected="{{t.selected}}" class="m-press" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{onOps}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: #FBF0DD; color: #956000">
+            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 14px; font-weight: 700">تعذّر تحميل العمليات</span>
+              <span style="font-size: 12px">تحقق من الاتصال ثم أعد المحاولة.</span>
+            </div>
+            <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 16px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 6px 14px rgba(29,54,53,0.08)">أعد المحاولة</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+          <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; gap: 10px">
+              <div class="m-skel" style="flex: 1 1 0; height: 66px; border-radius: 18px; background: rgba(25,61,51,0.07)"></div>
+              <div class="m-skel" style="flex: 1 1 0; height: 66px; border-radius: 18px; background: rgba(25,61,51,0.07)"></div>
+            </div>
+            <div class="m-skel" style="width: 48px; height: 16px; border-radius: 8px; background: rgba(25,61,51,0.08)"></div>
+            <div class="m-skel" style="height: 176px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px 8px; text-align: center">
+            <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+            <span style="font-size: 14px; font-weight: 700; margin-top: 8px">لا توجد عمليات في أكتوبر</span>
+            <span style="font-size: 13px; color: #637570">أضف عملية أو استورد كشف حسابك.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
+          <div class="m-rise" style="display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; gap: 10px">
+              <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+                <span style="font-size: 12px; color: #637570">دخل الشهر</span>
+                <sc-if value="{{isNA}}" hint-placeholder-val="{{ false }}"><span style="font-size: 18px; font-weight: 700; color: #637570">غير متاح</span></sc-if>
+                <sc-if value="{{hasNumbers}}" hint-placeholder-val="{{ true }}"><span dir="ltr" style="text-align: right; font-size: 18px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">+{{incomeText}}</span></sc-if>
+              </div>
+              <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+                <span style="font-size: 12px; color: #637570">المصروف الحقيقي</span>
+                <sc-if value="{{isNA}}" hint-placeholder-val="{{ false }}"><span style="font-size: 18px; font-weight: 700; color: #637570">غير متاح</span></sc-if>
+                <sc-if value="{{hasNumbers}}" hint-placeholder-val="{{ true }}"><span dir="ltr" style="text-align: right; font-size: 18px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">−{{expenseText}}</span></sc-if>
+              </div>
+            </div>
+
+            <sc-for list="{{days}}" as="day" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: 13px; font-weight: 700; color: #637570">{{day.label}}</span>
+                <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+                  <sc-for list="{{day.rows}}" as="row" hint-placeholder-count="2">
+                    <div class="m-press" style="{{row.rowStyle}}">
+                      <div style="{{row.tileStyle}}">
+                        <sc-if value="{{row.isFood}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8a3 3 0 0 0 3 3v7"></path><path d="M5 3v5M9 3v5"></path><path d="M17 3c-2 2-3 4-3 7s1 4 3 4v7"></path></svg></sc-if>
+                        <sc-if value="{{row.isShop}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></sc-if>
+                        <sc-if value="{{row.isCar}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16l1.5-5h11L19 16"></path><path d="M4 16h16v3H4z"></path><circle cx="7.5" cy="19.5" r="1"></circle><circle cx="16.5" cy="19.5" r="1"></circle></svg></sc-if>
+                        <sc-if value="{{row.isMove}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3"></path><path d="M20 16H6l3 3"></path></svg></sc-if>
+                        <sc-if value="{{row.isIncome}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M12 10v5M9.5 12.5L12 15l2.5-2.5"></path></svg></sc-if>
+                      </div>
+                      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+                        <span style="font-size: 14px; font-weight: 700">{{row.name}}</span>
+                        <span style="font-size: 12px; color: #637570">{{row.sub}}</span>
+                      </div>
+                      <span dir="ltr" style="{{row.amountStyle}}">{{row.amount}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{onOther}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 16px; border-radius: 22px; border: 1.5px dashed rgba(8,99,79,0.30); text-align: center">
+        <span style="font-size: 14px; font-weight: 700">{{otherTitle}}</span>
+        <span style="font-size: 13px; color: #637570">هذا القسم يُرسم في خطوته من الخطة.</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <nav aria-label="التنقل" style="position: absolute; left: 20px; right: 20px; bottom: 14px; z-index: 5; height: 70px; border-radius: 26px; display: flex; align-items: center; justify-content: space-around; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -4px 6px rgba(255,255,255,0.85), 0 18px 44px rgba(29,54,53,0.18), 0 0 0 0.5px rgba(155,179,179,0.25)">
+    <a href="Main.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg></span>الرئيسية</a>
+    <a href="Operations.dc.html" aria-current="page" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #08634F; font-size: 11px; font-weight: 700">
+      <span style="width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></span>العمليات</a>
+    <a href="People.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17.5" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg></span>الأشخاص</a>
+    <a href="Investment.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg></span>الاستثمار</a>
+    <a href="More.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></span>المزيد</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'ops' }; }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const C = {
+      food: '#A36A21', shop: '#3866A7', car: '#4D747C', move: '#2469BA', income: '#13764D'
+    };
+    const row = (kind, name, sub, amount, dir, last) => {
+      const color = dir === 'out' ? '#BE3D48' : dir === 'in' ? '#13764D' : '#2469BA';
+      const tint = { food: 'rgba(163,106,33,0.12)', shop: 'rgba(56,102,167,0.12)', car: 'rgba(77,116,124,0.12)', move: 'rgba(36,105,186,0.12)', income: 'rgba(19,118,77,0.12)' }[kind];
+      return {
+        name, sub,
+        amount: (dir === 'out' ? '−' : dir === 'in' ? '+' : '') + amount,
+        isFood: kind === 'food', isShop: kind === 'shop', isCar: kind === 'car', isMove: kind === 'move', isIncome: kind === 'income',
+        rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        tileStyle: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + tint + '; color: ' + C[kind],
+        amountStyle: 'font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + color
+      };
+    };
+    const days = eg ? [
+      { label: 'اليوم', rows: [row('food', 'مطعم الفول', 'مطاعم وقهوة', '185.00', 'out'), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '2,000.00', 'move', true)] },
+      { label: 'أمس', rows: [row('shop', 'سوبرماركت الحي', 'بقالة وسوبرماركت', '1,240.50', 'out'), row('car', 'بنزينة', 'بنزين', '600.00', 'out', true)] }
+    ] : [
+      { label: 'اليوم', rows: [row('food', 'مطعم الريف', 'مطاعم وقهوة', '42.00', 'out'), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '1,000.00', 'move', true)] },
+      { label: 'أمس', rows: [row('shop', 'سوبرماركت الحي', 'بقالة وسوبرماركت', '318.40', 'out'), row('car', 'محطة وقود', 'بنزين', '90.00', 'out'), row('income', 'راتب', 'دخل · مصدر الدخل الأساسي', '12,500.00', 'in', true)] }
+    ];
+    const tabDefs = [['ops', 'العمليات'], ['budgets', 'الميزانيات'], ['dues', 'المستحقات']];
+    const tabs = tabDefs.map(([id, label]) => {
+      const on = this.state.tab === id;
+      return {
+        label, selected: on ? 'true' : 'false',
+        pick: () => this.setState({ tab: id }),
+        style: 'flex: 1 1 0; height: 40px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on
+          ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)'
+          : 'color: #637570; background: transparent')
+      };
+    });
+    const list = st === 'عادي' || st === 'خطأ' || st === 'غير متاح';
+    return {
+      askPlaceholder: eg ? 'اسأل مصروفي… صرفت كام على الأكل؟' : 'اسأل مصروفي… كم صرفت على المطاعم؟',
+      tabs,
+      onOps: this.state.tab === 'ops',
+      onOther: this.state.tab !== 'ops',
+      otherTitle: this.state.tab === 'budgets' ? 'الميزانيات' : 'المستحقات',
+      isError: st === 'خطأ', isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isNA: st === 'غير متاح',
+      hasNumbers: st !== 'غير متاح',
+      showList: list,
+      incomeText: eg ? '28,000' : '12,500',
+      expenseText: eg ? '21,200' : '6,650',
+      days
+    };
+  }
+}
+</script>
+</body>
+</html>

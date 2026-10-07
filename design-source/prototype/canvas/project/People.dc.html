@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الأشخاص — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}a:hover{color:#064B40}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-rise{animation:m-fade 150ms both}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">الأشخاص</h1>
+      <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 13px; color: #08634F; font-weight: 700; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">القائمة كاملة (١٦)</button>
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 16px; border-radius: 18px; color: #637570; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">اسأل مصروفي</span>
+      <input type="text" placeholder="اسأل مصروفي… كم لي عند خالد؟" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: #193D33; outline: none">
+    </label>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px">
+        <div class="m-skel" style="height: 290px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+        <div class="m-skel" style="height: 112px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: #FBF0DD; color: #956000">
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+          <span style="font-size: 14px; font-weight: 700">تعذّر تحميل الأشخاص</span>
+          <span style="font-size: 12px">أعد المحاولة بعد قليل.</span>
+        </div>
+        <button type="button" class="m-press" style="border: 0; height: 48px; padding: 0 14px; border-radius: 16px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 6px 14px rgba(29,54,53,0.08)">أعد المحاولة</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">لم تُضف أحدًا بعد</span>
+        <span style="font-size: 13px; color: #637570">أضف من تتعامل معهم لتتابع ما لك وما عليك.</span>
+        <button type="button" class="m-press" style="margin-top: 10px; border: 0; height: 48px; padding: 0 28px; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">إضافة شخص</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showContent}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div class="m-rise" dir="ltr" aria-label="دوائرك: المُعالون أولًا ثم الأكثر تعاملًا" style="position: relative; height: 290px; border-radius: 28px; overflow: hidden; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+          <svg width="350" height="290" viewBox="0 0 350 290" aria-hidden="true" style="position: absolute; left: 0; top: 0" fill="none" stroke="rgba(220,235,214,0.45)" stroke-width="1.5" stroke-linecap="round">
+            <path d="M175 236 Q 260 230 308 197"></path>
+            <path d="M175 236 Q 230 180 257 127"></path>
+            <path d="M175 236 Q 168 160 175 100"></path>
+            <path d="M175 236 Q 110 180 93 127"></path>
+            <path d="M175 236 Q 80 230 42 197"></path>
+          </svg>
+          <span dir="rtl" style="position: absolute; right: 16px; top: 14px; font-size: 12px; color: #DCEBD6">المُعالون أولًا · ثم الأكثر تعاملًا</span>
+          <sc-for list="{{orbit}}" as="p" hint-placeholder-count="5">
+            <button type="button" class="m-press" style="{{p.pos}}">
+              <span style="{{p.circle}}">{{p.initial}}</span>
+              <span style="font-size: 12px; color: #FFFFFF; font-weight: 700">{{p.name}}</span>
+            </button>
+          </sc-for>
+          <div aria-label="أنت" style="position: absolute; left: 137px; top: 198px; width: 76px; height: 76px; border-radius: 26px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.03) 48%, rgba(150,243,204,0.16)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
+            <span aria-hidden="true" style="position: absolute; top: 2px; left: 14%; width: 56%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span><span aria-hidden="true" style="position: absolute; bottom: 2px; right: 12%; width: 46%; height: 3px; border-radius: 50%; background: linear-gradient(90deg, transparent, rgba(170,252,219,0.70), transparent); filter: blur(1px)"></span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <h2 style="margin: 0; font-size: 18px; font-weight: 700">لك</h2>
+            <span style="font-size: 12px; color: #637570">{{currencyName}} · بدون مقاصة مع «عليك»</span>
+          </div>
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px; border-bottom: 1px solid rgba(204,216,204,0.55)">
+              <div style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #DCEBD6; color: #08634F">خ</div>
+              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">خالد</span><span style="font-size: 12px; color: #637570">سلفة · منذ ١٢ يومًا</span></div>
+              <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{oweA}}</span>
+            </div>
+            <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px">
+              <div style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #DCEBD6; color: #08634F">أ</div>
+              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">أحمد</span><span style="font-size: 12px; color: #637570">نصيبه من فاتورة العشاء</span></div>
+              <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{oweB}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700">عليك</h2>
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px">
+              <div style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; background: #DCEBD6; color: #08634F">ع</div>
+              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">عمر</span><span style="font-size: 12px; color: #637570">سلفة · موعدها ١ نوفمبر</span></div>
+              <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{debtA}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <nav aria-label="التنقل" style="position: absolute; left: 20px; right: 20px; bottom: 14px; z-index: 5; height: 70px; border-radius: 26px; display: flex; align-items: center; justify-content: space-around; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -4px 6px rgba(255,255,255,0.85), 0 18px 44px rgba(29,54,53,0.18), 0 0 0 0.5px rgba(155,179,179,0.25)">
+    <a href="Main.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg></span>الرئيسية</a>
+    <a href="Operations.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></span>العمليات</a>
+    <a href="People.dc.html" aria-current="page" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #08634F; font-size: 11px; font-weight: 700">
+      <span style="width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17.5" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg></span>الأشخاص</a>
+    <a href="Investment.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg></span>الاستثمار</a>
+    <a href="More.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
+      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></span>المزيد</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const spots = [[280, 169, 'ل', 'ليلى', true], [229, 99, 'ي', 'يوسف', true], [147, 72, 'س', 'سارة', false], [65, 99, 'خ', 'خالد', false], [14, 169, 'أ', 'أحمد', false]];
+    const orbit = spots.map(([x, y, initial, name, dep]) => ({
+      initial, name,
+      pos: 'position: absolute; left: ' + x + 'px; top: ' + y + 'px; width: 60px; padding: 0; border: 0; background: transparent; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px',
+      circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; background: #FFFDF9; color: #08634F; box-shadow: ' + (dep ? '0 0 0 3px #A6DEC1, ' : '') + '0 8px 18px rgba(0,30,25,0.30)'
+    }));
+    return {
+      isLoading: st === 'بيحمّل', isError: st === 'خطأ', isEmpty: st === 'فاضي',
+      showContent: st === 'عادي' || st === 'خطأ' || st === 'غير متاح',
+      orbit,
+      currencyName: eg ? 'جنيه' : 'ريال',
+      oweA: eg ? '1,500.00' : '500.00',
+      oweB: eg ? '420.00' : '185.00',
+      debtA: eg ? '6,000.00' : '2,000.00'
+    };
+  }
+}
+</script>
+</body>
+</html>

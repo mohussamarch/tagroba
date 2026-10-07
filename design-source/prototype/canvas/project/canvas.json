@@ -1,0 +1,21 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-07T20:33:28Z"},
+  "title": "مصروفي — النموذج التفاعلي",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 1880, "y": 0, "w": 390, "h": 844, "title": "الرئيسية · Home", "is_interactive": true},
+    "Operations.dc.html": {"x": 1410, "y": 0, "w": 390, "h": 844, "title": "العمليات · Operations", "is_interactive": true},
+    "People.dc.html": {"x": 940, "y": 0, "w": 390, "h": 844, "title": "الأشخاص · People", "is_interactive": true},
+    "Investment.dc.html": {"x": 470, "y": 0, "w": 390, "h": 844, "title": "الاستثمار · Investment", "is_interactive": true},
+    "More.dc.html": {"x": 0, "y": 0, "w": 390, "h": 844, "title": "المزيد · More", "is_interactive": true}
+  },
+  "order": ["Main.dc.html", "Operations.dc.html", "People.dc.html", "Investment.dc.html", "More.dc.html"],
+  "notes": {
+    "shell": {"x": 0, "y": -300, "text": "الهيكل — التبويبات الخمسة (من اليمين)", "kind": "title1", "maxW": 2270}
+  },
+  "designSystems": [
+    {"title": "مصروفي — زجاج فاخر", "namespace": "masroufy", "artifact": "https://claude.ai/code/artifact/d6ba566d-acad-4d3e-a90a-24776b37dbef", "version": "1791404637-0e54", "copiedAt": "2026-10-07T20:33:28Z"}
+  ]
+}
