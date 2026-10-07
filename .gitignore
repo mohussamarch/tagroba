@@ -41,3 +41,6 @@ dist-android/
 android/local.properties
 
 dist-android-apk/
+
+# prototype preview: canvas runtime copied from the Design type (not ours)
+design-source/prototype/harness/.runtime/

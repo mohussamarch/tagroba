@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>معاينة النموذج</title>
+<style>html,body{margin:0;background:#0f1a16}iframe{display:block;width:390px;height:844px;border:0}</style>
+</head>
+<body>
+<iframe id="f" title="الشاشة"></iframe>
+<script>
+  var q = new URLSearchParams(location.search);
+  document.getElementById('f').src = '/' + (q.get('a') || 'Main.dc.html');
+</script>
+</body>
+</html>
