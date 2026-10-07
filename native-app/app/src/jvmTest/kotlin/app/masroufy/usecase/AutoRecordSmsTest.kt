@@ -135,6 +135,15 @@ class AutoRecordSmsTest {
         assertEquals(listOf("m1"), r.waiting)
     }
 
+    @Test fun aMessageThatWillBeRecordedIsNotWaitingEvenBeforeTheRun() = runBlocking<Unit> {
+        val world = SmsWorld().enable()
+        world.receive(sms("m1", CAFE), sms("m2", UNCLEAR))
+        // التطبيق اتفتح وجمع التنبيهات قبل ما الخلفية تلحق تسجّل: الشراء هيتسجل لوحده ⇒ مش «مستني» ⇒ مالوش إشعار
+        assertEquals(listOf("m2"), world.auto().waiting().messageIds)
+        assertTrue(world.spaces.single().all().isEmpty(), "الحساب ما بيكتبش")
+        assertEquals(listOf("m1", "m2"), world.queued())
+    }
+
     @Test fun offWhenReadingIsOffAndNothingWaits() = runBlocking<Unit> {
         val world = SmsWorld()
         world.receive(sms("m1", UNCLEAR))

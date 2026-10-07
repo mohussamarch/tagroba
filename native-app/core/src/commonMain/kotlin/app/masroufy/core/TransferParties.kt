@@ -136,7 +136,6 @@ private val SMS_IN_SIDE = setOf("من", "from")
 private fun looksLikeSms(text: String): Boolean = QNB_SMS_TRANSFER.containsMatchIn(text) || '\n' in text
 
 private fun smsPartyOf(text: String, direction: Direction): TransferPartyRef? {
-    if (QNB_SMS_TRANSFER.containsMatchIn(text)) return null
     val side = if (direction == Direction.OUT) SMS_OUT_SIDE else SMS_IN_SIDE
     SMS_ACCOUNT_LINE.findAll(text).firstOrNull { it.groupValues[1] in side }?.let { m ->
         // قص الآيبان بياكل السطر الجديد اللي بعده («••••7519بـSR 100») ⇒ الرقم من أول السطر بس

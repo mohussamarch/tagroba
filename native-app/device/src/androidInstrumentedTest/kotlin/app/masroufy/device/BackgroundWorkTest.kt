@@ -22,6 +22,7 @@ import app.masroufy.port.NoticeOutcome
 import app.masroufy.port.QueuedSms
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Rule
@@ -80,10 +81,19 @@ class BackgroundWorkTest {
 
     private fun shown(tag: String): Notification? = manager.activeNotifications.firstOrNull { it.tag == tag }?.notification
 
+    /** النظام بيضيف الإشعار بعد `notify` بشوية (مش في نفس اللحظة) ⇒ نستنى لحد 5 ثواني. */
+    private suspend fun awaitShown(tag: String): Notification? {
+        repeat(50) {
+            shown(tag)?.let { return it }
+            delay(100)
+        }
+        return null
+    }
+
     @Test fun phoneNotificationIsPrivateAndTheLockScreenVersionHasNoAmountsOrNames() = runBlocking<Unit> {
         val notice = systemNoticeFor(AlertKind.SMS_CONFIRM)
         assertEquals(NoticeOutcome.SHOWN, AndroidDeviceNotifier(context).post("alert-test-now", notice, null))
-        val n = assertNotNull(shown("alert-test-now"), "الإشعار ظهر فعلًا في النظام")
+        val n = assertNotNull(awaitShown("alert-test-now"), "الإشعار ظهر فعلًا في النظام")
         assertEquals(NotificationCompat.VISIBILITY_PRIVATE, n.visibility)
         assertEquals(AndroidDeviceNotifier.CHANNEL_ALERTS, n.channelId)
         val public = assertNotNull(n.publicVersion, "نسخة شاشة القفل موجودة")
@@ -93,9 +103,9 @@ class BackgroundWorkTest {
         assertEquals(notice.body, public.extras.getCharSequence(Notification.EXTRA_TEXT).toString())
     }
 
-    @Test fun textWithAnAmountIsNeverShown() {
+    @Test fun textWithAnAmountIsNeverShown() = runBlocking<Unit> {
         assertTrue(!AndroidDeviceNotifier.show(context, "alert-test-unsafe", "عندك عملية", "شراء 25 ر.س من محل"), "الفحص لحظة العرض")
-        assertEquals(null, shown("alert-test-unsafe"))
+        assertEquals(null, awaitShown("alert-test-unsafe"))
     }
 
     @Test fun laterNoticesWaitInWorkManager() = runBlocking<Unit> {
