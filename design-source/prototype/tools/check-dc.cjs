@@ -64,7 +64,12 @@ async function run(file) {
   const holes = [...tpl.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)].map((x) => x[1]);
   const loops = [...tpl.matchAll(/<sc-for list="\{\{\s*([\w.$]+)\s*\}\}" as="(\w+)"/g)].map((x) => ({ list: x[1], as: x[2] }));
   const enums = Object.entries(props).filter(([k, v]) => v && v.editor === 'enum');
-  const combos = enums.reduce((acc, [k, v]) => acc.flatMap((c) => v.options.map((o) => ({ ...c, [k]: o }))), [{}]);
+  let combos = enums.reduce((acc, [k, v]) => acc.flatMap((c) => v.options.map((o) => ({ ...c, [k]: o }))), [{}]);
+  if (combos.length > 24) {
+    // كتير: كل رافعة لوحدها والباقي على القيمة الافتراضية
+    const base = Object.fromEntries(enums.map(([k, v]) => [k, v.default ?? v.options[0]]));
+    combos = [base].concat(enums.flatMap(([k, v]) => v.options.filter((o) => o !== base[k]).map((o) => ({ ...base, [k]: o }))));
+  }
   const refKeys = [...tpl.matchAll(/ref="\{\{\s*(\w+)\s*\}\}"/g)].map((x) => x[1]);
   const fakeEl = () => ({ scrollTop: 0, scrollHeight: 1000, clientHeight: 844, scrollTo() {}, getBoundingClientRect: () => ({ top: 0, left: 0, width: 390, height: 844 }), closest: () => null, offsetHeight: 844, addEventListener() {}, removeEventListener() {} });
   const notes = new Set(), filled = new Set();

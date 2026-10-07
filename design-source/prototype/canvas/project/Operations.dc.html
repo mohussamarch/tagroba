@@ -15,16 +15,22 @@ a{color:#08634F}a:hover{color:#064B40}
 .m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
 .m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),color 220ms cubic-bezier(.2,.7,.3,1)}
 .m-press:active{transform:scale(.97)}
-.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) backwards}
 .m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+.o-veil{animation:o-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.o-lift{animation:o-lift 400ms cubic-bezier(.18,.9,.28,1.08) both}
+.o-pop{animation:o-pop 420ms cubic-bezier(.18,.9,.28,1.08) both}
+@keyframes o-fade{from{opacity:0}to{opacity:1}}
+@keyframes o-lift{from{transform:scale(1)}to{transform:scale(1.025)}}
+@keyframes o-pop{from{opacity:0;transform:translateY(-8px) scale(.94)}to{opacity:1;transform:none}}
 @keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes m-pulse{from{opacity:.5}to{opacity:1}}
-@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-rise{animation:m-fade 150ms both}}
+@media (prefers-reduced-motion: reduce){.o-lift{animation:none;transform:none}.o-pop{animation:o-fade 150ms both}.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-rise{animation:m-fade 150ms both}}
 @keyframes m-fade{from{opacity:0}to{opacity:1}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
-<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+<div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
   <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 156px; display: flex; flex-direction: column; gap: 14px">
 
     <div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px">
@@ -91,19 +97,22 @@ a{color:#08634F}a:hover{color:#064B40}
                 <span style="font-size: 13px; font-weight: 700; color: #637570">{{day.label}}</span>
                 <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
                   <sc-for list="{{day.rows}}" as="row" hint-placeholder-count="2">
-                    <div class="m-press" style="{{row.rowStyle}}">
+                    <div class="m-press" style="{{row.rowStyle}}" onPointerDown="{{row.down}}" onPointerMove="{{holdMove}}" onPointerUp="{{holdCancel}}" onPointerLeave="{{holdCancel}}" onContextMenu="{{noMenu}}">
                       <div style="{{row.tileStyle}}">
                         <sc-if value="{{row.isFood}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8a3 3 0 0 0 3 3v7"></path><path d="M5 3v5M9 3v5"></path><path d="M17 3c-2 2-3 4-3 7s1 4 3 4v7"></path></svg></sc-if>
                         <sc-if value="{{row.isShop}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></sc-if>
                         <sc-if value="{{row.isCar}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16l1.5-5h11L19 16"></path><path d="M4 16h16v3H4z"></path><circle cx="7.5" cy="19.5" r="1"></circle><circle cx="16.5" cy="19.5" r="1"></circle></svg></sc-if>
                         <sc-if value="{{row.isMove}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3"></path><path d="M20 16H6l3 3"></path></svg></sc-if>
                         <sc-if value="{{row.isIncome}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M12 10v5M9.5 12.5L12 15l2.5-2.5"></path></svg></sc-if>
+                        <sc-if value="{{row.isCash}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg></sc-if>
+                        <sc-if value="{{row.flag}}" hint-placeholder-val="{{ false }}"><span aria-label="غير مسجّلة" style="position: absolute; top: -3px; left: -3px; width: 12px; height: 12px; border-radius: 6px; background: #BE3D48; box-shadow: 0 0 0 2px #FFFFFF"></span></sc-if>
                       </div>
                       <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
                         <span style="font-size: 14px; font-weight: 700">{{row.name}}</span>
                         <span style="font-size: 12px; color: #637570">{{row.sub}}</span>
                       </div>
                       <span dir="ltr" style="{{row.amountStyle}}">{{row.amount}}</span>
+                      <button type="button" class="m-press" onClick="{{row.dots}}" aria-label="{{row.dotsLabel}}" style="width: 36px; height: 48px; margin-inline-end: -10px; border: 0; padding: 0; background: transparent; color: #637570; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
                     </div>
                   </sc-for>
                 </div>
@@ -123,49 +132,87 @@ a{color:#08634F}a:hover{color:#064B40}
   </div>
 
   <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
-    <dc-import name="AskBar" context="العمليات" space="{{spaceName}}" hint-size="390px,844px"></dc-import>
+    <dc-import name="BottomBar" active="Operations" context="العمليات" space="{{spaceName}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import>
   </div>
 
-  <nav aria-label="التنقل" style="position: absolute; left: 20px; right: 20px; bottom: 14px; z-index: 5; height: 70px; border-radius: 26px; display: flex; align-items: center; justify-content: space-around; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -4px 6px rgba(255,255,255,0.85), 0 18px 44px rgba(29,54,53,0.18), 0 0 0 0.5px rgba(155,179,179,0.25)">
-    <a href="Main.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
-      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg></span>الرئيسية</a>
-    <a href="Operations.dc.html" aria-current="page" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #08634F; font-size: 11px; font-weight: 700">
-      <span style="width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></span>العمليات</a>
-    <a href="People.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
-      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17.5" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg></span>الأشخاص</a>
-    <a href="Investment.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
-      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg></span>الاستثمار</a>
-    <a href="More.dc.html" class="m-press" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; color: #637570; font-size: 11px">
-      <span style="width: 40px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></span>المزيد</a>
-  </nav>
+  <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 7">
+      <button type="button" class="o-veil" onClick="{{closeMenu}}" aria-label="إغلاق القايمة" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px) saturate(0.88); -webkit-backdrop-filter: blur(8px) saturate(0.88)"></button>
+      <div class="o-lift" aria-hidden="true" style="{{liftStyle}}">
+        <div style="{{M.tileStyle}}">
+                        <sc-if value="{{M.isFood}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8a3 3 0 0 0 3 3v7"></path><path d="M5 3v5M9 3v5"></path><path d="M17 3c-2 2-3 4-3 7s1 4 3 4v7"></path></svg></sc-if>
+                        <sc-if value="{{M.isShop}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></sc-if>
+                        <sc-if value="{{M.isCar}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16l1.5-5h11L19 16"></path><path d="M4 16h16v3H4z"></path><circle cx="7.5" cy="19.5" r="1"></circle><circle cx="16.5" cy="19.5" r="1"></circle></svg></sc-if>
+                        <sc-if value="{{M.isMove}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3"></path><path d="M20 16H6l3 3"></path></svg></sc-if>
+                        <sc-if value="{{M.isIncome}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M12 10v5M9.5 12.5L12 15l2.5-2.5"></path></svg></sc-if>
+                        <sc-if value="{{M.isCash}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg></sc-if>
+                        <sc-if value="{{M.flag}}" hint-placeholder-val="{{ false }}"><span aria-label="غير مسجّلة" style="position: absolute; top: -3px; left: -3px; width: 12px; height: 12px; border-radius: 6px; background: #BE3D48; box-shadow: 0 0 0 2px #FFFFFF"></span></sc-if>
+        </div>
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{M.name}}</span><span style="font-size: 12px; color: #637570">{{M.sub}}</span></div>
+        <span dir="ltr" style="{{M.amountStyle}}">{{M.amount}}</span>
+      </div>
+      <div role="menu" aria-label="إجراءات العملية" class="o-pop" style="{{menuStyle}}">
+        <span aria-hidden="true" style="position: absolute; top: 2px; left: 14%; width: 56%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span>
+        <sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="3">
+          <button type="button" role="menuitem" class="m-press" onClick="{{closeMenu}}" style="{{mi.style}}">{{mi.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { tab: 'ops' }; }
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'ops', menu: null };
+    this.setRoot = (el) => { this.root = el; };
+    this.hold = null;
+  }
+  componentWillUnmount() { this.holdCancel(); }
+  holdCancel() { if (this.hold && this.hold.t) clearTimeout(this.hold.t); this.hold = null; }
+  openMenu(row, el) {
+    let top = 300, h = 56;
+    if (el && this.root && el.getBoundingClientRect) {
+      const rr = this.root.getBoundingClientRect(), r = el.getBoundingClientRect();
+      const k = rr.height / (this.root.offsetHeight || 844) || 1;
+      top = (r.top - rr.top) / k; h = r.height / k;
+    }
+    this.setState({ menu: { row, top, h } });
+  }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const C = {
-      food: '#A36A21', shop: '#3866A7', car: '#4D747C', move: '#2469BA', income: '#13764D'
+      food: '#A36A21', shop: '#3866A7', car: '#4D747C', move: '#2469BA', income: '#13764D', cash: '#637570'
     };
-    const row = (kind, name, sub, amount, dir, last) => {
+    const self = this;
+    const row = (kind, name, sub, amount, dir, last, flag) => {
       const color = dir === 'out' ? '#BE3D48' : dir === 'in' ? '#13764D' : '#2469BA';
-      const tint = { food: 'rgba(163,106,33,0.12)', shop: 'rgba(56,102,167,0.12)', car: 'rgba(77,116,124,0.12)', move: 'rgba(36,105,186,0.12)', income: 'rgba(19,118,77,0.12)' }[kind];
-      return {
+      const tint = { food: 'rgba(163,106,33,0.12)', shop: 'rgba(56,102,167,0.12)', car: 'rgba(77,116,124,0.12)', move: 'rgba(36,105,186,0.12)', income: 'rgba(19,118,77,0.12)', cash: 'rgba(99,117,112,0.12)' }[kind];
+      const r = {
         name, sub,
         amount: (dir === 'out' ? '−' : dir === 'in' ? '+' : '') + amount,
-        isFood: kind === 'food', isShop: kind === 'shop', isCar: kind === 'car', isMove: kind === 'move', isIncome: kind === 'income',
+        isFood: kind === 'food', isShop: kind === 'shop', isCar: kind === 'car', isMove: kind === 'move', isIncome: kind === 'income', isCash: kind === 'cash', flag: !!flag,
+        dotsLabel: 'إجراءات ' + name,
+        dots: (e) => { self.openMenu(r, e && e.currentTarget && e.currentTarget.parentElement); },
+        down: (e) => {
+          self.holdCancel();
+          const el = e.currentTarget, x = e.clientX, y = e.clientY;
+          self.hold = { x, y, t: setTimeout(() => { self.hold = null; self.openMenu(r, el); }, 440) };
+        },
         rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
-        tileStyle: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + tint + '; color: ' + C[kind],
+        tileStyle: 'position: relative; width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + tint + '; color: ' + C[kind],
         amountStyle: 'font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + color
       };
+      return r;
     };
     const days = eg ? [
-      { label: 'اليوم', rows: [row('food', 'مطعم الفول', 'مطاعم وقهوة', '185.00', 'out'), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '2,000.00', 'move', true)] },
+      { label: 'النهارده', rows: [row('food', 'مطعم الفول', 'أكل وقهوة', '185.00', 'out'), row('cash', 'صرف كاش مش متسجّل', 'من عدّ الكاش · من غير تصنيف', '180.00', 'out', false, true), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '2,000.00', 'move', true)] },
       { label: 'أمس', rows: [row('shop', 'سوبرماركت الحي', 'بقالة وسوبرماركت', '1,240.50', 'out'), row('car', 'بنزينة', 'بنزين', '600.00', 'out', true)] }
     ] : [
-      { label: 'اليوم', rows: [row('food', 'مطعم الريف', 'مطاعم وقهوة', '42.00', 'out'), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '1,000.00', 'move', true)] },
+      { label: 'اليوم', rows: [row('food', 'مطعم الريف', 'مطاعم وقهوة', '42.00', 'out'), row('cash', 'صرف نقدي غير مسجّل', 'من عدّ النقد · بلا تصنيف', '60.00', 'out', false, true), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '1,000.00', 'move', true)] },
       { label: 'أمس', rows: [row('shop', 'سوبرماركت الحي', 'بقالة وسوبرماركت', '318.40', 'out'), row('car', 'محطة وقود', 'بنزين', '90.00', 'out'), row('income', 'راتب', 'دخل · مصدر الدخل الأساسي', '12,500.00', 'in', true)] }
     ];
     const tabDefs = [['ops', 'العمليات'], ['budgets', 'الميزانيات'], ['dues', 'المستحقات']];
@@ -180,7 +227,27 @@ class Component extends DCLogic {
       };
     });
     const list = st === 'عادي' || st === 'خطأ' || st === 'غير متاح';
+    const menu = this.state.menu;
+    const mTop = menu ? menu.top : 0, mH = menu ? Math.max(56, menu.h) : 56;
+    const MENU_H = 3 * 48 + 18;
+    const below = mTop + mH + 12 + MENU_H < 844 - 110;
+    const blank = { tileStyle: '', name: '', sub: '', amount: '', amountStyle: '', isFood: false, isShop: false, isCar: false, isMove: false, isIncome: false, isCash: false, flag: false };
     return {
+      setRoot: this.setRoot,
+      holdMove: (e) => { if (this.hold && Math.hypot(e.clientX - this.hold.x, e.clientY - this.hold.y) > 9) this.holdCancel(); },
+      holdCancel: () => this.holdCancel(),
+      noMenu: (e) => { if (e && e.preventDefault) e.preventDefault(); },
+      menuOpen: !!menu,
+      closeMenu: () => this.setState({ menu: null }),
+      M: menu ? menu.row : blank,
+      liftStyle: 'position: absolute; left: 20px; right: 20px; top: ' + mTop.toFixed(1) + 'px; min-height: ' + Math.max(64, mH).toFixed(0) + 'px; box-sizing: border-box; padding: 0 16px; border-radius: 22px; display: flex; align-items: center; gap: 12px; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(240,246,240,0.80)); box-shadow: inset 0 2px 0 #FFFFFF, inset 0 -3px 5px #FFFFFF, 0 22px 48px rgba(16,45,53,0.20), 0 0 0 1px rgba(255,255,255,0.9)',
+      menuStyle: 'position: absolute; left: 20px; width: 300px; ' + (below ? 'top: ' + (mTop + Math.max(64, mH) + 12).toFixed(1) : 'top: ' + (mTop - MENU_H - 12).toFixed(1)) + 'px; transform-origin: ' + (below ? 'top' : 'bottom') + ' left; border-radius: 28px; padding: 9px; box-sizing: border-box; display: flex; flex-direction: column; background: linear-gradient(125deg, rgba(239,249,239,0.86), rgba(231,241,227,0.66) 55%, rgba(205,232,210,0.76)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.75), inset -1px -1px 3px rgba(59,113,102,0.18), 0 18px 44px rgba(29,54,53,0.20)',
+      menuItems: [
+        { label: eg ? 'شوف التفاصيل' : 'عرض التفاصيل', style: 'height: 48px; border: 0; background: transparent; border-radius: 16px; text-align: right; padding: 0 14px; font: inherit; font-size: 15px; color: #193D33; cursor: pointer' },
+        { label: eg ? 'خصّص مبلغ لشخص' : 'تخصيص مبلغ لشخص', style: 'height: 48px; border: 0; background: transparent; border-radius: 16px; text-align: right; padding: 0 14px; font: inherit; font-size: 15px; color: #193D33; cursor: pointer' },
+        { label: eg ? 'كل الإجراءات ←' : 'كل الإجراءات ←', style: 'height: 48px; border: 0; border-radius: 18px; text-align: right; padding: 0 14px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(145deg, rgba(255,255,255,0.90), rgba(255,255,255,0.40)); box-shadow: inset 0 1px 0 #FFFFFF, inset 0 -2px 3px rgba(255,255,255,0.6), 0 2px 8px rgba(33,58,45,0.06)' }
+      ],
+      navStyle: this.props.navStyle ?? "زرار في النص",
       spaceName: (this.props.space ?? "السعودية") === "مصر" ? "مصر" : "السعودية",
       tabs,
       onOps: this.state.tab === 'ops',

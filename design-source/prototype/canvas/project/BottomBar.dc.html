@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الشريط السفلي — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.b-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.b-press:active{transform:scale(.97)}
+.b-veil{animation:b-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.b-sheet{animation:b-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.b-toast{animation:b-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+.b-hint{animation:b-nudge 2400ms cubic-bezier(.2,.7,.3,1) 600ms 2 both}
+.b-wave{animation:b-wave 700ms cubic-bezier(.2,.7,.3,1) infinite alternate;transform-origin:center}
+.b-wave:nth-child(2){animation-delay:120ms}.b-wave:nth-child(3){animation-delay:240ms}.b-wave:nth-child(4){animation-delay:360ms}.b-wave:nth-child(5){animation-delay:480ms}
+@keyframes b-fade{from{opacity:0}to{opacity:1}}
+@keyframes b-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes b-toast{0%{opacity:0;transform:translateY(8px)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@keyframes b-nudge{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+@keyframes b-wave{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){.b-press{transition:none}.b-press:active{transform:none}.b-sheet{animation:b-fade 150ms both}.b-hint,.b-wave{animation:none}.b-toast{animation:b-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; pointer-events: none; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+
+  <div style="position: absolute; inset: 0; pointer-events: none">
+    <dc-import name="AskBar" context="{{context}}" space="{{space}}" bottom="{{askBottom}}" add-in-bar="{{addInBar}}" on-add="{{openAdd}}" hint-size="390px,844px"></dc-import>
+  </div>
+
+  <sc-if value="{{showToast}}" hint-placeholder-val="{{ false }}">
+    <div style="{{toastWrap}}"><div class="b-toast" role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 22px; white-space: nowrap; font-size: 13px; font-weight: 700; color: #193D33; background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(236,242,238,0.86)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 1px 1px 2px #FFFFFF, 0 10px 24px rgba(29,54,53,0.16)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+      <span>{{toastText}}</span>
+    </div></div>
+  </sc-if>
+
+  <nav aria-label="التنقل" onPointerDown="{{navDown}}" onPointerMove="{{navMove}}" style="{{navStyleCss}}">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="5">
+      <sc-if value="{{it.isTab}}" hint-placeholder-val="{{ true }}">
+        <a href="{{it.href}}" aria-current="{{it.current}}" class="b-press" style="{{it.style}}">
+          <span style="{{it.lensStyle}}">
+            <sc-if value="{{it.i.home}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></sc-if>
+            <sc-if value="{{it.i.ops}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"></line><line x1="8" x2="21" y1="12" y2="12"></line><line x1="8" x2="21" y1="18" y2="18"></line><line x1="3" x2="3.01" y1="6" y2="6"></line><line x1="3" x2="3.01" y1="12" y2="12"></line><line x1="3" x2="3.01" y1="18" y2="18"></line></svg></sc-if>
+            <sc-if value="{{it.i.people}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></sc-if>
+            <sc-if value="{{it.i.invest}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
+            <sc-if value="{{it.i.more}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></sc-if>
+          </span>{{it.label}}</a>
+      </sc-if>
+      <sc-if value="{{it.isAdd}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="b-press" onClick="{{openAdd}}" aria-label="{{addLabel}}" style="width: 64px; height: 64px; margin-top: -26px; border: 0; padding: 0; border-radius: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(145deg, rgba(14,140,112,0.92), rgba(8,99,79,0.88) 55%, rgba(6,75,64,0.92)); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); box-shadow: inset 1px 2px 3px rgba(200,255,235,0.55), inset -1px -2px 4px rgba(0,47,48,0.35), 0 12px 26px rgba(8,99,79,0.35), 0 0 0 4px rgba(255,255,255,0.65)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+        </button>
+      </sc-if>
+    </sc-for>
+  </nav>
+
+  <sc-if value="{{swipeStyle}}" hint-placeholder-val="{{ false }}">
+    <button type="button" class="b-hint" onClick="{{openAdd}}" style="position: absolute; left: 60px; right: 60px; bottom: 4px; height: 24px; border: 0; padding: 0; background: transparent; cursor: pointer; pointer-events: auto; display: flex; align-items: center; justify-content: center; gap: 4px; font: inherit; font-size: 11px; font-weight: 700; color: #4F625C">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg>{{swipeText}}</button>
+  </sc-if>
+
+  <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9; pointer-events: auto">
+      <button type="button" class="b-veil" onClick="{{closeAdd}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px) saturate(0.88); -webkit-backdrop-filter: blur(8px) saturate(0.88)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{addTitle}}" class="b-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 32px 32px 0 0; padding: 10px 20px 24px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 -14px 40px rgba(29,54,53,0.16)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(99,117,112,0.35)"></span>
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{addTitle}}</h2>
+          <button type="button" class="b-press" onClick="{{listen}}" style="height: 40px; border: 0; padding: 0 14px; border-radius: 18px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: #DCEBD6">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>{{voiceLabel}}</button>
+        </div>
+
+        <sc-if value="{{listening}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; border-radius: 18px; background: #DCEBD6; color: #08634F; font-size: 14px; font-weight: 700">
+            <span aria-hidden="true" style="display: flex; align-items: center; gap: 3px; height: 24px"><span class="b-wave" style="width: 3px; height: 14px; border-radius: 2px; background: #08634F"></span><span class="b-wave" style="width: 3px; height: 22px; border-radius: 2px; background: #08634F"></span><span class="b-wave" style="width: 3px; height: 18px; border-radius: 2px; background: #08634F"></span><span class="b-wave" style="width: 3px; height: 24px; border-radius: 2px; background: #08634F"></span><span class="b-wave" style="width: 3px; height: 12px; border-radius: 2px; background: #08634F"></span></span>
+            {{listeningText}}
+          </div>
+        </sc-if>
+
+        <div role="tablist" aria-label="نوع العملية" style="display: flex; gap: 4px; padding: 4px; border-radius: 18px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 8px 18px rgba(29,54,53,0.08)">
+          <sc-for list="{{types}}" as="t" hint-placeholder-count="3">
+            <button type="button" role="tab" aria-selected="{{t.on}}" class="b-press" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="b-amount" style="font-size: 13px; font-weight: 700">المبلغ</label>
+          <div style="display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 16px; border-radius: 18px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+            <input id="b-amount" type="text" inputmode="decimal" dir="ltr" placeholder="0.00" value="{{amount}}" onChange="{{typeAmount}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 28px; font-weight: 700; color: {{amountColor}}; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+            <span style="font-size: 15px; color: #637570">{{currency}}</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 13px; font-weight: 700">التصنيف</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+              <button type="button" class="b-press" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="{{c.style}}"><span style="{{c.dot}}"></span>{{c.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+          <span style="font-size: 13px; font-weight: 700">{{walletLabel}}</span>
+          <div style="display: flex; gap: 6px">
+            <sc-for list="{{wallets}}" as="w" hint-placeholder-count="2">
+              <button type="button" class="b-press" aria-pressed="{{w.on}}" onClick="{{w.pick}}" style="{{w.style}}">{{w.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <button type="button" class="b-press" onClick="{{save}}" style="{{saveStyle}}">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["Main","Operations","People","Investment","More"],"default":"Main","section":"الحالة"},"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { addOpen: false, listening: false, type: 'out', amount: '', cat: null, wallet: 'bank', toast: null, toastKey: 0 };
+    this.timers = [];
+    this.swipe = null;
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  later(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  style() { return this.props.navStyle ?? 'زرار في النص'; }
+  toMinor(text) {
+    const t = String(text || '').replace(/[^0-9.]/g, '');
+    if (!t) return null;
+    const [w, f = ''] = t.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  fmt(minor) { const f = minor % 100; return String((minor - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  open() { this.setState({ addOpen: true, listening: false, type: 'out', amount: '', cat: null, wallet: 'bank' }); }
+  renderVals() {
+    const eg = this.eg();
+    const st = this.style();
+    const center = st === 'زرار في النص', swipe = st === 'اسحب لفوق', inBar = st === 'زرار جنب الشريط';
+    const active = this.props.active ?? 'Main';
+    const tabs = [
+      ['Main', 'home', 'الرئيسية'], ['Operations', 'ops', 'العمليات'], ['People', 'people', 'الأشخاص'], ['Investment', 'invest', 'الاستثمار'], ['More', 'more', 'المزيد']
+    ];
+    const tab = ([id, icon, label]) => {
+      const on = id === active;
+      return {
+        isTab: true, isAdd: false, href: id + '.dc.html', label, current: on ? 'page' : 'false', i: { [icon]: true },
+        style: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; font-size: 11px; color: ' + (on ? '#08634F; font-weight: 700' : '#637570'),
+        lensStyle: 'width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;' + (on ? ' background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)' : '')
+      };
+    };
+    const items = center
+      ? [tab(tabs[0]), tab(tabs[1]), { isTab: false, isAdd: true }, tab(tabs[2]), tab(tabs[3])]
+      : tabs.map(tab);
+    const navBottom = swipe ? 30 : 14;
+    const askBottom = navBottom + 70 + (center ? 18 : 4);
+    const minor = this.toMinor(this.state.amount);
+    const typeDefs = [['out', eg ? 'صرف' : 'صرف'], ['in', eg ? 'دخل' : 'دخل'], ['move', eg ? 'تحويل' : 'تحويل']];
+    const types = typeDefs.map(([id, label]) => {
+      const on = this.state.type === id;
+      return { label, on: on ? 'true' : 'false', pick: () => this.setState({ type: id }),
+        style: 'flex: 1 1 0; height: 40px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)' : 'color: #637570; background: transparent') };
+    });
+    const catDefs = this.state.type === 'in'
+      ? [['salary', 'راتب', '#13764D'], ['gift', eg ? 'هدية' : 'هدية', '#A55060'], ['other', 'أخرى', '#637570']]
+      : [['food', eg ? 'أكل وقهوة' : 'مطاعم وقهوة', '#A36A21'], ['shop', 'تسوق', '#3866A7'], ['car', 'مواصلات', '#4D747C'], ['gift', 'هدايا', '#A55060'], ['save', 'مدخرات', '#27785B'], ['other', 'أخرى', '#637570']];
+    const cats = catDefs.map(([id, label, color]) => {
+      const on = this.state.cat === id;
+      return { label, on: on ? 'true' : 'false', pick: () => this.setState({ cat: id }),
+        dot: 'width: 8px; height: 8px; border-radius: 4px; background: ' + color,
+        style: 'height: 40px; border: 0; padding: 0 14px; border-radius: 18px; display: flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; cursor: pointer; color: #193D33; ' + (on ? 'font-weight: 700; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') };
+    });
+    const wallets = [['bank', eg ? 'البنك' : 'البنك'], ['cash', eg ? 'كاش' : 'نقدًا']].map(([id, label]) => {
+      const on = this.state.wallet === id;
+      return { label, on: on ? 'true' : 'false', pick: () => this.setState({ wallet: id }),
+        style: 'height: 40px; border: 0; padding: 0 16px; border-radius: 18px; font: inherit; font-size: 13px; cursor: pointer; color: #193D33; ' + (on ? 'font-weight: 700; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') };
+    });
+    const ready = minor != null && minor > 0 && (this.state.type === 'move' || !!this.state.cat);
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const catLabel = (catDefs.find((c) => c[0] === this.state.cat) || [0, ''])[1];
+    return {
+      context: this.props.context ?? 'الرئيسية', space: eg ? 'مصر' : 'السعودية',
+      askBottom, addInBar: inBar,
+      openAdd: () => this.open(),
+      closeAdd: () => { this.timers.forEach(clearTimeout); this.timers = []; this.setState({ addOpen: false, listening: false }); },
+      items, swipeStyle: swipe,
+      swipeText: eg ? 'اسحب لفوق عشان تضيف عملية' : 'اسحب لأعلى لإضافة عملية جديدة',
+      addLabel: eg ? 'ضيف عملية' : 'أضف عملية',
+      navStyleCss: 'position: absolute; left: 20px; right: 20px; bottom: ' + navBottom + 'px; z-index: 5; height: 70px; border-radius: 26px; pointer-events: auto; touch-action: pan-x; display: flex; align-items: center; justify-content: space-around; background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(225,233,234,0.70) 50%, rgba(255,255,255,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 2px 3px #FFFFFF, inset 0 -4px 6px rgba(255,255,255,0.85), 0 18px 44px rgba(29,54,53,0.18), 0 0 0 0.5px rgba(155,179,179,0.25)',
+      navDown: (e) => { this.swipe = swipe ? { y: e.clientY } : null; },
+      navMove: (e) => { if (this.swipe && this.swipe.y - e.clientY > 36) { this.swipe = null; this.open(); } },
+      addOpen: this.state.addOpen,
+      addTitle: eg ? 'عملية جديدة' : 'عملية جديدة',
+      voiceLabel: eg ? 'بصوتك' : 'بصوتك',
+      listening: this.state.listening,
+      listeningText: eg ? 'بسمعك…' : 'أستمع إليك…',
+      listen: () => {
+        if (this.state.listening) return;
+        this.setState({ listening: true });
+        this.later(1600, () => this.setState({ listening: false, type: 'out', amount: eg ? '85' : '42', cat: 'food', wallet: 'cash' }));
+      },
+      types, cats, wallets,
+      walletLabel: eg ? 'منين؟' : 'من أين؟',
+      currency: cur,
+      amount: this.state.amount,
+      amountColor: this.state.type === 'out' ? '#BE3D48' : this.state.type === 'in' ? '#13764D' : '#2469BA',
+      typeAmount: (e) => this.setState({ amount: e.target.value }),
+      saveLabel: eg ? 'سجّل' : 'احفظ',
+      saveStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: ' + (ready ? 'pointer' : 'default') + '; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: ' + (ready ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)' : 'none') + '; opacity: ' + (ready ? 1 : 0.45),
+      save: () => {
+        if (!ready) return;
+        const sign = this.state.type === 'out' ? '−' : this.state.type === 'in' ? '+' : '';
+        const text = (eg ? 'اتسجّلت: ' : 'سُجّلت: ') + sign + this.fmt(minor) + ' ' + cur + (catLabel ? ' · ' + catLabel : '');
+        this.setState((s) => ({ addOpen: false, toast: text, toastKey: s.toastKey + 1 }));
+        this.later(2700, () => this.setState({ toast: null }));
+      },
+      showToast: !!this.state.toast,
+      toastText: this.state.toast || '',
+      toastWrap: "position: absolute; left: 0; right: 0; bottom: " + (askBottom + 58) + "px; z-index: 7; display: flex; justify-content: center; pointer-events: none"
+    };
+  }
+}
+</script>
+</body>
+</html>

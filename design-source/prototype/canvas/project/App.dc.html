@@ -23,32 +23,32 @@ body{margin:0}
 </helmet>
 <div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EFF3ED">
   <sc-if value="{{s.Main}}" hint-placeholder-val="{{ true }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Main" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Main" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.Operations}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Operations" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Operations" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.People}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="People" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="People" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.Investment}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Investment" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Investment" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.More}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="More" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="More" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.PersonProfile}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="PersonProfile" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="PersonProfile" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.OwedToYou}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OwedToYou" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OwedToYou" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.YouOwe}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="YouOwe" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="YouOwe" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   // التطبيق كله في لوحة واحدة: كل شاشة لوحة لوحدها، وهنا بنعرض واحدة بس ونمسك الروابط جواها.
   // رابط لتبويب = تبديل تبويب (الرجوع يتمسح) · رابط لشاشة تانية = دخول · رابط عليه data-back = رجوع للي قبله.
@@ -91,7 +91,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = {};
     this.SCREENS.forEach((k) => { s[k] = this.state.screen === k; });
-    return { s, anim: this.state.anim, setRoot: this.setRoot, space: this.props.space ?? 'السعودية' };
+    return { s, anim: this.state.anim, setRoot: this.setRoot, space: this.props.space ?? 'السعودية', navStyle: this.props.navStyle ?? 'زرار في النص' };
   }
 }
 </script>

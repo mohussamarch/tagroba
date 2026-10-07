@@ -2,25 +2,129 @@
   "v": 3,
   "attachments": {},
   "boards": {
-    "App.dc.html": {"h": 844, "is_interactive": true, "title": "جرّب البرنامج كله · App", "w": 390, "x": 2430, "y": 0},
-    "Main.dc.html": {"h": 844, "is_interactive": true, "title": "الرئيسية · Home", "w": 390, "x": 1880, "y": 0},
-    "Operations.dc.html": {"h": 844, "is_interactive": true, "title": "العمليات · Operations", "w": 390, "x": 1410, "y": 0},
-    "People.dc.html": {"h": 844, "is_interactive": true, "title": "الأشخاص · People", "w": 390, "x": 940, "y": 0},
-    "Investment.dc.html": {"h": 844, "is_interactive": true, "title": "الاستثمار · Investment", "w": 390, "x": 470, "y": 0},
-    "More.dc.html": {"h": 844, "is_interactive": true, "title": "المزيد · More", "w": 390, "x": 0, "y": 0},
-    "AskBar.dc.html": {"h": 844, "is_interactive": true, "title": "اسأل مصروفي · AskBar (مشترك)", "w": 390, "x": 1880, "y": 1270},
-    "PersonProfile.dc.html": {"h": 844, "is_interactive": true, "title": "ملف الشخص · PersonProfile", "w": 390, "x": 1410, "y": 1270},
-    "OwedToYou.dc.html": {"h": 844, "is_interactive": true, "title": "لك · OwedToYou", "w": 390, "x": 940, "y": 1270},
-    "YouOwe.dc.html": {"h": 844, "is_interactive": true, "title": "عليك · YouOwe", "w": 390, "x": 470, "y": 1270}
+    "App.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "جرّب البرنامج كله · App",
+      "w": 390,
+      "x": 2430,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الرئيسية · Home",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Operations.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "العمليات · Operations",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "People.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الأشخاص · People",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Investment.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الاستثمار · Investment",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "More.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "المزيد · More",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "AskBar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "اسأل مصروفي · AskBar (مشترك)",
+      "w": 390,
+      "x": 1880,
+      "y": 1270
+    },
+    "PersonProfile.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "ملف الشخص · PersonProfile",
+      "w": 390,
+      "x": 1410,
+      "y": 1270
+    },
+    "OwedToYou.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "لك · OwedToYou",
+      "w": 390,
+      "x": 940,
+      "y": 1270
+    },
+    "YouOwe.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "عليك · YouOwe",
+      "w": 390,
+      "x": 470,
+      "y": 1270
+    },
+    "BottomBar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الشريط السفلي · BottomBar (مشترك)",
+      "w": 390,
+      "x": 2350,
+      "y": 1270
+    }
   },
-  "createdOnFiles": {"at": "2026-10-07T20:33:28Z", "v": 1},
+  "createdOnFiles": {
+    "at": "2026-10-07T20:33:28Z",
+    "v": 1
+  },
   "designSystems": [
-    {"artifact": "https://claude.ai/code/artifact/d6ba566d-acad-4d3e-a90a-24776b37dbef", "copiedAt": "2026-10-07T20:33:28Z", "namespace": "masroufy", "title": "مصروفي — زجاج فاخر", "version": "1791404637-0e54"}
+    {
+      "artifact": "https://claude.ai/code/artifact/d6ba566d-acad-4d3e-a90a-24776b37dbef",
+      "copiedAt": "2026-10-07T20:33:28Z",
+      "namespace": "masroufy",
+      "title": "مصروفي — زجاج فاخر",
+      "version": "1791404637-0e54"
+    }
   ],
-  "launch": {"view": "focused", "file": "App.dc.html"},
+  "launch": {
+    "view": "focused",
+    "file": "App.dc.html"
+  },
   "notes": {
-    "shell": {"kind": "title1", "maxW": 2820, "text": "التطبيق كامل (يمين) · التبويبات الخمسة", "w": 240, "x": 0, "y": -300},
-    "subs": {"kind": "title1", "maxW": 2270, "text": "شاشات داخلية · الأشخاص والمساعد", "w": 240, "x": 0, "y": 970}
+    "shell": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "التطبيق كامل (يمين) · التبويبات الخمسة",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "subs": {
+      "kind": "title1",
+      "maxW": 2740,
+      "text": "شاشات داخلية · الأشخاص والمساعد",
+      "w": 240,
+      "x": 0,
+      "y": 970
+    }
   },
   "order": [
     "App.dc.html",
@@ -29,6 +133,7 @@
     "People.dc.html",
     "Investment.dc.html",
     "More.dc.html",
+    "BottomBar.dc.html",
     "AskBar.dc.html",
     "PersonProfile.dc.html",
     "OwedToYou.dc.html",
