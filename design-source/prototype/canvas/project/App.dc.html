@@ -19,6 +19,8 @@ body{margin:0}
 @keyframes a-pop{from{opacity:.5;transform:translateX(30%)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.a-tab,.a-push,.a-pop{animation:a-only 150ms both}}
 @keyframes a-only{from{opacity:0}to{opacity:1}}
+/* مقبض أي قايمة طالعة من تحت: مساحة لمس أكبر من غير ما شكله يكبر، والسحب بالصباع ما يعملش تمرير */
+[role="dialog"]>span[aria-hidden="true"][style*="align-self: center"]:first-child{box-sizing:content-box;padding:14px 64px;margin-top:-14px;margin-bottom:-14px;background-clip:content-box!important;touch-action:none;cursor:grab}
 </style>
 </helmet>
 <div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EFF3ED">
@@ -103,11 +105,36 @@ class Component extends DCLogic {
       if (keep) { try { const o = JSON.parse(keep); Object.keys(o).forEach((k) => window.sessionStorage.setItem(k, o[k])); } catch (err) {} }
       this.go(m[1], a.hasAttribute('data-back'));
     };
+    // سحب أي قايمة طالعة من تحت بالصباع من مقبضها (طلب المالك ٢٠٢٦-١٠-٠٨ «عمّم دي على أي قايمة منبثقة»):
+    // بتمشي مع الصباع، ولو نزلت كفاية بتتقفل (بنضغط الستارة اللي وراها)، وإلا بترجع مكانها
+    this.onDown = (e) => {
+      const t = e.target, dlg = t && t.closest ? t.closest('[role="dialog"]') : null;
+      if (!dlg || !this.root || t.closest('button, a, input, textarea, select, label')) return;
+      const r = dlg.getBoundingClientRect();
+      if (!/(^|;)\s*bottom:\s*0(px)?\s*(;|$)/.test(dlg.getAttribute('style') || '') || e.clientY - r.top > 44) return; // قايمة لازقة في تحت، والضغطة على المقبض (أول ٤٤ بكسل)
+      this.drag = { dlg, y0: e.clientY, dy: 0, h: r.height, veil: Array.prototype.find.call(dlg.parentElement.children, (x) => x !== dlg && x.tagName === 'BUTTON') };
+      dlg.style.animation = 'none'; dlg.style.transition = 'none';
+      try { dlg.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+    };
+    this.onMove = (e) => {
+      const d = this.drag; if (!d) return;
+      d.dy = e.clientY - d.y0;
+      d.dlg.style.transform = 'translateY(' + (d.dy > 0 ? d.dy : d.dy / 5) + 'px)';
+      if (d.veil) d.veil.style.opacity = String(Math.max(0.25, 1 - Math.max(0, d.dy) / d.h));
+    };
+    this.onUp = () => {
+      const d = this.drag; if (!d) return; this.drag = null;
+      d.dlg.style.transition = 'transform 240ms cubic-bezier(.2,.7,.3,1)';
+      if (d.veil && d.dy > Math.min(140, d.h * 0.3)) { d.dlg.style.transform = 'translateY(100%)'; setTimeout(() => d.veil.click(), 200); }
+      else { d.dlg.style.transform = 'none'; if (d.veil) d.veil.style.opacity = ''; }
+    };
+    const EV = [['click', 'onClick'], ['pointerdown', 'onDown'], ['pointermove', 'onMove'], ['pointerup', 'onUp'], ['pointercancel', 'onUp']];
     this.setRoot = (el) => {
       if (this.root === el) return;
-      if (this.root) this.root.removeEventListener('click', this.onClick, true);
+      if (this.root) EV.forEach(([n, h]) => this.root.removeEventListener(n, this[h], true));
       this.root = el;
-      if (el) el.addEventListener('click', this.onClick, true);
+      if (el) EV.forEach(([n, h]) => el.addEventListener(n, this[h], true));
     };
   }
   go(name, back) {
@@ -124,7 +151,7 @@ class Component extends DCLogic {
     }
   }
   componentDidUpdate(prev) { if (prev.start !== this.props.start) this.setState({ screen: this.startOf(this.props.start), stack: [], anim: 'a-tab' }); }
-  componentWillUnmount() { if (this.root) this.root.removeEventListener('click', this.onClick, true); }
+  componentWillUnmount() { if (this.root) ['click', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach((n) => this.root.removeEventListener(n, n === 'click' ? this.onClick : n === 'pointerdown' ? this.onDown : n === 'pointermove' ? this.onMove : this.onUp, true)); }
   renderVals() {
     const s = {};
     this.SCREENS.forEach((k) => { s[k] = this.state.screen === k; });

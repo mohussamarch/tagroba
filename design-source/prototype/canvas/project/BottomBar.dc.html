@@ -50,10 +50,11 @@ body{margin:0}
             <sc-if value="{{it.i.ops}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"></line><line x1="8" x2="21" y1="12" y2="12"></line><line x1="8" x2="21" y1="18" y2="18"></line><line x1="3" x2="3.01" y1="6" y2="6"></line><line x1="3" x2="3.01" y1="12" y2="12"></line><line x1="3" x2="3.01" y1="18" y2="18"></line></svg></sc-if>
             <sc-if value="{{it.i.people}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></sc-if>
             <sc-if value="{{it.i.invest}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
+            <sc-if value="{{it.dot}}" hint-placeholder-val="{{ false }}"><span aria-label="{{dotLabel}}" style="position: absolute; top: 1px; right: 5px; width: 9px; height: 9px; border-radius: 5px; background: #D93A47; box-shadow: 0 0 0 2px rgba(255,255,255,0.95)"></span></sc-if>
           </span>{{it.label}}</a>
       </sc-if>
       <sc-if value="{{it.isAdd}}" hint-placeholder-val="{{ false }}">
-        <button type="button" class="b-press" onClick="{{openAdd}}" aria-label="{{addLabel}}" style="width: 64px; height: 64px; margin-top: -26px; border: 0; padding: 0; border-radius: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(145deg, rgba(14,140,112,0.92), rgba(8,99,79,0.88) 55%, rgba(6,75,64,0.92)); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); box-shadow: inset 1px 2px 3px rgba(200,255,235,0.55), inset -1px -2px 4px rgba(0,47,48,0.35), 0 12px 26px rgba(8,99,79,0.35), 0 0 0 4px rgba(255,255,255,0.65)">
+        <button type="button" class="b-press" onClick="{{openAdd}}" aria-label="{{addLabel}}" style="width: 64px; height: 64px; margin-top: -26px; border: 0; padding: 0; border-radius: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0E8A6E 0%, #08634F 60%, #064B40 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -2px 4px rgba(0,40,32,0.25), 0 10px 22px rgba(6,75,64,0.30), 0 2px 5px rgba(6,75,64,0.22)">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
         </button>
       </sc-if>
@@ -146,6 +147,9 @@ class Component extends DCLogic {
     const st = this.style();
     const center = st === 'زرار في النص', swipe = st === 'اسحب لفوق', inBar = st === 'زرار جنب الشريط';
     const active = this.props.active ?? 'Main';
+    // نقطة حمرا على القسم اللي فيه إشعار (طلب المالك ٢٠٢٦-١٠-٠٨): العمليات (رسائل البنك وأسئلة المراجعة) · الأشخاص (فهد اتأخر) — «تعليم الكل كمقروء» بيشيلها
+    let read = false; try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; } catch (e) {}
+    const DOTS = { Operations: true, People: true };
     const tabs = [
       ['Main', 'home', 'الرئيسية'], ['Operations', 'ops', 'العمليات'], ['People', 'people', 'الأشخاص'], ['Investment', 'invest', 'الاستثمار']
     ];
@@ -154,7 +158,8 @@ class Component extends DCLogic {
       return {
         isTab: true, isAdd: false, href: id + '.dc.html', label, current: on ? 'page' : 'false', i: { [icon]: true },
         style: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; font-size: 11px; color: ' + (on ? '#08634F; font-weight: 700' : '#637570'),
-        lensStyle: 'width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;' + (on ? ' background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)' : '')
+        dot: !!DOTS[id] && !read,
+        lensStyle: 'position: relative; width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;' + (on ? ' background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)' : '')
       };
     };
     const items = center
@@ -187,6 +192,7 @@ class Component extends DCLogic {
     const cur = eg ? 'ج.م' : 'ر.س';
     const catLabel = (catDefs.find((c) => c[0] === this.state.cat) || [0, ''])[1];
     return {
+      dotLabel: eg ? "فيه جديد" : "فيه جديد",
       context: this.props.context ?? 'الرئيسية', space: eg ? 'مصر' : 'السعودية',
       askBottom, addInBar: inBar,
       openAdd: () => this.open(),

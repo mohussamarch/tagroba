@@ -713,6 +713,14 @@
       "y": 6100,
       "w": 350,
       "h": 60
+    },
+    "QuickAddStrip.dc.html": {
+      "is_interactive": true,
+      "title": "متوقعة الشهر ده · QuickAddStrip (قطعة فوق العمليات)",
+      "x": 2010,
+      "y": 4230,
+      "w": 350,
+      "h": 150
     }
   },
   "createdOnFiles": {
@@ -943,7 +951,8 @@
     "Advisor.dc.html",
     "SavingsGoals.dc.html",
     "GoalDetail.dc.html",
-    "EventAddSheet.dc.html"
+    "EventAddSheet.dc.html",
+    "QuickAddStrip.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

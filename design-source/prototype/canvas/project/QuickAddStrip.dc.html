@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إضافة سريعة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.q-row{scrollbar-width:none}.q-row::-webkit-scrollbar{display:none}
+.q-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),opacity 260ms cubic-bezier(.2,.7,.3,1)}.q-press:active{transform:scale(.97)}
+.q-veil{animation:q-fade 220ms cubic-bezier(.2,.7,.3,1) both}.q-up{animation:q-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.q-toast{animation:q-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes q-fade{from{opacity:0}to{opacity:1}}@keyframes q-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes q-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.q-press{transition:none}.q-press:active{transform:none}.q-up{animation:q-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <sc-if value="{{hasCards}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{why}}</span></span>
+      <div class="q-row" style="display: flex; gap: 10px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 14px; scroll-snap-type: x mandatory">
+        <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+          <button type="button" class="q-press" onClick="{{c.open}}" style="{{c.style}}">
+            <span aria-hidden="true" style="{{c.tile}}"><img src="{{c.icon}}" width="18" height="18" alt=""></span>
+            <span style="font-size: 14px; font-weight: 700; text-align: right">{{c.ask}}</span>
+            <span style="font-size: 12px; color: #637570; text-align: right">{{c.usual}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="q-veil" onClick="{{close}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="q-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <div style="display: flex; align-items: center; height: 56px; border-radius: 18px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <input type="text" inputmode="decimal" dir="ltr" aria-label="{{amountLabel}}" value="{{amt}}" onInput="{{typeAmt}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 24px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+          <span style="font-size: 14px; color: #637570">{{cur}}</span>
+        </div>
+        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{err}}</span>
+        <span style="font-size: 13px; font-weight: 700">{{fromLabel}}</span>
+        <div role="radiogroup" aria-label="{{fromLabel}}" style="display: flex; gap: 8px">
+          <sc-for list="{{froms}}" as="w" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{w.on}}" class="q-press" onClick="{{w.pick}}" style="{{w.style}}">{{w.label}}</button>
+          </sc-for>
+        </div>
+        <button type="button" class="q-press" onClick="{{save}}" style="height: 48px; margin-top: 4px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        <button type="button" class="q-press" onClick="{{skip}}" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #637570; cursor: pointer; background: transparent">{{skipLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; left: 0; right: 0; bottom: 120px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="q-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":150}}'>
+// شريط «إضافة سريعة» فوق العمليات (طلب المالك ٢٠٢٦-١٠-٠٨): حاجات بتتدفع كل شهر وما ظهرتش في الشهر ده لسه (مش بتيجي في رسالة بنك غالبًا)
+// الضغطة ⇒ لوحة صغيرة المبلغ فيها جاهز ⇒ «سجّلها» ⇒ بترجع للشاشة الأم onAdd({ kind, name, sub, amount }) · «مش الشهر ده» بيشيلها من غير ما يسجّل
+// مخترعة · بالوحدة الصغرى · الكهرباء هي نفس الفاتورة المتأخرة في المستحقات (٣ أكتوبر)
+const ICON = {
+  home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
+};
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { done: {}, open: null, amt: '', from: 'bank', err: '', toast: '' }; this.timers = []; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.forEach(clearTimeout); this.timers = [setTimeout(() => this.setState({ toast: '' }), 2700)]; this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  icon(name, col) { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICON[name] + '</svg>'); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state, k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    // [المعرّف، السؤال، الاسم في العمليات، المبلغ المعتاد، يوم الدفع المعتاد، الأيقونة، اللون، من فين عادةً]
+    const D = [
+      ['rent', 'دفعت الإيجار؟', 'الإيجار', 250000 * k, 1, 'home', '#2469BA', 'bank'],
+      ['elec', eg ? 'دفعت الكهربا؟' : 'دفعت الكهرباء؟', eg ? 'فاتورة الكهربا' : 'فاتورة الكهرباء', 38000 * k, 3, 'receipt', '#956000', 'bank'],
+      ['water', eg ? 'دفعت المية؟' : 'دفعت المياه؟', eg ? 'فاتورة المية' : 'فاتورة المياه', 9000 * k, 5, 'receipt', '#4D747C', 'cash'],
+      ['help', eg ? 'اديت الشغالة مرتبها؟' : 'دفعت راتب العاملة؟', eg ? 'مرتب الشغالة' : 'راتب العاملة', 150000 * k, 1, 'users', '#A55060', 'cash']
+    ];
+    const left = D.filter((d) => !s.done[d[0]]);
+    const cur0 = s.open ? D.find((d) => d[0] === s.open) : null;
+    const chip = (on) => 'flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const W = [['bank', eg ? 'البنك (الراجحي)' : 'البنك (الراجحي)'], ['cash', 'الكاش']];
+    if (eg) W[0][1] = 'البنك (الأهلي)';
+    return {
+      hasCards: left.length > 0,
+      title: eg ? 'متوقعة الشهر ده ولسه ما اتسجلتش' : 'متوقّعة هذا الشهر ولم تُسجَّل بعد',
+      why: eg ? 'بتدفعها كل شهر، وما لقيناهاش في أكتوبر — دوسة وتتسجّل.' : 'تدفعها كل شهر ولم نجدها في أكتوبر — بلمسة تُسجَّل.',
+      cards: left.map((d) => ({
+        ask: d[1], usual: (eg ? 'عادةً ' : 'عادةً ') + this.fmt(d[3]) + ' ' + cur + '، ' + (eg ? 'يوم ' : 'يوم ') + n(d[4]),
+        icon: this.icon(d[5], d[6]),
+        tile: 'width: 34px; height: 34px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: ' + d[6] + '1F',
+        style: 'flex: 0 0 auto; width: 168px; scroll-snap-align: start; border: 0; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; font: inherit; color: #193D33; cursor: pointer; text-align: right; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)',
+        open: () => this.setState({ open: d[0], amt: String((d[3] - (d[3] % 100)) / 100), from: d[7], err: '' })
+      })),
+      open: !!cur0, close: () => this.setState({ open: null }),
+      sheetTitle: cur0 ? cur0[1] : '',
+      sheetBody: cur0 ? (eg ? 'المبلغ المعتاد جاهز — غيّره لو اختلف الشهر ده.' : 'المبلغ المعتاد جاهز — عدّله إن اختلف هذا الشهر.') : '',
+      amountLabel: 'المبلغ', amt: s.amt, cur, err: s.err,
+      typeAmt: (e) => { if (e && e.target) this.setState({ amt: e.target.value, err: '' }); },
+      fromLabel: eg ? 'دفعتها منين؟' : 'من أين دفعتها؟',
+      froms: W.map(([id, label]) => ({ label, on: s.from === id ? 'true' : 'false', pick: () => this.setState({ from: id }), style: chip(s.from === id) })),
+      saveLabel: eg ? 'سجّلها' : 'سجّلها',
+      skipLabel: eg ? 'مش هدفعها الشهر ده' : 'لن أدفعها هذا الشهر',
+      save: () => {
+        if (!cur0) return;
+        const v = this.toMinor(s.amt);
+        if (v == null || v <= 0) { this.setState({ err: eg ? 'اكتب مبلغ أكبر من صفر.' : 'اكتب مبلغًا أكبر من صفر.' }); return; }
+        this.setState({ open: null, done: Object.assign({}, s.done, { [cur0[0]]: 'paid' }) });
+        const src = s.from === 'cash' ? 'الكاش' : W[0][1];
+        this.say((eg ? 'اتسجّل «' : 'سُجّل «') + cur0[2] + '» ' + this.fmt(v) + ' ' + cur + (eg ? ' من ' : ' من ') + src);
+        if (typeof this.props.onAdd === 'function') this.props.onAdd({ kind: s.from === 'cash' ? 'cash' : 'move', name: cur0[2], sub: (eg ? 'إضافة سريعة · من ' : 'إضافة سريعة · من ') + src, amount: this.fmt(v) });
+      },
+      skip: () => {
+        if (!cur0) return;
+        this.setState({ open: null, done: Object.assign({}, s.done, { [cur0[0]]: 'skip' }) });
+        this.say(eg ? 'تمام — مش هنسألك عنها تاني الشهر ده.' : 'حسنًا — لن نسألك عنها مجددًا هذا الشهر.');
+      },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
