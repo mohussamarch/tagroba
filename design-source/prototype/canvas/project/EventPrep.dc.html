@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تجهيزات الحدث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.ep-in{animation:ep-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.ep-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.ep-toast{animation:ep-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes ep-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes ep-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.ep-bar{transition:none}.m-press:active{transform:none}.ep-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="EventDetail.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <span style="display: flex; flex-direction: column; min-width: 0"><h1 style="margin: 0; font-size: 20px; font-weight: 700">{{title}}</h1><span style="font-size: 12px; color: #637570">{{eventLine}}</span></span>
+    </div>
+
+    <sc-if value="{{blocked}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{blockedTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{blockedBody}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{open}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 10px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+          <span style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 12px; color: #DCEBD6">{{spentLabel}}</span><span dir="ltr" style="text-align: right; font-size: 22px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums">{{spentText}}</span></span>
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 12px; color: #DCEBD6">{{plannedLabel}}</span><span dir="ltr" style="{{plannedStyle}}">{{plannedText}}</span><span style="font-size: 11px; color: #DCEBD6">{{plannedSub}}</span></span>
+          </span>
+          <span style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #DCEBD6"><span>{{leftLine}}</span><span>{{looseLine}}</span></span>
+        </div>
+
+        <sc-if value="{{suggesting}}" hint-placeholder-val="{{ false }}">
+          <div class="ep-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="font-size: 15px; font-weight: 700">{{sugTitle}}</span>
+            <span style="font-size: 12px; color: #637570">{{sugBody}}</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{sugs}}" as="sg" hint-placeholder-count="6">
+                <button type="button" aria-pressed="{{sg.on}}" class="m-press" onClick="{{sg.pick}}" style="{{sg.style}}">{{sg.label}}</button>
+              </sc-for>
+            </div>
+            <button type="button" class="m-press" onClick="{{saveSugs}}" disabled="{{noSugs}}" style="{{saveSugsStyle}}">{{saveSugsLabel}}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{itemsTitle}}</h2>
+            <div style="border-radius: 22px; padding: 4px 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+              <sc-for list="{{items}}" as="it" hint-placeholder-count="4">
+                <div class="{{it.cls}}" style="{{it.wrapStyle}}">
+                  <div style="display: flex; align-items: center; gap: 8px; min-height: 56px">
+                    <button type="button" role="checkbox" aria-checked="{{it.doneAttr}}" aria-label="{{it.doneLabel}}" class="m-press" onClick="{{it.toggleDone}}" style="{{it.checkStyle}}"><sc-if value="{{it.done}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if></button>
+                    <button type="button" class="m-press" onClick="{{it.toggleEdit}}" aria-expanded="{{it.editAttr}}" style="flex: 1 1 auto; min-width: 0; min-height: 48px; border: 0; padding: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; display: flex; flex-direction: column; justify-content: center; gap: 2px">
+                      <span style="{{it.nameStyle}}">{{it.name}}</span>
+                      <span style="font-size: 12px; color: #637570">{{it.sub}}</span>
+                      <sc-if value="{{it.hasBar}}" hint-placeholder-val="{{ true }}"><span style="display: block; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="ep-bar" style="{{it.bar}}"></span></span></sc-if>
+                    </button>
+                  </div>
+                  <sc-if value="{{it.editing}}" hint-placeholder-val="{{ false }}">
+                    <div class="ep-in" style="display: flex; flex-direction: column; gap: 8px; padding: 0 0 12px">
+                      <div style="display: flex; gap: 8px; align-items: center">
+                        <input type="text" inputmode="decimal" dir="ltr" aria-label="{{plannedInputLabel}}" placeholder="{{plannedInputLabel}}" value="{{editAmt}}" onInput="{{typeEditAmt}}" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; text-align: right; font-variant-numeric: tabular-nums; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+                        <button type="button" class="m-press" onClick="{{it.saveAmt}}" style="height: 48px; padding: 0 14px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: #08634F">{{saveAmtLabel}}</button>
+                      </div>
+                      <div style="display: flex; gap: 8px">
+                        <button type="button" class="m-press" onClick="{{it.clearAmt}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{clearAmtLabel}}</button>
+                        <button type="button" class="m-press" onClick="{{it.remove}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #BE3D48; cursor: pointer; background: rgba(190,61,72,0.08)">{{removeLabel}}</button>
+                      </div>
+                      <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{editErr}}</span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; gap: 8px; align-items: center">
+          <input type="text" aria-label="{{newLabel}}" placeholder="{{newLabel}}" value="{{newName}}" onInput="{{typeNew}}" maxlength="60" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <button type="button" class="m-press" onClick="{{addItem}}" style="height: 48px; padding: 0 16px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{addLabel}}</button>
+        </div>
+        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 16px; margin-top: -8px">{{newErr}}</span>
+
+        <sc-if value="{{hasLoose}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{looseTitle}}</h2>
+            <sc-for list="{{loose}}" as="ls" hint-placeholder-count="1">
+              <div class="ep-in" style="border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
+                <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{ls.name}}</span><span style="font-size: 12px; color: #6B4600">{{ls.sub}}</span></span><span dir="ltr" style="font-size: 15px; font-weight: 700; white-space: nowrap; color: #BE3D48; font-variant-numeric: tabular-nums">{{ls.amount}}</span></span>
+                <span style="font-size: 12px; font-weight: 700; color: #956000">{{assignLabel}}</span>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                  <sc-for list="{{ls.targets}}" as="tg" hint-placeholder-count="3">
+                    <button type="button" class="m-press" onClick="{{tg.pick}}" style="height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.75)">{{tg.label}}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="ep-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"event":{"editor":"enum","options":["حسب اللي اتداس","رحلة العُلا","زواج خالد","عزاء والد سالم"],"default":"حسب اللي اتداس","section":"الحدث"},"state":{"editor":"enum","options":["عادي","فاضي","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.timers = []; this.state = this.fresh(props); }
+  componentDidUpdate(prev) { if (prev.event !== this.props.event || prev.state !== this.props.state || prev.space !== this.props.space) this.setState(this.fresh(this.props)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  pick(props) {
+    const map = { 'رحلة العُلا': 'trip', 'زواج خالد': 'khaled', 'عزاء والد سالم': 'salem' };
+    if (map[props.event]) return map[props.event];
+    let st = null;
+    try { st = window.sessionStorage.getItem('masroufy-event'); } catch (e) {}
+    return ['trip', 'khaled', 'salem', 'jood', 'eid'].indexOf(st) >= 0 ? st : 'trip';
+  }
+  // مخترعة · بالوحدة الصغرى (السعودية). البنود المقترحة = أسامي بس من غير مبالغ (§65 — نفس قايمة كوتلن لكل نوع)
+  data(eg) {
+    return {
+      trip: { name: eg ? 'رحلة دهب' : 'رحلة العُلا', line: eg ? 'سفر، ١٤ نوفمبر، بعد ٣٨ يوم' : 'سفر، ١٤ نوفمبر، بعد ٣٨ يومًا', sugs: ['التذاكر', 'السكن', 'التأشيرة', 'المواصلات هناك', 'الأكل', 'الهدايا'],
+        items: [['التذاكر', 180000, true], ['السكن', 240000, false], ['المواصلات هناك', null, false], ['الأكل', null, false]], links: [['حجز طيران', '٢٠ سبتمبر', 180000, 0], ['عربون فندق', '٢٢ سبتمبر', 55000, null]] },
+      khaled: { name: 'زواج خالد', line: eg ? 'فرح خالد، ١٨ أكتوبر، بعد ١١ يوم' : 'زواج خالد، ١٨ أكتوبر، بعد ١١ يومًا', sugs: ['القاعة', 'اللبس', 'الأكل والضيافة', 'التصوير', 'الدعوات', eg ? 'الكوافير' : 'التجميل', 'شهر العسل'],
+        items: [['اللبس', 90000, false], ['المواصلات', null, false]], links: [[eg ? 'محل بدل رجالي (٥٠٪)' : 'محل الأزياء الرجالية (٥٠٪)', '٤ أكتوبر', 45000, 0]] },
+      salem: { name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', line: eg ? 'عزا، ٣ أغسطس' : 'عزاء، ٣ أغسطس', blocked: 'condolence' },
+      jood: { name: 'ولادة جود', line: eg ? 'ولادة، ٢٨ سبتمبر' : 'ولادة، ٢٨ سبتمبر', blocked: 'past' },
+      eid: { name: 'عيد الفطر', line: eg ? 'عيد، ٢٠ مارس' : 'عيد، ٢٠ مارس', blocked: 'past' }
+    };
+  }
+  fresh(props) {
+    const eg = (props.space ?? 'السعودية') === 'مصر', k = eg ? 3 : 1, st = props.state ?? 'عادي';
+    const key = this.pick(props), d = this.data(eg)[key];
+    if (d.blocked) return { key, items: [], links: [], sugOn: {}, editing: null, editAmt: '', editErr: '', newName: '', newErr: '', toast: '' };
+    const items = st === 'فاضي' ? [] : d.items.map(([name, planned, done], i) => ({ id: 'i' + i, name, planned: st === 'غير متاح' || planned == null ? null : planned * k, done: st === 'غير متاح' ? false : done }));
+    const links = d.links.map(([name, when, amt, item], i) => ({ id: 'l' + i, name, when, amt: amt * k, item: st === 'فاضي' || item == null ? null : 'i' + item }));
+    return { key, items, links, sugOn: {}, editing: null, editAmt: '', editErr: '', newName: '', newErr: '', toast: '', seq: items.length };
+  }
+  renderVals() {
+    const eg = this.eg(), cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const ITEMS = eg ? ['بند واحد', 'بندين', 'بنود', 'بند'] : ['بند واحد', 'بندان', 'بنود', 'بندًا'];
+    const s = this.state, d = this.data(eg)[s.key];
+    const ids = s.items.map((x) => x.id);
+    const spentOf = (id) => s.links.filter((l) => l.item === id).reduce((t, l) => t + l.amt, 0);
+    const spent = s.links.reduce((t, l) => t + l.amt, 0);
+    const loose = s.links.filter((l) => !l.item || ids.indexOf(l.item) < 0);
+    const priced = s.items.filter((x) => x.planned != null);
+    const planned = priced.length ? priced.reduce((t, x) => t + x.planned, 0) : null;
+    const unpriced = s.items.length - priced.length;
+    const left = s.items.filter((x) => !x.done).length;
+    const setItem = (id, patch) => this.setState({ items: s.items.map((x) => (x.id === id ? Object.assign({}, x, patch) : x)) });
+    const sugNames = d.sugs || [];
+    const chosen = sugNames.filter((x) => s.sugOn[x]);
+    const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+    return {
+      title: (eg ? 'تجهيزات ' : 'تجهيزات ') + d.name, eventLine: d.line,
+      blocked: !!d.blocked, open: !d.blocked,
+      blockedTitle: d.blocked === 'condolence' ? (eg ? 'العزا مالوش تجهيزات' : 'لا تجهيزات للعزاء') : (eg ? 'الحدث ده عدّى' : 'انتهى هذا الحدث'),
+      blockedBody: d.blocked === 'condolence' ? (eg ? 'مصروفه ونقوطه في صفحة الحدث.' : 'مصروفه وما قدّمته في صفحة الحدث.') : (eg ? 'التجهيزات للأحداث الجاية بس.' : 'التجهيزات للأحداث القادمة فقط.'),
+      spentLabel: eg ? 'اتصرف' : 'المصروف', spentText: this.fmt(spent) + ' ' + cur,
+      plannedLabel: eg ? 'المخطط' : 'المخطط',
+      plannedText: planned == null ? 'غير متاح' : this.fmt(planned) + ' ' + cur,
+      plannedStyle: 'text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; ' + (planned == null ? 'font-size: 16px; font-weight: 700; color: #DCEBD6; padding-top: 4px' : 'font-size: 22px; font-weight: 700'),
+      plannedSub: !s.items.length ? (eg ? 'مفيش بنود لسه' : 'لا بنود بعد') : planned == null ? (eg ? 'ولا بند ليه مبلغ' : 'لا مبلغ لأي بند') : unpriced ? '+ ' + plural(unpriced, ITEMS) + (eg ? ' من غير مبلغ' : ' بلا مبلغ') : (eg ? 'كل البنود ليها مبلغ' : 'كل البنود لها مبلغ'),
+      leftLine: s.items.length ? (left ? (eg ? 'فاضل ' : 'باقٍ ') + plural(left, ITEMS) : (eg ? 'كل البنود خلصت ✓' : 'اكتملت كل البنود ✓')) : '',
+      looseLine: loose.length ? (eg ? 'مش على بند: ' : 'ليس على بند: ') + this.fmt(loose.reduce((t, l) => t + l.amt, 0)) : '',
+      suggesting: !s.items.length && sugNames.length > 0,
+      sugTitle: eg ? 'بنود مقترحة' : 'بنود مقترحة',
+      sugBody: eg ? 'اختار اللي يخصك — من غير مبالغ، وإنت تحط المبلغ بعدين لو حبيت.' : 'اختر ما يخصك — بلا مبالغ، وتضيف المبلغ لاحقًا إن شئت.',
+      sugs: sugNames.map((label) => ({ label, on: s.sugOn[label] ? 'true' : 'false', pick: () => this.setState({ sugOn: Object.assign({}, s.sugOn, { [label]: !s.sugOn[label] }) }),
+        style: 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.sugOn[label] ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+      noSugs: !chosen.length,
+      saveSugsLabel: chosen.length ? (eg ? 'احفظ ' : 'احفظ ') + plural(chosen.length, ITEMS) : (eg ? 'اختار بند واحد على الأقل' : 'اختر بندًا واحدًا على الأقل'),
+      saveSugsStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (chosen.length ? 'cursor: pointer' : 'opacity: 0.45; cursor: default'),
+      saveSugs: () => {
+        if (!chosen.length) return;
+        const seq = s.seq || 0;
+        this.setState({ items: chosen.map((name, i) => ({ id: 'n' + (seq + i), name, planned: null, done: false, fresh: true })), seq: seq + chosen.length, sugOn: {} });
+        this.say((eg ? 'اتحفظ ' : 'حُفظ ') + plural(chosen.length, ITEMS) + (eg ? ' من غير مبالغ' : ' بلا مبالغ'));
+      },
+      hasItems: s.items.length > 0,
+      itemsTitle: (eg ? 'البنود' : 'البنود') + ' (' + n(s.items.length) + ')',
+      items: s.items.map((x, i) => {
+        const sp = spentOf(x.id), pct = x.planned ? Math.min(100, Math.floor((sp * 100) / x.planned)) : 0, over = x.planned != null && sp > x.planned;
+        const ed = s.editing === x.id;
+        return {
+          name: x.name, done: x.done, doneAttr: x.done ? 'true' : 'false', editing: ed, editAttr: ed ? 'true' : 'false',
+          doneLabel: (eg ? 'خلص: ' : 'اكتمل: ') + x.name,
+          sub: (x.planned != null ? (eg ? 'مخطط ' : 'مخطط ') + this.fmt(x.planned) : (eg ? 'من غير مبلغ' : 'بلا مبلغ')) + '، ' + (sp ? (eg ? 'اتصرف ' : 'صُرف ') + this.fmt(sp) : (eg ? 'لسه ما اتصرفش' : 'لم يُصرف بعد')) + (over ? (eg ? ' — زيادة' : ' — تجاوز') : ''),
+          hasBar: x.planned != null,
+          bar: 'display: block; height: 6px; border-radius: 3px; width: ' + pct + '%; background: ' + (over ? '#BE3D48' : '#27785B'),
+          nameStyle: 'font-size: 15px; font-weight: 700; ' + (x.done ? 'color: #637570; text-decoration: line-through' : ''),
+          checkStyle: 'width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; ' + (x.done ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)'),
+          cls: x.fresh ? 'ep-in' : '', wrapStyle: i === s.items.length - 1 ? '' : 'border-bottom: 1px solid rgba(204,216,204,0.55)',
+          toggleDone: () => setItem(x.id, { done: !x.done }),
+          toggleEdit: () => this.setState({ editing: ed ? null : x.id, editAmt: x.planned != null ? this.fmt(x.planned).replace(/,/g, '') : '', editErr: '' }),
+          saveAmt: () => {
+            const v = this.toMinor(s.editAmt);
+            if (v == null || v <= 0) { this.setState({ editErr: eg ? 'مبلغ البند لازم يبقى أكبر من صفر — أو سيبه من غير مبلغ.' : 'يجب أن يكون المبلغ أكبر من صفر — أو اتركه بلا مبلغ.' }); return; }
+            this.setState({ items: s.items.map((y) => (y.id === x.id ? Object.assign({}, y, { planned: v }) : y)), editing: null, editErr: '' });
+          },
+          clearAmt: () => this.setState({ items: s.items.map((y) => (y.id === x.id ? Object.assign({}, y, { planned: null }) : y)), editing: null, editErr: '' }),
+          remove: () => { this.setState({ items: s.items.filter((y) => y.id !== x.id), editing: null }); this.say(sp ? (eg ? 'البند اتشال — ومصروفه فضل على الحدث من غير بند' : 'حُذف البند — وبقي مصروفه على الحدث بلا بند') : (eg ? 'البند اتشال' : 'حُذف البند')); }
+        };
+      }),
+      plannedInputLabel: eg ? 'المبلغ المخطط' : 'المبلغ المخطط', editAmt: s.editAmt, editErr: s.editErr,
+      typeEditAmt: (e) => this.setState({ editAmt: e.target.value, editErr: '' }),
+      saveAmtLabel: eg ? 'احفظ' : 'احفظ', clearAmtLabel: eg ? 'من غير مبلغ' : 'بلا مبلغ', removeLabel: eg ? 'شيل البند' : 'احذف البند',
+      newLabel: eg ? 'بند جديد' : 'بند جديد', newName: s.newName, addLabel: eg ? 'ضيف' : 'أضف', newErr: s.newErr,
+      typeNew: (e) => this.setState({ newName: e.target.value, newErr: '' }),
+      addItem: () => {
+        const name = norm(s.newName);
+        if (!name || name.length > 60) { this.setState({ newErr: eg ? 'اسم البند لازم يبقى من حرف لـ٦٠ حرف.' : 'اسم البند من حرف إلى ٦٠ حرفًا.' }); return; }
+        if (s.items.some((x) => norm(x.name) === name)) { this.setState({ newErr: eg ? 'فيه بند بنفس الاسم في الحدث ده.' : 'يوجد بند بالاسم نفسه في هذا الحدث.' }); return; }
+        const seq = s.seq || 0;
+        this.setState({ items: s.items.concat([{ id: 'n' + seq, name, planned: null, done: false, fresh: true }]), seq: seq + 1, newName: '', newErr: '' });
+      },
+      hasLoose: loose.length > 0 && s.items.length > 0,
+      looseTitle: eg ? 'مصروف مش على بند' : 'مصروف ليس على بند',
+      assignLabel: eg ? 'حطّه على:' : 'وزّعه على:',
+      loose: loose.map((l) => ({
+        name: l.name, sub: l.when, amount: '−' + this.fmt(l.amt) + ' ' + cur,
+        targets: s.items.map((x) => ({ label: x.name, pick: () => { this.setState({ links: s.links.map((y) => (y.id === l.id ? Object.assign({}, y, { item: x.id }) : y)) }); this.say((eg ? 'اتحط على «' : 'وُزّع على «') + x.name + '»'); } }))
+      })),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -34,7 +34,7 @@ body{margin:0}
     </sc-if>
 
     <sc-for list="{{roscas}}" as="r" hint-placeholder-count="2">
-      <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <a href="RoscaDetail.dc.html" data-keep="{{r.keep}}" class="m-press" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09); color: inherit; text-decoration: none">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
           <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.terms}}</span></span>
           <span style="{{r.stageStyle}}">{{r.stage}}</span>
@@ -49,11 +49,10 @@ body{margin:0}
           <span style="display: flex; flex-direction: column; padding: 8px 10px; border-radius: 14px; background: rgba(25,61,51,0.04)"><span style="font-size: 11px; color: #637570">{{gainLabel}}</span><span style="{{r.gainStyle}}">{{r.gain}}</span></span>
         </div>
         <span style="{{r.posStyle}}">{{r.position}}</span>
-      </div>
+      </a>
     </sc-for>
 
-    <button type="button" disabled="{{true}}" aria-describedby="rosca-soon" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); opacity: 0.45; cursor: default">{{newLabel}}</button>
-    <span id="rosca-soon" style="font-size: 12px; color: #637570; text-align: center">{{soon}}</span>
+    <a href="RoscaWizard.dc.html" class="m-press" style="height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #FFFFFF; text-decoration: none; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{newLabel}}</a>
   </div>
 </div>
 </x-dc>
@@ -68,8 +67,8 @@ class Component extends DCLogic {
     const na = st === 'غير متاح';
     // مخترعة. القسط والأدوار بالوحدة الصغرى
     const defs = [
-      { name: eg ? 'جمعية العيلة' : 'جمعية العائلة', turns: 10, inst: 100000, paidN: 4, myTurn: na ? null : 6, gotN: 0, stage: 'save' },
-      { name: eg ? 'جمعية الشغل' : 'جمعية العمل', turns: 6, inst: 50000, paidN: 6, myTurn: 2, gotN: 1, stage: 'done' }
+      { key: 'family', name: eg ? 'جمعية العيلة' : 'جمعية العائلة', turns: 10, inst: 100000, paidN: 4, myTurn: na ? null : 6, gotN: 0, stage: 'save' },
+      { key: 'work', name: eg ? 'جمعية الشغل' : 'جمعية العمل', turns: 6, inst: 50000, paidN: 6, myTurn: 2, gotN: 1, stage: 'done' }
     ];
     const S = {
       save: { label: eg ? 'ادخار' : 'ادخار', style: 'color: #08634F; background: #DCEBD6' },
@@ -82,6 +81,7 @@ class Component extends DCLogic {
       const pct = Math.floor((d.paidN * 100) / d.turns);
       const pos = paid - got;
       return {
+        keep: JSON.stringify({ 'masroufy-rosca': d.key }),
         name: d.name,
         terms: n(d.turns) + (eg ? ' أدوار · ' : ' أدوار · ') + this.fmt(d.inst * k) + ' ' + cur + (eg ? ' كل شهر' : ' شهريًا'),
         stage: S[d.stage].label,
@@ -104,7 +104,7 @@ class Component extends DCLogic {
       roscas,
       paidLabel: 'دفعت', gotLabel: eg ? 'قبضت' : 'قبضت', gainLabel: eg ? 'المكسب' : 'الربح',
       newLabel: eg ? 'جمعية جديدة' : 'جمعية جديدة',
-      soon: eg ? 'معالج الجمعية (٨ أسئلة) بيتبني في الخطوة الجاية.' : 'معالج الجمعية (٨ أسئلة) يُبنى في الخطوة القادمة.'
+      soon: ''
     };
   }
 }

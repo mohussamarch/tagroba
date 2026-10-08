@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل مشروع — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.d-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.d-press:active{transform:scale(.97)}
+.d-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}
+.d-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.d-in{animation:d-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes d-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.d-veil{animation:d-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.d-up{animation:d-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+@keyframes d-fade{from{opacity:0}to{opacity:1}}
+@keyframes d-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.d-press,.d-track,.d-knob{transition:none}.d-press:active{transform:none}.d-in{animation:none}.d-up{animation:d-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+    <span style="font-size: 14px; color: #DCEBD6">{{question}}</span>
+    <span dir="ltr" style="text-align: right; font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums">{{big}}</span>
+    <span style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <span style="border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; background: rgba(255,255,255,0.12)"><span style="font-size: 11px; color: #DCEBD6">{{outLabel}}</span><span dir="ltr" style="text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{outText}}</span></span>
+      <span style="border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; background: rgba(255,255,255,0.12)"><span style="font-size: 11px; color: #DCEBD6">{{inLabel}}</span><span dir="ltr" style="text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{inText}}</span></span>
+    </span>
+    <span style="font-size: 12px; color: #DCEBD6">{{formula}}</span>
+    <sc-if value="{{approx}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #6B4600; background: #FBF0DD">{{approxText}}</span></sc-if>
+  </div>
+
+  <div role="tablist" style="display: flex; gap: 4px; padding: 4px; border-radius: 18px; background: rgba(255,255,255,0.6); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05)">
+    <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
+      <button type="button" role="tab" aria-selected="{{tb.on}}" class="d-press" onClick="{{tb.pick}}" style="{{tb.style}}">{{tb.label}}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{showOps}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <sc-if value="{{noOps}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 8px; text-align: center">
+          <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+          <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{noOpsTitle}}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasOps}}" hint-placeholder-val="{{ true }}">
+        <div style="border-radius: 22px; padding: 4px 6px 4px 14px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{ops}}" as="o" hint-placeholder-count="3">
+            <div style="{{o.row}}">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{o.name}}</span><span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #637570"><span>{{o.date}}</span><span style="{{o.srcStyle}}">{{o.src}}</span><sc-if value="{{o.unsure}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #956000; background: #FBF0DD">{{unsureLabel}}</span></sc-if></span></span>
+              <span dir="ltr" style="{{o.amtStyle}}">{{o.amt}}</span>
+              <button type="button" class="d-press" onClick="{{o.remove}}" aria-label="{{o.removeLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasExcluded}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{excludedLine}}</span></sc-if>
+      <span style="border-radius: 16px; padding: 10px 12px; font-size: 12px; color: #637570; background: rgba(25,61,51,0.04)">{{addHint}}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showRules}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; color: #637570">{{rulesIntro}}</span>
+      <sc-if value="{{hasRules}}" hint-placeholder-val="{{ true }}">
+        <div style="border-radius: 22px; padding: 4px 6px 4px 14px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{rules}}" as="ru" hint-placeholder-count="2">
+            <div style="{{ru.row}}">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">{{ru.mode}}</span><span style="font-size: 15px; font-weight: 700">{{ru.text}}</span></span><span style="{{ru.dirStyle}}">{{ru.dir}}</span></span>
+              <button type="button" role="switch" aria-checked="{{ru.checked}}" aria-label="{{ru.label}}" onClick="{{ru.toggle}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="d-track" style="{{ru.track}}"><span class="d-knob" style="{{ru.knob}}"></span></span></button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <button type="button" class="d-press" onClick="{{openRule}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(8,99,79,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>{{newRuleLabel}}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="d-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="d-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{sheetTitle}}</h2>
+        <sc-if value="{{stepForm}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <label for="d-text" style="font-size: 13px; font-weight: 700">{{textLabel}}</label>
+            <input id="d-text" type="text" value="{{fText}}" onInput="{{typeText}}" maxlength="60" placeholder="{{textPh}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; color: #193D33; outline: none; background: rgba(25,61,51,0.05)">
+            <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{err}}</span></sc-if>
+            <sc-for list="{{segs}}" as="sg" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 13px; font-weight: 700">{{sg.label}}</span>
+                <div role="radiogroup" aria-label="{{sg.label}}" style="display: flex; gap: 4px; padding: 4px; border-radius: 16px; background: rgba(25,61,51,0.06)">
+                  <sc-for list="{{sg.opts}}" as="so" hint-placeholder-count="3">
+                    <button type="button" role="radio" aria-checked="{{so.on}}" class="d-press" onClick="{{so.pick}}" style="{{so.style}}">{{so.label}}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <button type="button" class="d-press" onClick="{{next}}" disabled="{{cantNext}}" style="{{nextStyle}}">{{nextLabel}}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{stepOld}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 14px">{{oldBody}}</span>
+            <sc-for list="{{matches}}" as="mt" hint-placeholder-count="2">
+              <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 8px 12px; border-radius: 12px; background: rgba(25,61,51,0.04)"><span>{{mt.name}} · {{mt.date}}</span><span dir="ltr" style="{{mt.style}}">{{mt.amt}}</span></span>
+            </sc-for>
+            <sc-if value="{{hasMatches}}" hint-placeholder-val="{{ true }}"><button type="button" class="d-press" onClick="{{addOld}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{addOldLabel}}</button></sc-if>
+            <button type="button" class="d-press" onClick="{{newOnly}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{newOnlyLabel}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'ops', sheet: null, text: '', mode: 'contains', dir: 'out', demo: null };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f ? '.' + (f < 10 ? '0' : '') + f : ''); }
+  project() {
+    const p = this.props.project;
+    if (p && p.id) return p;
+    // لوحة لوحدها: مشروع شخصي للعرض
+    return this.state.demo || { id: 'demo', name: 'رحلة العُلا', kind: 'personal', excluded: 0, approxOn: false, out: 405000, inn: 0, net: 405000, unsure: 0,
+      rules: [{ id: 'pr1', text: 'العلا', mode: 'contains', dir: 'out', on: true }],
+      ops: [{ id: 'o1', name: 'نُزل العلا الصخري', date: '٣ أكتوبر', amt: -180000, src: 'rule' }, { id: 'o2', name: 'تذاكر طيران', date: '٢٨ سبتمبر', amt: -145000, src: 'manual' }, { id: 'o4', name: 'جولة العلا القديمة', date: '٥ أكتوبر', amt: -80000, src: 'rule' }] };
+  }
+  change(p, patch) {
+    if (typeof this.props.onChange === 'function' && this.props.project && this.props.project.id) this.props.onChange(p.id, patch);
+    else { const next = Object.assign({}, p, patch); let out = 0, inn = 0; next.ops.forEach((o) => { if (o.amt < 0) out -= o.amt; else inn += o.amt; }); this.setState({ demo: Object.assign(next, { out, inn, net: next.kind === 'work' ? inn - out : out - inn }) }); }
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const s = this.state, p = this.project();
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPW = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const work = p.kind === 'work', sc = this.props.project && this.props.project.id ? 1 : k;
+    const MODES = { contains: eg ? 'فيه' : 'يحتوي', startsWith: eg ? 'بيبدأ بـ' : 'يبدأ بـ', exact: eg ? 'بالظبط' : 'مطابق' };
+    const DIRS = { out: eg ? 'صادر' : 'صادر', in: eg ? 'وارد' : 'وارد', any: eg ? 'الاتنين' : 'كلاهما' };
+    const money = (m) => (m < 0 ? '−' : '+') + this.fmt(m * k) + ' ' + cur;
+    // عمليات قديمة مش في أي مشروع (آخر ٣ سنين — ManageProjects.addRule → oldMatches) — مخترعة
+    const POOL = [['x1', eg ? 'كافيه الغردقة' : 'مقهى العلا الشعبي', '٢ أكتوبر', -2500], ['x2', eg ? 'بنزينة الغردقة' : 'محطة وقود العلا', '٢٧ سبتمبر', -15000], ['x3', eg ? 'متجري — شحن' : 'متجري — شحن', '١٥ سبتمبر', -8000], ['x4', eg ? 'استوديو ضي — دفعة تانية' : 'استوديو ضياء — دفعة ثانية', '١ أكتوبر', 150000], ['x5', eg ? 'هدية من خالد' : 'هدية من خالد', '٢٠ سبتمبر', 30000], ['x6', 'سوبرماركت الحي', '٦ أكتوبر', -12000]];
+    const t = s.text.trim();
+    const hit = (name, amt) => (s.mode === 'contains' ? name.indexOf(t) >= 0 : s.mode === 'startsWith' ? name.indexOf(t) === 0 : name === t) && (s.dir === 'any' || (s.dir === 'out' ? amt < 0 : amt > 0));
+    const have = {}; p.ops.forEach((o) => { have[o.id] = true; });
+    const matches = t.length >= 2 ? POOL.filter(([id, name, , amt]) => !have[id] && hit(name, amt)) : [];
+    const err = t.length === 1 ? (eg ? 'اكتب نص القاعدة من حرفين لـ ٦٠ حرف.' : 'نص القاعدة من حرفين إلى ٦٠ حرفًا.') : '';
+    const seg = (on) => 'flex: 1 1 0; height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.25)' : 'color: #193D33; background: transparent');
+    const addRule = (withOld) => {
+      if (t.length < 2) return;
+      const rule = { id: 'pr' + Date.now(), text: t, mode: s.mode, dir: s.dir, on: true };
+      const added = withOld ? matches.map(([id, name, date, amt]) => ({ id, name, date, amt, src: 'rule' })) : [];
+      this.change(p, { rules: p.rules.concat([rule]), ops: added.concat(p.ops) });
+      this.setState({ sheet: null, text: '', tab: withOld && added.length ? 'ops' : 'rules' });
+    };
+    const row = (last) => 'display: flex; align-items: center; gap: 8px; min-height: 64px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);');
+    return {
+      question: work ? (eg ? 'كسبت منه كام؟' : 'كم كسبت منه؟') : (eg ? 'كلّفني كام؟' : 'كم كلّفني؟'),
+      big: p.ops.length ? (work ? (p.net < 0 ? '−' : '+') : '') + this.fmt(p.net * sc) + ' ' + cur : '—',
+      outLabel: eg ? 'صرفت (نصيبك)' : 'صرفت (نصيبك)', inLabel: eg ? 'جالك' : 'جاءك',
+      outText: this.fmt(p.out * sc) + ' ' + cur, inText: this.fmt(p.inn * sc) + ' ' + cur,
+      formula: work ? (eg ? 'الصافي = اللي جالك − اللي صرفته، وممكن يطلع بالسالب.' : 'الصافي = ما جاءك − ما صرفت، وقد يكون سالبًا.') : (eg ? 'اللي جالك (نقوط أو هدايا) بيقلل الكلفة.' : 'ما جاءك (نقوط أو هدايا) يُنقص الكلفة.'),
+      approx: p.unsure > 0, approxText: 'تقريبي · ' + plural(p.unsure, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' مستنية تأكيد النوع' : ' بانتظار تأكيد النوع'),
+      tabs: [['ops', (eg ? 'العمليات (' : 'العمليات (') + n(p.ops.length) + ')'], ['rules', (eg ? 'القواعد (' : 'القواعد (') + n(p.rules.length) + ')']].map(([id, label]) => ({ label, on: s.tab === id ? 'true' : 'false', pick: () => this.setState({ tab: id }), style: seg(s.tab === id).replace('font-size: 13px', 'font-size: 14px') })),
+      showOps: s.tab === 'ops', showRules: s.tab === 'rules',
+      noOps: !p.ops.length, hasOps: p.ops.length > 0, noOpsTitle: eg ? 'لسه مفيش عمليات في المشروع' : 'لا عمليات في المشروع بعد',
+      unsureLabel: eg ? 'نوعها مش أكيد' : 'نوعها غير مؤكد',
+      ops: p.ops.map((o, i) => ({
+        name: o.name, date: o.date, unsure: !!(o.unsure && p.approxOn),
+        src: o.src === 'rule' ? (eg ? 'بقاعدة' : 'بقاعدة') : (eg ? 'ضفتها بإيدك' : 'أضفتها بنفسك'),
+        srcStyle: 'font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; ' + (o.src === 'rule' ? 'color: #2469BA; background: rgba(36,105,186,0.10)' : 'color: #637570; background: rgba(25,61,51,0.06)'),
+        amt: money(o.amt), amtStyle: 'flex-shrink: 0; font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (o.amt < 0 ? '#BE3D48' : '#13764D'),
+        row: row(i === p.ops.length - 1), removeLabel: (eg ? 'شيل ' : 'أزل ') + o.name + (eg ? ' من المشروع' : ' من المشروع'),
+        remove: () => this.change(p, { ops: p.ops.filter((x) => x.id !== o.id), excluded: (p.excluded || 0) + 1 })
+      })),
+      hasExcluded: (p.excluded || 0) > 0,
+      excludedLine: (eg ? 'مستبعدة: ' : 'مستبعدة: ') + plural(p.excluded || 0, OPW) + (eg ? ' — شلتها بإيدك، فمفيش قاعدة هترجّعها.' : ' — أزلتها بنفسك، فلن تعيدها أي قاعدة.'),
+      addHint: eg ? 'تضيف عملية بإيدك من التلات نقط بتوعها ← «ضيف لمشروع». والعملية ممكن تبقى في أكتر من مشروع.' : 'لإضافة عملية بنفسك: من نقاطها الثلاث ← «أضف إلى مشروع». ويمكن أن تكون العملية في أكثر من مشروع.',
+      rulesIntro: eg ? 'القاعدة بتضيف الجديد لوحدها. القديم بنسألك عليه وقت ما تعملها.' : 'تضيف القاعدة الجديد تلقائيًا، ونسألك عن السابق عند إنشائها.',
+      hasRules: p.rules.length > 0,
+      rules: p.rules.map((r, i) => ({
+        mode: MODES[r.mode], text: '«' + r.text + '»', dir: (eg ? 'الاتجاه: ' : 'الاتجاه: ') + DIRS[r.dir],
+        dirStyle: 'font-size: 12px; color: ' + (r.on ? '#637570' : '#956000'), checked: r.on ? 'true' : 'false', label: (eg ? 'شغّل قاعدة ' : 'تشغيل قاعدة ') + r.text,
+        row: row(i === p.rules.length - 1) + (r.on ? '' : ' opacity: 0.6;'),
+        track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (r.on ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'),
+        knob: 'position: absolute; top: 2px; right: ' + (r.on ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+        toggle: () => this.change(p, { rules: p.rules.map((x) => x.id === r.id ? Object.assign({}, x, { on: !x.on }) : x) })
+      })),
+      newRuleLabel: eg ? 'قاعدة جديدة' : 'قاعدة جديدة',
+      openRule: () => this.setState({ sheet: 'form', text: '', mode: 'contains', dir: 'out' }),
+      sheetOpen: !!s.sheet, stepForm: s.sheet === 'form', stepOld: s.sheet === 'old',
+      sheetTitle: s.sheet === 'old' ? (eg ? 'نضيف القديم كمان؟' : 'هل نضيف السابق أيضًا؟') : (eg ? 'قاعدة للمشروع' : 'قاعدة للمشروع'),
+      textLabel: eg ? 'النص في اسم التاجر أو الوصف' : 'النص في اسم التاجر أو الوصف', textPh: eg ? 'مثلًا: الغردقة' : 'مثلًا: العلا',
+      fText: s.text, typeText: (e) => this.setState({ text: String(e.target.value || '').slice(0, 60) }),
+      hasErr: !!err, err,
+      segs: [
+        { label: eg ? 'طريقة المطابقة' : 'طريقة المطابقة', opts: Object.keys(MODES).map((m) => ({ label: MODES[m], on: s.mode === m ? 'true' : 'false', pick: () => this.setState({ mode: m }), style: seg(s.mode === m) })) },
+        { label: eg ? 'الاتجاه' : 'الاتجاه', opts: Object.keys(DIRS).map((d) => ({ label: DIRS[d], on: s.dir === d ? 'true' : 'false', pick: () => this.setState({ dir: d }), style: seg(s.dir === d) })) }
+      ],
+      cantNext: t.length < 2, nextLabel: eg ? 'التالي' : 'التالي',
+      nextStyle: 'height: 48px; margin-top: 4px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (t.length < 2 ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      next: () => { if (t.length >= 2) this.setState({ sheet: 'old' }); },
+      oldBody: matches.length ? (eg ? 'من العمليات القديمة (آخر ٣ سنين) بيطابقها: ' : 'من العمليات السابقة (آخر ٣ سنوات) تطابقها: ') + plural(matches.length, OPW) : (eg ? 'مفيش عمليات قديمة بتطابقها. الجديدة هتتضاف لوحدها.' : 'لا عمليات سابقة تطابقها. ستُضاف الجديدة تلقائيًا.'),
+      matches: matches.map(([, name, date, amt]) => ({ name, date, amt: money(amt), style: 'flex-shrink: 0; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (amt < 0 ? '#BE3D48' : '#13764D') })),
+      hasMatches: matches.length > 0,
+      addOldLabel: eg ? 'أيوه، ضيف القديمة كمان' : 'نعم، أضف السابقة أيضًا',
+      addOld: () => addRule(true),
+      newOnlyLabel: matches.length ? (eg ? 'لأ، الجديد بس' : 'لا، الجديدة فقط') : (eg ? 'تمام' : 'تم'),
+      newOnly: () => addRule(false),
+      closeSheet: () => this.setState({ sheet: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

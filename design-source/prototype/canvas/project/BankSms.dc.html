@@ -35,13 +35,14 @@ body{margin:0}
     <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
       <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
       <h1 style="margin: 0; font-size: 24px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+      <a href="BankSmsSettings.dc.html" class="m-press" aria-label="{{gearLabel}}" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
     </div>
 
     <div style="{{statusStyle}}">
       <span aria-hidden="true" style="{{statusDot}}"></span>
       <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{statusTitle}}</span><span style="font-size: 12px">{{statusBody}}</span></span>
       <sc-if value="{{hasStatusBtn}}" hint-placeholder-val="{{ false }}">
-        <button type="button" disabled="{{true}}" style="height: 40px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(255,255,255,0.75); opacity: 0.6; flex-shrink: 0">{{statusBtn}}</button>
+        <a href="{{statusHref}}" class="m-press" style="height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(255,255,255,0.85); flex-shrink: 0">{{statusBtn}}</a>
       </sc-if>
     </div>
 
@@ -192,6 +193,8 @@ class Component extends DCLogic {
       statusDot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + status[2],
       statusTitle: status[0], statusBody: status[1],
       hasStatusBtn: st === 'خطأ' || st === 'غير متاح',
+      statusHref: st === 'خطأ' ? 'BankSmsSettings.dc.html' : 'SmsPaste.dc.html',
+      gearLabel: eg ? 'إعداد القراية' : 'إعداد القراءة',
       statusBtn: st === 'خطأ' ? (eg ? 'رجّع الإذن' : 'أعد الإذن') : (eg ? 'الصق رسالة' : 'الصق رسالة'),
       isLoading: st === 'بيحمّل',
       showWaiting: live, spaceName: eg ? 'مصر' : 'السعودية', onRecord: this.onRecord,

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل مصدر الدخل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.i-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.i-press:active{transform:scale(.97)}
+.i-in{position:relative;overflow:hidden;animation:i-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes i-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.i-toast{animation:i-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes i-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.i-press{transition:none}.i-press:active{transform:none}.i-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+    <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font-size: 20px; font-weight: 700; min-width: 0">{{name}}</span><span style="{{statusStyle}}">{{status}}</span></span>
+    <span style="font-size: 13px; color: #DCEBD6">{{kindLine}}</span>
+    <span style="font-size: 14px; font-weight: 700">{{periodLine}}</span>
+  </div>
+
+  <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <sc-for list="{{facts}}" as="f" hint-placeholder-count="3">
+      <div style="{{f.rowStyle}}"><span style="font-size: 13px; color: #637570">{{f.label}}</span><span dir="{{f.dir}}" style="{{f.valueStyle}}">{{f.value}}</span></div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{txTitle}}</h2><span style="font-size: 12px; color: #637570">{{txCount}}</span></span>
+    <sc-if value="{{hasTx}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{txs}}" as="t" hint-placeholder-count="3">
+          <div class="{{t.cls}}" style="{{t.rowStyle}}">
+            <span style="display: flex; align-items: center; gap: 10px">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{t.date}}</span><span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="{{t.chipStyle}}">{{t.chip}}</span><sc-if value="{{t.hasFrom}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{t.from}}</span></sc-if></span></span>
+              <span dir="ltr" style="font-size: 15px; font-weight: 700; white-space: nowrap; color: #13764D; font-variant-numeric: tabular-nums">{{t.amount}}</span>
+            </span>
+            <sc-if value="{{t.canMark}}" hint-placeholder-val="{{ false }}">
+              <button type="button" class="i-press" onClick="{{t.mark}}" aria-pressed="{{t.marked}}" style="{{t.markStyle}}">{{t.markLabel}}</button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{noTx}}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.04)"><span style="font-size: 13px; font-weight: 700; color: #637570">{{noTxTitle}}</span><span style="font-size: 12px; color: #637570">{{noTxBody}}</span></div>
+    </sc-if>
+  </div>
+
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font-size: 15px; font-weight: 700">{{cmpTitle}}</span><sc-if value="{{approx}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #956000; background: #FBF0DD; flex-shrink: 0">{{approxChip}}</span></sc-if></span>
+    <sc-if value="{{cmpOk}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{cmpRows}}" as="c" hint-placeholder-count="2">
+          <div style="border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: rgba(25,61,51,0.04)">
+            <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 700">{{c.label}}</span><span dir="ltr" style="{{c.changeStyle}}">{{c.change}}</span></span>
+            <span style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <span style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #637570">{{beforeLabel}}</span><span dir="ltr" style="text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{c.before}}</span></span>
+              <span style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #637570">{{afterLabel}}</span><span dir="ltr" style="text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{c.after}}</span></span>
+            </span>
+          </div>
+        </sc-for>
+        <sc-if value="{{hasApproxNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #956000">{{approxNote}}</span></sc-if>
+        <sc-if value="{{hasNoPct}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{noPctNote}}</span></sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{cmpNa}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700; color: #637570">غير متاح</span><span style="font-size: 12px; color: #637570">{{naReason}}</span></div>
+    </sc-if>
+    <span style="font-size: 12px; color: #637570">{{cmpNote}}</span>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="i-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","تقريبي","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { eos: {}, toast: '' }; this.timers = []; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const s = this.state;
+    // المصدر بييجي من الشاشة الأب (info = JSON). من غيره (معاينة اللوحة) بياخد أول مصدر في البلد، و«الحالة» بتغيّر المقارنة بس
+    const DEF = eg ? { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '١ يناير ٢٠٢٦', end: null, freq: 'monthly', day: 5, expected: 900000 }
+      : { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '٢٨ أبريل ٢٠٢٦', end: null, freq: 'monthly', day: 28, expected: 1250000 };
+    let src = DEF;
+    try { if (this.props.info) src = Object.assign({}, DEF, JSON.parse(this.props.info)); } catch (e) { src = DEF; }
+    const tweak = this.props.info ? 'عادي' : (this.props.state ?? 'عادي');
+    // مخترعة · بالوحدة الصغرى. cmp = مخرجات compareAroundStart: متوسطات ٣ شهور مالية قبل و٣ بعد (§64 قرار ٨)
+    // na: soon = الشهر التالت لسه ما خلصش · empty = شهر من الستة مفيهوش ولا عملية ⇒ مفيش رقم خالص
+    const D = {
+      rayada: { payer: 'الريادة للحلول ••• ٧٤٠٢', total: 6, tx: [['٢٨ سبتمبر', 1250000], ['٢٨ أغسطس', 1250000], ['٢٨ يوليو', 1250000]], cmp: [990000, 1250000, 690000, 762000], unknown: 0 },
+      waha: { payer: 'مكتب الواحة ••• ٣١٩٠', total: 8, tx: [['١ أكتوبر', 80000], ['٢٤ سبتمبر', 80000], ['١٧ سبتمبر', 80000]], na: 'soon', ready: '٢٧ نوفمبر ٢٠٢٦' },
+      sahm: { payer: 'مجموعة السهم ••• ٢٢٥٨', total: 15, tx: [['٣٠ أبريل ٢٠٢٦', 2400000, 'eos'], ['٢٧ أبريل ٢٠٢٦', 980000], ['٢٧ مارس ٢٠٢٦', 980000]], cmp: [820000, 980000, 610000, 642000], unknown: 7 },
+      noura: { cmp: [960000, 1035000, 655000, 671000], unknown: 0 },
+      maadi: { cmp: [0, 900000, 1150000, 1210000], unknown: 0 },
+      ahly: { na: 'soon', ready: '٢٧ أكتوبر ٢٠٢٦' },
+      delta: { na: 'empty' }
+    };
+    const d = Object.assign({ payer: null, total: 0, tx: [], unknown: 0 }, D[src.id] || { na: 'soon', ready: eg ? 'بعد ٣ شهور مالية كاملة من البداية' : 'بعد ٣ أشهر مالية كاملة من البداية' });
+    if (tweak === 'تقريبي') Object.assign(d, { na: null, cmp: d.cmp || [990000, 1250000, 690000, 762000], unknown: 4 });
+    if (tweak === 'غير متاح') Object.assign(d, { na: 'soon', ready: '٢٧ نوفمبر ٢٠٢٦' });
+    const extra = this.props.payerYes === '1' && src.id === 'rayada' ? [['٣ أكتوبر', 320000, null, eg ? 'من «الريادة القابضة»' : 'من «الريادة القابضة»']] : [];
+    const K = { job: 'وظيفة', part_time: eg ? 'بارت تايم' : 'دوام جزئي', client: 'عميل', rent: 'إيجار', investment: 'استثمار', pension: 'معاش', other: eg ? 'غيره' : 'أخرى' };
+    const WD = ['', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const salaried = src.kind === 'job' || src.kind === 'part_time';
+    const pay = src.freq === 'weekly' ? (eg ? 'كل أسبوع · ' : 'أسبوعيًا · ') + (src.weekday ? WD[src.weekday] : (eg ? 'اليوم مش محدد' : 'اليوم غير محدد'))
+      : src.day ? (eg ? 'كل شهر · يوم ' : 'شهريًا · يوم ') + n(src.day) : salaried || src.kind === 'pension' ? (eg ? 'لسه ما قلتش بتقبض إمتى' : 'لم تحدد موعد القبض بعد') : (eg ? 'من غير ميعاد ثابت' : 'بلا موعد ثابت');
+    const fact = (label, value, muted, last, ltr) => ({ label, value, dir: ltr ? 'ltr' : 'rtl', rowStyle: 'display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+      valueStyle: 'text-align: left; font-size: 14px; font-weight: 700; color: ' + (muted ? '#637570' : '#193D33') });
+    const facts = [
+      fact(eg ? 'ميعاد القبض' : 'موعد القبض', pay, false),
+      fact('المتوقع', src.expected ? this.fmt(src.expected) + ' ' + cur : (eg ? 'ما كتبتوش (اختياري)' : 'لم تكتبه (اختياري)'), !src.expected, false, !!src.expected),
+      fact(eg ? 'اللي بيحوّل' : 'الجهة المحوِّلة', salaried ? (d.payer || (eg ? 'لسه ما اتعرفش' : 'لم تُعرف بعد')) : (eg ? 'مش بنسأل عنها للنوع ده' : 'لا نسأل عنها لهذا النوع'), !(salaried && d.payer), true)
+    ];
+    const rows = extra.concat(d.tx);
+    const txs = rows.map(([date, amt, flag, from], i) => {
+      const key = src.id + i, marked = !!s.eos[key];
+      return {
+        date, amount: '+' + this.fmt(amt) + ' ' + cur, from: from || '', hasFrom: !!from, cls: marked ? 'i-in' : '',
+        chip: marked ? (eg ? 'مكافأة نهاية خدمة' : 'مكافأة نهاية خدمة') : (eg ? 'مرتب' : 'راتب'),
+        chipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (marked ? 'color: #2469BA; background: rgba(36,105,186,0.10)' : 'color: #08634F; background: #DCEBD6'),
+        canMark: flag === 'eos', marked: marked ? 'true' : 'false',
+        markLabel: marked ? (eg ? 'رجّعها مرتب' : 'أعدها راتبًا') : (eg ? 'دي مكافأة نهاية خدمة؟' : 'هل هي مكافأة نهاية خدمة؟'),
+        markStyle: 'align-self: flex-start; height: 44px; margin-top: 8px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; color: #08634F; background: rgba(8,99,79,0.08)',
+        mark: () => { this.setState({ eos: Object.assign({}, s.eos, { [key]: !marked }) }); this.say(marked ? (eg ? 'رجعت مرتب' : 'عادت راتبًا') : (eg ? 'اتعلّمت مكافأة نهاية خدمة — دخل في شهرها وبرا المقارنة' : 'عُلّمت مكافأة نهاية خدمة — دخل في شهرها وخارج المقارنة')); },
+        rowStyle: 'display: flex; flex-direction: column; padding: 10px 0;' + (i === rows.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      };
+    });
+    const DW = eg ? ['إيداع واحد', 'إيداعين', 'إيداعات', 'إيداع'] : ['إيداع واحد', 'إيداعان', 'إيداعات', 'إيداعًا'];
+    const total = d.total + extra.length;
+    // التغيّر بالعُشر من المية — أعداد صحيحة بس، تقريب نص لبعيد عن الصفر (changeTenthPercent)
+    const tenth = (b, a) => { if (b <= 0 || a < 0) return null; const df = (a - b) * 1000, m = Math.abs(df), r = m % b; let t = (m - r) / b; if (r * 2 >= b) t += 1; return df < 0 ? -t : t; };
+    const pctText = (t) => { if (t === null) return '—'; const a = Math.abs(t); return (t > 0 ? '+' : t < 0 ? '−' : '') + n((a - (a % 10)) / 10) + '٫' + n(a % 10) + '٪'; };
+    const c = d.cmp;
+    const cmpRows = !d.na && c ? [['الدخل', c[0], c[1], true], ['المصروف', c[2], c[3], false]].map(([label, b, a, isIn]) => {
+      const t = tenth(b, a);
+      return { label, before: this.fmt(b), after: this.fmt(a), change: pctText(t),
+        changeStyle: 'font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 12px; font-variant-numeric: tabular-nums; ' + (t === null || t === 0 ? 'color: #637570; background: rgba(25,61,51,0.06)' : (isIn ? t > 0 : t < 0) ? 'color: #13764D; background: rgba(19,118,77,0.10)' : 'color: #BE3D48; background: rgba(190,61,72,0.08)') };
+    }) : [];
+    const approx = !d.na && d.unknown > 0;
+    const OW = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    return {
+      name: src.name, status: src.end ? (eg ? 'خلص' : 'انتهى') : (eg ? 'شغال' : 'مستمر'),
+      statusStyle: 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (src.end ? 'color: #FFFFFF; background: rgba(255,255,255,0.16)' : 'color: #064B40; background: #A6DEC1'),
+      kindLine: K[src.kind] + ' · ' + (eg ? 'بالجنيه' : 'بالريال'),
+      periodLine: src.end ? src.start + ' – ' + src.end : (eg ? 'من ' : 'منذ ') + src.start,
+      facts,
+      txTitle: eg ? 'العمليات المنسوبة له' : 'العمليات المنسوبة إليه', txCount: total ? (eg ? 'آخر ' : 'آخر ') + n(rows.length) + (eg ? ' من ' : ' من ') + plural(total, DW) : '',
+      hasTx: rows.length > 0, noTx: !rows.length, txs,
+      noTxTitle: eg ? 'مفيش عمليات منسوبة له' : 'لا عمليات منسوبة إليه',
+      noTxBody: salaried ? (eg ? 'أول ما تأكد «ده مرتب من …؟» على أول إيداع، إيداعاته بتتنسب له لوحدها.' : 'حين تؤكد «هل هذا راتب من …؟» على أول إيداع، تُنسب إليه إيداعاته تلقائيًا.') : (eg ? 'بننسب الإيداعات من الجهة اللي بتحوّل المرتب، وده للوظيفة والبارت تايم بس.' : 'تُنسب الإيداعات من الجهة التي تحوّل الراتب، وهذا للوظيفة والدوام الجزئي فقط.'),
+      cmpTitle: eg ? 'قبل وبعد البداية' : 'قبل البداية وبعدها',
+      approx, approxChip: eg ? 'الأرقام ناقصة' : 'الأرقام ناقصة',
+      hasApproxNote: approx, approxNote: approx ? plural(d.unknown, OW) + (eg ? ' في الشهور الستة نوعها لسه ما اتحددش.' : ' في الأشهر الستة نوعها غير محدد بعد.') : '',
+      cmpOk: !d.na, cmpNa: !!d.na, cmpRows,
+      beforeLabel: eg ? 'متوسط ٣ شهور قبل' : 'متوسط ٣ أشهر قبل', afterLabel: eg ? 'متوسط ٣ شهور بعد' : 'متوسط ٣ أشهر بعد',
+      hasNoPct: !!(c && !d.na && c[0] <= 0), noPctNote: eg ? 'مفيش دخل قبلها، فمفيش نسبة.' : 'لا دخل قبلها، فلا نسبة.',
+      naReason: d.na === 'empty' ? (eg ? 'فيه شهر من الستة مفيهوش ولا عملية، فمفيش رقم.' : 'في الأشهر الستة شهر بلا أي عملية، فلا رقم.') : (eg ? 'بتظهر بعد ما يخلص تالت شهر مالي — ' : 'تظهر بعد انتهاء الشهر المالي الثالث — ') + (d.ready || ''),
+      cmpNote: eg ? 'بعملة المصدر، من غير النقوط ومكافأة نهاية الخدمة. الشهر اللي بدأ في نصه برا المقارنة.' : 'بعملة المصدر، بلا النقوط ومكافأة نهاية الخدمة. الشهر الذي بدأ في منتصفه خارج المقارنة.',
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

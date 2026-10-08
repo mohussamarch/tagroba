@@ -75,13 +75,21 @@ a{color:#08634F}a:hover{color:#064B40}
       <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{historyTitle}}</h2>
       <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
         <sc-for list="{{history}}" as="h" hint-placeholder-count="4">
-          <div style="{{h.rowStyle}}">
+          <sc-if value="{{h.isDebt}}" hint-placeholder-val="{{ false }}"><a href="DebtDetail.dc.html" data-keep="{{h.keep}}" class="m-press" style="{{h.rowStyle}} color: inherit; text-decoration: none">
             <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
               <span style="font-size: 14px; font-weight: 700">{{h.title}}</span>
               <span style="font-size: 12px; color: #637570">{{h.sub}}</span>
             </div>
             <span dir="ltr" style="{{h.amountStyle}}">{{h.amount}}</span>
-          </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+          </a></sc-if>
+          <sc-if value="{{h.plain}}" hint-placeholder-val="{{ true }}"><div style="{{h.rowStyle}}">
+            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 14px; font-weight: 700">{{h.title}}</span>
+              <span style="font-size: 12px; color: #637570">{{h.sub}}</span>
+            </div>
+            <span dir="ltr" style="{{h.amountStyle}}">{{h.amount}}</span>
+          </div></sc-if>
         </sc-for>
       </div>
     </div>
@@ -153,8 +161,8 @@ class Component extends DCLogic {
     const actions = [
       ['rosca', eg ? 'جمعية' : 'دعوة لجمعية'], ['project', 'مشروع مشترك'], ['link', 'طلب اتصال'], ['split', 'تقسيم فاتورة']
     ].map(([id, label]) => ({ label, i: { [id]: true }, open: () => this.setState({ sheet: id, amount: '' }) }));
-    const row = (title, sub, amountMinor, dir, last) => ({
-      title, sub,
+    const row = (title, sub, amountMinor, dir, last, debt) => ({
+      title, sub, isDebt: !!debt, plain: !debt, keep: JSON.stringify({ 'masroufy-debt': debt || '' }),
       amount: (dir === 'out' ? '−' : '+') + this.fmt(amountMinor * k),
       rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
       amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (dir === 'out' ? '#BE3D48' : '#13764D')
@@ -165,7 +173,7 @@ class Component extends DCLogic {
       occasionLine: eg ? 'فرحه ١٨ أكتوبر · بعد ١١ يوم' : 'زواجه ١٨ أكتوبر · بعد ١١ يومًا',
       lakLabel: eg ? 'ليك عنده' : 'لك عنده',
       lakAmount: this.fmt(50000 * k) + ' ' + cur,
-      waitingSignal: eg ? 'بقاله كتير مستني · ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا',
+      waitingSignal: eg ? 'بقاله كتير مستني، ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا',
       alekLabel: eg ? 'عليك ليه' : 'عليك له',
       alekNone: eg ? 'ولا حاجة' : 'لا شيء',
       actionsTitle: eg ? 'اعملوا سوا' : 'معًا',
@@ -173,7 +181,7 @@ class Component extends DCLogic {
       futureNote: eg ? 'قريب: لما خالد يستخدم مصروفي، هتقدروا تبنوا حاجات سوا من الحسابين.' : 'قريبًا: عندما يستخدم خالد مصروفي، تبنيان أشياء معًا من الحسابين.',
       historyTitle: eg ? 'السجل بينكم' : 'السجل بينكما',
       history: [
-        row(eg ? 'سلفة منك' : 'سلفة منك', eg ? '٢٣ أغسطس · لسه ما رجعتش' : '٢٣ أغسطس · لم تُسدَّد', 50000, 'out'),
+        row(eg ? 'سلفة منك' : 'سلفة منك', eg ? '٢٣ أغسطس، لسه ما رجعتش' : '٢٣ أغسطس، لم تُسدَّد', 50000, 'out', false, 'khaled'),
         row(eg ? 'رجّع سلفة' : 'سداد سلفة', '١٢ يوليو', 30000, 'in'),
         row('سلفة منك', '٢ يوليو', 30000, 'out'),
         row(eg ? 'نصيبه من رحلة البحر' : 'نصيبه من رحلة البحر', '١٨ يونيو', 42000, 'in', true)

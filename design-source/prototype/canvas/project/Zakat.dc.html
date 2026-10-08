@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الزكاة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+.m-veil{animation:m-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.m-up{animation:m-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.m-toast{animation:m-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+@keyframes m-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes m-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-up{animation:m-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Investment.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">الزكاة</h1>
+    </div>
+
+    <sc-if value="{{isHidden}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{hiddenTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{hiddenBody}}</span>
+        <a href="More.dc.html" class="m-press" style="margin-top: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 18px; font-size: 14px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{hiddenAction}}</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px">
+        <div class="m-skel" style="height: 150px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div>
+        <div class="m-skel" style="height: 120px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+        <div class="m-skel" style="height: 260px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 22px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; background: rgba(25,61,51,0.04)">
+          <span style="font-size: 13px; font-weight: 700">{{refTitle}}</span>
+          <span style="font-size: 12px; color: #4F625C">{{refBody}}</span>
+          <span style="font-size: 12px; font-weight: 700; color: #956000">{{scopeNote}}</span>
+        </div>
+
+        <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 8px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+          <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1 1 auto; font-size: 14px; color: #DCEBD6">{{heroLabel}}</span><span style="{{resultChipStyle}}">{{resultChip}}</span></span>
+          <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px"><span style="font-size: 16px">{{heroCur}}</span><span style="font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums">{{heroValue}}</span></div>
+          <span style="font-size: 12px; color: #DCEBD6">{{heroSub}}</span>
+          <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.14)"><span style="color: #DCEBD6">{{nisabLabel}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{nisabText}}</span></div>
+          <span style="font-size: 11px; color: #A6DEC1">{{nisabRule}}</span>
+        </div>
+
+        <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1 1 auto; font-size: 13px; color: #637570">{{hawlLabel}}</span><span style="{{hawlChipStyle}}">{{hawlChip}}</span></span>
+          <span style="font-size: 17px; font-weight: 700">{{hawlDate}}</span>
+          <span style="font-size: 12px; color: #4F625C">{{hawlWhy}}</span>
+          <span style="font-size: 11px; color: #637570">{{hawlRule}}</span>
+          <sc-if value="{{hawlOpen}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; gap: 8px; padding-top: 4px">
+              <button type="button" class="m-press" onClick="{{confirmHawl}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{confirmLabel}}</button>
+              <button type="button" disabled="{{true}}" aria-describedby="hawl-soon" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45">{{changeLabel}}</button>
+            </div>
+            <span id="hawl-soon" style="font-size: 11px; color: #637570">{{changeSoon}}</span>
+          </sc-if>
+        </div>
+
+        <button type="button" class="m-press" onClick="{{openFacts}}" disabled="{{closed}}" style="{{factsStyle}}">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; text-align: right"><span style="font-size: 15px; font-weight: 700">{{factsTitle}}</span><span style="font-size: 12px; color: #637570">{{factsSub}}</span></span>
+          <span style="{{factsChipStyle}}">{{factsChip}}</span>
+        </button>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{linesTitle}}</h2>
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <sc-for list="{{lines}}" as="l" hint-placeholder-count="4">
+              <div style="{{l.rowStyle}}">
+                <span style="display: flex; align-items: baseline; gap: 8px"><span style="flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 700">{{l.name}}</span><span dir="ltr" style="{{l.dueStyle}}">{{l.due}}</span></span>
+                <span style="font-size: 12px; color: #4F625C">{{l.detail}}</span>
+                <span style="font-size: 11px; color: #637570">{{l.src}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 700; color: #4F625C">{{outTitle}}</h2>
+          <sc-for list="{{outs}}" as="ou" hint-placeholder-count="3">
+            <div style="border-radius: 18px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.04)">
+              <span style="display: flex; gap: 8px"><span style="flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 700">{{ou.name}}</span><span dir="ltr" style="font-size: 13px; color: #637570; font-variant-numeric: tabular-nums">{{ou.value}}</span></span>
+              <span style="font-size: 12px; color: #4F625C">{{ou.rule}}</span>
+              <span style="font-size: 11px; color: #637570">{{ou.src}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{notClosed}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <button type="button" class="m-press" onClick="{{fixYear}}" disabled="{{cantClose}}" style="{{closeStyle}}">{{closeLabel}}</button>
+            <span style="font-size: 12px; color: #637570; text-align: center">{{closeNote}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{closed}}" hint-placeholder-val="{{ false }}">
+          <dc-import name="ZakatPay" space="{{spaceName}}" lines="{{payLines}}" hint-size="350px,760px"></dc-import>
+        </sc-if>
+        <span style="font-size: 12px; color: #637570; text-align: center">{{guidance}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="m-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{factsTitle}}" class="m-up m-scroll" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 88%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{factsTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetIntro}}</span>
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{g.title}}</span><span style="font-size: 12px; color: #637570">{{g.ask}}</span></span>
+            <div role="radiogroup" aria-label="{{g.title}}" style="display: flex; gap: 8px">
+              <sc-for list="{{g.opts}}" as="go" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{go.on}}" class="m-press" onClick="{{go.pick}}" style="{{go.style}}">{{go.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <button type="button" class="m-press" onClick="{{closeSheet}}" style="height: 48px; margin-top: 4px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{doneLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="m-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح","بيحمّل","المحتوى الإسلامي مخفي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // الوقائع (مش آراء — §62): undefined = لسه على القيمة المبدئية للحالة · الحساب بيتثبّت قبل الدفع
+    this.state = { gold: undefined, st: {}, rc: {}, hawl: 'suggested', closed: false, sheet: false, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  md(a, b, c) { const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    // مخترعة · نفس أرقام الشاشات التانية: البنوك والكاش (الرئيسية) · الذهب والأسهم (الاستثمار) · ليك (الأشخاص) · الجمعية (الجمعيات)
+    const D = eg
+      ? { cash: 2530000, goldQ: 80, pure: 600000, stocks: [['s1', 'الأفق للاتصالات', 24000000], ['s2', 'الواحة للأسمنت', 15000000], ['s3', 'النخبة للتجزئة', 13500000], ['s4', 'أطلس العالمية', 13500000]],
+        recv: [['fahd', 'فهد', 360000], ['khalid', 'خالد', 150000], ['noura', 'نورة', 90000], ['ahmad', 'أحمد', 55500]], rosca: ['جمعية العيلة', 1200000], flat: 384000000 }
+      : { cash: 735000, goldQ: 120, pure: 50057, silver: 540, stocks: [['s1', 'الأفق للاتصالات', 3200000], ['s2', 'الواحة للأسمنت', 2100000], ['s3', 'النخبة للتجزئة', 1800000], ['s4', 'أطلس العالمية', 1800000]],
+        recv: [['fahd', 'فهد', 120000], ['khalid', 'خالد', 50000], ['noura', 'نورة', 30000], ['ahmad', 'أحمد', 18500]], rosca: ['جمعية العائلة', 400000], flat: 57600000 };
+    const SRC = eg
+      ? { cash: 'دار الإفتاء — فتوى رقم ٢٢٧٩ (٢٠٠٧)', hawl: 'دار الإفتاء — فتوى رقم ٤١٣ (٢٠٠٨) · فتوى رقم ٥٨٩٠ (١٩٨٥)', metal: 'دار الإفتاء — فتوى رقم ٨٨٤٨ (٢٠٢٥)', shares: 'دار الإفتاء — فتوى رقم ٨٧٦٧ (٢٠٢٥)', recv: 'دار الإفتاء — فتوى رقم ٤٣٩٩ (٢٠٠٢)', debts: 'دار الإفتاء — فتوى رقم ٥٠٢٥ (٢٠٢٠)' }
+      : { cash: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)', hawl: 'دليل زكاة الأفراد — ص ١٤، ١٩، ٢٧؛ البند ٣٫٢٫١، ص ١٨', metal: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)', shares: 'دليل زكاة الأفراد — البند ٣٫٦، ص ٢٢–٢٣', recv: 'دليل زكاة الأفراد — البند ٣٫٤، ص ١٩–٢٠', debts: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)' };
+    const na = st === 'غير متاح';
+    const gold = s.gold !== undefined ? s.gold : na ? null : 'saved';
+    const DEF_ST = { s1: { k: 'long', sa: 'yes' }, s2: { k: 'trade' }, s3: { k: 'long', sa: 'yes' }, s4: { k: 'long', sa: 'no' } };
+    const DEF_RC = { fahd: 'strong', khalid: 'doubt', noura: 'strong', ahmad: 'strong' };
+    const stF = (id) => Object.assign({}, DEF_ST[id], s.st[id] || {});
+    const rcF = (id) => s.rc[id] || DEF_RC[id];
+    const due = (v) => this.md(v, 25, 1000); // ٢٫٥٪ على كل سطر لوحده، نص لفوق (§62 قرار ١)
+    const goldV = this.md(D.goldQ * 21, D.pure, 24); // الوزن × العيار/٢٤ × سعر الجرام الصافي
+    const counted = [], outs = [];
+    const out = (name, value, rule, src) => outs.push({ name, value: value == null ? '' : this.fmt(value), rule, src });
+    counted.push({ id: 'cash', name: 'الكاش وحسابات البنك', v: D.cash, rule: eg ? 'الكاش وحسابات البنك بالكامل برصيدها يوم الزكاة.' : 'الكاش والحسابات البنكية كاملةً برصيدها يوم الزكاة.', src: SRC.cash });
+    const goldName = (eg ? 'دهب عيار ٢١ (' : 'ذهب عيار ٢١ (') + D.goldQ.toLocaleString('ar-EG') + ' جرام)';
+    if (gold === 'worn') out(goldName, goldV, eg ? 'الدهب والفضة اللي للبس معفيين.' : 'الذهب والفضة المعدّان للبس معفيان.', SRC.metal);
+    else counted.push({ id: 'gold', name: eg ? 'دهب ادخار' : 'ذهب للادخار', v: goldV, na: gold == null, rule: gold == null ? (eg ? 'ناقصة واقعة: القطعة دي للبس ولا ادخار؟' : 'تنقصه واقعة: هل هو للبس أم للادخار؟') : (eg ? 'الدهب والفضة اللي للادخار عليهم زكاة بقيمتهم — ' : 'الذهب والفضة المعدّان للادخار تُزكّى قيمتهما — ') + goldName, src: SRC.metal });
+    const trade = D.stocks.filter(([id]) => stF(id).k === 'trade');
+    if (trade.length) counted.push({ id: 'stocks', name: 'أسهم', v: trade.reduce((t, x) => t + x[2], 0), rule: (eg ? 'للمضاربة: ' : 'للمضاربة: ') + trade.map((x) => x[1]).join(' · ') + (eg ? ' — بقيمتها السوقية كلها.' : ' — بكامل القيمة السوقية.'), src: SRC.shares });
+    D.stocks.filter(([id]) => stF(id).k === 'long').forEach(([id, name, v]) => {
+      if (eg) out(name, v, 'الأسهم طويلة الأجل: الزكاة على الأرباح بس — والأرباح مش متسجّلة لسه.', SRC.shares);
+      else if (stF(id).sa === 'yes') out(name, v, 'الأسهم طويلة الأجل: الشركة السعودية تزكّي عنها.', SRC.shares);
+      else out(name, v, 'لم يحدد المرجع الرسمي ذلك — راجع جهة الفتوى.', SRC.shares);
+    });
+    if (eg) out('ديون ليك · ' + D.recv.map((r) => r[1]).join(' و'), D.recv.reduce((t, r) => t + r[2], 0), 'الدين ليك ما بيدخلش الحساب السنوي — بيتزكّى لما يتحصّل، لسنة واحدة.', SRC.recv);
+    else {
+      const strong = D.recv.filter(([id]) => rcF(id) === 'strong');
+      if (strong.length) counted.push({ id: 'recv', name: 'ديون لك', v: strong.reduce((t, r) => t + r[2], 0), rule: 'يُرجى سدادها — ' + strong.map((r) => r[1]).join(' و') + ' — تُزكّى كل سنة.', src: SRC.recv });
+      D.recv.filter(([id]) => rcF(id) === 'doubt').forEach(([, name, v]) => out('دين على ' + name, v, 'الدين الذي لك ويُشك في سداده يُزكّى عند قبضه.', SRC.recv));
+    }
+    if (eg) out(D.rosca[0], D.rosca[1], 'الجمعية زي الدين ليك: اللي دفعته وما قبضتوش ما بيدخلش الحساب السنوي — لما تقبض دورك، ٢٫٥٪ مرة واحدة على اللي كان من فلوسك.', SRC.recv);
+    else counted.push({ id: 'rosca', name: 'الجمعيات', v: D.rosca[1], rule: D.rosca[0] + ' — ما دفعته ولم تقبضه دين لك يُرجى سداده.', src: SRC.cash });
+    out('شقة الياسمين', D.flat, eg ? 'النوع ده مش داخل في حساب الزكاة في التطبيق — راجعه بنفسك.' : 'هذا النوع غير مشمول في حساب الزكاة بالتطبيق — راجعه بنفسك.', '');
+    out(eg ? 'الديون اللي عليك' : 'الديون التي عليك', null, eg ? 'الديون اللي عليك ما بتتخصمش.' : 'الديون التي عليك لا تُخصم.', SRC.debts);
+    const nisab = eg ? this.md(85 * 21, D.pure, 24) : Math.min(85 * D.pure, 595 * D.silver);
+    const missing = counted.some((l) => l.na);
+    const base = counted.filter((l) => !l.na).reduce((t, l) => t + l.v, 0);
+    const above = base >= nisab;
+    const known = counted.filter((l) => !l.na).reduce((t, l) => t + due(l.v), 0);
+    const result = missing ? (above ? 'partial' : 'na') : above ? 'due' : 'below';
+    const RES = { due: [eg ? 'واجبة' : 'واجبة', '#064B40', '#A6DEC1'], below: [eg ? 'تحت النصاب' : 'تحت النصاب', '#064B40', '#DCEBD6'], partial: [eg ? 'ناقصة واقعة' : 'تنقصها واقعة', '#6B4600', '#F3C96B'], na: ['غير متاح', '#6B4600', '#F3C96B'] }[result];
+    const lines = counted.map((l, i) => ({ name: l.name, due: l.na ? 'غير متاح' : this.fmt(above ? due(l.v) : 0),
+      dueStyle: 'font-size: 15px; font-weight: 700; flex-shrink: 0; font-variant-numeric: tabular-nums; color: ' + (l.na ? '#956000' : '#193D33'),
+      detail: (l.na ? '' : this.fmt(l.v) + ' ' + cur + ' · ') + l.rule, src: l.src,
+      rowStyle: 'display: flex; flex-direction: column; gap: 2px; padding: 12px 0;' + (i === counted.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') }));
+    const opt = (on, label, pick) => ({ label, on: on ? 'true' : 'false', pick, style: 'flex: 1 1 0; min-height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)') });
+    const setSt = (id, patch) => () => this.setState({ st: Object.assign({}, s.st, { [id]: Object.assign({}, stF(id), patch) }) });
+    const groups = [{ title: goldName, ask: eg ? 'القطعة دي للبس ولا ادخار؟' : 'هل هو للبس أم للادخار؟', opts: [opt(gold === 'worn', eg ? 'للبس' : 'للبس', () => this.setState({ gold: 'worn' })), opt(gold === 'saved', eg ? 'ادخار' : 'للادخار', () => this.setState({ gold: 'saved' }))] }];
+    D.stocks.forEach(([id, name]) => {
+      const f = stF(id);
+      groups.push({ title: name, ask: eg ? 'مضاربة ولا طويل الأجل؟' : 'مضاربة أم طويل الأجل؟', opts: [opt(f.k === 'trade', 'مضاربة', setSt(id, { k: 'trade' })), opt(f.k === 'long', 'طويل الأجل', setSt(id, { k: 'long' }))] });
+      if (!eg && f.k === 'long') groups.push({ title: name, ask: 'هل الشركة سعودية؟', opts: [opt(f.sa === 'yes', 'نعم', setSt(id, { sa: 'yes' })), opt(f.sa === 'no', 'لا', setSt(id, { sa: 'no' }))] });
+    });
+    if (!eg) D.recv.forEach(([id, name, v]) => groups.push({ title: 'دين على ' + name + ' · ' + this.fmt(v), ask: 'هل يُرجى سداده؟', opts: [opt(rcF(id) === 'strong', 'يُرجى سداده', () => this.setState({ rc: Object.assign({}, s.rc, { [id]: 'strong' }) })), opt(rcF(id) === 'doubt', 'مشكوك فيه', () => this.setState({ rc: Object.assign({}, s.rc, { [id]: 'doubt' }) }))] }));
+    const asked = groups.length, open = gold == null ? 1 : 0;
+    const confirmed = s.hawl === 'confirmed';
+    const hidden = st === 'المحتوى الإسلامي مخفي', loading = st === 'بيحمّل';
+    return {
+      spaceName: eg ? 'مصر' : 'السعودية',
+      isHidden: hidden, isLoading: loading, showMain: !hidden && !loading,
+      hiddenTitle: eg ? 'الزكاة مستخبية' : 'الزكاة مخفية',
+      hiddenBody: eg ? '«المحتوى الإسلامي» مقفول في إعداداتك، فالزكاة وتنبيهاتها ومدخلها في «الاستثمار» مش بيظهروا.' : '«المحتوى الإسلامي» مخفي في إعداداتك، فلا تظهر الزكاة ولا تنبيهاتها ولا مدخلها في «الاستثمار».',
+      hiddenAction: eg ? 'افتح الإعدادات' : 'افتح الإعدادات',
+      refTitle: eg ? 'المرجع: دار الإفتاء المصرية' : 'المرجع: هيئة الزكاة والضريبة والجمارك',
+      refBody: eg ? 'بنمشي على مرجع البلد إجباري، ومكتوب مصدره جنب كل سطر — إنت بتدخل وقائع بس، مش آراء. إرشادي، مش فتوى.' : 'يُطبَّق مرجع البلد إلزاميًا، ومصدره بجانب كل سطر — تُدخل أنت الوقائع فقط لا الآراء. إرشادي، وليس فتوى.',
+      scopeNote: eg ? 'الحساب ده على فلوسك في مصر بس — عندك بلد تانية.' : 'هذا الحساب على أموالك في السعودية فقط — لديك بلد آخر.',
+      heroLabel: eg ? 'زكاة السنة دي' : 'زكاة هذه السنة', resultChip: RES[0], resultChipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: ' + RES[1] + '; background: ' + RES[2],
+      heroCur: result === 'na' ? '' : cur, heroValue: result === 'due' ? this.fmt(known) : result === 'below' ? this.fmt(0) : 'غير متاح',
+      heroSub: result === 'due' ? (eg ? 'على ' : 'على ') + this.fmt(base) + ' ' + cur + (eg ? ' عليها زكاة' : ' تجب فيها الزكاة') : result === 'below' ? (eg ? 'اللي عليه زكاة ' : 'ما تجب فيه الزكاة ') + this.fmt(base) + (eg ? ' — تحت النصاب، مفيش زكاة مطلوبة.' : ' — دون النصاب، لا زكاة مستحقة.')
+        : result === 'partial' ? (eg ? 'المعروف لحد دلوقتي ' : 'المعروف حتى الآن ') + this.fmt(known) + ' ' + cur + (eg ? ' — فيه واقعة ناقصة، فالإجمالي غير متاح.' : ' — تنقص واقعة، فالإجمالي غير متاح.') : (eg ? 'فيه واقعة ناقصة، ومن غيرها مش معروف إذا كانت فوق النصاب.' : 'تنقص واقعة، ودونها لا يُعرف بلوغ النصاب.'),
+      nisabLabel: eg ? 'النصاب (٨٥ جم دهب عيار ٢١)' : 'النصاب (الأقل: فضة ٥٩٥ جم)', nisabText: this.fmt(nisab) + ' ' + cur,
+      nisabRule: eg ? 'سعر الجرام الصافي ' + this.fmt(D.pure) + '، النهارده ٥ ص — ' + SRC.cash : 'الذهب الخالص ' + this.fmt(D.pure) + ' · الفضة ' + this.fmt(D.silver) + ' للجرام، اليوم ٥ ص — ' + SRC.cash,
+      hawlLabel: eg ? 'يوم زكاتك' : 'يوم زكاتك', hawlChip: confirmed ? (eg ? 'متأكد' : 'مؤكَّد') : (eg ? 'مقترح' : 'مقترح'),
+      hawlChipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (confirmed ? 'color: #13764D; background: #DCEBD6' : 'color: #956000; background: #FBF0DD'),
+      hawlDate: eg ? '٢٠ جمادى الأولى ١٤٤٨ — كمان ٢٤ يوم' : '١ جمادى الأولى ١٤٤٨ — بعد ٥ أيام',
+      hawlWhy: eg ? 'اقترحناه من سلسلة رصيدك: أول يوم فلوسك وصلت فيه للنصاب. العبرة بأول السنة وآخرها.' : 'اقترحناه من سلسلة رصيدك: بداية آخر فترة بقيت فيها أموالك فوق النصاب دون انقطاع.',
+      hawlRule: (eg ? 'يوم ثابت كل سنة هجرية — ' : 'يوم ثابت كل سنة هجرية — ') + SRC.hawl,
+      hawlOpen: !confirmed, confirmLabel: eg ? 'أكّده' : 'أكّده', changeLabel: eg ? 'غيّره ليوم هجري' : 'غيّره ليوم هجري',
+      changeSoon: eg ? 'اختيار يوم هجري تاني — في الخطوة الجاية.' : 'اختيار يوم هجري آخر — في الخطوة القادمة.',
+      confirmHawl: () => { this.setState({ hawl: 'confirmed' }); this.say(eg ? 'اتأكد يوم زكاتك — هننبهك قبله بـ١٠ أيام' : 'تأكّد يوم زكاتك — ننبهك قبله بـ١٠ أيام'); },
+      openFacts: () => { if (!s.closed) this.setState({ sheet: true }); }, closed: s.closed, notClosed: !s.closed,
+      factsTitle: eg ? 'الوقائع — مش آراء' : 'الوقائع — ليست آراء',
+      factsSub: s.closed ? (eg ? 'الحساب متثبّت — الوقائع مقفولة' : 'الحساب مثبّت — الوقائع مقفلة') : (eg ? 'لبس ولا ادخار · مضاربة ولا طويل الأجل' : 'للبس أم للادخار · مضاربة أم طويل الأجل') + (eg ? '' : ' · الدين يُرجى أم مشكوك'),
+      factsChip: open ? (eg ? 'ناقصة ١' : 'ينقص ١') : asked.toLocaleString('ar-EG') + (eg ? ' متجاوبة' : ' مُجابة'),
+      factsChipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; flex-shrink: 0; ' + (open ? 'color: #956000; background: #FBF0DD' : 'color: #13764D; background: #DCEBD6'),
+      factsStyle: 'width: 100%; border: 0; font: inherit; color: #193D33; text-align: right; cursor: pointer; border-radius: 22px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; ' + (open ? 'background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(149,96,0,0.35), 0 14px 32px rgba(29,54,53,0.09)' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)') + (s.closed ? '; opacity: 0.6; cursor: default' : ''),
+      linesTitle: eg ? 'عليه زكاة' : 'تجب فيه الزكاة', lines,
+      outTitle: eg ? 'برّه الحساب' : 'خارج الحساب', outs,
+      cantClose: missing, closeLabel: eg ? 'ثبّت حساب السنة دي' : 'ثبّت حساب هذه السنة',
+      closeStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)' + (missing ? '; opacity: 0.45; cursor: default' : ''),
+      closeNote: missing ? (eg ? 'الحساب لسه ناقص — كمّل الوقائع أو الأسعار الناقصة الأول.' : 'الحساب ناقص — أكمل الوقائع أو الأسعار الناقصة أولًا.') : (eg ? 'التثبيت بيحفظ السطور والنصاب عشان سعر بكرة ما يغيّرش زكاة النهارده. مسموح قبل الميعاد.' : 'التثبيت يحفظ السطور والنصاب فلا يغيّر سعر الغد زكاة اليوم. يجوز قبل الموعد.'),
+      fixYear: () => { if (missing) return; this.setState({ closed: true }); this.say(eg ? 'اتثبّت حساب السنة — سجّل الدفع تحت' : 'ثُبّت حساب السنة — سجّل الدفع أدناه'); },
+      payLines: above ? counted.filter((l) => !l.na).map((l) => ({ id: l.id, name: l.name, due: due(l.v) })) : [],
+      guidance: eg ? 'إرشادي، مش فتوى.' : 'إرشادي، وليس فتوى.',
+      sheet: s.sheet, sheetIntro: eg ? 'اختار اللي حصل فعلًا، والقاعدة بتتطبق على الواقعة لوحدها حسب مرجع البلد.' : 'اختر ما هو واقع فعلًا، وتُطبَّق القاعدة على الواقعة وحدها وفق مرجع البلد.', groups,
+      doneLabel: eg ? 'تمام' : 'تم', closeSheet: () => this.setState({ sheet: false }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

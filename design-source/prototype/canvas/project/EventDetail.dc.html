@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل الحدث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+.ed-in{animation:ed-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.ed-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}.ed-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.ed-toast{animation:ed-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes ed-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes ed-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.ed-track,.ed-knob{transition:none}.m-press:active{transform:none}.m-skel,.ed-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Events.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+      <sc-if value="{{isArchived}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #637570; background: rgba(99,117,112,0.12)">{{archivedChip}}</span></sc-if>
+    </div>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 12px"><div class="m-skel" style="height: 170px; border-radius: 28px; background: rgba(25,61,51,0.08)"></div><div class="m-skel" style="height: 160px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div></div>
+    </sc-if>
+
+    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 12px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+          <span style="display: flex; align-items: center; gap: 10px">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{kindLine}}</span><span style="font-size: 12px; color: #DCEBD6">{{whenLine}}</span></span>
+            <span style="{{ownerStyle}}">{{owner}}</span>
+          </span>
+          <span style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 12px; color: #DCEBD6">{{spendLabel}}</span><span dir="ltr" style="{{spendStyle}}">{{spendText}}</span></span>
+            <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 12px; color: #DCEBD6">{{giftLabel}}</span><span dir="ltr" style="{{giftStyle}}">{{giftText}}</span></span>
+          </span>
+          <span style="font-size: 12px; color: #DCEBD6">{{heroNote}}</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{spendTitle}}</h2>
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <sc-for list="{{spends}}" as="sp" hint-placeholder-count="2">
+              <div style="{{sp.rowStyle}}">
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{sp.name}}</span><span style="font-size: 12px; color: #637570">{{sp.sub}}</span></span>
+                <span style="display: flex; flex-direction: column; align-items: flex-end"><span dir="ltr" style="font-size: 15px; font-weight: 700; white-space: nowrap; color: #BE3D48; font-variant-numeric: tabular-nums">{{sp.amount}}</span><span style="font-size: 11px; color: #637570; white-space: nowrap">{{sp.share}}</span></span>
+              </div>
+            </sc-for>
+            <sc-if value="{{noSpend}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 14px 0; font-size: 13px; color: #637570">{{noSpendText}}</span></sc-if>
+          </div>
+          <button type="button" disabled="{{true}}" aria-describedby="ed-link-soon" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{linkSpendLabel}}</button>
+          <span id="ed-link-soon" style="font-size: 12px; color: #637570">{{linkSpendSoon}}</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{giftTitle}}</h2>
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <sc-for list="{{gifts}}" as="g" hint-placeholder-count="3">
+              <div class="{{g.cls}}" style="{{g.rowStyle}}">
+                <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #08634F; background: #DCEBD6">{{g.initial}}</span>
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{g.name}}</span><span style="font-size: 12px; color: #637570">{{g.sub}}</span></span>
+                <span dir="ltr" style="{{g.amountStyle}}">{{g.amount}}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{noGifts}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 14px 0; font-size: 13px; color: #637570">{{noGiftsText}}</span></sc-if>
+          </div>
+          <dc-import name="NuqootSheet" space="{{spaceName}}" mine="{{mine}}" host="{{host}}" condolence="{{isCondolence}}" on-save="{{onGifts}}" hint-size="350px,48px"></dc-import>
+        </div>
+
+        <sc-if value="{{mine}}" hint-placeholder-val="{{ true }}">
+          <div style="border-radius: 22px; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{remindTitle}}</span><span style="font-size: 12px; color: #637570">{{remindSub}}</span></span>
+              <button type="button" role="switch" aria-checked="{{remindOn}}" aria-label="{{remindTitle}}" onClick="{{toggleRemind}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="ed-track" style="{{track}}"><span class="ed-knob" style="{{knob}}"></span></span></button>
+            </div>
+            <sc-if value="{{remindOpen}}" hint-placeholder-val="{{ false }}">
+              <div class="ed-in" style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{leads}}" as="ld" hint-placeholder-count="4">
+                  <button type="button" aria-pressed="{{ld.on}}" class="m-press" onClick="{{ld.pick}}" style="{{ld.style}}">{{ld.label}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{canPrep}}" hint-placeholder-val="{{ true }}">
+          <a href="EventPrep.dc.html" data-keep="{{prepKeep}}" onClick="{{prepGo}}" class="m-press" style="border-radius: 22px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">{{prepTitle}}</span><span style="font-size: 12px; color: #637570">{{prepSub}}</span></span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+          </a>
+        </sc-if>
+        <sc-if value="{{noPrep}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570; padding: 0 4px">{{noPrepText}}</span></sc-if>
+
+        <button type="button" class="m-press" onClick="{{toggleArchive}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.05)">{{archiveLabel}}</button>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="ed-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"event":{"editor":"enum","options":["حسب اللي اتداس","ولادة جود","زواج خالد","رحلة العُلا","عزاء والد سالم"],"default":"حسب اللي اتداس","section":"الحدث"},"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.timers = [];
+    this.state = this.fresh(props);
+    // من «سجّل النقوط»: [{name, amt}] بالوحدة الصغرى المعروضة + المحفظة أو العملية + اتربطت عملية موجودة؟
+    this.onGifts = (rows, where, linked) => {
+      if (!Array.isArray(rows) || !rows.length) return;
+      const eg = this.eg(), mine = this.ev().mine;
+      const fresh = rows.map((r) => ({ who: r.name, amt: r.amt, via: linked ? (eg ? 'حوالة' : 'حوالة') : where === 'الكاش' ? 'كاش' : String(where), when: eg ? 'النهارده' : 'اليوم', fresh: true }));
+      this.setState({ added: this.state.added.concat(fresh) });
+      const c = rows.length, cnt = c === 1 ? 'نقطة واحدة' : c === 2 ? (eg ? 'نقطتين' : 'نقطتان') : c.toLocaleString('ar-EG') + ' نقاط';
+      this.say(linked ? (eg ? 'اتربطت نقطة — نوعها «' : 'رُبطت نقطة — نوعها «') + (mine ? 'نقوط' : (eg ? 'هدية أو مساعدة' : 'هدية أو مساعدة')) + (eg ? '» ومتأكدة' : '» ومؤكد') : (eg ? 'اتسجّلت ' : 'سُجّلت ') + cnt + (eg ? ' — عملية لكل اسم في «' : ' — عملية لكل اسم في «') + where + '»');
+    };
+  }
+  componentDidUpdate(prev) { if (prev.event !== this.props.event || prev.space !== this.props.space) this.setState(this.fresh(this.props)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  pick(props) {
+    const map = { 'ولادة جود': 'jood', 'زواج خالد': 'khaled', 'رحلة العُلا': 'trip', 'عزاء والد سالم': 'salem' };
+    if (map[props.event]) return map[props.event];
+    let st = null;
+    try { st = window.sessionStorage.getItem('masroufy-event'); } catch (e) {}
+    return ['jood', 'khaled', 'trip', 'salem', 'eid'].indexOf(st) >= 0 ? st : 'jood';
+  }
+  fresh(props) { const key = this.pick(props), d = this.data((props.space ?? 'السعودية') === 'مصر')[key]; return { key, added: [], archived: !!d.archived, remind: false, lead: 7, toast: '' }; }
+  ev() { return this.data(this.eg())[this.state.key]; }
+  // مخترعة · بالوحدة الصغرى (السعودية) · share = نصيب الحدث من العملية بالنسبة المتخزنة على الربط (§64)
+  data(eg) {
+    const R = eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي', A = eg ? 'QNB مصر' : 'البنك الأهلي السعودي';
+    return {
+      jood: { name: 'ولادة جود', kind: 'birth', date: '٢٨ سبتمبر', d: -9, mine: true, spends: [[eg ? 'مستشفى الولادة' : 'مستشفى الولادة', '٢٨ سبتمبر', R, 420000, 100], [eg ? 'محل لبس ومستلزمات أطفال' : 'متجر مستلزمات المواليد', '٢٦ سبتمبر', A, 145000, 60]],
+        gifts: [['سلمان', 50000, 'كاش', '٤ أكتوبر'], ['خالد', 50000, 'كاش', '٢ أكتوبر'], ['نورة', 30000, 'كاش', '٢ أكتوبر'], ['أحمد', 20000, 'كاش', '٢ أكتوبر'], ['عمر', 100000, 'حوالة', '٣٠ سبتمبر']] },
+      khaled: { name: 'زواج خالد', kind: 'wedding', date: '١٨ أكتوبر', d: 11, mine: false, host: 'خالد', spends: [[eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية', '٤ أكتوبر', R, 90000, 50]], gifts: [], prep: [2, 0] },
+      trip: { name: eg ? 'رحلة دهب' : 'رحلة العُلا', kind: 'travel', date: '١٤ نوفمبر', d: 38, mine: true, spends: [['حجز طيران', '٢٠ سبتمبر', R, 180000, 100], ['عربون فندق', '٢٢ سبتمبر', R, 55000, 100]], gifts: [], prep: [4, 1] },
+      salem: { name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '٣ أغسطس', d: -65, mine: false, host: 'سالم', spends: [], gifts: [['سالم', 50000, 'حوالة', '٣ أغسطس']], archived: true },
+      eid: { name: 'عيد الفطر', kind: 'eid', date: '٢٠ مارس', d: -201, mine: true, spends: [[eg ? 'لبس العيد' : 'ملابس العيد', '١٧ مارس', R, 140000, 100], ['العيدية', '١٩ مارس', 'الكاش', 120000, 100], [eg ? 'حلويات وضيافة' : 'حلويات وضيافة', '١٨ مارس', A, 55000, 100]], gifts: [], archived: true }
+    };
+  }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = this.eg(), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state, e = this.ev(), empty = st === 'فاضي';
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const rel = (d) => { const a = Math.abs(d), t = a === 1 ? 'يوم' : a === 2 ? 'يومين' : n(a) + ' ' + (a <= 10 ? 'أيام' : (eg ? 'يوم' : 'يومًا')); return d === 0 ? (eg ? 'النهارده' : 'اليوم') : d > 0 ? 'بعد ' + t : (eg ? 'من ' : 'قبل ') + t; };
+    const KIND = { wedding: 'فرح', travel: 'سفر', birth: 'ولادة', condolence: eg ? 'عزا' : 'عزاء', eid: 'عيد' };
+    const line = (i, last) => 'display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 0;' + (i === last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);');
+    const spendsD = empty ? [] : e.spends;
+    // مصروف الحدث = نصيبه من كل عملية (المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق) — من غير ما النقوط تتطرح منه أبدًا
+    const shareOf = (amt, p) => p === 100 ? amt : (amt * p - ((amt * p) % 100)) / 100 + (((amt * p) % 100) * 2 >= 100 ? 1 : 0);
+    const spends = spendsD.map(([name, when, wallet, amt, p], i) => ({
+      name, sub: when + '، ' + wallet, amount: '−' + this.fmt(shareOf(amt * k, p)),
+      share: p === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(p) + '٪ من ' + this.fmt(amt * k), rowStyle: line(i, spendsD.length - 1)
+    }));
+    const spendSum = spendsD.reduce((t, x) => t + shareOf(x[3] * k, x[4]), 0);
+    const giftsD = (empty ? [] : e.gifts.map(([who, amt, via, when]) => ({ who, amt: amt * k, via, when }))).concat(s.added);
+    const giftSum = giftsD.reduce((t, g) => t + g.amt, 0);
+    const gifts = giftsD.slice().reverse().map((g, i) => ({
+      initial: g.who.charAt(0), name: g.who, sub: g.via + '، ' + g.when, cls: g.fresh ? 'ed-in' : '',
+      amount: (e.mine ? '+' : '−') + this.fmt(g.amt) + ' ' + cur,
+      amountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (e.mine ? '#13764D' : '#BE3D48'),
+      rowStyle: line(i, giftsD.length - 1)
+    }));
+    const up = e.d >= 0 && !s.archived;
+    const big = (has) => 'text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; ' + (has ? 'font-size: 22px; font-weight: 700' : 'font-size: 14px; font-weight: 700; color: #DCEBD6; padding-top: 6px');
+    const LEADS = [[1, eg ? 'قبلها بيوم' : 'قبلها بيوم'], [7, eg ? 'بأسبوع' : 'بأسبوع'], [14, eg ? 'بأسبوعين' : 'بأسبوعين'], [30, eg ? 'بشهر' : 'بشهر']];
+    const leadName = (LEADS.find((l) => l[0] === s.lead) || LEADS[1])[1];
+    const giftWord = e.kind === 'condolence' ? (eg ? 'اللي ادّيته' : 'ما قدّمته') : (eg ? 'اللي نقّطته' : 'ما نقّطته');
+    return {
+      title: e.name,
+      isArchived: s.archived, archivedChip: eg ? 'متأرشف' : 'مؤرشف',
+      isLoading: st === 'بيحمّل', showMain: st !== 'بيحمّل',
+      kindLine: KIND[e.kind] + '، ' + e.date,
+      whenLine: rel(e.d),
+      owner: e.mine ? (eg ? 'حدثك' : 'حدثك') : (eg ? 'صاحبه: ' : 'صاحبه: ') + e.host,
+      ownerStyle: 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 12px; color: #FFFFFF; background: rgba(255,255,255,0.16)',
+      spendLabel: eg ? 'المصروف عليه' : 'المصروف عليه',
+      spendText: spendsD.length ? this.fmt(spendSum) + ' ' + cur : (eg ? 'لسه ما اتربطش' : 'لم يُربط بعد'), spendStyle: big(!!spendsD.length),
+      giftLabel: e.mine ? (eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك') : giftWord,
+      giftText: giftsD.length ? (e.mine ? '+' : '−') + this.fmt(giftSum) + ' ' + cur : (e.mine ? (eg ? 'لسه مفيش' : 'لا شيء بعد') : (eg ? 'لسه' : 'لم تنقّطه بعد')),
+      giftStyle: big(!!giftsD.length) + (giftsD.length ? '; color: ' + (e.mine ? '#A6DEC1' : '#FFD0D2') : ''),
+      heroNote: e.mine ? (eg ? 'النقوط للمعلومية بس — ما بتتطرحش من المصروف.' : 'النقوط للمعلومية فقط — لا تُطرح من المصروف.') : (eg ? 'حدث ' + e.host + ' — النقوط اللي جاتله مش بتظهر هنا.' : 'حدث ' + e.host + ' — نقوطه لا تظهر هنا، بل ما قدّمته أنت.'),
+      spendTitle: (eg ? 'المصروف' : 'المصروف') + (spendsD.length ? ' (' + n(spendsD.length) + ')' : ''),
+      spends, noSpend: !spendsD.length, noSpendText: eg ? 'لسه مفيش مصروف متربط بالحدث ده.' : 'لا مصروف مربوطًا بهذا الحدث بعد.',
+      linkSpendLabel: eg ? 'اربط مصروف بنسبة' : 'اربط مصروفًا بنسبة',
+      linkSpendSoon: eg ? 'الربط بنسبة من صفحة العملية — بيتبني في خطوة جاية.' : 'الربط بنسبة من صفحة العملية — يُبنى في خطوة قادمة.',
+      giftTitle: (e.mine ? (eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك') : giftWord) + (giftsD.length ? ' (' + n(giftsD.length) + ')' : ''),
+      gifts, noGifts: !giftsD.length, noGiftsText: e.mine ? (eg ? 'لسه مفيش نقوط متسجلة.' : 'لا نقوط مسجّلة بعد.') : (eg ? 'لسه ما سجّلتش حاجة.' : 'لم تسجّل شيئًا بعد.'),
+      spaceName: eg ? 'مصر' : 'السعودية', mine: !!e.mine, host: e.host || '', isCondolence: e.kind === 'condolence', onGifts: this.onGifts,
+      remindTitle: e.kind === 'wedding' ? (eg ? 'فكّرني بعيد الجواز كل سنة' : 'ذكّرني بذكرى الزواج كل سنة') : (eg ? 'فكّرني بيه كل سنة' : 'ذكّرني به كل سنة'),
+      remindSub: s.remind ? leadName + (eg ? ' — هدية أو احتفال' : ' — لهدية أو احتفال') : (eg ? 'مقفول' : 'متوقف'),
+      remindOn: s.remind ? 'true' : 'false', remindOpen: s.remind,
+      toggleRemind: () => { this.setState({ remind: !s.remind }); this.say(s.remind ? (eg ? 'التذكير اتقفل' : 'أُوقف التذكير') : (eg ? 'هنفكّرك ' : 'سنذكّرك ') + leadName + (eg ? ' كل سنة' : ' كل سنة')); },
+      track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (s.remind ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'background: rgba(25,61,51,0.16)'),
+      knob: 'position: absolute; top: 2px; right: ' + (s.remind ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      leads: LEADS.map(([v, label]) => ({ label, on: s.lead === v ? 'true' : 'false', pick: () => this.setState({ lead: v }), style: 'height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (s.lead === v ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+      canPrep: up && e.kind !== 'condolence',
+      prepKeep: JSON.stringify({ 'masroufy-event': s.key }),
+      prepGo: () => { try { window.sessionStorage.setItem('masroufy-event', s.key); } catch (err) {} },
+      prepTitle: eg ? 'التجهيزات' : 'التجهيزات',
+      prepSub: e.prep ? plural(e.prep[0], eg ? ['بند واحد', 'بندين', 'بنود', 'بند'] : ['بند واحد', 'بندان', 'بنود', 'بندًا']) + '، ' + (e.prep[1] ? (eg ? 'خلص ' : 'اكتمل ') + n(e.prep[1]) : (eg ? 'لسه ولا واحد خلص' : 'لم يكتمل أي بند')) : '',
+      noPrep: !(up && e.kind !== 'condolence'),
+      noPrepText: e.kind === 'condolence' ? (eg ? 'العزا مالوش تجهيزات.' : 'لا تجهيزات للعزاء.') : (eg ? 'التجهيزات للأحداث الجاية بس.' : 'التجهيزات للأحداث القادمة فقط.'),
+      archiveLabel: s.archived ? (eg ? 'رجّعه من الأرشيف' : 'أعده من الأرشيف') : (eg ? 'أرشف الحدث' : 'أرشفة الحدث'),
+      toggleArchive: () => { this.setState({ archived: !s.archived }); this.say(s.archived ? (eg ? 'رجع للشغالة' : 'عاد إلى النشطة') : (eg ? 'اتأرشف — مش بيتمسح' : 'أُرشف — لا يُحذف')); },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

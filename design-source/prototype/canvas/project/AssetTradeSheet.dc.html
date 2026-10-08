@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>شراء أو بيع أصل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.k-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.k-press:active{transform:scale(.97)}
+.k-veil{animation:k-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.k-up{animation:k-up 450ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes k-fade{from{opacity:0}to{opacity:1}}
+@keyframes k-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.k-press{transition:none}.k-press:active{transform:none}.k-up{animation:k-fade 150ms both}}
+.k-scroll{scrollbar-width:none}.k-scroll::-webkit-scrollbar{display:none}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="position: fixed; inset: 0; z-index: 9">
+    <button type="button" class="k-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+    <div role="dialog" aria-modal="true" aria-label="{{title}}" class="k-up k-scroll" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+      <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+      <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+      <span style="font-size: 13px; color: #637570">{{sub}}</span>
+
+      <sc-if value="{{isTrade}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 700">{{dateLabel}}</span>
+          <div role="radiogroup" aria-label="{{dateLabel}}" style="display: flex; gap: 8px; flex-wrap: wrap">
+            <sc-for list="{{days}}" as="d" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{d.on}}" class="k-press" onClick="{{d.pick}}" style="{{d.style}}">{{d.label}}</button>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{fields}}" as="fl" hint-placeholder-count="3">
+            <div style="{{fl.wrap}}">
+              <label for="{{fl.id}}" style="font-size: 13px; font-weight: 700">{{fl.label}}</label>
+              <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; background: rgba(25,61,51,0.05)">
+                <input id="{{fl.id}}" type="text" inputmode="decimal" dir="ltr" placeholder="0" value="{{fl.value}}" onInput="{{fl.type}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+                <span style="font-size: 13px; color: #637570; flex-shrink: 0">{{fl.unit}}</span>
+              </div>
+            </div>
+          </sc-for>
+          </div>
+          <span style="font-size: 13px; font-weight: 700">{{opLabel}}</span>
+          <div role="radiogroup" aria-label="{{opLabel}}" style="display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{ops}}" as="o" hint-placeholder-count="2">
+              <button type="button" role="radio" aria-checked="{{o.on}}" class="k-press" onClick="{{o.pick}}" style="{{o.style}}">
+                <span style="flex: 1 1 auto; min-width: 0; text-align: right; font-size: 14px">{{o.label}}</span>
+                <span dir="ltr" style="{{o.amtStyle}}">{{o.amount}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isPrice}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <label for="k-price" style="font-size: 13px; font-weight: 700">{{priceLabel}}</label>
+          <div style="display: flex; align-items: center; gap: 8px; height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 18px; background: rgba(25,61,51,0.05)">
+            <input id="k-price" type="text" inputmode="decimal" dir="ltr" placeholder="0" value="{{priceText}}" onInput="{{typePrice}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 22px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+            <span style="font-size: 13px; color: #637570">{{currency}}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <span style="{{previewStyle}}">{{preview}}</span>
+      <span style="font-size: 12px; color: #637570">{{note}}</span>
+      <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px">{{err}}</span>
+      <button type="button" class="k-press" onClick="{{save}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+      <sc-if value="{{hasDone}}" hint-placeholder-val="{{ false }}">
+        <span role="status" style="font-size: 13px; font-weight: 700; color: #08634F; text-align: center">{{done}}</span>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["شراء","بيع","سعر يدوي"],"default":"شراء","section":"الحالة"},"asset":{"editor":"enum","options":["ذهب","عقار"],"default":"ذهب","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // الكمية بالألف من الوحدة (نموذج) — كوتلن بيخزنها بـ10^8 (§11). المبالغ بالوحدة الصغرى
+    this.state = { day: 'today', q: '', v: '', f: '', op: 'none', price: '', err: '', done: '' };
+  }
+  digits(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, ''); }
+  parse(t, places) {
+    const s = this.digits(t);
+    if (!/\d/.test(s) || !/^\d*\.?\d*$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    if (f.length > places) return -1;
+    return parseInt(w || '0', 10) * Math.pow(10, places) + parseInt((f + '000').slice(0, places) || '0', 10);
+  }
+  md(a, b, c) { const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  qt(q) { const f = q % 1000, w = (q - f) / 1000; return w.toLocaleString('ar-EG') + (f ? '٫' + String(f).padStart(3, '0').replace(/0+$/, '').replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : ''); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const s = this.state;
+    const M = { 'شراء': 'buy', 'بيع': 'sell', 'سعر يدوي': 'price', buy: 'buy', sell: 'sell', price: 'price' }[this.props.mode ?? 'شراء'] || 'buy';
+    const flat = (this.props.asset ?? 'ذهب') === 'عقار';
+    const unit = flat ? 'وحدة' : 'جرام';
+    const name = flat ? 'شقة الياسمين' : 'ذهب عيار ٢١';
+    // لو مفتوحة لوحدها: نفس أرقام «تفاصيل الأصل» (المتبقي بعد بيع ٢٠ جرام بالمتوسط المرجّح)
+    const held = Number(this.props.held ?? (flat ? 1000 : eg ? 80000 : 120000));
+    const cost = Number(this.props.cost ?? (flat ? (eg ? 154500000 : 49200000) : (eg ? 28951111 : 3596571)));
+    const q = this.parse(s.q, 3), v = this.parse(s.v, 2), fee = this.parse(s.f, 2) || 0, p = this.parse(s.price, 2);
+    // عمليات حقيقية ممكن تتربط (اختياري) — مخترعة
+    const OPS = M === 'buy'
+      ? (flat ? [] : [{ id: 'yq', label: (eg ? 'مجوهرات الياقوت، ٢ أكتوبر · مصروف' : 'مجوهرات الياقوت، ٢ أكتوبر · مصروف'), amt: eg ? 1050000 : 438000, out: true, day: 'oct2' }])
+      : [{ id: 'in', label: (eg ? 'حوالة جاتلك، ٥ أكتوبر' : 'حوالة واردة، ٥ أكتوبر'), amt: flat ? (eg ? 400000000 : 62000000) : (eg ? 525000 : 87600), out: false, day: 'oct5' }];
+    const DAYS = [['today', eg ? 'النهارده' : 'اليوم'], ['yday', eg ? 'امبارح' : 'أمس']].concat(OPS.length ? [[OPS[0].day, OPS[0].day === 'oct2' ? '٢ أكتوبر' : '٥ أكتوبر']] : []);
+    const chip = (on) => 'height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const days = DAYS.map(([id, label]) => ({ label, on: s.day === id ? 'true' : 'false', pick: () => this.setState({ day: id }), style: chip(s.day === id) }));
+    const field = (id, label, key, u) => ({ id: 'k-' + id, label, unit: u, wrap: 'display: flex; flex-direction: column; gap: 4px; min-width: 0' + (id === 'q' ? '; grid-column: 1 / -1' : ''), value: s[key], type: (e) => this.setState({ [key]: e.target.value, err: '', done: '' }) });
+    const fields = [
+      field('q', eg ? 'الكمية' : 'الكمية', 'q', unit),
+      field('v', M === 'buy' ? (eg ? 'دفعت كام' : 'المبلغ المدفوع') : (eg ? 'قبضت كام' : 'الحصيلة'), 'v', cur),
+      field('f', eg ? 'الرسوم (لو فيه)' : 'الرسوم (اختياري)', 'f', cur)
+    ];
+    const opRow = (id, label, amount, out) => {
+      const on = s.op === id;
+      return { label, amount, on: on ? 'true' : 'false',
+        amtStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; color: ' + (amount ? (out ? '#BE3D48' : '#13764D') : '#637570'),
+        style: 'display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 14px; border: 0; border-radius: 14px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.05)'),
+        pick: () => { const o = OPS.find((x) => x.id === id); this.setState(o ? { op: id, v: s.v || this.fmt(o.amt).replace(/,/g, ''), day: o.day, err: '' } : { op: 'none', err: '' }); } };
+    };
+    const ops = [opRow('none', eg ? 'من غير ربط' : 'بلا ربط', '', false)].concat(OPS.map((o) => opRow(o.id, o.label, (o.out ? '−' : '+') + this.fmt(o.amt), o.out)));
+    // معاينة حية — نفس طريقة المتوسط المرجّح: رسوم الشراء في التكلفة، ورسوم البيع من الحصيلة (§11)
+    let preview = '', good = true;
+    if (M === 'buy' && q > 0 && v > 0) {
+      const nc = cost + v + fee, nh = held + q;
+      preview = (eg ? 'سعر ال' : 'سعر ال') + unit + ' ≈ ' + this.fmt(this.md(v, 1000, q)) + ' · ' + (eg ? 'التكلفة بعدها ' : 'التكلفة بعده ') + this.fmt(nc) + ' · ' + (eg ? 'المتوسط ' : 'المتوسط ') + this.fmt(this.md(nc, 1000, nh));
+    } else if (M === 'sell' && q > 0) {
+      if (q > held) { preview = (eg ? 'معاك ' : 'تملك ') + this.qt(held) + ' ' + unit + (eg ? ' بس' : ' فقط'); good = false; }
+      else { const share = this.md(cost, q, held), gain = (v || 0) - fee - share; preview = (eg ? 'حصة التكلفة ' : 'حصة التكلفة ') + this.fmt(share) + (v ? ' · ' + (eg ? 'المكسب ' : 'المكسب المحقق ') + '\u2066' + (gain < 0 ? '−' : '+') + this.fmt(gain) + '\u2069' : ''); good = gain >= 0 || !v; }
+    } else if (M === 'price' && p > 0) {
+      preview = (eg ? 'قيمته بالسعر ده ' : 'قيمته بهذا السعر ') + this.fmt(this.md(held, p, 1000)) + ' ' + cur;
+    }
+    const DAYNAME = { today: eg ? 'النهارده' : 'اليوم', yday: eg ? 'امبارح' : 'أمس', oct2: '٢ أكتوبر', oct5: '٥ أكتوبر' };
+    const finish = (trade, msg) => {
+      const parent = typeof this.props.onSave === 'function';
+      if (parent) this.props.onSave(trade);
+      this.setState({ q: '', v: '', f: '', price: '', op: 'none', day: 'today', err: '', done: parent ? '' : msg });
+    };
+    const save = () => {
+      if (M === 'price') {
+        if (p == null || p <= 0) { this.setState({ err: eg ? 'اكتب سعر أكبر من صفر.' : 'اكتب سعرًا أكبر من صفر.' }); return; }
+        if (p === -1) { this.setState({ err: eg ? 'السعر فيه أكتر من رقمين بعد العلامة.' : 'في السعر أكثر من رقمين عشريين.' }); return; }
+        finish({ type: 'price', price: p }, eg ? 'اتسجّل السعر (في النموذج)' : 'حُفظ السعر (في النموذج)');
+        return;
+      }
+      if (q === -1) { this.setState({ err: eg ? 'في الكمية أكتر من ٣ أرقام بعد العلامة. التطبيق مش هيقرّبها من غير ما تعرف — اختصرها إنت.' : 'في الكمية أكثر من ٣ أرقام عشرية. لن يقرّبها التطبيق دون علمك — اختصرها بنفسك.' }); return; }
+      if (q == null || q <= 0) { this.setState({ err: M === 'buy' ? (eg ? 'كمية الشراء لازم تبقى أكبر من صفر' : 'يجب أن تكون كمية الشراء أكبر من صفر') : (eg ? 'كمية البيع لازم تبقى أكبر من صفر' : 'يجب أن تكون كمية البيع أكبر من صفر') }); return; }
+      if (M === 'sell' && q > held) { this.setState({ err: (eg ? 'بيع ' : 'بيع ') + this.qt(q) + (eg ? ' والمملوك وقتها ' : ' والمملوك حينها ') + this.qt(held) + (eg ? ' بس. مفيش رصيد سالب صامت.' : ' فقط. لا رصيد سالب دون تنبيه.') }); return; }
+      if (v == null || v <= 0 || v === -1) { this.setState({ err: M === 'buy' ? (eg ? 'اكتب دفعت كام.' : 'اكتب المبلغ المدفوع.') : (eg ? 'اكتب قبضت كام.' : 'اكتب الحصيلة.') }); return; }
+      if (fee === -1) { this.setState({ err: eg ? 'الرسوم فيها أكتر من رقمين بعد العلامة.' : 'في الرسوم أكثر من رقمين عشريين.' }); return; }
+      const o = OPS.find((x) => x.id === s.op);
+      finish({ type: M, q, v, f: fee, date: DAYNAME[s.day] || DAYNAME.today, op: o ? o.label.split(' · ')[0] : '' }, eg ? 'اتسجّل (في النموذج)' : 'سُجّل (في النموذج)');
+    };
+    const notes = {
+      buy: flat ? (eg ? 'السعر ده بيدخل التكلفة ومعاه الرسوم (السعي والتسجيل).' : 'يدخل المبلغ في التكلفة ومعه الرسوم (السعي والتسجيل).')
+        : (eg ? 'شراء الدهب بيفضل مصروف في شهره لحد ما تسجّله هنا بنفسك. لو ربطته بعمليته بتبقى «شراء أصل» وتطلع من المصروف.' : 'شراء الذهب يبقى مصروفًا في شهره حتى تسجّله هنا بنفسك. إن ربطته بعمليته تصبح «شراء أصل» وتخرج من المصروف.'),
+      sell: eg ? 'الفلوس اللي قبضتها مش دخل — بتدخل محفظتك كبيع أصل، والمكسب بس هو اللي بيبان.' : 'الحصيلة ليست دخلًا — تدخل محفظتك كبيع أصل، ويظهر المكسب وحده.',
+      price: eg ? 'سعر بإيدك بتاريخ النهارده. لو الأصل مربوط بالسعر اليومي، التحديث الجاي هيكتب فوقه.' : 'سعر يدوي بتاريخ اليوم. إن كان الأصل مربوطًا بالسعر اليومي فسيكتب التحديث القادم فوقه.'
+    };
+    const titles = { buy: (eg ? 'شراء ' : 'شراء ') + name, sell: (eg ? 'بيع ' : 'بيع ') + name, price: (eg ? 'سعر بإيدك — ' : 'سعر يدوي — ') + name };
+    return {
+      title: titles[M],
+      sub: (eg ? 'معاك ' : 'تملك ') + this.qt(held) + ' ' + unit + ' · ' + (eg ? 'التكلفة ' : 'التكلفة ') + this.fmt(cost) + ' ' + cur + (eg ? ' — تسجيل بس، مفيش تداول' : ' — تسجيل فقط، لا تداول'),
+      isTrade: M !== 'price', isPrice: M === 'price',
+      dateLabel: eg ? 'إمتى؟' : 'متى؟', days, fields,
+      opLabel: M === 'buy' ? (eg ? 'اربطه بعملية دفعت بيها (اختياري)' : 'اربطه بعملية الدفع (اختياري)') : (eg ? 'اربطه بالفلوس اللي دخلت (اختياري)' : 'اربطه بالمبلغ الوارد (اختياري)'), ops,
+      priceLabel: (eg ? 'سعر ال' : 'سعر ال') + unit + (eg ? ' النهارده' : ' اليوم'), priceText: s.price, currency: cur,
+      typePrice: (e) => this.setState({ price: e.target.value, err: '', done: '' }),
+      preview, previewStyle: 'font-size: 13px; font-weight: 700; min-height: 20px; color: ' + (good ? '#08634F' : '#BE3D48'),
+      note: notes[M], err: s.err,
+      saveLabel: M === 'price' ? (eg ? 'احفظ السعر' : 'احفظ السعر') : M === 'buy' ? (eg ? 'سجّل الشراء' : 'سجّل الشراء') : (eg ? 'سجّل البيع' : 'سجّل البيع'),
+      save, hasDone: !!s.done, done: s.done,
+      closeSheet: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

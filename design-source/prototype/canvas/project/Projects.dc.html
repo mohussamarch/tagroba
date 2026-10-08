@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المشاريع — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-in{animation:m-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes m-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.p-enter{animation:p-enter 420ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes p-enter{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.p-veil{animation:p-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.p-up{animation:p-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.p-toast{animation:p-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes p-fade{from{opacity:0}to{opacity:1}}
+@keyframes p-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes p-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-in,.p-enter{animation:p-fade 150ms both}.p-up{animation:p-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <sc-if value="{{inList}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+          <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+          <button type="button" class="m-press" onClick="{{openNew}}" aria-label="{{newLabel}}" style="width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+        </div>
+        <span style="font-size: 13px; color: #637570">{{intro}}</span>
+        <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px; text-align: center">
+            <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+            <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+            <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+          </div>
+        </sc-if>
+        <sc-for list="{{active}}" as="p" hint-placeholder-count="3">
+          <button type="button" class="m-press" onClick="{{p.open}}" style="{{p.card}}">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700">{{p.name}}</span><span style="{{p.kindStyle}}">{{p.kind}}</span></span>
+            <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 13px; color: #637570">{{p.question}}</span><span dir="ltr" style="{{p.bigStyle}}">{{p.big}}</span></span>
+            <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #637570"><span>{{p.line}}</span><span>{{p.when}}</span></span>
+            <sc-if value="{{p.approx}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #956000; background: #FBF0DD">{{p.approxText}}</span></sc-if>
+          </button>
+        </sc-for>
+        <sc-if value="{{hasArchived}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <button type="button" class="m-press" onClick="{{toggleArch}}" aria-expanded="{{archOpen}}" style="min-height: 48px; border: 0; padding: 0 4px; background: transparent; font: inherit; color: #637570; cursor: pointer; display: flex; align-items: center; gap: 8px; text-align: right"><span style="flex: 1 1 auto; font-size: 13px; font-weight: 700">{{archTitle}}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{archChev}}"><path d="M6 9l6 6 6-6"></path></svg></button>
+            <sc-if value="{{archOpen}}" hint-placeholder-val="{{ false }}">
+              <div class="m-in" style="display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{archived}}" as="q" hint-placeholder-count="2">
+                  <div style="border-radius: 20px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.55); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05)">
+                    <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700; color: #4D5F5A">{{q.name}}</span><span style="font-size: 12px; color: #637570">{{q.line}}</span></span>
+                    <button type="button" class="m-press" onClick="{{q.restore}}" style="height: 44px; padding: 0 14px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{restoreLabel}}</button>
+                  </div>
+                </sc-for>
+                <span style="font-size: 12px; color: #637570">{{archNote}}</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{inDetail}}" hint-placeholder-val="{{ false }}">
+      <div class="p-enter" style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+          <button type="button" class="m-press" onClick="{{closeDetail}}" aria-label="{{toListLabel}}" style="width: 48px; height: 48px; border: 0; border-radius: 18px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 20px; font-weight: 700">{{dName}}</h1><span style="font-size: 12px; color: #637570">{{dSub}}</span></span>
+          <button type="button" class="m-press" onClick="{{openEdit}}" aria-label="{{editLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497zM15 5l4 4"></path></svg></button>
+          <button type="button" class="m-press" onClick="{{archive}}" aria-label="{{archiveLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: rgba(25,61,51,0.06)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-18a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1ZM4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4"></path></svg></button>
+        </div>
+        <dc-import name="ProjectDetail" space="{{spaceName}}" project="{{detail}}" on-change="{{onChange}}" hint-size="350px,700px"></dc-import>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="p-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="p-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{sheetTitle}}</h2>
+        <sc-if value="{{askKind}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <sc-for list="{{kinds}}" as="k" hint-placeholder-count="2">
+              <button type="button" class="m-press" onClick="{{k.pick}}" style="border: 0; border-radius: 20px; padding: 14px 16px; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.05)"><span style="font-size: 16px; font-weight: 700">{{k.name}}</span><span style="font-size: 14px; font-weight: 700; color: #08634F">{{k.q}}</span><span style="font-size: 12px; color: #637570">{{k.ex}}</span></button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{askName}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #08634F; background: #DCEBD6">{{kindChosen}}</span>
+            <label for="p-name" style="font-size: 13px; font-weight: 700">{{nameLabel}}</label>
+            <input id="p-name" type="text" value="{{fName}}" onInput="{{typeName}}" maxlength="60" placeholder="{{namePh}}" style="{{nameStyle}}">
+            <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{err}}</span></sc-if>
+            <label for="p-date" style="font-size: 13px; font-weight: 700">{{dateLabel}}</label>
+            <input id="p-date" type="date" dir="ltr" value="{{fDate}}" onInput="{{typeDate}}" min="2026-10-07" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; color: #193D33; outline: none; background: rgba(25,61,51,0.05); text-align: right">
+            <span style="font-size: 12px; color: #637570">{{dateNote}}</span>
+            <button type="button" class="m-press" onClick="{{saveSheet}}" disabled="{{cantSave}}" style="{{saveStyle}}">{{saveLabel}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="p-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","تقريبي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // projects: null = البيانات المخترعة · open: المشروع المفتوح · sheet: new | edit
+    this.state = { projects: null, open: null, archOpen: false, sheet: null, kind: null, fName: '', fDate: '', toast: '' };
+    this.timers = [];
+    this.onChange = (id, patch) => { if (typeof id === 'string' && patch && typeof patch === 'object') this.patch(id, patch); };
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f ? '.' + (f < 10 ? '0' : '') + f : ''); }
+  seed() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    // مخترعة · بالوحدة الصغرى (موجب = وارد، سالب = صادر) · src: rule | manual · unsure: نوعها لسه ما اتأكدش (§18)
+    const op = (id, name, date, amt, src, unsure) => ({ id, name, date, amt, src, unsure: !!unsure });
+    return [
+      { id: 'p1', name: eg ? 'رحلة الغردقة' : 'رحلة العُلا', kind: 'personal', deadline: '2026-11-20', archived: false, excluded: 0,
+        rules: [{ id: 'pr1', text: eg ? 'الغردقة' : 'العلا', mode: 'contains', dir: 'out', on: true }],
+        ops: [op('o1', eg ? 'فندق شاطئ الغردقة' : 'نُزل العلا الصخري', '٣ أكتوبر', -180000, 'rule'), op('o2', eg ? 'تذاكر طيران' : 'تذاكر طيران', '٢٨ سبتمبر', -145000, 'manual'), op('o3', eg ? 'مطعم الغردقة البحري' : 'مطعم واحة العلا', '٤ أكتوبر', -32000, 'rule', true), op('o4', eg ? 'رحلة غطس الغردقة' : 'جولة العلا القديمة', '٥ أكتوبر', -48000, 'rule')] },
+      { id: 'p2', name: eg ? 'تجهيز أوضة الأولاد' : 'تجهيز غرفة الأولاد', kind: 'personal', deadline: '', archived: false, excluded: 1,
+        rules: [],
+        ops: [op('o5', eg ? 'سرير وخزانة' : 'سرير وخزانة', '١٢ سبتمبر', -420000, 'manual'), op('o6', eg ? 'دهانات' : 'دهانات', '١٠ سبتمبر', -95000, 'manual'), op('o7', eg ? 'هدية من سارة للأوضة' : 'هدية من سارة للغرفة', '١٤ سبتمبر', 50000, 'manual')] },
+      { id: 'p3', name: eg ? 'تصميم شعار لعميل' : 'تصميم شعار لعميل', kind: 'work', deadline: '2026-10-15', archived: false, excluded: 0,
+        rules: [{ id: 'pr2', text: eg ? 'استوديو ضي' : 'استوديو ضياء', mode: 'startsWith', dir: 'in', on: true }],
+        ops: [op('o8', eg ? 'استوديو ضي — دفعة أولى' : 'استوديو ضياء — دفعة أولى', '٢٠ سبتمبر', 200000, 'rule', true), op('o9', eg ? 'اشتراك برنامج تصميم' : 'اشتراك برنامج تصميم', '٢١ سبتمبر', -35000, 'manual')] },
+      { id: 'p4', name: eg ? 'متجر جانبي' : 'متجر إلكتروني جانبي', kind: 'work', deadline: '', archived: false, excluded: 0,
+        rules: [{ id: 'pr3', text: eg ? 'متجري' : 'متجري', mode: 'contains', dir: 'any', on: true }],
+        ops: [op('o10', eg ? 'متجري — بضاعة' : 'متجري — بضاعة', '١ سبتمبر', -260000, 'rule'), op('o11', eg ? 'متجري — إعلانات' : 'متجري — إعلانات', '٨ سبتمبر', -50000, 'rule'), op('o12', eg ? 'متجري — مبيعات' : 'متجري — مبيعات', '٣٠ سبتمبر', 120000, 'rule')] },
+      { id: 'a1', name: eg ? 'نقل الشقة' : 'الانتقال للشقة', kind: 'personal', deadline: '', archived: true, excluded: 0, rules: [], ops: [op('o13', eg ? 'عربية نقل' : 'شاحنة نقل', '٢ يونيو', -90000, 'manual'), op('o14', eg ? 'ستائر' : 'ستائر', '٩ يونيو', -140000, 'manual')] },
+      { id: 'a2', name: eg ? 'كورس تدريب مسائي' : 'دورة تدريب مسائية', kind: 'work', deadline: '', archived: true, excluded: 0, rules: [], ops: [op('o15', eg ? 'أجر التدريب' : 'أجر التدريب', '٣٠ مايو', 300000, 'manual'), op('o16', eg ? 'مواصلات' : 'مواصلات', '٢٠ مايو', -15000, 'manual')] }
+    ];
+  }
+  list() { const st = this.props.state ?? 'عادي'; return this.state.projects || (st === 'فاضي' ? [] : this.seed()); }
+  patch(id, p) { this.setState({ projects: this.list().map((x) => x.id === id ? Object.assign({}, x, p) : x) }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const st = this.props.state ?? 'عادي', s = this.state, approxOn = st === 'تقريبي';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const all = this.list();
+    const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const TODAY = Date.UTC(2026, 9, 7);
+    const when = (iso) => { if (!iso) return eg ? 'من غير ميعاد' : 'بلا موعد'; const [y, m, d] = iso.split('-').map(Number); const days = Math.round((Date.UTC(y, m - 1, d) - TODAY) / 86400000); return n(d) + ' ' + MONTHS[m - 1] + ' · ' + (days > 0 ? (eg ? 'بعد ' : 'بعد ') + plural(days, eg ? ['يوم', 'يومين', 'أيام', 'يوم'] : ['يوم', 'يومين', 'أيام', 'يومًا']) : days === 0 ? (eg ? 'النهارده' : 'اليوم') : (eg ? 'عدّى' : 'فات')); };
+    // «صرفت» = نصيبك من الصادر · «جالك» = الوارد · شخصي: كلّفني = صرفت − جالك · شغل: كسبت = جالك − صرفت (ممكن سالب) — §34 §47
+    const sum = (p) => { let out = 0, inn = 0, unsure = 0; p.ops.forEach((o) => { if (o.amt < 0) out -= o.amt * k; else inn += o.amt * k; if (o.unsure && approxOn) unsure += 1; }); return { out, inn, unsure, net: p.kind === 'work' ? inn - out : out - inn }; };
+    const KIND = { personal: eg ? 'شخصي' : 'شخصي', work: eg ? 'شغل' : 'عمل' };
+    const Q = { personal: eg ? 'كلّفني كام؟' : 'كم كلّفني؟', work: eg ? 'كسبت منه كام؟' : 'كم كسبت منه؟' };
+    const big = (p, m) => p.kind === 'work' ? (m.net < 0 ? '−' : '+') + this.fmt(m.net) + ' ' + cur : this.fmt(m.net) + ' ' + cur;
+    const bigColor = (p, m) => p.kind === 'work' ? (m.net < 0 ? '#BE3D48' : '#13764D') : (m.net > 0 ? '#BE3D48' : '#13764D');
+    const statLine = (m, p) => p.ops.length ? (eg ? 'صرفت ' : 'صرفت ') + this.fmt(m.out) + ' · ' + (eg ? 'جالك ' : 'جاءك ') + this.fmt(m.inn) : (eg ? 'لسه مفيش عمليات' : 'لا عمليات بعد');
+    const active = all.filter((p) => !p.archived).map((p) => { const m = sum(p); return {
+      name: p.name, kind: KIND[p.kind], question: Q[p.kind], big: p.ops.length ? big(p, m) : '—', line: statLine(m, p), when: when(p.deadline),
+      bigStyle: 'font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: ' + (p.ops.length ? bigColor(p, m) : '#637570'),
+      kindStyle: 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (p.kind === 'work' ? 'color: #2469BA; background: rgba(36,105,186,0.10)' : 'color: #08634F; background: #DCEBD6'),
+      approx: m.unsure > 0, approxText: 'تقريبي · ' + plural(m.unsure, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' مستنية تأكيد النوع' : ' بانتظار تأكيد النوع'),
+      card: 'border: 0; width: 100%; font: inherit; color: inherit; text-align: right; cursor: pointer; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)',
+      open: () => this.setState({ open: p.id }) }; });
+    const archived = all.filter((p) => p.archived).map((p) => { const m = sum(p); return { name: p.name,
+      line: KIND[p.kind] + ' · ' + Q[p.kind] + ' ' + (p.ops.length ? big(p, m) : '—'),
+      restore: () => { this.patch(p.id, { archived: false }); this.say(eg ? '«' + p.name + '» رجع للنشطة' : 'عاد «' + p.name + '» إلى النشطة'); } }; });
+    const cp = s.open ? all.find((p) => p.id === s.open) : null;
+    const cm = cp ? sum(cp) : null;
+    // نافذة الإنشاء (أول سؤال: شخصي ولا شغل) والتعديل (الاسم والميعاد)
+    const nm = s.fName.trim();
+    const dup = nm && all.some((p) => p.name === nm && (!cp || s.sheet !== 'edit' || p.id !== cp.id));
+    const err = dup ? (eg ? 'فيه مشروع بنفس الاسم.' : 'يوجد مشروع بالاسم نفسه.') : '';
+    const cantSave = !nm || !!err;
+    return {
+      spaceName: eg ? 'مصر' : 'السعودية',
+      title: 'المشاريع', newLabel: eg ? 'مشروع جديد' : 'مشروع جديد',
+      intro: eg ? 'المشروع علامة زيادة على العملية: تصنيفها زي ما هو، ومفيش مجموع عام بيتغير.' : 'المشروع وسم إضافي: تبقى العملية بتصنيفها، ولا يتغير أي مجموع عام.',
+      inList: !cp, inDetail: !!cp,
+      isEmpty: !active.length, emptyTitle: eg ? 'مفيش مشاريع' : 'لا مشاريع بعد',
+      emptyBody: eg ? 'سفرية أو تجهيز أو شغلانة جنب: اعمل مشروع واعرف كلّفك كام أو كسبت كام.' : 'رحلة أو تجهيز أو عمل جانبي: أنشئ مشروعًا لتعرف كم كلّفك أو كم كسبت.',
+      active, archived, hasArchived: archived.length > 0, archOpen: s.archOpen,
+      archTitle: (eg ? 'المؤرشفة (' : 'المؤرشفة (') + n(archived.length) + ')',
+      archChev: 'flex-shrink: 0; transform: rotate(' + (s.archOpen ? 180 : 0) + 'deg)',
+      toggleArch: () => this.setState({ archOpen: !s.archOpen }),
+      restoreLabel: eg ? 'رجّعه' : 'إرجاع',
+      archNote: eg ? 'المؤرشف مقفول: قواعده واقفة، ومفيش مسح.' : 'المؤرشف مغلق: قواعده متوقفة، ولا حذف.',
+      toListLabel: eg ? 'رجوع للمشاريع' : 'رجوع إلى المشاريع',
+      closeDetail: () => this.setState({ open: null }),
+      dName: cp ? cp.name : '', dSub: cp ? KIND[cp.kind] + ' · ' + (cp.deadline ? (eg ? 'لحد ' : 'حتى ') + when(cp.deadline).split(' · ')[0] : when('')) : '',
+      detail: cp ? Object.assign({}, cp, { approxOn, out: cm.out, inn: cm.inn, net: cm.net, unsure: cm.unsure }) : null,
+      onChange: this.onChange,
+      editLabel: eg ? 'عدّل الاسم والميعاد' : 'تعديل الاسم والموعد',
+      openEdit: () => cp && this.setState({ sheet: 'edit', kind: cp.kind, fName: cp.name, fDate: cp.deadline }),
+      archiveLabel: eg ? 'أرشف المشروع' : 'أرشفة المشروع',
+      archive: () => { if (!cp) return; this.patch(cp.id, { archived: true }); this.setState({ open: null }); this.say(eg ? 'اتأرشف «' + cp.name + '» — مفيش حاجة اتمسحت' : 'أُرشف «' + cp.name + '» — لم يُحذف شيء'); },
+      sheetOpen: !!s.sheet, askKind: s.sheet === 'new' && !s.kind, askName: !!s.sheet && !!s.kind,
+      sheetTitle: s.sheet === 'edit' ? (eg ? 'تعديل المشروع' : 'تعديل المشروع') : !s.kind ? (eg ? 'المشروع ده شخصي ولا شغل؟' : 'هل المشروع شخصي أم عمل؟') : (eg ? 'مشروع جديد' : 'مشروع جديد'),
+      kinds: ['personal', 'work'].map((key) => ({ name: KIND[key], q: Q[key],
+        ex: key === 'personal' ? (eg ? 'فرح، سفر، تجهيز بيت — اللي جالك بيقلل الكلفة' : 'زواج، سفر، تجهيز منزل — الوارد يُنقص الكلفة') : (eg ? 'عميل، بارت تايم، شغلانة جنب — الصافي ممكن يطلع بالسالب' : 'عميل، دوام جزئي، عمل جانبي — الصافي قد يكون سالبًا'),
+        pick: () => this.setState({ kind: key }) })),
+      kindChosen: s.kind ? KIND[s.kind] + ' · ' + Q[s.kind] : '',
+      nameLabel: 'الاسم', namePh: eg ? 'مثلًا: سفرية العيد' : 'مثلًا: رحلة العيد', fName: s.fName,
+      typeName: (e) => this.setState({ fName: String(e.target.value || '').slice(0, 60) }),
+      hasErr: !!err, err,
+      nameStyle: 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; color: #193D33; outline: none; background: ' + (err ? 'rgba(190,61,72,0.06); box-shadow: inset 0 0 0 1.5px rgba(190,61,72,0.45)' : 'rgba(25,61,51,0.05)'),
+      dateLabel: eg ? 'آخر ميعاد (اختياري)' : 'آخر موعد (اختياري)', fDate: s.fDate,
+      typeDate: (e) => this.setState({ fDate: /^\d{4}-\d{2}-\d{2}$/.test(String(e.target.value)) ? e.target.value : '' }),
+      dateNote: eg ? 'لو حطيته، المشروع بيظهر في التقويم يومها.' : 'إن حدّدته يظهر المشروع في التقويم يومها.',
+      cantSave, saveLabel: s.sheet === 'edit' ? (eg ? 'احفظ' : 'احفظ') : (eg ? 'اعمل المشروع' : 'أنشئ المشروع'),
+      saveStyle: 'height: 48px; margin-top: 4px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (cantSave ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      saveSheet: () => {
+        if (cantSave || !s.kind) return;
+        if (s.sheet === 'edit' && cp) { this.patch(cp.id, { name: nm, deadline: s.fDate }); this.setState({ sheet: null }); this.say(eg ? 'اتحفظ' : 'حُفظ'); return; }
+        const id = 'n' + (all.length + 1);
+        this.setState({ projects: all.concat([{ id, name: nm, kind: s.kind, deadline: s.fDate, archived: false, excluded: 0, rules: [], ops: [] }]), sheet: null, open: id });
+        this.say(eg ? 'اتعمل «' + nm + '»' : 'أُنشئ «' + nm + '»');
+      },
+      openNew: () => this.setState({ sheet: 'new', kind: null, fName: '', fDate: '' }),
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

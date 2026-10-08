@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>كمّل ملفك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.q-ring{transition:stroke-dashoffset 450ms cubic-bezier(.2,.7,.3,1)}
+.q-up{animation:q-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.q-in{animation:q-in 500ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes q-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes q-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes q-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.m-press,.q-ring{transition:none}.m-press:active{transform:none}.q-up,.q-in{animation:q-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="{{scrollStyle}}">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Main.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <div role="progressbar" aria-label="{{pctText}}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{pctNow}}" style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true" style="flex-shrink: 0"><circle cx="22" cy="22" r="18" stroke="rgba(25,61,51,0.10)" stroke-width="5"></circle><circle class="q-ring" cx="22" cy="22" r="18" stroke="#08634F" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="{{ringOffset}}" transform="rotate(-90 22 22)"></circle></svg>
+        <span style="min-width: 0; display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 700">{{pctText}}</span><span style="font-size: 12px; color: #637570">{{pctBody}}</span></span>
+      </div>
+    </div>
+
+    <div aria-hidden="true" class="q-in" style="align-self: center; width: 120px; height: 80px; margin-top: 8px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; font-size: 11px; color: #637570"><span>رسمة بخط واحد</span><span style="font-size: 10px">{{illus}}</span></div>
+
+    <div class="q-in" style="border-radius: 28px; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <div style="display: flex; flex-direction: column; gap: 6px; text-align: center">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+        <sc-if value="{{hasSub}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; color: #637570">{{sub}}</span></sc-if>
+      </div>
+
+      <sc-if value="{{hasRows}}" hint-placeholder-val="{{ true }}">
+        <div role="radiogroup" aria-label="{{title}}" style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{o.on}}" class="m-press" onClick="{{o.pick}}" style="{{o.style}}"><span style="flex: 1 1 auto; min-width: 0">{{o.label}}</span><sc-if value="{{o.onB}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if></button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isCash}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="display: flex; justify-content: space-between; gap: 8px; padding: 10px 14px; border-radius: 16px; font-size: 13px; background: rgba(25,61,51,0.04)"><span style="color: #637570">{{openLabel}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{openText}}</span></span>
+          <div role="radiogroup" aria-label="{{title}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{ranges}}" as="rg" hint-placeholder-count="4">
+              <button type="button" role="radio" aria-checked="{{rg.on}}" class="m-press" onClick="{{rg.pick}}" style="{{rg.style}}">{{rg.label}}</button>
+            </sc-for>
+          </div>
+          <label for="pq-cash" style="font-size: 13px; font-weight: 700">{{exactLabel}}</label>
+          <div style="{{cashBox}}">
+            <input id="pq-cash" type="text" inputmode="decimal" dir="ltr" value="{{cashText}}" onInput="{{typeCash}}" aria-invalid="{{cashInvalid}}" aria-describedby="pq-cash-note" placeholder="0" style="flex: 1 1 auto; min-width: 0; height: 48px; border: 0; background: transparent; font: inherit; font-size: 20px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+            <span style="font-size: 14px; color: #637570">{{currency}}</span>
+          </div>
+          <span id="pq-cash-note" role="{{noteRole}}" style="{{noteStyle}}">{{cashNote}}</span>
+          <button type="button" class="m-press" onClick="{{saveCash}}" disabled="{{cashOff}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </sc-if>
+
+      <a href="Main.dc.html" data-back="1" class="m-press" style="height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #637570; text-decoration: none">{{notNow}}</a>
+    </div>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="ProfileDebtSheet" space="{{spaceName}}" mode="{{sheetMode}}" tried="{{tried}}" on-done="{{debtsDone}}" on-close="{{closeDebts}}" hint-size="390px,844px"></dc-import>
+  </sc-if>
+
+  <sc-if value="{{hasReply}}" hint-placeholder-val="{{ false }}">
+    <div role="status" class="q-up" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 14px; background: #DCEBD6; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 -14px 40px rgba(29,54,53,0.14)">
+      <div style="display: flex; gap: 12px; align-items: flex-start">
+        <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #13764D; background: #FFFFFF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700; color: #08634F">{{replyTitle}}</span><span style="font-size: 14px">{{replyLine}}</span></span>
+      </div>
+      <a href="Main.dc.html" data-back="1" class="m-press" style="height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)">{{homeLabel}}</a>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"card":{"editor":"enum","options":["السيارة","الكاش","العائلة","الراتب","السكن","العمل الخاص","الديون"],"default":"السيارة","section":"البطاقة"},"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // «كمّل ملفك»: سؤال واحد بس كل مرة (§63). البطاقة اللي بتظهر بيختارها محرك الإشعارات (§61) — هنا من الرافعة «البطاقة»
+  constructor(props) {
+    super(props);
+    this.IDS = { 'السيارة': 'car', 'الكاش': 'cash', 'العائلة': 'family', 'الراتب': 'salary', 'السكن': 'home', 'العمل الخاص': 'biz', 'الديون': 'debts' };
+    this.state = this.fresh(props);
+  }
+  // الشخص الافتراضي: خلّص الدقيقة الأولى (٤٠٪) وجاوب الكاش والديون (ملفك ٦٠٪ — زي «المزيد»)
+  fresh(p) {
+    const err = (p && p.state) === 'خطأ';
+    // خطأ: بطاقة الديون ولوحة الإضافة مفتوحة بخانات فاضية بعد «أضف» (أخطاء ONBOARD_DEBT_*)
+    const card = err ? 'debts' : this.IDS[(p && p.card) || 'السيارة'] || 'car';
+    return { card, got: { cash: 10, debts: 10 }, pick: card === 'debts' ? 'none' : null, reply: null, range: null, cashText: null, sheet: err ? 'recv' : null, tried: err, people: [] };
+  }
+  componentDidUpdate(prev) { if (prev.card !== this.props.card || prev.state !== this.props.state) this.setState(this.fresh(this.props)); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  // الأوزان (§63 — اختيار Claude): الراتب ١٢، الكاش ١٠، الديون ١٠، السيارة/العائلة/السكن/العمل الخاص ٧. «أفضّل ألا أقول» ما بيزوّدش
+  answer(value, reply) {
+    const W = { car: 7, cash: 10, family: 7, salary: 12, home: 7, biz: 7, debts: 10 };
+    const s = this.state, c = s.card;
+    const w = c === 'salary' && value === 'quiet' ? 0 : W[c];
+    const got = Object.assign({}, s.got, { [c]: Math.max(s.got[c] || 0, w) });
+    this.setState({ pick: value, reply, got });
+  }
+  renderVals() {
+    const s = this.state;
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const T = (msa, egy) => (eg ? egy : msa);
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const sum = (g) => Object.keys(g).reduce((t, key) => t + g[key], 0);
+    const startPct = 60, pct = 40 + sum(s.got);
+    const yes = T('نعم', 'أيوه'), no = T('لا', 'لأ');
+    const M = (x) => this.fmt(x * k);
+    // نص البطاقات من ملف الهاندأوف §4 (المصري) — والفصحى بلمسة سعودية (§66)
+    const C = {
+      car: [T('هل لديك سيارة؟', 'عندك عربية؟'), T('لنضبط تصنيفات البنزين والصيانة والمخالفات.', 'عشان نظبط تصنيفات البنزين والصيانة والمخالفات.'), 'سيارة',
+        [['yes', yes, T('ظهر لك تصنيف «السيارة»: بنزين · صيانة · مخالفات.', 'ظهرلك تصنيف «السيارة»: بنزين · صيانة · مخالفات.')], ['no', no, T('«المواصلات» فيها التاكسي والنقل العام فقط.', '«المواصلات» عندك فيها التاكسي والمواصلات العامة بس.')]]],
+      cash: [T('كم معك كاش الآن؟', 'معاك كاش دلوقتي؟'), T('تقريبًا — يمكنك تغييره لاحقًا.', 'تقريبًا — ممكن تغيّره بعدين.'), 'محفظة وعملات', []],
+      family: [T('هل تنفق على أحد غيرك؟', 'بتصرف على حد غيرك؟'), T('لنعرض تصنيفات المنزل والمدارس إن كانت تخصك.', 'عشان نوريك تصنيفات البيت والمدارس لو تخصّك.'), 'بيت وأشخاص',
+        [['no', no, T('لن نعرض لك تصنيفات العائلة.', 'مش هنوريك تصنيفات العيلة.')], ['spouse', T('زوجة وأولاد', 'زوجة وأولاد'), T('تصنيفات العائلة جاهزة.', 'تصنيفات العيلة جاهزة.')], ['parents', 'أهلي', T('تصنيفات العائلة جاهزة.', 'تصنيفات العيلة جاهزة.')]]],
+      salary: [T('كم راتبك الشهري تقريبًا؟', 'مرتبك في الشهر تقريبًا؟'), T('نطاق فقط، لا رقم بالضبط.', 'نطاق بس، مش رقم بالظبط.'), 'ظرف راتب',
+        [['r1', 'أقل من ' + M(500000)], ['r2', 'من ' + M(500000) + ' إلى ' + M(1000000)], ['r3', 'من ' + M(1000000) + ' إلى ' + M(2000000)], ['r4', T('أكثر من ', 'أكتر من ') + M(2000000)], ['quiet', T('أفضّل ألا أقول', 'مش عايز أقول'), T('لن نسألك عنه مرة أخرى.', 'مش هنسألك عنه تاني.')]]
+          .map((r) => [r[0], r[1], r[2] || T('صار التوقع والمتاح يوميًا أدق.', 'التوقع والمتاح يوميًا بقوا أدق.')])],
+      home: [T('ما نوع سكنك؟', 'ساكن في؟'), '', 'باب ومفتاح',
+        [['rent', 'إيجار', T('ظهر لك تصنيفا الإيجار والعمالة المنزلية.', 'ظهرلك تصنيف الإيجار والعمالة المنزلية.')], ['own', 'ملك', T('لن نعرض لك تصنيف الإيجار.', 'مش هنوريك تصنيف الإيجار.')], ['family', T('مع أهلي', 'مع أهلي'), T('لن نعرض لك تصنيف الإيجار.', 'مش هنوريك تصنيف الإيجار.')]]],
+      biz: [T('هل لديك عمل خاص أو مشروع؟', 'عندك شغل خاص أو مشروع؟'), '', 'حقيبة عمل',
+        [['yes', yes, T('ظهر لك تصنيفا «إعلانات وتسويق» و«مصاريف الدوام».', 'ظهرلك «إعلانات وتسويق» و«مصاريف الشغل».')], ['no', no, T('لن نعرض لك تصنيفات العمل الخاص.', 'مش هنوريك تصنيفات الشغل الخاص.')]]],
+      debts: [T('هل لك مال عند أحد، أو عليك لأحد؟', 'حد عليه فلوس ليك، أو إنت عليك لحد؟'), '', 'يدان وعملة',
+        [['none', T('لا أبدًا', 'لأ خالص'), T('لا ديون قديمة.', 'مفيش ديون قديمة.')], ['recv', T('لي مال عند أحد', 'ليا عند حد')], ['pay', T('عليّ لأحد', 'عليا لحد')], ['both', T('الاثنان', 'الاتنين')]]]
+    };
+    const c = C[s.card];
+    const row = (on) => 'width: 100%; min-height: 52px; box-sizing: border-box; padding: 8px 16px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
+    const opts = c[3].map(([id, label, reply]) => ({ label, on: s.pick === id ? 'true' : 'false', onB: s.pick === id, style: row(s.pick === id),
+      // الديون (غير «لا أبدًا») بتفتح إضافة الشخص والمبلغ (§26 · §27)
+      pick: () => { if (s.card === 'debts' && id !== 'none') this.setState({ sheet: id, tried: false }); else this.answer(id, reply); } }));
+    // الكاش: رصيد البداية الحالي ظاهر ومتساب يتغيّر (§26). مخترع
+    const opening = 50000 * k;
+    const ranges = [['zero', T('لا شيء', 'مفيش')], ['lt', 'أقل من ' + M(50000)], ['mid', 'من ' + M(50000) + ' إلى ' + M(200000)], ['gt', T('أكثر من ', 'أكتر من ') + M(200000)]]
+      .map(([id, label]) => ({ label, on: s.range === id ? 'true' : 'false', pick: () => this.setState({ range: id, cashText: '' }),
+        style: 'min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.range === id ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') }));
+    const text = s.cashText == null ? this.fmt(opening) : s.cashText;
+    const okText = /^\s*\d[\d,]*(\.\d{1,2})?\s*$/.test(text);
+    const typed = okText ? this.toMinor(text) : null;
+    const bad = !s.range && text.trim() !== '' && !okText;
+    const changed = !!s.range || (typed != null && typed !== opening);
+    const canSave = !!s.range || typed != null;
+    const cashNote = bad ? T('يجب أن يكون مبلغ الكاش رقمًا غير سالب', 'مبلغ الكاش لازم يكون رقم مش سالب')
+      : changed ? T('سيصبح رصيد بداية جديدًا من اليوم، ولن تُحسب عمليات الكاش قبل اليوم في رصيد الكاش.', 'هيبقى رصيد بداية جديد من النهارده، وعمليات الكاش اللي قبل النهارده مش هتتحسب في رصيد الكاش.')
+      : T('إن تركته كما هو فلن يتغير شيء.', 'لو سبته زي ما هو مش هيتغيّر حاجة.');
+    const cashReply = s.range === 'zero' ? T('رصيد الكاش صفر من اليوم.', 'رصيد الكاش صفر من النهارده.') : s.range ? T('ضُبطت محفظة الكاش تقريبًا من اليوم.', 'محفظة الكاش اتظبطت تقريبًا من النهارده.')
+      : changed ? T('رصيد بداية جديد للكاش من اليوم: ', 'رصيد بداية جديد للكاش من النهارده: ') + this.fmt(typed || 0) + ' ' + cur : T('لم يتغير شيء، ورصيد البداية كما هو.', 'ما اتغيّرش حاجة، ورصيد البداية زي ما هو.');
+    const delta = pct - startPct;
+    const PW = eg ? ['شخص واحد', 'شخصين', 'أشخاص', 'شخص'] : ['شخص واحد', 'شخصان', 'أشخاص', 'شخصًا'];
+    return {
+      scrollStyle: 'height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px ' + (s.reply ? 230 : 48) + 'px; display: flex; flex-direction: column; gap: 14px',
+      pctText: 'ملفك ' + n(pct) + '٪', pctNow: String(pct), ringOffset: String(113.1 * (100 - pct) / 100),
+      pctBody: T('بطاقة واحدة (١٠ ثوانٍ) تجعل أرقامك أدق', 'كارت واحد (١٠ ثواني) بيخلّي أرقامك أدق'),
+      illus: c[2], title: c[0], sub: c[1], hasSub: !!c[1],
+      hasRows: s.card !== 'cash', opts, isCash: s.card === 'cash',
+      openLabel: T('رصيد بداية الكاش الآن · منذ ١ سبتمبر', 'رصيد بداية الكاش دلوقتي · من ١ سبتمبر'), openText: this.fmt(opening) + ' ' + cur,
+      ranges, exactLabel: T('أو اكتب المبلغ بالضبط', 'أو اكتب المبلغ بالظبط'), currency: cur,
+      cashText: text, typeCash: (e) => this.setState({ cashText: e.target.value, range: null }), cashInvalid: bad ? 'true' : 'false',
+      cashBox: 'display: flex; align-items: center; height: 48px; border-radius: 16px; padding: 0 14px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      cashNote, noteRole: bad ? 'alert' : 'note',
+      noteStyle: 'font-size: 13px; ' + (bad ? 'color: #BE3D48' : changed ? 'padding: 10px 12px; border-radius: 14px; color: #6B4600; background: #FBF0DD' : 'color: #637570'),
+      cashOff: !canSave, saveLabel: 'احفظ', saveCash: () => { if (canSave) this.answer(s.range || 'exact', cashReply); },
+      saveStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (canSave ? 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)' : 'opacity: 0.45; cursor: default'),
+      notNow: T('ليس الآن', 'مش دلوقتي'),
+      spaceName: eg ? 'مصر' : 'السعودية', sheetOpen: !!s.sheet, sheetMode: s.sheet || 'recv', tried: s.tried ? '1' : '0',
+      debtsDone: (rows) => {
+        if (!Array.isArray(rows) || !rows.length) return;
+        const names = rows.map((r) => r.name).filter((x, i, a) => a.indexOf(x) === i);
+        this.setState({ sheet: null, tried: false });
+        this.answer(s.sheet || 'recv', T('سُجّل في الأشخاص: ', 'اتسجّل في الأشخاص: ') + plural(names.length, PW) + ' — ' + names.join('، ') + '.');
+      },
+      closeDebts: () => this.setState({ sheet: null, tried: false }),
+      hasReply: !!s.reply,
+      replyTitle: delta > 0 ? '+' + n(delta) + '٪ — ' + T('ملفك صار ', 'ملفك بقى ') + n(pct) + '٪' : T('ملفك ', 'ملفك ') + n(pct) + '٪ ' + T('كما هو', 'زي ما هو'),
+      replyLine: s.reply || '', homeLabel: T('العودة إلى الرئيسية', 'رجوع للرئيسية')
+    };
+  }
+}
+</script>
+</body>
+</html>

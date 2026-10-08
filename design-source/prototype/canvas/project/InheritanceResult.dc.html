@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>نتيجة الورث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.i-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.i-press:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){.i-press{transition:none}.i-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <sc-if value="{{isOk}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 10px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+        <span style="font-size: 14px; color: #DCEBD6">{{heroLabel}}</span>
+        <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px"><span style="font-size: 16px">{{cur}}</span><span style="font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums">{{poolText}}</span></div>
+        <div aria-hidden="true" style="display: flex; gap: 4px; height: 10px">
+          <sc-for list="{{segs}}" as="sg" hint-placeholder-count="4"><span style="{{sg}}"></span></sc-for>
+        </div>
+        <span style="font-size: 12px; color: #DCEBD6">{{heroSub}}</span>
+      </div>
+      <sc-if value="{{hasClaims}}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius: 22px; padding: 6px 16px; background: rgba(25,61,51,0.05)">
+          <sc-for list="{{claims}}" as="cl" hint-placeholder-count="2">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 40px; font-size: 13px"><span>{{cl.label}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{cl.amount}}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{heirs}}" as="hr" hint-placeholder-count="4">
+          <div style="{{hr.rowStyle}}">
+            <span style="{{hr.dot}}"></span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 14px; font-weight: 700">{{hr.name}}</span>
+              <span style="font-size: 12px; color: #637570">{{hr.basis}}</span>
+              <span style="font-size: 12px; color: #637570">{{hr.sub}}</span>
+            </span>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0">
+              <span dir="ltr" style="{{hr.amountStyle}}">{{hr.amount}}</span>
+              <span dir="ltr" style="font-size: 12px; font-weight: 700; color: #08634F">{{hr.frac}}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <dc-import name="InheritanceSplit" space="{{spaceName}}" data="{{splitJson}}" hint-size="350px,700px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{isAsk}}" hint-placeholder-val="{{ false }}">
+    <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #FBF0DD">
+      <span style="font-size: 15px; font-weight: 700; color: #6B4600">{{askText}}</span>
+      <div style="display: flex; gap: 8px">
+        <button type="button" class="i-press" onClick="{{answerNo}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{noLabel}}</button>
+        <button type="button" class="i-press" onClick="{{answerYes}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.75)">{{yesLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{isStop}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="{{stopStyle}}">
+      <span style="font-size: 13px; font-weight: 700">{{stopKind}}</span>
+      <span style="font-size: 18px; font-weight: 700; color: #193D33">{{stopTitle}}</span>
+      <span style="font-size: 14px; line-height: 1.7; color: #193D33">{{stopText}}</span>
+      <span style="font-size: 12px; color: #637570">{{stopCite}}</span>
+    </div>
+  </sc-if>
+  <span style="font-size: 12px; color: #637570; line-height: 1.7">{{disclaimer}}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { distant: null }; }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  // الكسور [بسط، مقام] بأعداد صحيحة — نفس منطق core/Inheritance*.kt (اتجرب على حالات §69.1 و§69.4)
+  solve(c, eg, distant) {
+    const g = (a, b) => (b ? g(b, a % b) : Math.abs(a)), F = (p, q) => { const k = g(p, q) || 1; return [p / k, q / k]; };
+    const add = (x, y) => F(x[0] * y[1] + y[0] * x[1], x[1] * y[1]), sub = (x, y) => F(x[0] * y[1] - y[0] * x[1], x[1] * y[1]), mul = (x, y) => F(x[0] * y[0], x[1] * y[1]), cmp = (x, y) => x[0] * y[1] - y[0] * x[1];
+    const n = (k) => c[k] || 0, H = this.H;
+    if (H.some((k) => n(k) > 100)) return { st: 'invalid', msg: 'big' };
+    if (n('wife') > 4) return { st: 'invalid', msg: 'wives' };
+    if (n('husband') && n('wife')) return { st: 'invalid', msg: 'hw' };
+    const one = ['husband', 'father', 'mother', 'gf', 'pgm', 'mgm'].find((k) => n(k) > 1);
+    if (one) return { st: 'invalid', msg: 'one', a: one };
+    if (!H.some((k) => n(k))) return { st: 'unsupported', msg: 'noHeirs' };
+    const blk = {}, notes = [], fard = {}, basis = {}, B = (by, ks) => ks.forEach((k) => { if (n(k) && !blk[k]) blk[k] = by; }), on = (k) => n(k) > 0 && !blk[k];
+    if (n('father')) B('father', ['gf'].concat(eg ? ['pgm'] : []));
+    if (n('mother')) B('mother', ['pgm', 'mgm']);
+    if (n('son')) B('son', ['ss', 'sd']);
+    if (n('daughter') >= 2 && !n('ss')) B('daughter', ['sd']);
+    const maleD = n('son') ? 'son' : on('ss') ? 'ss' : null, femD = !maleD && (n('daughter') > 0 || on('sd')), kids = !!maleD || femD, SIB = ['fb', 'fs', 'pb', 'ps', 'fn', 'fu'];
+    if (maleD) B(maleD, SIB.concat(['mb', 'ms']));
+    if (n('father')) B('father', SIB.concat(['mb', 'ms']));
+    if (kids) B(n('daughter') ? 'daughter' : 'sd', ['mb', 'ms']);
+    if (on('gf')) { B('gf', ['mb', 'ms', 'fn', 'fu']); if (!eg && ['fb', 'fs', 'pb', 'ps'].some(on)) { notes.push(['gfBlocks', 212]); B('gf', ['fb', 'fs', 'pb', 'ps']); } }
+    if (on('fb')) B('fb', ['pb', 'ps', 'fn', 'fu']);
+    const fsWith = on('fs') && !n('fb') && femD;
+    if (fsWith) B('fs', ['pb', 'ps', 'fn', 'fu']);
+    if (on('fs') && n('fs') >= 2 && !on('pb')) B('fs', ['ps']);
+    if (on('pb')) B('pb', ['fn', 'fu']);
+    const psWith = on('ps') && !on('pb') && femD;
+    if (psWith) B('ps', ['fn', 'fu']);
+    if (on('fn')) B('fn', ['fu']);
+    const egSibs = eg && on('gf') && ['fb', 'fs', 'pb', 'ps'].some(on);
+    if (egSibs && !femD && on('fs') && !n('fb') && (on('pb') || on('ps'))) return { st: 'court' };
+    const set = (k, f, b) => { fard[k] = f; basis[k] = b; }, NM = { '1/2': 'half', '1/4': 'quarter', '1/8': 'eighth', '1/3': 'third', '2/3': 'twoThirds', '1/6': 'sixth' }, nm = (f) => NM[f[0] + '/' + f[1]];
+    const pick = (k, a, b) => set(k, n(k) === 1 ? a : b, nm(n(k) === 1 ? a : b));
+    const sibAll = ['fb', 'fs', 'pb', 'ps', 'mb', 'ms'].reduce((t, k) => t + n(k), 0), spouse = n('husband') ? 'husband' : n('wife') ? 'wife' : null;
+    if (n('husband')) set('husband', kids ? [1, 4] : [1, 2], kids ? 'quarter' : 'half');
+    if (n('wife')) set('wife', kids ? [1, 8] : [1, 4], kids ? 'eighth' : 'quarter');
+    const umar = !kids && sibAll < 2 && n('father') && n('mother') && spouse;
+    if (n('mother')) {
+      if (umar) { set('mother', mul([1, 3], sub([1, 1], fard[spouse])), 'thirdOfRest'); notes.push(['umar', eg ? 14 : 213, spouse]); }
+      else set('mother', kids || sibAll >= 2 ? [1, 6] : [1, 3], kids || sibAll >= 2 ? 'sixth' : 'third');
+      if (!umar && on('gf') && spouse && !kids && sibAll < 2) notes.push(['gfMother', eg ? 14 : 212]);
+    }
+    const gm = ['pgm', 'mgm'].filter(on);
+    gm.forEach((k) => set(k, [1, 6 * gm.length], 'sixth'));
+    const fatherLike = n('father') ? 'father' : on('gf') && !egSibs ? 'gf' : null;
+    if (fatherLike && kids) set(fatherLike, [1, 6], 'sixth');
+    if (!n('son') && n('daughter')) pick('daughter', [1, 2], [2, 3]);
+    if (on('sd') && !on('ss')) { if (!n('daughter')) pick('sd', [1, 2], [2, 3]); else { set('sd', [1, 6], 'takmila'); notes.push(['takmila', eg ? 27 : 216, 'sd', 'daughter']); } }
+    if (on('fs') && !n('fb') && !femD) pick('fs', [1, 2], [2, 3]);
+    if (on('ps') && !on('pb') && !femD) { if (!on('fs')) pick('ps', [1, 2], [2, 3]); else if (n('fs') === 1) { set('ps', [1, 6], 'takmila'); notes.push(['takmila', eg ? 29 : 218, 'ps', 'fs']); } }
+    const mat = (on('mb') ? n('mb') : 0) + (on('ms') ? n('ms') : 0);
+    let mush = false;
+    if (mat) {
+      const f = mat === 1 ? [1, 6] : [1, 3];
+      mush = !!(n('husband') && (n('mother') || gm.length) && mat >= 2 && on('fb') && cmp(add(Object.values(fard).reduce(add, [0, 1]), f), [1, 1]) >= 0);
+      const heads = mat + (mush && eg ? n('fb') + (on('fs') ? n('fs') : 0) : 0), per = (k) => set(k, mul(f, [n(k), heads]), mat === 1 ? 'sixth' : 'thirdShared');
+      ['mb', 'ms'].filter(on).forEach(per);
+      if (mush && eg) { ['fb', 'fs'].filter(on).forEach(per); notes.push(['mushShared', 10]); }
+      if (mush && !eg) { basis.fb = 'none'; notes.push(['mushDropped', 227]); }
+    }
+    let group = null;
+    if (egSibs) { // مصر م٢٢: الجد يقاسم الإخوة كأخ، أو ياخد الباقي بعد فرض الأخوات، ومش أقل من السدس
+      const bro = on('fb') ? 'fb' : on('pb') ? 'pb' : null, sis = on('fs') ? 'fs' : on('ps') ? 'ps' : null, rest0 = sub([1, 1], Object.values(fard).reduce(add, [0, 1]));
+      const sibs = [bro && [bro, 2], sis && !fard[sis] && [sis, 1]].filter(Boolean);
+      if (sibs.length) {
+        const units = 2 + sibs.reduce((t, [k, u]) => t + u * n(k), 0);
+        if (cmp(mul(rest0, [2, units]), [1, 6]) < 0) { set('gf', [1, 6], 'sixth'); group = sibs; notes.push(['gfSixth', 22]); } else { group = [['gf', 2]].concat(sibs); basis.gf = 'gfShares'; notes.push(['gfShares', 22]); }
+      } else if (cmp(rest0, [1, 6]) < 0) { set('gf', [1, 6], 'sixth'); notes.push(['gfSixth', 22]); } else { group = [['gf', 1]]; notes.push(['gfResidue', 22]); }
+      if (femD || cmp(rest0, [1, 6]) < 0) notes.push(['unclear', 22]);
+    }
+    if (!group) group = n('son') ? [['son', 2], ['daughter', 1]] : on('ss') ? [['ss', 2], ['sd', 1]] : fatherLike ? [[fatherLike, 1]] : on('fb') && !mush ? [['fb', 2], ['fs', 1]]
+      : fsWith ? [['fs', 1]] : on('pb') ? [['pb', 2], ['ps', 1]] : psWith ? [['ps', 1]] : on('fn') ? [['fn', 1]] : on('fu') ? [['fu', 1]] : null;
+    if (fsWith || psWith) notes.push(['withDaughters', eg ? 20 : fsWith ? 225 : 226, fsWith ? 'fs' : 'ps']);
+    if (group) group = group.filter(([k]) => on(k));
+    if (group && !group.length) group = null;
+    const share = Object.assign({}, fard);
+    let sum = Object.values(fard).reduce(add, [0, 1]);
+    if (cmp(sum, [1, 1]) > 0) {
+      const base = Object.values(fard).reduce((l, f) => (l * f[1]) / g(l, f[1]), 1);
+      notes.push(['awl', eg ? 15 : 230, base, (sum[0] * base) / sum[1]]);
+      Object.keys(share).forEach((k) => { share[k] = F(share[k][0] * sum[1], share[k][1] * sum[0]); basis[k] += '+awl'; });
+      sum = [1, 1];
+    }
+    const rest = sub([1, 1], sum);
+    if (group) {
+      if (rest[0] <= 0) notes.push(['residueNone', eg ? 17 : 224, group[0][0]]);
+      else {
+        const units = group.reduce((t, [k, u]) => t + u * n(k), 0), mf = group.some(([, x]) => x === 1) && group.some(([, x]) => x === 2) && group.length > 1;
+        group.forEach(([k, u]) => { share[k] = add(share[k] || [0, 1], mul(rest, [u * n(k), units])); basis[k] = fard[k] ? basis[k] + '+rest' : basis[k] || (mf ? 'restMF' : 'rest'); });
+      }
+    } else if (rest[0] > 0) {
+      const holders = Object.keys(fard).filter((k) => k !== 'husband' && k !== 'wife');
+      if (holders.length) {
+        const hs = holders.reduce((t, k) => add(t, fard[k]), [0, 1]);
+        holders.forEach((k) => { share[k] = add(share[k], mul(rest, F(fard[k][0] * hs[1], fard[k][1] * hs[0]))); basis[k] += '+radd'; });
+        notes.push(['radd', eg ? 30 : 231]);
+      } else if (distant === 'no') { share[spouse] = [1, 1]; basis[spouse] += '+radd'; notes.push(['raddSpouse', eg ? 30 : 231, spouse]); }
+      else if (distant === 'yes') return { st: 'unsupported', msg: 'distant' };
+      else return { st: 'ask' };
+    }
+    const rows = H.filter((k) => n(k)).map((k) => ({ k, cnt: n(k), f: blk[k] ? [0, 1] : share[k] || [0, 1], basis: blk[k] ? 'blocked' : basis[k] || 'none', by: blk[k] || null }));
+    rows.filter((r) => r.by).forEach((r) => notes.push(['blocked', null, r.k, r.by]));
+    return { st: 'ok', rows, notes };
+  }
+  renderVals() {
+    this.H = ['husband', 'wife', 'son', 'daughter', 'father', 'mother', 'gf', 'pgm', 'mgm', 'ss', 'sd', 'fb', 'fs', 'pb', 'ps', 'mb', 'ms', 'fn', 'fu'];
+    const ui = (this.props.space ?? 'السعودية') === 'مصر';
+    let c = null;
+    try { c = typeof this.props.calc === 'string' ? JSON.parse(this.props.calc) : this.props.calc; } catch (e) { c = null; }
+    // بيانات عرض لو اللوحة اتفتحت لوحدها (مخترعة)
+    if (!c || !c.items) c = { country: ui ? 'EG' : 'SA', items: [{ name: ui ? 'شقة' : 'الشقة', v: ui ? 384000000 : 57600000 }, { name: ui ? 'دهب' : 'ذهب', v: ui ? 42000000 : 5256000 }, { name: 'الكاش', v: ui ? 270000 : 90000 }], heirs: { wife: 1, son: 1, daughter: 1, mother: 1 }, names: {}, funeral: 0, debts: 0, bequest: 0 };
+    const eg = c.country === 'EG', cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    const t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG'), A = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const L = { husband: 'الزوج', wife: 'الزوجة', son: 'الابن', daughter: 'البنت', father: 'الأب', mother: 'الأم', gf: 'الجد (أبو الأب)', pgm: 'الجدة (أم الأب)', mgm: 'الجدة (أم الأم)', ss: 'ابن الابن', sd: 'بنت الابن', fb: 'الأخ الشقيق', fs: 'الأخت الشقيقة', pb: 'الأخ من الأب', ps: 'الأخت من الأب', mb: 'الأخ من الأم', ms: 'الأخت من الأم', fn: 'ابن الأخ الشقيق', fu: 'العم الشقيق' };
+    const law = eg ? 'قانون المواريث ٧٧ لسنة ١٩٤٣' : 'نظام الأحوال الشخصية', law71 = 'قانون الوصية ٧١ لسنة ١٩٤٦';
+    const cite = (a, l) => (a == null ? '' : t('المادة ', 'مادة ') + A(a) + t(' من ', ' من ') + (l || law));
+    const md = (a, p, q) => { const x = BigInt(a) * BigInt(p), d = BigInt(q); return Number((x * 2n + d) / (d * 2n)); };
+    const items = (c.items || []).map((x) => ({ name: String(x.name || '').trim(), v: Math.max(0, Number(x.v) || 0) }));
+    const total = items.reduce((a, x) => a + x.v, 0), heirsIn = c.heirs || {};
+    const stop = (kind, title, text, cit) => ({ st: kind, title, text, cit });
+    const pre = eg && c.pre && (c.pre.sons || c.pre.daughters || c.pre.kind) ? c.pre : null;
+    const SP = { pregnancy: t('وجود حمل يحتاج حفظ نصيب له حتى الولادة، وهذه النسخة لا تحسبه', 'وجود حمل محتاج نصيب يتحفظ له لحد الولادة، والنسخة دي مش بتحسبه'), missing: t('وجود وارث مفقود يحتاج حفظ نصيبه، وهذه النسخة لا تحسبه', 'وجود وارث مفقود محتاج نصيبه يتحفظ، والنسخة دي مش بتحسبه'), successive: t('وفاة وارث قبل القسمة تحتاج حساب تركتين معًا، وهذه النسخة لا تحسبه', 'وفاة وارث قبل القسمة محتاجة حساب تركتين مع بعض، والنسخة دي مش بتحسبه'), takharuj: t('اتفاق الورثة على خروج أحدهم بمقابل (التخارج) لا تحسبه هذه النسخة', 'اتفاق الورثة إن حد فيهم يخرج بمقابل (التخارج) النسخة دي مش بتحسبه') };
+    const INV = { hw: t('لا يجتمع زوج وزوجة في مسألة واحدة', 'مينفعش زوج وزوجة في نفس المسألة'), wives: t('الزوجات أربع على الأكثر', 'الزوجات أربعة بالكتير'), big: t('الأرقام أكبر من المسموح', 'الأرقام أكبر من المسموح') };
+    let res = null, W = 0, Bx = 0, notesPre = [];
+    if (!items.length || !total) res = stop('invalid', '', t('أضف شيئًا واحدًا على الأقل من التركة', 'ضيف حاجة واحدة على الأقل من التركة'));
+    else if (items.some((x) => !x.name)) res = stop('invalid', '', t('اكتب اسم كل شيء في التركة', 'اكتب اسم كل حاجة في التركة'));
+    const fun = Math.min(Number(c.funeral) || 0, total), debt = Math.min(Number(c.debts) || 0, total - fun), net = total - fun - debt, third = (net - net % 3) / 3;
+    let sol = res ? null : this.solve(heirsIn, eg, s.distant);
+    if (sol && sol.st === 'invalid') res = stop('invalid', '', sol.msg === 'one' ? L[sol.a] + t(' واحد فقط', ' واحد بس') : INV[sol.msg]);
+    else if (!res && (c.special || []).length) res = stop('unsupported', '', SP[c.special[0]] || '');
+    else if (sol && sol.st === 'court') res = stop('court', t('لا نص — اسأل المحكمة', 'مفيش نص — اسأل المحكمة'), t('الجد مع إخوة أشقاء وإخوة من الأب معًا، والمادة ٢٢ لا تبيّن طريقة القسمة في هذه الحالة', 'الجد مع إخوة أشقاء وإخوة من الأب مع بعض، والمادة ٢٢ مش بتقول القسمة إزاي في الحالة دي'), cite(22));
+    else if (sol && sol.st === 'unsupported') res = stop('unsupported', '', sol.msg === 'noHeirs' ? t('لا يوجد وارث من الورثة المكتوبين؛ التركة لأقارب آخرين أو لبيت المال، وهذه النسخة لا تحسبها', 'مفيش وارث من الورثة المكتوبين؛ التركة لقرايب تانيين أو للخزانة العامة، والنسخة دي مش بتحسبها') : t('ذوو الأرحام (أولاد البنات، الخال، العمة…) يُحسبون في المنطق، ولم تُرسم خاناتهم في هذا النموذج بعد', 'ذوو الأرحام (أولاد البنات، الخال، العمة…) بيتحسبوا في المنطق، وخاناتهم لسه ما اترسمتش في النموذج ده'));
+    else if (pre && pre.kind === 'son' && !heirsIn.son) res = stop('unsupported', '', t('لا يوجد ابن على قيد الحياة، فأولاد الابن المتوفى قبله قد يرثون بأنفسهم؛ اكتبهم أبناء ابن وبنات ابن', 'مفيش ابن عايش، فأولاد الابن اللي اتوفى قبله ممكن يورثوا بنفسهم؛ اكتبهم أبناء ابن وبنات ابن'));
+    else if (pre && !(pre.sons || pre.daughters)) res = stop('invalid', '', t('اكتب عدد أولاد الابن أو البنت المتوفى قبله', 'اكتب عدد أولاد الابن أو البنت اللي اتوفى قبله'));
+    if (!res && sol && sol.st === 'ok') {
+      if (fun + debt < (Number(c.funeral) || 0) + (Number(c.debts) || 0)) notesPre.push([t('التجهيز والديون أكثر من التركة، فلا يبقى شيء للوصية ولا للورثة', 'التجهيز والديون أكتر من التركة، فمش هيفضل حاجة للوصية ولا للورثة'), null]);
+      if (pre) { // الوصية الواجبة (٧١/١٩٤٦ م٧٦–٧٩): نصيبه لو كان عايش، في حدود الثلث، ناقص اللي اتدّى في الحياة
+        const alt = this.solve(Object.assign({}, heirsIn, { [pre.kind]: (heirsIn[pre.kind] || 0) + 1 }), eg, 'no'), r = alt.rows && alt.rows.find((x) => x.k === pre.kind);
+        if (r) { const raw = md(net, r.f[0], r.f[1] * r.cnt), w0 = Math.min(raw, third); W = Math.max(0, w0 - (Number(pre.gift) || 0));
+          notesPre.push([t('لأولاد ', 'لأولاد ') + L[pre.kind] + t(' المتوفى قبله وصية واجبة قدرها ', ' اللي اتوفى قبله وصية واجبة قدرها ') + this.fmt(W) + t('، تُخرج قبل قسمة الباقي', '، بتطلع قبل قسمة الباقي'), cite('٧٦–٧٩', law71)]);
+          if (raw > third) notesPre.push([t('نصيبه أكثر من الثلث، فأُعطي أولاده الثلث فقط', 'نصيبه أكتر من التلت، فأولاده خدوا التلت بس'), cite(78, law71)]);
+          if (Number(pre.gift) > 0) notesPre.push([t('خُصم ما أعطاهم إياه في حياته (', 'اتخصم اللي اداهولهم في حياته (') + this.fmt(Number(pre.gift)) + ')', cite(77, law71)]); }
+      }
+      const b = Number(c.bequest) || 0, room = Math.max(0, third - W);
+      if (b) {
+        if (c.toHeir && !eg && !c.consent) { Bx = 0; notesPre.push([t('الوصية لوارث لا تنفذ إلا إذا وافق باقي الورثة بعد الوفاة، فلم تُحسب', 'الوصية لوارث مش بتتنفذ إلا لو باقي الورثة وافقوا بعد الوفاة، فمتحسبتش'), cite(179)]); }
+        else {
+          if (c.toHeir) notesPre.push([eg ? t('الوصية لوارث جائزة في حدود الثلث دون موافقة الورثة', 'الوصية لوارث جايزة في حدود التلت من غير موافقة الورثة') : t('الوصية لوارث نُفّذت لأن باقي الورثة وافقوا', 'الوصية لوارث اتنفذت عشان باقي الورثة وافقوا'), eg ? cite(37, law71) : cite(179)]);
+          if (b > room && c.consent) { Bx = Math.min(b, net - W); notesPre.push([t('الوصية أكثر من الثلث، ونُفّذت لأن الورثة كلهم وافقوا بعد الوفاة', 'الوصية أكتر من التلت، واتنفذت عشان الورثة كلهم وافقوا بعد الوفاة'), eg ? cite(37, law71) : cite(190)]); }
+          else if (b > room) { Bx = room; notesPre.push([t('الوصية (', 'الوصية (') + this.fmt(b) + t(') أكثر من الثلث المتاح، فنُفّذ منها ', ') أكتر من التلت المتاح، فاتنفذ منها ') + this.fmt(room) + t(' فقط', ' بس'), eg ? cite(37, law71) : cite(190)]); }
+          else Bx = b;
+        }
+      }
+    }
+    const pool = net - W - Bx;
+    const DOT = ['#13764D', '#2469BA', '#956000', '#BE3D48', '#08634F', '#6B5BA8', '#4D747C', '#A55060'], BAR = ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#7FC8AE', '#C9BEF0', '#A9C7CC', '#E9B4C0'];
+    const dot = (col) => 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + col, ok = !res && sol && sol.st === 'ok';
+    let heirs = [], segs = [], itemsV = [], notes = [], claims = [];
+    if (ok) {
+      // نصيب كل فرد = كسره من نصيب الورثة؛ الهللة الباقية لأكبر باقي ثم للأول في الترتيب
+      const live = sol.rows.filter((r) => r.f[0] > 0), per = [];
+      live.forEach((r) => { for (let i = 0; i < r.cnt; i++) per.push({ k: r.k, p: BigInt(r.f[0]), q: BigInt(r.f[1] * r.cnt) }); });
+      const gq = (a, b) => (b ? gq(b, a % b) : a), Lq = per.reduce((l, x) => (l * x.q) / gq(l, x.q), 1n), P = BigInt(pool);
+      per.forEach((x) => { const v = P * x.p * (Lq / x.q); x.amt = v / Lq; x.rem = v % Lq; });
+      let left = P - per.reduce((a, x) => a + x.amt, 0n);
+      per.map((x, i) => i).sort((a, b) => (per[b].rem > per[a].rem ? 1 : per[b].rem < per[a].rem ? -1 : a - b)).forEach((i) => { if (left > 0n) { per[i].amt += 1n; left -= 1n; } });
+      const BT = { half: 'النصف', quarter: 'الربع', eighth: 'الثمن', third: 'الثلث', twoThirds: 'الثلثان', sixth: 'السدس', thirdOfRest: 'ثلث الباقي', takmila: 'السدس تكملة للثلثين', thirdShared: t('من الثلث بالتساوي', 'من التلت بالتساوي'), gfShares: t('يقاسم الإخوة كأخ', 'بيقاسم الإخوة كأخ'), rest: 'الباقي', restMF: 'الباقي، للذكر مثل حظ الأنثيين', blocked: t('لا يرث (محجوب)', 'مش بيورث (محجوب)'), none: t('لم يبق له شيء', 'مفضلش له حاجة') };
+      const basisT = (b) => { const [h, ...rest] = b.split('+'); return (BT[h] || '') + (rest.indexOf('awl') >= 0 ? t(' — بعد العَوْل', ' — بعد العَوْل') : '') + (rest.indexOf('rest') >= 0 ? ' + الباقي' : '') + (rest.indexOf('radd') >= 0 ? ' + الرَّدّ' : ''); };
+      let ci = 0;
+      const claimRows = [[fun, t('تجهيز الميت', 'تجهيز الميت')], [debt, t('الديون', 'الديون')], [W, t('الوصية الواجبة لأولاد ', 'الوصية الواجبة لأولاد ') + (pre ? L[pre.kind] : '')], [Bx, 'الوصية']].filter((x) => x[0] > 0);
+      claims = claimRows.map(([v, label]) => ({ label, amount: this.fmt(v) }));
+      const parties = claimRows.map(([v, label]) => ({ label, x: v, dot: dot('#637570') }));
+      heirs = sol.rows.map((r, i) => {
+        const mine = per.filter((x) => x.k === r.k), amt = mine.reduce((a, x) => a + Number(x.amt), 0), col = r.f[0] > 0 ? ci++ % DOT.length : -1;
+        const nm = String((c.names || {})[r.k] || '').trim();
+        if (amt > 0) { segs.push('flex: ' + amt + ' 1 0; border-radius: 5px; background: ' + BAR[col]); parties.push({ label: L[r.k] + (r.cnt > 1 ? ' (' + n(r.cnt) + ')' : ''), x: amt, dot: dot(DOT[col]) }); }
+        const gF = r.f[0] ? r.f : null, each = mine.length ? Number(mine[0].amt) : 0, same = mine.every((x) => x.amt === mine[0].amt);
+        return { name: L[r.k] + (r.cnt > 1 ? ' (' + n(r.cnt) + ')' : ''), basis: basisT(r.basis), dot: dot(col >= 0 ? DOT[col] : '#CCD8CC'),
+          sub: (nm ? nm + ' · ' : '') + (r.cnt > 1 && amt ? t('لكل واحد ', 'لكل واحد ') + this.fmt(each) + (same ? '' : t(' (الهللة الزائدة للأول)', ' (الهللة الزيادة للأول)')) : ''),
+          amount: this.fmt(amt), amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (amt ? '#193D33' : '#637570'),
+          frac: gF ? A(gF[0]) + '/' + A(gF[1]) : '٠',
+          rowStyle: 'display: flex; align-items: center; gap: 10px; padding: 12px 0;' + (i === sol.rows.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') };
+      });
+      // قسمة كل شيء: كل عمود = قيمته بالهللة (أكبر باقي)، وآخر شيء ياخد الباقي عشان مجموع كل طرف = مبلغه بالظبط
+      const done = parties.map(() => 0);
+      itemsV = items.map((it, k) => {
+        let parts;
+        if (k === items.length - 1) parts = parties.map((p, j) => p.x - done[j]);
+        else {
+          const raw = parties.map((p) => { const v = BigInt(p.x) * BigInt(it.v); return { q: Number(v / BigInt(total)), r: v % BigInt(total) }; });
+          let lft = it.v - raw.reduce((a, x) => a + x.q, 0);
+          raw.map((x, j) => j).sort((a, b) => (raw[b].r > raw[a].r ? 1 : raw[b].r < raw[a].r ? -1 : a - b)).forEach((j) => { if (lft > 0) { raw[j].q += 1; lft--; } });
+          parts = raw.map((x) => x.q);
+        }
+        parts.forEach((v, j) => { done[j] += v; });
+        return { name: it.name, value: this.fmt(it.v), parts: parties.map((p, j) => ({ label: p.label, amount: this.fmt(parts[j]), dot: p.dot })) };
+      });
+      // الملاحظات: الجاهزة نص ['txt', النص، المادة]، والباقي مفاتيح المحرك بتتكتب في InheritanceSplit
+      notes = [['txt', t('الترتيب: تجهيز الميت، ثم الديون، ثم الوصية، ثم الورثة', 'الترتيب: تجهيز الميت، وبعدين الديون، وبعدين الوصية، وبعدين الورثة'), cite(eg ? 4 : 198)]].concat(notesPre.map((x) => ['txt', x[0], x[1] || '']), sol.notes);
+    }
+    const kinds = { invalid: [t('مدخلات غير صحيحة', 'مدخلات غلط'), '#BE3D48', 'rgba(190,61,72,0.08)'], unsupported: [t('غير مدعوم في هذه النسخة', 'مش مدعوم في النسخة دي'), '#637570', 'rgba(25,61,51,0.06)'], court: [t('حالة بلا نص في القانون', 'حالة من غير نص في القانون'), '#956000', '#FBF0DD'] };
+    const kd = res ? kinds[res.st] : null;
+    return {
+      isOk: !!ok, isAsk: !res && sol && sol.st === 'ask', isStop: !!res, cur,
+      heroLabel: t('يُقسَم على الورثة', 'بيتقسم على الورثة'), poolText: this.fmt(Math.max(0, pool)), segs,
+      heroSub: t('من تركة ', 'من تركة ') + this.fmt(total) + (claims.length ? t(' بعد ما يُخرج قبل القسمة', ' بعد اللي بيطلع قبل القسمة') : t(' · لا تجهيز ولا ديون ولا وصية', ' · مفيش تجهيز ولا ديون ولا وصية')) + ' · ' + (items.length === 1 ? t('شيء واحد', 'حاجة واحدة') : items.length === 2 ? t('شيئان', 'حاجتين') : n(items.length) + (items.length <= 10 ? t(' أشياء', ' حاجات') : t(' شيئًا', ' حاجة'))),
+      hasClaims: claims.length > 0, claims, heirs,
+      spaceName: ui ? 'مصر' : 'السعودية', splitJson: JSON.stringify({ law: c.country, items: itemsV, notes }),
+      askText: t('هل للمتوفى أقارب آخرون مثل أولاد البنات أو الخال أو العمة؟ الجواب يغيّر القسمة', 'المتوفى ليه قرايب تانيين زي أولاد البنات أو الخال أو العمة؟ الإجابة بتغيّر القسمة'),
+      noLabel: t('لا', 'لأ'), yesLabel: t('نعم', 'أيوه'), answerNo: () => this.setState({ distant: 'no' }), answerYes: () => this.setState({ distant: 'yes' }),
+      stopKind: kd ? kd[0] : '', stopTitle: res ? res.title || '' : '', stopText: res ? res.text : '', stopCite: res && res.cit ? res.cit : '',
+      stopStyle: 'border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 6px; color: ' + (kd ? kd[1] : '#637570') + '; background: ' + (kd ? kd[2] : '#FFFFFF'),
+      disclaimer: eg ? t('حساب تقريبي للتخطيط، والقسمة الرسمية بإعلام الوراثة من المحكمة.', 'حساب تقريبي للتخطيط، والقسمة الرسمية بإعلام الوراثة من المحكمة.') : 'حساب تقريبي للتخطيط، والقسمة الرسمية بصك حصر الورثة من المحكمة.'
+    };
+  }
+}
+</script>
+</body>
+</html>

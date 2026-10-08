@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>كشف الحساب — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.i-bar{transition:width 600ms cubic-bezier(.2,.7,.3,1)}
+.i-in{animation:i-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes i-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.i-veil{animation:i-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.i-up{animation:i-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.i-toast{animation:i-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes i-fade{from{opacity:0}to{opacity:1}}
+@keyframes i-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes i-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.i-bar{transition:none}.m-press:active{transform:none}.i-in,.i-up{animation:i-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">{{title}}</h1>
+    </div>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+
+    <sc-if value="{{showPick}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 26px; padding: 20px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+          <span aria-hidden="true" style="width: 52px; height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.14)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg></span>
+          <span style="font-size: 18px; font-weight: 700">{{pickTitle}}</span>
+          <span style="font-size: 13px; color: #DCEBD6">{{pickBody}}</span>
+          <button type="button" class="m-press" onClick="{{openPicker}}" style="align-self: stretch; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF; box-shadow: 0 8px 18px rgba(0,0,0,0.12)">{{pickBtn}}</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{supTitle}}</h2>
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <sc-for list="{{sups}}" as="sp" hint-placeholder-count="3">
+              <div style="{{sp.rowStyle}}">
+                <span aria-hidden="true" style="{{sp.tile}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></span>
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{sp.name}}</span><span style="font-size: 12px; color: #637570">{{sp.sub}}</span></span>
+              </div>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; color: #637570">{{curNote}}</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showReading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 14px; font-weight: 700; overflow-wrap: anywhere">{{fileName}}</span>
+        <span style="font-size: 13px; color: #637570">{{readLine}}</span>
+        <span role="progressbar" aria-label="{{readLine}}" aria-valuenow="{{readPct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="i-bar" style="{{readBar}}"></span></span>
+        <span style="font-size: 12px; color: #637570">{{readNote}}</span>
+        <button type="button" class="m-press" onClick="{{cancelRead}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showReady}}" hint-placeholder-val="{{ false }}">
+      <div class="i-in" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 10px; color: #08634F; background: #DCEBD6">{{readyChip}}</span><span style="font-size: 12px; color: #637570">{{readyMeta}}</span></span>
+        <span style="font-size: 14px; font-weight: 700; overflow-wrap: anywhere">{{fileName}}</span>
+        <span style="font-size: 20px; font-weight: 700">{{foundLine}}</span>
+        <div style="display: flex; flex-direction: column; border-radius: 14px; padding: 4px 12px; background: rgba(25,61,51,0.04)">
+          <sc-for list="{{facts}}" as="ft" hint-placeholder-count="3">
+            <span style="{{ft.style}}"><span style="color: #637570">{{ft.label}}</span><span style="font-weight: 700; text-align: left">{{ft.value}}</span></span>
+          </sc-for>
+        </div>
+        <sc-if value="{{askWallet}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 700">{{walletQ}}</span>
+            <div role="radiogroup" aria-label="{{walletQ}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{wallets}}" as="wl" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{wl.on}}" class="m-press" onClick="{{wl.pick}}" style="{{wl.style}}">{{wl.name}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{canReview}}" hint-placeholder-val="{{ true }}">
+          <a href="ImportReview.dc.html" data-keep="{{keep}}" class="m-press" style="height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{reviewLabel}}</a>
+        </sc-if>
+        <sc-if value="{{cantReview}}" hint-placeholder-val="{{ false }}">
+          <button type="button" disabled="{{true}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); opacity: 0.45; cursor: default">{{reviewLabel}}</button>
+        </sc-if>
+        <span style="font-size: 12px; color: #637570">{{saveNote}}</span>
+        <button type="button" class="m-press" onClick="{{again}}" style="height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{otherLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" class="i-in" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD; color: #6B4600">
+        <span style="display: flex; align-items: center; gap: 8px; color: #956000"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg><span style="font-size: 15px; font-weight: 700">{{errTitle}}</span></span>
+        <span style="font-size: 12px; overflow-wrap: anywhere">{{fileName}}</span>
+        <span style="font-size: 14px; line-height: 1.7; color: #193D33">{{errBody}}</span>
+        <sc-if value="{{hasCols}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 4px; border-radius: 14px; padding: 10px 12px; font-size: 12px; background: rgba(255,255,255,0.65)">
+            <span><b>{{colsFoundLabel}}</b> <span dir="ltr">{{colsFound}}</span></span>
+            <span><b>{{colsWantLabel}}</b> <span dir="ltr">{{colsWant}}</span></span>
+          </div>
+          <button type="button" disabled="{{true}}" aria-describedby="map-later" style="height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(255,255,255,0.75); opacity: 0.6; cursor: default">{{mapLabel}}</button>
+          <span id="map-later" style="font-size: 12px">{{mapLater}}</span>
+        </sc-if>
+        <button type="button" class="m-press" onClick="{{again}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{otherLabel}}</button>
+      </div>
+    </sc-if>
+
+    <a href="ImportBatches.dc.html" class="m-press" style="min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-radius: 16px; text-decoration: none; color: #08634F; font-size: 14px; font-weight: 700; background: rgba(8,99,79,0.06)"><span style="flex: 1 1 auto">{{batchesLink}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+  </div>
+
+  <sc-if value="{{picker}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="i-veil" onClick="{{closePicker}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{pickerTitle}}" class="i-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{pickerTitle}}</span>
+        <span style="font-size: 12px; color: #637570">{{pickerNote}}</span>
+        <sc-for list="{{files}}" as="fl" hint-placeholder-count="5">
+          <button type="button" class="m-press" onClick="{{fl.pick}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 12px; border: 0; border-radius: 16px; font: inherit; color: #193D33; text-align: right; cursor: pointer; background: rgba(25,61,51,0.04)">
+            <span aria-hidden="true" style="{{fl.tile}}">{{fl.ext}}</span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700; overflow-wrap: anywhere">{{fl.name}}</span><span style="font-size: 12px; color: #637570">{{fl.sub}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="i-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"error":{"editor":"enum","options":["ملف بكلمة مرور","لا عمليات","ممسوح ضوئيًا","أعمدة غير معروفة"],"default":"ملف بكلمة مرور","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // src = مفتاح الرافعات اللي الحالة دي اتبنت عليه؛ لو الرافعة اتغيرت بنرجع للحالة اللي بتقولها
+    this.state = { src: null, stage: 'pick', file: null, page: 0, wallet: null, picker: false, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  key() { return (this.props.state ?? 'عادي') + '|' + (this.props.error ?? 'ملف بكلمة مرور') + '|' + (this.props.space ?? 'السعودية'); }
+  fromProps() {
+    const st = this.props.state ?? 'عادي';
+    const E = { 'ملف بكلمة مرور': 'locked', 'لا عمليات': 'other', 'ممسوح ضوئيًا': 'scan', 'أعمدة غير معروفة': 'cols' };
+    if (st === 'بيحمّل') return { stage: 'reading', file: 'bank', page: 2, wallet: null };
+    if (st === 'خطأ') return { stage: 'error', file: E[this.props.error ?? 'ملف بكلمة مرور'] || 'locked', page: 0, wallet: null };
+    return { stage: 'pick', file: null, page: 0, wallet: null };
+  }
+  cur() { return this.state.src === this.key() ? this.state : Object.assign({}, this.state, this.fromProps()); }
+  go(patch) { this.setState(Object.assign({ src: this.key() }, patch)); }
+  start(F, id) {
+    const f = F[id];
+    this.timers.forEach(clearTimeout); this.timers = [];
+    if (f.err === 'pwd') { this.go({ stage: 'error', file: id, picker: false }); return; }
+    this.go({ stage: 'reading', file: id, page: 1, wallet: f.wallet || null, picker: false });
+    const step = (p) => this.timers.push(setTimeout(() => {
+      if (this.state.stage !== 'reading' || this.state.file !== id) return;
+      if (p < f.pages) { this.setState({ page: p + 1 }); step(p + 1); } else this.setState({ stage: f.err ? 'error' : 'ready' });
+    }, 650));
+    step(1);
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const s = this.cur();
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const bank = eg ? 'QNB مصر' : 'مصرف الراجحي';
+    // ملفات مخترعة · err: pwd بكلمة مرور · scan صورة ممسوحة · none مفيش عمليات (بنك مش مدعوم) · cols أعمدة مش معروفة
+    const F = {
+      bank: { name: eg ? 'كشف-QNB-سبتمبر.pdf' : 'كشف-الراجحي-سبتمبر.pdf', ext: 'PDF', pages: 4, size: '٢٤٠', wallet: eg ? 'w2' : 'w1', bank },
+      csv: { name: 'حركات-الحساب.csv', ext: 'CSV', pages: 1, size: '١٨', wallet: null },
+      locked: { name: 'كشف-محمي.pdf', ext: 'PDF', pages: 2, size: '٢٠٠', err: 'pwd' },
+      scan: { name: eg ? 'صورة-كشف.pdf' : 'صورة-كشف-الإنماء.pdf', ext: 'PDF', pages: 3, size: '٣٬١٠٠', err: 'scan' },
+      other: { name: eg ? 'كشف-الأهلي-المصري.pdf' : 'كشف-الأهلي.pdf', ext: 'PDF', pages: 3, size: '٣١٠', err: 'none' },
+      cols: { name: 'تصدير-البنك.csv', ext: 'CSV', pages: 1, size: '٩', err: 'cols' }
+    };
+    const f = F[s.file] || F.bank;
+    const isCsv = f.ext === 'CSV';
+    const W = eg ? [['w1', 'البنك الأهلي المصري · حساب المرتب'], ['w2', 'QNB مصر']] : [['w1', 'مصرف الراجحي · حساب الراتب'], ['w2', 'البنك الأهلي السعودي'], ['w3', 'مصرف الإنماء']];
+    const wName = (id) => { const w = W.find((x) => x[0] === id); return w ? w[1] : ''; };
+    const txN = 13;
+    const pct = s.stage === 'reading' ? Math.floor((s.page * 100) / (f.pages + 1)) : 0;
+    const ERR = {
+      pwd: [eg ? 'الملف عليه كلمة سر' : 'الملف محمي بكلمة مرور', eg ? 'الملف محمي بكلمة سر — افتحه واحفظه من غير كلمة سر وجرّب تاني.' : 'الملف محمي بكلمة مرور — افتحه واحفظه دون كلمة مرور ثم أعد المحاولة.'],
+      scan: [eg ? 'الكشف ده صورة' : 'الكشف صورة ممسوحة', eg ? 'قرينا ' + n(f.pages) + ' صفحات وكلها صور من غير كلام نقدر نقراه. قراية الصور مش مدعومة دلوقتي — اطلب من البنك كشف إلكتروني.' : 'قرأنا ' + n(f.pages) + ' صفحات وكلها صور بلا نص يُقرأ. قراءة الصور غير مدعومة الآن — اطلب من البنك كشفًا إلكترونيًا.'],
+      none: [eg ? 'ملقيناش ولا عملية' : 'لم نجد أي عملية', eg ? 'قرينا ' + n(f.pages) + ' صفحات بس ملقيناش أي عملية. القارئ بيعرف كشف مصرف الراجحي وكشف QNB مصر بس — لو ده كشف بنك تاني، مش هينفع دلوقتي.' : 'قرأنا ' + n(f.pages) + ' صفحات دون أي عملية. القارئ يدعم كشف مصرف الراجحي وكشف QNB مصر فقط — كشوف البنوك الأخرى غير مدعومة الآن.'],
+      cols: [eg ? 'الأعمدة مش معروفة' : 'الأعمدة غير معروفة', eg ? 'الأعمدة مش متطابقة مع أي شكل معروف. مش هنخمّن أعمدة الفلوس.' : 'الأعمدة لا تطابق أي مخطط معروف. لن نخمّن أعمدة مالية.']
+    }[f.err] || ['', ''];
+    const fact = (label, value, last) => ({ label, value, style: 'display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 8px 0;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') });
+    const facts = [
+      isCsv ? fact(eg ? 'النوع' : 'النوع', eg ? 'ملف CSV بأعمدة معروفة' : 'ملف CSV بأعمدة معروفة') : fact(eg ? 'البنك' : 'البنك', (eg ? 'كشف ' : 'كشف ') + bank),
+      fact(eg ? 'العملة' : 'العملة', cur + (eg ? ' — من البلد الحالي' : ' — من البلد الحالي')),
+      fact(eg ? 'المحفظة' : 'المحفظة', s.wallet ? wName(s.wallet) : (eg ? 'لسه ما اخترتش' : 'لم تُختر بعد'), true)
+    ];
+    const wallets = W.map(([id, name]) => {
+      const on = s.wallet === id;
+      return { name, on: on ? 'true' : 'false', pick: () => this.go({ wallet: id }),
+        style: 'min-height: 44px; padding: 6px 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; text-align: right; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') };
+    });
+    const tile = (bg, c) => 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; letter-spacing: .3px; color: ' + c + '; background: ' + bg;
+    const sups = [
+      { name: (eg ? 'كشف ' : 'كشف ') + bank, sub: eg ? 'ملف PDF من تطبيق البنك' : 'ملف PDF من تطبيق البنك' },
+      { name: eg ? 'ملف CSV' : 'ملف CSV', sub: eg ? 'بأعمدة معروفة: التاريخ والاسم والمبلغ والنوع' : 'بأعمدة معروفة: التاريخ والاسم والمبلغ والنوع' },
+      { name: eg ? 'كشوف البنوك التانية' : 'كشوف البنوك الأخرى', sub: eg ? 'لسه — بتيجي بعدين' : 'لاحقًا', muted: true }
+    ].map((x, i, a) => Object.assign(x, { tile: tile(x.muted ? 'rgba(25,61,51,0.06)' : 'rgba(8,99,79,0.10)', x.muted ? '#9AA9A4' : '#08634F'), rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 10px 0;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') }));
+    const order = ['bank', 'csv', 'locked', 'scan', 'other', 'cols'];
+    const files = order.map((id) => ({ name: F[id].name, ext: F[id].ext, sub: F[id].size + (eg ? ' ك.ب · امبارح' : ' ك.ب · أمس'),
+      tile: tile(F[id].ext === 'PDF' ? 'rgba(190,61,72,0.10)' : 'rgba(36,105,186,0.10)', F[id].ext === 'PDF' ? '#BE3D48' : '#2469BA'), pick: () => this.start(F, id) }));
+    const keep = JSON.stringify({ importFile: f.name, importWallet: wName(s.wallet) });
+    return {
+      title: 'كشف الحساب',
+      intro: eg ? 'بنقرا الكشف على جوالك، والملف نفسه مش بيترفع. مفيش حاجة بتتسجل قبل ما تراجع وتأكد.' : 'نقرأ الكشف على جوالك ولا يُرفع الملف نفسه. لا يُسجَّل شيء قبل أن تراجع وتؤكد.',
+      showPick: s.stage === 'pick',
+      pickTitle: eg ? 'اختار ملف الكشف' : 'اختر ملف الكشف',
+      pickBody: eg ? 'نزّله من تطبيق البنك الأول، وبعدين اختاره من هنا.' : 'نزّله من تطبيق البنك أولًا، ثم اختره من هنا.',
+      pickBtn: eg ? 'اختار ملف' : 'اختر ملفًا',
+      openPicker: () => this.go({ picker: true }),
+      supTitle: eg ? 'الملفات اللي بنقراها' : 'الملفات المدعومة',
+      sups,
+      curNote: (eg ? 'العملة من البلد الحالي: ' : 'العملة من البلد الحالي: ') + (eg ? 'مصر · ج.م' : 'السعودية · ر.س'),
+      showReading: s.stage === 'reading',
+      fileName: f.name,
+      readLine: isCsv ? (eg ? 'بنقرا السطور…' : 'نقرأ السطور…') : (eg ? 'بنقرا الصفحة ' : 'نقرأ الصفحة ') + n(Math.min(s.page, f.pages)) + (eg ? ' من ' : ' من ') + n(f.pages),
+      readPct: String(pct), readBar: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
+      readNote: eg ? 'الإلغاء آمن: لسه مفيش حاجة اتسجلت.' : 'الإلغاء آمن: لم يُسجَّل شيء بعد.',
+      cancelLabel: eg ? 'إلغاء' : 'إلغاء',
+      cancelRead: () => { this.timers.forEach(clearTimeout); this.timers = []; this.go({ stage: 'pick', file: null }); this.say(eg ? 'اتلغت القراية — مفيش حاجة اتسجلت' : 'أُلغيت القراءة — لم يُسجَّل شيء'); },
+      showReady: s.stage === 'ready',
+      readyChip: eg ? 'اتقرا' : 'قُرئ',
+      readyMeta: isCsv ? plural(txN, eg ? ['سطر واحد', 'سطرين', 'سطور', 'سطر'] : ['سطر واحد', 'سطران', 'أسطر', 'سطرًا']) : plural(f.pages, ['صفحة واحدة', eg ? 'صفحتين' : 'صفحتان', 'صفحات', 'صفحة']),
+      foundLine: plural(txN, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' من ١ لـ ٣٠ سبتمبر' : ' من ١ إلى ٣٠ سبتمبر'),
+      facts,
+      askWallet: isCsv, walletQ: eg ? 'الملف ده بتاع أنهي محفظة؟' : 'هذا الملف لأي محفظة؟', wallets,
+      canReview: !!s.wallet, cantReview: !s.wallet, keep,
+      reviewLabel: eg ? 'راجع العمليات' : 'راجع العمليات',
+      saveNote: eg ? 'في المراجعة هتشوف الجديد والمكرر، وتختار اللي يتسجل.' : 'في المراجعة ترى الجديد والمكرر وتختار ما يُسجَّل.',
+      otherLabel: eg ? 'اختار ملف تاني' : 'اختر ملفًا آخر',
+      again: () => { this.timers.forEach(clearTimeout); this.timers = []; this.go({ stage: 'pick', file: null, picker: true }); },
+      showError: s.stage === 'error', errTitle: ERR[0], errBody: ERR[1],
+      hasCols: f.err === 'cols',
+      colsFoundLabel: eg ? 'الموجود:' : 'الموجود:', colsFound: 'Date · Description · Value · Ref',
+      colsWantLabel: eg ? 'المتوقع:' : 'المتوقع:', colsWant: 'date · name · amount · type · source · reference',
+      mapLabel: eg ? 'حدد الأعمدة بإيدك' : 'حدّد الأعمدة يدويًا',
+      mapLater: eg ? 'تحديد الأعمدة بإيدك بييجي بعدين.' : 'تحديد الأعمدة يدويًا يأتي لاحقًا.',
+      batchesLink: eg ? 'الكشوف اللي اتستوردت قبل كده' : 'الكشوف المستوردة سابقًا',
+      picker: !!s.picker,
+      pickerTitle: eg ? 'ملفات على جوالك' : 'ملفات على جوالك',
+      pickerNote: eg ? 'في التطبيق بيفتح منتقي ملفات الجوال نفسه.' : 'في التطبيق يُفتح منتقي ملفات الجوال نفسه.',
+      files,
+      closePicker: () => this.go({ picker: false }),
+      hasToast: !!this.state.toast, toast: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

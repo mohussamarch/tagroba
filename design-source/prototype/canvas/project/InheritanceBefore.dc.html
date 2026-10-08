@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>قبل القسمة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.b-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.b-press:active{transform:scale(.97)}
+.b-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.b-in{animation:b-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes b-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.b-press,.b-knob{transition:none}.b-press:active{transform:none}.b-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 12px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{title}}</h2>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+  </div>
+
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <sc-for list="{{fields}}" as="fd" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="{{fd.id}}" style="font-size: 13px; font-weight: 700; color: #637570">{{fd.label}}</label>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <input id="{{fd.id}}" type="text" inputmode="decimal" dir="ltr" value="{{fd.value}}" onInput="{{fd.onInput}}" placeholder="0" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+          <span style="font-size: 13px; color: #637570">{{cur}}</span>
+        </div>
+        <span style="font-size: 12px; color: #637570">{{fd.note}}</span>
+      </div>
+    </sc-for>
+    <sc-for list="{{switches}}" as="sw" hint-placeholder-count="2">
+      <button type="button" role="switch" aria-checked="{{sw.checked}}" onClick="{{sw.toggle}}" class="b-press" style="border: 0; width: 100%; min-height: 52px; padding: 4px 0; display: flex; align-items: center; gap: 12px; font: inherit; color: inherit; text-align: right; cursor: pointer; background: transparent; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{sw.label}}</span><span style="font-size: 12px; color: #637570">{{sw.note}}</span></span>
+        <span style="{{sw.track}}"><span class="b-knob" style="{{sw.knob}}"></span></span>
+      </button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{isEg}}" hint-placeholder-val="{{ false }}">
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span id="b-pre" style="font-size: 15px; font-weight: 700">{{preQ}}</span>
+      <div role="radiogroup" aria-labelledby="b-pre" style="display: flex; gap: 8px">
+        <sc-for list="{{preAns}}" as="pa" hint-placeholder-count="2">
+          <button type="button" role="radio" aria-checked="{{pa.on}}" class="b-press" onClick="{{pa.pick}}" style="{{pa.style}}">{{pa.label}}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{preOn}}" hint-placeholder-val="{{ false }}">
+        <div class="b-in" style="display: flex; flex-direction: column; gap: 10px">
+          <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; gap: 8px">
+            <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="2">
+              <button type="button" role="radio" aria-checked="{{kd.on}}" class="b-press" onClick="{{kd.pick}}" style="{{kd.style}}">{{kd.label}}</button>
+            </sc-for>
+          </div>
+          <sc-for list="{{kids}}" as="kc" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 10px; min-height: 48px">
+              <span style="flex: 1 1 auto; font-size: 14px; font-weight: 700">{{kc.label}}</span>
+              <button type="button" class="b-press" onClick="{{kc.minus}}" aria-label="{{kc.minusLabel}}" style="{{kc.btn}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+              <span style="min-width: 28px; text-align: center; font-size: 18px; font-weight: 700">{{kc.count}}</span>
+              <button type="button" class="b-press" onClick="{{kc.plus}}" aria-label="{{kc.plusLabel}}" style="{{kc.btn}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+            </div>
+          </sc-for>
+          <label for="b-gift" style="font-size: 13px; font-weight: 700; color: #637570">{{giftLabel}}</label>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+            <input id="b-gift" type="text" inputmode="decimal" dir="ltr" value="{{gift}}" onInput="{{typeGift}}" placeholder="0" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700; color: #193D33; outline: none; text-align: right">
+            <span style="font-size: 13px; color: #637570">{{cur}}</span>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 14px; font-weight: 700">{{specialTitle}}</span>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <sc-for list="{{specials}}" as="sp" hint-placeholder-count="4">
+        <button type="button" aria-pressed="{{sp.on}}" class="b-press" onClick="{{sp.pick}}" style="{{sp.style}}">{{sp.label}}</button>
+      </sc-for>
+    </div>
+    <span style="font-size: 12px; color: #637570">{{specialNote}}</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { local: null }; }
+  cur() {
+    if (this.state.local) return this.state.local;
+    try { const d = typeof this.props.data === 'string' ? JSON.parse(this.props.data) : this.props.data; if (d && d.special) return d; } catch (e) {}
+    return { funeral: '', debts: '', bequest: '', toHeir: false, consent: false, pre: { on: false, kind: 'son', sons: 0, daughters: 0, gift: '' }, special: [] };
+  }
+  change(patch) { const next = Object.assign({}, this.cur(), patch); if (typeof this.props.onChange === 'function') this.props.onChange(next); this.setState({ local: next }); }
+  renderVals() {
+    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG');
+    // القانون بتاع الحسبة (مش لغة المساحة): الحسبة المحفوظة بتتحسب بقانون بلدها (§69.4)
+    const eg = (this.props.law || (ui ? 'EG' : 'SA')) === 'EG', d = this.cur(), pre = d.pre || {};
+    const chip = (on) => 'min-height: 44px; padding: 4px 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const sw = (id, label, note) => ({ label, note, checked: d[id] ? 'true' : 'false', toggle: () => this.change({ [id]: !d[id] }),
+      track: 'position: relative; display: block; width: 44px; height: 26px; flex-shrink: 0; border-radius: 13px; ' + (d[id] ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'background: rgba(25,61,51,0.16)'),
+      knob: 'position: absolute; top: 2px; right: ' + (d[id] ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)' });
+    const setPre = (p) => this.change({ pre: Object.assign({}, pre, p) });
+    const stepBtn = 'width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #08634F; background: rgba(8,99,79,0.08)';
+    const SP = [['pregnancy', t('فيه حمل', 'فيه حمل')], ['missing', t('وارث مفقود', 'وارث مفقود')], ['successive', t('وارث توفي قبل القسمة', 'وارث اتوفى قبل القسمة')], ['takharuj', t('تخارج بين الورثة', 'تخارج بين الورثة')]];
+    const special = d.special || [];
+    return {
+      title: t('قبل القسمة', 'قبل القسمة'),
+      intro: t('تُخرج أولًا بالترتيب: تجهيز الميت، ثم الديون، ثم الوصية — ثم يُقسم الباقي على الورثة.', 'بتطلع الأول بالترتيب: تجهيز الميت، وبعدين الديون، وبعدين الوصية — وبعدين الباقي يتقسم على الورثة.'),
+      cur: eg ? 'ج.م' : 'ر.س',
+      fields: [
+        ['funeral', t('تجهيز الميت', 'تجهيز الميت'), eg ? 'ومعاه تجهيز اللي كان بيصرف عليهم لو ماتوا قبل الدفن (مادة ٤)' : t('تكاليف الغسل والتكفين والدفن بالمعروف', 'تكاليف الغسل والتكفين والدفن بالمعروف')],
+        ['debts', t('الديون', 'الديون'), t('ومنها الرصيد بالسالب في أي حساب', 'ومنها الرصيد بالسالب في أي حساب')],
+        ['bequest', t('الوصية', 'الوصية'), t('حتى الثلث — ما زاد يحتاج موافقة الورثة كلهم بعد الوفاة', 'لحد التلت — الزيادة محتاجة موافقة الورثة كلهم بعد الوفاة')]
+      ].map(([id, label, note]) => ({ id: 'b-' + id, label, note, value: d[id] || '', onInput: (e) => this.change({ [id]: e.target.value }) })),
+      switches: [
+        sw('toHeir', t('الوصية لأحد الورثة', 'الوصية لحد من الورثة'), eg ? t('جائزة في حدود الثلث دون موافقة (قانون ٧١ م٣٧)', 'جايزة في حدود التلت من غير موافقة (قانون ٧١ مادة ٣٧)') : t('لا تنفذ إلا بموافقة باقي الورثة بعد الوفاة (م١٧٩)', 'مش بتتنفذ إلا بموافقة باقي الورثة بعد الوفاة (م١٧٩)')),
+        sw('consent', t('الورثة كلهم وافقوا بعد الوفاة', 'الورثة كلهم وافقوا بعد الوفاة'), t('تُنفذ الوصية كاملة ولو زادت على الثلث', 'الوصية بتتنفذ كلها حتى لو زادت عن التلت'))
+      ],
+      isEg: eg,
+      preQ: t('هل للمتوفى ابن أو بنت توفّي قبله وله أولاد؟', 'فيه ابن أو بنت توفّى قبله وله أولاد؟'),
+      preAns: [[false, t('لا', 'لأ')], [true, t('نعم', 'أيوه')]].map(([v, label]) => ({ label, on: !!pre.on === v ? 'true' : 'false', style: chip(!!pre.on === v) + '; flex: 1 1 0', pick: () => setPre({ on: v }) })),
+      preOn: !!pre.on, kindLabel: t('مَن توفّي قبله؟', 'مين اللي اتوفى قبله؟'),
+      kinds: [['son', t('ابن', 'ابن')], ['daughter', t('بنت', 'بنت')]].map(([k, label]) => ({ label, on: pre.kind === k ? 'true' : 'false', style: chip(pre.kind === k) + '; flex: 1 1 0', pick: () => setPre({ kind: k }) })),
+      kids: [['sons', t('أولاده الذكور', 'ولاده الذكور')], ['daughters', t('بناته', 'بناته')]].map(([k, label]) => ({ label, count: n(pre[k] || 0), btn: stepBtn,
+        minus: () => setPre({ [k]: Math.max(0, (pre[k] || 0) - 1) }), plus: () => setPre({ [k]: Math.min(100, (pre[k] || 0) + 1) }),
+        minusLabel: t('أنقص ', 'قلّل ') + label, plusLabel: t('أضف ', 'زوّد ') + label })),
+      giftLabel: t('ما أعطاهم في حياته (اختياري)', 'اللي اداهولهم في حياته (اختياري)'), gift: pre.gift || '', typeGift: (e) => setPre({ gift: e.target.value }),
+      specialTitle: t('ظروف خاصة', 'ظروف خاصة'),
+      specials: SP.map(([id, label]) => { const on = special.indexOf(id) >= 0; return { label, on: on ? 'true' : 'false', style: chip(on), pick: () => this.change({ special: on ? special.filter((x) => x !== id) : special.concat([id]) }) }; }),
+      specialNote: t('أي واحدة منها تجعل الحساب «غير مدعوم» في هذه النسخة — بدل التخمين.', 'أي واحدة منهم بتخلّي الحساب «مش مدعوم» في النسخة دي — بدل التخمين.')
+    };
+  }
+}
+</script>
+</body>
+</html>

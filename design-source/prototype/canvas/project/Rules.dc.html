@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>القواعد والتجار — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),opacity 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.n-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}
+.n-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.m-in{animation:m-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes m-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.r-spin{animation:r-spin 900ms linear infinite}
+@keyframes r-spin{to{transform:rotate(360deg)}}
+.r-veil{animation:r-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.r-up{animation:r-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.r-toast{animation:r-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes r-fade{from{opacity:0}to{opacity:1}}
+@keyframes r-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes r-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.n-track,.n-knob{transition:none}.m-press:active{transform:none}.m-in,.r-spin{animation:none}.r-up{animation:r-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+      <button type="button" class="m-press" onClick="{{addRule}}" aria-label="{{addLabel}}" style="width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+    </div>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+
+    <sc-for list="{{sections}}" as="sec" hint-placeholder-count="2">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="display: flex; flex-direction: column"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{sec.title}}</h2><span style="font-size: 12px; color: #637570">{{sec.note}}</span></span>
+        <sc-if value="{{sec.empty}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 8px; text-align: center">
+            <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+            <span style="font-size: 13px; color: #637570">{{sec.emptyText}}</span>
+          </div>
+        </sc-if>
+        <sc-for list="{{sec.rows}}" as="r" hint-placeholder-count="3">
+          <div style="{{r.card}}">
+            <button type="button" class="m-press" onClick="{{r.open}}" aria-label="{{r.aria}}" style="flex: 1 1 auto; min-width: 0; min-height: 56px; border: 0; padding: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px">
+              <span aria-hidden="true" style="{{r.badge}}">{{r.badgeText}}<sc-if value="{{r.isM}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"></path></svg></sc-if></span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">{{r.mode}}</span><span style="font-size: 15px; font-weight: 700">{{r.text}}</span></span>
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 13px"><span aria-hidden="true" style="{{r.dot}}"></span><span style="{{r.catStyle}}">{{r.cat}}</span></span>
+                <span style="font-size: 11px; color: #637570">{{r.meta}}</span>
+              </span>
+            </button>
+            <sc-if value="{{r.hasSwitch}}" hint-placeholder-val="{{ true }}">
+              <button type="button" role="switch" aria-checked="{{r.checked}}" aria-label="{{r.switchLabel}}" onClick="{{r.toggle}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="n-track" style="{{r.track}}"><span class="n-knob" style="{{r.knob}}"></span></span></button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="font-size: 15px; font-weight: 700">{{applyTitle}}</span>
+      <span style="font-size: 13px; color: #637570">{{applyBody}}</span>
+      <sc-if value="{{applyPreview}}" hint-placeholder-val="{{ false }}">
+        <div class="m-in" style="display: flex; flex-direction: column; border-radius: 14px; padding: 4px 12px; background: rgba(25,61,51,0.04)">
+          <sc-for list="{{applyRows}}" as="ap" hint-placeholder-count="4">
+            <span style="{{ap.style}}"><span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="{{ap.dot}}"></span>{{ap.label}}</span><span style="font-weight: 700">{{ap.n}}</span></span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <button type="button" class="m-press" onClick="{{applyAct}}" disabled="{{applyOff}}" style="{{applyBtnStyle}}">{{applyBtn}}</button>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="font-size: 15px; font-weight: 700">{{syncTitle}}</span>
+      <span style="font-size: 13px; color: #637570">{{syncBody}}</span>
+      <span style="{{syncLineStyle}}">{{syncLine}}</span>
+      <button type="button" class="m-press" onClick="{{syncAct}}" disabled="{{syncOff}}" style="{{syncBtnStyle}}">
+        <sc-if value="{{syncBusy}}" hint-placeholder-val="{{ false }}"><svg class="r-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.56"></path></svg></sc-if>
+        <sc-if value="{{noNet}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h.01M8.5 16.429a5 5 0 0 1 7 0M5 12.859a10 10 0 0 1 5.17-2.69M19 12.859a10 10 0 0 0-2.007-1.523M2 8.82a15 15 0 0 1 4.177-2.643M22 8.82a15 15 0 0 0-11.288-3.764M2 2l20 20"></path></svg></sc-if>
+        {{syncBtn}}
+      </button>
+    </div>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="r-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="r-up m-scroll" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 800px; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{sheetTitle}}</h2>
+        <label for="r-text" style="font-size: 13px; font-weight: 700">{{textLabel}}</label>
+        <input id="r-text" type="text" value="{{fText}}" onInput="{{typeText}}" maxlength="120" placeholder="{{textPh}}" style="{{textStyle}}">
+        <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{err}}</span></sc-if>
+        <sc-if value="{{isRule}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 13px; font-weight: 700">{{modeLabel}}</span>
+            <div role="radiogroup" aria-label="{{modeLabel}}" style="display: flex; gap: 4px; padding: 4px; border-radius: 16px; background: rgba(25,61,51,0.06)">
+              <sc-for list="{{modes}}" as="md" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{md.on}}" class="m-press" onClick="{{md.pick}}" style="{{md.style}}">{{md.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{isMerchant}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 700">{{aliasLabel}}</span>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{aliases}}" as="al" hint-placeholder-count="2"><span style="font-size: 12px; padding: 6px 10px; border-radius: 12px; background: rgba(25,61,51,0.06)">{{al}}</span></sc-for></div>
+            <div style="display: flex; gap: 8px"><input type="text" aria-label="{{aliasLabel}}" value="{{fAlias}}" onInput="{{typeAlias}}" maxlength="120" placeholder="{{aliasPh}}" style="flex: 1 1 auto; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; color: #193D33; outline: none; background: rgba(25,61,51,0.05)"><button type="button" class="m-press" onClick="{{addAlias}}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{aliasAdd}}</button></div>
+          </div>
+        </sc-if>
+        <span style="font-size: 13px; font-weight: 700">{{catLabel}}</span>
+        <div role="radiogroup" aria-label="{{catLabel}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{pickGroups}}" as="pg" hint-placeholder-count="4">
+            <button type="button" role="radio" aria-checked="{{pg.on}}" class="m-press" onClick="{{pg.pick}}" style="{{pg.style}}">{{pg.name}}</button>
+          </sc-for>
+        </div>
+        <div role="radiogroup" aria-label="{{catLabel}}" style="display: flex; gap: 6px; flex-wrap: wrap; padding: 8px; border-radius: 16px; background: rgba(25,61,51,0.04)">
+          <sc-for list="{{pickCats}}" as="pc" hint-placeholder-count="5">
+            <button type="button" role="radio" aria-checked="{{pc.on}}" class="m-press" onClick="{{pc.pick}}" style="{{pc.style}}"><span aria-hidden="true" style="{{pc.dot}}"></span>{{pc.name}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{isRule}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{priLabel}}</span><span style="font-size: 12px; color: #637570">{{priNote}}</span></span>
+            <button type="button" class="m-press" onClick="{{priDown}}" aria-label="{{priUpLabel}}" style="width: 44px; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 20px; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">−</button>
+            <span style="min-width: 28px; text-align: center; font-size: 18px; font-weight: 700">{{fPri}}</span>
+            <button type="button" class="m-press" onClick="{{priUp}}" aria-label="{{priDownLabel}}" style="width: 44px; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 20px; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">+</button>
+          </div>
+        </sc-if>
+        <span style="font-size: 12px; color: #637570">{{sheetNote}}</span>
+        <button type="button" class="m-press" onClick="{{save}}" disabled="{{cantSave}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        <sc-if value="{{canForget}}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="m-press" onClick="{{forget}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.06)">{{forgetLabel}}</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="r-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // مخترعة · الترتيب: الأصغر بيتطبق الأول · would = عمليات سابقة القاعدة هتغيّر تصنيفها (من خطة CategorizeTransactions)
+    this.state = { rules: null, merchants: null, sheet: null, f: {}, apply: 'idle', sync: 'idle', toast: '' };
+    this.R0 = [
+        { id: 'r1', pri: 1, text: 'مطعم', mode: 'contains', cat: 'food1', on: true, would: 12 },
+        { id: 'r2', pri: 2, text: 'كافيه', mode: 'contains', cat: 'food2', on: true, would: 9 },
+        { id: 'r3', pri: 3, text: 'محطة', mode: 'startsWith', cat: 'car1', on: true, would: 7 },
+        { id: 'r4', pri: 4, text: 'صيدلية', mode: 'contains', cat: 'health1', on: true, would: 4 },
+        { id: 'r5', pri: 5, text: 'سداد فاتورة كهرباء', mode: 'exact', cat: 'home1', on: false, would: 3 },
+        { id: 'r6', pri: 6, text: 'مكتبة', mode: 'contains', cat: 'gone', on: true, would: 0 }
+    ];
+    // تجار فاكرهم البرنامج: التصنيف اللي اخترته بإيدك مرة بيتحفظ للتاجر على طول (§75-16)
+    this.K0 = [
+        { id: 'k1', name: 'مخبز الفجر', aliases: ['مخبز الفجر فرع ٢'], cat: 'food3', when: '٥ أكتوبر' },
+        { id: 'k2', name: 'تموينات الريان', aliases: [], cat: 'groc2', when: '٢ أكتوبر' },
+        { id: 'k3', name: 'صيدلية النخيل', aliases: ['النخيل للأدوية', 'صيدليات النخيل'], cat: 'health1', when: '٢٩ سبتمبر' }
+    ];
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  hex(h, s, l) { s /= 100; l /= 100; const a = s * Math.min(l, 1 - l); const f = (n) => { const k = (n + h / 30) % 12; return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255).toString(16).padStart(2, '0'); }; return '#' + f(0) + f(8) + f(4); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const st = this.props.state ?? 'عادي', s = this.state, f = s.f;
+    const empty = st === 'فاضي', RL = s.rules || (empty ? [] : this.R0), KL = s.merchants || (empty ? [] : this.K0);
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPW = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    // التصنيفات بالمجموعات (§33.1) — الأسماء من شجرة التصنيفات، والفرعي درجة من لون أبوه
+    const G = [['food', eg ? 'الأكل والشرب' : 'الطعام والشراب'], ['home', eg ? 'البيت والالتزامات' : 'المنزل والالتزامات'], ['move', 'التنقل'], ['personal', 'الحياة الشخصية']];
+    const C = [
+      ['food0', 'food', 'مطاعم وقهوة', 22, 78, 46], ['food1', 'food', 'مطاعم', 22, 78, 53], ['food2', 'food', 'قهوة ومشروبات', 22, 78, 40], ['food3', 'food', 'حلويات ومخبوزات', 22, 78, 58],
+      ['groc0', 'food', 'بقالة وسوبرماركت', 135, 55, 34], ['groc1', 'food', 'سوبرماركت', 135, 55, 41], ['groc2', 'food', 'بقالة الحي', 135, 55, 28],
+      ['home0', 'home', 'المنزل', 40, 90, 38], ['home1', 'home', 'كهرباء', 40, 90, 45], ['home2', 'home', 'تنظيف', 40, 90, 32],
+      ['car0', 'move', 'السيارة', 210, 70, 42], ['car1', 'move', eg ? 'وقود' : 'بنزين', 210, 70, 49], ['car2', 'move', eg ? 'مواقف وسايس' : 'مواقف', 210, 70, 36],
+      ['health0', 'personal', 'صحة وصيدليات', 2, 70, 44], ['health1', 'personal', 'صيدلية', 2, 70, 51], ['shop0', 'personal', 'التسوق', 322, 62, 40], ['shop1', 'personal', 'تسوق إلكتروني', 322, 62, 47]
+    ];
+    const cat = {}; C.forEach(([id, g, name, h, sa, l]) => { cat[id] = { id, g, name, color: this.hex(h, sa, Math.max(22, Math.min(h >= 35 && h <= 110 ? 40 : 52, l))) }; });
+    const MODES = { contains: eg ? 'فيه' : 'يحتوي', startsWith: eg ? 'بيبدأ بـ' : 'يبدأ بـ', exact: eg ? 'بالظبط' : 'مطابق تمامًا' };
+    const dot = (c) => 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + (c ? c.color : 'transparent; box-shadow: inset 0 0 0 1.5px #BE3D48');
+    const sw = (on) => ({ track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (on ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'), knob: 'position: absolute; top: 2px; right: ' + (on ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)' });
+    const card = (dim) => 'border-radius: 20px; padding: 10px 6px 10px 14px; display: flex; align-items: center; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)' + (dim ? '; opacity: 0.6' : '');
+    const badge = (bg, c) => 'min-width: 32px; height: 32px; padding: 0 4px; box-sizing: border-box; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: ' + c + '; background: ' + bg;
+    const openRule = (r) => this.setState({ sheet: { kind: 'rule', id: r ? r.id : null }, f: r ? { text: r.text, mode: r.mode, cat: cat[r.cat] ? r.cat : 'food1', grp: cat[r.cat] ? cat[r.cat].g : 'food', pri: r.pri } : { text: '', mode: 'contains', cat: 'food1', grp: 'food', pri: RL.length + 1 } });
+    const merchRows = KL.map((m) => { const c = cat[m.cat]; return {
+      text: m.name, mode: eg ? 'التاجر' : 'التاجر', aria: (eg ? 'عدّل ' : 'تعديل ') + m.name,
+      cat: c ? c.name : (eg ? 'من غير تصنيف ثابت — القواعد بتشتغل' : 'بلا تصنيف ثابت — تُطبَّق القواعد'), dot: dot(c || { color: 'rgba(25,61,51,0.2)' }), catStyle: c ? 'font-weight: 700' : 'color: #637570',
+      meta: c ? (eg ? 'اتحفظ من اختيارك يوم ' : 'حُفظ من اختيارك يوم ') + m.when + (m.aliases.length ? ' · ' + (eg ? 'أسامي تانية: ' : 'أسماء بديلة: ') + n(m.aliases.length) : '') : '',
+      badgeText: '', badge: badge('#DCEBD6', '#08634F') + '; width: 32px', hasSwitch: false, isM: true, card: card(!c), checked: 'false', switchLabel: '', track: '', knob: '', toggle: () => {},
+      open: () => this.setState({ sheet: { kind: 'merchant', id: m.id }, f: { text: m.name, cat: m.cat || 'food1', grp: cat[m.cat] ? cat[m.cat].g : 'food', alias: '' } }) }; });
+    const ruleRows = RL.slice().sort((a, b) => a.pri - b.pri).map((r) => { const c = cat[r.cat], k = sw(r.on); return {
+      text: '«' + r.text + '»', mode: MODES[r.mode], aria: (eg ? 'عدّل قاعدة ' : 'تعديل قاعدة ') + r.text,
+      cat: c ? c.name : 'تصنيف محذوف', dot: dot(c), catStyle: c ? 'font-weight: 700' : 'font-weight: 700; color: #BE3D48',
+      meta: !r.on ? (eg ? 'مقفولة — بتفضل هنا ومش بتتطبق' : 'مقفولة — تبقى هنا ولا تُطبَّق') : !c ? (eg ? 'تصنيفها اتشال — اختار تصنيف تاني' : 'حُذف تصنيفها — اختر تصنيفًا آخر') : '',
+      badgeText: n(r.pri), badge: badge('rgba(25,61,51,0.06)', '#193D33'), hasSwitch: true, isM: false, card: card(!r.on),
+      checked: r.on ? 'true' : 'false', track: k.track, knob: k.knob, switchLabel: (eg ? 'شغّل قاعدة ' : 'تشغيل قاعدة ') + r.text,
+      toggle: () => { this.setState({ rules: RL.map((x) => x.id === r.id ? Object.assign({}, x, { on: !x.on }) : x), apply: s.apply === 'done' ? 'done' : 'idle' }); this.say(r.on ? (eg ? 'القاعدة اتقفلت — لسه موجودة' : 'أُقفلت القاعدة — ما زالت ظاهرة') : (eg ? 'القاعدة اشتغلت' : 'شُغّلت القاعدة')); },
+      open: () => openRule(r) }; });
+    const sections = [
+      { title: eg ? 'تجار فاكرهم البرنامج' : 'تجار يتذكرهم التطبيق', note: eg ? 'لما تختار تصنيف لتاجر بإيدك، بيتحفظ له على طول ويتطبق قبل أي قاعدة.' : 'عندما تختار تصنيفًا لتاجر بنفسك يُحفظ له تلقائيًا، ويُطبَّق قبل أي قاعدة.', rows: merchRows, empty: !merchRows.length, emptyText: eg ? 'لسه مفيش. أول ما تختار تصنيف لتاجر هيظهر هنا.' : 'لا شيء بعد. يظهر هنا التاجر بعد أول تصنيف تختاره له.' },
+      { title: eg ? 'قواعدك' : 'قواعدك', note: eg ? 'الرقم الأصغر بيتطبق الأول. القفل مش مسح.' : 'الأصغر رقمًا يُطبَّق أولًا. الإقفال لا يحذف القاعدة.', rows: ruleRows, empty: !ruleRows.length, emptyText: eg ? 'مفيش قواعد. دوس + وضيف أول قاعدة.' : 'لا قواعد بعد. اضغط + لإضافة أول قاعدة.' }
+    ];
+    // معاينة «طبّق على السابق» (CategorizeTransactions.plan): اللي هيتغير لكل تصنيف + المؤكد بإيدك + اللي مالوش قاعدة
+    const per = {}; RL.filter((r) => r.on && cat[r.cat] && r.would).forEach((r) => { per[r.cat] = (per[r.cat] || 0) + r.would; });
+    const changeN = Object.keys(per).reduce((t, k) => t + per[k], 0);
+    const rowS = (last) => 'display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);');
+    const applyRows = Object.keys(per).map((k) => ({ label: cat[k].name, n: n(per[k]), dot: dot(cat[k]) }))
+      .concat([{ label: eg ? 'أكّدتها بإيدك — مش هتتلمس' : 'أكّدتها بنفسك — لن تُمس', n: n(6), dot: dot({ color: '#13764D' }) }, { label: eg ? 'مفيش قاعدة تطابقها — تفضل للمراجعة' : 'لا قاعدة تطابقها — تبقى للمراجعة', n: n(14), dot: dot({ color: '#956000' }) }])
+      .map((x, i, a) => Object.assign(x, { style: rowS(i === a.length - 1) }));
+    const noNet = st === 'محتاج نت';
+    // نافذة القاعدة/التاجر
+    const sh = s.sheet, isRule = !!sh && sh.kind === 'rule', isMerchant = !!sh && sh.kind === 'merchant';
+    const text = String(f.text || '').trim();
+    const dupRule = isRule && text && RL.some((r) => r.id !== sh.id && r.text === text && r.mode === f.mode);
+    const err = dupRule ? (eg ? 'فيه قاعدة بنفس النص «' + text + '» ونفس طريقة المطابقة' : 'توجد قاعدة بالنص «' + text + '» وطريقة المطابقة نفسها') : '';
+    const cantSave = !text || !!err;
+    const chip = (on) => 'height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(255,255,255,0.8)');
+    const setF = (o) => this.setState({ f: Object.assign({}, s.f, o) });
+    const ruleCount = RL.length + (isRule && !sh.id ? 1 : 0);
+    return {
+      title: eg ? 'القواعد والتجار' : 'القواعد والتجار',
+      intro: eg ? 'العمليات الجديدة بتاخد تصنيفها لوحدها: الأول التاجر اللي فاكره البرنامج، وبعدين قواعدك بالترتيب.' : 'تأخذ العمليات الجديدة تصنيفها تلقائيًا: أولًا التاجر المحفوظ، ثم قواعدك بالترتيب.',
+      addLabel: eg ? 'قاعدة جديدة' : 'قاعدة جديدة', addRule: () => openRule(null),
+      sections,
+      applyTitle: eg ? 'طبّق القواعد على القديم' : 'طبّق القواعد على السابق',
+      applyBody: s.apply === 'done' ? (eg ? 'اتطبقت. اللي أكدته بإيدك ما اتلمسش.' : 'طُبّقت. ما أكدته بنفسك لم يُمس.') : changeN ? (eg ? 'تعديل قاعدة مش بيغيّر القديم لوحده. شوف الأول هيتغيّر إيه.' : 'تعديل القاعدة لا يغيّر السابق وحده. اعرض ما سيتغير أولًا.') : (eg ? 'مفيش قاعدة شغالة هتغيّر حاجة في القديم.' : 'لا قاعدة مفعّلة ستغيّر شيئًا في السابق.'),
+      applyPreview: s.apply === 'preview', applyRows, applyOff: s.apply === 'done' || !changeN,
+      applyBtn: s.apply === 'idle' ? (eg ? 'شوف هيتغيّر إيه' : 'اعرض ما سيتغير') : s.apply === 'preview' ? (eg ? 'غيّرهم (' : 'طبّق (') + n(changeN) + ')' : (eg ? 'اتطبقت' : 'طُبّقت'),
+      applyBtnStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (s.apply === 'preview' ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : s.apply === 'done' ? 'color: #08634F; background: #DCEBD6; cursor: default' : 'color: #08634F; background: rgba(8,99,79,0.08)') + (!changeN && s.apply !== 'done' ? '; opacity: 0.45; cursor: default' : ''),
+      applyAct: () => { if (s.apply === 'idle' && changeN) this.setState({ apply: 'preview' }); else if (s.apply === 'preview') { this.setState({ apply: 'done' }); this.say((eg ? 'اتغيّر تصنيف ' : 'تغيّر تصنيف ') + plural(changeN, OPW)); } },
+      syncTitle: eg ? 'قاعدة التجار المشتركة' : 'قاعدة التجار المشتركة',
+      syncBody: eg ? 'أسامي محلات وتصنيفها المبدئي من مستخدمين مصروفي — من غير مبالغ ولا تواريخ. تصنيفك إنت ما بيتكتبش فوقه.' : 'أسماء محلات وتصنيفها المبدئي من مستخدمي مصروفي — بلا مبالغ ولا تواريخ. لا يُكتب فوق تصنيفك.',
+      syncLine: noNet ? (eg ? 'محتاج نت عشان يتحدّث.' : 'يحتاج اتصالًا بالإنترنت للتحديث.') : s.sync === 'done' ? (eg ? 'اتحدّث دلوقتي: اتضاف تاجرين، واتكمّل تصنيف تاجر.' : 'حُدّث الآن: أُضيف تاجران، واكتمل تصنيف تاجر.') : (eg ? 'آخر تحديث: ٥ أكتوبر' : 'آخر تحديث: ٥ أكتوبر'),
+      syncLineStyle: 'font-size: 12px; font-weight: 700; color: ' + (noNet ? '#956000' : s.sync === 'done' ? '#13764D' : '#637570'),
+      syncBusy: s.sync === 'busy' && !noNet, noNet, syncOff: noNet || s.sync === 'busy',
+      syncBtn: noNet ? (eg ? 'محتاج نت' : 'يحتاج اتصالًا') : s.sync === 'busy' ? (eg ? 'بيتحدّث…' : 'جارٍ التحديث…') : (eg ? 'حدّث دلوقتي' : 'حدّث الآن'),
+      syncBtnStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(8,99,79,0.08); cursor: ' + (noNet || s.sync === 'busy' ? 'default' : 'pointer') + (noNet ? '; opacity: 0.45' : ''),
+      syncAct: () => { if (noNet || s.sync === 'busy') return; this.setState({ sync: 'busy' }); this.timers.push(setTimeout(() => { this.setState({ sync: 'done' }); this.say(eg ? '٣ تغييرات من القاعدة المشتركة' : '٣ تغييرات من القاعدة المشتركة'); }, 1200)); },
+      sheetOpen: !!sh, isRule, isMerchant,
+      sheetTitle: isMerchant ? (eg ? 'تعديل التاجر' : 'تعديل التاجر') : sh && sh.id ? (eg ? 'تعديل قاعدة' : 'تعديل قاعدة') : (eg ? 'قاعدة جديدة' : 'قاعدة جديدة'),
+      textLabel: isMerchant ? (eg ? 'اسم التاجر' : 'اسم التاجر') : (eg ? 'لو الوصف…' : 'إذا كان الوصف…'),
+      textPh: isMerchant ? (eg ? 'اسم التاجر' : 'اسم التاجر') : (eg ? 'مثلًا: مطعم' : 'مثلًا: مطعم'),
+      fText: f.text || '', typeText: (e) => setF({ text: e.target.value }),
+      hasErr: !!err, err,
+      textStyle: 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; color: #193D33; outline: none; background: ' + (err ? 'rgba(190,61,72,0.06); box-shadow: inset 0 0 0 1.5px rgba(190,61,72,0.45)' : 'rgba(25,61,51,0.05)'),
+      modeLabel: eg ? 'طريقة المطابقة' : 'طريقة المطابقة',
+      modes: Object.keys(MODES).map((k) => ({ label: MODES[k], on: f.mode === k ? 'true' : 'false', pick: () => setF({ mode: k }),
+        style: 'flex: 1 1 0; height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (f.mode === k ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.25)' : 'color: #193D33; background: transparent') })),
+      aliasLabel: eg ? 'أسامي تانية في الكشف' : 'أسماء بديلة في الكشف',
+      aliases: isMerchant ? (KL.find((m) => m.id === sh.id) || { aliases: [] }).aliases : [],
+      fAlias: f.alias || '', typeAlias: (e) => setF({ alias: e.target.value }), aliasPh: eg ? 'زي ما بيظهر في رسالة البنك' : 'كما يظهر في رسالة البنك', aliasAdd: eg ? 'ضيف' : 'أضف',
+      addAlias: () => { const a = String(f.alias || '').trim(); if (!a || !isMerchant) return; this.setState({ merchants: KL.map((m) => m.id === sh.id ? Object.assign({}, m, { aliases: m.aliases.concat([a]) }) : m), f: Object.assign({}, f, { alias: '' }) }); },
+      catLabel: eg ? 'التصنيف' : 'التصنيف',
+      pickGroups: G.map(([k, name]) => ({ name, on: f.grp === k ? 'true' : 'false', pick: () => setF({ grp: k }), style: chip(f.grp === k) })),
+      pickCats: C.filter((c) => c[1] === (f.grp || 'food')).map(([id]) => ({ name: cat[id].name, on: f.cat === id ? 'true' : 'false', pick: () => setF({ cat: id }), style: chip(f.cat === id), dot: dot(cat[id]) })),
+      priLabel: eg ? 'الترتيب' : 'الترتيب', fPri: n(f.pri || 1), priNote: eg ? '١ بيتطبق الأول' : '١ يُطبَّق أولًا',
+      priUpLabel: eg ? 'قدّمها' : 'قدّمها', priDownLabel: eg ? 'أخّرها' : 'أخّرها',
+      priDown: () => setF({ pri: Math.max(1, (f.pri || 1) - 1) }), priUp: () => setF({ pri: Math.min(ruleCount, (f.pri || 1) + 1) }),
+      sheetNote: isMerchant ? (eg ? 'التصنيف ده بيتطبق على عمليات التاجر الجاية. القديمة تتغير من «طبّق على القديم».' : 'يُطبَّق هذا التصنيف على عمليات التاجر القادمة، والسابقة عبر «طبّق على السابق».') : (eg ? 'تعديل القاعدة مش بيغيّر العمليات القديمة لوحده.' : 'تعديل القاعدة لا يغيّر العمليات السابقة وحده.'),
+      cantSave, saveLabel: eg ? 'احفظ' : 'احفظ',
+      saveStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (cantSave ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      save: () => {
+        if (cantSave || !sh) return;
+        if (isMerchant) { this.setState({ merchants: KL.map((m) => m.id === sh.id ? Object.assign({}, m, { name: text, cat: f.cat, when: m.cat ? m.when : '٧ أكتوبر' }) : m), sheet: null }); this.say(eg ? 'اتحفظ التاجر' : 'حُفظ التاجر'); return; }
+        const pri = f.pri || 1, id = sh.id || 'r' + (RL.length + 1);
+        const others = RL.filter((r) => r.id !== id).sort((a, b) => a.pri - b.pri);
+        others.splice(pri - 1, 0, { id, text, mode: f.mode, cat: f.cat, on: true, would: sh.id ? (RL.find((r) => r.id === id) || {}).would || 0 : 5 });
+        this.setState({ rules: others.map((r, i) => Object.assign({}, r, { pri: i + 1 })), sheet: null, apply: 'idle' });
+        this.say(sh.id ? (eg ? 'اتحفظت القاعدة' : 'حُفظت القاعدة') : (eg ? 'اتضافت القاعدة — بتشتغل على الجديد' : 'أُضيفت القاعدة — تُطبَّق على الجديد'));
+      },
+      canForget: isMerchant && !!(KL.find((m) => m.id === sh.id) || {}).cat,
+      forgetLabel: eg ? 'انسى تصنيفه' : 'انسَ تصنيفه',
+      forget: () => { if (!isMerchant) return; this.setState({ merchants: KL.map((m) => m.id === sh.id ? Object.assign({}, m, { cat: null }) : m), sheet: null }); this.say(eg ? 'البرنامج نسي تصنيفه — القواعد هي اللي هتشتغل' : 'نُسي تصنيفه — تُطبَّق القواعد عليه'); },
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

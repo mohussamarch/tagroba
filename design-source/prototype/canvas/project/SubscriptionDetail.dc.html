@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل الاشتراك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.sd-in{position:relative;overflow:hidden;animation:sd-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.sd-sheen{position:absolute;top:0;bottom:0;left:100%;width:60%;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(166,222,193,0.75) 50%,transparent 70%);animation:sd-sheen 1200ms cubic-bezier(.2,.7,.3,1) 150ms both}
+.sd-veil{animation:sd-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.sd-up{animation:sd-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.sd-toast{animation:sd-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes sd-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes sd-sheen{from{transform:translateX(0)}to{transform:translateX(-270%)}}
+@keyframes sd-fade{from{opacity:0}to{opacity:1}}
+@keyframes sd-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes sd-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.sd-in,.sd-up{animation:sd-fade 150ms both}.sd-sheen{display:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Subscriptions.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1><span style="font-size: 12px; color: #637570">{{kindLine}}</span></span>
+    </div>
+
+    <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+      <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 14px; color: #DCEBD6">{{nextLabel}}</span><span style="{{chipStyle}}">{{chip}}</span></span>
+      <span style="font-size: 28px; font-weight: 700">{{nextText}}</span>
+      <span style="font-size: 13px; color: #DCEBD6">{{nextSub}}</span>
+    </div>
+
+    <sc-if value="{{arrived}}" hint-placeholder-val="{{ false }}">
+      <div class="sd-in" role="status" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; background: #DCEBD6">
+        <span style="font-size: 14px; font-weight: 700; color: #08634F">{{arriveTitle}}</span>
+        <span style="font-size: 13px">{{arriveBody}}</span>
+        <span class="sd-sheen" aria-hidden="true"></span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; gap: 10px">
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span style="font-size: 12px; color: #637570">{{paidLabel}}</span><span dir="ltr" style="text-align: right; font-size: 18px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{paidText}}</span><span style="font-size: 11px; color: #637570">{{paidCount}}</span></div>
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span style="font-size: 12px; color: #637570">{{yearLabel}}</span><span dir="{{yearDir}}" style="{{yearStyle}}">{{yearText}}</span><span style="font-size: 11px; color: #637570">{{yearNote}}</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{datesTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px 12px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{facts}}" as="f" hint-placeholder-count="4">
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; border-bottom: 1px solid rgba(204,216,204,0.55)"><span style="color: #637570">{{f.label}}</span><span dir="{{f.dir}}" style="font-weight: 700; font-variant-numeric: tabular-nums">{{f.value}}</span></span>
+        </sc-for>
+        <button type="button" class="m-press" onClick="{{openEdit}}" disabled="{{stopped}}" style="{{editStyle}}">{{editLabel}}</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{payTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{pays}}" as="p" hint-placeholder-count="4">
+          <div class="{{p.cls}}" style="{{p.rowStyle}}">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{p.date}}</span><span style="font-size: 12px; color: #637570">{{p.sub}}</span>
+              <sc-if value="{{p.hasChip}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #08634F; background: #DCEBD6">{{p.chip}}</span></sc-if>
+            </span>
+            <span dir="ltr" style="font-size: 15px; font-weight: 700; color: #BE3D48; white-space: nowrap; font-variant-numeric: tabular-nums">{{p.amount}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{hasMore}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{toggleAll}}" aria-expanded="{{allOpen}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{allLabel}}</button>
+      </sc-if>
+      <span style="font-size: 12px; color: #637570">{{payNote}}</span>
+    </div>
+
+    <button type="button" class="m-press" onClick="{{stopAct}}" style="{{stopStyle}}">{{stopLabel}}</button>
+    <span style="font-size: 12px; color: #637570; text-align: center">{{stopNote}}</span>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="sd-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="sd-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 800px; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 14px 20px 24px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <sc-if value="{{isEdit}}" hint-placeholder-val="{{ true }}">
+          <label for="sd-amount" style="font-size: 13px; font-weight: 700">{{amountLabel}}</label>
+          <div style="display: flex; align-items: center; height: 52px; border-radius: 16px; padding: 0 14px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+            <input id="sd-amount" type="text" inputmode="decimal" dir="ltr" value="{{amountIn}}" onInput="{{typeAmount}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 22px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+            <span style="font-size: 14px; color: #637570">{{cur}}</span>
+          </div>
+          <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{err}}</span></sc-if>
+          <span style="font-size: 13px; font-weight: 700">{{cycleLabel}}</span>
+          <div role="radiogroup" aria-label="{{cycleLabel}}" style="display: flex; gap: 8px">
+            <sc-for list="{{cycles}}" as="c" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{c.on}}" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+          <span style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 13px; font-weight: 700">{{dateLabel}}</span><span style="display: flex; align-items: center; gap: 4px"><button type="button" class="m-press" onClick="{{monthPrev}}" aria-label="{{prevMonthLabel}}" style="width: 40px; height: 40px; border: 0; border-radius: 12px; cursor: pointer; color: #193D33; background: rgba(25,61,51,0.05); display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button><span style="min-width: 96px; text-align: center; font-size: 13px; font-weight: 700">{{monthTitle}}</span><button type="button" class="m-press" onClick="{{monthNext}}" aria-label="{{nextMonthLabel}}" style="width: 40px; height: 40px; border: 0; border-radius: 12px; cursor: pointer; color: #193D33; background: rgba(25,61,51,0.05); display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button></span></span>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px">
+            <sc-for list="{{days}}" as="d" hint-placeholder-count="31">
+              <button type="button" aria-pressed="{{d.on}}" class="m-press" onClick="{{d.pick}}" style="{{d.style}}">{{d.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{isStop}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{stopBody}}</span></sc-if>
+        <div style="display: flex; gap: 8px; margin-top: 4px">
+          <button type="button" class="m-press" onClick="{{confirm}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
+          <button type="button" class="m-press" onClick="{{closeSheet}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="sd-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"sub":{"editor":"enum","options":["حسب اللي اتداس","النادي الرياضي","فاتورة الكهرباء","إنترنت المنزل","تخزين سحابي"],"default":"حسب اللي اتداس","section":"الاشتراك"},"charge":{"editor":"enum","options":["لا","وصل خصم مطابق"],"default":"لا","section":"التجربة"},"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let picked = null;
+    // «الاشتراكات» تقدر تكتب هنا أنهي واحد اتداس (data-keep على الرابط): gym · power · net · cloud
+    try { picked = window.sessionStorage.getItem('masroufy-sub'); } catch (e) {}
+    this.picked = picked;
+    this.timers = [];
+    this.st = props.state ?? 'عادي';
+    // edits: التعديل المحفوظ (null = زي ما هو) · sheet: edit · stop
+    this.state = Object.assign({ edits: null, active: true, all: false, toast: '' }, this.init(this.st));
+  }
+  // «خطأ» بيفتح لوحة التعديل والمبلغ صفر — الغلط جنب الخانة
+  init(st) { return st === 'خطأ' ? { sheet: 'edit', amountIn: '0', cycle: 1, pickDate: null, cal: null, err: true } : { sheet: null, amountIn: '', cycle: 1, pickDate: null, cal: null, err: false }; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    if (this.st !== st) { this.st = st; Object.assign(this.state, this.init(st)); }
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const s = this.state;
+    const MO = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const dim = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const addM = (a, x) => { const t = a[0] * 12 + a[1] - 1 + x, M = t % 12, Y = (t - M) / 12; return [Y, M + 1, Math.min(a[2], dim(Y, M + 1))]; };
+    const key = (a) => a[0] * 10000 + a[1] * 100 + a[2];
+    const dt = (a) => n(a[2]) + ' ' + MO[a[1] - 1] + (a[0] !== 2026 ? ' ' + ny(a[0]) : '');
+    const TODAY = [2026, 10, 7];
+    const days = (a, b) => (Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 86400000;
+    const DW = eg ? ['يوم واحد', 'يومين', 'أيام', 'يوم'] : ['يوم واحد', 'يومين', 'أيام', 'يومًا'];
+    const pick = { 'النادي الرياضي': 'gym', 'فاتورة الكهرباء': 'power', 'إنترنت المنزل': 'net', 'تخزين سحابي': 'cloud' }[this.props.sub] || (['gym', 'power', 'net', 'cloud'].indexOf(this.picked) >= 0 ? this.picked : 'gym');
+    const wallet = eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي';
+    // مخترعة · نفس «الاشتراكات» · بالوحدة الصغرى · المدفوعات = عمليات نفس الجهة (recurringSummary) مش تسجيل منفصل
+    const monthly = (day, from, to, amt) => { const out = []; for (let m = from; m <= to; m++) { const t = 2025 * 12 + m - 1, M = t % 12; out.push([[(t - M) / 12, M + 1, day], amt]); } return out; };
+    const D = {
+      gym: { name: eg ? 'اشتراك الجيم' : 'اشتراك النادي الرياضي', who: eg ? 'الجيم' : 'النادي الرياضي', bill: false, amt: 19900, next: [2026, 10, 9], pays: monthly(9, 15, 21, 19900), arrive: 19900 },
+      power: { name: eg ? 'فاتورة الكهربا' : 'فاتورة الكهرباء', who: eg ? 'شركة الكهربا' : 'شركة الكهرباء', bill: true, amt: 38000, next: [2026, 10, 3], pays: [[[2026, 4, 3], 36990], [[2026, 5, 3], 37240], [[2026, 6, 4], 39110], [[2026, 7, 3], 38420], [[2026, 8, 3], 39870], [[2026, 9, 3], 37700]], arrive: 38310 },
+      net: { name: eg ? 'النت في البيت' : 'إنترنت المنزل', who: eg ? 'شركة النت' : 'مزوّد الإنترنت', bill: false, amt: 30000, next: [2026, 10, 15], pays: monthly(15, 10, 21, 30000), arrive: 30000 },
+      cloud: { name: 'تخزين سحابي', who: eg ? 'خدمة التخزين' : 'خدمة التخزين', bill: false, amt: 1100, next: [2026, 10, 20], pays: monthly(20, 13, 21, 1100), arrive: 1100 }
+    }[pick];
+    const E = s.edits || { amt: D.amt * k, cycle: 1, next: D.next };
+    const arrived = this.props.charge === 'وصل خصم مطابق' && s.active;
+    const pays = D.pays.map(([d, a]) => ({ d, a: a * k })).concat(arrived ? [{ d: TODAY, a: D.arrive * k, fresh: true }] : []).sort((x, y) => key(y.d) - key(x.d));
+    // الخصم المطابق بيحرّك الميعاد الجاي دورة (§75-7)
+    const next = arrived ? addM(E.next, E.cycle) : E.next;
+    const from = addM(TODAY, -12);
+    const inYear = pays.filter((p) => key(p.d) > key(from) && key(p.d) <= key(TODAY));
+    const paidSum = inYear.reduce((t, p) => t + p.a, 0);
+    const annual = E.amt * (12 / E.cycle);
+    const gap = days(TODAY, next);
+    const C = !s.active ? [eg ? 'متوقف' : 'متوقف', 'color: #193D33; background: rgba(255,255,255,0.8)'] : gap < 0 ? ['متأخرة', 'color: #BE3D48; background: #FFFFFF'] : gap <= 3 ? [eg ? 'قرّبت' : 'قريبة', 'color: #956000; background: #FBF0DD'] : [eg ? 'جاية' : 'قادمة', 'color: #08634F; background: #DCEBD6'];
+    const CY = [[1, eg ? 'كل شهر' : 'شهري'], [3, eg ? 'كل ٣ شهور' : 'كل ٣ أشهر'], [12, eg ? 'كل سنة' : 'سنوي']];
+    const cyName = (c) => CY.find((x) => x[0] === c)[1];
+    const shown = s.all ? pays : pays.slice(0, 4);
+    const cal = s.cal || [next[0], next[1]], pd = s.pickDate || next;
+    const dayBtns = [];
+    for (let i = 1; i <= dim(cal[0], cal[1]); i++) {
+      const on = pd[0] === cal[0] && pd[1] === cal[1] && pd[2] === i;
+      dayBtns.push({ label: n(i), on: on ? 'true' : 'false', pick: () => this.setState({ pickDate: [cal[0], cal[1], i] }), style: 'height: 36px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: transparent') });
+    }
+    const shiftCal = (x) => { const t = cal[0] * 12 + cal[1] - 1 + x, M = t % 12; this.setState({ cal: [(t - M) / 12, M + 1] }); };
+    const openEdit = () => { if (!s.active) return; this.setState({ sheet: 'edit', amountIn: this.fmt(E.amt).replace(/,/g, ''), cycle: E.cycle, pickDate: next, cal: null, err: false }); };
+    const primary = 'flex: 2 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ';
+    return {
+      title: D.name, cur,
+      kindLine: (D.bill ? (eg ? 'فاتورة' : 'فاتورة') : 'اشتراك') + ' · ' + cyName(E.cycle),
+      nextLabel: s.active ? (eg ? 'الميعاد الجاي' : 'الموعد القادم') : (eg ? 'المتابعة متوقفة' : 'المتابعة متوقفة'),
+      chip: C[0], chipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; flex-shrink: 0; ' + C[1],
+      nextText: s.active ? dt(next) : '—',
+      nextSub: !s.active ? (eg ? 'مش هيظهر في المستحقات ومش هننبهك بميعاده.' : 'لن يظهر في المستحقات ولن ننبّهك بموعده.') : (gap < 0 ? (eg ? 'متأخرة ' : 'متأخرة ') + plural(-gap, DW) : gap === 0 ? (eg ? 'النهارده' : 'اليوم') : (eg ? 'بعد ' : 'بعد ') + plural(gap, DW)) + ' · ' + (eg ? 'المتوقع ' : 'المتوقع ') + this.fmt(E.amt) + ' ' + cur,
+      arrived,
+      arriveTitle: (eg ? 'وصل خصم ' : 'وصل خصم ') + this.fmt(D.arrive * k) + ' ' + cur + (eg ? ' النهارده' : ' اليوم'),
+      arriveBody: (eg ? 'طابق «' : 'طابق «') + D.who + (eg ? '» والمبلغ، فاتحسب دفعة والميعاد اتنقل من ' : '» والمبلغ، فاحتُسب دفعةً وانتقل الموعد من ') + dt(E.next) + (eg ? ' لـ ' : ' إلى ') + dt(next) + '.',
+      paidLabel: eg ? 'دفعت آخر ١٢ شهر' : 'المدفوع آخر ١٢ شهرًا', paidText: this.fmt(paidSum) + ' ' + cur,
+      paidCount: plural(inYear.length, eg ? ['دفعة واحدة', 'دفعتين', 'دفعات', 'دفعة'] : ['دفعة واحدة', 'دفعتان', 'دفعات', 'دفعة']),
+      yearLabel: eg ? 'المتوقع في السنة' : 'المتوقع سنويًا',
+      yearText: s.active ? this.fmt(annual) + ' ' + cur : (eg ? 'متوقف' : 'متوقف'), yearDir: s.active ? 'ltr' : 'rtl',
+      yearStyle: 'text-align: right; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (s.active ? '#193D33' : '#637570'),
+      yearNote: s.active ? this.fmt(E.amt) + ' × ' + n(12 / E.cycle) : (eg ? 'مش داخل في الحساب' : 'خارج الحساب'),
+      datesTitle: eg ? 'المواعيد' : 'المواعيد',
+      facts: [
+        [eg ? 'الدورة' : 'الدورة', cyName(E.cycle), 'rtl'],
+        [eg ? 'المبلغ المتوقع' : 'المبلغ المتوقع', this.fmt(E.amt) + ' ' + cur, 'ltr'],
+        [eg ? 'الميعاد الجاي' : 'الموعد القادم', s.active ? dt(next) : '—', 'rtl'],
+        [eg ? 'آخر دفعة' : 'آخر دفعة', pays.length ? dt(pays[0].d) : (eg ? 'مفيش لسه' : 'لا يوجد بعد'), 'rtl']
+      ].map(([label, value, dir]) => ({ label, value, dir })),
+      openEdit, stopped: !s.active,
+      editLabel: !s.active ? (eg ? 'رجّع المتابعة الأول عشان تعدّل' : 'استأنف المتابعة أولًا لتعديله') : eg ? 'عدّل المبلغ والدورة والميعاد' : 'عدّل المبلغ والدورة والموعد',
+      editStyle: 'margin-top: 12px; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08);' + (s.active ? '' : ' opacity: 0.45; cursor: default'),
+      payTitle: (eg ? 'المدفوعات (' : 'المدفوعات (') + n(pays.length) + ')',
+      pays: shown.map((p, i) => ({
+        date: dt(p.d), sub: D.who + ' · ' + wallet, amount: '−' + this.fmt(p.a), cls: p.fresh ? 'sd-in' : '',
+        hasChip: !!p.fresh, chip: eg ? 'اتطابقت لوحدها' : 'طابقت تلقائيًا',
+        rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 10px 0;' + (i === shown.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      })),
+      hasMore: pays.length > 4, allOpen: s.all ? 'true' : 'false',
+      allLabel: s.all ? (eg ? 'اعرض أقل' : 'اعرض أقل') : (eg ? 'اعرض الكل' : 'اعرض الكل'), toggleAll: () => this.setState({ all: !s.all }),
+      payNote: (eg ? 'بتتحسب لوحدها من عمليات «' : 'تُحسب تلقائيًا من عمليات «') + D.who + (eg ? '» — مفيش تسجيل دفعة بإيدك.' : '» — دون تسجيل دفعات يدويًا.'),
+      stopAct: () => { if (s.active) this.setState({ sheet: 'stop' }); else { this.setState({ active: true }); this.say(eg ? 'رجعت المتابعة' : 'استؤنفت المتابعة'); } },
+      stopLabel: s.active ? (eg ? 'وقّف المتابعة' : 'أوقف المتابعة') : (eg ? 'رجّع المتابعة' : 'استأنف المتابعة'),
+      stopStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (s.active ? 'color: #BE3D48; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(190,61,72,0.25)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
+      stopNote: eg ? 'العمليات اللي فاتت بتفضل زي ما هي.' : 'تبقى العمليات السابقة كما هي.',
+      sheetOpen: !!s.sheet, isEdit: s.sheet === 'edit', isStop: s.sheet === 'stop',
+      sheetTitle: s.sheet === 'stop' ? (eg ? 'توقّف متابعة «' : 'إيقاف متابعة «') + D.name + '»؟' : (eg ? 'تعديل «' : 'تعديل «') + D.name + '»',
+      stopBody: eg ? 'مش هيظهر في المستحقات ومش هننبهك بميعاده. تقدر ترجّعه في أي وقت.' : 'لن يظهر في المستحقات ولن ننبّهك بموعده. يمكنك استئنافه في أي وقت.',
+      amountLabel: eg ? 'المبلغ المتوقع كل دورة' : 'المبلغ المتوقع لكل دورة', amountIn: s.amountIn,
+      typeAmount: (e) => this.setState({ amountIn: e.target.value, err: false }),
+      hasErr: !!s.err, err: eg ? 'قيمة الدورة لازم تكون أكبر من صفر.' : 'يجب أن تكون قيمة الدورة أكبر من صفر.',
+      cycleLabel: eg ? 'الدورة' : 'الدورة',
+      cycles: CY.map(([c, label]) => ({ label, on: s.cycle === c ? 'true' : 'false', pick: () => this.setState({ cycle: c }), style: 'flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.cycle === c ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') })),
+      dateLabel: eg ? 'الميعاد الجاي' : 'الموعد القادم', monthTitle: MO[cal[1] - 1] + ' ' + ny(cal[0]), days: dayBtns,
+      monthPrev: () => shiftCal(-1), monthNext: () => shiftCal(1), prevMonthLabel: eg ? 'الشهر اللي فات' : 'الشهر السابق', nextMonthLabel: eg ? 'الشهر الجاي' : 'الشهر التالي',
+      confirmLabel: s.sheet === 'stop' ? (eg ? 'وقّفه' : 'أوقفه') : (eg ? 'احفظ' : 'احفظ'),
+      confirmStyle: primary + (s.sheet === 'stop' ? 'color: #BE3D48; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(190,61,72,0.25)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
+      confirm: () => {
+        if (s.sheet === 'stop') { this.setState({ active: false, sheet: null }); this.say(eg ? 'اتوقفت المتابعة' : 'أُوقفت المتابعة'); return; }
+        const v = this.toMinor(s.amountIn);
+        if (v == null || v <= 0) { this.setState({ err: true }); return; }
+        const picked = s.pickDate || next;
+        // edits.next = الميعاد قبل الخصم اللي وصل، عشان التحريك ما يتكررش
+        this.setState({ edits: { amt: v, cycle: s.cycle, next: arrived ? addM(picked, -s.cycle) : picked }, sheet: null, err: false });
+        this.say(eg ? 'اتحفظ التعديل' : 'حُفظ التعديل');
+      },
+      cancelLabel: eg ? 'سيبه' : 'إلغاء',
+      closeSheet: () => this.setState({ sheet: null, err: false }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

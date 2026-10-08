@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حاسبة الادخار — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}a:hover{color:#064B40}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),color 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.s-bar{transition:height 450ms cubic-bezier(.2,.7,.3,1)}
+.t-toast{animation:t-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes t-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.s-bar{transition:none}.m-press:active{transform:none}.t-toast{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Investment.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <div role="radiogroup" aria-label="{{title}}" style="display: flex; gap: 4px; padding: 4px; border-radius: 20px; background: rgba(25,61,51,0.06)">
+      <sc-for list="{{modes}}" as="md" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{md.on}}" class="m-press" onClick="{{md.pick}}" style="{{md.style}}">{{md.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{fields}}" as="fd" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="{{fd.id}}" style="font-size: 13px; font-weight: 700; color: #637570">{{fd.label}}</label>
+          <div style="{{fd.boxStyle}}">
+            <input id="{{fd.id}}" type="{{fd.type}}" inputmode="{{fd.mode}}" dir="ltr" value="{{fd.value}}" onInput="{{fd.onInput}}" placeholder="{{fd.ph}}" style="flex: 1 1 auto; min-width: 0; height: 48px; border: 0; background: transparent; font: inherit; font-size: 18px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+            <span style="font-size: 13px; color: #637570; flex-shrink: 0">{{fd.unit}}</span>
+          </div>
+          <sc-if value="{{fd.hasQuick}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{fd.quick}}" as="q" hint-placeholder-count="4">
+                <button type="button" aria-pressed="{{q.on}}" class="m-press" onClick="{{q.pick}}" style="{{q.style}}">{{q.label}}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <span style="{{fd.noteStyle}}">{{fd.note}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div aria-live="polite" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+      <span style="font-size: 14px; color: #DCEBD6">{{heroLabel}}</span>
+      <sc-if value="{{hasResult}}" hint-placeholder-val="{{ true }}">
+        <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px">
+          <span style="font-size: 16px">{{currency}}</span>
+          <span style="font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{heroAmount}}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{noResult}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 22px; font-weight: 700">{{heroNa}}</span>
+      </sc-if>
+      <span style="font-size: 12px; color: #DCEBD6">{{heroSub}}</span>
+    </div>
+
+    <sc-if value="{{hasResult}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <span style="font-size: 15px; font-weight: 700">{{cmpTitle}}</span>
+          <span style="{{verdictStyle}}">{{verdict}}</span>
+        </div>
+        <div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 10px; height: 84px">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="3">
+            <div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%">
+              <span dir="ltr" style="font-size: 11px; color: #637570; font-variant-numeric: tabular-nums">{{b.value}}</span>
+              <span class="s-bar" style="{{b.style}}"></span>
+              <span style="font-size: 11px; color: #637570">{{b.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px">{{cmpLine}}</span>
+        <span style="font-size: 12px; color: #637570">{{cmpNote}}</span>
+        <sc-if value="{{cmpUnknown}}" hint-placeholder-val="{{ false }}">
+          <a href="ReviewQueue.dc.html" class="m-press" style="align-self: flex-start; display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 14px; font-size: 13px; font-weight: 700; text-decoration: none; color: #956000; background: #FBF0DD">{{reviewLabel}}</a>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{showGrowth}}" hint-placeholder-val="{{ true }}">
+        <dc-import name="SavingsGrowth" space="{{spaceName}}" state="{{growthState}}" monthly="{{gMonthly}}" months="{{gMonths}}" start="{{gStart}}" hint-size="350px,900px"></dc-import>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <button type="button" class="m-press" onClick="{{makeGoal}}" aria-disabled="{{goalDone}}" style="{{goalStyle}}">{{goalLabel}}</button>
+        <span style="font-size: 12px; color: #637570; text-align: center">{{goalNote}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="t-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح","تقريبي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // v: اللي المستخدم كتبه (نص) — الفاضي بياخد الافتراضي بتاع البلد. اليوم في النموذج: الأربعاء ٧ أكتوبر ٢٠٢٦
+    this.state = { mode: 'target', v: {}, goal: false, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  // التواريخ بأعداد صحيحة (31 يناير + شهر = 28 فبراير) — نفس monthsUntil و addMonthsClamped في كوتلن
+  P(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); if (!m) return null; const y = +m[1], mo = +m[2], d = +m[3]; return mo >= 1 && mo <= 12 && d >= 1 && d <= this.dim(y, mo) ? { y, mo, d } : null; }
+  dim(y, m) { return [31, (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]; }
+  addM(s, k) { const a = this.P(s), t = a.y * 12 + a.mo - 1 + k, y = (t - t % 12) / 12, m = t % 12 + 1; return y + '-' + String(m).padStart(2, '0') + '-' + String(Math.min(a.d, this.dim(y, m))).padStart(2, '0'); }
+  until(from, to) { const a = this.P(from), b = this.P(to); let k = Math.max(1, (b.y - a.y) * 12 + b.mo - a.mo - 1); while (this.addM(from, k) < to) k++; return k; }
+  day(s) { const a = this.P(s), M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; return a.d.toLocaleString('ar-EG') + ' ' + M[a.mo - 1] + ' ' + a.y.toLocaleString('ar-EG', { useGrouping: false }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const st = this.props.state ?? 'عادي';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', TODAY = '2026-10-07';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const MW = eg ? ['شهر واحد', 'شهرين', 'شهور', 'شهر'] : ['شهر واحد', 'شهران', 'أشهر', 'شهرًا'];
+    const s = this.state, isT = s.mode === 'target';
+    // مخترعة · بالجنيه ≈ ×٣
+    const D = { target: String(60000 * k), date: '2028-10-07', have: String(12000 * k), monthly: String(2000 * k), months: '36' };
+    const val = (id) => (s.v[id] != null ? s.v[id] : D[id]);
+    const put = (id, x) => this.setState({ v: Object.assign({}, s.v, { [id]: x }), goal: false });
+    const cdiv = (a, b) => (a + b - 1 - (a + b - 1) % b) / b;
+    const have = this.toMinor(val('have')) || 0;
+    const err = {};
+    let res = null;
+    if (isT) {
+      const target = this.toMinor(val('target')), date = val('date');
+      if (!target) err.target = eg ? 'اكتب المبلغ اللي عايز توصله (أكبر من صفر)' : 'اكتب المبلغ الذي تريد الوصول إليه (أكبر من صفر)';
+      if (!this.P(date) || date <= TODAY) err.date = eg ? 'اختار تاريخ بعد النهارده' : 'اختر تاريخًا بعد اليوم';
+      else if (this.until(TODAY, date) > 1200) err.date = eg ? 'المدة من شهر لحد ١٢٠٠ شهر' : 'المدة من شهر واحد حتى ١٢٠٠ شهر';
+      if (!err.target && !err.date) {
+        const m = this.until(TODAY, date), rem = Math.max(0, target - have);
+        res = { main: rem ? cdiv(rem, m) : 0, months: m, end: date, goalTarget: target, rem };
+      }
+    } else {
+      const mo = this.toMinor(val('monthly')), mt = parseInt(String(val('months')).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, ''), 10);
+      if (!mo) err.monthly = eg ? 'اكتب المبلغ الشهري (أكبر من صفر)' : 'اكتب المبلغ الشهري (أكبر من صفر)';
+      if (!(mt >= 1 && mt <= 1200)) err.months = eg ? 'المدة من شهر لحد ١٢٠٠ شهر' : 'المدة من شهر واحد حتى ١٢٠٠ شهر';
+      if (!err.monthly && !err.months) res = { main: have + mo * mt, months: mt, end: this.addM(TODAY, mt), perMonth: mo, goalTarget: have + mo * mt };
+    }
+    const chip = (on) => 'height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.05)');
+    const yrs = [[12, eg ? 'سنة' : 'سنة'], [24, eg ? 'سنتين' : 'سنتان'], [36, eg ? '٣ سنين' : '٣ سنوات'], [60, eg ? '٥ سنين' : '٥ سنوات'], [120, eg ? '١٠ سنين' : '١٠ سنوات']];
+    const field = (id, label, opts) => Object.assign({
+      id: 'sv-' + id, label, value: val(id), type: 'text', mode: 'decimal', unit: cur, ph: '0',
+      onInput: (e) => put(id, e.target.value), hasQuick: false, quick: [],
+      note: err[id] || '', noteStyle: 'font-size: 12px; ' + (err[id] ? 'font-weight: 700; color: #BE3D48' : 'color: #637570'),
+      boxStyle: 'display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (err[id] ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)')
+    }, opts || {}, err[id] ? { note: err[id] } : {});
+    const haveF = field('have', eg ? 'معاك كام دلوقتي؟' : 'كم معك الآن؟', { note: err.have || (eg ? 'فاضي = صفر' : 'فارغ = صفر') });
+    const fields = isT ? [
+      field('target', eg ? 'عايز توصل لكام؟' : 'كم تريد أن تجمع؟'),
+      field('date', eg ? 'لحد إمتى؟' : 'بحلول أي تاريخ؟', { type: 'date', mode: '', unit: '', note: err.date || (this.P(val('date')) ? this.day(val('date')) : ''), hasQuick: true,
+        quick: yrs.slice(0, 4).map(([m, l]) => { const d = this.addM(TODAY, m); return { label: l, on: val('date') === d ? 'true' : 'false', style: chip(val('date') === d), pick: () => put('date', d) }; }) }),
+      haveF
+    ] : [
+      field('monthly', eg ? 'بتحوّش كام في الشهر؟' : 'كم تدّخر شهريًا؟'),
+      field('months', eg ? 'لمدة كام شهر؟' : 'لمدة كم شهرًا؟', { mode: 'numeric', unit: eg ? 'شهر' : 'شهرًا', hasQuick: true,
+        quick: yrs.map(([m, l]) => ({ label: l, on: String(val('months')) === String(m) ? 'true' : 'false', style: chip(String(val('months')) === String(m)), pick: () => put('months', String(m)) })) }),
+      haveF
+    ];
+    // المتوسط الفعلي: آخر ٣ أشهر مالية مكتملة (من يوم الراتب ٢٨) — الدخل الحقيقي − المصروف الحقيقي (ActualSaving.kt). مخترعة
+    const na = st === 'غير متاح';
+    const months3 = [[eg ? 'يوليو' : 'يوليو', 235000 * k], [eg ? 'أغسطس' : 'أغسطس', na ? null : 112050 * k], [eg ? 'سبتمبر' : 'سبتمبر', 298000 * k]];
+    const known = months3.every((x) => x[1] != null);
+    const sum = months3.reduce((t, x) => t + (x[1] || 0), 0);
+    const avg = known ? (2 * sum + 3 - (2 * sum + 3) % 6) / 6 : null;
+    const max = months3.reduce((m, x) => Math.max(m, x[1] || 0), 1);
+    const need = res ? (isT ? res.main : res.perMonth) : null;
+    const gap = avg != null && need != null ? avg - need : null;
+    const goalName = (eg ? 'تحويش ' : 'ادخار ') + (res ? this.fmt(res.goalTarget).replace(/\.00$/, '') : '');
+    return {
+      title: eg ? 'حاسبة التحويش' : 'حاسبة الادخار',
+      spaceName: eg ? 'مصر' : 'السعودية', currency: cur,
+      modes: [['target', eg ? 'عايز أوصل لمبلغ بتاريخ' : 'أصل إلى مبلغ بتاريخ'], ['monthly', eg ? 'بحوّش كام في الشهر لمدة' : 'أدّخر مبلغًا كل شهر لمدة']].map(([id, label]) => ({
+        label, on: s.mode === id ? 'true' : 'false', pick: () => this.setState({ mode: id, goal: false }),
+        style: 'flex: 1 1 0; min-height: 48px; padding: 6px 8px; border: 0; border-radius: 16px; font: inherit; font-size: 13px; line-height: 1.35; cursor: pointer; ' + (s.mode === id ? 'font-weight: 700; color: #08634F; background: #FFFFFF; box-shadow: 0 6px 14px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent')
+      })),
+      fields,
+      heroLabel: isT ? (eg ? 'محتاج تحوّش في الشهر' : 'تحتاج أن تدّخر شهريًا') : (eg ? 'هتوصل لـ' : 'ستصل إلى'),
+      hasResult: !!res, noResult: !res, heroNa: eg ? 'كمّل البيانات' : 'أكمل البيانات',
+      heroAmount: res ? this.fmt(res.main) : '',
+      heroSub: !res ? (eg ? 'الحساب بيظهر أول ما الخانات تبقى صح.' : 'تظهر النتيجة حين تصح الخانات.') : isT
+        ? (res.rem ? (eg ? 'لمدة ' : 'لمدة ') + plural(res.months, MW) + (eg ? ' لحد ' : ' حتى ') + this.day(res.end) + (eg ? ' · فاضلك ' : ' · المتبقي ') + this.fmt(res.rem) + (eg ? ' · من غير أرباح' : ' · دون أرباح') : (eg ? 'معاك المبلغ كله خلاص.' : 'معك المبلغ كاملًا.'))
+        : (eg ? 'يوم ' : 'في ') + this.day(res.end) + ' · ' + plural(res.months, MW) + ' × ' + this.fmt(res.perMonth) + (eg ? ' + اللي معاك · من غير أرباح' : ' + ما معك · دون أرباح'),
+      cmpTitle: eg ? 'قدام اللي بتحوّشه فعلًا' : 'مقارنة بما تدّخره فعلًا',
+      verdict: gap == null ? (eg ? 'مش معروف' : 'غير معروف') : gap >= 0 ? (eg ? 'كفاية' : 'كافٍ') : (eg ? 'ناقصك ' : 'ينقصك ') + this.fmt(-gap),
+      verdictStyle: 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (gap == null ? 'color: #637570; background: rgba(99,117,112,0.12)' : gap >= 0 ? 'color: #13764D; background: #DCEBD6' : 'color: #BE3D48; background: rgba(190,61,72,0.10)'),
+      bars: months3.map(([label, v]) => ({ label, value: v == null ? (eg ? 'مش معروف' : 'غير معروف') : this.fmt(v),
+        style: 'display: block; width: 100%; max-width: 56px; border-radius: 10px 10px 4px 4px; ' + (v == null ? 'height: 40px; box-sizing: border-box; border: 1.5px dashed rgba(149,96,0,0.55); background: #FBF0DD' : 'height: ' + Math.max(6, (v * 48 - (v * 48) % max) / max) + 'px; background: linear-gradient(180deg, #A6DEC1, #27785B)') })),
+      cmpLine: avg == null ? (eg ? 'اللي بتحوّشه فعلًا غير متاح: شهر من التلاتة اللي فاتوا فيه عمليات نوعها لسه ما اتحددش' : 'ما تدّخره فعلًا غير متاح: أحد الأشهر الثلاثة الأخيرة فيه عمليات لم يُحدَّد نوعها')
+        : (eg ? 'متوسط تحويشك: ' : 'متوسط ادخارك: ') + this.fmt(avg) + ' ' + cur + (eg ? ' في الشهر · المطلوب ' : ' شهريًا · المطلوب ') + this.fmt(need) + (gap >= 0 ? (eg ? ' — زيادة ' : ' — يزيد ') + this.fmt(gap) : ''),
+      cmpNote: eg ? 'آخر ٣ شهور مالية خلصت (بتبدأ يوم ٢٨): الدخل الحقيقي ناقص المصروف الحقيقي. التحويل بين محافظك والسلف وشراء الأصول برّه الحسبة.' : 'آخر ٣ أشهر مالية مكتملة (تبدأ يوم ٢٨): الدخل الحقيقي ناقص المصروف الحقيقي. التحويل بين محافظك والسلف وشراء الأصول خارج الحساب.',
+      cmpUnknown: avg == null, reviewLabel: eg ? 'حدّد نوع العمليات دي' : 'حدّد نوع هذه العمليات',
+      growthState: st, showGrowth: !!res && (isT ? res.main : res.perMonth) > 0, gMonthly: res ? (isT ? res.main : res.perMonth) : 0, gMonths: res ? res.months : 0, gStart: have,
+      goalDone: s.goal ? 'true' : 'false',
+      goalLabel: s.goal ? (eg ? 'اتعملت الخطة ✓' : 'أُنشئت الخطة ✓') : (eg ? 'حوّلها لخطة تحويش' : 'حوّلها لخطة ادخار'),
+      goalStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; ' + (s.goal ? 'color: #13764D; background: #DCEBD6; cursor: default' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      goalNote: eg ? 'بنفس المبلغ والتاريخ، واللي معاك بيتسجّل أول إيداع فيها النهارده.' : 'بالمبلغ والتاريخ نفسيهما، وما معك يُسجَّل أول إيداع فيها اليوم.',
+      makeGoal: () => {
+        if (!res || s.goal) return;
+        this.setState({ goal: true });
+        this.say((eg ? 'اتعملت خطة «' : 'أُنشئت خطة «') + goalName + '» · ' + this.fmt(isT ? res.main : res.perMonth) + ' ' + cur + (eg ? ' في الشهر لحد ' : ' شهريًا حتى ') + this.day(res.end));
+      },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

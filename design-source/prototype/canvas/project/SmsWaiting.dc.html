@@ -123,8 +123,8 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    // مخترعة: بنك وهمي باسم «بنك الواحة» · المبالغ بالوحدة الصغرى
-    const bankName = 'بنك الواحة';
+    // مخترعة: مرسل مش في قايمة البنوك المعروفة ⇒ بيظهر زي ما جه في الرسالة (§74) · المبالغ بالوحدة الصغرى
+    const bankName = '⁨ALWAHA⁩';
     const msgs = [
       { id: 'w1', name: eg ? 'مكتبة الفجر' : 'مكتبة الفجر', cat: 'shop', amt: 4500 * k, t: '١:٣٠ م' },
       { id: 'w2', name: eg ? 'كافيه المرسى' : 'مقهى المرسى', cat: 'food', amt: 2300 * k, t: '١:١٢ م' }

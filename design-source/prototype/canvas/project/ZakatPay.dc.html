@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>دفع الزكاة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.z-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.z-press:active{transform:scale(.97)}
+.z-in{animation:z-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.z-fill{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+@keyframes z-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.z-press,.z-fill{transition:none}.z-press:active{transform:none}.z-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 10px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{title}}</h2>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <sc-for list="{{sums}}" as="sm" hint-placeholder-count="3">
+      <div style="border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)">
+        <span style="font-size: 11px; color: #637570">{{sm.label}}</span>
+        <span dir="ltr" style="{{sm.style}}">{{sm.value}}</span>
+      </div>
+    </sc-for>
+  </div>
+  <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="z-fill" style="{{bar}}"></span></span>
+
+  <sc-if value="{{allPaid}}" hint-placeholder-val="{{ false }}">
+    <div class="z-in" style="border-radius: 18px; padding: 12px 14px; font-size: 13px; font-weight: 700; color: #08634F; background: #DCEBD6">{{allPaidText}}</div>
+  </sc-if>
+
+  <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <sc-for list="{{lines}}" as="ln" hint-placeholder-count="4">
+      <button type="button" role="checkbox" aria-checked="{{ln.checked}}" disabled="{{ln.done}}" class="z-press" onClick="{{ln.toggle}}" style="{{ln.rowStyle}}">
+        <span aria-hidden="true" style="{{ln.box}}"><sc-if value="{{ln.tick}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; text-align: right"><span style="font-size: 14px; font-weight: 700">{{ln.name}}</span><span style="font-size: 12px; color: #637570">{{ln.sub}}</span></span>
+        <span dir="ltr" style="{{ln.amtStyle}}">{{ln.amount}}</span>
+      </button>
+    </sc-for>
+  </div>
+  <button type="button" class="z-press" onClick="{{pickAll}}" disabled="{{noneLeft}}" style="{{pickAllStyle}}">{{pickAllLabel}}</button>
+
+  <sc-if value="{{hasPick}}" hint-placeholder-val="{{ true }}">
+    <div class="z-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="font-size: 14px; font-weight: 700">{{howTitle}}</span>
+      <div role="radiogroup" aria-label="{{howTitle}}" style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{ops}}" as="op" hint-placeholder-count="3">
+          <button type="button" role="radio" aria-checked="{{op.on}}" class="z-press" onClick="{{op.pick}}" style="{{op.style}}">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; text-align: right"><span style="font-size: 14px">{{op.label}}</span><span style="{{op.subStyle}}">{{op.sub}}</span></span>
+            <span dir="ltr" style="font-size: 14px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums; flex-shrink: 0">{{op.amount}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{isCash}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; background: rgba(25,61,51,0.05)">
+          <input type="text" inputmode="decimal" dir="ltr" aria-label="{{cashLabel}}" placeholder="0.00" value="{{cashText}}" onInput="{{typeCash}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+          <span style="font-size: 13px; color: #637570">{{currency}}</span>
+        </div>
+      </sc-if>
+      <span style="font-size: 12px; color: #637570">{{howNote}}</span>
+      <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 16px">{{err}}</span>
+      <button type="button" class="z-press" onClick="{{record}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{recordLabel}}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasPays}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 14px; font-weight: 700">{{paysTitle}}</span>
+      <sc-for list="{{pays}}" as="py" hint-placeholder-count="1">
+        <div class="z-in" style="border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; background: rgba(25,61,51,0.04)">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{py.label}}</span><span style="font-size: 12px; color: #637570">{{py.sub}}</span></span>
+          <span dir="ltr" style="font-size: 14px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{py.amount}}</span>
+          <button type="button" class="z-press" onClick="{{py.unlink}}" style="height: 44px; padding: 0 12px; border: 0; border-radius: 14px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{unlinkLabel}}</button>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <span role="status" style="font-size: 13px; font-weight: 700; color: #08634F; min-height: 18px">{{status}}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // pick: السطور المختارة للدفعة الجاية · pays: الدفعات المربوطة (كل دفعة موزّعة على سطورها بالترتيب، والزيادة «صدقة إضافية» §62)
+    this.state = { pick: {}, pays: [], how: null, cash: '', err: '', status: '' };
+  }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(t) {
+    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    // السطور جاية من «الزكاة» بعد التثبيت؛ لو مفتوحة لوحدها: نفس سطور السنة المثبّتة
+    const LINES = Array.isArray(this.props.lines) ? this.props.lines : eg
+      ? [{ id: 'cash', name: 'الكاش وحسابات البنك', due: 63250 }, { id: 'gold', name: 'دهب ادخار', due: 1050000 }, { id: 'stocks', name: 'أسهم', due: 375000 }]
+      : [{ id: 'cash', name: 'الكاش وحسابات البنك', due: 18375 }, { id: 'gold', name: 'ذهب للادخار', due: 131400 }, { id: 'stocks', name: 'أسهم', due: 52500 }, { id: 'recv', name: 'ديون لك', due: 4213 }, { id: 'rosca', name: 'الجمعيات', due: 10000 }];
+    const paidOn = (id) => s.pays.reduce((t, p) => t + (p.alloc[id] || 0), 0);
+    const required = LINES.reduce((t, l) => t + l.due, 0);
+    const paid = LINES.reduce((t, l) => t + paidOn(l.id), 0);
+    const extra = s.pays.reduce((t, p) => t + p.extra, 0);
+    const left = required - paid;
+    // عمليات حقيقية من الكشف (مخترعة) — وحدة منهم مربوطة بقسط (نفس قاعدة DueLinks: العملية ما تتربطش بحاجتين)
+    const OPS = eg
+      ? [{ id: 't1', label: 'جمعية خيرية، ٥ أكتوبر', amt: 1500000 }, { id: 't2', label: 'تبرع أونلاين، ٣ أكتوبر', amt: 500000 }, { id: 't3', label: 'قسط العربية، ٢٧ سبتمبر', amt: 435000, busy: 'قسط العربية' }]
+      : [{ id: 't1', label: 'جمعية البر الخيرية، ٥ أكتوبر', amt: 220000 }, { id: 't2', label: 'تبرع إلكتروني، ٣ أكتوبر', amt: 100000 }, { id: 't3', label: 'قسط السيارة، ٢٧ سبتمبر', amt: 145000, busy: 'قسط السيارة' }];
+    const used = (id) => s.pays.some((p) => p.op === id);
+    const picked = LINES.filter((l) => s.pick[l.id] && paidOn(l.id) < l.due);
+    const pickedDue = picked.reduce((t, l) => t + l.due - paidOn(l.id), 0);
+    const lines = LINES.map((l, i) => {
+      const p = paidOn(l.id), done = p >= l.due, on = !!s.pick[l.id] && !done;
+      return { name: l.name, done, checked: done || on ? 'true' : 'false', tick: done || on,
+        sub: done ? (eg ? 'اتدفع ✓' : 'دُفع ✓') : p ? (eg ? 'اتدفع ' : 'دُفع ') + this.fmt(p) + (eg ? ' · فاضل ' : ' · بقي ') + this.fmt(l.due - p) : (eg ? 'لسه ما اتدفعش' : 'لم يُدفع بعد'),
+        amount: this.fmt(l.due), amtStyle: 'font-size: 14px; font-weight: 700; flex-shrink: 0; font-variant-numeric: tabular-nums; color: ' + (done ? '#13764D' : '#193D33'),
+        box: 'width: 24px; height: 24px; box-sizing: border-box; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; ' + (done ? 'background: #13764D' : on ? 'background: #08634F' : 'border: 1.5px solid #9AA9A4; background: #FFFFFF'),
+        rowStyle: 'width: 100%; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 0; cursor: ' + (done ? 'default' : 'pointer') + ';' + (i === LINES.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        toggle: () => { if (!done) this.setState({ pick: Object.assign({}, s.pick, { [l.id]: !s.pick[l.id] }), err: '', status: '' }); } };
+    });
+    const opRow = (o) => {
+      const on = s.how === o.id, gone = used(o.id);
+      return { label: o.label, amount: '−' + this.fmt(o.amt), on: on ? 'true' : 'false',
+        sub: o.busy ? (eg ? 'مربوطة بـ«' : 'مربوطة بـ«') + o.busy + '»' : gone ? (eg ? 'مربوطة بدفعة قبل كده' : 'مربوطة بدفعة سابقة') : (eg ? 'من الكشف · هتاخد تصنيف «زكاة»' : 'من الكشف · تأخذ تصنيف «زكاة»'),
+        subStyle: 'font-size: 12px; color: ' + (o.busy || gone ? '#956000' : '#637570'),
+        style: 'display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 14px; border: 0; border-radius: 14px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.05)'),
+        pick: () => this.setState({ how: o.id, err: '' }) };
+    };
+    const ops = OPS.map(opRow).concat([{ label: eg ? 'دفعتها كاش' : 'دفعتها كاشًا', amount: '', on: s.how === 'cash' ? 'true' : 'false', sub: eg ? 'من غير عملية — بتتسجل من محفظة الكاش' : 'بلا عملية — تُسجَّل من محفظة الكاش', subStyle: 'font-size: 12px; color: #637570',
+      style: 'display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 14px; border: 0; border-radius: 14px; font: inherit; color: #193D33; cursor: pointer; ' + (s.how === 'cash' ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.05)'),
+      pick: () => this.setState({ how: 'cash', err: '' }) }]);
+    const record = () => {
+      if (!picked.length) { this.setState({ err: left <= 0 ? (eg ? 'مفيش زكاة مطلوبة في السنة دي.' : 'لا زكاة مستحقة في هذه السنة.') : (eg ? 'اختار سطر واحد على الأقل من سطور السنة دي.' : 'اختر سطرًا واحدًا على الأقل من سطور هذه السنة.') }); return; }
+      const o = OPS.find((x) => x.id === s.how);
+      if (!s.how) { this.setState({ err: eg ? 'اختار العملية اللي دفعت بيها، أو «دفعتها كاش».' : 'اختر العملية التي دفعت بها، أو «دفعتها كاشًا».' }); return; }
+      if (o && o.busy) { this.setState({ err: (eg ? 'العملية دي مربوطة بـ«' : 'هذه العملية مربوطة بـ«') + o.busy + (eg ? '» — ما تتربطش بحاجتين.' : '» — لا تُربط بشيئين.') }); return; }
+      if (o && used(o.id)) { this.setState({ err: eg ? 'نفس العملية متربطة بدفعة قبل كده — فكّها الأول.' : 'هذه العملية مربوطة بدفعة سابقة — فُكّها أولًا.' }); return; }
+      const amt = o ? o.amt : this.toMinor(s.cash);
+      if (!o && (amt == null || amt <= 0)) { this.setState({ err: eg ? 'اكتب المبلغ اللي دفعته كاش.' : 'اكتب المبلغ الذي دفعته كاشًا.' }); return; }
+      // التوزيع على السطور المختارة بترتيبها، والزيادة «صدقة إضافية» ما بتتنقلش لسطر تاني ولا للسنة الجاية (§62 قرار ٦)
+      let rest = amt; const alloc = {};
+      picked.forEach((l) => { const take = Math.min(rest, l.due - paidOn(l.id)); if (take > 0) { alloc[l.id] = take; rest -= take; } });
+      const pay = { id: 'p' + (s.pays.length + 1) + '-' + (o ? o.id : 'cash'), op: o ? o.id : null, label: o ? o.label.split(' · ')[0] : (eg ? 'كاش' : 'كاش'), amount: amt, alloc, extra: rest, names: picked.map((l) => l.name) };
+      const msg = (eg ? 'اتسجّلت الدفعة' : 'سُجّلت الدفعة') + (rest > 0 ? (eg ? ' — والزيادة ' : ' — والزيادة ') + this.fmt(rest) + (eg ? ' صدقة زيادة' : ' صدقة إضافية') : amt < pickedDue ? (eg ? ' — فاضل ' : ' — بقي ') + this.fmt(pickedDue - amt) + (eg ? ' على السطور دي' : ' على هذه السطور') : '');
+      this.setState({ pays: s.pays.concat([pay]), pick: {}, how: null, cash: '', err: '', status: msg });
+    };
+    const pct = required ? Math.min(100, Math.floor((paid * 100) / required)) : 0;
+    const sum = (label, v, color) => ({ label, value: this.fmt(v), style: 'text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + color });
+    return {
+      title: eg ? 'دفع زكاة السنة' : 'دفع زكاة السنة',
+      sums: [sum(eg ? 'المطلوب' : 'المطلوب', required, '#193D33'), sum(eg ? 'اتدفع' : 'دُفع', paid, '#13764D'), sum(eg ? 'الباقي' : 'الباقي', left, left ? '#BE3D48' : '#13764D')],
+      pct: String(pct), bar: 'display: block; height: 8px; border-radius: 4px; width: ' + pct + '%; background: #13764D',
+      allPaid: left <= 0, allPaidText: (eg ? 'اتدفعت زكاة السنة كلها' : 'دُفعت زكاة هذه السنة كاملة') + (extra ? (eg ? ' · وصدقة زيادة ' : ' · وصدقة إضافية ') + this.fmt(extra) : '') + '.',
+      lines, noneLeft: left <= 0,
+      pickAllLabel: eg ? 'دفعت الكل' : 'دفعت الكل',
+      pickAllStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08);' + (left <= 0 ? ' opacity: 0.45; cursor: default' : ''),
+      pickAll: () => { const all = {}; LINES.forEach((l) => { if (paidOn(l.id) < l.due) all[l.id] = true; }); this.setState({ pick: all, err: '', status: '' }); },
+      hasPick: picked.length > 0,
+      howTitle: (eg ? 'دفعت ' : 'دفعت ') + this.fmt(pickedDue) + ' ' + cur + (eg ? ' إزاي؟' : ' كيف؟'),
+      ops, isCash: s.how === 'cash', cashLabel: eg ? 'المبلغ كاش' : 'المبلغ كاشًا', cashText: s.cash, currency: cur,
+      typeCash: (e) => this.setState({ cash: e.target.value, err: '' }),
+      howNote: eg ? 'الزكاة المدفوعة مصروف عادي في شهرها بتصنيف «زكاة». ممكن تدفع على مرات بأكتر من عملية.' : 'الزكاة المدفوعة مصروف عادي في شهرها بتصنيف «زكاة». يمكن الدفع على مرات بأكثر من عملية.',
+      err: s.err, record, recordLabel: eg ? 'سجّل الدفعة' : 'سجّل الدفعة',
+      hasPays: s.pays.length > 0, paysTitle: eg ? 'الدفعات' : 'الدفعات', unlinkLabel: eg ? 'فك' : 'فك',
+      pays: s.pays.map((p) => ({ label: p.label, amount: '−' + this.fmt(p.amount),
+        sub: p.names.join(eg ? ' و' : ' و') + (p.extra ? (eg ? ' · صدقة زيادة ' : ' · صدقة إضافية ') + this.fmt(p.extra) : ''),
+        unlink: () => this.setState({ pays: s.pays.filter((x) => x.id !== p.id), status: eg ? 'اتفكت الدفعة — العملية رجعت زي ما كانت' : 'فُكّت الدفعة — عادت العملية كما كانت' }) })),
+      status: s.status
+    };
+  }
+}
+</script>
+</body>
+</html>

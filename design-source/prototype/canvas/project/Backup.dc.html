@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>النسخة الاحتياطية — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+.m-in{animation:m-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes m-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.b-enter{animation:b-enter 420ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes b-enter{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.b-spin{animation:b-spin 900ms linear infinite}
+@keyframes b-spin{to{transform:rotate(360deg)}}
+.b-veil{animation:b-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.b-up{animation:b-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.b-toast{animation:b-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes b-fade{from{opacity:0}to{opacity:1}}
+@keyframes b-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes b-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel,.b-spin{animation:none}.m-in,.b-enter,.b-up{animation:b-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <sc-if value="{{inMain}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+          <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+        </div>
+        <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+          <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px"><div class="m-skel" style="height: 210px; border-radius: 22px; background: rgba(25,61,51,0.07)"></div><div class="m-skel" style="height: 170px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div><div class="m-skel" style="height: 230px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div></div>
+        </sc-if>
+        <sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <sc-for list="{{cards}}" as="c" hint-placeholder-count="3">
+              <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+                <div style="display: flex; align-items: center; gap: 12px">
+                  <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{c.ic}}"></path></svg></span>
+                  <h2 style="margin: 0; flex: 1 1 auto; font-size: 16px; font-weight: 700">{{c.title}}</h2>
+                </div>
+                <span style="font-size: 13px; color: #637570">{{c.body}}</span>
+                <sc-if value="{{c.isBackup}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 10px">
+                    <span style="{{lastStyle}}">{{lastLine}}</span>
+                    <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><div role="alert" class="m-in" style="border-radius: 16px; padding: 10px 12px; font-size: 13px; font-weight: 700; color: #6B4600; background: #FBF0DD">{{errText}}</div></sc-if>
+                    <button type="button" class="m-press" onClick="{{make}}" disabled="{{making}}" style="{{makeStyle}}"><sc-if value="{{making}}" hint-placeholder-val="{{ false }}"><svg class="b-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.56"></path></svg></sc-if>{{makeLabel}}</button>
+                    <span style="font-size: 12px; color: #637570">{{scopeNote}}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{c.isRestore}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 10px">
+                    <sc-if value="{{noNet}}" hint-placeholder-val="{{ false }}"><span style="border-radius: 14px; padding: 8px 12px; font-size: 12px; font-weight: 700; color: #6B4600; background: #FBF0DD">{{noNetText}}</span></sc-if>
+                    <button type="button" class="m-press" onClick="{{pickFile}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{pickLabel}}</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{c.isCsv}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 10px">
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                      <sc-for list="{{dates}}" as="dt" hint-placeholder-count="2">
+                        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: #637570">{{dt.label}}<input type="date" dir="ltr" value="{{dt.value}}" onInput="{{dt.set}}" max="2026-10-07" style="height: 48px; box-sizing: border-box; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; color: #193D33; outline: none; background: rgba(25,61,51,0.05)"></label>
+                      </sc-for>
+                    </div>
+                    <span style="{{rangeStyle}}">{{rangeLine}}</span>
+                    <button type="button" class="m-press" onClick="{{exportCsv}}" disabled="{{badRange}}" style="{{exportStyle}}">{{exportLabel}}</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{inRestore}}" hint-placeholder-val="{{ false }}">
+      <div class="b-enter" style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+          <button type="button" class="m-press" onClick="{{leaveRestore}}" aria-label="{{backLabel}}" style="width: 48px; height: 48px; border: 0; border-radius: 18px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{restoreTitle}}</h1>
+        </div>
+        <dc-import name="RestorePreview" space="{{spaceName}}" file="{{file}}" net="{{netFlag}}" on-done="{{onDone}}" on-cancel="{{onCancel}}" hint-size="350px,760px"></dc-import>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{picking}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="b-veil" onClick="{{closePick}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{pickTitle}}" class="b-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{pickTitle}}</h2>
+        <span style="font-size: 12px; color: #637570">{{pickNote}}</span>
+        <sc-for list="{{files}}" as="fl" hint-placeholder-count="3">
+          <button type="button" class="m-press" onClick="{{fl.pick}}" style="min-height: 60px; border: 0; border-radius: 18px; padding: 8px 14px; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 12px; background: rgba(25,61,51,0.05)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2zM14 2v5a1 1 0 0 0 1 1h5M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"></path></svg>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span dir="ltr" style="text-align: right; font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{fl.name}}</span><span style="font-size: 12px; color: #637570">{{fl.meta}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="b-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","خطأ","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // make: idle | busy | done · tries: «خطأ» = أول محاولة بتفشل والإعادة بتنجح · file: الملف اللي اتختار للاسترجاع
+    this.state = { make: 'idle', failed: false, tries: 0, picking: false, file: null, from: '2026-09-28', to: '2026-10-07', toast: '' };
+    this.timers = [];
+    this.onDone = (added) => { if (typeof added !== 'number') return; const eg = (this.props.space ?? 'السعودية') === 'مصر'; this.setState({ file: null }); this.say(eg ? 'الاسترجاع خلص' : 'اكتمل الاسترجاع'); };
+    this.onCancel = () => this.setState({ file: null });
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const st = this.props.state ?? 'عادي', s = this.state;
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const ok = (iso) => /^\d{4}-\d{2}-\d{2}$/.test(iso || '');
+    const day = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+    const say = (iso) => { const [y, m, d] = iso.split('-').map(Number); return n(d) + ' ' + MONTHS[m - 1] + (y !== 2026 ? ' ' + String(y).replace(/\d/g, (c) => '٠١٢٣٤٥٦٧٨٩'[c]) : ''); };
+    const badRange = !ok(s.from) || !ok(s.to) || day(s.from) > day(s.to);
+    const days = badRange ? 0 : Math.round((day(s.to) - day(s.from)) / 86400000) + 1;
+    const make = () => {
+      if (s.make === 'busy') return;
+      this.setState({ make: 'busy', failed: false });
+      this.timers.push(setTimeout(() => {
+        if (st === 'خطأ' && this.state.tries === 0) { this.setState({ make: 'idle', failed: true, tries: 1 }); return; }
+        this.setState({ make: 'done' }); this.say(eg ? 'النسخة اتحفظت على الجوال' : 'حُفظت النسخة على الجوال');
+      }, 1200));
+    };
+    const noNet = st === 'محتاج نت';
+    const space = eg ? 'مصر' : 'السعودية';
+    return {
+      spaceName: space,
+      title: 'النسخة الاحتياطية',
+      inMain: !s.file, inRestore: !!s.file, isLoading: st === 'بيحمّل', ready: st !== 'بيحمّل',
+      cards: [
+        { title: eg ? 'النسخة الشاملة' : 'النسخة الشاملة', isBackup: true, isRestore: false, isCsv: false, ic: 'M3 5a9 3 0 1 0 18 0a9 3 0 1 0 -18 0M3 12a9 3 0 0 0 5 2.69M21 9.3V5M3 5v14a9 3 0 0 0 6.47 2.88M12 12v4h4M13 20a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L12 16',
+          body: eg ? 'ملف واحد للحساب كله: السعودية ومصر وملفك وأشخاصك والتجار.' : 'ملف واحد للحساب كله: السعودية ومصر وملفك وأشخاصك والتجار.' },
+        { title: eg ? 'الاسترجاع (دمج)' : 'الاسترجاع (دمج)', isBackup: false, isRestore: true, isCsv: false, ic: 'M12 13v8M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M8 17l4-4 4 4',
+          body: eg ? 'اللي عندك ما بيتكتبش فوقه: نفس المعرّف بيتساب، والمكرر بنفس المحتوى بيتساب، والجديد بيتضاف. بتشوف كل ده قبل أي كتابة.' : 'لا يُكتب فوق ما عندك: نفس المعرّف يُتخطّى، والمكرر بالمحتوى نفسه يُتخطّى، والجديد يُضاف. ترى ذلك كله قبل أي كتابة.' },
+        { title: eg ? 'تصدير العمليات' : 'تصدير العمليات', isBackup: false, isRestore: false, isCsv: true, ic: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2ZM3 9L21 9M3 15L21 15M9 9L9 21M15 9L15 21',
+          body: (eg ? 'عمليات ' : 'عمليات ') + space + (eg ? ' في ملف جدول (CSV)، من اليوم ده لليوم ده بالظبط.' : ' في ملف جدول (CSV)، من تاريخ إلى تاريخ بالضبط.') }
+      ],
+      lastLine: s.make === 'done' ? (eg ? 'آخر نسخة: النهارده ٧ أكتوبر' : 'آخر نسخة: اليوم ٧ أكتوبر') : (eg ? 'آخر نسخة: ٢٨ سبتمبر — من ٩ أيام' : 'آخر نسخة: ٢٨ سبتمبر — قبل ٩ أيام'),
+      lastStyle: 'font-size: 13px; font-weight: 700; color: ' + (s.make === 'done' ? '#13764D' : '#193D33'),
+      hasErr: s.failed, errText: eg ? 'تعذر حفظ النسخة على الجهاز. ما اتغيّرش حاجة في حسابك — جرّب تاني.' : 'تعذّر حفظ النسخة على الجهاز. لم يتغير شيء في حسابك — أعد المحاولة.',
+      making: s.make === 'busy', make,
+      makeLabel: s.make === 'busy' ? (eg ? 'بنجهّز النسخة…' : 'جارٍ تجهيز النسخة…') : s.failed ? (eg ? 'جرّب تاني' : 'أعد المحاولة') : s.make === 'done' ? (eg ? 'اعمل نسخة تانية' : 'أنشئ نسخة أخرى') : (eg ? 'اعمل نسخة دلوقتي' : 'أنشئ نسخة الآن'),
+      makeStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28); cursor: ' + (s.make === 'busy' ? 'default' : 'pointer'),
+      scopeNote: eg ? 'النسخة فيها بيانات الحساب؛ أذونات الجوال ورسايل المراجعة اللي على الجهاز وإعدادات الشكل ما بترجعش منها.' : 'النسخة تشمل بيانات الحساب؛ أذونات الجوال ورسائل المراجعة المحلية وإعدادات المظهر لا تُستعاد منها.',
+      noNet, noNetText: eg ? 'التأكيد محتاج نت. تقدر تشوف المعاينة دلوقتي.' : 'التأكيد يحتاج اتصالًا بالإنترنت. يمكنك المعاينة الآن.',
+      pickLabel: eg ? 'اختار ملف النسخة' : 'اختر ملف النسخة', pickFile: () => this.setState({ picking: true }),
+      dates: [['from', eg ? 'من' : 'من'], ['to', eg ? 'لحد' : 'إلى']].map(([key, label]) => ({ label, value: s[key], set: (e) => this.setState({ [key]: String(e.target.value || '') }) })),
+      badRange,
+      rangeLine: badRange ? (eg ? 'تاريخ البداية لازم يبقى قبل النهاية.' : 'يجب أن يسبق تاريخ البداية تاريخ النهاية.') : say(s.from) + (eg ? ' ← ' : ' ← ') + say(s.to) + ' · ' + plural(days, eg ? ['يوم واحد', 'يومين', 'أيام', 'يوم'] : ['يوم واحد', 'يومان', 'أيام', 'يومًا']),
+      rangeStyle: 'font-size: 12px; font-weight: 700; color: ' + (badRange ? '#BE3D48' : '#637570'),
+      exportLabel: eg ? 'صدّر الملف' : 'صدّر الملف',
+      exportStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); ' + (badRange ? 'opacity: 0.45; cursor: default' : 'cursor: pointer'),
+      exportCsv: () => { if (badRange) return; this.say((eg ? 'اتجهز ' : 'جُهّز ') + 'masroufy-' + s.from + '_' + s.to + '.csv'); },
+      picking: s.picking, closePick: () => this.setState({ picking: false }),
+      pickTitle: eg ? 'اختار ملف النسخة' : 'اختر ملف النسخة',
+      pickNote: eg ? 'من ملفات الجوال' : 'من ملفات الجوال',
+      files: [['ok', 'masroufy-backup-2026-09-28.json', eg ? '٢٨ سبتمبر · من الجوال ده' : '٢٨ سبتمبر · من هذا الجوال'], ['v1', 'masroufy-backup-2025-08-01.json', eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم'], ['bad', 'masroufy-backup (1).json', eg ? '٣ أكتوبر · اتعدّل بعد ما اتعمل' : '٣ أكتوبر · عُدّل بعد إنشائه']]
+        .map(([key, name, meta]) => ({ name, meta, pick: () => this.setState({ picking: false, file: key }) })),
+      restoreTitle: eg ? 'معاينة الاسترجاع' : 'معاينة الاسترجاع',
+      backLabel: eg ? 'رجوع للنسخة الاحتياطية' : 'رجوع إلى النسخة الاحتياطية',
+      leaveRestore: () => this.setState({ file: null }),
+      file: s.file || '', netFlag: noNet ? 'لا' : 'نعم', onDone: this.onDone, onCancel: this.onCancel,
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

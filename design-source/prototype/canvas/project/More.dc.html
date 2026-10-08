@@ -29,14 +29,14 @@ a{color:#08634F}a:hover{color:#064B40}
     </div>
 
 
-    <button type="button" class="m-press" style="border: 0; width: 100%; text-align: right; font: inherit; color: #193D33; cursor: pointer; border-radius: 22px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <a href="Account.dc.html" class="m-press" style="box-sizing: border-box; width: 100%; text-align: right; color: #193D33; text-decoration: none; border-radius: 22px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
       <span aria-hidden="true" style="width: 46px; height: 46px; border-radius: 23px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)">م</span>
       <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
         <span style="font-size: 16px; font-weight: 700">محمد</span>
         <span style="font-size: 12px; color: #637570">{{spaceLine}}</span>
       </span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
-    </button>
+    </a>
 
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
       <div style="display: flex; flex-direction: column; gap: 8px">
@@ -85,23 +85,26 @@ class Component extends DCLogic {
     });
     const groups = [
       { title: 'حسابك', items: [
-        item('user', 'ملفك', 'مكتمل ٦٠٪'),
-        item('income', 'مصادر الدخل', 'الراتب يوم ٢٨'),
-        item('globe', 'البلدان', eg ? 'مصر · السعودية' : 'السعودية · مصر', true)
+        item('user', 'ملفك', 'مكتمل ٦٠٪', false, 'Account'),
+        item('income', 'مصادر الدخل', 'الراتب يوم ٢٨', false, 'IncomeSources'),
+        item('globe', 'البلدان', eg ? 'مصر · السعودية' : 'السعودية · مصر', true, 'Spaces')
       ] },
       { title: 'بياناتك', items: [
-        item('wallet', 'المحافظ'),
-        item('tag', 'التصنيفات والقواعد'),
+        item('wallet', 'المحافظ', '', false, 'Wallets'),
+        item('tag', 'التصنيفات', '', false, 'Categories'),
+        item('tag', eg ? 'القواعد والتجار' : 'القواعد والتجار', eg ? 'اللي البرنامج فاكره' : 'ما يتذكره التطبيق', false, 'Rules'),
+        item('tag', 'المشاريع', eg ? 'كلّفني كام؟ · كسبت كام؟' : 'كم كلّفني؟ · كم كسبت؟', false, 'Projects'),
         item('import', eg ? 'رسايل البنك' : 'رسائل البنك', eg ? '٤ مستنية تأكيدك' : '٤ بانتظار تأكيدك', false, 'BankSms'),
-        item('import', 'كشف الحساب', eg ? 'استيراد ملف من البنك' : 'استيراد ملف من البنك'),
-        item('backup', 'النسخة الاحتياطية'),
-        item('export', 'التصدير', '', true)
+        item('import', 'كشف الحساب', eg ? 'استيراد ملف من البنك' : 'استيراد ملف من البنك', false, 'StatementImport'),
+        item('import', eg ? 'دفعات الاستيراد' : 'دفعات الاستيراد', eg ? 'اللي اتسجّل من كل ملف، وترجّعه لو حبيت' : 'ما سُجّل من كل ملف، وإرجاعه', false, 'ImportBatches'),
+        item('backup', 'النسخة الاحتياطية', '', false, 'Backup'),
+        item('export', 'التصدير', eg ? 'ملف جدول من تاريخ لتاريخ' : 'ملف جدول من تاريخ إلى تاريخ', true, 'Backup')
       ] },
       { title: 'الإعدادات', items: [
         item('bell', 'الإشعارات', '', false, 'NotificationSettings'),
-        item('lock', 'القفل'),
-        item('lang', 'اللغة'),
-        item('moon', 'المحتوى الإسلامي', '', true)
+        item('lock', 'القفل', '', false, 'AppSettings'),
+        item('lang', 'اللغة', '', false, 'AppSettings'),
+        item('moon', 'المحتوى الإسلامي', '', true, 'AppSettings')
       ] }
     ];
     return {

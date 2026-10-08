@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الأحداث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+.ev-in{animation:ev-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes ev-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel,.ev-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="People.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">الأحداث</h1>
+    </div>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 12px">
+        <div class="m-skel" style="height: 96px; border-radius: 26px; background: rgba(25,61,51,0.08)"></div>
+        <div class="m-skel" style="height: 150px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+        <div class="m-skel" style="height: 150px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <a href="EventDetail.dc.html" data-keep="{{next.keep}}" onClick="{{next.prep}}" class="m-press" style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; color: #FFFFFF; text-decoration: none; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+          <span style="font-size: 12px; color: #DCEBD6">{{nextLabel}}</span>
+          <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 20px; font-weight: 700">{{next.name}}</span><span style="font-size: 13px; font-weight: 700; color: #A6DEC1; white-space: nowrap">{{next.rel}}</span></span>
+          <span style="font-size: 12px; color: #DCEBD6">{{nextReserved}}</span>
+        </a>
+
+        <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{activeTitle}}</h2>
+        <sc-for list="{{active}}" as="e" hint-placeholder-count="3">
+          <a href="EventDetail.dc.html" data-keep="{{e.keep}}" onClick="{{e.prep}}" class="m-press" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="display: flex; align-items: center; gap: 12px">
+              <span aria-hidden="true" style="{{e.tile}}">
+                <sc-if value="{{e.i.gem}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg></sc-if>
+                <sc-if value="{{e.i.globe}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg></sc-if>
+                <sc-if value="{{e.i.sparkles}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path></svg></sc-if>
+              </span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{e.name}}</span><span style="font-size: 12px; color: #637570">{{e.meta}}</span></span>
+              <span style="{{e.ownerStyle}}">{{e.owner}}</span>
+            </span>
+            <span style="{{e.gridStyle}}">
+              <sc-for list="{{e.stats}}" as="st" hint-placeholder-count="2">
+                <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 8px 10px; border-radius: 14px; background: rgba(25,61,51,0.04)"><span style="font-size: 11px; color: #637570">{{st.label}}</span><span dir="ltr" style="{{st.valueStyle}}">{{st.value}}</span><span style="font-size: 11px; color: #637570">{{st.sub}}</span></span>
+              </sc-for>
+            </span>
+          </a>
+        </sc-for>
+
+        <button type="button" class="m-press" onClick="{{toggleArchived}}" aria-expanded="{{archivedOpen}}" style="min-height: 48px; border: 0; border-radius: 18px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.05)"><span>{{archivedTitle}}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="{{chevStyle}}"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <sc-if value="{{showArchived}}" hint-placeholder-val="{{ false }}">
+          <div class="ev-in" style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <sc-for list="{{archived}}" as="ar" hint-placeholder-count="2">
+              <a href="EventDetail.dc.html" data-keep="{{ar.keep}}" onClick="{{ar.prep}}" class="m-press" style="{{ar.rowStyle}}">
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{ar.name}}</span><span style="font-size: 12px; color: #637570">{{ar.meta}}</span></span>
+                <span style="display: flex; flex-direction: column; align-items: flex-end"><span dir="ltr" style="{{ar.valueStyle}}">{{ar.value}}</span><span style="font-size: 11px; color: #637570">{{ar.sub}}</span></span>
+              </a>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <button type="button" disabled="{{true}}" aria-describedby="ev-soon" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); opacity: 0.45; cursor: default">{{newLabel}}</button>
+    <span id="ev-soon" style="font-size: 12px; color: #637570; text-align: center">{{soon}}</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { archivedOpen: false }; }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const GIFTS = eg ? ['نقطة واحدة', 'نقطتين', 'نقاط', 'نقطة'] : ['نقطة واحدة', 'نقطتان', 'نقاط', 'نقطة'];
+    // اليوم في النموذج ٧ أكتوبر: الموجب = بعد كام يوم · السالب = من كام يوم
+    const rel = (d) => {
+      const a = Math.abs(d), t = a === 1 ? 'يوم' : a === 2 ? 'يومين' : n(a) + ' ' + (a <= 10 ? 'أيام' : (eg ? 'يوم' : 'يومًا'));
+      return d === 0 ? (eg ? 'النهارده' : 'اليوم') : d > 0 ? 'بعد ' + t : (eg ? 'من ' : 'قبل ') + t;
+    };
+    const KIND = { wedding: ['فرح', 'gem', '#A55060', 'rgba(165,80,96,0.12)'], travel: ['سفر', 'globe', '#2469BA', 'rgba(36,105,186,0.12)'], birth: ['ولادة', 'sparkles', '#13764D', 'rgba(19,118,77,0.12)'], condolence: [eg ? 'عزا' : 'عزاء', 'users', '#637570', 'rgba(99,117,112,0.12)'], eid: ['عيد', 'moon', '#956000', '#FBF0DD'] };
+    // مخترعة · بالوحدة الصغرى (السعودية) · in = النقوط اللي جاتلك (حدثك بس، وإلا null) · out = اللي إنت اديته
+    const E = [
+      { id: 'khaled', name: 'زواج خالد', kind: 'wedding', date: '١٨ أكتوبر', d: 11, mine: false, host: 'خالد', spend: 45000, spendN: 1, inn: null, inN: null, out: 0, outN: 0 },
+      { id: 'trip', name: eg ? 'رحلة دهب' : 'رحلة العُلا', kind: 'travel', date: '١٤ نوفمبر', d: 38, mine: true, spend: 235000, spendN: 2, inn: 0, inN: 0, out: 0, outN: 0 },
+      { id: 'jood', name: 'ولادة جود', kind: 'birth', date: '٢٨ سبتمبر', d: -9, mine: true, spend: 507000, spendN: 2, inn: 250000, inN: 5, out: 0, outN: 0 },
+      { id: 'salem', name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '٣ أغسطس', d: -65, mine: false, host: 'سالم', spend: 0, spendN: 0, inn: null, inN: null, out: 50000, outN: 1, archived: true },
+      { id: 'eid', name: 'عيد الفطر', kind: 'eid', date: '٢٠ مارس', d: -201, mine: true, spend: 315000, spendN: 3, inn: 0, inN: 0, out: 0, outN: 0, archived: true }
+    ];
+    const keep = (id) => { const f = () => { try { window.sessionStorage.setItem('masroufy-event', id); } catch (e) {} }; return { keep: JSON.stringify({ 'masroufy-event': id }), prep: f }; };
+    const money = (v, color) => 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; color: ' + color;
+    const muted = 'font-size: 13px; font-weight: 700; color: #637570; text-align: right';
+    const card = (e) => {
+      const K = KIND[e.kind];
+      // المصروف دايمًا · النقوط اللي جاتلك لحدثك بس (لو فيه) · اللي إنت اديته لحدث حد تاني — من غير «صافي» (§64)
+      const stats = [{ label: eg ? 'المصروف' : 'المصروف', value: e.spendN ? this.fmt(e.spend * k) : (eg ? 'لسه ما اتربطش' : 'لم يُربط بعد'), valueStyle: e.spendN ? money('#193D33') : muted, sub: e.spendN ? plural(e.spendN, OPS) : '' }];
+      if (e.mine && e.inN) stats.push({ label: eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك', value: '+' + this.fmt(e.inn * k), valueStyle: money('#13764D'), sub: plural(e.inN, GIFTS) });
+      if (!e.mine) stats.push({ label: e.kind === 'condolence' ? (eg ? 'اللي ادّيته' : 'ما قدّمته') : (eg ? 'نقّطته' : 'نقّطته'), value: e.outN ? '−' + this.fmt(e.out * k) : (eg ? 'لسه' : 'لم تنقّطه بعد'), valueStyle: e.outN ? money('#BE3D48') : muted, sub: e.outN ? plural(e.outN, OPS) : '' });
+      return Object.assign(keep(e.id), {
+        name: e.name, meta: K[0] + '، ' + e.date + (e.archived ? '' : '، ' + rel(e.d)),
+        i: { [K[1]]: true },
+        tile: 'width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + K[2] + '; background: ' + K[3],
+        owner: e.mine ? (eg ? 'حدثك' : 'حدثك') : 'ل' + e.host,
+        ownerStyle: 'flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (e.mine ? 'color: #08634F; background: #DCEBD6' : 'color: #2469BA; background: rgba(36,105,186,0.10)'),
+        stats, gridStyle: 'display: grid; grid-template-columns: repeat(' + stats.length + ', minmax(0, 1fr)); gap: 8px',
+        value: stats[stats.length - 1].value, valueStyle: stats[stats.length - 1].valueStyle, sub: stats[stats.length - 1].label
+      });
+    };
+    const live = E.filter((e) => !e.archived);
+    const up = live.filter((e) => e.d >= 0).sort((a, b) => a.d - b.d).concat(live.filter((e) => e.d < 0).sort((a, b) => b.d - a.d));
+    const old = E.filter((e) => e.archived);
+    const archived = old.map((e, i) => Object.assign(card(e), { meta: KIND[e.kind][0] + '، ' + e.date + '، ' + (e.mine ? 'حدثك' : 'ل' + e.host), rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; text-decoration: none; color: #193D33;' + (i === old.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') }));
+    const nx = up[0];
+    const open = this.state.archivedOpen;
+    return {
+      isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', showList: st === 'عادي',
+      emptyTitle: eg ? 'مفيش أحداث لسه' : 'لا أحداث بعد',
+      emptyBody: eg ? 'ضيف فرح أو سفر أو مناسبة، ونجمعلك مصروفها ونقوطها.' : 'أضف زواجًا أو سفرًا أو مناسبة لنجمع مصروفها ونقوطها.',
+      next: Object.assign(keep(nx.id), { name: nx.name, rel: rel(nx.d) }),
+      nextLabel: eg ? 'أقرب حدث' : 'أقرب حدث',
+      nextReserved: (eg ? 'محجوز له ' : 'محجوز له ') + this.fmt(50000 * k) + ' ' + cur + (eg ? ' من الميزانيات' : ' في الميزانيات'),
+      activeTitle: (eg ? 'الشغالة' : 'النشطة') + ' (' + n(up.length) + ')',
+      active: up.map(card),
+      archivedTitle: (eg ? 'المتأرشفة' : 'المؤرشفة') + ' (' + n(old.length) + ')',
+      archivedOpen: open ? 'true' : 'false', showArchived: open, archived,
+      chevStyle: 'transition: transform 220ms cubic-bezier(.2,.7,.3,1); transform: rotate(' + (open ? 180 : 0) + 'deg)',
+      toggleArchived: () => this.setState({ archivedOpen: !open }),
+      newLabel: eg ? 'حدث جديد' : 'حدث جديد',
+      soon: eg ? 'إضافة حدث وتعديله بييجوا في خطوة جاية.' : 'إضافة حدث وتعديله في خطوة قادمة.'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إرجاع دفعة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.b-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.b-press:active{transform:scale(.97)}
+.b-skel{animation:b-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes b-pulse{from{opacity:.5}to{opacity:1}}
+.b-veil{animation:b-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.b-up{animation:b-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.b-list{scrollbar-width:none}.b-list::-webkit-scrollbar{display:none}
+@keyframes b-fade{from{opacity:0}to{opacity:1}}
+@keyframes b-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.b-press{transition:none}.b-press:active{transform:none}.b-skel{animation:none}.b-up{animation:b-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="position: fixed; inset: 0; z-index: 9">
+    <button type="button" class="b-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+    <div role="dialog" aria-modal="true" aria-label="{{title}}" class="b-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 88%; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 24px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+      <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+      <span style="font-size: 17px; font-weight: 700; overflow-wrap: anywhere">{{title}}</span>
+
+      <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+        <div aria-busy="true" aria-label="{{loadingLabel}}" style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 13px; color: #637570">{{loadingLabel}}</span><div class="b-skel" style="height: 64px; border-radius: 16px; background: rgba(25,61,51,0.06)"></div><div class="b-skel" style="height: 140px; border-radius: 16px; background: rgba(25,61,51,0.06)"></div></div>
+      </sc-if>
+
+      <sc-if value="{{isBlocked}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; background: #FBF0DD; color: #6B4600"><span style="font-size: 14px; font-weight: 700; color: #956000">{{blockedTitle}}</span><span style="font-size: 13px; line-height: 1.7">{{blockedBody}}</span></div>
+        <button type="button" class="b-press" onClick="{{closeBlocked}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{okLabel}}</button>
+      </sc-if>
+
+      <sc-if value="{{showPlan}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <span style="display: flex; flex-direction: column; padding: 10px 12px; border-radius: 14px; background: rgba(190,61,72,0.08)"><span style="font-size: 11px; color: #BE3D48">{{delLabel}}</span><span style="font-size: 17px; font-weight: 700; color: #BE3D48">{{delCount}}</span></span>
+          <span style="display: flex; flex-direction: column; padding: 10px 12px; border-radius: 14px; background: #DCEBD6"><span style="font-size: 11px; color: #08634F">{{keepLabel}}</span><span style="font-size: 17px; font-weight: 700; color: #08634F">{{keepCount}}</span></span>
+        </div>
+        <div class="b-list" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; min-height: 0; flex: 1 1 auto">
+          <sc-if value="{{hasKept}}" hint-placeholder-val="{{ true }}">
+            <span style="font-size: 13px; font-weight: 700">{{keptTitle}}</span>
+            <sc-for list="{{kept}}" as="kp" hint-placeholder-count="3">
+              <span style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 14px; background: rgba(25,61,51,0.04)">
+                <span style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline"><span style="font-size: 14px; font-weight: 700">{{kp.name}}</span><span dir="ltr" style="font-size: 13px; font-weight: 700; white-space: nowrap; color: #BE3D48; font-variant-numeric: tabular-nums">{{kp.amount}}</span></span>
+                <span style="display: flex; align-items: flex-start; gap: 6px"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; flex-shrink: 0; color: #08634F; background: #DCEBD6">{{kp.chip}}</span><span style="font-size: 12px; line-height: 1.6; color: #637570">{{kp.reason}}</span></span>
+              </span>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{isClean}}" hint-placeholder-val="{{ false }}">
+            <span style="font-size: 13px; padding: 10px 12px; border-radius: 14px; color: #08634F; background: #DCEBD6">{{cleanLine}}</span>
+          </sc-if>
+          <span style="font-size: 13px; font-weight: 700">{{delTitle}}</span>
+          <sc-for list="{{deleted}}" as="dl" hint-placeholder-count="3">
+            <span style="{{dl.style}}"><span>{{dl.name}}</span><span dir="ltr" style="font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{dl.amount}}</span></span>
+          </sc-for>
+          <sc-if value="{{hasMore}}" hint-placeholder-val="{{ true }}">
+            <span style="font-size: 12px; color: #637570">{{moreLine}}</span>
+          </sc-if>
+          <span style="font-size: 12px; color: #637570">{{unlinkLine}}</span>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="b-press" onClick="{{cancel}}" disabled="{{running}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+          <button type="button" class="b-press" onClick="{{confirm}}" disabled="{{running}}" aria-busy="{{busy}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // قطعة مشتركة: ImportBatches بتفتحها بـ batch و on-done و on-close. لوحدها بتعرض مثال من الخاصية state.
+  constructor(props) { super(props); this.state = { phase: props.batch ? 'loading' : null }; this.timers = []; }
+  componentDidMount() {
+    const b = this.props.batch;
+    if (b) this.timers.push(setTimeout(() => this.setState({ phase: b.blocked ? 'blocked' : 'plan' }), 700));
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  close() { if (typeof this.props.onClose === 'function') this.props.onClose(); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const st = this.props.state ?? 'عادي';
+    const B = this.props.batch || { id: 'x', name: eg ? 'كشف-QNB-أغسطس.pdf' : 'كشف-الراجحي-أغسطس.pdf', added: 38, keep: ['settle', 'alloc', 'due', 'gift', 'invest', 'source'], unlink: 3, blocked: st === 'خطأ' };
+    const phase = this.state.phase || (st === 'بيحمّل' ? 'loading' : st === 'خطأ' ? 'blocked' : 'plan');
+    // أسباب البقاء = جمل المنطق (REVERT_KEPT_*) · العمليات مخترعة وبالوحدة الصغرى
+    const K = {
+      settle: [eg ? 'عشا مع خالد' : 'عشاء مع خالد', 36000, eg ? 'تسوية' : 'تسوية', eg ? 'العملية دي دخلت عليها تسوية بعد الاستيراد، فمش هتتحذف.' : 'سُجّلت على هذه العملية تسوية بعد الاستيراد، فلن تُحذف.'],
+      alloc: [eg ? 'تحويل لسارة' : 'تحويل إلى سارة', 150000, eg ? 'تقسيم' : 'تقسيم', eg ? 'العملية دي متربطة بشخص (نصيب شخص أو دين)، فمش هتتحذف.' : 'هذه العملية مرتبطة بشخص (نصيب شخص أو دين)، فلن تُحذف.'],
+      due: ['قسط الجوال', 45000, eg ? 'مستحقات' : 'مستحقات', eg ? 'العملية دي متربطة بالمستحقات أو بدفعة زكاة اتسجلت بعد الاستيراد، فمش هتتحذف.' : 'هذه العملية مرتبطة بالمستحقات أو بدفعة زكاة سُجّلت بعد الاستيراد، فلن تُحذف.'],
+      gift: [eg ? 'نقطة فرح فهد' : 'نقوط زواج فهد', 50000, eg ? 'نقطة' : 'نقوط', eg ? 'العملية دي نقطة متربطة بشخص في حدث، فمش هتتحذف.' : 'هذه العملية نقوط مرتبطة بشخص في حدث، فلن تُحذف.'],
+      invest: [eg ? 'شراء وحدات صندوق' : 'شراء وحدات صندوق', 200000, eg ? 'استثمار' : 'استثمار', eg ? 'العملية دي متربطة بشراء أو بيع استثمار، فمش هتتحذف.' : 'هذه العملية مرتبطة بشراء استثمار أو بيعه، فلن تُحذف.'],
+      source: [eg ? 'كافيه المرسى' : 'مقهى المرسى', 2300, eg ? 'مصدر تاني' : 'مصدر آخر', eg ? 'العملية دي ليها مصدر تاني غير الدفعة دي (رسالة مثلًا)، فمش هتتحذف.' : 'لهذه العملية مصدر آخر غير هذه الدفعة (رسالة مثلًا)، فلن تُحذف.']
+    };
+    const keepKeys = (B.keep || []).filter((x) => K[x]);
+    const delN = Math.max(0, (B.added || 0) - keepKeys.length);
+    const DEL = [[eg ? 'سوبرماركت الحي' : 'سوبرماركت الحي', 27410], [eg ? 'بنزينة' : 'محطة وقود', 8500], [eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', 4300], [eg ? 'مطعم الفول' : 'مطعم الريف', 6100], [eg ? 'فرن الندى' : 'مخبز الندى', 1200], [eg ? 'اشتراك النت' : 'اشتراك الإنترنت', 23000]];
+    const shownDel = DEL.slice(0, Math.min(delN, 4));
+    const running = phase === 'running';
+    return {
+      title: (eg ? 'ترجيع «' : 'إرجاع «') + B.name + '»',
+      isLoading: phase === 'loading', loadingLabel: eg ? 'بنشوف إيه اللي هيتمسح وإيه اللي هيفضل…' : 'نتحقق مما سيُحذف وما سيبقى…',
+      isBlocked: phase === 'blocked',
+      blockedTitle: eg ? 'مقدرناش نرجّع الدفعة دي' : 'تعذّر إرجاع هذه الدفعة',
+      blockedBody: eg ? 'مقدرناش نلاقي عمليات الاستيراد ده. غالبًا معرّفاته اتحفظت ناقصة في نسخة قديمة. من الإعدادات دوس «افحص البيانات القديمة» وصلّح، وبعدين جرّب تاني.' : 'تعذّر إيجاد عمليات هذا الاستيراد؛ غالبًا حُفظت معرّفاته ناقصة في نسخة قديمة. من الإعدادات اضغط «افحص البيانات القديمة» وأصلحها، ثم أعد المحاولة.',
+      okLabel: eg ? 'تمام' : 'حسنًا', closeBlocked: () => this.close(),
+      showPlan: phase === 'plan' || running,
+      delLabel: eg ? 'هيتمسح' : 'سيُحذف', delCount: plural(delN, OPS),
+      keepLabel: eg ? 'هيفضل' : 'سيبقى', keepCount: keepKeys.length ? plural(keepKeys.length, OPS) : (eg ? 'ولا حاجة' : 'لا شيء'),
+      hasKept: keepKeys.length > 0, keptTitle: eg ? 'اللي هيفضل وليه' : 'ما سيبقى ولماذا',
+      kept: keepKeys.map((x) => ({ name: K[x][0], amount: '−' + this.fmt(K[x][1] * k) + ' ' + cur, chip: K[x][2], reason: K[x][3] })),
+      isClean: !keepKeys.length, cleanLine: eg ? 'الترجيع نظيف: مفيش عملية من الدفعة دي متربطة بحاجة تانية.' : 'الإرجاع نظيف: لا عملية من هذه الدفعة مرتبطة بشيء آخر.',
+      delTitle: eg ? 'اللي هيتمسح' : 'ما سيُحذف',
+      deleted: shownDel.map(([name, a], i) => ({ name, amount: '−' + this.fmt(a * k) + ' ' + cur, style: 'display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 6px 2px;' + (i ? ' border-top: 1px solid rgba(204,216,204,0.55);' : '') })),
+      hasMore: delN > shownDel.length,
+      moreLine: 'و' + plural(delN - shownDel.length, OPS) + (eg ? ' كمان' : (delN - shownDel.length === 2 ? ' أخريان' : ' أخرى')),
+      unlinkLine: B.unlink ? (eg ? 'هيتشال مع اللي هيتمسح ' : 'يُزال مع المحذوف ') + plural(B.unlink, eg ? ['ربط واحد', 'ربطين', 'روابط', 'ربط'] : ['رابط واحد', 'رابطان', 'روابط', 'رابطًا']) + (eg ? ' (مشروع · وسم · حدث). والتسويات والديون مش بتتلمس.' : ' (مشروع · وسم · حدث). ولا تُمس التسويات والديون.') : (eg ? 'التسويات والديون مش بتتلمس.' : 'لا تُمس التسويات والديون.'),
+      cancelLabel: eg ? 'إلغاء' : 'إلغاء', cancel: () => this.close(),
+      running, busy: running ? 'true' : 'false',
+      confirmLabel: running ? (eg ? 'بيترجع…' : 'جارٍ الإرجاع…') : (eg ? 'رجّع الدفعة' : 'أرجِع الدفعة'),
+      confirmStyle: 'flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #C9505A 0%, #A8323C 100%); box-shadow: 0 8px 18px rgba(168,50,60,0.22);' + (running ? ' opacity: 0.6; cursor: default' : ''),
+      confirm: () => {
+        if (running) return;
+        this.setState({ phase: 'running' });
+        this.timers.push(setTimeout(() => { if (typeof this.props.onDone === 'function') this.props.onDone(B.id, { deleted: delN, kept: keepKeys.length }); else this.setState({ phase: 'plan' }); }, 1100));
+      },
+      closeSheet: () => { if (!running) this.close(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل خطة الادخار — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.q-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.q-press:active{transform:scale(.97)}
+.q-veil{animation:q-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.q-up{animation:q-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.q-fill{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.q-fall{animation:q-fall 1600ms cubic-bezier(.2,.7,.3,1) both}
+.q-scroll{scrollbar-width:none}.q-scroll::-webkit-scrollbar{display:none}
+@keyframes q-fade{from{opacity:0}to{opacity:1}}
+@keyframes q-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes q-fall{0%{opacity:0;transform:translateY(-16px)}15%{opacity:1}100%{opacity:0;transform:translateY(76px)}}
+@media (prefers-reduced-motion: reduce){.q-press,.q-fill{transition:none}.q-press:active{transform:none}.q-up{animation:q-fade 150ms both}.q-fall{animation:none;display:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="position: fixed; inset: 0; z-index: 9">
+    <button type="button" class="q-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+    <div role="dialog" aria-modal="true" aria-label="{{title}}" class="q-up q-scroll" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 90%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+      <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+      <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+      <span style="font-size: 13px; color: #637570">{{sub}}</span>
+
+      <sc-if value="{{isDetail}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="position: relative; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 6px; background: #DCEBD6">
+            <sc-if value="{{celebrate}}" hint-placeholder-val="{{ false }}">
+              <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: -72px; height: 84px; pointer-events: none; overflow: hidden">
+                <sc-for list="{{bits}}" as="bt" hint-placeholder-count="16">
+                  <span class="q-fall" style="{{bt.outer}}"><span style="{{bt.inner}}"></span></span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <span style="font-size: 12px; color: #4F625C">{{savedLabel}}</span>
+            <span dir="ltr" style="text-align: right; font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums">{{savedText}}</span>
+            <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(8,99,79,0.14)"><span class="q-fill" style="{{bar}}"></span></span>
+            <span style="font-size: 12px; font-weight: 700; color: #08634F">{{ofText}}</span>
+          </div>
+          <div style="border-radius: 18px; padding: 2px 14px; background: rgba(25,61,51,0.04)">
+            <sc-for list="{{stats}}" as="sx" hint-placeholder-count="4">
+              <div style="{{sx.rowStyle}}"><span style="font-size: 13px; color: #4F625C">{{sx.label}}</span><span dir="ltr" style="{{sx.style}}">{{sx.value}}</span></div>
+            </sc-for>
+          </div>
+          <sc-if value="{{isLinked}}" hint-placeholder-val="{{ false }}">
+            <span style="border-radius: 16px; padding: 10px 12px; font-size: 13px; color: #2469BA; background: rgba(36,105,186,0.08)">{{linkText}}</span>
+          </sc-if>
+          <sc-if value="{{isManual}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; gap: 8px">
+                <div style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; background: rgba(25,61,51,0.05)">
+                  <input type="text" inputmode="decimal" dir="ltr" aria-label="{{depLabel}}" placeholder="0.00" value="{{depText}}" onInput="{{typeDep}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+                  <span style="font-size: 12px; color: #637570">{{currency}}</span>
+                </div>
+                <button type="button" class="q-press" onClick="{{deposit}}" style="height: 48px; padding: 0 18px; border: 0; border-radius: 14px; flex-shrink: 0; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{depBtn}}</button>
+              </div>
+              <span style="font-size: 13px; font-weight: 700">{{depsTitle}}</span>
+              <sc-for list="{{deps}}" as="dp" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 4px 0 12px; border-radius: 14px; background: rgba(25,61,51,0.04)">
+                  <span style="flex: 1 1 auto; font-size: 13px; color: #4F625C">{{dp.date}}</span>
+                  <span dir="ltr" style="font-size: 14px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{dp.amount}}</span>
+                  <button type="button" class="q-press" onClick="{{dp.remove}}" aria-label="{{dp.removeLabel}}" style="width: 44px; height: 44px; border: 0; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #BE3D48; cursor: pointer; background: transparent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display: flex; gap: 8px">
+            <button type="button" disabled="{{true}}" aria-describedby="goal-edit-soon" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45">{{editLabel}}</button>
+            <button type="button" class="q-press" onClick="{{archive}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.06)">{{archiveLabel}}</button>
+          </div>
+          <span id="goal-edit-soon" style="font-size: 11px; color: #637570">{{editSoon}}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{inputs}}" as="in" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="{{in.id}}" style="font-size: 13px; font-weight: 700">{{in.label}}</label>
+              <input id="{{in.id}}" type="text" inputmode="{{in.mode}}" dir="{{in.dir}}" placeholder="{{in.ph}}" value="{{in.value}}" onInput="{{in.type}}" maxlength="40" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; outline: none; text-align: right; background: rgba(25,61,51,0.05)">
+            </div>
+          </sc-for>
+          <sc-for list="{{choices}}" as="ch" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700">{{ch.label}}</span>
+              <div role="radiogroup" aria-label="{{ch.label}}" style="display: flex; gap: 8px; flex-wrap: wrap">
+                <sc-for list="{{ch.opts}}" as="co" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{co.on}}" class="q-press" onClick="{{co.pick}}" style="{{co.style}}">{{co.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <span style="font-size: 12px; color: #637570">{{newNote}}</span>
+          <button type="button" class="q-press" onClick="{{create}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{createLabel}}</button>
+        </div>
+      </sc-if>
+      <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 16px">{{err}}</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["تفاصيل خطة","خطة جديدة"],"default":"تفاصيل خطة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dep: '', err: '', name: '', target: '', when: 'year', kind: 'manual', wallet: null };
+  }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(t) {
+    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  call(name, arg) { if (typeof this.props[name] === 'function') this.props[name](arg); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    const isNew = (this.props.mode ?? 'تفاصيل خطة') === 'خطة جديدة' || this.props.mode === 'new';
+    // «خطط الادخار» بتبعت الخطة محسوبة؛ لو مفتوحة لوحدها: «السفر» زي ما هي في الصفحة
+    const G = this.props.goal || { id: 'g1', name: 'السفر', starred: true, sub: eg ? 'الهدف 36,000.00 ج.م، ٣١ ديسمبر ٢٠٢٦، إيداعات بإيدك' : 'الهدف 12,000.00 ر.س، ٣١ ديسمبر ٢٠٢٦، إيداعات يدوية',
+      saved: eg ? '22,200.00' : '7,400.00', of: eg ? '٦١٪، فاضل 13,800.00' : '٦١٪، بقي 4,600.00', pct: 61, linked: false, link: '', reached: false,
+      stats: [[eg ? 'المفروض النهارده' : 'المفروض اليوم', eg ? '27,593.41' : '9,197.80', ''], [eg ? 'ورا بـ' : 'متأخرة بـ', eg ? '5,393.41' : '1,797.80', '#BE3D48'], [eg ? 'المطلوب في الشهر' : 'المطلوب شهريًا', eg ? '4,600.00' : '1,533.34', ''], [eg ? 'هتوصل لكام' : 'ستصل إلى', eg ? '28,963.44' : '9,654.48', '']],
+      deps: [['d9', '٢٨ سبتمبر', eg ? 225000 : 75000], ['d8', '٢٨ أغسطس', eg ? 210000 : 70000]] };
+    const BITS = ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#08634F'];
+    const bits = [];
+    for (let i = 0; i < 16; i++) bits.push({ outer: 'position: absolute; top: 0; left: ' + (4 + i * 6) + '%; animation-delay: ' + ((i * 37) % 300) + 'ms', inner: 'display: block; width: 6px; height: 10px; border-radius: 2px; transform: rotate(' + ((i * 47) % 90 - 45) + 'deg); background: ' + BITS[i % 5] });
+    const chip = (on) => 'min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const WHEN = [['year', eg ? 'آخر السنة' : 'آخر السنة', '٣١ ديسمبر ٢٠٢٦', 85, 3], ['y1', eg ? 'بعد سنة' : 'بعد سنة', '٧ أكتوبر ٢٠٢٧', 365, 12], ['y2', eg ? 'بعد سنتين' : 'بعد سنتين', '٧ أكتوبر ٢٠٢٨', 731, 24]];
+    const WALLETS = eg ? [['ahly', 'البنك الأهلي المصري', '٢٢٠٤', 1640000], ['qnb', 'QNB مصر', '٥٥٢٠', 620000]] : [['rajhi', 'مصرف الراجحي', '٣٣١٨', 412000], ['snb', 'البنك الأهلي السعودي', '٩٠٤٥', 183000], ['inma', 'مصرف الإنماء', '٧٧٣١', 50000]];
+    const choices = [{ label: eg ? 'لحد إمتى؟' : 'حتى متى؟', opts: WHEN.map(([id, label]) => ({ label, on: s.when === id ? 'true' : 'false', style: chip(s.when === id), pick: () => this.setState({ when: id }) })) },
+      { label: eg ? 'بتحوّش إزاي؟' : 'كيف تدّخر؟', opts: [['manual', eg ? 'إيداعات بإيدي' : 'إيداعات يدوية'], ['linked', eg ? 'حساب مخصوص' : 'حساب مخصص']].map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', style: chip(s.kind === id), pick: () => this.setState({ kind: id, wallet: null }) })) }];
+    if (s.kind === 'linked') choices.push({ label: eg ? 'أنهي حساب؟' : 'أي حساب؟', opts: WALLETS.map(([id, label]) => ({ label, on: s.wallet === id ? 'true' : 'false', style: chip(s.wallet === id), pick: () => this.setState({ wallet: id }) })) });
+    const create = () => {
+      const name = s.name.trim(), target = this.toMinor(s.target);
+      if (!name) { this.setState({ err: eg ? 'اكتب اسم الخطة' : 'اكتب اسم الخطة' }); return; }
+      if (target == null || target <= 0) { this.setState({ err: eg ? 'مبلغ الخطة لازم يبقى أكبر من صفر' : 'مبلغ الخطة يجب أن يكون أكبر من صفر' }); return; }
+      if (s.kind === 'linked' && !s.wallet) { this.setState({ err: eg ? 'اختار الحساب اللي هتحوّش فيه' : 'اختر الحساب الذي تدّخر فيه' }); return; }
+      const w = WHEN.find((x) => x[0] === s.when), wl = WALLETS.find((x) => x[0] === s.wallet);
+      this.call('onCreate', { name, target, end: w[2], total: w[3], months: w[4], wallet: wl ? { name: wl[1], last4: wl[2], balance: wl[3] } : null });
+      this.setState({ name: '', target: '', err: '' });
+    };
+    const deposit = () => {
+      const v = this.toMinor(s.dep);
+      if (v == null || v <= 0) { this.setState({ err: eg ? 'مبلغ الإيداع لازم يبقى أكبر من صفر' : 'مبلغ الإيداع يجب أن يكون أكبر من صفر' }); return; }
+      this.call('onDeposit', v); this.setState({ dep: '', err: '' });
+    };
+    return {
+      title: isNew ? (eg ? 'خطة جديدة' : 'خطة جديدة') : (G.starred ? '★ ' : '') + (eg ? 'خطة «' : 'خطة «') + G.name + '»',
+      sub: isNew ? (eg ? 'الخطة بتتأرشف بس، عمرها ما بتتمسح.' : 'الخطة تُؤرشف فقط ولا تُحذف.') : G.sub,
+      isDetail: !isNew, isNew, celebrate: !isNew && !!this.props.celebrate, bits,
+      savedLabel: G.linked ? (eg ? 'المتحوّش (رصيد الحساب كله)' : 'المدّخر (رصيد الحساب كله)') : (eg ? 'المتحوّش' : 'المدّخر'),
+      savedText: G.saved + ' ' + cur, ofText: G.of, pct: String(G.pct), bar: 'display: block; height: 8px; border-radius: 4px; width: ' + G.pct + '%; background: ' + (G.reached ? '#13764D' : '#08634F'),
+      stats: G.stats.map(([label, value, color], i) => ({ label, value, rowStyle: 'display: flex; justify-content: space-between; gap: 8px; padding: 9px 0;' + (i === G.stats.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'), style: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (color || '#193D33') })),
+      isLinked: !!G.linked, isManual: !G.linked, linkText: G.link,
+      depLabel: eg ? 'مبلغ الإيداع' : 'مبلغ الإيداع', depText: s.dep, typeDep: (e) => this.setState({ dep: e.target.value, err: '' }), currency: cur,
+      depBtn: eg ? 'أودِع' : 'أودِع', deposit, depsTitle: eg ? 'الإيداعات' : 'الإيداعات',
+      deps: (G.deps || []).map(([id, date, amt]) => ({ date, amount: '+' + this.fmt(amt), removeLabel: (eg ? 'شيل إيداع ' : 'احذف إيداع ') + date, remove: () => this.call('onRemove', id) })),
+      editLabel: eg ? 'تعديل' : 'تعديل', editSoon: eg ? 'تعديل الاسم والمبلغ والميعاد — في الخطوة الجاية.' : 'تعديل الاسم والمبلغ والموعد — في الخطوة القادمة.',
+      archiveLabel: eg ? 'أرشف الخطة' : 'أرشفة الخطة', archive: () => this.call('onArchive', G.id),
+      inputs: [{ id: 'q-name', label: eg ? 'اسم الخطة' : 'اسم الخطة', mode: 'text', dir: 'rtl', ph: eg ? 'مثلًا: عربية' : 'مثلًا: سيارة', value: s.name, type: (e) => this.setState({ name: e.target.value, err: '' }) },
+        { id: 'q-target', label: (eg ? 'المبلغ المطلوب (' : 'المبلغ المستهدف (') + cur + ')', mode: 'decimal', dir: 'ltr', ph: '0', value: s.target, type: (e) => this.setState({ target: e.target.value, err: '' }) }],
+      choices, newNote: s.kind === 'linked' ? (eg ? 'رصيد الحساب كله هو المتحوّش — اربط حساب مخصوص للهدف.' : 'رصيد الحساب كله هو المدّخر — اربط حسابًا مخصصًا للهدف.') : (eg ? 'بتسجّل كل إيداع بنفسك، وتقدر تشيله.' : 'تسجّل كل إيداع بنفسك، ويمكنك حذفه.'),
+      createLabel: eg ? 'اعمل الخطة' : 'أنشئ الخطة', create,
+      err: s.err, closeSheet: () => this.call('onClose')
+    };
+  }
+}
+</script>
+</body>
+</html>

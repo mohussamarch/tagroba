@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل الدين — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.dd-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.dd-in{animation:dd-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.dd-bit{animation:dd-fall 1600ms cubic-bezier(.2,.7,.3,1) both}
+.dd-toast{animation:dd-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes dd-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes dd-fall{0%{opacity:0;transform:translateY(-16px) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translateY(58px) rotate(220deg)}}
+@keyframes dd-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.dd-bar{transition:none}.m-press:active{transform:none}.dd-in{animation:none}.dd-bit{display:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="PersonProfile.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+      <span style="{{sideChipStyle}}">{{sideChip}}</span>
+    </div>
+
+    <sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="border-radius: 18px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; background: #FBF0DD; color: #956000">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 20h.01"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path><path d="M5 12.859a10 10 0 0 1 5.17-2.69"></path><path d="M19 12.859a10 10 0 0 0-2.007-1.523"></path><path d="M2 8.82a15 15 0 0 1 4.177-2.643"></path><path d="M22 8.82a15 15 0 0 0-11.288-3.764"></path><path d="m2 2 20 20"></path></svg>
+        <span style="font-size: 13px; font-weight: 700">{{offlineText}}</span>
+      </div>
+    </sc-if>
+
+    <div style="position: relative">
+      <sc-if value="{{confetti}}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="position: absolute; left: 16px; right: 16px; top: 0; height: 0; z-index: 2; pointer-events: none">
+          <sc-for list="{{bits}}" as="b" hint-placeholder-count="14">
+            <span class="dd-bit" style="{{b.style}}"></span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 8px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #08634F; background: #FFFDF9">{{initial}}</span>
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{who}}</span><span style="font-size: 12px; color: #DCEBD6">{{kindLine}}</span></span>
+        </div>
+        <span style="font-size: 13px; color: #DCEBD6">{{remainLabel}}</span>
+        <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px"><span style="font-size: 16px">{{currency}}</span><span style="font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{remainText}}</span></div>
+        <span role="progressbar" aria-label="{{paidLine}}" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="dd-bar" style="{{barStyle}}"></span></span>
+        <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; color: #DCEBD6">{{paidLine}}</span><sc-if value="{{hasSignal}}" hint-placeholder-val="{{ true }}"><span style="{{signalStyle}}">{{signal}}</span></sc-if></span>
+      </div>
+    </div>
+
+    <sc-if value="{{hasPend}}" hint-placeholder-val="{{ false }}">
+      <div class="dd-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
+        <span style="font-size: 13px; font-weight: 700; color: #956000">{{pendQ}}</span>
+        <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 14px; font-weight: 700">{{pendWhat}}</span><span dir="ltr" style="{{pendAmountStyle}}">{{pendAmount}}</span></span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{pendActs}}" as="pa" hint-placeholder-count="3">
+            <button type="button" class="m-press" onClick="{{pa.go}}" style="{{pa.style}}">{{pa.label}}</button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #6B4600">{{pendHint}}</span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{originTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{originRows}}" as="o" hint-placeholder-count="3">
+          <div style="{{o.rowStyle}}">
+            <span style="font-size: 12px; color: #637570">{{o.label}}</span>
+            <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span dir="{{o.dir}}" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{o.value}}</span><sc-if value="{{o.hasChip}}" hint-placeholder-val="{{ false }}"><span style="{{o.chipStyle}}">{{o.chip}}</span></sc-if></span>
+            <sc-if value="{{o.hasHint}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{o.hint}}</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{termsTitle}}</h2>
+      <div style="border-radius: 22px; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{termsValue}}</span><sc-if value="{{hasTermsChip}}" hint-placeholder-val="{{ true }}"><span style="{{termsChipStyle}}">{{termsChip}}</span></sc-if></span>
+          <sc-for list="{{termActs}}" as="ta" hint-placeholder-count="2">
+            <button type="button" class="m-press" onClick="{{ta.go}}" style="{{ta.style}}">{{ta.label}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{termsEditing}}" hint-placeholder-val="{{ false }}">
+          <div class="dd-in" style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+            <span style="font-size: 12px; color: #637570">{{termsPickHint}}</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{termOpts}}" as="to" hint-placeholder-count="3">
+                <button type="button" class="m-press" onClick="{{to.pick}}" style="{{to.style}}">{{to.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{hasTerms}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+            <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{interestQ}}</span><span style="font-size: 12px; color: #637570">{{interestHint}}</span></span>
+            <sc-for list="{{interestOpts}}" as="io" hint-placeholder-count="2">
+              <button type="button" aria-pressed="{{io.on}}" class="m-press" onClick="{{io.pick}}" style="{{io.style}}">{{io.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{paidTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{paidRows}}" as="pr" hint-placeholder-count="2">
+          <div class="{{pr.cls}}" style="{{pr.rowStyle}}">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{pr.via}}</span><span style="font-size: 12px; color: #637570">{{pr.when}}</span></span>
+            <span dir="ltr" style="{{pr.amountStyle}}">{{pr.amount}}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{noPaid}}" hint-placeholder-val="{{ false }}">
+          <span style="display: block; padding: 14px 0; font-size: 13px; color: #637570">{{noPaidText}}</span>
+        </sc-if>
+      </div>
+    </div>
+
+    <sc-if value="{{hasCustody}}" hint-placeholder-val="{{ false }}">
+      <div class="dd-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; background: rgba(36,105,186,0.08)">
+        <span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 14px; font-weight: 700; color: #2469BA">{{custodyTitle}}</span><span dir="ltr" style="font-size: 15px; font-weight: 700; color: #2469BA; font-variant-numeric: tabular-nums">{{custodyAmount}}</span></span>
+        <span style="font-size: 12px; color: #193D33">{{custodyBody}}</span>
+      </div>
+    </sc-if>
+
+    <dc-import name="SettleSheet" space="{{spaceName}}" side="{{side}}" person="{{who}}" remaining="{{remainingMinor}}" offline="{{offline}}" cand-label="{{candLabel}}" cand-amount="{{candAmount}}" on-save="{{onSettle}}" hint-size="350px,80px"></dc-import>
+    <dc-import name="OpeningDebtSheet" space="{{spaceName}}" person="{{who}}" on-save="{{onOpening}}" hint-size="350px,76px"></dc-import>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="dd-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"debt":{"editor":"enum","options":["حسب اللي اتداس","خالد — لك","فهد — لك","عمر — عليك","دين قديم مع خالد"],"default":"حسب اللي اتداس","section":"الدين"},"state":{"editor":"enum","options":["عادي","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.timers = [];
+    this.state = this.fresh(props);
+    // من «سجّل تحصيل/سداد»: المبلغ (ما يزيدش عن المتبقي) + الزيادة كأمانة لو اختارها صراحة + اتربط بالعملية المستنية؟
+    this.onSettle = (amt, extra, linked) => {
+      if (typeof amt !== 'number' || amt <= 0) return;
+      const eg = this.eg();
+      const p = this.data(eg)[this.state.key].pend;
+      this.addPaid({ when: linked && p ? p.when : (eg ? 'النهارده' : 'اليوم'), via: linked ? this.pendVia() : (eg ? 'من غير عملية' : 'بلا عملية'), amt }, extra || 0, linked);
+    };
+    // دين قديم جديد (§27) ⇒ الصفحة بتعرضه هو
+    this.onOpening = (side, amt) => {
+      if (typeof amt !== 'number' || amt <= 0) return;
+      const eg = this.eg();
+      this.setState({ key: 'old', side: side === 'alek' ? 'alek' : 'lak', orig: amt, paid: [], terms: null, termsEdit: false, interest: null, pend: 'none', custody: 0, celebrated: false, confetti: false });
+      this.say(eg ? 'اتسجّل الدين القديم — دي صفحته' : 'سُجّل الدين القديم — هذه صفحته');
+    };
+  }
+  componentDidUpdate(prev) { if (prev.debt !== this.props.debt || prev.space !== this.props.space) this.setState(this.fresh(this.props)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  pick(props) {
+    const map = { 'خالد — لك': 'khaled', 'فهد — لك': 'fahd', 'عمر — عليك': 'omar', 'دين قديم مع خالد': 'old' };
+    if (map[props.debt]) return map[props.debt];
+    let st = null;
+    try { st = window.sessionStorage.getItem('masroufy-debt'); } catch (e) {}
+    return map[st] || (['khaled', 'fahd', 'omar', 'old'].indexOf(st) >= 0 ? st : 'khaled');
+  }
+  // مخترعة · بالوحدة الصغرى (السعودية) — نفس أرقام «لك» و«عليك» وملف خالد
+  data(eg) {
+    const bank = eg ? 'البنك الأهلي المصري •••• ٢٢٠٧' : 'مصرف الراجحي •••• ٤٤١٢';
+    return {
+      khaled: { who: 'خالد', side: 'lak', orig: 50000, since: '٢٣ أغسطس', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لخالد' : 'حوالة صادرة إلى خالد', bank, 'سلفة'], paid: [], terms: null, wait: eg ? 'بقاله كتير مستني، ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا' },
+      fahd: { who: 'فهد', side: 'lak', orig: 150000, since: '٢ سبتمبر', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لفهد' : 'حوالة صادرة إلى فهد', bank, 'سلفة'], paid: [{ when: '٢٠ سبتمبر', via: eg ? 'حوالة جاتلك' : 'حوالة واردة', amt: 30000 }], terms: { due: '٢٠ سبتمبر', late: true }, wait: eg ? 'بقاله كتير مستني، ٣٥ يوم' : 'منتظر منذ ٣٥ يومًا', interest: 'no', pend: { dir: 'in', when: '٥ أكتوبر', amt: 50000 } },
+      omar: { who: 'عمر', side: 'alek', orig: 200000, since: '١ سبتمبر', kind: eg ? 'سلفة منه' : 'قرض منه', from: [eg ? 'حوالة جاتلك من عمر' : 'حوالة واردة من عمر', eg ? 'QNB مصر •••• ٥٥٨٠' : 'البنك الأهلي السعودي •••• ٩٠٣١', eg ? 'سلفة جاتلي' : 'قرض مستلم'], paid: [], terms: { due: '١ نوفمبر', late: false }, interest: null, pend: { dir: 'out', when: '٦ أكتوبر', amt: 80000 } },
+      old: { who: 'خالد', side: 'lak', orig: 20000, kind: 'دين قديم', from: null, paid: [], terms: null }
+    };
+  }
+  fresh(props) {
+    const eg = (props.space ?? 'السعودية') === 'مصر', k = eg ? 3 : 1;
+    const key = this.pick(props), d = this.data(eg)[key];
+    return { key, who: d.who, side: d.side, orig: d.orig * k, paid: d.paid.map((p) => Object.assign({}, p, { amt: p.amt * k })), terms: d.terms, termsEdit: false, interest: d.interest || null, pend: d.pend ? 'ask' : 'none', custody: 0, celebrated: false, confetti: false, toast: '' };
+  }
+  pendVia() { const eg = this.eg(); const p = this.data(eg)[this.state.key].pend; return p ? (p.dir === 'in' ? (eg ? 'حوالة جاتلك' : 'حوالة واردة') : (eg ? 'حوالة طالعة' : 'حوالة صادرة')) : ''; }
+  addPaid(row, extra, linked) {
+    const eg = this.eg(), s = this.state;
+    const paid = s.paid.concat([Object.assign({ fresh: true }, row)]);
+    const left = s.orig - paid.reduce((t, p) => t + p.amt, 0);
+    const done = left <= 0 && !s.celebrated;
+    if (done) this.timers.push(setTimeout(() => this.setState({ confetti: false }), 2000));
+    this.setState({ paid, custody: s.custody + extra, pend: linked ? 'done' : s.pend, celebrated: s.celebrated || done, confetti: done || s.confetti });
+    const who = s.who;
+    this.say(left <= 0 ? (eg ? 'الدين خلص بالكامل' : 'سُدّد الدين بالكامل') + (extra ? (eg ? ' — والزيادة اتسجلت أمانة' : ' — والزيادة سُجّلت أمانة') : '') : (eg ? 'اتسجّل — فاضل ' : 'سُجّل — المتبقي ') + this.fmt(left) + (eg ? ' مع ' : ' مع ') + who);
+  }
+  renderVals() {
+    const eg = this.eg(), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const s = this.state, d = this.data(eg)[s.key];
+    const lak = s.side !== 'alek';
+    const offline = (this.props.state ?? 'عادي') === 'محتاج نت';
+    const paidSum = s.paid.reduce((t, p) => t + p.amt, 0);
+    const left = Math.max(0, s.orig - paidSum);
+    const pct = s.orig ? Math.min(100, Math.floor((paidSum * 100) / s.orig)) : 0;
+    const chip = (c, b) => 'align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; color: ' + c + '; background: ' + b;
+    const small = (strong) => 'height: 44px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)');
+    const T = s.terms;
+    const termRel = (t) => t.late ? (eg ? 'ميعادها فات من ١٧ يوم' : 'فات موعدها منذ ١٧ يومًا') : t.rel || (eg ? 'بعد ٢٥ يوم' : 'بعد ٢٥ يومًا');
+    // على البترولي: ألوان فاتحة من نفس العائلة (فات · جاي · مستني)
+    const signal = left <= 0 ? null : T ? [termRel(T), T.late ? '#FFD0D2' : '#DCEBD6', T.late ? 'rgba(255,168,172,0.20)' : 'rgba(220,235,214,0.16)'] : d.wait && lak ? [d.wait, '#F3C96B', 'rgba(243,201,107,0.16)'] : null;
+    const p = s.pend === 'ask' ? d.pend : null;
+    const over = p && p.amt * k > left;
+    const pendActs = !p ? [] : p.dir === 'in' ? [
+      { label: over ? (eg ? 'أيوه — والزيادة أمانة' : 'نعم — والزيادة أمانة') : (eg ? 'أيوه، تحصيل' : 'نعم، تحصيل'), style: small(true), go: () => this.addPaid({ when: p.when, via: this.pendVia(), amt: Math.min(p.amt * k, left) }, Math.max(0, p.amt * k - left), true) },
+      { label: eg ? 'لأ، حاجة تانية' : 'لا، شيء آخر', style: small(false), go: () => { this.setState({ pend: 'done' }); this.say(eg ? 'هتفضل في المراجعة لحد ما تقول نوعها' : 'تبقى في المراجعات حتى تحدد نوعها'); } }
+    ] : [
+      { label: eg ? 'سداد للي عليك' : 'سداد لدينك', style: small(true), go: () => this.addPaid({ when: p.when, via: this.pendVia(), amt: Math.min(p.amt * k, left) }, Math.max(0, p.amt * k - left), true) },
+      { label: 'سلفة', style: small(false), go: () => { this.setState({ pend: 'done' }); this.say((eg ? 'سلفة: ليك عند ' : 'سلفة: لك عند ') + s.who + ' ' + this.fmt(p.amt * k) + (eg ? ' — منفصلة، من غير مقاصة' : ' — منفصلة، بلا مقاصة')); } },
+      { label: 'دعم', style: small(false), go: () => { this.setState({ pend: 'done' }); this.say(eg ? 'اتسجّلت دعم — مصروف' : 'سُجّلت دعمًا — مصروف'); } }
+    ];
+    const origin = d.from ? [
+      { label: eg ? 'جه منين' : 'المصدر', value: d.from[0], dir: 'rtl', hasChip: true, chip: (eg ? 'اخترت «' : 'اخترت «') + d.from[2] + '»', chipStyle: chip('#08634F', '#DCEBD6'), hasHint: true, hint: d.since + ' · ' + d.from[1] }
+    ] : [
+      { label: eg ? 'جه منين' : 'المصدر', value: eg ? 'من قبل التطبيق' : 'من قبل التطبيق', dir: 'rtl', hasChip: true, chip: eg ? 'دين قديم' : 'دين قديم', chipStyle: chip('#956000', '#FBF0DD'), hasHint: true, hint: eg ? 'من غير عملية — ما بيدخلش المصروف ولا الدخل ولا الكاش' : 'بلا عملية — لا يدخل المصروف ولا الدخل ولا الكاش' }
+    ];
+    origin.push({ label: eg ? 'المبلغ الأصلي' : 'المبلغ الأصلي', value: this.fmt(s.orig) + ' ' + cur, dir: 'ltr', hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '' });
+    origin.push({ label: 'النوع', value: lak ? (eg ? 'دين ليك' : 'دين لك') : (d.from ? (eg ? 'سلفة عليك' : 'قرض عليك') : (eg ? 'دين عليك' : 'دين عليك')), dir: 'rtl', hasChip: false, chip: '', chipStyle: '', hasHint: true, hint: eg ? 'منفصل عن الأمانات — ومن غير مقاصة مع «' + (lak ? 'عليك' : 'ليك') + '»' : 'منفصل عن الأمانات — وبلا مقاصة مع «' + (lak ? 'عليك' : 'لك') + '»' });
+    const opts = [['١ نوفمبر', eg ? 'بعد ٢٥ يوم' : 'بعد ٢٥ يومًا'], ['١ ديسمبر', eg ? 'بعد ٥٥ يوم' : 'بعد ٥٥ يومًا'], ['١ يناير', eg ? 'بعد ٨٦ يوم' : 'بعد ٨٦ يومًا']];
+    const bits = [8, 20, 31, 44, 56, 67, 79, 90, 14, 37, 61, 85, 26, 73].map((x, i) => ({
+      style: 'position: absolute; top: 0; left: ' + x + '%; width: 6px; height: 10px; border-radius: 2px; background: ' + ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#08634F'][i % 5] + '; animation-delay: ' + ((i * 70) % 420) + 'ms'
+    }));
+    const paidRows = s.paid.map((r, i) => ({
+      via: r.via, when: r.when, cls: r.fresh ? 'dd-in' : '',
+      amount: (lak ? '+' : '−') + this.fmt(r.amt) + ' ' + cur,
+      amountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (lak ? '#13764D' : '#BE3D48'),
+      rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (i === s.paid.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+    })).reverse();
+    return {
+      title: eg ? 'تفاصيل الدين' : 'تفاصيل الدين',
+      sideChip: lak ? (eg ? 'ليك' : 'لك') : 'عليك',
+      sideChipStyle: 'flex-shrink: 0; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 12px; ' + (lak ? 'color: #13764D; background: #DCEBD6' : 'color: #BE3D48; background: rgba(190,61,72,0.10)'),
+      offline, offlineText: eg ? 'مفيش نت — التسوية بتستنى لحد ما يرجع.' : 'لا اتصال — التسوية تنتظر عودته.',
+      initial: s.who.charAt(0), who: s.who,
+      kindLine: d.kind + (d.from ? (eg ? ' يوم ' : ' في ') + d.since : (eg ? ' من قبل التطبيق' : ' من قبل التطبيق')),
+      remainLabel: lak ? (eg ? 'فاضل ليك عنده' : 'المتبقي لك عنده') : (eg ? 'فاضل عليك ليه' : 'المتبقي عليك له'),
+      currency: cur, remainText: this.fmt(left).replace(/\.00$/, ''),
+      pct: String(pct), barStyle: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + pct + '%',
+      paidLine: left <= 0 ? (eg ? 'خلص بالكامل ✓' : 'سُدّد بالكامل ✓') : (eg ? 'من أصل ' : 'من أصل ') + this.fmt(s.orig) + (paidSum ? (eg ? ' · اتسدد ' : ' · سُدّد ') + this.fmt(paidSum) : (eg ? ' · لسه ما اتسددش حاجة' : ' · لم يُسدَّد شيء بعد')),
+      hasSignal: !!signal, signal: signal ? signal[0] : '', signalStyle: signal ? 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + signal[1] + '; background: ' + signal[2] : '',
+      confetti: s.confetti, bits,
+      hasPend: !!p,
+      pendQ: !p ? '' : p.dir === 'in' ? (eg ? 'ده سداد من السلفة؟' : 'هل هي سداد من السلفة؟') : (eg ? 'سلفة ولا دعم؟ ولا سداد للي عليك؟' : 'سلفة أم دعم؟ أم سداد لدينك؟'),
+      pendWhat: !p ? '' : (p.dir === 'in' ? (eg ? 'حوالة جاتلك من ' : 'حوالة واردة من ') : (eg ? 'حوالة طالعة ل' : 'حوالة صادرة إلى ')) + s.who + (eg ? ' يوم ' : ' في ') + p.when,
+      pendAmount: !p ? '' : (p.dir === 'in' ? '+' : '−') + this.fmt(p.amt * k) + ' ' + cur,
+      pendAmountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (p && p.dir === 'in' ? '#13764D' : '#BE3D48'),
+      pendActs, pendHint: eg ? 'بنسأل في كل حوالة معاه، من غير تخمين.' : 'نسأل عن كل حوالة معه، دون تخمين.',
+      originTitle: eg ? 'أصل الدين' : 'أصل الدين',
+      originRows: origin.map((o, i) => Object.assign(o, { rowStyle: 'display: flex; flex-direction: column; gap: 2px; padding: 12px 0;' + (i === origin.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
+      termsTitle: eg ? 'الميعاد' : 'الموعد',
+      termsValue: T ? (eg ? 'ميعادها ' : 'موعدها ') + T.due + (eg ? ' · دفعة واحدة' : ' · دفعة واحدة') : (eg ? 'من غير ميعاد' : 'بلا موعد'),
+      hasTermsChip: !!T && left > 0, termsChip: T ? termRel(T) : '', termsChipStyle: T && T.late ? chip('#BE3D48', 'rgba(190,61,72,0.10)') : chip('#08634F', '#DCEBD6'),
+      termActs: T ? [{ label: eg ? 'غيّر' : 'غيّر', style: small(false), go: () => this.setState({ termsEdit: !s.termsEdit }) }, { label: eg ? 'شيله' : 'إزالة', style: small(false), go: () => { this.setState({ terms: null, termsEdit: false }); this.say(eg ? 'اتشال الميعاد — والدين فاضل زي ما هو' : 'أُزيل الموعد — والدين باقٍ كما هو'); } }]
+        : [{ label: eg ? 'حدّد ميعاد' : 'حدّد موعدًا', style: small(true), go: () => this.setState({ termsEdit: !s.termsEdit }) }],
+      termsEditing: s.termsEdit, termsPickHint: eg ? 'دفعة واحدة بالمتبقي كله في:' : 'دفعة واحدة بكامل المتبقي في:',
+      termOpts: opts.map(([due, rel]) => ({ label: due, style: small(T && T.due === due), pick: () => { this.setState({ terms: { due, late: false, rel }, termsEdit: false }); this.say((eg ? 'الميعاد بقى ' : 'الموعد: ') + due + (eg ? ' — هيظهر في المستحقات' : ' — يظهر في المستحقات')); } })),
+      hasTerms: !!T,
+      interestQ: eg ? 'فيها فوايد؟' : 'هل فيها فوائد؟',
+      interestHint: s.interest ? (eg ? 'اتحفظت إجابتك' : 'حُفظت إجابتك') : (eg ? 'لسه ما قلتش' : 'لم تحدّد بعد'),
+      interestOpts: [['yes', eg ? 'أيوه' : 'نعم'], ['no', 'لا']].map(([v, label]) => ({ label, on: s.interest === v ? 'true' : 'false', pick: () => this.setState({ interest: s.interest === v ? null : v }),
+        style: 'height: 44px; min-width: 52px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (s.interest === v ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+      paidTitle: (eg ? 'التسويات' : 'التسويات') + (s.paid.length ? ' (' + s.paid.length.toLocaleString('ar-EG') + ')' : ''),
+      paidRows, noPaid: !s.paid.length, noPaidText: eg ? 'لسه مفيش تسويات.' : 'لا تسويات بعد.',
+      hasCustody: s.custody > 0,
+      custodyTitle: lak ? (eg ? 'أمانة عندك ل' : 'أمانة عندك ل') + s.who : (eg ? 'أمانة ليك عند ' : 'أمانة لك عند ') + s.who,
+      custodyAmount: this.fmt(s.custody) + ' ' + cur,
+      custodyBody: eg ? 'التزام لوحده، ومش بيتسدد بيه أي دين من غير ما تقول.' : 'التزام مستقل، ولا يُسدَّد به أي دين ضمنيًا.',
+      spaceName: eg ? 'مصر' : 'السعودية', side: lak ? 'lak' : 'alek', remainingMinor: left,
+      candLabel: p ? this.pendVia() + (eg ? ' يوم ' : ' في ') + p.when : '', candAmount: p ? p.amt * k : 0,
+      onSettle: this.onSettle, onOpening: this.onOpening,
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

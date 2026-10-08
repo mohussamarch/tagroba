@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>لصق رسالة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.p-in{animation:p-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes p-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.p-toast{animation:p-toast 2800ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes p-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.p-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="BankSms.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <div role="tablist" aria-label="{{title}}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 18px; background: rgba(25,61,51,0.06)">
+      <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
+        <button type="button" role="tab" aria-selected="{{tb.sel}}" class="m-press" onClick="{{tb.go}}" disabled="{{tb.off}}" style="{{tb.style}}">{{tb.label}}</button>
+      </sc-for>
+    </div>
+    <span style="font-size: 12px; color: #637570">{{modeNote}}</span>
+
+    <sc-if value="{{showPaste}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <textarea aria-label="{{pasteLabel}}" placeholder="{{pasteLabel}}" value="{{text}}" onInput="{{typeText}}" rows="6" style="box-sizing: border-box; width: 100%; min-height: 132px; padding: 12px 14px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; line-height: 1.7; color: #193D33; background: rgba(25,61,51,0.05); outline: none; resize: none"></textarea>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{fromClip}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{clipLabel}}</button>
+          <button type="button" class="m-press" onClick="{{readPaste}}" disabled="{{noText}}" style="{{readStyle}}">{{readLabel}}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showPeriod}}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 13px; font-weight: 700">{{rangeTitle}}</span>
+        <div role="radiogroup" aria-label="{{rangeTitle}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{ranges}}" as="rg" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{rg.on}}" class="m-press" onClick="{{rg.pick}}" style="{{rg.style}}">{{rg.label}}</button>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; font-weight: 700">{{sendTitle}}</span>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{banks}}" as="bk" hint-placeholder-count="3">
+            <button type="button" role="checkbox" aria-checked="{{bk.on}}" class="m-press" onClick="{{bk.toggle}}" style="{{bk.style}}">{{bk.label}}</button>
+          </sc-for>
+        </div>
+        <button type="button" class="m-press" onClick="{{readPeriod}}" disabled="{{noBank}}" style="{{periodStyle}}">{{periodLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" class="p-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: #FBF0DD; color: #6B4600"><span style="font-size: 14px; font-weight: 700; color: #956000">{{errTitle}}</span><span style="font-size: 13px; line-height: 1.7">{{errBody}}</span></div>
+    </sc-if>
+
+    <sc-if value="{{hasResults}}" hint-placeholder-val="{{ false }}">
+      <div class="p-in" style="display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 15px; font-weight: 700">{{sumLine}}</span>
+        <sc-if value="{{askWallet}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; font-weight: 700">{{walletQ}}</span>
+            <div role="radiogroup" aria-label="{{walletQ}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{wallets}}" as="wl" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{wl.on}}" class="m-press" onClick="{{wl.pick}}" style="{{wl.style}}">{{wl.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{parsed}}" as="pr" hint-placeholder-count="3">
+            <div style="{{pr.rowStyle}}">
+              <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 700">{{pr.name}}</span><span dir="ltr" style="{{pr.amountStyle}}">{{pr.amount}}</span></span>
+              <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="{{pr.chipStyle}}">{{pr.chip}}</span><span style="font-size: 12px; color: #637570">{{pr.sub}}</span></span>
+              <sc-if value="{{pr.isFx}}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 12px; font-weight: 700; color: #956000; flex: 1 1 auto">{{fxQ}}</span><input type="text" inputmode="decimal" dir="ltr" aria-label="{{fxQ}}" placeholder="0.00" value="{{fx}}" onInput="{{typeFx}}" style="width: 120px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; text-align: right; color: #193D33; background: rgba(25,61,51,0.06); outline: none"></span>
+                <span style="font-size: 11px; color: #637570">{{fxNote}}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; font-weight: 700; color: #637570">{{skipTitle}}</span>
+        <div style="border-radius: 22px; padding: 4px 16px; background: rgba(25,61,51,0.04)">
+          <sc-for list="{{skipped}}" as="sk" hint-placeholder-count="3">
+            <div style="{{sk.rowStyle}}">
+              <span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 13px; font-weight: 700">{{sk.reason}}</span><span style="font-size: 12px; color: #637570">{{sk.count}}</span></span>
+              <span style="font-size: 12px; line-height: 1.6; color: #637570">{{sk.sample}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <button type="button" class="m-press" onClick="{{save}}" disabled="{{cantSave}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        <span style="font-size: 12px; color: #637570; text-align: center">{{saveNote}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+      <div class="p-in" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #DCEBD6">
+        <span style="font-size: 15px; font-weight: 700; color: #08634F">{{doneTitle}}</span>
+        <span style="font-size: 13px; color: #193D33">{{doneBody}}</span>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{again}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.75)">{{againLabel}}</button>
+          <a href="BankSms.dc.html" data-back="1" class="m-press" style="flex: 1 1 0; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{backLabel}}</a>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="p-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"device":{"editor":"enum","options":["آيفون","أندرويد"],"default":"آيفون","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { src: null, toast: '' }; this.timers = []; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2900)); this.setState({ toast: msg }); }
+  key() { return (this.props.state ?? 'عادي') + '|' + (this.props.device ?? 'آيفون') + '|' + (this.props.space ?? 'السعودية'); }
+  cur() {
+    if (this.state.src === this.key()) return this.state;
+    const err = (this.props.state ?? 'عادي') === 'خطأ';
+    return Object.assign({}, this.state, { tab: 'paste', text: err ? 'عزيزنا العميل، تم تحديث بيانات التواصل الخاصة بك بنجاح. شكرًا لاختيارك لنا.' : '', phase: err ? 'error' : 'input', wallet: null, range: 'month', off: {}, fx: '', kind: 'paste' });
+  }
+  go(patch) { this.setState(Object.assign({}, this.cur(), { src: this.key() }, patch)); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) {
+    const t = String(text || '').replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[^0-9.]/g, '');
+    if (!t) return null;
+    const [w, f = ''] = t.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const ios = (this.props.device ?? 'آيفون') === 'آيفون';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const MSG = eg ? ['رسالة واحدة', 'رسالتين', 'رسايل', 'رسالة'] : ['رسالة واحدة', 'رسالتان', 'رسائل', 'رسالة'];
+    const s = this.cur();
+    const BANKS = eg ? [['nbe', 'البنك الأهلي المصري'], ['qnb', 'QNB مصر']] : [['rajhi', 'مصرف الراجحي'], ['snb', 'البنك الأهلي السعودي'], ['inma', 'مصرف الإنماء']];
+    const W = eg ? [['w1', 'البنك الأهلي المصري · حساب المرتب'], ['w2', 'QNB مصر']] : [['w1', 'مصرف الراجحي · حساب الراتب'], ['w2', 'البنك الأهلي السعودي'], ['w3', 'مصرف الإنماء']];
+    const bank = (id) => (BANKS.find((b) => b[0] === id) || BANKS[0])[1];
+    // مخترعة · d = كام يوم فات · st: new جديدة · dup متسجلة قبل كده (بتتشال) · fx بعملة أجنبية (§75-12: تتسجل ونسأل عن المبلغ المحلي)
+    const ROWS = [
+      { id: 'r1', name: 'سوبرماركت الحي', amt: -8650, d: 0, when: eg ? 'النهارده ١:٠٥ م' : 'اليوم ١:٠٥ م', b: BANKS[0][0], st: 'new' },
+      { id: 'r4', name: eg ? 'متجر تطبيقات' : 'متجر تطبيقات', fx: eg ? '−19.99 يورو' : '−49.99 دولار', d: 1, when: eg ? 'امبارح' : 'أمس', b: BANKS[0][0], st: 'fx' },
+      { id: 'r2', name: eg ? 'بنزينة' : 'محطة وقود', amt: -9000, d: 3, when: '٤ أكتوبر', b: BANKS[1][0], st: 'new' },
+      { id: 'r3', name: eg ? 'كافيه المرسى' : 'مقهى المرسى', amt: -2300, d: 5, when: '٢ أكتوبر', b: BANKS[0][0], st: 'dup' },
+      { id: 'r5', name: eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', amt: -6400, d: 11, when: '٢٦ سبتمبر', b: BANKS[BANKS.length - 1][0], st: 'new' }
+    ];
+    const LIM = { week: 7, month: 9, d30: 30 };
+    const SK = [
+      { id: 'otp', reason: eg ? 'رمز تحقق أو كلمة سر — اتجاهلت' : 'رسالة تحقق أو كلمة مرور — تجاهلناها', sample: eg ? '«رمز التحقق ••••••. ما تشاركوش مع حد.»' : '«رمز التحقق ••••••. لا تشاركه مع أحد.»', c: { paste: 1, week: 5, month: 7, d30: 14 } },
+      { id: 'offer', reason: eg ? 'عرض مش عملية' : 'عرض وليس عملية مكتملة', sample: eg ? '«استرداد ٥٪ لما تدفع بالكارت لحد آخر الشهر»' : '«استرداد ٥٪ عند الدفع بالبطاقة حتى نهاية الشهر»', c: { paste: 1, week: 2, month: 3, d30: 7 } },
+      { id: 'declined', reason: eg ? 'عملية اترفضت أو ما كملتش' : 'عملية مرفوضة أو غير مكتملة', sample: eg ? '«اترفضت عملية شراء — الرصيد مش كفاية»' : '«رُفضت عملية شراء — الرصيد غير كافٍ»', c: { paste: 1, week: 1, month: 1, d30: 1 } }
+    ];
+    const isPeriod = s.kind === 'period';
+    const rows = isPeriod ? ROWS.filter((r) => r.d < LIM[s.range] && !s.off[r.b]) : ROWS.filter((r) => r.id !== 'r2' && r.id !== 'r5');
+    const fxMinor = this.toMinor(s.fx);
+    const keep = rows.filter((r) => r.st !== 'dup');
+    const dups = rows.length - keep.length;
+    const skipped = SK.map((x) => ({ id: x.id, reason: x.reason, sample: x.sample, n: isPeriod ? x.c[s.range] : x.c.paste })).filter((x) => x.n);
+    const skipN = skipped.reduce((t, x) => t + x.n, 0);
+    const askWallet = !isPeriod;
+    const cantSave = !keep.length || (askWallet && !s.wallet);
+    const showResults = s.phase === 'results';
+    const chip = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
+    const pill = (on) => 'min-height: 44px; padding: 6px 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const primary = (dis) => 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (dis ? ' opacity: 0.45; cursor: default' : '');
+    const read = (kind) => {
+      if (kind === 'paste' && !/[0-9٠-٩]/.test(s.text)) { this.go({ phase: 'error', kind }); return; }
+      this.go({ phase: 'results', kind, fx: '' });
+    };
+    return {
+      title: eg ? 'ضيف من الرسايل' : 'إضافة من الرسائل',
+      tabs: [['paste', eg ? 'الصق رسالة' : 'الصق رسالة'], ['period', eg ? 'اقرا فترة' : 'اقرأ فترة']].map(([id, label]) => {
+        const sel = s.tab === id, off = id === 'period' && ios;
+        return { label, sel: sel ? 'true' : 'false', off, go: () => { if (!off) this.go({ tab: id, phase: 'input' }); },
+          style: 'height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (sel ? 'color: #193D33; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent') + (off ? '; opacity: 0.45; cursor: default' : '') };
+      }),
+      modeNote: ios ? (eg ? 'الآيفون ما بيسمحش للبرامج تقرا الرسايل، فالصق نص الرسالة بإيدك. مفيش حاجة بتتسجل قبل ما تأكد.' : 'لا يسمح الآيفون بقراءة الرسائل، فالصق نص الرسالة بنفسك. لا يُسجَّل شيء قبل أن تؤكد.') : s.tab === 'period' ? (eg ? 'بنقرا رسايل البنوك اللي تختارها في الفترة دي بس — حتى لو القراية التلقائية واقفة.' : 'نقرأ رسائل البنوك التي تختارها في هذه الفترة فقط — ولو كانت القراءة التلقائية متوقفة.') : (eg ? 'الصق رسالة أو أكتر. مفيش حاجة بتتسجل قبل ما تأكد.' : 'الصق رسالة أو أكثر. لا يُسجَّل شيء قبل أن تؤكد.'),
+      showPaste: s.tab === 'paste' && s.phase !== 'done',
+      pasteLabel: eg ? 'الصق نص رسالة البنك هنا' : 'الصق نص رسالة البنك هنا', text: s.text,
+      typeText: (e) => this.go({ text: e.target.value, phase: 'input' }),
+      clipLabel: eg ? 'الصق من الحافظة' : 'الصق من الحافظة',
+      fromClip: () => this.go({ phase: 'input', text: eg ? 'شراء ٨٦٫٥٠ ج.م من سوبرماركت الحي، كارت آخره ٥٥١٨، النهارده ١:٠٥م\n\nشراء أونلاين ١٩٫٩٩ يورو من متجر تطبيقات، امبارح\n\nشراء ٢٣٫٠٠ ج.م من كافيه المرسى، ٢/١٠\n\nرمز التحقق ٤٨٣٩٢١. ما تشاركوش مع حد.\n\nاسترداد ٥٪ لما تدفع بالكارت لحد آخر الشهر\n\nاترفضت عملية شراء — الرصيد مش كفاية' : 'شراء ٨٦٫٥٠ ر.س لدى سوبرماركت الحي، بطاقة تنتهي بـ ٤٨٢١، اليوم ١:٠٥م\n\nشراء عبر الإنترنت ٤٩٫٩٩ دولار لدى متجر تطبيقات، أمس\n\nشراء ٢٣٫٠٠ ر.س لدى مقهى المرسى، ٢/١٠\n\nرمز التحقق ٤٨٣٩٢١. لا تشاركه مع أحد.\n\nاسترداد ٥٪ عند الدفع بالبطاقة حتى نهاية الشهر\n\nرُفضت عملية شراء — الرصيد غير كافٍ' }),
+      noText: !s.text.trim(), readLabel: eg ? 'اقراها' : 'اقرأها', readStyle: 'flex: 1 1 0; ' + primary(!s.text.trim()),
+      readPaste: () => { if (s.text.trim()) read('paste'); },
+      showPeriod: s.tab === 'period' && !ios && s.phase !== 'done',
+      rangeTitle: eg ? 'الفترة' : 'الفترة', sendTitle: eg ? 'من أنهي بنوك' : 'من أي البنوك',
+      ranges: [['month', eg ? 'من أول الشهر (٢٨ سبتمبر)' : 'منذ بداية الشهر (٢٨ سبتمبر)'], ['week', eg ? 'آخر ٧ أيام' : 'آخر ٧ أيام'], ['d30', eg ? 'آخر ٣٠ يوم' : 'آخر ٣٠ يومًا']].map(([id, label]) => ({ label, on: s.range === id ? 'true' : 'false', pick: () => this.go({ range: id, phase: s.phase === 'results' && isPeriod ? 'results' : 'input' }), style: pill(s.range === id) })),
+      banks: BANKS.map(([id, label]) => ({ label: (s.off[id] ? '' : '✓ ') + label, on: s.off[id] ? 'false' : 'true', toggle: () => this.go({ off: Object.assign({}, s.off, { [id]: !s.off[id] }) }), style: pill(!s.off[id]) })),
+      noBank: BANKS.every((b) => s.off[b[0]]), periodLabel: eg ? 'اقرا الرسايل' : 'اقرأ الرسائل', periodStyle: primary(BANKS.every((b) => s.off[b[0]])),
+      readPeriod: () => { if (!BANKS.every((b) => s.off[b[0]])) read('period'); },
+      isError: s.phase === 'error',
+      errTitle: eg ? 'ملقيناش عملية في النص ده' : 'لم نجد عملية في هذا النص',
+      errBody: eg ? 'مبلغ العملية مش واضح. اتأكد إنك نسخت نص رسالة البنك كله، أو سجّل العملية بإيدك.' : 'مبلغ العملية غير واضح. تأكد أنك نسخت نص رسالة البنك كاملًا، أو سجّل العملية يدويًا.',
+      hasResults: showResults,
+      sumLine: (isPeriod ? (eg ? 'قرينا ' : 'قرأنا ') + plural(rows.length + skipN, MSG) + ': ' : '') + (eg ? 'فهمنا ' : 'فهمنا ') + plural(rows.length, OPS) + (eg ? ' وعدّينا ' : ' وتجاوزنا ') + plural(skipN, MSG),
+      askWallet, walletQ: eg ? 'الرسايل دي من أنهي حساب؟' : 'هذه الرسائل من أي حساب؟',
+      wallets: W.map(([id, label]) => ({ label, on: s.wallet === id ? 'true' : 'false', pick: () => this.go({ wallet: id }), style: pill(s.wallet === id) })),
+      parsed: rows.map((r, i, a) => ({
+        name: r.name, sub: r.when + (isPeriod ? ' · ' + bank(r.b) : ''),
+        amount: r.st === 'fx' ? (fxMinor ? '−' + this.fmt(fxMinor) + ' ' + cur : r.fx) : '−' + this.fmt(r.amt * k) + ' ' + cur,
+        amountStyle: 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (r.st === 'dup' ? '#9AA9A4; text-decoration: line-through' : '#BE3D48'),
+        chip: r.st === 'dup' ? (eg ? 'متسجلة قبل كده' : 'مسجلة سابقًا') : r.st === 'fx' ? (eg ? 'عملة تانية' : 'عملة أجنبية') : (eg ? 'جديدة' : 'جديدة'),
+        chipStyle: r.st === 'dup' ? chip('#637570', 'rgba(99,117,112,0.12)') : r.st === 'fx' ? chip('#956000', '#FBF0DD') : chip('#08634F', '#DCEBD6'),
+        isFx: r.st === 'fx',
+        rowStyle: 'display: flex; flex-direction: column; gap: 6px; padding: 10px 0;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      })),
+      fxQ: (eg ? 'اتخصم كام بالجنيه؟' : 'كم خُصم بالريال؟'), fx: s.fx, typeFx: (e) => this.go({ fx: e.target.value }),
+      fxNote: eg ? 'هتتسجل في الحالتين. لو سبتها فاضية المبلغ بيبان «غير متاح» ونسألك تاني.' : 'تُسجَّل في الحالتين. إن تركته فارغًا يظهر المبلغ «غير متاح» ونسألك لاحقًا.',
+      skipTitle: (eg ? 'عدّيناها (' : 'تجاوزناها (') + n(skipN) + ')',
+      skipped: skipped.map((x, i, a) => ({ reason: x.reason, count: plural(x.n, MSG), sample: x.sample, rowStyle: 'display: flex; flex-direction: column; gap: 2px; padding: 10px 0;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
+      cantSave, saveLabel: (eg ? 'سجّل ' : 'سجّل ') + plural(keep.length, OPS), saveStyle: primary(cantSave),
+      saveNote: dups ? (eg ? 'المتسجلة قبل كده مش هتتكرر.' : 'المسجلة سابقًا لن تتكرر.') : (eg ? 'مفيش حاجة بتتسجل قبل الضغطة دي.' : 'لا يُسجَّل شيء قبل هذه الضغطة.'),
+      save: () => {
+        if (cantSave) return;
+        this.go({ phase: 'done', text: '', saved: keep.length, fxOpen: keep.some((r) => r.st === 'fx') && !fxMinor, where: askWallet ? (W.find((w) => w[0] === s.wallet) || W[0])[1] : '' });
+        this.say((eg ? 'اتسجلت ' : 'سُجّلت ') + plural(keep.length, OPS));
+      },
+      isDone: s.phase === 'done',
+      doneTitle: (eg ? 'اتسجلت ' : 'سُجّلت ') + plural(s.saved || 0, OPS),
+      doneBody: (s.where ? (eg ? 'في «' : 'في «') + s.where + '». ' : '') + (s.fxOpen ? (eg ? 'اللي بعملة تانية مبلغها «غير متاح» لحد ما تكتبه — هنسألك. ' : 'مبلغ العملية الأجنبية «غير متاح» حتى تكتبه — سنسألك. ') : '') + (eg ? 'التصنيف اللي جه من قاعدة بيفضل «مقترح» لحد ما تأكده.' : 'التصنيف القادم من قاعدة يبقى «مقترحًا» حتى تؤكده.'),
+      againLabel: eg ? 'الصق تاني' : 'الصق غيرها', again: () => this.go({ phase: 'input', text: '', wallet: null, fx: '' }),
+      backLabel: eg ? 'رسايل البنك' : 'رسائل البنك',
+      hasToast: !!this.state.toast, toast: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

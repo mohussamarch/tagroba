@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مصادر الدخل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.s-in{animation:s-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes s-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.s-toast{animation:s-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes s-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.s-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <sc-if value="{{inList}}" hint-placeholder-val="{{ true }}">
+        <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      </sc-if>
+      <sc-if value="{{inDetail}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{backToList}}" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border: 0; padding: 0; cursor: pointer; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+      </sc-if>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <sc-if value="{{inList}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 13px; color: #637570">{{intro}}</span>
+
+        <sc-if value="{{asking}}" hint-placeholder-val="{{ true }}">
+          <div role="group" aria-label="{{askQ}}" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
+            <span style="font-size: 15px; font-weight: 700; color: #6B4600">{{askQ}}</span>
+            <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 12px; color: #6B4600">{{askFrom}}</span><span dir="ltr" style="font-size: 15px; font-weight: 700; white-space: nowrap; color: #13764D; font-variant-numeric: tabular-nums">{{askAmount}}</span></span>
+            <div style="display: flex; gap: 8px">
+              <button type="button" class="m-press" onClick="{{payerYes}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{yesLabel}}</button>
+              <button type="button" class="m-press" onClick="{{payerNo}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.7)">{{noLabel}}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 8px; text-align: center">
+            <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+            <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+            <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+          </div>
+        </sc-if>
+
+        <sc-for list="{{sections}}" as="sec" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{sec.title}}</h2>
+            <sc-for list="{{sec.rows}}" as="r" hint-placeholder-count="2">
+              <button type="button" class="m-press s-in" onClick="{{r.open}}" style="{{r.style}}">
+                <span aria-hidden="true" style="{{r.lens}}">
+                  <sc-if value="{{r.i.work}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg></sc-if>
+                  <sc-if value="{{r.i.client}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></sc-if>
+                  <sc-if value="{{r.i.home}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></sc-if>
+                  <sc-if value="{{r.i.grow}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
+                </span>
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+                  <span style="font-size: 12px; color: #637570">{{r.meta}}</span>
+                  <span style="font-size: 12px; font-weight: 700; color: #193D33">{{r.period}}</span>
+                  <sc-if value="{{r.hasExp}}" hint-placeholder-val="{{ true }}">
+                    <span style="font-size: 12px; color: #637570">{{expLabel}} <span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{r.expected}}</span></span>
+                  </sc-if>
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"></path></svg>
+              </button>
+            </sc-for>
+          </div>
+        </sc-for>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-if value="{{canChange}}" hint-placeholder-val="{{ true }}">
+            <button type="button" class="m-press" onClick="{{openChange}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)">{{changeLabel}}</button>
+          </sc-if>
+          <button type="button" class="m-press" onClick="{{openAdd}}" style="{{addStyle}}">{{addLabel}}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{inDetail}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <dc-import name="IncomeSourceDetail" space="{{spaceName}}" info="{{detailInfo}}" payer-yes="{{payerFlag}}" hint-size="350px,760px"></dc-import>
+        <sc-if value="{{detailOpen}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="m-press" onClick="{{openClose}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">{{closeSourceLabel}}</button>
+        </sc-if>
+        <button type="button" disabled="{{true}}" aria-describedby="edit-soon" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{editLabel}}</button>
+        <span id="edit-soon" style="font-size: 12px; color: #637570; text-align: center; margin-top: -8px">{{editSoon}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="JobChangeSheet" space="{{spaceName}}" mode="{{sheetMode}}" sources="{{currentJson}}" source="{{closeId}}" on-done="{{onDone}}" on-close="{{onClose}}" hint-size="390px,844px"></dc-import>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="s-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // مخترعة · بالوحدة الصغرى · مصادر الدخل جوه كل بلد لوحدها (§64 قرار ٢). المقفول ما بيتمسحش — بيتقفل بتاريخ (§48)
+    const sa = [
+      { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '٢٨ أبريل ٢٠٢٦', end: null, freq: 'monthly', day: 28, expected: 1250000 },
+      { id: 'waha', name: 'مكتب الواحة للتصميم', kind: 'part_time', start: '١٠ أغسطس ٢٠٢٦', end: null, freq: 'weekly', weekday: 4, expected: 80000 },
+      { id: 'sahm', name: 'مجموعة السهم التجارية', kind: 'job', start: '١ مارس ٢٠٢٥', end: '٢٧ أبريل ٢٠٢٦', freq: 'monthly', day: 27, expected: 980000 },
+      { id: 'noura', name: 'متجر نورة للعطور', kind: 'client', start: '١٥ يناير ٢٠٢٦', end: '٣٠ يونيو ٢٠٢٦', freq: null, day: null, expected: null }
+    ];
+    const eg = [
+      { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '١ يناير ٢٠٢٦', end: null, freq: 'monthly', day: 5, expected: 900000 },
+      { id: 'ahly', name: 'شهادة ادخار — البنك الأهلي المصري', kind: 'investment', start: '١ يوليو ٢٠٢٦', end: null, freq: 'monthly', day: 1, expected: 225000 },
+      { id: 'delta', name: 'شركة الدلتا للمقاولات', kind: 'job', start: '١ سبتمبر ٢٠٢١', end: '٢٩ فبراير ٢٠٢٤', freq: 'monthly', day: 25, expected: null }
+    ];
+    this.state = { lists: { sa, eg, sa0: [], eg0: [] }, view: null, sheet: null, payer: 'ask', toast: '' };
+    this.timers = [];
+    this.onClose = () => this.setState({ sheet: null });
+    this.onDone = (r) => {
+      const k = this.key();
+      const list = this.state.lists[k].slice();
+      const res = r || {};
+      if (res.close) { const i = list.findIndex((x) => x.id === res.close.id); if (i >= 0) list[i] = Object.assign({}, list[i], { end: res.close.end }); }
+      if (res.add) list.unshift(res.add);
+      const eg2 = k.indexOf('eg') === 0;
+      this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), sheet: null, view: res.add ? null : this.state.view });
+      // القفل لوحده ولا كلمة (§64) · الإضافة من غير «مبروك» · «مبروك» اتقالت جوه اللوحة
+      if (res.monthStart) this.say((eg2 ? 'شهرك المالي بقى يبدأ يوم ' : 'أصبح شهرك المالي يبدأ يوم ') + res.monthStart.toLocaleString('ar-EG'));
+      else if (res.add && !res.close) this.say((eg2 ? 'اتضاف «' : 'أُضيف «') + res.add.name + '»');
+    };
+  }
+  key() { return ((this.props.space ?? 'السعودية') === 'مصر' ? 'eg' : 'sa') + ((this.props.state ?? 'عادي') === 'فاضي' ? '0' : ''); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { if (!msg) return; this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state;
+    const k = this.key();
+    const list = s.lists[k] || [];
+    const current = list.filter((x) => !x.end), past = list.filter((x) => x.end);
+    const K = { job: 'وظيفة', part_time: eg ? 'بارت تايم' : 'دوام جزئي', client: 'عميل', rent: 'إيجار', investment: 'استثمار', pension: 'معاش', other: eg ? 'غيره' : 'أخرى' };
+    const WD = ['', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const pay = (x) => x.freq === 'weekly' ? (eg ? 'كل ' : 'كل ') + (x.weekday ? WD[x.weekday] : (eg ? 'أسبوع' : 'أسبوع')) : x.day ? (eg ? 'يوم ' : 'يوم ') + n(x.day) + (eg ? ' كل شهر' : ' شهريًا') : ['job', 'part_time', 'pension'].indexOf(x.kind) >= 0 ? (eg ? 'الميعاد مش محدد' : 'الموعد غير محدد') : (eg ? 'من غير ميعاد ثابت' : 'بلا موعد ثابت');
+    const row = (x, done) => ({
+      name: x.name, meta: K[x.kind] + ' · ' + pay(x),
+      period: x.end ? x.start + ' – ' + x.end : (eg ? 'من ' : 'منذ ') + x.start,
+      expected: x.expected ? this.fmt(x.expected) + ' ' + cur : '', hasExp: !!x.expected,
+      i: { work: x.kind === 'job' || x.kind === 'part_time', client: x.kind === 'client', home: x.kind === 'rent', grow: ['investment', 'pension', 'other'].indexOf(x.kind) >= 0 },
+      lens: 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); ' + (done ? 'color: #637570; background: rgba(25,61,51,0.06)' : 'color: #08634F; background: rgba(8,99,79,0.10)'),
+      open: () => this.setState({ view: x.id }),
+      style: 'width: 100%; border: 0; font: inherit; color: #193D33; text-align: right; cursor: pointer; border-radius: 20px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; ' + (done ? 'background: rgba(255,255,255,0.55); box-shadow: inset 0 0 0 1px rgba(204,216,204,0.7)' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)')
+    });
+    const sections = [
+      { title: (eg ? 'الشغالة (' : 'الحالية (') + n(current.length) + ')', rows: current.map((x) => row(x, false)) },
+      { title: (eg ? 'اللي فاتت (' : 'السابقة (') + n(past.length) + ')', rows: past.map((x) => row(x, true)) }
+    ].filter((x) => x.rows.length);
+    const src = s.view ? list.find((x) => x.id === s.view) : null;
+    const rayada = list.find((x) => x.id === 'rayada' && !x.end);
+    const asking = k === 'sa' && s.payer === 'ask' && !!rayada && !src;
+    const salaried = current.filter((x) => x.kind === 'job' || x.kind === 'part_time');
+    return {
+      spaceName: eg ? 'مصر' : 'السعودية',
+      inList: !src, inDetail: !!src,
+      title: src ? (eg ? 'تفاصيل المصدر' : 'تفاصيل المصدر') : (eg ? 'مصادر الدخل' : 'مصادر الدخل'),
+      backToList: () => this.setState({ view: null }),
+      intro: eg ? 'قول بتشتغل فين ومن إمتى. البرنامج ما بيستنتجش حاجة من تغيّر المبلغ — بيسأل.' : 'سجّل أين تعمل ومتى بدأت. لا يستنتج التطبيق شيئًا من تغيّر المبلغ — بل يسأل.',
+      asking, askQ: (eg ? 'ده مرتب من «' : 'هل هذا راتب من «') + (rayada ? rayada.name : '') + '»؟',
+      askFrom: eg ? '٣ أكتوبر · من «الريادة القابضة» حساب آخره ٥٥١٠' : '٣ أكتوبر · من «الريادة القابضة» حساب ينتهي بـ ٥٥١٠',
+      askAmount: '+' + this.fmt(320000) + ' ' + cur,
+      yesLabel: eg ? 'أيوه' : 'نعم', noLabel: eg ? 'لأ' : 'لا',
+      payerYes: () => { this.setState({ payer: 'yes' }); this.say(eg ? 'تمام — أي تحويل منها هيتسجل مرتب لوحده' : 'تم — أي تحويل منها يُسجَّل راتبًا تلقائيًا'); },
+      payerNo: () => { this.setState({ payer: 'no' }); this.say(eg ? 'مش هنسأل عنها تاني للمصدر ده' : 'لن نسأل عنها مجددًا لهذا المصدر'); },
+      payerFlag: s.payer === 'yes' ? '1' : '0',
+      isEmpty: !list.length,
+      emptyTitle: eg ? 'مفيش مصادر دخل لسه' : 'لا مصادر دخل بعد',
+      emptyBody: eg ? 'ضيف شغلك الحالي عشان نعرف المرتب بينزل إمتى.' : 'أضف عملك الحالي ليعرف التطبيق متى ينزل راتبك.',
+      sections, expLabel: 'المتوقع',
+      canChange: current.length > 0, changeLabel: eg ? 'غيّرت شغلي' : 'غيّرت عملي',
+      openChange: () => this.setState({ sheet: 'change' }),
+      addLabel: eg ? 'ضيف مصدر دخل' : 'أضف مصدر دخل', openAdd: () => this.setState({ sheet: 'add' }),
+      addStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (list.length ? 'color: #08634F; background: rgba(8,99,79,0.08)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
+      detailInfo: src ? JSON.stringify(src) : '', detailOpen: !!(src && !src.end),
+      closeSourceLabel: eg ? 'المصدر ده خلص' : 'إنهاء المصدر', openClose: () => this.setState({ sheet: 'close' }),
+      editLabel: eg ? 'تعديل' : 'تعديل', editSoon: eg ? 'تعديل الاسم والميعاد والمتوقع بيتضاف بعدين.' : 'تعديل الاسم والموعد والمتوقع يُضاف لاحقًا.',
+      sheetOpen: !!s.sheet, sheetMode: s.sheet === 'add' ? 'إضافة' : s.sheet === 'close' ? 'إنهاء' : 'غيّرت شغلي',
+      currentJson: JSON.stringify((s.sheet === 'change' && salaried.length ? salaried : current).map((x) => ({ id: x.id, name: x.name, kind: x.kind }))),
+      closeId: src ? src.id : '', onDone: this.onDone, onClose: this.onClose,
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

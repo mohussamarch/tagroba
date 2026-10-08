@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المحافظ — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.v-in{animation:v-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes v-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.v-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <sc-if value="{{inList}}" hint-placeholder-val="{{ true }}">
+        <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      </sc-if>
+      <sc-if value="{{inDetail}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{backToList}}" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border: 0; padding: 0; cursor: pointer; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+      </sc-if>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+      <span style="font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #08634F; background: #DCEBD6">{{spaceChip}}</span>
+    </div>
+
+    <sc-if value="{{inList}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+          <span style="font-size: 13px; color: #DCEBD6">{{totalLabel}}</span>
+          <sc-if value="{{hasTotal}}" hint-placeholder-val="{{ true }}"><span dir="ltr" style="text-align: right; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums">{{total}}</span></sc-if>
+          <sc-if value="{{noTotal}}" hint-placeholder-val="{{ false }}"><span style="font-size: 26px; font-weight: 700">غير متاح</span></sc-if>
+          <span style="font-size: 12px; color: #DCEBD6">{{totalSub}}</span>
+        </div>
+
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{g.title}}</h2>
+            <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+              <sc-for list="{{g.rows}}" as="w" hint-placeholder-count="3">
+                <button type="button" class="m-press" onClick="{{w.open}}" style="{{w.style}}">
+                  <span aria-hidden="true" style="{{w.lens}}">
+                    <sc-if value="{{w.isCash}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg></sc-if>
+                    <sc-if value="{{w.isBank}}" hint-placeholder-val="{{ true }}">{{w.mark}}</sc-if>
+                  </span>
+                  <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                    <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 15px; font-weight: 700; min-width: 0">{{w.name}}</span><span dir="ltr" style="{{w.balStyle}}">{{w.balance}}</span></span>
+                    <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 12px; color: #637570">{{w.meta}}</span><sc-if value="{{w.approx}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #956000; background: #FBF0DD">تقريبي</span></sc-if></span>
+                    <span style="font-size: 11px; color: #637570">{{w.opening}}</span>
+                  </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"></path></svg>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+
+        <button type="button" disabled="{{true}}" aria-describedby="wallet-soon" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{addLabel}}</button>
+        <span id="wallet-soon" style="font-size: 12px; color: #637570; text-align: center; margin-top: -8px">{{addSoon}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{inDetail}}" hint-placeholder-val="{{ false }}">
+      <div class="v-in">
+        <dc-import name="WalletDetail" space="{{spaceName}}" wallet="{{walletId}}" na="{{naFlag}}" hint-size="350px,800px"></dc-import>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { view: null }; }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const na = (this.props.state ?? 'عادي') === 'غير متاح';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    // مخترعة · بالوحدة الصغرى · المحافظ في البلد الشغالة بس (§41) — الأرصدة = «معك الآن» في الرئيسية (HeroBanks). آخر ٤ أرقام بس
+    // [المعرّف، الاسم، حرف مكان اللوجو، آخر ٤، الرصيد، رصيد البداية، تاريخه]
+    const banks = eg
+      ? [['nbe', 'البنك الأهلي المصري', 'أ', '٧٢١٤', 1640000, 900000, '١٢ مايو ٢٠٢٦'], ['qnb', 'QNB مصر', 'Q', '٦٠٨٣', 620000, 300000, '١٢ مايو ٢٠٢٦']]
+      : [['rajhi', 'مصرف الراجحي', 'ر', '٤٤٠٧', 412000, 215000, '١ يناير ٢٠٢٥'], ['ahli', 'البنك الأهلي السعودي', 'أ', '٩١٢٦', 183000, 50000, '١ مارس ٢٠٢٥'], ['inma', 'مصرف الإنماء', 'إ', '٣٣٥٨', 50000, 0, '١٠ أغسطس ٢٠٢٦']];
+    const cash = eg ? [270000, 300000, '١٢ مايو ٢٠٢٦'] : [90000, 120000, '٢٨ أغسطس ٢٠٢٦'];
+    const s = this.state;
+    const rowStyle = (last) => 'box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 72px; padding: 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);');
+    const lens = (isCash) => 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #08634F; ' + (isCash ? 'background: #DCEBD6' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
+    const bankRows = banks.map(([id, name, mark, last4, bal, open, at], i) => ({
+      name, mark, isBank: true, isCash: false, approx: false,
+      meta: (eg ? 'حساب بنك · ' : 'حساب بنكي · ') + '•••• ' + last4,
+      opening: na ? (eg ? 'رصيد البداية لسه ما اتحددش' : 'رصيد البداية لم يُحدَّد بعد') : (eg ? 'رصيد البداية ' : 'رصيد البداية ') + this.fmt(open) + (eg ? ' في ' : ' في ') + at,
+      balance: na ? 'غير متاح' : this.fmt(bal) + ' ' + cur,
+      balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : '#193D33'),
+      lens: lens(false), open: () => this.setState({ view: id }), style: rowStyle(i === banks.length - 1)
+    }));
+    const cashRow = { name: 'الكاش', mark: '', isBank: false, isCash: true, approx: true,
+      meta: eg ? 'كاش · اللي في جيبك' : 'كاش · الذي معك',
+      opening: (eg ? 'رصيد البداية ' : 'رصيد البداية ') + this.fmt(cash[1]) + ' في ' + cash[2],
+      balance: this.fmt(cash[0]) + ' ' + cur, balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #193D33',
+      lens: lens(true), open: () => this.setState({ view: 'cash' }), style: rowStyle(true) };
+    const total = banks.reduce((t, b) => t + b[4], 0) + cash[0];
+    const all = banks.map((b) => b[0]).concat(['cash']);
+    const view = all.indexOf(s.view) >= 0 ? s.view : null;
+    // بعد «في» ⇒ المثنى مجرور في الفصحى
+    const MW = ['محفظة واحدة', 'محفظتين', 'محافظ', 'محفظة'];
+    const cnt = all.length;
+    return {
+      spaceName: eg ? 'مصر' : 'السعودية', spaceChip: eg ? 'مصر · ج.م' : 'السعودية · ر.س',
+      inList: !view, inDetail: !!view,
+      title: view ? (eg ? 'تفاصيل المحفظة' : 'تفاصيل المحفظة') : 'المحافظ',
+      backToList: () => this.setState({ view: null }),
+      totalLabel: eg ? 'معاك دلوقتي' : 'معك الآن',
+      hasTotal: !na, noTotal: na, total: this.fmt(total) + ' ' + cur,
+      totalSub: na ? (eg ? 'رصيد البنوك مش متاح لحد ما توصل رسالة بنك جديدة أو تستورد كشف. الكاش لوحده ' : 'رصيد البنوك غير متاح حتى تصل رسالة بنك جديدة أو تستورد كشفًا. الكاش وحده ') + this.fmt(cash[0]) + ' ' + cur + '.'
+        : (eg ? 'في ' : 'في ') + (cnt === 1 ? MW[0] : cnt === 2 ? MW[1] : n(cnt) + ' ' + (cnt <= 10 ? MW[2] : MW[3])) + (eg ? ' في البلد دي' : ' في هذا البلد'),
+      groups: [{ title: eg ? 'البنوك' : 'البنوك', rows: bankRows }, { title: 'الكاش', rows: [cashRow] }],
+      addLabel: eg ? 'ضيف محفظة' : 'أضف محفظة',
+      addSoon: eg ? 'إضافة محفظة وتعديل رصيد البداية بيتضافوا بعدين.' : 'إضافة محفظة وتعديل رصيد البداية يُضافان لاحقًا.',
+      walletId: view || '', naFlag: na ? '1' : '0'
+    };
+  }
+}
+</script>
+</body>
+</html>

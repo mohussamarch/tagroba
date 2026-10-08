@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الدخول بالبريد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),color 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.e-in{animation:e-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.e-spin{animation:e-spin 900ms cubic-bezier(.45,.05,.55,.95) infinite}
+@keyframes e-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes e-spin{to{transform:rotate(360deg)}}
+@keyframes e-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.e-in{animation:e-fade 150ms both}.e-spin{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Onboarding.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD; color: #6B4600">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #956000"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 20h.01"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path><path d="M5 12.859a10 10 0 0 1 5.17-2.69"></path><path d="M19 12.859a10 10 0 0 0-2.007-1.523"></path><path d="M2 8.82a15 15 0 0 1 4.177-2.643"></path><path d="M22 8.82a15 15 0 0 0-11.288-3.764"></path><path d="m2 2 20 20"></path></svg>{{offlineText}}</span>
+        <button type="button" class="m-press" onClick="{{reconnect}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.8)">أعد المحاولة</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+      <div role="status" class="e-in" style="border-radius: 22px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; background: #DCEBD6">
+        <span style="display: flex; gap: 12px; align-items: flex-start">
+          <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #13764D; background: #FFFFFF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+          <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700; color: #08634F">{{doneTitle}}</span><span style="font-size: 14px">{{doneLine}}</span></span>
+        </span>
+        <a href="Onboarding.dc.html" data-back="1" data-keep="{{keep}}" class="m-press" onClick="{{prep}}" onFocus="{{prep}}" style="height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #FFFFFF; text-decoration: none; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)">متابعة</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showForm}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div role="radiogroup" aria-label="نوع الدخول" style="display: flex; gap: 4px; padding: 4px; border-radius: 18px; background: rgba(25,61,51,0.06)">
+          <sc-for list="{{modes}}" as="md" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{md.on}}" class="m-press" onClick="{{md.pick}}" disabled="{{busy}}" style="{{md.style}}">{{md.label}}</button>
+          </sc-for>
+        </div>
+
+        <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="si-email" style="font-size: 13px; font-weight: 700">البريد الإلكتروني</label>
+            <input id="si-email" type="email" dir="ltr" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="name@example.com" value="{{email}}" onInput="{{typeEmail}}" disabled="{{busy}}" aria-invalid="{{emailInvalid}}" aria-describedby="si-email-err" style="{{emailStyle}}">
+            <sc-if value="{{emailBad}}" hint-placeholder-val="{{ false }}">
+              <span id="si-email-err" role="alert" class="e-in" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: #BE3D48"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg><span style="flex: 1 1 200px">{{emailErr}}</span>
+                <sc-if value="{{canSwitch}}" hint-placeholder-val="{{ false }}"><button type="button" class="m-press" onClick="{{toSignIn}}" style="height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">تسجيل الدخول</button></sc-if>
+              </span>
+            </sc-if>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="si-pass" style="font-size: 13px; font-weight: 700">كلمة المرور</label>
+            <div style="{{passBox}}">
+              <input id="si-pass" type="{{passType}}" dir="ltr" autocomplete="{{passAuto}}" value="{{pass}}" onInput="{{typePass}}" disabled="{{busy}}" aria-invalid="{{passInvalid}}" aria-describedby="si-pass-err si-pass-hint" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; background: transparent; font: inherit; font-size: 16px; color: #193D33; outline: none">
+              <button type="button" class="m-press" onClick="{{toggleEye}}" aria-label="{{eyeLabel}}" aria-pressed="{{eyePressed}}" style="width: 48px; height: 48px; flex-shrink: 0; border: 0; padding: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #637570; cursor: pointer; background: transparent">
+                <sc-if value="{{shown}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"></path><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"></path><path d="m2 2 20 20"></path></svg></sc-if>
+                <sc-if value="{{hidden}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg></sc-if>
+              </button>
+            </div>
+            <sc-if value="{{passHint}}" hint-placeholder-val="{{ false }}"><span id="si-pass-hint" style="font-size: 12px; color: #637570">٦ أحرف على الأقل.</span></sc-if>
+            <sc-if value="{{passBad}}" hint-placeholder-val="{{ false }}">
+              <span id="si-pass-err" role="alert" class="e-in" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #BE3D48"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>{{passErr}}</span>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{isSignIn}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <button type="button" disabled="{{true}}" aria-describedby="si-forgot" style="align-self: flex-start; height: 40px; padding: 0; border: 0; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: transparent; opacity: 0.45; cursor: default">نسيت كلمة المرور؟</button>
+              <span id="si-forgot" style="font-size: 12px; color: #637570">إرسال رابط إعادة التعيين إلى بريدك يأتي في خطوة لاحقة.</span>
+            </div>
+          </sc-if>
+
+          <button type="button" class="m-press" onClick="{{submit}}" disabled="{{submitOff}}" aria-busy="{{busyAttr}}" style="{{submitStyle}}">
+            <sc-if value="{{busy}}" hint-placeholder-val="{{ false }}"><svg class="e-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg></sc-if>
+            <span>{{submitLabel}}</span>
+          </button>
+        </div>
+        <sc-if value="{{offline}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570; text-align: center">{{offNote}}</span></sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","خطأ","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // §66: شاشة الدخول فصحى دايمًا (قبل ما الحساب يتعرف) — البلد ما بيغيّرش النص. الأخطاء نص AUTH_* من كوتلن (TextsAuth.kt)
+  constructor(props) {
+    super(props);
+    this.timers = [];
+    this.state = this.fresh(props);
+  }
+  fresh(p) {
+    const st = (p && p.state) || 'عادي';
+    // بيحمّل: بيانات مثال (مش حقيقية) عشان الحالة تتشاف
+    const loading = st === 'بيحمّل';
+    return { mode: 'in', email: loading ? 'user@example.com' : '', pass: loading ? 'example1' : '', shown: false, busy: loading, errs: {}, failedOnce: false, online: st !== 'محتاج نت', done: false };
+  }
+  componentDidUpdate(prev) { if (prev.state !== this.props.state) this.setState(this.fresh(this.props)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  submit() {
+    const s = this.state, st = this.props.state ?? 'عادي';
+    if (s.busy || !s.online) return;
+    const email = s.email.trim();
+    const errs = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.email = 'البريد الإلكتروني غير صحيح';
+    if (!s.pass) errs.pass = 'أدخل كلمة المرور';
+    else if (s.mode === 'new' && s.pass.length < 6) errs.pass = 'كلمة المرور قصيرة — ٦ أحرف على الأقل';
+    if (errs.email || errs.pass) { this.setState({ errs }); return; }
+    this.setState({ busy: true, errs: {} });
+    this.timers.push(setTimeout(() => {
+      // خطأ: أول محاولة بترجع خطأ من النظام، والمحاولة اللي بعدها بتنجح
+      if (st === 'خطأ' && !this.state.failedOnce) {
+        this.setState({ busy: false, failedOnce: true, errs: this.state.mode === 'new' ? { email: 'البريد مسجّل سابقًا — جرّب تسجيل الدخول', sw: true } : { pass: 'البريد أو كلمة المرور خاطئة' } });
+        return;
+      }
+      this.setState({ busy: false, done: true });
+    }, 900));
+  }
+  renderVals() {
+    const s = this.state;
+    const offline = !s.online;
+    const field = (bad) => 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; color: #193D33; outline: none; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
+    const modes = [['in', 'تسجيل الدخول'], ['new', 'حساب جديد']].map(([id, label]) => ({ label, on: s.mode === id ? 'true' : 'false',
+      pick: () => this.setState({ mode: id, errs: {} }),
+      style: 'flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.mode === id ? 'font-weight: 700; color: #08634F; background: #FFFFFF; box-shadow: 0 4px 12px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent') }));
+    const off = s.busy || offline;
+    const keepKey = 'masroufy-onb-signed';
+    return {
+      title: 'الدخول بالبريد الإلكتروني',
+      offline, offlineText: 'لا اتصال بالإنترنت. تحقق من الاتصال وأعد المحاولة', reconnect: () => this.setState({ online: true }),
+      done: s.done, showForm: !s.done,
+      doneTitle: s.mode === 'new' ? 'أُنشئ حسابك' : 'تم الدخول',
+      doneLine: 'نكمل تجهيز حسابك من حيث توقفت.',
+      // بيرجع للخطوة اللي بعد الدخول في «أول تشغيل»
+      keep: JSON.stringify({ [keepKey]: 'email' }),
+      prep: () => { try { window.sessionStorage.setItem(keepKey, 'email'); } catch (e) {} },
+      modes, busy: s.busy, busyAttr: s.busy ? 'true' : 'false',
+      email: s.email, typeEmail: (e) => this.setState({ email: e.target.value, errs: Object.assign({}, s.errs, { email: '', sw: false }) }),
+      emailBad: !!s.errs.email, emailInvalid: s.errs.email ? 'true' : 'false', emailErr: s.errs.email || '', emailStyle: field(!!s.errs.email),
+      canSwitch: !!s.errs.sw, toSignIn: () => this.setState({ mode: 'in', errs: {} }),
+      pass: s.pass, typePass: (e) => this.setState({ pass: e.target.value, errs: Object.assign({}, s.errs, { pass: '' }) }),
+      passType: s.shown ? 'text' : 'password', passAuto: s.mode === 'new' ? 'new-password' : 'current-password',
+      passBox: 'display: flex; align-items: center; border-radius: 14px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (s.errs.pass ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      shown: s.shown, hidden: !s.shown, toggleEye: () => this.setState({ shown: !s.shown }),
+      eyeLabel: s.shown ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور', eyePressed: s.shown ? 'true' : 'false',
+      passHint: s.mode === 'new' && !s.errs.pass, passBad: !!s.errs.pass, passInvalid: s.errs.pass ? 'true' : 'false', passErr: s.errs.pass || '',
+      isSignIn: s.mode === 'in',
+      submit: () => this.submit(), submitOff: off,
+      submitLabel: s.busy ? (s.mode === 'new' ? 'جارٍ إنشاء الحساب…' : 'جارٍ الدخول…') : s.mode === 'new' ? 'إنشاء الحساب' : 'دخول',
+      submitStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (off ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)'),
+      offNote: 'الدخول يحتاج اتصالًا بالإنترنت.'
+    };
+  }
+}
+</script>
+</body>
+</html>

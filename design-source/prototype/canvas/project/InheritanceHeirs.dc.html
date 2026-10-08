@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الورثة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.h-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.h-press:active{transform:scale(.94)}
+.h-in{animation:h-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes h-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.h-press{transition:none}.h-press:active{transform:none}.h-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 12px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{title}}</h2>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+  </div>
+  <span style="{{summaryStyle}}">{{summary}}</span>
+
+  <sc-for list="{{groups}}" as="gr" hint-placeholder-count="2">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-if value="{{gr.isMore}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="h-press" onClick="{{toggleMore}}" aria-expanded="{{moreOpen}}" style="min-height: 48px; border: 0; padding: 0 14px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)"><span>{{moreLabel}}</span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="{{moreChev}}"><path d="m6 9 6 6 6-6"></path></svg></button>
+      </sc-if>
+      <sc-if value="{{gr.show}}" hint-placeholder-val="{{ true }}">
+        <div class="h-in" style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{gr.rows}}" as="hr" hint-placeholder-count="6">
+            <div style="{{hr.rowStyle}}">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 52px">
+                <span id="{{hr.id}}" style="flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 700">{{hr.label}}</span>
+                <button type="button" class="h-press" onClick="{{hr.minus}}" aria-label="{{hr.minusLabel}}" disabled="{{hr.atMin}}" style="{{hr.minusStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+                <span aria-live="polite" aria-describedby="{{hr.id}}" style="{{hr.countStyle}}">{{hr.count}}</span>
+                <button type="button" class="h-press" onClick="{{hr.plus}}" aria-label="{{hr.plusLabel}}" disabled="{{hr.atMax}}" style="{{hr.plusStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+              </div>
+              <sc-if value="{{hr.hasNames}}" hint-placeholder-val="{{ false }}">
+                <input type="text" aria-label="{{hr.namesLabel}}" placeholder="{{hr.namesLabel}}" value="{{hr.names}}" onInput="{{hr.typeNames}}" maxlength="60" style="height: 44px; margin-bottom: 10px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; color: #193D33; background: rgba(25,61,51,0.05); outline: none">
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </sc-for>
+  <span style="font-size: 12px; color: #637570">{{foot}}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // القيمة الحقيقية عند الشاشة الأم (InheritanceCalculator) — هنا نسخة محلية لو اللوحة اتفتحت لوحدها
+    this.state = { local: null, more: null };
+  }
+  cur() {
+    if (this.state.local) return this.state.local;
+    try { const d = typeof this.props.data === 'string' ? JSON.parse(this.props.data) : this.props.data; if (d && d.heirs) return d; } catch (e) {}
+    return { heirs: {}, names: {} };
+  }
+  change(next) { if (typeof this.props.onChange === 'function') this.props.onChange(next); this.setState({ local: next }); }
+  renderVals() {
+    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG');
+    const d = this.cur(), H = d.heirs || {}, NM = d.names || {};
+    // الورثة اللي المنطق بيحسبهم (§69.1) — بالعدد، والأسامي اختيارية
+    const L = { husband: 'الزوج', wife: 'الزوجة', son: 'الابن', daughter: 'البنت', father: 'الأب', mother: 'الأم', gf: 'الجد (أبو الأب)', pgm: 'الجدة (أم الأب)', mgm: 'الجدة (أم الأم)', ss: 'ابن الابن', sd: 'بنت الابن', fb: 'الأخ الشقيق', fs: 'الأخت الشقيقة', pb: 'الأخ من الأب', ps: 'الأخت من الأب', mb: 'الأخ من الأم', ms: 'الأخت من الأم', fn: 'ابن الأخ الشقيق', fu: 'العم الشقيق' };
+    const MAX = { husband: 1, wife: 4, father: 1, mother: 1, gf: 1, pgm: 1, mgm: 1 };
+    const MAIN = ['husband', 'wife', 'son', 'daughter', 'father', 'mother'], MORE = ['gf', 'pgm', 'mgm', 'ss', 'sd', 'fb', 'fs', 'pb', 'ps', 'mb', 'ms', 'fn', 'fu'];
+    const moreOpen = this.state.more != null ? this.state.more : MORE.some((k) => H[k]);
+    const set = (k, v) => this.change({ heirs: Object.assign({}, H, { [k]: v }), names: NM });
+    const btn = (off, strong) => 'width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; ' + (off ? 'color: #9AA8A3; background: rgba(25,61,51,0.04); cursor: default' : strong ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.22)' : 'color: #08634F; background: rgba(8,99,79,0.08)');
+    const row = (k, i, arr) => {
+      const c = H[k] || 0, max = MAX[k] || 100;
+      return { id: 'hz-' + k, label: L[k], count: n(c), atMin: c <= 0, atMax: c >= max,
+        minus: () => { if (c > 0) set(k, c - 1); }, plus: () => { if (c < max) set(k, c + 1); },
+        minusLabel: t('أنقص ', 'قلّل ') + L[k], plusLabel: t('أضف ', 'زوّد ') + L[k],
+        minusStyle: btn(c <= 0, false), plusStyle: btn(c >= max, true),
+        countStyle: 'min-width: 28px; text-align: center; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (c ? '#193D33' : '#9AA8A3'),
+        hasNames: c > 0, names: NM[k] || '', namesLabel: t('الأسماء (اختياري)', 'الأسامي (اختياري)'),
+        typeNames: (e) => this.change({ heirs: H, names: Object.assign({}, NM, { [k]: String(e.target.value).slice(0, 60) }) }),
+        rowStyle: 'display: flex; flex-direction: column;' + (i === arr.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') };
+    };
+    const picked = MAIN.concat(MORE).filter((k) => H[k]);
+    const total = picked.reduce((a, k) => a + H[k], 0);
+    return {
+      title: t('مَن الورثة؟', 'مين الورثة؟'),
+      intro: t('اكتب العدد فقط، والأسماء اختيارية.', 'اكتب العدد بس، والأسامي اختيارية.'),
+      summary: total ? picked.map((k) => L[k] + (H[k] > 1 ? ' ' + n(H[k]) : '')).join(' · ') : t('لم تُضف ورثة بعد', 'لسه ما ضفتش ورثة'),
+      summaryStyle: 'font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 14px; ' + (total ? 'color: #08634F; background: #DCEBD6' : 'color: #956000; background: #FBF0DD'),
+      groups: [{ isMore: false, show: true, rows: MAIN.map(row) }, { isMore: true, show: moreOpen, rows: MORE.map(row) }],
+      toggleMore: () => this.setState({ more: !moreOpen }), moreOpen: moreOpen ? 'true' : 'false',
+      moreLabel: t('ورثة آخرون: الجد والجدات والأحفاد والإخوة والأعمام', 'ورثة تانيين: الجد والجدات والأحفاد والإخوة والأعمام'),
+      moreChev: 'flex-shrink: 0; transition: transform 220ms; transform: rotate(' + (moreOpen ? 180 : 0) + 'deg)',
+      foot: t('الأقارب الأبعد (أولاد البنات، الخال، العمة…) نسألك عنهم في النتيجة عند الحاجة. الحمل والمفقود في الخطوة التالية.', 'القرايب الأبعد (أولاد البنات، الخال، العمة…) بنسألك عنهم في النتيجة لو محتاجين. الحمل والمفقود في الخطوة الجاية.')
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>التقاعد في السعودية — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.r-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.r-press:active{transform:scale(.97)}
+.r-in{animation:r-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes r-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.r-press{transition:none}.r-press:active{transform:none}.r-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <span id="r-q" style="font-size: 15px; font-weight: 700">هل اشتركت في التأمينات قبل يوليو ٢٠٢٤؟</span>
+    <div role="radiogroup" aria-labelledby="r-q" style="display: flex; gap: 8px">
+      <sc-for list="{{answers}}" as="an" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{an.on}}" class="r-press" onClick="{{an.pick}}" style="{{an.style}}">{{an.label}}</button>
+      </sc-for>
+    </div>
+    <span style="font-size: 12px; color: #637570">{{lawLine}}</span>
+  </div>
+
+  <div aria-live="polite" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+    <span style="font-size: 14px; color: #DCEBD6">المعاش المتوقع شهريًا</span>
+    <sc-if value="{{hasPension}}" hint-placeholder-val="{{ true }}">
+      <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px"><span style="font-size: 16px">ر.س</span><span style="font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{pensionText}}</span></div>
+    </sc-if>
+    <sc-if value="{{noPension}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 22px; font-weight: 700">{{pensionNa}}</span>
+    </sc-if>
+    <span style="font-size: 12px; color: #DCEBD6">{{heroSub}}</span>
+  </div>
+
+  <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <sc-for list="{{outs}}" as="o" hint-placeholder-count="2">
+      <div style="{{o.rowStyle}}">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px"><span style="font-size: 14px; font-weight: 700">{{o.label}}</span><span dir="ltr" style="{{o.valueStyle}}">{{o.value}}</span></span>
+        <span style="{{o.subStyle}}">{{o.sub}}</span>
+      </div>
+    </sc-for>
+    <button type="button" class="r-press" onClick="{{toggleHow}}" aria-expanded="{{howOpen}}" style="width: 100%; min-height: 48px; border: 0; border-top: 1px solid rgba(204,216,204,0.55); background: transparent; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; text-align: right">{{howLabel}}</button>
+    <sc-if value="{{showHow}}" hint-placeholder-val="{{ false }}">
+      <div class="r-in" style="display: flex; flex-direction: column; gap: 6px; padding: 0 0 14px">
+        <sc-for list="{{how}}" as="h" hint-placeholder-count="3">
+          <span style="font-size: 12px; color: #4F625C; line-height: 1.7">{{h}}</span>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-for list="{{sections}}" as="sec" hint-placeholder-count="4">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 16px; font-weight: 700">{{sec.title}}</h2>
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{sec.fields}}" as="fd" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="{{fd.id}}" style="font-size: 13px; font-weight: 700; color: #637570">{{fd.label}}</label>
+            <sc-if value="{{fd.isInput}}" hint-placeholder-val="{{ true }}">
+              <div style="{{fd.boxStyle}}">
+                <input id="{{fd.id}}" type="{{fd.type}}" inputmode="{{fd.mode}}" dir="ltr" value="{{fd.value}}" onInput="{{fd.onInput}}" placeholder="{{fd.ph}}" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+                <span style="font-size: 13px; color: #637570; flex-shrink: 0">{{fd.unit}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{fd.isChips}}" hint-placeholder-val="{{ false }}">
+              <div role="radiogroup" aria-label="{{fd.label}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{fd.chips}}" as="ch" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ch.on}}" class="r-press" onClick="{{ch.pick}}" style="{{ch.style}}">{{ch.label}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <span style="{{fd.noteStyle}}">{{fd.note}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <span style="font-size: 12px; color: #637570; line-height: 1.7">فرض الحساب: الاشتراك والأجر مستمران كما هما حتى التقاعد، وما تدّخره بلا أرباح. حساب تقريبي للتخطيط، والرقم الرسمي من التأمينات.</span>
+  <span style="font-size: 12px; color: #637570; line-height: 1.7">{{sources}}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح"],"default":"عادي","section":"الحالة"},"$preview":{"width":350,"height":1600}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // v: ما كتبه المستخدم (نص). الفاضي = الافتراضي المخترع. اليوم في النموذج ٧ أكتوبر ٢٠٢٦
+    this.state = { old: true, v: {}, end: 'contract', how: false };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return (minor < 0 ? '−' : '') + String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  num(t) { const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); return s ? s : null; }
+  toMinor(t) { const s = this.num(t); if (s == null) return null; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  int(t) { const s = this.num(t); return s == null || s.indexOf('.') >= 0 ? null : parseInt(s, 10); }
+  md(a, num, den) { const x = BigInt(a) * BigInt(num), d = BigInt(den); return Number((x * 2n + d) / (d * 2n)); }
+  P(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); if (!m) return null; const y = +m[1], mo = +m[2], d = +m[3]; return mo >= 1 && mo <= 12 && d >= 1 && d <= this.dim(y, mo) ? { y, mo, d } : null; }
+  dim(y, m) { return [31, (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]; }
+  addM(s, k) { const a = this.P(s), t = a.y * 12 + a.mo - 1 + k, y = (t - t % 12) / 12, m = t % 12 + 1; return y + '-' + String(m).padStart(2, '0') + '-' + String(Math.min(a.d, this.dim(y, m))).padStart(2, '0'); }
+  fullM(from, to) { if (to <= from) return 0; const a = this.P(from), b = this.P(to); let k = (b.y - a.y) * 12 + b.mo - a.mo; while (k > 0 && this.addM(from, k) > to) k--; while (this.addM(from, k + 1) <= to) k++; return k; }
+  days(a, b) { const x = this.P(a), y = this.P(b); return (Date.UTC(y.y, y.mo - 1, y.d) - Date.UTC(x.y, x.mo - 1, x.d)) / 86400000; }
+  day(s) { const a = this.P(s), M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; return M[a.mo - 1] + ' ' + a.y.toLocaleString('ar-EG', { useGrouping: false }); }
+  age(m) { const y = (m - m % 12) / 12, r = m % 12; return y.toLocaleString('ar-EG') + ' سنة' + (r ? ' و' + (r === 1 ? 'شهر' : r === 2 ? 'شهران' : r.toLocaleString('ar-EG') + ' أشهر') : ''); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي', TODAY = '2026-10-07', EFF = '2024-07-03';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state;
+    // مخترعة: الراتب ١٢٬٥٠٠ من مصادر الدخل، والعمل الحالي من فبراير ٢٠٢١
+    const D = { birth: '1990-04-12', soFar: '103', at2024: '76', m1422: '', retire: '', basic: '10000', housing: st === 'غير متاح' ? '' : '2500', job: '2021-02-01', eosWage: '12500', want: '15000', years: '20', have: '40000' };
+    const val = (id) => (s.v[id] != null ? s.v[id] : D[id]);
+    const put = (id) => (e) => this.setState({ v: Object.assign({}, s.v, { [id]: e.target.value }) });
+    const err = {};
+    const birth = val('birth'), soFar = this.int(val('soFar')), at2024 = this.int(val('at2024')), m1422 = this.int(val('m1422')) || 0;
+    const basic = this.toMinor(val('basic')), housing = this.toMinor(val('housing')), retireY = this.int(val('retire'));
+    if (!this.P(birth) || birth >= TODAY) err.birth = 'اكتب تاريخ الميلاد (قبل اليوم)';
+    if (soFar == null || soFar > 1200) err.soFar = 'المدة من ٠ حتى ١٢٠٠ شهر';
+    if (s.old && at2024 != null && soFar != null && at2024 > soFar) err.at2024 = 'شهور الاشتراك في يوليو ٢٠٢٤ لا تزيد على مدة اشتراكك اليوم';
+    if (s.old && soFar != null && m1422 > soFar) err.m1422 = 'شهور ما قبل ١٤٢٢هـ جزء من مدة اشتراكك، فلا تزيد عليها';
+    if (basic === 0) err.basic = 'اكتب الأجر الشهري (أكبر من صفر)';
+    if (retireY != null && (retireY < 1 || retireY > 100)) err.retire = 'سن التقاعد غير صحيح';
+    const bad = Object.keys(err).length > 0;
+    // ===== المعاش (RetirementSaudi.kt + RetirementCalc.kt) =====
+    let est = null;
+    if (!bad) {
+      const outsideByAge = this.fullM(birth, EFF) >= 48 * 12 + 6;
+      if (s.old && at2024 == null && !outsideByAge) est = { na: 'غير متاح: اكتب شهور اشتراكك في ٣ يوليو ٢٠٢٤ — سن تقاعدك يتحدد منها' };
+      else {
+        const atEff = at2024 != null ? at2024 : outsideByAge ? 240 : 0;
+        const fifth = !outsideByAge && atEff < 240, ageEff = this.fullM(birth, EFF), yrs = (ageEff - ageEff % 12) / 12;
+        const legal = !s.old ? 780 : !fifth ? 720 : yrs < 29 ? 780 : 780 - 4 * (yrs - 28);
+        const earlyNeed = !s.old ? 360 : !fifth ? 300 : atEff < 180 ? 360 : 348 - 12 * ((atEff - 180 - (atEff - 180) % 12) / 12);
+        const ret = retireY != null ? retireY * 12 : legal, date = this.addM(birth, ret);
+        const future = this.fullM(TODAY, date), months = soFar + future, before = Math.max(0, legal - ret), after = Math.max(0, ret - legal);
+        est = { legal, ret, date, future, months, before, after, earlyNeed };
+        if (before > 0 && ((!s.old && before > 120) || months < earlyNeed)) est.no = 'التقاعد المبكر بهذا السن غير مسموح بمدة اشتراكك';
+        else if (months < (s.old ? 120 : 180)) est.no = 'مدة الاشتراك أقل من الحد الأدنى للمعاش — التعويض بدفعة واحدة غير محسوب هنا';
+        else if (basic == null) est.na = 'غير متاح: اكتب الأجر الأساسي الشهري';
+        else if (housing == null) est.na = 'غير متاح: اكتب بدل السكن الشهري — اكتب صفرًا إن لم يكن لك بدل سكن';
+        else {
+          const w = basic + housing;
+          if (!s.old) {
+            const wage = Math.min(w, 4500000), accrued = this.md(wage, 225 * months, 120000), base = Math.min(accrued, wage);
+            const minimum = Math.max(200000, this.md(400000, Math.min(months, 480), 480)), floored = Math.max(base, minimum);
+            const redM = Math.min(before, Math.max(0, 480 - months)), red = this.md(floored, 300 * redM, 120000), inc = this.md(floored, 300 * after, 120000);
+            est.p = floored - red + inc;
+            est.how = ['متوسط الأجر (الأساسي + السكن، بسقف ٤٥٬٠٠٠): ' + this.fmt(wage), '× ٢٫٢٥٪ × ' + n(months) + ' شهرًا ÷ ١٢ = ' + this.fmt(accrued) + (accrued > wage ? ' ← بسقف ١٠٠٪ من المتوسط' : ''), 'الحد الأدنى لمدتك: ' + this.fmt(minimum) + (minimum > base ? ' ← طُبّق' : ''),
+              red ? 'التخفيض المبكر: −' + this.fmt(red) + ' (٣٪ عن كل ١٢ شهرًا من ' + n(redM) + ' شهرًا — بعد الحد الأدنى، فقد ينزل تحته)' : inc ? 'الزيادة بعد السن: +' + this.fmt(inc) + ' (٣٪ عن كل ١٢ شهرًا)' : 'لا تخفيض ولا زيادة: التقاعد في السن النظامية'];
+          } else {
+            const aft = months - m1422, accrued = this.md(w, 5 * aft + 4 * m1422, 2400), base = Math.min(accrued, w);
+            est.p = Math.max(base, 198375);
+            est.how = ['متوسط أجر آخر سنتين (الأساسي + السكن): ' + this.fmt(w), '× ' + n(aft) + ' ÷ ٤٨٠' + (m1422 ? ' + ' + n(m1422) + ' ÷ ٦٠٠' : '') + ' = ' + this.fmt(accrued) + (accrued > w ? ' ← بسقف ١٠٠٪' : ''), 'الحد الأدنى ١٬٩٨٣٫٧٥' + (base < 198375 ? ' ← طُبّق' : ''), 'سن تقاعدك: ' + this.age(legal) + (fifth ? ' — من جدول البند «خامسًا» في المرسوم م/٢٧٣ (عمرك ' + n(yrs) + ' سنة يوم ٣ يوليو ٢٠٢٤)' : ' — السن ٦٠ (البند «خامسًا» لا ينطبق عليك)')];
+          }
+        }
+      }
+    }
+    // ===== مكافأة نهاية الخدمة (EndOfService.kt) =====
+    const job = val('job'), eosWage = this.toMinor(val('eosWage'));
+    let eos = null;
+    if (est && est.date) {
+      if (!this.P(job) || job > est.date) eos = { na: 'غير متاح: اكتب تاريخ بداية عملك الحالي لحساب مكافأة نهاية الخدمة' };
+      else if (!eosWage) eos = { na: 'غير متاح: اكتب أجرك الشهري الفعلي (الأساسي مع البدلات) لحساب مكافأة نهاية الخدمة' };
+      else if (!s.end) eos = { na: 'غير متاح: اختر كيف سينتهي عملك' };
+      else {
+        const mm = this.fullM(job, est.date), y = (mm - mm % 12) / 12, ann = this.addM(job, y * 12), L = this.days(ann, this.addM(job, (y + 1) * 12)), x = this.days(ann, est.date);
+        const N = y < 5 ? y * L + x : 5 * L + 2 * L * (y - 5) + 2 * x;
+        const th = s.end === 'art80' ? 0 : s.end === 'contract' ? 3 : y < 2 ? 0 : y < 5 || (y === 5 && x === 0) ? 1 : y < 10 ? 2 : 3;
+        eos = { v: this.md(eosWage, N * th, 6 * L), sub: n(y) + ' سنة و' + n(x) + ' يومًا · ' + ['لا شيء', 'ثلثها (استقالة)', 'ثلثاها (استقالة)', 'كاملة'][th] };
+      }
+    }
+    // ===== كم تدّخر شهريًا (retirementGap) =====
+    const want = this.toMinor(val('want')), years = this.int(val('years')), have = this.toMinor(val('have')) || 0;
+    let gap = null;
+    if (want === 0 || (val('want') && want == null)) err.want = 'اكتب المبلغ الشهري الذي تريد العيش به (أكبر من صفر)';
+    if (years != null && (years < 1 || years > 100)) err.years = 'عدد السنوات من ١ إلى ١٠٠';
+    if (!est || est.p == null) gap = { na: est && (est.no || est.na) ? (est.no || est.na) : 'غير متاح: المعاش المتوقع غير معروف' };
+    else if (!want || err.want) gap = { na: 'غير متاح: اكتب المبلغ الشهري الذي تريد العيش به' };
+    else if (years == null || err.years) gap = { na: 'غير متاح: اكتب كم سنة يكفيك مال التقاعد' };
+    else if (!eos || eos.v == null) gap = { na: eos ? eos.na : 'غير متاح' };
+    else {
+      const short = Math.max(0, want - est.p), need = short * years * 12, rem = Math.max(0, need - eos.v - have);
+      gap = est.future === 0 && rem > 0 ? { na: 'لم يبق وقت للادخار قبل التقاعد' } : { v: rem ? (rem + est.future - 1 - (rem + est.future - 1) % est.future) / est.future : 0,
+        sub: 'ينقصك ' + this.fmt(short) + ' شهريًا بعد المعاش × ' + n(years * 12) + ' شهرًا = ' + this.fmt(need) + ' − المكافأة − ما معك = ' + this.fmt(rem) + ' ÷ ' + n(est.future) + ' شهرًا · بلا أرباح' };
+    }
+    const row = (label, o, i) => ({ label, value: o.v != null ? this.fmt(o.v) : o.na ? (o.na.indexOf('غير متاح') === 0 ? 'غير متاح' : 'لا يُحسب') : '—',
+      valueStyle: 'font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; color: ' + (o.v != null ? '#193D33' : '#637570'),
+      sub: o.v != null ? o.sub : (o.na || '').replace(/^غير متاح: /, ''), subStyle: 'font-size: 12px; color: ' + (o.v != null ? '#637570' : '#956000'),
+      rowStyle: 'display: flex; flex-direction: column; gap: 4px; padding: 12px 0;' + (i ? ' border-top: 1px solid rgba(204,216,204,0.55);' : '') });
+    const chip = (on) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const F = (id, label, note, o) => Object.assign({ id: 'rs-' + id, label, isInput: true, isChips: false, chips: [], type: 'text', mode: 'decimal', unit: 'ر.س', ph: '0', value: val(id), onInput: put(id),
+      note: err[id] || note, noteStyle: 'font-size: 12px; ' + (err[id] ? 'font-weight: 700; color: #BE3D48' : 'color: #637570'),
+      boxStyle: 'display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (err[id] ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)') }, o || {});
+    const months = { mode: 'numeric', unit: 'شهرًا' };
+    const sections = [
+      { title: 'اشتراكك', fields: [F('birth', 'تاريخ الميلاد', '', { type: 'date', mode: '', unit: '' }), F('soFar', 'شهور الاشتراك حتى اليوم', 'من كشف التأمينات', months)]
+        .concat(s.old ? [F('at2024', 'شهور اشتراكك في ٣ يوليو ٢٠٢٤', 'سن تقاعدك في النظام القديم يتحدد منها', months), F('m1422', 'منها قبل ١٤٢٢هـ (اختياري)', 'تُحسب على ٦٠٠ بدل ٤٨٠', Object.assign({ ph: '٠' }, months))] : [])
+        .concat([F('retire', 'السن الذي تنوي التقاعد فيه (اختياري)', est && est.legal ? 'فارغ = السن النظامية لك: ' + this.age(est.legal) : 'فارغ = السن النظامية', { mode: 'numeric', unit: 'سنة', ph: est && est.legal ? n((est.legal - est.legal % 12) / 12) : '' })]) },
+      { title: 'أجرك الخاضع للاشتراك', fields: [F('basic', 'الأجر الأساسي الشهري', 'يُقترح من راتبك في مصادر الدخل، وعدّله إن كان فيه بدلات'), F('housing', 'بدل السكن الشهري', 'اكتب صفرًا إن لم يكن لك بدل سكن')] },
+      { title: 'مكافأة نهاية الخدمة', fields: [F('job', 'بداية عملك الحالي', 'من مصادر الدخل', { type: 'date', mode: '', unit: '' }), F('eosWage', 'أجرك الأخير كاملًا', 'الأساسي مع كل البدلات (نظام العمل م٢)'),
+        Object.assign(F('end', 'كيف سينتهي عملك؟', 'نسألك كل مرة — الاستقالة تُنقص المكافأة (م٨٥)'), { isInput: false, isChips: true, value: '',
+          chips: [['contract', 'انتهاء العقد أو السن'], ['resign', 'استقالة'], ['art80', 'فسخ (م٨٠)']].map(([id, label]) => ({ label, on: s.end === id ? 'true' : 'false', style: chip(s.end === id), pick: () => this.setState({ end: id }) })) })] },
+      { title: 'ما تريد العيش به', fields: [F('want', 'المبلغ الشهري الذي تريد العيش به', ''), F('years', 'كم سنة يكفيك مال التقاعد؟', 'مطلوب — لا رقم افتراضي له', { mode: 'numeric', unit: 'سنة' }), F('have', 'كم معك الآن للتقاعد؟', 'فارغ = صفر')] }
+    ];
+    const pOk = est && est.p != null;
+    return {
+      answers: [[true, 'نعم'], [false, 'لا']].map(([v, label]) => ({ label, on: s.old === v ? 'true' : 'false', style: chip(s.old === v) + '; flex: 1 1 0; height: 48px', pick: () => this.setState({ old: v }) })),
+      lawLine: s.old ? 'النظام القديم (م/٣٣) — وسن التقاعد من جدول البند «خامسًا» في المرسوم م/٢٧٣' : 'النظام الجديد (م/٢٧٣) — السن النظامية ٦٥',
+      hasPension: !!pOk, noPension: !pOk, pensionText: pOk ? this.fmt(est.p) : '',
+      pensionNa: bad ? 'أكمل البيانات' : est && est.no ? 'لا معاش' : 'غير متاح',
+      heroSub: bad ? 'تظهر النتيجة حين تصح الخانات.' : !est.date ? est.na : (est.no || est.na ? (est.no || est.na).replace(/^غير متاح: /, '') + ' · ' : '') + (s.old ? 'القديم' : 'الجديد') + ' · التقاعد عند ' + this.age(est.ret) + ' في ' + this.day(est.date) + '، ' + n(est.months) + ' شهر اشتراك',
+      outs: [row('مكافأة نهاية الخدمة', eos || { na: 'غير متاح' }, 0), row('كم تدّخر شهريًا حتى التقاعد', gap, 1)],
+      toggleHow: () => this.setState({ how: !s.how }), howOpen: s.how ? 'true' : 'false',
+      howLabel: s.how ? 'إخفاء طريقة الحساب' : 'كيف حُسب المعاش؟',
+      showHow: s.how && !!pOk, how: pOk ? est.how : [],
+      sections,
+      sources: 'المصادر: نظام التأمينات الاجتماعية (م/٢٧٣) م٨ و١٦–١٧ و٢٦ وقرار مجلس الوزراء ١٠٢٢، صفحة المعاش في التأمينات (النظام القديم) · نظام العمل م٢ و٨٤–٨٥ و٨٧.'
+    };
+  }
+}
+</script>
+</body>
+</html>

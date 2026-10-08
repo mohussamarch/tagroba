@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>سداد أو تحصيل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.ss-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.ss-press:active{transform:scale(.97)}
+.ss-veil{animation:ss-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.ss-up{animation:ss-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.ss-in{animation:ss-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes ss-fade{from{opacity:0}to{opacity:1}}
+@keyframes ss-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes ss-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.ss-press{transition:none}.ss-press:active{transform:none}.ss-up,.ss-in{animation:ss-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 6px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="ss-press" onClick="{{openSheet}}" disabled="{{blocked}}" aria-describedby="ss-why" style="{{triggerStyle}}">{{triggerLabel}}</button>
+  <sc-if value="{{hasWhy}}" hint-placeholder-val="{{ false }}">
+    <span id="ss-why" style="font-size: 12px; color: #637570; text-align: center">{{why}}</span>
+  </sc-if>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="ss-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="ss-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+          <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+          <span style="font-size: 12px; color: #637570">{{remainingLine}}</span>
+        </span>
+        <div role="radiogroup" aria-label="{{howLabel}}" style="display: flex; gap: 8px">
+          <sc-for list="{{hows}}" as="hw" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{hw.on}}" class="ss-press" onClick="{{hw.pick}}" style="{{hw.style}}">{{hw.label}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{linkMode}}" hint-placeholder-val="{{ false }}">
+          <div class="ss-in" style="{{candStyle}}">
+            <span style="font-size: 14px; font-weight: 700">{{candTitle}}</span>
+            <span style="font-size: 12px; color: #637570">{{candSub}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{freeMode}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="ss-amount" style="font-size: 13px; font-weight: 700">{{amountLabel}}</label>
+            <div style="display: flex; align-items: center; height: 56px; border-radius: 18px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+              <input id="ss-amount" type="text" inputmode="decimal" dir="ltr" value="{{amountText}}" onInput="{{typeAmount}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 22px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+              <span style="font-size: 14px; color: #637570">{{currency}}</span>
+            </div>
+            <button type="button" class="ss-press" onClick="{{fillAll}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{fillLabel}}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{over}}" hint-placeholder-val="{{ false }}">
+          <div class="ss-in" style="border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; background: #FBF0DD; color: #6B4600">
+            <span style="font-size: 13px; font-weight: 700; color: #956000">{{overTitle}}</span>
+            <span style="font-size: 12px">{{overBody}}</span>
+            <button type="button" role="switch" aria-checked="{{custodyOn}}" class="ss-press" onClick="{{toggleCustody}}" style="{{custodyStyle}}">{{custodyLabel}}</button>
+          </div>
+        </sc-if>
+        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px">{{err}}</span>
+        <button type="button" class="ss-press" onClick="{{save}}" disabled="{{cannot}}" style="{{saveStyle}}">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"side":{"editor":"enum","options":["lak","alek"],"default":"lak","section":"الحالة"},"person":{"editor":"enum","options":["فهد","خالد","عمر"],"default":"فهد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"remaining":{"editor":"int","default":120000,"section":"الحالة"},"offline":{"editor":"boolean","default":false,"section":"الحالة"},"candLabel":{"editor":"enum","options":["","حوالة واردة في ٥ أكتوبر"],"default":"حوالة واردة في ٥ أكتوبر","section":"الحالة"},"candAmount":{"editor":"int","default":50000,"section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":560}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // how: free (من غير عملية) · link (العملية اللي مستنية سؤال «ده سداد؟»)
+    this.state = { open: false, how: 'free', amount: '', custody: false };
+  }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const s = this.state;
+    const lak = (this.props.side ?? 'lak') !== 'alek';
+    const who = this.props.person || 'فهد';
+    const remaining = Math.max(0, Number(this.props.remaining) || 0);
+    const offline = this.props.offline === true || this.props.offline === 'true';
+    const candLabel = String(this.props.candLabel || '');
+    const candAmount = Number(this.props.candAmount) || 0;
+    const hasCand = !!candLabel && candAmount > 0;
+    const link = s.how === 'link';
+    const amt = link ? (hasCand ? candAmount : null) : this.toMinor(s.amount);
+    const extra = amt != null && amt > remaining ? amt - remaining : 0;
+    const okAmount = amt != null && amt > 0 && (extra === 0 || s.custody);
+    const err = amt != null && amt <= 0 ? (eg ? 'اكتب مبلغ أكبر من صفر.' : 'اكتب مبلغًا أكبر من صفر.')
+      : extra && !s.custody ? (eg ? 'المبلغ ما يزيدش عن المتبقي — أو سجّل الزيادة أمانة.' : 'لا يتجاوز المتبقي — أو سجّل الزيادة أمانة.')
+      : link && !hasCand ? (eg ? 'مفيش عملية مع ' + who + ' مستنية تتربط.' : 'لا عملية مع ' + who + ' بانتظار الربط.') : '';
+    const verb = lak ? (eg ? 'تحصيل' : 'تحصيل') : (eg ? 'سداد' : 'سداد');
+    const chip = (on) => 'flex: 1 1 0; min-height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const hows = [['free', eg ? 'من غير عملية' : 'بلا عملية'], ['link', eg ? 'عملية موجودة' : 'عملية موجودة']].map(([id, label]) => ({
+      label, on: s.how === id ? 'true' : 'false', style: chip(s.how === id), pick: () => this.setState({ how: id, custody: false })
+    }));
+    // الزيادة أمانة منفصلة: لك = أمانة عندك له (custody_payable) · عليك = أمانة لك عنده (مفيش نوع ليها في كوتلن — سؤال)
+    const custodyText = lak ? (eg ? 'أمانة عندك ل' : 'أمانة عندك ل') + who : (eg ? 'أمانة ليك عند ' : 'أمانة لك عند ') + who;
+    return {
+      triggerLabel: offline ? (eg ? 'محتاج نت' : 'يحتاج اتصالًا') : (lak ? (eg ? 'سجّل تحصيل' : 'سجّل تحصيلًا') : (eg ? 'سجّل سداد' : 'سجّل سدادًا')),
+      blocked: offline || remaining <= 0,
+      hasWhy: offline || remaining <= 0,
+      why: offline ? (eg ? 'التسوية بتستنى النت — مفيش تسجيل مؤقت يتشال بعدين.' : 'التسوية تنتظر الاتصال — لا تسجيل مؤقت يُلغى لاحقًا.') : (eg ? 'الدين ده خلص.' : 'سُدّد هذا الدين بالكامل.'),
+      triggerStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (offline || remaining <= 0 ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      openSheet: () => { if (!offline && remaining > 0) this.setState({ open: true, how: 'free', amount: '', custody: false }); },
+      open: s.open,
+      title: verb + (lak ? (eg ? ' من ' : ' من ') : (eg ? ' ل' : ' ل')) + who,
+      remainingLine: (eg ? 'المتبقي ' : 'المتبقي ') + this.fmt(remaining) + ' ' + cur,
+      howLabel: eg ? 'وصلت إزاي؟' : 'كيف تمّت؟', hows,
+      linkMode: link, freeMode: !link,
+      candTitle: hasCand ? candLabel + ' · ' + this.fmt(candAmount) + ' ' + cur : (eg ? 'مفيش عملية مستنية' : 'لا عملية بانتظار الربط'),
+      candSub: hasCand ? (eg ? 'العملية دي كانت مستنية سؤال «ده ' + verb + '؟» — ربطها بيجاوب عليه.' : 'كانت هذه العملية بانتظار سؤال «هل هي ' + verb + '؟» — ربطها يجيب عنه.') : (eg ? 'لما تيجي حوالة من ' + who + ' أو ليه هنسألك عنها.' : 'حين تصل حوالة من ' + who + ' أو إليه نسألك عنها.'),
+      candStyle: 'border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; ' + (hasCand ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)'),
+      amountLabel: eg ? 'المبلغ' : 'المبلغ', amountText: s.amount, currency: cur,
+      typeAmount: (e) => this.setState({ amount: e.target.value, custody: false }),
+      fillLabel: (eg ? 'المتبقي كله ' : 'المتبقي كاملًا ') + this.fmt(remaining),
+      fillAll: () => this.setState({ amount: this.fmt(remaining).replace(/,/g, ''), custody: false }),
+      over: extra > 0,
+      overTitle: (eg ? 'أكبر من المتبقي بـ ' : 'أكبر من المتبقي بـ ') + this.fmt(extra) + ' ' + cur,
+      overBody: (eg ? 'نسوّي ' : 'نسوّي ') + this.fmt(remaining) + (eg ? ' ونسجّل الزيادة أمانة منفصلة لو اخترت ده — من غير ما تنقّص أي دين تاني.' : ' ونسجّل الزيادة أمانة مستقلة إن اخترت ذلك — دون أن تُسدّد بها أي دين آخر.'),
+      custodyOn: s.custody ? 'true' : 'false',
+      custodyLabel: (s.custody ? '✓ ' : '') + (eg ? 'سجّل ' : 'سجّل ') + this.fmt(extra) + ' ' + custodyText,
+      custodyStyle: 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-align: right; ' + (s.custody ? 'color: #FFFFFF; background: #08634F' : 'color: #6B4600; background: rgba(255,255,255,0.75)'),
+      toggleCustody: () => this.setState({ custody: !s.custody }),
+      err: s.amount || link ? err : '',
+      cannot: !okAmount || (link && !hasCand),
+      saveLabel: (eg ? 'سجّل ال' : 'سجّل ال') + verb + (okAmount ? ' · ' + this.fmt(Math.min(amt, remaining)) : ''),
+      saveStyle: 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (okAmount && !(link && !hasCand) ? 'cursor: pointer' : 'opacity: 0.45; cursor: default'),
+      save: () => {
+        if (!okAmount || (link && !hasCand)) return;
+        this.setState({ open: false });
+        if (typeof this.props.onSave === 'function') this.props.onSave(Math.min(amt, remaining), extra, link);
+      },
+      closeSheet: () => this.setState({ open: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

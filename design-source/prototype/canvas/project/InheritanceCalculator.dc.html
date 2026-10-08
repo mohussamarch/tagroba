@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حاسبة الورث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}a:hover{color:#064B40}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.t-veil{animation:t-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.t-up{animation:t-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.t-toast{animation:t-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes t-fade{from{opacity:0}to{opacity:1}}
+@keyframes t-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes t-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.t-up{animation:t-fade 150ms both}.t-toast{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 120px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Investment.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+        <span style="font-size: 12px; color: #637570">{{whoseLine}}</span>
+      </div>
+      <a href="InheritanceSaved.dc.html" class="m-press" style="height: 44px; padding: 0 12px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; text-decoration: none; color: #08634F; background: rgba(8,99,79,0.08)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path></svg>{{savedLabel}}</a>
+    </div>
+    <span style="font-size: 12px; padding: 8px 12px; border-radius: 14px; color: #08634F; background: #DCEBD6">{{lawLine}}</span>
+
+    <nav aria-label="{{stepsLabel}}" style="display: flex; gap: 6px">
+      <sc-for list="{{steps}}" as="sp" hint-placeholder-count="4">
+        <button type="button" class="m-press" onClick="{{sp.go}}" aria-current="{{sp.current}}" style="{{sp.style}}"><span style="{{sp.bar}}"></span><span>{{sp.label}}</span></button>
+      </sc-for>
+    </nav>
+
+    <sc-if value="{{onWhose}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{whoseQ}}</h2>
+        <sc-for list="{{whoseOpts}}" as="wo" hint-placeholder-count="2">
+          <button type="button" role="radio" aria-checked="{{wo.on}}" class="m-press" onClick="{{wo.pick}}" style="{{wo.style}}"><span style="font-size: 16px; font-weight: 700">{{wo.label}}</span><span style="font-size: 12px; color: #637570">{{wo.sub}}</span></button>
+        </sc-for>
+        <sc-if value="{{isOther}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{people}}" as="pp" hint-placeholder-count="5">
+                <button type="button" aria-pressed="{{pp.on}}" class="m-press" onClick="{{pp.pick}}" style="{{pp.style}}">{{pp.name}}</button>
+              </sc-for>
+            </div>
+            <input type="text" aria-label="{{newNameLabel}}" placeholder="{{newNameLabel}}" value="{{person}}" onInput="{{typePerson}}" maxlength="40" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{onItems}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{itemsQ}}</h2>
+        <span style="font-size: 13px; color: #637570">{{itemsIntro}}</span>
+        <button type="button" class="m-press" onClick="{{bringMine}}" disabled="{{cantBring}}" style="{{bringStyle}}">{{bringLabel}}</button>
+        <span style="font-size: 12px; color: #637570">{{bringNote}}</span>
+        <sc-for list="{{rows}}" as="ro" hint-placeholder-count="2">
+          <div style="border-radius: 20px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <input type="text" aria-label="{{ro.nameLabel}}" placeholder="{{ro.nameLabel}}" value="{{ro.name}}" onInput="{{ro.typeName}}" maxlength="60" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; background: rgba(25,61,51,0.04); outline: none">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <div style="{{ro.valueBox}}">
+                <input type="text" inputmode="decimal" dir="ltr" aria-label="{{ro.valueLabel}}" placeholder="{{ro.valuePh}}" value="{{ro.value}}" onInput="{{ro.typeValue}}" style="flex: 1 1 auto; min-width: 0; height: 44px; border: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+                <span style="font-size: 12px; color: #637570">{{cur}}</span>
+              </div>
+              <button type="button" class="m-press" onClick="{{ro.remove}}" aria-label="{{ro.removeLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #BE3D48; cursor: pointer; background: rgba(190,61,72,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button>
+            </div>
+            <span style="{{ro.hintStyle}}">{{ro.hint}}</span>
+          </div>
+        </sc-for>
+        <button type="button" class="m-press" onClick="{{addItem}}" style="min-height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{addLabel}}</button>
+        <span style="font-size: 13px; font-weight: 700; color: #193D33">{{itemsTotal}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{onHeirs}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="InheritanceHeirs" space="{{spaceName}}" data="{{heirsJson}}" on-change="{{setHeirs}}" hint-size="350px,900px"></dc-import>
+    </sc-if>
+    <sc-if value="{{onBefore}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="InheritanceBefore" space="{{spaceName}}" law="{{law}}" data="{{beforeJson}}" on-change="{{setBefore}}" hint-size="350px,900px"></dc-import>
+    </sc-if>
+    <sc-if value="{{onResult}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="InheritanceResult" space="{{spaceName}}" calc="{{calcJson}}" hint-size="350px,1400px"></dc-import>
+    </sc-if>
+    <span style="font-size: 12px; font-weight: 700; color: #BE3D48">{{stepErr}}</span>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 20px 26px; display: flex; gap: 8px; background: linear-gradient(180deg, rgba(239,243,237,0), rgba(239,243,237,0.94) 30%)">
+    <sc-if value="{{hasBack}}" hint-placeholder-val="{{ true }}">
+      <button type="button" class="m-press" onClick="{{backAct}}" style="flex: 1 1 0; height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)">{{backLabel}}</button>
+    </sc-if>
+    <button type="button" class="m-press" onClick="{{mainAct}}" style="flex: 2 1 0; height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{mainLabel}}</button>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="t-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="t-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <input type="text" aria-label="{{sheetTitle}}" value="{{saveName}}" onInput="{{typeSaveName}}" maxlength="60" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; background: rgba(25,61,51,0.05); outline: none">
+        <button type="button" class="m-press" onClick="{{doSave}}" style="height: 48px; margin-top: 4px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 96px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="t-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // data = null ⇒ البداية حسب الحالة والبلد · حسبة محفوظة بتيجي من «الحسبات المحفوظة» عن طريق sessionStorage (زي OperationDetail)
+    let opened = null;
+    try { opened = JSON.parse(window.sessionStorage.getItem('masroufy-inherit-open') || 'null'); window.sessionStorage.removeItem('masroufy-inherit-open'); } catch (e) { opened = null; }
+    this.state = { data: opened && opened.items ? opened : null, step: opened && opened.items ? 5 : null, err: '', sheet: false, saveName: '', toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(t) { const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!s) return null; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  mine(eg) { // «هات أملاكي من مصروفي»: الأرصدة الموجبة + الأصول بأسعار اليوم (نفس أرقام HeroBanks وInvestment — مخترعة)
+    return eg ? [['البنك الأهلي المصري — الرصيد', '16400'], ['QNB مصر — الرصيد', '6200'], ['الكاش', '2700'], ['دهب عيار ٢١ — ٨٠ جرام', '420000'], ['محفظة الأسهم', '660000'], ['الشقة', '3840000']]
+      : [['مصرف الراجحي — الرصيد', '4120'], ['البنك الأهلي السعودي — الرصيد', '1830'], ['مصرف الإنماء — الرصيد', '500'], ['الكاش', '900'], ['ذهب عيار ٢١ — ١٢٠ جرام', '52560'], ['محفظة الأسهم', '89000'], ['شقة الياسمين', '576000']];
+  }
+  preset() {
+    const st = this.props.state ?? 'عادي', eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const before = { funeral: '', debts: '', bequest: '', toHeir: false, consent: false, pre: { on: false, kind: 'son', sons: 0, daughters: 0, gift: '' }, special: [] };
+    const d = { whose: 'mine', person: '', country: eg ? 'EG' : 'SA', items: [], heirs: {}, names: {}, before };
+    if (st === 'عادي') return d;
+    d.items = this.mine(eg).slice(-3).map(([name, v]) => ({ name, v }));
+    if (st === 'خطأ') d.heirs = { husband: 1, wife: 1, son: 1 };
+    else if (eg) d.heirs = { gf: 1, fs: 1, pb: 1 };
+    else { d.heirs = { wife: 1, son: 1, daughter: 1 }; d.before = Object.assign({}, before, { special: ['pregnancy'] }); }
+    return d;
+  }
+  renderVals() {
+    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state, d = s.data || this.preset(), step = s.step || ((this.props.state ?? 'عادي') === 'عادي' ? 1 : 5);
+    const eg = d.country === 'EG', cur = eg ? 'ج.م' : 'ر.س';
+    const put = (patch, extra) => this.setState(Object.assign({ data: Object.assign({}, d, patch), err: '' }, extra || {}));
+    const go = (k) => this.setState({ data: d, step: k, err: '' });
+    const chip = (on) => 'min-height: 44px; padding: 4px 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
+    const itemsMinor = d.items.map((x) => ({ name: String(x.name || '').trim(), v: this.toMinor(x.v) }));
+    const total = itemsMinor.reduce((a, x) => a + (x.v || 0), 0);
+    const check = () => {
+      if (step === 1 && d.whose === 'other' && !String(d.person || '').trim()) return t('اختر شخصًا من أشخاصك أو اكتب اسمًا', 'اختار حد من أشخاصك أو اكتب اسم');
+      if (step === 2 && !d.items.length) return t('أضف شيئًا واحدًا على الأقل من التركة', 'ضيف حاجة واحدة على الأقل من التركة');
+      if (step === 2 && itemsMinor.some((x) => !x.name)) return t('اكتب اسم كل شيء في التركة', 'اكتب اسم كل حاجة في التركة');
+      if (step === 2 && itemsMinor.some((x) => !x.v)) return t('اكتب قيمة تقريبية لكل شيء، أو احذفه', 'اكتب قيمة تقريبية لكل حاجة، أو امسحها');
+      return '';
+    };
+    const lawSa = 'بقانون السعودية: نظام الأحوال الشخصية (١٤٤٣هـ)', lawEg = t('بقانون مصر: قانون المواريث ٧٧ لسنة ١٩٤٣ والوصية ٧١ لسنة ١٩٤٦', 'بقانون مصر: قانون المواريث ٧٧ لسنة ١٩٤٣ والوصية ٧١ لسنة ١٩٤٦');
+    const foreign = eg !== ui;
+    const LBL = [t('تركة مَن', 'تركة مين'), t('الأملاك', 'الحاجات'), 'الورثة', t('قبل القسمة', 'قبل القسمة')];
+    const people = ['ليلى', 'يوسف', 'سارة', 'خالد', 'أحمد'];
+    const calc = { country: d.country, items: itemsMinor.map((x) => ({ name: x.name, v: x.v || 0 })), heirs: d.heirs, names: d.names, funeral: this.toMinor(d.before.funeral) || 0, debts: this.toMinor(d.before.debts) || 0,
+      bequest: this.toMinor(d.before.bequest) || 0, toHeir: !!d.before.toHeir, consent: !!d.before.consent, special: d.before.special || [],
+      pre: eg && d.before.pre && d.before.pre.on ? { kind: d.before.pre.kind, sons: d.before.pre.sons || 0, daughters: d.before.pre.daughters || 0, gift: this.toMinor(d.before.pre.gift) || 0 } : null };
+    const day = '٧ أكتوبر', defName = (d.whose === 'mine' ? t('تركتي', 'تركتي') : t('تركة ', 'تركة ') + d.person) + ' — ' + day;
+    return {
+      title: t('حاسبة الورث', 'حاسبة الورث'), savedLabel: t('المحفوظة', 'المتحفظة'),
+      whoseLine: step === 1 ? t('خطوة بخطوة، والقانون من البلد تلقائيًا', 'خطوة خطوة، والقانون من البلد لوحده') : d.whose === 'mine' ? t('تركتي أنا', 'تركتي أنا') : t('تركة ', 'تركة ') + d.person,
+      lawLine: (eg ? lawEg : lawSa) + (foreign ? t(' — حسبة محفوظة من ', ' — حسبة متحفظة من ') + (eg ? 'مصر' : 'السعودية') : ''),
+      stepsLabel: t('خطوات الحسبة', 'خطوات الحسبة'), cur, spaceName: ui ? 'مصر' : 'السعودية', law: d.country,
+      steps: LBL.map((label, i) => { const k = i + 1, on = step === k, done = step > k; return { label, current: on ? 'step' : 'false', go: () => { if (done) go(k); },
+        style: 'flex: 1 1 0; min-width: 0; border: 0; padding: 0; background: transparent; font: inherit; font-size: 11px; display: flex; flex-direction: column; gap: 6px; text-align: right; cursor: ' + (done ? 'pointer' : 'default') + '; color: ' + (on ? '#08634F; font-weight: 700' : done ? '#193D33' : '#8A9A95'),
+        bar: 'display: block; height: 6px; border-radius: 3px; background: ' + (on || done ? 'linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'rgba(25,61,51,0.10)') }; }),
+      onWhose: step === 1, onItems: step === 2, onHeirs: step === 3, onBefore: step === 4, onResult: step === 5,
+      whoseQ: t('تركة مَن تحسب؟', 'بتحسب تركة مين؟'),
+      whoseOpts: [['mine', t('تركتي أنا', 'تركتي أنا'), t('تقدر تجلب أملاكك من مصروفي بلمسة', 'تقدر تجيب أملاكك من مصروفي بلمسة')], ['other', t('تركة شخص آخر', 'تركة حد تاني'), t('من أشخاصك أو اسم جديد — الحساب نفسه', 'من أشخاصك أو اسم جديد — نفس الحساب')]].map(([id, label, sub]) => ({ label, sub, on: d.whose === id ? 'true' : 'false', pick: () => put({ whose: id }),
+        style: 'min-height: 72px; border: 0; padding: 12px 16px; border-radius: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font: inherit; color: #193D33; text-align: right; cursor: pointer; ' + (d.whose === id ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 14px 32px rgba(29,54,53,0.09)') })),
+      isOther: d.whose === 'other',
+      people: people.map((p) => ({ name: p, on: d.person === p ? 'true' : 'false', style: chip(d.person === p), pick: () => put({ person: p }) })),
+      newNameLabel: t('أو اكتب اسمًا جديدًا', 'أو اكتب اسم جديد'), person: people.indexOf(d.person) >= 0 ? '' : d.person, typePerson: (e) => put({ person: String(e.target.value).slice(0, 40) }),
+      itemsQ: t('ماذا يترك؟', 'سايب إيه؟'), itemsIntro: t('اكتب اسم كل شيء وقيمته التقريبية. كل رقم يتعدّل.', 'اكتب اسم كل حاجة وقيمتها التقريبية. كل رقم بيتعدّل.'),
+      bringLabel: t('هات أملاكي من مصروفي', 'هات أملاكي من مصروفي'), cantBring: d.whose !== 'mine',
+      bringStyle: 'min-height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.22);' + (d.whose !== 'mine' ? ' opacity: 0.45; cursor: default; box-shadow: none' : ''),
+      bringNote: d.whose !== 'mine' ? t('جلب الأملاك لتركتك أنت فقط.', 'جلب الأملاك لتركتك إنت بس.') : t('الأرصدة الموجبة والذهب والأسهم والعقار بأسعار اليوم. الرصيد بالسالب يُكتب في الديون.', 'الأرصدة الموجبة والدهب والأسهم والعقار بأسعار النهارده. الرصيد بالسالب يتكتب في الديون.'),
+      bringMine: () => { if (d.whose !== 'mine') return; const have = d.items.map((x) => x.name), add = this.mine(eg).filter(([nm]) => have.indexOf(nm) < 0).map(([name, v]) => ({ name, v }));
+        put({ items: d.items.concat(add) }); this.say(add.length ? t('جُلبت ', 'اتجابت ') + n(add.length) + t(' أشياء بأسعار اليوم — كل رقم يتعدّل', ' حاجات بأسعار النهارده — كل رقم بيتعدّل') : t('أملاكك موجودة في القائمة بالفعل', 'أملاكك موجودة في القايمة خلاص')); },
+      rows: d.items.map((x, i) => { const v = this.toMinor(x.v); return { name: x.name, value: x.v, nameLabel: t('اسم الشيء', 'اسم الحاجة'), valueLabel: t('القيمة التقريبية', 'القيمة التقريبية'), valuePh: t('غير معروف', 'مش معروف'),
+        typeName: (e) => put({ items: d.items.map((y, j) => (j === i ? Object.assign({}, y, { name: String(e.target.value).slice(0, 60) }) : y)) }),
+        typeValue: (e) => put({ items: d.items.map((y, j) => (j === i ? Object.assign({}, y, { v: e.target.value }) : y)) }),
+        remove: () => put({ items: d.items.filter((y, j) => j !== i) }), removeLabel: t('احذف ', 'امسح ') + (x.name || t('هذا الشيء', 'الحاجة دي')),
+        valueBox: 'flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 14px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (v ? '1px rgba(204,216,204,0.9)' : '1.5px rgba(149,96,0,0.55)'),
+        hint: v ? '' : t('غير معروف — اكتب قيمته', 'مش معروف — اكتب قيمته'), hintStyle: 'font-size: 12px; font-weight: 700; color: #956000' }; }),
+      addLabel: t('+ أضف شيئًا', '+ ضيف حاجة'), addItem: () => put({ items: d.items.concat([{ name: '', v: '' }]) }),
+      itemsTotal: d.items.length ? t('المجموع: ', 'المجموع: ') + this.fmt(total) + ' ' + cur : '',
+      heirsJson: JSON.stringify({ heirs: d.heirs, names: d.names }), setHeirs: (x) => { if (x && x.heirs) put({ heirs: x.heirs, names: x.names || {} }); },
+      beforeJson: JSON.stringify(d.before), setBefore: (x) => { if (x && x.special) put({ before: x }); },
+      calcJson: JSON.stringify(calc),
+      stepErr: s.err,
+      hasBack: step > 1, backLabel: step === 5 ? t('عدّل', 'عدّل') : t('السابق', 'اللي قبله'), backAct: () => go(step === 5 ? 3 : step - 1),
+      mainLabel: step === 5 ? t('احفظ الحسبة', 'احفظ الحسبة') : step === 4 ? t('احسب', 'احسب') : t('التالي', 'التالي'),
+      mainAct: () => { if (step === 5) { this.setState({ data: d, sheet: true, saveName: d.name || defName }); return; } const e = check(); if (e) { this.setState({ data: d, err: e }); return; } go(step + 1); },
+      sheet: s.sheet, sheetTitle: t('اسم الحسبة', 'اسم الحسبة'),
+      sheetBody: t('تُحفظ على حسابك وتظهر على كل أجهزتك. نحفظ المدخلات فقط، والنتيجة تُحسب من جديد عند الفتح.', 'بتتحفظ على حسابك وتبان على كل أجهزتك. بنحفظ المدخلات بس، والنتيجة بتتحسب من جديد وقت الفتح.'),
+      saveName: s.saveName, typeSaveName: (e) => this.setState({ saveName: String(e.target.value).slice(0, 60) }), saveLabel: t('احفظ', 'احفظ'),
+      doSave: () => {
+        const name = String(s.saveName || '').trim() || defName, id = d.id || 'n' + String(Date.now()), entry = Object.assign({}, d, { id, name, createdAt: d.createdAt || '2026-10-07', updatedAt: '2026-10-07' });
+        try { const q = JSON.parse(window.sessionStorage.getItem('masroufy-inherit-new') || '[]').filter((x) => x.id !== id); q.push(entry); window.sessionStorage.setItem('masroufy-inherit-new', JSON.stringify(q)); } catch (e) {}
+        this.setState({ data: entry, sheet: false }); this.say(t('حُفظت «', 'اتحفظت «') + name + t('» — تجدها في «المحفوظة»', '» — هتلاقيها في «المتحفظة»'));
+      },
+      closeSheet: () => this.setState({ sheet: false }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

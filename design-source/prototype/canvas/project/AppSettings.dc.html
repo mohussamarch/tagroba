@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>القفل واللغة والمحتوى — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.n-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}
+.n-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.a-flip{transition:transform 420ms cubic-bezier(.18,.9,.28,1.04)}
+.m-in{animation:m-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes m-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.a-veil{animation:a-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.a-up{animation:a-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.a-toast{animation:a-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes a-fade{from{opacity:0}to{opacity:1}}
+@keyframes a-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes a-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.n-track,.n-knob,.a-flip{transition:none}.m-press:active{transform:none}.m-in{animation:none}.a-up{animation:a-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <h2 style="margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #637570">{{lockHead}}</h2>
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-7a2 2 0 0 1 2 -2ZM7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{lockTitle}}</span><span style="font-size: 12px; color: #637570">{{lockDesc}}</span></span>
+        <button type="button" role="switch" aria-checked="{{lockChecked}}" aria-label="{{lockTitle}}" aria-disabled="{{lockNA}}" onClick="{{lockTap}}" style="{{lockBtn}}">
+          <span class="n-track" style="{{lockTrack}}"><span class="n-knob" style="{{lockKnob}}"></span></span>
+        </button>
+      </div>
+      <sc-if value="{{lockOn}}" hint-placeholder-val="{{ false }}">
+        <div class="m-in" style="display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+          <sc-for list="{{lockFacts}}" as="lf" hint-placeholder-count="3">
+            <span style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#13764D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px"><path d="M20 6 9 17l-5-5"></path></svg><span>{{lf}}</span></span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{lockNA}}" hint-placeholder-val="{{ false }}">
+        <div role="note" style="border-radius: 16px; padding: 10px 12px; font-size: 13px; color: #6B4600; background: #FBF0DD">{{naText}}</div>
+      </sc-if>
+      <sc-if value="{{lockErr}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" class="m-in" style="border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; background: #FBF0DD">
+          <span style="flex: 1 1 auto; font-size: 13px; color: #6B4600">{{errText}}</span>
+          <button type="button" class="m-press" onClick="{{retry}}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.8); flex-shrink: 0">{{retryLabel}}</button>
+        </div>
+      </sc-if>
+    </div>
+
+    <h2 style="margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #637570">{{langHead}}</h2>
+    <div role="radiogroup" aria-label="{{langHead}}" style="border-radius: 22px; padding: 4px 16px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{langs}}" as="lg" hint-placeholder-count="2">
+        <button type="button" role="radio" aria-checked="{{lg.checked}}" class="m-press" onClick="{{lg.pick}}" style="{{lg.rowStyle}}">
+          <span style="{{lg.dot}}"><span style="{{lg.dotIn}}"></span></span>
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span lang="{{lg.code}}" style="font-size: 15px; font-weight: 700">{{lg.name}}</span><span style="font-size: 12px; color: #637570">{{lg.alt}}</span></span>
+            <span style="font-size: 12px; color: #637570">{{lg.desc}}</span>
+          </span>
+        </button>
+      </sc-for>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0 14px; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="flex: 1 1 auto; font-size: 12px; color: #637570">{{dirNote}}</span>
+        <div aria-hidden="true" style="width: 120px; flex-shrink: 0; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: rgba(25,61,51,0.05)">
+          <sc-for list="{{dirRows}}" as="dr" hint-placeholder-count="2">
+            <span class="a-flip" style="{{dr}}"><span style="width: 16px; height: 16px; border-radius: 6px; flex-shrink: 0; background: #A6DEC1"></span><span style="flex: 1 1 auto; height: 6px; border-radius: 3px; background: rgba(25,61,51,0.22)"></span><span style="width: 18px; height: 6px; border-radius: 3px; flex-shrink: 0; background: rgba(190,61,72,0.45)"></span></span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #637570">{{islHead}}</h2>
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{islTitle}}</span><span style="font-size: 12px; color: #637570">{{islDesc}}</span></span>
+        <button type="button" role="switch" aria-checked="{{islChecked}}" aria-label="{{islTitle}}" onClick="{{islTap}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center">
+          <span class="n-track" style="{{islTrack}}"><span class="n-knob" style="{{islKnob}}"></span></span>
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="font-size: 12px; font-weight: 700; color: #637570">{{islListHead}}</span>
+        <sc-for list="{{islItems}}" as="ii" hint-placeholder-count="3">
+          <span style="{{ii.style}}"><span aria-hidden="true" style="{{ii.dot}}"></span>{{ii.label}}</span>
+        </sc-for>
+        <span style="font-size: 12px; color: #637570">{{islNote}}</span>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{confirming}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="a-veil" onClick="{{closeConfirm}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{confirmTitle}}" class="a-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 11px; color: #637570">{{osNote}}</span>
+        <span style="font-size: 17px; font-weight: 700">{{confirmTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{confirmSub}}</span>
+        <button type="button" class="m-press" onClick="{{touch}}" aria-label="{{touchLabel}}" style="width: 72px; height: 72px; margin: 6px 0; border: 0; border-radius: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: #DCEBD6"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4M14 13.12c0 2.38 0 6.38-1 8.88M17.29 21.02c.12-.6.43-2.3.5-3.02M2 12a10 10 0 0 1 18-6M2 16h.01M21.8 16c.2-2 .131-5.354 0-6M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2M8.65 22c.21-.66.45-1.32.57-2M9 6.8a6 6 0 0 1 9 5.2v2"></path></svg></button>
+        <span style="font-size: 12px; color: #637570">{{touchLabel}}</span>
+        <button type="button" class="m-press" onClick="{{cancelConfirm}}" style="align-self: stretch; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="a-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // القفل مقفول في الأول (§21) · المحتوى الإسلامي ظاهر مبدئيًا (§62-د) · «خطأ» = أول تأكيد بيفشل والإعادة بتنجح
+    this.state = { lock: false, confirm: null, failed: false, tries: 0, lang: 'ar', islamic: true, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const s = this.state;
+    const na = st === 'غير متاح';
+    const sw = (on, dim) => ({
+      track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (on ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)') + (dim ? '; opacity: 0.45' : ''),
+      knob: 'position: absolute; top: 2px; right: ' + (on ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)'
+    });
+    const lk = sw(s.lock, na), isl = sw(s.islamic, false);
+    // نصوص القفل من Texts*.kt: LOCK_CONFIRM_ENABLE/DISABLE · LOCK_UNLOCK_SUBTITLE · LOCK_FAILED · LOCK_CANCELLED · LOCK_UNAVAILABLE
+    const T = {
+      on: eg ? 'أكّد علشان تشغّل قفل مصروفي' : 'أكّد لتفعيل قفل مصروفي',
+      off: eg ? 'أكّد علشان توقف قفل مصروفي' : 'أكّد لإيقاف قفل مصروفي',
+      failed: eg ? 'ما اتأكدش إنك صاحب الجوال — ما اتغيّرش حاجة.' : 'تعذّر التحقق من أنك صاحب الجوال — لم يتغير شيء.',
+      cancelled: eg ? 'اتلغى التأكيد — ما اتغيّرش حاجة.' : 'أُلغي التأكيد — لم يتغير شيء.'
+    };
+    const finish = () => {
+      const want = s.confirm === 'on';
+      if (st === 'خطأ' && s.tries === 0) { this.setState({ confirm: null, failed: true, tries: 1 }); return; }
+      this.setState({ confirm: null, failed: false, lock: want });
+      this.say(want ? (eg ? 'القفل اشتغل' : 'تم تفعيل القفل') : (eg ? 'القفل اتوقف' : 'تم إيقاف القفل'));
+    };
+    const arName = eg ? 'المصري' : 'الفصحى المختصرة';
+    const langDefs = [
+      ['ar', 'العربية', '', 'ar', eg ? 'لوحده حسب البلد: السعودية بالفصحى المختصرة، ومصر بالمصري. دلوقتي: ' + arName + '.' : 'تلقائيًا حسب البلد: السعودية بالفصحى المختصرة، ومصر باللهجة المصرية. الآن: ' + arName + '.'],
+      ['en', 'English', eg ? 'الإنجليزي' : 'الإنجليزية', 'en', eg ? 'الشاشة بتتقلب وتبدأ من الشمال.' : 'تنقلب الشاشة فتبدأ من اليسار.']
+    ];
+    const langs = langDefs.map(([id, name, alt, code, desc], i) => {
+      const on = s.lang === id;
+      return {
+        name, alt, code, desc, checked: on ? 'true' : 'false',
+        pick: () => { if (s.lang === id) return; this.setState({ lang: id }); this.say(eg ? 'اللغة بتتطبق لما تفتح البرنامج تاني.' : 'تُطبَّق اللغة عند فتح التطبيق مرة أخرى.'); },
+        rowStyle: 'width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0;' + (i === 0 ? ' border-bottom: 1px solid rgba(204,216,204,0.55);' : ''),
+        dot: 'width: 22px; height: 22px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.5px ' + (on ? '#08634F' : 'rgba(25,61,51,0.30)'),
+        dotIn: 'width: 12px; height: 12px; border-radius: 6px; background: ' + (on ? '#08634F' : 'transparent')
+      };
+    });
+    const ltr = s.lang === 'en';
+    const row = 'display: flex; align-items: center; gap: 6px; flex-direction: ' + (ltr ? 'row-reverse' : 'row');
+    const islDefs = [eg ? 'الزكاة في الاستثمار وميعادها وإشعاراتها' : 'الزكاة في الاستثمار وموعدها وتنبيهاتها', eg ? 'رمضان والعيدين في التقويم' : 'رمضان والعيدان في التقويم'];
+    return {
+      title: eg ? 'القفل واللغة والمحتوى' : 'القفل واللغة والمحتوى',
+      lockHead: 'القفل',
+      lockTitle: eg ? 'قفل البصمة' : 'قفل البصمة',
+      lockDesc: eg ? 'بيتقفل لما تفتح البرنامج، وبعد ٥ دقايق في الخلفية.' : 'يُقفل عند فتح التطبيق، وبعد ٥ دقائق في الخلفية.',
+      lockChecked: s.lock ? 'true' : 'false', lockOn: s.lock && !na, lockNA: na,
+      lockBtn: 'width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; cursor: ' + (na ? 'default' : 'pointer'),
+      lockTrack: lk.track, lockKnob: lk.knob,
+      lockTap: () => { if (na) return; this.setState({ confirm: s.lock ? 'off' : 'on' }); },
+      lockFacts: eg
+        ? ['الرجوع قبل ٥ دقايق مش بيسأل.', 'لو البصمة ما نفعتش: رمز قفل الجوال.', 'البرنامج بيفضل متغطي ببلور لحد ما تتأكد.']
+        : ['العودة قبل ٥ دقائق لا تطلب البصمة.', 'إن تعذّرت البصمة: رمز قفل الجوال.', 'يبقى التطبيق خلف ضبابية حتى التحقق.'],
+      naText: eg ? 'الجوال مالوش قفل شاشة ولا بصمة متسجلة. اعمل قفل شاشة من إعدادات الجوال الأول.' : 'لا قفل شاشة ولا بصمة مسجلة في الجوال. فعّل قفل الشاشة من إعدادات الجوال أولًا.',
+      lockErr: s.failed && !na, errText: T.failed,
+      retryLabel: eg ? 'جرّب تاني' : 'أعد المحاولة',
+      retry: () => this.setState({ confirm: s.lock ? 'off' : 'on' }),
+      langHead: 'اللغة', langs,
+      dirNote: ltr ? (eg ? 'اتجاه الشاشة: من الشمال لليمين.' : 'اتجاه الشاشة: من اليسار إلى اليمين.') : (eg ? 'اتجاه الشاشة: من اليمين للشمال.' : 'اتجاه الشاشة: من اليمين إلى اليسار.'),
+      dirRows: [row, row],
+      islHead: eg ? 'المحتوى الإسلامي' : 'المحتوى الإسلامي',
+      islTitle: eg ? 'اظهر المحتوى الإسلامي' : 'إظهار المحتوى الإسلامي',
+      islDesc: s.islamic ? (eg ? 'ظاهر' : 'ظاهر') : (eg ? 'مخفي' : 'مخفي'),
+      islChecked: s.islamic ? 'true' : 'false', islTrack: isl.track, islKnob: isl.knob,
+      islTap: () => { const v = !s.islamic; this.setState({ islamic: v }); this.say(v ? (eg ? 'المحتوى الإسلامي ظاهر' : 'أصبح المحتوى الإسلامي ظاهرًا') : (eg ? 'المحتوى الإسلامي اتخفى' : 'أُخفي المحتوى الإسلامي')); },
+      islListHead: s.islamic ? (eg ? 'بيظهر:' : 'يظهر:') : (eg ? 'مخفي دلوقتي:' : 'مخفي الآن:'),
+      islItems: islDefs.map((label) => ({ label,
+        style: 'display: flex; align-items: center; gap: 8px; font-size: 13px; color: ' + (s.islamic ? '#193D33' : '#637570') + (s.islamic ? '' : '; text-decoration: line-through'),
+        dot: 'width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: ' + (s.islamic ? '#13764D' : 'rgba(25,61,51,0.25)') })),
+      islNote: eg ? 'إخفا بس — مفيش حاجة بتتمسح، ولما ترجّعه بيرجع زي ما كان.' : 'إخفاء فقط — لا يُحذف شيء، ويعود كما كان عند إظهاره.',
+      confirming: !!s.confirm,
+      osNote: eg ? 'نافذة نظام الجوال — شكلها بيختلف من جهاز للتاني' : 'نافذة نظام الجوال — يختلف شكلها من جهاز لآخر',
+      confirmTitle: s.confirm === 'off' ? T.off : T.on,
+      confirmSub: 'بالبصمة أو برمز الجوال',
+      touchLabel: eg ? 'المس الحساس' : 'المس المستشعر',
+      touch: finish,
+      cancelLabel: eg ? 'إلغاء' : 'إلغاء',
+      cancelConfirm: () => { this.setState({ confirm: null }); this.say(T.cancelled); },
+      closeConfirm: () => { this.setState({ confirm: null }); this.say(T.cancelled); },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

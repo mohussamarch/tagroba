@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تسجيل النقوط — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.nq-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.nq-press:active{transform:scale(.97)}
+.nq-veil{animation:nq-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.nq-up{animation:nq-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.nq-in{animation:nq-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes nq-fade{from{opacity:0}to{opacity:1}}
+@keyframes nq-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes nq-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.nq-press{transition:none}.nq-press:active{transform:none}.nq-up,.nq-in{animation:nq-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="nq-press" onClick="{{openSheet}}" style="width: 100%; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{openLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="nq-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="nq-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 94%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+        <div role="radiogroup" aria-label="{{title}}" style="display: flex; gap: 8px">
+          <sc-for list="{{modes}}" as="md" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{md.on}}" class="nq-press" onClick="{{md.pick}}" style="{{md.style}}">{{md.label}}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{cashMode}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 13px; font-weight: 700">{{walletLabel}}</span>
+            <div role="radiogroup" aria-label="{{walletLabel}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{wallets}}" as="wl" hint-placeholder-count="4">
+                <button type="button" role="radio" aria-checked="{{wl.on}}" class="nq-press" onClick="{{wl.pick}}" style="{{wl.style}}">{{wl.label}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 13px; font-weight: 700">{{rowsLabel}}</span>
+            <sc-for list="{{rows}}" as="rw" hint-placeholder-count="2">
+              <div class="nq-in" style="display: flex; gap: 8px; align-items: center">
+                <input type="text" aria-label="{{rw.nameLabel}}" placeholder="{{rw.nameLabel}}" value="{{rw.name}}" onInput="{{rw.typeName}}" maxlength="80" style="flex: 3 1 0; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+                <input type="text" inputmode="decimal" dir="ltr" aria-label="{{rw.amountLabel}}" placeholder="0.00" value="{{rw.amount}}" onInput="{{rw.typeAmount}}" style="flex: 2 1 0; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; text-align: right; font-variant-numeric: tabular-nums; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+                <button type="button" class="nq-press" onClick="{{rw.remove}}" disabled="{{rw.only}}" aria-label="{{rw.removeLabel}}" style="{{rw.removeStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+              </div>
+            </sc-for>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+              <button type="button" class="nq-press" onClick="{{addRow}}" style="height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{addRowLabel}}</button>
+              <sc-for list="{{people}}" as="pp" hint-placeholder-count="4">
+                <button type="button" class="nq-press" onClick="{{pp.pick}}" style="height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{pp.name}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 12px; color: #637570">{{sumLine}}</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{linkMode}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{cands}}" as="cd" hint-placeholder-count="2">
+              <button type="button" role="radio" aria-checked="{{cd.on}}" class="nq-press" onClick="{{cd.pick}}" style="{{cd.style}}">
+                <span style="display: flex; justify-content: space-between; gap: 8px; width: 100%"><span style="font-size: 14px; font-weight: 700">{{cd.label}}</span><span dir="ltr" style="{{cd.amountStyle}}">{{cd.amount}}</span></span>
+                <span style="font-size: 12px; color: #637570">{{cd.sub}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <span style="font-size: 12px; color: #637570">{{kindNote}}</span>
+        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px">{{err}}</span>
+        <button type="button" class="nq-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mine":{"editor":"boolean","default":true,"section":"الحالة"},"host":{"editor":"enum","options":["","خالد","سالم"],"default":"","section":"الحالة"},"condolence":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":60}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, mode: 'cash', wallet: 0, rows: [], cand: null, err: '' }; }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  mine() { return !(this.props.mine === false || this.props.mine === 'false'); }
+  setRow(i, patch) { this.setState({ rows: this.state.rows.map((r, j) => (j === i ? Object.assign({}, r, patch) : r)), err: '' }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state, mine = this.mine(), host = this.props.host || '';
+    const cond = this.props.condolence === true || this.props.condolence === 'true';
+    const outWord = cond ? (eg ? 'اللي ادّيته' : 'ما قدّمته') : (eg ? 'اللي نقّطته' : 'ما نقّطته');
+    const chip = (on) => 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const W = eg ? ['الكاش', 'البنك الأهلي المصري', 'QNB مصر'] : ['الكاش', 'مصرف الراجحي', 'البنك الأهلي السعودي', 'مصرف الإنماء'];
+    // مخترعة · عمليات موجودة لسه ما اتربطتش (جاية لحدثك · طالعة لحدث حد تاني)
+    const C = mine ? [
+      { who: 'سالم', label: eg ? 'حوالة جاتلك من سالم' : 'حوالة واردة من سالم', sub: eg ? 'النهارده · مستنية في المراجعة' : 'اليوم · بانتظارك في المراجعات', amt: 150000 * k },
+      { who: 'ريم', label: eg ? 'حوالة جاتلك من ريم' : 'حوالة واردة من ريم', sub: eg ? '٤ أكتوبر · البنك' : '٤ أكتوبر · حساب بنكي', amt: 20000 * k }
+    ] : [
+      { who: host || 'خالد', label: (eg ? 'حوالة طالعة ل' : 'حوالة صادرة إلى ') + (host || 'خالد'), sub: eg ? '٥ أكتوبر · كانت مستنية سؤال «سلفة ولا دعم؟» — ربطها نقطة بيجاوبه' : '٥ أكتوبر · كانت بانتظار سؤال «سلفة أم دعم؟» — ربطها نقطةً يجيب عنه', amt: 100000 * k }
+    ];
+    const valid = s.rows.map((r) => ({ name: r.name.trim(), amt: this.toMinor(r.amount) })).filter((r) => r.name || r.amt);
+    const total = valid.reduce((t, r) => t + (r.amt || 0), 0);
+    const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const blank = () => ({ name: '', amount: '' });
+    const firstEmpty = s.rows.findIndex((r) => !r.name.trim());
+    return {
+      openLabel: mine ? (eg ? 'سجّل النقوط اللي جاتلك' : 'سجّل النقوط التي جاءتك') : (eg ? 'سجّل ' : 'سجّل ') + outWord,
+      openSheet: () => this.setState({ open: true, mode: 'cash', wallet: 0, rows: mine ? [blank(), blank()] : [{ name: host, amount: '' }], cand: null, err: '' }),
+      open: s.open,
+      title: mine ? (eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك') : outWord,
+      modes: [['cash', eg ? 'نقوط كاش' : 'نقوط كاش'], ['link', eg ? 'عملية موجودة' : 'عملية موجودة']].map(([id, label]) => ({ label, on: s.mode === id ? 'true' : 'false', style: chip(s.mode === id) + '; flex: 1 1 0', pick: () => this.setState({ mode: id, err: '' }) })),
+      cashMode: s.mode === 'cash', linkMode: s.mode === 'link',
+      walletLabel: eg ? 'في أنهي محفظة؟' : 'في أي محفظة؟',
+      wallets: W.map((label, i) => ({ label, on: s.wallet === i ? 'true' : 'false', style: chip(s.wallet === i), pick: () => this.setState({ wallet: i }) })),
+      rowsLabel: eg ? 'لكل اسم مبلغه' : 'لكل اسم مبلغه',
+      rows: s.rows.map((r, i) => ({
+        name: r.name, amount: r.amount, only: s.rows.length === 1,
+        nameLabel: eg ? 'الاسم' : 'الاسم', amountLabel: (eg ? 'المبلغ بال' : 'المبلغ بال') + (eg ? 'جنيه' : 'ريال'), removeLabel: eg ? 'شيل السطر' : 'احذف السطر',
+        typeName: (e) => this.setRow(i, { name: e.target.value }),
+        typeAmount: (e) => this.setRow(i, { amount: e.target.value }),
+        remove: () => { if (s.rows.length > 1) this.setState({ rows: s.rows.filter((x, j) => j !== i), err: '' }); },
+        removeStyle: 'width: 44px; height: 48px; flex-shrink: 0; border: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #637570; background: rgba(25,61,51,0.05); ' + (s.rows.length === 1 ? 'opacity: 0.45; cursor: default' : 'cursor: pointer')
+      })),
+      addRowLabel: eg ? '+ اسم كمان' : '+ اسم آخر',
+      addRow: () => { if (s.rows.length < 8) this.setState({ rows: s.rows.concat([blank()]) }); },
+      people: ['خالد', 'نورة', 'فهد', 'سارة'].filter((p) => !s.rows.some((r) => r.name.trim() === p)).map((p) => ({ name: p, pick: () => { if (firstEmpty >= 0) this.setRow(firstEmpty, { name: p }); else if (s.rows.length < 8) this.setState({ rows: s.rows.concat([{ name: p, amount: '' }]) }); } })),
+      sumLine: valid.length ? (eg ? 'المجموع ' : 'المجموع ') + this.fmt(total) + ' ' + cur + '، ' + plural(valid.length, OPS) + (eg ? ' في «' : ' في «') + W[s.wallet] + '»' : (eg ? 'كل اسم بيبقى عملية لوحده في المحفظة.' : 'كل اسم يصبح عملية مستقلة في المحفظة.'),
+      cands: C.map((c, i) => ({
+        label: c.label, sub: c.sub, on: s.cand === i ? 'true' : 'false', pick: () => this.setState({ cand: i, err: '' }),
+        amount: (mine ? '+' : '−') + this.fmt(c.amt) + ' ' + cur,
+        amountStyle: 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (mine ? '#13764D' : '#BE3D48'),
+        style: 'display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 12px 14px; border: 0; border-radius: 16px; font: inherit; color: #193D33; text-align: right; cursor: pointer; ' + (s.cand === i ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)')
+      })),
+      kindNote: eg ? 'بتتصنّف «هدايا › نقوط» لوحدها، ومش هتتسأل عنها في المراجعة.' : 'تُصنَّف «هدايا › نقوط» تلقائيًا، ولن تُسأل عنها في المراجعات.',
+      err: s.err,
+      saveLabel: s.mode === 'link' ? (eg ? 'اربطها نقطة' : 'اربطها نقطةً') : valid.length ? (eg ? 'سجّل ' : 'سجّل ') + plural(valid.length, eg ? ['نقطة واحدة', 'نقطتين', 'نقاط', 'نقطة'] : ['نقطة واحدة', 'نقطتين', 'نقاط', 'نقطة']) : (eg ? 'سجّل' : 'سجّل'),
+      save: () => {
+        const say = (err) => this.setState({ err });
+        if (s.mode === 'link') {
+          if (s.cand == null || !C[s.cand]) return say(eg ? 'اختار العملية الأول.' : 'اختر العملية أولًا.');
+          this.setState({ open: false });
+          if (typeof this.props.onSave === 'function') this.props.onSave([{ name: C[s.cand].who, amt: C[s.cand].amt }], C[s.cand].label, true);
+          return;
+        }
+        // الكل أو ولا حاجة: كل سطر فيه اسم ومبلغ أكبر من صفر، ومن غير اسم مكرر
+        if (!valid.length) return say(eg ? 'ضيف نقطة واحدة على الأقل بمبلغ أكبر من صفر.' : 'أضف نقطة واحدة على الأقل بمبلغ أكبر من صفر.');
+        if (valid.some((r) => !r.name || !r.amt || r.amt <= 0)) return say(eg ? 'كمّل الاسم والمبلغ في كل سطر.' : 'أكمل الاسم والمبلغ في كل سطر.');
+        const names = valid.map((r) => r.name);
+        if (new Set(names).size !== names.length) return say(eg ? 'نفس الاسم متكرر — كل نقطة لاسم واحد.' : 'الاسم نفسه مكرر — كل نقطة لاسم واحد.');
+        this.setState({ open: false });
+        if (typeof this.props.onSave === 'function') this.props.onSave(valid.map((r) => ({ name: r.name, amt: r.amt })), W[s.wallet], false);
+      },
+      closeSheet: () => this.setState({ open: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

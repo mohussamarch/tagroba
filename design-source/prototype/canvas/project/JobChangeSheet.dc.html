@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>غيّرت شغلي — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.j-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.j-press:active{transform:scale(.97)}
+.j-veil{animation:j-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.j-up{animation:j-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.j-in{animation:j-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes j-fade{from{opacity:0}to{opacity:1}}
+@keyframes j-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes j-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.j-press{transition:none}.j-press:active{transform:none}.j-up,.j-in{animation:j-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="position: fixed; inset: 0; z-index: 9">
+    <button type="button" class="j-veil" onClick="{{closeAll}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+    <div role="dialog" aria-modal="true" aria-label="{{title}}" class="j-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+      <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+      <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 700">{{title}}</span><span style="font-size: 13px; color: #637570">{{sub}}</span></span>
+
+      <sc-if value="{{stepClose}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-if value="{{pickOld}}" hint-placeholder-val="{{ true }}">
+            <div role="radiogroup" aria-label="{{oldLabel}}" style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; color: #637570">{{oldLabel}}</span>
+              <sc-for list="{{olds}}" as="o" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{o.on}}" class="j-press" onClick="{{o.pick}}" style="{{o.style}}"><span style="font-size: 15px; font-weight: 700">{{o.name}}</span><span style="font-size: 12px; color: #637570">{{o.sub}}</span></button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <span style="font-size: 13px; font-weight: 700; color: #637570">{{endLabel}}</span>
+          <div role="radiogroup" aria-label="{{endLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{ends}}" as="e" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{e.on}}" class="j-press" onClick="{{e.pick}}" style="{{e.style}}">{{e.label}}</button>
+            </sc-for>
+          </div>
+          <button type="button" class="j-press" onClick="{{closeNext}}" disabled="{{closeOff}}" style="{{closeBtnStyle}}">{{closeBtn}}</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{stepNew}}" hint-placeholder-val="{{ false }}">
+        <div class="j-in" style="display: flex; flex-direction: column; gap: 10px">
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700; color: #637570">{{nameLabel}}</span>
+            <input type="text" value="{{name}}" onInput="{{typeName}}" maxlength="80" placeholder="{{namePh}}" aria-invalid="{{nameBad}}" style="{{nameStyle}}"></label>
+          <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; margin-top: -4px">{{err}}</span></sc-if>
+          <span style="font-size: 13px; font-weight: 700; color: #637570">{{kindLabel}}</span>
+          <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{kinds}}" as="k" hint-placeholder-count="7">
+              <button type="button" role="radio" aria-checked="{{k.on}}" class="j-press" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; font-weight: 700; color: #637570">{{startLabel}}</span>
+          <div role="radiogroup" aria-label="{{startLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{starts}}" as="sd" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{sd.on}}" class="j-press" onClick="{{sd.pick}}" style="{{sd.style}}">{{sd.label}}</button>
+            </sc-for>
+          </div>
+          <button type="button" class="j-press" onClick="{{saveNew}}" disabled="{{newOff}}" style="{{newBtnStyle}}">{{newBtn}}</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{stepAsk}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div class="j-in" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 4px; background: #DCEBD6; color: #08634F"><span style="font-size: 18px; font-weight: 700">{{congrats}}</span><span style="font-size: 13px; color: #193D33">{{closedLine}}</span></div>
+          <sc-if value="{{hasQ}}" hint-placeholder-val="{{ true }}">
+            <div class="j-in" style="display: flex; flex-direction: column; gap: 10px">
+              <span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 15px; font-weight: 700">{{qText}}</span><span style="font-size: 12px; color: #637570; flex-shrink: 0">{{qStep}}</span></span>
+              <sc-if value="{{qDays}}" hint-placeholder-val="{{ true }}">
+                <div role="radiogroup" aria-label="{{qText}}" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+                  <sc-for list="{{days}}" as="dd" hint-placeholder-count="31">
+                    <button type="button" role="radio" aria-checked="false" class="j-press" onClick="{{dd.pick}}" style="height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 14px; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.05)">{{dd.label}}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{qChips}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                  <sc-for list="{{qchips}}" as="qc" hint-placeholder-count="2">
+                    <button type="button" class="j-press" onClick="{{qc.pick}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{qc.label}}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{qAmount}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 8px">
+                  <input type="text" inputmode="decimal" dir="ltr" aria-label="{{qText}}" placeholder="0.00" value="{{amount}}" onInput="{{typeAmount}}" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 17px; font-weight: 700; text-align: right; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+                  <button type="button" class="j-press" onClick="{{saveAmount}}" disabled="{{amountOff}}" style="{{amountBtnStyle}}">{{amountBtn}}</button>
+                </div>
+              </sc-if>
+              <button type="button" class="j-press" onClick="{{skipQ}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #637570; cursor: pointer; background: transparent">{{skipLabel}}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{allDone}}" hint-placeholder-val="{{ false }}">
+            <span class="j-in" style="font-size: 13px; color: #637570">{{doneLine}}</span>
+            <button type="button" class="j-press" onClick="{{finish}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{finishLabel}}</button>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["غيّرت شغلي","إضافة","إنهاء"],"default":"غيّرت شغلي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: null, oldId: null, end: 0, name: '', kind: 'job', start: 0, err: '', ans: {}, amount: '' };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  tell(fn, x) { if (typeof this.props[fn] === 'function') this.props[fn](x); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const mode = this.props.mode ?? 'غيّرت شغلي';
+    const s = this.state;
+    // المصادر الشغالة من الشاشة الأب (JSON) — ومن غيرها (معاينة اللوحة) مثال مخترع
+    let cur0 = eg ? [{ id: 'maadi', name: 'شقة المعادي', kind: 'rent' }] : [{ id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job' }, { id: 'waha', name: 'مكتب الواحة للتصميم', kind: 'part_time' }];
+    try { if (this.props.sources) cur0 = JSON.parse(this.props.sources); } catch (e) { cur0 = []; }
+    const K = [['job', 'وظيفة'], ['part_time', eg ? 'بارت تايم' : 'دوام جزئي'], ['client', 'عميل'], ['rent', 'إيجار'], ['investment', 'استثمار'], ['pension', 'معاش'], ['other', eg ? 'غيره' : 'أخرى']];
+    const kindName = (id) => (K.find((k) => k[0] === id) || ['', ''])[1];
+    const target = mode === 'إنهاء' ? (cur0.find((x) => x.id === this.props.source) || cur0[0] || { id: '', name: '' }) : null;
+    const step = s.step || (mode === 'إضافة' ? 'new' : 'close');
+    const oldId = mode === 'إنهاء' ? target.id : (s.oldId || (cur0.find((x) => x.kind === 'job' || x.kind === 'part_time') || cur0[0] || {}).id || null);
+    const old = cur0.find((x) => x.id === oldId) || null;
+    const ENDS = ['٧ أكتوبر ٢٠٢٦', '٣٠ سبتمبر ٢٠٢٦', '٢٧ سبتمبر ٢٠٢٦'];
+    const STARTS = mode === 'إضافة' ? ['١ يناير ٢٠٢٦', '١ يونيو ٢٠٢٦', '٧ أكتوبر ٢٠٢٦'] : ['٨ أكتوبر ٢٠٢٦', '١ نوفمبر ٢٠٢٦', '٧ أكتوبر ٢٠٢٦'];
+    const chip = (on) => 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const primary = (ok) => 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (ok ? '' : ' opacity: 0.45; cursor: default');
+    const name = s.name.trim();
+    // INCOME_SOURCE_DUPLICATE: نفس الاسم مرفوض لو الفترتين بيتقابلوا — هنا مع المصادر الشغالة (غير اللي بيتقفل)
+    const dup = !!name && cur0.some((x) => x.id !== (mode === 'غيّرت شغلي' ? oldId : '') && x.name === name);
+    const kind = s.kind;
+    // أسئلة المتابعة (newSourceFollowUps): الوظيفة يوم ⇒ بداية الشهر ⇒ المتوقع · البارت تايم الدورية واليوم ⇒ المتوقع · المعاش اليوم بس
+    const a = s.ans;
+    const queue = kind === 'job' ? ['payday', a.payday && a.payday !== 28 ? 'monthStart' : null, 'expected'] : kind === 'part_time' ? ['freq', a.freq ? 'pday' : null, 'expected'] : kind === 'pension' ? ['payday'] : [];
+    const qs = queue.filter(Boolean);
+    const q = qs.find((x) => a[x] === undefined) || null;
+    const answer = (key, v) => this.setState({ ans: Object.assign({}, a, { [key]: v }), amount: '' });
+    const WD = [[1, 'الاثنين'], [2, 'الثلاثاء'], [3, 'الأربعاء'], [4, 'الخميس'], [5, 'الجمعة'], [6, 'السبت'], [7, 'الأحد']];
+    const QT = {
+      payday: eg ? 'المرتب الجديد بينزل يوم كام في الشهر؟' : 'في أي يوم من الشهر ينزل الراتب الجديد؟',
+      monthStart: (eg ? 'تغيّر بداية شهرك المالي ليوم ' : 'هل تغيّر بداية شهرك المالي إلى يوم ') + n(a.payday || 28) + '؟',
+      expected: eg ? 'المرتب المتوقع كام؟ (اختياري — تقدر تعدّيه)' : 'كم الراتب المتوقع؟ (اختياري — يمكنك تخطيه)',
+      freq: eg ? 'بتقبض من الشغل ده إمتى؟ كل شهر ولا كل أسبوع؟' : 'متى تقبض من هذه الوظيفة؟ شهريًا أم أسبوعيًا؟',
+      pday: a.freq === 'weekly' ? (eg ? 'يوم إيه في الأسبوع؟' : 'في أي يوم من الأسبوع؟') : (eg ? 'يوم كام في الشهر؟' : 'في أي يوم من الشهر؟')
+    };
+    const days = [];
+    for (let i = 1; i <= 31; i++) days.push({ label: n(i), pick: () => answer(q === 'pday' ? 'pday' : 'payday', i) });
+    const qchips = q === 'monthStart' ? [{ label: eg ? 'أيوه، غيّرها' : 'نعم، غيّرها', pick: () => answer('monthStart', true) }, { label: eg ? 'لأ، سيبها ٢٨' : 'لا، تبقى ٢٨', pick: () => answer('monthStart', false) }]
+      : q === 'freq' ? [{ label: eg ? 'كل شهر' : 'شهريًا', pick: () => answer('freq', 'monthly') }, { label: eg ? 'كل أسبوع' : 'أسبوعيًا', pick: () => answer('freq', 'weekly') }]
+      : q === 'pday' && a.freq === 'weekly' ? WD.map(([v, l]) => ({ label: l, pick: () => answer('pday', v) })) : [];
+    const amt = this.toMinor(s.amount);
+    const newSource = () => ({ id: 'new' + Date.now(), name, kind, start: STARTS[s.start], end: null, freq: a.freq === 'weekly' ? 'weekly' : kind === 'job' || kind === 'part_time' || kind === 'pension' ? 'monthly' : null,
+      day: a.freq === 'weekly' ? null : (a.payday || a.pday || null), weekday: a.freq === 'weekly' ? (a.pday || null) : null, expected: a.expected || null, fresh: true });
+    const doneBits = [];
+    if (a.payday || (a.pday && a.freq !== 'weekly')) doneBits.push((eg ? 'القبض يوم ' : 'القبض يوم ') + n(a.payday || a.pday));
+    if (a.pday && a.freq === 'weekly') doneBits.push((eg ? 'القبض كل ' : 'القبض كل ') + WD[a.pday - 1][1]);
+    if (a.expected) doneBits.push((eg ? 'المتوقع ' : 'المتوقع ') + this.fmt(a.expected) + ' ' + cur);
+    if (a.monthStart) doneBits.push((eg ? 'شهرك المالي هيبدأ يوم ' : 'يبدأ شهرك المالي يوم ') + n(a.payday));
+    const isChange = mode === 'غيّرت شغلي';
+    return {
+      title: mode === 'إنهاء' ? (eg ? 'إنهاء «' : 'إنهاء «') + target.name + '»' : mode === 'إضافة' ? (eg ? 'ضيف مصدر دخل' : 'أضف مصدر دخل') : (eg ? 'غيّرت شغلي' : 'غيّرت عملي'),
+      sub: step === 'close' ? (mode === 'إنهاء' ? (eg ? 'المصدر بيفضل في «اللي فاتت» بتاريخه، ومفيش حاجة بتتمسح.' : 'يبقى المصدر في «السابقة» بتاريخه، ولا يُحذف شيء.') : (eg ? 'نقفل القديم بتاريخ ونفتح الجديد.' : 'نغلق القديم بتاريخ ونفتح الجديد.'))
+        : step === 'new' ? (mode === 'إضافة' ? (eg ? 'الاسم وتاريخ البداية بس اللي لازم.' : 'الاسم وتاريخ البداية فقط إلزاميان.') : (eg ? 'الشغل الجديد' : 'العمل الجديد')) : (eg ? 'كام سؤال سريع، وكلهم تقدر تعدّيهم.' : 'أسئلة سريعة، ويمكنك تخطي أيٍّ منها.'),
+      stepClose: step === 'close', stepNew: step === 'new', stepAsk: step === 'ask',
+      pickOld: isChange && cur0.length > 0, oldLabel: eg ? 'إيه اللي خلص؟' : 'أيّ عمل انتهى؟',
+      olds: cur0.map((x) => ({ name: x.name, sub: kindName(x.kind), on: x.id === oldId ? 'true' : 'false', pick: () => this.setState({ oldId: x.id }),
+        style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 56px; padding: 8px 14px; border: 0; border-radius: 16px; font: inherit; color: #193D33; text-align: right; cursor: pointer; ' + (x.id === oldId ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)') })),
+      endLabel: eg ? 'خلص إمتى؟' : 'متى انتهى؟',
+      ends: ENDS.map((label, i) => ({ label: i === 0 ? (eg ? 'النهارده' : 'اليوم') : label, on: s.end === i ? 'true' : 'false', style: chip(s.end === i), pick: () => this.setState({ end: i }) })),
+      closeOff: !oldId, closeBtnStyle: primary(!!oldId),
+      closeBtn: mode === 'إنهاء' ? (eg ? 'إنهاء' : 'إنهاء') : (eg ? 'التالي' : 'التالي'),
+      // القفل لوحده «ولا كلمة» (§64 قرار ١): بيرجع للأب من غير رسالة
+      closeNext: () => { if (!oldId) return; if (mode === 'إنهاء') this.tell('onDone', { close: { id: oldId, end: ENDS[s.end] } }); else this.setState({ step: 'new' }); },
+      nameLabel: eg ? 'اسم الشركة أو العميل' : 'اسم الشركة أو العميل', namePh: eg ? 'مثلًا: شركة النيل' : 'مثلًا: شركة الأفق', name: s.name,
+      typeName: (e) => this.setState({ name: e.target.value, err: '' }),
+      nameBad: dup ? 'true' : 'false', hasErr: dup, err: eg ? 'فيه مصدر دخل بنفس الاسم.' : 'يوجد مصدر دخل بالاسم نفسه.',
+      nameStyle: 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (dup ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      kindLabel: 'النوع', kinds: K.map(([id, label]) => ({ label, on: kind === id ? 'true' : 'false', style: chip(kind === id), pick: () => this.setState({ kind: id, ans: {} }) })),
+      startLabel: eg ? 'بدأ إمتى؟' : 'متى بدأ؟',
+      starts: STARTS.map((label, i) => ({ label, on: s.start === i ? 'true' : 'false', style: chip(s.start === i), pick: () => this.setState({ start: i }) })),
+      newOff: !name || dup, newBtnStyle: primary(!!name && !dup), newBtn: mode === 'إضافة' ? (eg ? 'ضيف' : 'إضافة') : (eg ? 'احفظ' : 'حفظ'),
+      // الإضافة العادية من غير «مبروك» ولا أسئلة (§64 قرار ١) · «غيّرت شغلي» ⇒ «مبروك» على الجديد بس + أسئلته
+      saveNew: () => { if (!name || dup) return; if (mode === 'إضافة') this.tell('onDone', { add: newSource() }); else this.setState({ step: 'ask', ans: {} }); },
+      congrats: eg ? 'مبروك الشغل الجديد في «' + name + '»!' : 'مبارك الوظيفة الجديدة في «' + name + '»!',
+      closedLine: old ? (eg ? '«' + old.name + '» اتقفل في ' : 'أُغلق «' + old.name + '» في ') + ENDS[s.end] + '.' : '',
+      hasQ: !!q, qText: q ? QT[q] : '', qStep: q ? n(qs.indexOf(q) + 1) + (eg ? ' من ' : ' من ') + n(qs.length) : '',
+      qDays: q === 'payday' || (q === 'pday' && a.freq !== 'weekly'), days,
+      qChips: qchips.length > 0, qchips,
+      qAmount: q === 'expected', amount: s.amount, typeAmount: (e) => this.setState({ amount: e.target.value }),
+      amountOff: !amt, amountBtnStyle: 'flex-shrink: 0; padding: 0 18px; ' + primary(!!amt), amountBtn: eg ? 'احفظ' : 'حفظ',
+      saveAmount: () => { if (amt) answer('expected', amt); },
+      skipLabel: eg ? 'عدّي' : 'تخطَّ', skipQ: () => { if (q) answer(q, null); },
+      allDone: step === 'ask' && !q,
+      doneLine: doneBits.length ? doneBits.join('، ') : (eg ? 'تقدر تكمّل الباقي من تفاصيل المصدر بعدين.' : 'يمكنك إكمال الباقي من تفاصيل المصدر لاحقًا.'),
+      finishLabel: eg ? 'تمام' : 'تم',
+      finish: () => this.tell('onDone', { close: old ? { id: old.id, end: ENDS[s.end] } : null, add: newSource(), monthStart: a.monthStart ? a.payday : null }),
+      closeAll: () => this.tell('onClose')
+    };
+  }
+}
+</script>
+</body>
+</html>

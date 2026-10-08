@@ -48,7 +48,7 @@ body{margin:0}
 
     <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
       <sc-for list="{{subs}}" as="s" hint-placeholder-count="4">
-        <div class="{{s.cls}}" style="{{s.rowStyle}}">
+        <sc-if value="{{s.linked}}" hint-placeholder-val="{{ true }}"><a href="SubscriptionDetail.dc.html" data-keep="{{s.keep}}" class="{{s.cls}}" style="{{s.rowStyle}}">
           <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
             <span style="font-size: 14px; font-weight: 700">{{s.name}}</span>
             <span style="font-size: 12px; color: #637570">{{s.sub}}</span>
@@ -58,7 +58,18 @@ body{margin:0}
             <span dir="ltr" style="font-size: 15px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{s.amount}}</span>
             <span style="font-size: 11px; color: #637570">{{s.cycle}}</span>
           </span>
-        </div>
+        </a></sc-if>
+        <sc-if value="{{s.plain}}" hint-placeholder-val="{{ false }}"><div class="{{s.cls}}" style="{{s.rowStyle}}">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; font-weight: 700">{{s.name}}</span>
+            <span style="font-size: 12px; color: #637570">{{s.sub}}</span>
+            <span style="{{s.chipStyle}}">{{s.chip}}</span>
+          </span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+            <span dir="ltr" style="font-size: 15px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{s.amount}}</span>
+            <span style="font-size: 11px; color: #637570">{{s.cycle}}</span>
+          </span>
+        </div></sc-if>
       </sc-for>
     </div>
     <span style="font-size: 12px; color: #637570">{{note}}</span>
@@ -85,12 +96,14 @@ class Component extends DCLogic {
       [eg ? 'تخزين سحابي' : 'تخزين سحابي', '٢٠ أكتوبر', 1100, 'ok', eg ? 'كل شهر' : 'شهري']
     ];
     if (this.state.cand === 'yes') defs.push([eg ? 'خدمة أفلام' : 'خدمة بث', '٢٤ أكتوبر', 4500, 'ok', eg ? 'كل شهر' : 'شهري']);
+    const KEYS = ['power', 'gym', 'net', 'cloud'];
     const subs = defs.map(([name, sub, v, s, cycle], i) => ({
+      linked: !!KEYS[i], plain: !KEYS[i], keep: JSON.stringify({ 'masroufy-sub': KEYS[i] || '' }),
       name, sub, cycle, chip: C[s].label,
       chipStyle: 'align-self: flex-start; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 12px; ' + C[s].style,
       amount: this.fmt(v * k),
       cls: i === 4 ? 'm-in' : '',
-      rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 12px 0;' + (i === defs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 12px 0; min-height: 48px; color: inherit; text-decoration: none;' + (i === defs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
     }));
     const month = defs.reduce((s, d) => s + d[2] * k, 0);
     return {

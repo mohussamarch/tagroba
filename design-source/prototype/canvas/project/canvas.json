@@ -249,6 +249,462 @@
       "y": 6100,
       "w": 350,
       "h": 480
+    },
+    "RoscaDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل الجمعية · RoscaDetail",
+      "x": 2430,
+      "y": 7400,
+      "w": 390,
+      "h": 844
+    },
+    "RoscaWizard.dc.html": {
+      "is_interactive": true,
+      "title": "جمعية جديدة · RoscaWizard (٨ أسئلة)",
+      "x": 1960,
+      "y": 7400,
+      "w": 390,
+      "h": 844
+    },
+    "InstallmentDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل القسط · InstallmentDetail",
+      "x": 1490,
+      "y": 7400,
+      "w": 390,
+      "h": 844
+    },
+    "SubscriptionDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل الاشتراك · SubscriptionDetail",
+      "x": 1020,
+      "y": 7400,
+      "w": 390,
+      "h": 844
+    },
+    "Account.dc.html": {
+      "is_interactive": true,
+      "title": "ملفك · Account",
+      "x": 2430,
+      "y": 8970,
+      "w": 390,
+      "h": 844
+    },
+    "IncomeSources.dc.html": {
+      "is_interactive": true,
+      "title": "مصادر الدخل · IncomeSources",
+      "x": 1960,
+      "y": 8970,
+      "w": 390,
+      "h": 844
+    },
+    "IncomeSourceDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل المصدر · IncomeSourceDetail (قطعة)",
+      "x": 1530,
+      "y": 8970,
+      "w": 350,
+      "h": 760
+    },
+    "JobChangeSheet.dc.html": {
+      "is_interactive": true,
+      "title": "غيّرت عملي · JobChangeSheet (قطعة)",
+      "x": 1060,
+      "y": 8970,
+      "w": 390,
+      "h": 844
+    },
+    "Spaces.dc.html": {
+      "is_interactive": true,
+      "title": "البلدان · Spaces",
+      "x": 590,
+      "y": 8970,
+      "w": 390,
+      "h": 844
+    },
+    "Wallets.dc.html": {
+      "is_interactive": true,
+      "title": "المحافظ · Wallets",
+      "x": 120,
+      "y": 8970,
+      "w": 390,
+      "h": 844
+    },
+    "WalletDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل المحفظة · WalletDetail (قطعة)",
+      "x": -310,
+      "y": 8970,
+      "w": 350,
+      "h": 800
+    },
+    "StatementImport.dc.html": {
+      "is_interactive": true,
+      "title": "كشف الحساب · StatementImport",
+      "x": 2430,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "ImportReview.dc.html": {
+      "is_interactive": true,
+      "title": "مراجعة الكشف · ImportReview",
+      "x": 1960,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "ImportDuplicateSheet.dc.html": {
+      "is_interactive": true,
+      "title": "مقارنة المكرر · ImportDuplicateSheet (قطعة)",
+      "x": 1490,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "ImportBatches.dc.html": {
+      "is_interactive": true,
+      "title": "دفعات الاستيراد · ImportBatches",
+      "x": 1020,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "RevertBatchSheet.dc.html": {
+      "is_interactive": true,
+      "title": "إرجاع دفعة · RevertBatchSheet (قطعة)",
+      "x": 550,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "BankSmsSettings.dc.html": {
+      "is_interactive": true,
+      "title": "إعداد قراءة الرسائل · BankSmsSettings",
+      "x": 80,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "SmsPaste.dc.html": {
+      "is_interactive": true,
+      "title": "الصق رسالة · SmsPaste",
+      "x": -390,
+      "y": 10240,
+      "w": 390,
+      "h": 844
+    },
+    "Categories.dc.html": {
+      "is_interactive": true,
+      "title": "التصنيفات · Categories",
+      "x": 2430,
+      "y": 11510,
+      "w": 390,
+      "h": 844
+    },
+    "CategoryEditSheet.dc.html": {
+      "is_interactive": true,
+      "title": "تعديل تصنيف · CategoryEditSheet (قطعة)",
+      "x": 2000,
+      "y": 11510,
+      "w": 350,
+      "h": 900
+    },
+    "Rules.dc.html": {
+      "is_interactive": true,
+      "title": "القواعد والتجار · Rules",
+      "x": 1530,
+      "y": 11510,
+      "w": 390,
+      "h": 844
+    },
+    "Projects.dc.html": {
+      "is_interactive": true,
+      "title": "المشاريع · Projects",
+      "x": 1060,
+      "y": 11510,
+      "w": 390,
+      "h": 844
+    },
+    "ProjectDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل المشروع · ProjectDetail (قطعة)",
+      "x": 630,
+      "y": 11510,
+      "w": 350,
+      "h": 760
+    },
+    "Backup.dc.html": {
+      "is_interactive": true,
+      "title": "النسخة الاحتياطية والتصدير · Backup",
+      "x": 160,
+      "y": 11510,
+      "w": 390,
+      "h": 844
+    },
+    "RestorePreview.dc.html": {
+      "is_interactive": true,
+      "title": "معاينة الاسترجاع · RestorePreview (قطعة)",
+      "x": -270,
+      "y": 11510,
+      "w": 350,
+      "h": 900
+    },
+    "AppSettings.dc.html": {
+      "is_interactive": true,
+      "title": "القفل واللغة والمحتوى · AppSettings",
+      "x": -740,
+      "y": 11510,
+      "w": 390,
+      "h": 844
+    },
+    "Onboarding.dc.html": {
+      "is_interactive": true,
+      "title": "أول دقيقة · Onboarding (التطبيق ← «أول مرة»)",
+      "x": 2430,
+      "y": 12880,
+      "w": 390,
+      "h": 844
+    },
+    "SignInEmail.dc.html": {
+      "is_interactive": true,
+      "title": "الدخول بالبريد · SignInEmail",
+      "x": 1960,
+      "y": 12880,
+      "w": 390,
+      "h": 844
+    },
+    "ProfileQuestion.dc.html": {
+      "is_interactive": true,
+      "title": "كمّل ملفك · ProfileQuestion (من كارت «ملفك» في الرئيسية)",
+      "x": 1490,
+      "y": 12880,
+      "w": 390,
+      "h": 844
+    },
+    "ProfileDebtSheet.dc.html": {
+      "is_interactive": true,
+      "title": "ديون البداية · ProfileDebtSheet (قطعة)",
+      "x": 1020,
+      "y": 12880,
+      "w": 390,
+      "h": 844
+    },
+    "Lock.dc.html": {
+      "is_interactive": true,
+      "title": "القفل · Lock (التطبيق ← «القفل»)",
+      "x": 550,
+      "y": 12880,
+      "w": 390,
+      "h": 844
+    },
+    "Events.dc.html": {
+      "is_interactive": true,
+      "title": "الأحداث · Events (من «الأحداث» في الأشخاص)",
+      "x": 2430,
+      "y": 14450,
+      "w": 390,
+      "h": 844
+    },
+    "EventDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل الحدث · EventDetail",
+      "x": 1960,
+      "y": 14450,
+      "w": 390,
+      "h": 844
+    },
+    "EventPrep.dc.html": {
+      "is_interactive": true,
+      "title": "التجهيزات · EventPrep",
+      "x": 1490,
+      "y": 14450,
+      "w": 390,
+      "h": 844
+    },
+    "DebtDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل الدين · DebtDetail (من «سلفة منك» في ملف الشخص)",
+      "x": 1020,
+      "y": 14450,
+      "w": 390,
+      "h": 844
+    },
+    "SettleSheet.dc.html": {
+      "is_interactive": true,
+      "title": "سداد / تحصيل · SettleSheet (قطعة)",
+      "x": 600,
+      "y": 14450,
+      "w": 350,
+      "h": 560
+    },
+    "OpeningDebtSheet.dc.html": {
+      "is_interactive": true,
+      "title": "دين قديم · OpeningDebtSheet (قطعة)",
+      "x": 180,
+      "y": 14450,
+      "w": 350,
+      "h": 120
+    },
+    "NuqootSheet.dc.html": {
+      "is_interactive": true,
+      "title": "النقوط · NuqootSheet (قطعة)",
+      "x": 180,
+      "y": 14700,
+      "w": 350,
+      "h": 60
+    },
+    "SavingsCalculator.dc.html": {
+      "is_interactive": true,
+      "title": "حاسبة الادخار · SavingsCalculator",
+      "x": 2430,
+      "y": 16020,
+      "w": 390,
+      "h": 844
+    },
+    "SavingsGrowth.dc.html": {
+      "is_interactive": true,
+      "title": "مقارنة النمو · SavingsGrowth (قطعة)",
+      "x": 2000,
+      "y": 16020,
+      "w": 350,
+      "h": 900
+    },
+    "RetirementCalculator.dc.html": {
+      "is_interactive": true,
+      "title": "حاسبة التقاعد · RetirementCalculator",
+      "x": 1530,
+      "y": 16020,
+      "w": 390,
+      "h": 844
+    },
+    "RetirementSaudi.dc.html": {
+      "is_interactive": true,
+      "title": "التقاعد في السعودية · RetirementSaudi (قطعة)",
+      "x": 1110,
+      "y": 16020,
+      "w": 350,
+      "h": 1600
+    },
+    "RetirementEgypt.dc.html": {
+      "is_interactive": true,
+      "title": "التقاعد في مصر · RetirementEgypt (قطعة)",
+      "x": 690,
+      "y": 16020,
+      "w": 350,
+      "h": 1600
+    },
+    "InheritanceCalculator.dc.html": {
+      "is_interactive": true,
+      "title": "حاسبة الورث · InheritanceCalculator",
+      "x": 2430,
+      "y": 17920,
+      "w": 390,
+      "h": 844
+    },
+    "InheritanceSaved.dc.html": {
+      "is_interactive": true,
+      "title": "الحسابات المحفوظة · InheritanceSaved",
+      "x": 1960,
+      "y": 17920,
+      "w": 390,
+      "h": 844
+    },
+    "InheritanceHeirs.dc.html": {
+      "is_interactive": true,
+      "title": "الورثة · InheritanceHeirs (قطعة)",
+      "x": 1530,
+      "y": 17920,
+      "w": 350,
+      "h": 900
+    },
+    "InheritanceBefore.dc.html": {
+      "is_interactive": true,
+      "title": "قبل القسمة · InheritanceBefore (قطعة)",
+      "x": 1110,
+      "y": 17920,
+      "w": 350,
+      "h": 900
+    },
+    "InheritanceResult.dc.html": {
+      "is_interactive": true,
+      "title": "النتيجة · InheritanceResult (قطعة)",
+      "x": 690,
+      "y": 17920,
+      "w": 350,
+      "h": 1400
+    },
+    "InheritanceSplit.dc.html": {
+      "is_interactive": true,
+      "title": "قسمة كل شيء · InheritanceSplit (قطعة)",
+      "x": 270,
+      "y": 17920,
+      "w": 350,
+      "h": 700
+    },
+    "AssetDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل الأصل · AssetDetail",
+      "x": 2430,
+      "y": 19800,
+      "w": 390,
+      "h": 844
+    },
+    "AssetTradeSheet.dc.html": {
+      "is_interactive": true,
+      "title": "شراء · بيع · سعر · AssetTradeSheet (قطعة)",
+      "x": 1960,
+      "y": 19800,
+      "w": 390,
+      "h": 844
+    },
+    "AssetProjection.dc.html": {
+      "is_interactive": true,
+      "title": "العقار: الصورة كاملة · AssetProjection",
+      "x": 1490,
+      "y": 19800,
+      "w": 390,
+      "h": 844
+    },
+    "Zakat.dc.html": {
+      "is_interactive": true,
+      "title": "الزكاة · Zakat",
+      "x": 1020,
+      "y": 19800,
+      "w": 390,
+      "h": 844
+    },
+    "ZakatPay.dc.html": {
+      "is_interactive": true,
+      "title": "دفع الزكاة · ZakatPay (قطعة)",
+      "x": 590,
+      "y": 19800,
+      "w": 350,
+      "h": 900
+    },
+    "Advisor.dc.html": {
+      "is_interactive": true,
+      "title": "التحليلات الذكية · Advisor",
+      "x": 120,
+      "y": 19800,
+      "w": 390,
+      "h": 844
+    },
+    "SavingsGoals.dc.html": {
+      "is_interactive": true,
+      "title": "خطط الادخار · SavingsGoals",
+      "x": -350,
+      "y": 19800,
+      "w": 390,
+      "h": 844
+    },
+    "GoalDetail.dc.html": {
+      "is_interactive": true,
+      "title": "تفاصيل الخطة · GoalDetail (قطعة)",
+      "x": -820,
+      "y": 19800,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -316,6 +772,78 @@
       "w": 240,
       "x": 0,
       "y": 5800
+    },
+    "dues2": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "الجمعية · الأقساط · الاشتراكات من جوه",
+      "w": 240,
+      "x": 0,
+      "y": 7100
+    },
+    "more1": {
+      "kind": "title1",
+      "maxW": 3200,
+      "text": "من «المزيد» · ملفك · مصادر الدخل · البلدان · المحافظ",
+      "w": 240,
+      "x": 0,
+      "y": 8670
+    },
+    "imp": {
+      "kind": "title1",
+      "maxW": 3200,
+      "text": "الاستيراد · كشف الحساب · الدفعات · إعداد رسائل البنك · الصق رسالة",
+      "w": 240,
+      "x": 0,
+      "y": 9940
+    },
+    "more2": {
+      "kind": "title1",
+      "maxW": 3600,
+      "text": "من «المزيد» · التصنيفات · القواعد · المشاريع · النسخة الاحتياطية · الإعدادات",
+      "w": 240,
+      "x": 0,
+      "y": 11210
+    },
+    "onb": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "البداية · أول دقيقة · الدخول · كمّل ملفك · القفل",
+      "w": 240,
+      "x": 0,
+      "y": 12580
+    },
+    "ppl2": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "الأشخاص من جوه · الأحداث · التجهيزات · تفاصيل الدين",
+      "w": 240,
+      "x": 0,
+      "y": 14150
+    },
+    "calc": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "الحاسبات · الادخار · التقاعد",
+      "w": 240,
+      "x": 0,
+      "y": 15720
+    },
+    "calc2": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "الحاسبات · الورث",
+      "w": 240,
+      "x": 0,
+      "y": 17620
+    },
+    "inv2": {
+      "kind": "title1",
+      "maxW": 3700,
+      "text": "الاستثمار من جوه · الأصل · العقار · الزكاة · التحليلات · خطط الادخار",
+      "w": 240,
+      "x": 0,
+      "y": 19500
     }
   },
   "order": [
@@ -349,7 +877,64 @@
     "BellPopover.dc.html",
     "Calendar.dc.html",
     "PeriodPicker.dc.html",
-    "CalendarGrid.dc.html"
+    "CalendarGrid.dc.html",
+    "RoscaDetail.dc.html",
+    "RoscaWizard.dc.html",
+    "InstallmentDetail.dc.html",
+    "SubscriptionDetail.dc.html",
+    "Account.dc.html",
+    "IncomeSources.dc.html",
+    "IncomeSourceDetail.dc.html",
+    "JobChangeSheet.dc.html",
+    "Spaces.dc.html",
+    "Wallets.dc.html",
+    "WalletDetail.dc.html",
+    "StatementImport.dc.html",
+    "ImportReview.dc.html",
+    "ImportDuplicateSheet.dc.html",
+    "ImportBatches.dc.html",
+    "RevertBatchSheet.dc.html",
+    "BankSmsSettings.dc.html",
+    "SmsPaste.dc.html",
+    "Categories.dc.html",
+    "CategoryEditSheet.dc.html",
+    "Rules.dc.html",
+    "Projects.dc.html",
+    "ProjectDetail.dc.html",
+    "Backup.dc.html",
+    "RestorePreview.dc.html",
+    "AppSettings.dc.html",
+    "Onboarding.dc.html",
+    "SignInEmail.dc.html",
+    "ProfileQuestion.dc.html",
+    "ProfileDebtSheet.dc.html",
+    "Lock.dc.html",
+    "Events.dc.html",
+    "EventDetail.dc.html",
+    "EventPrep.dc.html",
+    "DebtDetail.dc.html",
+    "SettleSheet.dc.html",
+    "OpeningDebtSheet.dc.html",
+    "NuqootSheet.dc.html",
+    "SavingsCalculator.dc.html",
+    "SavingsGrowth.dc.html",
+    "RetirementCalculator.dc.html",
+    "RetirementSaudi.dc.html",
+    "RetirementEgypt.dc.html",
+    "InheritanceCalculator.dc.html",
+    "InheritanceSaved.dc.html",
+    "InheritanceHeirs.dc.html",
+    "InheritanceBefore.dc.html",
+    "InheritanceResult.dc.html",
+    "InheritanceSplit.dc.html",
+    "AssetDetail.dc.html",
+    "AssetTradeSheet.dc.html",
+    "AssetProjection.dc.html",
+    "Zakat.dc.html",
+    "ZakatPay.dc.html",
+    "Advisor.dc.html",
+    "SavingsGoals.dc.html",
+    "GoalDetail.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

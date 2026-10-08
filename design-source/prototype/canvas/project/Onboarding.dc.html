@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>أول تشغيل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.o-fill{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.o-ring{animation:o-draw 1400ms cubic-bezier(.45,.05,.55,.95) 200ms backwards}
+.o-up{animation:o-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.o-spin{animation:o-spin 900ms cubic-bezier(.45,.05,.55,.95) infinite}
+.o-in{animation:o-in 900ms cubic-bezier(.2,.7,.3,1) backwards}
+.o-ca{animation:o-ca 500ms cubic-bezier(.2,.7,.3,1) backwards}.o-cb{animation:o-cb 500ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes o-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes o-spin{to{transform:rotate(360deg)}}
+@keyframes o-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes o-fade{from{opacity:0}to{opacity:1}}
+@keyframes o-draw{from{stroke-dashoffset:351.9}}
+@keyframes o-ca{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes o-cb{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press,.o-fill{transition:none}.o-ring{animation:none}.m-press:active{transform:none}.o-up,.o-in,.o-ca,.o-cb{animation:o-fade 150ms both}.o-spin{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="{{scrollStyle}}">
+    <sc-if value="{{showTop}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <sc-if value="{{canBack}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{back}}" aria-label="رجوع" style="width: 48px; height: 48px; border: 0; padding: 0; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+      </sc-if>
+      <sc-if value="{{showBar}}" hint-placeholder-val="{{ true }}">
+        <div role="progressbar" aria-label="{{barLabel}}" aria-valuemin="0" aria-valuemax="6" aria-valuenow="{{barNow}}" style="flex: 1 1 auto; display: flex; gap: 4px">
+          <sc-for list="{{segs}}" as="g" hint-placeholder-count="6">
+            <span style="flex: 1 1 0; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(25,61,51,0.10)"><span class="o-fill" style="{{g.fill}}"></span></span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{canSkip}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{skip}}" style="height: 44px; padding: 0 12px; border: 0; border-radius: 14px; flex-shrink: 0; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: transparent">{{skipLabel}}</button>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{hasIllus}}" hint-placeholder-val="{{ true }}">
+      <div aria-hidden="true" class="o-in" style="align-self: center; width: 120px; height: 80px; margin-top: 12px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; font-size: 11px; color: #637570"><span>رسمة بخط واحد</span><span style="font-size: 10px">{{illus}}</span></div>
+    </sc-if>
+    <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+      <div role="img" aria-label="{{ringText}}" style="align-self: center; position: relative; width: 132px; height: 132px; margin-top: 8px">
+        <svg width="132" height="132" viewBox="0 0 132 132" fill="none" aria-hidden="true"><circle cx="66" cy="66" r="56" stroke="rgba(25,61,51,0.10)" stroke-width="8"></circle><circle class="o-ring" cx="66" cy="66" r="56" stroke="#08634F" stroke-width="8" stroke-linecap="round" stroke-dasharray="351.9" stroke-dashoffset="{{ringOffset}}" transform="rotate(-90 66 66)"></circle></svg>
+        <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#13764D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span style="font-size: 15px; font-weight: 700">{{ringText}}</span></span>
+      </div>
+    </sc-if>
+
+    <div class="{{cardClass}}" style="border-radius: 28px; padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <div style="display: flex; flex-direction: column; gap: 6px; text-align: center">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+        <span style="font-size: 14px; color: #637570">{{sub}}</span>
+      </div>
+
+      <sc-if value="{{at.s0}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{next}}" style="{{primary}}">{{startLabel}}</button>
+      </sc-if>
+
+      <sc-if value="{{at.s1}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div role="radiogroup" aria-label="{{title}}" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; justify-items: center">
+            <sc-for list="{{avatars}}" as="av" hint-placeholder-count="6">
+              <button type="button" role="radio" aria-checked="{{av.on}}" aria-label="{{av.label}}" class="m-press" onClick="{{av.pick}}" style="{{av.style}}"><span style="{{av.inner}}">{{av.n}}</span></button>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; color: #637570; text-align: center">{{avatarNote}}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{at.s2}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+            <div role="alert" style="border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; background: #FBF0DD; color: #6B4600">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #956000"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h.01"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path><path d="M5 12.859a10 10 0 0 1 5.17-2.69"></path><path d="M19 12.859a10 10 0 0 0-2.007-1.523"></path><path d="M2 8.82a15 15 0 0 1 4.177-2.643"></path><path d="M22 8.82a15 15 0 0 0-11.288-3.764"></path><path d="m2 2 20 20"></path></svg>{{offlineText}}</span>
+              <button type="button" class="m-press" onClick="{{reconnect}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.8)">أعد المحاولة</button>
+            </div>
+          </sc-if>
+          <button type="button" class="m-press" onClick="{{google}}" disabled="{{googleOff}}" aria-busy="{{busyAttr}}" aria-describedby="onb-auth-err" style="{{googleStyle}}">
+            <sc-if value="{{busy}}" hint-placeholder-val="{{ false }}"><svg class="o-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg></sc-if>
+            <span>{{googleLabel}}</span>
+          </button>
+          <sc-if value="{{authErr}}" hint-placeholder-val="{{ false }}">
+            <span id="onb-auth-err" role="alert" style="display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: #BE3D48"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>{{authErrText}}</span>
+          </sc-if>
+          <sc-if value="{{emailOn}}" hint-placeholder-val="{{ true }}">
+            <a href="SignInEmail.dc.html" class="m-press" style="{{secondary}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>{{emailLabel}}</a>
+          </sc-if>
+          <sc-if value="{{emailOff}}" hint-placeholder-val="{{ false }}">
+            <button type="button" disabled="{{true}}" style="{{secondaryOff}}">{{emailLabel}}</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{hasOpts}}" hint-placeholder-val="{{ false }}">
+        <div role="radiogroup" aria-label="{{title}}" style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{o.on}}" disabled="{{o.off}}" class="m-press" onClick="{{o.pick}}" style="{{o.style}}">
+              <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08)">
+                <sc-if value="{{o.i.cur}}" hint-placeholder-val="{{ false }}"><span>{{o.cur}}</span></sc-if>
+                <sc-if value="{{o.i.sms}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8H7"></path><path d="M17 12H7"></path></svg></sc-if>
+                <sc-if value="{{o.i.file}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></sc-if>
+                <sc-if value="{{o.i.later}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></sc-if>
+              </span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700">{{o.label}}</span><span style="font-size: 12px; color: #637570">{{o.sub}}</span></span>
+              <sc-if value="{{o.onB}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{at.s4}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div role="radiogroup" aria-label="{{title}}" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+            <sc-for list="{{days}}" as="dd" hint-placeholder-count="31">
+              <button type="button" role="radio" aria-checked="{{dd.on}}" class="m-press" onClick="{{dd.pick}}" style="{{dd.style}}">{{dd.n}}</button>
+            </sc-for>
+          </div>
+          <button type="button" class="m-press" onClick="{{skip}}" style="height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.06)">{{notFixed}}</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <a href="Main.dc.html" class="m-press" onClick="{{finish}}" style="{{primary}}">{{enterLabel}}</a>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{hasReply}}" hint-placeholder-val="{{ false }}">
+    <div role="status" class="o-up" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 14px; background: #DCEBD6; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 -14px 40px rgba(29,54,53,0.14)">
+      <div style="display: flex; gap: 12px; align-items: flex-start">
+        <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #13764D; background: #FFFFFF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 700; color: #08634F">{{replyTitle}}</span><span style="font-size: 14px">{{replyLine}}</span></span>
+      </div>
+      <button type="button" class="m-press" onClick="{{next}}" style="{{primary}}">{{nextLabel}}</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","خطأ","محتاج نت","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.timers = [];
+    this.state = this.fresh(props);
+  }
+  // الخطوات: ٠ أهلًا، ١ الشكل، ٢ الدخول، ٣ البلد، ٤ يوم الراتب، ٥ مصدر العمليات، ٦ جاهز (§63)
+  // الحالات بتفتح على الكارت اللي يخصها: الدخول (بيحمّل · خطأ · محتاج نت) · مصدر العمليات على الآيفون (غير متاح)
+  fresh(p) {
+    const st = (p && p.state) || 'عادي';
+    let viaEmail = false;
+    // راجع من «الدخول بالبريد» (SignInEmail بيكتبها قبل ما يرجع)
+    try { viaEmail = st === 'عادي' && window.sessionStorage.getItem('masroufy-onb-signed') === 'email'; } catch (e) {}
+    const step = st === 'غير متاح' ? 5 : st === 'عادي' ? (viaEmail ? 2 : 0) : 2;
+    return { step, reply: viaEmail ? 'signedEmail' : null, avatar: null, country: null, day: null, src: null, signed: viaEmail || step > 2, busy: st === 'بيحمّل', err: false, online: st !== 'محتاج نت' };
+  }
+  componentDidMount() { try { window.sessionStorage.removeItem('masroufy-onb-signed'); } catch (e) {} }
+  componentDidUpdate(prev) {
+    if (prev.state !== this.props.state) this.setState(this.fresh(this.props));
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  go(step) { this.setState({ step: Math.max(0, Math.min(6, step)), reply: null, err: false }); }
+  answer(patch, reply) { this.setState(Object.assign({ reply }, patch)); }
+  google() {
+    const s = this.state, st = this.props.state ?? 'عادي';
+    if (s.busy || !s.online || s.step !== 2) return;
+    this.setState({ busy: true, err: false });
+    this.timers.push(setTimeout(() => {
+      // خطأ: الرد الحقيقي من كوتلن النهارده (AUTH_GOOGLE_PENDING — ARCHITECTURE §31.6)، والبريد شغال
+      if (st === 'خطأ') this.setState({ busy: false, err: true });
+      else this.setState({ busy: false, signed: true, reply: 'signed' });
+    }, 900));
+  }
+  skip() {
+    const s = this.state;
+    if (s.step === 1) this.go(2);
+    else if (s.step === 4) this.answer({ day: 'later' }, 'dayLater');
+    else if (s.step === 5) this.answer({ src: 'later' }, 'later');
+  }
+  renderVals() {
+    const s = this.state, st = this.props.state ?? 'عادي';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const country = s.country || ((this.props.space ?? 'السعودية') === 'مصر' ? 'eg' : 'sa');
+    // §66: قبل ما البلد يتحدد (أهلًا · الشكل · الدخول) فصحى دايمًا. بعده: صياغة البلد المختار
+    const eg = s.step >= 3 && country === 'eg';
+    const T = (msa, egy) => (eg ? egy : msa);
+    const ios = st === 'غير متاح';
+    const STEPS = [
+      ['أهلًا بك في مصروفي', 'دقيقة واحدة نجهّز فيها حسابك، والباقي متى شئت.', 'دائرة تتنفس ومحفظة'],
+      ['اختر شكلك', 'يمكنك تغييره لاحقًا.', 'إطار يظهر فيه شكلك'],
+      ['كيف تريد الدخول؟', 'يحفظ حسابك بياناتك ويزامنها على كل أجهزتك.', 'قفل يُغلق بهدوء'],
+      [T('أين تقيم؟', 'إنت فين؟'), T('يحدد العملة، والبنوك التي نفهم رسائلها، وقواعد الزكاة.', 'بيحدد العملة، والبنوك اللي بنفهم رسايلها، وقواعد الزكاة.'), 'كرة أرضية تدور ببطء'],
+      [T('في أي يوم ينزل راتبك؟', 'مرتبك بينزل يوم كام؟'), T('يبدأ شهرك المالي من هذا اليوم.', 'شهرك المالي بيبدأ من اليوم ده.'), 'تقويم وعملة صغيرة'],
+      [T('من أين تصل عملياتك؟', 'فلوسك بتيجي منين؟'), T('لتدخل عملياتك وحدها.', 'عشان عملياتك تدخل لوحدها.'), 'جوال وخطوط تنساب'],
+      ['حسابك جاهز', T('الباقي بطاقات صغيرة داخل التطبيق، كل منها ١٠ ثوانٍ.', 'الباقي كروت صغيرة جوه التطبيق، كل واحد ١٠ ثواني.'), '']
+    ];
+    const ok = T('تم', 'تمام');
+    const R = {
+      avatar: ['حُفظ', 'هذا شكلك في التطبيق.'],
+      signed: ['أُنشئ حسابك', 'كل شيء يُحفظ ويُزامَن على أجهزتك.'],
+      signedEmail: ['دخلت بالبريد الإلكتروني', 'كل شيء يُحفظ ويُزامَن على أجهزتك.'],
+      // البنوك اللي رسايلها متفهومة فعلًا النهارده (ملف الهاندأوف §3 · §40.3)
+      sa: [ok, T('الريال ورسائل مصرف الراجحي جاهزة.', 'الريال ورسايل مصرف الراجحي جاهزين.')],
+      eg: [ok, T('الجنيه ورسائل QNB مصر جاهزة.', 'الجنيه ورسايل QNB مصر جاهزين.')],
+      day: [T('ضُبط', 'اتظبط'), T('يبدأ شهرك المالي يوم ', 'شهرك المالي بيبدأ يوم ') + n(typeof s.day === 'number' ? s.day : 1) + T(' من كل شهر.', ' من كل شهر.')],
+      dayLater: [T('لا بأس', 'مفيش مشكلة'), T('نبدأ من أول الشهر حتى تخبرنا.', 'هنبدأ من أول الشهر لحد ما تقولنا.')],
+      sms: [ok, T('سنطلب الإذن في الخطوة التالية داخل التطبيق.', 'هنطلب الإذن في الخطوة الجاية جوه التطبيق.')],
+      file: [ok, T('ارفعه من داخل التطبيق متى شئت.', 'ترفعه من جوه التطبيق وقت ما تحب.')],
+      later: [ok, T('يمكنك ربط البنك لاحقًا من الإعدادات.', 'تقدر توصّل البنك بعدين من الإعدادات.')]
+    };
+    const rep = s.reply ? R[s.reply] : null;
+    const at = {};
+    for (let i = 0; i <= 6; i++) at['s' + i] = s.step === i;
+    const filled = s.step === 6 ? 6 : Math.max(0, s.step - 1 + (s.reply ? 1 : 0));
+    // ملفك بعد الدقيقة: الدخول ١٠، البلد ١٠، يوم الراتب ١٠، مصدر العمليات ١٠ (§63 — الشكل ما بيتعدّش)
+    const pct = (s.signed ? 10 : 0) + 10 + (typeof s.day === 'number' ? 10 : 0) + (s.src === 'sms' || s.src === 'file' ? 10 : 0);
+    const primary = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)';
+    const secondary = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)';
+    const row = (on, off) => 'width: 100%; min-height: 60px; box-sizing: border-box; padding: 8px 14px; border: 0; border-radius: 18px; font: inherit; color: #193D33; text-align: right; cursor: ' + (off ? 'default' : 'pointer') + '; display: flex; align-items: center; gap: 12px; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') + (off ? '; opacity: 0.45' : '');
+    const optDefs = s.step === 3 ? [
+      { id: 'sa', label: 'السعودية', sub: T('الريال السعودي', 'الريال السعودي'), cur: 'ر.س', i: { cur: true }, go: () => this.answer({ country: 'sa' }, 'sa') },
+      { id: 'eg', label: 'مصر', sub: T('الجنيه المصري', 'الجنيه المصري'), cur: 'ج.م', i: { cur: true }, go: () => this.answer({ country: 'eg' }, 'eg') }
+    ] : s.step === 5 ? [
+      { id: 'sms', label: T('رسائل البنك', 'رسايل البنك'), sub: ios ? T('لا يقرأ الآيفون رسائل البنك.', 'الآيفون ما بيقراش رسايل البنك.') : T('على أندرويد', 'على أندرويد'), cur: '', i: { sms: true }, off: ios, go: () => this.answer({ src: 'sms' }, 'sms') },
+      { id: 'file', label: 'كشف حساب', sub: T('ملف من البنك ترفعه بنفسك', 'ملف من البنك ترفعه بنفسك'), cur: '', i: { file: true }, go: () => this.answer({ src: 'file' }, 'file') },
+      { id: 'later', label: T('لاحقًا', 'بعدين'), sub: T('من الإعدادات متى شئت', 'من الإعدادات وقت ما تحب'), cur: '', i: { later: true }, go: () => this.answer({ src: 'later' }, 'later') }
+    ] : [];
+    const picked = s.step === 3 ? s.country : s.src;
+    const opts = optDefs.map((o) => ({ label: o.label, sub: o.sub, cur: o.cur, i: o.i, on: picked === o.id ? 'true' : 'false', onB: picked === o.id, off: !!o.off,
+      style: row(picked === o.id, o.off), pick: () => { if (!o.off) o.go(); } }));
+    const avatars = [1, 2, 3, 4, 5, 6].map((k) => ({ n: n(k), label: 'الشكل ' + n(k), on: s.avatar === k ? 'true' : 'false', pick: () => this.answer({ avatar: k }, 'avatar'),
+      style: 'width: 76px; height: 76px; padding: 0; border: 0; border-radius: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: ' + (s.avatar === k ? 'inset 0 0 0 3px #08634F, 0 8px 18px rgba(8,99,79,0.20)' : 'inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.14), 0 8px 18px rgba(8,99,79,0.10)'),
+      inner: 'width: 56px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: ' + (s.avatar === k ? '#08634F' : '#637570') }));
+    const days = [];
+    for (let d = 1; d <= 31; d++) days.push({ n: n(d), on: s.day === d ? 'true' : 'false', pick: () => this.answer({ day: d }, 'day'),
+      style: 'height: 44px; padding: 0; border: 0; border-radius: 12px; font: inherit; font-size: 15px; cursor: pointer; ' + (s.day === d ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.05)') });
+    const offline = s.step === 2 && !s.online;
+    return {
+      scrollStyle: 'height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px ' + (s.reply ? 230 : 48) + 'px; display: flex; flex-direction: column; gap: 14px; justify-content: ' + (s.step === 0 ? 'center' : 'flex-start'),
+      showTop: s.step > 0,
+      // بعد ما الحساب يتعمل ما فيش رجوع للدخول
+      canBack: s.step === 1 || s.step === 2 || s.step === 4 || s.step === 5, back: () => this.go(s.step - 1),
+      showBar: s.step >= 1, barNow: String(filled), barLabel: 'الخطوة ' + n(Math.max(1, s.step)) + ' من ٦',
+      segs: [1, 2, 3, 4, 5, 6].map((i) => ({ fill: 'display: block; height: 100%; border-radius: 3px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); width: ' + (i <= filled ? 100 : 0) + '%' })),
+      // التخطي في كله ما عدا الدخول والبلد (ملف الهاندأوف §7)
+      canSkip: (s.step === 1 || s.step === 4 || s.step === 5) && !s.reply, skip: () => this.skip(), skipLabel: T('تخطَّ', 'تخطّي'),
+      hasIllus: s.step < 6, illus: STEPS[s.step][2], isDone: s.step === 6,
+      ringText: 'ملفك ' + n(pct) + '٪', ringOffset: String(351.9 * (100 - pct) / 100),
+      // دخول الكارت: ظهور + طلوع 8px في 500ms (الهاندأوف §5). الخطوة بتتغير ±١ دايمًا، فتبديل اسم الحركة بيعيدها
+      cardClass: s.step % 2 ? 'o-ca' : 'o-cb', title: STEPS[s.step][0], sub: STEPS[s.step][1], at, primary, secondary,
+      startLabel: 'لنبدأ', next: () => this.go(s.step + 1),
+      avatars, avatarNote: 'الأشكال النهائية قيد التصميم.',
+      offline, offlineText: 'لا اتصال بالإنترنت. تحقق من الاتصال وأعد المحاولة', reconnect: () => this.setState({ online: true }),
+      google: () => this.google(), busy: s.busy, busyAttr: s.busy ? 'true' : 'false', googleOff: s.busy || offline,
+      googleLabel: s.busy ? 'جارٍ الدخول…' : s.err ? 'أعد المحاولة' : 'الدخول بحساب Google',
+      googleStyle: primary + (s.busy || offline ? '; opacity: 0.45; cursor: default' : ''),
+      authErr: s.err, authErrText: 'الدخول بحساب Google قيد التجهيز في التطبيق الجديد. الدخول بالبريد وكلمة المرور متاح.',
+      emailOn: !s.busy && !offline, emailOff: s.busy || offline, emailLabel: 'الدخول بالبريد الإلكتروني',
+      secondaryOff: secondary + '; opacity: 0.45; cursor: default',
+      hasOpts: opts.length > 0, opts,
+      days, notFixed: T('ليس ثابتًا — اسألني لاحقًا', 'مش ثابت — اسألني بعدين'),
+      enterLabel: T('ادخل التطبيق', 'ادخل التطبيق'), finish: () => { try { window.sessionStorage.removeItem('masroufy-onb-signed'); } catch (e) {} },
+      hasReply: !!rep, replyTitle: rep ? rep[0] : '', replyLine: rep ? rep[1] : '',
+      nextLabel: s.step === 5 ? T('انتهينا', 'خلصنا') : T('متابعة', 'كمّل')
+    };
+  }
+}
+</script>
+</body>
+</html>

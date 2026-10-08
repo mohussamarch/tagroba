@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل الأصل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-rise{animation:m-rise 450ms cubic-bezier(.2,.7,.3,1) backwards}
+.m-toast{animation:m-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes m-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-rise{animation:m-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Investment.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto; min-width: 0">{{title}}</h1>
+      <span style="font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; flex-shrink: 0; color: #08634F; background: #DCEBD6">{{kind}}</span>
+    </div>
+
+    <sc-if value="{{isStale}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: #FBF0DD; color: #956000">
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{staleTitle}}</span><span style="font-size: 12px">{{staleBody}}</span></div>
+        <button type="button" class="m-press" onClick="{{retry}}" style="border: 0; height: 48px; padding: 0 14px; border-radius: 16px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 6px 14px rgba(29,54,53,0.08)">{{retryLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{archived}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: rgba(25,61,51,0.06)">
+        <span style="flex: 1 1 auto; min-width: 0; font-size: 13px; color: #4F625C">{{archivedText}}</span>
+        <button type="button" class="m-press" onClick="{{unarchive}}" style="border: 0; height: 44px; padding: 0 14px; border-radius: 14px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.10)">{{unarchiveLabel}}</button>
+      </div>
+    </sc-if>
+
+    <div class="m-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 8px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+      <span style="font-size: 14px; color: #DCEBD6">{{heroLabel}}</span>
+      <sc-if value="{{noValue}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 30px; font-weight: 700">غير متاح</span>
+          <span style="font-size: 12px; color: #DCEBD6">{{naReason}}</span>
+          <sc-if value="{{naGold}}" hint-placeholder-val="{{ true }}">
+            <button type="button" class="m-press" onClick="{{openPrice}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #064B40; cursor: pointer; background: #DCEBD6">{{writePrice}}</button>
+          </sc-if>
+          <sc-if value="{{naFlat}}" hint-placeholder-val="{{ false }}">
+            <a href="AssetProjection.dc.html" data-keep="{{keepFlat}}" onClick="{{prepFlat}}" class="m-press" style="align-self: flex-start; display: inline-flex; align-items: center; height: 44px; padding: 0 16px; border-radius: 14px; font-size: 13px; font-weight: 700; color: #064B40; text-decoration: none; background: #DCEBD6">{{writeArea}}</a>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasValue}}" hint-placeholder-val="{{ true }}">
+        <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px"><span style="font-size: 16px">{{currency}}</span><span style="font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums">{{valueText}}</span></div>
+      </sc-if>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #DCEBD6"><span>{{priceLine}}</span><span style="{{priceChipStyle}}">{{priceChip}}</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.14)"><span style="color: #DCEBD6">{{unrealLabel}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{unrealText}}</span></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <sc-for list="{{stats}}" as="st" hint-placeholder-count="4">
+        <div style="border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="font-size: 12px; color: #637570">{{st.label}}</span>
+          <span dir="{{st.dir}}" style="{{st.style}}">{{st.value}}</span>
+          <span style="font-size: 11px; color: #637570">{{st.sub}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{isFlat}}" hint-placeholder-val="{{ false }}">
+      <a href="AssetProjection.dc.html" data-keep="{{keepFlat}}" onClick="{{prepFlat}}" class="m-press" style="border-radius: 22px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; color: #193D33; text-decoration: none; background: #DCEBD6">
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700; color: #08634F">{{fullTitle}}</span><span style="font-size: 12px; color: #4F625C">{{fullBody}}</span></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+      </a>
+    </sc-if>
+
+    <div style="display: flex; gap: 10px">
+      <button type="button" class="m-press" onClick="{{openBuy}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{buyLabel}}</button>
+      <button type="button" class="m-press" onClick="{{openSell}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">{{sellLabel}}</button>
+    </div>
+    <span style="font-size: 12px; color: #637570; text-align: center; margin-top: -6px">{{recordOnly}}</span>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{logTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+          <div style="{{r.rowStyle}}">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="{{r.chipStyle}}">{{r.kind}}</span><span style="flex: 1 1 auto; min-width: 0; font-size: 13px; color: #637570">{{r.date}}</span><span dir="ltr" style="{{r.amtStyle}}">{{r.amount}}</span></span>
+            <span style="font-size: 13px">{{r.line}}</span>
+            <sc-if value="{{r.hasSub}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{r.sub}}</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #637570">{{methodNote}}</span>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="font-size: 14px; font-weight: 700">{{srcTitle}}</span>
+      <span style="font-size: 12px; color: #637570">{{srcBody}}</span>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{srcActs}}" as="sa" hint-placeholder-count="2">
+          <button type="button" class="m-press" onClick="{{sa.go}}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{sa.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{canArchive}}" hint-placeholder-val="{{ true }}">
+      <button type="button" class="m-press" onClick="{{archive}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.05)">{{archiveLabel}}</button>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{tradeOpen}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="AssetTradeSheet" space="{{spaceName}}" mode="{{tradeMode}}" asset="{{assetName}}" held="{{heldQ}}" cost="{{costMinor}}" on-save="{{onTrade}}" on-close="{{closeTrade}}" hint-size="390px,844px"></dc-import>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="m-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"asset":{"editor":"enum","options":["حسب اللي اتداس","ذهب","عقار"],"default":"حسب اللي اتداس","section":"الأصل"},"state":{"editor":"enum","options":["عادي","غير متاح","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // «الاستثمار» بيكتب هنا أنهي أصل اتداس (data-keep على الرابط): gold · flat
+    let picked = null;
+    try { picked = window.sessionStorage.getItem('masroufy-asset'); } catch (e) {}
+    this.picked = picked;
+    // «الصورة كاملة» بتكتب هنا سعر المتر الجديد لما تدوس «حدّث سعر المتر في أملاكي»
+    let fp = null;
+    try { fp = JSON.parse(window.sessionStorage.getItem('masroufy-flat-price') || 'null'); } catch (e) {}
+    this.fp = fp;
+    this.state = { added: { gold: [], flat: [] }, manual: null, linked: true, retried: false, archived: false, trade: null, toast: '' };
+    this.timers = [];
+    this.onTrade = (t) => this.trade(t);
+    this.closeTrade = () => this.setState({ trade: null });
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  md(a, b, c) { const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  sgn(m) { return (m < 0 ? '−' : '+') + this.fmt(m); }
+  qt(q) { const f = q % 1000, w = (q - f) / 1000; return w.toLocaleString('ar-EG') + (f ? '٫' + String(f).padStart(3, '0').replace(/0+$/, '').replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : ''); }
+  key() {
+    const a = this.props.asset ?? 'حسب اللي اتداس';
+    return a === 'عقار' ? 'flat' : a === 'ذهب' ? 'gold' : (this.picked === 'flat' ? 'flat' : 'gold');
+  }
+  trade(t) {
+    if (!t || !t.type) return;
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', k = this.key();
+    const unit = k === 'flat' ? 'وحدة' : 'جرام';
+    if (t.type === 'price') { this.setState({ manual: t.price, linked: false, trade: null }); this.say((eg ? 'اتسجّل سعر بإيدك ' : 'حُفظ سعر يدوي ') + this.fmt(t.price) + (eg ? ' بتاريخ النهارده' : ' بتاريخ اليوم')); return; }
+    this.setState({ added: Object.assign({}, this.state.added, { [k]: this.state.added[k].concat([t]) }), trade: null });
+    const what = (t.type === 'buy' ? (eg ? 'اتسجّل شراء ' : 'سُجّل شراء ') : (eg ? 'اتسجّل بيع ' : 'سُجّل بيع ')) + this.qt(t.q) + ' ' + unit;
+    this.say(what + (t.type === 'sell' ? (eg ? ' — الفلوس دي مش دخل' : ' — الحصيلة ليست دخلًا') : t.op ? (eg ? ' — و«' + t.op + '» بقت شراء أصل، برّه المصروف' : ' — وصارت «' + t.op + '» شراء أصل، خارج المصروف') : (eg ? ' — التكلفة والمتوسط اتحدّثوا' : ' — تحدّثت التكلفة والمتوسط')));
+  }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const k = this.key(), flat = k === 'flat', s = this.state;
+    const unit = flat ? 'وحدة' : 'جرام';
+    // مخترعة · الكمية بالألف من الوحدة · المبالغ بالوحدة الصغرى · [التاريخ، الكمية، المبلغ، الرسوم] — نفس أصول «الاستثمار»
+    let D = {
+      gold: eg ? { lots: [['١٢ مارس ٢٠٢٤', 50000, 15500000, 150000], ['٥ فبراير ٢٠٢٥', 40000, 16800000, 120000]], sales: [['٢٠ يونيو ٢٠٢٥', 10000, 4800000, 0]], price: 525000, stale: 521000 }
+        : { lots: [['١٢ مارس ٢٠٢٤', 80000, 2160000, 32000], ['٥ فبراير ٢٠٢٥', 60000, 1980000, 24000]], sales: [['٢٠ يونيو ٢٠٢٥', 20000, 740000, 0]], price: 43800, stale: 43650 },
+      flat: eg ? { lots: [['١٠ مايو ٢٠١٩', 1000, 150000000, 4500000]], sales: [], price: 384000000, sqm: 3200000 }
+        : { lots: [['١٠ مايو ٢٠١٩', 1000, 48000000, 1200000]], sales: [], price: 57600000, sqm: 480000 }
+    }[k];
+    const fp = flat && this.fp && this.fp.eg === eg ? this.fp : null;
+    if (fp) D = Object.assign({}, D, { price: fp.value, sqm: fp.sqm });
+    const areaText = (fp ? this.qt(fp.area) : '١٢٠') + ' م²';
+    const ev = D.lots.map((l) => ({ type: 'buy', date: l[0], q: l[1], v: l[2], f: l[3], op: '' }))
+      .concat(D.sales.map((x) => ({ type: 'sell', date: x[0], q: x[1], v: x[2], f: x[3], op: '' }))).concat(s.added[k]);
+    // المتوسط المرجّح (§11): رسوم الشراء في التكلفة · البيع بيقتطع حصته بالنسبة · الباقي بالطرح عشان مفيش هللة تضيع
+    let qty = 0, cost = 0, realized = 0, sold = 0;
+    const rows = ev.map((e) => {
+      if (e.type === 'buy') { qty += e.q; cost += e.v + e.f; return { e, share: 0, gain: 0 }; }
+      const share = this.md(cost, e.q, qty); cost -= share; qty -= e.q; sold += e.q;
+      const gain = e.v - e.f - share; realized += gain; return { e, share, gain };
+    }).reverse().map(({ e, share, gain }, i, all) => ({
+      kind: e.type === 'buy' ? 'شراء' : 'بيع', date: e.date,
+      chipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; ' + (e.type === 'buy' ? 'color: #2469BA; background: rgba(36,105,186,0.10)' : 'color: #13764D; background: #DCEBD6'),
+      amount: e.type === 'buy' ? '−' + this.fmt(e.v + e.f) : '+' + this.fmt(e.v - e.f),
+      amtStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (e.type === 'buy' ? '#BE3D48' : '#13764D'),
+      line: this.qt(e.q) + ' ' + unit + ' · ' + this.fmt(e.v) + (e.f ? (eg ? ' + رسوم ' : ' + رسوم ') + this.fmt(e.f) : (eg ? ' من غير رسوم' : ' بلا رسوم')),
+      hasSub: e.type === 'sell' || !!e.op,
+      sub: e.type === 'sell' ? (eg ? 'حصة التكلفة ' : 'حصة التكلفة ') + this.fmt(share) + ' · ' + (eg ? 'المكسب ' : 'المكسب المحقق ') + '\u2066' + this.sgn(gain) + '\u2069' : (eg ? 'مربوط بعملية «' : 'مربوط بعملية «') + e.op + '»',
+      rowStyle: 'display: flex; flex-direction: column; gap: 4px; padding: 12px 0;' + (i === all.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+    }));
+    const stale = st === 'خطأ' && !s.retried && !flat;
+    const missing = st === 'غير متاح' && s.manual == null;
+    const price = missing ? null : s.manual != null ? s.manual : stale ? D.stale : D.price;
+    const market = price == null ? null : this.md(qty, price, 1000);
+    const chipS = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
+    const pc = price == null ? [eg ? 'ناقص' : 'ناقص', '#FFFFFF', 'rgba(255,255,255,0.18)'] : s.manual != null || flat || !s.linked ? [eg ? 'بإيدك' : 'يدوي', '#064B40', '#9BC5FF'] : stale ? ['قديم', '#6B4600', '#F3C96B'] : [eg ? 'جديد' : 'حديث', '#064B40', '#A6DEC1'];
+    const priceLine = price == null ? (flat ? (eg ? 'سعر المتر مش متسجّل' : 'سعر المتر غير مسجّل') : (eg ? 'سعر الدهب النهارده ما وصلش' : 'لم يصل سعر الذهب اليوم'))
+      : flat ? areaText + ' × ' + this.fmt(D.sqm) + (eg ? ' للمتر · ' : ' للمتر · ') + (fp ? (eg ? 'النهارده' : 'اليوم') : '١ أكتوبر')
+      : (eg ? 'السعر ' : 'السعر ') + this.fmt(price) + (eg ? ' للجرام · ' : ' للجرام · ') + (s.manual != null ? (eg ? 'النهارده' : 'اليوم') : stale ? (eg ? '٦ أكتوبر ٥ ص — بقاله يوم' : '٦ أكتوبر ٥ ص — مضى عليه يوم') : (eg ? 'النهارده ٥ ص' : 'اليوم ٥ ص'));
+    const stat = (label, value, sub, color, isNum) => ({ label, value, sub, dir: isNum ? 'ltr' : 'rtl', style: 'font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; color: ' + (color || '#193D33') });
+    const stats = [
+      stat(eg ? 'الكمية' : 'الكمية', flat && qty === 1000 ? 'وحدة واحدة' : this.qt(qty) + ' ' + unit, flat ? areaText : (eg ? 'عيار ٢١' : 'عيار ٢١'), null, false),
+      stat(eg ? 'متوسط التكلفة' : 'متوسط التكلفة', qty ? this.fmt(this.md(cost, 1000, qty)) : '—', (eg ? 'لل' : 'لل') + unit + (eg ? ' · متوسط مرجّح' : ' · متوسط مرجّح'), null, true),
+      stat(eg ? 'التكلفة' : 'التكلفة', this.fmt(cost), eg ? 'فيها رسوم الشراء' : 'تشمل رسوم الشراء', null, true),
+      stat(eg ? 'المكسب المحقق' : 'المكسب المحقق', sold ? this.sgn(realized) : (eg ? 'مفيش بيع' : 'لا مبيعات'), sold ? (eg ? 'من بيع ' : 'من بيع ') + this.qt(sold) + ' ' + unit : (eg ? 'لسه ما بعتش' : 'لم تبع بعد'), sold ? (realized < 0 ? '#BE3D48' : '#13764D') : '#637570', !!sold)
+    ];
+    const keepFlat = JSON.stringify({ 'masroufy-asset': 'flat' });
+    const prepFlat = () => { try { window.sessionStorage.setItem('masroufy-asset', 'flat'); } catch (e) {} };
+    const open = (mode) => () => this.setState({ trade: mode });
+    const srcActs = flat ? [] : [{ label: eg ? 'سعر بإيدك' : 'سعر يدوي', go: open('سعر يدوي') }].concat(s.linked
+      ? [{ label: eg ? 'فك الربط' : 'فك الربط', go: () => { this.setState({ linked: false }); this.say(eg ? 'اتفك الربط — السعر بيفضل زي ما هو لحد ما تكتب غيره' : 'فُكّ الربط — يبقى السعر كما هو حتى تكتب غيره'); } }]
+      : [{ label: eg ? 'اربطه بالسعر اليومي' : 'اربطه بالسعر اليومي', go: () => { this.setState({ linked: true, manual: null }); this.say(eg ? 'اتربط بسعر الدهب اليومي' : 'رُبط بسعر الذهب اليومي'); } }]);
+    return {
+      spaceName: eg ? 'مصر' : 'السعودية', currency: cur,
+      title: flat ? 'شقة الياسمين' : 'ذهب عيار ٢١', kind: flat ? 'عقار' : 'ذهب',
+      isStale: stale, staleTitle: eg ? 'ما قدرناش نحدّث الأسعار' : 'تعذّر تحديث الأسعار', staleBody: eg ? 'المعروض بسعر آخر تحديث نجح.' : 'المعروض بسعر آخر تحديث ناجح.',
+      retryLabel: eg ? 'جرّب تاني' : 'أعد المحاولة', retry: () => { this.setState({ retried: true }); this.say(eg ? 'الأسعار اتحدّثت' : 'تحدّثت الأسعار'); },
+      archived: s.archived, archivedText: eg ? 'متأرشف — مش داخل في إجمالي أملاكك، وسجله موجود.' : 'مؤرشف — لا يدخل في إجمالي أملاكك، وسجله باقٍ.',
+      unarchiveLabel: eg ? 'رجّعه' : 'أعِده', unarchive: () => { this.setState({ archived: false }); this.say(eg ? 'رجع لأملاكك' : 'عاد إلى أملاكك'); },
+      heroLabel: eg ? 'قيمته النهارده بسعر السوق' : 'قيمته اليوم بسعر السوق',
+      noValue: market == null, hasValue: market != null, valueText: market == null ? '' : this.fmt(market),
+      naReason: flat ? (eg ? 'قيمة الأصل النهارده غير متاحة: اكتب سعره، أو المساحة وسعر المتر' : 'قيمة الأصل اليوم غير متاحة: اكتب سعره، أو المساحة وسعر المتر') : (eg ? 'مفيش سعر متسجّل. القيمة دلوقتي غير متاحة' : 'لا سعر مسجّل. القيمة الحالية غير متاحة'),
+      naGold: !flat, naFlat: flat, writePrice: eg ? 'اكتب سعر بإيدك' : 'اكتب سعرًا يدويًا', writeArea: eg ? 'اكتب المساحة وسعر المتر' : 'اكتب المساحة وسعر المتر',
+      openPrice: open('سعر يدوي'), keepFlat, prepFlat,
+      priceLine, priceChip: pc[0], priceChipStyle: chipS(pc[1], pc[2]),
+      unrealLabel: eg ? 'المكسب اللي لسه ما اتحققش' : 'المكسب غير المحقق', unrealText: market == null ? 'غير متاح' : this.sgn(market - cost),
+      stats, isFlat: flat,
+      fullTitle: eg ? 'الصورة كاملة' : 'الصورة كاملة', fullBody: eg ? 'هتساوي كام لو بعتها؟ السعر وقت البيع + الإيجار + المكسب من يوم الشراء' : 'كم ستساوي لو بعتها؟ السعر عند البيع + الإيجار + المكسب منذ الشراء',
+      buyLabel: 'شراء', sellLabel: 'بيع', openBuy: open('شراء'), openSell: open('بيع'),
+      recordOnly: eg ? 'تسجيل بس — التطبيق مش بيشتري ولا بيبيع.' : 'تسجيل فقط — لا يشتري التطبيق ولا يبيع.',
+      logTitle: eg ? 'الشراء والبيع' : 'المشتريات والمبيعات', rows,
+      methodNote: eg ? 'التكلفة بالمتوسط المرجّح: رسوم الشراء بتدخل فيها، ورسوم البيع بتتخصم من الفلوس اللي قبضتها.' : 'التكلفة بالمتوسط المرجّح: رسوم الشراء تدخل فيها، ورسوم البيع تُخصم من الحصيلة.',
+      srcTitle: flat ? (eg ? 'سعر المتر بإيدك' : 'سعر المتر يدوي') : s.linked ? (eg ? 'مربوط بالسعر اليومي' : 'مربوط بالسعر اليومي') : (eg ? 'سعر بإيدك' : 'سعر يدوي'),
+      srcBody: flat ? (eg ? 'مفيش مصدر تلقائي لسعر المتر لسه — حدّثه من «الصورة كاملة».' : 'لا مصدر تلقائي لسعر المتر بعد — حدّثه من «الصورة كاملة».')
+        : s.linked ? (eg ? 'سعر الدهب عيار ٢١ من ملف الأسعار، بيتحدّث ٥ الصبح كل يوم. لو المصدر وقع، مفيش سعر بيتألّف.' : 'سعر الذهب عيار ٢١ من ملف الأسعار، يتحدّث ٥ صباحًا كل يوم. إن تعطّل المصدر لا يُختلق سعر.')
+        : (eg ? 'مش بيتحدّث لوحده. بيفضل آخر سعر لحد ما تكتب غيره.' : 'لا يتحدّث وحده. يبقى آخر سعر حتى تكتب غيره.'),
+      srcActs,
+      canArchive: !s.archived, archiveLabel: eg ? 'أرشف الأصل' : 'أرشفة الأصل',
+      archive: () => { this.setState({ archived: true }); this.say(eg ? 'اتأرشف — خرج من إجمالي أملاكك وسجله موجود' : 'أُرشف — خرج من إجمالي أملاكك وسجله باقٍ'); },
+      tradeOpen: !!s.trade, tradeMode: s.trade || 'شراء', assetName: flat ? 'عقار' : 'ذهب', heldQ: qty, costMinor: cost,
+      onTrade: this.onTrade, closeTrade: this.closeTrade,
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

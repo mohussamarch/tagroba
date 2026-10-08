@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مراجعة الكشف — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.v-in{animation:v-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes v-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.v-toast{animation:v-toast 3200ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes v-toast{0%{opacity:0;transform:translateY(10px)}10%{opacity:1;transform:none}88%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.v-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 120px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="StatementImport.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; background: #FBF0DD; color: #6B4600">
+        <span style="font-size: 14px; font-weight: 700; color: #956000">{{errTitle}}</span><span style="font-size: 13px">{{errBody}}</span>
+        <button type="button" class="m-press" onClick="{{redo}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.8)">{{redoLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+        <a href="ImportBatches.dc.html" class="m-press" style="margin-top: 8px; min-height: 44px; padding: 0 18px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08)">{{batchesLabel}}</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+          <span style="font-size: 12px; color: #DCEBD6; overflow-wrap: anywhere"><span style="unicode-bidi: isolate">{{fileName}}</span> · {{walletName}}</span>
+          <span style="font-size: 18px; font-weight: 700">{{heroTitle}}</span>
+          <div style="display: flex; flex-direction: column; border-radius: 14px; padding: 2px 12px; background: rgba(255,255,255,0.10)">
+            <sc-for list="{{impacts}}" as="im" hint-placeholder-count="3">
+              <span style="{{im.rowStyle}}"><span style="font-size: 12px; color: #DCEBD6">{{im.label}}</span><span dir="ltr" style="{{im.style}}">{{im.value}}</span></span>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; color: #DCEBD6">{{mergeNote}}</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{counters}}" as="ct" hint-placeholder-count="5">
+            <button type="button" class="m-press" aria-pressed="{{ct.pressed}}" onClick="{{ct.go}}" style="{{ct.style}}"><span style="font-size: 18px; font-weight: 700">{{ct.n}}</span><span style="font-size: 11px">{{ct.label}}</span></button>
+          </sc-for>
+        </div>
+        <sc-if value="{{filtered}}" hint-placeholder-val="{{ false }}">
+          <span style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #637570">{{filterLine}}<button type="button" class="m-press" onClick="{{showAll}}" style="height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{showAllLabel}}</button></span>
+        </sc-if>
+
+        <div style="border-radius: 22px; padding: 4px 12px 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{rows}}" as="l" hint-placeholder-count="5">
+            <div style="{{l.rowStyle}}">
+              <sc-if value="{{l.selectable}}" hint-placeholder-val="{{ true }}">
+                <button type="button" role="checkbox" aria-checked="{{l.checked}}" aria-label="{{l.name}}" onClick="{{l.toggle}}" disabled="{{l.locked}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                  <span style="{{l.box}}"><sc-if value="{{l.on}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if></span>
+                </button>
+              </sc-if>
+              <sc-if value="{{l.fixed}}" hint-placeholder-val="{{ false }}">
+                <span aria-hidden="true" style="width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><span style="{{l.dot}}"></span></span>
+              </sc-if>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 4px">
+                <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 700">{{l.name}}</span><span dir="ltr" style="{{l.amountStyle}}">{{l.amount}}</span></span>
+                <span style="font-size: 12px; color: #637570">{{l.sub}}</span>
+                <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="{{l.chipStyle}}">{{l.chip}}</span><sc-if value="{{l.hasCat}}" hint-placeholder-val="{{ true }}"><span style="{{l.catStyle}}">{{l.cat}}</span></sc-if></span>
+                <sc-if value="{{l.hasReason}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.6; color: #637570">{{l.reason}}</span></sc-if>
+                <sc-if value="{{l.canCompare}}" hint-placeholder-val="{{ false }}"><button type="button" class="m-press" onClick="{{l.compare}}" style="align-self: flex-start; height: 36px; padding: 0 14px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{compareLabel}}</button></sc-if>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #637570">{{footNote}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{showBar}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(0deg, rgba(239,243,237,0.97) 60%, rgba(239,243,237,0.0)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)">
+      <sc-if value="{{notDone}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{commit}}" disabled="{{cantCommit}}" aria-busy="{{busy}}" style="{{commitStyle}}">{{commitLabel}}</button>
+      </sc-if>
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <a href="ImportBatches.dc.html" class="m-press" style="height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 15px; font-weight: 700; color: #08634F; background: #DCEBD6">{{batchesLabel}}</a>
+      </sc-if>
+      <span style="font-size: 11px; color: #637570; text-align: center">{{barNote}}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{dupOpen}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="ImportDuplicateSheet" space="{{spaceName}}" line="{{dupLine}}" on-decide="{{onDecide}}" on-close="{{onClose}}" hint-size="350px,420px"></dc-import>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 110px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="v-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let file = null, wallet = null;
+    try { file = window.sessionStorage.getItem('importFile'); wallet = window.sessionStorage.getItem('importWallet'); } catch (e) {}
+    this.state = { src: null, sel: {}, dec: {}, filter: null, open: null, phase: 'review', err: false, toast: '', file, wallet };
+    this.timers = [];
+    this.onDecide = (id, action) => {
+      const sel = Object.assign({}, this.state.sel), dec = Object.assign({}, this.state.dec, { [id]: action });
+      if (action === 'add' || action === 'split') sel[id] = true;
+      if (action === 'skip' || action === 'merge') sel[id] = false;
+      this.go({ sel, dec, open: null });
+    };
+    this.onClose = () => this.go({ open: null });
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 3300)); this.setState({ toast: msg }); }
+  key() { return (this.props.state ?? 'عادي') + '|' + (this.props.space ?? 'السعودية'); }
+  cur() {
+    if (this.state.src === this.key()) return this.state;
+    const st = this.props.state ?? 'عادي';
+    return Object.assign({}, this.state, { sel: {}, dec: {}, filter: null, open: null, phase: st === 'بيحمّل' ? 'saving' : 'review', err: st === 'خطأ' });
+  }
+  go(patch) { this.setState(Object.assign({}, this.cur(), { src: this.key() }, patch)); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const s = this.cur();
+    const money = (m) => m == null ? 'غير متاح' : (m < 0 ? '−' : '+') + this.fmt(m) + ' ' + cur;
+    // الفئة: [الاسم، اللون، الخلفية] — من عيلة لون التصنيف
+    const C = { shop: [eg ? 'بقالة' : 'بقالة وسوبرماركت', '#3866A7', 'rgba(56,102,167,0.12)'], car: ['بنزين', '#4D747C', 'rgba(77,116,124,0.12)'], health: ['صحة', '#A55060', 'rgba(165,80,96,0.12)'], food: [eg ? 'أكل وقهوة' : 'مطاعم وقهوة', '#A36A21', 'rgba(163,106,33,0.12)'], none: [eg ? 'غير مصنف' : 'غير مصنّف', '#637570', 'rgba(99,117,112,0.12)'], move: [eg ? 'بين محافظك' : 'بين محافظك', '#2469BA', 'rgba(36,105,186,0.10)'], pay: [eg ? 'مرتب' : 'راتب', '#13764D', 'rgba(19,118,77,0.10)'] };
+    const SRC = { rule: eg ? 'مقترح من قاعدة' : 'مقترح من قاعدة', merchant: eg ? 'تصنيف المحل المؤكد' : 'تصنيف المتجر المؤكد', fresh: eg ? 'محل جديد' : 'متجر جديد', income: eg ? 'مصدر دخل معروف' : 'مصدر دخل معروف', own: (eg ? 'عرفناه من آخر ٤ أرقام (٥٥١٨): حسابك في الأهلي' : 'عُرف من آخر ٤ أرقام (٧٢١٠): حسابك في الإنماء') };
+    const msgSrc = eg ? 'رسالة البنك' : 'رسالة البنك', manual = eg ? 'سجّلتها بإيدك' : 'سجّلتها يدويًا', prev = eg ? 'من كشف أغسطس' : 'من كشف أغسطس';
+    // مخترعة · بالوحدة الصغرى · st: new جديد · dup مكرر (merge = يندمج مع رسالة §75-10) · sim شبيه · conf تعارض · bad غير صالح
+    const D = [
+      { id: 'l1', row: 2, st: 'new', name: 'سوبرماركت الحي', d: '٢ سبتمبر', amt: -31840, kind: 'out', cat: 'shop', src: 'rule' },
+      { id: 'l2', row: 3, st: 'dup', merge: true, name: eg ? 'كافيه المرسى' : 'مقهى المرسى', d: '٣ سبتمبر', amt: -2300, cat: 'food', src: 'merchant', old: { d: '٢ سبتمبر', src: msgSrc }, diff: 'when' },
+      { id: 'l3', row: 4, st: 'new', name: eg ? 'بنزينة' : 'محطة وقود', d: '٤ سبتمبر', amt: -9000, kind: 'out', cat: 'car', src: 'merchant' },
+      { id: 'l4', row: 5, st: 'dup', name: eg ? 'اشتراك النت' : 'اشتراك الإنترنت', d: '٥ سبتمبر', amt: -23000, old: { d: '٥ سبتمبر', src: prev } },
+      { id: 'l5', row: 6, st: 'new', name: eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', d: '٨ سبتمبر', amt: -6750, kind: 'out', cat: 'health', src: 'rule' },
+      { id: 'l6', row: 7, st: 'dup', merge: true, name: 'مكتبة الفجر', d: '١٠ سبتمبر', amt: -4500, old: { d: '١٠ سبتمبر', src: msgSrc } },
+      { id: 'l7', row: 8, st: 'sim', name: eg ? 'مطعم الفول' : 'مطعم الريف', d: '١٤ سبتمبر', amt: -4200, kind: 'out', cat: 'food', src: 'merchant', old: { d: '١٤ سبتمبر', src: manual } },
+      { id: 'l8', row: 9, st: 'new', name: eg ? 'فرن الندى' : 'مخبز الندى', d: '١٦ سبتمبر', amt: -1850, kind: 'out', cat: 'none', src: 'fresh' },
+      { id: 'l9', row: 10, st: 'conf', name: 'متجر إلكتروني', d: '١٩ سبتمبر', amt: -15900, old: { d: '١٩ سبتمبر', src: prev, amt: -14900 }, diff: 'amount' },
+      { id: 'l10', row: 11, st: 'bad', name: eg ? 'رسوم خدمة' : 'رسوم خدمة', d: '٢٢ سبتمبر', amt: null },
+      { id: 'l11', row: 12, st: 'sim', name: 'بقالة الحي', d: '٢٥ سبتمبر', amt: -5600, kind: 'out', cat: 'shop', src: 'rule', old: { d: '٢٥ سبتمبر', src: manual } },
+      { id: 'l12', row: 13, st: 'new', name: eg ? 'تحويل لحسابي في الأهلي' : 'تحويل إلى حسابي في الإنماء', d: '٢٧ سبتمبر', amt: -200000, kind: 'move', cat: 'move', src: 'own' },
+      { id: 'l13', row: 14, st: 'new', name: eg ? 'مرتب سبتمبر — شركة الأفق' : 'راتب سبتمبر — شركة الأفق', d: '٢٨ سبتمبر', amt: 1250000, kind: 'in', cat: 'pay', src: 'income' }
+    ].map((x) => Object.assign(x, { amt: x.amt == null ? null : x.amt * k, old: x.old ? Object.assign({}, x.old, { amt: x.old.amt ? x.old.amt * k : null }) : null }));
+    const selectable = (x) => x.st === 'new' || x.st === 'sim' || (x.merge && s.dec[x.id] === 'split');
+    const isOn = (x) => selectable(x) && (x.id in s.sel ? !!s.sel[x.id] : x.st === 'new');
+    const picked = D.filter(isOn);
+    let wallet = 0, spent = 0, earned = 0;
+    picked.forEach((x) => { wallet += x.amt; if (x.kind === 'out' || x.merge) spent -= x.amt; if (x.kind === 'in') earned += x.amt; });
+    const ST = { new: ['جديد', '#08634F', '#DCEBD6'], dup: ['مكرر', '#637570', 'rgba(99,117,112,0.12)'], sim: ['شبيه', '#956000', '#FBF0DD'], conf: ['تعارض', '#BE3D48', 'rgba(190,61,72,0.10)'], bad: ['غير صالح', '#6B4600', 'rgba(107,70,0,0.10)'] };
+    const count = (key) => D.filter((x) => x.st === key).length;
+    const merges = D.filter((x) => x.merge && s.dec[x.id] !== 'split').length;
+    const locked = s.phase !== 'review' || s.err;
+    const chip = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
+    const reasonOf = (x) => {
+      const dd = s.dec[x.id];
+      if (x.merge) return dd === 'split' ? (eg ? 'هتتسجل عملية لوحدها، مش مع الرسالة.' : 'تُسجَّل عملية مستقلة عن الرسالة.') : (eg ? 'نفس عملية رسالة البنك يوم ' + x.old.d + ' — بتنضاف لها كمصدر تاني ومش بتتكرر.' : 'عملية رسالة البنك نفسها (' + x.old.d + ') — تُضاف إليها مصدرًا ثانيًا ولا تتكرر.');
+      if (x.st === 'dup') return eg ? 'نفس سطر الكشف متسجل قبل كده من كشف أغسطس.' : 'سطر الكشف نفسه مسجل سابقًا من كشف أغسطس.';
+      if (x.st === 'sim') return dd === 'skip' ? (eg ? 'قلت إنها نفسها — مش هتتضاف.' : 'قلت إنها نفسها — لن تُضاف.') : dd === 'add' ? (eg ? 'هتتضاف عملية لوحدها.' : 'تُضاف عملية مستقلة.') : (eg ? 'شبه عملية سجّلتها بإيدك نفس اليوم — مش مختارة لحد ما تقرر.' : 'تشبه عملية سجّلتها يدويًا في اليوم نفسه — غير مختارة حتى تقرر.');
+      if (x.st === 'conf') return dd === 'keep' ? (eg ? 'سبت القديم زي ما هو.' : 'أبقيت القديم كما هو.') : (eg ? 'نفس المرجع بمبلغ مختلف — القديم بيفضل زي ما هو.' : 'المرجع نفسه بمبلغ مختلف — يبقى القديم كما هو.');
+      if (x.st === 'bad') return eg ? 'العملية فيها مدين ودائن مع بعض — مش واضح اتجاهها.' : 'في العملية مدين ودائن معًا — اتجاهها غير واضح.';
+      return '';
+    };
+    const rows = D.filter((x) => !s.filter || x.st === s.filter).map((x, i, a) => {
+      const sel = selectable(x), on = isOn(x), c = C[x.cat] || C.none, t = x.merge ? [eg ? 'عملية واحدة بمصدرين' : 'عملية واحدة بمصدرين', '#2469BA', 'rgba(36,105,186,0.10)'] : ST[x.st];
+      return {
+        name: x.name, sub: x.d + ' · ' + (eg ? 'سطر ' : 'الصف ') + n(x.row), amount: money(x.amt),
+        amountStyle: 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (x.amt == null ? '#637570' : x.amt < 0 ? '#BE3D48' : '#13764D') + (x.amt == null ? '; font-size: 12px' : ''),
+        chip: x.merge && s.dec[x.id] === 'split' ? (eg ? 'منفصلة' : 'منفصلة') : t[0], chipStyle: chip(t[1], t[2]),
+        hasCat: sel, cat: c[0] + ' · ' + SRC[x.src || 'fresh'], catStyle: chip(c[1], c[2]).replace('font-weight: 700; ', ''),
+        reason: reasonOf(x), hasReason: x.st !== 'new',
+        canCompare: x.st !== 'new' && x.st !== 'bad' && !locked, compare: () => this.go({ open: x.id }),
+        selectable: sel, fixed: !sel, on, checked: on ? 'true' : 'false', locked,
+        toggle: () => { if (!locked) this.go({ sel: Object.assign({}, s.sel, { [x.id]: !on }) }); },
+        box: 'width: 22px; height: 22px; box-sizing: border-box; border-radius: 7px; display: flex; align-items: center; justify-content: center; ' + (on ? 'background: #08634F' : 'border: 1.5px solid #9AA9A4; background: #FFFFFF') + (locked ? '; opacity: 0.5' : ''),
+        dot: 'width: 10px; height: 10px; border-radius: 5px; background: ' + t[1],
+        rowStyle: 'display: flex; align-items: flex-start; gap: 6px; padding: 8px 0;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      };
+    });
+    const counters = [['new', 'جديد'], ['dup', 'مكرر'], ['sim', 'شبيه'], ['conf', 'تعارض'], ['bad', 'غير صالح']].map(([key, label]) => {
+      const active = s.filter === key;
+      return { n: n(count(key)), label, pressed: active ? 'true' : 'false', go: () => this.go({ filter: active ? null : key }),
+        style: 'min-height: 56px; padding: 6px 2px; border: 0; border-radius: 16px; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; color: ' + ST[key][1] + '; background: ' + (active ? ST[key][2] + '; box-shadow: inset 0 0 0 1.5px ' + ST[key][1] : 'linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 1px 2px rgba(29,54,53,0.05), 0 8px 18px rgba(29,54,53,0.07)') };
+    });
+    const target = D.find((x) => x.id === s.open);
+    const side = (x, o) => ({ name: x.name, amount: money(o ? (o.amt || x.amt) : x.amt), when: o ? o.d : x.d, src: o ? o.src : (eg ? 'سطر ' : 'الصف ') + n(x.row) + (eg ? ' في الكشف' : ' في الكشف') });
+    const dupLine = target ? { id: target.id, kind: target.merge ? 'merge' : target.st, diff: target.diff || null, newSide: side(target, null), oldSide: side(target, target.old),
+      reason: target.merge && !target.diff ? (eg ? 'نفس المبلغ والاتجاه والمحفظة ونفس اليوم، وواحدة منهم رسالة بنك. بتبقى عملية واحدة بمصدرين.' : 'المبلغ والاتجاه والمحفظة واليوم نفسها، وأحد المصدرين رسالة بنك. تبقى عملية واحدة بمصدرين.') : null } : null;
+    const fileName = s.file || (eg ? 'كشف-QNB-سبتمبر.pdf' : 'كشف-الراجحي-سبتمبر.pdf');
+    const walletName = s.wallet || (eg ? 'QNB مصر' : 'مصرف الراجحي · حساب الراتب');
+    const done = s.phase === 'done', saving = s.phase === 'saving';
+    const notAdded = D.length - picked.length - merges;
+    return {
+      title: eg ? 'مراجعة الكشف' : 'مراجعة الكشف',
+      isError: !!s.err && st !== 'فاضي', errTitle: eg ? 'فيه بيانات اتغيرت بعد المعاينة' : 'تغيّرت بيانات بعد المعاينة', errBody: eg ? 'اعمل معاينة جديدة علشان نمنع التكرار. مفيش حاجة اتسجلت.' : 'أعد المعاينة لمنع التكرار. لم يُسجَّل شيء.',
+      redoLabel: eg ? 'معاينة جديدة' : 'أعد المعاينة', redo: () => { this.go({ err: false, sel: {}, dec: {} }); this.say(eg ? 'اتعملت معاينة جديدة' : 'أُعيدت المعاينة'); },
+      isEmpty: st === 'فاضي', showMain: st !== 'فاضي', spaceName: eg ? 'مصر' : 'السعودية',
+      emptyTitle: eg ? 'الملف ده اتستورد قبل كده' : 'استوردت هذا الملف من قبل',
+      emptyBody: eg ? 'يوم ٢ أكتوبر: اتسجلت ١١ عملية ومتضافش ٢. كل اللي فيه متسجل، فمفيش حاجة جديدة.' : 'في ٢ أكتوبر: سُجّلت ١١ عملية ولم تُضف عمليتان. كل ما فيه مسجل، فلا جديد.',
+      batchesLabel: eg ? 'دفعات الاستيراد' : 'دفعات الاستيراد',
+      fileName, walletName,
+      heroTitle: done ? (eg ? 'اتسجلت ' : 'سُجّلت ') + plural(picked.length, OPS) : (eg ? 'أثر المختار: ' : 'أثر المحدد: ') + plural(picked.length, OPS),
+      impacts: [[eg ? 'على المحفظة' : 'على المحفظة', wallet, wallet < 0 ? '#FFC9CE' : '#A6DEC1'], [eg ? 'المصروف' : 'المصروف', -spent, '#FFC9CE'], [eg ? 'الدخل' : 'الدخل', earned, '#A6DEC1']].map(([label, v, c], i) => ({ label, value: v ? money(v) : '0.00 ' + cur, rowStyle: 'display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 7px 0;' + (i < 2 ? ' border-bottom: 1px solid rgba(255,255,255,0.12);' : ''), style: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + c })),
+      mergeNote: merges ? plural(merges, eg ? ['سطر واحد', 'سطرين', 'سطور', 'سطر'] : ['سطر واحد', 'سطران', 'أسطر', 'سطرًا']) + (eg ? ' بيتدمجوا مع رسايل البنك: عملية واحدة بمصدرين.' : ' تندمج مع رسائل البنك: عملية واحدة بمصدرين.') : (eg ? 'مفيش دمج مع رسايل البنك.' : 'لا دمج مع رسائل البنك.'),
+      counters, filtered: !!s.filter, filterLine: (eg ? 'بيعرض: ' : 'يعرض: ') + (ST[s.filter] || [''])[0] + (eg ? ' بس' : ' فقط'),
+      showAllLabel: eg ? 'اعرض الكل' : 'اعرض الكل', showAll: () => this.go({ filter: null }),
+      rows, compareLabel: eg ? 'قارن' : 'قارن',
+      footNote: eg ? 'المكرر وغير الصالح مش بيتضافوا. التعارض بيفضل القديم فيه زي ما هو لحد ما تعدّله بنفسك.' : 'المكرر وغير الصالح لا يُضافان. في التعارض يبقى القديم كما هو حتى تعدّله بنفسك.',
+      dupOpen: !!target, dupLine, onDecide: this.onDecide, onClose: this.onClose,
+      showBar: st !== 'فاضي', notDone: !done, isDone: done, busy: saving ? 'true' : 'false',
+      cantCommit: locked || !picked.length,
+      commitLabel: saving ? (eg ? 'بيتسجل…' : 'جارٍ التسجيل…') : (eg ? 'سجّل ' : 'سجّل ') + plural(picked.length, OPS),
+      commitStyle: 'height: 52px; border: 0; border-radius: 16px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22);' + (locked || !picked.length ? ' opacity: 0.5; cursor: default' : ''),
+      barNote: done ? (eg ? 'تقدر ترجّع الدفعة كلها من «دفعات الاستيراد».' : 'يمكنك إرجاع الدفعة كلها من «دفعات الاستيراد».') : saving ? (eg ? 'الدوس تاني مش هيكرر حاجة.' : 'الضغط مرة أخرى لا يكرر شيئًا.') : (eg ? 'كله بيتسجل مرة واحدة أو مفيش خالص.' : 'يُسجَّل الكل دفعة واحدة أو لا شيء.'),
+      commit: () => {
+        if (locked || !picked.length) return;
+        this.go({ phase: 'saving', filter: null });
+        this.timers.push(setTimeout(() => {
+          this.setState({ phase: 'done' });
+          this.say((eg ? 'اتسجلت ' : 'سُجّلت ') + plural(picked.length, OPS) + (merges ? '، ' + n(merges) + (eg ? ' اتدمجت مع رسايل' : ' اندمجت مع رسائل') : '') + '، ' + n(notAdded) + (eg ? ' ما اتضافتش' : ' لم تُضف'));
+        }, 1300));
+      },
+      hasToast: !!this.state.toast, toast: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

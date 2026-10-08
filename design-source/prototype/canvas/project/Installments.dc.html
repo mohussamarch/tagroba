@@ -32,7 +32,7 @@ body{margin:0}
     </div>
 
     <sc-for list="{{plans}}" as="p" hint-placeholder-count="2">
-      <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <a href="InstallmentDetail.dc.html" data-keep="{{p.keep}}" class="m-press" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09); color: inherit; text-decoration: none">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
           <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{p.name}}</span><span style="font-size: 12px; color: #637570">{{p.kind}}</span></span>
           <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{p.inst}}</span>
@@ -43,7 +43,7 @@ body{margin:0}
         <sc-if value="{{p.hasProfit}}" hint-placeholder-val="{{ false }}">
           <span style="font-size: 12px; color: #637570">{{p.profit}}</span>
         </sc-if>
-      </div>
+      </a>
     </sc-for>
     <span style="font-size: 12px; color: #637570">{{note}}</span>
   </div>
@@ -58,13 +58,13 @@ class Component extends DCLogic {
     const n = (x) => x.toLocaleString('ar-EG');
     // مخترعة: total = عدد الأقساط · done = اللي اتدفع · received = مبلغ التمويل المستلم (null = لسه ما اتربطش، مش صفر)
     const defs = [
-      { name: 'قسط السيارة', kind: eg ? 'تمويل من البنك · فيه أرباح' : 'تمويل بنكي · بأرباح', inst: 145000, total: 36, done: 12, next: '٢٧ أكتوبر', received: 4860000, profit: 360000 },
-      { name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', kind: eg ? 'تقسيط مشتريات' : 'تقسيط مشتريات', inst: 25000, total: 12, done: 8, next: '٥ نوفمبر', received: null, profit: null }
+      { key: 'car', name: 'قسط السيارة', kind: eg ? 'تمويل من البنك · فيه أرباح' : 'تمويل بنكي · بأرباح', inst: 145000, total: 36, done: 12, next: '٢٧ أكتوبر', received: 4860000, profit: 360000 },
+      { key: 'phone', name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', kind: eg ? 'تقسيط مشتريات' : 'تقسيط مشتريات', inst: 25000, total: 12, done: 8, next: '٥ نوفمبر', received: null, profit: null }
     ];
     const plans = defs.map((d) => {
       const pct = Math.floor((d.done * 100) / d.total);
       return {
-        name: d.name, kind: d.kind,
+        keep: JSON.stringify({ 'masroufy-plan': d.key }), name: d.name, kind: d.kind,
         inst: this.fmt(d.inst * k) + ' ' + cur,
         progress: (eg ? 'دفعت ' : 'دفعت ') + n(d.done) + (eg ? ' من ' : ' من ') + n(d.total),
         next: (eg ? 'الجاي ' : 'القادم ') + d.next,
@@ -82,7 +82,7 @@ class Component extends DCLogic {
       title: 'الأقساط',
       leftLabel: eg ? 'الباقي عليك في الأقساط' : 'المتبقي عليك في الأقساط',
       leftText: this.fmt(left) + ' ' + cur,
-      monthLine: (eg ? 'كل شهر ' : 'شهريًا ') + this.fmt(month) + ' ' + cur + ' · ' + n(defs.length) + (eg ? ' خطط' : ' خطط'),
+      monthLine: (eg ? 'كل شهر ' : 'شهريًا ') + this.fmt(month) + ' ' + cur + '، ' + n(defs.length) + (eg ? ' خطط' : ' خطط'),
       plans,
       receivedLabel: eg ? 'المبلغ اللي استلمته' : 'المبلغ المستلم',
       note: eg ? 'القسط كله بيتحسب مصروف وقت ما بيتدفع.' : 'يُحسب القسط كاملًا مصروفًا عند دفعه.'

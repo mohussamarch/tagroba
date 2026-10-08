@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>لو وضعتها في… — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.w-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.w-press:active{transform:scale(.97)}
+.w-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.w-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.w-veil{animation:w-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.w-up{animation:w-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+@keyframes w-fade{from{opacity:0}to{opacity:1}}
+@keyframes w-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.w-press,.w-bar,.w-knob{transition:none}.w-press:active{transform:none}.w-up{animation:w-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 10px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 8px">
+    <span style="display: flex; flex-direction: column; gap: 2px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{title}}</h2>
+      <span style="font-size: 12px; color: #637570">{{paidLine}}</span>
+    </span>
+  </div>
+
+  <button type="button" role="switch" aria-checked="{{todayChecked}}" onClick="{{toggleToday}}" class="w-press" style="border: 0; width: 100%; min-height: 52px; padding: 6px 14px; border-radius: 18px; display: flex; align-items: center; gap: 12px; font: inherit; color: inherit; text-align: right; cursor: pointer; background: rgba(25,61,51,0.05)">
+    <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{todayLabel}}</span><span style="{{todaySubStyle}}">{{todaySub}}</span></span>
+    <span style="{{track}}"><span class="w-knob" style="{{knob}}"></span></span>
+  </button>
+
+  <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+      <div style="{{r.rowStyle}}">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span aria-hidden="true" style="{{r.tile}}">
+            <sc-if value="{{r.isGold}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="m16.71 13.88.7.71-2.82 2.82"></path></svg></sc-if>
+            <sc-if value="{{r.isHouse}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></sc-if>
+            <sc-if value="{{r.isDep}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"></path><path d="M2 9v1c0 1.1.9 2 2 2h1"></path><path d="M16 11h.01"></path></svg></sc-if>
+            <sc-if value="{{r.isStocks}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
+            <sc-if value="{{r.isCash}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg></sc-if>
+          </span>
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+            <span style="font-size: 14px; font-weight: 700">{{r.name}}</span>
+            <span style="{{r.rateStyle}}">{{r.rateText}}</span>
+          </span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0">
+            <span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span>
+            <span dir="ltr" style="{{r.gainStyle}}">{{r.gain}}</span>
+          </span>
+        </div>
+        <sc-if value="{{r.hasBar}}" hint-placeholder-val="{{ true }}">
+          <span aria-hidden="true" style="height: 6px; border-radius: 3px; overflow: hidden; background: rgba(25,61,51,0.06)"><span class="w-bar" style="{{r.bar}}"></span></span>
+        </sc-if>
+        <span style="font-size: 12px; color: #637570">{{r.source}}</span>
+        <sc-if value="{{r.hasNote}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; padding: 6px 10px; border-radius: 12px; color: #6B4600; background: #FBF0DD">{{r.note}}</span>
+        </sc-if>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" class="w-press" onClick="{{r.edit}}" style="{{r.editStyle}}">{{r.editLabel}}</button>
+          <sc-if value="{{r.canReset}}" hint-placeholder-val="{{ false }}">
+            <button type="button" class="w-press" onClick="{{r.reset}}" style="height: 40px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.05)">{{resetLabel}}</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <span style="font-size: 12px; color: #637570">{{foot}}</span>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="w-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="w-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <label style="display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border-radius: 18px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <input type="text" inputmode="decimal" dir="ltr" aria-label="{{sheetTitle}}" value="{{rateInput}}" onInput="{{typeRate}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 24px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+          <span style="font-size: 16px; color: #637570">٪</span>
+        </label>
+        <span style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px">{{rateErr}}</span>
+        <button type="button" class="w-press" onClick="{{saveRate}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح","تقريبي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // rates: النسبة اللي المستخدم كتبها لكل نوع (نقاط أساس) — بتغلب الافتراضي (§69.6)
+    this.state = { rates: {}, today: false, sheet: null, rateInput: '', rateErr: '' };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  // أعداد صحيحة بس (GrowthMath.kt): المعدل الشهري المكافئ بجزء من 10^8 · تقريب للهللة كل شهر (النص لبعيد عن الصفر)
+  mulDiv(a, num, den) { const neg = (a < 0n) !== (num < 0n) && a !== 0n && num !== 0n; const x = (a < 0n ? -a : a) * (num < 0n ? -num : num); const q = (x * 2n + den) / (den * 2n); return neg ? -q : q; }
+  pow12(m) { const S = 100000000n; let x = S; for (let i = 0; i < 12; i++) x = (x * (S + m) + S / 2n) / S; return x; }
+  monthly(bp) { if (!bp) return 0n; const S = 100000000n, t = S + BigInt(bp) * 10000n; let lo = -60000000n, hi = 25000000n; while (lo < hi) { const mid = lo + (hi - lo) / 2n; if (this.pow12(mid) >= t) hi = mid; else lo = mid + 1n; } const b = lo - 1n; return t - this.pow12(b) < this.pow12(lo) - t ? b : lo; }
+  grow(mo, months, bp, start, simple) { const m = simple ? null : this.monthly(bp); let v = BigInt(start); for (let i = 0; i < months; i++) v = v + (simple ? this.mulDiv(v, BigInt(bp), 120000n) : this.mulDiv(v, m, 100000000n)) + BigInt(mo); return v; }
+  deflate(v, months, bp) { let x = v; for (let i = 0; i < (months - months % 12) / 12; i++) x = this.mulDiv(x, 10000n, BigInt(10000 + bp)); const m = this.monthly(bp); for (let i = 0; i < months % 12; i++) x = this.mulDiv(x, 100000000n, 100000000n + m); return x; }
+  pct(bp) { const a = Math.abs(bp), f = a % 100; return ((bp < 0 ? '−' : '') + (a - f) / 100 + '.' + (f < 10 ? '0' : '') + f).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]).replace('.', '٫') + '٪'; }
+  toBp(text) {
+    const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٫,]/g, '.').replace(/[−–]/g, '-').replace(/[\s٪%]/g, '');
+    const m = /^(-?)(\d{1,4})(?:\.(\d{1,2}))?$/.exec(t);
+    if (!m) return null;
+    const bp = parseInt(m[2], 10) * 100 + parseInt(((m[3] || '') + '00').slice(0, 2), 10);
+    const v = m[1] ? -bp : bp;
+    return v < -9999 || v > 100000 ? null : v;
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const st = this.props.state ?? 'عادي';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const noFile = st === 'غير متاح', stale = st === 'تقريبي';
+    const mo = Number(this.props.monthly) > 0 ? Number(this.props.monthly) : 100000 * k;
+    const months = Number(this.props.months) > 0 ? Math.min(1200, Number(this.props.months)) : 120;
+    const start = Number(this.props.start) >= 0 ? Number(this.props.start) : 0;
+    const s = this.state;
+    // المتوسطات (ملف averages.json — §69.6): آخر ١٠ سنين (§69.3). مخترع هنا: تاريخ آخر تحديث ناجح
+    const OFF = eg ? 'رسمي' : 'رسمي', PRIV = eg ? 'خاص (مش رسمي)' : 'خاص (غير رسمي)';
+    const D = eg ? {
+      gold: [3422, 'سعر الدهب — البنك الدولي، بسعر الصرف الرسمي للجنيه', OFF, '٢٠١٥–٢٠٢٥', 'جزء كبير من الزيادة سببه نزول الجنيه: الجنيه نزل قدام الدولار ٢٠٫٤٠٪ في السنة في المتوسط (٢٠١٥–٢٠٢٥)، وبالدولار الزيادة ١١٫٤٨٪ في السنة'],
+      re: [1633, 'التضخم — الجهاز المركزي للتعبئة العامة والإحصاء (عن طريق البنك الدولي)', OFF, '٢٠١٦–٢٠٢٥'],
+      dep: [null, 'البنك المركزي المصري ١٩٫٠٠٪ (عائد الإيداع لليلة واحدة، سبتمبر ٢٠٢٦ — منقول من خبر صحفي) — معلومة بس'],
+      stocks: [1942, 'مؤشر EGX30 للبورصة المصرية (السعر بس، من غير التوزيعات) · رقم يدوي — اتراجع في ٥ أكتوبر ٢٠٢٦', PRIV, '٢٠١٥–٢٠٢٥', 'الجنيه نزل قدام الدولار ٢٠٫٤٠٪ في السنة في المتوسط (٢٠١٥–٢٠٢٥)'],
+      cash: [0, 'الكاش في البيت ما بيزيدش']
+    } : {
+      gold: [1488, 'متوسط سعر الذهب الشهري — البنك الدولي', OFF, 'ديسمبر ٢٠١٥ – ديسمبر ٢٠٢٥'],
+      re: [174, 'التضخم — الهيئة العامة للإحصاء (عبر البنك الدولي)', OFF, '٢٠١٦–٢٠٢٥'],
+      dep: [null, 'البنك المركزي السعودي ٤٫٠٠٪ (سعر إعادة الشراء المعاكس، سبتمبر ٢٠٢٦ — منقول من خبر صحفي) — معلومة فقط'],
+      stocks: [795, 'مؤشر MSCI للسوق السعودية مع التوزيعات · رقم يدوي — رُوجع في ٥ أكتوبر ٢٠٢٦', PRIV, '١٠ سنوات حتى نهاية ٢٠٢٤'],
+      cash: [0, 'الكاش في البيت لا يزيد']
+    };
+    const CPI = noFile ? null : eg ? 1633 : 174;
+    const names = { gold: eg ? 'دهب' : 'ذهب', re: 'عقار', dep: eg ? 'وديعة في البنك' : 'وديعة في البنك', stocks: 'أسهم السوق المحلي', cash: eg ? 'كاش في البيت' : 'كاش في البيت' };
+    const tiles = { gold: ['#956000', 'rgba(149,96,0,0.12)'], re: ['#08634F', '#DCEBD6'], dep: ['#2469BA', 'rgba(36,105,186,0.12)'], stocks: ['#3866A7', 'rgba(56,102,167,0.12)'], cash: ['#637570', 'rgba(25,61,51,0.08)'] };
+    const paidIn = start + mo * months;
+    const ids = ['gold', 're', 'dep', 'stocks', 'cash'];
+    const calc = ids.map((id) => {
+      const d = D[id];
+      const fileRate = id === 'cash' ? 0 : noFile ? null : d[0];
+      const mine = s.rates[id];
+      const bp = mine != null ? mine : fileRate;
+      let v = null;
+      if (bp != null) v = id === 'cash' ? BigInt(paidIn) : this.grow(mo, months, bp, start, id === 'dep');
+      const today = v != null && s.today && CPI != null ? this.deflate(v, months, CPI) : null;
+      return { id, d, bp, mine: mine != null, fileRate, v: v == null ? null : Number(v), today: today == null ? null : Number(today) };
+    });
+    const top = calc.reduce((m, c) => Math.max(m, c.today != null ? c.today : c.v || 0), 1);
+    const rows = calc.map((c, i) => {
+      const shown = c.today != null ? c.today : c.v;
+      const gain = shown != null ? shown - paidIn : null;
+      const why = c.id === 'dep' && c.bp == null ? (eg ? 'اكتب فايدة بنكك على الوديعة' : 'اكتب فائدة بنكك على الوديعة') : noFile && c.bp == null ? (eg ? 'غير متاح: ملف المتوسطات لسه ما وصلش' : 'غير متاح: ملف المتوسطات لم يصل بعد') : '';
+      const src = c.mine ? (eg ? 'النسبة اللي إنت كتبتها' : 'النسبة التي كتبتها أنت') : c.id === 'dep' ? (noFile ? '' : c.d[1]) : c.id === 'cash' ? c.d[1] : noFile ? (eg ? 'اكتب النسبة بنفسك لحد ما الملف يوصل' : 'اكتب النسبة بنفسك حتى يصل الملف') : c.d[1] + ' · ' + c.d[2] + ' · ' + c.d[3];
+      const old = stale && !c.mine && c.id !== 'cash' && c.id !== 'dep' ? (eg ? 'قديم: آخر تحديث ما نجحش — الرقم من ٥ سبتمبر ٢٠٢٦' : 'قديم: آخر تحديث لم ينجح — الرقم من ٥ سبتمبر ٢٠٢٦') : '';
+      const note = [old, !c.mine && !noFile && c.d[4] ? c.d[4] : ''].filter(Boolean).join(' · ');
+      const w = shown != null ? Math.max(2, (shown * 100 - (shown * 100) % top) / top) : 0;
+      return {
+        name: names[c.id], isGold: c.id === 'gold', isHouse: c.id === 're', isDep: c.id === 'dep', isStocks: c.id === 'stocks', isCash: c.id === 'cash',
+        tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); color: ' + tiles[c.id][0] + '; background: ' + tiles[c.id][1],
+        rateText: c.bp != null ? this.pct(c.bp) + (eg ? ' في السنة' : ' سنويًا') : why,
+        rateStyle: 'font-size: 12px; ' + (c.bp != null ? 'color: #637570' : 'font-weight: 700; color: #956000'),
+        amount: shown != null ? this.fmt(shown) : (eg ? 'غير متاح' : 'غير متاح'),
+        amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (shown != null ? '#193D33' : '#637570'),
+        gain: !gain ? '' : (gain > 0 ? '+' : '−') + this.fmt(gain),
+        gainStyle: 'font-size: 12px; font-variant-numeric: tabular-nums; color: ' + (gain > 0 ? '#13764D' : gain < 0 ? '#BE3D48' : '#637570'),
+        hasBar: shown != null, bar: 'display: block; height: 6px; border-radius: 3px; width: ' + w + '%; background: ' + tiles[c.id][0],
+        source: src, hasNote: !!note, note,
+        edit: () => this.setState({ sheet: c.id, rateInput: c.bp != null ? this.pct(c.bp).replace('٪', '') : '', rateErr: '' }),
+        editLabel: c.id === 'cash' ? (eg ? 'ثابت: صفر' : 'ثابت: صفر') : c.bp == null ? (eg ? 'اكتب النسبة' : 'اكتب النسبة') : (eg ? 'عدّل النسبة' : 'عدّل النسبة'),
+        editStyle: 'height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (c.id === 'cash' ? 'color: #637570; background: rgba(25,61,51,0.05); opacity: 0.6; cursor: default' : c.bp == null ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)'),
+        canReset: c.mine && c.fileRate != null, reset: () => { const r = Object.assign({}, s.rates); delete r[c.id]; this.setState({ rates: r }); },
+        rowStyle: 'display: flex; flex-direction: column; gap: 6px; padding: 12px 0;' + (i === ids.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      };
+    });
+    const sid = s.sheet && s.sheet !== 'cash' ? s.sheet : null;
+    const yrs = months % 12 === 0 ? (months / 12 === 1 ? (eg ? 'سنة' : 'سنة') : months / 12 === 2 ? (eg ? 'سنتين' : 'سنتين') : n(months / 12) + (months / 12 <= 10 ? (eg ? ' سنين' : ' سنوات') : ' سنة')) : n(months) + (eg ? ' شهر' : ' شهرًا');
+    return {
+      title: eg ? 'لو حطّيتها في…' : 'لو وضعتها في…',
+      paidLine: (eg ? 'من جيبك: ' : 'من جيبك: ') + this.fmt(paidIn) + ' ' + cur + (eg ? ' على ' : ' خلال ') + yrs,
+      todayChecked: s.today ? 'true' : 'false',
+      toggleToday: () => this.setState({ today: !s.today }),
+      todayLabel: eg ? 'بقيمة فلوس النهارده' : 'بقيمة المال اليوم',
+      todaySub: CPI == null ? (eg ? '«بقيمة فلوس النهارده» غير متاح: معدل التضخم الرسمي مش معروف' : '«بقيمة المال اليوم» غير متاح: معدل التضخم الرسمي غير معروف') : (eg ? 'بنخصم التضخم الرسمي ' : 'نخصم التضخم الرسمي ') + this.pct(CPI) + (eg ? ' في السنة' : ' سنويًا'),
+      todaySubStyle: 'font-size: 12px; color: ' + (CPI == null ? '#956000' : '#637570'),
+      track: 'position: relative; display: block; width: 44px; height: 26px; flex-shrink: 0; border-radius: 13px; ' + (s.today ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'background: rgba(25,61,51,0.16)'),
+      knob: 'position: absolute; top: 2px; right: ' + (s.today ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      rows,
+      resetLabel: eg ? 'رجّع المتوسط' : 'ارجع للمتوسط',
+      foot: eg ? 'الدهب والعقار والأسهم بمتوسط زيادة سنوية مركّبة، والوديعة بفايدة البنك كل شهر. ده متوسط اللي فات، مش وعد باللي جاي.' : 'الذهب والعقار والأسهم بمتوسط زيادة سنوية مركّبة، والوديعة بفائدة البنك كل شهر. هذا متوسط ما مضى، وليس وعدًا بما سيأتي.',
+      sheet: !!sid,
+      sheetTitle: sid ? (eg ? 'نسبة الزيادة في السنة — ' : 'نسبة الزيادة السنوية — ') + names[sid] : '',
+      sheetBody: sid === 'dep' ? (eg ? 'اكتب فايدة بنكك على الوديعة.' : 'اكتب فائدة بنكك على الوديعة.') : (eg ? 'اكتب النسبة اللي تتوقعها. الرقم اللي تكتبه بيغلب المتوسط.' : 'اكتب النسبة السنوية التي تتوقعها. ما تكتبه يغلب المتوسط.'),
+      rateInput: s.rateInput, rateErr: s.rateErr,
+      typeRate: (e) => this.setState({ rateInput: e.target.value, rateErr: '' }),
+      saveLabel: eg ? 'احسب بيها' : 'احسب بها',
+      saveRate: () => {
+        const bp = this.toBp(s.rateInput);
+        if (bp == null || !sid) { this.setState({ rateErr: eg ? 'المعدل السنوي برا الحدود المقبولة' : 'المعدل السنوي خارج الحدود المقبولة' }); return; }
+        this.setState({ rates: Object.assign({}, s.rates, { [sid]: bp }), sheet: null });
+      },
+      closeSheet: () => this.setState({ sheet: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

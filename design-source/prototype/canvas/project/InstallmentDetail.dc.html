@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل الخطة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.id-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.id-cell{transition:background 450ms cubic-bezier(.2,.7,.3,1)}
+.id-in{animation:id-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.id-veil{animation:id-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.id-up{animation:id-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.id-toast{animation:id-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes id-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes id-fade{from{opacity:0}to{opacity:1}}
+@keyframes id-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes id-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.id-bar,.id-cell{transition:none}.m-press:active{transform:none}.id-in,.id-up{animation:id-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Installments.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1><span style="font-size: 12px; color: #637570">{{kind}}</span></span>
+    </div>
+
+    <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+      <span style="font-size: 14px; color: #DCEBD6">{{leftLabel}}</span>
+      <span dir="ltr" style="text-align: right; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums">{{leftText}}</span>
+      <span style="font-size: 12px; color: #DCEBD6">{{instLine}}</span>
+      <span style="display: flex; justify-content: space-between; font-size: 12px; color: #DCEBD6; margin-top: 4px"><span>{{progressLabel}}</span><span>{{nextLabel}}</span></span>
+      <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="id-bar" style="{{bar}}"></span></span>
+    </div>
+
+    <sc-if value="{{hasSug}}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
+        <span style="font-size: 13px; font-weight: 700; color: #956000">{{sugTitle}}</span>
+        <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 15px; font-weight: 700">{{sugName}}</span><span style="font-size: 12px; color: #6B4600">{{sugSub}}</span></span>
+          <span dir="ltr" style="{{sugAmountStyle}}">{{sugAmount}}</span>
+        </span>
+        <span style="font-size: 12px; color: #6B4600">{{sugWhy}}</span>
+        <sc-if value="{{sugFailed}}" hint-placeholder-val="{{ false }}">
+          <span role="alert" class="id-in" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{sugErr}}</span>
+        </sc-if>
+        <span style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{linkSug}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{linkLabel}}</button>
+          <button type="button" class="m-press" onClick="{{dropSug}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.7)">{{dropLabel}}</button>
+        </span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{schedTitle}}</h2>
+      <div role="img" aria-label="{{schedAria}}" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{years}}" as="y" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; color: #637570">{{y.label}}</span>
+            <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px">
+              <sc-for list="{{y.cells}}" as="c" hint-placeholder-count="12">
+                <span class="id-cell" style="{{c}}"></span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div aria-hidden="true" style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; color: #637570">
+          <sc-for list="{{legend}}" as="l" hint-placeholder-count="4">
+            <span style="display: flex; align-items: center; gap: 5px"><span style="{{l.sw}}"></span>{{l.label}}</span>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #637570">{{lastLine}}</span>
+      </div>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+        <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; font-weight: 700">{{recvLabel}}</span><span style="font-size: 12px; color: #637570">{{recvSub}}</span></span>
+        <span style="{{recvStyle}}">{{recvText}}</span>
+      </span>
+      <sc-if value="{{canUnlinkRecv}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="m-press" onClick="{{askUnlinkRecv}}" style="align-self: flex-start; height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{unlinkRecvLabel}}</button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{isFinancing}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="display: flex; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 17px; font-weight: 700">{{profitTitle}}</h2><span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #2469BA; background: rgba(36,105,186,0.10)">{{infoChip}}</span></span>
+        <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span aria-hidden="true" style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: rgba(25,61,51,0.08)"><span style="{{splitPrincipal}}"></span><span style="{{splitProfit}}"></span></span>
+          <span aria-hidden="true" style="display: flex; gap: 14px; font-size: 11px; color: #637570"><span style="display: flex; align-items: center; gap: 5px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #4D747C"></span>{{splitA}}</span><span style="display: flex; align-items: center; gap: 5px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #C9962F"></span>{{splitB}}</span></span>
+          <sc-for list="{{profitRows}}" as="p" hint-placeholder-count="5">
+            <span style="{{p.rowStyle}}"><span style="color: #637570">{{p.label}}</span><span dir="ltr" style="{{p.valueStyle}}">{{p.value}}</span></span>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <span style="font-size: 12px; color: #637570">{{expenseNote}}</span>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{linkedTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{entries}}" as="e" hint-placeholder-count="3">
+          <div class="{{e.cls}}" style="{{e.rowStyle}}">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{e.name}}</span><span style="font-size: 12px; color: #637570">{{e.sub}}</span></span>
+            <span dir="ltr" style="font-size: 14px; font-weight: 700; white-space: nowrap; color: #BE3D48; font-variant-numeric: tabular-nums">{{e.amount}}</span>
+            <button type="button" class="m-press" onClick="{{e.unlink}}" aria-label="{{e.unlinkLabel}}" style="height: 36px; padding: 0 10px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{unlinkWord}}</button>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" class="m-press" onClick="{{toggleEntries}}" aria-expanded="{{allOpen}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{entriesToggle}}</button>
+    </div>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="id-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="id-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{confirmUnlink}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #BE3D48; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(190,61,72,0.25)">{{unlinkYes}}</button>
+          <button type="button" class="m-press" onClick="{{closeSheet}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="id-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"plan":{"editor":"enum","options":["حسب اللي اتداس","قسط السيارة","تقسيط الجوال"],"default":"حسب اللي اتداس","section":"الخطة"},"state":{"editor":"enum","options":["عادي","غير متاح","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let picked = null;
+    // «الأقساط» تقدر تكتب هنا أنهي خطة اتداست (data-keep على الرابط)
+    try { picked = window.sessionStorage.getItem('masroufy-plan'); } catch (e) {}
+    this.picked = picked;
+    // sug/recv: pending · linked · dropped · gone: أقساط اتفك ربطها
+    this.state = { sug: 'pending', recv: 'pending', failed: false, gone: {}, recvGone: false, sheet: null, all: false, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const s = this.state;
+    const MO = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const addM = (a, x) => { const t = a[0] * 12 + a[1] - 1 + x, M = t % 12; return [(t - M) / 12, M + 1, a[2]]; };
+    const key = (a) => a[0] * 10000 + a[1] * 100 + a[2];
+    const dt = (a) => n(a[2]) + ' ' + MO[a[1] - 1] + (a[0] !== 2026 ? ' ' + ny(a[0]) : '');
+    const my = (a) => MO[a[1] - 1] + ' ' + ny(a[0]);
+    const TODAY = key([2026, 10, 7]);
+    const pick = { 'قسط السيارة': 'car', 'تقسيط الجوال': 'phone' }[this.props.plan] || (this.picked === 'phone' ? 'phone' : 'car');
+    // مخترعة · نفس أرقام «الأقساط» و«المستحقات» (القسط ١٣ من ٣٦ يوم ٢٧ أكتوبر) · بالوحدة الصغرى
+    const P = pick === 'car'
+      ? { fin: true, name: 'قسط السيارة', kind: eg ? 'تمويل من البنك · فيه أرباح' : 'تمويل بنكي · بأرباح', by: eg ? 'البنك الأهلي المصري' : 'البنك الأهلي السعودي', inst: 145000, count: 36, principal: 4860000, first: [2025, 10, 27], linked: 12, recvDate: [2025, 10, 20] }
+      : { fin: false, name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', kind: 'تقسيط مشتريات', by: eg ? 'محل الأجهزة' : 'متجر الأجهزة', inst: 25000, count: 12, principal: 300000, first: [2026, 2, 5], linked: 8 };
+    const wallet = eg ? 'QNB مصر' : 'مصرف الراجحي';
+    const inst = P.inst * k, total = inst * P.count, principal = P.principal * k, cost = total - principal;
+    const due = (x) => addM(P.first, x - 1);
+    const all = [];
+    for (let i = 1; i <= P.linked; i++) all.push({ id: 'i' + i, date: due(i) });
+    const sugTx = { id: 'i' + (P.linked + 1), date: due(P.linked + 1), fresh: true };
+    const sugOn = !P.fin && s.sug === 'pending';
+    if (!P.fin && s.sug === 'linked') all.push(sugTx);
+    const linked = all.filter((e) => !s.gone[e.id]).sort((a, b) => key(b.date) - key(a.date));
+    const paidN = linked.length, paid = paidN * inst, left = total - paid;
+    // مبلغ التمويل المستلم (§59): null = لسه ما اتربطش (مش صفر). «غير متاح» و«خطأ» = مش مربوط (وفي «خطأ» أول ربط بيفشل)
+    const recvOn = P.fin && !s.recvGone && (st === 'عادي' || s.recv === 'linked');
+    const recvSug = P.fin && !recvOn && s.recv === 'pending';
+    const received = recvOn ? principal : null;
+    const nextN = paidN + 1, nd = nextN <= P.count ? due(nextN) : null;
+    const pct = Math.floor((paidN * 100) / P.count);
+    const cell = (bg, extra) => 'display: block; aspect-ratio: 1; border-radius: 6px; background: ' + bg + (extra ? '; ' + extra : '');
+    const S = { paid: cell('#08634F'), late: cell('#FBF0DD', 'box-shadow: inset 0 0 0 1.5px #956000'), next: cell('#FFFFFF', 'box-shadow: inset 0 0 0 2px #08634F'), up: cell('rgba(25,61,51,0.08)') };
+    const years = [];
+    for (let r = 0; r * 12 < P.count; r++) {
+      const cells = [];
+      for (let x = r * 12 + 1; x <= Math.min(P.count, r * 12 + 12); x++) cells.push(x <= paidN ? S.paid : key(due(x)) < TODAY ? S.late : x === nextN ? S.next : S.up);
+      years.push({ label: (P.count > 12 ? (eg ? 'السنة ' : 'السنة ') + n(r + 1) + '، ' : '') + my(due(r * 12 + 1)) + ' – ' + my(due(Math.min(P.count, r * 12 + 12))), cells });
+    }
+    const lateN = (() => { let c = 0; for (let x = paidN + 1; x <= P.count; x++) if (key(due(x)) < TODAY) c++; return c; })();
+    // أرباح التمويل (financingCostPaidThrough): بنسبة المدفوع للإجمالي، والتقريب على المجموع التراكمي
+    const costPaid = cost ? (cost * paid - ((cost * paid) % total)) / total : 0;
+    const perInst = cost ? (cost - (cost % P.count)) / P.count : 0;
+    const row = (label, value, color, last) => ({ label, value, valueStyle: 'font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (color || '#193D33'), rowStyle: 'display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 36px; font-size: 14px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') });
+    const profitRows = P.fin ? [
+      row(eg ? 'إجمالي اللي هتدفعه' : 'إجمالي ما ستدفعه', this.fmt(total) + ' ' + cur),
+      row(eg ? 'المبلغ الأصلي' : 'المبلغ الأصلي', this.fmt(principal) + ' ' + cur),
+      row(eg ? 'أرباح التمويل' : 'أرباح التمويل', this.fmt(cost) + ' ' + cur, '#956000'),
+      row(eg ? 'منها اتدفع لحد دلوقتي' : 'المدفوع منها حتى الآن', this.fmt(costPaid) + ' ' + cur),
+      row(eg ? 'منها فاضل' : 'المتبقي منها', this.fmt(cost - costPaid) + ' ' + cur),
+      row(eg ? 'في كل قسط تقريبًا' : 'في كل قسط تقريبًا', this.fmt(perInst) + ' ' + cur, null, true)
+    ] : [];
+    const entriesAll = linked.map((e) => ({
+      name: (eg ? 'قسط ' : 'قسط ') + MO[e.date[1] - 1], sub: dt(e.date) + ' · ' + wallet,
+      amount: '−' + this.fmt(inst), cls: e.fresh ? 'id-in' : '',
+      unlinkLabel: (eg ? 'فك ربط قسط ' : 'فك ربط قسط ') + dt(e.date), unlink: () => this.setState({ sheet: e.id }),
+      rowStyle: 'display: flex; align-items: center; gap: 10px; padding: 10px 0;'
+    }));
+    const entries = s.all ? entriesAll : entriesAll.slice(0, 3);
+    entries.forEach((e, i) => { if (i < entries.length - 1) e.rowStyle += ' border-bottom: 1px solid rgba(204,216,204,0.55);'; });
+    const sheetE = s.sheet === 'recv' ? { recv: true } : s.sheet ? all.find((e) => e.id === s.sheet) : null;
+    const sugPay = sugOn, sugAny = sugPay || recvSug;
+    return {
+      title: P.name, kind: P.kind + ' · ' + P.by,
+      leftLabel: left ? (eg ? 'الباقي عليك' : 'المتبقي عليك') : (eg ? 'خلصت الأقساط' : 'اكتملت الأقساط'),
+      leftText: this.fmt(left) + ' ' + cur,
+      instLine: (eg ? 'القسط ' : 'القسط ') + this.fmt(inst) + ' ' + cur + (eg ? ' كل شهر · الإجمالي ' : ' شهريًا · الإجمالي ') + this.fmt(total) + ' ' + cur,
+      progressLabel: (eg ? 'دفعت ' : 'دفعت ') + n(paidN) + (eg ? ' من ' : ' من ') + n(P.count),
+      nextLabel: !nd ? '' : key(nd) < TODAY ? (eg ? 'متأخر من ' : 'متأخر منذ ') + dt(nd) : (eg ? 'الجاي ' : 'القادم ') + dt(nd) + (eg ? ' · القسط ' : ' · القسط ') + n(nextN),
+      pct: String(pct), bar: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + pct + '%',
+      hasSug: sugAny,
+      sugTitle: sugPay ? (eg ? 'عملية شبه قسط ' : 'عملية تشبه قسط ') + MO[sugTx.date[1] - 1] : (eg ? 'شكلها مبلغ التمويل' : 'تبدو مبلغ التمويل'),
+      sugName: sugPay ? P.by : (eg ? 'إيداع من ' : 'إيداع من ') + P.by,
+      sugSub: (sugPay ? dt(sugTx.date) : dt(P.recvDate || [2026, 1, 1])) + ' · ' + wallet,
+      sugAmount: (sugPay ? '−' + this.fmt(inst) : '+' + this.fmt(principal)) + ' ' + cur,
+      sugAmountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (sugPay ? '#BE3D48' : '#13764D'),
+      sugWhy: sugPay ? (eg ? 'نفس مبلغ القسط ولنفس المحل في ميعاده. نربطها؟' : 'بمبلغ القسط نفسه وللمتجر نفسه في موعده. هل نربطها؟') : (eg ? 'داخلة من نفس البنك قبل أول قسط بأسبوع وبنفس المبلغ الأصلي. نربطها بالخطة؟' : 'واردة من البنك نفسه قبل أول قسط بأسبوع وبالمبلغ الأصلي نفسه. هل نربطها بالخطة؟'),
+      sugFailed: s.failed, sugErr: eg ? 'ما اتحفظش الربط — مفيش نت. جرّب تاني.' : 'تعذّر حفظ الربط — لا يوجد اتصال. أعد المحاولة.',
+      linkLabel: s.failed ? (eg ? 'جرّب تاني' : 'أعد المحاولة') : sugPay ? (eg ? 'اربطها كقسط' : 'اربطها كقسط') : (eg ? 'اربطها بالخطة' : 'اربطها بالخطة'),
+      dropLabel: sugPay ? (eg ? 'مش قسط' : 'ليست قسطًا') : (eg ? 'مش هي' : 'ليست هي'),
+      linkSug: () => {
+        if (st === 'خطأ' && !s.failed) { this.setState({ failed: true }); return; }
+        if (sugPay) { this.setState({ sug: 'linked', failed: false }); this.say(eg ? 'اتربطت قسط — محسوبة مصروف في «المستحقات ← تقسيط مشتريات»' : 'رُبطت قسطًا — تُحسب مصروفًا في «المستحقات ← تقسيط مشتريات»'); }
+        else { this.setState({ recv: 'linked', recvGone: false, failed: false }); this.say(eg ? 'اتربط مبلغ التمويل — محسوب دخل في «المستحقات ← تمويل»' : 'رُبط مبلغ التمويل — يُحسب دخلًا في «المستحقات ← تمويل»'); }
+      },
+      dropSug: () => { this.setState(sugPay ? { sug: 'dropped', failed: false } : { recv: 'dropped', failed: false }); this.say(eg ? 'تمام، مش هنقترحها تاني' : 'تم، لن نقترحها مجددًا'); },
+      schedTitle: eg ? 'الجدول' : 'الجدول',
+      schedAria: (eg ? 'اتدفع ' : 'مدفوع ') + n(paidN) + (eg ? ' من ' : ' من ') + n(P.count) + (lateN ? (eg ? '، ومتأخر ' : '، ومتأخر ') + n(lateN) : ''),
+      years,
+      legend: [[eg ? 'اتدفع' : 'مدفوع', S.paid], ['متأخر', S.late], [eg ? 'الجاي' : 'القادم', S.next], [eg ? 'باقي' : 'متبقٍ', S.up]].map(([label, sw]) => ({ label, sw: sw.replace('aspect-ratio: 1', 'width: 12px; height: 12px') })),
+      lastLine: (eg ? 'آخر قسط ' : 'آخر قسط ') + dt(due(P.count)) + (eg ? ' · كل شهر يوم ' : ' · كل شهر يوم ') + n(P.first[2]),
+      recvLabel: eg ? 'المبلغ اللي استلمته' : 'المبلغ المستلم',
+      recvSub: !P.fin ? (eg ? 'تقسيط مشتريات — مافيهوش فلوس بتستلمها.' : 'تقسيط مشتريات — لا تستلم فيه مبلغًا.') : received != null ? dt(P.recvDate) + ' · ' + (eg ? 'نزل في ' : 'وصل إلى ') + wallet : (eg ? 'اربط عملية الإيداع وهيبان اللي وصلك فعلًا.' : 'اربط عملية الإيداع ليظهر ما وصلك فعلًا.'),
+      recvText: !P.fin ? (eg ? 'مش متاح' : 'لا ينطبق') : received != null ? this.fmt(received) + ' ' + cur : (eg ? 'لسه ما اتربطش' : 'لم يُربط بعد'),
+      recvStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; direction: ' + (received != null ? 'ltr' : 'rtl') + '; color: ' + (!P.fin ? '#637570' : received != null ? '#13764D' : '#956000'),
+      canUnlinkRecv: received != null, unlinkRecvLabel: eg ? 'فك الربط' : 'فك الربط', askUnlinkRecv: () => this.setState({ sheet: 'recv' }),
+      isFinancing: P.fin,
+      profitTitle: eg ? 'أرباح التمويل' : 'أرباح التمويل', infoChip: eg ? 'معلومة بس' : 'للعلم فقط',
+      splitPrincipal: 'display: block; height: 10px; background: #4D747C; width: ' + (total ? Math.floor((principal * 100) / total) : 0) + '%',
+      splitProfit: 'display: block; height: 10px; background: #C9962F; flex: 1 1 auto', splitA: eg ? 'المبلغ الأصلي' : 'المبلغ الأصلي', splitB: 'أرباح التمويل',
+      profitRows,
+      expenseNote: P.fin ? (eg ? 'القسط كله (' + this.fmt(inst) + ') بيتحسب مصروف في «المستحقات ← تمويل»، فالأرباح ما بتتضافش للمصروف تاني.' : 'القسط كاملًا (' + this.fmt(inst) + ') يُحسب مصروفًا في «المستحقات ← تمويل»، فلا تُضاف الأرباح إلى المصروف مرة أخرى.') : (eg ? 'القسط كله بيتحسب مصروف في «المستحقات ← تقسيط مشتريات».' : 'يُحسب القسط كاملًا مصروفًا في «المستحقات ← تقسيط مشتريات».'),
+      linkedTitle: (eg ? 'الأقساط المربوطة (' : 'الأقساط المربوطة (') + n(paidN) + ')',
+      entries, unlinkWord: 'فك', allOpen: s.all ? 'true' : 'false',
+      entriesToggle: s.all ? (eg ? 'اعرض أقل' : 'اعرض أقل') : (eg ? 'اعرض الكل' : 'اعرض الكل'),
+      toggleEntries: () => this.setState({ all: !s.all }),
+      sheet: !!sheetE,
+      sheetTitle: !sheetE ? '' : sheetE.recv ? (eg ? 'تفك ربط مبلغ التمويل؟' : 'فك ربط مبلغ التمويل؟') : (eg ? 'تفك ربط قسط ' : 'فك ربط قسط ') + dt(sheetE.date) + '؟',
+      sheetBody: eg ? 'العملية هترجع «لسه ما اتحددش» وهتظهر في المراجعات.' : 'تعود العملية «غير محددة» وتظهر في المراجعات.',
+      unlinkYes: eg ? 'فك الربط' : 'فُكّ الربط', cancelLabel: eg ? 'سيبها' : 'إلغاء',
+      confirmUnlink: () => {
+        if (!s.sheet) return;
+        if (s.sheet === 'recv') this.setState({ recvGone: true, recv: 'dropped', sheet: null });
+        else this.setState({ gone: Object.assign({}, s.gone, { [s.sheet]: true }), sheet: null });
+        this.say(eg ? 'اتفك الربط — العملية في المراجعات' : 'فُكّ الربط — العملية في المراجعات');
+      },
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

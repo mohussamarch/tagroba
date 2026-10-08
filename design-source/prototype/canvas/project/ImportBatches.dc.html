@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>دفعات الاستيراد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+.g-in{animation:g-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes g-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.g-toast{animation:g-toast 2800ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes g-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel,.g-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 12px"><div class="m-skel" style="height: 120px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div><div class="m-skel" style="height: 120px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div><div class="m-skel" style="height: 120px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div></div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+        <a href="StatementImport.dc.html" class="m-press" style="margin-top: 8px; min-height: 48px; padding: 0 20px; border-radius: 16px; display: flex; align-items: center; text-decoration: none; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{importLabel}}</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div role="status" style="{{stagedStyle}}">
+          <span style="{{stagedTitleStyle}}">{{stagedTitle}}</span>
+          <span style="font-size: 12px; overflow-wrap: anywhere"><span style="unicode-bidi: isolate">{{stagedFile}}</span> · {{stagedWhen}}</span>
+          <span style="font-size: 13px; line-height: 1.7; color: #193D33">{{stagedBody}}</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <sc-if value="{{canClean}}" hint-placeholder-val="{{ true }}">
+              <button type="button" class="m-press" onClick="{{clean}}" disabled="{{cleaning}}" style="{{cleanStyle}}">{{cleanLabel}}</button>
+            </sc-if>
+            <a href="StatementImport.dc.html" class="m-press" style="min-height: 44px; padding: 0 14px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(255,255,255,0.75)">{{reimportLabel}}</a>
+          </div>
+        </div>
+
+        <sc-for list="{{batches}}" as="b" hint-placeholder-count="4">
+          <div class="{{b.cls}}" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="display: flex; align-items: flex-start; gap: 12px">
+              <span aria-hidden="true" style="{{b.tile}}">
+                <sc-if value="{{b.isSms}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8H7"></path><path d="M17 12H7"></path></svg></sc-if>
+                <sc-if value="{{b.isFile}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></sc-if>
+              </span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700; overflow-wrap: anywhere">{{b.name}}</span><span style="font-size: 12px; color: #637570">{{b.sub}}</span></span>
+              <span style="{{b.chipStyle}}">{{b.chip}}</span>
+            </span>
+            <span style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{b.counts}}" as="cn" hint-placeholder-count="3">
+                <span style="{{cn.style}}">{{cn.label}}</span>
+              </sc-for>
+            </span>
+            <sc-if value="{{b.canRevert}}" hint-placeholder-val="{{ true }}">
+              <button type="button" class="m-press" onClick="{{b.revert}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #A8323C; cursor: pointer; background: rgba(190,61,72,0.08)">{{revertLabel}}</button>
+            </sc-if>
+            <sc-if value="{{b.hasNote}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12px; color: #637570">{{b.note}}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+        <span style="font-size: 12px; color: #637570">{{footNote}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="RevertBatchSheet" space="{{spaceName}}" batch="{{sheetBatch}}" on-done="{{onDone}}" on-close="{{onClose}}" hint-size="350px,600px"></dc-import>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="g-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { rev: {}, staged: 'staged', open: null, toast: '' };
+    this.timers = [];
+    this.onClose = () => this.setState({ open: null });
+    this.onDone = (id, res) => {
+      const eg = (this.props.space ?? 'السعودية') === 'مصر';
+      const r = res && typeof res.deleted === 'number' ? res : { deleted: 0, kept: 0 };
+      this.setState({ rev: Object.assign({}, this.state.rev, { [id]: r }), open: null });
+      this.say((eg ? 'اترجعت الدفعة: ' : 'أُرجعت الدفعة: ') + this.result(r, eg));
+    };
+  }
+  result(r, eg) {
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    return (eg ? 'اتمسحت ' : 'حُذفت ') + plural(r.deleted, OPS) + (r.kept ? (eg ? '، وفضلت ' : '، وبقيت ') + plural(r.kept, OPS) + (eg ? ' متربطة بحاجات تانية.' : ' لارتباطها بغيرها.') : '.');
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2900)); this.setState({ toast: msg }); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state;
+    const bank = eg ? 'QNB مصر' : 'مصرف الراجحي';
+    const file = (m) => eg ? 'كشف-QNB-' + m + '.pdf' : 'كشف-الراجحي-' + m + '.pdf';
+    // مخترعة · added = اللي اتسجل وقت الاستيراد · keep = اللي هيفضل لو رجّعت الدفعة وسببه (RevertPlan.toKeep)
+    const D = [
+      { id: 'b1', src: 'sms', name: eg ? 'رسايل البنك' : 'رسائل البنك', when: eg ? 'النهارده ٩:٠٠ ص' : 'اليوم ٩:٠٠ ص', c: { added: 4, dup: 1 }, keep: [], unlink: 0 },
+      { id: 'b2', src: 'pdf', name: file('سبتمبر'), when: eg ? 'النهارده ١٠:١٥ ص' : 'اليوم ١٠:١٥ ص', c: { added: 6, dup: 3, sim: 2, conf: 1, bad: 1 }, keep: [], unlink: 0 },
+      { id: 'b4', src: 'pdf', name: file('أغسطس'), when: '٢ أكتوبر ٩:٤٠ م', c: { added: 38, dup: 2, bad: 1 }, keep: ['settle', 'alloc', 'due', 'gift', 'invest', 'source'], unlink: 3 },
+      { id: 'b5', src: 'pdf', name: file('يوليو'), when: '٢٠ سبتمبر', c: { added: 41 }, reverted: '٢٢ سبتمبر' },
+      { id: 'b6', src: 'csv', name: eg ? 'ملف-البرنامج-القديم.csv' : 'ملف-التطبيق-القديم.csv', when: '١٠ سبتمبر', c: { added: 212, bad: 3 }, keep: [], unlink: 0, blocked: true }
+    ];
+    const SRC = { sms: eg ? 'اتسجلت لوحدها من رسايل البنك' : 'سُجّلت تلقائيًا من رسائل البنك', pdf: (eg ? 'كشف ' : 'كشف ') + bank, csv: eg ? 'ملف CSV' : 'ملف CSV' };
+    const CN = [['added', eg ? 'اتضاف' : 'أُضيف', '#08634F', '#DCEBD6'], ['dup', 'مكرر', '#637570', 'rgba(99,117,112,0.12)'], ['sim', 'شبيه', '#956000', '#FBF0DD'], ['conf', 'تعارض', '#BE3D48', 'rgba(190,61,72,0.10)'], ['bad', 'غير صالح', '#6B4600', 'rgba(107,70,0,0.10)']];
+    const chip = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; color: ' + c + '; background: ' + b;
+    const batches = D.map((x) => {
+      const reverted = !!x.reverted || !!s.rev[x.id];
+      return {
+        name: x.name, sub: SRC[x.src] + ' · ' + x.when, isSms: x.src === 'sms', isFile: x.src !== 'sms', cls: s.rev[x.id] ? 'g-in' : '',
+        tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; ' + (reverted ? 'color: #9AA9A4; background: rgba(25,61,51,0.06)' : 'color: #08634F; background: rgba(8,99,79,0.10)'),
+        chip: reverted ? (eg ? 'اترجعت' : 'أُرجعت') : (eg ? 'متسجلة' : 'مسجّلة'),
+        chipStyle: reverted ? chip('#637570', 'rgba(99,117,112,0.12)') : chip('#08634F', '#DCEBD6'),
+        counts: CN.filter(([key]) => x.c[key]).map(([key, label, c, b]) => ({ label: label + ' ' + n(x.c[key]), style: chip(c, b) })),
+        canRevert: !reverted, revert: () => this.setState({ open: x.id }),
+        hasNote: reverted, note: s.rev[x.id] ? (eg ? 'اترجعت النهارده: ' : 'أُرجعت اليوم: ') + this.result(s.rev[x.id], eg) : (eg ? 'اترجعت يوم ' : 'أُرجعت في ') + (x.reverted || '') + '.'
+      };
+    });
+    const target = D.find((x) => x.id === s.open);
+    const stg = s.staged;
+    const done = stg === 'cleaned';
+    return {
+      title: eg ? 'دفعات الاستيراد' : 'دفعات الاستيراد',
+      intro: eg ? 'كل كشف أو مجموعة رسايل بتتسجل دفعة واحدة. تقدر ترجّع أي دفعة، واللي متربط بحاجة تانية بيفضل.' : 'كل كشف أو مجموعة رسائل تُسجَّل دفعة واحدة. يمكنك إرجاع أي دفعة، ويبقى ما ارتبط بشيء آخر.',
+      isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', showList: st === 'عادي',
+      emptyTitle: eg ? 'لسه ما استوردتش حاجة' : 'لم تستورد شيئًا بعد', emptyBody: eg ? 'أول كشف تستورده هيظهر هنا، وتقدر ترجّعه لو حبيت.' : 'أول كشف تستورده يظهر هنا، ويمكنك إرجاعه متى شئت.',
+      importLabel: eg ? 'استورد كشف' : 'استورد كشفًا',
+      stagedStyle: 'border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #6B4600; background: ' + (done ? '#DCEBD6' : '#FBF0DD'),
+      stagedTitleStyle: 'font-size: 14px; font-weight: 700; color: ' + (done ? '#08634F' : '#956000'),
+      stagedTitle: done ? (eg ? 'اتنضّف الاستيراد اللي اتقطع' : 'نُظّف الاستيراد المنقطع') : (eg ? 'استيراد اتقطع في النص' : 'استيراد انقطع في المنتصف'),
+      stagedFile: 'حركات-الحساب.csv', stagedWhen: '٥ أكتوبر',
+      stagedBody: done ? (eg ? 'اتمسحت ١٢ عملية ما كملتش. علشان تكمّله، استورد الملف تاني.' : 'حُذفت ١٢ عملية غير مكتملة. لإكماله استورد الملف من جديد.') : (eg ? 'اتحفظ منه ١٢ عملية من ٣٠ والحفظ وقف. اللي اتحفظ مش معتمد — نضّفه الأول، وبعدين استورد الملف تاني.' : 'حُفظت منه ١٢ عملية من ٣٠ ثم توقف الحفظ. ما حُفظ غير معتمد — نظّفه أولًا ثم استورد الملف من جديد.'),
+      canClean: !done, cleaning: stg === 'cleaning',
+      cleanLabel: stg === 'cleaning' ? (eg ? 'بينضّف…' : 'جارٍ التنظيف…') : (eg ? 'نضّفه دلوقتي' : 'نظّفه الآن'),
+      cleanStyle: 'min-height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (stg === 'cleaning' ? ' opacity: 0.6; cursor: default' : ''),
+      clean: () => {
+        if (stg !== 'staged') return;
+        this.setState({ staged: 'cleaning' });
+        this.timers.push(setTimeout(() => { this.setState({ staged: 'cleaned' }); this.say(eg ? 'اتنضّف: اتمسحت ١٢ عملية ما كملتش' : 'نُظّف: حُذفت ١٢ عملية غير مكتملة'); }, 900));
+      },
+      reimportLabel: eg ? 'استورد الملف تاني' : 'استورد الملف من جديد',
+      batches, revertLabel: eg ? 'رجّع الدفعة' : 'إرجاع الدفعة',
+      footNote: eg ? 'الترجيع بيمسح عمليات الدفعة بس، ومفيش تسوية ولا دين بيتلمس.' : 'الإرجاع يحذف عمليات الدفعة فقط، ولا يمس أي تسوية أو دين.',
+      sheetOpen: !!target, spaceName: eg ? 'مصر' : 'السعودية',
+      sheetBatch: target ? { id: target.id, name: target.name, added: target.c.added, keep: target.keep || [], unlink: target.unlink || 0, blocked: !!target.blocked } : null,
+      onDone: this.onDone, onClose: this.onClose,
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

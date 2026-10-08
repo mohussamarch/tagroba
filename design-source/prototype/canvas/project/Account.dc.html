@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ملفك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-row:active{background:#DCEBD6}
+.a-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.n-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}
+.n-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.a-veil{animation:a-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.a-up{animation:a-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.a-toast{animation:a-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes a-fade{from{opacity:0}to{opacity:1}}
+@keyframes a-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes a-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.a-bar,.n-track,.n-knob{transition:none}.m-press:active{transform:none}.a-up{animation:a-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; background: #FBF0DD; color: #956000"><span style="font-size: 14px; font-weight: 700">{{errTitle}}</span><span style="font-size: 12px">{{errBody}}</span></div>
+    </sc-if>
+    <sc-if value="{{isOffline}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="border-radius: 18px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #637570; background: rgba(25,61,51,0.05)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 20h.01"></path><path d="M8.5 16.4a5 5 0 0 1 7 0"></path><path d="M2 8.8a15 15 0 0 1 4.2-2.6"></path><path d="M5 12.9a10 10 0 0 1 5.2-2.7"></path><path d="m2 2 20 20"></path></svg>{{offlineBody}}</div>
+    </sc-if>
+
+    <div style="border-radius: 26px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span aria-label="مكان الأفاتار" style="width: 64px; height: 64px; box-sizing: border-box; border-radius: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; color: #637570; border: 1.5px dashed rgba(8,99,79,0.35); background: rgba(220,235,214,0.35)">مكان الأفاتار</span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 18px; font-weight: 700">{{nameShown}}</span>
+          <span dir="ltr" style="font-size: 13px; color: #637570; text-align: right">{{email}}</span>
+        </span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="display: flex; justify-content: space-between; font-size: 13px"><span style="font-weight: 700">{{pctLabel}}</span><span style="color: #637570">{{pctHint}}</span></span>
+        <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" aria-label="{{pctLabel}}" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="a-bar" style="{{barStyle}}"></span></span>
+      </div>
+      <button type="button" disabled="{{true}}" aria-describedby="avatar-soon" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{avatarBtn}}</button>
+      <span id="avatar-soon" style="font-size: 12px; color: #637570; text-align: center; margin-top: -6px">{{avatarSoon}}</span>
+    </div>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{g.title}}</h2>
+        <sc-if value="{{g.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570; margin-top: -4px">{{g.note}}</span></sc-if>
+        <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
+            <button type="button" class="m-press m-row" onClick="{{r.open}}" style="{{r.style}}">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+                <span style="font-size: 15px; font-weight: 500">{{r.label}}</span>
+                <sc-if value="{{r.hasHint}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{r.hint}}</span></sc-if>
+              </span>
+              <span style="{{r.valueStyle}}">{{r.value}}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"></path></svg>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{budgetGroup}}</h2>
+      <div style="border-radius: 22px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{duesTitle}}</span><span style="font-size: 12px; color: #637570">{{duesDesc}}</span></span>
+        <button type="button" role="switch" aria-checked="{{duesChecked}}" aria-label="{{duesTitle}}" onClick="{{toggleDues}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="n-track" style="{{duesTrack}}"><span class="n-knob" style="{{duesKnob}}"></span></span></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{accountGroup}}</h2>
+      <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px; box-shadow: 0 1px 0 rgba(204,216,204,0.55)">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 500">{{emailLabel}}</span><span style="font-size: 12px; color: #637570">{{emailHint}}</span></span>
+          <span dir="ltr" style="font-size: 13px; font-weight: 700; color: #637570">{{email}}</span>
+        </div>
+        <button type="button" class="m-press m-row" onClick="{{resetPass}}" disabled="{{offline}}" aria-describedby="reset-note" style="{{resetStyle}}">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 500">{{resetLabel}}</span><span id="reset-note" style="font-size: 12px; color: #637570">{{resetHint}}</span></span>
+        </button>
+        <button type="button" class="m-press m-row" onClick="{{askSignOut}}" style="box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; text-align: right; cursor: pointer; display: flex; align-items: center; min-height: 56px; padding: 8px; border-radius: 16px; font-size: 15px; font-weight: 700; color: #BE3D48">{{signOutLabel}}</button>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="a-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="a-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <sc-if value="{{hasSheetBody}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #637570">{{sheetBody}}</span></sc-if>
+        <sc-if value="{{sName}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <input type="text" aria-label="{{sheetTitle}}" aria-invalid="{{nameBad}}" value="{{draftName}}" onInput="{{typeName}}" style="{{nameInput}}">
+            <sc-if value="{{hasNameErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{nameErr}}</span></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{sChips}}" hint-placeholder-val="{{ true }}">
+          <div role="{{chipsRole}}" aria-label="{{sheetTitle}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+              <button type="button" role="{{c.role}}" aria-checked="{{c.on}}" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{sDays}}" hint-placeholder-val="{{ false }}">
+          <div role="radiogroup" aria-label="{{sheetTitle}}" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{days}}" as="d" hint-placeholder-count="31">
+              <button type="button" role="radio" aria-checked="{{d.on}}" class="m-press" onClick="{{d.pick}}" style="{{d.style}}">{{d.label}}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; color: #637570">{{daysNote}}</span>
+        </sc-if>
+        <sc-if value="{{hasSave}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="m-press" onClick="{{save}}" disabled="{{saveOff}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </sc-if>
+        <sc-if value="{{sTwo}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 8px">
+            <button type="button" class="m-press" onClick="{{act1}}" style="{{act1Style}}">{{act1Label}}</button>
+            <button type="button" class="m-press" onClick="{{act2}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{act2Label}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="a-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // مخترعة. null = ما اتجاوبش (مش «لأ» — قاعدة 10). الملف واحد للحساب كله في البلدين (§41).
+    this.state = { p: { name: 'محمد', gender: null, deps: null, salary: null, payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  put(patch, msg) { this.setState({ p: Object.assign({}, this.state.p, patch), sheet: null, draft: null }); if (msg) this.say(msg); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state, p = s.p;
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const YES = eg ? 'أيوه' : 'نعم', NO = eg ? 'لأ' : 'لا';
+    const GENDER = { male: 'ذكر', female: 'أنثى' };
+    const DEPS = [['spouse', eg ? 'الزوج أو الزوجة' : 'الزوج أو الزوجة'], ['children', eg ? 'العيال' : 'الأولاد'], ['parents', 'الأهل']];
+    // §63: المرتب نطاقات مش رقم، ومعاه «مش عايز أقول». الحدود مخترعة (مصر ≈ ×٣)
+    const SAL = eg ? [['r1', 'أقل من ١٥ ألف'], ['r2', '١٥–٣٠ ألف'], ['r3', '٣٠–٦٠ ألف'], ['r4', 'أكتر من ٦٠ ألف'], ['skip', 'مش عايز أقول']]
+      : [['r1', 'أقل من ٥ آلاف'], ['r2', '٥–١٠ آلاف'], ['r3', '١٠–٢٠ ألفًا'], ['r4', 'أكثر من ٢٠ ألفًا'], ['skip', 'أفضّل ألا أقول']];
+    const label = (list, id) => (list.find((x) => x[0] === id) || [id, ''])[1];
+    // أوزان «ملفك X%» من §63 (اختيار Claude): الدخول والبلد ويوم المرتب ومصدر الفلوس والكاش والديون اتجاوبوا = ٦٠
+    const pct = 60 + (p.salary ? 12 : 0) + (p.deps ? 7 : 0) + (p.car !== null ? 7 : 0) + (p.renter !== null ? 7 : 0) + (p.biz !== null ? 7 : 0);
+    const notYet = eg ? 'لسه ما جاوبتش' : 'لم تُجب بعد';
+    const yn = (v) => (v === true ? YES : v === false ? NO : null);
+    const open = (sheet, draft) => () => this.setState({ sheet, draft });
+    const rowStyle = (last) => 'box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);');
+    const row = (lbl, value, sheet, draft, hint) => ({ label: lbl, value: value || notYet, hint: hint || '', hasHint: !!hint, open: open(sheet, draft),
+      valueStyle: 'flex-shrink: 0; max-width: 150px; text-align: left; ' + (value ? 'font-size: 14px; font-weight: 700; color: #193D33' : 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #956000; background: #FBF0DD') });
+    const carVal = p.car === true && p.carToWork !== null ? YES + (p.carToWork ? (eg ? ' · بروح بيها الشغل' : ' · أذهب بها للدوام') : (eg ? ' · مش للشغل' : ' · ليست للدوام')) : yn(p.car);
+    const groups = [
+      { title: 'عنك', rows: [row('الاسم', p.name, 'name', p.name), row('النوع', GENDER[p.gender], 'gender', p.gender), row(eg ? 'بتعول مين' : 'من تعول', p.deps ? (p.deps.length ? p.deps.map((d) => label(DEPS, d)).join('، ') : (eg ? 'محدش' : 'لا أحد')) : null, 'deps', p.deps ? p.deps.slice() : [])] },
+      { title: 'الدخل', rows: [row(eg ? 'المرتب' : 'الراتب', p.salary ? label(SAL, p.salary) + (p.salary === 'skip' ? '' : ' ' + cur) : null, 'salary', p.salary, eg ? 'نطاق تقريبي كفاية' : 'نطاق تقريبي يكفي'),
+        row(eg ? 'يوم المرتب' : 'يوم الراتب', 'يوم ' + n(p.payday), 'payday', p.payday, eg ? 'واحد للحساب كله، ومنه بيبدأ شهرك المالي' : 'واحد للحساب كله، ومنه يبدأ شهرك المالي')] },
+      { title: eg ? 'حياتك' : 'حياتك', note: eg ? 'على أساسها بتظهرلك التصنيفات اللي تخصك بس.' : 'بناءً عليها تظهر لك التصنيفات التي تخصك فقط.',
+        rows: [row(eg ? 'عندك عربية؟' : 'هل لديك سيارة؟', carVal, 'car', p.car), row(eg ? 'ساكن بإيجار؟' : 'هل تسكن بالإيجار؟', yn(p.renter), 'renter', p.renter),
+          row(eg ? 'عندك عمالة منزلية؟' : 'هل لديك عمالة منزلية؟', yn(p.maid), 'maid', p.maid), row(eg ? 'عندك شغل خاص؟' : 'هل لديك عمل خاص؟', yn(p.biz), 'biz', p.biz)] }
+    ].map((g) => Object.assign(g, { hasNote: !!g.note, note: g.note || '', rows: g.rows.map((r, i) => Object.assign(r, { style: rowStyle(i === g.rows.length - 1) })) }));
+    const chip = (on) => 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const d = s.draft;
+    const one = (list) => list.map(([id, lbl]) => ({ label: lbl, role: 'radio', on: d === id ? 'true' : 'false', style: chip(d === id), pick: () => this.setState({ draft: id }) }));
+    const yesNo = (key) => [[true, YES], [false, NO]].map(([v, lbl]) => ({ label: lbl, role: 'radio', on: d === v ? 'true' : 'false', style: chip(d === v), pick: () => this.setState({ draft: v }) }));
+    const depsChips = DEPS.map(([id, lbl]) => { const on = Array.isArray(d) && d.indexOf(id) >= 0; return { label: lbl, role: 'checkbox', on: on ? 'true' : 'false', style: chip(on), pick: () => { const cur2 = Array.isArray(d) ? d.slice() : []; const i = cur2.indexOf(id); if (i >= 0) cur2.splice(i, 1); else cur2.push(id); this.setState({ draft: cur2 }); } }; });
+    const nameTooLong = s.sheet === 'name' && String(d || '').trim().length > 60;
+    const SH = {
+      name: { t: 'الاسم', b: eg ? 'اختياري. بيظهر في التحية بس.' : 'اختياري. يظهر في التحية فقط.', save: () => { if (nameTooLong) return; this.put({ name: String(d || '').trim() || null }); } },
+      gender: { t: 'النوع', b: eg ? 'اختار ذكر أو أنثى، أو سيبها فاضية' : 'اختر ذكرًا أو أنثى، أو اتركه فارغًا', chips: one([['male', 'ذكر'], ['female', 'أنثى']]), save: () => this.put({ gender: d || null }) },
+      deps: { t: eg ? 'بتعول مين؟' : 'من تعول؟', b: eg ? 'اختار اللي ينطبق، أو «محدش».' : 'اختر ما ينطبق، أو «لا أحد».', chips: depsChips, role: 'group', save: () => this.put({ deps: Array.isArray(d) ? d : [] }), saveLabel: Array.isArray(d) && !d.length ? (eg ? 'محدش' : 'لا أحد') : null },
+      salary: { t: (eg ? 'المرتب في الشهر (' : 'الراتب الشهري (') + cur + ')', b: eg ? 'نطاق تقريبي كفاية، ومش هنطلب رقم.' : 'يكفي نطاق تقريبي، ولن نطلب رقمًا.', chips: one(SAL), save: () => { if (d) this.put({ salary: d }); }, need: true },
+      payday: { t: eg ? 'المرتب بينزل يوم كام؟' : 'في أي يوم ينزل الراتب؟', b: eg ? 'شهرك المالي بيبدأ من اليوم ده في البلدين.' : 'يبدأ شهرك المالي من هذا اليوم في البلدين.', save: () => this.put({ payday: d }, d === p.payday ? '' : (eg ? 'شهرك المالي بقى يبدأ يوم ' : 'أصبح شهرك المالي يبدأ يوم ') + n(d)) },
+      car: { t: eg ? 'عندك عربية؟' : 'هل لديك سيارة؟', chips: yesNo(), need: true, save: () => { if (d === null) return; if (d === true && p.car !== true) this.setState({ p: Object.assign({}, p, { car: true, carToWork: null }), sheet: 'carToWork', draft: null }); else this.put({ car: d, carToWork: d ? p.carToWork : null }); } },
+      renter: { t: eg ? 'ساكن بإيجار؟' : 'هل تسكن بالإيجار؟', chips: yesNo(), need: true, save: () => { if (d !== null) this.put({ renter: d }); } },
+      maid: { t: eg ? 'عندك عمالة منزلية؟' : 'هل لديك عمالة منزلية؟', chips: yesNo(), need: true, save: () => { if (d !== null) this.put({ maid: d }); } },
+      biz: { t: eg ? 'عندك شغل خاص؟' : 'هل لديك عمل خاص؟', chips: yesNo(), need: true, save: () => { if (d !== null) this.put({ biz: d }); } },
+      // §64: «هتروح بيها الشغل؟» لحظة ما الملف يتحوّل لـ«عنده عربية» وعنده شغل شغال — مرة واحدة لكل تغيير
+      carToWork: { t: eg ? 'هتروح بيها الشغل؟' : 'هل تذهب بها إلى الدوام؟', b: eg ? 'عشان نحسب مصاريف العربية صح. مش هنسأل تاني غير لو غيّرت عربيتك.' : 'لنحسب مصاريف السيارة بدقة. لن نسأل مجددًا إلا إن تغيّرت سيارتك.', two: [YES, () => this.put({ carToWork: true }, eg ? 'اتسجل: بتروح بيها الشغل' : 'سُجّل: تذهب بها إلى الدوام'), NO, () => this.put({ carToWork: false })] },
+      signout: { t: eg ? 'تخرج من الحساب؟' : 'تسجيل الخروج؟', b: eg ? 'بياناتك محفوظة في حسابك وبترجع كاملة لما تدخل تاني. النسخة اللي على الجوال ده هتتمسح.' : 'بياناتك محفوظة في حسابك وتعود كاملة عند الدخول مجددًا. تُمسح النسخة التي على هذا الجوال.', two: [eg ? 'اخرج' : 'خروج', () => this.put({}, eg ? 'تجربة: في التطبيق بتروح لشاشة الدخول' : 'تجربة: في التطبيق تنتقل إلى شاشة الدخول'), eg ? 'خليني' : 'إلغاء', () => this.setState({ sheet: null })], danger: true }
+    };
+    const sh = s.sheet ? SH[s.sheet] : null;
+    const saveOk = sh && !sh.two && !(sh.need && (d === null || d === undefined)) && !nameTooLong;
+    const days = [];
+    for (let i = 1; i <= 31; i++) days.push({ label: n(i), on: d === i ? 'true' : 'false', pick: () => this.setState({ draft: i }), style: 'height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 14px; cursor: pointer; ' + (d === i ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.05)') });
+    const on = p.dues !== false;
+    const offline = st === 'محتاج نت';
+    const primary = 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; ';
+    return {
+      title: eg ? 'ملفك' : 'ملفك',
+      isError: st === 'خطأ', errTitle: eg ? 'ما اتحفظش آخر تعديل' : 'تعذّر حفظ آخر تعديل', errBody: eg ? 'هنجرّب تاني لوحدنا أول ما النت يرجع.' : 'سنعيد المحاولة تلقائيًا عند عودة الاتصال.',
+      isOffline: offline, offline, offlineBody: eg ? 'مفيش نت. تعديلاتك بتتحفظ على الجوال وبتتبعت لما النت يرجع.' : 'لا اتصال. تُحفظ تعديلاتك على الجوال وتُرسل عند عودة الاتصال.',
+      nameShown: p.name || (eg ? 'من غير اسم' : 'بلا اسم'), email: 'mohamed@example.com',
+      pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '٪',
+      pctHint: pct >= 100 ? (eg ? 'كامل' : 'مكتمل') : (eg ? 'كل إجابة بتخلي الأرقام أدق' : 'كل إجابة تجعل الأرقام أدق'),
+      barStyle: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
+      avatarBtn: eg ? 'اختار أفاتار' : 'اختر أفاتار', avatarSoon: eg ? 'الأفاتارات بتتضاف بعدين.' : 'تُضاف الأفاتارات لاحقًا.',
+      groups,
+      budgetGroup: eg ? 'الميزانية' : 'الميزانية',
+      duesTitle: eg ? 'المستحقات جوه حد الميزانية' : 'المستحقات ضمن حد الميزانية',
+      duesDesc: p.dues === null ? (eg ? 'لسه ما حددتش، فبتتحسب احتياطًا. الأقساط في مصروف الشهر دايمًا.' : 'لم تحدده بعد، فتُحسب احتياطًا. الأقساط في مصروف الشهر دائمًا.') : on ? (eg ? 'أقساط الجمعيات والتمويل بتاكل من حد الميزانية.' : 'أقساط الجمعيات والتمويل تُحسب من حد الميزانية.') : (eg ? 'برا الحد، بس فاضلة في مصروف الشهر.' : 'خارج الحد، وتبقى في مصروف الشهر.'),
+      duesChecked: on ? 'true' : 'false', toggleDues: () => this.setState({ p: Object.assign({}, p, { dues: !on }) }),
+      duesTrack: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (on ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'),
+      duesKnob: 'position: absolute; top: 2px; right: ' + (on ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      accountGroup: 'الحساب', emailLabel: eg ? 'الإيميل' : 'البريد الإلكتروني', emailHint: eg ? 'للعرض بس' : 'للعرض فقط',
+      resetLabel: eg ? 'تغيير كلمة السر' : 'تغيير كلمة السر',
+      resetHint: offline ? (eg ? 'محتاج نت' : 'يحتاج اتصالًا بالإنترنت') : (eg ? 'هنبعتلك لينك على الإيميل' : 'نرسل رابطًا إلى بريدك'),
+      resetStyle: rowStyle(false) + (offline ? ' opacity: 0.45; cursor: default;' : ''),
+      resetPass: () => { if (!offline) this.say(eg ? 'بعتنالك لينك تغيير كلمة السر على الإيميل' : 'أرسلنا رابط تغيير كلمة السر إلى بريدك'); },
+      signOutLabel: eg ? 'اخرج من الحساب' : 'تسجيل الخروج', askSignOut: () => this.setState({ sheet: 'signout', draft: null }),
+      sheet: !!sh, sheetTitle: sh ? sh.t : '', hasSheetBody: !!(sh && sh.b), sheetBody: sh && sh.b ? sh.b : '',
+      sName: s.sheet === 'name', draftName: s.sheet === 'name' ? String(d || '') : '', typeName: (e) => this.setState({ draft: e.target.value }),
+      nameBad: nameTooLong ? 'true' : 'false', hasNameErr: nameTooLong, nameErr: eg ? 'الاسم أطول من ٦٠ حرف' : 'الاسم أطول من ٦٠ حرفًا',
+      nameInput: 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (nameTooLong ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      sChips: !!(sh && sh.chips), chips: sh && sh.chips ? sh.chips : [], chipsRole: sh && sh.role ? sh.role : 'radiogroup',
+      sDays: s.sheet === 'payday', days, daysNote: eg ? 'الأيام ٢٩–٣١ بتتحسب آخر يوم في الشهر القصير.' : 'الأيام ٢٩–٣١ تُحسب آخر يوم في الشهر القصير.',
+      hasSave: !!(sh && !sh.two), saveOff: !saveOk, saveLabel: sh && sh.saveLabel ? (eg ? 'احفظ: ' : 'حفظ: ') + sh.saveLabel : (eg ? 'احفظ' : 'حفظ'),
+      saveStyle: primary + 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (saveOk ? '' : ' opacity: 0.45; cursor: default'),
+      save: () => { if (sh && sh.save && saveOk) sh.save(); },
+      sTwo: !!(sh && sh.two), act1Label: sh && sh.two ? sh.two[0] : '', act1: () => { if (sh && sh.two) sh.two[1](); }, act2Label: sh && sh.two ? sh.two[2] : '', act2: () => { if (sh && sh.two) sh.two[3](); },
+      act1Style: 'flex: 1 1 0; ' + primary + (sh && sh.danger ? 'background: #BE3D48' : 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
+      closeSheet: () => this.setState({ sheet: null, draft: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إعداد قراءة الرسائل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-row:active{background:#DCEBD6}
+.e-in{animation:e-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes e-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.e-veil{animation:e-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.e-up{animation:e-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.e-toast{animation:e-toast 2800ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes e-fade{from{opacity:0}to{opacity:1}}
+@keyframes e-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes e-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.e-in,.e-up{animation:e-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="BankSms.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <sc-if value="{{permOff}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: #FBF0DD; color: #6B4600">
+        <span style="font-size: 14px; font-weight: 700; color: #956000">{{permTitle}}</span>
+        <span style="font-size: 13px">{{permBody}}</span>
+        <button type="button" class="m-press" onClick="{{grant}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.8)">{{permBtn}}</button>
+      </div>
+    </sc-if>
+
+    <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 16px; font-weight: 700; flex: 1 1 auto">{{autoTitle}}</span><span style="{{autoChipStyle}}">{{autoChip}}</span></span>
+      <span style="font-size: 13px; line-height: 1.7; color: #637570">{{autoBody}}</span>
+      <sc-if value="{{showStop}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{stop}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #A8323C; cursor: pointer; background: rgba(190,61,72,0.08)">{{stopLabel}}</button>
+      </sc-if>
+      <sc-if value="{{showStart}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="m-press" onClick="{{start}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{startLabel}}</button>
+      </sc-if>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #637570"><span aria-hidden="true" style="{{permDot}}"></span>{{permLine}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{sendersTitle}}</h2><span style="font-size: 12px; color: #637570">{{sendersCount}}</span></span>
+      <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{senders}}" as="sd" hint-placeholder-count="4">
+          <button type="button" class="m-press m-row" onClick="{{sd.open}}" style="{{sd.rowStyle}}">
+            <span aria-hidden="true" style="{{sd.tile}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path></svg></span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: right">
+              <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span dir="{{sd.dir}}" style="font-size: 15px; font-weight: 700">{{sd.name}}</span><sc-if value="{{sd.hasLast4}}" hint-placeholder-val="{{ true }}"><span dir="ltr" style="font-size: 12px; color: #637570">•••• {{sd.last4}}</span></sc-if><sc-if value="{{sd.unknown}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #637570; background: rgba(99,117,112,0.12)">{{unknownLabel}}</span></sc-if></span>
+              <span style="{{sd.subStyle}}">{{sd.sub}}</span>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+      <button type="button" class="m-press" onClick="{{openAdd}}" disabled="{{full}}" style="{{addStyle}}">{{addLabel}}</button>
+      <span style="font-size: 12px; line-height: 1.7; color: #637570">{{rulesNote}}</span>
+    </div>
+
+    <a href="NotificationSettings.dc.html" class="m-press" style="min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-radius: 16px; text-decoration: none; color: #08634F; font-size: 14px; font-weight: 700; background: rgba(8,99,79,0.06)"><span style="flex: 1 1 auto">{{notifLink}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="e-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="e-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <sc-if value="{{isAdd}}" hint-placeholder-val="{{ false }}">
+          <input type="text" dir="ltr" maxlength="11" aria-label="{{nameLabel}}" placeholder="{{nameLabel}}" value="{{newName}}" onInput="{{typeName}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; text-align: right; color: #193D33; background: rgba(25,61,51,0.05); outline: none">
+          <sc-if value="{{hasNameErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{nameErr}}</span></sc-if>
+        </sc-if>
+        <div role="radiogroup" aria-label="{{sheetTitle}}" style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{wallets}}" as="wl" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{wl.checked}}" class="m-press" onClick="{{wl.pick}}" style="{{wl.style}}">
+              <span style="flex: 1 1 auto; display: flex; flex-direction: column; text-align: right"><span style="font-size: 15px; font-weight: 700">{{wl.name}}</span><span style="font-size: 12px; color: #637570">{{wl.sub}}</span></span>
+              <span aria-hidden="true" style="{{wl.dot}}"></span>
+            </button>
+          </sc-for>
+        </div>
+        <button type="button" class="m-press" onClick="{{save}}" disabled="{{cantSave}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        <sc-if value="{{isEdit}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 8px">
+            <sc-if value="{{canUnlink}}" hint-placeholder-val="{{ true }}"><button type="button" class="m-press" onClick="{{unlink}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{unlinkLabel}}</button></sc-if>
+            <button type="button" class="m-press" onClick="{{remove}}" style="flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #A8323C; cursor: pointer; background: rgba(190,61,72,0.08)">{{removeLabel}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="e-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // map: المرسل ← المحفظة (null = مستني تختار) · محفظة لكل بنك في كل بلد (قرار المالك §72)
+    this.state = { on: true, granted: false, map: {}, gone: {}, extra: [], sheet: null, pick: null, newName: '', tried: false, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2900)); this.setState({ toast: msg }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state;
+    const permOff = (this.props.state ?? 'عادي') === 'خطأ' && !s.granted;
+    const reading = s.on && !permOff;
+    // الأسماء المعروفة بالعربي (قايمة البنوك المعروفة §74) · المرسل المجهول بيظهر زي ما جه في الرسالة · آخر ٤ أرقام بس
+    const W = eg ? [['w1', 'البنك الأهلي المصري · حساب المرتب'], ['w2', 'QNB مصر']] : [['w1', 'مصرف الراجحي · حساب الراتب'], ['w2', 'البنك الأهلي السعودي'], ['w3', 'مصرف الإنماء']];
+    const base = eg
+      ? [{ id: 'nbe', name: 'البنك الأهلي المصري', w: 'w1', last4: '٥٥١٨' }, { id: 'qnb', name: 'QNB مصر', w: 'w2', last4: '٣٣٠٧' }, { id: 'waha', raw: 'ALWAHA', w: null, waiting: 2 }]
+      : [{ id: 'rajhi', name: 'مصرف الراجحي', w: 'w1', last4: '٤٨٢١' }, { id: 'snb', name: 'البنك الأهلي السعودي', w: 'w2', last4: '٢٢٠٥' }, { id: 'inma', name: 'مصرف الإنماء', w: 'w3', last4: '٧٢١٠' }, { id: 'waha', raw: 'ALWAHA', w: null, waiting: 2 }];
+    const list = base.concat(s.extra).filter((x) => !s.gone[x.id]).map((x) => Object.assign({}, x, { w: x.id in s.map ? s.map[x.id] : x.w }));
+    const label = (x) => x.name || x.raw;
+    const wName = (id) => { const w = W.find((v) => v[0] === id); return w ? w[1] : id === 'new' ? (eg ? 'محفظة جديدة' : 'محفظة جديدة') : ''; };
+    const two = (x) => x === 2 ? (eg ? 'رسالتين' : 'رسالتان') : x === 1 ? (eg ? 'رسالة واحدة' : 'رسالة واحدة') : n(x) + (eg ? ' رسايل' : ' رسائل');
+    const senders = list.map((x, i, a) => {
+      const wait = !x.w;
+      return {
+        name: label(x), dir: x.raw ? 'ltr' : 'rtl', unknown: !!x.raw, hasLast4: !!x.last4, last4: x.last4 || '',
+        sub: wait ? (x.waiting ? two(x.waiting) + (eg ? ' مستنيين تختار المحفظة' : ' بانتظار اختيار المحفظة') : (eg ? 'لسه ما اخترتش المحفظة' : 'لم تُختر المحفظة بعد')) : (eg ? 'بتتسجل في: ' : 'تُسجَّل في: ') + wName(x.w),
+        subStyle: 'font-size: 12px; ' + (wait ? 'font-weight: 700; color: #956000' : 'color: #637570'),
+        tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; ' + (wait ? 'color: #956000; background: #FBF0DD' : 'color: #08634F; background: rgba(8,99,79,0.10)'),
+        open: () => this.setState({ sheet: { mode: 'edit', id: x.id }, pick: x.w, tried: false }),
+        rowStyle: 'box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px; border-radius: 16px;' + (i === a.length - 1 ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);')
+      };
+    });
+    const sh = s.sheet;
+    const target = sh && sh.mode === 'edit' ? list.find((x) => x.id === sh.id) : null;
+    const isAdd = !!sh && sh.mode === 'add';
+    const nm = s.newName.trim();
+    const nameErr = isAdd && s.tried && !nm;
+    const opts = W.concat([['new', (eg ? 'محفظة جديدة' : 'محفظة جديدة')]]);
+    const wallets = opts.map(([id, name]) => {
+      const on = s.pick === id;
+      return { name, sub: id === 'new' ? (eg ? 'نعملها دلوقتي برصيد «غير معروف»' : 'تُنشأ الآن برصيد «غير معروف»') : (eg ? 'حساب بنك' : 'حساب بنكي'), checked: on ? 'true' : 'false', pick: () => this.setState({ pick: id }),
+        style: 'display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border: 0; border-radius: 16px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.05)'),
+        dot: 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 10px; flex-shrink: 0; ' + (on ? 'border: 6px solid #08634F; background: #FFFFFF' : 'border: 1.5px solid #9AA9A4') };
+    });
+    const cantSave = !s.pick;
+    const primary = 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);';
+    const full = list.length >= 10;
+    return {
+      title: eg ? 'إعداد القراية' : 'إعداد القراءة',
+      permOff, permTitle: eg ? 'إذن الرسايل اتسحب' : 'سُحب إذن الرسائل',
+      permBody: eg ? 'راجع أذونات أندرويد. الرسايل المستنية محفوظة ومش هتضيع.' : 'راجع أذونات أندرويد. الرسائل المعلّقة محفوظة ولن تضيع.',
+      permBtn: eg ? 'افتح إعدادات الجوال' : 'افتح إعدادات الجوال',
+      grant: () => { this.setState({ granted: true }); this.say(eg ? 'الإذن رجع — القراية شغالة تاني' : 'عاد الإذن — عادت القراءة'); },
+      autoTitle: eg ? 'القراية التلقائية' : 'القراءة التلقائية',
+      autoChip: reading ? (eg ? 'شغالة' : 'تعمل') : (eg ? 'واقفة' : 'متوقفة'),
+      autoChipStyle: 'font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 10px; flex-shrink: 0; ' + (reading ? 'color: #08634F; background: #DCEBD6' : 'color: #956000; background: #FBF0DD'),
+      autoBody: permOff ? (eg ? 'واقفة لأن الإذن اتسحب. رجّعه وهي تشتغل لوحدها.' : 'متوقفة لأن الإذن سُحب. أعده لتعمل تلقائيًا.') : s.on ? (eg ? 'الرسالة المفهومة من بنك مربوط بتتسجل وتتصنف لوحدها حتى والبرنامج مقفول. اللي محتاج قرارك بيستنى في «رسايل البنك». ولو رسالة فاتتنا بنلحقها كل ٤ ساعات.' : 'الرسالة المفهومة من بنك مربوط تُسجَّل وتُصنَّف تلقائيًا ولو كان التطبيق مغلقًا. وما يحتاج قرارك ينتظر في «رسائل البنك». وما يفوتنا نلحقه كل ٤ ساعات.') : (eg ? 'واقفة: مش هنقرا رسايل جديدة. اللي اتسجل قبل كده زي ما هو.' : 'متوقفة: لن تُقرأ رسائل جديدة. وما سُجّل سابقًا يبقى كما هو.'),
+      showStop: s.on && !permOff, showStart: !s.on && !permOff,
+      stopLabel: eg ? 'وقّف القراية التلقائية' : 'أوقف القراءة التلقائية',
+      startLabel: eg ? 'شغّل القراية التلقائية' : 'شغّل القراءة التلقائية',
+      stop: () => { this.setState({ on: false }); this.say(eg ? 'القراية وقفت' : 'أُوقفت القراءة'); },
+      start: () => { this.setState({ on: true }); this.say(eg ? 'القراية اشتغلت' : 'عادت القراءة'); },
+      permDot: 'width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: ' + (permOff ? '#956000' : '#13764D'),
+      permLine: permOff ? (eg ? 'إذن الرسايل: مسحوب' : 'إذن الرسائل: مسحوب') : (eg ? 'إذن الرسايل: مسموح — اتطلب مرة واحدة بس' : 'إذن الرسائل: ممنوح — طُلب مرة واحدة فقط'),
+      sendersTitle: eg ? 'البنوك اللي بتبعتلك' : 'البنوك المرسلة', sendersCount: n(list.length) + (eg ? ' من ١٠' : ' من ١٠'),
+      senders, unknownLabel: eg ? 'اسم مش معروف' : 'اسم غير معروف',
+      full, addLabel: eg ? 'ضيف مرسل' : 'أضف مرسلًا',
+      addStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08);' + (full ? ' opacity: 0.5; cursor: default' : ''),
+      openAdd: () => { if (!full) this.setState({ sheet: { mode: 'add' }, pick: null, newName: '', tried: false }); },
+      rulesNote: eg ? 'لو في البلد حساب بنك واحد، رسايله بتتسجل فيه على طول. ولو عندك حسابين في نفس البنك، بنفرّق بينهم بآخر ٤ أرقام في الرسالة. البنك اللي مالوش محفظة رسايله بتستنى لحد ما تختار.' : 'إن كان في البلد حساب بنكي واحد تُسجَّل رسائله فيه مباشرة. وإن كان لك حسابان في البنك نفسه نفرّق بينهما بآخر ٤ أرقام في الرسالة. والبنك الذي بلا محفظة تنتظر رسائله حتى تختار.',
+      notifLink: eg ? 'إشعارات رسايل البنك' : 'إشعارات رسائل البنك',
+      sheetOpen: !!sh && (isAdd || !!target),
+      isAdd, isEdit: !!target, canUnlink: !!(target && target.w),
+      sheetTitle: isAdd ? (eg ? 'مرسل جديد' : 'مرسل جديد') : target ? (eg ? 'رسايل «' : 'رسائل «') + label(target) + (eg ? '» تتسجل فين؟' : '» أين تُسجَّل؟') : '',
+      sheetBody: isAdd ? (eg ? 'اكتب اسم المرسل زي ما بيظهر في الرسايل، واختار محفظته.' : 'اكتب اسم المرسل كما يظهر في الرسائل، واختر محفظته.') : (eg ? 'مرة واحدة بس. أي رسالة مستنية من البنك ده بتتسجل لوحدها بعد ما تختار.' : 'مرة واحدة فقط. ما ينتظر من رسائل هذا البنك يُسجَّل تلقائيًا بعد اختيارك.'),
+      nameLabel: eg ? 'اسم المرسل' : 'اسم المرسل', newName: s.newName, typeName: (e) => this.setState({ newName: e.target.value }),
+      hasNameErr: nameErr, nameErr: eg ? 'اكتب اسم مرسل البنك زي ما بيظهر في الرسايل' : 'اكتب اسم مرسل البنك كما يظهر في الرسائل',
+      wallets, cantSave,
+      saveLabel: isAdd ? (eg ? 'ضيفه' : 'أضفه') : (eg ? 'احفظ' : 'احفظ'),
+      saveStyle: primary + (cantSave ? ' opacity: 0.45; cursor: default' : ''),
+      save: () => {
+        if (!s.pick) return;
+        if (isAdd) {
+          if (!nm) { this.setState({ tried: true }); return; }
+          this.setState({ extra: s.extra.concat([{ id: 'x' + (s.extra.length + 1), raw: nm, w: s.pick }]), sheet: null });
+          this.say((eg ? 'اتضاف «' : 'أُضيف «') + nm + '»');
+          return;
+        }
+        if (!target) return;
+        this.setState({ map: Object.assign({}, s.map, { [target.id]: s.pick }), sheet: null });
+        this.say((eg ? 'اتربط «' : 'رُبط «') + label(target) + (eg ? '» بـ«' : '» بـ«') + wName(s.pick) + '»' + (!target.w && target.waiting ? (eg ? ' — المستني هيتسجل لوحده' : ' — يُسجَّل المنتظر تلقائيًا') : ''));
+      },
+      unlinkLabel: eg ? 'شيل الربط' : 'فك الربط',
+      unlink: () => { if (!target) return; this.setState({ map: Object.assign({}, s.map, { [target.id]: null }), sheet: null }); this.say(eg ? 'اتشال الربط — رسايله هتستنى لحد ما تختار' : 'فُك الربط — تنتظر رسائله حتى تختار'); },
+      removeLabel: eg ? 'شيل المرسل' : 'احذف المرسل',
+      remove: () => { if (!target) return; this.setState({ gone: Object.assign({}, s.gone, { [target.id]: true }), sheet: null }); this.say((eg ? 'مش هنقرا رسايل «' : 'لن نقرأ رسائل «') + label(target) + '»'); },
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

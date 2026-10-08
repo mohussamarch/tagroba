@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>البلدان — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.p-in{animation:p-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes p-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.p-veil{animation:p-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.p-up{animation:p-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.p-toast{animation:p-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes p-fade{from{opacity:0}to{opacity:1}}
+@keyframes p-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes p-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.p-in{animation:none}.p-up{animation:p-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; background: #FBF0DD; color: #956000"><span style="font-size: 14px; font-weight: 700">{{errTitle}}</span><span style="font-size: 12px">{{errBody}}</span></div>
+    </sc-if>
+
+    <sc-for list="{{sections}}" as="sec" hint-placeholder-count="2">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{sec.title}}</h2>
+        <sc-for list="{{sec.rows}}" as="c" hint-placeholder-count="2">
+          <div class="p-in" style="{{c.cardStyle}}">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span aria-hidden="true" style="{{c.lens}}">{{c.mark}}</span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 17px; font-weight: 700">{{c.name}}</span><sc-if value="{{c.isActive}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #08634F; background: #DCEBD6">{{activeChip}}</span></sc-if></span>
+                <span style="font-size: 13px; color: #637570">{{c.currency}}</span>
+                <span style="font-size: 12px; color: #637570">{{c.meta}}</span>
+              </span>
+            </div>
+            <sc-if value="{{c.hasActs}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+                <sc-for list="{{c.acts}}" as="a" hint-placeholder-count="2">
+                  <button type="button" class="m-press" onClick="{{a.go}}" style="{{a.style}}">{{a.label}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{c.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{c.note}}</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+
+    <button type="button" class="m-press" onClick="{{openAdd}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{addLabel}}</button>
+    <div style="border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.04)">
+      <span style="font-size: 13px; font-weight: 700; color: #637570">{{sharedTitle}}</span>
+      <span style="font-size: 12px; color: #637570">{{sharedBody}}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="p-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="p-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <sc-if value="{{isAdd}}" hint-placeholder-val="{{ true }}">
+          <div role="radiogroup" aria-label="{{sheetTitle}}" style="display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{countries}}" as="k" hint-placeholder-count="2">
+              <button type="button" role="radio" aria-checked="{{k.on}}" aria-disabled="{{k.off}}" class="m-press" onClick="{{k.pick}}" style="{{k.style}}"><span style="font-size: 15px; font-weight: 700">{{k.name}}</span><span style="font-size: 12px; color: #637570">{{k.sub}}</span></button>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; color: #637570">{{supported}}</span>
+        </sc-if>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{confirm}}" disabled="{{confirmOff}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
+          <button type="button" class="m-press" onClick="{{closeSheet}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="p-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بلد واحدة","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // مصر: active · archived · none — لكل سيناريو لوحده. السعودية بتتعمل لوحدها وما بتتأرشفش (§41 · §64 قرار ٣)
+    this.state = { eg: { normal: 'active', one: 'none' }, active: null, sheet: null, pick: null, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const sc = st === 'بلد واحدة' ? 'one' : 'normal';
+    const s = this.state;
+    const egSt = s.eg[sc];
+    const n = (x) => x.toLocaleString('ar-EG');
+    // البلد الشغالة على الجهاز بس (§64 قرار ٦) — مبدئيًا من خاصية «space»، ولو مصر مش شغالة ⇒ السعودية
+    const want = s.active || ((this.props.space ?? 'السعودية') === 'مصر' ? 'eg' : 'sa');
+    const active = want === 'eg' && egSt === 'active' ? 'eg' : 'sa';
+    const eg = active === 'eg';
+    const setEg = (v) => Object.assign({}, s.eg, { [sc]: v });
+    const btn = (strong) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)');
+    const switchTo = (to) => () => { this.setState({ active: to }); this.say(to === 'eg' ? 'بقيت في حساب مصر — الأرقام بالجنيه' : 'انتقلت إلى حساب السعودية — الأرقام بالريال'); };
+    const card = (id, archived) => {
+      const isSa = id === 'sa', isActive = !archived && active === id;
+      const acts = archived ? [{ label: eg ? 'رجّعها من الأرشيف' : 'أرجعها من الأرشيف', go: () => { this.setState({ eg: setEg('active') }); this.say(eg ? 'رجعت مصر — والمزامنة والتنبيهات شغالة تاني' : 'عادت مصر — وعادت المزامنة والتنبيهات'); }, style: btn(true) }]
+        : [].concat(isActive ? [] : [{ label: eg ? 'بدّل لها' : 'بدّل إليها', go: switchTo(id), style: btn(true) }]).concat(isSa ? [] : [{ label: eg ? 'أرشفة' : 'أرشفة', go: () => this.setState({ sheet: 'archive' }), style: btn(false) }]);
+      return {
+        name: isSa ? 'السعودية' : 'مصر', mark: isSa ? 'س' : 'م', isActive,
+        currency: isSa ? (eg ? 'ريال سعودي · ر.س' : 'ريال سعودي · ر.س') : (eg ? 'جنيه مصري · ج.م' : 'جنيه مصري · ج.م'),
+        meta: isSa ? (eg ? '٤ محافظ · اتعمل لوحده' : '٤ محافظ · أُنشئ تلقائيًا') : archived ? (eg ? '٣ محافظ · مؤرشفة: من غير مزامنة ولا تنبيهات' : '٣ محافظ · مؤرشفة: بلا مزامنة ولا تنبيهات') : (eg ? '٣ محافظ · ضفتها في ١٢ مايو ٢٠٢٦' : '٣ محافظ · أضفتها في ١٢ مايو ٢٠٢٦'),
+        acts, hasActs: acts.length > 0,
+        hasNote: isSa, note: eg ? 'حساب السعودية الأساسي ما بيتأرشفش' : 'حساب السعودية الأساسي لا يُؤرشف',
+        lens: 'width: 46px; height: 46px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; ' + (archived ? 'color: #637570; background: rgba(25,61,51,0.06)' : 'color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)'),
+        cardStyle: 'border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; ' + (archived ? 'background: rgba(255,255,255,0.55); box-shadow: inset 0 0 0 1px rgba(204,216,204,0.7)' : isActive ? 'background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.45), 0 14px 32px rgba(29,54,53,0.09)' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)')
+      };
+    };
+    const live = [card('sa', false)].concat(egSt === 'active' ? [card('eg', false)] : []);
+    const sections = [{ title: (eg ? 'الشغالة (' : 'النشطة (') + n(live.length) + ')', rows: live }].concat(egSt === 'archived' ? [{ title: (eg ? 'المؤرشفة (' : 'المؤرشفة (') + n(1) + ')', rows: [card('eg', true)] }] : []);
+    // لوحة الإضافة: بلد واحدة = حساب واحد (SPACE_COUNTRY_TAKEN) · البلاد المدعومة دلوقتي السعودية ومصر بس (COUNTRY_*)
+    const countries = [
+      { id: 'sa', name: 'السعودية', sub: eg ? 'عندك حساب «السعودية» قبل كده — كل بلد ليها حساب واحد' : 'لديك حساب «السعودية» سابقًا — لكل بلد حساب واحد', off: true },
+      { id: 'eg', name: 'مصر', sub: egSt === 'none' ? (eg ? 'جنيه مصري · ج.م' : 'جنيه مصري · ج.م') : egSt === 'archived' ? (eg ? 'مؤرشفة — رجّعها من الأرشيف بدل ما تعمل واحدة جديدة' : 'مؤرشفة — أرجعها من الأرشيف بدل إنشاء أخرى') : (eg ? 'عندك حساب «مصر» قبل كده — كل بلد ليها حساب واحد' : 'لديك حساب «مصر» سابقًا — لكل بلد حساب واحد'), off: egSt !== 'none' }
+    ].map((k) => ({ name: k.name, sub: k.sub, off: k.off ? 'true' : 'false', on: s.pick === k.id ? 'true' : 'false', pick: () => { if (!k.off) this.setState({ pick: k.id }); },
+      style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 56px; padding: 8px 14px; border: 0; border-radius: 16px; font: inherit; color: #193D33; text-align: right; ' + (k.off ? 'opacity: 0.55; cursor: default; background: rgba(25,61,51,0.04)' : s.pick === k.id ? 'cursor: pointer; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'cursor: pointer; background: rgba(25,61,51,0.04)') }));
+    const isAdd = s.sheet === 'add';
+    const canCreate = isAdd && s.pick === 'eg' && egSt === 'none';
+    const confirmOk = s.sheet === 'archive' || canCreate;
+    return {
+      title: eg ? 'البلاد' : 'البلدان',
+      intro: eg ? 'كل بلد ليها حساب لوحدها بمحافظها وميزانيتها وأرقامها، ومفيش تحويل عملة بينهم.' : 'لكل بلد حساب منفصل بمحافظه وميزانيته وأرقامه، ولا تحويل عملة بينها.',
+      isError: st === 'خطأ', errTitle: eg ? 'ما اتحفظش آخر تغيير' : 'تعذّر حفظ آخر تغيير', errBody: eg ? 'لو إنشاء بلد اتقطع في النص، المحاولة الجاية بتكمّل الناقص.' : 'إن انقطع إنشاء بلد في منتصفه، تكمل المحاولة التالية الناقص.',
+      sections, activeChip: eg ? 'الحالية' : 'الحالية',
+      addLabel: eg ? 'ضيف بلد' : 'أضف بلدًا', openAdd: () => this.setState({ sheet: 'add', pick: null }),
+      sharedTitle: eg ? 'مشترك بين البلاد' : 'مشترك بين البلدان',
+      sharedBody: eg ? 'ملفك ويوم المرتب والقفل والأشخاص والتجار والوسوم. والنسخة الاحتياطية واحدة فيها كل البلاد.' : 'ملفك ويوم الراتب والقفل والأشخاص والتجار والوسوم. والنسخة الاحتياطية واحدة تشمل كل البلدان.',
+      sheet: !!s.sheet, isAdd,
+      sheetTitle: isAdd ? (eg ? 'ضيف بلد' : 'أضف بلدًا') : (eg ? 'أرشفة حساب مصر؟' : 'أرشفة حساب مصر؟'),
+      sheetBody: isAdd ? (eg ? 'البلد الجديدة بتبدأ بشجرة تصنيفات بلدها ومحافظ فاضية. إنشاؤها ما بيبدّلش لها لوحده.' : 'يبدأ البلد الجديد بشجرة تصنيفات بلده ومحافظ فارغة. إنشاؤه لا ينقلك إليه تلقائيًا.')
+        : (eg ? 'مفيش حاجة بتتمسح. المزامنة والتنبيهات بتقف، والبيانات بتفضل في النسخة الاحتياطية، وترجّعها وقت ما تحب.' : 'لا يُحذف شيء. تتوقف المزامنة والتنبيهات، وتبقى البيانات في النسخة الاحتياطية، وتعيدها متى شئت.') + (active === 'eg' ? (eg ? ' وهترجع لحساب السعودية.' : ' وستنتقل إلى حساب السعودية.') : ''),
+      countries, supported: eg ? 'البلاد المدعومة دلوقتي: السعودية ومصر.' : 'البلدان المدعومة الآن: السعودية ومصر.',
+      confirmOff: !confirmOk, confirmLabel: isAdd ? (canCreate ? (eg ? 'اعمل حساب مصر' : 'أنشئ حساب مصر') : (eg ? 'اعمل الحساب' : 'أنشئ الحساب')) : (eg ? 'أرشفة' : 'أرشفة'),
+      confirmStyle: 'flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (confirmOk ? '' : ' opacity: 0.45; cursor: default'),
+      confirm: () => {
+        if (canCreate) { this.setState({ eg: setEg('active'), sheet: null }); this.say(eg ? 'اتعمل حساب مصر بالجنيه — بدّل له وقت ما تحب' : 'أُنشئ حساب مصر بالجنيه — بدّل إليه متى شئت'); }
+        else if (s.sheet === 'archive') { const wasActive = active === 'eg'; this.setState({ eg: setEg('archived'), sheet: null, active: wasActive ? 'sa' : s.active }); this.say(wasActive ? 'أُرشفت مصر — انتقلت إلى حساب السعودية' : (eg ? 'اتأرشفت مصر' : 'أُرشفت مصر')); }
+      },
+      cancelLabel: eg ? 'إلغاء' : 'إلغاء',
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

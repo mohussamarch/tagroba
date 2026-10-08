@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>قسمة كل شيء — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.x-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.x-press:active{transform:scale(.98)}
+.x-chev{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.x-in{animation:x-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes x-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.x-press,.x-chev{transition:none}.x-press:active{transform:none}.x-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <h2 style="margin: 4px 0 0; font-size: 17px; font-weight: 700">{{itemsTitle}}</h2>
+  <sc-for list="{{items}}" as="it" hint-placeholder-count="2">
+    <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <button type="button" class="x-press" onClick="{{it.toggle}}" aria-expanded="{{it.expanded}}" style="width: 100%; min-height: 52px; border: 0; padding: 0; background: transparent; font: inherit; color: inherit; cursor: pointer; display: flex; align-items: center; gap: 10px; text-align: right">
+        <span style="flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 700">{{it.name}}</span>
+        <span dir="ltr" style="font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums">{{it.value}}</span>
+        <svg class="x-chev" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="{{it.chev}}"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <sc-if value="{{it.open}}" hint-placeholder-val="{{ false }}">
+        <div class="x-in" style="display: flex; flex-direction: column; padding-bottom: 10px">
+          <sc-for list="{{it.parts}}" as="pt" hint-placeholder-count="3">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 32px; font-size: 13px; color: #4F625C"><span style="display: flex; align-items: center; gap: 8px"><span style="{{pt.dot}}"></span>{{pt.label}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{pt.amount}}</span></div>
+          </sc-for>
+          <div style="display: flex; justify-content: space-between; gap: 10px; min-height: 32px; padding-top: 4px; border-top: 1px solid rgba(204,216,204,0.55); font-size: 13px; font-weight: 700"><span>{{sumLabel}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{it.sum}}</span></div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-for>
+  <span style="font-size: 12px; color: #637570">{{itemsNote}}</span>
+
+  <h2 style="margin: 4px 0 0; font-size: 17px; font-weight: 700">{{notesTitle}}</h2>
+  <div style="border-radius: 22px; padding: 6px 16px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <sc-for list="{{notes}}" as="nt" hint-placeholder-count="3">
+      <div style="{{nt.style}}"><span style="{{nt.textStyle}}">{{nt.text}}</span><span style="font-size: 11px; color: #637570">{{nt.cite}}</span></div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":700}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: 0 }; }
+  renderVals() {
+    const ui = (this.props.space ?? 'السعودية') === 'مصر';
+    const t = (sa, e) => (ui ? e : sa), A = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    let d = null;
+    try { d = typeof this.props.data === 'string' ? JSON.parse(this.props.data) : this.props.data; } catch (e) { d = null; }
+    // بيانات عرض لو اللوحة اتفتحت لوحدها (مخترعة) — في البرنامج بتيجي من InheritanceResult
+    if (!d || !d.items) d = { law: 'SA', items: [{ name: 'الشقة', value: '576,000.00', parts: [{ label: 'الزوجة', amount: '72,000.00', dot: 'background: #13764D' }, { label: 'الابن', amount: '272,000.00', dot: 'background: #2469BA' }, { label: 'البنت', amount: '136,000.00', dot: 'background: #956000' }, { label: 'الأم', amount: '96,000.00', dot: 'background: #BE3D48' }] }], notes: [['txt', 'الترتيب: تجهيز الميت، ثم الديون، ثم الوصية، ثم الورثة', 'المادة ١٩٨ من نظام الأحوال الشخصية']] };
+    const eg = d.law === 'EG', law = eg ? 'قانون المواريث ٧٧ لسنة ١٩٤٣' : 'نظام الأحوال الشخصية';
+    const cite = (a) => (a == null ? '' : t('المادة ', 'مادة ') + A(a) + ' من ' + law);
+    const L = { husband: 'الزوج', wife: 'الزوجة', son: 'الابن', daughter: 'البنت', father: 'الأب', mother: 'الأم', gf: 'الجد (أبو الأب)', pgm: 'الجدة (أم الأب)', mgm: 'الجدة (أم الأم)', ss: 'ابن الابن', sd: 'بنت الابن', fb: 'الأخ الشقيق', fs: 'الأخت الشقيقة', pb: 'الأخ من الأب', ps: 'الأخت من الأب', mb: 'الأخ من الأم', ms: 'الأخت من الأم', fn: 'ابن الأخ الشقيق', fu: 'العم الشقيق' };
+    // نصوص TextsInheritance.kt (فصحى · مصري) — المصطلح الفقهي بين قوسين بعد شرح بسيط
+    const NT = {
+      gfBlocks: () => t('الجد يمنع الإخوة والأخوات من الإرث مثل الأب', 'الجد بيمنع الإخوة والأخوات من الورث زي الأب'), gfMother: () => t('مع الجد تأخذ الأم ثلث التركة كلها لا ثلث الباقي', 'مع الجد الأم بتاخد تلت التركة كلها مش تلت الباقي'),
+      umar: (x) => t('الورثة هم الأب والأم و', 'الورثة الأب والأم و') + L[x[2]] + t(' فقط، فتأخذ الأم ثلث الباقي بعد نصيب ', ' بس، فالأم بتاخد تلت الباقي بعد نصيب ') + L[x[2]] + ' (العُمَرية)',
+      takmila: (x) => L[x[2]] + t(' تأخذ السدس مع ', ' بتاخد السدس مع ') + L[x[3]] + t(' ليكتمل الثلثان', ' عشان يكمل التلتين'), withDaughters: (x) => L[x[2]] + t(' تأخذ الباقي مع البنات (عصبة مع الغير)', ' بتاخد الباقي مع البنات (عصبة مع الغير)'),
+      mushShared: () => t('الإخوة الأشقاء يشاركون الإخوة من الأم في الثلث بالتساوي (المُشرَّكة)', 'الإخوة الأشقاء بيشاركوا الإخوة من الأم في التلت بالتساوي (المُشرَّكة)'),
+      mushDropped: () => t('الإخوة الأشقاء لا يشاركون الإخوة من الأم في الثلث، ولم يبق لهم شيء (المُشرَّكة لا يُعمل بها)', 'الإخوة الأشقاء مش بيشاركوا الإخوة من الأم في التلت، ومفضلش ليهم حاجة (المُشرَّكة مش معمول بيها)'),
+      gfShares: () => t('الجد يقاسم الإخوة كأنه أخ', 'الجد بيقاسم الإخوة كأنه أخ'), gfResidue: () => t('الجد يأخذ الباقي بعد نصيب الأخوات', 'الجد بياخد الباقي بعد نصيب الأخوات'),
+      gfSixth: () => t('القسمة مع الإخوة كانت ستنقص الجد عن السدس، فأخذ السدس', 'القسمة مع الإخوة كانت هتنزّل الجد عن السدس، فخد السدس'),
+      unclear: () => t('قد يختلف عن حكم المحكمة — النص غير واضح في هذه المسألة', 'ممكن يختلف عن حكم المحكمة — النص مش واضح في المسألة دي'),
+      awl: (x) => t('الأنصبة أكثر من التركة، فنقص نصيب كل وارث بالنسبة نفسها (العَوْل): من ', 'الأنصبة طلعت أكتر من التركة، فنصيب كل وارث نقص بنفس النسبة (العَوْل): من ') + A(x[2]) + t(' إلى ', ' لـ') + A(x[3]),
+      residueNone: (x) => t('الأنصبة المحددة أخذت التركة كلها، فلم يبق شيء لـ', 'الأنصبة المحددة خدت التركة كلها، فمفضلش حاجة لـ') + L[x[2]],
+      radd: () => t('بقي جزء من التركة ولا يوجد من يأخذ الباقي، فرُدّ على أصحاب الأنصبة غير الزوجين بنسبة أنصبتهم (الرَّدّ)', 'فضل جزء من التركة ومفيش حد ياخد الباقي، فرجع لأصحاب الأنصبة غير الزوجين بنسبة أنصبتهم (الرَّدّ)'),
+      raddSpouse: (x) => t('لا وارث غير ', 'مفيش وارث غير ') + L[x[2]] + t(' ولا أقارب آخرون، فأخذ التركة كلها (الرَّدّ)', ' ولا قرايب تانيين، فخد التركة كلها (الرَّدّ)'),
+      blocked: (x) => L[x[2]] + t(' لا يرث لوجود ', ' مش بيورث عشان فيه ') + L[x[3]] + ' (الحَجْب)'
+    };
+    const rows = (d.notes || []).map((x) => (x[0] === 'txt' ? [x[1], x[2], false] : [NT[x[0]] ? NT[x[0]](x) : '', x[0] === 'unclear' ? '' : cite(x[1]), x[0] === 'unclear'])).filter((x) => x[0]);
+    const s = this.state;
+    const sum = (parts) => { const m = parts.reduce((a, p) => a + Number(String(p.amount).replace(/[^0-9]/g, '')), 0), f = m % 100; return String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
+    return {
+      itemsTitle: t('قسمة كل شيء', 'قسمة كل حاجة'), sumLabel: t('المجموع', 'المجموع'),
+      items: d.items.map((it, k) => {
+        const open = s.open === k;
+        return { name: it.name, value: it.value, open, expanded: open ? 'true' : 'false', toggle: () => this.setState({ open: open ? -1 : k }), sum: sum(it.parts || []),
+          chev: 'flex-shrink: 0; transform: rotate(' + (open ? 180 : 0) + 'deg)', parts: (it.parts || []).map((p) => ({ label: p.label, amount: p.amount, dot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; ' + String(p.dot || '').replace(/^.*background/, 'background') })) };
+      }),
+      itemsNote: eg ? t('كل شيء يحمل من الديون والوصية بنسبة قيمته، والمجاميع مضبوطة بالقرش.', 'كل حاجة شايلة من الديون والوصية بنسبة قيمتها، والمجاميع مظبوطة بالقرش.') : t('كل شيء يحمل من الديون والوصية بنسبة قيمته، والمجاميع مضبوطة بالهللة.', 'كل حاجة شايلة من الديون والوصية بنسبة قيمتها، والمجاميع مظبوطة بالهللة.'),
+      notesTitle: t('ملاحظات', 'ملاحظات'),
+      notes: rows.map(([text, c, warn], i) => ({ text, cite: c || '', textStyle: 'font-size: 13px; line-height: 1.7;' + (warn ? ' font-weight: 700; color: #956000' : ''),
+        style: 'display: flex; flex-direction: column; gap: 2px; padding: 10px 0;' + (i ? ' border-top: 1px solid rgba(204,216,204,0.55);' : '') }))
+    };
+  }
+}
+</script>
+</body>
+</html>

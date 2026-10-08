@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>معاينة الاسترجاع — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.v-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.v-press:active{transform:scale(.97)}
+.v-skel{animation:v-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes v-pulse{from{opacity:.5}to{opacity:1}}
+.v-in{animation:v-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes v-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.v-bar{transition:width 1100ms cubic-bezier(.2,.7,.3,1)}
+.v-chev{transition:transform 320ms cubic-bezier(.18,.9,.28,1.08)}
+@media (prefers-reduced-motion: reduce){.v-press,.v-bar,.v-chev{transition:none}.v-press:active{transform:none}.v-skel,.v-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 18px; padding: 10px 14px; display: flex; flex-direction: column; background: rgba(255,255,255,0.6); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05)">
+    <span dir="ltr" style="text-align: right; font-size: 13px; font-weight: 700">{{fileName}}</span>
+    <span style="font-size: 12px; color: #637570">{{fileMeta}}</span>
+  </div>
+
+  <sc-if value="{{reading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="{{readingLabel}}" style="display: flex; flex-direction: column; gap: 12px"><span style="font-size: 13px; color: #637570">{{readingLabel}}</span><div class="v-skel" style="height: 120px; border-radius: 24px; background: rgba(25,61,51,0.07)"></div><div class="v-skel" style="height: 260px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div></div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div role="alert" class="v-in" style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD; color: #6B4600">
+      <span style="font-size: 15px; font-weight: 700; color: #956000">{{errTitle}}</span>
+      <span style="font-size: 13px">{{errBody}}</span>
+      <span style="font-size: 12px">{{errNote}}</span>
+      <button type="button" class="v-press" onClick="{{cancel}}" style="align-self: flex-start; height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.8)">{{otherFile}}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isPlan}}" hint-placeholder-val="{{ true }}">
+    <div class="v-in" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+        <span style="font-size: 20px; font-weight: 700">{{heroTitle}}</span>
+        <span style="font-size: 13px; color: #DCEBD6">{{heroBody}}</span>
+        <sc-if value="{{applying}}" hint-placeholder-val="{{ false }}"><span role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{pct}}" style="height: 8px; margin-top: 4px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="v-bar" style="{{barStyle}}"></span></span></sc-if>
+      </div>
+      <span style="border-radius: 16px; padding: 10px 12px; font-size: 12px; color: #637570; background: rgba(25,61,51,0.04)">{{profileLine}}</span>
+      <sc-for list="{{spaces}}" as="sp" hint-placeholder-count="2">
+        <div style="border-radius: 22px; padding: 6px 16px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <button type="button" class="v-press" onClick="{{sp.toggle}}" aria-expanded="{{sp.open}}" style="min-height: 56px; border: 0; padding: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 15px; font-weight: 700">{{sp.name}}</span><span style="{{sp.badgeStyle}}">{{sp.badge}}</span></span><span style="font-size: 12px; color: #637570">{{sp.line}}</span></span>
+            <svg class="v-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{sp.chev}}"><path d="M6 9l6 6 6-6"></path></svg>
+          </button>
+          <sc-if value="{{sp.open}}" hint-placeholder-val="{{ true }}">
+            <div class="v-in" style="display: flex; flex-direction: column; padding-bottom: 8px">
+              <div aria-hidden="true" style="display: grid; grid-template-columns: minmax(0, 1fr) 52px 52px 52px; gap: 4px; padding: 6px 0; font-size: 11px; font-weight: 700; color: #637570; border-top: 1px solid rgba(204,216,204,0.55)"><span>{{colGroup}}</span><span style="text-align: center">{{colIn}}</span><span style="text-align: center">{{colAdd}}</span><span style="text-align: center">{{colSkip}}</span></div>
+              <sc-for list="{{sp.rows}}" as="g" hint-placeholder-count="4">
+                <div style="{{g.row}}">
+                  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 52px 52px 52px; gap: 4px; align-items: center; font-size: 13px"><span style="font-weight: 700">{{g.label}}</span><span style="text-align: center; color: #637570">{{g.inc}}</span><span style="{{g.addStyle}}">{{g.add}}</span><span style="text-align: center; color: #637570">{{g.skip}}</span></div>
+                  <sc-if value="{{g.hasWhy}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #637570">{{g.why}}</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{notes}}" as="nt" hint-placeholder-count="3">
+          <span style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #637570"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#13764D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px"><path d="M20 6 9 17l-5-5"></path></svg><span>{{nt}}</span></span>
+        </sc-for>
+      </div>
+      <sc-if value="{{noNet}}" hint-placeholder-val="{{ false }}"><span role="note" style="border-radius: 14px; padding: 10px 12px; font-size: 12px; font-weight: 700; color: #6B4600; background: #FBF0DD">{{noNetText}}</span></sc-if>
+      <sc-if value="{{showActions}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <button type="button" class="v-press" onClick="{{confirm}}" disabled="{{cantConfirm}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
+          <button type="button" class="v-press" onClick="{{cancel}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="v-press" onClick="{{finish}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{finishLabel}}</button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // phase: reading (قراية الملف وحساب الخطة) → plan | error → applying → done — مفيش حرف بيتكتب قبل التأكيد
+    this.state = { phase: 'reading', open: { sa: true }, pct: 0 };
+    this.timers = [];
+  }
+  componentDidMount() { this.timers.push(setTimeout(() => this.setState({ phase: this.file() === 'ok' ? 'plan' : 'error' }), 900)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  file() { const f = this.props.file; return f === 'v1' || f === 'bad' ? f : 'ok'; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const s = this.state, f = this.file(), net = this.props.net !== 'لا';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const REC = eg ? ['سجل واحد', 'سجلين', 'سجلات', 'سجل'] : ['سجل واحد', 'سجلان', 'سجلات', 'سجلًا'];
+    // خطة الدمج (FullBackup.plan → FullBackupPlan): لكل مجموعة جاي · هيتضاف · هيتساب — والسبب (نفس المعرّف · نفس المحتوى) — مخترعة
+    // [التسمية BACKUP_GROUP_*, جاي, نفس المعرّف, نفس المحتوى]
+    const SA = [['العمليات', 1240, 1192, 12], ['المحافظ', 4, 4, 0], ['التصنيفات', 92, 90, 0], ['القواعد', 14, 13, 0], ['التجار', 58, 54, 1], ['الأشخاص', 11, 10, 0], ['الميزانيات', 8, 8, 0], ['المشاريع', 4, 3, 0]];
+    const EGY = [['العمليات', 310, 300, 5], ['المحافظ', 3, 3, 0], ['التصنيفات', 80, 80, 0], ['الميزانيات', 2, 2, 0]];
+    const busy = s.phase === 'applying', done = s.phase === 'done';
+    const build = (key, name, defs) => {
+      const rows = defs.map(([label, inc, sameId, sameContent], i) => {
+        const skip = sameId + sameContent, add = inc - skip;
+        const why = [sameId ? (eg ? 'موجود بنفس المعرّف: ' : 'موجود بالمعرّف نفسه: ') + n(sameId) : '', sameContent ? (eg ? 'مكرر بنفس المحتوى: ' : 'مكرر بالمحتوى نفسه: ') + n(sameContent) : ''].filter(Boolean).join(' · ');
+        return { label, inc: n(inc), add: add ? n(add) : '—', skip: n(skip), add0: add, hasWhy: !!skip, why,
+          addStyle: 'text-align: center; font-weight: 700; color: ' + (add ? '#13764D' : '#637570'),
+          row: 'display: flex; flex-direction: column; gap: 2px; padding: 8px 0;' + (i === defs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') };
+      });
+      const toAdd = rows.reduce((t, r) => t + r.add0, 0), open = !!s.open[key];
+      return { key, name, rows, toAdd, open, badge: eg ? 'موجودة — هتتدمج' : 'موجودة — يُدمج فيها',
+        badgeStyle: 'font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #2469BA; background: rgba(36,105,186,0.10)',
+        line: toAdd ? (done ? (eg ? 'اتضاف ' : 'أُضيف ') : (eg ? 'هيتضاف ' : 'سيُضاف ')) + plural(toAdd, REC) : (eg ? 'كله موجود عندك' : 'كل شيء موجود عندك'),
+        chev: 'flex-shrink: 0; transform: rotate(' + (open ? 180 : 0) + 'deg)',
+        toggle: () => this.setState({ open: Object.assign({}, s.open, { [key]: !open }) }) };
+    };
+    const spaces = [build('sa', eg ? 'الحساب والسعودية' : 'الحساب والسعودية', SA), build('eg', 'مصر', EGY)];
+    const total = spaces.reduce((t, x) => t + x.toAdd, 0);
+    const incoming = SA.concat(EGY).reduce((t, r) => t + r[1], 0);
+    const confirm = () => {
+      if (!net || s.phase !== 'plan') return;
+      this.setState({ phase: 'applying', pct: 0 });
+      this.timers.push(setTimeout(() => this.setState({ pct: 100 }), 60));
+      this.timers.push(setTimeout(() => this.setState({ phase: 'done' }), 1300));
+    };
+    const ERR = {
+      v1: [eg ? 'دي نسخة قديمة (إصدار ١)' : 'هذه نسخة قديمة (الإصدار ١)', eg ? 'اختر نسخة شاملة بإصدار 2؛ للنسخ القديمة استخدم استعادة النسخة القديمة' : 'اختر نسخة شاملة بالإصدار 2؛ وللنسخ القديمة استخدم استعادة النسخة القديمة'],
+      bad: [eg ? 'الملف ده مش سليم' : 'هذا الملف غير سليم', eg ? 'رمز التحقق من النسخة مش مطابق؛ الملف اتغير أو اتلف' : 'رمز التحقق من النسخة غير مطابق؛ الملف تغيّر أو تلف']
+    };
+    const err = ERR[f] || ['', ''];
+    return {
+      fileName: f === 'v1' ? 'masroufy-backup-2025-08-01.json' : f === 'bad' ? 'masroufy-backup (1).json' : 'masroufy-backup-2026-09-28.json',
+      fileMeta: f === 'ok' ? (eg ? 'اتعملت ٢٨ سبتمبر · فيها بلدين' : 'أُنشئت ٢٨ سبتمبر · فيها بلدان') : f === 'v1' ? (eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم') : (eg ? '٣ أكتوبر' : '٣ أكتوبر'),
+      reading: s.phase === 'reading', readingLabel: eg ? 'بنقرا الملف ونقارنه باللي عندك…' : 'نقرأ الملف ونقارنه بما عندك…',
+      isError: s.phase === 'error', errTitle: err[0], errBody: err[1],
+      errNote: eg ? 'ما اتكتبش ولا حرف في حسابك.' : 'لم يُكتب أي حرف في حسابك.',
+      otherFile: eg ? 'اختار ملف تاني' : 'اختر ملفًا آخر',
+      isPlan: s.phase === 'plan' || busy || done,
+      heroTitle: done ? (eg ? 'اتضاف ' : 'أُضيف ') + plural(total, REC) : (eg ? 'هيتضاف ' : 'سيُضاف ') + plural(total, REC),
+      heroBody: done ? (eg ? 'اللي كان عندك فضل زي ما هو.' : 'بقي ما عندك كما هو.') : busy ? (eg ? 'بنضيف على دفعات…' : 'نضيف على دفعات…') : (eg ? 'من ' : 'من أصل ') + n(incoming) + (eg ? ' في الملف — والباقي موجود عندك فهيتساب. لسه ما اتكتبش حاجة.' : ' في الملف — والباقي موجود عندك فيُتخطّى. لم يُكتب شيء بعد.'),
+      applying: busy, pct: String(s.pct), barStyle: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + s.pct + '%',
+      profileLine: eg ? 'ملفك (الاسم والمرتب ويوم المرتب): موجود عندك — ما بيتكتبش فوقه.' : 'ملفك (الاسم والراتب ويوم الراتب): موجود عندك — لا يُكتب فوقه.',
+      spaces, colGroup: eg ? 'المجموعة' : 'المجموعة', colIn: eg ? 'جاي' : 'وارد', colAdd: eg ? 'هيتضاف' : 'يُضاف', colSkip: eg ? 'هيتساب' : 'يُتخطّى',
+      notes: eg
+        ? ['الموجود بيفضل زي ما هو، ولو بلد في الملف مش عندك بتتعمل.', 'لما تأكد بنحسب الدمج تاني على اللي عندك ساعتها، فمفيش حاجة بتتكرر حتى لو عدّلت من جهاز تاني.', 'المبالغ ما بتتحوّلش: كل عملية بعملتها.']
+        : ['يبقى الموجود كما هو، والبلد التي في الملف وليست عندك تُنشأ.', 'عند التأكيد نعيد حساب الدمج على ما عندك لحظتها، فلا يتكرر شيء ولو عدّلت من جهاز آخر.', 'لا تُحوَّل المبالغ: كل عملية بعملتها.'],
+      noNet: !net && !done, noNetText: eg ? 'الاسترجاع محتاج نت. المعاينة شغالة، والتأكيد أول ما النت يرجع.' : 'الاسترجاع يحتاج اتصالًا. المعاينة متاحة، والتأكيد عند عودة الاتصال.',
+      showActions: !done, cantConfirm: !net || busy,
+      confirmLabel: busy ? (eg ? 'بنضيف…' : 'جارٍ الإضافة…') : !net ? (eg ? 'محتاج نت' : 'يحتاج اتصالًا') : (eg ? 'أكّد وضيف ' : 'أكّد وأضف ') + plural(total, REC),
+      confirmStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (!net || busy ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      confirm,
+      cancelLabel: eg ? 'إلغاء — ما تكتبش حاجة' : 'إلغاء — لا تكتب شيئًا',
+      cancel: () => { if (typeof this.props.onCancel === 'function') this.props.onCancel(); },
+      isDone: done, finishLabel: eg ? 'تمام' : 'تم',
+      finish: () => { if (typeof this.props.onDone === 'function') this.props.onDone(total); }
+    };
+  }
+}
+</script>
+</body>
+</html>

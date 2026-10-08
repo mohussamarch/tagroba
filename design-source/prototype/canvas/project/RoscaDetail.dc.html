@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل الجمعية — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.rd-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.rd-in{animation:rd-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.rd-veil{animation:rd-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.rd-up{animation:rd-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.rd-toast{animation:rd-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes rd-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes rd-fade{from{opacity:0}to{opacity:1}}
+@keyframes rd-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes rd-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.rd-bar{transition:none}.m-press:active{transform:none}.rd-in,.rd-up{animation:rd-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Roscas.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto; min-width: 0">{{title}}</h1>
+    </div>
+
+    <div style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+      <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 14px; color: #DCEBD6">{{posLabel}}</span><span style="{{phaseStyle}}">{{phase}}</span></span>
+      <span dir="ltr" style="text-align: right; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums">{{posText}}</span>
+      <span style="font-size: 12px; color: #DCEBD6">{{terms}}</span>
+      <span style="display: flex; justify-content: space-between; font-size: 12px; color: #DCEBD6; margin-top: 4px"><span>{{progressLabel}}</span><span>{{turnLabel}}</span></span>
+      <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="rd-bar" style="{{bar}}"></span></span>
+    </div>
+
+    <sc-if value="{{hasSug}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #FBF0DD">
+        <span style="font-size: 13px; font-weight: 700; color: #956000">{{sugTitle}}</span>
+        <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 15px; font-weight: 700">{{sugName}}</span><span style="font-size: 12px; color: #6B4600">{{sugSub}}</span></span>
+          <span dir="ltr" style="font-size: 15px; font-weight: 700; color: #BE3D48; white-space: nowrap; font-variant-numeric: tabular-nums">{{sugAmount}}</span>
+        </span>
+        <span style="font-size: 12px; color: #6B4600">{{sugWhy}}</span>
+        <sc-if value="{{sugFailed}}" hint-placeholder-val="{{ false }}">
+          <span role="alert" class="rd-in" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{sugErr}}</span>
+        </sc-if>
+        <span style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{linkSug}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{linkLabel}}</button>
+          <button type="button" class="m-press" onClick="{{dropSug}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.7)">{{dropLabel}}</button>
+        </span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{turnsTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{rows}}" as="t" hint-placeholder-count="4">
+          <div style="{{t.rowStyle}}">
+            <span aria-hidden="true" style="{{t.dot}}">{{t.num}}</span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+              <span style="font-size: 14px; font-weight: 700">{{t.date}}</span>
+              <span style="{{t.statusStyle}}">{{t.status}}</span>
+            </span>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 1px">
+              <span dir="ltr" style="{{t.amountStyle}}">{{t.amount}}</span>
+              <span style="font-size: 11px; color: #637570">{{t.after}}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" class="m-press" onClick="{{toggleTurns}}" aria-expanded="{{allTurnsOpen}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{turnsToggle}}</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{anTitle}}</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{stats}}" as="st" hint-placeholder-count="6">
+          <div style="border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="font-size: 12px; color: #637570">{{st.label}}</span>
+            <span dir="{{st.dir}}" style="{{st.valueStyle}}">{{st.value}}</span>
+            <span style="font-size: 11px; color: #637570">{{st.note}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #637570">{{anNote}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{linkedTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{entries}}" as="e" hint-placeholder-count="3">
+          <div class="{{e.cls}}" style="{{e.rowStyle}}">
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{e.kind}}</span><span style="font-size: 12px; color: #637570">{{e.sub}}</span></span>
+            <span dir="ltr" style="{{e.amountStyle}}">{{e.amount}}</span>
+            <button type="button" class="m-press" onClick="{{e.unlink}}" aria-label="{{e.unlinkLabel}}" style="height: 36px; padding: 0 10px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{unlinkWord}}</button>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{hasMoreEntries}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{toggleEntries}}" aria-expanded="{{allEntriesOpen}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{entriesToggle}}</button>
+      </sc-if>
+      <span style="font-size: 12px; color: #637570">{{kindNote}}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="rd-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="rd-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="m-press" onClick="{{confirmUnlink}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #BE3D48; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(190,61,72,0.25)">{{unlinkYes}}</button>
+          <button type="button" class="m-press" onClick="{{closeSheet}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="rd-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"rosca":{"editor":"enum","options":["حسب اللي اتداس","جمعية العائلة","جمعية العمل"],"default":"حسب اللي اتداس","section":"الجمعية"},"state":{"editor":"enum","options":["عادي","غير متاح","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let picked = null;
+    // «الجمعيات» تقدر تكتب هنا أنهي جمعية اتداست (data-keep على الرابط)
+    try { picked = window.sessionStorage.getItem('masroufy-rosca'); } catch (e) {}
+    this.picked = picked;
+    // sug: pending · linked · dropped — gone: معرّفات العمليات اللي اتفك ربطها
+    this.state = { sug: 'pending', failed: false, gone: {}, sheet: null, allTurns: false, allEntries: false, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const QW = eg ? ['قسط واحد', 'قسطين', 'أقساط', 'قسط'] : ['قسط واحد', 'قسطان', 'أقساط', 'قسطًا'];
+    const s = this.state;
+    const MO = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const addM = (a, x) => { const t = a[0] * 12 + a[1] - 1 + x, M = t % 12; return [(t - M) / 12, M + 1, a[2]]; };
+    const key = (a) => a[0] * 10000 + a[1] * 100 + a[2];
+    const dt = (a) => n(a[2]) + ' ' + MO[a[1] - 1] + (a[0] !== 2026 ? ' ' + ny(a[0]) : '');
+    const TODAY = key([2026, 10, 7]);
+    const pick = { 'جمعية العائلة': 'family', 'جمعية العمل': 'work' }[this.props.rosca] || (this.picked === 'work' ? 'work' : 'family');
+    const na = st === 'غير متاح' && pick === 'family';
+    const bank = eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي';
+    // مخترعة · نفس أرقام «الجمعيات»: القسط والقبض بالوحدة الصغرى · أول قسط = ميعاد قبض الدور الأول (Rosca.kt)
+    const D = pick === 'family'
+      ? { name: eg ? 'جمعية العيلة' : 'جمعية العائلة', turns: 10, inst: 100000, first: [2026, 6, 1], myTurn: na ? null : 6, to: 'نورة', paidN: 4, payouts: [] }
+      : { name: eg ? 'جمعية الشغل' : 'جمعية العمل', turns: 6, inst: 50000, first: [2026, 3, 1], myTurn: 2, to: 'فهد', paidN: 6, payouts: [2] };
+    const inst = D.inst * k, payout = inst * D.turns;
+    const due = (x) => addM(D.first, x - 1);
+    const all = [];
+    for (let i = 1; i <= D.paidN; i++) all.push({ id: 'c' + i, kind: 'c', date: due(i), amt: inst });
+    D.payouts.forEach((t) => all.push({ id: 'p' + t, kind: 'p', date: due(t), amt: payout }));
+    const sugTx = { id: 'c' + (D.paidN + 1), kind: 'c', date: due(D.paidN + 1), amt: inst, fresh: true };
+    const sugOn = pick === 'family' && s.sug === 'pending';
+    if (pick === 'family' && s.sug === 'linked') all.push(sugTx);
+    const linked = all.filter((e) => !s.gone[e.id]).sort((a, b) => key(b.date) - key(a.date));
+    const paid = linked.filter((e) => e.kind === 'c').reduce((t, e) => t + e.amt, 0);
+    const got = linked.filter((e) => e.kind === 'p').reduce((t, e) => t + e.amt, 0);
+    const paidN = (paid - (paid % inst)) / inst, total = inst * D.turns;
+    const pos = paid - got;
+    const known = D.myTurn != null;
+    const phase = paid === total && got === payout ? 'done' : got > 0 ? 'pay' : 'save';
+    // التوقع (RoscaForecast.kt): الموقف بعد كل دور، وأكبر مبلغ محفوظ وأكبر دين
+    let run = 0, peakS = 0, peakO = 0;
+    const rowsAll = [];
+    for (let x = 1; x <= D.turns; x++) {
+      const mine = known && x === D.myTurn;
+      run += inst - (mine ? payout : 0);
+      peakS = Math.max(peakS, run); peakO = Math.max(peakO, -run);
+      const d = due(x), isPaid = x <= paidN, late = !isPaid && key(d) < TODAY;
+      const recv = mine && got >= payout;
+      const status = mine ? (recv ? (eg ? 'دورك · قبضت ' : 'دورك · قبضت ') : (eg ? 'دورك · هتقبض ' : 'دورك · ستقبض ')) + this.fmt(payout) + ' ' + cur
+        : isPaid ? (eg ? 'اتدفع' : 'دُفع') : late ? (eg ? 'متأخر' : 'متأخر') : (eg ? 'جاي' : 'قادم');
+      rowsAll.push({
+        num: n(x), date: dt(d), status, x,
+        statusStyle: 'font-size: 12px; ' + (mine ? 'font-weight: 700; color: #13764D' : late ? 'font-weight: 700; color: #956000' : 'color: #637570'),
+        amount: '−' + this.fmt(inst),
+        amountStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (isPaid ? '#637570' : '#BE3D48'),
+        after: !known ? '' : run === 0 ? (eg ? 'لا ليك ولا عليك' : 'لا لك ولا عليك') : (run > 0 ? (eg ? 'شايلالك ' : 'تحفظ لك ') : 'عليك ') + this.fmt(run),
+        dot: 'width: 32px; height: 32px; border-radius: 16px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; ' +
+          (mine ? 'color: #FFFFFF; background: linear-gradient(125deg, #064B40 0%, #08705A 100%)' : isPaid ? 'color: #08634F; background: #DCEBD6' : late ? 'color: #956000; background: #FBF0DD; box-shadow: inset 0 0 0 1.5px rgba(149,96,0,0.45)' : 'color: #637570; background: rgba(25,61,51,0.06)')
+      });
+    }
+    const nextN = paidN + 1;
+    const from = Math.max(1, Math.min(nextN - 1, D.turns - 3));
+    const shown = s.allTurns ? rowsAll : rowsAll.filter((r) => (r.x >= from && r.x < from + 4) || (known && r.x === D.myTurn));
+    const rows = shown.map((r, i) => Object.assign(r, { rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 10px 0;' + (i === shown.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') }));
+    const gain = known ? payout - total : null;
+    const NA = 'غير متاح';
+    const val = (v, c) => ({ value: v, dir: v === NA ? 'rtl' : 'ltr', valueStyle: 'text-align: right; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (v === NA ? '#637570' : c || '#193D33') });
+    const stats = [
+      Object.assign({ label: eg ? 'ميعاد قبضك' : 'موعد قبضك', note: known ? (eg ? 'دور رقم ' : 'الدور رقم ') + n(D.myTurn) : (eg ? 'دورك لسه ما اتعرفش' : 'دورك غير معروف بعد') }, known ? { value: dt(due(D.myTurn)), dir: 'rtl', valueStyle: 'font-size: 16px; font-weight: 700' } : val(NA)),
+      Object.assign({ label: eg ? 'المكسب لو حوّشت لوحدك' : 'الربح مقارنة بالادخار وحدك', note: known ? (gain === 0 ? (eg ? 'هتقبض قد اللي دفعته' : 'تقبض بقدر ما تدفع') : gain > 0 ? (eg ? 'مكسب' : 'ربح') : (eg ? 'رسوم عليك' : 'رسوم عليك')) : (eg ? 'محتاج دورك' : 'يحتاج دورك') }, val(known ? (gain === 0 ? (eg ? 'ولا حاجة' : 'لا شيء') : (gain < 0 ? '−' : '+') + this.fmt(gain)) : NA, gain > 0 ? '#13764D' : gain < 0 ? '#BE3D48' : '#193D33')),
+      Object.assign({ label: eg ? 'إجمالي اللي هتدفعه' : 'إجمالي ما تدفعه', note: (eg ? 'لحد ' : 'حتى ') + dt(due(D.turns)) }, val(this.fmt(total) + ' ' + cur)),
+      Object.assign({ label: eg ? 'إجمالي اللي هتقبضه' : 'إجمالي ما تقبضه', note: known ? (eg ? 'في دور واحد' : 'في دور واحد') : '' }, val(known ? this.fmt(payout) + ' ' + cur : NA)),
+      Object.assign({ label: eg ? 'أقساط قبل القبض' : 'أقساط قبل القبض', note: eg ? 'الجمعية بتحوّشلك' : 'الجمعية تدّخر لك' }, known ? { value: plural(D.myTurn - 1, QW), dir: 'rtl', valueStyle: 'font-size: 16px; font-weight: 700' } : val(NA)),
+      Object.assign({ label: eg ? 'أقساط بعد القبض' : 'أقساط بعد القبض', note: eg ? 'بتسدّد للجمعية' : 'تسدّد للجمعية' }, known ? { value: plural(D.turns - D.myTurn, QW), dir: 'rtl', valueStyle: 'font-size: 16px; font-weight: 700' } : val(NA)),
+      Object.assign({ label: eg ? 'أكبر مبلغ شايلاهولك' : 'أكبر مبلغ تحفظه لك', note: eg ? 'قبل دورك على طول' : 'قبيل دورك' }, val(known ? this.fmt(peakS) : NA, '#13764D')),
+      Object.assign({ label: eg ? 'أكبر دين عليك' : 'أكبر دين عليك', note: eg ? 'بعد ما تقبض على طول' : 'بعد القبض مباشرة' }, val(known ? this.fmt(peakO) : NA, '#BE3D48'))
+    ];
+    const entriesAll = linked.map((e, i, arr) => ({
+      kind: e.kind === 'c' ? (eg ? 'قسط جمعية' : 'قسط جمعية') : (eg ? 'قبض دور' : 'قبض دور'),
+      sub: dt(e.date) + ' · ' + (e.kind === 'c' ? (eg ? 'تحويل ل' : 'تحويل إلى ') + D.to : (eg ? 'حوالة من ' : 'حوالة من ') + D.to) + ' · ' + bank,
+      amount: (e.kind === 'c' ? '−' : '+') + this.fmt(e.amt),
+      amountStyle: 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (e.kind === 'c' ? '#BE3D48' : '#13764D'),
+      cls: e.fresh ? 'rd-in' : '',
+      unlinkLabel: (eg ? 'فك ربط ' : 'فك ربط ') + dt(e.date),
+      unlink: () => this.setState({ sheet: e.id }),
+      rowStyle: 'display: flex; align-items: center; gap: 10px; padding: 10px 0;'
+    }));
+    const entries = (s.allEntries ? entriesAll : entriesAll.slice(0, 3));
+    entries.forEach((e, i) => { if (i < entries.length - 1) e.rowStyle += ' border-bottom: 1px solid rgba(204,216,204,0.55);'; });
+    const sheetE = s.sheet ? all.find((e) => e.id === s.sheet) : null;
+    const P = {
+      save: [eg ? 'ادخار' : 'ادخار', 'color: #08634F; background: #DCEBD6'],
+      pay: [eg ? 'سداد' : 'سداد', 'color: #956000; background: #FBF0DD'],
+      done: [eg ? 'خلصت' : 'انتهت', 'color: #193D33; background: rgba(255,255,255,0.8)']
+    }[phase];
+    const pct = Math.floor((paidN * 100) / D.turns);
+    return {
+      title: D.name,
+      posLabel: phase === 'done' ? (eg ? 'خلصت من غير مكسب ولا خسارة' : 'انتهت بلا ربح ولا خسارة') : pos >= 0 ? (eg ? 'الجمعية شايلالك' : 'الجمعية تحفظ لك') : (eg ? 'عليك للجمعية' : 'عليك للجمعية'),
+      posText: this.fmt(pos) + ' ' + cur,
+      phase: P[0], phaseStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; flex-shrink: 0; ' + P[1],
+      terms: n(D.turns) + (eg ? ' أدوار · ' : ' أدوار · ') + this.fmt(inst) + ' ' + cur + (eg ? ' كل شهر · بتدفع ل' : ' شهريًا · تدفع إلى ') + D.to,
+      progressLabel: (eg ? 'دفعت ' : 'دفعت ') + n(paidN) + (eg ? ' من ' : ' من ') + n(D.turns),
+      turnLabel: known ? (eg ? 'دورك رقم ' : 'دورك رقم ') + n(D.myTurn) : (eg ? 'دورك لسه ما اتعرفش' : 'دورك غير معروف بعد'),
+      pct: String(pct), bar: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + pct + '%',
+      hasSug: sugOn,
+      sugTitle: (eg ? 'عملية شبه قسط ' : 'عملية تشبه قسط ') + MO[sugTx.date[1] - 1],
+      sugName: (eg ? 'تحويل ل' : 'تحويل إلى ') + D.to,
+      sugSub: dt(sugTx.date) + ' · ' + bank,
+      sugAmount: '−' + this.fmt(inst) + ' ' + cur,
+      sugWhy: eg ? 'نفس مبلغ القسط ولنفس الشخص في ميعاده. نربطها؟' : 'بمبلغ القسط نفسه وإلى الشخص نفسه في موعده. هل نربطها؟',
+      sugFailed: s.failed, sugErr: eg ? 'ما اتحفظش الربط — مفيش نت. جرّب تاني.' : 'تعذّر حفظ الربط — لا يوجد اتصال. أعد المحاولة.',
+      linkLabel: s.failed ? (eg ? 'جرّب تاني' : 'أعد المحاولة') : (eg ? 'اربطها كقسط' : 'اربطها كقسط'),
+      dropLabel: eg ? 'مش قسط' : 'ليست قسطًا',
+      linkSug: () => {
+        if (st === 'خطأ' && !s.failed) { this.setState({ failed: true }); return; }
+        this.setState({ sug: 'linked', failed: false });
+        this.say(eg ? 'اتربطت قسط ' + MO[sugTx.date[1] - 1] + ' — محسوبة مصروف في «المستحقات ← جمعيات»' : 'رُبطت قسطًا لشهر ' + MO[sugTx.date[1] - 1] + ' — تُحسب مصروفًا في «المستحقات ← جمعيات»');
+      },
+      dropSug: () => { this.setState({ sug: 'dropped', failed: false }); this.say(eg ? 'تمام، مش هنقترحها تاني' : 'تم، لن نقترحها مجددًا'); },
+      turnsTitle: eg ? 'الأدوار ومواعيدها' : 'الأدوار ومواعيدها',
+      rows,
+      allTurnsOpen: s.allTurns ? 'true' : 'false',
+      turnsToggle: s.allTurns ? (eg ? 'اعرض أقل' : 'اعرض أقل') : (eg ? 'كل الأدوار (' : 'كل الأدوار (') + n(D.turns) + ')',
+      toggleTurns: () => this.setState({ allTurns: !s.allTurns }),
+      anTitle: eg ? 'التحليل' : 'التحليل',
+      stats,
+      anNote: known ? (eg ? 'محسوب من الجمعية نفسها: قسطك وعدد الأدوار ودورك.' : 'محسوب من بيانات الجمعية: قسطك وعدد الأدوار ودورك.') : (eg ? 'لما تعرف دورك (بالقرعة مثلًا) هيبان ميعاد القبض والمكسب. ربط قبض الدور مقفول لحد ما دورك يتحدد.' : 'حين يُعرف دورك (بالقرعة مثلًا) يظهر موعد القبض والربح. ربط قبض الدور متوقف حتى تحديد دورك.'),
+      linkedTitle: (eg ? 'العمليات المربوطة (' : 'العمليات المربوطة (') + n(linked.length) + ')',
+      entries, unlinkWord: eg ? 'فك' : 'فك',
+      hasMoreEntries: entriesAll.length > 3, allEntriesOpen: s.allEntries ? 'true' : 'false',
+      entriesToggle: s.allEntries ? (eg ? 'اعرض أقل' : 'اعرض أقل') : (eg ? 'اعرض الكل' : 'اعرض الكل'),
+      toggleEntries: () => this.setState({ allEntries: !s.allEntries }),
+      kindNote: eg ? 'قسط الجمعية بيتحسب مصروف، والقبض دخل — الاتنين تحت «المستحقات».' : 'قسط الجمعية يُحسب مصروفًا، والقبض دخلًا — كلاهما تحت «المستحقات».',
+      sheet: !!sheetE,
+      sheetTitle: sheetE ? (eg ? 'تفك ربط ' : 'فك ربط ') + (sheetE.kind === 'c' ? (eg ? 'قسط ' : 'قسط ') : (eg ? 'قبض ' : 'قبض ')) + dt(sheetE.date) + '؟' : '',
+      sheetBody: eg ? 'العملية هترجع «لسه ما اتحددش» وهتظهر في المراجعات.' : 'تعود العملية «غير محددة» وتظهر في المراجعات.',
+      unlinkYes: eg ? 'فك الربط' : 'فُكّ الربط', cancelLabel: eg ? 'سيبها' : 'إلغاء',
+      confirmUnlink: () => { if (!s.sheet) return; this.setState({ gone: Object.assign({}, s.gone, { [s.sheet]: true }), sheet: null }); this.say(eg ? 'اتفك الربط — العملية في المراجعات' : 'فُكّ الربط — العملية في المراجعات'); },
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
