@@ -1,0 +1,1349 @@
+[
+  {
+    "country": "EG",
+    "id": "national-bank-of-egypt",
+    "nameArOfficial": "البنك الأهلي المصري",
+    "nameArShort": "البنك الأهلي",
+    "nameEn": "National Bank of Egypt (NBE)",
+    "type": "public bank",
+    "senderIds": [
+      {
+        "id": "BanK-AlAhly",
+        "confidence": "community",
+        "source": "https://raw.githubusercontent.com/mahafez-app/mahafez_sms_engine/main/data/sms-different-providers-device_grouped_by_address.filtered.json",
+        "verified": true,
+        "verification": "I opened all three cited sources and found one more. (1) In pennywise issue #762 a user submitted four Arabic sample messages from the sender 'BanK-AlAhly', covering card spend, ATM and instant-transfer credit. The message bodies do not name the bank. They do quote a 5-digit hotline that matches NBE's published hotline in NBE's own OTP FAQ and in press coverage. Merged PR #776 / NationalBankOfEgyptParser.kt documents 'Sender: \"BanK-AlAhly\"'. It matches by uppercasing the sender, removing whitespace, '-' and '_', then checking contains('ALAHLY'). (2) The raw Mahafez data dump has exactly two grouping keys, 'VF-Cash' and 'BanK-AlAhly'. The 21 messages under 'BanK-AlAhly' are all instant-transfer notices (about 14 incoming, 7 outgoing), and none of them names the bank. The GitHub blob view hides that key because it truncates the file, so use the raw URL as evidence. (3) PaySync Gateway gives 'BanK-AlAhly' only as a configuration example for 'Allowed senders' and never maps it to NBE in the text. This is weak and should not count as device evidence. Independent confirmation: a separate payment-bridge project's README (GitHub; owner and repo name withheld) lists the National Bank of Egypt (البنك الأهلي المصري, incoming instant transfers) sender as 'Bank-AlAhly', and its test fixture uses the notification title 'Bank-AlAhly' from Samsung Messages. Note the different capitalization of K. No statement from NBE or a regulator was found, so this cannot be 'official'. Match case-insensitively. The pennywise test sender 'AD-BANK-ALAHLY-S' is an invented DLT-style variant, not evidence. Not to be confused with Al Ahli Bank of Kuwait-Egypt or Saudi SNB 'AlAhli'."
+      },
+      {
+        "id": "Bank-AlAhly",
+        "confidence": "uncertain",
+        "source": "https://github.com/[owner]/[repo]",
+        "verified": false,
+        "verification": "Added by the verifier. A separate payment-bridge project's README lists the NBE incoming instant-transfer sender as 'Bank-AlAhly' (lower-case k), and its test fixture uses that notification title from a Samsung Messages capture. Same ID as 'BanK-AlAhly' under case-insensitive matching. Single source, not cross-checked. The project's owner and repo name are withheld here for privacy; the full URL is in the workflow's verify-result.json."
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:National_Bank_of_Egypt.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:National_Bank_of_Egypt.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Commons tags match the claim (PD-textlogo + Trademarked; one upload, Sep 2022, taken from nbe.com.eg). No later rebrand found. Not compared visually with the live site. PD-textlogo is debatable because the mark has a graphic emblem."
+    },
+    "website": "https://www.nbe.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://github.com/[owner]/pennywiseai-tracker/issues/762",
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/data/sms-different-providers-device_grouped_by_address.filtered.json",
+      "https://github.com/[owner]/paysync-gateway",
+      "https://raw.githubusercontent.com/mahafez-app/mahafez_sms_engine/main/data/sms-different-providers-device_grouped_by_address.filtered.json"
+    ],
+    "notes": "'BanK-AlAhly' (exact casing) seen on real devices in 3 independent open-source projects (card spend, ATM, instant-transfer/InstaPay credits). Match case-insensitively; pennywise also matches DLT-style variants containing 'ALAHLY'. 'NBE' appears only in an unverified candidate list. Do not confuse with Saudi 'AlAhli'/SNB.",
+    "verification": "Senders checked 2026-10-08: 'BanK-AlAhly' confirmed (community) and its three duplicate entries merged; 'NBE' removed (only in an unverified guess list, absent from the device data); 'Bank-AlAhly' added (uncertain). The row notes predate this: PaySync only uses the ID as a configuration example, so the device evidence is two projects (a PennyWise user report and the Mahafez data dump), plus a separate payment-bridge project as independent support."
+  },
+  {
+    "country": "EG",
+    "id": "banque-misr",
+    "nameArOfficial": "بنك مصر",
+    "nameArShort": "بنك مصر",
+    "nameEn": "Banque Misr",
+    "type": "public bank",
+    "senderIds": [
+      {
+        "id": "BanqueMisr",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart"
+      },
+      {
+        "id": "Banque-Misr",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Banque_Misr.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Banque_Misr.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Commons tags match the claim (PD-textlogo + Trademarked; re-uploaded at higher quality May 2026). No later rebrand found. Not compared visually with the live site."
+    },
+    "website": "https://www.banquemisr.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "No official or device-observed sender ID found; candidates come from a parser's guess list only. Owner of onebank (digital bank) and partner of WE Pay / BM Wallet."
+  },
+  {
+    "country": "EG",
+    "id": "banque-du-caire",
+    "nameArOfficial": "بنك القاهرة",
+    "nameArShort": "بنك القاهرة",
+    "nameEn": "Banque du Caire",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Banque_du_caire_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Banque_du_caire_Logo.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Commons tags match the claim (PD-textlogo + Trademarked; Sep 2022, after the 2019 rebrand). PD-textlogo is debatable because the mark includes a building/minaret drawing. The alternative CC BY-SA PNG in the row notes was not checked."
+    },
+    "website": "https://www.bdc.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Alt Commons file: File:Banque_Du_Caire_Logo.png (CC BY-SA 4.0). Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "agricultural-bank-of-egypt",
+    "nameArOfficial": "البنك الزراعي المصري",
+    "nameArShort": "البنك الزراعي",
+    "nameEn": "Agricultural Bank of Egypt (ABE)",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://abe.com.eg/assets/img/logo.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Path resolved from relative 'assets/img/logo.png' on the homepage.",
+      "source": "https://abe.com.eg/",
+      "verified": true,
+      "status": "ok",
+      "verification": "Homepage header still uses the relative assets/img/logo.png on the bank's own domain; the resolved path is an inference. No license offered, so all rights reserved."
+    },
+    "website": "https://abe.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Formerly PBDAC. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "industrial-development-bank",
+    "nameArOfficial": "بنك التنمية الصناعية",
+    "nameArShort": "بنك التنمية الصناعية",
+    "nameEn": "Industrial Development Bank (IDB)",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.idb.com.eg/media/bpij0tty/logo.webp",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://www.idb.com.eg/"
+    },
+    "website": "https://www.idb.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "united-bank",
+    "nameArOfficial": "المصرف المتحد",
+    "nameArShort": "المصرف المتحد",
+    "nameEn": "The United Bank",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.theubeg.com/images/logo.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Path resolved from relative '/images/logo.png'.",
+      "source": "https://www.theubeg.com/"
+    },
+    "website": "https://www.theubeg.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Owned by the Central Bank of Egypt (IPO of a stake announced). Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "egyptian-arab-land-bank",
+    "nameArOfficial": "البنك العقاري المصري العربي",
+    "nameArShort": "البنك العقاري",
+    "nameEn": "Egyptian Arab Land Bank (EALB)",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://www.eal-bank.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Homepage logo is a relative 'images/logo.png' whose base path could not be confirmed — no logo URL recorded. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "housing-and-development-bank",
+    "nameArOfficial": "بنك التعمير والإسكان",
+    "nameArShort": "التعمير والإسكان",
+    "nameEn": "Housing and Development Bank (HDB)",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.hdb-egy.com/img/HD%20Bank%20logo%20f-01.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://www.hdb-egy.com/"
+    },
+    "website": "https://www.hdb-egy.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Listed on EGX; majority state-owned. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "export-development-bank-of-egypt",
+    "nameArOfficial": "البنك المصري لتنمية الصادرات",
+    "nameArShort": "تنمية الصادرات",
+    "nameEn": "Export Development Bank of Egypt (EBank)",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://ebank.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Site rejected automated fetch; no logo URL. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "national-investment-bank",
+    "nameArOfficial": "بنك الاستثمار القومي",
+    "nameArShort": "بنك الاستثمار القومي",
+    "nameEn": "National Investment Bank (NIB)",
+    "type": "public bank",
+    "status": "non-retail",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.nib.gov.eg/images/only%20logo-1.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Path resolved from relative 'images/only logo-1.png'; base not confirmed.",
+      "source": "https://www.nib.gov.eg/"
+    },
+    "website": "https://www.nib.gov.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://www.nib.gov.eg/"
+    ],
+    "notes": "Bank under special legislation (outside the CBE's 36 registered banks). Not a retail SMS sender in practice.",
+    "verification": "State investment and development financing arm; its site shows no individual accounts, cards or consumer products. Hide it from the account picker."
+  },
+  {
+    "country": "EG",
+    "id": "nasser-social-bank",
+    "nameArOfficial": "بنك ناصر الاجتماعي",
+    "nameArShort": "بنك ناصر",
+    "nameEn": "Nasser Social Bank",
+    "type": "public bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.nsb.gov.eg/img/Asset3.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Path resolved from relative '/img/Asset3.png'.",
+      "source": "https://www.nsb.gov.eg/"
+    },
+    "website": "https://www.nsb.gov.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Bank under special legislation (outside the CBE's 36 registered banks). Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "cib-egypt",
+    "nameArOfficial": "البنك التجاري الدولي - مصر",
+    "nameArShort": "التجاري الدولي",
+    "nameEn": "Commercial International Bank (CIB)",
+    "type": "private bank",
+    "senderIds": [
+      {
+        "id": "CIB",
+        "confidence": "community",
+        "source": "https://github.com/[owner]/pennywiseai-tracker/issues/106",
+        "verified": true,
+        "verification": "The entry lists this ID twice in senderIds, so the two objects should be merged into one. I opened both cited sources. (1) tidybox Ingest.kt has 'CIB' in DEFAULT_SENDERS under the comment 'Egypt — observed on a device', and tidybox PR #17 says CIB, KFH Egypt and VF-Cash were 'the only IDs observed on a real device'. That repo may be connected to this project's owner, so I don't count it as independent. (2) The PennyWise CIBEgyptParser.kt doc comment gives 'Sender patterns: CIB', but its canHandle() is a loose heuristic (exact 'CIB', any sender containing 'CIB', and Indian-style XX-CIB / XX-CIB-X patterns), so the code alone doesn't prove the sender. The independent confirmation is PennyWise issue #106, '[BANK]: CIB Egypt', a user report filed with Country: Egypt. Both pasted English sample SMS are labelled 'Sender: CIB', and one of them is in EGP. Two unrelated projects reporting the same ID from real phones is enough for community confidence. It is not 'official': I found no CIB or CBE page that names the SMS sender ID. cibeg.com mentions transaction SMS alerts and two SMS short codes, but those are numbers customers send texts to, not the sender name on incoming alerts. The 'CIB OTP' string in tidybox PR #17 is only a hypothetical example of exact matching, not an observed sender. Match 'CIB' exactly and only for Egypt. PennyWise's contains('CIB') rule would also catch other banks named CIB, such as the Ukrainian one, and unrelated senders."
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Cib_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Cib_Logo.svg",
+      "verified": false,
+      "status": "risky-fidelity",
+      "verification": "License tags match (PD-textlogo + Trademarked), but the file history shows a 60x25 source that was later upscaled and cropped, so it may be a low-fidelity recreation. Not compared with cibeg.com."
+    },
+    "website": "https://www.cibeg.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://github.com/[owner]/tidybox/pull/17",
+      "https://github.com/[owner]/tidybox/pull/30",
+      "https://github.com/[owner]/pennywiseai-tracker/blob/main/parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/CIBEgyptParser.kt",
+      "https://github.com/[owner]/tidybox/blob/main/androidApp/src/main/kotlin/app/tidybox/Ingest.kt",
+      "https://github.com/[owner]/pennywiseai-tracker/issues/106"
+    ],
+    "notes": "Egyptians say «سي آي بي» as often as «التجاري الدولي». 'CIB' observed on a real Egyptian device (tidybox PR #17); tidybox notes CIB OTPs may use a different sender. Beware: 'CIB' is also used by banks in Hungary/Ukraine — gate by country.",
+    "verification": "Sender checked 2026-10-08: 'CIB' confirmed (community) through a second, independent user report filed for Egypt; the two duplicate entries merged. Match 'CIB' exactly and only for Egypt."
+  },
+  {
+    "country": "EG",
+    "id": "bank-nxt",
+    "nameArOfficial": "بنك نكست (بنك الاستثمار العربي سابقًا)",
+    "nameArShort": "بنك نكست",
+    "nameEn": "Bank NXT (formerly aiBANK / Arab Investment Bank)",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://www.banknxteg.com/",
+    "sources": [
+      "https://febanks.com/member-banks-2/",
+      "https://enterpriseam.com/egypt/2024/09/30/aibank-rebrands-to-bank-nxt/"
+    ],
+    "notes": "Rebranded from aiBANK on 30 Sep 2024; 51% owned by EFG Holding. Website per Federation of Egyptian Banks list; it refused connection during research. Old SMS may say 'aiBANK'. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "faisal-islamic-bank-of-egypt",
+    "nameArOfficial": "بنك فيصل الإسلامي المصري",
+    "nameArShort": "بنك فيصل",
+    "nameEn": "Faisal Islamic Bank of Egypt",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.faisalbank.com.eg/-/media/Images/Logo/logo-img.ashx",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://www.faisalbank.com.eg/",
+      "verified": true,
+      "status": "ok",
+      "verification": "Header still uses this .ashx logo on the bank's own domain; the page also references /assets/images/logo.svg, a likely vector alternative. No license offered, so all rights reserved."
+    },
+    "website": "https://www.faisalbank.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Islamic bank. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "arab-african-international-bank",
+    "nameArOfficial": "البنك العربي الأفريقي الدولي",
+    "nameArShort": "العربي الأفريقي",
+    "nameEn": "Arab African International Bank (AAIB)",
+    "type": "private bank",
+    "senderIds": [
+      {
+        "id": "AAIB",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:AAIB_2023.jpg",
+      "kind": "wikimedia",
+      "license": "CC0 (Wikimedia Commons). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Description is only 'AAIB 2023' — confirm it is the logo and not a photo before use.",
+      "source": "https://commons.wikimedia.org/wiki/File:AAIB_2023.jpg",
+      "verified": false,
+      "status": "wrong-file",
+      "verification": "Wrong file: EXIF data shows a phone camera, so this is a photo, not a logo. CC0 covers only the photo and grants nothing over the bank's mark. Do not use; no proper AAIB logo file was found on Commons."
+    },
+    "website": "https://aaib.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Joint Egyptian-Arab bank (CBE + Kuwait). Acquired Scotiabank Egypt."
+  },
+  {
+    "country": "EG",
+    "id": "arab-international-bank",
+    "nameArOfficial": "المصرف العربي الدولي",
+    "nameArShort": "المصرف العربي الدولي",
+    "nameEn": "Arab International Bank (AIB)",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.aib.com.eg/img/AIB%20Logo%20FF-03.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Path resolved from relative 'img/AIB Logo FF-03.png'.",
+      "source": "https://aib.com.eg/"
+    },
+    "website": "https://aib.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Not to be confused with the former aiBANK (now Bank NXT). Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "saib-bank",
+    "nameArOfficial": "بنك الشركة المصرفية العربية الدولية",
+    "nameArShort": "بنك سايب",
+    "nameEn": "SAIB Bank (Société Arabe Internationale de Banque)",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.saib.com.eg/img/SAIB-50-Years-Logo.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Current header shows a '50 years' anniversary variant.",
+      "source": "https://www.saib.com.eg/"
+    },
+    "website": "https://www.saib.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Egyptians mostly write it in Latin: 'SAIB'. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "suez-canal-bank",
+    "nameArOfficial": "بنك قناة السويس",
+    "nameArShort": "بنك قناة السويس",
+    "nameEn": "Suez Canal Bank",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:SCBank_Logo_AR.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:SCBank_Logo_AR.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Extra check: the file (dated 2025, uploaded Apr 2026) postdates the Dec 2025 rebrand."
+    },
+    "website": "https://scbank.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "English logo: File:SCBank_Logo_EN.svg (PD). Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "egyptian-gulf-bank",
+    "nameArOfficial": "البنك المصري الخليجي",
+    "nameArShort": "البنك المصري الخليجي",
+    "nameEn": "Egyptian Gulf Bank (EGBANK)",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://www.eg-bank.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Brand: EGBANK. Site returned 403 during research. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "midbank",
+    "nameArOfficial": "ميد بنك",
+    "nameArShort": "ميد بنك",
+    "nameEn": "MIDBANK",
+    "type": "private bank",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://midbank.com.eg/",
+    "sources": [
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Rebranded 2021. Site TLS failed during research. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "onebank",
+    "nameArOfficial": "وان بنك",
+    "nameArShort": "وان بنك",
+    "nameEn": "onebank S.A.E.",
+    "type": "digital bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.onebank.eg/resources/img/logo_onebank.svg",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights. Path resolved from relative '/resources/img/logo_onebank.svg'.",
+      "source": "https://www.onebank.eg/"
+    },
+    "website": "https://www.onebank.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://www.masrawy.com/news/news-banking/details/2025/8/18/2838682/",
+      "https://www.bankygate.com/70852"
+    ],
+    "notes": "Egypt's first licensed digital bank (Banque Misr subsidiary). Reported CBE licence decision 106/2026 (27 Jan 2026, per Banky Gate — not verified on cbe.org.eg); retail launch targeted Q4 2026. Sender ID unknown (not yet live).",
+    "verification": "Final-licence date conflicts between sources (one calls an Aug 2025 decision final; another reports CBE board decision 106/2026 of 27 Jan 2026). Keep as reported, not verified on cbe.org.eg. Launch status not re-checked."
+  },
+  {
+    "country": "EG",
+    "id": "fabmisr",
+    "nameArOfficial": "بنك أبوظبي الأول مصر",
+    "nameArShort": "أبوظبي الأول",
+    "nameEn": "FABMISR (First Abu Dhabi Bank Misr)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:First_Abu_Dhabi_Bank_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:First_Abu_Dhabi_Bank_Logo.svg"
+    },
+    "website": "https://www.fabmisr.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://en.wikipedia.org/wiki/Fabmisr",
+      "https://www.fabmisr.com.eg/ar/"
+    ],
+    "notes": "UAE. Acquired Bank Audi Egypt (2021). Logo is the parent FAB mark. Sender ID not found.",
+    "verification": "Website updated: the old address https://www.bankfab.com/ar-eg now redirects (301) to fabmisr.com.eg. Name confirmed as written; the legal footer uses only the Latin brand FABMISR."
+  },
+  {
+    "country": "EG",
+    "id": "emirates-nbd-egypt",
+    "nameArOfficial": "بنك الإمارات دبي الوطني - مصر",
+    "nameArShort": "الإمارات دبي الوطني",
+    "nameEn": "Emirates NBD Egypt",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Emirates_NBD_Logo.jpg",
+      "kind": "wikimedia",
+      "license": "Copyrighted free use (Wikimedia Commons). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Emirates_NBD_Logo.jpg",
+      "verified": false,
+      "status": "license-unsupported",
+      "verification": "The 'Copyrighted free use' tag has an empty permission field and no permission ticket (third-party upload, 2010). Low-resolution 216x56 JPG of the 2009 identity, probably still the mark in use. Treat it as an all-rights-reserved official asset."
+    },
+    "website": "https://www.emiratesnbd.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "UAE. Acquired BNP Paribas Egypt. Sender ID not found.",
+    "verification": "Name confirmed as written. Announced buyer of HSBC Egypt's retail business (2 Aug 2026; completion expected H2 2027)."
+  },
+  {
+    "country": "EG",
+    "id": "adcb-egypt",
+    "nameArOfficial": "بنك أبوظبي التجاري - مصر",
+    "nameArShort": "أبوظبي التجاري",
+    "nameEn": "Abu Dhabi Commercial Bank – Egypt (ADCB)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Abu_Dhabi_Commercial_Bank_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Abu_Dhabi_Commercial_Bank_logo.svg"
+    },
+    "website": "https://www.adcb.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "UAE. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "mashreq-egypt",
+    "nameArOfficial": "بنك المشرق",
+    "nameArShort": "المشرق",
+    "nameEn": "Mashreq Bank (Egypt)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Mashreq-new-logo.png",
+      "kind": "wikimedia",
+      "license": "CC BY-SA 4.0 (Wikimedia Commons). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Mashreq-new-logo.png",
+      "verified": false,
+      "status": "license-unsupported",
+      "verification": "Extra check: CC BY-SA 4.0 is claimed by a third-party uploader while the author is listed as the bank and the source is the bank's own site, the same license problem as InstaPay. Tiny 228x46 PNG."
+    },
+    "website": "https://www.mashreqbank.com/egypt",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "UAE branch. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "adib-egypt",
+    "nameArOfficial": "مصرف أبوظبي الإسلامي - مصر",
+    "nameArShort": "أبوظبي الإسلامي",
+    "nameEn": "Abu Dhabi Islamic Bank – Egypt (ADIB)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.adib.eg/media/146118/logo.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://www.adib.eg/"
+    },
+    "website": "https://www.adib.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "UAE, Islamic. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "kfh-egypt",
+    "nameArOfficial": "بنك بيت التمويل الكويتي - مصر",
+    "nameArShort": "بيت التمويل الكويتي",
+    "nameEn": "Kuwait Finance House – Egypt (KFH Egypt)",
+    "type": "foreign bank",
+    "senderIds": [
+      {
+        "id": "KFH Egypt",
+        "confidence": "uncertain",
+        "source": "https://github.com/[owner]/tidybox/blob/main/androidApp/src/main/kotlin/app/tidybox/Ingest.kt",
+        "verified": false,
+        "verification": "I opened the cited source myself. Ingest.kt does list \"KFH Egypt\" in DEFAULT_SENDERS, under the comment \"Egypt — observed on a device\". PR #17 repeats that the Egypt seeds were the only IDs seen on a real device. So the claim is not invented, but there are three problems. (1) The exact spelling of the sender is not established. The same file matches senders after lowercasing and removing spaces, hyphens and underscores (Senders.key), so the seed \"KFH Egypt\" would also match a real sender of \"KFH-Egypt\" or \"KFHEgypt\". The PR #30 fixtures store the source only as the slug \"kfh-egypt\", and the message bodies say \"KFH-Egypt\". This project's own egypt-sms-formats.json writes the sender as \"KFH-Egypt (as seen)\", which contradicts the space form in egypt-banks.json. (2) It rests on one source: a single developer's unpublished device, with no screenshot or raw address shown. (3) I found no independent confirmation. The bank's official SMS Banking page (https://www.eg.kfh.com/sms-banking-2/) describes the alerts but names no sender ID or short code. Searches of news sites, forums and Truecaller-style sources in English and Arabic found nothing. The brand is clearly KFH Egypt, the former Ahli United Bank Egypt (rebranded January 2025), so the sender is plausible. Treat it as a hint: match it after removing spaces and hyphens, and do not hard-code the spaced spelling."
+      }
+    ],
+    "logo": {
+      "url": "https://www.eg.kfh.com/wp-content/uploads/2024/12/KFH_EGYPT_LOGO.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://www.eg.kfh.com/",
+      "verified": true,
+      "status": "ok",
+      "verification": "This exact URL is still the header logo (alt 'KFH Egypt') on the bank's own domain. No license offered, so all rights reserved."
+    },
+    "website": "https://www.eg.kfh.com/",
+    "sources": [
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://github.com/[owner]/tidybox/pull/17",
+      "https://github.com/[owner]/tidybox/pull/30"
+    ],
+    "notes": "Kuwait, Islamic. Formerly Ahli United Bank Egypt. 'KFH Egypt' (with space) observed on a real device incl. IPN/InstaPay transfer messages.",
+    "verification": "Sender checked 2026-10-08: 'KFH Egypt' downgraded to uncertain. It rests on one unpublished device, and the exact spelling (space or hyphen) is not established, so match after removing spaces and hyphens. Name 'KFH Egypt' confirmed as written."
+  },
+  {
+    "country": "EG",
+    "id": "al-baraka-bank-egypt",
+    "nameArOfficial": "بنك البركة مصر",
+    "nameArShort": "بنك البركة",
+    "nameEn": "Al Baraka Bank Egypt",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Al_Baraka_Bank_Logo.svg",
+      "kind": "wikimedia",
+      "license": "CC BY-SA 4.0 (Wikimedia Commons). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Al_Baraka_Bank_Logo.svg"
+    },
+    "website": "https://www.albaraka.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Bahrain group, Islamic. Alt: File:Al_Baraka_Banking_Group_Logo.svg (PD). Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "bank-abc-egypt",
+    "nameArOfficial": "بنك المؤسسة العربية المصرفية - مصر",
+    "nameArShort": "بنك ABC",
+    "nameEn": "Bank ABC Egypt (Arab Banking Corporation)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:BankABCLogo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:BankABCLogo.svg"
+    },
+    "website": "https://www.bank-abc.com/en/CountrySites/Egypt",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Bahrain. Acquired Blom Bank Egypt. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "abk-egypt",
+    "nameArOfficial": "البنك الأهلي الكويتي - مصر",
+    "nameArShort": "الأهلي الكويتي",
+    "nameEn": "Al Ahli Bank of Kuwait – Egypt (ABK-Egypt)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:ABK_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:ABK_Logo.svg"
+    },
+    "website": "https://www.abkegypt.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Kuwait. Acquired Piraeus Bank Egypt. Its name contains 'Ahli' — do not let an 'ALAHLY' substring rule misroute it to NBE. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "nbk-egypt",
+    "nameArOfficial": "بنك الكويت الوطني - مصر",
+    "nameArShort": "الكويت الوطني",
+    "nameEn": "National Bank of Kuwait – Egypt (NBK-Egypt)",
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:NBK.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:NBK.svg"
+    },
+    "website": "https://www.nbk.com/egypt",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Kuwait. Sender ID not found."
+  },
+  {
+    "country": "EG",
+    "id": "qnb-egypt",
+    "nameArOfficial": "بنك قطر الوطني - مصر (بنك قطر الوطني الأهلي سابقًا)",
+    "nameArShort": "كيو إن بي",
+    "nameEn": "QNB Egypt (formerly QNB ALAHLI)",
+    "aliases": [
+      "بنك QNB مصر (قطر الوطني الأهلي سابقًا)",
+      "بنك قطر الوطني – شركة مساهمة مصرية"
+    ],
+    "type": "foreign bank",
+    "senderIds": [
+      {
+        "id": "QNB",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:QNB_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:QNB_Logo.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Commons tags match the claim (PD-textlogo + Trademarked; uploaded Apr 2026 from qnb.com). It is the QNB Group mark, which fits because QNB Egypt now trades as plain QNB."
+    },
+    "website": "https://www.qnb.com/sites/qnb/qnbegypt/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://en.wikipedia.org/wiki/QNB_Egypt",
+      "https://hapijournal.com/2024/02/18/عمومية-قطر-الوطني-الأهلي-qnb-تقر-تغيير-ال/"
+    ],
+    "notes": "Qatar. Dropped 'Al Ahli' from its name in 2024; older users still say «QNB الأهلي». 'QNB' is from an unverified candidate list only; QNB also operates in Qatar/Tunisia etc.",
+    "verification": "Arabic official name changed to the form Arabic press uses; the legal name approved by the general assembly in 2024 is kept in \"aliases\". Brand is plain QNB."
+  },
+  {
+    "country": "EG",
+    "id": "arab-bank-egypt",
+    "nameArOfficial": "البنك العربي",
+    "nameArShort": "البنك العربي",
+    "nameEn": "Arab Bank (Egypt)",
+    "type": "foreign bank",
+    "senderIds": [
+      {
+        "id": "ArabBank",
+        "confidence": "uncertain",
+        "source": "https://github.com/[owner]/pennywiseai-tracker/blob/main/parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/ArabBankParser.kt"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Arab_Bank.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Arab_Bank.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Extra check: the file is dated Feb 2025, matching the Feb 2025 identity refresh."
+    },
+    "website": "https://www.arabbank.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر"
+    ],
+    "notes": "Jordan, branch. Pennywise parser matches 'ArabBank' for Egypt and Jordan together; not confirmed as the Egypt sender."
+  },
+  {
+    "country": "EG",
+    "id": "attijariwafa-bank-egypt",
+    "nameArOfficial": "التجاري وفا بنك إيجيبت",
+    "nameArShort": "التجاري وفا",
+    "nameEn": "Attijariwafa Bank Egypt",
+    "aliases": [
+      "التجاري وفا بنك مصر"
+    ],
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.attijariwafabank.com.eg/_ipx/q_80/images/RGB_LOGO_digital.png",
+      "kind": "official-site",
+      "license": "All rights reserved (official bank asset). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://www.attijariwafabank.com.eg/"
+    },
+    "website": "https://www.attijariwafabank.com.eg/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://www.attijariwafabank.com.eg/ar"
+    ],
+    "notes": "Morocco. Acquired Barclays Egypt. Sender ID not found.",
+    "verification": "Arabic official name changed to the form on the bank's Arabic site."
+  },
+  {
+    "country": "EG",
+    "id": "alexbank",
+    "nameArOfficial": "بنك الإسكندرية",
+    "nameArShort": "بنك الإسكندرية",
+    "nameEn": "ALEXBANK (Bank of Alexandria)",
+    "type": "foreign bank",
+    "senderIds": [
+      {
+        "id": "ALEXBANK",
+        "confidence": "official",
+        "source": "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+        "verified": false,
+        "verification": "I couldn't open the cited page myself. WebFetch got HTTP 403 on every form of the URL: /en/ with and without .html, the Arabic version, and the bare alexbank.com host. The Wayback Machine is blocked for this tool. All the evidence comes through the search index. Seven different queries in English and Arabic all reported this list as coming from the bank's 'Keeping you Safe' page, including queries that did not name the IDs. One of them quoted text that looks verbatim: 'You may receive SMSs from the below official Sender names for ALEXBANK'. An exact-phrase search for part of that sentence did not return the page, though. I found no independent second source: febanks.com/39873, bankygate.com/21500, forums and GitHub parsers name no sender. The claim is very likely true, but no one has looked at the page directly. Keep 'official' only on condition that someone views the page in a normal browser."
+      },
+      {
+        "id": "Alex Bank",
+        "confidence": "official",
+        "source": "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+        "verified": false,
+        "verification": "Same situation as ALEXBANK. The search-index summaries consistently include 'Alex Bank' (with a space) in the official list, but the page returned 403 and I could not check the exact spelling. 'Alex Bank' is also the name of an unrelated Australian institution. That does not matter here because the source is the Egyptian alexbank.com, but the bank's country must stay attached to this ID. Matching should ignore case and spaces. No independent confirmation."
+      },
+      {
+        "id": "ALEXPOINTS",
+        "confidence": "official",
+        "source": "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+        "verified": false,
+        "verification": "The search index lists it on the safety page, and the page itself returned 403. The context fits: ALEXPOINTS is the bank's loyalty programme, and its redemption pages say a 6-digit PIN and a confirmation SMS are sent. Those pages do not name the sender, though. These are reward-programme messages, not account-debit alerts, so the parser should not treat them as transactions. No independent confirmation."
+      },
+      {
+        "id": "AB Magnifica",
+        "confidence": "uncertain",
+        "source": "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+        "verified": false,
+        "verification": "The search index reports this name on the safety page, but as written it is 12 characters including the space. A GSM alphanumeric sender ID can be at most 11 characters, so this exact string cannot be what appears on the phone. The real sender is probably 'ABMagnifica' or a cut-off 'AB Magnific'. I searched for 'ABMagnifica' and 'AB-Magnifica' and found nothing. Do not store this exact string for exact matching. Downgrade until a real message shows the displayed form."
+      },
+      {
+        "id": "AB Private",
+        "confidence": "official",
+        "source": "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+        "verified": false,
+        "verification": "The search index reports it on the safety page, and the page returned 403. Its length of 10 characters is valid. It is consistent with the bank's Private customer tier, whose ALEXALERTS bundle is free, but no other page names it as a sender. No independent confirmation."
+      },
+      {
+        "id": "4988",
+        "confidence": "uncertain",
+        "source": "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+        "verified": false,
+        "verification": "The Arabic search-index snippet places 4988 under an FAQ about the bank's official communication channels, labelled as the SMS service ('خدمة الرسائل النصية القصيرة: ٤٩٨٨'). It does not clearly say that SMS messages arrive from 4988. It could equally be a number customers send SMS to. A direct search for 'alexbank 4988 SMS' found nothing else. Its role as a sender is not established, and I could not view the page (403)."
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Alex_Bank_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Alex_Bank_Logo.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Commons tags match the claim (PD-textlogo + Trademarked; bilingual text logo, Sep 2022). The bank's Apr 2026 'new identity' was reported as a tagline and campaign only; still check the file against the live site before relying on it."
+    },
+    "website": "https://www.alexbank.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://www.alexbank.com/en/retail/our-group/keeping-you-safe/",
+      "https://www.alexbank.com/en/retail/digital-services/alexalerts-sms-service.html"
+    ],
+    "notes": "Intesa Sanpaolo group (Italy). Official sender list is on the bank's 'Keeping you Safe' page (read via search index; the page returned 403 to direct fetch). 4988 is a short code.",
+    "verification": "Senders checked 2026-10-08: all six remain unverifiable because the bank's safety page returns 403 and was read only through search snippets. 'AB Magnifica' (12 characters, over the 11-character sender limit) and '4988' (sender role unclear) downgraded to uncertain; the other four keep \"official\" until someone views the page in a normal browser."
+  },
+  {
+    "country": "EG",
+    "id": "credit-agricole-egypt",
+    "nameArOfficial": "كريدي أجريكول مصر",
+    "nameArShort": "كريدي أجريكول",
+    "nameEn": "Crédit Agricole Egypt",
+    "aliases": [
+      "بنك كريدي أجريكول مصر"
+    ],
+    "type": "foreign bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Crédit_Agricole_2020_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Crédit_Agricole_2020_logo.svg"
+    },
+    "website": "https://www.ca-egypt.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://www.ca-egypt.com/ar/"
+    ],
+    "notes": "France. SMS alert product is called 'banki Alert'; sender ID not published.",
+    "verification": "Arabic official name changed to the form on the bank's Arabic site."
+  },
+  {
+    "country": "EG",
+    "id": "hsbc-egypt",
+    "nameArOfficial": "بنك HSBC مصر",
+    "nameArShort": "إتش إس بي سي",
+    "nameEn": "HSBC Bank Egypt",
+    "aliases": [
+      "بنك إتش إس بي سي مصر"
+    ],
+    "type": "foreign bank",
+    "status": "retail-sale-announced",
+    "senderIds": [
+      {
+        "id": "HSBC",
+        "confidence": "official",
+        "source": "https://www.hsbc.com.eg/ar-eg/ways-to-bank/mobile/text-alerts/",
+        "verified": true,
+        "verification": "I opened the cited page myself and the claim holds. The Arabic page (/ar-eg/ways-to-bank/mobile/text-alerts/) says the sender name will be \"HSBC\". The English version of the same page says this in its FAQ and adds that account, debit card and credit card transaction alerts all come from the sender name HSBC. Both versions say alerts are sent in English only. I could not find any confirmation outside the bank: no GitHub parser, forum post or regulator notice names the HSBC Egypt sender. The bank's own page is enough for 'official'. The page says nothing about OTP (one-time code) texts, so the sender for those is unknown. 'HSBC' is a global brand name and HSBC Hong Kong now sends from '#HSBC' rather than the bare 'HSBC', so a match on the sender alone does not prove the message is from HSBC Egypt. Gate it by country and EGP currency. The separate FAQ page (/ways-to-bank/mobile/text-alerts/faq/) does not mention a sender name."
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:HSBC_logo_(2018).svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:HSBC_logo_(2018).svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Extra check: PD-textlogo/HK/UK tags hold up, but Commons flags that a US public-domain tag is missing."
+    },
+    "website": "https://www.hsbc.com.eg/",
+    "sources": [
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://www.hsbc.com.eg/ar-eg/ways-to-bank/mobile/text-alerts/",
+      "https://www.hsbc.com.eg/ways-to-bank/mobile/text-alerts/",
+      "https://www.hsbc.com/news-and-views/news/media-releases/2026/hsbc-agrees-to-sell-egypt-retail-banking-business-to-emirates-nbd",
+      "https://www.hsbc.com.eg/ar-eg/"
+    ],
+    "notes": "UK. Official page states the sender name is 'HSBC'; alerts are English only. 'HSBC' is global — gate by country/currency (EGP).",
+    "verification": "Sender checked 2026-10-08: 'HSBC' confirmed official from the bank's own text-alerts page; gate by country and EGP because 'HSBC' is global. On 2 Aug 2026 HSBC agreed to sell its whole Egypt retail business (accounts, deposits, retail loans) to Emirates NBD Egypt; completion expected in H2 2027, subject to approval. HSBC keeps only corporate/institutional banking in Egypt, so retail accounts will move to Emirates NBD Egypt. Arabic official name changed to the form on the bank's Arabic site."
+  },
+  {
+    "country": "EG",
+    "id": "citibank-egypt",
+    "nameArOfficial": "سيتي بنك",
+    "nameArShort": "سيتي بنك",
+    "nameEn": "Citibank N.A. Egypt",
+    "type": "foreign bank",
+    "status": "exited-retail",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Citi_logo_March_2023.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Citi_logo_March_2023.svg"
+    },
+    "website": "https://www.citi.com/",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://febanks.com/member-banks-2/",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://www.cibeg.com/en/newsroom/news/cib-completes-the-acquiring-process-of-citibank"
+    ],
+    "notes": "US branch. Citi wound down consumer banking in several markets; current Egypt retail status not verified. Website per FEB list (global site).",
+    "verification": "Retail and cards business sold to CIB (completed Oct 2015); the Egypt branch serves institutional clients only. Old Citi card customers are now CIB customers, so no retail SMS should come from Citi."
+  },
+  {
+    "country": "EG",
+    "id": "standard-chartered-egypt",
+    "nameArOfficial": "ستاندرد تشارترد",
+    "nameArShort": "ستاندرد تشارترد",
+    "nameEn": "Standard Chartered Bank (Egypt branch)",
+    "type": "foreign bank",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Standard_Chartered_(2021).svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Standard_Chartered_(2021).svg"
+    },
+    "website": "https://www.sc.com/",
+    "sources": [
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://enterpriseam.com/egypt/2024/01/22/this-evening-standard-chartered-is-now-licensed-to-set-up-a-full-branch-in-egypt/",
+      "https://www.bankygate.com/banky/banks"
+    ],
+    "notes": "UK. Branch licensed Jan 2024 (reported as the 37th CBE-registered bank); corporate/institutional only — unlikely to send retail SMS. Not on the FEB member list or the Wikipedia list.",
+    "verification": "Corporate/institutional-only branch, as the row notes already say. Not independently verified beyond the source already cited."
+  },
+  {
+    "country": "EG",
+    "id": "national-bank-of-greece-egypt",
+    "nameArOfficial": "البنك الأهلي اليوناني",
+    "nameArShort": "الأهلي اليوناني",
+    "nameEn": "National Bank of Greece – Egypt",
+    "type": "foreign bank",
+    "status": "exited",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://www.nbg.gr/el/egypt-business-closure",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Egypt",
+      "https://ar.wikipedia.org/wiki/قائمة_بنوك_مصر",
+      "https://enterprise.press/?p=132267"
+    ],
+    "notes": "Greece. Winding down / exiting Egypt since 2021 (CBE approval to cease operations); likely no longer among the 36 registered banks. Kept only so old SMS can be named.",
+    "verification": "NBG's own page says it no longer has offices or business in Egypt: fully exited, not \"winding down\". Legacy only: use it to name old SMS and never offer it for a new account."
+  },
+  {
+    "country": "EG",
+    "id": "vodafone-cash",
+    "nameArOfficial": "ڤودافون كاش",
+    "nameArShort": "فودافون كاش",
+    "nameEn": "Vodafone Cash (Vodafone Egypt)",
+    "aliases": [
+      "فودافون كاش"
+    ],
+    "type": "mobile wallet",
+    "senderIds": [
+      {
+        "id": "VF-Cash",
+        "confidence": "community",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/data/sms-same-providers-device_grouped_by_address.filtered.json",
+        "verified": true,
+        "verification": "I checked the four cited sources myself, and they are not equally strong. (1) The two mahafez_sms_engine data files are the best evidence. They hold 97 and 80 messages (177 in total, matching the claim) whose _address is exactly 'VF-Cash'. Their fields (_protocol, _service_center, _sub_id, _readable_date, _contact_name and so on) are the ones the SMS Backup & Restore app exports, so they look like real phone exports. The service-center values start with Egypt's +20 code, and most message bodies are in Arabic and name the service itself (transfers in and out, withdrawals, balance checks, promotions). The second file also contains 'BanK-AlAhly', so that file is not Vodafone-only. (2) tidybox Ingest.kt is a separate project with a different owner. It puts 'VF-Cash' in DEFAULT_SENDERS under a comment saying the Egyptian IDs were 'observed on a device', and its PR #30 says the templates came from real device samples. This is the independent second sighting. (3) The paysync-gateway README only uses 'VF-Cash' as an e.g. example of what to set as an allowed sender. That is a setup instruction, not evidence that the ID was seen, and this source should be dropped or marked as an example. (4) Tahweel lists lowercase 'vf-cash' in a variant/guess array and in its test samples, which is not evidence either. Its security doc warns that anyone can send a message under the sender name vf-cash through a bulk SMS gateway, so a matching sender ID alone does not prove a message is real. No Vodafone Egypt or NTRA page I could find names this sender ID, so 'official' is not justified. The four entries in the JSON are the same ID repeated and should be merged into one."
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Vodafone_logo_2017.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Vodafone_logo_2017.svg",
+      "verified": true,
+      "status": "ok",
+      "verification": "Commons tags match the claim (PD-textlogo + Trademarked; re-uploaded May 2026). This is the parent Vodafone mark, not the wallet's own logo; acceptable for identification."
+    },
+    "website": "https://web.vodafone.com.eg/",
+    "sources": [
+      "https://github.com/[owner]/tidybox/pull/30",
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/data/sms-different-providers-device_grouped_by_address.filtered.json",
+      "https://github.com/[owner]/paysync-gateway",
+      "https://github.com/[owner]/Tahweel",
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/data/sms-same-providers-device_grouped_by_address.filtered.json",
+      "https://github.com/[owner]/tidybox/blob/main/androidApp/src/main/kotlin/app/tidybox/Ingest.kt",
+      "https://web.vodafone.com.eg/ar/vodafone-cash"
+    ],
+    "notes": "Best-attested sender in this list: 'VF-Cash' seen on several real devices (177 messages across two datasets). Tahweel warns the sender can be spoofed. Logo is the parent Vodafone mark (no Vodafone Cash file on Commons).",
+    "verification": "Sender checked 2026-10-08: 'VF-Cash' confirmed (community) and its four duplicate entries merged. The PaySync source is only a configuration example. The sender name can be spoofed through bulk SMS gateways. Arabic official name now written with ڤ as on the official site; the old spelling is kept in \"aliases\" for search."
+  },
+  {
+    "country": "EG",
+    "id": "e-and-money",
+    "nameArOfficial": "إي آند ماني (إي آند كاش / اتصالات كاش سابقًا)",
+    "nameArShort": "إي آند ماني",
+    "nameEn": "e& money (formerly e& cash / Etisalat Cash)",
+    "aliases": [
+      "إي آند كاش (اتصالات كاش سابقًا)",
+      "إي آند كاش",
+      "e& money / e& Cash (formerly Etisalat Cash)"
+    ],
+    "type": "mobile wallet",
+    "senderIds": [
+      {
+        "id": "e& money",
+        "confidence": "uncertain",
+        "source": "https://github.com/[owner]/Tahweel/blob/main/packages/server/src/parsers/etisalat-money.samples.json"
+      },
+      {
+        "id": "Etisalat",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/etisalat_cash_sms_parser.dart"
+      },
+      {
+        "id": "E-Cash",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/etisalat_cash_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Eand_Logo_Ar.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Eand_Logo_Ar.svg"
+    },
+    "website": "https://www.eand.com.eg/",
+    "sources": [
+      "https://github.com/[owner]/Tahweel/blob/main/packages/server/src/parsers/etisalat-money.samples.json",
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/etisalat_cash_sms_parser.dart",
+      "https://hapijournal.com/?p=359315",
+      "https://almalnews.com/2139237/إي-آند-مصر-13-1-مليون-محفظة/"
+    ],
+    "notes": "Brand renamed from Etisalat Misr to e& (2023). Sender strings come from parser config/test samples that may be synthetic; no device-observed value found. Website domain not verified.",
+    "verification": "The wallet was renamed from e& cash to e& money on 19 Aug 2025 (Arabic press writes إي آند ماني); names updated and old names kept in \"aliases\". Sender IDs were not re-checked."
+  },
+  {
+    "country": "EG",
+    "id": "orange-cash",
+    "nameArOfficial": "أورنج كاش",
+    "nameArShort": "أورنج كاش",
+    "nameEn": "Orange Cash (Orange Egypt)",
+    "type": "mobile wallet",
+    "senderIds": [
+      {
+        "id": "Orange Cash",
+        "confidence": "uncertain",
+        "source": "https://github.com/[owner]/Tahweel/blob/main/packages/server/src/parsers/orange-cash.samples.json"
+      },
+      {
+        "id": "Orange-Cash",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/orange_money_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Orange_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:Orange_logo.svg"
+    },
+    "website": "https://www.orange.eg/",
+    "sources": [
+      "https://github.com/[owner]/Tahweel/blob/main/docs/parsers.md",
+      "https://github.com/[owner]/Tahweel/blob/main/packages/server/src/parsers/orange-cash.samples.json",
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/orange_money_sms_parser.dart"
+    ],
+    "notes": "Parser configs also accept 'OrangeCash' and Arabic «اورنج كاش». Tahweel notes Orange Cash receipts show the payer's name, not number. Website domain not verified."
+  },
+  {
+    "country": "EG",
+    "id": "we-pay",
+    "nameArOfficial": "وي باي",
+    "nameArShort": "وي باي",
+    "nameEn": "WE Pay (Telecom Egypt)",
+    "type": "mobile wallet",
+    "senderIds": [
+      {
+        "id": "WE-Pay",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/we_pay_sms_parser.dart"
+      },
+      {
+        "id": "WEPay",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/we_pay_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:We_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (Wikimedia Commons; typically PD-textlogo / ineligible for copyright). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:We_logo.svg"
+    },
+    "website": "https://te.eg/",
+    "sources": [
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/we_pay_sms_parser.dart"
+    ],
+    "notes": "Offered with Banque Misr. Sender values are parser guesses only. Logo is the parent WE mark."
+  },
+  {
+    "country": "EG",
+    "id": "instapay",
+    "nameArOfficial": "إنستاباي (شبكة المدفوعات اللحظية)",
+    "nameArShort": "إنستاباي",
+    "nameEn": "InstaPay (Instant Payment Network, IPN)",
+    "type": "payment app",
+    "senderIds": [
+      {
+        "id": "InstaPay",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:InstaPay_Logo.png",
+      "kind": "wikimedia",
+      "license": "CC BY-SA 4.0 (Wikimedia Commons). Trademark of the institution; Commons/site status covers copyright only, not trademark rights.",
+      "source": "https://commons.wikimedia.org/wiki/File:InstaPay_Logo.png",
+      "verified": false,
+      "status": "license-unsupported",
+      "verification": "An individual uploader claims own work under CC BY-SA 4.0 for a mark owned by Egyptian Banks Company, which is not credible. If used anyway, CC BY-SA needs attribution and share-alike. Looks like an app-icon render; whether it is current is unverified. High risk."
+    },
+    "website": "https://www.instapay.eg/",
+    "sources": [
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart",
+      "https://github.com/[owner]/tidybox/pull/30",
+      "https://github.com/[owner]/pennywiseai-tracker/issues/762",
+      "https://www.cibeg.com/en/personal/ways-to-bank/the-instant-payment-network-ipn"
+    ],
+    "notes": "Operated by Egyptian Banks Company. Observed InstaPay/IPN transfer alerts arrive from the customer's BANK sender (e.g. 'BanK-AlAhly' «تم إضافة تحويل لحظي», 'KFH Egypt' IPN messages), so treat InstaPay as a channel tag, not a sender. Website domain not fetched."
+  },
+  {
+    "country": "EG",
+    "id": "fawry",
+    "nameArOfficial": "فوري",
+    "nameArShort": "فوري",
+    "nameEn": "Fawry (Fawry for Banking & Payment Technology Services)",
+    "type": "payment app",
+    "senderIds": [
+      {
+        "id": "Fawry",
+        "confidence": "uncertain",
+        "source": "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart"
+      }
+    ],
+    "logo": null,
+    "website": "https://fawry.com/",
+    "sources": [
+      "https://github.com/mahafez-app/mahafez_sms_engine/blob/main/lib/src/parsers/insta_pay_sms_parser.dart",
+      "https://fawry.com/"
+    ],
+    "notes": "Bill-payment network and app (myfawry). Sender value is an unverified parser candidate. Homepage logo is lazy-loaded; no logo URL captured and no Commons file found."
+  },
+  {
+    "country": "EG",
+    "id": "valu",
+    "nameArOfficial": "ڤاليو",
+    "nameArShort": "ڤاليو",
+    "nameEn": "valU",
+    "type": "payment app",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://valugroup.com/",
+    "sources": [
+      "https://valugroup.com/"
+    ],
+    "notes": "BNPL / consumer finance app (EFG Holding group). valu.com.eg redirects to valugroup.com. No sender ID or logo URL found."
+  },
+  {
+    "country": "EG",
+    "id": "ezbank",
+    "nameArOfficial": "إيزي بنك",
+    "nameArShort": "إيزي بنك",
+    "nameEn": "ezbank (QNB Egypt digital bank)",
+    "aliases": [
+      "ايزي بنك",
+      "Ez Bank"
+    ],
+    "type": "digital bank",
+    "status": "preliminary-approval",
+    "senderIds": [],
+    "logo": null,
+    "website": null,
+    "sources": [
+      "https://www.bankygate.com/65244/QNB-مصر-يحصل-على-موافقة-المركزي-المصري-لتأسيس-البنك-الرقمي-Ez-Bank"
+    ],
+    "notes": "Digital bank backed by QNB Egypt. CBE preliminary approval reported in an article dated 10 Oct 2025; it only lets the founders start the establishment procedures. Not launched, so no sender ID, website or logo yet.",
+    "verification": "Added by the list check (2026-10-08); Arabic and Latin spellings and the approval type re-read on the cited article. Single source."
+  },
+  {
+    "country": "EG",
+    "id": "yomo",
+    "nameArOfficial": "يومو",
+    "nameArShort": "يومو",
+    "nameEn": "Yomo (CIB digital bank)",
+    "type": "digital bank",
+    "status": "preliminary-approval",
+    "senderIds": [],
+    "logo": null,
+    "website": null,
+    "sources": [
+      "https://egyptinnovate.com/en/news/cib-receives-central-bank-approval-to-establish-yomo-digital-bank"
+    ],
+    "notes": "Digital bank backed by CIB. CBE preliminary approval reported on 20 Aug 2026 (article date; the approval date itself is not stated). Services start only after further CBE approvals. Not launched, so no sender ID, website or logo yet.",
+    "verification": "Added by the list check (2026-10-08); name and approval type re-read on the cited article. The Arabic spelling يومو is a transliteration: no Arabic source was seen. Single source."
+  },
+  {
+    "country": "EG",
+    "id": "telda",
+    "nameArOfficial": "تيلدا",
+    "nameArShort": "تيلدا",
+    "nameEn": "Telda",
+    "type": "fintech",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://telda.app/",
+    "sources": [
+      "https://telda.app/"
+    ],
+    "notes": "Consumer app to send and spend money, with a Mastercard card; the site's Arabic image text ties the card to Banque du Caire (بنك القاهرة). Large youth-market user base. Comparable to valU and Fawry. No sender ID or logo URL recorded.",
+    "verification": "Added by the list check (2026-10-08); Arabic and Latin brand spellings and the card-issuer text re-read on the cited site."
+  },
+  {
+    "country": "EG",
+    "id": "halan",
+    "nameArOfficial": "حالا",
+    "nameArShort": "حالا",
+    "nameEn": "Halan (MNT-Halan)",
+    "type": "fintech",
+    "senderIds": [],
+    "logo": null,
+    "website": "https://www.halan.com/",
+    "sources": [
+      "https://www.halan.com/"
+    ],
+    "notes": "Consumer app for loans, an installment card (Halan Card), bill payments and peer transfers. A stake listing on EGX is reported for Oct 2026 (not checked). Comparable to valU. No sender ID or logo URL recorded.",
+    "verification": "Added by the list check (2026-10-08); Arabic name حالا confirmed from the title of the site's Arabic page. The site itself does not use the name MNT-Halan."
+  }
+]

@@ -1,0 +1,1325 @@
+[
+  {
+    "country": "SA",
+    "id": "saudi-national-bank",
+    "nameArOfficial": "البنك الأهلي السعودي",
+    "nameArShort": "الأهلي",
+    "nameEn": "The Saudi National Bank (SNB)",
+    "type": "local-bank",
+    "senderIds": [
+      {
+        "id": "SNB-AlAhli",
+        "confidence": "community",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/SNBAlAhliBankParser.kt",
+        "verified": false,
+        "verification": "Verifier verdict: unverifiable. I checked the cited source myself. The parser's doc comment lists 'Sender examples: SNB-AlAhli, SNB, AlAhliBank, الأهلي', and the test file uses sender = \"SNB-AlAhli\" in almost every case. The first version of that test (commit f88f21f, PR #255) used only 'SNB-AlAhli'. That PR says its test cases were taken 'from screenshot', which is weak sign the developer saw a real message, but it shows no screenshot and never says which sender appeared on the phone. The current test messages are openly synthetic: PR #708 calls them 'synthetic regression coverage', and merchants are named 'SYNTHETIC ...'. I found no independent confirmation. There is nothing on alahli.com (the site also failed the TLS check), no forum or X post, no news story, and no other repo outside PennyWise. Sourcegraph finds the exact string only in the PennyWise test file. Cashiro is derived from PennyWise, so it does not count as independent. The bank request in PennyWise issue #123 left the sender field blank. This is the most plausible current sender, but it rests on one developer's project. Evidence: GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/test/kotlin/com/pennywiseai/parser/core/bank/SNBAlAhliBankParserTest.kt"
+      },
+      {
+        "id": "SNB",
+        "confidence": "uncertain",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/test/kotlin/com/pennywiseai/parser/core/bank/SNBAlAhliBankParserTest.kt",
+        "verified": false,
+        "verification": "Verifier verdict: unverifiable. In the cited test file, 'SNB' is used once, as the sender of one synthetic refund test added in PR #708. That PR describes its cases as synthetic, so this is not a real message. The parser's canHandle checks whether the sender contains 'SNB' as a substring, so the test only exercises that matching rule and does not show a real sender. I found no independent source (bank, regulator, forum or other project) showing a bare 'SNB' sender for this bank. 'SNB' is also ambiguous, since it is used by the Swiss National Bank and others. Evidence: GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/test/kotlin/com/pennywiseai/parser/core/bank/SNBAlAhliBankParserTest.kt"
+      },
+      {
+        "id": "AlAhliBank",
+        "confidence": "uncertain",
+        "source": "Listed only as an example in a code comment of the same PennyWise parser; no real message seen",
+        "verified": false,
+        "verification": "Verifier verdict: unverifiable. This appears only in the parser's doc comment ('Sender examples: SNB-AlAhli, SNB, AlAhliBank, الأهلي'). No test uses it, no PR or issue backs it, and web searches for 'AlAhliBank' as an SMS sender returned nothing. It looks like a developer's guess. Keep it out of any default allowlist unless a real message turns it up. Evidence: GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/SNBAlAhliBankParser.kt"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Saudi_National_Bank_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://commons.wikimedia.org/wiki/File:Saudi_National_Bank_Logo.svg",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo, 'simple geometric shapes or text') + Trademarked tag. File page exists. Current version uploaded 21 Sep 2022 (512x136), source given as alahli.com, author given as the bank. SNB unveiled its post-merger logo in June 2021 and no later rebrand was found, so this is consistent with the current logo. The English Wikipedia infobox uses it. No deletion request. I did not view the image itself. Note: logo.url is the Commons description page (HTML), not the image file."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.alahli.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.wikidata.org/wiki/Q1518238"
+    ],
+    "notes": "Formed in 2021 by the merger of NCB (AlAhli) and Samba. Old SMS may carry legacy senders such as NCB or SAMBA (not verified). The official site would not load for this research (TLS certificate error), so no official logo URL. Trademark of SNB."
+  },
+  {
+    "country": "SA",
+    "id": "al-rajhi-bank",
+    "nameArOfficial": "مصرف الراجحي",
+    "nameArShort": "الراجحي",
+    "nameEn": "Al Rajhi Bank",
+    "type": "local-bank",
+    "senderIds": [
+      {
+        "id": "AlRajhiBank",
+        "confidence": "community",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/AlRajhiBankParser.kt (header: 'Sender: AlRajhiBank') + TestAlRajhiBankParser.kt",
+        "verified": true,
+        "verification": "Verifier verdict: confirmed. The cited source checks out. The header of PennyWise AlRajhiBankParser.kt literally says 'Sender: AlRajhiBank', and every ParserTestCase in parser-core/src/test/kotlin/TestAlRajhiBankParser.kt uses 'AlRajhiBank'. Some of those tests are labelled SYNTHETIC, so the tests alone prove nothing. Better evidence is issue #207 in the same repo, opened in March 2026 by an outside end user (author_association NONE). It has eight real-looking Arabic and English Al Rajhi alerts with masked card and account fields. The template's sender field (placeholder 'e.g. AD-ICICIB') was filled with 'AlRajhiBank', wrapped in invisible right-to-left Unicode marks, which is typical of text copied from an Arabic-locale phone screen. This looks like a real observed sender, but it comes from the same project's user base, not the bank. Indirect support: a 2015 Saudi scam-SMS blog (personal blog post, July 2015; address withheld) lists fake lookalikes such as 'AIRajhBank', 'AlRajhBank_' and 'AIRaijhBank', which imitate this string. The bank's fraud page, its 2024 annual-report fraud section and SAMA notices do not name any sender, so 'official' is not justified. Advice: match without regard to case, and remember that Saudi carriers require sender-name registration but lookalike names exist. Evidence: GitHub repo pennywiseai-tracker [owner withheld], issue #207"
+      }
+    ],
+    "logo": {
+      "url": "https://www.alrajhibank.com.sa/-/media/Project/AlRajhi/ARBRevamp/Temp/AlRajhiBankLogo.svg",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of Al Rajhi Bank",
+      "source": "https://www.alrajhibank.com.sa/en/About-alrajhi-bank/Fraud-Awareness",
+      "verified": true,
+      "verification": "License claim ok. Actual: Not stated at the URL (an official asset, so assume all rights reserved). The URL resolves on alrajhibank.com.sa (the bank's own domain; no cross-host redirect was reported) and returns an SVG: a single blue fill (#150FE0), outlined paths, no text elements. It is consistent with the post-Oct-2021 'Unbank the Bank' identity. Fragile: the path contains '/Temp/'. Extra: its Commons alternative 'Al_Rajhi_Bank_Logo.svg' is PD-textlogo + Trademarked; its current revision is from Sep 2022 (sourced from an Argaam image), replacing 2017 versions."
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Al_Rajhi_Bank_Logo.svg",
+        "kind": "wikimedia",
+        "license": "Public domain (text logo); trademarked",
+        "verified": true,
+        "verification": "Checked by the verifier: PD-textlogo plus Trademarked tag; current revision from Sep 2022, replacing 2017 versions."
+      }
+    ],
+    "website": "https://www.alrajhibank.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.alrajhibank.com.sa/en/About-alrajhi-bank/Fraud-Awareness"
+    ],
+    "notes": "The bank's fraud page does not name an official SMS sender. Owns Neoleap (urpay). Logo path was given as relative on the page and was made absolute here (query string dropped)."
+  },
+  {
+    "country": "SA",
+    "id": "riyad-bank",
+    "nameArOfficial": "بنك الرياض",
+    "nameArShort": "الرياض",
+    "nameEn": "Riyad Bank",
+    "type": "local-bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.riyadbank.com/documents/56211/7527405/riyad-bank-with-text-logo.svg/44e4f9e9-8330-9fcb-e845-a55fccde7681",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of Riyad Bank",
+      "source": "https://www.riyadbank.com/",
+      "verified": true,
+      "verification": "License claim ok. Actual: Not stated at the URL (an official asset, so assume all rights reserved). The URL resolves on riyadbank.com (the bank's own domain; no cross-host redirect reported) and returns an SVG of about 152x40: a purple/teal geometric mark plus a gray wordmark, drawn as paths. The URL is a CMS document link with a UUID, so it may change without notice."
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Riyad_Bank_logo.svg",
+        "kind": "wikimedia",
+        "license": "Public domain (text logo); trademarked"
+      }
+    ],
+    "website": "https://www.riyadbank.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.riyadbank.com/personal-banking/managing-your-money/riyad-alert"
+    ],
+    "notes": "SMS alert service is called 'Riyad Alert'. No sender ID found from any source."
+  },
+  {
+    "country": "SA",
+    "id": "saudi-awwal-bank",
+    "nameArOfficial": "البنك السعودي الأول",
+    "nameArShort": "الأول",
+    "nameEn": "Saudi Awwal Bank (SAB)",
+    "aliases": [
+      "ساب",
+      "البنك الأول"
+    ],
+    "type": "local-bank",
+    "senderIds": [
+      {
+        "id": "SAB",
+        "confidence": "community",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/SabbBankParser.kt (doc 'Sender example: SAB') + SabbBankParserTest.kt",
+        "verified": true,
+        "verification": "Verifier verdict: confirmed. I opened the cited PennyWise SabbBankParser.kt. Its doc comment says 'Saudi Awwal Bank (Saudi Arabia)' and 'Sender example: SAB', the currency is SAR, and canHandle() accepts SAB/SABB plus Arabic 'ساب'/'الأول'. The test file has no comments and uses 'SAB' (plus 'SABB' and the Indian DLT-style 'JD-SAB-S' as accepted strings), so on its own it is developer-written. The parser commit 5725b63 says 'Sender is SAB' and traces its samples to user issue #307. In #307 a separate user asks for SAB (Saudi Awwal Bank) support and labels each sample 'Sender: SAB'. The samples look like real alerts: Arabic/English text, SAR amounts, masked card numbers, 2026 dates. Issue #376 (SABB salary SMS, from a real-looking user) gives no sender. So the string comes from a real customer report, not something the developer invented. Limits: all of the evidence comes from one project and one reporter. I found no independent second source. SAB's official notification pages (EN and AR) describe the SMS alert service but never name a sender ID, and searches of regulator, forum and other GitHub projects (masarif, Cashiro #181, tidybox) found nothing for SAB. Keep it 'community', not 'official', and match it case-insensitively. Evidence: GitHub repo pennywiseai-tracker [owner withheld], issue #307"
+      }
+    ],
+    "logo": {
+      "url": "https://www.sab.com/content/dam/sabpws/common/icons/sab-new-logo.svg",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of SAB",
+      "source": "https://www.sab.com/",
+      "verified": true,
+      "verification": "License claim ok. Actual: Not stated at the URL (an official asset, so assume all rights reserved). The URL resolves on sab.com (the bank's own domain; no cross-host redirect reported) and returns an SVG with viewBox 197x54, black/red/white fills, exported from Illustrator. The file name 'sab-new-logo' is consistent with the 2023 SAB rebrand. Not visually verified."
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:SAB_logo_(since_2023).svg",
+        "kind": "wikimedia",
+        "license": "Public domain (text logo); trademarked"
+      }
+    ],
+    "website": "https://www.sab.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.sab.com/en/personal/ways-to-bank/automated-notification/",
+      "https://www.sab.com/ar/"
+    ],
+    "notes": "Formerly SABB (Saudi British Bank), merged with Alawwal Bank in 2019 and rebranded SAB in 2023. Old SMS may come from SABB or Alawwal (not verified). The notification page does not name the sender.",
+    "verification": "Name fix (nameArShort): 'ساب' -> 'الأول'. Verifier: الأول (keep ساب as an alias; old SMS from the pre-2019 Alawwal Bank 'البنك الأول' also maps here). Evidence: https://www.sab.com/ar/"
+  },
+  {
+    "country": "SA",
+    "id": "arab-national-bank",
+    "nameArOfficial": "البنك العربي الوطني",
+    "nameArShort": "العربي",
+    "nameEn": "Arab National Bank (anb)",
+    "type": "local-bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://anb.com.sa/image/layout_set_logo?img_id=1212212",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of ANB",
+      "source": "https://www.anb.com.sa/"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Anb_new_logo.svg",
+        "kind": "wikimedia",
+        "license": "CC BY-SA 4.0 as tagged by uploader (doubtful for a corporate logo); trademark of ANB"
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/File:Arab_National_Bank_Logo.svg",
+        "kind": "wikimedia",
+        "license": "PD (local file on English Wikipedia, not Commons)"
+      }
+    ],
+    "website": "https://www.anb.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "No sender ID found. The official logo is served from a CMS endpoint, which may change."
+  },
+  {
+    "country": "SA",
+    "id": "alinma-bank",
+    "nameArOfficial": "مصرف الإنماء",
+    "nameArShort": "الإنماء",
+    "nameEn": "Alinma Bank",
+    "type": "local-bank",
+    "senderIds": [
+      {
+        "id": "alinma",
+        "confidence": "community",
+        "source": "GitHub repo masarif [owner withheld] (README setup: sender 'alinma'); PennyWise tests use 'Alinma': GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/test/kotlin/TestAlinmaBankParser.kt",
+        "verified": false,
+        "verification": "Verifier verdict: unverifiable. I checked both cited sources myself. (1) masarif is a real Alinma-only app. Its welcome screen tells the user to type the sender 'as it appears in the Messages app (e.g. alinma)'. SettingsStore.kt sets DEFAULT_SENDER = \"alinma\", and the README says to leave it as 'alinma' and press verify. This is the only real-world signal. Its limits: it comes from one developer, it is phrased as an example, and InboxScanner.kt matches with address.contains(sender, ignoreCase = true). So it only shows that the sender contains 'alinma' in some casing (ALINMA, Alinma, AlinmaBank would all match). It does not show the exact string. (2) The PennyWise TestAlinmaBankParser.kt evidence is invented: placeholder merchants, **0000/**1234 suffixes, round amounts. The parser accepts any sender containing ALINMA or 'الإنماء'. The bank request it came from (issue #97) left the Sender field empty, showing only template placeholders. Do not cite it as evidence of the sender. (3) The researcher's formats note reads tidybox corpus.jsonl as 'sender alinma'. That is a misreading: the field is 'source', a provenance label next to values such as other GitHub users' handles and 'spamcsv', not an SMS address. The tidybox PR #17 also says its earlier Saudi sender list was 'written from memory'. Independent confirmation: none found. alinma.com (fraud-awareness page, SMS-alert news) does not name a sender ID. A 2015 blog lists 'ALINMA' in an unlabeled list mixed with spoofed variants, so it proves nothing. Recommendation: keep it as community, matched case-insensitively as a substring 'alinma', and record that the exact casing and full string are unverified. Evidence: GitHub repo masarif [owner withheld], file app/src/main/java/com/masarif/app/ui/screens/OnboardingScreen.kt"
+      }
+    ],
+    "logo": {
+      "url": "https://www.alinma.com/-/media/Project/AlinmaRevamp/shared/alinma-logo.svg",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of Alinma Bank",
+      "source": "https://www.alinma.com/"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Alinma_Bank_logo.svg",
+        "kind": "wikimedia",
+        "license": "Public domain (text logo); trademarked"
+      },
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Alinma_bank_new_logo.png",
+        "kind": "wikimedia",
+        "license": "CC0 as tagged by uploader (doubtful for a corporate logo)"
+      }
+    ],
+    "website": "https://www.alinma.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "GitHub repo masarif [owner withheld]"
+    ],
+    "notes": "Sender case varies between sources ('alinma' and 'Alinma'). Match it without regard to case."
+  },
+  {
+    "country": "SA",
+    "id": "banque-saudi-fransi",
+    "nameArOfficial": "البنك السعودي الفرنسي",
+    "nameArShort": "الفرنسي",
+    "nameEn": "Banque Saudi Fransi (BSF)",
+    "type": "local-bank",
+    "senderIds": [
+      {
+        "id": "BSF",
+        "confidence": "uncertain",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/BSFBankParser.kt (header 'Sender: BSF'; its other examples are Indian DLT-style and clearly generic)"
+      }
+    ],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Banque_Saudi_Fransi_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://commons.wikimedia.org/wiki/File:Banque_Saudi_Fransi_Logo.svg",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo) + Trademarked tag. Described as 'Banque Saudi Fransi Logo (2024)'. Uploaded 3 May 2024 from bsf.sa and re-uploaded 17 May 2024 'from the official website'. English Wikipedia says BSF launched its new identity and logo on 2 May 2024, so this is the CURRENT logo. Caveat: the entry's logoAlternatives 'BSF_logo_2021.jpg' is very likely the OLD pre-May-2024 logo, and it carries a doubtful uploader CC tag. Drop it."
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:BSF_logo_2021.jpg",
+        "kind": "wikimedia",
+        "license": "CC BY-SA 4.0 as tagged by uploader (doubtful)",
+        "verified": false,
+        "verification": "Very likely the old pre-May-2024 logo (BSF launched a new identity on 2 May 2024), and it carries a doubtful uploader CC tag. The verifier advises dropping it; kept here but flagged."
+      }
+    ],
+    "website": "https://bsf.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://bsf.sa/english/personal/security-center/securitycenter/identify-scams-and-social-engineering",
+      "https://www.wikidata.org/wiki/Q7181252"
+    ],
+    "notes": "Brand also seen as 'Alfransi'; old domain alfransi.com.sa. The header logo on bsf.sa is not an <img>, so no official logo URL was captured. No test messages back the BSF sender."
+  },
+  {
+    "country": "SA",
+    "id": "saudi-investment-bank",
+    "nameArOfficial": "البنك السعودي للاستثمار",
+    "nameArShort": "السعودي للاستثمار",
+    "nameEn": "The Saudi Investment Bank (SAIB)",
+    "aliases": [
+      "الاستثمار"
+    ],
+    "type": "local-bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.saib.com.sa/sites/default/files/2025-09/saib-logo1.png",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of SAIB",
+      "source": "https://www.saib.com.sa/en"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:SAIB_logo.png",
+        "kind": "wikimedia",
+        "license": "CC BY-SA 4.0 as tagged by uploader (doubtful)"
+      }
+    ],
+    "website": "https://www.saib.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.saib.com.sa/en/alerts_service",
+      "https://www.saib.com.sa/ar"
+    ],
+    "notes": "The alerts page names the telecom operators (Mobily, STC, Zain) but not the sender ID.",
+    "verification": "Name fix (nameArShort): 'الاستثمار' -> 'السعودي للاستثمار'. Verifier: السعودي للاستثمار (the bank uses no short Arabic brand; 'الاستثمار' alone is generic and ambiguous in SMS text). Evidence: https://www.saib.com.sa/ar"
+  },
+  {
+    "country": "SA",
+    "id": "bank-albilad",
+    "nameArOfficial": "بنك البلاد",
+    "nameArShort": "البلاد",
+    "nameEn": "Bank Albilad",
+    "type": "local-bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.bankalbilad.com.sa/az/images/logo.png",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of Bank Albilad",
+      "source": "https://www.bankalbilad.com.sa/"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Bank_Albilad.png",
+        "kind": "wikimedia",
+        "license": "CC BY-SA 4.0 as tagged by uploader (doubtful)"
+      }
+    ],
+    "website": "https://www.bankalbilad.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "GitHub repo bank-al-bilad-sms-parser [owner withheld]"
+    ],
+    "notes": "bankalbilad.com redirects to bankalbilad.com.sa. A public parser exists for its Arabic card SMS but does not name the sender. Enjaz is its remittance brand. Logo host was inferred from the page; the fetcher reported bankalbilad.com."
+  },
+  {
+    "country": "SA",
+    "id": "bank-aljazira",
+    "nameArOfficial": "بنك الجزيرة",
+    "nameArShort": "الجزيرة",
+    "nameEn": "Bank AlJazira (AJB)",
+    "type": "local-bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.aljazirabank.com.sa/Portals/0/ajb_Logo-04.svg",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of Bank AlJazira",
+      "source": "https://www.aljazirabank.com.sa/"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Aljazira_Bank_Logo.svg",
+        "kind": "wikimedia",
+        "license": "Public domain (text logo); trademarked (may be the older logo)"
+      },
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Bank_Aljazira_New_Logo.png",
+        "kind": "wikimedia",
+        "license": "CC BY-SA 4.0 as tagged by uploader (doubtful)"
+      }
+    ],
+    "website": "https://www.aljazirabank.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "bankaljazira.com now redirects (301) to aljazirabank.com.sa. No sender ID found."
+  },
+  {
+    "country": "SA",
+    "id": "gulf-international-bank-sa",
+    "nameArOfficial": "بنك الخليج الدولي - السعودية",
+    "nameArShort": "الخليج الدولي",
+    "nameEn": "Gulf International Bank Saudi Arabia (GIB-SA)",
+    "type": "local-bank",
+    "senderIds": [],
+    "logo": {
+      "url": "https://www.gib.com/sites/default/files/gib_arabic_3.png",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of GIB",
+      "source": "https://www.gib.com/en/saudi-arabia"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://en.wikipedia.org/wiki/File:Gulf_International_Bank_Logo.svg",
+        "kind": "wikimedia",
+        "license": "Fair use (non-free, English Wikipedia only); not reusable"
+      }
+    ],
+    "website": "https://www.gib.com/ksa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.gib.com/en/saudi-arabia"
+    ],
+    "notes": "Its retail digital brand is 'meem' (http://sa.meem.com). SMS may come from a 'meem' sender (not verified). The Arabic official name is approximate, since the SAMA Arabic page could not be read."
+  },
+  {
+    "country": "SA",
+    "id": "stc-bank",
+    "nameArOfficial": "بنك إس تي سي",
+    "nameArShort": "بنك إس تي سي",
+    "nameEn": "STC Bank (formerly STC Pay)",
+    "aliases": [
+      "STC بنك",
+      "بنك إس.تي.سي",
+      "بنك اس تي سي"
+    ],
+    "type": "digital-bank",
+    "senderIds": [
+      {
+        "id": "STC Bank",
+        "confidence": "uncertain",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/test/kotlin/com/pennywiseai/parser/core/bank/STCBankParserTest.kt",
+        "verified": false,
+        "verification": "Verifier verdict: unverifiable. The only places this appears are the synthetic PennyWise test file and the parser's KDoc 'Sender examples: STC Bank, STCBank, STC-Bank, STC', which looks like a guess list with no stated source. The only independent report I found (Cashiro #181) gives 'STCBank' with no space. The parser strips spaces before matching, so this entry probably adds nothing over STCBank. I found no real message from 'STC Bank' with a space. Evidence: GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/test/kotlin/com/pennywiseai/parser/core/bank/STCBankParserTest.kt"
+      },
+      {
+        "id": "STCBank",
+        "confidence": "community",
+        "source": "same test file",
+        "verified": true,
+        "verification": "Verifier verdict: confirmed. I opened the cited source and it is weak. In PennyWise STCBankParserTest.kt, every message is developer-made: merchants are prefixed 'SYNTHETIC', the dates are placeholders and the OTPs read <CODE>. PR #708 also calls its test data 'synthetic', and neither the parser nor its PRs (#255, #708) say where the sender strings came from. Independent confirmation: Cashiro GitHub issue #181 ('[BANK] Saudi Arabia', opened 2026-09-29 by a community user) lists 'SMS Sender: STCBank' and uses STCBank as the sender in every example. It describes its samples as coming from an exported dataset, but it is still one unverified community post. Neither the bank nor a regulator publishes the sender ID: the stcbank.com.sa transformation notice and awareness page mention SMS but not the sender name. So this is community level, not official. Evidence: GitHub repo Cashiro [owner withheld], issue #181"
+      },
+      {
+        "id": "STCPAY",
+        "confidence": "uncertain",
+        "source": "PennyWise STCBankParser.kt canHandle accepts it; no real message seen (legacy STC Pay wallet)",
+        "verified": false,
+        "verification": "Verifier verdict: unverifiable. canHandle() accepts normalized 'STCPAY', but no test and no PR shows a message from that sender, and PR #708 calls its samples synthetic. Searches for an stc pay wallet sender name (English and Arabic, including scam warnings) found nothing. The Cashiro #181 report lists only STCBank and says stc pay/stcpay do not appear. Accepting it might catch old wallet-era messages, but there is no evidence for it. Evidence: GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/STCBankParser.kt"
+      },
+      {
+        "id": "822265",
+        "confidence": "uncertain",
+        "source": "GitHub repo Cashiro [owner withheld], issue #181",
+        "verified": false,
+        "verification": "Added by the verifier as a new sender ID at 'uncertain'. It comes from the same single community report (Cashiro issue #181) that confirms 'STCBank'; the verdict gives no further detail on this numeric short-code sender. Confirm it on a real message before relying on it."
+      }
+    ],
+    "logo": {
+      "url": "https://stcbank.com.sa/documents/20117/220956/stc-inverted.svg/19718a25-45a2-3e1b-ba9a-fc3098e8a75a",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of stc",
+      "source": "https://www.stcbank.com.sa/"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.stcbank.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://aawsat.com/node/4948951",
+      "https://www.stcbank.com.sa/"
+    ],
+    "notes": "STC Pay was a SAMA-licensed e-wallet and was converted into a digital bank (Cabinet approval June 2021, operating January 2025). The site logo is the 'inverted' (white) variant, meant for dark backgrounds.",
+    "verification": "Name fix (nameArShort): 'STC بنك' -> 'بنك إس تي سي'. Verifier: بنك إس تي سي (the official footer writes 'بنك إس.تي.سي' and the legal disclaimer 'بنك اس تي سي'; SAMA's Arabic release writes 'بنك إس تي سي'. Match all three spellings). Evidence: https://www.stcbank.com.sa/"
+  },
+  {
+    "country": "SA",
+    "id": "d360-bank",
+    "nameArOfficial": "بنك D360",
+    "nameArShort": "D360",
+    "nameEn": "D360 Bank",
+    "aliases": [
+      "بنك دال 360",
+      "دال 360"
+    ],
+    "type": "digital-bank",
+    "senderIds": [
+      {
+        "id": "D360Bank",
+        "confidence": "community",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], file parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/D360BankParser.kt (comment: 'Senders seen in the wild: D360Bank, D360BANK')",
+        "verified": true,
+        "verification": "Verifier verdict: confirmed. The cited file is real. D360BankParser.kt has the comment 'Senders seen in the wild: \"D360Bank\", \"D360BANK\"', and canHandle() matches any sender containing 'D360', ignoring case. That comment is not primary evidence, though. It comes from GitHub issue #594 ('D360 BANK', opened 2026-07-09 by a user who is not the repo owner). The issue's 'Sender' template field holds 'D360Bank' in example 1 and 'D360BANK' in examples 2-8. The SMS bodies look like real messages the reporter masked by hand: labelled fields Amount/Card/Fee/At/Account/IBAN/On and masked numbers. The bank is clearly the Saudi D360 (amounts in SAR, Saudi IBAN fields). The reporter typed the sender into the form, so the exact capitalisation is not proven. No independent confirmation was found: d360.com/en/fraud-awareness names no sender ID, the Cashiro tracker has no D360 entry, and web searches returned nothing. PR #708 uses synthetic samples and adds nothing. All the evidence comes from one reporter, so 'community' is the right level, not 'official'. Match the sender ignoring case. Evidence: GitHub repo pennywiseai-tracker [owner withheld], issue #594"
+      },
+      {
+        "id": "D360BANK",
+        "confidence": "community",
+        "source": "GitHub repo pennywiseai-tracker [owner withheld], issue #594",
+        "verified": true,
+        "verification": "Added by the verifier as a new sender ID. In the cited issue the 'Sender' field holds 'D360BANK' in examples 2-8 (and 'D360Bank' in example 1). The reporter typed the sender into the form, so the exact capitalisation is not proven. One reporter only; 'community', not 'official'. Match the sender ignoring case."
+      }
+    ],
+    "logo": {
+      "url": "https://axa3tigaf4dy.objectstorage.me-jeddah-1.oci.customer-oci.com/n/axa3tigaf4dy/b/webcms-prod-bucket/o/logo2_a240e6aea9.png",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of D360 Bank",
+      "source": "https://d360.com/"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:D360_Bank.svg",
+        "kind": "wikimedia",
+        "license": "CC BY 2.5 as tagged (verify); trademark of D360"
+      }
+    ],
+    "website": "https://d360.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.cnbcarabia.com/131909/2024/17/12/",
+      "https://d360.com/ar"
+    ],
+    "notes": "SAMA announced the start of operations on 17 Dec 2024. Led by Derayah, with PIF among its backers. The bank's own Arabic site writes its name 'بنك D360' with the Latin 'D360'; 'دال 360' is a press spelling, kept in aliases.",
+    "verification": "Name fix (nameArOfficial): 'بنك دال 360' -> 'بنك D360'. Verifier: بنك D360. Evidence: https://d360.com/ar | Name fix (nameArShort): 'دال 360' -> 'D360'. Verifier: D360 (the bank writes its name with the Latin 'D360' even in Arabic text; keep 'دال 360' only as a press alias). Evidence: https://d360.com/ar"
+  },
+  {
+    "country": "SA",
+    "id": "vision-bank",
+    "nameArOfficial": "بنك فيجن",
+    "nameArShort": "فيجن",
+    "nameEn": "Vision Bank (formerly Saudi Digital Bank)",
+    "type": "digital-bank",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "Trademark of Vision Bank",
+      "source": "https://www.visionbank.sa/ (returned HTTP 403 to the fetcher)"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.visionbank.sa",
+    "sources": [
+      "https://aawsat.com/node/5186408",
+      "https://enterpriseam.com/ksa/2025/09/16/vision-bank-is-the-third-digital-bank-to-get-samas-approval/",
+      "https://www.fintechfutures.com/digital-banking/vision-bank-launches-digital-banking-app-in-saudi-arabia"
+    ],
+    "notes": "Full operations began in September 2025 after a pilot. The domain exists but blocked automated fetch, so it is unverified. No logo or sender found."
+  },
+  {
+    "country": "SA",
+    "id": "ez-bank",
+    "nameArOfficial": "آيزي بنك",
+    "nameArShort": "آيزي بنك",
+    "nameEn": "EZ Bank (ezbank)",
+    "type": "digital-bank",
+    "status": "licensed-not-launched",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "No official website found"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://www.sama.gov.sa/en-US/MediaCenter/News/pages/news-1112.aspx",
+      "https://www.sama.gov.sa/ar-sa/MediaCenter/News/pages/news-1112.aspx",
+      "https://www.agbi.com/banking-finance/2025/10/qnbs-ezbank-granted-licence-in-saudi-arabia/",
+      "https://www.fintechfutures.com/regulatory-actions/new-digital-bank-ez-bank-secures-sama-licence"
+    ],
+    "notes": "Licensed by Cabinet decision announced by SAMA on 30 Sep 2025, with SAR 2.5bn capital. A joint venture of Ajlan & Bros and QNB. No public launch was found as of Oct 2026. The Arabic name is from SAMA's Arabic announcement. QNB also has a separate Egyptian 'ezbank' (licensed by the Central Bank of Egypt in Oct 2025); do not attribute Egyptian ezbank SMS to this entry.",
+    "verification": "List check: Licensed 30 Sep 2025 but no launch, app or go-live found. Flag as licensed, not operating. Also note that QNB has a separate Egyptian 'ezbank' (licensed by the Central Bank of Egypt in Oct 2025), so do not attribute Egyptian ezbank SMS to this entry. Evidence: https://www.fintechfutures.com/regulatory-actions/new-digital-bank-ez-bank-secures-sama-licence"
+  },
+  {
+    "country": "SA",
+    "id": "national-bank-of-bahrain",
+    "nameArOfficial": "بنك البحرين الوطني",
+    "nameArShort": "البحرين الوطني",
+    "nameEn": "National Bank of Bahrain (NBB)",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:National_Bank_of_Bahrain_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q6970886"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.nbbonline.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Foreign branch (Riyadh). The website is the group site."
+  },
+  {
+    "country": "SA",
+    "id": "bank-of-china",
+    "nameArOfficial": "بنك الصين المحدود",
+    "nameArShort": "بنك الصين",
+    "nameEn": "Bank of China Limited",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Bank_of_China_symbol.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (simple symbol); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q790068"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.bankofchina.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/"
+    ],
+    "notes": "Corporate-focused branch. Opened its Riyadh branch on 5 Sep 2023 (AGBI). The older SAMA snapshot that listed it as licensed but not yet started is out of date.",
+    "verification": "List check: The note is stale: it says 'licensed but not yet started'. Bank of China opened its Riyadh branch on 5 Sep 2023. Update the note, and keep the entry as a corporate-focused branch. Evidence: https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/"
+  },
+  {
+    "country": "SA",
+    "id": "icbc",
+    "nameArOfficial": "البنك الصناعي والتجاري الصيني",
+    "nameArShort": "ICBC",
+    "nameEn": "Industrial and Commercial Bank of China (ICBC)",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "No logo file found on Commons or Wikidata"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.icbc.com.cn",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/"
+    ],
+    "notes": "Corporate-focused branch. Its Riyadh branch opened in 2015 (per press coverage of Bank of China's 2023 opening).",
+    "verification": "List check: Corporate-focused branch (the file's own note). Per press coverage of the BoC opening, ICBC's Riyadh branch opened in 2015. Mark it corporate-only. Evidence: https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/"
+  },
+  {
+    "country": "SA",
+    "id": "banque-misr",
+    "nameArOfficial": "بنك مصر",
+    "nameArShort": "بنك مصر",
+    "nameEn": "Banque Misr",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Banque_Misr.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q2060638",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo) + Trademarked tag. First uploaded Sep 2022. The current revision (10 May 2026, 1801x742) is described as an error-fixed, high-quality redraw. Same author/'own work' inconsistency as NBE. No rebrand found and the English Wikipedia infobox uses it. Not visually verified."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.banquemisr.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.capmad.com/post/bank-misr-opens-riyadh-branch-and-officially-starts-banking-operations-in-saudi-arabia"
+    ],
+    "notes": "Riyadh branch began operating 1 July 2026 (secondary source)."
+  },
+  {
+    "country": "SA",
+    "id": "national-bank-of-egypt",
+    "nameArOfficial": "البنك الأهلي المصري",
+    "nameArShort": "الأهلي المصري",
+    "nameEn": "National Bank of Egypt (NBE)",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:National_Bank_of_Egypt.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q4119563",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo) + Trademarked tag. Single version uploaded Sep 2022, source nbe.com.eg. The page lists the bank as author but also says 'Own work using' the site, which is inconsistent: it is a copy of the site logo, and its free status rests only on the US text-logo judgement. No rebrand found and the English Wikipedia infobox uses it, but I did not visually confirm it is the current logo."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.nbe.com.eg",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Reported to have opened a Riyadh branch in Oct 2025 (secondary source). Do not confuse with SNB «الأهلي» when matching on Arabic text."
+  },
+  {
+    "country": "SA",
+    "id": "bnp-paribas",
+    "nameArOfficial": "بي إن بي باريبا",
+    "nameArShort": "بي إن بي باريبا",
+    "nameEn": "BNP Paribas",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:BNP_Paribas.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q499707"
+    },
+    "logoAlternatives": [],
+    "website": "https://group.bnpparibas",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Corporate/wholesale branch only.",
+    "verification": "List check: Corporate/wholesale-only branch (the file's own note, not re-verified in this pass). Keep it, but mark it corporate-only so it is hidden from consumer pickers by default."
+  },
+  {
+    "country": "SA",
+    "id": "deutsche-bank",
+    "nameArOfficial": "دويتشه بنك",
+    "nameArShort": "دويتشه بنك",
+    "nameEn": "Deutsche Bank",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Deutsche_Bank_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q66048"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.db.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Corporate branch only.",
+    "verification": "List check: Corporate-only branch (the file's own note, not re-verified). Mark it corporate-only."
+  },
+  {
+    "country": "SA",
+    "id": "bank-syariah-indonesia",
+    "nameArOfficial": "بنك شريعة إندونيسيا",
+    "nameArShort": "بنك شريعة إندونيسيا",
+    "nameEn": "Bank Syariah Indonesia (BSI)",
+    "type": "foreign-branch",
+    "status": "licensed-not-launched",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Bank_Syariah_Indonesia.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q105574200"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.bankbsi.co.id",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://finance.detik.com/moneter/d-8542433/bsi-matangkan-operasional-kantor-cabang-arab-saudi-begini-potensinya"
+    ],
+    "notes": "Recent addition per Wikipedia (March 2026 list). Operating status not verified. The Arabic name is from Wikidata, not SAMA.",
+    "verification": "List check: The Saudi cabinet approved a Jeddah branch on 22 Apr 2025, with a Q2-2026 target. Indonesian press in June 2026 still describes it as preparing, and no opening was found. Flag as licensed, not operating. It is also aimed at the hajj/umrah ecosystem, not general retail. Evidence: https://finance.detik.com/moneter/d-8542433/bsi-matangkan-operasional-kantor-cabang-arab-saudi-begini-potensinya"
+  },
+  {
+    "country": "SA",
+    "id": "national-bank-of-iraq",
+    "nameArOfficial": "المصرف الأهلي العراقي",
+    "nameArShort": "الأهلي العراقي",
+    "nameEn": "National Bank of Iraq",
+    "type": "foreign-branch",
+    "status": "operating",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "No logo found"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.bnok24.com/2022/08/%D8%A7%D9%84%D8%A3%D9%87%D9%84%D9%8A-%D8%A3%D9%88%D9%84-%D8%A8%D9%86%D9%83-%D8%B9%D8%B1%D8%A7%D9%82%D9%8A-%D9%8A%D8%A8%D8%AF%D8%A3-%D9%85%D8%B2%D8%A7%D9%88%D9%84%D8%A9-%D9%86%D8%B4%D8%A7"
+    ],
+    "notes": "Opened its first Saudi branch, in Riyadh, in Aug 2022 (bnok24). The older SAMA snapshot that listed it as licensed but not yet started is out of date. The Arabic name is the common name, not verified on SAMA. Website not researched.",
+    "verification": "List check: The note is stale: it says 'licensed but not yet started'. المصرف الأهلي العراقي opened its first Saudi branch in Riyadh in Aug 2022. Update the note. Evidence: https://www.bnok24.com/2022/08/%D8%A7%D9%84%D8%A3%D9%87%D9%84%D9%8A-%D8%A3%D9%88%D9%84-%D8%A8%D9%86%D9%83-%D8%B9%D8%B1%D8%A7%D9%82%D9%8A-%D9%8A%D8%A8%D8%AF%D8%A3-%D9%85%D8%B2%D8%A7%D9%88%D9%84%D8%A9-%D9%86%D8%B4%D8%A7"
+  },
+  {
+    "country": "SA",
+    "id": "trade-bank-of-iraq",
+    "nameArOfficial": "المصرف العراقي للتجارة",
+    "nameArShort": "العراقي للتجارة",
+    "nameEn": "Trade Bank of Iraq (TBI)",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Trade_Bank_of_Iraq.png",
+      "kind": "wikimedia",
+      "license": "CC BY-SA 4.0 as tagged by uploader (doubtful)",
+      "source": "https://www.wikidata.org/wiki/Q7831929",
+      "verified": false,
+      "verification": "License claim NOT ok. Actual: Commons: CC BY-SA 4.0, self-published by an account named after the bank, with a VRT ticket confirming the copyright holder's permission ('Items with VRTS permission confirmed'). No trademark tag on the page. The license name is right, but calling it 'doubtful' is wrong: this is the only checked file with verified permission from the copyright holder. However, CC BY-SA requires attribution plus share-alike for edited versions, and the JSON does not record that. The file dates from Nov 2016 (800x805 PNG) and the page is in category 'Unidentified logos of Iraq', so it is unverified whether it is still the current TBI logo. Trademark rights still apply despite the missing tag."
+    },
+    "logoAlternatives": [],
+    "website": "http://www.tbi.com.iq",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.argaam.com/en/article/articledetail/id/605095?amp"
+    ],
+    "notes": "Opened its Riyadh (Al-Olaya) branch in April 2019 (Argaam). The older SAMA snapshot that listed it as licensed but not yet started is out of date. A state trade-finance bank, so corporate-focused.",
+    "verification": "List check: The note is stale: it says 'licensed but not yet started'. TBI opened its Riyadh (Al-Olaya) branch in April 2019. It is a state trade-finance bank, so flag it as corporate-focused. Evidence: https://www.argaam.com/en/article/articledetail/id/605095?amp"
+  },
+  {
+    "country": "SA",
+    "id": "mufg-bank",
+    "nameArOfficial": "بنك إم يو إف جي",
+    "nameArShort": "MUFG",
+    "nameEn": "MUFG Bank, Ltd.",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Mitsubishi_UFJ_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q988284"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.bk.mufg.jp",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Corporate branch only.",
+    "verification": "List check: Corporate-only branch (the file's own note, not re-verified). Mark it corporate-only."
+  },
+  {
+    "country": "SA",
+    "id": "bank-of-jordan",
+    "nameArOfficial": "بنك الأردن",
+    "nameArShort": "بنك الأردن",
+    "nameEn": "Bank of Jordan",
+    "type": "foreign-branch",
+    "status": "operating",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "No logo found"
+    },
+    "logoAlternatives": [],
+    "website": "https://bankofjordan.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://english.aawsat.com/node/5305657"
+    ],
+    "notes": "Recent addition per Wikipedia (March 2026 list). The Riyadh branch opened in Aug 2026 (reported 11 Aug 2026), with a focus on companies and investors; likely corporate-focused, retail scope not stated.",
+    "verification": "List check: The note says 'operating status not verified'. The Riyadh branch opened in Aug 2026 (reported 11 Aug 2026), with a focus on companies and investors. Update the note to say it is operating, likely corporate-focused (the retail scope is not stated). Evidence: https://english.aawsat.com/node/5305657"
+  },
+  {
+    "country": "SA",
+    "id": "national-bank-of-kuwait",
+    "nameArOfficial": "بنك الكويت الوطني",
+    "nameArShort": "الكويت الوطني",
+    "nameEn": "National Bank of Kuwait (NBK)",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:NBK.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q4045072",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo, via hidden categories 'PD textlogo'/'SVG text logos') + Trademarked tag. Single version uploaded 28 Jan 2025, source nbk.com. The author field links to a Wikipedia article rather than stating the bank, which is a sloppy attribution. The English Wikipedia infobox uses it and no rebrand was found. Not visually verified."
+    },
+    "logoAlternatives": [],
+    "website": "https://nbk.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Foreign branch."
+  },
+  {
+    "country": "SA",
+    "id": "bank-muscat",
+    "nameArOfficial": "بنك مسقط",
+    "nameArShort": "بنك مسقط",
+    "nameEn": "Bank Muscat",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "No logo found on Commons or Wikidata"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.bankmuscat.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Foreign branch (Riyadh)."
+  },
+  {
+    "country": "SA",
+    "id": "sohar-international",
+    "nameArOfficial": "بنك صحار الدولي",
+    "nameArShort": "صحار الدولي",
+    "nameEn": "Sohar International Bank",
+    "type": "foreign-branch",
+    "status": "operating",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "No logo found"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://timesofoman.com/article/157651-sohar-international-marks-official-inauguration-of-new-ksa-branch"
+    ],
+    "notes": "Recent addition per Wikipedia (March 2026 list). The Riyadh branch has operated since 2024 and was formally inaugurated around 4 May 2025; coverage frames it around cross-border and Omani business flows, so it is likely corporate-focused (retail scope not stated). The Arabic name is the common name, not verified. Website not researched.",
+    "verification": "List check: The note says 'not verified'. The Riyadh branch has operated since 2024 and was formally inaugurated around 4 May 2025. Coverage frames it around cross-border and Omani business flows, so it is likely corporate-focused (retail scope not stated). Evidence: https://timesofoman.com/article/157651-sohar-international-marks-official-inauguration-of-new-ksa-branch"
+  },
+  {
+    "country": "SA",
+    "id": "national-bank-of-pakistan",
+    "nameArOfficial": "البنك الوطني الباكستاني",
+    "nameArShort": "الوطني الباكستاني",
+    "nameEn": "National Bank of Pakistan (NBP)",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "Only a local English-Wikipedia file exists (National_Bank_of_Pakistan_(logo).png), not on Commons"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.nbp.com.pk",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Foreign branch, relevant to the expatriate remittance market."
+  },
+  {
+    "country": "SA",
+    "id": "qatar-national-bank",
+    "nameArOfficial": "بنك قطر الوطني",
+    "nameArShort": "QNB",
+    "nameEn": "Qatar National Bank (QNB)",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:QNB_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q1136759",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo) + Trademarked tag. Single version uploaded 19 Apr 2026 from qnb.com, so a recent and likely current logo. Listed on a Commons user's PD-textlogo review page in Apr 2026, with no deletion request. Not visually verified."
+    },
+    "logoAlternatives": [],
+    "website": "https://qnb.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Partner in EZ Bank. 'QNB EGYPT' is a different entity (Egypt)."
+  },
+  {
+    "country": "SA",
+    "id": "ubs",
+    "nameArOfficial": "يو بي إس",
+    "nameArShort": "UBS",
+    "nameEn": "UBS AG (previously Credit Suisse)",
+    "type": "foreign-branch",
+    "status": "wealth-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:UBS_Logo.png",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q193199",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: PD-EU-no_author_disclosure ('copyright expired in the EU... published more than 70 years ago') for the EU + PD-textlogo for the US + Trademarked tag. The claim matches the US tag but omits the EU basis, and that basis is shaky. The page dates the logo '1938 or before', but the UBS name and wordmark only exist since the 1998 merger (the keys symbol is older). The logo is not pure text (it has the keys emblem). It is a raster PNG uploaded 2019 from ubs.com. Treat it as weaker than the other PD-textlogo files."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.ubs.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.ubs.com/sa/en.html"
+    ],
+    "notes": "Took over the Credit Suisse licence. Corporate/wealth only.",
+    "verification": "List check: UBS describes the UBS AG Riyadh Branch (SAMA-licensed) as a 'Global Wealth Management Banking Branch'. Flag as wealth/corporate-only and hide it from a consumer bank picker by default. Evidence: https://www.ubs.com/sa/en.html"
+  },
+  {
+    "country": "SA",
+    "id": "ziraat-bank",
+    "nameArOfficial": "بنك زراعات",
+    "nameArShort": "زراعات",
+    "nameEn": "T.C. Ziraat Bankası",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Ziraat_Bankası_2025_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q696003",
+      "verified": true,
+      "verification": "License claim ok (extra check in the verifier's summary, not in the per-entry list). The Commons file is PD-textlogo, uploaded Feb 2025 from the bank's 2025 assets, consistent with the Nov 2024 logo change. Not visually verified."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.ziraatbank.com.tr",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Foreign branch (Jeddah)."
+  },
+  {
+    "country": "SA",
+    "id": "abu-dhabi-commercial-bank",
+    "nameArOfficial": "بنك أبوظبي التجاري",
+    "nameArShort": "أبوظبي التجاري",
+    "nameEn": "Abu Dhabi Commercial Bank (ADCB)",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Abu_Dhabi_Commercial_Bank_logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://commons.wikimedia.org/wiki/File:Abu_Dhabi_Commercial_Bank_logo.svg",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo) + Trademarked tag. Uploaded 21 Sep 2022 from adcb.com, with a cropped earlier revision on the same day. ADCB's last identity relaunch found was in late 2013, with no later logo change, so it is likely current. The 'own work' vs 'taken from the website' contradiction is noted on the page. Not visually verified."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.adcb.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.gtreview.com/news/mena/adcb-to-expand-to-saudi-arabia-after-winning-bank-licence/"
+    ],
+    "notes": "Recent addition per Wikipedia (March 2026 list). The website is the group domain (common knowledge, not fetched).",
+    "verification": "List check: Only an in-principle cabinet approval (Jan 2024), subject to final SAMA conditions, for a branch serving corporate and institutional clients only. No opening was found. Flag as corporate-only and opening unverified. The same Jan-2024 GTR piece says 6 of the 23 licensed foreign banks had not started operations. Evidence: https://www.gtreview.com/news/mena/adcb-to-expand-to-saudi-arabia-after-winning-bank-licence/"
+  },
+  {
+    "country": "SA",
+    "id": "emirates-nbd",
+    "nameArOfficial": "بنك الإمارات دبي الوطني",
+    "nameArShort": "الإمارات دبي الوطني",
+    "nameEn": "Emirates NBD",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "wikimedia",
+      "license": "n/a",
+      "source": "No Commons logo found"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.emiratesnbd.com.sa",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia",
+      "https://www.wikidata.org/wiki/Q5372575"
+    ],
+    "notes": "One of the few foreign branches with retail banking in KSA, so its SMS is likely relevant. The KSA domain (emiratesnbd.com.sa) was not fetched; the group domain is emiratesnbd.com."
+  },
+  {
+    "country": "SA",
+    "id": "first-abu-dhabi-bank",
+    "nameArOfficial": "بنك أبوظبي الأول",
+    "nameArShort": "أبوظبي الأول",
+    "nameEn": "First Abu Dhabi Bank (FAB)",
+    "type": "foreign-branch",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:First_Abu_Dhabi_Bank_Logo.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q29124183",
+      "verified": true,
+      "verification": "License claim ok. Actual: Commons: Public domain (PD-textlogo) + Trademarked tag. Single version uploaded 21 Sep 2022 from bankfab.com. It has the same 'Own work using' vs 'author = bank' inconsistency. FAB's identity dates from the 2017 merger and no later rebrand was found, so it is likely current. Not visually verified."
+    },
+    "logoAlternatives": [],
+    "website": "https://www.bankfab.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Foreign branch."
+  },
+  {
+    "country": "SA",
+    "id": "standard-chartered",
+    "nameArOfficial": "ستاندرد تشارترد",
+    "nameArShort": "ستاندرد تشارترد",
+    "nameEn": "Standard Chartered Bank",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Standard_Chartered_(2021).svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q548278"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.sc.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Corporate branch only.",
+    "verification": "List check: Corporate-only branch (the file's own note, not re-verified). Mark it corporate-only."
+  },
+  {
+    "country": "SA",
+    "id": "jpmorgan-chase",
+    "nameArOfficial": "جي بي مورغان تشيس",
+    "nameArShort": "جي بي مورغان",
+    "nameEn": "J.P. Morgan Chase Bank, N.A.",
+    "type": "foreign-branch",
+    "status": "corporate-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://commons.wikimedia.org/wiki/File:Logo_of_JPMorganChase_2024.svg",
+      "kind": "wikimedia",
+      "license": "Public domain (text logo); trademarked",
+      "source": "https://www.wikidata.org/wiki/Q192314"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.jpmorganchase.com",
+    "sources": [
+      "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
+    ],
+    "notes": "Corporate branch only.",
+    "verification": "List check: Corporate-only branch (the file's own note, not re-verified). Mark it corporate-only."
+  },
+  {
+    "country": "SA",
+    "id": "urpay",
+    "nameArOfficial": "يور باي",
+    "nameArShort": "urpay",
+    "nameEn": "urpay (Neoleap / International Digital Solutions Co.)",
+    "type": "payment-wallet",
+    "senderIds": [],
+    "logo": {
+      "url": "https://cms-portal.apps.ocpryd.neoleap.com.sa/neo-api/media/file/urpay_revamp_logo-3.webp",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of Neoleap",
+      "source": "https://www.urpay.com.sa/"
+    },
+    "logoAlternatives": [],
+    "website": "https://www.urpay.com.sa",
+    "sources": [
+      "https://www.alrajhibank.com.sa/ir25/business_in_perspective/subsidiaries/neoleap.html",
+      "https://www.argaam.com/en/article/articledetail/id/1502142"
+    ],
+    "notes": "Digital wallet of Neoleap, an Al Rajhi Bank subsidiary. The exact SAMA licence category for the wallet was not confirmed. The Arabic name is a transliteration; the brand is written in Latin letters."
+  },
+  {
+    "country": "SA",
+    "id": "tiqmo",
+    "nameArOfficial": "شركة المدفوعات الرقمية الذكية (تكمو)",
+    "nameArShort": "تكمو",
+    "nameEn": "tiqmo (Smart Digital Payment Company)",
+    "type": "payment-wallet",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "https://tiqmo.com/ returned empty content"
+    },
+    "logoAlternatives": [],
+    "website": "https://tiqmo.com",
+    "sources": [
+      "https://www.gccbusinessnews.com/saudi-central-bank-licenses-smart-digital-payment-company-tiqmo/",
+      "https://paymentexpert.com/2022/11/04/saudi-arabia-tiqmo-licence/"
+    ],
+    "notes": "SAMA licensed it for e-wallet services on 27 Oct 2022 (secondary sources). The Arabic company name is a translation, not verified."
+  },
+  {
+    "country": "SA",
+    "id": "hala",
+    "nameArOfficial": "شركة هلا للمدفوعات",
+    "nameArShort": "هلا",
+    "nameEn": "HALA Payments",
+    "type": "payment-wallet",
+    "status": "business-only",
+    "senderIds": [],
+    "logo": {
+      "url": "https://cdn.hala.com/website/images/logos/logo-white.svg",
+      "kind": "official-site",
+      "license": "All rights reserved; trademark of HALA",
+      "source": "https://hala.com/"
+    },
+    "logoAlternatives": [],
+    "website": "https://hala.com",
+    "sources": [
+      "https://hala.com/"
+    ],
+    "notes": "Its own site states it is licensed by SAMA. Mostly a merchant/SME product. The logo is the white variant.",
+    "verification": "List check: HALA is a business/SME platform (business accounts, payment acceptance) and not a consumer wallet. Its footer reads 'شركة هلا للمدفوعات' and says it is supervised by SAMA. Flag as business-only. Evidence: https://hala.com/"
+  },
+  {
+    "country": "SA",
+    "id": "barq",
+    "nameArOfficial": "شركة براق المالية",
+    "nameArShort": "برق",
+    "nameEn": "barq (Barraq Finance Company)",
+    "type": "payment-wallet",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "Header logo not exposed as an <img> on https://barq.com/"
+    },
+    "logoAlternatives": [],
+    "website": "https://barq.com",
+    "sources": [
+      "https://barq.com/",
+      "https://www.sama.gov.sa/en-US/News/Pages/news-1009.aspx"
+    ],
+    "notes": "SAMA licensed 'Barraq' for e-wallet services (per a SAMA news search snippet; the page itself returned 404 to the fetcher). The Arabic legal name is unverified."
+  },
+  {
+    "country": "SA",
+    "id": "mobily-pay",
+    "nameArOfficial": "شركة اتحاد الرقمية المالية (موبايلي باي)",
+    "nameArShort": "موبايلي باي",
+    "nameEn": "Mobily Pay",
+    "aliases": [
+      "موبايلي باي"
+    ],
+    "type": "payment-wallet",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "https://www.mobilypay.sa/ failed (self-signed certificate)"
+    },
+    "logoAlternatives": [
+      {
+        "url": "https://commons.wikimedia.org/wiki/File:Mobily_Logo.svg",
+        "kind": "wikimedia",
+        "license": "Public domain (text logo); trademarked. Parent Mobily brand, not the Mobily Pay mark"
+      }
+    ],
+    "website": null,
+    "sources": [
+      "https://www.argaam.com/en/article/articledetail/id/1547348",
+      "https://www.zawya.com/en/press-release/companies-news/mobily-pay-awarded-license-to-offer-digital-payments-and-e-wallet-services-bmfgtguw",
+      "https://www.alarabiya.net/aswaq/companies/2022/03/29/-المركزي-السعودي-يصرح-لـ3-شركات-تقنية-مالية-جديدة-"
+    ],
+    "notes": "SAMA licensed it for payments and e-wallet services (announced 29 Mar 2022). Official website not confirmed. Legal entity per the verifier: شركة اتحاد الرقمية المالية (English: Etihad Fintech Co.).",
+    "verification": "Name fix (nameArOfficial): 'موبايلي باي' -> 'شركة اتحاد الرقمية المالية (موبايلي باي)'. Verifier: شركة اتحاد الرقمية المالية (موبايلي باي). English legal name: Etihad Fintech Co. Evidence: https://www.alarabiya.net/aswaq/companies/2022/03/29/-المركزي-السعودي-يصرح-لـ3-شركات-تقنية-مالية-جديدة-"
+  },
+  {
+    "country": "SA",
+    "id": "alinmapay",
+    "nameArOfficial": "شركة التقنية المالية السعودية",
+    "nameArShort": "AlinmaPay",
+    "nameEn": "AlinmaPay (Saudi Financial Technology Company)",
+    "type": "payment-wallet",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "Not researched"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://www.sama.gov.sa/en-US/MediaCenter/News/Pages/news-613.aspx",
+      "https://www.alinma.com/en/about-the-bank/the-bank/news/2022/02/alinmapayisthefirstdigitalwalletthatbeencertifiedbysaudipaymentstobeaserviceproviderforsadadpayments"
+    ],
+    "notes": "Alinma Bank's consumer e-wallet. SAMA e-wallet licence 20 Sep 2020 (SAMA news). Alinma's own page describes it as a wallet that can be opened without a bank account, with digital cards and SADAD bill payments. The Arabic brand spelling, website, logo and sender ID were not researched; the brand is written in Latin letters here, as for urpay.",
+    "verification": "Added from the SA list check (missing consumer wallet). Two sources: SAMA news and Alinma Bank's own page."
+  },
+  {
+    "country": "SA",
+    "id": "tweeq",
+    "nameArOfficial": null,
+    "nameArShort": "Tweeq",
+    "nameEn": "Tweeq (Tweeq International Financial Company)",
+    "type": "payment-wallet",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "Not researched"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://fintechnews.ae/14301/saudi/tweeq-granted-sama-payments-license-to-offer-e-wallet-services/"
+    ],
+    "notes": "Consumer money app. SAMA e-wallet (e-money institution) licence announced 22 Nov 2022 (secondary source). Arabic legal name, website, logo and sender ID not researched.",
+    "verification": "Added from the SA list check (missing consumer wallet). One secondary source."
+  },
+  {
+    "country": "SA",
+    "id": "enjaz",
+    "nameArOfficial": null,
+    "nameArShort": "إنجاز",
+    "nameEn": "Enjaz (Enjaz Payment Services Company)",
+    "type": "remittance",
+    "status": "to-verify",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "Not researched"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://fintechnews.ae/14387/saudi/fintech-licence-overview-in-saudi-all-the-players/"
+    ],
+    "notes": "Bank Albilad's remittance brand (see bank-albilad), listed among SAMA's 2022 payment licensees (secondary source). Consumer remittances, used heavily by expatriates. Licence type not confirmed. The Arabic short name is the common spelling of the brand, not checked on an official page. Arabic legal name, website, logo and sender ID not researched.",
+    "verification": "Added from the SA list check (optional addition). The verifier says the licence type is not confirmed, hence status to-verify."
+  },
+  {
+    "country": "SA",
+    "id": "friendi-pay",
+    "nameArOfficial": null,
+    "nameArShort": "FRiENDi PAY",
+    "nameEn": "FRiENDi PAY (Beyond One Saudi for Telecommunication)",
+    "type": "remittance",
+    "status": "bank-agent",
+    "senderIds": [],
+    "logo": {
+      "url": null,
+      "kind": "official-site",
+      "license": "n/a",
+      "source": "Not researched"
+    },
+    "logoAlternatives": [],
+    "website": null,
+    "sources": [
+      "https://rewards.saib.com.sa/en/friendi-pay"
+    ],
+    "notes": "Consumer international money-transfer app with a funded account. Operates as an agent under SAMA agent-banking rules, listed under the Saudi Investment Bank (see saudi-investment-bank); not a standalone licensed wallet. Optional entry. Arabic name, website, logo and sender ID not researched.",
+    "verification": "Added from the SA list check (optional addition). The verifier marks it optional because it is an agent of SAIB, not a standalone licensed wallet, hence status bank-agent."
+  }
+]
