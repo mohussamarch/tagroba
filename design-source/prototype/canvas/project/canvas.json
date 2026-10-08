@@ -225,6 +225,30 @@
       "w": 48,
       "x": 1200,
       "y": 5284
+    },
+    "Calendar.dc.html": {
+      "is_interactive": true,
+      "title": "التقويم · Calendar (من «التقويم» في القادم)",
+      "x": 2430,
+      "y": 6100,
+      "w": 390,
+      "h": 844
+    },
+    "PeriodPicker.dc.html": {
+      "is_interactive": true,
+      "title": "اختيار الشهر · PeriodPicker (من «أكتوبر» في العمليات)",
+      "x": 1960,
+      "y": 6100,
+      "w": 390,
+      "h": 844
+    },
+    "CalendarGrid.dc.html": {
+      "is_interactive": true,
+      "title": "شبكة الشهر · CalendarGrid (قطعة جوه التقويم)",
+      "x": 1490,
+      "y": 6100,
+      "w": 350,
+      "h": 480
     }
   },
   "createdOnFiles": {
@@ -284,6 +308,14 @@
       "w": 240,
       "x": 0,
       "y": 4654
+    },
+    "cal": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "التقويم · اختيار الشهر",
+      "w": 240,
+      "x": 0,
+      "y": 5800
     }
   },
   "order": [
@@ -314,7 +346,10 @@
     "Transfers.dc.html",
     "UpcomingStrip.dc.html",
     "HeroBanks.dc.html",
-    "BellPopover.dc.html"
+    "BellPopover.dc.html",
+    "Calendar.dc.html",
+    "PeriodPicker.dc.html",
+    "CalendarGrid.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

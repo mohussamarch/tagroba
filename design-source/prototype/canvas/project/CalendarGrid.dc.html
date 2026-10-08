@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>شبكة التقويم — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.k-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.k-press:active{transform:scale(.97)}
+.k-fade{animation:k-fade 260ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes k-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.k-press{transition:none}.k-press:active{transform:none}.k-fade{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; box-sizing: border-box; border-radius: 24px; padding: 10px 6px 14px; display: flex; flex-direction: column; gap: 8px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+  <div style="display: flex; align-items: center; gap: 6px; padding: 0 4px">
+    <button type="button" class="k-press" onClick="{{goPrev}}" disabled="{{noPrev}}" aria-label="{{prevLabel}}" style="{{prevStyle}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+    <span style="flex: 1 1 auto; display: flex; align-items: center; justify-content: center; gap: 8px">
+      <span aria-live="polite" style="font-size: 17px; font-weight: 700">{{monthTitle}}</span>
+      <sc-if value="{{showToday}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="k-press" onClick="{{goToday}}" style="height: 32px; padding: 0 10px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: #DCEBD6">{{todayLabel}}</button>
+      </sc-if>
+    </span>
+    <button type="button" class="k-press" onClick="{{goNext}}" disabled="{{noNext}}" aria-label="{{nextLabel}}" style="{{nextStyle}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+  </div>
+
+  <div class="k-fade" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px">
+    <sc-for list="{{heads}}" as="h" hint-placeholder-count="7">
+      <span style="text-align: center; font-size: 11px; color: #637570; padding-bottom: 2px">{{h}}</span>
+    </sc-for>
+    <sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+      <sc-if value="{{c.blank}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true"></span></sc-if>
+      <sc-if value="{{c.real}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="k-press" onClick="{{c.pick}}" aria-pressed="{{c.on}}" aria-label="{{c.aria}}" style="{{c.style}}">
+          <span style="{{c.numStyle}}">{{c.num}}</span>
+          <sc-for list="{{c.tags}}" as="t" hint-placeholder-count="1">
+            <span style="{{t.style}}">{{t.label}}</span>
+          </sc-for>
+        </button>
+      </sc-if>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{hasLegend}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 2px 6px 0">
+      <sc-for list="{{legend}}" as="l" hint-placeholder-count="5">
+        <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: #637570"><span style="{{l.dot}}"></span>{{l.label}}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"month":{"editor":"text","default":"2026-10","section":"الحالة"},"today":{"editor":"text","default":"2026-10-07","section":"الحالة"},"marks":{"editor":"text","default":"","section":"الحالة"},"selected":{"editor":"text","default":"","section":"الحالة"},"$preview":{"width":350,"height":480}}'>
+class Component extends DCLogic {
+  // قطعة مشتركة: شبكة شهر ميلادي (السبت أول الأسبوع) للتقويم. المواعيد بتيجي جاهزة من الشاشة في `marks`:
+  // «اليوم:النوع:الاسم القصير:متأخر» مفصولة بـ«|» · «none» = مفيش مواعيد. الأنواع: sub · inst · rosca · debt · event · pay
+  dn(iso) { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; }
+  pick(d) { if (typeof this.props.onPick === 'function') this.props.onPick(d); }
+  move(v) { if (typeof this.props.onMonth === 'function') this.props.onMonth(v); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const yr = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const ym = /^\d{4}-\d{2}$/.test(this.props.month || '') ? this.props.month : '2026-10';
+    const today = /^\d{4}-\d{2}-\d{2}$/.test(this.props.today || '') ? this.props.today : '2026-10-07';
+    const [y, m] = ym.split('-').map(Number);
+    // بس لما اللوحة تتعرض لوحدها: عينة ثابتة من مواعيد أكتوبر (الشاشة نفسها دايمًا بتبعت `marks`)
+    const raw = this.props.marks || '3:sub:كهرباء:1|9:sub:النادي:0|14:event:ليلى:0|15:debt:نورة:0|15:sub:إنترنت:0|18:event:زواج:0|20:sub:تخزين:0|24:event:تخرّج:0|27:inst:السيارة:0|28:pay:الراتب:0';
+    const marks = raw === 'none' ? [] : raw.split('|').map((x) => x.split(':')).map(([d, k, s, late]) => ({ d: Number(d), k, s, late: late === '1' }));
+    const T = {
+      sub: ['#956000', 'rgba(149,96,0,0.12)', eg ? 'اشتراكات وفواتير' : 'اشتراكات وفواتير'],
+      inst: ['#4D747C', 'rgba(77,116,124,0.14)', 'أقساط'],
+      rosca: ['#27785B', 'rgba(39,120,91,0.13)', 'جمعيات'],
+      debt: ['#2469BA', 'rgba(36,105,186,0.12)', 'ديون'],
+      event: ['#A55060', 'rgba(165,80,96,0.12)', eg ? 'أحداث ومناسبات' : 'أحداث ومناسبات'],
+      pay: ['#FFFFFF', '#13764D', eg ? 'المرتب' : 'الراتب'],
+      late: ['#BE3D48', 'rgba(190,61,72,0.12)', eg ? 'فات ميعاده' : 'فات موعده']
+    };
+    const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const lead = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 1) % 7; // السبت = ٠
+    const tDay = this.dn(today);
+    const sel = Number(this.props.selected || 0);
+    const cells = [];
+    const blank = () => ({ blank: true, real: false, num: '', tags: [{ label: '', style: 'display: none' }], on: 'false', pick: () => {}, aria: '', numStyle: '', style: '' });
+    for (let i = 0; i < lead; i++) cells.push(blank());
+    for (let d = 1; d <= days; d++) {
+      const iso = ym + '-' + String(d).padStart(2, '0');
+      const diff = this.dn(iso) - tDay;
+      const mine = marks.filter((x) => x.d === d);
+      const shown = mine.length > 2 ? mine.slice(0, 1) : mine;
+      const tags = shown.map((x) => {
+        const c = T[x.late ? 'late' : x.k] || T.sub;
+        return { label: x.s, style: 'display: block; box-sizing: border-box; width: 100%; padding: 0 2px; border-radius: 6px; font-size: 10px; line-height: 15px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ' + c[0] + '; background: ' + c[1] + (diff < 0 && !x.late ? '; opacity: 0.55' : '') };
+      });
+      if (mine.length > 2) tags.push({ label: '+' + n(mine.length - 1), style: 'display: block; font-size: 10px; line-height: 15px; font-weight: 700; text-align: center; color: #637570; background: rgba(25,61,51,0.06); border-radius: 6px' });
+      const isToday = diff === 0, on = sel === d;
+      cells.push({
+        blank: false, real: true, num: n(d), tags, on: on ? 'true' : 'false',
+        pick: () => this.pick(d),
+        aria: n(d) + ' ' + MN[m - 1] + (isToday ? (eg ? '، النهارده' : '، اليوم') : '') + (mine.length ? '، ' + mine.map((x) => x.s).join('، ') : (eg ? '، مفيش مواعيد' : '، لا مواعيد')),
+        numStyle: 'align-self: center; min-width: 22px; height: 22px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; ' + (isToday ? 'color: #FFFFFF; background: #08634F' : diff < 0 ? 'color: #9AA8A3' : 'color: #193D33'),
+        style: 'min-width: 0; min-height: 60px; border: 0; padding: 4px 2px; border-radius: 12px; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: stretch; gap: 2px; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : isToday ? 'background: rgba(8,99,79,0.07)' : 'background: rgba(25,61,51,0.03)')
+      });
+    }
+    while (cells.length % 7) cells.push(blank());
+    const kinds = Object.keys(T).filter((key) => marks.some((x) => (key === 'late' ? x.late : x.k === key && !x.late)));
+    const tYm = today.slice(0, 7);
+    const noPrev = !!this.props.noPrev && this.props.noPrev !== '0', noNext = !!this.props.noNext && this.props.noNext !== '0';
+    const arrow = (off) => 'width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; font: inherit; cursor: ' + (off ? 'default; opacity: 0.35' : 'pointer') + '; color: #193D33; background: rgba(25,61,51,0.05)';
+    return {
+      monthTitle: MN[m - 1] + ' ' + yr(y),
+      showToday: ym !== tYm, todayLabel: eg ? 'النهارده' : 'اليوم', goToday: () => this.move('today'),
+      prevLabel: eg ? 'الشهر اللي فات' : 'الشهر السابق', nextLabel: eg ? 'الشهر الجاي' : 'الشهر التالي',
+      noPrev, noNext, prevStyle: arrow(noPrev), nextStyle: arrow(noNext),
+      goPrev: () => { if (!noPrev) this.move(-1); }, goNext: () => { if (!noNext) this.move(1); },
+      heads: eg ? ['سبت', 'حد', 'اتنين', 'تلات', 'أربع', 'خميس', 'جمعة'] : ['سبت', 'أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة'],
+      cells,
+      hasLegend: kinds.length > 0,
+      legend: kinds.map((key) => ({ label: T[key][2], dot: 'width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: ' + (key === 'pay' ? T.pay[1] : T[key][0]) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

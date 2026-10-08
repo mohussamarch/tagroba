@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اختيار الشهر — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}.m-press:active{transform:scale(.97)}
+.p-fade{animation:p-fade 260ms cubic-bezier(.2,.7,.3,1) both}@keyframes p-fade{from{opacity:0}to{opacity:1}}
+.p-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.t-toast{animation:t-toast 2600ms cubic-bezier(.2,.7,.3,1) both}@keyframes t-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.p-bar{transition:none}.m-press:active{transform:none}.p-fade{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Operations.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+    <span style="font-size: 13px; color: #637570">{{intro}}</span>
+
+    <div style="border-radius: 26px; padding: 14px; display: flex; flex-direction: column; gap: 10px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button type="button" class="m-press" onClick="{{stepPrev}}" disabled="{{noPrev}}" aria-label="{{prevLabel}}" style="{{prevStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <span aria-live="polite" class="p-fade" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px">
+          <span style="font-size: 24px; font-weight: 700">{{selTitle}}</span>
+          <span style="font-size: 13px; color: #DCEBD6">{{selRange}}</span>
+        </span>
+        <button type="button" class="m-press" onClick="{{stepNext}}" disabled="{{noNext}}" aria-label="{{nextLabel}}" style="{{nextStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+      </div>
+      <span style="display: flex; justify-content: center"><span style="{{chipStyle}}">{{chip}}</span></span>
+      <sc-if value="{{isCurrent}}" hint-placeholder-val="{{ true }}">
+        <span role="progressbar" aria-label="{{progressLabel}}" aria-valuenow="{{dayNow}}" aria-valuemin="1" aria-valuemax="{{dayMax}}" style="height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="p-bar" style="{{barStyle}}"></span></span>
+      </sc-if>
+      <span style="font-size: 12px; color: #DCEBD6; text-align: center">{{selNote}}</span>
+    </div>
+
+    <sc-if value="{{notCurrent}}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="m-press" onClick="{{backToNow}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.2)">{{backLabel}}</button>
+    </sc-if>
+
+    <div style="border-radius: 24px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button type="button" class="m-press" onClick="{{yearPrev}}" disabled="{{noYearPrev}}" aria-label="{{yearPrevLabel}}" style="{{yearPrevStyle}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <h2 aria-live="polite" style="flex: 1 1 auto; margin: 0; text-align: center; font-size: 18px; font-weight: 700">{{boardTitle}}</h2>
+        <button type="button" class="m-press" onClick="{{yearNext}}" disabled="{{noYearNext}}" aria-label="{{yearNextLabel}}" style="{{yearNextStyle}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+      </div>
+      <div class="p-fade" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{tiles}}" as="t" hint-placeholder-count="12">
+          <button type="button" class="m-press" onClick="{{t.pick}}" disabled="{{t.off}}" aria-pressed="{{t.on}}" aria-label="{{t.aria}}" style="{{t.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 6px">
+              <span style="font-size: 16px; font-weight: 700">{{t.name}}</span>
+              <sc-if value="{{t.isNow}}" hint-placeholder-val="{{ false }}"><span style="{{t.nowStyle}}">{{nowLabel}}</span></sc-if>
+            </span>
+            <span style="{{t.rangeStyle}}">{{t.range}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #637570; text-align: center">{{boardNote}}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="t-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// الشهر المالي بيبدأ يوم ٢٨ (يوم الراتب) ويخلص يوم ٢٧ من الشهر اللي بعده، واسمه اسم الشهر اللي بيخلص فيه (زي «أكتوبر» في العمليات)
+// النهارده الأربعاء ٧ أكتوبر ٢٠٢٦ ⇒ الشهر الحالي «أكتوبر ٢٠٢٦» = ٢٨ سبتمبر – ٢٧ أكتوبر · ما بيروحش للمستقبل (§31) · بياناتك من يناير ٢٠٢٥ (مخترعة)
+const PAYDAY = 28, NOW = { y: 2026, m: 10 }, FIRST = { y: 2025, m: 1 }, TODAY = [2026, 10, 7];
+const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: { y: NOW.y, m: NOW.m }, year: NOW.y, toast: '' };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.forEach(clearTimeout); this.timers = [setTimeout(() => this.setState({ toast: '' }), 2700)]; this.setState({ toast: msg }); }
+  idx(p) { return p.y * 12 + p.m - 1; }
+  at(i) { return { y: (i - (i % 12)) / 12, m: (i % 12) + 1 }; }
+  dn(y, m, d) { return Date.UTC(y, m - 1, d) / 86400000; } // رقم اليوم (أيام مش فلوس)
+  // الفترة اللي اسمها (y, m): من ٢٨ الشهر اللي قبله لحد ٢٧ الشهر ده (يوم ٢٨ موجود في كل شهر، فمفيش تقييد بآخر الشهر)
+  span(p) {
+    const s = this.at(this.idx(p) - 1);
+    return { s, days: this.dn(p.y, p.m, PAYDAY - 1) - this.dn(s.y, s.m, PAYDAY) + 1 };
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const st = this.state, n = (x) => x.toLocaleString('ar-EG'), yr = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const dw = (d) => n(d) + (d <= 10 ? ' أيام' : eg ? ' يوم' : ' يومًا');
+    const range = (p, withYear) => {
+      const { s } = this.span(p);
+      return n(PAYDAY) + ' ' + MN[s.m - 1] + (s.y !== p.y ? ' ' + yr(s.y) : '') + ' – ' + n(PAYDAY - 1) + ' ' + MN[p.m - 1] + (withYear ? ' ' + yr(p.y) : '');
+    };
+    const name = (p) => MN[p.m - 1] + ' ' + yr(p.y);
+    const iNow = this.idx(NOW), iFirst = this.idx(FIRST), iSel = this.idx(st.sel);
+    const isCur = iSel === iNow;
+    const choose = (i, how) => {
+      if (i < iFirst || i > iNow) return;
+      const p = this.at(i);
+      this.setState({ sel: p, year: p.y });
+      const s = this.span(p).s, words = (eg ? 'من ' : 'من ') + n(PAYDAY) + ' ' + MN[s.m - 1] + (eg ? ' لحد ' : ' إلى ') + n(PAYDAY - 1) + ' ' + MN[p.m - 1];
+      this.say((how === 'back' ? (eg ? 'رجعت للشهر الحالي ' : 'عدت إلى الشهر الحالي ') + MN[p.m - 1] : (eg ? 'اخترت ' : 'اخترت ') + name(p)) + ' — ' + words);
+    };
+    const sp = this.span(st.sel);
+    const dayNow = this.dn(TODAY[0], TODAY[1], TODAY[2]) - this.dn(sp.s.y, sp.s.m, PAYDAY) + 1;
+    const left = sp.days - dayNow + 1;
+    const pct = isCur ? (dayNow * 100 - ((dayNow * 100) % sp.days)) / sp.days : 0;
+    const glass = (off) => 'width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; font: inherit; color: #FFFFFF; background: rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22); cursor: ' + (off ? 'default; opacity: 0.35' : 'pointer');
+    const soft = (off) => 'width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; font: inherit; color: #193D33; background: rgba(25,61,51,0.05); cursor: ' + (off ? 'default; opacity: 0.35' : 'pointer');
+    const tiles = [];
+    for (let m = 1; m <= 12; m++) {
+      const p = { y: st.year, m }, i = this.idx(p);
+      const off = i > iNow || i < iFirst, on = i === iSel, now = i === iNow;
+      tiles.push({
+        name: MN[m - 1], range: i > iNow ? (eg ? 'لسه ما بدأش' : 'لم يبدأ بعد') : i < iFirst ? (eg ? 'قبل بياناتك' : 'قبل بداية بياناتك') : range(p, false),
+        off, on: on ? 'true' : 'false', isNow: now,
+        pick: () => choose(i, 'pick'),
+        aria: name(p) + '، ' + (off ? (i > iNow ? (eg ? 'لسه ما بدأش' : 'لم يبدأ بعد') : (eg ? 'قبل بياناتك' : 'قبل بداية بياناتك')) : range(p, false)) + (now ? (eg ? '، الشهر الحالي' : '، الشهر الحالي') : ''),
+        style: 'min-height: 64px; box-sizing: border-box; border: 0; border-radius: 16px; padding: 10px 12px; font: inherit; text-align: right; display: flex; flex-direction: column; justify-content: center; gap: 2px; ' + (on ? 'color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)' : off ? 'color: #193D33; cursor: default; opacity: 0.45; background: rgba(25,61,51,0.04)' : 'color: #193D33; cursor: pointer; background: rgba(25,61,51,0.04)' + (now ? '; box-shadow: inset 0 0 0 1.5px #08634F' : '')),
+        rangeStyle: 'font-size: 12px; line-height: 1.5; color: ' + (on ? '#DCEBD6' : '#637570'),
+        nowStyle: 'font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; flex-shrink: 0; ' + (on ? 'color: #FFFFFF; background: rgba(255,255,255,0.18)' : 'color: #08634F; background: #DCEBD6')
+      });
+    }
+    const firstYear = st.year <= FIRST.y, lastYear = st.year >= NOW.y;
+    return {
+      title: eg ? 'اختار الشهر' : 'اختر الشهر',
+      intro: eg ? 'شهرك بيبدأ يوم ٢٨ (يوم المرتب) ويخلص يوم ٢٧ من الشهر اللي بعده.' : 'يبدأ شهرك يوم ٢٨ (يوم الراتب) وينتهي يوم ٢٧ من الشهر التالي.',
+      selTitle: name(st.sel), selRange: range(st.sel, true),
+      chip: isCur ? (eg ? 'الشهر الحالي' : 'الشهر الحالي') : (eg ? 'شهر فات' : 'شهر سابق'),
+      chipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 12px; ' + (isCur ? 'color: #064B40; background: #A6DEC1' : 'color: #FFFFFF; background: rgba(255,255,255,0.16)'),
+      isCurrent: isCur, notCurrent: !isCur,
+      dayNow: String(dayNow), dayMax: String(sp.days),
+      progressLabel: (eg ? 'اليوم ' : 'اليوم ') + n(dayNow) + (eg ? ' من ' : ' من ') + n(sp.days),
+      barStyle: 'display: block; height: 6px; border-radius: 3px; width: ' + pct + '%; background: #A6DEC1',
+      selNote: isCur ? (eg ? 'النهارده يوم ' : 'اليوم ') + n(dayNow) + (eg ? ' من ' : ' من ') + n(sp.days) + (eg ? '، فاضل ' : '، بقي ') + dw(left) + (eg ? ' على المرتب' : ' على الراتب') : (eg ? 'كان ' : 'كان ') + dw(sp.days),
+      noPrev: iSel <= iFirst, noNext: iSel >= iNow,
+      prevStyle: glass(iSel <= iFirst), nextStyle: glass(iSel >= iNow),
+      prevLabel: eg ? 'الشهر اللي فات' : 'الشهر السابق', nextLabel: eg ? 'الشهر اللي بعده' : 'الشهر التالي',
+      stepPrev: () => choose(iSel - 1, 'step'), stepNext: () => choose(iSel + 1, 'step'),
+      backLabel: eg ? 'ارجع للشهر الحالي' : 'العودة إلى الشهر الحالي',
+      backToNow: () => choose(iNow, 'back'),
+      boardTitle: yr(st.year),
+      noYearPrev: firstYear, noYearNext: lastYear, yearPrevStyle: soft(firstYear), yearNextStyle: soft(lastYear),
+      yearPrevLabel: eg ? 'السنة اللي فاتت' : 'السنة السابقة', yearNextLabel: eg ? 'السنة اللي بعدها' : 'السنة التالية',
+      yearPrev: () => { if (!firstYear) this.setState({ year: st.year - 1 }); },
+      yearNext: () => { if (!lastYear) this.setState({ year: st.year + 1 }); },
+      tiles, nowLabel: eg ? 'الحالي' : 'الحالي',
+      boardNote: firstYear ? (eg ? 'بياناتك بتبدأ من يناير ' : 'تبدأ بياناتك من يناير ') + yr(FIRST.y) + '.' : lastYear ? (eg ? 'الشهور الجاية بتفتح لما تبدأ.' : 'الأشهر القادمة تُفتح عند بدايتها.') : '',
+      hasToast: !!st.toast, toast: st.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

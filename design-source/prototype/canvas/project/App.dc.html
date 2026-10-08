@@ -22,60 +22,26 @@ body{margin:0}
 </style>
 </helmet>
 <div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EFF3ED">
-  <sc-if value="{{s.Main}}" hint-placeholder-val="{{ true }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Main" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Operations}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Operations" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.People}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="People" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Investment}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Investment" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.More}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="More" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.PersonProfile}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="PersonProfile" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.OwedToYou}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OwedToYou" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.YouOwe}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="YouOwe" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Roscas}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Roscas" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Installments}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Installments" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Subscriptions}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Subscriptions" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Notifications}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Notifications" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.NotificationSettings}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="NotificationSettings" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.BankSms}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="BankSms" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.OperationDetail}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationDetail" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.OperationFilters}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationFilters" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.ReviewQueue}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="ReviewQueue" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
-  <sc-if value="{{s.Transfers}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Transfers" space="{{space}}" hint-size="390px,844px"></dc-import></div>
-  </sc-if>
+  <sc-if value="{{s.Main}}" hint-placeholder-val="{{ true }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Main" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Operations}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Operations" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.People}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="People" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Investment}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Investment" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.More}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="More" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.PersonProfile}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="PersonProfile" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.OwedToYou}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OwedToYou" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.YouOwe}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="YouOwe" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Roscas}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Roscas" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Installments}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Installments" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Subscriptions}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Subscriptions" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Notifications}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Notifications" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.NotificationSettings}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="NotificationSettings" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.BankSms}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="BankSms" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.OperationDetail}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationDetail" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.OperationFilters}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationFilters" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.ReviewQueue}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="ReviewQueue" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Transfers}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Transfers" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Calendar}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Calendar" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.PeriodPicker}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="PeriodPicker" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
@@ -85,7 +51,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.TABS = ['Main', 'Operations', 'People', 'Investment'];
-    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail', 'OperationFilters', 'ReviewQueue', 'Transfers']);
+    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail', 'OperationFilters', 'ReviewQueue', 'Transfers', 'Calendar', 'PeriodPicker']);
     this.state = { screen: 'Main', stack: [], anim: 'a-tab', n: 0 };
     this.onClick = (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
