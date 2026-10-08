@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تحديد الأعمدة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.c-x{scrollbar-width:none}.c-x::-webkit-scrollbar{display:none}.c-x>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.n-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}
+.n-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+.c-in{animation:c-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes c-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.c-toast{animation:c-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes c-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press,.n-track,.n-knob{transition:none}.m-press:active{transform:none}.c-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 132px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="StatementImport.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+    <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700; overflow-wrap: anywhere">{{fileName}}</span><span style="font-size: 13px; color: #637570">{{intro}}</span></span>
+
+    <sc-if value="{{bare}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="border-radius: 18px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.7; background: #FBF0DD; color: #6B4600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#956000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span>{{bareNote}}</span></div>
+    </sc-if>
+
+    <div style="border-radius: 22px; padding: 14px 16px 10px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 700">{{tableTitle}}</span><span style="font-size: 12px; color: #637570">{{tableNote}}</span></span>
+      <div class="c-x" ref="{{setX}}" role="group" aria-label="{{tableTitle}}" style="display: flex; gap: 4px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 4px">
+        <sc-for list="{{cols}}" as="cl" hint-placeholder-count="6">
+          <button type="button" aria-pressed="{{cl.on}}" aria-label="{{cl.aria}}" onClick="{{cl.pick}}" class="m-press" style="{{cl.style}}">
+            <span style="{{cl.badgeStyle}}">{{cl.badge}}</span>
+            <span dir="auto" style="{{cl.headStyle}}">{{cl.head}}</span>
+            <sc-for list="{{cl.cells}}" as="cc" hint-placeholder-count="4"><span dir="auto" style="{{cc.style}}">{{cc.text}}</span></sc-for>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{selTitle}}</span><span style="font-size: 12px; color: #637570">{{selSample}} <span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums">{{selFirst}}</span></span></span>
+      <div role="radiogroup" aria-label="{{selTitle}}" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{roles}}" as="ro" hint-placeholder-count="8">
+          <button type="button" role="radio" aria-checked="{{ro.on}}" class="m-press" onClick="{{ro.pick}}" style="{{ro.style}}">{{ro.label}}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{hasSug}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #956000">{{sugLine}}</span></sc-if>
+      <sc-if value="{{hasColErr}}" hint-placeholder-val="{{ false }}"><span role="alert" class="c-in" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{colErr}}</span></sc-if>
+    </div>
+
+    <sc-if value="{{showDate}}" hint-placeholder-val="{{ false }}">
+      <div class="c-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 14px; font-weight: 700">{{dateTitle}}</span>
+        <sc-if value="{{dateAmbig}}" hint-placeholder-val="{{ false }}">
+          <div role="radiogroup" aria-label="{{dateTitle}}" style="display: flex; gap: 6px">
+            <sc-for list="{{fmts}}" as="fm" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{fm.on}}" class="m-press" onClick="{{fm.pick}}" style="{{fm.style}}">{{fm.label}}</button></sc-for>
+          </div>
+        </sc-if>
+        <span role="status" style="font-size: 13px; line-height: 1.7; color: #193D33">{{dateNote}}</span>
+      </div>
+    </sc-if>
+
+    <div style="border-radius: 22px; padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="font-size: 14px; font-weight: 700">{{pvTitle}}</span>
+      <div style="border-radius: 16px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: rgba(25,61,51,0.04)">
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span dir="auto" style="{{pvNameStyle}}">{{pvName}}</span><span style="font-size: 12px; color: #637570">{{pvDate}}</span></span>
+        <span dir="ltr" style="{{pvAmtStyle}}">{{pvAmt}}</span>
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{checks}}" as="ck" hint-placeholder-count="4">
+          <div style="display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-top: 1px solid rgba(204,216,204,0.55)">
+            <span aria-hidden="true" style="{{ck.dot}}">
+              <sc-if value="{{ck.isOk}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+              <sc-if value="{{ck.isBad}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></sc-if>
+              <sc-if value="{{ck.isWarn}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v6"></path><path d="M12 17h.01"></path></svg></sc-if>
+            </span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{ck.label}}</span><span style="{{ck.subStyle}}">{{ck.sub}}</span></span>
+          </div>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; line-height: 1.7; color: #637570; padding-bottom: 6px">{{balanceWhy}}</span>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="font-size: 14px; font-weight: 700">{{walletQ}}</span>
+      <div role="radiogroup" aria-label="{{walletQ}}" style="display: flex; gap: 6px; flex-wrap: wrap">
+        <sc-for list="{{wallets}}" as="wl" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{wl.on}}" class="m-press" onClick="{{wl.pick}}" style="{{wl.style}}">{{wl.name}}</button></sc-for>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding-top: 8px; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{tplLabel}}</span><span style="font-size: 12px; color: #637570">{{tplSub}}</span></span>
+        <button type="button" role="switch" aria-checked="{{tplOn}}" aria-label="{{tplLabel}}" onClick="{{toggleTpl}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="n-track" style="{{track}}"><span class="n-knob" style="{{knob}}"></span></span></button>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(0deg, rgba(239,243,237,0.97) 60%, rgba(239,243,237,0.0)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)">
+    <sc-if value="{{ready}}" hint-placeholder-val="{{ false }}">
+      <a href="ImportReview.dc.html" data-keep="{{keep}}" class="m-press" style="height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{goLabel}}</a>
+    </sc-if>
+    <sc-if value="{{notReady}}" hint-placeholder-val="{{ true }}">
+      <button type="button" disabled="{{true}}" aria-describedby="sc-why" style="height: 52px; border: 0; border-radius: 16px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); opacity: 0.45; cursor: default">{{goLabel}}</button>
+    </sc-if>
+    <span id="sc-why" style="font-size: 12px; color: #637570; text-align: center">{{barNote}}</span>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 118px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="c-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","ملف غير مفهوم"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// تحديد أعمدة كشف CSV يدويًا (spec/05: «قدّم تعيين أعمدة … لا تخمّن الأعمدة المالية بصمت»). بيتفتح من «حدّد الأعمدة يدويًا» في StatementImport
+// الأعمدة غير المالية (التاريخ · الوصف · المرجع) بتتعرف من العنوان لو القيم مناسبة؛ المالية مقترحة بس لحد ما يختارها بنفسه
+// تسلسل الرصيد بيتفحص على الأسطر المعروضة بالوحدة الصغرى: الرصيد = اللي قبله − المدين + الدائن (أو + المبلغ بإشارة)
+const AUTO = { 'التاريخ': 'date', 'date': 'date', 'الوصف': 'desc', 'description': 'desc', 'المرجع': 'ref', 'ref no.': 'ref' };
+const SUG = { 'مدين': 'debit', 'debit': 'debit', 'دائن': 'credit', 'credit': 'credit', 'الرصيد': 'balance', 'balance': 'balance', 'المبلغ': 'signed', 'amount': 'signed', 'value': 'signed' };
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { src: null, toast: '' }; this.timers = []; this.setX = (el) => { this.x = el; }; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  componentDidMount() { this.reveal(); }
+  componentDidUpdate() { this.reveal(); }
+  reveal() { // العمود المختار يفضل باين في الجدول (بيتحرك لوحده للعمود اللي بعده)
+    const el = this.x && this.x.querySelector ? this.x.querySelector('[aria-pressed="true"]') : null;
+    if (!el || this.lastSel === el) return;
+    this.lastSel = el;
+    const b = el.getBoundingClientRect(), c = this.x.getBoundingClientRect();
+    if (b.left < c.left) this.x.scrollLeft -= c.left - b.left + 16; else if (b.right > c.right) this.x.scrollLeft += b.right - c.right + 16;
+  }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  key() { return (this.props.state ?? 'عادي') + '|' + (this.props.space ?? 'السعودية'); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  // خانة مبلغ من الملف ⇒ وحدة صغرى بإشارتها، أو null لو مش مبلغ
+  money(t) { const s = String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim(); if (!/^[-−+]?[\d,]+(\.\d{1,2})?$/.test(s)) return null; const v = this.toMinor(s); return /^[-−]/.test(s) ? -v : v; }
+  fits(role, cells) {
+    if (role === 'date') return cells.every((c) => /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(c));
+    if (role === 'debit' || role === 'credit') return cells.every((c) => c === '' || this.money(c) != null);
+    if (role === 'signed' || role === 'balance') return cells.every((c) => this.money(c) != null);
+    return true;
+  }
+  // ملفات مخترعة · المبالغ بالوحدة الصغرى وبتتكتب نص زي ما البنك بيصدّرها
+  file() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', k = eg ? 3 : 1;
+    const txt = (m) => m == null ? '' : (m < 0 ? '-' : '') + this.fmt(m * k);
+    if ((this.props.state ?? 'عادي') === 'ملف غير مفهوم') {
+      const R = [['02/09/2026', 'شراء - صيدلية الشفاء', -6750, 461250, 'FT26090204'], ['03/09/2026', 'POS CAFE ALMARSA', -2300, 458950, 'FT26090311'], ['05/09/2026', 'حوالة واردة - يوسف', 50000, 508950, 'FT26090519'], ['08/09/2026', 'POS سوبرماركت الحي', -31840, 477110, 'FT26090826']];
+      return { name: 'حركات-سبتمبر.csv', lines: 38, heads: null, rows: R.map((r) => [r[0], r[1], txt(r[2]), eg ? 'EGP' : 'SAR', txt(r[3]), r[4]]) };
+    }
+    const R = [['02/09/2026', 'POS سوبرماركت الحي', 31840, null, 451175, 'FT26090211'], ['03/09/2026', 'POS CAFE ALMARSA', 2300, null, 448875, 'FT26090314'], ['05/09/2026', 'حوالة واردة - يوسف', null, 50000, 498875, 'FT26090522'], ['14/09/2026', eg ? 'بنزينة الطريق' : 'محطة وقود', 9000, null, 489875, 'FT26091407']];
+    return { name: 'تصدير-البنك.csv', lines: 42, heads: ['التاريخ', 'Description', 'مدين', 'دائن', 'Balance', 'Ref No.'], rows: R.map((r) => [r[0], r[1], txt(r[2]), txt(r[3]), txt(r[4]), r[5]]) };
+  }
+  init(f) {
+    const map = f.rows[0].map((x, i) => { const r = f.heads ? AUTO[f.heads[i].toLowerCase()] : null; return r && this.fits(r, f.rows.map((row) => row[i])) ? r : null; });
+    const sel = map.findIndex((r) => r == null);
+    return { map, sel: sel < 0 ? 0 : sel, fmt: null, wallet: null, tpl: true };
+  }
+  cur() { return this.state.src === this.key() ? this.state : Object.assign({}, this.state, this.init(this.file())); }
+  go(patch) { this.setState(Object.assign({}, this.cur(), { src: this.key() }, patch)); }
+  assign(i, role, names, eg) {
+    const s = this.cur(), map = s.map.slice();
+    let moved = -1;
+    if (role !== 'skip') map.forEach((r, j) => { if (j !== i && r === role) { map[j] = null; moved = j; } });
+    const fmt = role === 'date' || map[i] === 'date' ? null : s.fmt;
+    map[i] = role;
+    const next = map.findIndex((r) => r == null);
+    this.go({ map, sel: next >= 0 ? next : i, fmt });
+    if (moved >= 0) this.say((eg ? '«' + names[role] + '» اتنقل من العمود ' : 'نُقل «' + names[role] + '» من العمود ') + String(moved + 1).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]));
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', f = this.file(), s = this.cur();
+    const bare = !f.heads, cur = eg ? 'ج.م' : 'ر.س';
+    const ar = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : ar(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const LINES = eg ? ['سطر واحد', 'سطرين', 'سطور', 'سطر'] : ['سطر واحد', 'سطران', 'أسطر', 'سطرًا'];
+    const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const RL = [['date', 'التاريخ'], ['desc', 'الوصف'], ['debit', 'مدين'], ['credit', 'دائن'], ['signed', 'المبلغ (بإشارة)'], ['balance', 'الرصيد'], ['ref', 'المرجع'], ['skip', 'تجاهل']];
+    const names = Object.fromEntries(RL);
+    const colWord = (i) => (eg ? 'العمود ' : 'العمود ') + ar(i + 1);
+    const cells = (i) => f.rows.map((row) => row[i]);
+    const col = (r) => s.map.indexOf(r);
+    const bad = s.map.map((r, i) => !!r && !this.fits(r, cells(i)));
+    const chip = (on, sug, extra) => 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (extra || '') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : sug ? 'font-weight: 700; color: #6B4600; background: #FBF0DD; box-shadow: inset 0 0 0 1.5px #E2B866' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    // التاريخ: الصيغة بتتعرف لو فيه رقم أكبر من ١٢ في أي ناحية، وإلا بيختار هو (مفيش تخمين)
+    const di = col('date'), dOk = di >= 0 && !bad[di];
+    const parts = dOk ? cells(di).map((c) => c.split('/').map(Number)) : [];
+    const ci = parts.findIndex((p) => p[0] > 12 || p[1] > 12), clue = parts[ci];
+    const certain = clue ? (clue[0] > 12 ? 'dm' : 'md') : null, fmtUsed = certain || (dOk ? s.fmt : null);
+    const readDate = (c, how) => { const p = c.split('/').map(Number), d = how === 'dm' ? p[0] : p[1], m = how === 'dm' ? p[1] : p[0]; return m >= 1 && m <= 12 && d >= 1 && d <= 31 ? ar(d) + ' ' + M[m - 1] + ' ' + ar(p[2]) : (eg ? 'تاريخ مش صالح' : 'تاريخ غير صالح'); };
+    const FMT = { dm: eg ? 'يوم/شهر/سنة' : 'يوم/شهر/سنة', md: eg ? 'شهر/يوم/سنة' : 'شهر/يوم/سنة' };
+    // المبلغ: مدين + دائن، أو عمود واحد بإشارة
+    const [de, cr, sg, ba, ds] = ['debit', 'credit', 'signed', 'balance', 'desc'].map(col);
+    const how = sg >= 0 && (de >= 0 || cr >= 0) ? 'both' : sg >= 0 ? (bad[sg] ? 'bad' : 'signed') : de >= 0 && cr >= 0 ? (bad[de] || bad[cr] ? 'bad' : 'dc') : de >= 0 ? 'noCredit' : cr >= 0 ? 'noDebit' : 'none';
+    const moneyOk = how === 'signed' || how === 'dc';
+    const amtOf = (ri) => how === 'signed' ? this.money(f.rows[ri][sg]) : (this.money(f.rows[ri][cr]) || 0) - (this.money(f.rows[ri][de]) || 0);
+    let chain = 'none', broken = 0;
+    if (ba >= 0) {
+      if (bad[ba]) chain = 'bad';
+      else if (!moneyOk) chain = 'wait';
+      else {
+        const B = cells(ba).map((c) => this.money(c));
+        let ok = 0, rev = 0;
+        for (let i = 1; i < B.length; i++) { if (B[i] === B[i - 1] + amtOf(i)) ok++; if (B[i] === B[i - 1] - amtOf(i)) rev++; }
+        broken = B.length - 1 - ok;
+        chain = !broken ? 'ok' : rev === B.length - 1 ? 'rev' : 'broken';
+      }
+    }
+    const W = eg ? [['w1', 'البنك الأهلي المصري · حساب المرتب', 'البنك الأهلي المصري'], ['w2', 'QNB مصر', 'QNB مصر']] : [['w1', 'مصرف الراجحي · حساب الراتب', 'مصرف الراجحي'], ['w2', 'البنك الأهلي السعودي', 'البنك الأهلي السعودي'], ['w3', 'مصرف الإنماء', 'مصرف الإنماء']];
+    const wal = W.find((w) => w[0] === s.wallet);
+    const need = [];
+    if (!dOk) need.push(eg ? 'عمود التاريخ' : 'عمود التاريخ'); else if (!fmtUsed) need.push(eg ? 'صيغة التاريخ' : 'صيغة التاريخ');
+    if (ds < 0) need.push(eg ? 'عمود الوصف' : 'عمود الوصف');
+    if (!moneyOk) need.push(eg ? 'أعمدة المبلغ' : 'أعمدة المبلغ');
+    if (chain === 'bad' || chain === 'rev' || chain === 'broken') need.push(eg ? 'تسلسل الرصيد' : 'تسلسل الرصيد');
+    if (!wal) need.push(eg ? 'المحفظة' : 'المحفظة');
+    // معاينة السطر الأول بعد التحديد
+    const r0 = f.rows[0], a0 = moneyOk ? amtOf(0) : null;
+    const ck = (label, st, sub) => ({ label, sub, isOk: st === 'ok', isBad: st === 'bad', isWarn: st === 'warn',
+      dot: 'width: 22px; height: 22px; border-radius: 11px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; ' + (st === 'ok' ? 'color: #13764D; background: #DCEBD6' : st === 'bad' ? 'color: #BE3D48; background: rgba(190,61,72,0.10)' : 'color: #956000; background: #FBF0DD'),
+      subStyle: 'font-size: 12px; color: ' + (st === 'bad' ? '#BE3D48' : st === 'warn' ? '#956000' : '#637570') });
+    const unset = eg ? 'لسه ما اتحددش' : 'لم يُحدَّد';
+    const MONEY = { dc: [ 'ok', (eg ? 'مدين ودائن: العمودين ' : 'مدين ودائن: العمودان ') + ar(de + 1) + ' و' + ar(cr + 1)], signed: ['ok', (eg ? 'مبلغ بإشارة: ' : 'مبلغ بإشارة: ') + colWord(sg)], both: ['bad', eg ? 'اختار طريقة واحدة: مدين ودائن، أو مبلغ بإشارة' : 'اختر طريقة واحدة: مدين ودائن، أو مبلغ بإشارة'], bad: ['bad', eg ? 'قيم عمود المبلغ مش أرقام' : 'قيم عمود المبلغ ليست أرقامًا'], noCredit: ['bad', eg ? 'ناقص عمود الدائن' : 'ينقص عمود الدائن'], noDebit: ['bad', eg ? 'ناقص عمود المدين' : 'ينقص عمود المدين'], none: ['bad', eg ? 'مدين ودائن، أو مبلغ واحد بإشارة' : 'مدين ودائن، أو مبلغ واحد بإشارة'] }[how];
+    const BAL = { none: ['warn', eg ? 'من غيره مش هنقدر نتأكد إن مفيش سطر ناقص' : 'بدونه لا نتحقق من أن الأسطر كاملة'], wait: ['warn', eg ? 'هنفحص تسلسله بعد ما تحدد المبلغ' : 'نفحص تسلسله بعد تحديد المبلغ'], bad: ['bad', eg ? 'قيم العمود ده مش أرقام' : 'قيم هذا العمود ليست أرقامًا'],
+      ok: ['ok', (eg ? 'متسلسل في السطور اللي ظاهرة — ' : 'يتسلسل في الأسطر المعروضة — ') + colWord(ba)], rev: ['bad', how === 'signed' ? (eg ? 'مش متسلسل — شكل الإشارة معكوسة' : 'لا يتسلسل — تبدو الإشارة معكوسة') : (eg ? 'مش متسلسل — شكل المدين والدائن معكوسين' : 'لا يتسلسل — يبدو المدين والدائن معكوسين')],
+      broken: ['bad', (eg ? 'مش متسلسل في ' : 'لا يتسلسل في ') + plural(broken, LINES) + (eg ? ' — راجع الأعمدة' : ' — راجع الأعمدة')] }[chain];
+    const si = s.sel, sr = s.map[si], sug = !sr && f.heads ? SUG[f.heads[si].toLowerCase()] : null;
+    const tone = (r, b) => !r ? ['#956000', '#FBF0DD'] : b ? ['#BE3D48', 'rgba(190,61,72,0.10)'] : r === 'skip' ? ['#637570', 'rgba(99,117,112,0.12)'] : ['#08634F', '#DCEBD6'];
+    const on = !!s.tpl;
+    return {
+      title: eg ? 'تحديد الأعمدة' : 'تحديد الأعمدة',
+      fileName: f.name,
+      intro: (eg ? 'اختار معنى كل عمود. مش بنخمّن أعمدة الفلوس، ومفيش حاجة بتتسجل قبل المراجعة.' : 'اختر معنى كل عمود. لا نخمّن الأعمدة المالية، ولا يُسجَّل شيء قبل المراجعة.'),
+      bare, bareNote: eg ? 'ماعرفناش ولا عمود: الملف من غير عناوين. اختار معنى كل عمود من القيم اللي فيه.' : 'لم نتعرّف على أي عمود: الملف بلا عناوين. اختر معنى كل عمود من قيمه.',
+      tableTitle: eg ? 'أول ٤ سطور' : 'أول ٤ أسطر',
+      tableNote: (eg ? 'من ' : 'من ') + plural(f.lines, LINES) + (eg ? ' · اسحب للجنب' : ' · اسحب جانبًا'),
+      setX: this.setX,
+      cols: s.map.map((r, i) => {
+        const sel = si === i, t = tone(r, bad[i]);
+        return { on: sel ? 'true' : 'false', pick: () => this.go({ sel: i }), badge: r ? names[r] : (eg ? 'اختار' : 'اختر'),
+          head: f.heads ? f.heads[i] : (eg ? 'عمود ' : 'عمود ') + ar(i + 1), aria: colWord(i) + ': ' + (r ? names[r] : unset),
+          style: 'min-width: 92px; max-width: 168px; display: flex; flex-direction: column; align-items: stretch; padding: 8px 0 2px; border: 0; border-radius: 16px; font: inherit; color: #193D33; text-align: right; cursor: pointer; ' + (sel ? 'background: rgba(8,99,79,0.07); box-shadow: inset 0 0 0 1.5px #08634F' : 'background: transparent'),
+          badgeStyle: 'align-self: flex-start; margin: 0 8px 6px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; color: ' + t[0] + '; background: ' + t[1],
+          headStyle: 'display: block; padding: 0 10px 6px; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; color: ' + (f.heads ? '#193D33' : '#9AA9A4'),
+          cells: cells(i).map((t2) => ({ text: t2, style: 'display: block; height: 30px; line-height: 30px; padding: 0 10px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; font-variant-numeric: tabular-nums; border-top: 1px solid rgba(204,216,204,0.55); color: ' + (r === 'skip' ? '#9AA9A4' : '#193D33') })) };
+      }),
+      selTitle: colWord(si) + ' · ' + (f.heads ? '«' + f.heads[si] + '»' : (eg ? 'من غير عنوان' : 'بلا عنوان')),
+      selSample: eg ? 'أول قيمة:' : 'أول قيمة:', selFirst: f.rows[0][si] || '—',
+      roles: RL.map(([id, label]) => ({ label, on: sr === id ? 'true' : 'false', pick: () => this.assign(si, id, names, eg), style: chip(sr === id, id === sug) })),
+      hasSug: !!sug, sugLine: sug ? (eg ? 'عنوانه شكله «' + names[sug] + '» — اختاره عشان تأكده.' : 'عنوانه يوحي بـ«' + names[sug] + '» — اختره لتأكيده.') : '',
+      hasColErr: !!bad[si], colErr: sr === 'date' ? (eg ? 'القيم في العمود ده مش تواريخ.' : 'قيم هذا العمود ليست تواريخ.') : (eg ? 'القيم في العمود ده مش مبالغ.' : 'قيم هذا العمود ليست مبالغ.'),
+      showDate: dOk, dateTitle: eg ? 'صيغة التاريخ' : 'صيغة التاريخ', dateAmbig: dOk && !certain,
+      fmts: ['dm', 'md'].map((id) => ({ label: FMT[id], on: s.fmt === id ? 'true' : 'false', pick: () => this.go({ fmt: id }), style: chip(s.fmt === id, false, 'flex: 1 1 0; ') })),
+      dateNote: !dOk ? '' : certain ? FMT[certain] + (eg ? ' — عرفناها من «' : ' — عُرفت من «') + cells(di)[ci] + '».' : s.fmt ? (eg ? 'أول سطر هيتقرا: ' : 'يُقرأ السطر الأول: ') + readDate(cells(di)[0], s.fmt) : (eg ? 'كل التواريخ ينفع تتقرا بالطريقتين. أول سطر: ' : 'كل التواريخ تحتمل القراءتين. السطر الأول: ') + readDate(cells(di)[0], 'dm') + (eg ? ' ولا ' : ' أو ') + readDate(cells(di)[0], 'md') + '؟',
+      pvTitle: eg ? 'كده هيتقرا أول سطر' : 'هكذا يُقرأ السطر الأول',
+      pvName: ds >= 0 ? r0[ds] : (eg ? 'الوصف ' : 'الوصف ') + unset,
+      pvNameStyle: 'font-size: 14px; font-weight: 700; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ' + (ds >= 0 ? '#193D33' : '#637570'),
+      pvDate: fmtUsed ? readDate(r0[di], fmtUsed) : (eg ? 'التاريخ ' : 'التاريخ ') + unset,
+      pvAmt: a0 == null ? 'غير متاح' : (a0 < 0 ? '−' : '+') + this.fmt(a0) + ' ' + cur,
+      pvAmtStyle: 'flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; ' + (a0 == null ? 'font-size: 12px; color: #637570' : 'font-size: 15px; font-weight: 700; color: ' + (a0 < 0 ? '#BE3D48' : '#13764D')),
+      checks: [
+        ck('التاريخ', !dOk ? 'bad' : fmtUsed ? 'ok' : 'warn', dOk ? colWord(di) + ' · ' + (fmtUsed ? FMT[fmtUsed] : (eg ? 'اختار الصيغة' : 'اختر الصيغة')) : di >= 0 ? colWord(di) + (eg ? ' · قيمه مش تواريخ' : ' · قيمه ليست تواريخ') : unset),
+        ck('الوصف', ds >= 0 ? 'ok' : 'bad', ds >= 0 ? colWord(ds) : unset),
+        ck(eg ? 'المبلغ' : 'المبلغ', MONEY[0], MONEY[1]),
+        ck(eg ? 'الرصيد (مش لازم)' : 'الرصيد (اختياري)', BAL[0], BAL[1])
+      ],
+      balanceWhy: eg ? 'الرصيد بيخلّينا نتأكد إن كل سطر = الرصيد اللي قبله − المدين + الدائن، فأي سطر ناقص أو متقري غلط يبان قبل التسجيل.' : 'عمود الرصيد يتيح التحقق من أن كل سطر = الرصيد السابق − المدين + الدائن، فيظهر أي سطر ناقص أو مقروء خطأ قبل التسجيل.',
+      walletQ: eg ? 'الملف ده بتاع أنهي محفظة؟' : 'هذا الملف لأي محفظة؟',
+      wallets: W.map(([id, name]) => ({ name, on: s.wallet === id ? 'true' : 'false', pick: () => this.go({ wallet: id }), style: chip(s.wallet === id, false, 'text-align: right; ') })),
+      tplLabel: eg ? 'احفظ القالب للبنك ده' : 'احفظ القالب لهذا البنك', tplOn: on ? 'true' : 'false', toggleTpl: () => this.go({ tpl: !on }),
+      tplSub: !on ? (eg ? 'مش هيتحفظ — هتحدد الأعمدة تاني المرة الجاية.' : 'لن يُحفظ — تحدّد الأعمدة مجددًا في المرة القادمة.') : bare ? (eg ? 'الملف من غير عناوين، فهنعرفه المرة الجاية من عدد الأعمدة وشكل القيم.' : 'الملف بلا عناوين، فنتعرّف عليه لاحقًا بعدد الأعمدة وشكل قيمها.') : (eg ? 'المرة الجاية ملف ' : 'في المرة القادمة يُقرأ ملف ') + (wal ? wal[2] : (eg ? 'البنك ده' : 'هذا البنك')) + (eg ? ' بنفس العناوين هيتقرا من غير الخطوة دي.' : ' بالعناوين نفسها دون هذه الخطوة.'),
+      track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (on ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'),
+      knob: 'position: absolute; top: 2px; right: ' + (on ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      ready: !need.length, notReady: !!need.length,
+      goLabel: eg ? 'راجع العمليات' : 'راجع العمليات',
+      keep: JSON.stringify({ importFile: f.name, importWallet: wal ? wal[1] : '' }),
+      barNote: need.length ? (eg ? 'قبل ما تكمّل: ' : 'قبل المتابعة: ') + need.join('، ') : on ? (eg ? 'القالب بيتحفظ لما تكمّل. مفيش حاجة بتتسجل قبل المراجعة.' : 'يُحفظ القالب عند المتابعة. لا يُسجَّل شيء قبل المراجعة.') : (eg ? 'مفيش حاجة بتتسجل قبل المراجعة.' : 'لا يُسجَّل شيء قبل المراجعة.'),
+      hasToast: !!this.state.toast, toast: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

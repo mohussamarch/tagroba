@@ -166,7 +166,7 @@ class Component extends DCLogic {
       const c = C[r.cat] || C.none;
       const needs = r.st !== 'ok';
       return {
-        name: r.name, sub: c[0] + ' · ' + r.t, i: { [r.cat === 'bake' ? 'food' : C[r.cat] ? r.cat : 'none']: true },
+        name: r.name, sub: c[0] + '، ' + r.t, i: { [r.cat === 'bake' ? 'food' : C[r.cat] ? r.cat : 'none']: true },
         amount: '−' + this.fmt(r.amt), sheen: !!r.sheen, cls: r.fresh ? 's-in' : '',
         needs, chip: r.st === 'sug' ? (eg ? 'مقترح' : 'مقترح') : (eg ? 'محل جديد' : 'متجر جديد'),
         chipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (r.st === 'sug' ? 'color: #956000; background: #FBF0DD' : 'color: #637570; background: rgba(99,117,112,0.12)'),

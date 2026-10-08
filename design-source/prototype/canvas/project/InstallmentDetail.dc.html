@@ -215,7 +215,7 @@ class Component extends DCLogic {
       row(eg ? 'في كل قسط تقريبًا' : 'في كل قسط تقريبًا', this.fmt(perInst) + ' ' + cur, null, true)
     ] : [];
     const entriesAll = linked.map((e) => ({
-      name: (eg ? 'قسط ' : 'قسط ') + MO[e.date[1] - 1], sub: dt(e.date) + ' · ' + wallet,
+      name: (eg ? 'قسط ' : 'قسط ') + MO[e.date[1] - 1], sub: dt(e.date) + '، ' + wallet,
       amount: '−' + this.fmt(inst), cls: e.fresh ? 'id-in' : '',
       unlinkLabel: (eg ? 'فك ربط قسط ' : 'فك ربط قسط ') + dt(e.date), unlink: () => this.setState({ sheet: e.id }),
       rowStyle: 'display: flex; align-items: center; gap: 10px; padding: 10px 0;'
@@ -230,12 +230,12 @@ class Component extends DCLogic {
       leftText: this.fmt(left) + ' ' + cur,
       instLine: (eg ? 'القسط ' : 'القسط ') + this.fmt(inst) + ' ' + cur + (eg ? ' كل شهر · الإجمالي ' : ' شهريًا · الإجمالي ') + this.fmt(total) + ' ' + cur,
       progressLabel: (eg ? 'دفعت ' : 'دفعت ') + n(paidN) + (eg ? ' من ' : ' من ') + n(P.count),
-      nextLabel: !nd ? '' : key(nd) < TODAY ? (eg ? 'متأخر من ' : 'متأخر منذ ') + dt(nd) : (eg ? 'الجاي ' : 'القادم ') + dt(nd) + (eg ? ' · القسط ' : ' · القسط ') + n(nextN),
+      nextLabel: !nd ? '' : key(nd) < TODAY ? (eg ? 'متأخر من ' : 'متأخر منذ ') + dt(nd) : (eg ? 'الجاي ' : 'القادم ') + dt(nd) + (eg ? '، القسط ' : '، القسط ') + n(nextN),
       pct: String(pct), bar: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + pct + '%',
       hasSug: sugAny,
       sugTitle: sugPay ? (eg ? 'عملية شبه قسط ' : 'عملية تشبه قسط ') + MO[sugTx.date[1] - 1] : (eg ? 'شكلها مبلغ التمويل' : 'تبدو مبلغ التمويل'),
       sugName: sugPay ? P.by : (eg ? 'إيداع من ' : 'إيداع من ') + P.by,
-      sugSub: (sugPay ? dt(sugTx.date) : dt(P.recvDate || [2026, 1, 1])) + ' · ' + wallet,
+      sugSub: (sugPay ? dt(sugTx.date) : dt(P.recvDate || [2026, 1, 1])) + '، ' + wallet,
       sugAmount: (sugPay ? '−' + this.fmt(inst) : '+' + this.fmt(principal)) + ' ' + cur,
       sugAmountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (sugPay ? '#BE3D48' : '#13764D'),
       sugWhy: sugPay ? (eg ? 'نفس مبلغ القسط ولنفس المحل في ميعاده. نربطها؟' : 'بمبلغ القسط نفسه وللمتجر نفسه في موعده. هل نربطها؟') : (eg ? 'داخلة من نفس البنك قبل أول قسط بأسبوع وبنفس المبلغ الأصلي. نربطها بالخطة؟' : 'واردة من البنك نفسه قبل أول قسط بأسبوع وبالمبلغ الأصلي نفسه. هل نربطها بالخطة؟'),
@@ -252,9 +252,9 @@ class Component extends DCLogic {
       schedAria: (eg ? 'اتدفع ' : 'مدفوع ') + n(paidN) + (eg ? ' من ' : ' من ') + n(P.count) + (lateN ? (eg ? '، ومتأخر ' : '، ومتأخر ') + n(lateN) : ''),
       years,
       legend: [[eg ? 'اتدفع' : 'مدفوع', S.paid], ['متأخر', S.late], [eg ? 'الجاي' : 'القادم', S.next], [eg ? 'باقي' : 'متبقٍ', S.up]].map(([label, sw]) => ({ label, sw: sw.replace('aspect-ratio: 1', 'width: 12px; height: 12px') })),
-      lastLine: (eg ? 'آخر قسط ' : 'آخر قسط ') + dt(due(P.count)) + (eg ? ' · كل شهر يوم ' : ' · كل شهر يوم ') + n(P.first[2]),
+      lastLine: (eg ? 'آخر قسط ' : 'آخر قسط ') + dt(due(P.count)) + (eg ? '، كل شهر يوم ' : '، كل شهر يوم ') + n(P.first[2]),
       recvLabel: eg ? 'المبلغ اللي استلمته' : 'المبلغ المستلم',
-      recvSub: !P.fin ? (eg ? 'تقسيط مشتريات — مافيهوش فلوس بتستلمها.' : 'تقسيط مشتريات — لا تستلم فيه مبلغًا.') : received != null ? dt(P.recvDate) + ' · ' + (eg ? 'نزل في ' : 'وصل إلى ') + wallet : (eg ? 'اربط عملية الإيداع وهيبان اللي وصلك فعلًا.' : 'اربط عملية الإيداع ليظهر ما وصلك فعلًا.'),
+      recvSub: !P.fin ? (eg ? 'تقسيط مشتريات — مافيهوش فلوس بتستلمها.' : 'تقسيط مشتريات — لا تستلم فيه مبلغًا.') : received != null ? dt(P.recvDate) + '، ' + (eg ? 'نزل في ' : 'وصل إلى ') + wallet : (eg ? 'اربط عملية الإيداع وهيبان اللي وصلك فعلًا.' : 'اربط عملية الإيداع ليظهر ما وصلك فعلًا.'),
       recvText: !P.fin ? (eg ? 'مش متاح' : 'لا ينطبق') : received != null ? this.fmt(received) + ' ' + cur : (eg ? 'لسه ما اتربطش' : 'لم يُربط بعد'),
       recvStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; direction: ' + (received != null ? 'ltr' : 'rtl') + '; color: ' + (!P.fin ? '#637570' : received != null ? '#13764D' : '#956000'),
       canUnlinkRecv: received != null, unlinkRecvLabel: eg ? 'فك الربط' : 'فك الربط', askUnlinkRecv: () => this.setState({ sheet: 'recv' }),

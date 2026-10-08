@@ -144,8 +144,8 @@ class Component extends DCLogic {
           law: eg ? t('بقانون مصر', 'بقانون مصر') : t('بقانون السعودية', 'بقانون السعودية'),
           lawStyle: 'flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (eg ? 'color: #2469BA; background: rgba(36,105,186,0.10)' : 'color: #08634F; background: #DCEBD6'),
           itemsLine: things((x.items || []).length), total: this.fmt(total) + ' ' + (eg ? 'ج.م' : 'ر.س'),
-          heirs: Object.keys(SH).filter((k) => H[k]).map((k) => SH[k] + (H[k] > 1 ? ' ' + n(H[k]) : '')).join(' · ') || t('بلا ورثة بعد (مسودة)', 'من غير ورثة لسه (مسودة)'),
-          when: t('عُدّلت ', 'اتعدّلت ') + day(x.updatedAt) + ' · ' + t('أُنشئت ', 'اتعملت ') + day(x.createdAt),
+          heirs: Object.keys(SH).filter((k) => H[k]).map((k) => SH[k] + (H[k] > 1 ? ' ' + n(H[k]) : '')).join('، ') || t('بلا ورثة بعد (مسودة)', 'من غير ورثة لسه (مسودة)'),
+          when: t('عُدّلت ', 'اتعدّلت ') + day(x.updatedAt) + '، ' + t('أُنشئت ', 'اتعملت ') + day(x.createdAt),
           keep: JSON.stringify({ 'masroufy-inherit-open': open }), prep,
           rename: () => this.setState({ sheet: { id: x.id, kind: 'rename' }, nameInput: x.name }),
           ask: () => this.setState({ sheet: { id: x.id, kind: 'delete' } }), delLabel: t('احذف ', 'امسح ') + x.name };

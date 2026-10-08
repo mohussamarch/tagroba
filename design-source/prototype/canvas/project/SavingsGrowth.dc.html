@@ -160,7 +160,7 @@ class Component extends DCLogic {
       const shown = c.today != null ? c.today : c.v;
       const gain = shown != null ? shown - paidIn : null;
       const why = c.id === 'dep' && c.bp == null ? (eg ? 'اكتب فايدة بنكك على الوديعة' : 'اكتب فائدة بنكك على الوديعة') : noFile && c.bp == null ? (eg ? 'غير متاح: ملف المتوسطات لسه ما وصلش' : 'غير متاح: ملف المتوسطات لم يصل بعد') : '';
-      const src = c.mine ? (eg ? 'النسبة اللي إنت كتبتها' : 'النسبة التي كتبتها أنت') : c.id === 'dep' ? (noFile ? '' : c.d[1]) : c.id === 'cash' ? c.d[1] : noFile ? (eg ? 'اكتب النسبة بنفسك لحد ما الملف يوصل' : 'اكتب النسبة بنفسك حتى يصل الملف') : c.d[1] + ' · ' + c.d[2] + ' · ' + c.d[3];
+      const src = c.mine ? (eg ? 'النسبة اللي إنت كتبتها' : 'النسبة التي كتبتها أنت') : c.id === 'dep' ? (noFile ? '' : c.d[1]) : c.id === 'cash' ? c.d[1] : noFile ? (eg ? 'اكتب النسبة بنفسك لحد ما الملف يوصل' : 'اكتب النسبة بنفسك حتى يصل الملف') : c.d[1] + '، ' + c.d[2] + '، ' + c.d[3];
       const old = stale && !c.mine && c.id !== 'cash' && c.id !== 'dep' ? (eg ? 'قديم: آخر تحديث ما نجحش — الرقم من ٥ سبتمبر ٢٠٢٦' : 'قديم: آخر تحديث لم ينجح — الرقم من ٥ سبتمبر ٢٠٢٦') : '';
       const note = [old, !c.mine && !noFile && c.d[4] ? c.d[4] : ''].filter(Boolean).join(' · ');
       const w = shown != null ? Math.max(2, (shown * 100 - (shown * 100) % top) / top) : 0;

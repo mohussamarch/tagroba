@@ -833,6 +833,14 @@
       "y": 23130,
       "w": 72,
       "h": 72
+    },
+    "LookSheet.dc.html": {
+      "is_interactive": true,
+      "title": "اختر شكلك · LookSheet (قطعة جوه «ملفك» — الأشكال الستة المؤقتة)",
+      "x": 590,
+      "y": 23250,
+      "w": 350,
+      "h": 44
     }
   },
   "createdOnFiles": {
@@ -1094,7 +1102,8 @@
     "AddPersonSheet.dc.html",
     "OccasionSheet.dc.html",
     "EventEditSheet.dc.html",
-    "MeAvatar.dc.html"
+    "MeAvatar.dc.html",
+    "LookSheet.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

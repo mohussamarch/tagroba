@@ -149,7 +149,7 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"debt":{"editor":"enum","options":["حسب اللي اتداس","خالد — لك","فهد — لك","عمر — عليك","دين قديم مع خالد"],"default":"حسب اللي اتداس","section":"الدين"},"state":{"editor":"enum","options":["عادي","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"debt":{"editor":"enum","options":["حسب اللي اتداس","خالد — لك","فهد — لك","عمر — عليك","دين قديم مع خالد","نورة — نصيبها","أحمد — نصيبه","سلمان — نصيبك"],"default":"حسب اللي اتداس","section":"الدين"},"state":{"editor":"enum","options":["عادي","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -176,11 +176,11 @@ class Component extends DCLogic {
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   pick(props) {
-    const map = { 'خالد — لك': 'khaled', 'فهد — لك': 'fahd', 'عمر — عليك': 'omar', 'دين قديم مع خالد': 'old' };
+    const map = { 'خالد — لك': 'khaled', 'فهد — لك': 'fahd', 'عمر — عليك': 'omar', 'دين قديم مع خالد': 'old', 'نورة — نصيبها': 'noura', 'أحمد — نصيبه': 'ahmed', 'سلمان — نصيبك': 'salman' };
     if (map[props.debt]) return map[props.debt];
     let st = null;
     try { st = window.sessionStorage.getItem('masroufy-debt'); } catch (e) {}
-    return map[st] || (['khaled', 'fahd', 'omar', 'old'].indexOf(st) >= 0 ? st : 'khaled');
+    return map[st] || (['khaled', 'fahd', 'omar', 'old', 'noura', 'ahmed', 'salman'].indexOf(st) >= 0 ? st : 'khaled');
   }
   // مخترعة · بالوحدة الصغرى (السعودية) — نفس أرقام «لك» و«عليك» وملف خالد
   data(eg) {
@@ -189,7 +189,7 @@ class Component extends DCLogic {
       khaled: { who: 'خالد', side: 'lak', orig: 50000, since: '٢٣ أغسطس', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لخالد' : 'حوالة صادرة إلى خالد', bank, 'سلفة'], paid: [], terms: null, wait: eg ? 'بقاله كتير مستني، ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا' },
       fahd: { who: 'فهد', side: 'lak', orig: 150000, since: '٢ سبتمبر', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لفهد' : 'حوالة صادرة إلى فهد', bank, 'سلفة'], paid: [{ when: '٢٠ سبتمبر', via: eg ? 'حوالة جاتلك' : 'حوالة واردة', amt: 30000 }], terms: { due: '٢٠ سبتمبر', late: true }, wait: eg ? 'بقاله كتير مستني، ٣٥ يوم' : 'منتظر منذ ٣٥ يومًا', interest: 'no', pend: { dir: 'in', when: '٥ أكتوبر', amt: 50000 } },
       omar: { who: 'عمر', side: 'alek', orig: 200000, since: '١ سبتمبر', kind: eg ? 'سلفة منه' : 'قرض منه', from: [eg ? 'حوالة جاتلك من عمر' : 'حوالة واردة من عمر', eg ? 'QNB مصر •••• ٥٥٨٠' : 'البنك الأهلي السعودي •••• ٩٠٣١', eg ? 'سلفة جاتلي' : 'قرض مستلم'], paid: [], terms: { due: '١ نوفمبر', late: false }, interest: null, pend: { dir: 'out', when: '٦ أكتوبر', amt: 80000 } },
-      old: { who: 'خالد', side: 'lak', orig: 20000, kind: 'دين قديم', from: null, paid: [], terms: null }
+      old: { who: 'خالد', side: 'lak', orig: 20000, kind: 'دين قديم', from: null, paid: [], terms: null }, noura: { who: 'نورة', side: 'lak', orig: 30000, since: '٢ أكتوبر', kind: eg ? 'نصيبها من مصروف' : 'نصيبها من مصروف', share: true, from: [eg ? 'هدية ليلى — اتقسمت عليكم' : 'هدية ليلى — قُسّمت بينكما', bank, eg ? 'نصيبها' : 'نصيبها'], paid: [], terms: { due: '١٥ أكتوبر', late: false } }, ahmed: { who: 'أحمد', side: 'lak', orig: 18500, since: '٤ أكتوبر', kind: eg ? 'نصيبه من مصروف' : 'نصيبه من مصروف', share: true, from: [eg ? 'فاتورة العشا — اتقسمت' : 'فاتورة العشاء — قُسّمت', bank, eg ? 'نصيبه' : 'نصيبه'], paid: [], terms: null, wait: eg ? 'من ٣ أيام' : 'منذ ٣ أيام' }, salman: { who: 'سلمان', side: 'alek', orig: 45000, since: '٢٧ سبتمبر', kind: eg ? 'نصيبك من مصروف دفعه سلمان' : 'نصيبك من مصروف دفعه سلمان', share: true, from: [eg ? 'رحلة البحر — سلمان دفعها كلها' : 'رحلة البحر — دفعها سلمان كاملة', eg ? 'من غير عملية عندك' : 'بلا عملية عندك', eg ? 'نصيبي' : 'نصيبي'], paid: [], terms: null }
     };
   }
   fresh(props) {
@@ -238,7 +238,7 @@ class Component extends DCLogic {
       { label: eg ? 'جه منين' : 'المصدر', value: eg ? 'من قبل التطبيق' : 'من قبل التطبيق', dir: 'rtl', hasChip: true, chip: eg ? 'دين قديم' : 'دين قديم', chipStyle: chip('#956000', '#FBF0DD'), hasHint: true, hint: eg ? 'من غير عملية — ما بيدخلش المصروف ولا الدخل ولا الكاش' : 'بلا عملية — لا يدخل المصروف ولا الدخل ولا الكاش' }
     ];
     origin.push({ label: eg ? 'المبلغ الأصلي' : 'المبلغ الأصلي', value: this.fmt(s.orig) + ' ' + cur, dir: 'ltr', hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '' });
-    origin.push({ label: 'النوع', value: lak ? (eg ? 'دين ليك' : 'دين لك') : (d.from ? (eg ? 'سلفة عليك' : 'قرض عليك') : (eg ? 'دين عليك' : 'دين عليك')), dir: 'rtl', hasChip: false, chip: '', chipStyle: '', hasHint: true, hint: eg ? 'منفصل عن الأمانات — ومن غير مقاصة مع «' + (lak ? 'عليك' : 'ليك') + '»' : 'منفصل عن الأمانات — وبلا مقاصة مع «' + (lak ? 'عليك' : 'لك') + '»' });
+    origin.push({ label: 'النوع', value: lak ? (eg ? 'دين ليك' : 'دين لك') : (d.share ? (eg ? 'نصيبك من مصروف' : 'نصيبك من مصروف') : d.from ? (eg ? 'سلفة عليك' : 'قرض عليك') : (eg ? 'دين عليك' : 'دين عليك')), dir: 'rtl', hasChip: false, chip: '', chipStyle: '', hasHint: true, hint: eg ? 'منفصل عن الأمانات — ومن غير مقاصة مع «' + (lak ? 'عليك' : 'ليك') + '»' : 'منفصل عن الأمانات — وبلا مقاصة مع «' + (lak ? 'عليك' : 'لك') + '»' });
     const opts = [['١ نوفمبر', eg ? 'بعد ٢٥ يوم' : 'بعد ٢٥ يومًا'], ['١ ديسمبر', eg ? 'بعد ٥٥ يوم' : 'بعد ٥٥ يومًا'], ['١ يناير', eg ? 'بعد ٨٦ يوم' : 'بعد ٨٦ يومًا']];
     const bits = [8, 20, 31, 44, 56, 67, 79, 90, 14, 37, 61, 85, 26, 73].map((x, i) => ({
       style: 'position: absolute; top: 0; left: ' + x + '%; width: 6px; height: 10px; border-radius: 2px; background: ' + ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#08634F'][i % 5] + '; animation-delay: ' + ((i * 70) % 420) + 'ms'

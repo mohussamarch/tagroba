@@ -283,7 +283,7 @@ class Component extends DCLogic {
     return {
       isOk: !!ok, isAsk: !res && sol && sol.st === 'ask', isStop: !!res, cur,
       heroLabel: t('يُقسَم على الورثة', 'بيتقسم على الورثة'), poolText: this.fmt(Math.max(0, pool)), segs,
-      heroSub: t('من تركة ', 'من تركة ') + this.fmt(total) + (claims.length ? t(' بعد ما يُخرج قبل القسمة', ' بعد اللي بيطلع قبل القسمة') : t(' · لا تجهيز ولا ديون ولا وصية', ' · مفيش تجهيز ولا ديون ولا وصية')) + ' · ' + (items.length === 1 ? t('شيء واحد', 'حاجة واحدة') : items.length === 2 ? t('شيئان', 'حاجتين') : n(items.length) + (items.length <= 10 ? t(' أشياء', ' حاجات') : t(' شيئًا', ' حاجة'))),
+      heroSub: t('من تركة ', 'من تركة ') + this.fmt(total) + (claims.length ? t(' بعد ما يُخرج قبل القسمة', ' بعد اللي بيطلع قبل القسمة') : t(' · لا تجهيز ولا ديون ولا وصية', ' · مفيش تجهيز ولا ديون ولا وصية')) + '، ' + (items.length === 1 ? t('شيء واحد', 'حاجة واحدة') : items.length === 2 ? t('شيئان', 'حاجتين') : n(items.length) + (items.length <= 10 ? t(' أشياء', ' حاجات') : t(' شيئًا', ' حاجة'))),
       hasClaims: claims.length > 0, claims, heirs,
       spaceName: ui ? 'مصر' : 'السعودية', splitJson: JSON.stringify({ law: c.country, items: itemsV, notes }),
       askText: t('هل للمتوفى أقارب آخرون مثل أولاد البنات أو الخال أو العمة؟ الجواب يغيّر القسمة', 'المتوفى ليه قرايب تانيين زي أولاد البنات أو الخال أو العمة؟ الإجابة بتغيّر القسمة'),

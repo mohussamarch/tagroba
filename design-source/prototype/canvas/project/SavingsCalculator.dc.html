@@ -201,8 +201,8 @@ class Component extends DCLogic {
       hasResult: !!res, noResult: !res, heroNa: eg ? 'كمّل البيانات' : 'أكمل البيانات',
       heroAmount: res ? this.fmt(res.main) : '',
       heroSub: !res ? (eg ? 'الحساب بيظهر أول ما الخانات تبقى صح.' : 'تظهر النتيجة حين تصح الخانات.') : isT
-        ? (res.rem ? (eg ? 'لمدة ' : 'لمدة ') + plural(res.months, MW) + (eg ? ' لحد ' : ' حتى ') + this.day(res.end) + (eg ? ' · فاضلك ' : ' · المتبقي ') + this.fmt(res.rem) + (eg ? ' · من غير أرباح' : ' · دون أرباح') : (eg ? 'معاك المبلغ كله خلاص.' : 'معك المبلغ كاملًا.'))
-        : (eg ? 'يوم ' : 'في ') + this.day(res.end) + ' · ' + plural(res.months, MW) + ' × ' + this.fmt(res.perMonth) + (eg ? ' + اللي معاك · من غير أرباح' : ' + ما معك · دون أرباح'),
+        ? (res.rem ? (eg ? 'لمدة ' : 'لمدة ') + plural(res.months, MW) + (eg ? ' لحد ' : ' حتى ') + this.day(res.end) + (eg ? '، فاضلك ' : '، المتبقي ') + this.fmt(res.rem) + (eg ? '، من غير أرباح' : '، دون أرباح') : (eg ? 'معاك المبلغ كله خلاص.' : 'معك المبلغ كاملًا.'))
+        : (eg ? 'يوم ' : 'في ') + this.day(res.end) + '، ' + plural(res.months, MW) + ' × ' + this.fmt(res.perMonth) + (eg ? ' + اللي معاك · من غير أرباح' : ' + ما معك · دون أرباح'),
       cmpTitle: eg ? 'قدام اللي بتحوّشه فعلًا' : 'مقارنة بما تدّخره فعلًا',
       verdict: gap == null ? (eg ? 'مش معروف' : 'غير معروف') : gap >= 0 ? (eg ? 'كفاية' : 'كافٍ') : (eg ? 'ناقصك ' : 'ينقصك ') + this.fmt(-gap),
       verdictStyle: 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (gap == null ? 'color: #637570; background: rgba(99,117,112,0.12)' : gap >= 0 ? 'color: #13764D; background: #DCEBD6' : 'color: #BE3D48; background: rgba(190,61,72,0.10)'),

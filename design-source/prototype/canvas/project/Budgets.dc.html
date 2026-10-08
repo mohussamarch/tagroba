@@ -202,7 +202,7 @@ class Component extends DCLogic {
         numStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : isOver ? '#BE3D48' : '#193D33'),
         dot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + color,
         bar: 'display: block; height: 6px; border-radius: 3px; width: ' + Math.min(100, p) + '%; background: ' + (isOver ? '#BE3D48' : color),
-        note: l == null ? (eg ? 'من غير سقف · دوس تحدّد سقف' : 'بلا سقف · اضغط لتحديد سقف') : isOver ? (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(s - l) : (eg ? 'فاضل ' : 'بقي ') + this.fmt(l - s) + ' · ' + p.toLocaleString('ar-EG') + '٪',
+        note: l == null ? (eg ? 'من غير سقف · دوس تحدّد سقف' : 'بلا سقف · اضغط لتحديد سقف') : isOver ? (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(s - l) : (eg ? 'فاضل ' : 'بقي ') + this.fmt(l - s) + '، ' + p.toLocaleString('ar-EG') + '٪',
         noteStyle: 'font-size: 12px; text-align: right; color: ' + (isOver ? '#BE3D48' : l == null ? '#08634F' : '#637570') + (l == null ? '; font-weight: 700' : ''),
         rowStyle: 'width: 100%; border: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; padding: 12px 0; display: flex; flex-direction: column; gap: 6px;' + (i === catDefs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
         edit: () => this.open(id, name), keep: JSON.stringify({ 'masroufy-budget-cat': id })
@@ -210,8 +210,8 @@ class Component extends DCLogic {
     });
     const R = this.state.reserved;
     const upDefs = [
-      ['car', 'قسط السيارة', eg ? '٢٧ أكتوبر · بعد ٢٠ يوم' : '٢٧ أكتوبر · بعد ٢٠ يومًا', 145000],
-      ['wedding', 'هدية زواج خالد', eg ? '١٨ أكتوبر · حدث' : '١٨ أكتوبر · حدث', 50000]
+      ['car', 'قسط السيارة', eg ? '٢٧ أكتوبر، بعد ٢٠ يوم' : '٢٧ أكتوبر، بعد ٢٠ يومًا', 145000],
+      ['wedding', 'هدية زواج خالد', eg ? '١٨ أكتوبر، حدث' : '١٨ أكتوبر، حدث', 50000]
     ];
     const ups = upDefs.map(([id, name, when, amt], i) => {
       const on = !!R[id];

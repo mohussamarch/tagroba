@@ -113,7 +113,7 @@ class Component extends DCLogic {
     const build = (key, name, defs) => {
       const rows = defs.map(([label, inc, sameId, sameContent], i) => {
         const skip = sameId + sameContent, add = inc - skip;
-        const why = [sameId ? (eg ? 'موجود بنفس المعرّف: ' : 'موجود بالمعرّف نفسه: ') + n(sameId) : '', sameContent ? (eg ? 'مكرر بنفس المحتوى: ' : 'مكرر بالمحتوى نفسه: ') + n(sameContent) : ''].filter(Boolean).join(' · ');
+        const why = [sameId ? (eg ? 'موجود بنفس المعرّف: ' : 'موجود بالمعرّف نفسه: ') + n(sameId) : '', sameContent ? (eg ? 'مكرر بنفس المحتوى: ' : 'مكرر بالمحتوى نفسه: ') + n(sameContent) : ''].filter(Boolean).join('، ');
         return { label, inc: n(inc), add: add ? n(add) : '—', skip: n(skip), add0: add, hasWhy: !!skip, why,
           addStyle: 'text-align: center; font-weight: 700; color: ' + (add ? '#13764D' : '#637570'),
           row: 'display: flex; flex-direction: column; gap: 2px; padding: 8px 0;' + (i === defs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') };
@@ -141,7 +141,7 @@ class Component extends DCLogic {
     const err = ERR[f] || ['', ''];
     return {
       fileName: f === 'v1' ? 'masroufy-backup-2025-08-01.json' : f === 'bad' ? 'masroufy-backup (1).json' : 'masroufy-backup-2026-09-28.json',
-      fileMeta: f === 'ok' ? (eg ? 'اتعملت ٢٨ سبتمبر · فيها بلدين' : 'أُنشئت ٢٨ سبتمبر · فيها بلدان') : f === 'v1' ? (eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم') : (eg ? '٣ أكتوبر' : '٣ أكتوبر'),
+      fileMeta: f === 'ok' ? (eg ? 'اتعملت ٢٨ سبتمبر، فيها بلدين' : 'أُنشئت ٢٨ سبتمبر، فيها بلدان') : f === 'v1' ? (eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم') : (eg ? '٣ أكتوبر' : '٣ أكتوبر'),
       reading: s.phase === 'reading', readingLabel: eg ? 'بنقرا الملف ونقارنه باللي عندك…' : 'نقرأ الملف ونقارنه بما عندك…',
       isError: s.phase === 'error', errTitle: err[0], errBody: err[1],
       errNote: eg ? 'ما اتكتبش ولا حرف في حسابك.' : 'لم يُكتب أي حرف في حسابك.',

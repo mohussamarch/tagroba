@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إضافة محفظة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.wa-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.wa-press:active{transform:scale(.97)}
+.wa-veil{animation:wa-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.wa-up{animation:wa-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.wa-up>*{flex-shrink:0}
+.wa-scroll{scrollbar-width:none}.wa-scroll::-webkit-scrollbar{display:none}
+@keyframes wa-fade{from{opacity:0}to{opacity:1}}
+@keyframes wa-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.wa-press{transition:none}.wa-press:active{transform:none}.wa-up{animation:wa-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+input:disabled{opacity:.45;cursor:default}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="wa-press" onClick="{{openSheet}}" style="width: 100%; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{triggerLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="wa-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="wa-up wa-scroll" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+        <span style="font-size: 13px; color: #637570; margin-top: -6px">{{sub}}</span>
+
+        <sc-if value="{{isAdd}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; gap: 8px">
+              <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{kd.on}}" class="wa-press" onClick="{{kd.pick}}" style="{{kd.style}}">{{kd.label}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 13px; font-weight: 700; margin-top: 2px">{{bankLabel}}</span>
+            <div role="radiogroup" aria-label="{{bankLabel}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 44px; gap: 8px; height: 148px; align-content: start">
+              <sc-for list="{{banks}}" as="bk" hint-placeholder-count="6">
+                <button type="button" role="radio" aria-checked="{{bk.on}}" class="wa-press" onClick="{{bk.pick}}" style="{{bk.style}}">{{bk.label}}</button>
+              </sc-for>
+            </div>
+            <span role="alert" style="{{bankErrStyle}}">{{bankErr}}</span>
+
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{nameLabel}}
+              <input type="text" maxlength="40" value="{{name}}" onInput="{{typeName}}" placeholder="{{namePh}}" style="{{nameStyle}}">
+            </label>
+            <span role="alert" style="{{nameErrStyle}}">{{nameErr}}</span>
+
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{last4Label}}
+              <input type="text" inputmode="numeric" dir="ltr" autocomplete="off" value="{{last4}}" onInput="{{typeLast4}}" placeholder="••••" style="{{last4Style}}">
+            </label>
+            <span role="alert" style="{{last4ErrStyle}}">{{last4Err}}</span>
+            <span style="font-size: 12px; line-height: 1.7; color: #637570">{{last4Note}}</span>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; gap: 8px; margin-top: 2px">
+          <label style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{amountLabel}}
+            <span style="{{amountBox}}">
+              <input type="text" inputmode="decimal" dir="ltr" aria-label="{{amountLabel}}" value="{{amount}}" onInput="{{typeAmount}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; text-align: right; font-variant-numeric: tabular-nums; outline: none">
+              <span style="font-size: 12px; font-weight: 500; color: #637570">{{currency}}</span>
+            </span>
+          </label>
+          <label style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{dateLabel}}
+            <input type="date" max="{{today}}" value="{{date}}" disabled="{{dateOff}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="{{dateStyle}}">
+          </label>
+        </div>
+        <span role="alert" style="{{amountErrStyle}}">{{amountErr}}</span>
+
+        <div role="status" style="border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; background: rgba(8,99,79,0.06)">
+          <span style="font-size: 13px; font-weight: 700; color: #08634F">{{effect}}</span>
+          <span style="font-size: 12px; line-height: 1.7; color: #4F625C">{{effectNote}}</span>
+        </div>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="wa-press" onClick="{{save}}" aria-disabled="{{saveOff}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["إضافة","تعديل"],"default":"إضافة","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"walletName":{"editor":null},"walletKind":{"editor":null},"last4":{"editor":null},"opening":{"editor":null},"openingDate":{"editor":null},"balance":{"editor":null},"existing":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":48}}'>
+// زرار «أضف محفظة» ولوحته (Wallets) — ونفس اللوحة بـ mode="edit" لرصيد البداية (WalletDetail). سؤال ١٨ في SCREENS.md · spec/03 «Wallet» · §26 §41 §72.
+// الإضافة: onSave({ mode:'add', kind, bank, bankLabel, name, last4, openingMinor|null, openingDate|null, openingDateText|null })
+// التعديل: onSave({ mode:'edit', openingMinor, openingDate, openingDateText, balanceMinor|null }) — balanceMinor بس لو التاريخ ما اتغيرش والرصيد معروف
+// العملة = عملة البلد (§41) · آخر ٤ أرقام بس (CLAUDE.md #11) · رصيد البداية حقيقة في تاريخ، وفاضي = «غير متاح» مش صفر
+const TODAY = '2026-10-07';
+const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: null, d: null, tried: false, cut: false }; }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  isEdit() { return this.props.mode === 'edit' || this.props.mode === 'تعديل'; }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  sfmt(m) { return (m < 0 ? '−' : '') + this.fmt(m); }
+  digits(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[^0-9]/g, ''); }
+  toMinor(t) {
+    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  ar(x) { return String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]); }
+  // تاريخ ISO أو مكتوب زي الشاشات «١ يناير ٢٠٢٥»
+  isoOf(t) {
+    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/), i = m ? M.indexOf(m[2]) : -1;
+    return i < 0 ? '' : m[3] + '-' + (i < 9 ? '0' : '') + (i + 1) + '-' + (+m[1] < 10 ? '0' : '') + (+m[1]);
+  }
+  show(iso) { const [y, m, d] = iso.split('-').map(Number); return this.ar(d) + ' ' + M[m - 1] + ' ' + this.ar(y); }
+  // المحفظة اللي بتتعدّل: من الشاشة الأم، ولو اللوحة مفتوحة لوحدها أول بنك في البلد (نفس أرقام WalletDetail)
+  orig() {
+    const p = this.props, eg = this.eg();
+    if (p.walletName == null) return eg ? { name: 'البنك الأهلي المصري', last4: '٧٢١٤', cash: false, open: 900000, date: '2026-05-12', bal: 1640000 } : { name: 'مصرف الراجحي', last4: '٤٤٠٧', cash: false, open: 215000, date: '2025-01-01', bal: 412000 };
+    const n = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
+    return { name: String(p.walletName), last4: p.last4 ? this.ar(this.digits(p.last4)) : '', cash: p.walletKind === 'cash', open: n(p.opening), date: this.isoOf(p.openingDate), bal: n(p.balance) };
+  }
+  fresh() {
+    if (!this.isEdit()) return { kind: 'bank', bank: null, name: '', named: false, last4: '', amount: '', date: TODAY };
+    const o = this.orig();
+    return { kind: 'bank', bank: null, name: '', named: false, last4: '', amount: o.open == null ? '' : this.fmt(o.open), date: o.date || TODAY };
+  }
+  renderVals() {
+    const eg = this.eg(), edit = this.isEdit(), s = this.state, d = s.d || this.fresh();
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const open = s.open === null ? this.props.sheet === 'مفتوحة' : s.open;
+    const set = (o) => this.setState({ d: Object.assign({}, d, o) });
+    const o = edit ? this.orig() : null;
+    const chip = (on, extra) => 'height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (extra || '') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const field = (bad) => 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 500; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
+    const errS = (x) => x ? 'font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48; margin-top: -4px' : 'display: none';
+    // الأنواع اللي في الموديل: bank · cash · digital_wallet (own_abroad اتلغى عمليًا بحساب لكل بلد §41). الكاش واحد لكل بلد وموجود
+    const KINDS = [['bank', eg ? 'حساب بنك' : 'حساب بنكي'], ['digital_wallet', 'محفظة إلكترونية']];
+    const LISTS = eg
+      ? { bank: [['nbe', 'البنك الأهلي المصري'], ['qnb', 'QNB مصر'], ['misr', 'بنك مصر'], ['cib', 'البنك التجاري الدولي'], ['alex', 'بنك الإسكندرية'], ['other', 'بنك تاني']], digital_wallet: [['vodafone', 'فودافون كاش'], ['orange', 'أورانج كاش'], ['other', 'محفظة تانية']] }
+      : { bank: [['rajhi', 'مصرف الراجحي'], ['snb', 'البنك الأهلي السعودي'], ['inma', 'مصرف الإنماء'], ['riyad', 'بنك الرياض'], ['anb', 'البنك العربي الوطني'], ['other', 'بنك آخر']], digital_wallet: [['stcpay', 'stc pay'], ['urpay', 'urpay'], ['other', 'محفظة أخرى']] };
+    const list = LISTS[d.kind], picked = list.find((x) => x[0] === d.bank);
+    let existing = eg ? ['البنك الأهلي المصري', 'QNB مصر', 'الكاش'] : ['مصرف الراجحي', 'البنك الأهلي السعودي', 'مصرف الإنماء', 'الكاش'];
+    try { const ex = this.props.existing; if (ex) existing = Array.isArray(ex) ? ex : JSON.parse(ex); } catch (e) { /* تفضل القايمة المبدئية */ }
+    const norm = (t) => String(t || '').trim().replace(/\s+/g, ' ');
+    const name = norm(d.name);
+    const dup = !edit && !!name && existing.some((x) => norm(x) === name);
+    const l4 = this.digits(d.last4);
+    const amountText = String(d.amount || '').trim();
+    const a = amountText ? this.toMinor(amountText) : null;
+    const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(d.date || '') && d.date <= TODAY;
+    // الأخطاء: المكرر بيبان على طول، والباقي بعد أول محاولة حفظ
+    const E = {
+      bank: !edit && !d.bank ? (d.kind === 'bank' ? (eg ? 'اختار البنك.' : 'اختر البنك.') : (eg ? 'اختار المحفظة.' : 'اختر المحفظة.')) : '',
+      name: edit ? '' : dup ? (eg ? 'عندك محفظة بالاسم ده — ميّزها، مثلًا: «' + name + ' — توفير».' : 'لديك محفظة بهذا الاسم — ميّزها، مثلًا: «' + name + ' — ادخار».') : !name ? (eg ? 'اكتب اسمها.' : 'اكتب اسمها.') : '',
+      last4: !edit && l4 && l4.length !== 4 ? (eg ? 'اكتب ٤ أرقام، أو سيبها فاضية.' : 'اكتب ٤ أرقام، أو اتركها فارغة.') : '',
+      amount: amountText && a == null ? (eg ? 'اكتب المبلغ بالأرقام، مثلًا 1250.50' : 'اكتب المبلغ بالأرقام، مثل 1250.50') : edit && !amountText ? (eg ? 'اكتب رصيد البداية.' : 'اكتب رصيد البداية.') : a != null && !dateOk ? (eg ? 'التاريخ ما ينفعش يبقى بعد النهارده.' : 'لا يكون التاريخ بعد اليوم.') : ''
+    };
+    const first = E.bank || E.name || E.last4 || E.amount;
+    const changed = !edit || a !== o.open || d.date !== o.date;
+    const valid = !first && changed;
+    const shown = (k) => (k === 'name' && dup) || (k === 'amount' && amountText && a == null) ? E[k] : s.tried ? E[k] : '';
+    // سطر الأثر: رصيد البداية حقيقة في تاريخ، والرصيد = هو + الحركات من يومه
+    let effect, note;
+    const later = eg ? 'الحركات اللي قبل التاريخ ده بتفضل متسجّلة، بس مش بتدخل في رصيدها.' : 'الحركات قبل هذا التاريخ تبقى مسجّلة، لكنها لا تدخل في رصيدها.';
+    if (!edit && !amountText) { effect = eg ? 'من غير رصيد بداية: رصيدها «غير متاح»' : 'بلا رصيد بداية: رصيدها «غير متاح»'; note = eg ? 'لحد ما توصل رسالة فيها الرصيد أو تستورد كشف — مش هنكتب صفر مكانه.' : 'حتى تصل رسالة فيها الرصيد أو تستورد كشفًا — لا نكتب صفرًا مكانه.'; }
+    else if (a == null || !dateOk) { effect = eg ? 'اكتب المبلغ وتاريخه عشان نحسب رصيدها.' : 'اكتب المبلغ وتاريخه لنحسب رصيدها.'; note = later; }
+    else if (!edit || o.open == null) { effect = (eg ? 'رصيدها بيبدأ من ' : 'يبدأ رصيدها من ') + this.fmt(a) + ' ' + cur + ' في ' + this.show(d.date); note = (eg ? 'وبعدين بتتضاف الحركات من اليوم ده ورايح. ' : 'ثم تُضاف الحركات من هذا اليوم فصاعدًا. ') + later; }
+    else if (!changed) { effect = (eg ? 'رصيد البداية دلوقتي ' : 'رصيد البداية الآن ') + this.fmt(o.open) + ' ' + cur + ' في ' + this.show(o.date); note = later; }
+    else if (d.date === o.date && o.open != null && o.bal != null) { effect = (eg ? 'رصيدها دلوقتي ' : 'رصيدها الآن ') + this.sfmt(o.bal) + (eg ? ' ← هيبقى ' : ' ← يصبح ') + this.sfmt(o.bal + a - o.open) + ' ' + cur; note = (eg ? 'نفس التاريخ، فالفرق بيتضاف للرصيد زي ما هو.' : 'التاريخ نفسه، فيُضاف الفرق إلى الرصيد كما هو.') + (o.cash ? (eg ? ' الكاش اللي اتصرف ومااتسجلش مش باين فيه.' : ' لا يظهر فيه الكاش الذي صُرف ولم يُسجَّل.') : ''); }
+    else { effect = (eg ? 'رصيدها هيتحسب من جديد من ' : 'يُعاد حساب رصيدها من ') + this.show(d.date); note = later; }
+    const btn = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)';
+    const known = edit && o.open != null;
+    return {
+      triggerLabel: !edit ? (eg ? 'ضيف محفظة' : 'أضف محفظة') : known ? (eg ? 'عدّل رصيد البداية' : 'تعديل رصيد البداية') : (eg ? 'حدّد رصيد البداية' : 'حدّد رصيد البداية'),
+      openSheet: () => this.setState({ open: true, d: this.fresh(), tried: false, cut: false }),
+      open, closeSheet: () => this.setState({ open: false }),
+      title: edit ? (known ? 'رصيد البداية' : (eg ? 'حدّد رصيد البداية' : 'تحديد رصيد البداية')) : (eg ? 'محفظة جديدة' : 'محفظة جديدة'),
+      sub: edit ? o.name + (o.last4 ? ' ⁦•••• ' + o.last4 + '⁩' : '') : (eg ? 'في مصر، بالجنيه المصري (ج.م) — عملة البلد دي.' : 'في السعودية، بالريال السعودي (ر.س) — عملة هذا البلد.'),
+      isAdd: !edit,
+      kindLabel: eg ? 'نوعها' : 'نوعها',
+      kinds: KINDS.map(([id, label]) => ({ label, on: d.kind === id ? 'true' : 'false', style: chip(d.kind === id, 'flex: 1 1 0; height: 48px; '), pick: () => set({ kind: id, bank: null, name: d.named ? d.name : '' }) })),
+      bankLabel: d.kind === 'bank' ? (eg ? 'البنك' : 'البنك') : (eg ? 'المحفظة' : 'المحفظة'),
+      banks: list.map(([id, label]) => ({ label, on: d.bank === id ? 'true' : 'false', style: chip(d.bank === id, 'font-size: 13px; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; '), pick: () => set({ bank: id, name: d.named ? d.name : id === 'other' ? '' : label }) })),
+      bankErr: shown('bank'), bankErrStyle: errS(shown('bank')),
+      nameLabel: eg ? 'اسمها في البرنامج' : 'اسمها في التطبيق', namePh: d.bank === 'other' ? (eg ? 'اسم البنك أو المحفظة' : 'اسم البنك أو المحفظة') : (eg ? 'مثلًا: حساب التوفير' : 'مثلًا: حساب الادخار'),
+      name: d.name, typeName: (e) => { if (e && e.target) set({ name: e.target.value, named: true }); },
+      nameStyle: field(!!shown('name')), nameErr: shown('name'), nameErrStyle: errS(shown('name')),
+      last4Label: d.kind === 'bank' ? (eg ? 'آخر ٤ أرقام من الحساب (مش لازم)' : 'آخر ٤ أرقام من الحساب (اختياري)') : (eg ? 'آخر ٤ أرقام من رقم المحفظة (مش لازم)' : 'آخر ٤ أرقام من رقم المحفظة (اختياري)'),
+      last4: l4, last4Style: field(!!shown('last4')) + '; text-align: right; font-size: 16px; font-weight: 700; letter-spacing: 2px; font-variant-numeric: tabular-nums',
+      typeLast4: (e) => { if (!e || !e.target) return; const raw = this.digits(e.target.value); this.setState({ d: Object.assign({}, d, { last4: raw.slice(-4) }), cut: raw.length > 4 }); },
+      last4Err: shown('last4'), last4ErrStyle: errS(shown('last4')),
+      last4Note: (s.cut ? (eg ? 'خدنا آخر ٤ أرقام بس. ' : 'أخذنا آخر ٤ أرقام فقط. ') : '') + (d.kind === 'bank'
+        ? (eg ? 'مش بنحفظ رقم الحساب كامل أبدًا — الأربعة دول بيميّزوا الحساب في رسايل البنك.' : 'لا نحفظ رقم الحساب كاملًا أبدًا — هذه الأربعة تميّز الحساب في رسائل البنك.')
+        : (eg ? 'مش بنحفظ رقم المحفظة كامل أبدًا — الأربعة دول بيميّزوها في رسايلها.' : 'لا نحفظ رقم المحفظة كاملًا أبدًا — هذه الأربعة تميّزها في رسائلها.')),
+      amountLabel: edit ? 'رصيد البداية' : (eg ? 'رصيد البداية (مش لازم)' : 'رصيد البداية (اختياري)'),
+      amountBox: 'height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 16px; display: flex; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (shown('amount') && E.amount.indexOf('التاريخ') < 0 ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      amount: d.amount, typeAmount: (e) => { if (e && e.target) set({ amount: e.target.value }); }, currency: cur,
+      dateLabel: eg ? 'في يوم' : 'في تاريخ', today: TODAY, date: d.date, dateOff: !edit && !amountText,
+      typeDate: (e) => { if (e && e.target && e.target.value) set({ date: e.target.value }); },
+      dateStyle: field(!!shown('amount') && E.amount.indexOf('التاريخ') >= 0) + '; width: 100%; font-size: 14px; padding: 0 10px',
+      amountErr: shown('amount'), amountErrStyle: errS(shown('amount')),
+      effect, effectNote: note,
+      err: s.tried && !changed ? (eg ? 'مفيش حاجة اتغيرت — عدّل المبلغ أو التاريخ.' : 'لم يتغيّر شيء — عدّل المبلغ أو التاريخ.') : s.tried && first ? (eg ? 'كمّل الناقص فوق.' : 'أكمل الناقص أعلاه.') : '',
+      saveOff: valid ? 'false' : 'true', saveStyle: btn + (valid ? '' : '; opacity: 0.45; cursor: default'),
+      saveLabel: edit ? (changed ? (eg ? 'احفظ رصيد البداية' : 'احفظ رصيد البداية') : (eg ? 'مفيش تغيير' : 'لم يتغيّر شيء')) : (eg ? 'ضيفها' : 'أضفها'),
+      save: () => {
+        if (!valid) { this.setState({ tried: true }); return; }
+        this.setState({ open: false, d: null, tried: false, cut: false });
+        if (typeof this.props.onSave !== 'function') return;
+        if (edit) this.props.onSave({ mode: 'edit', openingMinor: a, openingDate: d.date, openingDateText: this.show(d.date), balanceMinor: d.date === o.date && o.open != null && o.bal != null ? o.bal + a - o.open : null });
+        else this.props.onSave({ mode: 'add', kind: d.kind, bank: d.bank === 'other' ? null : d.bank, bankLabel: d.bank === 'other' ? null : picked ? picked[1] : null, name, last4: l4 || null, openingMinor: a, openingDate: a == null ? null : d.date, openingDateText: a == null ? null : this.show(d.date) });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

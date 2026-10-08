@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>يوم الزكاة الهجري — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.hw-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.hw-press:active{transform:scale(.97)}
+.hw-veil{animation:hw-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.hw-up{animation:hw-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.hw-up>*{flex-shrink:0}
+@keyframes hw-fade{from{opacity:0}to{opacity:1}}
+@keyframes hw-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.hw-press{transition:none}.hw-press:active{transform:none}.hw-up{animation:hw-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="hw-press" onClick="{{openSheet}}" style="width: 100%; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{openLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="hw-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="hw-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+          <span style="font-size: 12px; line-height: 1.7; color: #637570">{{intro}}</span>
+        </span>
+
+        <span style="font-size: 13px; font-weight: 700">{{monthLabel}}</span>
+        <div role="radiogroup" aria-label="{{monthLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{months}}" as="hm" hint-placeholder-count="12">
+            <button type="button" role="radio" aria-checked="{{hm.on}}" class="hw-press" onClick="{{hm.pick}}" style="{{hm.style}}">{{hm.label}}</button>
+          </sc-for>
+        </div>
+
+        <span style="font-size: 13px; font-weight: 700; margin-top: 2px">{{dayLabel}}</span>
+        <div role="radiogroup" aria-label="{{dayLabel}}" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{days}}" as="hd" hint-placeholder-count="30">
+            <button type="button" role="radio" aria-checked="{{hd.on}}" aria-label="{{hd.aria}}" class="hw-press" onClick="{{hd.pick}}" style="{{hd.style}}">{{hd.label}}</button>
+          </sc-for>
+        </div>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 4px -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <div role="status" style="border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; background: rgba(8,99,79,0.06)">
+            <span style="font-size: 14px; font-weight: 700; color: #08634F">{{nextLine}}</span>
+            <span style="font-size: 13px">{{gregLine}}</span>
+            <span style="font-size: 12px; line-height: 1.7; color: #637570">{{changeLine}}</span>
+          </div>
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="hw-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startOpen":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"month":{"editor":null},"day":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":48}}'>
+// «غيّره ليوم هجري» في الزكاة (§62 رد (ج): التطبيق يقترح والمستخدم يأكد أو يغيّره ليوم هجري · يوم ثابت كل سنة هجرية).
+// التقويم: أم القرى من Intl على الجهاز (من غير شبكة) — من النهارده ٧ أكتوبر ٢٠٢٦ لقدّام ٤٠٠ يوم، وأول مرة ييجي فيها اليوم المختار.
+// الشهر اللي ٢٩ يوم السنة دي واليوم المختار ٣٠ ⇒ آخر يوم في الشهر (زي ٢٩ فبراير ⇒ ٢٨ في المناسبات). Intl مش متاح ⇒ الميلادي «غير متاح».
+// الحفظ بيرجّع للشاشة الأم: onSave({ month, day, gregorian: 'YYYY-MM-DD' أو null, hijriYear, effectiveDay, daysAway, reminder: 'YYYY-MM-DD' أو null, hijriText, gregorianText })
+const T0 = Date.UTC(2026, 9, 7), DAY = 86400000, LEAD = 10;
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: props.startOpen === true || props.startOpen === 'true', saved: null, m: null, d: null, err: '' }; }
+  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩]/g, (x) => '٠١٢٣٤٥٦٧٨٩'.indexOf(x)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  cal() {
+    if (this._cal !== undefined) return this._cal;
+    try {
+      const f = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric' });
+      if (f.resolvedOptions().calendar !== 'islamic-umalqura') throw new Error('no umalqura');
+      const out = [];
+      for (let i = 0; i < 400; i++) {
+        const parts = f.formatToParts(new Date(T0 + i * DAY)), g = (k) => parseInt((parts.find((p) => p.type === k) || {}).value, 10);
+        out.push({ y: g('year'), m: g('month'), d: g('day') });
+      }
+      this._cal = out.every((h) => h.y > 1400 && h.m >= 1 && h.m <= 12 && h.d >= 1 && h.d <= 30) ? out : null;
+    } catch (e) { this._cal = null; }
+    return this._cal;
+  }
+  // أول مرة من النهارده: نفس الشهر ونفس اليوم، أو آخر يوم في الشهر لو الشهر أقصر
+  find(m, d) {
+    const c = this.cal();
+    if (!c) return null;
+    for (let i = 0; i < c.length - 1; i++) {
+      const h = c[i];
+      if (h.m === m && (h.d === d || (h.d < d && c[i + 1].m !== m))) return { i, y: h.y, d: h.d };
+    }
+    return null;
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
+    const ar = (x) => String(x).replace(/\d/g, (x2) => '٠١٢٣٤٥٦٧٨٩'[x2]);
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : ar(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const HM = ['محرّم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوّال', 'ذو القعدة', 'ذو الحجة'];
+    const GM = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const WD = eg ? ['الحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'] : ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    // المقترح من سلسلة الرصيد — نفس اللي مكتوب في شاشة الزكاة (السعودية ١ جمادى الأولى · مصر ٢٠ جمادى الأولى ١٤٤٨)
+    const SUG = eg ? [5, 20] : [5, 1];
+    const pm = this.num(this.props.month), pd = this.num(this.props.day);
+    const base = s.saved || (pm >= 1 && pm <= 12 && pd >= 1 && pd <= 30 ? [pm, pd] : SUG);
+    const m = s.m || base[0], d = s.d || base[1];
+    const c = this.cal(), today = c ? c[0] : null;
+    const hit = this.find(m, d);
+    const at = (i) => new Date(T0 + i * DAY);
+    const iso = (i) => at(i).toISOString().slice(0, 10);
+    const gText = (i, withDay) => { const x = at(i); return (withDay ? WD[x.getUTCDay()] + ' ' : '') + ar(x.getUTCDate()) + ' ' + GM[x.getUTCMonth()] + (withDay ? ' ' + ar(x.getUTCFullYear()) : ''); };
+    const DAYS = eg ? ['يوم', 'يومين', 'أيام', 'يوم'] : ['يوم', 'يومين', 'أيام', 'يومًا'];
+    const rel = (i) => i === 0 ? (eg ? 'النهارده' : 'اليوم') : i === 1 ? (eg ? 'بكرة' : 'غدًا') : (eg ? 'كمان ' : 'بعد ') + plural(i, DAYS);
+    const hText = hit ? ar(hit.d) + ' ' + HM[m - 1] + ' ' + ar(hit.y) : ar(d) + ' ' + HM[m - 1];
+    const chip = (on, extra) => 'height: 44px; border: 0; border-radius: 14px; font: inherit; cursor: pointer; ' + extra + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const remind = hit ? hit.i - LEAD : null;
+    return {
+      openLabel: eg ? 'غيّره ليوم هجري' : 'غيّره ليوم هجري',
+      openSheet: () => this.setState({ open: true, m: null, d: null, err: '' }),
+      open: s.open,
+      closeSheet: () => this.setState({ open: false }),
+      title: eg ? 'يوم زكاتك الهجري' : 'يوم زكاتك الهجري',
+      intro: (today ? (eg ? 'النهارده ' : 'اليوم ') + ar(today.d) + ' ' + HM[today.m - 1] + ' ' + ar(today.y) + '، و' : '') + (eg ? 'المقترح من سلسلة رصيدك ' : 'المقترح من سلسلة رصيدك ') + ar(SUG[1]) + ' ' + HM[SUG[0] - 1] + (eg ? '. اختار يوم ثابت كل سنة هجرية.' : '. اختر يومًا ثابتًا كل سنة هجرية.'),
+      monthLabel: eg ? 'الشهر الهجري' : 'الشهر الهجري',
+      months: HM.map((label, i) => ({ label, on: m === i + 1 ? 'true' : 'false', style: chip(m === i + 1, 'padding: 0 2px; font-size: 13px; white-space: nowrap; '), pick: () => this.setState({ m: i + 1, d: d, err: '' }) })),
+      dayLabel: eg ? 'اليوم من الشهر' : 'اليوم من الشهر',
+      days: Array.from({ length: 30 }, (_, i) => i + 1).map((v) => ({ label: ar(v), aria: (eg ? 'يوم ' : 'اليوم ') + ar(v), on: d === v ? 'true' : 'false', style: chip(d === v, 'padding: 0; font-size: 15px; font-variant-numeric: tabular-nums; '), pick: () => this.setState({ m: m, d: v, err: '' }) })),
+      nextLine: (eg ? 'يوم زكاتك الجاي: ' : 'يوم زكاتك القادم: ') + hText + (hit && hit.d !== d ? (eg ? ' (آخر الشهر السنة دي)' : ' (آخر الشهر هذه السنة)') : ''),
+      gregLine: hit ? (eg ? 'يعني ' : 'يوافق ') + gText(hit.i, true) + ' — ' + rel(hit.i) : (eg ? 'التاريخ الميلادي غير متاح على الجهاز ده.' : 'التاريخ الميلادي غير متاح على هذا الجهاز.'),
+      changeLine: (eg ? 'ده هيبقى ميعاد زكاتك كل سنة هجرية، ' : 'يصير هذا موعد زكاتك كل سنة هجرية، ') + (remind == null ? (eg ? 'والتنبيه قبله بـ١٠ أيام.' : 'والتنبيه قبله بـ١٠ أيام.') : remind >= 1 ? (eg ? 'والتنبيه هيجيلك قبله بـ١٠ أيام: ' : 'ويصلك التنبيه قبله بـ١٠ أيام: ') + gText(remind, false) + '.' : (eg ? 'والتنبيه هيظهر على طول لأنه أقرب من ١٠ أيام.' : 'ويظهر التنبيه فورًا لأنه أقرب من ١٠ أيام.')),
+      err: s.err,
+      saveLabel: eg ? 'احفظ اليوم' : 'احفظ اليوم',
+      save: () => {
+        if (!(m >= 1 && m <= 12 && d >= 1 && d <= 30)) return this.setState({ err: eg ? 'اختار الشهر واليوم.' : 'اختر الشهر واليوم.' });
+        this.setState({ open: false, saved: [m, d], m: null, d: null, err: '' });
+        if (typeof this.props.onSave === 'function') this.props.onSave({
+          month: m, day: d, gregorian: hit ? iso(hit.i) : null, hijriYear: hit ? hit.y : null, effectiveDay: hit ? hit.d : d,
+          daysAway: hit ? hit.i : null, reminder: hit ? iso(Math.max(0, remind)) : null, hijriText: hText, gregorianText: hit ? gText(hit.i, true) : null
+        });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

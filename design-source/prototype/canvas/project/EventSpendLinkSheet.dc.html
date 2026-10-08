@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ربط مصروف بالحدث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.esl-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.esl-press:active{transform:scale(.97)}
+.esl-press:disabled:active{transform:none}
+.esl-veil{animation:esl-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.esl-up{animation:esl-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.esl-up>*{flex-shrink:0}
+.esl-in{animation:esl-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes esl-fade{from{opacity:0}to{opacity:1}}
+@keyframes esl-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes esl-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.esl-press{transition:none}.esl-press:active{transform:none}.esl-up,.esl-in{animation:esl-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="esl-press" onClick="{{openSheet}}" style="width: 100%; height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{openLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="esl-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="esl-up" style="position: absolute; left: 0; right: 0; bottom: 0; height: 88%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+          <span style="font-size: 13px; color: #637570">{{intro}}</span>
+        </span>
+
+        <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="text" aria-label="{{searchPh}}" placeholder="{{searchPh}}" value="{{q}}" onInput="{{typeQ}}" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; font: inherit; font-size: 14px; color: #193D33; outline: none">
+        </div>
+
+        <span style="display: flex; flex-direction: column; gap: 2px; margin-top: 2px"><span style="font-size: 13px; font-weight: 700">{{listLabel}}</span><span style="font-size: 12px; color: #637570">{{listHint}}</span></span>
+        <div style="display: flex; flex-direction: column">
+          <sc-for list="{{rows}}" as="tx" hint-placeholder-count="6">
+            <div style="{{tx.wrap}}">
+              <button type="button" role="checkbox" aria-checked="{{tx.on}}" disabled="{{tx.locked}}" class="esl-press" onClick="{{tx.toggle}}" style="{{tx.btn}}">
+                <span aria-hidden="true" style="{{tx.box}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                  <span style="{{tx.nameStyle}}">{{tx.name}}</span>
+                  <span style="{{tx.subStyle}}">{{tx.sub}}</span>
+                </span>
+                <span dir="ltr" style="{{tx.amountStyle}}">{{tx.amount}}</span>
+              </button>
+              <sc-if value="{{tx.open}}" hint-placeholder-val="{{ false }}">
+                <div class="esl-in" style="display: flex; flex-direction: column; gap: 6px; padding-inline-start: 30px">
+                  <div style="display: flex; align-items: center; gap: 6px">
+                    <div style="width: 76px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 44px; box-sizing: border-box; border-radius: 14px; padding: 0 10px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+                      <input type="text" inputmode="numeric" dir="ltr" maxlength="3" aria-label="{{tx.pctLabel}}" value="{{tx.pct}}" onInput="{{tx.typePct}}" style="flex: 1 1 auto; min-width: 0; border: 0; padding: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+                      <span style="font-size: 14px; color: #637570">٪</span>
+                    </div>
+                    <sc-for list="{{tx.quick}}" as="qk" hint-placeholder-count="4">
+                      <button type="button" aria-pressed="{{qk.on}}" class="esl-press" onClick="{{qk.pick}}" style="{{qk.style}}">{{qk.label}}</button>
+                    </sc-for>
+                  </div>
+                  <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; color: #637570"><span style="min-width: 0">{{tx.partLabel}}</span><span dir="ltr" style="{{tx.partStyle}}">{{tx.partValue}}</span></span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{noMatch}}" hint-placeholder-val="{{ false }}"><span style="padding: 18px 0; font-size: 13px; color: #637570; text-align: center">{{noMatchText}}</span></sc-if>
+        </div>
+        <span style="font-size: 12px; line-height: 1.7; color: #637570">{{tagNote}}</span>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: auto -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <div role="status" style="border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; background: rgba(8,99,79,0.06)">
+            <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700"><span style="min-width: 0">{{totalLabel}}</span><span dir="ltr" style="{{totalStyle}}">{{totalValue}}</span></span>
+            <span style="font-size: 12px; color: #637570">{{totalSub}}</span>
+          </div>
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="esl-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"eventName":{"editor":"enum","options":["زواج خالد","ولادة جود","رحلة العُلا"],"default":"زواج خالد","section":"الحالة"},"startOpen":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":44}}'>
+// «اربط مصروفًا بنسبة» من صفحة الحدث — عكس LinkProjectEventSheet (§44 · §44.1 · §64 · §76).
+// عملية أو أكتر من المصروف الأخير، ولكل واحدة نسبة صحيحة ١–١٠٠ (المبدئي ١٠٠) بتتخزن على الربط.
+// نصيب الحدث = المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق على الهللة (§64 اختيار (أ) — زي LinkProjectEventSheet وEventDetail).
+// العملية بحدث واحد بس: المربوطة بحدث تاني ما تتختارش (EVENT_TXN_ALREADY_LINKED) — الفك من صفحة العملية. مفيش «صافي».
+// الحفظ بيرجّع للشاشة الأم: onSave({ items: [{ name, amountMinor, percent, linkedMinor, date, wallet }], totalMinor })
+//   المبالغ بالوحدة الصغرى لعملة البلد النشط (مصر مضروبة ×٣ خلاص — الشاشة الأم ما تضربش تاني).
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: props.startOpen === true || props.startOpen === 'true', q: '', sel: [], pct: {}, done: [], err: '' };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  shareOf(amt, p) { const x = amt * p, r = x % 100; return (x - r) / 100 + (r * 2 >= 100 ? 1 : 0); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const money = (m) => this.fmt(m) + ' ' + cur;
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const evName = String(this.props.eventName || 'زواج خالد');
+    const trip = eg ? 'رحلة دهب' : 'رحلة العُلا';
+    const here = (x) => x === evName || (x === trip && (evName === 'رحلة العُلا' || evName === 'رحلة دهب'));
+    const R = eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي', A = eg ? 'QNB مصر' : 'البنك الأهلي السعودي', I = eg ? 'QNB مصر' : 'مصرف الإنماء';
+    // مخترعة · مصروف آخر ٣٠ يوم، الأحدث الأول · بالوحدة الصغرى (السعودية) · آخر خانة = الحدث المربوط بيه فعلًا (نفس بيانات EventDetail)
+    const TX = [
+      ['t1', eg ? 'محل هدايا لمسة' : 'متجر هدايا لمسة', '٦ أكتوبر', R, 32500, null],
+      ['t2', eg ? 'ترزي الأناقة' : 'خياط الأناقة', '٥ أكتوبر', A, 48000, null],
+      ['t3', eg ? 'ورد الربيع' : 'زهور الربيع', '٥ أكتوبر', 'الكاش', 18500, null],
+      ['t4', eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية', '٤ أكتوبر', R, 90000, 'زواج خالد'],
+      ['t5', 'فندق الواحة', '٣ أكتوبر', R, 96000, null],
+      ['t6', eg ? 'حلواني السنبلة' : 'حلويات السنبلة', '٢ أكتوبر', I, 21050, null],
+      ['t7', 'مطعم الضيافة', '١ أكتوبر', A, 26000, null],
+      ['t8', eg ? 'محل لبس ومستلزمات أطفال' : 'متجر مستلزمات المواليد', '٢٦ سبتمبر', A, 145000, 'ولادة جود'],
+      ['t9', 'عربون فندق', '٢٢ سبتمبر', R, 55000, trip]
+    ].map(([id, name, date, wallet, amt, ev]) => ({ id, name, date, wallet, amt: amt * k, ev: s.done.indexOf(id) >= 0 ? evName : ev }));
+    const norm = (t) => String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
+    const nq = norm(s.q), dq = nq.replace(/[^0-9.]/g, '');
+    const hit = (t) => !nq || norm(t.name).indexOf(nq) >= 0 || norm(t.wallet).indexOf(nq) >= 0 || (!!dq && this.fmt(t.amt).replace(/,/g, '').indexOf(dq) >= 0);
+    const pOf = (id) => this.num(s.pct[id] == null ? '100' : s.pct[id]);
+    const okP = (p) => p != null && p >= 1 && p <= 100;
+    const picked = TX.filter((t) => s.sel.indexOf(t.id) >= 0 && !t.ev);
+    const allOk = picked.every((t) => okP(pOf(t.id)));
+    const total = picked.reduce((a, t) => a + (okP(pOf(t.id)) ? this.shareOf(t.amt, pOf(t.id)) : 0), 0);
+    const shown = TX.filter(hit);
+    const quickStyle = (on) => 'height: 44px; padding: 0 9px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const COUNT = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    const OBJ = ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'];
+    const rows = shown.map((t, i) => {
+      const on = s.sel.indexOf(t.id) >= 0 && !t.ev, mine = !!t.ev && here(t.ev), other = !!t.ev && !mine;
+      const p = pOf(t.id), ok = okP(p);
+      return {
+        name: t.name, on: on || mine ? 'true' : 'false', locked: !!t.ev, open: on,
+        sub: other ? (eg ? 'مربوطة بـ«' + t.ev + '» — فكّها من صفحة العملية الأول' : 'مربوطة بـ«' + t.ev + '» — فكّها من صفحة العملية أولًا') : mine ? t.date + '، ' + (eg ? 'مربوطة بالحدث ده' : 'مربوطة بهذا الحدث') : t.date + '، ' + t.wallet,
+        subStyle: 'font-size: 12px; ' + (other ? 'color: #956000' :mine ? 'color: #08634F' : 'color: #637570'),
+        nameStyle: 'font-size: 14px; font-weight: 700; ' + (t.ev ? 'color: #637570' : ''),
+        amount: '−' + money(t.amt),
+        amountStyle: 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (t.ev ? '#8A9A95' : '#BE3D48'),
+        wrap: 'display: flex; flex-direction: column; gap: 6px; padding: 4px 0 ' + (on ? '10px' : '4px') + ';' + (i === shown.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        btn: 'width: 100%; min-height: 56px; display: flex; align-items: center; gap: 12px; border: 0; padding: 0; border-radius: 14px; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: ' + (t.ev ? 'default' : 'pointer'),
+        box: 'width: 18px; height: 18px; flex-shrink: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; ' + (on ? 'color: #FFFFFF; background: #08634F' : mine ? 'color: #08634F; background: #DCEBD6' : other ? 'color: transparent; background: rgba(25,61,51,0.08)' : 'color: transparent; box-shadow: inset 0 0 0 1.5px rgba(99,117,112,0.55)'),
+        toggle: () => { if (!t.ev) this.setState({ sel: on ? s.sel.filter((x) => x !== t.id) : s.sel.concat([t.id]), err: '' }); },
+        pct: s.pct[t.id] == null ? '100' : s.pct[t.id],
+        pctLabel: (eg ? 'نسبة الحدث من ' : 'نسبة الحدث من ') + t.name,
+        typePct: (e) => this.setState({ pct: Object.assign({}, s.pct, { [t.id]: e && e.target ? e.target.value : '' }), err: '' }),
+        quick: [100, 75, 50, 25].map((v) => ({ label: n(v) + '٪', on: p === v ? 'true' : 'false', style: quickStyle(p === v), pick: () => this.setState({ pct: Object.assign({}, s.pct, { [t.id]: String(v) }), err: '' }) })),
+        partLabel: ok ? (p === 100 ? (eg ? 'العملية كلها على الحدث' : 'العملية كاملة على الحدث') : (eg ? 'نصيب الحدث، والباقي بيفضل عادي' : 'نصيب الحدث، ويبقى الباقي عاديًا')) : (eg ? 'النسبة من ١ لـ١٠٠' : 'النسبة من ١ إلى ١٠٠'),
+        partValue: ok ? '−' + money(this.shareOf(t.amt, p)) : '—',
+        partStyle: 'font-size: 13px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (ok ? '#BE3D48' : '#637570')
+      };
+    });
+    return {
+      openLabel: eg ? 'اربط مصروف بنسبة' : 'اربط مصروفًا بنسبة',
+      openSheet: () => this.setState({ open: true, q: '', sel: [], pct: {}, err: '' }),
+      open: s.open,
+      closeSheet: () => this.setState({ open: false }),
+      title: (eg ? 'اربط مصروف بـ«' : 'اربط مصروفًا بـ«') + evName + '»',
+      intro: eg ? 'اختار عملية أو أكتر، وحدد نصيب الحدث من كل واحدة.' : 'اختر عملية أو أكثر، وحدّد نصيب الحدث من كل واحدة.',
+      searchPh: eg ? 'دوّر باسم المحل أو المبلغ' : 'ابحث باسم المتجر أو المبلغ',
+      q: s.q, typeQ: (e) => this.setState({ q: e && e.target ? e.target.value : '' }),
+      listLabel: eg ? 'مصروفك الأخير' : 'مصروفك الأخير',
+      listHint: eg ? 'آخر ٣٠ يوم، والأحدث الأول. العملية بتتربط بحدث واحد بس.' : 'آخر ٣٠ يومًا، والأحدث أولًا. تُربط العملية بحدث واحد فقط.',
+      rows,
+      noMatch: shown.length === 0,
+      noMatchText: (eg ? 'مفيش عمليات فيها «' : 'لا عمليات تطابق «') + String(s.q || '').trim() + '»',
+      tagNote: eg ? 'الربط علامة على العملية — مش بيغيّر مصروف الشهر ولا تصنيفها، والنسبة بتتحفظ مع الربط.' : 'الربط علامة على العملية — لا يغيّر مصروف الشهر ولا تصنيفها، وتُحفظ النسبة مع الربط.',
+      totalLabel: eg ? 'هيتضاف لمصروف الحدث' : 'يُضاف إلى مصروف الحدث',
+      totalValue: !picked.length ? (eg ? 'لسه ما اخترتش' : 'لم تختر بعد') : allOk ? '−' + money(total) : '—',
+      totalStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (picked.length && allOk ? '#BE3D48' : '#637570') + (picked.length ? '' : '; font-size: 13px'),
+      totalSub: !picked.length ? (eg ? 'اختار عملية من القايمة.' : 'اختر عملية من القائمة.') : allOk ? plural(picked.length, COUNT) + (eg ? ' — كل واحدة بنصيبها.' : ' — كلٌّ منها بنصيبه.') : (eg ? 'فيه نسبة برّه ١–١٠٠.' : 'إحدى النسب خارج ١–١٠٠.'),
+      err: s.err,
+      saveLabel: picked.length ? (eg ? 'اربط ' : 'اربط ') + plural(picked.length, OBJ) : (eg ? 'اربط بالحدث' : 'اربط بالحدث'),
+      save: () => {
+        if (!picked.length) return this.setState({ err: eg ? 'اختار عملية واحدة على الأقل.' : 'اختر عملية واحدة على الأقل.' });
+        if (!allOk) return this.setState({ err: eg ? 'نسبة كل عملية لازم تبقى من ١ لـ١٠٠.' : 'نسبة كل عملية يجب أن تكون من ١ إلى ١٠٠.' });
+        const items = picked.map((t) => { const p = pOf(t.id); return { name: t.name, amountMinor: t.amt, percent: p, linkedMinor: this.shareOf(t.amt, p), date: t.date, wallet: t.wallet }; });
+        this.setState({ open: false, done: s.done.concat(picked.map((t) => t.id)), sel: [], pct: {}, q: '', err: '' });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ items, totalMinor: items.reduce((a, x) => a + x.linkedMinor, 0) });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

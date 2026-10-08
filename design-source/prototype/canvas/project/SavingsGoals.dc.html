@@ -163,7 +163,7 @@ class Component extends DCLogic {
       [eg ? 'المطلوب في الشهر' : 'المطلوب شهريًا', c.unknown ? NA : this.fmt(c.per), ''],
       [eg ? 'هتوصل لكام' : 'ستصل إلى', c.unknown ? NA : c.reach == null ? (eg ? 'بعد ٣٠ يوم' : 'بعد ٣٠ يومًا') : this.fmt(c.reach), c.reach != null && c.reach < g.target ? '#956000' : '']
     ];
-    const sub = (g) => (eg ? 'لحد ' : 'حتى ') + g.end + ' · ' + (g.wallet ? g.wallet.name + ' \u2066••••\u00A0' + g.wallet.last4 + '\u2069' : (eg ? 'إيداعات بإيدك' : 'إيداعات يدوية'));
+    const sub = (g) => (eg ? 'لحد ' : 'حتى ') + g.end + '، ' + (g.wallet ? g.wallet.name + ' \u2066••••\u00A0' + g.wallet.last4 + '\u2069' : (eg ? 'إيداعات بإيدك' : 'إيداعات يدوية'));
     const goals = live.map((g) => {
       const c = this.calc(g);
       const chip = c.unknown ? [NA, '#637570', 'rgba(25,61,51,0.06)'] : c.reached ? [eg ? 'كملت' : 'اكتملت', '#13764D', '#DCEBD6'] : g.elapsed < 30 ? [eg ? 'جديدة' : 'جديدة', '#2469BA', 'rgba(36,105,186,0.10)'] : c.diff >= 0 ? [eg ? 'قدّام' : 'متقدّمة', '#13764D', '#DCEBD6'] : [eg ? 'ورا' : 'متأخرة', '#BE3D48', 'rgba(190,61,72,0.10)'];
@@ -176,14 +176,14 @@ class Component extends DCLogic {
         },
         chip: chip[0], chipStyle: chipS(chip[1], chip[2]),
         savedText: c.unknown ? NA : this.fmt(c.saved) + ' ' + cur,
-        ofText: (eg ? 'من ' : 'من ') + this.fmt(g.target) + (c.unknown ? '' : ' · ' + c.pct.toLocaleString('ar-EG') + '٪'),
+        ofText: (eg ? 'من ' : 'من ') + this.fmt(g.target) + (c.unknown ? '' : '، ' + c.pct.toLocaleString('ar-EG') + '٪'),
         pct: String(c.unknown ? 0 : c.pct), bar: 'display: block; height: 8px; border-radius: 4px; width: ' + (c.unknown ? 0 : c.pct) + '%; background: ' + (c.reached ? '#13764D' : '#08634F'),
         stats: statsOf(g, c).map(([label, value, color]) => ({ label, value, style: 'text-align: right; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (color || '#193D33') })),
         openLabel: g.wallet ? (eg ? 'التفاصيل' : 'التفاصيل') : (eg ? 'التفاصيل والإيداعات' : 'التفاصيل والإيداعات'),
         open: () => this.setState({ open: g.id }) };
     });
     const og = this.cur(), oc = og ? this.calc(og) : null;
-    const sheetGoal = og ? { id: og.id, name: og.name, starred: !!og.starred, sub: (eg ? 'الهدف ' : 'الهدف ') + this.fmt(og.target) + ' ' + cur + ' · ' + sub(og),
+    const sheetGoal = og ? { id: og.id, name: og.name, starred: !!og.starred, sub: (eg ? 'الهدف ' : 'الهدف ') + this.fmt(og.target) + ' ' + cur + '، ' + sub(og),
       saved: oc.unknown ? NA : this.fmt(oc.saved), of: oc.unknown ? (eg ? 'رصيد الحساب مش معروف — كله غير متاح' : 'رصيد الحساب غير معروف — كل الأرقام غير متاحة') : oc.pct.toLocaleString('ar-EG') + '٪، ' + (oc.reached ? (eg ? 'كملت!' : 'اكتملت!') : (eg ? 'فاضل ' : 'بقي ') + this.fmt(oc.rem)),
       pct: oc.unknown ? 0 : oc.pct, reached: oc.reached, linked: !!og.wallet, deps: og.deps,
       link: og.wallet ? (eg ? 'مربوطة بـ«' : 'مربوطة بـ«') + og.wallet.name + ' \u2066••••\u00A0' + og.wallet.last4 + '\u2069' + (eg ? '» — الخطة مربوطة بحساب، المتحوّش بيتحسب من رصيده كله.' : '» — الخطة مربوطة بحساب، والمدّخر يُحسب من رصيده كله.') : '',

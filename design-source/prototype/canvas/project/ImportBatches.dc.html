@@ -141,7 +141,7 @@ class Component extends DCLogic {
     const batches = D.map((x) => {
       const reverted = !!x.reverted || !!s.rev[x.id];
       return {
-        name: x.name, sub: SRC[x.src] + ' · ' + x.when, isSms: x.src === 'sms', isFile: x.src !== 'sms', cls: s.rev[x.id] ? 'g-in' : '',
+        name: x.name, sub: SRC[x.src] + '، ' + x.when, isSms: x.src === 'sms', isFile: x.src !== 'sms', cls: s.rev[x.id] ? 'g-in' : '',
         tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; ' + (reverted ? 'color: #9AA9A4; background: rgba(25,61,51,0.06)' : 'color: #08634F; background: rgba(8,99,79,0.10)'),
         chip: reverted ? (eg ? 'اترجعت' : 'أُرجعت') : (eg ? 'متسجلة' : 'مسجّلة'),
         chipStyle: reverted ? chip('#637570', 'rgba(99,117,112,0.12)') : chip('#08634F', '#DCEBD6'),

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اختر شكلك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.lk-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.lk-press:active{transform:scale(.97)}
+.lk-veil{animation:lk-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.lk-up{animation:lk-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+@keyframes lk-fade{from{opacity:0}to{opacity:1}}
+@keyframes lk-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.lk-press{transition:none}.lk-press:active{transform:none}.lk-up{animation:lk-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="lk-press" onClick="{{openSheet}}" style="width: 100%; height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{openLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="lk-veil" onClick="{{closeSheet}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="lk-up" style="position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+        <div role="radiogroup" aria-label="{{title}}" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; justify-items: center; padding: 6px 0">
+          <sc-for list="{{looks}}" as="lk" hint-placeholder-count="6">
+            <button type="button" role="radio" aria-checked="{{lk.on}}" aria-label="{{lk.label}}" class="lk-press" onClick="{{lk.pick}}" style="{{lk.style}}"><dc-import name="MeAvatar" size="{{60}}" pct="{{100}}" look="{{lk.k}}" hint-size="60px,60px"></dc-import></button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #637570; text-align: center">{{note}}</span>
+        <button type="button" class="lk-press" onClick="{{save}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":44}}'>
+// «اختر شكلك» من صفحة «ملفك» — نفس الأشكال الستة المؤقتة اللي في أول مرة (الكاركتر النهائي لسه بيتصمم §73 · رد المالك ٢٠٢٦-١٠-٠٨ «لسه ما اتعملش»)
+// الاختيار بيتحفظ في masroufy-avatar، والدواير (الرئيسية · المزيد · ملفك) بتقراه — والصفحة الأم بتاخد onSave(k)
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, pick: null }; }
+  saved() { let k = 1; try { k = Number(window.sessionStorage.getItem('masroufy-avatar')) || 1; } catch (e) {} return k >= 1 && k <= 6 ? k : 1; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
+    const cur = s.pick || this.saved();
+    const n = (x) => x.toLocaleString('ar-EG');
+    return {
+      openLabel: eg ? 'غيّر شكلك' : 'غيّر شكلك',
+      openSheet: () => this.setState({ open: true, pick: this.saved() }),
+      open: s.open, closeSheet: () => this.setState({ open: false }), closeLabel: eg ? 'اقفل' : 'إغلاق',
+      title: 'اختر شكلك',
+      looks: [1, 2, 3, 4, 5, 6].map((k) => ({ k, label: 'الشكل ' + n(k), on: cur === k ? 'true' : 'false', pick: () => this.setState({ pick: k }),
+        style: 'width: 76px; height: 76px; padding: 0; border: 0; border-radius: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: '
+          + (cur === k ? 'inset 0 0 0 3px #08634F, 0 8px 18px rgba(8,99,79,0.20)' : 'inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.14), 0 8px 18px rgba(8,99,79,0.10)') })),
+      note: eg ? 'أشكال مؤقتة — الكاركتر النهائي لسه بيتصمم.' : 'أشكال مؤقتة — الكاركتر النهائي قيد التصميم.',
+      saveLabel: eg ? 'احفظ' : 'احفظ',
+      save: () => {
+        try { window.sessionStorage.setItem('masroufy-avatar', String(cur)); } catch (e) {}
+        this.setState({ open: false });
+        if (typeof this.props.onSave === 'function') this.props.onSave(cur);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -175,7 +175,7 @@ class Component extends DCLogic {
       pickLabel: eg ? 'اختار ملف النسخة' : 'اختر ملف النسخة', pickFile: () => this.setState({ picking: true }),
       dates: [['from', eg ? 'من' : 'من'], ['to', eg ? 'لحد' : 'إلى']].map(([key, label]) => ({ label, value: s[key], set: (e) => this.setState({ [key]: String(e.target.value || '') }) })),
       badRange,
-      rangeLine: badRange ? (eg ? 'تاريخ البداية لازم يبقى قبل النهاية.' : 'يجب أن يسبق تاريخ البداية تاريخ النهاية.') : say(s.from) + (eg ? ' ← ' : ' ← ') + say(s.to) + ' · ' + plural(days, eg ? ['يوم واحد', 'يومين', 'أيام', 'يوم'] : ['يوم واحد', 'يومان', 'أيام', 'يومًا']),
+      rangeLine: badRange ? (eg ? 'تاريخ البداية لازم يبقى قبل النهاية.' : 'يجب أن يسبق تاريخ البداية تاريخ النهاية.') : say(s.from) + (eg ? ' ← ' : ' ← ') + say(s.to) + '، ' + plural(days, eg ? ['يوم واحد', 'يومين', 'أيام', 'يوم'] : ['يوم واحد', 'يومان', 'أيام', 'يومًا']),
       rangeStyle: 'font-size: 12px; font-weight: 700; color: ' + (badRange ? '#BE3D48' : '#637570'),
       exportLabel: eg ? 'صدّر الملف' : 'صدّر الملف',
       exportStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); ' + (badRange ? 'opacity: 0.45; cursor: default' : 'cursor: pointer'),
@@ -183,7 +183,7 @@ class Component extends DCLogic {
       picking: s.picking, closePick: () => this.setState({ picking: false }),
       pickTitle: eg ? 'اختار ملف النسخة' : 'اختر ملف النسخة',
       pickNote: eg ? 'من ملفات الجوال' : 'من ملفات الجوال',
-      files: [['ok', 'masroufy-backup-2026-09-28.json', eg ? '٢٨ سبتمبر · من الجوال ده' : '٢٨ سبتمبر · من هذا الجوال'], ['v1', 'masroufy-backup-2025-08-01.json', eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم'], ['bad', 'masroufy-backup (1).json', eg ? '٣ أكتوبر · اتعدّل بعد ما اتعمل' : '٣ أكتوبر · عُدّل بعد إنشائه']]
+      files: [['ok', 'masroufy-backup-2026-09-28.json', eg ? '٢٨ سبتمبر، من الجوال ده' : '٢٨ سبتمبر، من هذا الجوال'], ['v1', 'masroufy-backup-2025-08-01.json', eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم'], ['bad', 'masroufy-backup (1).json', eg ? '٣ أكتوبر، اتعدّل بعد ما اتعمل' : '٣ أكتوبر، عُدّل بعد إنشائه']]
         .map(([key, name, meta]) => ({ name, meta, pick: () => this.setState({ picking: false, file: key }) })),
       restoreTitle: eg ? 'معاينة الاسترجاع' : 'معاينة الاسترجاع',
       backLabel: eg ? 'رجوع للنسخة الاحتياطية' : 'رجوع إلى النسخة الاحتياطية',

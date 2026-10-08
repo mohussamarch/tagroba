@@ -44,7 +44,7 @@ body{margin:0}
 
     <div style="border-radius: 26px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
       <div style="display: flex; align-items: center; gap: 14px">
-        <dc-import name="MeAvatar" size="{{64}}" pct="{{pct}}" hint-size="64px,64px"></dc-import>
+        <dc-import name="MeAvatar" size="{{64}}" pct="{{pct}}" look="{{look}}" hint-size="64px,64px"></dc-import>
         <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
           <span style="font-size: 18px; font-weight: 700">{{nameShown}}</span>
           <span dir="ltr" style="font-size: 13px; color: #637570; text-align: right">{{email}}</span>
@@ -54,8 +54,7 @@ body{margin:0}
         <span style="display: flex; justify-content: space-between; font-size: 13px"><span style="font-weight: 700">{{pctLabel}}</span><span style="color: #637570">{{pctHint}}</span></span>
         <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" aria-label="{{pctLabel}}" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="a-bar" style="{{barStyle}}"></span></span>
       </div>
-      <button type="button" disabled="{{true}}" aria-describedby="avatar-soon" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{avatarBtn}}</button>
-      <span id="avatar-soon" style="font-size: 12px; color: #637570; text-align: center; margin-top: -6px">{{avatarSoon}}</span>
+      <span style="display: flex; flex-direction: column; gap: 4px"><dc-import name="LookSheet" space="{{spaceName}}" on-save="{{onLook}}" hint-size="320px,44px"></dc-import><span style="font-size: 12px; color: #637570; text-align: center">{{avatarSoon}}</span></span>
     </div>
 
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
@@ -153,7 +152,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     // مخترعة. null = ما اتجاوبش (مش «لأ» — قاعدة 10). الملف واحد للحساب كله في البلدين (§41).
-    this.state = { p: { name: 'محمد', gender: null, deps: null, salary: null, payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '' };
+    this.state = { p: { name: 'محمد', gender: null, deps: null, salary: null, payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '', look: null };
     this.timers = [];
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
@@ -224,7 +223,8 @@ class Component extends DCLogic {
       pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '٪',
       pctHint: pct >= 100 ? (eg ? 'كامل' : 'مكتمل') : (eg ? 'كل إجابة بتخلي الأرقام أدق' : 'كل إجابة تجعل الأرقام أدق'),
       barStyle: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
-      avatarBtn: eg ? 'اختار أفاتار' : 'اختر أفاتار', avatarSoon: eg ? 'الأفاتارات بتتضاف بعدين.' : 'تُضاف الأفاتارات لاحقًا.',
+      avatarSoon: eg ? 'الكاركتر النهائي لسه بيتصمم.' : 'الكاركتر النهائي قيد التصميم.',
+      look: s.look || 0, onLook: (k) => { this.setState({ look: k }); this.say(eg ? 'اتغيّر شكلك' : 'تغيّر شكلك'); },
       groups,
       budgetGroup: eg ? 'الميزانية' : 'الميزانية',
       duesTitle: eg ? 'المستحقات جوه حد الميزانية' : 'المستحقات ضمن حد الميزانية',
@@ -250,6 +250,7 @@ class Component extends DCLogic {
       sTwo: !!(sh && sh.two), act1Label: sh && sh.two ? sh.two[0] : '', act1: () => { if (sh && sh.two) sh.two[1](); }, act2Label: sh && sh.two ? sh.two[2] : '', act2: () => { if (sh && sh.two) sh.two[3](); },
       act1Style: 'flex: 1 1 0; ' + primary + (sh && sh.danger ? 'background: #BE3D48' : 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
       closeSheet: () => this.setState({ sheet: null, draft: null }),
+      spaceName: eg ? 'مصر' : 'السعودية',
       hasToast: !!s.toast, toast: s.toast
     };
   }
