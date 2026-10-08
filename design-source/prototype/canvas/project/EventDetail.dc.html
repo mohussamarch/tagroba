@@ -62,8 +62,7 @@ body{margin:0}
             </sc-for>
             <sc-if value="{{noSpend}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 14px 0; font-size: 13px; color: #637570">{{noSpendText}}</span></sc-if>
           </div>
-          <button type="button" disabled="{{true}}" aria-describedby="ed-link-soon" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{linkSpendLabel}}</button>
-          <span id="ed-link-soon" style="font-size: 12px; color: #637570">{{linkSpendSoon}}</span>
+          <dc-import name="EventSpendLinkSheet" space="{{spaceName}}" event-name="{{title}}" on-save="{{onLinkSpend}}" hint-size="350px,44px"></dc-import>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px">
@@ -145,7 +144,7 @@ class Component extends DCLogic {
     try { st = window.sessionStorage.getItem('masroufy-event'); } catch (e) {}
     return ['jood', 'khaled', 'trip', 'salem', 'eid'].indexOf(st) >= 0 ? st : 'jood';
   }
-  fresh(props) { const key = this.pick(props), d = this.data((props.space ?? 'السعودية') === 'مصر')[key]; return { key, added: [], archived: !!d.archived, remind: false, lead: 7, toast: '' }; }
+  fresh(props) { const key = this.pick(props), d = this.data((props.space ?? 'السعودية') === 'مصر')[key]; return { key, added: [], linked: [], archived: !!d.archived, remind: false, lead: 7, toast: '' }; }
   ev() { return this.data(this.eg())[this.state.key]; }
   // مخترعة · بالوحدة الصغرى (السعودية) · share = نصيب الحدث من العملية بالنسبة المتخزنة على الربط (§64)
   data(eg) {
@@ -168,14 +167,16 @@ class Component extends DCLogic {
     const rel = (d) => { const a = Math.abs(d), t = a === 1 ? 'يوم' : a === 2 ? 'يومين' : n(a) + ' ' + (a <= 10 ? 'أيام' : (eg ? 'يوم' : 'يومًا')); return d === 0 ? (eg ? 'النهارده' : 'اليوم') : d > 0 ? 'بعد ' + t : (eg ? 'من ' : 'قبل ') + t; };
     const KIND = { wedding: 'فرح', travel: 'سفر', birth: 'ولادة', condolence: eg ? 'عزا' : 'عزاء', eid: 'عيد' };
     const line = (i, last) => 'display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 0;' + (i === last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);');
-    const spendsD = empty ? [] : e.spends;
+    const spendsD = empty ? [] : e.spends, linkedD = empty ? [] : s.linked, nSp = spendsD.length + linkedD.length;
     // مصروف الحدث = نصيبه من كل عملية (المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق) — من غير ما النقوط تتطرح منه أبدًا
     const shareOf = (amt, p) => p === 100 ? amt : (amt * p - ((amt * p) % 100)) / 100 + (((amt * p) % 100) * 2 >= 100 ? 1 : 0);
     const spends = spendsD.map(([name, when, wallet, amt, p], i) => ({
       name, sub: when + '، ' + wallet, amount: '−' + this.fmt(shareOf(amt * k, p)),
-      share: p === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(p) + '٪ من ' + this.fmt(amt * k), rowStyle: line(i, spendsD.length - 1)
+      share: p === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(p) + '٪ من ' + this.fmt(amt * k), rowStyle: line(i, nSp - 1)
     }));
-    const spendSum = spendsD.reduce((t, x) => t + shareOf(x[3] * k, x[4]), 0);
+    const spendSum = spendsD.reduce((t, x) => t + shareOf(x[3] * k, x[4]), 0) + linkedD.reduce((t, x) => t + x.linkedMinor, 0);
+    // اللي اتربط من «اربط مصروفًا بنسبة» (مبالغه جاية بعملة البلد الشغالة — من غير ضرب تاني)
+    const spendsAll = spends.concat(linkedD.map((x, j) => ({ name: x.name, sub: x.date + '، ' + x.wallet, amount: '−' + this.fmt(x.linkedMinor), share: x.percent === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(x.percent) + '٪ من ' + this.fmt(x.amountMinor), rowStyle: line(spendsD.length + j, nSp - 1) })));
     const giftsD = (empty ? [] : e.gifts.map(([who, amt, via, when]) => ({ who, amt: amt * k, via, when }))).concat(s.added);
     const giftSum = giftsD.reduce((t, g) => t + g.amt, 0);
     const gifts = giftsD.slice().reverse().map((g, i) => ({
@@ -200,15 +201,15 @@ class Component extends DCLogic {
       owner: e.mine ? (eg ? 'حدثك' : 'حدثك') : (eg ? 'صاحبه: ' : 'صاحبه: ') + e.host,
       ownerStyle: 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 12px; color: #FFFFFF; background: rgba(255,255,255,0.16)',
       spendLabel: eg ? 'المصروف عليه' : 'المصروف عليه',
-      spendText: spendsD.length ? this.fmt(spendSum) + ' ' + cur : (eg ? 'لسه ما اتربطش' : 'لم يُربط بعد'), spendStyle: big(!!spendsD.length),
+      spendText: nSp ? this.fmt(spendSum) + ' ' + cur : (eg ? 'لسه ما اتربطش' : 'لم يُربط بعد'), spendStyle: big(!!nSp),
       giftLabel: e.mine ? (eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك') : giftWord,
       giftText: giftsD.length ? (e.mine ? '+' : '−') + this.fmt(giftSum) + ' ' + cur : (e.mine ? (eg ? 'لسه مفيش' : 'لا شيء بعد') : (eg ? 'لسه' : 'لم تنقّطه بعد')),
       giftStyle: big(!!giftsD.length) + (giftsD.length ? '; color: ' + (e.mine ? '#A6DEC1' : '#FFD0D2') : ''),
       heroNote: e.mine ? (eg ? 'النقوط للمعلومية بس — ما بتتطرحش من المصروف.' : 'النقوط للمعلومية فقط — لا تُطرح من المصروف.') : (eg ? 'حدث ' + e.host + ' — النقوط اللي جاتله مش بتظهر هنا.' : 'حدث ' + e.host + ' — نقوطه لا تظهر هنا، بل ما قدّمته أنت.'),
-      spendTitle: (eg ? 'المصروف' : 'المصروف') + (spendsD.length ? ' (' + n(spendsD.length) + ')' : ''),
-      spends, noSpend: !spendsD.length, noSpendText: eg ? 'لسه مفيش مصروف متربط بالحدث ده.' : 'لا مصروف مربوطًا بهذا الحدث بعد.',
-      linkSpendLabel: eg ? 'اربط مصروف بنسبة' : 'اربط مصروفًا بنسبة',
-      linkSpendSoon: eg ? 'الربط بنسبة من صفحة العملية نفسها: «اربطها بـ» ← «مشروع أو حدث».' : 'الربط بنسبة من صفحة العملية نفسها: «اربطها بـ» ← «مشروع أو حدث».',
+      spendTitle: (eg ? 'المصروف' : 'المصروف') + (nSp ? ' (' + n(nSp) + ')' : ''),
+      spends: spendsAll, noSpend: !nSp, noSpendText: eg ? 'لسه مفيش مصروف متربط بالحدث ده.' : 'لا مصروف مربوطًا بهذا الحدث بعد.',
+      onLinkSpend: (p) => { if (!p || !p.items || !p.items.length) return; const c = p.items.length, t = (s.edited && s.edited.name) || e.name; this.setState((st) => ({ linked: st.linked.concat(p.items) }));
+        this.say(eg ? 'اتربطت ' + plural(c, ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية']) + ' بـ«' + t + '» — اتضاف ' + this.fmt(p.totalMinor) + ' ' + cur + ' لمصروفه' : 'رُبطت ' + plural(c, ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + ' بـ«' + t + '» — أُضيف ' + this.fmt(p.totalMinor) + ' ' + cur + ' إلى مصروفه'); },
       giftTitle: (e.mine ? (eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك') : giftWord) + (giftsD.length ? ' (' + n(giftsD.length) + ')' : ''),
       gifts, noGifts: !giftsD.length, noGiftsText: e.mine ? (eg ? 'لسه مفيش نقوط متسجلة.' : 'لا نقوط مسجّلة بعد.') : (eg ? 'لسه ما سجّلتش حاجة.' : 'لم تسجّل شيئًا بعد.'),
       spaceName: eg ? 'مصر' : 'السعودية', mine: !!e.mine, host: e.host || '', isCondolence: e.kind === 'condolence', onGifts: this.onGifts,

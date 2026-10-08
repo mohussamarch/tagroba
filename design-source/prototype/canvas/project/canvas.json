@@ -841,6 +841,62 @@
       "y": 23250,
       "w": 350,
       "h": 44
+    },
+    "StatementColumns.dc.html": {
+      "is_interactive": true,
+      "title": "حدّد الأعمدة يدويًا · StatementColumns (من «كشف الحساب»)",
+      "x": 1060,
+      "y": 21100,
+      "w": 390,
+      "h": 844
+    },
+    "EventSpendLinkSheet.dc.html": {
+      "is_interactive": true,
+      "title": "اربط مصروفًا بنسبة · EventSpendLinkSheet (قطعة جوه تفاصيل الحدث)",
+      "x": 590,
+      "y": 23350,
+      "w": 350,
+      "h": 44
+    },
+    "HawlDaySheet.dc.html": {
+      "is_interactive": true,
+      "title": "يوم الحول الهجري · HawlDaySheet (قطعة جوه الزكاة)",
+      "x": 590,
+      "y": 23460,
+      "w": 350,
+      "h": 48
+    },
+    "ResetPasswordSheet.dc.html": {
+      "is_interactive": true,
+      "title": "نسيت كلمة المرور · ResetPasswordSheet (قطعة جوه الدخول بالبريد)",
+      "x": 590,
+      "y": 23570,
+      "w": 350,
+      "h": 44
+    },
+    "WalletAddSheet.dc.html": {
+      "is_interactive": true,
+      "title": "إضافة محفظة · رصيد البداية · WalletAddSheet (قطعة جوه المحافظ وتفاصيل المحفظة)",
+      "x": 590,
+      "y": 23680,
+      "w": 350,
+      "h": 48
+    },
+    "IncomeSourceEditSheet.dc.html": {
+      "is_interactive": true,
+      "title": "تعديل مصدر الدخل · IncomeSourceEditSheet (قطعة جوه مصادر الدخل)",
+      "x": 590,
+      "y": 23790,
+      "w": 350,
+      "h": 44
+    },
+    "GoalEditSheet.dc.html": {
+      "is_interactive": true,
+      "title": "تعديل الهدف · GoalEditSheet (قطعة جوه الهدف)",
+      "x": 590,
+      "y": 23900,
+      "w": 350,
+      "h": 48
     }
   },
   "createdOnFiles": {
@@ -1103,7 +1159,14 @@
     "OccasionSheet.dc.html",
     "EventEditSheet.dc.html",
     "MeAvatar.dc.html",
-    "LookSheet.dc.html"
+    "LookSheet.dc.html",
+    "StatementColumns.dc.html",
+    "EventSpendLinkSheet.dc.html",
+    "HawlDaySheet.dc.html",
+    "ResetPasswordSheet.dc.html",
+    "WalletAddSheet.dc.html",
+    "IncomeSourceEditSheet.dc.html",
+    "GoalEditSheet.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

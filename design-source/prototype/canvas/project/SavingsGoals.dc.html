@@ -79,7 +79,7 @@ body{margin:0}
   </div>
 
   <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
-    <dc-import name="GoalDetail" space="{{spaceName}}" mode="{{sheetMode}}" goal="{{sheetGoal}}" celebrate="{{celebrating}}" on-deposit="{{onDeposit}}" on-remove="{{onRemove}}" on-archive="{{onArchive}}" on-create="{{onCreate}}" on-close="{{closeSheet}}" hint-size="390px,844px"></dc-import>
+    <dc-import name="GoalDetail" space="{{spaceName}}" mode="{{sheetMode}}" goal="{{sheetGoal}}" celebrate="{{celebrating}}" on-deposit="{{onDeposit}}" on-remove="{{onRemove}}" on-archive="{{onArchive}}" on-create="{{onCreate}}" on-edit="{{onEdit}}" on-close="{{closeSheet}}" hint-size="390px,844px"></dc-import>
   </sc-if>
 
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
@@ -99,6 +99,14 @@ class Component extends DCLogic {
     this.onRemove = (id) => this.edit((g) => Object.assign({}, g, { deps: g.deps.filter((d) => d[0] !== id) }), this.eg() ? 'اتشال الإيداع' : 'حُذف الإيداع');
     this.onArchive = () => { const g = this.cur(); if (!g) return; this.edit((x) => Object.assign({}, x, { archived: true }), (this.eg() ? 'اتأرشفت «' : 'أُرشفت «') + g.name + (this.eg() ? '» — ما بتتمسحش، وموجودة في المتأرشفة' : '» — لا تُحذف، وتبقى في المؤرشفة')); this.setState({ open: null }); };
     this.onCreate = (n) => this.create(n);
+    // «تعديل» من GoalDetail (GoalEditSheet): الاسم والهدف والموعد (الشهور بالتقويم والأيام من النهارده جاهزين) + أرشفة — ManageSavingsGoals.edit / archive
+    this.onEdit = (p) => {
+      const g = this.cur(); if (!g || !p || !p.name || !p.date) return;
+      const eg = this.eg();
+      this.edit((x) => Object.assign({}, x, { name: p.name, target: p.targetMinor, end: p.dateText, months: p.months, total: x.elapsed + p.daysLeft, archived: !!p.archived }),
+        p.archived ? (eg ? 'اتأرشفت «' : 'أُرشفت «') + p.name + (eg ? '» — ما بتتمسحش، وموجودة في المتأرشفة' : '» — لا تُحذف، وتبقى في المؤرشفة') : (eg ? 'اتحفظت خطة «' : 'حُفظت خطة «') + p.name + '»');
+      if (p.archived) this.setState({ open: null });
+    };
     this.closeSheet = () => this.setState({ open: null });
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
@@ -187,7 +195,7 @@ class Component extends DCLogic {
       saved: oc.unknown ? NA : this.fmt(oc.saved), of: oc.unknown ? (eg ? 'رصيد الحساب مش معروف — كله غير متاح' : 'رصيد الحساب غير معروف — كل الأرقام غير متاحة') : oc.pct.toLocaleString('ar-EG') + '٪، ' + (oc.reached ? (eg ? 'كملت!' : 'اكتملت!') : (eg ? 'فاضل ' : 'بقي ') + this.fmt(oc.rem)),
       pct: oc.unknown ? 0 : oc.pct, reached: oc.reached, linked: !!og.wallet, deps: og.deps,
       link: og.wallet ? (eg ? 'مربوطة بـ«' : 'مربوطة بـ«') + og.wallet.name + ' \u2066••••\u00A0' + og.wallet.last4 + '\u2069' + (eg ? '» — الخطة مربوطة بحساب، المتحوّش بيتحسب من رصيده كله.' : '» — الخطة مربوطة بحساب، والمدّخر يُحسب من رصيده كله.') : '',
-      stats: statsOf(og, oc) } : null;
+      stats: statsOf(og, oc), targetMinor: og.target, savedMinor: oc.unknown ? null : oc.saved, end: og.end } : null;
     const isEmpty = !live.length && (this.props.state ?? 'عادي') === 'فاضي' && !arch.length;
     return {
       title: eg ? 'خطط الادخار' : 'خطط الادخار', newLabel: eg ? 'خطة جديدة' : 'خطة جديدة', openNew: () => this.setState({ open: 'new' }),
@@ -199,7 +207,7 @@ class Component extends DCLogic {
       archivedList: arch.map((g) => ({ name: g.name, text: this.fmt(this.calc(g).saved) + ' / ' + this.fmt(g.target) })),
       method: eg ? 'المفروض النهارده = خط مستقيم بالأيام من البداية للميعاد. «هتوصل لكام» بمعدلك من البداية، وبيظهر بعد ٣٠ يوم.' : 'المفروض اليوم = خط مستقيم بالأيام من البداية إلى الموعد. «ستصل إلى» بمعدلك منذ البداية، ويظهر بعد ٣٠ يومًا.',
       sheetOpen: !!s.open && (s.open === 'new' || !!og), sheetMode: s.open === 'new' ? 'new' : 'detail', sheetGoal, celebrating: !!og && s.celebrate === og.id,
-      onDeposit: this.onDeposit, onRemove: this.onRemove, onArchive: this.onArchive, onCreate: this.onCreate, closeSheet: this.closeSheet,
+      onDeposit: this.onDeposit, onRemove: this.onRemove, onArchive: this.onArchive, onCreate: this.onCreate, onEdit: this.onEdit, closeSheet: this.closeSheet,
       spaceName: eg ? 'مصر' : 'السعودية', hasToast: !!s.toast, toast: s.toast
     };
   }

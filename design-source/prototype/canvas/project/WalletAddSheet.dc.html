@@ -22,6 +22,7 @@ body{margin:0}
 @media (prefers-reduced-motion: reduce){.wa-press{transition:none}.wa-press:active{transform:none}.wa-up{animation:wa-fade 150ms both}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 input::placeholder{color:#8A9A95}
+.wa-box:focus-within{box-shadow:0 0 0 3px #956000 !important}.wa-box input:focus-visible{box-shadow:none}
 input:disabled{opacity:.45;cursor:default}
 </style>
 </helmet>
@@ -66,7 +67,7 @@ input:disabled{opacity:.45;cursor:default}
 
         <div style="display: flex; gap: 8px; margin-top: 2px">
           <label style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{amountLabel}}
-            <span style="{{amountBox}}">
+            <span class="wa-box" style="{{amountBox}}">
               <input type="text" inputmode="decimal" dir="ltr" aria-label="{{amountLabel}}" value="{{amount}}" onInput="{{typeAmount}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; text-align: right; font-variant-numeric: tabular-nums; outline: none">
               <span style="font-size: 12px; font-weight: 500; color: #637570">{{currency}}</span>
             </span>
@@ -204,7 +205,7 @@ class Component extends DCLogic {
       amountBox: 'height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 16px; display: flex; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (shown('amount') && E.amount.indexOf('التاريخ') < 0 ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
       amount: d.amount, typeAmount: (e) => { if (e && e.target) set({ amount: e.target.value }); }, currency: cur,
       dateLabel: eg ? 'في يوم' : 'في تاريخ', today: TODAY, date: d.date, dateOff: !edit && !amountText,
-      typeDate: (e) => { if (e && e.target && e.target.value) set({ date: e.target.value }); },
+      typeDate: (e) => { if (e && e.target && /^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) set({ date: e.target.value }); },
       dateStyle: field(!!shown('amount') && E.amount.indexOf('التاريخ') >= 0) + '; width: 100%; font-size: 14px; padding: 0 10px',
       amountErr: shown('amount'), amountErrStyle: errS(shown('amount')),
       effect, effectNote: note,

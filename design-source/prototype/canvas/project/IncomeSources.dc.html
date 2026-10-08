@@ -97,14 +97,13 @@ body{margin:0}
         <sc-if value="{{detailOpen}}" hint-placeholder-val="{{ true }}">
           <button type="button" class="m-press" onClick="{{openClose}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">{{closeSourceLabel}}</button>
         </sc-if>
-        <button type="button" disabled="{{true}}" aria-describedby="edit-soon" style="height: 44px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{editLabel}}</button>
-        <span id="edit-soon" style="font-size: 12px; color: #637570; text-align: center; margin-top: -8px">{{editSoon}}</span>
+        <dc-import name="IncomeSourceEditSheet" space="{{spaceName}}" info="{{detailInfo}}" month-start="{{monthStart}}" on-save="{{onEdit}}" hint-size="350px,44px"></dc-import>
       </div>
     </sc-if>
   </div>
 
   <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
-    <dc-import name="JobChangeSheet" space="{{spaceName}}" mode="{{sheetMode}}" sources="{{currentJson}}" source="{{closeId}}" on-done="{{onDone}}" on-close="{{onClose}}" hint-size="390px,844px"></dc-import>
+    <dc-import name="JobChangeSheet" space="{{spaceName}}" mode="{{sheetMode}}" month-start="{{monthStart}}" sources="{{currentJson}}" source="{{closeId}}" on-done="{{onDone}}" on-close="{{onClose}}" hint-size="390px,844px"></dc-import>
   </sc-if>
 
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
@@ -130,9 +129,18 @@ class Component extends DCLogic {
       { id: 'ahly', name: 'شهادة ادخار — البنك الأهلي المصري', kind: 'investment', start: '١ يوليو ٢٠٢٦', end: null, freq: 'monthly', day: 1, expected: 225000 },
       { id: 'delta', name: 'شركة الدلتا للمقاولات', kind: 'job', start: '١ سبتمبر ٢٠٢١', end: '٢٩ فبراير ٢٠٢٤', freq: 'monthly', day: 25, expected: null }
     ];
-    this.state = { lists: { sa, eg, sa0: [], eg0: [] }, view: null, sheet: null, payer: 'ask', toast: '' };
+    // بداية الشهر المالي = يوم الراتب، واحد للحساب كله (§64 رد ١) — بيتغيّر من «غيّرت شغلي» أو من «تعديل» لو وافق
+    this.state = { lists: { sa, eg, sa0: [], eg0: [] }, view: null, sheet: null, payer: 'ask', toast: '', monthStart: 28 };
     this.timers = [];
     this.onClose = () => this.setState({ sheet: null });
+    // «تعديل» (IncomeSourceEditSheet): الاسم واليوم والمتوقع — النهاية مش من هنا (ManageIncomeSources.edit ما بيغيّرهاش)
+    this.onEdit = (r) => {
+      if (!r || !r.id) return;
+      const k = this.key(), eg2 = k.indexOf('eg') === 0;
+      const list = this.state.lists[k].map((x) => (x.id === r.id ? Object.assign({}, x, { name: r.name, day: r.day, weekday: r.weekday, expected: r.expectedMinor }) : x));
+      this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), monthStart: r.monthStart || this.state.monthStart });
+      this.say(r.monthStart ? (eg2 ? 'اتحفظ، وشهرك المالي بقى يبدأ يوم ' : 'حُفظ، وأصبح شهرك المالي يبدأ يوم ') + r.monthStart.toLocaleString('ar-EG') : (eg2 ? 'اتحفظ التعديل' : 'حُفظ التعديل'));
+    };
     this.onDone = (r) => {
       const k = this.key();
       const list = this.state.lists[k].slice();
@@ -142,7 +150,7 @@ class Component extends DCLogic {
       const eg2 = k.indexOf('eg') === 0;
       this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), sheet: null, view: res.add ? null : this.state.view });
       // القفل لوحده ولا كلمة (§64) · الإضافة من غير «مبروك» · «مبروك» اتقالت جوه اللوحة
-      if (res.monthStart) this.say((eg2 ? 'شهرك المالي بقى يبدأ يوم ' : 'أصبح شهرك المالي يبدأ يوم ') + res.monthStart.toLocaleString('ar-EG'));
+      if (res.monthStart) { this.setState({ monthStart: res.monthStart }); this.say((eg2 ? 'شهرك المالي بقى يبدأ يوم ' : 'أصبح شهرك المالي يبدأ يوم ') + res.monthStart.toLocaleString('ar-EG')); }
       else if (res.add && !res.close) this.say((eg2 ? 'اتضاف «' : 'أُضيف «') + res.add.name + '»');
     };
   }
@@ -201,7 +209,7 @@ class Component extends DCLogic {
       addStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (list.length ? 'color: #08634F; background: rgba(8,99,79,0.08)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
       detailInfo: src ? JSON.stringify(src) : '', detailOpen: !!(src && !src.end),
       closeSourceLabel: eg ? 'المصدر ده خلص' : 'إنهاء المصدر', openClose: () => this.setState({ sheet: 'close' }),
-      editLabel: eg ? 'تعديل' : 'تعديل', editSoon: eg ? 'تعديل الاسم والميعاد والمتوقع بيتضاف بعدين.' : 'تعديل الاسم والموعد والمتوقع يُضاف لاحقًا.',
+      onEdit: this.onEdit, monthStart: s.monthStart,
       sheetOpen: !!s.sheet, sheetMode: s.sheet === 'add' ? 'إضافة' : s.sheet === 'close' ? 'إنهاء' : 'غيّرت شغلي',
       currentJson: JSON.stringify((s.sheet === 'change' && salaried.length ? salaried : current).map((x) => ({ id: x.id, name: x.name, kind: x.kind }))),
       closeId: src ? src.id : '', onDone: this.onDone, onClose: this.onClose,

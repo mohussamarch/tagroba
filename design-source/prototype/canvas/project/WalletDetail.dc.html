@@ -17,7 +17,9 @@ body{margin:0}
 @keyframes w-pulse{from{opacity:.5}to{opacity:1}}
 .w-in{animation:w-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
 @keyframes w-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.w-press{transition:none}.w-press:active{transform:none}.w-skel,.w-in{animation:none}}
+.w-toast{animation:w-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes w-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.w-press{transition:none}.w-press:active{transform:none}.w-skel,.w-in,.w-toast{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
@@ -35,6 +37,7 @@ body{margin:0}
       <div style="{{f.rowStyle}}"><span style="font-size: 13px; color: #637570">{{f.label}}</span><span dir="{{f.dir}}" style="font-size: 14px; font-weight: 700; text-align: left">{{f.value}}</span></div>
     </sc-for>
   </div>
+  <dc-import name="WalletAddSheet" space="{{spaceName}}" mode="edit" wallet-name="{{name}}" wallet-kind="{{walletKind}}" last4="{{last4Digits}}" opening="{{openMinor}}" opening-date="{{openDate}}" balance="{{balMinor}}" on-save="{{onOpening}}" hint-size="350px,48px"></dc-import>
 
   <div style="display: flex; flex-direction: column; gap: 8px">
     <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{movesTitle}}</h2>
@@ -45,6 +48,9 @@ body{margin:0}
           <span dir="ltr" style="{{m.amountStyle}}">{{m.amount}}</span>
         </div>
       </sc-for>
+      <sc-if value="{{noMoves}}" hint-placeholder-val="{{ false }}">
+        <span style="display: block; padding: 14px 0; font-size: 13px; color: #637570">{{noMovesText}}</span>
+      </sc-if>
     </div>
   </div>
 
@@ -75,12 +81,19 @@ body{margin:0}
   <sc-if value="{{isCash}}" hint-placeholder-val="{{ false }}">
     <div style="border-radius: 18px; padding: 12px 16px; font-size: 12px; color: #637570; background: rgba(25,61,51,0.04)">{{cashNote}}</div>
   </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="w-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":800}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { rec: {} }; this.timers = []; }
+  constructor(props) { super(props); this.state = { rec: {}, edits: {}, toast: '' }; this.timers = []; }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
@@ -101,10 +114,17 @@ class Component extends DCLogic {
       inma: { name: 'مصرف الإنماء', last4: '٣٣٥٨', bal: 50000, open: [0, '١٠ أغسطس ٢٠٢٦'], mv: [['١ أكتوبر', 'مكتب الواحة للتصميم', 80000, 'sms'], ['٢٤ سبتمبر', 'مكتب الواحة للتصميم', 80000, 'sms'], ['٢٠ سبتمبر', 'اشتراك خدمة بث', -4500, 'sms']], rec: { none: true } },
       cash: { name: 'الكاش', cash: true, bal: 90000, open: [120000, '٢٨ أغسطس ٢٠٢٦'], mv: [['٥ أكتوبر', 'من سحب الصرّاف', 50000, 'sms', 1], ['٤ أكتوبر', 'بقالة الحي', -3500, 'manual'], ['٣ أكتوبر', 'صرف كاش غير مسجّل', -6000, 'count'], ['١ أكتوبر', 'هدية لخالد', -20000, 'manual']] }
     };
-    const id = W[this.props.wallet] ? this.props.wallet : Object.keys(W)[0];
-    const w = W[id];
-    const bankNa = na && !w.cash;
-    const s = this.state;
+    // محفظة اتضافت من «أضف محفظة» في المحافظ (info) — من غير حركات لسه
+    let info = null;
+    try { if (this.props.info) info = typeof this.props.info === 'string' ? JSON.parse(this.props.info) : this.props.info; } catch (e) { info = null; }
+    const id = info ? 'new:' + info.name : W[this.props.wallet] ? this.props.wallet : Object.keys(W)[0];
+    const s = this.state, ed = s.edits[id];
+    const base = info ? { name: info.name, last4: info.last4 || '', kind: info.kind, bal: info.open, open: [info.open, info.at], mv: [], rec: { none: true } } : W[id];
+    // تعديل رصيد البداية محلي هنا (WalletAddSheet بـ mode="edit"): نفس التاريخ ⇒ الرصيد بيتحرك بالفرق بالظبط، تاريخ تاني ⇒ «غير متاح» لحد ما يتحسب
+    const w = ed ? Object.assign({}, base, { open: ed.open, bal: ed.bal }) : base;
+    const openKnown = !!w.cash || (ed ? true : !(na && !info) && w.open[0] != null);
+    const balKnown = openKnown && w.bal != null;
+    const bankNa = !openKnown;
     const rs = tweak === 'بيحمّل' && !s.rec[id] ? 'loading' : (s.rec[id] || 'idle');
     const SRC = { sms: ['رسالة البنك', '#08634F', '#DCEBD6'], stmt: ['كشف الحساب', '#2469BA', 'rgba(36,105,186,0.10)'], both: [eg ? 'رسالة + كشف' : 'رسالة + كشف', '#08634F', '#DCEBD6'], manual: [eg ? 'بإيدك' : 'يدوي', '#637570', 'rgba(25,61,51,0.06)'], count: ['عدّ الكاش', '#BE3D48', 'rgba(190,61,72,0.08)'] };
     const moves = w.mv.map(([date, name, amt, src, move], i) => ({
@@ -116,7 +136,7 @@ class Component extends DCLogic {
     }));
     const fact = (label, value, ltr, last) => ({ label, value, dir: ltr ? 'ltr' : 'rtl', rowStyle: 'display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') });
     const facts = [
-      fact('النوع', w.cash ? (eg ? 'كاش' : 'كاش') : (eg ? 'حساب بنك' : 'حساب بنكي')),
+      fact('النوع', w.cash ? (eg ? 'كاش' : 'كاش') : w.kind === 'digital_wallet' ? 'محفظة إلكترونية' : (eg ? 'حساب بنك' : 'حساب بنكي')),
       fact('العملة', eg ? 'جنيه مصري · ج.م' : 'ريال سعودي · ر.س'),
       bankNa ? fact(eg ? 'رصيد البداية' : 'رصيد البداية', eg ? 'لسه ما اتحددش' : 'لم يُحدَّد بعد', false, true) : fact(eg ? 'رصيد البداية' : 'رصيد البداية', this.fmt(w.open[0]) + ' ' + cur + ' في ' + w.open[1], false, true)
     ];
@@ -137,9 +157,9 @@ class Component extends DCLogic {
     return {
       name: w.name, last4: w.last4 ? '•••• ' + w.last4 : '',
       balanceLabel: eg ? 'الرصيد' : 'الرصيد', approx: !!w.cash, approxLabel: 'تقريبي',
-      hasBalance: !bankNa, noBalance: bankNa, balance: this.fmt(w.bal) + ' ' + cur,
-      balanceSub: bankNa ? (eg ? 'مفيش رصيد بداية — رسالة بنك جديدة أو كشف بيحدده.' : 'لا رصيد بداية — تحدده رسالة بنك جديدة أو كشف.') : w.cash ? (eg ? 'الكاش اللي اتصرف ومااتسجلش مش باين فيه.' : 'لا يظهر فيه الكاش الذي صُرف ولم يُسجَّل.') : (eg ? 'من رصيد البداية والحركات اللي بعده' : 'من رصيد البداية والحركات بعده'),
-      facts, movesTitle: eg ? 'آخر الحركات ومصدرها' : 'آخر الحركات ومصدرها', moves,
+      hasBalance: balKnown, noBalance: !balKnown, balance: balKnown ? this.fmt(w.bal) + ' ' + cur : '',
+      balanceSub: bankNa ? (eg ? 'مفيش رصيد بداية — رسالة بنك جديدة أو كشف بيحدده.' : 'لا رصيد بداية — تحدده رسالة بنك جديدة أو كشف.') : !balKnown ? (eg ? 'بيتحسب من جديد من رصيد البداية والحركات من ' : 'يُعاد حسابه من رصيد البداية والحركات منذ ') + w.open[1] + '.' : w.cash ? (eg ? 'الكاش اللي اتصرف ومااتسجلش مش باين فيه.' : 'لا يظهر فيه الكاش الذي صُرف ولم يُسجَّل.') : (eg ? 'من رصيد البداية والحركات اللي بعده' : 'من رصيد البداية والحركات بعده'),
+      facts, movesTitle: eg ? 'آخر الحركات ومصدرها' : 'آخر الحركات ومصدرها', moves, noMoves: !moves.length, noMovesText: eg ? 'مفيش حركات لسه.' : 'لا حركات بعد.',
       isBank: !w.cash, isCash: !!w.cash,
       cashNote: eg ? 'الكاش مالوش كشف يتطابق عليه — بيتظبط لما تعدّه من كارت الكاش في الرئيسية.' : 'لا كشف للكاش يُطابق عليه — يُضبط حين تعدّه من بطاقة الكاش في الرئيسية.',
       recTitle: eg ? 'مطابقة الرصيد' : 'مطابقة الرصيد', optionalChip: eg ? 'اختيارية' : 'اختيارية',
@@ -150,7 +170,18 @@ class Component extends DCLogic {
       recLines,
       canRun: !recNone && rs !== 'loading', runLabel: rs === 'done' ? (eg ? 'طابق تاني' : 'أعد المطابقة') : (eg ? 'طابق الرصيد' : 'شغّل المطابقة'),
       run: () => { this.setState({ rec: Object.assign({}, this.state.rec, { [id]: 'loading' }) }); this.timers.push(setTimeout(() => this.setState({ rec: Object.assign({}, this.state.rec, { [id]: 'done' }) }), 1200)); },
-      recNa: recNone, recNaBody: bankNa ? (eg ? 'محتاجة رصيد بداية الأول.' : 'تحتاج رصيد بداية أولًا.') : (eg ? 'مفيش حركات برصيد مكتوب لسه — استورد كشف عشان تشتغل.' : 'لا حركات برصيد معلن بعد — استورد كشفًا لتعمل.')
+      recNa: recNone, recNaBody: bankNa ? (eg ? 'محتاجة رصيد بداية الأول.' : 'تحتاج رصيد بداية أولًا.') : (eg ? 'مفيش حركات برصيد مكتوب لسه — استورد كشف عشان تشتغل.' : 'لا حركات برصيد معلن بعد — استورد كشفًا لتعمل.'),
+      // لوحة رصيد البداية (WalletAddSheet) — فاضي = لسه ما اتحددش
+      spaceName: eg ? 'مصر' : 'السعودية', walletKind: w.cash ? 'cash' : 'bank', last4Digits: w.last4 || '',
+      openMinor: openKnown ? w.open[0] : '', openDate: openKnown ? w.open[1] : '', balMinor: balKnown ? w.bal : '',
+      onOpening: (p) => {
+        if (!p || p.openingMinor == null) return;
+        // محفظة لسه من غير حركات ⇒ رصيدها = رصيد البداية بالظبط
+        const bal = p.balanceMinor != null ? p.balanceMinor : !w.mv.length ? p.openingMinor : null;
+        this.setState({ edits: Object.assign({}, this.state.edits, { [id]: { open: [p.openingMinor, p.openingDateText], bal } }) });
+        this.say((eg ? 'اتحفظ رصيد البداية: ' : 'حُفظ رصيد البداية: ') + this.fmt(p.openingMinor) + ' ' + cur + ' في ' + p.openingDateText);
+      },
+      hasToast: !!s.toast, toast: s.toast
     };
   }
 }

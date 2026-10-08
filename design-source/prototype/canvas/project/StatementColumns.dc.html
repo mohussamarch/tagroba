@@ -257,7 +257,7 @@ class Component extends DCLogic {
           headStyle: 'display: block; padding: 0 10px 6px; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; color: ' + (f.heads ? '#193D33' : '#9AA9A4'),
           cells: cells(i).map((t2) => ({ text: t2, style: 'display: block; height: 30px; line-height: 30px; padding: 0 10px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; font-variant-numeric: tabular-nums; border-top: 1px solid rgba(204,216,204,0.55); color: ' + (r === 'skip' ? '#9AA9A4' : '#193D33') })) };
       }),
-      selTitle: colWord(si) + ' · ' + (f.heads ? '«' + f.heads[si] + '»' : (eg ? 'من غير عنوان' : 'بلا عنوان')),
+      selTitle: colWord(si) + '، ' + (f.heads ? '«' + f.heads[si] + '»' : (eg ? 'من غير عنوان' : 'بلا عنوان')),
       selSample: eg ? 'أول قيمة:' : 'أول قيمة:', selFirst: f.rows[0][si] || '—',
       roles: RL.map(([id, label]) => ({ label, on: sr === id ? 'true' : 'false', pick: () => this.assign(si, id, names, eg), style: chip(sr === id, id === sug) })),
       hasSug: !!sug, sugLine: sug ? (eg ? 'عنوانه شكله «' + names[sug] + '» — اختاره عشان تأكده.' : 'عنوانه يوحي بـ«' + names[sug] + '» — اختره لتأكيده.') : '',
@@ -272,7 +272,7 @@ class Component extends DCLogic {
       pvAmt: a0 == null ? 'غير متاح' : (a0 < 0 ? '−' : '+') + this.fmt(a0) + ' ' + cur,
       pvAmtStyle: 'flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; ' + (a0 == null ? 'font-size: 12px; color: #637570' : 'font-size: 15px; font-weight: 700; color: ' + (a0 < 0 ? '#BE3D48' : '#13764D')),
       checks: [
-        ck('التاريخ', !dOk ? 'bad' : fmtUsed ? 'ok' : 'warn', dOk ? colWord(di) + ' · ' + (fmtUsed ? FMT[fmtUsed] : (eg ? 'اختار الصيغة' : 'اختر الصيغة')) : di >= 0 ? colWord(di) + (eg ? ' · قيمه مش تواريخ' : ' · قيمه ليست تواريخ') : unset),
+        ck('التاريخ', !dOk ? 'bad' : fmtUsed ? 'ok' : 'warn', dOk ? colWord(di) + '، ' + (fmtUsed ? FMT[fmtUsed] : (eg ? 'اختار الصيغة' : 'اختر الصيغة')) : di >= 0 ? colWord(di) + (eg ? '، قيمه مش تواريخ' : '، قيمه ليست تواريخ') : unset),
         ck('الوصف', ds >= 0 ? 'ok' : 'bad', ds >= 0 ? colWord(ds) : unset),
         ck(eg ? 'المبلغ' : 'المبلغ', MONEY[0], MONEY[1]),
         ck(eg ? 'الرصيد (مش لازم)' : 'الرصيد (اختياري)', BAL[0], BAL[1])

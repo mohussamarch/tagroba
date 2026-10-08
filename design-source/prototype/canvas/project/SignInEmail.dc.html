@@ -83,10 +83,7 @@ input::placeholder{color:#8A9A95}
           </div>
 
           <sc-if value="{{isSignIn}}" hint-placeholder-val="{{ true }}">
-            <div style="display: flex; flex-direction: column; gap: 2px">
-              <button type="button" disabled="{{true}}" aria-describedby="si-forgot" style="align-self: flex-start; height: 40px; padding: 0; border: 0; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: transparent; opacity: 0.45; cursor: default">نسيت كلمة المرور؟</button>
-              <span id="si-forgot" style="font-size: 12px; color: #637570">إرسال رابط إعادة التعيين إلى بريدك يأتي في خطوة لاحقة.</span>
-            </div>
+            <dc-import name="ResetPasswordSheet" email="{{email}}" offline="{{offline}}" hint-size="350px,44px"></dc-import>
           </sc-if>
 
           <button type="button" class="m-press" onClick="{{submit}}" disabled="{{submitOff}}" aria-busy="{{busyAttr}}" style="{{submitStyle}}">

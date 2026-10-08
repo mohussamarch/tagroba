@@ -76,10 +76,9 @@ body{margin:0}
             </div>
           </sc-if>
           <div style="display: flex; gap: 8px">
-            <button type="button" disabled="{{true}}" aria-describedby="goal-edit-soon" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45">{{editLabel}}</button>
-            <button type="button" class="q-press" onClick="{{archive}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.06)">{{archiveLabel}}</button>
+            <div style="flex: 1 1 0; min-width: 0"><dc-import name="GoalEditSheet" space="{{spaceName}}" goal-name="{{goalName}}" target="{{goalTarget}}" saved="{{goalSaved}}" end-date="{{goalEnd}}" linked="{{goalLinked}}" on-save="{{onEditGoal}}" hint-size="170px,48px"></dc-import></div>
+            <button type="button" class="q-press" onClick="{{archive}}" style="flex: 1 1 0; min-width: 0; height: 48px; padding: 0; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.06)">{{archiveLabel}}</button>
           </div>
-          <span id="goal-edit-soon" style="font-size: 11px; color: #637570">{{editSoon}}</span>
         </div>
       </sc-if>
 
@@ -132,7 +131,8 @@ class Component extends DCLogic {
     const G = this.props.goal || { id: 'g1', name: 'السفر', starred: true, sub: eg ? 'الهدف 36,000.00 ج.م، ٣١ ديسمبر ٢٠٢٦، إيداعات بإيدك' : 'الهدف 12,000.00 ر.س، ٣١ ديسمبر ٢٠٢٦، إيداعات يدوية',
       saved: eg ? '22,200.00' : '7,400.00', of: eg ? '٦١٪، فاضل 13,800.00' : '٦١٪، بقي 4,600.00', pct: 61, linked: false, link: '', reached: false,
       stats: [[eg ? 'المفروض النهارده' : 'المفروض اليوم', eg ? '27,593.41' : '9,197.80', ''], [eg ? 'ورا بـ' : 'متأخرة بـ', eg ? '5,393.41' : '1,797.80', '#BE3D48'], [eg ? 'المطلوب في الشهر' : 'المطلوب شهريًا', eg ? '4,600.00' : '1,533.34', ''], [eg ? 'هتوصل لكام' : 'ستصل إلى', eg ? '28,963.44' : '9,654.48', '']],
-      deps: [['d9', '٢٨ سبتمبر', eg ? 225000 : 75000], ['d8', '٢٨ أغسطس', eg ? 210000 : 70000]] };
+      deps: [['d9', '٢٨ سبتمبر', eg ? 225000 : 75000], ['d8', '٢٨ أغسطس', eg ? 210000 : 70000]],
+      targetMinor: eg ? 3600000 : 1200000, savedMinor: eg ? 2220000 : 740000, end: '٣١ ديسمبر ٢٠٢٦' };
     const BITS = ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#08634F'];
     const bits = [];
     for (let i = 0; i < 16; i++) bits.push({ outer: 'position: absolute; top: 0; left: ' + (4 + i * 6) + '%; animation-delay: ' + ((i * 37) % 300) + 'ms', inner: 'display: block; width: 6px; height: 10px; border-radius: 2px; transform: rotate(' + ((i * 47) % 90 - 45) + 'deg); background: ' + BITS[i % 5] });
@@ -167,7 +167,9 @@ class Component extends DCLogic {
       depLabel: eg ? 'مبلغ الإيداع' : 'مبلغ الإيداع', depText: s.dep, typeDep: (e) => this.setState({ dep: e.target.value, err: '' }), currency: cur,
       depBtn: eg ? 'أودِع' : 'أودِع', deposit, depsTitle: eg ? 'الإيداعات' : 'الإيداعات',
       deps: (G.deps || []).map(([id, date, amt]) => ({ date, amount: '+' + this.fmt(amt), removeLabel: (eg ? 'شيل إيداع ' : 'احذف إيداع ') + date, remove: () => this.call('onRemove', id) })),
-      editLabel: eg ? 'تعديل' : 'تعديل', editSoon: eg ? 'تعديل الاسم والمبلغ والميعاد — في الخطوة الجاية.' : 'تعديل الاسم والمبلغ والموعد — في الخطوة القادمة.',
+      // «تعديل» (GoalEditSheet) — الأرقام بالهللة من «خطط الادخار»، والمدّخر فاضي لو رصيد الحساب مش معروف
+      spaceName: eg ? 'مصر' : 'السعودية', goalName: G.name, goalTarget: G.targetMinor, goalSaved: G.savedMinor == null ? '' : G.savedMinor,
+      goalEnd: G.end || '', goalLinked: G.linked ? '1' : '0', onEditGoal: (p) => this.call('onEdit', p),
       archiveLabel: eg ? 'أرشف الخطة' : 'أرشفة الخطة', archive: () => this.call('onArchive', G.id),
       inputs: [{ id: 'q-name', label: eg ? 'اسم الخطة' : 'اسم الخطة', mode: 'text', dir: 'rtl', ph: eg ? 'مثلًا: عربية' : 'مثلًا: سيارة', value: s.name, type: (e) => this.setState({ name: e.target.value, err: '' }) },
         { id: 'q-target', label: (eg ? 'المبلغ المطلوب (' : 'المبلغ المستهدف (') + cur + ')', mode: 'decimal', dir: 'ltr', ph: '0', value: s.target, type: (e) => this.setState({ target: e.target.value, err: '' }) }],

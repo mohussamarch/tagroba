@@ -145,7 +145,8 @@ class Component extends DCLogic {
     const kind = s.kind;
     // أسئلة المتابعة (newSourceFollowUps): الوظيفة يوم ⇒ بداية الشهر ⇒ المتوقع · البارت تايم الدورية واليوم ⇒ المتوقع · المعاش اليوم بس
     const a = s.ans;
-    const queue = kind === 'job' ? ['payday', a.payday && a.payday !== 28 ? 'monthStart' : null, 'expected'] : kind === 'part_time' ? ['freq', a.freq ? 'pday' : null, 'expected'] : kind === 'pension' ? ['payday'] : [];
+    const ms = Number(this.props.monthStart) || 28; // بداية الشهر المالي الحالية (من الصفحة الأم — مش ٢٨ ثابتة)
+    const queue = kind === 'job' ? ['payday', a.payday && a.payday !== ms ? 'monthStart' : null, 'expected'] : kind === 'part_time' ? ['freq', a.freq ? 'pday' : null, 'expected'] : kind === 'pension' ? ['payday'] : [];
     const qs = queue.filter(Boolean);
     const q = qs.find((x) => a[x] === undefined) || null;
     const answer = (key, v) => this.setState({ ans: Object.assign({}, a, { [key]: v }), amount: '' });
@@ -159,7 +160,7 @@ class Component extends DCLogic {
     };
     const days = [];
     for (let i = 1; i <= 31; i++) days.push({ label: n(i), pick: () => answer(q === 'pday' ? 'pday' : 'payday', i) });
-    const qchips = q === 'monthStart' ? [{ label: eg ? 'أيوه، غيّرها' : 'نعم، غيّرها', pick: () => answer('monthStart', true) }, { label: eg ? 'لأ، سيبها ٢٨' : 'لا، تبقى ٢٨', pick: () => answer('monthStart', false) }]
+    const qchips = q === 'monthStart' ? [{ label: eg ? 'أيوه، غيّرها' : 'نعم، غيّرها', pick: () => answer('monthStart', true) }, { label: eg ? 'لأ، سيبها ' + n(ms) : 'لا، تبقى ' + n(ms), pick: () => answer('monthStart', false) }]
       : q === 'freq' ? [{ label: eg ? 'كل شهر' : 'شهريًا', pick: () => answer('freq', 'monthly') }, { label: eg ? 'كل أسبوع' : 'أسبوعيًا', pick: () => answer('freq', 'weekly') }]
       : q === 'pday' && a.freq === 'weekly' ? WD.map(([v, l]) => ({ label: l, pick: () => answer('pday', v) })) : [];
     const amt = this.toMinor(s.amount);

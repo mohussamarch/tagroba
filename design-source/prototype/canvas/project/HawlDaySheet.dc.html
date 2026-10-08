@@ -28,32 +28,32 @@ body{margin:0}
   <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
     <div style="position: fixed; inset: 0; z-index: 9">
       <button type="button" class="hw-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
-      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="hw-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="hw-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
         <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
         <span style="display: flex; flex-direction: column; gap: 2px">
           <span style="font-size: 17px; font-weight: 700">{{title}}</span>
-          <span style="font-size: 12px; line-height: 1.7; color: #637570">{{intro}}</span>
+          <span style="font-size: 12px; color: #637570">{{intro}}</span>
         </span>
 
-        <span style="font-size: 13px; font-weight: 700">{{monthLabel}}</span>
-        <div role="radiogroup" aria-label="{{monthLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+        <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"><span style="font-size: 13px; font-weight: 700">{{monthLabel}}</span><span style="font-size: 12px; color: #637570">{{todayLine}}</span></span>
+        <div role="radiogroup" aria-label="{{monthLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px">
           <sc-for list="{{months}}" as="hm" hint-placeholder-count="12">
             <button type="button" role="radio" aria-checked="{{hm.on}}" class="hw-press" onClick="{{hm.pick}}" style="{{hm.style}}">{{hm.label}}</button>
           </sc-for>
         </div>
 
-        <span style="font-size: 13px; font-weight: 700; margin-top: 2px">{{dayLabel}}</span>
-        <div role="radiogroup" aria-label="{{dayLabel}}" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+        <span style="font-size: 13px; font-weight: 700">{{dayLabel}}</span>
+        <div role="radiogroup" aria-label="{{dayLabel}}" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px">
           <sc-for list="{{days}}" as="hd" hint-placeholder-count="30">
             <button type="button" role="radio" aria-checked="{{hd.on}}" aria-label="{{hd.aria}}" class="hw-press" onClick="{{hd.pick}}" style="{{hd.style}}">{{hd.label}}</button>
           </sc-for>
         </div>
 
-        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 4px -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
-          <div role="status" style="border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; background: rgba(8,99,79,0.06)">
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 8px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 8px)">
+          <div role="status" style="border-radius: 16px; padding: 8px 14px; display: flex; flex-direction: column; gap: 1px; background: rgba(8,99,79,0.06)">
             <span style="font-size: 14px; font-weight: 700; color: #08634F">{{nextLine}}</span>
             <span style="font-size: 13px">{{gregLine}}</span>
-            <span style="font-size: 12px; line-height: 1.7; color: #637570">{{changeLine}}</span>
+            <span style="font-size: 12px; color: #637570">{{changeLine}}</span>
           </div>
           <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
           <button type="button" class="hw-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
@@ -67,7 +67,7 @@ body{margin:0}
 // «غيّره ليوم هجري» في الزكاة (§62 رد (ج): التطبيق يقترح والمستخدم يأكد أو يغيّره ليوم هجري · يوم ثابت كل سنة هجرية).
 // التقويم: أم القرى من Intl على الجهاز (من غير شبكة) — من النهارده ٧ أكتوبر ٢٠٢٦ لقدّام ٤٠٠ يوم، وأول مرة ييجي فيها اليوم المختار.
 // الشهر اللي ٢٩ يوم السنة دي واليوم المختار ٣٠ ⇒ آخر يوم في الشهر (زي ٢٩ فبراير ⇒ ٢٨ في المناسبات). Intl مش متاح ⇒ الميلادي «غير متاح».
-// الحفظ بيرجّع للشاشة الأم: onSave({ month, day, gregorian: 'YYYY-MM-DD' أو null, hijriYear, effectiveDay, daysAway, reminder: 'YYYY-MM-DD' أو null, hijriText, gregorianText })
+// الحفظ بيرجّع للشاشة الأم: onSave({ month, day, gregorian: 'YYYY-MM-DD' أو null, hijriYear, effectiveDay, daysAway, relText, reminder: 'YYYY-MM-DD' أو null, hijriText, gregorianText })
 const T0 = Date.UTC(2026, 9, 7), DAY = 86400000, LEAD = 10;
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: props.startOpen === true || props.startOpen === 'true', saved: null, m: null, d: null, err: '' }; }
@@ -124,14 +124,15 @@ class Component extends DCLogic {
       open: s.open,
       closeSheet: () => this.setState({ open: false }),
       title: eg ? 'يوم زكاتك الهجري' : 'يوم زكاتك الهجري',
-      intro: (today ? (eg ? 'النهارده ' : 'اليوم ') + ar(today.d) + ' ' + HM[today.m - 1] + ' ' + ar(today.y) + '، و' : '') + (eg ? 'المقترح من سلسلة رصيدك ' : 'المقترح من سلسلة رصيدك ') + ar(SUG[1]) + ' ' + HM[SUG[0] - 1] + (eg ? '. اختار يوم ثابت كل سنة هجرية.' : '. اختر يومًا ثابتًا كل سنة هجرية.'),
+      intro: (eg ? 'يوم ثابت كل سنة هجرية — المقترح من رصيدك ' : 'يوم ثابت كل سنة هجرية — المقترح من رصيدك ') + ar(SUG[1]) + ' ' + HM[SUG[0] - 1],
+      todayLine: today ? (eg ? 'النهارده ' : 'اليوم ') + ar(today.d) + ' ' + HM[today.m - 1] + ' ' + ar(today.y) : '',
       monthLabel: eg ? 'الشهر الهجري' : 'الشهر الهجري',
       months: HM.map((label, i) => ({ label, on: m === i + 1 ? 'true' : 'false', style: chip(m === i + 1, 'padding: 0 2px; font-size: 13px; white-space: nowrap; '), pick: () => this.setState({ m: i + 1, d: d, err: '' }) })),
       dayLabel: eg ? 'اليوم من الشهر' : 'اليوم من الشهر',
       days: Array.from({ length: 30 }, (_, i) => i + 1).map((v) => ({ label: ar(v), aria: (eg ? 'يوم ' : 'اليوم ') + ar(v), on: d === v ? 'true' : 'false', style: chip(d === v, 'padding: 0; font-size: 15px; font-variant-numeric: tabular-nums; '), pick: () => this.setState({ m: m, d: v, err: '' }) })),
-      nextLine: (eg ? 'يوم زكاتك الجاي: ' : 'يوم زكاتك القادم: ') + hText + (hit && hit.d !== d ? (eg ? ' (آخر الشهر السنة دي)' : ' (آخر الشهر هذه السنة)') : ''),
-      gregLine: hit ? (eg ? 'يعني ' : 'يوافق ') + gText(hit.i, true) + ' — ' + rel(hit.i) : (eg ? 'التاريخ الميلادي غير متاح على الجهاز ده.' : 'التاريخ الميلادي غير متاح على هذا الجهاز.'),
-      changeLine: (eg ? 'ده هيبقى ميعاد زكاتك كل سنة هجرية، ' : 'يصير هذا موعد زكاتك كل سنة هجرية، ') + (remind == null ? (eg ? 'والتنبيه قبله بـ١٠ أيام.' : 'والتنبيه قبله بـ١٠ أيام.') : remind >= 1 ? (eg ? 'والتنبيه هيجيلك قبله بـ١٠ أيام: ' : 'ويصلك التنبيه قبله بـ١٠ أيام: ') + gText(remind, false) + '.' : (eg ? 'والتنبيه هيظهر على طول لأنه أقرب من ١٠ أيام.' : 'ويظهر التنبيه فورًا لأنه أقرب من ١٠ أيام.')),
+      nextLine: hText + (hit ? ' — ' + rel(hit.i) : ''),
+      gregLine: hit ? (eg ? 'يعني ' : 'يوافق ') + gText(hit.i, true) + (hit.d !== d ? (eg ? '، آخر يوم في الشهر' : '، آخر يوم في الشهر') : '') : (eg ? 'التاريخ الميلادي غير متاح على الجهاز ده.' : 'التاريخ الميلادي غير متاح على هذا الجهاز.'),
+      changeLine: (eg ? 'ميعاد زكاتك بيتغيّر، ' : 'يتغيّر موعد زكاتك، ') + (remind == null ? (eg ? 'والتنبيه قبله بـ١٠ أيام.' : 'والتنبيه قبله بـ١٠ أيام.') : remind >= 1 ? (eg ? 'والتنبيه قبله بـ١٠ أيام: ' : 'والتنبيه قبله بـ١٠ أيام: ') + gText(remind, false) + '.' : (eg ? 'والتنبيه هيظهر على طول.' : 'ويظهر التنبيه فورًا.')),
       err: s.err,
       saveLabel: eg ? 'احفظ اليوم' : 'احفظ اليوم',
       save: () => {
@@ -139,7 +140,7 @@ class Component extends DCLogic {
         this.setState({ open: false, saved: [m, d], m: null, d: null, err: '' });
         if (typeof this.props.onSave === 'function') this.props.onSave({
           month: m, day: d, gregorian: hit ? iso(hit.i) : null, hijriYear: hit ? hit.y : null, effectiveDay: hit ? hit.d : d,
-          daysAway: hit ? hit.i : null, reminder: hit ? iso(Math.max(0, remind)) : null, hijriText: hText, gregorianText: hit ? gText(hit.i, true) : null
+          daysAway: hit ? hit.i : null, relText: hit ? rel(hit.i) : null, reminder: hit ? iso(Math.max(0, remind)) : null, hijriText: hText, gregorianText: hit ? gText(hit.i, true) : null
         });
       }
     };

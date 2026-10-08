@@ -16,7 +16,9 @@ body{margin:0}
 .m-press:active{transform:scale(.97)}
 .v-in{animation:v-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
 @keyframes v-in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.v-in{animation:none}}
+.v-toast{animation:v-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes v-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.v-in,.v-toast{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
@@ -64,28 +66,50 @@ body{margin:0}
           </div>
         </sc-for>
 
-        <button type="button" disabled="{{true}}" aria-describedby="wallet-soon" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45; cursor: default">{{addLabel}}</button>
-        <span id="wallet-soon" style="font-size: 12px; color: #637570; text-align: center; margin-top: -8px">{{addSoon}}</span>
+        <dc-import name="WalletAddSheet" space="{{spaceName}}" existing="{{walletNames}}" on-save="{{onAddWallet}}" hint-size="350px,48px"></dc-import>
       </div>
     </sc-if>
 
     <sc-if value="{{inDetail}}" hint-placeholder-val="{{ false }}">
       <div class="v-in">
-        <dc-import name="WalletDetail" space="{{spaceName}}" wallet="{{walletId}}" na="{{naFlag}}" hint-size="350px,800px"></dc-import>
+        <dc-import name="WalletDetail" space="{{spaceName}}" wallet="{{walletId}}" info="{{walletInfo}}" na="{{naFlag}}" hint-size="350px,800px"></dc-import>
       </div>
     </sc-if>
   </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="v-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { view: null }; }
+  constructor(props) {
+    super(props);
+    // المحافظ اللي بتتضاف من «أضف محفظة» (WalletAddSheet) — لكل بلد لوحدها (§41)
+    this.state = { view: null, added: { sa: [], eg: [] }, seq: 0, toast: '' };
+    this.timers = [];
+    this.onAddWallet = (p) => {
+      if (!p || !p.name) return;
+      const eg = (this.props.space ?? 'السعودية') === 'مصر', key = eg ? 'eg' : 'sa', seq = this.state.seq + 1;
+      // حرف مكان اللوجو: أول حرف من الاسم من غير «بنك/مصرف» و«ال»
+      const word = (String(p.name).split(/\s+/).filter((w) => !/^(بنك|مصرف|البنك|المصرف)$/.test(w))[0] || String(p.name)).replace(/^ال/, '');
+      const w = { id: 'new' + seq, kind: p.kind, name: p.name, mark: word.charAt(0).toUpperCase(), last4: p.last4, open: p.openingMinor, at: p.openingDateText };
+      this.setState({ added: Object.assign({}, this.state.added, { [key]: (this.state.added[key] || []).concat([w]) }), seq });
+      this.say((eg ? 'اتضافت «' : 'أُضيفت «') + p.name + '»');
+    };
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const na = (this.props.state ?? 'عادي') === 'غير متاح';
     const cur = eg ? 'ج.م' : 'ر.س';
     const n = (x) => x.toLocaleString('ar-EG');
+    const ar = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
     // مخترعة · بالوحدة الصغرى · المحافظ في البلد الشغالة بس (§41) — الأرصدة = «معك الآن» في الرئيسية (HeroBanks). آخر ٤ أرقام بس
     // [المعرّف، الاسم، حرف مكان اللوجو، آخر ٤، الرصيد، رصيد البداية، تاريخه]
     const banks = eg
@@ -108,9 +132,22 @@ class Component extends DCLogic {
       opening: (eg ? 'رصيد البداية ' : 'رصيد البداية ') + this.fmt(cash[1]) + ' في ' + cash[2],
       balance: this.fmt(cash[0]) + ' ' + cur, balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #193D33',
       lens: lens(true), open: () => this.setState({ view: 'cash' }), style: rowStyle(true) };
-    const total = banks.reduce((t, b) => t + b[4], 0) + cash[0];
-    const all = banks.map((b) => b[0]).concat(['cash']);
+    // المضافة: رصيدها = رصيد البداية (لسه مفيش حركات بعده)، ومن غير رصيد بداية ⇒ «غير متاح» مش صفر
+    const added = s.added[eg ? 'eg' : 'sa'] || [];
+    const addRow = (a) => ({ name: a.name, mark: a.mark, isBank: true, isCash: false, approx: false, kind: a.kind,
+      meta: (a.kind === 'bank' ? (eg ? 'حساب بنك' : 'حساب بنكي') : 'محفظة إلكترونية') + (a.last4 ? ' · •••• ' + ar(a.last4) : ''),
+      opening: a.open == null ? (eg ? 'رصيد البداية لسه ما اتحددش' : 'رصيد البداية لم يُحدَّد بعد') : 'رصيد البداية ' + this.fmt(a.open) + ' في ' + a.at,
+      balance: a.open == null ? 'غير متاح' : this.fmt(a.open) + ' ' + cur,
+      balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (a.open == null ? '#637570' : '#193D33'),
+      lens: lens(false), open: () => this.setState({ view: a.id }) });
+    const styled = (rows) => rows.map((r, i) => Object.assign(r, { style: rowStyle(i === rows.length - 1) }));
+    const bankAll = styled(bankRows.concat(added.filter((a) => a.kind === 'bank').map(addRow)));
+    const eRows = styled(added.filter((a) => a.kind !== 'bank').map(addRow));
+    const unknown = added.filter((a) => a.open == null).map((a) => a.name);
+    const total = banks.reduce((t, b) => t + b[4], 0) + cash[0] + added.reduce((t, a) => t + (a.open == null ? 0 : a.open), 0);
+    const all = banks.map((b) => b[0]).concat(['cash'], added.map((a) => a.id));
     const view = all.indexOf(s.view) >= 0 ? s.view : null;
+    const av = added.find((a) => a.id === view);
     // بعد «في» ⇒ المثنى مجرور في الفصحى
     const MW = ['محفظة واحدة', 'محفظتين', 'محافظ', 'محفظة'];
     const cnt = all.length;
@@ -122,11 +159,13 @@ class Component extends DCLogic {
       totalLabel: eg ? 'معاك دلوقتي' : 'معك الآن',
       hasTotal: !na, noTotal: na, total: this.fmt(total) + ' ' + cur,
       totalSub: na ? (eg ? 'رصيد البنوك مش متاح لحد ما توصل رسالة بنك جديدة أو تستورد كشف. الكاش لوحده ' : 'رصيد البنوك غير متاح حتى تصل رسالة بنك جديدة أو تستورد كشفًا. الكاش وحده ') + this.fmt(cash[0]) + ' ' + cur + '.'
+        : unknown.length ? (eg ? 'من غير «' + unknown.join('» و«') + '» — رصيدها مش متاح لسه.' : 'لا يشمل «' + unknown.join('» و«') + '» — رصيدها غير متاح بعد.')
         : (eg ? 'في ' : 'في ') + (cnt === 1 ? MW[0] : cnt === 2 ? MW[1] : n(cnt) + ' ' + (cnt <= 10 ? MW[2] : MW[3])) + (eg ? ' في البلد دي' : ' في هذا البلد'),
-      groups: [{ title: eg ? 'البنوك' : 'البنوك', rows: bankRows }, { title: 'الكاش', rows: [cashRow] }],
-      addLabel: eg ? 'ضيف محفظة' : 'أضف محفظة',
-      addSoon: eg ? 'إضافة محفظة وتعديل رصيد البداية بيتضافوا بعدين.' : 'إضافة محفظة وتعديل رصيد البداية يُضافان لاحقًا.',
-      walletId: view || '', naFlag: na ? '1' : '0'
+      groups: [{ title: eg ? 'البنوك' : 'البنوك', rows: bankAll }].concat(eRows.length ? [{ title: 'المحافظ الإلكترونية', rows: eRows }] : [], [{ title: 'الكاش', rows: [cashRow] }]),
+      walletNames: JSON.stringify(banks.map((b) => b[1]).concat(['الكاش'], added.map((a) => a.name))), onAddWallet: this.onAddWallet,
+      walletId: view || '', naFlag: na ? '1' : '0',
+      walletInfo: av ? JSON.stringify({ name: av.name, kind: av.kind, last4: av.last4 ? ar(av.last4) : '', open: av.open, at: av.at || '' }) : '',
+      hasToast: !!s.toast, toast: s.toast
     };
   }
 }

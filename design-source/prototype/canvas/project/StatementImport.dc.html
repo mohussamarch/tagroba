@@ -109,8 +109,7 @@ body{margin:0}
             <span><b>{{colsFoundLabel}}</b> <span dir="ltr">{{colsFound}}</span></span>
             <span><b>{{colsWantLabel}}</b> <span dir="ltr">{{colsWant}}</span></span>
           </div>
-          <button type="button" disabled="{{true}}" aria-describedby="map-later" style="height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(255,255,255,0.75); opacity: 0.6; cursor: default">{{mapLabel}}</button>
-          <span id="map-later" style="font-size: 12px">{{mapLater}}</span>
+          <a href="StatementColumns.dc.html" class="m-press" style="height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(255,255,255,0.75)">{{mapLabel}}</a>
         </sc-if>
         <button type="button" class="m-press" onClick="{{again}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{otherLabel}}</button>
       </div>
@@ -254,10 +253,9 @@ class Component extends DCLogic {
       again: () => { this.timers.forEach(clearTimeout); this.timers = []; this.go({ stage: 'pick', file: null, picker: true }); },
       showError: s.stage === 'error', errTitle: ERR[0], errBody: ERR[1],
       hasCols: f.err === 'cols',
-      colsFoundLabel: eg ? 'الموجود:' : 'الموجود:', colsFound: 'Date · Description · Value · Ref',
+      colsFoundLabel: eg ? 'الموجود:' : 'الموجود:', colsFound: 'التاريخ · Description · مدين · دائن · Balance · Ref No.',
       colsWantLabel: eg ? 'المتوقع:' : 'المتوقع:', colsWant: 'date · name · amount · type · source · reference',
       mapLabel: eg ? 'حدد الأعمدة بإيدك' : 'حدّد الأعمدة يدويًا',
-      mapLater: eg ? 'تحديد الأعمدة بإيدك بييجي بعدين.' : 'تحديد الأعمدة يدويًا يأتي لاحقًا.',
       batchesLink: eg ? 'الكشوف اللي اتستوردت قبل كده' : 'الكشوف المستوردة سابقًا',
       picker: !!s.picker,
       pickerTitle: eg ? 'ملفات على جوالك' : 'ملفات على جوالك',

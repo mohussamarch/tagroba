@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تعديل الخطة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.ge-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.ge-press:active{transform:scale(.97)}
+.ge-veil{animation:ge-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.ge-up{animation:ge-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.ge-up>*{flex-shrink:0}
+.ge-scroll{scrollbar-width:none}.ge-scroll::-webkit-scrollbar{display:none}
+.ge-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}
+.ge-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+@keyframes ge-fade{from{opacity:0}to{opacity:1}}
+@keyframes ge-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.ge-press,.ge-track,.ge-knob{transition:none}.ge-press:active{transform:none}.ge-up{animation:ge-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+.ge-box:focus-within{box-shadow:0 0 0 3px #956000 !important}.ge-box input:focus-visible{box-shadow:none}
+input:disabled{opacity:.45;cursor:default}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="ge-press" onClick="{{openSheet}}" style="width: 100%; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{triggerLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 12">
+      <button type="button" class="ge-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="ge-up ge-scroll" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+        <span style="font-size: 13px; color: #637570; margin-top: -6px">{{sub}}</span>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{nameLabel}}
+          <input type="text" maxlength="40" value="{{name}}" onInput="{{typeName}}" style="{{nameStyle}}">
+        </label>
+        <span role="alert" style="{{nameErrStyle}}">{{nameErr}}</span>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{targetLabel}}
+          <span class="ge-box" style="{{targetBox}}">
+            <input type="text" inputmode="decimal" dir="ltr" aria-label="{{targetLabel}}" value="{{target}}" onInput="{{typeTarget}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; text-align: right; font-variant-numeric: tabular-nums; outline: none">
+            <span style="font-size: 12px; font-weight: 500; color: #637570">{{currency}}</span>
+          </span>
+        </label>
+        <span role="alert" style="{{targetErrStyle}}">{{targetErr}}</span>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; margin-top: 2px">{{dateLabel}}
+          <input type="date" min="{{minDate}}" value="{{date}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="{{dateStyle}}">
+        </label>
+        <span role="alert" style="{{dateErrStyle}}">{{dateErr}}</span>
+
+        <div role="status" style="border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; background: rgba(8,99,79,0.06)">
+          <span style="font-size: 14px; font-weight: 700; color: #08634F">{{need}}</span>
+          <span style="font-size: 12px; line-height: 1.7; color: #4F625C">{{needNote}}</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; min-height: 56px; margin-top: 2px">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; font-weight: 700">{{archiveLabel}}</span>
+            <span style="font-size: 12px; line-height: 1.7; color: #637570">{{archiveNote}}</span>
+          </span>
+          <button type="button" role="switch" aria-checked="{{archivedOn}}" aria-label="{{archiveLabel}}" onClick="{{toggleArchive}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="ge-track" style="{{track}}"><span class="ge-knob" style="{{knob}}"></span></span></button>
+        </div>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="ge-press" onClick="{{save}}" aria-disabled="{{saveOff}}" style="{{saveStyle}}">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح"],"default":"عادي","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"goalName":{"editor":null},"target":{"editor":null},"saved":{"editor":null},"endDate":{"editor":null},"linked":{"editor":null},"archived":{"editor":null},"onSave":{"editor":null},"$preview":{"width":175,"height":48}}'>
+// زرار «تعديل» في تفاصيل الخطة (GoalDetail) ولوحته — ManageSavingsGoals.edit (+ archive). §68.
+// الخانات: goal-name · target (هللة) · saved (هللة، فاضي = مش معروف) · end-date (ISO أو «٣١ ديسمبر ٢٠٢٦») · linked · archived
+// onSave({ name, targetMinor, date, dateText, months, daysLeft, perMonthMinor|null, archived }) — الموعد إجباري زي SavingsGoal.targetDate
+// «تحتاج … شهريًا» = الباقي ÷ الشهور الباقية بالتقويم (monthsUntil زي كوتلن) لفوق لأقرب هللة (ROUND) — نفس رقم GoalDetail · أعداد صحيحة بس
+const TODAY = '2026-10-07';
+const ROUND = 1; // 1 = لأقرب هللة لفوق زي ceilDivMoney في كوتلن · 100 = لأقرب ريال/جنيه كامل
+const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: null, d: null, tried: false }; }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  en(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))); }
+  toMinor(t) {
+    const s = this.en(t).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  ar(x) { return String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]); }
+  isoOf(t) {
+    const s = this.en(t).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/), i = m ? M.indexOf(m[2]) : -1;
+    return i < 0 ? '' : m[3] + '-' + (i < 9 ? '0' : '') + (i + 1) + '-' + (+m[1] < 10 ? '0' : '') + (+m[1]);
+  }
+  show(iso) { const [y, m, d] = iso.split('-').map(Number); return this.ar(d) + ' ' + M[m - 1] + ' ' + this.ar(y); }
+  // نفس monthsUntil في SavingsGoals.kt: أصغر n ≥ 1 بحيث النهارده + n شهر (اليوم بيتقيد بآخر الشهر) ≥ الموعد
+  addMonths(iso, n) {
+    const [y, m, d] = iso.split('-').map(Number), t = y * 12 + (m - 1) + n, ny = (t - (t % 12)) / 12, nm = (t % 12) + 1;
+    const dd = Math.min(d, new Date(Date.UTC(ny, nm, 0)).getUTCDate());
+    return ny + '-' + (nm < 10 ? '0' : '') + nm + '-' + (dd < 10 ? '0' : '') + dd;
+  }
+  monthsUntil(to) { if (to < TODAY) return 0; let n = 1; while (n < 1300 && this.addMonths(TODAY, n) < to) n++; return n; }
+  perMonth(rem, months) { const q = (rem - (rem % months)) / months + (rem % months ? 1 : 0); return q % ROUND ? q + ROUND - (q % ROUND) : q; }
+  // الخطة من الشاشة الأم؛ لو اللوحة لوحدها: «السفر» اليدوية أو «الطوارئ» المربوطة (نفس أرقام SavingsGoals)
+  orig() {
+    const p = this.props, k = this.eg() ? 3 : 1, num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
+    if (p.goalName != null) return { name: String(p.goalName), target: num(p.target) || 0, saved: num(p.saved), date: this.isoOf(p.endDate), linked: p.linked === true || p.linked === '1' || p.linked === 'true', archived: p.archived === true || p.archived === '1' || p.archived === 'true' };
+    return (this.props.state ?? 'عادي') === 'غير متاح' ? { name: 'الطوارئ', target: 2000000 * k, saved: null, date: '2027-06-01', linked: true, archived: false } : { name: 'السفر', target: 1200000 * k, saved: 740000 * k, date: '2026-12-31', linked: false, archived: false };
+  }
+  fresh(o) { return { name: o.name, target: o.target ? this.fmt(o.target) : '', date: o.date || this.addMonths(TODAY, 12), archived: o.archived }; }
+  renderVals() {
+    const eg = this.eg(), s = this.state, o = this.orig(), d = s.d || this.fresh(o), cur = eg ? 'ج.م' : 'ر.س';
+    const open = s.open === null ? this.props.sheet === 'مفتوحة' : s.open;
+    const set = (x) => this.setState({ d: Object.assign({}, d, x) });
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : this.ar(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const MW = eg ? ['شهر واحد', 'شهرين', 'شهور', 'شهر'] : ['شهر واحد', 'شهرين', 'أشهر', 'شهرًا'];
+    const field = (bad) => 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 500; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
+    const errS = (t) => t ? 'font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48; margin-top: -4px' : 'display: none';
+    const name = String(d.name || '').trim().replace(/\s+/g, ' ');
+    const tText = String(d.target || '').trim(), t = tText ? this.toMinor(tText) : null;
+    const date = d.date;
+    const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(date) && date > TODAY && date <= '2100-12-31';
+    const E = {
+      name: !name ? (eg ? 'اكتب اسم الخطة.' : 'اكتب اسم الخطة.') : '',
+      target: t == null || t <= 0 ? (tText && t == null ? (eg ? 'اكتب المبلغ بالأرقام، مثلًا 12000' : 'اكتب المبلغ بالأرقام، مثل 12000') : (eg ? 'مبلغ الخطة لازم يبقى أكبر من صفر.' : 'يجب أن يكون مبلغ الخطة أكبر من صفر.')) : '',
+      date: !dateOk ? (eg ? 'اختار ميعاد بعد النهارده.' : 'اختر موعدًا بعد اليوم.') : ''
+    };
+    const first = E.name || E.target || E.date;
+    const changed = name !== o.name || t !== o.target || date !== (o.date || null) || d.archived !== o.archived;
+    const valid = !first && changed;
+    const shown = (k) => (k === 'target' && tText && t == null) || k === 'date' ? E[k] : s.tried ? E[k] : '';
+    // السطر الحي: المدّخر ثابت من الشاشة الأم، والمبلغ والموعد من اللوحة
+    const calc = (tg, dt) => {
+      if (o.saved == null || !tg || tg <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(dt || '') || dt <= TODAY || dt > '2100-12-31') return null;
+      const rem = Math.max(0, tg - o.saved), months = this.monthsUntil(dt);
+      return { rem, months, per: rem ? this.perMonth(rem, months) : 0 };
+    };
+    const c = calc(t, date), before = calc(o.target, o.date);
+    let need, note;
+    if (o.saved == null) { need = eg ? 'المطلوب في الشهر: غير متاح' : 'المطلوب شهريًا: غير متاح'; note = eg ? 'بيظهر لما رصيد الحساب يتعرف — مش هنكتب رقم من عندنا.' : 'يظهر حين يُعرف رصيد الحساب — لا نكتب رقمًا من عندنا.'; }
+    else if (E.target) { need = eg ? 'اكتب المبلغ المطلوب عشان نحسب.' : 'اكتب المبلغ المستهدف لنحسب.'; note = (eg ? 'المتحوّش لحد دلوقتي ' : 'المدّخر حتى الآن ') + this.fmt(o.saved) + ' ' + cur + '.'; }
+    else if (t <= o.saved) { need = eg ? 'المتحوّش بيغطي الهدف — الخطة هتكمل' : 'المدّخر يغطي الهدف — تكتمل الخطة'; note = (eg ? 'متحوّش ' : 'لديك ') + this.fmt(o.saved) + (eg ? ' من ' : ' من ') + this.fmt(t) + ' ' + cur + '.'; }
+    else if (!c) { need = eg ? 'اختار ميعاد بعد النهارده عشان نحسب.' : 'اختر موعدًا بعد اليوم لنحسب.'; note = (eg ? 'الفاضل ' : 'الباقي ') + this.fmt(t - o.saved) + ' ' + cur + '.'; }
+    else {
+      need = (eg ? 'محتاج ' : 'تحتاج ') + this.fmt(c.per) + ' ' + cur + (eg ? ' في الشهر' : ' شهريًا');
+      note = (eg ? 'الفاضل ' : 'الباقي ') + this.fmt(c.rem) + (eg ? ' على ' : ' على ') + plural(c.months, MW) + (eg ? ' لحد ' : ' حتى ') + this.show(date) + (eg ? '، متقرّب لفوق' : '، مقرّبًا لأعلى')
+        + (changed && before && before.per !== c.per ? (eg ? ' — كان ' : ' — كان ') + this.fmt(before.per) : '') + '.';
+    }
+    const btn = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)';
+    return {
+      triggerLabel: eg ? 'تعديل' : 'تعديل',
+      openSheet: () => this.setState({ open: true, d: this.fresh(o), tried: false }),
+      open, closeSheet: () => this.setState({ open: false }),
+      title: eg ? 'تعديل الخطة' : 'تعديل الخطة',
+      sub: o.saved == null ? (eg ? 'المتحوّش غير متاح — رصيد الحساب المربوط مش معروف.' : 'المدّخر غير متاح — رصيد الحساب المربوط غير معروف.') : (o.linked ? (eg ? 'مربوطة بحساب — المتحوّش رصيده كله: ' : 'مربوطة بحساب — المدّخر رصيده كله: ') : (eg ? 'المتحوّش لحد دلوقتي ' : 'المدّخر حتى الآن ')) + (o.saved == null ? '' : this.fmt(o.saved) + ' ' + cur),
+      nameLabel: eg ? 'اسم الخطة' : 'اسم الخطة', name: d.name,
+      typeName: (e) => { if (e && e.target) set({ name: e.target.value }); },
+      nameStyle: field(!!shown('name')), nameErr: shown('name'), nameErrStyle: errS(shown('name')),
+      targetLabel: eg ? 'المبلغ المطلوب' : 'المبلغ المستهدف', target: d.target, currency: cur,
+      typeTarget: (e) => { if (e && e.target) set({ target: e.target.value }); },
+      targetBox: 'height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 16px; display: flex; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (shown('target') ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      targetErr: shown('target'), targetErrStyle: errS(shown('target')),
+      dateLabel: eg ? 'لحد إمتى؟' : 'حتى متى؟', minDate: '2026-10-08',
+      date: d.date,
+      typeDate: (e) => { if (e && e.target && /^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) set({ date: e.target.value }); },
+      dateStyle: field(!!shown('date')) + '; width: 100%; font-size: 14px; padding: 0 10px',
+      dateErr: shown('date'), dateErrStyle: errS(shown('date')),
+      need, needNote: note,
+      archiveLabel: eg ? 'أرشف الخطة' : 'أرشفة الخطة',
+      archiveNote: eg ? 'بتختفي من القايمة وتفضل في «المتأرشفة» بإيداعاتها — ما بتتمسحش.' : 'تختفي من القائمة وتبقى في «المؤرشفة» بإيداعاتها — لا تُحذف.',
+      archivedOn: d.archived ? 'true' : 'false', toggleArchive: () => set({ archived: !d.archived }),
+      track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (d.archived ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'),
+      knob: 'position: absolute; top: 2px; right: ' + (d.archived ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      err: s.tried && !changed ? (eg ? 'مفيش حاجة اتغيرت.' : 'لم يتغيّر شيء.') : s.tried && first ? first : '',
+      saveOff: valid ? 'false' : 'true', saveStyle: btn + (valid ? '' : '; opacity: 0.45; cursor: default'),
+      saveLabel: !changed ? (eg ? 'مفيش تغيير' : 'لم يتغيّر شيء') : d.archived && !o.archived ? (eg ? 'احفظ وأرشفها' : 'احفظ وأرشف') : (eg ? 'احفظ التعديل' : 'احفظ التعديل'),
+      save: () => {
+        if (!valid) { this.setState({ tried: true }); return; }
+        this.setState({ open: false, d: null, tried: false });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ name, targetMinor: t, date, dateText: this.show(date), months: this.monthsUntil(date), daysLeft: Math.round((Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10)) - Date.UTC(2026, 9, 7)) / 86400000), perMonthMinor: c ? c.per : null, archived: !!d.archived });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

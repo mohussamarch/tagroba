@@ -74,9 +74,8 @@ body{margin:0}
           <sc-if value="{{hawlOpen}}" hint-placeholder-val="{{ true }}">
             <div style="display: flex; gap: 8px; padding-top: 4px">
               <button type="button" class="m-press" onClick="{{confirmHawl}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{confirmLabel}}</button>
-              <button type="button" disabled="{{true}}" aria-describedby="hawl-soon" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); opacity: 0.45">{{changeLabel}}</button>
+              <div style="flex: 1 1 0; min-width: 0"><dc-import name="HawlDaySheet" space="{{spaceName}}" on-save="{{onHawlDay}}" hint-size="170px,48px"></dc-import></div>
             </div>
-            <span id="hawl-soon" style="font-size: 11px; color: #637570">{{changeSoon}}</span>
           </sc-if>
         </div>
 
@@ -157,7 +156,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     // الوقائع (مش آراء — §62): undefined = لسه على القيمة المبدئية للحالة · الحساب بيتثبّت قبل الدفع
-    this.state = { gold: undefined, st: {}, rc: {}, hawl: 'suggested', closed: false, sheet: false, toast: '' };
+    this.state = { gold: undefined, st: {}, rc: {}, hawl: 'suggested', hawlPick: null, closed: false, sheet: false, toast: '' };
     this.timers = [];
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
@@ -248,11 +247,11 @@ class Component extends DCLogic {
       nisabRule: eg ? 'سعر الجرام الصافي ' + this.fmt(D.pure) + '، النهارده ٥ ص — ' + SRC.cash : 'الذهب الخالص ' + this.fmt(D.pure) + ' · الفضة ' + this.fmt(D.silver) + ' للجرام، اليوم ٥ ص — ' + SRC.cash,
       hawlLabel: eg ? 'يوم زكاتك' : 'يوم زكاتك', hawlChip: confirmed ? (eg ? 'متأكد' : 'مؤكَّد') : (eg ? 'مقترح' : 'مقترح'),
       hawlChipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (confirmed ? 'color: #13764D; background: #DCEBD6' : 'color: #956000; background: #FBF0DD'),
-      hawlDate: eg ? '٢٠ جمادى الأولى ١٤٤٨ — كمان ٢٤ يوم' : '١ جمادى الأولى ١٤٤٨ — بعد ٥ أيام',
-      hawlWhy: eg ? 'اقترحناه من سلسلة رصيدك: أول يوم فلوسك وصلت فيه للنصاب. العبرة بأول السنة وآخرها.' : 'اقترحناه من سلسلة رصيدك: بداية آخر فترة بقيت فيها أموالك فوق النصاب دون انقطاع.',
+      hawlDate: s.hawlPick ? s.hawlPick.hijriText + ' — ' + s.hawlPick.relText : eg ? '٢٠ جمادى الأولى ١٤٤٨ — كمان ٢٤ يوم' : '١ جمادى الأولى ١٤٤٨ — بعد ٥ أيام',
+      hawlWhy: s.hawlPick ? (eg ? 'إنت اخترته — يوم ثابت كل سنة هجرية.' : 'اخترته أنت — يوم ثابت كل سنة هجرية.') : eg ? 'اقترحناه من سلسلة رصيدك: أول يوم فلوسك وصلت فيه للنصاب. العبرة بأول السنة وآخرها.' : 'اقترحناه من سلسلة رصيدك: بداية آخر فترة بقيت فيها أموالك فوق النصاب دون انقطاع.',
       hawlRule: (eg ? 'يوم ثابت كل سنة هجرية — ' : 'يوم ثابت كل سنة هجرية — ') + SRC.hawl,
-      hawlOpen: !confirmed, confirmLabel: eg ? 'أكّده' : 'أكّده', changeLabel: eg ? 'غيّره ليوم هجري' : 'غيّره ليوم هجري',
-      changeSoon: eg ? 'اختيار يوم هجري تاني — في الخطوة الجاية.' : 'اختيار يوم هجري آخر — في الخطوة القادمة.',
+      hawlOpen: !confirmed, confirmLabel: eg ? 'أكّده' : 'أكّده',
+      onHawlDay: (p) => { if (!p) return; this.setState({ hawl: 'confirmed', hawlPick: p }); this.say(eg ? 'اتغيّر يوم زكاتك لـ' + p.hijriText + ' — هننبهك قبله بـ١٠ أيام' : 'تغيّر يوم زكاتك إلى ' + p.hijriText + ' — ننبهك قبله بـ١٠ أيام'); },
       confirmHawl: () => { this.setState({ hawl: 'confirmed' }); this.say(eg ? 'اتأكد يوم زكاتك — هننبهك قبله بـ١٠ أيام' : 'تأكّد يوم زكاتك — ننبهك قبله بـ١٠ أيام'); },
       openFacts: () => { if (!s.closed) this.setState({ sheet: true }); }, closed: s.closed, notClosed: !s.closed,
       factsTitle: eg ? 'الوقائع — مش آراء' : 'الوقائع — ليست آراء',
