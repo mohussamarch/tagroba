@@ -13,6 +13,7 @@ internal val MSA_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_CHANNEL_NAME to "تنبيهات مصروفي",
     TextKey.BACKGROUND_WORK_NOTICE to "جارٍ تحديث مصروفي",
     TextKey.SMS_AUTO_WALLET_UNKNOWN to "المحفظة غير موجودة في هذا البلد",
+    TextKey.ALERT_GROUP_BANK_SMS to "رسائل البنك",
 )
 
 internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -23,6 +24,7 @@ internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_CHANNEL_NAME to "تنبيهات مصروفي",
     TextKey.BACKGROUND_WORK_NOTICE to "مصروفي بيحدّث",
     TextKey.SMS_AUTO_WALLET_UNKNOWN to "المحفظة دي مش موجودة في البلد دي",
+    TextKey.ALERT_GROUP_BANK_SMS to "رسايل البنك",
 )
 
 internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -33,4 +35,5 @@ internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_CHANNEL_NAME to "Masroufy alerts",
     TextKey.BACKGROUND_WORK_NOTICE to "Masroufy is updating",
     TextKey.SMS_AUTO_WALLET_UNKNOWN to "That wallet isn't in this country",
+    TextKey.ALERT_GROUP_BANK_SMS to "Bank messages",
 )

@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import app.masroufy.port.QueuedSms
 import app.masroufy.port.SmsInboxState
+import app.masroufy.port.smsSenderKey
 import java.time.Instant
 
 /**
@@ -49,16 +50,38 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
 
     fun checkpoint(date: Long, id: Long) = check(prefs.edit().putLong("cursorDate", date).putLong("cursorId", id).commit()) { "checkpoint failed" }
 
-    /** المحفظة اللي رسايل البلد بتتسجل فيها لوحدها (OVERRIDES §72) — لكل صاحب صندوق ولكل بلد. */
-    fun autoTarget(uid: String, spaceId: String): String? = prefs.getString(targetKey(uid, spaceId), null)
+    /**
+     * محفظة كل بنك (مرسل) في كل بلد (OVERRIDES §72 — رد المالك ١) — لكل صاحب صندوق. [sender] بعد `smsSenderKey`.
+     * **القديم:** النسخة الأولى من الجلسة 31 كانت بتحفظ محفظة واحدة للبلد (`autoTarget|uid|space`) — لو موجودة بتتحول مرة واحدة لربط
+     * كل مرسل مفعّل مالوش ربط (ده اختيار المالك نفسه للبلد)، وبعدين بتتمسح. ما بتضيعش وما بتتقريش غلط.
+     */
+    fun senderWallets(uid: String, spaceId: String): Map<String, String> {
+        migrateLegacyTarget(uid, spaceId)
+        val prefix = senderPrefix(uid, spaceId)
+        return prefs.all.mapNotNull { (key, value) -> if (key.startsWith(prefix) && value is String) key.removePrefix(prefix) to value else null }.toMap()
+    }
 
-    fun setAutoTarget(uid: String, spaceId: String, walletId: String?) {
+    fun setSenderWallet(uid: String, spaceId: String, sender: String, walletId: String?) {
+        migrateLegacyTarget(uid, spaceId)
+        val key = senderPrefix(uid, spaceId) + sender
         val edit = prefs.edit()
-        if (walletId == null) edit.remove(targetKey(uid, spaceId)) else edit.putString(targetKey(uid, spaceId), walletId)
+        if (walletId == null) edit.remove(key) else edit.putString(key, walletId)
         check(edit.commit()) { "settings write failed" }
     }
 
-    private fun targetKey(uid: String, spaceId: String) = "autoTarget|$uid|$spaceId"
+    private fun senderPrefix(uid: String, spaceId: String) = "senderWallet|$uid|$spaceId|"
+
+    private fun migrateLegacyTarget(uid: String, spaceId: String) {
+        val legacyKey = "autoTarget|$uid|$spaceId"
+        val legacy = prefs.getString(legacyKey, null) ?: return
+        if (uid != owner()) return // المرسلين بتوع صاحب الصندوق بس معروفين — بيتحول لما صاحبه يرجع
+        val edit = prefs.edit()
+        for (sender in senders()) {
+            val key = senderPrefix(uid, spaceId) + smsSenderKey(sender)
+            if (!prefs.contains(key)) edit.putString(key, legacy)
+        }
+        check(edit.remove(legacyKey).commit()) { "settings write failed" }
+    }
 
     /** `true` = رسالة جديدة دخلت الصندوق (مش مكررة ولا متفلترة) ⇒ الاستقبال يطلب تسجيلها في الخلفية. */
     fun enqueue(uid: String, sender: String, timestamp: Long, originalBody: String): Boolean {

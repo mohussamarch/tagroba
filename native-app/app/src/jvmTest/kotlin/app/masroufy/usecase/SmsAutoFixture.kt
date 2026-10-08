@@ -36,7 +36,7 @@ import kotlinx.coroutines.yield
  */
 internal const val SENT_AT = "2026-10-07T10:00:00Z"
 
-internal fun sms(id: String, body: String, at: String = SENT_AT) = QueuedSms(id, "TESTBANK", at, body)
+internal fun sms(id: String, body: String, at: String = SENT_AT, sender: String = "TESTBANK") = QueuedSms(id, sender, at, body)
 
 internal val CAFE = "شراء\nبـSR 25\nلدى:TEST CAFE\n26/10/07"
 internal val MART = "شراء\nبـSR 40\nلدى:TEST MART\n26/10/07"
@@ -49,6 +49,7 @@ internal val EG_CARD = "Your Debit Card **1234 had a Successful transaction of E
 
 internal val BANK = Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")
 internal val CASH = Wallet("w-cash", "النقد", Currency.SAR, "cash", 0, "2026-01-01")
+internal val BANK2 = Wallet("w-bank2", "بنك وهمي تاني", Currency.SAR, "bank", 0, "2026-01-01")
 
 /** صندوق بيقع مرة واحدة وقت الشيل — زي الجهاز اللي بيقفل بعد الحفظ وقبل الشيل. */
 internal class FlakyInbox(val real: MemorySmsInbox) : SmsInboxPort by real {

@@ -47,11 +47,14 @@ interface SmsInboxPort {
     suspend fun acknowledge(ids: List<String>): SmsInboxState
 
     /**
-     * المحفظة اللي رسايل البلد [spaceId] بتتسجل فيها لوحدها (OVERRIDES §72) — على الجهاز، لصاحب الصندوق، لكل بلد.
-     * null = لسه ما اتختارتش (`AutoRecordSms` بياخد أول محفظة بنك زي الشاشة §36).
+     * المحفظة اللي رسايل **كل مرسل (بنك)** بتتسجل فيها لوحدها في البلد [spaceId] (OVERRIDES §72 — رد المالك ١) — على الجهاز، لصاحب
+     * الصندوق. المفتاح = اسم المرسل بعد [smsSenderKey]. مرسل مش هنا ⇒ لو في البلد حساب بنك واحد بس بيتستخدم، وإلا رسايله بتستنى.
      */
-    suspend fun autoTarget(spaceId: String): String?
+    suspend fun senderWallets(spaceId: String): Map<String, String>
 
-    /** null = يرجع للافتراضي. */
-    suspend fun setAutoTarget(spaceId: String, walletId: String?)
+    /** null = يشيل الربط (رسايل المرسل ترجع تستنى لو في البلد أكتر من حساب بنك). */
+    suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?)
 }
+
+/** نفس المرسل مهما اتكتب بحروف كبيرة أو صغيرة أو مسافات (الصندوق بيقارن المرسلين من غير حالة الحروف). */
+fun smsSenderKey(sender: String): String = sender.trim().lowercase()

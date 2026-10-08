@@ -130,5 +130,6 @@ fun alertGroupLabel(group: AlertGroup): String = uiText(
         AlertGroup.EMAIL -> TextKey.ALERT_GROUP_EMAIL
         AlertGroup.INCOME -> TextKey.ALERT_GROUP_INCOME
         AlertGroup.ADVISOR -> TextKey.ALERT_GROUP_ADVISOR
+        AlertGroup.BANK_SMS -> TextKey.ALERT_GROUP_BANK_SMS
     },
 )

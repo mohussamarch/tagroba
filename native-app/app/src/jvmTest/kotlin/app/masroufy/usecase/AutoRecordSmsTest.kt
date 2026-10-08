@@ -115,24 +115,64 @@ class AutoRecordSmsTest {
         assertEquals(2, space.all().size)
     }
 
-    @Test fun storedWalletWinsAndAMissingWalletMeansWaiting() = runBlocking<Unit> {
-        val other = Wallet("w-bank2", "بنك وهمي تاني", Currency.SAR, "bank", 0, "2026-01-01")
-        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(BANK, other)))).enable()
+    @Test fun twoBankAccountsWaitUntilTheBankIsMappedThenTheWaitingOnesAreRecorded() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(CASH, BANK, BANK2)))).enable()
+        world.receive(sms("m1", CAFE), sms("m2", MART))
         val auto = world.auto()
-        auto.chooseWallet("sa", other.id)
-        assertEquals(other.id, auto.walletOf("sa"))
-        assertFailsWith<IllegalArgumentException> { auto.chooseWallet("sa", "w-nope") }
-        assertFailsWith<IllegalArgumentException> { auto.chooseWallet("eg", other.id) }
-        world.receive(sms("m1", CAFE))
-        auto.run()
-        assertEquals(other.id, world.spaces.single().all().single().walletId)
+        val first = auto.run()
+        assertEquals(0, first.recorded, "رد المالك ١: أكتر من حساب بنك ⇒ ما بنخمّنش")
+        assertEquals(listOf("m1", "m2"), first.waiting, "بيتحسبوا في «رسايل محتاجة تأكيدك»")
+        assertEquals(listOf(UnmappedSender("sa", "testbank", 2)), first.unmappedSenders)
+        assertEquals(first.unmappedSenders, auto.unmappedSenders(), "الشاشة بتشوف نفس القايمة من غير كتابة")
+        assertNull(auto.walletOf("sa", "TESTBANK"))
 
-        val noBank = SmsWorld(listOf(SmsSpace(wallets = listOf(CASH)))).enable()
-        noBank.receive(sms("m1", CAFE))
-        val r = noBank.auto().run()
+        auto.chooseWallet("sa", "TestBank ", BANK2.id) // مرة واحدة للبنك — المرسل بأي حالة حروف
+        assertEquals(BANK2.id, auto.walletOf("sa", "TESTBANK"))
+        val second = world.auto().run()
+        assertEquals(2, second.recorded, "الدورة الجاية بتسجّل اللي كان مستني لوحدها")
+        assertTrue(second.waiting.isEmpty() && second.unmappedSenders.isEmpty())
+        assertTrue(world.spaces.single().all().all { it.walletId == BANK2.id })
+
+        world.receive(sms("m3", "شراء\nبـSR 12\nلدى:TEST CAFE\n26/10/07"))
+        assertEquals(1, world.auto().run().recorded, "رسايل البنك ده بعد كده بتتسجل على طول")
+        auto.chooseWallet("sa", "TESTBANK", null)
+        assertNull(auto.walletOf("sa", "TESTBANK"), "شيل الربط ⇒ يرجع يستنى")
+    }
+
+    @Test fun eachBankHasItsOwnWallet() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(BANK, BANK2)))).enable()
+        world.receive(sms("a1", CAFE, sender = "BANKA"), sms("b1", MART, sender = "BANKB"))
+        val auto = world.auto()
+        auto.chooseWallet("sa", "BANKA", BANK.id)
+        val r = auto.run()
+        assertEquals(1, r.recorded)
+        assertEquals(BANK.id to 2_500L, world.spaces.single().all().single().let { it.walletId to it.amountMinor })
+        assertEquals(listOf("b1"), r.waiting)
+        assertEquals(listOf(UnmappedSender("sa", "bankb", 1)), r.unmappedSenders)
+        auto.chooseWallet("sa", "BANKB", BANK2.id)
+        world.auto().run()
+        assertEquals(mapOf(2_500L to BANK.id, 4_000L to BANK2.id), world.spaces.single().all().associate { it.amountMinor to it.walletId })
+    }
+
+    @Test fun mappingIsValidatedAndUnclearMessagesNeverAskForAWallet() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(BANK, BANK2)))).enable()
+        val auto = world.auto()
+        assertFailsWith<IllegalArgumentException> { auto.chooseWallet("sa", "TESTBANK", "w-nope") }
+        assertFailsWith<IllegalArgumentException> { auto.chooseWallet("eg", "TESTBANK", BANK.id) }
+        world.receive(sms("m1", UNCLEAR))
+        assertTrue(auto.unmappedSenders().isEmpty(), "رسالة ما اتفهمتش مستنية — بس مش بسبب المحفظة")
+        assertEquals(listOf("m1"), auto.run().waiting)
+    }
+
+    @Test fun noBankAccountMeansWaitingAndAnyWalletOfTheCountryCanBeChosen() = runBlocking<Unit> {
+        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(CASH)))).enable()
+        world.receive(sms("m1", CAFE))
+        val auto = world.auto()
+        val r = auto.run()
         assertEquals(0, r.recorded, "مفيش محفظة بنك ⇒ ما بنخمّنش (النقد مش مكان رسايل البنك)")
-        assertEquals(listOf("sa"), r.spacesWithoutWallet)
         assertEquals(listOf("m1"), r.waiting)
+        auto.chooseWallet("sa", "TESTBANK", CASH.id)
+        assertEquals(1, world.auto().run().recorded, "المالك اختار بنفسه")
     }
 
     @Test fun aMessageThatWillBeRecordedIsNotWaitingEvenBeforeTheRun() = runBlocking<Unit> {

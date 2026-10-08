@@ -38,6 +38,7 @@ class SmsConfirmAlertTest {
         assertTrue(AlertFactor.NEEDS_DECISION in fresh.factors)
         // بعد ما يتعلم إنك بتتجاهله: المحرك بيجمعه في ملخص (لسه إشعار، بس مجمّع) — نفس قاعدة سؤال التحويلات (§61 (٥))
         assertEquals(AlertDelivery.DIGEST, decideAlert(c, KindStats(shown = 10, opened = 0), UsualHours(), noon).delivery)
-        assertEquals(AlertGroup.QUESTIONS, AlertKind.SMS_CONFIRM.group)
+        assertEquals(AlertGroup.BANK_SMS, AlertKind.SMS_CONFIRM.group, "رد المالك ٣: مجموعة لوحدها")
+        assertEquals(AlertGroup.BANK_SMS, AlertGroup.fromWire("bank_sms"))
     }
 }

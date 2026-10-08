@@ -8,6 +8,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
+import app.masroufy.port.smsSenderKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -50,9 +51,10 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         it.snapshot(uid, granted(), false)
     }
 
-    override suspend fun autoTarget(spaceId: String): String? = withStore { it.autoTarget(uid, spaceId) }
+    override suspend fun senderWallets(spaceId: String): Map<String, String> = withStore { it.senderWallets(uid, spaceId) }
 
-    override suspend fun setAutoTarget(spaceId: String, walletId: String?) = withStore { it.setAutoTarget(uid, spaceId, walletId) }
+    override suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?) =
+        withStore { it.setSenderWallet(uid, spaceId, smsSenderKey(sender), walletId) }
 
     override suspend fun sync(): SmsInboxState = withStore { store ->
         // التحقق من الإذن ما بيفتحش نافذة أندرويد لوحده أبدًا

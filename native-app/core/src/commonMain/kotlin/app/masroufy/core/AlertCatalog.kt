@@ -14,6 +14,8 @@ enum class AlertGroup(val wire: String) {
     INCOME("income"),
     // المساعد المالي (§68) — مجموعة لوحدها عشان تتقفل كلها مرة واحدة
     ADVISOR("advisor"),
+    // رسايل البنك المستنية تأكيدك (§72 — رد المالك ٣): مجموعة لوحدها مش جوه «الأسئلة»، شغالة افتراضيًا (المقفول بس بيتخزن)
+    BANK_SMS("bank_sms"),
     ;
 
     companion object {
@@ -68,8 +70,8 @@ enum class AlertKind(
     GOAL_NEAR("goal_near", AlertGroup.ADVISOR, AlertUrgency.LOW),
     WEEKLY_SUMMARY("weekly_summary", AlertGroup.ADVISOR, AlertUrgency.MEDIUM),
     // رسايل البنك اللي ما اتسجلتش لوحدها ومستنية قرارك (§72): محتاج قرار ⇒ ما بيتدفنش في ملخص؛ متوسط ⇒ وقتك المعتاد أو دلوقتي.
-    // في مجموعة «الأسئلة» زي سؤال التحويلات (اختيار Claude — المالك يقدر يغيّره) ⇒ قفل الأسئلة بيقفله كمان.
-    SMS_CONFIRM("sms_confirm", AlertGroup.QUESTIONS, AlertUrgency.MEDIUM, needsDecision = true),
+    // مجموعة «رسايل البنك» لوحدها (رد المالك ٣ — 2026-10-08): قفل «الأسئلة» ما بيسكّتهوش، وقفل «رسايل البنك» بيسكّته.
+    SMS_CONFIRM("sms_confirm", AlertGroup.BANK_SMS, AlertUrgency.MEDIUM, needsDecision = true),
     NEW_DEVICE_LOGIN("new_device_login", AlertGroup.SECURITY, AlertUrgency.HIGH, needsServer = true),
     LINKED_ACCOUNT_ACTIVITY("linked_account_activity", AlertGroup.LINKED_ACCOUNTS, AlertUrgency.MEDIUM, needsServer = true),
     MONTHLY_EMAIL("monthly_email", AlertGroup.EMAIL, AlertUrgency.NONE, needsServer = true),

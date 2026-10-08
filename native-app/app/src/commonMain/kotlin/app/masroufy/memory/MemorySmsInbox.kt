@@ -3,6 +3,7 @@ package app.masroufy.memory
 import app.masroufy.port.QueuedSms
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
+import app.masroufy.port.smsSenderKey
 
 /** صندوق رسايل وهمي للاختبار — نقل `memorySmsInbox`: مفيش صلاحية جهاز ولا رسايل بنك حقيقية. */
 class MemorySmsInbox(messages: List<QueuedSms> = emptyList(), override val available: Boolean = false) : SmsInboxPort {
@@ -37,12 +38,13 @@ class MemorySmsInbox(messages: List<QueuedSms> = emptyList(), override val avail
         return state()
     }
 
-    private val targets = mutableMapOf<String, String>()
+    private val wallets = mutableMapOf<String, MutableMap<String, String>>()
 
-    override suspend fun autoTarget(spaceId: String): String? = targets[spaceId]
+    override suspend fun senderWallets(spaceId: String): Map<String, String> = wallets[spaceId].orEmpty().toMap()
 
-    override suspend fun setAutoTarget(spaceId: String, walletId: String?) {
-        if (walletId == null) targets.remove(spaceId) else targets[spaceId] = walletId
+    override suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?) {
+        val map = wallets.getOrPut(spaceId) { mutableMapOf() }
+        if (walletId == null) map.remove(smsSenderKey(sender)) else map[smsSenderKey(sender)] = walletId
     }
 
     /** للاختبار: رسالة وصلت (زي الاستقبال في الخلفية). */

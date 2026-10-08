@@ -19,6 +19,7 @@ import app.masroufy.core.toParsedRow
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.MerchantRepository
+import app.masroufy.port.smsSenderKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
@@ -97,11 +98,12 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
 
     val available: Boolean get() = deps.inbox.available
 
-    private suspend fun build(inbox: InboxView, target: SmsReviewTarget): SmsReview {
+    private suspend fun build(inbox: InboxView, target: SmsReviewTarget, only: ((InboxItem) -> Boolean)? = null): SmsReview {
         val rows = mutableListOf<SmsRow>()
         val messageByLine = mutableMapOf<Int, String>()
         val failed = mutableListOf<SmsFailed>()
         for (item in inbox.items) {
+            if (only != null && !only(item)) continue
             when (val parsed = item.parsed) {
                 is SmsParseResult.Ok -> {
                     rows += parsed.row
@@ -151,6 +153,13 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
     }
 
     suspend fun load(target: SmsReviewTarget): SmsReview = build(deps.inbox.refresh(), target)
+
+    /** رسايل مرسل واحد بس (كل بنك ليه محفظته — §72 رد المالك ١). [senderKey] بعد `smsSenderKey`. */
+    internal suspend fun loadSender(target: SmsReviewTarget, senderKey: String): SmsReview =
+        build(deps.inbox.refresh(), target) { smsSenderKey(it.sender) == senderKey }
+
+    /** الصندوق بقارئ البلد دي (من غير بناء معاينة). */
+    internal suspend fun inboxView(): InboxView = deps.inbox.refresh()
 
     suspend fun enable(senders: List<String>, target: SmsReviewTarget): SmsReview = build(deps.inbox.enable(senders), target)
 
