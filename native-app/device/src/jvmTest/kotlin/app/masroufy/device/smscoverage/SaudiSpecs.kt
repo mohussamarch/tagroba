@@ -1,5 +1,10 @@
 package app.masroufy.device.smscoverage
 
+import app.masroufy.core.SmsKind.CASH_WITHDRAWAL
+import app.masroufy.core.SmsKind.OWN_TRANSFER
+import app.masroufy.core.SmsKind.REFUND
+import app.masroufy.core.SmsKind.SALARY
+
 /**
  * المتوقع من كل سطر في `research/banks/saudi-sms-formats.json` (0…121؛ عناوين البنك المركزي 122…182 في [SamaTitles]).
  * المعنى من نوع السطر وملاحظاته في ملف البحث + قرارات OVERRIDES §75: السحب من الصرّاف حركة طالعة (بتتنقل للكاش بعدين — ٤)،
@@ -24,18 +29,18 @@ internal object SaudiSpecs {
         6 to out(merchant = true),
         7 to out(merchant = true),
         8 to out(),
-        9 to inn(merchant = true),
-        10 to inn(merchant = true),
+        9 to inn(merchant = true, kind = REFUND),
+        10 to inn(merchant = true, kind = REFUND),
         11 to custom(
-            CustomBody("استرجاع", "استرجاع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true)),
-            CustomBody("إرجاع", "إرجاع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nالتاجر:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true)),
-            CustomBody("مرتجع", "مرتجع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true)),
-            CustomBody("عكس العملية", "عكس العملية\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true)),
-            CustomBody("كاش باك", "كاش باك\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true)),
+            CustomBody("استرجاع", "استرجاع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
+            CustomBody("إرجاع", "إرجاع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nالتاجر:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
+            CustomBody("مرتجع", "مرتجع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
+            CustomBody("عكس العملية", "عكس العملية\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
+            CustomBody("كاش باك", "كاش باك\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
             CustomBody("كاش باك عكس", "كاش باك عكس\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.OUT, merchant = true)),
             date = rajhiDate,
         ),
-        12 to out(),
+        12 to out(kind = CASH_WITHDRAWAL),
         13 to inn(party = listOf(NAME)),
         14 to inn(party = NAME_DIGITS),
         15 to inn(party = NAME_DIGITS),
@@ -47,12 +52,12 @@ internal object SaudiSpecs {
         21 to out(party = NAME_DIGITS),
         22 to out(party = listOf(NAME)),
         // بين حساباتك: «الى: {acct}» = حسابك التاني ⇒ الطرف = آخر 4 منه (§75-11)
-        23 to out(party = listOf("acct")),
+        23 to out(party = listOf("acct"), kind = OWN_TRANSFER),
         24 to ignore("declined outgoing transfer (مرفوضة)"),
         25 to inn(),
         26 to inn(),
         27 to inn(),
-        28 to inn(),
+        28 to inn(kind = SALARY),
         29 to out(),
         30 to out(),
         31 to out(),
@@ -67,14 +72,14 @@ internal object SaudiSpecs {
         // ── الأهلي السعودي ──
         40 to out(merchant = true, values = mapOf("wallet" to "ApplePay")),
         41 to out(merchant = true),
-        42 to inn(merchant = true),
-        43 to inn(),
+        42 to inn(merchant = true, kind = REFUND),
+        43 to inn(kind = REFUND),
         44 to ignore("declined purchase"),
         45 to ignore("OTP with amount"),
         46 to ignore("refund of a previously rejected operation"),
         47 to custom(
             CustomBody("حوالة صادرة", "حوالة صادرة\nبـ{amount} SAR\nالى: {name}\nالرصيد المتاح: SAR {balance}\nفي {time} {date}", Expect(true, Dir.OUT, partyKeys = listOf(NAME))),
-            CustomBody("حوالة بين حساباتك", "حوالة بين حساباتك\nبـ{amount} SAR\nالى {name}\nالرصيد: SAR {balance}\nفي {time} {date}", Expect(true, Dir.OUT, partyKeys = listOf(NAME))),
+            CustomBody("حوالة بين حساباتك", "حوالة بين حساباتك\nبـ{amount} SAR\nالى {name}\nالرصيد: SAR {balance}\nفي {time} {date}", Expect(true, Dir.OUT, partyKeys = listOf(NAME), kind = OWN_TRANSFER)),
             CustomBody("سداد", "سداد\nبـ{amount} SAR\nالى: {name}\nالرصيد المتاح: SAR {balance}\nفي {time} {date}", Expect(true, Dir.OUT)),
         ),
         48 to out(merchant = true),
@@ -83,7 +88,7 @@ internal object SaudiSpecs {
         50 to out(merchant = true),
         51 to out(party = NAME_DIGITS),
         52 to inn(party = NAME_DIGITS),
-        53 to inn(),
+        53 to inn(kind = SALARY),
         // سطر كلمات بس («الرصيد[ المتاح]: SAR …») ⇒ متجرب جوه شكل شراء ساب (السطر 49): الرصيد ما يتحسبش مبلغ
         54 to custom(
             CustomBody("الرصيد المتاح", "شراء عبر نقاط البيع\nبطاقة: ***{last4};mada({wallet});\nمبلغ: SAR {amount}\nلدى: {merchant}\nالرصيد المتاح: SAR {balance}\nفي: {date} {time}", Expect(true, Dir.OUT, merchant = true)),
@@ -99,16 +104,16 @@ internal object SaudiSpecs {
         60 to out(merchant = true),
         61 to out(merchant = true),
         62 to out(merchant = true),
-        63 to inn(merchant = true),
+        63 to inn(merchant = true, kind = REFUND),
         64 to inn(party = listOf(NAME)),
         65 to inn(party = NAME_DIGITS),
         66 to inn(party = listOf(NAME)),
         67 to inn(),
         68 to out(party = NAME_DIGITS),
         69 to out(party = NAME_DIGITS),
-        70 to out(party = listOf("acct2")),
-        71 to inn(),
-        72 to inn(),
+        70 to out(party = listOf("acct2"), kind = OWN_TRANSFER),
+        71 to inn(kind = SALARY),
+        72 to inn(kind = SALARY),
         73 to inn(),
         74 to ignore("declined: card balance not enough (has amount + merchant)"),
         75 to ignore("purchase-like OTP"),
@@ -119,7 +124,7 @@ internal object SaudiSpecs {
         // ── دي 360: المبلغ بالريال بين قوسين جنب الأجنبي ⇒ ده المبلغ ──
         79 to out(merchant = true, values = FOREIGN_TRIP),
         80 to out(merchant = true),
-        81 to out(values = FOREIGN_TRIP),
+        81 to out(values = FOREIGN_TRIP, kind = CASH_WITHDRAWAL),
         82 to inn(party = listOf("cpAcct")),
         83 to inn(party = listOf(NAME)),
         84 to out(party = NAME_DIGITS),
@@ -134,11 +139,11 @@ internal object SaudiSpecs {
         92 to out(merchant = true),
         93 to out(merchant = true),
         94 to out(merchant = true, amountKey = "total", values = FOREIGN_TRIP),
-        95 to inn(merchant = true),
-        96 to inn(merchant = true),
-        97 to inn(merchant = true),
-        98 to out(party = listOf("acct2")),
-        99 to out(party = listOf("acct2")),
+        95 to inn(merchant = true, kind = REFUND),
+        96 to inn(merchant = true, kind = REFUND),
+        97 to inn(merchant = true, kind = REFUND),
+        98 to out(party = listOf("acct2"), kind = OWN_TRANSFER),
+        99 to out(party = listOf("acct2"), kind = OWN_TRANSFER),
         100 to inn(party = listOf(NAME)),
         101 to inn(party = listOf(NAME)),
         102 to inn(party = listOf(NAME)),

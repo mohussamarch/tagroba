@@ -14,6 +14,7 @@ internal val MSA_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKGROUND_WORK_NOTICE to "جارٍ تحديث مصروفي",
     TextKey.SMS_AUTO_WALLET_UNKNOWN to "المحفظة غير موجودة في هذا البلد",
     TextKey.ALERT_GROUP_BANK_SMS to "رسائل البنك",
+    TextKey.SMS_NOT_TRANSACTION to "ليست عملية مكتملة: حجز مبلغ أو طلب لم يُنفَّذ أو رسالة معلومات",
 )
 
 internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -25,6 +26,7 @@ internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKGROUND_WORK_NOTICE to "مصروفي بيحدّث",
     TextKey.SMS_AUTO_WALLET_UNKNOWN to "المحفظة دي مش موجودة في البلد دي",
     TextKey.ALERT_GROUP_BANK_SMS to "رسايل البنك",
+    TextKey.SMS_NOT_TRANSACTION to "مش عملية خلصت: حجز مبلغ أو طلب لسه ما اتنفذش أو رسالة معلومات",
 )
 
 internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -36,4 +38,5 @@ internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.BACKGROUND_WORK_NOTICE to "Masroufy is updating",
     TextKey.SMS_AUTO_WALLET_UNKNOWN to "That wallet isn't in this country",
     TextKey.ALERT_GROUP_BANK_SMS to "Bank messages",
+    TextKey.SMS_NOT_TRANSACTION to "Not a completed transaction: a hold, a pending request or an information message",
 )

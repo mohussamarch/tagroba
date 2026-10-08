@@ -1,87 +1,46 @@
 package app.masroufy.core
 
+import app.masroufy.core.JsText.B
+
 /**
- * قارئ رسايل بنوك مصر — بُني على عينات حقيقية من **QNB مصر** بعت بيها المالك (OVERRIDES §40.3).
+ * قارئ رسايل بنوك ومحافظ مصر. بدأ على عينات حقيقية من **QNB مصر** بعت بيها المالك (OVERRIDES §40.3)، واتوسّع (جلسة 32) على
+ * أشكال البحث (`research/banks/egypt-sms-formats.json`): الأهلي المصري (من غير مسافات أحيانًا «رقم4821»، والتاريخ من غير سنة)،
+ * التجاري الدولي، بيت التمويل الكويتي، البنك العربي، HSBC، بريدفاست، فودافون كاش، اتصالات/أورانج/وي.
  * ⚠️ العينات نفسها **مش في المستودع** (بيانات حقيقية، والمستودع عام)، والاختبارات برسايل مخترعة بنفس الشكل.
  *
- * التلات أشكال اللي في العينات:
- * 1. `IPN transfer sent with amount of EGP 300.00 from 1234 on 29/07 at 12:04 PM. Ref# ab12cd34.` ⇒ صادر
- * 2. `IPN transfer received with amount of EGP 250.00 on 1234 on 29/07 at 03:01 PM. Ref# ab12cd34.` ⇒ وارد
- * 3. `Your Debit Card **1234 had a Successful transaction of EGP 41.25 @store.com,your available bal.EGP174.40` ⇒ صادر
- *
- * **مفيش ملف مرجع (golden) للقارئ ده**: التطبيق الحالي مش بيقرا رسايل مصرية أصلًا، فمفيش حاجة يتطابق معاها.
- * الضمان هنا اختبارات مكتوبة بالإيد على الأشكال دي وعلى اللي لازم **يترفض**.
+ * الخطوات: التجاهل (`SmsGuards.kt`) ⇒ عملة تانية (ريال = رسالة سعودية؛ دولار ويورو = عملية أجنبية تستنى المبلغ بالجنيه §75-12) ⇒
+ * الاتجاه والنوع والمبلغ والمحل (`EgyptSmsShapes.kt`) ⇒ التاريخ (`SmsDates.kt` — الرسالة اللي مفيهاش تاريخ خالص = يوم الوصول §40.3-١).
+ * **مفيش ملف مرجع (golden) للقارئ ده**: التطبيق الحالي مش بيقرا رسايل مصرية أصلًا. الضمان اختبارات مكتوبة بالإيد.
  */
 
 private val EG_I = setOf(RegexOption.IGNORE_CASE)
 
-// المبلغ بيجي بعد «amount of» أو «transaction of» — والرصيد («bal.EGP…») مش بينطبق عليه
-private val EG_AMOUNT = Regex("(?:amount|transaction)${JsText.S}+of${JsText.S}+EGP${JsText.S}*([\\d,]+(?:\\.\\d{1,2})?)", EG_I)
-private val EG_SENT = Regex("transfer${JsText.S}+sent|debit${JsText.S}+card|credit${JsText.S}+card|purchase", EG_I)
-private val EG_RECEIVED = Regex("transfer${JsText.S}+received|deposit|salary|refund", EG_I)
-private val EG_MERCHANT = Regex("@${JsText.S}*([^,\\n]+)")
-private val EG_DAY_MONTH = Regex("(?<!\\d)(\\d{1,2})/(\\d{1,2})(?!\\d|/)")
-private val EG_OTHER_CURRENCY = Regex("${JsText.B}(?:USD|EUR|GBP|SAR|AED)${JsText.B}|دولار|يورو|ريال", EG_I)
+/** عملة مش جنيه. الريال والـSR = رسالة سعودية (قارئ السعودية هو اللي يقراها). */
+private val EG_OTHER_CURRENCY = Regex("$B(?:USD|EUR|GBP|SAR|AED|SR|KWD|BHD|QAR|OMR|JOD)$B|دولار|يورو|ريال|ر\\.س", EG_I)
 
-/** سنة اليوم/الشهر من تاريخ وصول الرسالة: سنة الوصول أو اللي قبلها، والمقبول واحد بس. */
-private fun egyptDate(body: String, receivedAt: String): IsoDate? {
-    val received = JsText.parseIsoMillis(receivedAt)
-    val match = EG_DAY_MONTH.find(body)
-    if (match == null) {
-        // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فتاريخ الوصول هو تاريخها.
-        // ⚠️ طبقة أندرويد لازم تبعت `receivedAt` **بالتوقيت المحلي** عشان اليوم يطلع صح.
-        val day = receivedAt.take(10)
-        return if (isValidIsoDate(day)) day else null
-    }
-    if (received == null) return null
-    val day = match.groupValues[1].toInt()
-    val month = match.groupValues[2].toInt()
-    val receivedYear = receivedAt.take(4).toIntOrNull() ?: return null
-    val candidates = LinkedHashSet<String>()
-    for (year in listOf(receivedYear, receivedYear - 1)) {
-        val value = "$year-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
-        if (!isValidIsoDate(value)) continue
-        val time = toDayNumber(parseIsoDate(value)).toLong() * DAY_MS
-        if (time <= received + DAY_MS && time >= received - 60 * DAY_MS) candidates.add(value)
-    }
-    return if (candidates.size == 1) candidates.first() else null
+/** عملية بعملة أجنبية: سبب الرفض القديم + اللي اتقري لو كله واضح (مش ريال — دي رسالة سعودية مش أجنبية). */
+private fun foreignOnly(body: String, receivedAt: String): SmsParseResult.Rejected {
+    val reason = uiText(TextKey.SMS_NOT_EGP)
+    val foreign = foreignAmountOf(body, skip = "EGP")?.takeIf { it.currency != "SAR" } ?: return SmsParseResult.Rejected(reason)
+    val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(reason)
+    val date = egyptTransactionDate(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
+    val kind = egyptKind(body, direction)
+    return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, redactSms(egyptMerchant(body, kind)), kind))
 }
 
-/** التاجر من `@اسم,` — واللي أرقام بس (حساب) مش تاجر. التحويل مفيهوش اسم الطرف أصلًا. */
-private fun egyptMerchant(body: String): String {
-    val raw = JsText.trim(EG_MERCHANT.find(body)?.groupValues?.get(1) ?: "")
-    return if (raw.all { it in '0'..'9' || JsText.isWhitespace(it) || it in "*•.:-" }) "" else raw
-}
-
-/** QNB مصر. الشكل المجهول بيترفض بسبب واضح ويتضاف باليد — نفس قاعدة القارئ السعودي. */
+/** بنوك ومحافظ مصر. الشكل المجهول بيترفض بسبب واضح ويتضاف باليد — نفس قاعدة القارئ السعودي. */
 fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
-    val body = latinizeDigits(message.body).filterNot { it == '\r' || it.code in BIDI_CODES }
-    if (SMS_OFFER_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OFFER))
-    if (SMS_SENSITIVE_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_SENSITIVE))
-    if (SMS_DECLINED_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DECLINED))
-    if (EG_OTHER_CURRENCY.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_NOT_EGP))
-
-    val out = EG_SENT.containsMatchIn(body)
-    val incoming = EG_RECEIVED.containsMatchIn(body)
-    if (out == incoming) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
-
-    val amounts = EG_AMOUNT.findAll(body).map { it.groupValues[1] }.toList()
-    if (amounts.isEmpty()) return SmsParseResult.Rejected(uiText(TextKey.SMS_AMOUNT_UNCLEAR))
-    if (amounts.size > 1) return SmsParseResult.Rejected(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
-    val amount = tryParseMoney(amounts[0], Currency.EGP)
-    if (amount == null || amount <= 0) return SmsParseResult.Rejected(uiText(TextKey.SMS_AMOUNT_INVALID))
-
-    val date = egyptDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
-    val safeBody = redactSms(body)
-    return SmsParseResult.Ok(
-        SmsRow(
-            lineNumber = lineNumber, date = date, amountMinor = amount,
-            direction = if (incoming) Direction.IN else Direction.OUT,
-            merchantName = redactSms(egyptMerchant(body)),
-            reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
-            sourceName = message.sender, description = safeBody, raw = safeBody,
-        ),
-    )
+    val body = normalizeSmsBody(message.body)
+    smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
+    if (EG_OTHER_CURRENCY.containsMatchIn(body)) return foreignOnly(body, message.receivedAt)
+    val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    val amount = when (val a = egyptAmount(body)) {
+        is EgyptAmount.Fail -> return SmsParseResult.Rejected(a.reason)
+        is EgyptAmount.Ok -> a.amountMinor
+    }
+    val date = egyptTransactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
+    val kind = egyptKind(body, direction)
+    return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind, null)
 }
 
 /** قارئ مصر لحزمة البلد. */

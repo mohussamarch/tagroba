@@ -18,9 +18,9 @@ import kotlin.test.fail
  * - `correctlyIgnored` — مش عملية واترفضت.
  * المتوقع لكل سطر مكتوب باليد في [SaudiSpecs] و[EgyptSpecs] و[SamaTitles] (عناوين البنك المركزي بتتجرب كأول سطر في رسالة عامة).
  *
- * ⚠️ **الاختبار ده بيقيس وما بيفشلش على نتيجة القارئ** — التقرير في `device/build/reports/sms-template-coverage/`
- * (`summary.txt` و`report.json`). بيفشل بس لو الأداة نفسها باظت: سطر في ملفات البحث مالوش متوقع، أو خانة `{…}` مالهاش قيمة.
- * اللي هيعدّل القارئ يقدر يقلب أي سطر لـ«لازم يبقى صح» بعد ما يصلحه.
+ * التقرير في `device/build/reports/sms-template-coverage/` (`summary.txt` و`report.json`). الاختبار بيفشل لو الأداة نفسها باظت
+ * (سطر مالوش متوقع، خانة `{…}` مالهاش قيمة)، **ومن جلسة 32 كمان لو سطر رجع لورا**: كل سطر لازم يتقري صح أو يترفض صح ما عدا
+ * [KNOWN_UNSUPPORTED] (معروف ومكتوب سببه)، ومفيش رسالة تتقري في البلدين.
  */
 class SmsTemplateCoverageTest {
     private fun researchDir(): File {
@@ -93,5 +93,24 @@ class SmsTemplateCoverageTest {
         assertTrue(report.isFile)
         println(Report.summaryText(rows))
         println("report: ${report.absolutePath}")
+        // جلسة 32 (تعديل القارئ): من هنا القياس **بيمسك الرجوع لورا** — كل سطر لازم يتقري صح أو يترفض صح، ما عدا القايمة دي
+        val notHandled = rows.filter { it.outcome != Outcome.CORRECT && it.outcome != Outcome.CORRECTLY_IGNORED }.map { "${it.file}#${it.index}" }.toSet()
+        assertEquals(KNOWN_UNSUPPORTED.keys, notHandled, "rows not handled right (outside the known list) — see build/reports/sms-template-coverage/summary.txt")
+        assertTrue(rows.flatMap { it.variants }.none { it.crossLane != null }, "a message read by both countries' readers")
+    }
+
+    companion object {
+        /** سطور معروف إنها بتترفض (بتستنى المالك) — والسبب. اللي يصلح سطر منهم يشيله من هنا. */
+        val KNOWN_UNSUPPORTED = mapOf(
+            "saudi#39" to "invented by a test author (research: «do not build on it»); no date in the message",
+            "saudi#48" to "probably invented; no date in the message",
+            "saudi#73" to "no currency at all («تم قيد مبلغ 87.50 لحسابكم») — riyal can't be assumed (rule 10)",
+            "saudi#97" to "STC «Purchase Reversal» template has no date (PennyWise test, likely trimmed)",
+            "saudi#103" to "STC «Internal transfer» has no date and no direction word (PennyWise test)",
+            "saudi#106" to "STC «Outward SARIE Transfer» template has no date",
+            "saudi#120" to "cashback accrual into a card's cashback wallet: no date in the template",
+            "saudi#121" to "cashback credited to card: no date in the template",
+            "egypt#49" to "synthetic VF English receive: SmsSafety's long-number redaction eats the date after the reference («Transaction ID: <12 digits> 14/09/2026»)",
+        )
     }
 }

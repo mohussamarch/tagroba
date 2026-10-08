@@ -60,6 +60,33 @@ class SmsSafetyTest {
         assertFalse(safe.contains("1234567890"))
     }
 
+    // جلسة 32 — أشكال البحث (رسايل مخترعة): الجنيه بكل كتاباته وكلمات حركة جديدة، والمبلغ الكبير بالجنيه ما بيتقصش
+    @Test fun keepsResearchedShapesThatTheOldWordListDropped() {
+        val kept = listOf(
+            "تم خصم 64.25 جم من بطاقة الائتمان رقم 6604 عند TEST GROCER يوم 03-05 الساعة 09:10",
+            "تم سحب 300.00 ج بنجاح. رصيد حسابك في فودافون  كاش الحالي 4,100.00 جنيه.",
+            "You have successfully recharged 50.00 LE to the balance of 01000000777",
+            "تم استلام تحويل لحظي بمبلغ 900.00 ج.م من سامي التجريبي",
+            "عكس عملية\nالى: ***6604; VISA\n12.40 SAR :المبلغ\nفي: TEST GROCER\nبتاريخ: 2026-03-05 09:10:44",
+            "مشتريات نقاط البيع\nبطاقة: **6604;مدى\nمبلغ: 64.25 SAR\nلدى: TEST GROCER\nفي: 05/03/2026 09:10",
+            "عملية انترنت\nب: 64.25 SAR\nمن:TEST GROCER\nفي:2026-03-05 09:10:44",
+            "Debit fees\nReason: Card replacement fee\nAmount: SAR 15.00\nDate: 2026-03-05 09:10:44",
+        )
+        for (body in kept) assertNotNull(SmsSafety.sanitize(body), body)
+        val big = SmsSafety.sanitize("تم استلام مبلغ 12500 جنيه من رقم 01000000777 المسجل بإسم سامي التجريبي")!!
+        assertTrue(big.contains("12500 جنيه"), big)
+        assertFalse(big.contains("01000000777"), "رقم الموبايل بيتقص لآخر 4")
+        assertTrue(big.contains("••••0777"))
+    }
+
+    @Test fun dropsHoldsRequestsAndPurchaseLikeCodes() {
+        assertNull(SmsSafety.sanitize("تفويض عبر الانترنت\nبطاقة:6604;مدى\nمبلغ:SAR 64.25\nلدى:TEST GROCER\nفي:26-03-05 09:10"))
+        assertNull(SmsSafety.sanitize("رمز شراء أونلاين 482913\nللبطاقة *6604\nبـ 64.25 SAR\nمن TEST GROCER\nفي 09:10 05/03/2026"))
+        assertNull(SmsSafety.sanitize("Insufficient balance-Online Purchase\nCard:6604;VISA-VISA\nAmount:64.25SR\nAt:TEST GROCER\n2026-03-05 09:10:44"))
+        assertNull(SmsSafety.sanitize("تم طلب سحب مبلغ 300.00 جنيه من حساب فودافون كاش. للتأكيد اطلب #1*9* وادخل الرقم السري."))
+        assertNull(SmsSafety.sanitize("لقد تم تقسيط مبلغ 1,200.00 جم من TEST GROCER على بطاقتكم الائتمانية"))
+    }
+
     // QNB مصر (OVERRIDES §40.3): العملة EGP والرسالة إنجليزي
     @Test fun keepsQnbEgyptMessages() {
         val sent = SmsSafety.sanitize("IPN transfer sent with amount of EGP 300.00 from 1234 on 30/07 at 05:48 AM. Ref# aaaa1111.")

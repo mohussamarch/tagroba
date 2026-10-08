@@ -5,8 +5,10 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.ReviewState
+import app.masroufy.core.SmsForeignPending
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
+import app.masroufy.core.SmsVocabulary
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.parseBankSms
@@ -28,25 +30,20 @@ internal object Evaluate {
         TextKey.SMS_NOT_EGP to "not EGP", TextKey.SMS_AMOUNT_INVALID to "amount invalid",
         TextKey.SMS_MULTIPLE_AMOUNTS to "multiple amounts", TextKey.SMS_CURRENCY_UNCLEAR to "currency unclear",
         TextKey.SMS_AMOUNT_UNCLEAR to "amount unclear", TextKey.SMS_DATE_UNCLEAR to "date unclear",
+        TextKey.SMS_NOT_TRANSACTION to "not a transaction",
     )
-    private val DELIBERATE = setOf("offer", "otp/sensitive", "declined")
+    private val DELIBERATE = setOf("offer", "otp/sensitive", "declined", "not a transaction")
     private val GARBAGE_KEYS = listOf("acct", "last4", "ownIbanMasked", "acct_tail", "date", "amount", "balance")
 
-    // نسخة من أنماط `SmsSafety` للتشخيص بس (ليه الفلتر رمى الرسالة) — الحكم نفسه من `SmsSafety.sanitize` الحقيقية
-    private val SAFETY_IGNORE = Regex(
-        "\\bOTP\\b|verification\\s*code|one.time\\s*(password|code)|رمز\\s*(التحقق|التوثيق|التفعيل|الدخول)|كلمة\\s*(المرور|السر)|عرض|سيتم|offer|will be|scheduled|مرفوض|لم تتم|declined|failed|مشاركة\\s*الرمز|الرمز\\s*[:：]?\\s*\\d{4,8}",
-        RegexOption.IGNORE_CASE,
-    )
-    private val SAFETY_MOVEMENT = Regex(
-        "شراء|سحب|خصم|سداد|مدفوعات|دفع|حوالة|تحويل|إيداع|ايداع|راتب|استرداد|مرتجع|purchase|withdrawal|transfer|deposit|refund|salary|payment|transaction",
-        RegexOption.IGNORE_CASE,
-    )
+    /** المبلغ الأجنبي في قوالب البحث كله دولار (الراجحي «شراء دولي» والبنك العربي). */
+    private const val FOREIGN_CURRENCY = "USD"
 
     private fun reasonCode(reason: String): String = REASONS.firstOrNull { uiText(it.first) == reason }?.second ?: reason
 
+    /** ليه `SmsSafety` رمى الرسالة — من نفس مفردات الفلتر (`SmsVocabulary`)، للتشخيص بس. */
     private fun safetyWhy(body: String): String {
-        SAFETY_IGNORE.find(body)?.let { return "ignore-word '${it.value}'" }
-        if (!SAFETY_MOVEMENT.containsMatchIn(body)) return "no movement word"
+        SmsVocabulary.ignoreReason(body)?.let { return "guard '${reasonCode(uiText(it))}'" }
+        if (!SmsVocabulary.hasMovement(body)) return "no movement word"
         return "no currency token SmsSafety knows"
     }
 
@@ -80,6 +77,7 @@ internal object Evaluate {
         val dir = if (row.direction == Direction.IN) Dir.IN else Dir.OUT
         if (e.dir != Dir.ANY && dir != e.dir) problems += "direction ${dir.name} != expected ${e.dir.name}"
         if (row.date != Fill.TX_DATE) problems += "date ${row.date} != expected ${Fill.TX_DATE}"
+        if (e.kind != null && row.kind != e.kind) problems += "kind ${row.kind.wire} != expected ${e.kind.wire}"
         if (e.merchant) {
             val m = v.values.getValue("merchant")
             if (norm(row.merchantName) != norm(m)) problems += "merchant '${row.merchantName}' != expected '$m'"
@@ -103,11 +101,34 @@ internal object Evaluate {
         return problems
     }
 
+    /** عملية أجنبية من غير مبلغ محلي (§75-12): الصح = رفض بسبب العملة **ومعاه** المبلغ الأجنبي والاتجاه والتاريخ (والمحل لو متوقع). */
+    private fun comparePending(v: Variant, pending: SmsForeignPending): List<String> {
+        val e = v.expect
+        val problems = mutableListOf<String>()
+        val want = Fill.minor(v.values.getValue(e.amountKey))
+        if (pending.foreign.currency != FOREIGN_CURRENCY || pending.foreign.amountMinor != want) {
+            problems += "foreign ${pending.foreign.currency} ${pending.foreign.amountMinor} != expected $FOREIGN_CURRENCY $want"
+        }
+        val dir = if (pending.direction == Direction.IN) Dir.IN else Dir.OUT
+        if (e.dir != Dir.ANY && dir != e.dir) problems += "direction ${dir.name} != expected ${e.dir.name}"
+        if (pending.date != Fill.TX_DATE) problems += "date ${pending.date} != expected ${Fill.TX_DATE}"
+        if (e.merchant && norm(pending.merchantName) != norm(v.values.getValue("merchant"))) problems += "merchant '${pending.merchantName}'"
+        return problems
+    }
+
     private fun judge(country: String, v: Variant, parsed: SmsParseResult): Triple<Outcome, List<String>, String> = when (parsed) {
         is SmsParseResult.Rejected -> {
             val code = reasonCode(parsed.reason)
-            if (v.expect.tx) Triple(Outcome.REJECTED, listOf("parser rejected: $code"), code)
-            else Triple(Outcome.CORRECTLY_IGNORED, emptyList(), code)
+            val pending = parsed.foreign
+            when {
+                v.expect.tx && v.expect.foreign && pending != null -> {
+                    val problems = comparePending(v, pending)
+                    val s = "foreign pending §75-12: ${pending.foreign.currency} ${pending.foreign.amountMinor} dir=${pending.direction.wire} date=${pending.date} merchant='${pending.merchantName}'"
+                    Triple(if (problems.isEmpty()) Outcome.CORRECT else Outcome.WRONG, problems, s)
+                }
+                v.expect.tx -> Triple(Outcome.REJECTED, listOf("parser rejected: $code"), code)
+                else -> Triple(Outcome.CORRECTLY_IGNORED, emptyList(), code)
+            }
         }
         is SmsParseResult.Ok -> {
             val s = summary(country, parsed.row)
@@ -127,7 +148,7 @@ internal object Evaluate {
             return if (v.expect.tx) {
                 VariantResult(v, Outcome.REJECTED, listOf("dropped by SmsSafety before the parser ($why)"), "SmsSafety: $why", manual, null, false)
             } else {
-                VariantResult(v, Outcome.CORRECTLY_IGNORED, emptyList(), "SmsSafety: $why", manual, null, !why.startsWith("ignore-word"))
+                VariantResult(v, Outcome.CORRECTLY_IGNORED, emptyList(), "SmsSafety: $why", manual, null, !why.startsWith("guard"))
             }
         }
         val parsed = reader(country)(BankSmsMessage(sender, Fill.RECEIVED_AT, stored), 1)

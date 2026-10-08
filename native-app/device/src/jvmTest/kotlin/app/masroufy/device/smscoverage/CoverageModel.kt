@@ -1,5 +1,7 @@
 package app.masroufy.device.smscoverage
 
+import app.masroufy.core.SmsKind
+
 /**
  * نموذج قياس تغطية أشكال رسايل البنوك (`research/banks (saudi|egypt)-sms-formats.json`) — الوصف الكامل في [SmsTemplateCoverageTest].
  *
@@ -23,7 +25,9 @@ internal enum class Outcome(val wire: String, val severity: Int) {
  * - [merchant] = الرسالة فيها `{merchant}` واسم المحل لازم يطلع زي ما هو.
  * - [partyKeys] = الخانات اللي بتعرّف الطرف التاني في التحويل (اسم أو أرقام). الطرف صح لو الاسم طلع، **أو** آخر 4 أرقام طلعوا
  *   (§39/§60: الاسم + آخر 4). الخانة اللي مش موجودة في نسخة الرسالة دي (جزء اختياري اتشال) ما بتتحسبش. فاضية = مفيش طرف ولازم ما يطلعش طرف.
- * - [foreign] = المبلغ بعملة أجنبية بس (من غير مقابل محلي) — قرار §75-12: يتسجل ويسأل عن المبلغ المحلي.
+ * - [foreign] = المبلغ بعملة أجنبية بس (من غير مقابل محلي) — قرار §75-12: يتسجل ويسأل عن المبلغ المحلي. **الصح** هنا = القارئ
+ *   رفضها بسبب العملة **ومعاها** المبلغ الأجنبي والاتجاه والتاريخ ([app.masroufy.core.SmsForeignPending]) عشان السؤال يتعمل.
+ * - [kind] = نوع العملية اللي لازم القارئ يعرفه (سحب صرّاف §75-4 · استرداد §75-6 · بين حساباتك §75-11) — null = ما بيتفحصش.
  */
 internal data class Expect(
     val tx: Boolean,
@@ -33,6 +37,7 @@ internal data class Expect(
     val partyKeys: List<String> = emptyList(),
     val foreign: Boolean = false,
     val what: String = "",
+    val kind: SmsKind? = null,
 )
 
 /** رسالة مكتوبة باليد لسطر «كلمات بس» (مفيهوش رسالة كاملة) — بقوالب `{…}` زي ملفات البحث. */
@@ -70,16 +75,16 @@ internal data class RowSpec(
 
 internal fun out(
     merchant: Boolean = false, party: List<String> = emptyList(), amountKey: String = "amount", foreign: Boolean = false,
-    values: Map<String, String> = emptyMap(), date: DateStyle? = null, fix: ((String) -> String)? = null,
-) = RowSpec(Expect(true, Dir.OUT, amountKey, merchant, party, foreign), values, date, fix)
+    values: Map<String, String> = emptyMap(), date: DateStyle? = null, fix: ((String) -> String)? = null, kind: SmsKind? = null,
+) = RowSpec(Expect(true, Dir.OUT, amountKey, merchant, party, foreign, kind = kind), values, date, fix)
 
 internal fun inn(
     merchant: Boolean = false, party: List<String> = emptyList(), amountKey: String = "amount",
-    values: Map<String, String> = emptyMap(), date: DateStyle? = null,
-) = RowSpec(Expect(true, Dir.IN, amountKey, merchant, party), values, date)
+    values: Map<String, String> = emptyMap(), date: DateStyle? = null, kind: SmsKind? = null,
+) = RowSpec(Expect(true, Dir.IN, amountKey, merchant, party, kind = kind), values, date)
 
 /** حركة فلوس اتجاهها ملتبس حتى للإنسان (سداد بطاقة ائتمانية مثلًا) — أي اتجاه مقبول، المهم تتسجل. */
-internal fun anyDir(values: Map<String, String> = emptyMap()) = RowSpec(Expect(true, Dir.ANY), values)
+internal fun anyDir(values: Map<String, String> = emptyMap(), kind: SmsKind? = null) = RowSpec(Expect(true, Dir.ANY, kind = kind), values)
 
 internal fun ignore(what: String, values: Map<String, String> = emptyMap(), date: DateStyle? = null) =
     RowSpec(Expect(false, what = what), values, date)

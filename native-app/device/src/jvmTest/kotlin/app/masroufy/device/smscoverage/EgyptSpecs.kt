@@ -1,5 +1,9 @@
 package app.masroufy.device.smscoverage
 
+import app.masroufy.core.SmsKind.CASH_WITHDRAWAL
+import app.masroufy.core.SmsKind.REFUND
+import app.masroufy.core.SmsKind.SALARY
+
 /**
  * المتوقع من كل سطر في `research/banks/egypt-sms-formats.json` (0…57). نفس القواعد زي [SaudiSpecs]؛ العملة المحلية الجنيه
  * والمبلغ بالقروش. الطرف التاني في المحافظ = رقم الموبايل (آخر 4) أو الاسم المسجل.
@@ -11,7 +15,7 @@ internal object EgyptSpecs {
         // ── الأهلي المصري ──
         0 to out(merchant = true),
         1 to out(merchant = true),
-        2 to out(), // سحب صرّاف — نفس نص الشراء والمحل «NBE ATM…»
+        2 to out(kind = CASH_WITHDRAWAL), // سحب صرّاف — نفس نص الشراء والمحل «NBE ATM…»
         3 to inn(party = listOf(NAME)),
         4 to out(party = listOf("masked_name")),
         5 to inn(party = listOf(NAME)),
@@ -21,14 +25,14 @@ internal object EgyptSpecs {
         9 to out(),
         // ── التجاري الدولي ──
         10 to out(merchant = true),
-        11 to inn(merchant = true),
-        12 to inn(merchant = true),
+        11 to inn(merchant = true, kind = REFUND),
+        12 to inn(merchant = true, kind = REFUND),
         13 to ignore("refund REQUEST (money not moved yet)", values = mapOf("amount" to "-42.25")),
         14 to out(merchant = true),
         15 to anyDir(), // سداد البطاقة الائتمانية = تحويل داخلي؛ الاتجاه حسب المحفظة
         16 to out(),
         17 to inn(party = listOf(NAME)),
-        18 to inn(),
+        18 to inn(kind = SALARY),
         19 to ignore("existing purchase converted to installments (not a new spend)", values = mapOf("currency" to "جم")),
         20 to ignore("declined", values = mapOf("currency" to "جم", "reason" to "عدم كفاية رصيد البطاقة")),
         21 to ignore("purchase OTP with amount + merchant"),
@@ -42,7 +46,7 @@ internal object EgyptSpecs {
         28 to inn(party = listOf(NAME)),
         29 to inn(party = listOf(NAME)),
         30 to out(),
-        31 to inn(), // IPN رجع ⇒ الفلوس رجعت
+        31 to inn(kind = REFUND), // IPN رجع ⇒ الفلوس رجعت
         32 to custom(
             CustomBody("ar", "عزيزي العميل لقد قمت بتسجيل الدخول في بنك بيت التمويل الكويتي – مصر في {date}, {time}", Expect(false, what = "info: login")),
             CustomBody("en", "Dear Customer, You have logged in to KFH - Egypt Mobile Banking service at {date}, {time}", Expect(false, what = "info: login")),
@@ -63,7 +67,7 @@ internal object EgyptSpecs {
         39 to out(party = listOf("phone")),
         40 to ignore("cash-out REQUEST waiting for PIN"),
         // سحب كاش من المحفظة (§75-4: نقل للكاش) — قبل التاريخ علامة LRM مخفية زي الرسالة الحقيقية
-        41 to out(fix = { it.replace("تاريخ العملية {date}", "تاريخ العملية ‎{date}") }),
+        41 to out(kind = CASH_WITHDRAWAL, fix = { it.replace("تاريخ العملية {date}", "تاريخ العملية ‎{date}") }),
         42 to ignore("declined: insufficient balance"),
         43 to ignore("declined: wrong PIN", values = mapOf("rest" to ",رقم العملية 260914000427")),
         44 to ignore("info: balance only"),
