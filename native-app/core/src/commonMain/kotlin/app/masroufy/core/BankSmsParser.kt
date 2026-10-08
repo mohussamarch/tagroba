@@ -7,6 +7,8 @@ package app.masroufy.core
  * 2. **الاتجاه**: عنوان الرسالة لو معروف (`SmsSaudiTitles.kt` — عناوين البنك المركزي الموحّدة + البنوك) ⇒ حوالة الراجحي القديمة
  *    من غير كلمة اتجاه (من مكان الاسم) ⇒ القاعدة القديمة: كلمات الصرف والدخل في الرسالة كلها، ولو الاتنين أو ولا واحد ⇒ ترفض.
  *    عنوان داخل («تصحيح») والنص فيه «تم خصم» ⇒ ترفض · «شيك مرتجع» ⇒ ترفض (الاتجاه مش واضح — الجولة التانية من المراجعة).
+ *    الجولة التالتة: عكس/استقطاع لحاجة ليها اتجاه («Refund Reversal» · «Salary Deduction») ⇒ ترفض · إلغاء ومعاه استرداد والاتجاه
+ *    طالع ⇒ ترفض. والعملة الأجنبية بقت **دليل** (رمز · اسم · «X (SAR …)» — `SmsForeignEvidence.kt`) مش قايمة.
  * 3. **المبلغ** (`SmsSaudiFields.kt`): «إجمالي المبلغ المستحق» لو موجود ⇒ رقم جنبه الريال في سطر مش رصيد ولا رسوم ولا ضريبة (قيمة واحدة).
  *    **عملة أجنبية ⇒ ترفض دايمًا ومعاها كل اللي اتقري** (قرار المالك §75-12: تتسجل وتسأل عن المبلغ المحلي — مش تتسجل لوحدها حتى
  *    لو المقابل بالريال مكتوب؛ المكتوب بيمشي معاها اقتراح بس) لحد ما شاشة السؤال تتبني.
@@ -33,8 +35,27 @@ private fun keywordDirection(body: String): Direction? {
 /** فعل خصم صريح في النص — مع عنوان داخل («تصحيح» · «استرداد») الرسالة متناقضة. */
 private val EXPLICIT_DEBIT = Regex("تم\\s*خصم|خصمت?\\s*من\\s*حساب|(?<![A-Za-z])debited(?![A-Za-z])", I)
 
-/** شيك رجع (اترفض): ممكن رصيد اتخصم تاني أو ما حصلش حاجة — مش استرداد داخل. */
-private val RETURNED_CHEQUE = Regex("شيك\\s*(?:مرتجع|مرفوض|راجع)|(?:returned|bounced|dishonou?red)\\s+cheque|cheque\\s+(?:returned|bounced)", I)
+/**
+ * عكس أو استقطاع في العنوان **ومعاه** كلمة اتجاه تانية («Refund Reversal» · «ATM Withdrawal Reversal» · «عكس حوالة واردة» ·
+ * «Salary Deduction» · «Debit Reversal» · «Cashback Reversal») ⇒ الاتجاه مش واضح (الجولة التالتة: كانت بتتسجل عكس اتجاهها —
+ * وعكس سحب الصرّاف كان هيحط كاش وهمي في محفظة الكاش §75-4). العناوين المعروفة بمعنى «استرداد» ([KNOWN_REVERSAL]) زي ما هي.
+ */
+private val REVERSAL_WORD = Regex("(?<![A-Za-z])(?:revers(?:al|ed|e)?|deduct(?:ion|ed)?)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:عكس|استقطاع)", I)
+private val KNOWN_REVERSAL = Regex(
+    "^(?:Purchase\\s*Reversal|Reverse\\s*Transaction|عكس\\s*(?:ال)?عملية|حوالة\\s*عكسية|كاش\\s*باك\\s*عكس)(?![A-Za-z])",
+    I,
+)
+private val DIRECTION_WORD = Regex(
+    OUT_WORDS.pattern + "|" + IN_WORDS.pattern.substringBefore("|(?<![A-Za-z])revers") +
+        "|(?<![A-Za-z])(?:ATM|debit|credit|cash\\s*back|cashback|refund|salary|deposit|transfer)(?![A-Za-z])|كاش\\s*باك|حوالة|تحويل|استرجاع",
+    I,
+)
+
+private fun reversalOfSomething(body: String): Boolean {
+    val title = smsTitleLine(body)
+    if (KNOWN_REVERSAL.containsMatchIn(title) || !REVERSAL_WORD.containsMatchIn(title)) return false
+    return DIRECTION_WORD.containsMatchIn(REVERSAL_WORD.replace(title, " "))
+}
 
 /**
  * الأهلي السعودي (البحث: «no date in the message»): **الشكل كله** — عنوان معروف · سطر «بـ<مبلغ> SAR» أو «مبلغ <مبلغ> SAR» ·
@@ -63,7 +84,8 @@ private val INTERNATIONAL_TITLE = Regex("^[^\\n]*(?:دولي|دولية|Internat
  * رصيده بالجنيه) والرسالة سطور أو فيها ريال (رسايل مصر سطر واحد).
  */
 private fun saudiForeign(body: String, currency: String): Boolean = when (currency) {
-    "EGP" -> hasSaudiCurrency(body) || INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body))
+    // الجولة التالتة: الجنيه **مقابل** بعد مبلغ تاني («charged SAR 75.00 (EGP 980.00)») = كارت مصري ⇒ مش هنا
+    "EGP" -> (hasSaudiCurrency(body) || INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body))) && !hasLocalConversion(body, EGYPT_LOCAL)
     else -> !hasEgyptianCurrency(body) && (hasSaudiCurrency(body) || '\n' in body)
 }
 
@@ -85,10 +107,12 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
     val unclear = SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
-    if (RETURNED_CHEQUE.containsMatchIn(body)) return unclear
+    if (isReturnedCheque(body) || reversalOfSomething(body)) return unclear
     val title = saudiTitle(body)
     if (title?.direction == Direction.IN && EXPLICIT_DEBIT.containsMatchIn(body)) return unclear
     val direction = title?.direction ?: undirectedTransferDirection(body) ?: keywordDirection(body) ?: return unclear
+    // «Purchase Cancelled … Refund»: إلغاء ومعاه استرداد = فلوس راجعة، مش صرف جديد (§75-6) ⇒ ما نسجلهاش صرف
+    if (direction == Direction.OUT && cancelledWithRefund(body)) return unclear
     val kind = title?.kind ?: saudiKindFromWords(body, direction)
     val amount = when (val a = saudiAmount(body)) {
         is SaudiAmount.Fail -> return SmsParseResult.Rejected(a.reason)

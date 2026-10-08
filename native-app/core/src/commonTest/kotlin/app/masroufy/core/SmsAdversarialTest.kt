@@ -39,6 +39,23 @@ class SmsAdversarialTest {
         assertTrue(kept.isEmpty(), "kept for storage: ${kept.joinToString("\n")}")
     }
 
+    /**
+     * الجولة التالتة: عمليات حقيقية فيها سطر تحذير أو إعلان أو كلمة شبه الحارس ⇒ **بتتسجل** بقارئ بلدها بمبلغها، وفلتر الجهاز
+     * ما بيرميهاش (كانت بتترمي قبل الحفظ وما تظهرش حتى في «مستنية تأكيدك»).
+     */
+    @Test fun realTransactionsWithFootersAreBookedAndKept() {
+        val wrong = mutableListOf<String>()
+        for ((country, body, amount) in SmsAdversarialCases.mustBook) {
+            val parse = if (country == "SA") ::parseBankSms else ::parseEgyptBankSms
+            when (val r = parse(smsMessage(body), 1)) {
+                is SmsParseResult.Ok -> if (r.row.amountMinor != amount || r.row.date != SMS_TX_DAY) wrong += "[$country] ${r.row.amountMinor} ${r.row.date}: $body"
+                is SmsParseResult.Rejected -> wrong += "[$country] rejected «${r.reason}»: $body"
+            }
+            if (SmsVocabulary.ignoreBeforeStorage(body)) wrong += "[$country] dropped before storage: $body"
+        }
+        assertTrue(wrong.isEmpty(), wrong.joinToString("\n"))
+    }
+
     /** ملتبسة: أي رفض مقبول (بتستنى المالك) — بس **ما تتسجلش** في أي بلد، ولا تستنى «المبلغ المحلي» في البلدين. */
     @Test fun ambiguousMessagesAreNeverBookedAutomatically() {
         val booked = mutableListOf<String>()

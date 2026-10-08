@@ -15,21 +15,36 @@ private val IM = setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
 private val CURRENCY = "(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ر\\.$S?س\\.?|ريال(?!$S*(?:$OTHER_RIYAL_TAIL))(?:$S+سعود[يى])?)"
 private val CURRENCY_TOKEN = Regex(CURRENCY, I)
 
+/** الريال لدليل العملة الأجنبية (`SmsForeignEvidence.kt`). */
+internal val SAUDI_LOCAL = LocalCurrency("SAR", CURRENCY)
+
 /**
  * سطر فيه كلمة من دول قبل المبلغ ⇒ مش مبلغ العملية. الإضافات: الضريبة (إس تي سي) · «اعادة مبلغ» = الباقي من الحجز (الراجحي) ·
- * «Bal» · charges · commission (الجولة التانية من المراجعة).
+ * «Bal» · charges · commission (الجولة التانية من المراجعة) · tax · discount · points (الجولة التالتة — «Tax: SAR 8.38» كانت
+ * بتبقى المبلغ لما المبلغ نفسه من غير عملة). «كاش باك» **مش** هنا: رسالة الكاش باك نفسها مبلغها جنبه.
  */
 private val NOT_TRANSACTION_AMOUNT = Regex(
     "الرصيد|رصيد|balance|المتاح|متاح|available|الحد|limit|رسوم|${B}fees?$B|عمولة|المتبقي" + "|${B}VAT$B|ضريبة|اعادة|إعادة" +
-        "|${B}bal$B|${B}charges?$B|commission",
+        "|${B}bal$B|${B}charges?$B|commission|${B}tax$B|${B}discount$B|${B}points$B",
     I,
 )
 
-/** كلمة رصيد **بعد** المبلغ ومفيش رقم تاني بعدها في السطر («SAR 4,100.00 is your available balance» · «SAR 4,100.00 Available»). */
+/**
+ * كلمة رصيد أو رسوم **بعد** المبلغ ومفيش رقم تاني بعدها في السطر («SAR 4,100.00 is your available balance» · «SAR 4,100.00 Available»
+ * · الجولة التالتة: «SAR 5.75 fee» · «SAR 8.38 VAT» · «4,100.00 after last purchase»).
+ */
 private val TRAILING_LABEL = Regex(
-    "^$S*(?:is$S+)?(?:your$S+)?(?:(?:available|current|remaining|new)$S+)?(?:balance|limit|available|${B}bal$B)|^$S*(?:الرصيد|رصيد|المتاح|متاح)",
+    "^$S*(?:is$S+)?(?:your$S+)?(?:(?:available|current|remaining|new)$S+)?(?:balance|limit|available|${B}bal$B)|^$S*(?:الرصيد|رصيد|المتاح|متاح)" +
+        "|^$S*(?:(?:transfer|transaction|service|bank)$S+)?(?:${B}fees?$B|${B}charges?$B|commission|${B}VAT$B|${B}tax$B)|^$S*(?:ال)?(?:رسوم|عمولة|ضريبة)" +
+        "|^$S*after$S+(?:the$S+|your$S+)?(?:last$S+)?(?:purchase|transaction|payment)",
     I,
 )
+
+/** سطر فوق المبلغ فيه كلمة رصيد (ومفيهوش رقم) ⇒ المبلغ اللي تحته لوحده رصيد («الرصيد المتاح بعد عملية الشراء\n4,100.00 ر.س»). */
+private val BALANCE_WORD_LINE = Regex("(?:ال)?رصيد|(?:ال)?متاح|balance|available", I)
+
+/** رقم مرجع قبل العملة على طول («Ref SR4821» · «رقم المرجع: SR 48213») ⇒ مش مبلغ. */
+private val REFERENCE_BEFORE = Regex("(?:${B}ref(?:erence)?|${B}no\\.?|#|مرجع|المرجع|رقم$S*(?:ال)?(?:مرجع|عملية|العملية)?)$S*[:：.]?$S*$", I)
 
 /** سطر كله اسم خانة رصيد أو رسوم من غير رقم («الرصيد» · «رسوم:») ⇒ المبلغ اللي في السطر اللي بعده لوحده هو قيمتها. */
 private val LABEL_ONLY_LINE = Regex(
@@ -50,10 +65,8 @@ private val FOREIGN = Regex(
     I,
 )
 
-/** المبلغ الأجنبي وجنبه مقابله بالريال بين قوسين (دي 360 «USD 23.40 (SAR 87.50)» · «23.40 USD (87.50 ريال)»). */
-private const val LOCAL_NUMBER = "\\d(?:[\\d,٬]*\\d)?(?:[.٫]\\d{1,2})?"
-private val LOCAL_IN_PARENS = Regex("\\($S*(?:$CURRENCY$S*($LOCAL_NUMBER)|($LOCAL_NUMBER)$S*$CURRENCY)$S*\\)", I)
-private val FOREIGN_AMOUNT = Regex("(?<![A-Za-z])($FOREIGN_CODES)$S*[:：]?$S*($FOREIGN_NUMBER)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$S*($FOREIGN_CODES)(?![A-Za-z])", I)
+/** المبلغ بكود من القايمة القديمة (أي حالة حروف). */
+private val FOREIGN_AMOUNT = Regex("(?<![A-Za-z])($FOREIGN_CODES)$SP*[:：]?$SP*($FOREIGN_NUMBER)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($FOREIGN_CODES)(?![A-Za-z])", I)
 
 internal sealed interface SaudiAmount {
     data class Ok(val amountMinor: Halalas) : SaudiAmount
@@ -75,61 +88,67 @@ private fun labelledElsewhere(lines: List<String>, index: Int, near: Near): Bool
     if (TRAILING_LABEL.containsMatchIn(rest) && rest.none { it in '0'..'9' }) return true
     if (line.substring(0, near.start).isNotBlank() || rest.isNotBlank()) return false
     val previous = lines.subList(0, index).lastOrNull { it.isNotBlank() } ?: return false
-    return LABEL_ONLY_LINE.matches(previous)
+    return LABEL_ONLY_LINE.matches(previous) || (BALANCE_WORD_LINE.containsMatchIn(previous) && previous.none { it in '0'..'9' })
 }
 
 /**
  * القاعدة القديمة: رقم جنبه عملة الريال في سطر مش رصيد ولا حد ولا رسوم — قيمة واحدة بس. الجولة التانية: رقم من الناحيتين
  * («Card 6604 SAR 64.25») ⇒ أكتر من مبلغ · فواصل غلط ⇒ مش صالح · أكبر من [SMS_AMOUNT_CAP_MINOR] ⇒ مش صالح (`SmsAmountTokens.kt`).
+ * الجولة التالتة: العملة بعد «Ref/رقم/No.» على طول = رقم مرجع مش مبلغ («Ref SR4821») · ولو المبلغ الوحيد كود لازق في رقم صحيح
+ * («SR1234») والرسالة فيها «Amount 64.25» من غير عملة ⇒ العملة مش واضحة (مش هنختار).
  */
 private fun oneLocalAmount(text: String, body: String): SaudiAmount {
     val values = LinkedHashSet<Long>()
+    var onlyGlued = true
     val lines = text.split('\n')
     for ((index, line) in lines.withIndex()) {
         for (near in amountsNearCurrency(line, CURRENCY_TOKEN, AmountStyle.SAUDI)) {
             if (NOT_TRANSACTION_AMOUNT.containsMatchIn(line.substring(0, near.start))) continue
+            if (REFERENCE_BEFORE.containsMatchIn(line.substring(0, near.start))) continue
             if (labelledElsewhere(lines, index, near)) continue
             val number = when (near) {
                 is Near.Ambiguous -> return SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
                 is Near.Malformed -> return SaudiAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
-                is Near.Value -> near.number
+                is Near.Value -> near.number.also { if (!near.glued) onlyGlued = false }
             }
             val amount = parse(number)
             if (amount == null || amount <= 0 || amount > SMS_AMOUNT_CAP_MINOR) return SaudiAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
             values.add(amount)
         }
     }
+    val bare = BARE_AMOUNT.containsMatchIn(body)
+    if (values.size == 1 && onlyGlued && bare && BARE_AMOUNT_NO_CURRENCY.containsMatchIn(body)) return SaudiAmount.Fail(uiText(TextKey.SMS_CURRENCY_UNCLEAR))
     if (values.size == 1) return SaudiAmount.Ok(values.first())
     if (values.size > 1) return SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
-    return SaudiAmount.Fail(if (BARE_AMOUNT.containsMatchIn(body)) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
+    return SaudiAmount.Fail(if (bare) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
 }
+
+/** «Amount 64.25» / «مبلغ: 64.25» من غير عملة جنبه (من الناحيتين). */
+private val BARE_AMOUNT_NO_CURRENCY = Regex(
+    "(?:بمبلغ|المبلغ|مبلغ|amount|قيمة)$S*[:：]?$S*\\d[\\d,٬]*(?:[.٫]\\d{1,2})?(?![\\d.,٬٫])(?!$S*(?:$CURRENCY))",
+    I,
+)
 
 /**
- * المبلغ الأجنبي الوحيد في الرسالة (مش في سطر رصيد أو رسوم)، أو null. [skip] = عملة البلد (الجنيه في قارئ مصر).
- * القايمة القديمة + أي كود ISO جنب مبلغ (`SmsForeignCodes.kt` — «TRY 450.00» كانت بتضيع) + اسم العملة بالعربي («ريال قطري»).
- * المبلغ بكسور العملة نفسها («KWD 12.345» = 12345 فلس) — رقم مش مظبوط ⇒ null (ما بنخمّنش).
+ * المبلغ الأجنبي الوحيد في الرسالة (مش في سطر رصيد أو رسوم)، أو null. [local] = عملة البلد (بتتشال).
+ * القايمة القديمة + أي كود ISO جنب مبلغ (`SmsForeignCodes.kt` — «TRY 450.00» كانت بتضيع) + اسم العملة بالعربي («ريال قطري») +
+ * الجولة التالتة: رمز العملة («$23.40») · الاسم بالإنجليزي («12.50 Swiss Francs») · الكود جنب رقم صحيح قبل المقابل المحلي على طول
+ * («JPY 4500 (SAR 112.50)») · «500.00 جم» في قارئ السعودية (`SmsForeignEvidence.kt`).
+ * المبلغ بكسور العملة نفسها («KWD 12.345» = 12345 فلس) — رقم مش مظبوط أو عملة مش معروفة بالظبط («300 دولار») ⇒ null (ما بنخمّنش).
  */
-internal fun foreignAmountOf(body: String, skip: String? = null): SmsForeignAmount? {
+internal fun foreignAmountOf(body: String, local: LocalCurrency): SmsForeignAmount? {
+    val listed = FOREIGN_AMOUNT.findAll(body).map { m ->
+        IsoMoney(m.range, m.groups[1]?.value ?: m.groups[4]!!.value, m.groups[2]?.value ?: m.groups[3]!!.value)
+    }.filter { it.code?.uppercase() != local.code && it.inOneLine(body) }
     val found = LinkedHashSet<SmsForeignAmount>()
-    for (line in body.split('\n')) {
-        val listed = FOREIGN_AMOUNT.findAll(line).map { m ->
-            IsoMoney(m.range, m.groups[1]?.value ?: m.groups[4]!!.value, m.groups[2]?.value ?: m.groups[3]!!.value)
-        }
-        for (m in listed + isoMoneyIn(line) + arabicMoneyIn(line)) {
-            if (NOT_TRANSACTION_AMOUNT.containsMatchIn(line.substring(0, m.range.first))) continue
-            val code = m.code.uppercase()
-            if (code == skip) continue
-            val amount = parseForeignMinor(m.number, code) ?: return null
-            if (amount > 0) found += SmsForeignAmount(code, amount)
-        }
+    for (m in listed + foreignMoneyIn(body, local)) {
+        val lineStart = body.lastIndexOf('\n', m.range.first - 1) + 1
+        if (NOT_TRANSACTION_AMOUNT.containsMatchIn(body.substring(lineStart, m.range.first))) continue
+        val code = m.code?.uppercase() ?: return null
+        val amount = parseForeignMinor(m.number, code) ?: return null
+        if (amount > 0) found += SmsForeignAmount(code, amount)
     }
     return found.singleOrNull()
-}
-
-/** المقابل بالريال بين قوسين جنب المبلغ الأجنبي، أو null. */
-private fun localInParens(body: String): Halalas? {
-    val values = LOCAL_IN_PARENS.findAll(body).mapNotNull { m -> parse(m.groups[1]?.value ?: m.groups[2]!!.value) }.toSet()
-    return values.singleOrNull()?.takeIf { it in 1..SMS_AMOUNT_CAP_MINOR }
 }
 
 /** فيه ريال سعودي في الرسالة (حتى لو في سطر الرصيد) — علامة إن الرسالة من بنك سعودي (لما مبلغها بالجنيه). */
@@ -145,18 +164,23 @@ internal fun riyalAmountAsForeign(body: String): SmsForeignAmount? =
 /**
  * مبلغ العملية: «إجمالي المبلغ المستحق» لو موجود (المبلغ + الرسوم + الضريبة) ⇒ وإلا القاعدة القديمة.
  * **الرسالة بعملة أجنبية ⇒ [SaudiAmount.ForeignOnly] دايمًا** (§75-12، قرار المالك ✗ على «يتسجل لو المحلي مكتوب»): المقابل
- * بالريال لو مكتوب (الإجمالي أو بين قوسين) بيمشي معاها **اقتراح** للسؤال، وما بيتسجلش لوحده.
+ * بالريال لو مكتوب (الإجمالي · بين قوسين بعد المبلغ الأجنبي · «ما يعادل» · «المبلغ بالريال») بيمشي معاها **اقتراح** للسؤال، وما
+ * بيتسجلش لوحده. الجولة التالتة: الأجنبي = **أي دليل** (`SmsForeignEvidence.kt` — رمز · اسم · الشكل «X (SAR …)»)، مش القايمة بس.
  */
 internal fun saudiAmount(body: String): SaudiAmount {
-    val foreign = FOREIGN.containsMatchIn(body) || isoMoneyIn(body).isNotEmpty()
+    val foreign = FOREIGN.containsMatchIn(body) || hasForeignEvidence(body, SAUDI_LOCAL)
     val total = TOTAL_DUE_LINE.find(body)?.let { oneLocalAmount(it.value, body) as? SaudiAmount.Ok }
-    if (foreign) return SaudiAmount.ForeignOnly(foreignAmountOf(body), total?.amountMinor ?: localInParens(body))
+    if (foreign) return SaudiAmount.ForeignOnly(foreignAmountOf(body, SAUDI_LOCAL), total?.amountMinor ?: localConversion(body, SAUDI_LOCAL))
     return total ?: oneLocalAmount(body, body)
 }
 
 // ── المحل ────────────────────────────────────────────────────────────────
 
-private val MERCHANT_AT = Regex("(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)$S*[:：]?$S*([^\\n]+?)(?=$S+(?:في|بتاريخ|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$)", IM)
+// الجولة التالتة: المحل بيقف قبل «(SAR 93.75)» (مقابل المبلغ مش جزء من اسم المحل)
+private val MERCHANT_AT = Regex(
+    "(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)$S*[:：]?$S*([^\\n]+?)(?=$S+(?:في|بتاريخ|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$S*\\($S*(?:$CURRENCY|\\d)|$)",
+    IM,
+)
 private val MERCHANT_LAM = Regex("^$S*لـ$S*[:：]?$S*([^\\n]+)$", setOf(RegexOption.MULTILINE))
 private val MERCHANT_FROM_TO = Regex("^$S*(من|إلى|الى|${B}from$B|${B}to$B)$S*[:：]$S*([^\\n]+)$", IM)
 

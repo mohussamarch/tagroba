@@ -25,6 +25,12 @@ object SmsSafety {
         RegexOption.IGNORE_CASE,
     )
 
+    /** الجولة التالتة: العملة بعد «Ref/No./#/مرجع» على طول رقم مرجع مش مبلغ («Ref SR 48213») — بيتحجب زي أي رقم طويل (والقارئ بيسيبه). */
+    private val referenceBefore = Regex("(?:(?<![A-Za-z])ref(?:erence)?|(?<![A-Za-z])no\\.?|#|مرجع|المرجع)[ \\t]*[:：.]?[ \\t]*$", RegexOption.IGNORE_CASE)
+
+    private fun afterReference(text: String, at: Int): Boolean =
+        referenceBefore.containsMatchIn(text.substring(text.lastIndexOf('\n', at - 1) + 1, at))
+
     /**
      * التاريخ بسنة («2026-03-05» · «05-03-2026» · «14/09/2026») ما بيتحجبش: من غيره، قص الأرقام الطويلة كان بيلزق رقم الحساب أو
      * المرجع اللي قبله في التاريخ («**3355 2026-03-05 09» = 14 رقم ⇒ «••••0509») والرسالة تترفض «التاريخ مش واضح» (مراجعة جلسة 33).
@@ -45,7 +51,7 @@ object SmsSafety {
         if (SmsVocabulary.ignoreBeforeStorage(text) || !SmsVocabulary.hasMovement(text) || !SmsVocabulary.hasMoney(text)) return null
         // اللي ما بيتحجبش: المبلغ جنب عملة (محلية أو أجنبية) والتاريخ
         val kept = (
-            financial.findAll(text).map { it.range } + SmsVocabulary.foreignMoneyRanges(text) +
+            financial.findAll(text).filterNot { afterReference(text, it.range.first) }.map { it.range } + SmsVocabulary.foreignMoneyRanges(text) +
                 dates.findAll(text).filter { plausibleDate(it.value) }.map { it.range }
             ).sortedBy { it.first }
         val safe = StringBuilder()

@@ -25,54 +25,54 @@ private val EG_OTHER_CURRENCY = Regex(
 )
 private val EGP_TOKEN = Regex(EG_CURRENCY, EG_I)
 
-/** المقابل بالجنيه بين قوسين جنب المبلغ الأجنبي («USD 14.90 (EGP 720.00)») — اقتراح بس للسؤال (§75-12). */
-private val EGP_IN_PARENS = Regex("\\($S*(?:$EG_CURRENCY$S*(\\d[\\d,٬]*(?:[.٫]\\d{1,2})?)|(\\d[\\d,٬]*(?:[.٫]\\d{1,2})?)$S*$EG_CURRENCY)$S*\\)", EG_I)
-
 /** نوع صرف (شراء · سحب · شحن) واتجاهه داخل ⇒ الرسالة متناقضة (مراجعة جلسة 33: «تم خصم … وتم إضافة 50 نقطة» اتسجلت دخل). */
 private val SPENDING_KINDS = setOf(SmsKind.PURCHASE, SmsKind.CASH_WITHDRAWAL, SmsKind.BILL)
 
 private fun contradicts(direction: Direction, kind: SmsKind) = direction == Direction.IN && kind in SPENDING_KINDS
 
-private fun egpInParens(body: String): Halalas? {
-    val values = EGP_IN_PARENS.findAll(body).mapNotNull { m ->
-        tryParseMoney((m.groups[1]?.value ?: m.groups[2]!!.value).replace('٬', ',').replace('٫', '.'), Currency.EGP)
-    }.toSet()
-    return values.singleOrNull()?.takeIf { it in 1..SMS_AMOUNT_CAP_MINOR }
-}
+/** عنوان «International/دولي» = رسالة بنك سعودي (البنوك المصرية في البحث ما بتكتبهوش). */
+private val INTERNATIONAL_TITLE = Regex("(?<![\\u0600-\\u06FF])(?:دولي|دولية)(?![\\u0600-\\u06FF])|(?<![A-Za-z])International(?![A-Za-z])", EG_I)
 
 /**
  * الرسالة الأجنبية دي **بتاعة مصر** (عشان ما تستناش في البلدين — الصندوق بيتقري بقارئ كل بلد): الريال = رسالة سعودية — إلا لو فيها
- * جنيه (حد البطاقة أو الرصيد بالجنيه = كارت مصري اتخصم بالريال). أي عملة تانية: مفيهاش ريال سعودي (رسالة البنك السعودي بتكتب
- * المقابل أو الرسوم أو الرصيد بالريال) وفيها جنيه أو سطر واحد (رسايل مصر سطر واحد، والسعودية سطور).
+ * جنيه **في مكان الرصيد أو الحد بس** (كارت مصري اتخصم بالريال). الجولة التالتة: لو الجنيه هو **مبلغ العملية** والريال مقابله
+ * («Amount: EGP 500.00 (SAR 37.50)» — دي 360) يبقى كارت سعودي اتخصم بالجنيه ⇒ بتاعة السعودية بس (كانت بتستنى في البلدين)،
+ * إلا لو الجنيه نفسه **مقابل** بعد مبلغ الريال («charged SAR 75.00 (EGP 980.00)» = كارت مصري اتخصم بالريال).
+ * أي عملة تانية: مفيهاش ريال سعودي (رسالة البنك السعودي بتكتب المقابل أو الرسوم أو الرصيد بالريال) وفيها جنيه أو سطر واحد.
  */
-private fun egyptianForeign(body: String, currency: String): Boolean = when (currency) {
-    "SAR" -> EGP_TOKEN.containsMatchIn(body)
+private fun egyptianForeign(body: String, currency: String): Boolean = when {
+    INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body)) -> false
+    currency == "SAR" -> EGP_TOKEN.containsMatchIn(body) && (!hasEgyptianTransactionAmount(body) || hasLocalConversion(body, EGYPT_LOCAL))
     else -> !hasSaudiCurrency(body) && (EGP_TOKEN.containsMatchIn(body) || '\n' !in body)
 }
 
 /**
  * عملية بعملة أجنبية (قرار المالك §75-12: تتسجل وتسأل عن المبلغ المحلي): سبب الرفض القديم + اللي اتقري لو كله واضح + المقابل
- * بالجنيه لو مكتوب بين قوسين (اقتراح بس).
+ * بالجنيه لو مكتوب **بعد المبلغ الأجنبي** (بين قوسين · «بما يعادل» · Equivalent — `SmsForeignEvidence.kt`) اقتراح بس؛ قوسين بعد
+ * «رسوم» أو «الحد المتاح» مش مقابل (الجولة التالتة).
  */
 private fun foreignOnly(body: String, receivedAt: String): SmsParseResult.Rejected {
     val reason = uiText(TextKey.SMS_NOT_EGP)
-    val foreign = (foreignAmountOf(body, skip = "EGP") ?: riyalAmountAsForeign(body))?.takeIf { egyptianForeign(body, it.currency) }
+    val foreign = (foreignAmountOf(body, EGYPT_LOCAL) ?: riyalAmountAsForeign(body))?.takeIf { egyptianForeign(body, it.currency) }
         ?: return SmsParseResult.Rejected(reason)
     val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(reason)
     val date = egyptTransactionDate(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
     val kind = egyptKind(body, direction)
     if (contradicts(direction, kind)) return SmsParseResult.Rejected(reason)
     val merchant = redactSms(egyptMerchant(body, kind))
-    return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, merchant, kind, ownLast4Of(body, direction), egpInParens(body)))
+    val suggestion = localConversion(body, EGYPT_LOCAL)
+    return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, merchant, kind, ownLast4Of(body, direction), suggestion))
 }
 
 /** بنوك ومحافظ مصر. الشكل المجهول بيترفض بسبب واضح ويتضاف باليد — نفس قاعدة القارئ السعودي. */
 fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
-    // أي كود عملة أجنبية جنب مبلغ (TRY 300.00 …) زي الدولار بالظبط (§75-12)
-    if (EG_OTHER_CURRENCY.containsMatchIn(body) || isoMoneyIn(body).isNotEmpty()) return foreignOnly(body, message.receivedAt)
+    // أي دليل عملة أجنبية (كود · رمز «$» · اسم «US Dollars»/«ين» · مقابل بالجنيه بعد مبلغ تاني) زي الدولار بالظبط (§75-12)
+    if (EG_OTHER_CURRENCY.containsMatchIn(body) || hasForeignEvidence(body, EGYPT_LOCAL)) return foreignOnly(body, message.receivedAt)
+    if (isReturnedCheque(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    if (direction == Direction.OUT && cancelledWithRefund(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     val amount = when (val a = egyptAmount(body)) {
         is EgyptAmount.Fail -> return SmsParseResult.Rejected(a.reason)
         is EgyptAmount.Ok -> a.amountMinor

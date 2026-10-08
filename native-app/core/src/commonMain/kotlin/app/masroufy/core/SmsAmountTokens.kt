@@ -9,13 +9,19 @@ package app.masroufy.core
  * - فواصل مش مظبوطة (فاصلة الآلاف مش كل 3 أرقام · مسافة أو «،» بين الآلاف · كسور أكتر من منزلتين) ⇒ [Near.Malformed].
  * - الرقم جزء من تاريخ أو ساعة («2026-03-05 SAR» · «09:10 SAR») ⇒ مش مبلغ.
  * - كود لازق في 5 أرقام أو أكتر من غير فواصل ولا كسور («SR2026030512») ⇒ رقم مرجع مش مبلغ.
+ *
+ * الجولة التالتة: أي علامة مش مسافة ولا حرف لازقة في الرقم («1'234.50» · «1’234») ⇒ مش صالح (كانت بتقص أول الرقم في صمت) ·
+ * استثناء ملف المرجع في السعودية («شراء 1.234 SAR» = 234.00) بقى **الشكل ده بالظبط** (رقم واحد · نقطة · 3 أرقام) — «12.345 SAR» ·
+ * «1,234.567 SAR» · «1.234.50 SAR» · «64.255 ريال» ⇒ مش صالح · الكود اللازق في رقم صحيح من غير فواصل ([Near.Value.glued]) بيتعلّم
+ * عشان القارئ يفرّقه عن رقم مرجع («Ref SR4821»).
  */
 internal sealed interface Near {
     /** [start]/[end] = أول وآخر الرقم والعملة مع بعض في السطر (السياق اللي قبلهم بيتفحص: رصيد · رسوم …). */
     val start: Int
     val end: Int
 
-    data class Value(override val start: Int, override val end: Int, val number: String) : Near
+    /** [glued] = العملة لازقة في رقم صحيح من غير فواصل ولا كسور («SR4821» · «شراءSR25») — ممكن يبقى رقم مرجع. */
+    data class Value(override val start: Int, override val end: Int, val number: String, val glued: Boolean = false) : Near
     data class Malformed(override val start: Int, override val end: Int) : Near
     data class Ambiguous(override val start: Int, override val end: Int) : Near
 }
@@ -39,10 +45,23 @@ private val SPACE_GROUP_BEFORE = Regex("(?<![\\d:/.\\\\-])\\d{1,3}$H$")
 private val SPACE_GROUP_AFTER = Regex("^$H\\d{3}(?!\\d)")
 
 private sealed interface Side
-private data class Num(val start: Int, val end: Int, val number: String) : Side
+private data class Num(val start: Int, val end: Int, val number: String, val glued: Boolean = false) : Side
 private data class Bad(val start: Int, val end: Int) : Side
 
 private fun isDigit(c: Char?) = c != null && c in '0'..'9'
+
+/** اللي ممكن ييجي قبل الرقم أو بعده عادي: مسافة · حرف (ومنه التطويل «بـ») · قوس · نقطتين · «=» · علامة. غير كده = الرقم متقطع. */
+private fun plainNeighbour(c: Char?) = c == null || JsText.isWhitespace(c) || c.isLetter() || c in "([{:：=+-/\\|>*#"
+
+/** علامات تنصيص قبل الرقم عادي («25 SAR» بين علامتين) — إلا لو قبلها رقم (يبقى فاصل آلاف غريب «1'234»). */
+private const val QUOTES = "«»\"“”'‘’`"
+
+/** «شراء 1.234 SAR» بالظبط (ملف المرجع): رقم واحد قبل النقطة ومفيش رقم أو فاصلة أو نقطة قبله. */
+private fun goldenDotShape(line: String, start: Int, number: String): Boolean {
+    if (number.length != 3 || !number.all(::isDigit)) return false
+    val before = line.getOrNull(start - 3)
+    return isDigit(line.getOrNull(start - 2)) && (before == null || !(isDigit(before) || before in ",.٬٫،"))
+}
 
 /** فاصلة الآلاف كل 3 أرقام بالظبط (أو مفيش)، والكسور منزلتين بالكتير. */
 private fun wellGrouped(number: String) = GROUPING.matches(number)
@@ -61,7 +80,9 @@ private fun before(line: String, tokenStart: Int, style: AmountStyle): Side? {
     return when {
         prev != null && prev in ":/\\-" && isDigit(prev2) -> null // ساعة أو تاريخ
         prev == '،' && isDigit(prev2) -> Bad(start, tokenStart)
-        (prev == '.' || prev == '٫') && isDigit(prev2) && style == AmountStyle.EGYPT -> Bad(start, tokenStart)
+        (prev == '.' || prev == '٫') && isDigit(prev2) ->
+            if (style == AmountStyle.SAUDI && goldenDotShape(line, start, g.value)) Num(start, tokenStart, g.value) else Bad(start, tokenStart)
+        prev != null && !plainNeighbour(prev) && (isDigit(prev2) || prev !in QUOTES) -> Bad(start, tokenStart) // «1'234.50»
         !wellGrouped(g.value) -> Bad(start, tokenStart)
         threeDigitHead(g.value) && SPACE_GROUP_BEFORE.containsMatchIn(line.substring(0, start)) -> Bad(start, tokenStart)
         else -> Num(start, tokenStart, g.value)
@@ -82,10 +103,10 @@ private fun after(line: String, tokenStart: Int, tokenEnd: Int, style: AmountSty
         next != null && next in ":/\\-" && isDigit(next2) -> null // تاريخ أو ساعة
         glued && number.length >= 5 && number.all(::isDigit) -> null // «SR2026030512» رقم مرجع
         isDigit(next) -> Bad(tokenStart, end) // كسور أكتر من منزلتين («SAR 1.234,50» · «SAR 12.345»)
-        next != null && next in ".,٬٫،" && isDigit(next2) -> Bad(tokenStart, end)
+        next != null && !plainNeighbour(next) && isDigit(next2) -> Bad(tokenStart, end) // «SAR 1,234.5,0» · «SAR 1'234.50»
         !wellGrouped(number) -> Bad(tokenStart, end)
         number.length <= 3 && number.all(::isDigit) && SPACE_GROUP_AFTER.containsMatchIn(line.substring(end)) -> Bad(tokenStart, end)
-        else -> Num(start, end, number)
+        else -> Num(start, end, number, glued = glued && number.all(::isDigit))
     }
 }
 
@@ -98,7 +119,7 @@ internal fun amountsNearCurrency(line: String, currency: Regex, style: AmountSty
         when {
             b != null && a != null -> Near.Ambiguous(minOf(startOf(b), t.range.first), maxOf(endOf(a), tokenEnd))
             b is Num -> Near.Value(b.start, tokenEnd, b.number)
-            a is Num -> Near.Value(t.range.first, a.end, a.number)
+            a is Num -> Near.Value(t.range.first, a.end, a.number, a.glued)
             b is Bad -> Near.Malformed(b.start, tokenEnd)
             a is Bad -> Near.Malformed(t.range.first, a.end)
             else -> null

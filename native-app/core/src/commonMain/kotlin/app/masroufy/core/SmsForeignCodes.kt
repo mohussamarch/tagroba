@@ -33,6 +33,12 @@ internal fun foreignDecimals(code: String): Int = when (code.uppercase()) {
     else -> 2
 }
 
+/**
+ * مسافة **في نفس السطر** بين الرقم والعملة (الجولة التالتة): «Card *6604\nINR 2500» كانت بتتقري «6604 INR» وتاكل الكود من المبلغ
+ * الحقيقي اللي بعده.
+ */
+internal const val SP = "[ \\t\\u00A0\\u2000-\\u200A\\u202F]"
+
 /** الرقم زي ما هو مكتوب: الكسور **كلها** (الدينار 3) — التحقق من عددها في [parseForeignMinor]. */
 internal const val FOREIGN_NUMBER = "\\d(?:[\\d,٬]*\\d)?(?:[.٫]\\d+)?"
 
@@ -57,7 +63,7 @@ internal fun parseForeignMinor(raw: String, code: String): Long? {
 
 // من غير IGNORE_CASE: «try 3» أو «all 4» في الكلام مش عملة
 private val ISO_AMOUNT = Regex(
-    "(?<![A-Za-z])($ISO_CODES)$S*[:：]?$S*($FOREIGN_NUMBER)(?![\\d])|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$S*($ISO_CODES)(?![A-Za-z])",
+    "(?<![A-Za-z])($ISO_CODES)$SP*[:：]?$SP*($FOREIGN_NUMBER)(?![\\d])|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($ISO_CODES)(?![A-Za-z])",
 )
 
 /** كلمة مبلغ قبل الكود أو الرقم على طول (في نفس السطر). */
@@ -66,39 +72,71 @@ private val AMOUNT_LABEL_BEFORE = Regex(
     setOf(RegexOption.IGNORE_CASE),
 )
 
-/** مبلغ بعملة أجنبية: مكانه في النص + الكود + الرقم زي ما هو مكتوب. */
-internal data class IsoMoney(val range: IntRange, val code: String, val number: String)
+/**
+ * مبلغ بعملة أجنبية: مكانه في النص + الكود + الرقم زي ما هو مكتوب. [code] null = العملة أجنبية أكيد بس مش معروفة بالظبط
+ * («300 دولار» من غير بلد · «¥4500» ين ولا يوان؟) — القارئ ما بيخمّنش الكود (الرسالة بتستنى من غير تفاصيل).
+ */
+internal data class IsoMoney(val range: IntRange, val code: String?, val number: String)
 
-/** كل المبالغ بكود عملة أجنبية (مش ريال ولا جنيه) اللي شكلها فلوس فعلًا. */
-internal fun isoMoneyIn(text: String): List<IsoMoney> = ISO_AMOUNT.findAll(text).mapNotNull { m ->
+/**
+ * كل المبالغ بكود عملة أجنبية (مش ريال ولا جنيه) اللي شكلها فلوس فعلًا. [relaxed] (الجولة التالتة): الرقم الصحيح من غير كسور
+ * ولا كلمة مبلغ بيتقبل كمان — بس لما الرسالة **فيها دليل تاني** إنها أجنبية (عنوان «دولي/International» ومعاها مبلغ محلي، أو
+ * الرقم ده هو اللي قبل المقابل المحلي على طول «JPY 4500 (SAR 112.50)») — عشان «TOP 10 MARKET» ما تبقاش عملة. فلتر الجهاز
+ * بيستعمله كمان عشان **ما يحجبش** الرقم ده (`SmsVocabulary.foreignMoneyRanges`) — ده مش دليل إن الرسالة أجنبية.
+ */
+internal fun isoMoneyIn(text: String, relaxed: Boolean = false): List<IsoMoney> = ISO_AMOUNT.findAll(text).mapNotNull { m ->
     val code = m.groups[1]?.value ?: m.groups[4]!!.value
     val number = m.groups[2]?.value ?: m.groups[3]!!.value
     val lineStart = text.lastIndexOf('\n', m.range.first - 1) + 1
-    val looksLikeMoney = number.any { it == '.' || it == '٫' } || AMOUNT_LABEL_BEFORE.containsMatchIn(text.substring(lineStart, m.range.first))
+    val looksLikeMoney = relaxed || number.any { it == '.' || it == '٫' } ||
+        AMOUNT_LABEL_BEFORE.containsMatchIn(text.substring(lineStart, m.range.first))
     if (looksLikeMoney) IsoMoney(m.range, code, number) else null
 }.toList()
 
 // ── أسماء العملات بالعربي ────────────────────────────────────────────────
 
 private const val YA = "[يى]"
+private const val AR_LETTER = "\\u0600-\\u06FF"
 
-/** الاسم اللي معناه واحد بس ⇒ كوده. «دينار» أو «درهم» أو «دولار» لوحدهم ممكن يبقوا أكتر من عملة ⇒ مش هنا (مبلغ من غير عملة مؤكدة). */
-private val ARABIC_NAMES = listOf(
+/**
+ * الاسم ⇒ كوده، والاسم اللي ممكن يبقى أكتر من عملة («دولار» · «دينار» · «درهم» · «ليرة» · «فرنك» لوحدهم) ⇒ null (أجنبي من غير كود).
+ * الأدق الأول. الجولة التالتة: الين واليوان والفرنك السويسري والروبل والرينغيت · و**الجنيه المصري** (عملة أجنبية في قارئ السعودية —
+ * كارت سعودي اتخصم «500.00 جم»؛ قارئ مصر بيشيله لأنه عملته).
+ */
+private val ARABIC_NAMES: List<Pair<String, String?>> = listOf(
     "ريال$S*قطر$YA" to "QAR", "ريال$S*عمان$YA" to "OMR", "ريال$S*يمن$YA" to "YER", "ريال$S*[إا]يران$YA" to "IRR",
     "دينار$S*كويت$YA" to "KWD", "دينار$S*بحرين$YA" to "BHD", "دينار$S*[أا]ردن$YA" to "JOD", "دينار$S*عراق$YA" to "IQD",
     "دينار$S*ليب$YA" to "LYD", "دينار$S*تونس$YA" to "TND", "درهم$S*[إا]مارات$YA" to "AED", "درهم$S*مغرب$YA" to "MAD",
-    "ليرة$S*ترك$YA[ةه]" to "TRY", "دولار$S*[أا]مريك$YA" to "USD", "جنيه$S*[إا]سترلين$YA" to "GBP", "يورو" to "EUR",
-    "روب$YA[ةه]$S*هند$YA[ةه]" to "INR",
-).map { (name, code) -> code to Regex("(?:($FOREIGN_NUMBER)$S*(?:$name)|(?:$name)$S*[:：]?$S*($FOREIGN_NUMBER))(?![\\d])") }
+    "ليرة$S*ترك$YA[ةه]" to "TRY", "ليرة$S*لبنان$YA[ةه]" to "LBP", "دولار$S*[أا]مريك$YA" to "USD", "دولار$S*كند$YA" to "CAD",
+    "دولار$S*[أا]سترال$YA" to "AUD", "جنيه$S*[إا]سترلين$YA" to "GBP", "يورو" to "EUR", "روب$YA[ةه]$S*هند$YA[ةه]" to "INR",
+    "ين$S*$YA?ابان$YA" to "JPY", "ين" to "JPY", "يوان(?:$S*صين$YA)?" to "CNY", "فرنك$S*سويسر$YA" to "CHF", "روبل(?:$S*روس$YA)?" to "RUB",
+    "رينغيت|رينجت" to "MYR",
+    "جنيه$S*مصر$YA|جنيه|جنية|ج\\.م\\.?|جم" to "EGP",
+    "دولار|دينار|درهم|ليرة|فرنك|روب$YA[ةه]" to null,
+)
+private val ARABIC_NAME_RES = ARABIC_NAMES.map { (name, code) -> Regex("^(?:$name)$") to code }
+private val ARABIC_NAME_ALT = ARABIC_NAMES.joinToString("|") { "(?:${it.first})" }
+
+/** الرقم جنب الاسم (من الناحيتين)، والاسم كلمة لوحدها («ينبع» مش ين · «جنيه إسترليني» مش جنيه مصري). */
+private val ARABIC_MONEY = Regex(
+    "($FOREIGN_NUMBER)$SP*($ARABIC_NAME_ALT)(?![$AR_LETTER])(?!$SP*[إا]سترلين)|(?<![$AR_LETTER])($ARABIC_NAME_ALT)(?![$AR_LETTER])$SP*[:：]?$SP*($FOREIGN_NUMBER)(?![\\d])",
+)
 
 /** ريال بلد تاني — «ريال» من غير «سعودي» ما بيبقاش ريال سعودي لو بعده اسم بلد تاني. */
 internal const val OTHER_RIYAL_TAIL = "قطر$YA|عمان$YA|يمن$YA|[إا]يران$YA|برازيل$YA|كمبود$YA"
 internal val OTHER_RIYAL = "ريال$S*(?:$OTHER_RIYAL_TAIL)"
 
-/** أي اسم عملة أجنبية بالعربي (حتى اللي معناه مش واحد) — الرسالة أجنبية حتى لو مبلغها مش مؤكد. */
-internal val ARABIC_FOREIGN_WORD = "$OTHER_RIYAL|دينار|درهم|ليرة|روب$YA[ةه]|جنيه$S*[إا]سترلين$YA"
+/**
+ * أي اسم عملة أجنبية بالعربي (حتى اللي معناه مش واحد) — الرسالة أجنبية حتى لو مبلغها مش مؤكد. الجولة التالتة: يوان · فرنك · روبل ·
+ * رينغيت · و«ين» **جنب رقم** بس (كلمة من حرفين).
+ */
+internal val ARABIC_FOREIGN_WORD =
+    "$OTHER_RIYAL|دينار|درهم|ليرة|روب$YA[ةه]|جنيه$S*[إا]سترلين$YA|يوان|فرنك|روبل|رينغيت|رينجت" +
+        "|\\d$S*ين(?![$AR_LETTER])|(?<![$AR_LETTER])ين$S*[:：]?$S*\\d"
 
-/** المبالغ المكتوبة باسم عملة بالعربي معناه واحد («120 ريال قطري» ⇒ QAR). */
-internal fun arabicMoneyIn(line: String): List<IsoMoney> = ARABIC_NAMES.flatMap { (code, regex) ->
-    regex.findAll(line).map { m -> IsoMoney(m.range, code, m.groups[1]?.value ?: m.groups[2]!!.value) }
-}
+/** المبالغ المكتوبة باسم عملة بالعربي («120 ريال قطري» ⇒ QAR · «300 دولار» ⇒ أجنبي من غير كود). */
+internal fun arabicMoneyIn(line: String): List<IsoMoney> = ARABIC_MONEY.findAll(line).map { m ->
+    val name = m.groups[2]?.value ?: m.groups[3]!!.value
+    val code = ARABIC_NAME_RES.firstOrNull { it.first.matches(name) }?.second
+    IsoMoney(m.range, code, m.groups[1]?.value ?: m.groups[4]!!.value)
+}.toList()

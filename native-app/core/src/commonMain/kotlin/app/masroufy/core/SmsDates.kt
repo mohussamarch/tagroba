@@ -41,14 +41,31 @@ private fun notFuture(value: IsoDate, receivedAt: String): IsoDate? {
     return value.takeIf { toDayNumber(parseIsoDate(it)).toLong() * DAY_MS <= received + DAY_MS }
 }
 
-/** نفس قاعدة التطبيق الحالي (ملف المرجع `golden/sms.json`) + فاصل «\» + التاريخ بسنة مش في المستقبل. */
+/**
+ * التاريخ الهجري (الجولة التالتة): «1447/09/16هـ الموافق 2026-03-05» كانت بتتسجل سنة 1447 ميلادي. التاريخ بسنة كاملة لازم سنته
+ * تبقى جنب سنة الوصول (السنة اللي قبلها لحد اللي بعدها — [notFuture] بيحكم الحد اللي فوق بالظبط)؛ الهجري (14xx) أو أي سنة بعيدة
+ * بيتساب والتاريخ اللي بعده بيتجرب. ده ما بيلمسش قفل ملف المرجع (رسالة اتأخرت أكتر من 60 يوم في نفس السنة أو اللي قبلها).
+ * (تخطي «هـ» وتفضيل «الموافق» اتجربوا واتشالوا: حد السنة بيعمل نفس الشغل — التحوير ما غيّرش ولا نتيجة.)
+ */
+private fun plausibleYear(year: Int, receivedAt: String): Boolean {
+    val received = JsText.parseIsoMillis(receivedAt) ?: return true
+    val receivedYear = parseIsoDate(dayNumberToIso(received.floorDiv(DAY_MS).toInt())).year
+    return year in receivedYear - 1..receivedYear + 1
+}
+
+/** أول تاريخ بسنة كاملة سنته معقولة، أو null. */
+private fun fullDate(regex: Regex, body: String, receivedAt: String, yearGroup: Int): MatchResult? =
+    regex.findAll(body).firstOrNull { plausibleYear(it.groupValues[yearGroup].toInt(), receivedAt) }
+
+/** نفس قاعدة التطبيق الحالي (ملف المرجع `golden/sms.json`) + فاصل «\» + التاريخ بسنة مش في المستقبل ولا هجري. */
 internal fun saudiTransactionDate(body: String, receivedAt: String): IsoDate? {
-    LONG_YMD.find(body)?.let { m ->
+    fullDate(LONG_YMD, body, receivedAt, 1)?.let { m ->
         return notFuture(iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()), receivedAt)
     }
-    LONG_DMY.find(body)?.let { m ->
+    fullDate(LONG_DMY, body, receivedAt, 3)?.let { m ->
         return notFuture(iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()), receivedAt)
     }
+    if (LONG_YMD.containsMatchIn(body) || LONG_DMY.containsMatchIn(body)) return null // تاريخ بسنة كاملة بس هجري أو بعيد
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     return shortCandidates(SHORT, body, received).singleOrNull()
 }
@@ -139,8 +156,13 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
     MONTH_NAME.find(body)?.let { m ->
         return notFuture(iso(m.groupValues[3].toInt(), MONTHS.indexOf(m.groupValues[1].lowercase()) + 1, m.groupValues[2].toInt()), receivedAt)
     }
-    EG_LONG_YMD.find(body)?.let { m -> return notFuture(iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()), receivedAt) }
-    EG_LONG_DMY.find(body)?.let { m -> return notFuture(iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()), receivedAt) }
+    fullDate(EG_LONG_YMD, body, receivedAt, 1)?.let { m ->
+        return notFuture(iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()), receivedAt)
+    }
+    fullDate(EG_LONG_DMY, body, receivedAt, 3)?.let { m ->
+        return notFuture(iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()), receivedAt)
+    }
+    if (EG_LONG_YMD.containsMatchIn(body) || EG_LONG_DMY.containsMatchIn(body)) return null // هجري أو سنة بعيدة
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
     if (!hasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null

@@ -12,6 +12,12 @@ import app.masroufy.core.JsText.S
 private val EI = setOf(RegexOption.IGNORE_CASE)
 private const val H = "[ \\t]"
 
+/**
+ * «تم» كلمة لوحدها (أو «وتم») — الجولة التالتة: «سوف يتم خصم» · «هيتم خصم» · «لن يتم خصم» كانت بتتقري «تم خصم» (خصم خلص) لأن
+ * «يتم» جواها «تم». الحراس بترفض الجاي والمنفي قبل القارئ، ودي حماية تانية.
+ */
+private const val TM = "(?<![\\u0600-\\u06FF])و?تم"
+
 /** الجنيه بكل كتاباته: EGP · LE · ج.م · جنيه · جنية (فودافون) · جم (الأهلي) · ج (فودافون «تم سحب 500 ج»). */
 internal const val EG_CURRENCY =
     "(?:(?<![A-Za-z])(?:EGP|L\\.?E)(?![A-Za-z])|ج\\.م\\.?|جنيه|جنية|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])ج(?![\\u0600-\\u06FF.]))"
@@ -26,11 +32,23 @@ private val EG_CURRENCY_TOKEN = Regex(EG_CURRENCY, EI)
 /** فيه جنيه في الرسالة (حتى لو في الرصيد أو حد البطاقة) — علامة إن الرسالة من بنك مصري. */
 internal fun hasEgyptianCurrency(body: String): Boolean = EG_CURRENCY_TOKEN.containsMatchIn(body)
 
+/** الجنيه لدليل العملة الأجنبية (`SmsForeignEvidence.kt`). */
+internal val EGYPT_LOCAL = LocalCurrency("EGP", EG_CURRENCY)
+
 /** الكلام بين المبلغ اللي قبله والمبلغ ده فيه كلمة من دول ⇒ ده رصيد أو رسوم أو حد أو قسط، مش مبلغ العملية. */
 private val NOT_THE_AMOUNT = Regex(
     "المتاح|متاح|رصيد|الرصيد|balance|available|${B}bal$B|limit|الحد|مصاريف|رسوم|عمولة|${B}fees?$B|قسط|installment|الأدنى|minimum",
     EI,
 )
+
+/** بعد المبلغ على طول «after last purchase» / «بعد آخر عملية» ⇒ ده الرصيد بعد العملية، مش مبلغها (الجولة التالتة). */
+private val BALANCE_AFTER = Regex(
+    "^$H*(?:after$H+(?:the$H+|your$H+)?(?:last$H+)?(?:purchase|transaction|payment)|بعد$H*(?:آخر|اخر)$H*(?:عملية|معاملة))|^$H*(?:is$H+)?(?:your$H+)?(?:available$H+)?balance",
+    EI,
+)
+
+/** فيه مبلغ بالجنيه **هو** مبلغ العملية (مش رصيد ولا حد ولا رسوم) — كارت سعودي اتخصم بالجنيه بيبان كده («Amount: EGP 500.00 (SAR 37.50)»). */
+internal fun hasEgyptianTransactionAmount(body: String): Boolean = egyptAmountValues(body).isNotEmpty()
 
 /** فودافون كاش شحن رصيد: «ب 50 بنجاح وخصم 57 من محفظتك شاملة الضريبة» ⇒ المخصوم = 57. */
 private val WALLET_DEBIT = Regex("وخصم$H*($NUM)$H*(?:$EG_CURRENCY$H*)?من$H*محفظتك", EI)
@@ -57,58 +75,88 @@ internal fun egyptAmount(body: String): EgyptAmount {
         val amount = egp(m.groupValues[1])
         return if (amount == null || amount <= 0 || amount > SMS_AMOUNT_CAP_MINOR) invalid() else EgyptAmount.Ok(amount)
     }
-    val values = LinkedHashSet<Long>()
-    for (line in body.split('\n')) {
-        var previousEnd = 0
-        for (near in amountsNearCurrency(line, EG_CURRENCY_TOKEN, AmountStyle.EGYPT)) {
-            val context = line.substring(minOf(previousEnd, near.start), near.start)
-            previousEnd = near.end
-            if (NOT_THE_AMOUNT.containsMatchIn(context)) continue
-            val number = when (near) {
-                is Near.Ambiguous -> return EgyptAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
-                is Near.Malformed -> return invalid()
-                is Near.Value -> near.number
-            }
-            val amount = egp(number)
-            if (amount == null || amount <= 0 || amount > SMS_AMOUNT_CAP_MINOR) return invalid()
-            values.add(amount)
-        }
-    }
+    val values = egyptAmountValues(body)
+    if (null in values) return problemOf(body)
     return when (values.size) {
-        1 -> EgyptAmount.Ok(values.first())
+        1 -> EgyptAmount.Ok(values.first()!!)
         0 -> EgyptAmount.Fail(uiText(TextKey.SMS_AMOUNT_UNCLEAR))
         else -> EgyptAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
     }
 }
 
+/** المبالغ بالجنيه اللي ممكن تبقى مبلغ العملية (مش رصيد ولا حد ولا رسوم)؛ null = مبلغ فيه مشكلة ([problemOf] بيقول إيه). */
+private fun egyptAmountValues(body: String): List<Long?> {
+    val values = mutableListOf<Long?>()
+    for (line in body.split('\n')) {
+        var previousEnd = 0
+        for (near in amountsNearCurrency(line, EG_CURRENCY_TOKEN, AmountStyle.EGYPT)) {
+            val context = line.substring(minOf(previousEnd, near.start), near.start)
+            previousEnd = near.end
+            if (NOT_THE_AMOUNT.containsMatchIn(context) || BALANCE_AFTER.containsMatchIn(line.substring(near.end))) continue
+            val amount = (near as? Near.Value)?.let { egp(it.number) }?.takeIf { it in 1..SMS_AMOUNT_CAP_MINOR }
+            if (amount == null || amount !in values) values.add(amount)
+        }
+    }
+    return values
+}
+
+/** أول مبلغ فيه مشكلة: رقم من الناحيتين ⇒ أكتر من مبلغ · غير كده ⇒ مش صالح. */
+private fun problemOf(body: String): EgyptAmount.Fail {
+    for (line in body.split('\n')) {
+        var previousEnd = 0
+        for (near in amountsNearCurrency(line, EG_CURRENCY_TOKEN, AmountStyle.EGYPT)) {
+            val context = line.substring(minOf(previousEnd, near.start), near.start)
+            previousEnd = near.end
+            if (NOT_THE_AMOUNT.containsMatchIn(context) || BALANCE_AFTER.containsMatchIn(line.substring(near.end))) continue
+            if (near is Near.Ambiguous) return EgyptAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
+            if (near !is Near.Value || egp(near.number)?.takeIf { it in 1..SMS_AMOUNT_CAP_MINOR } == null) return invalid()
+        }
+    }
+    return invalid()
+}
+
 // ── الاتجاه والنوع ───────────────────────────────────────────────────────
 
-private val STRONG_IN = Regex("has$H+been$H+refunded|تم$H*رد|${B}returned$B|تم$H*قيد$H*مبلغ|من$H*جهة$H*العمل", EI)
-private val OUT_FROM_ACCOUNT = Regex("تم$H*تنفيذ$H*تحويل[^\\n]{0,60}?من$H*حسابك", EI)
+private val STRONG_IN = Regex("has$H+been$H+refunded|$TM$H*رد|${B}returned$B|$TM$H*قيد$H*مبلغ|من$H*جهة$H*العمل", EI)
+private val OUT_FROM_ACCOUNT = Regex("$TM$H*تنفيذ$H*تحويل[^\\n]{0,60}?من$H*حسابك", EI)
 
 /** «إلى حسابك» / «لحسابكم» — حسابك **إنت** (التجاري الدولي والأهلي). «إلى حساب <رقم>» من غير «ك» ممكن يبقى صادر فما بتتحسبش. */
 private val IN_TO_ACCOUNT = Regex("(?:إلى|الى)$H*حسابك|لحسابك|على$H*حسابكم|لبطاقتك", EI)
 private val OUT_TARGET = Regex("لرقم|${B}deducted$B|${B}debited$B|from$H+your$H+AC$B", EI)
 /** كلمات الوارد — بحدود كلمة («non-refundable» · «TEST HOTEL DEPOSIT» جوه كلمة تانية ما تتحسبش). */
 private val IN_VERB = Regex(
-    "تم$H*استلام|تم$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|إيداع",
+    "$TM$H*استلام|$TM$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|إيداع",
     EI,
 )
 
 /** فعل خصم صريح — لو معاه فعل وارد في نفس الرسالة («تم خصم … وتم إضافة 50 نقطة») الاتجاه مش واضح. */
 private val DEBIT_VERB = Regex(
-    "تم$H*خصم|تم$H*سحب|تم$H*شحن|تم$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent",
+    "$TM$H*خصم|$TM$H*سحب|$TM$H*شحن|$TM$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent",
     EI,
 )
 
 /** إشارة صرف أضعف (اسم الكارت أو كلمة شراء) — بتخسر قدام فعل وارد صريح. */
 private val DEBIT_HINT = Regex("debit$H+card|credit$H+card|purchase", EI)
 
+/** «من حسابك … إلى حسابك/لحسابك» = بين حساباتك — الرسالة الواحدة فيها الطرفين (الجولة التالتة: كانت بتتسجل داخل). */
+private val FROM_YOUR_ACCOUNT = Regex("من$H*حسابك", EI)
+private val TO_YOUR_ACCOUNT = Regex("(?:إلى|الى)$H*حسابك|لحسابك", EI)
+
 /**
- * القواعد بالترتيب وأول واحدة بتكسب: الاسترداد ⇒ «من حسابك»/«إلى حسابك» ⇒ «لرقم»/خصم ⇒ فعل وارد **وفعل خصم صريح مع بعض = مش واضح**
- * ⇒ أفعال الوارد ⇒ أفعال الصادر. (مراجعة جلسة 33: الوارد كان بيكسب الخصم الصريح فعملية شراء اتسجلت دخل.)
+ * شحن المحفظة نفسها («تم شحن محفظتك/رصيد محفظتك») = فلوس **داخلة** المحفظة — مش فاتورة ولا صرف (الجولة التالتة: كانت بتتسجل
+ * فاتورة طالعة). شحن رصيد الموبايل من المحفظة («تم شحن رصيد موبايلك … وخصم … من محفظتك») لسه فاتورة طالعة.
+ */
+private val WALLET_TOP_UP = Regex("$TM$H*شحن$H*(?:رصيد$H*)?محفظت(?:ك|كم)", EI)
+private val FROM_YOUR_CARD_OR_ACCOUNT = Regex("من$H*(?:بطاقت|حساب)(?:ك|كم)", EI)
+
+/**
+ * القواعد بالترتيب وأول واحدة بتكسب: بين حساباتك ⇒ مش واضح · شحن المحفظة ⇒ داخل (ولو من كارتك/حسابك ⇒ مش واضح) · الاسترداد ⇒
+ * «من حسابك»/«إلى حسابك» ⇒ «لرقم»/خصم ⇒ فعل وارد **وفعل خصم صريح مع بعض = مش واضح** ⇒ أفعال الوارد ⇒ أفعال الصادر.
+ * (مراجعة جلسة 33: الوارد كان بيكسب الخصم الصريح فعملية شراء اتسجلت دخل.)
  */
 internal fun egyptDirection(body: String): Direction? {
+    if (FROM_YOUR_ACCOUNT.containsMatchIn(body) && TO_YOUR_ACCOUNT.containsMatchIn(body)) return null
+    if (WALLET_TOP_UP.containsMatchIn(body)) return if (FROM_YOUR_CARD_OR_ACCOUNT.containsMatchIn(body)) null else Direction.IN
     when {
         STRONG_IN.containsMatchIn(body) -> return Direction.IN
         OUT_FROM_ACCOUNT.containsMatchIn(body) -> return Direction.OUT
@@ -125,16 +173,17 @@ internal fun egyptDirection(body: String): Direction? {
     }
 }
 
-private val REFUND_WORDS = Regex("has$H+been$H+refunded|تم$H*رد|${B}returned$B", EI)
+private val REFUND_WORDS = Regex("has$H+been$H+refunded|$TM$H*رد|${B}returned$B", EI)
 private val SALARY_WORDS = Regex("جهة$H*العمل|salary|راتب", EI)
 // «ATMOSPHERE LOUNGE» محل مش صرّاف (الجولة التانية) — «NBE ATM0417» (رقم الماكينة لازق) لسه صرّاف
-private val CASH_WORDS = Regex("تم$H*سحب|(?<![A-Za-z])ATM(?![A-Za-z])", EI)
-private val CARD_PAYMENT_WORDS = Regex("تم$H*سداد[^\\n]{0,40}بطاقت", EI)
-private val BILL_WORDS = Regex("تم$H*شحن|recharged", EI)
+private val CASH_WORDS = Regex("$TM$H*سحب|(?<![A-Za-z])ATM(?![A-Za-z])", EI)
+private val CARD_PAYMENT_WORDS = Regex("$TM$H*سداد[^\\n]{0,40}بطاقت", EI)
+private val BILL_WORDS = Regex("$TM$H*شحن|recharged", EI)
 private val TRANSFER_WORDS = Regex("تحويل|${B}IPN$B|transfer|لرقم|من$H*رقم|received$H+(?:EGP$H*)?[\\d,.]+$H*(?:EGP$H+)?from", EI)
-private val PURCHASE_WORDS = Regex("تم$H*خصم|${B}charged$B|${B}Trx$H+using|debit$H+card|credit$H+card|purchase", EI)
+private val PURCHASE_WORDS = Regex("$TM$H*خصم|${B}charged$B|${B}Trx$H+using|debit$H+card|credit$H+card|purchase", EI)
 
 internal fun egyptKind(body: String, direction: Direction): SmsKind = when {
+    WALLET_TOP_UP.containsMatchIn(body) -> SmsKind.OTHER // فلوس داخلة المحفظة — مصدرها مش مكتوب (§75-1: الداخل المجهول بيستنى)
     REFUND_WORDS.containsMatchIn(body) -> SmsKind.REFUND
     SALARY_WORDS.containsMatchIn(body) -> SmsKind.SALARY
     direction == Direction.OUT && CASH_WORDS.containsMatchIn(body) -> SmsKind.CASH_WITHDRAWAL
