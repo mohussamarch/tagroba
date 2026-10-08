@@ -63,7 +63,7 @@ internal object Evaluate {
 
     private fun summary(country: String, row: SmsRow): String {
         val party = transferPartyOf(transaction(country, row))
-        return "amount=${row.amountMinor} dir=${row.direction.wire} date=${row.date} merchant='${row.merchantName}'" +
+        return "amount=${row.amountMinor} dir=${row.direction.wire} date=${row.date} kind=${row.kind.wire} own=${row.ownLast4 ?: "-"} merchant='${row.merchantName}'" +
             (party?.let { " party='${it.label}'/${it.last4 ?: "-"}" } ?: "")
     }
 

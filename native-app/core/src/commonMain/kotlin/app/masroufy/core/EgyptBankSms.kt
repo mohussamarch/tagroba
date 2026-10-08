@@ -25,7 +25,7 @@ private fun foreignOnly(body: String, receivedAt: String): SmsParseResult.Reject
     val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(reason)
     val date = egyptTransactionDate(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
     val kind = egyptKind(body, direction)
-    return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, redactSms(egyptMerchant(body, kind)), kind))
+    return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, redactSms(egyptMerchant(body, kind)), kind, ownLast4Of(body, direction)))
 }
 
 /** بنوك ومحافظ مصر. الشكل المجهول بيترفض بسبب واضح ويتضاف باليد — نفس قاعدة القارئ السعودي. */

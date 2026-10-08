@@ -159,7 +159,7 @@ class SaudiSmsRetailFormatsTest {
             parseBankSms(smsMessage("شراء دولي\nبطاقة:6604;مدى(أثير)\nمبلغ:EUR 14.90\nدولة:FR\nلدى:$m\nفي:26-03-05 09:10"), 1),
         )
         assertEquals(uiText(TextKey.SMS_FOREIGN_CURRENCY), pending.reason)
-        assertEquals(SmsForeignPending(SMS_TX_DAY, eur, OUT, m, PURCHASE), pending.foreign)
+        assertEquals(SmsForeignPending(SMS_TX_DAY, eur, OUT, m, PURCHASE, ownLast4 = "6604"), pending.foreign)
         // الجنيه في قارئ السعودية = رسالة مصرية مش عملية أجنبية ⇒ من غير «مستنية المبلغ»
         val egp = assertIs<SmsParseResult.Rejected>(parseBankSms(smsMessage("شراء\nمبلغ:EGP 50.00\nلدى:$m\nفي:26-03-05 09:10"), 1))
         assertEquals(null, egp.foreign)

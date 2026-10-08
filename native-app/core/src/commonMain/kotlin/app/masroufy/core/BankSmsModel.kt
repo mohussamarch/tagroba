@@ -50,6 +50,8 @@ data class SmsRow(
     val kind: SmsKind = SmsKind.OTHER,
     /** العملية كانت بعملة أجنبية والمبلغ المحلي مكتوب في الرسالة (هو [amountMinor]) — للمعلومة بس. */
     val foreign: SmsForeignAmount? = null,
+    /** آخر 4 أرقام حسابك أو كارتك اللي الرسالة عنها (§75-11 — `SmsOwnAccount.kt`)، أو null. */
+    val ownLast4: String? = null,
 )
 
 /**
@@ -62,6 +64,7 @@ data class SmsForeignPending(
     val direction: Direction,
     val merchantName: String,
     val kind: SmsKind,
+    val ownLast4: String? = null,
 )
 
 sealed interface SmsParseResult {
@@ -135,6 +138,7 @@ internal fun smsRow(
             merchantName = redactSms(merchant),
             reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
             sourceName = message.sender, description = safeBody, raw = safeBody, kind = kind, foreign = foreign,
+            ownLast4 = ownLast4Of(body, direction),
         ),
     )
 }

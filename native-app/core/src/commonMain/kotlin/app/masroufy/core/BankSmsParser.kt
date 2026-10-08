@@ -38,7 +38,7 @@ private fun foreignOnly(body: String, receivedAt: String, foreign: SmsForeignAmo
     val reason = uiText(TextKey.SMS_FOREIGN_CURRENCY)
     val amount = foreign?.takeIf { it.currency != "EGP" } ?: return SmsParseResult.Rejected(reason)
     val date = dateOf(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
-    return SmsParseResult.Rejected(reason, SmsForeignPending(date, amount, direction, redactSms(saudiMerchantOf(body, kind)), kind))
+    return SmsParseResult.Rejected(reason, SmsForeignPending(date, amount, direction, redactSms(saudiMerchantOf(body, kind)), kind, ownLast4Of(body, direction)))
 }
 
 /** قوالب سعودية؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */

@@ -125,7 +125,7 @@ class EgyptSmsFormatsTest {
             parseEgyptBankSms(smsMessage("A Trx using Card XXXX6604 from $m for USD 14.90 on 05/03/2026 at 09:10 GMT+2. Available balance is EGP 4,100.00."), 1),
         )
         assertEquals(uiText(TextKey.SMS_NOT_EGP), usd.reason)
-        assertEquals(SmsForeignPending(SMS_TX_DAY, SmsForeignAmount("USD", 1490), OUT, m, PURCHASE), usd.foreign)
+        assertEquals(SmsForeignPending(SMS_TX_DAY, SmsForeignAmount("USD", 1490), OUT, m, PURCHASE, ownLast4 = "6604"), usd.foreign)
         val eur = assertIs<SmsParseResult.Rejected>(
             parseEgyptBankSms(smsMessage("Your credit card ending with#6604 was charged for EUR 14.90 at $m on 05/03/26 at 09:10. Card available limit is EGP 4,100.00."), 1),
         )
