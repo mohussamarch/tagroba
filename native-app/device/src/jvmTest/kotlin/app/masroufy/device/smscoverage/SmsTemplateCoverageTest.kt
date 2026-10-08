@@ -102,7 +102,11 @@ class SmsTemplateCoverageTest {
         // جلسة 32 (تعديل القارئ): من هنا القياس **بيمسك الرجوع لورا** — كل سطر لازم يتقري صح أو يترفض صح، ما عدا القايمة دي
         val notHandled = rows.filter { it.outcome != Outcome.CORRECT && it.outcome != Outcome.CORRECTLY_IGNORED }.map { "${it.file}#${it.index}" }.toSet()
         assertEquals(KNOWN_UNSUPPORTED.keys, notHandled, "rows not handled right (outside the known list) — see build/reports/sms-template-coverage/summary.txt")
-        assertTrue(rows.flatMap { it.variants }.none { it.crossLane != null }, "a message read by both countries' readers")
+        assertTrue(rows.flatMap { it.variants }.none { it.crossLane != null }, "a message read (or kept waiting) by both countries' readers")
+        // الجولة التانية من المراجعة: الرسالة اللي مش عملية لازم يوقفها **حارس مقصود** (عرض · رمز · مرفوضة · مش عملية) — في التسجيل
+        // التلقائي وفي القراية بطلب المستخدم — مش رفض بالصدفة عشان التاريخ أو المبلغ مش واضح
+        val fragile = rows.filter { r -> r.variants.any { it.fragileIgnore } }.map { "${it.file}#${it.index}" }
+        assertTrue(fragile.isEmpty(), "must-ignore rows stopped only by accident, not by a guard: $fragile")
     }
 
     companion object {

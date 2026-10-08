@@ -15,8 +15,13 @@ import app.masroufy.core.latinizeDigits
  */
 object SmsSafety {
     private val numbers = Regex("SA[\\d\\s]{20,}|\\b(?:\\d[ -]*){12,34}\\b|\\d{5,}", RegexOption.IGNORE_CASE)
+
+    /**
+     * المبلغ جنب عملة ما بيتحجبش. الجولة التانية من المراجعة: كود لازق في 5 أرقام أو أكتر من غير فواصل ولا كسور («Ref SR2026030512»)
+     * رقم مرجع مش مبلغ — بيتحجب زي أي رقم طويل (كان بيتساب والقارئ يقراه ملياري ريال).
+     */
     private val financial = Regex(
-        "(?:(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\\s*[:：]?\\s*)?(?:${SmsVocabulary.CURRENCY}\\s*[:：]?\\s*[\\d,٬]+(?:[.٫]\\d{1,2})?|[\\d,٬]+(?:[.٫]\\d{1,2})?\\s*${SmsVocabulary.CURRENCY})",
+        "(?:(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)\\s*[:：]?\\s*)?(?:${SmsVocabulary.CURRENCY}(?!\\d{5,}(?![\\d,٬.٫]))\\s*[:：]?\\s*[\\d,٬]+(?:[.٫]\\d{1,2})?|[\\d,٬]+(?:[.٫]\\d{1,2})?\\s*${SmsVocabulary.CURRENCY})",
         RegexOption.IGNORE_CASE,
     )
 

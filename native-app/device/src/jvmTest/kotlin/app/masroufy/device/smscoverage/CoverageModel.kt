@@ -25,9 +25,12 @@ internal enum class Outcome(val wire: String, val severity: Int) {
  * - [merchant] = الرسالة فيها `{merchant}` واسم المحل لازم يطلع زي ما هو.
  * - [partyKeys] = الخانات اللي بتعرّف الطرف التاني في التحويل (اسم أو أرقام). الطرف صح لو الاسم طلع، **أو** آخر 4 أرقام طلعوا
  *   (§39/§60: الاسم + آخر 4). الخانة اللي مش موجودة في نسخة الرسالة دي (جزء اختياري اتشال) ما بتتحسبش. فاضية = مفيش طرف ولازم ما يطلعش طرف.
- * - [foreign] = المبلغ بعملة أجنبية بس (من غير مقابل محلي) — قرار §75-12: يتسجل ويسأل عن المبلغ المحلي. **الصح** هنا = القارئ
+ * - [foreign] = العملية بعملة أجنبية (حتى لو المقابل المحلي مكتوب — قرار المالك §75-12: يتسجل ويسأل عن المبلغ المحلي، و✗ على
+ *   «يتسجل لوحده لو المحلي مكتوب»). [amountKey] = خانة المبلغ الأجنبي. **الصح** هنا = القارئ
  *   رفضها بسبب العملة **ومعاها** المبلغ الأجنبي والاتجاه والتاريخ ([app.masroufy.core.SmsForeignPending]) عشان السؤال يتعمل.
  * - [kind] = نوع العملية اللي لازم القارئ يعرفه (سحب صرّاف §75-4 · استرداد §75-6 · بين حساباتك §75-11) — null = ما بيتفحصش.
+ * - [localKey] = في العملية الأجنبية: الخانة اللي فيها المبلغ المحلي **المكتوب** في الرسالة (بين قوسين أو الإجمالي المستحق) — لازم
+ *   يطلع اقتراح في [app.masroufy.core.SmsForeignPending.localSuggestion] **من غير ما يتسجل** (قرار المالك §75-12). null = مفيش اقتراح.
  */
 internal data class Expect(
     val tx: Boolean,
@@ -38,6 +41,7 @@ internal data class Expect(
     val foreign: Boolean = false,
     val what: String = "",
     val kind: SmsKind? = null,
+    val localKey: String? = null,
 )
 
 /** رسالة مكتوبة باليد لسطر «كلمات بس» (مفيهوش رسالة كاملة) — بقوالب `{…}` زي ملفات البحث. */
@@ -78,7 +82,8 @@ internal data class RowSpec(
 internal fun out(
     merchant: Boolean = false, party: List<String> = emptyList(), amountKey: String = "amount", foreign: Boolean = false,
     values: Map<String, String> = emptyMap(), date: DateStyle? = null, fix: ((String) -> String)? = null, kind: SmsKind? = null,
-) = RowSpec(Expect(true, Dir.OUT, amountKey, merchant, party, foreign, kind = kind), values, date, fix)
+    localKey: String? = null,
+) = RowSpec(Expect(true, Dir.OUT, amountKey, merchant, party, foreign, kind = kind, localKey = localKey), values, date, fix)
 
 internal fun inn(
     merchant: Boolean = false, party: List<String> = emptyList(), amountKey: String = "amount",
@@ -108,7 +113,10 @@ internal data class VariantResult(
     val manualOutcome: Outcome,
     /** قارئ البلد التانية قبلها (الصندوق بيتقري بقارئ كل بلد — `AutoRecordSms`) ⇒ هتتسجل في البلدين. */
     val crossLane: String?,
-    /** رسالة مش عملية اترفضت بالصدفة (مبلغ أو تاريخ أو اتجاه مش واضح) مش بحارس مقصود. */
+    /**
+     * رسالة مش عملية اترفضت بالصدفة (مبلغ أو تاريخ أو اتجاه مش واضح، أو فلتر الجهاز رماها لأن مفيهاش كلمة حركة أو عملة) مش بحارس
+     * مقصود — في التسجيل التلقائي **أو** في القراية بطلب المستخدم. الاختبار بيفشل لو فيه واحدة (الجولة التانية من المراجعة).
+     */
     val fragileIgnore: Boolean,
     /**
      * القالب مفيهوش تاريخ والقارئ رفضه عشان كده بس ⇒ نفس الرسالة + سطر تاريخ: هتتقري صح ولا فيه غلط مستخبي ورا الرفض؟

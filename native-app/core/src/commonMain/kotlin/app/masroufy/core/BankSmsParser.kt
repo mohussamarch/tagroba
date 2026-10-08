@@ -6,16 +6,22 @@ package app.masroufy.core
  * 1. **التجاهل** (`SmsGuards.kt`): عرض · رمز تحقق (حتى لو فيه مبلغ ومحل) · مرفوضة/رصيد مش كفاية · حجز وتفويض وطلب ومعلومة.
  * 2. **الاتجاه**: عنوان الرسالة لو معروف (`SmsSaudiTitles.kt` — عناوين البنك المركزي الموحّدة + البنوك) ⇒ حوالة الراجحي القديمة
  *    من غير كلمة اتجاه (من مكان الاسم) ⇒ القاعدة القديمة: كلمات الصرف والدخل في الرسالة كلها، ولو الاتنين أو ولا واحد ⇒ ترفض.
+ *    عنوان داخل («تصحيح») والنص فيه «تم خصم» ⇒ ترفض · «شيك مرتجع» ⇒ ترفض (الاتجاه مش واضح — الجولة التانية من المراجعة).
  * 3. **المبلغ** (`SmsSaudiFields.kt`): «إجمالي المبلغ المستحق» لو موجود ⇒ رقم جنبه الريال في سطر مش رصيد ولا رسوم ولا ضريبة (قيمة واحدة).
- *    عملة أجنبية: مقابلها بالريال لو مكتوب، وإلا ترفض **ومعاها كل اللي اتقري** عشان المالك يكتب المبلغ بالريال (§75-12).
- * 4. **التاريخ** (`SmsDates.kt`): تاريخ واحد بس من 60 يوم قبل الوصول لحد يوم بعده. رسالة الأهلي السعودي اللي شكلها ما فيهوش تاريخ
- *    خالص ⇒ يوم الوصول بتوقيت السعودية (نفس قرار رسالة الكارت المصرية §40.3-١).
+ *    **عملة أجنبية ⇒ ترفض دايمًا ومعاها كل اللي اتقري** (قرار المالك §75-12: تتسجل وتسأل عن المبلغ المحلي — مش تتسجل لوحدها حتى
+ *    لو المقابل بالريال مكتوب؛ المكتوب بيمشي معاها اقتراح بس) لحد ما شاشة السؤال تتبني.
+ * 4. **التاريخ** (`SmsDates.kt`): تاريخ واحد بس من 60 يوم قبل الوصول لحد يوم بعده (التاريخ بسنة كاملة: لحد يوم بعد الوصول).
+ *    رسالة الأهلي السعودي اللي شكلها كله ما فيهوش تاريخ ⇒ يوم الوصول بتوقيت السعودية (نفس قرار رسالة الكارت المصرية §40.3-١).
  * الشكل المجهول بيترفض بسبب واضح ويستنى المالك (§72).
  */
 
 private val I = setOf(RegexOption.IGNORE_CASE)
 private val OUT_WORDS = Regex("شراء|سحب|خصم|سداد|مدفوعات|دفع|(?:حوالة|تحويل)[^\\n]{0,20}صادر|purchase|withdrawal|outgoing transfer|مشتريات", I)
-private val IN_WORDS = Regex("(?:حوالة|تحويل)[^\\n]{0,20}وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund", I)
+// «was reversed» (الجولة التانية): الشراء اتعكس = فلوس راجعة أو عملية اتلغت — مع «Purchase» الاتجاه مش واضح، مش صرف
+private val IN_WORDS = Regex(
+    "(?:حوالة|تحويل)[^\\n]{0,20}وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund|(?<![A-Za-z])revers(?:ed|al)(?![A-Za-z])",
+    I,
+)
 
 /** القاعدة القديمة: «حوالة داخلية صادرة» و«حوالة محلية واردة» — كلمة الاتجاه ممكن تيجي بعد نوع الحوالة. */
 private fun keywordDirection(body: String): Direction? {
@@ -24,36 +30,71 @@ private fun keywordDirection(body: String): Direction? {
     return if (out == incoming) null else if (incoming) Direction.IN else Direction.OUT
 }
 
-/** الأهلي السعودي: آخر سطر «مدى *1234» / «مدى-ابل *1234» والرسالة مفيهاش تاريخ أصلًا (البحث: «no date in the message»). */
-private val SNB_CARD_LINE = Regex("^[ \\t]*(?:مدى|بطاقة)(?:-[^\\s*]+)?[ \\t]*\\*\\d{4}[ \\t]*$", setOf(RegexOption.MULTILINE))
+/** فعل خصم صريح في النص — مع عنوان داخل («تصحيح» · «استرداد») الرسالة متناقضة. */
+private val EXPLICIT_DEBIT = Regex("تم\\s*خصم|خصمت?\\s*من\\s*حساب|(?<![A-Za-z])debited(?![A-Za-z])", I)
+
+/** شيك رجع (اترفض): ممكن رصيد اتخصم تاني أو ما حصلش حاجة — مش استرداد داخل. */
+private val RETURNED_CHEQUE = Regex("شيك\\s*(?:مرتجع|مرفوض|راجع)|(?:returned|bounced|dishonou?red)\\s+cheque|cheque\\s+(?:returned|bounced)", I)
+
+/**
+ * الأهلي السعودي (البحث: «no date in the message»): **الشكل كله** — عنوان معروف · سطر «بـ<مبلغ> SAR» أو «مبلغ <مبلغ> SAR» ·
+ * آخر سطر «مدى *1234» / «مدى-ابل *1234». سطر الكارت لوحده مش كفاية (رمز أو عرض بنفس الشكل كان بياخد تاريخ النهارده).
+ */
+private val SNB_CARD_LINE = Regex("^[ \\t]*(?:مدى|بطاقة)(?:-[^\\s*]+)?[ \\t]*\\*\\d{4}[ \\t]*$")
+private val SNB_AMOUNT_LINE = Regex("^[ \\t]*(?:بـ|مبلغ)[ \\t]*(?:SAR[ \\t]*)?\\d[\\d,.]*(?:[ \\t]*SAR)?[ \\t]*$", setOf(RegexOption.MULTILINE))
 private const val SAUDI_UTC_OFFSET_HOURS = 3
 
+private fun snbDatelessShape(body: String): Boolean {
+    val lines = body.split('\n').filter { it.isNotBlank() }
+    return lines.size in 3..5 && saudiTitle(body) != null && SNB_CARD_LINE.matches(lines.last()) && SNB_AMOUNT_LINE.containsMatchIn(body)
+}
+
 private fun datelessDate(body: String, receivedAt: String): IsoDate? =
-    if (!hasDateToken(body) && SNB_CARD_LINE.containsMatchIn(body)) localDayOf(receivedAt, SAUDI_UTC_OFFSET_HOURS) else null
+    if (!hasDateToken(body) && snbDatelessShape(body)) localDayOf(receivedAt, SAUDI_UTC_OFFSET_HOURS) else null
 
 private fun dateOf(body: String, receivedAt: String): IsoDate? = saudiTransactionDate(body, receivedAt) ?: datelessDate(body, receivedAt)
 
-/** عملة أجنبية من غير مقابل بالريال: سبب الرفض القديم + اللي اتقري (لو المبلغ الأجنبي والتاريخ واضحين). الجنيه رسالة مصرية مش أجنبية. */
-private fun foreignOnly(body: String, receivedAt: String, foreign: SmsForeignAmount?, direction: Direction, kind: SmsKind): SmsParseResult.Rejected {
+/** «شراء دولي» / «International …» في أول سطر — رسالة بنك سعودي عن عملية برّه (حتى لو مبلغها بالجنيه). */
+private val INTERNATIONAL_TITLE = Regex("^[^\\n]*(?:دولي|دولية|International)", I)
+
+/**
+ * الرسالة الأجنبية دي **بتاعة البلد دي** (عشان ما تستناش في البلدين — الصندوق بيتقري بقارئ كل بلد): الجنيه = رسالة مصرية — إلا لو
+ * فيها ريال سعودي (رصيد بالريال) أو عنوانها «دولي» (كارت سعودي اتخصم بالجنيه). أي عملة تانية: مفيهاش جنيه (الكارت المصري بيكتب
+ * رصيده بالجنيه) والرسالة سطور أو فيها ريال (رسايل مصر سطر واحد).
+ */
+private fun saudiForeign(body: String, currency: String): Boolean = when (currency) {
+    "EGP" -> hasSaudiCurrency(body) || INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body))
+    else -> !hasEgyptianCurrency(body) && (hasSaudiCurrency(body) || '\n' in body)
+}
+
+/** عملة أجنبية (§75-12): سبب الرفض القديم + اللي اتقري (لو المبلغ الأجنبي والتاريخ واضحين) + المبلغ بالريال المكتوب كاقتراح. */
+private fun foreignOnly(
+    body: String, receivedAt: String, amount: SaudiAmount.ForeignOnly, direction: Direction, kind: SmsKind,
+): SmsParseResult.Rejected {
     val reason = uiText(TextKey.SMS_FOREIGN_CURRENCY)
-    val amount = foreign?.takeIf { it.currency != "EGP" } ?: return SmsParseResult.Rejected(reason)
+    val foreign = amount.foreign?.takeIf { saudiForeign(body, it.currency) } ?: return SmsParseResult.Rejected(reason)
     val date = dateOf(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
-    return SmsParseResult.Rejected(reason, SmsForeignPending(date, amount, direction, redactSms(saudiMerchantOf(body, kind)), kind, ownLast4Of(body, direction)))
+    val pending = SmsForeignPending(
+        date, foreign, direction, redactSms(saudiMerchantOf(body, kind)), kind, ownLast4Of(body, direction), amount.localSuggestion,
+    )
+    return SmsParseResult.Rejected(reason, pending)
 }
 
 /** قوالب سعودية؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */
 fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
+    val unclear = SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    if (RETURNED_CHEQUE.containsMatchIn(body)) return unclear
     val title = saudiTitle(body)
-    val direction = title?.direction ?: undirectedTransferDirection(body) ?: keywordDirection(body)
-        ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    if (title?.direction == Direction.IN && EXPLICIT_DEBIT.containsMatchIn(body)) return unclear
+    val direction = title?.direction ?: undirectedTransferDirection(body) ?: keywordDirection(body) ?: return unclear
     val kind = title?.kind ?: saudiKindFromWords(body, direction)
     val amount = when (val a = saudiAmount(body)) {
         is SaudiAmount.Fail -> return SmsParseResult.Rejected(a.reason)
-        is SaudiAmount.ForeignOnly -> return foreignOnly(body, message.receivedAt, a.foreign, direction, kind)
-        is SaudiAmount.Ok -> a
+        is SaudiAmount.ForeignOnly -> return foreignOnly(body, message.receivedAt, a, direction, kind)
+        is SaudiAmount.Ok -> a.amountMinor
     }
     val date = dateOf(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
-    return smsRow(message, body, lineNumber, date, amount.amountMinor, direction, saudiMerchantOf(body, kind), kind, amount.foreign)
+    return smsRow(message, body, lineNumber, date, amount, direction, saudiMerchantOf(body, kind), kind)
 }

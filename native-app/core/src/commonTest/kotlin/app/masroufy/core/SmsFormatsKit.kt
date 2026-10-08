@@ -30,7 +30,6 @@ internal data class SmsCase(
     val party: String? = null,
     val last4: String? = null,
     val date: String = SMS_TX_DAY,
-    val foreign: SmsForeignAmount? = null,
 )
 
 internal fun smsMessage(body: String, sender: String = "TESTBANK", receivedAt: String = SMS_RECEIVED_AT) = BankSmsMessage(sender, receivedAt, body)
@@ -53,7 +52,6 @@ internal fun checkCase(c: SmsCase, parse: (BankSmsMessage, Int) -> SmsParseResul
     assertEquals(c.date, row.date, "${c.name}: date")
     c.kind?.let { assertEquals(it, row.kind, "${c.name}: kind") }
     c.merchant?.let { assertEquals(it, row.merchantName, "${c.name}: merchant") }
-    assertEquals(c.foreign, row.foreign, "${c.name}: foreign")
     val party = transferPartyOf(smsTransaction(row, currency))
     if (c.party == null && c.last4 == null) {
         assertNull(party, "${c.name}: unexpected party $party")

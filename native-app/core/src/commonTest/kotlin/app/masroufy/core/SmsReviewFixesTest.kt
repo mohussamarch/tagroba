@@ -24,9 +24,9 @@ class SmsReviewFixesTest {
     private fun saudi(body: String, at: String = SMS_RECEIVED_AT) = parseBankSms(smsMessage(body, receivedAt = at), 1)
     private fun egypt(body: String, at: String = SMS_RECEIVED_AT) = parseEgyptBankSms(smsMessage(body, receivedAt = at), 1)
 
-    /** §75-12 لأي عملة: «TRY 450.00» كانت «المبلغ مش واضح» من غير المبلغ الأجنبي (والفلتر بيرميها). */
+    /** §75-12 لأي عملة: «TRY 450.00» كانت «المبلغ مش واضح» من غير المبلغ الأجنبي (والفلتر بيرميها). الين من غير كسور (4500 = 4500). */
     @Test fun anyIsoForeignCurrencyWaitsForTheLocalAmount() {
-        for ((code, written, minor) in listOf(Triple("TRY", "450.00", 45000L), Triple("CHF", "30.00", 3000L), Triple("JPY", "4500", 450000L), Triple("INR", "1500.00", 150000L))) {
+        for ((code, written, minor) in listOf(Triple("TRY", "450.00", 45000L), Triple("CHF", "30.00", 3000L), Triple("JPY", "4500", 4500L), Triple("INR", "1500.00", 150000L))) {
             val r = assertIs<SmsParseResult.Rejected>(saudi("شراء دولي\nبطاقة:4417;مدى\nمبلغ:$code $written\nدولة:XX\nلدى:NOVA GAMES\nفي:2026-03-05 09:10"), code)
             assertEquals(uiText(TextKey.SMS_FOREIGN_CURRENCY), r.reason, code)
             assertEquals(SmsForeignPending(SMS_TX_DAY, SmsForeignAmount(code, minor), OUT, "NOVA GAMES", PURCHASE, ownLast4 = "4417"), r.foreign, code)
@@ -44,7 +44,7 @@ class SmsReviewFixesTest {
     @Test fun merchantNamesThatLookLikeCurrencyCodesStayLocal() {
         val row = ok(saudi("شراء\nبطاقة:4417;مدى\nمبلغ:SAR 64.25\nلدى:TOP 10 MARKET\nفي:2026-03-05 09:10"), "TOP 10")
         assertEquals(6425L, row.amountMinor)
-        assertNull(row.foreign)
+        assertTrue(row.kind == PURCHASE)
         assertEquals("TOP 10 MARKET", row.merchantName)
         assertTrue(isoMoneyIn("please try 3 times, ALL 4 KIDS").isEmpty())
     }

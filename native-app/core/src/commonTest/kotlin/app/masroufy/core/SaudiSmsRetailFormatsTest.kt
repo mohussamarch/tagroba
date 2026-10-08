@@ -131,35 +131,36 @@ class SaudiSmsRetailFormatsTest {
         for (c in cases) checkCase(c, ::parseBankSms, Currency.SAR)
     }
 
-    /** §75-12: المبلغ المحلي مكتوب ⇒ هو المبلغ والأجنبي للمعلومة؛ مش مكتوب ⇒ الرسالة تستنى ومعاها كل اللي اتقري. */
-    @Test fun foreignCurrency() {
+
+    /**
+     * §75-12 — **قرار المالك** (OVERRIDES §75 بند 12 ✗): الشراء بعملة أجنبية «يتسجل ويسأل عن المبلغ بالعملة المحلية»، والمالك **رفض**
+     * «يتسجل لوحده لو المبلغ المحلي مكتوب». لحد ما شاشة السؤال تتبني: الرسالة **ما بتتسجلش بأي مبلغ** — بتترفض ومعاها كل اللي اتقري،
+     * والمبلغ بالريال المكتوب (بين قوسين أو «إجمالي المبلغ المستحق») بيمشي معاها **اقتراح** بس.
+     */
+    @Test fun foreignCurrencyIsNeverRecordedEvenWhenTheLocalAmountIsPrinted() {
         val eur = SmsForeignAmount("EUR", 1490)
-        checkCase(
-            SmsCase(
-                "d360 local amount in parentheses", "International Online Purchase\nAmount: EUR 14.90 (SAR 64.25)\nCard: *6604 - VISA (Ecommerce)\nFee: SAR 1.20\nAt: $m\nAccount number: *1188\nCountry: FR\nOn: 05/03/2026 09:10",
-                6425, OUT, PURCHASE, m, foreign = eur,
-            ),
-            ::parseBankSms, Currency.SAR,
+        fun pending(body: String): SmsForeignPending {
+            val r = assertIs<SmsParseResult.Rejected>(parseBankSms(smsMessage(body), 1), body)
+            assertEquals(uiText(TextKey.SMS_FOREIGN_CURRENCY), r.reason)
+            return r.foreign ?: throw AssertionError("no pending details: $body")
+        }
+        assertEquals(
+            SmsForeignPending(SMS_TX_DAY, eur, OUT, m, PURCHASE, ownLast4 = "1188", localSuggestion = 6425),
+            pending("International Online Purchase\nAmount: EUR 14.90 (SAR 64.25)\nCard: *6604 - VISA (Ecommerce)\nFee: SAR 1.20\nAt: $m\nAccount number: *1188\nCountry: FR\nOn: 05/03/2026 09:10"),
         )
-        checkCase(
-            SmsCase(
-                "d360 international atm", "International ATM Withdrawal\nAmount: EUR 70.00 (SAR 300.00)\nCard: *6604 - VISA\nFee: 25.00\nAt: TEST ATM PARIS\nCountry: FR\nOn: 05/03/2026 09:10",
-                30000, OUT, CASH_WITHDRAWAL, foreign = SmsForeignAmount("EUR", 7000),
-            ),
-            ::parseBankSms, Currency.SAR,
+        val atm = pending("International ATM Withdrawal\nAmount: EUR 70.00 (SAR 300.00)\nCard: *6604 - VISA\nFee: 25.00\nAt: TEST ATM PARIS\nCountry: FR\nOn: 05/03/2026 09:10")
+        assertEquals(SmsForeignAmount("EUR", 7000), atm.foreign)
+        assertEquals(CASH_WITHDRAWAL, atm.kind)
+        assertEquals(30000L, atm.localSuggestion)
+        // الإجمالي المستحق (المبلغ + الرسوم) هو الاقتراح، مش المبلغ اللي بين قوسين
+        val total = pending("شراء انترنت\nبطاقة: 6604 ;فيزا\nمبلغ: 14.90 EUR (64.25 ريال)\nلدى: $m\nرسوم وضريبة: 2.10 SAR\nسعر الصرف~ 4.3121\nإجمالي المبلغ المستحق: 66.35 SAR\nدولة: FR\nرصيد: 4,100.00 SAR\n؜ 5/3/26 09:10")
+        assertEquals(eur, total.foreign)
+        assertEquals(6635L, total.localSuggestion)
+        // من غير مقابل محلي: نفس الحاجة من غير اقتراح
+        assertEquals(
+            SmsForeignPending(SMS_TX_DAY, eur, OUT, m, PURCHASE, ownLast4 = "6604"),
+            pending("شراء دولي\nبطاقة:6604;مدى(أثير)\nمبلغ:EUR 14.90\nدولة:FR\nلدى:$m\nفي:26-03-05 09:10"),
         )
-        checkCase(
-            SmsCase(
-                "tidybox foreign + fees + total", "شراء انترنت\nبطاقة: 6604 ;فيزا\nمبلغ: 14.90 EUR (64.25 ريال)\nلدى: $m\nرسوم وضريبة: 2.10 SAR\nسعر الصرف~ 4.3121\nإجمالي المبلغ المستحق: 66.35 SAR\nدولة: FR\nرصيد: 4,100.00 SAR\n؜ 5/3/26 09:10",
-                6635, OUT, PURCHASE, m, foreign = eur,
-            ),
-            ::parseBankSms, Currency.SAR,
-        )
-        val pending = assertIs<SmsParseResult.Rejected>(
-            parseBankSms(smsMessage("شراء دولي\nبطاقة:6604;مدى(أثير)\nمبلغ:EUR 14.90\nدولة:FR\nلدى:$m\nفي:26-03-05 09:10"), 1),
-        )
-        assertEquals(uiText(TextKey.SMS_FOREIGN_CURRENCY), pending.reason)
-        assertEquals(SmsForeignPending(SMS_TX_DAY, eur, OUT, m, PURCHASE, ownLast4 = "6604"), pending.foreign)
         // الجنيه في قارئ السعودية = رسالة مصرية مش عملية أجنبية ⇒ من غير «مستنية المبلغ»
         val egp = assertIs<SmsParseResult.Rejected>(parseBankSms(smsMessage("شراء\nمبلغ:EGP 50.00\nلدى:$m\nفي:26-03-05 09:10"), 1))
         assertEquals(null, egp.foreign)

@@ -29,15 +29,25 @@ private fun shortCandidates(regex: Regex, body: String, received: Long): Set<Str
     return candidates
 }
 
-/** نفس قاعدة التطبيق الحالي (ملف المرجع `golden/sms.json`) + فاصل «\». */
+/**
+ * التاريخ بسنة كاملة **مش بعد يوم من الوصول** (الجولة التانية من المراجعة): تاريخ في المستقبل = آخر موعد عرض أو ميعاد سداد
+ * («حتى 31/03/2026» · «قبل 2026-03-25») مش عملية خلصت — كان بيبقى تاريخ العملية، وتاريخ بعد سنة كان بيتقبل.
+ * الحد التاني (60 يوم قبل الوصول) **ما بيتطبقش** على التاريخ بسنة كاملة: ملف المرجع `golden/sms.json` بيقفل رسايل اتأخرت أكتر من
+ * كده بتاريخها (سؤال مفتوح للمالك في OVERRIDES §75.1). وقت الوصول مش مفهوم ⇒ التاريخ زي ما هو (ملف المرجع).
+ */
+private fun notFuture(value: IsoDate, receivedAt: String): IsoDate? {
+    if (!isValidIsoDate(value)) return null
+    val received = JsText.parseIsoMillis(receivedAt) ?: return value
+    return value.takeIf { toDayNumber(parseIsoDate(it)).toLong() * DAY_MS <= received + DAY_MS }
+}
+
+/** نفس قاعدة التطبيق الحالي (ملف المرجع `golden/sms.json`) + فاصل «\» + التاريخ بسنة مش في المستقبل. */
 internal fun saudiTransactionDate(body: String, receivedAt: String): IsoDate? {
     LONG_YMD.find(body)?.let { m ->
-        val v = iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt())
-        return if (isValidIsoDate(v)) v else null
+        return notFuture(iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()), receivedAt)
     }
     LONG_DMY.find(body)?.let { m ->
-        val v = iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt())
-        return if (isValidIsoDate(v)) v else null
+        return notFuture(iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()), receivedAt)
     }
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     return shortCandidates(SHORT, body, received).singleOrNull()
@@ -127,11 +137,10 @@ private fun withYear(month: Int, day: Int, receivedAt: String, received: Long): 
  */
 internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
     MONTH_NAME.find(body)?.let { m ->
-        val v = iso(m.groupValues[3].toInt(), MONTHS.indexOf(m.groupValues[1].lowercase()) + 1, m.groupValues[2].toInt())
-        return v.takeIf(::isValidIsoDate)
+        return notFuture(iso(m.groupValues[3].toInt(), MONTHS.indexOf(m.groupValues[1].lowercase()) + 1, m.groupValues[2].toInt()), receivedAt)
     }
-    EG_LONG_YMD.find(body)?.let { m -> return iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()).takeIf(::isValidIsoDate) }
-    EG_LONG_DMY.find(body)?.let { m -> return iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()).takeIf(::isValidIsoDate) }
+    EG_LONG_YMD.find(body)?.let { m -> return notFuture(iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()), receivedAt) }
+    EG_LONG_DMY.find(body)?.let { m -> return notFuture(iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()), receivedAt) }
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
     if (!hasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null

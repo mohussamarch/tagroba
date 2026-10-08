@@ -123,10 +123,10 @@ internal object SaudiSpecs {
         // ── الفرنسي ──
         77 to out(party = NAME_DIGITS),
         78 to inn(party = NAME_DIGITS),
-        // ── دي 360: المبلغ بالريال بين قوسين جنب الأجنبي ⇒ ده المبلغ ──
-        79 to out(merchant = true, values = FOREIGN_TRIP),
+        // ── دي 360: المبلغ بالريال بين قوسين جنب الأجنبي ⇒ اقتراح بس، الرسالة تستنى (قرار المالك §75-12 ✗ على «يتسجل لو المحلي مكتوب») ──
+        79 to out(merchant = true, foreign = true, amountKey = "foreignAmount", localKey = "amount", values = FOREIGN_TRIP),
         80 to out(merchant = true),
-        81 to out(values = FOREIGN_TRIP, kind = CASH_WITHDRAWAL),
+        81 to out(foreign = true, amountKey = "foreignAmount", localKey = "amount", values = FOREIGN_TRIP, kind = CASH_WITHDRAWAL),
         82 to inn(party = listOf("cpAcct")),
         83 to inn(party = listOf(NAME)),
         84 to out(party = NAME_DIGITS),
@@ -170,8 +170,8 @@ internal object SaudiSpecs {
         116 to out(merchant = true),
         117 to out(merchant = true),
         118 to out(merchant = true),
-        // مبلغ أجنبي و(مقابله بالريال) + رسوم وضريبة ⇒ المخصوم الحقيقي «إجمالي المبلغ المستحق»
-        119 to out(merchant = true, amountKey = "total", values = FOREIGN_TRIP + ("total" to "93.25")),
+        // مبلغ أجنبي و(مقابله بالريال) + رسوم وضريبة ⇒ تستنى (§75-12)، واقتراح المبلغ المحلي = المخصوم الحقيقي «إجمالي المبلغ المستحق»
+        119 to out(merchant = true, foreign = true, amountKey = "foreignAmount", localKey = "total", values = FOREIGN_TRIP + ("total" to "93.25")),
         // تراكم كاش باك في «محفظة الاسترجاع النقدي» — اتحسب داخل (نوع السطر cashback)، وده محل نقاش
         120 to inn(),
         121 to inn(),

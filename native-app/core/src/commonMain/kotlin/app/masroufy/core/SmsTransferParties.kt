@@ -60,7 +60,12 @@ private val ACCOUNT_IN = Regex("^$H*(?:من$H*حساب|آيبان|الأيبان
 private val EG_WALLET_FROM = Regex("من$H*رقم$H*([0-9*•]{4,})(?:$H*المسجل$H*ب[إا]سم$H*(.+?)(?=$H*(?:على$H*رقم|[.\\n]|$)))?")
 private val EG_WALLET_TO = Regex("لرقم$H*([0-9*•]{4,})")
 private val EN_FROM_DIGITS = Regex("${B}from$H+([0-9*•]{4,})", EI)
-private val EN_FROM_NAME = Regex("${B}from$H+(?!your$B)([A-Za-z][A-Za-z .'*-]*?)$H*\\.(?:$H|$)", EI)
+/**
+ * «from NADIA M. EXAMPLE. Ref: …» — الاسم كلمات، والحرف لوحده بعده نقطة اختصار (initial) مش آخر الجملة (الجولة التانية من المراجعة:
+ * كان بيتقص «NADIA M» فناس مختلفين بنفس الاسم الأول والحرف بيبقى ليهم نفس الطرف).
+ */
+private const val EN_WORD = "(?:[A-Za-z]\\.(?=$H)|[A-Za-z][A-Za-z'*-]*)"
+private val EN_FROM_NAME = Regex("${B}from$H+(?!your$B)($EN_WORD(?:$H+$EN_WORD)*)$H*\\.(?:$H|$)", EI)
 private val AR_FROM_NAME = Regex(
     "(?<![\\u0600-\\u06FF])من$H+(?!رقم|حساب|بطاقة|جهة)([^\\n]+?)$H+(?:رقم$H*مرجعي|برقم$H*مرجعي|عبر$H*شبكة|$TO$H*حساب|مرجع|تحويل$H*لحظي)",
 )

@@ -119,7 +119,10 @@ class EgyptSmsFormatsTest {
         for (c in cases) checkCase(c, ::parseEgyptBankSms, Currency.EGP)
     }
 
-    /** §75-12: دولار أو يورو من غير مبلغ بالجنيه ⇒ ترفض «مش جنيه» ومعاها كل اللي اتقري. الريال = رسالة سعودية (من غير «مستنية»). */
+    /**
+     * §75-12 (قرار المالك: يتسجل ويسأل عن المبلغ المحلي): دولار أو يورو ⇒ ترفض «مش جنيه» ومعاها كل اللي اتقري (ما بتتسجلش لوحدها).
+     * الريال من غير جنيه في الرسالة = رسالة سعودية (من غير «مستنية»).
+     */
     @Test fun foreignCurrencyWaitsForTheLocalAmount() {
         val usd = assertIs<SmsParseResult.Rejected>(
             parseEgyptBankSms(smsMessage("A Trx using Card XXXX6604 from $m for USD 14.90 on 05/03/2026 at 09:10 GMT+2. Available balance is EGP 4,100.00."), 1),

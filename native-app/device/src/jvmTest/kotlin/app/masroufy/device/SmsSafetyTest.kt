@@ -109,6 +109,16 @@ class SmsSafetyTest {
         assertTrue(card.contains("2026-03-05"), card)
     }
 
+    // الجولة التانية من المراجعة: «Ref SR2026030512» رقم مرجع لازق في الكود مش مبلغ — بيتقص زي أي رقم طويل (القارئ كان بيقراه
+    // ملياري ريال). المبلغ بمسافة بعد الكود («بـSR 12500») أو بكسور («EGP900.00») لسه ما بيتقصش.
+    @Test fun aCodeGluedToAReferenceNumberIsNotAnAmount() {
+        val ref = SmsSafety.sanitize("Ref SR2026030512\nPurchase\nAmount 64.25\nAt TEST GROCER\n2026-03-05")!!
+        assertFalse(ref.contains("2026030512"), ref)
+        assertTrue(ref.contains("SR••••0512"), ref)
+        assertTrue(SmsSafety.sanitize("شراء PoS\nعبر1111;مدى\nبـSR 12500\nلـTEST STORE\n26/9/18 09:35")!!.contains("بـSR 12500"))
+        assertTrue(SmsSafety.sanitize("تم تحويل EGP900.00 لرقم 01000000123")!!.contains("EGP900.00"))
+    }
+
     // QNB مصر (OVERRIDES §40.3): العملة EGP والرسالة إنجليزي
     @Test fun keepsQnbEgyptMessages() {
         val sent = SmsSafety.sanitize("IPN transfer sent with amount of EGP 300.00 from 1234 on 30/07 at 05:48 AM. Ref# aaaa1111.")

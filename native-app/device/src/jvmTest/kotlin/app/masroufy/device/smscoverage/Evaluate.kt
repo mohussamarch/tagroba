@@ -35,10 +35,11 @@ internal object Evaluate {
     private val DELIBERATE = setOf("offer", "otp/sensitive", "declined", "not a transaction")
     private val GARBAGE_KEYS = listOf("acct", "last4", "ownIbanMasked", "acct_tail", "date", "amount", "balance")
 
-    /** العملة الأجنبية لما القالب كاتبها بالحرف (البنك العربي «for USD {amount}»)؛ لو القالب فيه `{currency}` بتتاخد من القيمة المملية. */
+    /** العملة الأجنبية لما القالب كاتبها بالحرف (البنك العربي «for USD {amount}»)؛ لو القالب فيه `{currency}`/`{ccy}` بتتاخد من القيمة المملية. */
     private const val FOREIGN_CURRENCY = "USD"
 
-    private fun foreignCurrencyOf(v: Variant): String = v.values["currency"]?.takeIf { it != "SAR" && it != "EGP" } ?: FOREIGN_CURRENCY
+    private fun foreignCurrencyOf(v: Variant): String =
+        listOf("currency", "ccy").firstNotNullOfOrNull { k -> v.values[k]?.takeIf { it != "SAR" && it != "EGP" } } ?: FOREIGN_CURRENCY
 
     private fun reasonCode(reason: String): String = REASONS.firstOrNull { uiText(it.first) == reason }?.second ?: reason
 
@@ -116,6 +117,10 @@ internal object Evaluate {
         if (e.dir != Dir.ANY && dir != e.dir) problems += "direction ${dir.name} != expected ${e.dir.name}"
         if (pending.date != Fill.TX_DATE) problems += "date ${pending.date} != expected ${Fill.TX_DATE}"
         if (e.merchant && norm(pending.merchantName) != norm(v.values.getValue("merchant"))) problems += "merchant '${pending.merchantName}'"
+        if (e.kind != null && pending.kind != e.kind) problems += "kind ${pending.kind.wire} != expected ${e.kind.wire}"
+        // المبلغ المحلي المكتوب = اقتراح بس (قرار المالك §75-12)، ومن غير مبلغ محلي مكتوب ⇒ مفيش اقتراح (قاعدة 10)
+        val local = e.localKey?.let { Fill.minor(v.values.getValue(it)) }
+        if (pending.localSuggestion != local) problems += "local suggestion ${pending.localSuggestion} != expected $local"
         return problems
     }
 
@@ -143,23 +148,32 @@ internal object Evaluate {
         }
     }
 
+    /** قارئ البلد التانية قبلها، أو خلاها «مستنية المبلغ المحلي» هي كمان (§75-12) ⇒ هتتسجل أو تتسأل في البلدين. */
+    private fun crossLane(country: String, sender: String, stored: String): String? {
+        val otherCountry = if (country == "SA") "EG" else "SA"
+        return when (val other = reader(otherCountry)(BankSmsMessage(sender, Fill.RECEIVED_AT, stored), 1)) {
+            is SmsParseResult.Ok -> "$otherCountry reader also accepted: ${summary(otherCountry, other.row)}"
+            is SmsParseResult.Rejected -> other.foreign?.let { "$otherCountry reader also keeps it waiting for a local amount: ${it.foreign}" }
+        }
+    }
+
     fun run(country: String, sender: String, v: Variant): VariantResult {
-        val manual = judge(country, v, reader(country)(BankSmsMessage(sender, Fill.RECEIVED_AT, v.body), 1)).first
+        val (manual, _, manualDetail) = judge(country, v, reader(country)(BankSmsMessage(sender, Fill.RECEIVED_AT, v.body), 1))
+        // القراية بطلب المستخدم (من غير فلتر الجهاز) كمان لازم ترفض الرسالة اللي مش عملية **بحارس** مش بالصدفة
+        val manualFragile = manual == Outcome.CORRECTLY_IGNORED && manualDetail !in DELIBERATE
         val stored = SmsSafety.sanitize(v.body)
         if (stored == null) {
             val why = safetyWhy(v.body)
             return if (v.expect.tx) {
                 VariantResult(v, Outcome.REJECTED, listOf("dropped by SmsSafety before the parser ($why)"), "SmsSafety: $why", manual, null, false)
             } else {
-                VariantResult(v, Outcome.CORRECTLY_IGNORED, emptyList(), "SmsSafety: $why", manual, null, !why.startsWith("guard"))
+                VariantResult(v, Outcome.CORRECTLY_IGNORED, emptyList(), "SmsSafety: $why", manual, null, !why.startsWith("guard") || manualFragile)
             }
         }
         val parsed = reader(country)(BankSmsMessage(sender, Fill.RECEIVED_AT, stored), 1)
         val (outcome, problems, detail) = judge(country, v, parsed)
-        val otherCountry = if (country == "SA") "EG" else "SA"
-        val cross = (reader(otherCountry)(BankSmsMessage(sender, Fill.RECEIVED_AT, stored), 1) as? SmsParseResult.Ok)
-            ?.let { "$otherCountry reader also accepted: ${summary(otherCountry, it.row)}" }
-        val fragile = outcome == Outcome.CORRECTLY_IGNORED && detail !in DELIBERATE
+        val cross = crossLane(country, sender, stored)
+        val fragile = outcome == Outcome.CORRECTLY_IGNORED && (detail !in DELIBERATE || manualFragile)
         val date = v.values["date"]
         val latent = if (outcome == Outcome.REJECTED && detail == "date unclear" && date != null && date !in v.body) {
             val dated = SmsSafety.sanitize(v.body + "\n" + date + " " + v.values["time"].orEmpty())

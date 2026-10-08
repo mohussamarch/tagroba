@@ -21,7 +21,10 @@ internal const val EG_CURRENCY =
  * الأرقام بس مش الفواصل): من غيرها «١٬٢٥٠» كانت بتتقري 250 في صمت (مراجعة جلسة 33).
  */
 private const val NUM = "(?:\\d[\\d,٬]*(?:[.٫]\\d{1,2})?|[.٫]\\d{1,2})"
-private val EG_CURRENCY_AMOUNT = Regex("$EG_CURRENCY$S*($NUM)|($NUM)$S*$EG_CURRENCY", EI)
+private val EG_CURRENCY_TOKEN = Regex(EG_CURRENCY, EI)
+
+/** فيه جنيه في الرسالة (حتى لو في الرصيد أو حد البطاقة) — علامة إن الرسالة من بنك مصري. */
+internal fun hasEgyptianCurrency(body: String): Boolean = EG_CURRENCY_TOKEN.containsMatchIn(body)
 
 /** الكلام بين المبلغ اللي قبله والمبلغ ده فيه كلمة من دول ⇒ ده رصيد أو رسوم أو حد أو قسط، مش مبلغ العملية. */
 private val NOT_THE_AMOUNT = Regex(
@@ -42,20 +45,32 @@ private fun egp(raw: String): Halalas? {
     return tryParseMoney(if (number.startsWith(".")) "0$number" else number, Currency.EGP)
 }
 
+private fun invalid() = EgyptAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
+
+/**
+ * المبلغ = رقم جنب الجنيه والكلام قبله (من المبلغ اللي قبله) مش رصيد ولا مصاريف ولا قسط. الجولة التانية من المراجعة
+ * (`SmsAmountTokens.kt`): رقم من الناحيتين («debit card 6604 EGP 500.00») ⇒ أكتر من مبلغ · فواصل غلط («64,25» · «1 234.50» ·
+ * «1.234 جم») ⇒ مش صالح · أكبر من [SMS_AMOUNT_CAP_MINOR] ⇒ مش صالح.
+ */
 internal fun egyptAmount(body: String): EgyptAmount {
     WALLET_DEBIT.find(body)?.let { m ->
         val amount = egp(m.groupValues[1])
-        return if (amount == null || amount <= 0) EgyptAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID)) else EgyptAmount.Ok(amount)
+        return if (amount == null || amount <= 0 || amount > SMS_AMOUNT_CAP_MINOR) invalid() else EgyptAmount.Ok(amount)
     }
     val values = LinkedHashSet<Long>()
     for (line in body.split('\n')) {
         var previousEnd = 0
-        for (match in EG_CURRENCY_AMOUNT.findAll(line)) {
-            val context = line.substring(previousEnd, match.range.first)
-            previousEnd = match.range.last + 1
+        for (near in amountsNearCurrency(line, EG_CURRENCY_TOKEN, AmountStyle.EGYPT)) {
+            val context = line.substring(minOf(previousEnd, near.start), near.start)
+            previousEnd = near.end
             if (NOT_THE_AMOUNT.containsMatchIn(context)) continue
-            val amount = egp(match.groups[1]?.value ?: match.groups[2]!!.value)
-            if (amount == null || amount <= 0) return EgyptAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
+            val number = when (near) {
+                is Near.Ambiguous -> return EgyptAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
+                is Near.Malformed -> return invalid()
+                is Near.Value -> near.number
+            }
+            val amount = egp(number)
+            if (amount == null || amount <= 0 || amount > SMS_AMOUNT_CAP_MINOR) return invalid()
             values.add(amount)
         }
     }
@@ -112,7 +127,8 @@ internal fun egyptDirection(body: String): Direction? {
 
 private val REFUND_WORDS = Regex("has$H+been$H+refunded|تم$H*رد|${B}returned$B", EI)
 private val SALARY_WORDS = Regex("جهة$H*العمل|salary|راتب", EI)
-private val CASH_WORDS = Regex("تم$H*سحب|${B}ATM", EI)
+// «ATMOSPHERE LOUNGE» محل مش صرّاف (الجولة التانية) — «NBE ATM0417» (رقم الماكينة لازق) لسه صرّاف
+private val CASH_WORDS = Regex("تم$H*سحب|(?<![A-Za-z])ATM(?![A-Za-z])", EI)
 private val CARD_PAYMENT_WORDS = Regex("تم$H*سداد[^\\n]{0,40}بطاقت", EI)
 private val BILL_WORDS = Regex("تم$H*شحن|recharged", EI)
 private val TRANSFER_WORDS = Regex("تحويل|${B}IPN$B|transfer|لرقم|من$H*رقم|received$H+(?:EGP$H*)?[\\d,.]+$H*(?:EGP$H+)?from", EI)

@@ -34,8 +34,13 @@ enum class SmsKind(val wire: String) {
     OTHER("other"),
 }
 
-/** مبلغ بعملة أجنبية: [currency] كود العملة (USD…)، و[amountMinor] بالوحدة الصغرى بتاعتها (منزلتين — زي `Money.kt`). */
-data class SmsForeignAmount(val currency: String, val amountMinor: Long)
+/**
+ * مبلغ بعملة أجنبية: [currency] كود العملة (USD…)، و[amountMinor] بالوحدة الصغرى **بتاعة العملة دي** حسب ISO 4217
+ * ([decimals]: الدولار 2 · الدينار الكويتي 3 · الين 0) — «KWD 12.345» = 12345، «JPY 4500» = 4500.
+ */
+data class SmsForeignAmount(val currency: String, val amountMinor: Long) {
+    val decimals: Int get() = foreignDecimals(currency)
+}
 
 data class SmsRow(
     val lineNumber: Int,
@@ -48,15 +53,15 @@ data class SmsRow(
     val description: String,
     val raw: String,
     val kind: SmsKind = SmsKind.OTHER,
-    /** العملية كانت بعملة أجنبية والمبلغ المحلي مكتوب في الرسالة (هو [amountMinor]) — للمعلومة بس. */
-    val foreign: SmsForeignAmount? = null,
     /** آخر 4 أرقام حسابك أو كارتك اللي الرسالة عنها (§75-11 — `SmsOwnAccount.kt`)، أو null. */
     val ownLast4: String? = null,
 )
 
 /**
- * عملية بعملة أجنبية **من غير** مبلغ بعملة البلد (قرار §75-12: تتسجل وتسأل عن المبلغ المحلي): كل حاجة اتقرت ما عدا المبلغ المحلي.
- * القارئ ما بيخترعش مبلغ (قاعدة 10) — اللي بعده بيسأل المالك وبعدين يسجّل.
+ * عملية بعملة أجنبية (قرار المالك §75-12: «تتسجل وتسأل عن المبلغ بالعملة المحلية» — ورفض «تتسجل لوحدها لو المبلغ المحلي مكتوب»):
+ * **ما بتتسجلش بأي مبلغ** لحد ما شاشة السؤال تتبني — كل اللي اتقري بيمشي معاها. القارئ ما بيخترعش مبلغ (قاعدة 10).
+ * [localSuggestion] = المبلغ بعملة البلد **المكتوب في الرسالة** (دي 360 «(SAR 87.50)» · «إجمالي المبلغ المستحق») — اقتراح يتعرض
+ * على المالك في السؤال، مش مبلغ متسجل؛ null = مش مكتوب.
  */
 data class SmsForeignPending(
     val date: IsoDate,
@@ -65,6 +70,7 @@ data class SmsForeignPending(
     val merchantName: String,
     val kind: SmsKind,
     val ownLast4: String? = null,
+    val localSuggestion: Halalas? = null,
 )
 
 sealed interface SmsParseResult {
@@ -129,7 +135,7 @@ fun smsRowsJson(rows: List<SmsRow>): String = rows.joinToString(",", "[", "]") {
 /** الصف النهائي — نفس المرجع (`SMS:` + بصمة المرسل والوقت والنص) والوصف المقصوص في القارئين. */
 internal fun smsRow(
     message: BankSmsMessage, body: String, lineNumber: Int, date: IsoDate, amount: Halalas, direction: Direction,
-    merchant: String, kind: SmsKind, foreign: SmsForeignAmount?,
+    merchant: String, kind: SmsKind,
 ): SmsParseResult.Ok {
     val safeBody = redactSms(body)
     return SmsParseResult.Ok(
@@ -137,7 +143,7 @@ internal fun smsRow(
             lineNumber = lineNumber, date = date, amountMinor = amount, direction = direction,
             merchantName = redactSms(merchant),
             reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
-            sourceName = message.sender, description = safeBody, raw = safeBody, kind = kind, foreign = foreign,
+            sourceName = message.sender, description = safeBody, raw = safeBody, kind = kind,
             ownLast4 = ownLast4Of(body, direction),
         ),
     )

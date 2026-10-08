@@ -82,7 +82,10 @@ internal object Report {
         appendLine("without SAMA titles: ${counts(rows.filterNot { it.isTitle })}")
         appendLine("SAMA titles only:    ${counts(rows.filter { it.isTitle })}")
         val pending = rows.count { r -> r.outcome == Outcome.CORRECT && r.variants.any { it.detail.startsWith("foreign pending") } }
-        appendLine("of the correct rows, $pending are foreign-currency-only and wait for the local amount (§75-12 — rejected WITH the parsed details)")
+        appendLine(
+            "of the correct rows, $pending are foreign-currency and wait for the local amount (owner decision §75-12 — never recorded " +
+                "automatically, rejected WITH the parsed details; a printed local amount is only a suggestion)",
+        )
         appendLine()
         for ((bank, list) in rows.groupBy { it.file.substringBefore('-') + " · " + it.bank }) {
             val right = list.count { it.outcome == Outcome.CORRECT || it.outcome == Outcome.CORRECTLY_IGNORED }

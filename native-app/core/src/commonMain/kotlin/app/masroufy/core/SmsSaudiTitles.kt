@@ -30,8 +30,8 @@ private class TitleRule(pattern: String, val title: SmsTitle) {
 
 private fun rule(pattern: String, direction: Direction, kind: SmsKind) = TitleRule(pattern, SmsTitle(direction, kind))
 
-/** «شراء واسترداد» مش عنوان شراء (ملف المرجع: الاتجاه مش واضح). */
-private const val NO_REFUND_AFTER = "(?![^\\n]*(?:استرداد|استرجاع|مرتجع|إرجاع|ارجاع|عكس|Reversal|Refund))"
+/** «شراء واسترداد» مش عنوان شراء (ملف المرجع: الاتجاه مش واضح). «Purchase … was reversed» كمان (الجولة التانية من المراجعة). */
+private const val NO_REFUND_AFTER = "(?![^\\n]*(?:استرداد|استرجاع|مرتجع|إرجاع|ارجاع|عكس|Revers|Refund))"
 private const val DEPOSIT = "(?:إيداع|ايداع)"
 
 /** الكلمة خلصت («دفع» مش «دفعة»، «خصم» مش «خصومات»). */
