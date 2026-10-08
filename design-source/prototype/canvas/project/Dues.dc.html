@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المستحقات — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}
+.d-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.d-press:active{transform:scale(.97)}
+.d-skel{animation:d-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes d-pulse{from{opacity:.5}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.d-press{transition:none}.d-press:active{transform:none}.d-skel{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; gap: 10px"><div class="d-skel" style="flex: 1; height: 120px; border-radius: 22px; background: rgba(25,61,51,0.07)"></div><div class="d-skel" style="flex: 1; height: 120px; border-radius: 22px; background: rgba(25,61,51,0.07)"></div></div>
+      <div class="d-skel" style="height: 280px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 8px; text-align: center">
+      <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+      <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+      <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; gap: 10px">
+        <a href="OwedToYou.dc.html" class="d-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="font-size: 14px; font-weight: 700">{{lakTitle}}</span>
+          <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{lakTotal}}</span>
+          <sc-for list="{{lakLines}}" as="l" hint-placeholder-count="2">
+            <span style="display: flex; justify-content: space-between; font-size: 11px; color: #637570"><span>{{l.label}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{l.amount}}</span></span>
+          </sc-for>
+        </a>
+        <a href="YouOwe.dc.html" class="d-press" style="flex: 1 1 0; min-width: 0; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="font-size: 14px; font-weight: 700">عليك</span>
+          <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{alekTotal}}</span>
+          <sc-for list="{{alekLines}}" as="l" hint-placeholder-count="2">
+            <span style="display: flex; justify-content: space-between; font-size: 11px; color: #637570"><span>{{l.label}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{l.amount}}</span></span>
+          </sc-for>
+        </a>
+      </div>
+      <span style="font-size: 12px; color: #637570; text-align: center">{{noNetting}}</span>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 18px; background: #DCEBD6; font-size: 13px">
+        <span style="font-weight: 700">{{monthLabel}}</span>
+        <span>{{monthLine}}</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{listTitle}}</h2>
+        <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{items}}" as="it" hint-placeholder-count="5">
+            <a href="{{it.href}}" class="d-press" style="{{it.rowStyle}}">
+              <span style="{{it.tile}}">
+                <sc-if value="{{it.i.debt}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"></path><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"></path><path d="m2 16 6 6"></path><circle cx="16" cy="9" r="2.9"></circle><circle cx="6" cy="5" r="3"></circle></svg></sc-if>
+                <sc-if value="{{it.i.sub}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 16h5v5"></path></svg></sc-if>
+                <sc-if value="{{it.i.inst}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path></svg></sc-if>
+                <sc-if value="{{it.i.rosca}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="m16.71 13.88.7.71-2.82 2.82"></path></svg></sc-if>
+              </span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 14px; font-weight: 700">{{it.name}}</span>
+                <span style="font-size: 12px; color: #637570">{{it.sub}}</span>
+                <span style="{{it.chipStyle}}">{{it.chip}}</span>
+              </span>
+              <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+                <span dir="ltr" style="{{it.amountStyle}}">{{it.amount}}</span>
+                <span style="font-size: 11px; color: #637570">{{it.dir}}</span>
+              </span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+          <a href="{{t.href}}" class="d-press" style="min-height: 84px; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <span style="font-size: 20px; font-weight: 700; color: #08634F">{{t.count}}</span>
+            <span style="font-size: 14px; font-weight: 700">{{t.label}}</span>
+          </a>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #637570">{{financing}}</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":1020}}'>
+class Component extends DCLogic {
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    // مخترعة. اليوم = ٧ أكتوبر. «لك» و«عليك» كل واحد لوحده (§67، بلا مقاصة)
+    const lak = [[eg ? 'ديون ليك' : 'ديون لك', 218500], [eg ? 'متحوّش في الجمعيات' : 'مدّخر في الجمعيات', 400000]];
+    const alek = [['ديون عليك', 245000], [eg ? 'أقساط باقية' : 'أقساط متبقية', 3580000]];
+    const sum = (xs) => xs.reduce((s, x) => s + x[1] * k, 0);
+    const line = ([label, v]) => ({ label, amount: this.fmt(v * k) });
+    const C = {
+      late: { label: eg ? 'متأخر' : 'متأخر', color: '#BE3D48', bg: 'rgba(190,61,72,0.10)' },
+      soon: { label: eg ? 'قرّب' : 'قريب', color: '#956000', bg: '#FBF0DD' },
+      next: { label: eg ? 'جاي' : 'قادم', color: '#08634F', bg: '#DCEBD6' }
+    };
+    const T = { debt: '#2469BA', sub: '#A55060', inst: '#4D747C', rosca: '#27785B' };
+    const rows = [
+      ['debt', eg ? 'سلفة فهد' : 'سلفة فهد', eg ? 'ميعادها كان ٢٠ سبتمبر · من ١٧ يوم' : 'موعدها ٢٠ سبتمبر · منذ ١٧ يومًا', 120000, 'in', 'late', 'OwedToYou.dc.html'],
+      ['sub', eg ? 'اشتراك الجيم' : 'اشتراك النادي الرياضي', eg ? '٩ أكتوبر · بعد يومين' : '٩ أكتوبر · بعد يومين', 19900, 'out', 'soon', 'Subscriptions.dc.html'],
+      ['inst', 'قسط السيارة', eg ? '٢٧ أكتوبر · القسط ١٣ من ٣٦' : '٢٧ أكتوبر · القسط ١٣ من ٣٦', 145000, 'out', 'next', 'Installments.dc.html'],
+      ['rosca', eg ? 'جمعية العيلة' : 'جمعية العائلة', eg ? '١ نوفمبر · دورك في مارس' : '١ نوفمبر · دورك في مارس', 100000, 'out', 'next', 'Roscas.dc.html'],
+      ['debt', eg ? 'سلفة عمر' : 'سلفة عمر', '١ نوفمبر', 200000, 'out', 'next', 'YouOwe.dc.html']
+    ];
+    const items = rows.map(([kind, name, sub, v, dir, s, href], i) => ({
+      name, sub, href, i: { [kind]: true },
+      chip: C[s].label,
+      chipStyle: 'align-self: flex-start; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 12px; color: ' + C[s].color + '; background: ' + C[s].bg,
+      amount: this.fmt(v * k),
+      amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (dir === 'in' ? '#13764D' : '#BE3D48'),
+      dir: dir === 'in' ? (eg ? 'هتستلم' : 'ستستلم') : (eg ? 'هتدفع' : 'ستدفع'),
+      tile: 'width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); color: ' + T[kind] + '; background: ' + T[kind] + '1F',
+      rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 12px 0; text-decoration: none; color: #193D33;' + (i === rows.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+    }));
+    const pay = rows.filter((r) => r[4] === 'out' && r[2].indexOf('أكتوبر') >= 0).reduce((s, r) => s + r[3] * k, 0);
+    const get = rows.filter((r) => r[4] === 'in').reduce((s, r) => s + r[3] * k, 0);
+    return {
+      isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', showMain: st !== 'بيحمّل' && st !== 'فاضي',
+      emptyTitle: eg ? 'مفيش مستحقات' : 'لا توجد مستحقات',
+      emptyBody: eg ? 'الديون والجمعيات والأقساط والاشتراكات هتظهر هنا.' : 'تظهر هنا الديون والجمعيات والأقساط والاشتراكات.',
+      lakTitle: eg ? 'ليك' : 'لك',
+      lakTotal: this.fmt(sum(lak)) + ' ' + cur, alekTotal: this.fmt(sum(alek)) + ' ' + cur,
+      lakLines: lak.map(line), alekLines: alek.map(line),
+      noNetting: eg ? 'كل رقم لوحده — مفيش خصم «ليك» من «عليك»' : 'كل رقم مستقل — بلا مقاصة بين «لك» و«عليك»',
+      monthLabel: 'أكتوبر',
+      monthLine: (eg ? 'هتدفع ' : 'ستدفع ') + this.fmt(pay) + ' · ' + (eg ? 'هتستلم ' : 'ستستلم ') + this.fmt(get),
+      listTitle: eg ? 'بالترتيب' : 'حسب الموعد',
+      items,
+      tiles: [
+        { label: 'الجمعيات', count: n(2), href: 'Roscas.dc.html' },
+        { label: 'الأقساط', count: n(2), href: 'Installments.dc.html' },
+        { label: 'الاشتراكات', count: n(4), href: 'Subscriptions.dc.html' }
+      ],
+      financing: (eg ? 'أرباح تمويل السيارة ' : 'أرباح تمويل السيارة ') + this.fmt(360000 * k) + ' ' + cur + (eg ? ' — معلومة بس، القسط كله محسوب مصروف.' : ' — للعلم فقط، والقسط كله محسوب مصروفًا.')
+    };
+  }
+}
+</script>
+</body>
+</html>

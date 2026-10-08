@@ -46,6 +46,15 @@ body{margin:0}
   <sc-if value="{{s.YouOwe}}" hint-placeholder-val="{{ false }}">
     <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="YouOwe" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
+  <sc-if value="{{s.Roscas}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Roscas" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.Installments}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Installments" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.Subscriptions}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Subscriptions" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
@@ -55,7 +64,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.TABS = ['Main', 'Operations', 'People', 'Investment', 'More'];
-    this.SCREENS = this.TABS.concat(['PersonProfile', 'OwedToYou', 'YouOwe']);
+    this.SCREENS = this.TABS.concat(['PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions']);
     this.state = { screen: 'Main', stack: [], anim: 'a-tab', n: 0 };
     this.onClick = (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;

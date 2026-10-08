@@ -123,11 +123,11 @@ a{color:#08634F}a:hover{color:#064B40}
       </div>
     </sc-if>
 
-    <sc-if value="{{onOther}}" hint-placeholder-val="{{ false }}">
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 16px; border-radius: 22px; border: 1.5px dashed rgba(8,99,79,0.30); text-align: center">
-        <span style="font-size: 14px; font-weight: 700">{{otherTitle}}</span>
-        <span style="font-size: 13px; color: #637570">هذا القسم يُرسم في خطوته من الخطة.</span>
-      </div>
+    <sc-if value="{{onBudgets}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Budgets" state="{{stateName}}" space="{{spaceName}}" hint-size="350px,980px"></dc-import>
+    </sc-if>
+    <sc-if value="{{onDues}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Dues" state="{{stateName}}" space="{{spaceName}}" hint-size="350px,1020px"></dc-import>
     </sc-if>
   </div>
 
@@ -166,7 +166,9 @@ a{color:#08634F}a:hover{color:#064B40}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { tab: 'ops', menu: null };
+    let tab = 'ops';
+    try { tab = window.sessionStorage.getItem('masroufy-ops-tab') || 'ops'; } catch (e) {}
+    this.state = { tab, menu: null };
     this.setRoot = (el) => { this.root = el; };
     this.hold = null;
   }
@@ -220,7 +222,7 @@ class Component extends DCLogic {
       const on = this.state.tab === id;
       return {
         label, selected: on ? 'true' : 'false',
-        pick: () => this.setState({ tab: id }),
+        pick: () => { try { window.sessionStorage.setItem('masroufy-ops-tab', id); } catch (err) {} this.setState({ tab: id }); },
         style: 'flex: 1 1 0; height: 40px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on
           ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)'
           : 'color: #637570; background: transparent')
@@ -251,8 +253,9 @@ class Component extends DCLogic {
       spaceName: (this.props.space ?? "السعودية") === "مصر" ? "مصر" : "السعودية",
       tabs,
       onOps: this.state.tab === 'ops',
-      onOther: this.state.tab !== 'ops',
-      otherTitle: this.state.tab === 'budgets' ? 'الميزانيات' : 'المستحقات',
+      onBudgets: this.state.tab === 'budgets',
+      onDues: this.state.tab === 'dues',
+      stateName: st,
       isError: st === 'خطأ', isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isNA: st === 'غير متاح',
       hasNumbers: st !== 'غير متاح',
       showList: list,

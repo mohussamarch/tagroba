@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الميزانيات — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.g-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.g-press:active{transform:scale(.97)}
+.g-fill{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+.g-veil{animation:g-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.g-sheet{animation:g-up 450ms cubic-bezier(.2,.7,.3,1) both}
+.g-skel{animation:g-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes g-fade{from{opacity:0}to{opacity:1}}
+@keyframes g-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes g-pulse{from{opacity:.5}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.g-press,.g-fill{transition:none}.g-press:active{transform:none}.g-sheet{animation:g-fade 150ms both}.g-skel{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 14px">
+      <div class="g-skel" style="height: 168px; border-radius: 22px; background: rgba(25,61,51,0.07)"></div>
+      <div class="g-skel" style="height: 240px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+
+      <sc-if value="{{hasTotal}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="g-press" onClick="{{editTotal}}" style="border: 0; width: 100%; text-align: right; font: inherit; color: inherit; cursor: pointer; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-size: 14px; font-weight: 700">{{totalTitle}}</span>
+            <span style="{{totalChipStyle}}">{{totalChip}}</span>
+          </span>
+          <sc-if value="{{isNA}}" hint-placeholder-val="{{ false }}">
+            <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 22px; font-weight: 700; color: #637570">غير متاح</span><span style="font-size: 12px; color: #637570">{{naReason}}</span></span>
+          </sc-if>
+          <sc-if value="{{hasSpent}}" hint-placeholder-val="{{ true }}">
+            <span style="display: flex; flex-direction: column; gap: 8px">
+              <span dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums">
+                <span style="font-size: 14px; color: #637570">/ {{limitText}} {{currency}}</span>
+                <span style="font-size: 28px; font-weight: 700">{{spentText}}</span>
+              </span>
+              <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="g-fill" style="{{totalBar}}"></span></span>
+              <span style="display: flex; justify-content: space-between; font-size: 12px; color: #637570"><span>{{leftLine}}</span><span>{{dailyLine}}</span></span>
+            </span>
+          </sc-if>
+        </button>
+      </sc-if>
+
+      <sc-if value="{{noTotal}}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="font-size: 14px; font-weight: 700">{{noTotalTitle}}</span>
+          <span style="font-size: 13px; color: #637570">{{noTotalBody}}</span>
+          <div style="display: flex; gap: 8px">
+            <button type="button" class="g-press" onClick="{{editTotal}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">حدّد سقفًا</button>
+            <button type="button" class="g-press" onClick="{{copyLast}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.2)">{{copyLabel}}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="font-size: 12px; color: #637570">{{avgLabel}}</span>
+          <span dir="ltr" style="text-align: right; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums">{{avgText}}</span>
+          <span style="font-size: 11px; color: #637570">معلومة، وليست سقفًا</span>
+        </div>
+        <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: #FBF0DD">
+          <span style="font-size: 12px; color: #956000; font-weight: 700">{{anomalyLabel}}</span>
+          <span style="font-size: 13px; color: #6B4600">{{anomalyText}}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{catsTitle}}</h2>
+        <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
+            <button type="button" class="g-press" onClick="{{c.edit}}" style="{{c.rowStyle}}">
+              <span style="display: flex; align-items: center; gap: 10px">
+                <span style="{{c.dot}}"></span>
+                <span style="flex: 1 1 auto; font-size: 14px; font-weight: 700">{{c.name}}</span>
+                <span dir="ltr" style="{{c.numStyle}}">{{c.nums}}</span>
+              </span>
+              <sc-if value="{{c.hasLimit}}" hint-placeholder-val="{{ true }}">
+                <span style="height: 6px; border-radius: 3px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="g-fill" style="{{c.bar}}"></span></span>
+              </sc-if>
+              <span style="{{c.noteStyle}}">{{c.note}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{upTitle}}</h2>
+        <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{ups}}" as="u" hint-placeholder-count="2">
+            <div style="{{u.rowStyle}}">
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+                <span style="font-size: 14px; font-weight: 700">{{u.name}}</span>
+                <span style="font-size: 12px; color: #637570">{{u.when}}</span>
+              </span>
+              <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+                <span dir="ltr" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{u.amount}}</span>
+                <button type="button" class="g-press" onClick="{{u.toggle}}" aria-pressed="{{u.on}}" style="{{u.btnStyle}}">{{u.btn}}</button>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+        <span style="{{leftoverStyle}}">{{leftoverLine}}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="g-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.16); backdrop-filter: blur(8px) saturate(0.88); -webkit-backdrop-filter: blur(8px) saturate(0.88)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="g-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 32px 32px 0 0; padding: 10px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 -14px 40px rgba(29,54,53,0.16)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(99,117,112,0.35)"></span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{sheetTitle}}</h2>
+        <span style="font-size: 13px; color: #637570">{{sheetSpent}}</span>
+        <label for="g-limit" style="font-size: 13px; font-weight: 700">السقف الشهري</label>
+        <div style="display: flex; align-items: center; height: 56px; border-radius: 18px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <input id="g-limit" type="text" inputmode="decimal" dir="ltr" value="{{limitInput}}" onChange="{{typeLimit}}" placeholder="0" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 24px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+          <span style="font-size: 14px; color: #637570">{{currency}}</span>
+        </div>
+        <span style="font-size: 13px; font-weight: 700">نبّهني عند</span>
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{thresholds}}" as="t" hint-placeholder-count="3">
+            <button type="button" class="g-press" aria-pressed="{{t.on}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+          </sc-for>
+        </div>
+        <span style="{{sheetErrStyle}}">{{sheetErr}}</span>
+        <div style="display: flex; gap: 10px">
+          <button type="button" class="g-press" onClick="{{saveLimit}}" style="flex: 2 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">احفظ</button>
+          <button type="button" class="g-press" onClick="{{clearLimit}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #BE3D48; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(190,61,72,0.25)">بلا سقف</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // السقوف بالوحدة الصغرى؛ null = بلا سقف. «فاضي» = مفيش ولا سقف (الحالة دي بتبدأ فاضية)
+    this.state = { limits: null, reserved: { car: false, wedding: true }, sheet: null, limitInput: '', threshold: 80, err: '' };
+  }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  k() { return this.eg() ? 3 : 1; }
+  base() {
+    const empty = (this.props.state ?? 'عادي') === 'فاضي';
+    return this.state.limits || (empty
+      ? { total: null, food: null, shop: null, car: null, gift: null }
+      : this.defaults());
+  }
+  defaults() { const k = this.k(); return { total: 800000 * k, food: 120000 * k, shop: 200000 * k, car: 80000 * k, gift: null }; }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  toMinor(text) {
+    const t = String(text || '').replace(/[^0-9.]/g, '');
+    if (!t) return null;
+    const [w, f = ''] = t.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = this.eg(), k = this.k(), cur = eg ? 'ج.م' : 'ر.س';
+    const L = this.base();
+    const lim = (x) => x; // السقوف متخزنة بعملة المساحة الشغالة
+    const spent = { food: 96000 * k, shop: 214000 * k, car: 31000 * k, gift: 45000 * k };
+    const totalSpent = 665000 * k;
+    const na = st === 'غير متاح';
+    const total = lim(L.total);
+    const pct = total ? Math.min(100, Math.floor((totalSpent * 100) / total)) : 0;
+    const over = total != null && totalSpent > total;
+    const left = total != null ? total - totalSpent : null;
+    const DAYS = 21;
+    const daily = left != null && left > 0 ? Math.floor(left / DAYS) : 0;
+    const catDefs = [
+      ['food', eg ? 'أكل وقهوة' : 'مطاعم وقهوة', '#A36A21'],
+      ['shop', 'بقالة وسوبرماركت', '#3866A7'],
+      ['car', 'مواصلات', '#4D747C'],
+      ['gift', 'هدايا', '#A55060']
+    ];
+    const cats = catDefs.map(([id, name, color], i) => {
+      const l = lim(L[id]), s = spent[id];
+      const p = l ? Math.floor((s * 100) / l) : 0;
+      const isOver = l != null && s > l;
+      return {
+        name, hasLimit: l != null,
+        nums: na ? 'غير متاح' : l != null ? this.fmt(s) + ' / ' + this.fmt(l) : this.fmt(s),
+        numStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : isOver ? '#BE3D48' : '#193D33'),
+        dot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + color,
+        bar: 'display: block; height: 6px; border-radius: 3px; width: ' + Math.min(100, p) + '%; background: ' + (isOver ? '#BE3D48' : color),
+        note: l == null ? (eg ? 'من غير سقف · دوس تحدّد سقف' : 'بلا سقف · اضغط لتحديد سقف') : isOver ? (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(s - l) : (eg ? 'فاضل ' : 'بقي ') + this.fmt(l - s) + ' · ' + p.toLocaleString('ar-EG') + '٪',
+        noteStyle: 'font-size: 12px; text-align: right; color: ' + (isOver ? '#BE3D48' : l == null ? '#08634F' : '#637570') + (l == null ? '; font-weight: 700' : ''),
+        rowStyle: 'width: 100%; border: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; padding: 12px 0; display: flex; flex-direction: column; gap: 6px;' + (i === catDefs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        edit: () => this.open(id, name)
+      };
+    });
+    const R = this.state.reserved;
+    const upDefs = [
+      ['car', 'قسط السيارة', eg ? '٢٧ أكتوبر · بعد ٢٠ يوم' : '٢٧ أكتوبر · بعد ٢٠ يومًا', 145000],
+      ['wedding', 'هدية زواج خالد', eg ? '١٨ أكتوبر · حدث' : '١٨ أكتوبر · حدث', 50000]
+    ];
+    const ups = upDefs.map(([id, name, when, amt], i) => {
+      const on = !!R[id];
+      return {
+        name, when, amount: this.fmt(amt * k) + ' ' + cur, on: on ? 'true' : 'false',
+        btn: on ? (eg ? 'محجوز ✓ · شيله' : 'محجوز ✓ · إلغاء') : (eg ? 'احسبه من فلوسي' : 'احسبه من فلوسي'),
+        btnStyle: 'height: 32px; border: 0; padding: 0 12px; border-radius: 16px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #13764D; background: #DCEBD6' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
+        rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 12px 0;' + (i === upDefs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        toggle: () => this.setState((s) => ({ reserved: Object.assign({}, s.reserved, { [id]: !s.reserved[id] }) }))
+      };
+    });
+    const reservedSum = upDefs.reduce((s, u) => s + (R[u[0]] ? u[3] * k : 0), 0);
+    const leftover = left != null ? left - reservedSum : null;
+    const key = this.state.sheet;
+    const sheetCat = key && key !== 'total' ? catDefs.find((c) => c[0] === key) : null;
+    return {
+      currency: cur,
+      isLoading: st === 'بيحمّل', showMain: st !== 'بيحمّل', isNA: na, hasSpent: !na,
+      hasTotal: total != null, noTotal: total == null,
+      totalTitle: eg ? 'سقف أكتوبر' : 'سقف أكتوبر',
+      totalChip: na ? 'غير متاح' : over ? (eg ? 'عدّيت السقف' : 'تجاوزت السقف') : pct >= 80 ? (eg ? 'قرّبت من السقف' : 'اقتربت من السقف') : (eg ? 'ماشي كويس' : 'ضمن الحد'),
+      totalChipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; ' + (na ? 'color: #637570; background: rgba(99,117,112,0.1)' : over ? 'color: #BE3D48; background: rgba(190,61,72,0.10)' : pct >= 80 ? 'color: #956000; background: #FBF0DD' : 'color: #13764D; background: #DCEBD6'),
+      naReason: eg ? 'كل عمليات الشهر من غير تصنيف، فمش هنعرف المصروف.' : 'كل عمليات الشهر بلا تصنيف، فلا يمكن معرفة المصروف.',
+      spentText: this.fmt(totalSpent), limitText: total != null ? this.fmt(total) : '',
+      pct: String(pct),
+      totalBar: 'display: block; height: 8px; border-radius: 4px; width: ' + pct + '%; background: ' + (over ? '#BE3D48' : pct >= 80 ? '#956000' : '#08634F'),
+      leftLine: left == null ? '' : left >= 0 ? (eg ? 'فاضل ' : 'بقي ') + this.fmt(left) + ' ' + cur : (eg ? 'زيادة ' : 'تجاوز ') + this.fmt(left) + ' ' + cur,
+      dailyLine: daily > 0 ? (eg ? 'حوالي ' : 'نحو ') + this.fmt(daily) + (eg ? ' في اليوم لحد المرتب' : ' يوميًا حتى الراتب') : '',
+      noTotalTitle: eg ? 'ما حدّدتش سقف لأكتوبر' : 'لم تحدّد سقفًا لأكتوبر',
+      noTotalBody: eg ? 'المصروف بيتحسب برضه. السقف بيخليك تعرف فاضلك كام في اليوم.' : 'المصروف يُحسب على أي حال. السقف يوضّح لك المتاح يوميًا.',
+      copyLabel: eg ? 'انسخ سقوف سبتمبر' : 'انسخ سقوف سبتمبر',
+      copyLast: () => this.setState({ limits: this.defaults() }),
+      editTotal: () => this.open('total', eg ? 'سقف الشهر كله' : 'سقف الشهر كله'),
+      avgLabel: eg ? 'متوسط آخر ٦ شهور' : 'متوسط آخر ٦ أشهر',
+      avgText: this.fmt(720000 * k) + ' ' + cur,
+      anomalyLabel: eg ? 'صرف مش معتاد' : 'صرف غير معتاد',
+      anomalyText: eg ? 'البقالة أعلى من متوسطك بـ ٣٥٪ الشهر ده.' : 'البقالة أعلى من متوسطك بـ ٣٥٪ هذا الشهر.',
+      catsTitle: eg ? 'التصنيفات' : 'التصنيفات',
+      cats,
+      upTitle: eg ? 'مواعيد جاية' : 'مواعيد قادمة',
+      ups,
+      leftoverLine: leftover == null ? '' : (eg ? 'فاضلك تقريبًا لآخر الشهر بعد المحجوز: ' : 'المتبقي تقريبًا لآخر الشهر بعد المحجوز: ') + (leftover < 0 ? '−' : '') + this.fmt(leftover) + ' ' + cur,
+      leftoverStyle: 'font-size: 13px; font-weight: 700; color: ' + (leftover != null && leftover < 0 ? '#BE3D48' : '#08634F'),
+
+      sheetOpen: !!key,
+      closeSheet: () => this.setState({ sheet: null, err: '' }),
+      sheetTitle: key === 'total' ? (eg ? 'سقف الشهر كله' : 'سقف الشهر كله') : sheetCat ? (eg ? 'سقف ' : 'سقف ') + sheetCat[1] : '',
+      sheetSpent: key ? (eg ? 'صرفت لحد دلوقتي ' : 'المصروف حتى الآن ') + this.fmt(key === 'total' ? totalSpent : spent[key]) + ' ' + cur : '',
+      limitInput: this.state.limitInput,
+      typeLimit: (e) => this.setState({ limitInput: e.target.value, err: '' }),
+      thresholds: [70, 80, 90].map((v) => ({ label: v.toLocaleString('ar-EG') + '٪', on: this.state.threshold === v ? 'true' : 'false', pick: () => this.setState({ threshold: v }),
+        style: 'flex: 1 1 0; height: 40px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (this.state.threshold === v ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') })),
+      sheetErr: this.state.err,
+      sheetErrStyle: 'font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px',
+      saveLimit: () => {
+        const v = this.toMinor(this.state.limitInput);
+        if (v == null || v <= 0) { this.setState({ err: eg ? 'اكتب مبلغ أكبر من صفر.' : 'اكتب مبلغًا أكبر من صفر.' }); return; }
+        const next = Object.assign({}, this.base(), { [key]: v });
+        this.setState({ limits: next, sheet: null, err: '' });
+      },
+      clearLimit: () => this.setState({ limits: Object.assign({}, this.base(), { [key]: null }), sheet: null, err: '' })
+    };
+  }
+  open(id, name) {
+    const cur = this.base()[id];
+    this.setState({ sheet: id, limitInput: cur != null ? this.fmt(cur).replace(/,/g, '') : '', err: '' });
+  }
+}
+</script>
+</body>
+</html>

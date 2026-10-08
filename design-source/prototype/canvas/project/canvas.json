@@ -89,6 +89,46 @@
       "w": 390,
       "x": 2350,
       "y": 1270
+    },
+    "Budgets.dc.html": {
+      "h": 980,
+      "is_interactive": true,
+      "title": "الميزانيات · Budgets (خانة جوه العمليات)",
+      "w": 350,
+      "x": 1880,
+      "y": 2540
+    },
+    "Dues.dc.html": {
+      "h": 1020,
+      "is_interactive": true,
+      "title": "المستحقات · Dues (خانة جوه العمليات)",
+      "w": 350,
+      "x": 1450,
+      "y": 2540
+    },
+    "Roscas.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الجمعيات · Roscas",
+      "w": 390,
+      "x": 980,
+      "y": 2540
+    },
+    "Installments.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الأقساط · Installments",
+      "w": 390,
+      "x": 510,
+      "y": 2540
+    },
+    "Subscriptions.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الاشتراكات · Subscriptions",
+      "w": 390,
+      "x": 40,
+      "y": 2540
     }
   },
   "createdOnFiles": {
@@ -124,6 +164,14 @@
       "w": 240,
       "x": 0,
       "y": 970
+    },
+    "dues": {
+      "kind": "title1",
+      "maxW": 2230,
+      "text": "العمليات من جوه · الميزانيات والمستحقات",
+      "w": 240,
+      "x": 0,
+      "y": 2240
     }
   },
   "order": [
@@ -137,7 +185,12 @@
     "AskBar.dc.html",
     "PersonProfile.dc.html",
     "OwedToYou.dc.html",
-    "YouOwe.dc.html"
+    "YouOwe.dc.html",
+    "Budgets.dc.html",
+    "Dues.dc.html",
+    "Roscas.dc.html",
+    "Installments.dc.html",
+    "Subscriptions.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
