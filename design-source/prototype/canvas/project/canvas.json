@@ -705,6 +705,14 @@
       "y": 19800,
       "w": 390,
       "h": 844
+    },
+    "EventAddSheet.dc.html": {
+      "is_interactive": true,
+      "title": "حدث جديد · EventAddSheet (قطعة — التقويم والأحداث)",
+      "x": 1020,
+      "y": 6100,
+      "w": 350,
+      "h": 60
     }
   },
   "createdOnFiles": {
@@ -934,7 +942,8 @@
     "ZakatPay.dc.html",
     "Advisor.dc.html",
     "SavingsGoals.dc.html",
-    "GoalDetail.dc.html"
+    "GoalDetail.dc.html",
+    "EventAddSheet.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

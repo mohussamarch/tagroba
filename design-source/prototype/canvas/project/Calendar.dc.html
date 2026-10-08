@@ -14,9 +14,8 @@ body{margin:0}
 .m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
 .m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}.m-press:active{transform:scale(.97)}
 .c-in{animation:c-in 320ms cubic-bezier(.2,.7,.3,1) backwards}@keyframes c-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.t-veil{animation:t-fade 220ms cubic-bezier(.2,.7,.3,1) both}.t-up{animation:t-up 420ms cubic-bezier(.18,.9,.28,1.04) both}.t-toast{animation:t-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
-@keyframes t-fade{from{opacity:0}to{opacity:1}}@keyframes t-up{from{transform:translateY(100%)}to{transform:none}}@keyframes t-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
-@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.c-in{animation:none}.t-up{animation:t-fade 150ms both}}
+.t-toast{animation:t-toast 2600ms cubic-bezier(.2,.7,.3,1) both}@keyframes t-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.c-in{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
@@ -28,100 +27,53 @@ body{margin:0}
     </div>
 
     <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
-      <div style="display: flex; flex-direction: column; gap: 14px">
-        <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
-          <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #DCEBD6"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>{{leftTitle}}</span>
-          <span dir="ltr" aria-live="polite" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums"><span style="font-size: 14px; color: #DCEBD6">{{cur}}</span><span style="font-size: 32px; font-weight: 700">{{leftText}}</span></span>
-          <span style="font-size: 12px; color: #DCEBD6">{{leftMath}}</span>
-          <span style="font-size: 11px; color: rgba(255,255,255,0.72)">{{leftNote}}</span>
-        </div>
-
-        <div style="border-radius: 22px; padding: 6px 16px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-          <span style="display: flex; align-items: center; gap: 6px; padding: 8px 0 4px; font-size: 14px; font-weight: 700"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>{{sumTitle}}</span>
-          <sc-for list="{{sums}}" as="u" hint-placeholder-count="4">
-            <div style="{{u.rowStyle}}">
-              <span aria-hidden="true" style="{{u.tile}}">
-                <sc-if value="{{u.i.wallet}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg></sc-if>
-                <sc-if value="{{u.i.trend}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
-                <sc-if value="{{u.i.clock}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></sc-if>
-                <sc-if value="{{u.i.bell}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></sc-if>
-              </span>
-              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 12px; color: #637570">{{u.label}}</span><span style="{{u.valueStyle}}">{{u.value}}</span></span>
-            </div>
-          </sc-for>
-        </div>
+      <div style="border-radius: 24px; padding: 14px 16px 8px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08634F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>{{sumTitle}}</span>
+        <span style="font-size: 13px; line-height: 1.7; color: #4F625C; padding: 4px 0 6px">{{smart}}</span>
+        <sc-for list="{{ups}}" as="r" hint-placeholder-count="5">
+          <a href="{{r.href}}" class="m-press c-in" aria-label="{{r.aria}}" style="{{r.rowStyle}}">
+            <span aria-hidden="true" style="{{r.tile}}"><img src="{{r.icon}}" width="20" height="20" alt=""></span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 700">{{r.title}}</span><span style="font-size: 12px; color: #637570">{{r.sub}}</span></span>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0"><span style="{{r.whenStyle}}">{{r.when}}</span><span style="{{r.statusStyle}}">{{r.status}}</span></span>
+          </a>
+        </sc-for>
+        <sc-if value="{{hasMore}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="m-press" onClick="{{toggleMore}}" style="height: 44px; border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer">{{moreLabel}}</button>
+        </sc-if>
       </div>
     </sc-if>
-
-    <dc-import name="CalendarGrid" space="{{spaceName}}" month="{{ym}}" today="{{today}}" marks="{{marks}}" selected="{{selText}}" no-prev="{{noPrev}}" no-next="{{noNext}}" on-pick="{{onPick}}" on-month="{{onMonth}}" hint-size="350px,470px"></dc-import>
 
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
       <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 8px 0; text-align: center">
         <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
         <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
         <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
-        <button type="button" disabled="{{true}}" aria-describedby="cal-soon" style="align-self: stretch; height: 48px; margin-top: 6px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); opacity: 0.45; cursor: default">{{newEvent}}</button>
-        <span id="cal-soon" style="font-size: 12px; color: #637570">{{newSoon}}</span>
       </div>
     </sc-if>
 
-    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
-      <div style="display: flex; flex-direction: column; gap: 8px">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px">
-          <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{listTitle}}</h2>
-          <sc-if value="{{hasSel}}" hint-placeholder-val="{{ false }}">
-            <button type="button" class="m-press" onClick="{{clearSel}}" style="height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{allLabel}}</button>
-          </sc-if>
-        </div>
-        <sc-if value="{{noRows}}" hint-placeholder-val="{{ false }}">
-          <div style="border-radius: 18px; padding: 12px 14px; font-size: 13px; color: #637570; background: rgba(25,61,51,0.04)">{{noRowsText}}</div>
+    <dc-import name="EventAddSheet" space="{{spaceName}}" default-date="{{defDate}}" on-save="{{onAdd}}" hint-size="350px,52px"></dc-import>
+
+    <dc-import name="CalendarGrid" space="{{spaceName}}" month="{{ym}}" today="{{today}}" marks="{{marks}}" selected="{{selText}}" no-prev="{{noPrev}}" no-next="{{noNext}}" on-pick="{{onPick}}" on-month="{{onMonth}}" hint-size="350px,470px"></dc-import>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">{{dayTitle}}</h2>
+        <sc-if value="{{hasSel}}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="m-press" onClick="{{clearSel}}" style="height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{allLabel}}</button>
         </sc-if>
-        <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
-          <div class="c-in" style="{{r.cardStyle}}">
-            <sc-if value="{{r.linked}}" hint-placeholder-val="{{ true }}"><a href="{{r.href}}" aria-label="{{r.aria}}" style="position: absolute; inset: 0; border-radius: 20px"></a></sc-if>
-            <div style="display: flex; align-items: center; gap: 12px; pointer-events: none; position: relative">
-              <span aria-hidden="true" style="{{r.tile}}">
-                <sc-if value="{{r.i.receipt}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg></sc-if>
-                <sc-if value="{{r.i.car}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg></sc-if>
-                <sc-if value="{{r.i.coins}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="m16.71 13.88.7.71-2.82 2.82"></path></svg></sc-if>
-                <sc-if value="{{r.i.users}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></sc-if>
-                <sc-if value="{{r.i.hand}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"></path><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"></path><path d="m2 16 6 6"></path><circle cx="16" cy="9" r="2.9"></circle><circle cx="6" cy="5" r="3"></circle></svg></sc-if>
-                <sc-if value="{{r.i.gift}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path></svg></sc-if>
-                <sc-if value="{{r.i.gem}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg></sc-if>
-                <sc-if value="{{r.i.spark}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg></sc-if>
-                <sc-if value="{{r.i.banknote}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg></sc-if>
-              </span>
-              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px"><span style="font-size: 15px; font-weight: 700">{{r.title}}</span><span style="font-size: 12px; color: #637570">{{r.sub}}</span></span>
-              <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0"><span style="{{r.whenStyle}}">{{r.when}}</span><span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span></span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; padding-top: 8px; margin-top: 8px; border-top: 1px dashed rgba(25,61,51,0.14); position: relative; pointer-events: none">
-              <span style="{{r.statusStyle}}">{{r.status}}</span>
-              <sc-if value="{{r.canHold}}" hint-placeholder-val="{{ true }}">
-                <button type="button" class="m-press" onClick="{{r.toggle}}" aria-pressed="{{r.held}}" style="{{r.btnStyle}}">{{r.btn}}</button>
-              </sc-if>
-            </div>
-          </div>
-        </sc-for>
       </div>
-    </sc-if>
-  </div>
-
-  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; inset: 0; z-index: 9">
-      <button type="button" class="t-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
-      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="t-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
-        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
-        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
-        <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
-        <div style="display: flex; align-items: center; height: 56px; border-radius: 18px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
-          <input type="text" inputmode="decimal" dir="ltr" aria-label="{{sheetTitle}}" value="{{amt}}" onInput="{{typeAmt}}" placeholder="0" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 24px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
-          <span style="font-size: 14px; color: #637570">{{cur}}</span>
-        </div>
-        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px">{{err}}</span>
-        <button type="button" class="m-press" onClick="{{saveAmt}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
-      </div>
+      <sc-if value="{{noDay}}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius: 18px; padding: 12px 14px; font-size: 13px; color: #637570; background: rgba(25,61,51,0.04)">{{noDayText}}</div>
+      </sc-if>
+      <sc-for list="{{dayRows}}" as="d" hint-placeholder-count="2">
+        <a href="{{d.href}}" class="m-press c-in" aria-label="{{d.aria}}" style="{{d.cardStyle}}">
+          <span aria-hidden="true" style="{{d.tile}}"><img src="{{d.icon}}" width="20" height="20" alt=""></span>
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 700">{{d.title}}</span><span style="font-size: 12px; color: #637570">{{d.sub}}</span></span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0"><span style="{{d.whenStyle}}">{{d.when}}</span><span style="{{d.statusStyle}}">{{d.status}}</span></span>
+        </a>
+      </sc-for>
     </div>
-  </sc-if>
+  </div>
 
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
@@ -131,51 +83,74 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// النموذج: النهارده الأربعاء ٧ أكتوبر · الشهر المالي بيبدأ ٢٨ (يوم الراتب) · التقويم شهر ميلادي (سبتمبر لحد ديسمبر هنا)
-const TODAY = '2026-10-07', NEXT_PAY = '2026-10-28', P_START = '2026-09-28', P_END = '2026-10-27', MONTHS = ['2026-09', '2026-10', '2026-11', '2026-12'];
+// التقويم = ملخص أحداث مش ملخص فلوس (قرار المالك ٢٠٢٦-١٠-٠٨ — §٧٦): ملخص الأحداث الجاية وجنب كل حدث سطر صغير «محجوز ولا لأ»
+// ⇐ زرار «حدث جديد» ⇐ شبكة الشهر. ملخص الفلوس («المتبقي تقريبًا») مكانه المستحقات.
+// النموذج: النهارده الأربعاء ٧ أكتوبر · الشهر المالي بيبدأ ٢٨ (يوم الراتب) · الأسبوع بيبدأ السبت (قرار المالك)
+const TODAY = '2026-10-07', NEXT_PAY = '2026-10-28', MONTHS = ['2026-09', '2026-10', '2026-11', '2026-12'];
 const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'], ORDER = { out: 0, in: 1, none: 2 }; // نفس اليوم: هتدفع ثم هتستلم ثم من غير فلوس (§65-٣)
+// أيقونات Lucide (ISC) — بتترسم صورة بلون نوع الميعاد
+const ICON = {
+  receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  car: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  hand: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+  gem: '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+  spark: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+  banknote: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+  cal: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>'
+};
+// اسم قصير لخانة اليوم في الشبكة
+const SHORT = { elec: ['كهرباء', 'كهربا'], gym: ['النادي', 'الجيم'], net: ['إنترنت', 'النت'], cloud: ['تخزين', 'تخزين'], car: ['السيارة', 'العربية'], phone: ['الجوال', 'الموبايل'], rosca: ['جمعية', 'جمعية'], pay: ['الراتب', 'المرتب'], bday: ['ليلى', 'ليلى'], noura: ['نورة', 'نورة'], wed: ['زواج', 'فرح'], grad: ['تخرّج', 'تخرّج'], omar: ['عمر', 'عمر'] };
+const ADD_ICON = { occasion: 'gift', wedding: 'gem', birth: 'spark', grad: 'spark', trip: 'globe', other: 'cal' };
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // الحجز (§65): مفتاح الميعاد (المعرّف@التاريخ) ⇒ 'full' = مبلغ الميعاد المعروف، أو مبلغ كتبه المستخدم بالوحدة الصغرى
-    this.state = { ym: '2026-10', sel: 0, held: { 'gym@2026-10-09': 'full', 'wed@2026-10-18': 'full' }, sheet: null, amt: '', err: '', toast: '' };
+    // held: الحجز اللي اتعمل من المستحقات/الميزانيات (§65) — هنا للعرض بس · added: أحداث اتضافت من «حدث جديد»
+    this.state = { ym: '2026-10', sel: 0, more: false, held: { 'gym@2026-10-09': 'full', 'wed@2026-10-18': 'full' }, added: [], toast: '' };
     this.timers = [];
     this.onPick = (d) => { if (typeof d === 'number') this.setState((s) => ({ sel: s.sel === d ? 0 : d })); };
     this.onMonth = (v) => this.setState((s) => {
       const i = v === 'today' ? MONTHS.indexOf(TODAY.slice(0, 7)) : MONTHS.indexOf(s.ym) + (v === 1 || v === -1 ? v : 0);
       return { ym: MONTHS[Math.max(0, Math.min(MONTHS.length - 1, i))], sel: 0 };
     });
+    this.onAdd = (ev) => {
+      if (!ev || !ev.name || !/^\d{4}-\d{2}-\d{2}$/.test(ev.date || '')) return;
+      const ym = MONTHS.indexOf(ev.date.slice(0, 7)) >= 0 ? ev.date.slice(0, 7) : this.state.ym;
+      this.setState((s) => ({ added: s.added.concat([ev]), ym, sel: ym === ev.date.slice(0, 7) ? Number(ev.date.slice(8)) : 0 }));
+      const eg = this.eg();
+      this.say((eg ? 'اتضاف «' : 'أُضيف «') + ev.name + '» — ' + Number(ev.date.slice(8)).toLocaleString('ar-EG') + ' ' + MN[Number(ev.date.slice(5, 7)) - 1]);
+    };
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.forEach(clearTimeout); this.timers = [setTimeout(() => this.setState({ toast: '' }), 2700)]; this.setState({ toast: msg }); }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; } dn(iso) { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; } // رقم اليوم (أيام مش فلوس)
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-  toMinor(text) {
-    const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null;
-    const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
-  }
+  icon(name, col) { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + (ICON[name] || ICON.cal) + '</svg>'); }
   // مخترعة · نفس مواعيد شريط «القادم» والمستحقات والاشتراكات · بالوحدة الصغرى · flow: out هتدفع · in هتستلم · none من غير فلوس
   all() {
-    if ((this.props.state ?? 'عادي') === 'فاضي') return [];
-    const eg = this.eg(), k = eg ? 3 : 1, L = (sa, e) => (eg ? e : sa);
-    const monthly = [
-      ['elec', 'sub', 'receipt', 3, 38000 * k, 'out', L('فاتورة الكهرباء', 'فاتورة الكهربا'), L('كهرباء', 'كهربا'), 'Subscriptions', 'فاتورة'],
-      ['gym', 'sub', 'receipt', 9, eg ? 59700 : 19900, 'out', L('اشتراك النادي', 'اشتراك الجيم'), L('النادي', 'الجيم'), 'Subscriptions', 'اشتراك'],
-      ['net', 'sub', 'receipt', 15, 30000 * k, 'out', L('إنترنت المنزل', 'النت في البيت'), L('إنترنت', 'النت'), 'Subscriptions', 'اشتراك'],
-      ['cloud', 'sub', 'receipt', 20, 1100 * k, 'out', 'تخزين سحابي', 'تخزين', 'Subscriptions', 'اشتراك'],
-      ['car', 'inst', 'car', 27, eg ? 435000 : 145000, 'out', 'قسط السيارة', 'السيارة', 'Installments', 'قسط'],
-      ['phone', 'inst', 'coins', 5, 25000 * k, 'out', L('تقسيط الجوال', 'تقسيط الموبايل'), L('الجوال', 'الموبايل'), 'Installments', 'قسط'],
-      ['rosca', 'rosca', 'users', 1, 100000 * k, 'out', L('جمعية العائلة', 'جمعية العيلة'), 'جمعية', 'Roscas', L('قسط الجمعية', 'قسط الجمعية')],
-      ['pay', 'pay', 'banknote', 28, null, 'in', L('يوم الراتب', 'يوم المرتب'), L('الراتب', 'المرتب'), '', L('دخل متوقع', 'فلوس جاية')]
+    if ((this.props.state ?? 'عادي') === 'فاضي' && !this.state.added.length) return [];
+    const eg = this.eg(), k = eg ? 3 : 1, L = (sa, e) => (eg ? e : sa), empty = (this.props.state ?? 'عادي') === 'فاضي';
+    const monthly = empty ? [] : [
+      ['elec', 'sub', 'receipt', 3, 38000 * k, 'out', L('فاتورة الكهرباء', 'فاتورة الكهربا'), 'Subscriptions', 'فاتورة'],
+      ['gym', 'sub', 'receipt', 9, eg ? 59700 : 19900, 'out', L('اشتراك النادي', 'اشتراك الجيم'), 'Subscriptions', 'اشتراك'],
+      ['net', 'sub', 'receipt', 15, 30000 * k, 'out', L('إنترنت المنزل', 'النت في البيت'), 'Subscriptions', 'اشتراك'],
+      ['cloud', 'sub', 'receipt', 20, 1100 * k, 'out', 'تخزين سحابي', 'Subscriptions', 'اشتراك'],
+      ['car', 'inst', 'car', 27, eg ? 435000 : 145000, 'out', 'قسط السيارة', 'Installments', 'قسط'],
+      ['phone', 'inst', 'coins', 5, 25000 * k, 'out', L('تقسيط الجوال', 'تقسيط الموبايل'), 'Installments', 'قسط'],
+      ['rosca', 'rosca', 'users', 1, 100000 * k, 'out', L('جمعية العائلة', 'جمعية العيلة'), 'Roscas', 'قسط الجمعية'],
+      ['pay', 'pay', 'banknote', 28, null, 'in', L('يوم الراتب', 'يوم المرتب'), 'IncomeSources', L('دخل متوقع', 'فلوس جاية')]
     ];
-    const once = [
-      ['bday', 'event', 'gift', '2026-10-14', null, 'none', 'عيد ميلاد ليلى', 'ليلى', 'PersonProfile', 'مناسبة'],
-      ['noura', 'debt', 'hand', '2026-10-15', 30000 * k, 'in', L('مستحق من نورة', 'فلوسك عند نورة'), 'نورة', 'OwedToYou', L('دين لك', 'دين ليك')],
-      ['wed', 'event', 'gem', '2026-10-18', eg ? 150000 : 50000, 'out', L('زواج خالد', 'فرح خالد'), L('زواج', 'فرح'), 'PersonProfile', L('حدث · من تجهيزاته', 'حدث · من تجهيزاته')],
-      ['grad', 'event', 'spark', '2026-10-24', null, 'out', L('حفل تخرّج سارة', 'حفلة تخرّج سارة'), 'تخرّج', 'Events', L('حدث · بنوده بلا مبالغ', 'حدث · بنوده من غير مبالغ')],
-      ['omar', 'debt', 'hand', '2026-11-01', 200000 * k, 'out', 'سلفة عمر', 'عمر', 'YouOwe', 'دين عليك']
-    ];
-    const mk = (r, date) => ({ id: r[0], kind: r[1], icon: r[2], date, amt: r[4], flow: r[5], t: r[6], s: r[7], href: r[8], type: r[9], key: r[0] + '@' + date, left: this.dn(date) - this.dn(TODAY) });
+    const once = empty ? [] : [
+      ['bday', 'event', 'gift', '2026-10-14', null, 'none', 'عيد ميلاد ليلى', 'PersonProfile', 'مناسبة'],
+      ['noura', 'debt', 'hand', '2026-10-15', 30000 * k, 'in', L('مستحق من نورة', 'فلوسك عند نورة'), 'OwedToYou', L('دين لك', 'دين ليك')],
+      ['wed', 'event', 'gem', '2026-10-18', eg ? 150000 : 50000, 'out', L('زواج خالد', 'فرح خالد'), 'Events', L('حدث، من تجهيزاته', 'حدث، من تجهيزاته')],
+      ['grad', 'event', 'spark', '2026-10-24', null, 'out', L('حفل تخرّج سارة', 'حفلة تخرّج سارة'), 'Events', L('حدث، بنوده بلا مبالغ', 'حدث، بنوده من غير مبالغ')],
+      ['omar', 'debt', 'hand', '2026-11-01', 200000 * k, 'out', 'سلفة عمر', 'YouOwe', 'دين عليك']
+    ].concat(this.state.added.map((a, i) => ['new' + i, 'event', ADD_ICON[a.kind] || 'cal', a.date, null, 'none', a.name, 'Events', a.who === 'me' ? (eg ? 'حدثك' : 'حدثك') : 'حدث ' + a.who]));
+    const mk = (r, date) => ({ id: r[0], kind: r[1], icon: r[2], date, amt: r[4], flow: r[5], t: r[6], href: r[7], type: r[8], key: r[0] + '@' + date, left: this.dn(date) - this.dn(TODAY) });
     const out = once.map((r) => mk(r, r[3]));
     MONTHS.forEach((ym) => monthly.forEach((r) => out.push(mk(r, ym + '-' + String(r[3]).padStart(2, '0')))));
     // اللي اتدفع بيختفي من التقويم (§65-٧): مواعيد الدفع اللي عدّت اتدفعت كلها ما عدا فاتورة الكهرباء (متأخرة — مكانها المستحقات)
@@ -183,114 +158,72 @@ class Component extends DCLogic {
       .map((x) => Object.assign(x, { late: x.left < 0 && x.flow === 'out' }))
       .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : ORDER[a.flow] - ORDER[b.flow]));
   }
-  res(x, held) { const h = held[x.key]; return h === 'full' ? x.amt : typeof h === 'number' ? h : null; }
-  // «فاضلك تقريبًا» (§65-٨): معاك النهارده (البنك + الكاش، نفس الرئيسية) − المحجوز اللي ميعاده من النهارده لحد قبل الراتب
-  counted(items, held) { return items.filter((x) => x.left >= 0 && x.date < NEXT_PAY && this.res(x, held) != null).reduce((a, x) => ({ sum: a.sum + this.res(x, held), n: a.n + 1 }), { sum: 0, n: 0 }); }
   renderVals() {
     const eg = this.eg(), s = this.state, cur = eg ? 'ج.م' : 'ر.س';
     const n = (x) => x.toLocaleString('ar-EG'), plural = (x, w) => (x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]));
-    const W = eg ? ['ميعاد واحد', 'ميعادين', 'مواعيد', 'ميعاد'] : ['موعد واحد', 'موعدين', 'مواعيد', 'موعدًا'];
+    const W = eg ? ['ميعاد واحد', 'ميعادين', 'مواعيد', 'ميعاد'] : ['موعد واحد', 'موعدان', 'مواعيد', 'موعدًا'];
     const dw = (d) => (d <= 10 ? ' أيام' : eg ? ' يوم' : ' يومًا');
     const after = (d) => (d === 0 ? (eg ? 'النهارده' : 'اليوم') : d === 1 ? (eg ? 'بكرة' : 'غدًا') : d === 2 ? 'بعد يومين' : 'بعد ' + n(d) + dw(d));
     const ago = (d) => (d === 1 ? (eg ? 'امبارح' : 'أمس') : d === 2 ? (eg ? 'من يومين' : 'منذ يومين') : (eg ? 'من ' : 'منذ ') + n(d) + dw(d));
-    const dstr = (iso) => n(Number(iso.slice(8))) + ' ' + MN[Number(iso.slice(5, 7)) - 1], iso = (dn) => new Date(dn * 86400000).toISOString().slice(0, 10);
-    const empty = (this.props.state ?? 'عادي') === 'فاضي', items = this.all(), held = s.held;
-    const onHand = eg ? 2530000 : 735000; // مخترعة: نفس «معك الآن» في الرئيسية
-    const c = this.counted(items, held), left = onHand - c.sum;
-    const pays = items.filter((x) => x.flow === 'out');
-    // الملخص الذكي (§65-٩) — الحجز ما بيغيّرش أي رقم فيه
-    const win = pays.filter((x) => x.left >= 0 && x.date < NEXT_PAY), known = win.filter((x) => x.amt != null);
-    const unknown = win.length - known.length, knownSum = known.reduce((a, x) => a + x.amt, 0);
-    const p0 = this.dn(P_START), p1 = this.dn(P_END), weeks = [];
-    pays.filter((x) => x.amt != null && this.dn(x.date) >= p0 && this.dn(x.date) <= p1).forEach((x) => { const off = this.dn(x.date) - p0, w = (off - (off % 7)) / 7; weeks[w] = (weeks[w] || 0) + x.amt; });
-    let hw = -1; weeks.forEach((v, w) => { if (v != null && (hw < 0 || v > weeks[hw])) hw = w; }); // التساوي ⇒ الأبدر
-    const ws = iso(p0 + hw * 7), we = iso(Math.min(p0 + hw * 7 + 6, p1));
-    const wRange = ws.slice(5, 7) === we.slice(5, 7) ? n(Number(ws.slice(8))) + '–' + dstr(we) : dstr(ws) + ' – ' + dstr(we);
-    const payLeft = this.dn(NEXT_PAY) - this.dn(TODAY);
-    const before = pays.filter((x) => x.left >= 0 && payLeft - x.left >= 1 && payLeft - x.left <= 3);
-    const bw = (d) => (d === 1 ? (eg ? 'بيوم' : 'بيوم') : d === 2 ? (eg ? 'بيومين' : 'بيومين') : 'بـ' + n(d) + ' أيام');
-    const soon = items.filter((x) => x.kind === 'event' && x.left >= 0 && x.left <= 30 && this.res(x, held) == null);
-    const tile = (col) => 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + col + '; background: ' + col + '1A';
-    const sumRow = (i, icon, label, value, col, last) => ({ i: { [icon]: true }, label, value, tile: tile(col), valueStyle: 'font-size: 14px; font-weight: 700; color: ' + (col === '#08634F' ? '#193D33' : col), rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 10px 0;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') });
-    const sums = [
-      sumRow(0, 'wallet', (eg ? 'لحد المرتب · ' : 'حتى الراتب · ') + after(payLeft), (eg ? 'عليك ' : 'عليك ') + this.fmt(knownSum) + ' ' + cur + ' في ' + plural(known.length, W) + (unknown ? (eg ? ' + ' + plural(unknown, W) + ' من غير مبلغ' : ' و' + plural(unknown, W) + ' بلا مبلغ') : ''), '#08634F'),
-      hw >= 0 ? sumRow(1, 'trend', eg ? 'الأسبوع الأتقل في الشهر' : 'الأسبوع الأثقل في الشهر', wRange + ' · ' + this.fmt(weeks[hw]) + ' ' + cur, '#BE3D48') : null,
-      before.length ? sumRow(2, 'clock', eg ? 'قبل المرتب على طول' : 'قبل الراتب مباشرة', before.map((x) => x.t + ' — ' + (eg ? 'قبله ' : 'قبله ') + bw(payLeft - x.left)).join(' · '), '#956000') : null,
-      sumRow(3, 'bell', eg ? 'قرّب ومش محجوز' : 'قريب وغير محجوز', soon.length ? soon.map((x) => x.t + ' (' + after(x.left) + ')').join(' · ') : (eg ? 'كل الأحداث الجاية محجوزة' : 'كل الأحداث القريبة محجوزة'), soon.length ? '#956000' : '#13764D', true)
-    ].filter(Boolean);
-    // الشهر المعروض
-    const ym = s.ym, inMonth = items.filter((x) => x.date.slice(0, 7) === ym);
-    const marks = inMonth.map((x) => Number(x.date.slice(8)) + ':' + x.kind + ':' + x.s + ':' + (x.late ? 1 : 0)).join('|') || 'none';
-    const isNow = ym === TODAY.slice(0, 7), mName = MN[Number(ym.slice(5)) - 1];
-    const listed = inMonth.filter((x) => !isNow || x.left >= 0 || x.late).filter((x) => !s.sel || Number(x.date.slice(8)) === s.sel);
+    const dstr = (iso) => n(Number(iso.slice(8))) + ' ' + MN[Number(iso.slice(5, 7)) - 1];
+    const empty = (this.props.state ?? 'عادي') === 'فاضي', items = this.all();
     const T = { sub: '#956000', inst: '#4D747C', rosca: '#27785B', debt: '#2469BA', event: '#A55060', pay: '#13764D' };
-    const hold = (x, v) => {
-      const next = Object.assign({}, held, { [x.key]: v });
-      const nl = onHand - this.counted(items, next).sum, inWin = x.date < NEXT_PAY, amount = v === 'full' ? x.amt : v;
-      this.setState({ held: next, sheet: null, amt: '', err: '' });
-      this.say((eg ? 'اتحجز ' : 'حُجز ') + this.fmt(amount) + ' ' + cur + ': ' + x.t + ' — ' + (inWin ? (eg ? 'فاضلك دلوقتي ' : 'المتبقي الآن ') + (nl < 0 ? '−' : '') + this.fmt(nl) : (eg ? 'بعد المرتب، فمش بيقلّل فاضلك الشهر ده' : 'بعد الراتب، فلا يُنقص متبقي هذا الشهر')));
+    const res = (x) => { const h = s.held[x.key]; return h === 'full' ? x.amt : typeof h === 'number' ? h : null; };
+    // السطر الصغير جنب كل حدث: محجوز ولا لأ (§65) — الحجز نفسه من المستحقات والميزانيات
+    const status = (x) => {
+      const r = res(x), money = x.amt != null ? '، ' + this.fmt(x.amt) + ' ' + cur : '';
+      if (x.late) return [eg ? 'فات ميعاده' : 'فات موعده', '#BE3D48'];
+      if (x.left < 0) return [eg ? 'عدّى' : 'مضى', '#637570'];
+      if (x.flow === 'in') return [(eg ? 'هتستلمه' : 'ستستلمه') + money, '#13764D'];
+      if (r != null) return ['محجوز ✓' + money, '#13764D'];
+      if (x.amt == null) return [eg ? 'من غير مبلغ' : 'بلا مبلغ', '#637570'];
+      return [(eg ? 'مش محجوز' : 'غير محجوز') + money, '#956000'];
     };
-    const unhold = (x) => {
-      const next = Object.assign({}, held); delete next[x.key];
-      const nl = onHand - this.counted(items, next).sum;
-      this.setState({ held: next });
-      this.say((eg ? 'اتشال الحجز: ' : 'أُلغي الحجز: ') + x.t + (x.date < NEXT_PAY ? ' — ' + (eg ? 'فاضلك ' : 'المتبقي ') + this.fmt(nl) : ''));
-    };
-    const rows = listed.map((x) => {
-      const r = this.res(x, held), can = x.left >= 0 && x.flow !== 'in';
-      const st = x.late ? [eg ? 'فات ميعاده — تلاقيه في المستحقات' : 'فات موعده — تجده في المستحقات', '#BE3D48']
-        : x.left < 0 ? [eg ? 'عدّى' : 'مضى', '#637570']
-        : x.flow === 'in' ? [x.kind === 'pay' ? (eg ? 'من غير مبلغ — المرتب في ملفك تقديري' : 'بلا مبلغ — الراتب في ملفك تقديري') : eg ? 'هتستلمه — مش بيتحجز' : 'ستستلمه — لا يُحجز', '#13764D']
-        : r != null ? ['محجوز ' + this.fmt(r) + (x.amt != null ? ' من ' + this.fmt(x.amt) : '') + ' ' + cur, '#13764D']
-        : [eg ? 'مش محجوز' : 'غير محجوز', '#956000'];
-      const near = x.left >= 0 && x.left <= 3;
+    const row = (x, last, card) => {
+      const st = status(x), near = x.left >= 0 && x.left <= 3, col = T[x.kind];
       return {
-        title: x.t, sub: dstr(x.date) + ' · ' + x.type, i: { [x.icon]: true }, linked: !!x.href, href: x.href ? x.href + '.dc.html' : '',
+        title: x.t, sub: dstr(x.date) + '، ' + x.type, icon: this.icon(x.icon, col), href: x.href + '.dc.html',
         aria: x.t + '، ' + dstr(x.date) + '، ' + st[0],
         when: x.left < 0 ? ago(-x.left) : after(x.left),
         whenStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (x.late ? 'color: #BE3D48; background: rgba(190,61,72,0.10)' : near ? 'color: #956000; background: #FBF0DD' : 'color: #637570; background: rgba(25,61,51,0.05)'),
-        amount: x.amt != null ? (x.flow === 'in' ? '+' : '−') + this.fmt(x.amt) + ' ' + cur : (eg ? 'من غير مبلغ' : 'بلا مبلغ'),
-        amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (x.amt == null ? '#637570' : x.flow === 'in' ? '#13764D' : '#BE3D48'),
-        status: st[0], statusStyle: 'font-size: 12px; font-weight: 700; color: ' + st[1],
-        canHold: can, held: r != null ? 'true' : 'false',
-        btn: r != null ? (eg ? 'محجوز ✓ · شيله' : 'محجوز ✓ · إلغاء') : 'احسبه من فلوسي',
-        btnStyle: 'pointer-events: auto; min-height: 36px; border: 0; padding: 0 12px; border-radius: 14px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; ' + (r != null ? 'color: #13764D; background: #DCEBD6' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)'),
-        toggle: () => (r != null ? unhold(x) : x.amt != null ? hold(x, 'full') : this.setState({ sheet: x.key, amt: '', err: '' })),
-        tile: 'width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); color: ' + T[x.kind] + '; background: ' + T[x.kind] + '1F',
-        cardStyle: 'position: relative; border-radius: 20px; padding: 12px 14px 8px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)' + (x.left < 0 && !x.late ? '; opacity: 0.7' : '')
+        status: st[0], statusStyle: 'font-size: 11px; font-weight: 700; white-space: nowrap; color: ' + st[1],
+        tile: 'width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + col + '1F',
+        rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 6px 0; color: inherit; text-decoration: none;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        cardStyle: 'display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; border-radius: 20px; color: inherit; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)' + (x.left < 0 && !x.late ? '; opacity: 0.7' : '')
       };
-    });
-    const target = s.sheet ? items.find((x) => x.key === s.sheet) : null;
+    };
+    // ملخص الأحداث الجاية (الذكي): الأقرب · كام مش محجوز · الأسبوع الأزحم في المواعيد · اللي قبل الراتب على طول
+    const next = items.filter((x) => x.left >= 0 || x.late), win = next.filter((x) => x.left <= 30);
+    const shown = s.more ? next : win.slice(0, 6);
+    const first = next.find((x) => x.left >= 0), unheld = win.filter((x) => x.left >= 0 && x.flow === 'out' && res(x) == null);
+    const payLeft = this.dn(NEXT_PAY) - this.dn(TODAY), before = win.find((x) => x.flow === 'out' && x.left >= 0 && payLeft - x.left === 1);
+    const smart = [
+      first ? (eg ? 'الأقرب: ' : 'الأقرب: ') + first.t + ' ' + after(first.left) : '',
+      win.length ? (eg ? 'في الـ٣٠ يوم الجايين ' : 'في الـ٣٠ يومًا القادمة ') + plural(win.filter((x) => x.left >= 0).length, W) + (unheld.length ? (eg ? '، منهم ' : '، منها ') + n(unheld.length) + (eg ? ' مش محجوزين' : ' غير محجوزة') : '') : '',
+      before ? before.t + (eg ? ' قبل المرتب بيوم' : ' قبل الراتب بيوم') : ''
+    ].filter(Boolean).join('. ') + '.';
+    // الشهر المعروض في الشبكة واليوم المختار
+    const ym = s.ym, inMonth = items.filter((x) => x.date.slice(0, 7) === ym);
+    const marks = inMonth.map((x) => Number(x.date.slice(8)) + ':' + x.kind + ':' + (SHORT[x.id] ? SHORT[x.id][eg ? 1 : 0] : x.t.replace(/[:|]/g, ' ').split(' ')[0]) + ':' + (x.late ? 1 : 0)).join('|') || 'none';
+    const mName = MN[Number(ym.slice(5)) - 1];
+    const day = s.sel ? inMonth.filter((x) => Number(x.date.slice(8)) === s.sel) : [];
+    const defDate = s.sel ? ym + '-' + String(s.sel).padStart(2, '0') : '';
     return {
-      spaceName: eg ? 'مصر' : 'السعودية', cur,
-      showMain: !empty, isEmpty: empty,
-      leftTitle: eg ? 'فاضلك تقريبًا آخر الشهر' : 'المتبقي تقريبًا آخر الشهر',
-      leftText: (left < 0 ? '−' : '') + this.fmt(left),
-      leftMath: (eg ? 'معاك دلوقتي ' : 'معك الآن ') + this.fmt(onHand) + ' − ' + (eg ? 'محجوز قبل المرتب ' : 'محجوز قبل الراتب ') + this.fmt(c.sum) + (c.n ? ' (' + plural(c.n, W) + ')' : ''),
-      leftNote: eg ? 'الحجز تخطيط بس: مش بيغيّر رصيدك ولا ميزانيتك.' : 'الحجز للتخطيط فقط: لا يغيّر رصيدك ولا ميزانيتك.',
-      sumTitle: 'ملخص ذكي', sums,
+      spaceName: eg ? 'مصر' : 'السعودية',
+      showMain: !empty || s.added.length > 0, isEmpty: empty && !s.added.length,
+      sumTitle: eg ? 'الأحداث الجاية' : 'الأحداث القادمة', smart,
+      ups: shown.map((x, i) => row(x, i === shown.length - 1)),
+      hasMore: next.length > win.slice(0, 6).length, toggleMore: () => this.setState((st) => ({ more: !st.more })),
+      moreLabel: s.more ? (eg ? 'أقل' : 'عرض أقل') : (eg ? 'كل الجاي (' : 'كل القادم (') + n(next.length) + ')',
+      emptyTitle: eg ? 'مفيش أحداث جاية' : 'لا أحداث قادمة',
+      emptyBody: eg ? 'ضيف حدث، أو هتظهر هنا لوحدها مواعيد اشتراكاتك وأقساطك وجمعياتك ومناسبات أشخاصك.' : 'أضف حدثًا، أو تظهر هنا تلقائيًا مواعيد اشتراكاتك وأقساطك وجمعياتك ومناسبات أشخاصك.',
+      defDate, onAdd: this.onAdd,
       ym, today: TODAY, marks, selText: s.sel ? String(s.sel) : '', noPrev: ym === MONTHS[0] ? '1' : '0', noNext: ym === MONTHS[MONTHS.length - 1] ? '1' : '0',
       onPick: this.onPick, onMonth: this.onMonth,
-      emptyTitle: eg ? 'مفيش مواعيد جاية' : 'لا مواعيد قادمة',
-      emptyBody: eg ? 'هتظهر هنا لوحدها مواعيد اشتراكاتك وأقساطك وجمعياتك وديونك ومناسبات أشخاصك.' : 'تظهر هنا تلقائيًا مواعيد اشتراكاتك وأقساطك وجمعياتك وديونك ومناسبات أشخاصك.',
-      newEvent: eg ? 'حدث جديد' : 'حدث جديد',
-      newSoon: eg ? 'إضافة حدث (فرح · تخرّج · سفر) بتتبني بعدين.' : 'إضافة حدث (زواج · تخرّج · سفر) تُبنى لاحقًا.',
-      listTitle: s.sel ? 'مواعيد ' + n(s.sel) + ' ' + mName : isNow ? (eg ? 'الجاي بالترتيب' : 'القادم بالترتيب') : 'مواعيد ' + mName,
-      hasSel: !!s.sel, allLabel: eg ? 'كل الشهر' : 'كل الشهر', clearSel: () => this.setState({ sel: 0 }),
-      noRows: rows.length === 0, noRowsText: s.sel ? (eg ? 'مفيش مواعيد في اليوم ده.' : 'لا مواعيد في هذا اليوم.') : (eg ? 'مفيش مواعيد في الشهر ده.' : 'لا مواعيد في هذا الشهر.'),
-      rows,
-      sheetOpen: !!target,
-      sheetTitle: target ? (eg ? 'هتحجز كام لـ«' : 'كم تحجز لـ«') + target.t + '»؟' : '',
-      sheetBody: eg ? 'الميعاد ده مالوش مبلغ معروف — اكتب المبلغ اللي هيتحجز.' : 'لا مبلغ معروف لهذا الموعد — أدخل مبلغ الحجز.',
-      amt: s.amt, typeAmt: (e) => this.setState({ amt: e.target.value, err: '' }), err: s.err,
-      saveLabel: eg ? 'احجزه' : 'احجز',
-      saveAmt: () => {
-        if (!target) return;
-        const v = this.toMinor(s.amt);
-        if (v == null || v <= 0) { this.setState({ err: eg ? 'المبلغ المحجوز لازم يبقى أكبر من صفر' : 'يجب أن يكون المبلغ المحجوز أكبر من صفر' }); return; }
-        hold(target, v);
-      },
-      closeSheet: () => this.setState({ sheet: null, amt: '', err: '' }),
+      dayTitle: s.sel ? (eg ? 'يوم ' : 'يوم ') + n(s.sel) + ' ' + mName : (eg ? 'دوس على يوم تشوف مواعيده' : 'اضغط يومًا لترى مواعيده'),
+      hasSel: !!s.sel, allLabel: eg ? 'إلغاء الاختيار' : 'إلغاء الاختيار', clearSel: () => this.setState({ sel: 0 }),
+      noDay: !!s.sel && day.length === 0, noDayText: eg ? 'مفيش مواعيد في اليوم ده — تقدر تضيف حدث فيه من الزرار اللي فوق.' : 'لا مواعيد في هذا اليوم — يمكنك إضافة حدث فيه من الزر أعلاه.',
+      dayRows: day.map((x) => row(x, true)),
       hasToast: !!s.toast, toast: s.toast
     };
   }

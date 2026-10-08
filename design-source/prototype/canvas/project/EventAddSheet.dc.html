@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حدث جديد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.ea-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.ea-press:active{transform:scale(.97)}
+.ea-veil{animation:ea-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.ea-up{animation:ea-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+@keyframes ea-fade{from{opacity:0}to{opacity:1}}
+@keyframes ea-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.ea-press{transition:none}.ea-press:active{transform:none}.ea-up{animation:ea-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="ea-press" onClick="{{openSheet}}" style="width: 100%; height: 52px; border: 0; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{{openLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="ea-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{openLabel}}" class="ea-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{openLabel}}</span>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{nameLabel}}
+          <input type="text" maxlength="40" value="{{name}}" onInput="{{typeName}}" placeholder="{{namePh}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 500; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+        </label>
+        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 0">{{nameErr}}</span>
+
+        <span style="font-size: 13px; font-weight: 700">{{kindLabel}}</span>
+        <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{kinds}}" as="k" hint-placeholder-count="6">
+            <button type="button" role="radio" aria-checked="{{k.on}}" class="ea-press" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button>
+          </sc-for>
+        </div>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{dateLabel}}
+          <input type="date" min="{{minDate}}" value="{{date}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+        </label>
+        <span style="font-size: 12px; color: #637570">{{dateNote}}</span>
+
+        <span style="font-size: 13px; font-weight: 700">{{whoLabel}}</span>
+        <div role="radiogroup" aria-label="{{whoLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{whos}}" as="w" hint-placeholder-count="4">
+            <button type="button" role="radio" aria-checked="{{w.on}}" class="ea-press" onClick="{{w.pick}}" style="{{w.style}}">{{w.label}}</button>
+          </sc-for>
+        </div>
+
+        <span style="font-size: 12px; line-height: 1.7; color: #637570">{{hint}}</span>
+        <button type="button" class="ea-press" onClick="{{save}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":60}}'>
+// زرار «حدث جديد» ولوحته — بيتستعمل في التقويم وفي الأحداث. الحفظ بيرجّع للشاشة الأم: onSave({ name, kind, date, who })
+// النموذج: النهارده ٧ أكتوبر ٢٠٢٦ · الحدث من غير مبلغ (التجهيزات بمبالغها من صفحة الحدث — §43)
+const TODAY = '2026-10-07';
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, name: '', kind: 'occasion', date: '', who: 'me', err: '' }; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
+    const def = this.props.defaultDate || '2026-10-21';
+    const chip = (on) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const K = [['occasion', 'مناسبة'], ['wedding', eg ? 'فرح' : 'زواج'], ['birth', 'ولادة'], ['grad', 'تخرّج'], ['trip', 'سفر'], ['other', eg ? 'حاجة تانية' : 'أخرى']];
+    const P = [['me', eg ? 'حدثي أنا' : 'حدثي'], ['ليلى', 'ليلى'], ['سارة', 'سارة'], ['خالد', 'خالد'], ['يوسف', 'يوسف']];
+    const date = s.date || def;
+    return {
+      openLabel: 'حدث جديد',
+      openSheet: () => this.setState({ open: true, name: '', kind: 'occasion', date: '', who: 'me', err: '' }),
+      open: s.open,
+      closeSheet: () => this.setState({ open: false }),
+      nameLabel: eg ? 'اسمه' : 'اسم الحدث', namePh: eg ? 'مثلًا: خطوبة يوسف' : 'مثلًا: خطوبة يوسف',
+      name: s.name, typeName: (e) => { if (e && e.target) this.setState({ name: e.target.value, err: '' }); },
+      nameErr: s.err,
+      kindLabel: eg ? 'نوعه' : 'نوعه',
+      kinds: K.map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', pick: () => this.setState({ kind: id }), style: chip(s.kind === id) })),
+      dateLabel: eg ? 'إمتى؟' : 'متى؟', minDate: TODAY, date,
+      typeDate: (e) => { if (e && e.target && e.target.value) this.setState({ date: e.target.value }); },
+      dateNote: eg ? 'بيظهر في التقويم في اليوم ده، ويفكّرك قبله.' : 'يظهر في التقويم في يومه، ويذكّرك قبله.',
+      whoLabel: eg ? 'حدث مين؟' : 'حدث مَن؟',
+      whos: P.map(([id, label]) => ({ label, on: s.who === id ? 'true' : 'false', pick: () => this.setState({ who: id }), style: chip(s.who === id) })),
+      hint: eg ? 'من غير مبلغ دلوقتي — التجهيزات ومبالغها والنقوط من صفحة الحدث.' : 'بلا مبلغ الآن — التجهيزات ومبالغها والنقوط من صفحة الحدث.',
+      saveLabel: eg ? 'ضيفه' : 'أضفه',
+      save: () => {
+        const name = String(s.name || '').trim();
+        if (!name) { this.setState({ err: eg ? 'اكتب اسم الحدث.' : 'اكتب اسم الحدث.' }); return; }
+        this.setState({ open: false });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ name, kind: s.kind, date, who: s.who });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

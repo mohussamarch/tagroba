@@ -87,14 +87,17 @@ body{margin:0}
       </div>
     </sc-if>
 
-    <button type="button" disabled="{{true}}" aria-describedby="ev-soon" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); opacity: 0.45; cursor: default">{{newLabel}}</button>
-    <span id="ev-soon" style="font-size: 12px; color: #637570; text-align: center">{{soon}}</span>
+    <dc-import name="EventAddSheet" space="{{spaceName}}" on-save="{{onAdd}}" hint-size="350px,52px"></dc-import>
   </div>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { archivedOpen: false }; }
+  constructor(props) {
+    super(props); this.state = { archivedOpen: false, added: [] };
+    // «حدث جديد» (نفس لوحة التقويم): بيتضاف من غير مبلغ — المصروف والنقوط بيتربطوا بعدين
+    this.onAdd = (ev) => { if (ev && ev.name && /^\d{4}-\d{2}-\d{2}$/.test(ev.date || '')) this.setState((st) => ({ added: st.added.concat([ev]) })); };
+  }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const st = this.props.state ?? 'عادي';
@@ -109,7 +112,7 @@ class Component extends DCLogic {
       const a = Math.abs(d), t = a === 1 ? 'يوم' : a === 2 ? 'يومين' : n(a) + ' ' + (a <= 10 ? 'أيام' : (eg ? 'يوم' : 'يومًا'));
       return d === 0 ? (eg ? 'النهارده' : 'اليوم') : d > 0 ? 'بعد ' + t : (eg ? 'من ' : 'قبل ') + t;
     };
-    const KIND = { wedding: ['فرح', 'gem', '#A55060', 'rgba(165,80,96,0.12)'], travel: ['سفر', 'globe', '#2469BA', 'rgba(36,105,186,0.12)'], birth: ['ولادة', 'sparkles', '#13764D', 'rgba(19,118,77,0.12)'], condolence: [eg ? 'عزا' : 'عزاء', 'users', '#637570', 'rgba(99,117,112,0.12)'], eid: ['عيد', 'moon', '#956000', '#FBF0DD'] };
+    const KIND = { wedding: ['فرح', 'gem', '#A55060', 'rgba(165,80,96,0.12)'], travel: ['سفر', 'globe', '#2469BA', 'rgba(36,105,186,0.12)'], occasion: ['مناسبة', 'sparkles', '#A55060', 'rgba(165,80,96,0.12)'], grad: ['تخرّج', 'sparkles', '#2469BA', 'rgba(36,105,186,0.12)'], other: [eg ? 'حاجة تانية' : 'أخرى', 'sparkles', '#637570', 'rgba(99,117,112,0.12)'], birth: ['ولادة', 'sparkles', '#13764D', 'rgba(19,118,77,0.12)'], condolence: [eg ? 'عزا' : 'عزاء', 'users', '#637570', 'rgba(99,117,112,0.12)'], eid: ['عيد', 'moon', '#956000', '#FBF0DD'] };
     // مخترعة · بالوحدة الصغرى (السعودية) · in = النقوط اللي جاتلك (حدثك بس، وإلا null) · out = اللي إنت اديته
     const E = [
       { id: 'khaled', name: 'زواج خالد', kind: 'wedding', date: '١٨ أكتوبر', d: 11, mine: false, host: 'خالد', spend: 45000, spendN: 1, inn: null, inN: null, out: 0, outN: 0 },
@@ -118,6 +121,8 @@ class Component extends DCLogic {
       { id: 'salem', name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '٣ أغسطس', d: -65, mine: false, host: 'سالم', spend: 0, spendN: 0, inn: null, inN: null, out: 50000, outN: 1, archived: true },
       { id: 'eid', name: 'عيد الفطر', kind: 'eid', date: '٢٠ مارس', d: -201, mine: true, spend: 315000, spendN: 3, inn: 0, inN: 0, out: 0, outN: 0, archived: true }
     ];
+    const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'], dn = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; };
+    this.state.added.forEach((a, i) => E.push({ id: 'new' + i, name: a.name, kind: { trip: 'travel' }[a.kind] || a.kind, date: n(Number(a.date.slice(8))) + ' ' + MN[Number(a.date.slice(5, 7)) - 1], d: dn(a.date) - dn('2026-10-07'), mine: a.who === 'me', host: a.who, spend: 0, spendN: 0, inn: 0, inN: 0, out: 0, outN: 0 }));
     const keep = (id) => { const f = () => { try { window.sessionStorage.setItem('masroufy-event', id); } catch (e) {} }; return { keep: JSON.stringify({ 'masroufy-event': id }), prep: f }; };
     const money = (v, color) => 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; color: ' + color;
     const muted = 'font-size: 13px; font-weight: 700; color: #637570; text-align: right';
@@ -144,6 +149,7 @@ class Component extends DCLogic {
     const nx = up[0];
     const open = this.state.archivedOpen;
     return {
+      spaceName: eg ? 'مصر' : 'السعودية', onAdd: this.onAdd,
       isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', showList: st === 'عادي',
       emptyTitle: eg ? 'مفيش أحداث لسه' : 'لا أحداث بعد',
       emptyBody: eg ? 'ضيف فرح أو سفر أو مناسبة، ونجمعلك مصروفها ونقوطها.' : 'أضف زواجًا أو سفرًا أو مناسبة لنجمع مصروفها ونقوطها.',
