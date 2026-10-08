@@ -71,6 +71,8 @@ internal data class RowSpec(
     val date: DateStyle? = null,
     val fix: ((String) -> String)? = null,
     val custom: List<CustomBody> = emptyList(),
+    /** أشكال تاريخ زيادة بتتجرب كمان على نفس القالب (شكل تاريخ البنك لسه مفترض — مثلًا الإنماء بشَرطة بدل «/»). */
+    val alsoDates: List<DateStyle> = emptyList(),
 )
 
 internal fun out(

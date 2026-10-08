@@ -35,8 +35,10 @@ internal object Evaluate {
     private val DELIBERATE = setOf("offer", "otp/sensitive", "declined", "not a transaction")
     private val GARBAGE_KEYS = listOf("acct", "last4", "ownIbanMasked", "acct_tail", "date", "amount", "balance")
 
-    /** المبلغ الأجنبي في قوالب البحث كله دولار (الراجحي «شراء دولي» والبنك العربي). */
+    /** العملة الأجنبية لما القالب كاتبها بالحرف (البنك العربي «for USD {amount}»)؛ لو القالب فيه `{currency}` بتتاخد من القيمة المملية. */
     private const val FOREIGN_CURRENCY = "USD"
+
+    private fun foreignCurrencyOf(v: Variant): String = v.values["currency"]?.takeIf { it != "SAR" && it != "EGP" } ?: FOREIGN_CURRENCY
 
     private fun reasonCode(reason: String): String = REASONS.firstOrNull { uiText(it.first) == reason }?.second ?: reason
 
@@ -106,8 +108,9 @@ internal object Evaluate {
         val e = v.expect
         val problems = mutableListOf<String>()
         val want = Fill.minor(v.values.getValue(e.amountKey))
-        if (pending.foreign.currency != FOREIGN_CURRENCY || pending.foreign.amountMinor != want) {
-            problems += "foreign ${pending.foreign.currency} ${pending.foreign.amountMinor} != expected $FOREIGN_CURRENCY $want"
+        val currency = foreignCurrencyOf(v)
+        if (pending.foreign.currency != currency || pending.foreign.amountMinor != want) {
+            problems += "foreign ${pending.foreign.currency} ${pending.foreign.amountMinor} != expected $currency $want"
         }
         val dir = if (pending.direction == Direction.IN) Dir.IN else Dir.OUT
         if (e.dir != Dir.ANY && dir != e.dir) problems += "direction ${dir.name} != expected ${e.dir.name}"

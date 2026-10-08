@@ -16,8 +16,11 @@ private const val H = "[ \\t]"
 internal const val EG_CURRENCY =
     "(?:(?<![A-Za-z])(?:EGP|L\\.?E)(?![A-Za-z])|ج\\.م\\.?|جنيه|جنية|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])ج(?![\\u0600-\\u06FF.]))"
 
-/** «.50» (التجاري الدولي: المبلغ ممكن يبدأ بنقطة). */
-private const val NUM = "(?:\\d[\\d,]*(?:\\.\\d{1,2})?|\\.\\d{1,2})"
+/**
+ * «.50» (التجاري الدولي: المبلغ ممكن يبدأ بنقطة). فواصل الأرقام العربية «١٬٢٥٠» و«٢٥٠٫٥٠» (الأهلي المصري — `latinizeDigits` بيحوّل
+ * الأرقام بس مش الفواصل): من غيرها «١٬٢٥٠» كانت بتتقري 250 في صمت (مراجعة جلسة 33).
+ */
+private const val NUM = "(?:\\d[\\d,٬]*(?:[.٫]\\d{1,2})?|[.٫]\\d{1,2})"
 private val EG_CURRENCY_AMOUNT = Regex("$EG_CURRENCY$S*($NUM)|($NUM)$S*$EG_CURRENCY", EI)
 
 /** الكلام بين المبلغ اللي قبله والمبلغ ده فيه كلمة من دول ⇒ ده رصيد أو رسوم أو حد أو قسط، مش مبلغ العملية. */
@@ -34,7 +37,10 @@ internal sealed interface EgyptAmount {
     data class Fail(val reason: String) : EgyptAmount
 }
 
-private fun egp(number: String): Halalas? = tryParseMoney(if (number.startsWith(".")) "0$number" else number, Currency.EGP)
+private fun egp(raw: String): Halalas? {
+    val number = raw.replace('٬', ',').replace('٫', '.')
+    return tryParseMoney(if (number.startsWith(".")) "0$number" else number, Currency.EGP)
+}
 
 internal fun egyptAmount(body: String): EgyptAmount {
     WALLET_DEBIT.find(body)?.let { m ->
@@ -68,21 +74,40 @@ private val OUT_FROM_ACCOUNT = Regex("تم$H*تنفيذ$H*تحويل[^\\n]{0,60}
 /** «إلى حسابك» / «لحسابكم» — حسابك **إنت** (التجاري الدولي والأهلي). «إلى حساب <رقم>» من غير «ك» ممكن يبقى صادر فما بتتحسبش. */
 private val IN_TO_ACCOUNT = Regex("(?:إلى|الى)$H*حسابك|لحسابك|على$H*حسابكم|لبطاقتك", EI)
 private val OUT_TARGET = Regex("لرقم|${B}deducted$B|${B}debited$B|from$H+your$H+AC$B", EI)
-private val IN_VERB = Regex("تم$H*استلام|تم$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|deposit|salary|refund|إيداع", EI)
-private val OUT_VERB = Regex(
-    "تم$H*خصم|تم$H*سحب|تم$H*شحن|تم$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent|debit$H+card|credit$H+card|purchase",
+/** كلمات الوارد — بحدود كلمة («non-refundable» · «TEST HOTEL DEPOSIT» جوه كلمة تانية ما تتحسبش). */
+private val IN_VERB = Regex(
+    "تم$H*استلام|تم$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|إيداع",
     EI,
 )
 
-/** القواعد بالترتيب وأول واحدة بتكسب: الاسترداد ⇒ «من حسابك»/«إلى حسابك» ⇒ «لرقم»/خصم ⇒ أفعال الوارد ⇒ أفعال الصادر. */
-internal fun egyptDirection(body: String): Direction? = when {
-    STRONG_IN.containsMatchIn(body) -> Direction.IN
-    OUT_FROM_ACCOUNT.containsMatchIn(body) -> Direction.OUT
-    IN_TO_ACCOUNT.containsMatchIn(body) -> Direction.IN
-    OUT_TARGET.containsMatchIn(body) -> Direction.OUT
-    IN_VERB.containsMatchIn(body) -> Direction.IN
-    OUT_VERB.containsMatchIn(body) -> Direction.OUT
-    else -> null
+/** فعل خصم صريح — لو معاه فعل وارد في نفس الرسالة («تم خصم … وتم إضافة 50 نقطة») الاتجاه مش واضح. */
+private val DEBIT_VERB = Regex(
+    "تم$H*خصم|تم$H*سحب|تم$H*شحن|تم$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent",
+    EI,
+)
+
+/** إشارة صرف أضعف (اسم الكارت أو كلمة شراء) — بتخسر قدام فعل وارد صريح. */
+private val DEBIT_HINT = Regex("debit$H+card|credit$H+card|purchase", EI)
+
+/**
+ * القواعد بالترتيب وأول واحدة بتكسب: الاسترداد ⇒ «من حسابك»/«إلى حسابك» ⇒ «لرقم»/خصم ⇒ فعل وارد **وفعل خصم صريح مع بعض = مش واضح**
+ * ⇒ أفعال الوارد ⇒ أفعال الصادر. (مراجعة جلسة 33: الوارد كان بيكسب الخصم الصريح فعملية شراء اتسجلت دخل.)
+ */
+internal fun egyptDirection(body: String): Direction? {
+    when {
+        STRONG_IN.containsMatchIn(body) -> return Direction.IN
+        OUT_FROM_ACCOUNT.containsMatchIn(body) -> return Direction.OUT
+        IN_TO_ACCOUNT.containsMatchIn(body) -> return Direction.IN
+        OUT_TARGET.containsMatchIn(body) -> return Direction.OUT
+    }
+    val incoming = IN_VERB.containsMatchIn(body)
+    val debit = DEBIT_VERB.containsMatchIn(body)
+    return when {
+        incoming && debit -> null
+        incoming -> Direction.IN
+        debit || DEBIT_HINT.containsMatchIn(body) -> Direction.OUT
+        else -> null
+    }
 }
 
 private val REFUND_WORDS = Regex("has$H+been$H+refunded|تم$H*رد|${B}returned$B", EI)

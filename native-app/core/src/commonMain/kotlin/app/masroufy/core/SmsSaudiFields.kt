@@ -26,6 +26,7 @@ private val BARE_AMOUNT = Regex("(?:بمبلغ|المبلغ|مبلغ|amount|بـ
 /** «إجمالي المبلغ المستحق» / «Total due amount» (إس تي سي · بنك غير معروف): المبلغ + الرسوم + الضريبة = المخصوم فعلًا. */
 private val TOTAL_DUE_LINE = Regex("^[^\\n]*(?:Total$S*due$S*amount|إجمال[يى]$S*المبلغ$S*المستحق)[^\\n]*$", IM)
 
+// القايمة القديمة (أي حالة حروف، والكود لوحده كفاية). باقي أكواد ISO في `SmsForeignCodes.kt` (حروف كبيرة وجنبها مبلغ)
 private const val FOREIGN_CODES = "USD|EUR|EGP|AED|GBP|KWD|BHD|QAR|OMR|JOD"
 // «EGP900.00» (فودافون) لازق في الرقم ⇒ الحد بعد الكود حرف لاتيني بس، مش رقم
 private val FOREIGN = Regex("(?<![A-Za-z])(?:$FOREIGN_CODES)(?![A-Za-z])|دولار|يورو|جنيه|ج\\.م|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])", I)
@@ -60,15 +61,21 @@ private fun oneLocalAmount(text: String, body: String): SaudiAmount {
     return SaudiAmount.Fail(if (BARE_AMOUNT.containsMatchIn(body)) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
 }
 
-/** المبلغ الأجنبي الوحيد في الرسالة (مش في سطر رصيد أو رسوم)، أو null. [skip] = عملة البلد (الجنيه في قارئ مصر). */
+/**
+ * المبلغ الأجنبي الوحيد في الرسالة (مش في سطر رصيد أو رسوم)، أو null. [skip] = عملة البلد (الجنيه في قارئ مصر).
+ * القايمة القديمة + أي كود ISO جنب مبلغ (`SmsForeignCodes.kt` — «TRY 450.00» كانت بتضيع).
+ */
 internal fun foreignAmountOf(body: String, skip: String? = null): SmsForeignAmount? {
     val found = LinkedHashSet<SmsForeignAmount>()
     for (line in body.split('\n')) {
-        for (m in FOREIGN_AMOUNT.findAll(line)) {
+        val listed = FOREIGN_AMOUNT.findAll(line).map { m ->
+            IsoMoney(m.range, m.groups[1]?.value ?: m.groups[4]!!.value, m.groups[2]?.value ?: m.groups[3]!!.value)
+        }
+        for (m in listed + isoMoneyIn(line)) {
             if (NOT_TRANSACTION_AMOUNT.containsMatchIn(line.substring(0, m.range.first))) continue
-            val code = (m.groups[1]?.value ?: m.groups[4]!!.value).uppercase()
+            val code = m.code.uppercase()
             if (code == skip) continue
-            val amount = parse(m.groups[2]?.value ?: m.groups[3]!!.value) ?: return null
+            val amount = parse(m.number) ?: return null
             if (amount > 0) found += SmsForeignAmount(code, amount)
         }
     }
@@ -80,7 +87,7 @@ internal fun foreignAmountOf(body: String, skip: String? = null): SmsForeignAmou
  * لو مقابلها بالريال مكتوب (بين قوسين أو الإجمالي) ⇒ ده المبلغ؛ وإلا [SaudiAmount.ForeignOnly] (§75-12).
  */
 internal fun saudiAmount(body: String): SaudiAmount {
-    val foreign = FOREIGN.containsMatchIn(body)
+    val foreign = FOREIGN.containsMatchIn(body) || isoMoneyIn(body).isNotEmpty()
     TOTAL_DUE_LINE.find(body)?.let { line ->
         val total = oneLocalAmount(line.value, body)
         if (total is SaudiAmount.Ok) return SaudiAmount.Ok(total.amountMinor, if (foreign) foreignAmountOf(body) else null)

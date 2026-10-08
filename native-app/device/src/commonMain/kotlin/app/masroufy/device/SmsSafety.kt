@@ -20,16 +20,36 @@ object SmsSafety {
         RegexOption.IGNORE_CASE,
     )
 
+    /**
+     * التاريخ بسنة («2026-03-05» · «05-03-2026» · «14/09/2026») ما بيتحجبش: من غيره، قص الأرقام الطويلة كان بيلزق رقم الحساب أو
+     * المرجع اللي قبله في التاريخ («**3355 2026-03-05 09» = 14 رقم ⇒ «••••0509») والرسالة تترفض «التاريخ مش واضح» (مراجعة جلسة 33).
+     */
+    private val dates = Regex("(?<!\\d)(?:\\d{4}[-/\\\\]\\d{1,2}[-/\\\\]\\d{1,2}|\\d{1,2}[-/\\\\]\\d{1,2}[-/\\\\](?:\\d{4}|\\d{2}))(?!\\d)")
+
+    /** شكل تاريخ بجد: الشهر في النص من 1 لـ 12، والطرفين سنة (4 أرقام) أو من 1 لـ 31. */
+    private fun plausibleDate(value: String): Boolean {
+        val parts = value.split('-', '/', '\\')
+        fun dayOrYear(p: String) = p.length == 4 || p.toInt() in 1..31
+        return parts.size == 3 && parts[1].toInt() in 1..12 && dayOrYear(parts[0]) && dayOrYear(parts[2])
+    }
+
     /** النص الآمن للحفظ، أو `null` = الرسالة دي ما تتحفظش خالص. */
     fun sanitize(body: String?): String? {
         if (body == null || body.length > 8000) return null
         val text = latinizeDigits(body)
         if (SmsVocabulary.ignoreBeforeStorage(text) || !SmsVocabulary.hasMovement(text) || !SmsVocabulary.hasMoney(text)) return null
+        // اللي ما بيتحجبش: المبلغ جنب عملة (محلية أو أجنبية) والتاريخ
+        val kept = (
+            financial.findAll(text).map { it.range } + SmsVocabulary.foreignMoneyRanges(text) +
+                dates.findAll(text).filter { plausibleDate(it.value) }.map { it.range }
+            ).sortedBy { it.first }
         val safe = StringBuilder()
         var end = 0
-        for (amount in financial.findAll(text)) {
-            safe.append(redactIdentifiers(text.substring(end, amount.range.first))).append(amount.value)
-            end = amount.range.last + 1
+        for (range in kept) {
+            if (range.last < end) continue
+            val start = maxOf(range.first, end)
+            safe.append(redactIdentifiers(text.substring(end, start))).append(text.substring(start, range.last + 1))
+            end = range.last + 1
         }
         return safe.append(redactIdentifiers(text.substring(end))).toString()
     }

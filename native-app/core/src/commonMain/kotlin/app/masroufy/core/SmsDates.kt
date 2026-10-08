@@ -56,24 +56,74 @@ private val EG_SHORT = Regex("(?<![\\d.,])(\\d{1,2})[-/.](\\d{1,2})[-/.](\\d{2})
 /** الأهلي المصري: «يوم 09-14» = شهر-يوم من غير سنة (البحث: «MM-DD with NO year»). */
 private val NBE_MONTH_DAY = Regex("يوم[ \\t]*(\\d{1,2})-(\\d{1,2})(?![-/.\\d])")
 
-/** «29/07» = يوم/شهر من غير سنة (QNB · بيت التمويل الكويتي). */
-private val DAY_MONTH = Regex("(?<!\\d)(\\d{1,2})/(\\d{1,2})(?!\\d|/)")
+/** كلمة قبل التاريخ في القوالب: «on 29/07» (QNB · بيت التمويل) · «dated» · «يوم» · «في» · «بتاريخ». */
+private const val DATE_WORD = "(?:(?<![A-Za-z])(?:on|dated)|(?<![\\u0600-\\u06FF])(?:يوم|في|فى|بتاريخ))"
 
-/** أي شكل تاريخ في الرسالة — لو مفيش خالص، تاريخ الوصول هو تاريخ العملية (§40.3-١). */
-private val DATE_TOKEN = Regex("(?<![\\d.,])\\d{1,4}[-/\\\\]\\d{1,2}(?![\\d,])|(?<![\\d.,])\\d{1,2}\\.\\d{1,2}\\.\\d{2,4}(?![\\d.,])")
+/**
+ * «29/07» = يوم/شهر من غير سنة (QNB · بيت التمويل الكويتي) — **في مكان التاريخ بس**: بعد كلمة تاريخ أو قبل الساعة على طول.
+ * «PHARMA 24/7» في اسم المحل مش تاريخ (مراجعة جلسة 33: كانت بتتقري 24 يوليو وتتسجل في صمت).
+ */
+private val DAY_MONTH = Regex(
+    "$DATE_WORD[ \\t]*[:：]?[ \\t]*(\\d{1,2})/(\\d{1,2})(?![\\d/])|(?<![\\d.,])(\\d{1,2})/(\\d{1,2})(?![\\d,/])(?=[ \\t]+(?:at[ \\t]+)?\\d{1,2}:\\d{2})",
+    RegexOption.IGNORE_CASE,
+)
 
-internal fun hasDateToken(body: String): Boolean = DATE_TOKEN.containsMatchIn(body) || MONTH_NAME.containsMatchIn(body)
+/** تاريخ بسنة في أي مكان (أي فاصل) — أو يوم/شهر في مكان التاريخ ([DAY_MONTH] و«يوم MM-DD»). */
+private val FULL_DATE_TOKEN = Regex(
+    "(?<![\\d.,])\\d{1,4}[-/\\\\]\\d{1,2}[-/\\\\]\\d{1,4}(?![\\d,])|(?<![\\d.,])\\d{1,2}\\.\\d{1,2}\\.\\d{2,4}(?![\\d.,])",
+)
+private val PARTIAL_DATE_IN_PLACE = Regex(
+    "$DATE_WORD[ \\t]*[:：]?[ \\t]*\\d{1,2}[-/\\\\]\\d{1,2}(?![\\d,])|(?<![\\d.,])\\d{1,2}[-/\\\\]\\d{1,2}(?![\\d,/\\\\-])(?=[ \\t]+(?:at[ \\t]+)?\\d{1,2}:\\d{2})",
+    RegexOption.IGNORE_CASE,
+)
 
-/** يوم/شهر من غير سنة: سنة الوصول أو اللي قبلها، والمقبول واحد بس. */
+/** أي تاريخ في الرسالة — لو مفيش خالص، تاريخ الوصول هو تاريخ العملية (§40.3-١). «24/7» في اسم محل مش تاريخ. */
+internal fun hasDateToken(body: String): Boolean =
+    FULL_DATE_TOKEN.containsMatchIn(body) || PARTIAL_DATE_IN_PLACE.containsMatchIn(body) || MONTH_NAME.containsMatchIn(body)
+
+/**
+ * الرسالة اللي مفيهاش تاريخ بتاخد يوم الوصول **بس** لو فيها عبارة عملية خلصت (تم … · إيداع · received · credited · has been …
+ * · Successful). رمز أو عرض أو طلب أو «pending» من غير تاريخ ما يتسجلش بتاريخ النهارده (مراجعة جلسة 33).
+ */
+private val DONE_PHRASE = Regex(
+    "(?<![\\u0600-\\u06FF])و?تم(?![\\u0600-\\u06FF])|إيداع|ايداع|(?<![A-Za-z])(?:has|have)[ \\t]+been(?![A-Za-z])" +
+        "|(?<![A-Za-z])(?:received|credited|debited|deducted|returned|refunded|recharged|charged)(?![A-Za-z])|(?<![A-Za-z])successful",
+    RegexOption.IGNORE_CASE,
+)
+
+private const val HOUR_MS = 3_600_000L
+
+/** آخر [weekday] في الشهر (الأحد = 0). رقم اليوم 0 = 1970-01-01 = خميس. */
+private fun lastWeekday(year: Int, month: Int, lastDay: Int, weekday: Int): Int {
+    val last = toDayNumber(DateParts(year, month, lastDay))
+    return last - (last + 4 - weekday).mod(7)
+}
+
+/**
+ * يوم الوصول بتوقيت القاهرة. `receivedAt` من أندرويد = `Instant.toString()` بتوقيت جرينتش، فـ«أول 10 حروف» كانت بتسجل رسالة
+ * وصلت بعد نص الليل بتوقيت القاهرة على اليوم اللي قبله (مراجعة جلسة 33). مصر +2، والتوقيت الصيفي (+3، من 2023) من أول آخر جمعة
+ * في أبريل لحد آخر خميس في أكتوبر.
+ */
+internal fun cairoDayOf(receivedAt: String): IsoDate? {
+    if (receivedAt.length == 10) return receivedAt.takeIf(::isValidIsoDate)
+    val standard = (JsText.parseIsoMillis(receivedAt) ?: return null) + 2 * HOUR_MS
+    val year = parseIsoDate(dayNumberToIso(standard.floorDiv(DAY_MS).toInt())).year
+    val summer = year >= 2023 &&
+        standard >= lastWeekday(year, 4, 30, 5) * DAY_MS &&
+        standard < (lastWeekday(year, 10, 31, 4) + 1) * DAY_MS - HOUR_MS
+    return dayNumberToIso((if (summer) standard + HOUR_MS else standard).floorDiv(DAY_MS).toInt())
+}
+
+/** يوم/شهر من غير سنة: سنة الوصول (بتوقيت القاهرة) أو اللي قبلها، والمقبول واحد بس. */
 private fun withYear(month: Int, day: Int, receivedAt: String, received: Long): IsoDate? {
-    val year = receivedAt.take(4).toIntOrNull() ?: return null
+    val year = cairoDayOf(receivedAt)?.take(4)?.toIntOrNull() ?: return null
     val candidates = listOf(year, year - 1).map { iso(it, month, day) }.filter { isValidIsoDate(it) && inWindow(it, received) }
     return candidates.singleOrNull()
 }
 
 /**
- * مصر: الشهر بالاسم ⇒ سنة كاملة ⇒ سنتين أرقام ⇒ «يوم MM-DD» ⇒ يوم/شهر ⇒ ولا تاريخ خالص = يوم الوصول.
- * ⚠️ يوم الوصول = أول 10 حروف من `receivedAt` زي ما هو (نفس القارئ القديم) — طبقة أندرويد لازم تبعت التوقيت المحلي.
+ * مصر: الشهر بالاسم ⇒ سنة كاملة ⇒ سنتين أرقام ⇒ «يوم MM-DD» ⇒ يوم/شهر في مكان التاريخ ⇒ ولا تاريخ خالص = يوم الوصول بتوقيت
+ * القاهرة (لو الرسالة فيها عبارة عملية خلصت — [DONE_PHRASE]).
  */
 internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
     MONTH_NAME.find(body)?.let { m ->
@@ -82,14 +132,15 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
     }
     EG_LONG_YMD.find(body)?.let { m -> return iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()).takeIf(::isValidIsoDate) }
     EG_LONG_DMY.find(body)?.let { m -> return iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()).takeIf(::isValidIsoDate) }
-    if (!hasDateToken(body)) {
-        // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فتاريخ الوصول هو تاريخها
-        val day = receivedAt.take(10)
-        return if (isValidIsoDate(day)) day else null
-    }
+    // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
+    if (!hasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     if (EG_SHORT.containsMatchIn(body)) return shortCandidates(EG_SHORT, body, received).singleOrNull()
     NBE_MONTH_DAY.find(body)?.let { m -> return withYear(m.groupValues[1].toInt(), m.groupValues[2].toInt(), receivedAt, received) }
-    DAY_MONTH.find(body)?.let { m -> return withYear(m.groupValues[2].toInt(), m.groupValues[1].toInt(), receivedAt, received) }
+    DAY_MONTH.find(body)?.let { m ->
+        val day = (m.groups[1] ?: m.groups[3])!!.value.toInt()
+        val month = (m.groups[2] ?: m.groups[4])!!.value.toInt()
+        return withYear(month, day, receivedAt, received)
+    }
     return null
 }

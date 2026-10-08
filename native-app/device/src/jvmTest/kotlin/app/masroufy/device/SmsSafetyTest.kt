@@ -87,6 +87,28 @@ class SmsSafetyTest {
         assertNull(SmsSafety.sanitize("لقد تم تقسيط مبلغ 1,200.00 جم من TEST GROCER على بطاقتكم الائتمانية"))
     }
 
+    // مراجعة جلسة 33: أي كود عملة أجنبية جنب مبلغ بيتحفظ (§75-12 يسأل عن المبلغ المحلي) والمبلغ الكبير ما بيتقصش
+    @Test fun keepsAnyForeignCurrencyAndItsAmount() {
+        val jpy = SmsSafety.sanitize("شراء دولي\nبطاقة:4417;مدى\nمبلغ:JPY 45000\nدولة:JP\nلدى:NOVA GAMES\nفي:2026-03-05 09:10")
+        assertNotNull(jpy)
+        assertTrue(jpy.contains("JPY 45000"), jpy)
+        assertNotNull(SmsSafety.sanitize("VISA Purchase\nVia: *4417\nAmount: 450.00 TRY\nFrom: NOVA GAMES\nAt: 2026-03-05 09:10"))
+    }
+
+    // مراجعة جلسة 33: قص الأرقام الطويلة كان بيلزق الحساب أو المرجع في التاريخ اللي بعده («**3355 2026-03-05 09» ⇒ «••••0509»)
+    @Test fun neverSwallowsADateIntoANumberRun() {
+        for (date in listOf("2026-03-05", "05-03-2026", "05/03/2026")) {
+            val safe = SmsSafety.sanitize("عميلنا العزيز،\nتم استلام حوالة واردة من حساب جاري مبلغ SAR 700.00 إلى **3355 $date 09:10")!!
+            assertTrue(safe.endsWith("**3355 $date 09:10"), safe)
+        }
+        val ref = SmsSafety.sanitize("You have received 1,250.00 EGP from 01000000123. Transaction ID: 260914000427 14/09/2026 New balance: 3,412.60 EGP.")!!
+        assertTrue(ref.contains("••••0427 14/09/2026"), ref)
+        // الكارت اللي بعده تاريخ لسه بيتقص
+        val card = SmsSafety.sanitize("شراء بمبلغ 25 SAR بطاقة 4417 1234 5678 9012 2026-03-05")!!
+        assertFalse(card.contains("1234 5678"), card)
+        assertTrue(card.contains("2026-03-05"), card)
+    }
+
     // QNB مصر (OVERRIDES §40.3): العملة EGP والرسالة إنجليزي
     @Test fun keepsQnbEgyptMessages() {
         val sent = SmsSafety.sanitize("IPN transfer sent with amount of EGP 300.00 from 1234 on 30/07 at 05:48 AM. Ref# aaaa1111.")

@@ -11,37 +11,51 @@ import app.masroufy.core.JsText.S
 
 private val GI = setOf(RegexOption.IGNORE_CASE)
 
-/** عرض أو حركة جاية — نفس التطبيق الحالي. */
-internal val SMS_OFFER_PATTERN = Regex("عرض|سيتم|عرض خاص|offer|will be|scheduled", GI)
+/**
+ * عرض أو حركة جاية — نفس التطبيق الحالي. مراجعة جلسة 33: عروض إنجليزي من غير كلمة «offer» («Shop now … pay over 12 months» ·
+ * «cashback when you pay with your debit card»).
+ */
+internal val SMS_OFFER_PATTERN = Regex(
+    "عرض|سيتم|عرض خاص|offer|will be|scheduled" + "|shop$S+now|when$S+you$S+(?:pay|shop|spend|use)|pay$S+over$S+\\d",
+    GI,
+)
 
 /**
  * رمز تحقق أو كلمة سر. الإضافات: «كلمة مرور» من غير «ال» (الراجحي) · «رمز مؤقت» و«رمز:123456» (الراجحي) · «رمز شراء أونلاين»
  * (الإنماء — شكلها شراء بالظبط) · «الرقم السري» (الأهلي السعودي والتجاري الدولي وفودافون كاش — فيها مبلغ ومحل أحيانًا) · security code.
+ * مراجعة جلسة 33: one-time PIN · verification PIN · passcode · «كود التحقق» · «code 482913»/«PIN 4829» (رقم جنب الكلمة).
+ * «كود العملية» (أورانج كاش — رقم العملية) مش رمز.
  */
 internal val SMS_SENSITIVE_PATTERN = Regex(
     "${B}OTP$B|verification$S*code|one.time$S*(?:password|code)|رمز$S*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة$S*(?:المرور|السر)|" +
         "مشاركة${S}*الرمز|الرمز$S*[:：]?$S*\\d{4,8}" +
-        "|كلمة$S*مرور|رمز$S*(?:مؤقت|شراء)|رمز$S*[:：]$S*\\d{4,8}|الرقم$S*السري|security$S*code",
+        "|كلمة$S*مرور|رمز$S*(?:مؤقت|شراء)|رمز$S*[:：]$S*\\d{4,8}|الرقم$S*السري|security$S*code" +
+        "|one.?time$S*(?:PIN|passcode)|verification$S*PIN|passcode|كود$S*(?:ال)?(?:تحقق|تفعيل|تأكيد|أمان)" +
+        "|$B(?:PIN|code)$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)",
     GI,
 )
 
 /**
  * مرفوضة أو رصيد مش كفاية. الإضافات: «لم يتم تنفيذ» · «تم رفض المعاملة» (التجاري الدولي) · «رصيد غير كافي» · «لا يكفي» (الإنماء) ·
  * «لا يوجد رصيد كاف» (فودافون كاش) · «عدم كفاية» · Insufficient balance (إس تي سي — كانت بتتسجل شراء).
+ * مراجعة جلسة 33: «was rejected» · denied · «could not be completed».
  */
 internal val SMS_DECLINED_PATTERN = Regex(
     "مرفوض|رفض العملية|لم تتم|غير ناجح|declined|failed|unsuccessful" +
-        "|لم$S*يتم|رفض$S*المعاملة|تم$S*رفض|insufficient|رصيد$S*غير$S*كا[فٍ]|لا$S*يكفي|لا$S*يوجد$S*رصيد|عدم$S*(?:وجود$S*رصيد|كفاية)",
+        "|لم$S*يتم|رفض$S*المعاملة|تم$S*رفض|insufficient|رصيد$S*غير$S*كا[فٍ]|لا$S*يكفي|لا$S*يوجد$S*رصيد|عدم$S*(?:وجود$S*رصيد|كفاية)" +
+        "|${B}rejected$B|${B}denied$B|could$S*not$S*be$S*(?:completed|processed)",
     GI,
 )
 
 /**
  * مش حركة فلوس خلصت: تفويض/حجز (الخصم الحقيقي بييجي بعدين في رسالة تانية) · طلب استرداد أو طلب سحب لسه مستني · تحويل شراء قديم
  * لأقساط (مش صرف جديد) · كشف حساب البطاقة · دخول للتطبيق · تفعيل بطاقة · رقم سري اتعمل · رسالة رصيد بس · جايزة لازم تتطلب.
+ * مراجعة جلسة 33: pending · «معلقة» · under review · «قيد المراجعة» · «تم استلام طلبك/طلب سحب» · refund request.
  */
 private val NOT_TRANSACTION_ANYWHERE = Regex(
     "حجز$S*مبلغ|Cash$S*Re(?:serve|lease)|تم$S*استلام$S*الطلب|تم$S*طلب|تم$S*تقسيط|كشف$S*حساب|الحد$S*الأدنى$S*للسداد|" +
-        "تسجيل$S*الدخول|logged$S*in|تم$S*تفعيل|${B}PIN$B[^\\n]*${B}SET$B|مبروك$S*كسبت",
+        "تسجيل$S*الدخول|logged$S*in|تم$S*تفعيل|${B}PIN$B[^\\n]*${B}SET$B|مبروك$S*كسبت" +
+        "|${B}pending$B|معلق(?:ة|ه)?(?![\\u0600-\\u06FF])|under$S*review|قيد$S*(?:المراجعة|الانتظار|التنفيذ)|تم$S*استلام$S*طلب|${B}refund$S+request$B",
     GI,
 )
 
@@ -88,7 +102,11 @@ object SmsVocabulary {
 
     fun hasMovement(text: String): Boolean = MOVEMENT.containsMatchIn(text)
 
-    fun hasMoney(text: String): Boolean = MONEY.containsMatchIn(text)
+    /** عملة معروفة، أو أي كود عملة أجنبية جنب مبلغ («TRY 450.00» — كانت بتترمي في صمت قبل ما تتسأل عن مبلغها المحلي §75-12). */
+    fun hasMoney(text: String): Boolean = MONEY.containsMatchIn(text) || isoMoneyIn(text).isNotEmpty()
+
+    /** أماكن المبالغ بكود عملة أجنبية — فلتر الجهاز ما بيحجبهاش («JPY 45000» مش رقم حساب). */
+    fun foreignMoneyRanges(text: String): List<IntRange> = isoMoneyIn(text).map { it.range }
 
     /** ليه الرسالة دي **ما تتحفظش** (رمز · عرض · مرفوضة · مش عملية)، أو null. */
     fun ignoreReason(text: String): TextKey? = smsIgnoreReason(normalizeSmsBody(text))

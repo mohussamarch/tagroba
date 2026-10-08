@@ -20,7 +20,8 @@ internal object SaudiSpecs {
     val rows: Map<Int, RowSpec> = mapOf(
         // ── الراجحي ──
         0 to out(merchant = true),
-        1 to out(merchant = true, foreign = true, values = FOREIGN_TRIP + ("currency" to "USD")),
+        // البحث: «{currency} is the foreign code» = أي كود — الليرة التركية مش في قايمة العشر عملات القديمة (مراجعة جلسة 33)
+        1 to out(merchant = true, foreign = true, values = FOREIGN_TRIP + ("currency" to "TRY")),
         2 to out(merchant = true),
         // «مبلغ» = المخصوم، و«اعادة مبلغ» = الباقي من الحجز اللي رجع — مبلغين مختلفين بنفس الخانة في القالب
         3 to out(merchant = true, fix = { it.replace("اعادة مبلغ:SAR {amount}", "اعادة مبلغ:SAR {released}") }),
@@ -108,7 +109,8 @@ internal object SaudiSpecs {
         64 to inn(party = listOf(NAME)),
         65 to inn(party = NAME_DIGITS),
         66 to inn(party = listOf(NAME)),
-        67 to inn(),
+        // شكل تاريخ الإنماء مفترض: بشَرطة كمان (قص الأرقام الطويلة في فلتر الجهاز كان بيلزق «**3355 2026-09-14 14» — مراجعة جلسة 33)
+        67 to inn().copy(alsoDates = listOf(DateStyle.YYYY_MM_DD, DateStyle.DD_MM_YYYY_DASH)),
         68 to out(party = NAME_DIGITS),
         69 to out(party = NAME_DIGITS),
         70 to out(party = listOf("acct2"), kind = OWN_TRANSFER),

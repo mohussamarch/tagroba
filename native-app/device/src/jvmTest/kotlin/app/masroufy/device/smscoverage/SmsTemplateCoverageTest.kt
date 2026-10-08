@@ -70,7 +70,13 @@ class SmsTemplateCoverageTest {
         }
         val fixed = spec.fix?.invoke(template) ?: template
         if (spec.fix != null) assertTrue(fixed != template, "$country #$index: template fix did not apply")
-        return Fill.expand(fixed).map { (l, t) -> Variant(l, Fill.fill(t, values), spec.expect, values) }
+        val main = Fill.expand(fixed).map { (l, t) -> Variant(l, Fill.fill(t, values), spec.expect, values) }
+        // نفس القالب بأشكال تاريخ تانية (شكل البنك لسه مفترض) — الاسم «date=<الشكل>»
+        val extra = spec.alsoDates.flatMap { s ->
+            val v = Fill.values(country, lang, type, s, spec.values)
+            Fill.expand(fixed).map { (l, t) -> Variant(if (l == "-") "date=${s.name}" else "$l/date=${s.name}", Fill.fill(t, v), spec.expect, v) }
+        }
+        return main + extra
     }
 
     private fun result(file: String, index: Int, row: Map<String, Any?>, results: List<VariantResult>, isTitle: Boolean, keywordOnly: Boolean) =
@@ -110,7 +116,7 @@ class SmsTemplateCoverageTest {
             "saudi#106" to "STC «Outward SARIE Transfer» template has no date",
             "saudi#120" to "cashback accrual into a card's cashback wallet: no date in the template",
             "saudi#121" to "cashback credited to card: no date in the template",
-            "egypt#49" to "synthetic VF English receive: SmsSafety's long-number redaction eats the date after the reference («Transaction ID: <12 digits> 14/09/2026»)",
+            // egypt#49 اتشال (مراجعة جلسة 33): فلتر الجهاز بقى ما بيحجبش التاريخ، فرقم المرجع اللي قبله ما بقاش بياكله
         )
     }
 }
