@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تبديل البلد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.sw-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.sw-press:active{transform:scale(.97)}
+.sw-veil{animation:sw-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.sw-up{animation:sw-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.sw-skel{animation:sw-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+.sw-spin{animation:sw-spin 900ms cubic-bezier(.5,.1,.5,.9) infinite}
+.sw-toast{animation:sw-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes sw-fade{from{opacity:0}to{opacity:1}}
+@keyframes sw-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes sw-pulse{from{opacity:.5}to{opacity:1}}
+@keyframes sw-spin{to{transform:rotate(360deg)}}
+@keyframes sw-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.sw-press{transition:none}.sw-press:active{transform:none}.sw-up{animation:sw-fade 150ms both}.sw-skel,.sw-spin{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="position: relative; display: inline-flex; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="sw-press" onClick="{{toggle}}" aria-haspopup="dialog" aria-expanded="{{expanded}}" aria-label="{{triggerLabel}}" style="{{triggerStyle}}">
+    <span style="{{chipStyle}}">
+      <sc-if value="{{full}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #08634F"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg></sc-if>
+      <span style="{{nameStyle}}">{{activeName}}</span>
+      <span style="font-size: 12px; color: #637570">{{activeCur}}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #637570"><path d="m6 9 6 6 6-6"></path></svg>
+    </span>
+  </button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 20">
+      <button type="button" class="sw-veil" onClick="{{close}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="sw-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+        <span style="font-size: 13px; color: #637570">{{body}}</span>
+        <div role="radiogroup" aria-label="{{title}}" aria-busy="{{busy}}" style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{rows}}" as="c" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{c.on}}" class="sw-press" onClick="{{c.pick}}" style="{{c.style}}">
+              <span aria-hidden="true" style="{{c.lens}}">{{c.mark}}</span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: right">
+                <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 16px; font-weight: 700">{{c.name}}</span><sc-if value="{{c.isActive}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #08634F; background: #DCEBD6">{{activeChip}}</span></sc-if></span>
+                <span style="font-size: 12px; color: #637570">{{c.sub}}</span>
+              </span>
+              <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0">
+                <span style="font-size: 11px; color: #637570">{{withYouLabel}}</span>
+                <sc-if value="{{c.showAmount}}" hint-placeholder-val="{{ true }}"><span dir="ltr" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">{{c.amount}}</span></sc-if>
+                <sc-if value="{{c.skeleton}}" hint-placeholder-val="{{ false }}"><span class="sw-skel" aria-hidden="true" style="width: 84px; height: 16px; border-radius: 8px; background: rgba(25,61,51,0.10)"></span></sc-if>
+                <sc-if value="{{c.switching}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #08634F"><span class="sw-spin" aria-hidden="true" style="width: 14px; height: 14px; box-sizing: border-box; border-radius: 7px; border: 2px solid rgba(8,99,79,0.25); border-top-color: #08634F"></span>{{openingLabel}}</span></sc-if>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #637570">{{sharedNote}}</span>
+        <a href="Spaces.dc.html" class="sw-press" style="height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{manageLabel}}</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; left: 0; right: 0; bottom: 28px; z-index: 21; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="sw-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"size":{"editor":"enum","options":["عادي","صغير"],"default":"عادي","section":"الشكل"},"$preview":{"width":150,"height":48}}'>
+// زرار البلد + لوحة التبديل — مكانه جنب التحية في الرئيسية (§41 · §64 · §66).
+// التبديل على الجهاز ده بس ومن غير أي كتابة على البيانات (ManageSpaces.switchTo). الشاشة الأم بتعرف بـ onSwitch('السعودية' | 'مصر').
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, active: null, pending: null, toast: '' }; this.timers = []; }
+  componentDidUpdate(prev) { if (prev.space !== this.props.space && this.state.active) this.setState({ active: null }); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const s = this.state;
+    const loading = (this.props.state ?? 'عادي') === 'بيحمّل';
+    const compact = this.props.size === 'صغير';
+    const active = s.active || (this.props.space ?? 'السعودية');
+    const eg = active === 'مصر';
+    const n = (x) => x.toLocaleString('ar-EG');
+    // «معك الآن» لكل بلد = كل محافظها (البنوك + الكاش) — نفس أرقام الرئيسية المخترعة، بالوحدة الصغرى:
+    // السعودية 645000 + 90000 · مصر 2260000 + 270000
+    const SP = [
+      { id: 'السعودية', mark: 'س', cur: 'ر.س', curName: 'ريال سعودي', wallets: 4, total: 645000 + 90000 },
+      { id: 'مصر', mark: 'م', cur: 'ج.م', curName: 'جنيه مصري', wallets: 3, total: 2260000 + 270000 }
+    ];
+    const me = SP.find((x) => x.id === active) || SP[0];
+    const switchTo = (to) => {
+      if (s.pending) return;
+      if (to === active) { this.setState({ open: false }); return; }
+      this.setState({ pending: to });
+      // فتح بيانات البلد التانية (المزامنة شغالة لكل بلد مش مؤرشفة §64-٧) — هنا تأخير صغير بس
+      this.timers.push(setTimeout(() => {
+        const msg = to === 'مصر' ? 'بقيت في حساب مصر — الأرقام بالجنيه' : 'انتقلت إلى حساب السعودية — الأرقام بالريال';
+        this.setState({ active: to, pending: null, open: false, toast: msg });
+        this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700));
+        if (typeof this.props.onSwitch === 'function') this.props.onSwitch(to);
+      }, 900));
+    };
+    const rows = SP.map((x) => {
+      const on = x.id === active, going = s.pending === x.id;
+      return {
+        name: x.id, mark: x.mark, isActive: on, on: on ? 'true' : 'false',
+        sub: x.curName + '، ' + x.cur + '، ' + n(x.wallets) + (eg ? ' محافظ' : ' محافظ'),
+        amount: this.fmt(x.total) + ' ' + x.cur,
+        showAmount: !loading && !going, skeleton: loading && !going, switching: going,
+        pick: () => switchTo(x.id),
+        lens: 'width: 44px; height: 44px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 6px 14px rgba(8,99,79,0.14)',
+        style: 'display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 10px 14px; border: 0; border-radius: 18px; font: inherit; color: #193D33; cursor: pointer; ' + (on ? 'background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.55), 0 10px 24px rgba(29,54,53,0.08)' : 'background: rgba(25,61,51,0.04)')
+      };
+    });
+    return {
+      toggle: () => this.setState({ open: !s.open }),
+      close: () => { if (!s.pending) this.setState({ open: false }); },
+      closeLabel: eg ? 'اقفل' : 'إغلاق',
+      expanded: s.open ? 'true' : 'false',
+      triggerLabel: (eg ? 'البلد: ' : 'البلد: ') + me.id + (eg ? ' — دوس عشان تبدّل' : ' — اضغط للتبديل'),
+      // size="صغير": شارة ٢٨ تحت التحية أو جنب التاريخ، ومساحة اللمس لسه ٤٤ (الهامش السالب بيمنعها تكبّر السطر)
+      full: !compact,
+      triggerStyle: 'display: flex; align-items: center; height: 44px; min-width: 44px; padding: 0; border: 0; background: transparent; font: inherit; color: #193D33; cursor: pointer;' + (compact ? ' margin: -8px 0;' : ''),
+      chipStyle: 'display: flex; align-items: center; gap: ' + (compact ? 4 : 6) + 'px; height: ' + (compact ? 28 : 44) + 'px; padding: 0 ' + (compact ? 10 : 12) + 'px; box-sizing: border-box; border-radius: ' + (compact ? 14 : 22) + 'px; ' + (s.open ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 ' + (compact ? '6px 14px' : '10px 24px') + ' rgba(29,54,53,0.09)'),
+      nameStyle: 'font-size: ' + (compact ? 12 : 13) + 'px; font-weight: 700',
+      activeName: me.id, activeCur: me.cur,
+      open: s.open,
+      title: eg ? 'بدّل البلد' : 'تبديل البلد',
+      body: eg ? 'كل بلد ليها حساب لوحدها بمحافظها وأرقامها وعملتها. التبديل على الموبايل ده بس، ومش بيغيّر حاجة في بياناتك.' : 'لكل بلد حساب منفصل بمحافظه وأرقامه وعملته. التبديل على هذا الجوال فقط، ولا يغيّر شيئًا في بياناتك.',
+      busy: loading || !!s.pending ? 'true' : 'false',
+      rows, activeChip: eg ? 'الحالية' : 'الحالية',
+      withYouLabel: eg ? 'معاك دلوقتي' : 'معك الآن',
+      openingLabel: eg ? 'بيفتح…' : 'جارٍ الفتح…',
+      sharedNote: eg ? 'مشترك بين البلاد: ملفك ويوم المرتب والأشخاص والتجار والوسوم.' : 'مشترك بين البلدان: ملفك ويوم الراتب والأشخاص والتجار والوسوم.',
+      manageLabel: eg ? 'إدارة البلاد' : 'إدارة البلدان',
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

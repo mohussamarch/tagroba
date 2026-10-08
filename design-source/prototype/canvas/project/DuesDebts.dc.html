@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الديون — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#08634F}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.dl-in{animation:dl-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes dl-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.dl-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Operations.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 22px; font-weight: 700">الديون</h1><span style="font-size: 12px; color: #637570">{{subTitle}}</span></span>
+    </div>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+        <a href="People.dc.html" class="m-press" style="margin-top: 8px; height: 48px; padding: 0 20px; border-radius: 18px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 700; color: #FFFFFF; text-decoration: none; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{emptyGo}}</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div role="group" aria-label="{{filterAria}}" style="display: flex; gap: 10px">
+          <sc-for list="{{sides}}" as="sd" hint-placeholder-count="2">
+            <button type="button" class="m-press" aria-pressed="{{sd.on}}" onClick="{{sd.pick}}" style="{{sd.style}}">
+              <span style="display: flex; justify-content: space-between; align-items: center; gap: 6px"><span style="font-size: 14px; font-weight: 700">{{sd.label}}</span><span style="font-size: 11px; color: #637570">{{sd.count}}</span></span>
+              <span dir="ltr" style="{{sd.amountStyle}}">{{sd.amount}}</span>
+              <span style="font-size: 11px; color: #637570">{{sd.hint}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #637570; text-align: center">{{noNetting}}</span>
+
+        <label style="display: flex; align-items: center; gap: 10px; height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 18px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9), 0 6px 16px rgba(29,54,53,0.05)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="search" value="{{q}}" onInput="{{typeQ}}" placeholder="{{qHint}}" aria-label="{{qHint}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; color: #193D33; outline: none">
+          <sc-if value="{{hasQ}}" hint-placeholder-val="{{ false }}">
+            <button type="button" class="m-press" onClick="{{clearQ}}" aria-label="{{clearLabel}}" style="width: 44px; height: 44px; margin-inline-end: -10px; flex-shrink: 0; border: 0; border-radius: 14px; background: transparent; color: #637570; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+          </sc-if>
+        </label>
+
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+          <div class="dl-in" style="display: flex; flex-direction: column; gap: 8px">
+            <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><h2 style="margin: 0; font-size: 17px; font-weight: 700">{{g.title}}</h2><span dir="ltr" style="{{g.totalStyle}}">{{g.total}}</span></span>
+            <span style="font-size: 12px; color: #637570">{{g.order}}</span>
+            <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+              <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
+                <div style="{{r.wrapStyle}}">
+                  <sc-if value="{{r.linked}}" hint-placeholder-val="{{ true }}">
+                    <a href="DebtDetail.dc.html" data-keep="{{r.keep}}" class="m-press" aria-label="{{r.aria}}" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0; text-decoration: none; color: #193D33">
+                      <span style="{{r.avatar}}">{{r.initial}}</span>
+                      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.reason}}</span><span style="{{r.chipStyle}}">{{r.chip}}</span></span>
+                      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span><span style="font-size: 11px; color: #637570">{{r.due}}</span></span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-inline-end: -4px"><path d="M15 6l-6 6 6 6"></path></svg>
+                    </a>
+                  </sc-if>
+                  <sc-if value="{{r.plain}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0">
+                      <span style="{{r.avatar}}">{{r.initial}}</span>
+                      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.reason}}</span><span style="{{r.chipStyle}}">{{r.chip}}</span></span>
+                      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span><span style="font-size: 11px; color: #637570">{{r.due}}</span><span style="font-size: 10px; color: #8A9A95">{{later}}</span></span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{noHits}}" hint-placeholder-val="{{ false }}">
+          <div class="dl-in" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 8px; text-align: center">
+            <span style="font-size: 14px; font-weight: 700">{{noHitsTitle}}</span>
+            <span style="font-size: 13px; color: #637570">{{noHitsBody}}</span>
+            <button type="button" class="m-press" onClick="{{clearQ}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{clearAll}}</button>
+          </div>
+        </sc-if>
+        <span style="font-size: 12px; color: #637570">{{footNote}}</span>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // side: all · lak · alek (الكارت المضغوط بيصفّي، والضغط تاني يرجّع الكل)
+    this.state = { q: '', side: 'all' };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const T = (sa, e) => (eg ? e : sa);
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const s = this.state;
+    // مخترعة · نفس أرقام «لك» و«عليك» و«تفاصيل الدين» (فهد ١٬٥٠٠ اتسدد منها ٣٠٠) · الترتيب: فات موعده ← طال انتظاره (٣٠ يوم فأكتر) ← قرّب (٧ أيام) ← عادي
+    const S = { overdue: ['#BE3D48', 'rgba(190,61,72,0.10)', 0], waiting: ['#956000', '#FBF0DD', 1], soon: ['#08634F', '#DCEBD6', 2], calm: ['#637570', 'rgba(99,117,112,0.10)', 3] };
+    const D = {
+      lak: [
+        ['khaled', 'خالد', 50000, T('سلفة، ٢٣ أغسطس', 'سلفة، ٢٣ أغسطس'), T('بلا موعد', 'من غير ميعاد'), 'waiting', T('منتظر منذ ٤٥ يومًا', 'بقاله كتير مستني، ٤٥ يوم')],
+        ['fahd', 'فهد', 120000, T('سلفة، ٢ سبتمبر — سُدّد ٣٠٠', 'سلفة، ٢ سبتمبر — اتسدد ' + n(900)), T('موعدها ٢٠ سبتمبر', 'ميعادها ٢٠ سبتمبر'), 'overdue', T('فات موعدها منذ ١٧ يومًا', 'ميعادها فات من ١٧ يوم')],
+        [null, 'نورة', 30000, T('نصيبها من هدية ليلى', 'نصيبها من هدية ليلى'), T('موعدها ١٥ أكتوبر', 'ميعادها ١٥ أكتوبر'), 'soon', T('اقترب موعدها، بعد ٨ أيام', 'ميعادها قرّب، بعد ٨ أيام')],
+        [null, 'أحمد', 18500, T('نصيبه من فاتورة العشاء', 'نصيبه من فاتورة العشا'), T('بلا موعد', 'من غير ميعاد'), 'calm', T('منذ ٣ أيام', 'من ٣ أيام')]
+      ],
+      alek: [
+        ['omar', 'عمر', 200000, T('قرض منه، ١ سبتمبر', 'سلفة منه، ١ سبتمبر'), T('موعدها ١ نوفمبر', 'ميعادها ١ نوفمبر'), 'calm', T('بعد ٢٥ يومًا', 'بعد ٢٥ يوم')],
+        [null, 'سلمان', 45000, T('نصيبك من رحلة البحر', 'نصيبك من رحلة البحر'), T('بلا موعد', 'من غير ميعاد'), 'calm', T('منذ ١٠ أيام', 'من ١٠ أيام')]
+      ]
+    };
+    const q = s.q.trim();
+    const hit = (name) => !q || name.indexOf(q) >= 0;
+    const sum = (xs) => xs.reduce((t, x) => t + x[2] * k, 0);
+    const side = (id) => {
+      const lak = id === 'lak';
+      const rows = D[id].slice().sort((a, b) => S[a[5]][2] - S[b[5]][2]).filter((x) => hit(x[1]));
+      return {
+        title: lak ? T('لك', 'ليك') : 'عليك',
+        total: this.fmt(sum(rows)).replace(/\.00$/, '') + ' ' + cur,
+        totalStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (lak ? '#13764D' : '#BE3D48'),
+        order: lak ? T('الأهم أولًا: ما فات موعده، ثم ما طال انتظاره', 'الأهم الأول: اللي ميعاده فات، وبعده اللي مستني من زمان') : T('حسب الموعد', 'بالميعاد'),
+        rows: rows.map(([key, name, minor, reason, due, sig, chip], i) => ({
+          name, reason, due, chip, initial: name.charAt(0),
+          linked: !!key, plain: !key,
+          keep: JSON.stringify({ 'masroufy-debt': key || '' }),
+          aria: name + '، ' + (lak ? T('لك ', 'ليك ') : T('عليك ', 'عليك ')) + this.fmt(minor * k) + ' ' + cur,
+          amount: this.fmt(minor * k),
+          amountStyle: 'font-size: 16px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (lak ? '#13764D' : '#BE3D48'),
+          chipStyle: 'align-self: flex-start; margin-top: 2px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; color: ' + S[sig][0] + '; background: ' + S[sig][1],
+          avatar: 'width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; ' + (lak ? 'background: #DCEBD6; color: #08634F' : 'background: rgba(190,61,72,0.10); color: #BE3D48'),
+          wrapStyle: i === rows.length - 1 ? '' : 'border-bottom: 1px solid rgba(204,216,204,0.55)'
+        }))
+      };
+    };
+    const lakG = side('lak'), alekG = side('alek');
+    const groups = [['lak', lakG], ['alek', alekG]].filter(([id, g]) => (s.side === 'all' || s.side === id) && g.rows.length).map((x) => x[1]);
+    const empty = st === 'فاضي';
+    const card = (on, lak) => 'flex: 1 1 0; min-width: 0; border: 0; font: inherit; color: #193D33; text-align: right; cursor: pointer; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: ' + (on ? 'inset 0 0 0 2px ' + (lak ? '#13764D' : '#BE3D48') + ', ' : 'inset 0 1px 0 #FFFFFF, ') + '0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)';
+    const sides = [['lak', T('لك', 'ليك'), D.lak, T('ديون لك عند الناس', 'ديون ليك عند الناس')], ['alek', 'عليك', D.alek, T('ديون عليك للناس', 'ديون عليك للناس')]].map(([id, label, xs, hint]) => ({
+      label, hint, on: s.side === id ? 'true' : 'false', style: card(s.side === id, id === 'lak'),
+      count: id === 'lak' ? T('عند ', 'عند ') + plural(xs.length, T(['شخص واحد', 'شخصين', 'أشخاص', 'شخصًا'], ['شخص واحد', 'اتنين', 'أشخاص', 'شخص'])) : plural(xs.length, T(['لشخص واحد', 'لشخصين', 'أشخاص', 'شخصًا'], ['لشخص واحد', 'لاتنين', 'أشخاص', 'شخص'])),
+      amount: this.fmt(sum(xs)).replace(/\.00$/, '') + ' ' + cur,
+      amountStyle: 'text-align: right; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (id === 'lak' ? '#13764D' : '#BE3D48'),
+      pick: () => this.setState({ side: s.side === id ? 'all' : id })
+    }));
+    return {
+      subTitle: T('مع الأشخاص، لك وعليك كلٌّ على حدة', 'مع الناس، ليك وعليك كل واحد لوحده'),
+      isEmpty: empty, showMain: !empty,
+      emptyTitle: T('لا ديون مع أحد', 'مفيش ديون مع حد'),
+      emptyBody: T('حين تقسّم فاتورة أو تسجّل سلفة على شخص تظهر هنا.', 'لما تقسم فاتورة أو تسجّل سلفة على حد هتظهر هنا.'),
+      emptyGo: T('افتح الأشخاص', 'افتح الناس'),
+      filterAria: T('اعرض لك أو عليك', 'اعرض ليك أو عليك'), sides,
+      noNetting: T('كل رقم مستقل — بلا مقاصة بين «لك» و«عليك»', 'كل رقم لوحده — مفيش خصم «ليك» من «عليك»'),
+      q: s.q, hasQ: !!s.q, qHint: T('ابحث باسم الشخص', 'دوّر باسم الشخص'),
+      typeQ: (e) => this.setState({ q: e.target.value }),
+      clearQ: () => this.setState({ q: '', side: 'all' }), clearLabel: T('امسح البحث', 'امسح البحث'),
+      groups, later: T('تفاصيله لاحقًا', 'تفاصيله بعدين'),
+      noHits: !groups.length,
+      noHitsTitle: q ? T('لا أحد باسم «' + q + '»', 'مفيش حد اسمه «' + q + '»') : T('لا شيء هنا', 'مفيش حاجة هنا'),
+      noHitsBody: s.side !== 'all' ? T('البحث داخل «' + (s.side === 'lak' ? 'لك' : 'عليك') + '» فقط.', 'البحث جوه «' + (s.side === 'lak' ? 'ليك' : 'عليك') + '» بس.') : T('جرّب جزءًا من الاسم.', 'جرّب حتة من الاسم.'),
+      clearAll: T('اعرض الكل', 'اعرض الكل'),
+      footNote: T('اضغط على الدين لترى أصله وتسوياته وتسجّل تحصيلًا أو سدادًا.', 'دوس على الدين عشان تشوف أصله وتسوياته وتسجّل تحصيل أو سداد.')
+    };
+  }
+}
+</script>
+</body>
+</html>

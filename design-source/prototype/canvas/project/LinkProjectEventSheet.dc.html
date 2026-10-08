@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مشروع أو حدث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.pe-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.pe-press:active{transform:scale(.97)}
+.pe-veil{animation:pe-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.pe-up{animation:pe-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.pe-up>*{flex-shrink:0}
+.pe-in{animation:pe-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes pe-fade{from{opacity:0}to{opacity:1}}
+@keyframes pe-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes pe-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.pe-press{transition:none}.pe-press:active{transform:none}.pe-up,.pe-in{animation:pe-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 22px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg></span>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 14px; font-weight: 700">{{cardTitle}}</span>
+        <span id="pe-why" style="font-size: 12px; color: #637570">{{cardSub}}</span>
+      </span>
+      <button type="button" class="pe-press" onClick="{{openSheet}}" disabled="{{locked}}" aria-describedby="pe-why" style="{{openStyle}}">{{openLabel}}</button>
+    </div>
+    <sc-for list="{{tags}}" as="tg" hint-placeholder-count="0">
+      <div class="pe-in" style="display: flex; align-items: center; gap: 8px; min-height: 36px; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="flex: 1 1 auto; min-width: 0; font-size: 13px"><span style="color: #637570">{{tg.kind}}</span> <span style="font-weight: 700">{{tg.name}}</span></span>
+        <span dir="ltr" style="font-size: 13px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums">{{tg.amount}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="pe-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="pe-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+          <span style="display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: #637570"><span style="min-width: 0">{{txnName}}</span><span dir="ltr" style="{{txnAmountStyle}}">{{txnAmount}}</span></span>
+        </span>
+
+        <span style="display: flex; flex-direction: column; gap: 2px; margin-top: 2px"><span style="font-size: 13px; font-weight: 700">{{projLabel}}</span><span style="font-size: 12px; color: #637570">{{projHint}}</span></span>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{projects}}" as="pj" hint-placeholder-count="4">
+            <button type="button" role="checkbox" aria-checked="{{pj.on}}" class="pe-press" onClick="{{pj.toggle}}" style="{{pj.style}}">
+              <span aria-hidden="true" style="{{pj.box}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>{{pj.name}}
+            </button>
+          </sc-for>
+        </div>
+
+        <span style="display: flex; flex-direction: column; gap: 2px; margin-top: 4px"><span style="font-size: 13px; font-weight: 700">{{eventLabel}}</span><span style="font-size: 12px; color: #637570">{{eventHint}}</span></span>
+        <sc-if value="{{eventsOn}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+          <div role="radiogroup" aria-label="{{eventLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{events}}" as="ev" hint-placeholder-count="4">
+              <button type="button" role="radio" aria-checked="{{ev.on}}" class="pe-press" onClick="{{ev.pick}}" style="{{ev.style}}">{{ev.name}}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; color: #637570; min-height: 18px">{{evSub}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{conflict}}" hint-placeholder-val="{{ false }}">
+          <div class="pe-in" role="alert" style="border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; background: #FBF0DD; color: #6B4600">
+            <span style="font-size: 13px; font-weight: 700; color: #956000">{{conflictTitle}}</span>
+            <span style="font-size: 12px; line-height: 1.7">{{conflictBody}}</span>
+            <button type="button" class="pe-press" onClick="{{unlinkOld}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #6B4600; cursor: pointer; background: rgba(255,255,255,0.75)">{{unlinkLabel}}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{hasShare}}" hint-placeholder-val="{{ false }}">
+          <div class="pe-in" style="display: flex; flex-direction: column; gap: 8px">
+            <label for="pe-share" style="font-size: 13px; font-weight: 700">{{shareLabel}}</label>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <div style="width: 112px; flex-shrink: 0; display: flex; align-items: center; height: 48px; box-sizing: border-box; border-radius: 16px; padding: 0 14px; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+                <input id="pe-share" type="text" inputmode="numeric" dir="ltr" maxlength="3" value="{{shareText}}" onInput="{{typeShare}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 18px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+                <span style="font-size: 15px; color: #637570">٪</span>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{quick}}" as="qs" hint-placeholder-count="4">
+                  <button type="button" aria-pressed="{{qs.on}}" class="pe-press" onClick="{{qs.pick}}" style="{{qs.style}}">{{qs.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="border-radius: 18px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; background: rgba(8,99,79,0.06)">
+              <sc-for list="{{split}}" as="sp" hint-placeholder-count="2">
+                <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px"><span style="min-width: 0">{{sp.label}}</span><span dir="ltr" style="{{sp.style}}">{{sp.value}}</span></span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <span style="font-size: 12px; line-height: 1.7; color: #637570">{{tagNote}}</span>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="pe-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"flow":{"editor":"enum","options":["out","in"],"default":"out","section":"الحالة"},"event":{"editor":"enum","options":["","زواج خالد"],"default":"","section":"الحالة"},"locked":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"share":{"editor":null},"projects":{"editor":null},"amount":{"editor":null},"txnName":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":80}}'>
+// ربط العملية بمشروع أو حدث (§34 · §44.1 · §64). المشروع علامة على العملية كلها (ممكن أكتر من مشروع)،
+// والحدث واحد بس بنسبة صحيحة ١–١٠٠ بتتخزن على الربط — نصيبه = المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق على الهللة.
+// الحفظ بيرجّع للشاشة الأم: onSave({ projects: [اسم…], event: اسم أو null, sharePercent: رقم أو null, shareMinor: رقم أو null, unlinkedEvent: اسم أو null })
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, saved: null, sel: [], ev: null, share: '100', pending: null, unlinked: false, err: '' }; }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  pct(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  shareOf(amt, p) { const x = amt * p, r = x % 100; return (x - r) / 100 + (r * 2 >= 100 ? 1 : 0); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    const n = (x) => x.toLocaleString('ar-EG');
+    const out = this.props.flow !== 'in';
+    const locked = this.props.locked === true || this.props.locked === 'true';
+    const total = Math.abs(Number(this.props.amount) || (out ? 90000 * k : 50000 * k));
+    const txnName = this.props.txnName || (out ? (eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية') : (eg ? 'حوالة جاتلك من سارة' : 'حوالة واردة من سارة'));
+    // مخترعة · نفس شاشتي المشاريع والأحداث (النشطة بس — المؤرشف ما بيتعرضش هنا)
+    const PROJ = [[eg ? 'رحلة الغردقة' : 'رحلة العُلا', 'p'], [eg ? 'تجهيز أوضة الأولاد' : 'تجهيز غرفة الأولاد', 'p'], ['تصميم شعار لعميل', 'w'], [eg ? 'متجر جانبي' : 'متجر إلكتروني جانبي', 'w']];
+    const EVS = [['ولادة جود', '٢٨ سبتمبر', ''], ['زواج خالد', '١٨ أكتوبر', 'خالد'], [eg ? 'رحلة دهب' : 'رحلة العُلا', '١٤ نوفمبر', '']];
+    const split = (v) => String(v || '').split(/[،,]/).map((x) => x.trim()).filter(Boolean);
+    const saved = s.saved || { projects: split(this.props.projects).filter((p) => PROJ.some((x) => x[0] === p)), event: out && EVS.some((e) => e[0] === this.props.event) ? this.props.event : null, share: Math.min(100, Math.max(1, Number(this.props.share) || 100)) };
+    // الحدث المربوط فعلًا: ما يتغيّرش لحدث تاني غير بعد «فك» (العملية بحدث واحد — EVENT_TXN_ALREADY_LINKED)
+    const linked = s.unlinked ? null : saved.event;
+    const p = this.pct(s.share);
+    const okShare = p != null && p >= 1 && p <= 100;
+    const part = okShare ? this.shareOf(total, p) : null;
+    const money = (m) => this.fmt(m) + ' ' + cur;
+    const chip = (on) => 'display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const pick = (name) => {
+      if (name && linked && name !== linked) { this.setState({ pending: name, err: '' }); return; }
+      this.setState({ ev: name, pending: null, err: '', unlinked: s.unlinked || (!name && !!linked), share: name && name === saved.event && !s.unlinked ? String(saved.share) : s.share });
+    };
+    const tags = saved.projects.map((x) => ({ kind: eg ? 'مشروع:' : 'مشروع:', name: x, amount: '' }))
+      .concat(saved.event ? [{ kind: 'حدث:', name: saved.event + (saved.share < 100 ? '، ' + n(saved.share) + '٪' : ''), amount: money(this.shareOf(total, saved.share)) }] : []);
+    const has = tags.length > 0;
+    const curEv = EVS.find((e) => e[0] === s.ev) || null;
+    return {
+      cardTitle: eg ? 'مشروع أو حدث' : 'مشروع أو حدث',
+      cardSub: locked ? (eg ? 'تحويل بين بلدينك — ما بيتربطش بمشروع ولا حدث.' : 'تحويل بين بلديك — لا يُربط بمشروع أو حدث.') : has ? (eg ? 'علامات على العملية — ما بتغيّرش أي مجموع.' : 'علامات على العملية — لا تغيّر أي مجموع.') : (eg ? 'لسه ما اتربطتش' : 'لم تُربط بعد'),
+      locked,
+      openStyle: 'height: 48px; padding: 0 16px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); ' + (locked ? 'opacity: 0.45; cursor: default' : 'cursor: pointer'),
+      openLabel: has ? 'غيّر' : (eg ? 'اربطها' : 'اربط'),
+      openSheet: () => { if (!locked) this.setState({ open: true, sel: saved.projects.slice(), ev: linked, share: String(saved.share), pending: null, unlinked: false, err: '' }); },
+      tags,
+      open: s.open,
+      title: eg ? 'اربطها بمشروع أو حدث' : 'اربطها بمشروع أو حدث',
+      txnName, txnAmount: (out ? '−' : '+') + money(total),
+      txnAmountStyle: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (out ? '#BE3D48' : '#13764D'),
+      projLabel: 'المشاريع',
+      projHint: eg ? 'ممكن أكتر من مشروع، وكل مشروع بيحسبها مرة واحدة.' : 'يمكن أكثر من مشروع، وكل مشروع يحسبها مرة واحدة.',
+      projects: PROJ.map(([name]) => {
+        const on = s.sel.indexOf(name) >= 0;
+        return {
+          name, on: on ? 'true' : 'false', style: chip(on),
+          box: 'width: 18px; height: 18px; flex-shrink: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; ' + (on ? 'color: #FFFFFF; background: #08634F' : 'color: transparent; box-shadow: inset 0 0 0 1.5px rgba(99,117,112,0.55)'),
+          toggle: () => this.setState({ sel: on ? s.sel.filter((x) => x !== name) : s.sel.concat([name]), err: '' })
+        };
+      }),
+      eventLabel: 'الحدث',
+      eventHint: out ? (eg ? 'حدث واحد بس للعملية، وبنسبة من مبلغها.' : 'حدث واحد فقط للعملية، وبنسبة من مبلغها.') : (eg ? 'الفلوس الجاية بتتربط بالحدث كنقطة — من صفحة الحدث «سجّل النقوط».' : 'الوارد يُربط بالحدث نقطةً — من صفحة الحدث «سجّل النقوط».'),
+      eventsOn: out,
+      events: [[null, eg ? 'من غير حدث' : 'بلا حدث', '']].concat(EVS.map(([name, date, host]) => [name, name, date + '، ' + (host ? (eg ? 'حدث ' : 'حدث ') + host : (eg ? 'حدثك' : 'حدثك'))])).map(([id, name, sub]) => ({
+        name, on: s.ev === id ? 'true' : 'false', style: chip(s.ev === id), pick: () => pick(id)
+      })),
+      evSub: curEv ? curEv[1] + '، ' + (curEv[2] ? 'حدث ' + curEv[2] : 'حدثك') + (curEv[0] === linked ? (eg ? '، ومربوطة بيه دلوقتي' : '، ومربوطة به حاليًا') : '') : (eg ? 'العملية مش على أي حدث.' : 'العملية ليست على أي حدث.'),
+      conflict: !!s.pending && !!linked,
+      conflictTitle: (eg ? 'مربوطة بـ«' : 'مربوطة بـ«') + (linked || '') + (eg ? '» قبل كده' : '» مسبقًا'),
+      conflictBody: eg ? 'العملية الواحدة بتتربط بحدث واحد بس. فكّها الأول، وبعدين تتربط بـ«' + (s.pending || '') + '».' : 'تُربط العملية بحدث واحد فقط. فكّها أولًا، ثم تُربط بـ«' + (s.pending || '') + '».',
+      unlinkLabel: (eg ? 'فك الربط من «' : 'فك الربط من «') + (linked || '') + '»',
+      unlinkOld: () => { if (s.pending) this.setState({ unlinked: true, ev: s.pending, pending: null, share: '100', err: '' }); },
+      hasShare: out && !!s.ev && !s.pending,
+      shareLabel: eg ? 'نصيب الحدث من العملية' : 'نصيب الحدث من العملية',
+      shareText: s.share,
+      typeShare: (e) => this.setState({ share: e && e.target ? e.target.value : '', err: '' }),
+      quick: [100, 75, 50, 25].map((v) => ({ label: n(v) + '٪', on: p === v ? 'true' : 'false', pick: () => this.setState({ share: String(v), err: '' }), style: 'height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (p === v ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+      split: okShare ? [
+        { label: (eg ? 'على «' : 'على «') + (s.ev || '') + '»', value: money(part), style: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: #BE3D48' },
+        { label: eg ? 'الباقي برّه الحدث' : 'الباقي خارج الحدث', value: money(total - part), style: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: #637570' }
+      ] : [{ label: eg ? 'النسبة من ١ لـ١٠٠' : 'النسبة من ١ إلى ١٠٠', value: '—', style: 'color: #637570' }],
+      tagNote: eg ? 'الربط علامة على العملية — مش بيغيّر مصروف الشهر ولا تصنيفها، والنسبة بتتحفظ مع الربط.' : 'الربط علامة على العملية — لا يغيّر مصروف الشهر ولا تصنيفها، وتُحفظ النسبة مع الربط.',
+      err: s.err,
+      saveLabel: eg ? 'احفظ' : 'احفظ',
+      save: () => {
+        if (s.pending) return this.setState({ err: eg ? 'فك الربط القديم الأول، أو اختار نفس الحدث.' : 'فكّ الربط القديم أولًا، أو اختر الحدث نفسه.' });
+        if (out && s.ev && !okShare) return this.setState({ err: eg ? 'نسبة الحدث من العملية لازم تبقى من ١ لـ١٠٠.' : 'نسبة الحدث من العملية يجب أن تكون من ١ إلى ١٠٠.' });
+        const ev = out ? s.ev : null;
+        const next = { projects: s.sel.slice(), event: ev, share: ev ? p : 100 };
+        this.setState({ open: false, saved: next, unlinked: false, err: '' });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ projects: next.projects, event: ev, sharePercent: ev ? p : null, shareMinor: ev ? part : null, unlinkedEvent: saved.event && saved.event !== ev ? saved.event : null });
+      },
+      closeSheet: () => this.setState({ open: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

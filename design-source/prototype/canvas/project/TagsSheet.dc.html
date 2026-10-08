@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الوسوم — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.tg-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.tg-press:active{transform:scale(.97)}
+.tg-veil{animation:tg-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.tg-up{animation:tg-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.tg-in{animation:tg-in 320ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes tg-fade{from{opacity:0}to{opacity:1}}
+@keyframes tg-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes tg-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.tg-press{transition:none}.tg-press:active{transform:none}.tg-up,.tg-in{animation:tg-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 0">
+    <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 12px; color: #637570">{{label}}</span>
+      <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+        <sc-for list="{{onTags}}" as="t" hint-placeholder-count="1">
+          <span class="tg-in" style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 12px; color: #08634F; background: #DCEBD6"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>{{t.name}}</span>
+        </sc-for>
+        <sc-if value="{{noTags}}" hint-placeholder-val="{{ false }}"><span style="font-size: 15px; font-weight: 700; color: #637570">{{noTagsText}}</span></sc-if>
+      </span>
+    </span>
+    <button type="button" class="tg-press" onClick="{{openSheet}}" aria-haspopup="dialog" style="height: 44px; padding: 0 14px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{triggerLabel}}</button>
+  </div>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="tg-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="tg-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+        <span style="font-size: 13px; line-height: 1.7; color: #637570">{{body}}</span>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{onTags}}" as="o" hint-placeholder-count="1">
+            <button type="button" class="tg-press tg-in" onClick="{{o.remove}}" aria-label="{{o.removeLabel}}" style="display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 10px 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: #DCEBD6">{{o.name}}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+          </sc-for>
+          <sc-if value="{{noTags}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{emptyLine}}</span></sc-if>
+        </div>
+
+        <div style="display: flex; gap: 8px">
+          <input type="text" aria-label="{{inputLabel}}" placeholder="{{inputLabel}}" value="{{text}}" onInput="{{typeText}}" maxlength="32" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+          <button type="button" class="tg-press" onClick="{{addTyped}}" style="height: 48px; padding: 0 18px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: #08634F">{{addLabel}}</button>
+        </div>
+        <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px"><span role="alert" style="font-weight: 700; color: #BE3D48">{{err}}</span><span style="color: #637570; flex-shrink: 0">{{counter}}</span></span>
+
+        <span style="font-size: 13px; font-weight: 700; color: #637570">{{allTitle}}</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{offTags}}" as="f" hint-placeholder-count="5">
+            <button type="button" class="tg-press" onClick="{{f.add}}" aria-label="{{f.addLabel}}" style="display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{{f.name}}</button>
+          </sc-for>
+          <sc-if value="{{noMatch}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{noMatchText}}</span></sc-if>
+        </div>
+
+        <span role="status" style="font-size: 12px; font-weight: 700; color: #08634F; min-height: 18px">{{status}}</span>
+        <button type="button" class="tg-press" onClick="{{done}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{doneLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tags":{"editor":"text","default":"هدية","section":"العملية"},"$preview":{"width":350,"height":72}}'>
+// وسوم العملية: الزرار + اللوحة (spec/02 «الوسوم بلا مضاعفة» · spec/04 حد ٣٢ حرف · UI020).
+// إضافة وشيل فوري زي EditTransaction.addTag/removeTag · الاسم المكرر بيرجع للوسم الموجود (normalizedName) · الوسوم مشتركة بين البلاد (§41).
+// الشاشة الأم بتعرف بـ onChange(['هدية', …]).
+const MAX = 32;
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const init = String(props.tags ?? 'هدية').split(/[،,]/).map((x) => x.trim()).filter(Boolean);
+    // listTags — مخترعة، بترتيب الحروف
+    this.state = { open: false, on: init, all: ['البيت', 'المدارس', 'رمضان', 'سفر', 'ضيوف', 'هدية'].concat(init).filter((x, i, a) => a.indexOf(x) === i), text: '', err: '', status: '', failed: false };
+  }
+  norm(t) { return String(t || '').trim().replace(/\s+/g, ' ').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي'); }
+  emit(on) { if (typeof this.props.onChange === 'function') this.props.onChange(on); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const failing = (this.props.state ?? 'عادي') === 'خطأ';
+    const s = this.state, n = (x) => x.toLocaleString('ar-EG');
+    const add = (raw) => {
+      const name = String(raw || '').trim().replace(/\s+/g, ' ');
+      if (!name) { this.setState({ err: eg ? 'اكتب اسم الوسم' : 'أدخل اسم الوسم', status: '' }); return; }
+      if (name.length > MAX) { this.setState({ err: (eg ? 'اسم الوسم أطول من ' : 'اسم الوسم أطول من ') + n(MAX) + (eg ? ' حرف' : ' حرفًا'), status: '' }); return; }
+      // في حالة «خطأ» أول حفظ بيفشل ومفيش حاجة بتتغير
+      if (failing && !s.failed) { this.setState({ failed: true, err: eg ? 'ما اتحفظش الوسم — ما اتغيرش حاجة. جرّب تاني.' : 'تعذّر حفظ الوسم — لم يتغير شيء. حاول مرة أخرى.', status: '' }); return; }
+      const existing = s.all.find((x) => this.norm(x) === this.norm(name));
+      const tag = existing || name;
+      if (s.on.some((x) => this.norm(x) === this.norm(tag))) { this.setState({ text: '', err: '', status: (eg ? '«' : '«') + tag + (eg ? '» موجود على العملية' : '» موجود على العملية') }); return; }
+      const on = s.on.concat([tag]);
+      const all = existing ? s.all : s.all.concat([tag]).sort((a, b) => a.localeCompare(b, 'ar'));
+      this.setState({ on, all, text: '', err: '', status: existing ? (eg ? 'اتضاف «' : 'أُضيف «') + tag + '»' : (eg ? 'اتعمل وسم جديد «' : 'أُنشئ وسم جديد «') + tag + (eg ? '» واتضاف' : '» وأُضيف') });
+      this.emit(on);
+    };
+    const q = this.norm(s.text);
+    const off = s.all.filter((x) => s.on.indexOf(x) < 0 && (!q || this.norm(x).indexOf(q) >= 0));
+    return {
+      label: eg ? 'الوسوم' : 'الوسوم',
+      onTags: s.on.map((name) => ({ name, removeLabel: (eg ? 'شيل وسم ' : 'إزالة وسم ') + name,
+        remove: () => { const on = s.on.filter((x) => x !== name); this.setState({ on, status: (eg ? 'اتشال «' : 'أُزيل «') + name + '»', err: '' }); this.emit(on); } })),
+      noTags: s.on.length === 0, noTagsText: eg ? 'من غير وسوم' : 'بلا وسوم',
+      triggerLabel: s.on.length ? (eg ? 'عدّل' : 'تعديل') : (eg ? 'ضيف وسم' : 'أضف وسمًا'),
+      openSheet: () => this.setState({ open: true, text: '', err: '', status: '' }),
+      open: s.open,
+      closeSheet: () => this.setState({ open: false }),
+      title: eg ? 'وسوم العملية' : 'وسوم العملية',
+      body: eg ? 'الوسم للبحث والتقارير بس — ما بيغيّرش المبلغ ولا بيتحسب مرتين. والوسوم مشتركة بين البلاد.' : 'الوسم للبحث والتقارير فقط — لا يغيّر المبلغ ولا يُحسب مرتين. والوسوم مشتركة بين البلدان.',
+      emptyLine: eg ? 'مفيش وسوم على العملية دي.' : 'لا وسوم على هذه العملية.',
+      inputLabel: eg ? 'وسم جديد أو دوّر' : 'وسم جديد أو ابحث',
+      text: s.text, typeText: (e) => this.setState({ text: e.target.value, err: '' }),
+      addLabel: eg ? 'ضيف' : 'أضف', addTyped: () => add(s.text),
+      err: s.err, counter: n(String(s.text || '').length) + '/' + n(MAX),
+      allTitle: eg ? 'وسومك' : 'وسومك',
+      offTags: off.map((name) => ({ name, addLabel: (eg ? 'ضيف وسم ' : 'إضافة وسم ') + name, add: () => add(name) })),
+      noMatch: off.length === 0,
+      noMatchText: q ? (eg ? 'مفيش وسم بالاسم ده — «ضيف» يعمله جديد.' : 'لا وسم بهذا الاسم — «أضف» ينشئه جديدًا.') : (eg ? 'كل وسومك على العملية دي.' : 'كل وسومك على هذه العملية.'),
+      status: s.status,
+      doneLabel: eg ? 'تمام' : 'تم', done: () => this.setState({ open: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

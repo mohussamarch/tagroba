@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اربطها بشخص — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.lp-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.lp-press:active{transform:scale(.97)}
+.lp-veil{animation:lp-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.lp-up{animation:lp-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.lp-up>*{flex-shrink:0}
+.lp-in{animation:lp-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes lp-fade{from{opacity:0}to{opacity:1}}
+@keyframes lp-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes lp-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.lp-press{transition:none}.lp-press:active{transform:none}.lp-up,.lp-in{animation:lp-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 22px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.10)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 14px; font-weight: 700">{{cardTitle}}</span>
+        <span id="lp-why" style="font-size: 12px; color: #637570">{{cardSub}}</span>
+      </span>
+      <button type="button" class="lp-press" onClick="{{openSheet}}" disabled="{{blocked}}" aria-describedby="lp-why" style="{{openStyle}}">{{openLabel}}</button>
+    </div>
+    <sc-for list="{{links}}" as="ln" hint-placeholder-count="0">
+      <div class="lp-in" style="display: flex; align-items: center; gap: 8px; min-height: 36px; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 700">{{ln.label}}</span>
+        <span dir="ltr" style="{{ln.amountStyle}}">{{ln.amount}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="lp-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="lp-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+          <span style="display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: #637570"><span style="min-width: 0">{{txnName}}</span><span dir="ltr" style="{{txnAmountStyle}}">{{txnAmount}}</span></span>
+          <sc-if value="{{hasSplitLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{splitLine}}</span></sc-if>
+        </span>
+
+        <span style="font-size: 13px; font-weight: 700">{{whoLabel}}</span>
+        <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="text" maxlength="80" aria-label="{{queryPh}}" value="{{query}}" onInput="{{typeQuery}}" placeholder="{{queryPh}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; color: #193D33; outline: none">
+        </div>
+        <div role="radiogroup" aria-label="{{whoLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{people}}" as="pp" hint-placeholder-count="6">
+            <button type="button" role="radio" aria-checked="{{pp.on}}" class="lp-press" onClick="{{pp.pick}}" style="{{pp.style}}">{{pp.name}}</button>
+          </sc-for>
+          <sc-if value="{{canAddNew}}" hint-placeholder-val="{{ false }}">
+            <button type="button" class="lp-press" onClick="{{pickNew}}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{newLabel}}</button>
+          </sc-if>
+        </div>
+        <sc-if value="{{hasPersonLine}}" hint-placeholder-val="{{ false }}">
+          <span style="display: flex; align-items: baseline; gap: 6px; font-size: 12px; color: #637570"><span>{{personLine}}</span><span dir="ltr" style="{{personAmtStyle}}">{{personAmt}}</span></span>
+        </sc-if>
+
+        <span style="font-size: 13px; font-weight: 700; margin-top: 4px">{{kindLabel}}</span>
+        <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{kd.on}}" disabled="{{kd.off}}" class="lp-press" onClick="{{kd.pick}}" style="{{kd.style}}">{{kd.label}}</button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; line-height: 1.7; color: #637570">{{kindNote}}</span>
+
+        <sc-if value="{{partial}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="lp-amount" style="font-size: 13px; font-weight: 700">{{amountLabel}}</label>
+            <div style="display: flex; align-items: center; height: 56px; border-radius: 18px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+              <input id="lp-amount" type="text" inputmode="decimal" dir="ltr" value="{{amountText}}" onInput="{{typeAmount}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 22px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+              <span style="font-size: 14px; color: #637570">{{cur}}</span>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{quick}}" as="qk" hint-placeholder-count="2">
+                <button type="button" class="lp-press" onClick="{{qk.pick}}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{qk.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{whole}}" hint-placeholder-val="{{ false }}">
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; border-radius: 16px; padding: 12px 14px; font-size: 13px; background: rgba(25,61,51,0.04)"><span>{{wholeLabel}}</span><span dir="ltr" style="font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums">{{wholeAmt}}</span></span>
+        </sc-if>
+
+        <div style="border-radius: 18px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; background: rgba(8,99,79,0.06)">
+          <span style="font-size: 12px; font-weight: 700; color: #08634F">{{fxTitle}}</span>
+          <sc-for list="{{fx}}" as="fe" hint-placeholder-count="2">
+            <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px"><span style="min-width: 0">{{fe.label}}</span><span dir="{{fe.dir}}" style="{{fe.style}}">{{fe.value}}</span></span>
+          </sc-for>
+        </div>
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="lp-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"flow":{"editor":"enum","options":["purchase","transfer_out","transfer_in"],"default":"purchase","section":"الحالة"},"locked":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"amount":{"editor":null},"txnName":{"editor":null},"allocated":{"editor":null},"person":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":80}}'>
+// ربط العملية بشخص (spec/02 «حسابات الأشخاص» · spec/04 «ربط الشخص» · §39.1 · §42 · §75-5).
+// الحفظ بيرجّع للشاشة الأم: onSave({ person, isNew, kind, amountMinor })
+//   kind: receivable · gift (شراء) | loan_given · support_given · repay (حوالة صادرة) | gift_received · support_received · collect · loan_received · custody_received · rosca_payout (حوالة واردة)
+//   amountMinor بالوحدة الصغرى — في الشراء جزء من العملية، وفي الحوالة العملية كلها.
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, who: '', isNew: false, query: '', kind: null, amount: '', err: '', links: [], added: [] }; }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    const flow = ['purchase', 'transfer_out', 'transfer_in'].indexOf(this.props.flow) >= 0 ? this.props.flow : 'purchase';
+    const buy = flow === 'purchase', inFlow = flow === 'transfer_in';
+    // مخترعة · بالوحدة الصغرى
+    const SAMPLE = { purchase: [eg ? 'مطعم الفول' : 'مطعم الريف', eg ? 18500 : 4200], transfer_out: [eg ? 'حوالة طالعة' : 'حوالة صادرة', 100000 * k], transfer_in: [eg ? 'حوالة جاتلك' : 'حوالة واردة', 150000 * k] }[flow];
+    const txnName = this.props.txnName || SAMPLE[0];
+    const total = Math.abs(Number(this.props.amount) || SAMPLE[1]);
+    const locked = this.props.locked === true || this.props.locked === 'true';
+    const prior = Math.max(0, Number(this.props.allocated) || 0);
+    const used = prior + (buy ? s.links.reduce((t, l) => t + l.amountMinor, 0) : 0);
+    const avail = Math.max(0, total - used);
+    // الرصيد مع كل شخص: موجب = لك عنده · سالب = عليك له (نفس أرقام شاشة الأشخاص)
+    const BASE = [['خالد', 50000], ['فهد', 120000], ['نورة', 30000], ['أحمد', 18500], ['عمر', -200000], ['سلمان', -45000], ['ليلى', 0], ['يوسف', 0], ['سارة', 0], ['ريم', 0], ['سالم', 0]];
+    const all = BASE.map(([name, b]) => ({ name, b: b * k })).concat(s.added.map((name) => ({ name, b: 0 })));
+    const who = s.who || (this.props.person && all.some((p) => p.name === this.props.person) ? this.props.person : '');
+    const sel = s.isNew ? { name: who, b: 0 } : all.find((p) => p.name === who) || null;
+    const q = s.query.trim();
+    const chip = (on, off) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; ' + (off ? 'opacity: 0.45; cursor: default; ' : 'cursor: pointer; ') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    let list = (s.isNew && who ? [{ name: who, b: 0 }] : []).concat(all).filter((p) => !q || p.name.indexOf(q) >= 0 || p.name === who);
+    if (!q && list.length > 8) list = list.slice(0, 8).concat(list.slice(8).filter((p) => p.name === who));
+    const exact = all.some((p) => p.name === q) || (s.isNew && who === q);
+    // الأنواع حسب العملية: الشراء (دين عليه أو هدية) · الحوالة الصادرة «سلفة أم دعم؟» كل مرة (§75-5) · الواردة قايمة §42
+    const owes = sel && sel.b < 0 ? -sel.b : 0, lent = sel && sel.b > 0 ? sel.b : 0;
+    const KL = {
+      receivable: eg ? 'دين عليه' : 'دين عليه', gift: eg ? 'هدية ليه' : 'هدية له', loan_given: 'سلفة', support_given: 'دعم', repay: 'سداد دين عليك',
+      gift_received: 'هدية أو عيدية', support_received: 'مساعدة', collect: 'تحصيل دين', loan_received: eg ? 'سلفة منه' : 'قرض منه', custody_received: 'أمانة عندك', rosca_payout: 'دور جمعية'
+    };
+    const ids = buy ? ['receivable', 'gift'] : inFlow ? ['gift_received', 'support_received', 'collect', 'loan_received', 'custody_received', 'rosca_payout'] : ['loan_given', 'support_given'].concat(owes ? ['repay'] : []);
+    const offOf = (id) => id === 'collect' && !lent;
+    const kind = s.kind && ids.indexOf(s.kind) >= 0 && !offOf(s.kind) ? s.kind : null;
+    const NOTE = {
+      receivable: eg ? 'دفعتها عنه، وبتتسجل دين عليه في «ليك».' : 'دفعتها عنه، وتُسجَّل دينًا عليه في «لك».',
+      gift: eg ? 'هدية مش هترجع — بتفضل من مصروفك وبتبان في سجله.' : 'هدية لا تُسترد — تبقى من مصروفك وتظهر في سجله.',
+      loan_given: eg ? 'بتتسجل دين عليه يرجّعه بعدين، ومش مصروف.' : 'تُسجَّل دينًا عليه يُسدَّد لاحقًا، وليست مصروفًا.',
+      support_given: eg ? 'دعم مش هيرجع — بيتحسب من مصروفك.' : 'دعم لا يُسترد — يُحسب من مصروفك.',
+      repay: eg ? 'بتسدّ بيها اللي عليك ليه، ومش مصروف.' : 'تسدّد بها ما عليك له، ولا تُحسب مصروفًا.',
+      gift_received: eg ? 'بتتحسب دخل، منفصلة عن المرتب.' : 'تُضاف إلى دخلك، منفصلة عن الراتب.',
+      support_received: eg ? 'بتتحسب دخل، منفصلة عن المرتب.' : 'تُضاف إلى دخلك، منفصلة عن الراتب.',
+      collect: eg ? 'بتنقّص اللي ليك عنده، ومش دخل.' : 'تُنقص ما لك عنده، ولا تُعدّ دخلًا.',
+      loan_received: eg ? 'سلفة عليك ليه — مش دخل.' : 'قرض عليك له — ليس دخلًا.',
+      custody_received: eg ? 'أمانة ليه عندك هترجعها — مش دخل.' : 'أمانة له عندك تردّها — ليست دخلًا.',
+      rosca_payout: eg ? 'دورك في الجمعية — مش دخل، وجزء منه عليك في الأقساط الجاية.' : 'دورك من الجمعية — ليس دخلًا، وجزء منه عليك في الأقساط القادمة.'
+    };
+    const noKindNote = buy ? (eg ? 'اختار النوع وهتشوف أثره تحت.' : 'اختر النوع ليظهر أثره بالأسفل.')
+      : inFlow ? (eg ? 'اللي جايلك من شخص مش بيتحسب دخل لحد ما تقول نوعه.' : 'الوارد من شخص لا يُحسب دخلًا حتى تحدد نوعه.')
+      : (eg ? 'بنسألك عن كل حوالة ليه — مفيش نوع ثابت لكل شخص.' : 'نسألك عن كل حوالة له — لا نوع ثابت لكل شخص.');
+    const amt = buy ? this.toMinor(s.amount) : total;
+    const P = sel ? sel.name : '';
+    const money = (m, sign) => (sign || '') + this.fmt(m) + ' ' + cur;
+    const same = eg ? 'زي ما هو' : 'بلا تغيير';
+    const line = (label, value, color, text) => ({ label, value, dir: text ? 'rtl' : 'ltr', style: 'white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; color: ' + (color || '#193D33') });
+    const G = '#13764D', R = '#BE3D48';
+    // قبل ← بعد: الرقمين من غير حروف بيتعرضوا من الشمال لليمين، فبنكتب «بعد ← قبل» عشان تتقري من اليمين
+    const arrow = (from, to) => this.fmt(to) + ' ← ' + this.fmt(from);
+    const expBefore = total - prior;
+    const FX = amt == null || amt <= 0 || !kind ? null : {
+      receivable: [line(eg ? 'مصروفك من العملية' : 'مصروفك من العملية', arrow(expBefore, Math.max(0, expBefore - amt))), line((eg ? 'ليك عند ' : 'لك عند ') + P, arrow(lent, lent + amt), G)],
+      gift: [line(eg ? 'مصروفك من العملية' : 'مصروفك من العملية', same, null, true), line((eg ? 'دين على ' : 'دين على ') + P, eg ? 'ولا حاجة' : 'لا شيء', null, true)],
+      loan_given: [line(eg ? 'مصروف الشهر' : 'مصروف الشهر', same, null, true), line((eg ? 'ليك عند ' : 'لك عند ') + P, arrow(lent, lent + amt), G)],
+      support_given: [line(eg ? 'مصروف الشهر' : 'مصروف الشهر', money(amt, '+'), R)],
+      repay: [line('عليك ل' + P, arrow(owes, Math.max(0, owes - amt)), R), line(eg ? 'مصروف الشهر' : 'مصروف الشهر', same, null, true)],
+      gift_received: [line(eg ? 'دخل الشهر' : 'دخل الشهر', money(amt, '+'), G)],
+      support_received: [line(eg ? 'دخل الشهر' : 'دخل الشهر', money(amt, '+'), G)],
+      collect: [line((eg ? 'ليك عند ' : 'لك عند ') + P, arrow(lent, Math.max(0, lent - amt)), G), line(eg ? 'دخل الشهر' : 'دخل الشهر', same, null, true)],
+      loan_received: [line('عليك ل' + P, arrow(owes, owes + amt), R), line(eg ? 'دخل الشهر' : 'دخل الشهر', same, null, true)],
+      custody_received: [line('أمانة ل' + P + (eg ? ' عندك' : ' عندك'), money(amt, '+')), line(eg ? 'دخل الشهر' : 'دخل الشهر', same, null, true)],
+      rosca_payout: [line(eg ? 'دخل الشهر' : 'دخل الشهر', same, null, true)]
+    }[kind];
+    const fx = FX || [line(!sel ? (eg ? 'اختار الشخص والنوع' : 'اختر الشخص والنوع') : !kind ? (eg ? 'اختار النوع' : 'اختر النوع') : (eg ? 'اكتب المبلغ' : 'اكتب المبلغ'), eg ? 'وهيظهر الأثر هنا' : 'ليظهر الأثر هنا', '#637570', true)];
+    const half = (avail - (avail % 2)) / 2;
+    const fresh = (prefill) => Object.assign({ open: true, query: '', amount: '', err: '', who: '', isNew: false, kind: null }, prefill || {});
+    const last = s.links.length ? s.links[s.links.length - 1] : null;
+    const EFF = { receivable: 1, loan_given: 1, gift: -1, support_given: -1, repay: -1 };
+    return {
+      cardTitle: 'شخص',
+      cardSub: locked ? (eg ? 'تحويل بين بلدينك — ما بيتربطش بشخص.' : 'تحويل بين بلديك — لا يُربط بشخص.')
+        : buy ? (s.links.length || prior ? (avail ? (eg ? 'الباقي للتقسيم ' : 'المتاح للتقسيم ') + money(avail) : (eg ? 'اتقسمت كلها' : 'قُسّمت كلها')) : (eg ? 'قسّمها على حد: دين عليه أو هدية ليه' : 'قسّمها على شخص: دين عليه أو هدية له'))
+        : last ? (eg ? 'تقدر تغيّر النوع في أي وقت.' : 'يمكنك تغيير النوع في أي وقت.')
+        : inFlow ? (eg ? 'من مين؟ والفلوس دي إيه؟' : 'ممّن؟ وما نوع المبلغ؟') : (eg ? 'الحوالة لمين؟ سلفة ولا دعم؟' : 'لمن الحوالة؟ سلفة أم دعم؟'),
+      blocked: locked || (buy && avail === 0),
+      openStyle: 'height: 48px; padding: 0 16px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.08); ' + (locked || (buy && avail === 0) ? 'opacity: 0.45; cursor: default' : 'cursor: pointer'),
+      openLabel: !s.links.length ? (eg ? 'اربطها' : 'اربط') : buy ? (eg ? 'حد تاني' : 'شخص آخر') : 'غيّر',
+      openSheet: () => { if (locked || (buy && avail === 0)) return; this.setState(fresh(!buy && last ? { who: last.person, kind: last.kind } : null)); },
+      links: s.links.map((l) => ({
+        label: l.person + ' — ' + KL[l.kind] + (l.isNew ? (eg ? ' (جديد)' : ' (جديد)') : ''),
+        amount: (inFlow || EFF[l.kind] === 1 ? '+' : '−') + money(l.amountMinor),
+        amountStyle: 'font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (inFlow || EFF[l.kind] === 1 ? G : R)
+      })),
+      open: s.open,
+      title: eg ? 'اربطها بشخص' : 'اربطها بشخص',
+      txnName, txnAmount: (inFlow ? '+' : '−') + money(total), cur,
+      txnAmountStyle: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (inFlow ? G : R),
+      hasSplitLine: buy && used > 0,
+      splitLine: (eg ? 'اتقسم منها ' : 'قُسّم منها ') + money(used) + (eg ? '، والباقي ' : '، والمتاح ') + money(avail),
+      whoLabel: eg ? 'مين؟' : 'مَن؟',
+      queryPh: eg ? 'دوّر أو اكتب اسم جديد' : 'ابحث أو اكتب اسمًا جديدًا',
+      query: s.query,
+      typeQuery: (e) => this.setState({ query: e && e.target ? e.target.value : '', err: '' }),
+      people: list.map((p) => ({ name: p.name, on: who === p.name ? 'true' : 'false', style: chip(who === p.name), pick: () => this.setState({ who: p.name, isNew: s.isNew && p.name === who, err: '' }) })),
+      canAddNew: !!q && !exact,
+      newLabel: (eg ? '+ ضيف «' : '+ أضف «') + q + '»',
+      pickNew: () => { if (q) this.setState({ who: q, isNew: true, query: '', err: '' }); },
+      hasPersonLine: !!sel,
+      personLine: !sel ? '' : s.isNew ? (eg ? 'هيتضاف للأشخاص بالاسم ده.' : 'سيُضاف إلى الأشخاص بهذا الاسم.') : sel.b > 0 ? (eg ? 'ليك عنده' : 'لك عنده') : sel.b < 0 ? (eg ? 'عليك ليه' : 'عليك له') : (eg ? 'مفيش رصيد بينكم' : 'لا رصيد بينكما'),
+      personAmt: sel && !s.isNew && sel.b ? money(Math.abs(sel.b)) : '',
+      personAmtStyle: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (sel && sel.b < 0 ? R : G),
+      kindLabel: buy ? (eg ? 'نوع الربط' : 'نوع الربط') : inFlow ? (eg ? 'الفلوس دي إيه؟' : 'ما نوع المبلغ؟') : (eg ? 'سلفة ولا دعم؟' : 'سلفة أم دعم؟'),
+      kinds: ids.map((id) => ({ label: KL[id], on: kind === id ? 'true' : 'false', off: offOf(id), style: chip(kind === id, offOf(id)), pick: () => { if (!offOf(id)) this.setState({ kind: id, err: '' }); } })),
+      kindNote: kind ? NOTE[kind] : (inFlow && sel && !lent ? (eg ? '«تحصيل دين» بيتفتح لو ليك عنده فلوس. ' : '«تحصيل دين» يُتاح إن كان لك عنده مبلغ. ') : '') + (kind ? '' : noKindNote),
+      partial: buy, whole: !buy,
+      amountLabel: eg ? 'نصيبه من العملية' : 'نصيبه من العملية', amountText: s.amount,
+      typeAmount: (e) => this.setState({ amount: e && e.target ? e.target.value : '', err: '' }),
+      quick: avail > 1 ? [
+        { label: (eg ? 'النص ' : 'النصف ') + this.fmt(half), pick: () => this.setState({ amount: this.fmt(half).replace(/,/g, ''), err: '' }) },
+        { label: (eg ? 'الباقي كله ' : 'المتاح كله ') + this.fmt(avail), pick: () => this.setState({ amount: this.fmt(avail).replace(/,/g, ''), err: '' }) }
+      ] : [],
+      wholeLabel: eg ? 'المبلغ: العملية كلها' : 'المبلغ: العملية كاملة', wholeAmt: money(total),
+      fxTitle: eg ? 'هيأثر إزاي؟' : 'الأثر على أرقامك',
+      fx, err: s.err,
+      saveLabel: eg ? 'احفظ الربط' : 'احفظ الربط',
+      save: () => {
+        const say = (err) => this.setState({ err });
+        if (!sel || !P) return say(eg ? 'اختار الشخص أو اكتب اسم جديد.' : 'اختر الشخص أو اكتب اسمًا جديدًا.');
+        if (!kind) return say(buy ? (eg ? 'اختار: دين عليه ولا هدية ليه.' : 'اختر: دين عليه أم هدية له.') : inFlow ? (eg ? 'اختار نوع الفلوس.' : 'اختر نوع المبلغ.') : (eg ? 'اختار: سلفة ولا دعم؟' : 'اختر: سلفة أم دعم؟'));
+        if (amt == null || amt <= 0) return say(eg ? 'اكتب مبلغ أكبر من صفر.' : 'اكتب مبلغًا أكبر من صفر.');
+        if (buy && amt > avail) return say((eg ? 'مجموع اللي اتقسم على الأشخاص (' : 'مجموع المقسّم على الأشخاص (') + this.fmt(used + amt) + (eg ? ') أكبر من قيمة العملية (' : ') أكبر من قيمة العملية (') + this.fmt(total) + ').');
+        if (kind === 'collect' && amt > lent) return say((eg ? 'أكبر من اللي ليك عنده (' : 'أكبر مما لك عنده (') + this.fmt(lent) + (eg ? '). اختار نوع تاني، أو سجّل التحصيل من صفحة الدين عشان الزيادة تبقى أمانة.' : '). اختر نوعًا آخر، أو سجّل التحصيل من صفحة الدين لتُسجَّل الزيادة أمانة.'));
+        if (kind === 'repay' && amt > owes) return say((eg ? 'أكبر من اللي عليك (' : 'أكبر مما عليك (') + this.fmt(owes) + (eg ? '). اختار سلفة أو دعم، أو سجّل السداد من صفحة الدين.' : '). اختر سلفة أو دعمًا، أو سجّل السداد من صفحة الدين.'));
+        const link = { person: P, isNew: !!s.isNew, kind, amountMinor: amt };
+        this.setState({ open: false, err: '', links: buy ? s.links.concat([link]) : [link], added: s.isNew && s.added.indexOf(P) < 0 ? s.added.concat([P]) : s.added });
+        if (typeof this.props.onSave === 'function') this.props.onSave(link);
+      },
+      closeSheet: () => this.setState({ open: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

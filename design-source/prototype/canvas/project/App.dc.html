@@ -24,7 +24,7 @@ body{margin:0}
 </style>
 </helmet>
 <div dir="rtl" ref="{{setRoot}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EFF3ED">
-  <sc-if value="{{s.Main}}" hint-placeholder-val="{{ true }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Main" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.Main}}" hint-placeholder-val="{{ true }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Main" space="{{space}}" on-space="{{setSpace}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
   <sc-if value="{{s.Operations}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Operations" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
   <sc-if value="{{s.People}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="People" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
   <sc-if value="{{s.Investment}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Investment" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div></sc-if>
@@ -79,6 +79,11 @@ body{margin:0}
   <sc-if value="{{s.Zakat}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Zakat" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
   <sc-if value="{{s.Advisor}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Advisor" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
   <sc-if value="{{s.SavingsGoals}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="SavingsGoals" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.SpaceTransfer}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="SpaceTransfer" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.MerchantProfile}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="MerchantProfile" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.CategoryBudget}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="CategoryBudget" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.DuesDebts}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="DuesDebts" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
+  <sc-if value="{{s.InstallmentEdit}}" hint-placeholder-val="{{ false }}"><div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="InstallmentEdit" space="{{space}}" hint-size="390px,844px"></dc-import></div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"start":{"editor":"enum","options":["الرئيسية","أول مرة","القفل"],"default":"الرئيسية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
@@ -88,10 +93,11 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.TABS = ['Main', 'Operations', 'People', 'Investment'];
-    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail', 'OperationFilters', 'ReviewQueue', 'Transfers', 'Calendar', 'PeriodPicker', 'RoscaDetail', 'RoscaWizard', 'InstallmentDetail', 'SubscriptionDetail', 'Account', 'IncomeSources', 'Spaces', 'Wallets', 'StatementImport', 'ImportReview', 'ImportBatches', 'BankSmsSettings', 'SmsPaste', 'Categories', 'Rules', 'Projects', 'Backup', 'AppSettings', 'Onboarding', 'SignInEmail', 'ProfileQuestion', 'Lock', 'Events', 'EventDetail', 'EventPrep', 'DebtDetail', 'SavingsCalculator', 'RetirementCalculator', 'InheritanceCalculator', 'InheritanceSaved', 'AssetDetail', 'AssetProjection', 'Zakat', 'Advisor', 'SavingsGoals']);
+    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail', 'OperationFilters', 'ReviewQueue', 'Transfers', 'Calendar', 'PeriodPicker', 'RoscaDetail', 'RoscaWizard', 'InstallmentDetail', 'SubscriptionDetail', 'Account', 'IncomeSources', 'Spaces', 'Wallets', 'StatementImport', 'ImportReview', 'ImportBatches', 'BankSmsSettings', 'SmsPaste', 'Categories', 'Rules', 'Projects', 'Backup', 'AppSettings', 'Onboarding', 'SignInEmail', 'ProfileQuestion', 'Lock', 'Events', 'EventDetail', 'EventPrep', 'DebtDetail', 'SavingsCalculator', 'RetirementCalculator', 'InheritanceCalculator', 'InheritanceSaved', 'AssetDetail', 'AssetProjection', 'Zakat', 'Advisor', 'SavingsGoals', 'SpaceTransfer', 'MerchantProfile', 'CategoryBudget', 'DuesDebts', 'InstallmentEdit']);
     // «أول مرة» = رحلة أول دقيقة · «القفل» = فتح البرنامج والقفل شغال — الاتنين بيخلصوا على الرئيسية
     this.startOf = (p) => ({ 'أول مرة': 'Onboarding', 'القفل': 'Lock' })[p] || 'Main';
-    this.state = { screen: this.startOf(props.start), stack: [], anim: 'a-tab', n: 0 };
+    this.state = { screen: this.startOf(props.start), stack: [], anim: 'a-tab', n: 0, space: null };
+    this.setSpace = (v) => { if (v === 'السعودية' || v === 'مصر') this.setState({ space: v }); };
     this.onClick = (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
       if (!a) return;
@@ -150,12 +156,12 @@ class Component extends DCLogic {
       this.setState({ screen: name, stack: stack.concat([screen]), anim: 'a-push' });
     }
   }
-  componentDidUpdate(prev) { if (prev.start !== this.props.start) this.setState({ screen: this.startOf(this.props.start), stack: [], anim: 'a-tab' }); }
+  componentDidUpdate(prev) { if (prev.space !== this.props.space && this.state.space) this.setState({ space: null }); if (prev.start !== this.props.start) this.setState({ screen: this.startOf(this.props.start), stack: [], anim: 'a-tab' }); }
   componentWillUnmount() { if (this.root) ['click', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach((n) => this.root.removeEventListener(n, n === 'click' ? this.onClick : n === 'pointerdown' ? this.onDown : n === 'pointermove' ? this.onMove : this.onUp, true)); }
   renderVals() {
     const s = {};
     this.SCREENS.forEach((k) => { s[k] = this.state.screen === k; });
-    return { s, anim: this.state.anim, setRoot: this.setRoot, space: this.props.space ?? 'السعودية', navStyle: this.props.navStyle ?? 'زرار في النص' };
+    return { s, anim: this.state.anim, setRoot: this.setRoot, setSpace: this.setSpace, space: this.state.space || (this.props.space ?? 'السعودية'), navStyle: this.props.navStyle ?? 'زرار في النص' };
   }
 }
 </script>

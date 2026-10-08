@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مناسبة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.oc-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.oc-press:active{transform:scale(.97)}
+.oc-veil{animation:oc-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.oc-up{animation:oc-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.oc-up>*{flex-shrink:0}
+.oc-in{animation:oc-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes oc-fade{from{opacity:0}to{opacity:1}}
+@keyframes oc-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes oc-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.oc-press{transition:none}.oc-press:active{transform:none}.oc-up,.oc-in{animation:oc-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <sc-if value="{{isAdd}}" hint-placeholder-val="{{ true }}">
+    <button type="button" class="oc-press" onClick="{{openSheet}}" style="width: 100%; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{addLabel}}</button>
+  </sc-if>
+  <sc-if value="{{isCard}}" hint-placeholder-val="{{ false }}">
+    <div class="oc-in" style="border-radius: 22px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #956000; background: #FBF0DD"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path></svg></span>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 14px; font-weight: 700">{{cardTitle}}</span>
+        <span style="font-size: 12px; color: #637570">{{cardSub}}</span>
+      </span>
+      <button type="button" class="oc-press" onClick="{{openSheet}}" style="height: 48px; padding: 0 16px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{editLabel}}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="oc-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="oc-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+
+        <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="4">
+            <button type="button" role="radio" aria-checked="{{kd.on}}" class="oc-press" onClick="{{kd.pick}}" style="{{kd.style}}">{{kd.label}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{isOther}}" hint-placeholder-val="{{ false }}">
+          <input type="text" maxlength="60" aria-label="{{labelPh}}" value="{{label}}" onInput="{{typeLabel}}" placeholder="{{labelPh}}" class="oc-in" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 500; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+        </sc-if>
+
+        <span style="font-size: 13px; font-weight: 700; margin-top: 2px">{{monthLabel}}</span>
+        <div role="radiogroup" aria-label="{{monthLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{months}}" as="mo" hint-placeholder-count="12">
+            <button type="button" role="radio" aria-checked="{{mo.on}}" class="oc-press" onClick="{{mo.pick}}" style="{{mo.style}}">{{mo.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <label style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{dayLabel}}
+            <input type="text" inputmode="numeric" dir="ltr" maxlength="2" value="{{day}}" onInput="{{typeDay}}" placeholder="1–31" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; text-align: right; font-variant-numeric: tabular-nums; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+          </label>
+          <label style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{yearLabel}}
+            <input type="text" inputmode="numeric" dir="ltr" maxlength="4" value="{{year}}" onInput="{{typeYear}}" placeholder="{{yearPh}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; text-align: right; font-variant-numeric: tabular-nums; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+          </label>
+        </div>
+
+        <span role="status" style="border-radius: 16px; padding: 10px 14px; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(8,99,79,0.06)">{{nextLine}}</span>
+        <div role="radiogroup" aria-label="{{repeatLabel}}" style="display: flex; gap: 8px; margin-top: 2px">
+          <sc-for list="{{repeats}}" as="rp" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{rp.on}}" class="oc-press" onClick="{{rp.pick}}" style="{{rp.style}}">{{rp.label}}</button>
+          </sc-for>
+        </div>
+
+        <span style="font-size: 13px; font-weight: 700; margin-top: 2px">{{leadLabel}}</span>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <button type="button" class="oc-press" onClick="{{leadDown}}" aria-label="{{lessLabel}}" style="{{stepStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+          <span role="status" style="flex: 1 1 auto; min-width: 0; text-align: center; font-size: 15px; font-weight: 700">{{leadText}}</span>
+          <button type="button" class="oc-press" onClick="{{leadUp}}" aria-label="{{moreLabel}}" style="{{stepStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{leads}}" as="ld" hint-placeholder-count="4">
+            <button type="button" aria-pressed="{{ld.on}}" class="oc-press" onClick="{{ld.pick}}" style="{{ld.style}}">{{ld.label}}</button>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #637570">{{remindLine}}</span>
+        <sc-if value="{{canRemove}}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="oc-press" onClick="{{remove}}" style="{{removeStyle}}">{{removeLabel}}</button>
+        </sc-if>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="oc-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["","birthday","wedding_anniversary","wedding","other"],"default":"","section":"الحالة"},"person":{"editor":"enum","options":["خالد","سارة",""],"default":"خالد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"label":{"editor":null},"month":{"editor":null},"day":{"editor":null},"year":{"editor":null},"yearly":{"editor":null},"lead":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":80}}'>
+// مناسبة لشخص (أو ليك لو person فاضي) — §44.1 · §64 (+قرار التنفيذ ٩) · ManageOccasions.add/update/remove.
+// ميلادي بس · السنة اختياري (والمرة الواحدة محتاجاها) · ٢٩ فبراير ⇒ ٢٨ في السنين العادية · التذكير ١–٦٠ يوم والمبدئي أسبوع.
+// kind فاضي = إضافة (زرار)، وغير كده = تعديل (كارت). الحفظ: onSave({ kind, label, month, day, year, yearly, leadDays }) · المسح: onSave({ removed: true })
+const TODAY = [2026, 10, 7];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, saved: undefined, kind: 'birthday', label: '', month: null, day: '', year: '', yearly: true, lead: 7, confirm: false, err: '' }; }
+  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  initial() {
+    const p = this.props, kind = ['birthday', 'wedding_anniversary', 'wedding', 'other'].indexOf(p.kind) >= 0 ? p.kind : null;
+    if (!kind) return null;
+    // مخترعة: لو الشاشة الأم ما بعتتش التاريخ
+    const S = { birthday: [3, 14, null, true, ''], wedding_anniversary: [6, 2, 2019, true, ''], wedding: [10, 18, 2026, false, ''], other: [6, 20, 2027, false, 'تخرّج'] }[kind];
+    const has = this.num(p.month) != null;
+    return { kind, label: has ? String(p.label || '') : S[4], month: has ? this.num(p.month) : S[0], day: has ? this.num(p.day) : S[1], year: has ? this.num(p.year) : S[2], yearly: has ? !(p.yearly === false || p.yearly === 'false') : S[3], lead: Math.min(60, Math.max(1, this.num(p.lead) || 7)) };
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
+    const ar = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const who = this.props.person == null ? 'خالد' : String(this.props.person);
+    const saved = s.saved === undefined ? this.initial() : s.saved;
+    const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const dim = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const dayNo = (y, m, d) => Math.round(Date.UTC(y, m - 1, d) / 86400000);
+    const today = dayNo(TODAY[0], TODAY[1], TODAY[2]);
+    // المرة الجاية: السنوية مش قبل سنتها لو متسجلة، واللي مرة واحدة يومها لو لسه ما فاتش
+    const next = (o) => {
+      if (!o.month || !o.day) return null;
+      const at = (y) => ({ y, m: o.month, d: Math.min(o.day, dim(y, o.month)) });
+      if (!o.yearly) { if (!o.year) return null; const x = at(o.year); return dayNo(x.y, x.m, x.d) >= today ? x : null; }
+      let x = at(Math.max(TODAY[0], o.year || 0));
+      if (dayNo(x.y, x.m, x.d) < today) x = at(x.y + 1);
+      return x;
+    };
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : ar(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const DAYS = eg ? ['يوم', 'يومين', 'أيام', 'يوم'] : ['يوم', 'يومين', 'أيام', 'يومًا'];
+    const rel = (d) => d === 0 ? (eg ? 'النهارده' : 'اليوم') : d === 1 ? (eg ? 'بكرة' : 'غدًا') : 'بعد ' + plural(d, eg ? ['يوم', 'يومين', 'أيام', 'يوم'] : ['يوم', 'يومين', 'أيام', 'يومًا']);
+    const leadName = (v) => v === 7 ? (eg ? 'قبلها بأسبوع' : 'قبلها بأسبوع') : v === 14 ? (eg ? 'قبلها بأسبوعين' : 'قبلها بأسبوعين') : v === 30 ? (eg ? 'قبلها بشهر' : 'قبلها بشهر') : v <= 2 ? 'قبلها ب' + DAYS[v - 1] : 'قبلها بـ' + plural(v, DAYS);
+    const dateText = (x, withYear) => ar(x.d) + ' ' + M[x.m - 1] + (withYear && x.y ? ' ' + ar(x.y) : '');
+    const titleOf = (o) => {
+      const own = !who;
+      if (o.kind === 'other') return (o.label || (eg ? 'مناسبة' : 'مناسبة')) + (own ? '' : ' — ' + who);
+      const T = { birthday: ['عيد ميلاد ', 'عيد ميلادك'], wedding_anniversary: eg ? ['عيد جواز ', 'عيد جوازك'] : ['ذكرى زواج ', 'ذكرى زواجك'], wedding: eg ? ['فرح ', 'فرحك'] : ['زواج ', 'زواجك'] }[o.kind];
+      return own ? T[1] : T[0] + who;
+    };
+    const subOf = (o) => { const x = next(o); return x ? dateText(x, true) + '، ' + rel(dayNo(x.y, x.m, x.d) - today) + '، ' + (eg ? 'التذكير ' : 'التذكير ') + leadName(o.lead) : (eg ? 'فاتت، ومش هتتكرر' : 'مضت ولن تتكرر'); };
+    const chip = (on, extra) => 'height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (extra || '') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const KINDS = [['birthday', 'عيد ميلاد'], ['wedding_anniversary', eg ? 'عيد جواز' : 'ذكرى زواج'], ['wedding', eg ? 'فرح' : 'زواج'], ['other', eg ? 'غيره' : 'أخرى']];
+    const draft = { kind: s.kind, label: String(s.label || '').trim().replace(/\s+/g, ' '), month: s.month, day: this.num(s.day), year: this.num(s.year), yearly: s.yearly, lead: s.lead };
+    const dx = draft.month && draft.day && draft.day <= dim(draft.year || 2000, draft.month) && (!draft.year || (draft.year >= 1900 && draft.year <= 2200)) ? next(draft) : null;
+    const setLead = (v) => this.setState({ lead: Math.min(60, Math.max(1, v)), err: '' });
+    const fresh = saved ? { kind: saved.kind, label: saved.label || '', month: saved.month, day: String(saved.day), year: saved.year ? String(saved.year) : '', yearly: saved.yearly, lead: saved.lead } : { kind: 'birthday', label: '', month: null, day: '', year: '', yearly: true, lead: 7 };
+    return {
+      isAdd: !saved, isCard: !!saved,
+      addLabel: (eg ? '+ ضيف مناسبة' : '+ أضف مناسبة') + (who ? ' ل' + who : ''),
+      cardTitle: saved ? titleOf(saved) : '', cardSub: saved ? subOf(saved) : '',
+      editLabel: eg ? 'عدّلها' : 'تعديل',
+      openSheet: () => this.setState(Object.assign({ open: true, confirm: false, err: '' }, fresh)),
+      open: s.open,
+      title: saved ? (eg ? 'تعديل المناسبة' : 'تعديل المناسبة') : who ? 'مناسبة ل' + who : (eg ? 'مناسبة ليك' : 'مناسبة لك'),
+      kindLabel: eg ? 'نوعها' : 'نوعها',
+      kinds: KINDS.map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', style: chip(s.kind === id), pick: () => this.setState({ kind: id, yearly: id === 'wedding' ? false : id === s.kind ? s.yearly : true, err: '' }) })),
+      isOther: s.kind === 'other',
+      labelPh: eg ? 'اسمها، مثلًا: تخرّجه' : 'اسمها، مثلًا: تخرّجه', label: s.label,
+      typeLabel: (e) => this.setState({ label: e && e.target ? e.target.value : '', err: '' }),
+      monthLabel: eg ? 'الشهر (ميلادي)' : 'الشهر (ميلادي)',
+      months: M.map((label, i) => ({ label, on: s.month === i + 1 ? 'true' : 'false', style: chip(s.month === i + 1, 'padding: 0 4px; font-size: 13px; '), pick: () => this.setState({ month: i + 1, err: '' }) })),
+      dayLabel: 'اليوم', day: s.day, typeDay: (e) => this.setState({ day: e && e.target ? e.target.value : '', err: '' }),
+      yearLabel: eg ? 'السنة (مش لازم)' : 'السنة (اختياري)', yearPh: eg ? 'مش عارف' : 'غير معروفة',
+      year: s.year, typeYear: (e) => this.setState({ year: e && e.target ? e.target.value : '', err: '' }),
+      repeatLabel: eg ? 'بتتكرر؟' : 'التكرار',
+      repeats: [[true, eg ? 'كل سنة' : 'كل سنة'], [false, eg ? 'مرة واحدة بس' : 'مرة واحدة']].map(([v, label]) => ({ label, on: s.yearly === v ? 'true' : 'false', style: chip(s.yearly === v, 'flex: 1 1 0; height: 48px; '), pick: () => this.setState({ yearly: v, err: '' }) })),
+      leadLabel: eg ? 'نفكّرك إمتى؟' : 'متى نذكّرك؟',
+      lessLabel: eg ? 'يوم أقل' : 'يوم أقل', moreLabel: eg ? 'يوم زيادة' : 'يوم إضافي',
+      stepStyle: 'width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)',
+      leadText: leadName(s.lead),
+      leadDown: () => setLead(s.lead - 1), leadUp: () => setLead(s.lead + 1),
+      leads: [[1, eg ? 'بيوم' : 'بيوم'], [7, 'بأسبوع'], [14, 'بأسبوعين'], [30, 'بشهر']].map(([v, label]) => ({ label, on: s.lead === v ? 'true' : 'false', style: chip(s.lead === v, 'font-size: 13px; '), pick: () => setLead(v) })),
+      nextLine: dx ? (eg ? 'المرة الجاية: ' : 'المرة القادمة: ') + dateText(dx, true) + '، ' + rel(dayNo(dx.y, dx.m, dx.d) - today) : draft.month && draft.day && !draft.yearly && draft.year ? (eg ? 'التاريخ ده فات — ومرة واحدة مش هتتكرر.' : 'هذا التاريخ مضى — ولمرة واحدة لن تتكرر.') : (eg ? 'اختار الشهر واليوم.' : 'اختر الشهر واليوم.'),
+      remindLine: dx ? (dayNo(dx.y, dx.m, dx.d) - today <= s.lead ? (eg ? 'جوه مدة التذكير — هتظهر في التنبيهات على طول.' : 'ضمن مدة التذكير — تظهر في التنبيهات مباشرة.') : (eg ? 'التذكير بيوصلك في وقتك المعتاد، ' : 'يصلك التذكير في وقتك المعتاد، ') + leadName(s.lead) + '.') : (eg ? 'التذكير بيوصلك في وقتك المعتاد.' : 'يصلك التذكير في وقتك المعتاد.'),
+      err: s.err,
+      saveLabel: saved ? (eg ? 'احفظ التعديل' : 'احفظ التعديل') : (eg ? 'ضيفها' : 'أضفها'),
+      save: () => {
+        const say = (err) => this.setState({ err });
+        const bad = eg ? 'تاريخ المناسبة مش صالح.' : 'تاريخ المناسبة غير صالح.';
+        if (draft.kind === 'other' && !draft.label) return say(eg ? 'اكتب اسم المناسبة.' : 'اكتب اسم المناسبة.');
+        if (!draft.month) return say(eg ? 'اختار الشهر.' : 'اختر الشهر.');
+        if (draft.year != null && (draft.year < 1900 || draft.year > 2200)) return say(bad);
+        if (!draft.day) return say(eg ? 'اكتب اليوم (من ١ لـ٣١).' : 'اكتب اليوم (من ١ إلى ٣١).');
+        if (!draft.day || draft.day < 1 || draft.day > dim(draft.year || 2000, draft.month)) return say(bad);
+        if (!draft.yearly && !draft.year) return say(eg ? 'المناسبة اللي مرة واحدة محتاجة السنة.' : 'المناسبة لمرة واحدة تحتاج السنة.');
+        const o = { kind: draft.kind, label: draft.kind === 'other' ? draft.label : null, month: draft.month, day: draft.day, year: draft.year || null, yearly: draft.yearly, lead: draft.lead };
+        this.setState({ open: false, saved: o, err: '' });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ kind: o.kind, label: o.label, month: o.month, day: o.day, year: o.year, yearly: o.yearly, leadDays: o.lead });
+      },
+      canRemove: !!saved,
+      removeLabel: s.confirm ? (eg ? 'متأكد؟ اضغط تاني للمسح' : 'اضغط مرة أخرى للحذف') : (eg ? 'امسح المناسبة' : 'احذف المناسبة'),
+      removeStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (s.confirm ? 'color: #FFFFFF; background: #BE3D48' : 'color: #BE3D48; background: rgba(190,61,72,0.08)'),
+      remove: () => {
+        if (!s.confirm) { this.setState({ confirm: true }); return; }
+        this.setState({ open: false, saved: null, confirm: false });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ removed: true });
+      },
+      closeSheet: () => this.setState({ open: false, confirm: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>سقف التصنيف — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.bl-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.bl-press:active{transform:scale(.97)}
+.bl-veil{animation:bl-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.bl-up{animation:bl-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.bl-in{animation:bl-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
+.bl-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+@keyframes bl-fade{from{opacity:0}to{opacity:1}}
+@keyframes bl-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes bl-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.bl-press,.bl-knob{transition:none}.bl-press:active{transform:none}.bl-up,.bl-in{animation:bl-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 6px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="bl-press" onClick="{{openSheet}}" style="{{triggerStyle}}">{{triggerLabel}}</button>
+  <span style="font-size: 12px; color: #637570; text-align: center">{{triggerNote}}</span>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="bl-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="bl-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+          <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+          <span style="font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 10px; color: #08634F; background: #DCEBD6">أكتوبر</span>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #637570"><span>{{spentLine}}</span><span>{{avgLine}}</span></span>
+
+        <label for="bl-limit" style="font-size: 13px; font-weight: 700; margin-top: 4px">{{limitLabel}}</label>
+        <div style="{{limitBoxStyle}}">
+          <input id="bl-limit" type="text" inputmode="decimal" dir="ltr" value="{{limitIn}}" onInput="{{typeLimit}}" placeholder="0" aria-describedby="bl-limit-err" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 24px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+          <span style="font-size: 14px; color: #637570">{{currency}}</span>
+        </div>
+        <span id="bl-limit-err" role="alert" style="{{limitErrStyle}}">{{limitErr}}</span>
+        <sc-if value="{{hasCompare}}" hint-placeholder-val="{{ true }}">
+          <span class="bl-in" style="font-size: 12px; color: #193D33">{{compareLine}}</span>
+        </sc-if>
+        <sc-if value="{{hasAvg}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="bl-press" onClick="{{fillAvg}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{fillAvgLabel}}</button>
+        </sc-if>
+
+        <div style="display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">التنبيه</span><span style="font-size: 12px; color: #637570">{{alertSub}}</span></span>
+          <button type="button" role="switch" aria-checked="{{alertChecked}}" aria-label="التنبيه" onClick="{{toggleAlert}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center">
+            <span style="{{track}}"><span class="bl-knob" style="{{knob}}"></span></span>
+          </button>
+        </div>
+        <sc-if value="{{alertOn}}" hint-placeholder-val="{{ true }}">
+          <div class="bl-in" style="display: flex; flex-direction: column; gap: 8px">
+            <span id="bl-pct-label" style="font-size: 13px; font-weight: 700">نسبة التنبيه</span>
+            <div role="radiogroup" aria-labelledby="bl-pct-label" style="display: flex; gap: 8px">
+              <sc-for list="{{pcts}}" as="pc" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{pc.on}}" class="bl-press" onClick="{{pc.pick}}" style="{{pc.style}}">{{pc.label}}</button>
+              </sc-for>
+              <div style="{{otherBoxStyle}}">
+                <input type="text" inputmode="numeric" dir="ltr" value="{{pctIn}}" onInput="{{typePct}}" placeholder="{{otherLabel}}" aria-label="{{otherAria}}" aria-describedby="bl-pct-err" style="width: 100%; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; outline: none; text-align: center">
+                <span style="font-size: 13px; color: #637570">٪</span>
+              </div>
+            </div>
+            <span id="bl-pct-err" role="alert" style="{{pctErrStyle}}">{{pctErr}}</span>
+            <sc-if value="{{hasAlertAt}}" hint-placeholder-val="{{ true }}">
+              <span style="font-size: 12px; color: #193D33">{{alertAt}}</span>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; gap: 10px; margin-top: 4px">
+          <button type="button" class="bl-press" onClick="{{save}}" style="flex: 2 1 0; height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">احفظ</button>
+          <sc-if value="{{canClear}}" hint-placeholder-val="{{ true }}">
+            <button type="button" class="bl-press" onClick="{{clear}}" style="flex: 1 1 0; height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #BE3D48; cursor: pointer; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(190,61,72,0.25)">{{clearLabel}}</button>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"cat":{"editor":"enum","options":["مطاعم وقهوة","بقالة وسوبرماركت","مواصلات","هدايا"],"default":"مطاعم وقهوة","section":"التصنيف"},"spent":{"editor":"int","default":96000,"section":"التصنيف"},"limit":{"editor":"int","default":120000,"section":"التصنيف"},"avg":{"editor":"int","default":104000,"section":"التصنيف"},"threshold":{"editor":"int","default":80,"section":"التصنيف"},"alert":{"editor":"boolean","default":true,"section":"التصنيف"},"onSave":{"editor":null},"onClear":{"editor":null},"$preview":{"width":350,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // saved = آخر حفظ (لما اللوحة لوحدها على الكانفس من غير شاشة أم بتحدّث الخصائص)
+    this.state = { open: false, limitIn: '', pct: 80, pctIn: '', alert: true, tried: false, saved: null };
+  }
+  componentDidUpdate(prev) {
+    const p = this.props;
+    if (prev.limit !== p.limit || prev.threshold !== p.threshold || prev.alert !== p.alert || prev.cat !== p.cat) this.setState({ saved: null });
+  }
+  digits(t) { return String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+  toMinor(text) { const t = this.digits(text).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  div(a, b) { return (a - (a % b)) / b; }
+  current() {
+    const p = this.props;
+    if (this.state.saved) return this.state.saved;
+    const on = p.alert === true || p.alert === 'true' || p.alert == null;
+    return { limit: Math.max(0, Number(p.limit) || 0), pct: Number(p.threshold) || 0, alert: on && (Number(p.threshold) || 0) > 0 };
+  }
+  // نسبة التنبيه: عدد صحيح من ١ لـ١٠٠ (SetBudget.validateThreshold) — الكتابة بتغلب الاختيار
+  readPct() {
+    const s = this.state;
+    if (!s.pctIn) return { ok: true, v: s.pct };
+    const t = this.digits(s.pctIn).trim();
+    if (!/^\d+$/.test(t)) return { ok: false, v: null };
+    const v = parseInt(t, 10);
+    return { ok: v >= 1 && v <= 100, v };
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state, c = this.current();
+    const cat = this.props.cat || 'مطاعم وقهوة';
+    const spent = Math.max(0, Number(this.props.spent) || 0);
+    const avg = Math.max(0, Number(this.props.avg) || 0);
+    const lim = this.toMinor(s.limitIn);
+    const limOk = lim != null && lim > 0;
+    const P = this.readPct();
+    const showErr = s.tried || (this.props.state ?? 'عادي') === 'خطأ';
+    const limitErr = showErr && !limOk ? (eg ? 'السقف لازم يكون أكبر من صفر.' : 'يجب أن يكون السقف أكبر من صفر.') : '';
+    const pctErr = (showErr || s.pctIn) && s.alert && !P.ok ? (eg ? 'نسبة التنبيه لازم تكون رقم صحيح بين ١ و١٠٠.' : 'يجب أن تكون نسبة التنبيه عددًا صحيحًا بين ١ و١٠٠.') : '';
+    const errStyle = (msg) => 'font-size: 12px; font-weight: 700; color: #BE3D48; min-height: ' + (msg ? '18px' : '0') + (msg ? '' : '; display: none');
+    // مقارنة بالمتوسط (spec/04 «ميزانية»): المتوسط معلومة مش سقف، والنسب بقسمة صحيحة
+    let compare = '';
+    if (limOk) {
+      const used = this.div(spent * 100, lim);
+      compare = eg ? 'صرفت منه ' + n(used) + '٪ لحد دلوقتي' : 'صُرف منه ' + n(used) + '٪ حتى الآن';
+      if (avg > 0) {
+        const d = lim - avg, pc = this.div(Math.abs(d) * 100, avg);
+        compare += '، ' + (pc === 0 ? (eg ? 'قد متوسطك تقريبًا' : 'يساوي متوسطك تقريبًا') : (d > 0 ? 'أعلى' : 'أقل') + ' من متوسطك بـ ' + n(pc) + '٪');
+      }
+    }
+    const at = limOk && P.ok && P.v ? this.div(lim * P.v, 100) : null;
+    const chip = (on) => 'flex: 1 1 0; min-width: 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
+    const pcts = [70, 80, 90].map((v) => ({
+      label: n(v) + '٪', on: !s.pctIn && s.pct === v ? 'true' : 'false', style: chip(!s.pctIn && s.pct === v),
+      pick: () => this.setState({ pct: v, pctIn: '' })
+    }));
+    const box = (bad) => 'background: #FFFFFF; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
+    return {
+      triggerLabel: c.limit ? (eg ? 'غيّر السقف' : 'عدّل السقف') : (eg ? 'حدّد سقف' : 'حدّد سقفًا'),
+      triggerStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (c.limit ? 'color: #08634F; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
+      triggerNote: c.limit ? (eg ? 'السقف ' : 'السقف ') + this.fmt(c.limit) + ' ' + cur + '، ' + (c.alert ? (eg ? 'التنبيه عند ' : 'التنبيه عند ') + n(c.pct) + '٪' : (eg ? 'التنبيه مقفول' : 'التنبيه متوقف')) : (eg ? 'من غير سقف — المصروف بيتحسب برضه' : 'بلا سقف — المصروف يُحسب على أي حال'),
+      openSheet: () => {
+        const bad = (this.props.state ?? 'عادي') === 'خطأ';
+        const std = [70, 80, 90].indexOf(c.pct) >= 0;
+        this.setState({ open: true, tried: false, alert: c.limit ? c.alert : true, limitIn: bad ? '0' : c.limit ? this.fmt(c.limit).replace(/,/g, '') : '', pct: std ? c.pct : 80, pctIn: bad ? '120' : !std && c.pct ? String(c.pct) : '' });
+      },
+      open: s.open,
+      closeSheet: () => this.setState({ open: false }),
+      title: 'سقف ' + cat, currency: cur,
+      spentLine: (eg ? 'صرفت لحد دلوقتي ' : 'المصروف حتى الآن ') + this.fmt(spent) + ' ' + cur,
+      avgLine: avg > 0 ? (eg ? 'متوسطك ' : 'متوسطك ') + this.fmt(avg) + ' ' + cur + (eg ? ' — معلومة مش سقف' : ' — معلومة وليس سقفًا') : (eg ? 'المتوسط لسه مش متاح — محتاج ٣ شهور مكتملة' : 'المتوسط غير متاح بعد — يحتاج ٣ أشهر مكتملة'),
+      limitLabel: eg ? 'السقف في الشهر' : 'السقف الشهري',
+      limitIn: s.limitIn,
+      typeLimit: (e) => this.setState({ limitIn: e.target.value }),
+      limitBoxStyle: 'display: flex; align-items: center; height: 56px; border-radius: 18px; padding: 0 16px; gap: 8px; ' + box(!!limitErr),
+      limitErr, limitErrStyle: errStyle(limitErr),
+      hasCompare: !!compare, compareLine: compare,
+      hasAvg: avg > 0, fillAvgLabel: (eg ? 'اكتب المتوسط ' : 'استخدم المتوسط ') + this.fmt(avg),
+      fillAvg: () => this.setState({ limitIn: this.fmt(avg).replace(/,/g, '') }),
+      alertSub: s.alert ? (eg ? 'هيوصلك إشعار لما توصل للنسبة دي' : 'يصلك إشعار عند بلوغ هذه النسبة') : (eg ? 'مش هيوصلك إشعار للسقف ده' : 'لن يصلك إشعار لهذا السقف'),
+      alertChecked: s.alert ? 'true' : 'false', alertOn: s.alert,
+      toggleAlert: () => this.setState({ alert: !s.alert }),
+      track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (s.alert ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'),
+      knob: 'position: absolute; top: 2px; right: ' + (s.alert ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      pcts, pctIn: s.pctIn,
+      otherLabel: eg ? 'غيرها' : 'أخرى', otherAria: eg ? 'نسبة تانية' : 'نسبة أخرى',
+      typePct: (e) => this.setState({ pctIn: e.target.value }),
+      otherBoxStyle: 'flex: 1 1 0; min-width: 0; height: 44px; box-sizing: border-box; border-radius: 14px; padding: 0 8px; display: flex; align-items: center; gap: 2px; ' + (s.pctIn && P.ok ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : box(!!pctErr)),
+      pctErr, pctErrStyle: errStyle(pctErr),
+      hasAlertAt: at != null,
+      alertAt: at == null ? '' : (eg ? 'هننبهك لما تصرف ' : 'ننبّهك عند صرف ') + this.fmt(at) + (eg ? ' من ' : ' من ') + this.fmt(lim) + ' ' + cur,
+      canClear: c.limit > 0, clearLabel: eg ? 'شيل السقف' : 'إزالة السقف',
+      save: () => {
+        if (!limOk || (s.alert && !P.ok)) { this.setState({ tried: true }); return; }
+        const next = { limit: lim, pct: P.v, alert: s.alert };
+        this.setState({ open: false, saved: next });
+        if (typeof this.props.onSave === 'function') this.props.onSave(lim, P.v, s.alert);
+      },
+      clear: () => {
+        this.setState({ open: false, saved: { limit: 0, pct: c.pct, alert: false } });
+        if (typeof this.props.onClear === 'function') this.props.onClear();
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

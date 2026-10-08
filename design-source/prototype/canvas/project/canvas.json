@@ -721,6 +721,70 @@
       "y": 4230,
       "w": 350,
       "h": 150
+    },
+    "SpaceTransfer.dc.html": {
+      "is_interactive": true,
+      "title": "التحويل بين البلدين · SpaceTransfer (من البلدان)",
+      "x": 2430,
+      "y": 21100,
+      "w": 390,
+      "h": 844
+    },
+    "MerchantProfile.dc.html": {
+      "is_interactive": true,
+      "title": "صفحة التاجر · MerchantProfile (من تفاصيل العملية)",
+      "x": 1960,
+      "y": 21100,
+      "w": 390,
+      "h": 844
+    },
+    "SpaceSwitcher.dc.html": {
+      "is_interactive": true,
+      "title": "اختيار البلد · SpaceSwitcher (قطعة جنب التاريخ في الرئيسية)",
+      "x": 1490,
+      "y": 21100,
+      "w": 150,
+      "h": 48
+    },
+    "TagsSheet.dc.html": {
+      "is_interactive": true,
+      "title": "الوسوم · TagsSheet (قطعة جوه تفاصيل العملية)",
+      "x": 1490,
+      "y": 21250,
+      "w": 350,
+      "h": 72
+    },
+    "CategoryBudget.dc.html": {
+      "is_interactive": true,
+      "title": "ميزانية تصنيف · CategoryBudget (من صف في الميزانيات)",
+      "x": 2430,
+      "y": 22370,
+      "w": 390,
+      "h": 844
+    },
+    "BudgetLimitSheet.dc.html": {
+      "is_interactive": true,
+      "title": "السقف ونسبة التنبيه · BudgetLimitSheet (قطعة)",
+      "x": 2000,
+      "y": 22370,
+      "w": 350,
+      "h": 760
+    },
+    "DuesDebts.dc.html": {
+      "is_interactive": true,
+      "title": "الديون · DuesDebts (من «الديون» في المستحقات)",
+      "x": 1530,
+      "y": 22370,
+      "w": 390,
+      "h": 844
+    },
+    "InstallmentEdit.dc.html": {
+      "is_interactive": true,
+      "title": "تعديل القسط · InstallmentEdit",
+      "x": 1060,
+      "y": 22370,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -860,6 +924,22 @@
       "w": 240,
       "x": 0,
       "y": 19500
+    },
+    "w2a": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "البلدين · صفحة التاجر · الوسوم",
+      "w": 240,
+      "x": 0,
+      "y": 20800
+    },
+    "w2b": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "ميزانية التصنيف · الديون · تعديل القسط",
+      "w": 240,
+      "x": 0,
+      "y": 22070
     }
   },
   "order": [
@@ -952,7 +1032,15 @@
     "SavingsGoals.dc.html",
     "GoalDetail.dc.html",
     "EventAddSheet.dc.html",
-    "QuickAddStrip.dc.html"
+    "QuickAddStrip.dc.html",
+    "SpaceTransfer.dc.html",
+    "MerchantProfile.dc.html",
+    "SpaceSwitcher.dc.html",
+    "TagsSheet.dc.html",
+    "CategoryBudget.dc.html",
+    "BudgetLimitSheet.dc.html",
+    "DuesDebts.dc.html",
+    "InstallmentEdit.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

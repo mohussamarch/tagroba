@@ -36,7 +36,7 @@ a{color:#08634F}a:hover{color:#064B40}
       <a href="More.dc.html" aria-label="حسابك" class="m-press" style="text-decoration: none; width: 46px; height: 46px; border-radius: 23px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)">م</a>
       <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
         <span style="font-size: 18px; font-weight: 700">{{greeting}}</span>
-        <span style="font-size: 12px; color: #637570">الأربعاء، ٧ أكتوبر</span>
+        <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">الأربعاء، ٧ أكتوبر</span><dc-import name="SpaceSwitcher" space="{{spaceName}}" size="صغير" on-switch="{{onSpace}}" hint-size="110px,28px"></dc-import></span>
       </div>
       <dc-import name="BellPopover" space="{{spaceName}}" hint-size="48px,48px"></dc-import>
       <a href="More.dc.html" class="m-press" aria-label="{{gearLabel}}" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
@@ -250,6 +250,7 @@ class Component extends DCLogic {
       coffeeTitle: (eg ? 'القهوة الشهر ده ' : 'القهوة هذا الشهر ') + this.fmt(d.coffee) + ' ' + d.currency,
       coffeeBody: eg ? 'بالمعدل ده هتحوّش أقل من هدف خطة السفر.' : 'بهذا المعدل ستدّخر أقل من هدف خطة السفر.',
       coffeeAction: eg ? 'قلّل ٤ مرات في الأسبوع وتلحق هدفك ←' : 'قلّل ٤ مرات في الأسبوع وتلحق هدفك ←',
+      onSpace: (v) => { if (typeof this.props.onSpace === 'function') this.props.onSpace(v); },
       profileTitle: eg ? 'ملفك ٦٠٪ — كمّله' : 'ملفك ٦٠٪ — أكمله', profileBody: eg ? 'سؤال واحد، ١٠ ثواني، والأرقام بتبقى أدق' : 'سؤال واحد في ١٠ ثوانٍ، وتصبح الأرقام أدق',
 
       cashOpen: this.state.cashOpen,

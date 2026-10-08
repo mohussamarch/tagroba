@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تحويلاتك بين البلدين — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.x-in{animation:x-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.x-veil{animation:x-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.x-up{animation:x-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.x-toast{animation:x-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes x-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes x-fade{from{opacity:0}to{opacity:1}}
+@keyframes x-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes x-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.x-in,.x-up{animation:x-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Spaces.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+    <span style="font-size: 13px; line-height: 1.7; color: #637570">{{intro}}</span>
+
+    <sc-if value="{{showError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px; background: #FBF0DD; color: #956000">
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{errTitle}}</span><span style="font-size: 12px">{{errBody}}</span></span><button type="button" class="m-press" onClick="{{retry}}" style="height: 44px; padding: 0 14px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF">{{retryLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isNa}}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 15px; font-weight: 700">{{naTitle}}</span><span style="font-size: 13px; color: #637570">{{naBody}}</span>
+        <a href="Spaces.dc.html" class="m-press" style="height: 48px; margin-top: 4px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{naLink}}</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{canAct}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; gap: 8px">
+        <button type="button" class="m-press" onClick="{{openNew}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{newLabel}}</button>
+        <button type="button" class="m-press" onClick="{{openLink}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{linkLabel}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span><span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+      </div>
+    </sc-if>
+
+    <sc-for list="{{pairs}}" as="p" hint-placeholder-count="3">
+      <div class="x-in" style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font-size: 15px; font-weight: 700">{{p.route}}</span><span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; color: #2469BA; background: rgba(36,105,186,0.10)">{{notSpendChip}}</span></div>
+        <sc-for list="{{p.legs}}" as="g" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #2469BA; background: rgba(36,105,186,0.10)">{{g.mark}}</span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{g.wallet}}</span><span style="font-size: 12px; color: #637570">{{g.sub}}</span></span>
+            <span dir="ltr" style="font-size: 15px; font-weight: 700; color: #2469BA; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0">{{g.amount}}</span>
+          </div>
+        </sc-for>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 14px; background: rgba(25,61,51,0.04)">
+          <span style="font-size: 12px; color: #637570">{{rateLabel}}</span>
+          <span style="font-size: 13px; font-weight: 700; white-space: nowrap"><span dir="ltr" style="font-variant-numeric: tabular-nums">{{p.rateNum}}</span> {{p.rateUnit}}</span>
+        </div>
+        <sc-if value="{{p.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{p.note}}</span></sc-if>
+        <button type="button" class="m-press" onClick="{{p.unlink}}" style="align-self: flex-start; height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{unlinkLabel}}</button>
+      </div>
+    </sc-for>
+
+    <sc-if value="{{hasPairs}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; line-height: 1.7; color: #637570; padding: 0 4px">{{lockNote}}</span></sc-if>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="x-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="x-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span><span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
+        <sc-if value="{{isForm}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div role="radiogroup" aria-label="{{dirLabel}}" style="display: flex; gap: 6px; padding: 4px; border-radius: 16px; background: rgba(25,61,51,0.05)">
+              <sc-for list="{{dirs}}" as="d" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{d.on}}" class="m-press" onClick="{{d.pick}}" style="{{d.style}}">{{d.label}}</button>
+              </sc-for>
+            </div>
+            <sc-for list="{{legForms}}" as="f" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: rgba(25,61,51,0.04)">
+                <span style="font-size: 13px; font-weight: 700">{{f.title}}</span>
+                <sc-if value="{{isNew}}" hint-placeholder-val="{{ true }}">
+                  <div role="radiogroup" aria-label="{{f.title}}" style="display: flex; flex-wrap: wrap; gap: 6px">
+                    <sc-for list="{{f.wallets}}" as="w" hint-placeholder-count="3">
+                      <button type="button" role="radio" aria-checked="{{w.on}}" class="m-press" onClick="{{w.pick}}" style="{{w.style}}">{{w.name}}</button>
+                    </sc-for>
+                  </div>
+                  <input type="text" inputmode="decimal" dir="ltr" aria-label="{{f.amountLabel}}" placeholder="{{f.amountLabel}}" value="{{f.amountText}}" onInput="{{f.typeAmount}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 17px; font-weight: 700; text-align: right; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+                </sc-if>
+                <sc-if value="{{isLink}}" hint-placeholder-val="{{ false }}">
+                  <div role="radiogroup" aria-label="{{f.title}}" style="display: flex; flex-direction: column; gap: 6px">
+                    <sc-for list="{{f.cands}}" as="c" hint-placeholder-count="2">
+                      <button type="button" role="radio" aria-checked="{{c.on}}" aria-disabled="{{c.off}}" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">
+                        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; text-align: right"><span style="font-size: 14px; font-weight: 700">{{c.name}}</span><span style="font-size: 12px; color: #637570">{{c.sub}}</span></span>
+                        <span dir="ltr" style="{{c.amountStyle}}">{{c.amount}}</span>
+                      </button>
+                    </sc-for>
+                    <sc-if value="{{f.noCands}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{noCandText}}</span></sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{isNew}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; gap: 8px">
+                <label style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: #637570">{{dateLabel}}<input type="date" max="2026-10-07" value="{{date}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="height: 48px; box-sizing: border-box; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none"></label>
+                <label style="flex: 1.4 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: #637570">{{noteLabel}}<input type="text" maxlength="1000" value="{{note}}" onInput="{{typeNote}}" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none"></label>
+              </div>
+            </sc-if>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 14px; background: rgba(36,105,186,0.08)">
+              <span style="font-size: 12px; color: #2469BA">{{liveRateLabel}}</span>
+              <span style="font-size: 13px; font-weight: 700; color: #2469BA; white-space: nowrap"><span dir="ltr" style="font-variant-numeric: tabular-nums">{{liveRateNum}}</span> {{liveRateUnit}}</span>
+            </div>
+          </div>
+        </sc-if>
+        <span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{formErr}}</span>
+        <div style="position: sticky; bottom: 0; z-index: 1; margin: 0 -20px; padding: 10px 20px 4px; display: flex; gap: 8px; background: linear-gradient(to top, #FBFAF4 75%, rgba(251,250,244,0))">
+          <button type="button" class="m-press" onClick="{{confirm}}" disabled="{{confirmOff}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
+          <button type="button" class="m-press" onClick="{{closeSheet}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{cancelLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="x-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// التحويل لنفسك بين بلدين (§64 قرار ٨): زوج مربوط — الطالعة من بلد والداخلة في التانية · لا مصروف ولا دخل · كل رجل بعملتها ·
+// السعر مش بيتخزن، بيتحسب للعرض بس من المبلغين (٤ أرقام بأعداد صحيحة زي spaceTransferRateText) · الفك ما بيمسحش العمليات.
+const W = { sa: ['مصرف الراجحي', 'البنك الأهلي السعودي', 'مصرف الإنماء', 'الكاش'], eg: ['البنك الأهلي المصري', 'QNB مصر', 'الكاش'] };
+const CUR = { sa: 'ر.س', eg: 'ج.م' }, MARK = { sa: 'س', eg: 'م' }, NAME = { sa: 'السعودية', eg: 'مصر' };
+const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pairs: null, cand: null, sheet: null, dir: 'sa2eg', fw: 0, tw: 0, fa: '', ta: '', date: '2026-10-07', note: '', pickOut: null, pickIn: null, err: '', failed: false, errGone: false, toast: '', seq: 0 };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  // قسمة طويلة بأعداد صحيحة: ٤ أرقام بعد العلامة، والنص لفوق — نفس spaceTransferRateText في كوتلن
+  rate(from, to) {
+    let rem = to % from, whole = (to - rem) / from, frac = 0;
+    for (let i = 0; i < 4; i++) { rem *= 10; const q = (rem - (rem % from)) / from; frac = frac * 10 + q; rem = rem % from; }
+    if (rem * 2 >= from) frac++;
+    if (frac === 10000) { whole++; frac = 0; }
+    return whole + '.' + String(frac).padStart(4, '0');
+  }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const s = this.state, na = st === 'غير متاح';
+    const n = (x) => x.toLocaleString('ar-EG');
+    // مخترعة · بالوحدة الصغرى · الأزواج على مستوى الحساب (مش جوه بلد) — §64 قرار ٢
+    const P0 = [
+      { id: 't1', from: 'sa', fw: 'مصرف الراجحي', fa: 200000, to: 'eg', tw: 'البنك الأهلي المصري', ta: 2564000, fd: '٣ أكتوبر', td: '٤ أكتوبر', note: eg ? 'مصروف البيت هناك' : 'مصروف البيت في مصر', fn: 'حوالة دولية صادرة', tn: 'حوالة واردة' },
+      { id: 't2', from: 'sa', fw: 'مصرف الإنماء', fa: 150000, to: 'eg', tw: 'QNB مصر', ta: 1915500, fd: '٢ سبتمبر', td: '٢ سبتمبر', note: '', fn: 'حوالة دولية صادرة', tn: 'إيداع' },
+      { id: 't3', from: 'eg', fw: 'QNB مصر', fa: 650000, to: 'sa', tw: 'مصرف الإنماء', ta: 50000, fd: '١٤ يوليو', td: '١٥ يوليو', note: eg ? 'باقي فلوس الأجازة' : 'باقي مصروف الإجازة', fn: 'تحويل للخارج', tn: 'حوالة دولية واردة' }
+    ];
+    // عمليات موجودة نوعها لسه ما اتحددش — الصادرة والواردة في كل بلد (o = طالعة · i = داخلة)
+    const C0 = [
+      { id: 'o1', sp: 'sa', io: 'o', name: 'حوالة دولية صادرة', wallet: 'مصرف الراجحي', date: '٥ أكتوبر', amt: 300000 },
+      { id: 'o2', sp: 'sa', io: 'o', name: 'حوالة دولية صادرة', wallet: 'مصرف الإنماء', date: '٢١ سبتمبر', amt: 80000 },
+      { id: 'o3', sp: 'sa', io: 'o', name: 'تحويل إلى خالد', wallet: 'مصرف الراجحي', date: '١٨ سبتمبر', amt: 120000, locked: true },
+      { id: 'i1', sp: 'eg', io: 'i', name: 'حوالة واردة', wallet: 'البنك الأهلي المصري', date: '٥ أكتوبر', amt: 3843000 },
+      { id: 'i2', sp: 'eg', io: 'i', name: 'إيداع', wallet: 'QNB مصر', date: '٢٢ سبتمبر', amt: 1025000 },
+      { id: 'o4', sp: 'eg', io: 'o', name: 'تحويل للخارج', wallet: 'QNB مصر', date: '٢٠ أغسطس', amt: 900000 },
+      { id: 'i3', sp: 'sa', io: 'i', name: 'حوالة دولية واردة', wallet: 'مصرف الإنماء', date: '٢١ أغسطس', amt: 69000 }
+    ];
+    const pairsL = s.pairs || (st === 'فاضي' || na ? [] : P0);
+    const candL = s.cand || C0;
+    const [fsp, tsp] = s.dir === 'sa2eg' ? ['sa', 'eg'] : ['eg', 'sa'];
+    const pairs = pairsL.map((p) => ({
+      route: 'من ' + NAME[p.from] + (eg ? (p.to === 'sa' ? ' للسعودية' : ' لمصر') : ' إلى ' + NAME[p.to]),
+      legs: [
+        { mark: MARK[p.from], wallet: p.fw, sub: (eg ? 'طلعت، ' : 'خرجت، ') + p.fd, amount: '−' + this.fmt(p.fa) + ' ' + CUR[p.from] },
+        { mark: MARK[p.to], wallet: p.tw, sub: (eg ? 'وصلت، ' : 'وصلت، ') + p.td, amount: '+' + this.fmt(p.ta) + ' ' + CUR[p.to] }
+      ],
+      rateNum: this.rate(p.fa, p.ta), rateUnit: CUR[p.to] + ' لكل ١ ' + CUR[p.from],
+      hasNote: !!p.note, note: (eg ? 'ملاحظتك: ' : 'ملاحظتك: ') + p.note,
+      unlink: () => this.setState({ sheet: { kind: 'unlink', id: p.id }, err: '' })
+    }));
+    const chip = (on) => 'height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: #FFFFFF');
+    const sh = s.sheet, isNew = !!sh && sh.kind === 'new', isLink = !!sh && sh.kind === 'link', isUnlink = !!sh && sh.kind === 'unlink';
+    const fa = this.toMinor(s.fa), ta = this.toMinor(s.ta);
+    const pOut = candL.find((c) => c.id === s.pickOut && c.sp === fsp), pIn = candL.find((c) => c.id === s.pickIn && c.sp === tsp);
+    const amounts = isNew ? [fa, ta] : pOut && pIn ? [pOut.amt, pIn.amt] : [null, null];
+    const okNew = isNew && fa > 0 && ta > 0 && !!s.date;
+    const okLink = isLink && !!pOut && !!pIn;
+    const cands = (sp, io) => candL.filter((c) => c.sp === sp && c.io === io).map((c) => {
+      const on = (io === 'o' ? s.pickOut : s.pickIn) === c.id;
+      return { name: c.name, sub: c.wallet + '، ' + c.date + (c.locked ? (eg ? ' — متربطة بشخص، فكّها الأول' : ' — مرتبطة بشخص، فُكّ الربط أولًا') : ''),
+        amount: (io === 'o' ? '−' : '+') + this.fmt(c.amt) + ' ' + CUR[sp], on: on ? 'true' : 'false', off: c.locked ? 'true' : 'false',
+        amountStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; color: ' + (io === 'o' ? '#BE3D48' : '#13764D'),
+        pick: () => { if (c.locked) { this.setState({ err: eg ? 'العملية دي متربطة بحاجة تانية (مستحقات أو زكاة أو حدث أو مشروع أو شخص) — فكّها الأول' : 'هذه العملية مرتبطة بشيء آخر (مستحقات أو زكاة أو حدث أو مشروع أو شخص) — فُكّ الربط أولًا' }); return; } this.setState(io === 'o' ? { pickOut: c.id, err: '' } : { pickIn: c.id, err: '' }); },
+        style: 'display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px; border: 0; border-radius: 14px; font: inherit; color: #193D33; ' + (c.locked ? 'opacity: 0.5; cursor: default; background: #FFFFFF' : on ? 'cursor: pointer; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'cursor: pointer; background: #FFFFFF') };
+    });
+    const legForm = (sp, idx, out) => ({
+      title: (out ? (eg ? 'طلعت من ' : 'خرجت من ') : (eg ? 'وصلت في ' : 'وصلت في ')) + NAME[sp],
+      wallets: W[sp].map((name, i) => ({ name, on: idx === i ? 'true' : 'false', pick: () => this.setState(out ? { fw: i } : { tw: i }), style: chip(idx === i) })),
+      amountLabel: (out ? (eg ? 'المبلغ اللي طلع' : 'المبلغ الذي خرج') : (eg ? 'المبلغ اللي وصل' : 'المبلغ الذي وصل')) + ' (' + CUR[sp] + ')',
+      amountText: out ? s.fa : s.ta, typeAmount: (e) => this.setState(out ? { fa: e.target.value, err: '' } : { ta: e.target.value, err: '' }),
+      cands: cands(sp, out ? 'o' : 'i'), noCands: cands(sp, out ? 'o' : 'i').length === 0
+    });
+    const dateText = (iso) => { const [y, m, d] = String(iso).split('-').map((x) => parseInt(x, 10)); return d && m ? n(d) + ' ' + MONTHS[m - 1] : ''; };
+    // الحفظ: الزوج والرجلين دفعة واحدة — في حالة «خطأ» أول محاولة بتفشل ومفيش حاجة بتتكتب
+    const failOnce = () => { if (st === 'خطأ' && !s.failed) { this.setState({ failed: true, err: eg ? 'ما اتحفظش ولا حاجة — التحويل ورجليه بيتحفظوا مع بعض أو ما يتحفظوش. جرّب تاني.' : 'لم يُحفظ شيء — يُحفظ التحويل وطرفاه معًا أو لا يُحفظ. حاول مرة أخرى.' }); return true; } return false; };
+    const confirm = () => {
+      if (isUnlink) {
+        const p = pairsL.find((x) => x.id === sh.id); if (!p) return;
+        // الرجلين بيرجعوا بأساميهم (المسجّل يدوي اسمه «تحويل داخلي» — KIND_INTERNAL_TRANSFER)
+        const back = [{ id: 'u' + p.id + 'o', sp: p.from, io: 'o', name: p.fn || 'تحويل داخلي', wallet: p.fw, date: p.fd, amt: p.fa }, { id: 'u' + p.id + 'i', sp: p.to, io: 'i', name: p.tn || 'تحويل داخلي', wallet: p.tw, date: p.td, amt: p.ta }];
+        this.setState({ pairs: pairsL.filter((x) => x.id !== p.id), cand: back.concat(candL), sheet: null });
+        this.say(eg ? 'اتفك الربط — العمليتين رجعوا للمراجعات' : 'فُكّ الربط — عادت العمليتان إلى المراجعات'); return;
+      }
+      if (isNew && !okNew) { this.setState({ err: eg ? 'المبلغ لازم يكون أكبر من صفر' : 'يجب أن يكون المبلغ أكبر من صفر' }); return; }
+      if (!(okNew || okLink) || failOnce()) return;
+      const id = 'n' + (s.seq + 1);
+      const p = isNew ? { id, from: fsp, fw: W[fsp][s.fw], fa, to: tsp, tw: W[tsp][s.tw], ta, fd: dateText(s.date), td: dateText(s.date), note: s.note.trim() }
+        : { id, from: fsp, fw: pOut.wallet, fa: pOut.amt, to: tsp, tw: pIn.wallet, ta: pIn.amt, fd: pOut.date, td: pIn.date, note: '', fn: pOut.name, tn: pIn.name };
+      this.setState({ pairs: [p].concat(pairsL), cand: isLink ? candL.filter((c) => c !== pOut && c !== pIn) : candL, sheet: null, seq: s.seq + 1, errGone: true });
+      this.say(isNew ? (eg ? 'اتسجّل التحويل — مش مصروف ولا دخل' : 'سُجّل التحويل — لا مصروف ولا دخل') : (eg ? 'اتربطت العمليتين — بقوا تحويل لنفسك' : 'رُبطت العمليتان — أصبحتا تحويلًا لنفسك'));
+    };
+    const open = (kind) => () => this.setState({ sheet: { kind }, fw: 0, tw: 0, fa: '', ta: '', date: '2026-10-07', note: '', pickOut: null, pickIn: null, err: '' });
+    const live = amounts[0] > 0 && amounts[1] > 0;
+    const okConfirm = isUnlink || okNew || okLink;
+    return {
+      title: eg ? 'تحويلاتك بين البلدين' : 'تحويلاتك بين البلدين',
+      intro: eg ? 'فلوس نقلتها من حسابك في بلد لحسابك في التانية. مش بتتحسب مصروف ولا دخل في أي بلد، وكل رجل بعملتها زي الكشف بالظبط.' : 'أموال نقلتها من حسابك في بلد إلى حسابك في الآخر. لا تُحسب مصروفًا ولا دخلًا في أي بلد، وكل طرف بعملته كما في الكشف تمامًا.',
+      showError: st === 'خطأ' && !s.errGone,
+      errTitle: eg ? 'آخر تحويل ما اتحفظش' : 'تعذّر حفظ آخر تحويل',
+      errBody: eg ? 'ما اتكتبش ولا حاجة — التحويل ورجليه مع بعض أو ولا حاجة.' : 'لم يُكتب شيء — التحويل وطرفاه معًا أو لا شيء.',
+      retryLabel: eg ? 'جرّب تاني' : 'أعد المحاولة', retry: open('new'),
+      isNa: na, naTitle: eg ? 'عندك بلد واحدة بس' : 'لديك بلد واحد فقط',
+      naBody: eg ? 'التحويل لنفسك بيبقى بين بلدين مختلفين. ضيف بلدك التانية الأول، وبعدها تسجّل التحويلات بينهم.' : 'التحويل لنفسك يكون بين بلدين مختلفين. أضف بلدك الآخر أولًا، ثم سجّل التحويلات بينهما.',
+      naLink: eg ? 'ضيف بلد' : 'أضف بلدًا',
+      canAct: !na, newLabel: eg ? 'سجّل تحويل' : 'سجّل تحويلًا', linkLabel: eg ? 'اربط عمليتين' : 'اربط عمليتين',
+      openNew: open('new'), openLink: open('link'),
+      isEmpty: !na && pairsL.length === 0,
+      emptyTitle: eg ? 'مفيش تحويلات بين البلدين لسه' : 'لا تحويلات بين البلدين بعد',
+      emptyBody: eg ? 'لما تنقل فلوس من بلد للتانية، سجّلها هنا أو اربط العمليتين لو اتسجلوا قبل كده.' : 'حين تنقل مالًا من بلد إلى آخر، سجّله هنا أو اربط العمليتين إن سُجّلتا سابقًا.',
+      pairs, hasPairs: pairs.length > 0,
+      notSpendChip: eg ? 'مش مصروف ولا دخل' : 'لا مصروف ولا دخل',
+      rateLabel: eg ? 'السعر اللي اتاخد (للعرض بس)' : 'السعر الفعلي (للعرض فقط)',
+      unlinkLabel: eg ? 'فك الربط' : 'فك الربط',
+      lockNote: eg ? 'كل رجل مقفولة على نوعها: لو عايز تغيّر نوعها أو تربطها بحاجة تانية فك الربط الأول. والسعر بيتحسب من المبلغين ومش بيحوّل أي رقم تاني.' : 'كل طرف مقفل على نوعه: لتغيير نوعه أو ربطه بشيء آخر فُكّ الربط أولًا. والسعر يُحسب من المبلغين ولا يحوّل أي رقم آخر.',
+      sheet: !!sh, isNew, isLink, isForm: isNew || isLink,
+      sheetTitle: isNew ? (eg ? 'تحويل جديد لنفسك' : 'تحويل جديد لنفسك') : isLink ? (eg ? 'اربط عمليتين موجودين' : 'اربط عمليتين موجودتين') : (eg ? 'تفك ربط التحويل؟' : 'فك ربط التحويل؟'),
+      sheetBody: isNew ? (eg ? 'عمليتين: طالعة من بلد وداخلة في التانية.' : 'عمليتان: صادرة من بلد وواردة في الآخر.')
+        : isLink ? (eg ? 'اختار العملية اللي طلعت من بلد واللي وصلت في التانية.' : 'اختر العملية التي خرجت من بلد والتي وصلت في الآخر.')
+        : (eg ? 'العمليتين مش هيتمسحوا. نوع كل واحدة هيرجع «لسه ما اتحددش» وهيظهروا في المراجعات.' : 'لن تُحذف العمليتان. يعود نوع كل منهما «غير محدد» وتظهران في المراجعات.'),
+      dirLabel: eg ? 'الاتجاه' : 'الاتجاه',
+      dirs: [['sa2eg', 'من السعودية إلى مصر', 'من السعودية لمصر'], ['eg2sa', 'من مصر إلى السعودية', 'من مصر للسعودية']].map(([id, msa, egy]) => ({ label: eg ? egy : msa, on: s.dir === id ? 'true' : 'false',
+        pick: () => this.setState({ dir: id, fw: 0, tw: 0, pickOut: null, pickIn: null, err: '' }),
+        style: 'flex: 1 1 0; height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (s.dir === id ? 'font-weight: 700; color: #08634F; background: #FFFFFF; box-shadow: 0 4px 12px rgba(29,54,53,0.08)' : 'color: #637570; background: transparent') })),
+      legForms: [legForm(fsp, s.fw, true), legForm(tsp, s.tw, false)],
+      noCandText: eg ? 'مفيش عمليات مناسبة هنا.' : 'لا عمليات مناسبة هنا.',
+      dateLabel: eg ? 'التاريخ' : 'التاريخ', date: s.date, typeDate: (e) => { if (e && e.target && e.target.value) this.setState({ date: e.target.value }); },
+      noteLabel: eg ? 'ملاحظة (اختياري)' : 'ملاحظة (اختياري)', note: s.note, typeNote: (e) => this.setState({ note: e.target.value }),
+      liveRateLabel: eg ? 'السعر (للعرض بس)' : 'السعر (للعرض فقط)',
+      liveRateNum: live ? this.rate(amounts[0], amounts[1]) : '', liveRateUnit: live ? CUR[tsp] + ' لكل ١ ' + CUR[fsp] : (eg ? 'بعد ما تكتب المبلغين' : 'بعد كتابة المبلغين'),
+      formErr: s.err,
+      confirmOff: !okConfirm,
+      confirmLabel: isNew ? (eg ? 'سجّله' : 'سجّله') : isLink ? (eg ? 'اربطهم' : 'اربطهما') : (eg ? 'فك الربط' : 'فك الربط'),
+      confirmStyle: 'flex: 1.4 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (okConfirm ? '' : ' opacity: 0.45; cursor: default'),
+      confirm, cancelLabel: eg ? 'إلغاء' : 'إلغاء',
+      closeSheet: () => this.setState({ sheet: null }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

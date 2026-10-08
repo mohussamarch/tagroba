@@ -87,7 +87,7 @@ a{color:#08634F}
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
         <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
           <a href="{{t.href}}" class="d-press" style="min-height: 84px; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
             <span style="font-size: 20px; font-weight: 700; color: #08634F">{{t.count}}</span>
@@ -151,6 +151,7 @@ class Component extends DCLogic {
       listTitle: eg ? 'بالترتيب' : 'حسب الموعد',
       items,
       tiles: [
+        { label: 'الديون', count: n(6), href: 'DuesDebts.dc.html' },
         { label: 'الجمعيات', count: n(2), href: 'Roscas.dc.html' },
         { label: 'الأقساط', count: n(2), href: 'Installments.dc.html' },
         { label: 'الاشتراكات', count: n(4), href: 'Subscriptions.dc.html' }

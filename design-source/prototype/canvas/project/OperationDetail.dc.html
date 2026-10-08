@@ -45,6 +45,7 @@ body{margin:0}
       </span>
       <span style="font-size: 18px; font-weight: 700; margin-top: 4px">{{name}}</span>
       <span style="font-size: 13px; color: #637570">{{sub}}</span>
+      <sc-if value="{{isMerchant}}" hint-placeholder-val="{{ true }}"><a href="MerchantProfile.dc.html" data-keep="{{merchantKeep}}" class="m-press" style="min-height: 44px; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none">{{merchantLabel}}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a></sc-if>
       <span dir="ltr" style="{{amountStyle}}">{{amount}}</span>
       <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #637570"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>{{lockLine}}</span>
     </div>
@@ -74,6 +75,7 @@ body{margin:0}
           </sc-for>
         </div>
       </sc-for>
+      <div style="border-top: 1px solid rgba(204,216,204,0.55); padding: 6px 0"><dc-import name="TagsSheet" space="{{spaceName}}" tags="" hint-size="350px,72px"></dc-import></div>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 8px">
@@ -192,6 +194,7 @@ class Component extends DCLogic {
       cashBody: eg ? 'ده فرق عدّ الكاش. داخل في صرف الشهر بنقطة حمرا لحد ما تقول اتصرف في إيه.' : 'هذا فرق عدّ الكاش. يدخل في صرف الشهر بنقطة حمراء حتى تحدد فيمَ صُرف.',
       cashBtn: eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟',
       openCat,
+      isMerchant: v === 'sms', merchantKeep: JSON.stringify({ 'masroufy-merchant': T.name }), merchantLabel: 'صفحة التاجر',
       isParty: v === 'party', spaceName: eg ? 'مصر' : 'السعودية', onKind: this.onKind,
       fields: fields.map((f, i) => Object.assign(f, { rowStyle: 'display: flex; align-items: center; gap: 8px; padding: 12px 0;' + (i === fields.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
       linkTitle: eg ? 'اربطها بـ' : 'اربطها بـ',

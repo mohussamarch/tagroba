@@ -85,7 +85,7 @@ body{margin:0}
         <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{catsTitle}}</h2>
         <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
           <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
-            <button type="button" class="g-press" onClick="{{c.edit}}" style="{{c.rowStyle}}">
+            <a href="CategoryBudget.dc.html" data-keep="{{c.keep}}" class="g-press" style="{{c.rowStyle}} text-decoration: none">
               <span style="display: flex; align-items: center; gap: 10px">
                 <span style="{{c.dot}}"></span>
                 <span style="flex: 1 1 auto; font-size: 14px; font-weight: 700">{{c.name}}</span>
@@ -95,7 +95,7 @@ body{margin:0}
                 <span style="height: 6px; border-radius: 3px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="g-fill" style="{{c.bar}}"></span></span>
               </sc-if>
               <span style="{{c.noteStyle}}">{{c.note}}</span>
-            </button>
+            </a>
           </sc-for>
         </div>
       </div>
@@ -205,7 +205,7 @@ class Component extends DCLogic {
         note: l == null ? (eg ? 'من غير سقف · دوس تحدّد سقف' : 'بلا سقف · اضغط لتحديد سقف') : isOver ? (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(s - l) : (eg ? 'فاضل ' : 'بقي ') + this.fmt(l - s) + ' · ' + p.toLocaleString('ar-EG') + '٪',
         noteStyle: 'font-size: 12px; text-align: right; color: ' + (isOver ? '#BE3D48' : l == null ? '#08634F' : '#637570') + (l == null ? '; font-weight: 700' : ''),
         rowStyle: 'width: 100%; border: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; padding: 12px 0; display: flex; flex-direction: column; gap: 6px;' + (i === catDefs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
-        edit: () => this.open(id, name)
+        edit: () => this.open(id, name), keep: JSON.stringify({ 'masroufy-budget-cat': id })
       };
     });
     const R = this.state.reserved;

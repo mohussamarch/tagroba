@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تعديل خطة الأقساط — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.ie-in{animation:ie-in 300ms cubic-bezier(.2,.7,.3,1) backwards}
+.ie-toast{animation:ie-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes ie-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes ie-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.ie-in,.ie-toast{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="{{backHref}}" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1><span style="font-size: 12px; color: #637570">{{subTitle}}</span></span>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{texts}}" as="tf" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="{{tf.id}}" style="font-size: 13px; font-weight: 700">{{tf.label}}</label>
+          <input id="{{tf.id}}" type="text" maxlength="80" value="{{tf.value}}" onInput="{{tf.set}}" placeholder="{{tf.hint}}" style="{{tf.style}}">
+          <span role="alert" style="{{tf.errStyle}}">{{tf.err}}</span>
+        </div>
+      </sc-for>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span id="ie-kind" style="font-size: 13px; font-weight: 700">النوع</span>
+        <div role="radiogroup" aria-labelledby="ie-kind" style="display: flex; gap: 8px">
+          <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{kd.on}}" aria-disabled="{{kd.locked}}" class="m-press" onClick="{{kd.pick}}" style="{{kd.style}}"><span style="font-size: 14px; font-weight: 700">{{kd.label}}</span><span style="font-size: 11px; color: #637570">{{kd.hint}}</span></button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px">
+        <span style="display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">العملة</span><span style="font-size: 11px; color: #637570">{{curHint}}</span></span>
+        <span style="font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 12px; background: rgba(25,61,51,0.05)">{{curName}}</span>
+      </div>
+      <sc-if value="{{locked}}" hint-placeholder-val="{{ true }}">
+        <span style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 14px; font-size: 12px; color: #6B4600; background: #FBF0DD"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>{{lockText}}</span>
+      </sc-if>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{amounts}}" as="am" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="{{am.id}}" style="font-size: 13px; font-weight: 700">{{am.label}}</label>
+          <div style="{{am.box}}">
+            <input id="{{am.id}}" type="text" inputmode="decimal" dir="ltr" value="{{am.value}}" onInput="{{am.set}}" placeholder="0" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 20px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
+            <span style="font-size: 14px; color: #637570">{{currency}}</span>
+          </div>
+          <span role="alert" style="{{am.errStyle}}">{{am.err}}</span>
+        </div>
+      </sc-for>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="ie-count" style="font-size: 13px; font-weight: 700">{{countLabel}}</label>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <button type="button" class="m-press" onClick="{{countUp}}" aria-label="{{upAria}}" style="width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 22px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">+</button>
+          <input id="ie-count" type="text" inputmode="numeric" dir="ltr" value="{{countIn}}" onInput="{{typeCount}}" style="{{countStyle}}">
+          <button type="button" class="m-press" onClick="{{countDown}}" aria-label="{{downAria}}" style="width: 48px; height: 48px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 22px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">−</button>
+        </div>
+        <span role="alert" style="{{countErrStyle}}">{{countErr}}</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span id="ie-cycle" style="font-size: 13px; font-weight: 700">{{cycleLabel}}</span>
+        <div role="radiogroup" aria-labelledby="ie-cycle" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{cycles}}" as="cy" hint-placeholder-count="5">
+            <button type="button" role="radio" aria-checked="{{cy.on}}" class="m-press" onClick="{{cy.pick}}" style="{{cy.style}}">{{cy.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="ie-first" style="font-size: 13px; font-weight: 700">{{firstLabel}}</label>
+        <input id="ie-first" type="date" dir="ltr" value="{{firstIn}}" onInput="{{typeFirst}}" onChange="{{typeFirst}}" style="{{firstStyle}}">
+        <span role="alert" style="{{firstErrStyle}}">{{firstErr}}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(204,216,204,0.55)">
+        <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{interestQ}}</span><span style="font-size: 12px; color: #637570">{{interestHint}}</span></span>
+        <sc-for list="{{interestOpts}}" as="io" hint-placeholder-count="2">
+          <button type="button" aria-pressed="{{io.on}}" class="m-press" onClick="{{io.pick}}" style="{{io.style}}">{{io.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; background: #DCEBD6">
+      <span style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{resultTitle}}</h2><span style="font-size: 11px; color: #08634F">{{resultHint}}</span></span>
+      <sc-for list="{{results}}" as="rs" hint-placeholder-count="4">
+        <span style="{{rs.rowStyle}}"><span style="color: #3F5A52">{{rs.label}}</span><span dir="{{rs.dir}}" style="{{rs.valueStyle}}">{{rs.value}}</span></span>
+      </sc-for>
+      <span style="font-size: 12px; color: #3F5A52; margin-top: 6px">{{expenseNote}}</span>
+    </div>
+
+    <sc-if value="{{notSaved}}" hint-placeholder-val="{{ true }}">
+      <button type="button" class="m-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)">{{saveLabel}}</button>
+    </sc-if>
+    <sc-if value="{{saved}}" hint-placeholder-val="{{ false }}">
+      <a href="{{backHref}}" data-back="1" class="m-press" style="height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{doneLabel}}</a>
+    </sc-if>
+    <span role="alert" style="{{saveErrStyle}}">{{saveErr}}</span>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="ie-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"plan":{"editor":"enum","options":["حسب اللي اتداس","قسط السيارة","تقسيط الجوال","خطة جديدة"],"default":"حسب اللي اتداس","section":"الخطة"},"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let picked = null;
+    // «تفاصيل الخطة» بتكتب هنا أنهي خطة اتفتحت (masroufy-plan: car · phone) — زي InstallmentDetail
+    try { picked = window.sessionStorage.getItem('masroufy-plan'); } catch (e) {}
+    this.picked = picked;
+    this.timers = [];
+    this.state = this.fresh(props);
+  }
+  componentDidUpdate(prev) { if (prev.plan !== this.props.plan || prev.space !== this.props.space || prev.state !== this.props.state) this.setState(this.fresh(this.props)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  digits(t) { return String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+  toMinor(text) { const t = this.digits(text).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  plain(minor) { return this.fmt(minor).replace(/,/g, ''); }
+  key(props) {
+    const m = { 'قسط السيارة': 'car', 'تقسيط الجوال': 'phone', 'خطة جديدة': 'new' }[props.plan];
+    return m || (this.picked === 'phone' || this.picked === 'new' ? this.picked : 'car');
+  }
+  // مخترعة · نفس «الأقساط» و«تفاصيل الخطة»: السيارة ١٤٥٠×٣٦ (مصر ×٣ = ٤٣٥٠) والأصل ٤٨٬٦٠٠ · linked = الأقساط المربوطة
+  fresh(props) {
+    const eg = (props.space ?? 'السعودية') === 'مصر', k = eg ? 3 : 1;
+    const key = this.key(props);
+    const P = key === 'car' ? { name: 'قسط السيارة', by: eg ? 'البنك الأهلي المصري' : 'البنك الأهلي السعودي', kind: 'fin', principal: 4860000 * k, inst: 145000 * k, count: 36, cycle: 1, first: '2025-10-27', interest: null, linked: 12 }
+      : key === 'phone' ? { name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', by: eg ? 'محل الأجهزة' : 'متجر الأجهزة', kind: 'buy', principal: 300000 * k, inst: 25000 * k, count: 12, cycle: 1, first: '2026-02-05', interest: false, linked: 8 }
+      : { name: '', by: '', kind: 'fin', principal: null, inst: null, count: 12, cycle: 1, first: '2026-10-28', interest: null, linked: 0 };
+    // «خطأ»: قسط أقل يخلّي الإجمالي تحت الأصل — بيبان الخطأ جنب الخانة من أول ما الشاشة تفتح
+    const bad = (props.state ?? 'عادي') === 'خطأ' && key !== 'new';
+    const inst = bad ? (key === 'car' ? 130000 * k : 20000 * k) : P.inst;
+    return { key, linked: P.linked, name: P.name, by: P.by, kind: P.kind, principalIn: P.principal ? this.plain(P.principal) : '', instIn: inst ? this.plain(inst) : '', countIn: String(P.count), cycle: P.cycle, first: P.first, interest: P.interest, tried: bad, saved: false, toast: '' };
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const T = (sa, e) => (eg ? e : sa);
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const s = this.state, isNew = s.key === 'new', fin = s.kind === 'fin';
+    const MO = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const principal = this.toMinor(s.principalIn), inst = this.toMinor(s.instIn);
+    const cRaw = this.digits(s.countIn).trim(), count = /^\d+$/.test(cRaw) ? parseInt(cRaw, 10) : null;
+    const total = inst && count ? inst * count : null;
+    const paid = inst ? s.linked * inst : 0;
+    const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.first || '');
+    const first = dm ? [parseInt(dm[1], 10), parseInt(dm[2], 10), parseInt(dm[3], 10)] : null;
+    const addM = (a, x) => { const t = a[0] * 12 + a[1] - 1 + x, M = t % 12; return [(t - M) / 12, M + 1, a[2]]; };
+    const dt = (a) => n(a[2]) + ' ' + MO[a[1] - 1] + ' ' + ny(a[0]);
+    // التحقق بنفس قواعد كوتلن (checkInstallmentPlan · checkDueSchedule · المدفوع ما يزيدش عن الإجمالي) — النصوص من TextsDues
+    const E = {};
+    const nm = s.name.trim().replace(/\s+/g, ' ');
+    if (!nm || nm.length > 80) E.name = T('الاسم من حرف إلى ٨٠ حرفًا.', 'الاسم لازم يكون من حرف لـ٨٠ حرف.');
+    if (s.by.trim().length > 80) E.by = T('الاسم من حرف إلى ٨٠ حرفًا.', 'الاسم لازم يكون من حرف لـ٨٠ حرف.');
+    if (principal == null || principal <= 0) E.principal = T('يجب أن يكون المبلغ أكبر من صفر.', 'المبلغ لازم يكون أكبر من صفر.');
+    if (inst == null || inst <= 0) E.inst = T('يجب أن يكون القسط أكبر من صفر.', 'القسط لازم يكون أكبر من صفر.');
+    if (count == null || count < 1) E.count = T('اكتب عدد الأقساط، واحد على الأقل.', 'اكتب عدد الأقساط، واحد على الأقل.');
+    else if (count > 360) E.count = T('عدد الأقساط يتجاوز ٣٦٠ — راجع القسط والإجمالي.', 'عدد الأقساط أكتر من ٣٦٠ — راجع القسط والإجمالي.');
+    else if (total != null && paid > total) E.count = T('المدفوع (' + this.fmt(paid) + ') أكبر من الإجمالي (' + this.fmt(total) + ').', 'المدفوع (' + this.fmt(paid) + ') أكبر من الإجمالي (' + this.fmt(total) + ').');
+    if (!E.principal && !E.inst && !E.count && total < principal) E.inst = T('لا يقل إجمالي ما ستدفعه عن المبلغ الأصلي.', 'إجمالي اللي هتدفعه مينفعش يكون أقل من المبلغ الأصلي.');
+    if (!first || first[1] < 1 || first[1] > 12 || first[2] < 1 || first[2] > 31) E.first = T('تاريخ أول قسط غير صحيح.', 'تاريخ أول قسط مش صحيح.');
+    const bad = Object.keys(E).length > 0;
+    const show = (f) => (s.tried ? E[f] || '' : '');
+    const errStyle = (msg) => 'font-size: 12px; font-weight: 700; color: #BE3D48;' + (msg ? '' : ' display: none');
+    const field = (badOne) => 'height: 52px; box-sizing: border-box; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; color: #193D33; outline: none; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (badOne ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
+    const texts = [['name', 'ie-name', 'الاسم', T('مثلًا: قسط السيارة', 'مثلًا: قسط العربية')], ['by', 'ie-by', T('الجهة', 'الجهة'), T('البنك أو المتجر', 'البنك أو المحل')]].map(([f, id, label, hint]) => ({
+      id, label, hint, value: s[f], err: show(f), errStyle: errStyle(show(f)), style: field(!!show(f)),
+      set: (e) => this.setState({ [f]: e.target.value, saved: false })
+    }));
+    const locked = !isNew && s.linked > 0;
+    const kinds = [['fin', 'تمويل', T('استلمت مبلغًا من الجهة', 'استلمت فلوس من الجهة')], ['buy', 'تقسيط مشتريات', T('اشتريت شيئًا بالتقسيط', 'اشتريت حاجة بالتقسيط')]].map(([id, label, hint]) => {
+      const on = s.kind === id;
+      return { label, hint, on: on ? 'true' : 'false', locked: locked ? 'true' : 'false',
+        pick: () => { if (!locked) this.setState({ kind: id, saved: false }); },
+        style: 'flex: 1 1 0; min-width: 0; min-height: 56px; padding: 8px 10px; border: 0; border-radius: 16px; font: inherit; color: #193D33; text-align: right; display: flex; flex-direction: column; gap: 2px; cursor: ' + (locked ? 'default' : 'pointer') + '; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') + (locked && !on ? '; opacity: 0.5' : '') };
+    });
+    const box = (badOne) => 'display: flex; align-items: center; height: 52px; border-radius: 16px; padding: 0 16px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (badOne ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
+    const amounts = [['principal', 'principalIn', 'ie-principal', fin ? T('المبلغ الأصلي (اللي استلمته)', 'المبلغ الأصلي (اللي استلمته)') : T('سعر الشيء', 'تمن الحاجة')], ['inst', 'instIn', 'ie-inst', 'القسط']].map(([f, v, id, label]) => ({
+      id, label, value: s[v], err: show(f), errStyle: errStyle(show(f)), box: box(!!show(f)),
+      set: (e) => this.setState({ [v]: e.target.value, saved: false })
+    }));
+    const step = (d) => () => { const c = count == null ? 0 : count; this.setState({ countIn: String(Math.max(1, Math.min(360, c + d))), saved: false }); };
+    const chip = (on) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const cycles = [[1, T('كل شهر', 'كل شهر')], [2, T('كل شهرين', 'كل شهرين')], [3, T('كل ٣ أشهر', 'كل ٣ شهور')], [6, T('كل ٦ أشهر', 'كل ٦ شهور')], [12, T('كل سنة', 'كل سنة')]].map(([v, label]) => ({
+      label, on: s.cycle === v ? 'true' : 'false', style: chip(s.cycle === v), pick: () => this.setState({ cycle: v, saved: false })
+    }));
+    const last = first && count && count >= 1 ? addM(first, (count - 1) * s.cycle) : null;
+    const next = first && count && s.linked < count ? addM(first, s.linked * s.cycle) : null;
+    const cost = total != null && principal != null ? total - principal : null;
+    const perInst = cost != null && cost > 0 && count ? (cost - (cost % count)) / count : 0;
+    const row = (label, value, color, ltr) => ({ label, value, dir: ltr ? 'ltr' : 'rtl', valueStyle: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (color || '#193D33'), rowStyle: 'display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 32px; font-size: 13px; border-bottom: 1px solid rgba(8,99,79,0.12)' });
+    const NA = T('غير متاح', 'مش متاح');
+    const results = [row(T('إجمالي ما ستدفعه', 'إجمالي اللي هتدفعه'), total != null ? this.fmt(total) + ' ' + cur : NA, null, total != null)];
+    if (fin) results.push(row(T('أرباح التمويل', 'أرباح التمويل'), cost != null && cost >= 0 ? this.fmt(cost) + ' ' + cur : NA, '#956000', cost != null && cost >= 0), row(T('في كل قسط تقريبًا', 'في كل قسط تقريبًا'), cost != null && cost >= 0 ? this.fmt(perInst) + ' ' + cur : NA, null, cost != null && cost >= 0));
+    else if (cost != null && cost > 0) results.push(row(T('زيادة على السعر', 'زيادة على التمن'), this.fmt(cost) + ' ' + cur, '#956000', true));
+    if (!isNew) results.push(row(T('المدفوع حتى الآن', 'اتدفع لحد دلوقتي'), inst ? plural(s.linked, T(['قسط واحد', 'قسطان', 'أقساط', 'قسطًا'], ['قسط واحد', 'قسطين', 'أقساط', 'قسط'])) + '، ' + this.fmt(paid) + ' ' + cur : NA, null, false));
+    const late = next && next[0] * 10000 + next[1] * 100 + next[2] < 20261007; // النهارده ٧ أكتوبر ٢٠٢٦
+    if (!isNew && next) results.push(row(T('القسط القادم', 'القسط الجاي'), (late ? T('متأخر، ', 'متأخر، ') : '') + dt(next), late ? '#956000' : null, false));
+    results.push(row(T('آخر قسط', 'آخر قسط'), last ? dt(last) : NA, null, false));
+    results[results.length - 1].rowStyle = results[results.length - 1].rowStyle.replace('; border-bottom: 1px solid rgba(8,99,79,0.12)', '');
+    const saveErr = s.tried && bad ? T('راجع الخانات المعلّمة بالأحمر.', 'راجع الخانات اللي عليها أحمر.') : '';
+    return {
+      backHref: isNew ? 'Installments.dc.html' : 'InstallmentDetail.dc.html',
+      title: isNew ? T('خطة جديدة', 'خطة جديدة') : T('تعديل الخطة', 'تعديل الخطة'),
+      subTitle: isNew ? T('قسط بنكي أو تقسيط مشتريات', 'قسط بنك أو تقسيط مشتريات') : (nm || s.name) + (s.linked ? '، ' + plural(s.linked, T(['قسط واحد مربوط', 'قسطان مربوطان', 'أقساط مربوطة', 'قسطًا مربوطًا'], ['قسط واحد مربوط', 'قسطين مربوطين', 'أقساط مربوطة', 'قسط مربوط'])) : ''),
+      texts, kinds, locked,
+      lockText: T('لا يمكن تغيير العملة أو النوع بعد ربط عمليات — فُكّ الربط أولًا.', 'مينفعش تغيّر العملة أو النوع بعد ما عمليات اتربطت — فك الربط الأول.'),
+      curName: T('ريال سعودي', 'جنيه مصري'), curHint: T('عملة هذه المساحة', 'عملة المساحة دي'), currency: cur,
+      amounts,
+      countLabel: T('عدد الأقساط', 'عدد الأقساط'), countIn: s.countIn,
+      typeCount: (e) => this.setState({ countIn: e.target.value, saved: false }),
+      countUp: step(1), countDown: step(-1), upAria: T('زِد قسطًا', 'زوّد قسط'), downAria: T('أنقص قسطًا', 'قلّل قسط'),
+      countStyle: field(!!show('count')) + '; flex: 1 1 auto; min-width: 0; width: 100%; text-align: center; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums',
+      countErr: show('count'), countErrStyle: errStyle(show('count')),
+      cycleLabel: T('كل كم شهر', 'كل كام شهر'), cycles,
+      firstLabel: T('أول موعد', 'أول ميعاد'), firstIn: s.first,
+      typeFirst: (e) => this.setState({ first: e.target.value, saved: false }),
+      firstStyle: field(!!show('first')) + '; text-align: right',
+      firstErr: show('first'), firstErrStyle: errStyle(show('first')),
+      interestQ: T('هل فيها فوائد؟', 'فيها فوايد؟'),
+      interestHint: s.interest == null ? T('لم تحدّد بعد', 'لسه ما قلتش') : T('محفوظة مع الخطة', 'محفوظة مع الخطة'),
+      interestOpts: [[true, T('نعم', 'أيوه')], [false, 'لا']].map(([v, label]) => ({ label, on: s.interest === v ? 'true' : 'false', pick: () => this.setState({ interest: s.interest === v ? null : v, saved: false }),
+        style: 'height: 44px; min-width: 52px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (s.interest === v ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+      resultTitle: T('النتيجة', 'النتيجة'), resultHint: T('تتحدّث وأنت تكتب', 'بتتحدّث وانت بتكتب'),
+      results,
+      expenseNote: fin ? T('القسط كاملًا يُحسب مصروفًا في «المستحقات ← تمويل»، والأرباح للعلم فقط.', 'القسط كله بيتحسب مصروف في «المستحقات ← تمويل»، والأرباح معلومة بس.') : T('القسط كاملًا يُحسب مصروفًا في «المستحقات ← تقسيط مشتريات».', 'القسط كله بيتحسب مصروف في «المستحقات ← تقسيط مشتريات».'),
+      notSaved: !s.saved, saved: s.saved,
+      saveLabel: isNew ? T('أضف الخطة', 'ضيف الخطة') : T('احفظ التعديلات', 'احفظ التعديلات'),
+      doneLabel: isNew ? T('إلى الأقساط', 'للأقساط') : T('ارجع للخطة', 'ارجع للخطة'),
+      saveErr, saveErrStyle: errStyle(saveErr) + ' text-align: center',
+      save: () => {
+        if (bad) { this.setState({ tried: true }); return; }
+        const out = { key: s.key, name: nm, provider: s.by.trim(), kind: fin ? 'financing' : 'purchase_plan', principalMinor: principal, installmentMinor: inst, totalMinor: total, cycleMonths: s.cycle, firstDueAt: s.first, hasInterest: s.interest };
+        try { window.sessionStorage.setItem('masroufy-plan-saved', JSON.stringify(out)); } catch (e) {}
+        this.setState({ saved: true, tried: false });
+        this.say(isNew ? T('أُضيفت «', 'اتضافت «') + nm + T('» — تجدها في الأقساط', '» — هتلاقيها في الأقساط') : T('حُفظت التعديلات — الجدول يتحدّث من أول موعد', 'اتحفظت التعديلات — الجدول بيتحدّث من أول ميعاد'));
+      },
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

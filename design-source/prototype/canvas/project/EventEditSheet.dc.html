@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تعديل الحدث — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.ee-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.ee-press:active{transform:scale(.97)}
+.ee-veil{animation:ee-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.ee-up{animation:ee-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.ee-up>*{flex-shrink:0}
+.ee-track{transition:background 220ms cubic-bezier(.2,.7,.3,1)}.ee-knob{transition:right 320ms cubic-bezier(.18,.9,.28,1.08)}
+@keyframes ee-fade{from{opacity:0}to{opacity:1}}
+@keyframes ee-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.ee-press,.ee-track,.ee-knob{transition:none}.ee-press:active{transform:none}.ee-up{animation:ee-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="ee-press" onClick="{{openSheet}}" style="width: 100%; height: 48px; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg>{{openLabel}}</button>
+
+  <sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="ee-veil" onClick="{{closeSheet}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{title}}" class="ee-up" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; box-sizing: border-box; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{title}}</span>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{nameLabel}}
+          <input type="text" maxlength="60" value="{{name}}" onInput="{{typeName}}" placeholder="{{namePh}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 500; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+        </label>
+
+        <span style="font-size: 13px; font-weight: 700">{{kindLabel}}</span>
+        <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{kinds}}" as="k" hint-placeholder-count="9">
+            <button type="button" role="radio" aria-checked="{{k.on}}" class="ee-press" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{hasKindNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{kindNote}}</span></sc-if>
+
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{dateLabel}}
+          <input type="date" value="{{date}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9); outline: none">
+        </label>
+
+        <span style="font-size: 13px; font-weight: 700">{{whoLabel}}</span>
+        <div role="radiogroup" aria-label="{{whoLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{whos}}" as="w" hint-placeholder-count="5">
+            <button type="button" role="radio" aria-checked="{{w.on}}" disabled="{{w.off}}" class="ee-press" onClick="{{w.pick}}" style="{{w.style}}">{{w.label}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{hasWhoNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.7; color: #956000; padding: 8px 12px; border-radius: 12px; background: #FBF0DD">{{whoNote}}</span></sc-if>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px; padding: 8px 14px; border-radius: 18px; background: rgba(25,61,51,0.04)">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{archLabel}}</span><span style="font-size: 12px; color: #637570">{{archSub}}</span></span>
+          <button type="button" role="switch" aria-checked="{{archOn}}" aria-label="{{archLabel}}" onClick="{{toggleArch}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span class="ee-track" style="{{track}}"><span class="ee-knob" style="{{knob}}"></span></span></button>
+        </div>
+
+        <div style="position: sticky; bottom: -28px; z-index: 1; margin: 0 -20px -28px; padding: 14px 20px 28px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(251,250,244,0) 0, #FBFAF4 14px)">
+          <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
+          <button type="button" class="ee-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"eventName":{"editor":"text","default":"زواج خالد","section":"الحدث"},"kind":{"editor":"enum","options":["wedding","engagement","condolence","birth","travel","medical","eid","school","other"],"default":"wedding","section":"الحدث"},"date":{"editor":"text","default":"2026-10-18","section":"الحدث"},"mine":{"editor":"boolean","default":false,"section":"الحدث"},"host":{"editor":"enum","options":["","خالد","سالم","ليلى"],"default":"خالد","section":"الحدث"},"archived":{"editor":"boolean","default":false,"section":"الحدث"},"giftsIn":{"editor":"boolean","default":false,"section":"الحدث"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":48}}'>
+// تعديل حدث موجود (§64 · §65 · ManageEvents.update / setArchived) — نفس شكل «حدث جديد» (EventAddSheet).
+// الخصائص: event-name · kind · date · mine · host · archived · gifts-in (اسم الحدث في event-name لأن name محجوز لـdc-import)
+// الحفظ بيرجّع للشاشة الأم: onSave({ name, kind, date, mine, host, archived })
+//   kind: wedding · engagement · condolence · birth · travel · medical · eid · school · other (LifeEventKind في كوتلن)
+//   host = اسم صاحب الحدث لو مش حدثك (وفاضي لو حدثك) · مفيش مسح — أرشفة بس، وعملياته ونقوطه بتفضل
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false, saved: null, name: '', kind: 'wedding', date: '', mine: false, host: '', archived: false, err: '' }; }
+  base() {
+    const p = this.props;
+    const KINDS = ['wedding', 'engagement', 'condolence', 'birth', 'travel', 'medical', 'eid', 'school', 'other'];
+    const legacy = { trip: 'travel' }; // أنواع «حدث جديد» القديمة اللي مش في كوتلن بتبقى «أخرى»
+    const kind = KINDS.indexOf(p.kind) >= 0 ? p.kind : legacy[p.kind] || 'other';
+    const mine = p.mine === true || p.mine === 'true';
+    return this.state.saved || { name: String(p.eventName == null ? 'زواج خالد' : p.eventName), kind, date: /^\d{4}-\d{2}-\d{2}$/.test(String(p.date || '')) ? p.date : '2026-10-18', mine, host: mine ? '' : String(p.host == null ? 'خالد' : p.host), archived: p.archived === true || p.archived === 'true' };
+  }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
+    const b = this.base();
+    const giftsIn = this.props.giftsIn === true || this.props.giftsIn === 'true';
+    const chip = (on, off) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; ' + (off ? 'opacity: 0.45; cursor: default; ' : 'cursor: pointer; ') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const K = [['wedding', eg ? 'فرح' : 'زواج'], ['engagement', 'خطوبة'], ['condolence', eg ? 'عزا' : 'عزاء'], ['birth', 'ولادة'], ['travel', 'سفر'], ['medical', 'عملية جراحية'], ['eid', 'عيد'], ['school', eg ? 'دخول مدرسة' : 'دخول المدرسة'], ['other', eg ? 'غيره' : 'أخرى']];
+    // مخترعة · نفس أسامي الأحداث والأشخاص في باقي الشاشات
+    const PEOPLE = ['ليلى', 'سارة', 'خالد', 'يوسف', 'سالم'];
+    const people = b.host && PEOPLE.indexOf(b.host) < 0 ? PEOPLE.concat([b.host]) : PEOPLE;
+    const OTHERS = ['ولادة جود', 'زواج خالد', 'رحلة العُلا', 'رحلة دهب', 'عزاء والد سالم', 'عزا والد سالم', 'عيد الفطر'];
+    const bare = (x) => Array.from(x).filter((c) => { const k = c.charCodeAt(0); return !(k >= 0x64B && k <= 0x652) && k !== 0x670 && k !== 0x640; }).join(''); // من غير تشكيل ولا تطويل
+    const norm = (x) => bare(String(x || '').trim().replace(/\s+/g, ' ')).replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي');
+    // حدثك اللي عليه نقوط جاتلك ما يتحوّلش لحدث حد تاني (EVENT_GIFT_IN_NOT_MINE)
+    const lockMine = giftsIn && b.mine;
+    const who = s.mine ? 'me' : s.host;
+    return {
+      openLabel: eg ? 'عدّل الحدث' : 'تعديل الحدث',
+      openSheet: () => this.setState({ open: true, name: b.name, kind: b.kind, date: b.date, mine: b.mine, host: b.host, archived: b.archived, err: '' }),
+      open: s.open,
+      title: eg ? 'تعديل الحدث' : 'تعديل الحدث',
+      nameLabel: eg ? 'اسمه' : 'اسم الحدث', namePh: eg ? 'مثلًا: خطوبة يوسف' : 'مثلًا: خطوبة يوسف',
+      name: s.name, typeName: (e) => this.setState({ name: e && e.target ? e.target.value : '', err: '' }),
+      kindLabel: 'نوعه',
+      kinds: K.map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', style: chip(s.kind === id), pick: () => this.setState({ kind: id, err: '' }) })),
+      hasKindNote: s.kind === 'condolence' || s.kind === 'school',
+      kindNote: s.kind === 'condolence' ? (eg ? 'العزا مالوش تجهيزات.' : 'لا تجهيزات للعزاء.') : (eg ? 'بداية الدراسة بتحطها إنت كحدث — مش من تقويم رسمي.' : 'بداية الدراسة تضيفها أنت حدثًا — لا من تقويم رسمي.'),
+      dateLabel: eg ? 'إمتى؟' : 'متى؟',
+      date: s.date, typeDate: (e) => { if (e && e.target && /^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) this.setState({ date: e.target.value, err: '' }); },
+      whoLabel: eg ? 'حدث مين؟' : 'حدث مَن؟',
+      whos: [['me', eg ? 'حدثي أنا' : 'حدثي']].concat(people.map((x) => [x, x])).map(([id, label]) => {
+        const off = lockMine && id !== 'me';
+        return { label, on: who === id ? 'true' : 'false', off, style: chip(who === id, off), pick: () => { if (!off) this.setState(id === 'me' ? { mine: true, host: '', err: '' } : { mine: false, host: id, err: '' }); } };
+      }),
+      hasWhoNote: lockMine || (!s.mine && !!s.host),
+      whoNote: lockMine ? (eg ? 'عليه نقوط جاتلك — بيفضل حدثك، لأن النقوط اللي جاتلك بتتسجل في حدثك إنت بس.' : 'عليه نقوط جاءتك — يبقى حدثك، لأن النقوط التي جاءتك تُسجَّل في حدثك فقط.') : (eg ? 'حدث ' + s.host + ': بيظهر فيه اللي إنت نقّطته بس، مش النقوط اللي جاتله.' : 'حدث ' + s.host + ': يظهر فيه ما نقّطته أنت فقط، لا النقوط التي جاءته.'),
+      archLabel: eg ? 'متأرشف' : 'مؤرشف',
+      archSub: eg ? 'بيختفي من الشغالة، وعملياته ونقوطه بتفضل — مش بيتمسح.' : 'يختفي من النشطة، وتبقى عملياته ونقوطه — لا يُحذف.',
+      archOn: s.archived ? 'true' : 'false',
+      toggleArch: () => this.setState({ archived: !s.archived }),
+      track: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (s.archived ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'background: rgba(25,61,51,0.16)'),
+      knob: 'position: absolute; top: 2px; right: ' + (s.archived ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
+      err: s.err,
+      saveLabel: eg ? 'احفظ التعديل' : 'احفظ التعديل',
+      save: () => {
+        const say = (err) => this.setState({ err });
+        const name = String(s.name || '').trim().replace(/\s+/g, ' ');
+        if (!name || name.length > 60) return say(eg ? 'اسم الحدث لازم يبقى من حرف لـ٦٠ حرف.' : 'اسم الحدث من حرف إلى ٦٠ حرفًا.');
+        if (OTHERS.some((x) => norm(x) === norm(name) && norm(x) !== norm(b.name))) return say(eg ? 'فيه حدث بنفس الاسم.' : 'يوجد حدث بالاسم نفسه.');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) return say(eg ? 'تاريخ الحدث مش صالح.' : 'تاريخ الحدث غير صالح.');
+        if (lockMine && !s.mine) return say(eg ? 'النقوط اللي جاتلك بتتسجل في حدثك إنت بس.' : 'النقوط التي جاءتك تُسجَّل في حدثك فقط.');
+        const out = { name, kind: s.kind, date: s.date, mine: !!s.mine, host: s.mine ? '' : s.host, archived: !!s.archived };
+        this.setState({ open: false, saved: out, err: '' });
+        if (typeof this.props.onSave === 'function') this.props.onSave(out);
+      },
+      closeSheet: () => this.setState({ open: false })
+    };
+  }
+}
+</script>
+</body>
+</html>
