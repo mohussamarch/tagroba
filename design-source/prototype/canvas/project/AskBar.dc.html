@@ -223,7 +223,7 @@ class Component extends DCLogic {
         isTxn: m.kind === 'txn', isSplit: m.kind === 'split', pending: !m.done,
         confirmLabel: m.kind === 'split' ? (eg ? 'سجّل التقسيم' : 'سجّل التقسيم') : (eg ? 'سجّلها' : 'احفظ'),
         confirm: confirm(m.id), edit: () => this.reply({ text: eg ? 'قولّي تعدّل إيه: المبلغ، التصنيف ولا المحفظة؟' : 'ماذا أعدّل: المبلغ أم التصنيف أم المحفظة؟' }),
-        txnTitle: 'قهوة', txnSub: eg ? 'مطاعم وقهوة · كاش · النهارده' : 'مطاعم وقهوة · نقدًا · اليوم', txnAmount: eg ? '−85.00' : '−42.00',
+        txnTitle: 'قهوة', txnSub: eg ? 'مطاعم وقهوة · كاش · النهارده' : 'مطاعم وقهوة · كاش · اليوم', txnAmount: eg ? '−85.00' : '−42.00',
         shares: eg ? [share('إنت', 'م', '360.00'), share('أحمد', 'أ', '360.00'), share('سارة', 'س', '360.00', true)] : [share('أنت', 'م', '120.00'), share('أحمد', 'أ', '120.00'), share('سارة', 'س', '120.00', true)],
         wrap: me
           ? 'align-self: flex-end; max-width: 80%; border-radius: 18px 18px 6px 18px; padding: 10px 14px; font-size: 14px; line-height: 1.7; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 8px 18px rgba(8,99,79,0.22)'

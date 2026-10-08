@@ -178,7 +178,7 @@ class Component extends DCLogic {
         dot: 'width: 8px; height: 8px; border-radius: 4px; background: ' + color,
         style: 'height: 40px; border: 0; padding: 0 14px; border-radius: 18px; display: flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; cursor: pointer; color: #193D33; ' + (on ? 'font-weight: 700; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') };
     });
-    const wallets = [['bank', eg ? 'البنك' : 'البنك'], ['cash', eg ? 'كاش' : 'نقدًا']].map(([id, label]) => {
+    const wallets = [['bank', eg ? 'البنك' : 'البنك'], ['cash', eg ? 'كاش' : 'كاش']].map(([id, label]) => {
       const on = this.state.wallet === id;
       return { label, on: on ? 'true' : 'false', pick: () => this.setState({ wallet: id }),
         style: 'height: 40px; border: 0; padding: 0 16px; border-radius: 18px; font: inherit; font-size: 13px; cursor: pointer; color: #193D33; ' + (on ? 'font-weight: 700; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') };
