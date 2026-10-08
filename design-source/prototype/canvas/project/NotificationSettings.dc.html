@@ -77,8 +77,8 @@ body{margin:0}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // كل المجموعات شغالة افتراضيًا (رسايل البنك كمان — قرار المالك §72)
-    this.state = { off: {}, freq: 'week', granted: false };
+    // كل المجموعات شغالة افتراضيًا (رسايل البنك كمان — قرار المالك §72) ما عدا سؤال الكاش: مقفول لحد ما يفتحه بنفسه (قرار المالك §74)
+    this.state = { off: { cash: true }, freq: 'week', granted: false };
   }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
