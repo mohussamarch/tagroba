@@ -98,7 +98,9 @@ class Component extends DCLogic {
     const groups = defs.map(([id, tEg, tSa, dEg, dSa, isNew], i) => {
       const on = !this.state.off[id];
       return {
-        title: eg ? tEg : tSa, desc: eg ? dEg : dSa, isNew: !!isNew,
+        title: eg ? tEg : tSa, isNew: !!isNew,
+        // رسائل البنك المقفولة: السطر بيفضل في صفحة الإشعارات «مقفولة» ومن غير إشعار جوال (جلسة كوتلن، AlertGroup.BANK_SMS)
+        desc: id === 'bank' && !on ? (eg ? 'مقفولة: الرسايل المستنية بتبان في صفحة الإشعارات بس، من غير إشعار جوال.' : 'مغلقة: الرسائل المنتظرة تظهر في صفحة الإشعارات فقط، بلا إشعار جوال.') : (eg ? dEg : dSa),
         checked: on ? 'true' : 'false',
         toggle: () => this.setState({ off: Object.assign({}, this.state.off, { [id]: on }) }),
         showFreq: id === 'cash' && on,
@@ -120,7 +122,7 @@ class Component extends DCLogic {
       permBody: eg ? 'مفيش حاجة هتوصلك برا البرنامج. اللي يستاهل هتلاقيه في صفحة الإشعارات جوه.' : 'لن يصلك شيء خارج التطبيق. ستجد ما يهمك في صفحة الإشعارات داخله.',
       permBtn: eg ? 'افتح إعدادات الجوال' : 'افتح إعدادات الجوال',
       grant: () => this.setState({ granted: true }),
-      intro: eg ? 'كل مجموعة بتتقفل لوحدها. المقفولة ما بيطلعش منها حاجة.' : 'أغلق أي مجموعة وحدها. المغلقة لا يصدر عنها شيء.',
+      intro: eg ? 'كل مجموعة بتتقفل لوحدها.' : 'أغلق أي مجموعة وحدها.',
       newLabel: 'جديد',
       groups,
       freqLabel: eg ? 'كل قد إيه' : 'كل كم',

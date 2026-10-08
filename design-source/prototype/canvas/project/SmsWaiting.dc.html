@@ -163,10 +163,11 @@ class Component extends DCLogic {
       dupWaiting: s.dup === 'wait',
       dupTitle: eg ? 'شبه عملية موجودة' : 'تشبه عملية موجودة',
       dupSides: [
-        { label: eg ? 'من الرسالة' : 'من الرسالة', name: dupRow.name, amount: '−' + this.fmt(dupRow.amt), when: dupRow.t },
-        { label: eg ? 'موجودة عندك' : 'موجودة لديك', name: eg ? 'قهوة' : 'قهوة', amount: '−' + this.fmt(dupRow.amt), when: eg ? '١:٠٠ م · سجّلتها بإيدك' : '١:٠٠ م · سجّلتها يدويًا' }
+        { label: eg ? 'من الرسالة' : 'من الرسالة', name: dupRow.name, amount: '−' + this.fmt(dupRow.amt), when: (eg ? 'النهارده ' : 'اليوم ') + dupRow.t },
+        { label: eg ? 'موجودة عندك' : 'موجودة لديك', name: eg ? 'قهوة' : 'قهوة', amount: '−' + this.fmt(dupRow.amt), when: eg ? 'النهارده · سجّلتها بإيدك' : 'اليوم · سجّلتها يدويًا' }
       ],
-      dupWhy: eg ? 'نفس المبلغ وبينهم ٥ دقايق.' : 'المبلغ نفسه وبينهما ٥ دقائق.',
+      // السبب جملة جاهزة من المنطق (DEDUPE_SMS_SIMILAR) — المقارنة باليوم مش بالدقيقة
+      dupWhy: eg ? 'عملية في نفس اليوم بنفس المبلغ والاتجاه في نفس المحفظة، وواحدة منهم من رسالة البنك. ممكن تكون هي نفسها باسم مختلف.' : 'عملية بنفس اليوم والمبلغ والاتجاه في المحفظة نفسها، وأحد المصدرين رسالة بنك. قد تكون العملية نفسها باسم مختلف.',
       dupSameLabel: eg ? 'هي نفسها — شيلها' : 'هي نفسها — احذفها',
       dupNewLabel: eg ? 'لأ، سجّلها' : 'لا، سجّلها',
       dupSame: () => this.setState({ dup: 'gone' }),
