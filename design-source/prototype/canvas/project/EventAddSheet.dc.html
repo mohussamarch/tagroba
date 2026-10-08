@@ -67,17 +67,17 @@ body{margin:0}
 // النموذج: النهارده ٧ أكتوبر ٢٠٢٦ · الحدث من غير مبلغ (التجهيزات بمبالغها من صفحة الحدث — §43)
 const TODAY = '2026-10-07';
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { open: false, name: '', kind: 'occasion', date: '', who: 'me', err: '' }; }
+  constructor(props) { super(props); this.state = { open: false, name: '', kind: 'wedding', date: '', who: 'me', err: '' }; }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
     const def = this.props.defaultDate || '2026-10-21';
     const chip = (on) => 'height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    const K = [['occasion', 'مناسبة'], ['wedding', eg ? 'فرح' : 'زواج'], ['birth', 'ولادة'], ['grad', 'تخرّج'], ['trip', 'سفر'], ['other', eg ? 'حاجة تانية' : 'أخرى']];
+    const K = [['wedding', eg ? 'فرح' : 'زواج'], ['engagement', 'خطوبة'], ['condolence', eg ? 'عزا' : 'عزاء'], ['birth', 'ولادة'], ['travel', 'سفر'], ['medical', 'عملية جراحية'], ['eid', 'عيد'], ['school', eg ? 'دخول مدرسة' : 'دخول المدرسة'], ['other', eg ? 'غيره' : 'أخرى']];
     const P = [['me', eg ? 'حدثي أنا' : 'حدثي'], ['ليلى', 'ليلى'], ['سارة', 'سارة'], ['خالد', 'خالد'], ['يوسف', 'يوسف']];
     const date = s.date || def;
     return {
       openLabel: 'حدث جديد',
-      openSheet: () => this.setState({ open: true, name: '', kind: 'occasion', date: '', who: 'me', err: '' }),
+      openSheet: () => this.setState({ open: true, name: '', kind: 'wedding', date: '', who: 'me', err: '' }),
       open: s.open,
       closeSheet: () => this.setState({ open: false }),
       nameLabel: eg ? 'اسمه' : 'اسم الحدث', namePh: eg ? 'مثلًا: خطوبة يوسف' : 'مثلًا: خطوبة يوسف',

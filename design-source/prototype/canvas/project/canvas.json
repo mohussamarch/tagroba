@@ -825,6 +825,14 @@
       "y": 22990,
       "w": 350,
       "h": 48
+    },
+    "MeAvatar.dc.html": {
+      "is_interactive": true,
+      "title": "دايرتك · MeAvatar (قطعة — كاركترك وشريط اكتمال ملفك: الرئيسية · المزيد · ملفك · أول مرة)",
+      "x": 590,
+      "y": 23130,
+      "w": 72,
+      "h": 72
     }
   },
   "createdOnFiles": {
@@ -1085,7 +1093,8 @@
     "LinkProjectEventSheet.dc.html",
     "AddPersonSheet.dc.html",
     "OccasionSheet.dc.html",
-    "EventEditSheet.dc.html"
+    "EventEditSheet.dc.html",
+    "MeAvatar.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

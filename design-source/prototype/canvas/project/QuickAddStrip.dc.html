@@ -24,13 +24,11 @@ body{margin:0}
 <div dir="rtl" style="width: 100%; min-width: 350px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
   <sc-if value="{{hasCards}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 8px">
-      <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{why}}</span></span>
-      <div class="q-row" style="display: flex; gap: 10px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 14px; scroll-snap-type: x mandatory">
+      <div class="q-row" role="list" aria-label="{{title}}" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 8px; scroll-snap-type: x mandatory">
         <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
-          <button type="button" class="q-press" onClick="{{c.open}}" style="{{c.style}}">
-            <span aria-hidden="true" style="{{c.tile}}"><img src="{{c.icon}}" width="18" height="18" alt=""></span>
-            <span style="font-size: 14px; font-weight: 700; text-align: right">{{c.ask}}</span>
-            <span style="font-size: 12px; color: #637570; text-align: right">{{c.usual}}</span>
+          <button type="button" role="listitem" class="q-press" onClick="{{c.open}}" aria-label="{{c.aria}}" style="{{c.style}}">
+            <span aria-hidden="true" style="{{c.tile}}"><img src="{{c.icon}}" width="24" height="24" alt=""></span>
+            <span style="font-size: 13px; font-weight: 700; white-space: nowrap">{{c.ask}}</span>
           </button>
         </sc-for>
       </div>
@@ -104,10 +102,10 @@ class Component extends DCLogic {
       title: eg ? 'متوقعة الشهر ده ولسه ما اتسجلتش' : 'متوقّعة هذا الشهر ولم تُسجَّل بعد',
       why: eg ? 'بتدفعها كل شهر، وما لقيناهاش في أكتوبر — دوسة وتتسجّل.' : 'تدفعها كل شهر ولم نجدها في أكتوبر — بلمسة تُسجَّل.',
       cards: left.map((d) => ({
-        ask: d[1], usual: (eg ? 'عادةً ' : 'عادةً ') + this.fmt(d[3]) + ' ' + cur + '، ' + (eg ? 'يوم ' : 'يوم ') + n(d[4]),
+        ask: d[1], aria: d[1] + ' — ' + ((eg ? 'عادةً ' : 'عادةً ') + this.fmt(d[3]) + ' ' + cur + '، ' + (eg ? 'يوم ' : 'يوم ') + n(d[4])), usual: (eg ? 'عادةً ' : 'عادةً ') + this.fmt(d[3]) + ' ' + cur + '، ' + (eg ? 'يوم ' : 'يوم ') + n(d[4]),
         icon: this.icon(d[5], d[6]),
-        tile: 'width: 34px; height: 34px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: ' + d[6] + '1F',
-        style: 'flex: 0 0 auto; width: 168px; scroll-snap-align: start; border: 0; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; font: inherit; color: #193D33; cursor: pointer; text-align: right; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)',
+        tile: 'width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px; display: flex; align-items: center; justify-content: center; background: ' + d[6] + '1F',
+        style: 'flex: 0 0 auto; height: 52px; box-sizing: border-box; scroll-snap-align: start; border: 0; border-radius: 26px; padding: 0 6px 0 16px; display: flex; align-items: center; gap: 8px; font: inherit; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 6px 16px rgba(29,54,53,0.08)',
         open: () => this.setState({ open: d[0], amt: String((d[3] - (d[3] % 100)) / 100), from: d[7], err: '' })
       })),
       open: !!cur0, close: () => this.setState({ open: null }),

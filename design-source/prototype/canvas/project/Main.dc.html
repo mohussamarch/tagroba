@@ -32,11 +32,10 @@ a{color:#08634F}a:hover{color:#064B40}
 <div dir="rtl" class="{{motionClass}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
   <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 156px; display: flex; flex-direction: column; gap: 14px">
 
-    <div style="display: flex; align-items: center; gap: 8px">
-      <a href="More.dc.html" aria-label="حسابك" class="m-press" style="text-decoration: none; width: 46px; height: 46px; border-radius: 23px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)">م</a>
-      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
-        <span style="font-size: 18px; font-weight: 700">{{greeting}}</span>
-        <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">الأربعاء، ٧ أكتوبر</span><dc-import name="SpaceSwitcher" space="{{spaceName}}" size="صغير" on-switch="{{onSpace}}" hint-size="110px,28px"></dc-import></span>
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <a href="Account.dc.html" aria-label="{{meLabel}}" class="m-press" style="text-decoration: none; width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 24px"><dc-import name="MeAvatar" size="{{46}}" pct="{{profilePct}}" hint-size="46px,46px"></dc-import></a>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start">
+        <span style="min-height: 48px; display: flex; flex-direction: column; justify-content: center"><span style="font-size: 18px; font-weight: 700; line-height: 1.4">{{greeting}}</span><span style="display: flex; align-items: center; gap: 6px"><dc-import name="SpaceSwitcher" space="{{spaceName}}" size="حرفين" on-switch="{{onSpace}}" hint-size="44px,22px"></dc-import><span style="font-size: 12px; color: #637570">الأربعاء، ٧ أكتوبر</span></span></span>
       </div>
       <dc-import name="BellPopover" space="{{spaceName}}" hint-size="48px,48px"></dc-import>
       <a href="More.dc.html" class="m-press" aria-label="{{gearLabel}}" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
@@ -121,7 +120,7 @@ a{color:#08634F}a:hover{color:#064B40}
         <div style="display: flex; flex-direction: column; gap: 8px">
           <div style="display: flex; justify-content: space-between; align-items: center">
             <h2 style="margin: 0; font-size: 18px; font-weight: 700">القادم</h2>
-            <a href="Calendar.dc.html" class="m-press" style="min-height: 48px; padding: 0 4px; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none">التقويم<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></a>
+            <a href="Calendar.dc.html" class="m-press" aria-label="التقويم" style="width: 44px; height: 44px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></a>
           </div>
           <dc-import name="UpcomingStrip" space="{{spaceName}}" hint-size="390px,230px"></dc-import>
         </div>
@@ -236,6 +235,7 @@ class Component extends DCLogic {
       spaceName: eg ? 'مصر' : 'السعودية',
       cashMinor: String(this.cash()),
       gearLabel: 'المزيد والإعدادات',
+      profilePct: 60, meLabel: (eg ? 'ملفك — مكتمل ' : 'ملفك — مكتمل ') + (60).toLocaleString('ar-EG') + '٪',
       greeting: eg ? 'مساء الخير يا محمد' : 'مساء الخير، محمد',
       currency: d.currency,
       isError: st === 'خطأ', isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isNA: st === 'غير متاح',

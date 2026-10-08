@@ -74,7 +74,7 @@ body{margin:0}
         <div style="display: flex; flex-direction: column; gap: 10px">
           <div role="radiogroup" aria-label="{{title}}" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; justify-items: center">
             <sc-for list="{{avatars}}" as="av" hint-placeholder-count="6">
-              <button type="button" role="radio" aria-checked="{{av.on}}" aria-label="{{av.label}}" class="m-press" onClick="{{av.pick}}" style="{{av.style}}"><span style="{{av.inner}}">{{av.n}}</span></button>
+              <button type="button" role="radio" aria-checked="{{av.on}}" aria-label="{{av.label}}" class="m-press" onClick="{{av.pick}}" style="{{av.style}}"><dc-import name="MeAvatar" size="{{60}}" pct="{{100}}" look="{{av.k}}" hint-size="60px,60px"></dc-import></button>
             </sc-for>
           </div>
           <span style="font-size: 12px; color: #637570; text-align: center">{{avatarNote}}</span>
@@ -241,7 +241,7 @@ class Component extends DCLogic {
     const picked = s.step === 3 ? s.country : s.src;
     const opts = optDefs.map((o) => ({ label: o.label, sub: o.sub, cur: o.cur, i: o.i, on: picked === o.id ? 'true' : 'false', onB: picked === o.id, off: !!o.off,
       style: row(picked === o.id, o.off), pick: () => { if (!o.off) o.go(); } }));
-    const avatars = [1, 2, 3, 4, 5, 6].map((k) => ({ n: n(k), label: 'الشكل ' + n(k), on: s.avatar === k ? 'true' : 'false', pick: () => this.answer({ avatar: k }, 'avatar'),
+    const avatars = [1, 2, 3, 4, 5, 6].map((k) => ({ k, n: n(k), label: 'الشكل ' + n(k), on: s.avatar === k ? 'true' : 'false', pick: () => { try { window.sessionStorage.setItem('masroufy-avatar', String(k)); } catch (e) {} this.answer({ avatar: k }, 'avatar'); },
       style: 'width: 76px; height: 76px; padding: 0; border: 0; border-radius: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: ' + (s.avatar === k ? 'inset 0 0 0 3px #08634F, 0 8px 18px rgba(8,99,79,0.20)' : 'inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.14), 0 8px 18px rgba(8,99,79,0.10)'),
       inner: 'width: 56px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: ' + (s.avatar === k ? '#08634F' : '#637570') }));
     const days = [];

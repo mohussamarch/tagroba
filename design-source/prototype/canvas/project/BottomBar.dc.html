@@ -29,6 +29,7 @@ body{margin:0}
 </style>
 </helmet>
 <div dir="rtl" style="position: relative; width: 390px; height: 844px; pointer-events: none; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div aria-hidden="true" style="{{fogWrap}}"><sc-for list="{{fog}}" as="fg" hint-placeholder-count="5"><span style="{{fg}}"></span></sc-for></div>
 
   <div style="position: absolute; inset: 0; pointer-events: none">
     <dc-import name="AskBar" context="{{context}}" space="{{space}}" bottom="{{askBottom}}" add-in-bar="{{addInBar}}" on-add="{{openAdd}}" hint-size="390px,844px"></dc-import>
@@ -50,7 +51,7 @@ body{margin:0}
             <sc-if value="{{it.i.ops}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"></line><line x1="8" x2="21" y1="12" y2="12"></line><line x1="8" x2="21" y1="18" y2="18"></line><line x1="3" x2="3.01" y1="6" y2="6"></line><line x1="3" x2="3.01" y1="12" y2="12"></line><line x1="3" x2="3.01" y1="18" y2="18"></line></svg></sc-if>
             <sc-if value="{{it.i.people}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></sc-if>
             <sc-if value="{{it.i.invest}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
-            <sc-if value="{{it.dot}}" hint-placeholder-val="{{ false }}"><span aria-label="{{dotLabel}}" style="position: absolute; top: 1px; right: 5px; width: 9px; height: 9px; border-radius: 5px; background: #D93A47; box-shadow: 0 0 0 2px rgba(255,255,255,0.95)"></span></sc-if>
+            <sc-if value="{{it.dot}}" hint-placeholder-val="{{ false }}"><span aria-label="{{dotLabel}}" style="position: absolute; top: 3px; right: 7px; width: 6px; height: 6px; border-radius: 3px; background: #D93A47"></span></sc-if>
           </span>{{it.label}}</a>
       </sc-if>
       <sc-if value="{{it.isAdd}}" hint-placeholder-val="{{ false }}">
@@ -100,7 +101,7 @@ body{margin:0}
 
         <div style="display: flex; flex-direction: column; gap: 6px">
           <span style="font-size: 13px; font-weight: 700">التصنيف</span>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <div style="display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; min-height: 88px">
             <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
               <button type="button" class="b-press" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="{{c.style}}"><span style="{{c.dot}}"></span>{{c.label}}</button>
             </sc-for>
@@ -195,6 +196,10 @@ class Component extends DCLogic {
       dotLabel: eg ? "فيه جديد" : "فيه جديد",
       context: this.props.context ?? 'الرئيسية', space: eg ? 'مصر' : 'السعودية',
       askBottom, addInBar: inBar,
+      // بلور متدرّج تحت شريط السؤال وشريط التنقل (طلب المالك ٢٠٢٦-١٠-٠٨): ٤ طبقات بتزيد لتحت + لون خفيف من الخلفية، من غير حدّ واضح فوق
+      fogWrap: 'position: absolute; left: 0; right: 0; bottom: 0; height: ' + (askBottom + 44 + 56) + 'px; pointer-events: none',
+      fog: [[2, 0, 22], [5, 18, 45], [10, 38, 68], [18, 60, 92]].map(([b, a, c]) => { const m = 'linear-gradient(to bottom, transparent ' + a + '%, #000 ' + c + '%)'; return 'position: absolute; inset: 0; backdrop-filter: blur(' + b + 'px); -webkit-backdrop-filter: blur(' + b + 'px); mask-image: ' + m + '; -webkit-mask-image: ' + m; })
+        .concat(['position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(239,243,237,0) 0%, rgba(236,242,237,0.40) 55%, rgba(226,237,229,0.72) 100%)']),
       openAdd: () => this.open(),
       closeAdd: () => { this.timers.forEach(clearTimeout); this.timers = []; this.setState({ addOpen: false, listening: false }); },
       items, swipeStyle: swipe,

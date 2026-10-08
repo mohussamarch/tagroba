@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>دايرتك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.me-ring{transition:background 420ms cubic-bezier(.2,.7,.3,1)}
+</style>
+</helmet>
+<span role="img" aria-label="{{label}}" style="{{outer}}"><span aria-hidden="true" class="me-ring" style="{{ring}}"></span><span style="{{inner}}"></span></span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"size":{"editor":"number","default":48,"section":"الحالة"},"pct":{"editor":"number","default":60,"section":"الحالة"},"look":{"editor":"enum","options":["اللي اختاره","١","٢","٣","٤","٥","٦"],"default":"اللي اختاره","section":"الحالة"},"$preview":{"width":72,"height":72}}'>
+// دايرة صاحب الحساب (طلب المالك ٢٠٢٦-١٠-٠٨): جواها الكاركتر بتاعه، وحواليها شريط بنسبة اكتمال ملفه — والشريط بيختفي لما الملف يكمل ١٠٠٪
+// الكاركتر النهائي لسه بيتصمم (§73)؛ هنا ٦ أشكال مؤقتة بنفس ترتيب «اختر شكلك» في أول مرة، واختيارك من هناك بيتحفظ في masroufy-avatar
+const LOOKS = [['#0E8A6E', '#08634F'], ['#3866A7', '#2A4F85'], ['#A36A21', '#7E5118'], ['#A55060', '#7F3C49'], ['#4D747C', '#39575D'], ['#637570', '#4B5A56']];
+class Component extends DCLogic {
+  look() {
+    const map = { '١': 1, '٢': 2, '٣': 3, '٤': 4, '٥': 5, '٦': 6 };
+    const p = this.props.look;
+    if (typeof p === 'number' && p >= 1 && p <= 6) return p;
+    if (map[p]) return map[p];
+    let k = 1; try { k = Number(window.sessionStorage.getItem('masroufy-avatar')) || 1; } catch (e) {}
+    return k >= 1 && k <= 6 ? k : 1;
+  }
+  renderVals() {
+    const size = Math.max(24, Number(this.props.size) || 48);
+    const pct = Math.max(0, Math.min(100, Math.round(Number(this.props.pct ?? 60))));
+    const done = pct >= 100;
+    const [head, body] = LOOKS[this.look() - 1];
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="15.5" r="7.5" fill="' + head + '"/><path d="M4.5 41c0-9 6.9-15 15.5-15s15.5 6 15.5 15z" fill="' + body + '"/></svg>';
+    const fig = "url('data:image/svg+xml," + encodeURIComponent(svg) + "')";
+    // الشريط برّه الدايرة بس (طلب المالك): الدايرة نفسها زي ما هي بمقاسها وزجاجها، والشريط طبقة حواليها بمسافة صغيرة
+    const T = Math.max(3, Math.round(size / 16)), G = 2;
+    const cut = 'radial-gradient(farthest-side, transparent calc(100% - ' + T + 'px), #000 calc(100% - ' + T + 'px))';
+    return {
+      label: 'شكلك' + (done ? '' : ' — ملفك مكتمل ' + pct.toLocaleString('ar-EG') + '٪'),
+      outer: 'position: relative; width: ' + size + 'px; height: ' + size + 'px; flex-shrink: 0; display: flex',
+      ring: done ? 'display: none' : 'position: absolute; inset: -' + (T + G) + 'px; border-radius: 50%; pointer-events: none; background: conic-gradient(#13764D 0 ' + pct + '%, rgba(25,61,51,0.12) ' + pct + '% 100%); mask-image: ' + cut + '; -webkit-mask-image: ' + cut,
+      inner: 'flex: 1 1 auto; border-radius: 50%; overflow: hidden; '
+        + 'background: ' + fig + ' center bottom / 84% no-repeat, linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); '
+        + 'backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)'
+    };
+  }
+}
+</script>
+</body>
+</html>

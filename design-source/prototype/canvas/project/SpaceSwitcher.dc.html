@@ -32,7 +32,7 @@ body{margin:0}
     <span style="{{chipStyle}}">
       <sc-if value="{{full}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #08634F"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg></sc-if>
       <span style="{{nameStyle}}">{{activeName}}</span>
-      <span style="font-size: 12px; color: #637570">{{activeCur}}</span>
+      <sc-if value="{{showCur}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: #637570">{{activeCur}}</span></sc-if>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: #637570"><path d="m6 9 6 6 6-6"></path></svg>
     </span>
   </button>
@@ -74,7 +74,7 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"size":{"editor":"enum","options":["عادي","صغير"],"default":"عادي","section":"الشكل"},"$preview":{"width":150,"height":48}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"size":{"editor":"enum","options":["عادي","صغير","حرفين"],"default":"عادي","section":"الشكل"},"$preview":{"width":150,"height":48}}'>
 // زرار البلد + لوحة التبديل — مكانه جنب التحية في الرئيسية (§41 · §64 · §66).
 // التبديل على الجهاز ده بس ومن غير أي كتابة على البيانات (ManageSpaces.switchTo). الشاشة الأم بتعرف بـ onSwitch('السعودية' | 'مصر').
 class Component extends DCLogic {
@@ -85,15 +85,16 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const loading = (this.props.state ?? 'عادي') === 'بيحمّل';
-    const compact = this.props.size === 'صغير';
+    // size=«حرفين» (طلب المالك ٢٠٢٦-١٠-٠٨): تحت الاسم قبل التاريخ، اختصار البلد بالإنجليزي بس (SA · EG)
+    const code = this.props.size === 'حرفين', compact = this.props.size === 'صغير' || code;
     const active = s.active || (this.props.space ?? 'السعودية');
     const eg = active === 'مصر';
     const n = (x) => x.toLocaleString('ar-EG');
     // «معك الآن» لكل بلد = كل محافظها (البنوك + الكاش) — نفس أرقام الرئيسية المخترعة، بالوحدة الصغرى:
     // السعودية 645000 + 90000 · مصر 2260000 + 270000
     const SP = [
-      { id: 'السعودية', mark: 'س', cur: 'ر.س', curName: 'ريال سعودي', wallets: 4, total: 645000 + 90000 },
-      { id: 'مصر', mark: 'م', cur: 'ج.م', curName: 'جنيه مصري', wallets: 3, total: 2260000 + 270000 }
+      { id: 'السعودية', code: 'SA', mark: 'س', cur: 'ر.س', curName: 'ريال سعودي', wallets: 4, total: 645000 + 90000 },
+      { id: 'مصر', code: 'EG', mark: 'م', cur: 'ج.م', curName: 'جنيه مصري', wallets: 3, total: 2260000 + 270000 }
     ];
     const me = SP.find((x) => x.id === active) || SP[0];
     const switchTo = (to) => {
@@ -128,10 +129,10 @@ class Component extends DCLogic {
       triggerLabel: (eg ? 'البلد: ' : 'البلد: ') + me.id + (eg ? ' — دوس عشان تبدّل' : ' — اضغط للتبديل'),
       // size="صغير": شارة ٢٨ تحت التحية أو جنب التاريخ، ومساحة اللمس لسه ٤٤ (الهامش السالب بيمنعها تكبّر السطر)
       full: !compact,
-      triggerStyle: 'display: flex; align-items: center; height: 44px; min-width: 44px; padding: 0; border: 0; background: transparent; font: inherit; color: #193D33; cursor: pointer;' + (compact ? ' margin: -8px 0;' : ''),
-      chipStyle: 'display: flex; align-items: center; gap: ' + (compact ? 4 : 6) + 'px; height: ' + (compact ? 28 : 44) + 'px; padding: 0 ' + (compact ? 10 : 12) + 'px; box-sizing: border-box; border-radius: ' + (compact ? 14 : 22) + 'px; ' + (s.open ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 ' + (compact ? '6px 14px' : '10px 24px') + ' rgba(29,54,53,0.09)'),
-      nameStyle: 'font-size: ' + (compact ? 12 : 13) + 'px; font-weight: 700',
-      activeName: me.id, activeCur: me.cur,
+      triggerStyle: 'display: flex; align-items: center; height: 44px; min-width: 44px; padding: 0; border: 0; background: transparent; font: inherit; color: #193D33; cursor: pointer;' + (code ? ' margin: -11px 0;' : compact ? ' margin: -8px 0;' : ''),
+      chipStyle: 'display: flex; align-items: center; gap: ' + (code ? 2 : compact ? 4 : 6) + 'px; height: ' + (code ? 22 : compact ? 28 : 44) + 'px; padding: 0 ' + (code ? '5px 0 8px' : compact ? '10px' : '12px') + '; box-sizing: border-box; border-radius: ' + (code ? 11 : compact ? 14 : 22) + 'px; ' + (s.open ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 ' + (compact ? '6px 14px' : '10px 24px') + ' rgba(29,54,53,0.09)'),
+      nameStyle: code ? 'font-size: 11px; font-weight: 700; letter-spacing: 0.5px; font-family: system-ui, sans-serif' : 'font-size: ' + (compact ? 12 : 13) + 'px; font-weight: 700',
+      activeName: code ? me.code : me.id, activeCur: me.cur, showCur: !code,
       open: s.open,
       title: eg ? 'بدّل البلد' : 'تبديل البلد',
       body: eg ? 'كل بلد ليها حساب لوحدها بمحافظها وأرقامها وعملتها. التبديل على الموبايل ده بس، ومش بيغيّر حاجة في بياناتك.' : 'لكل بلد حساب منفصل بمحافظه وأرقامه وعملته. التبديل على هذا الجوال فقط، ولا يغيّر شيئًا في بياناتك.',
