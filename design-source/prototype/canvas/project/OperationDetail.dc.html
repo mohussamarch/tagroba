@@ -100,13 +100,6 @@ body{margin:0}
             </sc-for>
           </div>
         </sc-if>
-        <sc-if value="{{askRemember}}" hint-placeholder-val="{{ false }}">
-          <span style="font-size: 14px">{{rememberQ}}</span>
-          <div style="display: flex; gap: 8px">
-            <button type="button" class="m-press" onClick="{{rememberYes}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{rememberYesLabel}}</button>
-            <button type="button" class="m-press" onClick="{{closeCat}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{rememberNoLabel}}</button>
-          </div>
-        </sc-if>
       </div>
     </div>
   </sc-if>
@@ -130,7 +123,7 @@ class Component extends DCLogic {
     this.picked = picked;
     const fromSms = !picked || String(picked.sub || '').indexOf('رسال') >= 0;
     this.fromSms = fromSms;
-    this.state = { cat: null, catSt: fromSms ? 'sug' : 'ok', sheet: false, step: 'pick', kind: null, toast: '' };
+    this.state = { cat: null, catSt: fromSms ? 'sug' : 'ok', sheet: false, kind: null, toast: '' };
     this.timers = [];
     this.onKind = (kind) => this.setState({ kind });
   }
@@ -157,7 +150,7 @@ class Component extends DCLogic {
     const chipS = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
     const act = (label, go, strong) => ({ label, go, style: 'height: 36px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)') });
     const field = (label, value, o) => Object.assign({ label, value, hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '', acts: [] }, o || {});
-    const openCat = () => this.setState({ sheet: true, step: 'pick' });
+    const openCat = () => this.setState({ sheet: true });
     const catValue = s.cat ? CATS[s.cat] : P ? P.sub.split(' · ')[0] : CATS.food;
     const srcSms = !P || this.fromSms;
     const fields = v === 'sms' ? [
@@ -182,7 +175,7 @@ class Component extends DCLogic {
       label: CATS[k], style: 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.cat === k ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)'),
       pick: () => {
         if (v === 'cash') { this.setState({ cat: k, sheet: false }); this.say(eg ? 'تمام — النقطة الحمرا اتشالت' : 'تم — أُزيلت النقطة الحمراء'); }
-        else this.setState({ cat: k, catSt: 'ok', step: 'remember' });
+        else { this.setState({ cat: k, catSt: 'ok', sheet: false }); this.say((eg ? 'تمام — «' : 'تم — «') + T.name + (eg ? '» هيتصنّف «' : '» سيُصنَّف «') + CATS[k] + (eg ? '» على طول' : '» دائمًا')); }
       }
     }));
     return {
@@ -205,11 +198,8 @@ class Component extends DCLogic {
       links: eg ? ['شخص', 'مشروع', 'حدث'] : ['شخص', 'مشروع', 'حدث'],
       linkSoon: eg ? 'الربط بيتبني في خطوة جاية.' : 'الربط يُبنى في خطوة قادمة.',
       catOpen: s.sheet,
-      catTitle: s.step === 'pick' ? (v === 'cash' ? (eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟') : (eg ? 'تصنيف «' : 'تصنيف «') + T.name + '»') : (eg ? 'نفتكرها؟' : 'نتذكرها؟'),
-      askPick: s.step === 'pick', askRemember: s.step === 'remember', cats,
-      rememberQ: s.cat ? (eg ? 'كل عمليات «' : 'كل عمليات «') + T.name + (eg ? '» الجاية تبقى «' : '» القادمة تكون «') + CATS[s.cat] + '»؟' : '',
-      rememberYesLabel: eg ? 'أيوه، افتكرها' : 'نعم، تذكّرها', rememberNoLabel: eg ? 'المرة دي بس' : 'هذه المرة فقط',
-      rememberYes: () => { this.setState({ sheet: false }); this.say(eg ? 'تمام، هنصنّفها كده على طول' : 'تم، ستُصنَّف هكذا دائمًا'); },
+      catTitle: (v === 'cash' ? (eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟') : (eg ? 'تصنيف «' : 'تصنيف «') + T.name + '»'),
+      askPick: true, cats,
       closeCat: () => this.setState({ sheet: false }),
       hasToast: !!s.toast, toast: s.toast
     };

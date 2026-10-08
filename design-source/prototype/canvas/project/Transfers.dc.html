@@ -141,7 +141,7 @@ class Component extends DCLogic {
         inText: p.inn ? '+' + this.fmt(p.inn * k) + ' ' + cur : '', outText: p.out ? '−' + this.fmt(p.out * k) + ' ' + cur : '',
         expanded: open, toggle: () => this.setState({ open: open ? null : id }),
         acts: d === 'ask' || d === 'none' ? askActs : decidedActs,
-        hint: d === 'ask' || d === 'none' ? (eg ? 'شخص: اللي بيروحله دعم (مصروف)، واللي جاي منه بنسألك نوعه.' : 'شخص: الصادر إليه دعم (مصروف)، والوارد منه نسألك نوعه.') : d === 'own' ? (eg ? 'كل التحويلات معاه بقت بين محافظك، مش دخل ولا مصروف.' : 'كل تحويلاته أصبحت بين محافظك، لا دخلًا ولا مصروفًا.') : (eg ? 'فك القرار بيرجّع السؤال.' : 'إلغاء القرار يعيد السؤال.'),
+        hint: d === 'ask' || d === 'none' ? (eg ? 'شخص: تحويلاته بتتسجل عليه، وبنسألك نوع كل تحويل (سلفة ولا دعم…).' : 'شخص: تُسجَّل تحويلاته عليه، ونسألك نوع كل تحويل (سلفة أو دعم…).') : d === 'own' ? (eg ? 'كل التحويلات معاه بقت بين محافظك، مش دخل ولا مصروف.' : 'كل تحويلاته أصبحت بين محافظك، لا دخلًا ولا مصروفًا.') : (eg ? 'فك القرار بيرجّع السؤال.' : 'إلغاء القرار يعيد السؤال.'),
         avatar: 'width: 40px; height: 40px; border-radius: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #08634F; background: #DCEBD6',
         cardStyle: 'border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; ' + (d === 'ask' ? 'background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(149,96,0,0.35), 0 14px 32px rgba(29,54,53,0.09)' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)')
       };

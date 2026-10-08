@@ -61,6 +61,10 @@ body{margin:0}
                   <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; font-weight: 700">{{it.name}}</span><span style="font-size: 12px; color: #637570">{{it.sub}}</span></span>
                   <span dir="ltr" style="{{it.amountStyle}}">{{it.amount}}</span>
                 </span>
+                <sc-if value="{{it.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{it.note}}</span></sc-if>
+                <sc-if value="{{it.openFx}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: flex; gap: 8px; align-items: center"><input type="text" inputmode="decimal" dir="ltr" aria-label="{{it.fxLabel}}" placeholder="{{it.fxLabel}}" value="{{it.fxValue}}" onInput="{{it.typeFx}}" style="flex: 1 1 auto; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; text-align: right; color: #193D33; background: rgba(25,61,51,0.06); outline: none"><button type="button" class="m-press" onClick="{{it.fxSave}}" disabled="{{it.fxBlocked}}" style="{{it.fxStyle}}">{{acceptLabel}}</button></span>
+                </sc-if>
                 <sc-if value="{{it.open}}" hint-placeholder-val="{{ true }}">
                   <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">{{it.sugLabel}}</span><span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #956000; background: #FBF0DD">{{it.sug}}</span><button type="button" class="m-press" onClick="{{it.accept}}" style="height: 36px; padding: 0 14px; margin-inline-start: auto; border: 0; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: #08634F">{{acceptLabel}}</button></span>
                   <span style="display: flex; gap: 6px; flex-wrap: wrap">
@@ -105,7 +109,8 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { done: {}, rules: 'idle' }; }
+  constructor(props) { super(props); this.state = { done: {}, fx: {}, rules: 'idle' }; }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return 0; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   set(id, kind) { this.setState({ done: Object.assign({}, this.state.done, { [id]: kind }) }); }
   renderVals() {
@@ -116,17 +121,21 @@ class Component extends DCLogic {
     const s = this.state;
     // صيغة العدد بالعربي: واحدة · اتنين · ٣–١٠ جمع · ١١+ مفرد
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
-    // مخترعة · بالوحدة الصغرى · المراجعة للغامض بس (§18) — «لا يُصنَّف وارد غامض كراتب» (spec/02) فالمقترح هنا مش «مرتب»
+    // مخترعة · بالوحدة الصغرى · المراجعة للغامض بس (§18) وقرارات الرحلة الشهرية (§75):
+    // سحب الصرّاف بيتنقل للكاش لوحده (٤) فمش هنا · الداخل المجهول «مستني» برّه الدخل (١) · «ده راتبك؟» مرة واحدة (٢)
+    // الاسترداد يستنى تأكيد (٦) · الصادر لشخص مربوط يسأل كل مرة (٥) · السداد يسأل (٩) · العملة الأجنبية تسأل عن المبلغ المحلي (١٢)
     const IN = eg ? ['هدية', 'مساعدة', 'تحصيل دين', 'سلفة جاتلي', 'أمانة', 'دور جمعية'] : ['هدية', 'مساعدة', 'تحصيل دين', 'قرض مستلم', 'أمانة', 'دور جمعية'];
     const defs = [
-      { id: 'w1', g: 'move', name: eg ? 'سحب من الصرّاف' : 'سحب من الصرّاف', sub: eg ? '٥ أكتوبر · حساب المرتب' : '٥ أكتوبر · حساب الراتب', amt: -50000, sug: eg ? 'بين محافظك (للكاش)' : 'بين محافظك (إلى الكاش)', alts: ['مصروف'] },
-      { id: 'w2', g: 'move', name: eg ? 'سحب من الصرّاف' : 'سحب من الصرّاف', sub: eg ? '١ أكتوبر · حساب المرتب' : '١ أكتوبر · حساب الراتب', amt: -30000, sug: eg ? 'بين محافظك (للكاش)' : 'بين محافظك (إلى الكاش)', alts: ['مصروف'] },
-      { id: 'i1', g: 'in', name: eg ? 'حوالة جاتلك من شركة الأفق' : 'حوالة واردة من شركة الأفق', sub: eg ? '٣ أكتوبر · مش في يوم المرتب' : '٣ أكتوبر · ليست يوم الراتب', amt: 820000, sug: eg ? 'شغل حر' : 'عمل حر', alts: ['مرتب', eg ? 'مكافأة' : 'مكافأة', eg ? 'من حسابي التاني' : 'من حسابي الآخر'] },
+      { id: 's1', g: 'salary', name: eg ? 'حوالة جاتلك من غير اسم جهة' : 'حوالة واردة بلا اسم جهة', sub: eg ? '٢٧ سبتمبر · قبل يوم المرتب بيوم' : '٢٧ سبتمبر · قبل يوم الراتب بيوم', amt: 1250000, sug: eg ? 'مرتبي' : 'راتبي', alts: [eg ? 'دخل تاني' : 'دخل آخر', eg ? 'من حسابي التاني' : 'من حسابي الآخر'], note: eg ? 'هنسألك مرة واحدة، وبعدها بيتعرف لوحده ويتحسب للشهر الجديد.' : 'نسألك مرة واحدة، ثم يُعرف تلقائيًا ويُحسب للشهر الجديد.' },
+      { id: 'i1', g: 'in', name: eg ? 'حوالة جاتلك من شركة الأفق' : 'حوالة واردة من شركة الأفق', sub: eg ? '٣ أكتوبر · مستنية برّه الدخل' : '٣ أكتوبر · منتظرة خارج الدخل', amt: 820000, sug: eg ? 'شغل حر' : 'عمل حر', alts: [eg ? 'مكافأة' : 'مكافأة', eg ? 'من حسابي التاني' : 'من حسابي الآخر'] },
       { id: 'i2', g: 'in', name: eg ? 'حوالة من سالم' : 'حوالة من سالم', sub: eg ? 'النهارده · أول مرة' : 'اليوم · أول تحويل منه', amt: 150000, sug: 'هدية', alts: IN.slice(1) },
-      { id: 'i3', g: 'in', name: eg ? 'فلوس راجعة من متجر إلكتروني' : 'مبلغ مسترد من متجر إلكتروني', sub: '٢ أكتوبر', amt: 8900, sug: eg ? 'استرداد (بيقلل المصروف)' : 'استرداد (يُنقص المصروف)', alts: ['دخل', 'هدية'] },
-      { id: 'o1', g: 'out', name: eg ? 'تحويل لحساب آخره ٧٧١٠' : 'تحويل لحساب ينتهي بـ ٧٧١٠', sub: '٢٩ سبتمبر', amt: -120000, sug: eg ? 'دعم (مصروف)' : 'دعم (مصروف)', alts: [eg ? 'سلفة لحد' : 'قرض ممنوح', eg ? 'سداد دين عليك' : 'سداد دين عليك', 'بين محافظك'] }
+      { id: 'r1', g: 'refund', name: eg ? 'فلوس راجعة من متجر إلكتروني' : 'مبلغ مسترد من متجر إلكتروني', sub: '٢ أكتوبر', amt: 8900, sug: eg ? 'استرداد (بيقلل المصروف)' : 'استرداد (يُنقص المصروف)', alts: ['دخل'] },
+      { id: 'r2', g: 'refund', name: eg ? 'مرتجع من سوبرماركت الحي' : 'مرتجع من سوبرماركت الحي', sub: '٤ أكتوبر', amt: 2350, sug: eg ? 'استرداد (بيقلل المصروف)' : 'استرداد (يُنقص المصروف)', alts: ['دخل'] },
+      { id: 'p1', g: 'person', name: eg ? 'تحويل لليلى' : 'تحويل إلى ليلى', sub: eg ? '٦ أكتوبر · شخص مربوط' : '٦ أكتوبر · شخص مرتبط', amt: -50000, sug: 'دعم', alts: ['سلفة', 'سداد دين عليك'] },
+      { id: 'a1', g: 'repay', name: 'حوالة من أحمد', sub: eg ? '٥ أكتوبر · ليك عنده ١٨٥' : '٥ أكتوبر · لك عنده ١٨٥', amt: 18500, sug: 'سداد السلفة', alts: ['هدية', 'مساعدة'] },
+      { id: 'f1', g: 'fx', name: 'شراء بالدولار · متجر سفر', sub: eg ? '٣ أكتوبر · البنك ما كتبش المبلغ بالجنيه' : '٣ أكتوبر · لم يذكر البنك المبلغ بالريال', amt: -4000, fx: 'USD', sug: '', alts: [] }
     ];
-    const G = [['move', eg ? 'شكلها بين محافظك' : 'تبدو بين محافظك'], ['in', eg ? 'فلوس داخلة نوعها مش واضح' : 'مبالغ واردة نوعها غير واضح'], ['out', eg ? 'فلوس خارجة لطرف' : 'مبالغ صادرة لطرف']];
+    const G = [['salary', eg ? 'ده مرتبك؟' : 'هل هذا راتبك؟'], ['in', eg ? 'فلوس داخلة نوعها مش واضح' : 'مبالغ واردة نوعها غير واضح'], ['refund', eg ? 'شكلها استرداد' : 'تبدو استردادًا'], ['person', eg ? 'سلفة ولا دعم؟' : 'سلفة أم دعم؟'], ['repay', 'سداد سلفة؟'], ['fx', eg ? 'كام بالجنيه؟' : 'كم بالريال؟']];
     const total = defs.length, doneN = defs.filter((d) => s.done[d.id]).length, left = total - doneN;
     const card = 'border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; ';
     const groups = G.map(([gid, title]) => {
@@ -134,14 +143,18 @@ class Component extends DCLogic {
       const openIds = list.filter((d) => !s.done[d.id]);
       return {
         title: title + ' (' + n(list.length) + ')',
-        hasBulk: gid === 'move' && openIds.length > 1,
+        hasBulk: gid === 'refund' && openIds.length > 1,
         bulkLabel: (eg ? 'أكّد الـ' : 'أكّد الـ') + n(openIds.length),
         bulk: () => { const d = Object.assign({}, s.done); openIds.forEach((x) => { d[x.id] = x.sug; }); this.setState({ done: d }); },
         items: list.map((d) => {
           const chosen = s.done[d.id];
           return {
-            name: d.name, sub: d.sub, open: !chosen, done: !!chosen, cls: chosen ? 'r-in' : '',
-            amount: (d.amt < 0 ? '−' : '+') + this.fmt(d.amt * k) + ' ' + cur,
+            name: d.name, sub: d.sub, open: !chosen && !d.fx, openFx: !chosen && !!d.fx, done: !!chosen, cls: chosen ? 'r-in' : '',
+            hasNote: !!d.note && !chosen, note: d.note || '',
+            fxValue: s.fx[d.id] || '', fxLabel: eg ? 'المبلغ بالجنيه' : 'المبلغ بالريال', typeFx: (e) => this.setState({ fx: Object.assign({}, s.fx, { [d.id]: e.target.value }) }),
+            fxBlocked: !(this.toMinor(s.fx[d.id]) > 0), fxStyle: 'height: 44px; padding: 0 16px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: #08634F;' + (this.toMinor(s.fx[d.id]) > 0 ? '' : ' opacity: 0.45; cursor: default'),
+            fxSave: () => { const m = this.toMinor(s.fx[d.id]); if (m > 0) this.set(d.id, (eg ? 'اتسجّلت: ' : 'سُجّلت: ') + this.fmt(m) + ' ' + cur); },
+            amount: (d.amt < 0 ? '−' : '+') + this.fmt(d.fx ? d.amt : d.amt * k) + ' ' + (d.fx || cur),
             amountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (d.amt < 0 ? '#BE3D48' : '#13764D'),
             sugLabel: eg ? 'المقترح' : 'المقترح', sug: d.sug,
             accept: () => this.set(d.id, d.sug),
@@ -163,7 +176,7 @@ class Component extends DCLogic {
       isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', showMain: live,
       emptyTitle: eg ? 'مفيش حاجة تتراجع' : 'لا شيء للمراجعة', emptyBody: eg ? 'كل العمليات نوعها واضح.' : 'كل العمليات نوعها واضح.',
       heroTitle: left ? plural(left, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' نوعها مش أكيد' : ' نوعها غير مؤكد') : (eg ? 'خلصت المراجعة' : 'اكتملت المراجعة'),
-      heroBody: left ? (eg ? 'الأرقام شغالة بتقدير لحد ما تأكد. اللي واضح ما بيتسألش.' : 'الأرقام تعمل بتقدير حتى تؤكد. الواضح لا يُسأل عنه.') : (eg ? 'الأرقام بقت مؤكدة.' : 'أصبحت الأرقام مؤكدة.'),
+      heroBody: left ? (eg ? 'الداخل اللي نوعه مش معروف برّه الدخل لحد ما تأكده. اللي واضح ما بيتسألش.' : 'الوارد المجهول خارج الدخل حتى تؤكده. الواضح لا يُسأل عنه.') : (eg ? 'الأرقام بقت مؤكدة.' : 'أصبحت الأرقام مؤكدة.'),
       donePct: String(pct), barStyle: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + pct + '%',
       groups,
       acceptLabel: eg ? 'تمام' : 'تأكيد', undoLabel: 'تراجع',

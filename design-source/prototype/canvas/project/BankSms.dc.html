@@ -107,13 +107,6 @@ body{margin:0}
             </sc-for>
           </div>
         </sc-if>
-        <sc-if value="{{askRemember}}" hint-placeholder-val="{{ false }}">
-          <span style="font-size: 14px; color: #193D33">{{rememberQ}}</span>
-          <div style="display: flex; gap: 8px">
-            <button type="button" class="m-press" onClick="{{rememberYes}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{rememberYesLabel}}</button>
-            <button type="button" class="m-press" onClick="{{closeCat}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{rememberNoLabel}}</button>
-          </div>
-        </sc-if>
       </div>
     </div>
   </sc-if>
@@ -143,7 +136,7 @@ class Component extends DCLogic {
         { id: 'c', name: 'مخبز الندى', cat: 'none', amt: 1850, t: '٩:٠٢ ص', st: 'new' },
         { id: 'd', name: 'محطة وقود', cat: 'car', amt: 9000, t: '٨:٣٠ ص', st: 'ok' }
       ],
-      cat: null, step: 'pick', picked: null, toast: '', toastKey: 0
+      cat: null, toast: '', toastKey: 0
     };
     this.timers = [];
     this.onRecord = (list, msg) => {
@@ -177,15 +170,14 @@ class Component extends DCLogic {
         needs, chip: r.st === 'sug' ? (eg ? 'مقترح' : 'مقترح') : (eg ? 'محل جديد' : 'متجر جديد'),
         chipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (r.st === 'sug' ? 'color: #956000; background: #FBF0DD' : 'color: #637570; background: rgba(99,117,112,0.12)'),
         actLabel: r.st === 'sug' ? (eg ? 'تمام كده' : 'تأكيد') : (eg ? 'صنّفها' : 'صنّفها'),
-        act: r.st === 'sug' ? () => this.setRow(r.id, { st: 'ok', sheen: true }) : () => this.setState({ cat: r.id, step: 'pick', picked: null }),
+        act: r.st === 'sug' ? () => this.setRow(r.id, { st: 'ok', sheen: true }) : () => this.setState({ cat: r.id }),
         tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + c[2] + '; color: ' + c[1],
         rowStyle: 'position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: 10px 0;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
       };
     });
     const target = this.state.rows.find((r) => r.id === this.state.cat);
-    const picked = this.state.picked;
     const cats = ['bake', 'food', 'shop', 'car'].map((k) => ({
-      label: C[k][0], pick: () => { if (!target) return; this.setRow(target.id, { cat: k, st: 'ok', sheen: true }); this.setState({ step: 'remember', picked: k }); },
+      label: C[k][0], pick: () => { if (!target) return; this.setRow(target.id, { cat: k, st: 'ok', sheen: true }); this.setState({ cat: null }); this.say((eg ? 'تمام — «' : 'تم — «') + target.name + (eg ? '» هيتصنّف «' : '» سيُصنَّف «') + C[k][0] + (eg ? '» على طول' : '» دائمًا')); },
       style: 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; color: ' + C[k][1] + '; background: ' + C[k][2]
     }));
     const live = st === 'عادي' || st === 'خطأ';
@@ -208,17 +200,13 @@ class Component extends DCLogic {
       emptyBody: eg ? 'أول ما رسالة من البنك توصل، هتتسجل هنا لوحدها.' : 'حين تصل رسالة من البنك ستُسجَّل هنا تلقائيًا.',
       showList: live,
       autoTitle: eg ? 'اتسجلت لوحدها النهارده' : 'سُجّلت تلقائيًا اليوم',
-      autoCount: rows.length + (eg ? ' عمليات' : ' عمليات'),
+      autoCount: ((x) => x === 1 ? (eg ? 'عملية واحدة' : 'عملية واحدة') : x === 2 ? (eg ? 'عمليتين' : 'عمليتان') : x.toLocaleString('ar-EG') + (x <= 10 ? ' عمليات' : ' عملية'))(rows.length),
       rows,
       footer: eg ? 'إشعار الجوال بيوصلك بس للرسايل المستنية تأكيدك، من مجموعة' : 'يصلك إشعار الجوال فقط للرسائل التي تنتظر تأكيدك، من مجموعة',
       footerLink: eg ? '«رسايل البنك»' : '«رسائل البنك»',
       catOpen: !!target,
-      catTitle: target ? (this.state.step === 'pick' ? (eg ? 'تصنيف «' : 'تصنيف «') + target.name + '»' : (eg ? 'نفتكرها؟' : 'نتذكرها؟')) : '',
-      cats, askPick: this.state.step === 'pick', askRemember: this.state.step === 'remember',
-      rememberQ: target && picked ? (eg ? 'كل عمليات «' : 'كل عمليات «') + target.name + (eg ? '» الجاية تبقى «' : '» القادمة تكون «') + C[picked][0] + '»؟' : '',
-      rememberYesLabel: eg ? 'أيوه، افتكرها' : 'نعم، تذكّرها',
-      rememberNoLabel: eg ? 'المرة دي بس' : 'هذه المرة فقط',
-      rememberYes: () => { this.say(eg ? 'تمام، هنصنّفها كده على طول' : 'تم، ستُصنَّف هكذا دائمًا'); this.setState({ cat: null }); },
+      catTitle: target ? (eg ? 'تصنيف «' : 'تصنيف «') + target.name + '»' : '',
+      cats, askPick: true,
       closeCat: () => this.setState({ cat: null }),
       hasToast: !!this.state.toast, toast: this.state.toast
     };
