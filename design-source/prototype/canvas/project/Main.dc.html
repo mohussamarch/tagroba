@@ -38,10 +38,7 @@ a{color:#08634F}a:hover{color:#064B40}
         <span style="font-size: 18px; font-weight: 700">{{greeting}}</span>
         <span style="font-size: 12px; color: #637570">الأربعاء، ٧ أكتوبر</span>
       </div>
-      <a href="Notifications.dc.html" class="m-press" aria-label="الإشعارات" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
-        <span aria-hidden="true" style="position: absolute; top: 11px; left: 12px; width: 8px; height: 8px; border-radius: 4px; background: #BE3D48"></span>
-      </a>
+      <dc-import name="BellPopover" space="{{spaceName}}" hint-size="48px,48px"></dc-import>
       <a href="More.dc.html" class="m-press" aria-label="{{gearLabel}}" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
       </a>
@@ -92,7 +89,7 @@ a{color:#08634F}a:hover{color:#064B40}
                 </div>
               </sc-if>
             </div>
-            <div aria-hidden="true" style="width: 46px; height: 46px; border-radius: 16px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; color: #DAF8E9; background: linear-gradient(145deg, rgba(255,255,255,0.24), rgba(255,255,255,0.03) 48%, rgba(150,243,204,0.16)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)"><span style="position: absolute; top: 2px; left: 14%; width: 56%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span><span style="position: absolute; bottom: 2px; right: 12%; width: 46%; height: 3px; border-radius: 50%; background: linear-gradient(90deg, transparent, rgba(170,252,219,0.70), transparent); filter: blur(1px)"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M16 12.5h2"></path><path d="M3 9h18"></path></svg></div>
+            <dc-import name="HeroBanks" space="{{spaceName}}" cash="{{cashMinor}}" hint-size="106px,48px"></dc-import>
           </div>
           <sc-if value="{{isNA}}" hint-placeholder-val="{{ false }}">
             <span style="font-size: 13px; color: #DCEBD6">رصيد البنك غير متاح حتى تصل رسالة بنك جديدة أو تستورد كشفًا. الكاش وحده {{cashText}} {{currency}}.</span>
@@ -126,18 +123,7 @@ a{color:#08634F}a:hover{color:#064B40}
             <h2 style="margin: 0; font-size: 18px; font-weight: 700">القادم</h2>
             <span style="font-size: 13px; color: #637570">التقويم</span>
           </div>
-          <div style="display: flex; gap: 10px">
-            <a href="PersonProfile.dc.html" class="m-press" style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-              <span style="font-size: 12px; color: #637570">١٨ أكتوبر · بعد ١١ يومًا</span>
-              <span style="font-size: 14px; font-weight: 700">زواج خالد</span>
-              <span style="font-size: 12px; color: #13764D">محجوز {{upcomingA}} {{currency}}</span>
-            </a>
-            <div class="m-press" style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-              <span style="font-size: 12px; color: #637570">٢٧ أكتوبر · بعد ٢٠ يومًا</span>
-              <span style="font-size: 14px; font-weight: 700">قسط السيارة</span>
-              <span style="font-size: 12px; color: #BE3D48">{{upcomingB}} {{currency}} غير محجوز</span>
-            </div>
-          </div>
+          <dc-import name="UpcomingStrip" space="{{spaceName}}" hint-size="390px,230px"></dc-import>
         </div>
       </div>
     </sc-if>
@@ -246,6 +232,7 @@ class Component extends DCLogic {
       motionClass: this.slow() ? 'm-slow' : '',
       navStyle: this.props.navStyle ?? "زرار في النص",
       spaceName: eg ? 'مصر' : 'السعودية',
+      cashMinor: String(this.cash()),
       gearLabel: 'المزيد والإعدادات',
       greeting: eg ? 'مساء الخير يا محمد' : 'مساء الخير، محمد',
       currency: d.currency,
@@ -261,7 +248,6 @@ class Component extends DCLogic {
       coffeeTitle: (eg ? 'القهوة الشهر ده ' : 'القهوة هذا الشهر ') + this.fmt(d.coffee) + ' ' + d.currency,
       coffeeBody: eg ? 'بالمعدل ده هتحوّش أقل من هدف خطة السفر.' : 'بهذا المعدل ستدّخر أقل من هدف خطة السفر.',
       coffeeAction: eg ? 'قلّل ٤ مرات في الأسبوع وتلحق هدفك ←' : 'قلّل ٤ مرات في الأسبوع وتلحق هدفك ←',
-      upcomingA: this.fmt(d.a), upcomingB: this.fmt(d.b),
 
       cashOpen: this.state.cashOpen,
       openCash: () => this.setState({ cashOpen: true, counting: false, countInput: '' }),

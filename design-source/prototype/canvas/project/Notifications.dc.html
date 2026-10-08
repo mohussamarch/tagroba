@@ -78,11 +78,14 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const empty = (this.props.state ?? 'عادي') === 'فاضي';
     const cur = eg ? 'ج.م' : 'ر.س';
+    let read = false;
+    // «تعليم الكل كمقروء» من نافذة الجرس
+    try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; } catch (e) {}
     // الشاشة اللي بتفتح بتقرا اختيارها من هنا (التطبيق بيفتح لوحة كاملة، مفيش باراميتر)
     const keep = (k, v) => { const f = () => { try { window.sessionStorage.setItem(k, v); } catch (e) {} }; f.data = JSON.stringify({ [k]: v }); return f; };
     const tint = { sms: ['rgba(8,99,79,0.10)', '#08634F'], move: ['rgba(36,105,186,0.12)', '#2469BA'], budget: ['rgba(190,61,72,0.10)', '#BE3D48'], sub: ['rgba(149,96,0,0.12)', '#956000'], debt: ['rgba(165,80,96,0.12)', '#A55060'] };
     const row = (icon, title, body, why, when, to, prep, unread, last) => ({
-      title, body, why, when, unread: !!unread, i: { [icon]: true },
+      title, body, why, when, unread: !!unread && !read, i: { [icon]: true },
       href: to + '.dc.html', prep: prep || (() => {}), keep: prep ? prep.data : '{}',
       tile: 'position: relative; width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + tint[icon][0] + '; color: ' + tint[icon][1],
       style: 'box-sizing: border-box; text-decoration: none; color: #193D33; display: flex; align-items: flex-start; gap: 12px; padding: 12px 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55)')

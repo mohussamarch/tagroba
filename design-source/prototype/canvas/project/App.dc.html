@@ -67,6 +67,15 @@ body{margin:0}
   <sc-if value="{{s.OperationDetail}}" hint-placeholder-val="{{ false }}">
     <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationDetail" space="{{space}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
+  <sc-if value="{{s.OperationFilters}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationFilters" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.ReviewQueue}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="ReviewQueue" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.Transfers}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Transfers" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
@@ -76,7 +85,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.TABS = ['Main', 'Operations', 'People', 'Investment'];
-    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail']);
+    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail', 'OperationFilters', 'ReviewQueue', 'Transfers']);
     this.state = { screen: 'Main', stack: [], anim: 'a-tab', n: 0 };
     this.onClick = (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;

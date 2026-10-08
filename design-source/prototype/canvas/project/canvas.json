@@ -177,6 +177,54 @@
       "w": 390,
       "x": 180,
       "y": 3810
+    },
+    "OperationFilters.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "تصفية العمليات · OperationFilters",
+      "w": 390,
+      "x": 2430,
+      "y": 4954
+    },
+    "ReviewQueue.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "المراجعة · ReviewQueue",
+      "w": 390,
+      "x": 1960,
+      "y": 4954
+    },
+    "Transfers.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "التحويلات · Transfers",
+      "w": 390,
+      "x": 1490,
+      "y": 4954
+    },
+    "UpcomingStrip.dc.html": {
+      "h": 230,
+      "is_interactive": true,
+      "title": "شريط القادم · UpcomingStrip (جوه الرئيسية)",
+      "w": 390,
+      "x": 1020,
+      "y": 4954
+    },
+    "HeroBanks.dc.html": {
+      "h": 48,
+      "is_interactive": true,
+      "title": "بنوك «معك الآن» · HeroBanks (جوه البطاقة)",
+      "w": 120,
+      "x": 1020,
+      "y": 5284
+    },
+    "BellPopover.dc.html": {
+      "h": 48,
+      "is_interactive": true,
+      "title": "نافذة الجرس · BellPopover (جوه الرئيسية)",
+      "w": 48,
+      "x": 1200,
+      "y": 5284
     }
   },
   "createdOnFiles": {
@@ -228,6 +276,14 @@
       "w": 240,
       "x": 0,
       "y": 3510
+    },
+    "ops2": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "التصفية · المراجعة · التحويلات · قطع الرئيسية الجديدة",
+      "w": 240,
+      "x": 0,
+      "y": 4654
     }
   },
   "order": [
@@ -252,7 +308,13 @@
     "BankSms.dc.html",
     "SmsWaiting.dc.html",
     "Notifications.dc.html",
-    "NotificationSettings.dc.html"
+    "NotificationSettings.dc.html",
+    "OperationFilters.dc.html",
+    "ReviewQueue.dc.html",
+    "Transfers.dc.html",
+    "UpcomingStrip.dc.html",
+    "HeroBanks.dc.html",
+    "BellPopover.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تصفية العمليات — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),color 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.f-in{animation:f-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes f-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.f-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+input::placeholder{color:#8A9A95}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 116px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Operations.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+      <sc-if value="{{hasActive}}" hint-placeholder-val="{{ true }}">
+        <button type="button" class="m-press" onClick="{{clearAll}}" style="height: 40px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #BE3D48; cursor: pointer; background: rgba(190,61,72,0.08)">{{clearLabel}}</button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{onFilters}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <label style="display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; border-radius: 18px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input type="search" aria-label="{{searchLabel}}" placeholder="{{searchHint}}" value="{{q}}" onInput="{{typeQ}}" style="flex: 1 1 auto; min-width: 0; height: 48px; border: 0; background: transparent; font: inherit; font-size: 15px; color: #193D33; outline: none">
+        </label>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 700; color: #637570">{{amountTitle}}</span>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <input type="text" inputmode="decimal" dir="ltr" aria-label="{{amountTitle}}" placeholder="0.00" value="{{amount}}" onInput="{{typeAmount}}" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 17px; font-weight: 700; text-align: right; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+            <button type="button" role="switch" aria-checked="{{nearChecked}}" class="m-press" onClick="{{toggleNear}}" style="{{nearStyle}}">{{nearLabel}}</button>
+          </div>
+        </div>
+
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 700; color: #637570">{{g.title}}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{g.chips}}" as="c" hint-placeholder-count="4">
+                <button type="button" aria-pressed="{{c.on}}" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{onResults}}" hint-placeholder-val="{{ false }}">
+      <div class="f-in" style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{activeChips}}" as="a" hint-placeholder-count="3">
+            <button type="button" class="m-press" onClick="{{a.drop}}" aria-label="{{a.dropLabel}}" style="height: 36px; padding: 0 10px 0 12px; border: 0; border-radius: 12px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: #DCEBD6">{{a.label}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+          </sc-for>
+        </div>
+        <span style="display: flex; justify-content: space-between; font-size: 13px; color: #637570"><span>{{resultLine}}</span><span dir="ltr" style="font-weight: 700; color: #193D33; font-variant-numeric: tabular-nums">{{resultSum}}</span></span>
+        <sc-if value="{{noResults}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 8px; text-align: center">
+            <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+            <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{noTitle}}</span>
+            <span style="font-size: 13px; color: #637570">{{noBody}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{hasResults}}" hint-placeholder-val="{{ true }}">
+          <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+            <sc-for list="{{results}}" as="r" hint-placeholder-count="5">
+              <div style="{{r.rowStyle}}">
+                <span style="{{r.dot}}"></span>
+                <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.sub}}</span></span>
+                <span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 20px 26px; display: flex; gap: 8px; background: linear-gradient(180deg, rgba(239,243,237,0), rgba(239,243,237,0.94) 30%)">
+    <button type="button" class="m-press" onClick="{{mainAct}}" disabled="{{mainDisabled}}" style="{{mainStyle}}">{{mainLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { q: '', amount: '', near: false, period: 'm0', sel: {}, review: 'all', view: 'filters' };
+  }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toggle(key, id) { const cur = Object.assign({}, this.state.sel[key] || {}); if (cur[id]) delete cur[id]; else cur[id] = true; this.setState({ sel: Object.assign({}, this.state.sel, { [key]: cur }) }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const s = this.state;
+    const n = (x) => x.toLocaleString('ar-EG');
+    // صيغة العدد بالعربي: واحدة · اتنين · ٣–١٠ جمع · ١١+ مفرد
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    const W = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
+    // مخترعة · بالوحدة الصغرى · m: 0 الشهر ده، 1 اللي قبله، 2 اللي قبله
+    // [الاسم، التصنيف، النوع، المصدر، المحفظة، الشخص، المراجعة، المبلغ، الشهر]
+    const D = [
+      [eg ? 'مطعم الفول' : 'مطعم الريف', 'food', 'out', 'sms', 'salary', null, 'ok', 4200, 0], ['حوالة واردة', 'none', 'in', 'sms', 'salary', 'سالم', 'sug', 150000, 0],
+      [eg ? 'صرف كاش مش متسجّل' : 'صرف كاش غير مسجّل', 'none', 'out', 'manual', 'cash', null, 'sug', 6000, 0], [eg ? 'بين محافظك' : 'بين محافظك', 'none', 'move', 'stmt', 'salary', null, 'ok', 100000, 0],
+      ['سوبرماركت الحي', 'shop', 'out', 'stmt', 'salary', null, 'ok', 31840, 0], [eg ? 'بنزينة' : 'محطة وقود', 'car', 'out', 'stmt', 'salary', null, 'ok', 9000, 0],
+      ['راتب', 'none', 'in', 'stmt', 'salary', null, 'ok', 1250000, 0], ['مكتبة الفجر', 'shop', 'out', 'sms', 'saving', null, 'ok', 4500, 0],
+      [eg ? 'كافيه المرسى' : 'مقهى المرسى', 'food', 'out', 'sms', 'saving', null, 'ok', 2300, 0], [eg ? 'هدية لخالد' : 'هدية لخالد', 'gift', 'out', 'manual', 'cash', 'خالد', 'ok', 20000, 0],
+      [eg ? 'سلفة لأحمد' : 'سلفة لأحمد', 'none', 'debt', 'manual', 'salary', 'أحمد', 'ok', 18500, 1], [eg ? 'أجزخانة' : 'صيدلية', 'shop', 'out', 'stmt', 'salary', null, 'sug', 6700, 1],
+      [eg ? 'مطعم الفول' : 'مطعم الريف', 'food', 'out', 'sms', 'salary', null, 'ok', 3900, 1], ['راتب', 'none', 'in', 'stmt', 'salary', null, 'ok', 1250000, 1],
+      [eg ? 'بنزينة' : 'محطة وقود', 'car', 'out', 'sms', 'salary', null, 'ok', 8500, 1], [eg ? 'تحويل لحساب آخره ٧٧١٠' : 'تحويل لحساب ينتهي بـ ٧٧١٠', 'none', 'out', 'stmt', 'salary', null, 'sug', 120000, 1],
+      ['سوبرماركت الحي', 'shop', 'out', 'stmt', 'salary', null, 'ok', 42010, 2], [eg ? 'كافيه الشاطئ' : 'مقهى الشاطئ', 'food', 'out', 'sms', 'salary', null, 'ok', 1800, 2],
+      ['راتب', 'none', 'in', 'stmt', 'salary', null, 'ok', 1250000, 2], ['قسط السيارة', 'none', 'debt', 'stmt', 'salary', null, 'ok', 145000, 2]
+    ];
+    const L = {
+      period: [['m0', eg ? 'الشهر ده' : 'هذا الشهر'], ['m1', eg ? 'الشهر اللي فات' : 'الشهر الماضي'], ['3m', eg ? 'آخر ٣ شهور' : 'آخر ٣ أشهر']],
+      kind: [['out', 'مصروف'], ['in', 'دخل'], ['move', eg ? 'بين محافظك' : 'بين محافظك'], ['debt', eg ? 'ديون وأقساط' : 'ديون وأقساط']],
+      cat: [['food', eg ? 'أكل وقهوة' : 'مطاعم وقهوة'], ['shop', 'تسوق'], ['car', 'مواصلات'], ['gift', 'هدايا'], ['none', eg ? 'من غير تصنيف' : 'بلا تصنيف']],
+      src: [['sms', eg ? 'رسالة البنك' : 'رسالة البنك'], ['stmt', 'كشف الحساب'], ['manual', eg ? 'بإيدك' : 'يدوي']],
+      wallet: [['salary', eg ? 'حساب المرتب' : 'حساب الراتب'], ['saving', 'حساب التوفير'], ['cash', 'الكاش']],
+      person: [['سالم', 'سالم'], ['خالد', 'خالد'], ['أحمد', 'أحمد']],
+      review: [['all', eg ? 'الكل' : 'الكل'], ['ok', eg ? 'متأكدة' : 'مؤكدة'], ['sug', eg ? 'محتاجة تأكيد' : 'تحتاج تأكيد']]
+    };
+    const chipStyle = (on) => 'height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.22)' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
+    const one = (key, stateKey) => L[key].map(([id, label]) => ({ label, on: s[stateKey] === id ? 'true' : 'false', style: chipStyle(s[stateKey] === id), pick: () => this.setState({ [stateKey]: id }) }));
+    const many = (key) => L[key].map(([id, label]) => { const on = !!(s.sel[key] || {})[id]; return { label, on: on ? 'true' : 'false', style: chipStyle(on), pick: () => this.toggle(key, id) }; });
+    const groups = [
+      { title: eg ? 'الفترة' : 'الفترة', chips: one('period', 'period') },
+      { title: 'النوع', chips: many('kind') }, { title: 'التصنيف', chips: many('cat') },
+      { title: 'المصدر', chips: many('src') }, { title: 'المحفظة', chips: many('wallet') },
+      { title: 'الشخص', chips: many('person') }, { title: eg ? 'المراجعة' : 'المراجعة', chips: one('review', 'review') }
+    ];
+    const x = this.toMinor(s.amount);
+    const has = (key, v) => { const m = s.sel[key] || {}; return !Object.keys(m).length || !!m[v]; };
+    const months = s.period === 'm0' ? [0] : s.period === 'm1' ? [1] : [0, 1, 2];
+    const q = s.q.trim();
+    const hits = D.filter(([name, cat, kind, src, wallet, person, review, amt, m]) =>
+      months.indexOf(m) >= 0 && has('kind', kind) && has('cat', cat) && has('src', src) && has('wallet', wallet) && (!Object.keys(s.sel.person || {}).length || (person && s.sel.person[person])) &&
+      (s.review === 'all' || s.review === review) && (!q || name.indexOf(q) >= 0 || (person || '').indexOf(q) >= 0) &&
+      (x == null || (s.near ? amt * k * 100 >= x * 95 && amt * k * 100 <= x * 105 : amt * k === x)));
+    const sign = (kind) => (kind === 'in' ? 1 : kind === 'move' ? 0 : -1);
+    const total = hits.reduce((t, h) => t + sign(h[2]) * h[7] * k, 0);
+    const name = (key, id) => (L[key].find((p) => p[0] === id) || [id, id])[1];
+    const activeChips = [];
+    if (q) activeChips.push({ label: '«' + q + '»', drop: () => this.setState({ q: '' }) });
+    if (x != null) activeChips.push({ label: (s.near ? '≈ ' : '') + this.fmt(x), drop: () => this.setState({ amount: '' }) });
+    if (s.period !== 'm0') activeChips.push({ label: name('period', s.period), drop: () => this.setState({ period: 'm0' }) });
+    Object.keys(s.sel).forEach((key) => Object.keys(s.sel[key]).forEach((id) => activeChips.push({ label: name(key, id), drop: () => this.toggle(key, id) })));
+    if (s.review !== 'all') activeChips.push({ label: name('review', s.review), drop: () => this.setState({ review: 'all' }) });
+    activeChips.forEach((a) => { a.dropLabel = (eg ? 'شيل ' : 'إزالة ') + a.label; });
+    const cnt = hits.length;
+    const C = { food: '#A36A21', shop: '#3866A7', car: '#4D747C', gift: '#A55060', none: '#637570' };
+    const onF = s.view === 'filters';
+    const primary = 'flex: 1 1 auto; height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; ';
+    return {
+      title: onF ? (eg ? 'فلترة العمليات' : 'تصفية العمليات') : (eg ? 'النتيجة' : 'النتائج'),
+      hasActive: activeChips.length > 0, clearLabel: eg ? 'امسح الكل' : 'مسح الكل',
+      clearAll: () => this.setState({ q: '', amount: '', near: false, period: 'm0', sel: {}, review: 'all' }),
+      onFilters: onF, onResults: !onF,
+      searchLabel: eg ? 'دوّر' : 'بحث', searchHint: eg ? 'اسم محل، شخص، ملاحظة…' : 'اسم متجر، شخص، ملاحظة…', q: s.q,
+      typeQ: (e) => this.setState({ q: e.target.value }),
+      amountTitle: 'المبلغ (' + cur + ')', amount: s.amount, typeAmount: (e) => this.setState({ amount: e.target.value }),
+      nearChecked: s.near ? 'true' : 'false', toggleNear: () => this.setState({ near: !s.near }),
+      nearLabel: eg ? 'قريب منه ±٥٪' : 'قريب منه ±٥٪',
+      nearStyle: chipStyle(s.near) + '; flex-shrink: 0; height: 48px',
+      groups,
+      activeChips,
+      resultLine: plural(cnt, W),
+      resultSum: (total < 0 ? '−' : total > 0 ? '+' : '') + this.fmt(total) + ' ' + cur,
+      noResults: cnt === 0, hasResults: cnt > 0,
+      noTitle: eg ? 'مفيش نتايج' : 'لا نتائج', noBody: eg ? 'شيل فلتر أو اتنين وجرّب تاني.' : 'أزل فلترًا أو أكثر وحاول مجددًا.',
+      results: hits.map(([nm, cat, kind, src, wallet], i) => ({
+        name: nm, sub: name('cat', cat) + ' · ' + name('wallet', wallet) + ' · ' + name('src', src),
+        amount: (kind === 'in' ? '+' : kind === 'move' ? '' : '−') + this.fmt(hits[i][7] * k),
+        amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (kind === 'in' ? '#13764D' : kind === 'move' ? '#2469BA' : '#BE3D48'),
+        dot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + C[cat],
+        rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (i === cnt - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      })),
+      mainLabel: onF ? (cnt ? (eg ? 'اعرض ' : 'اعرض ') + plural(cnt, W) : (eg ? 'مفيش نتايج' : 'لا نتائج')) : (eg ? 'عدّل الفلاتر' : 'عدّل التصفية'),
+      mainDisabled: onF && !cnt,
+      mainStyle: primary + (onF ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25);' + (cnt ? '' : ' opacity: 0.45; cursor: default') : 'color: #08634F; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px #08634F'),
+      mainAct: () => { if (onF && !cnt) return; this.setState({ view: onF ? 'results' : 'filters' }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

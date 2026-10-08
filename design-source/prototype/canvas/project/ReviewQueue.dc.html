@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المراجعة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+.r-in{position:relative;overflow:hidden;animation:r-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes r-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.r-sheen{position:absolute;top:0;bottom:0;left:100%;width:60%;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(166,222,193,0.75) 50%,transparent 70%);animation:r-sheen 1000ms cubic-bezier(.3,.7,.4,1) 120ms both}
+@keyframes r-sheen{from{transform:translateX(0)}to{transform:translateX(-270%)}}
+.r-bar{transition:width 450ms cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){.m-press,.r-bar{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.r-in{animation:none}.r-sheen{display:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Operations.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; background: #FBF0DD; color: #956000"><span style="font-size: 14px; font-weight: 700">{{errTitle}}</span><span style="font-size: 12px">{{errBody}}</span></div>
+    </sc-if>
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 12px"><div class="m-skel" style="height: 110px; border-radius: 24px; background: rgba(25,61,51,0.07)"></div><div class="m-skel" style="height: 180px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div></div>
+    </sc-if>
+
+    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="border-radius: 26px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; color: #FFFFFF; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.28)">
+          <span style="font-size: 20px; font-weight: 700">{{heroTitle}}</span>
+          <span style="font-size: 13px; color: #DCEBD6">{{heroBody}}</span>
+          <span role="progressbar" aria-valuenow="{{donePct}}" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.18)"><span class="r-bar" style="{{barStyle}}"></span></span>
+        </div>
+
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+              <h2 style="margin: 0; font-size: 15px; font-weight: 700">{{g.title}}</h2>
+              <sc-if value="{{g.hasBulk}}" hint-placeholder-val="{{ false }}">
+                <button type="button" class="m-press" onClick="{{g.bulk}}" style="height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: #08634F">{{g.bulkLabel}}</button>
+              </sc-if>
+            </span>
+            <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+              <div class="{{it.cls}}" style="{{it.cardStyle}}">
+                <span style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+                  <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; font-weight: 700">{{it.name}}</span><span style="font-size: 12px; color: #637570">{{it.sub}}</span></span>
+                  <span dir="ltr" style="{{it.amountStyle}}">{{it.amount}}</span>
+                </span>
+                <sc-if value="{{it.open}}" hint-placeholder-val="{{ true }}">
+                  <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">{{it.sugLabel}}</span><span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #956000; background: #FBF0DD">{{it.sug}}</span><button type="button" class="m-press" onClick="{{it.accept}}" style="height: 36px; padding: 0 14px; margin-inline-start: auto; border: 0; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: #08634F">{{acceptLabel}}</button></span>
+                  <span style="display: flex; gap: 6px; flex-wrap: wrap">
+                    <sc-for list="{{it.alts}}" as="a" hint-placeholder-count="3">
+                      <button type="button" class="m-press" onClick="{{a.pick}}" style="height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{a.label}}</button>
+                    </sc-for>
+                  </span>
+                </sc-if>
+                <sc-if value="{{it.done}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 700; color: #08634F">{{it.doneText}}</span><button type="button" class="m-press" onClick="{{it.undo}}" style="height: 32px; padding: 0 10px; margin-inline-start: auto; border: 0; border-radius: 10px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.7)">{{undoLabel}}</button></span>
+                  <span class="r-sheen" aria-hidden="true"></span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+
+        <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <span style="font-size: 15px; font-weight: 700">{{rulesTitle}}</span>
+          <span style="font-size: 13px; color: #637570">{{rulesBody}}</span>
+          <sc-if value="{{rulesPreview}}" hint-placeholder-val="{{ false }}">
+            <div class="r-in" style="display: flex; flex-direction: column; border-radius: 14px; padding: 4px 12px; background: rgba(25,61,51,0.04)">
+              <sc-for list="{{rulesRows}}" as="p" hint-placeholder-count="4">
+                <span style="{{p.style}}"><span>{{p.label}}</span><span style="font-weight: 700">{{p.n}}</span></span>
+              </sc-for>
+            </div>
+          </sc-if>
+          <button type="button" class="m-press" onClick="{{rulesAct}}" disabled="{{rulesDone}}" style="{{rulesBtnStyle}}">{{rulesBtn}}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { done: {}, rules: 'idle' }; }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  set(id, kind) { this.setState({ done: Object.assign({}, this.state.done, { [id]: kind }) }); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state;
+    // صيغة العدد بالعربي: واحدة · اتنين · ٣–١٠ جمع · ١١+ مفرد
+    const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
+    // مخترعة · بالوحدة الصغرى · المراجعة للغامض بس (§18) — «لا يُصنَّف وارد غامض كراتب» (spec/02) فالمقترح هنا مش «مرتب»
+    const IN = eg ? ['هدية', 'مساعدة', 'تحصيل دين', 'سلفة جاتلي', 'أمانة', 'دور جمعية'] : ['هدية', 'مساعدة', 'تحصيل دين', 'قرض مستلم', 'أمانة', 'دور جمعية'];
+    const defs = [
+      { id: 'w1', g: 'move', name: eg ? 'سحب من الصرّاف' : 'سحب من الصرّاف', sub: eg ? '٥ أكتوبر · حساب المرتب' : '٥ أكتوبر · حساب الراتب', amt: -50000, sug: eg ? 'بين محافظك (للكاش)' : 'بين محافظك (إلى الكاش)', alts: ['مصروف'] },
+      { id: 'w2', g: 'move', name: eg ? 'سحب من الصرّاف' : 'سحب من الصرّاف', sub: eg ? '١ أكتوبر · حساب المرتب' : '١ أكتوبر · حساب الراتب', amt: -30000, sug: eg ? 'بين محافظك (للكاش)' : 'بين محافظك (إلى الكاش)', alts: ['مصروف'] },
+      { id: 'i1', g: 'in', name: eg ? 'حوالة جاتلك من شركة الأفق' : 'حوالة واردة من شركة الأفق', sub: eg ? '٣ أكتوبر · مش في يوم المرتب' : '٣ أكتوبر · ليست يوم الراتب', amt: 820000, sug: eg ? 'شغل حر' : 'عمل حر', alts: ['مرتب', eg ? 'مكافأة' : 'مكافأة', eg ? 'من حسابي التاني' : 'من حسابي الآخر'] },
+      { id: 'i2', g: 'in', name: eg ? 'حوالة من سالم' : 'حوالة من سالم', sub: eg ? 'النهارده · أول مرة' : 'اليوم · أول تحويل منه', amt: 150000, sug: 'هدية', alts: IN.slice(1) },
+      { id: 'i3', g: 'in', name: eg ? 'فلوس راجعة من متجر إلكتروني' : 'مبلغ مسترد من متجر إلكتروني', sub: '٢ أكتوبر', amt: 8900, sug: eg ? 'استرداد (بيقلل المصروف)' : 'استرداد (يُنقص المصروف)', alts: ['دخل', 'هدية'] },
+      { id: 'o1', g: 'out', name: eg ? 'تحويل لحساب آخره ٧٧١٠' : 'تحويل لحساب ينتهي بـ ٧٧١٠', sub: '٢٩ سبتمبر', amt: -120000, sug: eg ? 'دعم (مصروف)' : 'دعم (مصروف)', alts: [eg ? 'سلفة لحد' : 'قرض ممنوح', eg ? 'سداد دين عليك' : 'سداد دين عليك', 'بين محافظك'] }
+    ];
+    const G = [['move', eg ? 'شكلها بين محافظك' : 'تبدو بين محافظك'], ['in', eg ? 'فلوس داخلة نوعها مش واضح' : 'مبالغ واردة نوعها غير واضح'], ['out', eg ? 'فلوس خارجة لطرف' : 'مبالغ صادرة لطرف']];
+    const total = defs.length, doneN = defs.filter((d) => s.done[d.id]).length, left = total - doneN;
+    const card = 'border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; ';
+    const groups = G.map(([gid, title]) => {
+      const list = defs.filter((d) => d.g === gid);
+      const openIds = list.filter((d) => !s.done[d.id]);
+      return {
+        title: title + ' (' + n(list.length) + ')',
+        hasBulk: gid === 'move' && openIds.length > 1,
+        bulkLabel: (eg ? 'أكّد الـ' : 'أكّد الـ') + n(openIds.length),
+        bulk: () => { const d = Object.assign({}, s.done); openIds.forEach((x) => { d[x.id] = x.sug; }); this.setState({ done: d }); },
+        items: list.map((d) => {
+          const chosen = s.done[d.id];
+          return {
+            name: d.name, sub: d.sub, open: !chosen, done: !!chosen, cls: chosen ? 'r-in' : '',
+            amount: (d.amt < 0 ? '−' : '+') + this.fmt(d.amt * k) + ' ' + cur,
+            amountStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (d.amt < 0 ? '#BE3D48' : '#13764D'),
+            sugLabel: eg ? 'المقترح' : 'المقترح', sug: d.sug,
+            accept: () => this.set(d.id, d.sug),
+            alts: d.alts.map((label) => ({ label, pick: () => this.set(d.id, label) })),
+            doneText: '✓ ' + (chosen || ''),
+            undo: () => { const x = Object.assign({}, s.done); delete x[d.id]; this.setState({ done: x }); },
+            cardStyle: card + (chosen ? 'background: #DCEBD6' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)')
+          };
+        })
+      };
+    });
+    const pct = Math.floor((doneN * 100) / total);
+    const R = [[eg ? 'أكل وقهوة' : 'مطاعم وقهوة', 12], [eg ? 'بقالة' : 'بقالة وسوبرماركت', 9], ['مواصلات', 8], ['أخرى', 5]];
+    const rulesN = R.reduce((t, r) => t + r[1], 0);
+    const live = st === 'عادي' || st === 'خطأ';
+    return {
+      title: eg ? 'المراجعة' : 'المراجعة',
+      isError: st === 'خطأ', errTitle: eg ? 'ما اتحفظش آخر تأكيد' : 'تعذّر حفظ آخر تأكيد', errBody: eg ? 'هنجرّب تاني لوحدنا أول ما النت يرجع.' : 'سنعيد المحاولة تلقائيًا عند عودة الاتصال.',
+      isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', showMain: live,
+      emptyTitle: eg ? 'مفيش حاجة تتراجع' : 'لا شيء للمراجعة', emptyBody: eg ? 'كل العمليات نوعها واضح.' : 'كل العمليات نوعها واضح.',
+      heroTitle: left ? plural(left, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' نوعها مش أكيد' : ' نوعها غير مؤكد') : (eg ? 'خلصت المراجعة' : 'اكتملت المراجعة'),
+      heroBody: left ? (eg ? 'الأرقام شغالة بتقدير لحد ما تأكد. اللي واضح ما بيتسألش.' : 'الأرقام تعمل بتقدير حتى تؤكد. الواضح لا يُسأل عنه.') : (eg ? 'الأرقام بقت مؤكدة.' : 'أصبحت الأرقام مؤكدة.'),
+      donePct: String(pct), barStyle: 'display: block; height: 8px; border-radius: 4px; background: #A6DEC1; width: ' + pct + '%',
+      groups,
+      acceptLabel: eg ? 'تمام' : 'تأكيد', undoLabel: 'تراجع',
+      rulesTitle: eg ? 'طبّق قواعدك على القديم' : 'طبّق قواعدك على السابق',
+      rulesBody: s.rules === 'done' ? (eg ? 'اتطبقت. التصنيفات اللي أكدتها بنفسك ما اتلمستش.' : 'طُبّقت. التصنيفات التي أكدتها بنفسك لم تُمس.') : (eg ? 'فيه ' : 'هناك ') + n(rulesN) + (eg ? ' عملية قديمة تصنيفها هيتغيّر لو طبّقت القواعد. اللي أكدته بنفسك مش هيتلمس.' : ' عملية سابقة سيتغير تصنيفها بتطبيق القواعد. ما أكدته بنفسك لن يُمس.'),
+      rulesPreview: s.rules === 'preview',
+      rulesRows: R.map(([label, c], i) => ({ label, n: n(c), style: 'display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0;' + (i === R.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
+      rulesDone: s.rules === 'done',
+      rulesBtn: s.rules === 'idle' ? (eg ? 'شوف هيتغيّر إيه' : 'اعرض ما سيتغير') : s.rules === 'preview' ? (eg ? 'طبّق على ' : 'طبّق على ') + n(rulesN) : (eg ? 'اتطبقت' : 'طُبّقت'),
+      rulesBtnStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (s.rules === 'preview' ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : s.rules === 'done' ? 'color: #08634F; background: #DCEBD6; cursor: default' : 'color: #08634F; background: rgba(8,99,79,0.08)'),
+      rulesAct: () => { if (s.rules === 'idle') this.setState({ rules: 'preview' }); else if (s.rules === 'preview') this.setState({ rules: 'done' }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
