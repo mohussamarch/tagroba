@@ -29,11 +29,12 @@ internal object Report {
     private fun rowJson(r: RowResult): Map<String, Any?> = linkedMapOf(
         "file" to r.file, "index" to r.index, "bank" to r.bank, "type" to r.type, "lang" to r.lang, "verified" to r.verified,
         "title" to r.isTitle, "keywordOnly" to r.keywordOnly, "outcome" to r.outcome.wire, "problems" to r.problems,
+        "bookedShape" to r.bookedShape,
         "variants" to r.variants.map { v ->
             linkedMapOf(
                 "label" to v.variant.label, "outcome" to v.outcome.wire, "problems" to v.problems, "detail" to v.detail,
                 "manualReadOutcome" to v.manualOutcome.wire, "crossLane" to v.crossLane, "fragileIgnore" to v.fragileIgnore,
-                "latentWithDate" to v.latent,
+                "latentWithDate" to v.latent, "shape" to v.shape,
                 "expect" to linkedMapOf(
                     "tx" to v.variant.expect.tx, "dir" to v.variant.expect.dir.name, "amountKey" to v.variant.expect.amountKey,
                     "merchant" to v.variant.expect.merchant, "partyKeys" to v.variant.expect.partyKeys, "foreign" to v.variant.expect.foreign,
@@ -44,6 +45,16 @@ internal object Report {
     )
 
     private fun counts(rows: List<RowResult>): Map<String, Int> = Outcome.entries.associate { o -> o.wire to rows.count { it.outcome == o } }
+
+    /** الجولة الرابعة: العمليات اللي اتقرت صح واتسجلت — بشكل معروف (بتتسجل لوحدها) ولا من كلمات عامة بس (بتستنى تأكيد المالك). */
+    fun shapeCounts(rows: List<RowResult>): Map<String, Int> {
+        val booked = rows.mapNotNull { it.bookedShape }
+        return linkedMapOf(
+            "known" to booked.count { it == "known" },
+            "sama-title" to booked.count { it == "sama-title" },
+            RowResult.FALLBACK to booked.count { it == RowResult.FALLBACK },
+        )
+    }
 
     fun write(dir: File, rows: List<RowResult>): File {
         dir.mkdirs()
@@ -67,6 +78,8 @@ internal object Report {
             "manualReadDiffers" to variants.count { it.manualOutcome != it.outcome },
             "crossLaneAccepted" to variants.count { it.crossLane != null },
             "fragileIgnores" to variants.count { it.fragileIgnore },
+            "bookedShapes" to shapeCounts(rows),
+            "bookedShapesResearchTemplates" to shapeCounts(rows.filterNot { it.keywordOnly }),
             "byBank" to byBank,
             "rows" to rows.map(::rowJson),
         )
@@ -86,6 +99,14 @@ internal object Report {
             "of the correct rows, $pending are foreign-currency and wait for the local amount (owner decision §75-12 — never recorded " +
                 "automatically, rejected WITH the parsed details; a printed local amount is only a suggestion)",
         )
+        // الجولة الرابعة: اللي بيتسجل لوحده = شكل معروف أو عنوان موحّد؛ الكلمات العامة بس ⇒ بيستنى تأكيد المالك (§72)
+        appendLine("booked rows by shape (auto-record needs known/sama-title): ${shapeCounts(rows)}")
+        appendLine("  researched templates only (no keyword-level rows): ${shapeCounts(rows.filterNot { it.keywordOnly })}")
+        val fallback = rows.filter { it.bookedShape == RowResult.FALLBACK }
+        if (fallback.isNotEmpty()) {
+            appendLine("  keyword-fallback (wait for the owner instead of auto-recording):")
+            fallback.forEach { r -> appendLine("    ${r.file}#${r.index} (${r.type}${if (r.keywordOnly) ", keyword-level research row" else ""})") }
+        }
         appendLine()
         for ((bank, list) in rows.groupBy { it.file.substringBefore('-') + " · " + it.bank }) {
             val right = list.count { it.outcome == Outcome.CORRECT || it.outcome == Outcome.CORRECTLY_IGNORED }

@@ -21,6 +21,8 @@ import kotlin.test.fail
  * التقرير في `device/build/reports/sms-template-coverage/` (`summary.txt` و`report.json`). الاختبار بيفشل لو الأداة نفسها باظت
  * (سطر مالوش متوقع، خانة `{…}` مالهاش قيمة)، **ومن جلسة 32 كمان لو سطر رجع لورا**: كل سطر لازم يتقري صح أو يترفض صح ما عدا
  * [KNOWN_UNSUPPORTED] (معروف ومكتوب سببه)، ومفيش رسالة تتقري في البلدين.
+ * **الجولة الرابعة (OVERRIDES §72.1):** كمان بيعد **الشكل** اللي اتفهمت بيه العملية اللي اتسجلت (`known` · `sama-title` بيتسجلوا لوحدهم،
+ * `keyword-fallback` بيستنى تأكيد المالك)، وبيفشل لو قالب بحث (مش سطر «كلمات بس») اتقري صح من الكلمات العامة بس.
  */
 class SmsTemplateCoverageTest {
     private fun researchDir(): File {
@@ -107,6 +109,15 @@ class SmsTemplateCoverageTest {
         // التلقائي وفي القراية بطلب المستخدم — مش رفض بالصدفة عشان التاريخ أو المبلغ مش واضح
         val fragile = rows.filter { r -> r.variants.any { it.fragileIgnore } }.map { "${it.file}#${it.index}" }
         assertTrue(fragile.isEmpty(), "must-ignore rows stopped only by accident, not by a guard: $fragile")
+        // الجولة الرابعة (§72 «المفهومة» = شكل معروف): كل قالب بحث بيتقري صح لازم يبقى **شكل معروف** في كل نسخه — لو بقى «كلمات
+        // عامة» هيستنى تأكيد المالك بدل ما يتسجل لوحده (رجوع لورا). سطور «كلمات بس» في البحث (`keywordOnly`) بتتعد في التقرير بس.
+        val fallback = rows.filter { !it.keywordOnly && it.bookedShape == RowResult.FALLBACK }.map { "${it.file}#${it.index}" }
+        assertTrue(fallback.isEmpty(), "researched templates read only by the keyword fallback (would wait instead of auto-recording): $fallback")
+        // وعناوين البنك المركزي لازم تتعرف **كعنوان موحّد** بالعربي والإنجليزي (مش قالب بنك بالصدفة)
+        val samaNotTitle = rows.filter { r -> r.isTitle && r.variants.any { it.shape != null && it.shape != "sama-title" } }.map { "${it.file}#${it.index}" }
+        assertTrue(samaNotTitle.isEmpty(), "SAMA standard titles not recognised as SAMA titles: $samaNotTitle")
+        val shapes = Report.shapeCounts(rows.filterNot { it.keywordOnly })
+        assertTrue(shapes.getValue("known") > 0 && shapes.getValue("sama-title") > 0, "shape counts look empty: $shapes")
     }
 
     companion object {

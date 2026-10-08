@@ -80,7 +80,8 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     val date = egyptTransactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val kind = egyptKind(body, direction)
     if (contradicts(direction, kind)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
-    return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind)
+    // الجولة الرابعة: الشكل علامة جنب القراية — جملة على قالب معروف بس هي اللي بتتسجل لوحدها (§72)
+    return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind, egyptShape(body, direction))
 }
 
 /** قارئ مصر لحزمة البلد. */

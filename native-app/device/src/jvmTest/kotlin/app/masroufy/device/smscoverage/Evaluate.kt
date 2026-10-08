@@ -172,6 +172,8 @@ internal object Evaluate {
         }
         val parsed = reader(country)(BankSmsMessage(sender, Fill.RECEIVED_AT, stored), 1)
         val (outcome, problems, detail) = judge(country, v, parsed)
+        // الجولة الرابعة: الشكل على **النص المحفوظ** (نفس اللي التسجيل التلقائي بيشوفه)
+        val shape = (parsed as? SmsParseResult.Ok)?.row?.shape?.wire
         val cross = crossLane(country, sender, stored)
         val fragile = outcome == Outcome.CORRECTLY_IGNORED && (detail !in DELIBERATE || manualFragile)
         val date = v.values["date"]
@@ -180,6 +182,6 @@ internal object Evaluate {
             dated?.let { judge(country, v, reader(country)(BankSmsMessage(sender, Fill.RECEIVED_AT, it), 1)) }
                 ?.let { (o, p, d) -> "with a date line: ${o.wire}" + if (p.isEmpty()) "" else " — ${p.joinToString("; ")}" + " ($d)" }
         } else null
-        return VariantResult(v, outcome, problems, detail, manual, cross, fragile, latent)
+        return VariantResult(v, outcome, problems, detail, manual, cross, fragile, latent, shape)
     }
 }

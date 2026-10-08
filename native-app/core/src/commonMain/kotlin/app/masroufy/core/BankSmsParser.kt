@@ -14,6 +14,9 @@ package app.masroufy.core
  *    لو المقابل بالريال مكتوب؛ المكتوب بيمشي معاها اقتراح بس) لحد ما شاشة السؤال تتبني.
  * 4. **التاريخ** (`SmsDates.kt`): تاريخ واحد بس من 60 يوم قبل الوصول لحد يوم بعده (التاريخ بسنة كاملة: لحد يوم بعد الوصول).
  *    رسالة الأهلي السعودي اللي شكلها كله ما فيهوش تاريخ ⇒ يوم الوصول بتوقيت السعودية (نفس قرار رسالة الكارت المصرية §40.3-١).
+ * 5. **الشكل** (الجولة الرابعة — `SmsKnownShapesSaudi.kt` و`SmsSamaTitles.kt`): أول سطر كله عنوان موحّد أو قالب بنك معروف واتجاهه نفس
+ *    اتجاه القارئ ⇒ بتتسجل لوحدها؛ غير كده (الاتجاه من الكلمات العامة بس) ⇒ `SmsShape.KeywordFallback` ⇒ **بتستنى تأكيد المالك** (§72).
+ *    الشكل ما بيغيّرش القراية نفسها (ملف المرجع `golden/sms.json` زي ما هو).
  * الشكل المجهول بيترفض بسبب واضح ويستنى المالك (§72).
  */
 
@@ -120,5 +123,6 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
         is SaudiAmount.Ok -> a.amountMinor
     }
     val date = dateOf(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
-    return smsRow(message, body, lineNumber, date, amount, direction, saudiMerchantOf(body, kind), kind)
+    // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72)
+    return smsRow(message, body, lineNumber, date, amount, direction, saudiMerchantOf(body, kind), kind, saudiShape(body, direction))
 }

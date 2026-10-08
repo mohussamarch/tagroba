@@ -123,6 +123,11 @@ internal data class VariantResult(
      * (تشخيص بس — مش داخل في النتيجة.)
      */
     val latent: String? = null,
+    /**
+     * القارئ فهمها إزاي لو قبلها (`SmsShape.wire` — الجولة الرابعة): `known:…` · `sama-title` بيتسجلوا لوحدهم، و`keyword-fallback`
+     * بيستنى تأكيد المالك. null = اترفضت.
+     */
+    val shape: String? = null,
 )
 
 internal data class RowResult(
@@ -142,4 +147,24 @@ internal data class RowResult(
     val problems: List<String>
         get() = variants.filter { it.outcome == outcome && it.problems.isNotEmpty() }
             .map { v -> (if (variants.size > 1) "[${v.variant.label}] " else "") + v.problems.joinToString("; ") }
+
+    /**
+     * الشكل للتسجيل التلقائي (الجولة الرابعة): عملية اتقرت صح **واتسجلت** (مش أجنبي مستني) ⇒ أضعف شكل في نسخها — `keyword-fallback` لو
+     * أي نسخة اتفهمت من كلمات عامة بس، وإلا `sama-title` لو أي نسخة عنوان موحّد، وإلا `known`. null = مش عملية بتتسجل.
+     */
+    val bookedShape: String?
+        get() {
+            if (outcome != Outcome.CORRECT) return null
+            val shapes = variants.mapNotNull { it.shape }
+            if (shapes.isEmpty()) return null
+            return when {
+                shapes.any { it == FALLBACK } -> FALLBACK
+                shapes.any { it == "sama-title" } -> "sama-title"
+                else -> "known"
+            }
+        }
+
+    companion object {
+        const val FALLBACK = "keyword-fallback"
+    }
 }

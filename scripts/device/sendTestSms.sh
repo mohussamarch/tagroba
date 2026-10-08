@@ -2,7 +2,9 @@
 # رسايل بنك **وهمية** لمحاكي أندرويد (native-app/device) — زي ما الشبكة بتبعتها للموبايل.
 # 1) قبل الاختبار: رسايل «القراية بالطلب» من 5550001.
 # 2) لما `SmsOnDeviceTest` يكتب READY (تحت MasroufySms): رسايل «الصندوق» من 5550002.
-# 3) لما `SmsAutoRecordOnDeviceTest` يكتب READY (تحت MasroufySmsAuto): شراء مفهوم + رسالة اتجاهها مش واضح من 5550003 (OVERRIDES §72).
+# 3) لما `SmsAutoRecordOnDeviceTest` يكتب READY (تحت MasroufySmsAuto): من 5550003 (OVERRIDES §72) — شراء **بشكل معروف** (عنوان البنك
+#    المركزي «PoS Purchase»، سطور بـ\n — المحاكي بيحوّل \n لسطر جديد) + شراء مفهوم **من كلمات عامة بس** (الجولة الرابعة: بيستنى
+#    تأكيد المالك) + رسالة اتجاهها مش واضح. نفس النصوص متجربة على الكمبيوتر في `SmsDeviceScriptTest` (device/jvmTest).
 # المراحل اللي هتتستنى: STAGES (الافتراضي "inbox auto") — لو شغّلت كلاس واحد بس، خلّيها مرحلته بس.
 # التشغيل (Git Bash): ADB=<مسار adb> bash scripts/device/sendTestSms.sh   ثم في نفس الوقت: ./gradlew :device:connectedDebugAndroidTest
 set -u
@@ -21,7 +23,8 @@ for _ in $(seq 1 600); do
   fi
   if [[ " $pending " == *" auto "* ]] && "$ADB" logcat -d -s MasroufySmsAuto | grep -q READY; then
     today="$(date +%Y-%m-%d)"
-    "$ADB" emu sms send 5550003 "TEST-AUTO Purchase SAR 25.00 at TEST CAFE on $today"
+    "$ADB" emu sms send 5550003 "PoS Purchase\nAmount: SAR 25.00\nAt: TEST CAFE\nOn: $today"
+    "$ADB" emu sms send 5550003 "TEST-FALLBACK Purchase SAR 12.00 at TEST SHOP on $today"
     "$ADB" emu sms send 5550003 "TEST-WAIT transfer SAR 10.00 $today"
     echo "sent auto"
     pending="${pending/auto/}"

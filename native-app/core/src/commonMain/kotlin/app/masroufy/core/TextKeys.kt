@@ -565,4 +565,6 @@ enum class TextKey {
     // رسايل البنك بتتسجل لوحدها + إشعار الجوال (§72) — القيم في `TextsSmsAuto.kt`
     ALERT_LOCK_SMS_CONFIRM, ALERT_WHY_SMS_CONFIRM, ALERT_SMS_CONFIRM_TITLE, ALERT_SMS_CONFIRM_BODY, ALERT_CHANNEL_NAME, BACKGROUND_WORK_NOTICE,
     SMS_AUTO_WALLET_UNKNOWN, ALERT_GROUP_BANK_SMS, SMS_NOT_TRANSACTION,
+    // الجولة الرابعة: الرسالة اللي اتفهمت من كلمات عامة بس (مش شكل معروف) بتستنى تأكيد المالك — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_UNKNOWN_SHAPE,
 }

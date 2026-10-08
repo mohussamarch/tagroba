@@ -42,6 +42,41 @@ data class SmsForeignAmount(val currency: String, val amountMinor: Long) {
     val decimals: Int get() = foreignDecimals(currency)
 }
 
+/**
+ * القارئ فهم الرسالة **إزاي** — ده أساس التسجيل التلقائي (OVERRIDES §72: «المفهومة بتتسجل لوحدها» — والجولة الرابعة: المفهومة =
+ * **شكل معروف**، `SmsKnownShapes*.kt`). [clear] = بتتسجل لوحدها في الخلفية؛ غير كده بتستنى تأكيد المالك (الشاشة بتعرضها جاهزة).
+ */
+sealed interface SmsShape {
+    val clear: Boolean
+
+    /** للتقارير والاختبارات: `known:<البنك>/<القالب>` · `sama-title` · `keyword-fallback`. */
+    val wire: String
+
+    /**
+     * الرسالة على قالب بنك معروف من البحث (`research/banks/` — ملفين `sms-formats` للسعودية ومصر) أو من عينات المالك، واتجاه القالب = اتجاه القارئ.
+     * [bankFamily] و[templateId] للتتبع بس — **مش** شرط إن المرسل هو البنك ده (أسماء المرسلين مش منشورة، `research/banks/README.md`).
+     */
+    data class KnownShape(val bankFamily: String, val templateId: String) : SmsShape {
+        override val clear: Boolean get() = true
+        override val wire: String get() = "known:$bankFamily/$templateId"
+    }
+
+    /** أول سطر = عنوان من عناوين البنك المركزي السعودي الموحّدة **بالحرف** (تعميم 42023876 — لأي بنك سعودي)، واتجاهه = اتجاه القارئ. */
+    data object SamaTitle : SmsShape {
+        override val clear: Boolean get() = true
+        override val wire: String get() = "sama-title"
+    }
+
+    /**
+     * مفيش شكل معروف: الاتجاه جه من **كلمات عامة** بس (القاعدة القديمة — «شراء/سحب/حوالة صادرة» في أي مكان)، أو الشكل المعروف
+     * اتجاهه عكس اللي القارئ قراه ⇒ **ما بتتسجلش لوحدها** — بتستنى تأكيد المالك ومعاها سبب (`TextKey.SMS_WAIT_UNKNOWN_SHAPE`).
+     */
+    data object KeywordFallback : SmsShape {
+        override val clear: Boolean get() = false
+        override val wire: String get() = "keyword-fallback"
+    }
+}
+
 data class SmsRow(
     val lineNumber: Int,
     val date: IsoDate,
@@ -55,6 +90,11 @@ data class SmsRow(
     val kind: SmsKind = SmsKind.OTHER,
     /** آخر 4 أرقام حسابك أو كارتك اللي الرسالة عنها (§75-11 — `SmsOwnAccount.kt`)، أو null. */
     val ownLast4: String? = null,
+    /**
+     * القارئ فهمها إزاي (القارئين بيحطوها). **الافتراضي = كلمات عامة** (الأأمن): أي صف اتعمل من غير القارئين ما بيتسجلش لوحده.
+     * مش جوه بصمة الملف ([smsRowsJson]) ولا ملفات المرجع.
+     */
+    val shape: SmsShape = SmsShape.KeywordFallback,
 )
 
 /**
@@ -135,7 +175,7 @@ fun smsRowsJson(rows: List<SmsRow>): String = rows.joinToString(",", "[", "]") {
 /** الصف النهائي — نفس المرجع (`SMS:` + بصمة المرسل والوقت والنص) والوصف المقصوص في القارئين. */
 internal fun smsRow(
     message: BankSmsMessage, body: String, lineNumber: Int, date: IsoDate, amount: Halalas, direction: Direction,
-    merchant: String, kind: SmsKind,
+    merchant: String, kind: SmsKind, shape: SmsShape,
 ): SmsParseResult.Ok {
     val safeBody = redactSms(body)
     return SmsParseResult.Ok(
@@ -144,7 +184,7 @@ internal fun smsRow(
             merchantName = redactSms(merchant),
             reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
             sourceName = message.sender, description = safeBody, raw = safeBody, kind = kind,
-            ownLast4 = ownLast4Of(body, direction),
+            ownLast4 = ownLast4Of(body, direction), shape = shape,
         ),
     )
 }
