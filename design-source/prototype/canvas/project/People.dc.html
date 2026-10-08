@@ -98,7 +98,7 @@ a{color:#08634F}a:hover{color:#064B40}
                     </a>
                   </sc-if>
                   <sc-if value="{{c.isAdd}}" hint-placeholder-val="{{ false }}">
-                    <button type="button" class="m-press" style="border: 0; background: transparent; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #08634F">
+                    <button type="button" class="m-press" onClick="{{openAdd}}" style="border: 0; background: transparent; padding: 0; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #08634F">
                       <span style="width: 56px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1.5px dashed rgba(8,99,79,0.45); display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
                       <span style="font-size: 12px; font-weight: 700">إضافة</span>
                     </button>
@@ -138,13 +138,14 @@ a{color:#08634F}a:hover{color:#064B40}
   <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
     <dc-import name="BottomBar" active="People" context="الأشخاص" space="{{spaceName}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import>
   </div>
+  <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="AddPersonSheet" auto-open="{{true}}" space="{{spaceName}}" on-save="{{onAddPerson}}" on-close="{{closeAdd}}" hint-size="390px,844px"></dc-import></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { p: 0 };
+    this.state = { p: 0, addOpen: false, added: [] };
     this.RANGE = 420;
     this.setScroller = (el) => { this.scroller = el; };
     this.onScroll = () => {
@@ -182,7 +183,7 @@ class Component extends DCLogic {
     const smooth = (x) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
     const all = this.people(eg);
     const top = all.slice(0, 5);
-    const rest = all.slice(5);
+    const rest = all.slice(5).concat(this.state.added.map((name) => ({ name, initial: name.charAt(0), b: 0 })));
 
     // أهم ٥ فوق الكاركتر، وخيوط ملتوية من راسه لكل واحد
     const spots = [[298, 184], [250, 112], [175, 82], [100, 112], [52, 184]];
@@ -244,6 +245,8 @@ class Component extends DCLogic {
       navStyle: this.props.navStyle ?? "زرار في النص",
       spaceName: eg ? 'مصر' : 'السعودية',
       eventsLabel: 'الأحداث',
+      addOpen: this.state.addOpen, openAdd: () => this.setState({ addOpen: true }), closeAdd: () => this.setState({ addOpen: false }),
+      onAddPerson: (q) => { if (q && q.name) this.setState((st) => ({ addOpen: false, added: st.added.concat([q.name]) })); },
       allLabel: p > 0.5 ? 'رجوع' : 'الكل (' + n(all.length) + ')',
       trackStyle: 'position: relative; height: ' + (showPeople ? 844 + this.RANGE : 844) + 'px',
       snapEndStyle: 'position: absolute; top: ' + this.RANGE + 'px; height: 1px; width: 1px',

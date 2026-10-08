@@ -37,7 +37,7 @@ a{color:#08634F}a:hover{color:#064B40}
       <div aria-hidden="true" style="width: 104px; height: 104px; border-radius: 52px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; color: #08634F; background: #FFFDF9; box-shadow: 0 0 0 4px #FAF9F3, 0 12px 28px rgba(0,30,25,0.22)">خ</div>
       <h1 style="margin: 6px 0 0; font-size: 22px; font-weight: 700">خالد</h1>
       <span style="font-size: 13px; color: #637570">{{relLine}}</span>
-      <span style="margin-top: 4px; font-size: 12px; font-weight: 700; color: #956000; padding: 4px 12px; border-radius: 12px; background: #FBF0DD">{{occasionLine}}</span>
+      <span style="margin-top: 8px; align-self: stretch; display: flex; flex-direction: column; gap: 8px"><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" kind="wedding" month="10" day="18" year="2026" yearly="{{false}}" hint-size="350px,80px"></dc-import><dc-import name="OccasionSheet" space="{{spaceName}}" person="خالد" hint-size="350px,48px"></dc-import></span>
     </div>
 
     <div style="display: flex; gap: 10px; padding: 0 20px">
@@ -170,6 +170,7 @@ class Component extends DCLogic {
     return {
       circleLine: eg ? 'الصحاب' : 'الأصدقاء',
       relLine: eg ? 'صاحبك من الجامعة · بتتعاملوا كتير' : 'صديقك من الجامعة · تعامل متكرر',
+      spaceName: eg ? 'مصر' : 'السعودية',
       occasionLine: eg ? 'فرحه ١٨ أكتوبر · بعد ١١ يوم' : 'زواجه ١٨ أكتوبر · بعد ١١ يومًا',
       lakLabel: eg ? 'ليك عنده' : 'لك عنده',
       lakAmount: this.fmt(50000 * k) + ' ' + cur,

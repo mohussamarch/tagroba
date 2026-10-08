@@ -105,7 +105,7 @@ body{margin:0}
         </sc-if>
         <sc-if value="{{noPrep}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570; padding: 0 4px">{{noPrepText}}</span></sc-if>
 
-        <button type="button" class="m-press" onClick="{{toggleArchive}}" style="height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 700; color: #637570; cursor: pointer; background: rgba(25,61,51,0.05)">{{archiveLabel}}</button>
+        <dc-import name="EventEditSheet" space="{{spaceName}}" event-name="{{title}}" kind="{{kindWire}}" date="{{isoDate}}" mine="{{mineWire}}" host="{{hostWire}}" archived="{{isArchived}}" gifts-in="{{hasGiftsIn}}" on-save="{{onEdit}}" hint-size="350px,48px"></dc-import>
       </div>
     </sc-if>
   </div>
@@ -190,7 +190,9 @@ class Component extends DCLogic {
     const leadName = (LEADS.find((l) => l[0] === s.lead) || LEADS[1])[1];
     const giftWord = e.kind === 'condolence' ? (eg ? 'اللي ادّيته' : 'ما قدّمته') : (eg ? 'اللي نقّطته' : 'ما نقّطته');
     return {
-      title: e.name,
+      title: (s.edited && s.edited.name) || e.name, kindWire: e.kind, mineWire: !!e.mine, hostWire: e.host || '',
+      isoDate: { jood: '2026-09-28', khaled: '2026-10-18', trip: '2026-11-14', salem: '2026-08-03', eid: '2026-03-20' }[s.key] || '2026-10-18', hasGiftsIn: !!e.mine && giftsD.length > 0,
+      onEdit: (p) => { if (!p) return; this.setState({ edited: p, archived: !!p.archived }); this.say(eg ? 'اتحفظ التعديل' : 'حُفظ التعديل'); },
       isArchived: s.archived, archivedChip: eg ? 'متأرشف' : 'مؤرشف',
       isLoading: st === 'بيحمّل', showMain: st !== 'بيحمّل',
       kindLine: KIND[e.kind] + '، ' + e.date,
@@ -206,7 +208,7 @@ class Component extends DCLogic {
       spendTitle: (eg ? 'المصروف' : 'المصروف') + (spendsD.length ? ' (' + n(spendsD.length) + ')' : ''),
       spends, noSpend: !spendsD.length, noSpendText: eg ? 'لسه مفيش مصروف متربط بالحدث ده.' : 'لا مصروف مربوطًا بهذا الحدث بعد.',
       linkSpendLabel: eg ? 'اربط مصروف بنسبة' : 'اربط مصروفًا بنسبة',
-      linkSpendSoon: eg ? 'الربط بنسبة من صفحة العملية — بيتبني في خطوة جاية.' : 'الربط بنسبة من صفحة العملية — يُبنى في خطوة قادمة.',
+      linkSpendSoon: eg ? 'الربط بنسبة من صفحة العملية نفسها: «اربطها بـ» ← «مشروع أو حدث».' : 'الربط بنسبة من صفحة العملية نفسها: «اربطها بـ» ← «مشروع أو حدث».',
       giftTitle: (e.mine ? (eg ? 'النقوط اللي جاتلك' : 'النقوط التي جاءتك') : giftWord) + (giftsD.length ? ' (' + n(giftsD.length) + ')' : ''),
       gifts, noGifts: !giftsD.length, noGiftsText: e.mine ? (eg ? 'لسه مفيش نقوط متسجلة.' : 'لا نقوط مسجّلة بعد.') : (eg ? 'لسه ما سجّلتش حاجة.' : 'لم تسجّل شيئًا بعد.'),
       spaceName: eg ? 'مصر' : 'السعودية', mine: !!e.mine, host: e.host || '', isCondolence: e.kind === 'condolence', onGifts: this.onGifts,

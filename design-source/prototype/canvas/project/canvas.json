@@ -785,6 +785,46 @@
       "y": 22370,
       "w": 390,
       "h": 844
+    },
+    "LinkPersonSheet.dc.html": {
+      "is_interactive": true,
+      "title": "اربطها بشخص · LinkPersonSheet (قطعة جوه تفاصيل العملية)",
+      "x": 590,
+      "y": 22370,
+      "w": 350,
+      "h": 80
+    },
+    "LinkProjectEventSheet.dc.html": {
+      "is_interactive": true,
+      "title": "اربطها بمشروع أو حدث · LinkProjectEventSheet (قطعة)",
+      "x": 590,
+      "y": 22530,
+      "w": 350,
+      "h": 80
+    },
+    "AddPersonSheet.dc.html": {
+      "is_interactive": true,
+      "title": "إضافة شخص · AddPersonSheet (قطعة — خانة «إضافة» في الأشخاص)",
+      "x": 590,
+      "y": 22690,
+      "w": 350,
+      "h": 60
+    },
+    "OccasionSheet.dc.html": {
+      "is_interactive": true,
+      "title": "مناسبة شخص · OccasionSheet (قطعة جوه ملف الشخص)",
+      "x": 590,
+      "y": 22830,
+      "w": 350,
+      "h": 80
+    },
+    "EventEditSheet.dc.html": {
+      "is_interactive": true,
+      "title": "تعديل الحدث · EventEditSheet (قطعة جوه تفاصيل الحدث)",
+      "x": 590,
+      "y": 22990,
+      "w": 350,
+      "h": 48
     }
   },
   "createdOnFiles": {
@@ -1040,7 +1080,12 @@
     "CategoryBudget.dc.html",
     "BudgetLimitSheet.dc.html",
     "DuesDebts.dc.html",
-    "InstallmentEdit.dc.html"
+    "InstallmentEdit.dc.html",
+    "LinkPersonSheet.dc.html",
+    "LinkProjectEventSheet.dc.html",
+    "AddPersonSheet.dc.html",
+    "OccasionSheet.dc.html",
+    "EventEditSheet.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
