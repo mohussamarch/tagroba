@@ -497,7 +497,8 @@
       "https://d360.com/ar"
     ],
     "notes": "SAMA announced the start of operations on 17 Dec 2024. Led by Derayah, with PIF among its backers. The bank's own Arabic site writes its name 'بنك D360' with the Latin 'D360'; 'دال 360' is a press spelling, kept in aliases.",
-    "verification": "Name fix (nameArOfficial): 'بنك دال 360' -> 'بنك D360'. Verifier: بنك D360. Evidence: https://d360.com/ar | Name fix (nameArShort): 'دال 360' -> 'D360'. Verifier: D360 (the bank writes its name with the Latin 'D360' even in Arabic text; keep 'دال 360' only as a press alias). Evidence: https://d360.com/ar"
+    "verification": "Name fix (nameArOfficial): 'بنك دال 360' -> 'بنك D360'. Verifier: بنك D360. Evidence: https://d360.com/ar | Name fix (nameArShort): 'دال 360' -> 'D360'. Verifier: D360 (the bank writes its name with the Latin 'D360' even in Arabic text; keep 'دال 360' only as a press alias). Evidence: https://d360.com/ar",
+    "nameArDisplay": "دي ٣٦٠"
   },
   {
     "country": "SA",
@@ -615,7 +616,8 @@
       "https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/"
     ],
     "notes": "Corporate-focused branch. Its Riyadh branch opened in 2015 (per press coverage of Bank of China's 2023 opening).",
-    "verification": "List check: Corporate-focused branch (the file's own note). Per press coverage of the BoC opening, ICBC's Riyadh branch opened in 2015. Mark it corporate-only. Evidence: https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/"
+    "verification": "List check: Corporate-focused branch (the file's own note). Per press coverage of the BoC opening, ICBC's Riyadh branch opened in 2015. Mark it corporate-only. Evidence: https://www.agbi.com/banking-finance/2023/09/bank-of-china-opens-riyadh-branch/",
+    "nameArDisplay": "الصناعي والتجاري الصيني"
   },
   {
     "country": "SA",
@@ -805,7 +807,8 @@
       "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
     ],
     "notes": "Corporate branch only.",
-    "verification": "List check: Corporate-only branch (the file's own note, not re-verified). Mark it corporate-only."
+    "verification": "List check: Corporate-only branch (the file's own note, not re-verified). Mark it corporate-only.",
+    "nameArDisplay": "إم يو إف جي"
   },
   {
     "country": "SA",
@@ -941,7 +944,8 @@
     "sources": [
       "https://en.wikipedia.org/wiki/List_of_banks_in_Saudi_Arabia"
     ],
-    "notes": "Partner in EZ Bank. 'QNB EGYPT' is a different entity (Egypt)."
+    "notes": "Partner in EZ Bank. 'QNB EGYPT' is a different entity (Egypt).",
+    "nameArDisplay": "قطر الوطني"
   },
   {
     "country": "SA",
@@ -967,7 +971,8 @@
       "https://www.ubs.com/sa/en.html"
     ],
     "notes": "Took over the Credit Suisse licence. Corporate/wealth only.",
-    "verification": "List check: UBS describes the UBS AG Riyadh Branch (SAMA-licensed) as a 'Global Wealth Management Banking Branch'. Flag as wealth/corporate-only and hide it from a consumer bank picker by default. Evidence: https://www.ubs.com/sa/en.html"
+    "verification": "List check: UBS describes the UBS AG Riyadh Branch (SAMA-licensed) as a 'Global Wealth Management Banking Branch'. Flag as wealth/corporate-only and hide it from a consumer bank picker by default. Evidence: https://www.ubs.com/sa/en.html",
+    "nameArDisplay": "يو بي إس"
   },
   {
     "country": "SA",
@@ -1129,7 +1134,8 @@
       "https://www.alrajhibank.com.sa/ir25/business_in_perspective/subsidiaries/neoleap.html",
       "https://www.argaam.com/en/article/articledetail/id/1502142"
     ],
-    "notes": "Digital wallet of Neoleap, an Al Rajhi Bank subsidiary. The exact SAMA licence category for the wallet was not confirmed. The Arabic name is a transliteration; the brand is written in Latin letters."
+    "notes": "Digital wallet of Neoleap, an Al Rajhi Bank subsidiary. The exact SAMA licence category for the wallet was not confirmed. The Arabic name is a transliteration; the brand is written in Latin letters.",
+    "nameArDisplay": "يور باي"
   },
   {
     "country": "SA",
@@ -1252,7 +1258,8 @@
       "https://www.alinma.com/en/about-the-bank/the-bank/news/2022/02/alinmapayisthefirstdigitalwalletthatbeencertifiedbysaudipaymentstobeaserviceproviderforsadadpayments"
     ],
     "notes": "Alinma Bank's consumer e-wallet. SAMA e-wallet licence 20 Sep 2020 (SAMA news). Alinma's own page describes it as a wallet that can be opened without a bank account, with digital cards and SADAD bill payments. The Arabic brand spelling, website, logo and sender ID were not researched; the brand is written in Latin letters here, as for urpay.",
-    "verification": "Added from the SA list check (missing consumer wallet). Two sources: SAMA news and Alinma Bank's own page."
+    "verification": "Added from the SA list check (missing consumer wallet). Two sources: SAMA news and Alinma Bank's own page.",
+    "nameArDisplay": "الإنماء باي"
   },
   {
     "country": "SA",
@@ -1274,7 +1281,8 @@
       "https://fintechnews.ae/14301/saudi/tweeq-granted-sama-payments-license-to-offer-e-wallet-services/"
     ],
     "notes": "Consumer money app. SAMA e-wallet (e-money institution) licence announced 22 Nov 2022 (secondary source). Arabic legal name, website, logo and sender ID not researched.",
-    "verification": "Added from the SA list check (missing consumer wallet). One secondary source."
+    "verification": "Added from the SA list check (missing consumer wallet). One secondary source.",
+    "nameArDisplay": "تويك"
   },
   {
     "country": "SA",
@@ -1320,6 +1328,7 @@
       "https://rewards.saib.com.sa/en/friendi-pay"
     ],
     "notes": "Consumer international money-transfer app with a funded account. Operates as an agent under SAMA agent-banking rules, listed under the Saudi Investment Bank (see saudi-investment-bank); not a standalone licensed wallet. Optional entry. Arabic name, website, logo and sender ID not researched.",
-    "verification": "Added from the SA list check (optional addition). The verifier marks it optional because it is an agent of SAIB, not a standalone licensed wallet, hence status bank-agent."
+    "verification": "Added from the SA list check (optional addition). The verifier marks it optional because it is an agent of SAIB, not a standalone licensed wallet, hence status bank-agent.",
+    "nameArDisplay": "فريندي باي"
   }
 ]
