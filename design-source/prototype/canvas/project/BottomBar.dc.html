@@ -50,7 +50,6 @@ body{margin:0}
             <sc-if value="{{it.i.ops}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"></line><line x1="8" x2="21" y1="12" y2="12"></line><line x1="8" x2="21" y1="18" y2="18"></line><line x1="3" x2="3.01" y1="6" y2="6"></line><line x1="3" x2="3.01" y1="12" y2="12"></line><line x1="3" x2="3.01" y1="18" y2="18"></line></svg></sc-if>
             <sc-if value="{{it.i.people}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></sc-if>
             <sc-if value="{{it.i.invest}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></sc-if>
-            <sc-if value="{{it.i.more}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></sc-if>
           </span>{{it.label}}</a>
       </sc-if>
       <sc-if value="{{it.isAdd}}" hint-placeholder-val="{{ false }}">
@@ -122,7 +121,7 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["Main","Operations","People","Investment","More"],"default":"Main","section":"الحالة"},"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["Main","Operations","People","Investment"],"default":"Main","section":"الحالة"},"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار"],"default":"الرئيسية","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -148,7 +147,7 @@ class Component extends DCLogic {
     const center = st === 'زرار في النص', swipe = st === 'اسحب لفوق', inBar = st === 'زرار جنب الشريط';
     const active = this.props.active ?? 'Main';
     const tabs = [
-      ['Main', 'home', 'الرئيسية'], ['Operations', 'ops', 'العمليات'], ['People', 'people', 'الأشخاص'], ['Investment', 'invest', 'الاستثمار'], ['More', 'more', 'المزيد']
+      ['Main', 'home', 'الرئيسية'], ['Operations', 'ops', 'العمليات'], ['People', 'people', 'الأشخاص'], ['Investment', 'invest', 'الاستثمار']
     ];
     const tab = ([id, icon, label]) => {
       const on = id === active;

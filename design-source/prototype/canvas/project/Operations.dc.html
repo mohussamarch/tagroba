@@ -25,7 +25,9 @@ a{color:#08634F}a:hover{color:#064B40}
 @keyframes o-pop{from{opacity:0;transform:translateY(-8px) scale(.94)}to{opacity:1;transform:none}}
 @keyframes m-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes m-pulse{from{opacity:.5}to{opacity:1}}
-@media (prefers-reduced-motion: reduce){.o-lift{animation:none;transform:none}.o-pop{animation:o-fade 150ms both}.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.m-rise{animation:m-fade 150ms both}}
+.s-sheen{position:absolute;top:0;bottom:0;left:100%;width:60%;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(166,222,193,0.75) 50%,transparent 70%);animation:s-sheen 1200ms cubic-bezier(.3,.7,.4,1) 500ms both}
+@keyframes s-sheen{from{transform:translateX(0)}to{transform:translateX(-270%)}}
+@media (prefers-reduced-motion: reduce){.o-lift{animation:none;transform:none}.o-pop{animation:o-fade 150ms both}.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.s-sheen{display:none}.m-rise{animation:m-fade 150ms both}}
 @keyframes m-fade{from{opacity:0}to{opacity:1}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
@@ -79,6 +81,7 @@ a{color:#08634F}a:hover{color:#064B40}
 
         <sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
           <div class="m-rise" style="display: flex; flex-direction: column; gap: 14px">
+            <a href="BankSms.dc.html" class="m-press" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; box-sizing: border-box; border-radius: 18px; text-decoration: none; color: #6B4600; background: #FBF0DD"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#956000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8H7"></path><path d="M17 12H7"></path></svg><span style="flex: 1 1 auto; font-size: 13px; font-weight: 700">{{smsBanner}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
             <div style="display: flex; gap: 10px">
               <div style="flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
                 <span style="font-size: 12px; color: #637570">دخل الشهر</span>
@@ -98,6 +101,7 @@ a{color:#08634F}a:hover{color:#064B40}
                 <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
                   <sc-for list="{{day.rows}}" as="row" hint-placeholder-count="2">
                     <div class="m-press" style="{{row.rowStyle}}" onPointerDown="{{row.down}}" onPointerMove="{{holdMove}}" onPointerUp="{{holdCancel}}" onPointerLeave="{{holdCancel}}" onContextMenu="{{noMenu}}">
+                      <a href="OperationDetail.dc.html" data-keep="{{row.keep}}" onFocus="{{row.prep}}" onClick="{{row.prep}}" draggable="false" style="flex: 1 1 auto; min-width: 0; min-height: 56px; display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; -webkit-touch-callout: none; user-select: none">
                       <div style="{{row.tileStyle}}">
                         <sc-if value="{{row.isFood}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8a3 3 0 0 0 3 3v7"></path><path d="M5 3v5M9 3v5"></path><path d="M17 3c-2 2-3 4-3 7s1 4 3 4v7"></path></svg></sc-if>
                         <sc-if value="{{row.isShop}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 13H7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></sc-if>
@@ -112,6 +116,8 @@ a{color:#08634F}a:hover{color:#064B40}
                         <span style="font-size: 12px; color: #637570">{{row.sub}}</span>
                       </div>
                       <span dir="ltr" style="{{row.amountStyle}}">{{row.amount}}</span>
+                      </a>
+                      <sc-if value="{{row.sheen}}" hint-placeholder-val="{{ false }}"><span class="s-sheen" aria-hidden="true"></span></sc-if>
                       <button type="button" class="m-press" onClick="{{row.dots}}" aria-label="{{row.dotsLabel}}" style="width: 36px; height: 48px; margin-inline-end: -10px; border: 0; padding: 0; background: transparent; color: #637570; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
                     </div>
                   </sc-for>
@@ -153,7 +159,8 @@ a{color:#08634F}a:hover{color:#064B40}
       </div>
       <div role="menu" aria-label="إجراءات العملية" class="o-pop" style="{{menuStyle}}">
         <span aria-hidden="true" style="position: absolute; top: 2px; left: 14%; width: 56%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span>
-        <sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="3">
+        <a href="OperationDetail.dc.html" data-keep="{{M.keep}}" onClick="{{M.prep}}" role="menuitem" class="m-press" style="{{detailItemStyle}}">{{detailLabel}}</a>
+        <sc-for list="{{menuItems}}" as="mi" hint-placeholder-count="2">
           <button type="button" role="menuitem" class="m-press" onClick="{{closeMenu}}" style="{{mi.style}}">{{mi.label}}</button>
         </sc-for>
       </div>
@@ -168,6 +175,9 @@ class Component extends DCLogic {
     super(props);
     let tab = 'ops';
     try { tab = window.sessionStorage.getItem('masroufy-ops-tab') || 'ops'; } catch (e) {}
+    let seen = null;
+    try { seen = window.sessionStorage.getItem('masroufy-ops-sheen'); window.sessionStorage.setItem('masroufy-ops-sheen', '1'); } catch (e) {}
+    this.sheenOnce = !seen;
     this.state = { tab, menu: null };
     this.setRoot = (el) => { this.root = el; };
     this.hold = null;
@@ -190,31 +200,34 @@ class Component extends DCLogic {
       food: '#A36A21', shop: '#3866A7', car: '#4D747C', move: '#2469BA', income: '#13764D', cash: '#637570'
     };
     const self = this;
-    const row = (kind, name, sub, amount, dir, last, flag) => {
+    const row = (kind, name, sub, amount, dir, last, flag, sheen) => {
+      const txn = kind === 'cash' ? 'cash' : dir === 'in' && kind === 'move' ? 'party' : 'sms';
+      const prep = () => { try { window.sessionStorage.setItem('masroufy-txn', txn); window.sessionStorage.setItem('masroufy-txn-row', JSON.stringify({ name, sub, amount, dir, kind })); } catch (err) {} };
       const color = dir === 'out' ? '#BE3D48' : dir === 'in' ? '#13764D' : '#2469BA';
       const tint = { food: 'rgba(163,106,33,0.12)', shop: 'rgba(56,102,167,0.12)', car: 'rgba(77,116,124,0.12)', move: 'rgba(36,105,186,0.12)', income: 'rgba(19,118,77,0.12)', cash: 'rgba(99,117,112,0.12)' }[kind];
       const r = {
         name, sub,
         amount: (dir === 'out' ? '−' : dir === 'in' ? '+' : '') + amount,
         isFood: kind === 'food', isShop: kind === 'shop', isCar: kind === 'car', isMove: kind === 'move', isIncome: kind === 'income', isCash: kind === 'cash', flag: !!flag,
-        dotsLabel: 'إجراءات ' + name,
+        dotsLabel: 'إجراءات ' + name, prep, keep: JSON.stringify({ 'masroufy-txn': txn, 'masroufy-txn-row': JSON.stringify({ name, sub, amount, dir, kind }) }), sheen: !!sheen && self.sheenOnce,
         dots: (e) => { self.openMenu(r, e && e.currentTarget && e.currentTarget.parentElement); },
         down: (e) => {
+          prep();
           self.holdCancel();
           const el = e.currentTarget, x = e.clientX, y = e.clientY;
           self.hold = { x, y, t: setTimeout(() => { self.hold = null; self.openMenu(r, el); }, 440) };
         },
-        rowStyle: 'display: flex; align-items: center; gap: 12px; min-height: 56px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
+        rowStyle: 'position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; min-height: 56px;' + (last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
         tileStyle: 'position: relative; width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + tint + '; color: ' + C[kind],
         amountStyle: 'font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + color
       };
       return r;
     };
     const days = eg ? [
-      { label: 'النهارده', rows: [row('food', 'مطعم الفول', 'أكل وقهوة', '185.00', 'out'), row('cash', 'صرف كاش مش متسجّل', 'من عدّ الكاش · من غير تصنيف', '180.00', 'out', false, true), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '2,000.00', 'move', true)] },
+      { label: 'النهارده', rows: [row('food', 'مطعم الفول', 'أكل وقهوة · من رسالة البنك', '185.00', 'out', false, false, true), row('move', 'حوالة جاتلك', 'من حساب آخره ٤٨٢١', '4,500.00', 'in'), row('cash', 'صرف كاش مش متسجّل', 'من عدّ الكاش · من غير تصنيف', '180.00', 'out', false, true), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '2,000.00', 'move', true)] },
       { label: 'أمس', rows: [row('shop', 'سوبرماركت الحي', 'بقالة وسوبرماركت', '1,240.50', 'out'), row('car', 'بنزينة', 'بنزين', '600.00', 'out', true)] }
     ] : [
-      { label: 'اليوم', rows: [row('food', 'مطعم الريف', 'مطاعم وقهوة', '42.00', 'out'), row('cash', 'صرف نقدي غير مسجّل', 'من عدّ النقد · بلا تصنيف', '60.00', 'out', false, true), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '1,000.00', 'move', true)] },
+      { label: 'اليوم', rows: [row('food', 'مطعم الريف', 'مطاعم وقهوة · من رسالة البنك', '42.00', 'out', false, false, true), row('move', 'حوالة واردة', 'من حساب ينتهي بـ ٤٨٢١', '1,500.00', 'in'), row('cash', 'صرف نقدي غير مسجّل', 'من عدّ النقد · بلا تصنيف', '60.00', 'out', false, true), row('move', 'بين محافظك', 'تحويل داخلي · البنك ← كاش', '1,000.00', 'move', true)] },
       { label: 'أمس', rows: [row('shop', 'سوبرماركت الحي', 'بقالة وسوبرماركت', '318.40', 'out'), row('car', 'محطة وقود', 'بنزين', '90.00', 'out'), row('income', 'راتب', 'دخل · مصدر الدخل الأساسي', '12,500.00', 'in', true)] }
     ];
     const tabDefs = [['ops', 'العمليات'], ['budgets', 'الميزانيات'], ['dues', 'المستحقات']];
@@ -233,7 +246,7 @@ class Component extends DCLogic {
     const mTop = menu ? menu.top : 0, mH = menu ? Math.max(56, menu.h) : 56;
     const MENU_H = 3 * 48 + 18;
     const below = mTop + mH + 12 + MENU_H < 844 - 110;
-    const blank = { tileStyle: '', name: '', sub: '', amount: '', amountStyle: '', isFood: false, isShop: false, isCar: false, isMove: false, isIncome: false, isCash: false, flag: false };
+    const blank = { keep: '{}', prep: () => {}, tileStyle: '', name: '', sub: '', amount: '', amountStyle: '', isFood: false, isShop: false, isCar: false, isMove: false, isIncome: false, isCash: false, flag: false };
     return {
       setRoot: this.setRoot,
       holdMove: (e) => { if (this.hold && Math.hypot(e.clientX - this.hold.x, e.clientY - this.hold.y) > 9) this.holdCancel(); },
@@ -244,8 +257,10 @@ class Component extends DCLogic {
       M: menu ? menu.row : blank,
       liftStyle: 'position: absolute; left: 20px; right: 20px; top: ' + mTop.toFixed(1) + 'px; min-height: ' + Math.max(64, mH).toFixed(0) + 'px; box-sizing: border-box; padding: 0 16px; border-radius: 22px; display: flex; align-items: center; gap: 12px; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(240,246,240,0.80)); box-shadow: inset 0 2px 0 #FFFFFF, inset 0 -3px 5px #FFFFFF, 0 22px 48px rgba(16,45,53,0.20), 0 0 0 1px rgba(255,255,255,0.9)',
       menuStyle: 'position: absolute; left: 20px; width: 300px; ' + (below ? 'top: ' + (mTop + Math.max(64, mH) + 12).toFixed(1) : 'top: ' + (mTop - MENU_H - 12).toFixed(1)) + 'px; transform-origin: ' + (below ? 'top' : 'bottom') + ' left; border-radius: 28px; padding: 9px; box-sizing: border-box; display: flex; flex-direction: column; background: linear-gradient(125deg, rgba(239,249,239,0.86), rgba(231,241,227,0.66) 55%, rgba(205,232,210,0.76)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.75), inset -1px -1px 3px rgba(59,113,102,0.18), 0 18px 44px rgba(29,54,53,0.20)',
+      detailLabel: eg ? 'شوف التفاصيل' : 'عرض التفاصيل',
+      detailItemStyle: 'height: 48px; display: flex; align-items: center; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #193D33; text-decoration: none',
+      smsBanner: eg ? '٤ رسايل من البنك مستنية تأكيدك' : '٤ رسائل من البنك بانتظار تأكيدك',
       menuItems: [
-        { label: eg ? 'شوف التفاصيل' : 'عرض التفاصيل', style: 'height: 48px; border: 0; background: transparent; border-radius: 16px; text-align: right; padding: 0 14px; font: inherit; font-size: 15px; color: #193D33; cursor: pointer' },
         { label: eg ? 'خصّص مبلغ لشخص' : 'تخصيص مبلغ لشخص', style: 'height: 48px; border: 0; background: transparent; border-radius: 16px; text-align: right; padding: 0 14px; font: inherit; font-size: 15px; color: #193D33; cursor: pointer' },
         { label: eg ? 'كل الإجراءات ←' : 'كل الإجراءات ←', style: 'height: 48px; border: 0; border-radius: 18px; text-align: right; padding: 0 14px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: linear-gradient(145deg, rgba(255,255,255,0.90), rgba(255,255,255,0.40)); box-shadow: inset 0 1px 0 #FFFFFF, inset 0 -2px 3px rgba(255,255,255,0.6), 0 2px 8px rgba(33,58,45,0.06)' }
       ],

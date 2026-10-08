@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تفاصيل العملية — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.d-veil{animation:d-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.d-up{animation:d-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.d-in{animation:d-in 380ms cubic-bezier(.2,.7,.3,1) backwards}
+.d-toast{animation:d-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes d-fade{from{opacity:0}to{opacity:1}}
+@keyframes d-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes d-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes d-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.d-up,.d-in{animation:d-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Operations.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1>
+    </div>
+
+    <div style="border-radius: 26px; padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="{{tile}}">
+        <sc-if value="{{isFood}}" hint-placeholder-val="{{ true }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg></sc-if>
+        <sc-if value="{{isShop}}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg></sc-if>
+        <sc-if value="{{isCar}}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16l1.5-5h11L19 16"></path><path d="M4 16h16v3H4z"></path><circle cx="7.5" cy="19.5" r="1"></circle><circle cx="16.5" cy="19.5" r="1"></circle></svg></sc-if>
+        <sc-if value="{{isIncome}}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M12 10v5M9.5 12.5L12 15l2.5-2.5"></path></svg></sc-if>
+        <sc-if value="{{isCash}}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg></sc-if>
+        <sc-if value="{{isMove}}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"></path><path d="M4 7h16"></path><path d="m16 21 4-4-4-4"></path><path d="M20 17H4"></path></svg></sc-if>
+        <sc-if value="{{redDot}}" hint-placeholder-val="{{ false }}"><span aria-label="غير مسجّلة" style="position: absolute; top: -3px; left: -3px; width: 14px; height: 14px; border-radius: 7px; background: #BE3D48; box-shadow: 0 0 0 2px #FFFFFF"></span></sc-if>
+      </span>
+      <span style="font-size: 18px; font-weight: 700; margin-top: 4px">{{name}}</span>
+      <span style="font-size: 13px; color: #637570">{{sub}}</span>
+      <span dir="ltr" style="{{amountStyle}}">{{amount}}</span>
+      <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #637570"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>{{lockLine}}</span>
+    </div>
+
+    <sc-if value="{{cashOpen}}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: rgba(190,61,72,0.08)">
+        <span style="font-size: 13px; font-weight: 700; color: #BE3D48">{{cashTitle}}</span>
+        <span style="font-size: 13px; color: #193D33">{{cashBody}}</span>
+        <button type="button" class="m-press" onClick="{{openCat}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{cashBtn}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isParty}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="TransferParty" space="{{spaceName}}" on-kind="{{onKind}}" hint-size="350px,250px"></dc-import>
+    </sc-if>
+
+    <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-for list="{{fields}}" as="f" hint-placeholder-count="5">
+        <div style="{{f.rowStyle}}">
+          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; color: #637570">{{f.label}}</span>
+            <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="font-size: 15px; font-weight: 700">{{f.value}}</span><sc-if value="{{f.hasChip}}" hint-placeholder-val="{{ false }}"><span style="{{f.chipStyle}}">{{f.chip}}</span></sc-if></span>
+            <sc-if value="{{f.hasHint}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{f.hint}}</span></sc-if>
+          </span>
+          <sc-for list="{{f.acts}}" as="a" hint-placeholder-count="0">
+            <button type="button" class="m-press" onClick="{{a.go}}" style="{{a.style}}">{{a.label}}</button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; font-weight: 700; color: #637570">{{linkTitle}}</span>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{links}}" as="l" hint-placeholder-count="3">
+          <button type="button" disabled="{{true}}" aria-describedby="links-soon" style="height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; color: #193D33; background: rgba(25,61,51,0.06); opacity: 0.55">{{l}}</button>
+        </sc-for>
+      </div>
+      <span id="links-soon" style="font-size: 12px; color: #637570">{{linkSoon}}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{catOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="d-veil" onClick="{{closeCat}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{catTitle}}" class="d-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{catTitle}}</span>
+        <sc-if value="{{askPick}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+              <button type="button" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{askRemember}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 14px">{{rememberQ}}</span>
+          <div style="display: flex; gap: 8px">
+            <button type="button" class="m-press" onClick="{{rememberYes}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{rememberYesLabel}}</button>
+            <button type="button" class="m-press" onClick="{{closeCat}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{rememberNoLabel}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="d-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"txn":{"editor":"enum","options":["حسب اللي اتداس","من رسالة البنك","كاش مش متسجّل","حوالة من طرف جديد"],"default":"حسب اللي اتداس","section":"العملية"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let stored = null;
+    // العمليات والإشعارات بيكتبوا هنا أنهي عملية اتداست قبل ما تفتح الشاشة
+    let picked = null;
+    try { stored = window.sessionStorage.getItem('masroufy-txn'); picked = JSON.parse(window.sessionStorage.getItem('masroufy-txn-row') || 'null'); } catch (e) {}
+    this.stored = stored;
+    this.picked = picked;
+    const fromSms = !picked || String(picked.sub || '').indexOf('رسال') >= 0;
+    this.fromSms = fromSms;
+    this.state = { cat: null, catSt: fromSms ? 'sug' : 'ok', sheet: false, step: 'pick', kind: null, toast: '' };
+    this.timers = [];
+    this.onKind = (kind) => this.setState({ kind });
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
+  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return 0; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const pickName = this.props.txn ?? 'حسب اللي اتداس';
+    const v = { 'من رسالة البنك': 'sms', 'كاش مش متسجّل': 'cash', 'حوالة من طرف جديد': 'party' }[pickName] || (['sms', 'cash', 'party'].indexOf(this.stored) >= 0 ? this.stored : 'sms');
+    const s = this.state;
+    const cur = eg ? 'ج.م' : 'ر.س';
+    const CATS = { food: eg ? 'أكل وقهوة' : 'مطاعم وقهوة', shop: eg ? 'بقالة' : 'بقالة وسوبرماركت', car: eg ? 'مواصلات' : 'مواصلات', gift: 'هدايا', home: eg ? 'بيت' : 'منزل', other: 'أخرى' };
+    // مخترعة · بالوحدة الصغرى
+    const T = {
+      sms: { name: eg ? 'مطعم الفول' : 'مطعم الريف', sub: eg ? 'النهارده ١٢:٤٠ م · صرف' : 'اليوم ١٢:٤٠ م · مدين', amt: eg ? -18500 : -4200, icon: 'food' },
+      cash: { name: s.cat ? CATS[s.cat] + (eg ? ' (كاش)' : ' (نقدًا)') : (eg ? 'صرف كاش مش متسجّل' : 'صرف نقدي غير مسجّل'), sub: eg ? 'النهارده · من عدّ الكاش' : 'اليوم · من عدّ النقد', amt: eg ? -18000 : -6000, icon: 'cash' },
+      party: { name: eg ? 'حوالة جاتلك' : 'حوالة واردة', sub: eg ? 'النهارده ٩:١٥ ص · من حساب آخره ٤٨٢١' : 'اليوم ٩:١٥ ص · من حساب ينتهي بـ ٤٨٢١', amt: eg ? 450000 : 150000, icon: 'move' }
+    }[v];
+    const P = v === 'sms' && pickName === 'حسب اللي اتداس' ? this.picked : null;
+    const dir = P ? P.dir : 'out';
+    if (P) Object.assign(T, { name: P.name, sub: P.sub.split(' · ')[0], amt: (dir === 'in' ? 1 : -1) * this.toMinor(P.amount), icon: P.kind });
+    const chipS = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
+    const act = (label, go, strong) => ({ label, go, style: 'height: 36px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)') });
+    const field = (label, value, o) => Object.assign({ label, value, hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '', acts: [] }, o || {});
+    const openCat = () => this.setState({ sheet: true, step: 'pick' });
+    const catValue = s.cat ? CATS[s.cat] : P ? P.sub.split(' · ')[0] : CATS.food;
+    const srcSms = !P || this.fromSms;
+    const fields = v === 'sms' ? [
+      field(eg ? 'المحفظة' : 'المحفظة', eg ? 'حساب المرتب' : 'حساب الراتب'),
+      field('التصنيف', catValue, s.catSt === 'sug'
+        ? { hasChip: true, chip: 'مقترح', chipStyle: chipS('#956000', '#FBF0DD'), hasHint: true, hint: eg ? 'من قاعدة عامة — محتاج تأكيدك' : 'من قاعدة عامة — يحتاج تأكيدك', acts: [act(eg ? 'غيّر' : 'غيّر', openCat), act(eg ? 'تمام' : 'تأكيد', () => { this.setState({ catSt: 'ok' }); this.say(eg ? 'اتأكد التصنيف' : 'تأكّد التصنيف'); }, true)] }
+        : { hasChip: true, chip: eg ? 'مؤكد' : 'مؤكد', chipStyle: chipS('#08634F', '#DCEBD6'), acts: [act(eg ? 'غيّر' : 'غيّر', openCat)] }),
+      field('النوع', dir === 'in' ? 'دخل' : dir === 'move' ? (eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك') : 'مصروف حقيقي'),
+      srcSms ? field('المصدر', eg ? 'رسالة البنك' : 'رسالة البنك', { hasChip: true, chip: eg ? 'اتسجلت لوحدها' : 'سُجّلت تلقائيًا', chipStyle: chipS('#08634F', '#DCEBD6'), hasHint: true, hint: eg ? 'كشف الحساب لما ييجي هيتدمج معاها، مش هيكررها' : 'حين يصل كشف الحساب تُدمج معه ولا تتكرر' })
+        : field('المصدر', eg ? 'كشف الحساب' : 'كشف الحساب', { hasChip: true, chip: eg ? 'اتستورد' : 'مستورد', chipStyle: chipS('#2469BA', 'rgba(36,105,186,0.10)') })
+    ].filter((f) => !(dir === 'move' && f.label === 'التصنيف')) : v === 'cash' ? [
+      field('المحفظة', eg ? 'الكاش' : 'النقد'),
+      field('التصنيف', s.cat ? CATS[s.cat] : (eg ? 'من غير تصنيف' : 'بلا تصنيف'), s.cat ? {} : { acts: [act(eg ? 'صنّفها' : 'صنّفها', openCat, true)] }),
+      field('النوع', eg ? 'مصروف حقيقي' : 'مصروف حقيقي', { hasHint: true, hint: eg ? 'داخل في صرف الشهر' : 'داخل في صرف الشهر' }),
+      field('المصدر', eg ? 'عدّ الكاش' : 'عدّ النقد', { hasHint: true, hint: eg ? 'كان المفروض معاك ' + this.fmt(270000 - T.amt) + ' ولقيت ' + this.fmt(270000) : 'كان المتوقع ' + this.fmt(90000 - T.amt) + ' ووجدت ' + this.fmt(90000) })
+    ] : [
+      field('المحفظة', eg ? 'حساب المرتب' : 'حساب الراتب'),
+      field('النوع', s.kind || (eg ? 'مستني تقول مين ده' : 'بانتظار تحديد الطرف'), s.kind ? {} : { hasChip: true, chip: eg ? 'مستني' : 'بانتظارك', chipStyle: chipS('#956000', '#FBF0DD') }),
+      field('المصدر', eg ? 'كشف الحساب' : 'رسالة البنك', { hasChip: true, chip: eg ? 'اتستورد' : 'سُجّلت تلقائيًا', chipStyle: chipS('#08634F', '#DCEBD6') })
+    ];
+    const cats = Object.keys(CATS).map((k) => ({
+      label: CATS[k], style: 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (s.cat === k ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)'),
+      pick: () => {
+        if (v === 'cash') { this.setState({ cat: k, sheet: false }); this.say(eg ? 'تمام — النقطة الحمرا اتشالت' : 'تم — أُزيلت النقطة الحمراء'); }
+        else this.setState({ cat: k, catSt: 'ok', step: 'remember' });
+      }
+    }));
+    return {
+      title: eg ? 'تفاصيل العملية' : 'تفاصيل العملية',
+      tile: 'position: relative; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); ' + ({ shop: 'background: rgba(56,102,167,0.12); color: #3866A7', car: 'background: rgba(77,116,124,0.12); color: #4D747C', income: 'background: rgba(19,118,77,0.12); color: #13764D', food: 'background: rgba(163,106,33,0.12); color: #A36A21', cash: 'background: rgba(99,117,112,0.12); color: #637570', move: 'background: rgba(36,105,186,0.12); color: #2469BA' }[T.icon]),
+      isFood: T.icon === 'food', isCash: T.icon === 'cash', isMove: T.icon === 'move', isShop: T.icon === 'shop', isCar: T.icon === 'car', isIncome: T.icon === 'income',
+      redDot: v === 'cash' && !s.cat,
+      name: T.name, sub: T.sub,
+      amount: (T.amt < 0 ? '−' : '+') + this.fmt(T.amt) + ' ' + cur,
+      amountStyle: 'font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (T.amt < 0 ? '#BE3D48' : '#13764D'),
+      lockLine: v === 'cash' ? (eg ? 'المبلغ من فرق العدّ' : 'المبلغ من فرق العدّ') : (eg ? 'التاريخ والاتجاه جايين من البنك، ما بيتعدلوش' : 'التاريخ والاتجاه من البنك ولا يُعدَّلان'),
+      cashOpen: v === 'cash' && !s.cat,
+      cashTitle: eg ? 'دي مش عملية اتسجلت' : 'هذه ليست عملية مسجّلة',
+      cashBody: eg ? 'ده فرق عدّ الكاش. داخل في صرف الشهر بنقطة حمرا لحد ما تقول اتصرف في إيه.' : 'هذا فرق عدّ النقد. يدخل في صرف الشهر بنقطة حمراء حتى تحدد فيمَ صُرف.',
+      cashBtn: eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟',
+      openCat,
+      isParty: v === 'party', spaceName: eg ? 'مصر' : 'السعودية', onKind: this.onKind,
+      fields: fields.map((f, i) => Object.assign(f, { rowStyle: 'display: flex; align-items: center; gap: 8px; padding: 12px 0;' + (i === fields.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
+      linkTitle: eg ? 'اربطها بـ' : 'اربطها بـ',
+      links: eg ? ['شخص', 'مشروع', 'حدث'] : ['شخص', 'مشروع', 'حدث'],
+      linkSoon: eg ? 'الربط بيتبني في خطوة جاية.' : 'الربط يُبنى في خطوة قادمة.',
+      catOpen: s.sheet,
+      catTitle: s.step === 'pick' ? (v === 'cash' ? (eg ? 'اتصرف في إيه؟' : 'فيمَ صُرف؟') : (eg ? 'تصنيف «' : 'تصنيف «') + T.name + '»') : (eg ? 'نفتكرها؟' : 'نتذكرها؟'),
+      askPick: s.step === 'pick', askRemember: s.step === 'remember', cats,
+      rememberQ: s.cat ? (eg ? 'كل عمليات «' : 'كل عمليات «') + T.name + (eg ? '» الجاية تبقى «' : '» القادمة تكون «') + CATS[s.cat] + '»؟' : '',
+      rememberYesLabel: eg ? 'أيوه، افتكرها' : 'نعم، تذكّرها', rememberNoLabel: eg ? 'المرة دي بس' : 'هذه المرة فقط',
+      rememberYes: () => { this.setState({ sheet: false }); this.say(eg ? 'تمام، هنصنّفها كده على طول' : 'تم، ستُصنَّف هكذا دائمًا'); },
+      closeCat: () => this.setState({ sheet: false }),
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>رسائل البنك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}.m-scroll>*{flex-shrink:0}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+.m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
+@keyframes m-pulse{from{opacity:.5}to{opacity:1}}
+.s-sheen{position:absolute;top:0;bottom:0;left:100%;width:60%;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(166,222,193,0.75) 50%,transparent 70%);animation:s-sheen 1200ms cubic-bezier(.3,.7,.4,1) 250ms both}
+@keyframes s-sheen{from{transform:translateX(0)}to{transform:translateX(-270%)}}
+.s-in{animation:s-in 450ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes s-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.s-veil{animation:s-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.s-up{animation:s-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
+.s-toast{animation:s-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes s-fade{from{opacity:0}to{opacity:1}}
+@keyframes s-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes s-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.s-sheen{display:none}.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}.s-in,.s-up{animation:s-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="More.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700; flex: 1 1 auto">{{title}}</h1>
+    </div>
+
+    <div style="{{statusStyle}}">
+      <span aria-hidden="true" style="{{statusDot}}"></span>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{statusTitle}}</span><span style="font-size: 12px">{{statusBody}}</span></span>
+      <sc-if value="{{hasStatusBtn}}" hint-placeholder-val="{{ false }}">
+        <button type="button" disabled="{{true}}" style="height: 40px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; background: rgba(255,255,255,0.75); opacity: 0.6; flex-shrink: 0">{{statusBtn}}</button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="جارٍ التحميل" style="display: flex; flex-direction: column; gap: 12px">
+        <div class="m-skel" style="height: 120px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+        <div class="m-skel" style="height: 220px; border-radius: 22px; background: rgba(25,61,51,0.06)"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showWaiting}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="SmsWaiting" space="{{spaceName}}" on-record="{{onRecord}}" hint-size="350px,560px"></dc-import>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 8px; text-align: center">
+        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
+        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">{{emptyTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{emptyBody}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showList}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{autoTitle}}</h2><span style="font-size: 12px; color: #637570">{{autoCount}}</span></span>
+        <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+            <div class="{{r.cls}}" style="{{r.rowStyle}}">
+              <span style="{{r.tile}}">
+                <sc-if value="{{r.i.food}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg></sc-if>
+                <sc-if value="{{r.i.shop}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg></sc-if>
+                <sc-if value="{{r.i.car}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16l1.5-5h11L19 16"></path><path d="M4 16h16v3H4z"></path><circle cx="7.5" cy="19.5" r="1"></circle><circle cx="16.5" cy="19.5" r="1"></circle></svg></sc-if>
+                <sc-if value="{{r.i.none}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg></sc-if>
+              </span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 14px; font-weight: 700">{{r.name}}</span>
+                <span style="font-size: 12px; color: #637570">{{r.sub}}</span>
+                <sc-if value="{{r.needs}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: flex; align-items: center; gap: 6px"><span style="{{r.chipStyle}}">{{r.chip}}</span><button type="button" class="m-press" onClick="{{r.act}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{r.actLabel}}</button></span>
+                </sc-if>
+              </span>
+              <span dir="ltr" style="font-size: 15px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{r.amount}}</span>
+              <sc-if value="{{r.sheen}}" hint-placeholder-val="{{ false }}"><span class="s-sheen" aria-hidden="true"></span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <span style="font-size: 12px; color: #637570">{{footer}} <a href="NotificationSettings.dc.html" style="color: #08634F; font-weight: 700">{{footerLink}}</a></span>
+  </div>
+
+  <sc-if value="{{catOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="s-veil" onClick="{{closeCat}}" aria-label="إغلاق" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{catTitle}}" class="s-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{catTitle}}</span>
+        <sc-if value="{{askPick}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="5">
+              <button type="button" class="m-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{askRemember}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 14px; color: #193D33">{{rememberQ}}</span>
+          <div style="display: flex; gap: 8px">
+            <button type="button" class="m-press" onClick="{{rememberYes}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{rememberYesLabel}}</button>
+            <button type="button" class="m-press" onClick="{{closeCat}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{rememberNoLabel}}</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 28px; z-index: 10; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="s-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const eg = (props.space ?? 'السعودية') === 'مصر';
+    // مخترعة. المبلغ بالوحدة الصغرى · st: ok مؤكد · sug مقترح من قاعدة عامة · new محل جديد «غير مصنف»
+    this.state = {
+      rows: eg ? [
+        { id: 'a', name: 'مطعم الفول', cat: 'food', amt: 18500, t: '١٢:٤٠ م', st: 'ok', sheen: true },
+        { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 124050, t: '١٠:١٥ ص', st: 'sug' },
+        { id: 'c', name: 'فرن الندى', cat: 'none', amt: 3500, t: '٩:٠٢ ص', st: 'new' },
+        { id: 'd', name: 'بنزينة', cat: 'car', amt: 60000, t: '٨:٣٠ ص', st: 'ok' }
+      ] : [
+        { id: 'a', name: 'مطعم الريف', cat: 'food', amt: 4200, t: '١٢:٤٠ م', st: 'ok', sheen: true },
+        { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 31840, t: '١٠:١٥ ص', st: 'sug' },
+        { id: 'c', name: 'مخبز الندى', cat: 'none', amt: 1850, t: '٩:٠٢ ص', st: 'new' },
+        { id: 'd', name: 'محطة وقود', cat: 'car', amt: 9000, t: '٨:٣٠ ص', st: 'ok' }
+      ],
+      cat: null, step: 'pick', picked: null, toast: '', toastKey: 0
+    };
+    this.timers = [];
+    this.onRecord = (list, msg) => {
+      if (!Array.isArray(list)) return;
+      const fresh = list.map((r) => Object.assign({ st: 'ok', sheen: true, fresh: true }, r));
+      this.say(msg);
+      this.setState({ rows: fresh.concat(this.state.rows) });
+    };
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  say(msg) {
+    this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700));
+    this.setState({ toast: msg, toastKey: this.state.toastKey + 1 });
+  }
+  fmt(minor) { const f = minor % 100; return String((minor - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  setRow(id, patch) { this.setState({ rows: this.state.rows.map((r) => (r.id === id ? Object.assign({}, r, patch) : r)) }); }
+  renderVals() {
+    const st = this.props.state ?? 'عادي';
+    const eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const C = {
+      food: [eg ? 'أكل وقهوة' : 'مطاعم وقهوة', '#A36A21', 'rgba(163,106,33,0.12)'], shop: [eg ? 'بقالة' : 'بقالة وسوبرماركت', '#3866A7', 'rgba(56,102,167,0.12)'],
+      car: ['بنزين', '#4D747C', 'rgba(77,116,124,0.12)'], bake: [eg ? 'عيش وحلويات' : 'مخبوزات', '#A55060', 'rgba(165,80,96,0.12)'],
+      none: [eg ? 'غير مصنف' : 'غير مصنّف', '#637570', 'rgba(99,117,112,0.12)']
+    };
+    const rows = this.state.rows.map((r, i, a) => {
+      const c = C[r.cat] || C.none;
+      const needs = r.st !== 'ok';
+      return {
+        name: r.name, sub: c[0] + ' · ' + r.t, i: { [r.cat === 'bake' ? 'food' : C[r.cat] ? r.cat : 'none']: true },
+        amount: '−' + this.fmt(r.amt), sheen: !!r.sheen, cls: r.fresh ? 's-in' : '',
+        needs, chip: r.st === 'sug' ? (eg ? 'مقترح' : 'مقترح') : (eg ? 'محل جديد' : 'متجر جديد'),
+        chipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (r.st === 'sug' ? 'color: #956000; background: #FBF0DD' : 'color: #637570; background: rgba(99,117,112,0.12)'),
+        actLabel: r.st === 'sug' ? (eg ? 'تمام كده' : 'تأكيد') : (eg ? 'صنّفها' : 'صنّفها'),
+        act: r.st === 'sug' ? () => this.setRow(r.id, { st: 'ok', sheen: true }) : () => this.setState({ cat: r.id, step: 'pick', picked: null }),
+        tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + c[2] + '; color: ' + c[1],
+        rowStyle: 'position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: 10px 0;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);')
+      };
+    });
+    const target = this.state.rows.find((r) => r.id === this.state.cat);
+    const picked = this.state.picked;
+    const cats = ['bake', 'food', 'shop', 'car'].map((k) => ({
+      label: C[k][0], pick: () => { if (!target) return; this.setRow(target.id, { cat: k, st: 'ok', sheen: true }); this.setState({ step: 'remember', picked: k }); },
+      style: 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; color: ' + C[k][1] + '; background: ' + C[k][2]
+    }));
+    const live = st === 'عادي' || st === 'خطأ';
+    const status = {
+      ok: [eg ? 'القراية شغالة' : 'القراءة تعمل', eg ? 'الرسالة المفهومة بتتسجل وتتصنف لوحدها. آخر رسالة من دقيقتين.' : 'الرسالة المفهومة تُسجَّل وتُصنَّف تلقائيًا. آخر رسالة قبل دقيقتين.', '#08634F', '#DCEBD6'],
+      err: [eg ? 'القراية واقفة' : 'القراءة متوقفة', eg ? 'إذن الرسايل اتسحب من إعدادات الجوال.' : 'سُحب إذن الرسائل من إعدادات الجوال.', '#956000', '#FBF0DD'],
+      ios: [eg ? 'الآيفون ما بيسمحش' : 'الآيفون لا يسمح', eg ? 'أبل ما بتسمحش للبرامج تقرا الرسايل. تقدر تلصق الرسالة بإيدك.' : 'لا تسمح أبل بقراءة الرسائل. يمكنك لصق الرسالة يدويًا.', '#637570', 'rgba(25,61,51,0.06)']
+    }[st === 'خطأ' ? 'err' : st === 'غير متاح' ? 'ios' : 'ok'];
+    return {
+      title: eg ? 'رسايل البنك' : 'رسائل البنك',
+      statusStyle: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 18px; color: ' + status[2] + '; background: ' + status[3],
+      statusDot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + status[2],
+      statusTitle: status[0], statusBody: status[1],
+      hasStatusBtn: st === 'خطأ' || st === 'غير متاح',
+      statusBtn: st === 'خطأ' ? (eg ? 'رجّع الإذن' : 'أعد الإذن') : (eg ? 'الصق رسالة' : 'الصق رسالة'),
+      isLoading: st === 'بيحمّل',
+      showWaiting: live, spaceName: eg ? 'مصر' : 'السعودية', onRecord: this.onRecord,
+      isEmpty: st === 'فاضي',
+      emptyTitle: eg ? 'مفيش رسايل النهارده' : 'لا رسائل اليوم',
+      emptyBody: eg ? 'أول ما رسالة من البنك توصل، هتتسجل هنا لوحدها.' : 'حين تصل رسالة من البنك ستُسجَّل هنا تلقائيًا.',
+      showList: live,
+      autoTitle: eg ? 'اتسجلت لوحدها النهارده' : 'سُجّلت تلقائيًا اليوم',
+      autoCount: rows.length + (eg ? ' عمليات' : ' عمليات'),
+      rows,
+      footer: eg ? 'إشعار الجوال بيوصلك بس للرسايل المستنية تأكيدك، من مجموعة' : 'يصلك إشعار الجوال فقط للرسائل التي تنتظر تأكيدك، من مجموعة',
+      footerLink: eg ? '«رسايل البنك»' : '«رسائل البنك»',
+      catOpen: !!target,
+      catTitle: target ? (this.state.step === 'pick' ? (eg ? 'تصنيف «' : 'تصنيف «') + target.name + '»' : (eg ? 'نفتكرها؟' : 'نتذكرها؟')) : '',
+      cats, askPick: this.state.step === 'pick', askRemember: this.state.step === 'remember',
+      rememberQ: target && picked ? (eg ? 'كل عمليات «' : 'كل عمليات «') + target.name + (eg ? '» الجاية تبقى «' : '» القادمة تكون «') + C[picked][0] + '»؟' : '',
+      rememberYesLabel: eg ? 'أيوه، افتكرها' : 'نعم، تذكّرها',
+      rememberNoLabel: eg ? 'المرة دي بس' : 'هذه المرة فقط',
+      rememberYes: () => { this.say(eg ? 'تمام، هنصنّفها كده على طول' : 'تم، ستُصنَّف هكذا دائمًا'); this.setState({ cat: null }); },
+      closeCat: () => this.setState({ cat: null }),
+      hasToast: !!this.state.toast, toast: this.state.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

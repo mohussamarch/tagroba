@@ -21,9 +21,10 @@ a{color:#08634F}a:hover{color:#064B40}
 </style>
 </helmet>
 <div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
-  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 156px; display: flex; flex-direction: column; gap: 14px">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 40px; display: flex; flex-direction: column; gap: 14px">
 
-    <div style="display: flex; align-items: center; min-height: 48px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Main.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
       <h1 style="margin: 0; font-size: 24px; font-weight: 700">المزيد</h1>
     </div>
 
@@ -42,7 +43,7 @@ a{color:#08634F}a:hover{color:#064B40}
         <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{g.title}}</h2>
         <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
           <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
-            <button type="button" class="m-press m-row" style="{{it.style}}">
+            <a href="{{it.href}}" onClick="{{it.go}}" class="m-press m-row" style="{{it.style}}">
               <span style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(8,99,79,0.10); color: #08634F; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7)">
                 <sc-if value="{{it.i.user}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></sc-if>
                 <sc-if value="{{it.i.income}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M12 10v5M9.5 12.5L12 15l2.5-2.5"></path></svg></sc-if>
@@ -62,26 +63,25 @@ a{color:#08634F}a:hover{color:#064B40}
                 <sc-if value="{{it.hasHint}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #637570">{{it.hint}}</span></sc-if>
               </span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
-            </button>
+            </a>
           </sc-for>
         </div>
       </div>
     </sc-for>
   </div>
 
-  <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
-    <dc-import name="BottomBar" active="More" context="المزيد" space="{{spaceName}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import>
-  </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const item = (icon, label, hint, last) => ({
+    const item = (icon, label, hint, last, to) => ({
       label, hint: hint || '', hasHint: !!hint,
+      href: to ? to + '.dc.html' : '#',
+      go: (e) => { if (!to && e && e.preventDefault) e.preventDefault(); },
       i: { [icon]: true },
-      style: 'width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);')
+      style: 'box-sizing: border-box; text-decoration: none; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);')
     });
     const groups = [
       { title: 'حسابك', items: [
@@ -92,19 +92,19 @@ class Component extends DCLogic {
       { title: 'بياناتك', items: [
         item('wallet', 'المحافظ'),
         item('tag', 'التصنيفات والقواعد'),
-        item('import', 'الاستيراد', 'رسائل البنك وكشف الحساب'),
+        item('import', eg ? 'رسايل البنك' : 'رسائل البنك', eg ? '٤ مستنية تأكيدك' : '٤ بانتظار تأكيدك', false, 'BankSms'),
+        item('import', 'كشف الحساب', eg ? 'استيراد ملف من البنك' : 'استيراد ملف من البنك'),
         item('backup', 'النسخة الاحتياطية'),
         item('export', 'التصدير', '', true)
       ] },
       { title: 'الإعدادات', items: [
-        item('bell', 'الإشعارات'),
+        item('bell', 'الإشعارات', '', false, 'NotificationSettings'),
         item('lock', 'القفل'),
         item('lang', 'اللغة'),
         item('moon', 'المحتوى الإسلامي', '', true)
       ] }
     ];
     return {
-      navStyle: this.props.navStyle ?? "زرار في النص",
       spaceName: (this.props.space ?? "السعودية") === "مصر" ? "مصر" : "السعودية",
       spaceLine: eg ? 'المساحة الحالية: مصر · ج.م' : 'المساحة الحالية: السعودية · ر.س',
       groups

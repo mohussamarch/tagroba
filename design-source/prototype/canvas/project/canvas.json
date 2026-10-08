@@ -45,7 +45,7 @@
     "More.dc.html": {
       "h": 844,
       "is_interactive": true,
-      "title": "المزيد · More",
+      "title": "المزيد · More (بيفتح من الترس)",
       "w": 390,
       "x": 0,
       "y": 0
@@ -129,6 +129,54 @@
       "w": 390,
       "x": 40,
       "y": 2540
+    },
+    "OperationDetail.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "تفاصيل العملية · OperationDetail",
+      "w": 390,
+      "x": 2430,
+      "y": 3810
+    },
+    "TransferParty.dc.html": {
+      "h": 360,
+      "is_interactive": true,
+      "title": "طرف التحويل · TransferParty (جوه التفاصيل)",
+      "w": 350,
+      "x": 2010,
+      "y": 3810
+    },
+    "BankSms.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "رسائل البنك · BankSms",
+      "w": 390,
+      "x": 1540,
+      "y": 3810
+    },
+    "SmsWaiting.dc.html": {
+      "h": 640,
+      "is_interactive": true,
+      "title": "بانتظار تأكيدك · SmsWaiting (جوه رسائل البنك)",
+      "w": 350,
+      "x": 1120,
+      "y": 3810
+    },
+    "Notifications.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "الإشعارات · Notifications (الجرس)",
+      "w": 390,
+      "x": 650,
+      "y": 3810
+    },
+    "NotificationSettings.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "إعدادات الإشعارات · NotificationSettings",
+      "w": 390,
+      "x": 180,
+      "y": 3810
     }
   },
   "createdOnFiles": {
@@ -152,7 +200,7 @@
     "shell": {
       "kind": "title1",
       "maxW": 2820,
-      "text": "التطبيق كامل (يمين) · التبويبات الخمسة",
+      "text": "التطبيق كامل (يمين) · التبويبات الأربعة · المزيد بقى ترس",
       "w": 240,
       "x": 0,
       "y": -300
@@ -172,6 +220,14 @@
       "w": 240,
       "x": 0,
       "y": 2240
+    },
+    "sms": {
+      "kind": "title1",
+      "maxW": 2820,
+      "text": "تفاصيل العملية · رسائل البنك · الإشعارات",
+      "w": 240,
+      "x": 0,
+      "y": 3510
     }
   },
   "order": [
@@ -190,7 +246,13 @@
     "Dues.dc.html",
     "Roscas.dc.html",
     "Installments.dc.html",
-    "Subscriptions.dc.html"
+    "Subscriptions.dc.html",
+    "OperationDetail.dc.html",
+    "TransferParty.dc.html",
+    "BankSms.dc.html",
+    "SmsWaiting.dc.html",
+    "Notifications.dc.html",
+    "NotificationSettings.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

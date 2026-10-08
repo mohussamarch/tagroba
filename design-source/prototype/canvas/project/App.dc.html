@@ -35,7 +35,7 @@ body{margin:0}
     <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Investment" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.More}}" hint-placeholder-val="{{ false }}">
-    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="More" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="More" space="{{space}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
   <sc-if value="{{s.PersonProfile}}" hint-placeholder-val="{{ false }}">
     <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="PersonProfile" space="{{space}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import></div>
@@ -55,6 +55,18 @@ body{margin:0}
   <sc-if value="{{s.Subscriptions}}" hint-placeholder-val="{{ false }}">
     <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Subscriptions" space="{{space}}" hint-size="390px,844px"></dc-import></div>
   </sc-if>
+  <sc-if value="{{s.Notifications}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="Notifications" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.NotificationSettings}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="NotificationSettings" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.BankSms}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="BankSms" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{s.OperationDetail}}" hint-placeholder-val="{{ false }}">
+    <div class="{{anim}}" style="position: absolute; inset: 0"><dc-import name="OperationDetail" space="{{space}}" hint-size="390px,844px"></dc-import></div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
@@ -63,8 +75,8 @@ class Component extends DCLogic {
   // رابط لتبويب = تبديل تبويب (الرجوع يتمسح) · رابط لشاشة تانية = دخول · رابط عليه data-back = رجوع للي قبله.
   constructor(props) {
     super(props);
-    this.TABS = ['Main', 'Operations', 'People', 'Investment', 'More'];
-    this.SCREENS = this.TABS.concat(['PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions']);
+    this.TABS = ['Main', 'Operations', 'People', 'Investment'];
+    this.SCREENS = this.TABS.concat(['More', 'PersonProfile', 'OwedToYou', 'YouOwe', 'Roscas', 'Installments', 'Subscriptions', 'Notifications', 'NotificationSettings', 'BankSms', 'OperationDetail']);
     this.state = { screen: 'Main', stack: [], anim: 'a-tab', n: 0 };
     this.onClick = (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
@@ -74,6 +86,9 @@ class Component extends DCLogic {
       if (!m) return;
       e.preventDefault();
       e.stopPropagation();
+      // الرابط ممكن يشيل اختيار للشاشة الجاية (أنهي عملية اتداست مثلًا) — بنكتبه قبل ما نفتحها
+      const keep = a.getAttribute('data-keep');
+      if (keep) { try { const o = JSON.parse(keep); Object.keys(o).forEach((k) => window.sessionStorage.setItem(k, o[k])); } catch (err) {} }
       this.go(m[1], a.hasAttribute('data-back'));
     };
     this.setRoot = (el) => {

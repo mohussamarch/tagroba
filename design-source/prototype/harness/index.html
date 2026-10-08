@@ -13,6 +13,7 @@
   // &set=state:فاضي,space:مصر    قيم الرافعات (بتتكتب مكان القيم الافتراضية)
   // &scroll=210                  تمرير أول قايمة بتتمرر جوه الشاشة
   // &click=كم لي|احفظ            ضغطات متتالية على أزرار/روابط فيها النص ده
+  // &after=400                   تمرير تاني بعد آخر ضغطة (عشان تشوف اللي اتضاف تحت)
   var q = new URLSearchParams(location.search);
   var name = q.get('a') || 'Main.dc.html';
   var f = document.getElementById('f');
@@ -34,6 +35,10 @@
         });
         if (el) el.click(); else console.warn('no element with text', t);
       });
+    });
+    if (q.get('after')) after(400 + clicks.length * 1600, function () {
+      var s2 = d.querySelector('.m-scroll');
+      if (s2) s2.scrollTop = Number(q.get('after'));
     });
   }
   f.addEventListener('load', function () { after(900, act); });
