@@ -21,6 +21,10 @@ class LockGate(private val lock: AppLock?) {
     var message by mutableStateOf<String?>(null)
         private set
 
+    /** نتيجة آخر محاولة (فشل ⇒ زرار «إعادة المحاولة» بدل «فتح» — لوحة `Lock`). null = لسه ما اتجربش أو اتفتح. */
+    var lastResult by mutableStateOf<LockResult?>(null)
+        private set
+
     /** القفل اتوقف لأن الجوال بقى مالوش قفل (رسالة لمرة واحدة — §21 سلوك مبدئي). */
     var released by mutableStateOf(false)
         private set
@@ -35,6 +39,7 @@ class LockGate(private val lock: AppLock?) {
         if (!locked && lock?.needsUnlock(hiddenAt) == true) {
             locked = true
             message = null
+            lastResult = null
         }
         hiddenAt = null
     }
@@ -51,7 +56,11 @@ class LockGate(private val lock: AppLock?) {
         if (outcome.result == LockResult.OK) {
             locked = false
             message = null
-        } else message = outcome.message
+            lastResult = null
+        } else {
+            message = outcome.message
+            lastResult = outcome.result
+        }
     }
 
     fun dismissReleased() {

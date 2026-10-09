@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
+import app.masroufy.port.LockResult
 import app.masroufy.ui.app.LockGate
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.LensOnLight
@@ -85,15 +86,16 @@ fun LockScreen(gate: LockGate, backdrop: Backdrop?) {
                 style = Type.body().copy(color = Color(0xFF6B4600), textAlign = TextAlign.Center),
             )
             Spacer(Modifier.height(4.dp))
-            // فشل البصمة ⇒ «إعادة المحاولة» · اتلغى أو أول مرة ⇒ «فتح» (النموذج)
-            val failed = msg != null && msg == t(TextKey.LOCK_FAILED)
             PrimaryButton(
-                if (failed) t(TextKey.LOCK_SCREEN_RETRY) else t(TextKey.LOCK_SCREEN_OPEN),
+                t(lockButtonKey(gate.lastResult)),
                 onClick = { ask() }, loading = asking, height = 52.dp, modifier = Modifier.widthIn(min = 200.dp), leading = Lucide.FINGERPRINT,
             )
         }
     }
 }
+
+/** زرار شاشة القفل (النموذج): البصمة ما اتطابقتش ⇒ «إعادة المحاولة» · اتلغت أو أول مرة أو مش متاحة ⇒ «فتح». */
+fun lockButtonKey(last: LockResult?): TextKey = if (last == LockResult.FAILED) TextKey.LOCK_SCREEN_RETRY else TextKey.LOCK_SCREEN_OPEN
 
 /**
  * «أُوقف قفل التطبيق» (حالة «غير متاح» في النموذج — `AppLock.releaseIfDeviceHasNoLock`): الجوال مالوش قفل شاشة ولا بصمة ⇒ القفل بيتوقف ويتقال
