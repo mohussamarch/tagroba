@@ -188,9 +188,9 @@ class Component extends DCLogic {
   }
   data() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    // مخترعة. bank + cash = «معك الآن» (كل المحافظ)، بالوحدة الصغرى
+    // مخترعة. bank + cash = «معك الآن» (كل المحافظ)، بالوحدة الصغرى · قهوة مصر = السعودية ×٣ زي المستشار والمساعد (كانت ٩٢٠ ومتعارضة مع ١٬٩٢٠)
     return eg
-      ? { bank: 2260000, cash: 270000, spent: 2120000, cashSpent: 330000, coffee: 92000, a: 150000, b: 420000, currency: 'ج.م' }
+      ? { bank: 2260000, cash: 270000, spent: 2120000, cashSpent: 330000, coffee: 192000, a: 150000, b: 420000, currency: 'ج.م' }
       : { bank: 645000, cash: 90000, spent: 665000, cashSpent: 110000, coffee: 64000, a: 50000, b: 145000, currency: 'ر.س' };
   }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
