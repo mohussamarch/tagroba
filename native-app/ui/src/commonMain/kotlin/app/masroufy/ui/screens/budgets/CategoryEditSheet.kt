@@ -60,14 +60,18 @@ import kotlinx.coroutines.launch
 fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -> Unit, onSaved: (String, String?) -> Unit) {
     val deps = app.masroufy.ui.app.LocalSpace.current.budgets
     val scope = rememberCoroutineScope()
-    var draft by remember(target, ui) { mutableStateOf(if (target != null && ui != null) target.startDraft(ui.stored) else null) }
-    var error by remember(target) { mutableStateOf<String?>(null) }
-    var busy by remember(target) { mutableStateOf(false) }
-    val view = if (target != null && ui != null) draft?.let { catEditView(target, it, ui.stored, ui.visibleMains) } else null
+    // اللوحة بتفضل بمحتواها وهي نازلة بعد القفل (حركة الخروج) — آخر تصنيف اتفتح
+    var last by remember { mutableStateOf(target) }
+    if (target != null) last = target
+    val shown = last
+    var draft by remember(shown) { mutableStateOf(if (shown != null && ui != null) shown.startDraft(ui.stored) else null) }
+    var error by remember(shown) { mutableStateOf<String?>(null) }
+    var busy by remember(shown) { mutableStateOf(false) }
+    val view = if (shown != null && ui != null) draft?.let { catEditView(shown, it, ui.stored, ui.visibleMains) } else null
     Sheet(target != null && ui != null, onDismiss, view?.title.orEmpty(), spacing = 12.dp) {
         val d = draft ?: return@Sheet
         val v = view ?: return@Sheet
-        val t0 = target ?: return@Sheet
+        val t0 = shown ?: return@Sheet
         val stored = ui?.stored ?: return@Sheet
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             val color = parseHexColor(v.previewHex)

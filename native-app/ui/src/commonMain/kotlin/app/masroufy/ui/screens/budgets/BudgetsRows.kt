@@ -110,12 +110,15 @@ fun UpcomingSection(ui: BudgetsUi, onToggle: (UpcomingUi) -> Unit) {
 /** «كم تحجز لـ…؟» — ميعاد مالوش مبلغ معروف (`ManageReservations.countUpcomingItem(…, amountMinor)` — المستخدم لازم يكتبه). */
 @Composable
 fun ReserveAmountSheet(target: UpcomingUi?, onDismiss: () -> Unit, onSave: suspend (UpcomingUi, Halalas) -> String?) {
-    var text by remember(target) { mutableStateOf("") }
-    var error by remember(target) { mutableStateOf<String?>(null) }
+    var last by remember { mutableStateOf(target) }
+    if (target != null) last = target
+    val shown = last
+    var text by remember(shown) { mutableStateOf("") }
+    var error by remember(shown) { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    val title = target?.let { t(TextKey.BUDGETS_RESERVE_TITLE, it.item.title) } ?: ""
+    val title = shown?.let { t(TextKey.BUDGETS_RESERVE_TITLE, it.item.title) } ?: ""
     Sheet(target != null, onDismiss, title) {
-        val item = target ?: return@Sheet
+        val item = shown ?: return@Sheet
         BasicText(title, style = Type.section())
         TextInput(
             value = text,

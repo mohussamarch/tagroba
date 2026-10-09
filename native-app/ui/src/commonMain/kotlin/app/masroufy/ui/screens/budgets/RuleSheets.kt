@@ -61,14 +61,18 @@ fun RulesSheetHost(sheet: RulesSheet?, ui: RulesUi?, deps: BudgetsDeps, onDismis
 @Composable
 private fun RuleSheet(sheet: RulesSheet.Rule?, ui: RulesUi?, deps: BudgetsDeps, onDismiss: () -> Unit, onDone: (String, String?) -> Unit) {
     val scope = rememberCoroutineScope()
-    var draft by remember(sheet, ui) { mutableStateOf(if (sheet != null && ui != null) sheet.startDraft(ui) else null) }
-    var error by remember(sheet) { mutableStateOf<String?>(null) }
-    var busy by remember(sheet) { mutableStateOf(false) }
-    val title = t(if (sheet?.row != null) TextKey.RULES_SHEET_EDIT else TextKey.RULES_NEW)
+    // المحتوى بيفضل وهي نازلة بعد القفل (حركة الخروج)
+    var last by remember { mutableStateOf(sheet) }
+    if (sheet != null) last = sheet
+    val shown = last
+    var draft by remember(shown) { mutableStateOf(if (shown != null && ui != null) shown.startDraft(ui) else null) }
+    var error by remember(shown) { mutableStateOf<String?>(null) }
+    var busy by remember(shown) { mutableStateOf(false) }
+    val title = t(if (shown?.row != null) TextKey.RULES_SHEET_EDIT else TextKey.RULES_NEW)
     Sheet(sheet != null, onDismiss, title, spacing = 10.dp) {
         val d = draft ?: return@Sheet
         val r = ui ?: return@Sheet
-        val editing = sheet?.row
+        val editing = shown?.row
         BasicText(title, style = Type.of(18, FontWeight.Bold))
         Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             val problem = ruleProblem(r, editing, d)
@@ -108,15 +112,18 @@ private fun RuleSheet(sheet: RulesSheet.Rule?, ui: RulesUi?, deps: BudgetsDeps, 
 @Composable
 private fun MerchantSheet(sheet: RulesSheet.Merchant?, ui: RulesUi?, deps: BudgetsDeps, onDismiss: () -> Unit, onDone: (String, String?) -> Unit) {
     val scope = rememberCoroutineScope()
-    var draft by remember(sheet, ui) { mutableStateOf(if (sheet != null && ui != null) sheet.startDraft(ui) else null) }
-    var aliases by remember(sheet) { mutableStateOf(sheet?.row?.merchant?.aliases.orEmpty()) }
-    var error by remember(sheet) { mutableStateOf<String?>(null) }
-    var busy by remember(sheet) { mutableStateOf(false) }
+    var last by remember { mutableStateOf(sheet) }
+    if (sheet != null) last = sheet
+    val shown = last
+    var draft by remember(shown) { mutableStateOf(if (shown != null && ui != null) shown.startDraft(ui) else null) }
+    var aliases by remember(shown) { mutableStateOf(shown?.row?.merchant?.aliases.orEmpty()) }
+    var error by remember(shown) { mutableStateOf<String?>(null) }
+    var busy by remember(shown) { mutableStateOf(false) }
     val title = t(TextKey.RULES_SHEET_MERCHANT)
     Sheet(sheet != null, onDismiss, title, spacing = 10.dp) {
         val d = draft ?: return@Sheet
         val r = ui ?: return@Sheet
-        val row = sheet?.row ?: return@Sheet
+        val row = shown?.row ?: return@Sheet
         BasicText(title, style = Type.of(18, FontWeight.Bold))
         Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             TextInput(d.name, { draft = d.copy(name = it.take(120)); error = null }, label = t(TextKey.RULES_MERCHANT_NAME), placeholder = t(TextKey.RULES_MERCHANT_NAME))
