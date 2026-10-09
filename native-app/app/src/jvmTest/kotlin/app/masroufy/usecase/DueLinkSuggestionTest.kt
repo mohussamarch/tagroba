@@ -141,10 +141,13 @@ class DueLinkSuggestionTest {
         assertTrue(w.october().isEmpty())
         // «مش ده» على الجمعية
         val w2 = World(listOf(txn("t-c", "2026-10-02", 50_000)))
-        w2.rosca()
+        val circle = w2.rosca()
         w2.suggest.decline(w2.october().single())
         assertEquals(listOf("t-c"), w2.roscas.listAll().single().dismissedTxnIds)
         assertTrue(w2.october().isEmpty())
+        // تعديل الجمعية ما بيمسحش «مش ده»
+        w2.roscaLinks.save(RoscaInput(circle.id, "جمعية وهمية معدّلة", Currency.SAR, 50_000, firstDueAt = "2026-09-01", cycleCount = 5, myTurns = listOf(2)))
+        assertEquals(listOf("t-c"), w2.roscas.listAll().single().dismissedTxnIds)
     }
 
     @Test fun financingReceivedIsSuggestedBeforeTheFirstInstallment() = runBlocking<Unit> {
@@ -184,5 +187,11 @@ class DueLinkSuggestionTest {
         assertEquals(listOf("t-near"), got.filter { it.number == 1 }.map { it.transactionId })
         // القسط التاني (2026-11-10) أبعد من أسبوع عن كلهم
         assertTrue(got.none { it.transactionId in setOf("t-cents", "t-late", "t-in", "t-far") }, got.toString())
+        // الأسبوع بالظبط: ٧ أيام جوه، ٨ برّه
+        for ((date, expected) in listOf("2026-10-17" to 1, "2026-10-03" to 1, "2026-10-18" to 0, "2026-10-02" to 0)) {
+            val one = World(listOf(txn("t-1", date, 120_000)))
+            one.financing()
+            assertEquals(expected, one.october().size, date)
+        }
     }
 }

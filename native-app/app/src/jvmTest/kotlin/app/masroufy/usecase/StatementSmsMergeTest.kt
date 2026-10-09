@@ -23,7 +23,7 @@ class StatementSmsMergeTest {
 
     @Test fun smsThenStatementIsOneTransactionWithTwoSources() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         assertEquals(1, w.recordSms())
         val sms = w.all().single()
         assertEquals("2026-10-01", sms.occurredAt)
@@ -66,13 +66,13 @@ class StatementSmsMergeTest {
         assertEquals(batch.id, w.importer.commit(request, again).id)
         assertEquals(3, w.all().size)
         // ونفس الرسالة لو وصلت تاني ⇒ مكررة (مرجعها على العملية المدموجة)
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         assertEquals(MatchingState.DUPLICATE, w.review.load(w.target).duplicates.single().state)
     }
 
     @Test fun theSameStatementInAnotherExportIsStillRecognisedByItsBalance() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         w.import(w.statement(cafe))
         // نفس السطر بنص تاني (تصدير تاني للكشف): التاريخ والمبلغ والرصيد بتوع الكشف ⇒ نفس سطر الكشف
@@ -81,9 +81,25 @@ class StatementSmsMergeTest {
         assertEquals(uiText(TextKey.DEDUPE_SAME_STATEMENT_LINE), line.reason)
     }
 
+    @Test fun aStatementWithoutReferenceOrBalanceIsNotAddedTwice() = runBlocking<Unit> {
+        val w = MatchingWorld()
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
+        w.recordSms()
+        // ملف المعاينة من غير مرجع ولا رصيد: اسم المحل في العملية المدموجة بتاع الرسالة، فمنع التكرار العادي ما بيعرفوش
+        val csv = "date,name,amount,type,source,reference\n2026-10-02,TEST CAFE RIYADH,100.00,expense,$MW_BANK_NAME,"
+        val request = ImportRequest("preview.csv", csv, MW_BANK_NAME, app.masroufy.core.ImportSourceType.CSV_PREVIEW, walletId = MW_BANK)
+        assertNotNull(w.importer.preview(request).lines.single().mergeInto)
+        val batch = w.import(request)
+        val again = w.importer.preview(request).lines.single()
+        assertEquals(MatchingState.DUPLICATE, again.state)
+        assertEquals(uiText(TextKey.MATCH_ALREADY_MERGED, uiText(TextKey.MATCH_SOURCE_SMS)), again.reason)
+        assertEquals(batch.id, w.import(request).id)
+        assertEquals(1, w.all().size)
+    }
+
     @Test fun aStatementOfOnlyTheMergedLineHasZeroImpactAndStillCommits() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val request = w.statement(cafe)
         val preview = w.importer.preview(request)
@@ -98,7 +114,7 @@ class StatementSmsMergeTest {
         w.import(w.statement(cafe, mart))
         val before = w.all().associateBy { it.id }
         val cafeTxn = before.values.single { it.amountMinor == 10_000L }
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         val review = w.review.load(w.target)
         val line = review.ready.single()
         assertEquals(uiText(TextKey.MATCH_MERGE, uiText(TextKey.MATCH_SOURCE_STATEMENT), "2026-10-02"), line.reason)
@@ -112,13 +128,13 @@ class StatementSmsMergeTest {
         assertTrue(w.sources.listByTransactionIds(listOf(cafeTxn.id)).all { it.mergeUndo == null }, "مفيش حاجة تترجع")
 
         // نفس الرسالة لو رجعت (انقطاع قبل الشيل) ⇒ مكررة، مش عملية تانية
-        w.receive(purchaseSms("100", "26/10/01"), at = "2026-10-01T09:00:00Z")
+        w.receive(matchingPurchaseSms("100", "26/10/01"), at = "2026-10-01T09:00:00Z")
         assertEquals(MatchingState.DUPLICATE, w.review.load(w.target).duplicates.single().state)
     }
 
     @Test fun aRenamedWalletStillMergesByWallet() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         // الرسايل اتسجلت باسم المحفظة القديم (هوية حساب تانية) — نفس المحفظة
         w.review.load(w.target.copy(accountIdentity = "بنك وهمي القديم"))
         w.review.recordAll(emptyMap(), emptyList())
@@ -129,7 +145,7 @@ class StatementSmsMergeTest {
 
     @Test fun threeDaysApartIsTodaysBehaviour() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val preview = w.importer.preview(w.statement("2026-10-04,100.00,0.00,4900.00,TEST CAFE RIYADH,,,شراء"))
         assertEquals(MatchingState.NEW, preview.lines.single().state)
@@ -138,8 +154,8 @@ class StatementSmsMergeTest {
 
     @Test fun twoCandidatesAskInsteadOfGuessing() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
-        w.receive(purchaseSms("100", "26/10/02", shop = "TEST BAKERY"), at = "2026-10-02T09:00:00Z")
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/02", shop = "TEST BAKERY"), at = "2026-10-02T09:00:00Z")
         assertEquals(2, w.recordSms())
         val request = w.statement(cafe)
         val line = w.importer.preview(request).lines.single()
@@ -152,14 +168,14 @@ class StatementSmsMergeTest {
 
     @Test fun oneSmsAbsorbsOneStatementLineOnly() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val lines = w.importer.preview(w.statement("2026-10-01,100.00,0.00,4900.00,TEST CAFE,,,شراء", cafe.replace("4900.00", "4800.00"))).lines
         assertEquals(listOf(MatchingState.SIMILAR, MatchingState.SIMILAR), lines.map { it.state })
         assertTrue(lines.all { it.mergeInto == null })
         // وبعد الدمج العملية ما بتبلعش سطر تاني
         val w2 = MatchingWorld()
-        w2.receive(purchaseSms("100", "26/10/01"))
+        w2.receive(matchingPurchaseSms("100", "26/10/01"))
         w2.recordSms()
         w2.import(w2.statement(cafe))
         val next = w2.importer.preview(w2.statement("2026-10-02,100.00,0.00,4800.00,TEST CAFE RIYADH,,,شراء تاني", file = "later.csv")).lines.single()
@@ -168,7 +184,7 @@ class StatementSmsMergeTest {
 
     @Test fun withoutTheWindowNothingIsMerged() = runBlocking<Unit> {
         val w = MatchingWorld(window = null)
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val line = w.importer.preview(w.statement(cafe)).lines.single()
         assertEquals(MatchingState.NEW, line.state)
@@ -178,7 +194,7 @@ class StatementSmsMergeTest {
 
     @Test fun aCrashBeforeCommitNeverPointsAtTheSmsTransaction() = runBlocking<Unit> {
         val w = MatchingWorld(rollback = false)
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val sms = w.all().single()
         w.batches.crash = true
@@ -202,14 +218,14 @@ class StatementSmsMergeTest {
         w.batches.crash = true
         assertFailsWith<IllegalStateException> { w.import(w.statement(cafe)) }
         assertEquals(1, w.all().size, "عملية الكشف المعلّقة لسه موجودة لحد التنظيف")
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         val line = w.review.load(w.target).ready.single()
         assertEquals(uiText(TextKey.DEDUPE_NEW_REFERENCE), line.reason, "ما اتدمجتش في عملية هتتمسح")
     }
 
     @Test fun revertingTheStatementKeepsTheSmsAndRestoresItsDateAndBalance() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val sms = w.all().single()
         val batch = w.import(w.statement(cafe, mart))
@@ -227,7 +243,7 @@ class StatementSmsMergeTest {
 
     @Test fun revertingTheSmsBatchKeepsTheStatementVersion() = runBlocking<Unit> {
         val w = MatchingWorld()
-        w.receive(purchaseSms("100", "26/10/01"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"))
         w.recordSms()
         val sms = w.all().single()
         val smsBatch = w.sources.listByTransactionIds(listOf(sms.id)).single().batchId

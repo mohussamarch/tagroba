@@ -45,10 +45,10 @@ internal const val MW_BANK_NAME = "بنك وهمي"
 internal const val MW_HEADER = "التاريخ,مدين,دائن,الرصيد,التاجر,التصنيف,نوع العملية,التفاصيل"
 
 /** شراء من رسالة بنك بتاريخ [day] (yy/MM/dd) ومبلغ [amount] ريال. */
-internal fun purchaseSms(amount: String, day: String, shop: String = "TEST CAFE") = "شراء\nبـSR $amount\nلدى:$shop\n$day"
+internal fun matchingPurchaseSms(amount: String, day: String, shop: String = "TEST CAFE") = "شراء\nبـSR $amount\nلدى:$shop\n$day"
 
 /** الدفعة بتقع مرة واحدة قبل `committed` — زي انقطاع بعد كتابة العمليات وقبل العلامة. */
-internal class CrashBeforeCommit(val real: MemoryImportBatchRepository) : ImportBatchRepository by real {
+internal class MatchingCrashBatches(val real: MemoryImportBatchRepository) : ImportBatchRepository by real {
     var crash = false
 
     override suspend fun updateState(id: Id, state: ImportBatchState) {
@@ -64,7 +64,7 @@ internal class MatchingWorld(window: Int? = CROSS_SOURCE_WINDOW_DAYS, rollback: 
     val txns = MemoryTransactionRepository()
     val sources = MemorySourceRecordRepository()
     val batchStore = MemoryImportBatchRepository()
-    val batches = CrashBeforeCommit(batchStore)
+    val batches = MatchingCrashBatches(batchStore)
     val wallets = MemoryWalletRepository(listOf(Wallet(MW_BANK, MW_BANK_NAME, Currency.SAR, "bank", 500_000, "2026-09-30")))
     val parties = MemoryTransferPartyRepository()
     val ids = SequentialIdGenerator()

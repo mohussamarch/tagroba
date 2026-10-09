@@ -48,7 +48,7 @@ class SubscriptionChargeTest {
     @Test fun anSmsChargeMovesTheNextDueDate() = runBlocking<Unit> {
         val items = MemoryRecurringRepository(listOf(stream))
         val w = MatchingWorld(effects = listOf(SubscriptionChargeEffect(items)))
-        w.receive(purchaseSms("49", "26/10/04", shop = "TEST STREAM"), at = "2026-10-04T09:00:00Z")
+        w.receive(matchingPurchaseSms("49", "26/10/04", shop = "TEST STREAM"), at = "2026-10-04T09:00:00Z")
         assertEquals(1, w.recordSms())
         assertEquals("2026-11-05", nextDue(items))
     }
@@ -80,7 +80,7 @@ class SubscriptionChargeTest {
         val items = MemoryRecurringRepository(listOf(stream))
         // من غير دمج (null): الرسالة والكشف بقوا عمليتين — الاشتراك برضه بيتحرك مرة واحدة
         val w = MatchingWorld(window = null, effects = listOf(SubscriptionChargeEffect(items)))
-        w.receive(purchaseSms("49", "26/10/04", shop = "TEST STREAM"), at = "2026-10-04T09:00:00Z")
+        w.receive(matchingPurchaseSms("49", "26/10/04", shop = "TEST STREAM"), at = "2026-10-04T09:00:00Z")
         w.recordSms()
         w.import(w.statement(line("2026-10-05", "49.00")))
         assertEquals(2, w.all().size)
@@ -93,14 +93,17 @@ class SubscriptionChargeTest {
     }
 
     @Test fun inactiveOrUnconfirmedItemsAreUntouched() = runBlocking<Unit> {
+        // جنبه اشتراك تاني متأكد وشغال (محل تاني) — عشان الفحص يتعمل على كل اشتراك لوحده مش على القايمة كلها
+        val music = RecurringItem("r-2", "TEST MUSIC", "name:" + normalizeText("TEST MUSIC"), "subscription", 1, 2_000, Currency.SAR, "2026-10-05", active = true, confirmed = true)
         for (item in listOf(stream.copy(active = false), stream.copy(confirmed = false))) {
-            val items = MemoryRecurringRepository(listOf(item))
+            assertFalse(paysSubscription(item, charge("t", "2026-10-04")))
+            val items = MemoryRecurringRepository(listOf(item, music))
             val w = MatchingWorld(effects = listOf(SubscriptionChargeEffect(items)))
             w.import(w.statement(line("2026-10-04", "49.00")))
-            assertEquals(item, items.listAll().single())
+            assertEquals(listOf(item, music), items.listAll())
             val txns = MemoryTransactionRepository(listOf(charge("t-1", "2026-10-04")))
             assertTrue(MatchSubscriptions(MatchSubscriptionsDeps(items, txns)).catchUp("2026-10-08").isEmpty())
-            assertEquals(item, items.listAll().single())
+            assertEquals(listOf(item, music), items.listAll())
         }
     }
 
