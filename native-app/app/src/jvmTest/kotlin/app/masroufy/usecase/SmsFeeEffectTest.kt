@@ -210,8 +210,10 @@ class SmsFeeEffectTest {
         desk.receive("t1", S2_SA_TOTAL_DUE)
         desk.recordAll()
         val batch = desk.space.batchStore.listRecent(10).single()
+        // مراجعة S2: عدد الدفعة فيه عملية الرسوم (كان 1 والتراجع بيمسح 2 — والسجل بيعرض «1 عملية»)
+        assertEquals(2, batch.counts.imported, "الحوالة ورسومها")
         val plan = desk.revert().execute(batch.id)
-        assertEquals(2, plan.toDelete.size)
+        assertEquals(2 to 2, plan.toDelete.size to plan.expectedCount)
         assertTrue(desk.all().isEmpty())
         assertTrue(desk.space.sources.listByBatch(batch.id).isEmpty())
     }
