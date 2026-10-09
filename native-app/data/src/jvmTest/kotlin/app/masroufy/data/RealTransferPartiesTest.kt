@@ -68,7 +68,7 @@ class RealTransferPartiesTest {
         assertEquals(transfers.size, parties.size, "كل تحويل في كشف الراجحي ليه طرف")
         assertEquals(0, sameAfterStorage(transfers), "المفتاح ما بيتغيرش بعد قص الأرقام")
         assertTrue(parties.none { Regex("[0-9]{5,}").containsMatchIn(it.key + it.label) }, "مفيش رقم كامل في طرف")
-        File("build/real-transfer-parties.txt").writeText(report.toString())
+        reportFile("real-transfer-parties.txt").writeText(report.toString())
     }
 
     @Test fun qnbTransfersWithoutAPartyAreOnlyTheOnesWhoseNameTheBankLost() = runBlocking<Unit> {
@@ -87,7 +87,7 @@ class RealTransferPartiesTest {
         )
         val transfers = all.filter(::isTransferLike)
         val missing = transfers.filter { transferPartyOf(it) == null }
-        File("build/real-transfer-parties-qnb.txt").writeText("QNB: تحويلات ${transfers.size} · ليها طرف ${transfers.size - missing.size}\n")
+        reportFile("real-transfer-parties-qnb.txt").writeText("QNB: تحويلات ${transfers.size} · ليها طرف ${transfers.size - missing.size}\n")
         assertTrue(transfers.isNotEmpty())
         // اللي من غير طرف: الاسم بعد IPN كله «?» (عربي ضاع من ملف البنك) — مش اسم لاتيني القارئ فوّته
         assertTrue(missing.all { Regex("IPN(?!\\s*TRANSFER)[?._ ]*[?]").containsMatchIn(it.rawDescription.orEmpty()) }, "تحويل اسمه موجود ومالوش طرف")

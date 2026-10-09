@@ -69,7 +69,7 @@ class SpacesBackupTest {
         val withPort = FullBackup(MemoryFullBackup(root(), profile), MemorySpacesBackup()).create(now).toJsonText()
         assertEquals(v2, withPort, "من غير بلد تانية: نفس الملف بالحرف")
         assertTrue("\"schemaVersion\":2," in v2 && "\"spaces\"" !in v2 && "merchantCategories" !in v2)
-        File("build/kotlin-spaces-backup-v2.json").writeText(withPort)
+        reportFile("kotlin-spaces-backup-v2.json").writeText(withPort)
     }
 
     @Test fun withEgyptItIsVersionThreeAndComesBackWhole() = runBlocking<Unit> {
@@ -79,7 +79,7 @@ class SpacesBackupTest {
         assertEquals(listOf("eg"), file.spaces!!.map { it.space.id })
         assertEquals(1L, file.counts["spaceTransfers"])
         assertTrue("\"spaces\":[{\"id\":\"eg\",\"name\":\"مصر\",\"countryCode\":\"EG\",\"currency\":\"EGP\"" in text)
-        File("build/kotlin-spaces-backup-v3.json").writeText(text)
+        reportFile("kotlin-spaces-backup-v3.json").writeText(text)
 
         // حساب جديد فاضي ⇒ استعادة ⇒ نفس البصمة، والإعادة ما بتضيفش حاجة
         val rootB = MemoryFullBackup()

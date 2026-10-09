@@ -167,7 +167,7 @@ class RealDataFlowTest {
         assertEquals(plan.totalToAdd, applied.totalAdded)
 
         report.appendLine("مصادر العمليات: ${stored.second.size} · دفعات الاستيراد: ${stored.third.size}")
-        File("build/real-data-report.txt").writeText(report.toString())
+        reportFile("real-data-report.txt").writeText(report.toString())
         assertTrue(report.isNotEmpty())
     }
 }

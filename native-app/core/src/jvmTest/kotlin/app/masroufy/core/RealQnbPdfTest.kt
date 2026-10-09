@@ -55,7 +55,7 @@ class RealQnbPdfTest {
         // كل قارئ بيرفض كشف البنك التاني (الاستيراد بيجرب الراجحي الأول وبعدين QNB)
         assertTrue(parseAlrajhiPdf(pages).rows.isEmpty(), "قارئ الراجحي ما يقراش كشف QNB")
         if (File(files, "alrajhi-pdf-pages.json").isFile) assertTrue(parseQnbPdf(pages("alrajhi-pdf-pages.json")).rows.isEmpty(), "قارئ QNB ما يقراش كشف الراجحي")
-        File("build/real-qnb-report.txt").writeText(
+        reportFile("real-qnb-report.txt").writeText(
             "عمليات: ${outcome.rows.size} · صفحات: ${outcome.pagesRead} · أنواع: ${outcome.rows.groupingBy { it.sourceOperationType }.eachCount()}\n",
         )
     }

@@ -131,6 +131,6 @@ class ScaleTest {
         assertEquals(periods, reconciled.periodsRead)
         assertEquals(formatAmount(closing), formatAmount(reconciled.result.closingMinor))
         assertEquals(0, reconciled.result.mismatches.size)
-        File("build/scale-report.txt").writeText(report.toString())
+        reportFile("scale-report.txt").writeText(report.toString())
     }
 }
