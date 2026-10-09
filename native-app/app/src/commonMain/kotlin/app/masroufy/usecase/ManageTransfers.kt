@@ -89,7 +89,11 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
     /** «ده حسابي التاني» ⇒ كل التحويلات معاه (القديم كمان — قرار المالك §39 (ج)) تحويل داخلي. بيرجّع عدد العمليات اللي اتغيرت. */
     suspend fun markOwnAccount(party: TransferPartyRef): Int = decide(party, TransferVerdict.OWN_ACCOUNT, null)
 
-    /** «ده شخص» ⇒ الصادر ليه «دعم» (لو نوعه لسه ما اتأكدش)، والوارد منه بيتسأل عن نوعه (§39.1). */
+    /**
+     * «ده شخص» ⇒ كل تحويل معاه نوعه لسه ما اتأكدش **بيتسأل** (القديم كمان): الصادر «سلفة ولا دعم؟» كل مرة (قرار المالك §75-5 —
+     * كان «دعم» لوحده) أو «ده سداد؟» لو ليه عندك دين (§75-9)، والوارد عن نوعه (§39.1) أو «ده سداد السلفة؟». الأسئلة في
+     * `TransferAskSource` والإجابة في `AnswerTransferAsks`. اللي إنت أكدته (حتى «دعم» اتحط لوحده قبل §75-5) ما بيتلمسش.
+     */
     suspend fun markPerson(party: TransferPartyRef, personId: Id): Int {
         if (deps.people.listAll().none { it.id == personId }) throw TransferZoneError(uiText(TextKey.TRANSFER_PERSON_NOT_FOUND))
         return decide(party, TransferVerdict.PERSON, personId)
@@ -103,6 +107,8 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
     /**
      * فك القرار: الطرف بيرجع يتسأل، والعمليات اللي القرار حط نوعها (تحويل داخلي / دعم) بترجع «لسه ما اتحددش» وتتسأل تاني —
      * ما بنخمّنش نوعها القديم. بيرجّع عدد العمليات اللي رجعت.
+     * ⚠️ بعد §75-5 «شخص» ما بقاش بيحط «دعم» لوحده، بس «دعم» القديم و«دعم» اللي المالك جاوبه في السؤال ما بيتفرقوش في التخزين ⇒ الفك
+     * بيرجّع الاتنين (زي ما كان). «سلفة» اللي اتجاوبت بتفضل (معاها دين). سؤال مفتوح للمالك.
      */
     suspend fun forget(key: String): Int {
         val party = deps.parties.listAll().firstOrNull { it.key == key } ?: return 0

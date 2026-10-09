@@ -583,6 +583,8 @@ enum class TextKey {
     // S4 — الكشف والرسالة · الاشتراكات · الأقساط (§75-10 · §75-7 · §75-8) — القيم في `TextsMatching.kt`
 
     // S5 — «سلفة ولا دعم؟» · سداد السلفة · التصنيف بيتفتكر (§75-5 · §75-9 · §75-16) — القيم في `TextsAsks.kt`
+    ASK_LOAN_OR_SUPPORT, ASK_LOAN_OR_SUPPORT_BODY, ASK_DEBT_COLLECTED, ASK_DEBT_COLLECTED_BODY, ASK_DEBT_REPAID, ASK_DEBT_REPAID_BODY,
+    ASK_TRANSFER_NOT_PENDING,
 
     // S6 — الداخل المستني · الراتب والشهر · التذكير الأسبوعي (§75-1 · §75-3 · §75-15) — القيم في `TextsMonth.kt`
 

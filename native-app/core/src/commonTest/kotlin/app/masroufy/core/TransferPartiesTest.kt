@@ -89,4 +89,35 @@ class TransferPartiesTest {
         assertEquals(SuspiciousParty(TransferPartyRef("علي#4567", "علي", "4567"), "2026-02", 5, 2, 3), found.single())
         assertTrue(suspiciousTransferParties(five, setOf("علي#4567")).isEmpty(), "الطرف اللي اتقرر فيه ما يتسألش تاني")
     }
+
+    private fun decided(verdict: TransferVerdict) = TransferParty("علي#4567", "علي", "4567", verdict, if (verdict == TransferVerdict.PERSON) "p-1" else null)
+
+    /** قرار المالك §75-5: الصادر لشخص بيتسأل «سلفة ولا دعم؟» كل مرة — مش «دعم» مؤكد لوحده زي §60. */
+    @Test fun personVerdictLeavesOutgoingUndecidedAndWaiting() {
+        val now = "2026-10-08T00:00:00.000Z"
+        val suggested = t(internalOp, "x").copy(economicKind = EconomicKind.PURCHASE, reviewState = ReviewState.SUGGESTED)
+        val out = applyTransferVerdict(suggested, decided(TransferVerdict.PERSON), now)
+        assertEquals(EconomicKind.UNCLASSIFIED, out.economicKind, "النوع المقترح بيتشال — التحويل لشخص مش شراء")
+        assertFalse(out.economicKindConfirmed)
+        assertEquals(ReviewState.NEEDS_REVIEW to now, out.reviewState to out.updatedAt)
+        // مستنية أصلًا ⇒ نفس العملية (مفيش كتابة على الفاضي)
+        val waiting = t(internalOp, "x")
+        assertTrue(applyTransferVerdict(waiting, decided(TransferVerdict.PERSON), now) === waiting)
+        // اللي المالك أكده — ومنه «دعم» اتحط لوحده قبل §75-5 — ما بيتلمسش
+        val oldSupport = t(internalOp, "x").copy(economicKind = EconomicKind.SUPPORT_GIFT, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED)
+        assertTrue(applyTransferVerdict(oldSupport, decided(TransferVerdict.PERSON), now) === oldSupport)
+        // الوارد زي ما هو: بيتسأل ونوعه ما بيتغيرش
+        val incoming = t(internalOp, "x", Direction.IN).copy(reviewState = ReviewState.SUGGESTED)
+        assertEquals(EconomicKind.UNCLASSIFIED to ReviewState.NEEDS_REVIEW, applyTransferVerdict(incoming, decided(TransferVerdict.PERSON), now).let { it.economicKind to it.reviewState })
+    }
+
+    @Test fun ownAccountAndDismissedDidNotChange() {
+        val now = "2026-10-08T00:00:00.000Z"
+        val loan = t(internalOp, "x").copy(economicKind = EconomicKind.LOAN_GRANTED, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED)
+        val own = applyTransferVerdict(loan, decided(TransferVerdict.OWN_ACCOUNT), now)
+        assertEquals(Triple(EconomicKind.INTERNAL_TRANSFER, true, ReviewState.CONFIRMED), Triple(own.economicKind, own.economicKindConfirmed, own.reviewState))
+        val open = t(internalOp, "x")
+        assertTrue(applyTransferVerdict(open, decided(TransferVerdict.DISMISSED), now) === open)
+        assertTrue(applyTransferVerdict(open, null, now) === open)
+    }
 }

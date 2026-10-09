@@ -87,11 +87,15 @@ class ManageTransfersTest {
         assertEquals(TransferVerdict.OWN_ACCOUNT, manage().zone().rows.first().decision?.verdict)
     }
 
-    @Test fun personMakesOutgoingSupportAndAsksAboutIncoming() = runBlocking<Unit> {
+    @Test fun personAsksAboutOutgoingAndIncoming() = runBlocking<Unit> {
         val ali = manage().zone().questions.single().party
         assertFailsWith<TransferZoneError> { manage().markPerson(ali, "p-مش-موجود") }
-        assertEquals(4, manage().markPerson(ali, "p-1"), "2 صادر اتحولوا دعم + 2 وارد بقوا يتسألوا")
-        assertEquals(EconomicKind.SUPPORT_GIFT, byId(aliTxns[0].id).economicKind)
+        assertEquals(4, manage().markPerson(ali, "p-1"), "2 صادر + 2 وارد بقوا يتسألوا")
+        val out = byId(aliTxns[0].id)
+        assertEquals(
+            Triple(EconomicKind.UNCLASSIFIED, false, ReviewState.NEEDS_REVIEW), Triple(out.economicKind, out.economicKindConfirmed, out.reviewState),
+            "الصادر بيتسأل «سلفة ولا دعم؟» — مش دعم لوحده (§75-5)",
+        )
         assertEquals(EconomicKind.LOAN_GRANTED, byId(aliTxns[3].id).economicKind, "اللي إنت أكدته قبل كده ما بيتكتبش فوقه")
         val incoming = byId(aliTxns[1].id)
         assertEquals(EconomicKind.UNCLASSIFIED to ReviewState.NEEDS_REVIEW, incoming.economicKind to incoming.reviewState, "الوارد يتسأل — ما يتصنفش لوحده (§39.1)")
