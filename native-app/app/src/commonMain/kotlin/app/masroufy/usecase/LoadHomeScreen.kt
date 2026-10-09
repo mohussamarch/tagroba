@@ -77,7 +77,10 @@ data class HomeScreenData(
     val coverage: DataCoverage,
     /** آخر ست فترات، الأحدث الأول. */
     val recentPeriods: List<PeriodSummary>,
-    /** «حركة الفلوس» (اللي دخل واللي خرج فعلًا) — جنب الدخل الحقيقي، مش بداله (§58). السلفة هنا، مش في الدخل. */
+    /**
+     * «حركة الفلوس» (اللي دخل واللي خرج فعلًا) — جنب الدخل الحقيقي، مش بداله (§58). السلفة هنا، مش في الدخل. بتاريخ العملية: الراتب
+     * اللي نزل في آخر الفترة وبيتحسب للجاية ([countedInNextPeriod]) هنا، واللي نزل قبلها واتحسب فيها لأ.
+     */
     val cash: CashMovement = CashMovement(0, 0),
     /**
      * §75-1: الداخل المستني برّه الدخل لحد ما يتأكد (عدده ومبلغه لكل عملة ومعرّفاته). لو فيه: [incomeMinor] «لحد دلوقتي» (من غير
@@ -190,7 +193,8 @@ class LoadHomeScreen(private val deps: LoadHomeScreenDeps) {
             },
             coverage = coverage,
             recentPeriods = recentPeriods,
-            cash = cashMovement(transactions),
+            // §58: اللي دخل وخرج **فعلًا** في الفترة بتاريخه — الراتب اللي اتنقل للشهر الجديد (§75-3) بيتنقل في الدخل بس
+            cash = cashMovement(periodRows.arrived),
             pendingIncomingCount = estimated.pendingIncomingCount,
             pendingIncomingMinor = estimated.pendingIncomingByCurrency,
             pendingIncomingIds = estimated.pendingIncomingIds,

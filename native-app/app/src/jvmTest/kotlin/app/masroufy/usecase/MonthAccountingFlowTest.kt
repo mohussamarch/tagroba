@@ -7,6 +7,7 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.EstimatePolicy
 import app.masroufy.core.Period
 import app.masroufy.core.ReviewState
+import app.masroufy.core.SALARY_EARLY_DAYS
 import app.masroufy.core.Transaction
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.countingReadStart
@@ -119,13 +120,13 @@ class MonthAccountingFlowTest {
     @Test fun midMonthSalaryAndOtherIncomingStayInTheirMonth() = runBlocking<Unit> {
         val w = World(
             listOf(
-                salary("sal-mid", "2026-09-15"),
+                salary("sal-mid", "2026-09-12"),
                 txn("bonus", "2026-09-26", 50_000, EconomicKind.BONUS, Direction.IN),
                 unknownIn("gift", "2026-09-26", 30_000),
             ),
         )
         val homeAug = w.home(aug, "2026-09-27", history = false)
-        assertEquals(1_250_000, homeAug.incomeMinor, "راتب نص الشهر والمكافأة في أغسطس — الراتب بس اللي بيتنقل وقرب يوم 28 بس")
+        assertEquals(1_250_000, homeAug.incomeMinor, "راتب النص الأول من الفترة (16 يوم قبل 28) والمكافأة في أغسطس — الراتب بس اللي بيتنقل، ومن النص التاني بس")
         assertEquals(listOf("gift"), homeAug.pendingIncomingIds, "الداخل المجهول في شهره ومستني")
         assertEquals(emptyList(), homeAug.countedInNextPeriod)
         assertEquals(0, w.home(sep, "2026-10-05", history = false).incomeMinor)
@@ -142,18 +143,18 @@ class MonthAccountingFlowTest {
         assertTrue(w.txns.reads.all { (from, _) -> from.endsWith("-28") }, "القراية من أول الفترة بالظبط: ${w.txns.reads}")
     }
 
-    @Test fun readsStayBoundedByThePeriodAndAWeek() = runBlocking<Unit> {
+    @Test fun readsStayBoundedByThePeriodAndHalfAMonth() = runBlocking<Unit> {
         val w = earlySalary()
         w.home(sep, "2026-10-05")
         val periods = (0 until 6).map { if (it == 0) sep else shiftPeriod(sep, -it, 28) }
-        assertEquals(periods.map { countingReadStart(it.start) to it.end }, w.txns.reads, "قراية واحدة لكل فترة: من 7 أيام قبلها لآخرها")
+        assertEquals(periods.map { countingReadStart(it.start) to it.end }, w.txns.reads, "قراية واحدة لكل فترة: من 15 يوم قبلها لآخرها")
         w.txns.reads.clear()
         w.list(sep)
         w.budget(sep, "2026-10-05")
         w.history.load(sep, 28, w.home(sep, "2026-10-05", history = false))
         w.money.load(sep.start, sep.end, 28)
         assertTrue(w.txns.reads.isNotEmpty())
-        assertTrue(w.txns.reads.all { (from, to) -> daysBetween(from, to) + 1 <= 31 + 7 }, "ولا قراية أطول من فترة وأسبوع: ${w.txns.reads}")
+        assertTrue(w.txns.reads.all { (from, to) -> daysBetween(from, to) + 1 <= 31 + SALARY_EARLY_DAYS }, "ولا قراية أطول من فترة ونص: ${w.txns.reads}")
     }
 
     @Test fun pendingIncomingIsShownApartAndNumbersStayAvailable() = runBlocking<Unit> {
@@ -194,6 +195,11 @@ class MonthAccountingFlowTest {
         val budget = w.budget(sep, "2026-10-05")
         assertTrue(budget.spentKnown, "الميزانية: «0 من 300» صح هنا — مفيش صرف مجهول")
         assertEquals(300_000, budget.totalStatus!!.remainingMinor)
+        // مراجعة S6: شاشة العمليات زي الرئيسية (مش «غير متاح»)، والميزانية مش «تقريبي» — المستني مش جوه الرقم ولا بتخمين
+        assertEquals(0L to 0L, w.list(sep).let { it.incomeMinor to it.expenseMinor })
+        assertEquals(1, w.list(sep).pendingIncomingCount)
+        assertTrue(budget.spentReliable)
+        assertEquals(null, budget.spentNote)
         val older = World(listOf(unknownIn("in-0", "2026-09-02", 150_000))).home(sep, "2026-10-05").recentPeriods[1]
         assertEquals(aug.key to 0L, older.period.key to older.incomeMinor, "فترة قديمة فيها مستني بس ⇒ معروفة برضه")
     }

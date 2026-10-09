@@ -115,16 +115,33 @@ fun membershipChanges(existing: List<ProjectLink>, projectId: Id, transactionId:
     return listOf(ProjectLink(first?.id ?: projectLinkId(projectId, transactionId), projectId, transactionId, "manual", first?.createdAt ?: now))
 }
 
-data class ProjectSummary(val spentMinor: Halalas, val receivedMinor: Halalas, val count: Int, val estimatedCount: Int, val needsReviewCount: Int)
+/**
+ * §75-1: الداخل المستني (نوعه مش معروف ومش متأكد) **برّه** [receivedMinor] لحد ما يتأكد — زي الدخل في الرئيسية. عدده ومبلغه لكل عملة
+ * ومعرّفاته هنا عشان الشاشة تقول «فيه داخل مستني» جنب «اللي جالك» والصافي (وإلا مشروع جاله فلوس يبان خسران من غير سبب).
+ */
+data class ProjectSummary(
+    val spentMinor: Halalas,
+    val receivedMinor: Halalas,
+    val count: Int,
+    val estimatedCount: Int,
+    val needsReviewCount: Int,
+    val pendingIncomingCount: Int = 0,
+    val pendingIncomingMinor: Map<Currency, Halalas> = emptyMap(),
+    val pendingIncomingIds: List<Id> = emptyList(),
+)
 
 /**
  * صافي مشروع الشغل = اللي جالك منه − اللي صرفته عليه. بيطلع **سالب** لو المشروع خسران —
  * ومفيش سبب يخبّي ده (القاعدة 10). لمشروع شخصي الرقم ده معناه «كلّفك كام بعد اللي جالك».
+ * فيه داخل مستني ([ProjectSummary.pendingIncomingCount] > 0) ⇒ الصافي «لحد دلوقتي» من غيره، والشاشة تعرض المستني جنبه.
  */
 fun projectNetMinor(summary: ProjectSummary): Halalas = subtractMoney(summary.receivedMinor, summary.spentMinor)
 
 fun summarizeProject(transactions: List<Transaction>, allocations: List<PersonAllocation>, categoryNameById: Map<String, String>): ProjectSummary {
     val view = withEstimatedKinds(transactions, categoryNameById)
     val totals = computePeriodTotals(view.transactions, allocations)
-    return ProjectSummary(addMoney(totals.personalExpenseMinor, totals.excludedExpenseMinor), totals.incomeMinor, transactions.size, view.estimatedCount, view.needsReviewCount)
+    return ProjectSummary(
+        addMoney(totals.personalExpenseMinor, totals.excludedExpenseMinor), totals.incomeMinor, transactions.size, view.estimatedCount, view.needsReviewCount,
+        view.pendingIncomingCount, view.pendingIncomingByCurrency, view.pendingIncomingIds,
+    )
 }

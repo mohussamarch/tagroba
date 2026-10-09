@@ -15,6 +15,8 @@ import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.countsAsIncome
 import app.masroufy.core.countsAsPersonalExpense
 import app.masroufy.core.ruleFor
+import app.masroufy.core.sumMoney
+import app.masroufy.core.Transaction
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.CategoryRepository
@@ -43,6 +45,17 @@ data class MoneySummary(
      */
     val pendingIncomingCount: Int = 0,
     val pendingIncomingMinor: Map<Currency, Halalas> = emptyMap(),
+    /**
+     * §75-3 (لما المدى شهور مالية): [cash] بتاريخ العملية (§58 — اللي دخل فعلًا)، والدخل بشهر الراتب. الفرق بينهم راتبين:
+     * - [countedInNextPeriod]: نزل في آخر المدى وبيتحسب للشهر اللي بعده ⇒ في «اللي دخل» ومش في [incomeMinor] (لما المدى «لحد النهارده»
+     *   ده راتب الشهر الجاي اللي نزل بدري — الشاشة تعرضه بعلامة «بيتحسب للشهر الجديد»).
+     * - [countedFromEarlier]: نزل قبل أول المدى بشوية واتحسب فيه ⇒ في [incomeMinor] ومش في «اللي دخل».
+     * مبالغهم جاهزة ([countedInNextPeriodMinor] · [countedFromEarlierMinor]) عشان الشاشة ما تحسبش.
+     */
+    val countedInNextPeriod: List<Transaction> = emptyList(),
+    val countedInNextPeriodMinor: Halalas = 0,
+    val countedFromEarlier: List<Transaction> = emptyList(),
+    val countedFromEarlierMinor: Halalas = 0,
 )
 
 data class LoadMoneySummaryDeps(
@@ -58,7 +71,8 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
      */
     suspend fun load(from: IsoDate, to: IsoDate, payday: Int? = null): MoneySummary {
         val names = deps.categories.listAll().associate { it.id to it.name }
-        val raw = loadRangeRows(deps.txns, from, to, payday, names).rows
+        val range = loadRangeRows(deps.txns, from, to, payday, names)
+        val raw = range.rows
         // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (OVERRIDES §18)، والداخل المستني برّه الدخل (§75-1)
         val view = withEstimatedKinds(raw, names)
         val rows = view.transactions
@@ -80,11 +94,16 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, t.amountMinor)
         }
         return MoneySummary(
-            from, to, cashMovement(rows),
+            // §58: اللي دخل وخرج فعلًا في المدى بتاريخه — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس
+            from, to, cashMovement(range.arrived),
             incomeMinor = if (unknown) null else totals.incomeMinor,
             expenseMinor = if (unknown) null else totals.personalExpenseMinor,
             inflowNotIncome = notIncome, outflowNotExpense = notExpense, coverage = coverage,
             pendingIncomingCount = view.pendingIncomingCount, pendingIncomingMinor = view.pendingIncomingByCurrency,
+            countedInNextPeriod = range.countedInNextPeriod,
+            countedInNextPeriodMinor = sumMoney(range.countedInNextPeriod.map { it.amountMinor }),
+            countedFromEarlier = range.countedFromEarlier,
+            countedFromEarlierMinor = sumMoney(range.countedFromEarlier.map { it.amountMinor }),
         )
     }
 }

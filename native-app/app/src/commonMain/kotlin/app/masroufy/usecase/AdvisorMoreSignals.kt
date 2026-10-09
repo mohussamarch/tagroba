@@ -19,7 +19,10 @@ import app.masroufy.core.assessCoverage
 import app.masroufy.core.beforePaydayCandidate
 import app.masroufy.core.bigOneCandidate
 import app.masroufy.core.billJumpCandidate
+import app.masroufy.core.countingDate
+import app.masroufy.core.countingReadStart
 import app.masroufy.core.dupSubsCandidates
+import app.masroufy.core.periodForDate
 import app.masroufy.core.goalNearCandidate
 import app.masroufy.core.lastWeekEnd
 import app.masroufy.core.payFirstCandidate
@@ -70,13 +73,15 @@ internal suspend fun moreAdvisorCandidates(
         beforePaydayCandidate(p, dues, usualOutsideDues, period.days, input.today, currency)?.let { out += it }
     }
 
-    // payFirst: آخر مرتب (نوعه «مرتب» فعلًا — مش التقدير) جوه الفترة
+    // payFirst: آخر مرتب (نوعه «مرتب» فعلًا — مش التقدير) بيتحسب للفترة دي أو للجاية (§75-3: اللي نزل قبل يوم الراتب بشوية للشهر
+    // الجديد) — التنبيه يوم ما ينزل، وموضوعه شهر حسابه ⇒ مرة واحدة للشهر حتى لو نزل قبل أوله
     val goals = ctx.goals.orEmpty().filter { it.goal.currency == currency }
     if (goals.isNotEmpty()) {
-        val salary = deps.txns.listByDateRange(period.start, input.today)
+        val salary = deps.txns.listByDateRange(countingReadStart(period.start), input.today)
             .filter { it.currency == currency && it.observedDirection == Direction.IN && it.economicKind == EconomicKind.SALARY }
-            .maxOfOrNull { it.occurredAt }
-        for (g in goals) payFirstCandidate(salary, g, input.today, period, currency)?.let { out += it }
+            .maxByOrNull { it.occurredAt }
+        val countedIn = salary?.let { periodForDate(countingDate(it, ctx.payday), ctx.payday) }
+        for (g in goals) payFirstCandidate(salary?.occurredAt, g, input.today, period, currency, countedIn)?.let { out += it }
         for (g in goals) goalNearCandidate(g)?.let { out += it }
     }
 
@@ -118,11 +123,14 @@ internal suspend fun moreAdvisorCandidates(
     return out
 }
 
-/** عدد «محتاجة تأكيد» للتذكير — مش متوصل أو فشل ⇒ صفر (من غير سطر — ما بنقولش «0» مكان «مش معروف»). */
+/**
+ * عدد «محتاجة تأكيد» للتذكير — **أسئلة البلد دي بس** (المساعد بيشتغل مرة لكل بلد؛ عدّ واحد مشترك لكل البلاد كان هيطلع نفس التذكير
+ * مرتين). مش متوصل أو فشل ⇒ صفر (من غير سطر — ما بنقولش «0» مكان «مش معروف»).
+ */
 private suspend fun needsConfirmationCount(deps: AdvisorSignalsDeps, today: String, period: Period): Int {
     val count = deps.needsConfirmation ?: return 0
     return try {
-        count.load(today, period).total
+        count.load(today, period, deps.spaceId).total
     } catch (e: CancellationException) {
         throw e
     } catch (_: Exception) {

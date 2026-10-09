@@ -10,6 +10,10 @@ import app.masroufy.core.PendingAsk
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Transaction
 import app.masroufy.core.buildPeriod
+import app.masroufy.core.dayNumberToIso
+import app.masroufy.core.parseIsoDate
+import app.masroufy.core.periodForDate
+import app.masroufy.core.toDayNumber
 import app.masroufy.memory.MemoryCategoryRepository
 import app.masroufy.memory.MemoryTransactionRepository
 import app.masroufy.port.AskSource
@@ -30,6 +34,7 @@ class NeedsConfirmationTest {
 
     private val period = buildPeriod(2026, 9, 28)
     private val today = "2026-10-05"
+    private val lookback = CountNeedsConfirmation.LOOKBACK_DAYS
 
     private fun ask(kind: AskKind, txn: String? = null, msg: String? = null, date: String? = "2026-10-01", space: String = "sa") =
         PendingAsk(kind, space, transactionId = txn, messageId = msg, date = date)
@@ -60,6 +65,12 @@ class NeedsConfirmationTest {
         val found = CountNeedsConfirmation(listOf(source)).load(today, period)
         assertEquals(listOf(period.start to today), windows, "النافذة: من أول الفترة لحد النهارده")
         assertEquals(listOf("now", "undated", "old-msg"), found.asks.map { it.transactionId ?: it.messageId })
+        // أول أسبوع في الفترة: النافذة بتبدأ من أسبوع قبل النهارده (آخر أيام الشهر اللي فات جوه)
+        val early = CountNeedsConfirmation(listOf(source)).load("2026-10-01", period)
+        assertEquals("2026-09-24" to "2026-10-01", windows.last())
+        assertEquals(listOf("now", "undated", "old-msg"), early.asks.map { it.transactionId ?: it.messageId }, "20 سبتمبر أقدم من أسبوع")
+        val beforeWeek = CountNeedsConfirmation(listOf(source)).load("2026-09-27", buildPeriod(2026, 8, 28))
+        assertEquals(listOf("old", "undated", "old-msg"), beforeWeek.asks.map { it.transactionId ?: it.messageId }, "في فترته: جوه")
         // قبل ما الفترة تبدأ (اليوم قبلها) ⇒ النافذة يوم البداية بس
         CountNeedsConfirmation(listOf(source)).load("2026-09-01", period)
         assertEquals(period.start to period.start, windows.last())
@@ -76,6 +87,29 @@ class NeedsConfirmationTest {
         assertEquals(4, found.total, "نفس المعرّف في بلدين = حاجتين · سؤال من غير معرّف بيتعد لوحده")
         assertEquals(mapOf(AskKind.INCOMING_KIND to 2, AskKind.SMS_WAITING to 2), found.byKind)
         assertEquals(0, CountNeedsConfirmation(emptyList()).load(today, period).total)
+        // المساعد بيشتغل مرة لكل بلد ⇒ كل ملخص أسبوعي بيعدّ أسئلة بلده بس (مش نفس التذكير مرتين)
+        assertEquals(listOf("sa", "sa", "sa"), CountNeedsConfirmation(listOf(source)).load(today, period, "sa").asks.map { it.spaceId })
+        assertEquals(1, CountNeedsConfirmation(listOf(source)).load(today, period, "eg").total)
+    }
+
+    /**
+     * مراجعة S6: داخل مستني وصل قبل يوم الراتب بيومين كان بيختفي من العدّ يوم ما الفترة الجديدة تبدأ (وهو لسه مستني). النافذة دلوقتي
+     * فيها الأسبوع اللي فات دايمًا ⇒ كل سؤال بيطلع في تذكير أسبوعي واحد على الأقل.
+     */
+    @Test fun lastWeekStaysCountedAfterPayday() = runBlocking<Unit> {
+        val aug = buildPeriod(2026, 8, 28)
+        val count = CountNeedsConfirmation(
+            listOf(IncomingAskSource(MemoryTransactionRepository(listOf(txn("in-26", "2026-09-26", Direction.IN))), MemoryCategoryRepository(), "sa")),
+        )
+        assertEquals(1, count.load("2026-09-27", aug).total)
+        assertEquals(1, count.load("2026-09-29", period).total, "تاني يوم في الفترة الجديدة: لسه في العدّ")
+        assertEquals(1, count.load("2026-10-03", period).total, "بعد أسبوع بالظبط")
+        assertEquals(0, count.load("2026-10-04", period).total, "أقدم من أسبوع ومن الفترة ⇒ في شاشته بس")
+        // الملخص الأسبوعي الجاي (أي يوم في الأسبوع اللي بعد وصوله، قبل أو بعد يوم الراتب) بيشوفه
+        for (offset in 0..lookback) {
+            val day = dayNumberToIso(toDayNumber(parseIsoDate("2026-09-26")) + offset)
+            assertEquals(1, count.load(day, periodForDate(day, 28)).total, "ملخص يوم $day")
+        }
     }
 
     private fun txn(id: String, date: String, dir: Direction, kind: EconomicKind = EconomicKind.UNCLASSIFIED, categoryId: String? = null) = Transaction(

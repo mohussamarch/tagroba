@@ -75,18 +75,29 @@ fun beforePaydayCandidate(p: LeftoverProjection, dueBeforeMinor: Halalas, usualM
 /**
  * payFirst: المرتب نزل ([salaryDate] جوه الفترة، لحد [PAY_FIRST_WINDOW_DAYS] أيام) ⇒ «حوّل المطلوب في الشهر لخطتك قبل ما تصرف».
  * خطة شغالة بس، بعملة البلد، ومطلوبها في الشهر معروف وأكبر من صفر. مرة لكل خطة في الفترة.
+ * [countedIn] = الشهر المالي اللي الراتب ده بيتحسب فيه (§75-3 — `countingDate`): لو اتبعت، الراتب بتاعه لازم يكون للفترة [period]
+ * أو اللي بعدها (نزل قبل يوم الراتب بشوية)، والموضوع بشهر حسابه ⇒ التنبيه يوم ما ينزل ومرة واحدة لشهره. من غيره ⇒ الراتب جوه [period].
  */
-fun payFirstCandidate(salaryDate: IsoDate?, progress: GoalProgress, today: IsoDate, period: Period, currency: Currency): AlertCandidate? {
+fun payFirstCandidate(
+    salaryDate: IsoDate?,
+    progress: GoalProgress,
+    today: IsoDate,
+    period: Period,
+    currency: Currency,
+    countedIn: Period? = null,
+): AlertCandidate? {
     val paid = salaryDate ?: return null
     val since = daysBetween(paid, today)
-    if (since < 0 || since > PAY_FIRST_WINDOW_DAYS || paid < period.start) return null
+    if (since < 0 || since > PAY_FIRST_WINDOW_DAYS) return null
+    if (if (countedIn == null) paid < period.start else countedIn.start < period.start) return null
+    val month = countedIn ?: period
     val g = progress.goal
     if (g.archived || g.currency != currency) return null
     if (progress.state !in setOf(GoalState.ON_TRACK, GoalState.BEHIND, GoalState.PACE_UNKNOWN, GoalState.NOT_STARTED)) return null
     val required = progress.requiredPerMonthMinor ?: return null
     if (required <= 0) return null
     return AlertCandidate(
-        AlertKind.PAY_FIRST, "payfirst|${period.start}|${g.id}", uiText(TextKey.ADVISOR_PAY_FIRST_TITLE),
+        AlertKind.PAY_FIRST, "payfirst|${month.start}|${g.id}", uiText(TextKey.ADVISOR_PAY_FIRST_TITLE),
         uiText(TextKey.ADVISOR_PAY_FIRST_BODY, formatMoney(required, currency), g.name),
     )
 }

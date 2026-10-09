@@ -128,6 +128,24 @@ class PendingIncomeTest {
         assertEquals(4 to 3, now.estimatedCount to now.needsReviewCount, "المستني جوه «محتاجة تأكيد»")
     }
 
+    /**
+     * مراجعة S6: مشروع شغل جاله 5,000 داخل لسه ما اتأكدش + صرف 1,000. «اللي جالك» من غير المستني (زي الدخل في الرئيسية)، بس الملخص
+     * بيقول إن فيه داخل مستني ومبلغه — عشان الشاشة ما تعرضش «خسران 1,000» من غير سبب.
+     */
+    @Test fun projectSummaryShowsItsPendingIncoming() {
+        val paid = t(IN, 500_000)
+        val cost = t(OUT, 100_000, kind = EconomicKind.PURCHASE, confirmed = true)
+        EstimatePolicy.current = owner
+        val now = summarizeProject(listOf(paid, cost), emptyList(), names)
+        assertEquals(0L to -100_000L, now.receivedMinor to projectNetMinor(now), "الصافي «لحد دلوقتي»")
+        assertEquals(1, now.pendingIncomingCount)
+        assertEquals(mapOf(Currency.SAR to 500_000L), now.pendingIncomingMinor)
+        assertEquals(listOf(paid.id), now.pendingIncomingIds)
+        EstimatePolicy.current = legacy
+        val old = summarizeProject(listOf(paid, cost), emptyList(), names)
+        assertEquals(400_000L to 0, projectNetMinor(old) to old.pendingIncomingCount, "القديم: الداخل راتب تقديري")
+    }
+
     @Test fun theDefaultFollowsTheAppWidePolicy() {
         val rows = listOf(t(IN, 1_000))
         assertEquals(EstimatePolicy.OWNER_2026_10, EstimatePolicy.current, "التطبيق بيشتغل بقرار المالك")

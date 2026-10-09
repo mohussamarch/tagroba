@@ -14,13 +14,20 @@ import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.TransactionRepository
 
 /**
- * عمليات الفترة **زي ما بتتحسب** (قرار المالك §75-3): الراتب اللي نزل قبل أول الفترة بشوية جوه، وراتب الفترة الجاية اللي نزل في آخرها
- * برّه ([countedInNextPeriod] — عشان الشاشة تعرضه بعلامة «بيتحسب للشهر الجديد» وما يختفيش). القراية محدودة: من
- * `countingReadStart` لآخر الفترة (ARCHITECTURE §5.6). [EstimatePolicy.LEGACY] ⇒ نفس `listByDateRange(start, end)` بالظبط.
+ * عمليات الفترة **زي ما بتتحسب** (قرار المالك §75-3): الراتب اللي نزل قبل أول الفترة بشوية جوه ([countedFromEarlier] منها)، وراتب
+ * الفترة الجاية اللي نزل في آخرها برّه ([countedInNextPeriod] — عشان الشاشة تعرضه بعلامة «بيتحسب للشهر الجديد» وما يختفيش). القراية
+ * محدودة: من `countingReadStart` لآخر الفترة (ARCHITECTURE §5.6). [EstimatePolicy.LEGACY] ⇒ نفس `listByDateRange(start, end)` بالظبط.
  * [rows] بالعمليات الأصلية (من غير التقدير) وبنفس ترتيب المستودع — الشاشة بتعمل التقدير عليها زي الأول. كل عملية بتطلع في فترة
  * واحدة بالظبط (يوم حسابها واحد).
+ * [arrived] = اللي **وصل فعلًا** في المدى بتاريخه (نفس ترتيب المستودع) — «حركة الفلوس» (§58: اللي دخل واللي خرج فعلًا) بتتحسب منه
+ * مش من [rows]: نقل الراتب للشهر الجديد بيخص **الدخل** بس.
  */
-internal data class PeriodRows(val rows: List<Transaction>, val countedInNextPeriod: List<Transaction>)
+internal data class PeriodRows(
+    val rows: List<Transaction>,
+    val countedInNextPeriod: List<Transaction>,
+    val arrived: List<Transaction> = rows,
+    val countedFromEarlier: List<Transaction> = emptyList(),
+)
 
 internal suspend fun loadPeriodRows(txns: TransactionRepository, period: Period, payday: Int, names: Map<Id, String>): PeriodRows =
     loadRangeRows(txns, period.start, period.end, payday, names)
@@ -34,14 +41,21 @@ internal suspend fun loadRangeRows(txns: TransactionRepository, from: IsoDate, t
     val counted = withEstimatedKinds(raw, names, policy).transactions
     val rows = ArrayList<Transaction>(raw.size)
     val next = mutableListOf<Transaction>()
+    val arrived = ArrayList<Transaction>(raw.size)
+    val earlier = mutableListOf<Transaction>()
     for (i in raw.indices) {
         val day = countingDate(counted[i], payday, policy)
+        val real = raw[i].occurredAt
+        if (real >= from) arrived += raw[i]
         when {
-            day in from..to -> rows += raw[i]
-            day > to && raw[i].occurredAt <= to -> next += raw[i]
+            day in from..to -> {
+                rows += raw[i]
+                if (real < from) earlier += raw[i]
+            }
+            day > to && real <= to -> next += raw[i]
         }
     }
-    return PeriodRows(rows, next)
+    return PeriodRows(rows, next, arrived, earlier)
 }
 
 /**

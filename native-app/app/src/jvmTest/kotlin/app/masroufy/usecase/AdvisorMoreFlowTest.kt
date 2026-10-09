@@ -7,6 +7,7 @@ import app.masroufy.core.ArabicVariant
 import app.masroufy.core.AskKind
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
+import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Direction
 import app.masroufy.core.DuesCategories
 import app.masroufy.core.EconomicKind
@@ -14,6 +15,7 @@ import app.masroufy.core.GoalContribution
 import app.masroufy.core.Language
 import app.masroufy.core.LocalMoment
 import app.masroufy.core.PendingAsk
+import app.masroufy.core.Period
 import app.masroufy.core.RecurringItem
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SavingsGoal
@@ -82,6 +84,7 @@ class AdvisorMoreFlowTest {
         recurring: List<RecurringItem> = emptyList(),
         asks: List<AskSource>? = null,
         extraHistory: List<Transaction> = emptyList(),
+        inputPeriod: Period = period,
     ): List<AlertCandidate> {
         val txns = MemoryTransactionRepository(history() + extraHistory + current)
         val goals = LoadGoalsOverview(
@@ -91,7 +94,7 @@ class AdvisorMoreFlowTest {
             txns, MemoryAllocationRepository(), MemoryCategoryRepository(categories), MemoryProfileRepository(emptyProfile().copy(payday = 28)),
             goals = goals, recurring = MemoryRecurringRepository(recurring), needsConfirmation = asks?.let(::CountNeedsConfirmation),
         )
-        return AdvisorSignals(deps).alertCandidates(AlertGatherInput(today, period, Currency.SAR))
+        return AdvisorSignals(deps).alertCandidates(AlertGatherInput(today, inputPeriod, Currency.SAR))
     }
 
     private fun List<AlertCandidate>.of(kind: AlertKind) = filter { it.kind == kind }
@@ -147,6 +150,23 @@ class AdvisorMoreFlowTest {
         assertEquals(emptyList(), advisor(listOf(salary), "2026-10-02", goal = true).of(AlertKind.PAY_FIRST), "بعد 4 أيام")
     }
 
+    /**
+     * مراجعة S6 (§75-3): راتب نزل 26 سبتمبر (قبل يوم 28 بيومين) = راتب فترة 28 سبتمبر. التنبيه يوم ما ينزل، وموضوعه فترته الجديدة ⇒
+     * يوم 28 نفس الموضوع (المحرك ما بيكرروش). كان مربوط بفترة أغسطس، وبعد 28 ما كانش فيه حاجة.
+     */
+    @Test fun payFirstOnAnEarlySalaryBelongsToItsNewMonth() = runBlocking<Unit> {
+        val aug = buildPeriod(2026, 8, 28)
+        val early = txn("2026-09-26", 1_500_000, null, kind = EconomicKind.SALARY, dir = Direction.IN)
+        val onArrival = advisor(listOf(early), "2026-09-26", goal = true, saved = 1_080_000, inputPeriod = aug).of(AlertKind.PAY_FIRST).single()
+        assertEquals("payfirst|2026-09-28|g-1", onArrival.threadKey)
+        val onPayday = advisor(listOf(early), "2026-09-28", goal = true, saved = 1_080_000).of(AlertKind.PAY_FIRST).single()
+        assertEquals(onArrival.threadKey, onPayday.threadKey, "نفس الموضوع ⇒ مرة واحدة")
+        assertEquals(emptyList(), advisor(listOf(early), "2026-09-30", goal = true).of(AlertKind.PAY_FIRST), "بعد 4 أيام من نزوله")
+        // راتب أغسطس نفسه (نزل 28 أغسطس) ما بيتحسبش لسبتمبر
+        val august = txn("2026-08-28", 1_500_000, null, kind = EconomicKind.SALARY, dir = Direction.IN)
+        assertEquals("payfirst|2026-08-28|g-1", advisor(listOf(august), "2026-08-30", goal = true, inputPeriod = aug).of(AlertKind.PAY_FIRST).single().threadKey)
+    }
+
     @Test fun weeklySummaryForTheWeekThatEnded() = runBlocking<Unit> {
         val weeks = listOf(txn("2026-09-21", 20_000, grocery), txn("2026-09-28", 25_000, grocery), txn("2026-10-02", 6_000, coffee))
         val w = advisor(weeks, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY).single()
@@ -176,8 +196,22 @@ class AdvisorMoreFlowTest {
     }
 
     private val weeks get() = listOf(txn("2026-09-21", 20_000, grocery), txn("2026-09-28", 25_000, grocery), txn("2026-10-02", 6_000, coffee))
-    private fun asks(n: Int) = listOf(AskSource { _, _ -> (1..n).map { PendingAsk(AskKind.LOAN_OR_SUPPORT, "sa", transactionId = "q-$it", date = "2026-10-01") } })
+    /** [n] سؤال في البلد الافتراضية (بلد المساعد في الاختبار) و[other] في مصر. */
+    private fun asks(n: Int, other: Int = 0) = listOf(
+        AskSource { _, _ ->
+            (1..n).map { PendingAsk(AskKind.LOAN_OR_SUPPORT, DEFAULT_SPACE_ID, transactionId = "q-$it", date = "2026-10-01") } +
+                (1..other).map { PendingAsk(AskKind.LOAN_OR_SUPPORT, "eg", transactionId = "q-$it", date = "2026-10-01") }
+        },
+    )
     private suspend fun weekly(current: List<Transaction>, n: Int?) = advisor(current, "2026-10-05", asks = n?.let(::asks)).of(AlertKind.WEEKLY_SUMMARY)
+
+    /** مراجعة S6: المساعد بيشتغل مرة لكل بلد ⇒ الملخص بيعدّ أسئلة بلده بس، فعدّ واحد مشترك لكل البلاد ما يطلعش نفس التذكير مرتين. */
+    @Test fun reminderCountsOnlyThisCountrysAsks() = runBlocking<Unit> {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        val mixed = advisor(emptyList(), "2026-10-05", asks = asks(2, other = 3)).of(AlertKind.WEEKLY_SUMMARY).single()
+        assertEquals("عندك عمليتين محتاجين تأكيد", mixed.body, "التلاتة اللي في مصر في ملخص مصر")
+        assertEquals(emptyList(), advisor(emptyList(), "2026-10-05", asks = asks(0, other = 3)).of(AlertKind.WEEKLY_SUMMARY))
+    }
 
     @Test fun weeklySummaryRemindsWhatNeedsConfirmation() = runBlocking<Unit> {
         val spent = "صرفت 310.00 ر.س هذا الأسبوع · أكثر بـ110.00 ر.س من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (250.00 ر.س)"

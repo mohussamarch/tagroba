@@ -118,8 +118,10 @@ class LoadTransactionsScreen(private val deps: LoadTransactionsScreenDeps) {
         val unclassifiedCount = estimated.needsReviewCount
         val totalCount = transactions.size
 
-        // فيه عمليات، لكن ولا واحدة اتحدد نوعها ⇒ المجاميع مجهولة مش صفر
-        val allUnknown = totalCount > 0 && unclassifiedCount == totalCount
+        // فيه عمليات، لكن ولا واحدة اتحدد نوعها ⇒ المجاميع مجهولة مش صفر. الداخل المستني (§75-1) برّه العدّين: مش «نوع مش معروف
+        // جوه المجاميع» — برّه الدخل ومعدود لوحده، زي الرئيسية (فترة كل اللي فيها داخل مستني = دخل وصرف معروفين صفر)
+        val pending = estimated.pendingIncomingCount
+        val allUnknown = totalCount - pending > 0 && unclassifiedCount - pending == totalCount - pending
 
         return TransactionsScreenData(
             period = period,
