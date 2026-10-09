@@ -12,6 +12,8 @@ import app.masroufy.port.BudgetRepository
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.DebtTermsRepository
 import app.masroufy.port.EventLinkRepository
+import app.masroufy.port.FullBackupPort
+import app.masroufy.port.SpacesBackupPort
 import app.masroufy.port.GoalContributionRepository
 import app.masroufy.port.ImportBatchRepository
 import app.masroufy.port.IncomeSourceRepository
@@ -112,4 +114,8 @@ data class SpaceRepositories(
     val profile: ProfileRepository,
     val spaces: SpaceRegistry,
     val spaceTransfers: SpaceTransferRepository,
+    /** النسخة الشاملة للحساب كله (منطقة «المزيد» — `FullBackup`). null = مش متوصلة (اختبار من غيرها) ⇒ الشاشة بتقول «غير متاح بعد». */
+    val fullBackup: FullBackupPort? = null,
+    /** البلاد التانية في النسخة الشاملة (الإصدار 3). */
+    val spacesBackup: SpacesBackupPort? = null,
 )
