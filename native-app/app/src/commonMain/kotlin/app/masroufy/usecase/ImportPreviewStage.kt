@@ -124,8 +124,9 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
             selectedByDefault = verdict.state == MatchingState.NEW,
         )
     }
-    // §75-10 (S4): الكشف والرسالة نفس الحركة ⇒ دمج. null = من غير دمج (ملفات المرجع بالحرف)
-    val lines = if (window != null) applyCrossSource(deps, request, scanned, ledger, window) else scanned
+    // §75-10 (S4): الكشف والرسالة نفس الحركة ⇒ دمج. null = من غير دمج (ملفات المرجع بالحرف). نص السطر = سطر الملف في الـCSV بس
+    val textLines = request.parsedRows == null && (outcome.schema == SchemaId.PREVIEW || outcome.schema == SchemaId.LEGACY)
+    val lines = if (window != null) applyCrossSource(deps, request, scanned, ledger, window, textLines) else scanned
 
     val counts = ImportCountsPreview(
         total = outcome.rows.size + outcome.errors.size,

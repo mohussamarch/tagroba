@@ -12,8 +12,11 @@ import kotlin.math.abs
  * - **احتمال واحد بس من الناحيتين** ⇒ دمج: السطر ليه عملية واحدة مرشحة، والعملية دي ليها السطر ده بس. أي احتمالين ⇒ «شبه عملية» ويسأل
  *   (ما بنختارش بالتخمين) — وكده كل عملية موجودة بتبلع سطر وارد واحد بالكتير.
  * - العملية اللي اتدمجت قبل كده (ليها المصدرين) ما بتبلعش تاني؛ والرسالة أو السطر اللي **مرجعه** متسجل عليها (بنفس المبلغ والاتجاه) أو
- *   **نصه بالحرف** ([CrossSourceExisting.hashes] — كشف من غير مرجع ولا رصيد) ⇒ «متسجلة خلاص»: إعادة استيراد نفس الكشف ما بتكررش العملية
- *   (اسم المحل في العملية المدموجة بتاع الرسالة، فمنع التكرار العادي ما كانش هيعرفها).
+ *   **نصه بالحرف** ([CrossSourceExisting.hashes] — سطر كشف CSV من غير مرجع ولا رصيد) ⇒ «متسجلة خلاص»: إعادة استيراد نفس الكشف ما بتكررش
+ *   العملية (اسم المحل في العملية المدموجة بتاع الرسالة، فمنع التكرار العادي ما كانش هيعرفها).
+ * - **النص بالحرف ضيّق عن قصد** (مراجعة S4): «التشابه ما بيمسحش أبدًا» (`Dedupe.kt`)، والنص لوحده بيتشابه بين عمليتين مختلفتين فعلًا —
+ *   سطور الـPDF نصها «صفحة N · التاريخ» بس، ورسالتين لنفس المحل بنفس المبلغ في نفس اليوم نصهم واحد. فالنص بيحكم بس لسطر **كشف** من غير
+ *   مرجع (المستدعي بيبعت البصمة لسطر CSV من غير مرجع ولا رصيد بس)، وعلى عملية مدموجة **بنفس المبلغ والاتجاه وجوه النافذة** من السطر ده.
  *
  * [classifyCandidate] (ملف المرجع `dedupe.json`) ما اتلمسش: الدمج طبقة بعده، ومن غير نافذة (null) المعاينة هي هي بالحرف.
  */
@@ -38,7 +41,7 @@ data class CrossSourceExisting(
     val fromSms: Boolean,
     val fromStatement: Boolean,
     val references: Set<String> = emptySet(),
-    /** بصمات نص سجلات مصدرها (`SourceRecord.sourceHash`) — بالتكرار (سطرين متطابقين بالحرف = بصمتين). */
+    /** بصمات نص سجلات **الكشف** بتاعتها (`SourceRecord.sourceHash` — مش الرسايل) — بالتكرار (سطرين متطابقين بالحرف = بصمتين). */
     val hashes: List<String> = emptyList(),
 ) {
     /** ليها المصدرين خلاص (اتدمجت قبل كده). */
@@ -55,7 +58,10 @@ data class CrossSourceRow(
     val reference: String?,
     val state: MatchingState,
     val matchedTransactionId: Id? = null,
-    /** بصمة نص السطر (`hashContent(raw)`) — null = ما بيتقارنش بالنص. */
+    /**
+     * بصمة نص السطر (`hashContent(raw)`) — null = ما بيتقارنش بالنص. المستدعي بيبعتها **بس** لسطر كشف نصه هو السطر نفسه (CSV) ومن غير
+     * مرجع ولا رصيد معلن (المرجع والرصيد بيحسموا من غيرها). رسالة البنك ما بتتقارنش بالنص أبدًا (مرجعها فريد).
+     */
     val hash: String? = null,
 )
 
@@ -65,8 +71,11 @@ sealed interface CrossSourceVerdict {
     /** نفس الحركة ⇒ السطر ما بيعملش عملية جديدة، بيتسجل مصدر تاني للعملية دي. */
     data class Merge(override val transactionId: Id) : CrossSourceVerdict
 
-    /** أكتر من احتمال ⇒ «شبه عملية» (الأقرب في التاريخ) ويستنى قرار المالك. */
-    data class Ambiguous(override val transactionId: Id) : CrossSourceVerdict
+    /**
+     * أكتر من احتمال ⇒ «شبه عملية» (الأقرب في التاريخ) ويستنى قرار المالك. [candidates] = كل الاحتمالات (الأقرب الأول) — المالك يقدر
+     * يختار واحدة منهم «هي دي» (`ImportStatement.commit(mergeChoices)`).
+     */
+    data class Ambiguous(override val transactionId: Id, val candidates: List<Id>) : CrossSourceVerdict
 
     /** مرجع السطر متسجل خلاص على عملية اتدمجت ⇒ مكرر. */
     data class AlreadyMerged(override val transactionId: Id) : CrossSourceVerdict
@@ -76,8 +85,22 @@ private fun trimmedReference(reference: String?): String? = reference?.let(JsTex
 
 /** المرشحين لسطر: من المصدر التاني بس، ولسه ما اتدمجوش، وبنفس المبلغ والاتجاه جوه النافذة. */
 private fun candidatesOf(row: CrossSourceRow, existing: List<CrossSourceExisting>, windowDays: Int): List<CrossSourceExisting> = existing.filter { e ->
-    !e.merged && (if (row.fromSms) e.fromStatement else e.fromSms) && e.direction == row.direction && e.amountMinor == row.amountMinor &&
-        abs(daysBetween(row.date, e.date)) <= windowDays
+    !e.merged && (if (row.fromSms) e.fromStatement else e.fromSms) && sameMovement(row, e, windowDays)
+}
+
+/** نفس المبلغ (زي ما ورد) ونفس الاتجاه وجوه النافذة. */
+private fun sameMovement(row: CrossSourceRow, e: CrossSourceExisting, windowDays: Int): Boolean =
+    e.direction == row.direction && e.amountMinor == row.amountMinor && abs(daysBetween(row.date, e.date)) <= windowDays
+
+/**
+ * سطر كشف من غير مرجع نصه بالحرف نص سطر كشف اتدمج قبل كده ⇒ العملية المدموجة دي (وبتتشال من الطابور: كل بصمة بتبلع سطر واحد بس).
+ * بس لو العملية **نفس الحركة** للسطر ده (المبلغ والاتجاه والنافذة) — النص لوحده مش كفاية. الرسالة عمرها ما بتتقارن بالنص.
+ */
+private fun takeTextTwin(row: CrossSourceRow, byHash: Map<String, ArrayDeque<CrossSourceExisting>>, windowDays: Int): CrossSourceExisting? {
+    if (row.fromSms || trimmedReference(row.reference) != null) return null
+    val queue = row.hash?.let { byHash[it] } ?: return null
+    val at = queue.indexOfFirst { sameMovement(row, it, windowDays) }
+    return if (at < 0) null else queue.removeAt(at)
 }
 
 /**
@@ -89,17 +112,17 @@ fun matchCrossSource(rows: List<CrossSourceRow>, existing: List<CrossSourceExist
     val out = LinkedHashMap<Int, CrossSourceVerdict>()
     val mergedByReference = HashMap<String, CrossSourceExisting>()
     // كل بصمة بتبلع سطر واحد بس: سطرين متطابقين بالحرف وواحد بس منهم اتدمج ⇒ التاني بيكمّل في منع التكرار العادي
-    val mergedByHash = HashMap<String, ArrayDeque<Id>>()
+    val mergedByHash = HashMap<String, ArrayDeque<CrossSourceExisting>>()
     for (e in existing) {
         if (!e.merged) continue
         for (ref in e.references) mergedByReference.getOrPut(ref) { e }
-        for (h in e.hashes) mergedByHash.getOrPut(h) { ArrayDeque() }.addLast(e.transactionId)
+        for (h in e.hashes) mergedByHash.getOrPut(h) { ArrayDeque() }.addLast(e)
     }
     for (row in rows) {
         if (row.state == MatchingState.DUPLICATE || row.state == MatchingState.INVALID) continue
         // نفس المرجع بمبلغ أو اتجاه تاني = تعارض حقيقي ⇒ حكم منع التكرار العادي بيفضل
         val byRef = trimmedReference(row.reference)?.let { mergedByReference[it] }?.takeIf { it.amountMinor == row.amountMinor && it.direction == row.direction }
-        val id = byRef?.transactionId ?: row.hash?.let { mergedByHash[it]?.removeFirstOrNull() } ?: continue
+        val id = byRef?.transactionId ?: takeTextTwin(row, mergedByHash, windowDays)?.transactionId ?: continue
         out[row.lineNumber] = CrossSourceVerdict.AlreadyMerged(id)
     }
 
@@ -120,14 +143,15 @@ fun matchCrossSource(rows: List<CrossSourceRow>, existing: List<CrossSourceExist
         out[row.lineNumber] = if (only != null && degree[only.transactionId] == 1) {
             CrossSourceVerdict.Merge(only.transactionId)
         } else {
-            CrossSourceVerdict.Ambiguous(list.minWith(compareBy({ abs(daysBetween(row.date, it.date)) }, { it.date }, { it.transactionId })).transactionId)
+            val nearestFirst = list.sortedWith(compareBy({ abs(daysBetween(row.date, it.date)) }, { it.date }, { it.transactionId })).map { it.transactionId }
+            CrossSourceVerdict.Ambiguous(nearestFirst.first(), nearestFirst)
         }
     }
     return out
 }
 
 /**
- * النسخة الشاملة (الشريحة S4): سجل الدمج ([SourceRecord.mergeUndo]) لازم يبقى خريطة بتاريخ صحيح وأعداد صحيحة وعلى سجل «مكرر» مربوط بعملية،
+ * النسخة الشاملة (الشريحة S4): سجل الدمج ([SourceRecord.mergeUndo]) لازم يبقى خريطة بتواريخ صحيحة وأعداد صحيحة وعلى سجل «مكرر» مربوط بعملية،
  * و«مش ده» ([InstallmentPlan.dismissedTxnIds] · [Rosca.dismissedTxnIds]) قايمة معرّفات نصية. بيرجّع اسم الحقل الغلط أو null.
  */
 fun matchingBackupProblem(group: String, row: Map<String, Any?>): String? {
@@ -135,7 +159,11 @@ fun matchingBackupProblem(group: String, row: Map<String, Any?>): String? {
         val m = row["mergeUndo"] as? Map<*, *> ?: return "mergeUndo"
         val date = m["occurredAt"] as? String
         val balance = m["statedBalanceMinor"]
+        // اللي سطر الكشف كتبه (مراجعة S4) — اختياري: السجلات الأقدم من غيره
+        val wroteDate = m["mergedOccurredAt"]
+        val wroteBalance = m["mergedStatedBalanceMinor"]
         val ok = date != null && isValidIsoDate(date) && isSafeInteger(m["sourceOrder"]) && (balance == null || isSafeInteger(balance)) &&
+            (wroteDate == null || (wroteDate is String && isValidIsoDate(wroteDate))) && (wroteBalance == null || isSafeInteger(wroteBalance)) &&
             row["transactionId"] != null && row["matchingState"] == MatchingState.DUPLICATE.wire
         if (!ok) return "mergeUndo"
     }

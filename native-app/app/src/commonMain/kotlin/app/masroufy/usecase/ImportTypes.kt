@@ -39,6 +39,12 @@ data class ImportPreviewLine(
      * سجل مصدر تاني للعملية دي (`MergeUndo.kt`). null = سطر عادي. بيتملى بس لما `ImportStatementDeps.crossSourceWindowDays` متحدد.
      */
     val mergeInto: Id? = null,
+    /**
+     * §75-10 (مراجعة S4): السطر «شبه عملية» لأن ليه **أكتر من احتمال** من المصدر التاني (أو احتمال واحد سطر تاني بيتنافس عليه) ⇒ الاحتمالات
+     * (الأقرب في التاريخ الأول). المالك يقدر يختار واحدة «هي دي» (`ImportStatement.commit(mergeChoices)`) فتتدمج بدل ما تتضاف مرة تانية.
+     * فاضية = مفيش سؤال دمج على السطر.
+     */
+    val mergeCandidates: List<Id> = emptyList(),
 )
 
 data class ImportCountsPreview(

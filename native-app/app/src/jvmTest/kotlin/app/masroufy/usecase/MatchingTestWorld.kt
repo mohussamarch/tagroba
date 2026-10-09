@@ -100,14 +100,15 @@ internal class MatchingWorld(window: Int? = CROSS_SOURCE_WINDOW_DAYS, rollback: 
 
     fun all(): List<Transaction> = txns.all()
 
-    fun revert() = RevertImportBatch(
+    /** [extra] = تراجعات آثار تانية جنب `MergeUndo` (زي `SubscriptionChargeUndo`). */
+    fun revert(extra: List<BatchUndo> = emptyList()) = RevertImportBatch(
         RevertDeps(
             txns, sources, batchStore, MemorySettlementRepository(), MemoryAllocationRepository(), MemoryObligationRepository(), MemoryUnitOfWork(listOf(txns, sources, batchStore)),
             RevertLinkDeps(
                 MemoryProjectLinkRepository(), MemoryEventLinkRepository(), MemoryTransactionTagRepository(), MemoryRoscaEntryRepository(), MemoryInstallmentPaymentRepository(),
                 MemoryInstallmentPlanRepository(), MemoryZakatPaymentRepository(), MemoryAssetLotRepository(), MemoryAssetSaleRepository(),
             ),
-            undoers = listOf(MergeUndo(txns, clock)),
+            undoers = listOf(MergeUndo(txns, clock)) + extra,
         ),
     )
 }

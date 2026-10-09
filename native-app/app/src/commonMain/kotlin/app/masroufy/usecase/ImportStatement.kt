@@ -17,7 +17,6 @@ import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
 import app.masroufy.core.importFingerprint
 import app.masroufy.core.uiText
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * ImportStatement — نقل `importStatement.ts`: قراءة الكشف، منع التكرار، إنشاء الدفعة.
@@ -175,26 +174,6 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         return committed
     }
 
-    private suspend fun captureFailure(block: suspend () -> Unit): Exception? = try {
-        block()
-        null
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        e
-    }
-
-    /** الدفعة اتقفلت خلاص ⇒ فشل أثر بعد الحفظ ما بيرجّعش حاجة (الشرائح اللي بتستعمله ليها تصليح ولحاق بعدين). */
-    private suspend fun afterCommitIsolated(effect: RecordEffect, ctx: RecordContext) {
-        try {
-            effect.afterCommit(ctx)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            // مقصود: الأثر بعد الحفظ اختياري
-        }
-    }
-
     private fun firstByLineNumber(lines: List<ImportPreviewLine>): Map<Int, ImportPreviewLine> {
         val out = HashMap<Int, ImportPreviewLine>(lines.size * 2)
         for (line in lines) out.getOrPut(line.row.lineNumber) { line }
@@ -203,12 +182,17 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
     private var committing = false
 
-    /** `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد. */
+    /**
+     * `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد.
+     * `mergeChoices` (§75-10 — مراجعة S4): رد المالك على «أكتر من احتمال» — رقم السطر ← العملية اللي «هي دي» من
+     * [ImportPreviewLine.mergeCandidates] ⇒ السطر بيتدمج فيها (مش محتاج يبقى في `selected`). اختيار مش من الاحتمالات ⇒ خطأ.
+     */
     suspend fun commit(
         request: ImportRequest,
         previous: ImportPreview,
         selected: List<Int>? = null,
         chosenCategories: Map<Int, Id>? = null,
+        mergeChoices: Map<Int, Id> = emptyMap(),
     ): ImportBatch {
         if (committing) throw IllegalStateException(uiText(TextKey.IMPORT_COMMIT_RUNNING))
         committing = true
@@ -230,7 +214,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 val line = freshByNumber[number]
                 line != null && line.state != MatchingState.DUPLICATE && line.state != MatchingState.INVALID
             }
-            if (fresh.previousBatch != null && addable.isEmpty()) return fresh.previousBatch
+            if (fresh.previousBatch != null && addable.isEmpty() && mergeChoices.isEmpty()) return fresh.previousBatch
             for (number in selection) {
                 val before = previousByNumber[number]
                 val now = freshByNumber[number]
@@ -243,7 +227,9 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                     throw IllegalStateException(uiText(TextKey.IMPORT_LINE_NOT_ADDABLE))
                 }
             }
-            return commitPrepared(request, fresh, selection, chosenCategories)
+            // «هي دي» (`MergeUndo.kt`): السطور اللي المالك اختار عمليتها بتتدمج فيها
+            val lines = applyMergeChoices(request, previous, fresh, selection.toSet(), mergeChoices)
+            return commitPrepared(request, fresh.copy(lines = lines), selection + mergeChoices.keys, chosenCategories)
         } finally {
             committing = false
         }

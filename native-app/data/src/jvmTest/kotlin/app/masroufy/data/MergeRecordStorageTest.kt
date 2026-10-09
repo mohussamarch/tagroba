@@ -32,6 +32,9 @@ class MergeRecordStorageTest {
         "sr-2", "b-2", "بنك وهمي", null, "H2", 2, "2026-10-02,100.00,0.00,4900.00,TEST CAFE RIYADH,,,شراء", "t-1", MatchingState.DUPLICATE, "دمج وهمي",
         mergeUndo = MergeRestore("2026-10-01", 1, null),
     )
+
+    /** بالقيم اللي سطر الكشف كتبها (مراجعة S4). */
+    private val wroteMerge = merge.copy(mergeUndo = MergeRestore("2026-10-01", 1, null, "2026-10-02", 490_000))
     private val oldShape = setOf("id", "batchId", "accountIdentity", "sourceReference", "sourceHash", "originalRowIndex", "rawLine", "transactionId", "matchingState", "reason")
 
     @Test fun mergeUndoRoundTripsAndPlainRecordsKeepTheOldShape() {
@@ -41,6 +44,13 @@ class MergeRecordStorageTest {
         assertEquals(mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L), LedgerCodecs.sourceRecords.toStore(merge)["mergeUndo"])
         assertEquals(oldShape, LedgerCodecs.sourceRecords.toStore(merge.copy(mergeUndo = null)).keys)
         assertEquals(oldShape + "mergeUndo", LedgerCodecs.sourceRecords.toStore(merge).keys)
+        // اللي سطر الكشف كتبه (مراجعة S4) جوه نفس الخريطة المتداخلة — المستوى الأول زي ما هو
+        assertEquals(wroteMerge, LedgerCodecs.sourceRecords.decode(LedgerCodecs.sourceRecords.toStore(wroteMerge)))
+        assertEquals(
+            mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L, "mergedOccurredAt" to "2026-10-02", "mergedStatedBalanceMinor" to 490_000L),
+            LedgerCodecs.sourceRecords.toStore(wroteMerge)["mergeUndo"],
+        )
+        assertEquals(oldShape + "mergeUndo", LedgerCodecs.sourceRecords.toStore(wroteMerge).keys)
     }
 
     private fun txn() = Transaction(
@@ -59,12 +69,12 @@ class MergeRecordStorageTest {
     }
 
     @Test fun theMergeRecordTravelsInTheFullBackup() = runBlocking<Unit> {
-        val file = FullBackup(MemoryFullBackup(account(merge))).create("2026-10-06T00:00:00.000Z")
+        val file = FullBackup(MemoryFullBackup(account(wroteMerge))).create("2026-10-06T00:00:00.000Z")
         File("build/kotlin-merge-backup.json").writeText(file.toJsonText())
         val target = MemoryFullBackup()
         val restore = FullBackup(target)
         restore.apply(restore.plan(file.toJsonText()).file)
-        assertEquals(merge, target.read().getValue("sourceRecords").map { LedgerCodecs.sourceRecords.decode(it) }.single { it.id == "sr-2" })
+        assertEquals(wroteMerge, target.read().getValue("sourceRecords").map { LedgerCodecs.sourceRecords.decode(it) }.single { it.id == "sr-2" })
         assertEquals(file.checksum, FullBackup(target).create("2026-10-06T00:00:00.000Z").checksum, "اللي اترجع = الأصل")
     }
 
@@ -75,6 +85,11 @@ class MergeRecordStorageTest {
         }
         val e = assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(bad)).create("2026-10-06T00:00:00.000Z") }
         assertTrue("mergeUndo" in (e.message ?: ""), e.message)
+        val badWrote = account(merge.copy(mergeUndo = null)).also { data ->
+            val rows = data.getValue("sourceRecords")
+            rows[1] = rows[1] + ("mergeUndo" to mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L, "mergedOccurredAt" to "2026-02-30"))
+        }
+        assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(badWrote)).create("2026-10-06T00:00:00.000Z") }
         val onNew = account(merge.copy(matchingState = MatchingState.NEW))
         assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(onNew)).create("2026-10-06T00:00:00.000Z") }
     }

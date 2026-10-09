@@ -75,8 +75,19 @@ data class SourceRecord(
     val mergeUndo: MergeRestore? = null,
 )
 
-/** القيم اللي سطر الكشف كتب فوقها في العملية اللي اتدمج فيها (§75-10) — التراجع عن دفعته بيرجّعها زي ما كانت. */
-data class MergeRestore(val occurredAt: IsoDate, val sourceOrder: Int, val statedBalanceMinor: Halalas?)
+/**
+ * القيم اللي سطر الكشف كتب فوقها في العملية اللي اتدمج فيها (§75-10) — التراجع عن دفعته بيرجّعها زي ما كانت.
+ * [mergedOccurredAt] و[mergedStatedBalanceMinor] = اللي سطر الكشف **كتبه** (مراجعة S4): التراجع بيرجّع كل حقل **بس لو لسه** فيه اللي الكشف
+ * كتبه — تعديل المالك بعد الدمج (التاريخ مثلًا) بيفضل. ترتيب السطر المكتوب = `SourceRecord.originalRowIndex`. [mergedStatedBalanceMinor] null =
+ * السطر ما كانش فيه رصيد (الرصيد ما اتغيرش). [mergedOccurredAt] null = سجل أقدم من المراجعة ⇒ بيرجع زي الأول (من غير شرط).
+ */
+data class MergeRestore(
+    val occurredAt: IsoDate,
+    val sourceOrder: Int,
+    val statedBalanceMinor: Halalas?,
+    val mergedOccurredAt: IsoDate? = null,
+    val mergedStatedBalanceMinor: Halalas? = null,
+)
 
 data class Budget(
     /** مفتاح الفترة نفسه: «2026-09». فترة واحدة = ميزانية واحدة. */

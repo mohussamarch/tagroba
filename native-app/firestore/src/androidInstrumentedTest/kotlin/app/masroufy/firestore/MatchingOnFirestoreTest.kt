@@ -29,11 +29,14 @@ class MatchingOnFirestoreTest {
         val sources = FirestoreSourceRecordRepository(space())
         val plain = SourceRecord("sr-1", "b-1", "بنك وهمي", "SMS:TEST", "H1", 1, "رسالة وهمية", "t-1", MatchingState.NEW, "جديد")
         val merge = SourceRecord("sr-2", "b-2", "بنك وهمي", null, "H2", 2, "سطر كشف وهمي", "t-1", MatchingState.DUPLICATE, "دمج وهمي", MergeRestore("2026-10-01", 1, 490_000))
-        sources.saveMany(listOf(plain, merge, merge.copy(id = "sr-3", mergeUndo = MergeRestore("2026-10-01", 1, null))))
+        // مراجعة S4: ومعاه اللي سطر الكشف كتبه (التاريخ والرصيد) جوه نفس الخريطة
+        val wrote = merge.copy(id = "sr-4", mergeUndo = MergeRestore("2026-10-01", 1, null, "2026-10-02", 480_000))
+        sources.saveMany(listOf(plain, merge, merge.copy(id = "sr-3", mergeUndo = MergeRestore("2026-10-01", 1, null)), wrote))
         val stored = sources.listByTransactionIds(listOf("t-1")).associateBy { it.id }
         assertEquals(plain, stored.getValue("sr-1"))
         assertEquals(merge, stored.getValue("sr-2"))
         assertNull(stored.getValue("sr-3").mergeUndo?.statedBalanceMinor)
+        assertEquals(wrote, stored.getValue("sr-4"))
     }
 
     @Test fun dismissedSuggestionsAreWrittenAndClearedOnFirestore() = run {

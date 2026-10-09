@@ -67,6 +67,8 @@ data class SmsReviewLine(
     val confirmReason: String? = null,
     /** عقد C0: نوع العملية زي ما الرسالة بتقوله (دليل — [SmsKind]). */
     val kind: SmsKind = SmsKind.OTHER,
+    /** §75-10 (مراجعة S4): عمليات من الكشف ممكن تكون هي الرسالة دي (أكتر من احتمال) — المالك يختار «هي دي» بـ`recordAll(mergeChoices)`. */
+    val mergeCandidates: List<Id> = emptyList(),
 )
 
 data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)
@@ -169,6 +171,7 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
                 shape = shape,
                 confirmReason = if (shape.clear) null else waitByLine[line.row.lineNumber] ?: uiText(TextKey.SMS_WAIT_UNKNOWN_SHAPE),
                 kind = request.smsRows[line.row.lineNumber]?.kind ?: SmsKind.OTHER,
+                mergeCandidates = line.mergeCandidates,
             )
         }
         val newestFirst = Comparator<SmsReviewLine> { a, b -> if (a.date != b.date) b.date.compareTo(a.date) else b.lineNumber - a.lineNumber }
@@ -197,16 +200,22 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
     /**
      * «سجّل الكل»: الجديد كله + الشبيه اللي المستخدم اختاره. التصنيف اللي اختاره المستخدم بيتحفظ مؤكد.
      * اللي اتسجل والمكرر بيتشالوا من الصندوق؛ الباقي (المرفوض والشبيه اللي ما اتختارش) بيفضل.
+     * [mergeChoices] (§75-10): رقم السطر ⇐ عملية الكشف اللي «هي دي» من [SmsReviewLine.mergeCandidates] ⇒ الرسالة بتتدمج فيها وتتشال.
      */
-    suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>): Int =
-        SMS_RECORD_LOCK.withLock { recordLocked(categories, includeSimilar).recorded }
+    suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>, mergeChoices: Map<Int, Id> = emptyMap()): Int =
+        SMS_RECORD_LOCK.withLock { recordLocked(categories, includeSimilar, mergeChoices = mergeChoices).recorded }
 
     /**
      * «سجّل الكل» من غير القفل — للي ماسك [SMS_RECORD_LOCK] بالفعل (`AutoRecordSms`). [clearOnly] = التسجيل التلقائي (§72): الجديد
      * اللي **شكله معروف** بس ([SmsShape.clear]) — اللي اتفهم من كلمات عامة بيفضل في الصندوق مستني تأكيد المالك (الجولة الرابعة).
      * المكرر بيتشال في الحالتين (نفس الرسالة بالظبط اتسجلت قبل كده — مرجع `SMS:<بصمة>`).
      */
-    internal suspend fun recordLocked(categories: Map<Int, Id>, includeSimilar: List<Int>, clearOnly: Boolean = false): SmsRecordOutcome {
+    internal suspend fun recordLocked(
+        categories: Map<Int, Id>,
+        includeSimilar: List<Int>,
+        clearOnly: Boolean = false,
+        mergeChoices: Map<Int, Id> = emptyMap(),
+    ): SmsRecordOutcome {
         val current = session ?: return SmsRecordOutcome(0, 0, null)
         val allowed = includeSimilar.toSet()
         fun clear(line: Int) = current.shapeByLine[line]?.clear == true
@@ -214,17 +223,19 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
             .filter { it.state == MatchingState.NEW || (it.state == MatchingState.SIMILAR && it.row.lineNumber in allowed) }
             .map { it.row.lineNumber }
             .filter { !clearOnly || clear(it) }
+        // «هي دي» بيتدمج ويتشال من الصندوق زي المسجّل (الاختيار ده من المالك بس — التسجيل التلقائي ما بيبعتش اختيارات)
+        val handled = (selection + mergeChoices.keys).distinct()
         var recorded = 0
         var batchId: Id? = null
-        if (selection.isNotEmpty()) {
+        if (handled.isNotEmpty()) {
             // عقد C0: التسجيل التلقائي مش تسجيل المالك (الآثار اللي بتفرّق بينهم بتبص على `byOwner`)
-            val batch = deps.importer.commit(current.request.copy(byOwner = !clearOnly), current.preview, selection, categories)
+            val batch = deps.importer.commit(current.request.copy(byOwner = !clearOnly), current.preview, selection, categories, mergeChoices)
             if (current.preview.previousBatch?.id != batch.id) {
-                recorded = selection.size
+                recorded = handled.size
                 batchId = batch.id
             }
         }
-        val lines = if (recorded > 0) selection else emptyList()
+        val lines = if (recorded > 0) handled else emptyList()
         val duplicates = current.preview.lines.filter { it.state == MatchingState.DUPLICATE }.map { it.row.lineNumber }
         val done = lines + duplicates
         // بعد الحفظ بس: لو الشيل وقع، الرسالة بتفضل وبتطلع «مكررة» المرة الجاية (مش بتتسجل تاني)

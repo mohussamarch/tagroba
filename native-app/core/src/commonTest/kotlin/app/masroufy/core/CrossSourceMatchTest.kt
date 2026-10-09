@@ -44,14 +44,15 @@ class CrossSourceMatchTest {
 
     @Test fun twoCandidatesStaySimilarOnTheNearest() {
         val out = matchCrossSource(listOf(line(1, "2026-10-02")), listOf(sms("t-far", "2026-10-04"), sms("t-near", "2026-10-01")), 2)
-        assertEquals(CrossSourceVerdict.Ambiguous("t-near"), out[1])
+        // ومعاه كل الاحتمالات (الأقرب الأول) عشان المالك يختار «هي دي»
+        assertEquals(CrossSourceVerdict.Ambiguous("t-near", listOf("t-near", "t-far")), out[1])
     }
 
     @Test fun eachExistingTransactionAbsorbsOneRowAtMost() {
         // سطرين في الكشف بنفس المبلغ ورسالة واحدة ⇒ الاتنين بيسألوا (ما بنختارش بالتخمين)
         val out = matchCrossSource(listOf(line(1, "2026-10-01"), line(2, "2026-10-02")), listOf(sms("t-sms", "2026-10-01")), 2)
-        assertEquals(CrossSourceVerdict.Ambiguous("t-sms"), out[1])
-        assertEquals(CrossSourceVerdict.Ambiguous("t-sms"), out[2])
+        assertEquals(CrossSourceVerdict.Ambiguous("t-sms", listOf("t-sms")), out[1])
+        assertEquals(CrossSourceVerdict.Ambiguous("t-sms", listOf("t-sms")), out[2])
         // واللي اتدمجت قبل كده ما بتبلعش تاني
         assertTrue(matchCrossSource(listOf(line(3, "2026-10-01")), listOf(sms("t-sms", "2026-10-01", merged = true)), 2).isEmpty())
     }
@@ -80,6 +81,26 @@ class CrossSourceMatchTest {
         assertNull(matchCrossSource(listOf(line(1, "2026-10-09", hash = "H-X")), listOf(sms("t", "2026-10-01", hashes = listOf("H-X"))), 2)[1])
     }
 
+    /** مراجعة S4: النص لوحده بيتشابه بين عمليتين مختلفتين فعلًا ⇒ بيحكم بس لسطر كشف من غير مرجع، وعلى نفس الحركة. */
+    @Test fun theSameTextAloneNeverDropsAnotherMovement() {
+        val merged = sms("t-m", "2026-10-02", merged = true, refs = setOf("SMS:ABC"), hashes = listOf("H-LINE"))
+        // رسالة نصها زي نص سجل اتدمج (شراءين بنفس المبلغ في نفس اليوم) ⇒ مش «متسجلة خلاص» — مرجعها هو اللي بيحكم
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", ref = "SMS:OTHER", hash = "H-LINE", fromSms = true)), listOf(merged), 2)[1])
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", hash = "H-LINE", fromSms = true)), listOf(merged), 2)[1])
+        // سطر كشف ليه مرجع: المرجع بيحسم مش النص
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", ref = "REF-9", hash = "H-LINE")), listOf(merged), 2)[1])
+        // نفس النص بس مبلغ تاني · برّه النافذة · اتجاه تاني ⇒ مش نفس الحركة
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", amount = 7_500, hash = "H-LINE")), listOf(merged), 2)[1])
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-05", hash = "H-LINE")), listOf(merged), 2)[1])
+        val incoming = CrossSourceRow(1, "2026-10-02", 10_000, Direction.IN, false, null, MatchingState.NEW, hash = "H-LINE")
+        assertNull(matchCrossSource(listOf(incoming), listOf(merged), 2)[1])
+        // عمليتين مدموجتين بنفس النص: السطر بياخد اللي **نفس حركته** (مش أول واحدة في الطابور)
+        val other = sms("t-other", "2026-10-02", amount = 7_500, merged = true, hashes = listOf("H-LINE"))
+        val pick = matchCrossSource(listOf(line(1, "2026-10-02", amount = 7_500, hash = "H-LINE"), line(2, "2026-10-02", hash = "H-LINE")), listOf(merged, other), 2)
+        assertEquals(CrossSourceVerdict.AlreadyMerged("t-other"), pick[1])
+        assertEquals(CrossSourceVerdict.AlreadyMerged("t-m"), pick[2])
+    }
+
     @Test fun windowZeroIsSameDayAndNegativeIsRejected() {
         assertEquals(CrossSourceVerdict.Merge("t"), matchCrossSource(listOf(line(1, "2026-10-01")), listOf(sms("t", "2026-10-01")), 0)[1])
         assertTrue(matchCrossSource(listOf(line(1, "2026-10-02")), listOf(sms("t", "2026-10-01")), 0).isEmpty())
@@ -95,6 +116,13 @@ class CrossSourceMatchTest {
         assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", record + ("mergeUndo" to mapOf("occurredAt" to "2026-13-01", "sourceOrder" to 3L))))
         assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", record + ("mergeUndo" to mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1.5))))
         assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", record + ("mergeUndo" to mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L, "statedBalanceMinor" to 0.5))))
+        // اللي سطر الكشف كتبه (مراجعة S4) — اختياري، ولو موجود لازم يبقى صح
+        val wrote = mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L, "mergedOccurredAt" to "2026-10-02", "mergedStatedBalanceMinor" to 490_000L)
+        assertNull(matchingBackupProblem("sourceRecords", record + ("mergeUndo" to wrote)))
+        assertNull(matchingBackupProblem("sourceRecords", record + ("mergeUndo" to wrote + ("mergedStatedBalanceMinor" to null))))
+        assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", record + ("mergeUndo" to wrote + ("mergedOccurredAt" to "2026-02-30"))))
+        assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", record + ("mergeUndo" to wrote + ("mergedOccurredAt" to 20261002L))))
+        assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", record + ("mergeUndo" to wrote + ("mergedStatedBalanceMinor" to 0.5))))
         // سجل الدمج لازم يبقى «مكرر» مربوط بعملية
         assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", mapOf("transactionId" to null, "matchingState" to "duplicate", "mergeUndo" to mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L))))
         assertEquals("mergeUndo", matchingBackupProblem("sourceRecords", mapOf("transactionId" to "t", "matchingState" to "new", "mergeUndo" to mapOf("occurredAt" to "2026-10-01", "sourceOrder" to 1L))))

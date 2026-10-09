@@ -103,6 +103,8 @@ internal class SmsSpace(
     wallets: List<Wallet> = listOf(CASH, BANK),
     parties: List<TransferParty> = emptyList(),
     val parse: (BankSmsMessage, Int) -> SmsParseResult = ::parseBankSms,
+    /** §75-10: نافذة الدمج بين الكشف والرسالة (null = من غير دمج — زي الأول). */
+    val window: Int? = null,
 ) {
     val txnStore = MemoryTransactionRepository()
     val txns = FlakyTxns(txnStore)
@@ -118,7 +120,7 @@ internal class SmsSpace(
     fun importDeps() = ImportStatementDeps(
         txns = txns, sources = sources, batches = batches, merchants = MemoryMerchantRepository(), categories = categories, rules = rules,
         uow = MemoryUnitOfWork(listOf(txnStore, sources, batchStore, parties)), ids = ids, clock = FixedClock("2026-10-07T11:00:00.000Z"),
-        transferParties = parties,
+        transferParties = parties, crossSourceWindowDays = window,
     )
 
     fun lane(inbox: SmsInboxPort) = SmsLane.of(spaceId, importDeps(), ManageSmsInbox(inbox, parse), wallets)

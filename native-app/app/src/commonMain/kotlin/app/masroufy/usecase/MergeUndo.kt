@@ -43,7 +43,8 @@ internal suspend fun recordMerges(deps: ImportStatementDeps, request: ImportRequ
             transactionId = target.id,
             matchingState = MatchingState.DUPLICATE,
             reason = line.reason,
-            mergeUndo = if (statement) MergeRestore(target.occurredAt, target.sourceOrder, target.statedBalanceMinor) else null,
+            // القديم + اللي السطر كتبه (التراجع بيرجّع الحقل بس لو لسه فيه اللي الكشف كتبه — مراجعة S4)
+            mergeUndo = if (statement) MergeRestore(target.occurredAt, target.sourceOrder, target.statedBalanceMinor, line.row.date, line.row.statedBalanceMinor) else null,
         )
         if (statement) {
             patched += target.copy(
@@ -63,7 +64,8 @@ internal suspend fun recordMerges(deps: ImportStatementDeps, request: ImportRequ
 
 /**
  * التراجع عن دفعة فيها دمج (`RevertDeps.undoers`): العملية **بتفضل** (ليها مصدر تاني — `RevertImportBatch` بيقرر ده)، وتاريخها وترتيبها
- * ورصيدها بيرجعوا زي ما كانوا قبل سطر الكشف. العملية اللي هتتمسح أصلًا ما بتتلمسش.
+ * ورصيدها بيرجعوا زي ما كانوا قبل سطر الكشف — **كل حقل بس لو لسه فيه اللي سطر الكشف كتبه** (مراجعة S4): المالك لو صلّح التاريخ بعد الدمج،
+ * تصليحه بيفضل. العملية اللي هتتمسح أصلًا ما بتتلمسش.
  * ⚠️ التطبيق القديم لو رجّع نفس الدفعة: بيسيب العملية (مصدر تاني) بس **ما بيرجّعش** التاريخ والرصيد — ما بيعرفش الحقل.
  */
 class MergeUndo(private val txns: TransactionRepository, private val clock: Clock) : BatchUndo {
@@ -75,8 +77,50 @@ class MergeUndo(private val txns: TransactionRepository, private val clock: Cloc
         val now = clock.nowIso()
         val restored = restores.mapNotNull { record ->
             val old = record.mergeUndo ?: return@mapNotNull null
-            byId[record.transactionId]?.copy(occurredAt = old.occurredAt, sourceOrder = old.sourceOrder, statedBalanceMinor = old.statedBalanceMinor, updatedAt = now)
+            val current = byId[record.transactionId] ?: return@mapNotNull null
+            val back = undoMergedFields(current, old, record.originalRowIndex)
+            if (back == current) null else back.copy(updatedAt = now)
         }
         if (restored.isNotEmpty()) txns.saveMany(restored)
+    }
+}
+
+/** كل حقل بيرجع لقيمته القديمة **بس لو لسه** فيه اللي سطر الكشف رقم [lineNumber] كتبه. سجل أقدم من غير المكتوب ⇒ زي الأول. */
+internal fun undoMergedFields(t: Transaction, old: MergeRestore, lineNumber: Int): Transaction {
+    val wroteDate = old.mergedOccurredAt
+    return t.copy(
+        occurredAt = if (wroteDate == null || t.occurredAt == wroteDate) old.occurredAt else t.occurredAt,
+        sourceOrder = if (t.sourceOrder == lineNumber) old.sourceOrder else t.sourceOrder,
+        statedBalanceMinor = when {
+            wroteDate == null -> old.statedBalanceMinor
+            // السطر ما كانش فيه رصيد ⇒ الدمج ما غيّرش الرصيد
+            old.mergedStatedBalanceMinor == null -> t.statedBalanceMinor
+            t.statedBalanceMinor == old.mergedStatedBalanceMinor -> old.statedBalanceMinor
+            else -> t.statedBalanceMinor
+        },
+    )
+}
+
+/**
+ * §75-10 (مراجعة S4) — رد المالك على سؤال «أكتر من احتمال»: «هي دي» ⇒ السطر بيتدمج في العملية اللي اختارها بدل ما يتضاف مرة تانية.
+ * [choices] = رقم السطر ⇐ العملية. كل اختيار لازم يكون من احتمالات السطر في المعاينة اللي المالك شافها ([previous]) **وفي** المعاينة
+ * الجديدة ([fresh] — لسه من المصدر التاني · نفس المحفظة والمبلغ والاتجاه · جوه النافذة · ما اتدمجتش)، وكل عملية بتتختار لسطر واحد بس
+ * ومش هدف دمج تلقائي في نفس الدفعة. بيرجّع سطور [fresh] والسطور المختارة عليها الدمج وسببه.
+ */
+internal fun applyMergeChoices(request: ImportRequest, previous: ImportPreview, fresh: ImportPreview, selection: Set<Int>, choices: Map<Int, Id>): List<ImportPreviewLine> {
+    if (choices.isEmpty()) return fresh.lines
+    val before = previous.lines.associateBy { it.row.lineNumber }
+    val auto = fresh.lines.filter { it.mergeInto != null && it.row.lineNumber in selection && it.row.lineNumber !in choices }.mapNotNull { it.mergeInto }.toSet()
+    if (choices.values.toSet().size != choices.size || choices.values.any { it in auto }) throw IllegalArgumentException(uiText(TextKey.MATCH_CHOICE_INVALID))
+    for ((number, target) in choices) {
+        val seen = before[number] ?: throw IllegalArgumentException(uiText(TextKey.MATCH_CHOICE_INVALID))
+        if (target !in seen.mergeCandidates) throw IllegalArgumentException(uiText(TextKey.MATCH_CHOICE_INVALID))
+        val now = fresh.lines.firstOrNull { it.row.lineNumber == number }
+        if (now == null || now.row != seen.row || target !in now.mergeCandidates) throw IllegalStateException(uiText(TextKey.IMPORT_CHANGED_AFTER_PREVIEW))
+    }
+    val other = uiText(if (request.sourceType == ImportSourceType.SMS) TextKey.MATCH_SOURCE_STATEMENT else TextKey.MATCH_SOURCE_SMS)
+    return fresh.lines.map { line ->
+        val target = choices[line.row.lineNumber] ?: return@map line
+        line.copy(mergeInto = target, matchedTransactionId = target, reason = uiText(TextKey.MATCH_MERGE_CHOSEN, other))
     }
 }

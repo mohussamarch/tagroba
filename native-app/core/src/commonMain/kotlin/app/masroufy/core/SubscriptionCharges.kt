@@ -63,3 +63,25 @@ fun applySubscriptionCharges(items: List<RecurringItem>, charges: List<Transacti
     val original = items.associateBy { it.id }
     return SubscriptionMatches(current.values.filter { original[it.id]?.nextDueAt != it.nextDueAt }, matched)
 }
+
+/**
+ * التراجع (مراجعة S4): الخصومات [removed] اتمسحت (التراجع عن دفعتها) ⇒ الاشتراك اللي ميعاده اتحرك **بيها** بيرجع دورة. من غير تخزين: الخصم
+ * بيدفع الميعاد اللي قبل الحالي (`shiftMonths(nextDueAt, −cycleMonths)`) والدفع ده بيوصّل للميعاد الحالي بالظبط، ومفيش خصم تاني لسه موجود
+ * ([kept]) بيدفع نفس الدورة. غير كده (المالك عدّل الميعاد · خصم تاني حرّكه بعده · خصم مكرر والأصلي فاضل) ما بيتلمسش.
+ * الأحدث الأول — خصمين لنفس الاشتراك في نفس الدفعة بيرجعوا الاتنين. ⚠️ آخر الشهر: `shiftMonths` بيقص اليوم (31 ⇒ 28)، فالرجوع ممكن
+ * يقع على يوم أبدر بكام يوم من الأصلي (نفس القص اللي حصل وهو رايح).
+ */
+fun revertSubscriptionCharges(items: List<RecurringItem>, removed: List<Transaction>, kept: List<Transaction>): List<RecurringItem> {
+    val current = LinkedHashMap<String, RecurringItem>().apply { items.forEach { put(it.id, it) } }
+    val gone = removed.map { it.id }.toSet()
+    val still = kept.filter { it.id !in gone }
+    for (t in removed.distinctBy { it.id }.sortedWith(compareByDescending<Transaction> { it.occurredAt }.thenByDescending { it.id })) {
+        val item = current.values.firstOrNull { item ->
+            val before = item.copy(nextDueAt = shiftMonths(item.nextDueAt, -item.cycleMonths))
+            paysSubscription(before, t) && nextDueAfterCharge(before, t.occurredAt) == item.nextDueAt && still.none { paysSubscription(before, it) }
+        } ?: continue
+        current[item.id] = item.copy(nextDueAt = shiftMonths(item.nextDueAt, -item.cycleMonths))
+    }
+    val original = items.associateBy { it.id }
+    return current.values.filter { original[it.id]?.nextDueAt != it.nextDueAt }
+}

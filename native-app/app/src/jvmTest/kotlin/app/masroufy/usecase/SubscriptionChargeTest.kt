@@ -152,6 +152,48 @@ class SubscriptionChargeTest {
         assertTrue(gather.gather(input).none { it.kind == AlertKind.DUE_OVERDUE }, "اتدفع ⇒ مش متأخر")
     }
 
+    /** مراجعة S4: التراجع عن الدفعة اللي جابت الخصم بيرجّع الميعاد — الدورة دي ما اتدفعتش تاني. */
+    @Test fun revertingTheChargeBatchRestoresTheNextDueDate() = runBlocking<Unit> {
+        val items = MemoryRecurringRepository(listOf(stream))
+        val w = MatchingWorld(effects = listOf(SubscriptionChargeEffect(items)))
+        val batch = w.import(w.statement(line("2026-10-04", "49.00")))
+        assertEquals("2026-11-05", nextDue(items))
+        w.revert(listOf(SubscriptionChargeUndo(items, w.txns))).execute(batch.id)
+        assertEquals(0, w.all().size, "الخصم اتمسح")
+        assertEquals("2026-10-05", nextDue(items), "مفيش حاجة دفعت دورة أكتوبر")
+        // خصمين لدورتين ورا بعض في نفس الدفعة ⇒ الاتنين بيرجعوا
+        val two = MemoryRecurringRepository(listOf(stream))
+        val w2 = MatchingWorld(effects = listOf(SubscriptionChargeEffect(two)))
+        val both = w2.import(w2.statement(line("2026-10-04", "49.00"), line("2026-11-04", "49.00")))
+        assertEquals("2026-12-05", nextDue(two))
+        w2.revert(listOf(SubscriptionChargeUndo(two, w2.txns))).execute(both.id)
+        assertEquals("2026-10-05", nextDue(two))
+    }
+
+    @Test fun revertKeepsTheDateWhenAnotherChargeStillPaysOrTheOwnerMovedIt() = runBlocking<Unit> {
+        // من غير دمج: الرسالة دفعت (حرّكت الميعاد) والكشف خصم مكرر ما حرّكش ⇒ التراجع عن الكشف ما بيرجّعش (الرسالة لسه دافعة)
+        val items = MemoryRecurringRepository(listOf(stream))
+        val w = MatchingWorld(window = null, effects = listOf(SubscriptionChargeEffect(items)))
+        w.receive(matchingPurchaseSms("49", "26/10/04", shop = "TEST STREAM"), at = "2026-10-04T09:00:00Z")
+        w.recordSms()
+        val smsBatch = w.sources.listByTransactionIds(w.all().map { it.id }).single().batchId
+        val statement = w.import(w.statement(line("2026-10-05", "49.00")))
+        val undo = listOf(SubscriptionChargeUndo(items, w.txns))
+        w.revert(undo).execute(statement.id)
+        assertEquals("2026-11-05", nextDue(items), "خصم الرسالة لسه دافع دورة أكتوبر")
+        // وبعدها التراجع عن الرسالة نفسها ⇒ مفيش حاجة دافعة ⇒ يرجع
+        w.revert(undo).execute(smsBatch)
+        assertEquals("2026-10-05", nextDue(items))
+
+        // المالك غيّر الميعاد بإيده بعد الخصم ⇒ التراجع ما بيلمسوش
+        val moved = MemoryRecurringRepository(listOf(stream))
+        val w2 = MatchingWorld(effects = listOf(SubscriptionChargeEffect(moved)))
+        val batch = w2.import(w2.statement(line("2026-10-04", "49.00")))
+        moved.save(moved.listAll().single().copy(nextDueAt = "2026-11-20"))
+        w2.revert(listOf(SubscriptionChargeUndo(moved, w2.txns))).execute(batch.id)
+        assertEquals("2026-11-20", nextDue(moved))
+    }
+
     @Test fun aFailingCountryIsReportedAndTheOthersStillCatchUp() = runBlocking<Unit> {
         val broken = object : RecurringRepository {
             override suspend fun listAll(): List<RecurringItem> = throw IllegalStateException("store down")

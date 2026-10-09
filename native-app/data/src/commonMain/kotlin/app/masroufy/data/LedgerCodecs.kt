@@ -99,14 +99,29 @@ object LedgerCodecs {
                 req("sourceHash", s.sourceHash); req("originalRowIndex", s.originalRowIndex); req("rawLine", s.rawLine)
                 nul("transactionId", s.transactionId); req("matchingState", s.matchingState.wire); req("reason", s.reason)
                 // §75-10 (S4): سجل الدمج بس — خريطة متداخلة (النسخة الشاملة في التطبيق القديم بتفحص المستوى الأول بس) وما بتتكتبش من غيرها
-                opt("mergeUndo", s.mergeUndo?.let { m -> doc { req("occurredAt", m.occurredAt); req("sourceOrder", m.sourceOrder); opt("statedBalanceMinor", m.statedBalanceMinor) } })
+                opt(
+                    "mergeUndo",
+                    s.mergeUndo?.let { m ->
+                        doc {
+                            req("occurredAt", m.occurredAt); req("sourceOrder", m.sourceOrder); opt("statedBalanceMinor", m.statedBalanceMinor)
+                            // اللي سطر الكشف كتبه (مراجعة S4): التراجع بيرجّع الحقل بس لو لسه فيه ده
+                            opt("mergedOccurredAt", m.mergedOccurredAt); opt("mergedStatedBalanceMinor", m.mergedStatedBalanceMinor)
+                        }
+                    },
+                )
             }
         },
         { r ->
             SourceRecord(
                 r.str("id"), r.str("batchId"), r.str("accountIdentity"), r.strOrNull("sourceReference"), r.str("sourceHash"),
                 r.int("originalRowIndex"), r.str("rawLine"), r.strOrNull("transactionId"), r.wire("matchingState", MatchingState::fromWire), r.str("reason"),
-                mergeUndo = if (r.has("mergeUndo")) r.map("mergeUndo").let { m -> MergeRestore(m.str("occurredAt"), m.int("sourceOrder"), m.longOrNull("statedBalanceMinor")) } else null,
+                mergeUndo = if (r.has("mergeUndo")) {
+                    r.map("mergeUndo").let { m ->
+                        MergeRestore(m.str("occurredAt"), m.int("sourceOrder"), m.longOrNull("statedBalanceMinor"), m.strOrNull("mergedOccurredAt"), m.longOrNull("mergedStatedBalanceMinor"))
+                    }
+                } else {
+                    null
+                },
             )
         },
     )

@@ -112,21 +112,33 @@ private suspend fun loadCrossSource(deps: ImportStatementDeps, request: ImportRe
         CrossSourceExisting(
             transactionId = t.id, date = t.occurredAt, amountMinor = sourceAmountMinor(t.amountMinor, t.originalAmountMinor), direction = t.observedDirection,
             fromSms = own.any { sms(it) }, fromStatement = own.any { !sms(it) },
-            references = own.mapNotNull { trimmedRef(it.sourceReference) }.toSet(), hashes = own.map { it.sourceHash },
+            // بصمات سجلات الكشف بس (مراجعة S4): نص الرسالة عمره ما بيحكم إن رسالة تانية «متسجلة خلاص»
+            references = own.mapNotNull { trimmedRef(it.sourceReference) }.toSet(), hashes = own.filter { !sms(it) }.map { it.sourceHash },
         )
     }
 }
 
 /**
- * §75-10 على سطور المعاينة: دمج (جديد + [ImportPreviewLine.mergeInto] — مختار افتراضيًا وأثره صفر) · أكتر من احتمال ⇒ «شبه عملية» ويسأل ·
- * مرجعه اتدمج قبل كده ⇒ مكرر. الباقي زي ما هو.
+ * §75-10 على سطور المعاينة: دمج (جديد + [ImportPreviewLine.mergeInto] — مختار افتراضيًا وأثره صفر) · أكتر من احتمال ⇒ «شبه عملية» ويسأل
+ * ومعاه الاحتمالات ([ImportPreviewLine.mergeCandidates]) · مرجعه أو نصه اتدمج قبل كده ⇒ مكرر. الباقي زي ما هو.
+ * [textLines] = نص كل سطر هو سطر الملف نفسه (CSV) — الـPDF نصه «صفحة N · التاريخ» بس، فما بيتقارنش بالنص (مراجعة S4).
  */
-internal suspend fun applyCrossSource(deps: ImportStatementDeps, request: ImportRequest, lines: List<ImportPreviewLine>, ledger: ExistingLedger, window: Int): List<ImportPreviewLine> {
+internal suspend fun applyCrossSource(
+    deps: ImportStatementDeps,
+    request: ImportRequest,
+    lines: List<ImportPreviewLine>,
+    ledger: ExistingLedger,
+    window: Int,
+    textLines: Boolean,
+): List<ImportPreviewLine> {
     if (lines.isEmpty()) return lines
     val fromSms = request.sourceType == ImportSourceType.SMS
     val existing = loadCrossSource(deps, request, lines, ledger, window)
     if (existing.isEmpty()) return lines
-    val rows = lines.map { CrossSourceRow(it.row.lineNumber, it.row.date, it.row.amountMinor, it.row.direction, fromSms, it.row.reference, it.state, it.matchedTransactionId, hashContent(it.row.raw)) }
+    // النص بالحرف بيحكم بس لسطر كشف CSV من غير مرجع ولا رصيد (المرجع والرصيد بيحسموا من غيره)
+    fun hashOf(line: ImportPreviewLine): String? =
+        if (!fromSms && textLines && trimmedRef(line.row.reference) == null && line.row.statedBalanceMinor == null) hashContent(line.row.raw) else null
+    val rows = lines.map { CrossSourceRow(it.row.lineNumber, it.row.date, it.row.amountMinor, it.row.direction, fromSms, it.row.reference, it.state, it.matchedTransactionId, hashOf(it)) }
     val verdicts = matchCrossSource(rows, existing, window)
     if (verdicts.isEmpty()) return lines
     val byId = existing.associateBy { it.transactionId }
@@ -141,7 +153,7 @@ internal suspend fun applyCrossSource(deps: ImportStatementDeps, request: Import
             )
             is CrossSourceVerdict.Ambiguous -> line.copy(
                 state = MatchingState.SIMILAR, reason = uiText(TextKey.MATCH_AMBIGUOUS, other, window.toString()),
-                matchedTransactionId = v.transactionId, mergeInto = null, selectedByDefault = false,
+                matchedTransactionId = v.transactionId, mergeInto = null, selectedByDefault = false, mergeCandidates = v.candidates,
             )
             is CrossSourceVerdict.AlreadyMerged -> line.copy(
                 state = MatchingState.DUPLICATE, reason = uiText(TextKey.MATCH_ALREADY_MERGED, other),
