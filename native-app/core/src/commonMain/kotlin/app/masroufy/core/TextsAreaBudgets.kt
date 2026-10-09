@@ -43,6 +43,7 @@ private val MSA_BUDGETS_PANEL: Map<TextKey, String> = mapOf(
     TextKey.BUDGETS_TOTAL_SHEET_TITLE to "سقف الشهر كله",
     TextKey.BUDGETS_ERROR_TITLE to "تعذّر تحميل الميزانيات",
     TextKey.BUDGETS_ERROR_BODY to "تحقق من الاتصال ثم أعد المحاولة.",
+    TextKey.BUDGETS_SPENT_OF to "{0} / {1}",
 )
 
 private val EGYPTIAN_BUDGETS_PANEL: Map<TextKey, String> = mapOf(
@@ -81,6 +82,7 @@ private val EGYPTIAN_BUDGETS_PANEL: Map<TextKey, String> = mapOf(
     TextKey.BUDGETS_TOTAL_SHEET_TITLE to "سقف الشهر كله",
     TextKey.BUDGETS_ERROR_TITLE to "الميزانيات ما اتحمّلتش",
     TextKey.BUDGETS_ERROR_BODY to "اتأكد من النت وجرّب تاني.",
+    TextKey.BUDGETS_SPENT_OF to "{0} / {1}",
 )
 
 private val ENGLISH_BUDGETS_PANEL: Map<TextKey, String> = mapOf(
@@ -119,6 +121,7 @@ private val ENGLISH_BUDGETS_PANEL: Map<TextKey, String> = mapOf(
     TextKey.BUDGETS_TOTAL_SHEET_TITLE to "Cap for the whole month",
     TextKey.BUDGETS_ERROR_TITLE to "Couldn't load the budgets",
     TextKey.BUDGETS_ERROR_BODY to "Check your connection, then try again.",
+    TextKey.BUDGETS_SPENT_OF to "{0} / {1}",
 )
 
 // التجميع في الآخر: المتغيرات اللي فوق لازم تتعمل الأول (ترتيب التهيئة في نفس الملف)

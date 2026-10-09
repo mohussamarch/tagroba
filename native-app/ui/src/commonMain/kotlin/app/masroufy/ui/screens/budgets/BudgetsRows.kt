@@ -54,7 +54,7 @@ fun CategoryLineRow(line: LineUi, ui: BudgetsUi, onOpen: () -> Unit) {
             val numbers = when {
                 line.spentMinor == null -> t(TextKey.NOT_AVAILABLE)
                 // «المصروف / السقف» — نفس شكل «المدّخر / الهدف» (`{0} / {1}`)
-                line.limitMinor != null -> t(TextKey.GOALS_ARCHIVED_ROW, amount(line.spentMinor, ui.currency), amount(line.limitMinor, ui.currency))
+                line.limitMinor != null -> t(TextKey.BUDGETS_SPENT_OF, amount(line.spentMinor, ui.currency), amount(line.limitMinor, ui.currency))
                 else -> amount(line.spentMinor, ui.currency)
             }
             val ink = when {
