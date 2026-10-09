@@ -136,11 +136,13 @@ internal object SaudiSpecs {
         87 to out(merchant = true),
         88 to out(merchant = true),
         89 to out(merchant = true),
+        // الجولة السادسة (§75-12 · اختيار (م)): المبلغ بالريال صح (الإجمالي = المبلغ + الضريبة + الرسوم)، بس سعر الصرف ≠ 1 والدولة GB
+        // = شراء برّه البلد ⇒ بيتقري صح و**بيستنى** تأكيد المالك (`SmsTemplateCoverageTest.WAIT_BY_DESIGN`) — مش بيتسجل لوحده
         90 to out(merchant = true, amountKey = "total", values = FOREIGN_TRIP),
         91 to out(merchant = true),
         92 to out(merchant = true),
         93 to out(merchant = true),
-        94 to out(merchant = true, amountKey = "total", values = FOREIGN_TRIP),
+        94 to out(merchant = true, amountKey = "total", values = FOREIGN_TRIP), // زي #90: بيتقري صح وبيستنى (الدولة GB)
         95 to inn(merchant = true, kind = REFUND),
         96 to inn(merchant = true, kind = REFUND),
         97 to inn(merchant = true, kind = REFUND),

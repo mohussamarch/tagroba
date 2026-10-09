@@ -65,11 +65,16 @@ class SmsMustIgnoreTest {
         }
     }
 
-    /** فلتر الجهاز بيرميها — إلا اللي أولها شكل بنك معروف (بتتحفظ وتستنى في «المرفوضة» — الجولة الخامسة). الرمز بيترمي دايمًا. */
+    /**
+     * فلتر الجهاز بيرميها — إلا اللي أولها شكل بنك معروف أو الحارس مسك آخرها بس (بتتحفظ وتستنى في «المرفوضة» بسبب الحارس — الجولة
+     * الخامسة والسادسة: الضياع مش مقبول). الرمز بيترمي دايمًا، واللي اتحفظ القارئين بيرفضوه (الاختبار اللي فوق).
+     */
     @Test fun theDeviceFilterDropsThemBeforeStorage() {
         for ((name, body) in ignored) {
             val stored = !SmsVocabulary.ignoreBeforeStorage(body)
-            assertTrue(!stored || (SmsVocabulary.hasKnownHead(body) && SmsVocabulary.ignoreReason(body) != TextKey.SMS_SENSITIVE), name)
+            val reason = SmsVocabulary.ignoreReason(body)
+            assertTrue(!stored || (reason != null && reason != TextKey.SMS_SENSITIVE), name)
+            if (reason == TextKey.SMS_SENSITIVE) assertTrue(!stored, "$name: a code was kept")
         }
     }
 

@@ -39,16 +39,22 @@ private val LOCAL_GROUPING = Regex("^\\d{1,3}(?:[,٬]\\d{3})+(?:[.٫]\\d{1,2})?$
 
 // ── 1. رموز العملات ─────────────────────────────────────────────────────
 
-// الجولة الخامسة: ₩ ₽ ₪ ฿ ₱ ₫ zł و«R$» (ريال برازيلي) — كانت بتترمي في فلتر الجهاز أو تتسجل بالمقابل المحلي
-private const val SYMBOL = "(?:US|[A-Z]{1,2})?\\$|E?£E?|€|¥|₹|₺|₩|₽|₪|฿|₱|₫|zł"
-private val SYMBOL_MONEY = Regex("(?<![A-Za-z])($SYMBOL)$SP*($FOREIGN_NUMBER)|($FOREIGN_NUMBER)$SP*($SYMBOL)(?![A-Za-z])")
+// الجولة الخامسة: ₩ ₽ ₪ ฿ ₱ ₫ zł و«R$» (ريال برازيلي) — كانت بتترمي في فلتر الجهاز أو تتسجل بالمقابل المحلي.
+// الجولة السادسة: **أي** رمز عملة من كتلة الرموز (U+20A0…U+20C0: ₾ ₴ ₦ ₸ ₼ …) + ֏ ؋ ৳ ៛ — «TBILISI MARKET 52.00 ₾» جوه خانة المحل كان
+// بيتسجل شراء بالريال. رمز الريال السعودي الجديد (U+20C1) و«﷼» **مش** هنا (ممكن يبقوا الريال نفسه — ما بنخمّنش إنه أجنبي).
+private const val SYMBOL = "(?:US|[A-Z]{1,2})?\\$|E?£E?|€|¥|₹|₺|₩|₽|₪|฿|₱|₫|zł|[\\u20A0-\\u20C0\\u058F\\u060B\\u09F2\\u09F3\\u17DB]"
+private val SYMBOL_MONEY = Regex("(?<![A-Za-z])($SYMBOL)$SP*($FOREIGN_NUMBER)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($SYMBOL)(?![A-Za-z])")
 private val DOLLAR_PREFIX = mapOf(
     "US" to "USD", "" to "USD", "C" to "CAD", "CA" to "CAD", "A" to "AUD", "AU" to "AUD", "HK" to "HKD", "S" to "SGD", "SG" to "SGD", "NZ" to "NZD",
     "R" to "BRL",
 )
-private val SYMBOL_CODES = mapOf("€" to "EUR", "£" to "GBP", "₹" to "INR", "₺" to "TRY", "₩" to "KRW", "₽" to "RUB", "₪" to "ILS", "฿" to "THB", "₱" to "PHP", "₫" to "VND", "zł" to "PLN")
+private val SYMBOL_CODES = mapOf(
+    "€" to "EUR", "£" to "GBP", "₹" to "INR", "₺" to "TRY", "₩" to "KRW", "₽" to "RUB", "₪" to "ILS", "฿" to "THB", "₱" to "PHP", "₫" to "VND", "zł" to "PLN",
+    "₾" to "GEL", "₴" to "UAH", "₦" to "NGN", "₸" to "KZT", "₼" to "AZN", "₭" to "LAK", "₮" to "MNT", "₲" to "PYG", "₵" to "GHS", "₡" to "CRC",
+    "֏" to "AMD", "؋" to "AFN", "৳" to "BDT", "៛" to "KHR",
+)
 
-/** «$» لوحده = دولار أمريكي (العرف في رسايل بنوك الخليج ومصر) · «C$/A$/HK$…» بلدهم · «¥» ين ولا يوان ⇒ null. */
+/** «$» لوحده = دولار أمريكي (العرف في رسايل بنوك الخليج ومصر) · «C$/A$/HK$…» بلدهم · «¥» ين ولا يوان ⇒ null · رمز مش معروف ⇒ null. */
 private fun symbolCode(symbol: String): String? = when {
     symbol.endsWith("$") -> DOLLAR_PREFIX[symbol.dropLast(1)]
     symbol in SYMBOL_CODES -> SYMBOL_CODES.getValue(symbol)
@@ -64,8 +70,10 @@ private val ABBREV_CODES = mapOf(
     "KD" to "KWD", "BD" to "BHD", "QR" to "QAR", "RO" to "OMR", "Dhs" to "AED", "DH" to "AED", "TL" to "TRY", "RM" to "MYR", "Rp" to "IDR",
     "kr" to null, "Rs" to null, "LE" to "EGP", "L.E" to "EGP", "د.إ" to "AED", "د.ك" to "KWD", "ر.ق" to "QAR", "ر.ع" to "OMR",
     "د.ب" to "BHD", "د.أ" to "JOD",
+    // الجولة السادسة: الفورنت · الكرونة التشيكية · الليرة اللبنانية والسورية
+    "Ft" to "HUF", "Kč" to "CZK", "L.L" to "LBP", "ل.ل" to "LBP", "ل.س" to "SYP",
 )
-private const val ABBREV = "KD|BD|QR|RO|Dhs|DH|TL|RM|Rp|kr|Rs|L\\.E|LE|د\\.إ|د\\.ك|ر\\.ق|ر\\.ع|د\\.ب|د\\.أ"
+private const val ABBREV = "KD|BD|QR|RO|Dhs|DH|TL|RM|Rp|kr|Rs|Ft|Kč|L\\.L|L\\.E|LE|د\\.إ|د\\.ك|ر\\.ق|ر\\.ع|د\\.ب|د\\.أ|ل\\.ل|ل\\.س"
 private val ABBREV_MONEY = Regex(
     "(?<![A-Za-z\\u0600-\\u06FF])($ABBREV)\\.?$SP*[:：]?$SP*($FOREIGN_NUMBER)(?!\\d)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($ABBREV)\\.?(?![A-Za-z\\u0600-\\u06FF])",
 )

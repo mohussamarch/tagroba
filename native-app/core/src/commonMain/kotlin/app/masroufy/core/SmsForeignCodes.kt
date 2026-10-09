@@ -49,9 +49,9 @@ private val GROUPED = Regex("^\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?$|^\\d+(?:\\.\\d+)
  * فواصل غلط («64,25») أو كسور أكتر من العملة («USD 1.234») ⇒ null (ما بنخمّنش).
  */
 internal fun parseForeignMinor(raw: String, code: String): Long? {
+    val decimals = foreignDecimals(code)
     val text = raw.replace('٬', ',').replace('٫', '.')
     if (!GROUPED.matches(text)) return null
-    val decimals = foreignDecimals(code)
     val plain = text.replace(",", "")
     val intPart = plain.substringBefore('.')
     val frac = if ('.' in plain) plain.substringAfter('.') else ""
@@ -111,8 +111,15 @@ private val ARABIC_NAMES: List<Pair<String, String?>> = listOf(
     "دولار$S*[أا]سترال$YA" to "AUD", "(?:جنيه$S*)?[إا]سترلين$YA" to "GBP", "يورو" to "EUR", "روب$YA[ةه]$S*هند$YA[ةه]" to "INR",
     "ين$S*$YA?ابان$YA" to "JPY", "ين" to "JPY", "يوان(?:$S*صين$YA)?" to "CNY", "فرنك$S*سويسر$YA" to "CHF", "روبل(?:$S*روس$YA)?" to "RUB",
     "رينغيت|رينجت" to "MYR",
+    // ── الجولة السادسة: عملات كانت بتترمي «مفيهاش مبلغ» قبل الحفظ (§75-12) ──
+    "بات(?:$S*تايلند$YA)?" to "THB", "وون(?:$S*كور$YA)?" to "KRW", "بيزو$S*مكسيك$YA" to "MXN", "بيزو$S*فلبين$YA" to "PHP",
+    "بيزو$S*[أا]رجنتين$YA" to "ARS", "بيزو$S*تشيل$YA" to "CLP", "بيزو$S*كولومب$YA" to "COP", "كرون[ةه]$S*سويد$YA[ةه]" to "SEK",
+    "كرون[ةه]$S*نرويج$YA[ةه]" to "NOK", "كرون[ةه]$S*دنمارك$YA[ةه]" to "DKK", "كرون[ةه]$S*تشيك$YA[ةه]" to "CZK", "شيكل" to "ILS",
+    "دونغ|دونج" to "VND", "فورنت|فورينت" to "HUF", "ليرة$S*سور$YA[ةه]" to "SYP",
+    // «جنيه سوداني» مش جنيه مصري (كان بيتقري جنيه مصري ويستنى «جاهز» بالجنيه)
+    "جنيه$S*جنوب$S*سودان$YA" to "SSP", "جنيه$S*سودان$YA" to "SDG",
     "جنيه$S*مصر$YA|جنيه|جنية|ج\\.م\\.?|جم" to "EGP",
-    "دولار|دينار|درهم|ليرة|فرنك|روب$YA[ةه]" to null,
+    "دولار|دينار|درهم|ليرة|فرنك|روب$YA[ةه]|بيزو|كرون[ةه]|كرونا" to null,
 )
 private val ARABIC_NAME_RES = ARABIC_NAMES.map { (name, code) -> Regex("^(?:$name)$") to code }
 private val ARABIC_NAME_ALT = ARABIC_NAMES.joinToString("|") { "(?:${it.first})" }
@@ -132,7 +139,9 @@ internal val OTHER_RIYAL = "ريال$S*(?:$OTHER_RIYAL_TAIL)"
  */
 internal val ARABIC_FOREIGN_WORD =
     "$OTHER_RIYAL|دينار|درهم|ليرة|روب$YA[ةه]|(?:جنيه$S*)?[إا]سترلين$YA|يوان|فرنك|روبل|رينغيت|رينجت" +
-        "|\\d$S*ين(?![$AR_LETTER])|(?<![$AR_LETTER])ين$S*[:：]?$S*\\d"
+        "|\\d$S*ين(?![$AR_LETTER])|(?<![$AR_LETTER])ين$S*[:：]?$S*\\d" +
+        // الجولة السادسة: «بات» و«وون» و«كرونة» كلمات قصيرة (جوه «حسابات») ⇒ جنب رقم بس
+        "|بيزو|شيكل|دونغ|دونج|فورنت|فورينت|جنيه$S*(?:جنوب$S*)?سودان$YA|\\d$S*(?:بات|وون|كرون[ةه]|كرونا)(?![$AR_LETTER])"
 
 /** المبالغ المكتوبة باسم عملة بالعربي («120 ريال قطري» ⇒ QAR · «300 دولار» ⇒ أجنبي من غير كود). */
 internal fun arabicMoneyIn(line: String): List<IsoMoney> = ARABIC_MONEY.findAll(line).map { m ->

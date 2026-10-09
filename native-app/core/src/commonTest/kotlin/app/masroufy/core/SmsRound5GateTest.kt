@@ -37,8 +37,8 @@ class SmsRound5GateTest {
     @Test fun aDateAfterTheArrivalDayWaits() {
         waitsReady("شراء\nمبلغ: SAR 87.40\nلدى: TEST BAKERY\nفي: 2026-03-06 09:00")
         waitsReady("Your credit card ending with#7788 was charged for EGP 640.00 at TEST TOYS on 06/03/26 at 19:30.", egypt = true)
-        assertEquals(SmsShape.SamaTitle, gateShape(SmsShape.SamaTitle, "x 2026-03-05", "2026-03-05", "2026-03-05"))
-        assertEquals(SmsShape.KeywordFallback, gateShape(SmsShape.SamaTitle, "x 2026-03-06", "2026-03-06", "2026-03-05"))
+        assertEquals(SmsShape.SamaTitle, gateShape(SmsShape.SamaTitle, "x 2026-03-05", "2026-03-05", "2026-03-05", "x 2026-03-05"))
+        assertEquals(SmsShape.KeywordFallback, gateShape(SmsShape.SamaTitle, "x 2026-03-06", "2026-03-06", "2026-03-05", "x 2026-03-06"))
     }
 
     /** كلمة شك جوه خانة حرة في قالب مصري (مفيش حارس بيمسكها) ⇒ يستنى. */

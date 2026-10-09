@@ -104,9 +104,18 @@ private val PARTIAL_DATE_IN_PLACE = Regex(
     RegexOption.IGNORE_CASE,
 )
 
+/**
+ * خانة «تاريخ العملية» (فودافون كاش) بيوم وشهر **من غير سنة** والساعة قبله أو من غيرها («23:50 7/10» · «21:05 07.10» · «6/10») —
+ * الجولة السادسة: ما كانتش بتتقري خالص (مش بعد كلمة تاريخ ومش قبل الساعة)، فالرسالة كانت بتاخد يوم الوصول وتتسجل في يوم غلط.
+ */
+internal const val VF_DATE_SLOT =
+    "تاريخ[ \\t]*العملية[ \\t]*[:：]?[ \\t]*(?:\\d{1,2}:\\d{2}(?::\\d{2})?(?:[ \\t]*(?:AM|PM|ص|م))?[ \\t]+)?(\\d{1,2})[-/.](\\d{1,2})(?![\\d/.\\\\-])"
+private val VF_SLOT = Regex(VF_DATE_SLOT, RegexOption.IGNORE_CASE)
+
 /** أي تاريخ في الرسالة — لو مفيش خالص، تاريخ الوصول هو تاريخ العملية (§40.3-١). «24/7» في اسم محل مش تاريخ. */
 internal fun hasDateToken(body: String): Boolean =
-    FULL_DATE_TOKEN.containsMatchIn(body) || PARTIAL_DATE_IN_PLACE.containsMatchIn(body) || MONTH_NAME.containsMatchIn(body)
+    FULL_DATE_TOKEN.containsMatchIn(body) || PARTIAL_DATE_IN_PLACE.containsMatchIn(body) || MONTH_NAME.containsMatchIn(body) ||
+        VF_SLOT.containsMatchIn(body)
 
 /**
  * الرسالة اللي مفيهاش تاريخ بتاخد يوم الوصول **بس** لو فيها عبارة عملية خلصت (تم … · إيداع · received · credited · has been …
@@ -163,6 +172,15 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
         return notFuture(iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt()), receivedAt)
     }
     if (EG_LONG_YMD.containsMatchIn(body) || EG_LONG_DMY.containsMatchIn(body)) return null // هجري أو سنة بعيدة
+    // الجولة السادسة: «تاريخ العملية: 23:50 7/10» — يوم/شهر أو شهر/يوم: المقبول واحد بس في النافذة، وإلا «التاريخ مش واضح»
+    VF_SLOT.find(body)?.let { m ->
+        val received = JsText.parseIsoMillis(receivedAt) ?: return null
+        val a = m.groupValues[1].toInt()
+        val b = m.groupValues[2].toInt()
+        val dayMonth = withYear(b, a, receivedAt, received)
+        val monthDay = withYear(a, b, receivedAt, received)
+        return if (dayMonth != null && monthDay != null && dayMonth != monthDay) null else dayMonth ?: monthDay
+    }
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
     if (!hasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null

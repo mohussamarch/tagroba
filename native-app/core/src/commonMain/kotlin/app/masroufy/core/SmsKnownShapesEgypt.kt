@@ -35,17 +35,42 @@ private const val AE = "(?:$EGC ?($N)|($N) ?$EGC)"
 /** رقم كارت/حساب متقص («4821» · «**4821» · «...4821» · «••••4821») · تليفون (فلتر الجهاز ممكن يلزقه في الكلمة اللي بعده). */
 private const val D = "[\\d*•x#.]+"
 private const val PH = "[\\d*•+]+ ?"
-private const val M = "(?:.+?)"
-private const val NM = "(?:[^\\d]+?)"
+
+/**
+ * **الخانات الحرة محصورة** (الجولة السادسة — المراجعة العدائية التانية): قبل كده المحل «.+?» والاسم «[^\d]+?» كانوا بيقبلوا أي جملة
+ * («… عند SAMPLE GROCER - عملية معكوسة» · «من كريم التجريبي والتحويل مستني تأكيد البنك» · «at TEST HOTEL (pre-approval only, …)» ·
+ * «from HANY SAMPLE, not yet credited»)، وقايمة كلمات الحالة لوحدها ما بتكفيش.
+ * - [M] المحل: كلمة لـ8 كلمات، **من غير** أقواس ولا فاصلة ولا شَرطة لوحدها بين مسافتين («AL-OTHAIM» ماشي، «X - Y» لأ).
+ * - [NM] الاسم: كلمة لـ5 كلمات من غير أرقام ولا علامات، ولا كلمة **مش اسم** ([NAME_STOP]: حروف جر · «والـ…» · أفعال حالة إنجليزي).
+ * المحل أو الاسم اللي فيه كده ⇒ الجملة مش على القالب ⇒ تستنى تأكيد المالك.
+ */
+private const val MT = "[^\\s,،;()\\[\\]\\-–—]+(?:[-–—][^\\s,،;()\\[\\]\\-–—]+)*"
+private const val M = "(?:$MT(?: $MT){0,7})"
+private const val NAME_STOP =
+    // «علي» مش هنا: بعد توحيد الحروف «على» = «علي» (اسم)
+    "(?:في|فى|من|الي|الى|إلى|عن|ل|لحساب\\S*|حساب\\S*|بعد|قبل|لحد|لحين|حتي|حتى|عشان|علشان|وال\\S*|المبلغ|التحويل|العملية|البنك" +
+        "|مستني\\S*|منتظر\\S*|بانتظار|انتظار|مراجع\\S*|تاكيد|تأكيد|الطريق|طريق\\S*" +
+        "|was|is|are|has|have|had|not|could|cannot|can't|will|would|subject|pending|on|to|for|with|and|but|due|credit|amount|your|the|via|by|at)"
+private const val NT = "(?!$NAME_STOP(?![^ ]))[^\\d\\s,،;:()\\[\\]\\-–—.]+"
+private const val NM = "(?:$NT(?: $NT){0,4})"
 private const val DATE = "(?:\\d{1,4}[-/.\\\\]\\d{1,2}(?:[-/.\\\\]\\d{1,4})?|[a-z]{3,9}\\.? \\d{1,2},? \\d{4})"
+
+/** تاريخ **بسنة** (فودافون كاش — الجولة السادسة: «تاريخ العملية: 23:50 7/10» من غير سنة ما بقاش على القالب). */
+private const val FULL_DATE = "(?:\\d{1,4}[-/.\\\\]\\d{1,2}[-/.\\\\]\\d{1,4}|[a-z]{3,9}\\.? \\d{1,2},? \\d{4})"
 private const val TIME = "\\d{1,2}:\\d{2}(?::\\d{2})?(?: ?(?:am|pm|ص|م))?"
 private const val DT = "(?:$DATE(?:,? (?:at )?$TIME)?|$TIME,? $DATE)"
 private const val REF = "[^ ]+"
 private const val HOT = "(?: ?\\(?للمزيد،? (?:اتصل|برجاء الاتصال) ب ?[\\d•]+\\)?)?"
 
-/** آخر سطر في رسايل فودافون كاش: إعلان بيتغير (البحث) — من غير أرقام غير في رابط (والكلام بيتفحص بـ[hasShapeDoubt]). */
-private const val VF_TAIL = "(?: [^\\d]{2,120}?(?: https?://\\S+)?)?"
-private const val VF_WHEN = "(?: تاريخ العملية:? ?(?:$TIME )?$DATE(?: $TIME)?)?"
+/**
+ * آخر سطر في رسايل فودافون كاش: إعلان (البحث: «Trailing promo line varies»). الجولة السادسة: كان **أي** كلام لحد 120 حرف من غير
+ * أرقام («التحويل مستني موافقتك» · «العملية متمتش وهيرجعلك المبلغ» · «الماكينة مطلعتش الفلوس») ⇒ بقى **جمل الإعلان المعروفة بس**
+ * (نص البحث) أو رابط. إعلان جديد ⇒ الرسالة تستنى أول مرة ونضيفه.
+ */
+private const val VF_PROMO =
+    "تابع (?:كل )?مصروفاتك(?: من تاريخ المعاملات)?(?: (?:من|علي|عبر) (?:ال)?(?:تطبيق|ابلكيشن|ابليكيشن|ابلكشن)(?: انا فودافون)?)?"
+private const val VF_TAIL = "(?: (?:$VF_PROMO)\\.?)?(?: https?://\\S+)?"
+private const val VF_WHEN = "(?: تاريخ العملية:? ?(?:$TIME )?$FULL_DATE(?: $TIME)?)?"
 private const val VF_REF = "(?: رقم العملية:? ?$REF)?"
 
 private fun e(bank: String, id: String, head: String, rest: String, direction: Direction?) = EgyptShape(bank, id, head, rest, direction)
@@ -86,7 +111,7 @@ private val EGYPT_SHAPES: List<EgyptShape> = listOf(
     ), // #17
     e("cib", "salary", "عميلنا العزيز لقد تم تحويل مبلغ $CA علي حسابكم لدينا من جهة العمل", "", IN), // #18
     e("cib", "transfer-in-ipn-en", "you have received an ipn transfer of", " $CA to account ending ?$D(?: from $NM)?\\.?(?: ref no: ?$REF)?", IN), // #26
-    e("cib", "transfer-in-instapay-2", "تم استلام تحويل لحظي بمبلغ $A من .+ الي حسابكم المنتهي", " ب ?$D\\.?(?: رقم المرجع ?$REF)?", IN), // #27
+    e("cib", "transfer-in-instapay-2", "تم استلام تحويل لحظي بمبلغ $A من $NM الي حسابكم المنتهي", " ب ?$D\\.?(?: رقم المرجع ?$REF)?", IN), // #27
     // ── بنوك تانية ──
     e("banquemisr", "transfer-in-instapay", "ايداع تحويل لحظي ipn بمبلغ", " $A بحسابك رقم ?$D(?: من $NM)?(?: مرجع ?$REF)?", IN), // #28
     e(
@@ -94,11 +119,11 @@ private val EGYPT_SHAPES: List<EgyptShape> = listOf(
         " $CA on $DT(?: from $NM)?\\.?(?: ref: ?$REF)?(?: \\(ipn inward transfer\\))?", IN,
     ), // #29
     e("kfh", "transfer-out-ipn", "ipn transfer with $CA deducted on", " $DT from your ac ending with ?$D(?: with ref# ?$REF)?\\.?(?: for info call ?[\\d•]+)?", OUT), // #30
-    e("kfh", "ipn-returned", "ipn transfer dated .+ with $CA returned", "(?: with ref# ?$REF)?\\.?(?: for info call ?[\\d•]+)?", IN), // #31
-    e("arabbank", "purchase-card", "a trx using card \\S+? ?from .+ for ", "(?:$AE) on $DT(?: at $TIME)?(?: gmt ?\\+? ?\\d+)?\\.?(?: available balance is $EGC ?$N)?", OUT), // #33 #34
+    e("kfh", "ipn-returned", "ipn transfer dated $DT with $CA returned", "(?: with ref# ?$REF)?\\.?(?: for info call ?[\\d•]+)?", IN), // #31
+    e("arabbank", "purchase-card", "a trx using card \\S+? ?from $M for ", "(?:$AE) on $DT(?: at $TIME)?(?: gmt ?\\+? ?\\d+)?\\.?(?: available balance is $EGC ?$N)?", OUT), // #33 #34
     e("arabbank", "credit-card-credit", "تم قيد مبلغ $A لبطاقتك الائتمانية", " رقم ?#? ?$D", IN), // #35
     e(
-        "breadfast", "card-top-up", "you received $CA on .+ to your card ending in",
+        "breadfast", "card-top-up", "you received $CA on $DT to your card ending in",
         " ?$D\\.?(?: ?for details, please contact breadfast customer support via the app)?", IN,
     ), // #36
     // ── فودافون كاش ──
@@ -143,7 +168,7 @@ private val EGYPT_SHAPES: List<EgyptShape> = listOf(
     e("qnb", "transfer-in-ipn", "ipn transfer received with amount of", " $CA (?:from|on) ?$D on $DT(?: at $TIME)?\\.?(?: ref# ?$REF)?\\.?(?: for more details call ?\\d+)?", IN),
     e(
         "qnb", "debit-card", "your debit card \\S+? ?had a successful transaction of",
-        " $CA ?@ ?[^,]+,(?: ?your available bal\\.? ?$EGC ?$N)?(?: for lost/stolen card call ?\\d+)?", OUT,
+        " $CA ?@ ?$M,(?: ?your available bal\\.? ?$EGC ?$N)?(?: for lost/stolen card call ?\\d+)?", OUT,
     ),
 )
 
@@ -160,6 +185,15 @@ internal fun hasEgyptianKnownHead(body: String): Boolean {
 internal fun isNbeSentence(body: String): Boolean {
     val key = shapeKey(body, dropColons = false)
     return EGYPT_SHAPES.any { it.bank == "nbe" && it.headAnyCurrency.containsMatchIn(key) }
+}
+
+/**
+ * أول الجملة على قالب «IPN transfer dated … returned» (بيت التمويل #31): التاريخ اللي فيها **تاريخ التحويل الأصلي** (البحث)، مش يوم ما
+ * الفلوس رجعت — القارئ بياخد يوم الوصول (الجولة السادسة).
+ */
+internal fun isReturnedTransferNotice(body: String): Boolean {
+    val key = shapeKey(body, dropColons = false)
+    return EGYPT_SHAPES.any { it.id == "ipn-returned" && it.headAnyCurrency.containsMatchIn(key) }
 }
 
 private fun egp(raw: String): Halalas? {

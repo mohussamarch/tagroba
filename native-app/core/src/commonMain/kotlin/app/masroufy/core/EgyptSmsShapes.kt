@@ -23,7 +23,7 @@ private const val TM = "(?<![\\u0600-\\u06FF])و?تم"
  * (كانت «المبلغ مش واضح») · «جنيه إسترليني» **مش** جنيه مصري (كانت بتخلي الشراء بالإسترليني في السعودية يترفض من غير ما يتسأل).
  */
 internal const val EG_CURRENCY =
-    "(?:(?<![A-Za-z])(?:EGP|L\\.?E|E£)(?![A-Za-z])|£E(?![A-Za-z])|ج\\.م\\.?|(?:جنيه|جنية)(?![ \\t]*[إا]سترلين)" +
+    "(?:(?<![A-Za-z])(?:EGP|L\\.?E|E£)(?![A-Za-z])|£E(?![A-Za-z])|ج\\.م\\.?|(?:جنيه|جنية)(?![ \\t]*(?:[إا]سترلين|سودان|جنوب))" +
         "|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])ج(?![\\u0600-\\u06FF.]))"
 
 /**
@@ -131,8 +131,14 @@ private fun problemOf(body: String): EgyptAmount.Fail {
 private val STRONG_IN = Regex("has$H+been$H+refunded|$TM$H*رد|${B}returned$B|$TM$H*قيد$H*مبلغ|من$H*جهة$H*العمل", EI)
 private val OUT_FROM_ACCOUNT = Regex("$TM$H*تنفيذ$H*تحويل[^\\n]{0,60}?من$H*حسابك", EI)
 
+/**
+ * «إلى» بكل كتاباتها — الجولة السادسة: «الي حسابك» بالياء (شائعة في الرسايل) كانت بتخلي الاتجاه «مش واضح» رغم إن القالب نفسه (بعد
+ * توحيد الحروف في `shapeKey`) معروف.
+ */
+private const val TO_WORD = "(?:(?<![\\u0600-\\u06FF])[إا]ل[ىي])"
+
 /** «إلى حسابك» / «لحسابكم» — حسابك **إنت** (التجاري الدولي والأهلي). «إلى حساب <رقم>» من غير «ك» ممكن يبقى صادر فما بتتحسبش. */
-private val IN_TO_ACCOUNT = Regex("(?:إلى|الى)$H*حسابك|لحسابك|على$H*حسابكم|لبطاقتك", EI)
+private val IN_TO_ACCOUNT = Regex("$TO_WORD$H*حسابك|لحسابك|عل[ىي]$H*حسابكم|لبطاقتك", EI)
 
 /** «لرقم» = تحويل لرقم تاني — **إلا** «لرقم محفظتك» (رقمك إنت في رسالة استلام — الجولة الخامسة: كانت بتتقري صرف). */
 private val OUT_TARGET = Regex("لرقم(?!$H*محفظت)|${B}deducted$B|${B}debited$B|from$H+your$H+AC$B", EI)
@@ -141,19 +147,25 @@ private val OUT_TARGET = Regex("لرقم(?!$H*محفظت)|${B}deducted$B|${B}deb
  * الجولة الخامسة: العملية **اتعكست أو اتلغت** («وتم عكس العملية» · «has been reversed» · «Reversal:» · «عملية مرتجعة» · «اتلغت») ⇒
  * الاتجاه مش واضح دايمًا (مفيش قالب مصري في البحث فيه الكلام ده — كانت بتتسجل في اتجاه أول الجملة).
  */
-private val REVERSED = Regex("(?<![\\u0600-\\u06FF])(?:[وف]?(?:ال)?(?:عكس|مرتجع)|اتلغ[تى])|${B}revers(?:ed|al|e)$B", EI)
+private val REVERSED = Regex(
+    "(?<![\\u0600-\\u06FF])(?:[وف]?(?:ال)?(?:عكس|مرتجع|معكوس|مسترد[ةه]?(?![\\u0600-\\u06FF])|مسترجع|مرتد[ةه]?(?![\\u0600-\\u06FF]))|اتلغ[تى]|[اإ][تن]عكس)" +
+        "|${B}revers(?:ed|al|e)$B",
+    EI,
+)
 
 /** فلوس **راجعة** (استرداد · استرجاع · رد) — دليل وارد؛ مع فعل صرف أو «لرقم» ⇒ الاتجاه مش واضح («تم تحويل … وتم استرجاع المبلغ»). */
 private val MONEY_BACK = Regex("استرداد|استرجاع|${B}refunded$B", EI)
 /** كلمات الوارد — بحدود كلمة («non-refundable» · «TEST HOTEL DEPOSIT» جوه كلمة تانية ما تتحسبش). */
 private val IN_VERB = Regex(
-    "$TM$H*استلام|$TM$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|إيداع",
+    "$TM$H*استلام|$TM$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|[إا]يداع",
     EI,
 )
 
 /** فعل خصم صريح — لو معاه فعل وارد في نفس الرسالة («تم خصم … وتم إضافة 50 نقطة») الاتجاه مش واضح. */
 private val DEBIT_VERB = Regex(
-    "$TM$H*خصم|$TM$H*سحب|$TM$H*شحن|$TM$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent|(?<![\\u0600-\\u06FF])اتخصم",
+    "$TM$H*خصم|$TM$H*سحب|$TM$H*شحن|$TM$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent|(?<![\\u0600-\\u06FF])اتخصم" +
+        // الجولة السادسة: «You paid USD 12.99 to …» · «EGP 640.00 was spent» (كارت المحفظة — الأجنبي كان بيستنى من غير تفاصيل)
+        "|${B}(?:paid|spent)$B",
     EI,
 )
 
@@ -162,7 +174,7 @@ private val DEBIT_HINT = Regex("debit$H+card|credit$H+card|purchase", EI)
 
 /** «من حسابك … إلى حسابك/لحسابك» = بين حساباتك — الرسالة الواحدة فيها الطرفين (الجولة التالتة: كانت بتتسجل داخل). */
 private val FROM_YOUR_ACCOUNT = Regex("من$H*حسابك", EI)
-private val TO_YOUR_ACCOUNT = Regex("(?:إلى|الى)$H*حسابك|لحسابك", EI)
+private val TO_YOUR_ACCOUNT = Regex("$TO_WORD$H*حسابك|لحسابك", EI)
 
 /**
  * شحن المحفظة نفسها («تم شحن محفظتك/رصيد محفظتك») = فلوس **داخلة** المحفظة — مش فاتورة ولا صرف (الجولة التالتة: كانت بتتسجل

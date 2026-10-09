@@ -119,7 +119,7 @@ class SmsTemplateCoverageTest {
         assertTrue(samaNotTitle.isEmpty(), "SAMA standard titles not recognised as SAMA titles: $samaNotTitle")
         // الجولة الخامسة: الشراء/السحب **برّه البلد** بيستنى حتى لو المبلغ بالريال بس (§75-12) — لازم يفضل كده
         val notWaiting = rows.filter { "${it.file}#${it.index}" in WAIT_BY_DESIGN && it.bookedShape != RowResult.FALLBACK }.map { "${it.file}#${it.index}" }
-        assertTrue(notWaiting.isEmpty(), "international purchase/withdrawal titles must wait for the owner: $notWaiting")
+        assertTrue(notWaiting.isEmpty(), "international purchase/withdrawal (title, exchange rate or country) must wait for the owner: $notWaiting")
         val shapes = Report.shapeCounts(rows.filterNot { it.keywordOnly })
         assertTrue(shapes.getValue("known") > 0 && shapes.getValue("sama-title") > 0, "shape counts look empty: $shapes")
     }
@@ -132,6 +132,9 @@ class SmsTemplateCoverageTest {
         val WAIT_BY_DESIGN = mapOf(
             "saudi#164" to "SAMA «International ATM Withdrawal / سحب صراف آلي دولي» with only a SAR amount",
             "saudi#174" to "SAMA «PoS International Purchase / شراء عبر نقاط البيع دولية» with only a SAR amount",
+            // الجولة السادسة: سعر صرف ≠ 1 ودولة غير السعودية تحت عنوان محلي = شراء برّه البلد بالريال (نفس اختيار (م))
+            "saudi#90" to "STC «Online Purchase» abroad: Exchange rate 3.7612 + Country GB, SAR total only",
+            "saudi#94" to "STC «شراء إنترنت» abroad: رسوم تحويل العملات + الدولة GB, SAR total only",
         )
 
         /** سطور معروف إنها بتترفض (بتستنى المالك) — والسبب. اللي يصلح سطر منهم يشيله من هنا. */

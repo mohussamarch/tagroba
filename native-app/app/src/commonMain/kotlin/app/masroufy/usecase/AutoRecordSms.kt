@@ -100,9 +100,15 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     private suspend fun walletFor(lane: SmsLane, senderKey: String, mapping: Map<String, String>): SmsReviewTarget? {
         val all = lane.wallets.listAll()
         val mapped = mapping[senderKey]
-        val wallet = if (mapped != null) all.firstOrNull { it.id == mapped } else all.filter { it.kind == "bank" }.singleOrNull()
-        return wallet?.let { SmsReviewTarget(it.id, it.name, it.currency) }
+        val wallet = (if (mapped != null) all.firstOrNull { it.id == mapped } else all.filter { it.kind == "bank" }.singleOrNull()) ?: return null
+        // الجولة السادسة: آخر 4 أرقام حسابات المالك التانية في البلد — رسالة عن واحد منهم ما بتتسجلش لوحدها في المحفظة دي (رد المالك ١
+        // «محفظة لكل بنك» كان مفترض حساب واحد للبنك؛ سؤال مفتوح للمالك في OVERRIDES §72.3)
+        val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
+        return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others)
     }
+
+    /** آخر 4 أرقام من خانة رقم الحساب (ممكن تبقى مكتوبة بمسافات أو كاملة في بيانات قديمة) — أقل من 4 أرقام ⇒ null. */
+    private fun last4(value: String?): String? = value?.filter { it in '0'..'9' }?.takeLast(4)?.takeIf { it.length == 4 }
 
     /**
      * المرسلين اللي ليهم رسايل **مفهومة بقارئ البلد دي** في الصندوق، بترتيب أول ظهور — **والمالك مفعّلهم** (دفاع تاني: الجهاز ما بيحفظش

@@ -88,7 +88,24 @@ data class SmsReview(
  * `accountIdentity` = اسم المحفظة — نطاق تفرّد المرجع، زي شاشة الاستيراد. [currency] = عملة المحفظة: من غيرها رسايل QNB مصر
  * كانت هتتسجل بالريال (الاستيراد افتراضيه ريال) — اتكشف في جلسة 31. الافتراضي ريال عشان ملفات المرجع والتطبيق الحالي.
  */
-data class SmsReviewTarget(val walletId: Id, val accountIdentity: String, val currency: Currency = Currency.SAR)
+data class SmsReviewTarget(
+    val walletId: Id,
+    val accountIdentity: String,
+    val currency: Currency = Currency.SAR,
+    /** آخر 4 أرقام حساب المحفظة دي (لو مكتوبة). */
+    val accountLast4: String? = null,
+    /**
+     * آخر 4 أرقام حسابات المالك **التانية** في نفس البلد (الجولة السادسة): الرسالة اللي أرقام حسابها واحد منهم ومش المحفظة دي ⇒ ما
+     * بتتسجلش لوحدها في المحفظة دي (كانت بتتسجل في محفظة البنك المربوط لمجرد إن المرسل نفسه) — بتستنى ومعاها سببها.
+     */
+    val otherAccountsLast4: Set<String> = emptySet(),
+)
+
+/** الرسالة بتقول حساب تاني من حسابات المالك (مش حساب المحفظة دي). */
+private fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
+    val own = row.ownLast4 ?: return false
+    return own in otherAccountsLast4 && own != accountLast4
+}
 
 /** اللي بيترفع للقايمة المشتركة (OVERRIDES §25) — المصروف بس. */
 data class MerchantContribution(val economicKind: EconomicKind, val observedDirection: Direction, val rawMerchantName: String)
@@ -119,14 +136,19 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
         val rows = mutableListOf<SmsRow>()
         val messageByLine = mutableMapOf<Int, String>()
         val shapeByLine = mutableMapOf<Int, SmsShape>()
+        val waitByLine = mutableMapOf<Int, String>()
         val failed = mutableListOf<SmsFailed>()
         for (item in inbox.items) {
             if (only != null && !only(item)) continue
             when (val parsed = item.parsed) {
                 is SmsParseResult.Ok -> {
-                    rows += parsed.row
-                    messageByLine[parsed.row.lineNumber] = item.id
-                    shapeByLine[parsed.row.lineNumber] = parsed.row.shape
+                    val row = parsed.row
+                    rows += row
+                    messageByLine[row.lineNumber] = item.id
+                    // الجولة السادسة: حساب تاني من حسابات المالك ⇒ مش واضحة للمحفظة دي (تستنى بسببها)
+                    val other = row.shape.clear && target.otherAccount(row)
+                    shapeByLine[row.lineNumber] = if (other) SmsShape.KeywordFallback else row.shape
+                    if (other) waitByLine[row.lineNumber] = uiText(TextKey.SMS_WAIT_OTHER_ACCOUNT)
                 }
                 is SmsParseResult.Rejected -> failed += SmsFailed(item.id, item.sender, item.receivedAt.take(10), parsed.reason)
             }
@@ -163,7 +185,7 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
                 state = line.state,
                 reason = line.reason,
                 shape = shape,
-                confirmReason = if (shape.clear) null else uiText(TextKey.SMS_WAIT_UNKNOWN_SHAPE),
+                confirmReason = if (shape.clear) null else waitByLine[line.row.lineNumber] ?: uiText(TextKey.SMS_WAIT_UNKNOWN_SHAPE),
             )
         }
         val newestFirst = Comparator<SmsReviewLine> { a, b -> if (a.date != b.date) b.date.compareTo(a.date) else b.lineNumber - a.lineNumber }

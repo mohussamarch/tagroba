@@ -106,8 +106,11 @@ private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
 /** حوالة الراجحي القديمة من غير كلمة اتجاه (#13 #16 #18 #22) — الاتجاه من **مكان الاسم** (`undirectedTransferDirection`). */
 private val UNDIRECTED_TITLE = Regex("حوالة (?:داخلية|محلية)")
 
-/** سطر تحية قبل العنوان (الإنماء #67 «عميلنا العزيز،» · #71 «هلا <اسم>») ⇒ العنوان هو السطر اللي بعده. */
-private val GREETING = Regex("عميلنا العزيز|هلا .+")
+/**
+ * سطر تحية قبل العنوان (الإنماء #67 «عميلنا العزيز،» · #71 «هلا <اسم>») ⇒ العنوان هو السطر اللي بعده. الجولة السادسة: «هلا» + اسم
+ * (4 كلمات بالكتير، من غير « - » ولا أقواس ولا كلمة حالة) — «هلا سامر - الحوالة موقوفة» كانت بتستخبى كتحية.
+ */
+private val GREETING = Regex("عميلنا العزيز|هلا(?: [^ ,،()\\-–—]+){1,4}")
 
 /** عدد قوالب البنوك (للاختبار). */
 internal val SAUDI_BANK_TITLE_COUNT: Int get() = SAUDI_BANK_TITLES.size
@@ -129,12 +132,13 @@ private fun titleHit(lines: List<String>): TitleHit? {
     val first = shapeKey(lines.firstOrNull() ?: return null)
     if (UNDIRECTED_TITLE.matches(first)) return TitleHit("alrajhi", "transfer-undirected", null, 1, first)
     if (isSamaTitle(first)) return TitleHit(null, null, null, 1, first)
-    val index = if (GREETING.matches(first)) 1 else 0
+    val index = if (GREETING.matches(first) && !hasShapeDoubt(first) && !GREETING_NOT_A_NAME.containsMatchIn(first.removePrefix("هلا"))) 1 else 0
     val raw = lines.getOrNull(index) ?: return null
     val title = shapeKey(raw)
     val withColons = shapeKey(raw, dropColons = false)
     val known = SAUDI_BANK_TITLES.firstOrNull { it.regex.matches(if (it.colon) withColons else title) } ?: return null
-    if (known.colon && (hasShapeDoubt(withColons) || TITLE_STATUS.containsMatchIn(withColons))) return null
+    // الجولة السادسة: اسم البنك بعد النقطتين قيمة حرة محصورة («Incoming Transfer: Riyad Bank - recalled» مش اسم بنك)
+    if (known.colon && (!freeValueOk(withColons.substringAfter(':')) || TITLE_STATUS.containsMatchIn(withColons))) return null
     return TitleHit(known.bank, known.id, known.direction, index + 1, title)
 }
 
@@ -155,7 +159,9 @@ internal fun saudiShape(body: String, direction: Direction): SmsShape {
         else -> hit.direction == null || hit.direction == direction
     }
     if (!agrees) return SmsShape.KeywordFallback
-    if (INTERNATIONAL.containsMatchIn(hit.key) && !TRANSFER_TITLE.containsMatchIn(hit.key)) return SmsShape.KeywordFallback
-    if (!allLinesKnown(lines.drop(hit.from), hit.bank?.let { "$it/${hit.id}" })) return SmsShape.KeywordFallback
+    val body = lines.drop(hit.from)
+    // الجولة السادسة: «Exchange rate: 4.6875» · «Country: GB» · «الدولة: الإمارات» تحت عنوان محلي = شراء برّه البلد ⇒ يستنى زي «دولي»
+    if ((INTERNATIONAL.containsMatchIn(hit.key) || abroadLines(body)) && !TRANSFER_TITLE.containsMatchIn(hit.key)) return SmsShape.KeywordFallback
+    if (!allLinesKnown(body, hit.bank?.let { "$it/${hit.id}" })) return SmsShape.KeywordFallback
     return if (hit.bank == null) SmsShape.SamaTitle else SmsShape.KnownShape(hit.bank, hit.id!!)
 }

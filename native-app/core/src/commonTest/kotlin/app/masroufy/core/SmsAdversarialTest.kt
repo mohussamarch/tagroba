@@ -37,11 +37,13 @@ class SmsAdversarialTest {
     /**
      * الجولة الخامسة (§72: الانتظار مقبول، الضياع لا): فلتر الجهاز بيرمي الرسالة **إلا** لو أولها عنوان أو قالب بنك معروف — ساعتها بتتحفظ
      * وتستنى في «المرفوضة» بسبب الحارس (القارئين بيرفضوها — الاختبار اللي فوق). رمز التحقق بيترمي دايمًا.
+     * الجولة السادسة: والحارس اللي مسك **آخر** الرسالة بس (مش أولها) ما بيرميهاش — نفس الشيء: بتتحفظ والقارئ يرفضها فتستنى. المهم إن
+     * اللي اتحفظ عمره ما يبقى رمز، وإن له سبب حارس (القارئ بيرفضه، ما بيتسجلش).
      */
     @Test fun theDeviceFilterDropsEveryMustIgnoreMessageUnlessItHasAKnownHead() {
         val kept = SmsAdversarialCases.mustIgnore.filterNot { (_, body) ->
             SmsVocabulary.ignoreBeforeStorage(body) ||
-                (SmsVocabulary.hasKnownHead(body) && SmsVocabulary.ignoreReason(body) != TextKey.SMS_SENSITIVE)
+                SmsVocabulary.ignoreReason(body).let { it != null && it != TextKey.SMS_SENSITIVE }
         }
         assertTrue(kept.isEmpty(), "kept for storage: ${kept.joinToString("\n")}")
         val otp = SmsAdversarialCases.mustIgnore.filter { SmsVocabulary.ignoreReason(it.second) == TextKey.SMS_SENSITIVE }

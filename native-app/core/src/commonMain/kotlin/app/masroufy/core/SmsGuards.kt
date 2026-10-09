@@ -72,7 +72,9 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         "مشاركة${S}*الرمز|الرمز$S*[:：]?$S*\\d{4,8}" +
         "|كلمة$S*مرور|رمز$S*(?:مؤقت|شراء)|رمز$S*[:：]$S*\\d{4,8}|الرقم$S*السري|security$S*code" +
         "|one.?time$S*(?:PIN|passcode)|verification$S*PIN|passcode|كود$S*(?:ال)?(?:تحقق|تفعيل|تأكيد|أمان)" +
-        "|(?<!(?:auth|approval|authori[sz]ation|merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})$B(?:PIN|code)$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
+        "|(?<!(?:auth|approval|authori[sz]ation|merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})${B}code$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
+        // الجولة السادسة: «Approval PIN: 553901» رمز (رقم الموافقة «Approval code» بس هو اللي مش رمز)
+        "|(?<!(?:merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})${B}PIN$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         "|رمز$S*(?:ال)?(?:تأكيد|أمان|امان|سري)|الرمز$S*السري|(?:confirmation|authentication|security)$S*(?:code|PIN)" +
         "|$NA(?:ال)?(?:رمز|كود)ك?$S*(?:ال)?(?:تحقق|توثيق|تفعيل|دخول|تأكيد|تاكيد|أمان|امان|سري|مؤقت|شراء|مرور)$NZ" +
         "|$NA(?:ال)?رقم$S*(?:ال)?(?:تحقق|سري)$NZ|$NA(?:ال)?(?:رمز|كود)ك?$S*(?:هو$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
@@ -84,7 +86,9 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         "|(?:رمز|كود|كلمة$S*(?:ال)?(?:مرور|سر))[^\\n]{0,15}لمرة$S*واحدة|$NA(?:ال)?(?:رمز|كود)ك?[ \\t]+(?!(?:ال)?عملية)(?:[^\\s\\d]+[ \\t]+){1,2}\\d{4,8}(?!\\d)" +
         "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)[^\\n\\d]{0,20}\\d{4,8}(?!\\d)|$NA(?:ال)?رقمك$S*(?:ال)?(?:سري|تحقق)" +
         "|${B}verification$S*(?:no\\.?|number|num)(?![A-Za-z])|${B}one.?time(?:[ \\t]+[^\\s\\d]+){0,2}[ \\t]*[:：]?[ \\t]*\\d{4,8}(?!\\d)" +
-        "|${B}use$S+\\d{4,8}$S+to$B|\\d{4,8}$S+is$S+your$S+(?:[A-Za-z]+$S+)?(?:code|OTP|PIN|password|passcode)$B",
+        "|${B}use$S+\\d{4,8}$S+to$B|\\d{4,8}$S+is$S+your$S+(?:[A-Za-z]+$S+)?(?:code|OTP|PIN|password|passcode)$B" +
+        // ── الجولة السادسة: «رقم التعريف المؤقت 662190» · «activation number 662190» · «Secure code for … : 662190» ──
+        "|$NA(?:ال)?رقم$S*(?:ال)?تعريف$S*(?:ال)?(?:مؤقت|شخصي)|${B}activation$S+(?:number|code|no\\.?)(?![A-Za-z])|${B}secure$S+code$B",
     GI,
 )
 
@@ -131,13 +135,7 @@ internal fun cancelledWithRefund(body: String): Boolean = mentionsCancel(body) &
  * (بصمة الرسالة ووصفها في ملف المرجع فيهم «بـ» و«لـ»).
  */
 internal fun guardText(body: String): String =
-    body.filterNot { it.code == 0x0640 || it.code in 0x064B..0x065F || it.code == 0x0670 || it.code in 0x0610..0x061A || it.code in FORMAT_CODES }
-
-/**
- * حروف تنسيق مخفية (الجولة الخامسة): مسافة من غير عرض (U+200B) · ZWNJ/ZWJ · word joiner · الشرطة الناعمة (U+00AD) · BOM — جوه كلمة
- * حارس («مرف​وضة» · «Decl‌ined» · «OT­P») كانت بتعدّي الحارس والرسالة تتسجل. بتتشال من النص قبل الحراس والقراية.
- */
-internal val FORMAT_CODES = setOf(0x200B, 0x200C, 0x200D, 0x2060, 0x00AD, 0xFEFF)
+    foldHiddenText(body).filterNot { it.code == 0x0640 || it.code in 0x064B..0x065F || it.code == 0x0670 || it.code in 0x0610..0x061A }
 
 /**
  * سبب تجاهل الرسالة أو null — الترتيب نفس التطبيق الحالي (عرض ⇒ رمز ⇒ مرفوض) وبعدهم «مش عملية» ⇒ اتلغت
@@ -147,7 +145,7 @@ internal fun smsIgnoreReason(body: String): TextKey? {
     val text = guardText(body)
     return when {
         SMS_OFFER_PATTERN.containsMatchIn(text) -> TextKey.SMS_OFFER
-        SMS_SENSITIVE_PATTERN.containsMatchIn(text) -> TextKey.SMS_SENSITIVE
+        isSensitiveText(text) -> TextKey.SMS_SENSITIVE
         SMS_DECLINED_PATTERN.containsMatchIn(text) -> TextKey.SMS_DECLINED
         isNotATransaction(text) -> TextKey.SMS_NOT_TRANSACTION
         isCancelled(text) -> TextKey.SMS_DECLINED
@@ -155,6 +153,38 @@ internal fun smsIgnoreReason(body: String): TextKey? {
     }
 }
 
-/** نص الرسالة زي ما القارئ بيشوفه: أرقام لاتيني، من غير `\r` ولا علامات الاتجاه ولا حروف التنسيق المخفية ([FORMAT_CODES]). */
+/** سبب الحارس **من غير العرض** (فلتر الجهاز — الجولة السادسة: «تمت عملية شراء … ، سيتم إضافة النقاط» عرض بس في نفس الجملة). */
+internal fun guardReasonBesidesOffer(body: String): TextKey? {
+    val text = guardText(body)
+    return when {
+        isSensitiveText(text) -> TextKey.SMS_SENSITIVE
+        SMS_DECLINED_PATTERN.containsMatchIn(text) || isCancelled(text) -> TextKey.SMS_DECLINED
+        isNotATransaction(text) -> TextKey.SMS_NOT_TRANSACTION
+        else -> null
+    }
+}
+
+/**
+ * الجولة السادسة: جملة **تحذير** من غير رقم («Never share your OTP or PIN» · «لا تشارك الرقم السري مع أحد» · «اوعى تدي كود التحقق
+ * لأي حد» · «فودافون كاش عمرها ما هتطلب منك الرقم السري») مش رسالة رمز — كانت بتخلي عملية حقيقية تترمي قبل الحفظ وتضيع في صمت.
+ * التحذير بيتشال لحد آخر جملته **لو مفيهوش رقم 4–8 أرقام** («Do not share the code 731905» لسه رمز)، والباقي بيتفحص.
+ */
+private val WARNING = Regex(
+    "(?:${B}never$S+(?:share|disclose|give|reveal|tell)|${B}(?:do$S+not|don'?t)$S+(?:share|disclose|give|reveal|tell)" +
+        "|${B}(?:will$S+)?never$S+ask|$NA(?:لا|ولا)$S*(?:تشارك|تعطي|تعط|تفصح|تخبر|تبلغ|تدي)|$NA(?:ب|يجب$S*)?عدم$S*(?:مشاركة|اعطاء|إعطاء|الإفصاح|الافصاح)" +
+        "|$NA(?:[اإ]وع[ىي])$NZ|$NA(?:ما$S*)?م?ا?تدي(?:ش|هوش|هاش)$NZ|$NA(?:ما$S*)?م?ا?تقول(?:ش|هوش|هاش)$NZ" +
+        "|${NA}عمر(?:ها|نا|ه|هم)?$S*ما$S*(?:ه|ح)?[تين]?طلب|${NA}(?:لن|لا)$S*(?:نطلب|يطلب|تطلب))[^.!؟?\\n]*",
+    GI,
+)
+private val CODE_DIGITS = Regex("(?<!\\d)\\d{4,8}(?!\\d)")
+
+/** فيها رمز تحقق أو كلمة سر **برّه** جمل التحذير اللي مفيهاش رقم. */
+internal fun isSensitiveText(text: String): Boolean =
+    SMS_SENSITIVE_PATTERN.containsMatchIn(WARNING.replace(text) { if (CODE_DIGITS.containsMatchIn(it.value)) it.value else " " })
+
+/**
+ * نص الرسالة زي ما القارئ بيشوفه: أرقام لاتيني، من غير `\r` ولا علامات الاتجاه ولا **أي** حرف تنسيق مخفي، وأشكال العرض العربية
+ * راجعة لحروفها (`SmsHiddenText.kt` — الجولة السادسة).
+ */
 internal fun normalizeSmsBody(body: String): String =
-    latinizeDigits(body).filterNot { it == '\r' || it.code in BIDI_CODES || it.code in FORMAT_CODES }
+    foldHiddenText(latinizeDigits(body).filterNot { it == '\r' || it.code in BIDI_CODES })

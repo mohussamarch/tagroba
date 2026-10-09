@@ -86,15 +86,27 @@ class SmsStoredPathTest {
         }
     }
 
-    /** عملية حقيقية فيها سطر تحذير أو إعلان بتتحفظ وبتتسجل بمبلغها. */
+    /**
+     * عملية حقيقية فيها سطر تحذير أو إعلان بتتحفظ وبتتسجل بمبلغها. الجولة السادسة (طلب المراجع): التحذير المعروف تحت عنوان معروف لازم
+     * يفضل **شكل معروف بعد الحفظ** (رقم التليفون بيتحجب «••••0000» — كان بيقلب السطر لـ«مش معروف» والرسالة تستنى في صمت).
+     */
     @Test fun realTransactionsWithFootersAreStoredAndBooked() {
-        val real = listOf(
-            "SA" to "شراء\nمبلغ: SAR 64.25\nلدى: TEST GROCER\nفي: 2026-03-05 09:10\nللاعتراض على العملية اتصل 8001110000",
+        val known = listOf(
+            "شراء\nمبلغ: SAR 64.25\nلدى: TEST GROCER\nفي: 2026-03-05 09:10\nللاعتراض على العملية اتصل 8001110000",
+            "شراء\nمبلغ: SAR 64.25\nلدى: TEST GROCER\nفي: 2026-03-05 09:10\nاستمتع بخدماتنا",
+            "شراء عبر نقاط البيع\nمبلغ: 64.25 ر.س\nلدى: TEST GROCER\nفي: 2026-03-05 09:10\nإذا لم تتم العملية بواسطتك اتصل 8001110000",
+            "PoS Purchase\nAmount: SAR 64.25\nAt: TEST GROCER\n2026-03-05 09:10\nIf you have not authorized this transaction call 8001110000",
+        )
+        for (body in known) {
+            val r = read("SA", stored(body))
+            assertTrue(r is SmsParseResult.Ok && r.row.shape.clear, "not booked automatically: $r — $body")
+        }
+        // «Purchase» لوحده مش عنوان معروف ⇒ بيتقري وبيستنى · وجملة مصر دي مش على قالب بنك معروف ⇒ بتتقري وبتستنى
+        val waitReady = listOf(
             "SA" to "Purchase\nAmount: SAR 64.25\nAt: TEST GROCER\n2026-03-05 09:10\nIf you have not authorized this transaction call 8001110000",
-            "SA" to "شراء\nمبلغ: SAR 64.25\nلدى: TEST GROCER\nفي: 2026-03-05 09:10\nاستمتع بخدماتنا",
             "EG" to "Your debit card 6604 was charged EGP 500.00 at TEST GROCER on 05/03/2026. Not authorised by you? Call 19000",
         )
-        for ((country, body) in real) {
+        for ((country, body) in waitReady) {
             val r = read(country, stored(body))
             assertTrue(r is SmsParseResult.Ok, "[$country] not booked: $r — $body")
         }

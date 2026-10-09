@@ -8,6 +8,8 @@ import app.masroufy.core.JsText.S
  * بيرفضها بسببها فتستنى في «المرفوضة» — «لعرض تفاصيل العملية» أو «See latest offers» تحت شراء حقيقي كانوا بيرموه) · مفيهاش مبلغ جنبه
  * عملة. **كلمة الحركة ما بقتش شرط** («تمت إضافة» · «تم استقطاع» · «استلمت» · «You paid» · «withdrawn» · «وصلك» كانوا بيضيعوا في صمت):
  * أي رسالة من بنك مفعّل فيها مبلغ بتتحفظ، والقارئ يرفض اللي مش فاهمه فيستنى المالك.
+ * **الجولة السادسة:** الحارس بيتفحص على **أول** الرسالة بس (سطر إعلان أو تنبيه في آخر عملية حقيقية بشكل مش معروف ما بيرميهاش)،
+ * والرمز بيترمي لو فيه رمز فعلًا (جملة «لا تشارك الرقم السري» من غير رقم مش رمز) — [ignoreBeforeStorage].
  * (كان جوه `SmsGuards.kt` — اتنقل لملف لوحده في الجولة التالتة عشان حد الـ300 سطر.)
  */
 object SmsVocabulary {
@@ -28,7 +30,9 @@ object SmsVocabulary {
      */
     const val CURRENCY: String =
         "(?:(?<![A-Za-z])(?:SAR|SR|USD|EUR|GBP|AED|EGP|KWD|BHD|QAR|OMR|JOD)(?![A-Za-z])|ريال|ر\\.?س\\.?|ر\\.[ \\t]س\\.?|دولار|يورو|جنيه|جنية|دينار|درهم|ليرة|[إا]سترليني|" +
-            "ج\\.م\\.?|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])ج(?![\\u0600-\\u06FF.])|(?<![A-Za-z])L\\.?E(?![A-Za-z]))"
+            "ج\\.م\\.?|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])ج(?![\\u0600-\\u06FF.])|(?<![A-Za-z])L\\.?E(?![A-Za-z])" +
+            // الجولة السادسة: عملات اسمها أو اختصارها ما كانش هنا (الشراء كان بيترمي «مفيهاش مبلغ» بدل ما يستنى §75-12)
+            "|(?<![\\u0600-\\u06FF])(?:بات|وون|بيزو|كرون[ةه]|كرونا|شيكل|دونغ|دونج)(?![\\u0600-\\u06FF])|(?<![A-Za-z])(?:Ft|Kč|L\\.L)(?![A-Za-z])|ل\\.ل|ل\\.س)"
 
     private val MONEY = Regex(CURRENCY, GI)
 
@@ -45,7 +49,25 @@ object SmsVocabulary {
      * فيها **فلوس ورقم** — شرط الحفظ (الجولة الخامسة، مكان «كلمة حركة + عملة»): عملة (محلية أو أجنبية) ورقم في أي مكان («تم شحن رصيد
      * موبايلك ب 50 بنجاح وخصم 57 من محفظتك شاملة الضريبة جنيه» — الرقم مش لازق في العملة).
      */
-    fun hasAmount(text: String): Boolean = hasMoney(text) && text.any { it in '0'..'9' }
+    fun hasAmount(text: String): Boolean =
+        (hasMoney(text) && text.any { it in '0'..'9' }) || (AMOUNT_LABEL_NUMBER.containsMatchIn(text) && hasKnownHead(normalizeSmsBody(text)))
+
+    /**
+     * الجولة السادسة: تحت عنوان أو قالب بنك معروف، رقم بعد «مبلغ/Amount» ومعاه كلمة عملة ما نعرفهاش لسه («مبلغ: 1,500.00 بات») =
+     * عملية بعملة مش في القايمة — بتتحفظ وتستنى (القارئ بيرفضها) بدل ما تترمي «مفيهاش مبلغ».
+     */
+    private val AMOUNT_LABEL_NUMBER = Regex("(?:بمبلغ|المبلغ|مبلغ|${JsText.B}amount)$S*[:：]?$S*\\d", GI)
+
+    /**
+     * الجولة السادسة: «خلصت» في أول الرسالة — عرض في نفس الجملة («تمت عملية شراء … ، سيتم إضافة النقاط») ما بيرميهاش.
+     * «سيتم/هيتم» مش «تم»، و«will be credited» مش «credited».
+     */
+    private val COMPLETED = Regex(
+        "(?<![\\u0600-\\u06FF])و?تمت?(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])(?:اتخصم|اتحول|اتسحب|استلمت|وصلك|أضيف|اضيف)(?![\\u0600-\\u06FF])" +
+            "|${JsText.B}(?:has|have)$S+been${JsText.B}|${JsText.B}was$S+(?:successful|completed)${JsText.B}" +
+            "|(?<!(?:will|to|shall|would)$S{1,3}be$S{1,3})${JsText.B}(?:credited|debited|charged|spent|withdrawn|received|sent|paid|deducted|deposited|transferred|refunded)${JsText.B}",
+        GI,
+    )
 
     /**
      * أماكن المبالغ بكود أو رمز أو اسم عملة أجنبية — فلتر الجهاز ما بيحجبهاش («JPY 45000» · «$12500» مش رقم حساب). الكود جنب رقم
@@ -58,13 +80,19 @@ object SmsVocabulary {
     fun ignoreReason(text: String): TextKey? = smsIgnoreReason(normalizeSmsBody(text))
 
     /**
-     * الرسالة دي **ما تتحفظش**: رمز تحقق دايمًا، وأي حارس تاني **لو أولها مش عنوان أو قالب بنك معروف** (الجولة الخامسة — العنوان المعروف
-     * بيتحفظ ويستنى في «المرفوضة» بسببه بدل ما يضيع لو الحارس مسك سطر إعلان أو تحذير).
+     * الرسالة دي **ما تتحفظش**: رمز تحقق **فعلًا** (جملة «لا تشارك الرمز/Never share your OTP» من غير رقم مش رمز — الجولة السادسة) ·
+     * أو حارس تاني (عرض · مرفوضة · مش عملية) **في أولها** ([headOf]) وأولها مش عنوان أو قالب بنك معروف.
+     * الجولة السادسة: الحارس اللي مسك **آخر** الرسالة بس (إعلان أو تنبيه تحت عملية حقيقية بشكل مش معروف — «You will earn 23 points» ·
+     * «سيتم خصم قسط التمويل بتاريخ …» · «Next bill due on …») ما بيرميهاش: بتتحفظ والقارئ يرفضها فتستنى (§72: الضياع مش مقبول).
+     * والعرض في أولها مع «تم/has been/credited…» في نفس الجملة («تمت عملية شراء … ، سيتم إضافة النقاط») ما بيرميهاش برضه.
      */
     fun ignoreBeforeStorage(text: String): Boolean {
         val body = normalizeSmsBody(text)
-        val reason = smsIgnoreReason(body) ?: return false
-        return reason == TextKey.SMS_SENSITIVE || !hasKnownHead(body)
+        if (isSensitiveText(guardText(body))) return true
+        if (smsIgnoreReason(body) == null || hasKnownHead(body)) return false
+        val head = headOf(body)
+        val headReason = smsIgnoreReason(head) ?: return false
+        return !(headReason == TextKey.SMS_OFFER && guardReasonBesidesOffer(head) == null && COMPLETED.containsMatchIn(guardText(head)))
     }
 
     /** أول الرسالة عنوان سعودي معروف (موحّد أو قالب بنك) أو أول جملة قالب مصري معروف. */

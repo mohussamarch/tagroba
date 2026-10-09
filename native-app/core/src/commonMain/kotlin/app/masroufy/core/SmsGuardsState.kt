@@ -52,7 +52,10 @@ internal val SMS_DECLINED_PATTERN = Regex(
         // «unpaid» — إلا الشيك اللي رجع («was returned unpaid» · «unpaid cheque» ⇒ «الاتجاه مش واضح» زي الجولة التالتة)
         "|$B(?<!returned$S)unpaid$B(?!$S+cheque)" +
         "|$IF_EN${B}(?:transaction|payment|purchase)$S+(?:was$S+|is$S+)?not$S+authori[sz]ed$B" +
-        "|$NA(?:ماتمش|ماتمتش|مانجحتش)$NZ|${NA}ما$S*(?:تمتش|نجحتش)$NZ",
+        "|$NA(?:ماتمش|ماتمتش|مانجحتش)$NZ|${NA}ما$S*(?:تمتش|نجحتش)$NZ" +
+        // ── الجولة السادسة: تحويل وصل البنك وما اتضافش («could not be credited» · «was not deposited» · «not yet credited») ──
+        "|${B}(?:could$S+not|cannot|can'?t)$S+be$S+(?:credited|deposited|sent|transferred|executed)$B" +
+        "|${B}not$S+(?:yet$S+)?(?:been$S+)?(?:deposited|credited)$B",
     GI,
 )
 
@@ -92,7 +95,10 @@ private val NOT_TRANSACTION_ANYWHERE = Regex(
         "|$NA(?:تم$S*)?(?:إنشاء|انشاء|إيقاف|ايقاف|تعديل)$S*(?:ال)?(?:أمر|امر)$NZ|كشف$S*(?:ال)?بطاق" +
         "|${B}(?:e-?)?statement$S+(?:is$S+)?(?:ready|available|generated|issued)$B|${B}e-?statement$B|${B}overdue$B" +
         "|(?:يرجى|يرجي|برجاء|الرجاء|نرجو)$S*(?:إيداع|ايداع|سداد|دفع|تحويل)|${B}(?:payment|money)$S+request$B" +
-        "|${B}reserved$B|$NA(?:تم$S*)?تعليق$S*(?:ال)?مبلغ|${NA}مؤجل[ةه]?$NZ",
+        "|${B}reserved$B|$NA(?:تم$S*)?تعليق$S*(?:ال)?مبلغ|${NA}مؤجل[ةه]?$NZ" +
+        // ── الجولة السادسة: لسه في السكة أو مستني تأكيد («subject to bank verification» · «on its way» · «provisional credit») ──
+        "|${B}subject$S+to$S+(?:bank$S+|further$S+)?(?:verification|approval|review|confirmation)$B|${B}on$S+(?:its|the)$S+way$B" +
+        "|${B}in$S+transit$B|${B}to$S+be$S+confirmed$B|${B}provisional(?:ly)?$S+credit",
     GI,
 )
 

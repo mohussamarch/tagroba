@@ -18,6 +18,7 @@ internal val MSA_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_GROUP_BANK_SMS to "رسائل البنك",
     TextKey.SMS_NOT_TRANSACTION to "ليست عملية مكتملة: حجز مبلغ أو طلب لم يُنفَّذ أو رسالة معلومات",
     TextKey.SMS_WAIT_UNKNOWN_SHAPE to "شكل الرسالة غير معروف، وفُهمت من كلماتها فقط؛ لذلك لم تُسجَّل تلقائيًا. راجعها وأكّدها",
+    TextKey.SMS_WAIT_OTHER_ACCOUNT to "الرسالة عن حساب آخر من حساباتك، لا عن حساب هذه المحفظة؛ لذلك لم تُسجَّل تلقائيًا. راجعها وأكّدها",
 )
 
 internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -31,6 +32,7 @@ internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_GROUP_BANK_SMS to "رسايل البنك",
     TextKey.SMS_NOT_TRANSACTION to "مش عملية خلصت: حجز مبلغ أو طلب لسه ما اتنفذش أو رسالة معلومات",
     TextKey.SMS_WAIT_UNKNOWN_SHAPE to "شكل الرسالة مش معروف، واتفهمت من كلامها بس؛ عشان كده ما اتسجلتش لوحدها. راجعها وأكّدها",
+    TextKey.SMS_WAIT_OTHER_ACCOUNT to "الرسالة عن حساب تاني من حساباتك، مش حساب المحفظة دي؛ عشان كده ما اتسجلتش لوحدها. راجعها وأكّدها",
 )
 
 internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -44,4 +46,5 @@ internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_GROUP_BANK_SMS to "Bank messages",
     TextKey.SMS_NOT_TRANSACTION to "Not a completed transaction: a hold, a pending request or an information message",
     TextKey.SMS_WAIT_UNKNOWN_SHAPE to "The app doesn't know this message's layout and read it from its wording only, so it wasn't recorded automatically. Check it and confirm",
+    TextKey.SMS_WAIT_OTHER_ACCOUNT to "This message is about another of your accounts, not this wallet's account, so it wasn't recorded automatically. Check it and confirm",
 )

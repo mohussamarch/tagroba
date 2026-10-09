@@ -21,7 +21,8 @@ internal sealed interface Near {
     val end: Int
 
     /** [glued] = العملة لازقة في رقم صحيح من غير فواصل ولا كسور («SR4821» · «شراءSR25») — ممكن يبقى رقم مرجع. */
-    data class Value(override val start: Int, override val end: Int, val number: String, val glued: Boolean = false) : Near
+    /** [goldenDot] = «1.234 SAR» بشكل ملف المرجع (الرقم بعد النقطة بس) — القراية زي ما هي بس ما بتتسجلش لوحدها (الجولة السادسة). */
+    data class Value(override val start: Int, override val end: Int, val number: String, val glued: Boolean = false, val goldenDot: Boolean = false) : Near
     data class Malformed(override val start: Int, override val end: Int) : Near
     data class Ambiguous(override val start: Int, override val end: Int) : Near
 }
@@ -45,7 +46,7 @@ private val SPACE_GROUP_BEFORE = Regex("(?<![\\d:/.\\\\-])\\d{1,3}$H$")
 private val SPACE_GROUP_AFTER = Regex("^$H\\d{3}(?!\\d)")
 
 private sealed interface Side
-private data class Num(val start: Int, val end: Int, val number: String, val glued: Boolean = false) : Side
+private data class Num(val start: Int, val end: Int, val number: String, val glued: Boolean = false, val goldenDot: Boolean = false) : Side
 private data class Bad(val start: Int, val end: Int) : Side
 
 private fun isDigit(c: Char?) = c != null && c in '0'..'9'
@@ -81,7 +82,7 @@ private fun before(line: String, tokenStart: Int, style: AmountStyle): Side? {
         prev != null && prev in ":/\\-" && isDigit(prev2) -> null // ساعة أو تاريخ
         prev == '،' && isDigit(prev2) -> Bad(start, tokenStart)
         (prev == '.' || prev == '٫') && isDigit(prev2) ->
-            if (style == AmountStyle.SAUDI && goldenDotShape(line, start, g.value)) Num(start, tokenStart, g.value) else Bad(start, tokenStart)
+            if (style == AmountStyle.SAUDI && goldenDotShape(line, start, g.value)) Num(start, tokenStart, g.value, goldenDot = true) else Bad(start, tokenStart)
         prev != null && !plainNeighbour(prev) && (isDigit(prev2) || prev !in QUOTES) -> Bad(start, tokenStart) // «1'234.50»
         !wellGrouped(g.value) -> Bad(start, tokenStart)
         threeDigitHead(g.value) && SPACE_GROUP_BEFORE.containsMatchIn(line.substring(0, start)) -> Bad(start, tokenStart)
@@ -118,7 +119,7 @@ internal fun amountsNearCurrency(line: String, currency: Regex, style: AmountSty
         val a = after(line, t.range.first, tokenEnd, style)
         when {
             b != null && a != null -> Near.Ambiguous(minOf(startOf(b), t.range.first), maxOf(endOf(a), tokenEnd))
-            b is Num -> Near.Value(b.start, tokenEnd, b.number)
+            b is Num -> Near.Value(b.start, tokenEnd, b.number, goldenDot = b.goldenDot)
             a is Num -> Near.Value(t.range.first, a.end, a.number, a.glued)
             b is Bad -> Near.Malformed(b.start, tokenEnd)
             a is Bad -> Near.Malformed(t.range.first, a.end)

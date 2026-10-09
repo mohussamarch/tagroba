@@ -9,7 +9,8 @@ package app.masroufy.core
  *    عنوان داخل («تصحيح») والنص فيه «تم خصم» ⇒ ترفض · «شيك مرتجع» ⇒ ترفض (الاتجاه مش واضح — الجولة التانية من المراجعة).
  *    الجولة التالتة: عكس/استقطاع لحاجة ليها اتجاه («Refund Reversal» · «Salary Deduction») ⇒ ترفض · إلغاء ومعاه استرداد والاتجاه
  *    طالع ⇒ ترفض. والعملة الأجنبية بقت **دليل** (رمز · اسم · «X (SAR …)» — `SmsForeignEvidence.kt`) مش قايمة.
- * 3. **المبلغ** (`SmsSaudiFields.kt`): «إجمالي المبلغ المستحق» لو موجود ⇒ رقم جنبه الريال في سطر مش رصيد ولا رسوم ولا ضريبة (قيمة واحدة).
+ * 3. **المبلغ** (`SmsSaudiFields.kt`): «إجمالي المبلغ المستحق» لو موجود **و= المبلغ + الرسوم + الضريبة** (الجولة السادسة — غير كده
+ *    «أكتر من مبلغ») ⇒ رقم جنبه الريال في سطر مش رصيد ولا رسوم ولا ضريبة (قيمة واحدة). «1.234 SAR» (ملف المرجع) ⇒ ما بتتسجلش لوحدها.
  *    **عملة أجنبية ⇒ ترفض دايمًا ومعاها كل اللي اتقري** (قرار المالك §75-12: تتسجل وتسأل عن المبلغ المحلي — مش تتسجل لوحدها حتى
  *    لو المقابل بالريال مكتوب؛ المكتوب بيمشي معاها اقتراح بس) لحد ما شاشة السؤال تتبني.
  * 4. **التاريخ** (`SmsDates.kt`): تاريخ واحد بس من 60 يوم قبل الوصول لحد يوم بعده (التاريخ بسنة كاملة: لحد يوم بعد الوصول).
@@ -142,14 +143,18 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     // «Purchase Cancelled … Refund»: إلغاء ومعاه استرداد = فلوس راجعة، مش صرف جديد (§75-6) ⇒ ما نسجلهاش صرف
     if (direction == Direction.OUT && cancelledWithRefund(body)) return unclear
     val kind = title?.kind ?: saudiKindFromWords(body, direction)
-    val amount = when (val a = saudiAmount(body)) {
+    // الجولة السادسة: العملة بتتعرف من غير التشكيل («9.50 ريال عُماني» كانت بتتقري ريال سعودي) — الوصف والبصمة من النص الأصلي
+    val plain = withoutTashkeel(body)
+    val read = when (val a = saudiAmount(plain)) {
         is SaudiAmount.Fail -> return SmsParseResult.Rejected(a.reason)
-        is SaudiAmount.ForeignOnly -> return foreignOnly(body, message.receivedAt, a, direction, kind)
-        is SaudiAmount.Ok -> a.amountMinor
+        is SaudiAmount.ForeignOnly -> return foreignOnly(plain, message.receivedAt, a, direction, kind)
+        is SaudiAmount.Ok -> a
     }
     val date = dateOf(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72).
-    // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`)
-    val shape = gateShape(saudiShape(body, direction), body, date, localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS))
-    return smsRow(message, body, lineNumber, date, amount, direction, saudiMerchantOf(body, kind), kind, shape)
+    // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: مبلغ «1.234 SAR»
+    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى
+    val shape = if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction)
+    val gated = gateShape(shape, body, date, localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS), message.body)
+    return smsRow(message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated)
 }

@@ -46,7 +46,9 @@ internal object EgyptSpecs {
         28 to inn(party = listOf(NAME)),
         29 to inn(party = listOf(NAME)),
         30 to out(),
-        31 to inn(kind = REFUND), // IPN رجع ⇒ الفلوس رجعت
+        // IPN رجع ⇒ الفلوس رجعت. الجولة السادسة: «dated {date}» = يوم **التحويل الأصلي** (البحث) ⇒ العملية بيوم وصول الرسالة، مش {date}
+        // (القالب هنا بتاريخ أصلي قبلها بأربع أيام — المتوقع لسه يوم الوصول [Fill.TX_DATE])
+        31 to inn(kind = REFUND, values = mapOf("date" to "10/09")),
         32 to custom(
             CustomBody("ar", "عزيزي العميل لقد قمت بتسجيل الدخول في بنك بيت التمويل الكويتي – مصر في {date}, {time}", Expect(false, what = "info: login")),
             CustomBody("en", "Dear Customer, You have logged in to KFH - Egypt Mobile Banking service at {date}, {time}", Expect(false, what = "info: login")),

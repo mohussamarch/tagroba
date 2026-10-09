@@ -72,7 +72,11 @@ private val FOREIGN = Regex(
 private val FOREIGN_AMOUNT = Regex("(?<![A-Za-z])($FOREIGN_CODES)$SP*[:：]?$SP*($FOREIGN_NUMBER)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($FOREIGN_CODES)(?![A-Za-z])", I)
 
 internal sealed interface SaudiAmount {
-    data class Ok(val amountMinor: Halalas) : SaudiAmount
+    /**
+     * [doubtful] = المبلغ اتقري بشكل ملف المرجع «1.234 SAR» = 234.00 (سؤال (ز) مفتوح — ممكن 1,234): القراية زي ما هي، بس الرسالة
+     * **ما بتتسجلش لوحدها** (الجولة السادسة: كانت بتتسجل 250.00 تحت عنوان موحّد).
+     */
+    data class Ok(val amountMinor: Halalas, val doubtful: Boolean = false) : SaudiAmount
 
     /**
      * عملية بعملة أجنبية (§75-12 — قرار المالك: تتسجل وتسأل عن المبلغ المحلي، **مش** تتسجل لوحدها لو المحلي مكتوب). [foreign] =
@@ -103,6 +107,7 @@ private fun labelledElsewhere(lines: List<String>, index: Int, near: Near): Bool
 private fun oneLocalAmount(text: String, body: String): SaudiAmount {
     val values = LinkedHashSet<Long>()
     var onlyGlued = true
+    var goldenDot = false
     val lines = text.split('\n')
     for ((index, line) in lines.withIndex()) {
         for (near in amountsNearCurrency(line, CURRENCY_TOKEN, AmountStyle.SAUDI)) {
@@ -112,7 +117,10 @@ private fun oneLocalAmount(text: String, body: String): SaudiAmount {
             val number = when (near) {
                 is Near.Ambiguous -> return SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
                 is Near.Malformed -> return SaudiAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
-                is Near.Value -> near.number.also { if (!near.glued) onlyGlued = false }
+                is Near.Value -> near.number.also {
+                    if (!near.glued) onlyGlued = false
+                    if (near.goldenDot) goldenDot = true
+                }
             }
             val amount = parse(number)
             if (amount == null || amount <= 0 || amount > SMS_AMOUNT_CAP_MINOR) return SaudiAmount.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
@@ -126,7 +134,7 @@ private fun oneLocalAmount(text: String, body: String): SaudiAmount {
     if (values.size == 1 && BARE_AMOUNT_NO_CURRENCY.findAll(text).any { parse(it.groupValues[1]) != values.first() }) {
         return SaudiAmount.Fail(uiText(TextKey.SMS_CURRENCY_UNCLEAR))
     }
-    if (values.size == 1) return SaudiAmount.Ok(values.first())
+    if (values.size == 1) return SaudiAmount.Ok(values.first(), doubtful = goldenDot)
     if (values.size > 1) return SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
     return SaudiAmount.Fail(if (bare) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
 }
@@ -177,9 +185,41 @@ internal fun riyalAmountAsForeign(body: String): SmsForeignAmount? =
  */
 internal fun saudiAmount(body: String): SaudiAmount {
     val foreign = FOREIGN.containsMatchIn(body) || hasForeignEvidence(body, SAUDI_LOCAL)
-    val total = TOTAL_DUE_LINE.find(body)?.let { oneLocalAmount(it.value, body) as? SaudiAmount.Ok }
+    val totalLine = TOTAL_DUE_LINE.find(body)
+    val total = totalLine?.let { oneLocalAmount(it.value, body) as? SaudiAmount.Ok }
     if (foreign) return SaudiAmount.ForeignOnly(foreignAmountOf(body, SAUDI_LOCAL), total?.amountMinor ?: localConversion(body, SAUDI_LOCAL))
-    return total ?: oneLocalAmount(body, body)
+    if (totalLine == null) return oneLocalAmount(body, body)
+    return consistentTotal(body.removeRange(totalLine.range), total)
+}
+
+/** سطر رسوم أو ضريبة («VAT: 0.86 SAR» · «Fees {fee}SR» · «رسوم وضريبة: 5.75 SAR») — للجمع مع المبلغ. */
+private val FEE_LINE = Regex("^$S*(?:(?:ال)?رسوم|${B}fees?$B|${B}VAT$B|(?:ال)?ضريبة|${B}commission$B|(?:ال)?عمولة|${B}charges?$B)", I)
+
+/** مجموع الرسوم والضريبة بالريال في السطور، أو null لو قيمة فيهم مش واضحة. «رسوم تحويل العملات: 3.7612» من غير عملة ما بتتحسبش. */
+private fun feesOf(text: String): Long? {
+    var sum = 0L
+    for (line in text.split('\n')) {
+        if (!FEE_LINE.containsMatchIn(line)) continue
+        for (near in amountsNearCurrency(line, CURRENCY_TOKEN, AmountStyle.SAUDI)) {
+            sum += (near as? Near.Value)?.let { parse(it.number) } ?: return null
+        }
+    }
+    return sum
+}
+
+/**
+ * الجولة السادسة: «إجمالي المبلغ المستحق / Total due amount» هو المخصوم **بس لو = المبلغ + الرسوم + الضريبة** المكتوبين (قالب إس تي سي
+ * #90 #94). غير كده ده رصيد البطاقة المستحق («بطاقة ائتمانية تسديد\nمبلغ: 1,000.00\nإجمالي المبلغ المستحق: 3,215.40» — كان بيتسجل 3,215.40)
+ * أو السعر الكامل («Amount: SAR 250.00 … Total due amount: SAR 1,000.00» — كان 1,000) ⇒ «أكتر من مبلغ» (بتستنى، ما بنختارش).
+ */
+private fun consistentTotal(withoutTotal: String, total: SaudiAmount.Ok?): SaudiAmount {
+    val multiple = SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
+    val base = oneLocalAmount(withoutTotal, withoutTotal)
+    if (base !is SaudiAmount.Ok) return base
+    total ?: return multiple
+    val fees = feesOf(withoutTotal) ?: return multiple
+    if (total.amountMinor != base.amountMinor && total.amountMinor != base.amountMinor + fees) return multiple
+    return total.copy(doubtful = total.doubtful || base.doubtful)
 }
 
 // ── المحل ────────────────────────────────────────────────────────────────

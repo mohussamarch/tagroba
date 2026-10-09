@@ -567,4 +567,6 @@ enum class TextKey {
     SMS_AUTO_WALLET_UNKNOWN, ALERT_GROUP_BANK_SMS, SMS_NOT_TRANSACTION,
     // الجولة الرابعة: الرسالة اللي اتفهمت من كلمات عامة بس (مش شكل معروف) بتستنى تأكيد المالك — القيم في `TextsSmsAuto.kt`
     SMS_WAIT_UNKNOWN_SHAPE,
+    // الجولة السادسة: الرسالة بتقول حساب تاني من حسابات المالك (مش حساب محفظة البنك ده) ⇒ بتستنى — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_OTHER_ACCOUNT,
 }

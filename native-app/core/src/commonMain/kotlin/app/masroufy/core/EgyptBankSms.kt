@@ -21,7 +21,10 @@ private val EG_I = setOf(RegexOption.IGNORE_CASE)
  */
 private val OTHER_NAME =
     "(?<![A-Za-z])(?:USD|EUR|GBP|SAR|AED|SR|KWD|BHD|QAR|OMR|JOD)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:دولار|يورو|ريال|ر\\.س|$OTHER_RIYAL" +
-        "|دينار|درهم|ليرة|روب[يى][ةه]|(?:جنيه$S*)?[إا]سترلين[يى]|يوان|فرنك|روبل|رينغيت|رينجت|ين)(?![\\u0600-\\u06FF])"
+        "|دينار|درهم|ليرة|روب[يى][ةه]|(?:جنيه$S*)?[إا]سترلين[يى]|جنيه$S*(?:جنوب$S*)?سودان[يى]|يوان|فرنك|روبل|رينغيت|رينجت|ين" +
+        // الجولة السادسة
+        "|بات|وون|بيزو|كرون[ةه]|كرونا|شيكل|دونغ|دونج|فورنت|فورينت|ل\\.ل|ل\\.س)(?![\\u0600-\\u06FF])" +
+        "|(?<![A-Za-z])(?:Ft|Kč|L\\.L)(?![A-Za-z])"
 
 /**
  * الجولة الخامسة: العملة لازم **جنبها رقم** («300.00 SAR» · «30 دولار» · «USD15.00») — اسم المحل «ريال للعطور» · «صيدلية يوروفارم» ·
@@ -71,25 +74,37 @@ private fun foreignOnly(body: String, receivedAt: String): SmsParseResult.Reject
     return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, merchant, kind, ownLast4Of(body, direction), suggestion))
 }
 
+/** الجولة السادسة: العملة بعد «Ref/No./#/مرجع» على طول رقم مرجع («Ref: SR4471») مش عملة — زي فلتر الجهاز. */
+private val REFERENCE_BEFORE = Regex("(?:(?<![A-Za-z])ref(?:erence)?|(?<![A-Za-z])no\\.?|#|مرجع|المرجع)[ \\t]*[:：.#]?[ \\t]*$", EG_I)
+
+private fun hasOtherCurrency(body: String): Boolean = EG_OTHER_CURRENCY.findAll(body).any { m ->
+    !REFERENCE_BEFORE.containsMatchIn(body.substring(body.lastIndexOf('\n', m.range.first - 1) + 1, m.range.first))
+}
+
 /** بنوك ومحافظ مصر. الشكل المجهول بيترفض بسبب واضح ويتضاف باليد — نفس قاعدة القارئ السعودي. */
 fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
+    // الجولة السادسة: العملة بتتعرف من غير التشكيل («ريال عُماني») — النص نفسه (البصمة والوصف) زي ما هو
+    val plain = withoutTashkeel(body)
     // أي دليل عملة أجنبية (كود · رمز «$» · اسم «US Dollars»/«ين» · مقابل بالجنيه بعد مبلغ تاني) زي الدولار بالظبط (§75-12)
-    if (EG_OTHER_CURRENCY.containsMatchIn(body) || hasForeignEvidence(body, EGYPT_LOCAL)) return foreignOnly(body, message.receivedAt)
+    if (hasOtherCurrency(plain) || hasForeignEvidence(plain, EGYPT_LOCAL)) return foreignOnly(plain, message.receivedAt)
     if (isReturnedCheque(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     if (direction == Direction.OUT && cancelledWithRefund(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
-    val amount = when (val a = egyptAmount(body)) {
+    val amount = when (val a = egyptAmount(plain)) {
         is EgyptAmount.Fail -> return SmsParseResult.Rejected(a.reason)
         is EgyptAmount.Ok -> a.amountMinor
     }
-    val date = egyptTransactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
+    // الجولة السادسة: «IPN transfer dated <التاريخ الأصلي> … returned» (بيت التمويل) — الفلوس رجعت **يوم وصول الرسالة**، مش يوم
+    // التحويل الأصلي (كانت بتتسجل في يوم قديم وممكن شهر مالي قفل). الرسالة مفيهاش تاريخ الرجوع ⇒ يوم الوصول بتوقيت القاهرة
+    val date = (if (isReturnedTransferNotice(body)) cairoDayOf(message.receivedAt) else egyptTransactionDate(body, message.receivedAt))
+        ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val kind = egyptKind(body, direction)
     if (contradicts(direction, kind)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     // الجولة الرابعة: الشكل علامة جنب القراية — جملة على قالب معروف بس هي اللي بتتسجل لوحدها (§72). الجولة الخامسة: الجملة **كلها**
-    // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`)
-    val shape = gateShape(egyptShape(body, direction, amount), body, date, cairoDayOf(message.receivedAt))
+    // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: حروف مخفية ⇒ تستنى
+    val shape = gateShape(egyptShape(body, direction, amount), body, date, cairoDayOf(message.receivedAt), message.body)
     return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind, shape)
 }
 
