@@ -53,8 +53,10 @@ class CrossSourceMatchTest {
         val out = matchCrossSource(listOf(line(1, "2026-10-01"), line(2, "2026-10-02")), listOf(sms("t-sms", "2026-10-01")), 2)
         assertEquals(CrossSourceVerdict.Ambiguous("t-sms", listOf("t-sms")), out[1])
         assertEquals(CrossSourceVerdict.Ambiguous("t-sms", listOf("t-sms")), out[2])
-        // واللي اتدمجت قبل كده ما بتبلعش تاني
-        assertTrue(matchCrossSource(listOf(line(3, "2026-10-01")), listOf(sms("t-sms", "2026-10-01", merged = true)), 2).isEmpty())
+        // واللي اتدمجت قبل كده ما بتبلعش تاني: السطر اللي ليه رصيد بيكمّل في منع التكرار العادي، واللي مفيهوش حاجة تحسم بيسأل بس
+        val merged = sms("t-sms", "2026-10-01", merged = true)
+        assertTrue(matchCrossSource(listOf(line(3, "2026-10-01").copy(statedBalanceMinor = 490_000)), listOf(merged), 2).isEmpty())
+        assertEquals(CrossSourceVerdict.MaybeMerged("t-sms"), matchCrossSource(listOf(line(3, "2026-10-01")), listOf(merged), 2)[3])
     }
 
     @Test fun similarRowMergesOnlyIntoItsOwnMatch() {
@@ -76,7 +78,7 @@ class CrossSourceMatchTest {
         // سطر الكشف نفسه بالحرف (من غير مرجع ولا رصيد) — مرة واحدة بس لكل بصمة
         val twice = matchCrossSource(listOf(line(1, "2026-10-02", hash = "H-LINE"), line(2, "2026-10-02", hash = "H-LINE")), listOf(merged), 2)
         assertEquals(CrossSourceVerdict.AlreadyMerged("t-m"), twice[1])
-        assertNull(twice[2], "التاني بيكمّل في منع التكرار العادي")
+        assertEquals(CrossSourceVerdict.MaybeMerged("t-m"), twice[2], "التاني بيسأل (ممكن تكون عملية تانية فعلًا) — ما بيتشالش ولا بيتضاف في صمت")
         // العملية اللي لسه ما اتدمجتش: نص سجلها ما بيحكمش (منع التكرار العادي بيعرفه)
         assertNull(matchCrossSource(listOf(line(1, "2026-10-09", hash = "H-X")), listOf(sms("t", "2026-10-01", hashes = listOf("H-X"))), 2)[1])
     }
@@ -99,6 +101,26 @@ class CrossSourceMatchTest {
         val pick = matchCrossSource(listOf(line(1, "2026-10-02", amount = 7_500, hash = "H-LINE"), line(2, "2026-10-02", hash = "H-LINE")), listOf(merged, other), 2)
         assertEquals(CrossSourceVerdict.AlreadyMerged("t-other"), pick[1])
         assertEquals(CrossSourceVerdict.AlreadyMerged("t-m"), pick[2])
+    }
+
+    /**
+     * مراجعة S4: سطر كشف مفيش فيه حاجة تحسم (لا مرجع ولا رصيد ولا نص متطابق — PDF من غير رصيد) قصاد عملية اتدمجت بنفس الحركة ⇒ بيسأل
+     * (مش «جديد» يتضاف تاني في صمت، ومش «مكرر» يتشال في صمت). الأقرب في التاريخ.
+     */
+    @Test fun aLineWithNothingToDecideNextToAMergedTransactionAsks() {
+        val near = sms("t-near", "2026-10-02", merged = true)
+        val far = sms("t-far", "2026-10-04", merged = true)
+        assertEquals(CrossSourceVerdict.MaybeMerged("t-near"), matchCrossSource(listOf(line(1, "2026-10-02")), listOf(far, near), 2)[1])
+        // الرصيد أو المرجع بيحسموا (منع التكرار العادي) · الرسالة مرجعها فريد · مبلغ تاني أو برّه النافذة = حركة تانية
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02").copy(statedBalanceMinor = 1)), listOf(near), 2)[1])
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", ref = "REF-1")), listOf(near), 2)[1])
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", ref = "SMS:X", fromSms = true)), listOf(near), 2)[1])
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", amount = 7_500)), listOf(near), 2)[1])
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-05")), listOf(near), 2)[1])
+        // اللي حكمه مش «جديد» بيفضل زي ما هو (بيسأل أصلًا أو مكرر)
+        assertNull(matchCrossSource(listOf(line(1, "2026-10-02", state = MatchingState.SIMILAR, matched = "t-x")), listOf(near), 2)[1])
+        // ومرشح لسه ما اتدمجش بيكسب: الدمج العادي الأول
+        assertEquals(CrossSourceVerdict.Merge("t-sms"), matchCrossSource(listOf(line(1, "2026-10-02")), listOf(near, sms("t-sms", "2026-10-02")), 2)[1])
     }
 
     @Test fun windowZeroIsSameDayAndNegativeIsRejected() {

@@ -29,7 +29,7 @@ import kotlin.test.assertTrue
 class StatementSmsMergeReviewTest {
     private val cafe = "2026-10-02,100.00,0.00,4900.00,TEST CAFE RIYADH,,,شراء نقاط بيع"
 
-    private fun pdfRow(line: Int, date: String, minor: Long, balance: Long, shop: String, page: Int = 1) = ParsedRow(
+    private fun pdfRow(line: Int, date: String, minor: Long, balance: Long?, shop: String, page: Int = 1) = ParsedRow(
         lineNumber = line, date = date, amountMinor = minor, direction = Direction.OUT, merchantName = shop, reference = null,
         sourceName = "كشف وهمي", description = shop, raw = "صفحة $page · $date", statedBalanceMinor = balance,
     )
@@ -61,6 +61,27 @@ class StatementSmsMergeReviewTest {
                 assertEquals(uiText(TextKey.DEDUPE_SAME_STATEMENT_LINE), old.reason)
             }
         }
+    }
+
+    /**
+     * سطر PDF من غير رصيد (زي QNB لما الرصيد ما يتقريش) اتدمج قبل كده ومحله في الكشف غير محل الرسالة: نفس السطر في تصدير تاني ⇒ **بيسأل**
+     * (من غير الحماية دي كان «جديد» ومختار ويتضاف تاني في صمت — النص ما بقاش بيحكم لسطور الـPDF). والسطر الجديد فعلًا بيفضل جديد.
+     */
+    @Test fun aPdfLineWithoutBalanceNextToAMergedTransactionAsks() = runBlocking<Unit> {
+        val w = MatchingWorld()
+        w.receive(matchingPurchaseSms("100", "26/10/02"), at = "2026-10-02T09:00:00Z")
+        assertEquals(1, w.recordSms())
+        val row = pdfRow(1, "2026-10-02", 10_000, null, "TEST CAFE RIYADH 0042")
+        val first = pdf("export-1.pdf", listOf(row))
+        assertEquals(w.all().single().id, w.importer.preview(first).lines.single().mergeInto)
+        w.import(first)
+        assertEquals(1, w.all().size, "اتدمجوا")
+        val lines = w.importer.preview(pdf("export-2.pdf", listOf(row, pdfRow(2, "2026-10-02", 7_500, null, "TEST BAKERY")))).lines
+        val same = lines.single { it.row.amountMinor == 10_000L }
+        assertEquals(MatchingState.SIMILAR, same.state, same.reason)
+        assertEquals(false, same.selectedByDefault)
+        assertEquals(uiText(TextKey.MATCH_MAYBE_MERGED, uiText(TextKey.MATCH_SOURCE_SMS), "2026-10-02"), same.reason)
+        assertEquals(MatchingState.NEW, lines.single { it.row.amountMinor == 7_500L }.state)
     }
 
     /** قهوتين بنفس المبلغ في نفس اليوم: نص الرسالتين واحد — التانية **بتسأل** (زي قبل S4)، مش «متسجلة خلاص» وتتشال. */

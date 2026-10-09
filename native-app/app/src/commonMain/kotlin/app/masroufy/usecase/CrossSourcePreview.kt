@@ -120,7 +120,8 @@ private suspend fun loadCrossSource(deps: ImportStatementDeps, request: ImportRe
 
 /**
  * §75-10 على سطور المعاينة: دمج (جديد + [ImportPreviewLine.mergeInto] — مختار افتراضيًا وأثره صفر) · أكتر من احتمال ⇒ «شبه عملية» ويسأل
- * ومعاه الاحتمالات ([ImportPreviewLine.mergeCandidates]) · مرجعه أو نصه اتدمج قبل كده ⇒ مكرر. الباقي زي ما هو.
+ * ومعاه الاحتمالات ([ImportPreviewLine.mergeCandidates]) · مرجعه أو نصه اتدمج قبل كده ⇒ مكرر · سطر كشف مفيش فيه حاجة تحسم جنب عملية اتدمجت
+ * بنفس الحركة ⇒ «شبه عملية» ويسأل. الباقي زي ما هو.
  * [textLines] = نص كل سطر هو سطر الملف نفسه (CSV) — الـPDF نصه «صفحة N · التاريخ» بس، فما بيتقارنش بالنص (مراجعة S4).
  */
 internal suspend fun applyCrossSource(
@@ -138,7 +139,9 @@ internal suspend fun applyCrossSource(
     // النص بالحرف بيحكم بس لسطر كشف CSV من غير مرجع ولا رصيد (المرجع والرصيد بيحسموا من غيره)
     fun hashOf(line: ImportPreviewLine): String? =
         if (!fromSms && textLines && trimmedRef(line.row.reference) == null && line.row.statedBalanceMinor == null) hashContent(line.row.raw) else null
-    val rows = lines.map { CrossSourceRow(it.row.lineNumber, it.row.date, it.row.amountMinor, it.row.direction, fromSms, it.row.reference, it.state, it.matchedTransactionId, hashOf(it)) }
+    val rows = lines.map {
+        CrossSourceRow(it.row.lineNumber, it.row.date, it.row.amountMinor, it.row.direction, fromSms, it.row.reference, it.state, it.matchedTransactionId, hashOf(it), it.row.statedBalanceMinor)
+    }
     val verdicts = matchCrossSource(rows, existing, window)
     if (verdicts.isEmpty()) return lines
     val byId = existing.associateBy { it.transactionId }
@@ -157,6 +160,11 @@ internal suspend fun applyCrossSource(
             )
             is CrossSourceVerdict.AlreadyMerged -> line.copy(
                 state = MatchingState.DUPLICATE, reason = uiText(TextKey.MATCH_ALREADY_MERGED, other),
+                matchedTransactionId = v.transactionId, mergeInto = null, selectedByDefault = false,
+            )
+            // مفيش حاجة في السطر تحسم ⇒ بيسأل: «ضيفها» = عملية جديدة، «تجاهل» = هي اللي اتدمجت (التشابه ما بيمسحش)
+            is CrossSourceVerdict.MaybeMerged -> line.copy(
+                state = MatchingState.SIMILAR, reason = uiText(TextKey.MATCH_MAYBE_MERGED, other, byId.getValue(v.transactionId).date),
                 matchedTransactionId = v.transactionId, mergeInto = null, selectedByDefault = false,
             )
         }

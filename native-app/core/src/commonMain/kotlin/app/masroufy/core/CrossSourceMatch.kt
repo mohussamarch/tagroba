@@ -17,6 +17,9 @@ import kotlin.math.abs
  * - **النص بالحرف ضيّق عن قصد** (مراجعة S4): «التشابه ما بيمسحش أبدًا» (`Dedupe.kt`)، والنص لوحده بيتشابه بين عمليتين مختلفتين فعلًا —
  *   سطور الـPDF نصها «صفحة N · التاريخ» بس، ورسالتين لنفس المحل بنفس المبلغ في نفس اليوم نصهم واحد. فالنص بيحكم بس لسطر **كشف** من غير
  *   مرجع (المستدعي بيبعت البصمة لسطر CSV من غير مرجع ولا رصيد بس)، وعلى عملية مدموجة **بنفس المبلغ والاتجاه وجوه النافذة** من السطر ده.
+ * - **سطر كشف مفيش حاجة فيه تحسم** (لا مرجع ولا رصيد ولا نص متطابق — زي PDF من غير رصيد أو CSV بشكل تاني) وقصاده عملية **اتدمجت**
+ *   بنفس الحركة ⇒ «شبه عملية» ويسأل ([CrossSourceVerdict.MaybeMerged]): العملية المدموجة اسم محلها بتاع الرسالة، فمنع التكرار العادي
+ *   كان هيقول «جديد» ويضيفها تاني من غير ما حد يسأل — والتشابه ما بيمسحش، بيسأل بس.
  *
  * [classifyCandidate] (ملف المرجع `dedupe.json`) ما اتلمسش: الدمج طبقة بعده، ومن غير نافذة (null) المعاينة هي هي بالحرف.
  */
@@ -63,6 +66,8 @@ data class CrossSourceRow(
      * مرجع ولا رصيد معلن (المرجع والرصيد بيحسموا من غيرها). رسالة البنك ما بتتقارنش بالنص أبدًا (مرجعها فريد).
      */
     val hash: String? = null,
+    /** الرصيد المعلن في السطر (null = مفيش) — سطر الكشف اللي ليه رصيد بيتعرف بيه في منع التكرار العادي، فمش محتاج تخمين. */
+    val statedBalanceMinor: Halalas? = null,
 )
 
 sealed interface CrossSourceVerdict {
@@ -79,6 +84,9 @@ sealed interface CrossSourceVerdict {
 
     /** مرجع السطر متسجل خلاص على عملية اتدمجت ⇒ مكرر. */
     data class AlreadyMerged(override val transactionId: Id) : CrossSourceVerdict
+
+    /** سطر كشف مفيش فيه حاجة تحسم، وقصاده عملية اتدمجت بنفس الحركة ⇒ «شبه عملية» ويسأل (ممكن يكون هو، وممكن عملية تانية فعلًا). */
+    data class MaybeMerged(override val transactionId: Id) : CrossSourceVerdict
 }
 
 private fun trimmedReference(reference: String?): String? = reference?.let(JsText::trim)?.takeIf { it.isNotEmpty() }
@@ -87,6 +95,12 @@ private fun trimmedReference(reference: String?): String? = reference?.let(JsTex
 private fun candidatesOf(row: CrossSourceRow, existing: List<CrossSourceExisting>, windowDays: Int): List<CrossSourceExisting> = existing.filter { e ->
     !e.merged && (if (row.fromSms) e.fromStatement else e.fromSms) && sameMovement(row, e, windowDays)
 }
+
+/** سطر كشف من غير مرجع ولا رصيد — مفيش حاجة فيه بتفرّقه عن سطر تاني بنفس الحركة (الرسالة ليها مرجع فريد دايمًا). */
+private fun nothingDecides(row: CrossSourceRow): Boolean = !row.fromSms && trimmedReference(row.reference) == null && row.statedBalanceMinor == null
+
+private fun nearestFirst(row: CrossSourceRow): Comparator<CrossSourceExisting> =
+    compareBy({ abs(daysBetween(row.date, it.date)) }, { it.date }, { it.transactionId })
 
 /** نفس المبلغ (زي ما ورد) ونفس الاتجاه وجوه النافذة. */
 private fun sameMovement(row: CrossSourceRow, e: CrossSourceExisting, windowDays: Int): Boolean =
@@ -97,7 +111,7 @@ private fun sameMovement(row: CrossSourceRow, e: CrossSourceExisting, windowDays
  * بس لو العملية **نفس الحركة** للسطر ده (المبلغ والاتجاه والنافذة) — النص لوحده مش كفاية. الرسالة عمرها ما بتتقارن بالنص.
  */
 private fun takeTextTwin(row: CrossSourceRow, byHash: Map<String, ArrayDeque<CrossSourceExisting>>, windowDays: Int): CrossSourceExisting? {
-    if (row.fromSms || trimmedReference(row.reference) != null) return null
+    if (!nothingDecides(row)) return null
     val queue = row.hash?.let { byHash[it] } ?: return null
     val at = queue.indexOfFirst { sameMovement(row, it, windowDays) }
     return if (at < 0) null else queue.removeAt(at)
@@ -143,9 +157,16 @@ fun matchCrossSource(rows: List<CrossSourceRow>, existing: List<CrossSourceExist
         out[row.lineNumber] = if (only != null && degree[only.transactionId] == 1) {
             CrossSourceVerdict.Merge(only.transactionId)
         } else {
-            val nearestFirst = list.sortedWith(compareBy({ abs(daysBetween(row.date, it.date)) }, { it.date }, { it.transactionId })).map { it.transactionId }
-            CrossSourceVerdict.Ambiguous(nearestFirst.first(), nearestFirst)
+            val candidates = list.sortedWith(nearestFirst(row)).map { it.transactionId }
+            CrossSourceVerdict.Ambiguous(candidates.first(), candidates)
         }
+    }
+
+    // آخر حاجة: سطر كشف «جديد» مفيش فيه حاجة تحسم وما لقاش مرشح، وقصاده عملية اتدمجت بنفس الحركة ⇒ يسأل بدل ما يتضاف تاني في صمت
+    for (row in rows) {
+        if (row.lineNumber in out || row.state != MatchingState.NEW || !nothingDecides(row)) continue
+        val twin = existing.filter { it.merged && sameMovement(row, it, windowDays) }.minWithOrNull(nearestFirst(row)) ?: continue
+        out[row.lineNumber] = CrossSourceVerdict.MaybeMerged(twin.transactionId)
     }
     return out
 }
