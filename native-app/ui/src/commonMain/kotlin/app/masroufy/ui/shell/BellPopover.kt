@@ -47,7 +47,13 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.overlay.Anchor
 import app.masroufy.ui.overlay.GlassPopover
+import app.masroufy.ui.components.pressScale
+import app.masroufy.ui.components.rememberPress
+import app.masroufy.ui.components.tap
+import app.masroufy.ui.icons.LucideIcon
+import app.masroufy.ui.screens.home.Dismissals
 import app.masroufy.ui.screens.home.NotificationsRoute
+import kotlinx.coroutines.delay
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Springs
@@ -86,9 +92,25 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
                 style = Type.caption().copy(color = Ink.muted),
             )
         }
-        val items = state?.items.orEmpty().take(4)
+        // «×» على كل سطر + «تراجع» ٤ ثواني (قرار المالك 2026-10-09) — نفس الحالة اللي في صفحة الإشعارات (`Dismissals` — للجلسة بس،
+        // والحفظ مع الحساب وشيل نقطة التبويب منطقهم في فرع `assistant-engine`)
+        val dismissals = Dismissals.of(LocalSpace.current.space.id)
+        val undo = dismissals.undo
+        LaunchedEffect(undo) {
+            if (undo != null) {
+                delay(Dismissals.UNDO_MS)
+                dismissals.expire(undo)
+            }
+        }
+        val items = state?.items.orEmpty().filter { !dismissals.isGone(it.threadKey) }.take(4)
         if (items.isEmpty()) BasicText(t(TextKey.BELL_EMPTY), Modifier.padding(8.dp), style = Type.of(13).copy(color = Ink.muted))
-        for (item in items) BellRow(item)
+        for (item in items) BellRow(item) { dismissals.drop(item.threadKey) }
+        if (undo != null) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                BasicText(t(TextKey.NOTIFICATIONS_DROPPED), style = Type.of(13, FontWeight.Bold))
+                TonalButton(t(TextKey.NOTIFICATIONS_UNDO), onClick = { dismissals.restore() }, height = 44.dp)
+            }
+        }
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             val readShape = RoundedCornerShape(18.dp)
             TonalButton(
@@ -121,7 +143,7 @@ private fun BellTone.color(): Color = when (this) {
 }
 
 @Composable
-private fun BellRow(item: BellItem) {
+private fun BellRow(item: BellItem, onDrop: () -> Unit) {
     val c = item.tone.color()
     val shape = RoundedCornerShape(16.dp)
     Row(
@@ -135,5 +157,11 @@ private fun BellRow(item: BellItem) {
             BasicText(item.title, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicText(item.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+        val press = rememberPress()
+        val label = t(TextKey.NOTIFICATIONS_DROP, item.title)
+        Box(
+            Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).tap(press, label = label, onClick = onDrop),
+            contentAlignment = Alignment.Center,
+        ) { LucideIcon(Lucide.X, size = 16.dp, tint = Ink.muted, contentDescription = label) }
     }
 }

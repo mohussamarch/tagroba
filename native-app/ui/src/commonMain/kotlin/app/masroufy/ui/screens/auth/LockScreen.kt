@@ -5,8 +5,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,11 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
 import app.masroufy.ui.app.LockGate
+import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.LensOnLight
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.screenBackground
@@ -44,9 +50,9 @@ import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
 
 /**
- * شاشة القفل (`Lock` — §21): التطبيق ورا بلور (18 + `rgba(239,243,237,.40)`) لحد ما نافذة الجهاز تأكد — تحت أندرويد 12 الخلفية معتمة
- * (المبالغ ما تبانش). العدسة 76 بالقفل · «مصروفي» · الرسالة (فشل/اتلغى) · «افتح». نافذة الجهاز بتطلع لوحدها أول ما الشاشة تظهر.
- * القفل نفسه منطقة «أول تشغيل» تقدر تزوّق فيه؛ القرار (إمتى يتقفل) في `AppLock`.
+ * شاشة القفل (`Lock` — §21 · §31): التطبيق ورا بلور (18 + `rgba(239,243,237,.40)`) لحد ما نافذة الجهاز تأكد — تحت أندرويد 12 الخلفية معتمة
+ * (المبالغ ما تبانش). العدسة 76 بالقفل · «مصروفي» · «بالبصمة أو برمز الجوال» · الرسالة (فشل/اتلغى من `AppLock`) · «فتح» أو «إعادة المحاولة».
+ * نافذة البصمة/الرمز **بيرسمها النظام** (النموذج بيمثّلها بس) وبتطلع لوحدها أول ما الشاشة تظهر. القرار (إمتى يتقفل) في `AppLock`.
  */
 @Composable
 fun LockScreen(gate: LockGate, backdrop: Backdrop?) {
@@ -74,11 +80,37 @@ fun LockScreen(gate: LockGate, backdrop: Backdrop?) {
             val msg = gate.message
             if (msg != null) BasicText(
                 msg,
-                Modifier.widthIn(max = 320.dp).clip(RoundedCornerShape(16.dp)).background(Ink.alertBg).padding(horizontal = 14.dp, vertical = 10.dp),
+                Modifier.widthIn(max = 320.dp).clip(RoundedCornerShape(16.dp)).background(Ink.alertBg).padding(horizontal = 14.dp, vertical = 10.dp)
+                    .semantics { liveRegion = LiveRegionMode.Assertive },
                 style = Type.body().copy(color = Color(0xFF6B4600), textAlign = TextAlign.Center),
             )
             Spacer(Modifier.height(4.dp))
-            PrimaryButton(t(TextKey.LOCK_SCREEN_OPEN), onClick = { ask() }, loading = asking, height = 52.dp, modifier = Modifier.widthIn(min = 200.dp), leading = Lucide.FINGERPRINT)
+            // فشل البصمة ⇒ «إعادة المحاولة» · اتلغى أو أول مرة ⇒ «فتح» (النموذج)
+            val failed = msg != null && msg == t(TextKey.LOCK_FAILED)
+            PrimaryButton(
+                if (failed) t(TextKey.LOCK_SCREEN_RETRY) else t(TextKey.LOCK_SCREEN_OPEN),
+                onClick = { ask() }, loading = asking, height = 52.dp, modifier = Modifier.widthIn(min = 200.dp), leading = Lucide.FINGERPRINT,
+            )
+        }
+    }
+}
+
+/**
+ * «أُوقف قفل التطبيق» (حالة «غير متاح» في النموذج — `AppLock.releaseIfDeviceHasNoLock`): الجوال مالوش قفل شاشة ولا بصمة ⇒ القفل بيتوقف ويتقال
+ * ده بوضوح في كارت فوق التطبيق (بدل رسالة صغيرة بتختفي) ⇒ «متابعة».
+ */
+@Composable
+fun LockReleasedCard(onContinue: () -> Unit) {
+    Box(Modifier.fillMaxSize().background(Color(0x38203B30)).pointerInput(Unit) { detectTapGestures { } }, contentAlignment = Alignment.BottomCenter) {
+        FloatingCard(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 32.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LucideIcon(Lucide.LOCK_OPEN, size = 22.dp, tint = Ink.focus)
+                    BasicText(t(TextKey.LOCK_SCREEN_RELEASED_TITLE), style = Type.of(16, FontWeight.Bold))
+                }
+                BasicText(t(TextKey.LOCK_SCREEN_RELEASED_BODY), style = Type.of(13).copy(color = Ink.soft))
+                PrimaryButton(t(TextKey.LOCK_SCREEN_CONTINUE), onClick = onContinue, modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

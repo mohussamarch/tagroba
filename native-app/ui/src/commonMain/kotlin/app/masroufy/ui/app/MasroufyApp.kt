@@ -36,6 +36,7 @@ import app.masroufy.ui.glass.rememberBackdrop
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.overlay.OverlayRoot
+import app.masroufy.ui.screens.auth.LockReleasedCard
 import app.masroufy.ui.screens.auth.LockScreen
 import app.masroufy.ui.screens.auth.SignInFlow
 import app.masroufy.ui.screens.buildRegistry
@@ -67,12 +68,8 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
                     }
                 }
                 if (lock.locked && session !is AppSession.SignedOut) LockScreen(lock, root)
-            }
-            LaunchedEffect(lock.released) {
-                if (lock.released) {
-                    shell.toaster.show(t(TextKey.LOCK_RELEASED), dark = true)
-                    lock.dismissReleased()
-                }
+                // القفل اتوقف لأن الجوال بقى مالوش قفل (حالة «غير متاح» في لوحة `Lock`) ⇒ كارت واضح بـ«متابعة» بدل رسالة بتختفي
+                if (lock.released) LockReleasedCard { lock.dismissReleased() }
             }
         }
     }
