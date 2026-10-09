@@ -139,7 +139,7 @@ class Component extends DCLogic {
       const k = this.key(), eg2 = k.indexOf('eg') === 0;
       const list = this.state.lists[k].map((x) => (x.id === r.id ? Object.assign({}, x, { name: r.name, day: r.day, weekday: r.weekday, expected: r.expectedMinor }) : x));
       this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), monthStart: r.monthStart || this.state.monthStart });
-      this.say(r.monthStart ? (eg2 ? 'اتحفظ، وشهرك المالي بقى يبدأ يوم ' : 'حُفظ، وأصبح شهرك المالي يبدأ يوم ') + r.monthStart.toLocaleString('ar-EG') : (eg2 ? 'اتحفظ التعديل' : 'حُفظ التعديل'));
+      this.say(r.monthStart ? (eg2 ? 'اتحفظ — شهرك المالي هيبدأ يوم ' : 'حُفظ — يبدأ شهرك المالي يوم ') + r.monthStart.toLocaleString('ar-EG') + (eg2 ? ' من الشهر الجاي' : ' من الشهر القادم') : (eg2 ? 'اتحفظ التعديل' : 'حُفظ التعديل'));
     };
     this.onDone = (r) => {
       const k = this.key();
@@ -150,7 +150,7 @@ class Component extends DCLogic {
       const eg2 = k.indexOf('eg') === 0;
       this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), sheet: null, view: res.add ? null : this.state.view });
       // القفل لوحده ولا كلمة (§64) · الإضافة من غير «مبروك» · «مبروك» اتقالت جوه اللوحة
-      if (res.monthStart) { this.setState({ monthStart: res.monthStart }); this.say((eg2 ? 'شهرك المالي بقى يبدأ يوم ' : 'أصبح شهرك المالي يبدأ يوم ') + res.monthStart.toLocaleString('ar-EG')); }
+      if (res.monthStart) { this.setState({ monthStart: res.monthStart }); this.say((eg2 ? 'شهرك المالي هيبدأ يوم ' : 'يبدأ شهرك المالي يوم ') + res.monthStart.toLocaleString('ar-EG') + (eg2 ? ' من الشهر الجاي' : ' من الشهر القادم')); }
       else if (res.add && !res.close) this.say((eg2 ? 'اتضاف «' : 'أُضيف «') + res.add.name + '»');
     };
   }

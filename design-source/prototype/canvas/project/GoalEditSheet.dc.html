@@ -52,9 +52,11 @@ input:disabled{opacity:.45;cursor:default}
         </label>
         <span role="alert" style="{{targetErrStyle}}">{{targetErr}}</span>
 
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; margin-top: 2px">{{dateLabel}}
-          <input type="date" min="{{minDate}}" value="{{date}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="{{dateStyle}}">
-        </label>
+        <span style="font-size: 13px; font-weight: 700; margin-top: 2px">{{dateLabel}}</span>
+        <div style="display: flex; gap: 8px">
+          <input type="date" aria-label="{{dateLabel}}" min="{{minDate}}" value="{{date}}" disabled="{{dateOff}}" onInput="{{typeDate}}" onChange="{{typeDate}}" style="{{dateStyle}}">
+          <button type="button" aria-pressed="{{noDate}}" class="ge-press" onClick="{{toggleNoDate}}" style="{{noDateStyle}}">{{noDateLabel}}</button>
+        </div>
         <span role="alert" style="{{dateErrStyle}}">{{dateErr}}</span>
 
         <div role="status" style="border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; background: rgba(8,99,79,0.06)">
@@ -82,7 +84,7 @@ input:disabled{opacity:.45;cursor:default}
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح"],"default":"عادي","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"goalName":{"editor":null},"target":{"editor":null},"saved":{"editor":null},"endDate":{"editor":null},"linked":{"editor":null},"archived":{"editor":null},"onSave":{"editor":null},"$preview":{"width":175,"height":48}}'>
 // زرار «تعديل» في تفاصيل الخطة (GoalDetail) ولوحته — ManageSavingsGoals.edit (+ archive). §68.
 // الخانات: goal-name · target (هللة) · saved (هللة، فاضي = مش معروف) · end-date (ISO أو «٣١ ديسمبر ٢٠٢٦») · linked · archived
-// onSave({ name, targetMinor, date, dateText, months, daysLeft, perMonthMinor|null, archived }) — الموعد إجباري زي SavingsGoal.targetDate
+// onSave({ name, targetMinor, date|null, dateText|null, months|null, daysLeft|null, perMonthMinor|null, archived }) — «بلا موعد» مسموح (رد المالك: «ينفع بلا موعد») ⇒ date: null
 // «تحتاج … شهريًا» = الباقي ÷ الشهور الباقية بالتقويم (monthsUntil زي كوتلن) لفوق لأقرب هللة (ROUND) — نفس رقم GoalDetail · أعداد صحيحة بس
 const TODAY = '2026-10-07';
 const ROUND = 1; // 1 = لأقرب هللة لفوق زي ceilDivMoney في كوتلن · 100 = لأقرب ريال/جنيه كامل
@@ -120,7 +122,7 @@ class Component extends DCLogic {
     if (p.goalName != null) return { name: String(p.goalName), target: num(p.target) || 0, saved: num(p.saved), date: this.isoOf(p.endDate), linked: p.linked === true || p.linked === '1' || p.linked === 'true', archived: p.archived === true || p.archived === '1' || p.archived === 'true' };
     return (this.props.state ?? 'عادي') === 'غير متاح' ? { name: 'الطوارئ', target: 2000000 * k, saved: null, date: '2027-06-01', linked: true, archived: false } : { name: 'السفر', target: 1200000 * k, saved: 740000 * k, date: '2026-12-31', linked: false, archived: false };
   }
-  fresh(o) { return { name: o.name, target: o.target ? this.fmt(o.target) : '', date: o.date || this.addMonths(TODAY, 12), archived: o.archived }; }
+  fresh(o) { return { name: o.name, target: o.target ? this.fmt(o.target) : '', date: o.date || this.addMonths(TODAY, 12), noDate: !o.date, archived: o.archived }; }
   renderVals() {
     const eg = this.eg(), s = this.state, o = this.orig(), d = s.d || this.fresh(o), cur = eg ? 'ج.م' : 'ر.س';
     const open = s.open === null ? this.props.sheet === 'مفتوحة' : s.open;
@@ -131,8 +133,8 @@ class Component extends DCLogic {
     const errS = (t) => t ? 'font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48; margin-top: -4px' : 'display: none';
     const name = String(d.name || '').trim().replace(/\s+/g, ' ');
     const tText = String(d.target || '').trim(), t = tText ? this.toMinor(tText) : null;
-    const date = d.date;
-    const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(date) && date > TODAY && date <= '2100-12-31';
+    const date = d.noDate ? null : d.date;
+    const dateOk = date == null || (/^\d{4}-\d{2}-\d{2}$/.test(date) && date > TODAY && date <= '2100-12-31');
     const E = {
       name: !name ? (eg ? 'اكتب اسم الخطة.' : 'اكتب اسم الخطة.') : '',
       target: t == null || t <= 0 ? (tText && t == null ? (eg ? 'اكتب المبلغ بالأرقام، مثلًا 12000' : 'اكتب المبلغ بالأرقام، مثل 12000') : (eg ? 'مبلغ الخطة لازم يبقى أكبر من صفر.' : 'يجب أن يكون مبلغ الخطة أكبر من صفر.')) : '',
@@ -153,6 +155,7 @@ class Component extends DCLogic {
     if (o.saved == null) { need = eg ? 'المطلوب في الشهر: غير متاح' : 'المطلوب شهريًا: غير متاح'; note = eg ? 'بيظهر لما رصيد الحساب يتعرف — مش هنكتب رقم من عندنا.' : 'يظهر حين يُعرف رصيد الحساب — لا نكتب رقمًا من عندنا.'; }
     else if (E.target) { need = eg ? 'اكتب المبلغ المطلوب عشان نحسب.' : 'اكتب المبلغ المستهدف لنحسب.'; note = (eg ? 'المتحوّش لحد دلوقتي ' : 'المدّخر حتى الآن ') + this.fmt(o.saved) + ' ' + cur + '.'; }
     else if (t <= o.saved) { need = eg ? 'المتحوّش بيغطي الهدف — الخطة هتكمل' : 'المدّخر يغطي الهدف — تكتمل الخطة'; note = (eg ? 'متحوّش ' : 'لديك ') + this.fmt(o.saved) + (eg ? ' من ' : ' من ') + this.fmt(t) + ' ' + cur + '.'; }
+    else if (date == null) { need = eg ? 'من غير ميعاد — حوّش براحتك، وهنوريك وصلت لفين' : 'بلا موعد — ادّخر براحتك، ونريك أين وصلت'; note = (eg ? 'الفاضل ' : 'الباقي ') + this.fmt(t - o.saved) + ' ' + cur + (eg ? '، ومفيش مطلوب في الشهر.' : '، ولا مطلوب شهري.'); }
     else if (!c) { need = eg ? 'اختار ميعاد بعد النهارده عشان نحسب.' : 'اختر موعدًا بعد اليوم لنحسب.'; note = (eg ? 'الفاضل ' : 'الباقي ') + this.fmt(t - o.saved) + ' ' + cur + '.'; }
     else {
       need = (eg ? 'محتاج ' : 'تحتاج ') + this.fmt(c.per) + ' ' + cur + (eg ? ' في الشهر' : ' شهريًا');
@@ -174,9 +177,11 @@ class Component extends DCLogic {
       targetBox: 'height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 16px; display: flex; align-items: center; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (shown('target') ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
       targetErr: shown('target'), targetErrStyle: errS(shown('target')),
       dateLabel: eg ? 'لحد إمتى؟' : 'حتى متى؟', minDate: '2026-10-08',
-      date: d.date,
+      date: d.noDate ? '' : d.date, dateOff: !!d.noDate,
       typeDate: (e) => { if (e && e.target && /^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) set({ date: e.target.value }); },
-      dateStyle: field(!!shown('date')) + '; width: 100%; font-size: 14px; padding: 0 10px',
+      dateStyle: field(!!shown('date')) + '; flex: 1 1 auto; min-width: 0; font-size: 14px; padding: 0 10px',
+      noDate: d.noDate ? 'true' : 'false', noDateLabel: eg ? 'من غير ميعاد' : 'بلا موعد', toggleNoDate: () => set({ noDate: !d.noDate }),
+      noDateStyle: 'height: 48px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 16px; font: inherit; font-size: 13px; cursor: pointer; ' + (d.noDate ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)'),
       dateErr: shown('date'), dateErrStyle: errS(shown('date')),
       need, needNote: note,
       archiveLabel: eg ? 'أرشف الخطة' : 'أرشفة الخطة',
@@ -190,7 +195,7 @@ class Component extends DCLogic {
       save: () => {
         if (!valid) { this.setState({ tried: true }); return; }
         this.setState({ open: false, d: null, tried: false });
-        if (typeof this.props.onSave === 'function') this.props.onSave({ name, targetMinor: t, date, dateText: this.show(date), months: this.monthsUntil(date), daysLeft: Math.round((Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10)) - Date.UTC(2026, 9, 7)) / 86400000), perMonthMinor: c ? c.per : null, archived: !!d.archived });
+        if (typeof this.props.onSave === 'function') this.props.onSave({ name, targetMinor: t, date, dateText: date ? this.show(date) : null, months: date ? this.monthsUntil(date) : null, daysLeft: date ? Math.round((Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10)) - Date.UTC(2026, 9, 7)) / 86400000) : null, perMonthMinor: c ? c.per : null, archived: !!d.archived });
       }
     };
   }

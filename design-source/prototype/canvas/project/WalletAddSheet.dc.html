@@ -40,7 +40,7 @@ input:disabled{opacity:.45;cursor:default}
         <sc-if value="{{isAdd}}" hint-placeholder-val="{{ true }}">
           <div style="display: flex; flex-direction: column; gap: 10px">
             <div role="radiogroup" aria-label="{{kindLabel}}" style="display: flex; gap: 8px">
-              <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="2">
+              <sc-for list="{{kinds}}" as="kd" hint-placeholder-count="3">
                 <button type="button" role="radio" aria-checked="{{kd.on}}" class="wa-press" onClick="{{kd.pick}}" style="{{kd.style}}">{{kd.label}}</button>
               </sc-for>
             </div>
@@ -57,11 +57,23 @@ input:disabled{opacity:.45;cursor:default}
             </label>
             <span role="alert" style="{{nameErrStyle}}">{{nameErr}}</span>
 
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{last4Label}}
-              <input type="text" inputmode="numeric" dir="ltr" autocomplete="off" value="{{last4}}" onInput="{{typeLast4}}" placeholder="••••" style="{{last4Style}}">
-            </label>
-            <span role="alert" style="{{last4ErrStyle}}">{{last4Err}}</span>
-            <span style="font-size: 12px; line-height: 1.7; color: #637570">{{last4Note}}</span>
+            <sc-if value="{{hasLast4}}" hint-placeholder-val="{{ true }}">
+              <div style="min-height: 128px; display: flex; flex-direction: column; gap: 6px">
+                <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700">{{last4Label}}
+                  <input type="text" inputmode="numeric" dir="ltr" autocomplete="off" value="{{last4}}" onInput="{{typeLast4}}" placeholder="••••" style="{{last4Style}}">
+                </label>
+                <span role="alert" style="{{last4ErrStyle}}">{{last4Err}}</span>
+                <span style="font-size: 12px; line-height: 1.7; color: #637570">{{last4Note}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{isCashKind}}" hint-placeholder-val="{{ false }}">
+              <div style="min-height: 128px; display: flex; flex-direction: column; justify-content: center">
+                <div style="border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; background: rgba(25,61,51,0.04)">
+                  <span style="font-size: 13px; font-weight: 700">{{cashHead}}</span>
+                  <span style="font-size: 12px; line-height: 1.7; color: #637570">{{cashNote}}</span>
+                </div>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
 
@@ -94,7 +106,7 @@ input:disabled{opacity:.45;cursor:default}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["إضافة","تعديل"],"default":"إضافة","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"walletName":{"editor":null},"walletKind":{"editor":null},"last4":{"editor":null},"opening":{"editor":null},"openingDate":{"editor":null},"balance":{"editor":null},"existing":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":48}}'>
 // زرار «أضف محفظة» ولوحته (Wallets) — ونفس اللوحة بـ mode="edit" لرصيد البداية (WalletDetail). سؤال ١٨ في SCREENS.md · spec/03 «Wallet» · §26 §41 §72.
-// الإضافة: onSave({ mode:'add', kind, bank, bankLabel, name, last4, openingMinor|null, openingDate|null, openingDateText|null })
+// الإضافة: onSave({ mode:'add', kind: 'bank'|'digital_wallet'|'cash', bank|null, bankLabel|null, name, last4|null (الكاش من غير), openingMinor|null, openingDate|null, openingDateText|null })
 // التعديل: onSave({ mode:'edit', openingMinor, openingDate, openingDateText, balanceMinor|null }) — balanceMinor بس لو التاريخ ما اتغيرش والرصيد معروف
 // العملة = عملة البلد (§41) · آخر ٤ أرقام بس (CLAUDE.md #11) · رصيد البداية حقيقة في تاريخ، وفاضي = «غير متاح» مش صفر
 const TODAY = '2026-10-07';
@@ -142,12 +154,12 @@ class Component extends DCLogic {
     const chip = (on, extra) => 'height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (extra || '') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
     const field = (bad) => 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 500; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
     const errS = (x) => x ? 'font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48; margin-top: -4px' : 'display: none';
-    // الأنواع اللي في الموديل: bank · cash · digital_wallet (own_abroad اتلغى عمليًا بحساب لكل بلد §41). الكاش واحد لكل بلد وموجود
-    const KINDS = [['bank', eg ? 'حساب بنك' : 'حساب بنكي'], ['digital_wallet', 'محفظة إلكترونية']];
+    // الأنواع: bank · digital_wallet · cash (رد المالك «ضيف كاش تاني»: أكتر من محفظة كاش في البلد، زي «كاش البيت» و«كاش الشغل»). مفيش بطاقة ائتمانية
+    const KINDS = [['bank', eg ? 'حساب بنك' : 'حساب بنكي'], ['digital_wallet', 'محفظة إلكترونية'], ['cash', 'كاش']];
     const LISTS = eg
-      ? { bank: [['nbe', 'البنك الأهلي المصري'], ['qnb', 'QNB مصر'], ['misr', 'بنك مصر'], ['cib', 'البنك التجاري الدولي'], ['alex', 'بنك الإسكندرية'], ['other', 'بنك تاني']], digital_wallet: [['vodafone', 'فودافون كاش'], ['orange', 'أورانج كاش'], ['other', 'محفظة تانية']] }
-      : { bank: [['rajhi', 'مصرف الراجحي'], ['snb', 'البنك الأهلي السعودي'], ['inma', 'مصرف الإنماء'], ['riyad', 'بنك الرياض'], ['anb', 'البنك العربي الوطني'], ['other', 'بنك آخر']], digital_wallet: [['stcpay', 'stc pay'], ['urpay', 'urpay'], ['other', 'محفظة أخرى']] };
-    const list = LISTS[d.kind], picked = list.find((x) => x[0] === d.bank);
+      ? { bank: [['nbe', 'البنك الأهلي المصري'], ['qnb', 'QNB مصر'], ['misr', 'بنك مصر'], ['cib', 'البنك التجاري الدولي'], ['alex', 'بنك الإسكندرية'], ['other', 'بنك تاني']], digital_wallet: [['vodafone', 'فودافون كاش'], ['orange', 'أورانج كاش'], ['other', 'محفظة تانية']], cash: [['home', 'كاش البيت'], ['work', 'كاش الشغل'], ['travel', 'كاش السفر'], ['car', 'كاش العربية']] }
+      : { bank: [['rajhi', 'مصرف الراجحي'], ['snb', 'البنك الأهلي السعودي'], ['inma', 'مصرف الإنماء'], ['riyad', 'بنك الرياض'], ['anb', 'البنك العربي الوطني'], ['other', 'بنك آخر']], digital_wallet: [['stcpay', 'stc pay'], ['urpay', 'urpay'], ['other', 'محفظة أخرى']], cash: [['home', 'كاش البيت'], ['work', 'كاش الشغل'], ['travel', 'كاش السفر'], ['car', 'كاش السيارة']] };
+    const isCash = d.kind === 'cash', list = LISTS[d.kind], picked = isCash ? null : list.find((x) => x[0] === d.bank);
     let existing = eg ? ['البنك الأهلي المصري', 'QNB مصر', 'الكاش'] : ['مصرف الراجحي', 'البنك الأهلي السعودي', 'مصرف الإنماء', 'الكاش'];
     try { const ex = this.props.existing; if (ex) existing = Array.isArray(ex) ? ex : JSON.parse(ex); } catch (e) { /* تفضل القايمة المبدئية */ }
     const norm = (t) => String(t || '').trim().replace(/\s+/g, ' ');
@@ -159,9 +171,9 @@ class Component extends DCLogic {
     const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(d.date || '') && d.date <= TODAY;
     // الأخطاء: المكرر بيبان على طول، والباقي بعد أول محاولة حفظ
     const E = {
-      bank: !edit && !d.bank ? (d.kind === 'bank' ? (eg ? 'اختار البنك.' : 'اختر البنك.') : (eg ? 'اختار المحفظة.' : 'اختر المحفظة.')) : '',
-      name: edit ? '' : dup ? (eg ? 'عندك محفظة بالاسم ده — ميّزها، مثلًا: «' + name + ' — توفير».' : 'لديك محفظة بهذا الاسم — ميّزها، مثلًا: «' + name + ' — ادخار».') : !name ? (eg ? 'اكتب اسمها.' : 'اكتب اسمها.') : '',
-      last4: !edit && l4 && l4.length !== 4 ? (eg ? 'اكتب ٤ أرقام، أو سيبها فاضية.' : 'اكتب ٤ أرقام، أو اتركها فارغة.') : '',
+      bank: !edit && !isCash && !d.bank ? (d.kind === 'bank' ? (eg ? 'اختار البنك.' : 'اختر البنك.') : (eg ? 'اختار المحفظة.' : 'اختر المحفظة.')) : '',
+      name: edit ? '' : dup ? (eg ? 'عندك محفظة بالاسم ده — ميّزها، مثلًا: «' + (isCash ? 'كاش البيت' : name + ' — توفير') + '».' : 'لديك محفظة بهذا الاسم — ميّزها، مثلًا: «' + (isCash ? 'كاش البيت' : name + ' — ادخار') + '».') : !name ? (eg ? 'اكتب اسمها.' : 'اكتب اسمها.') : '',
+      last4: !edit && !isCash && l4 && l4.length !== 4 ? (eg ? 'اكتب ٤ أرقام، أو سيبها فاضية.' : 'اكتب ٤ أرقام، أو اتركها فارغة.') : '',
       amount: amountText && a == null ? (eg ? 'اكتب المبلغ بالأرقام، مثلًا 1250.50' : 'اكتب المبلغ بالأرقام، مثل 1250.50') : edit && !amountText ? (eg ? 'اكتب رصيد البداية.' : 'اكتب رصيد البداية.') : a != null && !dateOk ? (eg ? 'التاريخ ما ينفعش يبقى بعد النهارده.' : 'لا يكون التاريخ بعد اليوم.') : ''
     };
     const first = E.bank || E.name || E.last4 || E.amount;
@@ -171,7 +183,7 @@ class Component extends DCLogic {
     // سطر الأثر: رصيد البداية حقيقة في تاريخ، والرصيد = هو + الحركات من يومه
     let effect, note;
     const later = eg ? 'الحركات اللي قبل التاريخ ده بتفضل متسجّلة، بس مش بتدخل في رصيدها.' : 'الحركات قبل هذا التاريخ تبقى مسجّلة، لكنها لا تدخل في رصيدها.';
-    if (!edit && !amountText) { effect = eg ? 'من غير رصيد بداية: رصيدها «غير متاح»' : 'بلا رصيد بداية: رصيدها «غير متاح»'; note = eg ? 'لحد ما توصل رسالة فيها الرصيد أو تستورد كشف — مش هنكتب صفر مكانه.' : 'حتى تصل رسالة فيها الرصيد أو تستورد كشفًا — لا نكتب صفرًا مكانه.'; }
+    if (!edit && !amountText) { effect = eg ? 'من غير رصيد بداية: رصيدها «غير متاح»' : 'بلا رصيد بداية: رصيدها «غير متاح»'; note = isCash ? (eg ? 'لحد ما تحدده من صفحتها — مش هنكتب صفر مكانه.' : 'حتى تحدّده من صفحتها — لا نكتب صفرًا مكانه.') : (eg ? 'لحد ما توصل رسالة فيها الرصيد أو تستورد كشف — مش هنكتب صفر مكانه.' : 'حتى تصل رسالة فيها الرصيد أو تستورد كشفًا — لا نكتب صفرًا مكانه.'); }
     else if (a == null || !dateOk) { effect = eg ? 'اكتب المبلغ وتاريخه عشان نحسب رصيدها.' : 'اكتب المبلغ وتاريخه لنحسب رصيدها.'; note = later; }
     else if (!edit || o.open == null) { effect = (eg ? 'رصيدها بيبدأ من ' : 'يبدأ رصيدها من ') + this.fmt(a) + ' ' + cur + ' في ' + this.show(d.date); note = (eg ? 'وبعدين بتتضاف الحركات من اليوم ده ورايح. ' : 'ثم تُضاف الحركات من هذا اليوم فصاعدًا. ') + later; }
     else if (!changed) { effect = (eg ? 'رصيد البداية دلوقتي ' : 'رصيد البداية الآن ') + this.fmt(o.open) + ' ' + cur + ' في ' + this.show(o.date); note = later; }
@@ -187,11 +199,15 @@ class Component extends DCLogic {
       sub: edit ? o.name + (o.last4 ? ' ⁦•••• ' + o.last4 + '⁩' : '') : (eg ? 'في مصر، بالجنيه المصري (ج.م) — عملة البلد دي.' : 'في السعودية، بالريال السعودي (ر.س) — عملة هذا البلد.'),
       isAdd: !edit,
       kindLabel: eg ? 'نوعها' : 'نوعها',
-      kinds: KINDS.map(([id, label]) => ({ label, on: d.kind === id ? 'true' : 'false', style: chip(d.kind === id, 'flex: 1 1 0; height: 48px; '), pick: () => set({ kind: id, bank: null, name: d.named ? d.name : '' }) })),
-      bankLabel: d.kind === 'bank' ? (eg ? 'البنك' : 'البنك') : (eg ? 'المحفظة' : 'المحفظة'),
-      banks: list.map(([id, label]) => ({ label, on: d.bank === id ? 'true' : 'false', style: chip(d.bank === id, 'font-size: 13px; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; '), pick: () => set({ bank: id, name: d.named ? d.name : id === 'other' ? '' : label }) })),
+      kinds: KINDS.map(([id, label]) => ({ label, on: d.kind === id ? 'true' : 'false', style: chip(d.kind === id, 'flex: 1 1 0; height: 48px; padding: 0 4px; font-size: 13px; '), pick: () => set({ kind: id, bank: null, name: d.named ? d.name : '' }) })),
+      // الكاش: مفيش بنك — نفس المكان فيه اقتراحات للاسم (اللوحة ما يتغيّرش طولها)
+      bankLabel: isCash ? (eg ? 'اسم مقترح' : 'اسم مقترح') : d.kind === 'bank' ? (eg ? 'البنك' : 'البنك') : (eg ? 'المحفظة' : 'المحفظة'),
+      banks: list.map(([id, label]) => { const on = isCash ? name === label : d.bank === id; return { label, on: on ? 'true' : 'false', style: chip(on, 'font-size: 13px; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; '), pick: () => set(isCash ? { name: label, named: false } : { bank: id, name: d.named ? d.name : id === 'other' ? '' : label }) }; }),
       bankErr: shown('bank'), bankErrStyle: errS(shown('bank')),
-      nameLabel: eg ? 'اسمها في البرنامج' : 'اسمها في التطبيق', namePh: d.bank === 'other' ? (eg ? 'اسم البنك أو المحفظة' : 'اسم البنك أو المحفظة') : (eg ? 'مثلًا: حساب التوفير' : 'مثلًا: حساب الادخار'),
+      hasLast4: !isCash, isCashKind: isCash,
+      cashHead: eg ? 'الكاش من غير بنك ولا رقم حساب' : 'الكاش بلا بنك ولا رقم حساب',
+      cashNote: eg ? 'رصيده تقريبي — الكاش اللي اتصرف ومااتسجلش مش باين فيه. سمّيه باسم مكانه عشان تفرّق بين محافظ الكاش.' : 'رصيده تقريبي — لا يظهر فيه الكاش الذي صُرف ولم يُسجَّل. سمّه باسم مكانه لتميّز محافظ الكاش.',
+      nameLabel: eg ? 'اسمها في البرنامج' : 'اسمها في التطبيق', namePh: isCash ? (eg ? 'مثلًا: كاش البيت' : 'مثلًا: كاش البيت') : d.bank === 'other' ? (eg ? 'اسم البنك أو المحفظة' : 'اسم البنك أو المحفظة') : (eg ? 'مثلًا: حساب التوفير' : 'مثلًا: حساب الادخار'),
       name: d.name, typeName: (e) => { if (e && e.target) set({ name: e.target.value, named: true }); },
       nameStyle: field(!!shown('name')), nameErr: shown('name'), nameErrStyle: errS(shown('name')),
       last4Label: d.kind === 'bank' ? (eg ? 'آخر ٤ أرقام من الحساب (مش لازم)' : 'آخر ٤ أرقام من الحساب (اختياري)') : (eg ? 'آخر ٤ أرقام من رقم المحفظة (مش لازم)' : 'آخر ٤ أرقام من رقم المحفظة (اختياري)'),
@@ -217,7 +233,7 @@ class Component extends DCLogic {
         this.setState({ open: false, d: null, tried: false, cut: false });
         if (typeof this.props.onSave !== 'function') return;
         if (edit) this.props.onSave({ mode: 'edit', openingMinor: a, openingDate: d.date, openingDateText: this.show(d.date), balanceMinor: d.date === o.date && o.open != null && o.bal != null ? o.bal + a - o.open : null });
-        else this.props.onSave({ mode: 'add', kind: d.kind, bank: d.bank === 'other' ? null : d.bank, bankLabel: d.bank === 'other' ? null : picked ? picked[1] : null, name, last4: l4 || null, openingMinor: a, openingDate: a == null ? null : d.date, openingDateText: a == null ? null : this.show(d.date) });
+        else this.props.onSave({ mode: 'add', kind: d.kind, bank: isCash || d.bank === 'other' ? null : d.bank, bankLabel: picked && d.bank !== 'other' ? picked[1] : null, name, last4: isCash ? null : l4 || null, openingMinor: a, openingDate: a == null ? null : d.date, openingDateText: a == null ? null : this.show(d.date) });
       }
     };
   }

@@ -134,15 +134,17 @@ class Component extends DCLogic {
       lens: lens(true), open: () => this.setState({ view: 'cash' }), style: rowStyle(true) };
     // المضافة: رصيدها = رصيد البداية (لسه مفيش حركات بعده)، ومن غير رصيد بداية ⇒ «غير متاح» مش صفر
     const added = s.added[eg ? 'eg' : 'sa'] || [];
-    const addRow = (a) => ({ name: a.name, mark: a.mark, isBank: true, isCash: false, approx: false, kind: a.kind,
-      meta: (a.kind === 'bank' ? (eg ? 'حساب بنك' : 'حساب بنكي') : 'محفظة إلكترونية') + (a.last4 ? ' · •••• ' + ar(a.last4) : ''),
+    const addRow = (a) => ({ name: a.name, mark: a.mark, isBank: a.kind !== 'cash', isCash: a.kind === 'cash', approx: a.kind === 'cash' && a.open != null, kind: a.kind,
+      meta: (a.kind === 'bank' ? (eg ? 'حساب بنك' : 'حساب بنكي') : a.kind === 'cash' ? 'كاش' : 'محفظة إلكترونية') + (a.last4 ? ' · •••• ' + ar(a.last4) : ''),
       opening: a.open == null ? (eg ? 'رصيد البداية لسه ما اتحددش' : 'رصيد البداية لم يُحدَّد بعد') : 'رصيد البداية ' + this.fmt(a.open) + ' في ' + a.at,
       balance: a.open == null ? 'غير متاح' : this.fmt(a.open) + ' ' + cur,
       balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (a.open == null ? '#637570' : '#193D33'),
-      lens: lens(false), open: () => this.setState({ view: a.id }) });
+      lens: lens(a.kind === 'cash'), open: () => this.setState({ view: a.id }) });
     const styled = (rows) => rows.map((r, i) => Object.assign(r, { style: rowStyle(i === rows.length - 1) }));
     const bankAll = styled(bankRows.concat(added.filter((a) => a.kind === 'bank').map(addRow)));
-    const eRows = styled(added.filter((a) => a.kind !== 'bank').map(addRow));
+    const eRows = styled(added.filter((a) => a.kind === 'digital_wallet').map(addRow));
+    // محافظ الكاش التانية (رد المالك «ضيف كاش تاني») جنب «الكاش» في نفس القسم
+    const cashAll = styled([cashRow].concat(added.filter((a) => a.kind === 'cash').map(addRow)));
     const unknown = added.filter((a) => a.open == null).map((a) => a.name);
     const total = banks.reduce((t, b) => t + b[4], 0) + cash[0] + added.reduce((t, a) => t + (a.open == null ? 0 : a.open), 0);
     const all = banks.map((b) => b[0]).concat(['cash'], added.map((a) => a.id));
@@ -161,7 +163,7 @@ class Component extends DCLogic {
       totalSub: na ? (eg ? 'رصيد البنوك مش متاح لحد ما توصل رسالة بنك جديدة أو تستورد كشف. الكاش لوحده ' : 'رصيد البنوك غير متاح حتى تصل رسالة بنك جديدة أو تستورد كشفًا. الكاش وحده ') + this.fmt(cash[0]) + ' ' + cur + '.'
         : unknown.length ? (eg ? 'من غير «' + unknown.join('» و«') + '» — رصيدها مش متاح لسه.' : 'لا يشمل «' + unknown.join('» و«') + '» — رصيدها غير متاح بعد.')
         : (eg ? 'في ' : 'في ') + (cnt === 1 ? MW[0] : cnt === 2 ? MW[1] : n(cnt) + ' ' + (cnt <= 10 ? MW[2] : MW[3])) + (eg ? ' في البلد دي' : ' في هذا البلد'),
-      groups: [{ title: eg ? 'البنوك' : 'البنوك', rows: bankAll }].concat(eRows.length ? [{ title: 'المحافظ الإلكترونية', rows: eRows }] : [], [{ title: 'الكاش', rows: [cashRow] }]),
+      groups: [{ title: eg ? 'البنوك' : 'البنوك', rows: bankAll }].concat(eRows.length ? [{ title: 'المحافظ الإلكترونية', rows: eRows }] : [], [{ title: 'الكاش', rows: cashAll }]),
       walletNames: JSON.stringify(banks.map((b) => b[1]).concat(['الكاش'], added.map((a) => a.name))), onAddWallet: this.onAddWallet,
       walletId: view || '', naFlag: na ? '1' : '0',
       walletInfo: av ? JSON.stringify({ name: av.name, kind: av.kind, last4: av.last4 ? ar(av.last4) : '', open: av.open, at: av.at || '' }) : '',

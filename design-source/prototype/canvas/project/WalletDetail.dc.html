@@ -119,10 +119,10 @@ class Component extends DCLogic {
     try { if (this.props.info) info = typeof this.props.info === 'string' ? JSON.parse(this.props.info) : this.props.info; } catch (e) { info = null; }
     const id = info ? 'new:' + info.name : W[this.props.wallet] ? this.props.wallet : Object.keys(W)[0];
     const s = this.state, ed = s.edits[id];
-    const base = info ? { name: info.name, last4: info.last4 || '', kind: info.kind, bal: info.open, open: [info.open, info.at], mv: [], rec: { none: true } } : W[id];
+    const base = info ? { name: info.name, last4: info.last4 || '', kind: info.kind, cash: info.kind === 'cash', bal: info.open, open: [info.open, info.at], mv: [], rec: { none: true } } : W[id];
     // تعديل رصيد البداية محلي هنا (WalletAddSheet بـ mode="edit"): نفس التاريخ ⇒ الرصيد بيتحرك بالفرق بالظبط، تاريخ تاني ⇒ «غير متاح» لحد ما يتحسب
     const w = ed ? Object.assign({}, base, { open: ed.open, bal: ed.bal }) : base;
-    const openKnown = !!w.cash || (ed ? true : !(na && !info) && w.open[0] != null);
+    const openKnown = ed ? true : w.open[0] != null && !(na && !info && !w.cash);
     const balKnown = openKnown && w.bal != null;
     const bankNa = !openKnown;
     const rs = tweak === 'بيحمّل' && !s.rec[id] ? 'loading' : (s.rec[id] || 'idle');
@@ -156,12 +156,12 @@ class Component extends DCLogic {
     const recNone = !!r.none || bankNa;
     return {
       name: w.name, last4: w.last4 ? '•••• ' + w.last4 : '',
-      balanceLabel: eg ? 'الرصيد' : 'الرصيد', approx: !!w.cash, approxLabel: 'تقريبي',
+      balanceLabel: eg ? 'الرصيد' : 'الرصيد', approx: !!w.cash && balKnown, approxLabel: 'تقريبي',
       hasBalance: balKnown, noBalance: !balKnown, balance: balKnown ? this.fmt(w.bal) + ' ' + cur : '',
-      balanceSub: bankNa ? (eg ? 'مفيش رصيد بداية — رسالة بنك جديدة أو كشف بيحدده.' : 'لا رصيد بداية — تحدده رسالة بنك جديدة أو كشف.') : !balKnown ? (eg ? 'بيتحسب من جديد من رصيد البداية والحركات من ' : 'يُعاد حسابه من رصيد البداية والحركات منذ ') + w.open[1] + '.' : w.cash ? (eg ? 'الكاش اللي اتصرف ومااتسجلش مش باين فيه.' : 'لا يظهر فيه الكاش الذي صُرف ولم يُسجَّل.') : (eg ? 'من رصيد البداية والحركات اللي بعده' : 'من رصيد البداية والحركات بعده'),
+      balanceSub: bankNa ? (w.cash ? (eg ? 'مفيش رصيد بداية — حدّده من تحت.' : 'لا رصيد بداية — حدّده من الزر أدناه.') : (eg ? 'مفيش رصيد بداية — رسالة بنك جديدة أو كشف بيحدده.' : 'لا رصيد بداية — تحدده رسالة بنك جديدة أو كشف.')) : !balKnown ? (eg ? 'بيتحسب من جديد من رصيد البداية والحركات من ' : 'يُعاد حسابه من رصيد البداية والحركات منذ ') + w.open[1] + '.' : w.cash ? (eg ? 'الكاش اللي اتصرف ومااتسجلش مش باين فيه.' : 'لا يظهر فيه الكاش الذي صُرف ولم يُسجَّل.') : (eg ? 'من رصيد البداية والحركات اللي بعده' : 'من رصيد البداية والحركات بعده'),
       facts, movesTitle: eg ? 'آخر الحركات ومصدرها' : 'آخر الحركات ومصدرها', moves, noMoves: !moves.length, noMovesText: eg ? 'مفيش حركات لسه.' : 'لا حركات بعد.',
       isBank: !w.cash, isCash: !!w.cash,
-      cashNote: eg ? 'الكاش مالوش كشف يتطابق عليه — بيتظبط لما تعدّه من كارت الكاش في الرئيسية.' : 'لا كشف للكاش يُطابق عليه — يُضبط حين تعدّه من بطاقة الكاش في الرئيسية.',
+      cashNote: info ? (eg ? 'الكاش مالوش كشف يتطابق عليه — لما تعدّه، عدّل رصيد البداية من فوق.' : 'لا كشف للكاش يُطابق عليه — حين تعدّه، عدّل رصيد البداية من الزر أعلاه.') : eg ? 'الكاش مالوش كشف يتطابق عليه — بيتظبط لما تعدّه من كارت الكاش في الرئيسية.' : 'لا كشف للكاش يُطابق عليه — يُضبط حين تعدّه من بطاقة الكاش في الرئيسية.',
       recTitle: eg ? 'مطابقة الرصيد' : 'مطابقة الرصيد', optionalChip: eg ? 'اختيارية' : 'اختيارية',
       recBody: eg ? 'بتقارن رصيد كل حركة بالرصيد المكتوب في الكشف. مفيش حاجة مستنياها.' : 'تقارن رصيد كل حركة بالرصيد المكتوب في الكشف. لا شيء ينتظرها.',
       recLoading: rs === 'loading', recDone: rs === 'done' && !r.none,

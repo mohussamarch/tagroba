@@ -99,11 +99,11 @@ class Component extends DCLogic {
     this.onRemove = (id) => this.edit((g) => Object.assign({}, g, { deps: g.deps.filter((d) => d[0] !== id) }), this.eg() ? 'اتشال الإيداع' : 'حُذف الإيداع');
     this.onArchive = () => { const g = this.cur(); if (!g) return; this.edit((x) => Object.assign({}, x, { archived: true }), (this.eg() ? 'اتأرشفت «' : 'أُرشفت «') + g.name + (this.eg() ? '» — ما بتتمسحش، وموجودة في المتأرشفة' : '» — لا تُحذف، وتبقى في المؤرشفة')); this.setState({ open: null }); };
     this.onCreate = (n) => this.create(n);
-    // «تعديل» من GoalDetail (GoalEditSheet): الاسم والهدف والموعد (الشهور بالتقويم والأيام من النهارده جاهزين) + أرشفة — ManageSavingsGoals.edit / archive
+    // «تعديل» من GoalDetail (GoalEditSheet): الاسم والهدف والموعد (الشهور بالتقويم والأيام من النهارده جاهزين، أو «بلا موعد» ⇒ null) + أرشفة — ManageSavingsGoals.edit / archive
     this.onEdit = (p) => {
-      const g = this.cur(); if (!g || !p || !p.name || !p.date) return;
+      const g = this.cur(); if (!g || !p || !p.name) return;
       const eg = this.eg();
-      this.edit((x) => Object.assign({}, x, { name: p.name, target: p.targetMinor, end: p.dateText, months: p.months, total: x.elapsed + p.daysLeft, archived: !!p.archived }),
+      this.edit((x) => Object.assign({}, x, { name: p.name, target: p.targetMinor, end: p.dateText, months: p.months, total: p.date ? x.elapsed + p.daysLeft : null, archived: !!p.archived }),
         p.archived ? (eg ? 'اتأرشفت «' : 'أُرشفت «') + p.name + (eg ? '» — ما بتتمسحش، وموجودة في المتأرشفة' : '» — لا تُحذف، وتبقى في المؤرشفة') : (eg ? 'اتحفظت خطة «' : 'حُفظت خطة «') + p.name + '»');
       if (p.archived) this.setState({ open: null });
     };
@@ -135,12 +135,13 @@ class Component extends DCLogic {
     const start = g.wallet ? g.start : 0;
     const saved = g.wallet ? g.wallet.balance : g.deps.reduce((t, d) => t + d[2], 0);
     // المفروض النهارده: خط مستقيم بالأيام من المدّخر يوم البداية للهدف · المطلوب في الشهر لفوق · «هتوصل لكام» بعد ٣٠ يوم بس (§68)
-    const should = start + this.md(g.target - start, g.elapsed, g.total);
+    const dated = !!g.end && g.total > 0 && g.months > 0; // «بلا موعد» (رد المالك) ⇒ مفيش مفروض ولا مطلوب ولا «هتوصل لكام»
+    const should = dated ? start + this.md(g.target - start, g.elapsed, g.total) : null;
     const rem = Math.max(0, g.target - saved);
-    const per = (rem - (rem % g.months)) / g.months + (rem % g.months ? 1 : 0);
-    const reach = g.elapsed >= 30 ? start + this.md(saved - start, g.total, g.elapsed) : null;
+    const per = dated ? (rem - (rem % g.months)) / g.months + (rem % g.months ? 1 : 0) : null;
+    const reach = dated && g.elapsed >= 30 ? start + this.md(saved - start, g.total, g.elapsed) : null;
     const pct = Math.min(100, ((saved * 100) - ((saved * 100) % g.target)) / g.target);
-    return { unknown, saved, should, diff: saved - should, rem, per, reach, pct, reached: saved >= g.target };
+    return { unknown, dated, saved, should, diff: dated ? saved - should : null, rem, per, reach, pct, reached: saved >= g.target };
   }
   deposit(v) {
     const g = this.cur(); if (!g || !(v > 0) || g.wallet) return;
@@ -165,16 +166,18 @@ class Component extends DCLogic {
     const all = this.list(), live = all.filter((g) => !g.archived), arch = all.filter((g) => g.archived);
     const NA = 'غير متاح';
     const chipS = (c, b) => 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; flex-shrink: 0; color: ' + c + '; background: ' + b;
-    const statsOf = (g, c) => [
+    const NODATE = eg ? 'من غير ميعاد' : 'بلا موعد';
+    // «بلا موعد»: الباقي والموعد بس — مفيش أرقام محتاجة تاريخ
+    const statsOf = (g, c) => !c.dated ? [[eg ? 'الفاضل' : 'الباقي', c.unknown ? NA : this.fmt(c.rem), c.unknown ? '#637570' : ''], [eg ? 'الميعاد' : 'الموعد', NODATE, '#637570']] : [
       [eg ? 'المفروض النهارده' : 'المفروض اليوم', c.unknown ? NA : this.fmt(c.should), ''],
       [c.diff === 0 ? (eg ? 'في الميعاد' : 'في الموعد') : c.diff > 0 ? (eg ? 'قدّام بـ' : 'متقدّمة بـ') : (eg ? 'ورا بـ' : 'متأخرة بـ'), c.unknown ? NA : this.fmt(c.diff), c.unknown ? '#637570' : c.diff > 0 ? '#13764D' : c.diff < 0 ? '#BE3D48' : ''],
       [eg ? 'المطلوب في الشهر' : 'المطلوب شهريًا', c.unknown ? NA : this.fmt(c.per), ''],
       [eg ? 'هتوصل لكام' : 'ستصل إلى', c.unknown ? NA : c.reach == null ? (eg ? 'بعد ٣٠ يوم' : 'بعد ٣٠ يومًا') : this.fmt(c.reach), c.reach != null && c.reach < g.target ? '#956000' : '']
     ];
-    const sub = (g) => (eg ? 'لحد ' : 'حتى ') + g.end + '، ' + (g.wallet ? g.wallet.name + ' \u2066••••\u00A0' + g.wallet.last4 + '\u2069' : (eg ? 'إيداعات بإيدك' : 'إيداعات يدوية'));
+    const sub = (g) => (g.end ? (eg ? 'لحد ' : 'حتى ') + g.end : NODATE) + '، ' + (g.wallet ? g.wallet.name + ' \u2066••••\u00A0' + g.wallet.last4 + '\u2069' : (eg ? 'إيداعات بإيدك' : 'إيداعات يدوية'));
     const goals = live.map((g) => {
       const c = this.calc(g);
-      const chip = c.unknown ? [NA, '#637570', 'rgba(25,61,51,0.06)'] : c.reached ? [eg ? 'كملت' : 'اكتملت', '#13764D', '#DCEBD6'] : g.elapsed < 30 ? [eg ? 'جديدة' : 'جديدة', '#2469BA', 'rgba(36,105,186,0.10)'] : c.diff >= 0 ? [eg ? 'قدّام' : 'متقدّمة', '#13764D', '#DCEBD6'] : [eg ? 'ورا' : 'متأخرة', '#BE3D48', 'rgba(190,61,72,0.10)'];
+      const chip = c.unknown ? [NA, '#637570', 'rgba(25,61,51,0.06)'] : c.reached ? [eg ? 'كملت' : 'اكتملت', '#13764D', '#DCEBD6'] : !c.dated ? [NODATE, '#637570', 'rgba(25,61,51,0.06)'] : g.elapsed < 30 ? [eg ? 'جديدة' : 'جديدة', '#2469BA', 'rgba(36,105,186,0.10)'] : c.diff >= 0 ? [eg ? 'قدّام' : 'متقدّمة', '#13764D', '#DCEBD6'] : [eg ? 'ورا' : 'متأخرة', '#BE3D48', 'rgba(190,61,72,0.10)'];
       return { name: g.name, sub: sub(g), starred: g.starred ? 'true' : 'false', starFill: g.starred ? 'currentColor' : 'none',
         starLabel: g.starred ? (eg ? 'شيل النجمة' : 'أزل النجمة') : (eg ? 'حط النجمة على الخطة دي' : 'ضع النجمة على هذه الخطة'),
         starStyle: 'width: 44px; height: 44px; border: 0; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; ' + (g.starred ? 'color: #956000; background: #FBF0DD' : 'color: #9AA9A4; background: rgba(25,61,51,0.04)'),
