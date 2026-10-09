@@ -5,6 +5,9 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.Space
 import app.masroufy.port.AccountPort
 import app.masroufy.port.AlertInteractionStore
+import app.masroufy.port.BankSmsPort
+import app.masroufy.port.SmsInboxPort
+import app.masroufy.usecase.PdfPagesPort
 import app.masroufy.port.Clock
 import app.masroufy.port.FeedCachePort
 import app.masroufy.port.HttpTextPort
@@ -29,6 +32,13 @@ class DeviceEnv(
     val seenAlerts: SeenAlerts,
     val http: HttpTextPort,
     val feedCache: FeedCachePort,
+    /**
+     * منطقة «الاستيراد» (ARCHITECTURE §31.31 — «محتاج حاجة من الجهاز؟ ضيفها هنا»): صندوق رسايل البنك (§72) · قراية رسايل فترة بالطلب ·
+     * كلمات صفحات الـPDF. null = الجهاز مالوش (الآيفون للرسايل · الاختبار) ⇒ الشاشة بتقول «غير متاح» بسببه.
+     */
+    val smsInbox: SmsInboxPort? = null,
+    val bankSms: BankSmsPort? = null,
+    val pdfPages: PdfPagesPort? = null,
 )
 
 /**
