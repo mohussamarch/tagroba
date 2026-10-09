@@ -1,0 +1,65 @@
+package app.masroufy.core
+
+import kotlin.math.abs
+
+/**
+ * §75-7 (قرار المالك 2026-10-08): **خصم الاشتراك بيتطابق لوحده بالمحل والمبلغ، والميعاد الجاي بيتحرك.** الشريحة S4.
+ *
+ * الخصم «بيدفع» اشتراك متأكد وشغال ([RecurringItem.active] و[RecurringItem.confirmed]) لو: فلوس طالعة · نفس العملة · نفس المحل
+ * ([recurringKey] — نفس مفتاح الاقتراح والملخص) · نوعها شراء أو لسه ما اتحددش (زي `recurringSummary`) · مش تحويل بين محافظ ·
+ * المبلغ ±٥٪ من المتوقع · والتاريخ ±٧ أيام من [RecurringItem.nextDueAt].
+ * **اختيار Claude (المالك يقدر يغيّره):** السماحية هي نفسها بتاعة اقتراح الاشتراكات (`detectRecurring`: المبلغ ±٥٪ والموعد ±٧ أيام).
+ *
+ * الدفع بيحرّك الميعاد دورة (`shiftMonths(nextDueAt, cycleMonths)`) — ولو لسه مش بعد الخصم يتحرك تاني — فنفس الخصم مرتين (أو خصم مكرر
+ * بنفس اليوم) بيحرّكه **مرة واحدة**: بعد الحركة الخصم بقى بعيد عن الميعاد الجديد. ده اللي بيخلّي اللحاق (`MatchSubscriptions.catchUp`)
+ * آمن يتعاد. الاشتراك المتأخر بأكتر من أسبوع ما بيتطابقش (بيفضل «متأخر» لحد ما المالك يعدّله) — زي ما المالك قرر بالمحل والمبلغ والميعاد.
+ */
+const val SUBSCRIPTION_CHARGE_DAYS = 7
+const val SUBSCRIPTION_CHARGE_PERCENT = 5
+
+private val CHARGE_KINDS = setOf(EconomicKind.PURCHASE, EconomicKind.UNCLASSIFIED)
+
+/** الخصم [t] بيدفع الاشتراك [item] عند ميعاده الحالي؟ */
+fun paysSubscription(item: RecurringItem, t: Transaction): Boolean {
+    if (!item.active || !item.confirmed || item.expectedMinor <= 0) return false
+    if (t.observedDirection != Direction.OUT || t.currency != item.currency || t.economicKind !in CHARGE_KINDS || t.transferToWalletId != null) return false
+    if (recurringKey(t) != item.merchantKey) return false
+    if (abs(t.amountMinor - item.expectedMinor) * 100 > item.expectedMinor * SUBSCRIPTION_CHARGE_PERCENT) return false
+    return abs(daysBetween(item.nextDueAt, t.occurredAt)) <= SUBSCRIPTION_CHARGE_DAYS
+}
+
+/** الميعاد الجاي بعد خصم يوم [chargeDate]: دورة على الأقل، ولحد ما يبقى بعد الخصم. */
+fun nextDueAfterCharge(item: RecurringItem, chargeDate: IsoDate): IsoDate {
+    var next = shiftMonths(item.nextDueAt, item.cycleMonths)
+    var guard = 0
+    while (next <= chargeDate && guard < DUE_MAX_INSTALLMENTS) {
+        next = shiftMonths(next, item.cycleMonths)
+        guard++
+    }
+    return next
+}
+
+/** خصم اتطابق: دفع ميعاد [paidDueAt] والميعاد بقى [nextDueAt]. */
+data class SubscriptionCharge(val itemId: String, val transactionId: Id, val paidDueAt: IsoDate, val nextDueAt: IsoDate)
+
+data class SubscriptionMatches(val changed: List<RecurringItem>, val charges: List<SubscriptionCharge>)
+
+/**
+ * بيعدّي على الخصومات بالتاريخ (وبعده المعرّف) ويحرّك كل اشتراك بيتدفع بيها. الخصم الواحد بيدفع اشتراك واحد بالكتير (مفيش اشتراكين بنفس
+ * المحل والعملة — `ManageRecurring.save`). [SubscriptionMatches.changed] = الاشتراكات اللي ميعادها اتحرك بس (بآخر ميعاد).
+ */
+fun applySubscriptionCharges(items: List<RecurringItem>, charges: List<Transaction>): SubscriptionMatches {
+    val current = LinkedHashMap<String, RecurringItem>().apply { items.forEach { put(it.id, it) } }
+    val matched = mutableListOf<SubscriptionCharge>()
+    val used = HashSet<Id>()
+    for (t in charges.distinctBy { it.id }.sortedWith(compareBy({ it.occurredAt }, { it.id }))) {
+        if (t.id in used) continue
+        val item = current.values.firstOrNull { paysSubscription(it, t) } ?: continue
+        val next = nextDueAfterCharge(item, t.occurredAt)
+        matched += SubscriptionCharge(item.id, t.id, item.nextDueAt, next)
+        current[item.id] = item.copy(nextDueAt = next)
+        used += t.id
+    }
+    val original = items.associateBy { it.id }
+    return SubscriptionMatches(current.values.filter { original[it.id]?.nextDueAt != it.nextDueAt }, matched)
+}

@@ -34,6 +34,11 @@ data class ImportPreviewLine(
     val categorySource: CategorizationSource? = null,
     /** مختار للاستيراد افتراضيًا؟ الجديد أيوه، وما عداه محتاج قرار. */
     val selectedByDefault: Boolean,
+    /**
+     * §75-10 (الشريحة S4): السطر ده **نفس الحركة** اللي اتسجلت من المصدر التاني (رسالة ⇄ كشف) ⇒ الالتزام ما بيعملش عملية جديدة، بيضيف
+     * سجل مصدر تاني للعملية دي (`MergeUndo.kt`). null = سطر عادي. بيتملى بس لما `ImportStatementDeps.crossSourceWindowDays` متحدد.
+     */
+    val mergeInto: Id? = null,
 )
 
 data class ImportCountsPreview(

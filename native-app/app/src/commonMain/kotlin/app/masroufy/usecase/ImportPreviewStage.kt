@@ -3,7 +3,6 @@ package app.masroufy.usecase
 import app.masroufy.core.CategorizationInput
 import app.masroufy.core.CategorizeDeps
 import app.masroufy.core.DedupeCandidate
-import app.masroufy.core.ExistingRecord
 import app.masroufy.core.Id
 import app.masroufy.core.MatchingState
 import app.masroufy.core.ParseOutcome
@@ -22,7 +21,6 @@ import app.masroufy.core.normalizeText
 import app.masroufy.core.parseCsv
 import app.masroufy.core.parseRows
 import app.masroufy.core.prepareRules
-import app.masroufy.core.sourceAmountMinor
 import app.masroufy.core.Direction
 import app.masroufy.core.uiText
 
@@ -53,44 +51,6 @@ private fun toCandidate(row: ParsedRow, accountIdentity: String) = DedupeCandida
     statedBalanceMinor = row.statedBalanceMinor,
 )
 
-/** بيبني فهرس الموجود مسبقًا للحساب ده. */
-private suspend fun loadExisting(deps: ImportStatementDeps, accountIdentity: String): List<ExistingRecord> {
-    val records = deps.sources.listByAccountIdentity(accountIdentity)
-    val txnIds = records.mapNotNull { it.transactionId }
-    val byId = deps.txns.findByIds(txnIds).associateBy { it.id }
-
-    /*
-     * **سجل واحد لكل عملية، مش لكل سجل مصدر.** العملية اللي اتسجلت من مصدرين
-     * ليها أكتر من `sourceRecord`، وكانت بتتعد أكتر من مرة في فهرس التكرار
-     * فتبتلع أكتر من صف وارد (اتشاف على بيانات المالك 2026-09-12).
-     */
-    val existing = mutableListOf<ExistingRecord>()
-    val seenTransactions = mutableSetOf<String>()
-    for (record in records) {
-        val transactionId = record.transactionId ?: continue
-        if (transactionId in seenTransactions) continue
-        val txn = byId[transactionId] ?: continue
-        seenTransactions.add(transactionId)
-        existing += ExistingRecord(
-            DedupeCandidate(
-                accountIdentity = record.accountIdentity,
-                sourceReference = record.sourceReference,
-                date = txn.occurredAt,
-                // المبلغ الأصلي من الكشف لو المستخدم عدّله (OVERRIDES §32) — فنفس السطر ما يتضافش تاني
-                amountMinor = sourceAmountMinor(txn.amountMinor, txn.originalAmountMinor),
-                // الاتجاه الملاحظ حقيقة بنكية محفوظة، مش بيستنتج من النوع الاقتصادي
-                direction = txn.observedDirection,
-                merchantName = txn.rawMerchantName ?: "",
-                rowIndex = record.originalRowIndex,
-                statedBalanceMinor = txn.statedBalanceMinor,
-                smsSource = record.sourceReference?.startsWith("SMS:") == true,
-            ),
-            transactionId,
-        )
-    }
-    return existing
-}
-
 internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportRequest): ImportPreview {
     val fileHash = importFingerprint(request.content, request.accountIdentity)
 
@@ -108,10 +68,13 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
     val outcome = request.parsedRows?.let { ParseOutcome(request.schema ?: SchemaId.ALRAJHI_PDF, it, emptyList()) }
         ?: parseRows(parseCsv(request.content), request.schema)
 
-    val index = buildDedupeIndex(loadExisting(deps, request.accountIdentity))
+    // فهرس الموجود مسبقًا للحساب ده (`CrossSourcePreview.kt`) — سجل واحد لكل عملية
+    val window = deps.crossSourceWindowDays
+    val ledger = loadLedger(deps, request.accountIdentity)
+    val index = buildDedupeIndex(existingRecordsOf(ledger, preferStatement = window != null))
     val catDeps = buildCategorizeDeps(deps)
 
-    val lines = mutableListOf<ImportPreviewLine>()
+    val scanned = mutableListOf<ImportPreviewLine>()
     // الدفعة بتتفحص ضد نفسها كمان: نفس المرجع مرتين في نفس الملف
     val seenInBatch = mutableMapOf<String, Int>()
     // كل سجل موجود بيبلع صف وارد واحد بس (اتشاف على بيانات المالك 2026-09-12)
@@ -149,7 +112,7 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
             catDeps,
         )
 
-        lines += ImportPreviewLine(
+        scanned += ImportPreviewLine(
             row = row,
             state = verdict.state,
             reason = verdict.reason,
@@ -161,6 +124,8 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
             selectedByDefault = verdict.state == MatchingState.NEW,
         )
     }
+    // §75-10 (S4): الكشف والرسالة نفس الحركة ⇒ دمج. null = من غير دمج (ملفات المرجع بالحرف)
+    val lines = if (window != null) applyCrossSource(deps, request, scanned, ledger, window) else scanned
 
     val counts = ImportCountsPreview(
         total = outcome.rows.size + outcome.errors.size,
@@ -174,7 +139,8 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
     var walletDelta = 0L
     var expense = 0L
     var income = 0L
-    for (line in lines.filter { it.selectedByDefault }) {
+    // سطر الدمج ما بيضيفش فلوس: العملية موجودة ومحسوبة خلاص
+    for (line in lines.filter { it.selectedByDefault && it.mergeInto == null }) {
         if (line.row.direction == Direction.IN) {
             walletDelta = addMoney(walletDelta, line.row.amountMinor)
             income = addMoney(income, line.row.amountMinor)

@@ -40,6 +40,8 @@ data class InstallmentPlan(
      * استلمته فعلًا، مش من الرقم المكتوب في الخطة بس. null = لسه ما اتربطش.
      */
     val receivedTransactionId: Id? = null,
+    /** §75-8 (الشريحة S4): عمليات المالك قال عنها «مش قسط الخطة دي» ⇒ ما تتقترحش عليها تاني (`SuggestDueLinks`). */
+    val dismissedTxnIds: List<Id> = emptyList(),
 )
 
 /** ربط عملية من الكشف بخطة الأقساط. */

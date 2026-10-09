@@ -79,6 +79,9 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         }
 
         var context: RecordContext? = null
+        // §75-10 (S4): سطور الدمج ما بتعملش عملية، وسجلها بيتكتب **بعد** ما الدفعة تتقفل (`MergeUndo.kt`) — فدفعة معلّقة عمرها ما بتشاور
+        // على عملية دفعة تانية (التنظيف بعد الانقطاع كان هيمسحها)
+        val merges = previewResult.lines.filter { it.mergeInto != null && it.row.lineNumber in selection }
         val committed = deps.uow.run {
             val batchId = deps.ids.next("batch")
             val now = deps.clock.nowIso()
@@ -88,6 +91,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
             for (line in previewResult.lines) {
                 val included = line.row.lineNumber in selection
+                if (included && line.mergeInto != null) continue
                 val txnId = if (included) deps.ids.next("txn") else null
                 if (txnId != null) {
                     transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
@@ -164,8 +168,20 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
             batch.copy(state = ImportBatchState.COMMITTED)
         }
+        // الدمج فشل (العملية اتمسحت بعد المعاينة مثلًا) ⇒ الآثار بتشتغل برضه والخطأ بيطلع بعدها: الرسالة بتفضل في الصندوق والسطر بيرجع جديد
+        val mergeFailure = if (merges.isEmpty()) null else captureFailure { recordMerges(deps, request, committed.id, committed.importedAt, merges) }
         context?.let { ctx -> for (effect in deps.effects) afterCommitIsolated(effect, ctx) }
+        mergeFailure?.let { throw it }
         return committed
+    }
+
+    private suspend fun captureFailure(block: suspend () -> Unit): Exception? = try {
+        block()
+        null
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        e
     }
 
     /** الدفعة اتقفلت خلاص ⇒ فشل أثر بعد الحفظ ما بيرجّعش حاجة (الشرائح اللي بتستعمله ليها تصليح ولحاق بعدين). */
@@ -218,7 +234,9 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             for (number in selection) {
                 val before = previousByNumber[number]
                 val now = freshByNumber[number]
-                if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId) {
+                if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId ||
+                    now.mergeInto != before.mergeInto
+                ) {
                     throw IllegalStateException(uiText(TextKey.IMPORT_CHANGED_AFTER_PREVIEW))
                 }
                 if (now.state == MatchingState.DUPLICATE || now.state == MatchingState.INVALID) {

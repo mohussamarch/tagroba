@@ -581,6 +581,8 @@ enum class TextKey {
     // S3 — اللي رجع · الشراء الأجنبي (§77-D · §75-12) — القيم في `TextsReturns.kt`
 
     // S4 — الكشف والرسالة · الاشتراكات · الأقساط (§75-10 · §75-7 · §75-8) — القيم في `TextsMatching.kt`
+    MATCH_SOURCE_STATEMENT, MATCH_SOURCE_SMS, MATCH_MERGE, MATCH_AMBIGUOUS, MATCH_ALREADY_MERGED,
+    DUE_LINK_ASK_INSTALLMENT, DUE_LINK_ASK_ROSCA_CONTRIBUTION, DUE_LINK_ASK_ROSCA_PAYOUT, DUE_LINK_ASK_FINANCING_RECEIVED,
 
     // S5 — «سلفة ولا دعم؟» · سداد السلفة · التصنيف بيتفتكر (§75-5 · §75-9 · §75-16) — القيم في `TextsAsks.kt`
 
