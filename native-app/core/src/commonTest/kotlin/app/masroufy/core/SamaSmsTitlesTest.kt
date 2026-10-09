@@ -74,7 +74,7 @@ class SamaSmsTitlesTest {
         Title("تسوية نقطة البيع", "PoS settlement", IN, OTHER),
         Title("حوالة واردة", "Received transfer", IN, TRANSFER_IN),
         Title("استرجاع مدفوعات وزارة الداخلية", "Refunding MOI Payments", IN, REFUND),
-        Title("حوالة عكسية", "Reverse Transaction", IN, REFUND),
+        Title("حوالة عكسية", "Reverse Transaction", IN, SmsKind.RETURNED),
         Title("سحب صراف آلي", "ATM Withdrawal", OUT, CASH_WITHDRAWAL),
         Title("سحب فرع", "Branch Withdrawal", OUT, CASH_WITHDRAWAL),
         Title("حوالة واردة راتب", "Credit transfer Salary", IN, SALARY),

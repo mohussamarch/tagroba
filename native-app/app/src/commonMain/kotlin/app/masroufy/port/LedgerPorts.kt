@@ -61,6 +61,14 @@ data class TransactionPatch(
     val excludedFromBudget: Boolean? = null,
     val isCashTagged: Boolean? = null,
     val updatedAt: String? = null,
+    /** النوع المقترح المستني تأكيد (§75-6 · §77-D) — `clearSuggestedKind` = اتجاوب. */
+    val suggestedKind: app.masroufy.core.EconomicKind? = null,
+    val clearSuggestedKind: Boolean = false,
+    /** ربط العملية اللي رجعت بالأصلية (§77-D) — `clear…` = فك الربط (التراجع والتصليح). */
+    val reversalOfId: Id? = null,
+    val clearReversalOfId: Boolean = false,
+    val reversedById: Id? = null,
+    val clearReversedById: Boolean = false,
 )
 
 interface SourceRecordRepository {

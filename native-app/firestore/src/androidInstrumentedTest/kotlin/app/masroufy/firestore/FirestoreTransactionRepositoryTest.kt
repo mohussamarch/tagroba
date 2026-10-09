@@ -73,6 +73,40 @@ class FirestoreTransactionRepositoryTest {
         assertFalse("note" in raw, "الحقل اللي اتفضى لازم يتمسح")
     }
 
+    /**
+     * الشريحة S3 (§75-6 · §75-12 · §77-D): الحقول الجديدة بتتحفظ وترجع، والتعديل بيكتبها ويمسحها. معرّف فيه 6 أرقام ورا بعض في
+     * `reversalOfId`/`reversedById` **ما بيتقصش** (آخر الاسم `Id` — قص أرقام الحسابات بيعدّي عليه).
+     */
+    @Test fun newFieldsRoundTripAndPatch() = run {
+        val s = space()
+        val repo = FirestoreTransactionRepository(s)
+        val ret = txn("txn-000001", "2026-10-05").copy(
+            observedDirection = Direction.IN, economicKind = EconomicKind.UNCLASSIFIED, economicKindConfirmed = false,
+            suggestedKind = EconomicKind.REFUND_RECEIVED, foreignCurrency = "USD", foreignAmountMinor = 2_340,
+        )
+        val original = txn("txn-000002", "2026-10-02")
+        repo.saveMany(listOf(ret, original))
+        assertEquals(ret, repo.findByIds(listOf(ret.id)).single())
+        repo.update(ret.id, TransactionPatch(economicKind = EconomicKind.INTERNAL_TRANSFER, economicKindConfirmed = true, clearSuggestedKind = true, reversalOfId = original.id))
+        repo.update(original.id, TransactionPatch(economicKind = EconomicKind.INTERNAL_TRANSFER, reversedById = ret.id))
+        val r = repo.findByIds(listOf(ret.id)).single()
+        assertEquals(original.id, r.reversalOfId)
+        assertEquals(null, r.suggestedKind)
+        assertEquals(ret.id, repo.findByIds(listOf(original.id)).single().reversedById)
+        val raw = s.collection("transactions").document(ret.id).get().rawData()!!
+        assertEquals("txn-000002", raw["reversalOfId"])
+        assertFalse("suggestedKind" in raw, "الاقتراح اتمسح")
+        assertEquals(2_340L, raw["foreignAmountMinor"])
+        repo.update(ret.id, TransactionPatch(clearReversalOfId = true, suggestedKind = EconomicKind.REFUND_RECEIVED))
+        repo.update(original.id, TransactionPatch(clearReversedById = true))
+        assertEquals(null to EconomicKind.REFUND_RECEIVED, repo.findByIds(listOf(ret.id)).single().let { it.reversalOfId to it.suggestedKind })
+        assertFalse("reversedById" in s.collection("transactions").document(original.id).get().rawData()!!)
+        // مستند من غير الحقول (زي التطبيق القديم) بيتقري زي ما هو
+        val plain = txn("t-plain", "2026-10-01")
+        repo.saveMany(listOf(plain))
+        assertEquals(plain, repo.findByIds(listOf("t-plain")).single())
+    }
+
     @Test fun deleteManyRemoves() = run {
         val repo = FirestoreTransactionRepository(space())
         repo.saveMany(listOf(txn("t-1", "2026-09-15"), txn("t-2", "2026-09-16")))

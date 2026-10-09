@@ -166,6 +166,7 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (group == INHERITANCE_SCENARIOS_GROUP) checkInheritanceScenarioRow(row)
     if (group == ALERT_INBOX_GROUP && (row["factors"] as? List<*>)?.all { it is String } != true) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, group, "factors"))
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
+    if (group == "transactions") checkTransactionExtras(row)?.let { throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, it)) }
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     if (group == "importBatches") {
@@ -207,6 +208,21 @@ fun checkBackupFinance(data: FullBackupData) {
         if (!isSafeInteger(sum) || sum > num(obligation?.get("originalMinor"))) throw BackupError(uiText(TextKey.BACKUP_SETTLEMENTS_EXCEED))
         settlements[row["obligationId"]] = sum
     }
+}
+
+/**
+ * حقول الشريحة S3 على العملية (بتتفحص لو موجودة بس) ⇒ اسم الحقل الغلط أو null: النوع المقترح نوع معروف · العملة الأجنبية كود ISO
+ * (3 حروف كبيرة) · المبلغ الأجنبي أكبر من صفر ومعاه عملته (العدد الصحيح والسالب بيتفحصوا فوق زي أي `…Minor`) · العملية ما ترجعش نفسها.
+ */
+private fun checkTransactionExtras(row: Map<String, Any?>): String? {
+    val suggested = row["suggestedKind"]
+    if (suggested != null && ALL_ECONOMIC_KINDS.none { it.wire == suggested }) return "suggestedKind"
+    val currency = row["foreignCurrency"]
+    if (currency != null && (currency !is String || !CURRENCY_CODE.matches(currency))) return "foreignCurrency"
+    val foreign = row["foreignAmountMinor"]
+    if (foreign != null && (currency == null || (numberOf(foreign) ?: 0.0) <= 0)) return "foreignAmountMinor"
+    for (field in listOf("reversalOfId", "reversedById")) if (row[field] != null && row[field] == row["id"]) return field
+    return null
 }
 
 /** خطة الادخار (§68): الهدف والإيداع أكبر من صفر، وتاريخ الهدف بعد البداية، والمحفظة والبلد مع بعض. */

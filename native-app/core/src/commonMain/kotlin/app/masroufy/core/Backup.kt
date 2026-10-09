@@ -66,7 +66,11 @@ val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + N
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
     "rules" to mapOf("categoryId" to "categories"),
-    "transactions" to linkedMapOf("walletId" to "wallets", "transferToWalletId" to "wallets", "categoryId" to "categories", "merchantId" to "merchants"),
+    "transactions" to linkedMapOf(
+        "walletId" to "wallets", "transferToWalletId" to "wallets", "categoryId" to "categories", "merchantId" to "merchants",
+        // العملية اللي رجعت والأصلية (§77-D — الشريحة S3)
+        "reversalOfId" to "transactions", "reversedById" to "transactions",
+    ),
     "obligations" to linkedMapOf("personId" to "people", "originTransactionId" to "transactions"),
     "allocations" to linkedMapOf("personId" to "people", "transactionId" to "transactions"),
     "settlements" to linkedMapOf("obligationId" to "obligations", "transactionId" to "transactions"),

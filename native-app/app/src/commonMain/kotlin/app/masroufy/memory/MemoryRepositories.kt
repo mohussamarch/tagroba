@@ -59,6 +59,9 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
             excludedFromBudget = patch.excludedFromBudget ?: old.excludedFromBudget,
             isCashTagged = patch.isCashTagged ?: old.isCashTagged,
             updatedAt = patch.updatedAt ?: old.updatedAt,
+            suggestedKind = if (patch.clearSuggestedKind) null else patch.suggestedKind ?: old.suggestedKind,
+            reversalOfId = if (patch.clearReversalOfId) null else patch.reversalOfId ?: old.reversalOfId,
+            reversedById = if (patch.clearReversedById) null else patch.reversedById ?: old.reversedById,
         )
     }
 

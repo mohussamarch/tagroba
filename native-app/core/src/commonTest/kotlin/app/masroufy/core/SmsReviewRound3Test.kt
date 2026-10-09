@@ -121,7 +121,7 @@ class SmsReviewRound3Test {
         for (t in listOf("Purchase Reversal", "عكس عملية", "Reverse Transaction", "حوالة عكسية")) {
             val row = ok(saudi("$t\nAmount: SAR 64.25\nFrom: TEST STORE\n2026-03-05 09:10"), t)
             assertEquals(IN, row.direction, t)
-            assertEquals(SmsKind.REFUND, row.kind, t)
+            assertEquals(SmsKind.RETURNED, row.kind, t) // §77-D
         }
     }
 

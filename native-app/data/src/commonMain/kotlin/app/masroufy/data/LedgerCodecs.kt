@@ -33,6 +33,9 @@ object LedgerCodecs {
                 opt("statedBalanceMinor", t.statedBalanceMinor); opt("rawDescription", t.rawDescription); opt("rawMerchantName", t.rawMerchantName)
                 req("isCashTagged", t.isCashTagged); opt("sourceCategory", t.sourceCategory); opt("sourceOperationType", t.sourceOperationType)
                 req("createdAt", t.createdAt); req("updatedAt", t.updatedAt)
+                // الشريحة S3 (§75-6 · §75-12 · §77-D): بتتكتب لو موجودة بس ⇒ أي مستند قديم ونسخته هي هي بالحرف
+                opt("suggestedKind", t.suggestedKind?.wire); opt("reversalOfId", t.reversalOfId); opt("reversedById", t.reversedById)
+                opt("foreignAmountMinor", t.foreignAmountMinor); opt("foreignCurrency", t.foreignCurrency)
             }
         },
         { r ->
@@ -48,6 +51,9 @@ object LedgerCodecs {
                 transferToWalletId = r.strOrNull("transferToWalletId"), statedBalanceMinor = r.longOrNull("statedBalanceMinor"),
                 rawDescription = r.strOrNull("rawDescription"), rawMerchantName = r.strOrNull("rawMerchantName"),
                 sourceCategory = r.strOrNull("sourceCategory"), sourceOperationType = r.strOrNull("sourceOperationType"),
+                suggestedKind = if (r.has("suggestedKind")) r.wire("suggestedKind", EconomicKind::fromWire) else null,
+                reversalOfId = r.strOrNull("reversalOfId"), reversedById = r.strOrNull("reversedById"),
+                foreignAmountMinor = r.longOrNull("foreignAmountMinor"), foreignCurrency = r.strOrNull("foreignCurrency"),
             )
         },
     )

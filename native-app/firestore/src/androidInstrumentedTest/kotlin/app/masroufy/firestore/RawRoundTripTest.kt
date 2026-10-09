@@ -39,6 +39,21 @@ class RawRoundTripTest {
         assertEquals(txn.copy(rawDescription = "شراء من حساب ****3322"), LedgerCodecs.transactions.decode(back!!))
     }
 
+    /** حقول الشريحة S3 (§75-12 · §77-D): نفس الأنواع (المبلغ الأجنبي Long) والربط بمعرّف فيه أرقام كتير ما بيتقصش. */
+    @Test fun returnAndForeignFieldsComeBackTheSame() = runBlocking<Unit> {
+        val db = Emulator.firestore()
+        val ret = txn.copy(
+            id = "t-raw-000002", observedDirection = Direction.IN, economicKind = EconomicKind.INTERNAL_TRANSFER, rawDescription = null,
+            reversalOfId = "t-raw-000001", foreignCurrency = "KWD", foreignAmountMinor = 12_345, suggestedKind = EconomicKind.REFUND_RECEIVED,
+        )
+        val stored = LedgerCodecs.transactions.toStore(ret)
+        val ref = db.collection("users/kt-user/transactions").document(ret.id)
+        withTimeout(30_000) { ref.set(stored) }
+        val back = withTimeout(30_000) { ref.get() }.rawData()
+        assertEquals(stored, back)
+        assertEquals(ret, LedgerCodecs.transactions.decode(back!!))
+    }
+
     @Test fun explicitNullsAndNestedMapsSurvive() = runBlocking<Unit> {
         val db = Emulator.firestore()
         val category = app.masroufy.core.Category("c-1", null, "أكل", "utensils", "#AA3344", "#FF8899", true, 1)

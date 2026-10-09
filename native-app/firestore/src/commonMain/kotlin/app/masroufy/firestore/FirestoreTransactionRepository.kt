@@ -47,6 +47,10 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         patch.excludedFromBudget?.let { fields["excludedFromBudget"] = it }
         patch.isCashTagged?.let { fields["isCashTagged"] = it }
         patch.updatedAt?.let { fields["updatedAt"] = it }
+        // الشريحة S3 (§75-6 · §77-D): الاقتراح وربط العملية اللي رجعت — آخر اسم الربط `Id` ⇒ `storeForm` ما بيقصّش المعرّف
+        if (patch.clearSuggestedKind) fields["suggestedKind"] = FieldValue.delete else patch.suggestedKind?.let { fields["suggestedKind"] = it.wire }
+        if (patch.clearReversalOfId) fields["reversalOfId"] = FieldValue.delete else patch.reversalOfId?.let { fields["reversalOfId"] = it }
+        if (patch.clearReversedById) fields["reversedById"] = FieldValue.delete else patch.reversedById?.let { fields["reversedById"] = it }
         if (fields.isEmpty()) return
         val safe = storeForm(codec.group, fields)
         space.updateDoc(codec.group, id, safe)

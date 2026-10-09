@@ -579,6 +579,8 @@ enum class TextKey {
     // S2 — الرسوم · السحب للكاش · الاسترداد (§77-B · §75-4 · §75-6) — القيم في `TextsSmsFees.kt`
 
     // S3 — اللي رجع · الشراء الأجنبي (§77-D · §75-12) — القيم في `TextsReturns.kt`
+    RETURNS_ASK_REFUND, RETURNS_ASK_REVERSAL, RETURNS_ASK_FOREIGN, RETURNS_REFUND_NOT_PENDING, RETURNS_REVERSAL_NOT_POSSIBLE,
+    RETURNS_FOREIGN_NOT_FOUND, RETURNS_FOREIGN_AMOUNT_POSITIVE, RETURNS_FOREIGN_WALLET_NEEDED,
 
     // S4 — الكشف والرسالة · الاشتراكات · الأقساط (§75-10 · §75-7 · §75-8) — القيم في `TextsMatching.kt`
 
