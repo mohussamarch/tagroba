@@ -71,12 +71,10 @@ body{margin:0}
           <span style="font-size: 17px; font-weight: 700">{{hawlDate}}</span>
           <span style="font-size: 12px; color: #4F625C">{{hawlWhy}}</span>
           <span style="font-size: 11px; color: #637570">{{hawlRule}}</span>
-          <sc-if value="{{hawlOpen}}" hint-placeholder-val="{{ true }}">
-            <div style="display: flex; gap: 8px; padding-top: 4px">
-              <button type="button" class="m-press" onClick="{{confirmHawl}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{confirmLabel}}</button>
-              <div style="flex: 1 1 0; min-width: 0"><dc-import name="HawlDaySheet" space="{{spaceName}}" on-save="{{onHawlDay}}" hint-size="170px,48px"></dc-import></div>
-            </div>
-          </sc-if>
+          <div style="display: flex; gap: 8px; padding-top: 4px">
+            <sc-if value="{{hawlOpen}}" hint-placeholder-val="{{ true }}"><button type="button" class="m-press" onClick="{{confirmHawl}}" style="flex: 1 1 0; min-width: 0; height: 48px; padding: 0; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{confirmLabel}}</button></sc-if>
+            <div style="flex: 1 1 0; min-width: 0"><dc-import name="HawlDaySheet" space="{{spaceName}}" on-save="{{onHawlDay}}" hint-size="170px,48px"></dc-import></div>
+          </div>
         </div>
 
         <button type="button" class="m-press" onClick="{{openFacts}}" disabled="{{closed}}" style="{{factsStyle}}">

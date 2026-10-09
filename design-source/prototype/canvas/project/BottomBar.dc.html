@@ -196,10 +196,10 @@ class Component extends DCLogic {
       dotLabel: eg ? "فيه جديد" : "فيه جديد",
       context: this.props.context ?? 'الرئيسية', space: eg ? 'مصر' : 'السعودية',
       askBottom, addInBar: inBar,
-      // بلور متدرّج تحت شريط السؤال وشريط التنقل (طلب المالك ٢٠٢٦-١٠-٠٨): ٤ طبقات بتزيد لتحت + لون خفيف من الخلفية، من غير حدّ واضح فوق
-      fogWrap: 'position: absolute; left: 0; right: 0; bottom: 0; height: ' + (askBottom + 44 + 56) + 'px; pointer-events: none',
-      fog: [[2, 0, 22], [5, 18, 45], [10, 38, 68], [18, 60, 92]].map(([b, a, c]) => { const m = 'linear-gradient(to bottom, transparent ' + a + '%, #000 ' + c + '%)'; return 'position: absolute; inset: 0; backdrop-filter: blur(' + b + 'px); -webkit-backdrop-filter: blur(' + b + 'px); mask-image: ' + m + '; -webkit-mask-image: ' + m; })
-        .concat(['position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(239,243,237,0) 0%, rgba(236,242,237,0.40) 55%, rgba(226,237,229,0.72) 100%)']),
+      // بلور متدرّج تحت شريط السؤال وشريط التنقل: كامل من تحت لحد نص شريط السؤال، والتدرج من نصه لـ١٤ نقطة فوق حافته بس (طلب المالك ٢٠٢٦-١٠-٠٩)
+      fogWrap: 'position: absolute; left: 0; right: 0; bottom: 0; height: ' + (askBottom + 44 + 14) + 'px; pointer-events: none',
+      fog: [[2, 0, 12], [5, 6, 20], [10, 14, 28], [18, 22, 36]].map(([b, a, c]) => { const m = 'linear-gradient(to bottom, transparent ' + a + 'px, #000 ' + c + 'px)'; return 'position: absolute; inset: 0; backdrop-filter: blur(' + b + 'px); -webkit-backdrop-filter: blur(' + b + 'px); mask-image: ' + m + '; -webkit-mask-image: ' + m; })
+        .concat(['position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(239,243,237,0) 0px, rgba(236,242,237,0.40) 36px, rgba(226,237,229,0.72) 100%)']),
       openAdd: () => this.open(),
       closeAdd: () => { this.timers.forEach(clearTimeout); this.timers = []; this.setState({ addOpen: false, listening: false }); },
       items, swipeStyle: swipe,
