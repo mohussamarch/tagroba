@@ -1458,7 +1458,7 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **المكتبات الجديدة — سطر سبب لكل واحدة (CLAUDE.md #8):**
   - `org.jetbrains.compose` runtime/foundation/ui/animation **1.11.1** + `kotlin("plugin.compose")`: إطار الواجهة اللي المالك اختاره (KOTLIN_PLAN §2). 1.12 محتاج compileSdk 37 وAGP 9.1 (مش متاحين هنا).
   - `androidx.compose.ui:ui-text-google-fonts` 1.11.0: خط **Noto Sans Arabic** من خدمة خطوط جوجل على الجهاز — من غير ملف خط في المستودع؛ لو ما نزلش ⇒ خط الجهاز (مكان `Tahoma`).
-  - `androidx.activity:activity-compose` 1.11.0: `setContent` + `enableEdgeToEdge` + زرار الرجوع.
+  - `androidx.activity:activity-compose` 1.11.0: `setContent` + `enableEdgeToEdge` + زرار الرجوع. **وفي `:ui` (androidMain بس)** نفس النسخة: منتقي ملفات الجوال لـ«كشف الحساب» (`rememberLauncherForActivityResult` + `OpenDocument` — منطقة «الاستيراد»، `FilePicker.android.kt`؛ الملف بيتقرا على الجوال ومش بيترفع).
   - `androidx.fragment:fragment` 1.8.9: نافذة البصمة (`BiometricPrompt`) محتاجة `FragmentActivity` (`AndroidDeviceLock` — §31.9).
   - `androidx.credentials:credentials` + `credentials-play-services-auth` 1.5.0 + `com.google.android.libraries.identity.googleid:googleid` 1.1.1: **دخول جوجل بنافذة النظام** (Credential Manager) ⇒ رمز هوية ⇒ فايربيز. التطبيق ما بيشوفش كلمة سر.
   - `dev.gitlive:firebase-auth` 2.7.0: نفس عيلة المكتبة اللي `:firestore` بيستعملها (GitLive — §31.3).
