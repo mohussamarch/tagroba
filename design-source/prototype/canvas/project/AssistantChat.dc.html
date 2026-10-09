@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المحادثة مع المساعد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.c-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.c-press:active{transform:scale(.97)}
+.c-veil{animation:c-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.c-rise{animation:c-rise 450ms cubic-bezier(.2,.7,.3,1) both}
+.c-pop{animation:c-pop 420ms cubic-bezier(.18,.9,.28,1.08) both}
+.c-dot{animation:c-dot 900ms cubic-bezier(.2,.7,.3,1) infinite alternate}
+.c-dot:nth-child(2){animation-delay:150ms}.c-dot:nth-child(3){animation-delay:300ms}
+.c-wave{animation:c-wave 700ms cubic-bezier(.2,.7,.3,1) infinite alternate;transform-origin:center}
+.c-wave:nth-child(2){animation-delay:120ms}.c-wave:nth-child(3){animation-delay:240ms}.c-wave:nth-child(4){animation-delay:360ms}.c-wave:nth-child(5){animation-delay:480ms}
+.c-scroll{scrollbar-width:none}.c-scroll::-webkit-scrollbar{display:none}.c-scroll>*{flex-shrink:0}
+.c-box{transition:box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.c-box:focus-within{box-shadow:inset 0 0 0 2px #08634F,0 10px 26px rgba(8,99,79,0.18)!important}
+.c-box input:focus-visible{box-shadow:none}
+.c-box input::placeholder{color:#6E7F7A}
+.c-toast{animation:c-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes c-fade{from{opacity:0}to{opacity:1}}
+@keyframes c-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes c-pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes c-dot{from{opacity:.3;transform:translateY(0)}to{opacity:1;transform:translateY(-3px)}}
+@keyframes c-wave{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+@keyframes c-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.c-press,.c-box{transition:none}.c-press:active{transform:none}.c-rise,.c-pop,.c-toast{animation:c-fade 150ms both}.c-dot,.c-wave{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" role="dialog" aria-modal="true" aria-label="{{dialogLabel}}" style="position: relative; width: 390px; height: 844px; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div aria-hidden="true" style="{{baseStyle}}"></div>
+  <div class="c-veil" style="position: absolute; inset: 0; background: rgba(250,249,243,0.76); backdrop-filter: blur(22px) saturate(1.1); -webkit-backdrop-filter: blur(22px) saturate(1.1)"></div>
+
+  <div class="c-rise" style="position: absolute; top: 20px; left: 20px; right: 20px; height: 48px; display: flex; align-items: center; gap: 8px">
+    <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 16px; flex-shrink: 0; margin-left: 4px; display: flex; align-items: center; justify-content: center; color: #DAF8E9; background: linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 18px rgba(6,75,64,0.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"></path></svg></span>
+    <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{brandName}}</span>
+      <span style="font-size: 12px; color: #637570; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{brandTitle}}</span>
+    </span>
+    <button type="button" class="c-press" onClick="{{openHist}}" aria-label="{{histLabel}}" style="{{iconBtn}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg></button>
+    <button type="button" class="c-press" onClick="{{newChat}}" aria-label="{{newLabel}}" aria-disabled="{{newOff}}" style="{{newBtn}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg></button>
+    <button type="button" class="c-press" onClick="{{closeChat}}" aria-label="{{closeLabel}}" style="{{iconBtn}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+  </div>
+
+  <div class="c-scroll" ref="{{setLog}}" style="position: absolute; top: 80px; bottom: 158px; left: 0; right: 0; overflow-y: auto; padding: 8px 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{fresh}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="AssistantStart" space="{{spaceName}}" brand-name="{{brandName}}" brand-title="{{brandTitle}}" done="{{doneFlags}}" on-ask="{{onStart}}" hint-size="350px,470px"></dc-import>
+    </sc-if>
+    <sc-for list="{{msgs}}" as="m" hint-placeholder-count="0">
+      <dc-import name="AssistantMessage" msg="{{m.raw}}" space="{{spaceName}}" on-confirm="{{m.confirm}}" on-edit="{{m.edit}}" on-copy="{{m.copy}}" hint-size="350px,60px"></dc-import>
+    </sc-for>
+    <sc-if value="{{typing}}" hint-placeholder-val="{{ false }}">
+      <div role="status" aria-label="{{typingLabel}}" style="align-self: flex-start; display: flex; gap: 5px; padding: 12px 14px; border-radius: 18px 18px 18px 6px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 10px 22px rgba(29,54,53,0.08)">
+        <span class="c-dot" style="width: 7px; height: 7px; border-radius: 4px; background: #637570"></span><span class="c-dot" style="width: 7px; height: 7px; border-radius: 4px; background: #637570"></span><span class="c-dot" style="width: 7px; height: 7px; border-radius: 4px; background: #637570"></span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div class="c-rise" style="position: absolute; left: 20px; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px">
+    <div class="c-box" style="height: 52px; box-sizing: border-box; border-radius: 18px; padding: 0 4px 0 4px; display: flex; align-items: center; gap: 4px; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.25), 0 10px 26px rgba(29,54,53,0.10)">
+      <sc-if value="{{listening}}" hint-placeholder-val="{{ false }}">
+        <div aria-live="polite" style="flex: 1 1 auto; display: flex; align-items: center; gap: 10px; padding: 0 10px; color: #08634F; font-size: 14px; font-weight: 700">
+          <span aria-hidden="true" style="display: flex; align-items: center; gap: 3px; height: 24px"><span class="c-wave" style="width: 3px; height: 14px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 22px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 18px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 24px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 12px; border-radius: 2px; background: #08634F"></span></span>
+          {{listeningText}}
+        </div>
+      </sc-if>
+      <sc-if value="{{notListening}}" hint-placeholder-val="{{ true }}">
+        <input id="c-input" type="text" aria-label="{{inputLabel}}" value="{{draft}}" onChange="{{typeDraft}}" onKeyDown="{{enterSend}}" placeholder="{{inputHint}}" autocomplete="off" style="flex: 1 1 auto; min-width: 0; height: 48px; border: 0; background: transparent; font: inherit; font-size: 15px; color: #193D33; outline: none; padding: 0 12px">
+      </sc-if>
+      <button type="button" class="c-press" onClick="{{listenNow}}" aria-label="{{micLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: #DCEBD6">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>
+      </button>
+      <button type="button" class="c-press" onClick="{{sendDraft}}" aria-label="{{sendLabel}}" aria-disabled="{{sendOff}}" style="{{sendStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+      </button>
+    </div>
+    <span style="height: 18px; line-height: 18px; padding: 0 4px; font-size: 12px; color: #637570; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{chipsLabel}}</span>
+    <div class="c-scroll" role="group" aria-label="{{chipsLabel}}" style="display: flex; gap: 8px; overflow-x: auto; margin: -2px -20px -6px; padding: 2px 20px 6px">
+      <sc-for list="{{chips}}" as="ch" hint-placeholder-count="4">
+        <button type="button" class="c-press" onClick="{{ch.pick}}" style="{{ch.style}}">{{ch.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 166px; z-index: 12; display: flex; justify-content: center; pointer-events: none">
+      <div role="status" class="c-toast" style="max-width: 330px; padding: 12px 16px; border-radius: 18px; font-size: 13px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)">{{toast}}</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{histOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 20">
+      <dc-import name="AssistantHistory" space="{{spaceName}}" current="{{cid}}" sessions="{{sessions}}" learned="{{learnedNow}}" on-open="{{onOpenConv}}" on-deleted="{{onDeleted}}" on-learn="{{onLearn}}" on-close="{{closeHist}}" hint-size="390px,844px"></dc-import>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"listenFirst":{"editor":"boolean","default":false,"section":"الحالة"},"onClose":{"editor":null},"$preview":{"width":390,"height":844}}'>
+// صفحة المحادثة مع المساعد (طلب المالك ٢٠٢٦-١٠-٠٩: «يكون شكله شات، فيه مستطيل واضح أكتب فيه وتحته الاقتراحات، ومكان لسجل المحادثات، ويتعلّم من اللي بسأله ويقترح، ويقترح عليّا حاجات لسه ما عملتهاش»)
+// القطع: البداية (AssistantStart) · الفقاعة (AssistantMessage) · السجل (AssistantHistory) · الفهم والردود هنا. الاسم واللقب من BRAND في AskBar (القيم هنا للمعاينة لوحدها بس)
+// تخزين النموذج (sessionStorage): المحادثة الحالية بتفضل لو اتقفلت أو اتنقلت (§67) · محادثات الجلسة للسجل · اللي اتعلمه · اللي اتعمل من الاقتراحات
+// الأرقام مخترعة ومن الشاشات التانية (بالوحدة الصغرى، مصر ×٣): القهوة ٦٤٠ والمعتاد ٤٨٠ (Advisor) · مطاعم وقهوة ٩٦٠ من ١٬٢٠٠ (Budgets) · الإيجار ٢٬٥٠٠ والكهرباء ٣٨٠ والمياه ٩٠ (QuickAddStrip) · فهد ١٬٢٠٠ وخالد ٥٠٠ وأحمد ١٨٥ (DuesDebts) · الميزانية ٦٬٦٥٠ من ٨٬٠٠٠ · «السفر» ٧٬٤٠٠ من ١٢٬٠٠٠ (SavingsGoals)
+const KEY = { cur: 'masroufy-ask-current', ses: 'masroufy-ask-sessions', learn: 'masroufy-ask-learned', done: 'masroufy-ask-done' };
+// كلمة في الرسالة ⇒ الرد ⇒ الموضوع اللي بيتعلّمه (أول واحد بيطابق هو الرد، وكل اللي بيطابق بيتعلّم)
+const RULES = [[/قسّ?م|تقسيم/, 'split', 'split'], [/أحمد|سارة/, 'owed', 'split'], [/خالد/, 'lak', 'debts'], [/فهد|اتأخر|تأخر|متأخر/, 'late', 'debts'], [/قهو|كافي|كوفي/, 'coffee', 'coffee'], [/مطعم|مطاعم|أكل|اكل|غدا|عشا/, 'food', 'food'], [/إيجار|ايجار/, 'rent', 'rent'], [/كهرب|مياه|المي[ةه]/, 'bills', 'bills'], [/ميزاني|خطة|سقف/, 'plan', 'budget'], [/حوّ?ش|ادّ?خار|هدف|السفر/, 'goal', 'goal'], [/قفل/, 'lock', '']];
+// اقتراح لكل موضوع اتعلّمه + اقتراحات كل صفحة: [فصحى، مصري، الرد]
+const Q = {
+  coffee: ['كم صرفت على القهوة هذا الأسبوع؟', 'صرفت كام على القهوة الأسبوع ده؟', 'coffee'], food: ['كم صرفت على المطاعم هذا الشهر؟', 'صرفت كام على الأكل برّه الشهر ده؟', 'food'],
+  rent: ['متى الإيجار القادم؟', 'امتى الإيجار الجاي؟', 'rent'], bills: ['كم فاتورة الكهرباء عادةً؟', 'الكهربا بتيجي كام عادةً؟', 'bills'],
+  debts: ['من تأخر في السداد؟', 'مين اتأخر في السداد؟', 'late'], split: ['كم لي عند أحمد وسارة؟', 'ليّا كام عند أحمد وسارة؟', 'owed'],
+  budget: ['كم بقي من ميزانية الشهر؟', 'فاضل كام من ميزانية الشهر؟', 'plan'], goal: ['كم بقي لهدف السفر؟', 'فاضل كام على هدف السفر؟', 'goal'],
+  spent: ['كم صرفت على المطاعم؟', 'صرفت كام على الأكل؟', 'food'], voice: ['أضف عملية بصوتي', 'ضيف عملية بصوتي', 'voice'],
+  doSplit: ['قسّم فاتورة العشاء مع أحمد وسارة', 'قسّم فاتورة العشا مع أحمد وسارة', 'split'], plan: ['هل أنا على الخطة؟', 'أنا ماشي على الخطة؟', 'plan'],
+  lak: ['كم لي عند خالد؟', 'ليّا كام عند خالد؟', 'lak'], lock: ['أين أغيّر القفل؟', 'فين أغيّر القفل؟', 'lock']
+};
+// كل موضوع اتعلّمه ⇒ سؤالين متابعة (التاني قريب منه: القهوة بتأخّر هدف «السفر» مثلًا)
+const NEXT = { coffee: ['coffee', 'goal'], food: ['food', 'budget'], rent: ['rent', 'bills'], bills: ['bills', 'rent'], debts: ['debts', 'lak'], split: ['split', 'debts'], budget: ['budget', 'food'], goal: ['goal', 'coffee'] };
+const BY_CTX = { 'الرئيسية': ['spent', 'voice', 'doSplit', 'plan'], 'العمليات': ['voice', 'spent', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['plan', 'spent', 'voice'], 'المزيد': ['lock', 'voice', 'doSplit'] };
+// نوع المصروف من الكلام: [كلمة، علامة، الاسم فصحى، مصري، التصنيف فصحى، مصري، الأيقونة، اللون، بيتدفع من البنك عادةً]
+const CATS = [[/قهو|كافي|كوفي/, 'coffee', 'قهوة', 'قهوة', 'مطاعم وقهوة', 'أكل وقهوة', 'coffee', '#A36A21'], [/مطعم|غدا|عشا|أكل|اكل|فطور/, 'food', 'مطعم', 'أكل برّه', 'مطاعم وقهوة', 'أكل وقهوة', 'food', '#A36A21'],
+  [/كهرب/, 'elec', 'فاتورة الكهرباء', 'فاتورة الكهربا', 'فواتير', 'فواتير', 'bill', '#956000', 1], [/مياه|المي[ةه]/, 'water', 'فاتورة المياه', 'فاتورة المية', 'فواتير', 'فواتير', 'bill', '#4D747C'],
+  [/إيجار|ايجار/, 'rent', 'الإيجار', 'الإيجار', 'السكن', 'السكن', 'home', '#2469BA', 1], [/بنزين|وقود/, 'fuel', 'بنزين', 'بنزين', 'مواصلات', 'مواصلات', 'car', '#4D747C'], [/بقال|سوبر|خضار/, 'grocery', 'بقالة', 'بقالة', 'بقالة وسوبرماركت', 'بقالة وسوبرماركت', 'bag', '#3866A7']];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const cur = this.read(KEY.cur, null);
+    this.state = { cid: cur && cur.id ? cur.id : 'c' + Date.now(), msgs: cur && Array.isArray(cur.msgs) ? cur.msgs : [], typing: false, listening: false, draft: '', hist: false, toast: '', tk: 0, lv: 0 };
+    this.timers = []; this.queue = [];
+    this.setLog = (el) => { this.log = el; };
+  }
+  componentDidMount() { this.stick(); if (this.props.listenFirst) this.listen(); }
+  componentDidUpdate() { this.stick(); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); if (this.queue.length) this.save(this.state.msgs.concat(this.queue)); }
+  stick() { const n = this.state.msgs.length + (this.state.typing ? 1 : 0); if (this.log && n && n !== this.seen) { this.seen = n; const go = () => { if (this.log) this.log.scrollTop = this.log.scrollHeight; }; go(); this.later(120, go); this.later(450, go); } } // الفقاعة بتترسم بعد ما قطعتها تتحمّل
+  later(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  T(sa, e) { return this.eg() ? e : sa; }
+  cur() { return this.eg() ? 'ج.م' : 'ر.س'; }
+  div(a, b) { return (a - (a % b)) / b; }
+  whole(minor) { return String(this.div(Math.abs(minor), 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  fmt(minor) { const a = Math.abs(minor), f = a % 100; return this.whole(a) + '.' + (f < 10 ? '0' : '') + f; }
+  num(t) { const s = String(t).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[,٬]/g, ''); const m = s.match(/\d+(\.\d{1,2})?/); if (!m) return null; const [w, f = ''] = m[0].split('.'); return parseInt(w, 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  read(k, def) { try { const v = JSON.parse(window.sessionStorage.getItem(k) || 'null'); return v == null ? def : v; } catch (e) { return def; } }
+  write(k, v) { try { window.sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  learned() { const v = this.read(KEY.learn, null); return v && v.topics ? v : { on: true, topics: { coffee: 3, rent: 2, split: 1 }, recent: [] }; }
+  say(msg) { this.setState((s) => ({ toast: msg, tk: s.tk + 1 })); this.later(2700, () => this.setState({ toast: '' })); }
+  save(msgs, cid) {
+    const id = cid || this.state.cid;
+    this.write(KEY.cur, { id, msgs });
+    if (!msgs.length) return;
+    const me = msgs.find((m) => m.from === 'me'), bot = msgs.find((m) => m.from === 'bot' && m.text);
+    this.write(KEY.ses, [{ id, title: me ? me.text : '…', first: bot ? bot.text : '…', msgs }].concat(this.read(KEY.ses, []).filter((c) => c.id !== id)).slice(0, 12));
+  }
+  setMsgs(msgs) { this.setState({ msgs }); this.save(msgs); }
+  reply(r) {
+    const p = Object.assign({ from: 'bot', id: 'b' + Date.now() + this.queue.length }, r);
+    this.queue.push(p); this.setState({ typing: true });
+    this.later(900, () => { this.queue = this.queue.filter((x) => x !== p); this.setState({ typing: this.queue.length > 0 }); this.setMsgs(this.state.msgs.concat([p])); });
+  }
+  learn(text) {
+    const L = this.learned(); if (!L.on) return;
+    const hits = RULES.filter((r) => r[2] && r[0].test(text)).map((r) => r[2]).filter((x, i, a) => a.indexOf(x) === i);
+    if (!hits.length) return;
+    hits.forEach((h) => { L.topics[h] = (L.topics[h] || 0) + 1; });
+    L.recent = hits.concat(L.recent.filter((r) => hits.indexOf(r) < 0)).slice(0, 4);
+    this.write(KEY.learn, L);
+  }
+  tx(i, amount, wallet) {
+    const c = CATS[i] || [null, 'other', 'مصروف', 'مصروف', 'أخرى', 'أخرى', 'bill', '#637570'], eg = this.eg(), w = wallet || (c[8] ? 'bank' : 'cash');
+    return { tag: c[1], title: eg ? c[3] : c[2], cat: eg ? c[5] : c[4], icon: c[6], color: c[7], amount, w, wallet: w === 'cash' ? 'الكاش' : eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي' };
+  }
+  answer(key) {
+    const eg = this.eg(), k = eg ? 3 : 1, c = this.cur(), T = (a, b) => (eg ? b : a), D = this.read(KEY.done, {}), sp = eg ? '_eg' : '_sa';
+    const W = (x) => this.whole(x) + '\u00A0' + c, m = (x) => W(x * k), n = (x) => x.toLocaleString('ar-EG');
+    const cAdd = D['coffee' + sp] || 0, cN = 2 + (D['coffeeN' + sp] || 0), food = 96000 * k + cAdd, times = cN === 2 ? 'مرتين' : n(cN) + (cN <= 10 ? ' مرات' : ' مرة');
+    const fahd = ['DebtDetail.dc.html', { 'masroufy-debt': 'fahd' }, 'افتح دين فهد'];
+    const A = {
+      coffee: { text: T('القهوة هذا الأسبوع (من السبت) ', 'القهوة الأسبوع ده (من السبت) ') + W(21400 * k + cAdd) + ' في ' + times + '، والشهر كله ' + W(64000 * k + cAdd) + T(' — أعلى من معتادك (', ' — أعلى من العادي (') + m(48000) + ').' },
+      food: { text: T('صرفت على «مطاعم وقهوة» هذا الشهر ', 'صرفت على «أكل وقهوة» الشهر ده ') + W(food) + ' من سقف ' + m(120000) + ' (' + n(this.div(food * 100, 120000 * k)) + '٪)' + T('، منها القهوة ', '، منهم القهوة ') + W(64000 * k + cAdd) + '.', link: ['CategoryBudget.dc.html', { 'masroufy-budget-cat': 'food' }, 'افتح الميزانية'] },
+      rent: D['rent' + sp] ? { text: T('سُجّل إيجار أكتوبر. والقادم ', 'إيجار أكتوبر اتسجّل. والجاي ') + m(250000) + T(' يوم ١ نوفمبر، بعد ٢٥ يومًا.', ' يوم ١ نوفمبر، بعد ٢٥ يوم.') }
+        : { text: 'إيجار أكتوبر (' + m(250000) + T(' يوم ١) لم يُسجَّل بعد، والقادم يوم ١ نوفمبر. هل أسجّل إيجار أكتوبر الآن؟', ' يوم ١) لسه ما اتسجلش، والجاي يوم ١ نوفمبر. أسجّل إيجار أكتوبر دلوقتي؟'), txn: this.tx(4, 250000 * k) },
+      bills: { text: T('فاتورة الكهرباء عادةً ', 'فاتورة الكهربا عادةً ') + m(38000) + T(' يوم ٣، والمياه ', ' يوم ٣، والمية ') + m(9000) + ' يوم ٥.' + (D['elec' + sp] ? T(' وسُجّلت كهرباء هذا الشهر.', ' وكهربا الشهر ده اتسجّلت.') : T(' وكهرباء هذا الشهر لم تُسجَّل بعد — هل أسجّلها؟', ' وكهربا الشهر ده لسه ما اتسجلتش — أسجّلها؟')), txn: D['elec' + sp] ? null : this.tx(2, 38000 * k) },
+      elec: { text: T('فاتورة الكهرباء عادةً ', 'فاتورة الكهربا عادةً ') + m(38000) + T(' يوم ٣ من مصرف الراجحي، ولم تُسجَّل هذا الشهر. أسجّلها بهذا المبلغ؟', ' يوم ٣ من البنك الأهلي المصري، ولسه ما اتسجلتش الشهر ده. أسجّلها بالمبلغ ده؟'), txn: this.tx(2, 38000 * k) },
+      late: { text: T('فهد: بقي ', 'فهد: فاضل ') + m(120000) + ' من ' + m(150000) + T('، فات موعدها منذ ١٧ يومًا. وخالد: ', '، ميعادها فات من ١٧ يوم. وخالد: ') + m(50000) + T(' بلا موعد، منتظر منذ ٤٥ يومًا.', ' من غير ميعاد، بقاله ٤٥ يوم.'), link: fahd },
+      fahd: { kind: 'draft', text: T('فات موعد فهد منذ ١٧ يومًا، وبقي عليه ', 'ميعاد فهد فات من ١٧ يوم، وفاضل عليه ') + m(120000) + T('. كتبت لك رسالة لطيفة ترسلها له:', '. كتبتلك رسالة لطيفة تبعتهاله:'), link: fahd,
+        draft: T('أهلًا فهد، أتمنى أنك بخير. أذكّرك بالمبلغ المتبقي من السلفة ', 'إزيك يا فهد، يارب تكون بخير. بفكّرك بباقي السلفة ') + m(120000) + T('، وكان موعده ٢٠ سبتمبر. متى يناسبك السداد؟', '، كان ميعادها ٢٠ سبتمبر. يناسبك تسدّ امتى؟') },
+      lak: { text: T('لك عند خالد ', 'ليك عند خالد ') + m(50000) + T(' من سلفة قبل ٤٥ يومًا، بلا موعد.', ' من سلفة من ٤٥ يوم، من غير ميعاد.'), link: ['DebtDetail.dc.html', { 'masroufy-debt': 'khaled' }, 'افتح دين خالد'] },
+      owed: { text: T('لك عند أحمد ', 'ليك عند أحمد ') + m(18500) + T(' من فاتورة العشاء السابقة', ' من فاتورة العشا اللي فاتت') + (D['split' + sp] ? '، و' + m(12000) + T(' من عشاء اليوم. ولك عند سارة ', ' من عشا النهارده. وليك عند سارة ') + m(12000) + '.' : T('، وليس لك شيء عند سارة.', '، وسارة مالكش عندها حاجة.')) },
+      split: { kind: 'split', text: T('قسمت فاتورة العشاء ', 'قسمت فاتورة العشا ') + m(36000) + T(' بينكم أنتم الثلاثة:', ' عليكم انتم التلاتة:'), shares: [[T('أنت', 'إنت'), 'م'], ['أحمد', 'أ'], ['سارة', 'س']].map((p) => ({ name: p[0], initial: p[1], amount: 12000 * k })) },
+      plan: { text: T('أنت على الخطة تقريبًا: بقي ', 'إنت ماشي على الخطة تقريبًا: فاضل ') + m(135000) + T(' من ميزانية الشهر (١٧٪) و٢١ يومًا — نحو ', ' من ميزانية الشهر (١٧٪) و٢١ يوم — حوالي ') + W(this.div(135000 * k, 21)) + ' في اليوم.', link: ['Operations.dc.html', { 'masroufy-ops-tab': 'budgets' }, 'افتح الميزانيات'] },
+      goal: { text: T('ادّخرت لـ«السفر» ', 'حوّشت لـ«السفر» ') + m(740000) + ' من ' + m(1200000) + T('. بقي ', '. فاضل ') + m(460000) + T('، أي ', '، يعني ') + this.fmt(eg ? 460000 : 153334) + '\u00A0' + c + T(' شهريًا حتى ٣١ ديسمبر.', ' في الشهر لحد ٣١ ديسمبر.'), link: ['SavingsGoals.dc.html', null, 'افتح خطط الادخار'] },
+      lock: { text: 'القفل في «المزيد ← الإعدادات ← القفل».', link: ['AppSettings.dc.html', null, 'افتح الإعدادات'] },
+      voice: { text: T('فهمت: «دفعت ٤٢ ريال قهوة». أسجّلها هكذا؟', 'فهمت: «دفعت ٨٥ جنيه قهوة». أسجّلها كده؟'), txn: this.tx(0, eg ? 8500 : 4200, 'cash') }
+    };
+    return A[key] || { text: T('لم أفهم هذا بعد. في النموذج أفهم إضافة مصروف («صرفت 25 قهوة») وأسئلة الصرف والميزانية والديون.', 'لسه مش فاهم دي. في النموذج بفهم إضافة مصروف («صرفت 25 قهوة») وأسئلة الصرف والميزانية والديون.') };
+  }
+  // الرسالة ⇒ تعديل العملية المستنية · تقسيم · مصروف جديد · سؤال معروف · «مش فاهم»
+  think(t, key) {
+    this.learn(t);
+    if (key) return { r: this.answer(key) };
+    const T = (a, b) => this.T(a, b), amt = this.num(t), q = /كم|كام|امتى|متى|فين|أين|هل|ليه|لماذا|؟|\?/.test(t);
+    const ci = CATS.findIndex((x) => x[0].test(t)), w = /كاش/.test(t) ? 'cash' : /بنك|بطاق|كارت|مدى|الراجحي|الأهلي/.test(t) ? 'bank' : null;
+    const pend = this.state.msgs.filter((x) => x.txn && !x.done).pop(), hit = RULES.find((x) => x[0].test(t));
+    if (pend && ci < 0 && !q && (amt || w)) return { drop: pend.id, r: { text: T('عدّلتها. أحفظها هكذا؟', 'عدّلتها. أحفظها كده؟'), txn: this.tx(CATS.findIndex((x) => x[1] === pend.txn.tag), amt || pend.txn.amount, w || pend.txn.w) } };
+    if (hit && hit[1] === 'split') return { r: this.answer('split') };
+    if (amt && !q) { const x = this.tx(ci, amt, w); return { r: { text: 'فهمت: ' + x.title + ' بـ' + this.fmt(amt) + '\u00A0' + this.cur() + ' من ' + x.wallet + T('، اليوم. أسجّلها؟', '، النهارده. أسجّلها؟'), txn: x } }; }
+    return { r: this.answer(hit ? hit[1] : '') };
+  }
+  ask(text, key) {
+    const out = this.think(text, key);
+    const msgs = this.state.msgs.map((m) => (out.drop && m.id === out.drop ? Object.assign({}, m, { done: true, dropped: true }) : m)).concat([{ from: 'me', id: 'u' + Date.now(), text }]);
+    this.setMsgs(msgs);
+    if (out.r) this.reply(out.r);
+  }
+  confirm(id) {
+    const m = this.state.msgs.find((x) => x.id === id); if (!m || m.done) return;
+    const T = (a, b) => this.T(a, b), D = this.read(KEY.done, {}), sp = this.eg() ? '_eg' : '_sa', tag = m.txn ? m.txn.tag : 'split', k = this.eg() ? 3 : 1;
+    if (tag === 'coffee') { D['coffee' + sp] = (D['coffee' + sp] || 0) + m.txn.amount; D['coffeeN' + sp] = (D['coffeeN' + sp] || 0) + 1; } else D[tag + sp] = true;
+    this.write(KEY.done, D);
+    this.setMsgs(this.state.msgs.map((x) => (x.id === id ? Object.assign({}, x, { done: true }) : x)));
+    const each = this.whole(12000 * k);
+    this.reply({ text: tag === 'split' ? T('تم: على أحمد ' + each + ' وعلى سارة ' + each + '، وتظهر في «لك».', 'اتسجّل: أحمد عليه ' + each + ' وسارة عليها ' + each + '، وهيبانوا في «ليك».') : T('سُجّلت في عمليات اليوم.', 'اتسجّلت في عمليات النهارده.') });
+  }
+  copy(m) {
+    try { const p = navigator.clipboard.writeText(m.draft || ''); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+    const D = this.read(KEY.done, {}); D['fahd' + (this.eg() ? '_eg' : '_sa')] = true; this.write(KEY.done, D);
+    this.say(this.T('نُسخت — أرسلها لفهد من الواتساب أو الرسائل', 'اتنسخت — ابعتها لفهد على الواتساب أو الرسايل'));
+  }
+  listen() {
+    if (this.state.listening) return;
+    this.setState({ listening: true });
+    this.later(1800, () => { this.setState({ listening: false }); this.ask(this.T('«دفعت ٤٢ ريال قهوة»', '«دفعت ٨٥ جنيه قهوة»'), 'voice'); });
+  }
+  sendText() { const t = (this.state.draft || '').trim(); if (!t) return; this.setState({ draft: '' }); this.ask(t, null); }
+  fresh(cid) { this.timers.forEach(clearTimeout); this.timers = []; this.queue = []; this.setState({ cid, msgs: [], typing: false, listening: false, draft: '' }); this.write(KEY.cur, { id: cid, msgs: [] }); }
+  // الاقتراحات تحت الخانة: اللي اتعلمه من آخر أسئلتك الأول، وبعدها اقتراحات الصفحة اللي انت فيها
+  chips() {
+    const eg = this.eg(), L = this.learned(), last = (this.state.msgs.filter((x) => x.from === 'me').pop() || {}).text, seen = {}, out = [];
+    const add = (key, learned) => { const q = Q[key]; if (!q) return; const label = eg ? q[1] : q[0]; if (seen[q[2]] || label === last) return; seen[q[2]] = 1; out.push({ label, learned, key: q[2] }); };
+    (L.on ? L.recent : []).forEach((t) => (NEXT[t] || []).forEach((k) => { if (out.length < 3) add(k, true); }));
+    (BY_CTX[this.props.context ?? 'الرئيسية'] || BY_CTX['الرئيسية']).forEach((k) => add(k, false));
+    return out.slice(0, 6);
+  }
+  renderVals() {
+    const eg = this.eg(), T = (a, b) => this.T(a, b), s = this.state, D = this.read(KEY.done, {}), sp = eg ? '_eg' : '_sa';
+    const name = this.props.brandName || 'مصروفي', title = this.props.brandTitle || 'مساعدك المالي الذكي';
+    const btn = 'width: 44px; height: 44px; border: 0; padding: 0; border-radius: 16px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.08)';
+    const can = !!(s.draft || '').trim(), chips = this.chips();
+    return {
+      dialogLabel: 'محادثة مع ' + name, brandName: name, brandTitle: title,
+      iconBtn: btn, newBtn: btn + (s.msgs.length ? '' : '; opacity: 0.45; cursor: default'), newOff: s.msgs.length ? 'false' : 'true',
+      histLabel: 'سجل المحادثات', newLabel: 'محادثة جديدة', closeLabel: T('إغلاق المحادثة', 'اقفل المحادثة'),
+      openHist: () => this.setState({ hist: true }),
+      newChat: () => { if (!s.msgs.length) return; this.fresh('c' + Date.now()); this.say(T('بدأت محادثة جديدة — السابقة في السجل', 'بدأنا محادثة جديدة — اللي فاتت في السجل')); },
+      closeChat: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); },
+      setLog: this.setLog, fresh: s.msgs.length === 0, spaceName: eg ? 'مصر' : 'السعودية',
+      doneFlags: { elec: !!D['elec' + sp], fahd: !!D['fahd' + sp] },
+      onStart: (key) => this.ask(key === 'fahd' ? T('ذكّر فهد بالسلفة', 'فكّر فهد بالسلفة') : T('سجّل فاتورة الكهرباء', 'سجّل فاتورة الكهربا'), key === 'fahd' ? 'fahd' : 'elec'),
+      msgs: s.msgs.map((m) => ({ raw: m, confirm: () => this.confirm(m.id), copy: () => this.copy(m),
+        edit: () => this.reply({ text: T('ماذا أعدّل؟ اكتب المبلغ الصحيح، أو «كاش» أو «البنك» لتغيير المحفظة.', 'تعدّل إيه؟ اكتب المبلغ الصح، أو «كاش» أو «البنك» عشان تغيّر المحفظة.') }) })),
+      typing: s.typing, typingLabel: name + T(' يكتب', ' بيكتب'),
+      listening: s.listening, notListening: !s.listening, listeningText: T('أستمع إليك…', 'بسمعك…'),
+      listenNow: () => this.listen(), micLabel: T('تكلّم', 'اتكلّم'), sendLabel: T('أرسل', 'ابعت'),
+      inputLabel: T('رسالتك إلى ', 'رسالتك لـ') + name, inputHint: T('اكتب سؤالك أو اطلب أي شيء…', 'اكتب سؤالك أو اطلب أي حاجة…'),
+      draft: s.draft, typeDraft: (e) => this.setState({ draft: e.target.value }),
+      enterSend: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.sendText(); } }, sendDraft: () => this.sendText(),
+      sendStyle: 'width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: ' + (can ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)' : 'none') + '; opacity: ' + (can ? 1 : 0.5),
+      chipsLabel: chips.some((x) => x.learned) ? 'اقتراحات من أسئلتك' : 'اقتراحات لصفحة «' + (this.props.context ?? 'الرئيسية') + '»',
+      chips: chips.map((x) => ({ label: x.label, pick: () => (x.key === 'voice' ? this.listen() : this.ask(x.label, x.key)),
+        style: 'height: 44px; flex-shrink: 0; border: 0; padding: 0 16px; border-radius: 22px; white-space: nowrap; font: inherit; font-size: 13px; font-weight: 500; color: #08634F; cursor: pointer; background: ' + (x.learned ? '#DCEBD6' : 'rgba(255,255,255,0.88)') + '; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.18), 0 4px 10px rgba(29,54,53,0.06)' })),
+      hasToast: !!s.toast, toast: s.toast, sendOff: can ? 'false' : 'true',
+      // لوحدها على اللوحة (من غير أم تقفلها) ⇒ خلفية التطبيق تحت الضباب، وجوه التطبيق ⇒ الشاشة اللي تحتها
+      baseStyle: 'position: absolute; inset: 0; background: ' + (typeof this.props.onClose === 'function' ? 'transparent' : 'radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)'),
+      histOpen: s.hist, cid: s.cid, sessions: this.read(KEY.ses, []), learnedNow: this.learned(),
+      onOpenConv: (c) => { if (!c || !Array.isArray(c.msgs)) return; this.fresh(c.id); this.setState({ msgs: c.msgs, hist: false }); this.write(KEY.cur, { id: c.id, msgs: c.msgs }); },
+      onDeleted: (id) => { if (id === s.cid) this.fresh('c' + Date.now()); },
+      onLearn: (L) => { if (L && L.topics) { this.write(KEY.learn, L); this.setState((x) => ({ lv: x.lv + 1 })); } },
+      closeHist: () => this.setState({ hist: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

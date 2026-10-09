@@ -158,16 +158,16 @@ class Component extends DCLogic {
       const on = id === active;
       return {
         isTab: true, isAdd: false, href: id + '.dc.html', label, current: on ? 'page' : 'false', i: { [icon]: true },
-        style: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 56px; min-height: 56px; text-decoration: none; font-size: 11px; color: ' + (on ? '#08634F; font-weight: 700' : '#637570'),
+        style: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; min-width: 62px; height: 56px; box-sizing: border-box; padding: 0 6px; border-radius: 20px; text-decoration: none; font-size: 11px; color: ' + (on ? '#08634F; font-weight: 700; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)' : '#637570'),
         dot: !!DOTS[id] && !read,
-        lensStyle: 'position: relative; width: 40px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center;' + (on ? ' background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(220,235,214,0.70) 55%, rgba(166,222,193,0.55)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.16), 0 6px 14px rgba(8,99,79,0.18)' : '')
+        lensStyle: 'position: relative; width: 40px; height: 28px; display: flex; align-items: center; justify-content: center'
       };
     };
     const items = center
       ? [tab(tabs[0]), tab(tabs[1]), { isTab: false, isAdd: true }, tab(tabs[2]), tab(tabs[3])]
       : tabs.map(tab);
     const navBottom = swipe ? 30 : 14;
-    const askBottom = navBottom + 70 + (center ? 18 : 4);
+    const askBottom = navBottom + 70 + (center ? 6 : 4); // ٦ فوق الشريط — دايرة «+» بتطلع فوقه شوية وده مقبول (المالك)
     const minor = this.toMinor(this.state.amount);
     const typeDefs = [['out', eg ? 'صرف' : 'صرف'], ['in', eg ? 'دخل' : 'دخل'], ['move', eg ? 'تحويل' : 'تحويل']];
     const types = typeDefs.map(([id, label]) => {

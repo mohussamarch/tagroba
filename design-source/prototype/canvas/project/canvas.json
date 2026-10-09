@@ -897,6 +897,38 @@
       "y": 23900,
       "w": 350,
       "h": 48
+    },
+    "AssistantChat.dc.html": {
+      "is_interactive": true,
+      "title": "مصروفي — مساعدك المالي الذكي · AssistantChat (صفحة الشات — بتفتح من شريط السؤال)",
+      "x": 1530,
+      "y": 23400,
+      "w": 390,
+      "h": 844
+    },
+    "AssistantHistory.dc.html": {
+      "is_interactive": true,
+      "title": "سجل المحادثات واللي اتعلمه · AssistantHistory (جوه الشات)",
+      "x": 1960,
+      "y": 23400,
+      "w": 390,
+      "h": 844
+    },
+    "AssistantStart.dc.html": {
+      "is_interactive": true,
+      "title": "أول الشات: «أمور لم تُنجزها بعد» · AssistantStart (قطعة)",
+      "x": 590,
+      "y": 24010,
+      "w": 350,
+      "h": 500
+    },
+    "AssistantMessage.dc.html": {
+      "is_interactive": true,
+      "title": "رسالة في الشات (نص · تأكيد عملية · تقسيم · رسالة تذكير) · AssistantMessage (قطعة)",
+      "x": 590,
+      "y": 24570,
+      "w": 350,
+      "h": 220
     }
   },
   "createdOnFiles": {
@@ -1166,7 +1198,11 @@
     "ResetPasswordSheet.dc.html",
     "WalletAddSheet.dc.html",
     "IncomeSourceEditSheet.dc.html",
-    "GoalEditSheet.dc.html"
+    "GoalEditSheet.dc.html",
+    "AssistantChat.dc.html",
+    "AssistantHistory.dc.html",
+    "AssistantStart.dc.html",
+    "AssistantMessage.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

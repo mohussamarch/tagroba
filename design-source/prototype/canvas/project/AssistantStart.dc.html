@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>بداية المحادثة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.s-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.s-press:active{transform:scale(.97)}
+.s-in{animation:s-in 450ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes s-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes s-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.s-press{transition:none}.s-press:active{transform:none}.s-in{animation:s-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 10px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div class="s-in" style="display: flex; flex-direction: column; gap: 4px; padding: 8px 2px 6px">
+    <h2 style="margin: 0; font-size: 22px; font-weight: 700">{{hello}}</h2>
+    <span style="font-size: 14px; line-height: 1.7; color: #4F625C">{{intro}}</span>
+  </div>
+
+  <h3 style="margin: 6px 2px 0; font-size: 15px; font-weight: 700">{{todoTitle}}</h3>
+  <sc-for list="{{cards}}" as="cd" hint-placeholder-count="4">
+    <div class="s-in" style="{{cd.cardStyle}}">
+      <span style="{{cd.tile}}"><img src="{{cd.icon}}" width="20" height="20" alt=""></span>
+      <span style="flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 1.6">{{cd.line}}</span>
+      <sc-if value="{{cd.isLink}}" hint-placeholder-val="{{ true }}">
+        <a href="{{cd.href}}" data-keep="{{cd.keep}}" class="s-press" style="{{cd.actStyle}}">{{cd.action}}</a>
+      </sc-if>
+      <sc-if value="{{cd.isAsk}}" hint-placeholder-val="{{ false }}">
+        <button type="button" class="s-press" onClick="{{cd.go}}" style="{{cd.actStyle}}">{{cd.action}}</button>
+      </sc-if>
+    </div>
+  </sc-for>
+  <sc-if value="{{allDone}}" hint-placeholder-val="{{ false }}">
+    <div style="border-radius: 20px; padding: 14px 16px; font-size: 14px; color: #13764D; font-weight: 700; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)">{{allDoneText}}</div>
+  </sc-if>
+  <span style="padding: 0 2px; font-size: 12px; color: #637570">{{basis}}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":500}}'>
+// بداية محادثة جديدة: تحية بالوقت + «حاجات لسه ما عملتهاش» (طلب المالك ٢٠٢٦-١٠-٠٩: «كمساعد مالي حقيقي يقترح عليّا حاجات لسه ما عملتهاش»)
+// كل كارت = قاعدة على بيانات التطبيق (مخترعة، نفس أرقام الشاشات التانية، مصر ×٣)، والترتيب بالأهم:
+//   رسائل بنك مستنية تأكيد (BankSms: ٤) · فاتورة دورية عدّى يومها المعتاد ولسه ما اتسجلتش (QuickAddStrip: الكهرباء ٣٨٠ يوم ٣)
+//   · تصنيف وصل نسبة التنبيه ولسه ما عدّاش السقف (Budgets: مطاعم وقهوة ٩٦٠ من ١٬٢٠٠ = ٨٠٪) · دين ليك فات ميعاده (DuesDebts: فهد ١٬٢٠٠ من ٢٠ سبتمبر)
+// «سجّلها» و«ذكّره» بيتعملوا جوه المحادثة (on-ask) · الباقي روابط للشاشة · اللي اتعمل بيختفي (done من الأم)
+const ICON = {
+  sms: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/>',
+  bill: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  debt: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>'
+};
+class Component extends DCLogic {
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  whole(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  icon(name, col) { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICON[name] + '</svg>'); }
+  // التحية بالوقت: قبل ١٢ الضهر «صباح الخير» وبعده «مساء الخير». النموذج واقف على مساء الأربعاء ٧ أكتوبر زي الرئيسية
+  hour() { return 20; }
+  renderVals() {
+    const eg = this.eg(), T = (a, b) => (eg ? b : a), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', n = (x) => x.toLocaleString('ar-EG');
+    const m = (x) => this.whole(x * k) + '\u00A0' + cur;
+    const name = this.props.brandName || 'مصروفي', title = this.props.brandTitle || 'مساعدك المالي الذكي';
+    const done = this.props.done || {};
+    // الحقائق (مخترعة): العدد · المعتاد ويومه · المصروف والسقف ونسبة التنبيه · الباقي وأيام التأخير
+    const F = { sms: 4, today: 7, elecDay: 3, elec: 38000, foodSpent: 96000, foodCap: 120000, alertPct: 80, fahdLeft: 120000, fahdLate: 17 };
+    const foodPct = (F.foodSpent * 100 - ((F.foodSpent * 100) % F.foodCap)) / F.foodCap;
+    const R = [
+      { id: 'sms', show: F.sms > 0, ic: 'sms', col: '#956000', line: T(n(F.sms) + ' رسائل من البنك بانتظار تأكيدك', n(F.sms) + ' رسايل من البنك مستنية تأكيدك'), action: T('راجعها', 'راجعها'), href: 'BankSms.dc.html' },
+      { id: 'elec', show: F.today > F.elecDay && !done.elec, ic: 'bill', col: '#956000', line: T('فاتورة الكهرباء لم تُسجَّل هذا الشهر — عادةً ' + m(F.elec) + ' يوم ' + n(F.elecDay), 'فاتورة الكهربا ما اتسجلتش الشهر ده — عادةً ' + m(F.elec) + ' يوم ' + n(F.elecDay)), action: 'سجّلها', ask: 'elec' },
+      { id: 'food', show: foodPct >= F.alertPct && F.foodSpent <= F.foodCap, ic: 'food', col: '#A36A21', line: T('«مطاعم وقهوة» وصلت ' + n(foodPct) + '٪ من سقفها (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')', '«أكل وقهوة» وصل ' + n(foodPct) + '٪ من سقفه (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')'), action: T('افتحها', 'افتحها'), href: 'CategoryBudget.dc.html', keep: { 'masroufy-budget-cat': 'food' } },
+      { id: 'fahd', show: F.fahdLate > 0 && !done.fahd, ic: 'debt', col: '#BE3D48', line: T('فهد فات موعد سداده منذ ' + n(F.fahdLate) + ' يومًا — بقي ' + m(F.fahdLeft), 'فهد ميعاد سداده فات من ' + n(F.fahdLate) + ' يوم — فاضل ' + m(F.fahdLeft)), action: T('ذكّره', 'فكّره'), ask: 'fahd' }
+    ];
+    const cards = R.filter((r) => r.show).slice(0, 4).map((r) => ({
+      line: r.line, action: r.action, icon: this.icon(r.ic, r.col), isLink: !r.ask, isAsk: !!r.ask,
+      href: r.href || '', keep: r.keep ? JSON.stringify(r.keep) : '',
+      go: () => { if (r.ask && typeof this.props.onAsk === 'function') this.props.onAsk(r.ask); },
+      tile: 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + r.col + '1A',
+      cardStyle: 'border-radius: 20px; padding: 12px 12px 12px 10px; display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)',
+      actStyle: 'flex-shrink: 0; min-width: 64px; height: 44px; box-sizing: border-box; border: 0; padding: 0 14px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; ' + (r.ask ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.22)' : 'color: #08634F; background: rgba(8,99,79,0.08)')
+    }));
+    const h = this.hour(), morning = h >= 4 && h < 12;
+    return {
+      hello: morning ? T('صباح الخير، محمد', 'صباح الخير يا محمد') : T('مساء الخير، محمد', 'مساء الخير يا محمد'),
+      intro: T('أنا ' + name + '، ' + title + '. اسألني عن مالك، أو اطلب مني تسجيل مصروف أو تقسيم فاتورة.', 'أنا ' + name + '، ' + title + '. اسألني عن فلوسك، أو قولّي أسجّل مصروف أو أقسّم فاتورة.'),
+      todoTitle: T('أمور لم تُنجزها بعد', 'حاجات لسه ما عملتهاش'),
+      cards, allDone: cards.length === 0, allDoneText: T('أنجزت كل شيء — لا شيء ينتظرك الآن.', 'خلّصت كل حاجة — مفيش حاجة مستنياك دلوقتي.'),
+      basis: T('من رسائل البنك والفواتير الدورية والميزانيات والديون.', 'من رسايل البنك والفواتير اللي بتتكرر والميزانيات والديون.')
+    };
+  }
+}
+</script>
+</body>
+</html>
