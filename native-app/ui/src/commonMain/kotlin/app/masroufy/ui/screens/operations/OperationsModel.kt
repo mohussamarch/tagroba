@@ -13,15 +13,22 @@ import app.masroufy.usecase.TransactionsScreenData
 
 /**
  * حالة خانة «العمليات» من `TransactionsScreenData` (عرض بس — المجاميع زي ما هي من حالة الاستخدام، و`null` ⇒ «غير متاح»).
- * الحالات: بيحمّل · خطأ · فاضي · عادي · تقريبي (فيه نوع تقديري) · غير متاح (المجاميع `null`).
+ * الحالات زي النموذج: بيحمّل · خطأ (الشريط فوق، **والقايمة اللي اتحمّلت قبل كده بتفضل تحته**) · فاضي · عادي · تقريبي · غير متاح.
+ * [partiesWaiting] = الأطراف المستنية ردك (`ManageTransfers.zone().questions`) لشريط التحويلات.
  */
-sealed interface OpsState {
-    data object Loading : OpsState
-
-    data object Failed : OpsState
-
-    data class Ready(val view: OpsView) : OpsState
+data class OpsUi(val view: OpsView? = null, val loading: Boolean = true, val failed: Boolean = false, val partiesWaiting: Int = 0) {
+    /** «بيحمّل» = لسه مفيش ولا مرة اتحمّلت (إعادة المحاولة بتسيب القايمة القديمة ظاهرة). */
+    val skeleton: Boolean get() = loading && view == null && !failed
 }
+
+/** إعادة المحاولة: القايمة القديمة بتفضل، والشريط بيستنى النتيجة. */
+fun OpsUi.retrying(): OpsUi = copy(loading = true)
+
+/**
+ * نتيجة التحميل: [view] `null` = فشل ⇒ الشريط فوق والقايمة القديمة (لو فيه) زي ما هي. [parties] `null` (فشل الزون لوحده) ⇒ العدد القديم.
+ */
+fun OpsUi.loaded(view: OpsView?, parties: Int?): OpsUi =
+    if (view == null) copy(loading = false, failed = true) else OpsUi(view, loading = false, failed = false, partiesWaiting = parties ?: partiesWaiting)
 
 data class OpsView(
     /** «أكتوبر» — اسم الشهر اللي الفترة بتخلص فيه (الشهر المالي من يوم الراتب). */

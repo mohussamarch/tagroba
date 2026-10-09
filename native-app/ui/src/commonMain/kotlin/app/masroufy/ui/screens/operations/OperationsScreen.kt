@@ -63,24 +63,22 @@ fun OperationsScreen() {
     val deps = space.operations
     val nav = LocalNavigator.current
     var tab by rememberSaveable { mutableStateOf(OpsTab.OPERATIONS) }
-    var state by remember(deps) { mutableStateOf<OpsState>(OpsState.Loading) }
-    var waiting by remember(deps) { mutableIntStateOf(0) }
+    var ui by remember(deps) { mutableStateOf(OpsUi()) }
     var reload by remember { mutableIntStateOf(0) }
     var menu by remember { mutableStateOf<Pair<OpRow, Anchor>?>(null) }
     LaunchedEffect(deps, reload) {
         val today = space.shell.today()
-        state = attempt {
+        val view = attempt {
             val data = deps.transactions.load(LoadTransactionsScreenRequest(today = today, payday = deps.payday()))
-            OpsState.Ready(operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency))
-        } ?: OpsState.Failed
-        waiting = attempt { deps.transfers.zone().questions.size } ?: 0
+            operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency)
+        }
+        ui = ui.loaded(view, attempt { deps.transfers.zone().questions.size })
     }
-    val ready = state as? OpsState.Ready
     val title = t(TextKey.TAB_OPERATIONS)
     TabScaffold(title, header = {
         TabHeader(title, actions = {
             SurfaceIconButton(Lucide.FILTER, t(TextKey.OPERATIONS_FILTER), onClick = { nav.push(OperationFiltersRoute) }, iconSize = 20.dp)
-            MonthButton(ready?.view?.periodLabel ?: t(TextKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
+            MonthButton(ui.view?.periodLabel ?: t(TextKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
         })
     }) {
         item(key = "tabs") {
@@ -92,7 +90,7 @@ fun OperationsScreen() {
         when (tab) {
             OpsTab.BUDGETS -> item(key = "budgets") { LocalRegistry.current.Slot(Slots.BUDGETS) }
             OpsTab.DUES -> item(key = "dues") { LocalRegistry.current.Slot(Slots.DUES) }
-            OpsTab.OPERATIONS -> operationsTab(state, waiting, onRetry = { reload++ }, onOpen = { nav.push(OperationDetailRoute(it.id)) }, onMenu = { r, a -> menu = r to a })
+            OpsTab.OPERATIONS -> operationsTab(ui, onRetry = { ui = ui.retrying(); reload++ }, onOpen = { nav.push(OperationDetailRoute(it.id)) }, onMenu = { r, a -> menu = r to a })
         }
     }
     OperationMenu(
@@ -103,28 +101,28 @@ fun OperationsScreen() {
     )
 }
 
-private fun LazyListScope.operationsTab(state: OpsState, waiting: Int, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit) {
-    when (state) {
-        OpsState.Loading -> item(key = "loading") { LoadingBlocks() }
-        OpsState.Failed -> item(key = "error") {
-            ErrorBanner(t(TextKey.OPERATIONS_ERROR_TITLE), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), onRetry)
-        }
-        is OpsState.Ready -> {
-            val v = state.view
-            if (v.empty) {
-                item(key = "empty") { EmptyState(t(TextKey.OPERATIONS_EMPTY_TITLE, v.periodLabel), t(TextKey.OPERATIONS_EMPTY_BODY)) }
-                return
-            }
-            items(banners(bankSmsWaiting = null, reviewCount = v.reviewCount, partiesWaiting = waiting), key = { "banner-${it.kind}" }) { b -> BannerItem(b) }
-            // «دفعت الإيجار؟» (`QuickAddStrip`) بيستنى حالة استخدام «المتوقع ولم يُسجَّل» — من غيرها ما بيظهرش
-            item(key = "summary") { Summary(v.incomeMinor, v.expenseMinor, v.currency, v.approx) }
-            items(v.days, key = { "day-${it.date}" }) { day ->
-                DayGroup(day.label) {
-                    day.rows.forEachIndexed { i, row ->
-                        if (i > 0) Divider()
-                        OperationListRow(row, onOpen = { onOpen(row) }, onMenu = { a -> onMenu(row, a) })
-                    }
-                }
+private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit) {
+    if (ui.skeleton) {
+        item(key = "loading") { LoadingBlocks() }
+        return
+    }
+    if (ui.failed) item(key = "error") {
+        ErrorBanner(t(TextKey.OPERATIONS_ERROR_TITLE), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), onRetry)
+    }
+    val v = ui.view ?: return
+    if (v.empty) {
+        item(key = "empty") { EmptyState(t(TextKey.OPERATIONS_EMPTY_TITLE, v.periodLabel), t(TextKey.OPERATIONS_EMPTY_BODY)) }
+        return
+    }
+    // شريط رسايل البنك: عددها مالوش حالة استخدام في «العمليات» لسه (صندوق الرسايل شغل منطقة الاستيراد) ⇒ `null` ⇒ ما بيظهرش
+    items(banners(bankSmsWaiting = null, reviewCount = v.reviewCount, partiesWaiting = ui.partiesWaiting), key = { "banner-${it.kind}" }) { b -> BannerItem(b) }
+    // «دفعت الإيجار؟» (`QuickAddStrip`) بيستنى حالة استخدام «المتوقع ولم يُسجَّل» — من غيرها ما بيظهرش
+    item(key = "summary") { Summary(v.incomeMinor, v.expenseMinor, v.currency, v.approx) }
+    items(v.days, key = { "day-${it.date}" }) { day ->
+        DayGroup(day.label) {
+            day.rows.forEachIndexed { i, row ->
+                if (i > 0) Divider()
+                OperationListRow(row, onOpen = { onOpen(row) }, onMenu = { a -> onMenu(row, a) })
             }
         }
     }

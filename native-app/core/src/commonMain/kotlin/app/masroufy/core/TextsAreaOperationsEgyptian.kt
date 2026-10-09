@@ -39,6 +39,7 @@ internal val EGYPTIAN_OPERATIONS_LIST_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.OPERATIONS_PARTIES_TWO to "طرفين مستنيين ردك",
     TextKey.OPERATIONS_PARTIES_FEW to "{0} أطراف مستنية ردك",
     TextKey.OPERATIONS_PARTIES_MANY to "{0} طرف مستني ردك",
+    TextKey.OPERATIONS_SAVE_FAILED to "ما اتحفظش — ما اتغيرش حاجة. جرّب تاني.",
     TextKey.OPERATION_MENU_TITLE to "إجراءات العملية",
     TextKey.OPERATION_MENU_DETAIL to "شوف التفاصيل",
     TextKey.OPERATION_MENU_PERSON to "خصّص مبلغ لشخص",

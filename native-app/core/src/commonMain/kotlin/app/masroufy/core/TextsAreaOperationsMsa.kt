@@ -39,6 +39,7 @@ internal val MSA_OPERATIONS_LIST_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.OPERATIONS_PARTIES_TWO to "طرفان بانتظار ردك",
     TextKey.OPERATIONS_PARTIES_FEW to "{0} أطراف بانتظار ردك",
     TextKey.OPERATIONS_PARTIES_MANY to "{0} طرفًا بانتظار ردك",
+    TextKey.OPERATIONS_SAVE_FAILED to "تعذّر الحفظ — لم يتغير شيء. حاول مرة أخرى.",
     TextKey.OPERATION_MENU_TITLE to "إجراءات العملية",
     TextKey.OPERATION_MENU_DETAIL to "عرض التفاصيل",
     TextKey.OPERATION_MENU_PERSON to "تخصيص مبلغ لشخص",

@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.masroufy.core.TextKey
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.mirrorInLtr
 import app.masroufy.ui.components.pressScale
@@ -32,6 +33,7 @@ import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
+import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Radius
 import app.masroufy.ui.theme.Type
@@ -48,14 +50,23 @@ internal suspend inline fun <T> attempt(block: () -> T): T? = try {
     null
 }
 
-/** نفس [attempt] لكن بيرجّع رسالة الخطأ (رسايل حالات الاستخدام نفسها جاية من جدول النصوص). */
+/** نفس [attempt] لكن بيرجّع رسالة الخطأ اللي تتعرض ([userMessage]). `null` = نجح. */
 internal suspend inline fun failureOf(block: () -> Unit): String? = try {
     block()
     null
 } catch (e: CancellationException) {
     throw e
 } catch (e: Exception) {
-    e.message ?: ""
+    userMessage(e)
+}
+
+/**
+ * رسالة الخطأ للمستخدم: رفض حالة الاستخدام (`IllegalArgumentException`/`IllegalStateException` — رسالتها من جدول النصوص بلغة البلد) بيتعرض
+ * زي ما هو؛ أي فشل تاني (النت · التخزين — رسالته تقنية وممكن تبقى إنجليزي) ⇒ «تعذّر الحفظ — لم يتغير شيء» (حالة «خطأ» في النموذج).
+ */
+fun userMessage(e: Throwable): String {
+    val text = e.message?.takeIf { it.isNotBlank() }
+    return if ((e is IllegalArgumentException || e is IllegalStateException) && text != null) text else t(TextKey.OPERATIONS_SAVE_FAILED)
 }
 
 /** شريط الخطأ الكهرماني (النموذج: «تعذّر تحميل العمليات» + «أعد المحاولة»). */

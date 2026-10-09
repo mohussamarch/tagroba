@@ -36,6 +36,7 @@ internal val ENGLISH_OPERATIONS_LIST_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.OPERATIONS_PARTIES_TWO to "2 parties await your answer",
     TextKey.OPERATIONS_PARTIES_FEW to "{0} parties await your answer",
     TextKey.OPERATIONS_PARTIES_MANY to "{0} parties await your answer",
+    TextKey.OPERATIONS_SAVE_FAILED to "Couldn't save — nothing changed. Try again.",
     TextKey.OPERATION_MENU_TITLE to "Operation actions",
     TextKey.OPERATION_MENU_DETAIL to "View details",
     TextKey.OPERATION_MENU_PERSON to "Assign an amount to someone",
