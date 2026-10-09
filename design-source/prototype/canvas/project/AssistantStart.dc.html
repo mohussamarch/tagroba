@@ -37,6 +37,7 @@ body{margin:0}
       <sc-if value="{{cd.isAsk}}" hint-placeholder-val="{{ false }}">
         <button type="button" class="s-press" onClick="{{cd.go}}" style="{{cd.actStyle}}">{{cd.action}}</button>
       </sc-if>
+      <button type="button" class="s-press" onClick="{{cd.hide}}" aria-label="{{cd.hideLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; margin: -4px 0 -4px -6px; border: 0; padding: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
     </div>
   </sc-for>
   <sc-if value="{{allDone}}" hint-placeholder-val="{{ false }}">
@@ -58,7 +59,9 @@ const ICON = {
   food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
   debt: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>'
 };
+// «×» على كل كارت بيقفله حتى لو الحاجة ما اتعملتش (قرار المالك ٢٠٢٦-١٠-٠٩: «زي الإشعارات») — بيفضل مقفول طول الجلسة في النموذج
 class Component extends DCLogic {
+  constructor(props) { super(props); let hidden = []; try { hidden = JSON.parse(window.sessionStorage.getItem('masroufy-ask-hidden') || '[]') || []; } catch (e) {} this.state = { hidden }; }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   whole(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   icon(name, col) { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICON[name] + '</svg>'); }
@@ -78,12 +81,14 @@ class Component extends DCLogic {
       { id: 'food', show: foodPct >= F.alertPct && F.foodSpent <= F.foodCap, ic: 'food', col: '#A36A21', line: T('«مطاعم وقهوة» وصلت ' + n(foodPct) + '٪ من سقفها (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')', '«أكل وقهوة» وصل ' + n(foodPct) + '٪ من سقفه (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')'), action: T('افتحها', 'افتحها'), href: 'CategoryBudget.dc.html', keep: { 'masroufy-budget-cat': 'food' } },
       { id: 'fahd', show: F.fahdLate > 0 && !done.fahd, ic: 'debt', col: '#BE3D48', line: T('فهد فات موعد سداده منذ ' + n(F.fahdLate) + ' يومًا — بقي ' + m(F.fahdLeft), 'فهد ميعاد سداده فات من ' + n(F.fahdLate) + ' يوم — فاضل ' + m(F.fahdLeft)), action: '' }
     ];
-    const cards = R.filter((r) => r.show).slice(0, 4).map((r) => ({
-      line: r.line, action: r.action, icon: this.icon(r.ic, r.col), isLink: !!r.href, isAsk: !!r.ask,
+    const sp = eg ? '_eg' : '_sa', hidden = this.state.hidden, shown = R.filter((r) => r.show), anyHidden = shown.some((r) => hidden.indexOf(r.id + sp) >= 0);
+    const hide = (id) => { const h = hidden.concat([id + sp]); try { window.sessionStorage.setItem('masroufy-ask-hidden', JSON.stringify(h)); } catch (e) {} this.setState({ hidden: h }); };
+    const cards = shown.filter((r) => hidden.indexOf(r.id + sp) < 0).slice(0, 4).map((r) => ({
+      line: r.line, hide: () => hide(r.id), hideLabel: T('أغلق: ', 'اقفل: ') + r.line, action: r.action, icon: this.icon(r.ic, r.col), isLink: !!r.href, isAsk: !!r.ask,
       href: r.href || '', keep: r.keep ? JSON.stringify(r.keep) : '',
       go: () => { if (r.ask && typeof this.props.onAsk === 'function') this.props.onAsk(r.ask); },
       tile: 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + r.col + '1A',
-      cardStyle: 'border-radius: 20px; padding: 12px 12px 12px 10px; display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)',
+      cardStyle: 'border-radius: 20px; padding: 12px 12px 12px 10px; display: flex; align-items: center; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.08)',
       actStyle: 'flex-shrink: 0; min-width: 64px; height: 44px; box-sizing: border-box; border: 0; padding: 0 14px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; ' + (r.ask ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.22)' : 'color: #08634F; background: rgba(8,99,79,0.08)')
     }));
     const h = this.hour(), morning = h >= 4 && h < 12;
@@ -91,7 +96,7 @@ class Component extends DCLogic {
       hello: morning ? T('صباح الخير، محمد', 'صباح الخير يا محمد') : T('مساء الخير، محمد', 'مساء الخير يا محمد'),
       intro: T('أنا ' + name + '، ' + title + '. اسألني عن مالك، أو اطلب مني تسجيل مصروف أو تقسيم فاتورة.', 'أنا ' + name + '، ' + title + '. اسألني عن فلوسك، أو قولّي أسجّل مصروف أو أقسّم فاتورة.'),
       todoTitle: T('أمور لم تُنجزها بعد', 'حاجات لسه ما عملتهاش'),
-      cards, allDone: cards.length === 0, allDoneText: T('أنجزت كل شيء — لا شيء ينتظرك الآن.', 'خلّصت كل حاجة — مفيش حاجة مستنياك دلوقتي.'),
+      cards, allDone: cards.length === 0, allDoneText: anyHidden ? T('لا شيء ينتظرك الآن.', 'مفيش حاجة مستنياك دلوقتي.') : T('أنجزت كل شيء — لا شيء ينتظرك الآن.', 'خلّصت كل حاجة — مفيش حاجة مستنياك دلوقتي.'),
       basis: T('من رسائل البنك والفواتير الدورية والميزانيات والديون.', 'من رسايل البنك والفواتير اللي بتتكرر والميزانيات والديون.')
     };
   }

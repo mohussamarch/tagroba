@@ -91,9 +91,7 @@ body{margin:0}
           <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 500">{{emailLabel}}</span><span style="font-size: 12px; color: #637570">{{emailHint}}</span></span>
           <span dir="ltr" style="font-size: 13px; font-weight: 700; color: #637570">{{email}}</span>
         </div>
-        <button type="button" class="m-press m-row" onClick="{{resetPass}}" disabled="{{offline}}" aria-describedby="reset-note" style="{{resetStyle}}">
-          <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 500">{{resetLabel}}</span><span id="reset-note" style="font-size: 12px; color: #637570">{{resetHint}}</span></span>
-        </button>
+        <dc-import name="ResetPasswordSheet" kind="تغيير" email="{{email}}" offline="{{offline}}" space="{{spaceName}}" trigger-style="{{resetStyle}}" hint-size="334px,56px"></dc-import>
         <button type="button" class="m-press m-row" onClick="{{askSignOut}}" style="box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; text-align: right; cursor: pointer; display: flex; align-items: center; min-height: 56px; padding: 8px; border-radius: 16px; font-size: 15px; font-weight: 700; color: #BE3D48">{{signOutLabel}}</button>
       </div>
     </div>
@@ -233,10 +231,7 @@ class Component extends DCLogic {
       duesTrack: 'position: relative; display: block; width: 44px; height: 26px; border-radius: 13px; ' + (on ? 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 2px rgba(0,47,48,0.25)' : 'background: rgba(25,61,51,0.16); box-shadow: inset 0 1px 2px rgba(25,61,51,0.12)'),
       duesKnob: 'position: absolute; top: 2px; right: ' + (on ? 20 : 2) + 'px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 2px 6px rgba(16,45,53,0.22)',
       accountGroup: 'الحساب', emailLabel: eg ? 'الإيميل' : 'البريد الإلكتروني', emailHint: eg ? 'للعرض بس' : 'للعرض فقط',
-      resetLabel: eg ? 'تغيير كلمة السر' : 'تغيير كلمة السر',
-      resetHint: offline ? (eg ? 'محتاج نت' : 'يحتاج اتصالًا بالإنترنت') : (eg ? 'هنبعتلك لينك على الإيميل' : 'نرسل رابطًا إلى بريدك'),
-      resetStyle: rowStyle(false) + (offline ? ' opacity: 0.45; cursor: default;' : ''),
-      resetPass: () => { if (!offline) this.say(eg ? 'بعتنالك لينك تغيير كلمة السر على الإيميل' : 'أرسلنا رابط تغيير كلمة السر إلى بريدك'); },
+      resetStyle: rowStyle(false),
       signOutLabel: eg ? 'اخرج من الحساب' : 'تسجيل الخروج', askSignOut: () => this.setState({ sheet: 'signout', draft: null }),
       sheet: !!sh, sheetTitle: sh ? sh.t : '', hasSheetBody: !!(sh && sh.b), sheetBody: sh && sh.b ? sh.b : '',
       sName: s.sheet === 'name', draftName: s.sheet === 'name' ? String(d || '') : '', typeName: (e) => this.setState({ draft: e.target.value }),
