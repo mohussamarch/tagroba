@@ -90,7 +90,7 @@ fun subDetailUi(v: RecurringItemView, today: IsoDate): SubDetailUi {
         nextLabel = t(if (item.active) TextKey.SUBS_F_NEXT else TextKey.SUBS_STOPPED_LABEL),
         nextText = if (item.active) dateText(item.nextDueAt, today) else t(TextKey.DUES_DASH),
         nextSub = if (item.active) t(TextKey.SUBS_NEXT_SUB, rel, amountLabel(item.expectedMinor, item.currency)) else t(TextKey.SUBS_STOPPED_SUB),
-        paidCount = countText(v.paidCount, TextKey.SUBS_PAYMENTS_ONE, TextKey.SUBS_PAYMENTS_TWO, TextKey.SUBS_PAYMENTS_FEW, TextKey.SUBS_PAYMENTS_MANY),
+        paidCount = countText(v.paidCount, TextKey.SUBS_PAYMENTS_ONE, TextKey.SUBS_PAYMENTS_TWO, TextKey.SUBS_PAYMENTS_FEW, TextKey.SUBS_PAYMENTS_MANY, zero = TextKey.SUBS_PAYMENTS_NONE),
         annualNote = if (item.active) t(TextKey.SUBS_ANNUAL_NOTE, amountLabel(item.expectedMinor, item.currency, showCurrency = false), sentenceNumber(12 / item.cycleMonths)) else t(TextKey.SUBS_OUT_OF_CALC),
         cycle = subCycle(item.cycleMonths),
     )

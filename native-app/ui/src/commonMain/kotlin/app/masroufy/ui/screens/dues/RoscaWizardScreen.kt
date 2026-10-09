@@ -2,7 +2,7 @@ package app.masroufy.ui.screens.dues
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -69,7 +69,7 @@ fun RoscaWizardScreen() {
                     DuesChanges.bump()
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
-                    error = e.message
+                    error = failText(e)
                 } finally {
                     saving = false
                 }
@@ -85,13 +85,22 @@ fun RoscaWizardScreen() {
             state = deps.roscaSetup.answer(state.draft, answer)
             goTo(null)
         } catch (e: IllegalArgumentException) {
-            error = e.message
+            error = failText(e)
         } catch (e: IllegalStateException) {
-            error = e.message
+            error = failText(e)
         }
     }
 
-    DuesScaffold(t(TextKey.RW_TITLE)) {
+    // الزرارين ثابتين تحت زي النموذج: «السابق» (لو فيه) · «التالي»/«احفظ الجمعية» — وبعد الحفظ «إلى الجمعيات»
+    val bar: @Composable RowScope.() -> Unit = {
+        if (saved) PrimaryButton(t(TextKey.RW_DONE), { nav.pop() }, Modifier.weight(1f), height = 52.dp)
+        else {
+            val prev = previousQuestion(state.draft, q)
+            if (prev != null) SecondaryButton(t(TextKey.RW_PREV), { goTo(prev) }, Modifier.weight(1f), height = 52.dp)
+            PrimaryButton(t(if (q == null) TextKey.RW_SAVE else TextKey.RW_NEXT), { next() }, Modifier.weight(2f), loading = saving, height = 52.dp)
+        }
+    }
+    DuesScaffold(t(TextKey.RW_TITLE), bottomBar = bar) {
         item(key = "progress") {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 BasicText(
@@ -108,14 +117,6 @@ fun RoscaWizardScreen() {
         } else {
             wizardSummary(state, today)?.let { s -> item(key = "summary") { SummaryView(s, currency, onEdit = { goTo(it) }) } }
             error?.let { item(key = "save-error") { FieldError(it) } }
-        }
-        item(key = "actions") {
-            if (saved) SecondaryButton(t(TextKey.RW_DONE), { nav.pop() }, Modifier.fillMaxWidth(), height = 52.dp)
-            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                val prev = previousQuestion(state.draft, q)
-                if (prev != null) SecondaryButton(t(TextKey.RW_PREV), { goTo(prev) }, Modifier.weight(1f), height = 52.dp)
-                PrimaryButton(t(if (q == null) TextKey.RW_SAVE else TextKey.RW_NEXT), { next() }, Modifier.weight(2f), loading = saving, height = 52.dp)
-            }
         }
     }
 }

@@ -1,11 +1,13 @@
 package app.masroufy.ui.screens.dues
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,6 +17,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
@@ -23,7 +28,6 @@ import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FieldError
-import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.pressScale
@@ -72,7 +76,7 @@ fun SubscriptionsScreen() {
                                     DuesChanges.bump()
                                 } catch (e: Exception) {
                                     if (e is kotlinx.coroutines.CancellationException) throw e
-                                    error = e.message
+                                    error = failText(e)
                                 }
                             }
                         }, onNo = { dismissed = dismissed + c.key; error = null })
@@ -94,24 +98,29 @@ fun SubscriptionsScreen() {
 
 @Composable
 private fun CandidateCard(c: CandidateUi, error: String?, onYes: () -> Unit, onNo: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.SUBS_CAND_TITLE), style = Type.captionBold().copy(color = Ink.focus))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    BasicText(c.name, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    BasicText(c.why, style = Type.caption().copy(color = Ink.muted))
-                }
-                AmountText(c.amountMinor, c.currency)
+    // كارت كهرماني هادي (`#FBF0DD`) زي النموذج: اقتراح محتاج قرارك — مش كارت عادي
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        BasicText(t(TextKey.SUBS_CAND_TITLE), style = Type.captionBold().copy(color = Ink.focus))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                BasicText(c.name, style = Type.of(15, FontWeight.Bold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                BasicText(c.why, style = Type.caption().copy(color = AMBER_INK))
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PrimaryButton(t(TextKey.SUBS_CAND_YES), onYes, Modifier.weight(2f), height = 44.dp)
-                TonalButton(t(TextKey.DUES_NO), onNo, Modifier.weight(1f), height = 44.dp)
-            }
-            error?.let { FieldError(it) }
+            AmountText(c.amountMinor, c.currency)
         }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PrimaryButton(t(TextKey.SUBS_CAND_YES), onYes, Modifier.weight(1f), height = 44.dp)
+            TonalButton(t(TextKey.DUES_NO), onNo, Modifier.weight(1f), height = 44.dp)
+        }
+        error?.let { FieldError(it) }
     }
 }
+
+/** نص الشرح على الكارت الكهرماني (`#6B4600` في النموذج). */
+private val AMBER_INK = Color(0xFF6B4600)
 
 @Composable
 private fun SubRow(r: SubRowUi, onClick: () -> Unit) {

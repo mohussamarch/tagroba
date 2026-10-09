@@ -112,8 +112,8 @@ fun wizardSummary(state: RoscaSetupState, today: IsoDate): WizardSummaryUi? {
         WizardFact(t(TextKey.ROSCA_ST_GAIN), f.gainMinor?.let { if (it == 0L) StatValue.Text(t(TextKey.ROSCA_GAIN_NONE)) else StatValue.Money(it, signed = true) } ?: StatValue.NA),
         WizardFact(t(TextKey.ROSCA_ST_BEFORE), f.paymentsBeforePayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
         WizardFact(t(TextKey.ROSCA_ST_AFTER), f.paymentsAfterPayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_PEAK_SAVED), if (known) StatValue.Money(f.peakSavedMinor) else StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_PEAK_OWED), if (known) StatValue.Money(f.peakOwedMinor) else StatValue.NA),
+        WizardFact(t(TextKey.ROSCA_ST_PEAK_SAVED), if (known) StatValue.Money(f.peakSavedMinor, tint = StatTint.INCOME) else StatValue.NA),
+        WizardFact(t(TextKey.ROSCA_ST_PEAK_OWED), if (known) StatValue.Money(f.peakOwedMinor, tint = StatTint.EXPENSE) else StatValue.NA),
         WizardFact(t(TextKey.RW_LAST), StatValue.Text(dateText(f.lastDueAt, today))),
     )
     val answers = buildList {

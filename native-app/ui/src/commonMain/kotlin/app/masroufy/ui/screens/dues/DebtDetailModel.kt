@@ -76,7 +76,11 @@ fun debtDetailUi(people: List<PersonRow>, dueItems: List<DueItem>, obligationId:
         remainingMinor = row.remainingMinor,
         originalMinor = o.originalMinor,
         currency = o.currency,
-        ofOriginal = t(TextKey.DEBT_OF_ORIGINAL, amountLabel(o.originalMinor, o.currency)),
+        // المتبقي = الأصل (مقارنة مش حساب) ⇒ «لم يُسدَّد شيء بعد»؛ غير كده «من أصل X» بس (المسدَّد مش في حالة الاستخدام)
+        ofOriginal = t(
+            if (row.remainingMinor == o.originalMinor) TextKey.DEBT_OF_ORIGINAL_NONE else TextKey.DEBT_OF_ORIGINAL,
+            amountLabel(o.originalMinor, o.currency, showCurrency = false),
+        ),
         signal = if (due == null) null else chip,
         signalText = text,
         opening = opening,
@@ -121,6 +125,13 @@ fun settleInput(text: String, remainingMinor: Halalas, currency: Currency): Sett
         minor > remainingMinor -> SettleInput.OverRemaining
         else -> SettleInput.Ok(minor, minor == remainingMinor)
     }
+}
+
+/** رسالة بعد الحفظ: «سُدّد الدين بالكامل» · «سُجّل التحصيل من فهد» · «سُجّل السداد لعمر» (المتبقي الجديد بيظهر في الصفحة من حالة الاستخدام). */
+fun settledToast(ok: SettleInput.Ok, target: SettleTarget): String = when {
+    ok.full -> t(TextKey.SETTLE_SAVED_FULL)
+    target.forYou -> t(TextKey.SETTLE_SAVED_FOR, target.personName)
+    else -> t(TextKey.SETTLE_SAVED_ON, target.personName)
 }
 
 fun SettleInput.errorText(remainingMinor: Halalas, currency: Currency): String? = when (this) {

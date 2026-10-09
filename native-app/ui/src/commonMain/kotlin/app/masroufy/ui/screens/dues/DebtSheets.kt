@@ -1,8 +1,13 @@
 package app.masroufy.ui.screens.dues
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -10,7 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -31,7 +38,6 @@ import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
-import androidx.compose.foundation.layout.height
 import kotlinx.coroutines.launch
 
 /** اللي لوحة التسوية محتاجاه عن الالتزام (من «تفاصيل الدين» أو من القايمة لو اتفتحت من ملف الشخص). */
@@ -50,31 +56,51 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var text by remember(target.obligationId) { mutableStateOf("") }
+    var linkMode by remember(target.obligationId) { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
-    val check = settleInput(text, target.remainingMinor, target.currency)
-    BasicText(t(if (target.forYou) TextKey.SETTLE_TITLE_FOR else TextKey.SETTLE_TITLE_ON, target.personName), style = Type.section())
-    BasicText(t(TextKey.SETTLE_REMAINING, amountLabel(target.remainingMinor, target.currency)), style = Type.of(13).copy(color = Ink.muted))
-    MoneyField(text, { text = it; failure = null }, t(TextKey.SETTLE_AMOUNT), target.currency, check.errorText(target.remainingMinor, target.currency), big = true)
-    TonalButton(
-        t(TextKey.SETTLE_FILL, amountLabel(target.remainingMinor, target.currency, showCurrency = false)),
-        { text = formatAmount(target.remainingMinor, target.currency, grouping = false); failure = null }, height = 44.dp,
-    )
+    val check = if (linkMode) SettleInput.Empty else settleInput(text, target.remainingMinor, target.currency)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
+        BasicText(t(if (target.forYou) TextKey.SETTLE_TITLE_FOR else TextKey.SETTLE_TITLE_ON, target.personName), Modifier.weight(1f), style = Type.section())
+        BasicText(t(TextKey.SETTLE_REMAINING, amountLabel(target.remainingMinor, target.currency)), style = Type.caption().copy(color = Ink.muted))
+    }
+    // «كيف تمّت؟»: بلا عملية · عملية موجودة (الحوالة اللي مستنية سؤال «هل هي سداد؟» — §75، مش متبني لسه ⇒ مفيش مرشح)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        SelectChip(t(TextKey.SETTLE_HOW_FREE), !linkMode, { linkMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
+        SelectChip(t(TextKey.SETTLE_HOW_LINK), linkMode, { linkMode = true; failure = null }, Modifier.weight(1f), height = 44.dp)
+    }
+    if (linkMode) {
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.text.copy(alpha = 0.04f)).padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            BasicText(t(TextKey.SETTLE_NO_CAND), style = Type.bodyBold())
+            BasicText(t(TextKey.SETTLE_NO_CAND_SUB, target.personName), style = Type.caption().copy(color = Ink.muted))
+        }
+    } else {
+        MoneyField(text, { text = it; failure = null }, t(TextKey.SETTLE_AMOUNT), target.currency, check.errorText(target.remainingMinor, target.currency), big = true)
+        TonalButton(
+            t(TextKey.SETTLE_FILL, amountLabel(target.remainingMinor, target.currency, showCurrency = false)),
+            { text = formatAmount(target.remainingMinor, target.currency, grouping = false); failure = null }, height = 44.dp,
+        )
+    }
     failure?.let { FieldError(it) }
+    val ok = check as? SettleInput.Ok
     PrimaryButton(
-        t(if (target.forYou) TextKey.SETTLE_SAVE_FOR else TextKey.SETTLE_SAVE_ON),
+        if (ok == null) t(if (target.forYou) TextKey.SETTLE_SAVE_FOR else TextKey.SETTLE_SAVE_ON)
+        else t(if (target.forYou) TextKey.SETTLE_SAVE_FOR_AMOUNT else TextKey.SETTLE_SAVE_ON_AMOUNT, amountLabel(ok.minor, target.currency, showCurrency = false)),
         onClick = {
-            val ok = check as? SettleInput.Ok ?: return@PrimaryButton
+            val go = ok ?: return@PrimaryButton
             saving = true
             scope.launch {
                 try {
-                    deps.people.settle(target.obligationId, target.personId, ok.minor)
-                    toaster.show(t(if (ok.full) TextKey.SETTLE_SAVED_FULL else if (target.forYou) TextKey.SETTLE_SAVED_FOR else TextKey.SETTLE_SAVED_ON))
+                    deps.people.settle(target.obligationId, target.personId, go.minor)
+                    toaster.show(settledToast(go, target))
                     DuesChanges.bump()
-                    onSaved(ok.full)
+                    onSaved(go.full)
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
-                    failure = e.message ?: t(TextKey.SHELL_LOAD_FAILED)
+                    failure = failText(e)
                 } finally {
                     saving = false
                 }
@@ -140,7 +166,7 @@ internal fun OpeningDebtBody(personId: String, personName: String, onSaved: (Obl
                     onSaved(o)
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
-                    shown = e.message ?: t(TextKey.SHELL_LOAD_FAILED)
+                    shown = failText(e)
                 } finally {
                     saving = false
                 }

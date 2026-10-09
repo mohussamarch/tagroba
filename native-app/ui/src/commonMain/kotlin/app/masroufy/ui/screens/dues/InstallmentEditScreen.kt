@@ -143,7 +143,7 @@ fun InstallmentEditScreen(planId: String?) {
                                 DuesChanges.bump()
                             } catch (e: Exception) {
                                 if (e is kotlinx.coroutines.CancellationException) throw e
-                                failure = e.message
+                                failure = failText(e)
                             } finally {
                                 saving = false
                             }

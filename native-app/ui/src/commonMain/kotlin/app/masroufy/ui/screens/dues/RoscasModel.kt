@@ -92,10 +92,13 @@ fun roscaCard(v: RoscaView): RoscaCardUi {
 /** صف دور في «الأدوار ومواعيدها». */
 data class TurnRowUi(val number: Int, val num: String, val date: String, val status: String, val mine: Boolean, val paid: Boolean, val late: Boolean, val payMinor: Halalas, val after: String?)
 
+/** لون مبلغ في «التحليل»: عادي · أخضر (أكبر مبلغ تحفظه لك) · أحمر (أكبر دين عليك). */
+enum class StatTint { PLAIN, INCOME, EXPENSE }
+
 /** قيمة في «التحليل»: كلام · مبلغ (بلونه) · «غير متاح». */
 sealed interface StatValue {
     data class Text(val text: String) : StatValue
-    data class Money(val minor: Halalas, val signed: Boolean = false) : StatValue
+    data class Money(val minor: Halalas, val signed: Boolean = false, val tint: StatTint = StatTint.PLAIN) : StatValue
     data object NA : StatValue
 }
 
@@ -113,7 +116,8 @@ data class RoscaDetailUi(
     val note: String,
 )
 
-fun roscaDetailUi(v: RoscaView, f: RoscaForecast, today: IsoDate): RoscaDetailUi {
+/** [organizer] = اسم اللي بيلم الفلوس لو متسجل (`Rosca.organizerPersonId` ⇒ شخص) — بيتضاف لسطر الشروط «تدفع إلى نورة». */
+fun roscaDetailUi(v: RoscaView, f: RoscaForecast, today: IsoDate, organizer: String? = null): RoscaDetailUi {
     val r = v.rosca
     val s = v.status
     val known = r.myTurns.isNotEmpty()
@@ -155,12 +159,12 @@ fun roscaDetailUi(v: RoscaView, f: RoscaForecast, today: IsoDate): RoscaDetailUi
         StatUi(t(TextKey.ROSCA_ST_TOTAL_GET), if (known) t(TextKey.ROSCA_ST_IN, turnsCount(r.myTurns.size)) else "", f.totalReceiveMinor?.let { StatValue.Money(it) } ?: StatValue.NA),
         StatUi(t(TextKey.ROSCA_ST_BEFORE), t(TextKey.ROSCA_ST_BEFORE_NOTE), f.paymentsBeforePayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
         StatUi(t(TextKey.ROSCA_ST_AFTER), t(TextKey.ROSCA_ST_AFTER_NOTE), f.paymentsAfterPayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
-        StatUi(t(TextKey.ROSCA_ST_PEAK_SAVED), t(TextKey.ROSCA_ST_PEAK_SAVED_NOTE), if (known) StatValue.Money(f.peakSavedMinor) else StatValue.NA),
-        StatUi(t(TextKey.ROSCA_ST_PEAK_OWED), t(TextKey.ROSCA_ST_PEAK_OWED_NOTE), if (known) StatValue.Money(f.peakOwedMinor) else StatValue.NA),
+        StatUi(t(TextKey.ROSCA_ST_PEAK_SAVED), t(TextKey.ROSCA_ST_PEAK_SAVED_NOTE), if (known) StatValue.Money(f.peakSavedMinor, tint = StatTint.INCOME) else StatValue.NA),
+        StatUi(t(TextKey.ROSCA_ST_PEAK_OWED), t(TextKey.ROSCA_ST_PEAK_OWED_NOTE), if (known) StatValue.Money(f.peakOwedMinor, tint = StatTint.EXPENSE) else StatValue.NA),
     )
     val pos = s.positionMinor
     return RoscaDetailUi(
-        card = roscaCard(v),
+        card = roscaCard(v).let { c -> if (organizer.isNullOrBlank()) c else c.copy(terms = t(TextKey.ROSCA_TERMS_TO, c.terms, organizer)) },
         heroLabel = t(
             when {
                 s.phase == RoscaPhase.DONE && pos == 0L -> TextKey.ROSCA_POS_DONE

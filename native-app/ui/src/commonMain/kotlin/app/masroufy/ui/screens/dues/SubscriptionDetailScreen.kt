@@ -63,7 +63,7 @@ fun SubscriptionDetailScreen(itemId: String) {
             DuesChanges.bump()
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            error = e.message
+            error = failText(e)
         }
     }
     val ui = (load.value as? Load.Ready)?.value

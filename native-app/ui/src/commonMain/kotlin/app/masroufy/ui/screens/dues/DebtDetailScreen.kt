@@ -61,8 +61,7 @@ fun DebtDetailScreen(obligationId: String) {
     var celebrate by remember(obligationId) { mutableStateOf(false) }
     val load = rememberLoad(deps, obligationId) {
         val today = space.shell.today()
-        val view = deps.loadDues.load(today, deps.period(today), space.space.currency, null)
-        debtDetailUi(deps.people.listWithBalances(), view.agenda, obligationId, today)
+        debtDetailUi(deps.people.listWithBalances(), debtDueItems(deps, today), obligationId, today)
     }
     val ready = (load.value as? Load.Ready)?.value
     LaunchedEffect(ready) { if (ready != null) last = ready }
@@ -94,11 +93,11 @@ private fun Hero(ui: DebtDetailUi, celebrate: Boolean) {
         HeroCard(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(44.dp).clip(CircleShape).background(Color(0x26FFFFFF)), contentAlignment = Alignment.Center) {
-                        BasicText(ui.initial, style = Type.of(18, FontWeight.Bold).copy(color = Color.White))
+                    Box(Modifier.size(40.dp).clip(CircleShape).background(Ink.surface), contentAlignment = Alignment.Center) {
+                        BasicText(ui.initial, style = Type.of(17, FontWeight.Bold).copy(color = Ink.primary))
                     }
                     Column {
-                        BasicText(ui.personName, style = Type.of(17, FontWeight.Bold).copy(color = Color.White))
+                        BasicText(ui.personName, style = Type.of(16, FontWeight.Bold).copy(color = Color.White))
                         BasicText(ui.kindLine, style = Type.caption().copy(color = Ink.onHeroMuted))
                     }
                 }
@@ -119,16 +118,13 @@ private fun Origin(ui: DebtDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(TextKey.DEBT_ORIGIN_TITLE), style = Type.section())
         CardList {
-            LabelValue(t(TextKey.DEBT_ORIGIN_LABEL), note = ui.originHint) {
-                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    ValueText(ui.originValue)
-                    if (ui.opening) StatusChip(t(TextKey.DEBT_ORIGIN_OLD_CHIP), Chip.SOON)
-                }
+            StackedRow(t(TextKey.DEBT_ORIGIN_LABEL), ui.originHint, chip = if (ui.opening) ({ StatusChip(t(TextKey.DEBT_ORIGIN_OLD_CHIP), Chip.SOON) }) else null) {
+                ValueText(ui.originValue)
             }
             Divider()
-            LabelValue(t(TextKey.DEBT_ORIGINAL)) { AmountText(ui.originalMinor, ui.currency) }
+            StackedRow(t(TextKey.DEBT_ORIGINAL)) { AmountText(ui.originalMinor, ui.currency) }
             Divider()
-            LabelValue(t(TextKey.DEBT_TYPE), note = ui.typeHint) { ValueText(ui.typeText) }
+            StackedRow(t(TextKey.DEBT_TYPE), ui.typeHint) { ValueText(ui.typeText) }
         }
     }
 }
@@ -151,7 +147,7 @@ private fun Terms(ui: DebtDetailUi) {
             DuesChanges.bump()
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            error = e.message
+            error = failText(e)
         }
     }
     fun save(date: String, hasInterest: Boolean?) = DebtTerms(ui.obligationId, ui.personId, firstDueAt = date, hasInterest = hasInterest)

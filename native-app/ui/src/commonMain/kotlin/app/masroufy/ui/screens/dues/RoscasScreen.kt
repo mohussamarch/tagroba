@@ -19,8 +19,7 @@ import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FloatingCard
-import app.masroufy.ui.components.SecondaryButton
-import app.masroufy.ui.icons.Lucide
+import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.CategoryInk
@@ -44,7 +43,7 @@ fun RoscasScreen() {
             is Load.Ready -> {
                 if (s.value.isEmpty()) item { EmptyState(t(TextKey.ROSCAS_EMPTY_TITLE), t(TextKey.ROSCAS_EMPTY_BODY)) }
                 for (c in s.value) item(key = c.roscaId) { RoscaCard(c) { nav.push(RoscaDetailRoute(c.roscaId)) } }
-                item(key = "new") { SecondaryButton(t(TextKey.ROSCAS_NEW), { nav.push(RoscaWizardRoute) }, Modifier.fillMaxWidth(), height = 52.dp, leading = Lucide.PLUS) }
+                item(key = "new") { PrimaryButton(t(TextKey.ROSCAS_NEW), { nav.push(RoscaWizardRoute) }, Modifier.fillMaxWidth()) }
             }
         }
     }

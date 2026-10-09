@@ -66,7 +66,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
     val load = rememberLoad(deps) {
         val today = space.shell.today()
         val view = deps.loadDues.load(today, deps.period(today), space.space.currency, null)
-        DebtsData(deps.people.listWithBalances(), view.totals, view.agenda, today)
+        DebtsData(deps.people.listWithBalances(), view.totals, debtDueItems(deps, today), today)
     }
     DuesScaffold(t(TextKey.DEBTS_TITLE), t(TextKey.DEBTS_SUB)) {
         when (val s = load.value) {

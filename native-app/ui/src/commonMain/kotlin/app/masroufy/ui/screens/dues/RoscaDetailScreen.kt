@@ -4,11 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +33,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.EmptyState
+import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.HeroAmount
 import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.TonalButton
@@ -47,7 +53,10 @@ fun RoscaDetailScreen(roscaId: String) {
     val deps = space.dues
     val load = rememberLoad(deps, roscaId) {
         val today = space.shell.today()
-        deps.roscas.list(today).firstOrNull { it.rosca.id == roscaId }?.let { roscaDetailUi(it, deps.roscas.forecast(roscaId), today) }
+        deps.roscas.list(today).firstOrNull { it.rosca.id == roscaId }?.let { v ->
+            val organizer = v.rosca.organizerPersonId?.let { id -> deps.people.listWithBalances().firstOrNull { it.person.id == id }?.person?.name }
+            roscaDetailUi(v, deps.roscas.forecast(roscaId), today, organizer)
+        }
     }
     val ui = (load.value as? Load.Ready)?.value
     DuesScaffold(ui?.card?.name ?: t(TextKey.ROSCAS_TITLE)) {
@@ -138,25 +147,37 @@ private fun TurnRow(r: TurnRowUi, currency: Currency) {
     }
 }
 
+/** «التحليل»: كروت صغيرة اتنين اتنين (الاسم · القيمة 16 · سطر الشرح) زي النموذج. */
 @Composable
 private fun Analysis(d: RoscaDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(TextKey.ROSCA_ANALYSIS), style = Type.section())
-        CardList {
-            d.stats.forEachIndexed { i, st ->
-                if (i > 0) Divider()
-                LabelValue(st.label, note = st.note.ifEmpty { null }) { StatValueView(st.value, d.card.currency) }
+        for (pair in d.stats.chunked(2)) Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            for (st in pair) FloatingCard(Modifier.weight(1f).fillMaxHeight(), shape = RoundedCornerShape(18.dp), contentPadding = PaddingValues(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    BasicText(st.label, style = Type.caption().copy(color = Ink.muted))
+                    StatValueView(st.value, d.card.currency, size = 16)
+                    if (st.note.isNotEmpty()) BasicText(st.note, style = Type.of(11).copy(color = Ink.muted))
+                }
             }
+            if (pair.size == 1) Box(Modifier.weight(1f))
         }
         BasicText(d.note, style = Type.caption().copy(color = Ink.muted))
     }
 }
 
 @Composable
-internal fun StatValueView(v: StatValue, currency: Currency) {
+internal fun StatValueView(v: StatValue, currency: Currency, size: Int = 15) {
     when (v) {
-        StatValue.NA -> AmountText(null, currency, size = 15)
-        is StatValue.Text -> ValueText(v.text)
-        is StatValue.Money -> if (v.signed) GainValue(v.minor, currency, size = 15) else AmountText(v.minor, currency, size = 15)
+        StatValue.NA -> AmountText(null, currency, size = size)
+        is StatValue.Text -> BasicText(v.text, style = Type.of(size, FontWeight.Bold))
+        is StatValue.Money -> if (v.signed) GainValue(v.minor, currency, size = size) else AmountText(
+            v.minor, currency, size = size,
+            color = when (v.tint) {
+                StatTint.PLAIN -> null
+                StatTint.INCOME -> Ink.income
+                StatTint.EXPENSE -> Ink.expense
+            },
+        )
     }
 }

@@ -97,6 +97,12 @@ internal fun <T> rememberLoad(vararg keys: Any?, block: suspend () -> T): LoadSt
     return state
 }
 
+/**
+ * رسالة فشل حفظ للمستخدم: رسالة حالة الاستخدام نفسها (متترجمة من `uiText`) — ولو مالهاش نص، جملة عامة «تعذّر الحفظ».
+ * ممنوع خطأ صامت، وممنوع نص إنجليزي من استثناء يظهر في الشاشة.
+ */
+internal fun failText(e: Throwable): String = e.message?.takeIf { it.isNotBlank() } ?: t(TextKey.DUES_SAVE_FAILED)
+
 /** الهيكل الرمادي مكان الكروت (بيحمّل) — مش دوّامة في نص الشاشة. */
 @Composable
 internal fun LoadingBlocks(first: Int = 120, second: Int = 280) {
@@ -166,6 +172,19 @@ internal fun LabelValue(label: String, modifier: Modifier = Modifier, note: Stri
             if (note != null) BasicText(note, style = Type.caption().copy(color = Ink.muted))
         }
         value()
+    }
+}
+
+/** سطر «أصل الدين» في النموذج: الاسم صغير فوق · القيمة عريضة (وجنبها شريحة) · سطر شرح تحت — كله عمود. */
+@Composable
+internal fun StackedRow(label: String, hint: String? = null, chip: (@Composable () -> Unit)? = null, value: @Composable () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        BasicText(label, style = Type.caption().copy(color = Ink.muted))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            value()
+            chip?.invoke()
+        }
+        if (hint != null) BasicText(hint, style = Type.caption().copy(color = Ink.muted))
     }
 }
 

@@ -51,8 +51,9 @@ internal fun relativeText(date: IsoDate, today: IsoDate): String {
     return if (d < 0) agoText(-d) else afterText(d)
 }
 
-/** عدّ بصيغ العربي الأربعة: واحد · اتنين · ٣–١٠ · ١١ وأكتر ([few]/[many] فيهم `{0}`). */
-internal fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: TextKey): String = when {
+/** عدّ بصيغ العربي الأربعة: واحد · اتنين · ٣–١٠ · ١١ وأكتر ([few]/[many] فيهم `{0}`) — و[zero] لو الصفر ليه جملة («لا أقساط» مش «٠ قسطًا»). */
+internal fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: TextKey, zero: TextKey? = null): String = when {
+    n == 0 && zero != null -> t(zero)
     n == 1 -> t(one)
     n == 2 -> t(two)
     n in 3..10 -> t(few, sentenceNumber(n))
@@ -61,7 +62,7 @@ internal fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: T
 
 /** «قسط واحد» · «قسطان» · «٥ أقساط» · «١٢ قسطًا». */
 internal fun installmentsCount(n: Int): String =
-    countText(n, TextKey.DUES_INST_ONE, TextKey.DUES_INST_TWO, TextKey.DUES_INST_FEW, TextKey.DUES_INST_MANY)
+    countText(n, TextKey.DUES_INST_ONE, TextKey.DUES_INST_TWO, TextKey.DUES_INST_FEW, TextKey.DUES_INST_MANY, zero = TextKey.DUES_INST_NONE)
 
 /** الدورة بالكلام: «كل شهر» · «كل شهرين» · «كل ٣ أشهر» · «كل سنة» · «كل أسبوع» · «كل أسبوعين». */
 internal fun cycleText(every: Int, unit: CycleUnit = CycleUnit.MONTH): String = when (unit) {

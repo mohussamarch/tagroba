@@ -174,7 +174,7 @@ private fun Received(d: PlanDetailUi) {
                 DuesChanges.bump()
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
-                error = e.message
+                error = failText(e)
             }
         }
     }, onDismiss = { ask = false })

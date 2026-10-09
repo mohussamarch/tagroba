@@ -12,6 +12,7 @@ import app.masroufy.core.ObligationKind
 import app.masroufy.core.TextKey
 import app.masroufy.core.daysBetween
 import app.masroufy.core.normalizeText
+import app.masroufy.core.shiftMonths
 import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.PersonRow
@@ -52,6 +53,15 @@ data class DuesDebtsUi(
     val noHitsTitle: String?,
     val noHitsBody: String?,
 )
+
+/**
+ * مواعيد الديون لحد ١٠ سنين قدام (`LoadDues.dueItems`) — `LoadDues.load` بيرجّع شهر واحد قدام بس، فدين ميعاده بعد شهرين كان بيبان
+ * «بلا موعد» غلط. المتأخر بيرجع برضه (اللي فات وما اتسددش).
+ */
+internal suspend fun debtDueItems(deps: DuesDeps, today: IsoDate): List<DueItem> =
+    deps.loadDues.dueItems(today, shiftMonths(today, DEBT_DUE_HORIZON_MONTHS)).filter { it.source == DueSource.DEBT }
+
+internal const val DEBT_DUE_HORIZON_MONTHS = 120
 
 /** أقرب ميعاد لسه ما اتدفعش لكل التزام (من `LoadDues.dueItems` — المتأخر الأول). */
 internal fun debtDueMap(items: List<DueItem>): Map<String, DueItem> =
@@ -131,12 +141,12 @@ fun duesDebtsUi(people: List<PersonRow>, totals: DuesTotals, dueItems: List<DueI
     val sides = listOf(
         DebtSideUi(
             DebtSide.FOR_YOU, t(TextKey.DUES_FOR_YOU),
-            countText(forYouPeople, TextKey.DEBTS_AT_ONE, TextKey.DEBTS_AT_TWO, TextKey.DEBTS_AT_FEW, TextKey.DEBTS_AT_MANY),
+            countText(forYouPeople, TextKey.DEBTS_AT_ONE, TextKey.DEBTS_AT_TWO, TextKey.DEBTS_AT_FEW, TextKey.DEBTS_AT_MANY, zero = TextKey.DEBTS_NOBODY),
             totals.receivableMinor, t(TextKey.DEBTS_FOR_YOU_HINT),
         ),
         DebtSideUi(
             DebtSide.ON_YOU, t(TextKey.DUES_ON_YOU),
-            countText(onYouPeople, TextKey.DEBTS_TO_ONE, TextKey.DEBTS_TO_TWO, TextKey.DEBTS_TO_FEW, TextKey.DEBTS_TO_MANY),
+            countText(onYouPeople, TextKey.DEBTS_TO_ONE, TextKey.DEBTS_TO_TWO, TextKey.DEBTS_TO_FEW, TextKey.DEBTS_TO_MANY, zero = TextKey.DEBTS_NOBODY),
             totals.payableLoanMinor, t(TextKey.DEBTS_ON_YOU_HINT),
         ),
     )
