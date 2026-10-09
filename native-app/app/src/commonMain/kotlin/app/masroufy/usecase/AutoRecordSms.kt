@@ -36,6 +36,8 @@ class SmsLane private constructor(
     internal val sources: SourceRecordRepository,
     /** عقد C0: نفس المستورد اللي جوه [review] (الآثار والسجلات). */
     internal val importer: ImportStatement,
+    /** S2 (§75-4): الاستيراد فيه `CashWithdrawalEffect` — من غيره السحب من الصرّاف بيستنى (ما يتسجلش صرف من البنك لوحده). */
+    internal val movesCashWithdrawals: Boolean = false,
 ) {
     companion object {
         /**
@@ -47,7 +49,7 @@ class SmsLane private constructor(
             require(importDeps.transferParties != null) { "SMS lane needs the transfer-party decisions (OVERRIDES §60/§72)" }
             val importer = ImportStatement(importDeps)
             val review = ReviewSmsInbox(ReviewSmsInboxDeps(inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids))
-            return SmsLane(spaceId, review, wallets, importDeps.sources, importer)
+            return SmsLane(spaceId, review, wallets, importDeps.sources, importer, importDeps.effects.any { it is CashWithdrawalEffect })
         }
     }
 }
@@ -107,7 +109,7 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         // الجولة السادسة: آخر 4 أرقام حسابات المالك التانية في البلد — رسالة عن واحد منهم ما بتتسجلش لوحدها في المحفظة دي (رد المالك ١
         // «محفظة لكل بنك» كان مفترض حساب واحد للبنك؛ سؤال مفتوح للمالك في OVERRIDES §72.3)
         val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
-        val cash = all.filter { it.kind == "cash" }.singleOrNull()?.id // عقد C0 (§75-4)
+        val cash = if (lane.movesCashWithdrawals) singleCashWallet(all)?.id else null
         return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others, cash)
     }
 

@@ -56,7 +56,7 @@ class AutoRecordSmsRound8Test {
         for (id in listOf("cred", "credAr")) assertEquals(uiText(TextKey.SMS_WAIT_CARD_CREDIT), ready.getValue(id).confirmReason, id)
         assertEquals(uiText(TextKey.SMS_WAIT_REFUND), ready.getValue("refund").confirmReason)
         for (id in listOf("dep", "depEn")) assertEquals(uiText(TextKey.SMS_WAIT_CASH_DEPOSIT), ready.getValue(id).confirmReason, id)
-        assertEquals(uiText(TextKey.SMS_WAIT_CASH_WITHDRAWAL), ready.getValue("atm").confirmReason)
+        assertEquals(uiText(TextKey.SMS_WAIT_NO_CASH_WALLET), ready.getValue("atm").confirmReason) // S2: الهدف من غير محفظة كاش
         assertEquals(uiText(TextKey.SMS_WAIT_PURCHASE_CASH), ready.getValue("cb").confirmReason)
     }
 
@@ -87,7 +87,7 @@ class AutoRecordSmsRound8Test {
         assertEquals(listOf("2026-10-07"), space.all().map { it.occurredAt }, "«يوم 10/07» شهر/يوم في جملة الأهلي")
         val ready = screen(world, space).load(SmsReviewTarget(eg.id, eg.name, Currency.EGP, accountLast4 = "2277")).ready.associateBy { it.messageId }
         assertEquals(uiText(TextKey.SMS_WAIT_CARD_CREDIT), ready.getValue("credit").confirmReason)
-        assertEquals(uiText(TextKey.SMS_WAIT_CASH_WITHDRAWAL), ready.getValue("atm").confirmReason)
+        assertEquals(uiText(TextKey.SMS_WAIT_NO_CASH_WALLET), ready.getValue("atm").confirmReason) // S2: الهدف من غير محفظة كاش
         assertEquals(uiText(TextKey.SMS_WAIT_REFUND), ready.getValue("cashback").confirmReason)
     }
 

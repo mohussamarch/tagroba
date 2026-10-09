@@ -48,7 +48,7 @@ internal fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
 internal fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
     target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
     row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
-    row.kind == SmsKind.CASH_WITHDRAWAL -> TextKey.SMS_WAIT_CASH_WITHDRAWAL
+    row.kind == SmsKind.CASH_WITHDRAWAL && target.cashWalletId == null -> TextKey.SMS_WAIT_NO_CASH_WALLET // §75-4 (S2): له محفظة كاش واحدة ⇒ `CashWithdrawalEffect`
     row.kind == SmsKind.CARD_PAYMENT && row.direction == Direction.IN && (row.ownLast4 == null || row.ownLast4 != target.accountLast4) -> TextKey.SMS_WAIT_CARD_CREDIT
     row.kind == SmsKind.CASH_DEPOSIT -> TextKey.SMS_WAIT_CASH_DEPOSIT
     row.kind == SmsKind.PURCHASE_WITH_CASH -> TextKey.SMS_WAIT_PURCHASE_CASH
