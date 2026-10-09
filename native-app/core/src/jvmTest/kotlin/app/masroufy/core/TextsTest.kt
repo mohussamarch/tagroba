@@ -39,8 +39,8 @@ class TextsTest {
         val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_FEED_ALERT_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys +
             EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys + EGYPTIAN_CALC_TEXTS.keys + EGYPTIAN_RETIRE_TEXTS.keys + EGYPTIAN_GROWTH_TEXTS.keys +
             EGYPTIAN_INHERITANCE_DISTANT_TEXTS.keys + EGYPTIAN_SMS_AUTO_TEXTS.keys +
-            // الواجهة: الهيكل والمكوّنات المشتركة والدخول والقفل (ARCHITECTURE §31.31)
-            EGYPTIAN_SHELL_TEXTS.keys + EGYPTIAN_SHELL_AUTH_TEXTS.keys
+            // الواجهة: الهيكل والمكوّنات المشتركة والدخول والقفل + شاشات المناطق الثمانية (`TextsArea*.kt` — ARCHITECTURE §31.31)
+            EGYPTIAN_SHELL_TEXTS.keys + EGYPTIAN_SHELL_AUTH_TEXTS.keys + EGYPTIAN_AREA_TEXTS.keys
         assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 

@@ -41,7 +41,7 @@ import app.masroufy.ui.theme.Type
 /**
  * هياكل الشاشات — **كل شاشة بتبدأ بواحد منهم** عشان المسافات والرأس يبقوا واحد (KOTLIN-MAP §٣ «رأس الأقسام الأربعة لازم يبقى متطابق»):
  * - [TabScaffold] للتبويبات الأربعة: صف أول 48 (العنوان 24 عريض + **الترس دايمًا آخر حاجة على الشمال**) والمسافة تحت 156 للشريطين.
- * - [InnerScaffold] للشاشات الداخلية: زرار رجوع 48 + العنوان 22، ومن غير شريط التنقل.
+ * - [InnerScaffold] للشاشات الداخلية: زرار رجوع 48 (سهم 22) + العنوان 24 عريض (زي `Notifications`/`Calendar`/`More` في النموذج)، ومن غير شريط التنقل.
  * الحواف 20 والمسافة بين الكتل 14 (DESIGN-SYSTEM «المقاسات»). المحتوى `LazyColumn` (القوايم الطويلة بتتمرر بنعومة).
  */
 private val statusTop @Composable get() = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -101,14 +101,14 @@ fun InnerScaffold(
     }
 }
 
-/** رأس شاشة داخلية: رجوع (سهم لليمين في العربي) + العنوان 22 عريض + أفعال على الشمال. */
+/** رأس شاشة داخلية: رجوع (سهم لليمين في العربي) + العنوان 24 عريض + أفعال على الشمال (أزرار 48 بزاوية 18 — `SurfaceIconButton`). */
 @Composable
 fun ScreenHeader(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: (@Composable () -> Unit)? = null) {
     Row(modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (onBack != null) {
             Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(TextKey.SHELL_BACK), onBack) }
         }
-        BasicText(title, Modifier.weight(1f).semantics { heading() }, style = Type.of(22, FontWeight.Bold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        BasicText(title, Modifier.weight(1f).semantics { heading() }, style = Type.title(), maxLines = 1, overflow = TextOverflow.Ellipsis)
         actions?.invoke()
     }
 }

@@ -28,6 +28,7 @@ import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.glass.backdropSource
 import app.masroufy.ui.glass.rememberBackdrop
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.nav.LocalRegistry
 import app.masroufy.ui.nav.NavMotion
 import app.masroufy.ui.nav.Navigator
 import app.masroufy.ui.nav.RouteRegistry
@@ -37,12 +38,12 @@ import app.masroufy.ui.overlay.LocalOverlayHost
 import app.masroufy.ui.overlay.OverlayHost
 import app.masroufy.ui.overlay.OverlayLayer
 import app.masroufy.ui.shell.AddOperationSheet
-import app.masroufy.ui.shell.AskSheet
 import app.masroufy.ui.shell.BottomBars
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.shell.ToastHost
 import app.masroufy.ui.shell.Toaster
-import app.masroufy.ui.text.t
+import app.masroufy.ui.shell.ask.AskState
+import app.masroufy.ui.shell.ask.AssistantChat
 import app.masroufy.ui.theme.LocalReduceMotion
 import app.masroufy.ui.theme.Springs
 import app.masroufy.ui.theme.Space
@@ -56,6 +57,9 @@ class ShellState {
     val navigator = Navigator()
     val overlays = OverlayHost()
     val toaster = Toaster()
+
+    /** المحادثة مع المساعد — بتفضل لو الشات اتقفل أو اتنقلت أو البلد اتبدّل، لحد «محادثة جديدة» (§67 · آخر §76). */
+    val ask = AskState()
 
     /** لوحة/نافذة مفتوحة ⇒ تتقفل · شاشة داخلية ⇒ رجوع · تبويب ⇒ الرئيسية · الرئيسية ⇒ `false` (الجهاز يقفل التطبيق). */
     fun handleBack(): Boolean = overlays.handleBack() || navigator.back()
@@ -82,6 +86,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     LaunchedEffect(deps, bellTick) { bell = runCatching { deps.shell.bell() }.getOrNull() }
     CompositionLocalProvider(
         LocalNavigator provides nav,
+        LocalRegistry provides registry,
         LocalOverlayHost provides shell.overlays,
         LocalBackdrop provides backdrop,
         LocalSpace provides deps,
@@ -93,7 +98,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 key(deps.space.id) { ScreenHost(nav, registry) }
             }
             val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-            // المحادثة بتغطي الشاشة كلها وخانة الكتابة مكان الشريطين (النموذج: `AskBar` — الستارة `inset 0`) ⇒ الشريطين بيستخبوا وهي مفتوحة
+            // صفحة الشات بتغطي الشاشة كلها ومستطيل الكتابة مكان الشريطين (النموذج: `AssistantChat` — `inset 0`) ⇒ الشريطين بيستخبوا وهي مفتوحة
             if (nav.atTabRoot && ask == null) {
                 BottomBars(
                     current = nav.tab, dots = bell?.dots.orEmpty(), backdrop = backdrop, onTab = nav::switchTab,
@@ -107,7 +112,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 registry.Sheet(sheet) { nav.close(sheet) }
             }
             AddOperationSheet(adding) { adding = false }
-            AskSheet(ask != null, ask == true, context = t(nav.tab.label)) { ask = null }
+            AssistantChat(ask != null, ask == true, nav.tab, shell.ask) { ask = null }
             OverlayLayer(shell.overlays)
         }
     }

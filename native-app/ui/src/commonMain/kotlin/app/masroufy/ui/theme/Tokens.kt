@@ -35,6 +35,8 @@ object Ink {
     val sky = Color(0xFF9BC5FF)
     val amber = Color(0xFFF3C96B)
     val rose = Color(0xFFFFA8AC)
+    /** نص شرح أهدى من [text] وأتقل من [muted] — `#4F625C` في النموذج (مقدمة المساعد `AssistantStart` · تلميح «اسحب لفوق»). */
+    val soft = Color(0xFF4F625C)
     /** نص ميت (يوم فات في التقويم). */
     val faded = Color(0xFF9AA8A3)
     /** حدود الحقول: `rgba(204,216,204,0.9)`. */
@@ -74,9 +76,9 @@ object Space {
     /** v0.4.1: الشريط على خط المحتوى (OVERRIDES §73) — مش 12. */
     val navInset = 20.dp
     val navBottom = 14.dp
-    /** شريط «اسأل مصروفي»: ٤٤ مرئي جوه مساحة لمس ٤٨، على بعد ١٨ فوق شريط التنقل (KOTLIN-MAP §٣). */
+    /** شريط «اسأل مصروفي»: ٤٤ مرئي جوه مساحة لمس ٤٨، اللمس على بعد ٦ بس فوق شريط التنقل (`14 + 70 + 6 = 90` — طلب المالك §76، KOTLIN-MAP §٣). */
     val askHeight = 44.dp
-    val askGap = 18.dp
+    val askGap = 6.dp
     /** المسافة تحت آخر عنصر في قايمة جوه تبويب (الشريطين تحت) ≈ 156. */
     val tabContentBottom = 156.dp
     /** رأس الأقسام الأربعة: صف أول ٤٨ والزراير ٤٨×٤٨ بزاوية ١٨. */

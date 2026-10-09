@@ -66,8 +66,10 @@ import app.masroufy.ui.theme.motion
 /**
  * الشريطين تحت في التبويبات الأربعة (`BottomBar` — KOTLIN-MAP §٣ · OVERRIDES §73/§74/§76):
  * - **شريط التنقل:** زجاج سائل عايم `left/right 20 · bottom 14 · ارتفاع 70 · زاوية 26`، ٤ تبويبات + «+» في النص (64، من غير هالة).
- *   التبويب المختار = عدسة 40×30 والاسم أخضر عريض. **نقطة الإشعار** ٦×٦ من غير إطار (`top 3 · right 7` من العدسة).
- * - **«اسأل مصروفي»:** كبسولة 44 جوه لمس 48 على بعد `14 + 70 + 18 = 102` من تحت، والميكروفون دايرة 36 جوه آخرها.
+ *   **فقاعة التبويب المختار على التبويب كله** (الرمز والاسم — طلب المالك §76): ٦٢×٥٦ بزاوية ٢٠، وكل التبويبات بنفس المقاس، والاسم أخضر عريض.
+ *   **نقطة الإشعار** ٦×٦ من غير إطار (`top 3 · right 7` من مكان الرمز 40×28).
+ * - **«اسأل مصروفي»:** كبسولة 44 جوه لمس 48، اللمس على بعد `14 + 70 + 6 = 90` من تحت (دايرة «+» بتطلع فوق طرفه — مقبول من المالك)،
+ *   والميكروفون دايرة 36 جوه آخرها.
  * - **بلور متدرّج تحت الشريطين:** ٤ طبقات (2 · 5 · 10 · 18) بأقنعة (0←12 · 6←20 · 14←28 · 22←36) من أول المنطقة (١٤ فوق حافة شريط
  *   السؤال)، وفوقهم لون من الخلفية. تحت أندرويد 12: اللون بس.
  * الترتيب من اليمين: الرئيسية · العمليات · «+» · الأشخاص · الاستثمار.
@@ -83,10 +85,11 @@ fun BoxScope.BottomBars(
     onMic: () -> Unit,
 ) {
     val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    // زي النموذج بالظبط: مساحة اللمس (48) على بعد askBottom، والكبسولة (44) في نصها ⇒ حافتها التحتانية على بعد askBottom + 2
     val askBottom = Space.navBottom + Space.navHeight + Space.askGap
     Fog(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(askBottom + Space.askHeight + 14.dp + inset), backdrop)
     AskBar(
-        Modifier.align(Alignment.BottomCenter).padding(start = Space.navInset, end = Space.navInset, bottom = askBottom + inset - 2.dp),
+        Modifier.align(Alignment.BottomCenter).padding(start = Space.navInset, end = Space.navInset, bottom = askBottom + inset),
         backdrop, onAsk, onMic,
     )
     NavBar(
@@ -143,23 +146,25 @@ private fun TabItem(tab: Tab, current: Tab, dot: Boolean, onTab: (Tab) -> Unit) 
     val press = rememberPress()
     val lens by animateFloatAsState(if (on) 1f else 0f, motion(Springs.BOUNCY), label = "lens")
     val label = t(tab.label)
-    Column(
-        Modifier.defaultMinSize(minWidth = 56.dp, minHeight = 56.dp).pressScale(press)
+    val bubble = RoundedCornerShape(20.dp)
+    Box(
+        Modifier.defaultMinSize(minWidth = 62.dp).height(56.dp).pressScale(press)
             .tap(press, role = Role.Tab, onClick = { onTab(tab) })
             .semantics { selected = on; contentDescription = if (dot) t(TextKey.SHELL_TAB_WITH_NEW, label) else label },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+        contentAlignment = Alignment.Center,
     ) {
-        val lensShape = RoundedCornerShape(15.dp)
-        Box(Modifier.size(40.dp, 30.dp), contentAlignment = Alignment.Center) {
-            if (lens > 0.01f) Box(
-                Modifier.matchParentSize().graphicsLayer { alpha = lens.coerceIn(0f, 1f); scaleX = 0.8f + 0.2f * lens; scaleY = 0.8f + 0.2f * lens }
-                    .layeredShadow(lensShape, Shadows.navLens).clip(lensShape).background(Glass.navLens).innerSheen(lensShape, Shadows.navLens),
-            )
-            LucideIcon(tab.icon, size = 20.dp, tint = if (on) Ink.primary else Ink.muted)
-            if (dot) Box(Modifier.align(AbsoluteAlignment.TopRight).absoluteOffset(x = (-7).dp, y = 3.dp).size(6.dp).clip(CircleShape).background(Ink.dot))
+        // الفقاعة على التبويب كله (الرمز والاسم) — بتظهر بالنابض المرن (الزجاج السائل)
+        if (lens > 0.01f) Box(
+            Modifier.matchParentSize().graphicsLayer { alpha = lens.coerceIn(0f, 1f); scaleX = 0.8f + 0.2f * lens; scaleY = 0.8f + 0.2f * lens }
+                .layeredShadow(bubble, Shadows.navLens).clip(bubble).background(Glass.navLens).innerSheen(bubble, Shadows.navLens),
+        )
+        Column(Modifier.padding(horizontal = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(Modifier.size(40.dp, 28.dp), contentAlignment = Alignment.Center) {
+                LucideIcon(tab.icon, size = 20.dp, tint = if (on) Ink.primary else Ink.muted)
+                if (dot) Box(Modifier.align(AbsoluteAlignment.TopRight).absoluteOffset(x = (-7).dp, y = 3.dp).size(6.dp).clip(CircleShape).background(Ink.dot))
+            }
+            BasicText(label, style = Type.of(11, if (on) FontWeight.Bold else FontWeight.Normal).copy(color = if (on) Ink.primary else Ink.muted), maxLines = 1)
         }
-        BasicText(label, style = Type.of(11, if (on) FontWeight.Bold else FontWeight.Normal).copy(color = if (on) Ink.primary else Ink.muted), maxLines = 1)
     }
 }
 
@@ -191,7 +196,7 @@ private fun AskBar(modifier: Modifier, backdrop: Backdrop, onAsk: () -> Unit, on
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                LucideIcon(Lucide.SPARKLES, size = 18.dp, tint = Ink.primary)
+                LucideIcon(Lucide.ASSISTANT, size = 18.dp, tint = Ink.primary)
                 BasicText(t(TextKey.ASK_BAR), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
             MicButton(onMic)

@@ -582,9 +582,11 @@ enum class TextKey {
     WEEKDAY_SHORT_MON, WEEKDAY_SHORT_TUE, WEEKDAY_SHORT_WED, WEEKDAY_SHORT_THU, WEEKDAY_SHORT_FRI, WEEKDAY_SHORT_SAT, WEEKDAY_SHORT_SUN,
     MONTH_1, MONTH_2, MONTH_3, MONTH_4, MONTH_5, MONTH_6, MONTH_7, MONTH_8, MONTH_9, MONTH_10, MONTH_11, MONTH_12,
     DATE_DAY_MONTH, DATE_WEEKDAY_DAY_MONTH, DATE_MONTH_YEAR,
-    ASK_BAR, ASK_MIC, ASK_TITLE, ASK_CONTEXT, ASK_GREETING_NAME, ASK_GREETING, ASK_INPUT_HINT, ASK_INPUT_LABEL, ASK_SEND, ASK_TALK, ASK_CLOSE,
+    ASK_BAR, ASK_MIC, ASK_TITLE, ASK_BRAND_TITLE, ASK_DIALOG, ASK_HISTORY, ASK_NEW, ASK_NEW_STARTED, ASK_INTRO, ASK_TODO_TITLE, ASK_TODO_NOT_READY,
+    ASK_TODO_BASIS, ASK_INPUT_HINT, ASK_INPUT_LABEL, ASK_SEND, ASK_TALK, ASK_CLOSE, ASK_CHIPS_FOR,
     ASK_NOT_READY, ASK_VOICE_NOT_READY, ASK_CHIP_SPENT, ASK_CHIP_VOICE, ASK_CHIP_SPLIT, ASK_CHIP_PLAN, ASK_CHIP_OWED, ASK_CHIP_LOCK, ASK_TYPING,
-    ASK_LISTENING,
+    ASK_LISTENING, ASK_HISTORY_CLOSE, ASK_HISTORY_SEARCH, ASK_HISTORY_TODAY, ASK_HISTORY_CURRENT, ASK_HISTORY_EMPTY, ASK_HISTORY_NO_MATCH,
+    ASK_HISTORY_DELETE, ASK_HISTORY_DELETED, ASK_HISTORY_UNDO,
     ADD_LABEL, ADD_TITLE, ADD_VOICE, ADD_KIND_TABS, ADD_TYPE_OUT, ADD_TYPE_IN, ADD_TYPE_MOVE, ADD_AMOUNT, ADD_CATEGORY, ADD_INCOME_KIND, ADD_FROM,
     ADD_TO, ADD_SAVE, ADD_SAVING, ADD_SAVED, ADD_NO_WALLET, ADD_AMOUNT_INVALID,
     BELL_TITLE, BELL_LABEL_NEW, BELL_NEW_COUNT, BELL_ALL_READ, BELL_MARK_READ, BELL_ALL, BELL_EMPTY, BELL_CLOSE,
@@ -603,4 +605,23 @@ enum class TextKey {
     RESET_SPAM, RESET_RESEND, RESET_AGAIN, RESET_WAIT_ONE, RESET_WAIT_TWO, RESET_WAIT_FEW, RESET_WAIT_MANY, RESET_CHANGE, RESET_FINISH, RESET_OFFLINE,
     LOCK_SCREEN_TITLE, LOCK_SCREEN_BODY, LOCK_SCREEN_OPEN, LOCK_RELEASED,
     FEED_OFFLINE, FEED_HTTP_FAILED, FEED_UPDATED_AT, AUTH_GOOGLE_NO_ACCOUNT, AUTH_GOOGLE_FAILED,
+
+    // ════ شاشات المناطق الثمانية (ARCHITECTURE §31.31) — كل منطقة بتضيف مفاتيحها **تحت سطرها هي بس** (المناطق بتتبني بالتوازي،
+    // فالإضافة تحت سطور مختلفة بتندمج من غير تعارض): السطر الجديد **على طول تحت سطر منطقتك** وقبل السطر الفاضي. البادئة = اسم الشاشة (`PEOPLE_…` · `BANK_SMS_…`).
+    // ── منطقة «الرئيسية» (screens/home — Home · PeriodPicker · CashDetails · Notifications · Calendar) — القيم في `TextsAreaHome.kt`
+
+    // ── منطقة «العمليات» (screens/operations) — القيم في `TextsAreaOperations.kt`
+
+    // ── منطقة «الاستيراد» (screens/imports) — القيم في `TextsAreaImports.kt`
+
+    // ── منطقة «الأشخاص» (screens/people) — القيم في `TextsAreaPeople.kt`
+
+    // ── منطقة «المستحقات» (screens/dues) — القيم في `TextsAreaDues.kt`
+
+    // ── منطقة «الاستثمار» (screens/investment) — القيم في `TextsAreaInvestment.kt`
+
+    // ── منطقة «المزيد» (screens/more) — القيم في `TextsAreaMore.kt`
+
+    // ── منطقة «أول تشغيل» (screens/onboarding) — القيم في `TextsAreaOnboarding.kt`
+
 }

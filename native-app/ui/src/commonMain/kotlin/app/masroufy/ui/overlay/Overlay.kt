@@ -110,14 +110,14 @@ fun OverlayLayer(host: OverlayHost, modifier: Modifier = Modifier) {
 /**
  * الستارة ورا اللوحات والقوائم (KOTLIN-MAP §٣ · DESIGN-SYSTEM):
  * [NORMAL] اللوحات: `rgba(32,59,48,0.22)` + بلور 6 · [MENU] الضغط المطوّل والإضافة: `rgba(32,59,48,0.16)` + بلور 8 وتشبّع 0.88 ·
- * [LIGHT] نافذة الجرس: `rgba(32,59,48,0.06)` **من غير بلور** · [CHAT] «اسأل مصروفي»: `rgba(250,249,243,0.66)` + بلور 18 وتشبّع 1.1.
+ * [LIGHT] نافذة الجرس: `rgba(32,59,48,0.06)` **من غير بلور** · [CHAT] صفحة الشات (`AssistantChat`): `rgba(250,249,243,0.76)` + بلور 22 وتشبّع 1.1.
  * تحت أندرويد 12: نفس اللون أتقل شوية من غير بلور.
  */
 enum class Veil(internal val color: Color, internal val opaqueColor: Color, internal val blur: Dp, internal val saturation: Float) {
     NORMAL(Color(0x38203B30), Color(0x52203B30), 6.dp, 1f),
     MENU(Color(0x29203B30), Color(0x47203B30), 8.dp, 0.88f),
     LIGHT(Color(0x0F203B30), Color(0x0F203B30), 0.dp, 1f),
-    CHAT(Color(0xA8FAF9F3), Color(0xF0FAF9F3), 18.dp, 1.1f),
+    CHAT(Color(0xC2FAF9F3), Color(0xF7FAF9F3), 22.dp, 1.1f),
 }
 
 /** الستارة بحالة ظهورها [alpha] (0..1). الضغط عليها = [onDismiss] (من غير تموّج). */
