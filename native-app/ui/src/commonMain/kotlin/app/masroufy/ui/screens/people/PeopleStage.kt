@@ -62,8 +62,9 @@ internal const val STAGE_H = 360
 internal fun PeopleStage(orbit: List<PersonChip>, meName: String?, onOpen: (PersonChip) -> Unit, modifier: Modifier = Modifier) {
     HeroCard(modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
         BoxWithConstraints(Modifier.fillMaxWidth().padding(0.dp)) {
-            val k = maxWidth.value / STAGE_W
-            Box(Modifier.fillMaxWidth().size(width = maxWidth, height = STAGE_H.dp)) {
+            val w = maxWidth
+            val k = w.value / STAGE_W
+            Box(Modifier.fillMaxWidth().size(width = w, height = STAGE_H.dp)) {
                 Threads(orbit.size)
                 BasicText(
                     t(TextKey.PEOPLE_ORBIT_NOTE),
@@ -73,7 +74,7 @@ internal fun PeopleStage(orbit: List<PersonChip>, meName: String?, onOpen: (Pers
                 // الأماكن في النموذج من الشمال (left)؛ الإزاحة هنا من بداية السطر ⇒ في العربي نفس مكان النموذج، وفي الإنجليزي بالمراية
                 orbit.take(SPOTS.size).forEachIndexed { i, p ->
                     val (x, y) = SPOTS[i]
-                    val start = maxWidth.value - (x * k - 32f) - 64f
+                    val start = w.value - (x * k - 32f) - 64f
                     OrbitPerson(p, { onOpen(p) }, Modifier.offset(x = start.dp, y = (y - 48f).dp).zIndex(1f))
                 }
                 You(meName, Modifier.align(Alignment.BottomCenter))

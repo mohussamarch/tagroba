@@ -252,10 +252,10 @@ private fun Loose(ui: PrepUi) {
                 }
                 BasicText(t(TextKey.EVENT_PREP_ASSIGN), Modifier.padding(top = 8.dp, bottom = 6.dp), style = Type.captionBold())
                 ChoiceFlow {
-                    for (it in ui.items) Choice(it.item.name, false, {
+                    for (row in ui.items) Choice(row.item.name, false, {
                         scope.launch {
-                            runCatching { deps.prep.assignSpend(ui.event.id, l.txnId, it.item.id) }
-                                .onSuccess { PeopleChanges.bump(); toaster.show(t(TextKey.EVENT_PREP_ASSIGNED, it.item.name)) }
+                            runCatching { deps.prep.assignSpend(ui.event.id, l.txnId, row.item.id) }
+                                .onSuccess { PeopleChanges.bump(); toaster.show(t(TextKey.EVENT_PREP_ASSIGNED, row.item.name)) }
                                 .onFailure { e -> toaster.show(e.message ?: "") }
                         }
                     }, textSize = 13)
