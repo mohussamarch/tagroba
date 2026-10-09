@@ -61,6 +61,9 @@ internal val MSA_BUDGETS_RULES: Map<TextKey, String> = mapOf(
     TextKey.RULES_SAVED to "حُفظت القاعدة",
     TextKey.RULES_ADDED to "أُضيفت القاعدة — تُطبَّق على الجديد",
     TextKey.RULES_FORGOT to "نُسي تصنيفه — تُطبَّق القواعد عليه",
+    TextKey.RULES_QUOTED to "«{0}»",
+    TextKey.RULES_ALIAS_ADD to "أضف",
+    TextKey.RULES_SAVE to "احفظ",
 )
 
 internal val EGYPTIAN_BUDGETS_RULES: Map<TextKey, String> = mapOf(
@@ -123,6 +126,9 @@ internal val EGYPTIAN_BUDGETS_RULES: Map<TextKey, String> = mapOf(
     TextKey.RULES_SAVED to "اتحفظت القاعدة",
     TextKey.RULES_ADDED to "اتضافت القاعدة — بتشتغل على الجديد",
     TextKey.RULES_FORGOT to "البرنامج نسي تصنيفه — القواعد هي اللي هتشتغل",
+    TextKey.RULES_QUOTED to "«{0}»",
+    TextKey.RULES_ALIAS_ADD to "ضيف",
+    TextKey.RULES_SAVE to "احفظ",
 )
 
 internal val ENGLISH_BUDGETS_RULES: Map<TextKey, String> = mapOf(
@@ -185,4 +191,7 @@ internal val ENGLISH_BUDGETS_RULES: Map<TextKey, String> = mapOf(
     TextKey.RULES_SAVED to "Rule saved",
     TextKey.RULES_ADDED to "Rule added — it applies to new operations",
     TextKey.RULES_FORGOT to "Its category is forgotten — rules apply to it now",
+    TextKey.RULES_QUOTED to "“{0}”",
+    TextKey.RULES_ALIAS_ADD to "Add",
+    TextKey.RULES_SAVE to "Save",
 )
