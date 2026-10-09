@@ -117,7 +117,7 @@ class Component extends DCLogic {
   }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   toMinor(t) {
-    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
     if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
     const [w, f = ''] = s.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -128,17 +128,17 @@ class Component extends DCLogic {
     const cur = eg ? 'ج.م' : 'ر.س', s = this.state;
     const isNew = (this.props.mode ?? 'تفاصيل خطة') === 'خطة جديدة' || this.props.mode === 'new';
     // «خطط الادخار» بتبعت الخطة محسوبة؛ لو مفتوحة لوحدها: «السفر» زي ما هي في الصفحة
-    const G = this.props.goal || { id: 'g1', name: 'السفر', starred: true, sub: eg ? 'الهدف 36,000.00 ج.م، ٣١ ديسمبر ٢٠٢٦، إيداعات بإيدك' : 'الهدف 12,000.00 ر.س، ٣١ ديسمبر ٢٠٢٦، إيداعات يدوية',
-      saved: eg ? '22,200.00' : '7,400.00', of: eg ? '٦١٪، فاضل 13,800.00' : '٦١٪، بقي 4,600.00', pct: 61, linked: false, link: '', reached: false,
+    const G = this.props.goal || { id: 'g1', name: 'السفر', starred: true, sub: eg ? 'الهدف 36,000.00 ج.م، 31 ديسمبر 2026، إيداعات بإيدك' : 'الهدف 12,000.00 ر.س، 31 ديسمبر 2026، إيداعات يدوية',
+      saved: eg ? '22,200.00' : '7,400.00', of: eg ? '61%، فاضل 13,800.00' : '61%، بقي 4,600.00', pct: 61, linked: false, link: '', reached: false,
       stats: [[eg ? 'المفروض النهارده' : 'المفروض اليوم', eg ? '27,593.41' : '9,197.80', ''], [eg ? 'ورا بـ' : 'متأخرة بـ', eg ? '5,393.41' : '1,797.80', '#BE3D48'], [eg ? 'المطلوب في الشهر' : 'المطلوب شهريًا', eg ? '4,600.00' : '1,533.34', ''], [eg ? 'هتوصل لكام' : 'ستصل إلى', eg ? '28,963.44' : '9,654.48', '']],
-      deps: [['d9', '٢٨ سبتمبر', eg ? 225000 : 75000], ['d8', '٢٨ أغسطس', eg ? 210000 : 70000]],
-      targetMinor: eg ? 3600000 : 1200000, savedMinor: eg ? 2220000 : 740000, end: '٣١ ديسمبر ٢٠٢٦' };
+      deps: [['d9', '28 سبتمبر', eg ? 225000 : 75000], ['d8', '28 أغسطس', eg ? 210000 : 70000]],
+      targetMinor: eg ? 3600000 : 1200000, savedMinor: eg ? 2220000 : 740000, end: '31 ديسمبر 2026' };
     const BITS = ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#08634F'];
     const bits = [];
     for (let i = 0; i < 16; i++) bits.push({ outer: 'position: absolute; top: 0; left: ' + (4 + i * 6) + '%; animation-delay: ' + ((i * 37) % 300) + 'ms', inner: 'display: block; width: 6px; height: 10px; border-radius: 2px; transform: rotate(' + ((i * 47) % 90 - 45) + 'deg); background: ' + BITS[i % 5] });
     const chip = (on) => 'min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    const WHEN = [['year', eg ? 'آخر السنة' : 'آخر السنة', '٣١ ديسمبر ٢٠٢٦', 85, 3], ['y1', eg ? 'بعد سنة' : 'بعد سنة', '٧ أكتوبر ٢٠٢٧', 365, 12], ['y2', eg ? 'بعد سنتين' : 'بعد سنتين', '٧ أكتوبر ٢٠٢٨', 731, 24]];
-    const WALLETS = eg ? [['ahly', 'البنك الأهلي المصري', '٢٢٠٤', 1640000], ['qnb', 'QNB مصر', '٥٥٢٠', 620000]] : [['rajhi', 'مصرف الراجحي', '٣٣١٨', 412000], ['snb', 'البنك الأهلي السعودي', '٩٠٤٥', 183000], ['inma', 'مصرف الإنماء', '٧٧٣١', 50000]];
+    const WHEN = [['year', eg ? 'آخر السنة' : 'آخر السنة', '31 ديسمبر 2026', 85, 3], ['y1', eg ? 'بعد سنة' : 'بعد سنة', '7 أكتوبر 2027', 365, 12], ['y2', eg ? 'بعد سنتين' : 'بعد سنتين', '7 أكتوبر 2028', 731, 24]];
+    const WALLETS = eg ? [['ahly', 'البنك الأهلي المصري', '2204', 1640000], ['qnb', 'QNB مصر', '5520', 620000]] : [['rajhi', 'مصرف الراجحي', '3318', 412000], ['snb', 'البنك الأهلي السعودي', '9045', 183000], ['inma', 'مصرف الإنماء', '7731', 50000]];
     const choices = [{ label: eg ? 'لحد إمتى؟' : 'حتى متى؟', opts: WHEN.map(([id, label]) => ({ label, on: s.when === id ? 'true' : 'false', style: chip(s.when === id), pick: () => this.setState({ when: id }) })) },
       { label: eg ? 'بتحوّش إزاي؟' : 'كيف تدّخر؟', opts: [['manual', eg ? 'إيداعات بإيدي' : 'إيداعات يدوية'], ['linked', eg ? 'حساب مخصوص' : 'حساب مخصص']].map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', style: chip(s.kind === id), pick: () => this.setState({ kind: id, wallet: null }) })) }];
     if (s.kind === 'linked') choices.push({ label: eg ? 'أنهي حساب؟' : 'أي حساب؟', opts: WALLETS.map(([id, label]) => ({ label, on: s.wallet === id ? 'true' : 'false', style: chip(s.wallet === id), pick: () => this.setState({ wallet: id }) })) });

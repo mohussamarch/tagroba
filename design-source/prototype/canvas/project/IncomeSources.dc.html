@@ -117,19 +117,19 @@ body{margin:0}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // مخترعة · بالوحدة الصغرى · مصادر الدخل جوه كل بلد لوحدها (§64 قرار ٢). المقفول ما بيتمسحش — بيتقفل بتاريخ (§48)
+    // مخترعة · بالوحدة الصغرى · مصادر الدخل جوه كل بلد لوحدها (§64 قرار 2). المقفول ما بيتمسحش — بيتقفل بتاريخ (§48)
     const sa = [
-      { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '٢٨ أبريل ٢٠٢٦', end: null, freq: 'monthly', day: 28, expected: 1250000 },
-      { id: 'waha', name: 'مكتب الواحة للتصميم', kind: 'part_time', start: '١٠ أغسطس ٢٠٢٦', end: null, freq: 'weekly', weekday: 4, expected: 80000 },
-      { id: 'sahm', name: 'مجموعة السهم التجارية', kind: 'job', start: '١ مارس ٢٠٢٥', end: '٢٧ أبريل ٢٠٢٦', freq: 'monthly', day: 27, expected: 980000 },
-      { id: 'noura', name: 'متجر نورة للعطور', kind: 'client', start: '١٥ يناير ٢٠٢٦', end: '٣٠ يونيو ٢٠٢٦', freq: null, day: null, expected: null }
+      { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '28 أبريل 2026', end: null, freq: 'monthly', day: 28, expected: 1250000 },
+      { id: 'waha', name: 'مكتب الواحة للتصميم', kind: 'part_time', start: '10 أغسطس 2026', end: null, freq: 'weekly', weekday: 4, expected: 80000 },
+      { id: 'sahm', name: 'مجموعة السهم التجارية', kind: 'job', start: '1 مارس 2025', end: '27 أبريل 2026', freq: 'monthly', day: 27, expected: 980000 },
+      { id: 'noura', name: 'متجر نورة للعطور', kind: 'client', start: '15 يناير 2026', end: '30 يونيو 2026', freq: null, day: null, expected: null }
     ];
     const eg = [
-      { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '١ يناير ٢٠٢٦', end: null, freq: 'monthly', day: 5, expected: 900000 },
-      { id: 'ahly', name: 'شهادة ادخار — البنك الأهلي المصري', kind: 'investment', start: '١ يوليو ٢٠٢٦', end: null, freq: 'monthly', day: 1, expected: 225000 },
-      { id: 'delta', name: 'شركة الدلتا للمقاولات', kind: 'job', start: '١ سبتمبر ٢٠٢١', end: '٢٩ فبراير ٢٠٢٤', freq: 'monthly', day: 25, expected: null }
+      { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '1 يناير 2026', end: null, freq: 'monthly', day: 5, expected: 900000 },
+      { id: 'ahly', name: 'شهادة ادخار — البنك الأهلي المصري', kind: 'investment', start: '1 يوليو 2026', end: null, freq: 'monthly', day: 1, expected: 225000 },
+      { id: 'delta', name: 'شركة الدلتا للمقاولات', kind: 'job', start: '1 سبتمبر 2021', end: '29 فبراير 2024', freq: 'monthly', day: 25, expected: null }
     ];
-    // بداية الشهر المالي = يوم الراتب، واحد للحساب كله (§64 رد ١) — بيتغيّر من «غيّرت شغلي» أو من «تعديل» لو وافق
+    // بداية الشهر المالي = يوم الراتب، واحد للحساب كله (§64 رد 1) — بيتغيّر من «غيّرت شغلي» أو من «تعديل» لو وافق
     this.state = { lists: { sa, eg, sa0: [], eg0: [] }, view: null, sheet: null, payer: 'ask', toast: '', monthStart: 28 };
     this.timers = [];
     this.onClose = () => this.setState({ sheet: null });
@@ -139,7 +139,7 @@ class Component extends DCLogic {
       const k = this.key(), eg2 = k.indexOf('eg') === 0;
       const list = this.state.lists[k].map((x) => (x.id === r.id ? Object.assign({}, x, { name: r.name, day: r.day, weekday: r.weekday, expected: r.expectedMinor }) : x));
       this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), monthStart: r.monthStart || this.state.monthStart });
-      this.say(r.monthStart ? (eg2 ? 'اتحفظ — شهرك المالي هيبدأ يوم ' : 'حُفظ — يبدأ شهرك المالي يوم ') + r.monthStart.toLocaleString('ar-EG') + (eg2 ? ' من الشهر الجاي' : ' من الشهر القادم') : (eg2 ? 'اتحفظ التعديل' : 'حُفظ التعديل'));
+      this.say(r.monthStart ? (eg2 ? 'اتحفظ — شهرك المالي هيبدأ يوم ' : 'حُفظ — يبدأ شهرك المالي يوم ') + r.monthStart.toLocaleString('en-US') + (eg2 ? ' من الشهر الجاي' : ' من الشهر القادم') : (eg2 ? 'اتحفظ التعديل' : 'حُفظ التعديل'));
     };
     this.onDone = (r) => {
       const k = this.key();
@@ -150,7 +150,7 @@ class Component extends DCLogic {
       const eg2 = k.indexOf('eg') === 0;
       this.setState({ lists: Object.assign({}, this.state.lists, { [k]: list }), sheet: null, view: res.add ? null : this.state.view });
       // القفل لوحده ولا كلمة (§64) · الإضافة من غير «مبروك» · «مبروك» اتقالت جوه اللوحة
-      if (res.monthStart) { this.setState({ monthStart: res.monthStart }); this.say((eg2 ? 'شهرك المالي هيبدأ يوم ' : 'يبدأ شهرك المالي يوم ') + res.monthStart.toLocaleString('ar-EG') + (eg2 ? ' من الشهر الجاي' : ' من الشهر القادم')); }
+      if (res.monthStart) { this.setState({ monthStart: res.monthStart }); this.say((eg2 ? 'شهرك المالي هيبدأ يوم ' : 'يبدأ شهرك المالي يوم ') + res.monthStart.toLocaleString('en-US') + (eg2 ? ' من الشهر الجاي' : ' من الشهر القادم')); }
       else if (res.add && !res.close) this.say((eg2 ? 'اتضاف «' : 'أُضيف «') + res.add.name + '»');
     };
   }
@@ -161,7 +161,7 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state;
     const k = this.key();
     const list = s.lists[k] || [];
@@ -193,7 +193,7 @@ class Component extends DCLogic {
       backToList: () => this.setState({ view: null }),
       intro: eg ? 'قول بتشتغل فين ومن إمتى. البرنامج ما بيستنتجش حاجة من تغيّر المبلغ — بيسأل.' : 'سجّل أين تعمل ومتى بدأت. لا يستنتج التطبيق شيئًا من تغيّر المبلغ — بل يسأل.',
       asking, askQ: (eg ? 'ده مرتب من «' : 'هل هذا راتب من «') + (rayada ? rayada.name : '') + '»؟',
-      askFrom: eg ? '٣ أكتوبر · من «الريادة القابضة» حساب آخره ٥٥١٠' : '٣ أكتوبر · من «الريادة القابضة» حساب ينتهي بـ ٥٥١٠',
+      askFrom: eg ? '3 أكتوبر · من «الريادة القابضة» حساب آخره 5510' : '3 أكتوبر · من «الريادة القابضة» حساب ينتهي بـ 5510',
       askAmount: '+' + this.fmt(320000) + ' ' + cur,
       yesLabel: eg ? 'أيوه' : 'نعم', noLabel: eg ? 'لأ' : 'لا',
       payerYes: () => { this.setState({ payer: 'yes' }); this.say(eg ? 'تمام — أي تحويل منها هيتسجل مرتب لوحده' : 'تم — أي تحويل منها يُسجَّل راتبًا تلقائيًا'); },

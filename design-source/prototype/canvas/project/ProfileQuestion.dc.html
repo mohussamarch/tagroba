@@ -96,7 +96,7 @@ class Component extends DCLogic {
     this.IDS = { 'السيارة': 'car', 'الكاش': 'cash', 'العائلة': 'family', 'الراتب': 'salary', 'السكن': 'home', 'العمل الخاص': 'biz', 'الديون': 'debts' };
     this.state = this.fresh(props);
   }
-  // الشخص الافتراضي: خلّص الدقيقة الأولى (٤٠٪) وجاوب الكاش والديون (ملفك ٦٠٪ — زي «المزيد»)
+  // الشخص الافتراضي: خلّص الدقيقة الأولى (40%) وجاوب الكاش والديون (ملفك 60% — زي «المزيد»)
   fresh(p) {
     const err = (p && p.state) === 'خطأ';
     // خطأ: بطاقة الديون ولوحة الإضافة مفتوحة بخانات فاضية بعد «أضف» (أخطاء ONBOARD_DEBT_*)
@@ -105,8 +105,8 @@ class Component extends DCLogic {
   }
   componentDidUpdate(prev) { if (prev.card !== this.props.card || prev.state !== this.props.state) this.setState(this.fresh(this.props)); }
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
-  // الأوزان (§63 — اختيار Claude): الراتب ١٢، الكاش ١٠، الديون ١٠، السيارة/العائلة/السكن/العمل الخاص ٧. «أفضّل ألا أقول» ما بيزوّدش
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  // الأوزان (§63 — اختيار Claude): الراتب 12، الكاش 10، الديون 10، السيارة/العائلة/السكن/العمل الخاص 7. «أفضّل ألا أقول» ما بيزوّدش
   answer(value, reply) {
     const W = { car: 7, cash: 10, family: 7, salary: 12, home: 7, biz: 7, debts: 10 };
     const s = this.state, c = s.card;
@@ -119,7 +119,7 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const T = (msa, egy) => (eg ? egy : msa);
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const sum = (g) => Object.keys(g).reduce((t, key) => t + g[key], 0);
     const startPct = 60, pct = 40 + sum(s.got);
@@ -167,11 +167,11 @@ class Component extends DCLogic {
     const PW = eg ? ['شخص واحد', 'شخصين', 'أشخاص', 'شخص'] : ['شخص واحد', 'شخصان', 'أشخاص', 'شخصًا'];
     return {
       scrollStyle: 'height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px ' + (s.reply ? 230 : 48) + 'px; display: flex; flex-direction: column; gap: 14px',
-      pctText: 'ملفك ' + n(pct) + '٪', pctNow: String(pct), ringOffset: String(113.1 * (100 - pct) / 100),
-      pctBody: T('بطاقة واحدة (١٠ ثوانٍ) تجعل أرقامك أدق', 'كارت واحد (١٠ ثواني) بيخلّي أرقامك أدق'),
+      pctText: 'ملفك ' + n(pct) + '%', pctNow: String(pct), ringOffset: String(113.1 * (100 - pct) / 100),
+      pctBody: T('بطاقة واحدة (10 ثوانٍ) تجعل أرقامك أدق', 'كارت واحد (10 ثواني) بيخلّي أرقامك أدق'),
       illus: c[2], title: c[0], sub: c[1], hasSub: !!c[1],
       hasRows: s.card !== 'cash', opts, isCash: s.card === 'cash',
-      openLabel: T('رصيد بداية الكاش الآن · منذ ١ سبتمبر', 'رصيد بداية الكاش دلوقتي · من ١ سبتمبر'), openText: this.fmt(opening) + ' ' + cur,
+      openLabel: T('رصيد بداية الكاش الآن · منذ 1 سبتمبر', 'رصيد بداية الكاش دلوقتي · من 1 سبتمبر'), openText: this.fmt(opening) + ' ' + cur,
       ranges, exactLabel: T('أو اكتب المبلغ بالضبط', 'أو اكتب المبلغ بالظبط'), currency: cur,
       cashText: text, typeCash: (e) => this.setState({ cashText: e.target.value, range: null }), cashInvalid: bad ? 'true' : 'false',
       cashBox: 'display: flex; align-items: center; height: 48px; border-radius: 16px; padding: 0 14px; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
@@ -189,7 +189,7 @@ class Component extends DCLogic {
       },
       closeDebts: () => this.setState({ sheet: null, tried: false }),
       hasReply: !!s.reply,
-      replyTitle: delta > 0 ? '+' + n(delta) + '٪ — ' + T('ملفك صار ', 'ملفك بقى ') + n(pct) + '٪' : T('ملفك ', 'ملفك ') + n(pct) + '٪ ' + T('كما هو', 'زي ما هو'),
+      replyTitle: delta > 0 ? '+' + n(delta) + '% — ' + T('ملفك صار ', 'ملفك بقى ') + n(pct) + '%' : T('ملفك ', 'ملفك ') + n(pct) + '% ' + T('كما هو', 'زي ما هو'),
       replyLine: s.reply || '', homeLabel: T('العودة إلى الرئيسية', 'رجوع للرئيسية')
     };
   }

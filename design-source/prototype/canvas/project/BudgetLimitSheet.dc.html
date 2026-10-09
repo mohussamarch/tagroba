@@ -67,7 +67,7 @@ body{margin:0}
               </sc-for>
               <div style="{{otherBoxStyle}}">
                 <input type="text" inputmode="numeric" dir="ltr" value="{{pctIn}}" onInput="{{typePct}}" placeholder="{{otherLabel}}" aria-label="{{otherAria}}" aria-describedby="bl-pct-err" style="width: 100%; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: #193D33; outline: none; text-align: center">
-                <span style="font-size: 13px; color: #637570">٪</span>
+                <span style="font-size: 13px; color: #637570">%</span>
               </div>
             </div>
             <span id="bl-pct-err" role="alert" style="{{pctErrStyle}}">{{pctErr}}</span>
@@ -99,7 +99,7 @@ class Component extends DCLogic {
     const p = this.props;
     if (prev.limit !== p.limit || prev.threshold !== p.threshold || prev.alert !== p.alert || prev.cat !== p.cat) this.setState({ saved: null });
   }
-  digits(t) { return String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+  digits(t) { return String(t || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)); }
   toMinor(text) { const t = this.digits(text).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   div(a, b) { return (a - (a % b)) / b; }
@@ -109,7 +109,7 @@ class Component extends DCLogic {
     const on = p.alert === true || p.alert === 'true' || p.alert == null;
     return { limit: Math.max(0, Number(p.limit) || 0), pct: Number(p.threshold) || 0, alert: on && (Number(p.threshold) || 0) > 0 };
   }
-  // نسبة التنبيه: عدد صحيح من ١ لـ١٠٠ (SetBudget.validateThreshold) — الكتابة بتغلب الاختيار
+  // نسبة التنبيه: عدد صحيح من 1 لـ100 (SetBudget.validateThreshold) — الكتابة بتغلب الاختيار
   readPct() {
     const s = this.state;
     if (!s.pctIn) return { ok: true, v: s.pct };
@@ -121,7 +121,7 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state, c = this.current();
     const cat = this.props.cat || 'مطاعم وقهوة';
     const spent = Math.max(0, Number(this.props.spent) || 0);
@@ -131,29 +131,29 @@ class Component extends DCLogic {
     const P = this.readPct();
     const showErr = s.tried || (this.props.state ?? 'عادي') === 'خطأ';
     const limitErr = showErr && !limOk ? (eg ? 'السقف لازم يكون أكبر من صفر.' : 'يجب أن يكون السقف أكبر من صفر.') : '';
-    const pctErr = (showErr || s.pctIn) && s.alert && !P.ok ? (eg ? 'نسبة التنبيه لازم تكون رقم صحيح بين ١ و١٠٠.' : 'يجب أن تكون نسبة التنبيه عددًا صحيحًا بين ١ و١٠٠.') : '';
+    const pctErr = (showErr || s.pctIn) && s.alert && !P.ok ? (eg ? 'نسبة التنبيه لازم تكون رقم صحيح بين 1 و100.' : 'يجب أن تكون نسبة التنبيه عددًا صحيحًا بين 1 و100.') : '';
     const errStyle = (msg) => 'font-size: 12px; font-weight: 700; color: #BE3D48; min-height: ' + (msg ? '18px' : '0') + (msg ? '' : '; display: none');
     // مقارنة بالمتوسط (spec/04 «ميزانية»): المتوسط معلومة مش سقف، والنسب بقسمة صحيحة
     let compare = '';
     if (limOk) {
       const used = this.div(spent * 100, lim);
-      compare = eg ? 'صرفت منه ' + n(used) + '٪ لحد دلوقتي' : 'صُرف منه ' + n(used) + '٪ حتى الآن';
+      compare = eg ? 'صرفت منه ' + n(used) + '% لحد دلوقتي' : 'صُرف منه ' + n(used) + '% حتى الآن';
       if (avg > 0) {
         const d = lim - avg, pc = this.div(Math.abs(d) * 100, avg);
-        compare += '، ' + (pc === 0 ? (eg ? 'قد متوسطك تقريبًا' : 'يساوي متوسطك تقريبًا') : (d > 0 ? 'أعلى' : 'أقل') + ' من متوسطك بـ ' + n(pc) + '٪');
+        compare += '، ' + (pc === 0 ? (eg ? 'قد متوسطك تقريبًا' : 'يساوي متوسطك تقريبًا') : (d > 0 ? 'أعلى' : 'أقل') + ' من متوسطك بـ ' + n(pc) + '%');
       }
     }
     const at = limOk && P.ok && P.v ? this.div(lim * P.v, 100) : null;
     const chip = (on) => 'flex: 1 1 0; min-width: 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
     const pcts = [70, 80, 90].map((v) => ({
-      label: n(v) + '٪', on: !s.pctIn && s.pct === v ? 'true' : 'false', style: chip(!s.pctIn && s.pct === v),
+      label: n(v) + '%', on: !s.pctIn && s.pct === v ? 'true' : 'false', style: chip(!s.pctIn && s.pct === v),
       pick: () => this.setState({ pct: v, pctIn: '' })
     }));
     const box = (bad) => 'background: #FFFFFF; box-shadow: inset 0 0 0 ' + (bad ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)');
     return {
       triggerLabel: c.limit ? (eg ? 'غيّر السقف' : 'عدّل السقف') : (eg ? 'حدّد سقف' : 'حدّد سقفًا'),
       triggerStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (c.limit ? 'color: #08634F; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)' : 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
-      triggerNote: c.limit ? (eg ? 'السقف ' : 'السقف ') + this.fmt(c.limit) + ' ' + cur + '، ' + (c.alert ? (eg ? 'التنبيه عند ' : 'التنبيه عند ') + n(c.pct) + '٪' : (eg ? 'التنبيه مقفول' : 'التنبيه متوقف')) : (eg ? 'من غير سقف — المصروف بيتحسب برضه' : 'بلا سقف — المصروف يُحسب على أي حال'),
+      triggerNote: c.limit ? (eg ? 'السقف ' : 'السقف ') + this.fmt(c.limit) + ' ' + cur + '، ' + (c.alert ? (eg ? 'التنبيه عند ' : 'التنبيه عند ') + n(c.pct) + '%' : (eg ? 'التنبيه مقفول' : 'التنبيه متوقف')) : (eg ? 'من غير سقف — المصروف بيتحسب برضه' : 'بلا سقف — المصروف يُحسب على أي حال'),
       openSheet: () => {
         const bad = (this.props.state ?? 'عادي') === 'خطأ';
         const std = [70, 80, 90].indexOf(c.pct) >= 0;
@@ -163,7 +163,7 @@ class Component extends DCLogic {
       closeSheet: () => this.setState({ open: false }),
       title: 'سقف ' + cat, currency: cur,
       spentLine: (eg ? 'صرفت لحد دلوقتي ' : 'المصروف حتى الآن ') + this.fmt(spent) + ' ' + cur,
-      avgLine: avg > 0 ? (eg ? 'متوسطك ' : 'متوسطك ') + this.fmt(avg) + ' ' + cur + (eg ? ' — معلومة مش سقف' : ' — معلومة وليس سقفًا') : (eg ? 'المتوسط لسه مش متاح — محتاج ٣ شهور مكتملة' : 'المتوسط غير متاح بعد — يحتاج ٣ أشهر مكتملة'),
+      avgLine: avg > 0 ? (eg ? 'متوسطك ' : 'متوسطك ') + this.fmt(avg) + ' ' + cur + (eg ? ' — معلومة مش سقف' : ' — معلومة وليس سقفًا') : (eg ? 'المتوسط لسه مش متاح — محتاج 3 شهور مكتملة' : 'المتوسط غير متاح بعد — يحتاج 3 أشهر مكتملة'),
       limitLabel: eg ? 'السقف في الشهر' : 'السقف الشهري',
       limitIn: s.limitIn,
       typeLimit: (e) => this.setState({ limitIn: e.target.value }),

@@ -98,7 +98,7 @@ class Component extends DCLogic {
     const B = { funeral: '', debts: '', bequest: '', toHeir: false, consent: false, pre: { on: false, kind: 'son', sons: 0, daughters: 0, gift: '' }, special: [] };
     const it = (a) => a.map(([name, v]) => ({ name, v }));
     this.DEF = [
-      { id: 's1', name: 'تركتي — بعد شراء الشقة', whose: 'mine', person: '', country: 'SA', items: it([['شقة الياسمين', '576000'], ['ذهب عيار ٢١ — ١٢٠ جرام', '52560'], ['مصرف الراجحي — الرصيد', '4120']]), heirs: { wife: 1, son: 2, daughter: 1, mother: 1 }, names: { son: 'يوسف، عمر', daughter: 'ريم' }, before: Object.assign({}, B, { debts: '15000' }), createdAt: '2026-09-02', updatedAt: '2026-10-05' },
+      { id: 's1', name: 'تركتي — بعد شراء الشقة', whose: 'mine', person: '', country: 'SA', items: it([['شقة الياسمين', '576000'], ['ذهب عيار 21 — 120 جرام', '52560'], ['مصرف الراجحي — الرصيد', '4120']]), heirs: { wife: 1, son: 2, daughter: 1, mother: 1 }, names: { son: 'يوسف، عمر', daughter: 'ريم' }, before: Object.assign({}, B, { debts: '15000' }), createdAt: '2026-09-02', updatedAt: '2026-10-05' },
       { id: 's2', name: 'تركة الوالد — للتخطيط', whose: 'other', person: 'سالم', country: 'EG', items: it([['شقة المعادي', '2400000'], ['وديعة في البنك الأهلي المصري', '600000']]), heirs: { wife: 1, son: 1, daughter: 1 }, names: {}, before: Object.assign({}, B, { funeral: '15000', pre: { on: true, kind: 'daughter', sons: 1, daughters: 1, gift: '' } }), createdAt: '2026-09-15', updatedAt: '2026-09-21' },
       { id: 's3', name: 'تركتي — لو بلا أولاد', whose: 'mine', person: '', country: 'SA', items: it([['شقة الياسمين', '576000'], ['محفظة الأسهم', '89000']]), heirs: { wife: 1, father: 1, mother: 1, fb: 2 }, names: {}, before: B, createdAt: '2026-08-30', updatedAt: '2026-08-30' }
     ];
@@ -123,9 +123,9 @@ class Component extends DCLogic {
     this.setState({ list, sheet: null, toast: msg, last: last || null });
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(t) { const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!s) return 0; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(t) { const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!s) return 0; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   renderVals() {
-    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG');
+    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('en-US');
     const s = this.state, list = this.base().slice().sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
     const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const day = (iso) => { const p = String(iso || '').split('-'); return p.length === 3 ? n(+p[2]) + ' ' + M[+p[1] - 1] : ''; };

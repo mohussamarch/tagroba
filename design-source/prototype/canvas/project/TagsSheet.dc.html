@@ -74,7 +74,7 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tags":{"editor":"text","default":"هدية","section":"العملية"},"$preview":{"width":350,"height":72}}'>
-// وسوم العملية: الزرار + اللوحة (spec/02 «الوسوم بلا مضاعفة» · spec/04 حد ٣٢ حرف · UI020).
+// وسوم العملية: الزرار + اللوحة (spec/02 «الوسوم بلا مضاعفة» · spec/04 حد 32 حرف · UI020).
 // إضافة وشيل فوري زي EditTransaction.addTag/removeTag · الاسم المكرر بيرجع للوسم الموجود (normalizedName) · الوسوم مشتركة بين البلاد (§41).
 // الشاشة الأم بتعرف بـ onChange(['هدية', …]).
 const MAX = 32;
@@ -90,7 +90,7 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const failing = (this.props.state ?? 'عادي') === 'خطأ';
-    const s = this.state, n = (x) => x.toLocaleString('ar-EG');
+    const s = this.state, n = (x) => x.toLocaleString('en-US');
     const add = (raw) => {
       const name = String(raw || '').trim().replace(/\s+/g, ' ');
       if (!name) { this.setState({ err: eg ? 'اكتب اسم الوسم' : 'أدخل اسم الوسم', status: '' }); return; }

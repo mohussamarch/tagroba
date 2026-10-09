@@ -140,7 +140,7 @@ class Component extends DCLogic {
     if (!s.prompt || s.pin.length >= 4) return;
     const pin = s.pin + d;
     this.setState({ pin });
-    // تمثيل بس: أي ٤ أرقام بتفتح، والرقم مش بيتخزن
+    // تمثيل بس: أي 4 أرقام بتفتح، والرقم مش بيتخزن
     if (pin.length === 4) this.later(300, () => this.unlock());
   }
   renderVals() {
@@ -152,7 +152,7 @@ class Component extends DCLogic {
     const tone = s.bio === 'fail' ? '#BE3D48' : s.bio === 'ok' ? '#13764D' : '#08634F';
     // نص النظام ثابت (لغة الجوال)، والعنوان والسطر من التطبيق (LOCK_UNLOCK_TITLE · LOCK_UNLOCK_SUBTITLE)
     const hint = { idle: 'المس مستشعر البصمة', scan: 'جارٍ التحقق…', fail: 'لم يتم التعرّف على البصمة', ok: 'تم التعرّف' }[s.bio];
-    const digits = ['١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '', '٠', 'del'];
+    const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'];
     return {
       spaceName: eg ? 'مصر' : 'السعودية',
       appHidden: locked ? 'true' : 'false',
@@ -167,7 +167,7 @@ class Component extends DCLogic {
       touch: () => this.touch(), bioOk: s.bio === 'ok', bioIcon: s.bio !== 'ok', scanClass: s.bio === 'scan' ? 'l-scan' : '',
       bioStyle: 'width: 76px; height: 76px; border: 0; padding: 0; border-radius: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: ' + tone + '; background: ' + (s.bio === 'fail' ? 'rgba(190,61,72,0.08)' : 'rgba(8,99,79,0.08)'),
       bioHint: hint, hintStyle: 'font-size: 13px; font-weight: 700; color: ' + (s.bio === 'idle' || s.bio === 'scan' ? '#637570' : tone),
-      pinLabel: 'أُدخل ' + s.pin.length.toLocaleString('ar-EG') + ' من ٤',
+      pinLabel: 'أُدخل ' + s.pin.length.toLocaleString('en-US') + ' من 4',
       dots: [0, 1, 2, 3].map((i) => ({ style: 'width: 14px; height: 14px; border-radius: 7px; box-sizing: border-box; ' + (i < s.pin.length ? 'background: #193D33' : 'border: 1.5px solid rgba(25,61,51,0.35)') })),
       keys: digits.map((k) => ({ label: k, isKey: k !== '' && k !== 'del', isDel: k === 'del', isGap: k === '',
         press: () => (k === 'del' ? this.setState({ pin: s.pin.slice(0, -1) }) : k ? this.press(k) : null) })),

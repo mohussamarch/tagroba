@@ -151,7 +151,7 @@ class Component extends DCLogic {
   md(a, b, c) { const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   sgn(m) { return (m < 0 ? '−' : '+') + this.fmt(m); }
-  qt(q) { const f = q % 1000, w = (q - f) / 1000; return w.toLocaleString('ar-EG') + (f ? '٫' + String(f).padStart(3, '0').replace(/0+$/, '').replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : ''); }
+  qt(q) { const f = q % 1000, w = (q - f) / 1000; return w.toLocaleString('en-US') + (f ? '.' + String(f).padStart(3, '0').replace(/0+$/, '').replace(/[0-9]/g, (d) => '0123456789'[d]) : ''); }
   key() {
     const a = this.props.asset ?? 'حسب اللي اتداس';
     return a === 'عقار' ? 'flat' : a === 'ذهب' ? 'gold' : (this.picked === 'flat' ? 'flat' : 'gold');
@@ -173,14 +173,14 @@ class Component extends DCLogic {
     const unit = flat ? 'وحدة' : 'جرام';
     // مخترعة · الكمية بالألف من الوحدة · المبالغ بالوحدة الصغرى · [التاريخ، الكمية، المبلغ، الرسوم] — نفس أصول «الاستثمار»
     let D = {
-      gold: eg ? { lots: [['١٢ مارس ٢٠٢٤', 50000, 15500000, 150000], ['٥ فبراير ٢٠٢٥', 40000, 16800000, 120000]], sales: [['٢٠ يونيو ٢٠٢٥', 10000, 4800000, 0]], price: 525000, stale: 521000 }
-        : { lots: [['١٢ مارس ٢٠٢٤', 80000, 2160000, 32000], ['٥ فبراير ٢٠٢٥', 60000, 1980000, 24000]], sales: [['٢٠ يونيو ٢٠٢٥', 20000, 740000, 0]], price: 43800, stale: 43650 },
-      flat: eg ? { lots: [['١٠ مايو ٢٠١٩', 1000, 150000000, 4500000]], sales: [], price: 384000000, sqm: 3200000 }
-        : { lots: [['١٠ مايو ٢٠١٩', 1000, 48000000, 1200000]], sales: [], price: 57600000, sqm: 480000 }
+      gold: eg ? { lots: [['12 مارس 2024', 50000, 15500000, 150000], ['5 فبراير 2025', 40000, 16800000, 120000]], sales: [['20 يونيو 2025', 10000, 4800000, 0]], price: 525000, stale: 521000 }
+        : { lots: [['12 مارس 2024', 80000, 2160000, 32000], ['5 فبراير 2025', 60000, 1980000, 24000]], sales: [['20 يونيو 2025', 20000, 740000, 0]], price: 43800, stale: 43650 },
+      flat: eg ? { lots: [['10 مايو 2019', 1000, 150000000, 4500000]], sales: [], price: 384000000, sqm: 3200000 }
+        : { lots: [['10 مايو 2019', 1000, 48000000, 1200000]], sales: [], price: 57600000, sqm: 480000 }
     }[k];
     const fp = flat && this.fp && this.fp.eg === eg ? this.fp : null;
     if (fp) D = Object.assign({}, D, { price: fp.value, sqm: fp.sqm });
-    const areaText = (fp ? this.qt(fp.area) : '١٢٠') + ' م²';
+    const areaText = (fp ? this.qt(fp.area) : '120') + ' م²';
     const ev = D.lots.map((l) => ({ type: 'buy', date: l[0], q: l[1], v: l[2], f: l[3], op: '' }))
       .concat(D.sales.map((x) => ({ type: 'sell', date: x[0], q: x[1], v: x[2], f: x[3], op: '' }))).concat(s.added[k]);
     // المتوسط المرجّح (§11): رسوم الشراء في التكلفة · البيع بيقتطع حصته بالنسبة · الباقي بالطرح عشان مفيش هللة تضيع
@@ -206,11 +206,11 @@ class Component extends DCLogic {
     const chipS = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
     const pc = price == null ? [eg ? 'ناقص' : 'ناقص', '#FFFFFF', 'rgba(255,255,255,0.18)'] : s.manual != null || flat || !s.linked ? [eg ? 'بإيدك' : 'يدوي', '#064B40', '#9BC5FF'] : stale ? ['قديم', '#6B4600', '#F3C96B'] : [eg ? 'جديد' : 'حديث', '#064B40', '#A6DEC1'];
     const priceLine = price == null ? (flat ? (eg ? 'سعر المتر مش متسجّل' : 'سعر المتر غير مسجّل') : (eg ? 'سعر الدهب النهارده ما وصلش' : 'لم يصل سعر الذهب اليوم'))
-      : flat ? areaText + ' × ' + this.fmt(D.sqm) + (eg ? ' للمتر · ' : ' للمتر · ') + (fp ? (eg ? 'النهارده' : 'اليوم') : '١ أكتوبر')
-      : (eg ? 'السعر ' : 'السعر ') + this.fmt(price) + (eg ? ' للجرام · ' : ' للجرام · ') + (s.manual != null ? (eg ? 'النهارده' : 'اليوم') : stale ? (eg ? '٦ أكتوبر ٥ ص — بقاله يوم' : '٦ أكتوبر ٥ ص — مضى عليه يوم') : (eg ? 'النهارده ٥ ص' : 'اليوم ٥ ص'));
+      : flat ? areaText + ' × ' + this.fmt(D.sqm) + (eg ? ' للمتر · ' : ' للمتر · ') + (fp ? (eg ? 'النهارده' : 'اليوم') : '1 أكتوبر')
+      : (eg ? 'السعر ' : 'السعر ') + this.fmt(price) + (eg ? ' للجرام · ' : ' للجرام · ') + (s.manual != null ? (eg ? 'النهارده' : 'اليوم') : stale ? (eg ? '6 أكتوبر 5 ص — بقاله يوم' : '6 أكتوبر 5 ص — مضى عليه يوم') : (eg ? 'النهارده 5 ص' : 'اليوم 5 ص'));
     const stat = (label, value, sub, color, isNum) => ({ label, value, sub, dir: isNum ? 'ltr' : 'rtl', style: 'font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; color: ' + (color || '#193D33') });
     const stats = [
-      stat(eg ? 'الكمية' : 'الكمية', flat && qty === 1000 ? 'وحدة واحدة' : this.qt(qty) + ' ' + unit, flat ? areaText : (eg ? 'عيار ٢١' : 'عيار ٢١'), null, false),
+      stat(eg ? 'الكمية' : 'الكمية', flat && qty === 1000 ? 'وحدة واحدة' : this.qt(qty) + ' ' + unit, flat ? areaText : (eg ? 'عيار 21' : 'عيار 21'), null, false),
       stat(eg ? 'متوسط التكلفة' : 'متوسط التكلفة', qty ? this.fmt(this.md(cost, 1000, qty)) : '—', (eg ? 'لل' : 'لل') + unit + (eg ? ' · متوسط مرجّح' : ' · متوسط مرجّح'), null, true),
       stat(eg ? 'التكلفة' : 'التكلفة', this.fmt(cost), eg ? 'فيها رسوم الشراء' : 'تشمل رسوم الشراء', null, true),
       stat(eg ? 'المكسب المحقق' : 'المكسب المحقق', sold ? this.sgn(realized) : (eg ? 'مفيش بيع' : 'لا مبيعات'), sold ? (eg ? 'من بيع ' : 'من بيع ') + this.qt(sold) + ' ' + unit : (eg ? 'لسه ما بعتش' : 'لم تبع بعد'), sold ? (realized < 0 ? '#BE3D48' : '#13764D') : '#637570', !!sold)
@@ -223,7 +223,7 @@ class Component extends DCLogic {
       : [{ label: eg ? 'اربطه بالسعر اليومي' : 'اربطه بالسعر اليومي', go: () => { this.setState({ linked: true, manual: null }); this.say(eg ? 'اتربط بسعر الدهب اليومي' : 'رُبط بسعر الذهب اليومي'); } }]);
     return {
       spaceName: eg ? 'مصر' : 'السعودية', currency: cur,
-      title: flat ? 'شقة الياسمين' : 'ذهب عيار ٢١', kind: flat ? 'عقار' : 'ذهب',
+      title: flat ? 'شقة الياسمين' : 'ذهب عيار 21', kind: flat ? 'عقار' : 'ذهب',
       isStale: stale, staleTitle: eg ? 'ما قدرناش نحدّث الأسعار' : 'تعذّر تحديث الأسعار', staleBody: eg ? 'المعروض بسعر آخر تحديث نجح.' : 'المعروض بسعر آخر تحديث ناجح.',
       retryLabel: eg ? 'جرّب تاني' : 'أعد المحاولة', retry: () => { this.setState({ retried: true }); this.say(eg ? 'الأسعار اتحدّثت' : 'تحدّثت الأسعار'); },
       archived: s.archived, archivedText: eg ? 'متأرشف — مش داخل في إجمالي أملاكك، وسجله موجود.' : 'مؤرشف — لا يدخل في إجمالي أملاكك، وسجله باقٍ.',
@@ -243,7 +243,7 @@ class Component extends DCLogic {
       methodNote: eg ? 'التكلفة بالمتوسط المرجّح: رسوم الشراء بتدخل فيها، ورسوم البيع بتتخصم من الفلوس اللي قبضتها.' : 'التكلفة بالمتوسط المرجّح: رسوم الشراء تدخل فيها، ورسوم البيع تُخصم من الحصيلة.',
       srcTitle: flat ? (eg ? 'سعر المتر بإيدك' : 'سعر المتر يدوي') : s.linked ? (eg ? 'مربوط بالسعر اليومي' : 'مربوط بالسعر اليومي') : (eg ? 'سعر بإيدك' : 'سعر يدوي'),
       srcBody: flat ? (eg ? 'مفيش مصدر تلقائي لسعر المتر لسه — حدّثه من «الصورة كاملة».' : 'لا مصدر تلقائي لسعر المتر بعد — حدّثه من «الصورة كاملة».')
-        : s.linked ? (eg ? 'سعر الدهب عيار ٢١ من ملف الأسعار، بيتحدّث ٥ الصبح كل يوم. لو المصدر وقع، مفيش سعر بيتألّف.' : 'سعر الذهب عيار ٢١ من ملف الأسعار، يتحدّث ٥ صباحًا كل يوم. إن تعطّل المصدر لا يُختلق سعر.')
+        : s.linked ? (eg ? 'سعر الدهب عيار 21 من ملف الأسعار، بيتحدّث 5 الصبح كل يوم. لو المصدر وقع، مفيش سعر بيتألّف.' : 'سعر الذهب عيار 21 من ملف الأسعار، يتحدّث 5 صباحًا كل يوم. إن تعطّل المصدر لا يُختلق سعر.')
         : (eg ? 'مش بيتحدّث لوحده. بيفضل آخر سعر لحد ما تكتب غيره.' : 'لا يتحدّث وحده. يبقى آخر سعر حتى تكتب غيره.'),
       srcActs,
       canArchive: !s.archived, archiveLabel: eg ? 'أرشف الأصل' : 'أرشفة الأصل',

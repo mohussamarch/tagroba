@@ -114,16 +114,16 @@ class Component extends DCLogic {
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   md(a, b, c) { if (a < 0) return -this.md(-a, b, c); const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  // مخترعة · الأيام والشهور ثابتة من «النهارده» ٧ أكتوبر ٢٠٢٦، [المعرّف، التاريخ، المبلغ]
+  // مخترعة · الأيام والشهور ثابتة من «النهارده» 7 أكتوبر 2026، [المعرّف، التاريخ، المبلغ]
   defaults() {
     const eg = this.eg(), k = eg ? 3 : 1;
     const DM = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر'];
-    const dep = (ids, months, amts) => amts.map((a, i) => [ids + (i + 1), '٢٨ ' + months[i], a * k]).reverse();
+    const dep = (ids, months, amts) => amts.map((a, i) => [ids + (i + 1), '28 ' + months[i], a * k]).reverse();
     return [
-      { id: 'g1', name: 'السفر', target: 1200000 * k, from: '١ يناير ٢٠٢٦', end: '٣١ ديسمبر ٢٠٢٦', total: 364, elapsed: 279, months: 3, starred: true, deps: dep('d', DM, [120000, 100000, 80000, 100000, 65000, 70000, 60000, 70000, 75000]) },
-      { id: 'g2', name: 'جوال جديد', target: 300000 * k, from: '١ يونيو ٢٠٢٦', end: '٣١ ديسمبر ٢٠٢٦', total: 213, elapsed: 128, months: 3, deps: dep('e', DM.slice(5), [80000, 70000, 66000, 60000]) },
-      { id: 'g3', name: 'الطوارئ', target: 2000000 * k, from: '١ سبتمبر ٢٠٢٦', end: '١ يونيو ٢٠٢٧', total: 273, elapsed: 36, months: 8, start: eg ? 400000 : 30000, deps: [],
-        wallet: eg ? { name: 'QNB مصر', last4: '٥٥٢٠', balance: 620000 } : { name: 'مصرف الإنماء', last4: '٧٧٣١', balance: 50000 } }
+      { id: 'g1', name: 'السفر', target: 1200000 * k, from: '1 يناير 2026', end: '31 ديسمبر 2026', total: 364, elapsed: 279, months: 3, starred: true, deps: dep('d', DM, [120000, 100000, 80000, 100000, 65000, 70000, 60000, 70000, 75000]) },
+      { id: 'g2', name: 'جوال جديد', target: 300000 * k, from: '1 يونيو 2026', end: '31 ديسمبر 2026', total: 213, elapsed: 128, months: 3, deps: dep('e', DM.slice(5), [80000, 70000, 66000, 60000]) },
+      { id: 'g3', name: 'الطوارئ', target: 2000000 * k, from: '1 سبتمبر 2026', end: '1 يونيو 2027', total: 273, elapsed: 36, months: 8, start: eg ? 400000 : 30000, deps: [],
+        wallet: eg ? { name: 'QNB مصر', last4: '5520', balance: 620000 } : { name: 'مصرف الإنماء', last4: '7731', balance: 50000 } }
     ];
   }
   list() { const key = this.eg() ? 'eg' : 'sa'; return this.state.data[key] || ((this.props.state ?? 'عادي') === 'فاضي' ? [] : this.defaults()); }
@@ -134,7 +134,7 @@ class Component extends DCLogic {
     const unknown = !!g.wallet && (this.props.state ?? 'عادي') === 'غير متاح';
     const start = g.wallet ? g.start : 0;
     const saved = g.wallet ? g.wallet.balance : g.deps.reduce((t, d) => t + d[2], 0);
-    // المفروض النهارده: خط مستقيم بالأيام من المدّخر يوم البداية للهدف · المطلوب في الشهر لفوق · «هتوصل لكام» بعد ٣٠ يوم بس (§68)
+    // المفروض النهارده: خط مستقيم بالأيام من المدّخر يوم البداية للهدف · المطلوب في الشهر لفوق · «هتوصل لكام» بعد 30 يوم بس (§68)
     const dated = !!g.end && g.total > 0 && g.months > 0; // «بلا موعد» (رد المالك) ⇒ مفيش مفروض ولا مطلوب ولا «هتوصل لكام»
     const should = dated ? start + this.md(g.target - start, g.elapsed, g.total) : null;
     const rem = Math.max(0, g.target - saved);
@@ -172,7 +172,7 @@ class Component extends DCLogic {
       [eg ? 'المفروض النهارده' : 'المفروض اليوم', c.unknown ? NA : this.fmt(c.should), ''],
       [c.diff === 0 ? (eg ? 'في الميعاد' : 'في الموعد') : c.diff > 0 ? (eg ? 'قدّام بـ' : 'متقدّمة بـ') : (eg ? 'ورا بـ' : 'متأخرة بـ'), c.unknown ? NA : this.fmt(c.diff), c.unknown ? '#637570' : c.diff > 0 ? '#13764D' : c.diff < 0 ? '#BE3D48' : ''],
       [eg ? 'المطلوب في الشهر' : 'المطلوب شهريًا', c.unknown ? NA : this.fmt(c.per), ''],
-      [eg ? 'هتوصل لكام' : 'ستصل إلى', c.unknown ? NA : c.reach == null ? (eg ? 'بعد ٣٠ يوم' : 'بعد ٣٠ يومًا') : this.fmt(c.reach), c.reach != null && c.reach < g.target ? '#956000' : '']
+      [eg ? 'هتوصل لكام' : 'ستصل إلى', c.unknown ? NA : c.reach == null ? (eg ? 'بعد 30 يوم' : 'بعد 30 يومًا') : this.fmt(c.reach), c.reach != null && c.reach < g.target ? '#956000' : '']
     ];
     const sub = (g) => (g.end ? (eg ? 'لحد ' : 'حتى ') + g.end : NODATE) + '، ' + (g.wallet ? g.wallet.name + ' \u2066••••\u00A0' + g.wallet.last4 + '\u2069' : (eg ? 'إيداعات بإيدك' : 'إيداعات يدوية'));
     const goals = live.map((g) => {
@@ -187,7 +187,7 @@ class Component extends DCLogic {
         },
         chip: chip[0], chipStyle: chipS(chip[1], chip[2]),
         savedText: c.unknown ? NA : this.fmt(c.saved) + ' ' + cur,
-        ofText: (eg ? 'من ' : 'من ') + this.fmt(g.target) + (c.unknown ? '' : '، ' + c.pct.toLocaleString('ar-EG') + '٪'),
+        ofText: (eg ? 'من ' : 'من ') + this.fmt(g.target) + (c.unknown ? '' : '، ' + c.pct.toLocaleString('en-US') + '%'),
         pct: String(c.unknown ? 0 : c.pct), bar: 'display: block; height: 8px; border-radius: 4px; width: ' + (c.unknown ? 0 : c.pct) + '%; background: ' + (c.reached ? '#13764D' : '#08634F'),
         stats: statsOf(g, c).map(([label, value, color]) => ({ label, value, style: 'text-align: right; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (color || '#193D33') })),
         openLabel: g.wallet ? (eg ? 'التفاصيل' : 'التفاصيل') : (eg ? 'التفاصيل والإيداعات' : 'التفاصيل والإيداعات'),
@@ -195,7 +195,7 @@ class Component extends DCLogic {
     });
     const og = this.cur(), oc = og ? this.calc(og) : null;
     const sheetGoal = og ? { id: og.id, name: og.name, starred: !!og.starred, sub: (eg ? 'الهدف ' : 'الهدف ') + this.fmt(og.target) + ' ' + cur + '، ' + sub(og),
-      saved: oc.unknown ? NA : this.fmt(oc.saved), of: oc.unknown ? (eg ? 'رصيد الحساب مش معروف — كله غير متاح' : 'رصيد الحساب غير معروف — كل الأرقام غير متاحة') : oc.pct.toLocaleString('ar-EG') + '٪، ' + (oc.reached ? (eg ? 'كملت!' : 'اكتملت!') : (eg ? 'فاضل ' : 'بقي ') + this.fmt(oc.rem)),
+      saved: oc.unknown ? NA : this.fmt(oc.saved), of: oc.unknown ? (eg ? 'رصيد الحساب مش معروف — كله غير متاح' : 'رصيد الحساب غير معروف — كل الأرقام غير متاحة') : oc.pct.toLocaleString('en-US') + '%، ' + (oc.reached ? (eg ? 'كملت!' : 'اكتملت!') : (eg ? 'فاضل ' : 'بقي ') + this.fmt(oc.rem)),
       pct: oc.unknown ? 0 : oc.pct, reached: oc.reached, linked: !!og.wallet, deps: og.deps,
       link: og.wallet ? (eg ? 'مربوطة بـ«' : 'مربوطة بـ«') + og.wallet.name + ' \u2066••••\u00A0' + og.wallet.last4 + '\u2069' + (eg ? '» — الخطة مربوطة بحساب، المتحوّش بيتحسب من رصيده كله.' : '» — الخطة مربوطة بحساب، والمدّخر يُحسب من رصيده كله.') : '',
       stats: statsOf(og, oc), targetMinor: og.target, savedMinor: oc.unknown ? null : oc.saved, end: og.end } : null;
@@ -206,9 +206,9 @@ class Component extends DCLogic {
       emptyTitle: eg ? 'مفيش خطط ادخار' : 'لا توجد خطط ادخار', emptyBody: eg ? 'اعمل خطة بهدف وميعاد، وهنقولك المفروض تكون فين النهارده.' : 'أنشئ خطة بهدف وموعد، ونخبرك أين يُفترض أن تكون اليوم.',
       intro: eg ? 'النجمة على خطة واحدة بس — عليها المساعد بيقيس عادات الصرف.' : 'النجمة على خطة واحدة فقط — عليها يقيس المساعد عادات الصرف.',
       goals, hasArchived: arch.length > 0, archivedOpen: s.archivedOpen,
-      archivedLabel: (eg ? 'المتأرشفة (' : 'المؤرشفة (') + arch.length.toLocaleString('ar-EG') + ')', toggleArchived: () => this.setState({ archivedOpen: !s.archivedOpen }),
+      archivedLabel: (eg ? 'المتأرشفة (' : 'المؤرشفة (') + arch.length.toLocaleString('en-US') + ')', toggleArchived: () => this.setState({ archivedOpen: !s.archivedOpen }),
       archivedList: arch.map((g) => ({ name: g.name, text: this.fmt(this.calc(g).saved) + ' / ' + this.fmt(g.target) })),
-      method: eg ? 'المفروض النهارده = خط مستقيم بالأيام من البداية للميعاد. «هتوصل لكام» بمعدلك من البداية، وبيظهر بعد ٣٠ يوم.' : 'المفروض اليوم = خط مستقيم بالأيام من البداية إلى الموعد. «ستصل إلى» بمعدلك منذ البداية، ويظهر بعد ٣٠ يومًا.',
+      method: eg ? 'المفروض النهارده = خط مستقيم بالأيام من البداية للميعاد. «هتوصل لكام» بمعدلك من البداية، وبيظهر بعد 30 يوم.' : 'المفروض اليوم = خط مستقيم بالأيام من البداية إلى الموعد. «ستصل إلى» بمعدلك منذ البداية، ويظهر بعد 30 يومًا.',
       sheetOpen: !!s.open && (s.open === 'new' || !!og), sheetMode: s.open === 'new' ? 'new' : 'detail', sheetGoal, celebrating: !!og && s.celebrate === og.id,
       onDeposit: this.onDeposit, onRemove: this.onRemove, onArchive: this.onArchive, onCreate: this.onCreate, onEdit: this.onEdit, closeSheet: this.closeSheet,
       spaceName: eg ? 'مصر' : 'السعودية', hasToast: !!s.toast, toast: s.toast

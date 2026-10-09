@@ -76,7 +76,7 @@ input::placeholder{color:#8A9A95}
                 <sc-if value="{{hidden}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg></sc-if>
               </button>
             </div>
-            <sc-if value="{{passHint}}" hint-placeholder-val="{{ false }}"><span id="si-pass-hint" style="font-size: 12px; color: #637570">٦ أحرف على الأقل.</span></sc-if>
+            <sc-if value="{{passHint}}" hint-placeholder-val="{{ false }}"><span id="si-pass-hint" style="font-size: 12px; color: #637570">6 أحرف على الأقل.</span></sc-if>
             <sc-if value="{{passBad}}" hint-placeholder-val="{{ false }}">
               <span id="si-pass-err" role="alert" class="e-in" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #BE3D48"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>{{passErr}}</span>
             </sc-if>
@@ -120,7 +120,7 @@ class Component extends DCLogic {
     const errs = {};
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.email = 'البريد الإلكتروني غير صحيح';
     if (!s.pass) errs.pass = 'أدخل كلمة المرور';
-    else if (s.mode === 'new' && s.pass.length < 6) errs.pass = 'كلمة المرور قصيرة — ٦ أحرف على الأقل';
+    else if (s.mode === 'new' && s.pass.length < 6) errs.pass = 'كلمة المرور قصيرة — 6 أحرف على الأقل';
     if (errs.email || errs.pass) { this.setState({ errs }); return; }
     this.setState({ busy: true, errs: {} });
     this.timers.push(setTimeout(() => {

@@ -54,12 +54,12 @@ class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: 0 }; }
   renderVals() {
     const ui = (this.props.space ?? 'السعودية') === 'مصر';
-    const t = (sa, e) => (ui ? e : sa), A = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const t = (sa, e) => (ui ? e : sa), A = (x) => String(x).replace(/\d/g, (d) => '0123456789'[d]);
     let d = null;
     try { d = typeof this.props.data === 'string' ? JSON.parse(this.props.data) : this.props.data; } catch (e) { d = null; }
     // بيانات عرض لو اللوحة اتفتحت لوحدها (مخترعة) — في البرنامج بتيجي من InheritanceResult
-    if (!d || !d.items) d = { law: 'SA', items: [{ name: 'الشقة', value: '576,000.00', parts: [{ label: 'الزوجة', amount: '72,000.00', dot: 'background: #13764D' }, { label: 'الابن', amount: '272,000.00', dot: 'background: #2469BA' }, { label: 'البنت', amount: '136,000.00', dot: 'background: #956000' }, { label: 'الأم', amount: '96,000.00', dot: 'background: #BE3D48' }] }], notes: [['txt', 'الترتيب: تجهيز الميت، ثم الديون، ثم الوصية، ثم الورثة', 'المادة ١٩٨ من نظام الأحوال الشخصية']] };
-    const eg = d.law === 'EG', law = eg ? 'قانون المواريث ٧٧ لسنة ١٩٤٣' : 'نظام الأحوال الشخصية';
+    if (!d || !d.items) d = { law: 'SA', items: [{ name: 'الشقة', value: '576,000.00', parts: [{ label: 'الزوجة', amount: '72,000.00', dot: 'background: #13764D' }, { label: 'الابن', amount: '272,000.00', dot: 'background: #2469BA' }, { label: 'البنت', amount: '136,000.00', dot: 'background: #956000' }, { label: 'الأم', amount: '96,000.00', dot: 'background: #BE3D48' }] }], notes: [['txt', 'الترتيب: تجهيز الميت، ثم الديون، ثم الوصية، ثم الورثة', 'المادة 198 من نظام الأحوال الشخصية']] };
+    const eg = d.law === 'EG', law = eg ? 'قانون المواريث 77 لسنة 1943' : 'نظام الأحوال الشخصية';
     const cite = (a) => (a == null ? '' : t('المادة ', 'مادة ') + A(a) + ' من ' + law);
     const L = { husband: 'الزوج', wife: 'الزوجة', son: 'الابن', daughter: 'البنت', father: 'الأب', mother: 'الأم', gf: 'الجد (أبو الأب)', pgm: 'الجدة (أم الأب)', mgm: 'الجدة (أم الأم)', ss: 'ابن الابن', sd: 'بنت الابن', fb: 'الأخ الشقيق', fs: 'الأخت الشقيقة', pb: 'الأخ من الأب', ps: 'الأخت من الأب', mb: 'الأخ من الأم', ms: 'الأخت من الأم', fn: 'ابن الأخ الشقيق', fu: 'العم الشقيق' };
     // نصوص TextsInheritance.kt (فصحى · مصري) — المصطلح الفقهي بين قوسين بعد شرح بسيط
@@ -80,7 +80,7 @@ class Component extends DCLogic {
     };
     const rows = (d.notes || []).map((x) => (x[0] === 'txt' ? [x[1], x[2], false] : [NT[x[0]] ? NT[x[0]](x) : '', x[0] === 'unclear' ? '' : cite(x[1]), x[0] === 'unclear'])).filter((x) => x[0]);
     const s = this.state;
-    const sum = (parts) => { const m = parts.reduce((a, p) => a + Number(String(p.amount).replace(/[^0-9]/g, '')), 0), f = m % 100; return String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
+    const sum = (parts) => { const m = parts.reduce((a, p) => a + Number(String(p.amount).replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9]/g, '')), 0), f = m % 100; return String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; };
     return {
       itemsTitle: t('قسمة كل شيء', 'قسمة كل حاجة'), sumLabel: t('المجموع', 'المجموع'),
       items: d.items.map((it, k) => {

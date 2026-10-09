@@ -87,7 +87,7 @@ input::placeholder{color:#8A9A95}
             <div style="display: flex; align-items: center; gap: 8px">
               <div style="width: 112px; flex-shrink: 0; display: flex; align-items: center; height: 48px; box-sizing: border-box; border-radius: 16px; padding: 0 14px; gap: 6px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
                 <input id="pe-share" type="text" inputmode="numeric" dir="ltr" maxlength="3" value="{{shareText}}" onInput="{{typeShare}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 18px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
-                <span style="font-size: 15px; color: #637570">٪</span>
+                <span style="font-size: 15px; color: #637570">%</span>
               </div>
               <div style="display: flex; gap: 6px; flex-wrap: wrap">
                 <sc-for list="{{quick}}" as="qs" hint-placeholder-count="4">
@@ -115,24 +115,24 @@ input::placeholder{color:#8A9A95}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"flow":{"editor":"enum","options":["out","in"],"default":"out","section":"الحالة"},"event":{"editor":"enum","options":["","زواج خالد"],"default":"","section":"الحالة"},"locked":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"share":{"editor":null},"projects":{"editor":null},"amount":{"editor":null},"txnName":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":80}}'>
 // ربط العملية بمشروع أو حدث (§34 · §44.1 · §64). المشروع علامة على العملية كلها (ممكن أكتر من مشروع)،
-// والحدث واحد بس بنسبة صحيحة ١–١٠٠ بتتخزن على الربط — نصيبه = المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق على الهللة.
+// والحدث واحد بس بنسبة صحيحة 1–100 بتتخزن على الربط — نصيبه = المبلغ × النسبة ÷ 100 بأعداد صحيحة، النص لفوق على الهللة.
 // الحفظ بيرجّع للشاشة الأم: onSave({ projects: [اسم…], event: اسم أو null, sharePercent: رقم أو null, shareMinor: رقم أو null, unlinkedEvent: اسم أو null })
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, saved: null, sel: [], ev: null, share: '100', pending: null, unlinked: false, err: '' }; }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  pct(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  pct(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
   shareOf(amt, p) { const x = amt * p, r = x % 100; return (x - r) / 100 + (r * 2 >= 100 ? 1 : 0); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', s = this.state;
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const out = this.props.flow !== 'in';
     const locked = this.props.locked === true || this.props.locked === 'true';
     const total = Math.abs(Number(this.props.amount) || (out ? 90000 * k : 50000 * k));
     const txnName = this.props.txnName || (out ? (eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية') : (eg ? 'حوالة جاتلك من سارة' : 'حوالة واردة من سارة'));
     // مخترعة · نفس شاشتي المشاريع والأحداث (النشطة بس — المؤرشف ما بيتعرضش هنا)
     const PROJ = [[eg ? 'رحلة الغردقة' : 'رحلة العُلا', 'p'], [eg ? 'تجهيز أوضة الأولاد' : 'تجهيز غرفة الأولاد', 'p'], ['تصميم شعار لعميل', 'w'], [eg ? 'متجر جانبي' : 'متجر إلكتروني جانبي', 'w']];
-    const EVS = [['ولادة جود', '٢٨ سبتمبر', ''], ['زواج خالد', '١٨ أكتوبر', 'خالد'], [eg ? 'رحلة دهب' : 'رحلة العُلا', '١٤ نوفمبر', '']];
+    const EVS = [['ولادة جود', '28 سبتمبر', ''], ['زواج خالد', '18 أكتوبر', 'خالد'], [eg ? 'رحلة دهب' : 'رحلة العُلا', '14 نوفمبر', '']];
     const split = (v) => String(v || '').split(/[،,]/).map((x) => x.trim()).filter(Boolean);
     const saved = s.saved || { projects: split(this.props.projects).filter((p) => PROJ.some((x) => x[0] === p)), event: out && EVS.some((e) => e[0] === this.props.event) ? this.props.event : null, share: Math.min(100, Math.max(1, Number(this.props.share) || 100)) };
     // الحدث المربوط فعلًا: ما يتغيّرش لحدث تاني غير بعد «فك» (العملية بحدث واحد — EVENT_TXN_ALREADY_LINKED)
@@ -147,7 +147,7 @@ class Component extends DCLogic {
       this.setState({ ev: name, pending: null, err: '', unlinked: s.unlinked || (!name && !!linked), share: name && name === saved.event && !s.unlinked ? String(saved.share) : s.share });
     };
     const tags = saved.projects.map((x) => ({ kind: eg ? 'مشروع:' : 'مشروع:', name: x, amount: '' }))
-      .concat(saved.event ? [{ kind: 'حدث:', name: saved.event + (saved.share < 100 ? '، ' + n(saved.share) + '٪' : ''), amount: money(this.shareOf(total, saved.share)) }] : []);
+      .concat(saved.event ? [{ kind: 'حدث:', name: saved.event + (saved.share < 100 ? '، ' + n(saved.share) + '%' : ''), amount: money(this.shareOf(total, saved.share)) }] : []);
     const has = tags.length > 0;
     const curEv = EVS.find((e) => e[0] === s.ev) || null;
     return {
@@ -188,17 +188,17 @@ class Component extends DCLogic {
       shareLabel: eg ? 'نصيب الحدث من العملية' : 'نصيب الحدث من العملية',
       shareText: s.share,
       typeShare: (e) => this.setState({ share: e && e.target ? e.target.value : '', err: '' }),
-      quick: [100, 75, 50, 25].map((v) => ({ label: n(v) + '٪', on: p === v ? 'true' : 'false', pick: () => this.setState({ share: String(v), err: '' }), style: 'height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (p === v ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
+      quick: [100, 75, 50, 25].map((v) => ({ label: n(v) + '%', on: p === v ? 'true' : 'false', pick: () => this.setState({ share: String(v), err: '' }), style: 'height: 44px; padding: 0 10px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (p === v ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
       split: okShare ? [
         { label: (eg ? 'على «' : 'على «') + (s.ev || '') + '»', value: money(part), style: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: #BE3D48' },
         { label: eg ? 'الباقي برّه الحدث' : 'الباقي خارج الحدث', value: money(total - part), style: 'font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: #637570' }
-      ] : [{ label: eg ? 'النسبة من ١ لـ١٠٠' : 'النسبة من ١ إلى ١٠٠', value: '—', style: 'color: #637570' }],
+      ] : [{ label: eg ? 'النسبة من 1 لـ100' : 'النسبة من 1 إلى 100', value: '—', style: 'color: #637570' }],
       tagNote: eg ? 'الربط علامة على العملية — مش بيغيّر مصروف الشهر ولا تصنيفها، والنسبة بتتحفظ مع الربط.' : 'الربط علامة على العملية — لا يغيّر مصروف الشهر ولا تصنيفها، وتُحفظ النسبة مع الربط.',
       err: s.err,
       saveLabel: eg ? 'احفظ' : 'احفظ',
       save: () => {
         if (s.pending) return this.setState({ err: eg ? 'فك الربط القديم الأول، أو اختار نفس الحدث.' : 'فكّ الربط القديم أولًا، أو اختر الحدث نفسه.' });
-        if (out && s.ev && !okShare) return this.setState({ err: eg ? 'نسبة الحدث من العملية لازم تبقى من ١ لـ١٠٠.' : 'نسبة الحدث من العملية يجب أن تكون من ١ إلى ١٠٠.' });
+        if (out && s.ev && !okShare) return this.setState({ err: eg ? 'نسبة الحدث من العملية لازم تبقى من 1 لـ100.' : 'نسبة الحدث من العملية يجب أن تكون من 1 إلى 100.' });
         const ev = out ? s.ev : null;
         const next = { projects: s.sel.slice(), event: ev, share: ev ? p : 100 };
         this.setState({ open: false, saved: next, unlinked: false, err: '' });

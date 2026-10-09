@@ -90,7 +90,7 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     const st = this.props.state ?? 'عادي';

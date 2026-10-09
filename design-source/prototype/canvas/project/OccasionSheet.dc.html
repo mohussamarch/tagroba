@@ -104,13 +104,13 @@ input::placeholder{color:#8A9A95}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["","birthday","wedding_anniversary","wedding","other"],"default":"","section":"الحالة"},"person":{"editor":"enum","options":["خالد","سارة",""],"default":"خالد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"label":{"editor":null},"month":{"editor":null},"day":{"editor":null},"year":{"editor":null},"yearly":{"editor":null},"lead":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":80}}'>
-// مناسبة لشخص (أو ليك لو person فاضي) — §44.1 · §64 (+قرار التنفيذ ٩) · ManageOccasions.add/update/remove.
-// ميلادي بس · السنة اختياري (والمرة الواحدة محتاجاها) · ٢٩ فبراير ⇒ ٢٨ في السنين العادية · التذكير ١–٦٠ يوم والمبدئي أسبوع.
+// مناسبة لشخص (أو ليك لو person فاضي) — §44.1 · §64 (+قرار التنفيذ 9) · ManageOccasions.add/update/remove.
+// ميلادي بس · السنة اختياري (والمرة الواحدة محتاجاها) · 29 فبراير ⇒ 28 في السنين العادية · التذكير 1–60 يوم والمبدئي أسبوع.
 // kind فاضي = إضافة (زرار)، وغير كده = تعديل (كارت). الحفظ: onSave({ kind, label, month, day, year, yearly, leadDays }) · المسح: onSave({ removed: true })
 const TODAY = [2026, 10, 7];
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, saved: undefined, kind: 'birthday', label: '', month: null, day: '', year: '', yearly: true, lead: 7, confirm: false, err: '' }; }
-  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
   initial() {
     const p = this.props, kind = ['birthday', 'wedding_anniversary', 'wedding', 'other'].indexOf(p.kind) >= 0 ? p.kind : null;
     if (!kind) return null;
@@ -121,7 +121,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
-    const ar = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const ar = (x) => String(x).replace(/\d/g, (d) => '0123456789'[d]);
     const who = this.props.person == null ? 'خالد' : String(this.props.person);
     const saved = s.saved === undefined ? this.initial() : s.saved;
     const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -191,7 +191,7 @@ class Component extends DCLogic {
         if (draft.kind === 'other' && !draft.label) return say(eg ? 'اكتب اسم المناسبة.' : 'اكتب اسم المناسبة.');
         if (!draft.month) return say(eg ? 'اختار الشهر.' : 'اختر الشهر.');
         if (draft.year != null && (draft.year < 1900 || draft.year > 2200)) return say(bad);
-        if (!draft.day) return say(eg ? 'اكتب اليوم (من ١ لـ٣١).' : 'اكتب اليوم (من ١ إلى ٣١).');
+        if (!draft.day) return say(eg ? 'اكتب اليوم (من 1 لـ31).' : 'اكتب اليوم (من 1 إلى 31).');
         if (!draft.day || draft.day < 1 || draft.day > dim(draft.year || 2000, draft.month)) return say(bad);
         if (!draft.yearly && !draft.year) return say(eg ? 'المناسبة اللي مرة واحدة محتاجة السنة.' : 'المناسبة لمرة واحدة تحتاج السنة.');
         const o = { kind: draft.kind, label: draft.kind === 'other' ? draft.label : null, month: draft.month, day: draft.day, year: draft.year || null, yearly: draft.yearly, lead: draft.lead };

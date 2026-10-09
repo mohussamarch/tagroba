@@ -64,7 +64,7 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":60}}'>
 // زرار «حدث جديد» ولوحته — بيتستعمل في التقويم وفي الأحداث. الحفظ بيرجّع للشاشة الأم: onSave({ name, kind, date, who })
-// النموذج: النهارده ٧ أكتوبر ٢٠٢٦ · الحدث من غير مبلغ (التجهيزات بمبالغها من صفحة الحدث — §43)
+// النموذج: النهارده 7 أكتوبر 2026 · الحدث من غير مبلغ (التجهيزات بمبالغها من صفحة الحدث — §43)
 const TODAY = '2026-10-07';
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, name: '', kind: 'wedding', date: '', who: 'me', err: '' }; }

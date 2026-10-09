@@ -159,17 +159,17 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state, p = s.p;
     const cur = eg ? 'ج.م' : 'ر.س';
     const YES = eg ? 'أيوه' : 'نعم', NO = eg ? 'لأ' : 'لا';
     const GENDER = { male: 'ذكر', female: 'أنثى' };
     const DEPS = [['spouse', eg ? 'الزوج أو الزوجة' : 'الزوج أو الزوجة'], ['children', eg ? 'العيال' : 'الأولاد'], ['parents', 'الأهل']];
-    // §63: المرتب نطاقات مش رقم، ومعاه «مش عايز أقول». الحدود مخترعة (مصر ≈ ×٣)
-    const SAL = eg ? [['r1', 'أقل من ١٥ ألف'], ['r2', '١٥–٣٠ ألف'], ['r3', '٣٠–٦٠ ألف'], ['r4', 'أكتر من ٦٠ ألف'], ['skip', 'مش عايز أقول']]
-      : [['r1', 'أقل من ٥ آلاف'], ['r2', '٥–١٠ آلاف'], ['r3', '١٠–٢٠ ألفًا'], ['r4', 'أكثر من ٢٠ ألفًا'], ['skip', 'أفضّل ألا أقول']];
+    // §63: المرتب نطاقات مش رقم، ومعاه «مش عايز أقول». الحدود مخترعة (مصر ≈ ×3)
+    const SAL = eg ? [['r1', 'أقل من 15 ألف'], ['r2', '15–30 ألف'], ['r3', '30–60 ألف'], ['r4', 'أكتر من 60 ألف'], ['skip', 'مش عايز أقول']]
+      : [['r1', 'أقل من 5 آلاف'], ['r2', '5–10 آلاف'], ['r3', '10–20 ألفًا'], ['r4', 'أكثر من 20 ألفًا'], ['skip', 'أفضّل ألا أقول']];
     const label = (list, id) => (list.find((x) => x[0] === id) || [id, ''])[1];
-    // أوزان «ملفك X%» من §63 (اختيار Claude): الدخول والبلد ويوم المرتب ومصدر الفلوس والكاش والديون اتجاوبوا = ٦٠
+    // أوزان «ملفك X%» من §63 (اختيار Claude): الدخول والبلد ويوم المرتب ومصدر الفلوس والكاش والديون اتجاوبوا = 60
     const pct = 60 + (p.salary ? 12 : 0) + (p.deps ? 7 : 0) + (p.car !== null ? 7 : 0) + (p.renter !== null ? 7 : 0) + (p.biz !== null ? 7 : 0);
     const notYet = eg ? 'لسه ما جاوبتش' : 'لم تُجب بعد';
     const yn = (v) => (v === true ? YES : v === false ? NO : null);
@@ -218,7 +218,7 @@ class Component extends DCLogic {
       isError: st === 'خطأ', errTitle: eg ? 'ما اتحفظش آخر تعديل' : 'تعذّر حفظ آخر تعديل', errBody: eg ? 'هنجرّب تاني لوحدنا أول ما النت يرجع.' : 'سنعيد المحاولة تلقائيًا عند عودة الاتصال.',
       isOffline: offline, offline, offlineBody: eg ? 'مفيش نت. تعديلاتك بتتحفظ على الجوال وبتتبعت لما النت يرجع.' : 'لا اتصال. تُحفظ تعديلاتك على الجوال وتُرسل عند عودة الاتصال.',
       nameShown: p.name || (eg ? 'من غير اسم' : 'بلا اسم'), email: 'mohamed@example.com',
-      pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '٪',
+      pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '%',
       pctHint: pct >= 100 ? (eg ? 'كامل' : 'مكتمل') : (eg ? 'كل إجابة بتخلي الأرقام أدق' : 'كل إجابة تجعل الأرقام أدق'),
       barStyle: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
       avatarSoon: eg ? 'الكاركتر النهائي لسه بيتصمم.' : 'الكاركتر النهائي قيد التصميم.',
@@ -235,10 +235,10 @@ class Component extends DCLogic {
       signOutLabel: eg ? 'اخرج من الحساب' : 'تسجيل الخروج', askSignOut: () => this.setState({ sheet: 'signout', draft: null }),
       sheet: !!sh, sheetTitle: sh ? sh.t : '', hasSheetBody: !!(sh && sh.b), sheetBody: sh && sh.b ? sh.b : '',
       sName: s.sheet === 'name', draftName: s.sheet === 'name' ? String(d || '') : '', typeName: (e) => this.setState({ draft: e.target.value }),
-      nameBad: nameTooLong ? 'true' : 'false', hasNameErr: nameTooLong, nameErr: eg ? 'الاسم أطول من ٦٠ حرف' : 'الاسم أطول من ٦٠ حرفًا',
+      nameBad: nameTooLong ? 'true' : 'false', hasNameErr: nameTooLong, nameErr: eg ? 'الاسم أطول من 60 حرف' : 'الاسم أطول من 60 حرفًا',
       nameInput: 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (nameTooLong ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
       sChips: !!(sh && sh.chips), chips: sh && sh.chips ? sh.chips : [], chipsRole: sh && sh.role ? sh.role : 'radiogroup',
-      sDays: s.sheet === 'payday', days, daysNote: eg ? 'الأيام ٢٩–٣١ بتتحسب آخر يوم في الشهر القصير.' : 'الأيام ٢٩–٣١ تُحسب آخر يوم في الشهر القصير.',
+      sDays: s.sheet === 'payday', days, daysNote: eg ? 'الأيام 29–31 بتتحسب آخر يوم في الشهر القصير.' : 'الأيام 29–31 تُحسب آخر يوم في الشهر القصير.',
       hasSave: !!(sh && !sh.two), saveOff: !saveOk, saveLabel: sh && sh.saveLabel ? (eg ? 'احفظ: ' : 'حفظ: ') + sh.saveLabel : (eg ? 'احفظ' : 'حفظ'),
       saveStyle: primary + 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (saveOk ? '' : ' opacity: 0.45; cursor: default'),
       save: () => { if (sh && sh.save && saveOk) sh.save(); },

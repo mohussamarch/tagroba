@@ -134,7 +134,7 @@ class Component extends DCLogic {
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   pick(props) {
     const map = { 'رحلة العُلا': 'trip', 'زواج خالد': 'khaled', 'عزاء والد سالم': 'salem' };
@@ -146,13 +146,13 @@ class Component extends DCLogic {
   // مخترعة · بالوحدة الصغرى (السعودية). البنود المقترحة = أسامي بس من غير مبالغ (§65 — نفس قايمة كوتلن لكل نوع)
   data(eg) {
     return {
-      trip: { name: eg ? 'رحلة دهب' : 'رحلة العُلا', line: eg ? 'سفر، ١٤ نوفمبر، بعد ٣٨ يوم' : 'سفر، ١٤ نوفمبر، بعد ٣٨ يومًا', sugs: ['التذاكر', 'السكن', 'التأشيرة', 'المواصلات هناك', 'الأكل', 'الهدايا'],
-        items: [['التذاكر', 180000, true], ['السكن', 240000, false], ['المواصلات هناك', null, false], ['الأكل', null, false]], links: [['حجز طيران', '٢٠ سبتمبر', 180000, 0], ['عربون فندق', '٢٢ سبتمبر', 55000, null]] },
-      khaled: { name: 'زواج خالد', line: eg ? 'فرح خالد، ١٨ أكتوبر، بعد ١١ يوم' : 'زواج خالد، ١٨ أكتوبر، بعد ١١ يومًا', sugs: ['القاعة', 'اللبس', 'الأكل والضيافة', 'التصوير', 'الدعوات', eg ? 'الكوافير' : 'التجميل', 'شهر العسل'],
-        items: [['اللبس', 90000, false], ['المواصلات', null, false]], links: [[eg ? 'محل بدل رجالي (٥٠٪)' : 'محل الأزياء الرجالية (٥٠٪)', '٤ أكتوبر', 45000, 0]] },
-      salem: { name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', line: eg ? 'عزا، ٣ أغسطس' : 'عزاء، ٣ أغسطس', blocked: 'condolence' },
-      jood: { name: 'ولادة جود', line: eg ? 'ولادة، ٢٨ سبتمبر' : 'ولادة، ٢٨ سبتمبر', blocked: 'past' },
-      eid: { name: 'عيد الفطر', line: eg ? 'عيد، ٢٠ مارس' : 'عيد، ٢٠ مارس', blocked: 'past' }
+      trip: { name: eg ? 'رحلة دهب' : 'رحلة العُلا', line: eg ? 'سفر، 14 نوفمبر، بعد 38 يوم' : 'سفر، 14 نوفمبر، بعد 38 يومًا', sugs: ['التذاكر', 'السكن', 'التأشيرة', 'المواصلات هناك', 'الأكل', 'الهدايا'],
+        items: [['التذاكر', 180000, true], ['السكن', 240000, false], ['المواصلات هناك', null, false], ['الأكل', null, false]], links: [['حجز طيران', '20 سبتمبر', 180000, 0], ['عربون فندق', '22 سبتمبر', 55000, null]] },
+      khaled: { name: 'زواج خالد', line: eg ? 'فرح خالد، 18 أكتوبر، بعد 11 يوم' : 'زواج خالد، 18 أكتوبر، بعد 11 يومًا', sugs: ['القاعة', 'اللبس', 'الأكل والضيافة', 'التصوير', 'الدعوات', eg ? 'الكوافير' : 'التجميل', 'شهر العسل'],
+        items: [['اللبس', 90000, false], ['المواصلات', null, false]], links: [[eg ? 'محل بدل رجالي (50%)' : 'محل الأزياء الرجالية (50%)', '4 أكتوبر', 45000, 0]] },
+      salem: { name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', line: eg ? 'عزا، 3 أغسطس' : 'عزاء، 3 أغسطس', blocked: 'condolence' },
+      jood: { name: 'ولادة جود', line: eg ? 'ولادة، 28 سبتمبر' : 'ولادة، 28 سبتمبر', blocked: 'past' },
+      eid: { name: 'عيد الفطر', line: eg ? 'عيد، 20 مارس' : 'عيد، 20 مارس', blocked: 'past' }
     };
   }
   fresh(props) {
@@ -165,7 +165,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const eg = this.eg(), cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const ITEMS = eg ? ['بند واحد', 'بندين', 'بنود', 'بند'] : ['بند واحد', 'بندان', 'بنود', 'بندًا'];
     const s = this.state, d = this.data(eg)[s.key];
@@ -239,7 +239,7 @@ class Component extends DCLogic {
       typeNew: (e) => this.setState({ newName: e.target.value, newErr: '' }),
       addItem: () => {
         const name = norm(s.newName);
-        if (!name || name.length > 60) { this.setState({ newErr: eg ? 'اسم البند لازم يبقى من حرف لـ٦٠ حرف.' : 'اسم البند من حرف إلى ٦٠ حرفًا.' }); return; }
+        if (!name || name.length > 60) { this.setState({ newErr: eg ? 'اسم البند لازم يبقى من حرف لـ60 حرف.' : 'اسم البند من حرف إلى 60 حرفًا.' }); return; }
         if (s.items.some((x) => norm(x.name) === name)) { this.setState({ newErr: eg ? 'فيه بند بنفس الاسم في الحدث ده.' : 'يوجد بند بالاسم نفسه في هذا الحدث.' }); return; }
         const seq = s.seq || 0;
         this.setState({ items: s.items.concat([{ id: 'n' + seq, name, planned: null, done: false, fresh: true }]), seq: seq + 1, newName: '', newErr: '' });

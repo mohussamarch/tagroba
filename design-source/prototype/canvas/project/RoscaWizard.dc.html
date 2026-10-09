@@ -143,13 +143,13 @@ class Component extends DCLogic {
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (f ? '.' + (f < 10 ? '0' : '') + f : ''); }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     if (this.st !== st) { this.st = st; Object.assign(this.state, this.init(st, this.props.space === 'مصر')); }
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const n = (x) => x.toLocaleString('en-US'), ny = (x) => x.toLocaleString('en-US', { useGrouping: false });
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const QW = eg ? ['قسط واحد', 'قسطين', 'أقساط', 'قسط'] : ['قسط واحد', 'قسطان', 'أقساط', 'قسطًا'];
     const s = this.state, d = s.d;
@@ -157,7 +157,7 @@ class Component extends DCLogic {
     const dim = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
     const dt = (a) => n(a[2]) + ' ' + MO[a[1] - 1] + (a[0] !== 2026 ? ' ' + ny(a[0]) : '');
     // الدورية (RoscaFrequency): أسبوع أو شهر × كل كام
-    const FREQ = [['w1', 'كل أسبوع', 'w', 1], ['w2', 'كل أسبوعين', 'w', 2], ['m1', 'كل شهر', 'm', 1], ['m2', 'كل شهرين', 'm', 2], ['m3', eg ? 'كل ٣ شهور' : 'كل ٣ أشهر', 'm', 3]];
+    const FREQ = [['w1', 'كل أسبوع', 'w', 1], ['w2', 'كل أسبوعين', 'w', 2], ['m1', 'كل شهر', 'm', 1], ['m2', 'كل شهرين', 'm', 2], ['m3', eg ? 'كل 3 شهور' : 'كل 3 أشهر', 'm', 3]];
     const SHARE = [['half', eg ? 'نص سهم' : 'نصف سهم', 1, 2, 1], ['one', 'سهم واحد', 1, 1, 1], ['two', eg ? 'سهمين' : 'سهمان', 2, 1, 2]];
     const fq = (id) => FREQ.find((f) => f[0] === id), sh = (id) => SHARE.find((x) => x[0] === id);
     const dueOf = (draft, x) => {
@@ -175,11 +175,11 @@ class Component extends DCLogic {
     const total = order.length, onSum = s.q === 'sum';
     const idx = onSum ? total : order.indexOf(s.q) + 1;
     const ERR = {
-      name: eg ? 'اسم الجمعية لازم يكون من حرف لـ ٨٠ حرف.' : 'اسم الجمعية من حرف إلى ٨٠ حرفًا.',
+      name: eg ? 'اسم الجمعية لازم يكون من حرف لـ 80 حرف.' : 'اسم الجمعية من حرف إلى 80 حرفًا.',
       amount: eg ? 'القسط لازم يكون أكبر من صفر.' : 'يجب أن يكون القسط أكبر من صفر.',
       half: eg ? 'نص القسط لازم يطلع بالقرش — راجع المبلغ.' : 'يجب أن يكون نصف القسط بالهللة — راجع المبلغ.',
       first: eg ? 'اختار يوم أول دفعة.' : 'اختر يوم أول دفعة.',
-      turn: eg ? 'اختار دورك: رقم من ١ لـ ' + n(d.count || 0) + '، أو «لسه ما اتعرفش».' : 'اختر دورك: رقم من ١ إلى ' + n(d.count || 0) + '، أو «غير معروف بعد».',
+      turn: eg ? 'اختار دورك: رقم من 1 لـ ' + n(d.count || 0) + '، أو «لسه ما اتعرفش».' : 'اختر دورك: رقم من 1 إلى ' + n(d.count || 0) + '، أو «غير معروف بعد».',
       two: eg ? 'اختار دورين.' : 'اختر دورين.',
       payout: eg ? 'قيمة الدور لازم تكون أكبر من صفر.' : 'يجب أن تكون قيمة الدور أكبر من صفر.'
     };

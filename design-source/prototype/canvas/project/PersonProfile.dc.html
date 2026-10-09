@@ -133,7 +133,7 @@ a{color:#08634F}a:hover{color:#064B40}
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { sheet: null, amount: '' }; }
   toMinor(text) {
-    const t = String(text || '').replace(/[^0-9.]/g, '');
+    const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     if (!t) return null;
     const [w, f = ''] = t.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -171,10 +171,10 @@ class Component extends DCLogic {
       circleLine: eg ? 'الصحاب' : 'الأصدقاء',
       relLine: eg ? 'صاحبك من الجامعة · بتتعاملوا كتير' : 'صديقك من الجامعة · تعامل متكرر',
       spaceName: eg ? 'مصر' : 'السعودية',
-      occasionLine: eg ? 'فرحه ١٨ أكتوبر · بعد ١١ يوم' : 'زواجه ١٨ أكتوبر · بعد ١١ يومًا',
+      occasionLine: eg ? 'فرحه 18 أكتوبر · بعد 11 يوم' : 'زواجه 18 أكتوبر · بعد 11 يومًا',
       lakLabel: eg ? 'ليك عنده' : 'لك عنده',
       lakAmount: this.fmt(50000 * k) + ' ' + cur,
-      waitingSignal: eg ? 'بقاله كتير مستني، ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا',
+      waitingSignal: eg ? 'بقاله كتير مستني، 45 يوم' : 'منتظر منذ 45 يومًا',
       alekLabel: eg ? 'عليك ليه' : 'عليك له',
       alekNone: eg ? 'ولا حاجة' : 'لا شيء',
       actionsTitle: eg ? 'اعملوا سوا' : 'معًا',
@@ -182,10 +182,10 @@ class Component extends DCLogic {
       futureNote: eg ? 'قريب: لما خالد يستخدم مصروفي، هتقدروا تبنوا حاجات سوا من الحسابين.' : 'قريبًا: عندما يستخدم خالد مصروفي، تبنيان أشياء معًا من الحسابين.',
       historyTitle: eg ? 'السجل بينكم' : 'السجل بينكما',
       history: [
-        row(eg ? 'سلفة منك' : 'سلفة منك', eg ? '٢٣ أغسطس، لسه ما رجعتش' : '٢٣ أغسطس، لم تُسدَّد', 50000, 'out', false, 'khaled'),
-        row(eg ? 'رجّع سلفة' : 'سداد سلفة', '١٢ يوليو', 30000, 'in'),
-        row('سلفة منك', '٢ يوليو', 30000, 'out'),
-        row(eg ? 'نصيبه من رحلة البحر' : 'نصيبه من رحلة البحر', '١٨ يونيو', 42000, 'in', true)
+        row(eg ? 'سلفة منك' : 'سلفة منك', eg ? '23 أغسطس، لسه ما رجعتش' : '23 أغسطس، لم تُسدَّد', 50000, 'out', false, 'khaled'),
+        row(eg ? 'رجّع سلفة' : 'سداد سلفة', '12 يوليو', 30000, 'in'),
+        row('سلفة منك', '2 يوليو', 30000, 'out'),
+        row(eg ? 'نصيبه من رحلة البحر' : 'نصيبه من رحلة البحر', '18 يونيو', 42000, 'in', true)
       ],
       sheetOpen: !!key, sheet, closeSheet: close,
       currency: cur,

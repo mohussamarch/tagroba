@@ -139,7 +139,7 @@ class Component extends DCLogic {
       if (mush && !eg) { basis.fb = 'none'; notes.push(['mushDropped', 227]); }
     }
     let group = null;
-    if (egSibs) { // مصر م٢٢: الجد يقاسم الإخوة كأخ، أو ياخد الباقي بعد فرض الأخوات، ومش أقل من السدس
+    if (egSibs) { // مصر م22: الجد يقاسم الإخوة كأخ، أو ياخد الباقي بعد فرض الأخوات، ومش أقل من السدس
       const bro = on('fb') ? 'fb' : on('pb') ? 'pb' : null, sis = on('fs') ? 'fs' : on('ps') ? 'ps' : null, rest0 = sub([1, 1], Object.values(fard).reduce(add, [0, 1]));
       const sibs = [bro && [bro, 2], sis && !fard[sis] && [sis, 1]].filter(Boolean);
       if (sibs.length) {
@@ -190,9 +190,9 @@ class Component extends DCLogic {
     // بيانات عرض لو اللوحة اتفتحت لوحدها (مخترعة)
     if (!c || !c.items) c = { country: ui ? 'EG' : 'SA', items: [{ name: ui ? 'شقة' : 'الشقة', v: ui ? 384000000 : 57600000 }, { name: ui ? 'دهب' : 'ذهب', v: ui ? 42000000 : 5256000 }, { name: 'الكاش', v: ui ? 270000 : 90000 }], heirs: { wife: 1, son: 1, daughter: 1, mother: 1 }, names: {}, funeral: 0, debts: 0, bequest: 0 };
     const eg = c.country === 'EG', cur = eg ? 'ج.م' : 'ر.س', s = this.state;
-    const t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG'), A = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('en-US'), A = (x) => String(x).replace(/\d/g, (d) => '0123456789'[d]);
     const L = { husband: 'الزوج', wife: 'الزوجة', son: 'الابن', daughter: 'البنت', father: 'الأب', mother: 'الأم', gf: 'الجد (أبو الأب)', pgm: 'الجدة (أم الأب)', mgm: 'الجدة (أم الأم)', ss: 'ابن الابن', sd: 'بنت الابن', fb: 'الأخ الشقيق', fs: 'الأخت الشقيقة', pb: 'الأخ من الأب', ps: 'الأخت من الأب', mb: 'الأخ من الأم', ms: 'الأخت من الأم', fn: 'ابن الأخ الشقيق', fu: 'العم الشقيق' };
-    const law = eg ? 'قانون المواريث ٧٧ لسنة ١٩٤٣' : 'نظام الأحوال الشخصية', law71 = 'قانون الوصية ٧١ لسنة ١٩٤٦';
+    const law = eg ? 'قانون المواريث 77 لسنة 1943' : 'نظام الأحوال الشخصية', law71 = 'قانون الوصية 71 لسنة 1946';
     const cite = (a, l) => (a == null ? '' : t('المادة ', 'مادة ') + A(a) + t(' من ', ' من ') + (l || law));
     const md = (a, p, q) => { const x = BigInt(a) * BigInt(p), d = BigInt(q); return Number((x * 2n + d) / (d * 2n)); };
     const items = (c.items || []).map((x) => ({ name: String(x.name || '').trim(), v: Math.max(0, Number(x.v) || 0) }));
@@ -208,16 +208,16 @@ class Component extends DCLogic {
     let sol = res ? null : this.solve(heirsIn, eg, s.distant);
     if (sol && sol.st === 'invalid') res = stop('invalid', '', sol.msg === 'one' ? L[sol.a] + t(' واحد فقط', ' واحد بس') : INV[sol.msg]);
     else if (!res && (c.special || []).length) res = stop('unsupported', '', SP[c.special[0]] || '');
-    else if (sol && sol.st === 'court') res = stop('court', t('لا نص — اسأل المحكمة', 'مفيش نص — اسأل المحكمة'), t('الجد مع إخوة أشقاء وإخوة من الأب معًا، والمادة ٢٢ لا تبيّن طريقة القسمة في هذه الحالة', 'الجد مع إخوة أشقاء وإخوة من الأب مع بعض، والمادة ٢٢ مش بتقول القسمة إزاي في الحالة دي'), cite(22));
+    else if (sol && sol.st === 'court') res = stop('court', t('لا نص — اسأل المحكمة', 'مفيش نص — اسأل المحكمة'), t('الجد مع إخوة أشقاء وإخوة من الأب معًا، والمادة 22 لا تبيّن طريقة القسمة في هذه الحالة', 'الجد مع إخوة أشقاء وإخوة من الأب مع بعض، والمادة 22 مش بتقول القسمة إزاي في الحالة دي'), cite(22));
     else if (sol && sol.st === 'unsupported') res = stop('unsupported', '', sol.msg === 'noHeirs' ? t('لا يوجد وارث من الورثة المكتوبين؛ التركة لأقارب آخرين أو لبيت المال، وهذه النسخة لا تحسبها', 'مفيش وارث من الورثة المكتوبين؛ التركة لقرايب تانيين أو للخزانة العامة، والنسخة دي مش بتحسبها') : t('ذوو الأرحام (أولاد البنات، الخال، العمة…) يُحسبون في المنطق، ولم تُرسم خاناتهم في هذا النموذج بعد', 'ذوو الأرحام (أولاد البنات، الخال، العمة…) بيتحسبوا في المنطق، وخاناتهم لسه ما اترسمتش في النموذج ده'));
     else if (pre && pre.kind === 'son' && !heirsIn.son) res = stop('unsupported', '', t('لا يوجد ابن على قيد الحياة، فأولاد الابن المتوفى قبله قد يرثون بأنفسهم؛ اكتبهم أبناء ابن وبنات ابن', 'مفيش ابن عايش، فأولاد الابن اللي اتوفى قبله ممكن يورثوا بنفسهم؛ اكتبهم أبناء ابن وبنات ابن'));
     else if (pre && !(pre.sons || pre.daughters)) res = stop('invalid', '', t('اكتب عدد أولاد الابن أو البنت المتوفى قبله', 'اكتب عدد أولاد الابن أو البنت اللي اتوفى قبله'));
     if (!res && sol && sol.st === 'ok') {
       if (fun + debt < (Number(c.funeral) || 0) + (Number(c.debts) || 0)) notesPre.push([t('التجهيز والديون أكثر من التركة، فلا يبقى شيء للوصية ولا للورثة', 'التجهيز والديون أكتر من التركة، فمش هيفضل حاجة للوصية ولا للورثة'), null]);
-      if (pre) { // الوصية الواجبة (٧١/١٩٤٦ م٧٦–٧٩): نصيبه لو كان عايش، في حدود الثلث، ناقص اللي اتدّى في الحياة
+      if (pre) { // الوصية الواجبة (71/1946 م76–79): نصيبه لو كان عايش، في حدود الثلث، ناقص اللي اتدّى في الحياة
         const alt = this.solve(Object.assign({}, heirsIn, { [pre.kind]: (heirsIn[pre.kind] || 0) + 1 }), eg, 'no'), r = alt.rows && alt.rows.find((x) => x.k === pre.kind);
         if (r) { const raw = md(net, r.f[0], r.f[1] * r.cnt), w0 = Math.min(raw, third); W = Math.max(0, w0 - (Number(pre.gift) || 0));
-          notesPre.push([t('لأولاد ', 'لأولاد ') + L[pre.kind] + t(' المتوفى قبله وصية واجبة قدرها ', ' اللي اتوفى قبله وصية واجبة قدرها ') + this.fmt(W) + t('، تُخرج قبل قسمة الباقي', '، بتطلع قبل قسمة الباقي'), cite('٧٦–٧٩', law71)]);
+          notesPre.push([t('لأولاد ', 'لأولاد ') + L[pre.kind] + t(' المتوفى قبله وصية واجبة قدرها ', ' اللي اتوفى قبله وصية واجبة قدرها ') + this.fmt(W) + t('، تُخرج قبل قسمة الباقي', '، بتطلع قبل قسمة الباقي'), cite('76–79', law71)]);
           if (raw > third) notesPre.push([t('نصيبه أكثر من الثلث، فأُعطي أولاده الثلث فقط', 'نصيبه أكتر من التلت، فأولاده خدوا التلت بس'), cite(78, law71)]);
           if (Number(pre.gift) > 0) notesPre.push([t('خُصم ما أعطاهم إياه في حياته (', 'اتخصم اللي اداهولهم في حياته (') + this.fmt(Number(pre.gift)) + ')', cite(77, law71)]); }
       }
@@ -258,7 +258,7 @@ class Component extends DCLogic {
         return { name: L[r.k] + (r.cnt > 1 ? ' (' + n(r.cnt) + ')' : ''), basis: basisT(r.basis), dot: dot(col >= 0 ? DOT[col] : '#CCD8CC'),
           sub: (nm ? nm + ' · ' : '') + (r.cnt > 1 && amt ? t('لكل واحد ', 'لكل واحد ') + this.fmt(each) + (same ? '' : t(' (الهللة الزائدة للأول)', ' (الهللة الزيادة للأول)')) : ''),
           amount: this.fmt(amt), amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (amt ? '#193D33' : '#637570'),
-          frac: gF ? A(gF[0]) + '/' + A(gF[1]) : '٠',
+          frac: gF ? A(gF[0]) + '/' + A(gF[1]) : '0',
           rowStyle: 'display: flex; align-items: center; gap: 10px; padding: 12px 0;' + (i === sol.rows.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') };
       });
       // قسمة كل شيء: كل عمود = قيمته بالهللة (أكبر باقي)، وآخر شيء ياخد الباقي عشان مجموع كل طرف = مبلغه بالظبط

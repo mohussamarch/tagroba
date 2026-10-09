@@ -128,7 +128,7 @@ class Component extends DCLogic {
       const eg = this.eg(), mine = this.ev().mine;
       const fresh = rows.map((r) => ({ who: r.name, amt: r.amt, via: linked ? (eg ? 'حوالة' : 'حوالة') : where === 'الكاش' ? 'كاش' : String(where), when: eg ? 'النهارده' : 'اليوم', fresh: true }));
       this.setState({ added: this.state.added.concat(fresh) });
-      const c = rows.length, cnt = c === 1 ? 'نقطة واحدة' : c === 2 ? (eg ? 'نقطتين' : 'نقطتان') : c.toLocaleString('ar-EG') + ' نقاط';
+      const c = rows.length, cnt = c === 1 ? 'نقطة واحدة' : c === 2 ? (eg ? 'نقطتين' : 'نقطتان') : c.toLocaleString('en-US') + ' نقاط';
       this.say(linked ? (eg ? 'اتربطت نقطة — نوعها «' : 'رُبطت نقطة — نوعها «') + (mine ? 'نقوط' : (eg ? 'هدية أو مساعدة' : 'هدية أو مساعدة')) + (eg ? '» ومتأكدة' : '» ومؤكد') : (eg ? 'اتسجّلت ' : 'سُجّلت ') + cnt + (eg ? ' — عملية لكل اسم في «' : ' — عملية لكل اسم في «') + where + '»');
     };
   }
@@ -150,33 +150,33 @@ class Component extends DCLogic {
   data(eg) {
     const R = eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي', A = eg ? 'QNB مصر' : 'البنك الأهلي السعودي';
     return {
-      jood: { name: 'ولادة جود', kind: 'birth', date: '٢٨ سبتمبر', d: -9, mine: true, spends: [[eg ? 'مستشفى الولادة' : 'مستشفى الولادة', '٢٨ سبتمبر', R, 420000, 100], [eg ? 'محل لبس ومستلزمات أطفال' : 'متجر مستلزمات المواليد', '٢٦ سبتمبر', A, 145000, 60]],
-        gifts: [['سلمان', 50000, 'كاش', '٤ أكتوبر'], ['خالد', 50000, 'كاش', '٢ أكتوبر'], ['نورة', 30000, 'كاش', '٢ أكتوبر'], ['أحمد', 20000, 'كاش', '٢ أكتوبر'], ['عمر', 100000, 'حوالة', '٣٠ سبتمبر']] },
-      khaled: { name: 'زواج خالد', kind: 'wedding', date: '١٨ أكتوبر', d: 11, mine: false, host: 'خالد', spends: [[eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية', '٤ أكتوبر', R, 90000, 50]], gifts: [], prep: [2, 0] },
-      trip: { name: eg ? 'رحلة دهب' : 'رحلة العُلا', kind: 'travel', date: '١٤ نوفمبر', d: 38, mine: true, spends: [['حجز طيران', '٢٠ سبتمبر', R, 180000, 100], ['عربون فندق', '٢٢ سبتمبر', R, 55000, 100]], gifts: [], prep: [4, 1] },
-      salem: { name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '٣ أغسطس', d: -65, mine: false, host: 'سالم', spends: [], gifts: [['سالم', 50000, 'حوالة', '٣ أغسطس']], archived: true },
-      eid: { name: 'عيد الفطر', kind: 'eid', date: '٢٠ مارس', d: -201, mine: true, spends: [[eg ? 'لبس العيد' : 'ملابس العيد', '١٧ مارس', R, 140000, 100], ['العيدية', '١٩ مارس', 'الكاش', 120000, 100], [eg ? 'حلويات وضيافة' : 'حلويات وضيافة', '١٨ مارس', A, 55000, 100]], gifts: [], archived: true }
+      jood: { name: 'ولادة جود', kind: 'birth', date: '28 سبتمبر', d: -9, mine: true, spends: [[eg ? 'مستشفى الولادة' : 'مستشفى الولادة', '28 سبتمبر', R, 420000, 100], [eg ? 'محل لبس ومستلزمات أطفال' : 'متجر مستلزمات المواليد', '26 سبتمبر', A, 145000, 60]],
+        gifts: [['سلمان', 50000, 'كاش', '4 أكتوبر'], ['خالد', 50000, 'كاش', '2 أكتوبر'], ['نورة', 30000, 'كاش', '2 أكتوبر'], ['أحمد', 20000, 'كاش', '2 أكتوبر'], ['عمر', 100000, 'حوالة', '30 سبتمبر']] },
+      khaled: { name: 'زواج خالد', kind: 'wedding', date: '18 أكتوبر', d: 11, mine: false, host: 'خالد', spends: [[eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية', '4 أكتوبر', R, 90000, 50]], gifts: [], prep: [2, 0] },
+      trip: { name: eg ? 'رحلة دهب' : 'رحلة العُلا', kind: 'travel', date: '14 نوفمبر', d: 38, mine: true, spends: [['حجز طيران', '20 سبتمبر', R, 180000, 100], ['عربون فندق', '22 سبتمبر', R, 55000, 100]], gifts: [], prep: [4, 1] },
+      salem: { name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '3 أغسطس', d: -65, mine: false, host: 'سالم', spends: [], gifts: [['سالم', 50000, 'حوالة', '3 أغسطس']], archived: true },
+      eid: { name: 'عيد الفطر', kind: 'eid', date: '20 مارس', d: -201, mine: true, spends: [[eg ? 'لبس العيد' : 'ملابس العيد', '17 مارس', R, 140000, 100], ['العيدية', '19 مارس', 'الكاش', 120000, 100], [eg ? 'حلويات وضيافة' : 'حلويات وضيافة', '18 مارس', A, 55000, 100]], gifts: [], archived: true }
     };
   }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = this.eg(), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state, e = this.ev(), empty = st === 'فاضي';
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const rel = (d) => { const a = Math.abs(d), t = a === 1 ? 'يوم' : a === 2 ? 'يومين' : n(a) + ' ' + (a <= 10 ? 'أيام' : (eg ? 'يوم' : 'يومًا')); return d === 0 ? (eg ? 'النهارده' : 'اليوم') : d > 0 ? 'بعد ' + t : (eg ? 'من ' : 'قبل ') + t; };
     const KIND = { wedding: 'فرح', travel: 'سفر', birth: 'ولادة', condolence: eg ? 'عزا' : 'عزاء', eid: 'عيد' };
     const line = (i, last) => 'display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 0;' + (i === last ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);');
     const spendsD = empty ? [] : e.spends, linkedD = empty ? [] : s.linked, nSp = spendsD.length + linkedD.length;
-    // مصروف الحدث = نصيبه من كل عملية (المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق) — من غير ما النقوط تتطرح منه أبدًا
+    // مصروف الحدث = نصيبه من كل عملية (المبلغ × النسبة ÷ 100 بأعداد صحيحة، النص لفوق) — من غير ما النقوط تتطرح منه أبدًا
     const shareOf = (amt, p) => p === 100 ? amt : (amt * p - ((amt * p) % 100)) / 100 + (((amt * p) % 100) * 2 >= 100 ? 1 : 0);
     const spends = spendsD.map(([name, when, wallet, amt, p], i) => ({
       name, sub: when + '، ' + wallet, amount: '−' + this.fmt(shareOf(amt * k, p)),
-      share: p === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(p) + '٪ من ' + this.fmt(amt * k), rowStyle: line(i, nSp - 1)
+      share: p === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(p) + '% من ' + this.fmt(amt * k), rowStyle: line(i, nSp - 1)
     }));
     const spendSum = spendsD.reduce((t, x) => t + shareOf(x[3] * k, x[4]), 0) + linkedD.reduce((t, x) => t + x.linkedMinor, 0);
     // اللي اتربط من «اربط مصروفًا بنسبة» (مبالغه جاية بعملة البلد الشغالة — من غير ضرب تاني)
-    const spendsAll = spends.concat(linkedD.map((x, j) => ({ name: x.name, sub: x.date + '، ' + x.wallet, amount: '−' + this.fmt(x.linkedMinor), share: x.percent === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(x.percent) + '٪ من ' + this.fmt(x.amountMinor), rowStyle: line(spendsD.length + j, nSp - 1) })));
+    const spendsAll = spends.concat(linkedD.map((x, j) => ({ name: x.name, sub: x.date + '، ' + x.wallet, amount: '−' + this.fmt(x.linkedMinor), share: x.percent === 100 ? (eg ? 'العملية كلها' : 'العملية كاملة') : n(x.percent) + '% من ' + this.fmt(x.amountMinor), rowStyle: line(spendsD.length + j, nSp - 1) })));
     const giftsD = (empty ? [] : e.gifts.map(([who, amt, via, when]) => ({ who, amt: amt * k, via, when }))).concat(s.added);
     const giftSum = giftsD.reduce((t, g) => t + g.amt, 0);
     const gifts = giftsD.slice().reverse().map((g, i) => ({

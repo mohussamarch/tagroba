@@ -164,7 +164,7 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const n = (x) => x.toLocaleString('en-US'), ny = (x) => x.toLocaleString('en-US', { useGrouping: false });
     const s = this.state;
     const MO = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const addM = (a, x) => { const t = a[0] * 12 + a[1] - 1 + x, M = t % 12; return [(t - M) / 12, M + 1, a[2]]; };
@@ -173,7 +173,7 @@ class Component extends DCLogic {
     const my = (a) => MO[a[1] - 1] + ' ' + ny(a[0]);
     const TODAY = key([2026, 10, 7]);
     const pick = { 'قسط السيارة': 'car', 'تقسيط الجوال': 'phone' }[this.props.plan] || (this.picked === 'phone' ? 'phone' : 'car');
-    // مخترعة · نفس أرقام «الأقساط» و«المستحقات» (القسط ١٣ من ٣٦ يوم ٢٧ أكتوبر) · بالوحدة الصغرى
+    // مخترعة · نفس أرقام «الأقساط» و«المستحقات» (القسط 13 من 36 يوم 27 أكتوبر) · بالوحدة الصغرى
     const P = pick === 'car'
       ? { fin: true, name: 'قسط السيارة', kind: eg ? 'تمويل من البنك · فيه أرباح' : 'تمويل بنكي · بأرباح', by: eg ? 'البنك الأهلي المصري' : 'البنك الأهلي السعودي', inst: 145000, count: 36, principal: 4860000, first: [2025, 10, 27], linked: 12, recvDate: [2025, 10, 20] }
       : { fin: false, name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', kind: 'تقسيط مشتريات', by: eg ? 'محل الأجهزة' : 'متجر الأجهزة', inst: 25000, count: 12, principal: 300000, first: [2026, 2, 5], linked: 8 };

@@ -28,8 +28,8 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"fresh":{"editor":"boolean","default":true,"section":"الحالة"},"$preview":{"width":350,"height":80}}'>
-// الاقتراحات تحت خانة الكتابة في المساعد (اتفصلت من AssistantChat عشان حد الـ٣٠٠ سطر)
-// أول ما المحادثة تفتح: الأسئلة اللي بتسألها كتير (OVERRIDES §78-٥: «لو بيسأل عنها كتير تتحفظ كاقتراح أول ما يفتح المساعد») · بعد أول سؤال: متابعة للي سألت عنه · وبعدهم اقتراحات الصفحة
+// الاقتراحات تحت خانة الكتابة في المساعد (اتفصلت من AssistantChat عشان حد الـ300 سطر)
+// أول ما المحادثة تفتح: الأسئلة اللي بتسألها كتير (OVERRIDES §78-5: «لو بيسأل عنها كتير تتحفظ كاقتراح أول ما يفتح المساعد») · بعد أول سؤال: متابعة للي سألت عنه · وبعدهم اقتراحات الصفحة
 // الاختيار ⇒ on-pick(المفتاح، النص) — «voice» بيفتح الميكروفون و«find» بيدوّر على شاشة بالكلام (في الأم)
 // [فصحى، مصري، الرد]
 const Q = {
@@ -40,11 +40,11 @@ const Q = {
   salary: ['متى ينزل الراتب؟', 'المرتب بينزل امتى؟', 'salary'], store: ['آخر مرة في المرسى؟', 'آخر مرة في المرسى؟', 'store'],
   spent: ['كم صرفت على المطاعم؟', 'صرفت كام على الأكل؟', 'food'], voice: ['أضف عملية بصوتي', 'ضيف عملية بصوتي', 'voice'],
   doSplit: ['قسّم فاتورة العشاء مع أحمد وسارة', 'قسّم فاتورة العشا مع أحمد وسارة', 'split'], plan: ['هل أنا على الخطة؟', 'أنا ماشي على الخطة؟', 'plan'],
-  lak: ['كم لي عند خالد؟', 'ليّا كام عند خالد؟', 'lak'], lock: ['أين أغيّر القفل؟', 'فين أغيّر القفل؟', 'lock'], find: ['أين أجد الزكاة؟', 'فين الزكاة؟', 'find']
+  lak: ['كم لي عند خالد؟', 'ليّا كام عند خالد؟', 'lak'], left: ['كم بقي لي؟', 'فاضلي كام؟', 'left'], lock: ['أين أغيّر القفل؟', 'فين أغيّر القفل؟', 'lock'], find: ['أين أجد الزكاة؟', 'فين الزكاة؟', 'find']
 };
 // كل موضوع اتعلّمه ⇒ سؤالين متابعة (التاني قريب منه: القهوة بتأخّر هدف «السفر» مثلًا)
 const NEXT = { coffee: ['coffee', 'goal'], food: ['food', 'budget'], rent: ['rent', 'bills'], bills: ['bills', 'rent'], debts: ['debts', 'lak'], split: ['split', 'debts'], budget: ['budget', 'food'], goal: ['goal', 'coffee'], salary: ['salary', 'budget'], store: ['store', 'coffee'] };
-const BY_CTX = { 'الرئيسية': ['spent', 'voice', 'salary', 'doSplit', 'plan'], 'العمليات': ['voice', 'spent', 'store', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['plan', 'find', 'spent', 'voice'], 'المزيد': ['lock', 'find', 'voice', 'doSplit'] };
+const BY_CTX = { 'الرئيسية': ['left', 'spent', 'voice', 'salary', 'doSplit'], 'العمليات': ['voice', 'spent', 'store', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['plan', 'find', 'spent', 'voice'], 'المزيد': ['lock', 'find', 'voice', 'doSplit'] };
 class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', ctx = this.props.context ?? 'الرئيسية', last = this.props.last || '';

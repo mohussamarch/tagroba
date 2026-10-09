@@ -95,30 +95,30 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const s = this.state;
     // المصدر بييجي من الشاشة الأب (info = JSON). من غيره (معاينة اللوحة) بياخد أول مصدر في البلد، و«الحالة» بتغيّر المقارنة بس
-    const DEF = eg ? { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '١ يناير ٢٠٢٦', end: null, freq: 'monthly', day: 5, expected: 900000 }
-      : { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '٢٨ أبريل ٢٠٢٦', end: null, freq: 'monthly', day: 28, expected: 1250000 };
+    const DEF = eg ? { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '1 يناير 2026', end: null, freq: 'monthly', day: 5, expected: 900000 }
+      : { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '28 أبريل 2026', end: null, freq: 'monthly', day: 28, expected: 1250000 };
     let src = DEF;
     try { if (this.props.info) src = Object.assign({}, DEF, JSON.parse(this.props.info)); } catch (e) { src = DEF; }
     const tweak = this.props.info ? 'عادي' : (this.props.state ?? 'عادي');
-    // مخترعة · بالوحدة الصغرى. cmp = مخرجات compareAroundStart: متوسطات ٣ شهور مالية قبل و٣ بعد (§64 قرار ٨)
+    // مخترعة · بالوحدة الصغرى. cmp = مخرجات compareAroundStart: متوسطات 3 شهور مالية قبل و3 بعد (§64 قرار 8)
     // na: soon = الشهر التالت لسه ما خلصش · empty = شهر من الستة مفيهوش ولا عملية ⇒ مفيش رقم خالص
     const D = {
-      rayada: { payer: 'الريادة للحلول ••• ٧٤٠٢', total: 6, tx: [['٢٨ سبتمبر', 1250000], ['٢٨ أغسطس', 1250000], ['٢٨ يوليو', 1250000]], cmp: [990000, 1250000, 690000, 762000], unknown: 0 },
-      waha: { payer: 'مكتب الواحة ••• ٣١٩٠', total: 8, tx: [['١ أكتوبر', 80000], ['٢٤ سبتمبر', 80000], ['١٧ سبتمبر', 80000]], na: 'soon', ready: '٢٧ نوفمبر ٢٠٢٦' },
-      sahm: { payer: 'مجموعة السهم ••• ٢٢٥٨', total: 15, tx: [['٣٠ أبريل ٢٠٢٦', 2400000, 'eos'], ['٢٧ أبريل ٢٠٢٦', 980000], ['٢٧ مارس ٢٠٢٦', 980000]], cmp: [820000, 980000, 610000, 642000], unknown: 7 },
+      rayada: { payer: 'الريادة للحلول ••• 7402', total: 6, tx: [['28 سبتمبر', 1250000], ['28 أغسطس', 1250000], ['28 يوليو', 1250000]], cmp: [990000, 1250000, 690000, 762000], unknown: 0 },
+      waha: { payer: 'مكتب الواحة ••• 3190', total: 8, tx: [['1 أكتوبر', 80000], ['24 سبتمبر', 80000], ['17 سبتمبر', 80000]], na: 'soon', ready: '27 نوفمبر 2026' },
+      sahm: { payer: 'مجموعة السهم ••• 2258', total: 15, tx: [['30 أبريل 2026', 2400000, 'eos'], ['27 أبريل 2026', 980000], ['27 مارس 2026', 980000]], cmp: [820000, 980000, 610000, 642000], unknown: 7 },
       noura: { cmp: [960000, 1035000, 655000, 671000], unknown: 0 },
       maadi: { cmp: [0, 900000, 1150000, 1210000], unknown: 0 },
-      ahly: { na: 'soon', ready: '٢٧ أكتوبر ٢٠٢٦' },
+      ahly: { na: 'soon', ready: '27 أكتوبر 2026' },
       delta: { na: 'empty' }
     };
-    const d = Object.assign({ payer: null, total: 0, tx: [], unknown: 0 }, D[src.id] || { na: 'soon', ready: eg ? 'بعد ٣ شهور مالية كاملة من البداية' : 'بعد ٣ أشهر مالية كاملة من البداية' });
+    const d = Object.assign({ payer: null, total: 0, tx: [], unknown: 0 }, D[src.id] || { na: 'soon', ready: eg ? 'بعد 3 شهور مالية كاملة من البداية' : 'بعد 3 أشهر مالية كاملة من البداية' });
     if (tweak === 'تقريبي') Object.assign(d, { na: null, cmp: d.cmp || [990000, 1250000, 690000, 762000], unknown: 4 });
-    if (tweak === 'غير متاح') Object.assign(d, { na: 'soon', ready: '٢٧ نوفمبر ٢٠٢٦' });
-    const extra = this.props.payerYes === '1' && src.id === 'rayada' ? [['٣ أكتوبر', 320000, null, eg ? 'من «الريادة القابضة»' : 'من «الريادة القابضة»']] : [];
+    if (tweak === 'غير متاح') Object.assign(d, { na: 'soon', ready: '27 نوفمبر 2026' });
+    const extra = this.props.payerYes === '1' && src.id === 'rayada' ? [['3 أكتوبر', 320000, null, eg ? 'من «الريادة القابضة»' : 'من «الريادة القابضة»']] : [];
     const K = { job: 'وظيفة', part_time: eg ? 'بارت تايم' : 'دوام جزئي', client: 'عميل', rent: 'إيجار', investment: 'استثمار', pension: 'معاش', other: eg ? 'غيره' : 'أخرى' };
     const WD = ['', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
     const salaried = src.kind === 'job' || src.kind === 'part_time';
@@ -149,7 +149,7 @@ class Component extends DCLogic {
     const total = d.total + extra.length;
     // التغيّر بالعُشر من المية — أعداد صحيحة بس، تقريب نص لبعيد عن الصفر (changeTenthPercent)
     const tenth = (b, a) => { if (b <= 0 || a < 0) return null; const df = (a - b) * 1000, m = Math.abs(df), r = m % b; let t = (m - r) / b; if (r * 2 >= b) t += 1; return df < 0 ? -t : t; };
-    const pctText = (t) => { if (t === null) return '—'; const a = Math.abs(t); return (t > 0 ? '+' : t < 0 ? '−' : '') + n((a - (a % 10)) / 10) + '٫' + n(a % 10) + '٪'; };
+    const pctText = (t) => { if (t === null) return '—'; const a = Math.abs(t); return (t > 0 ? '+' : t < 0 ? '−' : '') + n((a - (a % 10)) / 10) + '.' + n(a % 10) + '%'; };
     const c = d.cmp;
     const cmpRows = !d.na && c ? [['الدخل', c[0], c[1], true], ['المصروف', c[2], c[3], false]].map(([label, b, a, isIn]) => {
       const t = tenth(b, a);
@@ -172,7 +172,7 @@ class Component extends DCLogic {
       approx, approxChip: eg ? 'الأرقام ناقصة' : 'الأرقام ناقصة',
       hasApproxNote: approx, approxNote: approx ? plural(d.unknown, OW) + (eg ? ' في الشهور الستة نوعها لسه ما اتحددش.' : ' في الأشهر الستة نوعها غير محدد بعد.') : '',
       cmpOk: !d.na, cmpNa: !!d.na, cmpRows,
-      beforeLabel: eg ? 'متوسط ٣ شهور قبل' : 'متوسط ٣ أشهر قبل', afterLabel: eg ? 'متوسط ٣ شهور بعد' : 'متوسط ٣ أشهر بعد',
+      beforeLabel: eg ? 'متوسط 3 شهور قبل' : 'متوسط 3 أشهر قبل', afterLabel: eg ? 'متوسط 3 شهور بعد' : 'متوسط 3 أشهر بعد',
       hasNoPct: !!(c && !d.na && c[0] <= 0), noPctNote: eg ? 'مفيش دخل قبلها، فمفيش نسبة.' : 'لا دخل قبلها، فلا نسبة.',
       naReason: d.na === 'empty' ? (eg ? 'فيه شهر من الستة مفيهوش ولا عملية، فمفيش رقم.' : 'في الأشهر الستة شهر بلا أي عملية، فلا رقم.') : (eg ? 'بتظهر بعد ما يخلص تالت شهر مالي — ' : 'تظهر بعد انتهاء الشهر المالي الثالث — ') + (d.ready || ''),
       cmpNote: eg ? 'بعملة المصدر، من غير النقوط ومكافأة نهاية الخدمة. الشهر اللي بدأ في نصه برا المقارنة.' : 'بعملة المصدر، بلا النقوط ومكافأة نهاية الخدمة. الشهر الذي بدأ في منتصفه خارج المقارنة.',

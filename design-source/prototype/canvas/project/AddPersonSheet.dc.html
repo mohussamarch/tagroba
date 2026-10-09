@@ -103,7 +103,7 @@ input::placeholder{color:#8A9A95}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"autoOpen":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"names":{"editor":null},"onSave":{"editor":null},"onClose":{"editor":null},"$preview":{"width":350,"height":60}}'>
-// إضافة شخص (spec/04 · ManagePeople.addPerson · ManagePersonCircles.setProfile · §27 · §64). الاسم إجباري (حد ٨٠ وما يتكررش)، والباقي اختياري.
+// إضافة شخص (spec/04 · ManagePeople.addPerson · ManagePersonCircles.setProfile · §27 · §64). الاسم إجباري (حد 80 وما يتكررش)، والباقي اختياري.
 // الحفظ بيرجّع للشاشة الأم: onSave({ name, circle: family|friend|work|other|null, relation: نص أو null,
 //   occasion: { kind: birthday|wedding_anniversary|wedding, month, day, year أو null, yearly, leadDays: 7 } أو null (زي OccasionSheet),
 //   openingDebt: { side: lak|alek, amountMinor } أو null })
@@ -114,7 +114,7 @@ class Component extends DCLogic {
     const auto = props.autoOpen === true || props.autoOpen === 'true';
     this.state = { open: auto, name: '', circle: null, rel: '', occ: false, occKind: 'birthday', occMonth: null, occDay: '', occYear: '', debt: false, side: null, amount: '', err: '', added: [] };
   }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س', s = this.state;
@@ -128,7 +128,7 @@ class Component extends DCLogic {
     const CIRCLES = [['family', eg ? 'العيلة' : 'العائلة'], ['friend', eg ? 'الصحاب' : 'الأصدقاء'], ['work', eg ? 'الشغل' : 'الدوام'], ['other', eg ? 'تانيين' : 'آخرون']];
     const OCC = [['birthday', 'عيد ميلاد'], ['wedding_anniversary', eg ? 'عيد جواز' : 'ذكرى زواج'], ['wedding', eg ? 'فرح' : 'زواج']];
     const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-    const num = (t) => { const x = String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return x ? parseInt(x, 10) : null; };
+    const num = (t) => { const x = String(t || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9]/g, ''); return x ? parseInt(x, 10) : null; };
     const dim = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
     const SIDES = [['lak', eg ? 'ليا عنده' : 'لي عنده'], ['alek', eg ? 'عليا ليه' : 'عليّ له']];
     const close = () => { this.setState({ open: false }); if (auto && typeof this.props.onClose === 'function') this.props.onClose(); };

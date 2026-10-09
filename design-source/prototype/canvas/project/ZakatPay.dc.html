@@ -94,7 +94,7 @@ class Component extends DCLogic {
   }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   toMinor(t) {
-    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
     if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
     const [w, f = ''] = s.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -113,8 +113,8 @@ class Component extends DCLogic {
     const left = required - paid;
     // عمليات حقيقية من الكشف (مخترعة) — وحدة منهم مربوطة بقسط (نفس قاعدة DueLinks: العملية ما تتربطش بحاجتين)
     const OPS = eg
-      ? [{ id: 't1', label: 'جمعية خيرية، ٥ أكتوبر', amt: 1500000 }, { id: 't2', label: 'تبرع أونلاين، ٣ أكتوبر', amt: 500000 }, { id: 't3', label: 'قسط العربية، ٢٧ سبتمبر', amt: 435000, busy: 'قسط العربية' }]
-      : [{ id: 't1', label: 'جمعية البر الخيرية، ٥ أكتوبر', amt: 220000 }, { id: 't2', label: 'تبرع إلكتروني، ٣ أكتوبر', amt: 100000 }, { id: 't3', label: 'قسط السيارة، ٢٧ سبتمبر', amt: 145000, busy: 'قسط السيارة' }];
+      ? [{ id: 't1', label: 'جمعية خيرية، 5 أكتوبر', amt: 1500000 }, { id: 't2', label: 'تبرع أونلاين، 3 أكتوبر', amt: 500000 }, { id: 't3', label: 'قسط العربية، 27 سبتمبر', amt: 435000, busy: 'قسط العربية' }]
+      : [{ id: 't1', label: 'جمعية البر الخيرية، 5 أكتوبر', amt: 220000 }, { id: 't2', label: 'تبرع إلكتروني، 3 أكتوبر', amt: 100000 }, { id: 't3', label: 'قسط السيارة، 27 سبتمبر', amt: 145000, busy: 'قسط السيارة' }];
     const used = (id) => s.pays.some((p) => p.op === id);
     const picked = LINES.filter((l) => s.pick[l.id] && paidOn(l.id) < l.due);
     const pickedDue = picked.reduce((t, l) => t + l.due - paidOn(l.id), 0);
@@ -146,7 +146,7 @@ class Component extends DCLogic {
       if (o && used(o.id)) { this.setState({ err: eg ? 'نفس العملية متربطة بدفعة قبل كده — فكّها الأول.' : 'هذه العملية مربوطة بدفعة سابقة — فُكّها أولًا.' }); return; }
       const amt = o ? o.amt : this.toMinor(s.cash);
       if (!o && (amt == null || amt <= 0)) { this.setState({ err: eg ? 'اكتب المبلغ اللي دفعته كاش.' : 'اكتب المبلغ الذي دفعته كاشًا.' }); return; }
-      // التوزيع على السطور المختارة بترتيبها، والزيادة «صدقة إضافية» ما بتتنقلش لسطر تاني ولا للسنة الجاية (§62 قرار ٦)
+      // التوزيع على السطور المختارة بترتيبها، والزيادة «صدقة إضافية» ما بتتنقلش لسطر تاني ولا للسنة الجاية (§62 قرار 6)
       let rest = amt; const alloc = {};
       picked.forEach((l) => { const take = Math.min(rest, l.due - paidOn(l.id)); if (take > 0) { alloc[l.id] = take; rest -= take; } });
       const pay = { id: 'p' + (s.pays.length + 1) + '-' + (o ? o.id : 'cash'), op: o ? o.id : null, label: o ? o.label.split(' · ')[0] : (eg ? 'كاش' : 'كاش'), amount: amt, alloc, extra: rest, names: picked.map((l) => l.name) };

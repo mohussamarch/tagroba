@@ -57,7 +57,7 @@ body{margin:0}
 <script type="text/x-dc" data-dc-script data-props='{"person":{"editor":"enum","options":["خالد","فهد","عمر"],"default":"خالد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":120}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, side: null, amount: '', err: '' }; }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const who = this.props.person || 'خالد';

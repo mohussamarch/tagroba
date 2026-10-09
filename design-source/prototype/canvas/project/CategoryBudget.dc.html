@@ -152,7 +152,7 @@ class Component extends DCLogic {
       if (typeof limit !== 'number' || limit <= 0) return;
       const eg = this.eg(), key = this.key();
       this.setState({ lim: Object.assign({}, this.state.lim, { [key]: { limit, pct, alert } }) });
-      this.say((eg ? 'اتحفظ السقف ' : 'حُفظ السقف ') + this.fmt(limit) + ' ' + (eg ? 'ج.م' : 'ر.س') + (alert ? (eg ? '، والتنبيه عند ' : '، والتنبيه عند ') + pct.toLocaleString('ar-EG') + '٪' : (eg ? ' من غير تنبيه' : ' بلا تنبيه')));
+      this.say((eg ? 'اتحفظ السقف ' : 'حُفظ السقف ') + this.fmt(limit) + ' ' + (eg ? 'ج.م' : 'ر.س') + (alert ? (eg ? '، والتنبيه عند ' : '، والتنبيه عند ') + pct.toLocaleString('en-US') + '%' : (eg ? ' من غير تنبيه' : ' بلا تنبيه')));
     };
     this.onClear = () => {
       const eg = this.eg(), key = this.key();
@@ -171,30 +171,30 @@ class Component extends DCLogic {
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   fmt2(minor) { const a = Math.abs(minor), f = a % 100; return this.fmt(a) + '.' + (f < 10 ? '0' : '') + f; }
   div(a, b) { return (a - (a % b)) / b; }
-  // مخترعة · بالوحدة الصغرى للسعودية (مصر ×٣) · نفس أرقام «الميزانيات» · العملية: [اسم، اسم مصر، الفرعي، متى، مبلغ، مبلغ مصر لو مختلف]
+  // مخترعة · بالوحدة الصغرى للسعودية (مصر ×3) · نفس أرقام «الميزانيات» · العملية: [اسم، اسم مصر، الفرعي، متى، مبلغ، مبلغ مصر لو مختلف]
   data(eg) {
     const T = (a, b) => (eg ? b : a);
     return {
       food: { name: T('مطاعم وقهوة', 'أكل وقهوة'), color: '#A36A21', tint: 'rgba(163,106,33,0.12)', spent: 96000, limit: 120000, pct: 80, avg: 104000, anom: null, count: 14,
         subs: [['مطاعم', 52000], ['قهوة ومشروبات', 31000], ['حلويات ومخبوزات', 13000]],
-        txns: [['مطعم الريف', 'مطعم الفول', 'مطاعم', T('اليوم', 'النهارده'), 4200, 18500], ['قهوة المساء', 'كافيه الناصية', 'قهوة ومشروبات', T('أمس', 'امبارح'), 1800], ['مخبز الحي', 'فرن العيش الفينو', 'حلويات ومخبوزات', '٤ أكتوبر', 2600], ['مطعم مشويات', 'مطعم كشري', 'مطاعم', '٢ أكتوبر', 11500]] },
+        txns: [['مطعم الريف', 'مطعم الفول', 'مطاعم', T('اليوم', 'النهارده'), 4200, 18500], ['قهوة المساء', 'كافيه الناصية', 'قهوة ومشروبات', T('أمس', 'امبارح'), 1800], ['مخبز الحي', 'فرن العيش الفينو', 'حلويات ومخبوزات', '4 أكتوبر', 2600], ['مطعم مشويات', 'مطعم كشري', 'مطاعم', '2 أكتوبر', 11500]] },
       shop: { name: 'بقالة وسوبرماركت', color: '#3866A7', tint: 'rgba(56,102,167,0.12)', spent: 214000, limit: 200000, pct: 90, avg: 158500, anom: 35, count: 11,
         subs: [['سوبرماركت', 128000], ['خضار وفواكه', 38000], ['لحوم ودواجن وأسماك', 31000], ['بقالة الحي', 17000]],
-        txns: [['سوبرماركت الحي', 'سوبرماركت الحي', 'سوبرماركت', T('أمس', 'امبارح'), 31840, 124050], ['خضار وفواكه الحي', 'الخضري', 'خضار وفواكه', '٥ أكتوبر', 6500], ['ملحمة الحي', 'الجزار', 'لحوم ودواجن وأسماك', '٣ أكتوبر', 14200], ['بقالة الحي', 'البقال', 'بقالة الحي', '١ أكتوبر', 2300]] },
+        txns: [['سوبرماركت الحي', 'سوبرماركت الحي', 'سوبرماركت', T('أمس', 'امبارح'), 31840, 124050], ['خضار وفواكه الحي', 'الخضري', 'خضار وفواكه', '5 أكتوبر', 6500], ['ملحمة الحي', 'الجزار', 'لحوم ودواجن وأسماك', '3 أكتوبر', 14200], ['بقالة الحي', 'البقال', 'بقالة الحي', '1 أكتوبر', 2300]] },
       car: { name: 'مواصلات', color: '#4D747C', tint: 'rgba(77,116,124,0.12)', spent: 31000, limit: 80000, pct: 80, avg: 42000, anom: null, count: 9,
         subs: [['تاكسي وتطبيقات', 19000], ['مواصلات عامة', 12000]],
-        txns: [['تاكسي من التطبيق', 'تاكسي من التطبيق', 'تاكسي وتطبيقات', '٦ أكتوبر', 3400], ['مترو الرياض', 'مترو الأنفاق', 'مواصلات عامة', '٥ أكتوبر', 400], ['تاكسي من التطبيق', 'تاكسي من التطبيق', 'تاكسي وتطبيقات', '٢ أكتوبر', 2700], ['حافلة المدينة', 'أتوبيس', 'مواصلات عامة', '٣٠ سبتمبر', 400]] },
+        txns: [['تاكسي من التطبيق', 'تاكسي من التطبيق', 'تاكسي وتطبيقات', '6 أكتوبر', 3400], ['مترو الرياض', 'مترو الأنفاق', 'مواصلات عامة', '5 أكتوبر', 400], ['تاكسي من التطبيق', 'تاكسي من التطبيق', 'تاكسي وتطبيقات', '2 أكتوبر', 2700], ['حافلة المدينة', 'أتوبيس', 'مواصلات عامة', '30 سبتمبر', 400]] },
       gift: { name: 'هدايا', color: '#A55060', tint: 'rgba(165,80,96,0.12)', spent: 45000, limit: null, pct: 0, avg: null, anom: null, count: 2, subs: [],
-        txns: [['محل ورد', 'محل ورد', '', '٥ أكتوبر', 15000], ['متجر هدايا', 'محل هدايا', '', '٢ أكتوبر', 30000]] }
+        txns: [['محل ورد', 'محل ورد', '', '5 أكتوبر', 15000], ['متجر هدايا', 'محل هدايا', '', '2 أكتوبر', 30000]] }
     };
   }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = this.eg(), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const key = this.key(), D = this.data(eg)[key], s = this.state;
     const na = st === 'غير متاح', empty = st === 'فاضي';
-    // الشهر المالي ٢٨ سبتمبر – ٢٧ أكتوبر = ٣٠ يوم · النهارده ٧ أكتوبر = اليوم العاشر · فاضل ٢١ يوم بالنهارده
+    // الشهر المالي 28 سبتمبر – 27 أكتوبر = 30 يوم · النهارده 7 أكتوبر = اليوم العاشر · فاضل 21 يوم بالنهارده
     const DAYS = 30, DAY = 10, LEFT = 21;
     const L = s.lim[key] || { limit: D.limit == null ? null : D.limit * k, pct: D.pct, alert: D.pct > 0 };
     const limit = L.limit, has = limit != null;
@@ -207,14 +207,14 @@ class Component extends DCLogic {
     const left = has ? limit - spent : 0;
     const light = (c, b) => 'flex-shrink: 0; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: ' + c + '; background: ' + b;
     const chip = na ? ['غير متاح', light('#DCEBD6', 'rgba(255,255,255,0.14)')] : !has ? [eg ? 'من غير سقف' : 'بلا سقف', light('#DCEBD6', 'rgba(255,255,255,0.14)')] : over ? [eg ? 'عدّيت السقف' : 'تجاوزت السقف', light('#FFD0D2', 'rgba(255,168,172,0.22)')] : crossed ? [eg ? 'وصلت لنسبة التنبيه' : 'بلغت نسبة التنبيه', light('#F3C96B', 'rgba(243,201,107,0.18)')] : [eg ? 'ماشي كويس' : 'ضمن الحد', light('#DCEBD6', 'rgba(220,235,214,0.16)')];
-    // الوتيرة: forecastPeriodSpend (بعد ٥ أيام) + يوم تجاوز السقف من معدل الأيام اللي فاتت (capPace) — قسمة صحيحة
+    // الوتيرة: forecastPeriodSpend (بعد 5 أيام) + يوم تجاوز السقف من معدل الأيام اللي فاتت (capPace) — قسمة صحيحة
     const forecast = this.div(spent * DAYS, DAY);
     let pace1 = '', pace2 = '', pace1Color = '#193D33';
     if (!spent) { pace1 = eg ? 'لسه ما صرفتش حاجة في التصنيف ده الشهر ده' : 'لا مصروف في هذا التصنيف هذا الشهر بعد'; }
     else if (over) { pace1 = (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(spent - limit) + ' ' + cur; pace1Color = '#BE3D48'; pace2 = (eg ? 'والشهر لسه في يومه العاشر — المتوقع حوالي ' : 'والشهر في يومه العاشر — المتوقع نحو ') + this.fmt(forecast) + ' ' + cur; }
     else if (has) {
       const fast = forecast > limit;
-      pace1 = (fast ? (eg ? 'أسرع من الوقت: ' : 'أسرع من الوقت: ') : (eg ? 'ماشي مع الوقت: ' : 'ضمن الوقت: ')) + (eg ? 'صرفت ' : 'صُرف ') + n(usedFull) + (eg ? '٪ وعدّى ' : '٪ ومضى ') + n(timePct) + (eg ? '٪ من الشهر' : '٪ من الشهر');
+      pace1 = (fast ? (eg ? 'أسرع من الوقت: ' : 'أسرع من الوقت: ') : (eg ? 'ماشي مع الوقت: ' : 'ضمن الوقت: ')) + (eg ? 'صرفت ' : 'صُرف ') + n(usedFull) + (eg ? '% وعدّى ' : '% ومضى ') + n(timePct) + (eg ? '% من الشهر' : '% من الشهر');
       pace1Color = fast ? '#956000' : '#13764D';
       if (fast) { const d = Math.min(LEFT - 1, Math.max(1, this.div(left * DAY + spent - 1, spent))); pace2 = (eg ? 'لو كمّلت كده هتعدّي السقف حوالي ' : 'بهذه الوتيرة يُتجاوز السقف نحو ') + n(7 + d) + ' أكتوبر'; }
       else pace2 = (eg ? 'لو كمّلت كده هتخلّص الشهر على حوالي ' : 'بهذه الوتيرة يُتوقع نحو ') + this.fmt(forecast) + ' ' + cur + (eg ? '' : ' بنهاية الشهر');
@@ -224,7 +224,7 @@ class Component extends DCLogic {
     const subs = D.subs.map(([nm, v], i) => {
       const share = subTotal ? this.div(v * 100, subTotal) : 0;
       return {
-        name: nm, hasShare: !na && !empty, share: n(share) + '٪',
+        name: nm, hasShare: !na && !empty, share: n(share) + '%',
         amount: na ? 'غير متاح' : this.fmt(empty ? 0 : v * k), amountStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : '#193D33'),
         dot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + D.color + '; opacity: ' + (1 - i * 0.2),
         bar: 'display: block; height: 6px; border-radius: 3px; background: ' + D.color + '; width: ' + share + '%',
@@ -241,15 +241,15 @@ class Component extends DCLogic {
       };
     });
     return {
-      name: D.name, periodLine: eg ? 'ميزانية أكتوبر، من ٢٨ سبتمبر لـ٢٧ أكتوبر' : 'ميزانية أكتوبر، من ٢٨ سبتمبر إلى ٢٧ أكتوبر',
+      name: D.name, periodLine: eg ? 'ميزانية أكتوبر، من 28 سبتمبر لـ27 أكتوبر' : 'ميزانية أكتوبر، من 28 سبتمبر إلى 27 أكتوبر',
       dotStyle: 'width: 12px; height: 12px; border-radius: 6px; flex-shrink: 0; background: ' + D.color + '; box-shadow: 0 0 0 4px ' + D.tint,
       isNA: na, naTitle: eg ? 'مصروف التصنيف ده مش معروف دلوقتي' : 'مصروف هذا التصنيف غير معروف حاليًا',
-      naBody: eg ? '٣ عمليات الشهر ده نوعها لسه مش أكيد، وممكن تكون منه. أكّدها والرقم يرجع.' : '٣ عمليات هذا الشهر نوعها غير مؤكد، وقد تكون منه. أكّدها ليظهر الرقم.',
+      naBody: eg ? '3 عمليات الشهر ده نوعها لسه مش أكيد، وممكن تكون منه. أكّدها والرقم يرجع.' : '3 عمليات هذا الشهر نوعها غير مؤكد، وقد تكون منه. أكّدها ليظهر الرقم.',
       naGo: eg ? 'راجعها' : 'راجعها',
       naLimit: has ? (eg ? 'السقف ' : 'السقف ') + this.fmt(limit) + ' ' + cur + (eg ? ' — مستني المراجعة' : ' — بانتظار المراجعة') : (eg ? 'مستني المراجعة' : 'بانتظار المراجعة'),
       heroLabel: eg ? 'صرفت في أكتوبر' : 'المصروف في أكتوبر', chip: chip[0], chipStyle: chip[1],
       known: !na, spentText: this.fmt(spent), ofLimit: has ? '/ ' + this.fmt(limit) + ' ' + cur : cur,
-      showBar: !na && has, pct: String(pct), barAria: (eg ? 'صرفت ' : 'صُرف ') + n(usedFull) + '٪',
+      showBar: !na && has, pct: String(pct), barAria: (eg ? 'صرفت ' : 'صُرف ') + n(usedFull) + '%',
       barStyle: 'display: block; height: 8px; border-radius: 4px; width: ' + pct + '%; background: ' + (over ? '#FFA8AC' : crossed ? '#F3C96B' : '#A6DEC1'),
       tickStyle: 'position: absolute; top: 0; bottom: 0; right: ' + timePct + '%; width: 2px; border-radius: 1px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(6,75,64,0.35)',
       leftLine: !has ? '' : left >= 0 ? (eg ? 'فاضل ' : 'بقي ') + this.fmt(left) + ' ' + cur : (eg ? 'زيادة ' : 'تجاوز ') + this.fmt(-left) + ' ' + cur,
@@ -259,13 +259,13 @@ class Component extends DCLogic {
       pace1, pace1Style: 'font-size: 14px; font-weight: 700; color: ' + pace1Color, pace2,
       hasCaveat: !!spent && has, caveat: eg ? 'لو باقي الفترة مشي بنفس المعدل (' + n(DAY) + ' أيام عدّوا).' : 'إن استمر باقي الفترة بالمعدل نفسه (مضى ' + n(DAY) + ' أيام).',
       hasDaily: daily > 0, daily: (eg ? 'تقدر تصرف حوالي ' : 'المتاح نحو ') + this.fmt(daily) + ' ' + cur + (eg ? ' في اليوم لـ' : ' يوميًا لـ') + n(LEFT) + (eg ? ' يوم باقيين' : ' يومًا متبقيًا'),
-      avgLabel: eg ? 'متوسط آخر ٦ شهور' : 'متوسط آخر ٦ أشهر',
+      avgLabel: eg ? 'متوسط آخر 6 شهور' : 'متوسط آخر 6 أشهر',
       avgText: avg == null ? 'غير متاح' : this.fmt(avg) + ' ' + cur, avgDir: avg == null ? 'rtl' : 'ltr',
       avgStyle: 'text-align: right; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (avg == null ? '#637570' : '#193D33'),
-      avgNote: avg == null ? (eg ? 'محتاج ٣ شهور مكتملة، والمتاح ٢' : 'يحتاج ٣ أشهر مكتملة، والمتاح ٢') : (eg ? 'معلومة، مش سقف' : 'معلومة، وليست سقفًا'),
+      avgNote: avg == null ? (eg ? 'محتاج 3 شهور مكتملة، والمتاح 2' : 'يحتاج 3 أشهر مكتملة، والمتاح 2') : (eg ? 'معلومة، مش سقف' : 'معلومة، وليست سقفًا'),
       anomBox: 'flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 2px; background: ' + (D.anom && !na && !empty ? '#FBF0DD' : 'rgba(25,61,51,0.05)'),
       anomLabelStyle: 'font-size: 12px; font-weight: 700; color: ' + (D.anom && !na && !empty ? '#956000' : '#637570'),
-      anomText: na || avg == null ? 'غير متاح' : empty ? (eg ? 'مفيش صرف لسه' : 'لا صرف بعد') : D.anom ? (eg ? 'أعلى من المعتاد بـ' : 'أعلى من المعتاد بنسبة ') + n(D.anom) + '٪' : (eg ? 'في حدود المعتاد' : 'ضمن المعتاد'),
+      anomText: na || avg == null ? 'غير متاح' : empty ? (eg ? 'مفيش صرف لسه' : 'لا صرف بعد') : D.anom ? (eg ? 'أعلى من المعتاد بـ' : 'أعلى من المعتاد بنسبة ') + n(D.anom) + '%' : (eg ? 'في حدود المعتاد' : 'ضمن المعتاد'),
       limitTitle: eg ? 'السقف والتنبيه' : 'السقف والتنبيه',
       spaceName: eg ? 'مصر' : 'السعودية', spentMinor: spent, limitMinor: has ? limit : 0, avgMinor: avg || 0, threshold: L.pct || 0, alertOn: !!L.alert,
       onLimit: this.onLimit, onClear: this.onClear,

@@ -157,7 +157,7 @@ class Component extends DCLogic {
     this.timers = [];
     this.state = this.fresh(props);
   }
-  // الخطوات: ٠ أهلًا، ١ الشكل، ٢ الدخول، ٣ البلد، ٤ يوم الراتب، ٥ مصدر العمليات، ٦ جاهز (§63)
+  // الخطوات: 0 أهلًا، 1 الشكل، 2 الدخول، 3 البلد، 4 يوم الراتب، 5 مصدر العمليات، 6 جاهز (§63)
   // الحالات بتفتح على الكارت اللي يخصها: الدخول (بيحمّل · خطأ · محتاج نت) · مصدر العمليات على الآيفون (غير متاح)
   fresh(p) {
     const st = (p && p.state) || 'عادي';
@@ -192,7 +192,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const s = this.state, st = this.props.state ?? 'عادي';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const country = s.country || ((this.props.space ?? 'السعودية') === 'مصر' ? 'eg' : 'sa');
     // §66: قبل ما البلد يتحدد (أهلًا · الشكل · الدخول) فصحى دايمًا. بعده: صياغة البلد المختار
     const eg = s.step >= 3 && country === 'eg';
@@ -205,7 +205,7 @@ class Component extends DCLogic {
       [T('أين تقيم؟', 'إنت فين؟'), T('يحدد العملة، والبنوك التي نفهم رسائلها، وقواعد الزكاة.', 'بيحدد العملة، والبنوك اللي بنفهم رسايلها، وقواعد الزكاة.'), 'كرة أرضية تدور ببطء'],
       [T('في أي يوم ينزل راتبك؟', 'مرتبك بينزل يوم كام؟'), T('يبدأ شهرك المالي من هذا اليوم.', 'شهرك المالي بيبدأ من اليوم ده.'), 'تقويم وعملة صغيرة'],
       [T('من أين تصل عملياتك؟', 'فلوسك بتيجي منين؟'), T('لتدخل عملياتك وحدها.', 'عشان عملياتك تدخل لوحدها.'), 'جوال وخطوط تنساب'],
-      ['حسابك جاهز', T('الباقي بطاقات صغيرة داخل التطبيق، كل منها ١٠ ثوانٍ.', 'الباقي كروت صغيرة جوه التطبيق، كل واحد ١٠ ثواني.'), '']
+      ['حسابك جاهز', T('الباقي بطاقات صغيرة داخل التطبيق، كل منها 10 ثوانٍ.', 'الباقي كروت صغيرة جوه التطبيق، كل واحد 10 ثواني.'), '']
     ];
     const ok = T('تم', 'تمام');
     const R = {
@@ -225,7 +225,7 @@ class Component extends DCLogic {
     const at = {};
     for (let i = 0; i <= 6; i++) at['s' + i] = s.step === i;
     const filled = s.step === 6 ? 6 : Math.max(0, s.step - 1 + (s.reply ? 1 : 0));
-    // ملفك بعد الدقيقة: الدخول ١٠، البلد ١٠، يوم الراتب ١٠، مصدر العمليات ١٠ (§63 — الشكل ما بيتعدّش)
+    // ملفك بعد الدقيقة: الدخول 10، البلد 10، يوم الراتب 10، مصدر العمليات 10 (§63 — الشكل ما بيتعدّش)
     const pct = (s.signed ? 10 : 0) + 10 + (typeof s.day === 'number' ? 10 : 0) + (s.src === 'sms' || s.src === 'file' ? 10 : 0);
     const primary = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)';
     const secondary = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)';
@@ -253,13 +253,13 @@ class Component extends DCLogic {
       showTop: s.step > 0,
       // بعد ما الحساب يتعمل ما فيش رجوع للدخول
       canBack: s.step === 1 || s.step === 2 || s.step === 4 || s.step === 5, back: () => this.go(s.step - 1),
-      showBar: s.step >= 1, barNow: String(filled), barLabel: 'الخطوة ' + n(Math.max(1, s.step)) + ' من ٦',
+      showBar: s.step >= 1, barNow: String(filled), barLabel: 'الخطوة ' + n(Math.max(1, s.step)) + ' من 6',
       segs: [1, 2, 3, 4, 5, 6].map((i) => ({ fill: 'display: block; height: 100%; border-radius: 3px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); width: ' + (i <= filled ? 100 : 0) + '%' })),
       // التخطي في كله ما عدا الدخول والبلد (ملف الهاندأوف §7)
       canSkip: (s.step === 1 || s.step === 4 || s.step === 5) && !s.reply, skip: () => this.skip(), skipLabel: T('تخطَّ', 'تخطّي'),
       hasIllus: s.step < 6, illus: STEPS[s.step][2], isDone: s.step === 6,
-      ringText: 'ملفك ' + n(pct) + '٪', ringOffset: String(351.9 * (100 - pct) / 100),
-      // دخول الكارت: ظهور + طلوع 8px في 500ms (الهاندأوف §5). الخطوة بتتغير ±١ دايمًا، فتبديل اسم الحركة بيعيدها
+      ringText: 'ملفك ' + n(pct) + '%', ringOffset: String(351.9 * (100 - pct) / 100),
+      // دخول الكارت: ظهور + طلوع 8px في 500ms (الهاندأوف §5). الخطوة بتتغير ±1 دايمًا، فتبديل اسم الحركة بيعيدها
       cardClass: s.step % 2 ? 'o-ca' : 'o-cb', title: STEPS[s.step][0], sub: STEPS[s.step][1], at, primary, secondary,
       startLabel: 'لنبدأ', next: () => this.go(s.step + 1),
       avatars, avatarNote: 'الأشكال النهائية قيد التصميم.',

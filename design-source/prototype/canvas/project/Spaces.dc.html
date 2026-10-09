@@ -106,7 +106,7 @@ body{margin:0}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // مصر: active · archived · none — لكل سيناريو لوحده. السعودية بتتعمل لوحدها وما بتتأرشفش (§41 · §64 قرار ٣)
+    // مصر: active · archived · none — لكل سيناريو لوحده. السعودية بتتعمل لوحدها وما بتتأرشفش (§41 · §64 قرار 3)
     this.state = { eg: { normal: 'active', one: 'none' }, active: null, sheet: null, pick: null, toast: '' };
     this.timers = [];
   }
@@ -117,8 +117,8 @@ class Component extends DCLogic {
     const sc = st === 'بلد واحدة' ? 'one' : 'normal';
     const s = this.state;
     const egSt = s.eg[sc];
-    const n = (x) => x.toLocaleString('ar-EG');
-    // البلد الشغالة على الجهاز بس (§64 قرار ٦) — مبدئيًا من خاصية «space»، ولو مصر مش شغالة ⇒ السعودية
+    const n = (x) => x.toLocaleString('en-US');
+    // البلد الشغالة على الجهاز بس (§64 قرار 6) — مبدئيًا من خاصية «space»، ولو مصر مش شغالة ⇒ السعودية
     const want = s.active || ((this.props.space ?? 'السعودية') === 'مصر' ? 'eg' : 'sa');
     const active = want === 'eg' && egSt === 'active' ? 'eg' : 'sa';
     const eg = active === 'eg';
@@ -132,7 +132,7 @@ class Component extends DCLogic {
       return {
         name: isSa ? 'السعودية' : 'مصر', mark: isSa ? 'س' : 'م', isActive,
         currency: isSa ? (eg ? 'ريال سعودي · ر.س' : 'ريال سعودي · ر.س') : (eg ? 'جنيه مصري · ج.م' : 'جنيه مصري · ج.م'),
-        meta: isSa ? (eg ? '٤ محافظ · اتعمل لوحده' : '٤ محافظ · أُنشئ تلقائيًا') : archived ? (eg ? '٣ محافظ · مؤرشفة: من غير مزامنة ولا تنبيهات' : '٣ محافظ · مؤرشفة: بلا مزامنة ولا تنبيهات') : (eg ? '٣ محافظ · ضفتها في ١٢ مايو ٢٠٢٦' : '٣ محافظ · أضفتها في ١٢ مايو ٢٠٢٦'),
+        meta: isSa ? (eg ? '4 محافظ · اتعمل لوحده' : '4 محافظ · أُنشئ تلقائيًا') : archived ? (eg ? '3 محافظ · مؤرشفة: من غير مزامنة ولا تنبيهات' : '3 محافظ · مؤرشفة: بلا مزامنة ولا تنبيهات') : (eg ? '3 محافظ · ضفتها في 12 مايو 2026' : '3 محافظ · أضفتها في 12 مايو 2026'),
         acts, hasActs: acts.length > 0,
         hasNote: isSa, note: eg ? 'حساب السعودية الأساسي ما بيتأرشفش' : 'حساب السعودية الأساسي لا يُؤرشف',
         lens: 'width: 46px; height: 46px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; ' + (archived ? 'color: #637570; background: rgba(25,61,51,0.06)' : 'color: #08634F; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 8px 18px rgba(8,99,79,0.16)'),

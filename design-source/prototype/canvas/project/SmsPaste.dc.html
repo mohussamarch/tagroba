@@ -140,7 +140,7 @@ class Component extends DCLogic {
   go(patch) { this.setState(Object.assign({}, this.cur(), { src: this.key() }, patch)); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   toMinor(text) {
-    const t = String(text || '').replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[^0-9.]/g, '');
+    const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/[^0-9.]/g, '');
     if (!t) return null;
     const [w, f = ''] = t.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -149,7 +149,7 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const ios = (this.props.device ?? 'آيفون') === 'آيفون';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     const MSG = eg ? ['رسالة واحدة', 'رسالتين', 'رسايل', 'رسالة'] : ['رسالة واحدة', 'رسالتان', 'رسائل', 'رسالة'];
@@ -159,16 +159,16 @@ class Component extends DCLogic {
     const bank = (id) => (BANKS.find((b) => b[0] === id) || BANKS[0])[1];
     // مخترعة · d = كام يوم فات · st: new جديدة · dup متسجلة قبل كده (بتتشال) · fx بعملة أجنبية (§75-12: تتسجل ونسأل عن المبلغ المحلي)
     const ROWS = [
-      { id: 'r1', name: 'سوبرماركت الحي', amt: -8650, d: 0, when: eg ? 'النهارده ١:٠٥ م' : 'اليوم ١:٠٥ م', b: BANKS[0][0], st: 'new' },
+      { id: 'r1', name: 'سوبرماركت الحي', amt: -8650, d: 0, when: eg ? 'النهارده 1:05 م' : 'اليوم 1:05 م', b: BANKS[0][0], st: 'new' },
       { id: 'r4', name: eg ? 'متجر تطبيقات' : 'متجر تطبيقات', fx: eg ? '−19.99 يورو' : '−49.99 دولار', d: 1, when: eg ? 'امبارح' : 'أمس', b: BANKS[0][0], st: 'fx' },
-      { id: 'r2', name: eg ? 'بنزينة' : 'محطة وقود', amt: -9000, d: 3, when: '٤ أكتوبر', b: BANKS[1][0], st: 'new' },
-      { id: 'r3', name: eg ? 'كافيه المرسى' : 'مقهى المرسى', amt: -2300, d: 5, when: '٢ أكتوبر', b: BANKS[0][0], st: 'dup' },
-      { id: 'r5', name: eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', amt: -6400, d: 11, when: '٢٦ سبتمبر', b: BANKS[BANKS.length - 1][0], st: 'new' }
+      { id: 'r2', name: eg ? 'بنزينة' : 'محطة وقود', amt: -9000, d: 3, when: '4 أكتوبر', b: BANKS[1][0], st: 'new' },
+      { id: 'r3', name: eg ? 'كافيه المرسى' : 'مقهى المرسى', amt: -2300, d: 5, when: '2 أكتوبر', b: BANKS[0][0], st: 'dup' },
+      { id: 'r5', name: eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', amt: -6400, d: 11, when: '26 سبتمبر', b: BANKS[BANKS.length - 1][0], st: 'new' }
     ];
     const LIM = { week: 7, month: 9, d30: 30 };
     const SK = [
       { id: 'otp', reason: eg ? 'رمز تحقق أو كلمة سر — اتجاهلت' : 'رسالة تحقق أو كلمة مرور — تجاهلناها', sample: eg ? '«رمز التحقق ••••••. ما تشاركوش مع حد.»' : '«رمز التحقق ••••••. لا تشاركه مع أحد.»', c: { paste: 1, week: 5, month: 7, d30: 14 } },
-      { id: 'offer', reason: eg ? 'عرض مش عملية' : 'عرض وليس عملية مكتملة', sample: eg ? '«استرداد ٥٪ لما تدفع بالكارت لحد آخر الشهر»' : '«استرداد ٥٪ عند الدفع بالبطاقة حتى نهاية الشهر»', c: { paste: 1, week: 2, month: 3, d30: 7 } },
+      { id: 'offer', reason: eg ? 'عرض مش عملية' : 'عرض وليس عملية مكتملة', sample: eg ? '«استرداد 5% لما تدفع بالكارت لحد آخر الشهر»' : '«استرداد 5% عند الدفع بالبطاقة حتى نهاية الشهر»', c: { paste: 1, week: 2, month: 3, d30: 7 } },
       { id: 'declined', reason: eg ? 'عملية اترفضت أو ما كملتش' : 'عملية مرفوضة أو غير مكتملة', sample: eg ? '«اترفضت عملية شراء — الرصيد مش كفاية»' : '«رُفضت عملية شراء — الرصيد غير كافٍ»', c: { paste: 1, week: 1, month: 1, d30: 1 } }
     ];
     const isPeriod = s.kind === 'period';
@@ -185,7 +185,7 @@ class Component extends DCLogic {
     const pill = (on) => 'min-height: 44px; padding: 6px 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
     const primary = (dis) => 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (dis ? ' opacity: 0.45; cursor: default' : '');
     const read = (kind) => {
-      if (kind === 'paste' && !/[0-9٠-٩]/.test(s.text)) { this.go({ phase: 'error', kind }); return; }
+      if (kind === 'paste' && !/[0-90-9]/.test(s.text)) { this.go({ phase: 'error', kind }); return; }
       this.go({ phase: 'results', kind, fx: '' });
     };
     return {
@@ -200,12 +200,12 @@ class Component extends DCLogic {
       pasteLabel: eg ? 'الصق نص رسالة البنك هنا' : 'الصق نص رسالة البنك هنا', text: s.text,
       typeText: (e) => this.go({ text: e.target.value, phase: 'input' }),
       clipLabel: eg ? 'الصق من الحافظة' : 'الصق من الحافظة',
-      fromClip: () => this.go({ phase: 'input', text: eg ? 'شراء ٨٦٫٥٠ ج.م من سوبرماركت الحي، كارت آخره ٥٥١٨، النهارده ١:٠٥م\n\nشراء أونلاين ١٩٫٩٩ يورو من متجر تطبيقات، امبارح\n\nشراء ٢٣٫٠٠ ج.م من كافيه المرسى، ٢/١٠\n\nرمز التحقق ٤٨٣٩٢١. ما تشاركوش مع حد.\n\nاسترداد ٥٪ لما تدفع بالكارت لحد آخر الشهر\n\nاترفضت عملية شراء — الرصيد مش كفاية' : 'شراء ٨٦٫٥٠ ر.س لدى سوبرماركت الحي، بطاقة تنتهي بـ ٤٨٢١، اليوم ١:٠٥م\n\nشراء عبر الإنترنت ٤٩٫٩٩ دولار لدى متجر تطبيقات، أمس\n\nشراء ٢٣٫٠٠ ر.س لدى مقهى المرسى، ٢/١٠\n\nرمز التحقق ٤٨٣٩٢١. لا تشاركه مع أحد.\n\nاسترداد ٥٪ عند الدفع بالبطاقة حتى نهاية الشهر\n\nرُفضت عملية شراء — الرصيد غير كافٍ' }),
+      fromClip: () => this.go({ phase: 'input', text: eg ? 'شراء 86.50 ج.م من سوبرماركت الحي، كارت آخره 5518، النهارده 1:05م\n\nشراء أونلاين 19.99 يورو من متجر تطبيقات، امبارح\n\nشراء 23.00 ج.م من كافيه المرسى، 2/10\n\nرمز التحقق 483921. ما تشاركوش مع حد.\n\nاسترداد 5% لما تدفع بالكارت لحد آخر الشهر\n\nاترفضت عملية شراء — الرصيد مش كفاية' : 'شراء 86.50 ر.س لدى سوبرماركت الحي، بطاقة تنتهي بـ 4821، اليوم 1:05م\n\nشراء عبر الإنترنت 49.99 دولار لدى متجر تطبيقات، أمس\n\nشراء 23.00 ر.س لدى مقهى المرسى، 2/10\n\nرمز التحقق 483921. لا تشاركه مع أحد.\n\nاسترداد 5% عند الدفع بالبطاقة حتى نهاية الشهر\n\nرُفضت عملية شراء — الرصيد غير كافٍ' }),
       noText: !s.text.trim(), readLabel: eg ? 'اقراها' : 'اقرأها', readStyle: 'flex: 1 1 0; ' + primary(!s.text.trim()),
       readPaste: () => { if (s.text.trim()) read('paste'); },
       showPeriod: s.tab === 'period' && !ios && s.phase !== 'done',
       rangeTitle: eg ? 'الفترة' : 'الفترة', sendTitle: eg ? 'من أنهي بنوك' : 'من أي البنوك',
-      ranges: [['month', eg ? 'من أول الشهر (٢٨ سبتمبر)' : 'منذ بداية الشهر (٢٨ سبتمبر)'], ['week', eg ? 'آخر ٧ أيام' : 'آخر ٧ أيام'], ['d30', eg ? 'آخر ٣٠ يوم' : 'آخر ٣٠ يومًا']].map(([id, label]) => ({ label, on: s.range === id ? 'true' : 'false', pick: () => this.go({ range: id, phase: s.phase === 'results' && isPeriod ? 'results' : 'input' }), style: pill(s.range === id) })),
+      ranges: [['month', eg ? 'من أول الشهر (28 سبتمبر)' : 'منذ بداية الشهر (28 سبتمبر)'], ['week', eg ? 'آخر 7 أيام' : 'آخر 7 أيام'], ['d30', eg ? 'آخر 30 يوم' : 'آخر 30 يومًا']].map(([id, label]) => ({ label, on: s.range === id ? 'true' : 'false', pick: () => this.go({ range: id, phase: s.phase === 'results' && isPeriod ? 'results' : 'input' }), style: pill(s.range === id) })),
       banks: BANKS.map(([id, label]) => ({ label: (s.off[id] ? '' : '✓ ') + label, on: s.off[id] ? 'false' : 'true', toggle: () => this.go({ off: Object.assign({}, s.off, { [id]: !s.off[id] }) }), style: pill(!s.off[id]) })),
       noBank: BANKS.every((b) => s.off[b[0]]), periodLabel: eg ? 'اقرا الرسايل' : 'اقرأ الرسائل', periodStyle: primary(BANKS.every((b) => s.off[b[0]])),
       readPeriod: () => { if (!BANKS.every((b) => s.off[b[0]])) read('period'); },

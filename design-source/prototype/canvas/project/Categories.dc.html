@@ -207,7 +207,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const eg = this.eg(), s = this.state, I = this.I;
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const SUBW = eg ? ['فرعي واحد', 'فرعيين', 'فرعيات', 'فرعي'] : ['فرع واحد', 'فرعان', 'فروع', 'فرعًا'];
     const isErr = (this.props.state ?? 'عادي') === 'خطأ' && !s.loaded;

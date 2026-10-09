@@ -83,7 +83,7 @@ body{margin:0}
         <span style="font-size: 13px; color: #637570">{{sheetBody}}</span>
         <label style="display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border-radius: 18px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
           <input type="text" inputmode="decimal" dir="ltr" aria-label="{{sheetTitle}}" value="{{rateInput}}" onInput="{{typeRate}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 24px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
-          <span style="font-size: 16px; color: #637570">٪</span>
+          <span style="font-size: 16px; color: #637570">%</span>
         </label>
         <span style="font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px">{{rateErr}}</span>
         <button type="button" class="w-press" onClick="{{saveRate}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
@@ -106,9 +106,9 @@ class Component extends DCLogic {
   monthly(bp) { if (!bp) return 0n; const S = 100000000n, t = S + BigInt(bp) * 10000n; let lo = -60000000n, hi = 25000000n; while (lo < hi) { const mid = lo + (hi - lo) / 2n; if (this.pow12(mid) >= t) hi = mid; else lo = mid + 1n; } const b = lo - 1n; return t - this.pow12(b) < this.pow12(lo) - t ? b : lo; }
   grow(mo, months, bp, start, simple) { const m = simple ? null : this.monthly(bp); let v = BigInt(start); for (let i = 0; i < months; i++) v = v + (simple ? this.mulDiv(v, BigInt(bp), 120000n) : this.mulDiv(v, m, 100000000n)) + BigInt(mo); return v; }
   deflate(v, months, bp) { let x = v; for (let i = 0; i < (months - months % 12) / 12; i++) x = this.mulDiv(x, 10000n, BigInt(10000 + bp)); const m = this.monthly(bp); for (let i = 0; i < months % 12; i++) x = this.mulDiv(x, 100000000n, 100000000n + m); return x; }
-  pct(bp) { const a = Math.abs(bp), f = a % 100; return ((bp < 0 ? '−' : '') + (a - f) / 100 + '.' + (f < 10 ? '0' : '') + f).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]).replace('.', '٫') + '٪'; }
+  pct(bp) { const a = Math.abs(bp), f = a % 100; return ((bp < 0 ? '−' : '') + (a - f) / 100 + '.' + (f < 10 ? '0' : '') + f).replace(/\d/g, (d) => '0123456789'[d]).replace('.', '.') + '%'; }
   toBp(text) {
-    const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٫,]/g, '.').replace(/[−–]/g, '-').replace(/[\s٪%]/g, '');
+    const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[.,]/g, '.').replace(/[−–]/g, '-').replace(/[\s%%]/g, '');
     const m = /^(-?)(\d{1,4})(?:\.(\d{1,2}))?$/.exec(t);
     if (!m) return null;
     const bp = parseInt(m[2], 10) * 100 + parseInt(((m[3] || '') + '00').slice(0, 2), 10);
@@ -119,25 +119,25 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const st = this.props.state ?? 'عادي';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const noFile = st === 'غير متاح', stale = st === 'تقريبي';
     const mo = Number(this.props.monthly) > 0 ? Number(this.props.monthly) : 100000 * k;
     const months = Number(this.props.months) > 0 ? Math.min(1200, Number(this.props.months)) : 120;
     const start = Number(this.props.start) >= 0 ? Number(this.props.start) : 0;
     const s = this.state;
-    // المتوسطات (ملف averages.json — §69.6): آخر ١٠ سنين (§69.3). مخترع هنا: تاريخ آخر تحديث ناجح
+    // المتوسطات (ملف averages.json — §69.6): آخر 10 سنين (§69.3). مخترع هنا: تاريخ آخر تحديث ناجح
     const OFF = eg ? 'رسمي' : 'رسمي', PRIV = eg ? 'خاص (مش رسمي)' : 'خاص (غير رسمي)';
     const D = eg ? {
-      gold: [3422, 'سعر الدهب — البنك الدولي، بسعر الصرف الرسمي للجنيه', OFF, '٢٠١٥–٢٠٢٥', 'جزء كبير من الزيادة سببه نزول الجنيه: الجنيه نزل قدام الدولار ٢٠٫٤٠٪ في السنة في المتوسط (٢٠١٥–٢٠٢٥)، وبالدولار الزيادة ١١٫٤٨٪ في السنة'],
-      re: [1633, 'التضخم — الجهاز المركزي للتعبئة العامة والإحصاء (عن طريق البنك الدولي)', OFF, '٢٠١٦–٢٠٢٥'],
-      dep: [null, 'البنك المركزي المصري ١٩٫٠٠٪ (عائد الإيداع لليلة واحدة، سبتمبر ٢٠٢٦ — منقول من خبر صحفي) — معلومة بس'],
-      stocks: [1942, 'مؤشر EGX30 للبورصة المصرية (السعر بس، من غير التوزيعات) · رقم يدوي — اتراجع في ٥ أكتوبر ٢٠٢٦', PRIV, '٢٠١٥–٢٠٢٥', 'الجنيه نزل قدام الدولار ٢٠٫٤٠٪ في السنة في المتوسط (٢٠١٥–٢٠٢٥)'],
+      gold: [3422, 'سعر الدهب — البنك الدولي، بسعر الصرف الرسمي للجنيه', OFF, '2015–2025', 'جزء كبير من الزيادة سببه نزول الجنيه: الجنيه نزل قدام الدولار 20.40% في السنة في المتوسط (2015–2025)، وبالدولار الزيادة 11.48% في السنة'],
+      re: [1633, 'التضخم — الجهاز المركزي للتعبئة العامة والإحصاء (عن طريق البنك الدولي)', OFF, '2016–2025'],
+      dep: [null, 'البنك المركزي المصري 19.00% (عائد الإيداع لليلة واحدة، سبتمبر 2026 — منقول من خبر صحفي) — معلومة بس'],
+      stocks: [1942, 'مؤشر EGX30 للبورصة المصرية (السعر بس، من غير التوزيعات) · رقم يدوي — اتراجع في 5 أكتوبر 2026', PRIV, '2015–2025', 'الجنيه نزل قدام الدولار 20.40% في السنة في المتوسط (2015–2025)'],
       cash: [0, 'الكاش في البيت ما بيزيدش']
     } : {
-      gold: [1488, 'متوسط سعر الذهب الشهري — البنك الدولي', OFF, 'ديسمبر ٢٠١٥ – ديسمبر ٢٠٢٥'],
-      re: [174, 'التضخم — الهيئة العامة للإحصاء (عبر البنك الدولي)', OFF, '٢٠١٦–٢٠٢٥'],
-      dep: [null, 'البنك المركزي السعودي ٤٫٠٠٪ (سعر إعادة الشراء المعاكس، سبتمبر ٢٠٢٦ — منقول من خبر صحفي) — معلومة فقط'],
-      stocks: [795, 'مؤشر MSCI للسوق السعودية مع التوزيعات · رقم يدوي — رُوجع في ٥ أكتوبر ٢٠٢٦', PRIV, '١٠ سنوات حتى نهاية ٢٠٢٤'],
+      gold: [1488, 'متوسط سعر الذهب الشهري — البنك الدولي', OFF, 'ديسمبر 2015 – ديسمبر 2025'],
+      re: [174, 'التضخم — الهيئة العامة للإحصاء (عبر البنك الدولي)', OFF, '2016–2025'],
+      dep: [null, 'البنك المركزي السعودي 4.00% (سعر إعادة الشراء المعاكس، سبتمبر 2026 — منقول من خبر صحفي) — معلومة فقط'],
+      stocks: [795, 'مؤشر MSCI للسوق السعودية مع التوزيعات · رقم يدوي — رُوجع في 5 أكتوبر 2026', PRIV, '10 سنوات حتى نهاية 2024'],
       cash: [0, 'الكاش في البيت لا يزيد']
     };
     const CPI = noFile ? null : eg ? 1633 : 174;
@@ -161,7 +161,7 @@ class Component extends DCLogic {
       const gain = shown != null ? shown - paidIn : null;
       const why = c.id === 'dep' && c.bp == null ? (eg ? 'اكتب فايدة بنكك على الوديعة' : 'اكتب فائدة بنكك على الوديعة') : noFile && c.bp == null ? (eg ? 'غير متاح: ملف المتوسطات لسه ما وصلش' : 'غير متاح: ملف المتوسطات لم يصل بعد') : '';
       const src = c.mine ? (eg ? 'النسبة اللي إنت كتبتها' : 'النسبة التي كتبتها أنت') : c.id === 'dep' ? (noFile ? '' : c.d[1]) : c.id === 'cash' ? c.d[1] : noFile ? (eg ? 'اكتب النسبة بنفسك لحد ما الملف يوصل' : 'اكتب النسبة بنفسك حتى يصل الملف') : c.d[1] + '، ' + c.d[2] + '، ' + c.d[3];
-      const old = stale && !c.mine && c.id !== 'cash' && c.id !== 'dep' ? (eg ? 'قديم: آخر تحديث ما نجحش — الرقم من ٥ سبتمبر ٢٠٢٦' : 'قديم: آخر تحديث لم ينجح — الرقم من ٥ سبتمبر ٢٠٢٦') : '';
+      const old = stale && !c.mine && c.id !== 'cash' && c.id !== 'dep' ? (eg ? 'قديم: آخر تحديث ما نجحش — الرقم من 5 سبتمبر 2026' : 'قديم: آخر تحديث لم ينجح — الرقم من 5 سبتمبر 2026') : '';
       const note = [old, !c.mine && !noFile && c.d[4] ? c.d[4] : ''].filter(Boolean).join(' · ');
       const w = shown != null ? Math.max(2, (shown * 100 - (shown * 100) % top) / top) : 0;
       return {
@@ -175,7 +175,7 @@ class Component extends DCLogic {
         gainStyle: 'font-size: 12px; font-variant-numeric: tabular-nums; color: ' + (gain > 0 ? '#13764D' : gain < 0 ? '#BE3D48' : '#637570'),
         hasBar: shown != null, bar: 'display: block; height: 6px; border-radius: 3px; width: ' + w + '%; background: ' + tiles[c.id][0],
         source: src, hasNote: !!note, note,
-        edit: () => this.setState({ sheet: c.id, rateInput: c.bp != null ? this.pct(c.bp).replace('٪', '') : '', rateErr: '' }),
+        edit: () => this.setState({ sheet: c.id, rateInput: c.bp != null ? this.pct(c.bp).replace('%', '') : '', rateErr: '' }),
         editLabel: c.id === 'cash' ? (eg ? 'ثابت: صفر' : 'ثابت: صفر') : c.bp == null ? (eg ? 'اكتب النسبة' : 'اكتب النسبة') : (eg ? 'عدّل النسبة' : 'عدّل النسبة'),
         editStyle: 'height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (c.id === 'cash' ? 'color: #637570; background: rgba(25,61,51,0.05); opacity: 0.6; cursor: default' : c.bp == null ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)'),
         canReset: c.mine && c.fileRate != null, reset: () => { const r = Object.assign({}, s.rates); delete r[c.id]; this.setState({ rates: r }); },

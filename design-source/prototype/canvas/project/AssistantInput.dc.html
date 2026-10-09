@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>خانة الكتابة في المساعد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.c-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.c-press:active{transform:scale(.97)}
+.c-wave{animation:c-wave 700ms cubic-bezier(.2,.7,.3,1) infinite alternate;transform-origin:center}
+.c-wave:nth-child(2){animation-delay:120ms}.c-wave:nth-child(3){animation-delay:240ms}.c-wave:nth-child(4){animation-delay:360ms}.c-wave:nth-child(5){animation-delay:480ms}
+.c-box{transition:box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.c-box:focus-within{box-shadow:inset 0 0 0 2px #08634F,0 10px 26px rgba(8,99,79,0.18)!important}
+.c-box input:focus-visible{box-shadow:none}
+.c-box input::placeholder{color:#6E7F7A}
+@keyframes c-wave{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){.c-press,.c-box{transition:none}.c-press:active{transform:none}.c-wave{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div class="c-box" style="height: 52px; box-sizing: border-box; border-radius: 18px; padding: 0 4px 0 4px; display: flex; align-items: center; gap: 4px; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.25), 0 10px 26px rgba(29,54,53,0.10)">
+    <sc-if value="{{listening}}" hint-placeholder-val="{{ false }}">
+      <div aria-live="polite" style="flex: 1 1 auto; display: flex; align-items: center; gap: 10px; padding: 0 10px; color: #08634F; font-size: 14px; font-weight: 700">
+        <span aria-hidden="true" style="display: flex; align-items: center; gap: 3px; height: 24px"><span class="c-wave" style="width: 3px; height: 14px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 22px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 18px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 24px; border-radius: 2px; background: #08634F"></span><span class="c-wave" style="width: 3px; height: 12px; border-radius: 2px; background: #08634F"></span></span>
+        {{listeningText}}
+      </div>
+    </sc-if>
+    <sc-if value="{{notListening}}" hint-placeholder-val="{{ true }}">
+      <input id="c-input" type="text" aria-label="{{inputLabel}}" value="{{draft}}" onChange="{{typeDraft}}" onKeyDown="{{enterSend}}" placeholder="{{inputHint}}" autocomplete="off" style="flex: 1 1 auto; min-width: 0; height: 48px; border: 0; background: transparent; font: inherit; font-size: 15px; color: #193D33; outline: none; padding: 0 12px">
+    </sc-if>
+    <button type="button" class="c-press" onClick="{{listenNow}}" aria-label="{{micLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: #DCEBD6">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>
+    </button>
+    <button type="button" class="c-press" onClick="{{sendDraft}}" aria-label="{{sendLabel}}" aria-disabled="{{sendOff}}" style="{{sendStyle}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"listening":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":52}}'>
+// خانة الكتابة في المساعد (اتفصلت من AssistantChat): مستطيل 52 بإطار باين بيقوى لما تدوس · الميكروفون · الإرسال
+// الكلام بيرجع للأم بـ on-send(النص) زي ما اتكتب (الأرقام العربي والفارسي بتتحوّل هناك قبل الحساب — §79.1) · الميكروفون on-listen
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { draft: '' }; }
+  eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
+  send() { const t = (this.state.draft || '').trim(); if (!t) return; this.setState({ draft: '' }); if (typeof this.props.onSend === 'function') this.props.onSend(t); }
+  renderVals() {
+    const eg = this.eg(), T = (a, b) => (eg ? b : a), name = this.props.brandName || 'مصروفي', can = !!(this.state.draft || '').trim();
+    const listening = this.props.listening === true || this.props.listening === 'true';
+    return {
+      listening, notListening: !listening, listeningText: T('أستمع إليك…', 'بسمعك…'),
+      listenNow: () => { if (typeof this.props.onListen === 'function') this.props.onListen(); }, micLabel: T('تكلّم', 'اتكلّم'), sendLabel: T('أرسل', 'ابعت'),
+      inputLabel: T('رسالتك إلى ', 'رسالتك لـ') + name, inputHint: T('اكتب سؤالك أو اطلب أي شيء…', 'اكتب سؤالك أو اطلب أي حاجة…'),
+      draft: this.state.draft, typeDraft: (e) => this.setState({ draft: e.target.value }),
+      enterSend: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.send(); } }, sendDraft: () => this.send(), sendOff: can ? 'false' : 'true',
+      sendStyle: 'width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: ' + (can ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)' : 'none') + '; opacity: ' + (can ? 1 : 0.5)
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -127,15 +127,15 @@ class Component extends DCLogic {
     // مخترعة. المبلغ بالوحدة الصغرى · st: ok مؤكد · sug مقترح من قاعدة عامة · new محل جديد «غير مصنف»
     this.state = {
       rows: eg ? [
-        { id: 'a', name: 'مطعم الفول', cat: 'food', amt: 18500, t: '١٢:٤٠ م', st: 'ok', sheen: true },
-        { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 124050, t: '١٠:١٥ ص', st: 'sug' },
-        { id: 'c', name: 'فرن الندى', cat: 'none', amt: 3500, t: '٩:٠٢ ص', st: 'new' },
-        { id: 'd', name: 'بنزينة', cat: 'car', amt: 60000, t: '٨:٣٠ ص', st: 'ok' }
+        { id: 'a', name: 'مطعم الفول', cat: 'food', amt: 18500, t: '12:40 م', st: 'ok', sheen: true },
+        { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 124050, t: '10:15 ص', st: 'sug' },
+        { id: 'c', name: 'فرن الندى', cat: 'none', amt: 3500, t: '9:02 ص', st: 'new' },
+        { id: 'd', name: 'بنزينة', cat: 'car', amt: 60000, t: '8:30 ص', st: 'ok' }
       ] : [
-        { id: 'a', name: 'مطعم الريف', cat: 'food', amt: 4200, t: '١٢:٤٠ م', st: 'ok', sheen: true },
-        { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 31840, t: '١٠:١٥ ص', st: 'sug' },
-        { id: 'c', name: 'مخبز الندى', cat: 'none', amt: 1850, t: '٩:٠٢ ص', st: 'new' },
-        { id: 'd', name: 'محطة وقود', cat: 'car', amt: 9000, t: '٨:٣٠ ص', st: 'ok' }
+        { id: 'a', name: 'مطعم الريف', cat: 'food', amt: 4200, t: '12:40 م', st: 'ok', sheen: true },
+        { id: 'b', name: 'سوبرماركت الحي', cat: 'shop', amt: 31840, t: '10:15 ص', st: 'sug' },
+        { id: 'c', name: 'مخبز الندى', cat: 'none', amt: 1850, t: '9:02 ص', st: 'new' },
+        { id: 'd', name: 'محطة وقود', cat: 'car', amt: 9000, t: '8:30 ص', st: 'ok' }
       ],
       cat: null, toast: '', toastKey: 0
     };
@@ -203,7 +203,7 @@ class Component extends DCLogic {
       emptyBody: eg ? 'أول ما رسالة من البنك توصل، هتتسجل هنا لوحدها.' : 'حين تصل رسالة من البنك ستُسجَّل هنا تلقائيًا.',
       showList: live,
       autoTitle: eg ? 'اتسجلت لوحدها النهارده' : 'سُجّلت تلقائيًا اليوم',
-      autoCount: ((x) => x === 1 ? (eg ? 'عملية واحدة' : 'عملية واحدة') : x === 2 ? (eg ? 'عمليتين' : 'عمليتان') : x.toLocaleString('ar-EG') + (x <= 10 ? ' عمليات' : ' عملية'))(rows.length),
+      autoCount: ((x) => x === 1 ? (eg ? 'عملية واحدة' : 'عملية واحدة') : x === 2 ? (eg ? 'عمليتين' : 'عمليتان') : x.toLocaleString('en-US') + (x <= 10 ? ' عمليات' : ' عملية'))(rows.length),
       rows,
       footer: eg ? 'إشعار الجوال بيوصلك بس للرسايل المستنية تأكيدك، من مجموعة' : 'يصلك إشعار الجوال فقط للرسائل التي تنتظر تأكيدك، من مجموعة',
       footerLink: eg ? '«رسايل البنك»' : '«رسائل البنك»',

@@ -128,7 +128,7 @@ class Component extends DCLogic {
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return 0; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return 0; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
@@ -139,9 +139,9 @@ class Component extends DCLogic {
     const CATS = { food: eg ? 'أكل وقهوة' : 'مطاعم وقهوة', shop: eg ? 'بقالة' : 'بقالة وسوبرماركت', car: eg ? 'مواصلات' : 'مواصلات', gift: 'هدايا', home: eg ? 'بيت' : 'منزل', other: 'أخرى' };
     // مخترعة · بالوحدة الصغرى
     const T = {
-      sms: { name: eg ? 'مطعم الفول' : 'مطعم الريف', sub: eg ? 'النهارده ١٢:٤٠ م · صرف' : 'اليوم ١٢:٤٠ م · مدين', amt: eg ? -18500 : -4200, icon: 'food' },
+      sms: { name: eg ? 'مطعم الفول' : 'مطعم الريف', sub: eg ? 'النهارده 12:40 م · صرف' : 'اليوم 12:40 م · مدين', amt: eg ? -18500 : -4200, icon: 'food' },
       cash: { name: s.cat ? CATS[s.cat] + (eg ? ' (كاش)' : ' (كاش)') : (eg ? 'صرف كاش مش متسجّل' : 'صرف كاش غير مسجّل'), sub: eg ? 'النهارده · من عدّ الكاش' : 'اليوم · من عدّ الكاش', amt: eg ? -18000 : -6000, icon: 'cash' },
-      party: { name: eg ? 'حوالة جاتلك' : 'حوالة واردة', sub: eg ? 'النهارده ٩:١٥ ص · من حساب آخره ٤٨٢١' : 'اليوم ٩:١٥ ص · من حساب ينتهي بـ ٤٨٢١', amt: eg ? 450000 : 150000, icon: 'move' }
+      party: { name: eg ? 'حوالة جاتلك' : 'حوالة واردة', sub: eg ? 'النهارده 9:15 ص · من حساب آخره 4821' : 'اليوم 9:15 ص · من حساب ينتهي بـ 4821', amt: eg ? 450000 : 150000, icon: 'move' }
     }[v];
     const P = v === 'sms' && pickName === 'حسب اللي اتداس' ? this.picked : null;
     const dir = P ? P.dir : 'out';
@@ -194,7 +194,7 @@ class Component extends DCLogic {
       isMerchant: v === 'sms', merchantKeep: JSON.stringify({ 'masroufy-merchant': T.name }), merchantLabel: 'صفحة التاجر',
       showLinks: dir !== 'move', personFlow: v === 'party' || dir === 'in' ? 'transfer_in' : 'purchase', peFlow: T.amt < 0 ? 'out' : 'in', absAmt: String(Math.abs(T.amt)), txnName: T.name,
       onPerson: (p) => { if (p && p.person) this.say((eg ? 'اتربطت بـ' : 'رُبطت بـ') + p.person); },
-      onLinks: (p) => { if (p) this.say(p.event ? (eg ? 'اتربطت بـ«' : 'رُبطت بـ«') + p.event + '» (' + p.sharePercent.toLocaleString('ar-EG') + '٪)' : (eg ? 'اتحفظ الربط' : 'حُفظ الربط')); },
+      onLinks: (p) => { if (p) this.say(p.event ? (eg ? 'اتربطت بـ«' : 'رُبطت بـ«') + p.event + '» (' + p.sharePercent.toLocaleString('en-US') + '%)' : (eg ? 'اتحفظ الربط' : 'حُفظ الربط')); },
       isParty: v === 'party', spaceName: eg ? 'مصر' : 'السعودية', onKind: this.onKind,
       fields: fields.map((f, i) => Object.assign(f, { rowStyle: 'display: flex; align-items: center; gap: 8px; padding: 12px 0;' + (i === fields.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') })),
       linkTitle: eg ? 'اربطها بـ' : 'اربطها بـ',

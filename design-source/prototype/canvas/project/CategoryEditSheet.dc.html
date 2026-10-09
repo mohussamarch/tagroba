@@ -114,7 +114,7 @@ class Component extends DCLogic {
     const dup = nm && d.taken.some((t) => t === nm);
     const err = dup ? (eg ? 'فيه تصنيف بنفس الاسم.' : 'يوجد تصنيف بالاسم نفسه.') : '';
     const cantSave = !nm || dup || !s.icon;
-    // ١٨ درجة — CATEGORY_SWATCHES (CategoryColors.kt) بأسماء COLOR_*
+    // 18 درجة — CATEGORY_SWATCHES (CategoryColors.kt) بأسماء COLOR_*
     const SW = [['أحمر', 2, 70, 44], ['برتقالي', 22, 78, 46], ['كهرماني', 40, 90, 38], ['زيتوني', 60, 80, 28], ['ليموني', 85, 65, 30], ['أخضر', 135, 55, 34], ['نعناعي', 158, 65, 30], ['فيروزي', 174, 70, 29], ['سماوي', 190, 80, 33], ['أزرق', 210, 70, 42], ['نيلي', 250, 55, 50], ['بنفسجي', 268, 40, 40], ['ليلكي', 285, 50, 48], ['أرجواني', 305, 50, 42], ['فوشيا', 322, 62, 40], ['وردي', 340, 65, 48], ['رمادي مزرق', 200, 22, 32], ['رمادي', 210, 8, 45]];
     const sws = SW.map(([name, h, sat, l]) => ({ name, hsl: [h, sat, l] }));
     if (!sws.some((x) => String(x.hsl) === String(d.hsl))) sws.push({ name: eg ? 'لونه الحالي' : 'لونه الحالي', hsl: d.hsl });

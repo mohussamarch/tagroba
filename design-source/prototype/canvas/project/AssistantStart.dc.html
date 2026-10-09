@@ -47,28 +47,28 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":500}}'>
-// بداية محادثة جديدة: تحية بالوقت + «حاجات لسه ما عملتهاش» (طلب المالك ٢٠٢٦-١٠-٠٩: «كمساعد مالي حقيقي يقترح عليّا حاجات لسه ما عملتهاش»)
-// كل كارت = قاعدة على بيانات التطبيق (مخترعة، نفس أرقام الشاشات التانية، مصر ×٣)، والترتيب بالأهم:
-//   رسائل بنك مستنية تأكيد (BankSms: ٤) · فاتورة دورية عدّى يومها المعتاد ولسه ما اتسجلتش (QuickAddStrip: الكهرباء ٣٨٠ يوم ٣)
-//   · تصنيف وصل نسبة التنبيه ولسه ما عدّاش السقف (Budgets: مطاعم وقهوة ٩٦٠ من ١٬٢٠٠ = ٨٠٪) · دين ليك فات ميعاده (DuesDebts: فهد ١٬٢٠٠ من ٢٠ سبتمبر)
+// بداية محادثة جديدة: تحية بالوقت + «حاجات لسه ما عملتهاش» (طلب المالك 2026-10-09: «كمساعد مالي حقيقي يقترح عليّا حاجات لسه ما عملتهاش»)
+// كل كارت = قاعدة على بيانات التطبيق (مخترعة، نفس أرقام الشاشات التانية، مصر ×3)، والترتيب بالأهم:
+//   رسائل بنك مستنية تأكيد (BankSms: 4) · فاتورة دورية عدّى يومها المعتاد ولسه ما اتسجلتش (QuickAddStrip: الكهرباء 380 يوم 3)
+//   · تصنيف وصل نسبة التنبيه ولسه ما عدّاش السقف (Budgets: مطاعم وقهوة 960 من 1,200 = 80%) · دين ليك فات ميعاده (DuesDebts: فهد 1,200 من 20 سبتمبر)
 // «سجّلها» بيتعمل جوه المحادثة (on-ask) · الباقي روابط للشاشة · اللي اتعمل بيختفي (done من الأم)
-// الدين المتأخر معلومة بس من غير زرار (قرار المالك ٢٠٢٦-١٠-٠٩: «مفيش أكشن معين، كافي إنه يعرف») — وتذكيره إشعار في الجرس يتقفل أو يتمسح
+// الدين المتأخر معلومة بس من غير زرار (قرار المالك 2026-10-09: «مفيش أكشن معين، كافي إنه يعرف») — وتذكيره إشعار في الجرس يتقفل أو يتمسح
 const ICON = {
   sms: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/>',
   bill: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
   food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
   debt: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>'
 };
-// «×» على كل كارت بيقفله حتى لو الحاجة ما اتعملتش (قرار المالك ٢٠٢٦-١٠-٠٩: «زي الإشعارات») — بيفضل مقفول طول الجلسة في النموذج
+// «×» على كل كارت بيقفله حتى لو الحاجة ما اتعملتش (قرار المالك 2026-10-09: «زي الإشعارات») — بيفضل مقفول طول الجلسة في النموذج
 class Component extends DCLogic {
   constructor(props) { super(props); let hidden = []; try { hidden = JSON.parse(window.sessionStorage.getItem('masroufy-ask-hidden') || '[]') || []; } catch (e) {} this.state = { hidden }; }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   whole(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   icon(name, col) { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICON[name] + '</svg>'); }
-  // التحية بالوقت: قبل ١٢ الضهر «صباح الخير» وبعده «مساء الخير». النموذج واقف على مساء الأربعاء ٧ أكتوبر زي الرئيسية
+  // التحية بالوقت: قبل 12 الضهر «صباح الخير» وبعده «مساء الخير». النموذج واقف على مساء الأربعاء 7 أكتوبر زي الرئيسية
   hour() { return 20; }
   renderVals() {
-    const eg = this.eg(), T = (a, b) => (eg ? b : a), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', n = (x) => x.toLocaleString('ar-EG');
+    const eg = this.eg(), T = (a, b) => (eg ? b : a), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', n = (x) => x.toLocaleString('en-US');
     const m = (x) => this.whole(x * k) + '\u00A0' + cur;
     const name = this.props.brandName || 'مصروفي', title = this.props.brandTitle || 'مساعدك المالي الذكي';
     const done = this.props.done || {};
@@ -78,7 +78,7 @@ class Component extends DCLogic {
     const R = [
       { id: 'sms', show: F.sms > 0, ic: 'sms', col: '#956000', line: T(n(F.sms) + ' رسائل من البنك بانتظار تأكيدك', n(F.sms) + ' رسايل من البنك مستنية تأكيدك'), action: T('راجعها', 'راجعها'), href: 'BankSms.dc.html' },
       { id: 'elec', show: F.today > F.elecDay && !done.elec, ic: 'bill', col: '#956000', line: T('فاتورة الكهرباء لم تُسجَّل هذا الشهر — عادةً ' + m(F.elec) + ' يوم ' + n(F.elecDay), 'فاتورة الكهربا ما اتسجلتش الشهر ده — عادةً ' + m(F.elec) + ' يوم ' + n(F.elecDay)), action: 'سجّلها', ask: 'elec' },
-      { id: 'food', show: foodPct >= F.alertPct && F.foodSpent <= F.foodCap, ic: 'food', col: '#A36A21', line: T('«مطاعم وقهوة» وصلت ' + n(foodPct) + '٪ من سقفها (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')', '«أكل وقهوة» وصل ' + n(foodPct) + '٪ من سقفه (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')'), action: T('افتحها', 'افتحها'), href: 'CategoryBudget.dc.html', keep: { 'masroufy-budget-cat': 'food' } },
+      { id: 'food', show: foodPct >= F.alertPct && F.foodSpent <= F.foodCap, ic: 'food', col: '#A36A21', line: T('«مطاعم وقهوة» وصلت ' + n(foodPct) + '% من سقفها (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')', '«أكل وقهوة» وصل ' + n(foodPct) + '% من سقفه (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')'), action: T('افتحها', 'افتحها'), href: 'CategoryBudget.dc.html', keep: { 'masroufy-budget-cat': 'food' } },
       { id: 'fahd', show: F.fahdLate > 0 && !done.fahd, ic: 'debt', col: '#BE3D48', line: T('فهد فات موعد سداده منذ ' + n(F.fahdLate) + ' يومًا — بقي ' + m(F.fahdLeft), 'فهد ميعاد سداده فات من ' + n(F.fahdLate) + ' يوم — فاضل ' + m(F.fahdLeft)), action: '' }
     ];
     const sp = eg ? '_eg' : '_sa', hidden = this.state.hidden, shown = R.filter((r) => r.show), anyHidden = shown.some((r) => hidden.indexOf(r.id + sp) >= 0);

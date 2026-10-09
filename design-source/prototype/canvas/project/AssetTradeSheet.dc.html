@@ -89,7 +89,7 @@ class Component extends DCLogic {
     // الكمية بالألف من الوحدة (نموذج) — كوتلن بيخزنها بـ10^8 (§11). المبالغ بالوحدة الصغرى
     this.state = { day: 'today', q: '', v: '', f: '', op: 'none', price: '', err: '', done: '' };
   }
-  digits(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, ''); }
+  digits(t) { return String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/٫/g, '.').replace(/[,٬\s]/g, ''); }
   parse(t, places) {
     const s = this.digits(t);
     if (!/\d/.test(s) || !/^\d*\.?\d*$/.test(s)) return null;
@@ -99,7 +99,7 @@ class Component extends DCLogic {
   }
   md(a, b, c) { const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  qt(q) { const f = q % 1000, w = (q - f) / 1000; return w.toLocaleString('ar-EG') + (f ? '٫' + String(f).padStart(3, '0').replace(/0+$/, '').replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : ''); }
+  qt(q) { const f = q % 1000, w = (q - f) / 1000; return w.toLocaleString('en-US') + (f ? '.' + String(f).padStart(3, '0').replace(/0+$/, '').replace(/[0-9]/g, (d) => '0123456789'[d]) : ''); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
@@ -107,16 +107,16 @@ class Component extends DCLogic {
     const M = { 'شراء': 'buy', 'بيع': 'sell', 'سعر يدوي': 'price', buy: 'buy', sell: 'sell', price: 'price' }[this.props.mode ?? 'شراء'] || 'buy';
     const flat = (this.props.asset ?? 'ذهب') === 'عقار';
     const unit = flat ? 'وحدة' : 'جرام';
-    const name = flat ? 'شقة الياسمين' : 'ذهب عيار ٢١';
-    // لو مفتوحة لوحدها: نفس أرقام «تفاصيل الأصل» (المتبقي بعد بيع ٢٠ جرام بالمتوسط المرجّح)
+    const name = flat ? 'شقة الياسمين' : 'ذهب عيار 21';
+    // لو مفتوحة لوحدها: نفس أرقام «تفاصيل الأصل» (المتبقي بعد بيع 20 جرام بالمتوسط المرجّح)
     const held = Number(this.props.held ?? (flat ? 1000 : eg ? 80000 : 120000));
     const cost = Number(this.props.cost ?? (flat ? (eg ? 154500000 : 49200000) : (eg ? 28951111 : 3596571)));
     const q = this.parse(s.q, 3), v = this.parse(s.v, 2), fee = this.parse(s.f, 2) || 0, p = this.parse(s.price, 2);
     // عمليات حقيقية ممكن تتربط (اختياري) — مخترعة
     const OPS = M === 'buy'
-      ? (flat ? [] : [{ id: 'yq', label: (eg ? 'مجوهرات الياقوت، ٢ أكتوبر · مصروف' : 'مجوهرات الياقوت، ٢ أكتوبر · مصروف'), amt: eg ? 1050000 : 438000, out: true, day: 'oct2' }])
-      : [{ id: 'in', label: (eg ? 'حوالة جاتلك، ٥ أكتوبر' : 'حوالة واردة، ٥ أكتوبر'), amt: flat ? (eg ? 400000000 : 62000000) : (eg ? 525000 : 87600), out: false, day: 'oct5' }];
-    const DAYS = [['today', eg ? 'النهارده' : 'اليوم'], ['yday', eg ? 'امبارح' : 'أمس']].concat(OPS.length ? [[OPS[0].day, OPS[0].day === 'oct2' ? '٢ أكتوبر' : '٥ أكتوبر']] : []);
+      ? (flat ? [] : [{ id: 'yq', label: (eg ? 'مجوهرات الياقوت، 2 أكتوبر · مصروف' : 'مجوهرات الياقوت، 2 أكتوبر · مصروف'), amt: eg ? 1050000 : 438000, out: true, day: 'oct2' }])
+      : [{ id: 'in', label: (eg ? 'حوالة جاتلك، 5 أكتوبر' : 'حوالة واردة، 5 أكتوبر'), amt: flat ? (eg ? 400000000 : 62000000) : (eg ? 525000 : 87600), out: false, day: 'oct5' }];
+    const DAYS = [['today', eg ? 'النهارده' : 'اليوم'], ['yday', eg ? 'امبارح' : 'أمس']].concat(OPS.length ? [[OPS[0].day, OPS[0].day === 'oct2' ? '2 أكتوبر' : '5 أكتوبر']] : []);
     const chip = (on) => 'height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
     const days = DAYS.map(([id, label]) => ({ label, on: s.day === id ? 'true' : 'false', pick: () => this.setState({ day: id }), style: chip(s.day === id) }));
     const field = (id, label, key, u) => ({ id: 'k-' + id, label, unit: u, wrap: 'display: flex; flex-direction: column; gap: 4px; min-width: 0' + (id === 'q' ? '; grid-column: 1 / -1' : ''), value: s[key], type: (e) => this.setState({ [key]: e.target.value, err: '', done: '' }) });
@@ -144,7 +144,7 @@ class Component extends DCLogic {
     } else if (M === 'price' && p > 0) {
       preview = (eg ? 'قيمته بالسعر ده ' : 'قيمته بهذا السعر ') + this.fmt(this.md(held, p, 1000)) + ' ' + cur;
     }
-    const DAYNAME = { today: eg ? 'النهارده' : 'اليوم', yday: eg ? 'امبارح' : 'أمس', oct2: '٢ أكتوبر', oct5: '٥ أكتوبر' };
+    const DAYNAME = { today: eg ? 'النهارده' : 'اليوم', yday: eg ? 'امبارح' : 'أمس', oct2: '2 أكتوبر', oct5: '5 أكتوبر' };
     const finish = (trade, msg) => {
       const parent = typeof this.props.onSave === 'function';
       if (parent) this.props.onSave(trade);
@@ -157,7 +157,7 @@ class Component extends DCLogic {
         finish({ type: 'price', price: p }, eg ? 'اتسجّل السعر (في النموذج)' : 'حُفظ السعر (في النموذج)');
         return;
       }
-      if (q === -1) { this.setState({ err: eg ? 'في الكمية أكتر من ٣ أرقام بعد العلامة. التطبيق مش هيقرّبها من غير ما تعرف — اختصرها إنت.' : 'في الكمية أكثر من ٣ أرقام عشرية. لن يقرّبها التطبيق دون علمك — اختصرها بنفسك.' }); return; }
+      if (q === -1) { this.setState({ err: eg ? 'في الكمية أكتر من 3 أرقام بعد العلامة. التطبيق مش هيقرّبها من غير ما تعرف — اختصرها إنت.' : 'في الكمية أكثر من 3 أرقام عشرية. لن يقرّبها التطبيق دون علمك — اختصرها بنفسك.' }); return; }
       if (q == null || q <= 0) { this.setState({ err: M === 'buy' ? (eg ? 'كمية الشراء لازم تبقى أكبر من صفر' : 'يجب أن تكون كمية الشراء أكبر من صفر') : (eg ? 'كمية البيع لازم تبقى أكبر من صفر' : 'يجب أن تكون كمية البيع أكبر من صفر') }); return; }
       if (M === 'sell' && q > held) { this.setState({ err: (eg ? 'بيع ' : 'بيع ') + this.qt(q) + (eg ? ' والمملوك وقتها ' : ' والمملوك حينها ') + this.qt(held) + (eg ? ' بس. مفيش رصيد سالب صامت.' : ' فقط. لا رصيد سالب دون تنبيه.') }); return; }
       if (v == null || v <= 0 || v === -1) { this.setState({ err: M === 'buy' ? (eg ? 'اكتب دفعت كام.' : 'اكتب المبلغ المدفوع.') : (eg ? 'اكتب قبضت كام.' : 'اكتب الحصيلة.') }); return; }

@@ -49,6 +49,15 @@ body{margin:0}
             <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px"><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span>{{fc.text}}</span><span style="font-size: 11px; color: #637570">{{fc.src}}</span></span><button type="button" class="h-press" onClick="{{fc.del}}" aria-label="{{fc.delLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; padding: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></span>
           </sc-for>
           <sc-if value="{{noFacts}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{noFactsText}}</span></sc-if>
+          <sc-if value="{{hasUnknown}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; border-top: 1px solid rgba(8,99,79,0.12); padding-top: 2px">
+              <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font-size: 13px; font-weight: 700">{{unkTitle}}</span><button type="button" class="h-press" onClick="{{copyUnk}}" style="height: 44px; border: 0; padding: 0 4px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: transparent">{{copyLabel}}</button></span>
+              <sc-for list="{{unknown}}" as="uq" hint-placeholder-count="2">
+                <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px"><span style="flex: 1 1 auto; min-width: 0">«{{uq.text}}»</span><button type="button" class="h-press" onClick="{{uq.del}}" aria-label="{{uq.delLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; padding: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></span>
+              </sc-for>
+              <span style="font-size: 12px; color: #637570">{{unkNote}}</span>
+            </div>
+          </sc-if>
           <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(8,99,79,0.12); padding-top: 4px">
             <span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{switchTitle}}</span><span style="font-size: 12px; color: #637570">{{switchSub}}</span></span>
             <button type="button" role="switch" aria-checked="{{onAttr}}" aria-label="{{switchTitle}}" onClick="{{toggle}}" style="width: 56px; height: 48px; flex-shrink: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center">
@@ -110,15 +119,17 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onOpen":{"editor":null},"onClose":{"editor":null},"$preview":{"width":390,"height":844}}'>
 // سجل المحادثات (لوحة من تحت): بحث · «اللي اتعلمته عنك» (المفتاح + المسح بتأكيد) · المحادثات متجمعة النهارده · امبارح · الأسبوع ده · أقدم
-// المحادثات القديمة مخترعة (النهارده الأربعاء ٧ أكتوبر، والأسبوع من السبت) · محادثات الجلسة جاية من الأم (sessions) وبتطلع فوق
+// المحادثات القديمة مخترعة (النهارده الأربعاء 7 أكتوبر، والأسبوع من السبت) · محادثات الجلسة جاية من الأم (sessions) وبتطلع فوق
 // الفتح ⇒ on-open({ id, msgs }) · الحذف ⇒ مخفية في sessionStorage «masroufy-ask-deleted» + رسالة فيها «تراجع» ⇒ on-deleted(id)
 // اللي اتعلمه جاي من الأم (learned) والتغيير بيرجع on-learn({ on, topics, recent })
 // المواضيع اللي بتسأل عنها كتير (بالعدد) — نفس مواضيع RULES في AssistantChat
 const FACT = { coffee: ['تسأل عن القهوة', 'بتسأل عن القهوة'], rent: ['تسأل عن الإيجار', 'بتسأل عن الإيجار'], split: ['تسأل عن تقسيم الفواتير', 'بتسأل عن تقسيم الفواتير'], food: ['تسأل عن صرف المطاعم', 'بتسأل عن صرف الأكل برّه'], bills: ['تسأل عن فواتير البيت', 'بتسأل عن فواتير البيت'], debts: ['تسأل عن فلوسك عند الناس', 'بتسأل عن فلوسك عند الناس'], budget: ['تسأل عن ميزانية الشهر', 'بتسأل عن ميزانية الشهر'], goal: ['تسأل عن هدف «السفر»', 'بتسأل عن هدف «السفر»'], salary: ['تسأل عن موعد الراتب', 'بتسأل عن ميعاد المرتب'], store: ['تسأل عن «المرسى»', 'بتسأل عن «المرسى»'] };
-// حاجات إنت أكدتها بنفسك في شاشاتها (§78-٤: يوم الراتب ومصدر الدخل · المحل الأكتر · الأشخاص · الأهداف) — مخترعة ومن نفس الشاشات
-const KNOWN = { sa: [['pay', 'راتبك يوم ٢٨ من «شركة الريادة للحلول»', 'من مصادر الدخل'], ['shop', 'أكثر محل تشتري منه: «مقهى المرسى»', 'من عملياتك'], ['ppl', 'تقسّم الفواتير مع أحمد وسارة', 'من التقسيم'], ['goal', 'خطتك المميّزة بنجمة: «السفر»', 'من خطط الادخار']],
-  eg: [['pay', 'دخلك: عائد الشهادة يوم ١ وإيجار شقة المعادي يوم ٥', 'من مصادر الدخل'], ['shop', 'أكتر محل: «كافيه المرسى»', 'من عملياتك'], ['ppl', 'بتقسّم الفواتير مع أحمد وسارة', 'من التقسيم'], ['goal', 'خطتك اللي عليها النجمة: «السفر»', 'من خطط الادخار']] };
-const DEL = 'masroufy-ask-deleted';
+// حاجات إنت أكدتها بنفسك في شاشاتها (§78-4: يوم الراتب ومصدر الدخل · المحل الأكتر · الأشخاص · الأهداف) — مخترعة ومن نفس الشاشات
+const KNOWN = { sa: [['pay', 'راتبك يوم 28 من «شركة الريادة للحلول»', 'من مصادر الدخل'], ['shop', 'أكثر محل تشتري منه: «مقهى المرسى»', 'من عملياتك'], ['ppl', 'تقسّم الفواتير مع أحمد وسارة', 'من التقسيم'], ['goal', 'خطتك المميّزة بنجمة: «السفر»', 'من خطط الادخار']],
+  eg: [['pay', 'دخلك: عائد الشهادة يوم 1 وإيجار شقة المعادي يوم 5', 'من مصادر الدخل'], ['shop', 'أكتر محل: «كافيه المرسى»', 'من عملياتك'], ['ppl', 'بتقسّم الفواتير مع أحمد وسارة', 'من التقسيم'], ['goal', 'خطتك اللي عليها النجمة: «السفر»', 'من خطط الادخار']] };
+const DEL = 'masroufy-ask-deleted', UNK = 'masroufy-ask-unknown';
+// §79.2-10: الأسئلة اللي ما اتفهمتش بتبان هنا بعددها (لو لسه ما اتسجلش أي حاجة في الجلسة: مثالين مخترعين للمعاينة) — وبتتحفظ حتى لو التعلّم واقف (§79.2-2)
+const UNK_SEED = { sa: ['كم سعر الدولار اليوم؟', 'متى ينزل حساب المواطن؟'], eg: ['الدهب النهارده بكام؟', 'المعاش بينزل امتى؟'] };
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -132,24 +143,27 @@ class Component extends DCLogic {
   whole(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   keep(gone) { this.setState({ gone }); try { window.sessionStorage.setItem(DEL, JSON.stringify(gone)); } catch (e) {} }
   say(toast, undoId) { this.timers.forEach(clearTimeout); this.timers = [setTimeout(() => this.setState({ toast: '', undoId: null }), 5300)]; this.setState((s) => ({ toast, undoId: undoId || null, tk: s.tk + 1 })); }
+  unk() { try { const v = JSON.parse(window.sessionStorage.getItem(UNK) || 'null'); return Array.isArray(v) ? v : UNK_SEED[this.eg() ? 'eg' : 'sa'].slice(); } catch (e) { return []; } }
+  setUnk(list) { try { window.sessionStorage.setItem(UNK, JSON.stringify(list)); } catch (e) {} this.setState((s) => ({ tk: s.tk + 1 })); }
   learned() { return this.state.L || (this.props.learned && this.props.learned.topics ? this.props.learned : { on: true, topics: { coffee: 3, rent: 2, split: 1 }, recent: [] }); }
   setLearned(L) { this.setState({ L }); if (typeof this.props.onLearn === 'function') this.props.onLearn(L); }
   seeds() {
     const eg = this.eg(), T = (a, b) => (eg ? b : a), k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', m = (x) => this.whole(x * k) + '\u00A0' + cur;
     const bank = T('مصرف الراجحي', 'البنك الأهلي المصري'), rent = T('سجّل الإيجار ', 'سجّل الإيجار ') + this.whole(250000 * k);
     return [
-      ['h1', 'today', T('٩:٢٠ ص', '٩:٢٠ ص'), T('كم صرفت على القهوة؟', 'صرفت كام على القهوة؟'), T('القهوة هذا الشهر ' + m(64000) + ' في ٦ مرات — أعلى من معتادك (' + m(48000) + '). بهذا المعدل قد تتأخر خطة «السفر».', 'القهوة الشهر ده ' + m(64000) + ' في ٦ مرات — أعلى من العادي (' + m(48000) + '). بالمعدل ده خطة «السفر» ممكن تتأخر.')],
-      ['h2', 'yday', T('٨:٤٥ م', '٨:٤٥ م'), T('كم لي عند خالد؟', 'ليّا كام عند خالد؟'), T('لك عند خالد ' + m(50000) + ' من سلفة قبل ٤٤ يومًا، بلا موعد.', 'ليك عند خالد ' + m(50000) + ' من سلفة من ٤٤ يوم، من غير ميعاد.')],
+      ['h1', 'today', T('9:20 ص', '9:20 ص'), T('كم صرفت على القهوة؟', 'صرفت كام على القهوة؟'), T('القهوة هذا الشهر ' + m(64000) + ' في 6 مرات — أعلى من معتادك (' + m(48000) + '). بهذا المعدل قد تتأخر خطة «السفر».', 'القهوة الشهر ده ' + m(64000) + ' في 6 مرات — أعلى من العادي (' + m(48000) + '). بالمعدل ده خطة «السفر» ممكن تتأخر.')],
+      ['h2', 'yday', T('8:45 م', '8:45 م'), T('كم لي عند خالد؟', 'ليّا كام عند خالد؟'), T('لك عند خالد ' + m(50000) + ' من سلفة قبل 44 يومًا، بلا موعد.', 'ليك عند خالد ' + m(50000) + ' من سلفة من 44 يوم، من غير ميعاد.')],
       ['h3', 'week', T('الأحد', 'الحد'), T('قسّم فاتورة العشاء مع أحمد', 'قسّم فاتورة العشا مع أحمد'), T('قسمت ' + m(37000) + ' بينك وبين أحمد: على أحمد ' + m(18500) + '، ويظهر في «لك».', 'قسمت ' + m(37000) + ' بينك وبين أحمد: أحمد عليه ' + m(18500) + '، وهيبان في «ليك».')],
       ['h4', 'week', 'السبت', T('هل أنا على الخطة؟', 'أنا ماشي على الخطة؟'), T('أنت على الخطة تقريبًا، لكن «القهوة» أعلى من معتادها هذا الشهر.', 'إنت ماشي على الخطة تقريبًا، بس «القهوة» أعلى من العادي الشهر ده.')],
-      ['h5', 'old', '٢٤ سبتمبر', T('أين أغيّر القفل؟', 'فين أغيّر القفل؟'), 'القفل في «المزيد ← الإعدادات ← القفل».'],
-      ['h6', 'old', '١ سبتمبر', rent, T('سُجّل إيجار سبتمبر ' + m(250000) + ' من ' + bank + '.', 'اتسجّل إيجار سبتمبر ' + m(250000) + ' من ' + bank + '.')],
-      ['h7', 'old', '١ أغسطس', rent, T('سُجّل إيجار أغسطس ' + m(250000) + ' من ' + bank + '.', 'اتسجّل إيجار أغسطس ' + m(250000) + ' من ' + bank + '.')]
+      ['h5', 'old', '24 سبتمبر', T('أين أغيّر القفل؟', 'فين أغيّر القفل؟'), 'القفل في «المزيد ← الإعدادات ← القفل».'],
+      ['h6', 'old', '1 سبتمبر', rent, T('سُجّل إيجار سبتمبر ' + m(250000) + ' من ' + bank + '.', 'اتسجّل إيجار سبتمبر ' + m(250000) + ' من ' + bank + '.')],
+      ['h7', 'old', '1 أغسطس', rent, T('سُجّل إيجار أغسطس ' + m(250000) + ' من ' + bank + '.', 'اتسجّل إيجار أغسطس ' + m(250000) + ' من ' + bank + '.')]
     ].map(([id, g, time, title, first]) => ({ id, g, time, title, first, msgs: [{ from: 'me', id: id + 'q', text: title }, { from: 'bot', id: id + 'a', text: first }] }));
   }
   renderVals() {
-    const eg = this.eg(), T = (a, b) => (eg ? b : a), s = this.state, n = (x) => x.toLocaleString('ar-EG');
+    const eg = this.eg(), T = (a, b) => (eg ? b : a), s = this.state, n = (x) => x.toLocaleString('en-US');
     const L = this.learned(), on = L.on !== false;
+    const U = this.unk();
     const times = (x) => (x === 1 ? 'مرة واحدة' : x === 2 ? 'مرتين' : n(x) + (x <= 10 ? ' مرات' : ' مرة'));
     const forgot = L.forgot || [], forget = (id, t, text) => { const tp = Object.assign({}, L.topics); if (t) tp[t] = 0;
       this.setLearned(Object.assign({}, L, { forgot: id ? forgot.concat([id]) : forgot, topics: tp, recent: (L.recent || []).filter((r) => r !== t) })); this.say(T('حُذف: ', 'اتمسح: ') + text); };
@@ -178,8 +192,12 @@ class Component extends DCLogic {
       closeIt: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); },
       searchHint: T('ابحث في محادثاتك', 'دوّر في محادثاتك'), q: s.q, typeQ: (e) => this.setState({ q: e.target.value }),
       showLearn: !q, learnTitle: T('ما تعلّمته عنك', 'اللي اتعلمته عنك'), facts,
-      // قرار المالك ٢٠٢٦-١٠-٠٩: «مع حسابي» — اللي اتعلمه والسجل بيتزامنوا وبيوصلوا لأي موبايل
-      syncNote: T('ما تعلّمته وسجل محادثاتك محفوظان مع حسابك، ويصلان معك إلى أي جهاز.', 'اللي اتعلمته وسجل محادثاتك محفوظين مع حسابك، وبيوصلوا معاك لأي موبايل.'), noFacts: facts.length === 0,
+      // قرار المالك 2026-10-09: «مع حسابي» — اللي اتعلمه والسجل بيتزامنوا وبيوصلوا لأي موبايل
+      syncNote: T('ما تعلّمته وسجل محادثاتك محفوظان مع حسابك، ويصلان معك إلى أي جهاز. وتُمسح المحادثات وحدها بعد 3 أشهر.', 'اللي اتعلمته وسجل محادثاتك محفوظين مع حسابك، وبيوصلوا معاك لأي موبايل. والمحادثات بتتمسح لوحدها بعد 3 شهور.'),
+      hasUnknown: !q && U.length > 0, unkTitle: T('أسئلة لم أفهمها بعد (', 'أسئلة لسه ما فهمتهاش (') + U.length + ')', copyLabel: T('انسخ القائمة', 'انسخ القايمة'),
+      unkNote: T('محفوظة لنعلّمها لـ', 'محفوظة عشان نعلّمها لـ') + (this.props.brandName || 'مصروفي') + (U.length > 5 ? T('، وتظهر هنا أحدث 5.', '، وظاهر هنا آخر 5.') : '.'),
+      copyUnk: () => { try { const p = navigator.clipboard.writeText(U.join('\n')); if (p && p.catch) p.catch(() => {}); } catch (e) {} this.say(T('نُسخت القائمة', 'اتنسخت القايمة')); },
+      unknown: U.slice(0, 5).map((text, i) => ({ text, delLabel: T('احذف: ', 'امسح: ') + text, del: () => { this.setUnk(U.filter((x, j) => j !== i)); this.say(T('حُذف السؤال', 'اتمسح السؤال'), 'unk:' + i + ':' + text); } })), noFacts: facts.length === 0,
       noFactsText: T('لم أتعلّم شيئًا عنك بعد.', 'لسه ما اتعلمتش حاجة عنك.'),
       switchTitle: T('التعلّم من أسئلتي', 'يتعلّم من أسئلتي'),
       switchSub: on ? T('أرتّب الاقتراحات حسب ما تسأل عنه', 'برتّب الاقتراحات حسب اللي بتسأل عنه') : T('متوقف — الاقتراحات حسب الصفحة فقط', 'واقف — الاقتراحات حسب الصفحة بس'),
@@ -191,14 +209,14 @@ class Component extends DCLogic {
       clearLabel: T('امسح ما تعلّمته', 'امسح اللي اتعلمته'),
       clearStyle: 'align-self: flex-start; height: 44px; border: 0; padding: 0 14px; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #BE3D48; background: rgba(255,255,255,0.75); cursor: ' + (facts.length ? 'pointer' : 'default') + '; opacity: ' + (facts.length ? 1 : 0.45),
       startClear: () => { if (facts.length) this.setState({ askClear: true }); },
-      clearQ: T('تمسح كل ما تعلّمته عنك؟ المحادثات نفسها تبقى.', 'تمسح كل اللي اتعلمته عنك؟ المحادثات نفسها هتفضل.'),
+      clearQ: T('تمسح كل ما تعلّمته عنك والأسئلة التي لم أفهمها؟ المحادثات نفسها تبقى.', 'تمسح كل اللي اتعلمته عنك والأسئلة اللي ما فهمتهاش؟ المحادثات نفسها هتفضل.'),
       clearYes: T('امسح', 'امسح'), clearNo: T('إلغاء', 'لأ'),
-      doClear: () => { this.setLearned({ on, topics: {}, recent: [], forgot: ['pay', 'shop', 'ppl', 'goal'] }); this.setState({ askClear: false }); this.say(T('مُسح ما تعلّمته عنك', 'اتمسح اللي اتعلمته عنك')); },
+      doClear: () => { this.setLearned({ on, topics: {}, recent: [], forgot: ['pay', 'shop', 'ppl', 'goal'] }); this.setUnk([]); this.setState({ askClear: false }); this.say(T('مُسح ما تعلّمته عنك', 'اتمسح اللي اتعلمته عنك')); },
       cancelClear: () => this.setState({ askClear: false }),
       groups, currentTag: T('الحالية', 'الحالية'),
       empty: groups.length === 0, emptyText: q ? T('لا توجد محادثات بهذا البحث.', 'مفيش محادثات بالبحث ده.') : T('لا توجد محادثات بعد.', 'لسه مفيش محادثات.'),
       hasToast: !!s.toast, toast: s.toast, canUndo: !!s.undoId, undoLabel: T('تراجع', 'رجّعها'),
-      undo: () => { if (!s.undoId) return; this.keep(s.gone.filter((x) => x !== s.undoId)); this.say(T('رجعت المحادثة', 'المحادثة رجعت')); }
+      undo: () => { if (!s.undoId) return; if (s.undoId.indexOf('unk:') === 0) { const [, i, ...r] = s.undoId.split(':'), L2 = this.unk(); L2.splice(+i, 0, r.join(':')); this.setUnk(L2); this.say(T('رجع السؤال', 'السؤال رجع')); return; } this.keep(s.gone.filter((x) => x !== s.undoId)); this.say(T('رجعت المحادثة', 'المحادثة رجعت')); }
     };
   }
 }

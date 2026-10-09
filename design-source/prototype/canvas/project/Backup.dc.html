@@ -134,12 +134,12 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const st = this.props.state ?? 'عادي', s = this.state;
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const ok = (iso) => /^\d{4}-\d{2}-\d{2}$/.test(iso || '');
     const day = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d); };
-    const say = (iso) => { const [y, m, d] = iso.split('-').map(Number); return n(d) + ' ' + MONTHS[m - 1] + (y !== 2026 ? ' ' + String(y).replace(/\d/g, (c) => '٠١٢٣٤٥٦٧٨٩'[c]) : ''); };
+    const say = (iso) => { const [y, m, d] = iso.split('-').map(Number); return n(d) + ' ' + MONTHS[m - 1] + (y !== 2026 ? ' ' + String(y).replace(/\d/g, (c) => '0123456789'[c]) : ''); };
     const badRange = !ok(s.from) || !ok(s.to) || day(s.from) > day(s.to);
     const days = badRange ? 0 : Math.round((day(s.to) - day(s.from)) / 86400000) + 1;
     const make = () => {
@@ -164,7 +164,7 @@ class Component extends DCLogic {
         { title: eg ? 'تصدير العمليات' : 'تصدير العمليات', isBackup: false, isRestore: false, isCsv: true, ic: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2ZM3 9L21 9M3 15L21 15M9 9L9 21M15 9L15 21',
           body: (eg ? 'عمليات ' : 'عمليات ') + space + (eg ? ' في ملف جدول (CSV)، من اليوم ده لليوم ده بالظبط.' : ' في ملف جدول (CSV)، من تاريخ إلى تاريخ بالضبط.') }
       ],
-      lastLine: s.make === 'done' ? (eg ? 'آخر نسخة: النهارده ٧ أكتوبر' : 'آخر نسخة: اليوم ٧ أكتوبر') : (eg ? 'آخر نسخة: ٢٨ سبتمبر — من ٩ أيام' : 'آخر نسخة: ٢٨ سبتمبر — قبل ٩ أيام'),
+      lastLine: s.make === 'done' ? (eg ? 'آخر نسخة: النهارده 7 أكتوبر' : 'آخر نسخة: اليوم 7 أكتوبر') : (eg ? 'آخر نسخة: 28 سبتمبر — من 9 أيام' : 'آخر نسخة: 28 سبتمبر — قبل 9 أيام'),
       lastStyle: 'font-size: 13px; font-weight: 700; color: ' + (s.make === 'done' ? '#13764D' : '#193D33'),
       hasErr: s.failed, errText: eg ? 'تعذر حفظ النسخة على الجهاز. ما اتغيّرش حاجة في حسابك — جرّب تاني.' : 'تعذّر حفظ النسخة على الجهاز. لم يتغير شيء في حسابك — أعد المحاولة.',
       making: s.make === 'busy', make,
@@ -183,7 +183,7 @@ class Component extends DCLogic {
       picking: s.picking, closePick: () => this.setState({ picking: false }),
       pickTitle: eg ? 'اختار ملف النسخة' : 'اختر ملف النسخة',
       pickNote: eg ? 'من ملفات الجوال' : 'من ملفات الجوال',
-      files: [['ok', 'masroufy-backup-2026-09-28.json', eg ? '٢٨ سبتمبر، من الجوال ده' : '٢٨ سبتمبر، من هذا الجوال'], ['v1', 'masroufy-backup-2025-08-01.json', eg ? '١ أغسطس ٢٠٢٥، من البرنامج القديم' : '١ أغسطس ٢٠٢٥، من التطبيق القديم'], ['bad', 'masroufy-backup (1).json', eg ? '٣ أكتوبر، اتعدّل بعد ما اتعمل' : '٣ أكتوبر، عُدّل بعد إنشائه']]
+      files: [['ok', 'masroufy-backup-2026-09-28.json', eg ? '28 سبتمبر، من الجوال ده' : '28 سبتمبر، من هذا الجوال'], ['v1', 'masroufy-backup-2025-08-01.json', eg ? '1 أغسطس 2025، من البرنامج القديم' : '1 أغسطس 2025، من التطبيق القديم'], ['bad', 'masroufy-backup (1).json', eg ? '3 أكتوبر، اتعدّل بعد ما اتعمل' : '3 أكتوبر، عُدّل بعد إنشائه']]
         .map(([key, name, meta]) => ({ name, meta, pick: () => this.setState({ picking: false, file: key }) })),
       restoreTitle: eg ? 'معاينة الاسترجاع' : 'معاينة الاسترجاع',
       backLabel: eg ? 'رجوع للنسخة الاحتياطية' : 'رجوع إلى النسخة الاحتياطية',

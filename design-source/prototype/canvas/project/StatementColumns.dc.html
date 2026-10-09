@@ -144,9 +144,9 @@ class Component extends DCLogic {
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   key() { return (this.props.state ?? 'عادي') + '|' + (this.props.space ?? 'السعودية'); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   // خانة مبلغ من الملف ⇒ وحدة صغرى بإشارتها، أو null لو مش مبلغ
-  money(t) { const s = String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim(); if (!/^[-−+]?[\d,]+(\.\d{1,2})?$/.test(s)) return null; const v = this.toMinor(s); return /^[-−]/.test(s) ? -v : v; }
+  money(t) { const s = String(t || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).trim(); if (!/^[-−+]?[\d,]+(\.\d{1,2})?$/.test(s)) return null; const v = this.toMinor(s); return /^[-−]/.test(s) ? -v : v; }
   fits(role, cells) {
     if (role === 'date') return cells.every((c) => /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(c));
     if (role === 'debit' || role === 'credit') return cells.every((c) => c === '' || this.money(c) != null);
@@ -179,12 +179,12 @@ class Component extends DCLogic {
     map[i] = role;
     const next = map.findIndex((r) => r == null);
     this.go({ map, sel: next >= 0 ? next : i, fmt });
-    if (moved >= 0) this.say((eg ? '«' + names[role] + '» اتنقل من العمود ' : 'نُقل «' + names[role] + '» من العمود ') + String(moved + 1).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]));
+    if (moved >= 0) this.say((eg ? '«' + names[role] + '» اتنقل من العمود ' : 'نُقل «' + names[role] + '» من العمود ') + String(moved + 1).replace(/\d/g, (d) => '0123456789'[d]));
   }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', f = this.file(), s = this.cur();
     const bare = !f.heads, cur = eg ? 'ج.م' : 'ر.س';
-    const ar = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const ar = (x) => String(x).replace(/\d/g, (d) => '0123456789'[d]);
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : ar(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const LINES = eg ? ['سطر واحد', 'سطرين', 'سطور', 'سطر'] : ['سطر واحد', 'سطران', 'أسطر', 'سطرًا'];
     const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -195,7 +195,7 @@ class Component extends DCLogic {
     const col = (r) => s.map.indexOf(r);
     const bad = s.map.map((r, i) => !!r && !this.fits(r, cells(i)));
     const chip = (on, sug, extra) => 'min-height: 44px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (extra || '') + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : sug ? 'font-weight: 700; color: #6B4600; background: #FBF0DD; box-shadow: inset 0 0 0 1.5px #E2B866' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    // التاريخ: الصيغة بتتعرف لو فيه رقم أكبر من ١٢ في أي ناحية، وإلا بيختار هو (مفيش تخمين)
+    // التاريخ: الصيغة بتتعرف لو فيه رقم أكبر من 12 في أي ناحية، وإلا بيختار هو (مفيش تخمين)
     const di = col('date'), dOk = di >= 0 && !bad[di];
     const parts = dOk ? cells(di).map((c) => c.split('/').map(Number)) : [];
     const ci = parts.findIndex((p) => p[0] > 12 || p[1] > 12), clue = parts[ci];
@@ -225,7 +225,7 @@ class Component extends DCLogic {
     if (!dOk) need.push(eg ? 'عمود التاريخ' : 'عمود التاريخ'); else if (!fmtUsed) need.push(eg ? 'صيغة التاريخ' : 'صيغة التاريخ');
     if (ds < 0) need.push(eg ? 'عمود الوصف' : 'عمود الوصف');
     if (!moneyOk) need.push(eg ? 'أعمدة المبلغ' : 'أعمدة المبلغ');
-    // عمود رصيد مش أرقام = عمود غلط ⇒ يمنع · مش متسلسل (مقلوب أو مكسور) ⇒ ينبّه ويكمّل (قرار المالك ٢٠٢٦-١٠-٠٩)
+    // عمود رصيد مش أرقام = عمود غلط ⇒ يمنع · مش متسلسل (مقلوب أو مكسور) ⇒ ينبّه ويكمّل (قرار المالك 2026-10-09)
     if (chain === 'bad') need.push(eg ? 'عمود الرصيد' : 'عمود الرصيد');
     if (!wal) need.push(eg ? 'المحفظة' : 'المحفظة');
     // معاينة السطر الأول بعد التحديد
@@ -246,7 +246,7 @@ class Component extends DCLogic {
       fileName: f.name,
       intro: (eg ? 'اختار معنى كل عمود. مش بنخمّن أعمدة الفلوس، ومفيش حاجة بتتسجل قبل المراجعة.' : 'اختر معنى كل عمود. لا نخمّن الأعمدة المالية، ولا يُسجَّل شيء قبل المراجعة.'),
       bare, bareNote: eg ? 'ماعرفناش ولا عمود: الملف من غير عناوين. اختار معنى كل عمود من القيم اللي فيه.' : 'لم نتعرّف على أي عمود: الملف بلا عناوين. اختر معنى كل عمود من قيمه.',
-      tableTitle: eg ? 'أول ٤ سطور' : 'أول ٤ أسطر',
+      tableTitle: eg ? 'أول 4 سطور' : 'أول 4 أسطر',
       tableNote: (eg ? 'من ' : 'من ') + plural(f.lines, LINES) + (eg ? ' · اسحب للجنب' : ' · اسحب جانبًا'),
       setX: this.setX,
       cols: s.map.map((r, i) => {

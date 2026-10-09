@@ -187,7 +187,7 @@ class Component extends DCLogic {
     const top = all.slice(0, 5);
     const rest = all.slice(5).concat(this.state.added.map((name) => ({ name, initial: name.charAt(0), b: 0 })));
 
-    // أهم ٥ فوق الكاركتر، وخيوط ملتوية من راسه لكل واحد
+    // أهم 5 فوق الكاركتر، وخيوط ملتوية من راسه لكل واحد
     const spots = [[298, 184], [250, 112], [175, 82], [100, 112], [52, 184]];
     const head = [175, 196];
     const orbit = top.map((q, i) => ({
@@ -210,7 +210,7 @@ class Component extends DCLogic {
       };
     });
 
-    // الأسطوانة: صف أهم ٥ مطوي فوق (بيظهر في الصفحة الكاملة بس)، وتحته الباقيين؛ السحب لفوق بيلف الصفوف ناحيتك
+    // الأسطوانة: صف أهم 5 مطوي فوق (بيظهر في الصفحة الكاملة بس)، وتحته الباقيين؛ السحب لفوق بيلف الصفوف ناحيتك
     const cell = (q) => ({
       isPerson: true, isAdd: false, name: q.name, initial: q.initial,
       circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #08634F; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: ' + (q.dep ? '0 0 0 3px #A6DEC1, ' : '') + 'inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.10)',
@@ -241,7 +241,7 @@ class Component extends DCLogic {
     const sum = (xs) => xs.reduce((s, q) => s + Math.abs(q.b), 0);
     const showPeople = st === 'عادي' || st === 'خطأ';
     const heroO = Math.max(0, 1 - 2.2 * p);
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     return {
       setScroller: this.setScroller, onScroll: this.onScroll, toggleAll: this.toggleAll,
       navStyle: this.props.navStyle ?? "زرار في النص",

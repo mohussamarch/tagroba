@@ -83,11 +83,11 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// التقويم = ملخص أحداث مش ملخص فلوس (قرار المالك ٢٠٢٦-١٠-٠٨ — §٧٦): ملخص الأحداث الجاية وجنب كل حدث سطر صغير «محجوز ولا لأ»
+// التقويم = ملخص أحداث مش ملخص فلوس (قرار المالك 2026-10-08 — §76): ملخص الأحداث الجاية وجنب كل حدث سطر صغير «محجوز ولا لأ»
 // ⇐ زرار «حدث جديد» ⇐ شبكة الشهر. ملخص الفلوس («المتبقي تقريبًا») مكانه المستحقات.
-// النموذج: النهارده الأربعاء ٧ أكتوبر · الشهر المالي بيبدأ ٢٨ (يوم الراتب) · الأسبوع بيبدأ السبت (قرار المالك)
+// النموذج: النهارده الأربعاء 7 أكتوبر · الشهر المالي بيبدأ 28 (يوم الراتب) · الأسبوع بيبدأ السبت (قرار المالك)
 const TODAY = '2026-10-07', NEXT_PAY = '2026-10-28', MONTHS = ['2026-09', '2026-10', '2026-11', '2026-12'];
-const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'], ORDER = { out: 0, in: 1, none: 2 }; // نفس اليوم: هتدفع ثم هتستلم ثم من غير فلوس (§65-٣)
+const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'], ORDER = { out: 0, in: 1, none: 2 }; // نفس اليوم: هتدفع ثم هتستلم ثم من غير فلوس (§65-3)
 // أيقونات Lucide (ISC) — بتترسم صورة بلون نوع الميعاد
 const ICON = {
   receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
@@ -121,7 +121,7 @@ class Component extends DCLogic {
       const ym = MONTHS.indexOf(ev.date.slice(0, 7)) >= 0 ? ev.date.slice(0, 7) : this.state.ym;
       this.setState((s) => ({ added: s.added.concat([ev]), ym, sel: ym === ev.date.slice(0, 7) ? Number(ev.date.slice(8)) : 0 }));
       const eg = this.eg();
-      this.say((eg ? 'اتضاف «' : 'أُضيف «') + ev.name + '» — ' + Number(ev.date.slice(8)).toLocaleString('ar-EG') + ' ' + MN[Number(ev.date.slice(5, 7)) - 1]);
+      this.say((eg ? 'اتضاف «' : 'أُضيف «') + ev.name + '» — ' + Number(ev.date.slice(8)).toLocaleString('en-US') + ' ' + MN[Number(ev.date.slice(5, 7)) - 1]);
     };
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
@@ -153,14 +153,14 @@ class Component extends DCLogic {
     const mk = (r, date) => ({ id: r[0], kind: r[1], icon: r[2], date, amt: r[4], flow: r[5], t: r[6], href: r[7], type: r[8], key: r[0] + '@' + date, left: this.dn(date) - this.dn(TODAY) });
     const out = once.map((r) => mk(r, r[3]));
     MONTHS.forEach((ym) => monthly.forEach((r) => out.push(mk(r, ym + '-' + String(r[3]).padStart(2, '0')))));
-    // اللي اتدفع بيختفي من التقويم (§65-٧): مواعيد الدفع اللي عدّت اتدفعت كلها ما عدا فاتورة الكهرباء (متأخرة — مكانها المستحقات)
+    // اللي اتدفع بيختفي من التقويم (§65-7): مواعيد الدفع اللي عدّت اتدفعت كلها ما عدا فاتورة الكهرباء (متأخرة — مكانها المستحقات)
     return out.filter((x) => x.left >= 0 || x.kind === 'pay' || x.key === 'elec@2026-10-03')
       .map((x) => Object.assign(x, { late: x.left < 0 && x.flow === 'out' }))
       .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : ORDER[a.flow] - ORDER[b.flow]));
   }
   renderVals() {
     const eg = this.eg(), s = this.state, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG'), plural = (x, w) => (x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]));
+    const n = (x) => x.toLocaleString('en-US'), plural = (x, w) => (x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]));
     const W = eg ? ['ميعاد واحد', 'ميعادين', 'مواعيد', 'ميعاد'] : ['موعد واحد', 'موعدان', 'مواعيد', 'موعدًا'];
     const dw = (d) => (d <= 10 ? ' أيام' : eg ? ' يوم' : ' يومًا');
     const after = (d) => (d === 0 ? (eg ? 'النهارده' : 'اليوم') : d === 1 ? (eg ? 'بكرة' : 'غدًا') : d === 2 ? 'بعد يومين' : 'بعد ' + n(d) + dw(d));
@@ -199,7 +199,7 @@ class Component extends DCLogic {
     const payLeft = this.dn(NEXT_PAY) - this.dn(TODAY), before = win.find((x) => x.flow === 'out' && x.left >= 0 && payLeft - x.left === 1);
     const smart = [
       first ? (eg ? 'الأقرب: ' : 'الأقرب: ') + first.t + ' ' + after(first.left) : '',
-      win.length ? (eg ? 'في الـ٣٠ يوم الجايين ' : 'في الـ٣٠ يومًا القادمة ') + plural(win.filter((x) => x.left >= 0).length, W) + (unheld.length ? (eg ? '، منهم ' : '، منها ') + n(unheld.length) + (eg ? ' مش محجوزين' : ' غير محجوزة') : '') : '',
+      win.length ? (eg ? 'في الـ30 يوم الجايين ' : 'في الـ30 يومًا القادمة ') + plural(win.filter((x) => x.left >= 0).length, W) + (unheld.length ? (eg ? '، منهم ' : '، منها ') + n(unheld.length) + (eg ? ' مش محجوزين' : ' غير محجوزة') : '') : '',
       before ? before.t + (eg ? ' قبل المرتب بيوم' : ' قبل الراتب بيوم') : ''
     ].filter(Boolean).join('. ') + '.';
     // الشهر المعروض في الشبكة واليوم المختار

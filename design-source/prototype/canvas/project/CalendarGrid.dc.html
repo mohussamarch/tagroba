@@ -66,8 +66,8 @@ class Component extends DCLogic {
   move(v) { if (typeof this.props.onMonth === 'function') this.props.onMonth(v); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const n = (x) => x.toLocaleString('ar-EG');
-    const yr = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const n = (x) => x.toLocaleString('en-US');
+    const yr = (x) => x.toLocaleString('en-US', { useGrouping: false });
     const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const ym = /^\d{4}-\d{2}$/.test(this.props.month || '') ? this.props.month : '2026-10';
     const today = /^\d{4}-\d{2}-\d{2}$/.test(this.props.today || '') ? this.props.today : '2026-10-07';
@@ -85,7 +85,7 @@ class Component extends DCLogic {
       late: ['#BE3D48', 'rgba(190,61,72,0.12)', eg ? 'فات ميعاده' : 'فات موعده']
     };
     const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
-    const lead = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 1) % 7; // السبت = ٠
+    const lead = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 1) % 7; // السبت = 0
     const tDay = this.dn(today);
     const sel = Number(this.props.selected || 0);
     const cells = [];

@@ -146,30 +146,30 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     const s = this.cur();
     const money = (m) => m == null ? 'غير متاح' : (m < 0 ? '−' : '+') + this.fmt(m) + ' ' + cur;
     // الفئة: [الاسم، اللون، الخلفية] — من عيلة لون التصنيف
     const C = { shop: [eg ? 'بقالة' : 'بقالة وسوبرماركت', '#3866A7', 'rgba(56,102,167,0.12)'], car: ['بنزين', '#4D747C', 'rgba(77,116,124,0.12)'], health: ['صحة', '#A55060', 'rgba(165,80,96,0.12)'], food: [eg ? 'أكل وقهوة' : 'مطاعم وقهوة', '#A36A21', 'rgba(163,106,33,0.12)'], none: [eg ? 'غير مصنف' : 'غير مصنّف', '#637570', 'rgba(99,117,112,0.12)'], move: [eg ? 'بين محافظك' : 'بين محافظك', '#2469BA', 'rgba(36,105,186,0.10)'], pay: [eg ? 'مرتب' : 'راتب', '#13764D', 'rgba(19,118,77,0.10)'] };
-    const SRC = { rule: eg ? 'مقترح من قاعدة' : 'مقترح من قاعدة', merchant: eg ? 'تصنيف المحل المؤكد' : 'تصنيف المتجر المؤكد', fresh: eg ? 'محل جديد' : 'متجر جديد', income: eg ? 'مصدر دخل معروف' : 'مصدر دخل معروف', own: (eg ? 'عرفناه من آخر ٤ أرقام (٥٥١٨): حسابك في الأهلي' : 'عُرف من آخر ٤ أرقام (٧٢١٠): حسابك في الإنماء') };
+    const SRC = { rule: eg ? 'مقترح من قاعدة' : 'مقترح من قاعدة', merchant: eg ? 'تصنيف المحل المؤكد' : 'تصنيف المتجر المؤكد', fresh: eg ? 'محل جديد' : 'متجر جديد', income: eg ? 'مصدر دخل معروف' : 'مصدر دخل معروف', own: (eg ? 'عرفناه من آخر 4 أرقام (5518): حسابك في الأهلي' : 'عُرف من آخر 4 أرقام (7210): حسابك في الإنماء') };
     const msgSrc = eg ? 'رسالة البنك' : 'رسالة البنك', manual = eg ? 'سجّلتها بإيدك' : 'سجّلتها يدويًا', prev = eg ? 'من كشف أغسطس' : 'من كشف أغسطس';
     // مخترعة · بالوحدة الصغرى · st: new جديد · dup مكرر (merge = يندمج مع رسالة §75-10) · sim شبيه · conf تعارض · bad غير صالح
     const D = [
-      { id: 'l1', row: 2, st: 'new', name: 'سوبرماركت الحي', d: '٢ سبتمبر', amt: -31840, kind: 'out', cat: 'shop', src: 'rule' },
-      { id: 'l2', row: 3, st: 'dup', merge: true, name: eg ? 'كافيه المرسى' : 'مقهى المرسى', d: '٣ سبتمبر', amt: -2300, cat: 'food', src: 'merchant', old: { d: '٢ سبتمبر', src: msgSrc }, diff: 'when' },
-      { id: 'l3', row: 4, st: 'new', name: eg ? 'بنزينة' : 'محطة وقود', d: '٤ سبتمبر', amt: -9000, kind: 'out', cat: 'car', src: 'merchant' },
-      { id: 'l4', row: 5, st: 'dup', name: eg ? 'اشتراك النت' : 'اشتراك الإنترنت', d: '٥ سبتمبر', amt: -23000, old: { d: '٥ سبتمبر', src: prev } },
-      { id: 'l5', row: 6, st: 'new', name: eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', d: '٨ سبتمبر', amt: -6750, kind: 'out', cat: 'health', src: 'rule' },
-      { id: 'l6', row: 7, st: 'dup', merge: true, name: 'مكتبة الفجر', d: '١٠ سبتمبر', amt: -4500, old: { d: '١٠ سبتمبر', src: msgSrc } },
-      { id: 'l7', row: 8, st: 'sim', name: eg ? 'مطعم الفول' : 'مطعم الريف', d: '١٤ سبتمبر', amt: -4200, kind: 'out', cat: 'food', src: 'merchant', old: { d: '١٤ سبتمبر', src: manual } },
-      { id: 'l8', row: 9, st: 'new', name: eg ? 'فرن الندى' : 'مخبز الندى', d: '١٦ سبتمبر', amt: -1850, kind: 'out', cat: 'none', src: 'fresh' },
-      { id: 'l9', row: 10, st: 'conf', name: 'متجر إلكتروني', d: '١٩ سبتمبر', amt: -15900, old: { d: '١٩ سبتمبر', src: prev, amt: -14900 }, diff: 'amount' },
-      { id: 'l10', row: 11, st: 'bad', name: eg ? 'رسوم خدمة' : 'رسوم خدمة', d: '٢٢ سبتمبر', amt: null },
-      { id: 'l11', row: 12, st: 'sim', name: 'بقالة الحي', d: '٢٥ سبتمبر', amt: -5600, kind: 'out', cat: 'shop', src: 'rule', old: { d: '٢٥ سبتمبر', src: manual } },
-      { id: 'l12', row: 13, st: 'new', name: eg ? 'تحويل لحسابي في الأهلي' : 'تحويل إلى حسابي في الإنماء', d: '٢٧ سبتمبر', amt: -200000, kind: 'move', cat: 'move', src: 'own' },
-      { id: 'l13', row: 14, st: 'new', name: eg ? 'مرتب سبتمبر — شركة الأفق' : 'راتب سبتمبر — شركة الأفق', d: '٢٨ سبتمبر', amt: 1250000, kind: 'in', cat: 'pay', src: 'income' }
+      { id: 'l1', row: 2, st: 'new', name: 'سوبرماركت الحي', d: '2 سبتمبر', amt: -31840, kind: 'out', cat: 'shop', src: 'rule' },
+      { id: 'l2', row: 3, st: 'dup', merge: true, name: eg ? 'كافيه المرسى' : 'مقهى المرسى', d: '3 سبتمبر', amt: -2300, cat: 'food', src: 'merchant', old: { d: '2 سبتمبر', src: msgSrc }, diff: 'when' },
+      { id: 'l3', row: 4, st: 'new', name: eg ? 'بنزينة' : 'محطة وقود', d: '4 سبتمبر', amt: -9000, kind: 'out', cat: 'car', src: 'merchant' },
+      { id: 'l4', row: 5, st: 'dup', name: eg ? 'اشتراك النت' : 'اشتراك الإنترنت', d: '5 سبتمبر', amt: -23000, old: { d: '5 سبتمبر', src: prev } },
+      { id: 'l5', row: 6, st: 'new', name: eg ? 'صيدلية الشفا' : 'صيدلية الشفاء', d: '8 سبتمبر', amt: -6750, kind: 'out', cat: 'health', src: 'rule' },
+      { id: 'l6', row: 7, st: 'dup', merge: true, name: 'مكتبة الفجر', d: '10 سبتمبر', amt: -4500, old: { d: '10 سبتمبر', src: msgSrc } },
+      { id: 'l7', row: 8, st: 'sim', name: eg ? 'مطعم الفول' : 'مطعم الريف', d: '14 سبتمبر', amt: -4200, kind: 'out', cat: 'food', src: 'merchant', old: { d: '14 سبتمبر', src: manual } },
+      { id: 'l8', row: 9, st: 'new', name: eg ? 'فرن الندى' : 'مخبز الندى', d: '16 سبتمبر', amt: -1850, kind: 'out', cat: 'none', src: 'fresh' },
+      { id: 'l9', row: 10, st: 'conf', name: 'متجر إلكتروني', d: '19 سبتمبر', amt: -15900, old: { d: '19 سبتمبر', src: prev, amt: -14900 }, diff: 'amount' },
+      { id: 'l10', row: 11, st: 'bad', name: eg ? 'رسوم خدمة' : 'رسوم خدمة', d: '22 سبتمبر', amt: null },
+      { id: 'l11', row: 12, st: 'sim', name: 'بقالة الحي', d: '25 سبتمبر', amt: -5600, kind: 'out', cat: 'shop', src: 'rule', old: { d: '25 سبتمبر', src: manual } },
+      { id: 'l12', row: 13, st: 'new', name: eg ? 'تحويل لحسابي في الأهلي' : 'تحويل إلى حسابي في الإنماء', d: '27 سبتمبر', amt: -200000, kind: 'move', cat: 'move', src: 'own' },
+      { id: 'l13', row: 14, st: 'new', name: eg ? 'مرتب سبتمبر — شركة الأفق' : 'راتب سبتمبر — شركة الأفق', d: '28 سبتمبر', amt: 1250000, kind: 'in', cat: 'pay', src: 'income' }
     ].map((x) => Object.assign(x, { amt: x.amt == null ? null : x.amt * k, old: x.old ? Object.assign({}, x.old, { amt: x.old.amt ? x.old.amt * k : null }) : null }));
     const selectable = (x) => x.st === 'new' || x.st === 'sim' || (x.merge && s.dec[x.id] === 'split');
     const isOn = (x) => selectable(x) && (x.id in s.sel ? !!s.sel[x.id] : x.st === 'new');
@@ -225,7 +225,7 @@ class Component extends DCLogic {
       redoLabel: eg ? 'معاينة جديدة' : 'أعد المعاينة', redo: () => { this.go({ err: false, sel: {}, dec: {} }); this.say(eg ? 'اتعملت معاينة جديدة' : 'أُعيدت المعاينة'); },
       isEmpty: st === 'فاضي', showMain: st !== 'فاضي', spaceName: eg ? 'مصر' : 'السعودية',
       emptyTitle: eg ? 'الملف ده اتستورد قبل كده' : 'استوردت هذا الملف من قبل',
-      emptyBody: eg ? 'يوم ٢ أكتوبر: اتسجلت ١١ عملية ومتضافش ٢. كل اللي فيه متسجل، فمفيش حاجة جديدة.' : 'في ٢ أكتوبر: سُجّلت ١١ عملية ولم تُضف عمليتان. كل ما فيه مسجل، فلا جديد.',
+      emptyBody: eg ? 'يوم 2 أكتوبر: اتسجلت 11 عملية ومتضافش 2. كل اللي فيه متسجل، فمفيش حاجة جديدة.' : 'في 2 أكتوبر: سُجّلت 11 عملية ولم تُضف عمليتان. كل ما فيه مسجل، فلا جديد.',
       batchesLabel: eg ? 'دفعات الاستيراد' : 'دفعات الاستيراد',
       fileName, walletName,
       heroTitle: done ? (eg ? 'اتسجلت ' : 'سُجّلت ') + plural(picked.length, OPS) : (eg ? 'أثر المختار: ' : 'أثر المحدد: ') + plural(picked.length, OPS),

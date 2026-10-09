@@ -105,35 +105,35 @@ input:disabled{opacity:.45;cursor:default}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"source":{"editor":"enum","options":["الأول","الثاني","المنتهي"],"default":"الأول","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"info":{"editor":null},"monthStart":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":44}}'>
 // زرار «تعديل» في تفاصيل المصدر (IncomeSources) ولوحته — ManageIncomeSources.edit (+ applyMonthStart لو وافق). §48 §64 §65.
-// info = نفس JSON اللي IncomeSourceDetail بياخده · month-start = بداية الشهر المالي (واحدة للحساب كله، §64 رد ١ — المبدئي ٢٨)
+// info = نفس JSON اللي IncomeSourceDetail بياخده · month-start = بداية الشهر المالي (واحدة للحساب كله، §64 رد 1 — المبدئي 28)
 // onSave({ id, name, day|null, weekday|null, expectedMinor|null, monthStart|null }) — النهاية مش من هنا: «إنهاء المصدر» (close)، زي ManageIncomeSources.edit اللي ما بيغيّرش النهاية
 // المتوقع فاضي = «غير متاح» مش صفر (§48) · «تغيّر بداية شهرك المالي؟» للوظيفة بس · القفل من غير أي كلمة (§64)
-// النهارده ٧ أكتوبر ٢٠٢٦ (period تحت)
+// النهارده 7 أكتوبر 2026 (period تحت)
 const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: null, d: null, tried: false }; }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  en(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))); }
+  en(t) { return String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))); }
   toMinor(t) {
     const s = this.en(t).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
     if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
     const [w, f = ''] = s.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
   }
-  ar(x) { return String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]); }
+  ar(x) { return String(x).replace(/\d/g, (d) => '0123456789'[d]); }
   // المصدر من الشاشة الأم؛ لو اللوحة لوحدها: نفس مصادر IncomeSources المخترعة (الأول · التاني · المنتهي)
   src() {
     try { const i = this.props.info; if (i) return typeof i === 'string' ? JSON.parse(i) : i; } catch (e) { /* المبدئي */ }
     const k = ['الأول', 'الثاني', 'المنتهي'].indexOf(this.props.source ?? 'الأول');
     return (this.eg() ? [
-      { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '١ يناير ٢٠٢٦', end: null, freq: 'monthly', day: 5, expected: 900000 },
-      { id: 'ahly', name: 'شهادة ادخار — البنك الأهلي المصري', kind: 'investment', start: '١ يوليو ٢٠٢٦', end: null, freq: 'monthly', day: 1, expected: 225000 },
-      { id: 'delta', name: 'شركة الدلتا للمقاولات', kind: 'job', start: '١ سبتمبر ٢٠٢١', end: '٢٩ فبراير ٢٠٢٤', freq: 'monthly', day: 25, expected: null }
+      { id: 'maadi', name: 'شقة المعادي', kind: 'rent', start: '1 يناير 2026', end: null, freq: 'monthly', day: 5, expected: 900000 },
+      { id: 'ahly', name: 'شهادة ادخار — البنك الأهلي المصري', kind: 'investment', start: '1 يوليو 2026', end: null, freq: 'monthly', day: 1, expected: 225000 },
+      { id: 'delta', name: 'شركة الدلتا للمقاولات', kind: 'job', start: '1 سبتمبر 2021', end: '29 فبراير 2024', freq: 'monthly', day: 25, expected: null }
     ] : [
-      { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '٢٨ أبريل ٢٠٢٦', end: null, freq: 'monthly', day: 28, expected: 1250000 },
-      { id: 'waha', name: 'مكتب الواحة للتصميم', kind: 'part_time', start: '١٠ أغسطس ٢٠٢٦', end: null, freq: 'weekly', weekday: 4, expected: 80000 },
-      { id: 'sahm', name: 'مجموعة السهم التجارية', kind: 'job', start: '١ مارس ٢٠٢٥', end: '٢٧ أبريل ٢٠٢٦', freq: 'monthly', day: 27, expected: 980000 }
+      { id: 'rayada', name: 'شركة الريادة للحلول', kind: 'job', start: '28 أبريل 2026', end: null, freq: 'monthly', day: 28, expected: 1250000 },
+      { id: 'waha', name: 'مكتب الواحة للتصميم', kind: 'part_time', start: '10 أغسطس 2026', end: null, freq: 'weekly', weekday: 4, expected: 80000 },
+      { id: 'sahm', name: 'مجموعة السهم التجارية', kind: 'job', start: '1 مارس 2025', end: '27 أبريل 2026', freq: 'monthly', day: 27, expected: 980000 }
     ])[Math.max(0, k)];
   }
   fresh(x) { return { name: x.name || '', day: x.day ? String(x.day) : '', weekday: x.weekday || null, expected: x.expected ? this.fmt(x.expected) : '', answer: null }; }
@@ -153,18 +153,18 @@ class Component extends DCLogic {
     const day = dayText ? parseInt(dayText, 10) : null;
     const expText = String(d.expected || '').trim();
     const exp = expText ? this.toMinor(expText) : null;
-    // يوم الراتب واحد للحساب كله (§64 رد ١) — السؤال للوظيفة الشغالة بس لو اليوم الجديد غير بداية الشهر
+    // يوم الراتب واحد للحساب كله (§64 رد 1) — السؤال للوظيفة الشغالة بس لو اليوم الجديد غير بداية الشهر
     const job = x.kind === 'job' && active && !weekly;
     const dayChanged = !weekly && day !== (x.day || null);
     const ask = job && dayChanged && day != null && day >= 1 && day <= 31 && day !== ms;
-    // الشهر المالي الحالي في النموذج: ٢٨ سبتمبر – ٢٧ أكتوبر (النهارده ٧ أكتوبر). تغيير البداية «للجديد بس» (رد المالك):
-    // الشهور اللي فاتت زي ما هي، والجديد بيبدأ أول يوم D بعد ما الحالي يخلص (٢٩–٣١ بيتقيد بآخر الشهر)
-    const CUR = eg ? '٢٨ سبتمبر لـ٢٧ أكتوبر' : '٢٨ سبتمبر إلى ٢٧ أكتوبر';
+    // الشهر المالي الحالي في النموذج: 28 سبتمبر – 27 أكتوبر (النهارده 7 أكتوبر). تغيير البداية «للجديد بس» (رد المالك):
+    // الشهور اللي فاتت زي ما هي، والجديد بيبدأ أول يوم D بعد ما الحالي يخلص (29–31 بيتقيد بآخر الشهر)
+    const CUR = eg ? '28 سبتمبر لـ27 أكتوبر' : '28 سبتمبر إلى 27 أكتوبر';
     const nextStart = (D) => { const oct = Math.min(D, dim(2026, 10)); return oct >= 28 ? this.ar(oct) + ' ' + M[9] : this.ar(Math.min(D, dim(2026, 11))) + ' ' + M[10]; };
     const later = ms !== 28 ? (eg ? ' من الشهر الجاي' : ' من الشهر القادم') : '';
     const E = {
       name: !name ? (eg ? 'اكتب اسم المصدر.' : 'اكتب اسم المصدر.') : '',
-      day: dayText && (day < 1 || day > 31) ? (eg ? 'اليوم من ١ لـ٣١.' : 'اليوم من ١ إلى ٣١.') : '',
+      day: dayText && (day < 1 || day > 31) ? (eg ? 'اليوم من 1 لـ31.' : 'اليوم من 1 إلى 31.') : '',
       exp: expText && (exp == null || exp <= 0) ? (eg ? 'اكتب مبلغ أكبر من صفر، أو سيبه فاضي.' : 'اكتب مبلغًا أكبر من صفر، أو اتركه فارغًا.') : '',
       month: ask && d.answer == null ? (eg ? 'اختار: بداية شهرك المالي تتغيّر ولا لأ؟' : 'اختر: هل تتغيّر بداية شهرك المالي؟') : ''
     };
@@ -203,7 +203,7 @@ class Component extends DCLogic {
       typeDay: (e) => { if (e && e.target) set({ day: e.target.value, answer: null }); },
       dayStyle: field(!!shown('day')) + '; text-align: right; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums',
       dayErr: shown('day'), dayErrStyle: errS(shown('day')),
-      dayNote: day == null ? (eg ? 'فاضي = من غير ميعاد ثابت، ومفيش تنبيه لو اتأخر.' : 'فارغ = بلا موعد ثابت، ولا تنبيه إن تأخر.') : (eg ? '٢٩–٣١ في الشهور الأقصر = آخر يوم فيها.' : '٢٩–٣١ في الشهور الأقصر = آخر يوم فيها.') + (x.kind === 'job' || x.kind === 'part_time' ? (eg ? ' لو المرتب اتأخر ٣ أيام بننبّهك.' : ' إن تأخر الراتب ٣ أيام ننبّهك.') : ''),
+      dayNote: day == null ? (eg ? 'فاضي = من غير ميعاد ثابت، ومفيش تنبيه لو اتأخر.' : 'فارغ = بلا موعد ثابت، ولا تنبيه إن تأخر.') : (eg ? '29–31 في الشهور الأقصر = آخر يوم فيها.' : '29–31 في الشهور الأقصر = آخر يوم فيها.') + (x.kind === 'job' || x.kind === 'part_time' ? (eg ? ' لو المرتب اتأخر 3 أيام بننبّهك.' : ' إن تأخر الراتب 3 أيام ننبّهك.') : ''),
       weekLabel: eg ? 'يوم القبض في الأسبوع' : 'يوم القبض في الأسبوع',
       weekdays: WD.map(([n, label]) => ({ label, on: d.weekday === n ? 'true' : 'false', style: chip(d.weekday === n, 'font-size: 13px; padding: 0 2px; '), pick: () => set({ weekday: n }) })),
       showMonth: job, asking: ask, monthHead, monthNote,

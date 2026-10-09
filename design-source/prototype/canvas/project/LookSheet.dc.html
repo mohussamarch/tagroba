@@ -43,7 +43,7 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":44}}'>
-// «اختر شكلك» من صفحة «ملفك» — نفس الأشكال الستة المؤقتة اللي في أول مرة (الكاركتر النهائي لسه بيتصمم §73 · رد المالك ٢٠٢٦-١٠-٠٨ «لسه ما اتعملش»)
+// «اختر شكلك» من صفحة «ملفك» — نفس الأشكال الستة المؤقتة اللي في أول مرة (الكاركتر النهائي لسه بيتصمم §73 · رد المالك 2026-10-08 «لسه ما اتعملش»)
 // الاختيار بيتحفظ في masroufy-avatar، والدواير (الرئيسية · المزيد · ملفك) بتقراه — والصفحة الأم بتاخد onSave(k)
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, pick: null }; }
@@ -51,7 +51,7 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
     const cur = s.pick || this.saved();
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     return {
       openLabel: eg ? 'غيّر شكلك' : 'غيّر شكلك',
       openSheet: () => this.setState({ open: true, pick: this.saved() }),

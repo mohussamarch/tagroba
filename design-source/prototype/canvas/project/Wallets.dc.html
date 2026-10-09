@@ -108,14 +108,14 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const na = (this.props.state ?? 'عادي') === 'غير متاح';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
-    const ar = (x) => String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
-    // مخترعة · بالوحدة الصغرى · المحافظ في البلد الشغالة بس (§41) — الأرصدة = «معك الآن» في الرئيسية (HeroBanks). آخر ٤ أرقام بس
-    // [المعرّف، الاسم، حرف مكان اللوجو، آخر ٤، الرصيد، رصيد البداية، تاريخه]
+    const n = (x) => x.toLocaleString('en-US');
+    const ar = (x) => String(x).replace(/\d/g, (d) => '0123456789'[d]);
+    // مخترعة · بالوحدة الصغرى · المحافظ في البلد الشغالة بس (§41) — الأرصدة = «معك الآن» في الرئيسية (HeroBanks). آخر 4 أرقام بس
+    // [المعرّف، الاسم، حرف مكان اللوجو، آخر 4، الرصيد، رصيد البداية، تاريخه]
     const banks = eg
-      ? [['nbe', 'البنك الأهلي المصري', 'أ', '٧٢١٤', 1640000, 900000, '١٢ مايو ٢٠٢٦'], ['qnb', 'QNB مصر', 'Q', '٦٠٨٣', 620000, 300000, '١٢ مايو ٢٠٢٦']]
-      : [['rajhi', 'مصرف الراجحي', 'ر', '٤٤٠٧', 412000, 215000, '١ يناير ٢٠٢٥'], ['ahli', 'البنك الأهلي السعودي', 'أ', '٩١٢٦', 183000, 50000, '١ مارس ٢٠٢٥'], ['inma', 'مصرف الإنماء', 'إ', '٣٣٥٨', 50000, 0, '١٠ أغسطس ٢٠٢٦']];
-    const cash = eg ? [270000, 300000, '١٢ مايو ٢٠٢٦'] : [90000, 120000, '٢٨ أغسطس ٢٠٢٦'];
+      ? [['nbe', 'البنك الأهلي المصري', 'أ', '7214', 1640000, 900000, '12 مايو 2026'], ['qnb', 'QNB مصر', 'Q', '6083', 620000, 300000, '12 مايو 2026']]
+      : [['rajhi', 'مصرف الراجحي', 'ر', '4407', 412000, 215000, '1 يناير 2025'], ['ahli', 'البنك الأهلي السعودي', 'أ', '9126', 183000, 50000, '1 مارس 2025'], ['inma', 'مصرف الإنماء', 'إ', '3358', 50000, 0, '10 أغسطس 2026']];
+    const cash = eg ? [270000, 300000, '12 مايو 2026'] : [90000, 120000, '28 أغسطس 2026'];
     const s = this.state;
     let main = null; try { main = (JSON.parse(window.sessionStorage.getItem('masroufy-main-wallet') || '{}') || {})[eg ? 'eg' : 'sa'] || null; } catch (e) {}
     const rowStyle = (last) => 'box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 72px; padding: 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);');

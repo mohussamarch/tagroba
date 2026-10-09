@@ -77,8 +77,8 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// الشهر المالي بيبدأ يوم ٢٨ (يوم الراتب) ويخلص يوم ٢٧ من الشهر اللي بعده، واسمه اسم الشهر اللي بيخلص فيه (زي «أكتوبر» في العمليات)
-// النهارده الأربعاء ٧ أكتوبر ٢٠٢٦ ⇒ الشهر الحالي «أكتوبر ٢٠٢٦» = ٢٨ سبتمبر – ٢٧ أكتوبر · ما بيروحش للمستقبل (§31) · بياناتك من يناير ٢٠٢٥ (مخترعة)
+// الشهر المالي بيبدأ يوم 28 (يوم الراتب) ويخلص يوم 27 من الشهر اللي بعده، واسمه اسم الشهر اللي بيخلص فيه (زي «أكتوبر» في العمليات)
+// النهارده الأربعاء 7 أكتوبر 2026 ⇒ الشهر الحالي «أكتوبر 2026» = 28 سبتمبر – 27 أكتوبر · ما بيروحش للمستقبل (§31) · بياناتك من يناير 2025 (مخترعة)
 const PAYDAY = 28, NOW = { y: 2026, m: 10 }, FIRST = { y: 2025, m: 1 }, TODAY = [2026, 10, 7];
 const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 class Component extends DCLogic {
@@ -92,14 +92,14 @@ class Component extends DCLogic {
   idx(p) { return p.y * 12 + p.m - 1; }
   at(i) { return { y: (i - (i % 12)) / 12, m: (i % 12) + 1 }; }
   dn(y, m, d) { return Date.UTC(y, m - 1, d) / 86400000; } // رقم اليوم (أيام مش فلوس)
-  // الفترة اللي اسمها (y, m): من ٢٨ الشهر اللي قبله لحد ٢٧ الشهر ده (يوم ٢٨ موجود في كل شهر، فمفيش تقييد بآخر الشهر)
+  // الفترة اللي اسمها (y, m): من 28 الشهر اللي قبله لحد 27 الشهر ده (يوم 28 موجود في كل شهر، فمفيش تقييد بآخر الشهر)
   span(p) {
     const s = this.at(this.idx(p) - 1);
     return { s, days: this.dn(p.y, p.m, PAYDAY - 1) - this.dn(s.y, s.m, PAYDAY) + 1 };
   }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const st = this.state, n = (x) => x.toLocaleString('ar-EG'), yr = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const st = this.state, n = (x) => x.toLocaleString('en-US'), yr = (x) => x.toLocaleString('en-US', { useGrouping: false });
     const dw = (d) => n(d) + (d <= 10 ? ' أيام' : eg ? ' يوم' : ' يومًا');
     const range = (p, withYear) => {
       const { s } = this.span(p);
@@ -138,7 +138,7 @@ class Component extends DCLogic {
     const firstYear = st.year <= FIRST.y, lastYear = st.year >= NOW.y;
     return {
       title: eg ? 'اختار الشهر' : 'اختر الشهر',
-      intro: eg ? 'شهرك بيبدأ يوم ٢٨ (يوم المرتب) ويخلص يوم ٢٧ من الشهر اللي بعده.' : 'يبدأ شهرك يوم ٢٨ (يوم الراتب) وينتهي يوم ٢٧ من الشهر التالي.',
+      intro: eg ? 'شهرك بيبدأ يوم 28 (يوم المرتب) ويخلص يوم 27 من الشهر اللي بعده.' : 'يبدأ شهرك يوم 28 (يوم الراتب) وينتهي يوم 27 من الشهر التالي.',
       selTitle: name(st.sel), selRange: range(st.sel, true),
       chip: isCur ? (eg ? 'الشهر الحالي' : 'الشهر الحالي') : (eg ? 'شهر فات' : 'شهر سابق'),
       chipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 12px; ' + (isCur ? 'color: #064B40; background: #A6DEC1' : 'color: #FFFFFF; background: rgba(255,255,255,0.16)'),

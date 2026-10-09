@@ -63,7 +63,7 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const na = st === 'غير متاح';
     // مخترعة. القسط والأدوار بالوحدة الصغرى
     const defs = [

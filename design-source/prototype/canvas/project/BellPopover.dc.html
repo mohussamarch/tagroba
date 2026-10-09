@@ -57,7 +57,7 @@ class Component extends DCLogic {
     super(props);
     let read = false;
     // «تم القراءة» بيفضل طول الجلسة، وصفحة الإشعارات الكاملة بتقراه هي كمان
-    // «×» على كل إشعار بيمسحه من هنا ومن صفحة الإشعارات (قرار المالك ٢٠٢٦-١٠-٠٩: «أي تذكير يظهر فوق على الشمال ويقدر يقفله أو يمسحه»)
+    // «×» على كل إشعار بيمسحه من هنا ومن صفحة الإشعارات (قرار المالك 2026-10-09: «أي تذكير يظهر فوق على الشمال ويقدر يقفله أو يمسحه»)
     let gone = [];
     try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; gone = JSON.parse(window.sessionStorage.getItem('masroufy-notif-gone') || '[]'); } catch (e) {}
     this.state = { open: false, read, gone, undo: null };
@@ -75,11 +75,11 @@ class Component extends DCLogic {
     const s = this.state;
     // نفس سطور صفحة الإشعارات (مخترعة) — النافذة عرض سريع بس، والأفعال في الصفحة الكاملة
     const all = [
-      ['sms', '#08634F', eg ? 'رسايل من البنك مستنية تأكيدك' : 'رسائل من البنك بانتظار تأكيدك', eg ? 'من ١٠ دقايق' : 'قبل ١٠ دقائق', true],
+      ['sms', '#08634F', eg ? 'رسايل من البنك مستنية تأكيدك' : 'رسائل من البنك بانتظار تأكيدك', eg ? 'من 10 دقايق' : 'قبل 10 دقائق', true],
       ['party', '#2469BA', eg ? 'حوالة من طرف جديد' : 'حوالة من طرف جديد', eg ? 'النهارده' : 'اليوم', true],
       ['shop', '#BE3D48', eg ? 'التسوق عدّى السقف' : 'التسوق تجاوز السقف', eg ? 'النهارده' : 'اليوم', true],
       ['gym', '#956000', eg ? 'اشتراك الجيم بعد يومين' : 'اشتراك النادي بعد يومين', eg ? 'امبارح' : 'أمس', false],
-      ['fahd', '#A55060', eg ? 'فهد اتأخر في السداد' : 'فهد تأخّر في السداد', eg ? 'من ٣ أيام' : 'قبل ٣ أيام', false]
+      ['fahd', '#A55060', eg ? 'فهد اتأخر في السداد' : 'فهد تأخّر في السداد', eg ? 'من 3 أيام' : 'قبل 3 أيام', false]
     ];
     const defs = all.filter((d) => s.gone.indexOf(d[0]) < 0);
     const unread = s.read ? 0 : defs.filter((d) => d[4]).length;
@@ -96,7 +96,7 @@ class Component extends DCLogic {
       noUndo: !s.undo, canUndo: !!s.undo, undoLabel: eg ? 'اتمسح — رجّعه' : 'حُذف — تراجع',
       undo: () => this.setGone(s.gone.filter((x) => x !== s.undo), null),
       none: defs.length === 0, noneText: eg ? 'مفيش إشعارات.' : 'لا إشعارات.',
-      countLine: unread ? unread.toLocaleString('ar-EG') + (eg ? ' جديد' : ' جديدة') : (eg ? 'كله مقروء' : 'كلها مقروءة'),
+      countLine: unread ? unread.toLocaleString('en-US') + (eg ? ' جديد' : ' جديدة') : (eg ? 'كله مقروء' : 'كلها مقروءة'),
       items: defs.map(([id, c, title, when, isNew]) => {
         const fresh = isNew && !s.read;
         return {

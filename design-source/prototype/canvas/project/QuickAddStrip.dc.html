@@ -67,9 +67,9 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":150}}'>
-// شريط «إضافة سريعة» فوق العمليات (طلب المالك ٢٠٢٦-١٠-٠٨): حاجات بتتدفع كل شهر وما ظهرتش في الشهر ده لسه (مش بتيجي في رسالة بنك غالبًا)
+// شريط «إضافة سريعة» فوق العمليات (طلب المالك 2026-10-08): حاجات بتتدفع كل شهر وما ظهرتش في الشهر ده لسه (مش بتيجي في رسالة بنك غالبًا)
 // الضغطة ⇒ لوحة صغيرة المبلغ فيها جاهز ⇒ «سجّلها» ⇒ بترجع للشاشة الأم onAdd({ kind, name, sub, amount }) · «مش الشهر ده» بيشيلها من غير ما يسجّل
-// مخترعة · بالوحدة الصغرى · الكهرباء هي نفس الفاتورة المتأخرة في المستحقات (٣ أكتوبر)
+// مخترعة · بالوحدة الصغرى · الكهرباء هي نفس الفاتورة المتأخرة في المستحقات (3 أكتوبر)
 const ICON = {
   home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
@@ -80,11 +80,11 @@ class Component extends DCLogic {
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.forEach(clearTimeout); this.timers = [setTimeout(() => this.setState({ toast: '' }), 2700)]; this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   icon(name, col) { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' + col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICON[name] + '</svg>'); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state, k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     // [المعرّف، السؤال، الاسم في العمليات، المبلغ المعتاد، يوم الدفع المعتاد، الأيقونة، اللون، من فين عادةً]
     const D = [
       ['rent', 'دفعت الإيجار؟', 'الإيجار', 250000 * k, 1, 'home', '#2469BA', 'bank'],

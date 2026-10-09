@@ -175,19 +175,19 @@ class Component extends DCLogic {
   }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const s = this.cur();
     const cur = eg ? 'ج.م' : 'ر.س';
     const bank = eg ? 'QNB مصر' : 'مصرف الراجحي';
     // ملفات مخترعة · err: pwd بكلمة مرور · scan صورة ممسوحة · none مفيش عمليات (بنك مش مدعوم) · cols أعمدة مش معروفة
     const F = {
-      bank: { name: eg ? 'كشف-QNB-سبتمبر.pdf' : 'كشف-الراجحي-سبتمبر.pdf', ext: 'PDF', pages: 4, size: '٢٤٠', wallet: eg ? 'w2' : 'w1', bank },
-      csv: { name: 'حركات-الحساب.csv', ext: 'CSV', pages: 1, size: '١٨', wallet: null },
-      locked: { name: 'كشف-محمي.pdf', ext: 'PDF', pages: 2, size: '٢٠٠', err: 'pwd' },
-      scan: { name: eg ? 'صورة-كشف.pdf' : 'صورة-كشف-الإنماء.pdf', ext: 'PDF', pages: 3, size: '٣٬١٠٠', err: 'scan' },
-      other: { name: eg ? 'كشف-الأهلي-المصري.pdf' : 'كشف-الأهلي.pdf', ext: 'PDF', pages: 3, size: '٣١٠', err: 'none' },
-      cols: { name: 'تصدير-البنك.csv', ext: 'CSV', pages: 1, size: '٩', err: 'cols' }
+      bank: { name: eg ? 'كشف-QNB-سبتمبر.pdf' : 'كشف-الراجحي-سبتمبر.pdf', ext: 'PDF', pages: 4, size: '240', wallet: eg ? 'w2' : 'w1', bank },
+      csv: { name: 'حركات-الحساب.csv', ext: 'CSV', pages: 1, size: '18', wallet: null },
+      locked: { name: 'كشف-محمي.pdf', ext: 'PDF', pages: 2, size: '200', err: 'pwd' },
+      scan: { name: eg ? 'صورة-كشف.pdf' : 'صورة-كشف-الإنماء.pdf', ext: 'PDF', pages: 3, size: '3,100', err: 'scan' },
+      other: { name: eg ? 'كشف-الأهلي-المصري.pdf' : 'كشف-الأهلي.pdf', ext: 'PDF', pages: 3, size: '310', err: 'none' },
+      cols: { name: 'تصدير-البنك.csv', ext: 'CSV', pages: 1, size: '9', err: 'cols' }
     };
     const f = F[s.file] || F.bank;
     const isCsv = f.ext === 'CSV';
@@ -243,7 +243,7 @@ class Component extends DCLogic {
       showReady: s.stage === 'ready',
       readyChip: eg ? 'اتقرا' : 'قُرئ',
       readyMeta: isCsv ? plural(txN, eg ? ['سطر واحد', 'سطرين', 'سطور', 'سطر'] : ['سطر واحد', 'سطران', 'أسطر', 'سطرًا']) : plural(f.pages, ['صفحة واحدة', eg ? 'صفحتين' : 'صفحتان', 'صفحات', 'صفحة']),
-      foundLine: plural(txN, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' من ١ لـ ٣٠ سبتمبر' : ' من ١ إلى ٣٠ سبتمبر'),
+      foundLine: plural(txN, eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية']) + (eg ? ' من 1 لـ 30 سبتمبر' : ' من 1 إلى 30 سبتمبر'),
       facts,
       askWallet: isCsv, walletQ: eg ? 'الملف ده بتاع أنهي محفظة؟' : 'هذا الملف لأي محفظة؟', wallets,
       canReview: !!s.wallet, cantReview: !s.wallet, keep,

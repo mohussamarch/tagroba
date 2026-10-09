@@ -139,10 +139,10 @@ class Component extends DCLogic {
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(t) { const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!s) return null; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(t) { const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!s) return null; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   mine(eg) { // «هات أملاكي من مصروفي»: الأرصدة الموجبة + الأصول بأسعار اليوم (نفس أرقام HeroBanks وInvestment — مخترعة)
-    return eg ? [['البنك الأهلي المصري — الرصيد', '16400'], ['QNB مصر — الرصيد', '6200'], ['الكاش', '2700'], ['دهب عيار ٢١ — ٨٠ جرام', '420000'], ['محفظة الأسهم', '660000'], ['الشقة', '3840000']]
-      : [['مصرف الراجحي — الرصيد', '4120'], ['البنك الأهلي السعودي — الرصيد', '1830'], ['مصرف الإنماء — الرصيد', '500'], ['الكاش', '900'], ['ذهب عيار ٢١ — ١٢٠ جرام', '52560'], ['محفظة الأسهم', '89000'], ['شقة الياسمين', '576000']];
+    return eg ? [['البنك الأهلي المصري — الرصيد', '16400'], ['QNB مصر — الرصيد', '6200'], ['الكاش', '2700'], ['دهب عيار 21 — 80 جرام', '420000'], ['محفظة الأسهم', '660000'], ['الشقة', '3840000']]
+      : [['مصرف الراجحي — الرصيد', '4120'], ['البنك الأهلي السعودي — الرصيد', '1830'], ['مصرف الإنماء — الرصيد', '500'], ['الكاش', '900'], ['ذهب عيار 21 — 120 جرام', '52560'], ['محفظة الأسهم', '89000'], ['شقة الياسمين', '576000']];
   }
   preset() {
     const st = this.props.state ?? 'عادي', eg = (this.props.space ?? 'السعودية') === 'مصر';
@@ -156,7 +156,7 @@ class Component extends DCLogic {
     return d;
   }
   renderVals() {
-    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG');
+    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('en-US');
     const s = this.state, d = s.data || this.preset(), step = s.step || ((this.props.state ?? 'عادي') === 'عادي' ? 1 : 5);
     const eg = d.country === 'EG', cur = eg ? 'ج.م' : 'ر.س';
     const put = (patch, extra) => this.setState(Object.assign({ data: Object.assign({}, d, patch), err: '' }, extra || {}));
@@ -171,14 +171,14 @@ class Component extends DCLogic {
       if (step === 2 && itemsMinor.some((x) => !x.v)) return t('اكتب قيمة تقريبية لكل شيء، أو احذفه', 'اكتب قيمة تقريبية لكل حاجة، أو امسحها');
       return '';
     };
-    const lawSa = 'بقانون السعودية: نظام الأحوال الشخصية (١٤٤٣هـ)', lawEg = t('بقانون مصر: قانون المواريث ٧٧ لسنة ١٩٤٣ والوصية ٧١ لسنة ١٩٤٦', 'بقانون مصر: قانون المواريث ٧٧ لسنة ١٩٤٣ والوصية ٧١ لسنة ١٩٤٦');
+    const lawSa = 'بقانون السعودية: نظام الأحوال الشخصية (1443هـ)', lawEg = t('بقانون مصر: قانون المواريث 77 لسنة 1943 والوصية 71 لسنة 1946', 'بقانون مصر: قانون المواريث 77 لسنة 1943 والوصية 71 لسنة 1946');
     const foreign = eg !== ui;
     const LBL = [t('تركة مَن', 'تركة مين'), t('الأملاك', 'الحاجات'), 'الورثة', t('قبل القسمة', 'قبل القسمة')];
     const people = ['ليلى', 'يوسف', 'سارة', 'خالد', 'أحمد'];
     const calc = { country: d.country, items: itemsMinor.map((x) => ({ name: x.name, v: x.v || 0 })), heirs: d.heirs, names: d.names, funeral: this.toMinor(d.before.funeral) || 0, debts: this.toMinor(d.before.debts) || 0,
       bequest: this.toMinor(d.before.bequest) || 0, toHeir: !!d.before.toHeir, consent: !!d.before.consent, special: d.before.special || [],
       pre: eg && d.before.pre && d.before.pre.on ? { kind: d.before.pre.kind, sons: d.before.pre.sons || 0, daughters: d.before.pre.daughters || 0, gift: this.toMinor(d.before.pre.gift) || 0 } : null };
-    const day = '٧ أكتوبر', defName = (d.whose === 'mine' ? t('تركتي', 'تركتي') : t('تركة ', 'تركة ') + d.person) + ' — ' + day;
+    const day = '7 أكتوبر', defName = (d.whose === 'mine' ? t('تركتي', 'تركتي') : t('تركة ', 'تركة ') + d.person) + ' — ' + day;
     return {
       title: t('حاسبة الورث', 'حاسبة الورث'), savedLabel: t('المحفوظة', 'المتحفظة'),
       whoseLine: step === 1 ? t('خطوة بخطوة، والقانون من البلد تلقائيًا', 'خطوة خطوة، والقانون من البلد لوحده') : d.whose === 'mine' ? t('تركتي أنا', 'تركتي أنا') : t('تركة ', 'تركة ') + d.person,

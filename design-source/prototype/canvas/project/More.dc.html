@@ -85,8 +85,8 @@ class Component extends DCLogic {
     });
     const groups = [
       { title: 'حسابك', items: [
-        item('user', 'ملفك', 'مكتمل ٦٠٪', false, 'Account'),
-        item('income', 'مصادر الدخل', 'الراتب يوم ٢٨', false, 'IncomeSources'),
+        item('user', 'ملفك', 'مكتمل 60%', false, 'Account'),
+        item('income', 'مصادر الدخل', 'الراتب يوم 28', false, 'IncomeSources'),
         item('globe', 'البلدان', eg ? 'مصر · السعودية' : 'السعودية · مصر', true, 'Spaces')
       ] },
       { title: 'بياناتك', items: [
@@ -94,7 +94,7 @@ class Component extends DCLogic {
         item('tag', 'التصنيفات', '', false, 'Categories'),
         item('tag', eg ? 'القواعد والتجار' : 'القواعد والتجار', eg ? 'اللي البرنامج فاكره' : 'ما يتذكره التطبيق', false, 'Rules'),
         item('tag', 'المشاريع', eg ? 'كلّفني كام؟ · كسبت كام؟' : 'كم كلّفني؟ · كم كسبت؟', false, 'Projects'),
-        item('import', eg ? 'رسايل البنك' : 'رسائل البنك', eg ? '٤ مستنية تأكيدك' : '٤ بانتظار تأكيدك', false, 'BankSms'),
+        item('import', eg ? 'رسايل البنك' : 'رسائل البنك', eg ? '4 مستنية تأكيدك' : '4 بانتظار تأكيدك', false, 'BankSms'),
         item('import', 'كشف الحساب', eg ? 'استيراد ملف من البنك' : 'استيراد ملف من البنك', false, 'StatementImport'),
         item('import', eg ? 'دفعات الاستيراد' : 'دفعات الاستيراد', eg ? 'اللي اتسجّل من كل ملف، وترجّعه لو حبيت' : 'ما سُجّل من كل ملف، وإرجاعه', false, 'ImportBatches'),
         item('backup', 'النسخة الاحتياطية', '', false, 'Backup'),

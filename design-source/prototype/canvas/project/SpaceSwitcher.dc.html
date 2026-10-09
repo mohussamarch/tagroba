@@ -85,11 +85,11 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const loading = (this.props.state ?? 'عادي') === 'بيحمّل';
-    // size=«حرفين» (طلب المالك ٢٠٢٦-١٠-٠٨): تحت الاسم قبل التاريخ، اختصار البلد بالإنجليزي بس (SA · EG)
+    // size=«حرفين» (طلب المالك 2026-10-08): تحت الاسم قبل التاريخ، اختصار البلد بالإنجليزي بس (SA · EG)
     const code = this.props.size === 'حرفين', compact = this.props.size === 'صغير' || code;
     const active = s.active || (this.props.space ?? 'السعودية');
     const eg = active === 'مصر';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     // «معك الآن» لكل بلد = كل محافظها (البنوك + الكاش) — نفس أرقام الرئيسية المخترعة، بالوحدة الصغرى:
     // السعودية 645000 + 90000 · مصر 2260000 + 270000
     const SP = [
@@ -101,7 +101,7 @@ class Component extends DCLogic {
       if (s.pending) return;
       if (to === active) { this.setState({ open: false }); return; }
       this.setState({ pending: to });
-      // فتح بيانات البلد التانية (المزامنة شغالة لكل بلد مش مؤرشفة §64-٧) — هنا تأخير صغير بس
+      // فتح بيانات البلد التانية (المزامنة شغالة لكل بلد مش مؤرشفة §64-7) — هنا تأخير صغير بس
       this.timers.push(setTimeout(() => {
         const msg = to === 'مصر' ? 'بقيت في حساب مصر — الأرقام بالجنيه' : 'انتقلت إلى حساب السعودية — الأرقام بالريال';
         this.setState({ active: to, pending: null, open: false, toast: msg });
@@ -127,7 +127,7 @@ class Component extends DCLogic {
       closeLabel: eg ? 'اقفل' : 'إغلاق',
       expanded: s.open ? 'true' : 'false',
       triggerLabel: (eg ? 'البلد: ' : 'البلد: ') + me.id + (eg ? ' — دوس عشان تبدّل' : ' — اضغط للتبديل'),
-      // size="صغير": شارة ٢٨ تحت التحية أو جنب التاريخ، ومساحة اللمس لسه ٤٤ (الهامش السالب بيمنعها تكبّر السطر)
+      // size="صغير": شارة 28 تحت التحية أو جنب التاريخ، ومساحة اللمس لسه 44 (الهامش السالب بيمنعها تكبّر السطر)
       full: !compact,
       triggerStyle: 'display: flex; align-items: center; height: 44px; min-width: 44px; padding: 0; border: 0; background: transparent; font: inherit; color: #193D33; cursor: pointer;' + (code ? ' margin: -11px 0;' : compact ? ' margin: -8px 0;' : ''),
       chipStyle: 'display: flex; align-items: center; gap: ' + (code ? 2 : compact ? 4 : 6) + 'px; height: ' + (code ? 22 : compact ? 28 : 44) + 'px; padding: 0 ' + (code ? '5px 0 8px' : compact ? '10px' : '12px') + '; box-sizing: border-box; border-radius: ' + (code ? 11 : compact ? 14 : 22) + 'px; ' + (s.open ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 ' + (compact ? '6px 14px' : '10px 24px') + ' rgba(29,54,53,0.09)'),

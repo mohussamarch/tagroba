@@ -107,8 +107,8 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
-    // مخترعة. اليوم = ٧ أكتوبر. «لك» و«عليك» كل واحد لوحده (§67، بلا مقاصة)
+    const n = (x) => x.toLocaleString('en-US');
+    // مخترعة. اليوم = 7 أكتوبر. «لك» و«عليك» كل واحد لوحده (§67، بلا مقاصة)
     const lak = [[eg ? 'ديون ليك' : 'ديون لك', 218500], [eg ? 'متحوّش في الجمعيات' : 'مدّخر في الجمعيات', 400000]];
     const alek = [['ديون عليك', 245000], [eg ? 'أقساط باقية' : 'أقساط متبقية', 3580000]];
     const sum = (xs) => xs.reduce((s, x) => s + x[1] * k, 0);
@@ -120,11 +120,11 @@ class Component extends DCLogic {
     };
     const T = { debt: '#2469BA', sub: '#A55060', inst: '#4D747C', rosca: '#27785B' };
     const rows = [
-      ['debt', eg ? 'سلفة فهد' : 'سلفة فهد', eg ? 'ميعادها كان ٢٠ سبتمبر · من ١٧ يوم' : 'موعدها ٢٠ سبتمبر · منذ ١٧ يومًا', 120000, 'in', 'late', 'OwedToYou.dc.html'],
-      ['sub', eg ? 'اشتراك الجيم' : 'اشتراك النادي الرياضي', eg ? '٩ أكتوبر · بعد يومين' : '٩ أكتوبر · بعد يومين', 19900, 'out', 'soon', 'Subscriptions.dc.html'],
-      ['inst', 'قسط السيارة', eg ? '٢٧ أكتوبر · القسط ١٣ من ٣٦' : '٢٧ أكتوبر · القسط ١٣ من ٣٦', 145000, 'out', 'next', 'Installments.dc.html'],
-      ['rosca', eg ? 'جمعية العيلة' : 'جمعية العائلة', eg ? '١ نوفمبر · وده دورك' : '١ نوفمبر · وفيه دورك', 100000, 'out', 'next', 'Roscas.dc.html'],
-      ['debt', eg ? 'سلفة عمر' : 'سلفة عمر', '١ نوفمبر', 200000, 'out', 'next', 'YouOwe.dc.html']
+      ['debt', eg ? 'سلفة فهد' : 'سلفة فهد', eg ? 'ميعادها كان 20 سبتمبر · من 17 يوم' : 'موعدها 20 سبتمبر · منذ 17 يومًا', 120000, 'in', 'late', 'OwedToYou.dc.html'],
+      ['sub', eg ? 'اشتراك الجيم' : 'اشتراك النادي الرياضي', eg ? '9 أكتوبر · بعد يومين' : '9 أكتوبر · بعد يومين', 19900, 'out', 'soon', 'Subscriptions.dc.html'],
+      ['inst', 'قسط السيارة', eg ? '27 أكتوبر · القسط 13 من 36' : '27 أكتوبر · القسط 13 من 36', 145000, 'out', 'next', 'Installments.dc.html'],
+      ['rosca', eg ? 'جمعية العيلة' : 'جمعية العائلة', eg ? '1 نوفمبر · وده دورك' : '1 نوفمبر · وفيه دورك', 100000, 'out', 'next', 'Roscas.dc.html'],
+      ['debt', eg ? 'سلفة عمر' : 'سلفة عمر', '1 نوفمبر', 200000, 'out', 'next', 'YouOwe.dc.html']
     ];
     const items = rows.map(([kind, name, sub, v, dir, s, href], i) => ({
       name, sub, href, i: { [kind]: true },

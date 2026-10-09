@@ -118,12 +118,12 @@ class Component extends DCLogic {
     this.state = { step: null, oldId: null, end: 0, name: '', kind: 'job', start: 0, err: '', ans: {}, amount: '' };
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   tell(fn, x) { if (typeof this.props[fn] === 'function') this.props[fn](x); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const mode = this.props.mode ?? 'غيّرت شغلي';
     const s = this.state;
     // المصادر الشغالة من الشاشة الأب (JSON) — ومن غيرها (معاينة اللوحة) مثال مخترع
@@ -135,8 +135,8 @@ class Component extends DCLogic {
     const step = s.step || (mode === 'إضافة' ? 'new' : 'close');
     const oldId = mode === 'إنهاء' ? target.id : (s.oldId || (cur0.find((x) => x.kind === 'job' || x.kind === 'part_time') || cur0[0] || {}).id || null);
     const old = cur0.find((x) => x.id === oldId) || null;
-    const ENDS = ['٧ أكتوبر ٢٠٢٦', '٣٠ سبتمبر ٢٠٢٦', '٢٧ سبتمبر ٢٠٢٦'];
-    const STARTS = mode === 'إضافة' ? ['١ يناير ٢٠٢٦', '١ يونيو ٢٠٢٦', '٧ أكتوبر ٢٠٢٦'] : ['٨ أكتوبر ٢٠٢٦', '١ نوفمبر ٢٠٢٦', '٧ أكتوبر ٢٠٢٦'];
+    const ENDS = ['7 أكتوبر 2026', '30 سبتمبر 2026', '27 سبتمبر 2026'];
+    const STARTS = mode === 'إضافة' ? ['1 يناير 2026', '1 يونيو 2026', '7 أكتوبر 2026'] : ['8 أكتوبر 2026', '1 نوفمبر 2026', '7 أكتوبر 2026'];
     const chip = (on) => 'height: 44px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
     const primary = (ok) => 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (ok ? '' : ' opacity: 0.45; cursor: default');
     const name = s.name.trim();
@@ -145,7 +145,7 @@ class Component extends DCLogic {
     const kind = s.kind;
     // أسئلة المتابعة (newSourceFollowUps): الوظيفة يوم ⇒ بداية الشهر ⇒ المتوقع · البارت تايم الدورية واليوم ⇒ المتوقع · المعاش اليوم بس
     const a = s.ans;
-    const ms = Number(this.props.monthStart) || 28; // بداية الشهر المالي الحالية (من الصفحة الأم — مش ٢٨ ثابتة)
+    const ms = Number(this.props.monthStart) || 28; // بداية الشهر المالي الحالية (من الصفحة الأم — مش 28 ثابتة)
     const queue = kind === 'job' ? ['payday', a.payday && a.payday !== ms ? 'monthStart' : null, 'expected'] : kind === 'part_time' ? ['freq', a.freq ? 'pday' : null, 'expected'] : kind === 'pension' ? ['payday'] : [];
     const qs = queue.filter(Boolean);
     const q = qs.find((x) => a[x] === undefined) || null;
@@ -184,7 +184,7 @@ class Component extends DCLogic {
       ends: ENDS.map((label, i) => ({ label: i === 0 ? (eg ? 'النهارده' : 'اليوم') : label, on: s.end === i ? 'true' : 'false', style: chip(s.end === i), pick: () => this.setState({ end: i }) })),
       closeOff: !oldId, closeBtnStyle: primary(!!oldId),
       closeBtn: mode === 'إنهاء' ? (eg ? 'إنهاء' : 'إنهاء') : (eg ? 'التالي' : 'التالي'),
-      // القفل لوحده «ولا كلمة» (§64 قرار ١): بيرجع للأب من غير رسالة
+      // القفل لوحده «ولا كلمة» (§64 قرار 1): بيرجع للأب من غير رسالة
       closeNext: () => { if (!oldId) return; if (mode === 'إنهاء') this.tell('onDone', { close: { id: oldId, end: ENDS[s.end] } }); else this.setState({ step: 'new' }); },
       nameLabel: eg ? 'اسم الشركة أو العميل' : 'اسم الشركة أو العميل', namePh: eg ? 'مثلًا: شركة النيل' : 'مثلًا: شركة الأفق', name: s.name,
       typeName: (e) => this.setState({ name: e.target.value, err: '' }),
@@ -194,7 +194,7 @@ class Component extends DCLogic {
       startLabel: eg ? 'بدأ إمتى؟' : 'متى بدأ؟',
       starts: STARTS.map((label, i) => ({ label, on: s.start === i ? 'true' : 'false', style: chip(s.start === i), pick: () => this.setState({ start: i }) })),
       newOff: !name || dup, newBtnStyle: primary(!!name && !dup), newBtn: mode === 'إضافة' ? (eg ? 'ضيف' : 'إضافة') : (eg ? 'احفظ' : 'حفظ'),
-      // الإضافة العادية من غير «مبروك» ولا أسئلة (§64 قرار ١) · «غيّرت شغلي» ⇒ «مبروك» على الجديد بس + أسئلته
+      // الإضافة العادية من غير «مبروك» ولا أسئلة (§64 قرار 1) · «غيّرت شغلي» ⇒ «مبروك» على الجديد بس + أسئلته
       saveNew: () => { if (!name || dup) return; if (mode === 'إضافة') this.tell('onDone', { add: newSource() }); else this.setState({ step: 'ask', ans: {} }); },
       congrats: eg ? 'مبروك الشغل الجديد في «' + name + '»!' : 'مبارك الوظيفة الجديدة في «' + name + '»!',
       closedLine: old ? (eg ? '«' + old.name + '» اتقفل في ' : 'أُغلق «' + old.name + '» في ') + ENDS[s.end] + '.' : '',

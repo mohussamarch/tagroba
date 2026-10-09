@@ -114,29 +114,29 @@ input::placeholder{color:#8A9A95}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // v: اللي المستخدم كتبه (نص) — الفاضي بياخد الافتراضي بتاع البلد. اليوم في النموذج: الأربعاء ٧ أكتوبر ٢٠٢٦
+    // v: اللي المستخدم كتبه (نص) — الفاضي بياخد الافتراضي بتاع البلد. اليوم في النموذج: الأربعاء 7 أكتوبر 2026
     this.state = { mode: 'target', v: {}, goal: false, toast: '' };
     this.timers = [];
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   // التواريخ بأعداد صحيحة (31 يناير + شهر = 28 فبراير) — نفس monthsUntil و addMonthsClamped في كوتلن
   P(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); if (!m) return null; const y = +m[1], mo = +m[2], d = +m[3]; return mo >= 1 && mo <= 12 && d >= 1 && d <= this.dim(y, mo) ? { y, mo, d } : null; }
   dim(y, m) { return [31, (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]; }
   addM(s, k) { const a = this.P(s), t = a.y * 12 + a.mo - 1 + k, y = (t - t % 12) / 12, m = t % 12 + 1; return y + '-' + String(m).padStart(2, '0') + '-' + String(Math.min(a.d, this.dim(y, m))).padStart(2, '0'); }
   until(from, to) { const a = this.P(from), b = this.P(to); let k = Math.max(1, (b.y - a.y) * 12 + b.mo - a.mo - 1); while (this.addM(from, k) < to) k++; return k; }
-  day(s) { const a = this.P(s), M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; return a.d.toLocaleString('ar-EG') + ' ' + M[a.mo - 1] + ' ' + a.y.toLocaleString('ar-EG', { useGrouping: false }); }
+  day(s) { const a = this.P(s), M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; return a.d.toLocaleString('en-US') + ' ' + M[a.mo - 1] + ' ' + a.y.toLocaleString('en-US', { useGrouping: false }); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const st = this.props.state ?? 'عادي';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س', TODAY = '2026-10-07';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const MW = eg ? ['شهر واحد', 'شهرين', 'شهور', 'شهر'] : ['شهر واحد', 'شهران', 'أشهر', 'شهرًا'];
     const s = this.state, isT = s.mode === 'target';
-    // مخترعة · بالجنيه ≈ ×٣
+    // مخترعة · بالجنيه ≈ ×3
     const D = { target: String(60000 * k), date: '2028-10-07', have: String(12000 * k), monthly: String(2000 * k), months: '36' };
     const val = (id) => (s.v[id] != null ? s.v[id] : D[id]);
     const put = (id, x) => this.setState({ v: Object.assign({}, s.v, { [id]: x }), goal: false });
@@ -148,19 +148,19 @@ class Component extends DCLogic {
       const target = this.toMinor(val('target')), date = val('date');
       if (!target) err.target = eg ? 'اكتب المبلغ اللي عايز توصله (أكبر من صفر)' : 'اكتب المبلغ الذي تريد الوصول إليه (أكبر من صفر)';
       if (!this.P(date) || date <= TODAY) err.date = eg ? 'اختار تاريخ بعد النهارده' : 'اختر تاريخًا بعد اليوم';
-      else if (this.until(TODAY, date) > 1200) err.date = eg ? 'المدة من شهر لحد ١٢٠٠ شهر' : 'المدة من شهر واحد حتى ١٢٠٠ شهر';
+      else if (this.until(TODAY, date) > 1200) err.date = eg ? 'المدة من شهر لحد 1200 شهر' : 'المدة من شهر واحد حتى 1200 شهر';
       if (!err.target && !err.date) {
         const m = this.until(TODAY, date), rem = Math.max(0, target - have);
         res = { main: rem ? cdiv(rem, m) : 0, months: m, end: date, goalTarget: target, rem };
       }
     } else {
-      const mo = this.toMinor(val('monthly')), mt = parseInt(String(val('months')).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, ''), 10);
+      const mo = this.toMinor(val('monthly')), mt = parseInt(String(val('months')).replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/\D/g, ''), 10);
       if (!mo) err.monthly = eg ? 'اكتب المبلغ الشهري (أكبر من صفر)' : 'اكتب المبلغ الشهري (أكبر من صفر)';
-      if (!(mt >= 1 && mt <= 1200)) err.months = eg ? 'المدة من شهر لحد ١٢٠٠ شهر' : 'المدة من شهر واحد حتى ١٢٠٠ شهر';
+      if (!(mt >= 1 && mt <= 1200)) err.months = eg ? 'المدة من شهر لحد 1200 شهر' : 'المدة من شهر واحد حتى 1200 شهر';
       if (!err.monthly && !err.months) res = { main: have + mo * mt, months: mt, end: this.addM(TODAY, mt), perMonth: mo, goalTarget: have + mo * mt };
     }
     const chip = (on) => 'height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.05)');
-    const yrs = [[12, eg ? 'سنة' : 'سنة'], [24, eg ? 'سنتين' : 'سنتان'], [36, eg ? '٣ سنين' : '٣ سنوات'], [60, eg ? '٥ سنين' : '٥ سنوات'], [120, eg ? '١٠ سنين' : '١٠ سنوات']];
+    const yrs = [[12, eg ? 'سنة' : 'سنة'], [24, eg ? 'سنتين' : 'سنتان'], [36, eg ? '3 سنين' : '3 سنوات'], [60, eg ? '5 سنين' : '5 سنوات'], [120, eg ? '10 سنين' : '10 سنوات']];
     const field = (id, label, opts) => Object.assign({
       id: 'sv-' + id, label, value: val(id), type: 'text', mode: 'decimal', unit: cur, ph: '0',
       onInput: (e) => put(id, e.target.value), hasQuick: false, quick: [],
@@ -179,7 +179,7 @@ class Component extends DCLogic {
         quick: yrs.map(([m, l]) => ({ label: l, on: String(val('months')) === String(m) ? 'true' : 'false', style: chip(String(val('months')) === String(m)), pick: () => put('months', String(m)) })) }),
       haveF
     ];
-    // المتوسط الفعلي: آخر ٣ أشهر مالية مكتملة (من يوم الراتب ٢٨) — الدخل الحقيقي − المصروف الحقيقي (ActualSaving.kt). مخترعة
+    // المتوسط الفعلي: آخر 3 أشهر مالية مكتملة (من يوم الراتب 28) — الدخل الحقيقي − المصروف الحقيقي (ActualSaving.kt). مخترعة
     const na = st === 'غير متاح';
     const months3 = [[eg ? 'يوليو' : 'يوليو', 235000 * k], [eg ? 'أغسطس' : 'أغسطس', na ? null : 112050 * k], [eg ? 'سبتمبر' : 'سبتمبر', 298000 * k]];
     const known = months3.every((x) => x[1] != null);
@@ -210,7 +210,7 @@ class Component extends DCLogic {
         style: 'display: block; width: 100%; max-width: 56px; border-radius: 10px 10px 4px 4px; ' + (v == null ? 'height: 40px; box-sizing: border-box; border: 1.5px dashed rgba(149,96,0,0.55); background: #FBF0DD' : 'height: ' + Math.max(6, (v * 48 - (v * 48) % max) / max) + 'px; background: linear-gradient(180deg, #A6DEC1, #27785B)') })),
       cmpLine: avg == null ? (eg ? 'اللي بتحوّشه فعلًا غير متاح: شهر من التلاتة اللي فاتوا فيه عمليات نوعها لسه ما اتحددش' : 'ما تدّخره فعلًا غير متاح: أحد الأشهر الثلاثة الأخيرة فيه عمليات لم يُحدَّد نوعها')
         : (eg ? 'متوسط تحويشك: ' : 'متوسط ادخارك: ') + this.fmt(avg) + ' ' + cur + (eg ? ' في الشهر · المطلوب ' : ' شهريًا · المطلوب ') + this.fmt(need) + (gap >= 0 ? (eg ? ' — زيادة ' : ' — يزيد ') + this.fmt(gap) : ''),
-      cmpNote: eg ? 'آخر ٣ شهور مالية خلصت (بتبدأ يوم ٢٨): الدخل الحقيقي ناقص المصروف الحقيقي. التحويل بين محافظك والسلف وشراء الأصول برّه الحسبة.' : 'آخر ٣ أشهر مالية مكتملة (تبدأ يوم ٢٨): الدخل الحقيقي ناقص المصروف الحقيقي. التحويل بين محافظك والسلف وشراء الأصول خارج الحساب.',
+      cmpNote: eg ? 'آخر 3 شهور مالية خلصت (بتبدأ يوم 28): الدخل الحقيقي ناقص المصروف الحقيقي. التحويل بين محافظك والسلف وشراء الأصول برّه الحسبة.' : 'آخر 3 أشهر مالية مكتملة (تبدأ يوم 28): الدخل الحقيقي ناقص المصروف الحقيقي. التحويل بين محافظك والسلف وشراء الأصول خارج الحساب.',
       cmpUnknown: avg == null, reviewLabel: eg ? 'حدّد نوع العمليات دي' : 'حدّد نوع هذه العمليات',
       growthState: st, showGrowth: !!res && (isT ? res.main : res.perMonth) > 0, gMonthly: res ? (isT ? res.main : res.perMonth) : 0, gMonths: res ? res.months : 0, gStart: have,
       goalDone: s.goal ? 'true' : 'false',

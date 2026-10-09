@@ -101,14 +101,14 @@ class Component extends DCLogic {
     this.state = { q: '', amount: '', near: false, period: 'm0', sel: {}, review: 'all', view: 'filters' };
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   toggle(key, id) { const cur = Object.assign({}, this.state.sel[key] || {}); if (cur[id]) delete cur[id]; else cur[id] = true; this.setState({ sel: Object.assign({}, this.state.sel, { [key]: cur }) }); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
     const s = this.state;
-    const n = (x) => x.toLocaleString('ar-EG');
-    // صيغة العدد بالعربي: واحدة · اتنين، ٣–١٠ جمع، ١١+ مفرد
+    const n = (x) => x.toLocaleString('en-US');
+    // صيغة العدد بالعربي: واحدة · اتنين، 3–10 جمع، 11+ مفرد
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const W = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     // مخترعة · بالوحدة الصغرى · m: 0 الشهر ده، 1 اللي قبله، 2 اللي قبله
@@ -121,12 +121,12 @@ class Component extends DCLogic {
       [eg ? 'كافيه المرسى' : 'مقهى المرسى', 'food', 'out', 'sms', 'saving', null, 'ok', 2300, 0], [eg ? 'هدية لخالد' : 'هدية لخالد', 'gift', 'out', 'manual', 'cash', 'خالد', 'ok', 20000, 0],
       [eg ? 'سلفة لأحمد' : 'سلفة لأحمد', 'none', 'debt', 'manual', 'salary', 'أحمد', 'ok', 18500, 1], [eg ? 'أجزخانة' : 'صيدلية', 'shop', 'out', 'stmt', 'salary', null, 'sug', 6700, 1],
       [eg ? 'مطعم الفول' : 'مطعم الريف', 'food', 'out', 'sms', 'salary', null, 'ok', 3900, 1], ['راتب', 'none', 'in', 'stmt', 'salary', null, 'ok', 1250000, 1],
-      [eg ? 'بنزينة' : 'محطة وقود', 'car', 'out', 'sms', 'salary', null, 'ok', 8500, 1], [eg ? 'تحويل لحساب آخره ٧٧١٠' : 'تحويل لحساب ينتهي بـ ٧٧١٠', 'none', 'out', 'stmt', 'salary', null, 'sug', 120000, 1],
+      [eg ? 'بنزينة' : 'محطة وقود', 'car', 'out', 'sms', 'salary', null, 'ok', 8500, 1], [eg ? 'تحويل لحساب آخره 7710' : 'تحويل لحساب ينتهي بـ 7710', 'none', 'out', 'stmt', 'salary', null, 'sug', 120000, 1],
       ['سوبرماركت الحي', 'shop', 'out', 'stmt', 'salary', null, 'ok', 42010, 2], [eg ? 'كافيه الشاطئ' : 'مقهى الشاطئ', 'food', 'out', 'sms', 'salary', null, 'ok', 1800, 2],
       ['راتب', 'none', 'in', 'stmt', 'salary', null, 'ok', 1250000, 2], ['قسط السيارة', 'none', 'debt', 'stmt', 'salary', null, 'ok', 145000, 2]
     ];
     const L = {
-      period: [['m0', eg ? 'الشهر ده' : 'هذا الشهر'], ['m1', eg ? 'الشهر اللي فات' : 'الشهر الماضي'], ['3m', eg ? 'آخر ٣ شهور' : 'آخر ٣ أشهر']],
+      period: [['m0', eg ? 'الشهر ده' : 'هذا الشهر'], ['m1', eg ? 'الشهر اللي فات' : 'الشهر الماضي'], ['3m', eg ? 'آخر 3 شهور' : 'آخر 3 أشهر']],
       kind: [['out', 'مصروف'], ['in', 'دخل'], ['move', eg ? 'بين محافظك' : 'بين محافظك'], ['debt', eg ? 'ديون وأقساط' : 'ديون وأقساط']],
       cat: [['food', eg ? 'أكل وقهوة' : 'مطاعم وقهوة'], ['shop', 'تسوق'], ['car', 'مواصلات'], ['gift', 'هدايا'], ['none', eg ? 'من غير تصنيف' : 'بلا تصنيف']],
       src: [['sms', eg ? 'رسالة البنك' : 'رسالة البنك'], ['stmt', 'كشف الحساب'], ['manual', eg ? 'بإيدك' : 'يدوي']],
@@ -174,7 +174,7 @@ class Component extends DCLogic {
       typeQ: (e) => this.setState({ q: e.target.value }),
       amountTitle: 'المبلغ (' + cur + ')', amount: s.amount, typeAmount: (e) => this.setState({ amount: e.target.value }),
       nearChecked: s.near ? 'true' : 'false', toggleNear: () => this.setState({ near: !s.near }),
-      nearLabel: eg ? 'قريب منه ±٥٪' : 'قريب منه ±٥٪',
+      nearLabel: eg ? 'قريب منه ±5%' : 'قريب منه ±5%',
       nearStyle: chipStyle(s.near) + '; flex-shrink: 0; height: 48px',
       groups,
       activeChips,

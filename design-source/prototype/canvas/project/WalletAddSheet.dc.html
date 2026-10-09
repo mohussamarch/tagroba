@@ -105,10 +105,10 @@ input:disabled{opacity:.45;cursor:default}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["إضافة","تعديل"],"default":"إضافة","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"walletName":{"editor":null},"walletKind":{"editor":null},"last4":{"editor":null},"opening":{"editor":null},"openingDate":{"editor":null},"balance":{"editor":null},"existing":{"editor":null},"onSave":{"editor":null},"$preview":{"width":350,"height":48}}'>
-// زرار «أضف محفظة» ولوحته (Wallets) — ونفس اللوحة بـ mode="edit" لرصيد البداية (WalletDetail). سؤال ١٨ في SCREENS.md · spec/03 «Wallet» · §26 §41 §72.
+// زرار «أضف محفظة» ولوحته (Wallets) — ونفس اللوحة بـ mode="edit" لرصيد البداية (WalletDetail). سؤال 18 في SCREENS.md · spec/03 «Wallet» · §26 §41 §72.
 // الإضافة: onSave({ mode:'add', kind: 'bank'|'digital_wallet'|'cash', bank|null, bankLabel|null, name, last4|null (الكاش من غير), openingMinor|null, openingDate|null, openingDateText|null })
 // التعديل: onSave({ mode:'edit', openingMinor, openingDate, openingDateText, balanceMinor|null }) — balanceMinor بس لو التاريخ ما اتغيرش والرصيد معروف
-// العملة = عملة البلد (§41) · آخر ٤ أرقام بس (CLAUDE.md #11) · رصيد البداية حقيقة في تاريخ، وفاضي = «غير متاح» مش صفر
+// العملة = عملة البلد (§41) · آخر 4 أرقام بس (CLAUDE.md #11) · رصيد البداية حقيقة في تاريخ، وفاضي = «غير متاح» مش صفر
 const TODAY = '2026-10-07';
 const M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 class Component extends DCLogic {
@@ -117,17 +117,17 @@ class Component extends DCLogic {
   isEdit() { return this.props.mode === 'edit' || this.props.mode === 'تعديل'; }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   sfmt(m) { return (m < 0 ? '−' : '') + this.fmt(m); }
-  digits(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[^0-9]/g, ''); }
+  digits(t) { return String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/[^0-9]/g, ''); }
   toMinor(t) {
-    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
     if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
     const [w, f = ''] = s.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
   }
-  ar(x) { return String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]); }
-  // تاريخ ISO أو مكتوب زي الشاشات «١ يناير ٢٠٢٥»
+  ar(x) { return String(x).replace(/\d/g, (d) => '0123456789'[d]); }
+  // تاريخ ISO أو مكتوب زي الشاشات «1 يناير 2025»
   isoOf(t) {
-    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).trim();
+    const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
     const m = s.match(/^(\d{1,2})\s+(\S+)\s+(\d{4})$/), i = m ? M.indexOf(m[2]) : -1;
     return i < 0 ? '' : m[3] + '-' + (i < 9 ? '0' : '') + (i + 1) + '-' + (+m[1] < 10 ? '0' : '') + (+m[1]);
@@ -136,7 +136,7 @@ class Component extends DCLogic {
   // المحفظة اللي بتتعدّل: من الشاشة الأم، ولو اللوحة مفتوحة لوحدها أول بنك في البلد (نفس أرقام WalletDetail)
   orig() {
     const p = this.props, eg = this.eg();
-    if (p.walletName == null) return eg ? { name: 'البنك الأهلي المصري', last4: '٧٢١٤', cash: false, open: 900000, date: '2026-05-12', bal: 1640000 } : { name: 'مصرف الراجحي', last4: '٤٤٠٧', cash: false, open: 215000, date: '2025-01-01', bal: 412000 };
+    if (p.walletName == null) return eg ? { name: 'البنك الأهلي المصري', last4: '7214', cash: false, open: 900000, date: '2026-05-12', bal: 1640000 } : { name: 'مصرف الراجحي', last4: '4407', cash: false, open: 215000, date: '2025-01-01', bal: 412000 };
     const n = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
     return { name: String(p.walletName), last4: p.last4 ? this.ar(this.digits(p.last4)) : '', cash: p.walletKind === 'cash', open: n(p.opening), date: this.isoOf(p.openingDate), bal: n(p.balance) };
   }
@@ -173,7 +173,7 @@ class Component extends DCLogic {
     const E = {
       bank: !edit && !isCash && !d.bank ? (d.kind === 'bank' ? (eg ? 'اختار البنك.' : 'اختر البنك.') : (eg ? 'اختار المحفظة.' : 'اختر المحفظة.')) : '',
       name: edit ? '' : dup ? (eg ? 'عندك محفظة بالاسم ده — ميّزها، مثلًا: «' + (isCash ? 'كاش البيت' : name + ' — توفير') + '».' : 'لديك محفظة بهذا الاسم — ميّزها، مثلًا: «' + (isCash ? 'كاش البيت' : name + ' — ادخار') + '».') : !name ? (eg ? 'اكتب اسمها.' : 'اكتب اسمها.') : '',
-      last4: !edit && !isCash && l4 && l4.length !== 4 ? (eg ? 'اكتب ٤ أرقام، أو سيبها فاضية.' : 'اكتب ٤ أرقام، أو اتركها فارغة.') : '',
+      last4: !edit && !isCash && l4 && l4.length !== 4 ? (eg ? 'اكتب 4 أرقام، أو سيبها فاضية.' : 'اكتب 4 أرقام، أو اتركها فارغة.') : '',
       amount: amountText && a == null ? (eg ? 'اكتب المبلغ بالأرقام، مثلًا 1250.50' : 'اكتب المبلغ بالأرقام، مثل 1250.50') : edit && !amountText ? (eg ? 'اكتب رصيد البداية.' : 'اكتب رصيد البداية.') : a != null && !dateOk ? (eg ? 'التاريخ ما ينفعش يبقى بعد النهارده.' : 'لا يكون التاريخ بعد اليوم.') : ''
     };
     const first = E.bank || E.name || E.last4 || E.amount;
@@ -210,11 +210,11 @@ class Component extends DCLogic {
       nameLabel: eg ? 'اسمها في البرنامج' : 'اسمها في التطبيق', namePh: isCash ? (eg ? 'مثلًا: كاش البيت' : 'مثلًا: كاش البيت') : d.bank === 'other' ? (eg ? 'اسم البنك أو المحفظة' : 'اسم البنك أو المحفظة') : (eg ? 'مثلًا: حساب التوفير' : 'مثلًا: حساب الادخار'),
       name: d.name, typeName: (e) => { if (e && e.target) set({ name: e.target.value, named: true }); },
       nameStyle: field(!!shown('name')), nameErr: shown('name'), nameErrStyle: errS(shown('name')),
-      last4Label: d.kind === 'bank' ? (eg ? 'آخر ٤ أرقام من الحساب (مش لازم)' : 'آخر ٤ أرقام من الحساب (اختياري)') : (eg ? 'آخر ٤ أرقام من رقم المحفظة (مش لازم)' : 'آخر ٤ أرقام من رقم المحفظة (اختياري)'),
+      last4Label: d.kind === 'bank' ? (eg ? 'آخر 4 أرقام من الحساب (مش لازم)' : 'آخر 4 أرقام من الحساب (اختياري)') : (eg ? 'آخر 4 أرقام من رقم المحفظة (مش لازم)' : 'آخر 4 أرقام من رقم المحفظة (اختياري)'),
       last4: l4, last4Style: field(!!shown('last4')) + '; text-align: right; font-size: 16px; font-weight: 700; letter-spacing: 2px; font-variant-numeric: tabular-nums',
       typeLast4: (e) => { if (!e || !e.target) return; const raw = this.digits(e.target.value); this.setState({ d: Object.assign({}, d, { last4: raw.slice(-4) }), cut: raw.length > 4 }); },
       last4Err: shown('last4'), last4ErrStyle: errS(shown('last4')),
-      last4Note: (s.cut ? (eg ? 'خدنا آخر ٤ أرقام بس. ' : 'أخذنا آخر ٤ أرقام فقط. ') : '') + (d.kind === 'bank'
+      last4Note: (s.cut ? (eg ? 'خدنا آخر 4 أرقام بس. ' : 'أخذنا آخر 4 أرقام فقط. ') : '') + (d.kind === 'bank'
         ? (eg ? 'مش بنحفظ رقم الحساب كامل أبدًا — الأربعة دول بيميّزوا الحساب في رسايل البنك.' : 'لا نحفظ رقم الحساب كاملًا أبدًا — هذه الأربعة تميّز الحساب في رسائل البنك.')
         : (eg ? 'مش بنحفظ رقم المحفظة كامل أبدًا — الأربعة دول بيميّزوها في رسايلها.' : 'لا نحفظ رقم المحفظة كاملًا أبدًا — هذه الأربعة تميّزها في رسائلها.')),
       amountLabel: edit ? 'رصيد البداية' : (eg ? 'رصيد البداية (مش لازم)' : 'رصيد البداية (اختياري)'),

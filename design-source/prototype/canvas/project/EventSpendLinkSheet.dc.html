@@ -61,7 +61,7 @@ input::placeholder{color:#8A9A95}
                   <div style="display: flex; align-items: center; gap: 6px">
                     <div style="width: 76px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 44px; box-sizing: border-box; border-radius: 14px; padding: 0 10px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
                       <input type="text" inputmode="numeric" dir="ltr" maxlength="3" aria-label="{{tx.pctLabel}}" value="{{tx.pct}}" onInput="{{tx.typePct}}" style="flex: 1 1 auto; min-width: 0; border: 0; padding: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; outline: none; text-align: right; font-variant-numeric: tabular-nums">
-                      <span style="font-size: 14px; color: #637570">٪</span>
+                      <span style="font-size: 14px; color: #637570">%</span>
                     </div>
                     <sc-for list="{{tx.quick}}" as="qk" hint-placeholder-count="4">
                       <button type="button" aria-pressed="{{qk.on}}" class="esl-press" onClick="{{qk.pick}}" style="{{qk.style}}">{{qk.label}}</button>
@@ -91,43 +91,43 @@ input::placeholder{color:#8A9A95}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"eventName":{"editor":"enum","options":["زواج خالد","ولادة جود","رحلة العُلا"],"default":"زواج خالد","section":"الحالة"},"startOpen":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":44}}'>
 // «اربط مصروفًا بنسبة» من صفحة الحدث — عكس LinkProjectEventSheet (§44 · §44.1 · §64 · §76).
-// عملية أو أكتر من المصروف الأخير، ولكل واحدة نسبة صحيحة ١–١٠٠ (المبدئي ١٠٠) بتتخزن على الربط.
-// نصيب الحدث = المبلغ × النسبة ÷ ١٠٠ بأعداد صحيحة، النص لفوق على الهللة (§64 اختيار (أ) — زي LinkProjectEventSheet وEventDetail).
+// عملية أو أكتر من المصروف الأخير، ولكل واحدة نسبة صحيحة 1–100 (المبدئي 100) بتتخزن على الربط.
+// نصيب الحدث = المبلغ × النسبة ÷ 100 بأعداد صحيحة، النص لفوق على الهللة (§64 اختيار (أ) — زي LinkProjectEventSheet وEventDetail).
 // العملية بحدث واحد بس: المربوطة بحدث تاني ما تتختارش (EVENT_TXN_ALREADY_LINKED) — الفك من صفحة العملية. مفيش «صافي».
 // الحفظ بيرجّع للشاشة الأم: onSave({ items: [{ name, amountMinor, percent, linkedMinor, date, wallet }], totalMinor })
-//   المبالغ بالوحدة الصغرى لعملة البلد النشط (مصر مضروبة ×٣ خلاص — الشاشة الأم ما تضربش تاني).
+//   المبالغ بالوحدة الصغرى لعملة البلد النشط (مصر مضروبة ×3 خلاص — الشاشة الأم ما تضربش تاني).
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = { open: props.startOpen === true || props.startOpen === 'true', q: '', sel: [], pct: {}, done: [], err: '' };
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
+  num(text) { const t = String(text == null ? '' : text).replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9]/g, ''); return t ? parseInt(t, 10) : null; }
   shareOf(amt, p) { const x = amt * p, r = x % 100; return (x - r) / 100 + (r * 2 >= 100 ? 1 : 0); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', s = this.state;
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const money = (m) => this.fmt(m) + ' ' + cur;
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const evName = String(this.props.eventName || 'زواج خالد');
     const trip = eg ? 'رحلة دهب' : 'رحلة العُلا';
     const here = (x) => x === evName || (x === trip && (evName === 'رحلة العُلا' || evName === 'رحلة دهب'));
     const R = eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي', A = eg ? 'QNB مصر' : 'البنك الأهلي السعودي', I = eg ? 'QNB مصر' : 'مصرف الإنماء';
-    // مخترعة · مصروف آخر ٣٠ يوم، الأحدث الأول · بالوحدة الصغرى (السعودية) · آخر خانة = الحدث المربوط بيه فعلًا (نفس بيانات EventDetail)
+    // مخترعة · مصروف آخر 30 يوم، الأحدث الأول · بالوحدة الصغرى (السعودية) · آخر خانة = الحدث المربوط بيه فعلًا (نفس بيانات EventDetail)
     const TX = [
-      ['t1', eg ? 'محل هدايا لمسة' : 'متجر هدايا لمسة', '٦ أكتوبر', R, 32500, null],
-      ['t2', eg ? 'ترزي الأناقة' : 'خياط الأناقة', '٥ أكتوبر', A, 48000, null],
-      ['t3', eg ? 'ورد الربيع' : 'زهور الربيع', '٥ أكتوبر', 'الكاش', 18500, null],
-      ['t4', eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية', '٤ أكتوبر', R, 90000, 'زواج خالد'],
-      ['t5', 'فندق الواحة', '٣ أكتوبر', R, 96000, null],
-      ['t6', eg ? 'حلواني السنبلة' : 'حلويات السنبلة', '٢ أكتوبر', I, 21050, null],
-      ['t7', 'مطعم الضيافة', '١ أكتوبر', A, 26000, null],
-      ['t8', eg ? 'محل لبس ومستلزمات أطفال' : 'متجر مستلزمات المواليد', '٢٦ سبتمبر', A, 145000, 'ولادة جود'],
-      ['t9', 'عربون فندق', '٢٢ سبتمبر', R, 55000, trip]
+      ['t1', eg ? 'محل هدايا لمسة' : 'متجر هدايا لمسة', '6 أكتوبر', R, 32500, null],
+      ['t2', eg ? 'ترزي الأناقة' : 'خياط الأناقة', '5 أكتوبر', A, 48000, null],
+      ['t3', eg ? 'ورد الربيع' : 'زهور الربيع', '5 أكتوبر', 'الكاش', 18500, null],
+      ['t4', eg ? 'محل بدل رجالي' : 'محل الأزياء الرجالية', '4 أكتوبر', R, 90000, 'زواج خالد'],
+      ['t5', 'فندق الواحة', '3 أكتوبر', R, 96000, null],
+      ['t6', eg ? 'حلواني السنبلة' : 'حلويات السنبلة', '2 أكتوبر', I, 21050, null],
+      ['t7', 'مطعم الضيافة', '1 أكتوبر', A, 26000, null],
+      ['t8', eg ? 'محل لبس ومستلزمات أطفال' : 'متجر مستلزمات المواليد', '26 سبتمبر', A, 145000, 'ولادة جود'],
+      ['t9', 'عربون فندق', '22 سبتمبر', R, 55000, trip]
     ].map(([id, name, date, wallet, amt, ev]) => ({ id, name, date, wallet, amt: amt * k, ev: s.done.indexOf(id) >= 0 ? evName : ev }));
-    const norm = (t) => String(t || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
-    const nq = norm(s.q), dq = nq.replace(/[^0-9.]/g, '');
+    const norm = (t) => String(t || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
+    const nq = norm(s.q), dq = nq.replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     const hit = (t) => !nq || norm(t.name).indexOf(nq) >= 0 || norm(t.wallet).indexOf(nq) >= 0 || (!!dq && this.fmt(t.amt).replace(/,/g, '').indexOf(dq) >= 0);
     const pOf = (id) => this.num(s.pct[id] == null ? '100' : s.pct[id]);
     const okP = (p) => p != null && p >= 1 && p <= 100;
@@ -155,8 +155,8 @@ class Component extends DCLogic {
         pct: s.pct[t.id] == null ? '100' : s.pct[t.id],
         pctLabel: (eg ? 'نسبة الحدث من ' : 'نسبة الحدث من ') + t.name,
         typePct: (e) => this.setState({ pct: Object.assign({}, s.pct, { [t.id]: e && e.target ? e.target.value : '' }), err: '' }),
-        quick: [100, 75, 50, 25].map((v) => ({ label: n(v) + '٪', on: p === v ? 'true' : 'false', style: quickStyle(p === v), pick: () => this.setState({ pct: Object.assign({}, s.pct, { [t.id]: String(v) }), err: '' }) })),
-        partLabel: ok ? (p === 100 ? (eg ? 'العملية كلها على الحدث' : 'العملية كاملة على الحدث') : (eg ? 'نصيب الحدث، والباقي بيفضل عادي' : 'نصيب الحدث، ويبقى الباقي عاديًا')) : (eg ? 'النسبة من ١ لـ١٠٠' : 'النسبة من ١ إلى ١٠٠'),
+        quick: [100, 75, 50, 25].map((v) => ({ label: n(v) + '%', on: p === v ? 'true' : 'false', style: quickStyle(p === v), pick: () => this.setState({ pct: Object.assign({}, s.pct, { [t.id]: String(v) }), err: '' }) })),
+        partLabel: ok ? (p === 100 ? (eg ? 'العملية كلها على الحدث' : 'العملية كاملة على الحدث') : (eg ? 'نصيب الحدث، والباقي بيفضل عادي' : 'نصيب الحدث، ويبقى الباقي عاديًا')) : (eg ? 'النسبة من 1 لـ100' : 'النسبة من 1 إلى 100'),
         partValue: ok ? '−' + money(this.shareOf(t.amt, p)) : '—',
         partStyle: 'font-size: 13px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (ok ? '#BE3D48' : '#637570')
       };
@@ -171,7 +171,7 @@ class Component extends DCLogic {
       searchPh: eg ? 'دوّر باسم المحل أو المبلغ' : 'ابحث باسم المتجر أو المبلغ',
       q: s.q, typeQ: (e) => this.setState({ q: e && e.target ? e.target.value : '' }),
       listLabel: eg ? 'مصروفك الأخير' : 'مصروفك الأخير',
-      listHint: eg ? 'آخر ٣٠ يوم، والأحدث الأول. العملية بتتربط بحدث واحد بس.' : 'آخر ٣٠ يومًا، والأحدث أولًا. تُربط العملية بحدث واحد فقط.',
+      listHint: eg ? 'آخر 30 يوم، والأحدث الأول. العملية بتتربط بحدث واحد بس.' : 'آخر 30 يومًا، والأحدث أولًا. تُربط العملية بحدث واحد فقط.',
       rows,
       noMatch: shown.length === 0,
       noMatchText: (eg ? 'مفيش عمليات فيها «' : 'لا عمليات تطابق «') + String(s.q || '').trim() + '»',
@@ -179,12 +179,12 @@ class Component extends DCLogic {
       totalLabel: eg ? 'هيتضاف لمصروف الحدث' : 'يُضاف إلى مصروف الحدث',
       totalValue: !picked.length ? (eg ? 'لسه ما اخترتش' : 'لم تختر بعد') : allOk ? '−' + money(total) : '—',
       totalStyle: 'font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: ' + (picked.length && allOk ? '#BE3D48' : '#637570') + (picked.length ? '' : '; font-size: 13px'),
-      totalSub: !picked.length ? (eg ? 'اختار عملية من القايمة.' : 'اختر عملية من القائمة.') : allOk ? plural(picked.length, COUNT) + (eg ? ' — كل واحدة بنصيبها.' : ' — كلٌّ منها بنصيبه.') : (eg ? 'فيه نسبة برّه ١–١٠٠.' : 'إحدى النسب خارج ١–١٠٠.'),
+      totalSub: !picked.length ? (eg ? 'اختار عملية من القايمة.' : 'اختر عملية من القائمة.') : allOk ? plural(picked.length, COUNT) + (eg ? ' — كل واحدة بنصيبها.' : ' — كلٌّ منها بنصيبه.') : (eg ? 'فيه نسبة برّه 1–100.' : 'إحدى النسب خارج 1–100.'),
       err: s.err,
       saveLabel: picked.length ? (eg ? 'اربط ' : 'اربط ') + plural(picked.length, OBJ) : (eg ? 'اربط بالحدث' : 'اربط بالحدث'),
       save: () => {
         if (!picked.length) return this.setState({ err: eg ? 'اختار عملية واحدة على الأقل.' : 'اختر عملية واحدة على الأقل.' });
-        if (!allOk) return this.setState({ err: eg ? 'نسبة كل عملية لازم تبقى من ١ لـ١٠٠.' : 'نسبة كل عملية يجب أن تكون من ١ إلى ١٠٠.' });
+        if (!allOk) return this.setState({ err: eg ? 'نسبة كل عملية لازم تبقى من 1 لـ100.' : 'نسبة كل عملية يجب أن تكون من 1 إلى 100.' });
         const items = picked.map((t) => { const p = pOf(t.id); return { name: t.name, amountMinor: t.amt, percent: p, linkedMinor: this.shareOf(t.amt, p), date: t.date, wallet: t.wallet }; });
         this.setState({ open: false, done: s.done.concat(picked.map((t) => t.id)), sel: [], pct: {}, q: '', err: '' });
         if (typeof this.props.onSave === 'function') this.props.onSave({ items, totalMinor: items.reduce((a, x) => a + x.linkedMinor, 0) });

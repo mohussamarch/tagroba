@@ -153,7 +153,7 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const n = (x) => x.toLocaleString('en-US'), ny = (x) => x.toLocaleString('en-US', { useGrouping: false });
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const QW = eg ? ['قسط واحد', 'قسطين', 'أقساط', 'قسط'] : ['قسط واحد', 'قسطان', 'أقساط', 'قسطًا'];
     const s = this.state;

@@ -114,7 +114,7 @@ class Component extends DCLogic {
   }
   fmt(minor) { const f = minor % 100; return String((minor - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   toMinor(text) {
-    const t = String(text || '').replace(/[^0-9.]/g, '');
+    const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     if (!t) return null;
     const [w, f = ''] = t.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -126,10 +126,10 @@ class Component extends DCLogic {
     // مخترعة: مرسل مش في قايمة البنوك المعروفة ⇒ بيظهر زي ما جه في الرسالة (§74) · المبالغ بالوحدة الصغرى
     const bankName = '⁨ALWAHA⁩';
     const msgs = [
-      { id: 'w1', name: eg ? 'مكتبة الفجر' : 'مكتبة الفجر', cat: 'shop', amt: 4500 * k, t: '١:٣٠ م' },
-      { id: 'w2', name: eg ? 'كافيه المرسى' : 'مقهى المرسى', cat: 'food', amt: 2300 * k, t: '١:١٢ م' }
+      { id: 'w1', name: eg ? 'مكتبة الفجر' : 'مكتبة الفجر', cat: 'shop', amt: 4500 * k, t: '1:30 م' },
+      { id: 'w2', name: eg ? 'كافيه المرسى' : 'مقهى المرسى', cat: 'food', amt: 2300 * k, t: '1:12 م' }
     ];
-    const dupRow = { id: 'dp', name: eg ? 'كافيه الشاطئ' : 'مقهى الشاطئ', cat: 'food', amt: 1800 * k, t: '١:٠٥ م' };
+    const dupRow = { id: 'dp', name: eg ? 'كافيه الشاطئ' : 'مقهى الشاطئ', cat: 'food', amt: 1800 * k, t: '1:05 م' };
     const s = this.state;
     const n = (s.bank === 'wait' ? 2 : 0) + (s.dup === 'wait' ? 1 : 0) + (s.unclear !== 'gone' ? 1 : 0);
     const minor = this.toMinor(s.amount);
@@ -149,7 +149,7 @@ class Component extends DCLogic {
     const primary = 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);';
     return {
       title: eg ? 'مستنية تأكيدك' : 'بانتظار تأكيدك',
-      countText: n.toLocaleString('ar-EG'),
+      countText: n.toLocaleString('en-US'),
       countStyle: 'font-size: 12px; font-weight: 700; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; ' + (n ? 'color: #FFFFFF; background: #956000' : 'color: #08634F; background: #DCEBD6'),
       allDone: n === 0,
       doneText: eg ? 'مفيش حاجة مستنية — كله اتسجّل.' : 'لا شيء بانتظارك — سُجّل كل شيء.',
@@ -174,7 +174,7 @@ class Component extends DCLogic {
       dupNew: () => { this.setState({ dup: 'gone' }); this.record([dupRow], eg ? 'اتسجّلت عملية لوحدها' : 'سُجّلت عملية مستقلة'); },
       unclearWaiting: s.unclear !== 'gone',
       unTitle: eg ? 'رسالة ما اتفهمتش' : 'رسالة لم تُفهم',
-      unText: eg ? '«تمت عملية على بطاقتك المنتهية بـ ٢٢ لدى متجر إلكتروني. للاستفسار اتصل بنا.»' : '«تمت عملية على بطاقتك المنتهية بـ ٢٢ لدى متجر إلكتروني. للاستفسار اتصل بنا.»',
+      unText: eg ? '«تمت عملية على بطاقتك المنتهية بـ 22 لدى متجر إلكتروني. للاستفسار اتصل بنا.»' : '«تمت عملية على بطاقتك المنتهية بـ 22 لدى متجر إلكتروني. للاستفسار اتصل بنا.»',
       unWhy: eg ? 'السبب: مفيهاش مبلغ.' : 'السبب: لا مبلغ فيها.',
       typing: s.unclear === 'typing', notTyping: s.unclear === 'wait',
       unDropLabel: eg ? 'شيلها' : 'احذفها', unTypeLabel: eg ? 'سجّلها بإيدك' : 'سجّلها يدويًا',
@@ -185,7 +185,7 @@ class Component extends DCLogic {
       cantSave: !okAmount,
       saveLabel: eg ? 'سجّل' : 'سجّل',
       saveStyle: primary + ' padding: 0 18px; flex-shrink: 0;' + (okAmount ? '' : ' opacity: 0.45; cursor: default'),
-      saveManual: () => { if (!okAmount) return; this.setState({ unclear: 'gone' }); this.record([{ id: 'um', name: eg ? 'عملية بطاقة' : 'عملية بطاقة', cat: 'none', amt: minor, t: '١٢:٥٥ م', st: 'new' }], eg ? 'اتسجّلت — فاضل تصنّفها' : 'سُجّلت — بقي تصنيفها'); },
+      saveManual: () => { if (!okAmount) return; this.setState({ unclear: 'gone' }); this.record([{ id: 'um', name: eg ? 'عملية بطاقة' : 'عملية بطاقة', cat: 'none', amt: minor, t: '12:55 م', st: 'new' }], eg ? 'اتسجّلت — فاضل تصنّفها' : 'سُجّلت — بقي تصنيفها'); },
       sheet: s.sheet,
       sheetTitle: (eg ? 'رسايل «' : 'رسائل «') + bankName + (eg ? '» تتسجل فين؟' : '» أين تُسجَّل؟'),
       sheetBody: eg ? 'مرة واحدة بس. الرسالتين المستنيين هيتسجلوا أول ما تختار.' : 'مرة واحدة فقط. تُسجَّل الرسالتان المنتظرتان فور اختيارك.',

@@ -167,7 +167,7 @@ class Component extends DCLogic {
   defaults() { const k = this.k(); return { total: 800000 * k, food: 120000 * k, shop: 200000 * k, car: 80000 * k, gift: null }; }
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   toMinor(text) {
-    const t = String(text || '').replace(/[^0-9.]/g, '');
+    const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     if (!t) return null;
     const [w, f = ''] = t.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -202,7 +202,7 @@ class Component extends DCLogic {
         numStyle: 'font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : isOver ? '#BE3D48' : '#193D33'),
         dot: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: ' + color,
         bar: 'display: block; height: 6px; border-radius: 3px; width: ' + Math.min(100, p) + '%; background: ' + (isOver ? '#BE3D48' : color),
-        note: l == null ? (eg ? 'من غير سقف · دوس تحدّد سقف' : 'بلا سقف · اضغط لتحديد سقف') : isOver ? (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(s - l) : (eg ? 'فاضل ' : 'بقي ') + this.fmt(l - s) + '، ' + p.toLocaleString('ar-EG') + '٪',
+        note: l == null ? (eg ? 'من غير سقف · دوس تحدّد سقف' : 'بلا سقف · اضغط لتحديد سقف') : isOver ? (eg ? 'عدّيت السقف بـ ' : 'تجاوزت السقف بـ ') + this.fmt(s - l) : (eg ? 'فاضل ' : 'بقي ') + this.fmt(l - s) + '، ' + p.toLocaleString('en-US') + '%',
         noteStyle: 'font-size: 12px; text-align: right; color: ' + (isOver ? '#BE3D48' : l == null ? '#08634F' : '#637570') + (l == null ? '; font-weight: 700' : ''),
         rowStyle: 'width: 100%; border: 0; background: transparent; font: inherit; color: inherit; text-align: right; cursor: pointer; padding: 12px 0; display: flex; flex-direction: column; gap: 6px;' + (i === catDefs.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);'),
         edit: () => this.open(id, name), keep: JSON.stringify({ 'masroufy-budget-cat': id })
@@ -210,8 +210,8 @@ class Component extends DCLogic {
     });
     const R = this.state.reserved;
     const upDefs = [
-      ['car', 'قسط السيارة', eg ? '٢٧ أكتوبر، بعد ٢٠ يوم' : '٢٧ أكتوبر، بعد ٢٠ يومًا', 145000],
-      ['wedding', 'هدية زواج خالد', eg ? '١٨ أكتوبر، حدث' : '١٨ أكتوبر، حدث', 50000]
+      ['car', 'قسط السيارة', eg ? '27 أكتوبر، بعد 20 يوم' : '27 أكتوبر، بعد 20 يومًا', 145000],
+      ['wedding', 'هدية زواج خالد', eg ? '18 أكتوبر، حدث' : '18 أكتوبر، حدث', 50000]
     ];
     const ups = upDefs.map(([id, name, when, amt], i) => {
       const on = !!R[id];
@@ -245,10 +245,10 @@ class Component extends DCLogic {
       copyLabel: eg ? 'انسخ سقوف سبتمبر' : 'انسخ سقوف سبتمبر',
       copyLast: () => this.setState({ limits: this.defaults() }),
       editTotal: () => this.open('total', eg ? 'سقف الشهر كله' : 'سقف الشهر كله'),
-      avgLabel: eg ? 'متوسط آخر ٦ شهور' : 'متوسط آخر ٦ أشهر',
+      avgLabel: eg ? 'متوسط آخر 6 شهور' : 'متوسط آخر 6 أشهر',
       avgText: this.fmt(720000 * k) + ' ' + cur,
       anomalyLabel: eg ? 'صرف مش معتاد' : 'صرف غير معتاد',
-      anomalyText: eg ? 'البقالة أعلى من متوسطك بـ ٣٥٪ الشهر ده.' : 'البقالة أعلى من متوسطك بـ ٣٥٪ هذا الشهر.',
+      anomalyText: eg ? 'البقالة أعلى من متوسطك بـ 35% الشهر ده.' : 'البقالة أعلى من متوسطك بـ 35% هذا الشهر.',
       catsTitle: eg ? 'التصنيفات' : 'التصنيفات',
       cats,
       upTitle: eg ? 'مواعيد جاية' : 'مواعيد قادمة',
@@ -262,7 +262,7 @@ class Component extends DCLogic {
       sheetSpent: key ? (eg ? 'صرفت لحد دلوقتي ' : 'المصروف حتى الآن ') + this.fmt(key === 'total' ? totalSpent : spent[key]) + ' ' + cur : '',
       limitInput: this.state.limitInput,
       typeLimit: (e) => this.setState({ limitInput: e.target.value, err: '' }),
-      thresholds: [70, 80, 90].map((v) => ({ label: v.toLocaleString('ar-EG') + '٪', on: this.state.threshold === v ? 'true' : 'false', pick: () => this.setState({ threshold: v }),
+      thresholds: [70, 80, 90].map((v) => ({ label: v.toLocaleString('en-US') + '%', on: this.state.threshold === v ? 'true' : 'false', pick: () => this.setState({ threshold: v }),
         style: 'flex: 1 1 0; height: 40px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; cursor: pointer; ' + (this.state.threshold === v ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') })),
       sheetErr: this.state.err,
       sheetErrStyle: 'font-size: 12px; font-weight: 700; color: #BE3D48; min-height: 18px',

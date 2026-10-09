@@ -29,7 +29,7 @@ body{margin:0}
         <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.55)">
           <span style="{{txTile}}"><img src="{{txIcon}}" width="20" height="20" alt=""></span>
           <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{txTitle}}</span><span style="font-size: 12px; color: #637570">{{txSub}}</span></span>
-          <span dir="ltr" style="font-size: 16px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums; white-space: nowrap">{{txAmount}}</span>
+          <span dir="ltr" style="font-size: 16px; font-weight: 700; color: {{txColor}}; font-variant-numeric: tabular-nums; white-space: nowrap">{{txAmount}}</span>
         </div>
         <sc-if value="{{pending}}" hint-placeholder-val="{{ true }}">
           <div style="display: flex; gap: 8px">
@@ -76,15 +76,18 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"sample":{"editor":"enum","options":["عملية","تقسيم","اختيار المحفظة","رسالتي"],"default":"عملية","section":"المعاينة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":220}}'>
 // فقاعة واحدة في محادثة المساعد — بترسم بس، والفهم والحفظ في AssistantChat.
-// الرسالة: { from: 'me'|'bot', text, txn?: { title, cat, wallet, amount (هللة/قرش), icon, color }, kind?: 'split', shares?: [{ name, initial, amount }], pick?: { ci, amt, lead, opts: [[المعرّف، الاسم]] }, picked?, link?: [href, keep, label], links?: [[href, keep, label]] (أقرب الشاشات), done?, dropped? }
-// الأفعال بترجع للأم: on-confirm · on-edit · on-pick(المحفظة) — «اختيار المحفظة» بيظهر مرة واحدة لما لسه مفيش محفظة أساسية (قرار المالك ٢٠٢٦-١٠-٠٩)
+// الرسالة: { from: 'me'|'bot', text, txn?: { title, cat, wallet, amount (هللة/قرش), icon, color, type?: 'in'|'lend'|'borrow'|'move' (من غيره مصروف) }, kind?: 'split', shares?: [{ name, initial, amount }], pick?: { ci, amt, lead, opts: [[المعرّف، الاسم]] }, picked?, link?: [href, keep, label], links?: [[href, keep, label]] (أقرب الشاشات), done?, dropped? }
+// الأفعال بترجع للأم: on-confirm · on-edit · on-pick(المحفظة) — «اختيار المحفظة» بيظهر مرة واحدة لما لسه مفيش محفظة أساسية (قرار المالك 2026-10-09)
 const ICON = {
   coffee: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
   food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
   bill: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
   home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   car: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
-  bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>'
+  bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  in: '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
+  debt: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>',
+  move: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>'
 };
 class Component extends DCLogic {
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
@@ -114,7 +117,7 @@ class Component extends DCLogic {
       hasText: !!m.text, text: m.text || '',
       isTxn: !!tx && !me, isSplit: m.kind === 'split', isPick: !!m.pick && !me, pending: !m.done,
       txTitle: tx ? tx.title : '', txSub: tx ? tx.cat + ' · ' + tx.wallet + ' · ' + (eg ? 'النهارده' : 'اليوم') : '',
-      txAmount: tx ? '−' + this.fmt(tx.amount) : '', txIcon: this.icon(tx ? tx.icon : 'bill', tx ? tx.color : '#637570'),
+      txAmount: tx ? (tx.type === 'in' || tx.type === 'borrow' ? '+' : tx.type === 'move' ? '' : '−') + this.fmt(tx.amount) : '', txColor: !tx || !tx.type || tx.type === 'out' || tx.type === 'lend' ? '#BE3D48' : tx.type === 'move' ? '#2469BA' : '#13764D', txIcon: this.icon(tx ? tx.icon : 'bill', tx ? tx.color : '#637570'),
       txTile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + (tx ? tx.color : '#637570') + '1F',
       settled: !!tx && !!m.done, settledColor: m.dropped ? '#637570' : '#13764D',
       settledText: m.dropped ? (eg ? 'اتعدّلت تحت' : 'عُدّلت في الأسفل') : (eg ? 'اتسجّلت' : 'سُجّلت'),

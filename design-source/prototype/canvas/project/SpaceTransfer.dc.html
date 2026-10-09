@@ -149,8 +149,8 @@ body{margin:0}
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// التحويل لنفسك بين بلدين (§64 قرار ٨): زوج مربوط — الطالعة من بلد والداخلة في التانية · لا مصروف ولا دخل · كل رجل بعملتها ·
-// السعر مش بيتخزن، بيتحسب للعرض بس من المبلغين (٤ أرقام بأعداد صحيحة زي spaceTransferRateText) · الفك ما بيمسحش العمليات.
+// التحويل لنفسك بين بلدين (§64 قرار 8): زوج مربوط — الطالعة من بلد والداخلة في التانية · لا مصروف ولا دخل · كل رجل بعملتها ·
+// السعر مش بيتخزن، بيتحسب للعرض بس من المبلغين (4 أرقام بأعداد صحيحة زي spaceTransferRateText) · الفك ما بيمسحش العمليات.
 const W = { sa: ['مصرف الراجحي', 'البنك الأهلي السعودي', 'مصرف الإنماء', 'الكاش'], eg: ['البنك الأهلي المصري', 'QNB مصر', 'الكاش'] };
 const CUR = { sa: 'ر.س', eg: 'ج.م' }, MARK = { sa: 'س', eg: 'م' }, NAME = { sa: 'السعودية', eg: 'مصر' };
 const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -162,9 +162,9 @@ class Component extends DCLogic {
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  // قسمة طويلة بأعداد صحيحة: ٤ أرقام بعد العلامة، والنص لفوق — نفس spaceTransferRateText في كوتلن
+  // قسمة طويلة بأعداد صحيحة: 4 أرقام بعد العلامة، والنص لفوق — نفس spaceTransferRateText في كوتلن
   rate(from, to) {
     let rem = to % from, whole = (to - rem) / from, frac = 0;
     for (let i = 0; i < 4; i++) { rem *= 10; const q = (rem - (rem % from)) / from; frac = frac * 10 + q; rem = rem % from; }
@@ -176,22 +176,22 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const s = this.state, na = st === 'غير متاح';
-    const n = (x) => x.toLocaleString('ar-EG');
-    // مخترعة · بالوحدة الصغرى · الأزواج على مستوى الحساب (مش جوه بلد) — §64 قرار ٢
+    const n = (x) => x.toLocaleString('en-US');
+    // مخترعة · بالوحدة الصغرى · الأزواج على مستوى الحساب (مش جوه بلد) — §64 قرار 2
     const P0 = [
-      { id: 't1', from: 'sa', fw: 'مصرف الراجحي', fa: 200000, to: 'eg', tw: 'البنك الأهلي المصري', ta: 2564000, fd: '٣ أكتوبر', td: '٤ أكتوبر', note: eg ? 'مصروف البيت هناك' : 'مصروف البيت في مصر', fn: 'حوالة دولية صادرة', tn: 'حوالة واردة' },
-      { id: 't2', from: 'sa', fw: 'مصرف الإنماء', fa: 150000, to: 'eg', tw: 'QNB مصر', ta: 1915500, fd: '٢ سبتمبر', td: '٢ سبتمبر', note: '', fn: 'حوالة دولية صادرة', tn: 'إيداع' },
-      { id: 't3', from: 'eg', fw: 'QNB مصر', fa: 650000, to: 'sa', tw: 'مصرف الإنماء', ta: 50000, fd: '١٤ يوليو', td: '١٥ يوليو', note: eg ? 'باقي فلوس الأجازة' : 'باقي مصروف الإجازة', fn: 'تحويل للخارج', tn: 'حوالة دولية واردة' }
+      { id: 't1', from: 'sa', fw: 'مصرف الراجحي', fa: 200000, to: 'eg', tw: 'البنك الأهلي المصري', ta: 2564000, fd: '3 أكتوبر', td: '4 أكتوبر', note: eg ? 'مصروف البيت هناك' : 'مصروف البيت في مصر', fn: 'حوالة دولية صادرة', tn: 'حوالة واردة' },
+      { id: 't2', from: 'sa', fw: 'مصرف الإنماء', fa: 150000, to: 'eg', tw: 'QNB مصر', ta: 1915500, fd: '2 سبتمبر', td: '2 سبتمبر', note: '', fn: 'حوالة دولية صادرة', tn: 'إيداع' },
+      { id: 't3', from: 'eg', fw: 'QNB مصر', fa: 650000, to: 'sa', tw: 'مصرف الإنماء', ta: 50000, fd: '14 يوليو', td: '15 يوليو', note: eg ? 'باقي فلوس الأجازة' : 'باقي مصروف الإجازة', fn: 'تحويل للخارج', tn: 'حوالة دولية واردة' }
     ];
     // عمليات موجودة نوعها لسه ما اتحددش — الصادرة والواردة في كل بلد (o = طالعة · i = داخلة)
     const C0 = [
-      { id: 'o1', sp: 'sa', io: 'o', name: 'حوالة دولية صادرة', wallet: 'مصرف الراجحي', date: '٥ أكتوبر', amt: 300000 },
-      { id: 'o2', sp: 'sa', io: 'o', name: 'حوالة دولية صادرة', wallet: 'مصرف الإنماء', date: '٢١ سبتمبر', amt: 80000 },
-      { id: 'o3', sp: 'sa', io: 'o', name: 'تحويل إلى خالد', wallet: 'مصرف الراجحي', date: '١٨ سبتمبر', amt: 120000, locked: true },
-      { id: 'i1', sp: 'eg', io: 'i', name: 'حوالة واردة', wallet: 'البنك الأهلي المصري', date: '٥ أكتوبر', amt: 3843000 },
-      { id: 'i2', sp: 'eg', io: 'i', name: 'إيداع', wallet: 'QNB مصر', date: '٢٢ سبتمبر', amt: 1025000 },
-      { id: 'o4', sp: 'eg', io: 'o', name: 'تحويل للخارج', wallet: 'QNB مصر', date: '٢٠ أغسطس', amt: 900000 },
-      { id: 'i3', sp: 'sa', io: 'i', name: 'حوالة دولية واردة', wallet: 'مصرف الإنماء', date: '٢١ أغسطس', amt: 69000 }
+      { id: 'o1', sp: 'sa', io: 'o', name: 'حوالة دولية صادرة', wallet: 'مصرف الراجحي', date: '5 أكتوبر', amt: 300000 },
+      { id: 'o2', sp: 'sa', io: 'o', name: 'حوالة دولية صادرة', wallet: 'مصرف الإنماء', date: '21 سبتمبر', amt: 80000 },
+      { id: 'o3', sp: 'sa', io: 'o', name: 'تحويل إلى خالد', wallet: 'مصرف الراجحي', date: '18 سبتمبر', amt: 120000, locked: true },
+      { id: 'i1', sp: 'eg', io: 'i', name: 'حوالة واردة', wallet: 'البنك الأهلي المصري', date: '5 أكتوبر', amt: 3843000 },
+      { id: 'i2', sp: 'eg', io: 'i', name: 'إيداع', wallet: 'QNB مصر', date: '22 سبتمبر', amt: 1025000 },
+      { id: 'o4', sp: 'eg', io: 'o', name: 'تحويل للخارج', wallet: 'QNB مصر', date: '20 أغسطس', amt: 900000 },
+      { id: 'i3', sp: 'sa', io: 'i', name: 'حوالة دولية واردة', wallet: 'مصرف الإنماء', date: '21 أغسطس', amt: 69000 }
     ];
     const pairsL = s.pairs || (st === 'فاضي' || na ? [] : P0);
     const candL = s.cand || C0;
@@ -202,7 +202,7 @@ class Component extends DCLogic {
         { mark: MARK[p.from], wallet: p.fw, sub: (eg ? 'طلعت، ' : 'خرجت، ') + p.fd, amount: '−' + this.fmt(p.fa) + ' ' + CUR[p.from] },
         { mark: MARK[p.to], wallet: p.tw, sub: (eg ? 'وصلت، ' : 'وصلت، ') + p.td, amount: '+' + this.fmt(p.ta) + ' ' + CUR[p.to] }
       ],
-      rateNum: this.rate(p.fa, p.ta), rateUnit: CUR[p.to] + ' لكل ١ ' + CUR[p.from],
+      rateNum: this.rate(p.fa, p.ta), rateUnit: CUR[p.to] + ' لكل 1 ' + CUR[p.from],
       hasNote: !!p.note, note: (eg ? 'ملاحظتك: ' : 'ملاحظتك: ') + p.note,
       unlink: () => this.setState({ sheet: { kind: 'unlink', id: p.id }, err: '' })
     }));
@@ -284,7 +284,7 @@ class Component extends DCLogic {
       dateLabel: eg ? 'التاريخ' : 'التاريخ', date: s.date, typeDate: (e) => { if (e && e.target && e.target.value) this.setState({ date: e.target.value }); },
       noteLabel: eg ? 'ملاحظة (اختياري)' : 'ملاحظة (اختياري)', note: s.note, typeNote: (e) => this.setState({ note: e.target.value }),
       liveRateLabel: eg ? 'السعر (للعرض بس)' : 'السعر (للعرض فقط)',
-      liveRateNum: live ? this.rate(amounts[0], amounts[1]) : '', liveRateUnit: live ? CUR[tsp] + ' لكل ١ ' + CUR[fsp] : (eg ? 'بعد ما تكتب المبلغين' : 'بعد كتابة المبلغين'),
+      liveRateNum: live ? this.rate(amounts[0], amounts[1]) : '', liveRateUnit: live ? CUR[tsp] + ' لكل 1 ' + CUR[fsp] : (eg ? 'بعد ما تكتب المبلغين' : 'بعد كتابة المبلغين'),
       formErr: s.err,
       confirmOff: !okConfirm,
       confirmLabel: isNew ? (eg ? 'سجّله' : 'سجّله') : isLink ? (eg ? 'اربطهم' : 'اربطهما') : (eg ? 'فك الربط' : 'فك الربط'),

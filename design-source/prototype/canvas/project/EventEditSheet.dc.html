@@ -134,7 +134,7 @@ class Component extends DCLogic {
       save: () => {
         const say = (err) => this.setState({ err });
         const name = String(s.name || '').trim().replace(/\s+/g, ' ');
-        if (!name || name.length > 60) return say(eg ? 'اسم الحدث لازم يبقى من حرف لـ٦٠ حرف.' : 'اسم الحدث من حرف إلى ٦٠ حرفًا.');
+        if (!name || name.length > 60) return say(eg ? 'اسم الحدث لازم يبقى من حرف لـ60 حرف.' : 'اسم الحدث من حرف إلى 60 حرفًا.');
         if (OTHERS.some((x) => norm(x) === norm(name) && norm(x) !== norm(b.name))) return say(eg ? 'فيه حدث بنفس الاسم.' : 'يوجد حدث بالاسم نفسه.');
         if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) return say(eg ? 'تاريخ الحدث مش صالح.' : 'تاريخ الحدث غير صالح.');
         if (lockMine && !s.mine) return say(eg ? 'النقوط اللي جاتلك بتتسجل في حدثك إنت بس.' : 'النقوط التي جاءتك تُسجَّل في حدثك فقط.');

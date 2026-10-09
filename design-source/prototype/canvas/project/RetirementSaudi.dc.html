@@ -22,7 +22,7 @@ input::placeholder{color:#8A9A95}
 </helmet>
 <div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
   <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-    <span id="r-q" style="font-size: 15px; font-weight: 700">هل اشتركت في التأمينات قبل يوليو ٢٠٢٤؟</span>
+    <span id="r-q" style="font-size: 15px; font-weight: 700">هل اشتركت في التأمينات قبل يوليو 2024؟</span>
     <div role="radiogroup" aria-labelledby="r-q" style="display: flex; gap: 8px">
       <sc-for list="{{answers}}" as="an" hint-placeholder-count="2">
         <button type="button" role="radio" aria-checked="{{an.on}}" class="r-press" onClick="{{an.pick}}" style="{{an.style}}">{{an.label}}</button>
@@ -94,11 +94,11 @@ input::placeholder{color:#8A9A95}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // v: ما كتبه المستخدم (نص). الفاضي = الافتراضي المخترع. اليوم في النموذج ٧ أكتوبر ٢٠٢٦
+    // v: ما كتبه المستخدم (نص). الفاضي = الافتراضي المخترع. اليوم في النموذج 7 أكتوبر 2026
     this.state = { old: true, v: {}, end: 'contract', how: false };
   }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return (minor < 0 ? '−' : '') + String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  num(t) { const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); return s ? s : null; }
+  num(t) { const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); return s ? s : null; }
   toMinor(t) { const s = this.num(t); if (s == null) return null; const [w, f = ''] = s.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   int(t) { const s = this.num(t); return s == null || s.indexOf('.') >= 0 ? null : parseInt(s, 10); }
   md(a, num, den) { const x = BigInt(a) * BigInt(num), d = BigInt(den); return Number((x * 2n + d) / (d * 2n)); }
@@ -107,13 +107,13 @@ class Component extends DCLogic {
   addM(s, k) { const a = this.P(s), t = a.y * 12 + a.mo - 1 + k, y = (t - t % 12) / 12, m = t % 12 + 1; return y + '-' + String(m).padStart(2, '0') + '-' + String(Math.min(a.d, this.dim(y, m))).padStart(2, '0'); }
   fullM(from, to) { if (to <= from) return 0; const a = this.P(from), b = this.P(to); let k = (b.y - a.y) * 12 + b.mo - a.mo; while (k > 0 && this.addM(from, k) > to) k--; while (this.addM(from, k + 1) <= to) k++; return k; }
   days(a, b) { const x = this.P(a), y = this.P(b); return (Date.UTC(y.y, y.mo - 1, y.d) - Date.UTC(x.y, x.mo - 1, x.d)) / 86400000; }
-  day(s) { const a = this.P(s), M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; return M[a.mo - 1] + ' ' + a.y.toLocaleString('ar-EG', { useGrouping: false }); }
-  age(m) { const y = (m - m % 12) / 12, r = m % 12; return y.toLocaleString('ar-EG') + ' سنة' + (r ? ' و' + (r === 1 ? 'شهر' : r === 2 ? 'شهران' : r.toLocaleString('ar-EG') + ' أشهر') : ''); }
+  day(s) { const a = this.P(s), M = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']; return M[a.mo - 1] + ' ' + a.y.toLocaleString('en-US', { useGrouping: false }); }
+  age(m) { const y = (m - m % 12) / 12, r = m % 12; return y.toLocaleString('en-US') + ' سنة' + (r ? ' و' + (r === 1 ? 'شهر' : r === 2 ? 'شهران' : r.toLocaleString('en-US') + ' أشهر') : ''); }
   renderVals() {
     const st = this.props.state ?? 'عادي', TODAY = '2026-10-07', EFF = '2024-07-03';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state;
-    // مخترعة: الراتب ١٢٬٥٠٠ من مصادر الدخل، والعمل الحالي من فبراير ٢٠٢١
+    // مخترعة: الراتب 12,500 من مصادر الدخل، والعمل الحالي من فبراير 2021
     const D = { birth: '1990-04-12', soFar: '103', at2024: '76', m1422: '', retire: '', basic: '10000', housing: st === 'غير متاح' ? '' : '2500', job: '2021-02-01', eosWage: '12500', want: '15000', years: '20', have: '40000' };
     const val = (id) => (s.v[id] != null ? s.v[id] : D[id]);
     const put = (id) => (e) => this.setState({ v: Object.assign({}, s.v, { [id]: e.target.value }) });
@@ -121,9 +121,9 @@ class Component extends DCLogic {
     const birth = val('birth'), soFar = this.int(val('soFar')), at2024 = this.int(val('at2024')), m1422 = this.int(val('m1422')) || 0;
     const basic = this.toMinor(val('basic')), housing = this.toMinor(val('housing')), retireY = this.int(val('retire'));
     if (!this.P(birth) || birth >= TODAY) err.birth = 'اكتب تاريخ الميلاد (قبل اليوم)';
-    if (soFar == null || soFar > 1200) err.soFar = 'المدة من ٠ حتى ١٢٠٠ شهر';
-    if (s.old && at2024 != null && soFar != null && at2024 > soFar) err.at2024 = 'شهور الاشتراك في يوليو ٢٠٢٤ لا تزيد على مدة اشتراكك اليوم';
-    if (s.old && soFar != null && m1422 > soFar) err.m1422 = 'شهور ما قبل ١٤٢٢هـ جزء من مدة اشتراكك، فلا تزيد عليها';
+    if (soFar == null || soFar > 1200) err.soFar = 'المدة من 0 حتى 1200 شهر';
+    if (s.old && at2024 != null && soFar != null && at2024 > soFar) err.at2024 = 'شهور الاشتراك في يوليو 2024 لا تزيد على مدة اشتراكك اليوم';
+    if (s.old && soFar != null && m1422 > soFar) err.m1422 = 'شهور ما قبل 1422هـ جزء من مدة اشتراكك، فلا تزيد عليها';
     if (basic === 0) err.basic = 'اكتب الأجر الشهري (أكبر من صفر)';
     if (retireY != null && (retireY < 1 || retireY > 100)) err.retire = 'سن التقاعد غير صحيح';
     const bad = Object.keys(err).length > 0;
@@ -131,7 +131,7 @@ class Component extends DCLogic {
     let est = null;
     if (!bad) {
       const outsideByAge = this.fullM(birth, EFF) >= 48 * 12 + 6;
-      if (s.old && at2024 == null && !outsideByAge) est = { na: 'غير متاح: اكتب شهور اشتراكك في ٣ يوليو ٢٠٢٤ — سن تقاعدك يتحدد منها' };
+      if (s.old && at2024 == null && !outsideByAge) est = { na: 'غير متاح: اكتب شهور اشتراكك في 3 يوليو 2024 — سن تقاعدك يتحدد منها' };
       else {
         const atEff = at2024 != null ? at2024 : outsideByAge ? 240 : 0;
         const fifth = !outsideByAge && atEff < 240, ageEff = this.fullM(birth, EFF), yrs = (ageEff - ageEff % 12) / 12;
@@ -151,12 +151,12 @@ class Component extends DCLogic {
             const minimum = Math.max(200000, this.md(400000, Math.min(months, 480), 480)), floored = Math.max(base, minimum);
             const redM = Math.min(before, Math.max(0, 480 - months)), red = this.md(floored, 300 * redM, 120000), inc = this.md(floored, 300 * after, 120000);
             est.p = floored - red + inc;
-            est.how = ['متوسط الأجر (الأساسي + السكن، بسقف ٤٥٬٠٠٠): ' + this.fmt(wage), '× ٢٫٢٥٪ × ' + n(months) + ' شهرًا ÷ ١٢ = ' + this.fmt(accrued) + (accrued > wage ? ' ← بسقف ١٠٠٪ من المتوسط' : ''), 'الحد الأدنى لمدتك: ' + this.fmt(minimum) + (minimum > base ? ' ← طُبّق' : ''),
-              red ? 'التخفيض المبكر: −' + this.fmt(red) + ' (٣٪ عن كل ١٢ شهرًا من ' + n(redM) + ' شهرًا — بعد الحد الأدنى، فقد ينزل تحته)' : inc ? 'الزيادة بعد السن: +' + this.fmt(inc) + ' (٣٪ عن كل ١٢ شهرًا)' : 'لا تخفيض ولا زيادة: التقاعد في السن النظامية'];
+            est.how = ['متوسط الأجر (الأساسي + السكن، بسقف 45,000): ' + this.fmt(wage), '× 2.25% × ' + n(months) + ' شهرًا ÷ 12 = ' + this.fmt(accrued) + (accrued > wage ? ' ← بسقف 100% من المتوسط' : ''), 'الحد الأدنى لمدتك: ' + this.fmt(minimum) + (minimum > base ? ' ← طُبّق' : ''),
+              red ? 'التخفيض المبكر: −' + this.fmt(red) + ' (3% عن كل 12 شهرًا من ' + n(redM) + ' شهرًا — بعد الحد الأدنى، فقد ينزل تحته)' : inc ? 'الزيادة بعد السن: +' + this.fmt(inc) + ' (3% عن كل 12 شهرًا)' : 'لا تخفيض ولا زيادة: التقاعد في السن النظامية'];
           } else {
             const aft = months - m1422, accrued = this.md(w, 5 * aft + 4 * m1422, 2400), base = Math.min(accrued, w);
             est.p = Math.max(base, 198375);
-            est.how = ['متوسط أجر آخر سنتين (الأساسي + السكن): ' + this.fmt(w), '× ' + n(aft) + ' ÷ ٤٨٠' + (m1422 ? ' + ' + n(m1422) + ' ÷ ٦٠٠' : '') + ' = ' + this.fmt(accrued) + (accrued > w ? ' ← بسقف ١٠٠٪' : ''), 'الحد الأدنى ١٬٩٨٣٫٧٥' + (base < 198375 ? ' ← طُبّق' : ''), 'سن تقاعدك: ' + this.age(legal) + (fifth ? ' — من جدول البند «خامسًا» في المرسوم م/٢٧٣ (عمرك ' + n(yrs) + ' سنة يوم ٣ يوليو ٢٠٢٤)' : ' — السن ٦٠ (البند «خامسًا» لا ينطبق عليك)')];
+            est.how = ['متوسط أجر آخر سنتين (الأساسي + السكن): ' + this.fmt(w), '× ' + n(aft) + ' ÷ 480' + (m1422 ? ' + ' + n(m1422) + ' ÷ 600' : '') + ' = ' + this.fmt(accrued) + (accrued > w ? ' ← بسقف 100%' : ''), 'الحد الأدنى 1,983.75' + (base < 198375 ? ' ← طُبّق' : ''), 'سن تقاعدك: ' + this.age(legal) + (fifth ? ' — من جدول البند «خامسًا» في المرسوم م/273 (عمرك ' + n(yrs) + ' سنة يوم 3 يوليو 2024)' : ' — السن 60 (البند «خامسًا» لا ينطبق عليك)')];
           }
         }
       }
@@ -179,7 +179,7 @@ class Component extends DCLogic {
     const want = this.toMinor(val('want')), years = this.int(val('years')), have = this.toMinor(val('have')) || 0;
     let gap = null;
     if (want === 0 || (val('want') && want == null)) err.want = 'اكتب المبلغ الشهري الذي تريد العيش به (أكبر من صفر)';
-    if (years != null && (years < 1 || years > 100)) err.years = 'عدد السنوات من ١ إلى ١٠٠';
+    if (years != null && (years < 1 || years > 100)) err.years = 'عدد السنوات من 1 إلى 100';
     if (!est || est.p == null) gap = { na: est && (est.no || est.na) ? (est.no || est.na) : 'غير متاح: المعاش المتوقع غير معروف' };
     else if (!want || err.want) gap = { na: 'غير متاح: اكتب المبلغ الشهري الذي تريد العيش به' };
     else if (years == null || err.years) gap = { na: 'غير متاح: اكتب كم سنة يكفيك مال التقاعد' };
@@ -200,18 +200,18 @@ class Component extends DCLogic {
     const months = { mode: 'numeric', unit: 'شهرًا' };
     const sections = [
       { title: 'اشتراكك', fields: [F('birth', 'تاريخ الميلاد', '', { type: 'date', mode: '', unit: '' }), F('soFar', 'شهور الاشتراك حتى اليوم', 'من كشف التأمينات', months)]
-        .concat(s.old ? [F('at2024', 'شهور اشتراكك في ٣ يوليو ٢٠٢٤', 'سن تقاعدك في النظام القديم يتحدد منها', months), F('m1422', 'منها قبل ١٤٢٢هـ (اختياري)', 'تُحسب على ٦٠٠ بدل ٤٨٠', Object.assign({ ph: '٠' }, months))] : [])
+        .concat(s.old ? [F('at2024', 'شهور اشتراكك في 3 يوليو 2024', 'سن تقاعدك في النظام القديم يتحدد منها', months), F('m1422', 'منها قبل 1422هـ (اختياري)', 'تُحسب على 600 بدل 480', Object.assign({ ph: '0' }, months))] : [])
         .concat([F('retire', 'السن الذي تنوي التقاعد فيه (اختياري)', est && est.legal ? 'فارغ = السن النظامية لك: ' + this.age(est.legal) : 'فارغ = السن النظامية', { mode: 'numeric', unit: 'سنة', ph: est && est.legal ? n((est.legal - est.legal % 12) / 12) : '' })]) },
       { title: 'أجرك الخاضع للاشتراك', fields: [F('basic', 'الأجر الأساسي الشهري', 'يُقترح من راتبك في مصادر الدخل، وعدّله إن كان فيه بدلات'), F('housing', 'بدل السكن الشهري', 'اكتب صفرًا إن لم يكن لك بدل سكن')] },
-      { title: 'مكافأة نهاية الخدمة', fields: [F('job', 'بداية عملك الحالي', 'من مصادر الدخل', { type: 'date', mode: '', unit: '' }), F('eosWage', 'أجرك الأخير كاملًا', 'الأساسي مع كل البدلات (نظام العمل م٢)'),
-        Object.assign(F('end', 'كيف سينتهي عملك؟', 'نسألك كل مرة — الاستقالة تُنقص المكافأة (م٨٥)'), { isInput: false, isChips: true, value: '',
-          chips: [['contract', 'انتهاء العقد أو السن'], ['resign', 'استقالة'], ['art80', 'فسخ (م٨٠)']].map(([id, label]) => ({ label, on: s.end === id ? 'true' : 'false', style: chip(s.end === id), pick: () => this.setState({ end: id }) })) })] },
+      { title: 'مكافأة نهاية الخدمة', fields: [F('job', 'بداية عملك الحالي', 'من مصادر الدخل', { type: 'date', mode: '', unit: '' }), F('eosWage', 'أجرك الأخير كاملًا', 'الأساسي مع كل البدلات (نظام العمل م2)'),
+        Object.assign(F('end', 'كيف سينتهي عملك؟', 'نسألك كل مرة — الاستقالة تُنقص المكافأة (م85)'), { isInput: false, isChips: true, value: '',
+          chips: [['contract', 'انتهاء العقد أو السن'], ['resign', 'استقالة'], ['art80', 'فسخ (م80)']].map(([id, label]) => ({ label, on: s.end === id ? 'true' : 'false', style: chip(s.end === id), pick: () => this.setState({ end: id }) })) })] },
       { title: 'ما تريد العيش به', fields: [F('want', 'المبلغ الشهري الذي تريد العيش به', ''), F('years', 'كم سنة يكفيك مال التقاعد؟', 'مطلوب — لا رقم افتراضي له', { mode: 'numeric', unit: 'سنة' }), F('have', 'كم معك الآن للتقاعد؟', 'فارغ = صفر')] }
     ];
     const pOk = est && est.p != null;
     return {
       answers: [[true, 'نعم'], [false, 'لا']].map(([v, label]) => ({ label, on: s.old === v ? 'true' : 'false', style: chip(s.old === v) + '; flex: 1 1 0; height: 48px', pick: () => this.setState({ old: v }) })),
-      lawLine: s.old ? 'النظام القديم (م/٣٣) — وسن التقاعد من جدول البند «خامسًا» في المرسوم م/٢٧٣' : 'النظام الجديد (م/٢٧٣) — السن النظامية ٦٥',
+      lawLine: s.old ? 'النظام القديم (م/33) — وسن التقاعد من جدول البند «خامسًا» في المرسوم م/273' : 'النظام الجديد (م/273) — السن النظامية 65',
       hasPension: !!pOk, noPension: !pOk, pensionText: pOk ? this.fmt(est.p) : '',
       pensionNa: bad ? 'أكمل البيانات' : est && est.no ? 'لا معاش' : 'غير متاح',
       heroSub: bad ? 'تظهر النتيجة حين تصح الخانات.' : !est.date ? est.na : (est.no || est.na ? (est.no || est.na).replace(/^غير متاح: /, '') + ' · ' : '') + (s.old ? 'القديم' : 'الجديد') + ' · التقاعد عند ' + this.age(est.ret) + ' في ' + this.day(est.date) + '، ' + n(est.months) + ' شهر اشتراك',
@@ -220,7 +220,7 @@ class Component extends DCLogic {
       howLabel: s.how ? 'إخفاء طريقة الحساب' : 'كيف حُسب المعاش؟',
       showHow: s.how && !!pOk, how: pOk ? est.how : [],
       sections,
-      sources: 'المصادر: نظام التأمينات الاجتماعية (م/٢٧٣) م٨ و١٦–١٧ و٢٦ وقرار مجلس الوزراء ١٠٢٢، صفحة المعاش في التأمينات (النظام القديم) · نظام العمل م٢ و٨٤–٨٥ و٨٧.'
+      sources: 'المصادر: نظام التأمينات الاجتماعية (م/273) م8 و16–17 و26 وقرار مجلس الوزراء 1022، صفحة المعاش في التأمينات (النظام القديم) · نظام العمل م2 و84–85 و87.'
     };
   }
 }

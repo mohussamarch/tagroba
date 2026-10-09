@@ -95,7 +95,7 @@ body{margin:0}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    // مخترعة: الاسم من سطر «من:» في رسالة البنك، وآخر ٤ أرقام بس (ممنوع الرقم كامل)
+    // مخترعة: الاسم من سطر «من:» في رسالة البنك، وآخر 4 أرقام بس (ممنوع الرقم كامل)
     this.state = { mode: 'ask', sheet: false, step: 'who', who: null, newName: 'سالم', circle: null, kind: null };
   }
   tell(kind) { if (typeof this.props.onKind === 'function') this.props.onKind(kind); }
@@ -119,7 +119,7 @@ class Component extends DCLogic {
     const tone = { person: ['#08634F', '#DCEBD6'], own: ['#2469BA', 'rgba(36,105,186,0.10)'], not: ['#637570', 'rgba(25,61,51,0.06)'] }[s.mode] || ['#637570', '#FFFFFF'];
     const done = {
       person: [(eg ? 'اتربط ب' : 'رُبط ب') + name + (s.kind ? ' · ' + s.kind : ''),
-        (s.made ? (eg ? name + ' اتضاف لأشخاصك. ' : 'أُضيف ' + name + ' إلى أشخاصك. ') : '') + (eg ? 'أي تحويل من الحساب ٤٨٢١ أو ليه هيتسجل عليه لوحده، وهنسألك نوعه كل مرة (سلفة ولا دعم…).' : 'أي تحويل من الحساب ٤٨٢١ أو إليه يُسجَّل عليه تلقائيًا، ونسألك نوعه كل مرة (سلفة أو دعم…).')],
+        (s.made ? (eg ? name + ' اتضاف لأشخاصك. ' : 'أُضيف ' + name + ' إلى أشخاصك. ') : '') + (eg ? 'أي تحويل من الحساب 4821 أو ليه هيتسجل عليه لوحده، وهنسألك نوعه كل مرة (سلفة ولا دعم…).' : 'أي تحويل من الحساب 4821 أو إليه يُسجَّل عليه تلقائيًا، ونسألك نوعه كل مرة (سلفة أو دعم…).')],
       own: [eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك', eg ? 'مش دخل ولا مصروف. واتصلّح كمان تحويلين قدام من نفس الحساب.' : 'ليس دخلًا ولا مصروفًا. وصُحّح تحويلان سابقان من الحساب نفسه.'],
       not: [eg ? 'تمام' : 'تم', eg ? 'مش هنسألك عن الحساب ده تاني. التحويل فاضل دخل من غير شخص.' : 'لن نسألك عن هذا الحساب مجددًا. يبقى التحويل دخلًا بلا شخص.']
     }[s.mode] || ['', ''];
@@ -127,7 +127,7 @@ class Component extends DCLogic {
       asking: s.mode === 'ask', decided: s.mode !== 'ask',
       askTitle: eg ? 'مين ده؟' : 'من هذا؟',
       partyLine: eg ? 'الاسم في كشف الحساب: سالم' : 'الاسم في الرسالة: سالم',
-      partyFrom: eg ? 'حساب آخره ٤٨٢١، أول مرة يحوّلك' : 'حساب ينتهي بـ ٤٨٢١، أول تحويل منه',
+      partyFrom: eg ? 'حساب آخره 4821، أول مرة يحوّلك' : 'حساب ينتهي بـ 4821، أول تحويل منه',
       personLabel: eg ? 'شخص أعرفه' : 'شخص أعرفه',
       ownLabel: eg ? 'حسابي التاني' : 'حسابي الآخر', notLabel: eg ? 'مش ده' : 'ليس هذا',
       openWho: () => this.setState({ sheet: true, step: 'who' }),
@@ -138,7 +138,7 @@ class Component extends DCLogic {
       undoLabel: eg ? 'تراجع' : 'تراجع',
       undo: () => { this.setState({ mode: 'ask', kind: null, who: null, made: false }); this.tell(null); },
       sheet: s.sheet,
-      sheetTitle: s.step === 'who' ? (eg ? 'مين صاحب الحساب ٤٨٢١؟' : 'من صاحب الحساب ٤٨٢١؟') : (eg ? 'الفلوس دي من ' : 'هذا المبلغ من ') + name,
+      sheetTitle: s.step === 'who' ? (eg ? 'مين صاحب الحساب 4821؟' : 'من صاحب الحساب 4821؟') : (eg ? 'الفلوس دي من ' : 'هذا المبلغ من ') + name,
       stepWho: s.step === 'who', stepKind: s.step === 'kind',
       newBox: 'display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; ' + (isNew ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.04)'),
       newTitle: eg ? 'شخص جديد (الاسم من الكشف)' : 'شخص جديد (الاسم من الرسالة)',

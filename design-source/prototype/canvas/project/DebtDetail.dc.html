@@ -184,12 +184,12 @@ class Component extends DCLogic {
   }
   // مخترعة · بالوحدة الصغرى (السعودية) — نفس أرقام «لك» و«عليك» وملف خالد
   data(eg) {
-    const bank = eg ? 'البنك الأهلي المصري •••• ٢٢٠٧' : 'مصرف الراجحي •••• ٤٤١٢';
+    const bank = eg ? 'البنك الأهلي المصري •••• 2207' : 'مصرف الراجحي •••• 4412';
     return {
-      khaled: { who: 'خالد', side: 'lak', orig: 50000, since: '٢٣ أغسطس', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لخالد' : 'حوالة صادرة إلى خالد', bank, 'سلفة'], paid: [], terms: null, wait: eg ? 'بقاله كتير مستني، ٤٥ يوم' : 'منتظر منذ ٤٥ يومًا' },
-      fahd: { who: 'فهد', side: 'lak', orig: 150000, since: '٢ سبتمبر', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لفهد' : 'حوالة صادرة إلى فهد', bank, 'سلفة'], paid: [{ when: '٢٠ سبتمبر', via: eg ? 'حوالة جاتلك' : 'حوالة واردة', amt: 30000 }], terms: { due: '٢٠ سبتمبر', late: true }, wait: eg ? 'بقاله كتير مستني، ٣٥ يوم' : 'منتظر منذ ٣٥ يومًا', interest: 'no', pend: { dir: 'in', when: '٥ أكتوبر', amt: 50000 } },
-      omar: { who: 'عمر', side: 'alek', orig: 200000, since: '١ سبتمبر', kind: eg ? 'سلفة منه' : 'قرض منه', from: [eg ? 'حوالة جاتلك من عمر' : 'حوالة واردة من عمر', eg ? 'QNB مصر •••• ٥٥٨٠' : 'البنك الأهلي السعودي •••• ٩٠٣١', eg ? 'سلفة جاتلي' : 'قرض مستلم'], paid: [], terms: { due: '١ نوفمبر', late: false }, interest: null, pend: { dir: 'out', when: '٦ أكتوبر', amt: 80000 } },
-      old: { who: 'خالد', side: 'lak', orig: 20000, kind: 'دين قديم', from: null, paid: [], terms: null }, noura: { who: 'نورة', side: 'lak', orig: 30000, since: '٢ أكتوبر', kind: eg ? 'نصيبها من مصروف' : 'نصيبها من مصروف', share: true, from: [eg ? 'هدية ليلى — اتقسمت عليكم' : 'هدية ليلى — قُسّمت بينكما', bank, eg ? 'نصيبها' : 'نصيبها'], paid: [], terms: { due: '١٥ أكتوبر', late: false } }, ahmed: { who: 'أحمد', side: 'lak', orig: 18500, since: '٤ أكتوبر', kind: eg ? 'نصيبه من مصروف' : 'نصيبه من مصروف', share: true, from: [eg ? 'فاتورة العشا — اتقسمت' : 'فاتورة العشاء — قُسّمت', bank, eg ? 'نصيبه' : 'نصيبه'], paid: [], terms: null, wait: eg ? 'من ٣ أيام' : 'منذ ٣ أيام' }, salman: { who: 'سلمان', side: 'alek', orig: 45000, since: '٢٧ سبتمبر', kind: eg ? 'نصيبك من مصروف دفعه سلمان' : 'نصيبك من مصروف دفعه سلمان', share: true, from: [eg ? 'رحلة البحر — سلمان دفعها كلها' : 'رحلة البحر — دفعها سلمان كاملة', eg ? 'من غير عملية عندك' : 'بلا عملية عندك', eg ? 'نصيبي' : 'نصيبي'], paid: [], terms: null }
+      khaled: { who: 'خالد', side: 'lak', orig: 50000, since: '23 أغسطس', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لخالد' : 'حوالة صادرة إلى خالد', bank, 'سلفة'], paid: [], terms: null, wait: eg ? 'بقاله كتير مستني، 45 يوم' : 'منتظر منذ 45 يومًا' },
+      fahd: { who: 'فهد', side: 'lak', orig: 150000, since: '2 سبتمبر', kind: 'سلفة منك', from: [eg ? 'حوالة طالعة لفهد' : 'حوالة صادرة إلى فهد', bank, 'سلفة'], paid: [{ when: '20 سبتمبر', via: eg ? 'حوالة جاتلك' : 'حوالة واردة', amt: 30000 }], terms: { due: '20 سبتمبر', late: true }, wait: eg ? 'بقاله كتير مستني، 35 يوم' : 'منتظر منذ 35 يومًا', interest: 'no', pend: { dir: 'in', when: '5 أكتوبر', amt: 50000 } },
+      omar: { who: 'عمر', side: 'alek', orig: 200000, since: '1 سبتمبر', kind: eg ? 'سلفة منه' : 'قرض منه', from: [eg ? 'حوالة جاتلك من عمر' : 'حوالة واردة من عمر', eg ? 'QNB مصر •••• 5580' : 'البنك الأهلي السعودي •••• 9031', eg ? 'سلفة جاتلي' : 'قرض مستلم'], paid: [], terms: { due: '1 نوفمبر', late: false }, interest: null, pend: { dir: 'out', when: '6 أكتوبر', amt: 80000 } },
+      old: { who: 'خالد', side: 'lak', orig: 20000, kind: 'دين قديم', from: null, paid: [], terms: null }, noura: { who: 'نورة', side: 'lak', orig: 30000, since: '2 أكتوبر', kind: eg ? 'نصيبها من مصروف' : 'نصيبها من مصروف', share: true, from: [eg ? 'هدية ليلى — اتقسمت عليكم' : 'هدية ليلى — قُسّمت بينكما', bank, eg ? 'نصيبها' : 'نصيبها'], paid: [], terms: { due: '15 أكتوبر', late: false } }, ahmed: { who: 'أحمد', side: 'lak', orig: 18500, since: '4 أكتوبر', kind: eg ? 'نصيبه من مصروف' : 'نصيبه من مصروف', share: true, from: [eg ? 'فاتورة العشا — اتقسمت' : 'فاتورة العشاء — قُسّمت', bank, eg ? 'نصيبه' : 'نصيبه'], paid: [], terms: null, wait: eg ? 'من 3 أيام' : 'منذ 3 أيام' }, salman: { who: 'سلمان', side: 'alek', orig: 45000, since: '27 سبتمبر', kind: eg ? 'نصيبك من مصروف دفعه سلمان' : 'نصيبك من مصروف دفعه سلمان', share: true, from: [eg ? 'رحلة البحر — سلمان دفعها كلها' : 'رحلة البحر — دفعها سلمان كاملة', eg ? 'من غير عملية عندك' : 'بلا عملية عندك', eg ? 'نصيبي' : 'نصيبي'], paid: [], terms: null }
     };
   }
   fresh(props) {
@@ -219,7 +219,7 @@ class Component extends DCLogic {
     const chip = (c, b) => 'align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; color: ' + c + '; background: ' + b;
     const small = (strong) => 'height: 44px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)');
     const T = s.terms;
-    const termRel = (t) => t.late ? (eg ? 'ميعادها فات من ١٧ يوم' : 'فات موعدها منذ ١٧ يومًا') : t.rel || (eg ? 'بعد ٢٥ يوم' : 'بعد ٢٥ يومًا');
+    const termRel = (t) => t.late ? (eg ? 'ميعادها فات من 17 يوم' : 'فات موعدها منذ 17 يومًا') : t.rel || (eg ? 'بعد 25 يوم' : 'بعد 25 يومًا');
     // على البترولي: ألوان فاتحة من نفس العائلة (فات · جاي · مستني)
     const signal = left <= 0 ? null : T ? [termRel(T), T.late ? '#FFD0D2' : '#DCEBD6', T.late ? 'rgba(255,168,172,0.20)' : 'rgba(220,235,214,0.16)'] : d.wait && lak ? [d.wait, '#F3C96B', 'rgba(243,201,107,0.16)'] : null;
     const p = s.pend === 'ask' ? d.pend : null;
@@ -239,7 +239,7 @@ class Component extends DCLogic {
     ];
     origin.push({ label: eg ? 'المبلغ الأصلي' : 'المبلغ الأصلي', value: this.fmt(s.orig) + ' ' + cur, dir: 'ltr', hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '' });
     origin.push({ label: 'النوع', value: lak ? (eg ? 'دين ليك' : 'دين لك') : (d.share ? (eg ? 'نصيبك من مصروف' : 'نصيبك من مصروف') : d.from ? (eg ? 'سلفة عليك' : 'قرض عليك') : (eg ? 'دين عليك' : 'دين عليك')), dir: 'rtl', hasChip: false, chip: '', chipStyle: '', hasHint: true, hint: eg ? 'منفصل عن الأمانات — ومن غير مقاصة مع «' + (lak ? 'عليك' : 'ليك') + '»' : 'منفصل عن الأمانات — وبلا مقاصة مع «' + (lak ? 'عليك' : 'لك') + '»' });
-    const opts = [['١ نوفمبر', eg ? 'بعد ٢٥ يوم' : 'بعد ٢٥ يومًا'], ['١ ديسمبر', eg ? 'بعد ٥٥ يوم' : 'بعد ٥٥ يومًا'], ['١ يناير', eg ? 'بعد ٨٦ يوم' : 'بعد ٨٦ يومًا']];
+    const opts = [['1 نوفمبر', eg ? 'بعد 25 يوم' : 'بعد 25 يومًا'], ['1 ديسمبر', eg ? 'بعد 55 يوم' : 'بعد 55 يومًا'], ['1 يناير', eg ? 'بعد 86 يوم' : 'بعد 86 يومًا']];
     const bits = [8, 20, 31, 44, 56, 67, 79, 90, 14, 37, 61, 85, 26, 73].map((x, i) => ({
       style: 'position: absolute; top: 0; left: ' + x + '%; width: 6px; height: 10px; border-radius: 2px; background: ' + ['#A6DEC1', '#9BC5FF', '#F3C96B', '#FFA8AC', '#08634F'][i % 5] + '; animation-delay: ' + ((i * 70) % 420) + 'ms'
     }));
@@ -282,7 +282,7 @@ class Component extends DCLogic {
       interestHint: s.interest ? (eg ? 'اتحفظت إجابتك' : 'حُفظت إجابتك') : (eg ? 'لسه ما قلتش' : 'لم تحدّد بعد'),
       interestOpts: [['yes', eg ? 'أيوه' : 'نعم'], ['no', 'لا']].map(([v, label]) => ({ label, on: s.interest === v ? 'true' : 'false', pick: () => this.setState({ interest: s.interest === v ? null : v }),
         style: 'height: 44px; min-width: 52px; padding: 0 12px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; cursor: pointer; ' + (s.interest === v ? 'font-weight: 700; color: #FFFFFF; background: #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)') })),
-      paidTitle: (eg ? 'التسويات' : 'التسويات') + (s.paid.length ? ' (' + s.paid.length.toLocaleString('ar-EG') + ')' : ''),
+      paidTitle: (eg ? 'التسويات' : 'التسويات') + (s.paid.length ? ' (' + s.paid.length.toLocaleString('en-US') + ')' : ''),
       paidRows, noPaid: !s.paid.length, noPaidText: eg ? 'لسه مفيش تسويات.' : 'لا تسويات بعد.',
       hasCustody: s.custody > 0,
       custodyTitle: lak ? (eg ? 'أمانة عندك ل' : 'أمانة عندك ل') + s.who : (eg ? 'أمانة ليك عند ' : 'أمانة لك عند ') + s.who,

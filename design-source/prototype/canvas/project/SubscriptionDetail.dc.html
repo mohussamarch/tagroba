@@ -146,13 +146,13 @@ class Component extends DCLogic {
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  toMinor(text) { const t = String(text || '').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     if (this.st !== st) { this.st = st; Object.assign(this.state, this.init(st)); }
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG'), ny = (x) => x.toLocaleString('ar-EG', { useGrouping: false });
+    const n = (x) => x.toLocaleString('en-US'), ny = (x) => x.toLocaleString('en-US', { useGrouping: false });
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const s = this.state;
     const MO = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -184,7 +184,7 @@ class Component extends DCLogic {
     const annual = E.amt * (12 / E.cycle);
     const gap = days(TODAY, next);
     const C = !s.active ? [eg ? 'متوقف' : 'متوقف', 'color: #193D33; background: rgba(255,255,255,0.8)'] : gap < 0 ? ['متأخرة', 'color: #BE3D48; background: #FFFFFF'] : gap <= 3 ? [eg ? 'قرّبت' : 'قريبة', 'color: #956000; background: #FBF0DD'] : [eg ? 'جاية' : 'قادمة', 'color: #08634F; background: #DCEBD6'];
-    const CY = [[1, eg ? 'كل شهر' : 'شهري'], [3, eg ? 'كل ٣ شهور' : 'كل ٣ أشهر'], [12, eg ? 'كل سنة' : 'سنوي']];
+    const CY = [[1, eg ? 'كل شهر' : 'شهري'], [3, eg ? 'كل 3 شهور' : 'كل 3 أشهر'], [12, eg ? 'كل سنة' : 'سنوي']];
     const cyName = (c) => CY.find((x) => x[0] === c)[1];
     const shown = s.all ? pays : pays.slice(0, 4);
     const cal = s.cal || [next[0], next[1]], pd = s.pickDate || next;
@@ -206,7 +206,7 @@ class Component extends DCLogic {
       arrived,
       arriveTitle: (eg ? 'وصل خصم ' : 'وصل خصم ') + this.fmt(D.arrive * k) + ' ' + cur + (eg ? ' النهارده' : ' اليوم'),
       arriveBody: (eg ? 'طابق «' : 'طابق «') + D.who + (eg ? '» والمبلغ، فاتحسب دفعة والميعاد اتنقل من ' : '» والمبلغ، فاحتُسب دفعةً وانتقل الموعد من ') + dt(E.next) + (eg ? ' لـ ' : ' إلى ') + dt(next) + '.',
-      paidLabel: eg ? 'دفعت آخر ١٢ شهر' : 'المدفوع آخر ١٢ شهرًا', paidText: this.fmt(paidSum) + ' ' + cur,
+      paidLabel: eg ? 'دفعت آخر 12 شهر' : 'المدفوع آخر 12 شهرًا', paidText: this.fmt(paidSum) + ' ' + cur,
       paidCount: plural(inYear.length, eg ? ['دفعة واحدة', 'دفعتين', 'دفعات', 'دفعة'] : ['دفعة واحدة', 'دفعتان', 'دفعات', 'دفعة']),
       yearLabel: eg ? 'المتوقع في السنة' : 'المتوقع سنويًا',
       yearText: s.active ? this.fmt(annual) + ' ' + cur : (eg ? 'متوقف' : 'متوقف'), yearDir: s.active ? 'ltr' : 'rtl',

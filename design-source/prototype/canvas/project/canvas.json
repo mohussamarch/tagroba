@@ -260,7 +260,7 @@
     },
     "RoscaWizard.dc.html": {
       "is_interactive": true,
-      "title": "جمعية جديدة · RoscaWizard (٨ أسئلة)",
+      "title": "جمعية جديدة · RoscaWizard (8 أسئلة)",
       "x": 1960,
       "y": 7400,
       "w": 390,
@@ -937,6 +937,14 @@
       "y": 24850,
       "w": 350,
       "h": 80
+    },
+    "AssistantInput.dc.html": {
+      "is_interactive": true,
+      "title": "خانة الكتابة في المساعد (المستطيل والميكروفون والإرسال) · AssistantInput (قطعة)",
+      "x": 590,
+      "y": 24950,
+      "w": 350,
+      "h": 52
     }
   },
   "createdOnFiles": {
@@ -1211,7 +1219,8 @@
     "AssistantHistory.dc.html",
     "AssistantStart.dc.html",
     "AssistantMessage.dc.html",
-    "AssistantChips.dc.html"
+    "AssistantChips.dc.html",
+    "AssistantInput.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

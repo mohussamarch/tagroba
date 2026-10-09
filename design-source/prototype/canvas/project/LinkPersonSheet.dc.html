@@ -119,7 +119,7 @@ input::placeholder{color:#8A9A95}
 //   amountMinor بالوحدة الصغرى — في الشراء جزء من العملية، وفي الحوالة العملية كلها.
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, who: '', isNew: false, query: '', kind: null, amount: '', err: '', links: [], added: [] }; }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';

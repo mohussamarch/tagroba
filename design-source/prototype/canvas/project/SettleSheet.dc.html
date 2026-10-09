@@ -73,14 +73,14 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"side":{"editor":"enum","options":["lak","alek"],"default":"lak","section":"الحالة"},"person":{"editor":"enum","options":["فهد","خالد","عمر"],"default":"فهد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"remaining":{"editor":"int","default":120000,"section":"الحالة"},"offline":{"editor":"boolean","default":false,"section":"الحالة"},"candLabel":{"editor":"enum","options":["","حوالة واردة في ٥ أكتوبر"],"default":"حوالة واردة في ٥ أكتوبر","section":"الحالة"},"candAmount":{"editor":"int","default":50000,"section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":560}}'>
+<script type="text/x-dc" data-dc-script data-props='{"side":{"editor":"enum","options":["lak","alek"],"default":"lak","section":"الحالة"},"person":{"editor":"enum","options":["فهد","خالد","عمر"],"default":"فهد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"remaining":{"editor":"int","default":120000,"section":"الحالة"},"offline":{"editor":"boolean","default":false,"section":"الحالة"},"candLabel":{"editor":"enum","options":["","حوالة واردة في 5 أكتوبر"],"default":"حوالة واردة في 5 أكتوبر","section":"الحالة"},"candAmount":{"editor":"int","default":50000,"section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":560}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     // how: free (من غير عملية) · link (العملية اللي مستنية سؤال «ده سداد؟»)
     this.state = { open: false, how: 'free', amount: '', custody: false };
   }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';

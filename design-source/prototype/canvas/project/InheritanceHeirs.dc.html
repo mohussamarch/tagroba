@@ -68,7 +68,7 @@ class Component extends DCLogic {
   }
   change(next) { if (typeof this.props.onChange === 'function') this.props.onChange(next); this.setState({ local: next }); }
   renderVals() {
-    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('ar-EG');
+    const ui = (this.props.space ?? 'السعودية') === 'مصر', t = (sa, e) => (ui ? e : sa), n = (x) => x.toLocaleString('en-US');
     const d = this.cur(), H = d.heirs || {}, NM = d.names || {};
     // الورثة اللي المنطق بيحسبهم (§69.1) — بالعدد، والأسامي اختيارية
     const L = { husband: 'الزوج', wife: 'الزوجة', son: 'الابن', daughter: 'البنت', father: 'الأب', mother: 'الأم', gf: 'الجد (أبو الأب)', pgm: 'الجدة (أم الأب)', mgm: 'الجدة (أم الأم)', ss: 'ابن الابن', sd: 'بنت الابن', fb: 'الأخ الشقيق', fs: 'الأخت الشقيقة', pb: 'الأخ من الأب', ps: 'الأخت من الأب', mb: 'الأخ من الأم', ms: 'الأخت من الأم', fn: 'ابن الأخ الشقيق', fu: 'العم الشقيق' };

@@ -35,7 +35,7 @@ a{color:#08634F}a:hover{color:#064B40}
     <div style="display: flex; align-items: flex-start; gap: 8px">
       <a href="Account.dc.html" aria-label="{{meLabel}}" class="m-press" style="text-decoration: none; width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 24px"><dc-import name="MeAvatar" size="{{46}}" pct="{{profilePct}}" hint-size="46px,46px"></dc-import></a>
       <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start">
-        <span style="min-height: 48px; display: flex; flex-direction: column; justify-content: center"><span style="font-size: 18px; font-weight: 700; line-height: 1.4">{{greeting}}</span><span style="display: flex; align-items: center; gap: 6px"><dc-import name="SpaceSwitcher" space="{{spaceName}}" size="حرفين" on-switch="{{onSpace}}" hint-size="44px,22px"></dc-import><span style="font-size: 12px; color: #637570">الأربعاء، ٧ أكتوبر</span></span></span>
+        <span style="min-height: 48px; display: flex; flex-direction: column; justify-content: center"><span style="font-size: 18px; font-weight: 700; line-height: 1.4">{{greeting}}</span><span style="display: flex; align-items: center; gap: 6px"><dc-import name="SpaceSwitcher" space="{{spaceName}}" size="حرفين" on-switch="{{onSpace}}" hint-size="44px,22px"></dc-import><span style="font-size: 12px; color: #637570">الأربعاء، 7 أكتوبر</span></span></span>
       </div>
       <dc-import name="BellPopover" space="{{spaceName}}" hint-size="48px,48px"></dc-import>
       <a href="More.dc.html" class="m-press" aria-label="{{gearLabel}}" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
@@ -124,7 +124,7 @@ a{color:#08634F}a:hover{color:#064B40}
           </div>
           <dc-import name="UpcomingStrip" space="{{spaceName}}" hint-size="390px,230px"></dc-import>
         </div>
-        <a href="ProfileQuestion.dc.html" class="m-press" style="border-radius: 22px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: conic-gradient(#13764D 0 60%, rgba(25,61,51,0.10) 60% 100%)"><span style="width: 34px; height: 34px; border-radius: 17px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #FFFFFF">٦٠٪</span></span>
+        <a href="ProfileQuestion.dc.html" class="m-press" style="border-radius: 22px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: conic-gradient(#13764D 0 60%, rgba(25,61,51,0.10) 60% 100%)"><span style="width: 34px; height: 34px; border-radius: 17px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #FFFFFF">60%</span></span>
           <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{profileTitle}}</span><span style="font-size: 12px; color: #637570">{{profileBody}}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
       </div>
     </sc-if>
@@ -188,7 +188,7 @@ class Component extends DCLogic {
   }
   data() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    // مخترعة. bank + cash = «معك الآن» (كل المحافظ)، بالوحدة الصغرى · قهوة مصر = السعودية ×٣ زي المستشار والمساعد (كانت ٩٢٠ ومتعارضة مع ١٬٩٢٠)
+    // مخترعة. bank + cash = «معك الآن» (كل المحافظ)، بالوحدة الصغرى · قهوة مصر = السعودية ×3 زي المستشار والمساعد (كانت 920 ومتعارضة مع 1,920)
     return eg
       ? { bank: 2260000, cash: 270000, spent: 2120000, cashSpent: 330000, coffee: 192000, a: 150000, b: 420000, currency: 'ج.م' }
       : { bank: 645000, cash: 90000, spent: 665000, cashSpent: 110000, coffee: 64000, a: 50000, b: 145000, currency: 'ر.س' };
@@ -198,7 +198,7 @@ class Component extends DCLogic {
   total() { return this.data().bank + this.cash(); }
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   toMinor(text) {
-    const t = String(text || '').replace(/[^0-9.]/g, '');
+    const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).replace(/٫/g, '.').replace(/[^0-9.]/g, '');
     if (!t) return null;
     const [w, f = ''] = t.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
@@ -228,14 +228,14 @@ class Component extends DCLogic {
     const content = st === 'عادي' || st === 'خطأ' || st === 'غير متاح';
     const counted = this.toMinor(this.state.countInput);
     const diff = counted == null ? null : counted - this.cash();
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     return {
       motionClass: this.slow() ? 'm-slow' : '',
       navStyle: this.props.navStyle ?? "زرار في النص",
       spaceName: eg ? 'مصر' : 'السعودية',
       cashMinor: String(this.cash()),
       gearLabel: 'المزيد والإعدادات',
-      profilePct: 60, meLabel: (eg ? 'ملفك — مكتمل ' : 'ملفك — مكتمل ') + (60).toLocaleString('ar-EG') + '٪',
+      profilePct: 60, meLabel: (eg ? 'ملفك — مكتمل ' : 'ملفك — مكتمل ') + (60).toLocaleString('en-US') + '%',
       greeting: eg ? 'مساء الخير يا محمد' : 'مساء الخير، محمد',
       currency: d.currency,
       isError: st === 'خطأ', isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isNA: st === 'غير متاح',
@@ -246,18 +246,18 @@ class Component extends DCLogic {
       cashText: this.fmt(this.cash()),
       cashChip: eg ? 'منهم ' + this.fmt(this.cash()) + ' كاش' : 'يشمل ' + this.fmt(this.cash()) + ' كاش',
       spentLine: (eg ? 'صرفت الشهر ده ' : 'صرفت هذا الشهر ') + this.fmt(d.spent),
-      salaryLine: eg ? 'المرتب بعد ٢١ يوم' : 'الراتب بعد ٢١ يومًا',
+      salaryLine: eg ? 'المرتب بعد 21 يوم' : 'الراتب بعد 21 يومًا',
       coffeeTitle: (eg ? 'القهوة الشهر ده ' : 'القهوة هذا الشهر ') + this.fmt(d.coffee) + ' ' + d.currency,
       coffeeBody: eg ? 'بالمعدل ده هتحوّش أقل من هدف خطة السفر.' : 'بهذا المعدل ستدّخر أقل من هدف خطة السفر.',
-      coffeeAction: eg ? 'قلّل ٤ مرات في الأسبوع وتلحق هدفك ←' : 'قلّل ٤ مرات في الأسبوع وتلحق هدفك ←',
+      coffeeAction: eg ? 'قلّل 4 مرات في الأسبوع وتلحق هدفك ←' : 'قلّل 4 مرات في الأسبوع وتلحق هدفك ←',
       onSpace: (v) => { if (typeof this.props.onSpace === 'function') this.props.onSpace(v); },
-      profileTitle: eg ? 'ملفك ٦٠٪ — كمّله' : 'ملفك ٦٠٪ — أكمله', profileBody: eg ? 'سؤال واحد، ١٠ ثواني، والأرقام بتبقى أدق' : 'سؤال واحد في ١٠ ثوانٍ، وتصبح الأرقام أدق',
+      profileTitle: eg ? 'ملفك 60% — كمّله' : 'ملفك 60% — أكمله', profileBody: eg ? 'سؤال واحد، 10 ثواني، والأرقام بتبقى أدق' : 'سؤال واحد في 10 ثوانٍ، وتصبح الأرقام أدق',
 
       cashOpen: this.state.cashOpen,
       openCash: () => this.setState({ cashOpen: true, counting: false, countInput: '' }),
       closeCash: () => this.setState({ cashOpen: false, counting: false, countInput: '' }),
       cashTitle: eg ? 'الكاش اللي معاك' : 'الكاش الذي معك',
-      countedLine: this.state.cashOverride != null ? (eg ? 'اتعدّ دلوقتي' : 'عُدَّ الآن') : (eg ? 'آخر عدّ من ٣ أيام' : 'آخر عدّ قبل ٣ أيام'),
+      countedLine: this.state.cashOverride != null ? (eg ? 'اتعدّ دلوقتي' : 'عُدَّ الآن') : (eg ? 'آخر عدّ من 3 أيام' : 'آخر عدّ قبل 3 أيام'),
       cashSpentLabel: eg ? 'صرفت كاش الشهر ده' : 'صرفت كاش هذا الشهر',
       cashSpentText: this.fmt(d.cashSpent) + ' ' + d.currency,
       howTitle: eg ? 'بيتحدّث لوحده كده:' : 'يتحدّث تلقائيًا هكذا:',

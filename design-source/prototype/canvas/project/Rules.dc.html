@@ -168,9 +168,9 @@ class Component extends DCLogic {
     ];
     // تجار فاكرهم البرنامج: التصنيف اللي اخترته بإيدك مرة بيتحفظ للتاجر على طول (§75-16)
     this.K0 = [
-        { id: 'k1', name: 'مخبز الفجر', aliases: ['مخبز الفجر فرع ٢'], cat: 'food3', when: '٥ أكتوبر' },
-        { id: 'k2', name: 'تموينات الريان', aliases: [], cat: 'groc2', when: '٢ أكتوبر' },
-        { id: 'k3', name: 'صيدلية النخيل', aliases: ['النخيل للأدوية', 'صيدليات النخيل'], cat: 'health1', when: '٢٩ سبتمبر' }
+        { id: 'k1', name: 'مخبز الفجر', aliases: ['مخبز الفجر فرع 2'], cat: 'food3', when: '5 أكتوبر' },
+        { id: 'k2', name: 'تموينات الريان', aliases: [], cat: 'groc2', when: '2 أكتوبر' },
+        { id: 'k3', name: 'صيدلية النخيل', aliases: ['النخيل للأدوية', 'صيدليات النخيل'], cat: 'health1', when: '29 سبتمبر' }
     ];
     this.timers = [];
   }
@@ -181,7 +181,7 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const st = this.props.state ?? 'عادي', s = this.state, f = s.f;
     const empty = st === 'فاضي', RL = s.rules || (empty ? [] : this.R0), KL = s.merchants || (empty ? [] : this.K0);
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPW = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     // التصنيفات بالمجموعات (§33.1) — الأسماء من شجرة التصنيفات، والفرعي درجة من لون أبوه
@@ -248,12 +248,12 @@ class Component extends DCLogic {
       applyAct: () => { if (s.apply === 'idle' && changeN) this.setState({ apply: 'preview' }); else if (s.apply === 'preview') { this.setState({ apply: 'done' }); this.say((eg ? 'اتغيّر تصنيف ' : 'تغيّر تصنيف ') + plural(changeN, OPW)); } },
       syncTitle: eg ? 'قاعدة التجار المشتركة' : 'قاعدة التجار المشتركة',
       syncBody: eg ? 'أسامي محلات وتصنيفها المبدئي من مستخدمين مصروفي — من غير مبالغ ولا تواريخ. تصنيفك إنت ما بيتكتبش فوقه.' : 'أسماء محلات وتصنيفها المبدئي من مستخدمي مصروفي — بلا مبالغ ولا تواريخ. لا يُكتب فوق تصنيفك.',
-      syncLine: noNet ? (eg ? 'محتاج نت عشان يتحدّث.' : 'يحتاج اتصالًا بالإنترنت للتحديث.') : s.sync === 'done' ? (eg ? 'اتحدّث دلوقتي: اتضاف تاجرين، واتكمّل تصنيف تاجر.' : 'حُدّث الآن: أُضيف تاجران، واكتمل تصنيف تاجر.') : (eg ? 'آخر تحديث: ٥ أكتوبر' : 'آخر تحديث: ٥ أكتوبر'),
+      syncLine: noNet ? (eg ? 'محتاج نت عشان يتحدّث.' : 'يحتاج اتصالًا بالإنترنت للتحديث.') : s.sync === 'done' ? (eg ? 'اتحدّث دلوقتي: اتضاف تاجرين، واتكمّل تصنيف تاجر.' : 'حُدّث الآن: أُضيف تاجران، واكتمل تصنيف تاجر.') : (eg ? 'آخر تحديث: 5 أكتوبر' : 'آخر تحديث: 5 أكتوبر'),
       syncLineStyle: 'font-size: 12px; font-weight: 700; color: ' + (noNet ? '#956000' : s.sync === 'done' ? '#13764D' : '#637570'),
       syncBusy: s.sync === 'busy' && !noNet, noNet, syncOff: noNet || s.sync === 'busy',
       syncBtn: noNet ? (eg ? 'محتاج نت' : 'يحتاج اتصالًا') : s.sync === 'busy' ? (eg ? 'بيتحدّث…' : 'جارٍ التحديث…') : (eg ? 'حدّث دلوقتي' : 'حدّث الآن'),
       syncBtnStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(8,99,79,0.08); cursor: ' + (noNet || s.sync === 'busy' ? 'default' : 'pointer') + (noNet ? '; opacity: 0.45' : ''),
-      syncAct: () => { if (noNet || s.sync === 'busy') return; this.setState({ sync: 'busy' }); this.timers.push(setTimeout(() => { this.setState({ sync: 'done' }); this.say(eg ? '٣ تغييرات من القاعدة المشتركة' : '٣ تغييرات من القاعدة المشتركة'); }, 1200)); },
+      syncAct: () => { if (noNet || s.sync === 'busy') return; this.setState({ sync: 'busy' }); this.timers.push(setTimeout(() => { this.setState({ sync: 'done' }); this.say(eg ? '3 تغييرات من القاعدة المشتركة' : '3 تغييرات من القاعدة المشتركة'); }, 1200)); },
       sheetOpen: !!sh, isRule, isMerchant,
       sheetTitle: isMerchant ? (eg ? 'تعديل التاجر' : 'تعديل التاجر') : sh && sh.id ? (eg ? 'تعديل قاعدة' : 'تعديل قاعدة') : (eg ? 'قاعدة جديدة' : 'قاعدة جديدة'),
       textLabel: isMerchant ? (eg ? 'اسم التاجر' : 'اسم التاجر') : (eg ? 'لو الوصف…' : 'إذا كان الوصف…'),
@@ -271,7 +271,7 @@ class Component extends DCLogic {
       catLabel: eg ? 'التصنيف' : 'التصنيف',
       pickGroups: G.map(([k, name]) => ({ name, on: f.grp === k ? 'true' : 'false', pick: () => setF({ grp: k }), style: chip(f.grp === k) })),
       pickCats: C.filter((c) => c[1] === (f.grp || 'food')).map(([id]) => ({ name: cat[id].name, on: f.cat === id ? 'true' : 'false', pick: () => setF({ cat: id }), style: chip(f.cat === id), dot: dot(cat[id]) })),
-      priLabel: eg ? 'الترتيب' : 'الترتيب', fPri: n(f.pri || 1), priNote: eg ? '١ بيتطبق الأول' : '١ يُطبَّق أولًا',
+      priLabel: eg ? 'الترتيب' : 'الترتيب', fPri: n(f.pri || 1), priNote: eg ? '1 بيتطبق الأول' : '1 يُطبَّق أولًا',
       priUpLabel: eg ? 'قدّمها' : 'قدّمها', priDownLabel: eg ? 'أخّرها' : 'أخّرها',
       priDown: () => setF({ pri: Math.max(1, (f.pri || 1) - 1) }), priUp: () => setF({ pri: Math.min(ruleCount, (f.pri || 1) + 1) }),
       sheetNote: isMerchant ? (eg ? 'التصنيف ده بيتطبق على عمليات التاجر الجاية. القديمة تتغير من «طبّق على القديم».' : 'يُطبَّق هذا التصنيف على عمليات التاجر القادمة، والسابقة عبر «طبّق على السابق».') : (eg ? 'تعديل القاعدة مش بيغيّر العمليات القديمة لوحده.' : 'تعديل القاعدة لا يغيّر العمليات السابقة وحده.'),
@@ -279,7 +279,7 @@ class Component extends DCLogic {
       saveStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (cantSave ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
       save: () => {
         if (cantSave || !sh) return;
-        if (isMerchant) { this.setState({ merchants: KL.map((m) => m.id === sh.id ? Object.assign({}, m, { name: text, cat: f.cat, when: m.cat ? m.when : '٧ أكتوبر' }) : m), sheet: null }); this.say(eg ? 'اتحفظ التاجر' : 'حُفظ التاجر'); return; }
+        if (isMerchant) { this.setState({ merchants: KL.map((m) => m.id === sh.id ? Object.assign({}, m, { name: text, cat: f.cat, when: m.cat ? m.when : '7 أكتوبر' }) : m), sheet: null }); this.say(eg ? 'اتحفظ التاجر' : 'حُفظ التاجر'); return; }
         const pri = f.pri || 1, id = sh.id || 'r' + (RL.length + 1);
         const others = RL.filter((r) => r.id !== id).sort((a, b) => a.pri - b.pri);
         others.splice(pri - 1, 0, { id, text, mode: f.mode, cat: f.cat, on: true, would: sh.id ? (RL.find((r) => r.id === id) || {}).would || 0 : 5 });

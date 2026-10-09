@@ -50,8 +50,8 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
-    // مخترعة (النهارده ٧ أكتوبر) · بالوحدة الصغرى · نفس أرقام الرئيسية والمستحقات
+    const n = (x) => x.toLocaleString('en-US');
+    // مخترعة (النهارده 7 أكتوبر) · بالوحدة الصغرى · نفس أرقام الرئيسية والمستحقات
     // st: held محجوز · open غير محجوز · none من غير مبلغ (§65: المناسبة ويوم المرتب) · in فلوس جاية
     const defs = [
       { t: eg ? 'اشتراك الجيم' : 'اشتراك النادي', d: 9, days: 2, icon: 'sub', st: 'held', amt: eg ? 59700 : 19900, to: 'Subscriptions' },

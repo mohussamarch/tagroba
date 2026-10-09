@@ -83,7 +83,7 @@ input:disabled{opacity:.45;cursor:default}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","غير متاح"],"default":"عادي","section":"الحالة"},"sheet":{"editor":"enum","options":["مقفولة","مفتوحة"],"default":"مقفولة","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"goalName":{"editor":null},"target":{"editor":null},"saved":{"editor":null},"endDate":{"editor":null},"linked":{"editor":null},"archived":{"editor":null},"onSave":{"editor":null},"$preview":{"width":175,"height":48}}'>
 // زرار «تعديل» في تفاصيل الخطة (GoalDetail) ولوحته — ManageSavingsGoals.edit (+ archive). §68.
-// الخانات: goal-name · target (هللة) · saved (هللة، فاضي = مش معروف) · end-date (ISO أو «٣١ ديسمبر ٢٠٢٦») · linked · archived
+// الخانات: goal-name · target (هللة) · saved (هللة، فاضي = مش معروف) · end-date (ISO أو «31 ديسمبر 2026») · linked · archived
 // onSave({ name, targetMinor, date|null, dateText|null, months|null, daysLeft|null, perMonthMinor|null, archived }) — «بلا موعد» مسموح (رد المالك: «ينفع بلا موعد») ⇒ date: null
 // «تحتاج … شهريًا» = الباقي ÷ الشهور الباقية بالتقويم (monthsUntil زي كوتلن) لفوق لأقرب هللة (ROUND) — نفس رقم GoalDetail · أعداد صحيحة بس
 const TODAY = '2026-10-07';
@@ -93,14 +93,14 @@ class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: null, d: null, tried: false }; }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  en(t) { return String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))); }
+  en(t) { return String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))); }
   toMinor(t) {
     const s = this.en(t).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
     if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
     const [w, f = ''] = s.split('.');
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
   }
-  ar(x) { return String(x).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]); }
+  ar(x) { return String(x).replace(/\d/g, (d) => '0123456789'[d]); }
   isoOf(t) {
     const s = this.en(t).trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;

@@ -113,7 +113,7 @@ class Component extends DCLogic {
     };
   }
   result(r, eg) {
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     return (eg ? 'اتمسحت ' : 'حُذفت ') + plural(r.deleted, OPS) + (r.kept ? (eg ? '، وفضلت ' : '، وبقيت ') + plural(r.kept, OPS) + (eg ? ' متربطة بحاجات تانية.' : ' لارتباطها بغيرها.') : '.');
@@ -123,17 +123,17 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state;
     const bank = eg ? 'QNB مصر' : 'مصرف الراجحي';
     const file = (m) => eg ? 'كشف-QNB-' + m + '.pdf' : 'كشف-الراجحي-' + m + '.pdf';
     // مخترعة · added = اللي اتسجل وقت الاستيراد · keep = اللي هيفضل لو رجّعت الدفعة وسببه (RevertPlan.toKeep)
     const D = [
-      { id: 'b1', src: 'sms', name: eg ? 'رسايل البنك' : 'رسائل البنك', when: eg ? 'النهارده ٩:٠٠ ص' : 'اليوم ٩:٠٠ ص', c: { added: 4, dup: 1 }, keep: [], unlink: 0 },
-      { id: 'b2', src: 'pdf', name: file('سبتمبر'), when: eg ? 'النهارده ١٠:١٥ ص' : 'اليوم ١٠:١٥ ص', c: { added: 6, dup: 3, sim: 2, conf: 1, bad: 1 }, keep: [], unlink: 0 },
-      { id: 'b4', src: 'pdf', name: file('أغسطس'), when: '٢ أكتوبر ٩:٤٠ م', c: { added: 38, dup: 2, bad: 1 }, keep: ['settle', 'alloc', 'due', 'gift', 'invest', 'source'], unlink: 3 },
-      { id: 'b5', src: 'pdf', name: file('يوليو'), when: '٢٠ سبتمبر', c: { added: 41 }, reverted: '٢٢ سبتمبر' },
-      { id: 'b6', src: 'csv', name: eg ? 'ملف-البرنامج-القديم.csv' : 'ملف-التطبيق-القديم.csv', when: '١٠ سبتمبر', c: { added: 212, bad: 3 }, keep: [], unlink: 0, blocked: true }
+      { id: 'b1', src: 'sms', name: eg ? 'رسايل البنك' : 'رسائل البنك', when: eg ? 'النهارده 9:00 ص' : 'اليوم 9:00 ص', c: { added: 4, dup: 1 }, keep: [], unlink: 0 },
+      { id: 'b2', src: 'pdf', name: file('سبتمبر'), when: eg ? 'النهارده 10:15 ص' : 'اليوم 10:15 ص', c: { added: 6, dup: 3, sim: 2, conf: 1, bad: 1 }, keep: [], unlink: 0 },
+      { id: 'b4', src: 'pdf', name: file('أغسطس'), when: '2 أكتوبر 9:40 م', c: { added: 38, dup: 2, bad: 1 }, keep: ['settle', 'alloc', 'due', 'gift', 'invest', 'source'], unlink: 3 },
+      { id: 'b5', src: 'pdf', name: file('يوليو'), when: '20 سبتمبر', c: { added: 41 }, reverted: '22 سبتمبر' },
+      { id: 'b6', src: 'csv', name: eg ? 'ملف-البرنامج-القديم.csv' : 'ملف-التطبيق-القديم.csv', when: '10 سبتمبر', c: { added: 212, bad: 3 }, keep: [], unlink: 0, blocked: true }
     ];
     const SRC = { sms: eg ? 'اتسجلت لوحدها من رسايل البنك' : 'سُجّلت تلقائيًا من رسائل البنك', pdf: (eg ? 'كشف ' : 'كشف ') + bank, csv: eg ? 'ملف CSV' : 'ملف CSV' };
     const CN = [['added', eg ? 'اتضاف' : 'أُضيف', '#08634F', '#DCEBD6'], ['dup', 'مكرر', '#637570', 'rgba(99,117,112,0.12)'], ['sim', 'شبيه', '#956000', '#FBF0DD'], ['conf', 'تعارض', '#BE3D48', 'rgba(190,61,72,0.10)'], ['bad', 'غير صالح', '#6B4600', 'rgba(107,70,0,0.10)']];
@@ -162,15 +162,15 @@ class Component extends DCLogic {
       stagedStyle: 'border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #6B4600; background: ' + (done ? '#DCEBD6' : '#FBF0DD'),
       stagedTitleStyle: 'font-size: 14px; font-weight: 700; color: ' + (done ? '#08634F' : '#956000'),
       stagedTitle: done ? (eg ? 'اتنضّف الاستيراد اللي اتقطع' : 'نُظّف الاستيراد المنقطع') : (eg ? 'استيراد اتقطع في النص' : 'استيراد انقطع في المنتصف'),
-      stagedFile: 'حركات-الحساب.csv', stagedWhen: '٥ أكتوبر',
-      stagedBody: done ? (eg ? 'اتمسحت ١٢ عملية ما كملتش. علشان تكمّله، استورد الملف تاني.' : 'حُذفت ١٢ عملية غير مكتملة. لإكماله استورد الملف من جديد.') : (eg ? 'اتحفظ منه ١٢ عملية من ٣٠ والحفظ وقف. اللي اتحفظ مش معتمد — نضّفه الأول، وبعدين استورد الملف تاني.' : 'حُفظت منه ١٢ عملية من ٣٠ ثم توقف الحفظ. ما حُفظ غير معتمد — نظّفه أولًا ثم استورد الملف من جديد.'),
+      stagedFile: 'حركات-الحساب.csv', stagedWhen: '5 أكتوبر',
+      stagedBody: done ? (eg ? 'اتمسحت 12 عملية ما كملتش. علشان تكمّله، استورد الملف تاني.' : 'حُذفت 12 عملية غير مكتملة. لإكماله استورد الملف من جديد.') : (eg ? 'اتحفظ منه 12 عملية من 30 والحفظ وقف. اللي اتحفظ مش معتمد — نضّفه الأول، وبعدين استورد الملف تاني.' : 'حُفظت منه 12 عملية من 30 ثم توقف الحفظ. ما حُفظ غير معتمد — نظّفه أولًا ثم استورد الملف من جديد.'),
       canClean: !done, cleaning: stg === 'cleaning',
       cleanLabel: stg === 'cleaning' ? (eg ? 'بينضّف…' : 'جارٍ التنظيف…') : (eg ? 'نضّفه دلوقتي' : 'نظّفه الآن'),
       cleanStyle: 'min-height: 44px; padding: 0 16px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (stg === 'cleaning' ? ' opacity: 0.6; cursor: default' : ''),
       clean: () => {
         if (stg !== 'staged') return;
         this.setState({ staged: 'cleaning' });
-        this.timers.push(setTimeout(() => { this.setState({ staged: 'cleaned' }); this.say(eg ? 'اتنضّف: اتمسحت ١٢ عملية ما كملتش' : 'نُظّف: حُذفت ١٢ عملية غير مكتملة'); }, 900));
+        this.timers.push(setTimeout(() => { this.setState({ staged: 'cleaned' }); this.say(eg ? 'اتنضّف: اتمسحت 12 عملية ما كملتش' : 'نُظّف: حُذفت 12 عملية غير مكتملة'); }, 900));
       },
       reimportLabel: eg ? 'استورد الملف تاني' : 'استورد الملف من جديد',
       batches, revertLabel: eg ? 'رجّع الدفعة' : 'إرجاع الدفعة',

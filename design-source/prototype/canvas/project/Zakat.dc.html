@@ -173,20 +173,20 @@ class Component extends DCLogic {
       : { cash: 735000, goldQ: 120, pure: 50057, silver: 540, stocks: [['s1', 'الأفق للاتصالات', 3200000], ['s2', 'الواحة للأسمنت', 2100000], ['s3', 'النخبة للتجزئة', 1800000], ['s4', 'أطلس العالمية', 1800000]],
         recv: [['fahd', 'فهد', 120000], ['khalid', 'خالد', 50000], ['noura', 'نورة', 30000], ['ahmad', 'أحمد', 18500]], rosca: ['جمعية العائلة', 400000], flat: 57600000 };
     const SRC = eg
-      ? { cash: 'دار الإفتاء — فتوى رقم ٢٢٧٩ (٢٠٠٧)', hawl: 'دار الإفتاء — فتوى رقم ٤١٣ (٢٠٠٨) · فتوى رقم ٥٨٩٠ (١٩٨٥)', metal: 'دار الإفتاء — فتوى رقم ٨٨٤٨ (٢٠٢٥)', shares: 'دار الإفتاء — فتوى رقم ٨٧٦٧ (٢٠٢٥)', recv: 'دار الإفتاء — فتوى رقم ٤٣٩٩ (٢٠٠٢)', debts: 'دار الإفتاء — فتوى رقم ٥٠٢٥ (٢٠٢٠)' }
-      : { cash: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)', hawl: 'دليل زكاة الأفراد — ص ١٤، ١٩، ٢٧؛ البند ٣٫٢٫١، ص ١٨', metal: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)', shares: 'دليل زكاة الأفراد — البند ٣٫٦، ص ٢٢–٢٣', recv: 'دليل زكاة الأفراد — البند ٣٫٤، ص ١٩–٢٠', debts: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)' };
+      ? { cash: 'دار الإفتاء — فتوى رقم 2279 (2007)', hawl: 'دار الإفتاء — فتوى رقم 413 (2008) · فتوى رقم 5890 (1985)', metal: 'دار الإفتاء — فتوى رقم 8848 (2025)', shares: 'دار الإفتاء — فتوى رقم 8767 (2025)', recv: 'دار الإفتاء — فتوى رقم 4399 (2002)', debts: 'دار الإفتاء — فتوى رقم 5025 (2020)' }
+      : { cash: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)', hawl: 'دليل زكاة الأفراد — ص 14، 19، 27؛ البند 3.2.1، ص 18', metal: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)', shares: 'دليل زكاة الأفراد — البند 3.6، ص 22–23', recv: 'دليل زكاة الأفراد — البند 3.4، ص 19–20', debts: 'دليل زكاة الأفراد (وفق فتاوى اللجنة الدائمة)' };
     const na = st === 'غير متاح';
     const gold = s.gold !== undefined ? s.gold : na ? null : 'saved';
     const DEF_ST = { s1: { k: 'long', sa: 'yes' }, s2: { k: 'trade' }, s3: { k: 'long', sa: 'yes' }, s4: { k: 'long', sa: 'no' } };
     const DEF_RC = { fahd: 'strong', khalid: 'doubt', noura: 'strong', ahmad: 'strong' };
     const stF = (id) => Object.assign({}, DEF_ST[id], s.st[id] || {});
     const rcF = (id) => s.rc[id] || DEF_RC[id];
-    const due = (v) => this.md(v, 25, 1000); // ٢٫٥٪ على كل سطر لوحده، نص لفوق (§62 قرار ١)
-    const goldV = this.md(D.goldQ * 21, D.pure, 24); // الوزن × العيار/٢٤ × سعر الجرام الصافي
+    const due = (v) => this.md(v, 25, 1000); // 2.5% على كل سطر لوحده، نص لفوق (§62 قرار 1)
+    const goldV = this.md(D.goldQ * 21, D.pure, 24); // الوزن × العيار/24 × سعر الجرام الصافي
     const counted = [], outs = [];
     const out = (name, value, rule, src) => outs.push({ name, value: value == null ? '' : this.fmt(value), rule, src });
     counted.push({ id: 'cash', name: 'الكاش وحسابات البنك', v: D.cash, rule: eg ? 'الكاش وحسابات البنك بالكامل برصيدها يوم الزكاة.' : 'الكاش والحسابات البنكية كاملةً برصيدها يوم الزكاة.', src: SRC.cash });
-    const goldName = (eg ? 'دهب عيار ٢١ (' : 'ذهب عيار ٢١ (') + D.goldQ.toLocaleString('ar-EG') + ' جرام)';
+    const goldName = (eg ? 'دهب عيار 21 (' : 'ذهب عيار 21 (') + D.goldQ.toLocaleString('en-US') + ' جرام)';
     if (gold === 'worn') out(goldName, goldV, eg ? 'الدهب والفضة اللي للبس معفيين.' : 'الذهب والفضة المعدّان للبس معفيان.', SRC.metal);
     else counted.push({ id: 'gold', name: eg ? 'دهب ادخار' : 'ذهب للادخار', v: goldV, na: gold == null, rule: gold == null ? (eg ? 'ناقصة واقعة: القطعة دي للبس ولا ادخار؟' : 'تنقصه واقعة: هل هو للبس أم للادخار؟') : (eg ? 'الدهب والفضة اللي للادخار عليهم زكاة بقيمتهم — ' : 'الذهب والفضة المعدّان للادخار تُزكّى قيمتهما — ') + goldName, src: SRC.metal });
     const trade = D.stocks.filter(([id]) => stF(id).k === 'trade');
@@ -202,7 +202,7 @@ class Component extends DCLogic {
       if (strong.length) counted.push({ id: 'recv', name: 'ديون لك', v: strong.reduce((t, r) => t + r[2], 0), rule: 'يُرجى سدادها — ' + strong.map((r) => r[1]).join(' و') + ' — تُزكّى كل سنة.', src: SRC.recv });
       D.recv.filter(([id]) => rcF(id) === 'doubt').forEach(([, name, v]) => out('دين على ' + name, v, 'الدين الذي لك ويُشك في سداده يُزكّى عند قبضه.', SRC.recv));
     }
-    if (eg) out(D.rosca[0], D.rosca[1], 'الجمعية زي الدين ليك: اللي دفعته وما قبضتوش ما بيدخلش الحساب السنوي — لما تقبض دورك، ٢٫٥٪ مرة واحدة على اللي كان من فلوسك.', SRC.recv);
+    if (eg) out(D.rosca[0], D.rosca[1], 'الجمعية زي الدين ليك: اللي دفعته وما قبضتوش ما بيدخلش الحساب السنوي — لما تقبض دورك، 2.5% مرة واحدة على اللي كان من فلوسك.', SRC.recv);
     else counted.push({ id: 'rosca', name: 'الجمعيات', v: D.rosca[1], rule: D.rosca[0] + ' — ما دفعته ولم تقبضه دين لك يُرجى سداده.', src: SRC.cash });
     out('شقة الياسمين', D.flat, eg ? 'النوع ده مش داخل في حساب الزكاة في التطبيق — راجعه بنفسك.' : 'هذا النوع غير مشمول في حساب الزكاة بالتطبيق — راجعه بنفسك.', '');
     out(eg ? 'الديون اللي عليك' : 'الديون التي عليك', null, eg ? 'الديون اللي عليك ما بتتخصمش.' : 'الديون التي عليك لا تُخصم.', SRC.debts);
@@ -242,21 +242,21 @@ class Component extends DCLogic {
       heroCur: result === 'na' ? '' : cur, heroValue: result === 'due' ? this.fmt(known) : result === 'below' ? this.fmt(0) : 'غير متاح',
       heroSub: result === 'due' ? (eg ? 'على ' : 'على ') + this.fmt(base) + ' ' + cur + (eg ? ' عليها زكاة' : ' تجب فيها الزكاة') : result === 'below' ? (eg ? 'اللي عليه زكاة ' : 'ما تجب فيه الزكاة ') + this.fmt(base) + (eg ? ' — تحت النصاب، مفيش زكاة مطلوبة.' : ' — دون النصاب، لا زكاة مستحقة.')
         : result === 'partial' ? (eg ? 'المعروف لحد دلوقتي ' : 'المعروف حتى الآن ') + this.fmt(known) + ' ' + cur + (eg ? ' — فيه واقعة ناقصة، فالإجمالي غير متاح.' : ' — تنقص واقعة، فالإجمالي غير متاح.') : (eg ? 'فيه واقعة ناقصة، ومن غيرها مش معروف إذا كانت فوق النصاب.' : 'تنقص واقعة، ودونها لا يُعرف بلوغ النصاب.'),
-      nisabLabel: eg ? 'النصاب (٨٥ جم دهب عيار ٢١)' : 'النصاب (الأقل: فضة ٥٩٥ جم)', nisabText: this.fmt(nisab) + ' ' + cur,
-      nisabRule: eg ? 'سعر الجرام الصافي ' + this.fmt(D.pure) + '، النهارده ٥ ص — ' + SRC.cash : 'الذهب الخالص ' + this.fmt(D.pure) + ' · الفضة ' + this.fmt(D.silver) + ' للجرام، اليوم ٥ ص — ' + SRC.cash,
+      nisabLabel: eg ? 'النصاب (85 جم دهب عيار 21)' : 'النصاب (الأقل: فضة 595 جم)', nisabText: this.fmt(nisab) + ' ' + cur,
+      nisabRule: eg ? 'سعر الجرام الصافي ' + this.fmt(D.pure) + '، النهارده 5 ص — ' + SRC.cash : 'الذهب الخالص ' + this.fmt(D.pure) + ' · الفضة ' + this.fmt(D.silver) + ' للجرام، اليوم 5 ص — ' + SRC.cash,
       hawlLabel: eg ? 'يوم زكاتك' : 'يوم زكاتك', hawlChip: confirmed ? (eg ? 'متأكد' : 'مؤكَّد') : (eg ? 'مقترح' : 'مقترح'),
       hawlChipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; ' + (confirmed ? 'color: #13764D; background: #DCEBD6' : 'color: #956000; background: #FBF0DD'),
-      hawlDate: s.hawlPick ? s.hawlPick.hijriText + ' — ' + s.hawlPick.relText : eg ? '٢٠ جمادى الأولى ١٤٤٨ — كمان ٢٤ يوم' : '١ جمادى الأولى ١٤٤٨ — بعد ٥ أيام',
+      hawlDate: s.hawlPick ? s.hawlPick.hijriText + ' — ' + s.hawlPick.relText : eg ? '20 جمادى الأولى 1448 — كمان 24 يوم' : '1 جمادى الأولى 1448 — بعد 5 أيام',
       hawlWhy: s.hawlPick ? (eg ? 'إنت اخترته — يوم ثابت كل سنة هجرية.' : 'اخترته أنت — يوم ثابت كل سنة هجرية.') : eg ? 'اقترحناه من سلسلة رصيدك: أول يوم فلوسك وصلت فيه للنصاب. العبرة بأول السنة وآخرها.' : 'اقترحناه من سلسلة رصيدك: بداية آخر فترة بقيت فيها أموالك فوق النصاب دون انقطاع.',
       hawlRule: (eg ? 'يوم ثابت كل سنة هجرية — ' : 'يوم ثابت كل سنة هجرية — ') + SRC.hawl,
       hawlOpen: !confirmed, confirmLabel: eg ? 'أكّده' : 'أكّده',
       hawlLate: !!(s.hawlPick && s.hawlPick.lateNote), hawlLateNote: s.hawlPick && s.hawlPick.lateNote ? s.hawlPick.lateNote : '',
-      onHawlDay: (p) => { if (!p) return; this.setState({ hawl: 'confirmed', hawlPick: p }); this.say(eg ? 'اتغيّر يوم زكاتك لـ' + p.hijriText + ' — هننبهك قبله بـ١٠ أيام' : 'تغيّر يوم زكاتك إلى ' + p.hijriText + ' — ننبهك قبله بـ١٠ أيام'); },
-      confirmHawl: () => { this.setState({ hawl: 'confirmed' }); this.say(eg ? 'اتأكد يوم زكاتك — هننبهك قبله بـ١٠ أيام' : 'تأكّد يوم زكاتك — ننبهك قبله بـ١٠ أيام'); },
+      onHawlDay: (p) => { if (!p) return; this.setState({ hawl: 'confirmed', hawlPick: p }); this.say(eg ? 'اتغيّر يوم زكاتك لـ' + p.hijriText + ' — هننبهك قبله بـ10 أيام' : 'تغيّر يوم زكاتك إلى ' + p.hijriText + ' — ننبهك قبله بـ10 أيام'); },
+      confirmHawl: () => { this.setState({ hawl: 'confirmed' }); this.say(eg ? 'اتأكد يوم زكاتك — هننبهك قبله بـ10 أيام' : 'تأكّد يوم زكاتك — ننبهك قبله بـ10 أيام'); },
       openFacts: () => { if (!s.closed) this.setState({ sheet: true }); }, closed: s.closed, notClosed: !s.closed,
       factsTitle: eg ? 'الوقائع — مش آراء' : 'الوقائع — ليست آراء',
       factsSub: s.closed ? (eg ? 'الحساب متثبّت — الوقائع مقفولة' : 'الحساب مثبّت — الوقائع مقفلة') : (eg ? 'لبس ولا ادخار · مضاربة ولا طويل الأجل' : 'للبس أم للادخار · مضاربة أم طويل الأجل') + (eg ? '' : ' · الدين يُرجى أم مشكوك'),
-      factsChip: open ? (eg ? 'ناقصة ١' : 'ينقص ١') : asked.toLocaleString('ar-EG') + (eg ? ' متجاوبة' : ' مُجابة'),
+      factsChip: open ? (eg ? 'ناقصة 1' : 'ينقص 1') : asked.toLocaleString('en-US') + (eg ? ' متجاوبة' : ' مُجابة'),
       factsChipStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; flex-shrink: 0; ' + (open ? 'color: #956000; background: #FBF0DD' : 'color: #13764D; background: #DCEBD6'),
       factsStyle: 'width: 100%; border: 0; font: inherit; color: #193D33; text-align: right; cursor: pointer; border-radius: 22px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; ' + (open ? 'background: #FFFFFF; box-shadow: inset 0 0 0 1.5px rgba(149,96,0,0.35), 0 14px 32px rgba(29,54,53,0.09)' : 'background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)') + (s.closed ? '; opacity: 0.6; cursor: default' : ''),
       linesTitle: eg ? 'عليه زكاة' : 'تجب فيه الزكاة', lines,

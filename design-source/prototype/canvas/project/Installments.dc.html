@@ -56,11 +56,11 @@ class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     // مخترعة: total = عدد الأقساط · done = اللي اتدفع · received = مبلغ التمويل المستلم (null = لسه ما اتربطش، مش صفر)
     const defs = [
-      { key: 'car', name: 'قسط السيارة', kind: eg ? 'تمويل من البنك · فيه أرباح' : 'تمويل بنكي · بأرباح', inst: 145000, total: 36, done: 12, next: '٢٧ أكتوبر', received: 4860000, profit: 360000 },
-      { key: 'phone', name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', kind: eg ? 'تقسيط مشتريات' : 'تقسيط مشتريات', inst: 25000, total: 12, done: 8, next: '٥ نوفمبر', received: null, profit: null }
+      { key: 'car', name: 'قسط السيارة', kind: eg ? 'تمويل من البنك · فيه أرباح' : 'تمويل بنكي · بأرباح', inst: 145000, total: 36, done: 12, next: '27 أكتوبر', received: 4860000, profit: 360000 },
+      { key: 'phone', name: eg ? 'تقسيط الموبايل' : 'تقسيط الجوال', kind: eg ? 'تقسيط مشتريات' : 'تقسيط مشتريات', inst: 25000, total: 12, done: 8, next: '5 نوفمبر', received: null, profit: null }
     ];
     const plans = defs.map((d) => {
       const pct = Math.floor((d.done * 100) / d.total);

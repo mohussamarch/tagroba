@@ -136,7 +136,7 @@ class Component extends DCLogic {
     // لوحة لوحدها: مشروع شخصي للعرض
     return this.state.demo || { id: 'demo', name: 'رحلة العُلا', kind: 'personal', excluded: 0, approxOn: false, out: 405000, inn: 0, net: 405000, unsure: 0,
       rules: [{ id: 'pr1', text: 'العلا', mode: 'contains', dir: 'out', on: true }],
-      ops: [{ id: 'o1', name: 'نُزل العلا الصخري', date: '٣ أكتوبر', amt: -180000, src: 'rule' }, { id: 'o2', name: 'تذاكر طيران', date: '٢٨ سبتمبر', amt: -145000, src: 'manual' }, { id: 'o4', name: 'جولة العلا القديمة', date: '٥ أكتوبر', amt: -80000, src: 'rule' }] };
+      ops: [{ id: 'o1', name: 'نُزل العلا الصخري', date: '3 أكتوبر', amt: -180000, src: 'rule' }, { id: 'o2', name: 'تذاكر طيران', date: '28 سبتمبر', amt: -145000, src: 'manual' }, { id: 'o4', name: 'جولة العلا القديمة', date: '5 أكتوبر', amt: -80000, src: 'rule' }] };
   }
   change(p, patch) {
     if (typeof this.props.onChange === 'function' && this.props.project && this.props.project.id) this.props.onChange(p.id, patch);
@@ -146,20 +146,20 @@ class Component extends DCLogic {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const s = this.state, p = this.project();
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPW = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     const work = p.kind === 'work', sc = this.props.project && this.props.project.id ? 1 : k;
     const MODES = { contains: eg ? 'فيه' : 'يحتوي', startsWith: eg ? 'بيبدأ بـ' : 'يبدأ بـ', exact: eg ? 'بالظبط' : 'مطابق' };
     const DIRS = { out: eg ? 'صادر' : 'صادر', in: eg ? 'وارد' : 'وارد', any: eg ? 'الاتنين' : 'كلاهما' };
     const money = (m) => (m < 0 ? '−' : '+') + this.fmt(m * k) + ' ' + cur;
-    // عمليات قديمة مش في أي مشروع (آخر ٣ سنين — ManageProjects.addRule → oldMatches) — مخترعة
-    const POOL = [['x1', eg ? 'كافيه الغردقة' : 'مقهى العلا الشعبي', '٢ أكتوبر', -2500], ['x2', eg ? 'بنزينة الغردقة' : 'محطة وقود العلا', '٢٧ سبتمبر', -15000], ['x3', eg ? 'متجري — شحن' : 'متجري — شحن', '١٥ سبتمبر', -8000], ['x4', eg ? 'استوديو ضي — دفعة تانية' : 'استوديو ضياء — دفعة ثانية', '١ أكتوبر', 150000], ['x5', eg ? 'هدية من خالد' : 'هدية من خالد', '٢٠ سبتمبر', 30000], ['x6', 'سوبرماركت الحي', '٦ أكتوبر', -12000]];
+    // عمليات قديمة مش في أي مشروع (آخر 3 سنين — ManageProjects.addRule → oldMatches) — مخترعة
+    const POOL = [['x1', eg ? 'كافيه الغردقة' : 'مقهى العلا الشعبي', '2 أكتوبر', -2500], ['x2', eg ? 'بنزينة الغردقة' : 'محطة وقود العلا', '27 سبتمبر', -15000], ['x3', eg ? 'متجري — شحن' : 'متجري — شحن', '15 سبتمبر', -8000], ['x4', eg ? 'استوديو ضي — دفعة تانية' : 'استوديو ضياء — دفعة ثانية', '1 أكتوبر', 150000], ['x5', eg ? 'هدية من خالد' : 'هدية من خالد', '20 سبتمبر', 30000], ['x6', 'سوبرماركت الحي', '6 أكتوبر', -12000]];
     const t = s.text.trim();
     const hit = (name, amt) => (s.mode === 'contains' ? name.indexOf(t) >= 0 : s.mode === 'startsWith' ? name.indexOf(t) === 0 : name === t) && (s.dir === 'any' || (s.dir === 'out' ? amt < 0 : amt > 0));
     const have = {}; p.ops.forEach((o) => { have[o.id] = true; });
     const matches = t.length >= 2 ? POOL.filter(([id, name, , amt]) => !have[id] && hit(name, amt)) : [];
-    const err = t.length === 1 ? (eg ? 'اكتب نص القاعدة من حرفين لـ ٦٠ حرف.' : 'نص القاعدة من حرفين إلى ٦٠ حرفًا.') : '';
+    const err = t.length === 1 ? (eg ? 'اكتب نص القاعدة من حرفين لـ 60 حرف.' : 'نص القاعدة من حرفين إلى 60 حرفًا.') : '';
     const seg = (on) => 'flex: 1 1 0; height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.25)' : 'color: #193D33; background: transparent');
     const addRule = (withOld) => {
       if (t.length < 2) return;
@@ -215,7 +215,7 @@ class Component extends DCLogic {
       cantNext: t.length < 2, nextLabel: eg ? 'التالي' : 'التالي',
       nextStyle: 'height: 48px; margin-top: 4px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); ' + (t.length < 2 ? 'opacity: 0.45; cursor: default' : 'cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)'),
       next: () => { if (t.length >= 2) this.setState({ sheet: 'old' }); },
-      oldBody: matches.length ? (eg ? 'من العمليات القديمة (آخر ٣ سنين) بيطابقها: ' : 'من العمليات السابقة (آخر ٣ سنوات) تطابقها: ') + plural(matches.length, OPW) : (eg ? 'مفيش عمليات قديمة بتطابقها. الجديدة هتتضاف لوحدها.' : 'لا عمليات سابقة تطابقها. ستُضاف الجديدة تلقائيًا.'),
+      oldBody: matches.length ? (eg ? 'من العمليات القديمة (آخر 3 سنين) بيطابقها: ' : 'من العمليات السابقة (آخر 3 سنوات) تطابقها: ') + plural(matches.length, OPW) : (eg ? 'مفيش عمليات قديمة بتطابقها. الجديدة هتتضاف لوحدها.' : 'لا عمليات سابقة تطابقها. ستُضاف الجديدة تلقائيًا.'),
       matches: matches.map(([, name, date, amt]) => ({ name, date, amt: money(amt), style: 'flex-shrink: 0; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (amt < 0 ? '#BE3D48' : '#13764D') })),
       hasMatches: matches.length > 0,
       addOldLabel: eg ? 'أيوه، ضيف القديمة كمان' : 'نعم، أضف السابقة أيضًا',

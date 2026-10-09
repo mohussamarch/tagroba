@@ -103,11 +103,11 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const plural = (x, w) => x === 1 ? w[0] : x === 2 ? w[1] : n(x) + ' ' + (x <= 10 ? w[2] : w[3]);
     const OPS = eg ? ['عملية واحدة', 'عمليتين', 'عمليات', 'عملية'] : ['عملية واحدة', 'عمليتان', 'عمليات', 'عملية'];
     const GIFTS = eg ? ['نقطة واحدة', 'نقطتين', 'نقاط', 'نقطة'] : ['نقطة واحدة', 'نقطتان', 'نقاط', 'نقطة'];
-    // اليوم في النموذج ٧ أكتوبر: الموجب = بعد كام يوم · السالب = من كام يوم
+    // اليوم في النموذج 7 أكتوبر: الموجب = بعد كام يوم · السالب = من كام يوم
     const rel = (d) => {
       const a = Math.abs(d), t = a === 1 ? 'يوم' : a === 2 ? 'يومين' : n(a) + ' ' + (a <= 10 ? 'أيام' : (eg ? 'يوم' : 'يومًا'));
       return d === 0 ? (eg ? 'النهارده' : 'اليوم') : d > 0 ? 'بعد ' + t : (eg ? 'من ' : 'قبل ') + t;
@@ -115,11 +115,11 @@ class Component extends DCLogic {
     const KIND = { wedding: ['فرح', 'gem', '#A55060', 'rgba(165,80,96,0.12)'], travel: ['سفر', 'globe', '#2469BA', 'rgba(36,105,186,0.12)'], engagement: ['خطوبة', 'gem', '#A55060', 'rgba(165,80,96,0.12)'], medical: ['عملية جراحية', 'sparkles', '#2469BA', 'rgba(36,105,186,0.12)'], school: [eg ? 'دخول مدرسة' : 'دخول المدرسة', 'sparkles', '#956000', '#FBF0DD'], other: [eg ? 'غيره' : 'أخرى', 'sparkles', '#637570', 'rgba(99,117,112,0.12)'], birth: ['ولادة', 'sparkles', '#13764D', 'rgba(19,118,77,0.12)'], condolence: [eg ? 'عزا' : 'عزاء', 'users', '#637570', 'rgba(99,117,112,0.12)'], eid: ['عيد', 'moon', '#956000', '#FBF0DD'] };
     // مخترعة · بالوحدة الصغرى (السعودية) · in = النقوط اللي جاتلك (حدثك بس، وإلا null) · out = اللي إنت اديته
     const E = [
-      { id: 'khaled', name: 'زواج خالد', kind: 'wedding', date: '١٨ أكتوبر', d: 11, mine: false, host: 'خالد', spend: 45000, spendN: 1, inn: null, inN: null, out: 0, outN: 0 },
-      { id: 'trip', name: eg ? 'رحلة دهب' : 'رحلة العُلا', kind: 'travel', date: '١٤ نوفمبر', d: 38, mine: true, spend: 235000, spendN: 2, inn: 0, inN: 0, out: 0, outN: 0 },
-      { id: 'jood', name: 'ولادة جود', kind: 'birth', date: '٢٨ سبتمبر', d: -9, mine: true, spend: 507000, spendN: 2, inn: 250000, inN: 5, out: 0, outN: 0 },
-      { id: 'salem', name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '٣ أغسطس', d: -65, mine: false, host: 'سالم', spend: 0, spendN: 0, inn: null, inN: null, out: 50000, outN: 1, archived: true },
-      { id: 'eid', name: 'عيد الفطر', kind: 'eid', date: '٢٠ مارس', d: -201, mine: true, spend: 315000, spendN: 3, inn: 0, inN: 0, out: 0, outN: 0, archived: true }
+      { id: 'khaled', name: 'زواج خالد', kind: 'wedding', date: '18 أكتوبر', d: 11, mine: false, host: 'خالد', spend: 45000, spendN: 1, inn: null, inN: null, out: 0, outN: 0 },
+      { id: 'trip', name: eg ? 'رحلة دهب' : 'رحلة العُلا', kind: 'travel', date: '14 نوفمبر', d: 38, mine: true, spend: 235000, spendN: 2, inn: 0, inN: 0, out: 0, outN: 0 },
+      { id: 'jood', name: 'ولادة جود', kind: 'birth', date: '28 سبتمبر', d: -9, mine: true, spend: 507000, spendN: 2, inn: 250000, inN: 5, out: 0, outN: 0 },
+      { id: 'salem', name: eg ? 'عزا والد سالم' : 'عزاء والد سالم', kind: 'condolence', date: '3 أغسطس', d: -65, mine: false, host: 'سالم', spend: 0, spendN: 0, inn: null, inN: null, out: 50000, outN: 1, archived: true },
+      { id: 'eid', name: 'عيد الفطر', kind: 'eid', date: '20 مارس', d: -201, mine: true, spend: 315000, spendN: 3, inn: 0, inN: 0, out: 0, outN: 0, archived: true }
     ];
     const MN = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'], dn = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; };
     this.state.added.forEach((a, i) => E.push({ id: 'new' + i, name: a.name, kind: a.kind, date: n(Number(a.date.slice(8))) + ' ' + MN[Number(a.date.slice(5, 7)) - 1], d: dn(a.date) - dn('2026-10-07'), mine: a.who === 'me', host: a.who, spend: 0, spendN: 0, inn: 0, inN: 0, out: 0, outN: 0 }));

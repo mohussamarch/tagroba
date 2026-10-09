@@ -86,14 +86,14 @@ body{margin:0}
 <script type="text/x-dc" data-dc-script data-props='{"mine":{"editor":"boolean","default":true,"section":"الحالة"},"host":{"editor":"enum","options":["","خالد","سالم"],"default":"","section":"الحالة"},"condolence":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"onSave":{"editor":null},"$preview":{"width":350,"height":60}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: false, mode: 'cash', wallet: 0, rows: [], cand: null, err: '' }; }
-  toMinor(text) { const t = String(text || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
+  toMinor(text) { const t = String(text || '').replace(/[٠-٩۰-۹]/g, (d) => ('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)).replace(/[^0-9.]/g, ''); if (!t) return null; const [w, f = ''] = t.split('.'); return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   mine() { return !(this.props.mine === false || this.props.mine === 'false'); }
   setRow(i, patch) { this.setState({ rows: this.state.rows.map((r, j) => (j === i ? Object.assign({}, r, patch) : r)), err: '' }); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state, mine = this.mine(), host = this.props.host || '';
     const cond = this.props.condolence === true || this.props.condolence === 'true';
     const outWord = cond ? (eg ? 'اللي ادّيته' : 'ما قدّمته') : (eg ? 'اللي نقّطته' : 'ما نقّطته');
@@ -102,9 +102,9 @@ class Component extends DCLogic {
     // مخترعة · عمليات موجودة لسه ما اتربطتش (جاية لحدثك · طالعة لحدث حد تاني)
     const C = mine ? [
       { who: 'سالم', label: eg ? 'حوالة جاتلك من سالم' : 'حوالة واردة من سالم', sub: eg ? 'النهارده · مستنية في المراجعة' : 'اليوم · بانتظارك في المراجعات', amt: 150000 * k },
-      { who: 'ريم', label: eg ? 'حوالة جاتلك من ريم' : 'حوالة واردة من ريم', sub: eg ? '٤ أكتوبر · البنك' : '٤ أكتوبر · حساب بنكي', amt: 20000 * k }
+      { who: 'ريم', label: eg ? 'حوالة جاتلك من ريم' : 'حوالة واردة من ريم', sub: eg ? '4 أكتوبر · البنك' : '4 أكتوبر · حساب بنكي', amt: 20000 * k }
     ] : [
-      { who: host || 'خالد', label: (eg ? 'حوالة طالعة ل' : 'حوالة صادرة إلى ') + (host || 'خالد'), sub: eg ? '٥ أكتوبر · كانت مستنية سؤال «سلفة ولا دعم؟» — ربطها نقطة بيجاوبه' : '٥ أكتوبر · كانت بانتظار سؤال «سلفة أم دعم؟» — ربطها نقطةً يجيب عنه', amt: 100000 * k }
+      { who: host || 'خالد', label: (eg ? 'حوالة طالعة ل' : 'حوالة صادرة إلى ') + (host || 'خالد'), sub: eg ? '5 أكتوبر · كانت مستنية سؤال «سلفة ولا دعم؟» — ربطها نقطة بيجاوبه' : '5 أكتوبر · كانت بانتظار سؤال «سلفة أم دعم؟» — ربطها نقطةً يجيب عنه', amt: 100000 * k }
     ];
     const valid = s.rows.map((r) => ({ name: r.name.trim(), amt: this.toMinor(r.amount) })).filter((r) => r.name || r.amt);
     const total = valid.reduce((t, r) => t + (r.amt || 0), 0);

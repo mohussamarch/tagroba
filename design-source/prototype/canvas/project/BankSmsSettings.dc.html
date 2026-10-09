@@ -124,15 +124,15 @@ class Component extends DCLogic {
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2900)); this.setState({ toast: msg }); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const n = (x) => x.toLocaleString('ar-EG');
+    const n = (x) => x.toLocaleString('en-US');
     const s = this.state;
     const permOff = (this.props.state ?? 'عادي') === 'خطأ' && !s.granted;
     const reading = s.on && !permOff;
-    // الأسماء المعروفة بالعربي (قايمة البنوك المعروفة §74) · المرسل المجهول بيظهر زي ما جه في الرسالة · آخر ٤ أرقام بس
+    // الأسماء المعروفة بالعربي (قايمة البنوك المعروفة §74) · المرسل المجهول بيظهر زي ما جه في الرسالة · آخر 4 أرقام بس
     const W = eg ? [['w1', 'البنك الأهلي المصري · حساب المرتب'], ['w2', 'QNB مصر']] : [['w1', 'مصرف الراجحي · حساب الراتب'], ['w2', 'البنك الأهلي السعودي'], ['w3', 'مصرف الإنماء']];
     const base = eg
-      ? [{ id: 'nbe', name: 'البنك الأهلي المصري', w: 'w1', last4: '٥٥١٨' }, { id: 'qnb', name: 'QNB مصر', w: 'w2', last4: '٣٣٠٧' }, { id: 'waha', raw: 'ALWAHA', w: null, waiting: 2 }]
-      : [{ id: 'rajhi', name: 'مصرف الراجحي', w: 'w1', last4: '٤٨٢١' }, { id: 'snb', name: 'البنك الأهلي السعودي', w: 'w2', last4: '٢٢٠٥' }, { id: 'inma', name: 'مصرف الإنماء', w: 'w3', last4: '٧٢١٠' }, { id: 'waha', raw: 'ALWAHA', w: null, waiting: 2 }];
+      ? [{ id: 'nbe', name: 'البنك الأهلي المصري', w: 'w1', last4: '5518' }, { id: 'qnb', name: 'QNB مصر', w: 'w2', last4: '3307' }, { id: 'waha', raw: 'ALWAHA', w: null, waiting: 2 }]
+      : [{ id: 'rajhi', name: 'مصرف الراجحي', w: 'w1', last4: '4821' }, { id: 'snb', name: 'البنك الأهلي السعودي', w: 'w2', last4: '2205' }, { id: 'inma', name: 'مصرف الإنماء', w: 'w3', last4: '7210' }, { id: 'waha', raw: 'ALWAHA', w: null, waiting: 2 }];
     const list = base.concat(s.extra).filter((x) => !s.gone[x.id]).map((x) => Object.assign({}, x, { w: x.id in s.map ? s.map[x.id] : x.w }));
     const label = (x) => x.name || x.raw;
     const wName = (id) => { const w = W.find((v) => v[0] === id); return w ? w[1] : id === 'new' ? (eg ? 'محفظة جديدة' : 'محفظة جديدة') : ''; };
@@ -172,7 +172,7 @@ class Component extends DCLogic {
       autoTitle: eg ? 'القراية التلقائية' : 'القراءة التلقائية',
       autoChip: reading ? (eg ? 'شغالة' : 'تعمل') : (eg ? 'واقفة' : 'متوقفة'),
       autoChipStyle: 'font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 10px; flex-shrink: 0; ' + (reading ? 'color: #08634F; background: #DCEBD6' : 'color: #956000; background: #FBF0DD'),
-      autoBody: permOff ? (eg ? 'واقفة لأن الإذن اتسحب. رجّعه وهي تشتغل لوحدها.' : 'متوقفة لأن الإذن سُحب. أعده لتعمل تلقائيًا.') : s.on ? (eg ? 'الرسالة المفهومة من بنك مربوط بتتسجل وتتصنف لوحدها حتى والبرنامج مقفول. اللي محتاج قرارك بيستنى في «رسايل البنك». ولو رسالة فاتتنا بنلحقها كل ٤ ساعات.' : 'الرسالة المفهومة من بنك مربوط تُسجَّل وتُصنَّف تلقائيًا ولو كان التطبيق مغلقًا. وما يحتاج قرارك ينتظر في «رسائل البنك». وما يفوتنا نلحقه كل ٤ ساعات.') : (eg ? 'واقفة: مش هنقرا رسايل جديدة. اللي اتسجل قبل كده زي ما هو.' : 'متوقفة: لن تُقرأ رسائل جديدة. وما سُجّل سابقًا يبقى كما هو.'),
+      autoBody: permOff ? (eg ? 'واقفة لأن الإذن اتسحب. رجّعه وهي تشتغل لوحدها.' : 'متوقفة لأن الإذن سُحب. أعده لتعمل تلقائيًا.') : s.on ? (eg ? 'الرسالة المفهومة من بنك مربوط بتتسجل وتتصنف لوحدها حتى والبرنامج مقفول. اللي محتاج قرارك بيستنى في «رسايل البنك». ولو رسالة فاتتنا بنلحقها كل 4 ساعات.' : 'الرسالة المفهومة من بنك مربوط تُسجَّل وتُصنَّف تلقائيًا ولو كان التطبيق مغلقًا. وما يحتاج قرارك ينتظر في «رسائل البنك». وما يفوتنا نلحقه كل 4 ساعات.') : (eg ? 'واقفة: مش هنقرا رسايل جديدة. اللي اتسجل قبل كده زي ما هو.' : 'متوقفة: لن تُقرأ رسائل جديدة. وما سُجّل سابقًا يبقى كما هو.'),
       showStop: s.on && !permOff, showStart: !s.on && !permOff,
       stopLabel: eg ? 'وقّف القراية التلقائية' : 'أوقف القراءة التلقائية',
       startLabel: eg ? 'شغّل القراية التلقائية' : 'شغّل القراءة التلقائية',
@@ -180,12 +180,12 @@ class Component extends DCLogic {
       start: () => { this.setState({ on: true }); this.say(eg ? 'القراية اشتغلت' : 'عادت القراءة'); },
       permDot: 'width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: ' + (permOff ? '#956000' : '#13764D'),
       permLine: permOff ? (eg ? 'إذن الرسايل: مسحوب' : 'إذن الرسائل: مسحوب') : (eg ? 'إذن الرسايل: مسموح — اتطلب مرة واحدة بس' : 'إذن الرسائل: ممنوح — طُلب مرة واحدة فقط'),
-      sendersTitle: eg ? 'البنوك اللي بتبعتلك' : 'البنوك المرسلة', sendersCount: n(list.length) + (eg ? ' من ١٠' : ' من ١٠'),
+      sendersTitle: eg ? 'البنوك اللي بتبعتلك' : 'البنوك المرسلة', sendersCount: n(list.length) + (eg ? ' من 10' : ' من 10'),
       senders, unknownLabel: eg ? 'اسم مش معروف' : 'اسم غير معروف',
       full, addLabel: eg ? 'ضيف مرسل' : 'أضف مرسلًا',
       addStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08);' + (full ? ' opacity: 0.5; cursor: default' : ''),
       openAdd: () => { if (!full) this.setState({ sheet: { mode: 'add' }, pick: null, newName: '', tried: false }); },
-      rulesNote: eg ? 'لو في البلد حساب بنك واحد، رسايله بتتسجل فيه على طول. ولو عندك حسابين في نفس البنك، بنفرّق بينهم بآخر ٤ أرقام في الرسالة. البنك اللي مالوش محفظة رسايله بتستنى لحد ما تختار.' : 'إن كان في البلد حساب بنكي واحد تُسجَّل رسائله فيه مباشرة. وإن كان لك حسابان في البنك نفسه نفرّق بينهما بآخر ٤ أرقام في الرسالة. والبنك الذي بلا محفظة تنتظر رسائله حتى تختار.',
+      rulesNote: eg ? 'لو في البلد حساب بنك واحد، رسايله بتتسجل فيه على طول. ولو عندك حسابين في نفس البنك، بنفرّق بينهم بآخر 4 أرقام في الرسالة. البنك اللي مالوش محفظة رسايله بتستنى لحد ما تختار.' : 'إن كان في البلد حساب بنكي واحد تُسجَّل رسائله فيه مباشرة. وإن كان لك حسابان في البنك نفسه نفرّق بينهما بآخر 4 أرقام في الرسالة. والبنك الذي بلا محفظة تنتظر رسائله حتى تختار.',
       notifLink: eg ? 'إشعارات رسايل البنك' : 'إشعارات رسائل البنك',
       sheetOpen: !!sh && (isAdd || !!target),
       isAdd, isEdit: !!target, canUnlink: !!(target && target.w),

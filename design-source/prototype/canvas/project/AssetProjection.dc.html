@@ -79,7 +79,7 @@ body{margin:0}
       <span style="font-size: 12px; color: #637570">{{rateSource}}</span>
       <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 12px; border-radius: 14px; background: rgba(25,61,51,0.05)">
         <input type="text" inputmode="decimal" dir="ltr" aria-label="{{rateInputLabel}}" placeholder="{{ratePlaceholder}}" value="{{rateText}}" onInput="{{typeRate}}" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; outline: none; text-align: right">
-        <span style="font-size: 13px; color: #637570">٪</span>
+        <span style="font-size: 13px; color: #637570">%</span>
       </div>
       <span style="font-size: 12px; color: #637570">{{rateInputLabel}}</span>
     </div>
@@ -115,22 +115,22 @@ class Component extends DCLogic {
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   parse(t, places) {
-    const s = String(t == null ? '' : t).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (d) => String(('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10))).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
     if (!/\d/.test(s) || !/^\d*\.?\d*$/.test(s)) return s ? -1 : null;
     const [w, f = ''] = s.split('.');
     return parseInt(w || '0', 10) * Math.pow(10, places) + parseInt((f + '000').slice(0, places) || '0', 10);
   }
   md(a, b, c) { const p = BigInt(a) * BigInt(b), d = BigInt(c), two = BigInt(2); return Number((p * two + d) / (two * d)); }
-  // نمو مركّب: v × (1 + bp/10000)^n — الضرب بـBigInt والتقريب مرة واحدة نص لفوق (§11 · §69.6 اختيار ١)
+  // نمو مركّب: v × (1 + bp/10000)^n — الضرب بـBigInt والتقريب مرة واحدة نص لفوق (§11 · §69.6 اختيار 1)
   grow(v, bp, n) { let num = BigInt(v), den = BigInt(1); for (let i = 0; i < n; i++) { num *= BigInt(10000 + bp); den *= BigInt(10000); } const two = BigInt(2); return Number((num * two + den) / (two * den)); }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  ar(t) { return String(t).replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]).replace(/\./g, '٫'); }
-  pct(bp) { const f = bp % 100; return this.ar(String((bp - f) / 100) + (f ? '.' + String(f).padStart(2, '0').replace(/0$/, '') : '')) + '٪'; }
+  ar(t) { return String(t).replace(/[0-9]/g, (d) => '0123456789'[d]).replace(/\./g, '.'); }
+  pct(bp) { const f = bp % 100; return this.ar(String((bp - f) / 100) + (f ? '.' + String(f).padStart(2, '0').replace(/0$/, '') : '')) + '%'; }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const cur = eg ? 'ج.م' : 'ر.س', s = this.state;
-    // مخترعة — نفس «شقة الياسمين» في «الاستثمار»: ١٢٠ م² × سعر المتر · الشراء بالرسوم من «تفاصيل الأصل»
+    // مخترعة — نفس «شقة الياسمين» في «الاستثمار»: 120 م² × سعر المتر · الشراء بالرسوم من «تفاصيل الأصل»
     const DEF = eg ? { area: '120', sqm: '32000', whole: '3840000', rent: '12000', inc: '10', vac: '', cost: 154500000, rateBp: 1633 }
       : { area: '120', sqm: '4800', whole: '576000', rent: '4000', inc: '1.5', vac: '', cost: 49200000, rateBp: 174 };
     const val = (k) => (s[k] == null ? DEF[k] : s[k]);
@@ -150,7 +150,7 @@ class Component extends DCLogic {
     const sale = value == null || rate == null ? null : this.grow(value, rate, n);
     let rentSum = 0;
     if (rent > 0 && !badVac) for (let y = 1; y <= n; y++) rentSum += this.grow(rent, inc > 0 ? inc : 0, y - 1) * (12 - vac);
-    const yr = (y) => y.toLocaleString('ar-EG', { useGrouping: false });
+    const yr = (y) => y.toLocaleString('en-US', { useGrouping: false });
     const iso = (t) => '\u2066' + t + '\u2069';
     const chip = (on) => 'flex: 1 1 0; min-height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #08634F; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent');
     const field = (id, label, key, unit, full) => ({ id: 'p-' + id, label, unit, value: val(key), type: set(key), wrap: 'display: flex; flex-direction: column; gap: 4px; min-width: 0' + (full ? '; grid-column: 1 / -1' : '') });
@@ -161,12 +161,12 @@ class Component extends DCLogic {
       [eg ? 'المجموع' : 'المجموع', sale == null ? 'غير متاح' : '≈ ' + this.fmt(sale + rentSum), true],
       [eg ? 'المكسب من يوم الشراء (بالإيجار)' : 'المكسب منذ الشراء (مع الإيجار)', sale == null ? 'غير متاح' : '≈ ' + (sale - DEF.cost + rentSum < 0 ? '−' : '+') + this.fmt(sale - DEF.cost + rentSum), false]
     ].map(([label, v, bold]) => ({ label, value: v, style: 'display: flex; justify-content: space-between; gap: 8px; font-size: ' + (bold ? '15px; font-weight: 700' : '13px') }));
-    const srcLine = eg ? 'غلاء الأسعار الرسمي — التضخم — الجهاز المركزي للتعبئة العامة والإحصاء (عن طريق البنك الدولي)، ٢٠١٦–٢٠٢٥، رسمي'
-      : 'غلاء الأسعار الرسمي — التضخم — الهيئة العامة للإحصاء (عبر البنك الدولي)، ٢٠١٦–٢٠٢٥، رسمي';
+    const srcLine = eg ? 'غلاء الأسعار الرسمي — التضخم — الجهاز المركزي للتعبئة العامة والإحصاء (عن طريق البنك الدولي)، 2016–2025، رسمي'
+      : 'غلاء الأسعار الرسمي — التضخم — الهيئة العامة للإحصاء (عبر البنك الدولي)، 2016–2025، رسمي';
     const RC = { typed: [eg ? 'كتبتها إنت' : 'كتبتها أنت', '#2469BA', 'rgba(36,105,186,0.10)'], saved: [eg ? 'محفوظة على الأصل' : 'محفوظة على الأصل', '#08634F', '#DCEBD6'], def: stale ? ['قديم', '#956000', '#FBF0DD'] : [eg ? 'الافتراضي' : 'الافتراضي', '#08634F', '#DCEBD6'], na: ['ناقص', '#637570', 'rgba(25,61,51,0.06)'] }[rateFrom];
     return {
       title: eg ? 'الصورة كاملة' : 'الصورة كاملة',
-      subtitle: (eg ? 'شقة الياسمين · اشتريتها ١٠ مايو ٢٠١٩ بـ ' : 'شقة الياسمين · اشتريتها ١٠ مايو ٢٠١٩ بـ ') + iso(costShow) + (eg ? ' بالرسوم' : ' مع الرسوم'),
+      subtitle: (eg ? 'شقة الياسمين · اشتريتها 10 مايو 2019 بـ ' : 'شقة الياسمين · اشتريتها 10 مايو 2019 بـ ') + iso(costShow) + (eg ? ' بالرسوم' : ' مع الرسوم'),
       valueTitle: eg ? 'قيمتها النهارده' : 'قيمتها اليوم',
       methods: [['area', eg ? 'سعر المتر × المساحة' : 'سعر المتر × المساحة'], ['whole', eg ? 'القيمة كلها' : 'القيمة كاملة']].map(([id, label]) => ({ label, on: s.method === id ? 'true' : 'false', style: chip(s.method === id), pick: () => this.setState({ method: id, err: '' }) })),
       valueFields: byArea ? [field('area', eg ? 'المساحة' : 'المساحة', 'area', 'م²'), field('sqm', eg ? 'سعر المتر' : 'سعر المتر', 'sqm', cur)] : [field('whole', eg ? 'القيمة كلها' : 'القيمة كاملة', 'whole', cur, true)],
@@ -180,20 +180,20 @@ class Component extends DCLogic {
         this.say((eg ? 'قيمة الشقة في أملاكك بقت ' : 'أصبحت قيمة الشقة في أملاكك ') + this.fmt(value) + (eg ? ' بتاريخ النهارده' : ' بتاريخ اليوم'));
       },
       rentTitle: eg ? 'الإيجار' : 'الإيجار', rentSub: eg ? 'كل خانة اختيارية — الفاضية = صفر' : 'كل خانة اختيارية — الفارغة = صفر',
-      rentFields: [field('rent', eg ? 'في الشهر' : 'شهريًا', 'rent', cur, true), field('inc', eg ? 'زيادة كل سنة' : 'زيادة سنوية', 'inc', '٪'), field('vac', eg ? 'شهور فاضية في السنة' : 'أشهر فارغة سنويًا', 'vac', eg ? 'شهر' : 'شهر')],
+      rentFields: [field('rent', eg ? 'في الشهر' : 'شهريًا', 'rent', cur, true), field('inc', eg ? 'زيادة كل سنة' : 'زيادة سنوية', 'inc', '%'), field('vac', eg ? 'شهور فاضية في السنة' : 'أشهر فارغة سنويًا', 'vac', eg ? 'شهر' : 'شهر')],
       yearTitle: eg ? 'هتبيعها سنة كام؟' : 'سنة البيع', yearSub: (eg ? 'بعد ' : 'بعد ') + yr(n) + (n <= 10 && n >= 3 ? (eg ? ' سنين' : ' سنوات') : (eg ? ' سنة' : ' سنة')),
       yearText: yr(s.year), yearUpLabel: eg ? 'سنة بعدها' : 'السنة التالية', yearDownLabel: eg ? 'سنة قبلها' : 'السنة السابقة',
       yearUp: () => this.setState({ year: Math.min(2126, s.year + 1) }), yearDown: () => this.setState({ year: Math.max(2027, s.year - 1) }),
       rateTitle: eg ? 'الزيادة السنوية المتوقعة' : 'الزيادة السنوية المتوقعة', rateChip: RC[0], rateChipStyle: 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + RC[1] + '; background: ' + RC[2],
       rateValue: rate == null ? 'غير متاح' : this.pct(rate) + (eg ? ' في السنة' : ' سنويًا'), rateValueStyle: 'font-size: 20px; font-weight: 700; color: ' + (rate == null ? '#637570' : '#193D33'),
       rateSource: rateFrom === 'typed' ? (eg ? 'النسبة اللي إنت كتبتها' : 'النسبة التي كتبتها أنت') : rateFrom === 'saved' ? (eg ? 'النسبة المحفوظة على الشقة' : 'النسبة المحفوظة على الشقة')
-        : rateFrom === 'na' ? (eg ? 'غير متاح: ملف المتوسطات ما وصلش لسه' : 'غير متاح: ملف المتوسطات لم يصل بعد') : srcLine + (stale ? (eg ? ' — قديم: آخر تحديث ما نجحش، الرقم من ١ أغسطس ٢٠٢٦' : ' — قديم: آخر تحديث لم ينجح، الرقم من ١ أغسطس ٢٠٢٦') : ''),
-      rateInputLabel: eg ? 'اكتب النسبة السنوية اللي متوقعها (اختياري)' : 'اكتب النسبة السنوية التي تتوقعها (اختياري)', ratePlaceholder: rate == null ? '' : this.pct(rate).replace('٪', ''),
+        : rateFrom === 'na' ? (eg ? 'غير متاح: ملف المتوسطات ما وصلش لسه' : 'غير متاح: ملف المتوسطات لم يصل بعد') : srcLine + (stale ? (eg ? ' — قديم: آخر تحديث ما نجحش، الرقم من 1 أغسطس 2026' : ' — قديم: آخر تحديث لم ينجح، الرقم من 1 أغسطس 2026') : ''),
+      rateInputLabel: eg ? 'اكتب النسبة السنوية اللي متوقعها (اختياري)' : 'اكتب النسبة السنوية التي تتوقعها (اختياري)', ratePlaceholder: rate == null ? '' : this.pct(rate).replace('%', ''),
       rateText: s.rate, typeRate: (e) => this.setState({ rate: e.target.value, err: '' }),
       resultTitle: (eg ? 'لو بعتها سنة ' : 'لو بعتها في ') + yr(s.year), approx: stale && rateFrom === 'def', results,
       hasNa: sale == null, naLine: value == null ? (eg ? 'اكتب القيمة الأول.' : 'اكتب القيمة أولًا.') : (eg ? 'القيمة وقت البيع غير متاحة: اكتب الزيادة السنوية اللي متوقعها' : 'القيمة عند البيع غير متاحة: اكتب الزيادة السنوية التي تتوقعها'),
       method: eg ? 'الزيادة مركّبة كل سنة. الإيجار بيتجمع زي ما هو (مش بيتستثمر) ويبدأ من السنة الجاية. المكسب = سعر البيع − اللي دفعته فيها + الإيجار.' : 'الزيادة مركّبة كل سنة. الإيجار يُجمع كما هو (لا يُستثمر) ويبدأ من السنة القادمة. المكسب = سعر البيع − ما دفعته فيها + الإيجار.',
-      err: s.err || (badVac ? (eg ? 'الشهور الفاضية في السنة من ٠ لـ ١٢' : 'الأشهر الفارغة في السنة من ٠ إلى ١٢') : rent === -1 || inc === -1 || typed === -1 ? (eg ? 'فيه خانة مكتوب فيها حاجة مش رقم.' : 'في إحدى الخانات قيمة ليست رقمًا.') : ''),
+      err: s.err || (badVac ? (eg ? 'الشهور الفاضية في السنة من 0 لـ 12' : 'الأشهر الفارغة في السنة من 0 إلى 12') : rent === -1 || inc === -1 || typed === -1 ? (eg ? 'فيه خانة مكتوب فيها حاجة مش رقم.' : 'في إحدى الخانات قيمة ليست رقمًا.') : ''),
       saveLabel: eg ? 'احفظ على الشقة' : 'احفظ على الشقة',
       save: () => {
         if (badVac || rent === -1 || inc === -1 || typed === -1) return;
