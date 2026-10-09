@@ -63,8 +63,7 @@ fun AdvisorScreen() {
     var ui by remember(space) { mutableStateOf<AdvisorUi?>(null) }
     var open by remember { mutableStateOf<String?>(null) }
     suspend fun reload() {
-        val enabled = runCatching { deps.advisorEnabled() }.getOrDefault(true)
-        ui = advisorUi(runCatching { deps.alerts.inbox() }.getOrDefault(emptyList()), enabled)
+        ui = loadAdvisor(deps)
     }
     LaunchedEffect(space) { reload() }
     val u = ui
@@ -88,7 +87,7 @@ fun AdvisorScreen() {
                         onAction = {
                             scope.launch { runCatching { deps.alerts.opened(c.threadKey) } }
                             when (c.link) {
-                                AdvisorLink.GOALS -> nav.push(SavingsGoalsRoute)
+                                AdvisorLink.GOALS -> nav.push(SavingsGoalsLink)
                                 // ⚠️ «الميزانيات» خانة جوه مبدّل «العمليات» (منطقة تانية) ومفيش طريقة نفتحها على خانة بعينها ⇒ تبويب العمليات
                                 AdvisorLink.BUDGETS, AdvisorLink.OPS -> nav.switchTab(Tab.OPERATIONS)
                                 null -> Unit

@@ -33,7 +33,6 @@ import app.masroufy.core.Id
 import app.masroufy.core.TextKey
 import app.masroufy.core.ZakatLineKind
 import app.masroufy.core.currencySymbol
-import app.masroufy.core.parseMoney
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.AmountTone
@@ -54,14 +53,13 @@ import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.ZakatPaymentSource
 import kotlinx.coroutines.launch
 
-private const val CASH = "cash"
 
 /**
  * «دفع زكاة السنة» (`ZakatPay`) بعد التثبيت: المطلوب · دُفع · الباقي (من `PayZakat.status`) · السطور بخانة «دُفع» · «دفعت الكل» ·
  * «كيف دفعتها؟» (عملية من الكشف ⇒ `pay` — أو كاش ⇒ `payCash`) · الدفعات بـ«فك» (`unlink`). التوزيع على السطور والصدقة الزيادة في حالة الاستخدام.
  */
 @Composable
-internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, onChanged: () -> Unit) {
+internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, showTitle: Boolean = true, onChanged: () -> Unit) {
     val deps = LocalSpace.current.investment
     val scope = rememberCoroutineScope()
     var picked by remember(pay) { mutableStateOf(emptySet<ZakatLineKind>()) }
@@ -71,27 +69,21 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, onChanged: () 
     var status by remember { mutableStateOf<String?>(null) }
     var ops by remember { mutableStateOf<List<LinkableOp>>(emptyList()) }
     LaunchedEffect(pay.yearId) { ops = linkableOps(runCatching { deps.recentOperations() }.getOrNull(), outgoing = true, currency) }
-    fun submit(block: suspend () -> String) {
+    fun submit(block: suspend () -> Unit) {
         scope.launch {
-            try { status = block(); error = null; onChanged() } catch (e: IllegalArgumentException) { error = e.message }
+            try { block(); status = t(TextKey.ZAKAT_PAY_RECORDED); error = null; onChanged() } catch (e: IllegalArgumentException) { error = e.message }
         }
     }
     fun record() {
-        val lines = ZakatLineKind.entries.filter { it in picked }
-        when {
-            lines.isEmpty() -> error = t(TextKey.ZAKAT_LINES_INVALID)
-            how == null -> error = t(TextKey.ZAKAT_PAY_ERR_HOW)
-            how == CASH -> {
-                val amount = runCatching { parseMoney(cash, currency) }.getOrNull()
-                if (amount == null || amount <= 0) error = t(TextKey.ZAKAT_PAY_ERR_CASH)
-                else submit { deps.payZakat.payCash(pay.yearId, lines, amount, deps.today()); t(TextKey.ZAKAT_PAY_RECORDED) }
-            }
-            else -> submit { deps.payZakat.pay(pay.yearId, lines, listOf(ZakatPaymentSource(how!!))); t(TextKey.ZAKAT_PAY_RECORDED) }
+        when (val r = zakatPayRequest(picked, how, cash, currency)) {
+            is ZakatPayRequest.Invalid -> error = r.message
+            is ZakatPayRequest.Cash -> submit { deps.payZakat.payCash(pay.yearId, r.lines, r.amountMinor, deps.today()) }
+            is ZakatPayRequest.FromOperation -> submit { deps.payZakat.pay(pay.yearId, r.lines, listOf(ZakatPaymentSource(r.transactionId))) }
         }
     }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column {
-            BasicText(t(TextKey.ZAKAT_PAY_TITLE), style = Type.section())
+            if (showTitle) BasicText(t(TextKey.ZAKAT_PAY_TITLE), style = Type.section())
             BasicText(pay.yearLabel, style = Type.caption().copy(color = Ink.muted))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -123,8 +115,8 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, onChanged: () 
                 if (ops.isNotEmpty()) BasicText(t(TextKey.ZAKAT_PAY_FROM_STATEMENT), style = Type.caption().copy(color = Ink.muted))
                 else BasicText(t(TextKey.ZAKAT_PAY_NO_OPS), style = Type.caption().copy(color = Ink.muted))
                 for (op in ops) OpChoice(t(TextKey.INVEST_ROW_SUB, op.title, dateText(op.date)), op, how == op.id) { how = op.id; error = null }
-                OpChoice(t(TextKey.ZAKAT_PAY_CASH), null, how == CASH) { how = CASH; error = null }
-                if (how == CASH) {
+                OpChoice(t(TextKey.ZAKAT_PAY_CASH), null, how == PAY_CASH) { how = PAY_CASH; error = null }
+                if (how == PAY_CASH) {
                     BasicText(t(TextKey.ZAKAT_PAY_CASH_SUB), style = Type.caption().copy(color = Ink.muted))
                     TextInput(cash, { cash = it; error = null }, label = t(TextKey.ZAKAT_PAY_CASH_LABEL), placeholder = "0.00", ltr = true,
                         keyboard = KeyboardType.Decimal, trailing = { FieldUnit(currencySymbol(currency)) })

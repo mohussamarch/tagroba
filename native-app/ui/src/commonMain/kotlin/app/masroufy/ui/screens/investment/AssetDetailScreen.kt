@@ -29,9 +29,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.Id
 import app.masroufy.core.NOT_AVAILABLE
 import app.masroufy.core.TextKey
-import app.masroufy.core.isRealEstate
 import app.masroufy.ui.app.LocalSpace
-import app.masroufy.ui.app.SpaceDeps
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.FloatingCard
@@ -54,18 +52,7 @@ import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.FeedState
 import kotlinx.coroutines.launch
 
-/** «تفاصيل الأصل» بالمعرّف: صف الأصل من المحفظة + «الصورة كاملة» للعقار. null = مش موجود (أو اتمسح). */
-internal suspend fun loadAssetDetail(space: SpaceDeps, assetId: Id): AssetDetailUi? {
-    val deps = space.investment
-    val today = deps.today()
-    val row = deps.assets.listPortfolio(today).rows.firstOrNull { it.asset.id == assetId } ?: return null
-    val projection = if (row.asset.isRealEstate) runCatching {
-        val averages = (deps.feeds.averages() as? FeedState.Ready)?.feed
-        deps.growth.project(assetId, defaultSellYear(today), space.space.countryCode, deps.defaultRates.load(averages, space.space.countryCode, today))
-    }.getOrNull() else null
-    return assetDetailUi(row, projection, row.asset.currency, today)
-}
-
+/** «تفاصيل الأصل» (لوحة `AssetDetail`) — التحميل في [loadAssetDetail]، والشراء والبيع والسعر اليدوي في `AssetTradeSheet`. */
 @Composable
 fun AssetDetailScreen(assetId: Id) {
     val space = LocalSpace.current
@@ -75,10 +62,12 @@ fun AssetDetailScreen(assetId: Id) {
     val scope = rememberCoroutineScope()
     var ui by remember(space, assetId) { mutableStateOf<AssetDetailUi?>(null) }
     var failed by remember(space, assetId) { mutableStateOf(false) }
-    var trade by remember { mutableStateOf<TradeMode?>(null) }
+    var tradeMode by remember { mutableStateOf(TradeMode.BUY) }
+    var tradeOpen by remember { mutableStateOf(false) }
+    fun openTrade(mode: TradeMode) { tradeMode = mode; tradeOpen = true }
     var picking by remember { mutableStateOf(false) }
     suspend fun reload() {
-        val next = runCatching { loadAssetDetail(space, assetId) }
+        val next = runCatching { loadAssetDetail(deps, space.space, assetId) }
         ui = next.getOrNull()
         failed = next.isFailure || next.getOrNull() == null
     }
@@ -103,12 +92,7 @@ fun AssetDetailScreen(assetId: Id) {
             return@InnerScaffold
         }
         if (a.staleLinked) item(key = "stale") {
-            AlertBanner(t(TextKey.INVEST_ERROR_TITLE), t(TextKey.ASSET_DETAIL_STALE_BODY), t(TextKey.SHELL_RETRY)) {
-                act {
-                    val feed = deps.feeds.prices(force = true)
-                    if (feed is FeedState.Ready) { deps.syncPrices.sync(feed.feed); t(TextKey.INVEST_REFRESHED) } else (feed as FeedState.Unavailable).reason
-                }
-            }
+            AlertBanner(t(TextKey.INVEST_ERROR_TITLE), t(TextKey.ASSET_DETAIL_STALE_BODY), t(TextKey.SHELL_RETRY)) { act { refreshPrices(deps) } }
         }
         if (a.archived) item(key = "archived") {
             QuietBox {
@@ -118,25 +102,25 @@ fun AssetDetailScreen(assetId: Id) {
                 }
             }
         }
-        item(key = "hero") { DetailHero(a, onPrice = { trade = TradeMode.PRICE }, onArea = { nav.push(AssetProjectionRoute(a.assetId)) }) }
+        item(key = "hero") { DetailHero(a, onPrice = { openTrade(TradeMode.PRICE) }, onArea = { nav.push(AssetProjectionRoute(a.assetId)) }) }
         item(key = "stats") { DetailStats(a) }
         if (a.realEstate) item(key = "full") { FullPictureLink { nav.push(AssetProjectionRoute(a.assetId)) } }
         item(key = "trade") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PrimaryButton(t(TextKey.ASSET_DETAIL_BUY), { trade = TradeMode.BUY }, Modifier.weight(1f))
-                    SecondaryButton(t(TextKey.ASSET_DETAIL_SELL), { trade = TradeMode.SELL }, Modifier.weight(1f))
+                    PrimaryButton(t(TextKey.ASSET_DETAIL_BUY), { openTrade(TradeMode.BUY) }, Modifier.weight(1f))
+                    SecondaryButton(t(TextKey.ASSET_DETAIL_SELL), { openTrade(TradeMode.SELL) }, Modifier.weight(1f))
                 }
                 BasicText(t(TextKey.ASSET_DETAIL_RECORD_ONLY), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
             }
         }
         item(key = "log") { TradeLog(a) }
-        item(key = "source") { SourceCard(a, onManual = { trade = TradeMode.PRICE }, onLink = { picking = true }) { act { deps.assets.linkToFeed(a.assetId, null); t(TextKey.ASSET_DETAIL_UNLINKED) } } }
+        item(key = "source") { SourceCard(a, onManual = { openTrade(TradeMode.PRICE) }, onLink = { picking = true }) { act { deps.assets.linkToFeed(a.assetId, null); t(TextKey.ASSET_DETAIL_UNLINKED) } } }
         if (!a.archived) item(key = "archive") {
             TonalButton(t(TextKey.ASSET_DETAIL_ARCHIVE), { act { deps.assets.archiveAsset(a.assetId, true); t(TextKey.ASSET_DETAIL_ARCHIVED_TOAST) } }, Modifier.fillMaxWidth(), muted = true)
         }
     }
-    AssetTradeSheet(trade != null, trade ?: TradeMode.BUY, a, onDismiss = { trade = null }) { scope.launch { reload() } }
+    AssetTradeSheet(tradeOpen, tradeMode, a, onDismiss = { tradeOpen = false }) { scope.launch { reload() } }
     FeedPickSheet(picking, a, onDismiss = { picking = false }) { symbol, name ->
         act {
             deps.assets.linkToFeed(assetId, symbol)

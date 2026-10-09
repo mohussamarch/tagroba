@@ -52,8 +52,8 @@ sealed interface DraftParse {
     data class Invalid(val message: String) : DraftParse
 }
 
-/** نسبة مكتوبة («1.5» ⇒ 150 نقطة أساس) — نفس قارئ المبالغ (رقمين بعد العلامة بالظبط، من غير تقريب). */
-private fun bpOf(text: String, currency: Currency): Int? = text.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency).toInt() }
+/** نسبة مكتوبة («1.5» ⇒ 150 نقطة أساس) — نفس قارئ المبالغ برقمين بعد العلامة (من غير تقريب)، مهما كانت عملة البلد. */
+private fun bpOf(text: String): Int? = text.trim().takeIf { it.isNotEmpty() }?.let { t -> parseMoney(t, Currency.SAR).takeIf { it in Int.MIN_VALUE..Int.MAX_VALUE }?.toInt() ?: throw IllegalArgumentException(t) }
 
 fun parseDraft(d: ProjectionDraft, asset: Asset, currency: Currency): DraftParse {
     val vacantText = normalizeDigits(d.vacant).trim()
@@ -62,13 +62,13 @@ fun parseDraft(d: ProjectionDraft, asset: Asset, currency: Currency): DraftParse
     if (vacant != null && vacant !in 0..12) return DraftParse.Invalid(uiText(TextKey.ASSET_PROJ_ERR_VACANT))
     return try {
         val byArea = d.method == RealEstateValuation.AREA
-        val typed = bpOf(d.rate, currency)
+        val typed = bpOf(d.rate)
         val input = AssetGrowthInput(
             valuation = if (asset.isRealEstate || d.method != null) d.method else null,
             areaSqm = if (byArea) d.area.trim().takeIf { it.isNotEmpty() }?.let(::parseQuantity) else null,
             pricePerSqmMinor = if (byArea) d.sqm.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) } else null,
             pricePerSqmAsOf = if (byArea && d.sqm.trim() == asset.pricePerSqmMinor?.let { amount(it, currency) }) asset.pricePerSqmAsOf else null,
-            rent = RentTerms(d.rent.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) }, bpOf(d.increase, currency), vacant),
+            rent = RentTerms(d.rent.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) }, bpOf(d.increase), vacant),
             expectedRateBp = typed ?: asset.expectedRateBp,
         )
         val whole = if (d.method == RealEstateValuation.WHOLE) d.whole.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) } else null

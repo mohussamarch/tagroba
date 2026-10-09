@@ -25,9 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.NOT_AVAILABLE
 import app.masroufy.core.TextKey
-import app.masroufy.core.ZakatPrices
 import app.masroufy.ui.app.LocalSpace
-import app.masroufy.ui.app.SpaceDeps
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FloatingCard
@@ -44,39 +42,9 @@ import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
-import app.masroufy.usecase.FeedState
 import kotlinx.coroutines.launch
 
-/** اللي شاشة الزكاة جابته: ظاهرة؟ · الحساب · الأسئلة · سنة الدفع (لو فيه سنة متثبّتة قبل المفتوحة). */
-internal class ZakatLoad(val visible: Boolean, val data: ZakatData?, val ui: ZakatUi?, val questions: List<FactQuestion>, val pay: ZakatPayUi?)
-
-internal suspend fun loadZakat(space: SpaceDeps): ZakatLoad {
-    val deps = space.investment
-    val currency = space.space.currency
-    if (!deps.zakat.visible()) return ZakatLoad(false, null, null, emptyList(), null)
-    val today = deps.today()
-    val prices: ZakatPrices = deps.zakat.pricesFrom((runCatching { deps.feeds.prices() }.getOrNull() as? FeedState.Ready)?.feed)
-    val open = deps.zakat.openYear()
-    val data = ZakatData(
-        currency = currency,
-        scopeNote = deps.zakat.scopeNote(),
-        rules = deps.zakat.rules(),
-        prices = prices,
-        openYear = open,
-        suggestion = runCatching { deps.zakat.suggestDate(today, prices) }.getOrNull(),
-        assessment = open?.let { deps.zakat.assess(it.id, today, prices) },
-    )
-    // السنة اللي اتثبّتت: `close` بيفتح اللي بعدها وبدايتها = ميعاد المتثبّتة = معرّفها
-    val pay = open?.hawlStart?.let { closedId ->
-        runCatching {
-            val status = deps.payZakat.status(closedId)
-            zakatPayUi(closedId, closedId, status, deps.payZakat.payments(closedId), runCatching { deps.recentOperations() }.getOrNull(), currency)
-        }.getOrNull()
-    }
-    return ZakatLoad(true, data, zakatUi(data, today), factQuestions(data.assessment, currency), pay)
-}
-
-/** «الزكاة» (لوحة `Zakat` + `ZakatFactsSheet` + `HawlDaySheet` + `ZakatPay`). */
+/** «الزكاة» (لوحة `Zakat` + `ZakatFactsSheet` + `HawlDaySheet` + `ZakatPay`) — التحميل في [loadZakat]. */
 @Composable
 fun ZakatScreen() {
     val space = LocalSpace.current
@@ -89,7 +57,7 @@ fun ZakatScreen() {
     var facts by remember { mutableStateOf(false) }
     var hawl by remember { mutableStateOf(false) }
     suspend fun reload() {
-        try { load = loadZakat(space); failed = null } catch (e: IllegalArgumentException) { failed = e.message }
+        try { load = loadZakat(deps, space.space); failed = null } catch (e: IllegalArgumentException) { failed = e.message }
     }
     fun act(block: suspend () -> String?) {
         scope.launch {

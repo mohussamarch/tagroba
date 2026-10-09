@@ -32,6 +32,8 @@ data class InvestmentUi(
     val totalNa: String?,
     val costMinor: Halalas,
     val unrealizedMinor: Halalas?,
+    /** المكسب المحقق من كل البيع (`PortfolioTotals`) — null لو مفيش بيع خالص ⇒ السطر مش بيظهر (مش صفر). */
+    val realizedMinor: Halalas?,
     val estates: List<EstateCard>,
     val others: List<AssetLine>,
 )
@@ -78,6 +80,7 @@ fun investmentUi(view: PortfolioView, projections: Map<Id, AssetProjectionView>,
         totalNa = totalNa,
         costMinor = view.totals.costBasisMinor,
         unrealizedMinor = view.totals.unrealizedGainMinor,
+        realizedMinor = view.totals.realizedGainMinor.takeIf { view.rows.any { it.sales.isNotEmpty() } },
         estates = estates,
         others = others,
     )

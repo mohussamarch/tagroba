@@ -8,6 +8,7 @@ import app.masroufy.core.ZakatLineKind
 import app.masroufy.core.ZakatPayment
 import app.masroufy.core.IsoDate
 import app.masroufy.core.ZakatYearStatus
+import app.masroufy.core.parseMoney
 import app.masroufy.core.uiText
 import app.masroufy.usecase.TransactionsScreenData
 
@@ -70,3 +71,27 @@ fun zakatPayUi(yearId: Id, dueAt: IsoDate, status: ZakatYearStatus, payments: Li
 
 /** السطور اللي لسه عليها باقي (لـ«دفعت الكل»). */
 fun unpaidKinds(ui: ZakatPayUi): Set<ZakatLineKind> = ui.lines.filter { !it.done }.map { it.kind }.toSet()
+
+/** اختيار «دفعتها كاش» في «كيف دفعتها؟» (بدل معرّف عملية). */
+const val PAY_CASH = "cash"
+
+/** من اختيارات «دفع زكاة السنة» لمدخل `PayZakat` — قراية بس (المبلغ بـ`parseMoney`)، والتوزيع والفحص الحقيقي في حالة الاستخدام. */
+sealed interface ZakatPayRequest {
+    data class Cash(val lines: List<ZakatLineKind>, val amountMinor: Halalas) : ZakatPayRequest
+    data class FromOperation(val lines: List<ZakatLineKind>, val transactionId: Id) : ZakatPayRequest
+    data class Invalid(val message: String) : ZakatPayRequest
+}
+
+/** [picked] السطور المختارة · [how] معرّف العملية أو [PAY_CASH] · [cash] المبلغ المكتوب لو كاش. السطور بترتيب السنة. */
+fun zakatPayRequest(picked: Set<ZakatLineKind>, how: Id?, cash: String, currency: Currency): ZakatPayRequest {
+    val lines = ZakatLineKind.entries.filter { it in picked }
+    return when {
+        lines.isEmpty() -> ZakatPayRequest.Invalid(uiText(TextKey.ZAKAT_LINES_INVALID))
+        how == null -> ZakatPayRequest.Invalid(uiText(TextKey.ZAKAT_PAY_ERR_HOW))
+        how == PAY_CASH -> {
+            val amount = runCatching { parseMoney(cash, currency) }.getOrNull()
+            if (amount == null || amount <= 0) ZakatPayRequest.Invalid(uiText(TextKey.ZAKAT_PAY_ERR_CASH)) else ZakatPayRequest.Cash(lines, amount)
+        }
+        else -> ZakatPayRequest.FromOperation(lines, how)
+    }
+}

@@ -49,7 +49,6 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.AssetProjectionView
 import app.masroufy.usecase.DefaultRatesView
-import app.masroufy.usecase.FeedState
 import kotlinx.coroutines.launch
 
 /**
@@ -73,9 +72,9 @@ fun AssetProjectionScreen(assetId: Id) {
     var failed by remember { mutableStateOf<String?>(null) }
 
     suspend fun project(typed: Int?) {
-        val d = defaults ?: deps.defaultRates.load((deps.feeds.averages() as? FeedState.Ready)?.feed, space.space.countryCode, today).also { defaults = it }
+        val d = defaults ?: defaultRatesFor(deps, space.space).also { defaults = it }
         try {
-            val v = deps.growth.project(assetId, year, space.space.countryCode, d, typed)
+            val v = loadProjection(deps, space.space, assetId, year, typed, d)
             view = v
             if (draft == null) draft = draftOf(v.asset, currency, v.projection.currentValueMinor)
             failed = null

@@ -80,24 +80,37 @@ object ZakatRoute : Route {
     override val name = "Zakat"
 }
 
+/**
+ * «دفع زكاة السنة» لسنة متثبّتة بمعرّفها (= يوم ميعادها). في النموذج `ZakatPay` مرسومة **جوه** `Zakat` بعد «ثبّت» (وده اللي بيتعرض
+ * هناك)؛ المسار ده عشان أي مكان تاني (تنبيه الزكاة مثلًا) يفتح دفع سنة بعينها.
+ */
+data class ZakatPayRoute(val yearId: Id) : Route {
+    override val name = "ZakatPay"
+}
+
 object AdvisorRoute : Route {
     override val name = "Advisor"
 }
 
-// شاشات تانية في المنطقة (`SCREENS.md` §٢.٧) — المسارات هنا عشان روابط «الاستثمار» تشتغل، وبتظهر «قيد البناء» لحد ما تتسجّل.
-object SavingsGoalsRoute : Route {
+/*
+ * روابط لشاشات مناطق تانية (مسارها بتاع منطقتها — مش متعرّف في الأساس): لحد الدمج النهائي بتفتح «قيد البناء» بصراحة (`PendingScreen`)،
+ * **ووقت الدمج بتتبدّل بمسار المنطقة الحقيقي** (نفس اسم اللوحة): `SavingsGoals` ⇐ `screens/budgets` (`SavingsGoalsRoute`) ·
+ * الحاسبات التلاتة ⇐ `screens/investment/calc` (`SavingsCalculatorRoute` · `RetirementCalculatorRoute` · `InheritanceCalculatorRoute`).
+ * **مش متسجّلة هنا عمدًا.**
+ */
+internal object SavingsGoalsLink : Route {
     override val name = "SavingsGoals"
 }
 
-object SavingsCalculatorRoute : Route {
+internal object SavingsCalculatorLink : Route {
     override val name = "SavingsCalculator"
 }
 
-object RetirementCalculatorRoute : Route {
+internal object RetirementCalculatorLink : Route {
     override val name = "RetirementCalculator"
 }
 
-object InheritanceCalculatorRoute : Route {
+internal object InheritanceCalculatorLink : Route {
     override val name = "InheritanceCalculator"
 }
 
@@ -106,5 +119,6 @@ fun RouteRegistry.registerInvestment() {
     screen<AssetDetailRoute> { r -> AssetDetailScreen(r.assetId) }
     screen<AssetProjectionRoute> { r -> AssetProjectionScreen(r.assetId) }
     screen<ZakatRoute> { ZakatScreen() }
+    screen<ZakatPayRoute> { r -> ZakatPayScreen(r.yearId) }
     screen<AdvisorRoute> { AdvisorScreen() }
 }

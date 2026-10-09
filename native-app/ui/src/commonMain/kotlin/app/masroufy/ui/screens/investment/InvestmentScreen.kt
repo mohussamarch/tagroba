@@ -25,9 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Id
 import app.masroufy.core.TextKey
-import app.masroufy.core.isRealEstate
+import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.app.LocalSpace
-import app.masroufy.ui.app.SpaceDeps
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.EmptyState
@@ -48,57 +47,34 @@ import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
-import app.masroufy.usecase.FeedState
 import kotlinx.coroutines.launch
-
-/** اللي الشاشة جابته مرة واحدة: الشكل + مشكلة ملف الأسعار + الزكاة ظاهرة؟ ومرجعها + عدد الخطط. */
-private class InvestLoad(val ui: InvestmentUi?, val failed: Boolean, val feed: String?, val zakatHint: String?, val goals: Int?)
-
-/** بيحمّل «الاستثمار»: الأسعار (ويحطها على الأصول المربوطة) ⇒ الأصول ⇒ توقّع كل عقار ⇒ الزكاة والخطط. */
-private suspend fun loadInvestment(space: SpaceDeps, force: Boolean): Pair<InvestLoad, Int> {
-    val deps = space.investment
-    val today = deps.today()
-    var skipped = 0
-    val prices = runCatching { deps.feeds.prices(force) }.getOrNull()
-    if (prices is FeedState.Ready) skipped = runCatching { deps.syncPrices.sync(prices.feed).skipped.size }.getOrDefault(0)
-    val view = runCatching { deps.assets.listPortfolio(today) }.getOrNull()
-        ?: return InvestLoad(null, true, feedProblem(prices), null, null) to skipped
-    val averages = (runCatching { deps.feeds.averages() }.getOrNull() as? FeedState.Ready)?.feed
-    val defaults = deps.defaultRates.load(averages, space.space.countryCode, today)
-    val projections = view.rows.filter { it.asset.isRealEstate && !it.asset.archived }.mapNotNull { row ->
-        runCatching { row.asset.id to deps.growth.project(row.asset.id, defaultSellYear(today), space.space.countryCode, defaults) }.getOrNull()
-    }.toMap()
-    val zakatHint = runCatching {
-        if (deps.zakat.visible()) deps.zakat.rules().firstOrNull()?.source?.authority?.label?.let { t(TextKey.INVEST_TOOL_ZAKAT_HINT, it) } else null
-    }.getOrNull()
-    val goals = runCatching { deps.goals().size }.getOrNull()
-    return InvestLoad(investmentUi(view, projections, space.space.currency, today), false, feedProblem(prices), zakatHint, goals) to skipped
-}
 
 /** تبويب «الاستثمار» (لوحة `Investment`): البطل · العقار و«كم ستساوي» · الأصول · الزكاة والتحليلات والخطط · الحاسبات. */
 @Composable
 fun InvestmentScreen() {
     val space = LocalSpace.current
+    val deps = space.investment
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
-    var load by remember(space) { mutableStateOf<InvestLoad?>(null) }
+    var load by remember(space) { mutableStateOf<InvestmentLoad?>(null) }
     var addOpen by remember { mutableStateOf(false) }
     var refreshing by remember { mutableStateOf(false) }
-    LaunchedEffect(space) { load = loadInvestment(space, force = false).first }
+    LaunchedEffect(space) { load = loadInvestment(deps, space.space) }
     fun refresh() {
         if (refreshing) return
         refreshing = true
         scope.launch {
-            val (next, skipped) = loadInvestment(space, force = true)
+            val next = loadInvestment(deps, space.space, force = true)
             load = next
             refreshing = false
-            if (next.feed == null) toaster.show(if (skipped > 0) t(TextKey.INVEST_REFRESH_SKIPPED, app.masroufy.core.sentenceNumber(skipped)) else t(TextKey.INVEST_REFRESHED))
+            if (next.feedProblem == null) toaster.show(refreshedText(next.skipped))
         }
     }
     val title = t(TextKey.TAB_INVESTMENT)
     TabScaffold(title, header = {
         TabHeader(title, actions = {
+            // «تحديث الأسعار» و«إضافة أصل» (أفعال `Investment` في SCREENS.md) — بين العنوان والترس، والترس آخر حاجة على الشمال
             SurfaceIconButton(Lucide.REFRESH_CW, t(TextKey.INVEST_REFRESH), ::refresh)
             SurfaceIconButton(Lucide.PLUS, t(TextKey.INVEST_ADD_ASSET), { addOpen = true })
         })
@@ -108,7 +84,7 @@ fun InvestmentScreen() {
             item(key = "loading") { LoadingBlocks() }
             return@TabScaffold
         }
-        val problem = if (l.failed) t(TextKey.SHELL_LOAD_FAILED) else l.feed
+        val problem = if (l.failed) t(TextKey.SHELL_LOAD_FAILED) else l.feedProblem
         if (problem != null) item(key = "error") { AlertBanner(t(TextKey.INVEST_ERROR_TITLE), problem, t(TextKey.SHELL_RETRY), ::refresh) }
         val ui = l.ui
         if (ui != null && ui.empty) {
@@ -127,6 +103,10 @@ fun InvestmentScreen() {
     }
     AssetTradeSheet(addOpen, TradeMode.ADD, null, onDismiss = { addOpen = false }) { id -> nav.push(AssetDetailRoute(id)) }
 }
+
+/** رسالة «تحديث الأسعار» بعد ما الملف نزل: «تحدّثت الأسعار» — أو ومعاها عدد الأصول المربوطة اللي ما لقتش سعرها. */
+fun refreshedText(skipped: Int): String =
+    if (skipped > 0) t(TextKey.INVEST_REFRESH_SKIPPED, sentenceNumber(skipped)) else t(TextKey.INVEST_REFRESHED)
 
 @Composable
 private fun LoadingBlocks() {
@@ -147,6 +127,7 @@ private fun PortfolioHero(ui: InvestmentUi) {
             HeroDivider(Modifier.padding(top = 2.dp))
             AmountLine(t(TextKey.INVEST_COST), ui.costMinor, ui.currency, ink = Color.White, labelInk = Ink.onHeroMuted)
             HeroSigned(t(TextKey.INVEST_UNREALIZED), ui.unrealizedMinor, ui)
+            ui.realizedMinor?.let { HeroSigned(t(TextKey.INVEST_REALIZED), it, ui) }
         }
     }
 }
@@ -212,7 +193,7 @@ private fun ToolsCard(zakatHint: String?, goals: Int?) {
         }
         ToolRow(t(TextKey.INVEST_TOOL_ADVISOR), t(TextKey.INVEST_TOOL_ADVISOR_HINT), { nav.push(AdvisorRoute) }, trailing = chevron)
         RowGap()
-        ToolRow(t(TextKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsRoute) }, trailing = chevron)
+        ToolRow(t(TextKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsLink) }, trailing = chevron)
     }
 }
 
@@ -222,9 +203,9 @@ private fun CalculatorsGrid() {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(TextKey.INVEST_CALCS), style = Type.section())
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            CalcTile(t(TextKey.INVEST_CALC_SAVINGS), InvestmentIcons.SAVINGS, Modifier.weight(1f)) { nav.push(SavingsCalculatorRoute) }
-            CalcTile(t(TextKey.INVEST_CALC_RETIREMENT), InvestmentIcons.RETIREMENT, Modifier.weight(1f)) { nav.push(RetirementCalculatorRoute) }
-            CalcTile(t(TextKey.INVEST_CALC_INHERITANCE), InvestmentIcons.INHERITANCE, Modifier.weight(1f)) { nav.push(InheritanceCalculatorRoute) }
+            CalcTile(t(TextKey.INVEST_CALC_SAVINGS), InvestmentIcons.SAVINGS, Modifier.weight(1f)) { nav.push(SavingsCalculatorLink) }
+            CalcTile(t(TextKey.INVEST_CALC_RETIREMENT), InvestmentIcons.RETIREMENT, Modifier.weight(1f)) { nav.push(RetirementCalculatorLink) }
+            CalcTile(t(TextKey.INVEST_CALC_INHERITANCE), InvestmentIcons.INHERITANCE, Modifier.weight(1f)) { nav.push(InheritanceCalculatorLink) }
         }
     }
 }
