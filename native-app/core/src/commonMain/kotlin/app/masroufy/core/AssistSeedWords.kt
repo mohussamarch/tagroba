@@ -71,8 +71,10 @@ enum class WalletWord { CASH, BANK }
 
 private fun normSet(vararg w: String) = w.map(::assistNormalize).toSet()
 
-internal val CASH_WORDS = normSet("كاش", "نقد", "نقدا", "نقدي", "نقدًا", "cash", "كاشا")
-internal val BANK_WORDS = normSet("بنك", "البنك", "بطاقه", "البطاقه", "كارت", "الكارت", "الفيزا", "فيزا", "مدى", "مدي", "حسابي البنكي", "card", "bank", "visa", "mada")
+internal val ASSIST_CASH_WORDS = normSet("كاش", "نقد", "نقدا", "نقدي", "نقدًا", "cash", "كاشا", "بالكاش")
+internal val ASSIST_BANK_WORDS = normSet(
+    "بنك", "البنك", "بطاقه", "البطاقه", "كارت", "الكارت", "الفيزا", "فيزا", "مدى", "مدي", "card", "bank", "visa", "mada", "ابل باي", "apple pay",
+)
 
 /** كلمات عامة في أسامي المحلات والمحافظ والأهداف — الاسم المميز هو اللي بعدها («مقهى المرسى» ⇒ «المرسى»). */
 internal val GENERIC_NAME_WORDS = normSet(

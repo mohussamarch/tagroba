@@ -17,6 +17,9 @@ enum class AssistNote {
 
     /** الاسم ملتبس (شخصين بنفس الاسم) ⇒ اختيار، ما بنخمّنش. */
     AMBIGUOUS,
+
+    /** رقم مكتوب كمبلغ ومش صالح (أكتر من خانتين كسر · كبير جدًا) ⇒ سؤال بصراحة. */
+    INVALID_AMOUNT,
 }
 
 data class AssistUnderstanding(
@@ -64,9 +67,10 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
         val note = if (s.money.distinct.size > 1) AssistNote.TWO_AMOUNTS else null
         return done(AssistIntent.SPLIT, s.entities.ofType(AssistEntityType.PERSON).firstOrNull(), note = note)
     }
-    // ٣. مصروف بمبلغ (مش سؤال)
-    if (s.hasAmount && !s.question && controlOf(s) == null) {
+    // ٣. مصروف بمبلغ (مش سؤال) — والرقم اللي مكتوب كمبلغ ومش صالح («١٥٫٥٥٥») ⇒ سؤال بصراحة من غير كارت
+    if ((s.hasAmount || (s.money.invalid && !s.question)) && !s.question && controlOf(s) == null) {
         val note = when {
+            !s.hasAmount -> AssistNote.INVALID_AMOUNT
             s.money.distinct.size > 1 -> AssistNote.TWO_AMOUNTS
             s.dayOffset == -1 -> AssistNote.FUTURE_DATE
             else -> null
@@ -74,7 +78,7 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
         val subject = s.specific(AssistEntityType.RECURRING) ?: s.specific(AssistEntityType.MERCHANT) ?: s.entity(AssistEntityType.CATEGORY)
         return done(AssistIntent.QUICK_ADD, subject, note = note)
     }
-    // ٤. موضوع معروف: التحكم · المحفظة الأساسية · تسجيل فاتورة · أسئلة البيانات · طلب نصيحة
+    // ٤. موضوع معروف: التحكم · المحفظة الأساسية · تسجيل فاتورة · طلب نصيحة · أسئلة البيانات
     controlOf(s)?.let { (intent, on) -> return done(intent, learning = on) }
     s.entity(AssistEntityType.WALLET)?.takeIf { s.has(AssistWords.MAIN) || s.has(AssistWords.USUALLY_FROM) }?.let {
         val note = if (s.specific(AssistEntityType.WALLET) == null && s.entities.ambiguous(AssistEntityType.WALLET)) AssistNote.AMBIGUOUS else null
@@ -84,10 +88,9 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
         return done(AssistIntent.RECORD_DUE_BILL, s.specific(AssistEntityType.RECURRING) ?: s.entity(AssistEntityType.CATEGORY))
     }
     if (s.has(AssistTalkWords.ADVICE)) return done(AssistIntent.ADVICE_REQUEST)
-    dataTopicOf(s, ctx)?.let { (intent, subject) ->
-        val note = if (subject?.type == AssistEntityType.PERSON && s.entities.ambiguous(AssistEntityType.PERSON)) AssistNote.AMBIGUOUS else null
-        return done(intent, subject, note = note)
-    }
+    // «فين/وين/وريني/افتح …» من غير «كام/إمتى» ⇒ إجابة التنقل للموضوع (التصميم: سؤال «فين» ⇒ الشاشة)، ولو ما فيش شاشة ⇒ البيانات
+    val navMode = (s.has(AssistWords.WHERE) || s.has(AssistWords.NAV_VERB)) && !s.has(AssistWords.HOW_MUCH) && !s.has(AssistWords.WHEN)
+    if (!navMode) dataTopic(s, ctx)?.let { return done(it.first, it.second, note = it.third) }
     // ٥. اسم شاشة: اسم من أسامي المستخدم (شخص · محفظة · تصنيف بسقف …) ثم كلمات الشاشات
     entityScreen(s)?.let { (screen, entity) ->
         val note = if (s.entities.ambiguous(entity.type)) AssistNote.AMBIGUOUS else null
@@ -95,9 +98,17 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
     }
     val named = screensNamedIn(s.tokens, ctx.visible)
     if (named.isNotEmpty()) return done(AssistIntent.NAV, screens = named)
+    if (navMode) dataTopic(s, ctx)?.let { return done(it.first, it.second, note = it.third) }
     smallTalkOf(s)?.let { return done(it) }
     // ٦. مش فاهم (الأقرب بيتحسب في طبقة الاستخدامات بالتبويب والشاشات الظاهرة)
     return done(AssistIntent.UNKNOWN)
+}
+
+/** سؤال البيانات + ملاحظة «الاسم ملتبس» لو الشخص ليه اتنين بنفس الاسم. */
+private fun dataTopic(s: AssistSignals, ctx: AssistUnderstandContext): Triple<AssistIntent, AssistEntity?, AssistNote?>? {
+    val (intent, subject) = dataTopicOf(s, ctx) ?: return null
+    val note = if (subject != null && subject.start >= 0 && s.entities.ambiguous(subject.type)) AssistNote.AMBIGUOUS else null
+    return Triple(intent, subject, note)
 }
 
 /** تعديل الكارت: مبلغ أو محفظة أو يوم، أو «التصنيف …» صريح — ومن غير كلمة مصروف جديدة (تصنيف/محل) ومش سؤال. */

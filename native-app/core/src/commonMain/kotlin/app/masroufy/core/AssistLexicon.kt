@@ -106,8 +106,8 @@ fun findEntities(tokens: List<String>, lex: AssistLexicon): List<AssistEntity> {
     for (w in lex.wallets) out += match(tokens, AssistEntityType.WALLET, w.id, w.name, listOf(w.name), allowPartial = true)
     for ((i, t) in tokens.withIndex()) {
         val word = when {
-            cliticForms(t).any { it in CASH_WORDS } -> WalletWord.CASH
-            cliticForms(t).any { it in BANK_WORDS } -> WalletWord.BANK
+            cliticForms(t).any { it in ASSIST_CASH_WORDS } -> WalletWord.CASH
+            cliticForms(t).any { it in ASSIST_BANK_WORDS } -> WalletWord.BANK
             else -> null
         } ?: continue
         if (out.any { it.type == AssistEntityType.WALLET && i in it.start until it.end }) continue

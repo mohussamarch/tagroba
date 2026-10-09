@@ -1,47 +1,13 @@
 package app.masroufy.core
 
 /**
- * كروت التأكيد اللي المساعد بيطلّعها قبل أي كتابة: **عملية** (إضافة بالكتابة §78-٣) و**تقسيم فاتورة**. ولا حاجة بتتكتب قبل «احفظ» —
+ * قواعد كروت التأكيد اللي المساعد بيطلّعها قبل أي كتابة: **عملية** (إضافة بالكتابة §78-٣) و**تقسيم فاتورة**. ولا حاجة بتتكتب قبل «احفظ» —
  * والحفظ نفسه بحالة الاستخدام العادية للإضافة (`AddTransaction`) والربط بالأشخاص (`ManagePeople`).
  */
-data class TxnDraft(
-    /** موجب دايمًا، بالوحدة الصغرى. */
-    val amountMinor: Halalas,
-    val currency: Currency,
-    val occurredAt: IsoDate,
-    /** null = لسه مفيش محفظة أساسية ⇒ المساعد بيسأل «بتصرف عادةً منين؟» الأول. */
-    val walletId: Id?,
-    val categoryId: Id?,
-    /** اسم العملية (المحل · التصنيف · الكلمة اللي كتبها). */
-    val title: String,
-    val merchantId: Id? = null,
-    /** شراء (الافتراضي) أو رسوم («رسوم التحويل ١٥»). */
-    val economicKind: EconomicKind = EconomicKind.PURCHASE,
-    /** الفاتورة الدورية اللي الكلام بيتكلم عنها (محفظتها المعتادة). */
-    val recurringId: Id? = null,
-    /** عملية شبهها اتسجلت النهارده (نفس المبلغ) ⇒ تحذير على الكارت، ما بيمنعش. */
-    val similarTransactionId: Id? = null,
-    /** المستخدم غيّر التصنيف على الكارت ⇒ بيتحفظ للمحل لما يأكد (§75-16). */
-    val categoryChanged: Boolean = false,
-)
-
-data class SplitShare(val personId: Id?, val name: String, val amountMinor: Halalas, val me: Boolean = false)
-
-data class SplitDraft(
-    val totalMinor: Halalas,
-    val currency: Currency,
-    val occurredAt: IsoDate,
-    val walletId: Id?,
-    val categoryId: Id?,
-    val title: String,
-    val shares: List<SplitShare>,
-    /** عملية موجودة هتتقسم (بدل ما تتسجل جديدة). */
-    val existingTransactionId: Id? = null,
-)
 
 /**
- * التقسيم بأعداد صحيحة: كل واحد [total] ÷ [heads]، و**الباقي (الهللات) على نصيبك إنت** (التصميم: «remainder halalas on your own share»).
- * أول نصيب = نصيبك. مجموع الأنصبة = الإجمالي بالظبط.
+ * التقسيم بأعداد صحيحة (التصميم `AssistSplit`): كل واحد [total] ÷ [heads]، و**الباقي (الهللات) على نصيبك إنت**. أول نصيب = نصيبك.
+ * مجموع الأنصبة = الإجمالي بالظبط. (التقسيم من غيرك — «بين أحمد وسارة» بس — مش في أول نسخة: المساعد بيحسبك واحد منهم دايمًا.)
  */
 fun splitShares(total: Halalas, heads: Int): List<Halalas> {
     require(heads >= 2) { "split needs two people or more" }
@@ -52,22 +18,25 @@ fun splitShares(total: Halalas, heads: Int): List<Halalas> {
 }
 
 /** من أين المحفظة اتختارت — للعرض والاختبار. */
-enum class WalletSource { NAMED_IN_TEXT, RECURRING_BILL, MAIN_WALLET, NONE }
+enum class WalletSource { NAMED_IN_TEXT, RECURRING_BILL, MAIN_WALLET, ONLY_WALLET, NONE }
 
 /**
- * محفظة المصروف المكتوب (رد المالك ٢ — 2026-10-09 + الرد التاني «الفاتورة الدورية على محفظتها المعتادة»):
- * المذكورة في الكلام ⇒ محفظة الفاتورة الدورية (محفظة آخر دفعة ليها) ⇒ المحفظة الأساسية للبلد ⇒ مفيش (⇒ «بتصرف عادةً منين؟» مرة واحدة).
+ * محفظة المصروف المكتوب (رد المالك ٢ — 2026-10-09 + النافذة التانية: «الفاتورة الدورية على محفظتها المعتادة»):
+ * المذكورة في الكلام ⇒ محفظة الفاتورة الدورية (محفظة آخر دفعة ليها) ⇒ المحفظة الأساسية للبلد ⇒ محفظة واحدة بس في البلد ⇒ مفيش
+ * (⇒ «بتصرف عادةً منين؟» مرة واحدة).
  */
-fun resolveSpendWallet(named: Id?, recurringWallet: Id?, mainWallet: Id?): Pair<Id?, WalletSource> = when {
+fun resolveSpendWallet(named: Id?, recurringWallet: Id?, mainWallet: Id?, onlyWallet: Id? = null): Pair<Id?, WalletSource> = when {
     named != null -> named to WalletSource.NAMED_IN_TEXT
     recurringWallet != null -> recurringWallet to WalletSource.RECURRING_BILL
     mainWallet != null -> mainWallet to WalletSource.MAIN_WALLET
+    onlyWallet != null -> onlyWallet to WalletSource.ONLY_WALLET
     else -> null to WalletSource.NONE
 }
 
 /**
- * عملية شبه المكتوبة اتسجلت **نفس اليوم بنفس المبلغ** (خارجة) — تحذير على الكارت بس (اختيار Claude: نفس فكرة «شبه عملية موجودة» في
- * منع التكرار §36، من غير ما نمنع — ممكن يكون اشترى قهوتين).
+ * عملية شبه المكتوبة اتسجلت **نفس اليوم بنفس المبلغ** (خارجة) — تحذير على الكارت بس، ما بيمنعش (سؤال المالك ٨ — المقترح: ممكن يكون
+ * اشترى قهوتين، أو العملية دي نفسها اتسجلت لوحدها من رسالة البنك §72).
  */
 fun similarSameDay(existing: List<Transaction>, date: IsoDate, amountMinor: Halalas, currency: Currency): Transaction? =
-    existing.firstOrNull { it.occurredAt.take(10) == date && it.amountMinor == amountMinor && it.currency == currency && it.observedDirection == Direction.OUT }
+    existing.filter { it.occurredAt.take(10) == date && it.amountMinor == amountMinor && it.currency == currency && it.observedDirection == Direction.OUT }
+        .maxWithOrNull(compareBy<Transaction> { it.occurredAt }.thenBy { it.sourceOrder })

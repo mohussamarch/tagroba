@@ -15,6 +15,10 @@ fun assistNormalize(raw: String): String {
             code in 0x200B..0x200F || code in 0x202A..0x202E || code in 0x2066..0x2069 || code == 0xFEFF -> Unit
             c == 'أ' || c == 'إ' || c == 'آ' || c == 'ٱ' -> out.append('ا')
             c == 'ة' -> out.append('ه')
+            c == 'ؤ' -> out.append('و')
+            c == 'ئ' -> out.append('ي')
+            // رمز الريال (القديم والجديد) ⇒ كلمة «ريال»
+            code == 0xFDFC || code == 0x20C1 -> out.append(" ريال ")
             c == 'ى' -> out.append('ي')
             code in 0x0660..0x0669 -> out.append('0' + (code - 0x0660))
             code in 0x06F0..0x06F9 -> out.append('0' + (code - 0x06F0))
@@ -96,9 +100,12 @@ fun tokenHasStem(token: String, stem: String, fuzzy: Boolean = true): Boolean {
     if (forms.any { it.startsWith(stem) }) return true
     if (!fuzzy || stem.length < ASSIST_FUZZY_MIN_STEM) return false
     return forms.any { f ->
-        f.length >= stem.length - 1 && (stem.length - 1..stem.length + 1).any { n -> n <= f.length && editDistance(f.substring(0, n), stem) <= 1 }
+        f.length >= stem.length - 1 && (stem.length - 1..stem.length + 1).any { n -> n <= f.length && editDistance(loose(f.substring(0, n)), loose(stem)) <= 1 }
     }
 }
+
+/** الشكل «المرن» للمقارنة التقريبية بس (التصميم): ذ⇒ز · ث⇒س · ظ⇒ض. */
+fun loose(word: String): String = word.replace('ذ', 'ز').replace('ث', 'س').replace('ظ', 'ض')
 
 /** الكلمة نفسها (بأي أداة قبلها) — من غير لواحق. */
 fun tokenIsWord(token: String, word: String): Boolean = cliticForms(token).any { it == word }

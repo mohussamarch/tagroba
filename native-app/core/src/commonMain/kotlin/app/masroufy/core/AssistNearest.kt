@@ -31,7 +31,7 @@ fun screensNamedIn(tokens: List<String>, visible: (AssistScreen) -> Boolean = { 
     val kept = hits.filter { h ->
         hits.none { o -> o !== h && o.weight > h.weight && o.start <= h.start && o.end >= h.end }
     }
-    return kept.sortedWith(compareByDescending<ScreenHit> { it.weight }.thenBy { it.screen.ordinal }).map { it.screen }.distinctBy { it.board + it.screen.section }.take(limit)
+    return kept.sortedWith(compareByDescending<ScreenHit> { it.weight }.thenBy { it.screen.ordinal }).map { it.screen }.distinctBy { it.board + it.section }.take(limit)
 }
 
 private fun grams(text: String): List<String> = text.split(' ').filter { it.length >= 3 }.flatMap { w -> (0..w.length - 3).map { w.substring(it, it + 3) } }

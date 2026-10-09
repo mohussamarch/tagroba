@@ -22,7 +22,6 @@ import app.masroufy.port.AlertInteractionStore
 import app.masroufy.port.AlertReceiptStore
 import app.masroufy.port.AlertSettingsStore
 import app.masroufy.port.Clock
-import app.masroufy.port.DismissalStore
 import app.masroufy.port.UsualHoursStore
 
 /**
@@ -42,11 +41,6 @@ data class AlertEngineDeps(
     val receipts: AlertReceiptStore,
     val inbox: AlertInboxStore,
     val clock: Clock,
-    /**
-     * الإشعارات اللي المستخدم مسحها بـ«×» (رد المالك ٣ — 2026-10-09، على الحساب): موضوعها ما بيرجعش للصفحة ولا للشريط لحد ما يتحل؛
-     * لما يتحل المسح بيتنسى. null = من غير مسح (زي قبل).
-     */
-    val dismissals: DismissalStore? = null,
 )
 
 /** إشعار للشريط: النص العام + إمتى (null = دلوقتي) + مفاتيح التنبيهات اللي جواه. */
@@ -72,13 +66,7 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
         val resolved = deps.inbox.listAll().map { it.threadKey }.filter { it !in liveThreads }
         if (resolved.isNotEmpty()) deps.inbox.remove(resolved)
 
-        // الممسوح بـ«×»: ما بيتكتبش ولا بيتبعت. اللي موضوعه اتحل ⇒ المسح بيتشال (لو رجع بعدين = حاجة جديدة)
-        val dismissedKeys = deps.dismissals?.listAll().orEmpty().map { it.key }
-        val staleDismissals = dismissedKeys.filter { it !in liveThreads }
-        if (staleDismissals.isNotEmpty()) deps.dismissals?.remove(staleDismissals)
-        val dismissed = dismissedKeys.toSet() - staleDismissals.toSet()
-
-        val sent =deps.receipts.listAll().map { it.eventKey }.toSet()
+        val sent = deps.receipts.listAll().map { it.eventKey }.toSet()
         val stats = deps.interactions.load().toMutableMap()
         val hours = deps.hours.load()
         val nowIso = deps.clock.nowIso()
@@ -89,7 +77,6 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
 
         val kept = deps.inbox.listAll().map { it.threadKey }.toMutableSet()
         for (c in live) {
-            if (c.threadKey in dismissed) continue
             if (c.kind.group in off) {
                 // مقفولة ⇒ الصفحة بس: السطر بيتكتب (أو بيتحدث لدرجة أعلى) من غير شريط ولا إيصال ولا عدّ
                 val current = deps.inbox.listAll().firstOrNull { it.threadKey == c.threadKey }
@@ -131,8 +118,7 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
     /** صفحة الإشعارات: الأحدث الأول، وكل سطر معاه «ليه اتبعت دلوقتي»، و«مقفولة» لو مجموعته مقفولة دلوقتي. */
     suspend fun inbox(): List<AlertInboxView> {
         val off = deps.settings.disabledGroups()
-        val dismissed = deps.dismissals?.listAll().orEmpty().map { it.key }.toSet()
-        return deps.inbox.listAll().filter { it.threadKey !in dismissed }.sortedWith(compareByDescending<AlertInboxEntry> { it.createdAt }.thenBy { it.threadKey })
+        return deps.inbox.listAll().sortedWith(compareByDescending<AlertInboxEntry> { it.createdAt }.thenBy { it.threadKey })
             .map { AlertInboxView(it, alertReasonText(it.decision), alertGroupLabel(it.kind.group), it.decision.muted || it.kind.group in off) }
     }
 

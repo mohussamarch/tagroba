@@ -86,21 +86,9 @@ enum class AssistScreen(val board: String, val navWire: String, val label: TextK
         }
 
     companion object {
+        /** اللوحة (والقسم) ⇒ الشاشة — اللي من غير معرّف الأول (`Roscas` قبل `RoscaDetail` لو اللوحة واحدة). */
         fun fromBoard(board: String, section: String? = null): AssistScreen? =
-            entries.firstOrNull { it.board == board && it.section == section } ?: entries.firstOrNull { it.board == board }
-    }
-}
-
-/**
- * رابط شاشة في رد المساعد: الشاشة + معرّفات بتتفتح بيها (`personId` · `categoryId` · `section` …). الشاشات بتتبني في مكان تاني — هنا
- * «فين» بس.
- */
-data class ScreenLink(val screen: AssistScreen, val args: Map<String, String> = emptyMap()) {
-    val board: String get() = screen.board
-    val label: String get() = uiText(screen.label)
-
-    companion object {
-        fun of(screen: AssistScreen, vararg args: Pair<String, String>): ScreenLink =
-            ScreenLink(screen, linkedMapOf(*args).apply { screen.section?.let { put("section", it) } })
+            entries.firstOrNull { it.board == board && it.section == section } ?: entries.firstOrNull { it.board == board && !it.needsEntity }
+                ?: entries.firstOrNull { it.board == board }
     }
 }

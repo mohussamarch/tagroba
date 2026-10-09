@@ -38,7 +38,7 @@ class TextsTest {
         val newer = TextKey.entries.map { it.name }.filter { it !in snapshot }
         val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_FEED_ALERT_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys +
             EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys + EGYPTIAN_CALC_TEXTS.keys + EGYPTIAN_RETIRE_TEXTS.keys + EGYPTIAN_GROWTH_TEXTS.keys +
-            EGYPTIAN_INHERITANCE_DISTANT_TEXTS.keys + EGYPTIAN_SMS_AUTO_TEXTS.keys
+            EGYPTIAN_INHERITANCE_DISTANT_TEXTS.keys + EGYPTIAN_SMS_AUTO_TEXTS.keys + EGYPTIAN_ASSIST_ALL_TEXTS.keys
         assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 
