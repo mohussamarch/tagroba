@@ -16,8 +16,6 @@ import kotlin.test.assertTrue
  * الجولة السابعة (المراجعة العدائية التالتة): **الاسترداد** بشكل معروف كان بيتسجل لوحده دخل، والمالك قرّر في §75-6 (✗ — غير المقترح):
  * «الاسترداد ⇒ يقترح «استرداد» ويستنى تأكيده». و**السحب من الصرّاف** كان بيتسجل صرف عادي من البنك، و§75-4 (النقل لمحفظة الكاش)
  * لسه ما اتبناش. الاتنين دلوقتي **بيستنوا** ومعاهم سببهم، والشاشة بتعرضهم جاهزين (ضغطة «سجّل الكل» = التأكيد). كل الرسايل مخترعة.
- * الشريحة S2: النقل لمحفظة الكاش اتبنى (`CashWithdrawalEffect` — `SmsCashWithdrawalTest`)؛ هنا البلد مستوردها من غير الأثر (`SmsSpace`)
- * والهدف من غير محفظة كاش ⇒ السحب لسه بيستنى، وسببه بقى «مفيش محفظة كاش واحدة» (`SMS_WAIT_NO_CASH_WALLET`).
  */
 class AutoRecordSmsRefundTest {
     private val sar = listOf(
@@ -44,7 +42,7 @@ class AutoRecordSmsRefundTest {
         )
         val ready = screen.load(SmsReviewTarget(BANK.id, BANK.name)).ready.associateBy { it.messageId }
         for (id in listOf("rf1", "rf2", "rf3")) assertEquals(uiText(TextKey.SMS_WAIT_REFUND), ready.getValue(id).confirmReason, id)
-        for (id in listOf("atm1", "atm2")) assertEquals(uiText(TextKey.SMS_WAIT_NO_CASH_WALLET), ready.getValue(id).confirmReason, id)
+        for (id in listOf("atm1", "atm2")) assertEquals(uiText(TextKey.SMS_WAIT_CASH_WITHDRAWAL), ready.getValue(id).confirmReason, id)
         assertTrue(ready.values.none { it.shape.clear })
 
         // «سجّل الكل» = تأكيد المالك ⇒ بيتسجلوا

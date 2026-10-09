@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.BankFeeCategory
+import app.masroufy.core.CategorizationSource
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
@@ -8,6 +9,7 @@ import app.masroufy.core.MatchingState
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SmsFee
 import app.masroufy.core.SmsKind
+import app.masroufy.core.SmsRow
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
@@ -18,31 +20,43 @@ import app.masroufy.port.CategoryRepository
 
 /**
  * الرسوم = **عملية لوحدها «رسوم بنكية»** جنب العملية الأصلية (§77-B — قرار المالك 2026-10-09 ✓): الرسوم المكتوبة في رسالة البنك
- * ([app.masroufy.core.SmsRow.fee] — `SmsFees.kt`) بتتسجل عملية صرف تانية **في نفس الدفعة** (نفس اليوم والمحفظة والعملة)، فرصيد المحفظة
- * بيفضل مظبوط. عمرها ما بتتكتب من غير عمليتها الأصلية (نفس وحدة العمل)، والتراجع عن الدفعة بيمسح الاتنين.
+ * ([SmsRow.fee] — `SmsFees.kt`) بتتسجل عملية صرف تانية **في نفس الدفعة** (نفس اليوم والمحفظة والعملة)، فرصيد المحفظة بيفضل مظبوط.
+ * عمرها ما بتتكتب من غير عمليتها الأصلية (نفس وحدة العمل)، والتراجع عن الدفعة بيمسح الاتنين. اللي بيتكتب = [smsFeeToRecord] بالظبط
+ * (الشاشة بتعرضه قبل «سجّل الكل» — `SmsReviewLine.fee`).
  *
  * - الرسوم **جوه** مبلغ الرسالة («إجمالي المبلغ المستحق») ⇒ العملية الأصلية = المبلغ − الرسوم، و`originalAmountMinor` = مبلغ الرسالة —
  *   ده الحقل اللي التطبيقين بيقارنوا بيه التكرار (§32)، فقراية نفس الرسالة تاني بتطلع **«مكررة»** مش «تعارض» ومن غير رسوم تانية.
  *   الرسوم **برّه** المبلغ ⇒ الأصلية زي ما هي.
+ * - **عقد الترتيب:** الأثر ده بعد الآثار اللي بتغيّر المبلغ (`CashWithdrawalEffect` · المبلغ المحلي للشراء الأجنبي …): لو أثر قبله غيّر
+ *   مبلغ العملية، الرسوم اللي **جوه** المبلغ ما بتتقسمش (مش عارفين المبلغ الجديد فيه الرسوم ولا لأ — قاعدة 10)، واللي **برّه** بتتكتب
+ *   والأصلية ما بتتلمسش.
  * - عملية الرسوم: نوعها «رسوم» مؤكد · تصنيفها «رسوم بنكية» ([BankFeeCategory] — بيتعمل لو مش موجود) · مراجَعة · نوع العملية في المصدر
  *   «رسوم بنكية» (فزون التحويلات ما بيعتبرهاش تحويل) · سجل مصدر لوحده مرجعه = مرجع الرسالة + `#fee`.
- * - رسالة الرسوم نفسها ([SmsKind.FEE] — «خصم رسوم» · «Debit fees») ⇒ عمليتها نفسها بتبقى «رسوم» مؤكد تحت «رسوم بنكية» (لو المالك ما
- *   اختارش تصنيف تاني).
+ * - رسالة الرسوم نفسها ([SmsKind.FEE] — «خصم رسوم» · «Debit fees») ⇒ عمليتها نفسها بتبقى «رسوم» مؤكد. التصنيف: اللي المالك اختاره
+ *   (دلوقتي، أو **للمحل ده قبل كده** — §75-16 · §36) بيفضل زي ما الشاشة عرضته؛ «رسوم بنكية» بس لو مفيش تصنيف من المالك.
  */
 class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
     override suspend fun prepare(ctx: RecordContext) {
         val feeKind = ctx.lines.filter { it.sms?.kind == SmsKind.FEE && it.transaction.observedDirection == Direction.OUT }
-        val withFee = ctx.lines.filter { it.sms?.kind != SmsKind.FEE && it.sms?.fee != null }
+        val withFee = ctx.lines.mapNotNull { line -> line.sms?.let(::smsFeeToRecord)?.let { line to it } }
         if (feeKind.isEmpty() && withFee.isEmpty()) return
-        val categoryId = bankFeeCategoryId()
+        // «رسوم بنكية» بيتعمل بس لو فيه عملية هتتسجل تحته
+        var bankFees: Id? = null
+        val bankFeeCategory: suspend () -> Id = { bankFees ?: bankFeeCategoryId().also { bankFees = it } }
         for (line in feeKind) {
-            val chosen = ctx.chosenCategories[line.line.row.lineNumber]
-            line.transaction = line.transaction.copy(
-                economicKind = EconomicKind.FEE, economicKindConfirmed = true, categoryId = chosen ?: categoryId, categoryConfirmed = true,
-                reviewState = ReviewState.CONFIRMED, sourceOperationType = BankFeeCategory.NAME, updatedAt = ctx.nowIso,
-            )
+            val t = line.transaction
+            val owners = ctx.chosenCategories[line.line.row.lineNumber] ?: t.categoryId?.takeIf { line.line.categorySource in OWNER_SOURCES }
+            line.transaction = if (owners != null) {
+                // تصنيف المالك: زي ما `ImportStatement` بناه (المختار مؤكد · المتفتكر للمحل زي أي محل متفتكر)
+                t.copy(economicKind = EconomicKind.FEE, economicKindConfirmed = true, sourceOperationType = BankFeeCategory.NAME, updatedAt = ctx.nowIso)
+            } else {
+                t.copy(
+                    economicKind = EconomicKind.FEE, economicKindConfirmed = true, categoryId = bankFeeCategory(), categoryConfirmed = true,
+                    reviewState = ReviewState.CONFIRMED, sourceOperationType = BankFeeCategory.NAME, updatedAt = ctx.nowIso,
+                )
+            }
         }
-        for (line in withFee) split(ctx, line, line.sms!!.fee!!, categoryId)
+        for ((line, fee) in withFee) split(ctx, line, fee, bankFeeCategory)
     }
 
     /** «رسوم بنكية» (بيتعمل لو مش موجود — اللي المالك غيّره ما يتكتبش فوقه). */
@@ -53,15 +67,13 @@ class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
         return created.id
     }
 
-    private fun split(ctx: RecordContext, line: RecordedLine, fee: SmsFee, categoryId: Id) {
+    private suspend fun split(ctx: RecordContext, line: RecordedLine, fee: SmsFee, category: suspend () -> Id) {
         val main = line.transaction
-        val source = line.line.row.amountMinor
-        // من غير مرجع الرسالة مفيش مرجع لسجل الرسوم (ومنع التكرار) ⇒ ما بنقسمش. الرسوم جوه المبلغ: لازم يفضل للأصلية مبلغ، وفي الصادر بس
         val reference = line.line.row.reference ?: return
-        if (fee.amountMinor <= 0) return
         if (fee.includedInAmount) {
-            if (main.observedDirection != Direction.OUT || fee.amountMinor >= source) return
-            line.transaction = main.copy(amountMinor = subtractMoney(source, fee.amountMinor), originalAmountMinor = source, updatedAt = ctx.nowIso)
+            // الرسوم اتقرت على مبلغ الرسالة — أثر قبلنا غيّره ⇒ ما بنقسمش (عقد الترتيب فوق)
+            if (main.amountMinor != line.line.row.amountMinor) return
+            line.transaction = main.copy(amountMinor = subtractMoney(main.amountMinor, fee.amountMinor), originalAmountMinor = main.amountMinor, updatedAt = ctx.nowIso)
         }
         val txn = Transaction(
             id = ctx.ids.next("txn"),
@@ -79,7 +91,7 @@ class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
             isCashTagged = false,
             createdAt = ctx.nowIso,
             updatedAt = ctx.nowIso,
-            categoryId = categoryId,
+            categoryId = category(),
             walletId = main.walletId,
             rawDescription = main.rawDescription,
             rawMerchantName = BankFeeCategory.NAME,
@@ -103,5 +115,20 @@ class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
     companion object {
         /** مرجع سجل مصدر الرسوم = مرجع الرسالة + ده (نص عادي — التطبيق القديم بيقراه زي أي مرجع). */
         const val FEE_REFERENCE_SUFFIX = "#fee"
+
+        /** التصنيف جه من المالك: أكّده بنفسه · أو افتكره للمحل ده (§36 · §75-16). */
+        private val OWNER_SOURCES = setOf(CategorizationSource.USER_CONFIRMED, CategorizationSource.VERIFIED_MERCHANT)
     }
+}
+
+/**
+ * الرسوم اللي هتتسجل عملية «رسوم بنكية» لوحدها من صف الرسالة ده، أو null — [SmsFeeEffect] بيكتب ده بالظبط، والشاشة بتعرضه
+ * (`SmsReviewLine.fee`) قبل «سجّل الكل». رسالة الرسوم نفسها مالهاش رسوم زيادة · من غير مرجع مفيش سجل للرسوم (ومنع التكرار) · الرسوم
+ * جوه المبلغ: في الصادر بس ولازم يفضل للأصلية مبلغ.
+ */
+internal fun smsFeeToRecord(row: SmsRow): SmsFee? {
+    val fee = row.fee ?: return null
+    if (row.kind == SmsKind.FEE || row.reference == null || fee.amountMinor <= 0) return null
+    if (fee.includedInAmount && (row.direction != Direction.OUT || fee.amountMinor >= row.amountMinor)) return null
+    return fee
 }

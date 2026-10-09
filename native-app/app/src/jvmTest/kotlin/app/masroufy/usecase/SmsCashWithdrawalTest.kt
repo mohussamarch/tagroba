@@ -25,7 +25,8 @@ import kotlin.test.assertTrue
 
 /**
  * السحب من الصرّاف = نقل لمحفظة الكاش لوحده (§75-4 — `CashWithdrawalEffect`): تحويل داخلي مؤكد من البنك للكاش، البنك بينزل والكاش بيزيد،
- * ومش مصروف ولا «حركة فلوس». البلد اللي مالهاش محفظة كاش **واحدة** ⇒ بيستنى بسبب جديد. الإيداع الكاش والشراء بالكاش لسه بيستنوا
+ * ومش مصروف ولا «حركة فلوس». البلد اللي مالهاش محفظة كاش **واحدة** بنفس العملة ⇒ بيستنى وسببه بيقول إمتى بيتنقل لوحده
+ * (`SMS_WAIT_CASH_WITHDRAWAL` — مراجعة S2: النص صحيح حتى لو الشاشة بنت الهدف بنفسها). الإيداع الكاش والشراء بالكاش لسه بيستنوا
  * (أسئلتهم مفتوحة). كل الرسايل والأسامي مخترعة.
  */
 class SmsCashWithdrawalTest {
@@ -86,7 +87,7 @@ class SmsCashWithdrawalTest {
                 Texts.language = language
                 Texts.arabicVariant = variant
                 val line = desk.load().ready.single()
-                assertEquals(uiText(TextKey.SMS_WAIT_NO_CASH_WALLET), line.confirmReason, "$wallets $language $variant")
+                assertEquals(uiText(TextKey.SMS_WAIT_CASH_WITHDRAWAL), line.confirmReason, "$wallets $language $variant")
                 assertTrue(!line.shape.clear)
                 texts += line.confirmReason
             }

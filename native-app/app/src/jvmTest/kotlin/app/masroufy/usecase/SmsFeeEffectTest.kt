@@ -62,14 +62,20 @@ internal val S2_EG_CASH = Wallet("w-eg-cash", "كاش مصر", Currency.EGP, "ca
 internal class S2Desk(
     wallets: List<Wallet> = listOf(CASH, BANK),
     val parse: (BankSmsMessage, Int) -> SmsParseResult = ::parseBankSms,
-    withEffects: Boolean = true,
+    val withEffects: Boolean = true,
     extraCategories: List<Category> = emptyList(),
+    /** آثار قبل آثار S2 (عقد الترتيب — زي المبلغ المحلي للشراء الأجنبي في شريحة تانية). */
+    before: List<RecordEffect> = emptyList(),
 ) {
     val space = SmsSpace(wallets = wallets, parse = parse)
     val inbox = MemorySmsInbox(emptyList(), available = true)
-    val effects: List<RecordEffect> = if (withEffects) listOf(CashWithdrawalEffect(space.wallets), SmsFeeEffect(space.categories), RefundConfirmEffect()) else emptyList()
+
+    /** نفس ذاكرة المحلات للشاشة («افتكره») وللاستيراد (التصنيف المتفتكر). */
+    val merchants = MemoryMerchantRepository()
+    val effects: List<RecordEffect> = before +
+        if (withEffects) listOf(CashWithdrawalEffect(space.wallets), SmsFeeEffect(space.categories), RefundConfirmEffect()) else emptyList()
     val screen = ReviewSmsInbox(
-        ReviewSmsInboxDeps(ManageSmsInbox(inbox, parse), ImportStatement(space.importDeps().copy(effects = effects)), MemoryMerchantRepository(), space.categories, space.ids),
+        ReviewSmsInboxDeps(ManageSmsInbox(inbox, parse), ImportStatement(space.importDeps().copy(merchants = merchants, effects = effects)), merchants, space.categories, space.ids),
     )
 
     init {
@@ -78,8 +84,9 @@ internal class S2Desk(
 
     fun receive(id: String, body: String, at: String = S2_MARCH) = inbox.receive(QueuedSms(id, "TESTBANK", at, body))
 
-    /** الهدف زي ما `AutoRecordSms.walletFor` بيبنيه: محفظة الكاش الوحيدة لو فيه. */
-    suspend fun target(wallet: Wallet = BANK) = SmsReviewTarget(wallet.id, wallet.name, wallet.currency, cashWalletId = singleCashWallet(space.wallets.listAll())?.id)
+    /** الهدف زي ما `AutoRecordSms.targetFor` بيبنيه: نفس قاعدة `cashWalletFor`، ومن غير الأثر مفيش محفظة كاش. */
+    suspend fun target(wallet: Wallet = BANK) =
+        SmsReviewTarget(wallet.id, wallet.name, wallet.currency, cashWalletId = if (withEffects) cashWalletFor(wallet, space.wallets.listAll())?.id else null)
 
     suspend fun load(wallet: Wallet = BANK) = screen.load(target(wallet))
 

@@ -3,6 +3,7 @@ package app.masroufy.usecase
 import app.masroufy.core.Id
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.TextKey
+import app.masroufy.core.Wallet
 import app.masroufy.core.uiText
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SourceRecordRepository
@@ -36,7 +37,10 @@ class SmsLane private constructor(
     internal val sources: SourceRecordRepository,
     /** عقد C0: نفس المستورد اللي جوه [review] (الآثار والسجلات). */
     internal val importer: ImportStatement,
-    /** S2 (§75-4): الاستيراد فيه `CashWithdrawalEffect` — من غيره السحب من الصرّاف بيستنى (ما يتسجلش صرف من البنك لوحده). */
+    /**
+     * S2 (§75-4): استيراد البلد فيه `CashWithdrawalEffect` — من غيره `SmsReviewTarget.cashWalletId` = null فالسحب من الصرّاف بيستنى (ما
+     * يتسجلش صرف من البنك لوحده). حارس توصيل: لو حد بنى البلد من غير الأثر.
+     */
     internal val movesCashWithdrawals: Boolean = false,
 ) {
     companion object {
@@ -106,11 +110,27 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         val all = lane.wallets.listAll()
         val mapped = mapping[senderKey]
         val wallet = (if (mapped != null) all.firstOrNull { it.id == mapped } else all.filter { it.kind == "bank" }.singleOrNull()) ?: return null
+        return targetOf(lane, wallet, all)
+    }
+
+    /** محفظة [wallet] كهدف تسجيل — **نفسه** للخلفية ([walletFor]) وللشاشة ([targetFor]). */
+    private fun targetOf(lane: SmsLane, wallet: Wallet, all: List<Wallet>): SmsReviewTarget {
         // الجولة السادسة: آخر 4 أرقام حسابات المالك التانية في البلد — رسالة عن واحد منهم ما بتتسجلش لوحدها في المحفظة دي (رد المالك ١
         // «محفظة لكل بنك» كان مفترض حساب واحد للبنك؛ سؤال مفتوح للمالك في OVERRIDES §72.3)
         val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
-        val cash = if (lane.movesCashWithdrawals) singleCashWallet(all)?.id else null
+        // S2 (§75-4): نفس قاعدة `CashWithdrawalEffect` بالظبط — ومن غير الأثر في استيراد البلد مفيش محفظة (السحب يستنى، ما يتسجلش صرف)
+        val cash = if (lane.movesCashWithdrawals) cashWalletFor(wallet, all)?.id else null
         return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others, cash)
+    }
+
+    /**
+     * الهدف اللي الشاشة بتحمّل بيه رسايل محفظة [walletId] (`ReviewSmsInbox.load`) — نفس اللي التسجيل في الخلفية بيبنيه بالظبط (محفظة
+     * الكاش وأرقام الحسابات التانية)، فسبب الانتظار اللي الشاشة بتعرضه هو نفسه. null = المحفظة مش في البلد دي.
+     */
+    suspend fun targetFor(spaceId: String, walletId: Id): SmsReviewTarget? {
+        val lane = laneOf(spaceId)
+        val all = lane.wallets.listAll()
+        return all.firstOrNull { it.id == walletId }?.let { targetOf(lane, it, all) }
     }
 
     /** آخر 4 أرقام من خانة رقم الحساب (ممكن تبقى مكتوبة بمسافات أو كاملة في بيانات قديمة) — أقل من 4 أرقام ⇒ null. */

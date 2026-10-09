@@ -577,7 +577,7 @@ enum class TextKey {
     // S1 — رسايل البنك: وضع التعلّم · رسالة من غير تاريخ · «ده راتبك؟» · بنك بحسابين (§77-A · §77-C · §75-2 · §75-11) — القيم في `TextsSmsLearn.kt`
 
     // S2 — الرسوم · السحب للكاش · الاسترداد (§77-B · §75-4 · §75-6) — القيم في `TextsSmsFees.kt`
-    SMS_WAIT_NO_CASH_WALLET, SMS_FEE_SOURCE_REASON,
+    SMS_WAIT_CASH_ADVANCE, SMS_FEE_SOURCE_REASON,
 
     // S3 — اللي رجع · الشراء الأجنبي (§77-D · §75-12) — القيم في `TextsReturns.kt`
 

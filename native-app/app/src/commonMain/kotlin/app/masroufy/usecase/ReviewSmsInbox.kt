@@ -10,6 +10,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SchemaId
+import app.masroufy.core.SmsFee
 import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
@@ -67,6 +68,11 @@ data class SmsReviewLine(
     val confirmReason: String? = null,
     /** عقد C0: نوع العملية زي ما الرسالة بتقوله (دليل — [SmsKind]). */
     val kind: SmsKind = SmsKind.OTHER,
+    /**
+     * S2 (§77-B): الرسوم اللي هتتسجل عملية «رسوم بنكية» لوحدها جنب السطر ده (`smsFeeToRecord` — نفس اللي `SmsFeeEffect` بيكتبه)، أو null.
+     * [SmsFee.includedInAmount] = [amountMinor] فيه الرسوم (الأصلية هتتسجل المبلغ − الرسوم). الشاشة بتعرضها قبل «سجّل الكل».
+     */
+    val fee: SmsFee? = null,
 )
 
 data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)
@@ -169,6 +175,7 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
                 shape = shape,
                 confirmReason = if (shape.clear) null else waitByLine[line.row.lineNumber] ?: uiText(TextKey.SMS_WAIT_UNKNOWN_SHAPE),
                 kind = request.smsRows[line.row.lineNumber]?.kind ?: SmsKind.OTHER,
+                fee = request.smsRows[line.row.lineNumber]?.let(::smsFeeToRecord),
             )
         }
         val newestFirst = Comparator<SmsReviewLine> { a, b -> if (a.date != b.date) b.date.compareTo(a.date) else b.lineNumber - a.lineNumber }

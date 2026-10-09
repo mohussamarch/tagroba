@@ -27,7 +27,10 @@ data class SmsReviewTarget(
      * بتتسجلش لوحدها في المحفظة دي (كانت بتتسجل في محفظة البنك المربوط لمجرد إن المرسل نفسه) — بتستنى ومعاها سببها.
      */
     val otherAccountsLast4: Set<String> = emptySet(),
-    /** عقد C0 (§75-4): محفظة الكاش الوحيدة في البلد (لو فيه واحدة بس)، وإلا null. */
+    /**
+     * عقد C0 (§75-4): محفظة الكاش اللي السحب من الصرّاف بيتنقل ليها لوحده، وإلا null. S2: الوحيدة في البلد **بنفس العملة ومش هي نفسها**
+     * (`cashWalletFor`) وبس لو استيراد البلد فيه `CashWithdrawalEffect` — `AutoRecordSms.targetFor` بيبنيه للشاشة زي الخلفية بالظبط.
+     */
     val cashWalletId: Id? = null,
 )
 
@@ -48,7 +51,7 @@ internal fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
 internal fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
     target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
     row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
-    row.kind == SmsKind.CASH_WITHDRAWAL && target.cashWalletId == null -> TextKey.SMS_WAIT_NO_CASH_WALLET // §75-4 (S2): له محفظة كاش واحدة ⇒ `CashWithdrawalEffect`
+    row.kind == SmsKind.CASH_WITHDRAWAL -> cashWithdrawalWait(row, target) // S2 (§75-4): نفس قاعدة `CashWithdrawalEffect.kt` — بيتنقل ⇒ null
     row.kind == SmsKind.CARD_PAYMENT && row.direction == Direction.IN && (row.ownLast4 == null || row.ownLast4 != target.accountLast4) -> TextKey.SMS_WAIT_CARD_CREDIT
     row.kind == SmsKind.CASH_DEPOSIT -> TextKey.SMS_WAIT_CASH_DEPOSIT
     row.kind == SmsKind.PURCHASE_WITH_CASH -> TextKey.SMS_WAIT_PURCHASE_CASH
