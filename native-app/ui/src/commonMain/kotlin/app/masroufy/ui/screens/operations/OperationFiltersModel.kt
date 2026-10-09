@@ -56,12 +56,16 @@ private fun monthsBack(p: Period, back: Int, payday: Int): Period {
     return buildPeriod(index.floorDiv(12), index.mod(12) + 1, payday)
 }
 
-/** مجموعة النوع من القاعدة (`ruleFor`): الداخلي ⇒ بين محافظك · ليه أثر على شخص أو مستحقات ⇒ ديون وأقساط · وإلا بالاتجاه. */
+/**
+ * مجموعة النوع من القاعدة (`ruleFor`): الداخلي ⇒ بين محافظك · سلفة أو أمانة أو سدادها (أثر على شخص ومش مصروف محسوب) أو مستحقات ⇒ ديون
+ * وأقساط · وإلا بالاتجاه. الشراء والدعم ليهم أثر ممكن على شخص (التقسيم) لكنهم مصروف ⇒ «مصروف».
+ */
 fun kindGroupOf(tx: Transaction): KindGroup {
     val rule = ruleFor(tx.economicKind)
+    val debt = rule.personEffect != PersonEffect.NONE && rule.personEffect != PersonEffect.BENEFICIARY_INFO && !rule.countsAsPersonalExpense
     return when {
         rule.liquidity == Liquidity.INTERNAL -> KindGroup.MOVE
-        rule.personEffect != PersonEffect.NONE || tx.economicKind in DUES_KINDS -> KindGroup.DEBT
+        debt || tx.economicKind in DUES_KINDS -> KindGroup.DEBT
         tx.observedDirection == Direction.IN -> KindGroup.IN
         else -> KindGroup.OUT
     }
