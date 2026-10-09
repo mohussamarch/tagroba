@@ -165,8 +165,54 @@ private fun knownLine(line: String, template: String?): LineSlot? {
 }
 
 /** سطرين مبلغ أساسي أو أكتر («Amount: …» مرتين) = أكتر من عملية في رسالة واحدة (الجولة السابعة) — القارئ بيرفضها «أكتر من مبلغ». */
-internal fun repeatedAmountLines(body: String): Boolean =
-    body.split('\n').count { line -> keyOf(line).let { AMOUNT.matches(it) && slotOfLine(it).group == "amount" } } > 1
+internal fun repeatedAmountLines(body: String): Boolean {
+    val lines = body.split('\n').map(JsText::trim).filter { it.isNotEmpty() }
+    val amounts = lines.withIndex().filter { (_, line) -> isPrimaryAmountLine(keyOf(line)) }
+    if (amounts.size <= 1) return false
+    // الجولة التامنة: رسالة **بلغتين** (كتلة عربي وكتلة إنجليزي بعنوان موحّد، نفس المبلغ) مش عمليتين — بتتقري (وبتستنى: سطور الكتلة التانية مش خانات)
+    return !(amounts.size == 2 && bilingualRepeat(lines, amounts[0].index, amounts[1].index))
+}
+
+private fun isPrimaryAmountLine(key: String): Boolean = AMOUNT.matches(key) && slotOfLine(key).group == "amount"
+
+private val ARABIC_LETTER = Regex("[\\u0600-\\u06FF]")
+
+/** الكتلة التانية بتبدأ بعنوان موحّد بلغة غير لغة العنوان الأولاني (وهو كمان موحّد)، والمبلغين نفس القيمة. */
+private fun bilingualRepeat(lines: List<String>, first: Int, second: Int): Boolean {
+    if (!isSamaTitle(shapeKey(lines[0]))) return false
+    val secondTitle = (first + 1 until second).firstOrNull { isSamaTitle(shapeKey(lines[it])) } ?: return false
+    if (ARABIC_LETTER.containsMatchIn(lines[secondTitle]) == ARABIC_LETTER.containsMatchIn(lines[0])) return false
+    return slotNumber(keyOf(lines[first])) == slotNumber(keyOf(lines[second]))
+}
+
+private val NUM_RE = Regex(NUM)
+private val MONEY_RE = Regex(MONEY)
+private val MONEY_ALONE = Regex("^(?:$MONEY|$MONEY ?: ?المبلغ)$")
+private val TOTAL_DUE = field("total due amount|اجمالي المبلغ المستحق", MONEY_OR_NUM)
+
+/** أول رقم في [text] بالوحدة الصغرى (فواصل سليمة). */
+private fun slotNumber(text: String): Long? = NUM_RE.find(text)?.value?.let { tryParseMoney(it.replace('٬', ',').replace('٫', '.')) }
+
+/**
+ * الجولة التامنة (شكل معروف = خانة مبلغ واحدة): قيم **خانة المبلغ** في العنوان ([titleKey] — «شراء انترنت 25.00 SAR» · «حوالة داخلية واردة ب
+ * SAR 500») وفي السطور ([lines]: «مبلغ/Amount/بـ» · مبلغ لوحده في سطر). [amount] المقروء لازم = القيمة الوحيدة دي أو الإجمالي المستحق
+ * (`SmsSaudiFields.consistentTotal` اتأكد منه). من غير خانة مبلغ ⇒ المبلغ جه من خانة حرة (محل · طرف · مرجع · فاتورة) ⇒ مش شكل معروف.
+ */
+internal fun amountFromSlot(titleKey: String, lines: List<String>, amount: Long): Boolean {
+    val values = mutableSetOf<Long?>()
+    MONEY_RE.find(titleKey)?.let { values += slotNumber(it.value) }
+    var totalDue: Long? = null
+    for (line in lines) {
+        val key = keyOf(line)
+        when {
+            MONEY_ALONE.matches(key) -> values += slotNumber(key)
+            isPrimaryAmountLine(key) -> values += slotNumber(key.substringAfter(':'))
+            TOTAL_DUE.matches(key) -> totalDue = slotNumber(key.substringAfter(':'))
+        }
+    }
+    val slot = values.singleOrNull() ?: return false
+    return slot == amount || totalDue == amount
+}
 
 /**
  * كل السطور [lines] (اللي بعد العنوان) معروفة **وكل لابل مرة واحدة** (الجولة السابعة): نفس اللابل مرتين بقيمتين مختلفتين من نفس

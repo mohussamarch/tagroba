@@ -85,7 +85,8 @@ class EgyptSmsFormatsTest {
         SmsCase("kfh out (no party)", "IPN Transfer with EGP 900.00 deducted on 05/03 09:10 from your AC ending with 188 with Ref# $ref. For info call 19533", 90000, OUT, TRANSFER_OUT),
         SmsCase("kfh returned", "IPN Transfer dated 05/03 09:10 with EGP 900.00 returned with Ref# $ref. For info call 19533", 90000, IN, REFUND),
         SmsCase("arab bank card", "A Trx using Card XXXX6604 from $m for EGP 64.25 on 05/03/2026 at 09:10 GMT+2. Available balance is EGP 4,100.00.", 6425, OUT, PURCHASE, m),
-        SmsCase("arab bank card credit", "تم قيد مبلغ 12.40 جنيه لبطاقتك الائتمانية رقم #6604", 1240, IN, OTHER),
+        // الجولة التامنة: فلوس داخلة على كارت ائتمان = سداد البطاقة (CARD_PAYMENT) — بتستنى في المحفظة البنكية (مش دخل)
+        SmsCase("arab bank card credit", "تم قيد مبلغ 12.40 جنيه لبطاقتك الائتمانية رقم #6604", 1240, IN, CARD_PAYMENT),
         SmsCase("breadfast top-up", "You received EGP 300.00 on 05.03.26 at 09:10 to your card ending in ***6604.For details, please  contact Breadfast customer support via the app.", 30000, IN),
         // ── فودافون كاش ومحافظ تانية: الطرف = الاسم المسجل + آخر 4 من الموبايل ──
         SmsCase(

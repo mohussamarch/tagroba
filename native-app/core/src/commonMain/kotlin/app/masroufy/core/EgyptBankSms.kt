@@ -49,7 +49,9 @@ private val INTERNATIONAL_TITLE = Regex("(?<![\\u0600-\\u06FF])(?:دولي|دو�
  * أي عملة تانية: مفيهاش ريال سعودي (رسالة البنك السعودي بتكتب المقابل أو الرسوم أو الرصيد بالريال) وفيها جنيه أو سطر واحد.
  */
 private fun egyptianForeign(body: String, currency: String): Boolean = when {
-    INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body)) -> false
+    // الجولة التامنة: «دولي/International» **عنوان** (أول سطر في رسالة سطور) بس — «You sent USD 40.00 … via InstaPay International on …» جملة
+    // مصرية واحدة كانت بتستنى من غير تفاصيل المبلغ الأجنبي
+    '\n' in body.trim() && INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body)) -> false
     // الجولة الخامسة: جملة على قالب مصري معروف والريال هو العملة الوحيدة («تم خصم 300.00 SAR من بطاقة الخصم المباشر رقم …») = كارت مصري
     currency == "SAR" -> (EGP_TOKEN.containsMatchIn(body) && (!hasEgyptianTransactionAmount(body) || hasLocalConversion(body, EGYPT_LOCAL))) ||
         (hasEgyptianKnownHead(body) && !EGP_TOKEN.containsMatchIn(body))
@@ -63,8 +65,10 @@ private fun egyptianForeign(body: String, currency: String): Boolean = when {
  */
 private fun foreignOnly(body: String, receivedAt: String): SmsParseResult.Rejected {
     val reason = uiText(TextKey.SMS_NOT_EGP)
-    val foreign = (foreignAmountOf(body, EGYPT_LOCAL) ?: riyalAmountAsForeign(body))?.takeIf { egyptianForeign(body, it.currency) }
-        ?: return SmsParseResult.Rejected(reason)
+    val read = foreignAmountOf(body, EGYPT_LOCAL) ?: riyalAmountAsForeign(body)
+    // الجولة التامنة: أجنبية أكيد بس المبلغ الأجنبي مش مقروء بالظبط («200 دولار» لوحده — سؤال (س)) ⇒ بتستنى ومعاها اللي اتقري (جملة مصرية بس)
+    if (read == null) return foreignUnread(body, receivedAt, reason)
+    val foreign = read.takeIf { egyptianForeign(body, it.currency) } ?: return SmsParseResult.Rejected(reason)
     val direction = egyptDirection(body) ?: return SmsParseResult.Rejected(reason)
     val date = egyptTransactionDate(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
     val kind = egyptKind(body, direction)
@@ -72,6 +76,20 @@ private fun foreignOnly(body: String, receivedAt: String): SmsParseResult.Reject
     val merchant = redactSms(egyptMerchant(body, kind))
     val suggestion = localConversion(body, EGYPT_LOCAL)
     return SmsParseResult.Rejected(reason, SmsForeignPending(date, foreign, direction, merchant, kind, ownLast4Of(body, direction), suggestion))
+}
+
+private fun foreignUnread(body: String, receivedAt: String, reason: String): SmsParseResult.Rejected {
+    val egyptian = !hasSaudiCurrency(body) && (EGP_TOKEN.containsMatchIn(body) || '\n' !in body.trim())
+    val direction = egyptDirection(body)
+    val date = egyptTransactionDate(body, receivedAt)
+    if (!egyptian || direction == null || date == null) return SmsParseResult.Rejected(reason)
+    val kind = egyptKind(body, direction)
+    if (contradicts(direction, kind)) return SmsParseResult.Rejected(reason)
+    val (code, written) = foreignUnreadDetails(body, EGYPT_LOCAL)
+    val unread = SmsForeignUnread(
+        date, code, written, direction, redactSms(egyptMerchant(body, kind)), kind, ownLast4Of(body, direction), localConversion(body, EGYPT_LOCAL),
+    )
+    return SmsParseResult.Rejected(reason, foreignUnread = unread)
 }
 
 /** الجولة السادسة: العملة بعد «Ref/No./#/مرجع» على طول رقم مرجع («Ref: SR4471») مش عملة — زي فلتر الجهاز. */
@@ -85,8 +103,12 @@ private fun hasOtherCurrency(body: String): Boolean = EG_OTHER_CURRENCY.findAll(
 fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
-    // الجولة السابعة: علامة قلب اتجاه (LRO/RLO) ⇒ الكلام المعروض غير المقروء («تم خصم ‮06.84‬ جم» بيتعرض 48.60) ⇒ ما بنقراش
-    if (hasBidiOverride(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
+    // الجولة السابعة: علامة قلب اتجاه (LRO/RLO) ⇒ الكلام المعروض غير المقروء («تم خصم ‮06.84‬ جم» بيتعرض 48.60) ⇒ ما بنقراش.
+    // الجولة التامنة: أي علامة اتجاه **جوه رقم** (`SmsHiddenText.kt`) ⇒ نفس الحكم
+    if (hasBidiOverride(message.body) || hasBidiInsideNumber(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
+    // الجولة التامنة: رسالة سطور أولها عنوان بنك سعودي معروف («PoS Purchase\nAmount: EGP 1,250.00 …» = كارت سعودي اتخصم بالجنيه) ⇒ بتتقري
+    // في السعودية (بتستنى هناك ومعاها المبلغ بالجنيه §75-12) — كانت بتبان هنا «جاهزة» شراء مصري
+    if ('\n' in body.trim() && hasSaudiKnownTitle(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY))
     // الجولة السادسة: العملة بتتعرف من غير التشكيل («ريال عُماني») — النص نفسه (البصمة والوصف) زي ما هو
     val plain = withoutTashkeel(body)
     // أي دليل عملة أجنبية (كود · رمز «$» · اسم «US Dollars»/«ين» · مقابل بالجنيه بعد مبلغ تاني) زي الدولار بالظبط (§75-12)
@@ -116,8 +138,21 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     // الجولة السابعة: محل برّه مصر (كود البلد في آخر اسمه «SAMPLE CLOUD USA» — §75-12) ⇒ تستنى
     val merchant = egyptMerchant(body, kind)
     val known = egyptShape(body, direction, amount).let { if (it.clear && foreignCountryTail(merchant, EGYPT_TAIL)) SmsShape.KeywordFallback else it }
-    val shape = gateShape(known, body, date, arrival, message.body)
+    val shape = gateShape(egyptDateGate(known, body), body, date, arrival, message.body)
     return smsRow(message, body, lineNumber, date, amount, direction, merchant, kind, shape)
+}
+
+private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
+
+/**
+ * الجولة التامنة: الشكل المعروف بيستنى لو **ساعة من غير تاريخ** (فودافون كاش «23:58: Received …» — وصلت بعد نص الليل بتوقيت القاهرة
+ * فاتسجلت يوم متأخر؛ نفس قاعدة الأهلي السعودي) أو **أكتر من تاريخ** بعد عدّ «يوم/شهر» من غير سنة في أي مكان.
+ */
+private fun egyptDateGate(shape: SmsShape, body: String): SmsShape = when {
+    !shape.clear -> shape
+    !egyptHasDateToken(body) && TIME_TOKEN.containsMatchIn(body) -> SmsShape.KeywordFallback
+    egyptDistinctDateCount(body) > 1 -> SmsShape.KeywordFallback
+    else -> shape
 }
 
 /** قارئ مصر لحزمة البلد. */

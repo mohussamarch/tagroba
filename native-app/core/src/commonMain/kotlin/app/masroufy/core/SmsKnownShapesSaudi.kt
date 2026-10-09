@@ -155,11 +155,14 @@ internal fun hasSaudiKnownTitle(body: String): Boolean = titleHit(body.split('\n
  * · غير كده ⇒ [SmsShape.KeywordFallback] (بتستنى). الشرط: اتجاه الشكل = اتجاه القارئ، **وكل سطر بعد العنوان خانة معروفة**
  * (`SmsSaudiLines.kt` — الجولة الخامسة)، والعملية مش شراء أو سحب برّه البلد.
  */
-internal fun saudiShape(body: String, direction: Direction): SmsShape {
+internal fun saudiShape(body: String, direction: Direction, amount: Halalas? = null): SmsShape {
     val lines = body.split('\n').map(JsText::trim).filter { it.isNotEmpty() }
     val hit = titleHit(lines) ?: return SmsShape.KeywordFallback
     val agrees = when {
         hit.id == "transfer-undirected" -> undirectedTransferDirection(body) == direction
+        // الجولة التامنة: عنوان موحّد اتجاهه ملتبس في التعميم ⇒ واضح **بس لو قاعدة العنوان نفسها** قالت الاتجاه ده (`SmsSaudiTitles.kt`) —
+        // الاتجاه من كلمة في باقي الرسالة («سداد» · «حساب راتب») كان بيتسجل لوحده صرف أو دخل حسب الكتابة
+        hit.bank == null && isUndirectedSamaTitle(hit.key) -> saudiTitle(body)?.direction == direction
         hit.bank == null -> samaTitleAgrees(hit.key, direction) == true
         else -> hit.direction == null || hit.direction == direction
     }
@@ -168,5 +171,8 @@ internal fun saudiShape(body: String, direction: Direction): SmsShape {
     // الجولة السادسة: «Exchange rate: 4.6875» · «Country: GB» · «الدولة: الإمارات» تحت عنوان محلي = شراء برّه البلد ⇒ يستنى زي «دولي»
     if ((INTERNATIONAL.containsMatchIn(hit.key) || abroadLines(body)) && !TRANSFER_TITLE.containsMatchIn(hit.key)) return SmsShape.KeywordFallback
     if (!allLinesKnown(body, hit.bank?.let { "$it/${hit.id}" })) return SmsShape.KeywordFallback
+    // الجولة التامنة: **خانة مبلغ واحدة بالظبط** (سطر «مبلغ/Amount» · «بـ» الأهلي · مبلغ لوحده · مبلغ في العنوان) والمبلغ المقروء = قيمتها (أو
+    // الإجمالي المستحق) — «PoS Purchase\nAt: محلات 5 ريال» · «الفاتورة: SR4471» · «MTCN: SR4471» · «To: SR 4417» كانوا بيتسجلوا بالرقم ده
+    if (amount != null && !amountFromSlot(hit.key, body, amount)) return SmsShape.KeywordFallback
     return if (hit.bank == null) SmsShape.SamaTitle else SmsShape.KnownShape(hit.bank, hit.id!!)
 }

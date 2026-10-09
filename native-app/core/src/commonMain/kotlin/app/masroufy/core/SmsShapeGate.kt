@@ -30,7 +30,9 @@ private const val SUF = "(?:ه|ها|هم|هما|كم|ك|ي)?"
  * المصري «متمتش/مطلعتش/هيتضاف/مستني/في الطريق» · recall · revert · timed out · retained · not yet · provisional · verification …).
  */
 internal val SHAPE_DOUBT = Regex(
-    "$B(?:revers(?:e|ed|al)|chargeback|pending|processing|in$S+process|awaiting|initiated|submitted|scheduled|queued|on$S+hold" +
+    // الجولة التامنة: «Scheduled transfer completed/executed» خلص (مش «to be executed»)
+    "$B(?:revers(?:e|ed|al)|chargeback|pending|processing|in$S+process|awaiting|initiated|submitted" +
+        "|scheduled(?![^\\n]{0,60}?(?<!(?:to|will|shall)$S{1,3}be$S{1,3})${B}(?:executed|completed)$B)|queued|on$S+hold" +
         "|auth(?:ori[sz]ation)?$S+hold|reserved|held|declined|rejected|refused|failed|unsuccessful|cancel(?:l?ed|lation)|void(?:ed)?" +
         "|expired|incomplete|unpaid|overdue|reminder|blocked|suspended|frozen|e-?statement|statement|refund$S+(?:request|initiated)" +
         "|returned$S+(?:to|by)|request(?:ed)?|future.?dated|next$S+instal?l?ments?|standing$S+order" +
@@ -87,9 +89,23 @@ private val DATE_TOKEN = Regex(
 )
 private val DIGITS = Regex("\\d+")
 
+private fun dateKey(value: String): String = DIGITS.findAll(value).joinToString("-") { it.value.trimStart('0') }
+
 /** عدد التواريخ **المختلفة** في الرسالة (نفس التاريخ مكتوب مرتين = واحد). */
-internal fun distinctDateCount(body: String): Int =
-    DATE_TOKEN.findAll(body).map { m -> DIGITS.findAll(m.value).joinToString("-") { it.value.trimStart('0') } }.toSet().size
+internal fun distinctDateCount(body: String): Int = DATE_TOKEN.findAll(body).map { dateKey(it.value) }.toSet().size
+
+/**
+ * الجولة التامنة — مصر: نفس العدّ + «يوم/شهر» من غير سنة في أي مكان (`egyptPartialDateMatches` — «08.10 23:58: …» · «… 900000553 06/10 …»)
+ * اللي مش جوه تاريخ اتعدّ خلاص.
+ */
+internal fun egyptDistinctDateCount(body: String): Int {
+    val tokens = DATE_TOKEN.findAll(body).toList()
+    val keys = tokens.map { dateKey(it.value) }.toMutableSet()
+    for (m in egyptPartialDateMatches(body)) {
+        if (tokens.none { it.range.first <= m.range.last && m.range.first <= it.range.last }) keys += dateKey(m.value)
+    }
+    return keys.size
+}
 
 /**
  * آخر خطوة في الشكل (القارئين): الشكل الواضح بيفضل واضح بس لو الرسالة فيها تاريخ واحد بس، وتاريخ العملية مش بعد يوم الوصول

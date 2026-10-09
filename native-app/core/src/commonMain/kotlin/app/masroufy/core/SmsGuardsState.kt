@@ -55,7 +55,11 @@ internal val SMS_DECLINED_PATTERN = Regex(
         "|$NA(?:ماتمش|ماتمتش|مانجحتش)$NZ|${NA}ما$S*(?:تمتش|نجحتش)$NZ" +
         // ── الجولة السادسة: تحويل وصل البنك وما اتضافش («could not be credited» · «was not deposited» · «not yet credited») ──
         "|${B}(?:could$S+not|cannot|can'?t)$S+be$S+(?:credited|deposited|sent|transferred|executed)$B" +
-        "|${B}not$S+(?:yet$S+)?(?:been$S+)?(?:deposited|credited)$B",
+        "|${B}not$S+(?:yet$S+)?(?:been$S+)?(?:deposited|credited)$B" +
+        // ── الجولة التامنة: «couldn't be completed» · «didn't go through» · «wasn't successful» · «التحويل اتأخر وهيتراجع» (كانت بتستنى «جاهزة») ──
+        "|${B}(?:couldn'?t|could$S+not|can'?t|cannot|won'?t)$S+be$S+(?:completed|processed|executed|done)$B|${B}did(?:n'?t|$S+not)$S+go$S+through$B" +
+        "|${B}(?:was|is|has)(?:n'?t|$S+not)$S+(?:been$S+)?(?:successful|completed|processed|executed|done)$B" +
+        "|$NA[وف]?(?:هيتراجع|هتتراجع|حيتراجع|اتراجع|اتراجعت|يتراجع)$NZ|$NA(?:ال)?(?:تحويل|عملية|العملية|دفع|سداد)$S*(?:ات[أا]خر|اتأخرت|اتاخرت)$NZ",
     GI,
 )
 
@@ -73,7 +77,9 @@ private val NOT_TRANSACTION_ANYWHERE = Regex(
     "حجز$S*مبلغ|Cash$S*Re(?:serve|lease)|تم$S*استلام$S*الطلب|تم$S*طلب|تم$S*تقسيط|كشف$S*حساب|الحد$S*الأدنى$S*للسداد|" +
         "تسجيل$S*الدخول|logged$S*in|تم$S*تفعيل|${B}PIN$B[^\\n]*${B}SET$B|مبروك$S*كسبت" +
         "|${B}pending$B(?!$S*[:：]?$S*(?:EGP|SAR|SR|LE)?$S*0+(?:[.,]0+)?(?![\\d.,]))|${NA}معلق(?:ة|ه)?$NZ|under$S*review|قيد$S*(?:المراجعة|الانتظار|التنفيذ)|تم$S*استلام$S*طلب" +
-        "|$NEG(?<![A-Za-z])authori[sz]ation(?![A-Za-z])|${B}(?:has|have|was|were|is|been)$S+(?:been$S+)?authori[sz]ed$B|${B}pre.?auth" +
+        // الجولة التامنة: «Authorization code 482211» · «authorization no.» = رقم موافقة في شراء حقيقي (زي «Approval code»)، مش حجز
+        "|$NEG(?<![A-Za-z])authori[sz]ation(?![A-Za-z])(?!$S*(?:code|no\\.?|number|num|id|#|ref)$B)" +
+        "|${B}(?:has|have|was|were|is|been)$S+(?:been$S+)?authori[sz]ed$B|${B}pre.?auth" +
         "|تم$S*حجز(?!$S*(?:ال)?(?:تذكر|موعد|رحل|طاول|غرف|مقعد))|حجز$S*مؤقت|${B}on$S+hold$B|${B}hold$S+(?:of|on|amount)$B" +
         "|طلب$S*(?:ال)?(?:استرداد|استرجاع|اعتراض)|تم$S*(?:تسجيل|استلام|رفع)$S*(?:ال)?اعتراض|${B}(?:your|the)$S+dispute$B" +
         "|${B}dispute$S+(?:for|on|of|has|was|is|request|case|ref)$B|${B}disputed$B|chargeback" +
@@ -114,8 +120,11 @@ private val NOT_TRANSACTION_ANYWHERE = Regex(
  */
 private val HEAD_ONLY = Regex("$NA(?:ال)?(?:تذكير|اعتراض|محجوز(?:ة|ه)?)$NZ|${B}reminder$B|${B}dispute$B|${B}blocked$B", GI)
 
-/** «تفويض» في أي مكان = حجز مبلغ لشراء إنترنت. «خصم من التفويض» (الراجحي — الخصم الحقيقي) ما بيتلمسش. */
-private val HOLD_WORD = Regex("تفويض")
+/**
+ * «تفويض» في أي مكان = حجز مبلغ لشراء إنترنت. «خصم من التفويض» (الراجحي — الخصم الحقيقي) ما بيتلمسش. الجولة التامنة: «رقم/كود/رمز التفويض»
+ * = رقم موافقة في شراء أو سحب حقيقي («عملية شراء ناجحة … رقم التفويض 553120» · «سحبت 1,000 جنيه … رقم التفويض 552310» كانوا بيترموا).
+ */
+private val HOLD_WORD = Regex("(?<!(?:رقم|كود|رمز)[ \\t]{0,3}(?:ال)?)تفويض")
 private val DEBIT_FROM_HOLD = Regex("خصم$S*من$S*(?:ال)?تفويض")
 
 /**
@@ -139,7 +148,14 @@ private val MOVEMENT_AFTER_BALANCE = Regex(
         "$S+(?:مبلغ$S+|of$S+)?(?:[A-Za-z]{3}$S*)?\\d" +
         // الجولة السابعة: «Available balance SAR 3,912.40 after PoS purchase of SAR 48.50 at …» — «of» ومبلغ **في نفس السطر** («Available Balance after
         // Purchase\nSAR 4,100.00» لسه رصيد بس)
-        "|${B}after[ \\t]+(?:(?:pos|online|card)[ \\t]+)?purchase[ \\t]+of[ \\t]+(?:[A-Za-z]{3}[ \\t]*)?\\d",
+        "|${B}after[ \\t]+(?:(?:pos|online|card)[ \\t]+)?purchase[ \\t]+of[ \\t]+(?:[A-Za-z]{3}[ \\t]*)?\\d" +
+        // الجولة التامنة: «<الرصيد> <رقم> بعد/after/following <فعل حركة> … <مبلغ>» **في نفس السطر** («balance is SAR 3,212.00 after a debit of SAR 48.50» ·
+        // «following a purchase of …» · «3,163.50 ر.س بعد عملية شراء بمبلغ 48.50» · «بعد سداد فاتورة … بمبلغ 450» · «650.00 جنيه بعد خصم 350.00 جنيه» ·
+        // «after paying EGP 450.00») — الرصيد **قبل** «بعد» والحركة بمبلغها بعده («الرصيد المتاح بعد عملية الشراء 4,100.00» لسه رصيد بس)
+        "|\\d[^\\n\\d]{0,60}?(?:(?<![$AR])بعد|${B}after|${B}following)[ \\t]+(?:(?:a|an|the|your)[ \\t]+)?(?:(?:ال)?عملي[ةه][ \\t]*)?" +
+        "(?:(?:ال)?(?:خصم|دفع|شراء|سداد|تسديد|تحويل|سحب|إيداع|ايداع|استلام|إضافة|اضافة)" +
+        "|(?:debit|credit|purchase|payment|paying|transfer|withdrawal|deposit|charge|spend|spending)$B)" +
+        "[^\\n\\d]{0,40}?\\d",
     GI,
 )
 
@@ -159,8 +175,23 @@ internal val COMPLETED_MOVEMENT = Regex(
         "|paid|refunded|returned|executed|completed|processed|sent|deposited)$B" +
         "|(?<!(?:will|to|shall|would|may|can)$S{1,3}be$S{1,3})${B}(?:credited|debited|deducted|withdrawn|refunded|returned|transferred)$S+(?:to|from|back|into)$B" +
         "|${B}was$S+successful$B|${B}completed$S+successfully$B|${B}you$S+(?:have$S+)?(?:received|sent|paid|spent|withdrew|transferred)$B" +
-        "|${B}received$S+(?:towards|from|into)$B",
-    GI,
+        "|${B}received$S+(?:towards|from|into)$B" +
+        // ── الجولة التامنة (المراجعة العدائية الرابعة): أفعال خلصت كانت ناقصة فالرسالة بتترمي لما حارس يمسك كلمة تانية فيها ──
+        // «has been made» · «was used for» · «You've received» · «Payment successful» · «Transfer done» · «Scheduled Transfer Executed» ·
+        // «Approved purchase SAR 48.50» · «Purchase of EGP 850.00» · «شراء بمبلغ 48.50»
+        "|${B}(?:has|have|had|was|were)$S+(?:been$S+)?(?:successfully$S+)?(?:made|used$S+(?:for|at))$B|${B}you'?ve$S+(?:received|sent|paid|spent|withdrawn|transferred)$B" +
+        "|${B}(?:payment|transfer|transaction|purchase|withdrawal|deposit|money)$S*(?:was$S+|is$S+)?(?:successful|done|complete[d]?|executed|sent|received)$B" +
+        "|(?<!(?:will|to|shall|would|may|can)$S{1,3}be$S{1,3})${B}executed$B|${B}approved$S+(?:purchase|transaction|payment|withdrawal)$B" +
+        "|(?:^|[.!؟?\\n]$S*)(?:${B}purchase$S+of|${B}purchase$B|$NA(?:عملية$S*)?شراء(?:$S*ناجح[ةه]?)?$S*(?:بمبلغ|بقيمة|مبلغ)?)$S*[:：]?$S*" +
+        "(?:SAR|SR|EGP|LE|ر\\.?$S?س\\.?|جنيه|جم)?$S*\\d" +
+        // «عملية شراء ناجحة» · «تنفيذ دفعة» (عنوان من غير «تم»، ومش «سيتم/يتم/لم يتم/جاري تنفيذ») · «وتحصيل/واستيفاء رسوم» · «وخصم … من رصيد محفظتك» ·
+        // «وتمت إضافتها لمحفظتك» · المصري الماضي («حولت · بعتّ · سحبت · شحنت · قبضت · جالك · اتدفع · اتشحن»)
+        "|$NA(?:عملية$S*)?شراء$S*ناجح[ةه]?$NZ|^$S*تنفيذ$S+(?:دفع[ةه]?|حوال[ةه]|تحويل|سداد|امر|أمر)" +
+        "|${NA}و(?:خصم|دفع|تحصيل|استيفاء|سحب)[^\\n\\d]{0,30}\\d[\\d,.]*$S*(?:ر\\.?$S?س|ريال|SAR|SR|جنيه|جم|ج\\.م|EGP|LE)" +
+        "|${NA}و(?:خصم|دفع)$S*[^\\n]{0,40}?من$S*رصيد$S*(?:حساب|محفظت|بطاقت)" +
+        "|${NA}و?تمت?$S*(?:ال)?(?:إضافت|اضافت)(?:ه|ها|هم)" +
+        "|$NA(?:حولت|بعت|بعتّ|بعتت|سحبت|شحنت|قبضت|جالك|جالكم|جالكو|اتدفع|اتدفعت|اتشحن|اتشحنت)$NZ",
+    setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE),
 )
 
 internal fun isNotATransaction(body: String): Boolean =

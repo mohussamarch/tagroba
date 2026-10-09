@@ -61,7 +61,8 @@ object SmsVocabulary {
      * الجولة السادسة: تحت عنوان أو قالب بنك معروف، رقم بعد «مبلغ/Amount» ومعاه كلمة عملة ما نعرفهاش لسه («مبلغ: 1,500.00 بات») =
      * عملية بعملة مش في القايمة — بتتحفظ وتستنى (القارئ بيرفضها) بدل ما تترمي «مفيهاش مبلغ».
      */
-    private val AMOUNT_LABEL_NUMBER = Regex("(?:بمبلغ|المبلغ|مبلغ|${JsText.B}amount)$S*[:：]?$S*\\d", GI)
+    /** الجولة التامنة: وبعد «Amount:» اختصار عملة قصير ما نعرفهوش لسه («Amount: XYZ 45.00» · «مبلغ: Fr. 45.00») قبل الرقم. */
+    private val AMOUNT_LABEL_NUMBER = Regex("(?:بمبلغ|المبلغ|مبلغ|${JsText.B}amount)$S*[:：]?$S*(?:[A-Za-z][A-Za-z.]{0,3}$S*)?\\d", GI)
 
     /**
      * الجولة السادسة: «خلصت» في أول الرسالة — عرض في نفس الجملة («تمت عملية شراء … ، سيتم إضافة النقاط») ما بيرميهاش.
@@ -70,6 +71,8 @@ object SmsVocabulary {
     private val COMPLETED = Regex(
         "(?<![\\u0600-\\u06FF])و?تمت?(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])(?:اتخصم|اتحول|اتسحب|استلمت|وصلك|أضيف|اضيف)(?![\\u0600-\\u06FF])" +
             "|${JsText.B}(?:has|have)$S+been${JsText.B}|${JsText.B}was$S+(?:successful|completed)${JsText.B}" +
+            // الجولة التامنة: «Your mada card **5093 was used for SAR 48.50 …, you will earn 48 points.» · «Scheduled Transfer Executed»
+            "|${JsText.B}(?:was|were)$S+used$S+(?:for|at)${JsText.B}|(?<!(?:will|to|shall)$S{1,3}be$S{1,3})${JsText.B}executed${JsText.B}" +
             "|(?<!(?:will|to|shall|would)$S{1,3}be$S{1,3})${JsText.B}(?:credited|debited|charged|spent|withdrawn|received|sent|paid|deducted|deposited|transferred|refunded)${JsText.B}",
         GI,
     )
@@ -95,12 +98,16 @@ object SmsVocabulary {
         val body = normalizeSmsBody(text)
         val guard = guardText(body)
         // الجولة السابعة: رسالة الرمز بتترمي **لو فيها رمز فعلًا** ([hasFreeCode]) — «Keep your IPN PIN and OTP private» · «Verified with OTP» ·
-        // «متشاركش الرقم السري مع حد» تحت تحويل حقيقي كانوا بيرموه. من غير رقم رمز ⇒ بتتحفظ والقارئ يرفضها فتستنى
-        if (isSensitiveText(guard) && hasFreeCode(guard)) return true
-        if (smsIgnoreReason(body) == null || hasKnownHead(body)) return false
+        // «متشاركش الرقم السري مع حد» تحت تحويل حقيقي كانوا بيرموه. من غير رقم رمز ⇒ بتتحفظ والقارئ يرفضها فتستنى.
+        // الجولة التامنة: رسالة **أولها شكل بنك معروف** أو فيها **حركة فلوس خلصت ومبلغ** بتترمي بس لو رقم الرمز **في نفس جملة** كلمة الرمز
+        // («Online Purchase … Date: 09 Oct 2026 … Authenticated with OTP» · «… was charged … Never share your OTP, call 19990» كانوا بيترموا)
+        val completed = COMPLETED_MOVEMENT.containsMatchIn(guard) && hasAmount(body)
+        val knownHead = hasKnownHead(body)
+        if (isSensitiveText(guard) && hasFreeCode(guard) && (!(knownHead || completed) || hasCodeBesideSensitiveWord(guard))) return true
+        if (smsIgnoreReason(body) == null || knownHead) return false
         // الجولة السابعة: حركة فلوس خلصت ومعاها مبلغ («تم خصم رسوم إصدار كشف حساب …» · «has been credited» · «اتحولك 300 جنيه … لعرض
         // الإيصال» · «رصيدك الحالي … . تم استلام …») ⇒ بتتحفظ — الحارس اللي مسك كلمة تانية فيها بيخلي القارئ يرفضها فتستنى، مش تضيع
-        if (COMPLETED_MOVEMENT.containsMatchIn(guard) && hasAmount(body)) return false
+        if (completed) return false
         val head = headOf(body)
         val headReason = smsIgnoreReason(head) ?: return false
         return !(headReason == TextKey.SMS_OFFER && guardReasonBesidesOffer(head) == null && COMPLETED.containsMatchIn(guardText(head)))

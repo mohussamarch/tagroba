@@ -59,8 +59,9 @@ class SmsRound7Test {
     @Test fun controlsStillRecordThemselves() {
         val clear = listOf(
             "Incoming Transfer: Al Rajhi Bank\nAmount: SAR 500.00\nFrom: RAYAN EXAMPLE\nOn: 2026-10-07 11:40",
-            "PoS Purchase\nAmount: SAR 48.60\nAt: ⁨QUOLL BAKERY⁩\nOn: 2026-10-07 18:22", // العزل (isolates) مش بيقلب حاجة
-            "PoS Purchase\nAmount: SAR 48.‏60\nAt: QUOLL BAKERY\nOn: 2026-10-07 18:22", // RLM جوه الرقم
+            "PoS Purchase\nAmount: SAR 48.60\nAt: ⁨QUOLL BAKERY⁩\nOn: 2026-10-07 18:22", // العزل (isolates) حوالين الاسم مش بيقلب حاجة
+            // (الجولة التامنة: «SAR 48.‏60» — RLM **جوه** الرقم — بقت بتترفض «علامات اتجاه»: `SmsRound8Test`)
+            "PoS Purchase\nAmount: SAR ‏48.60‏\nAt: QUOLL BAKERY\nOn: 2026-10-07 18:22", // RLM حوالين الرقم
             // أسامي ومحلات فيها كلمات قريبة من كلمات الحالة (مش منها)
             "PoS Purchase\nAmount: SAR 48.60\nAt: THE BODY SHOP\nOn: 2026-10-07 18:22",
             "PoS Purchase\nAmount: SAR 48.60\nAt: NEXT RIYADH PARK\nOn: 2026-10-07 18:22",

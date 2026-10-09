@@ -161,8 +161,13 @@ class SaudiSmsRetailFormatsTest {
             SmsForeignPending(SMS_TX_DAY, eur, OUT, m, PURCHASE, ownLast4 = "6604"),
             pending("شراء دولي\nبطاقة:6604;مدى(أثير)\nمبلغ:EUR 14.90\nدولة:FR\nلدى:$m\nفي:26-03-05 09:10"),
         )
-        // الجنيه في قارئ السعودية = رسالة مصرية مش عملية أجنبية ⇒ من غير «مستنية المبلغ»
-        val egp = assertIs<SmsParseResult.Rejected>(parseBankSms(smsMessage("شراء\nمبلغ:EGP 50.00\nلدى:$m\nفي:26-03-05 09:10"), 1))
+        // الجنيه في قارئ السعودية في **جملة واحدة** = رسالة مصرية مش عملية أجنبية ⇒ من غير «مستنية المبلغ»
+        val egp = assertIs<SmsParseResult.Rejected>(parseBankSms(smsMessage("تم خصم 50.00 جم من بطاقتك عند $m في 05/03/2026"), 1))
         assertEquals(null, egp.foreign)
+        // الجولة التامنة (المراجعة العدائية الرابعة S61/S62): رسالة **سطور تحت عنوان سعودي معروف** بالجنيه بس = كارت سعودي اتخصم في مصر ⇒
+        // بتستنى في السعودية ومعاها الجنيه (كانت بترفض من غير تفاصيل، ومصر كانت بتعرضها «جاهزة» شراء مصري)، ومصر بتقول «البلد التانية»
+        val saudiCard = "شراء\nمبلغ:EGP 50.00\nلدى:$m\nفي:26-03-05 09:10"
+        assertEquals(SmsForeignAmount("EGP", 5000), pending(saudiCard).foreign)
+        assertEquals(uiText(TextKey.SMS_OTHER_COUNTRY), assertIs<SmsParseResult.Rejected>(parseEgyptBankSms(smsMessage(saudiCard), 1)).reason)
     }
 }

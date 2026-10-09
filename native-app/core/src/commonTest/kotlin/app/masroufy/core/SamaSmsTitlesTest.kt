@@ -10,6 +10,7 @@ import app.masroufy.core.SmsKind.FEE
 import app.masroufy.core.SmsKind.OTHER
 import app.masroufy.core.SmsKind.OWN_TRANSFER
 import app.masroufy.core.SmsKind.PURCHASE
+import app.masroufy.core.SmsKind.PURCHASE_WITH_CASH
 import app.masroufy.core.SmsKind.REFUND
 import app.masroufy.core.SmsKind.SALARY
 import app.masroufy.core.SmsKind.TRANSFER_IN
@@ -69,7 +70,7 @@ class SamaSmsTitlesTest {
         Title("امر مستديم حوالة صادرة بين حساباتك", "Permanent transfer Debit transfer Between Your Accounts", OUT, OWN_TRANSFER),
         Title("امر مستديم مدفوعات وزارة الداخلية", "Permanent transfer MOI Payments", OUT, BILL),
         Title("شراء عبر نقاط البيع دولية", "PoS International Purchase", OUT, PURCHASE),
-        Title("شراء ونقد عبر نقاط البيع", "PoS Purchase & Cashback", OUT, PURCHASE),
+        Title("شراء ونقد عبر نقاط البيع", "PoS Purchase & Cashback", OUT, PURCHASE_WITH_CASH), // الجولة التامنة: جزء منه كاش (§75-4)
         Title("تسوية نقطة البيع", "PoS settlement", IN, OTHER),
         Title("حوالة واردة", "Received transfer", IN, TRANSFER_IN),
         Title("استرجاع مدفوعات وزارة الداخلية", "Refunding MOI Payments", IN, REFUND),

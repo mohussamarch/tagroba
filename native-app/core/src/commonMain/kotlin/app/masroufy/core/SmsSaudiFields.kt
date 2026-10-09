@@ -46,8 +46,22 @@ private val TRAILING_LABEL = Regex(
 /** سطر فوق المبلغ فيه كلمة رصيد (ومفيهوش رقم) ⇒ المبلغ اللي تحته لوحده رصيد («الرصيد المتاح بعد عملية الشراء\n4,100.00 ر.س»). */
 private val BALANCE_WORD_LINE = Regex("(?:ال)?رصيد|(?:ال)?متاح|balance|available", I)
 
-/** رقم مرجع قبل العملة على طول («Ref SR4821» · «رقم المرجع: SR 48213») ⇒ مش مبلغ. */
-private val REFERENCE_BEFORE = Regex("(?:${B}ref(?:erence)?|${B}no\\.?|#|مرجع|المرجع|رقم$S*(?:ال)?(?:مرجع|عملية|العملية)?)$S*[:：.]?$S*$", I)
+/** رقم مرجع قبل العملة على طول («Ref SR4821» · «رقم المرجع: SR 48213» · الجولة التامنة: «MTCN: SR4471» · «الفاتورة: SR4471») ⇒ مش مبلغ. */
+private val REFERENCE_BEFORE = Regex(
+    "(?:${B}ref(?:erence)?|${B}no\\.?|#|مرجع|المرجع|رقم$S*(?:ال)?(?:مرجع|عملية|العملية)?|${B}mtcn|(?:ال)?فاتورة|${B}(?:bill|invoice)$B)$S*[:：.]?$S*$",
+    I,
+)
+
+/**
+ * الجولة التامنة: سطر **خانة حرة** («لابل: قيمة» — المحل · الطرف · المرجع · الفاتورة · الخدمة · الجهة) — العملة جواه جزء من الاسم أو المرجع، مش
+ * مبلغ: «At: محلات 5 ريال» اتسجلت 5 ريال · «To: SR 4417» اتسجلت 4,417 · «MTCN: SR4471». ولو الرسالة مفيهاش مبلغ تاني ⇒ «المبلغ مش واضح».
+ */
+private val FREE_SLOT_LINE = Regex(
+    "^$S*(?:لدى|لدي|عند|${B}at|التاجر|${B}merchant|من$S*البائع|${B}transaction|من|إلى|الى|الي|${B}to|${B}from|لـ?|المستفيد|${B}receiver" +
+        "|${B}beneficiary|مصرف|البنك|من$S*بنك|المفوتر|مفوتر|${B}biller|الخدمة|لخدمة|${B}service|الجهة|${B}mtcn|مرجع|الرقم$S*المرجعي" +
+        "|${B}ref(?:erence)?(?:\\.?$S*no\\.?)?|(?:ال)?فاتورة|${B}number|مكان$S*السحب|الصراف|${B}reason)$S*[:：]",
+    I,
+)
 
 /** سطر كله اسم خانة رصيد أو رسوم من غير رقم («الرصيد» · «رسوم:») ⇒ المبلغ اللي في السطر اللي بعده لوحده هو قيمتها. */
 private val LABEL_ONLY_LINE = Regex(
@@ -110,6 +124,7 @@ private fun oneLocalAmount(text: String, body: String): SaudiAmount {
     var goldenDot = false
     val lines = text.split('\n')
     for ((index, line) in lines.withIndex()) {
+        if (FREE_SLOT_LINE.containsMatchIn(line)) continue
         for (near in amountsNearCurrency(line, CURRENCY_TOKEN, AmountStyle.SAUDI)) {
             if (NOT_TRANSACTION_AMOUNT.containsMatchIn(line.substring(0, near.start))) continue
             if (REFERENCE_BEFORE.containsMatchIn(line.substring(0, near.start))) continue

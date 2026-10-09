@@ -122,3 +122,6 @@ internal fun samaTitleAgrees(titleKey: String, direction: Direction): Boolean? {
     val entry = SAMA_BY_KEY[titleKey] ?: return null
     return entry.direction == null || entry.direction == direction
 }
+
+/** عنوان موحّد اتجاهه ملتبس في التعميم نفسه (سداد البطاقة · السحب الطارئ · تسوية نقطة البيع). */
+internal fun isUndirectedSamaTitle(titleKey: String): Boolean = SAMA_BY_KEY[titleKey]?.direction == null && titleKey in SAMA_BY_KEY

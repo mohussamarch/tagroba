@@ -23,6 +23,9 @@ internal val MSA_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SMS_WAIT_CASH_WITHDRAWAL to "سحب نقدي: نقله إلى محفظة النقد لم يُبنَ بعد، فلم يُسجَّل تلقائيًا. راجعه وأكّده",
     TextKey.SMS_HIDDEN_TEXT to "في الرسالة علامات تعكس اتجاه النص، فما يظهر لك قد يختلف عما يُقرأ؛ لم تُقرأ",
     TextKey.SMS_OTHER_COUNTRY to "الرسالة على شكل رسالة بنك من البلد الآخر، فتُقرأ هناك",
+    TextKey.SMS_WAIT_CARD_CREDIT to "مبلغ دخل على بطاقة ائتمانية، لا على حساب هذه المحفظة؛ فلم يُسجَّل تلقائيًا. راجعه وأكّده",
+    TextKey.SMS_WAIT_CASH_DEPOSIT to "إيداع نقدي: نقله من محفظة النقد إلى البنك لم يُبنَ بعد، فلم يُسجَّل تلقائيًا. راجعه وأكّده",
+    TextKey.SMS_WAIT_PURCHASE_CASH to "شراء مع سحب نقدي: جزء من المبلغ نقد لمحفظة النقد، ونقله لم يُبنَ بعد؛ فلم يُسجَّل تلقائيًا. راجعه وأكّده",
 )
 
 internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -41,6 +44,9 @@ internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SMS_WAIT_CASH_WITHDRAWAL to "سحب كاش: نقله لمحفظة الكاش لسه ما اتعملش، عشان كده ما اتسجلش لوحده. راجعه وأكّده",
     TextKey.SMS_HIDDEN_TEXT to "الرسالة فيها علامات بتعكس اتجاه الكلام، فاللي شايفه ممكن يختلف عن اللي بيتقري؛ ما اتقرتش",
     TextKey.SMS_OTHER_COUNTRY to "الرسالة على شكل رسالة بنك من البلد التانية، فبتتقري هناك",
+    TextKey.SMS_WAIT_CARD_CREDIT to "مبلغ دخل على كارت ائتمان، مش على حساب المحفظة دي؛ عشان كده ما اتسجلش لوحده. راجعه وأكّده",
+    TextKey.SMS_WAIT_CASH_DEPOSIT to "إيداع كاش: نقله من محفظة الكاش للبنك لسه ما اتعملش، عشان كده ما اتسجلش لوحده. راجعه وأكّده",
+    TextKey.SMS_WAIT_PURCHASE_CASH to "شراء ومعاه سحب كاش: جزء من المبلغ كاش لمحفظة الكاش ونقله لسه ما اتعملش؛ عشان كده ما اتسجلش لوحده. راجعه وأكّده",
 )
 
 internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
@@ -59,4 +65,7 @@ internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SMS_WAIT_CASH_WITHDRAWAL to "A cash withdrawal: moving it to your cash wallet isn't built yet, so it wasn't recorded automatically. Check it and confirm",
     TextKey.SMS_HIDDEN_TEXT to "The message has marks that reverse the text direction, so what you see may differ from what is read; it wasn't read",
     TextKey.SMS_OTHER_COUNTRY to "The message is in a bank layout from the other country, so it is read there",
+    TextKey.SMS_WAIT_CARD_CREDIT to "Money credited to a credit card, not to this wallet's account, so it wasn't recorded automatically. Check it and confirm",
+    TextKey.SMS_WAIT_CASH_DEPOSIT to "A cash deposit: moving it from your cash wallet to the bank isn't built yet, so it wasn't recorded automatically. Check it and confirm",
+    TextKey.SMS_WAIT_PURCHASE_CASH to "A purchase with cash back: part of it is cash for your cash wallet, and moving it isn't built yet, so it wasn't recorded automatically. Check it and confirm",
 )

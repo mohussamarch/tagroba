@@ -19,6 +19,11 @@ enum class SmsKind(val wire: String) {
 
     /** سحب كاش (صرّاف · فرع · وكيل محفظة) — §75-4: يتنقل لمحفظة الكاش. */
     CASH_WITHDRAWAL("cash_withdrawal"),
+
+    /** الجولة التامنة: شراء **ومعاه** سحب كاش من نفس المحل («PoS Purchase & Cashback» · «شراء ونقد عبر نقاط البيع») — جزء منه للكاش (§75-4). */
+    PURCHASE_WITH_CASH("purchase_with_cash"),
+
+    /** إيداع كاش في البنك (صرّاف · فرع) — الجولة التامنة: نقل من محفظة الكاش للبنك، مش دخل (§75-4 بالعكس — لسه ما اتبناش). */
     CASH_DEPOSIT("cash_deposit"),
     TRANSFER_IN("transfer_in"),
     TRANSFER_OUT("transfer_out"),
@@ -113,11 +118,28 @@ data class SmsForeignPending(
     val localSuggestion: Halalas? = null,
 )
 
+/**
+ * الجولة التامنة: عملية **أجنبية أكيد** بس المبلغ الأجنبي مش مقروء بالظبط (اسم عملة ليه أكتر من بلد «25.000 دينار» · «200 دولار» لوحده (سؤال
+ * (س) لسه مفتوح) · سطر «Currency: USD» من غير مبلغ جنبه) — كانت بتستنى **من غير أي تفاصيل**. دلوقتي بتستنى ومعاها اللي اتقري بس (قاعدة 10):
+ * [currency] لو الكود مكتوب صريح · [writtenAmount] الرقم **زي ما هو مكتوب** جنب العملة (كسوره بتتحدد لما العملة تتعرف) · المقابل المحلي
+ * المكتوب [localSuggestion] اقتراح.
+ */
+data class SmsForeignUnread(
+    val date: IsoDate,
+    val currency: String?,
+    val writtenAmount: String?,
+    val direction: Direction,
+    val merchantName: String,
+    val kind: SmsKind,
+    val ownLast4: String? = null,
+    val localSuggestion: Halalas? = null,
+)
+
 sealed interface SmsParseResult {
     data class Ok(val row: SmsRow) : SmsParseResult
 
-    /** [foreign] موجود بس لو السبب «عملة أجنبية» والباقي كله اتقري (§75-12). */
-    data class Rejected(val reason: String, val foreign: SmsForeignPending? = null) : SmsParseResult
+    /** [foreign] موجود بس لو السبب «عملة أجنبية» والباقي كله اتقري (§75-12) · [foreignUnread] لو أجنبية والمبلغ الأجنبي مش مقروء بالظبط. */
+    data class Rejected(val reason: String, val foreign: SmsForeignPending? = null, val foreignUnread: SmsForeignUnread? = null) : SmsParseResult
 }
 
 internal const val DAY_MS = 86_400_000L

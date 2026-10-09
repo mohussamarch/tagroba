@@ -71,6 +71,26 @@ private val BIDI_EMBEDDING = setOf(0x202A, 0x202B, 0x202D, 0x202E)
 /** فيها علامة قلب اتجاه (LRO/RLO) ⇒ القارئ بيرفضها (الكلام المعروض غير المقروء). */
 internal fun hasBidiOverride(raw: String): Boolean = raw.any { it.code in BIDI_OVERRIDE }
 
+private fun isNumberChar(c: Char?): Boolean = c != null && (c.isDigit() || c in ".,٫٬")
+
+/**
+ * الجولة التامنة — **علامة اتجاه جوه الرقم** (أي علامة من `BIDI_CODES`: RLM/LRM/ALM · العزل U+2066…2069 · التضمين): «SAR 1⁧,234.5⁩0» بتتعرض
+ * في برنامج الرسايل «1234.5,0» والقارئ بيقرا 1,234.50 — الرقم اللي المالك شايفه غير اللي بيتسجل. البنوك بتحط العلامات دي **حوالين**
+ * الرقم مش جواه، فالرسالة دي **بتترفض** زي علامات القلب (`SMS_HIDDEN_TEXT`). علامة قبل الرقم أو بعده («‏48.60 ر.س») عادي.
+ */
+internal fun hasBidiInsideNumber(raw: String): Boolean {
+    /** من [from] في اتجاه [step]: حروف رقم (وعلامات اتجاه) من غير مسافة لحد رقم فعلًا. */
+    fun digitReachable(from: Int, step: Int): Boolean {
+        var j = from
+        while (j in raw.indices && (raw[j].code in BIDI_CODES || isNumberChar(raw[j]))) {
+            if (raw[j].isDigit()) return true
+            j += step
+        }
+        return false
+    }
+    return raw.indices.any { i -> raw[i].code in BIDI_CODES && digitReachable(i - 1, -1) && digitReachable(i + 1, 1) }
+}
+
 /** رمز الريال (U+FDFC) جوه كتلة أشكال العرض (أ) — مش حرف متشكل. */
 private const val RIAL_SIGN = 0xFDFC
 

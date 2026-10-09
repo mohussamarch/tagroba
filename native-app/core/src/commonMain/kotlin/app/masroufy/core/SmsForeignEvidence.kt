@@ -72,8 +72,11 @@ private val ABBREV_CODES = mapOf(
     "د.ب" to "BHD", "د.أ" to "JOD",
     // الجولة السادسة: الفورنت · الكرونة التشيكية · الليرة اللبنانية والسورية
     "Ft" to "HUF", "Kč" to "CZK", "L.L" to "LBP", "ل.ل" to "LBP", "ل.س" to "SYP",
+    // الجولة التامنة: كتابات شائعة كانت بتترمي قبل الحفظ «مفيهاش مبلغ» بدل ما تستنى (§75-12): «DHS» كبيرة · «RS» · «SFr» · «JD» (الدينار
+    // الأردني) · «Qr» · «Dh»
+    "DHS" to "AED", "Dh" to "AED", "RS" to null, "SFr" to "CHF", "SFR" to "CHF", "Sfr" to "CHF", "JD" to "JOD", "Qr" to "QAR",
 )
-private const val ABBREV = "KD|BD|QR|RO|Dhs|DH|TL|RM|Rp|kr|Rs|Ft|Kč|L\\.L|L\\.E|LE|د\\.إ|د\\.ك|ر\\.ق|ر\\.ع|د\\.ب|د\\.أ|ل\\.ل|ل\\.س"
+private const val ABBREV = "KD|BD|QR|Qr|RO|DHS|Dhs|DH|Dh|TL|RM|Rp|kr|RS|Rs|SFr|SFR|Sfr|JD|Ft|Kč|L\\.L|L\\.E|LE|د\\.إ|د\\.ك|ر\\.ق|ر\\.ع|د\\.ب|د\\.أ|ل\\.ل|ل\\.س"
 private val ABBREV_MONEY = Regex(
     "(?<![A-Za-z\\u0600-\\u06FF])($ABBREV)\\.?$SP*[:：]?$SP*($FOREIGN_NUMBER)(?!\\d)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($ABBREV)\\.?(?![A-Za-z\\u0600-\\u06FF])",
 )
@@ -199,9 +202,22 @@ private fun conversionsIn(body: String, local: LocalCurrency, withLabels: Boolea
         for (m in regex.findAll(body)) amountBefore(body, m.range.first, local)?.let { out += Conversion(it, localValue(m)) }
     }
     for (m in local.equivalent.findAll(body)) out += Conversion(null, localValue(m))
-    if (withLabels) for (m in local.label.findAll(body)) out += Conversion(null, localValue(m))
+    if (withLabels) {
+        for (m in local.label.findAll(body)) out += Conversion(null, localValue(m))
+        // الجولة التامنة: «You paid GBP 9.99 to TEST MUSIC on 08/10/2026 (EGP 640.50)» — القوسين في **آخر الجملة** بعد التاريخ (مش بعد المبلغ
+        // الأجنبي على طول) = المقابل المحلي كاقتراح بس (الرسالة أجنبية بدليل تاني)؛ قبلهم كلمة رسوم/رصيد/حد ⇒ مش مقابل
+        for (m in local.parens.findAll(body)) {
+            val lineStart = body.lastIndexOf('\n', m.range.first - 1) + 1
+            val rest = body.substring(m.range.last + 1).substringBefore('\n').trim()
+            val before = body.substring(maxOf(lineStart, m.range.first - 25), m.range.first)
+            if (rest in TRAILING_END && !NOT_CONVERSION.containsMatchIn(before) && !ID_BEFORE.containsMatchIn(before)) out += Conversion(null, localValue(m))
+        }
+    }
     return out
 }
+
+/** بعد القوسين: ولا حاجة لحد آخر السطر غير علامة آخر الجملة. */
+private val TRAILING_END = setOf("", ".", "!", "؟", "?")
 
 /** المقابل المحلي **المكتوب** (اقتراح للسؤال — §75-12)، لو واحد بس وواضح. */
 internal fun localConversion(body: String, local: LocalCurrency): Halalas? =
@@ -236,6 +252,19 @@ internal fun foreignMoneyIn(body: String, local: LocalCurrency): List<IsoMoney> 
 }
 
 private fun IntRange.overlaps(other: IntRange) = first <= other.last && other.first <= last
+
+private val CURRENCY_LINE = Regex("^[ \\t]*(?:currency|العملة|العمله)[ \\t]*[:：][ \\t]*([A-Za-z]{3})[ \\t]*$", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+
+/**
+ * الجولة التامنة — تفاصيل العملية الأجنبية اللي مبلغها مش مقروء بالظبط (`SmsForeignUnread`): الكود لو مكتوب صريح (سطر «Currency: USD» أو كود
+ * واحد جنب المبلغ) · والرقم زي ما هو مكتوب جنب العملة الأجنبية (لو رقم واحد).
+ */
+internal fun foreignUnreadDetails(body: String, local: LocalCurrency): Pair<String?, String?> {
+    val found = foreignMoneyIn(body, local)
+    val code = CURRENCY_LINE.find(body)?.groupValues?.get(1)?.uppercase()?.takeIf { it != local.code }
+        ?: found.mapNotNull { it.code?.uppercase() }.toSet().singleOrNull()
+    return code to found.map { it.number }.toSet().singleOrNull()
+}
 
 /** الرسالة بعملة أجنبية (أي دليل من الأربعة) — حتى لو المبلغ الأجنبي نفسه مش واضح. */
 internal fun hasForeignEvidence(body: String, local: LocalCurrency): Boolean =

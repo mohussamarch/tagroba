@@ -29,7 +29,10 @@ private const val AR_STATE =
         "|المتوقع|متوقع|المقرر|مقرر|تحصيل|التحصيل|استكمال|اكتمال|التحقق|تحقق|التوثيق|توثيق|التفعيل|تفعيل|موافقه|موافقة|الموافقة|القبول|قبول" +
         "|رفض|متاح|للصرف|الصرف|تقديري|تقديريه|تقديرية|مبدئي|مبدئيه|مبدئية|مؤقت|مؤقته|مؤقتة|تامين|ضمان|الكشف|كشف|تحديث|حدث|استلام|استلامه" +
         "|اضافه|اضافة|الاضافة|اضافته|اضافتها|ظهور|انتظار|بانتظار|تدقيق|التدقيق|مراجعه|مراجعة|المراجعة|متاكدش|ماتاكدش|متاكد|مؤكد|مؤكده|مؤكدة" +
-        "|جديد|جديده|جديدة|صادر|صادره|صادرة|مستحق|مستحقه|مستحقة"
+        "|جديد|جديده|جديدة|صادر|صادره|صادرة|مستحق|مستحقه|مستحقة" +
+        // الجولة التامنة: صفات الحالة بالمصري («المسجل باسم رنا التجريبية متجمد/متعطل» · «من هشام النموذجي عالق» كانوا بيتسجلوا تحويل داخل)
+        "|متجمد|متجمده|متجمدة|مجمد|مجمده|مجمدة|اتجمد|اتجمدت|متعطل|متعطله|متعطلة|معطل|معطله|معطلة|اتعطل|اتعطلت|عالق|عالقه|عالقة" +
+        "|متاخر|متاخره|متاخرة|اتاخر|اتاخرت|مرتجع|مرتجعه|مرتجعة|مسترد|مسترده|مستردة|استرداد"
 
 /** أول الكلمة: «محتاج/محتاجة» · «اقبله» · «ارفضه» · «مستني» · «منتظر» · «معلق» — بأي آخر. */
 private const val AR_STEMS = "(?:محتاج|تحتاج|يحتاج|اقبل|ارفض|مستني|منتظر|معلق|مراجع)\\S*"
@@ -55,8 +58,17 @@ private const val EN_WORDS =
         "|updated|sent|issued|waived|stopped|completed|complete|incomplete|successful|failed|declined|rejected|reversed|refunded|returned" +
         "|cancelled|canceled|expired|blocked|frozen|suspended|needs|need|requires|required|require|working|tomorrow|later|soon|payable|due"
 
+/**
+ * الجولة التامنة: **جذور حالة جوه الكلمة** (مش الكلمة كلها): «SAMI MODEL ABORTED · REVOKED · UNDELIVERED · ONHOLD · PENDINGAPPROVAL» كانوا
+ * بيعدّوا لأن قايمة الكلام بتقارن الكلمة كاملة («ONHOLD» مش «on hold»، و«-ed» مش في القايمة) فبيتسجلوا تحويل داخل خلص. الجذور دي نادر
+ * تيجي جوه اسم شخص أو محل («HOLDINGS» مش منها: hold لوحدها كلمة كاملة بس).
+ */
+private const val EN_STATUS_STEMS =
+    "\\S*(?:pending|approv|abort|revok|undeliver|reject|revers|refund|cashback|chargeback|declin|cancel|suspend|unpaid|onhold|unsuccess|unverif" +
+        "|unconfirm|uncleared|failed|failure|frozen|blocked|expired)\\S*|holds?|held"
+
 /** كلمة واحدة مش اسم (على [shapeKey]) — بتتقارن كلها. */
-internal const val SLOT_STOP = "(?:$AR_FUNCTION|$AR_STATE|$AR_STEMS|$AR_VERB|$EN_WORDS)"
+internal const val SLOT_STOP = "(?:$AR_FUNCTION|$AR_STATE|$AR_STEMS|$AR_VERB|$EN_WORDS|$EN_STATUS_STEMS)"
 
 private val STOP_WORD = Regex("^$SLOT_STOP$")
 

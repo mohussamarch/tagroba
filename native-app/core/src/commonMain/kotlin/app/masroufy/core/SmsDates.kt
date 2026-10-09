@@ -70,6 +70,22 @@ internal fun saudiTransactionDate(body: String, receivedAt: String): IsoDate? {
     return shortCandidates(SHORT, body, received).singleOrNull()
 }
 
+/**
+ * الجولة التامنة (اختياري في المراجعة — اتعمل): «On: 10/09/2026» وصلت يوم 9 أكتوبر ⇒ القراية السعودية (يوم/شهر) = 10 سبتمبر (ملف المرجع)،
+ * والقراية التانية (شهر/يوم) = **يوم الوصول بالظبط**. بنك بيكتب التاريخ بالطريقة الأمريكية كان هيتسجل في الشهر المالي اللي قبله ⇒ القراية
+ * زي ما هي بس **ما بتتسجلش لوحدها** لو القراية التانية يوم الوصول أو اللي قبله والقراية الأولى لأ.
+ */
+internal fun swappedDateNearArrival(body: String, date: IsoDate, arrival: IsoDate?): Boolean {
+    arrival ?: return false
+    val m = LONG_DMY.find(body) ?: return false
+    val (a, b, y) = m.destructured.toList().map { it.toInt() }
+    if (iso(y, b, a) != date) return false
+    val swapped = iso(y, a, b)
+    if (swapped == date || !isValidIsoDate(swapped)) return false
+    val arrivalDay = toDayNumber(parseIsoDate(arrival))
+    return toDayNumber(parseIsoDate(swapped)) in arrivalDay - 1..arrivalDay && toDayNumber(parseIsoDate(date)) !in arrivalDay - 1..arrivalDay
+}
+
 // ── مصر ──────────────────────────────────────────────────────────────────
 
 private val MONTHS = listOf("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
@@ -80,18 +96,24 @@ private val EG_LONG_DMY = Regex("(?<![\\d.,])(\\d{1,2})[-/.](\\d{1,2})[-/.](\\d{
 /** سنتين أرقام بأي فاصل: «14/09/26» (التجاري الدولي) · «26-09-14» (فودافون كاش) · «14.09.26» (بريدفاست). */
 private val EG_SHORT = Regex("(?<![\\d.,])(\\d{1,2})[-/.](\\d{1,2})[-/.](\\d{2})(?![\\d.,])")
 
-/** الأهلي المصري: «يوم 09-14» = شهر-يوم من غير سنة (البحث: «MM-DD with NO year»). */
-private val NBE_MONTH_DAY = Regex("يوم[ \\t]*(\\d{1,2})-(\\d{1,2})(?![-/.\\d])")
+/**
+ * الأهلي المصري: «يوم 09-14» = شهر-يوم من غير سنة (البحث: «MM-DD with NO year»). الجولة التامنة: **بأي فاصل** («يوم 10/09» · «يوم 10.08») —
+ * كانت «يوم 10/09» بتتقري يوم/شهر (10 سبتمبر) والقالب نفسه بيتسجل لوحده فبتتسجل في الشهر المالي اللي قبله.
+ */
+private val NBE_MONTH_DAY = Regex("يوم[ \\t]*(\\d{1,2})([-/.])(\\d{1,2})(?![-/.]?\\d)")
 
-/** كلمة قبل التاريخ في القوالب: «on 29/07» (QNB · بيت التمويل) · «dated» · «يوم» · «في» · «بتاريخ». */
-private const val DATE_WORD = "(?:(?<![A-Za-z])(?:on|dated)|(?<![\\u0600-\\u06FF])(?:يوم|في|فى|بتاريخ))"
+/** كلمة قبل التاريخ في القوالب: «on 29/07» (QNB · بيت التمويل) · «dated» · «يوم» · «في» · «بتاريخ» · الجولة التامنة: «Trx date: 07/10». */
+private const val DATE_WORD = "(?:(?<![A-Za-z])(?:on|dated|date)|(?<![\\u0600-\\u06FF])(?:يوم|في|فى|بتاريخ))"
 
 /**
  * «29/07» = يوم/شهر من غير سنة (QNB · بيت التمويل الكويتي) — **في مكان التاريخ بس**: بعد كلمة تاريخ أو قبل الساعة على طول.
  * «PHARMA 24/7» في اسم المحل مش تاريخ (مراجعة جلسة 33: كانت بتتقري 24 يوليو وتتسجل في صمت).
+ * الجولة التامنة: بالنقطة كمان («on 07.10» · «في 08.10 21:15» · «08.10 23:58: Received …») وفاصلة قبل الساعة («8/10, 23:58: …») —
+ * القوالب المعروفة كانت بتقبل الشكل ده والقارئ ما يقراهوش فياخد يوم الوصول ويتسجل لوحده في يوم غلط.
  */
 private val DAY_MONTH = Regex(
-    "$DATE_WORD[ \\t]*[:：]?[ \\t]*(\\d{1,2})/(\\d{1,2})(?![\\d/])|(?<![\\d.,])(\\d{1,2})/(\\d{1,2})(?![\\d,/])(?=[ \\t]+(?:at[ \\t]+)?\\d{1,2}:\\d{2})",
+    "$DATE_WORD[ \\t]*[:：]?[ \\t]*(\\d{1,2})[/.](\\d{1,2})(?![\\d/]|\\.\\d)" +
+        "|(?<![\\d.,])(\\d{1,2})[/.](\\d{1,2})(?![\\d,/]|\\.\\d)(?=,?[ \\t]+(?:at[ \\t]+)?\\d{1,2}:\\d{2})",
     RegexOption.IGNORE_CASE,
 )
 
@@ -125,7 +147,9 @@ private val DONE_PHRASE = Regex(
     "(?<![\\u0600-\\u06FF])و?تم(?![\\u0600-\\u06FF])|إيداع|ايداع|(?<![A-Za-z])(?:has|have)[ \\t]+been(?![A-Za-z])" +
         "|(?<![A-Za-z])(?:received|credited|debited|deducted|returned|refunded|recharged|charged)(?![A-Za-z])|(?<![A-Za-z])successful" +
         // الجولة السابعة: صيغ المحافظ («وصلتك 450 ج.م» · «دفعت 95 جنيه» · «بعتّ 275 جنيه» · «You sent EGP 820.00») — كانت «التاريخ مش واضح»
-        "|(?<![\\u0600-\\u06FF])(?:وصلتك|وصلتلك|وصلك|اتحولك|اترجعلك|دفعت|بعتّ?)(?![\\u0600-\\u06FF])|(?<![A-Za-z])(?:sent|paid)(?![A-Za-z])",
+        "|(?<![\\u0600-\\u06FF])(?:وصلتك|وصلتلك|وصلك|اتحولك|اترجعلك|دفعت|بعتّ?)(?![\\u0600-\\u06FF])|(?<![A-Za-z])(?:sent|paid)(?![A-Za-z])" +
+        // الجولة التامنة: «جالك 400 جنيه» · «قبضت» · «حولت» · «سحبت» · «Transfer … done»
+        "|(?<![\\u0600-\\u06FF])(?:جالك|جالكم|قبضت|حولت|سحبت|شحنت)(?![\\u0600-\\u06FF])|(?<![A-Za-z])done(?![A-Za-z])",
     RegexOption.IGNORE_CASE,
 )
 
@@ -184,15 +208,17 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
         return if (dayMonth != null && monthDay != null && dayMonth != monthDay) null else dayMonth ?: monthDay
     }
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
-    if (!hasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
+    if (!egyptHasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     if (EG_SHORT.containsMatchIn(body)) return shortCandidates(EG_SHORT, body, received).singleOrNull()
     NBE_MONTH_DAY.find(body)?.let { m ->
         val a = m.groupValues[1].toInt()
-        val b = m.groupValues[2].toInt()
+        val b = m.groupValues[3].toInt()
         // الجولة الخامسة: «يوم MM-DD» شهر-يوم في جمل الأهلي المصري بس — مرسل تاني «يوم 08-10» ممكن يبقى يوم-شهر: لو القرايتين
-        // ممكنين (ومختلفين) ⇒ التاريخ مش واضح (كانت بتتسجل 10 أغسطس بدل 8 أكتوبر)
+        // ممكنين (ومختلفين) ⇒ التاريخ مش واضح (كانت بتتسجل 10 أغسطس بدل 8 أكتوبر). الجولة التامنة: جملة الأهلي بأي فاصل شهر-يوم،
+        // ومرسل تاني بـ«/» أو «.» يوم/شهر (العرف في مصر — زي «on 29/07»)
         if (isNbeSentence(body)) return withYear(a, b, receivedAt, received)
+        if (m.groupValues[2] != "-") return withYear(b, a, receivedAt, received)
         val monthDay = withYear(a, b, receivedAt, received)
         val dayMonth = withYear(b, a, receivedAt, received)
         return if (monthDay != null && dayMonth != null && monthDay != dayMonth) null else monthDay ?: dayMonth
@@ -202,5 +228,39 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
         val month = (m.groups[2] ?: m.groups[4])!!.value.toInt()
         return withYear(month, day, receivedAt, received)
     }
-    return null
+    // الجولة التامنة: يوم/شهر لوحده في أي مكان («Transaction ID: 900000553 06/10 New balance …») — قراية واحدة بس، وإلا «التاريخ مش واضح»
+    return egyptPartialDates(body).mapNotNull { (day, month) -> withYear(month, day, receivedAt, received) }.toSet().singleOrNull()
 }
+
+/**
+ * الجولة التامنة: «يوم/شهر» من غير سنة **في أي مكان** في رسالة مصر (مش مبلغ ولا ساعة ولا جزء من رقم أطول ولا «24/7»): الشكل اللي القوالب
+ * المعروفة بتقبله لازم القارئ يشوفه — قبل كده «08.10 23:58: Received …» · «… Transaction ID: 900000553 06/10 …» كانوا بيعدّوا القالب
+ * والقارئ ما يقراش التاريخ فياخد يوم الوصول. دلوقتي الرسالة اللي فيها الشكل ده يا تتقري بيه يا «التاريخ مش واضح» (بتستنى).
+ */
+private val EG_PARTIAL = Regex("(?<![\\d.,:/\\\\-])(\\d{1,2})([./\\\\-])(\\d{1,2})(?!\\d|[.,/\\\\-]\\d)")
+private val EG_MONEY_BEFORE = Regex(
+    "(?:(?<![A-Za-z])(?:egp|l\\.?e|e£|sar|sr|usd|eur|balance|bal\\.?|available|limit|amount|of|for|with|fees?|is)|[\$€£]" +
+        "|(?<![\\u0600-\\u06FF])(?:جم|جنيه|جنية|ج\\.م|ريال|رصيد\\S*|الرصيد|الحالي|الحالى|المتاح|متاح|الحد|مبلغ|بمبلغ|المبلغ|مصاريف|رسوم|قيمة|بقيمة))[ \\t]*[:：]?[ \\t]*$",
+    RegexOption.IGNORE_CASE,
+)
+private val EG_MONEY_AFTER = Regex(
+    "^[ \\t]*(?:(?:egp|l\\.?e|sar|sr|usd|eur)(?![A-Za-z])|(?:جم|جنيه|جنية|ج\\.م|ج|ريال)(?![\\u0600-\\u06FF])|[%٪])",
+    RegexOption.IGNORE_CASE,
+)
+
+/** «يوم/شهر» من غير سنة في الرسالة (يوم ≤ 31 وشهر ≤ 12)، من غير المبالغ و«24/7». */
+internal fun egyptPartialDateMatches(body: String): List<MatchResult> = EG_PARTIAL.findAll(body).filter { m ->
+    val day = m.groupValues[1].toInt()
+    val month = m.groupValues[3].toInt()
+    val lineStart = body.lastIndexOf('\n', m.range.first - 1) + 1
+    val before = body.substring(maxOf(lineStart, m.range.first - 30), m.range.first)
+    val after = body.substring(m.range.last + 1)
+    val money = EG_MONEY_BEFORE.containsMatchIn(before) || EG_MONEY_AFTER.containsMatchIn(after)
+    day in 1..31 && month in 1..12 && !money && !(day == 24 && month == 7)
+}.toList()
+
+private fun egyptPartialDates(body: String): List<Pair<Int, Int>> =
+    egyptPartialDateMatches(body).map { it.groupValues[1].toInt() to it.groupValues[3].toInt() }
+
+/** فيها تاريخ (أي شكل — بسنة أو من غيرها في أي مكان) — رسالة مصر اللي مفيهاش خالص بس هي اللي بتاخد يوم الوصول. */
+internal fun egyptHasDateToken(body: String): Boolean = hasDateToken(body) || egyptPartialDates(body).isNotEmpty()

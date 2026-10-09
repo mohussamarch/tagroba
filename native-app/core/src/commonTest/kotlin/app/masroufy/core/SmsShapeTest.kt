@@ -93,8 +93,9 @@ class SmsShapeTest {
         assertEquals(SmsShape.KeywordFallback, saudiShape("شراء\nبـSR 25", IN))
         assertEquals(SmsShape.KeywordFallback, saudiShape("حوالة داخلية\nالى:1188\nمن:TEST PERSON", OUT), "الاسم في «من:» = وارد")
         assertEquals(SmsShape.KeywordFallback, egyptShape("IPN transfer received with amount of EGP 300.00 on 1234 on 30/07", OUT))
-        // الملتبس في المصدر نفسه (سداد البطاقة) بيقبل أي اتجاه
-        assertEquals(SmsShape.SamaTitle, saudiShape("بطاقة ائتمانية تسديد\nمبلغ: 64.25 SAR", IN))
+        // الملتبس في المصدر نفسه (سداد البطاقة): الجولة التامنة — واضح **بس في الاتجاه اللي قاعدة العنوان قالته** («تسديد» = صرف)؛ الاتجاه
+        // من كلمة في باقي الرسالة («حساب راتب») ما بقاش بيتسجل لوحده
+        assertEquals(SmsShape.KeywordFallback, saudiShape("بطاقة ائتمانية تسديد\nمبلغ: 64.25 SAR", IN))
         assertEquals(SmsShape.SamaTitle, saudiShape("بطاقة ائتمانية تسديد\nمبلغ: 64.25 SAR", OUT))
     }
 

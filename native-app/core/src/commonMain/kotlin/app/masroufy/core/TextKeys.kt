@@ -571,4 +571,6 @@ enum class TextKey {
     SMS_WAIT_OTHER_ACCOUNT,
     // الجولة السابعة: الاسترداد (§75-6) والسحب من الصرّاف (§75-4) بيستنوا التأكيد · رسالة فيها علامة قلب اتجاه بتترفض — القيم في `TextsSmsAuto.kt`
     SMS_WAIT_REFUND, SMS_WAIT_CASH_WITHDRAWAL, SMS_HIDDEN_TEXT, SMS_OTHER_COUNTRY,
+    // الجولة التامنة: فلوس داخلة على كارت ائتمان · إيداع كاش · شراء ومعاه كاش بيستنوا التأكيد — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_CARD_CREDIT, SMS_WAIT_CASH_DEPOSIT, SMS_WAIT_PURCHASE_CASH,
 }

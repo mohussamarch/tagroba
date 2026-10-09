@@ -117,6 +117,13 @@ private fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when 
     target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
     row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
     row.kind == SmsKind.CASH_WITHDRAWAL -> TextKey.SMS_WAIT_CASH_WITHDRAWAL
+    // الجولة التامنة: فلوس **داخلة على كارت ائتمان** («Credit Card Credited» · «تم قيد مبلغ … لبطاقتك الائتمانية») مش دخل لحساب البنك — كانت
+    // بتتسجل داخل المحفظة وتلغي خصم «Credit Card Payment» فالرصيد يزيد بمبلغ السداد كله. إلا لو المحفظة دي **هي** الكارت (أرقامها نفس الكارت)
+    row.kind == SmsKind.CARD_PAYMENT && row.direction == Direction.IN && (row.ownLast4 == null || row.ownLast4 != target.accountLast4) ->
+        TextKey.SMS_WAIT_CARD_CREDIT
+    // الجولة التامنة: إيداع كاش = نقل من محفظة الكاش (§75-4 بالعكس، لسه ما اتبناش) — كان بيتسجل دخل للبنك والسحب بيستنى · شراء ومعاه كاش
+    row.kind == SmsKind.CASH_DEPOSIT -> TextKey.SMS_WAIT_CASH_DEPOSIT
+    row.kind == SmsKind.PURCHASE_WITH_CASH -> TextKey.SMS_WAIT_PURCHASE_CASH
     else -> null
 }
 

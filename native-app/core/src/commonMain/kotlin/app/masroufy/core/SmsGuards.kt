@@ -40,7 +40,8 @@ private const val NEG = "(?<!(?:\\bnot|\\bnever|\\bno|n't)[ \\t]{1,3})(?<![Uu]n)
 internal val SMS_OFFER_PATTERN = Regex(
     // الجولة الخامسة: «لعرض تفاصيل العملية» مش عرض · «scheduled transfer … executed successfully» خلص · «هدية … صالحة لمدة» عرض
     "$NA(?:[وف])?(?:بال|لل|ال|ب|ل)?عرض(?!$S*(?:ال)?(?:تفاصيل|رصيد|كشف|حساب))|سيتم|عرض خاص|offer|will be" +
-        "|scheduled(?![^\\n]{0,100}?${B}(?:executed|completed|processed)$S+successfully$B)|${NA}هدي[ةه][^\\n]{0,40}صالح" +
+        // الجولة التامنة: «Scheduled Transfer Executed» · «Scheduled transfer completed: …» خلصت من غير «successfully» (مش «to be executed»)
+        "|scheduled(?![^\\n]{0,100}?(?<!(?:to|will|shall)$S{1,3}be$S{1,3})${B}(?:executed|completed|processed)$B)|${NA}هدي[ةه][^\\n]{0,40}صالح" +
         "|shop$S+now|when$S+you$S+(?:pay|shop|spend|use)|pay$S+over$S+\\d" +
         "|${NA}و?احصل$S*(?:على|علي)?$S*(?:\\d|خصم|كاش|استرداد|نقاط|هدي|مكافأ|مكافا|جائز|عرض|ضعف|مضاعف|قسيم|كوبون)" +
         "|${NA}استمتع$S*(?:ب)?(?:ال)?(?:\\d|خصم|عرض|كاش|استرداد|نقاط|تقسيط|هدي)" +
@@ -72,8 +73,11 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         "مشاركة${S}*الرمز|الرمز$S*[:：]?$S*\\d{4,8}" +
         "|كلمة$S*مرور|رمز$S*(?:مؤقت|شراء)|رمز$S*[:：]$S*\\d{4,8}|الرقم$S*السري|security$S*code" +
         "|one.?time$S*(?:PIN|passcode)|verification$S*PIN|passcode|كود$S*(?:ال)?(?:تحقق|تفعيل|تأكيد|أمان)" +
-        // الجولة السابعة: «Auth. Code» · «Appr Code» · «Ref. Code» · «Txn Code» · «Approval No.» رقم موافقة/مرجع في شراء حقيقي، مش رمز
-        "|(?<!(?:auth|appr|approval|authori[sz]ation|merchant|branch|terminal|promo|transaction|txn|trx|ref|reference)\\.?[ \\t:#.]{1,3})${B}code$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
+        // الجولة السابعة: «Auth. Code» · «Appr Code» · «Ref. Code» · «Txn Code» · «Approval No.» رقم موافقة/مرجع في شراء حقيقي، مش رمز.
+        // الجولة التامنة — **القاعدة اتقلبت**: «<كلمة> code <رقم>» رمز **بس** لو الكلمة كلمة رمز (verification · OTP · one-time · security ·
+        // your …) أو مفيش كلمة قبلها خالص — «Customer code: 553128» · «Bill code 4471209» · «Order code 55821» · «service code 1234» مش رمز
+        "|(?:(?<![A-Za-z][ \\t:#.]{1,3})|(?<=(?:verification|otp|one.?time|security|confirmation|authentication|activation|login|access|secret" +
+        "|secure|sms|temporary|your|the|this|use|enter|using|with|type|input|provide|following|below|an|a)[ \\t:#.]{1,3}))${B}code$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         // الجولة السادسة: «Approval PIN: 553901» رمز (رقم الموافقة «Approval code» بس هو اللي مش رمز)
         "|(?<!(?:merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})${B}PIN$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         "|رمز$S*(?:ال)?(?:تأكيد|أمان|امان|سري)|الرمز$S*السري|(?:confirmation|authentication|security)$S*(?:code|PIN)" +
@@ -86,7 +90,10 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         // «Verification No.» · «one-time 731905» · «Use 731905 to confirm» · «731905 is your code» («كود العملية» لسه رقم العملية)
         // الجولة السابعة: «رمز/كود الموافقة 553120» · «رمز التفويض» = رقم موافقة في شراء حقيقي (زي «كود العملية»)، مش رمز
         "|(?:رمز|كود|كلمة$S*(?:ال)?(?:مرور|سر))[^\\n]{0,15}لمرة$S*واحدة" +
-        "|$NA(?:ال)?(?:رمز|كود)ك?[ \\t]+(?!(?:ال)?(?:عملية|معاملة|موافقة|موافقه|تفويض|مرجع))(?:[^\\s\\d]+[ \\t]+){1,2}\\d{4,8}(?!\\d)" +
+        // الجولة التامنة — **القاعدة اتقلبت**: «كود <كلمة> <رقم>» رمز **بس** لو الكلمة كلمة رمز («الكود بتاعك 4829» · «الرمز المرسل لك
+        // 731905»)؛ «كود المشترك 44712» · «كود الطلب 77120» · «كود الحجز» · «كود الدفع» · «كود الوكيل» · «كود التاجر» أرقام عملية
+        "|$NA(?:ال)?(?:رمز|كود)ك?[ \\t]+(?:[^\\s\\d]+[ \\t]+)?(?:بتاع(?:ك|تك)|الخاص(?:$S*بك)?|المرسل|المؤقت|السري|لك|ليك)[ \\t]+" +
+        "(?:[^\\s\\d]+[ \\t]+)?\\d{4,8}(?!\\d)" +
         "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)[^\\n\\d]{0,20}\\d{4,8}(?!\\d)|$NA(?:ال)?رقمك$S*(?:ال)?(?:سري|تحقق)" +
         "|${B}verification$S*(?:no\\.?|number|num)(?![A-Za-z])|${B}one.?time(?:[ \\t]+[^\\s\\d]+){0,2}[ \\t]*[:：]?[ \\t]*\\d{4,8}(?!\\d)" +
         "|${B}use$S+\\d{4,8}$S+to$B|\\d{4,8}$S+is$S+your$S+(?:[A-Za-z]+$S+)?(?:code|OTP|PIN|password|passcode)$B" +
@@ -95,7 +102,10 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         // ── الجولة السابعة: «Verification: 551204» · «Password: 551204» · «أدخل: 551204» · «registration code for card *7739 is 551204» ·
         // «transaction PIN for InstaPay transfer … is 553320» ──
         "|${B}verification$S*[:：]$S*\\d{4,8}(?!\\d)|${B}password$S*[:：]|$NA(?:أدخل|ادخل)$S*[:：]$S*\\d{4,8}(?!\\d)" +
-        "|${B}(?:code|PIN)$S+for$B[^\\n]{0,80}?${B}is$S*[:：]?$S*\\d{4,8}(?!\\d)",
+        "|${B}(?:code|PIN)$S+for$B[^\\n]{0,80}?${B}is$S*[:：]?$S*\\d{4,8}(?!\\d)" +
+        // ── الجولة التامنة: رقم موافقة من غير كلمة «رمز» («أدخل الرقم 604218 لتأكيد عملية الشراء …» · «… reply with 604218 within 5 minutes») ──
+        "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?رقم$S*\\d{4,8}(?!\\d)|${B}(?:reply|respond)$S+(?:with$S+)?(?:the$S+)?(?:code$S+)?\\d{4,8}(?!\\d)" +
+        "|${NA}لتأكيد$S*(?:ال)?(?:عملية|شراء|دفع|تحويل|حوالة|سداد)",
     GI,
 )
 
@@ -157,7 +167,7 @@ internal fun guardText(body: String): String =
  * («الغاء حجز مبلغ» = رجوع حجز، يعني «مش عملية» مش «مرفوضة»).
  */
 internal fun smsIgnoreReason(body: String): TextKey? {
-    val text = guardText(body)
+    val text = withoutPointsTail(guardText(body))
     return when {
         SMS_OFFER_PATTERN.containsMatchIn(text) -> TextKey.SMS_OFFER
         isSensitiveText(text) -> TextKey.SMS_SENSITIVE
@@ -166,6 +176,24 @@ internal fun smsIgnoreReason(body: String): TextKey? {
         isCancelled(text) -> TextKey.SMS_DECLINED
         else -> null
     }
+}
+
+/**
+ * الجولة التامنة: جملة **نقاط ولاء** بعد حركة خلصت («… وسيتم إضافة 48 نقطة قطاف» · «…, you will earn 48 points.» · «Bonus points will be
+ * credited at month end») = ذيل، مش سبب العرض — الشراء الحقيقي كان بيترفض «عرض أو حركة مستقبلية» (أو بيترمي قبل الحفظ). بتتشال **بس**
+ * لو الباقي فيه حركة خلصت (`COMPLETED_MOVEMENT`)؛ عرض النقاط لوحده لسه عرض.
+ */
+private val POINTS_TAIL = Regex(
+    "[،,;]?$S*و?(?:سيتم|سوف$S*يتم|هيتم|يتم)$S*(?:إضافة|اضافة|منح|احتساب|إيداع|ايداع)$S*(?:\\d[\\d,.]*$S*)?(?:نقط[ةه]|نقاط)[^.!؟?\\n]*" +
+        "|[,.;]?$S*(?:and$S+)?you$S+(?:will|'ll)$S+(?:earn|get|receive|collect)$S+\\d[\\d,.]*$S+(?:[A-Za-z]+$S+){0,2}points?$B[^.!?\\n]*" +
+        "|[,.;]?$S*(?:[A-Za-z]+$S+){0,2}points?$S+will$S+be$S+(?:credited|added|awarded|posted)$B[^.!?\\n]*",
+    GI,
+)
+
+private fun withoutPointsTail(text: String): String {
+    if (!POINTS_TAIL.containsMatchIn(text)) return text
+    val stripped = POINTS_TAIL.replace(text, "")
+    return if (COMPLETED_MOVEMENT.containsMatchIn(stripped)) stripped else text
 }
 
 /** سبب الحارس **من غير العرض** (فلتر الجهاز — الجولة السادسة: «تمت عملية شراء … ، سيتم إضافة النقاط» عرض بس في نفس الجملة). */
@@ -182,44 +210,35 @@ internal fun guardReasonBesidesOffer(body: String): TextKey? {
 /**
  * الجولة السادسة: جملة **تحذير** من غير رقم («Never share your OTP or PIN» · «لا تشارك الرقم السري مع أحد» · «اوعى تدي كود التحقق
  * لأي حد» · «فودافون كاش عمرها ما هتطلب منك الرقم السري») مش رسالة رمز — كانت بتخلي عملية حقيقية تترمي قبل الحفظ وتضيع في صمت.
- * التحذير بيتشال لحد آخر جملته **لو مفيهوش رقم 4–8 أرقام** («Do not share the code 731905» لسه رمز)، والباقي بيتفحص.
+ * التحذير بيتشال لحد آخر جملته **لو مفيهوش رقم رمز** («Do not share the code 731905» لسه رمز)، والباقي بيتفحص.
+ * الجولة التامنة: «أوعى» بالهمزة · «متشاركش/ماتشاركش» · «احذر» · «خلي بالك» · «Beware» · «Report any OTP request» · «Your OTP is never
+ * needed» · «Keep your …» — ورقم خدمة العملاء جوه التحذير («… call 19990» · «واتصل على 19990») مش رمز (`SmsCodeDigits.kt`).
  */
 private val WARNING = Regex(
     "(?:${B}never$S+(?:share|disclose|give|reveal|tell)|${B}(?:do$S+not|don'?t)$S+(?:share|disclose|give|reveal|tell)" +
         "|${B}(?:will$S+)?never$S+ask|$NA(?:لا|ولا)$S*(?:تشارك|تعطي|تعط|تفصح|تخبر|تبلغ|تدي)|$NA(?:ب|يجب$S*)?عدم$S*(?:مشاركة|اعطاء|إعطاء|الإفصاح|الافصاح)" +
-        "|$NA(?:[اإ]وع[ىي])$NZ|$NA(?:ما$S*)?م?ا?تدي(?:ش|هوش|هاش)$NZ|$NA(?:ما$S*)?م?ا?تقول(?:ش|هوش|هاش)$NZ" +
-        "|${NA}عمر(?:ها|نا|ه|هم)?$S*ما$S*(?:ه|ح)?[تين]?طلب|${NA}(?:لن|لا)$S*(?:نطلب|يطلب|تطلب))[^.!؟?\\n]*",
+        "|$NA(?:[اأإآ]وع[ىي])$NZ|$NA(?:ما$S*)?م?ا?تدي(?:ش|هوش|هاش)$NZ|$NA(?:ما$S*)?م?ا?تقول(?:ش|هوش|هاش)$NZ" +
+        "|${NA}عمر(?:ها|نا|ه|هم)?$S*ما$S*(?:ه|ح)?[تين]?طلب|${NA}(?:لن|لا)$S*(?:نطلب|يطلب|تطلب)" +
+        // ── الجولة التامنة ──
+        "|$NA(?:ما$S*)?م?ا?تشارك(?:ش|هوش|هاش|يش)$NZ|$NA[اإ]?حذر(?:وا)?$NZ|${NA}خل[يّ]+$S*بال(?:ك|كم)$NZ" +
+        "|${B}beware$B|${B}report$S+any$B|${B}keep$S+your$B" +
+        "|${B}(?:your$S+)?(?:OTP|PIN|password|passcode)s?$S+(?:is|are)$S+never$S+(?:needed|required|requested|asked)$B)[^.!؟?\\n]*",
     GI,
 )
-private val CODE_DIGITS = Regex("(?<!\\d)\\d{4,8}(?!\\d)")
+
+/** النص من غير جمل التحذير اللي مفيهاش رقم رمز (الجملة اللي فيها رمز «Do not share the code 731905» بتفضل). */
+private fun withoutWarnings(text: String): String = WARNING.replace(text) { if (hasFreeCode(it.value)) it.value else " " }
 
 /** فيها رمز تحقق أو كلمة سر **برّه** جمل التحذير اللي مفيهاش رقم. */
-internal fun isSensitiveText(text: String): Boolean =
-    SMS_SENSITIVE_PATTERN.containsMatchIn(WARNING.replace(text) { if (CODE_DIGITS.containsMatchIn(it.value)) it.value else " " })
-
-/** رقم 4–8 أرقام لوحده: مش جوه رقم أطول ولا تاريخ ولا ساعة ولا مبلغ بكسور، ومش بعد نجمة أو «•» (كارت أو حساب متقص). */
-private val CODE_CANDIDATE = Regex("(?<![\\d.,٫٬*•xX#/:\\\\-])\\d{4,8}(?!\\d|[.,٫٬/:\\\\-]\\d)")
-private val MONEY_BEFORE = Regex("(?:${SmsVocabulary.CURRENCY}|بمبلغ|المبلغ|مبلغ|${B}amount|${B}of)$S*[:：]?$S*$", GI)
-private val MONEY_AFTER = Regex("^$S*(?:${SmsVocabulary.CURRENCY})", GI)
-private val ID_BEFORE = Regex(
-    // «Verification No. 731905» رمز — «No.» لوحدها مش رقم حساب
-    "(?:${B}ending(?:$S+(?:in|with))?|المنتهي[ةه]?$S*بـ?|${B}(?:ref(?:erence)?|id|trx|txn|transaction|card|account|acct|ac)(?:$S*(?:no|number|id)\\.?)?" +
-        "|بطاقة|البطاقة|بطاقتك|بطاقتكم|حساب|الحساب|حسابك|حسابكم|مرجع[يى]?|(?:ال)?عملية|رقم)$S*[:：#.]?$S*$",
-    GI,
-)
-private val MONTH_DAY_BEFORE = Regex("(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?$S+\\d{1,2},?$S*$", GI)
+internal fun isSensitiveText(text: String): Boolean = SMS_SENSITIVE_PATTERN.containsMatchIn(withoutWarnings(text))
 
 /**
- * الجولة السابعة: الرسالة فيها **رقم رمز فعلًا** — 4 لـ8 أرقام لوحدهم مش مبلغ (جنبه عملة أو «مبلغ») ولا سنة تاريخ ولا آخر 4 من كارت أو
- * حساب ولا رقم مرجع. فلتر الجهاز بيرمي رسالة الرمز **بس لو فيها رمز**: «Keep your IPN PIN and OTP private» · «متشاركش الرقم السري
- * مع حد» · «Verified with OTP» · «لو حد طلب منك كود التحقق اقفل السكة» تحت تحويل حقيقي **مش رمز** (كانت بتترمي والعملية تضيع).
+ * الجولة التامنة: رقم الرمز **جنب** كلمة الرمز (في نفس الجملة — `SmsCodeDigits.kt`). فلتر الجهاز بيستعملها لرسالة **أولها شكل بنك معروف
+ * أو فيها حركة فلوس خلصت**: «Online Purchase … Authenticated with OTP» و«Date: 09 Oct 2026» في سطر تاني مش رمز.
  */
-internal fun hasFreeCode(text: String): Boolean = CODE_CANDIDATE.findAll(text).any { m ->
-    val lineStart = text.lastIndexOf('\n', m.range.first - 1) + 1
-    val before = text.substring(maxOf(lineStart, m.range.first - 40), m.range.first)
-    val after = text.substring(m.range.last + 1, minOf(text.length, m.range.last + 12))
-    !MONEY_BEFORE.containsMatchIn(before) && !MONEY_AFTER.containsMatchIn(after) && !ID_BEFORE.containsMatchIn(before) &&
-        !MONTH_DAY_BEFORE.containsMatchIn(before)
+internal fun hasCodeBesideSensitiveWord(text: String): Boolean {
+    val clean = withoutWarnings(text)
+    return codeBesideSensitiveWord(clean, SMS_SENSITIVE_PATTERN.findAll(clean).map { it.range })
 }
 
 /**

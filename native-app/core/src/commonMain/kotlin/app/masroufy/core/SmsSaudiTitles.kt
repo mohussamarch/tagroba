@@ -24,8 +24,16 @@ import app.masroufy.core.SmsKind.TRANSFER_OUT
  */
 internal data class SmsTitle(val direction: Direction, val kind: SmsKind)
 
+/**
+ * الجولة التامنة: القواعد بتتقارن على العنوان **بعد [shapeKey]** (من غير تشكيل ولا تطويل · «ا» مكان «أ/إ/آ» · «ي» مكان «ى») — زي فحص الشكل
+ * (`SmsKnownShapesSaudi.kt`). قبل كده القاعدة كانت على النص الخام: «بطاقة ائتمانية تاكيد سداد» (من غير همزة) ما كانتش بتتعرف فالاتجاه
+ * جه من كلمة «سداد» (صرف) والشكل بيتعرف عنوان موحّد ⇒ اتسجل صرف · و«ائتمانيّة» بالشدة اتسجل **راتب داخل** من «حساب راتب».
+ */
+private fun unifyLetters(pattern: String): String =
+    pattern.map { c -> if (c == 'أ' || c == 'إ' || c == 'آ' || c == 'ٱ') 'ا' else if (c == 'ى') 'ي' else c }.joinToString("")
+
 private class TitleRule(pattern: String, val title: SmsTitle) {
-    val regex = Regex("^(?:$pattern)", setOf(RegexOption.IGNORE_CASE))
+    val regex = Regex("^(?:${unifyLetters(pattern)})", setOf(RegexOption.IGNORE_CASE))
 }
 
 private fun rule(pattern: String, direction: Direction, kind: SmsKind) = TitleRule(pattern, SmsTitle(direction, kind))
@@ -63,6 +71,8 @@ private val RULES = listOf(
     rule("$DEPOSIT|Deposit|Credit$S*Transaction$S*Fees|Adding$S*money|تسوية$S*نقطة$S*البيع|PoS$S*settlement", IN, OTHER),
     // ── طالع ──
     rule("سحب$S*[:：]?$S*(?:صراف|نقدي|فرع)|(?:International$S*)?ATM$S*Withdrawal|Branch$S*Withdrawal", OUT, CASH_WITHDRAWAL),
+    // الجولة التامنة: شراء ومعاه كاش من المحل (عنوان موحّد) — كان بيتسجل شراء بالمبلغ كله لوحده، وجزء منه كاش رايح محفظة الكاش (§75-4)
+    rule("PoS$S*Purchase$S*(?:&|and|و)$S*Cash$S*back|شراء$S*ونقد", OUT, SmsKind.PURCHASE_WITH_CASH),
     rule("(?:عملية$S*)?(?:شراء|مشتريات)$NO_REFUND_AFTER|عملية$S*(?:انترنت|إنترنت)|دفع$NOT_LETTER|خصم$S*من$S*التفويض", OUT, PURCHASE),
     rule("خصم$S*[:：]?$S*رسوم|Debit$S*(?:Transaction$S*)?fees", OUT, FEE),
     rule(
@@ -87,7 +97,7 @@ private val CASH_HINT = Regex("صراف|${B}ATM$B|مكان$S*السحب|نقد",
 
 /** اتجاه ونوع العنوان المعروف، أو null. «سحب» لوحده = سحب كاش لو الرسالة فيها صرّاف أو مكان السحب. */
 internal fun saudiTitle(body: String): SmsTitle? {
-    val line = smsTitleLine(body)
+    val line = shapeKey(smsTitleLine(body), dropColons = false)
     val title = RULES.firstOrNull { it.regex.containsMatchIn(line) }?.title ?: return null
     return if (title.kind == OTHER && title.direction == OUT && line.startsWith("سحب") && CASH_HINT.containsMatchIn(body)) {
         SmsTitle(OUT, CASH_WITHDRAWAL)
@@ -104,7 +114,14 @@ private val TO_LINE = Regex("^[ \\t]*$TO[ \\t]*[:：][ \\t]*([^\\n]*)$", LM)
 private val FROM_LINE = Regex("^[ \\t]*من[ \\t]*[:：][ \\t]*([^\\n]*)$", LM)
 private val BANK_CODE_LINE = Regex("^[ \\t]*مصرف[ \\t]*[:：]", LM)
 private val VIA_BANK_LINE = Regex("^[ \\t]*عبر[ \\t]*[:：][ \\t]*[^\\d\\n]", LM)
-private val LETTER = Regex("[A-Za-z\\u0600-\\u06FF]")
+/**
+ * الجولة التامنة: **اسم** = كلمة من حرفين على الأقل بعد ما نشيل قناع الرقم (x · X · * · • · #) والأرقام وبادئة SA/IBAN — «من: XX6618» ·
+ * «الى: xx4417» كانت حروف القناع بتتقري اسم والاتجاه يتخمّن ويتسجل لوحده.
+ */
+private val MASK_TOKEN = Regex("(?<![A-Za-z])(?:(?:SA|IBAN)[ \\t]*)?[xX*•#]*[\\d*•#][\\d*•#xX ]*(?![A-Za-z])", setOf(RegexOption.IGNORE_CASE))
+private val NAME_WORD = Regex("[A-Za-z\\u0600-\\u06FF]{2,}")
+
+private fun hasName(value: String): Boolean = NAME_WORD.containsMatchIn(MASK_TOKEN.replace(value, " "))
 
 /**
  * الاتجاه في الشكل القديم = **أنهي سطر فيه الاسم**: «الى:<اسم>» ⇒ صادرة، «من:<اسم>» ⇒ واردة (السطر التاني فيه أرقام حسابك).
@@ -112,8 +129,8 @@ private val LETTER = Regex("[A-Za-z\\u0600-\\u06FF]")
  */
 internal fun undirectedTransferDirection(body: String): Direction? {
     if (!UNDIRECTED_TRANSFER.matches(smsTitleLine(body))) return null
-    val toName = TO_LINE.findAll(body).any { LETTER.containsMatchIn(it.groupValues[1]) }
-    val fromName = FROM_LINE.findAll(body).any { LETTER.containsMatchIn(it.groupValues[1]) }
+    val toName = TO_LINE.findAll(body).any { hasName(it.groupValues[1]) }
+    val fromName = FROM_LINE.findAll(body).any { hasName(it.groupValues[1]) }
     return when {
         toName && !fromName -> OUT
         fromName && !toName -> IN
