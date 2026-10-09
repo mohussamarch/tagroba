@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 
 /**
  * «كمّل ملفك» (`ProfileQuestion`): سؤال واحد بس — مكان الرسمة (١٢٠×٨٠ «رسمة بخط واحد» لحد ما المالك يرسمها) · السؤال 22 · الاختيارات صفوف 52 ·
- * «ليس الآن». الاختيار بيتحفظ على طول (`ManageProfile.saveWithQuestions`) وتحت بتطلع جملة باللي اتغير + «العودة إلى الرئيسية» أو «السؤال التالي».
+ * «ليس الآن». الاختيار بيتحفظ على طول (`ManageProfile.saveWithQuestions`) وتحت بتطلع جملة باللي اتغير + «العودة إلى الرئيسية» (و«السؤال التالي» لسؤال المتابعة بس).
  * ⚠️ رأس الصفحة في النموذج فيه دايرة «ملفك X٪» — النسبة مالهاش حسبة لسه ⇒ «كمّل ملفك» من غير رقم.
  */
 @Composable
@@ -117,7 +117,9 @@ fun ProfileQuestionScreen() {
                 error?.let { msg -> item(key = "error") { FieldError(msg) } }
                 val r = reply
                 if (r != null) item(key = "reply") {
-                    val next = if (carToWork) ProfileCard.CAR_TO_WORK else nextAfter(c, profile)
+                    // §63: سؤال واحد بس كل مرة ⇒ بعد الإجابة «العودة إلى الرئيسية» (النموذج) — إلا سؤال المتابعة اللي المنطق نفسه طلّعه
+                    // («عندي سيارة» وعنده شغل ⇒ «هل تذهب بها إلى العمل؟» — جزء من نفس الإجابة)
+                    val next = if (carToWork) ProfileCard.CAR_TO_WORK else null
                     ReplyCard(r, hasNext = next != null, onNext = {
                         card = next
                         carToWork = false
@@ -131,10 +133,6 @@ fun ProfileQuestionScreen() {
         }
     }
 }
-
-/** بعد الإجابة: سؤال «تذهب بها للعمل» لو طلع، وإلا أول سؤال لسه ما اتجاوبش. */
-private fun nextAfter(current: ProfileCard, profile: UserProfile?): ProfileCard? =
-    if (current == ProfileCard.CAR_TO_WORK) nextProfileCard(profile) else nextProfileCard(profile)?.takeIf { it != current }
 
 @Composable
 private fun LeadLine() {
