@@ -54,6 +54,7 @@ body{margin:0}
             <span style="font-size: 14px; font-weight: 700; color: #08634F">{{nextLine}}</span>
             <span style="font-size: 13px">{{gregLine}}</span>
             <span style="font-size: 12px; color: #637570">{{changeLine}}</span>
+            <sc-if value="{{isLate}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.7; color: #956000">{{lateNote}}</span></sc-if>
           </div>
           <span role="alert" style="font-size: 12px; font-weight: 700; line-height: 1.7; color: #BE3D48">{{err}}</span>
           <button type="button" class="hw-press" onClick="{{save}}" style="height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">{{saveLabel}}</button>
@@ -67,7 +68,7 @@ body{margin:0}
 // «غيّره ليوم هجري» في الزكاة (§62 رد (ج): التطبيق يقترح والمستخدم يأكد أو يغيّره ليوم هجري · يوم ثابت كل سنة هجرية).
 // التقويم: أم القرى من Intl على الجهاز (من غير شبكة) — من النهارده ٧ أكتوبر ٢٠٢٦ لقدّام ٤٠٠ يوم، وأول مرة ييجي فيها اليوم المختار.
 // الشهر اللي ٢٩ يوم السنة دي واليوم المختار ٣٠ ⇒ آخر يوم في الشهر (زي ٢٩ فبراير ⇒ ٢٨ في المناسبات). Intl مش متاح ⇒ الميلادي «غير متاح».
-// الحفظ بيرجّع للشاشة الأم: onSave({ month, day, gregorian: 'YYYY-MM-DD' أو null, hijriYear, effectiveDay, daysAway, relText, reminder: 'YYYY-MM-DD' أو null, hijriText, gregorianText })
+// الحفظ بيرجّع للشاشة الأم: onSave({ month, day, gregorian: 'YYYY-MM-DD' أو null, hijriYear, effectiveDay, daysAway, relText, reminder: 'YYYY-MM-DD' أو null, hijriText, gregorianText, lateNote (لو بعد المقترح) })
 const T0 = Date.UTC(2026, 9, 7), DAY = 86400000, LEAD = 10;
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { open: props.startOpen === true || props.startOpen === 'true', saved: null, m: null, d: null, err: '' }; }
@@ -118,6 +119,9 @@ class Component extends DCLogic {
     const hText = hit ? ar(hit.d) + ' ' + HM[m - 1] + ' ' + ar(hit.y) : ar(d) + ' ' + HM[m - 1];
     const chip = (on, extra) => 'height: 44px; border: 0; border-radius: 14px; font: inherit; cursor: pointer; ' + extra + (on ? 'font-weight: 700; color: #08634F; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'color: #193D33; background: rgba(25,61,51,0.06)');
     const remind = hit ? hit.i - LEAD : null;
+    // بعد المقترح (تأخير الحول) ⇒ تنبيه بمصدر (قرار المالك ٢٠٢٦-١٠-٠٩) · قبله (تعجيل) من غير تنبيه. المسافة بالتقريب على سنة هجرية ٣٦٠ يوم
+    let gap = (m - 1) * 30 + d - ((SUG[0] - 1) * 30 + SUG[1]); if (gap > 180) gap -= 360; if (gap < -180) gap += 360;
+    const late = gap > 0, lateNote = late ? (eg ? 'الأصل إن الزكاة تطلع أول ما الحول يتم، والتأخير يجوز بس لعذر أو لمصلحة الفقير — دار الإفتاء، فتوى رقم ٥٠٥٥ (٢٠٢٠)' : 'الأصل إخراج الزكاة عند تمام الحول، ويجوز التأخير اليسير لعذر كتحرّي المستحقين — فتاوى اللجنة الدائمة (٩/٣٩٤)') : '';
     return {
       openLabel: eg ? 'غيّره ليوم هجري' : 'غيّره ليوم هجري',
       openSheet: () => this.setState({ open: true, m: null, d: null, err: '' }),
@@ -133,6 +137,7 @@ class Component extends DCLogic {
       nextLine: hText + (hit ? ' — ' + rel(hit.i) : ''),
       gregLine: hit ? (eg ? 'يعني ' : 'يوافق ') + gText(hit.i, true) + (hit.d !== d ? (eg ? '، آخر يوم في الشهر' : '، آخر يوم في الشهر') : '') : (eg ? 'التاريخ الميلادي غير متاح على الجهاز ده.' : 'التاريخ الميلادي غير متاح على هذا الجهاز.'),
       changeLine: (eg ? 'ميعاد زكاتك بيتغيّر، ' : 'يتغيّر موعد زكاتك، ') + (remind == null ? (eg ? 'والتنبيه قبله بـ١٠ أيام.' : 'والتنبيه قبله بـ١٠ أيام.') : remind >= 1 ? (eg ? 'والتنبيه قبله بـ١٠ أيام: ' : 'والتنبيه قبله بـ١٠ أيام: ') + gText(remind, false) + '.' : (eg ? 'والتنبيه هيظهر على طول.' : 'ويظهر التنبيه فورًا.')),
+      isLate: late, lateNote,
       err: s.err,
       saveLabel: eg ? 'احفظ اليوم' : 'احفظ اليوم',
       save: () => {
@@ -140,7 +145,7 @@ class Component extends DCLogic {
         this.setState({ open: false, saved: [m, d], m: null, d: null, err: '' });
         if (typeof this.props.onSave === 'function') this.props.onSave({
           month: m, day: d, gregorian: hit ? iso(hit.i) : null, hijriYear: hit ? hit.y : null, effectiveDay: hit ? hit.d : d,
-          daysAway: hit ? hit.i : null, relText: hit ? rel(hit.i) : null, reminder: hit ? iso(Math.max(0, remind)) : null, hijriText: hText, gregorianText: hit ? gText(hit.i, true) : null
+          daysAway: hit ? hit.i : null, relText: hit ? rel(hit.i) : null, reminder: hit ? iso(Math.max(0, remind)) : null, hijriText: hText, gregorianText: hit ? gText(hit.i, true) : null, lateNote: lateNote || null
         });
       }
     };

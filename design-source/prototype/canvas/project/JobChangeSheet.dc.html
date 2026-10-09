@@ -170,7 +170,7 @@ class Component extends DCLogic {
     if (a.payday || (a.pday && a.freq !== 'weekly')) doneBits.push((eg ? 'القبض يوم ' : 'القبض يوم ') + n(a.payday || a.pday));
     if (a.pday && a.freq === 'weekly') doneBits.push((eg ? 'القبض كل ' : 'القبض كل ') + WD[a.pday - 1][1]);
     if (a.expected) doneBits.push((eg ? 'المتوقع ' : 'المتوقع ') + this.fmt(a.expected) + ' ' + cur);
-    if (a.monthStart) doneBits.push((eg ? 'شهرك المالي هيبدأ يوم ' : 'يبدأ شهرك المالي يوم ') + n(a.payday) + (eg ? ' من الشهر الجاي' : ' من الشهر القادم'));
+    if (a.monthStart) doneBits.push((eg ? 'شهرك المالي هيبدأ يوم ' : 'يبدأ شهرك المالي يوم ') + n(a.payday) + (eg ? ' من الشهر الجاي، والأيام اللي قبله بتتضم للشهر الحالي' : ' من الشهر القادم، وتُضم الأيام التي قبله إلى الشهر الحالي'));
     const isChange = mode === 'غيّرت شغلي';
     return {
       title: mode === 'إنهاء' ? (eg ? 'إنهاء «' : 'إنهاء «') + target.name + '»' : mode === 'إضافة' ? (eg ? 'ضيف مصدر دخل' : 'أضف مصدر دخل') : (eg ? 'غيّرت شغلي' : 'غيّرت عملي'),

@@ -70,6 +70,7 @@ body{margin:0}
           <span style="display: flex; align-items: center; gap: 8px"><span style="flex: 1 1 auto; font-size: 13px; color: #637570">{{hawlLabel}}</span><span style="{{hawlChipStyle}}">{{hawlChip}}</span></span>
           <span style="font-size: 17px; font-weight: 700">{{hawlDate}}</span>
           <span style="font-size: 12px; color: #4F625C">{{hawlWhy}}</span>
+          <sc-if value="{{hawlLate}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.7; color: #956000">{{hawlLateNote}}</span></sc-if>
           <span style="font-size: 11px; color: #637570">{{hawlRule}}</span>
           <div style="display: flex; gap: 8px; padding-top: 4px">
             <sc-if value="{{hawlOpen}}" hint-placeholder-val="{{ true }}"><button type="button" class="m-press" onClick="{{confirmHawl}}" style="flex: 1 1 0; min-width: 0; height: 48px; padding: 0; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{confirmLabel}}</button></sc-if>
@@ -249,6 +250,7 @@ class Component extends DCLogic {
       hawlWhy: s.hawlPick ? (eg ? 'إنت اخترته — يوم ثابت كل سنة هجرية.' : 'اخترته أنت — يوم ثابت كل سنة هجرية.') : eg ? 'اقترحناه من سلسلة رصيدك: أول يوم فلوسك وصلت فيه للنصاب. العبرة بأول السنة وآخرها.' : 'اقترحناه من سلسلة رصيدك: بداية آخر فترة بقيت فيها أموالك فوق النصاب دون انقطاع.',
       hawlRule: (eg ? 'يوم ثابت كل سنة هجرية — ' : 'يوم ثابت كل سنة هجرية — ') + SRC.hawl,
       hawlOpen: !confirmed, confirmLabel: eg ? 'أكّده' : 'أكّده',
+      hawlLate: !!(s.hawlPick && s.hawlPick.lateNote), hawlLateNote: s.hawlPick && s.hawlPick.lateNote ? s.hawlPick.lateNote : '',
       onHawlDay: (p) => { if (!p) return; this.setState({ hawl: 'confirmed', hawlPick: p }); this.say(eg ? 'اتغيّر يوم زكاتك لـ' + p.hijriText + ' — هننبهك قبله بـ١٠ أيام' : 'تغيّر يوم زكاتك إلى ' + p.hijriText + ' — ننبهك قبله بـ١٠ أيام'); },
       confirmHawl: () => { this.setState({ hawl: 'confirmed' }); this.say(eg ? 'اتأكد يوم زكاتك — هننبهك قبله بـ١٠ أيام' : 'تأكّد يوم زكاتك — ننبهك قبله بـ١٠ أيام'); },
       openFacts: () => { if (!s.closed) this.setState({ sheet: true }); }, closed: s.closed, notClosed: !s.closed,
