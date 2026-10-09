@@ -6,6 +6,7 @@ import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
 import app.masroufy.core.Space
 import app.masroufy.ui.nav.Tab
+import app.masroufy.ui.screens.budgets.BudgetsDeps
 import app.masroufy.ui.screens.dues.DuesDeps
 import app.masroufy.ui.screens.home.HomeDeps
 import app.masroufy.ui.screens.imports.ImportsDeps
@@ -35,6 +36,9 @@ interface SpaceDeps {
     val investment: InvestmentDeps
     val more: MoreDeps
     val onboarding: OnboardingDeps
+
+    /** منطقة تاسعة (ARCHITECTURE §31.32): الميزانيات · ميزانية تصنيف · خطط الادخار · التصنيفات · القواعد والتجار. */
+    val budgets: BudgetsDeps
 }
 
 val LocalSpace = staticCompositionLocalOf<SpaceDeps> { error("SpaceDeps مش متقدّم — الشاشة لازم تبقى جوه AppShell بعد ما الحساب يجهز") }
