@@ -66,14 +66,14 @@ class SmsCashWithdrawalTest {
     }
 
     @Test fun anEgyptWalletAgentWithdrawalMovesToTheEgyptCashWallet() = runBlocking<Unit> {
-        val desk = S2Desk(wallets = listOf(EG_CASH, EG_BANK), parse = ::parseEgyptBankSms)
+        val desk = S2Desk(wallets = listOf(S2_EG_CASH, S2_EG_BANK), parse = ::parseEgyptBankSms)
         desk.receive("vf", egAgent, SENT_AT)
-        assertNull(desk.load(EG_BANK).ready.single().confirmReason)
+        assertNull(desk.load(S2_EG_BANK).ready.single().confirmReason)
         desk.screen.recordAll(emptyMap(), emptyList())
         val t = desk.all().single()
-        assertEquals(EconomicKind.INTERNAL_TRANSFER to EG_CASH.id, t.economicKind to t.transferToWalletId)
+        assertEquals(EconomicKind.INTERNAL_TRANSFER to S2_EG_CASH.id, t.economicKind to t.transferToWalletId)
         assertEquals(Currency.EGP, t.currency)
-        assertEquals(-50_000L to 50_000L, desk.balance(EG_BANK) to desk.balance(EG_CASH))
+        assertEquals(-50_000L to 50_000L, desk.balance(S2_EG_BANK) to desk.balance(S2_EG_CASH))
     }
 
     @Test fun withoutExactlyOneCashWalletTheWithdrawalWaitsWithItsReason() = runBlocking<Unit> {

@@ -44,16 +44,16 @@ import kotlin.test.assertTrue
 internal const val S2_MARCH = "2026-03-05T09:00:00Z"
 
 /** حوالة بالإجمالي المستحق = 1,000.00 + رسوم 5.75 + ضريبة 0.86 (شكل إس تي سي). كل الأسامي والأرقام مخترعة. */
-internal const val SA_TOTAL_DUE = "حوالة صادرة\nمبلغ: SAR 1,000.00\nرسوم: SAR 5.75\nضريبة القيمة المضافة: SAR 0.86\nإجمالي المبلغ المستحق: SAR 1,006.61\nإلى: TEST PERSON\nفي: 2026-03-05 09:10"
+internal const val S2_SA_TOTAL_DUE = "حوالة صادرة\nمبلغ: SAR 1,000.00\nرسوم: SAR 5.75\nضريبة القيمة المضافة: SAR 0.86\nإجمالي المبلغ المستحق: SAR 1,006.61\nإلى: TEST PERSON\nفي: 2026-03-05 09:10"
 
 /** حوالة محلية على شكل الراجحي: «الرسوم» سطر لوحدها برّه الـ1,000. */
-internal const val SA_FEE_ON_TOP = "حوالة محلية صادرة\nمصرف:ANB\nمن:1111\nمبلغ:SAR 1000\nالى:TEST PERSON\nالرسوم:SAR 5.75\n26/03/05 09:10"
+internal const val S2_SA_FEE_ON_TOP = "حوالة محلية صادرة\nمصرف:ANB\nمن:1111\nمبلغ:SAR 1000\nالى:TEST PERSON\nالرسوم:SAR 5.75\n26/03/05 09:10"
 
 /** فودافون كاش: «مصاريف الخدمة 1 جنيه» برّه الـ300. */
-internal const val VF_SEND = "تم تحويل 300 جنيه لرقم 01000001212 مصاريف الخدمة 1 جنيه رصيد حسابك فى فودافون كاش الحالي 699.\nتاريخ العملية: 09:10 26-03-05\nرقم العملية: 900000001"
+internal const val S2_VF_SEND = "تم تحويل 300 جنيه لرقم 01000001212 مصاريف الخدمة 1 جنيه رصيد حسابك فى فودافون كاش الحالي 699.\nتاريخ العملية: 09:10 26-03-05\nرقم العملية: 900000001"
 
-internal val EG_BANK = Wallet("w-eg-wallet", "محفظة مصرية وهمية", Currency.EGP, "bank", 0, "2026-01-01")
-internal val EG_CASH = Wallet("w-eg-cash", "كاش مصر", Currency.EGP, "cash", 0, "2026-01-01")
+internal val S2_EG_BANK = Wallet("w-eg-wallet", "محفظة مصرية وهمية", Currency.EGP, "bank", 0, "2026-01-01")
+internal val S2_EG_CASH = Wallet("w-eg-cash", "كاش مصر", Currency.EGP, "cash", 0, "2026-01-01")
 
 /**
  * مكتب الشريحة S2: بلد واحدة (مستودعات `SmsSpace`) + شاشة رسايل البنك بالاستيراد **ومعاه آثار التسجيل** (§77-B · §75-4 · §75-6) بالترتيب
@@ -113,7 +113,7 @@ internal class S2Desk(
 class SmsFeeEffectTest {
     @Test fun aTransferWithTotalDueBecomesTheTransferAndASeparateBankFee() = runBlocking<Unit> {
         val desk = S2Desk()
-        desk.receive("t1", SA_TOTAL_DUE)
+        desk.receive("t1", S2_SA_TOTAL_DUE)
         assertEquals(1, desk.recordAll())
         val all = desk.all()
         assertEquals(2, all.size, "عمليتين بالظبط")
@@ -133,7 +133,7 @@ class SmsFeeEffectTest {
         assertEquals(-100_661L, desk.balance(BANK), "الرصيد = المخصوم فعلًا")
 
         // نفس معاملة النوع زي الأول: الأصلية = اللي كان هيتسجل من غير الأثر بالظبط، ما عدا المبلغ
-        val legacy = S2Desk(withEffects = false).run { receive("t1", SA_TOTAL_DUE); recordAll(); all().single() }
+        val legacy = S2Desk(withEffects = false).run { receive("t1", S2_SA_TOTAL_DUE); recordAll(); all().single() }
         assertEquals(100_661L, legacy.amountMinor, "من غير الأثر: عملية واحدة بالإجمالي (زي التطبيق الحالي)")
         assertEquals(legacy, main.copy(id = legacy.id, amountMinor = 100_661L, originalAmountMinor = null))
 
@@ -148,7 +148,7 @@ class SmsFeeEffectTest {
 
     @Test fun aFeeOnTopKeepsTheTransferAmount() = runBlocking<Unit> {
         val desk = S2Desk()
-        desk.receive("t1", SA_FEE_ON_TOP)
+        desk.receive("t1", S2_SA_FEE_ON_TOP)
         desk.recordAll()
         val (main, fee) = desk.all().partition { it.economicKind != EconomicKind.FEE }.let { it.first.single() to it.second.single() }
         assertEquals(100_000L, main.amountMinor)
@@ -158,16 +158,16 @@ class SmsFeeEffectTest {
     }
 
     @Test fun vodafoneCashServiceFeeKeepsTheWalletRight() = runBlocking<Unit> {
-        val desk = S2Desk(wallets = listOf(EG_CASH, EG_BANK), parse = ::parseEgyptBankSms)
-        desk.receive("vf", VF_SEND)
-        assertEquals(1, desk.recordAll(EG_BANK))
+        val desk = S2Desk(wallets = listOf(S2_EG_CASH, S2_EG_BANK), parse = ::parseEgyptBankSms)
+        desk.receive("vf", S2_VF_SEND)
+        assertEquals(1, desk.recordAll(S2_EG_BANK))
         assertEquals(listOf(100L, 30_000L), desk.all().map { it.amountMinor }.sorted())
         assertTrue(desk.all().all { it.currency == Currency.EGP })
-        assertEquals(-30_100L, desk.balance(EG_BANK))
+        assertEquals(-30_100L, desk.balance(S2_EG_BANK))
     }
 
     @Test fun readingTheSameMessageAgainIsADuplicateAndAddsNoSecondFee() = runBlocking<Unit> {
-        for (body in listOf(SA_TOTAL_DUE, SA_FEE_ON_TOP)) {
+        for (body in listOf(S2_SA_TOTAL_DUE, S2_SA_FEE_ON_TOP)) {
             val desk = S2Desk()
             desk.receive("t1", body)
             desk.recordAll()
@@ -182,7 +182,7 @@ class SmsFeeEffectTest {
 
     @Test fun aSimilarLineThatWasNotChosenWritesNoFee() = runBlocking<Unit> {
         val desk = S2Desk()
-        desk.receive("t1", SA_FEE_ON_TOP)
+        desk.receive("t1", S2_SA_FEE_ON_TOP)
         desk.recordAll()
         // نفس اليوم والمبلغ والاتجاه من رسالة تانية ⇒ «شبه عملية موجودة» · وجنبها شراء جديد
         desk.receive("t2", "حوالة محلية صادرة\nمصرف:ANB\nمن:1111\nمبلغ:SAR 1000\nالى:TEST OTHER\nالرسوم:SAR 5.75\n26/03/05 11:30")
@@ -200,7 +200,7 @@ class SmsFeeEffectTest {
 
     @Test fun revertingTheBatchDeletesTheTransferAndItsFee() = runBlocking<Unit> {
         val desk = S2Desk()
-        desk.receive("t1", SA_TOTAL_DUE)
+        desk.receive("t1", S2_SA_TOTAL_DUE)
         desk.recordAll()
         val batch = desk.space.batchStore.listRecent(10).single()
         val plan = desk.revert().execute(batch.id)
@@ -211,7 +211,7 @@ class SmsFeeEffectTest {
 
     @Test fun theFeeIsNeverWrittenWithoutItsTransfer() = runBlocking<Unit> {
         val desk = S2Desk()
-        desk.receive("t1", SA_TOTAL_DUE)
+        desk.receive("t1", S2_SA_TOTAL_DUE)
         desk.space.txns.failSaves = 1
         assertFailsWith<IllegalStateException> { desk.recordAll() }
         assertTrue(desk.all().isEmpty(), "وحدة العمل رجّعت كله")
@@ -236,14 +236,14 @@ class SmsFeeEffectTest {
     @Test fun theOwnersBankFeeCategoryIsReusedAndOursIsCreatedOnce() = runBlocking<Unit> {
         val mine = Category("c-my-fees", null, "رسوم بنكية", "receipt", "#222222", "#dddddd", true, 5)
         val desk = S2Desk(extraCategories = listOf(mine))
-        desk.receive("t1", SA_TOTAL_DUE)
+        desk.receive("t1", S2_SA_TOTAL_DUE)
         desk.recordAll()
         assertEquals("c-my-fees", desk.all().single { it.economicKind == EconomicKind.FEE }.categoryId, "تصنيف المالك بنفس الاسم")
         assertTrue(desk.space.categories.listAll().none { it.id == BankFeeCategory.ID }, "ما اتعملش تصنيف تاني")
 
         val fresh = S2Desk()
-        fresh.receive("t1", SA_TOTAL_DUE)
-        fresh.receive("t2", SA_FEE_ON_TOP, "2026-03-05T10:00:00Z")
+        fresh.receive("t1", S2_SA_TOTAL_DUE)
+        fresh.receive("t2", S2_SA_FEE_ON_TOP, "2026-03-05T10:00:00Z")
         fresh.recordAll()
         fresh.receive("t3", "حوالة محلية صادرة\nمصرف:ANB\nمن:1111\nمبلغ:SAR 250\nالى:TEST PERSON\nالرسوم:SAR 2.00\n26/03/05 12:00")
         fresh.recordAll()
