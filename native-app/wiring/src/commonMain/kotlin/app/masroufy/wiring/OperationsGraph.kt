@@ -1,8 +1,10 @@
 package app.masroufy.wiring
 
+import app.masroufy.core.Id
 import app.masroufy.core.SpaceTransfer
 import app.masroufy.core.SpaceTransferError
 import app.masroufy.core.TextKey
+import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.core.uiText
 import app.masroufy.port.SpaceLegWrite
@@ -86,6 +88,12 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
 
     override suspend fun spaceBooks(): List<SpaceWallets> = openSpaces().map { (s, repos) ->
         SpaceWallets(s, LoadWithYouNow(repos.wallets, repos.transactions, s.currency).load(c.env.today()).wallets.map { it.wallet }, s.id == c.space.id)
+    }
+
+    override suspend fun legOf(spaceId: String, transactionId: Id): Transaction? {
+        val repos = openSpaces().firstOrNull { it.first.id == spaceId }?.second ?: return null
+        val read = EditTransaction(EditTransactionDeps(repos.transactions, repos.categories, repos.tags, repos.transactionTags, repos.uow, ids, clock))
+        return read.load(transactionId).transaction
     }
 
     /** البلاد المفتوحة في الجلسة — والبلد الشغالة دايمًا منهم (الاختبار ممكن ما يدّيهاش). */

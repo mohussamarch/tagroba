@@ -67,30 +67,34 @@ fun SpaceTransferScreen() {
     var adding by remember { mutableStateOf(false) }
     var unlinking by remember { mutableStateOf<PairView?>(null) }
     LaunchedEffect(deps, reload) {
-        books = attempt { deps.spaceBooks() }
+        val loadedBooks = attempt { deps.spaceBooks() }
         val list = attempt { deps.spaceTransfers.list() }
-        failed = list == null || books == null
-        pairs = list?.let { pairViews(it, books.orEmpty().map { b -> b.space }) }
+        // عملية كل رجل من بلدها (المحفظة والتاريخ) — رجل ما اتقرتش بتتعرض بالبلد والمبلغ بس
+        val legs = list.orEmpty().flatMap { listOf(it.fromSpaceId to it.fromTransactionId, it.toSpaceId to it.toTransactionId) }
+            .mapNotNull { (spaceId, id) -> attempt { deps.legOf(spaceId, id) }?.let { id to it } }.toMap()
+        books = loadedBooks
+        failed = list == null || loadedBooks == null
+        pairs = list?.let { pairViews(it, loadedBooks.orEmpty(), legs) }
     }
     val b = books
     val p = pairs
     InnerScaffold(t(TextKey.SPACE_TRANSFER_SCREEN_TITLE)) {
         item(key = "intro") { BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
-        when {
-            failed -> item(key = "error") {
+        when (spaceTransferState(b, p, failed)) {
+            SpaceTransferState.FAILED -> item(key = "error") {
                 ErrorBanner(t(TextKey.SPACE_TRANSFER_SCREEN_ERROR), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), { reload++ })
             }
-            b == null || p == null -> item(key = "loading") {
+            SpaceTransferState.LOADING -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { repeat(2) { Skeleton(Modifier.fillMaxWidth().height(170.dp)) } }
             }
-            b.size < 2 -> item(key = "na") {
+            SpaceTransferState.ONE_SPACE -> item(key = "na") {
                 FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
                     BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_NA_TITLE), style = Type.of(15, FontWeight.Bold))
                     BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_NA_BODY), Modifier.padding(vertical = 8.dp), style = Type.of(13).copy(color = Ink.muted))
                     TonalButton(t(TextKey.SPACE_TRANSFER_SCREEN_ADD_SPACE), { nav.push(SpacesRoute) }, Modifier.fillMaxWidth())
                 }
             }
-            else -> {
+            SpaceTransferState.EMPTY, SpaceTransferState.READY -> {
                 item(key = "actions") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -100,9 +104,10 @@ fun SpaceTransferScreen() {
                         BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_LINK_SOON), style = Type.caption().copy(color = Ink.muted))
                     }
                 }
-                if (p.isEmpty()) item(key = "empty") { EmptyState(t(TextKey.SPACE_TRANSFER_SCREEN_EMPTY), t(TextKey.SPACE_TRANSFER_SCREEN_EMPTY_BODY)) }
-                for (pair in p) item(key = "pair-${pair.id}") { PairCard(pair) { unlinking = pair } }
-                if (p.isNotEmpty()) item(key = "lock") { BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE), Modifier.padding(horizontal = 4.dp), style = Type.of(12).copy(color = Ink.muted)) }
+                val list = p.orEmpty()
+                if (list.isEmpty()) item(key = "empty") { EmptyState(t(TextKey.SPACE_TRANSFER_SCREEN_EMPTY), t(TextKey.SPACE_TRANSFER_SCREEN_EMPTY_BODY)) }
+                for (pair in list) item(key = "pair-${pair.id}") { PairCard(pair) { unlinking = pair } }
+                if (list.isNotEmpty()) item(key = "lock") { BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE), Modifier.padding(horizontal = 4.dp), style = Type.of(12).copy(color = Ink.muted)) }
             }
         }
     }
@@ -134,7 +139,10 @@ private fun PairCard(p: PairView, onUnlink: () -> Unit) {
                 Box(Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(ChipInk.blueBg), contentAlignment = Alignment.Center) {
                     BasicText(leg.mark, style = Type.of(14, FontWeight.Bold).copy(color = Ink.transfer))
                 }
-                BasicText(leg.title, Modifier.weight(1f), style = Type.of(14, FontWeight.Bold))
+                Column(Modifier.weight(1f)) {
+                    BasicText(leg.title, style = Type.of(14, FontWeight.Bold))
+                    leg.sub?.let { BasicText(it, style = Type.caption().copy(color = Ink.muted)) }
+                }
                 AmountText(leg.amountMinor, leg.currency, tone = if (leg.out) AmountTone.EXPENSE else AmountTone.INCOME, color = Ink.transfer)
             }
             Row(

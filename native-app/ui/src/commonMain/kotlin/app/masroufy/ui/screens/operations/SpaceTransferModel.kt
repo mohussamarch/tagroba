@@ -6,13 +6,18 @@ import app.masroufy.core.Id
 import app.masroufy.core.Space
 import app.masroufy.core.SpaceTransfer
 import app.masroufy.core.TextKey
+import app.masroufy.core.Transaction
 import app.masroufy.core.currencySymbol
+import app.masroufy.core.dayMonth
 import app.masroufy.core.sentenceNumber
 import app.masroufy.core.spaceTransferRateText
 import app.masroufy.ui.text.t
 
-/** رجل في زوج: البلد · طلعت/وصلت · المبلغ بعملتها. */
-data class LegView(val mark: String, val title: String, val amountMinor: Halalas, val currency: Currency, val out: Boolean)
+/**
+ * رجل في زوج: علامة البلد · [title] المحفظة (أو «خرجت من السعودية» لو عملية الرجل ما اتقرتش) · [sub] «خرجت، ٥ أكتوبر» · المبلغ بعملتها
+ * زي ما هو في الزوج.
+ */
+data class LegView(val mark: String, val title: String, val sub: String?, val amountMinor: Halalas, val currency: Currency, val out: Boolean)
 
 data class PairView(val id: Id, val route: String, val legs: List<LegView>, val rate: String, val note: String?)
 
@@ -21,15 +26,18 @@ data class Direction2(val from: Space, val to: Space) {
     val key: String get() = from.id + ">" + to.id
 }
 
-/** أول حرف من اسم البلد (العلامة في المربع). */
-fun spaceMark(space: Space?): String = space?.name?.trim()?.take(1).orEmpty()
+/** أول حرف من اسم البلد من غير «ال» (العلامة في المربع — النموذج: السعودية «س» · مصر «م»). */
+fun spaceMark(space: Space?): String {
+    val name = space?.name?.trim().orEmpty()
+    return (if (name.startsWith("ال") && name.length > 2) name.drop(2) else name).take(1)
+}
 
 /** «من السعودية إلى مصر». */
 fun routeName(from: Space?, to: Space?): String = t(TextKey.SPACE_TRANSFER_SCREEN_ROUTE, from?.name.orEmpty(), to?.name.orEmpty())
 
 /**
- * السعر للعرض بس من المبلغين (`spaceTransferRateText` من `core` — أعداد صحيحة و٤ أرقام والتقريب نص لفوق) ⇒ «12.8200 ج.م لكل ١ ر.س».
- * مش بيتخزن ومش بيحوّل أي رقم تاني. مبلغ صفر أو ناقص ⇒ `null`.
+ * السعر للعرض بس من المبلغين (`spaceTransferRateText` من `core` — نص العرض اللي الدومين نفسه بيطلّعه: أعداد صحيحة و٤ أرقام والتقريب نص لفوق)
+ * ⇒ «12.8200 ج.م لكل ١ ر.س». مش بيتخزن ومش بيحوّل أي رقم تاني. مبلغ صفر أو ناقص ⇒ `null`.
  */
 fun rateLine(fromMinor: Halalas?, fromCurrency: Currency, toMinor: Halalas?, toCurrency: Currency): String? {
     if (fromMinor == null || toMinor == null || fromMinor <= 0 || toMinor <= 0) return null
@@ -39,26 +47,45 @@ fun rateLine(fromMinor: Halalas?, fromCurrency: Currency, toMinor: Halalas?, toC
 }
 
 /**
- * الأزواج (`TransferBetweenSpaces.list`) ⇒ كروت. ⚠️ المحفظة وتاريخ كل رجل في عمليتها جوه بلدها — مفيش حالة استخدام بتقرا عملية من بلد تانية
- * ⇒ الكارت بيعرض البلد والمبلغ بس.
+ * الأزواج (`TransferBetweenSpaces.list`) ⇒ كروت. [legs] عمليات الرجلين من بلدها (`OperationsDeps.legOf`) و[books] محافظ كل بلد — رجل
+ * ما اتقرتش (البلد مش مفتوحة) ⇒ البلد والمبلغ بس.
  */
-fun pairViews(pairs: List<SpaceTransfer>, spaces: List<Space>): List<PairView> = pairs.map { p ->
-    val from = spaces.firstOrNull { it.id == p.fromSpaceId }
-    val to = spaces.firstOrNull { it.id == p.toSpaceId }
+fun pairViews(pairs: List<SpaceTransfer>, books: List<SpaceWallets>, legs: Map<Id, Transaction> = emptyMap()): List<PairView> = pairs.map { p ->
+    val from = books.firstOrNull { it.space.id == p.fromSpaceId }
+    val to = books.firstOrNull { it.space.id == p.toSpaceId }
     PairView(
         id = p.id,
-        route = routeName(from, to),
+        route = routeName(from?.space, to?.space),
         legs = listOf(
-            LegView(spaceMark(from), t(TextKey.SPACE_TRANSFER_SCREEN_LEFT, from?.name.orEmpty()), p.fromAmountMinor, p.fromCurrency, out = true),
-            LegView(spaceMark(to), t(TextKey.SPACE_TRANSFER_SCREEN_ARRIVED, to?.name.orEmpty()), p.toAmountMinor, p.toCurrency, out = false),
+            legView(from, legs[p.fromTransactionId], p.fromAmountMinor, p.fromCurrency, out = true),
+            legView(to, legs[p.toTransactionId], p.toAmountMinor, p.toCurrency, out = false),
         ),
         rate = rateLine(p.fromAmountMinor, p.fromCurrency, p.toAmountMinor, p.toCurrency).orEmpty(),
         note = p.note?.takeIf { it.isNotBlank() }?.let { t(TextKey.SPACE_TRANSFER_SCREEN_NOTE_LINE, it) },
     )
 }
 
+private fun legView(book: SpaceWallets?, tx: Transaction?, amount: Halalas, currency: Currency, out: Boolean): LegView {
+    val name = book?.space?.name.orEmpty()
+    val wallet = tx?.walletId?.let { id -> book?.wallets?.firstOrNull { it.id == id }?.name }
+    val title = wallet ?: t(if (out) TextKey.SPACE_TRANSFER_SCREEN_LEFT else TextKey.SPACE_TRANSFER_SCREEN_ARRIVED, name)
+    val sub = tx?.let { t(if (out) TextKey.SPACE_TRANSFER_SCREEN_LEG_OUT else TextKey.SPACE_TRANSFER_SCREEN_LEG_IN, dayMonth(it.occurredAt)) }
+    return LegView(spaceMark(book?.space), title, sub, amount, currency, out)
+}
+
 /** الاتجاهات الممكنة بين البلاد المفتوحة (البلد الشغالة الأول). */
 fun directions(spaces: List<Space>, activeId: String): List<Direction2> {
     val ordered = spaces.sortedBy { if (it.id == activeId) 0 else 1 }
     return ordered.flatMap { a -> ordered.filter { it.id != a.id }.map { b -> Direction2(a, b) } }
+}
+
+/** حالة الشاشة: بيحمّل · خطأ · غير متاح (بلد واحدة بس) · فاضي · عادي. */
+enum class SpaceTransferState { LOADING, FAILED, ONE_SPACE, EMPTY, READY }
+
+fun spaceTransferState(books: List<SpaceWallets>?, pairs: List<PairView>?, failed: Boolean): SpaceTransferState = when {
+    failed -> SpaceTransferState.FAILED
+    books == null || pairs == null -> SpaceTransferState.LOADING
+    books.size < 2 -> SpaceTransferState.ONE_SPACE
+    pairs.isEmpty() -> SpaceTransferState.EMPTY
+    else -> SpaceTransferState.READY
 }

@@ -88,4 +88,6 @@ internal val ENGLISH_OPERATIONS_TRANSFER_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SPACE_TRANSFER_SCREEN_LIVE_RATE to "Rate (display only)",
     TextKey.SPACE_TRANSFER_SCREEN_AFTER_AMOUNTS to "after you type both amounts",
     TextKey.SPACE_TRANSFER_SCREEN_RECORD to "Record it",
+    TextKey.SPACE_TRANSFER_SCREEN_LEG_OUT to "Left on {0}",
+    TextKey.SPACE_TRANSFER_SCREEN_LEG_IN to "Arrived on {0}",
 )

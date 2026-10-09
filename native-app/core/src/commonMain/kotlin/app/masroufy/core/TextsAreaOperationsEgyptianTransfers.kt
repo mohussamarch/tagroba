@@ -88,4 +88,6 @@ internal val EGYPTIAN_OPERATIONS_TRANSFER_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SPACE_TRANSFER_SCREEN_LIVE_RATE to "السعر (للعرض بس)",
     TextKey.SPACE_TRANSFER_SCREEN_AFTER_AMOUNTS to "بعد ما تكتب المبلغين",
     TextKey.SPACE_TRANSFER_SCREEN_RECORD to "سجّله",
+    TextKey.SPACE_TRANSFER_SCREEN_LEG_OUT to "طلعت، {0}",
+    TextKey.SPACE_TRANSFER_SCREEN_LEG_IN to "وصلت، {0}",
 )

@@ -2,6 +2,7 @@ package app.masroufy.ui.screens.operations
 
 import app.masroufy.core.Id
 import app.masroufy.core.Space
+import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.ui.nav.Route
 import app.masroufy.ui.nav.RouteRegistry
@@ -70,6 +71,12 @@ interface OperationsDeps {
 
     /** البلاد المفتوحة بمحافظها (للتحويل لنفسك). */
     suspend fun spaceBooks(): List<SpaceWallets>
+
+    /**
+     * عملية رجل من رجلين «التحويل لنفسك» في بلدها (المحفظة والتاريخ على كارت الزوج) — `EditTransaction.load` على مستودعات البلد دي.
+     * البلد مش مفتوحة في الجلسة ⇒ `null`؛ العملية مش موجودة ⇒ بيرمي (الشاشة بتعرض البلد بس).
+     */
+    suspend fun legOf(spaceId: String, transactionId: Id): Transaction?
 }
 
 /** بلد بمحافظها — [active] = البلد الشغالة. */

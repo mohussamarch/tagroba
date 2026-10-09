@@ -88,4 +88,6 @@ internal val MSA_OPERATIONS_TRANSFER_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SPACE_TRANSFER_SCREEN_LIVE_RATE to "السعر (للعرض فقط)",
     TextKey.SPACE_TRANSFER_SCREEN_AFTER_AMOUNTS to "بعد كتابة المبلغين",
     TextKey.SPACE_TRANSFER_SCREEN_RECORD to "سجّله",
+    TextKey.SPACE_TRANSFER_SCREEN_LEG_OUT to "خرجت، {0}",
+    TextKey.SPACE_TRANSFER_SCREEN_LEG_IN to "وصلت، {0}",
 )
