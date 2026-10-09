@@ -20,3 +20,7 @@ include(":app")
 include(":data")
 include(":firestore")
 include(":device")
+// الواجهة (Compose Multiplatform — نظام التصميم v0.4 + هيكل التنقل + الشاشات) · التجميع (من المستودعات لحالات الاستخدام لكل منطقة) · تطبيق أندرويد
+include(":ui")
+include(":wiring")
+include(":androidApp")

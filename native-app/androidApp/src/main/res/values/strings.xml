@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- اسم التطبيق تحت الأيقونة بس (النظام بيقراه قبل ما الكود يشتغل). أي نص تاني جوه التطبيق من خرائط النصوص في `core` (TextKey). -->
+<resources>
+    <string name="app_name">مصروفي</string>
+</resources>

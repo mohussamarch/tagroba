@@ -34,7 +34,11 @@ kotlin {
             implementation(kotlin("test"))
         }
         // الكشف المخترع (`SyntheticStatement`) — مصدر واحد لاختبارات الكمبيوتر وأندرويد والآيفون
-        jvmTest { kotlin.srcDir("src/sharedTest/kotlin") }
+        jvmTest {
+            kotlin.srcDir("src/sharedTest/kotlin")
+            // `runBlocking` لاختبار الجلب من النت (`PlatformHttpTextTest`) — نفس النسخة اللي في باقي الموديولات
+            dependencies { implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2") }
+        }
         if (onMac) {
             // `iosMain`/`iosTest` بيتعملوا من القالب الافتراضي — بالاسم (`getByName`) مش موجودين لسه هنا، فبالـaccessor
             iosMain.dependencies {

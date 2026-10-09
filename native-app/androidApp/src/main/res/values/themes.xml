@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- الشاشة كلها من Compose (من غير شريط عنوان)، والخلفية لون بداية الإضاءات (#FAF9F3) عشان ما يبانش أبيض قبل أول رسم. -->
+<resources>
+    <style name="Theme.Masroufy" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/masroufy_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <color name="masroufy_background">#FAF9F3</color>
+    <color name="masroufy_icon_background">#08634F</color>
+</resources>

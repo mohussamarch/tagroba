@@ -67,6 +67,9 @@ class AuthOnEmulatorTest {
             assertTrue(wrong.code in setOf("auth/wrong-password", "auth/invalid-credential"), "كلمة سر غلط: ${wrong.code}")
             assertEquals(user.uid, auth.signInWithEmail(me, "secret1").uid)
             auth.sendPasswordReset(me)
+            // تصليح أمان (OVERRIDES §76): إيميل مالوش حساب ⇒ نفس النجاح، ما بنكشفش مين مسجّل
+            auth.sendPasswordReset(email("nobody"))
+            fails("auth/invalid-email", AuthField.EMAIL) { auth.sendPasswordReset("   ") }
             auth.signOut()
             scope.cancel()
         }

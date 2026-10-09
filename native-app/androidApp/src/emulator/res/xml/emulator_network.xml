@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- محاكي فايربيز على الكمبيوتر (من جوه محاكي أندرويد = 10.0.2.2) — HTTP عادي للعنوان ده بس. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

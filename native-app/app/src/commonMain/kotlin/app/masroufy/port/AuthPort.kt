@@ -27,9 +27,41 @@ interface AuthPort {
 
     suspend fun registerWithEmail(email: String, password: String): AuthUser
 
+    /**
+     * دخول بحساب جوجل من رمز الهوية (`idToken`) اللي نافذة الجهاز رجّعته (أندرويد: Credential Manager — `GoogleIdTokenSource`).
+     * فايربيز بيعمل الحساب لو أول مرة. الرمز ما بيتخزنش.
+     */
+    suspend fun signInWithGoogle(idToken: String): AuthUser
+
+    /**
+     * رابط إعادة تعيين كلمة السر. **ما بيكشفش مين عنده حساب** (OVERRIDES §76 — تصليح أمان): «مفيش حساب بالإيميل ده»
+     * بيعدّي كأنه اتبعت ([hidesAccountOnReset]) — نفس الرسالة للشاشة في الحالتين.
+     */
     suspend fun sendPasswordReset(email: String)
 
     suspend fun signOut()
+}
+
+/**
+ * طلب إعادة تعيين كلمة السر لإيميل **مالوش حساب** = نجاح ظاهريًا (OVERRIDES §76 «⚠️ ناقص في كوتلن» — تصليح أمان):
+ * لو الرد قال «مفيش حساب» أي حد يقدر يعرف مين مسجّل عندنا بتجربة الإيميلات. الإيميل المكتوب غلط بيفضل خطأ (ما بيكشفش حاجة).
+ */
+fun hidesAccountOnReset(code: String): Boolean = code == "auth/user-not-found"
+
+/** نتيجة نافذة «اختار حساب جوجل» على الجهاز. */
+sealed interface GoogleIdToken {
+    data class Token(val idToken: String) : GoogleIdToken
+
+    /** المستخدم قفل النافذة — مش خطأ، ومفيش رسالة. */
+    data object Cancelled : GoogleIdToken
+
+    /** الجهاز ما يقدرش (مفيش حساب جوجل على الجوال · مفيش خدمات جوجل · مفيش إعدادات فايربيز) — [reason] بلغة المستخدم. */
+    data class Unavailable(val reason: String) : GoogleIdToken
+}
+
+/** نافذة الجهاز اللي بتجيب رمز هوية جوجل (أندرويد: Credential Manager في `:androidApp`). التطبيق ما بيشوفش كلمة سر. */
+fun interface GoogleIdTokenSource {
+    suspend fun request(): GoogleIdToken
 }
 
 /**

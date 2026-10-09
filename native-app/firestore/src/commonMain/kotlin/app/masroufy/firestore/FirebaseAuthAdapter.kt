@@ -8,6 +8,8 @@ import app.masroufy.port.AuthPort
 import app.masroufy.port.AuthUser
 import app.masroufy.port.authError
 import app.masroufy.port.checkedCredentials
+import app.masroufy.port.hidesAccountOnReset
+import dev.gitlive.firebase.auth.GoogleAuthProvider
 import dev.gitlive.firebase.FirebaseNetworkException
 import dev.gitlive.firebase.FirebaseTooManyRequestsException
 import dev.gitlive.firebase.auth.FirebaseAuth
@@ -23,10 +25,15 @@ import kotlinx.coroutines.launch
 /**
  * تسجيل الدخول بفايربيز (GitLive) — نقل `FirebaseAuthAdapter.ts`. كل خطأ بيتحول لنفس كود مكتبة الويب (`auth/…`)
  * ⇒ نفس الرسالة العربي ونفس الحقل اللي في التطبيق الحالي ([authError]).
- * **دخول جوجل مش هنا لسه:** محتاج بصمة التطبيق الجديد (SHA-1) تتسجل في مشروع المالك — مستني موافقته.
+ * **دخول جوجل:** رمز الهوية بييجي من نافذة الجهاز (أندرويد: Credential Manager في `:androidApp`) ⇒ [signInWithGoogle].
+ * [googleReady] = التطبيق عنده معرّف عميل الويب (من `google-services.json`) — من غيره السبب بيتقال للمستخدم.
  */
-class FirebaseAuthAdapter(private val auth: FirebaseAuth, private val scope: CoroutineScope) : AuthPort, AccountPort {
-    override val googleUnavailableReason: String = uiText(TextKey.AUTH_GOOGLE_PENDING)
+class FirebaseAuthAdapter(
+    private val auth: FirebaseAuth,
+    private val scope: CoroutineScope,
+    private val googleReady: Boolean = false,
+) : AuthPort, AccountPort {
+    override val googleUnavailableReason: String? get() = if (googleReady) null else uiText(TextKey.AUTH_GOOGLE_PENDING)
 
     override fun currentUser(): AuthUser? = auth.currentUser?.toAuthUser()
 
@@ -45,10 +52,20 @@ class FirebaseAuthAdapter(private val auth: FirebaseAuth, private val scope: Cor
         return translated { auth.createUserWithEmailAndPassword(trimmed, password).user!!.toAuthUser() }
     }
 
+    override suspend fun signInWithGoogle(idToken: String): AuthUser {
+        if (idToken.isBlank()) throw authError("auth/invalid-credential")
+        return translated { auth.signInWithCredential(GoogleAuthProvider.credential(idToken, null)).user!!.toAuthUser() }
+    }
+
+    /** تصليح أمان (OVERRIDES §76): «مفيش حساب بالإيميل ده» ⇒ نجاح ظاهريًا ([hidesAccountOnReset]) — ما بنكشفش مين مسجّل. */
     override suspend fun sendPasswordReset(email: String) {
         val trimmed = email.trim()
         if (trimmed.isEmpty()) throw authError("auth/invalid-email")
-        translated { auth.sendPasswordResetEmail(trimmed) }
+        try {
+            translated { auth.sendPasswordResetEmail(trimmed) }
+        } catch (e: AuthError) {
+            if (!hidesAccountOnReset(e.code)) throw e
+        }
     }
 
     override suspend fun signOut() = translated { auth.signOut() }

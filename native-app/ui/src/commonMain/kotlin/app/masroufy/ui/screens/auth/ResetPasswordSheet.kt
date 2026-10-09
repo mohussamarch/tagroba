@@ -1,0 +1,129 @@
+package app.masroufy.ui.screens.auth
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import app.masroufy.core.TextKey
+import app.masroufy.core.sentenceNumber
+import app.masroufy.port.AuthError
+import app.masroufy.ui.app.LocalApp
+import app.masroufy.ui.components.PrimaryButton
+import app.masroufy.ui.components.TextInput
+import app.masroufy.ui.components.TonalButton
+import app.masroufy.ui.components.pressScale
+import app.masroufy.ui.components.rememberPress
+import app.masroufy.ui.components.tap
+import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.text.t
+import app.masroufy.ui.theme.Ink
+import app.masroufy.ui.theme.Type
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+private const val WAIT_SECONDS = 60
+private val EMAIL = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$")
+
+/**
+ * «نسيت كلمة المرور؟» ولوحته (`ResetPasswordSheet` — OVERRIDES §76): البريد ⇒ «راجع بريدك» **بنفس الرسالة سواء البريد ليه حساب أو لأ**
+ * (`SignIn.sendPasswordReset` — تصليح الأمان: «مفيش حساب» = نجاح ظاهريًا) · إعادة الإرسال بعد ٦٠ ثانية · «غيّر البريد» · «العودة لتسجيل الدخول».
+ * أخطاء الشكل والشبكة جنب الخانة (ما بتكشفش حاجة).
+ */
+@Composable
+fun ResetPasswordSheet(prefill: String) {
+    val app = LocalApp.current
+    val scope = rememberCoroutineScope()
+    var open by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var sentTo by remember { mutableStateOf<String?>(null) }
+    var again by remember { mutableStateOf(false) }
+    var left by remember { mutableIntStateOf(0) }
+    LaunchedEffect(left) { if (left > 0) { delay(1000); left -= 1 } }
+
+    fun send(to: String, isAgain: Boolean) {
+        busy = true
+        error = null
+        scope.launch {
+            try {
+                app.signIn.sendPasswordReset(to)
+                sentTo = to
+                again = isAgain
+                left = WAIT_SECONDS
+            } catch (e: AuthError) {
+                error = e.message
+            }
+            busy = false
+        }
+    }
+
+    val press = rememberPress()
+    Box(Modifier.heightIn(min = 44.dp).pressScale(press).tap(press, onClick = { open = true; error = null; email = sentTo ?: prefill.trim() }), contentAlignment = Alignment.CenterStart) {
+        BasicText(t(TextKey.RESET_TRIGGER), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
+    }
+
+    Sheet(open, { open = false }, title = t(TextKey.RESET_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, minHeight = 400.dp, spacing = 12.dp) {
+        val sent = sentTo
+        if (sent == null) {
+            BasicText(t(TextKey.RESET_TITLE), style = Type.of(17, FontWeight.Bold))
+            BasicText(t(TextKey.RESET_BODY), style = Type.of(13).copy(color = Ink.muted))
+            TextInput(
+                email, { email = it; error = null }, label = t(TextKey.SIGNIN_EMAIL), placeholder = "name@example.com", error = error,
+                enabled = !busy, ltr = true, keyboard = KeyboardType.Email, imeAction = ImeAction.Send,
+            )
+            PrimaryButton(
+                if (busy) t(TextKey.RESET_SENDING) else t(TextKey.RESET_SEND),
+                onClick = {
+                    val e = email.trim()
+                    error = when {
+                        e.isEmpty() -> t(TextKey.RESET_EMAIL_EMPTY)
+                        !EMAIL.matches(e) -> t(TextKey.AUTH_INVALID_EMAIL)
+                        else -> null
+                    }
+                    if (error == null) send(e, false)
+                },
+                loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
+            )
+            BasicText(t(TextKey.RESET_PRIVACY), style = Type.caption().copy(color = Ink.muted))
+        } else {
+            BasicText(t(TextKey.RESET_SENT_TITLE), style = Type.of(17, FontWeight.Bold))
+            BasicText(t(TextKey.RESET_SENT_BODY, sent), style = Type.body())
+            BasicText(t(TextKey.RESET_SPAM), style = Type.of(13).copy(color = Ink.muted))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TonalButton(if (busy) t(TextKey.RESET_SENDING) else t(TextKey.RESET_RESEND), onClick = { send(sent, true) }, enabled = left == 0 && !busy, modifier = Modifier.weight(1f))
+                TonalButton(t(TextKey.RESET_CHANGE), onClick = { sentTo = null; left = 0; again = false; email = sent }, modifier = Modifier.weight(1f))
+            }
+            val wait = when {
+                left <= 0 -> null
+                left == 1 -> t(TextKey.RESET_WAIT_ONE)
+                left == 2 -> t(TextKey.RESET_WAIT_TWO)
+                left <= 10 -> t(TextKey.RESET_WAIT_FEW, sentenceNumber(left))
+                else -> t(TextKey.RESET_WAIT_MANY, sentenceNumber(left))
+            }
+            val note = listOfNotNull(if (again && !busy) t(TextKey.RESET_AGAIN) else null, wait).joinToString(" ")
+            if (note.isNotEmpty()) BasicText(note, style = Type.caption().copy(color = Ink.muted))
+            if (error != null) BasicText(error!!, style = Type.of(13).copy(color = Ink.expense))
+            Column(Modifier.fillMaxWidth().height(4.dp)) {}
+            PrimaryButton(t(TextKey.RESET_FINISH), onClick = { open = false }, height = 48.dp, modifier = Modifier.fillMaxWidth())
+        }
+    }
+}

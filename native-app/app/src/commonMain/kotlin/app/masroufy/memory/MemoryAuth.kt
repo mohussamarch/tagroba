@@ -44,6 +44,14 @@ class MemoryAuth(private val uidPrefix: String = "u-") : AuthPort {
         return enter(AuthUser(account.uid, key, null))
     }
 
+    /** رمز جوجل وهمي ⇒ حساب ثابت لكل رمز (أول مرة بيتعمل) — نفس فايربيز: الدخول بجوجل بيعمل الحساب لو مش موجود. */
+    override suspend fun signInWithGoogle(idToken: String): AuthUser {
+        if (idToken.isBlank()) throw authError("auth/invalid-credential")
+        val key = "google:$idToken"
+        val account = accounts.getOrPut(key) { Account("$uidPrefix${accounts.size + 1}", "") }
+        return enter(AuthUser(account.uid, null, null))
+    }
+
     override suspend fun sendPasswordReset(email: String) {
         val key = email.trim()
         if (!key.contains('@')) throw authError("auth/invalid-email")
