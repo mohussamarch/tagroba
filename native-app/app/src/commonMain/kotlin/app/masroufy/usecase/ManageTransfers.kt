@@ -35,6 +35,11 @@ data class ManageTransfersDeps(
     val people: PersonRepository,
     val uow: UnitOfWork,
     val clock: Clock,
+    /**
+     * دفتر الأشخاص: «ده حسابي التاني» بيشيل اللي إجابات «سلفة ولا دعم؟» و«ده سداد؟» كتبته على تحويلات الطرف (الفلوس راحت لحسابك،
+     * فمفيش حد مديون بيها). **التشغيل الحقيقي لازم يدّيه**؛ null = سلوك ما قبل الإصلاح (الدين بيفضل).
+     */
+    val ledger: PersonLedgerRepos? = null,
 )
 
 /** سطر في الزون: طرف بعملة واحدة (المبالغ ما بتتجمعش بين عملتين). */
@@ -86,7 +91,12 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         return TransferZone(rows, suspiciousTransferParties(all, decided.keys), unidentified)
     }
 
-    /** «ده حسابي التاني» ⇒ كل التحويلات معاه (القديم كمان — قرار المالك §39 (ج)) تحويل داخلي. بيرجّع عدد العمليات اللي اتغيرت. */
+    /**
+     * «ده حسابي التاني» ⇒ كل التحويلات معاه (القديم كمان — قرار المالك §39 (ج)) تحويل داخلي. بيرجّع عدد العمليات اللي اتغيرت.
+     * ومع [ManageTransfersDeps.ledger]: اللي إجابات السؤال كتبته على التحويلات دي (دين «سلفة» ونصيبه، وتسويات «أيوه، سداد») بيتشال
+     * في نفس الخطوة. السلفة اللي عليها سداد اتسجل **من مكان تاني** ⇒ مرفوض بسببه ومفيش ولا كتابة (ما بنمسحش حاجة المالك كتبها).
+     * الربط اللي المالك عمله بنفسه من شاشة الأشخاص ما بيتلمسش (زي ما كان).
+     */
     suspend fun markOwnAccount(party: TransferPartyRef): Int = decide(party, TransferVerdict.OWN_ACCOUNT, null)
 
     /**
@@ -105,17 +115,16 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
     }
 
     /**
-     * فك القرار: الطرف بيرجع يتسأل، والعمليات اللي القرار حط نوعها (تحويل داخلي / دعم) بترجع «لسه ما اتحددش» وتتسأل تاني —
-     * ما بنخمّنش نوعها القديم. بيرجّع عدد العمليات اللي رجعت.
-     * ⚠️ بعد §75-5 «شخص» ما بقاش بيحط «دعم» لوحده، بس «دعم» القديم و«دعم» اللي المالك جاوبه في السؤال ما بيتفرقوش في التخزين ⇒ الفك
-     * بيرجّع الاتنين (زي ما كان). «سلفة» اللي اتجاوبت بتفضل (معاها دين). سؤال مفتوح للمالك.
+     * فك القرار: الطرف بيرجع يتسأل، والعمليات اللي القرار حط نوعها («تحويل داخلي» من «حسابي التاني») بترجع «لسه ما اتحددش»
+     * وتتسأل تاني — ما بنخمّنش نوعها القديم. بيرجّع عدد العمليات اللي رجعت.
+     * «شخص» بعد §75-5 **ما بيحطش نوع** لوحده — «سلفة» و«دعم» إجابات المالك نفسه ⇒ الفك ما بيرجّعش حاجة (الاتنين بيفضلوا زي بعض).
+     * «دعم» اللي كان بيتحط لوحده قبل §75-5 ما بيتفرقش في التخزين عن إجابة المالك ⇒ بيفضل كمان (سؤال مفتوح للمالك).
      */
     suspend fun forget(key: String): Int {
         val party = deps.parties.listAll().firstOrNull { it.key == key } ?: return 0
         val setKind = when (party.verdict) {
             TransferVerdict.OWN_ACCOUNT -> EconomicKind.INTERNAL_TRANSFER
-            TransferVerdict.PERSON -> EconomicKind.SUPPORT_GIFT
-            TransferVerdict.DISMISSED -> null
+            TransferVerdict.PERSON, TransferVerdict.DISMISSED -> null
         }
         val now = deps.clock.nowIso()
         val reverted = everything().filter { t -> setKind != null && t.economicKind == setKind && transferPartyOf(t)?.key == key }
@@ -130,11 +139,16 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
     private suspend fun decide(party: TransferPartyRef, verdict: TransferVerdict, personId: Id?): Int {
         val now = deps.clock.nowIso()
         val decision = TransferParty(party.key, party.label, party.last4, verdict, personId, now)
-        val changed = everything().filter { transferPartyOf(it)?.key == party.key }
-            .mapNotNull { t -> applyTransferVerdict(t, decision, now).takeIf { it != t } }
+        val mine = everything().filter { transferPartyOf(it)?.key == party.key }
+        val changed = mine.mapNotNull { t -> applyTransferVerdict(t, decision, now).takeIf { it != t } }
+        // «حسابي التاني»: اللي الأسئلة كتبته على **كل** تحويلات الطرف (مش اللي اتغير بس — عشان الإعادة بعد انقطاع تكمّل الشيل)
+        val ledger = deps.ledger?.takeIf { verdict == TransferVerdict.OWN_ACCOUNT }
+        val stale = ledger?.let { it.askWrites(it.linksOf(mine.map { t -> t.id }).values, withLoans = true) }
+        if (stale != null && stale.blocking.isNotEmpty()) throw TransferZoneError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
         deps.uow.run {
             deps.parties.save(decision)
             if (changed.isNotEmpty()) deps.txns.saveMany(changed)
+            if (stale != null) ledger?.remove(stale)
         }
         return changed.size
     }

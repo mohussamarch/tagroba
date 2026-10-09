@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.CategorizationSource
 import app.masroufy.core.Category
+import app.masroufy.core.ClassificationRule
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
@@ -9,9 +10,13 @@ import app.masroufy.core.Id
 import app.masroufy.core.ImportSourceType
 import app.masroufy.core.Merchant
 import app.masroufy.core.ReviewState
+import app.masroufy.core.RuleMatchMode
 import app.masroufy.core.SchemaId
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
+import app.masroufy.core.isGenericOperationName
+import app.masroufy.core.rememberableMerchantName
+import app.masroufy.core.tidy
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryCategoryRepository
 import app.masroufy.memory.MemoryImportBatchRepository
@@ -90,8 +95,27 @@ class MerchantMemoryTest {
     @Test fun confirmFromTheCategorizeScreenRemembersToo() = runBlocking<Unit> {
         categorize().confirm("t-1", "cat-food")
         assertEquals("cat-food", cafe()?.verifiedCategoryId)
-        assertEquals(listOf("TEST CAFE" to "cat-food"), shared, "شراء صادر ⇒ بيترفع للقايمة المشتركة")
+        assertEquals(emptyList(), shared, "نوعها لسه «غير محدد» ⇒ ما بتترفعش (§25.1: المشتريات المؤكدة بس)")
         assertEquals("cat-food" to CategorizationSource.VERIFIED_MERCHANT, nextImportLine("test cafe").let { it.categoryId to it.categorySource })
+        txns.saveMany(listOf(purchase("t-buy", "TEST BAKERY").copy(economicKind = EconomicKind.PURCHASE)))
+        categorize().confirm("t-buy", "cat-food")
+        assertEquals(listOf("TEST BAKERY" to "cat-food"), shared, "شراء صادر ⇒ بيترفع للقايمة المشتركة")
+    }
+
+    /** مراجعة S5: الاختيار على عملية نوعها مش «شراء» ما بيترفعش للقايمة المشتركة **على إنه شراء** (§25.1 — أسماء الأشخاص). */
+    @Test fun onlyAPurchaseKindIsSharedAndAsAPurchase() = runBlocking<Unit> {
+        val sent = mutableListOf<MerchantContribution>()
+        val strict = MerchantMemory(merchants, ids) { c, _ -> sent += c }
+        txns.saveMany(
+            listOf(
+                purchase("t-lend", "TEST LENDER NAME"),
+                purchase("t-gave", "TEST RELATIVE").copy(economicKind = EconomicKind.SUPPORT_GIFT),
+                purchase("t-bought", "TEST SHOP").copy(economicKind = EconomicKind.PURCHASE),
+            ),
+        )
+        for (id in listOf("t-lend", "t-gave", "t-bought")) categorize(memory = strict).confirm(id, "cat-gift")
+        assertEquals(listOf(MerchantContribution(EconomicKind.PURCHASE, Direction.OUT, "TEST SHOP")), sent)
+        assertEquals("cat-gift", merchants.findByNormalizedName("test lender name")?.verifiedCategoryId, "الحفظ في حسابه زي ما هو (§75-16)")
     }
 
     @Test fun theLastPickWins() = runBlocking<Unit> {
@@ -119,6 +143,52 @@ class MerchantMemoryTest {
         assertEquals(emptyList(), merchants.listAll())
     }
 
+    /** مراجعة S5: سطر نوع العملية اللي الكشف حطه مكان التاجر («شراء عبر نقاط البيع») مش محل — اختيار واحد ما يصنّفش كل النوع. */
+    @Test fun aGenericTypeLineIsNotRememberedAsAMerchant() = runBlocking<Unit> {
+        val pos = "شراء عبر نقاط البيع"
+        val rules = MemoryRuleRepository(listOf(ClassificationRule("rule-1", 1, "TEST PANDA", RuleMatchMode.CONTAINS, "cat-food", true)))
+        txns.saveMany(listOf(purchase("t-pos", pos, desc = "TEST CAFE 1", op = pos), purchase("t-fee", "رسوم", op = "رسوم")))
+        suspend fun posLine() = ImportStatement(
+            ImportStatementDeps(txns, MemorySourceRecordRepository(), MemoryImportBatchRepository(), merchants, categories, rules, MemoryUnitOfWork(listOf(txns)), ids, clock),
+        ).preview(
+            ImportRequest(
+                "t.csv", "التاريخ,مدين,دائن,الرصيد,التاجر,التصنيف,نوع العملية,التفاصيل\n2026/10/09,25.00,0.00,975.00,$pos,,$pos,TEST PANDA 7\n",
+                "acc-test", ImportSourceType.CSV_LEGACY, "w-1", SchemaId.LEGACY,
+            ),
+        ).lines.single().let { it.categoryId to it.categorySource }
+        assertEquals("cat-food" to CategorizationSource.RULE, posLine())
+        edit().setCategory("t-pos", "cat-coffee")
+        categorize().confirm("t-fee", "cat-food")
+        assertEquals("cat-coffee", txns.findByIds(listOf("t-pos")).single().categoryId, "تصنيف العملية نفسها اتحفظ")
+        assertEquals(emptyList(), merchants.listAll(), "نوع العملية مش محل")
+        assertEquals("cat-food" to CategorizationSource.RULE, posLine(), "شراء تاني من نفس النوع بياخد قاعدته")
+        assertEquals(emptyList(), shared)
+        // الاسم الحقيقي اللي الكشف طلّعه (مش سطر النوع) بيتفتكر عادي
+        assertEquals("TEST MART", rememberableMerchantName(purchase("t-m", "TEST MART", op = pos)))
+        // سطر نوع مش في أي قايمة أسماء عامة: بيتعرف إنه هو هو نوع العملية (والطويل اللي الكشف قصه عند 60 و80 حرف كمان)
+        val typeLine = "عملية شراء إلكترونية تجريبية"
+        assertNull(rememberableMerchantName(purchase("t-type", typeLine, op = typeLine)))
+        assertEquals(typeLine, rememberableMerchantName(purchase("t-type2", typeLine)), "من غير سطر نوع جنبه مش اسم عام")
+        val longLine = "$typeLine بوصف طويل جدا مكتوب لاختبار القص اللي قارئ الكشف بيعمله عند ستين وتمانين حرف"
+        assertNull(rememberableMerchantName(purchase("t-long", tidy(longLine, 60), op = tidy(longLine, 80))))
+        // التحويل الداخلي المؤكد (رجل التحويل بين بلدين §64 اسمه «تحويل داخلي») مش محل
+        val leg = purchase("t-leg", "تحويل داخلي").copy(economicKind = EconomicKind.INTERNAL_TRANSFER, economicKindConfirmed = true)
+        assertNull(rememberableMerchantName(leg))
+    }
+
+    /** مراجعة S5: الاسم العام **في خانة التاجر نفسها** (من غير سطر نوع جنبه) مش محل — اختيار واحد ما يوصلش لمحل تاني خالص مؤكد. */
+    @Test fun aGenericNameInTheMerchantColumnIsNotRemembered() = runBlocking<Unit> {
+        val generic = "شراء عبر نقاط البيع"
+        val names = listOf(generic, "PoS Purchase", "حوالة واردة", "خصم رسوم", "Internal transfer", "تحويل داخلي", "دعم / هدية")
+        txns.saveMany(names.mapIndexed { i, name -> purchase("t-gen-$i", name) })
+        for (i in names.indices) edit().setCategory("t-gen-$i", "cat-coffee")
+        assertEquals(emptyList(), merchants.listAll(), "ولا اسم منهم اتحفظ محل")
+        assertEquals(CategorizationSource.NONE, nextImportLine(generic).categorySource, "شراء تاني من محل تاني ما ياخدش «قهوة» مؤكد")
+        assertEquals(listOf(true, false), listOf(isGenericOperationName("  شراء  عبر نقاط البيع "), isGenericOperationName("TEST CAFE")))
+        edit().setCategory("t-1", "cat-coffee")
+        assertEquals("cat-coffee", cafe()?.verifiedCategoryId, "اسم المحل الحقيقي بيتحفظ عادي")
+    }
+
     @Test fun withoutTheMemoryNothingIsRemembered() = runBlocking<Unit> {
         edit(memory = null).setCategory("t-1", "cat-coffee")
         categorize(memory = null).confirm("t-2", "cat-food")
@@ -132,8 +202,10 @@ class MerchantMemoryTest {
         assertFalse(MerchantPick.of(transfer, "cat-gift").shareable, "اسم الشخص اللي حولتله ما يطلعش برّه حسابك")
         assertFalse(MerchantPick.of(gift, "cat-gift").shareable)
         assertFalse(MerchantPick.of(salary, "cat-gift").shareable, "الصادر بس")
-        assertTrue(MerchantPick.of(purchase("t-p", "TEST MART"), "cat-food").shareable)
-        assertEquals(3, memory.rememberAll(listOf(transfer, gift, salary).map { MerchantPick.of(it, "cat-gift") }))
+        assertTrue(MerchantPick.of(purchase("t-p", "TEST MART").copy(economicKind = EconomicKind.PURCHASE), "cat-food").shareable)
+        assertFalse(MerchantPick.of(purchase("t-p", "TEST MART"), "cat-food").shareable, "نوعها لسه «غير محدد»")
+        assertEquals(2, memory.rememberAll(listOf(transfer, gift, salary).map { MerchantPick.of(it, "cat-gift") }))
+        assertNull(merchants.findByNormalizedName("test person"), "اسم طرف التحويل مش محل — ما يدخلش قايمة التجار اللي التطبيق القديم بيقراها")
         assertEquals(emptyList(), shared)
 
         val failing = MerchantMemory(merchants, ids) { _, _ -> throw IllegalStateException("السيرفر وقع") }
@@ -152,7 +224,7 @@ class MerchantMemoryTest {
         assertEquals(2, screen.recordAll(mapOf(mart.lineNumber to "cat-coffee"), emptyList()))
         assertEquals("cat-coffee", merchants.findByNormalizedName("test mart")?.verifiedCategoryId, "من غير «نفتكره؟»")
         assertNull(merchants.findByNormalizedName("test cafe"), "اقتراح القاعدة مش اختيار المالك ⇒ ما بيتحفظش")
-        assertEquals(listOf("TEST MART" to "cat-coffee"), shared)
+        assertEquals(emptyList(), shared, "سطر الرسالة نوعه «غير محدد» وقت التسجيل ⇒ ما بيترفعش للقايمة المشتركة (§25.1)")
         world.receive(sms("m3", MART.replace("SR 40", "SR 41").replace("26/10/07", "26/10/08")))
         val next = screen.load(SmsReviewTarget(BANK.id, BANK.name)).ready.single()
         assertEquals(true to "cat-coffee", next.remembered to next.categoryId, "الرسالة الجاية من نفس المحل")

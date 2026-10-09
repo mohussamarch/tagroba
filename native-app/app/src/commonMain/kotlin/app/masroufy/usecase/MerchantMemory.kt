@@ -8,6 +8,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.isTransferLike
 import app.masroufy.core.jsTrim
 import app.masroufy.core.rememberMerchant
+import app.masroufy.core.rememberableMerchantName
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.MerchantRepository
 import kotlin.coroutines.cancellation.CancellationException
@@ -17,22 +18,27 @@ import kotlin.coroutines.cancellation.CancellationException
  * (`verifiedCategoryId` — حقل التطبيق القديم نفسه)، والعملية الجاية من نفس المحل بتاخده مؤكد («التاجر المؤكد» في `categorize`).
  * - **آخر اختيار يكسب**، وبيأثر على **الجاي بس** — العمليات القديمة ما بتتصنفش من جديد (قراءة Claude الحرفية لـ«يفتكر لوحده دايمًا»).
  * - الاسم الفاضي أو الأرقام/النجوم بس ⇒ ما بيتحفظش (`rememberMerchant`)، ولا «بلا اسم» بتاع العملية اليدوية ([MANUAL_NO_NAME]).
+ * - **الاسم اللي مش محل ما بيتحفظش** (`rememberableMerchantName` في القلب): سطر نوع العملية اللي الكشف حطه مكان التاجر،
+ *   والاسم العام في خانة التاجر (عنوان عملية موحّد زي «شراء عبر نقاط البيع» · «حوالة واردة»، أو اسم نوع زي «تحويل داخلي» — كان
+ *   هيصنّف كل عمليات الاسم ده بتصنيف واحد مؤكد فوق القواعد)، واسم طرف التحويل (شخص أو حساب — ما يدخلش قايمة التجار اللي التطبيق
+ *   القديم بيقراها)، والتحويل الداخلي المؤكد.
  * - بلد غير السعودية: [merchants] هو `SpaceMerchantRepository` ⇒ التصنيف بيتحفظ في البلد دي بس (§64) والتاجر المشترك ما بيتلمسش.
- * - **القايمة المشتركة (§25) زي ما كانت:** الصادر بس، وفشلها ما بيوقفش الحفظ. زيادة (اختيار Claude): التحويل ما بيترفعش — اسم
- *   الشخص اللي حولتله ما يطلعش برّه حسابك — ولا اللي نوعه المؤكد مش شراء.
+ * - **القايمة المشتركة (§25.1، نص المالك: «المشتريات المؤكدة بس»):** اسم المحل بيترفع بس لما نوع العملية **شراء** — زي طريق
+ *   التعديل في التطبيق القديم اللي بيبعت نوع العملية الحقيقي. العملية اللي نوعها لسه «غير محدد» (كل سطر وقت التسجيل من الكشف أو
+ *   الرسايل) **ما بتترفعش** (ممكن تكون تحويل أو دين باسم شخص)، ولا التحويل (اسم الشخص اللي حولتله ما يطلعش برّه حسابك). الصادر
+ *   بس، وفشل الرفع ما بيوقفش الحفظ.
  */
 data class MerchantPick(
     val rawMerchantName: String?,
     val categoryId: Id,
-    /** يترفع للقايمة المشتركة؟ (الصادر بس — [of] بيحسبها). */
+    /** يترفع للقايمة المشتركة؟ (شراء صادر بس — [of] بيحسبها؛ وبيترفع بنوع «شراء»). */
     val shareable: Boolean = false,
 ) {
     companion object {
-        /** اختيار المالك لتصنيف [t]. */
+        /** اختيار المالك لتصنيف [t] — الاسم null لو اسم العملية مش محل (`rememberableMerchantName`). */
         fun of(t: Transaction, categoryId: Id): MerchantPick = MerchantPick(
-            t.rawMerchantName, categoryId,
-            shareable = t.observedDirection == Direction.OUT && !isTransferLike(t) &&
-                (!t.economicKindConfirmed || t.economicKind == EconomicKind.PURCHASE),
+            rememberableMerchantName(t), categoryId,
+            shareable = t.observedDirection == Direction.OUT && !isTransferLike(t) && t.economicKind == EconomicKind.PURCHASE,
         )
     }
 }

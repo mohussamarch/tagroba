@@ -62,9 +62,60 @@ class TransferAsksTest {
         assertNull(transferAskOf(t(Direction.IN, 30_000), person, listOf(debt("o-3", ObligationKind.RECEIVABLE, 50_000, currency = Currency.EGP)), emptyList()), "عملة تانية")
         assertNull(transferAskOf(t(Direction.IN, 30_000), person, listOf(debt("o-4", ObligationKind.RECEIVABLE, 50_000, personId = "p-2")), emptyList()), "شخص تاني")
         assertEquals(AskKind.LOAN_OR_SUPPORT, transferAskOf(t(Direction.OUT, 30_000), person, listOf(debt("o-5", ObligationKind.CUSTODY_PAYABLE, 50_000)), emptyList()), "الأمانة ليها نوعها")
-        // تسوية العملية نفسها ما بتقفلش سؤالها (الإجابة اللي اتقطعت تكمل)
-        val own = listOf(Settlement("s-2", "t-new", "o-1", 50_000))
-        assertEquals(AskKind.DEBT_REPAYMENT, transferAskOf(t(Direction.IN, 50_000), person, listOf(paid), own))
+        // التسوية اللي **إجابة السؤال** على العملية دي كتبتها ما بتقفلش سؤالها (الإجابة اللي اتقطعت تكمل)
+        val own = listOf(Settlement("stl-o-1-ask-t-new", "t-new", "o-1", 50_000))
+        assertEquals(AskKind.DEBT_REPAYMENT, transferAskOf(t(Direction.IN, 50_000), person, listOf(paid), own, links = TransactionLedgerLinks(settlements = own)))
+        // تسوية تانية على نفس العملية (شيت «اربطها بدين موجود» §30) ⇒ المالك جاوب بنفسه، والدين اتقفل بيها
+        val sheet = listOf(Settlement("stl-o-1-old-sheet", "t-new", "o-1", 50_000))
+        assertNull(transferAskOf(t(Direction.IN, 50_000), person, listOf(paid), sheet, links = TransactionLedgerLinks(settlements = sheet)))
+        assertEquals(emptyList(), openDebtsFor(t(Direction.IN, 50_000), "p-1", listOf(paid), sheet), "المفتوح بيحسبها")
+        // تسوية من برّه السؤال على العملية في تسويات الشخص نفسها ⇒ اتجاوبت، حتى لو الروابط ما اتمررتش (والدين لسه فيه باقي)
+        val big = debt("o-9", ObligationKind.RECEIVABLE, 100_000)
+        val byHand = listOf(Settlement("stl-000001", "t-new", "o-9", 30_000))
+        assertNull(transferAskOf(t(Direction.IN, 30_000), person, listOf(big), byHand))
+    }
+
+    @Test fun aDebtMadeAfterTheTransferIsNotRepaidByIt() {
+        val later = debt("o-oct", ObligationKind.RECEIVABLE, 50_000, origin = "t-loan")
+        val opening = debt("o-old", ObligationKind.RECEIVABLE, 10_000)
+        val incoming = t(Direction.IN, 30_000) // يوم 2026-10-07
+        assertNull(transferAskOf(incoming, person, listOf(later), emptyList(), originDates = mapOf("t-loan" to "2026-10-08")), "الدين اتعمل بعد الفلوس")
+        assertEquals(AskKind.DEBT_REPAYMENT, transferAskOf(incoming, person, listOf(later), emptyList(), originDates = mapOf("t-loan" to "2026-10-07")), "نفس اليوم")
+        assertEquals(
+            listOf("o-old"), openDebtsFor(incoming, "p-1", listOf(later, opening), emptyList(), mapOf("t-loan" to "2026-10-08")).map { it.obligation.id },
+            "الدين القديم من غير عملية (§27) بيتحسب دايمًا",
+        )
+        assertEquals(AskKind.DEBT_REPAYMENT, transferAskOf(incoming, person, listOf(later), emptyList()), "تاريخ عملية الدين مش معروف ⇒ بيتحسب زي الأول")
+        val owed = debt("o-owe", ObligationKind.LOAN_PAYABLE, 50_000, origin = "t-borrow")
+        assertEquals(AskKind.LOAN_OR_SUPPORT, transferAskOf(t(Direction.OUT, 10_000), person, listOf(owed), emptyList(), originDates = mapOf("t-borrow" to "2026-12-01")), "الصادر كمان")
+    }
+
+    @Test fun aTransactionLinkedOutsideTheAskIsAnswered() {
+        val out = t(Direction.OUT, 30_000)
+        val share = PersonAllocation("alloc-1", "t-new", "p-1", AllocationKind.RECEIVABLE, 10_000, Currency.SAR)
+        val made = debt("obl-1", ObligationKind.RECEIVABLE, 10_000, origin = "t-new")
+        val paidWith = Settlement("stl-x-1", "t-new", "x", 1_000)
+        for (links in listOf(TransactionLedgerLinks(allocations = listOf(share)), TransactionLedgerLinks(originated = listOf(made)), TransactionLedgerLinks(settlements = listOf(paidWith)))) {
+            assertEquals(true, linkedOutsideTheAsk(out, links), links.toString())
+            assertNull(transferAskOf(out, person, emptyList(), emptyList(), links = links), links.toString())
+        }
+        // اللي السؤال نفسه كتبه (بمعرّفاته الثابتة) مش ربط من برّه
+        val askLinks = TransactionLedgerLinks(
+            allocations = listOf(share.copy(id = transferAskAllocationId("t-new"))),
+            originated = listOf(made.copy(id = transferAskObligationId("t-new"))),
+            settlements = listOf(paidWith.copy(id = "stl-x-" + transferAskRequestId("t-new"))),
+        )
+        assertEquals(false, linkedOutsideTheAsk(out, askLinks))
+        assertEquals(AskKind.LOAN_OR_SUPPORT, transferAskOf(out, person, emptyList(), emptyList(), links = askLinks))
+        assertEquals("obl-ask-t-new" to "alloc-ask-t-new", transferAskObligationId("t-new") to transferAskAllocationId("t-new"))
+    }
+
+    @Test fun unusualTransactionIdsGetAStableFingerprint() {
+        val a = transferAskRequestId("ت-١")
+        assertEquals(a, transferAskRequestId("ت-١"), "ثابت")
+        assertEquals(false, a == transferAskRequestId("ت-٢"), "عمليتين مختلفتين ⇒ معرّفين مختلفين")
+        assertEquals(true, Regex("^[a-zA-Z0-9_-]{1,100}$").matches(a) && Regex("^[a-zA-Z0-9_-]{1,100}$").matches(transferAskRequestId("x".repeat(500))), a)
+        assertEquals(false, isTransferAskSettlement(Settlement("stl-o-1-" + transferAskRequestId(""), "", "o-1", 1)), "التسوية من غير عملية مش إجابة سؤال")
     }
 
     @Test fun repaymentGoesToTheOldestDebtFirst() {
@@ -93,7 +144,7 @@ class TransferAsksTest {
 
     @Test fun questionTextsExistInEveryVariant() {
         forEachTextVariant { label ->
-            for (key in listOf(TextKey.ASK_LOAN_OR_SUPPORT, TextKey.ASK_DEBT_COLLECTED, TextKey.ASK_DEBT_REPAID, TextKey.ASK_TRANSFER_NOT_PENDING)) {
+            for (key in listOf(TextKey.ASK_LOAN_OR_SUPPORT, TextKey.ASK_DEBT_COLLECTED, TextKey.ASK_DEBT_REPAID, TextKey.ASK_TRANSFER_NOT_PENDING, TextKey.ASK_LOAN_HAS_REPAYMENT)) {
                 assertEquals(false, uiText(key).isBlank() || uiText(key) == key.name, "$label $key")
             }
             val body = uiText(TextKey.ASK_DEBT_COLLECTED_BODY, "300", "TEST PERSON", "500")

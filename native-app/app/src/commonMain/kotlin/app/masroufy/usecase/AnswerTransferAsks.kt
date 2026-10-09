@@ -12,14 +12,17 @@ import app.masroufy.core.ReviewState
 import app.masroufy.core.Settlement
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
+import app.masroufy.core.TransactionLedgerLinks
 import app.masroufy.core.TransferParty
 import app.masroufy.core.formatMoney
 import app.masroufy.core.openDebtsFor
 import app.masroufy.core.planRepayment
 import app.masroufy.core.sumMoney
 import app.masroufy.core.transferAskOf
+import app.masroufy.core.transferAskRequestId
 import app.masroufy.core.transferPartyOf
 import app.masroufy.core.uiText
+import app.masroufy.port.AllocationRepository
 import app.masroufy.port.Clock
 import app.masroufy.port.ObligationRepository
 import app.masroufy.port.PersonRepository
@@ -35,9 +38,13 @@ import kotlin.coroutines.cancellation.CancellationException
  * - «سلفة ولا دعم؟»: **سلفة** ⇒ «قرض ممنوح» مؤكد + دين ليك على الشخص بالمبلغ (نفس طريق شاشة الأشخاص `linkToPerson`) ·
  *   **دعم** ⇒ «دعم / هدية» مؤكد (مصروف — زي ما كان بيتحط لوحده قبل §75-5).
  * - «ده سداد؟»: **أيوه** ⇒ «تحصيل دين» (الوارد) أو «سداد دين عليك» (الصادر) مؤكد + تسوية على الديون المفتوحة **بالأقدم الأول**
- *   (`ManagePeople.settle`). المبلغ أكبر من المفتوح ⇒ **مرفوض بنفس رسالة الزيادة ومفيش ولا كتابة**. **لأ** ⇒ مفيش كتابة، والسؤال
- *   اللي بعده: الصادر «سلفة ولا دعم؟» · الوارد اختيارات §39.1 من غير «تحصيل دين».
- * الإجابة ممكن تتعاد بأمان لو اتقطعت في النص: الدين ما بيتعملش مرتين، والتسوية بمعرّف ثابت من العملية.
+ *   (`ManagePeople.settle`) — الديون اللي اتعملت يوم التحويل أو قبله بس (الدين اللي بعده ما بيتسددش بفلوس سابقاه). المبلغ أكبر
+ *   من المفتوح ⇒ **مرفوض بنفس رسالة الزيادة ومفيش ولا كتابة**. **لأ** ⇒ مفيش كتابة، والسؤال اللي بعده: الصادر «سلفة ولا دعم؟» ·
+ *   الوارد اختيارات §39.1 من غير «تحصيل دين». «لأ» **ما بتتخزنش**: الشاشة بتمرر `debtRuledOut` في نفس الخطوة، ولو المالك قفل
+ *   قبل ما يختار، «ده سداد؟» بيرجع المرة الجاية.
+ * - العملية اللي المالك ربطها بالدفتر بنفسه (تسوية أو نصيب أو دين منها — §30، في التطبيق القديم أو الجديد) **مالهاش سؤال**.
+ * الإجابة ممكن تتعاد بأمان لو اتقطعت في النص (وحدة عمل فايربيز مش ذرّية): الدين والتسوية بمعرّفات ثابتة من العملية
+ * (`transferAskRequestId`)، والإجابة التانية بتشيل اللي إجابة مقطوعة مختلفة كتبته.
  * الشاشات مستنية تصميم المالك — دي الدوال اللي هتنادِيها.
  */
 data class AnswerTransferAsksDeps(
@@ -45,6 +52,8 @@ data class AnswerTransferAsksDeps(
     val parties: TransferPartyRepository,
     val obligations: ObligationRepository,
     val settlements: SettlementRepository,
+    /** نصيب الأشخاص من العمليات — العملية اللي ليها نصيب من شاشة الأشخاص اتجاوبت. */
+    val allocations: AllocationRepository,
     /** اسم الشخص في نص السؤال. */
     val persons: PersonRepository,
     /** السلفة والسداد من نفس طريق شاشة الأشخاص (نفس الفحوص ونفس الأشكال المتخزنة اللي التطبيق القديم بيقراها). */
@@ -70,7 +79,7 @@ sealed class DebtAnswer {
     /** «أيوه»: العملية بعد التأكيد والتسويات اللي اتكتبت. */
     data class Recorded(val transaction: Transaction, val settlements: List<Settlement>) : DebtAnswer()
 
-    /** «لأ» على الصادر ⇒ اسأل «سلفة ولا دعم؟». */
+    /** «لأ» على الصادر ⇒ اسأل «سلفة ولا دعم؟» (`question(id, debtRuledOut = true)`). */
     object ThenAskLoanOrSupport : DebtAnswer()
 
     /** «لأ» على الوارد ⇒ اختار نوعه من دول (§39.1) بـ`SetEconomicKind.setOne`. */
@@ -82,12 +91,24 @@ data class TransferAskBulkResult(val answered: List<Id>, val skipped: List<Id>, 
 
 open class TransferAskError(message: String) : IllegalStateException(message)
 
-/** العملية مالهاش السؤال ده دلوقتي (اتجاوب، أو الطرف مش «شخص»، أو اتجاهها غلط). */
+/** العملية مالهاش السؤال ده دلوقتي (اتجاوب، أو الطرف مش «شخص»، أو اتجاهها غلط، أو المالك ربطها بالدفتر بنفسه). */
 class TransferAskNotPending : TransferAskError(uiText(TextKey.ASK_TRANSFER_NOT_PENDING))
 
 class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
-    private class Pending(val t: Transaction, val party: TransferParty, val personId: Id, val debts: PersonLedger.Debts) {
-        fun ask(debtRuledOut: Boolean = false): AskKind? = transferAskOf(t, party, debts.obligations, debts.settlements, debtRuledOut)
+    private val ledger = PersonLedgerRepos(deps.obligations, deps.settlements, deps.allocations)
+
+    private class Pending(
+        val t: Transaction,
+        val party: TransferParty,
+        val personId: Id,
+        val debts: PersonLedger.Debts,
+        val links: TransactionLedgerLinks,
+    ) {
+        fun ask(debtRuledOut: Boolean = false): AskKind? =
+            transferAskOf(t, party, debts.obligations, debts.settlements, debtRuledOut, links, debts.originDates)
+
+        /** الديون المفتوحة اللي العملية ممكن تسددها — من غير اللي اتعمل بعدها. */
+        fun openDebts() = openDebtsFor(t, personId, debts.obligations, debts.settlements, debts.originDates)
     }
 
     /** العملية وطرفها لو «شخص» — null لو مالهاش طرف شخص. */
@@ -96,22 +117,23 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
         val key = transferPartyOf(t)?.key ?: return null
         val party = personParties(deps.parties.listAll())[key] ?: return null
         val personId = party.personId ?: return null
-        return Pending(t, party, personId, PersonLedger(deps.obligations, deps.settlements).of(personId))
+        val links = ledger.linksOf(listOf(t.id)).getValue(t.id)
+        return Pending(t, party, personId, PersonLedger(deps.obligations, deps.settlements, deps.txns).of(personId), links)
     }
 
-    /** السؤال اللي على العملية دلوقتي (أو null) — نفس اللي بيتعد في «محتاجة تأكيد». */
-    suspend fun askOf(txnId: Id): AskKind? = load(txnId)?.ask()
+    /** السؤال اللي على العملية دلوقتي (أو null) — نفس اللي بيتعد في «محتاجة تأكيد». [debtRuledOut] = المالك لسه قايل «لأ، مش سداد». */
+    suspend fun askOf(txnId: Id, debtRuledOut: Boolean = false): AskKind? = load(txnId)?.ask(debtRuledOut)
 
-    /** السؤال بنصه للشاشة، أو null. */
-    suspend fun question(txnId: Id): TransferQuestion? {
+    /** السؤال بنصه للشاشة، أو null. بعد «لأ، مش سداد» على الصادر: [debtRuledOut] = true ⇒ «سلفة ولا دعم؟». */
+    suspend fun question(txnId: Id, debtRuledOut: Boolean = false): TransferQuestion? {
         val p = load(txnId) ?: return null
-        val kind = p.ask() ?: return null
+        val kind = p.ask(debtRuledOut) ?: return null
         val name = deps.persons.listAll().firstOrNull { it.id == p.personId }?.name ?: p.party.label
         val amount = formatMoney(p.t.amountMinor, p.t.currency)
         if (kind == AskKind.LOAN_OR_SUPPORT) {
             return TransferQuestion(kind, p.t, p.personId, uiText(TextKey.ASK_LOAN_OR_SUPPORT), uiText(TextKey.ASK_LOAN_OR_SUPPORT_BODY, amount, name))
         }
-        val open = sumMoney(openDebtsFor(p.t, p.personId, p.debts.obligations, p.debts.settlements).map { it.remainingMinor })
+        val open = sumMoney(p.openDebts().map { it.remainingMinor })
         val incoming = p.t.observedDirection == Direction.IN
         val title = if (incoming) TextKey.ASK_DEBT_COLLECTED else TextKey.ASK_DEBT_REPAID
         val body = if (incoming) TextKey.ASK_DEBT_COLLECTED_BODY else TextKey.ASK_DEBT_REPAID_BODY
@@ -125,15 +147,15 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
     suspend fun answerLoanOrSupport(txnId: Id, answer: LoanOrSupport): Transaction {
         val p = load(txnId) ?: throw TransferAskNotPending()
         if (p.ask(debtRuledOut = true) != AskKind.LOAN_OR_SUPPORT) throw TransferAskNotPending()
-        val kind = if (answer == LoanOrSupport.LOAN) EconomicKind.LOAN_GRANTED else EconomicKind.SUPPORT_GIFT
+        val loan = answer == LoanOrSupport.LOAN
+        // اللي إجابة مقطوعة كتبته وبطل صح: تسويات «سداد» دايمًا، والسلفة لو الإجابة «دعم» (السلفة بتتكتب تاني بنفس المعرّف)
+        val stale = ledger.askWrites(listOf(p.links), withLoans = !loan)
+        if (stale.blocking.isNotEmpty()) throw TransferAskError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
         return deps.uow.run {
-            // سلفة ⇒ دين ليك على الشخص — مرة واحدة بس للعملية (إعادة الإجابة بعد انقطاع ما بتعملش دين تاني)
-            if (answer == LoanOrSupport.LOAN &&
-                deps.obligations.listByTransactionIds(listOf(p.t.id)).none { it.personId == p.personId && it.kind == ObligationKind.RECEIVABLE }
-            ) {
-                deps.people.linkToPerson(p.t.id, p.personId, ObligationKind.RECEIVABLE, p.t.amountMinor)
-            }
-            confirmKind(p.t, kind)
+            ledger.remove(stale)
+            // سلفة ⇒ دين ليك على الشخص بمعرّف ثابت من العملية: الإعادة بعد انقطاع بتكتب نفس الدين، مش دين تاني
+            if (loan) deps.people.linkToPerson(p.t.id, p.personId, ObligationKind.RECEIVABLE, p.t.amountMinor, requestId = transferAskRequestId(p.t.id))
+            confirmKind(p.t, if (loan) EconomicKind.LOAN_GRANTED else EconomicKind.SUPPORT_GIFT)
         }
     }
 
@@ -145,15 +167,19 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
             return if (p.t.observedDirection == Direction.OUT) DebtAnswer.ThenAskLoanOrSupport
             else DebtAnswer.ThenChooseIncomingKind(INCOMING_FROM_PERSON_KINDS - EconomicKind.DEBT_COLLECTED)
         }
-        val origins = p.debts.obligations.mapNotNull { it.originTransactionId }
-        val dates = if (origins.isEmpty()) emptyMap() else deps.txns.findByIds(origins).associate { it.id to it.occurredAt }
-        val parts = when (val plan = planRepayment(p.t.amountMinor, openDebtsFor(p.t, p.personId, p.debts.obligations, p.debts.settlements, dates))) {
+        val parts = when (val plan = planRepayment(p.t.amountMinor, p.openDebts())) {
             is RepaymentPlan.Refused -> throw TransferAskError(plan.reason) // قبل أي كتابة
             is RepaymentPlan.Settle -> plan.parts
         }
+        val request = transferAskRequestId(p.t.id)
+        // نفس معرّف `ManagePeople.settle` — التسوية المقطوعة اللي زي الخطة بالظبط بتفضل، واللي مختلفة (أو سلفة مقطوعة) بتتشال
+        val planned = parts.associate { (obligation, amount) -> "stl-${obligation.id}-$request" to amount }
+        val stale = ledger.askWrites(listOf(p.links), withLoans = true) { planned[it.id] != it.amountMinor }
+        if (stale.blocking.isNotEmpty()) throw TransferAskError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
         val kind = if (p.t.observedDirection == Direction.IN) EconomicKind.DEBT_COLLECTED else EconomicKind.DEBT_REPAID
         return deps.uow.run {
-            val written = parts.map { (obligation, amount) -> deps.people.settle(obligation.id, p.personId, amount, p.t.id, requestIdOf(p.t.id)) }
+            ledger.remove(stale)
+            val written = parts.map { (obligation, amount) -> deps.people.settle(obligation.id, p.personId, amount, p.t.id, request) }
             DebtAnswer.Recorded(confirmKind(p.t, kind), written)
         }
     }
@@ -191,26 +217,5 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
         val now = deps.clock.nowIso()
         deps.txns.update(t.id, TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now))
         return t.copy(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now)
-    }
-
-    /**
-     * معرّف طلب ثابت من العملية (`stl-<الدين>-<ده>`) — نفس الإجابة مرتين = نفس التسوية. المعرّف اللي فيه حروف مش مسموحة في معرّف
-     * الطلب (أو طويل) بياخد بصمة ثابتة منه بدل ما الحروف تتبدل — عشان عمليتين مختلفتين عمرهم ما ياخدوا نفس التسوية.
-     */
-    private fun requestIdOf(txnId: Id): String =
-        if (SAFE_TXN_ID.matches(txnId)) "ask-$txnId" else "ask-h" + fingerprint(txnId) + "-" + txnId.length
-
-    private companion object {
-        val SAFE_TXN_ID = Regex("^[A-Za-z0-9_-]{1,90}$")
-
-        /** FNV-1a 64 على حروف المعرّف — بصمة مش فلوس. */
-        fun fingerprint(text: String): String {
-            var hash = -0x340d631b7bdddcdbL
-            for (c in text) {
-                hash = hash xor c.code.toLong()
-                hash *= 0x100000001b3L
-            }
-            return hash.toULong().toString(16)
-        }
     }
 }

@@ -13,6 +13,7 @@ internal val MSA_ASKS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASK_DEBT_REPAID to "هل هذا سداد دين عليك؟",
     TextKey.ASK_DEBT_REPAID_BODY to "حوّلت {0} إلى {1}، وما زال له عندك {2}.",
     TextKey.ASK_TRANSFER_NOT_PENDING to "لا يوجد على هذه العملية هذا السؤال الآن.",
+    TextKey.ASK_LOAN_HAS_REPAYMENT to "سلفة سُجِّلت من تحويل مع هذا الطرف عليها سداد مسجَّل من مكان آخر، فلا يمكن تغييرها.",
 )
 
 internal val EGYPTIAN_ASKS_TEXTS: Map<TextKey, String> = mapOf(
@@ -23,6 +24,7 @@ internal val EGYPTIAN_ASKS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASK_DEBT_REPAID to "ده سداد دين عليك؟",
     TextKey.ASK_DEBT_REPAID_BODY to "حوّلت {0} لـ{1}، ولسه ليه عندك {2}.",
     TextKey.ASK_TRANSFER_NOT_PENDING to "العملية دي ما عليهاش السؤال ده دلوقتي.",
+    TextKey.ASK_LOAN_HAS_REPAYMENT to "فيه سلفة اتسجلت من تحويل مع الطرف ده وعليها سداد متسجل من مكان تاني، فمش هينفع تتغير.",
 )
 
 internal val ENGLISH_ASKS_TEXTS: Map<TextKey, String> = mapOf(
@@ -33,4 +35,5 @@ internal val ENGLISH_ASKS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASK_DEBT_REPAID to "Is this paying back what you owe?",
     TextKey.ASK_DEBT_REPAID_BODY to "You sent {0} to {1}, and you still owe them {2}.",
     TextKey.ASK_TRANSFER_NOT_PENDING to "This transaction does not have this question now.",
+    TextKey.ASK_LOAN_HAS_REPAYMENT to "A loan recorded from a transfer with this party has a repayment recorded elsewhere, so it cannot be changed.",
 )

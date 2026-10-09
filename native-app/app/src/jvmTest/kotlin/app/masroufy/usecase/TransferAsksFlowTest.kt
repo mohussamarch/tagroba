@@ -77,8 +77,8 @@ class TransferAsksFlowTest {
         val ids = SequentialIdGenerator()
         val uow = MemoryUnitOfWork(listOf(txns, this.parties))
         val people = ManagePeople(ManagePeopleDeps(persons, obligations, settlements, MemorySettlementWriter(obligations, settlements), allocations, repo, uow, ids, clock))
-        val answers = AnswerTransferAsks(AnswerTransferAsksDeps(repo, this.parties, obligations, settlements, persons, people, uow, clock))
-        val source = TransferAskSource(TransferAskSourceDeps("sa", txns, this.parties, obligations, settlements))
+        val answers = AnswerTransferAsks(AnswerTransferAsksDeps(repo, this.parties, obligations, settlements, allocations, persons, people, uow, clock))
+        val source = TransferAskSource(TransferAskSourceDeps("sa", txns, this.parties, obligations, settlements, allocations))
         val zone = ManageTransfers(ManageTransfersDeps(txns, this.parties, persons, uow, clock))
 
         suspend fun asks(from: String = "2026-01-01", to: String = "2026-12-31") = source.pending(from, to).map { it.kind to it.transactionId }
@@ -129,7 +129,7 @@ class TransferAsksFlowTest {
         assertEquals(1, screen.recordAll(emptyMap(), emptyList()))
         val sms = space.all().single { it.amountMinor == 30_000L }
         assertEquals(Triple(EconomicKind.UNCLASSIFIED, false, ReviewState.NEEDS_REVIEW), Triple(sms.economicKind, sms.economicKindConfirmed, sms.reviewState))
-        val asks = TransferAskSource(TransferAskSourceDeps("sa", space.txnStore, space.parties, MemoryObligationRepository(), MemorySettlementRepository()))
+        val asks = TransferAskSource(TransferAskSourceDeps("sa", space.txnStore, space.parties, MemoryObligationRepository(), MemorySettlementRepository(), MemoryAllocationRepository()))
         assertEquals(2, asks.pending("2026-10-01", "2026-10-31").count { it.kind == AskKind.LOAN_OR_SUPPORT }, "الاتنين بيتسألوا — القديم كمان")
     }
 
@@ -200,7 +200,7 @@ class TransferAsksFlowTest {
         // «لأ» على الوارد ⇒ اختيارات §39.1 من غير «تحصيل دين»، ومفيش كتابة
         val no = assertIs<DebtAnswer.ThenChooseIncomingKind>(w.answers.answerDebtRepayment("t-big", yes = false))
         assertTrue(EconomicKind.DEBT_COLLECTED !in no.choices && EconomicKind.GIFT_RECEIVED in no.choices)
-        assertEquals(AskKind.DEBT_REPAYMENT, w.answers.askOf("t-big"), "لسه ما اختارش نوعه ⇒ لسه بيتسأل")
+        assertEquals(AskKind.DEBT_REPAYMENT, w.answers.askOf("t-big"), "«لأ» ما بتتخزنش ولسه ما اختارش نوعه ⇒ لسه بيتسأل (الشاشة بتمرر «لأ» في نفس الخطوة)")
     }
 
     @Test fun outgoingToAPersonHeOwesAsksRepayment() = runBlocking<Unit> {

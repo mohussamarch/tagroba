@@ -11,6 +11,7 @@ import app.masroufy.core.TransferPartyRef
 import app.masroufy.core.TransferVerdict
 import app.masroufy.core.transferPartyOf
 import app.masroufy.memory.FixedClock
+import app.masroufy.memory.MemoryAllocationRepository
 import app.masroufy.memory.MemoryObligationRepository
 import app.masroufy.memory.MemoryPersonRepository
 import app.masroufy.memory.MemorySettlementRepository
@@ -86,7 +87,7 @@ class SmsTransferDecisionsTest {
         assertEquals(0, zone.markPerson(row.party, "p-1"), "مستنية زي ما هي — مفيش حاجة تتكتب")
         assertEquals(before, space.all().single())
         val asks = TransferAskSource(
-            TransferAskSourceDeps("sa", space.txnStore, space.parties, MemoryObligationRepository(), MemorySettlementRepository()),
+            TransferAskSourceDeps("sa", space.txnStore, space.parties, MemoryObligationRepository(), MemorySettlementRepository(), MemoryAllocationRepository()),
         ).pending("2026-10-01", "2026-10-31")
         assertEquals(listOf(AskKind.LOAN_OR_SUPPORT to before.id), asks.map { it.kind to it.transactionId }, "القرار من الزون بيوصل لتحويل الرسالة اللي اتسجل قبله")
     }
