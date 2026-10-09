@@ -8,10 +8,12 @@ import app.masroufy.core.ImportBatch
 import app.masroufy.core.IsoDate
 import app.masroufy.core.MatchingState
 import app.masroufy.core.TextKey
+import app.masroufy.core.dayMonth
 import app.masroufy.core.jsTrim
 import app.masroufy.usecase.ImportCountsPreview
 import app.masroufy.usecase.ImportImpact
 import app.masroufy.usecase.ImportPreview
+import app.masroufy.ui.text.t
 
 /** سطر في «مراجعة الكشف»: حالته وسببها (جملة منع التكرار نفسها) وتصنيفه ومصدر التصنيف. [amountMinor] = null للسطر غير الصالح. */
 data class ReviewLineUi(
@@ -79,6 +81,20 @@ fun importReviewUi(preview: ImportPreview): ImportReviewUi {
     }
     val default = preview.lines.filter { it.selectedByDefault }.map { it.row.lineNumber }.toSet()
     return ImportReviewUi(lines.sortedBy { it.lineNumber }, preview.counts, preview.impact, preview.previousBatch, default)
+}
+
+/** رسالة بعد التسجيل: «سُجّلت N، ولم يُضف M» — ولو كل السطور اتضافت «سُجّلت N» بس (عدّ سطور، مش فلوس). */
+fun savedToast(imported: Int, lines: Int): String {
+    val notAdded = lines - imported
+    return if (notAdded > 0) t(TextKey.IMPORT_REVIEW_SAVED_TOAST, opsCount(imported), opsCount(notAdded)) else t(TextKey.IMPORT_REVIEW_DONE_TITLE, opsCount(imported))
+}
+
+/** الحالة «فاضي»: الدفعة القديمة ونتيجتها («في ٢ أكتوبر: سُجّلت ١١ عملية، ولم تُضف عمليتان»). */
+fun alreadyImportedBody(previous: ImportBatch): String {
+    val day = dayMonth(previous.importedAt.take(10))
+    val notAdded = previous.counts.total - previous.counts.imported
+    return if (notAdded > 0) t(TextKey.IMPORT_REVIEW_EMPTY_BODY, day, opsCount(previous.counts.imported), opsCount(notAdded))
+    else t(TextKey.IMPORT_REVIEW_EMPTY_BODY_ALL, day, opsCount(previous.counts.imported))
 }
 
 /** مصدر التصنيف بكلمتين (مقترح من قاعدة · تصنيف المتجر المؤكد · متجر جديد …). */

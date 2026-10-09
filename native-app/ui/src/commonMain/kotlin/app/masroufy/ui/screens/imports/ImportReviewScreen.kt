@@ -85,8 +85,7 @@ fun ImportReviewScreen(draftId: Long) {
             try {
                 val batch = deps.importer.commit(request, p, selection.sortedBy { it })
                 done = batch
-                val notAdded = (ui?.lines?.size ?: 0) - batch.counts.imported
-                toaster.show(t(TextKey.IMPORT_REVIEW_SAVED_TOAST, opsCount(batch.counts.imported), opsCount(maxOf(0, notAdded))), dark = true)
+                toaster.show(savedToast(batch.counts.imported, ui?.lines?.size ?: 0), dark = true)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -121,7 +120,7 @@ fun ImportReviewScreen(draftId: Long) {
             item(key = "empty") {
                 EmptyState(
                     t(TextKey.IMPORT_REVIEW_EMPTY_TITLE),
-                    prev?.let { t(TextKey.IMPORT_REVIEW_EMPTY_BODY, dayMonth(it.importedAt.take(10)), opsCount(it.counts.imported), opsCount(maxOf(0, it.counts.total - it.counts.imported))) },
+                    prev?.let(::alreadyImportedBody),
                     action = { TonalButton(t(TextKey.IMPORT_BATCHES_TITLE), { nav.push(ImportBatchesRoute) }) },
                 )
             }
