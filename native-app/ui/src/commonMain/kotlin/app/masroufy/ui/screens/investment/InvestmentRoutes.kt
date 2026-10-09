@@ -6,6 +6,8 @@ import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.nav.RouteRegistry
 import app.masroufy.ui.nav.Tab
 import app.masroufy.ui.screens.common.TabScaffold
+import app.masroufy.ui.screens.investment.calc.CalculatorsDeps
+import app.masroufy.ui.screens.investment.calc.registerCalculators
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.LoadDefaultRates
 import app.masroufy.usecase.LoadOnlineFeeds
@@ -27,10 +29,14 @@ interface InvestmentDeps {
 
     /** المعدل الافتراضي لكل نوع بمصدره (حاسبة الادخار و«هتوصل لكام»): `defaultRates.load(averages, بلد، النهارده)`. */
     val defaultRates: LoadDefaultRates
+
+    /** الحاسبات (الادخار · التقاعد · الورث) — ملفاتها في `investment/calc/` (`CalcRoutes.kt`). */
+    val calculators: CalculatorsDeps
 }
 
 fun RouteRegistry.registerInvestment() {
     tabRoot(Tab.INVESTMENT) { InvestmentTab() }
+    registerCalculators()
 }
 
 @Composable
