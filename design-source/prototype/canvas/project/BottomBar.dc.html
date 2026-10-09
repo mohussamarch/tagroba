@@ -127,7 +127,7 @@ body{margin:0}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { addOpen: false, listening: false, type: 'out', amount: '', cat: null, wallet: 'bank', toast: null, toastKey: 0 };
+    this.state = { addOpen: false, listening: false, type: 'out', amount: '', cat: null, wallet: null, firstMain: false, toast: null, toastKey: 0 };
     this.timers = [];
     this.swipe = null;
   }
@@ -135,6 +135,8 @@ class Component extends DCLogic {
   later(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
   eg() { return (this.props.space ?? 'السعودية') === 'مصر'; }
   style() { return this.props.navStyle ?? 'زرار في النص'; }
+  // المحفظة الأساسية لكل بلد (قرار المالك ٢٠٢٦-١٠-٠٩): أول عملية بتسأل «بتصرف عادةً منين؟» وبعدها بتتختار لوحدها، وتتغير في أي عملية
+  main() { try { const m = (JSON.parse(window.sessionStorage.getItem('masroufy-main-wallet') || '{}') || {})[this.eg() ? 'eg' : 'sa']; return m ? (m === 'cash' ? 'cash' : 'bank') : null; } catch (e) { return null; } }
   toMinor(text) {
     const t = String(text || '').replace(/[^0-9.]/g, '');
     if (!t) return null;
@@ -142,15 +144,15 @@ class Component extends DCLogic {
     return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
   }
   fmt(minor) { const f = minor % 100; return String((minor - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
-  open() { this.setState({ addOpen: true, listening: false, type: 'out', amount: '', cat: null, wallet: 'bank' }); }
+  open() { this.setState({ addOpen: true, listening: false, type: 'out', amount: '', cat: null, wallet: this.main(), firstMain: false }); }
   renderVals() {
     const eg = this.eg();
     const st = this.style();
     const center = st === 'زرار في النص', swipe = st === 'اسحب لفوق', inBar = st === 'زرار جنب الشريط';
     const active = this.props.active ?? 'Main';
     // نقطة حمرا على القسم اللي فيه إشعار (طلب المالك ٢٠٢٦-١٠-٠٨): العمليات (رسائل البنك وأسئلة المراجعة) · الأشخاص (فهد اتأخر) — «تعليم الكل كمقروء» بيشيلها
-    let read = false; try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; } catch (e) {}
-    const DOTS = { Operations: true, People: true };
+    let read = false, gone = []; try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; gone = JSON.parse(window.sessionStorage.getItem('masroufy-notif-gone') || '[]'); } catch (e) {}
+    const DOTS = { Operations: ['sms', 'party', 'laila', 'ahmed', 'usd', 'week'].some((x) => gone.indexOf(x) < 0), People: gone.indexOf('fahd') < 0 };
     const tabs = [
       ['Main', 'home', 'الرئيسية'], ['Operations', 'ops', 'العمليات'], ['People', 'people', 'الأشخاص'], ['Investment', 'invest', 'الاستثمار']
     ];
@@ -186,10 +188,12 @@ class Component extends DCLogic {
     });
     const wallets = [['bank', eg ? 'البنك' : 'البنك'], ['cash', eg ? 'كاش' : 'كاش']].map(([id, label]) => {
       const on = this.state.wallet === id;
-      return { label, on: on ? 'true' : 'false', pick: () => this.setState({ wallet: id }),
+      return { label, on: on ? 'true' : 'false', pick: () => {
+        if (!this.main()) { const sp = eg ? 'eg' : 'sa'; let M = {}; try { M = JSON.parse(window.sessionStorage.getItem('masroufy-main-wallet') || '{}') || {}; M[sp] = id === 'cash' ? 'cash' : sp === 'eg' ? 'nbe' : 'rajhi'; window.sessionStorage.setItem('masroufy-main-wallet', JSON.stringify(M)); } catch (e) {} this.setState({ wallet: id, firstMain: true }); }
+        else this.setState({ wallet: id }); },
         style: 'height: 40px; border: 0; padding: 0 16px; border-radius: 18px; font: inherit; font-size: 13px; cursor: pointer; color: #193D33; ' + (on ? 'font-weight: 700; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)') };
     });
-    const ready = minor != null && minor > 0 && (this.state.type === 'move' || !!this.state.cat);
+    const ready = minor != null && minor > 0 && (this.state.type === 'move' || !!this.state.cat) && !!this.state.wallet;
     const cur = eg ? 'ج.م' : 'ر.س';
     const catLabel = (catDefs.find((c) => c[0] === this.state.cat) || [0, ''])[1];
     return {
@@ -216,10 +220,10 @@ class Component extends DCLogic {
       listen: () => {
         if (this.state.listening) return;
         this.setState({ listening: true });
-        this.later(1600, () => this.setState({ listening: false, type: 'out', amount: eg ? '85' : '42', cat: 'food', wallet: 'cash' }));
+        this.later(1600, () => this.setState({ listening: false, type: 'out', amount: eg ? '85' : '42', cat: 'food', wallet: this.main() }));
       },
       types, cats, wallets,
-      walletLabel: eg ? 'منين؟' : 'من أين؟',
+      walletLabel: this.main() && !this.state.firstMain ? (eg ? 'منين؟' : 'من أين؟') : (eg ? 'بتصرف عادةً منين؟' : 'من أين تصرف عادةً؟'),
       currency: cur,
       amount: this.state.amount,
       amountColor: this.state.type === 'out' ? '#BE3D48' : this.state.type === 'in' ? '#13764D' : '#2469BA',
@@ -229,7 +233,7 @@ class Component extends DCLogic {
       save: () => {
         if (!ready) return;
         const sign = this.state.type === 'out' ? '−' : this.state.type === 'in' ? '+' : '';
-        const text = (eg ? 'اتسجّلت: ' : 'سُجّلت: ') + sign + this.fmt(minor) + ' ' + cur + (catLabel ? ' · ' + catLabel : '');
+        const text = (eg ? 'اتسجّلت: ' : 'سُجّلت: ') + sign + this.fmt(minor) + ' ' + cur + (catLabel ? ' · ' + catLabel : '') + (this.state.firstMain ? (eg ? ' — و«' + (this.state.wallet === 'cash' ? 'الكاش' : 'البنك') + '» بقى الأساسي' : ' — وصار «' + (this.state.wallet === 'cash' ? 'الكاش' : 'البنك') + '» الأساسي') : '');
         this.setState((s) => ({ addOpen: false, toast: text, toastKey: s.toastKey + 1 }));
         this.later(2700, () => this.setState({ toast: null }));
       },

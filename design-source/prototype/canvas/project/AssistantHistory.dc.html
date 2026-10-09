@@ -44,8 +44,9 @@ body{margin:0}
       <sc-if value="{{showLearn}}" hint-placeholder-val="{{ true }}">
         <div style="border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: rgba(220,235,214,0.55)">
           <span style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #08634F"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path></svg>{{learnTitle}}</span>
-          <sc-for list="{{facts}}" as="fc" hint-placeholder-count="3">
-            <span style="display: flex; align-items: baseline; gap: 8px; font-size: 13px"><span style="flex: 1 1 auto">{{fc.text}}</span><span style="font-size: 12px; color: #637570">{{fc.count}}</span></span>
+          <span style="font-size: 12px; color: #637570">{{syncNote}}</span>
+          <sc-for list="{{facts}}" as="fc" hint-placeholder-count="4">
+            <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px"><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span>{{fc.text}}</span><span style="font-size: 11px; color: #637570">{{fc.src}}</span></span><button type="button" class="h-press" onClick="{{fc.del}}" aria-label="{{fc.delLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; padding: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></span>
           </sc-for>
           <sc-if value="{{noFacts}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{noFactsText}}</span></sc-if>
           <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(8,99,79,0.12); padding-top: 4px">
@@ -112,7 +113,11 @@ body{margin:0}
 // المحادثات القديمة مخترعة (النهارده الأربعاء ٧ أكتوبر، والأسبوع من السبت) · محادثات الجلسة جاية من الأم (sessions) وبتطلع فوق
 // الفتح ⇒ on-open({ id, msgs }) · الحذف ⇒ مخفية في sessionStorage «masroufy-ask-deleted» + رسالة فيها «تراجع» ⇒ on-deleted(id)
 // اللي اتعلمه جاي من الأم (learned) والتغيير بيرجع on-learn({ on, topics, recent })
-const FACT = { coffee: ['تسأل عن القهوة كثيرًا', 'بتسأل عن القهوة كتير'], rent: ['تسجّل الإيجار أول الشهر', 'بتسجّل الإيجار أول الشهر'], split: ['تقسّم الفواتير مع أصدقائك', 'بتقسّم الفواتير مع صحابك'], food: ['تتابع صرف المطاعم', 'بتتابع صرف الأكل برّه'], bills: ['تتابع فواتير البيت', 'بتتابع فواتير البيت'], debts: ['تتابع ما لك عند الناس', 'بتتابع فلوسك اللي عند الناس'], budget: ['تراجع ميزانية الشهر', 'بتراجع ميزانية الشهر'], goal: ['تتابع هدف «السفر»', 'بتتابع هدف «السفر»'] };
+// المواضيع اللي بتسأل عنها كتير (بالعدد) — نفس مواضيع RULES في AssistantChat
+const FACT = { coffee: ['تسأل عن القهوة', 'بتسأل عن القهوة'], rent: ['تسأل عن الإيجار', 'بتسأل عن الإيجار'], split: ['تسأل عن تقسيم الفواتير', 'بتسأل عن تقسيم الفواتير'], food: ['تسأل عن صرف المطاعم', 'بتسأل عن صرف الأكل برّه'], bills: ['تسأل عن فواتير البيت', 'بتسأل عن فواتير البيت'], debts: ['تسأل عن فلوسك عند الناس', 'بتسأل عن فلوسك عند الناس'], budget: ['تسأل عن ميزانية الشهر', 'بتسأل عن ميزانية الشهر'], goal: ['تسأل عن هدف «السفر»', 'بتسأل عن هدف «السفر»'], salary: ['تسأل عن موعد الراتب', 'بتسأل عن ميعاد المرتب'], store: ['تسأل عن «المرسى»', 'بتسأل عن «المرسى»'] };
+// حاجات إنت أكدتها بنفسك في شاشاتها (§78-٤: يوم الراتب ومصدر الدخل · المحل الأكتر · الأشخاص · الأهداف) — مخترعة ومن نفس الشاشات
+const KNOWN = { sa: [['pay', 'راتبك يوم ٢٨ من «شركة الريادة للحلول»', 'من مصادر الدخل'], ['shop', 'أكثر محل تشتري منه: «مقهى المرسى»', 'من عملياتك'], ['ppl', 'تقسّم الفواتير مع أحمد وسارة', 'من التقسيم'], ['goal', 'خطتك المميّزة بنجمة: «السفر»', 'من خطط الادخار']],
+  eg: [['pay', 'دخلك: عائد الشهادة يوم ١ وإيجار شقة المعادي يوم ٥', 'من مصادر الدخل'], ['shop', 'أكتر محل: «كافيه المرسى»', 'من عملياتك'], ['ppl', 'بتقسّم الفواتير مع أحمد وسارة', 'من التقسيم'], ['goal', 'خطتك اللي عليها النجمة: «السفر»', 'من خطط الادخار']] };
 const DEL = 'masroufy-ask-deleted';
 class Component extends DCLogic {
   constructor(props) {
@@ -146,8 +151,11 @@ class Component extends DCLogic {
     const eg = this.eg(), T = (a, b) => (eg ? b : a), s = this.state, n = (x) => x.toLocaleString('ar-EG');
     const L = this.learned(), on = L.on !== false;
     const times = (x) => (x === 1 ? 'مرة واحدة' : x === 2 ? 'مرتين' : n(x) + (x <= 10 ? ' مرات' : ' مرة'));
-    const facts = Object.keys(L.topics || {}).filter((t) => FACT[t] && L.topics[t] > 0).sort((a, b) => L.topics[b] - L.topics[a]).slice(0, 3)
-      .map((t) => ({ text: eg ? FACT[t][1] : FACT[t][0], count: times(L.topics[t]) }));
+    const forgot = L.forgot || [], forget = (id, t, text) => { const tp = Object.assign({}, L.topics); if (t) tp[t] = 0;
+      this.setLearned(Object.assign({}, L, { forgot: id ? forgot.concat([id]) : forgot, topics: tp, recent: (L.recent || []).filter((r) => r !== t) })); this.say(T('حُذف: ', 'اتمسح: ') + text); };
+    const facts = KNOWN[eg ? 'eg' : 'sa'].filter((f) => forgot.indexOf(f[0]) < 0).map(([id, text, src]) => ({ text, src, delLabel: T('احذف: ', 'امسح: ') + text, del: () => forget(id, null, text) }))
+      .concat(Object.keys(L.topics || {}).filter((t) => FACT[t] && L.topics[t] > 0).sort((a, b) => L.topics[b] - L.topics[a]).slice(0, 3)
+        .map((t) => { const text = eg ? FACT[t][1] : FACT[t][0]; return { text, src: 'سألت ' + times(L.topics[t]), delLabel: T('احذف: ', 'امسح: ') + text, del: () => forget(null, t, text) }; }));
     const ses = (Array.isArray(this.props.sessions) ? this.props.sessions : []).filter((c) => c && c.id && Array.isArray(c.msgs))
       .map((c) => ({ id: c.id, g: 'today', time: T('الآن', 'دلوقتي'), title: c.title, first: c.first, msgs: c.msgs }));
     const ids = ses.map((c) => c.id), q = s.q.trim();
@@ -169,7 +177,9 @@ class Component extends DCLogic {
       title: 'سجل المحادثات', closeLabel: T('إغلاق السجل', 'اقفل السجل'),
       closeIt: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); },
       searchHint: T('ابحث في محادثاتك', 'دوّر في محادثاتك'), q: s.q, typeQ: (e) => this.setState({ q: e.target.value }),
-      showLearn: !q, learnTitle: T('ما تعلّمته عنك', 'اللي اتعلمته عنك'), facts, noFacts: facts.length === 0,
+      showLearn: !q, learnTitle: T('ما تعلّمته عنك', 'اللي اتعلمته عنك'), facts,
+      // قرار المالك ٢٠٢٦-١٠-٠٩: «مع حسابي» — اللي اتعلمه والسجل بيتزامنوا وبيوصلوا لأي موبايل
+      syncNote: T('ما تعلّمته وسجل محادثاتك محفوظان مع حسابك، ويصلان معك إلى أي جهاز.', 'اللي اتعلمته وسجل محادثاتك محفوظين مع حسابك، وبيوصلوا معاك لأي موبايل.'), noFacts: facts.length === 0,
       noFactsText: T('لم أتعلّم شيئًا عنك بعد.', 'لسه ما اتعلمتش حاجة عنك.'),
       switchTitle: T('التعلّم من أسئلتي', 'يتعلّم من أسئلتي'),
       switchSub: on ? T('أرتّب الاقتراحات حسب ما تسأل عنه', 'برتّب الاقتراحات حسب اللي بتسأل عنه') : T('متوقف — الاقتراحات حسب الصفحة فقط', 'واقف — الاقتراحات حسب الصفحة بس'),
@@ -183,7 +193,7 @@ class Component extends DCLogic {
       startClear: () => { if (facts.length) this.setState({ askClear: true }); },
       clearQ: T('تمسح كل ما تعلّمته عنك؟ المحادثات نفسها تبقى.', 'تمسح كل اللي اتعلمته عنك؟ المحادثات نفسها هتفضل.'),
       clearYes: T('امسح', 'امسح'), clearNo: T('إلغاء', 'لأ'),
-      doClear: () => { this.setLearned({ on, topics: {}, recent: [] }); this.setState({ askClear: false }); this.say(T('مُسح ما تعلّمته عنك', 'اتمسح اللي اتعلمته عنك')); },
+      doClear: () => { this.setLearned({ on, topics: {}, recent: [], forgot: ['pay', 'shop', 'ppl', 'goal'] }); this.setState({ askClear: false }); this.say(T('مُسح ما تعلّمته عنك', 'اتمسح اللي اتعلمته عنك')); },
       cancelClear: () => this.setState({ askClear: false }),
       groups, currentTag: T('الحالية', 'الحالية'),
       empty: groups.length === 0, emptyText: q ? T('لا توجد محادثات بهذا البحث.', 'مفيش محادثات بالبحث ده.') : T('لا توجد محادثات بعد.', 'لسه مفيش محادثات.'),

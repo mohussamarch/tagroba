@@ -56,7 +56,7 @@ body{margin:0}
                   </span>
                   <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px">
                     <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 15px; font-weight: 700; min-width: 0">{{w.name}}</span><span dir="ltr" style="{{w.balStyle}}">{{w.balance}}</span></span>
-                    <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 12px; color: #637570">{{w.meta}}</span><sc-if value="{{w.approx}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #956000; background: #FBF0DD">تقريبي</span></sc-if></span>
+                    <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="display: flex; align-items: center; gap: 6px; min-width: 0"><span style="font-size: 12px; color: #637570">{{w.meta}}</span><sc-if value="{{w.isMain}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #13764D; background: #DCEBD6">الأساسية</span></sc-if></span><sc-if value="{{w.approx}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #956000; background: #FBF0DD">تقريبي</span></sc-if></span>
                     <span style="font-size: 11px; color: #637570">{{w.opening}}</span>
                   </span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"></path></svg>
@@ -117,17 +117,18 @@ class Component extends DCLogic {
       : [['rajhi', 'مصرف الراجحي', 'ر', '٤٤٠٧', 412000, 215000, '١ يناير ٢٠٢٥'], ['ahli', 'البنك الأهلي السعودي', 'أ', '٩١٢٦', 183000, 50000, '١ مارس ٢٠٢٥'], ['inma', 'مصرف الإنماء', 'إ', '٣٣٥٨', 50000, 0, '١٠ أغسطس ٢٠٢٦']];
     const cash = eg ? [270000, 300000, '١٢ مايو ٢٠٢٦'] : [90000, 120000, '٢٨ أغسطس ٢٠٢٦'];
     const s = this.state;
+    let main = null; try { main = (JSON.parse(window.sessionStorage.getItem('masroufy-main-wallet') || '{}') || {})[eg ? 'eg' : 'sa'] || null; } catch (e) {}
     const rowStyle = (last) => 'box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 72px; padding: 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);');
     const lens = (isCash) => 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #08634F; ' + (isCash ? 'background: #DCEBD6' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)');
     const bankRows = banks.map(([id, name, mark, last4, bal, open, at], i) => ({
-      name, mark, isBank: true, isCash: false, approx: false,
+      name, mark, isBank: true, isCash: false, approx: false, isMain: main === id,
       meta: (eg ? 'حساب بنك · ' : 'حساب بنكي · ') + '•••• ' + last4,
       opening: na ? (eg ? 'رصيد البداية لسه ما اتحددش' : 'رصيد البداية لم يُحدَّد بعد') : (eg ? 'رصيد البداية ' : 'رصيد البداية ') + this.fmt(open) + (eg ? ' في ' : ' في ') + at,
       balance: na ? 'غير متاح' : this.fmt(bal) + ' ' + cur,
       balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : '#193D33'),
       lens: lens(false), open: () => this.setState({ view: id }), style: rowStyle(i === banks.length - 1)
     }));
-    const cashRow = { name: 'الكاش', mark: '', isBank: false, isCash: true, approx: true,
+    const cashRow = { name: 'الكاش', mark: '', isBank: false, isCash: true, approx: true, isMain: main === 'cash',
       meta: eg ? 'كاش · اللي في جيبك' : 'كاش · الذي معك',
       opening: (eg ? 'رصيد البداية ' : 'رصيد البداية ') + this.fmt(cash[1]) + ' في ' + cash[2],
       balance: this.fmt(cash[0]) + ' ' + cur, balStyle: 'flex-shrink: 0; white-space: nowrap; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #193D33',

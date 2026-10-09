@@ -924,11 +924,19 @@
     },
     "AssistantMessage.dc.html": {
       "is_interactive": true,
-      "title": "رسالة في الشات (نص · تأكيد عملية · تقسيم · رسالة تذكير) · AssistantMessage (قطعة)",
+      "title": "رسالة في الشات (نص · تأكيد عملية · تقسيم · اختيار المحفظة أول مرة · روابط لأقرب الشاشات) · AssistantMessage (قطعة)",
       "x": 590,
       "y": 24570,
       "w": 350,
       "h": 220
+    },
+    "AssistantChips.dc.html": {
+      "is_interactive": true,
+      "title": "اقتراحات تحت خانة الكتابة («بتسأل عنها كتير» أول الفتح) · AssistantChips (قطعة)",
+      "x": 590,
+      "y": 24850,
+      "w": 350,
+      "h": 80
     }
   },
   "createdOnFiles": {
@@ -1202,7 +1210,8 @@
     "AssistantChat.dc.html",
     "AssistantHistory.dc.html",
     "AssistantStart.dc.html",
-    "AssistantMessage.dc.html"
+    "AssistantMessage.dc.html",
+    "AssistantChips.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

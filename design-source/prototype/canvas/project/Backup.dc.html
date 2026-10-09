@@ -170,7 +170,7 @@ class Component extends DCLogic {
       making: s.make === 'busy', make,
       makeLabel: s.make === 'busy' ? (eg ? 'بنجهّز النسخة…' : 'جارٍ تجهيز النسخة…') : s.failed ? (eg ? 'جرّب تاني' : 'أعد المحاولة') : s.make === 'done' ? (eg ? 'اعمل نسخة تانية' : 'أنشئ نسخة أخرى') : (eg ? 'اعمل نسخة دلوقتي' : 'أنشئ نسخة الآن'),
       makeStyle: 'height: 48px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28); cursor: ' + (s.make === 'busy' ? 'default' : 'pointer'),
-      scopeNote: eg ? 'النسخة فيها بيانات الحساب؛ أذونات الجوال ورسايل المراجعة اللي على الجهاز وإعدادات الشكل ما بترجعش منها.' : 'النسخة تشمل بيانات الحساب؛ أذونات الجوال ورسائل المراجعة المحلية وإعدادات المظهر لا تُستعاد منها.',
+      scopeNote: eg ? 'النسخة فيها بيانات الحساب، ومنها اللي المساعد اتعلمه وسجل محادثاته؛ أذونات الجوال ورسايل المراجعة اللي على الجهاز وإعدادات الشكل ما بترجعش منها.' : 'النسخة تشمل بيانات الحساب، ومنها ما تعلّمه المساعد وسجل محادثاته؛ أذونات الجوال ورسائل المراجعة المحلية وإعدادات المظهر لا تُستعاد منها.',
       noNet, noNetText: eg ? 'التأكيد محتاج نت. تقدر تشوف المعاينة دلوقتي.' : 'التأكيد يحتاج اتصالًا بالإنترنت. يمكنك المعاينة الآن.',
       pickLabel: eg ? 'اختار ملف النسخة' : 'اختر ملف النسخة', pickFile: () => this.setState({ picking: true }),
       dates: [['from', eg ? 'من' : 'من'], ['to', eg ? 'لحد' : 'إلى']].map(([key, label]) => ({ label, value: s[key], set: (e) => this.setState({ [key]: String(e.target.value || '') }) })),

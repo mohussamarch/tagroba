@@ -50,7 +50,8 @@ body{margin:0}
 // كل كارت = قاعدة على بيانات التطبيق (مخترعة، نفس أرقام الشاشات التانية، مصر ×٣)، والترتيب بالأهم:
 //   رسائل بنك مستنية تأكيد (BankSms: ٤) · فاتورة دورية عدّى يومها المعتاد ولسه ما اتسجلتش (QuickAddStrip: الكهرباء ٣٨٠ يوم ٣)
 //   · تصنيف وصل نسبة التنبيه ولسه ما عدّاش السقف (Budgets: مطاعم وقهوة ٩٦٠ من ١٬٢٠٠ = ٨٠٪) · دين ليك فات ميعاده (DuesDebts: فهد ١٬٢٠٠ من ٢٠ سبتمبر)
-// «سجّلها» و«ذكّره» بيتعملوا جوه المحادثة (on-ask) · الباقي روابط للشاشة · اللي اتعمل بيختفي (done من الأم)
+// «سجّلها» بيتعمل جوه المحادثة (on-ask) · الباقي روابط للشاشة · اللي اتعمل بيختفي (done من الأم)
+// الدين المتأخر معلومة بس من غير زرار (قرار المالك ٢٠٢٦-١٠-٠٩: «مفيش أكشن معين، كافي إنه يعرف») — وتذكيره إشعار في الجرس يتقفل أو يتمسح
 const ICON = {
   sms: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/>',
   bill: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
@@ -75,10 +76,10 @@ class Component extends DCLogic {
       { id: 'sms', show: F.sms > 0, ic: 'sms', col: '#956000', line: T(n(F.sms) + ' رسائل من البنك بانتظار تأكيدك', n(F.sms) + ' رسايل من البنك مستنية تأكيدك'), action: T('راجعها', 'راجعها'), href: 'BankSms.dc.html' },
       { id: 'elec', show: F.today > F.elecDay && !done.elec, ic: 'bill', col: '#956000', line: T('فاتورة الكهرباء لم تُسجَّل هذا الشهر — عادةً ' + m(F.elec) + ' يوم ' + n(F.elecDay), 'فاتورة الكهربا ما اتسجلتش الشهر ده — عادةً ' + m(F.elec) + ' يوم ' + n(F.elecDay)), action: 'سجّلها', ask: 'elec' },
       { id: 'food', show: foodPct >= F.alertPct && F.foodSpent <= F.foodCap, ic: 'food', col: '#A36A21', line: T('«مطاعم وقهوة» وصلت ' + n(foodPct) + '٪ من سقفها (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')', '«أكل وقهوة» وصل ' + n(foodPct) + '٪ من سقفه (' + this.whole(F.foodSpent * k) + ' من ' + m(F.foodCap) + ')'), action: T('افتحها', 'افتحها'), href: 'CategoryBudget.dc.html', keep: { 'masroufy-budget-cat': 'food' } },
-      { id: 'fahd', show: F.fahdLate > 0 && !done.fahd, ic: 'debt', col: '#BE3D48', line: T('فهد فات موعد سداده منذ ' + n(F.fahdLate) + ' يومًا — بقي ' + m(F.fahdLeft), 'فهد ميعاد سداده فات من ' + n(F.fahdLate) + ' يوم — فاضل ' + m(F.fahdLeft)), action: T('ذكّره', 'فكّره'), ask: 'fahd' }
+      { id: 'fahd', show: F.fahdLate > 0 && !done.fahd, ic: 'debt', col: '#BE3D48', line: T('فهد فات موعد سداده منذ ' + n(F.fahdLate) + ' يومًا — بقي ' + m(F.fahdLeft), 'فهد ميعاد سداده فات من ' + n(F.fahdLate) + ' يوم — فاضل ' + m(F.fahdLeft)), action: '' }
     ];
     const cards = R.filter((r) => r.show).slice(0, 4).map((r) => ({
-      line: r.line, action: r.action, icon: this.icon(r.ic, r.col), isLink: !r.ask, isAsk: !!r.ask,
+      line: r.line, action: r.action, icon: this.icon(r.ic, r.col), isLink: !!r.href, isAsk: !!r.ask,
       href: r.href || '', keep: r.keep ? JSON.stringify(r.keep) : '',
       go: () => { if (r.ask && typeof this.props.onAsk === 'function') this.props.onAsk(r.ask); },
       tile: 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + r.col + '1A',

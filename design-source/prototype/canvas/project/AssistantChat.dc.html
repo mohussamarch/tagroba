@@ -56,7 +56,7 @@ body{margin:0}
       <dc-import name="AssistantStart" space="{{spaceName}}" brand-name="{{brandName}}" brand-title="{{brandTitle}}" done="{{doneFlags}}" on-ask="{{onStart}}" hint-size="350px,470px"></dc-import>
     </sc-if>
     <sc-for list="{{msgs}}" as="m" hint-placeholder-count="0">
-      <dc-import name="AssistantMessage" msg="{{m.raw}}" space="{{spaceName}}" on-confirm="{{m.confirm}}" on-edit="{{m.edit}}" on-copy="{{m.copy}}" hint-size="350px,60px"></dc-import>
+      <dc-import name="AssistantMessage" msg="{{m.raw}}" space="{{spaceName}}" on-confirm="{{m.confirm}}" on-edit="{{m.edit}}" on-pick="{{m.choose}}" hint-size="350px,60px"></dc-import>
     </sc-for>
     <sc-if value="{{typing}}" hint-placeholder-val="{{ false }}">
       <div role="status" aria-label="{{typingLabel}}" style="align-self: flex-start; display: flex; gap: 5px; padding: 12px 14px; border-radius: 18px 18px 18px 6px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 10px 22px rgba(29,54,53,0.08)">
@@ -83,12 +83,7 @@ body{margin:0}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
       </button>
     </div>
-    <span style="height: 18px; line-height: 18px; padding: 0 4px; font-size: 12px; color: #637570; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{chipsLabel}}</span>
-    <div class="c-scroll" role="group" aria-label="{{chipsLabel}}" style="display: flex; gap: 8px; overflow-x: auto; margin: -2px -20px -6px; padding: 2px 20px 6px">
-      <sc-for list="{{chips}}" as="ch" hint-placeholder-count="4">
-        <button type="button" class="c-press" onClick="{{ch.pick}}" style="{{ch.style}}">{{ch.label}}</button>
-      </sc-for>
-    </div>
+    <dc-import name="AssistantChips" space="{{spaceName}}" context="{{ctxName}}" learned="{{learnedNow}}" last="{{lastAsk}}" fresh="{{fresh}}" on-pick="{{pickChip}}" hint-size="350px,70px"></dc-import>
   </div>
 
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
@@ -107,24 +102,19 @@ body{margin:0}
 <script type="text/x-dc" data-dc-script data-props='{"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"listenFirst":{"editor":"boolean","default":false,"section":"الحالة"},"onClose":{"editor":null},"$preview":{"width":390,"height":844}}'>
 // صفحة المحادثة مع المساعد (طلب المالك ٢٠٢٦-١٠-٠٩: «يكون شكله شات، فيه مستطيل واضح أكتب فيه وتحته الاقتراحات، ومكان لسجل المحادثات، ويتعلّم من اللي بسأله ويقترح، ويقترح عليّا حاجات لسه ما عملتهاش»)
 // القطع: البداية (AssistantStart) · الفقاعة (AssistantMessage) · السجل (AssistantHistory) · الفهم والردود هنا. الاسم واللقب من BRAND في AskBar (القيم هنا للمعاينة لوحدها بس)
-// تخزين النموذج (sessionStorage): المحادثة الحالية بتفضل لو اتقفلت أو اتنقلت (§67) · محادثات الجلسة للسجل · اللي اتعلمه · اللي اتعمل من الاقتراحات
+// تخزين النموذج (sessionStorage): المحادثة الحالية بتفضل لو اتقفلت أو اتنقلت (§67) لحد ساعة من غير كلام · محادثات الجلسة للسجل · اللي اتعلمه · اللي اتعمل من الاقتراحات · المحفظة الأساسية لكل بلد · في كوتلن: السجل واللي اتعلمه محفوظين مع الحساب ويتزامنوا (قرار المالك ٢٠٢٦-١٠-٠٩)
 // الأرقام مخترعة ومن الشاشات التانية (بالوحدة الصغرى، مصر ×٣): القهوة ٦٤٠ والمعتاد ٤٨٠ (Advisor) · مطاعم وقهوة ٩٦٠ من ١٬٢٠٠ (Budgets) · الإيجار ٢٬٥٠٠ والكهرباء ٣٨٠ والمياه ٩٠ (QuickAddStrip) · فهد ١٬٢٠٠ وخالد ٥٠٠ وأحمد ١٨٥ (DuesDebts) · الميزانية ٦٬٦٥٠ من ٨٬٠٠٠ · «السفر» ٧٬٤٠٠ من ١٢٬٠٠٠ (SavingsGoals)
-const KEY = { cur: 'masroufy-ask-current', ses: 'masroufy-ask-sessions', learn: 'masroufy-ask-learned', done: 'masroufy-ask-done' };
+const KEY = { cur: 'masroufy-ask-current', ses: 'masroufy-ask-sessions', learn: 'masroufy-ask-learned', done: 'masroufy-ask-done', main: 'masroufy-main-wallet', gone: 'masroufy-notif-gone', unk: 'masroufy-ask-unknown' };
+const HOUR = 3600000, BANKS = { rajhi: 'مصرف الراجحي', ahli: 'البنك الأهلي السعودي', inma: 'مصرف الإنماء', nbe: 'البنك الأهلي المصري', qnb: 'QNB مصر' };
 // كلمة في الرسالة ⇒ الرد ⇒ الموضوع اللي بيتعلّمه (أول واحد بيطابق هو الرد، وكل اللي بيطابق بيتعلّم)
-const RULES = [[/قسّ?م|تقسيم/, 'split', 'split'], [/أحمد|سارة/, 'owed', 'split'], [/خالد/, 'lak', 'debts'], [/فهد|اتأخر|تأخر|متأخر/, 'late', 'debts'], [/قهو|كافي|كوفي/, 'coffee', 'coffee'], [/مطعم|مطاعم|أكل|اكل|غدا|عشا/, 'food', 'food'], [/إيجار|ايجار/, 'rent', 'rent'], [/كهرب|مياه|المي[ةه]/, 'bills', 'bills'], [/ميزاني|خطة|سقف/, 'plan', 'budget'], [/حوّ?ش|ادّ?خار|هدف|السفر/, 'goal', 'goal'], [/قفل/, 'lock', '']];
-// اقتراح لكل موضوع اتعلّمه + اقتراحات كل صفحة: [فصحى، مصري، الرد]
-const Q = {
-  coffee: ['كم صرفت على القهوة هذا الأسبوع؟', 'صرفت كام على القهوة الأسبوع ده؟', 'coffee'], food: ['كم صرفت على المطاعم هذا الشهر؟', 'صرفت كام على الأكل برّه الشهر ده؟', 'food'],
-  rent: ['متى الإيجار القادم؟', 'امتى الإيجار الجاي؟', 'rent'], bills: ['كم فاتورة الكهرباء عادةً؟', 'الكهربا بتيجي كام عادةً؟', 'bills'],
-  debts: ['من تأخر في السداد؟', 'مين اتأخر في السداد؟', 'late'], split: ['كم لي عند أحمد وسارة؟', 'ليّا كام عند أحمد وسارة؟', 'owed'],
-  budget: ['كم بقي من ميزانية الشهر؟', 'فاضل كام من ميزانية الشهر؟', 'plan'], goal: ['كم بقي لهدف السفر؟', 'فاضل كام على هدف السفر؟', 'goal'],
-  spent: ['كم صرفت على المطاعم؟', 'صرفت كام على الأكل؟', 'food'], voice: ['أضف عملية بصوتي', 'ضيف عملية بصوتي', 'voice'],
-  doSplit: ['قسّم فاتورة العشاء مع أحمد وسارة', 'قسّم فاتورة العشا مع أحمد وسارة', 'split'], plan: ['هل أنا على الخطة؟', 'أنا ماشي على الخطة؟', 'plan'],
-  lak: ['كم لي عند خالد؟', 'ليّا كام عند خالد؟', 'lak'], lock: ['أين أغيّر القفل؟', 'فين أغيّر القفل؟', 'lock']
-};
-// كل موضوع اتعلّمه ⇒ سؤالين متابعة (التاني قريب منه: القهوة بتأخّر هدف «السفر» مثلًا)
-const NEXT = { coffee: ['coffee', 'goal'], food: ['food', 'budget'], rent: ['rent', 'bills'], bills: ['bills', 'rent'], debts: ['debts', 'lak'], split: ['split', 'debts'], budget: ['budget', 'food'], goal: ['goal', 'coffee'] };
-const BY_CTX = { 'الرئيسية': ['spent', 'voice', 'doSplit', 'plan'], 'العمليات': ['voice', 'spent', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['plan', 'spent', 'voice'], 'المزيد': ['lock', 'voice', 'doSplit'] };
+const RULES = [[/قسّ?م|تقسيم/, 'split', 'split'], [/أحمد|سارة/, 'owed', 'split'], [/خالد/, 'lak', 'debts'], [/فهد|اتأخر|تأخر|متأخر/, 'late', 'debts'], [/قهو|كافي|كوفي/, 'coffee', 'coffee'], [/مطعم|مطاعم|أكل|اكل|غدا|عشا/, 'food', 'food'], [/إيجار|ايجار/, 'rent', 'rent'], [/كهرب|مياه|المي[ةه]/, 'bills', 'bills'], [/ميزاني|خطة|سقف/, 'plan', 'budget'], [/حوّ?ش|ادّ?خار|هدف|السفر/, 'goal', 'goal'], [/راتب|مرتب|قبض/, 'salary', 'salary'], [/مرس[يى]|[آا]خر مر[ةه]|[آا]خر عملي[ةه]/, 'store', 'store'], [/قفل/, 'lock', '']];
+// §78-١ فهرس الشاشات: الكلام بيتوحّد الأول (من غير تشكيل، أ/إ/آ⇒ا، ة⇒ه، ى⇒ي) وبعدين كلمة ⇒ شاشة [الكلمات بعد التوحيد، الملف، الاسم]
+const NAV = [[/زكا/, 'Zakat', 'الزكاة'], [/ميزاني|سقف/, 'Budgets', 'الميزانيات'], [/محافظ|محفظ|رصيد|حساباتي/, 'Wallets', 'المحافظ'], [/اشتراك/, 'Subscriptions', 'الاشتراكات'], [/قسط|اقساط|تقسيط/, 'Installments', 'الأقساط'],
+  [/ورث|ميراث|مواريث|تركه/, 'InheritanceCalculator', 'حاسبة الورث'], [/جمعي/, 'Roscas', 'الجمعيات'], [/كشف|استيراد/, 'StatementImport', 'كشف الحساب'], [/رسايل|رسائل|رساله/, 'BankSms', 'رسائل البنك'], [/نسخه|احتياط|باك ?اب/, 'Backup', 'النسخة الاحتياطية'],
+  [/تصنيف/, 'Categories', 'التصنيفات'], [/اشعار|تنبيه/, 'Notifications', 'الإشعارات'], [/مشروع|مشاريع/, 'Projects', 'المشاريع'], [/تقاعد|معاش/, 'RetirementCalculator', 'حاسبة التقاعد'], [/مصادر|دخلي/, 'IncomeSources', 'مصادر الدخل'],
+  [/استثمار|ذهب|اسهم/, 'Investment', 'الاستثمار'], [/تحويلات|حوالات/, 'Transfers', 'التحويلات'], [/قواعد|تجار/, 'Rules', 'القواعد والتجار'], [/مناسب|احداث/, 'Events', 'الأحداث'], [/ديون|دين|سلف/, 'DuesDebts', 'الديون'], [/ملفي|بروفايل/, 'Account', 'ملفك']];
+// لو مفيش حروف مشتركة: أقرب الشاشات للصفحة اللي هو فيها
+const NEAR = { 'الرئيسية': ['Budgets', 'Wallets', 'Notifications'], 'العمليات': ['Categories', 'BankSms', 'Rules'], 'الأشخاص': ['DuesDebts', 'Roscas', 'Events'], 'الاستثمار': ['Zakat', 'Investment', 'RetirementCalculator'], 'المزيد': ['Wallets', 'Backup', 'Account'] };
 // نوع المصروف من الكلام: [كلمة، علامة، الاسم فصحى، مصري، التصنيف فصحى، مصري، الأيقونة، اللون، بيتدفع من البنك عادةً]
 const CATS = [[/قهو|كافي|كوفي/, 'coffee', 'قهوة', 'قهوة', 'مطاعم وقهوة', 'أكل وقهوة', 'coffee', '#A36A21'], [/مطعم|غدا|عشا|أكل|اكل|فطور/, 'food', 'مطعم', 'أكل برّه', 'مطاعم وقهوة', 'أكل وقهوة', 'food', '#A36A21'],
   [/كهرب/, 'elec', 'فاتورة الكهرباء', 'فاتورة الكهربا', 'فواتير', 'فواتير', 'bill', '#956000', 1], [/مياه|المي[ةه]/, 'water', 'فاتورة المياه', 'فاتورة المية', 'فواتير', 'فواتير', 'bill', '#4D747C'],
@@ -132,7 +122,7 @@ const CATS = [[/قهو|كافي|كوفي/, 'coffee', 'قهوة', 'قهوة', 'م
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    const cur = this.read(KEY.cur, null);
+    const c0 = this.read(KEY.cur, null), cur = c0 && c0.at && Date.now() - c0.at > HOUR ? null : c0; // ساعة من غير كلام ⇒ محادثة جديدة، واللي فاتت في السجل (قرار المالك)
     this.state = { cid: cur && cur.id ? cur.id : 'c' + Date.now(), msgs: cur && Array.isArray(cur.msgs) ? cur.msgs : [], typing: false, listening: false, draft: '', hist: false, toast: '', tk: 0, lv: 0 };
     this.timers = []; this.queue = [];
     this.setLog = (el) => { this.log = el; };
@@ -155,7 +145,7 @@ class Component extends DCLogic {
   say(msg) { this.setState((s) => ({ toast: msg, tk: s.tk + 1 })); this.later(2700, () => this.setState({ toast: '' })); }
   save(msgs, cid) {
     const id = cid || this.state.cid;
-    this.write(KEY.cur, { id, msgs });
+    this.write(KEY.cur, { id, msgs, at: Date.now() });
     if (!msgs.length) return;
     const me = msgs.find((m) => m.from === 'me'), bot = msgs.find((m) => m.from === 'bot' && m.text);
     this.write(KEY.ses, [{ id, title: me ? me.text : '…', first: bot ? bot.text : '…', msgs }].concat(this.read(KEY.ses, []).filter((c) => c.id !== id)).slice(0, 12));
@@ -166,17 +156,32 @@ class Component extends DCLogic {
     this.queue.push(p); this.setState({ typing: true });
     this.later(900, () => { this.queue = this.queue.filter((x) => x !== p); this.setState({ typing: this.queue.length > 0 }); this.setMsgs(this.state.msgs.concat([p])); });
   }
+  norm(t) { return String(t).replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي'); }
   learn(text) {
     const L = this.learned(); if (!L.on) return;
-    const hits = RULES.filter((r) => r[2] && r[0].test(text)).map((r) => r[2]).filter((x, i, a) => a.indexOf(x) === i);
+    const nt = this.norm(text), hits = RULES.filter((r) => r[2] && (r[0].test(text) || r[0].test(nt))).map((r) => r[2]).filter((x, i, a) => a.indexOf(x) === i);
     if (!hits.length) return;
     hits.forEach((h) => { L.topics[h] = (L.topics[h] || 0) + 1; });
     L.recent = hits.concat(L.recent.filter((r) => hits.indexOf(r) < 0)).slice(0, 4);
     this.write(KEY.learn, L);
   }
+  // المحفظة: اللي في الكلام ⇒ الفاتورة الدورية على بنكها ⇒ المحفظة الأساسية (قرار المالك ٢٠٢٦-١٠-٠٩) ⇒ لسه مفيش أساسية = null وبنسأل مرة واحدة
   tx(i, amount, wallet) {
-    const c = CATS[i] || [null, 'other', 'مصروف', 'مصروف', 'أخرى', 'أخرى', 'bill', '#637570'], eg = this.eg(), w = wallet || (c[8] ? 'bank' : 'cash');
-    return { tag: c[1], title: eg ? c[3] : c[2], cat: eg ? c[5] : c[4], icon: c[6], color: c[7], amount, w, wallet: w === 'cash' ? 'الكاش' : eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي' };
+    const c = CATS[i] || [null, 'other', 'مصروف', 'مصروف', 'أخرى', 'أخرى', 'bill', '#637570'], eg = this.eg(), bank = eg ? 'nbe' : 'rajhi', main = this.read(KEY.main, {})[eg ? 'eg' : 'sa'] || null;
+    const w = wallet === 'bank' ? (main && main !== 'cash' ? main : bank) : wallet || (c[8] ? bank : main);
+    return { tag: c[1], title: eg ? c[3] : c[2], cat: eg ? c[5] : c[4], icon: c[6], color: c[7], amount, w, wallet: w === 'cash' ? 'الكاش' : BANKS[w] || 'محفظتك الأساسية' };
+  }
+  offer(ci, amt, w, lead) {
+    const T = (a, b) => this.T(a, b), x = this.tx(ci, amt, w), bank = this.eg() ? 'nbe' : 'rajhi';
+    if (!x.w) return { text: T('قبل أن أسجّلها: من أين تصرف عادةً؟ سأسجّل عليها دائمًا، ويمكنك تغييرها في أي عملية.', 'قبل ما أسجّلها: بتصرف عادةً منين؟ هسجّل عليها على طول، وتقدر تغيّرها في أي عملية.'), pick: { ci, amt, lead: lead || '', opts: [[bank, BANKS[bank]], ['cash', 'الكاش']] } };
+    return { text: (lead || 'فهمت: ' + x.title + ' بـ' + this.fmt(amt) + '\u00A0' + this.cur()) + ' من ' + x.wallet + T('، اليوم. أسجّلها؟', '، النهارده. أسجّلها؟'), txn: x };
+  }
+  pickWallet(id, w) {
+    const m = this.state.msgs.find((x) => x.id === id); if (!m || !m.pick || m.done) return;
+    const M = this.read(KEY.main, {}); M[this.eg() ? 'eg' : 'sa'] = w; this.write(KEY.main, M);
+    this.setMsgs(this.state.msgs.map((x) => (x.id === id ? Object.assign({}, x, { done: true, picked: w }) : x)));
+    this.say(this.T('صارت «' + (BANKS[w] || 'الكاش') + '» محفظتك الأساسية — غيّرها من «المحافظ»', '«' + (BANKS[w] || 'الكاش') + '» بقت محفظتك الأساسية — تغيّرها من «المحافظ»'));
+    this.reply(this.offer(m.pick.ci, m.pick.amt, w, m.pick.lead));
   }
   answer(key) {
     const eg = this.eg(), k = eg ? 3 : 1, c = this.cur(), T = (a, b) => (eg ? b : a), D = this.read(KEY.done, {}), sp = eg ? '_eg' : '_sa';
@@ -191,29 +196,43 @@ class Component extends DCLogic {
       bills: { text: T('فاتورة الكهرباء عادةً ', 'فاتورة الكهربا عادةً ') + m(38000) + T(' يوم ٣، والمياه ', ' يوم ٣، والمية ') + m(9000) + ' يوم ٥.' + (D['elec' + sp] ? T(' وسُجّلت كهرباء هذا الشهر.', ' وكهربا الشهر ده اتسجّلت.') : T(' وكهرباء هذا الشهر لم تُسجَّل بعد — هل أسجّلها؟', ' وكهربا الشهر ده لسه ما اتسجلتش — أسجّلها؟')), txn: D['elec' + sp] ? null : this.tx(2, 38000 * k) },
       elec: { text: T('فاتورة الكهرباء عادةً ', 'فاتورة الكهربا عادةً ') + m(38000) + T(' يوم ٣ من مصرف الراجحي، ولم تُسجَّل هذا الشهر. أسجّلها بهذا المبلغ؟', ' يوم ٣ من البنك الأهلي المصري، ولسه ما اتسجلتش الشهر ده. أسجّلها بالمبلغ ده؟'), txn: this.tx(2, 38000 * k) },
       late: { text: T('فهد: بقي ', 'فهد: فاضل ') + m(120000) + ' من ' + m(150000) + T('، فات موعدها منذ ١٧ يومًا. وخالد: ', '، ميعادها فات من ١٧ يوم. وخالد: ') + m(50000) + T(' بلا موعد، منتظر منذ ٤٥ يومًا.', ' من غير ميعاد، بقاله ٤٥ يوم.'), link: fahd },
-      fahd: { kind: 'draft', text: T('فات موعد فهد منذ ١٧ يومًا، وبقي عليه ', 'ميعاد فهد فات من ١٧ يوم، وفاضل عليه ') + m(120000) + T('. كتبت لك رسالة لطيفة ترسلها له:', '. كتبتلك رسالة لطيفة تبعتهاله:'), link: fahd,
-        draft: T('أهلًا فهد، أتمنى أنك بخير. أذكّرك بالمبلغ المتبقي من السلفة ', 'إزيك يا فهد، يارب تكون بخير. بفكّرك بباقي السلفة ') + m(120000) + T('، وكان موعده ٢٠ سبتمبر. متى يناسبك السداد؟', '، كان ميعادها ٢٠ سبتمبر. يناسبك تسدّ امتى؟') },
       lak: { text: T('لك عند خالد ', 'ليك عند خالد ') + m(50000) + T(' من سلفة قبل ٤٥ يومًا، بلا موعد.', ' من سلفة من ٤٥ يوم، من غير ميعاد.'), link: ['DebtDetail.dc.html', { 'masroufy-debt': 'khaled' }, 'افتح دين خالد'] },
       owed: { text: T('لك عند أحمد ', 'ليك عند أحمد ') + m(18500) + T(' من فاتورة العشاء السابقة', ' من فاتورة العشا اللي فاتت') + (D['split' + sp] ? '، و' + m(12000) + T(' من عشاء اليوم. ولك عند سارة ', ' من عشا النهارده. وليك عند سارة ') + m(12000) + '.' : T('، وليس لك شيء عند سارة.', '، وسارة مالكش عندها حاجة.')) },
       split: { kind: 'split', text: T('قسمت فاتورة العشاء ', 'قسمت فاتورة العشا ') + m(36000) + T(' بينكم أنتم الثلاثة:', ' عليكم انتم التلاتة:'), shares: [[T('أنت', 'إنت'), 'م'], ['أحمد', 'أ'], ['سارة', 'س']].map((p) => ({ name: p[0], initial: p[1], amount: 12000 * k })) },
       plan: { text: T('أنت على الخطة تقريبًا: بقي ', 'إنت ماشي على الخطة تقريبًا: فاضل ') + m(135000) + T(' من ميزانية الشهر (١٧٪) و٢١ يومًا — نحو ', ' من ميزانية الشهر (١٧٪) و٢١ يوم — حوالي ') + W(this.div(135000 * k, 21)) + ' في اليوم.', link: ['Operations.dc.html', { 'masroufy-ops-tab': 'budgets' }, 'افتح الميزانيات'] },
       goal: { text: T('ادّخرت لـ«السفر» ', 'حوّشت لـ«السفر» ') + m(740000) + ' من ' + m(1200000) + T('. بقي ', '. فاضل ') + m(460000) + T('، أي ', '، يعني ') + this.fmt(eg ? 460000 : 153334) + '\u00A0' + c + T(' شهريًا حتى ٣١ ديسمبر.', ' في الشهر لحد ٣١ ديسمبر.'), link: ['SavingsGoals.dc.html', null, 'افتح خطط الادخار'] },
       lock: { text: 'القفل في «المزيد ← الإعدادات ← القفل».', link: ['AppSettings.dc.html', null, 'افتح الإعدادات'] },
-      voice: { text: T('فهمت: «دفعت ٤٢ ريال قهوة». أسجّلها هكذا؟', 'فهمت: «دفعت ٨٥ جنيه قهوة». أسجّلها كده؟'), txn: this.tx(0, eg ? 8500 : 4200, 'cash') }
+      voice: this.offer(0, eg ? 8500 : 4200, null, T('فهمت: «دفعت ٤٢ ريال قهوة»', 'فهمت: «دفعت ٨٥ جنيه قهوة»')),
+      // المرتب من مصادر الدخل (مصر مفيهاش شغل شغّال) · آخر عملية عند محل من حركات المحافظ (WalletDetail)
+      salary: { text: eg ? 'مفيش مرتب شغّال في مصر دلوقتي. دخلك هنا: عائد الشهادة يوم ١ وإيجار شقة المعادي يوم ٥ — الجاي عائد الشهادة ١ نوفمبر، بعد ٢٥ يوم.' : 'راتبك من «شركة الريادة للحلول» ينزل يوم ٢٨ من كل شهر — القادم ٢٨ أكتوبر، بعد ٢١ يومًا.', link: ['IncomeSources.dc.html', null, 'افتح مصادر الدخل'] },
+      store: { text: eg ? 'آخر عملية عند «كافيه المرسى»: ' + this.fmt(6900) + '\u00A0' + c + ' يوم ٢ أكتوبر من QNB مصر.' : 'آخر عملية عند «مقهى المرسى»: ' + this.fmt(2300) + '\u00A0' + c + ' يوم ٢ أكتوبر من البنك الأهلي السعودي.' }
     };
-    return A[key] || { text: T('لم أفهم هذا بعد. في النموذج أفهم إضافة مصروف («صرفت 25 قهوة») وأسئلة الصرف والميزانية والديون.', 'لسه مش فاهم دي. في النموذج بفهم إضافة مصروف («صرفت 25 قهوة») وأسئلة الصرف والميزانية والديون.') };
+    return A[key] || this.unknown(String(key), '');
   }
-  // الرسالة ⇒ تعديل العملية المستنية · تقسيم · مصروف جديد · سؤال معروف · «مش فاهم»
+  links(list) { return list.map((x) => [x[1] + '.dc.html', null, 'افتح ' + x[2]]); }
+  // §78-٧: مش فاهم ⇒ يقول بصراحة ويقترح أقرب الشاشات (حروف مشتركة مع كلامه، وإلا شاشات الصفحة اللي هو فيها)، والسؤال بيتحفظ عشان يتعلّمه بعدين
+  unknown(t, nt) {
+    const T = (a, b) => this.T(a, b), g = []; nt.split(/\s+/).forEach((w) => { for (let i = 0; i + 3 <= w.length; i++) g.push(w.slice(i, i + 3)); });
+    const near = NAV.map((x) => [x, g.filter((s) => x[0].source.indexOf(s) >= 0).length]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).map((x) => x[0]);
+    const ctx = (NEAR[this.props.context ?? 'الرئيسية'] || NEAR['الرئيسية']).map((f) => NAV.find((x) => x[1] === f));
+    this.write(KEY.unk, [t].concat(this.read(KEY.unk, []).filter((x) => x !== t)).slice(0, 30));
+    const q = t.length > 28 ? t.slice(0, 28) + '…' : t;
+    return { text: T('لم أفهم «' + q + '» بعد، وحفظت سؤالك لأتعلّمه. قد تجد ما تريده هنا:', 'لسه مش فاهم «' + q + '»، وحفظت سؤالك عشان أتعلمه. ممكن تلاقي اللي عايزه هنا:'), links: this.links((near.length ? near : ctx).slice(0, 3)) };
+  }
+  // الرسالة ⇒ تعديل العملية المستنية · تقسيم · مصروف جديد · سؤال معروف · شاشة بالاسم · «مش فاهم» بأقرب الشاشات
   think(t, key) {
     this.learn(t);
     if (key) return { r: this.answer(key) };
     const T = (a, b) => this.T(a, b), amt = this.num(t), q = /كم|كام|امتى|متى|فين|أين|هل|ليه|لماذا|؟|\?/.test(t);
     const ci = CATS.findIndex((x) => x[0].test(t)), w = /كاش/.test(t) ? 'cash' : /بنك|بطاق|كارت|مدى|الراجحي|الأهلي/.test(t) ? 'bank' : null;
-    const pend = this.state.msgs.filter((x) => x.txn && !x.done).pop(), hit = RULES.find((x) => x[0].test(t));
+    const nt = this.norm(t), pend = this.state.msgs.filter((x) => x.txn && !x.done).pop(), hit = RULES.find((x) => x[0].test(t) || x[0].test(nt));
     if (pend && ci < 0 && !q && (amt || w)) return { drop: pend.id, r: { text: T('عدّلتها. أحفظها هكذا؟', 'عدّلتها. أحفظها كده؟'), txn: this.tx(CATS.findIndex((x) => x[1] === pend.txn.tag), amt || pend.txn.amount, w || pend.txn.w) } };
     if (hit && hit[1] === 'split') return { r: this.answer('split') };
-    if (amt && !q) { const x = this.tx(ci, amt, w); return { r: { text: 'فهمت: ' + x.title + ' بـ' + this.fmt(amt) + '\u00A0' + this.cur() + ' من ' + x.wallet + T('، اليوم. أسجّلها؟', '، النهارده. أسجّلها؟'), txn: x } }; }
-    return { r: this.answer(hit ? hit[1] : '') };
+    if (amt && !q) return { r: this.offer(ci, amt, w) };
+    if (hit) return { r: this.answer(hit[1]) };
+    const nav = NAV.filter((x) => x[0].test(nt)).slice(0, 3);
+    if (nav.length) return { r: { text: T('تجدها في «', 'تلاقيها في «') + nav.map((x) => x[2]).join('» و«') + '».', links: this.links(nav) } };
+    return { r: this.unknown(t, nt) };
   }
   ask(text, key) {
     const out = this.think(text, key);
@@ -230,11 +249,6 @@ class Component extends DCLogic {
     const each = this.whole(12000 * k);
     this.reply({ text: tag === 'split' ? T('تم: على أحمد ' + each + ' وعلى سارة ' + each + '، وتظهر في «لك».', 'اتسجّل: أحمد عليه ' + each + ' وسارة عليها ' + each + '، وهيبانوا في «ليك».') : T('سُجّلت في عمليات اليوم.', 'اتسجّلت في عمليات النهارده.') });
   }
-  copy(m) {
-    try { const p = navigator.clipboard.writeText(m.draft || ''); if (p && p.catch) p.catch(() => {}); } catch (e) {}
-    const D = this.read(KEY.done, {}); D['fahd' + (this.eg() ? '_eg' : '_sa')] = true; this.write(KEY.done, D);
-    this.say(this.T('نُسخت — أرسلها لفهد من الواتساب أو الرسائل', 'اتنسخت — ابعتها لفهد على الواتساب أو الرسايل'));
-  }
   listen() {
     if (this.state.listening) return;
     this.setState({ listening: true });
@@ -242,19 +256,11 @@ class Component extends DCLogic {
   }
   sendText() { const t = (this.state.draft || '').trim(); if (!t) return; this.setState({ draft: '' }); this.ask(t, null); }
   fresh(cid) { this.timers.forEach(clearTimeout); this.timers = []; this.queue = []; this.setState({ cid, msgs: [], typing: false, listening: false, draft: '' }); this.write(KEY.cur, { id: cid, msgs: [] }); }
-  // الاقتراحات تحت الخانة: اللي اتعلمه من آخر أسئلتك الأول، وبعدها اقتراحات الصفحة اللي انت فيها
-  chips() {
-    const eg = this.eg(), L = this.learned(), last = (this.state.msgs.filter((x) => x.from === 'me').pop() || {}).text, seen = {}, out = [];
-    const add = (key, learned) => { const q = Q[key]; if (!q) return; const label = eg ? q[1] : q[0]; if (seen[q[2]] || label === last) return; seen[q[2]] = 1; out.push({ label, learned, key: q[2] }); };
-    (L.on ? L.recent : []).forEach((t) => (NEXT[t] || []).forEach((k) => { if (out.length < 3) add(k, true); }));
-    (BY_CTX[this.props.context ?? 'الرئيسية'] || BY_CTX['الرئيسية']).forEach((k) => add(k, false));
-    return out.slice(0, 6);
-  }
   renderVals() {
     const eg = this.eg(), T = (a, b) => this.T(a, b), s = this.state, D = this.read(KEY.done, {}), sp = eg ? '_eg' : '_sa';
     const name = this.props.brandName || 'مصروفي', title = this.props.brandTitle || 'مساعدك المالي الذكي';
     const btn = 'width: 44px; height: 44px; border: 0; padding: 0; border-radius: 16px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.08)';
-    const can = !!(s.draft || '').trim(), chips = this.chips();
+    const can = !!(s.draft || '').trim();
     return {
       dialogLabel: 'محادثة مع ' + name, brandName: name, brandTitle: title,
       iconBtn: btn, newBtn: btn + (s.msgs.length ? '' : '; opacity: 0.45; cursor: default'), newOff: s.msgs.length ? 'false' : 'true',
@@ -263,9 +269,10 @@ class Component extends DCLogic {
       newChat: () => { if (!s.msgs.length) return; this.fresh('c' + Date.now()); this.say(T('بدأت محادثة جديدة — السابقة في السجل', 'بدأنا محادثة جديدة — اللي فاتت في السجل')); },
       closeChat: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); },
       setLog: this.setLog, fresh: s.msgs.length === 0, spaceName: eg ? 'مصر' : 'السعودية',
-      doneFlags: { elec: !!D['elec' + sp], fahd: !!D['fahd' + sp] },
-      onStart: (key) => this.ask(key === 'fahd' ? T('ذكّر فهد بالسلفة', 'فكّر فهد بالسلفة') : T('سجّل فاتورة الكهرباء', 'سجّل فاتورة الكهربا'), key === 'fahd' ? 'fahd' : 'elec'),
-      msgs: s.msgs.map((m) => ({ raw: m, confirm: () => this.confirm(m.id), copy: () => this.copy(m),
+      // دين فهد: معلومة بس من غير زرار، ولو اتمسح إشعاره من الجرس بيختفي هنا كمان (قرار المالك: «كافي إنه يعرف»)
+      doneFlags: { elec: !!D['elec' + sp], fahd: this.read(KEY.gone, []).indexOf('fahd') >= 0 },
+      onStart: () => this.ask(T('سجّل فاتورة الكهرباء', 'سجّل فاتورة الكهربا'), 'elec'),
+      msgs: s.msgs.map((m) => ({ raw: m, confirm: () => this.confirm(m.id), choose: (w) => this.pickWallet(m.id, w),
         edit: () => this.reply({ text: T('ماذا أعدّل؟ اكتب المبلغ الصحيح، أو «كاش» أو «البنك» لتغيير المحفظة.', 'تعدّل إيه؟ اكتب المبلغ الصح، أو «كاش» أو «البنك» عشان تغيّر المحفظة.') }) })),
       typing: s.typing, typingLabel: name + T(' يكتب', ' بيكتب'),
       listening: s.listening, notListening: !s.listening, listeningText: T('أستمع إليك…', 'بسمعك…'),
@@ -274,14 +281,13 @@ class Component extends DCLogic {
       draft: s.draft, typeDraft: (e) => this.setState({ draft: e.target.value }),
       enterSend: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.sendText(); } }, sendDraft: () => this.sendText(),
       sendStyle: 'width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: ' + (can ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 14px rgba(8,99,79,0.25)' : 'none') + '; opacity: ' + (can ? 1 : 0.5),
-      chipsLabel: chips.some((x) => x.learned) ? 'اقتراحات من أسئلتك' : 'اقتراحات لصفحة «' + (this.props.context ?? 'الرئيسية') + '»',
-      chips: chips.map((x) => ({ label: x.label, pick: () => (x.key === 'voice' ? this.listen() : this.ask(x.label, x.key)),
-        style: 'height: 44px; flex-shrink: 0; border: 0; padding: 0 16px; border-radius: 22px; white-space: nowrap; font: inherit; font-size: 13px; font-weight: 500; color: #08634F; cursor: pointer; background: ' + (x.learned ? '#DCEBD6' : 'rgba(255,255,255,0.88)') + '; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.18), 0 4px 10px rgba(29,54,53,0.06)' })),
+      ctxName: this.props.context ?? 'الرئيسية', lastAsk: (s.msgs.filter((x) => x.from === 'me').pop() || {}).text || '',
+      pickChip: (key, label) => (key === 'voice' ? this.listen() : this.ask(label, key === 'find' ? null : key)),
       hasToast: !!s.toast, toast: s.toast, sendOff: can ? 'false' : 'true',
       // لوحدها على اللوحة (من غير أم تقفلها) ⇒ خلفية التطبيق تحت الضباب، وجوه التطبيق ⇒ الشاشة اللي تحتها
       baseStyle: 'position: absolute; inset: 0; background: ' + (typeof this.props.onClose === 'function' ? 'transparent' : 'radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)'),
       histOpen: s.hist, cid: s.cid, sessions: this.read(KEY.ses, []), learnedNow: this.learned(),
-      onOpenConv: (c) => { if (!c || !Array.isArray(c.msgs)) return; this.fresh(c.id); this.setState({ msgs: c.msgs, hist: false }); this.write(KEY.cur, { id: c.id, msgs: c.msgs }); },
+      onOpenConv: (c) => { if (!c || !Array.isArray(c.msgs)) return; this.fresh(c.id); this.setState({ msgs: c.msgs, hist: false }); this.write(KEY.cur, { id: c.id, msgs: c.msgs, at: Date.now() }); },
       onDeleted: (id) => { if (id === s.cid) this.fresh('c' + Date.now()); },
       onLearn: (L) => { if (L && L.topics) { this.write(KEY.learn, L); this.setState((x) => ({ lv: x.lv + 1 })); } },
       closeHist: () => this.setState({ hist: false })

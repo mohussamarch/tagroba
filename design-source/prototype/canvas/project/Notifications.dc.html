@@ -40,6 +40,7 @@ body{margin:0}
         <h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #637570">{{sec.title}}</h2>
         <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
           <sc-for list="{{sec.rows}}" as="n" hint-placeholder-count="2">
+            <div style="{{n.wrap}}">
             <a href="{{n.href}}" data-keep="{{n.keep}}" onPointerDown="{{n.prep}}" onFocus="{{n.prep}}" onClick="{{n.prep}}" class="m-press m-row" style="{{n.style}}">
               <span style="{{n.tile}}">
                 <sc-if value="{{n.i.sms}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8H7"></path><path d="M17 12H7"></path></svg></sc-if>
@@ -55,6 +56,8 @@ body{margin:0}
                 <span style="font-size: 11px; color: #637570">{{n.why}}</span>
               </span>
             </a>
+            <button type="button" class="m-press" onClick="{{n.drop}}" aria-label="{{n.dropLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; margin-top: 8px; border: 0; padding: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+            </div>
           </sc-for>
         </div>
       </div>
@@ -70,11 +73,28 @@ body{margin:0}
       <span style="font-size: 12px; color: #637570">{{lockNote}}</span>
     </div>
   </div>
+  <sc-if value="{{canUndo}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 20px; right: 20px; bottom: 24px; z-index: 10; min-height: 52px; box-sizing: border-box; border-radius: 18px; padding: 4px 16px 4px 4px; display: flex; align-items: center; gap: 8px; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)"><span style="flex: 1 1 auto; font-size: 13px; font-weight: 700">{{undoText}}</span><button type="button" class="m-press" onClick="{{undo}}" style="height: 44px; border: 0; padding: 0 14px; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #DCEBD6; cursor: pointer; background: rgba(255,255,255,0.10)">{{undoLabel}}</button></div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// «×» على كل إشعار بيمسحه من هنا ومن نافذة الجرس، و«رجّعه» لمدة ٤ ثواني (قرار المالك ٢٠٢٦-١٠-٠٩: «أي تذكير … يكون قادر يقفلها أو يمسحها كنوتيفيكيشن»)
 class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let gone = []; try { gone = JSON.parse(window.sessionStorage.getItem('masroufy-notif-gone') || '[]') || []; } catch (e) {}
+    this.state = { gone, undo: null }; this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  setGone(gone, undo) {
+    try { window.sessionStorage.setItem('masroufy-notif-gone', JSON.stringify(gone)); } catch (e) {}
+    this.timers.forEach(clearTimeout); this.timers = [];
+    this.setState({ gone, undo });
+    if (undo) this.timers.push(setTimeout(() => this.setState({ undo: null }), 4000));
+  }
   renderVals() {
+    const s = this.state;
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const empty = (this.props.state ?? 'عادي') === 'فاضي';
     const cur = eg ? 'ج.م' : 'ر.س';
@@ -84,42 +104,50 @@ class Component extends DCLogic {
     // الشاشة اللي بتفتح بتقرا اختيارها من هنا (التطبيق بيفتح لوحة كاملة، مفيش باراميتر)
     const keep = (k, v) => { const f = () => { try { window.sessionStorage.setItem(k, v); } catch (e) {} }; f.data = JSON.stringify({ [k]: v }); return f; };
     const tint = { sms: ['rgba(8,99,79,0.10)', '#08634F'], move: ['rgba(36,105,186,0.12)', '#2469BA'], budget: ['rgba(190,61,72,0.10)', '#BE3D48'], sub: ['rgba(149,96,0,0.12)', '#956000'], debt: ['rgba(165,80,96,0.12)', '#A55060'] };
-    const row = (icon, title, body, why, when, to, prep, unread, last) => ({
-      title, body, why, when, unread: !!unread && !read, i: { [icon]: true },
+    const row = (id, icon, title, body, why, when, to, prep, unread) => ({
+      id, title, body, why, when, dropLabel: (eg ? 'امسح إشعار «' : 'احذف إشعار «') + title + '»', drop: () => this.setGone(s.gone.concat([id]), id), unread: !!unread && !read, i: { [icon]: true },
       href: to + '.dc.html', prep: prep || (() => {}), keep: prep ? prep.data : '{}',
       tile: 'position: relative; width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: ' + tint[icon][0] + '; color: ' + tint[icon][1],
-      style: 'box-sizing: border-box; text-decoration: none; color: #193D33; display: flex; align-items: flex-start; gap: 12px; padding: 12px 8px; border-radius: 16px;' + (last ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55)')
+      style: 'flex: 1 1 auto; min-width: 0; box-sizing: border-box; text-decoration: none; color: #193D33; display: flex; align-items: flex-start; gap: 12px; padding: 12px 8px 12px 0; border-radius: 16px'
     });
-    const sections = empty ? [] : [
+    const all = empty ? [] : [
       { title: eg ? 'محتاج قرارك' : 'بانتظار قرارك', rows: [
-        row('sms', eg ? 'رسايل من البنك مستنية تأكيدك' : 'رسائل من البنك بانتظار تأكيدك',
+        row('sms', 'sms', eg ? 'رسايل من البنك مستنية تأكيدك' : 'رسائل من البنك بانتظار تأكيدك',
           eg ? '٤ رسايل: بنك جديد، وواحدة شبه عملية موجودة، وواحدة ما اتفهمتش' : '٤ رسائل: بنك جديد، وواحدة تشبه عملية موجودة، وواحدة لم تُفهم',
           eg ? 'ليه دلوقتي: وصلت رسالة جديدة ومستنية' : 'لماذا الآن: وصلت رسالة جديدة بانتظارك', eg ? 'من ١٠ دقايق' : 'قبل ١٠ دقائق', 'BankSms', null, true),
-        row('move', eg ? 'حوالة من طرف جديد' : 'حوالة من طرف جديد',
+        row('party', 'move', eg ? 'حوالة من طرف جديد' : 'حوالة من طرف جديد',
           eg ? 'حساب آخره ٤٨٢١ — مين ده؟' : 'حساب ينتهي بـ ٤٨٢١ — من هذا؟',
           eg ? 'ليه دلوقتي: أول مرة يحوّلك' : 'لماذا الآن: أول تحويل منه', eg ? 'النهارده' : 'اليوم', 'OperationDetail', keep('masroufy-txn', 'party'), true),
         // §75 (٥ و٩ و١٢) — قرار المالك ٢٠٢٦-١٠-٠٨ «الاتنين»: إشعار لكل عملية، ولو ما ردّش بتفضل مستنياه في المراجعة
-        row('move', eg ? 'تحويل لليلى — سلفة ولا دعم؟' : 'تحويل إلى ليلى — سلفة أم دعم؟', (eg ? '١٬٥٠٠ ' : '٥٠٠ ') + cur + (eg ? '، ٦ أكتوبر' : '، ٦ أكتوبر'), eg ? 'ليه دلوقتي: ليلى شخص مربوط، وبنسألك كل مرة' : 'لماذا الآن: ليلى شخص مرتبط، ونسألك كل مرة', eg ? 'امبارح' : 'أمس', 'ReviewQueue', null, true),
-        row('debt', eg ? 'حوالة من أحمد — ده سداد السلفة؟' : 'حوالة من أحمد — هل هي سداد السلفة؟', (eg ? '٥٥٥ ' : '١٨٥ ') + cur + (eg ? '، وليك عنده نفس المبلغ' : '، ولك عنده المبلغ نفسه'), eg ? 'ليه دلوقتي: جت من حد ليك عنده سلفة' : 'لماذا الآن: وصلت ممن لك عنده سلفة', eg ? 'من يومين' : 'قبل يومين', 'ReviewQueue', null, true),
-        row('sub', eg ? 'شراء بالدولار — كام بالجنيه؟' : 'شراء بالدولار — كم بالريال؟', eg ? '٤٠ دولار، والبنك ما كتبش المبلغ بالجنيه' : '٤٠ دولارًا، ولم يذكر البنك المبلغ بالريال', eg ? 'ليه دلوقتي: من غيره الصرف ناقص' : 'لماذا الآن: بدونه يبقى الصرف ناقصًا', eg ? 'من ٤ أيام' : 'قبل ٤ أيام', 'ReviewQueue', null, true, true)
+        row('laila', 'move', eg ? 'تحويل لليلى — سلفة ولا دعم؟' : 'تحويل إلى ليلى — سلفة أم دعم؟', (eg ? '١٬٥٠٠ ' : '٥٠٠ ') + cur + (eg ? '، ٦ أكتوبر' : '، ٦ أكتوبر'), eg ? 'ليه دلوقتي: ليلى شخص مربوط، وبنسألك كل مرة' : 'لماذا الآن: ليلى شخص مرتبط، ونسألك كل مرة', eg ? 'امبارح' : 'أمس', 'ReviewQueue', null, true),
+        row('ahmed', 'debt', eg ? 'حوالة من أحمد — ده سداد السلفة؟' : 'حوالة من أحمد — هل هي سداد السلفة؟', (eg ? '٥٥٥ ' : '١٨٥ ') + cur + (eg ? '، وليك عنده نفس المبلغ' : '، ولك عنده المبلغ نفسه'), eg ? 'ليه دلوقتي: جت من حد ليك عنده سلفة' : 'لماذا الآن: وصلت ممن لك عنده سلفة', eg ? 'من يومين' : 'قبل يومين', 'ReviewQueue', null, true),
+        row('usd', 'sub', eg ? 'شراء بالدولار — كام بالجنيه؟' : 'شراء بالدولار — كم بالريال؟', eg ? '٤٠ دولار، والبنك ما كتبش المبلغ بالجنيه' : '٤٠ دولارًا، ولم يذكر البنك المبلغ بالريال', eg ? 'ليه دلوقتي: من غيره الصرف ناقص' : 'لماذا الآن: بدونه يبقى الصرف ناقصًا', eg ? 'من ٤ أيام' : 'قبل ٤ أيام', 'ReviewQueue', null, true)
       ] },
       { title: eg ? 'جديد' : 'جديد', rows: [
-        row('budget', eg ? 'التسوق عدّى السقف' : 'التسوق تجاوز السقف',
+        row('shop', 'budget', eg ? 'التسوق عدّى السقف' : 'التسوق تجاوز السقف',
           eg ? 'صرفت ١٠٧٪ من سقف التسوق' : 'صرفت ١٠٧٪ من سقف التسوق',
           eg ? 'ليه دلوقتي: عملية اتسجلت لوحدها من رسالة البنك' : 'لماذا الآن: عملية سُجّلت تلقائيًا من رسالة البنك', eg ? 'النهارده' : 'اليوم', 'Operations', keep('masroufy-ops-tab', 'budgets'), true),
         // §75-15: تذكير أسبوعي جوه الملخص بعدد اللي محتاج تأكيد
-        row('sms', eg ? 'تذكير الأسبوع' : 'تذكير الأسبوع', eg ? 'عندك ٨ عمليات محتاجة تأكيد' : 'لديك ٨ عمليات تحتاج تأكيدًا', eg ? 'ليه دلوقتي: ملخص كل أسبوع' : 'لماذا الآن: ملخص أسبوعي', eg ? 'النهارده' : 'اليوم', 'ReviewQueue', null, true),
-        row('sub', eg ? 'اشتراك الجيم بعد يومين' : 'اشتراك النادي بعد يومين',
+        row('week', 'sms', eg ? 'تذكير الأسبوع' : 'تذكير الأسبوع', eg ? 'عندك ٨ عمليات محتاجة تأكيد' : 'لديك ٨ عمليات تحتاج تأكيدًا', eg ? 'ليه دلوقتي: ملخص كل أسبوع' : 'لماذا الآن: ملخص أسبوعي', eg ? 'النهارده' : 'اليوم', 'ReviewQueue', null, true),
+        row('gym', 'sub', eg ? 'اشتراك الجيم بعد يومين' : 'اشتراك النادي بعد يومين',
           (eg ? '١٩٩ ' : '١٩٩ ') + cur + (eg ? ' يوم ٩ أكتوبر' : ' يوم ٩ أكتوبر'),
           eg ? 'ليه دلوقتي: قرّب ميعاده (٣ أيام)' : 'لماذا الآن: اقترب موعده (٣ أيام)', eg ? 'امبارح' : 'أمس', 'Subscriptions'),
-        row('debt', eg ? 'فهد اتأخر' : 'فهد تأخّر في السداد',
-          eg ? 'ميعاد سداده كان من ٥ أيام' : 'موعد سداده قبل ٥ أيام',
-          eg ? 'ليه دلوقتي: عدّى الميعاد' : 'لماذا الآن: تجاوز الموعد', eg ? 'من ٣ أيام' : 'قبل ٣ أيام', 'PersonProfile', null, false, true)
+        // نفس أرقام المساعد والديون: فاضل ١٬٢٠٠ (مصر ×٣) وميعاده ٢٠ سبتمبر = فات من ١٧ يوم
+        row('fahd', 'debt', eg ? 'فهد اتأخر في السداد' : 'فهد تأخّر في السداد',
+          eg ? 'ميعاده فات من ١٧ يوم — فاضل عليه ٣٬٦٠٠ ' + cur : 'فات موعده منذ ١٧ يومًا — بقي عليه ١٬٢٠٠ ' + cur,
+          eg ? 'ليه دلوقتي: عدّى الميعاد' : 'لماذا الآن: تجاوز الموعد', eg ? 'من ٣ أيام' : 'قبل ٣ أيام', 'DebtDetail', keep('masroufy-debt', 'fahd'), false)
       ] }
     ];
+    const sections = all.map((sec) => {
+      const rows = sec.rows.filter((r) => s.gone.indexOf(r.id) < 0);
+      rows.forEach((r, i) => { r.wrap = 'display: flex; align-items: flex-start;' + (i === rows.length - 1 ? '' : ' box-shadow: 0 1px 0 rgba(204,216,204,0.55)'); });
+      return { title: sec.title, rows };
+    }).filter((sec) => sec.rows.length);
     return {
       settingsLabel: eg ? 'إعدادات الإشعارات' : 'إعدادات الإشعارات',
-      isEmpty: empty,
+      isEmpty: !sections.length,
+      canUndo: !!s.undo, undoText: eg ? 'اتمسح الإشعار' : 'حُذف الإشعار', undoLabel: eg ? 'رجّعه' : 'تراجع',
+      undo: () => this.setGone(s.gone.filter((x) => x !== s.undo), null),
       emptyTitle: eg ? 'مفيش حاجة جديدة' : 'لا جديد',
       emptyBody: eg ? 'هنقولك لما يبقى فيه حاجة تستاهل.' : 'سننبهك عندما يستحق الأمر.',
       sections,

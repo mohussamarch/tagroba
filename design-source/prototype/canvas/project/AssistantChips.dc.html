@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اقتراحات المساعد — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.p-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.p-press:active{transform:scale(.97)}
+.p-scroll{scrollbar-width:none}.p-scroll::-webkit-scrollbar{display:none}.p-scroll>*{flex-shrink:0}
+@media (prefers-reduced-motion: reduce){.p-press{transition:none}.p-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 8px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <span style="height: 18px; line-height: 18px; padding: 0 4px; font-size: 12px; color: #637570; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{label}}</span>
+  <div class="p-scroll" role="group" aria-label="{{label}}" style="display: flex; gap: 8px; overflow-x: auto; margin: -2px -20px -6px; padding: 2px 20px 6px">
+    <sc-for list="{{chips}}" as="ch" hint-placeholder-count="4">
+      <button type="button" class="p-press" onClick="{{ch.pick}}" style="{{ch.style}}">{{ch.label}}</button>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"context":{"editor":"enum","options":["الرئيسية","العمليات","الأشخاص","الاستثمار","المزيد"],"default":"الرئيسية","section":"الحالة"},"fresh":{"editor":"boolean","default":true,"section":"الحالة"},"$preview":{"width":350,"height":80}}'>
+// الاقتراحات تحت خانة الكتابة في المساعد (اتفصلت من AssistantChat عشان حد الـ٣٠٠ سطر)
+// أول ما المحادثة تفتح: الأسئلة اللي بتسألها كتير (OVERRIDES §78-٥: «لو بيسأل عنها كتير تتحفظ كاقتراح أول ما يفتح المساعد») · بعد أول سؤال: متابعة للي سألت عنه · وبعدهم اقتراحات الصفحة
+// الاختيار ⇒ on-pick(المفتاح، النص) — «voice» بيفتح الميكروفون و«find» بيدوّر على شاشة بالكلام (في الأم)
+// [فصحى، مصري، الرد]
+const Q = {
+  coffee: ['كم صرفت على القهوة هذا الأسبوع؟', 'صرفت كام على القهوة الأسبوع ده؟', 'coffee'], food: ['كم صرفت على المطاعم هذا الشهر؟', 'صرفت كام على الأكل برّه الشهر ده؟', 'food'],
+  rent: ['متى الإيجار القادم؟', 'امتى الإيجار الجاي؟', 'rent'], bills: ['كم فاتورة الكهرباء عادةً؟', 'الكهربا بتيجي كام عادةً؟', 'bills'],
+  debts: ['من تأخر في السداد؟', 'مين اتأخر في السداد؟', 'late'], split: ['كم لي عند أحمد وسارة؟', 'ليّا كام عند أحمد وسارة؟', 'owed'],
+  budget: ['كم بقي من ميزانية الشهر؟', 'فاضل كام من ميزانية الشهر؟', 'plan'], goal: ['كم بقي لهدف السفر؟', 'فاضل كام على هدف السفر؟', 'goal'],
+  salary: ['متى ينزل الراتب؟', 'المرتب بينزل امتى؟', 'salary'], store: ['آخر مرة في المرسى؟', 'آخر مرة في المرسى؟', 'store'],
+  spent: ['كم صرفت على المطاعم؟', 'صرفت كام على الأكل؟', 'food'], voice: ['أضف عملية بصوتي', 'ضيف عملية بصوتي', 'voice'],
+  doSplit: ['قسّم فاتورة العشاء مع أحمد وسارة', 'قسّم فاتورة العشا مع أحمد وسارة', 'split'], plan: ['هل أنا على الخطة؟', 'أنا ماشي على الخطة؟', 'plan'],
+  lak: ['كم لي عند خالد؟', 'ليّا كام عند خالد؟', 'lak'], lock: ['أين أغيّر القفل؟', 'فين أغيّر القفل؟', 'lock'], find: ['أين أجد الزكاة؟', 'فين الزكاة؟', 'find']
+};
+// كل موضوع اتعلّمه ⇒ سؤالين متابعة (التاني قريب منه: القهوة بتأخّر هدف «السفر» مثلًا)
+const NEXT = { coffee: ['coffee', 'goal'], food: ['food', 'budget'], rent: ['rent', 'bills'], bills: ['bills', 'rent'], debts: ['debts', 'lak'], split: ['split', 'debts'], budget: ['budget', 'food'], goal: ['goal', 'coffee'], salary: ['salary', 'budget'], store: ['store', 'coffee'] };
+const BY_CTX = { 'الرئيسية': ['spent', 'voice', 'salary', 'doSplit', 'plan'], 'العمليات': ['voice', 'spent', 'store', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['plan', 'find', 'spent', 'voice'], 'المزيد': ['lock', 'find', 'voice', 'doSplit'] };
+class Component extends DCLogic {
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', ctx = this.props.context ?? 'الرئيسية', last = this.props.last || '';
+    const L = this.props.learned && this.props.learned.topics ? this.props.learned : { on: true, topics: { coffee: 3, rent: 2, split: 1 }, recent: [] };
+    const fresh = this.props.fresh !== false && this.props.fresh !== 'false', seen = {}, out = [];
+    const add = (key, learned) => { const q = Q[key]; if (!q) return; const label = eg ? q[1] : q[0]; if (seen[q[2]] || label === last) return; seen[q[2]] = 1; out.push({ label, learned, key: q[2] }); };
+    if (L.on !== false) {
+      // أول الفتح: اللي سألت عنه مرتين أو أكتر بالترتيب · بعد أول سؤال: متابعة لآخر اللي سألت عنه
+      if (fresh) Object.keys(L.topics || {}).filter((t) => L.topics[t] >= 2).sort((a, b) => L.topics[b] - L.topics[a]).forEach((t) => { if (out.length < 3) add(t, true); });
+      else (L.recent || []).forEach((t) => (NEXT[t] || []).forEach((k) => { if (out.length < 3) add(k, true); }));
+    }
+    (BY_CTX[ctx] || BY_CTX['الرئيسية']).forEach((k) => add(k, false));
+    const chips = out.slice(0, 6), mine = chips.some((x) => x.learned);
+    return {
+      label: mine ? (fresh ? (eg ? 'بتسأل عنها كتير' : 'تسأل عنها كثيرًا') : 'اقتراحات من أسئلتك') : 'اقتراحات لصفحة «' + ctx + '»',
+      chips: chips.map((x) => ({ label: x.label, pick: () => { if (typeof this.props.onPick === 'function') this.props.onPick(x.key, x.label); },
+        style: 'height: 44px; flex-shrink: 0; border: 0; padding: 0 16px; border-radius: 22px; white-space: nowrap; font: inherit; font-size: 13px; font-weight: 500; color: #08634F; cursor: pointer; background: ' + (x.learned ? '#DCEBD6' : 'rgba(255,255,255,0.88)') + '; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.18), 0 4px 10px rgba(29,54,53,0.06)' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

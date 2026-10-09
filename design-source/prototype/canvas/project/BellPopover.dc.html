@@ -33,13 +33,15 @@ body{margin:0}
       <button type="button" class="b-veil" onClick="{{close}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.06)"></button>
       <div role="dialog" aria-label="{{title}}" class="b-pop" style="position: absolute; top: 80px; left: 20px; width: 320px; box-sizing: border-box; border-radius: 28px; padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(125deg, rgba(246,251,245,0.94), rgba(236,244,233,0.86) 55%, rgba(214,236,219,0.90)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.8), inset -1px -1px 3px rgba(59,113,102,0.16), 0 22px 48px rgba(16,45,53,0.22)">
         <span aria-hidden="true" style="position: absolute; top: -7px; left: 69px; width: 14px; height: 14px; transform: rotate(45deg); border-radius: 3px; background: rgba(246,251,245,0.96)"></span>
-        <span style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 8px"><span style="font-size: 16px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{countLine}}</span></span>
+        <span style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 8px"><span style="font-size: 16px; font-weight: 700">{{title}}</span><sc-if value="{{noUndo}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: #637570">{{countLine}}</span></sc-if><sc-if value="{{canUndo}}" hint-placeholder-val="{{ false }}"><button type="button" class="b-press" onClick="{{undo}}" style="height: 44px; border: 0; padding: 0 14px; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{undoLabel}}</button></sc-if></span>
         <sc-for list="{{items}}" as="n" hint-placeholder-count="4">
           <div style="{{n.style}}">
             <span aria-hidden="true" style="{{n.dot}}"></span>
             <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{n.title}}</span><span style="font-size: 12px; color: #637570">{{n.when}}</span></span>
+            <button type="button" class="b-press" onClick="{{n.drop}}" aria-label="{{n.dropLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border: 0; padding: 0; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #637570; background: transparent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
           </div>
         </sc-for>
+        <sc-if value="{{none}}" hint-placeholder-val="{{ false }}"><span style="padding: 12px 10px; font-size: 13px; color: #637570">{{noneText}}</span></sc-if>
         <div style="display: flex; gap: 8px; padding-top: 4px">
           <button type="button" class="b-press" onClick="{{markRead}}" disabled="{{allRead}}" style="{{readStyle}}">{{readLabel}}</button>
           <a href="Notifications.dc.html" class="b-press" style="flex: 1 1 0; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #FFFFFF; text-decoration: none; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.22)">{{allLabel}}</a>
@@ -55,20 +57,32 @@ class Component extends DCLogic {
     super(props);
     let read = false;
     // «تم القراءة» بيفضل طول الجلسة، وصفحة الإشعارات الكاملة بتقراه هي كمان
-    try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; } catch (e) {}
-    this.state = { open: false, read };
+    // «×» على كل إشعار بيمسحه من هنا ومن صفحة الإشعارات (قرار المالك ٢٠٢٦-١٠-٠٩: «أي تذكير يظهر فوق على الشمال ويقدر يقفله أو يمسحه»)
+    let gone = [];
+    try { read = window.sessionStorage.getItem('masroufy-notif-read') === '1'; gone = JSON.parse(window.sessionStorage.getItem('masroufy-notif-gone') || '[]'); } catch (e) {}
+    this.state = { open: false, read, gone, undo: null };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  setGone(gone, undo) {
+    try { window.sessionStorage.setItem('masroufy-notif-gone', JSON.stringify(gone)); } catch (e) {}
+    this.timers.forEach(clearTimeout); this.timers = [];
+    this.setState({ gone, undo });
+    if (undo) this.timers.push(setTimeout(() => this.setState({ undo: null }), 4000));
   }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const s = this.state;
     // نفس سطور صفحة الإشعارات (مخترعة) — النافذة عرض سريع بس، والأفعال في الصفحة الكاملة
-    const defs = [
-      ['#08634F', eg ? 'رسايل من البنك مستنية تأكيدك' : 'رسائل من البنك بانتظار تأكيدك', eg ? 'من ١٠ دقايق' : 'قبل ١٠ دقائق', true],
-      ['#2469BA', eg ? 'حوالة من طرف جديد' : 'حوالة من طرف جديد', eg ? 'النهارده' : 'اليوم', true],
-      ['#BE3D48', eg ? 'التسوق عدّى السقف' : 'التسوق تجاوز السقف', eg ? 'النهارده' : 'اليوم', true],
-      ['#956000', eg ? 'اشتراك الجيم بعد يومين' : 'اشتراك النادي بعد يومين', eg ? 'امبارح' : 'أمس', false]
+    const all = [
+      ['sms', '#08634F', eg ? 'رسايل من البنك مستنية تأكيدك' : 'رسائل من البنك بانتظار تأكيدك', eg ? 'من ١٠ دقايق' : 'قبل ١٠ دقائق', true],
+      ['party', '#2469BA', eg ? 'حوالة من طرف جديد' : 'حوالة من طرف جديد', eg ? 'النهارده' : 'اليوم', true],
+      ['shop', '#BE3D48', eg ? 'التسوق عدّى السقف' : 'التسوق تجاوز السقف', eg ? 'النهارده' : 'اليوم', true],
+      ['gym', '#956000', eg ? 'اشتراك الجيم بعد يومين' : 'اشتراك النادي بعد يومين', eg ? 'امبارح' : 'أمس', false],
+      ['fahd', '#A55060', eg ? 'فهد اتأخر في السداد' : 'فهد تأخّر في السداد', eg ? 'من ٣ أيام' : 'قبل ٣ أيام', false]
     ];
-    const unread = s.read ? 0 : defs.filter((d) => d[3]).length;
+    const defs = all.filter((d) => s.gone.indexOf(d[0]) < 0);
+    const unread = s.read ? 0 : defs.filter((d) => d[4]).length;
     return {
       bellLabel: (eg ? 'الإشعارات' : 'الإشعارات') + (unread ? (eg ? ' — فيه جديد' : ' — يوجد جديد') : ''),
       expanded: s.open ? 'true' : 'false',
@@ -79,13 +93,17 @@ class Component extends DCLogic {
       dotStyle: 'position: absolute; top: 12px; left: 13px; width: 6px; height: 6px; border-radius: 3px; background: #BE3D48; ' + (unread ? 'opacity: 1' : 'opacity: 0; transform: scale(0.4)'),
       open: s.open,
       title: 'الإشعارات',
+      noUndo: !s.undo, canUndo: !!s.undo, undoLabel: eg ? 'اتمسح — رجّعه' : 'حُذف — تراجع',
+      undo: () => this.setGone(s.gone.filter((x) => x !== s.undo), null),
+      none: defs.length === 0, noneText: eg ? 'مفيش إشعارات.' : 'لا إشعارات.',
       countLine: unread ? unread.toLocaleString('ar-EG') + (eg ? ' جديد' : ' جديدة') : (eg ? 'كله مقروء' : 'كلها مقروءة'),
-      items: defs.map(([c, title, when, isNew], i) => {
+      items: defs.map(([id, c, title, when, isNew]) => {
         const fresh = isNew && !s.read;
         return {
-          title, when,
+          title, when, dropLabel: (eg ? 'امسح إشعار «' : 'احذف إشعار «') + title + '»',
+          drop: () => this.setGone(s.gone.concat([id]), id),
           dot: 'width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: ' + (fresh ? c : 'transparent') + '; box-shadow: inset 0 0 0 1.5px ' + c,
-          style: 'display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 4px 10px; border-radius: 16px; ' + (fresh ? 'background: rgba(255,255,255,0.75)' : 'background: transparent; opacity: 0.72')
+          style: 'display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 4px 10px 4px 0; border-radius: 16px; ' + (fresh ? 'background: rgba(255,255,255,0.75)' : 'background: transparent; opacity: 0.72')
         };
       }),
       allRead: unread === 0,

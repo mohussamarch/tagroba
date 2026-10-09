@@ -60,23 +60,24 @@ body{margin:0}
       </div>
     </sc-if>
 
-    <sc-if value="{{isDraft}}" hint-placeholder-val="{{ false }}">
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
-        <div style="padding: 10px 12px; border-radius: 16px; font-size: 14px; line-height: 1.7; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.55)">{{draft}}</div>
-        <button type="button" class="g-press" onClick="{{copy}}" style="height: 44px; border: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(8,99,79,0.24)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>{{copyLabel}}</button>
+    <sc-if value="{{isPick}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; gap: 8px; margin-top: 8px">
+        <sc-for list="{{picks}}" as="pk" hint-placeholder-count="2">
+          <button type="button" class="g-press" onClick="{{pk.go}}" aria-pressed="{{pk.on}}" style="{{pk.style}}">{{pk.label}}</button>
+        </sc-for>
       </div>
     </sc-if>
 
     <sc-if value="{{hasLink}}" hint-placeholder-val="{{ false }}">
-      <div style="display: flex; margin-top: 8px"><a href="{{href}}" data-keep="{{keep}}" class="g-press" style="display: inline-flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 14px; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{linkLabel}}</a></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px"><sc-for list="{{links}}" as="ln" hint-placeholder-count="1"><a href="{{ln.href}}" data-keep="{{ln.keep}}" class="g-press" style="display: inline-flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 14px; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)">{{ln.label}}</a></sc-for></div>
     </sc-if>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"sample":{"editor":"enum","options":["عملية","تقسيم","رسالة تذكير","رسالتي"],"default":"عملية","section":"المعاينة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":220}}'>
+<script type="text/x-dc" data-dc-script data-props='{"sample":{"editor":"enum","options":["عملية","تقسيم","اختيار المحفظة","رسالتي"],"default":"عملية","section":"المعاينة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":220}}'>
 // فقاعة واحدة في محادثة المساعد — بترسم بس، والفهم والحفظ في AssistantChat.
-// الرسالة: { from: 'me'|'bot', text, txn?: { title, cat, wallet, amount (هللة/قرش), icon, color }, kind?: 'split'|'draft', shares?: [{ name, initial, amount }], draft?, link?: [href, keep, label], done?, dropped? }
-// الأفعال بترجع للأم: on-confirm · on-edit · on-copy
+// الرسالة: { from: 'me'|'bot', text, txn?: { title, cat, wallet, amount (هللة/قرش), icon, color }, kind?: 'split', shares?: [{ name, initial, amount }], pick?: { ci, amt, lead, opts: [[المعرّف، الاسم]] }, picked?, link?: [href, keep, label], links?: [[href, keep, label]] (أقرب الشاشات), done?, dropped? }
+// الأفعال بترجع للأم: on-confirm · on-edit · on-pick(المحفظة) — «اختيار المحفظة» بيظهر مرة واحدة لما لسه مفيش محفظة أساسية (قرار المالك ٢٠٢٦-١٠-٠٩)
 const ICON = {
   coffee: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
   food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
@@ -94,14 +95,14 @@ class Component extends DCLogic {
     const S = {
       'عملية': { from: 'bot', text: eg ? 'فهمت: قهوة بـ25.00 ج.م من الكاش، النهارده. أسجّلها؟' : 'فهمت: قهوة بـ25.00 ر.س من الكاش، اليوم. أسجّلها؟', txn: { title: 'قهوة', cat: eg ? 'أكل وقهوة' : 'مطاعم وقهوة', wallet: 'الكاش', amount: 2500, icon: 'coffee', color: '#A36A21' } },
       'تقسيم': { from: 'bot', kind: 'split', text: eg ? 'قسمت فاتورة العشا 1,080 ج.م عليكم انتم التلاتة:' : 'قسمت فاتورة العشاء 360 ر.س بينكم أنتم الثلاثة:', shares: [[eg ? 'إنت' : 'أنت', 'م'], ['أحمد', 'أ'], ['سارة', 'س']].map((p) => ({ name: p[0], initial: p[1], amount: 12000 * k })) },
-      'رسالة تذكير': { from: 'bot', kind: 'draft', text: eg ? 'كتبتلك رسالة لطيفة تبعتهاله:' : 'كتبت لك رسالة لطيفة ترسلها له:', draft: eg ? 'إزيك يا فهد، بفكّرك بباقي السلفة.' : 'أهلًا فهد، أذكّرك بالمبلغ المتبقي من السلفة.', link: ['DebtDetail.dc.html', { 'masroufy-debt': 'fahd' }, 'افتح دين فهد'] },
+      'اختيار المحفظة': { from: 'bot', text: eg ? 'قبل ما أسجّلها: بتصرف عادةً منين؟ هسجّل عليها على طول، وتقدر تغيّرها في أي عملية.' : 'قبل أن أسجّلها: من أين تصرف عادةً؟ سأسجّل عليها دائمًا، ويمكنك تغييرها في أي عملية.', pick: { opts: [[eg ? 'nbe' : 'rajhi', eg ? 'البنك الأهلي المصري' : 'مصرف الراجحي'], ['cash', 'الكاش']] } },
       'رسالتي': { from: 'me', text: eg ? 'صرفت 25 قهوة' : 'صرفت 25 قهوة' }
     };
     return S[this.props.sample ?? 'عملية'] || S['عملية'];
   }
   renderVals() {
     const eg = this.eg(), m = this.props.msg || this.sample(), me = m.from === 'me', tx = m.txn || null;
-    const rich = !!(tx || m.kind), lk = Array.isArray(m.link) ? m.link : null;
+    const rich = !!(tx || m.kind || m.pick), lk = Array.isArray(m.links) ? m.links : Array.isArray(m.link) ? [m.link] : [];
     const call = (name) => () => { if (typeof this.props[name] === 'function') this.props[name](m.id); };
     const shares = (m.shares || []).map((p, i, a) => ({ name: p.name, initial: p.initial, amount: this.fmt(p.amount),
       style: 'display: flex; align-items: center; gap: 10px; min-height: 48px;' + (i === a.length - 1 ? '' : ' border-bottom: 1px solid rgba(204,216,204,0.55);') }));
@@ -111,16 +112,17 @@ class Component extends DCLogic {
         ? 'max-width: 80%; border-radius: 18px 18px 6px 18px; padding: 10px 14px; font-size: 14px; line-height: 1.7; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 8px 18px rgba(8,99,79,0.22)'
         : 'width: ' + (rich ? '88%' : 'auto') + '; max-width: 88%; box-sizing: border-box; border-radius: 18px 18px 18px 6px; padding: 10px 14px; font-size: 14px; line-height: 1.7; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 22px rgba(29,54,53,0.08)',
       hasText: !!m.text, text: m.text || '',
-      isTxn: !!tx && !me, isSplit: m.kind === 'split', isDraft: m.kind === 'draft', pending: !m.done,
+      isTxn: !!tx && !me, isSplit: m.kind === 'split', isPick: !!m.pick && !me, pending: !m.done,
       txTitle: tx ? tx.title : '', txSub: tx ? tx.cat + ' · ' + tx.wallet + ' · ' + (eg ? 'النهارده' : 'اليوم') : '',
       txAmount: tx ? '−' + this.fmt(tx.amount) : '', txIcon: this.icon(tx ? tx.icon : 'bill', tx ? tx.color : '#637570'),
       txTile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + (tx ? tx.color : '#637570') + '1F',
       settled: !!tx && !!m.done, settledColor: m.dropped ? '#637570' : '#13764D',
       settledText: m.dropped ? (eg ? 'اتعدّلت تحت' : 'عُدّلت في الأسفل') : (eg ? 'اتسجّلت' : 'سُجّلت'),
       confirmLabel: m.kind === 'split' ? 'سجّل التقسيم' : (eg ? 'سجّلها' : 'احفظ'), editLabel: eg ? 'عدّل' : 'تعديل',
-      confirm: call('onConfirm'), edit: call('onEdit'), copy: call('onCopy'), copyLabel: eg ? 'انسخ الرسالة' : 'انسخ الرسالة',
-      shares, draft: m.draft || '',
-      hasLink: !!lk && !me, href: lk ? lk[0] : '', keep: lk && lk[1] ? JSON.stringify(lk[1]) : '', linkLabel: lk ? lk[2] : ''
+      confirm: call('onConfirm'), edit: call('onEdit'), shares,
+      picks: ((m.pick && m.pick.opts) || []).map(([id, label]) => { const on = m.picked === id; return { label, on: on ? 'true' : 'false', go: () => { if (!m.done && typeof this.props.onPick === 'function') this.props.onPick(id); },
+        style: 'flex: 1 1 0; min-width: 0; height: 44px; border: 0; padding: 0 10px; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: ' + (m.done ? 'default' : 'pointer') + '; ' + (on ? 'background: #DCEBD6; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(8,99,79,0.25)' + (m.done ? '; opacity: 0.45' : '')) }; }),
+      hasLink: lk.length > 0 && !me, links: lk.map((l) => ({ href: l[0], keep: l[1] ? JSON.stringify(l[1]) : '', label: l[2] }))
     };
   }
 }

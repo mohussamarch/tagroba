@@ -37,6 +37,13 @@ body{margin:0}
       <div style="{{f.rowStyle}}"><span style="font-size: 13px; color: #637570">{{f.label}}</span><span dir="{{f.dir}}" style="font-size: 14px; font-weight: 700; text-align: left">{{f.value}}</span></div>
     </sc-for>
   </div>
+  <sc-if value="{{canMain}}" hint-placeholder-val="{{ true }}">
+    <div style="border-radius: 22px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{mainTitle}}</span><span style="font-size: 12px; line-height: 1.6; color: #637570">{{mainSub}}</span></span>
+      <sc-if value="{{isMain}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; height: 32px; line-height: 32px; padding: 0 12px; border-radius: 16px; font-size: 12px; font-weight: 700; color: #13764D; background: #DCEBD6">{{mainChip}}</span></sc-if>
+      <sc-if value="{{notMain}}" hint-placeholder-val="{{ true }}"><button type="button" class="w-press" onClick="{{makeMain}}" style="flex-shrink: 0; height: 44px; border: 0; padding: 0 14px; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{mainBtn}}</button></sc-if>
+    </div>
+  </sc-if>
   <dc-import name="WalletAddSheet" space="{{spaceName}}" mode="edit" wallet-name="{{name}}" wallet-kind="{{walletKind}}" last4="{{last4Digits}}" opening="{{openMinor}}" opening-date="{{openDate}}" balance="{{balMinor}}" on-save="{{onOpening}}" hint-size="350px,48px"></dc-import>
 
   <div style="display: flex; flex-direction: column; gap: 8px">
@@ -91,7 +98,7 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","بيحمّل","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":800}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { rec: {}, edits: {}, toast: '' }; this.timers = []; }
+  constructor(props) { super(props); this.state = { rec: {}, edits: {}, toast: '', main: null }; this.timers = []; }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   fmt(minor) { const a = Math.abs(minor), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
@@ -154,6 +161,9 @@ class Component extends DCLogic {
       if (r.unassigned) recLines.push({ text: plural(r.unassigned, OW) + (eg ? ' مش منسوبة لأي محفظة — بنذكرها ومش بننسبها بالتخمين.' : ' غير منسوبة لأي محفظة — تُذكر ولا تُنسب بالتخمين.'), style: muted });
     }
     const recNone = !!r.none || bankNa;
+    // المحفظة الأساسية لكل بلد (قرار المالك ٢٠٢٦-١٠-٠٩): عليها بيتسجل اللي بتضيفه بإيدك أو بصوتك أو في المساعد، وتتغير في أي عملية
+    let M = {}; try { M = JSON.parse(window.sessionStorage.getItem('masroufy-main-wallet') || '{}') || {}; } catch (e) {}
+    const sp = eg ? 'eg' : 'sa', main = s.main || M[sp] || null, isMain = main === id;
     return {
       name: w.name, last4: w.last4 ? '•••• ' + w.last4 : '',
       balanceLabel: eg ? 'الرصيد' : 'الرصيد', approx: !!w.cash && balKnown, approxLabel: 'تقريبي',
@@ -181,6 +191,11 @@ class Component extends DCLogic {
         this.setState({ edits: Object.assign({}, this.state.edits, { [id]: { open: [p.openingMinor, p.openingDateText], bal } }) });
         this.say((eg ? 'اتحفظ رصيد البداية: ' : 'حُفظ رصيد البداية: ') + this.fmt(p.openingMinor) + ' ' + cur + ' في ' + p.openingDateText);
       },
+      canMain: !info, isMain, notMain: !isMain, mainChip: 'الأساسية', mainBtn: eg ? 'خلّيها الأساسية' : 'اجعلها الأساسية',
+      mainTitle: isMain ? 'محفظتك الأساسية' : 'المحفظة الأساسية',
+      mainSub: isMain ? (eg ? 'اللي بتسجّله بإيدك أو بصوتك أو في المساعد بيتسجل عليها، وتقدر تغيّره في أي عملية.' : 'ما تسجّله بنفسك أو بصوتك أو في المساعد يُسجَّل عليها، ويمكنك تغييره في أي عملية.')
+        : main && W[main] ? (eg ? 'دلوقتي: «' : 'الآن: «') + W[main].name + '»' : (eg ? 'لسه ما حددتهاش — هنسألك أول مرة تسجّل عملية.' : 'لم تحدّدها بعد — سنسألك أول مرة تسجّل عملية.'),
+      makeMain: () => { M[sp] = id; try { window.sessionStorage.setItem('masroufy-main-wallet', JSON.stringify(M)); } catch (e) {} this.setState({ main: id }); this.say((eg ? '«' + w.name + '» بقت محفظتك الأساسية' : 'صارت «' + w.name + '» محفظتك الأساسية')); },
       hasToast: !!s.toast, toast: s.toast
     };
   }
