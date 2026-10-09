@@ -174,6 +174,9 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier, valueC
 internal object BudgetsIcons {
     /** النجمة في «خطط الادخار» (`<polygon>` اتحوّل لمسار بنفس الشكل) — المختارة كهرماني على خلفية كهرمانية (لوسيد من غير ملء). */
     val STAR = app.masroufy.ui.icons.Lucide("STAR", "M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z")
+
+    /** «قدّمها» في ترتيب القواعد (لوسيد `minus`). */
+    val MINUS = app.masroufy.ui.icons.Lucide("MINUS", "M5 12h14")
 }
 
 /** صف أفقي بمسافة 8 (للشرايح والأزرار). */
