@@ -3,6 +3,9 @@ package app.masroufy.usecase
 import app.masroufy.core.AskKind
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
+import app.masroufy.core.EconomicKind
+import app.masroufy.core.computePeriodTotals
+import app.masroufy.core.withEstimatedKinds
 import app.masroufy.core.MAX_SAFE_HALALAS
 import app.masroufy.core.MoneyError
 import app.masroufy.core.SmsKind
@@ -119,6 +122,70 @@ class ForeignSmsAskTest {
         val t = w2.all().single()
         assertEquals(Triple(980_000L, Currency.EGP, null), Triple(t.amountMinor, t.currency, t.foreignCurrency))
         assertNull(t.foreignAmountMinor)
+    }
+
+    /**
+     * P9: الكشف فيه نفس المبلغ في نفس اليوم ⇒ الإجابة **ما بتسجّلش** (كانت بتعدّي «شبه عملية موجودة» بالاختيار الصريح والمصروف بيتحسب
+     * مرتين) — بترجع العملية الموجودة والرسالة بتفضل؛ «هي نفسها» بيشيل الرسالة · «لأ دي تانية» بيسجّلها.
+     */
+    @Test fun anAnswerThatLooksLikeAStatementLineAsksFirst() = runBlocking<Unit> {
+        for (same in listOf(true, false)) {
+            val w = ReturnsWorld().enable()
+            w.importStatementLine("2026-10-07", 8_775, Direction.OUT, "FT26X0001")
+            val statement = w.all().single()
+            w.memory.receive(sms("f1", usd))
+            val answer = asksOf(w).answerForeign("f1", 8_775)
+            assertEquals(ForeignOutcome.LOOKS_LIKE_EXISTING to statement.id, answer.outcome to answer.transactionId)
+            assertEquals(listOf(statement), w.all(), "ما اتسجلش حاجة")
+            assertEquals(listOf("f1"), w.memory.sync().messages.map { it.id }, "والرسالة مستنية")
+            if (same) {
+                asksOf(w).keepExisting("f1")
+                assertEquals(listOf(statement), w.all())
+            } else {
+                assertEquals(ForeignOutcome.RECORDED, asksOf(w).answerForeign("f1", 8_775, notTheSame = true).outcome)
+                assertEquals(2, w.all().size)
+            }
+            assertEquals(emptyList(), w.memory.sync().messages)
+            assertEquals(emptyList(), asksOf(w).list())
+        }
+    }
+
+    /** P4: الأجنبي اللي **رجع** بيدخل §77-D بعد الإجابة: نوعه RETURNED ومرجعه معاه ⇒ «استرداد» مقترح وسؤال (مش داخل عادي). */
+    @Test fun anAnsweredForeignReturnGoesThroughTheReturnRules() = runBlocking<Unit> {
+        val w = ReturnsWorld().enable()
+        w.memory.receive(sms("r1", "حوالة مرتجعة\nمبلغ:USD 23.40 (SAR 87.75)\nمرجع:$RETURN_REF\nفي:26-10-07 10:00"))
+        val ask = asksOf(w).list().single()
+        assertEquals(SmsKind.RETURNED to Direction.IN, ask.kind to ask.direction)
+        asksOf(w).answerForeign("r1", 8_775)
+        val t = w.all().single()
+        assertEquals(EconomicKind.REFUND_RECEIVED to EconomicKind.UNCLASSIFIED, t.suggestedKind to t.economicKind)
+        assertEquals("USD" to 2_340L, t.foreignCurrency to t.foreignAmountMinor)
+        assertEquals(listOf(AskKind.REVERSAL_CHECK), w.asks(asksOf(w)).pending("2026-10-01", "2026-10-31").map { it.kind })
+        assertEquals(0L, computePeriodTotals(withEstimatedKinds(w.all(), emptyMap()).transactions, emptyList()).incomeMinor)
+    }
+
+    /**
+     * P4 (عكس من محل بعملة أجنبية): «Purchase Reversal» بالدولار = **استرداد** (§75-6) مش عملية رجعت (§77-D) ⇒ السؤال نوعه REFUND، والإجابة
+     * بتعدّي على آثار وقت التسجيل بنوع REFUND و«المالك هو اللي سجّل» (أثر تأكيد الاسترداد بتاع الشريحة S2 بيشتغل عليها) — وما بتلغيش الشراء.
+     */
+    @Test fun aForeignMerchantReversalIsAskedAsARefundAndCancelsNothing() = runBlocking<Unit> {
+        val seen = mutableListOf<Pair<SmsKind?, Boolean>>()
+        val probe = object : RecordEffect {
+            override suspend fun prepare(ctx: RecordContext) {
+                for (line in ctx.lines) seen += line.sms?.kind to ctx.byOwner
+            }
+        }
+        val w = ReturnsWorld(before = listOf(probe)).enable()
+        w.confirmOnScreen("buy" to purchaseWithRef(day = "05", amount = "87.75"))
+        seen.clear()
+        w.memory.receive(sms("f2", "Purchase Reversal\nAmount: USD 23.40 (SAR 87.75)\nFrom: TEST STORE\nRef: $RETURN_REF\n2026-10-07 09:10"))
+        val ask = asksOf(w).list().single()
+        assertEquals(SmsKind.REFUND to Direction.IN, ask.kind to ask.direction)
+        assertEquals(ForeignOutcome.RECORDED, asksOf(w).answerForeign("f2", 8_775).outcome)
+        assertEquals(listOf<Pair<SmsKind?, Boolean>>(SmsKind.REFUND to true), seen)
+        assertNull(w.all().single { it.observedDirection == Direction.OUT }.reversedById, "الشراء ما اتلغاش")
+        val back = w.all().single { it.observedDirection == Direction.IN }
+        assertEquals(Triple(null, "USD", 2_340L), Triple(back.reversalOfId, back.foreignCurrency, back.foreignAmountMinor))
     }
 
     @Test fun badAnswersAreRefused() = runBlocking<Unit> {

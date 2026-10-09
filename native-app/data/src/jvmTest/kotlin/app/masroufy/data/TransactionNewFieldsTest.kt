@@ -38,10 +38,15 @@ class TransactionNewFieldsTest {
     )
     private val refund = base.copy(id = "txn-000004", economicKind = EconomicKind.UNCLASSIFIED, economicKindConfirmed = false, suggestedKind = EconomicKind.REFUND_RECEIVED)
 
+    /** سلفة مؤكدة اتلغت مع رجوعها بإيد المالك — نوعها اتحفظ (§77-D). */
+    private val loanCancelled = original.copy(id = "txn-000005", reversedById = "txn-000006", kindBeforeReversal = EconomicKind.LOAN_GRANTED)
+    private val loanReturn = ret.copy(id = "txn-000006", reversalOfId = "txn-000005")
+
     private val codec = LedgerCodecs.transactions
 
     @Test fun theFieldsRoundTripAndAreWrittenOnlyWhenPresent() {
-        for (t in listOf(original, ret, foreign, refund)) assertEquals(t, codec.decode(codec.toStore(t)), t.id)
+        for (t in listOf(original, ret, foreign, refund, loanCancelled, loanReturn)) assertEquals(t, codec.decode(codec.toStore(t)), t.id)
+        assertEquals("loan_granted", codec.toStore(loanCancelled)["kindBeforeReversal"])
         val stored = codec.toStore(ret)
         assertEquals("txn-000002", stored["reversalOfId"], "المعرّف (6 أرقام ورا بعض) ما اتقصش")
         assertEquals("txn-000001", codec.toStore(original)["reversedById"])
@@ -50,7 +55,7 @@ class TransactionNewFieldsTest {
         // مستند من غير الحقول ⇒ هو هو بالحرف، والحقول في قايمة «اتمسحت» (الحفظ بـmerge بيمسح الفاضي)
         val plain = base.copy(rawDescription = null)
         val doc = codec.toStore(plain)
-        for (key in listOf("suggestedKind", "reversalOfId", "reversedById", "foreignAmountMinor", "foreignCurrency")) {
+        for (key in listOf("suggestedKind", "reversalOfId", "reversedById", "foreignAmountMinor", "foreignCurrency", "kindBeforeReversal")) {
             assertFalse(key in doc, key)
             assertTrue(key in codec.omittedFields(plain), key)
         }
@@ -74,9 +79,11 @@ class TransactionNewFieldsTest {
         assertEquals(unsupported("foreignAmountMinor"), refused(codec.toStore(foreign) + ("foreignAmountMinor" to 0L)))
         assertEquals(uiText(TextKey.BACKUP_NEGATIVE_AMOUNT, "foreignAmountMinor"), refused(codec.toStore(foreign) + ("foreignAmountMinor" to -5L)))
         assertEquals(unsupported("reversalOfId"), refused(codec.toStore(ret) + ("reversalOfId" to ret.id)))
-        // ربط بعملية مش في الملف
-        assertEquals(uiText(TextKey.BACKUP_RELATION_MISSING, "transactions", "reversalOfId"), refused(codec.toStore(ret)))
-        assertEquals(uiText(TextKey.BACKUP_RELATION_MISSING, "transactions", "reversedById"), refused(codec.toStore(original)))
+        assertEquals(unsupported("reversalOfId"), refused(codec.toStore(ret) + ("reversalOfId" to 5L)))
+        assertEquals(unsupported("kindBeforeReversal"), refused(codec.toStore(loanCancelled) + ("kindBeforeReversal" to "loan")))
+        // ربط بعملية مش في الملف ⇒ **مش** «علاقة ناقصة» (الربط لين — التراجع في التطبيق القديم بيمسح رجل من الزوج): بيتصلح مش بيترفض
+        checkFullBackupData(backup(ret))
+        checkFullBackupData(backup(original))
         // العملة الأجنبية لوحدها (العملة معروفة والمبلغ مش مقروء بالظبط) مقبولة
         checkFullBackupData(backup(foreign.copy(foreignAmountMinor = null)))
     }
@@ -94,5 +101,36 @@ class TransactionNewFieldsTest {
         java.io.File("build/kotlin-s3-fields-backup.json").writeText(file.toJsonText())
         val confirmedRefund = backup(original, ret, foreign, refund.copy(economicKind = EconomicKind.REFUND_RECEIVED, economicKindConfirmed = true, suggestedKind = null))
         java.io.File("build/kotlin-s3-confirmed-refund-backup.json").writeText(FullBackup(MemoryFullBackup(confirmedRefund)).create("2026-10-09T12:00:00.000Z").toJsonText())
+        // زوج اتلغى بإيد المالك ومعاه نوعه قبل الإلغاء (`kindBeforeReversal` = سلفة) ⇒ التطبيق القديم بيقبله (الحقل مش في فحصه)
+        val pair = FullBackup(MemoryFullBackup(backup(loanCancelled, loanReturn))).create("2026-10-09T12:00:00.000Z")
+        assertEquals(listOf("loan_granted"), pair.data.getValue("transactions").mapNotNull { it["kindBeforeReversal"] }, "الزوج السليم زي ما هو")
+        java.io.File("build/kotlin-s3-kind-before-backup.json").writeText(pair.toJsonText())
+    }
+
+    /**
+     * الملاحظة 3 في المراجعة: (أ) التطبيق القديم مسح الرجوع ⇒ عمل النسخة كان بيقف «علاقة ناقصة» — دلوقتي الأصلية بتتصلح في الملف (نوع المالك).
+     * (ب) استرجاع على حساب فيه الأصلية بمعرّف تاني كان بيقف لو الرجوع قبل الأصلية في الملف — دلوقتي بالترتيبين بيعدّي، والموجود ما بيتلمسش،
+     * والرجوع المضاف بيسأل «نلغي الاتنين؟» (مش نص زوج).
+     */
+    @Test fun theBackupSettlesBrokenPairsInsteadOfFailing() = runBlocking<Unit> {
+        val file = FullBackup(MemoryFullBackup(backup(loanCancelled))).create("2026-10-09T12:00:00.000Z")
+        val fixed = codec.decode(file.data.getValue("transactions").single())
+        assertEquals(EconomicKind.LOAN_GRANTED to true, fixed.economicKind to fixed.economicKindConfirmed)
+        assertEquals(null to null, fixed.reversedById to fixed.kindBeforeReversal)
+        val again = MemoryFullBackup()
+        FullBackup(again).let { it.apply(it.plan(file.toJsonText()).file) }
+        assertEquals(fixed, codec.decode(again.read().getValue("transactions").single()))
+
+        val live = loanCancelled.copy(id = "live-1", economicKind = EconomicKind.LOAN_GRANTED, reversedById = null, kindBeforeReversal = null)
+        for (order in listOf(listOf(loanReturn, loanCancelled), listOf(loanCancelled, loanReturn))) {
+            val text = FullBackup(MemoryFullBackup(backup(*order.toTypedArray()))).create("2026-10-09T12:00:00.000Z").toJsonText()
+            val target = MemoryFullBackup(backup(live))
+            FullBackup(target).let { it.apply(it.plan(text).file) }
+            val rows = target.read().getValue("transactions").map { codec.decode(it) }.associateBy { it.id }
+            assertEquals(setOf("live-1", loanReturn.id), rows.keys, "$order")
+            assertEquals(live, rows.getValue("live-1"), "الموجود ما اتلمسش")
+            val added = rows.getValue(loanReturn.id)
+            assertEquals(Triple(EconomicKind.UNCLASSIFIED, EconomicKind.INTERNAL_TRANSFER, null), Triple(added.economicKind, added.suggestedKind, added.reversalOfId))
+        }
     }
 }

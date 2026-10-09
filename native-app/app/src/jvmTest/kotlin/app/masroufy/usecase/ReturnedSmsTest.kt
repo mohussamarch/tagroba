@@ -1,21 +1,24 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.AskKind
+import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Obligation
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.ProjectLink
-import app.masroufy.core.Currency
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Transaction
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.cashMovement
 import app.masroufy.core.computePeriodTotals
+import app.masroufy.core.parseEgyptBankSms
+import app.masroufy.core.withEstimatedKinds
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -29,16 +32,16 @@ class ReturnedSmsTest {
     private fun pendingRefund(t: Transaction) =
         t.economicKind == EconomicKind.UNCLASSIFIED && !t.economicKindConfirmed && t.suggestedKind == EconomicKind.REFUND_RECEIVED && t.reversalOfId == null
 
-    /** الأصلية والرجوع اتلغوا مع بعض وربطهم متبادل — ومش في أي مجموع ولا «حركة فلوس» في أي فترة، وأثر المحفظة صفر. */
+    /** الأصلية والرجوع اتلغوا مع بعض لوحدهم في الخلفية (بيت التمويل — أشكال معروفة) — ومش في أي مجموع ولا «حركة فلوس»، وأثر المحفظة صفر. */
     @Test fun aReturnFoundByItsReferenceCancelsTheOriginal() = runBlocking<Unit> {
-        val w = ReturnsWorld().enable()
-        w.memory.receive(sms("buy", purchaseWithRef()))
-        assertEquals(1, w.auto().run().recorded, "الشراء (شكل معروف) اتسجل لوحده")
+        val w = ReturnsWorld(wallets = listOf(EG_BANK), parse = ::parseEgyptBankSms).enable()
+        w.memory.receive(sms("buy", kfhOut(), at = "2026-10-02T09:00:00Z"))
+        assertEquals(1, w.auto().run().recorded, "الحوالة (شكل معروف) اتسجلت لوحدها")
         val original = w.all().single()
         assertTrue(original.rawDescription!!.contains("••••7781"), "الوصف المتخزن محجوب")
         assertEquals(EconomicKind.UNCLASSIFIED, original.economicKind)
 
-        w.memory.receive(sms("back", reversalWithRef(), at = "2026-10-05T10:00:00Z"))
+        w.memory.receive(sms("back", kfhReturned(), at = "2026-10-05T10:00:00Z"))
         val run = w.auto().run()
         assertEquals(1, run.recorded, "الرجوع (شكل معروف) اتسجل لوحده")
         val ret = w.one(run.recordedTransactionIds.single())
@@ -47,15 +50,16 @@ class ReturnedSmsTest {
         assertEquals(original.id, ret.reversalOfId)
         assertEquals(ret.id, o.reversedById)
         assertNull(ret.suggestedKind)
+        assertNull(o.kindBeforeReversal, "نوعها ما كانش مؤكد")
         assertEquals(ReviewState.CONFIRMED, o.reviewState)
 
         for (period in listOf(buildPeriod(2026, 9, 28), buildPeriod(2026, 10, 28), buildPeriod(2026, 10, 1))) {
             val inPeriod = w.txns.listByDateRange(period.start, period.end)
-            val totals = computePeriodTotals(inPeriod, emptyList())
+            val totals = computePeriodTotals(withEstimatedKinds(inPeriod, emptyMap()).transactions, emptyList())
             assertEquals(0L to 0L, totals.incomeMinor to totals.personalExpenseMinor, "${period.start}")
             assertEquals(0L to 0L, cashMovement(inPeriod).let { it.inMinor to it.outMinor })
         }
-        assertEquals(0L, w.walletNet())
+        assertEquals(0L, w.walletNet(EG_BANK.id))
         assertEquals(emptyList(), w.asks().pending("2026-09-01", "2026-10-31"), "مفيش سؤال")
     }
 
@@ -79,7 +83,7 @@ class ReturnedSmsTest {
         assertEquals(ret.id, o.reversedById)
     }
 
-    /** مبلغ تاني · من غير مرجع · أصليتين · أقدم من 60 يوم ⇒ «استرداد» مقترح وسؤال، ومش دخل. */
+    /** مبلغ تاني · من غير مرجع · أصليتين · أقدم من 60 يوم ⇒ «استرداد» مقترح وسؤال (`REVERSAL_CHECK` — عقد C0)، ومش دخل حتى بالتقدير. */
     @Test fun noSafeMatchMeansASuggestedRefund() = runBlocking<Unit> {
         val cases = listOf(
             "different amount" to listOf(purchaseWithRef(amount = "300.00")),
@@ -97,23 +101,41 @@ class ReturnedSmsTest {
             val r = w.all().single { it.observedDirection == Direction.IN }
             assertTrue(pendingRefund(r), "$name: $r")
             assertTrue(w.all().filter { it.observedDirection == Direction.OUT }.none { it.reversedById != null || it.economicKind != EconomicKind.UNCLASSIFIED }, name)
-            assertEquals(0L, computePeriodTotals(w.all(), emptyList()).incomeMinor, "$name: مش دخل")
-            assertEquals(listOf(AskKind.REFUND_CONFIRM), w.asks().pending("2026-07-01", "2026-10-31").map { it.kind }, name)
+            assertEquals(0L, computePeriodTotals(withEstimatedKinds(w.all(), emptyMap()).transactions, emptyList()).incomeMinor, "$name: مش دخل")
+            assertEquals(listOf(AskKind.REVERSAL_CHECK), w.asks().pending("2026-07-01", "2026-10-31").map { it.kind }, name)
         }
     }
 
-    /** الأصلية مربوطة (دين · تخصيص · حدث · مشروع) أو نوعها مؤكد ⇒ ما بتتلغيش لوحدها: سؤال «نلغي الاتنين؟»، والتأكيد بيلغيهم. */
+    /**
+     * الأصلية مربوطة (دين · تخصيص · حدث · مشروع) أو نوعها مؤكد ⇒ ما بتتلغيش لوحدها: سؤال «نلغي الاتنين؟». المربوطة: «أيوه» **بيترفض**
+     * ([ReversalAnswer.Linked]) لحد ما الربط يتفك — وبعده بتتلغي. المؤكدة: «أيوه» بيلغيهم.
+     */
     @Test fun aLinkedOrConfirmedOriginalAsksFirst() = runBlocking<Unit> {
         for (how in listOf("obligation", "allocation", "event", "project", "confirmed")) {
             val w = ReturnsWorld()
             w.confirmOnScreen("buy" to purchaseWithRef())
             val original = w.all().single()
-            when (how) {
-                "obligation" -> w.obligations.saveMany(listOf(Obligation("ob-1", "p-1", original.id, ObligationKind.RECEIVABLE, 25_000, Currency.SAR)))
-                "allocation" -> w.allocations.saveMany(listOf(app.masroufy.core.PersonAllocation("al-1", original.id, "p-1", app.masroufy.core.AllocationKind.GIFT, 10_000, Currency.SAR)))
-                "event" -> w.eventLinks.saveMany(listOf(app.masroufy.core.EventLink("el-1", "ev-1", original.id, app.masroufy.core.EventRole.SPEND, createdAt = "2026-10-03T00:00:00Z")))
-                "project" -> w.projectLinks.saveMany(listOf(ProjectLink("pl-1", "prj-1", original.id, "manual", "2026-10-03T00:00:00Z")))
-                else -> w.txns.update(original.id, app.masroufy.port.TransactionPatch(economicKind = EconomicKind.PURCHASE, economicKindConfirmed = true))
+            val detach: suspend () -> Unit = when (how) {
+                "obligation" -> {
+                    w.obligations.saveMany(listOf(Obligation("ob-1", "p-1", original.id, ObligationKind.RECEIVABLE, 25_000, Currency.SAR)))
+                    suspend { w.obligations.deleteMany(listOf("ob-1")) }
+                }
+                "allocation" -> {
+                    w.allocations.saveMany(listOf(app.masroufy.core.PersonAllocation("al-1", original.id, "p-1", app.masroufy.core.AllocationKind.GIFT, 10_000, Currency.SAR)))
+                    suspend { w.allocations.deleteMany(listOf("al-1")) }
+                }
+                "event" -> {
+                    w.eventLinks.saveMany(listOf(app.masroufy.core.EventLink("el-1", "ev-1", original.id, app.masroufy.core.EventRole.SPEND, createdAt = "2026-10-03T00:00:00Z")))
+                    suspend { w.eventLinks.deleteMany(listOf("el-1")) }
+                }
+                "project" -> {
+                    w.projectLinks.saveMany(listOf(ProjectLink("pl-1", "prj-1", original.id, "manual", "2026-10-03T00:00:00Z")))
+                    suspend { w.projectLinks.deleteMany(listOf("pl-1")) }
+                }
+                else -> {
+                    w.txns.update(original.id, app.masroufy.port.TransactionPatch(economicKind = EconomicKind.PURCHASE, economicKindConfirmed = true))
+                    suspend {}
+                }
             }
             w.confirmOnScreen("back" to reversalWithRef())
             val ret = w.all().single { it.observedDirection == Direction.IN }
@@ -123,10 +145,18 @@ class ReturnedSmsTest {
             assertEquals(listOf(AskKind.REVERSAL_CHECK), w.asks().pending("2026-10-01", "2026-10-31").map { it.kind }, how)
             assertEquals(listOf(original.id), w.refunds().reversalCandidates(ret.id).map { it.id }, how)
 
-            val (r, o) = w.refunds().confirmReversal(ret.id, original.id)
-            assertTrue(cancelled(r) && cancelled(o), how)
-            assertEquals(original.id, r.reversalOfId)
-            assertEquals(ret.id, o.reversedById)
+            if (how != "confirmed") {
+                val before = w.all()
+                val refused = assertIs<ReversalAnswer.Linked>(w.refunds().confirmReversal(ret.id, original.id), how)
+                assertEquals(1, refused.links.size, how)
+                assertEquals(before, w.all(), "$how: ولا كتابة")
+                detach()
+            }
+            val done = assertIs<ReversalAnswer.Cancelled>(w.refunds().confirmReversal(ret.id, original.id), how)
+            assertTrue(cancelled(done.ret) && cancelled(done.original), how)
+            assertEquals(original.id, done.ret.reversalOfId)
+            assertEquals(ret.id, done.original.reversedById)
+            assertEquals(if (how == "confirmed") EconomicKind.PURCHASE else null, done.original.kindBeforeReversal, how)
             assertEquals(emptyList(), w.asks().pending("2026-10-01", "2026-10-31"), how)
         }
     }
@@ -139,7 +169,7 @@ class ReturnedSmsTest {
         w.confirmOnScreen("back" to reversalWithRef())
         val ret = w.all().single { it.observedDirection == Direction.IN }
         assertTrue(pendingRefund(w.refunds().declineReversal(ret.id)))
-        assertEquals(listOf(AskKind.REFUND_CONFIRM), w.asks().pending("2026-10-01", "2026-10-31").map { it.kind })
+        assertEquals(listOf(AskKind.REVERSAL_CHECK), w.asks().pending("2026-10-01", "2026-10-31").map { it.kind })
         assertFailsWith<IllegalStateException> { w.refunds().declineReversal(ret.id) }
         // عملية مش مستنية سؤال ⇒ مرفوض
         assertFailsWith<IllegalStateException> { w.refunds().confirmRefund(original.id) }
@@ -169,7 +199,7 @@ class ReturnedSmsTest {
         assertEquals(emptyList(), w2.asks().pending("2026-10-01", "2026-10-31"))
     }
 
-    /** الأثر مش متوصّل ⇒ الرجوع بيتسجل «غير محدد» عادي (من غير اقتراح ولا إلغاء) — الأثر لازم في `effects` بتاعة كل بلد. */
+    /** الأثر مش متوصّل في استيراد بُني بإيده (مش `SmsLane`) ⇒ الرجوع بيتسجل «غير محدد» عادي — الخط نفسه بيضيفه (`ReturnsWiringTest`). */
     @Test fun withoutTheEffectNothingIsCancelled() = runBlocking<Unit> {
         val w = ReturnsWorld()
         w.confirmOnScreen("buy" to purchaseWithRef())

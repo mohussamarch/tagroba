@@ -51,7 +51,8 @@ data class Transaction(
     /**
      * نوع **مقترح** مستني تأكيد المالك — النوع نفسه ([economicKind]) بيفضل «غير محدد» لحد ما يأكد (§75-6 · §77-D):
      * `REFUND_RECEIVED` = «ده استرداد؟» · `INTERNAL_TRANSFER` = «دي العملية اللي رجعت؟ نلغي الاتنين؟». حقل منفصل عن قصد: الاقتراح
-     * ما بيلمسش `economicKind` (التطبيق القديم بيرفض نسخة فيها «استرداد» مؤكد — §55).
+     * ما بيلمسش `economicKind` (التطبيق القديم بيرفض نسخة فيها «استرداد» مؤكد — §55). لحد ما يتجاوب **ما بيتحسبش بأي نوع** حتى في
+     * المجاميع التقريبية (`withEstimatedKinds` — مش «دخل» ولا «مصروف»)، وأي نوع المالك يحدده بإيده بيشيله.
      */
     val suggestedKind: EconomicKind? = null,
     /**
@@ -65,6 +66,11 @@ data class Transaction(
     val foreignAmountMinor: Long? = null,
     /** §75-12: العملة الأجنبية (ISO 4217) — [amountMinor] بعملة المحفظة (المبلغ المحلي اللي المالك كتبه). */
     val foreignCurrency: String? = null,
+    /**
+     * §77-D: النوع اللي **المالك كان أكده** على الأصلية قبل ما تتلغي مع اللي رجعت (بيتكتب بس لو كان مؤكد) — التراجع والتصليح بيرجّعوه هو
+     * بالظبط بدل «غير محددة». الأصلية اللي نوعها ما كانش مؤكد (الإلغاء لوحده) ⇒ null وبترجع «غير محددة».
+     */
+    val kindBeforeReversal: EconomicKind? = null,
 )
 
 enum class AllocationKind(val wire: String) {

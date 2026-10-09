@@ -32,6 +32,12 @@ interface TransactionRepository {
 
     suspend fun findByIds(ids: List<Id>): List<Transaction>
 
+    /**
+     * العمليات اللي عليها ربط «العملية اللي رجعت» (§77-D — `reversalOfId` أو `reversedById`) بس — لتصليح الأزواج (`RepairReversals`)
+     * في دورة الخلفية من غير ما تقرا فترة عمليات كاملة كل دورة (قرايات فايربيز على باقة Spark). شرط على الحقل نفسه.
+     */
+    suspend fun listReversalLinked(): List<Transaction>
+
     suspend fun saveMany(transactions: List<Transaction>)
 
     /** تعديل حقول محددة بس — الباقي زي ما هو. */
@@ -69,6 +75,9 @@ data class TransactionPatch(
     val clearReversalOfId: Boolean = false,
     val reversedById: Id? = null,
     val clearReversedById: Boolean = false,
+    /** النوع اللي المالك كان أكده على الأصلية قبل ما تتلغي (§77-D) — `clear…` لما الزوج يتفك. */
+    val kindBeforeReversal: app.masroufy.core.EconomicKind? = null,
+    val clearKindBeforeReversal: Boolean = false,
 )
 
 interface SourceRecordRepository {

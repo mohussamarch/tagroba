@@ -37,7 +37,7 @@ class SaudiSmsRetailFormatsTest {
         SmsCase("rajhi online refund", "استرداد شراء الانترنت\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nلدى:$m\nفي:26-03-05 09:10", 1240, IN, REFUND, m),
         SmsCase("rajhi pos refund", "استرداد شراء\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nلدى:$m\nفي:26-03-05 09:10", 1240, IN, REFUND, m),
         SmsCase("rajhi return", "مرتجع\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nالتاجر:$m\nفي:26-03-05 09:10", 1240, IN, REFUND, m),
-        SmsCase("rajhi reversal", "عكس العملية\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nلدى:$m\nفي:26-03-05 09:10", 1240, IN, SmsKind.RETURNED, m),
+        SmsCase("rajhi reversal", "عكس العملية\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nلدى:$m\nفي:26-03-05 09:10", 1240, IN, REFUND, m),
         SmsCase("rajhi cashback reversal", "كاش باك عكس\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nلدى:$m\nفي:26-03-05 09:10", 1240, OUT, OTHER, m),
         SmsCase("rajhi atm", "سحب:صراف آلي\nبطاقة:6604;مدى\nمبلغ:SAR 300.00\nمكان السحب:TEST ATM\n26-03-05 09:10", 30000, OUT, CASH_WITHDRAWAL),
         SmsCase("rajhi atm deposit", "إيداع:صراف آلي\nمبلغ:SAR 300.00\nالى:1188\nفي:26-03-05 09:10", 30000, IN, CASH_DEPOSIT),
@@ -81,7 +81,7 @@ class SaudiSmsRetailFormatsTest {
         SmsCase("alinma online amount in title", "شراء إنترنت 64.25 SAR\nبطاقة 6604* مدى\nحساب *1188\nمن $m\nفي 09:10 05/03/2026", 6425, OUT, PURCHASE, m),
         SmsCase(
             "alinma reverse transaction = merchant refund, not a person transfer",
-            "حوالة عكسية\nمبلغ: 12.40 SAR\nلبطاقة مدى: 6604*\nالحساب: **1188\nمن البائع: $m\nفي: 05/03/2026 09:10", 1240, IN, SmsKind.RETURNED, m,
+            "حوالة عكسية\nمبلغ: 12.40 SAR\nلبطاقة مدى: 6604*\nالحساب: **1188\nمن البائع: $m\nفي: 05/03/2026 09:10", 1240, IN, REFUND, m,
         ),
         SmsCase("alinma salary greeting", "هلا سامي\nتم إيداع الراتب\nبمبلغ: 7,400.00 SAR\nفي حساب: **1188\nفي: 05/03/2026 09:10\nمن خلال الإنماء", 740000, IN, SALARY),
         SmsCase("alinma salary", "تم إيداع الراتب\nمبلغ 7,400.00 SAR\nلـ **1188\nفي05/03/2026 09:10", 740000, IN, SALARY),
@@ -95,7 +95,7 @@ class SaudiSmsRetailFormatsTest {
         SmsCase("stc arabic two من lines", "شراء mada Pay (Atheer)\nمن:*6604\nبـ:64.25 SAR\nمن:$m\nفي: 2026-03-05 09:10:44", 6425, OUT, PURCHASE, m),
         SmsCase("stc internet operation", "عملية انترنت\nب: 64.25 SAR\nمن:$m\nبطاقة:*6604\nفي:2026-03-05 09:10:44", 6425, OUT, PURCHASE, m),
         SmsCase("stc refund notice", "Notification: Refund\nTransaction: $m\nCard: ***6604\nAmount: 12.40 SAR\nDate: 2026-03-05 09:10:44", 1240, IN, REFUND, m),
-        SmsCase("stc reversal (merchant in في:)", "عكس عملية\nالى: ***6604; VISA\n12.40 SAR :المبلغ\nفي: $m\nبتاريخ: 2026-03-05 09:10:44", 1240, IN, SmsKind.RETURNED, m),
+        SmsCase("stc reversal (merchant in في:)", "عكس عملية\nالى: ***6604; VISA\n12.40 SAR :المبلغ\nفي: $m\nبتاريخ: 2026-03-05 09:10:44", 1240, IN, REFUND, m),
         SmsCase("stc top-up", "Adding money to account\nAmount: 300.00 SAR\nVia: *6604\nAt: 2026-03-05 09:10:44", 30000, IN, OTHER),
         SmsCase(
             "stc sadad", "Bill Payment (SADAD)\nAmount: 150.00 SAR\nBiller: TEST WATER CO\nService: Water bill\nNumber: 4400012345\nFrom Account: ***1188\nOn: 2026-03-05 09:10:44",

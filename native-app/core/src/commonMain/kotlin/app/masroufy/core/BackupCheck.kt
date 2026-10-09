@@ -211,17 +211,20 @@ fun checkBackupFinance(data: FullBackupData) {
 }
 
 /**
- * حقول الشريحة S3 على العملية (بتتفحص لو موجودة بس) ⇒ اسم الحقل الغلط أو null: النوع المقترح نوع معروف · العملة الأجنبية كود ISO
+ * حقول الشريحة S3 على العملية (بتتفحص لو موجودة بس) ⇒ اسم الحقل الغلط أو null: النوع المقترح والنوع قبل الإلغاء نوع معروف · العملة الأجنبية كود ISO
  * (3 حروف كبيرة) · المبلغ الأجنبي أكبر من صفر ومعاه عملته (العدد الصحيح والسالب بيتفحصوا فوق زي أي `…Minor`) · العملية ما ترجعش نفسها.
  */
 private fun checkTransactionExtras(row: Map<String, Any?>): String? {
-    val suggested = row["suggestedKind"]
-    if (suggested != null && ALL_ECONOMIC_KINDS.none { it.wire == suggested }) return "suggestedKind"
+    for (field in listOf("suggestedKind", "kindBeforeReversal")) {
+        val kind = row[field]
+        if (kind != null && ALL_ECONOMIC_KINDS.none { it.wire == kind }) return field
+    }
     val currency = row["foreignCurrency"]
     if (currency != null && (currency !is String || !CURRENCY_CODE.matches(currency))) return "foreignCurrency"
     val foreign = row["foreignAmountMinor"]
     if (foreign != null && (currency == null || (numberOf(foreign) ?: 0.0) <= 0)) return "foreignAmountMinor"
-    for (field in listOf("reversalOfId", "reversedById")) if (row[field] != null && row[field] == row["id"]) return field
+    // الربط لين (`BACKUP_SOFT_RELATIONS`): العملية اللي بيشاور عليها ممكن ما تبقاش في الملف (بيتصلح مش بيترفض) — بس لازم نص ومش نفسها
+    for (field in listOf("reversalOfId", "reversedById")) if (row[field] != null && (row[field] !is String || row[field] == row["id"])) return field
     return null
 }
 

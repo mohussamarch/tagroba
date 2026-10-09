@@ -49,18 +49,38 @@ internal const val RETURN_REF = "553317781"
 internal fun purchaseWithRef(day: String = "02", amount: String = "250.00", ref: String = RETURN_REF) =
     "شراء\nبطاقة:6604;مدى\nمبلغ:SAR $amount\nلدى:TEST STORE\nفي:26-10-$day 10:00\nمرجع:$ref"
 
-/** «Purchase Reversal» (إس تي سي — شكل معروف) ومعاه المرجع — 250.00 ريال يوم 2026-10-05. */
+/**
+ * «حوالة مرتجعة» (عملية رجعت §77-D — كلمات بس، فبتستنى وبتتسجل من الشاشة) ومعاها المرجع — 250.00 ريال يوم 2026-10-05.
+ * (أول نسخة كانت «Purchase Reversal» — ده عكس من محل وبقى استرداد بيستنى §75-6: [merchantReversal].)
+ */
 internal fun reversalWithRef(amount: String = "250.00", ref: String? = RETURN_REF, day: String = "05") =
-    "Purchase Reversal\nAmount: SAR $amount\nFrom: TEST STORE\n" + (ref?.let { "Ref: $it\n" } ?: "") + "2026-10-$day 09:10"
+    "حوالة مرتجعة\nمبلغ:SAR $amount\n" + (ref?.let { "مرجع:$it\n" } ?: "") + "في:26-10-$day 10:00"
 
-/** «حوالة مرتجعة» (كلمات بس — بتستنى وبتتسجل من الشاشة). */
-internal fun returnedTransfer(amount: String = "250.00", ref: String = RETURN_REF) = "حوالة مرتجعة\nمبلغ:SAR $amount\nمرجع:$ref\nفي:26-10-05 10:00"
+/** «Purchase Reversal» (إس تي سي — شكل معروف): عكس من محل = استرداد (§75-6) بيستنى، مش عملية رجعت. */
+internal fun merchantReversal(ref: String = RETURN_REF) = "Purchase Reversal\nAmount: SAR 250.00\nFrom: TEST STORE\nRef: $ref\n2026-10-05 09:10"
+
+/** بيت التمويل مصر (أشكال معروفة ⇒ بتتسجل لوحدها): حوالة صادرة ومرجعها، ورجوعها بنفس المرجع (يوم الوصول). */
+internal fun kfhOut(ref: String = RETURN_REF, amount: String = "250.00") =
+    "IPN Transfer with EGP $amount deducted on 02/10 10:00 from your AC ending with 188 with Ref# $ref. For info call 19533"
+
+internal fun kfhReturned(ref: String = RETURN_REF, amount: String = "250.00") =
+    "IPN Transfer dated 02/10 10:00 with EGP $amount returned with Ref# $ref. For info call 19533"
+
+internal val EG_BANK = Wallet("eg-bank", "بنك مصري وهمي", app.masroufy.core.Currency.EGP, "bank", 0, "2026-01-01")
 
 /** العمليات بتقع مرة واحدة في التعديل — زي التطبيق اللي وقع بعد الحفظ وقبل ما الأصلية تتعلّم. */
 internal class FlakyUpdates(private val real: TransactionRepository) : TransactionRepository by real {
     var failUpdates = 0
 
+    /** كام تعديل يعدّي قبل ما [failUpdates] يبدأ (الوقوع بين كتابتين). */
+    var passBeforeFail = 0
+
     override suspend fun update(id: String, patch: TransactionPatch) {
+        if (passBeforeFail > 0) {
+            passBeforeFail--
+            real.update(id, patch)
+            return
+        }
         if (failUpdates > 0) {
             failUpdates--
             throw IllegalStateException("crash after commit")
@@ -110,7 +130,10 @@ internal class ReturnsWorld(
 
     fun screen() = ReviewSmsInbox(ReviewSmsInboxDeps(ManageSmsInbox(memory, parse), ImportStatement(importDeps()), MemoryMerchantRepository(), categories, ids))
 
-    fun refunds() = RefundAsks(RefundAsksDeps(txns, sources, links, clock))
+    fun refunds() = RefundAsks(RefundAsksDeps(txns, sources, links, clock, MemoryUnitOfWork(listOf(txns))))
+
+    /** من غير وحدة عمل وبالمستودع اللي بيقع ([effectTxns]) — زي فايربيز (وحدة العمل هناك بتمرّر بس). */
+    fun refundsWithoutUnitOfWork() = RefundAsks(RefundAsksDeps(effectTxns, sources, links, clock))
 
     fun repair() = RepairReversals(RepairReversalsDeps(txns, clock))
 
@@ -123,10 +146,10 @@ internal class ReturnsWorld(
     suspend fun enable() = apply { memory.enable(listOf("TESTBANK")) }
 
     /** الرسايل وصلت و«سجّل الكل» من الشاشة (تأكيد المالك) ⇒ عدد اللي اتسجل. */
-    suspend fun confirmOnScreen(vararg bodies: Pair<String, String>, at: String = SENT_AT): Int {
+    suspend fun confirmOnScreen(vararg bodies: Pair<String, String>, at: String = SENT_AT, wallet: Wallet = BANK): Int {
         for ((id, body) in bodies) memory.receive(sms(id, body, at))
         val screen = screen()
-        screen.load(SmsReviewTarget(BANK.id, BANK.name))
+        screen.load(SmsReviewTarget(wallet.id, wallet.name, wallet.currency))
         return screen.recordAll(emptyMap(), emptyList())
     }
 

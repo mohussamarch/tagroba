@@ -10,8 +10,9 @@ import app.masroufy.port.TransactionRepository
 
 /**
  * أسئلة الشريحة S3 لعدّاد «محتاجة تأكيد» والتذكير الأسبوعي (§75-15) — مش إشعار جوال جديد:
- * - `REVERSAL_CHECK` لكل عملية في الفترة مستنية «نلغي الاتنين؟» (§77-D — الأصلية مربوطة أو نوعها مؤكد).
- * - `REFUND_CONFIRM` لكل عملية في الفترة مستنية «ده استرداد؟» (§75-6 · §77-D — ومنها الاسترداد اللي الشريحة S2 بتقترحه).
+ * - `REVERSAL_CHECK` (§77-D — زي عقد C0: «التحويل رجع» وما اتلغتش الأصلية لوحدها) لكل عملية في الفترة عليها سؤال من أسئلة اللي رجعت:
+ *   «ده استرداد؟» (ما لقيناش الأصلية — `suggestedKind` = استرداد) أو «نلغي الاتنين؟» (الأصلية مربوطة أو مؤكدة أو المرجع قصير —
+ *   `suggestedKind` = تحويل داخلي). الشاشة بتعرف السؤال من الاقتراح. `REFUND_CONFIRM` مش هنا: ده استرداد المحل (§75-6 — الشريحة S2).
  * - `FOREIGN_LOCAL_AMOUNT` لكل رسالة أجنبية مستنية المبلغ المحلي في البلد دي ([foreign] — §75-12)، **مهما قدمت** لحد ما تتجاوب.
  * البلد = [spaceId] (المستودع مربوط بالبلد). الرسالة اللي ليها سؤال هنا ممكن تتعد كمان «رسالة مستنية» من مصدر تاني — العدّاد بيشيل
  * التكرار بالرسالة/العملية ويسيب الأدق (ترتيب `AskKind`).
@@ -23,13 +24,9 @@ class ReturnsAskSource(
 ) : AskSource {
     override suspend fun pending(from: IsoDate, to: IsoDate): List<PendingAsk> {
         val messages = foreign?.pendingFor(spaceId, to).orEmpty()
-        val asks = txns.listByDateRange(from, to).mapNotNull { t ->
-            when {
-                awaitsReversalAnswer(t) -> PendingAsk(AskKind.REVERSAL_CHECK, spaceId, transactionId = t.id, date = t.occurredAt)
-                awaitsRefundAnswer(t) -> PendingAsk(AskKind.REFUND_CONFIRM, spaceId, transactionId = t.id, date = t.occurredAt)
-                else -> null
-            }
-        }
+        val asks = txns.listByDateRange(from, to)
+            .filter { awaitsRefundAnswer(it) || awaitsReversalAnswer(it) }
+            .map { PendingAsk(AskKind.REVERSAL_CHECK, spaceId, transactionId = it.id, date = it.occurredAt) }
         return messages + asks
     }
 }

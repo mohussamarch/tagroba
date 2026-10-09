@@ -7,9 +7,12 @@ package app.masroufy.core
  * المبلغ ما بيدخلش في أي قرار هنا — لا في السؤال، ولا في النسبة للمصدر، ولا في «وصل ولا لأ».
  */
 
-/** إيداع شكله مرتب: داخل، ونوعه «مرتب» أو لسه ما اتحددش (المستخدم ما قالش إنه حاجة تانية). */
+/**
+ * إيداع شكله مرتب: داخل، ونوعه «مرتب» أو لسه ما اتحددش (المستخدم ما قالش إنه حاجة تانية). الفلوس اللي رجعت وعليها سؤال مستني
+ * (§77-D — [awaitsKindAnswer]) مش مرتب.
+ */
 fun isSalaryLike(t: Transaction): Boolean =
-    t.observedDirection == Direction.IN &&
+    t.observedDirection == Direction.IN && !awaitsKindAnswer(t) &&
         (t.economicKind == EconomicKind.SALARY || (!t.economicKindConfirmed && t.economicKind == EconomicKind.UNCLASSIFIED))
 
 /** المصادر اللي ممكن نسأل عنها في يوم [day]: وظيفة أو بارت تايم شغالة بنفس العملة. */

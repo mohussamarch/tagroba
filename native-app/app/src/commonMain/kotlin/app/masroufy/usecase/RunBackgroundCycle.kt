@@ -24,6 +24,12 @@ data class BackgroundCycleDeps(
     val candidates: (suspend () -> List<AlertCandidate>)? = null,
     val engine: RunAlertEngine? = null,
     val notifier: DeviceNotifier? = null,
+    /**
+     * الشريحة S3 (§77-D): تصليح أزواج «اللي رجع» لكل بلد (`ReturnsWiring.repair`) — بعد التسجيل. التراجع في التطبيق القديم بيسيب رجل من
+     * الزوج بتشاور على عملية اتمسحت (والأصلية متخبية «تحويل داخلي») لحد ما التصليح يشتغل. فشله ما بيوقفش حاجة (آمن التكرار — الدورة الجاية).
+     * بيقرا العمليات المربوطة بس (`listReversalLinked`) — مش فترة عمليات كاملة كل دورة.
+     */
+    val reversalRepairs: List<RepairReversals> = emptyList(),
 )
 
 data class NoticeDelivery(val shown: Int, val scheduled: Int, val blocked: Boolean, val unavailable: Boolean = false)
@@ -51,6 +57,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
                 null
             }
         }
+        for (repair in deps.reversalRepairs) runCatchingNotCancel { repair.run() }
         val candidates = deps.candidates
         val engine = deps.engine
         if (candidates == null || engine == null) return BackgroundCycleResult(sms, smsFailed, null, false, null)

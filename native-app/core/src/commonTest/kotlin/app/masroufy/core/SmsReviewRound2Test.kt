@@ -154,8 +154,8 @@ class SmsReviewRound2Test {
         assertEquals(unclear, reason(saudi("Purchase SAR 64.25 at TEST GROCER 2026-03-05 was reversed due to a technical error")))
         // «تصحيح» من غير خصم لسه استرداد داخل (§75-6)
         assertEquals(IN, ok(saudi("تصحيح\nمبلغ: SAR 64.25\nحساب: 1188\nفي: 2026-03-05"), "correction").direction)
-        // «Purchase Reversal» (إس تي سي) فلوس راجعة داخلة — §77-D: عملية رجعت (بتدوّر على الأصلية، وإلا «استرداد» مقترح)
-        assertEquals(SmsKind.RETURNED, ok(saudi("Purchase Reversal\nAmount: 64.25 SAR\nFrom: TEST GROCER\nAt: 2026-03-05 09:10"), "stc").kind)
+        // «Purchase Reversal» (إس تي سي) لسه استرداد
+        assertEquals(REFUND, ok(saudi("Purchase Reversal\nAmount: 64.25 SAR\nFrom: TEST GROCER\nAt: 2026-03-05 09:10"), "stc").kind)
         assertEquals(OUT, ok(saudi("Purchase\nAmount: SAR 64.25\nAt: TEST GROCER\n2026-03-05"), "plain").direction)
     }
 }

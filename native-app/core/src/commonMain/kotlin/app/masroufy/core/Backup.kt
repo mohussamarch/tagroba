@@ -66,11 +66,8 @@ val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + N
 val BACKUP_RELATIONS: Map<String, Map<String, String>> = mapOf(
     "categories" to mapOf("parentId" to "categories"), "merchants" to mapOf("verifiedCategoryId" to "categories"),
     "rules" to mapOf("categoryId" to "categories"),
-    "transactions" to linkedMapOf(
-        "walletId" to "wallets", "transferToWalletId" to "wallets", "categoryId" to "categories", "merchantId" to "merchants",
-        // العملية اللي رجعت والأصلية (§77-D — الشريحة S3)
-        "reversalOfId" to "transactions", "reversedById" to "transactions",
-    ),
+    // ربط العملية اللي رجعت بالأصلية (§77-D) **لين** ومش هنا — `BACKUP_SOFT_RELATIONS` في `ReversalBackup.kt`
+    "transactions" to linkedMapOf("walletId" to "wallets", "transferToWalletId" to "wallets", "categoryId" to "categories", "merchantId" to "merchants"),
     "obligations" to linkedMapOf("personId" to "people", "originTransactionId" to "transactions"),
     "allocations" to linkedMapOf("personId" to "people", "transactionId" to "transactions"),
     "settlements" to linkedMapOf("obligationId" to "obligations", "transactionId" to "transactions"),
@@ -269,14 +266,17 @@ fun mergeFullBackupDetailed(
         val byContent = LinkedHashMap<String, MutableList<BackupRow>>()
         val consumed = HashSet<String>()
         for (row in existing.getValue(group)) semantic(group, row)?.let { byContent.getOrPut(it) { mutableListOf() }.add(row) }
+        // ربط لنفس المجموعة لصف لسه جاي بعده في الملف ⇒ بيتحوّل بعد ما المجموعة تخلص (الترتيب في الملف ما يفرقش)
+        val later = mutableListOf<Triple<MutableMap<String, Any?>, String, String>>()
         for (original in incoming.getValue(group)) {
             // سطر صفحة إشعارات من نسخة أحدث (نوع مش معروف) ⇒ بيتخطّى، والباقي بيترجع (§69)
             if (group == ALERT_INBOX_GROUP && !isRestorableInboxRow(original)) continue
             val row = LinkedHashMap(original)
             val originalId = backupRowId(group, original)
-            for ((field, target) in BACKUP_RELATIONS[group].orEmpty()) {
+            for ((field, target) in BACKUP_RELATIONS[group].orEmpty() + BACKUP_SOFT_RELATIONS[group].orEmpty()) {
                 val value = row[field] ?: continue
-                maps[target]?.get(jsString(value))?.let { row[field] = it }
+                val mapped = maps[target]?.get(jsString(value))
+                if (mapped != null) row[field] = mapped else if (target == group) later += Triple(row, field, jsString(value))
             }
             val id = backupRowId(group, row)
             val key = semantic(group, row)
@@ -290,6 +290,7 @@ fun mergeFullBackupDetailed(
             additions.getValue(group).add(row)
             remap[originalId] = id
         }
+        for ((row, field, value) in later) remap[value]?.let { row[field] = it }
     }
     return BackupMerge(additions, maps)
 }

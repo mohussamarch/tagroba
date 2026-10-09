@@ -26,8 +26,6 @@ class SmsReturnedTest {
         val cases = listOf(
             saudi("حوالة واردة مرتجعة\nمبلغ:SAR 250.00\nمرجع:553317781\nفي:26-10-05 10:00"),
             saudi("حوالة مرتجعة\nمبلغ:SAR 250.00\nمرجع:553317781\nفي:26-10-05 10:00"),
-            saudi("Purchase Reversal\nAmount: SAR 250.00\nFrom: TEST STORE\nRef: 553317781\n2026-10-05 09:10"),
-            saudi("عكس عملية\nالى: ***6604; VISA\n250.00 SAR :المبلغ\nفي: TEST STORE\nبتاريخ: 2026-10-05 10:00:00"),
             egypt("تم رد مبلغ التحويل 250.00 جم لحسابكم رقم 1188 رقم مرجعي 553317781 يوم 05/10/2026"),
             egypt("IPN Transfer dated 02/10/2026 10:00 with EGP 250.00 returned with Ref# 553317781. For info call 19888"),
             egypt("The transaction on your credit card#6604 from TEST STORE with EGP 250.00 on 05/10/26 at 09:10 has been refunded."),
@@ -39,13 +37,18 @@ class SmsReturnedTest {
             assertEquals(25_000L, r.amountMinor, r.raw)
         }
         // بيت التمويل: «dated <يوم التحويل الأصلي>» ⇒ يوم الوصول (الجولة السادسة) — زي ما هو
-        assertEquals("2026-10-07", cases[5].date)
+        assertEquals("2026-10-07", cases[3].date)
     }
 
     @Test fun theWordingAloneDecides() {
-        for (body in listOf("التحويل رجع", "الحوالة الصادرة مرتجعة", "تم رد مبلغ التحويل", "اترد المبلغ", "Transfer returned", "Reverse Transaction")) {
+        for (body in listOf("التحويل رجع", "الحوالة الصادرة مرتجعة", "تم رد مبلغ التحويل", "Transfer returned", "Returned transfer")) {
             assertEquals(SmsKind.RETURNED, refineSmsKind(body, SmsKind.TRANSFER_IN, IN), body)
             assertEquals(SmsKind.TRANSFER_OUT, refineSmsKind(body, SmsKind.TRANSFER_OUT, OUT), "$body: الصادر ما بيتغيرش")
+        }
+        // «تم رد/اترد» من غير كلمة تحويل: رجوع على أي نوع **إلا** حوالة واردة (ممكن تبقى شخص بيسدد — §75-9)
+        for (body in listOf("اترد المبلغ", "تم رد المبلغ لحسابك", "Your payment has been refunded")) {
+            assertEquals(SmsKind.RETURNED, refineSmsKind(body, SmsKind.OTHER, IN), body)
+            assertEquals(SmsKind.TRANSFER_IN, refineSmsKind(body, SmsKind.TRANSFER_IN, IN), body)
         }
         // الراتب والسحب والإيداع وبين حساباتك وسداد الكارت ما بيبقوش «رجعت»
         for (kind in listOf(SmsKind.SALARY, SmsKind.CASH_DEPOSIT, SmsKind.OWN_TRANSFER, SmsKind.CARD_PAYMENT)) {
@@ -53,9 +56,15 @@ class SmsReturnedTest {
         }
     }
 
-    /** §75-6: الاسترداد من محل وكاش باك بيفضلوا استرداد (مش «رجعت»). */
+    /**
+     * §75-6: الاسترداد من محل وكاش باك **وعكس العملية من محل** بيفضلوا استرداد (مش «رجعت») — «عكس عملية» · «Purchase Reversal» ·
+     * «حوالة عكسية … من البائع» كانوا RETURNED في أول نسخة من الشريحة (بيلغوا الشراء من غير سؤال)، وده مش من كلام المالك.
+     */
     @Test fun merchantRefundsAndCashbackStayRefunds() {
-        for (body in listOf("استرداد شراء\nبطاقة:6604;مدى\nمبلغ:SAR 250.00\nلدى:TEST STORE\nفي:26-10-05 10:00",
+        for (body in listOf("Purchase Reversal\nAmount: SAR 250.00\nFrom: TEST STORE\nRef: 553317781\n2026-10-05 09:10",
+            "عكس عملية\nالى: ***6604; VISA\n250.00 SAR :المبلغ\nفي: TEST STORE\nبتاريخ: 2026-10-05 10:00:00",
+            "حوالة عكسية\nمبلغ: 12.40 SAR\nلبطاقة مدى: 6604*\nالحساب: **1188\nمن البائع: TEST STORE\nفي: 05/10/2026 09:10",
+            "استرداد شراء\nبطاقة:6604;مدى\nمبلغ:SAR 250.00\nلدى:TEST STORE\nفي:26-10-05 10:00",
             "كاش باك\nبطاقة:6604;مدى\nمبلغ:SAR 12.40\nلدى:TEST STORE\nفي:26-10-05 09:10",
             "استرداد مبلغ شراء\nمبلغ: SAR 64.25\nلدى: TEST GROCER\nفي: 2026-03-05 09:10",
             "Notification: Refund\nTransaction: TEST STORE\nCard: ***6604\nAmount: 89.00 SAR\nDate: 2026-10-05 16:02")) {

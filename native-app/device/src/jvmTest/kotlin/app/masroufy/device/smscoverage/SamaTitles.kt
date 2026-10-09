@@ -55,7 +55,7 @@ internal object SamaTitles {
         177 to EITHER, // تسوية نقطة البيع (للتاجر)
         178 to IN, // حوالة واردة
         179 to REFUND_IN, // استرجاع مدفوعات وزارة الداخلية
-        180 to Expect(true, Dir.IN, kind = SmsKind.RETURNED), // حوالة عكسية = عملية رجعت (§77-D)
+        180 to REFUND_IN, // حوالة عكسية = استرداد
         181 to CASH_OUT, 182 to CASH_OUT, // سحب صراف آلي · سحب فرع
     )
 }

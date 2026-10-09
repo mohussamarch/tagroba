@@ -18,12 +18,15 @@ import app.masroufy.core.Wallet
 import app.masroufy.core.assertHalalas
 import app.masroufy.core.currencyDecimals
 import app.masroufy.core.redactSms
+import app.masroufy.core.smsMessageKind
+import app.masroufy.core.smsMessageReference
 import app.masroufy.core.smsRowsJson
 import app.masroufy.core.smsSafeText
 import app.masroufy.core.smsSourceReference
 import app.masroufy.core.toParsedRow
 import app.masroufy.core.uiText
 import app.masroufy.core.writtenForeignMinor
+import app.masroufy.port.QueuedSms
 import app.masroufy.port.smsSenderKey
 import kotlinx.coroutines.sync.withLock
 
@@ -32,9 +35,13 @@ import kotlinx.coroutines.sync.withLock
  * ومعاها كل اللي اتقري (`SmsForeignPending` / `SmsForeignUnread`) فبتفضل في الصندوق — **ولا عملية بتتسجل بمبلغ مخترع قبل الإجابة**
  * (قاعدة 10). هنا:
  * - [list]: الأسئلة (رسالة لكل سؤال، في بلدها بس) ومعاها المبلغ الأجنبي بكسور عملته (أو المكتوب زي ما هو) والمقابل المحلي المكتوب
- *   **اقتراح** بس ([ForeignAsk.localSuggestion]).
- * - [answerForeign]: المالك كتب المبلغ المحلي ⇒ عملية واحدة بنفس خط رسايل البنك (منع التكرار · التصنيف · زون التحويلات) بمرجع الرسالة
- *   نفسه (`SMS:<البصمة>`) ⇒ الإجابة مرتين أو الوقوع بعد الحفظ وقبل الشيل **ما بيعملش عملية تانية**. والرسالة بتتشال من الصندوق.
+ *   **اقتراح** بس ([ForeignAsk.localSuggestion]). نوعها بعد §77-D (الأجنبي اللي **رجع** = `RETURNED`).
+ * - [answerForeign]: المالك كتب المبلغ المحلي ⇒ عملية واحدة بنفس خط رسايل البنك (منع التكرار · التصنيف · زون التحويلات · آثار وقت
+ *   التسجيل — ومنها §77-D للي رجع) بمرجع الرسالة نفسه (`SMS:<البصمة>`) ⇒ الإجابة مرتين أو الوقوع بعد الحفظ وقبل الشيل **ما بيعملش
+ *   عملية تانية**. والرسالة بتتشال من الصندوق.
+ * - **شبه عملية موجودة** (الكشف فيه نفس المبلغ في نفس اليوم — §72 «شبه عملية موجودة» بيستنى) ⇒ **ما بتتسجلش**:
+ *   [ForeignOutcome.LOOKS_LIKE_EXISTING] ومعاها العملية الموجودة، والشاشة بتسأل: «هي نفسها» ⇒ [keepExisting] · «لأ دي عملية تانية» ⇒
+ *   [answerForeign] تاني بـ `notTheSame = true`.
  * ⚠️ §75.1 (ب) لسه مفتوح: السؤال اللي ما اتجاوبش يظهر كسطر عملية «مبلغها ناقص» ولا يفضل رسالة مستنية — المتبني هنا: رسالة مستنية.
  */
 data class ForeignAsk(
@@ -56,7 +63,21 @@ data class ForeignAsk(
     val localSuggestion: Halalas?,
 )
 
-data class ForeignAnswer(val transactionId: Id, val alreadyRecorded: Boolean)
+enum class ForeignOutcome {
+    /** اتسجلت دلوقتي. */
+    RECORDED,
+
+    /** اتجاوبت قبل كده (نفس الرسالة) ⇒ نفس العملية، ما اتسجلتش تاني. */
+    ALREADY_RECORDED,
+
+    /** شبه عملية موجودة ⇒ **ما اتسجلتش** والرسالة لسه مستنية — [ForeignAnswer.transactionId] = العملية الموجودة. */
+    LOOKS_LIKE_EXISTING,
+}
+
+/** [transactionId] = العملية اللي اتسجلت أو الموجودة (في [ForeignOutcome.LOOKS_LIKE_EXISTING] — null لو المطابقة ما قالتش هي مين). */
+data class ForeignAnswer(val transactionId: Id?, val outcome: ForeignOutcome) {
+    val alreadyRecorded: Boolean get() = outcome == ForeignOutcome.ALREADY_RECORDED
+}
 
 class ForeignSmsAsks(private val deps: AutoRecordSmsDeps) {
     private class Found(val lane: SmsLane, val ask: ForeignAsk)
@@ -66,27 +87,31 @@ class ForeignSmsAsks(private val deps: AutoRecordSmsDeps) {
         val seen = HashSet<String>()
         val out = mutableListOf<Found>()
         for (lane in deps.lanes) {
-            for (item in lane.review.inboxView().items) {
+            val view = lane.review.inboxView()
+            val byId = view.messages.associateBy { it.id }
+            for (item in view.items) {
                 val parsed = item.parsed as? SmsParseResult.Rejected ?: continue
-                val ask = askOf(lane.spaceId, item, parsed) ?: continue
+                val ask = askOf(lane.spaceId, item, parsed, byId[item.id]) ?: continue
                 if (seen.add(item.id)) out += Found(lane, ask)
             }
         }
         return out
     }
 
-    private fun askOf(spaceId: String, item: InboxItem, parsed: SmsParseResult.Rejected): ForeignAsk? {
+    private fun askOf(spaceId: String, item: InboxItem, parsed: SmsParseResult.Rejected, queued: QueuedSms?): ForeignAsk? {
+        // §77-D: الأجنبي اللي رجع («Purchase … returned» بالدولار) — القارئ المصري ما بيعدّيش الأجنبي على `refineSmsKind`
+        fun kindOf(kind: SmsKind, direction: Direction) = queued?.let { smsMessageKind(it.message(), kind, direction) } ?: kind
         parsed.foreign?.let { f ->
             return ForeignAsk(
                 item.id, spaceId, item.sender, f.date, f.foreign.currency, f.foreign.amountMinor, f.foreign.decimals, null,
-                f.direction, f.merchantName, f.kind, f.ownLast4, f.localSuggestion,
+                f.direction, f.merchantName, kindOf(f.kind, f.direction), f.ownLast4, f.localSuggestion,
             )
         }
         val u = parsed.foreignUnread ?: return null
         val minor = u.currency?.let { writtenForeignMinor(u.writtenAmount, it) }
         return ForeignAsk(
             item.id, spaceId, item.sender, u.date, u.currency, minor, u.currency?.let(::currencyDecimals), u.writtenAmount,
-            u.direction, u.merchantName, u.kind, u.ownLast4, u.localSuggestion,
+            u.direction, u.merchantName, kindOf(u.kind, u.direction), u.ownLast4, u.localSuggestion,
         )
     }
 
@@ -100,9 +125,10 @@ class ForeignSmsAsks(private val deps: AutoRecordSmsDeps) {
 
     /**
      * المالك كتب المبلغ المحلي [localMinor] (بعملة المحفظة) للرسالة [messageId]. [walletId] = المحفظة اللي اتخصم منها؛ من غيرها: محفظة
-     * البنك ده (الربط) أو حساب البنك الوحيد في البلد — زي التسجيل التلقائي، وإلا لازم يختار.
+     * البنك ده (الربط) أو حساب البنك الوحيد في البلد — زي التسجيل التلقائي، وإلا لازم يختار. [notTheSame] = المالك قال إنها **مش** العملية
+     * الموجودة اللي شبهها (بعد [ForeignOutcome.LOOKS_LIKE_EXISTING]) ⇒ بتتسجل.
      */
-    suspend fun answerForeign(messageId: String, localMinor: Halalas, walletId: Id? = null): ForeignAnswer = SMS_RECORD_LOCK.withLock {
+    suspend fun answerForeign(messageId: String, localMinor: Halalas, walletId: Id? = null, notTheSame: Boolean = false): ForeignAnswer = SMS_RECORD_LOCK.withLock {
         assertHalalas(localMinor)
         if (localMinor <= 0) throw IllegalArgumentException(uiText(TextKey.RETURNS_FOREIGN_AMOUNT_POSITIVE))
         val found = findAll().firstOrNull { it.ask.messageId == messageId } ?: throw IllegalStateException(uiText(TextKey.RETURNS_FOREIGN_NOT_FOUND))
@@ -117,16 +143,28 @@ class ForeignSmsAsks(private val deps: AutoRecordSmsDeps) {
         )
         val preview = lane.importer.preview(request)
         val line = preview.lines.single()
-        val answer = if (line.state == MatchingState.DUPLICATE || line.state == MatchingState.CONFLICT) {
-            // اتجاوبت قبل كده (الشيل وقع، أو مبلغ تاني بنفس الرسالة) ⇒ نفس العملية، ما بتتسجلش تاني
-            ForeignAnswer(line.matchedTransactionId ?: throw IllegalStateException(uiText(TextKey.RETURNS_FOREIGN_NOT_FOUND)), alreadyRecorded = true)
-        } else {
-            val batch = lane.importer.commit(request, preview, listOf(row.lineNumber))
-            ForeignAnswer(lane.sources.listByBatch(batch.id).mapNotNull { it.transactionId }.single(), alreadyRecorded = false)
+        val matched = line.matchedTransactionId
+        when {
+            line.state == MatchingState.DUPLICATE || line.state == MatchingState.CONFLICT ->
+                // اتجاوبت قبل كده (الشيل وقع، أو مبلغ تاني بنفس الرسالة) ⇒ نفس العملية، ما بتتسجلش تاني
+                ForeignAnswer(matched ?: throw IllegalStateException(uiText(TextKey.RETURNS_FOREIGN_NOT_FOUND)), ForeignOutcome.ALREADY_RECORDED)
+                    .also { deps.inbox.acknowledge(listOf(messageId)) }
+            // §72: «شبه عملية موجودة» بيستنى — الاختيار الصريح في الاستيراد كان بيسجّلها فوق الكشف (العملية مرتين)
+            line.state == MatchingState.SIMILAR && !notTheSame -> ForeignAnswer(matched, ForeignOutcome.LOOKS_LIKE_EXISTING)
+            else -> {
+                val batch = lane.importer.commit(request, preview, listOf(row.lineNumber))
+                val id = lane.sources.listByBatch(batch.id).mapNotNull { it.transactionId }.single()
+                // بعد الحفظ بس — لو الشيل وقع، الرسالة بتفضل والإجابة الجاية بتلاقي العملية (مكررة)
+                deps.inbox.acknowledge(listOf(messageId))
+                ForeignAnswer(id, ForeignOutcome.RECORDED)
+            }
         }
-        // بعد الحفظ بس — لو الشيل وقع، الرسالة بتفضل والإجابة الجاية بتلاقي العملية (مكررة)
+    }
+
+    /** «هي نفسها العملية الموجودة» (بعد [ForeignOutcome.LOOKS_LIKE_EXISTING]): الرسالة بتتشال من غير ما حاجة تتسجل. */
+    suspend fun keepExisting(messageId: String): Unit = SMS_RECORD_LOCK.withLock {
+        if (findAll().none { it.ask.messageId == messageId }) throw IllegalStateException(uiText(TextKey.RETURNS_FOREIGN_NOT_FOUND))
         deps.inbox.acknowledge(listOf(messageId))
-        answer
     }
 
     private suspend fun walletFor(lane: SmsLane, sender: String, chosen: Id?): Wallet? {
@@ -136,13 +174,17 @@ class ForeignSmsAsks(private val deps: AutoRecordSmsDeps) {
         return if (mapped != null) all.firstOrNull { it.id == mapped } else all.filter { it.kind == "bank" }.singleOrNull()
     }
 
-    /** صف الإجابة: نفس مرجع الرسالة ووصفها المحجوب زي القارئين، والمبلغ = المحلي، والأجنبي معاه (`ForeignSmsEffect` بينسخه). */
+    /**
+     * صف الإجابة: نفس مرجع الرسالة ووصفها المحجوب زي القارئين، والمبلغ = المحلي، والأجنبي معاه (`ForeignSmsEffect` بينسخه) ورقم البنك
+     * المرجعي ونوعها بعد §77-D (`ReturnedSmsEffect` بيدوّر على الأصلية للأجنبي اللي رجع).
+     */
     private fun answerRow(message: BankSmsMessage, ask: ForeignAsk, localMinor: Halalas): SmsRow {
         val text = smsSafeText(message)
         return SmsRow(
             lineNumber = 1, date = ask.date, amountMinor = localMinor, direction = ask.direction, merchantName = redactSms(ask.merchant),
             reference = smsSourceReference(message), sourceName = message.sender, description = text, raw = text, kind = ask.kind,
-            ownLast4 = ask.ownLast4, foreignCurrency = ask.currency, foreignAmountMinor = ask.foreignMinor.takeIf { ask.currency != null },
+            ownLast4 = ask.ownLast4, bankReference = smsMessageReference(message),
+            foreignCurrency = ask.currency, foreignAmountMinor = ask.foreignMinor.takeIf { ask.currency != null },
         )
     }
 }

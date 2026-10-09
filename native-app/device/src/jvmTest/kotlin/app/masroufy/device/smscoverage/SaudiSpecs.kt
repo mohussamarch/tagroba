@@ -3,7 +3,6 @@ package app.masroufy.device.smscoverage
 import app.masroufy.core.SmsKind.CASH_WITHDRAWAL
 import app.masroufy.core.SmsKind.OWN_TRANSFER
 import app.masroufy.core.SmsKind.REFUND
-import app.masroufy.core.SmsKind.RETURNED
 import app.masroufy.core.SmsKind.SALARY
 
 /**
@@ -37,8 +36,7 @@ internal object SaudiSpecs {
             CustomBody("استرجاع", "استرجاع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
             CustomBody("إرجاع", "إرجاع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nالتاجر:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
             CustomBody("مرتجع", "مرتجع\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
-            // §77-D (الشريحة S3): عكس العملية = عملية رجعت (بتدوّر على الأصلية، وإلا «استرداد» مقترح)
-            CustomBody("عكس العملية", "عكس العملية\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = RETURNED)),
+            CustomBody("عكس العملية", "عكس العملية\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
             CustomBody("كاش باك", "كاش باك\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.IN, merchant = true, kind = REFUND)),
             CustomBody("كاش باك عكس", "كاش باك عكس\nبطاقة:{last4};مدى\nمبلغ:SAR {amount}\nلدى:{merchant}\nفي:{date} {time}", Expect(true, Dir.OUT, merchant = true)),
             date = rajhiDate,
@@ -107,7 +105,7 @@ internal object SaudiSpecs {
         60 to out(merchant = true),
         61 to out(merchant = true),
         62 to out(merchant = true),
-        63 to inn(merchant = true, kind = RETURNED), // حوالة عكسية (§77-D)
+        63 to inn(merchant = true, kind = REFUND),
         64 to inn(party = listOf(NAME)),
         65 to inn(party = NAME_DIGITS),
         66 to inn(party = listOf(NAME)),
@@ -146,8 +144,8 @@ internal object SaudiSpecs {
         93 to out(merchant = true),
         94 to out(merchant = true, amountKey = "total", values = FOREIGN_TRIP), // زي #90: بيتقري صح وبيستنى (الدولة GB)
         95 to inn(merchant = true, kind = REFUND),
-        96 to inn(merchant = true, kind = RETURNED), // عكس عملية (§77-D)
-        97 to inn(merchant = true, kind = RETURNED), // Purchase Reversal (§77-D)
+        96 to inn(merchant = true, kind = REFUND),
+        97 to inn(merchant = true, kind = REFUND),
         98 to out(party = listOf("acct2"), kind = OWN_TRANSFER),
         99 to out(party = listOf("acct2"), kind = OWN_TRANSFER),
         100 to inn(party = listOf(NAME)),

@@ -22,6 +22,8 @@ import app.masroufy.core.exportedSpaceData
 import app.masroufy.core.mergeFullBackupDetailed
 import app.masroufy.core.normalizeBudgetIds
 import app.masroufy.core.normalizeLegacySilverAssets
+import app.masroufy.core.settleMergedReversals
+import app.masroufy.core.settleReversalLinks
 import app.masroufy.core.pointLinesAtLiveBudgets
 import app.masroufy.core.spaceBackupData
 import app.masroufy.core.spaceBackupHeader
@@ -72,7 +74,7 @@ internal suspend fun readSpaces(port: SpacesBackupPort, root: FullBackupData): P
     val external = accountIds(root)
     val entries = registry.map { space ->
         // فضة قديمة («silver») بتتصدّر بالشكل الجديد «other» + العلامة (§69.9)
-        val data = normalizeLegacySilverAssets(normalizeBudgetIds(port.dataOf(space.id).read()))
+        val data = settleReversalLinks(normalizeLegacySilverAssets(normalizeBudgetIds(port.dataOf(space.id).read())))
         checkFullBackupData(data, SPACE_GROUPS, external)
         checkBackupFinance(data)
         SpaceBackupEntry(space, spaceBackupData(data), spaceCounts(data))
@@ -128,7 +130,7 @@ private suspend fun mergeSpaces(port: SpacesBackupPort, file: FullBackupFile, ro
         val live = if (found != null) port.dataOf(target.id).read() else emptyBackupData()
         val existing = normalizeBudgetIds(live)
         // فضة قديمة في الملف بتتكتب بالشكل الجديد (§69.9)
-        val merge = mergeFullBackupDetailed(normalizeLegacySilverAssets(entry.data), existing, SPACE_GROUPS, inherited)
+        val merge = settleMergedReversals(mergeFullBackupDetailed(settleReversalLinks(normalizeLegacySilverAssets(entry.data)), existing, SPACE_GROUPS, inherited), existing)
         val combined = SPACE_GROUPS.associateWith { existing.getValue(it) + merge.additions.getValue(it) }
         checkFullBackupData(combined, SPACE_GROUPS, external)
         checkBackupFinance(combined)

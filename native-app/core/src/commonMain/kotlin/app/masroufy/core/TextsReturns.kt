@@ -3,7 +3,9 @@ package app.masroufy.core
 /**
  * نصوص الشريحة S3: العملية اللي رجعت (§77-D) وسؤال المبلغ المحلي للشراء الأجنبي (§75-12). أسئلة جوه التطبيق بس (مش إشعار جوال) —
  * `RETURNS_ASK_*` نص السؤال على العملية/الرسالة: `{0}` في «نلغي الاتنين؟» = وصف العملية الأصلية (الشاشة بتكتبه) وفي سؤال الأجنبي =
- * المبلغ الأجنبي بعملته. فصحى مختصرة للسعودية · مصري لمصر · إنجليزي (كتابة Claude ومستني مراجعة المالك زي باقي الجدول §40).
+ * المبلغ الأجنبي بعملته. `RETURNS_REVERSAL_LINKED` (`ReversalAnswer.Linked`): `{0}` = أسماء الروابط · `RETURNS_FOREIGN_LOOKS_LIKE`
+ * (`ForeignOutcome.LOOKS_LIKE_EXISTING`): `{0}` = وصف العملية الموجودة — الشاشة بتكتبهم.
+ * فصحى مختصرة للسعودية · مصري لمصر · إنجليزي (كتابة Claude ومستني مراجعة المالك زي باقي الجدول §40).
  */
 internal val MSA_RETURNS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.RETURNS_ASK_REFUND to "هل هذا المبلغ الداخل استرداد عن شيء دفعته؟",
@@ -15,6 +17,8 @@ internal val MSA_RETURNS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.RETURNS_FOREIGN_NOT_FOUND to "هذه الرسالة لم تعد تنتظر المبلغ المحلي",
     TextKey.RETURNS_FOREIGN_AMOUNT_POSITIVE to "يجب أن يكون المبلغ المحلي أكبر من صفر",
     TextKey.RETURNS_FOREIGN_WALLET_NEEDED to "اختر المحفظة التي خُصم منها المبلغ",
+    TextKey.RETURNS_REVERSAL_LINKED to "لا يمكن إلغاء العمليتين قبل فك ربط العملية الأصلية بـ: {0}",
+    TextKey.RETURNS_FOREIGN_LOOKS_LIKE to "يبدو أن هذه العملية مسجلة من قبل ({0}). هل هي نفسها؟",
 )
 
 internal val EGYPTIAN_RETURNS_TEXTS: Map<TextKey, String> = mapOf(
@@ -27,6 +31,8 @@ internal val EGYPTIAN_RETURNS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.RETURNS_FOREIGN_NOT_FOUND to "الرسالة دي مش مستنية المبلغ المحلي خلاص",
     TextKey.RETURNS_FOREIGN_AMOUNT_POSITIVE to "المبلغ المحلي لازم يبقى أكبر من صفر",
     TextKey.RETURNS_FOREIGN_WALLET_NEEDED to "اختار المحفظة اللي المبلغ اتخصم منها",
+    TextKey.RETURNS_REVERSAL_LINKED to "مينفعش نلغي العمليتين قبل ما تفك ربط العملية الأصلية بـ: {0}",
+    TextKey.RETURNS_FOREIGN_LOOKS_LIKE to "شكل العملية دي متسجلة قبل كده ({0}). هي نفسها؟",
 )
 
 internal val ENGLISH_RETURNS_TEXTS: Map<TextKey, String> = mapOf(
@@ -39,4 +45,6 @@ internal val ENGLISH_RETURNS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.RETURNS_FOREIGN_NOT_FOUND to "This message is no longer waiting for a local amount",
     TextKey.RETURNS_FOREIGN_AMOUNT_POSITIVE to "The local amount must be more than zero",
     TextKey.RETURNS_FOREIGN_WALLET_NEEDED to "Choose the wallet the amount was taken from",
+    TextKey.RETURNS_REVERSAL_LINKED to "Unlink the original transaction from {0} first, then cancel both",
+    TextKey.RETURNS_FOREIGN_LOOKS_LIKE to "This looks like a transaction already recorded ({0}). Is it the same one?",
 )

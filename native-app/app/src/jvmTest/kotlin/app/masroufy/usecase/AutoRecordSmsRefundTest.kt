@@ -74,5 +74,10 @@ class AutoRecordSmsRefundTest {
         assertEquals(3, r.recorded, "الشراء + العمليتين اللي رجعوا (§77-D)")
         assertEquals(listOf("vf"), r.waiting)
         assertEquals(listOf(7_550L, 64_000L, 150_000L), space.all().map { it.amountMinor }.sorted())
+        // خط الرسايل بيضيف أثر «اللي رجع» لوحده (`SmsLane.of`): ما لقيناش الأصلية ⇒ «استرداد» مقترح ويسأل — مش داخل بيتقدّر دخل
+        val returns = space.all().filter { it.observedDirection == app.masroufy.core.Direction.IN }
+        assertTrue(returns.all { it.suggestedKind == app.masroufy.core.EconomicKind.REFUND_RECEIVED }, "$returns")
+        val estimated = app.masroufy.core.withEstimatedKinds(space.all(), emptyMap()).transactions
+        assertEquals(0L, app.masroufy.core.computePeriodTotals(estimated, emptyList()).incomeMinor)
     }
 }

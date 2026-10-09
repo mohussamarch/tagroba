@@ -35,7 +35,7 @@ object LedgerCodecs {
                 req("createdAt", t.createdAt); req("updatedAt", t.updatedAt)
                 // الشريحة S3 (§75-6 · §75-12 · §77-D): بتتكتب لو موجودة بس ⇒ أي مستند قديم ونسخته هي هي بالحرف
                 opt("suggestedKind", t.suggestedKind?.wire); opt("reversalOfId", t.reversalOfId); opt("reversedById", t.reversedById)
-                opt("foreignAmountMinor", t.foreignAmountMinor); opt("foreignCurrency", t.foreignCurrency)
+                opt("foreignAmountMinor", t.foreignAmountMinor); opt("foreignCurrency", t.foreignCurrency); opt("kindBeforeReversal", t.kindBeforeReversal?.wire)
             }
         },
         { r ->
@@ -54,6 +54,7 @@ object LedgerCodecs {
                 suggestedKind = if (r.has("suggestedKind")) r.wire("suggestedKind", EconomicKind::fromWire) else null,
                 reversalOfId = r.strOrNull("reversalOfId"), reversedById = r.strOrNull("reversedById"),
                 foreignAmountMinor = r.longOrNull("foreignAmountMinor"), foreignCurrency = r.strOrNull("foreignCurrency"),
+                kindBeforeReversal = if (r.has("kindBeforeReversal")) r.wire("kindBeforeReversal", EconomicKind::fromWire) else null,
             )
         },
     )

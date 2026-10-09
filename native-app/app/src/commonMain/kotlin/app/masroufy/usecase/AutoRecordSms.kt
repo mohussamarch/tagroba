@@ -45,7 +45,7 @@ class SmsLane private constructor(
          */
         fun of(spaceId: String, importDeps: ImportStatementDeps, inbox: ManageSmsInbox, wallets: WalletRepository): SmsLane {
             require(importDeps.transferParties != null) { "SMS lane needs the transfer-party decisions (OVERRIDES §60/§72)" }
-            val importer = ImportStatement(importDeps)
+            val importer = ImportStatement(withReturnEffects(importDeps)) // الشريحة S3: آثار «اللي رجع» والأجنبي لازم (`ReturnsWiring.kt`)
             val review = ReviewSmsInbox(ReviewSmsInboxDeps(inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids))
             return SmsLane(spaceId, review, wallets, importDeps.sources, importer)
         }

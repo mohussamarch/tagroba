@@ -84,7 +84,7 @@ internal class DueLinks(
             transactionId,
             TransactionPatch(
                 economicKind = kind, economicKindConfirmed = true, categoryId = categoryId, categoryConfirmed = true,
-                reviewState = ReviewState.CONFIRMED, updatedAt = clock.nowIso(),
+                reviewState = ReviewState.CONFIRMED, clearSuggestedKind = true, updatedAt = clock.nowIso(),
             ),
         )
     }

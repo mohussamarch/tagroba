@@ -45,6 +45,7 @@ class RawRoundTripTest {
         val ret = txn.copy(
             id = "t-raw-000002", observedDirection = Direction.IN, economicKind = EconomicKind.INTERNAL_TRANSFER, rawDescription = null,
             reversalOfId = "t-raw-000001", foreignCurrency = "KWD", foreignAmountMinor = 12_345, suggestedKind = EconomicKind.REFUND_RECEIVED,
+            kindBeforeReversal = EconomicKind.LOAN_GRANTED,
         )
         val stored = LedgerCodecs.transactions.toStore(ret)
         val ref = db.collection("users/kt-user/transactions").document(ret.id)
