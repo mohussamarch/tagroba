@@ -69,6 +69,9 @@ fun countryLabel(space: Space): String = when (space.countryCode.uppercase()) {
     else -> space.name
 }
 
+/** حرف البلد جوه العدسة (النموذج: «س» للسعودية و«م» لمصر) — أول حرف بعد «ال» التعريف. */
+fun countryMark(name: String): String = name.trim().removePrefix("ال").take(1)
+
 /**
  * شارة البلد + لوحة التبديل (`SpaceSwitcher` — §41 · §64 · OVERRIDES §76): في الرئيسية تحت الاسم قبل التاريخ **حرفين لاتيني بس**
  * (`SA ⌄` · ارتفاع 22 · مساحة اللمس 44). اللوحة: كل بلد باسمها وعملتها و«معك الآن» بعملتها، والحالية عليها «الحالية»،
@@ -143,7 +146,7 @@ private fun SpaceRow(c: SpaceChoice, going: Boolean, onPick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LensOnLight(Modifier.size(44.dp), shape = RoundedCornerShape(16.dp)) {
-            BasicText(name.take(1), style = Type.of(17, FontWeight.Bold).copy(color = Ink.primary))
+            BasicText(countryMark(name), style = Type.of(17, FontWeight.Bold).copy(color = Ink.primary))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

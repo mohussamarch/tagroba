@@ -21,6 +21,9 @@ plugins {
     val checkout = rootDir.parentFile.name
     allprojects {
         layout.buildDirectory.set(File(root, "$checkout/${path.trim(':').replace(':', '/').ifEmpty { "root" }}"))
+        // اختبارات قديمة بتكتب تقاريرها الصغيرة في `build/…` جنب الموديول (مسار نسبي من فولدر الموديول) — الفولدر ده ما بقاش بيتعمل لوحده
+        // بعد ما ملفات البناء اتنقلت، فبنعمله قبل الاختبار (تقارير نصية صغيرة بس، ومستبعدة من Git)
+        tasks.withType<Test>().configureEach { doFirst { File(projectDir, "build").mkdirs() } }
     }
 }
 

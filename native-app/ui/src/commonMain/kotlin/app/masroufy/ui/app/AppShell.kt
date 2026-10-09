@@ -93,7 +93,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 key(deps.space.id) { ScreenHost(nav, registry) }
             }
             val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-            if (nav.atTabRoot) {
+            // المحادثة بتغطي الشاشة كلها وخانة الكتابة مكان الشريطين (النموذج: `AskBar` — الستارة `inset 0`) ⇒ الشريطين بيستخبوا وهي مفتوحة
+            if (nav.atTabRoot && ask == null) {
                 BottomBars(
                     current = nav.tab, dots = bell?.dots.orEmpty(), backdrop = backdrop, onTab = nav::switchTab,
                     onAdd = { adding = true }, onAsk = { ask = false }, onMic = { ask = true },
@@ -101,7 +102,10 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
             }
             val toastBottom = if (nav.atTabRoot) Space.navBottom + Space.navHeight + Space.askGap + Space.askHeight + 14.dp else 32.dp
             ToastHost(shell.toaster, Modifier.align(Alignment.BottomCenter).padding(bottom = toastBottom + inset))
-            for (s in nav.sheets) key(s.id) { registry.Sheet(s.route as SheetRoute) { nav.close(s.route as SheetRoute) } }
+            for (s in nav.sheets) key(s.id) {
+                val sheet = s.route as SheetRoute
+                registry.Sheet(sheet) { nav.close(sheet) }
+            }
             AddOperationSheet(adding) { adding = false }
             AskSheet(ask != null, ask == true, context = t(nav.tab.label)) { ask = null }
             OverlayLayer(shell.overlays)

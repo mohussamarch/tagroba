@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -100,7 +100,7 @@ fun LiquidMenu(
             // (٢) الصف المرفوع في مكانه
             val rowShape = RoundedCornerShape(Radius.card)
             Box(
-                Modifier.offset { IntOffset(a.left.roundToInt(), a.top.roundToInt()) }
+                Modifier.absoluteOffset { IntOffset(a.left.roundToInt(), a.top.roundToInt()) }
                     .size(with(density) { a.width.toDp() }, with(density) { a.height.toDp() })
                     .graphicsLayer {
                         val s = 1f + 0.025f * p
@@ -119,7 +119,7 @@ fun LiquidMenu(
             val top = if (below) a.bottom + gap else a.top - gap - menuHeight
             val shape = RoundedCornerShape(Radius.menu)
             Box(
-                Modifier.offset { IntOffset(a.left.roundToInt(), top.roundToInt()) }
+                Modifier.absoluteOffset { IntOffset(a.left.roundToInt(), top.roundToInt()) }
                     .width(with(density) { a.width.toDp() })
                     .onSizeChanged { menuHeight = it.height }
                     .graphicsLayer {

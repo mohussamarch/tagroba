@@ -74,6 +74,7 @@ fun Sheet(
     minHeight: Dp = 0.dp,
     contentPadding: PaddingValues = PaddingValues(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 24.dp),
     spacing: Dp = 14.dp,
+    onExited: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val enter = remember { Animatable(0f) }
@@ -87,12 +88,34 @@ fun Sheet(
         } else if (mounted) {
             enter.animateTo(0f, exitSpec)
             mounted = false
+            onExited?.invoke()
         }
     }
     if (!mounted) return
     Overlay(onBack = onDismiss) {
         SheetFrame(enter.value, onDismiss, title, modifier, veil, closeLabel, corner, minHeight, contentPadding, spacing, content)
     }
+}
+
+/**
+ * لوحة متسجّلة في الجدول (`RouteRegistry.sheet<…>` — بتتفتح من أي منطقة بـ`navigator.open(…)`): بتطلع لوحدها، وأي قفل (السحب · الستارة ·
+ * الرجوع · [content] بينادي `dismiss`) بيشغّل حركة الخروج **الأول** وبعدها [close] بيشيلها من رصة اللوحات.
+ * ```
+ * sheet<AddPersonRoute> { _, close -> RouteSheet(t(TextKey.X_TITLE), close) { dismiss -> …; PrimaryButton(…, onClick = { save(); dismiss() }) } }
+ * ```
+ */
+@Composable
+fun RouteSheet(
+    title: String,
+    close: () -> Unit,
+    modifier: Modifier = Modifier,
+    veil: Veil = Veil.NORMAL,
+    minHeight: Dp = 0.dp,
+    content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit,
+) {
+    var visible by remember { mutableStateOf(true) }
+    val dismiss = { visible = false }
+    Sheet(visible, dismiss, title, modifier, veil, minHeight = minHeight, onExited = close) { content(dismiss) }
 }
 
 @Composable

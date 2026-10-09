@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -103,14 +103,14 @@ fun GlassPopover(
             val top = a.bottom + with(density) { 12.dp.toPx() }
             VeilLayer(veil, progress.coerceIn(0f, 1f), onDismiss, closeLabel)
             if (anchorContent != null) {
-                Box(Modifier.offset { IntOffset(a.left.roundToInt(), a.top.roundToInt()) }.size(with(density) { a.width.toDp() }, with(density) { a.height.toDp() })) {
+                Box(Modifier.absoluteOffset { IntOffset(a.left.roundToInt(), a.top.roundToInt()) }.size(with(density) { a.width.toDp() }, with(density) { a.height.toDp() })) {
                     anchorContent()
                 }
             }
             val shape = RoundedCornerShape(Radius.menu)
             Column(
                 modifier
-                    .offset { IntOffset(left.roundToInt(), top.roundToInt()) }
+                    .absoluteOffset { IntOffset(left.roundToInt(), top.roundToInt()) }
                     .width(with(density) { w.toDp() })
                     .graphicsLayer {
                         alpha = progress.coerceIn(0f, 1f)

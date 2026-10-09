@@ -73,7 +73,7 @@ fun BoxScope.BackdropBlur(backdrop: Backdrop?, radius: Dp, shape: Shape = Rectan
             .onGloballyPositioned { mine = it.positionInRoot() }
             .clip(shape)
             .graphicsLayer {
-                val px = radius.toPx()
+                val px = cssBlurToRadius(radius.toPx())
                 if (px > 0f) renderEffect = BlurEffect(px, px, TileMode.Clamp)
                 clip = true
                 this.shape = shape
@@ -94,7 +94,13 @@ fun BoxScope.BackdropBlur(backdrop: Backdrop?, radius: Dp, shape: Shape = Rectan
     )
 }
 
-/** قيم التمويه من الوصفات. */
+/**
+ * `blur(Npx)` في CSS = انحراف معياري (sigma) N، لكن `BlurEffect` بياخد «نصف قطر» وبيحوّله لـ`sigma = 0.57735·r + 0.5` (نفس Skia على
+ * أندرويد والكمبيوتر) ⇒ من غير التحويل ده كل زجاج كان بيطلع أخف من الوصفة بحوالي ٤٠٪ (اتشاف في لقطة المحادثة على المحاكي 2026-10-09).
+ */
+internal fun cssBlurToRadius(sigmaPx: Float): Float = if (sigmaPx <= 0.5f) 0f else (sigmaPx - 0.5f) / 0.57735f
+
+/** قيم التمويه من الوصفات (بنفس أرقام `blur()` في CSS — التحويل في [cssBlurToRadius]). */
 object BlurRadius {
     val nav = 24.dp
     val lens = 8.dp
