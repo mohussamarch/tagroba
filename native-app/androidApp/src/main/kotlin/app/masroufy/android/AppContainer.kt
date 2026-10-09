@@ -116,6 +116,9 @@ class AppContainer(private val context: Context) {
         override fun spaces(): List<Pair<Space, SpaceRepositories>> = spacesOf(session?.state?.value as? AccountSession.State.Ready)
 
         override fun switchSpace(spaceId: String): Boolean = session?.switchSpace(spaceId) == true
+
+        // التحويل لنفسك بين بلدين (`SpaceTransfer`): كاتب ذرّي على الحساب بأماكن الجلسة نفسها
+        override fun spaceTransferWriter() = (session?.state?.value as? AccountSession.State.Ready)?.spaceTransferWriter()
     }
 
     private fun spacesOf(ready: AccountSession.State.Ready?): List<Pair<Space, SpaceRepositories>> =

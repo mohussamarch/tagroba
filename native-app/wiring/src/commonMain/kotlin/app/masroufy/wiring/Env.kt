@@ -42,6 +42,13 @@ interface SessionLinks {
     fun spaces(): List<Pair<Space, SpaceRepositories>>
 
     fun switchSpace(spaceId: String): Boolean
+
+    /**
+     * كتابة «التحويل لنفسك» على البلدين ذرّيًا (`AccountSession.State.Ready.spaceTransferWriter` على الجوال) — قرار شريحة «العمليات»
+     * 2026-10-09 (`SpaceTransfer`): الكاتب على مستوى الحساب مش البلد، فمكانه الجلسة. `null` (الافتراضي) ⇒ التسجيل والربط والفك بيرفضوا
+     * بـ«غير متاح» والقايمة بتتعرض عادي.
+     */
+    fun spaceTransferWriter(): app.masroufy.port.SpaceTransferWriter? = null
 }
 
 /**
