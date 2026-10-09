@@ -618,8 +618,8 @@ enum class TextKey {
 
     // ── منطقة «المستحقات» (screens/dues) — القيم في `TextsAreaDues.kt`
 
-    // ── منطقة «الاستثمار» (screens/investment) — القيم في `TextsAreaInvestment.kt`
-    // ── └ الحاسبات (screens/investment/calc — الادخار · التقاعد · الورث) — القيم في `TextsAreaCalc*.kt` (مضمومة في `TextsAreaInvestment.kt`)
+    // ── └ حاسبات «الاستثمار» (screens/investment/calc — الادخار · التقاعد · الورث) — القيم في `TextsAreaCalc*.kt` (مجمّعة في `TextsAreaCalc.kt`).
+    //   فوق سطر «الاستثمار» بسطر فاضي عشان تندمج مع شاشات المنطقة (اللي تحت سطرها) من غير تعارض.
     CALCUI_MONTHS_ONE, CALCUI_MONTHS_TWO, CALCUI_MONTHS_FEW, CALCUI_MONTHS_MANY, CALCUI_YEARS_ONE, CALCUI_YEARS_TWO, CALCUI_YEARS_FEW, CALCUI_YEARS_MANY,
     CALCUI_DAY_MONTH_YEAR, CALCUI_AGE, CALCUI_AGE_MONTHS, CALCUI_MONTHS_UNIT, CALCUI_YEARS_UNIT, CALCUI_PICK_DATE, CALCUI_PREV_YEAR, CALCUI_NEXT_YEAR,
     CALCUI_YES, CALCUI_NO, CALCUI_PERCENT_SIGN, CALCUI_WHOLE_NUMBER,
@@ -669,6 +669,8 @@ enum class TextKey {
     INHSAVED_TITLE, INHSAVED_INTRO, INHSAVED_EMPTY_TITLE, INHSAVED_EMPTY_BODY, INHSAVED_EMPTY_ACTION, INHSAVED_LOAD_FAILED, INHSAVED_LAW_SA,
     INHSAVED_LAW_EG, INHSAVED_DRAFT, INHSAVED_WHEN, INHSAVED_OPEN, INHSAVED_RENAME, INHSAVED_RENAME_BODY, INHSAVED_RENAMED, INHSAVED_DELETE_ONE,
     INHSAVED_DELETE_TITLE, INHSAVED_DELETE_BODY, INHSAVED_DELETE, INHSAVED_DELETED, INHSAVED_UNDO, INHSAVED_RESTORED,
+
+    // ── منطقة «الاستثمار» (screens/investment) — القيم في `TextsAreaInvestment.kt`
 
     // ── منطقة «المزيد» (screens/more) — القيم في `TextsAreaMore.kt`
 

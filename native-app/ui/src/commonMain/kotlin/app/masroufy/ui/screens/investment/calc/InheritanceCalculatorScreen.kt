@@ -34,8 +34,10 @@ import app.masroufy.core.TextKey
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SecondaryButton
+import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.common.InnerScaffold
+import app.masroufy.ui.screens.investment.InheritanceSavedRoute
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -80,8 +82,12 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
         else {
             val calc = if (foreign) deps.inheritanceUnder(draft.countryCode) else deps.inheritance
             val case = draft.toCase()
-            val r = case?.let { c -> runCatching { calc.calculate(c) }.getOrNull() } ?: InheritanceResult.Invalid(InvalidReason.TOO_LARGE, law = draft.law)
-            inheritanceResultUi(r, draft.currency)
+            if (case == null) badAmountResultUi(draft.law, draft.currency)
+            else {
+                // المحرك بيرمي بس لو الأرقام أكبر من المسموح (فيضان) ⇒ نفس رسالته
+                val r = runCatching { calc.calculate(case) }.getOrNull() ?: InheritanceResult.Invalid(InvalidReason.TOO_LARGE, law = draft.law)
+                inheritanceResultUi(r, draft.currency)
+            }
         }
     }
     val go = { step: Int ->
@@ -93,7 +99,9 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
         InnerScaffold(t(TextKey.INHCALC_TITLE), actions = { SavedButton { nav.push(InheritanceSavedRoute) } }) {
             item(key = "law") { LawLines(draft, foreign) }
             item(key = "steps") { StepsBar(draft.step) { k -> if (k < draft.step) go(k) } }
-            when (draft.step) {
+            // حسبة محفوظة لسه بتتقري ⇒ هيكل مكان النتيجة (مش خطوة «تركة مَن» للحظة)
+            if (!loaded) item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(220.dp), radius = 28.dp) }
+            else when (draft.step) {
                 1 -> item(key = "whose") { WhoseStep(draft, people) { stepError = null; update(it) } }
                 2 -> item(key = "items") {
                     ItemsStep(draft, canBring = draft.estateOf == EstateOwner.MINE && !foreign, onChange = { stepError = null; update(it) }) {
@@ -115,14 +123,13 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
                 3 -> item(key = "heirs") { InheritanceHeirsStep(draft) { update(it) } }
                 4 -> item(key = "before") { InheritanceBeforeStep(draft) { stepError = null; update(it) } }
                 else -> item(key = "result") {
-                    if (!loaded) Spacer(Modifier.height(1.dp))
-                    else result?.let { InheritanceResultPanel(it) { yes -> update(draft.copy(distantRelatives = yes)) } }
+                    result?.let { InheritanceResultPanel(it) { yes -> update(draft.copy(distantRelatives = yes)) } }
                 }
             }
             stepError?.let { e -> item(key = "error") { BasicText(e, style = Type.captionBold().copy(color = Ink.expense)) } }
             item(key = "bottom-space") { Spacer(Modifier.height(96.dp)) }
         }
-        BottomActions(
+        if (loaded) BottomActions(
             Modifier.align(Alignment.BottomCenter),
             backLabel = if (draft.step > 1) t(if (draft.step == 5) TextKey.INHCALC_EDIT else TextKey.INHCALC_PREV) else null,
             onBack = { go(if (draft.step == 5) 3 else draft.step - 1) },

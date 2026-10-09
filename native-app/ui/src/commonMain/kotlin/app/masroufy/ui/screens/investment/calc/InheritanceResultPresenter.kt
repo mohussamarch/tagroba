@@ -12,6 +12,7 @@ import app.masroufy.core.InheritanceResult
 import app.masroufy.core.ShareBasis
 import app.masroufy.core.TextKey
 import app.masroufy.core.UnsupportedReason
+import app.masroufy.core.inheritanceDisclaimer
 import app.masroufy.core.label
 import app.masroufy.core.sentenceDigits
 import app.masroufy.core.sentenceNumber
@@ -71,6 +72,10 @@ fun inheritanceResultUi(result: InheritanceResult, currency: Currency): Inherita
     }
     return InheritanceResultUi(view, result.disclaimer, currency)
 }
+
+/** مبلغ مكتوب مش مقروء (نادر — كل خطوة بتمنعه قبل «التالي») ⇒ «مدخلات غير صحيحة» بسببه، مش رقم. */
+fun badAmountResultUi(law: InheritanceLaw?, currency: Currency): InheritanceResultUi =
+    InheritanceResultUi(InheritanceView.Stop(StopKind.INVALID, null, t(TextKey.MONEY_BAD_FORMAT), null), inheritanceDisclaimer(law), currency)
 
 fun stopKindLabel(kind: StopKind): String = t(
     when (kind) {

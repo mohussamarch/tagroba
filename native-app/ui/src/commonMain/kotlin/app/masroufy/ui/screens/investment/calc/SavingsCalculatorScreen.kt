@@ -46,6 +46,7 @@ import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.common.InnerScaffold
+import app.masroufy.ui.screens.operations.ReviewQueueRoute
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -74,8 +75,11 @@ fun SavingsCalculatorScreen() {
     val check = checkSavings(mode, fields.snapshot(), currency, today)
     var outcome by remember(deps) { mutableStateOf<SavingsOutcome?>(null) }
     var calcError by remember(deps) { mutableStateOf<String?>(null) }
+    // الحسبة نفسها وقعت (مثلًا قراية العمليات للمقارنة) ⇒ «غير متاح» بسببه، مش صفر ولا وقوع
+    var failed by remember(deps) { mutableStateOf(false) }
     LaunchedEffect(deps, check.request) {
         val req = check.request
+        failed = false
         if (req == null) {
             outcome = null
             calcError = null
@@ -91,6 +95,11 @@ fun SavingsCalculatorScreen() {
         } catch (e: SavingsCalcError) {
             outcome = null
             calcError = e.message
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            outcome = null
+            failed = true
         }
     }
     val errors = check.errors + (calcError?.let { mapOf((if (mode == SavingsMode.TARGET) SavingsFields.DATE else SavingsFields.MONTHS) to it) } ?: emptyMap())
@@ -102,11 +111,14 @@ fun SavingsCalculatorScreen() {
         item(key = "modes") { ModeSwitch(mode) { modeName = it.name; goalDone = false } }
         item(key = "fields") { SavingsFieldsCard(mode, fields, errors, currency, today, put) }
         item(key = "hero") {
-            if (check.request != null && ui == null && calcError == null) Skeleton(Modifier.fillMaxWidth().height(132.dp), radius = 28.dp)
-            else CalcHero(heroLabel(mode), ui?.heroAmountMinor, currency, t(TextKey.SAVCALC_FILL), ui?.heroSub ?: t(TextKey.SAVCALC_FILL_SUB))
+            when {
+                failed && check.request != null -> CalcHero(heroLabel(mode), null, currency, t(TextKey.NOT_AVAILABLE), t(TextKey.SHELL_LOAD_FAILED))
+                check.request != null && ui == null && calcError == null -> Skeleton(Modifier.fillMaxWidth().height(132.dp), radius = 28.dp)
+                else -> CalcHero(heroLabel(mode), ui?.heroAmountMinor, currency, t(TextKey.SAVCALC_FILL), ui?.heroSub ?: t(TextKey.SAVCALC_FILL_SUB))
+            }
         }
         if (ui != null) {
-            item(key = "compare") { CompareCard(ui) { nav.push(ReviewQueueLink) } }
+            item(key = "compare") { CompareCard(ui) { nav.push(ReviewQueueRoute) } }
             if (ui.growthMonthlyMinor > 0) item(key = "growth") { SavingsGrowthPanel(ui.growthMonthlyMinor, ui.growthMonths, ui.growthStartMinor, today) }
             item(key = "goal") {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

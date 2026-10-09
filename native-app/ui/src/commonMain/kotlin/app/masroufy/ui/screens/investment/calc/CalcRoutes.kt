@@ -2,8 +2,12 @@ package app.masroufy.ui.screens.investment.calc
 
 import app.masroufy.core.AveragesFeed
 import app.masroufy.core.IsoDate
-import app.masroufy.ui.nav.Route
 import app.masroufy.ui.nav.RouteRegistry
+import app.masroufy.ui.screens.investment.InheritanceCalculatorRoute
+import app.masroufy.ui.screens.investment.InheritanceSavedRoute
+import app.masroufy.ui.screens.investment.InheritanceScenarioRoute
+import app.masroufy.ui.screens.investment.RetirementCalculatorRoute
+import app.masroufy.ui.screens.investment.SavingsCalculatorRoute
 import app.masroufy.usecase.CalculateInheritance
 import app.masroufy.usecase.CompareSavingsGrowth
 import app.masroufy.usecase.FeedState
@@ -13,34 +17,10 @@ import app.masroufy.usecase.SavingsCalculator
 
 /**
  * حاسبات «الاستثمار» (OVERRIDES §69 — الادخار · التقاعد · الورث): جزء من منطقة «الاستثمار» في ملفاته هو (`screens/investment/calc/`)
- * عشان شاشات الاستثمار والحاسبات يتبنوا بالتوازي (ARCHITECTURE §31.31). اسم كل مسار = اسم اللوحة في النموذج.
- * القطع المرسومة جوه الشاشات (`SavingsGrowth` · `RetirementSaudi` · `RetirementEgypt` · `InheritanceHeirs` · `InheritanceBefore` ·
- * `InheritanceResult` · `InheritanceSplit`) composables جوه شاشتها، مش مسارات.
+ * عشان شاشات الاستثمار والحاسبات يتبنوا بالتوازي (ARCHITECTURE §31.31). المسارات في `investment/CalculatorRoutes.kt` (اسم كل مسار = اسم
+ * اللوحة في النموذج). القطع المرسومة جوه الشاشات (`SavingsGrowth` · `RetirementSaudi` · `RetirementEgypt` · `InheritanceHeirs` ·
+ * `InheritanceBefore` · `InheritanceResult` · `InheritanceSplit`) composables جوه شاشتها، مش مسارات.
  */
-object SavingsCalculatorRoute : Route {
-    override val name = "SavingsCalculator"
-}
-
-object RetirementCalculatorRoute : Route {
-    override val name = "RetirementCalculator"
-}
-
-/** [scenarioId] = حسبة محفوظة بتتفتح على النتيجة (من «الحسبات المحفوظة»). null = حسبة جديدة. */
-data class InheritanceCalculatorRoute(val scenarioId: String? = null) : Route {
-    override val name = "InheritanceCalculator"
-}
-
-object InheritanceSavedRoute : Route {
-    override val name = "InheritanceSaved"
-}
-
-/**
- * «حدّد نوع هذه العمليات» في حاسبة الادخار بيفتح `ReviewQueue` (منطقة «العمليات»). المسار الحقيقي بتاع المنطقة دي لسه مش موجود ⇒ ده
- * مكانه لحد الدمج (متسجّلش ⇒ «قيد البناء»). وقت الدمج: يتبدّل بمسار منطقة العمليات.
- */
-internal object ReviewQueueLink : Route {
-    override val name = "ReviewQueue"
-}
 
 /** شخص من أشخاصك (تركة شخص آخر). */
 data class PersonChoice(val id: String, val name: String)
@@ -80,6 +60,7 @@ interface CalculatorsDeps {
 fun RouteRegistry.registerCalculators() {
     screen<SavingsCalculatorRoute> { SavingsCalculatorScreen() }
     screen<RetirementCalculatorRoute> { RetirementCalculatorScreen() }
-    screen<InheritanceCalculatorRoute> { r -> InheritanceCalculatorScreen(r.scenarioId) }
+    screen<InheritanceCalculatorRoute> { InheritanceCalculatorScreen(null) }
+    screen<InheritanceScenarioRoute> { r -> InheritanceCalculatorScreen(r.scenarioId) }
     screen<InheritanceSavedRoute> { InheritanceSavedScreen() }
 }

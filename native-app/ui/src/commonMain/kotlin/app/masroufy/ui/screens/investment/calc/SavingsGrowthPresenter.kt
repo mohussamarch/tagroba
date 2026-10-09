@@ -51,9 +51,11 @@ data class GrowthUi(
 
 fun growthUi(outcome: GrowthCompareOutcome, currency: Currency): GrowthUi {
     val c = outcome.comparison
-    val shown = c.lines.associate { it.growthClass to if (c.todayMoney) it.todayMoneyMinor else it.reachedMinor }
+    // «بقيمة المال اليوم» شغال والتضخم مش معروف ⇒ الأرقام زي ما هي والسطر تحت الزرار بيقول «غير متاح» (زي النموذج)
+    val deflated = c.todayMoney && c.inflationBp != null
+    val shown = c.lines.associate { it.growthClass to if (deflated) it.todayMoneyMinor else it.reachedMinor }
     val top = shown.values.filterNotNull().maxOrNull()?.coerceAtLeast(1L) ?: 1L
-    val rows = outcome.choices.map { choice -> row(choice, shown[choice.line.growthClass], top, c.todayMoney) }
+    val rows = outcome.choices.map { choice -> row(choice, shown[choice.line.growthClass], top, deflated) }
     val inflation = outcome.inflation
     return GrowthUi(
         paidLine = t(TextKey.SAVGROW_PAID, money(c.paidInMinor, currency), durationPhrase(c.months)),

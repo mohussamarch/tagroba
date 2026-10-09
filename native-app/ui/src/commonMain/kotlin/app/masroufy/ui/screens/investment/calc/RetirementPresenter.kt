@@ -45,6 +45,9 @@ fun stripNa(text: String): String = text.removePrefix(t(TextKey.NOT_AVAILABLE) +
 fun retirementIncomplete(message: String? = null): RetirementUi =
     RetirementUi(null, t(TextKey.RETCALC_FILL), message ?: t(TextKey.RETCALC_FILL_SUB), null, emptyList(), null)
 
+/** الحسبة نفسها وقعت (قراية مصادر الدخل) ⇒ «غير متاح» بسببه — مش «أكمل البيانات» ولا صفر. */
+fun retirementFailed(): RetirementUi = RetirementUi(null, t(TextKey.NOT_AVAILABLE), t(TextKey.SHELL_LOAD_FAILED), null, emptyList(), null)
+
 /**
  * [heroDetails] سطر «النظام · التقاعد عند … في … ، N شهر اشتراك» (بيختلف بين البلدين). [withEos] = السعودية (مصر «لا تنطبق» بتيجي من حالة الاستخدام).
  */

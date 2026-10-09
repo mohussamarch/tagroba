@@ -50,6 +50,8 @@ import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.overlay.Sheet
 import app.masroufy.ui.screens.common.InnerScaffold
+import app.masroufy.ui.screens.investment.InheritanceCalculatorRoute
+import app.masroufy.ui.screens.investment.InheritanceScenarioRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -95,10 +97,12 @@ fun InheritanceSavedScreen() {
             undo = null
         }
     }
+    // «افتح» و«احسب تركة» بيرجعوا للحاسبة اللي تحت (لو جيت منها) بدل ما يكدّسوا حاسبة فوق حاسبة
     val backToCalculator = { id: String? ->
-        val below = nav.stack.getOrNull(nav.stack.lastIndex - 1)?.route
-        if (below is InheritanceCalculatorRoute) nav.pop()
-        if (id != null || below !is InheritanceCalculatorRoute) nav.replace(InheritanceCalculatorRoute(id))
+        val belowIsCalculator = nav.stack.getOrNull(nav.stack.lastIndex - 1)?.route?.name == InheritanceCalculatorRoute.name
+        if (belowIsCalculator) nav.pop()
+        if (id != null) nav.replace(InheritanceScenarioRoute(id))
+        else if (!belowIsCalculator) nav.replace(InheritanceCalculatorRoute)
     }
 
     Box(Modifier.fillMaxSize()) {

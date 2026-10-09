@@ -3,7 +3,7 @@ package app.masroufy.core
 /**
  * نصوص الحاسبات (`ui/screens/investment/calc/`) — المشترك (`CALCUI_*`) + «حاسبة الادخار» (`SavingsCalculator`) + «لو وضعتها في…»
  * (`SavingsGrowth`). النص من النموذج التفاعلي بالحرف (الفصحى من `space = السعودية` والمصري من `مصر`)؛ الإنجليزي كتابة Claude (مستني
- * مراجعة المالك §40). **ممنوع «·» جنب رقم عربي** ⇒ «،». مضمومة في `TextsAreaInvestment.kt`.
+ * مراجعة المالك §40). **ممنوع «·» جنب رقم عربي** ⇒ «،». مضمومة في `TextsAreaCalc.kt`.
  */
 internal val MSA_CALC_SAVINGS_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CALCUI_MONTHS_ONE to "شهر واحد",

@@ -62,7 +62,7 @@ fun RetirementCalculatorScreen() {
 }
 
 /** الحسبة نفسها (مشتركة بين اللوحتين): الراتب من مصادر الدخل مرة، والنتيجة كل ما الخانات تتغير. */
-internal class RetirementState(val defaults: RetirementDefaults?, val result: RetirementResult?, val error: String?)
+internal class RetirementState(val defaults: RetirementDefaults?, val result: RetirementResult?, val error: String?, val failed: Boolean = false)
 
 @Composable
 internal fun rememberRetirement(check: RetirementCheck, countryCode: String): RetirementState {
@@ -72,8 +72,10 @@ internal fun rememberRetirement(check: RetirementCheck, countryCode: String): Re
     LaunchedEffect(deps, countryCode) { defaults = runCatching { deps.retirement.defaults(countryCode, today) }.getOrNull() }
     var result by remember(deps) { mutableStateOf<RetirementResult?>(null) }
     var error by remember(deps) { mutableStateOf<String?>(null) }
+    var failed by remember(deps) { mutableStateOf(false) }
     LaunchedEffect(deps, check.request, check.eosChosen) {
         val req = check.request
+        failed = false
         if (req == null) {
             result = null
             error = null
@@ -93,9 +95,13 @@ internal fun rememberRetirement(check: RetirementCheck, countryCode: String): Re
         } catch (e: IllegalArgumentException) {
             result = null
             error = e.message
+        } catch (e: Exception) {
+            // قراية مصادر الدخل وقعت ⇒ «غير متاح» بسببه (مش «أكمل البيانات» ولا وقوع)
+            result = null
+            failed = true
         }
     }
-    return RetirementState(defaults, result, error)
+    return RetirementState(defaults, result, error, failed)
 }
 
 /** البطاقة البطلة + سطري النتيجة + «كيف حُسب المعاش؟». */
@@ -113,6 +119,7 @@ internal fun RetirementResults(
     val result = state.result
     val ui = when {
         check.request == null -> retirementIncomplete()
+        state.failed -> retirementFailed()
         state.error != null -> retirementIncomplete(state.error)
         result == null -> null
         else -> retirementUi(result, currency, details, gapSubKey)

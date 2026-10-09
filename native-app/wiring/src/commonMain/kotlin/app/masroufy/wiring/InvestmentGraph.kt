@@ -7,11 +7,11 @@ import app.masroufy.usecase.SyncAssetPricesDeps
 
 /**
  * «الاستثمار» — **الملف ده بتاع المنطقة بس.** الأسعار والمتوسطات من النت ([AreaContext.feeds] — مشتركة بين البلاد) جاهزة؛ ضيف `ManageAssets` ·
- * `ManageAssetGrowth` · `ManageZakat` · `PayZakat` · `AdvisorSignals` · `ManageSavingsGoals` … الحاسبات في [CalculatorsGraph].
+ * `ManageAssetGrowth` · `ManageZakat` · `PayZakat` · الحاسبات · `AdvisorSignals` · `ManageSavingsGoals` …
  */
 class InvestmentGraph(c: AreaContext) : InvestmentDeps {
     override val feeds = c.feeds
     override val syncPrices = SyncAssetPrices(SyncAssetPricesDeps(c.repos.assets, c.repos.assetPrices))
     override val defaultRates = LoadDefaultRates()
-    override val calculators = CalculatorsGraph(c, defaultRates)
+    override val calculators = CalculatorsGraph(c, defaultRates) // الحاسبات (ملف لوحده — CalculatorsGraph.kt)
 }
