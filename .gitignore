@@ -41,3 +41,6 @@ dist-android/
 android/local.properties
 
 dist-android-apk/
+
+# ملفات إعدادات خاصة (google-services.json) — برا المستودع العام
+secrets/
