@@ -15,6 +15,7 @@ import app.masroufy.core.emptyProfile
 import app.masroufy.ui.screens.investment.AdvisorLink
 import app.masroufy.ui.screens.investment.FactAnswer
 import app.masroufy.ui.screens.investment.OutcomeChip
+import app.masroufy.ui.screens.investment.advisorUi
 import app.masroufy.ui.screens.investment.factsSummary
 import app.masroufy.ui.screens.investment.loadAdvisor
 import app.masroufy.ui.screens.investment.loadZakat
@@ -155,6 +156,8 @@ class ZakatAdvisorScreensTest {
         assertEquals(AdvisorLink.GOALS, goal.link)
         assertTrue(goal.why.isNotBlank(), "«لماذا؟» = سبب المحرك")
         assertEquals(AdvisorLink.OPS, ui.cards.first { it.threadKey == "big:t-1" }.link)
+        // مكان توصيل «الإشعار الممسوح بيشيل كارته» (المنطق في assistant-engine)
+        assertEquals(listOf("big:t-1"), advisorUi(w.deps.alerts.inbox(), enabled = true, dismissed = setOf("goal:g-1")).cards.map { it.threadKey })
 
         w.deps.alerts.setGroupEnabled(AlertGroup.ADVISOR, false)
         val off = loadAdvisor(w.deps)

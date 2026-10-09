@@ -6,7 +6,7 @@ package app.masroufy.core
  */
 internal val MSA_INVEST_ASSET_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_DETAIL_STALE_BODY to "المعروض بسعر آخر تحديث ناجح.",
-    TextKey.ASSET_DETAIL_ARCHIVED to "مؤرشف — لا يدخل في إجمالي أملاكك، وسجله باقٍ.",
+    TextKey.ASSET_DETAIL_ARCHIVED to "مؤرشف — سجله باقٍ ويظهر آخر القائمة.",
     TextKey.ASSET_DETAIL_UNARCHIVE to "أعِده",
     TextKey.ASSET_DETAIL_UNARCHIVED to "عاد إلى أملاكك",
     TextKey.ASSET_DETAIL_HERO to "قيمته اليوم بسعر السوق",
@@ -56,12 +56,12 @@ internal val MSA_INVEST_ASSET_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_DETAIL_PICK_FEED to "اختر السعر اليومي",
     TextKey.ASSET_DETAIL_PICK_FEED_EMPTY to "لا أسعار بعملة الأصل في ملف الأسعار.",
     TextKey.ASSET_DETAIL_ARCHIVE to "أرشفة الأصل",
-    TextKey.ASSET_DETAIL_ARCHIVED_TOAST to "أُرشف — خرج من إجمالي أملاكك وسجله باقٍ",
+    TextKey.ASSET_DETAIL_ARCHIVED_TOAST to "أُرشف — سجله باقٍ",
 )
 
 internal val EGYPTIAN_INVEST_ASSET_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_DETAIL_STALE_BODY to "المعروض بسعر آخر تحديث نجح.",
-    TextKey.ASSET_DETAIL_ARCHIVED to "متأرشف — مش داخل في إجمالي أملاكك، وسجله موجود.",
+    TextKey.ASSET_DETAIL_ARCHIVED to "متأرشف — سجله موجود وبيظهر آخر القايمة.",
     TextKey.ASSET_DETAIL_UNARCHIVE to "رجّعه",
     TextKey.ASSET_DETAIL_UNARCHIVED to "رجع لأملاكك",
     TextKey.ASSET_DETAIL_HERO to "قيمته النهارده بسعر السوق",
@@ -111,12 +111,12 @@ internal val EGYPTIAN_INVEST_ASSET_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_DETAIL_PICK_FEED to "اختار السعر اليومي",
     TextKey.ASSET_DETAIL_PICK_FEED_EMPTY to "مفيش أسعار بعملة الأصل في ملف الأسعار.",
     TextKey.ASSET_DETAIL_ARCHIVE to "أرشف الأصل",
-    TextKey.ASSET_DETAIL_ARCHIVED_TOAST to "اتأرشف — خرج من إجمالي أملاكك وسجله موجود",
+    TextKey.ASSET_DETAIL_ARCHIVED_TOAST to "اتأرشف — سجله موجود",
 )
 
 internal val ENGLISH_INVEST_ASSET_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_DETAIL_STALE_BODY to "Showing the price from the last successful update.",
-    TextKey.ASSET_DETAIL_ARCHIVED to "Archived — not counted in your total, and its record stays.",
+    TextKey.ASSET_DETAIL_ARCHIVED to "Archived — its record stays, at the end of the list.",
     TextKey.ASSET_DETAIL_UNARCHIVE to "Restore",
     TextKey.ASSET_DETAIL_UNARCHIVED to "Back in your assets",
     TextKey.ASSET_DETAIL_HERO to "Its value today at market price",
@@ -166,5 +166,5 @@ internal val ENGLISH_INVEST_ASSET_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSET_DETAIL_PICK_FEED to "Pick the daily price",
     TextKey.ASSET_DETAIL_PICK_FEED_EMPTY to "There are no prices in the asset's currency in the prices file.",
     TextKey.ASSET_DETAIL_ARCHIVE to "Archive the asset",
-    TextKey.ASSET_DETAIL_ARCHIVED_TOAST to "Archived — removed from your total, and its record stays",
+    TextKey.ASSET_DETAIL_ARCHIVED_TOAST to "Archived — its record stays",
 )

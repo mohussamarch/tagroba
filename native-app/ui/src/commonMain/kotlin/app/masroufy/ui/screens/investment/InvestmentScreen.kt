@@ -84,8 +84,9 @@ fun InvestmentScreen() {
             item(key = "loading") { LoadingBlocks() }
             return@TabScaffold
         }
-        val problem = if (l.failed) t(TextKey.SHELL_LOAD_FAILED) else l.feedProblem
-        if (problem != null) item(key = "error") { AlertBanner(t(TextKey.INVEST_ERROR_TITLE), problem, t(TextKey.SHELL_RETRY), ::refresh) }
+        // الأصول ما اتحمّلتش ⇒ «تعذّر التحميل» · الملف ما نزلش ⇒ «تعذّر تحديث الأسعار» والمعروض بآخر نسخة (حالة «خطأ» في النموذج)
+        if (l.failed) item(key = "failed") { AlertBanner(t(TextKey.SHELL_LOAD_FAILED), null, t(TextKey.SHELL_RETRY), ::refresh) }
+        l.feedProblem?.let { problem -> item(key = "error") { AlertBanner(t(TextKey.INVEST_ERROR_TITLE), problem, t(TextKey.SHELL_RETRY), ::refresh) } }
         val ui = l.ui
         if (ui != null && ui.empty) {
             item(key = "empty") {

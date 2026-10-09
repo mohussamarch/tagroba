@@ -38,9 +38,13 @@ data class AdvisorUi(val enabled: Boolean, val cards: List<AdvisorCard>) {
     val quiet: Boolean get() = enabled && cards.isEmpty()
 }
 
-fun advisorUi(inbox: List<AlertInboxView>, enabled: Boolean): AdvisorUi {
+/**
+ * [dismissed] = مواضيع الإشعارات اللي المستخدم مسحها بـ«×» (قرار المالك 2026-10-09: الإشعار الممسوح بيشيل كارته) — **المنطق في فرع
+ * `assistant-engine`**؛ هنا مكان التوصيل بس (فاضي لحد الدمج).
+ */
+fun advisorUi(inbox: List<AlertInboxView>, enabled: Boolean, dismissed: Set<String> = emptySet()): AdvisorUi {
     if (!enabled) return AdvisorUi(false, emptyList())
-    val cards = inbox.filter { it.entry.kind.group == AlertGroup.ADVISOR }.map { v ->
+    val cards = inbox.filter { it.entry.kind.group == AlertGroup.ADVISOR && it.entry.threadKey !in dismissed }.map { v ->
         val k = v.entry.kind
         AdvisorCard(
             threadKey = v.entry.threadKey,
