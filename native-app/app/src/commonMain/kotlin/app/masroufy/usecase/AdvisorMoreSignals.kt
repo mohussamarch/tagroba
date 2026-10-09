@@ -7,6 +7,7 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.LeftoverProjection
+import app.masroufy.core.Period
 import app.masroufy.core.SubscriptionPlace
 import app.masroufy.core.Transaction
 import app.masroufy.core.WeekSpend
@@ -30,6 +31,7 @@ import app.masroufy.core.unusualSpendCandidate
 import app.masroufy.core.usualMonthMinor
 import app.masroufy.core.weeklySummaryCandidate
 import app.masroufy.core.withEstimatedKinds
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * الأفكار الثمانية التانية للمساعد (OVERRIDES §68): unusual · beforePayday · payFirst · billJump · dupSubs · bigOne · goalNear · weekly.
@@ -111,16 +113,29 @@ internal suspend fun moreAdvisorCandidates(
     val rows = deps.txns.listByDateRange(plusDays(prevEnd, -6), weekEnd).filter { it.currency == currency }
     val thisWeek = weekSpend(rows.filter { it.occurredAt >= weekStart }, ctx, deps)
     val lastWeek = weekSpend(rows.filter { it.occurredAt <= prevEnd }, ctx, deps)
-    weeklySummaryCandidate(weekEnd, thisWeek, lastWeek, ctx.names, currency)?.let { out += it }
+    // §75-15: «عندك N عملية محتاجة تأكيد» في نفس الملخص (حتى لو صرف الأسبوع مش معروف)
+    weeklySummaryCandidate(weekEnd, thisWeek, lastWeek, ctx.names, currency, needsConfirmationCount(deps, input.today, period))?.let { out += it }
     return out
+}
+
+/** عدد «محتاجة تأكيد» للتذكير — مش متوصل أو فشل ⇒ صفر (من غير سطر — ما بنقولش «0» مكان «مش معروف»). */
+private suspend fun needsConfirmationCount(deps: AdvisorSignalsDeps, today: String, period: Period): Int {
+    val count = deps.needsConfirmation ?: return 0
+    return try {
+        count.load(today, period).total
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        0
+    }
 }
 
 /** نفس أنواع كشف الاشتراكات (`detectRecurring`): شراء أو لسه من غير نوع. */
 private val RECURRING_LIKE = setOf(EconomicKind.PURCHASE, EconomicKind.UNCLASSIFIED)
 
-/** مصروف أسبوع، أو null لو فيه عملية من غير نوع (مش معروف). */
+/** مصروف أسبوع، أو null لو فيه عملية من غير نوع (مش معروف) — الداخل المستني (§75-1) مش منها: عمره ما بيبقى صرف. */
 private suspend fun weekSpend(rows: List<Transaction>, ctx: AdvisorContext, deps: AdvisorSignalsDeps): WeekSpend? {
-    if (assessCoverage(withEstimatedKinds(rows, ctx.names).transactions).unclassified > 0) return null
+    if (assessCoverage(withEstimatedKinds(rows, ctx.names).withoutPendingIncoming).unclassified > 0) return null
     val lines = spendLinesOf(rows, ctx.names, deps.allocations)
     val byCategory = LinkedHashMap<Id?, Halalas>()
     for (l in lines) byCategory[l.categoryId] = addMoney(byCategory[l.categoryId] ?: 0L, l.amountMinor)

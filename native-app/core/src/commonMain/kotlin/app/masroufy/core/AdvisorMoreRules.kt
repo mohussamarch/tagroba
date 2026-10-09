@@ -164,12 +164,40 @@ fun lastWeekEnd(today: IsoDate): IsoDate {
 data class WeekSpend(val totalMinor: Halalas, val byCategory: Map<Id?, Halalas>, val count: Int)
 
 /**
- * weekly: «صرفت X هذا الأسبوع · أكثر/أقل بـY من الأسبوع الماضي · الأعلى: «بند» (Z)». [thisWeek] null = الأسبوع مش معروف
- * (فيه عملية من غير نوع) ⇒ ساكت. الأسبوعين فاضيين ⇒ مفيش بيانات ⇒ ساكت. الأسبوع اللي فات مش معروف ⇒ من غير مقارنة.
+ * §75-15: «عندك N عملية محتاجة تأكيد» بصيغة العدد الصح بالعربي (واحدة · اتنين · 3–10 جمع · غير كده مفرد — بآخر رقمين).
+ * [count] ≤ 0 ⇒ null (مفيش سطر).
  */
-fun weeklySummaryCandidate(weekEnd: IsoDate, thisWeek: WeekSpend?, lastWeek: WeekSpend?, names: Map<Id, String>, currency: Currency): AlertCandidate? {
-    val now = thisWeek ?: return null
-    if (now.count == 0 && (lastWeek?.count ?: 0) == 0) return null
+fun weeklyAsksLine(count: Int): String? = when {
+    count <= 0 -> null
+    count == 1 -> uiText(TextKey.ADVISOR_WEEKLY_ASKS_ONE)
+    count == 2 -> uiText(TextKey.ADVISOR_WEEKLY_ASKS_TWO)
+    count % 100 in 3..10 -> uiText(TextKey.ADVISOR_WEEKLY_ASKS_FEW, count.toString())
+    else -> uiText(TextKey.ADVISOR_WEEKLY_ASKS_MANY, count.toString())
+}
+
+/**
+ * weekly: «صرفت X هذا الأسبوع · أكثر/أقل بـY من الأسبوع الماضي · الأعلى: «بند» (Z)». [thisWeek] null = الأسبوع مش معروف
+ * (فيه عملية من غير نوع) ⇒ من غير سطر الصرف. الأسبوعين فاضيين ⇒ مفيش بيانات ⇒ من غير سطر الصرف. الأسبوع اللي فات مش معروف ⇒ من غير مقارنة.
+ * §75-15: [needsConfirmation] > 0 ⇒ سطر «عندك N عملية محتاجة تأكيد» في الآخر — **حتى لو الصرف مش معروف** (التذكير هو اللي بيعرّفه).
+ * من غير سطر صرف ولا تذكير ⇒ ساكت. نص شاشة القفل بيفضل عام ومن غير عدد (`ALERT_LOCK_WEEKLY`).
+ */
+fun weeklySummaryCandidate(
+    weekEnd: IsoDate,
+    thisWeek: WeekSpend?,
+    lastWeek: WeekSpend?,
+    names: Map<Id, String>,
+    currency: Currency,
+    needsConfirmation: Int = 0,
+): AlertCandidate? {
+    val parts = weeklySpendParts(thisWeek, lastWeek, names, currency)
+    weeklyAsksLine(needsConfirmation)?.let { parts += it }
+    if (parts.isEmpty()) return null
+    return AlertCandidate(AlertKind.WEEKLY_SUMMARY, "weekly|$weekEnd", uiText(TextKey.ADVISOR_WEEKLY_TITLE), parts.joinToString(" · "))
+}
+
+private fun weeklySpendParts(thisWeek: WeekSpend?, lastWeek: WeekSpend?, names: Map<Id, String>, currency: Currency): MutableList<String> {
+    val now = thisWeek ?: return mutableListOf()
+    if (now.count == 0 && (lastWeek?.count ?: 0) == 0) return mutableListOf()
     val parts = mutableListOf(uiText(TextKey.ADVISOR_WEEKLY_SPENT, formatMoney(now.totalMinor, currency)))
     lastWeek?.takeIf { it.count > 0 }?.let { last ->
         val diff = subtractMoney(now.totalMinor, last.totalMinor)
@@ -181,5 +209,5 @@ fun weeklySummaryCandidate(weekEnd: IsoDate, thisWeek: WeekSpend?, lastWeek: Wee
     }
     now.byCategory.filter { it.key != null && it.value > 0 }.maxWithOrNull(compareBy<Map.Entry<Id?, Halalas>> { it.value }.thenByDescending { it.key })
         ?.let { top -> names[top.key]?.let { parts += uiText(TextKey.ADVISOR_WEEKLY_TOP, it, formatMoney(top.value, currency)) } }
-    return AlertCandidate(AlertKind.WEEKLY_SUMMARY, "weekly|$weekEnd", uiText(TextKey.ADVISOR_WEEKLY_TITLE), parts.joinToString(" · "))
+    return parts
 }

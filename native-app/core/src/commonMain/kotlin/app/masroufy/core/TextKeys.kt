@@ -585,5 +585,7 @@ enum class TextKey {
     // S5 — «سلفة ولا دعم؟» · سداد السلفة · التصنيف بيتفتكر (§75-5 · §75-9 · §75-16) — القيم في `TextsAsks.kt`
 
     // S6 — الداخل المستني · الراتب والشهر · التذكير الأسبوعي (§75-1 · §75-3 · §75-15) — القيم في `TextsMonth.kt`
+    ADVISOR_WEEKLY_ASKS_ONE, ADVISOR_WEEKLY_ASKS_TWO, ADVISOR_WEEKLY_ASKS_FEW, ADVISOR_WEEKLY_ASKS_MANY,
+    INCOME_PENDING_LABEL, SALARY_COUNTS_NEXT_MONTH, ASK_INCOMING_KIND,
 
 }

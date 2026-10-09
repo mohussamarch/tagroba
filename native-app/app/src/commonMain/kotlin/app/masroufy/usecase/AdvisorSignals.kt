@@ -60,6 +60,8 @@ data class AdvisorSignalsDeps(
     val recurring: RecurringRepository? = null,
     /** التقويم — مستحقات قبل الراتب (beforePayday). null ⇒ بنقارن بالصرف المعتاد بس. */
     val calendar: LoadCalendar? = null,
+    /** §75-15: عدّ «محتاجة تأكيد» لسطر التذكير في الملخص الأسبوعي — null = مش متوصل ⇒ من غير السطر. */
+    val needsConfirmation: CountNeedsConfirmation? = null,
 )
 
 /** نصيبك من عملية مصروف واحدة. [key] = مفتاح التاجر للاشتراكات (`recurringKey`). */
@@ -153,7 +155,8 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
         (1..HABIT_BASELINE_MONTHS).map { i ->
             val p: Period = shiftPeriod(input.period, -i, payday)
             val rows = deps.txns.listByDateRange(p.start, p.end).filter { it.currency == input.currency }
-            if (rows.isEmpty() || assessCoverage(withEstimatedKinds(rows, names).transactions).unclassified > 0) null else spendLinesOf(rows, names, deps.allocations)
+            // الداخل المستني (§75-1) عمره ما بيبقى صرف ⇒ ما بيخلّيش الشهر «مش معروف» للمعتاد
+            if (rows.isEmpty() || assessCoverage(withEstimatedKinds(rows, names).withoutPendingIncoming).unclassified > 0) null else spendLinesOf(rows, names, deps.allocations)
         }
 }
 

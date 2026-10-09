@@ -13,11 +13,14 @@ class LedgerGoldenTest {
     @BeforeTest
     fun egyptianText() {
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        // ملف المرجع من التطبيق القديم: الداخل المجهول «راتب» تقديري (withEstimatedKinds) ⇒ السياسة القديمة صراحةً (§75-1)
+        EstimatePolicy.current = EstimatePolicy.LEGACY
     }
 
     @AfterTest
     fun defaultText() {
         Texts.arabicVariant = ArabicVariant.MSA
+        EstimatePolicy.current = EstimatePolicy.OWNER_2026_10
     }
 
     private fun check(fn: String, run: (JsonElement) -> Any?) = Golden.check("ledger", fn) { json(run(it)) }

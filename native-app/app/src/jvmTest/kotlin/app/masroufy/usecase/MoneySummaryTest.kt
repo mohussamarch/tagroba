@@ -46,6 +46,19 @@ class MoneySummaryTest {
         assertEquals(mapOf(EconomicKind.DEBT_REPAID to 200_000L), s.outflowNotExpense)
     }
 
+    /** §75-1: فلوس داخلة نوعها مش معروف ⇒ «حركة» بس، ومستنية برّه الدخل الحقيقي لحد ما تتأكد. */
+    @Test fun unknownIncomingIsMovementButNotIncomeYet() = runBlocking<Unit> {
+        val unknown = txn("who", Direction.IN, 150_000, EconomicKind.UNCLASSIFIED).copy(economicKindConfirmed = false)
+        val withUnknown = MemoryTransactionRepository(txns.listByDateRange("2026-01-01", "2026-12-31") + unknown)
+        val s = LoadMoneySummary(LoadMoneySummaryDeps(withUnknown, MemoryCategoryRepository(), MemoryAllocationRepository())).load("2026-01-01", "2026-12-31")
+        assertEquals(CashMovement(950_000, 350_000), s.cash, "دخلت فعلًا")
+        assertEquals(600_000, s.incomeMinor, "بس مش دخل لسه")
+        assertEquals(150_000, s.expenseMinor, "ولا بتخلّي الصرف مش معروف")
+        assertEquals(1, s.pendingIncomingCount)
+        assertEquals(mapOf(Currency.SAR to 150_000L), s.pendingIncomingMinor)
+        assertEquals(150_000, s.inflowNotIncome[EconomicKind.UNCLASSIFIED], "ظاهرة في «اللي دخل ومش دخل» بنوعها «لسه»")
+    }
+
     @Test fun homeShowsBoth() = runBlocking<Unit> {
         val home = LoadHomeScreen(LoadHomeScreenDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository(), MemoryBudgetRepository()))
             .load(LoadHomeScreenRequest(periodForDate("2026-01-10", 28), "2026-01-10", 28, includeHistory = false))

@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Category
+import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.Period
@@ -46,6 +47,15 @@ data class TransactionsScreenData(
     /** منهم: كام عملية التطبيق مش متأكد منها — محتاجة تأكيد. */
     val needsReviewCount: Int,
     val totalCount: Int,
+    /**
+     * §75-1: الداخل المستني برّه الدخل (جزء من [needsReviewCount]) — لو فيه: الدخل «لحد دلوقتي» والمتبقي ونسبة الادخار محسوبين منه
+     * (زي الرئيسية — §18). [pendingIncomingIds] عشان القايمة تعلّم السطور دي «مستني تأكيدك».
+     */
+    val pendingIncomingCount: Int = 0,
+    val pendingIncomingMinor: Map<Currency, Halalas> = emptyMap(),
+    val pendingIncomingIds: List<Id> = emptyList(),
+    /** §75-3: راتب نزل في آخر الفترة دي وبيتحسب للفترة الجاية — مش في [transactions] ولا المجاميع، بيتعرض بعلامة «بيتحسب للشهر الجديد». */
+    val countedInNextPeriod: List<Transaction> = emptyList(),
 )
 
 data class LoadTransactionsScreenDeps(
@@ -73,8 +83,11 @@ class LoadTransactionsScreen(private val deps: LoadTransactionsScreenDeps) {
             ?: request.today?.let { if (request.payday != null) periodForDate(it, request.payday) else periodForDate(it) }
             ?: throw IllegalArgumentException("لازم فترة أو تاريخ اليوم — مفيش ساعة جوه المنطق")
 
-        val transactions = deps.txns.listByDateRange(period.start, period.end)
         val categories = deps.categories.listAll()
+        val names = categories.associate { it.id to it.name }
+        // §75-3: عمليات الفترة زي ما بتتحسب (يوم الراتب من الطلب، وإلا من حدود الفترة نفسها)
+        val periodRows = loadPeriodRows(deps.txns, period, request.payday ?: paydayOf(period), names)
+        val transactions = periodRows.rows
 
         val ids = transactions.map { it.id }
         val allocations = deps.allocations.listByTransactionIds(ids)
@@ -92,7 +105,7 @@ class LoadTransactionsScreen(private val deps: LoadTransactionsScreenDeps) {
         }
 
         // المجاميع بالأنواع التقديرية للواضح (OVERRIDES §18)؛ القايمة المعروضة بتفضل بالعمليات الأصلية
-        val estimated = withEstimatedKinds(transactions, categories.associate { it.id to it.name })
+        val estimated = withEstimatedKinds(transactions, names)
         val totals = computePeriodTotals(estimated.transactions, allocations)
 
         val merchantMap = merchantIndex(deps.merchants?.listAll() ?: emptyList())
@@ -123,6 +136,10 @@ class LoadTransactionsScreen(private val deps: LoadTransactionsScreenDeps) {
             estimatedCount = estimated.estimatedCount,
             needsReviewCount = estimated.needsReviewCount,
             totalCount = totalCount,
+            pendingIncomingCount = estimated.pendingIncomingCount,
+            pendingIncomingMinor = estimated.pendingIncomingByCurrency,
+            pendingIncomingIds = estimated.pendingIncomingIds,
+            countedInNextPeriod = periodRows.countedInNextPeriod,
         )
     }
 }

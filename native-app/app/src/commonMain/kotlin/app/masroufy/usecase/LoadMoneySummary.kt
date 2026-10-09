@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.CashMovement
+import app.masroufy.core.Currency
 import app.masroufy.core.DataCoverage
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
@@ -36,6 +37,12 @@ data class MoneySummary(
     /** اللي خرج ومش مصروف شخصي، بالنوع. */
     val outflowNotExpense: Map<EconomicKind, Halalas>,
     val coverage: DataCoverage,
+    /**
+     * §75-1: الداخل المستني برّه الدخل لحد ما يتأكد — هو نفسه `inflowNotIncome[UNCLASSIFIED]` (غير المؤكد منه)، بعدده ومبلغه لكل عملة.
+     * لو فيه: [incomeMinor] «لحد دلوقتي».
+     */
+    val pendingIncomingCount: Int = 0,
+    val pendingIncomingMinor: Map<Currency, Halalas> = emptyMap(),
 )
 
 data class LoadMoneySummaryDeps(
@@ -45,14 +52,21 @@ data class LoadMoneySummaryDeps(
 )
 
 class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
-    suspend fun load(from: IsoDate, to: IsoDate): MoneySummary {
-        val raw = deps.txns.listByDateRange(from, to)
+    /**
+     * [payday] لما المدى شهور مالية (من يوم الراتب): الراتب اللي نزل قبل أول المدى بشوية جوه، وراتب الشهر اللي بعد المدى برّه (§75-3).
+     * null (سنة ميلادية مثلًا) ⇒ العمليات بتاريخها.
+     */
+    suspend fun load(from: IsoDate, to: IsoDate, payday: Int? = null): MoneySummary {
         val names = deps.categories.listAll().associate { it.id to it.name }
-        // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (OVERRIDES §18)
-        val rows = withEstimatedKinds(raw, names).transactions
+        val raw = loadRangeRows(deps.txns, from, to, payday, names).rows
+        // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (OVERRIDES §18)، والداخل المستني برّه الدخل (§75-1)
+        val view = withEstimatedKinds(raw, names)
+        val rows = view.transactions
         val totals = computePeriodTotals(rows, deps.allocations.listByTransactionIds(rows.map { it.id }))
         val coverage = assessCoverage(rows)
-        val unknown = coverage.total > 0 && coverage.unclassified == coverage.total
+        // الداخل المستني مش «صرف مش معروف» ⇒ ما بيخلّيش الملخص كله «غير متاح»
+        val spend = assessCoverage(view.withoutPendingIncoming)
+        val unknown = spend.total > 0 && spend.unclassified == spend.total
 
         val notIncome = LinkedHashMap<EconomicKind, Halalas>()
         val notExpense = LinkedHashMap<EconomicKind, Halalas>()
@@ -70,6 +84,7 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             incomeMinor = if (unknown) null else totals.incomeMinor,
             expenseMinor = if (unknown) null else totals.personalExpenseMinor,
             inflowNotIncome = notIncome, outflowNotExpense = notExpense, coverage = coverage,
+            pendingIncomingCount = view.pendingIncomingCount, pendingIncomingMinor = view.pendingIncomingByCurrency,
         )
     }
 }
