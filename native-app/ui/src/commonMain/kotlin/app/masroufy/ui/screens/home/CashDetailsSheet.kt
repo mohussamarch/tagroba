@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.DEFAULT_PAYDAY
 import app.masroufy.core.TextKey
@@ -25,7 +26,6 @@ import app.masroufy.core.dayMonth
 import app.masroufy.core.periodForDate
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
-import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.ListRow
@@ -77,6 +77,10 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
     }
 }
 
+/**
+ * زي النموذج: العنوان وسطر «منذ رصيد البداية» يمين والرصيد 30 شمال ⇒ شريط «صرفت كاش هذا الشهر» الأخضر الفاتح ⇒ (مكان «يتحدّث تلقائيًا» و«عددت
+ * الكاش الآن» — منطقهم مش متبني، فمش ظاهرين) عمليات الكاش في الشهر من نفس القراية ⇒ سطر إن «صرفت هذا الشهر» فيه الكاش.
+ */
 @Composable
 private fun CashBody(v: CashView) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
@@ -86,20 +90,16 @@ private fun CashBody(v: CashView) {
         }
         AmountText(v.balanceMinor, v.currency, size = 30)
     }
-    // صرفت كاش هذا الشهر — شريط أخضر فاتح زي النموذج
+    // صرفت كاش هذا الشهر — شريط أخضر فاتح زي النموذج (المبلغ عادي من غير لون: ده مجموع مش عملية)
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.selected).padding(horizontal = 14.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BasicText(t(TextKey.CASH_DETAILS_SPENT), style = Type.of(13))
-        AmountText(v.spentInPeriodMinor, v.currency, size = 13)
+        AmountText(v.spentInPeriodMinor, v.currency, size = 13, weight = FontWeight.Bold)
     }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Flow(t(TextKey.CASH_DETAILS_IN), v.inSinceOpeningMinor, v, AmountTone.INCOME, Modifier.weight(1f))
-        Flow(t(TextKey.CASH_DETAILS_OUT), v.outSinceOpeningMinor, v, AmountTone.EXPENSE, Modifier.weight(1f))
-    }
-    BasicText(t(TextKey.CASH_DETAILS_OPS), style = Type.of(13, androidx.compose.ui.text.font.FontWeight.Bold).copy(color = Ink.muted))
+    BasicText(t(TextKey.CASH_DETAILS_OPS), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
     if (v.rows.isEmpty()) BasicText(t(TextKey.CASH_DETAILS_NO_OPS), style = Type.of(13).copy(color = Ink.muted))
     v.rows.forEachIndexed { i, r ->
         ListRow(
@@ -111,16 +111,4 @@ private fun CashBody(v: CashView) {
         if (i < v.rows.lastIndex) Divider()
     }
     BasicText(t(TextKey.CASH_DETAILS_NOTE), style = Type.caption().copy(color = Ink.muted))
-}
-
-/** مربع «دخل الكاش» / «خرج منه» من يوم رصيد البداية. */
-@Composable
-private fun Flow(label: String, minor: Long, v: CashView, tone: AmountTone, modifier: Modifier) {
-    Column(
-        modifier.clip(RoundedCornerShape(16.dp)).background(Ink.surface).padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        BasicText(label, style = Type.caption().copy(color = Ink.muted))
-        AmountText(minor, v.currency, tone = tone, size = 15)
-    }
 }

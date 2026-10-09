@@ -27,8 +27,6 @@ internal val MSA_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CASH_DETAILS_TITLE to "الكاش الذي معك",
     TextKey.CASH_DETAILS_SINCE to "منذ رصيد البداية في {0}",
     TextKey.CASH_DETAILS_SPENT to "صرفت كاش هذا الشهر",
-    TextKey.CASH_DETAILS_IN to "دخل منذ البداية",
-    TextKey.CASH_DETAILS_OUT to "خرج منذ البداية",
     TextKey.CASH_DETAILS_OPS to "عمليات الكاش هذا الشهر",
     TextKey.CASH_DETAILS_NO_OPS to "لا عمليات كاش هذا الشهر.",
     TextKey.CASH_DETAILS_NOTE to "«صرفت هذا الشهر» في الرئيسية يشمل ما دفعته كاش.",
@@ -42,6 +40,8 @@ internal val MSA_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.LOOK_SHEET_ITEM to "الشكل {0}",
     TextKey.LOOK_SHEET_NOTE to "أشكال مؤقتة — الكاركتر النهائي قيد التصميم.",
     TextKey.LOOK_SHEET_SAVE to "احفظ",
+    TextKey.ADD_FROM_USUAL to "من أين تصرف عادةً؟",
+    TextKey.ADD_SAVED_MAIN to "{0} — وصار «{1}» الأساسي",
 ) + MSA_AREA_HOME_NOTIFY_TEXTS + MSA_AREA_HOME_CALENDAR_TEXTS + MSA_AREA_HOME_PROFILE_TEXTS + MSA_AREA_HOME_REVIEW_TEXTS
 
 internal val EGYPTIAN_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
@@ -63,8 +63,6 @@ internal val EGYPTIAN_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CASH_DETAILS_TITLE to "الكاش اللي معاك",
     TextKey.CASH_DETAILS_SINCE to "من رصيد البداية في {0}",
     TextKey.CASH_DETAILS_SPENT to "صرفت كاش الشهر ده",
-    TextKey.CASH_DETAILS_IN to "دخل من البداية",
-    TextKey.CASH_DETAILS_OUT to "خرج من البداية",
     TextKey.CASH_DETAILS_OPS to "عمليات الكاش الشهر ده",
     TextKey.CASH_DETAILS_NO_OPS to "مفيش عمليات كاش الشهر ده.",
     TextKey.CASH_DETAILS_NOTE to "«صرفت الشهر ده» في الرئيسية فيه اللي دفعته كاش.",
@@ -78,6 +76,8 @@ internal val EGYPTIAN_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.LOOK_SHEET_ITEM to "الشكل {0}",
     TextKey.LOOK_SHEET_NOTE to "أشكال مؤقتة — الكاركتر النهائي لسه بيتصمم.",
     TextKey.LOOK_SHEET_SAVE to "احفظ",
+    TextKey.ADD_FROM_USUAL to "بتصرف عادةً منين؟",
+    TextKey.ADD_SAVED_MAIN to "{0} — و«{1}» بقى الأساسي",
 ) + EGYPTIAN_AREA_HOME_NOTIFY_TEXTS + EGYPTIAN_AREA_HOME_CALENDAR_TEXTS + EGYPTIAN_AREA_HOME_PROFILE_TEXTS + EGYPTIAN_AREA_HOME_REVIEW_TEXTS
 
 internal val ENGLISH_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
@@ -99,8 +99,6 @@ internal val ENGLISH_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.CASH_DETAILS_TITLE to "Your cash",
     TextKey.CASH_DETAILS_SINCE to "Since the opening balance on {0}",
     TextKey.CASH_DETAILS_SPENT to "Cash spent this month",
-    TextKey.CASH_DETAILS_IN to "In since the start",
-    TextKey.CASH_DETAILS_OUT to "Out since the start",
     TextKey.CASH_DETAILS_OPS to "Cash transactions this month",
     TextKey.CASH_DETAILS_NO_OPS to "No cash transactions this month.",
     TextKey.CASH_DETAILS_NOTE to "“Spent this month” on Home includes what you paid in cash.",
@@ -114,4 +112,6 @@ internal val ENGLISH_AREA_HOME_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.LOOK_SHEET_ITEM to "Look {0}",
     TextKey.LOOK_SHEET_NOTE to "Temporary looks — the final character is still being designed.",
     TextKey.LOOK_SHEET_SAVE to "Save",
+    TextKey.ADD_FROM_USUAL to "Where do you usually spend from?",
+    TextKey.ADD_SAVED_MAIN to "{0} — and “{1}” is now your main wallet",
 ) + ENGLISH_AREA_HOME_NOTIFY_TEXTS + ENGLISH_AREA_HOME_CALENDAR_TEXTS + ENGLISH_AREA_HOME_PROFILE_TEXTS + ENGLISH_AREA_HOME_REVIEW_TEXTS

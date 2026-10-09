@@ -59,13 +59,15 @@ import kotlinx.coroutines.launch
 
 /**
  * لوحة «+» ⇒ «عملية جديدة» (`AddSheet`/`AddOperation` جوه `BottomBar` في النموذج): صرف · دخل · تحويل، المبلغ بلون النوع، التصنيف (أو نوع الدخل،
- * أو «إلى أين؟» للتحويل) **في مكان محجوز على صفين (88) عشان طول اللوحة ما يتغيرش**، و«من أين؟»، و«احفظ» (معطّل لحد ما الأساسي يكمل).
+ * أو «إلى أين؟» للتحويل) **في مكان محجوز على صفين (88) عشان طول اللوحة ما يتغيرش**، و«من أين؟» (المحفظة الأساسية مختارة لوحدها — ولو لسه
+ * مفيش أساسية: فاضية و«من أين تصرف عادةً؟»، `MainWallet.kt`)، و«احفظ» (معطّل لحد ما الأساسي يكمل — والمحفظة منه).
  * الحفظ ⇒ `QuickAddOperation` (`AddTransaction`) ⇒ اللوحة تقفل ورسالة «سُجّلت: …». الخطأ جنب المبلغ. «بصوتك» ⇒ «غير متاحة بعد» (مفيش خدمة صوت).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
-    val shell = LocalSpace.current.shell
+    val space = LocalSpace.current
+    val shell = space.shell
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var options by remember { mutableStateOf<AddOperationOptions?>(null) }
@@ -78,12 +80,15 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
     var voiceNote by remember { mutableStateOf(false) }
+    // فيه محفظة أساسية للبلد دي وقت ما اللوحة اتفتحت؟ لأ ⇒ «من أين تصرف عادةً؟» واللي يختاره بيبقى الأساسي بعد الحفظ (`MainWallet.kt`)
+    var hadMain by remember { mutableStateOf(false) }
     LaunchedEffect(visible, shell) {
         if (!visible) return@LaunchedEffect
         kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null; voiceNote = false
         val o = shell.addOptions()
         options = o
-        from = o.wallets.firstOrNull { it.kind != "cash" }?.id ?: o.wallets.firstOrNull()?.id
+        from = initialFromWallet(MainWalletChoice.of(space.space.id), o.wallets)
+        hadMain = from != null
         to = null
     }
     val o = options
@@ -128,7 +133,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            FieldLabel(t(TextKey.ADD_FROM), Modifier.weight(1f))
+            FieldLabel(t(fromLabelKey(hadMain)), Modifier.weight(1f))
             for (w in o?.wallets.orEmpty().take(3)) SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null })
         }
         if (o != null && o.wallets.isEmpty()) FieldError(t(TextKey.ADD_NO_WALLET))
@@ -143,7 +148,12 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
                         is AddOperationResult.Invalid -> error = r.message
                         is AddOperationResult.Saved -> {
                             val label = category?.name ?: income?.let { ruleFor(it).label }
-                            toaster.show(t(TextKey.ADD_SAVED, amountLabel(r.transaction.amountMinor, r.transaction.currency, tone) + (label?.let { " · $it" } ?: "")))
+                            val saved = t(TextKey.ADD_SAVED, amountLabel(r.transaction.amountMinor, r.transaction.currency, tone) + (label?.let { " · $it" } ?: ""))
+                            // أول مصروف من غير أساسية ⇒ اللي اختاره بقى الأساسي («وصار «البنك» الأساسي» — النموذج)
+                            val firstMain = from?.takeIf { !hadMain }
+                            if (firstMain != null) MainWalletChoice.set(space.space.id, firstMain)
+                            val mainName = firstMain?.let { id -> o?.wallets?.firstOrNull { it.id == id }?.name }
+                            toaster.show(if (mainName != null) t(TextKey.ADD_SAVED_MAIN, saved, mainName) else saved)
                             onClose()
                         }
                     }

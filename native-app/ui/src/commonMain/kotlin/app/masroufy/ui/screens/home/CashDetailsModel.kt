@@ -13,7 +13,7 @@ import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.text.t
 
 /**
- * لوحة الكاش (`CashDetails` — §26 · §32 · `LoadCashSummary`): الرصيد · اللي دخل واللي خرج من يوم رصيد البداية · المصروف كاش في الشهر ·
+ * لوحة الكاش (`CashDetails` — §26 · §32 · `LoadCashSummary`): الرصيد (من يوم رصيد البداية) · المصروف كاش في الشهر ·
  * عمليات الكاش في الشهر. كل الأرقام من `CashSummary` بالهللة — هنا ترتيب وكلام بس.
  * ⚠️ **ناقص في المنطق** (النموذج راسمه — مش متبني في كوتلن، فمش ظاهر هنا): «آخر عدّ» · «عددت الكاش الآن» والفرق («صرف كاش غير مسجّل»
  * بنقطة حمرا / «كاش زائد») · التحديث لوحده (السحب من الصرّاف · الدفع بالصوت · سؤال «كم معك كاش؟» كل مدة) · أكتر من محفظة كاش في البلد
@@ -23,8 +23,6 @@ data class CashView(
     val walletName: String,
     val currency: Currency,
     val balanceMinor: Halalas,
-    val inSinceOpeningMinor: Halalas,
-    val outSinceOpeningMinor: Halalas,
     val spentInPeriodMinor: Halalas,
     /** «من رصيد البداية في ١ سبتمبر». */
     val sinceLine: String,
@@ -43,8 +41,6 @@ fun cashViewOf(summary: CashSummary?): CashView? {
         walletName = w.name,
         currency = w.currency,
         balanceMinor = s.balanceMinor,
-        inSinceOpeningMinor = s.inSinceOpeningMinor,
-        outSinceOpeningMinor = s.outSinceOpeningMinor,
         spentInPeriodMinor = s.spentInPeriodMinor,
         sinceLine = t(TextKey.CASH_DETAILS_SINCE, dayMonth(w.openingAt)),
         // اللوحة طولها ثابت ⇒ أحدث [CASH_ROWS] بس (القايمة الكاملة في «العمليات» بفلتر المحفظة)
