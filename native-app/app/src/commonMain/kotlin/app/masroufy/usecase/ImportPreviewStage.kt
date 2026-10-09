@@ -3,6 +3,7 @@ package app.masroufy.usecase
 import app.masroufy.core.CategorizationInput
 import app.masroufy.core.CategorizeDeps
 import app.masroufy.core.DedupeCandidate
+import app.masroufy.core.DedupeVerdict
 import app.masroufy.core.ExistingRecord
 import app.masroufy.core.Id
 import app.masroufy.core.MatchingState
@@ -91,6 +92,26 @@ private suspend fun loadExisting(deps: ImportStatementDeps, accountIdentity: Str
     return existing
 }
 
+/**
+ * مراجعة S1 — §72 «الرسالة بتتسجل مرة واحدة مهما حصل»: منع التكرار مقيد بهوية الحساب، و§75-11 بيوزّع رسايل البنك على المحافظ بآخر 4 أرقام —
+ * فرسالة اتسجلت في محفظة والجهاز وقع قبل ما تتشال من الصندوق، والمحاولة الجاية راحت محفظة تانية (المالك ربط البنك بمحفظة تانية · كتب أرقام
+ * حساب) كانت بتتسجل **تاني**. مرجع الرسالة (`SMS:<بصمة>` = المرسل + وقت الوصول + النص) **فريد في البلد كلها** ⇒ لو اتسجل في أي محفظة تانية
+ * (وعمليته لسه موجودة) = مكررة. رسايل البنك بس — الكشف زي ما هو.
+ */
+private suspend fun smsRecordedElsewhere(deps: ImportStatementDeps, request: ImportRequest, rows: List<ParsedRow>): Map<String, String> {
+    if (request.sourceType != app.masroufy.core.ImportSourceType.SMS) return emptyMap()
+    val refs = rows.mapNotNull { row -> row.reference?.let(::jsTrim)?.takeIf { it.startsWith("SMS:") } }.distinct()
+    if (refs.isEmpty()) return emptyMap()
+    val records = deps.sources.listBySourceReferences(refs).filter { it.accountIdentity != request.accountIdentity && it.transactionId != null }
+    val alive = deps.txns.findByIds(records.mapNotNull { it.transactionId }.distinct()).map { it.id }.toSet()
+    val out = LinkedHashMap<String, String>()
+    for (record in records) {
+        val txn = record.transactionId ?: continue
+        if (txn in alive) out.getOrPut(jsTrim(record.sourceReference ?: continue)) { txn }
+    }
+    return out
+}
+
 internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportRequest): ImportPreview {
     val fileHash = importFingerprint(request.content, request.accountIdentity)
 
@@ -109,6 +130,7 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
         ?: parseRows(parseCsv(request.content), request.schema)
 
     val index = buildDedupeIndex(loadExisting(deps, request.accountIdentity))
+    val elsewhere = smsRecordedElsewhere(deps, request, outcome.rows)
     val catDeps = buildCategorizeDeps(deps)
 
     val lines = mutableListOf<ImportPreviewLine>()
@@ -123,6 +145,11 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
         verdict.matchedBalanceKey?.let { key -> balanceUsed[key] = (balanceUsed[key] ?: 0) + 1 }
 
         val ref = candidate.sourceReference?.let { jsTrim(it) }
+        // مراجعة S1: نفس رسالة البنك اتسجلت في محفظة تانية في البلد ⇒ مكررة (مش جديدة ولا «شبه») — بتتشال من الصندوق من غير تسجيل
+        val recordedElsewhere = if (ref == null) null else elsewhere[ref]
+        if (ref != null && recordedElsewhere != null && (verdict.state == MatchingState.NEW || verdict.state == MatchingState.SIMILAR)) {
+            verdict = DedupeVerdict(MatchingState.DUPLICATE, uiText(TextKey.DEDUPE_SAME_REFERENCE, ref), matchedTransactionId = recordedElsewhere)
+        }
         if (verdict.state == MatchingState.NEW && !ref.isNullOrEmpty()) {
             val key = "${request.accountIdentity}|$ref"
             val priorLine = seenInBatch[key]

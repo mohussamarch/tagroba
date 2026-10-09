@@ -35,7 +35,7 @@ class SmsLearnModeTest {
         assertTrue(first.unknownShape.isEmpty())
         assertNotNull(smsConfirmCandidate(w.auto().waiting().messageIds), "بتتحسب في «رسايل محتاجة تأكيدك»")
 
-        val screen = space.screen(w.inbox, SmsLearning(w.inbox, "sa"))
+        val screen = space.screen(w.inbox)
         val line = screen.load(SmsReviewTarget(BANK.id, BANK.name)).ready.single()
         assertEquals(uiText(TextKey.SMS_WAIT_NEW_SHAPE) to TextKey.SMS_WAIT_NEW_SHAPE, line.confirmReason to line.waitReason)
         assertEquals(1, screen.recordAll(emptyMap(), emptyList()), "ضغطة المالك = التأكيد")
@@ -81,7 +81,7 @@ class SmsLearnModeTest {
         assertEquals(0, r.recorded)
         assertEquals(listOf("r2", "c2"), r.waiting)
         assertTrue(r.newShape.isEmpty(), "مش شكل جديد — سببهم هما")
-        val ready = space.screen(w.inbox, SmsLearning(w.inbox, "sa")).load(SmsReviewTarget(BANK.id, BANK.name)).ready.associateBy { it.messageId }
+        val ready = space.screen(w.inbox).load(SmsReviewTarget(BANK.id, BANK.name)).ready.associateBy { it.messageId }
         assertEquals(TextKey.SMS_WAIT_REFUND, ready.getValue("r2").waitReason)
         assertEquals(TextKey.SMS_WAIT_CARD_CREDIT, ready.getValue("c2").waitReason)
     }
@@ -90,15 +90,17 @@ class SmsLearnModeTest {
         val w = world().enable()
         val space = w.spaces.single()
         val target = SmsReviewTarget(BANK.id, BANK.name)
-        val screen = space.screen(w.inbox, SmsLearning(w.inbox, "sa"))
+        val screen = space.screen(w.inbox)
         w.receive(sms("m1", CAFE))
         screen.load(target)
         screen.dismiss(listOf("m1"), target)
         assertTrue(w.memory.learnedShapes("sa").isEmpty(), "شيل ⇒ ولا تعلّم")
 
-        // نفس الرسالة اتسجلت قبل كده من شاشة من غير تعلّم ⇒ رجعت «مكررة»
+        // نفس الرسالة اتسجلت قبل كده ⇒ رجعت «مكررة». (مراجعة S1: مفيش شاشة من غير تعلّم — فبعد التسجيل الأول بننسى الشكل)
         w.receive(sms("m2", MART))
-        space.screen(w.inbox).apply { load(target) }.recordAll(emptyMap(), emptyList())
+        assertEquals(1, space.screen(w.inbox).apply { load(target) }.recordAll(emptyMap(), emptyList()))
+        w.auto().forgetLayouts("sa", "TESTBANK")
+        assertTrue(w.memory.learnedShapes("sa").isEmpty())
         w.receive(sms("m2-again", MART))
         screen.load(target)
         assertEquals(0, screen.recordAll(emptyMap(), emptyList()))

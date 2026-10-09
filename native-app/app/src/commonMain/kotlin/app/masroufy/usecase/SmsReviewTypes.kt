@@ -13,8 +13,8 @@ import app.masroufy.core.TextKey
 
 /** أنواع شاشة رسايل البنك (`ReviewSmsInbox`) — اتنقلت هنا عشان حد الـ300 سطر (S1). */
 
-/** نتيجة التسجيل لحالات الاستخدام — [batchId] بس لو اتسجل حاجة فعلًا. */
-internal class SmsRecordOutcome(val recorded: Int, val duplicates: Int, val batchId: Id?)
+/** نتيجة التسجيل لحالات الاستخدام — [batchIds] الدفعات اللي اتسجل فيها حاجة فعلًا (دفعة لكل محفظة — مراجعة S1). */
+internal class SmsRecordOutcome(val recorded: Int, val duplicates: Int, val batchIds: List<Id>)
 
 data class SmsReviewLine(
     val messageId: String,
@@ -40,8 +40,13 @@ data class SmsReviewLine(
     val kind: SmsKind = SmsKind.OTHER,
     /** S1: مفتاح [confirmReason] (عشان العدّ يفرّق «شكل جديد» عن «كلمات عامة» من غير ما يقارن نصوص). */
     val waitReason: TextKey? = null,
-    /** S1 (§75-2): سؤال جوه التطبيق على الرسالة دي — «ده راتبك؟» ([AskKind.IS_SALARY]) — أو null. */
+    /**
+     * S1 (§75-2): سؤال جوه التطبيق على الرسالة دي — «ده راتبك؟» ([AskKind.IS_SALARY]) — أو null. مراجعة S1: الرسالة اللي عليها السؤال
+     * **ما بتتسجلش** بـ«سجّل الكل» لحد ما يترد عليه (`ReviewSmsInbox.answerSalary` · `AutoRecordSms.confirm(…, isSalary)`).
+     */
     val question: AskKind? = null,
+    /** مراجعة S1 (§75-11): المحفظة اللي الرسالة دي هتتسجل فيها — ممكن تبقى غير محفظة الشاشة (أرقام حسابها لمحفظة تانية). */
+    val walletId: Id? = null,
 )
 
 data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)

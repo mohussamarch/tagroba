@@ -25,7 +25,11 @@ data class InboxView(
 
 data class InboxLine(val id: String, val lineNumber: Int)
 
-class ManageSmsInbox(private val port: SmsInboxPort, private val parse: BankSmsParser) {
+class ManageSmsInbox(
+    /** الصندوق نفسه — `SmsLane` بيبني منه تعلّم البلد (§77-A) عشان الشاشة والخلفية يقروا نفس التخزين. */
+    internal val port: SmsInboxPort,
+    private val parse: BankSmsParser,
+) {
     val available: Boolean get() = port.available
 
     private fun prepare(state: SmsInboxState) = InboxView(

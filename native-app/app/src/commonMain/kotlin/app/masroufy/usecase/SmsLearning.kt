@@ -26,6 +26,9 @@ class SmsLearning(val inbox: SmsInboxPort, val spaceId: String) {
     suspend fun learn(sender: String, keys: Set<String>) = inbox.learnShapes(spaceId, sender, keys)
 
     suspend fun salaryAnswer(sender: String): Boolean? = inbox.salaryAnswer(spaceId, sender)
+
+    /** §75-2: رد المالك على «ده راتبك؟» لرسايل [sender] (null = يتسأل تاني). */
+    suspend fun setSalaryAnswer(sender: String, answer: Boolean?) = inbox.setSalaryAnswer(spaceId, sender, answer)
 }
 
 /** لقطة واحدة من [SmsLearning] لمعاينة واحدة (بنقرا التخزين مرة لكل مرسل بس). */

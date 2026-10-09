@@ -37,9 +37,7 @@ class AutoRecordSmsRefundTest {
         assertEquals(sar.map { it.first }, world.queued(), "المستني فضل في الصندوق — ما ضاعش")
         assertEquals(listOf(2_500L), space.all().map { it.amountMinor })
 
-        val screen = ReviewSmsInbox(
-            ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(space.importDeps()), MemoryMerchantRepository(), space.categories, space.ids),
-        )
+        val screen = space.screen(world.inbox)
         val ready = screen.load(SmsReviewTarget(BANK.id, BANK.name)).ready.associateBy { it.messageId }
         for (id in listOf("rf1", "rf2", "rf3")) assertEquals(uiText(TextKey.SMS_WAIT_REFUND), ready.getValue(id).confirmReason, id)
         for (id in listOf("atm1", "atm2")) assertEquals(uiText(TextKey.SMS_WAIT_CASH_WITHDRAWAL), ready.getValue(id).confirmReason, id)

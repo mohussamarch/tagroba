@@ -26,8 +26,11 @@ private class EgyptShape(val bank: String, val id: String, head: String, rest: S
     val named by lazy { Regex("(?:${withNameGroups(head)})${withNameGroups(rest)}") }
 }
 
-/** الخانات الحرة في القوالب: المحل ([M]) · المحل اللاتيني ([ML]) · الاسم ([NM]) — كل واحدة نص ثابت مش جوه التانية. */
-private fun withNameGroups(pattern: String): String = listOf(M, ML, NM).fold(pattern) { p, slot -> p.replace(slot, "($slot)") }
+/**
+ * الخانات الحرة في القوالب: المحل ([M]) · المحل اللاتيني ([ML]) · الاسم ([NM]) · رقم المرجع ([REF] — مراجعة S1: الحروف اللي في أوله
+ * «TT9921» كانت بتفضل في البصمة) — كل واحدة نص ثابت مش جوه التانية.
+ */
+private fun withNameGroups(pattern: String): String = listOf(M, ML, NM, REF).fold(pattern) { p, slot -> p.replace(slot, "($slot)") }
 
 private const val N = "(?:[\\d,٬]+(?:[.٫]\\d+)?|[.٫]\\d+)"
 private const val EGC = "(?:جم|جنيه|جنية|egp|l\\.?e|ج\\.م\\.?|ج|e£|£e)"
@@ -257,11 +260,12 @@ internal fun egyptShape(body: String, direction: Direction, amount: Halalas? = n
 internal fun egyptLayoutSkeleton(body: String): String? {
     val key = shapeKey(body, dropColons = false)
     val shape = EGYPT_SHAPES.firstOrNull { it.full.matches(key) } ?: return null
-    val base = shape.full.matchEntire(key)?.groupValues?.drop(1) ?: return null
-    // الخانات الحرة = مجموعات [EgyptShape.named] اللي مش في [EgyptShape.full] (نفس الأرقام بالظبط في الاتنين)
-    val names = shape.named.matchEntire(key)?.groupValues?.drop(1)?.toMutableList() ?: return null
-    for (value in base) names.remove(value)
-    var text = key
-    for (name in names.filter { it.isNotBlank() }.sortedByDescending { it.length }) text = text.replace(name.trim(), "<name>")
-    return "${shape.bank}/${shape.id}\n" + maskLayoutValues(text)
+    val base = shape.full.matchEntire(key)?.groups?.drop(1)?.mapNotNull { it?.range }?.toMutableList() ?: return null
+    // الخانات الحرة = مجموعات [EgyptShape.named] اللي مش في [EgyptShape.full] (المجموعات الزيادة ما بتغيّرش المطابقة ⇒ نفس الأماكن بالظبط).
+    // مراجعة S1: بالمكان مش بالنص — «text.replace(القيمة)» كان بيمسح نفس الحروف في أي حتة تانية في الجملة (مرجع «5» جوه مبلغ «500»)
+    val slots = shape.named.matchEntire(key)?.groups?.drop(1)?.mapNotNull { it?.range }?.toMutableList() ?: return null
+    for (range in base) slots.remove(range)
+    val text = StringBuilder(key)
+    for (range in slots.filter { !it.isEmpty() }.distinct().sortedByDescending { it.first }) text.replace(range.first, range.last + 1, "<name>")
+    return "${shape.bank}/${shape.id}\n" + maskLayoutValues(text.toString())
 }

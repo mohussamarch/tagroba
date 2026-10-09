@@ -71,6 +71,12 @@ interface SourceRecordRepository {
 
     suspend fun listByTransactionIds(ids: List<Id>): List<SourceRecord>
 
+    /**
+     * السجلات اللي مرجعها واحد من [references] **في البلد كلها** (أي هوية حساب) — مراجعة S1: رسالة البنك (`SMS:<بصمة>`) اتسجلت في محفظة
+     * وبعدين اتوزعت على محفظة تانية (§75-11) لازم تطلع «مكررة» مش جديدة. قراية بس على خانة موجودة (`sourceReference`).
+     */
+    suspend fun listBySourceReferences(references: List<String>): List<SourceRecord>
+
     suspend fun saveMany(records: List<SourceRecord>)
 
     suspend fun deleteMany(ids: List<Id>)

@@ -20,6 +20,10 @@ class FirestoreSourceRecordRepository(private val space: FirestoreSpace) : Sourc
 
     override suspend fun listByTransactionIds(ids: List<Id>): List<SourceRecord> = space.findIn(codec, "transactionId", ids)
 
+    /** مراجعة S1: مرجع رسالة البنك في أي محفظة في البلد — نفس خانة `sourceReference` اللي التطبيق القديم بيكتبها (مفيش خانة جديدة). */
+    override suspend fun listBySourceReferences(references: List<String>): List<SourceRecord> =
+        space.findIn(codec, "sourceReference", references.distinct())
+
     override suspend fun saveMany(records: List<SourceRecord>) = space.saveAll(codec, records)
 
     override suspend fun deleteMany(ids: List<Id>) = space.deleteAll(codec.group, ids)

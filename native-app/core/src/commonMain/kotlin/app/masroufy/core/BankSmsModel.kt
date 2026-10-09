@@ -120,6 +120,8 @@ data class SmsRow(
     val foreignCurrency: String? = null,
     /** §75-12: المبلغ الأجنبي بالوحدة الصغرى **بتاعة العملة دي**. */
     val foreignAmountMinor: Long? = null,
+    /** مراجعة S1 (§75-11): آخر 4 أرقام **حسابك** بس (مش الكارت — `SmsOwnAccount.kt`) — التوزيع على المحافظ بيبص على ده بس. */
+    val accountLast4: String? = null,
 )
 
 /**
@@ -235,6 +237,7 @@ internal fun smsRow(
             ownLast4 = ownLast4Of(body, direction), shape = shape,
             fee = fee, bankReference = bankReference, learnKey = learnKey,
             foreignCurrency = foreignCurrency, foreignAmountMinor = foreignAmountMinor,
+            accountLast4 = ownAccountLast4Of(body, direction),
         ),
     )
 }

@@ -187,10 +187,13 @@ class SmsFlowGoldenTest {
             )
             val contributed = mutableListOf<JsonElement>()
             var failContribute = false
+            val port = MemorySmsInbox(inbox, available = true)
             val review = ReviewSmsInbox(
                 ReviewSmsInboxDeps(
-                    inbox = ManageSmsInbox(MemorySmsInbox(inbox, available = true), ::parseBankSms),
+                    inbox = ManageSmsInbox(port, ::parseBankSms),
                     importer = importer, merchants = merchants, categories = categories, ids = ids,
+                    // S1: التعلّم والمحافظ لازم — هنا ولا شكل اتعلّم ولا محفظة في المستودع (ملف المرجع: شاشة محفظة واحدة زي التطبيق الحالي)
+                    learning = SmsLearning(port, "sa"), wallets = app.masroufy.memory.MemoryWalletRepository(emptyList()),
                     contribute = if (input.bool("withContribute")) {
                         { c, categoryId ->
                             if (failContribute) throw IllegalStateException("الشبكة مش متاحة")

@@ -575,7 +575,7 @@ enum class TextKey {
     SMS_WAIT_CARD_CREDIT, SMS_WAIT_CASH_DEPOSIT, SMS_WAIT_PURCHASE_CASH,
     // ── عقد C0: كل شريحة بتضيف مفاتيحها تحت علامتها بس (سطر فاضي بين كل علامة والتانية) ──
     // S1 — رسايل البنك: وضع التعلّم · رسالة من غير تاريخ · «ده راتبك؟» · بنك بحسابين (§77-A · §77-C · §75-2 · §75-11) — القيم في `TextsSmsLearn.kt`
-    SMS_WAIT_NEW_SHAPE, SMS_WAIT_IS_SALARY, SMS_ASK_IS_SALARY,
+    SMS_WAIT_NEW_SHAPE, SMS_WAIT_IS_SALARY, SMS_ASK_IS_SALARY, SMS_ASK_OWN_ACCOUNT,
 
     // S2 — الرسوم · السحب للكاش · الاسترداد (§77-B · §75-4 · §75-6) — القيم في `TextsSmsFees.kt`
 

@@ -23,7 +23,9 @@ import app.masroufy.usecase.AutoRecordSms
 import app.masroufy.usecase.AutoRecordSmsDeps
 import app.masroufy.usecase.ImportStatementDeps
 import app.masroufy.usecase.ManageSmsInbox
+import app.masroufy.usecase.OwnAccountByLast4Effect
 import app.masroufy.usecase.SmsLane
+import app.masroufy.usecase.SmsSalaryEffect
 import java.io.File
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
@@ -91,12 +93,14 @@ class SmsDeviceScriptTest {
         val sources = MemorySourceRecordRepository()
         val batches = MemoryImportBatchRepository()
         val parties = MemoryTransferPartyRepository()
+        val wallets = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")))
+        // آثار رسايل البنك زي التشغيل الحقيقي (S1 — `SmsLane.of` بيطلبهم)
         val importDeps = ImportStatementDeps(
             txns = txns, sources = sources, batches = batches, merchants = MemoryMerchantRepository(), categories = MemoryCategoryRepository(),
             rules = MemoryRuleRepository(), uow = MemoryUnitOfWork(listOf(txns, sources, batches, parties)), ids = SequentialIdGenerator(),
             clock = FixedClock("${today}T11:00:00.000Z"), transferParties = parties,
+            effects = listOf(OwnAccountByLast4Effect(wallets), SmsSalaryEffect(inbox, "sa")),
         )
-        val wallets = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")))
         val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, listOf(SmsLane.of("sa", importDeps, ManageSmsInbox(inbox, ::parseBankSms), wallets))))
         val first = auto.run()
         assertEquals(0, first.recorded, "§77-A: أول رسالة من الشكل ده بتستنى")

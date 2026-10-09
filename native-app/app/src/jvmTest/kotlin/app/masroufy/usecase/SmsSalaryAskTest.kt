@@ -31,7 +31,7 @@ class SmsSalaryAskTest {
         val r = w.auto().run()
         assertEquals(0, r.recorded)
         assertEquals(listOf("s1"), r.waiting)
-        val line = w.spaces.single().screen(w.inbox, SmsLearning(w.inbox, "sa")).load(SmsReviewTarget(BANK.id, BANK.name)).ready.single()
+        val line = w.spaces.single().screen(w.inbox).load(SmsReviewTarget(BANK.id, BANK.name)).ready.single()
         assertEquals(AskKind.IS_SALARY, line.question)
         assertEquals(uiText(TextKey.SMS_WAIT_IS_SALARY), line.confirmReason)
         assertEquals(listOf(PendingAsk(AskKind.IS_SALARY, "sa", messageId = "s1", date = "2026-10-01")), SmsAskSource(w.auto()).pending("2026-01-01", "2026-01-02"))
@@ -88,7 +88,7 @@ class SmsSalaryAskTest {
         val w = world().enable()
         val space = w.spaces.single()
         w.receive(sms("p1", withPayer))
-        val line = space.screen(w.inbox, SmsLearning(w.inbox, "sa")).load(SmsReviewTarget(BANK.id, BANK.name)).ready.single()
+        val line = space.screen(w.inbox).load(SmsReviewTarget(BANK.id, BANK.name)).ready.single()
         assertNull(line.question, "الجهة مكتوبة ⇒ سؤال «ده مرتب من …؟» (§64) مش «ده راتبك؟»")
         assertEquals(TextKey.SMS_WAIT_NEW_SHAPE, line.waitReason)
         // حتى لو المرسل اترد عليه «أيوه» قبل كده، الرسالة اللي فيها جهة ما بتتلمسش هنا

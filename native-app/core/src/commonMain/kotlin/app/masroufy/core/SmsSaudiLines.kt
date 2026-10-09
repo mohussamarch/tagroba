@@ -149,10 +149,18 @@ private fun slotOfLine(key: String): LineSlot {
     return LineSlot(groupOf(m.groupValues[1].trim()), type, value)
 }
 
-/** خانة السطر ومعاها شكله ([LineSlot.skeleton] = «نوع الخانة:اللابل[:نوع القيمة]»). */
+/** مراجعة S1: لابل رقم مرجع — قيمته (أرقام بس أو حروف وأرقام «FT4455») ما بتغيّرش الشكل، فنوعها مش جوه البصمة. */
+private val REF_LABEL = Regex("^(?:mtcn|مرجع|الرقم المرجعي|ref|ref\\. no\\.?|ref no\\.?)$")
+
+/** خانة السطر ومعاها شكله ([LineSlot.skeleton] = «نوع الخانة:اللابل[:نوع القيمة]» — والمرجع «…:<ref>» من غير نوع). */
 private fun slotWith(key: String, family: String, m: MatchResult, withType: Boolean = false): LineSlot {
     val slot = slotOfLine(key)
-    val skeleton = "$family:${labelOf(key, m)}" + if (withType) ":${slot.type}" else ""
+    val label = labelOf(key, m)
+    val skeleton = "$family:$label" + when {
+        !withType -> ""
+        REF_LABEL.matches(label) -> ":<ref>"
+        else -> ":${slot.type}"
+    }
     return LineSlot(slot.group, slot.type, slot.value, skeleton)
 }
 

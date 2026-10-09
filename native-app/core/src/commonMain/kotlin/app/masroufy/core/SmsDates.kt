@@ -140,8 +140,10 @@ internal fun hasDateToken(body: String): Boolean =
         VF_SLOT.containsMatchIn(body)
 
 /**
- * الرسالة اللي مفيهاش تاريخ بتاخد يوم الوصول **بس** لو فيها عبارة عملية خلصت (تم … · إيداع · received · credited · has been …
- * · Successful). رمز أو عرض أو طلب أو «pending» من غير تاريخ ما يتسجلش بتاريخ النهارده (مراجعة جلسة 33).
+ * الرسالة اللي مفيهاش تاريخ ومش على شكل معروف بتاخد يوم الوصول **بس** لو فيها عبارة عملية خلصت (تم … · إيداع · received · credited ·
+ * has been … · Successful). رمز أو عرض أو طلب أو «pending» من غير تاريخ ما يتسجلش بتاريخ النهارده (مراجعة جلسة 33): إعلان زي «Use your
+ * debit card at TEST GROCER and save EGP 50» مفيش حارس بيمسكه، وكان هيبقى «جاهز» و«سجّل الكل» يسجله صرف. مراجعة S1: **البلدين**
+ * بنفس القاعدة ([hasDoneWording]) — السعودية كانت للشكل المعروف بس، فكاش باك البطاقة («تم استرداد و إضافة …») كان بيترفض.
  */
 private val DONE_PHRASE = Regex(
     "(?<![\\u0600-\\u06FF])و?تم(?![\\u0600-\\u06FF])|إيداع|ايداع|(?<![A-Za-z])(?:has|have)[ \\t]+been(?![A-Za-z])" +
@@ -152,6 +154,9 @@ private val DONE_PHRASE = Regex(
         "|(?<![\\u0600-\\u06FF])(?:جالك|جالكم|قبضت|حولت|سحبت|شحنت)(?![\\u0600-\\u06FF])|(?<![A-Za-z])done(?![A-Za-z])",
     RegexOption.IGNORE_CASE,
 )
+
+/** الرسالة فيها عبارة عملية خلصت ([DONE_PHRASE]) — دليل إن الرسالة اللي مفيهاش تاريخ عملية حصلت فعلًا (السعودية ومصر). */
+internal fun hasDoneWording(body: String): Boolean = DONE_PHRASE.containsMatchIn(body)
 
 /** يوم/شهر من غير سنة: سنة الوصول (بتوقيت القاهرة) أو اللي قبلها، والمقبول واحد بس. */
 private fun withYear(month: Int, day: Int, receivedAt: String, received: Long): IsoDate? {

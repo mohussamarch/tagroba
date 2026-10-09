@@ -32,9 +32,7 @@ class AutoRecordSmsRound8Test {
     private val depositEn = "Deposit ATM\nAmount: SAR 2,000.00\nAccount: **1188\nOn: 2026-10-07 09:12"
     private val cashback = "PoS Purchase & Cashback\nAmount: SAR 350.00\nAt: MARJAN HYPER\nOn: 2026-10-07 18:40"
 
-    private fun screen(world: SmsWorld, space: SmsSpace) = ReviewSmsInbox(
-        ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(space.importDeps()), MemoryMerchantRepository(), space.categories, space.ids),
-    )
+    private fun screen(world: SmsWorld, space: SmsSpace) = space.screen(world.inbox)
 
     @Test fun aCardCreditNeverCancelsTheCardPaymentDebit() = runBlocking<Unit> {
         val bank = Wallet("w-sa-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01", accountLast4 = "1188")
@@ -110,10 +108,14 @@ class AutoRecordSmsRound8Test {
             "PoS Purchase\nAmount: SAR 64.25\nCard: *9001\nAccount: **4417\nAt: WOMBAT PANTRY\nOn: 2026-10-07 18:22",
         )
         world.receive(*bodies.mapIndexed { i, b -> sms("p$i", b) }.toTypedArray(), sms("cafe", CAFE))
-        // الشاشة على محفظة البنك المربوط لسه بتقول «حساب تاني» (الشاشة بتعرض محفظة واحدة؛ التوزيع بالأرقام في التسجيل)
+        // مراجعة S1: الشاشة على محفظة البنك المربوط بتوزّع زي الخلفية — كل كتابة رايحة محفظة الحساب التاني ومن غير «حساب تاني»
+        // (قبل كده كانت بتقول «حساب تاني» و«سجّل الكل» كان بيسجّلها في محفظة الشاشة)
         val target = SmsReviewTarget(bankA.id, bankA.name, accountLast4 = "6618", otherAccountsLast4 = setOf("4417"))
-        val ready = screen(world, space).load(target).ready.filter { it.messageId != "cafe" }
-        assertTrue(ready.all { it.confirmReason == uiText(TextKey.SMS_WAIT_OTHER_ACCOUNT) }, ready.joinToString { "${it.messageId}: ${it.confirmReason}" })
+        val all = screen(world, space).load(target).ready
+        val ready = all.filter { it.messageId != "cafe" }
+        assertEquals(bodies.size, ready.size)
+        assertTrue(ready.all { it.walletId == bankB.id && it.waitReason == null }, ready.joinToString { "${it.messageId}: ${it.walletId} ${it.confirmReason}" })
+        assertEquals(bankA.id, all.single { it.messageId == "cafe" }.walletId, "من غير أرقام حساب ⇒ محفظة الشاشة")
         // كل كتابة لوحدها (نفس التحويل بكذا كتابة — مع بعض كانوا هيبقوا «شبه عملية موجودة»)
         for ((i, body) in bodies.withIndex()) {
             val alone = SmsSpace(wallets = listOf(CASH, bankA, bankB))

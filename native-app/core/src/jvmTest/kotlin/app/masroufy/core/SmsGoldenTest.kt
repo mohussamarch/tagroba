@@ -56,41 +56,50 @@ class SmsGoldenTest {
         val cases = Golden.cases("sms", "parseBankSms")
         assertTrue(cases.isNotEmpty())
         val unexpected = mutableListOf<String>()
-        val seen = mutableSetOf<String>()
+        val seen = mutableSetOf<Pair<String, String>>()
         cases.forEachIndexed { i, case ->
             val input = case["in"] ?: JsonNull
             val message = BankSmsMessage(input.field("sender").str, input.field("receivedAt").str, input.field("body").str)
             // رقم السطر في الحالات = ترتيب الرسالة (كل رسالة ليها حالتين)
             val r = parseBankSms(message, (i + 2) / 2)
             val diff = Golden.firstDiff(plain(case["out"] ?: JsonNull), resultJson(r), "") ?: return@forEachIndexed
-            val reason = KNOWN_DIVERGENCE[message.body]
-            if (reason == null) {
+            val known = KNOWN_DIVERGENCE[message.body]
+            if (known == null) {
                 unexpected += "${message.body.replace("\n", "\\n")} @ ${message.receivedAt}: $diff"
                 return@forEachIndexed
             }
             // الفرق المسموح بس: كان «التاريخ مش واضح» وبقى بيتقري بيوم الوصول بتوقيت الرياض (§77-C)
             val old = case["out"]?.field("reason")?.str?.let(::plainEgyptian)
-            assertEquals(uiText(TextKey.SMS_DATE_UNCLEAR), old, "${message.body}: only a dateless rejection may change ($reason)")
+            assertEquals(uiText(TextKey.SMS_DATE_UNCLEAR), old, "${message.body}: only a dateless rejection may change (${known.reason})")
             val row = (r as? SmsParseResult.Ok)?.row
-            assertEquals(datelessDay(message.body, message.receivedAt, SmsClock.RIYADH), row?.date, "${message.body}: arrival day ($reason)")
-            assertTrue(row!!.shape.clear, "${message.body}: §77-C applies to known layouts only")
-            seen += message.body
+            // مراجعة S1: اليوم المتوقع **مكتوب بالحرف** لكل وقت وصول — مش محسوب بنفس الدالة اللي بنختبرها
+            assertEquals(known.days[message.receivedAt], row?.date, "${message.body} @ ${message.receivedAt}: arrival day (${known.reason})")
+            assertEquals(known.clear, row!!.shape.clear, "${message.body}: shape (${known.reason})")
+            seen += message.body to message.receivedAt
         }
         assertTrue(unexpected.isEmpty(), "golden sms.json differences outside KNOWN_DIVERGENCE:\n" + unexpected.joinToString("\n"))
-        assertEquals(KNOWN_DIVERGENCE.keys, seen, "KNOWN_DIVERGENCE must list exactly the changed entries")
+        val listed = KNOWN_DIVERGENCE.flatMap { (body, known) -> known.days.keys.map { body to it } }.toSet()
+        assertEquals(listed, seen, "KNOWN_DIVERGENCE must list exactly the changed entries (body and arrival time)")
     }
 
     @Test fun redactSms() { check("redactSms") { redactSms(it.str) } }
 
+    /** حالة اتغيّرت بقرار مالك: السبب · اليوم المتوقع لكل وقت وصول في ملف المرجع (بالحرف) · الشكل واضح ولا بيستنى. */
+    class Divergence(val reason: String, val days: Map<String, String>, val clear: Boolean)
+
     companion object {
         /**
-         * حالات ملف المرجع اللي **قرار مالك** غيّر نتيجتها — النص بالحرف ⇒ السبب. ملف المرجع نفسه ما اتلمسش.
+         * حالات ملف المرجع اللي **قرار مالك** غيّر نتيجتها — النص بالحرف ⇒ السبب واليوم المتوقع. ملف المرجع نفسه ما اتلمسش.
          * §77-C (2026-10-09): «الرسالة من غير تاريخ ⇒ ياخد يوم وصول الرسالة بتوقيت البلد — لكل الأشكال اللي مفيهاش تاريخ»: التطبيق
          * الحالي كان بيرفضها «التاريخ مش واضح»، ودلوقتي الشكل المعروف بيتقري بيوم الوصول.
          */
-        val KNOWN_DIVERGENCE: Map<String, String> = mapOf(
-            // حالتين (وصول 10:00 و23:30 بتوقيت جرينتش ⇒ 18 و19 سبتمبر بتوقيت الرياض): قالب الراجحي «حوالة محلية واردة» من غير تاريخ
-            "حوالة محلية واردة\nSR 7\nإلى: 9999\nرسوم: 2 SAR" to "§77-C: a known layout with no date takes the arrival day (Riyadh)",
+        val KNOWN_DIVERGENCE: Map<String, Divergence> = mapOf(
+            // قالب الراجحي «حوالة محلية واردة» من غير تاريخ: وصول 10:00 جرينتش = 13:00 الرياض يوم 18 · 23:30 جرينتش = 02:30 الرياض يوم 19
+            "حوالة محلية واردة\nSR 7\nإلى: 9999\nرسوم: 2 SAR" to Divergence(
+                "§77-C: a known layout with no date takes the arrival day (Riyadh)",
+                mapOf("2026-09-18T10:00:00Z" to "2026-09-18", "2026-09-18T23:30:00.123Z" to "2026-09-19"),
+                clear = true,
+            ),
         )
     }
 }

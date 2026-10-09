@@ -36,17 +36,31 @@ class SmsLane private constructor(
     internal val sources: SourceRecordRepository,
     /** عقد C0: نفس المستورد اللي جوه [review] (الآثار والسجلات). */
     internal val importer: ImportStatement,
+    private val importDeps: ImportStatementDeps,
+    private val screenDeps: ReviewSmsInboxDeps,
 ) {
+    /**
+     * **شاشة رسايل البنك للبلد دي** (مراجعة S1): نفس التعلّم (§77-A) والآثار (§75-2 · §75-11) والمحافظ بتوع التسجيل التلقائي — الشاشة
+     * اللي اتبنت لوحدها من غيرهم ما كانتش بتعلّم ولا بتسأل ولا بتوزّع. نسخة جديدة كل مرة (جلسة الشاشة ما تتخلطش بجلسة الخلفية).
+     */
+    fun screen(contribute: (suspend (MerchantContribution, Id) -> Unit)? = null): ReviewSmsInbox =
+        ReviewSmsInbox(screenDeps.copy(importer = ImportStatement(importDeps), contribute = contribute))
+
     companion object {
         /**
          * [importDeps] = **نفس** اعتمادات استيراد الكشف في البلد دي — فيها قرارات «زون التحويلات» (`transferParties`) لازم، وآثار وقت
-         * التسجيل (`effects` — S1: `OwnAccountByLast4Effect` · `SmsSalaryEffect`). [inbox] = الصندوق بقارئ رسايل البلد دي (حزمة البلد).
+         * التسجيل لرسايل البنك لازم (`effects` — S1: [OwnAccountByLast4Effect] · [SmsSalaryEffect]؛ مراجعة S1: من غيرهم «ده راتبك؟ أيوه»
+         * و«حسابي التاني» ما كانوش بيعملوا حاجة في صمت). [inbox] = الصندوق بقارئ رسايل البلد دي (حزمة البلد).
          */
         fun of(spaceId: String, importDeps: ImportStatementDeps, inbox: ManageSmsInbox, wallets: WalletRepository): SmsLane {
             require(importDeps.transferParties != null) { "SMS lane needs the transfer-party decisions (OVERRIDES §60/§72)" }
+            require(importDeps.effects.any { it is SmsSalaryEffect } && importDeps.effects.any { it is OwnAccountByLast4Effect }) {
+                "SMS lane needs the S1 record effects: SmsSalaryEffect and OwnAccountByLast4Effect (OVERRIDES §75-2/§75-11)"
+            }
             val importer = ImportStatement(importDeps)
-            val review = ReviewSmsInbox(ReviewSmsInboxDeps(inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids))
-            return SmsLane(spaceId, review, wallets, importDeps.sources, importer)
+            val learning = SmsLearning(inbox.port, spaceId)
+            val deps = ReviewSmsInboxDeps(inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids, learning, wallets)
+            return SmsLane(spaceId, ReviewSmsInbox(deps), wallets, importDeps.sources, importer, importDeps, deps)
         }
     }
 }
@@ -118,11 +132,10 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
             if (senders.isEmpty()) continue
             val mapping = deps.inbox.senderWallets(lane.spaceId)
             val wallets = lane.wallets.listAll()
-            val learning = SmsLearning(deps.inbox, lane.spaceId)
             for (sender in senders) {
                 val routes = routeSender(wallets, sender, mapping, items)
                 if (routes.unrouted > 0) unmapped += UnmappedSender(lane.spaceId, sender, routes.unrouted)
-                for (route in routes.routes) visit(lane, lane.review.loadFor(route.target, learning) { it.id in route.messageIds })
+                for (route in routes.routes) visit(lane, lane.review.loadFor(route.target) { it.id in route.messageIds })
             }
         }
         return unmapped
@@ -153,7 +166,7 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
             val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true)
             recorded += outcome.recorded
             duplicates += outcome.duplicates
-            outcome.batchId?.let { batch -> ids += lane.sources.listByBatch(batch).mapNotNull { it.transactionId } }
+            for (batch in outcome.batchIds) ids += lane.sources.listByBatch(batch).mapNotNull { it.transactionId }
         }
         val state = waitingLocked()
         val w = state.waiting
@@ -163,14 +176,16 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     /**
      * §77-A — **تأكيد المالك** لرسايل مستنية (من غير الشاشة): بتتسجل في محفظتها (الجديد · والشبيه لأنه اختاره) **وأشكالها بتتعلّم**، فرسايل
      * الشكل ده الجاية (واللي مستنية) بتتسجل لوحدها. المكرر بيتشال من غير ما يعلّم. بيرجّع عدد اللي اتسجل.
+     * §75-2 (مراجعة S1): الرسالة اللي عليها «ده راتبك؟» محتاجة الرد [isSalary] (بيتحفظ لمرسلها ويتطبق عليها وهي بتتسجل)؛ من غيره **ما
+     * بتتسجلش** وبتفضل مستنية بسؤالها — كانت بتتسجل «مش متصنف» والسؤال يرجع للرسالة الجاية، والنص بيقول «أكّد مرة إنه راتبك».
      */
-    suspend fun confirm(messageIds: List<String>): Int = SMS_RECORD_LOCK.withLock {
+    suspend fun confirm(messageIds: List<String>, isSalary: Boolean? = null): Int = SMS_RECORD_LOCK.withLock {
         if (off()) return@withLock 0
         val wanted = messageIds.toSet()
         var recorded = 0
         forEachRoute({ it.id in wanted }) { lane, view ->
             val similar = view.similar.filter { it.state == MatchingState.SIMILAR }.map { it.lineNumber }
-            recorded += lane.review.recordLocked(emptyMap(), similar, clearOnly = false).recorded
+            recorded += lane.review.recordLocked(emptyMap(), similar, clearOnly = false, salaryAnswer = isSalary).recorded
         }
         recorded
     }
@@ -193,13 +208,23 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      */
     suspend fun waiting(): SmsWaiting = SMS_RECORD_LOCK.withLock { if (off()) SmsWaiting(emptyList()) else waitingLocked().waiting }
 
-    /** سؤال لكل رسالة مستنية (`SmsAskSource`): «ده راتبك؟» لو عليها، وإلا «مستنية تأكيدك» — بلدها ويومها لو اتقرت. */
+    /**
+     * سؤال لكل رسالة مستنية (`SmsAskSource`): «ده راتبك؟» لو عليها، وإلا «مستنية تأكيدك» — بلدها ويومها لو اتقرت. الرسالة اللي ولا قارئ
+     * فهمها: بلدها = البلد اللي المالك ربط فيها البنك ده بمحفظة (لو بلد واحدة)، أو البلد الوحيدة؛ غير كده **مش معروفة** (`spaceId` فاضي)
+     * — مراجعة S1: كانت بتتحسب على أول بلد، فرسالة مصرية مش مقروءة كانت بتتعد في السعودية.
+     */
     internal suspend fun waitingAsks(): List<PendingAsk> = SMS_RECORD_LOCK.withLock {
         if (off()) return@withLock emptyList()
         val state = waitingLocked()
-        val fallback = deps.lanes.firstOrNull()?.spaceId.orEmpty()
+        val senderOf = deps.inbox.sync().messages.associate { it.id to smsSenderKey(it.sender) }
+        val mapped = deps.lanes.associate { it.spaceId to deps.inbox.senderWallets(it.spaceId).keys }
+        fun spaceOfUnread(id: String): String {
+            val sender = senderOf[id] ?: return ""
+            val spaces = mapped.filterValues { sender in it }.keys
+            return spaces.singleOrNull() ?: deps.lanes.singleOrNull()?.spaceId?.takeIf { spaces.isEmpty() } ?: ""
+        }
         state.waiting.messageIds.map { id ->
-            val (space, date) = state.where[id] ?: (fallback to null)
+            val (space, date) = state.where[id] ?: (spaceOfUnread(id) to null)
             PendingAsk(state.questions[id] ?: AskKind.SMS_WAITING, space, messageId = id, date = date)
         }
     }

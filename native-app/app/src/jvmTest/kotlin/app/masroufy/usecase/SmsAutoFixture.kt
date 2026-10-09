@@ -126,10 +126,8 @@ internal class SmsSpace(
 
     fun lane(inbox: SmsInboxPort) = SmsLane.of(spaceId, importDeps(smsEffects(inbox)), ManageSmsInbox(inbox, parse), wallets)
 
-    /** شاشة رسايل البنك للبلد دي — [learning] = §77-A (الشاشة الحقيقية بتدّيه؛ null = زي قبل وضع التعلّم). */
-    fun screen(inbox: SmsInboxPort, learning: SmsLearning? = null) = ReviewSmsInbox(
-        ReviewSmsInboxDeps(ManageSmsInbox(inbox, parse), ImportStatement(importDeps(smsEffects(inbox))), MemoryMerchantRepository(), categories, ids, learning = learning),
-    )
+    /** شاشة رسايل البنك للبلد دي — زي التشغيل الحقيقي (مراجعة S1): من البلد نفسها (`SmsLane.screen`) بالتعلّم والآثار والمحافظ. */
+    fun screen(inbox: SmsInboxPort) = lane(inbox).screen()
 
     suspend fun all(): List<Transaction> = txnStore.listByDateRange("0000-01-01", "9999-12-31")
 }

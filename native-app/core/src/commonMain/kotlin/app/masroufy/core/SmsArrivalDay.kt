@@ -5,7 +5,11 @@ package app.masroufy.core
  * التوقيت: السعودية +3 · مصر بتوقيتها (+2، والصيفي +3 من 2023).
  *
  * **الساعة المكتوبة** (اختيار Claude — من الرسالة نفسها مش تخمين): رسالة فيها ساعة بس من غير تاريخ والساعة المكتوبة **بعد** ساعة الوصول
- * بأكتر من [CLOCK_SKEW_MINUTES] دقيقة ⇒ الرسالة عدّت نص الليل وهي جاية ⇒ **اليوم اللي قبل** يوم الوصول («23:58» ووصلت 00:03 ⇒ امبارح).
+ * بأكتر من [CLOCK_SKEW_MINUTES] دقيقة ⇒ يا إما الرسالة عدّت نص الليل وهي جاية، يا إما الساعتين مش متفقين:
+ * - **عدّت نص الليل** = اتكتبت بالليل ووصلت الصبح بدري: التأخير اللي ده معناه (الوصول + 24 ساعة − المكتوب) **[MAX_OVERNIGHT_DELAY_MINUTES]
+ *   بالكتير** ⇒ **اليوم اللي قبل** يوم الوصول («23:58» ووصلت 00:03 ⇒ امبارح · «23:30» والجوال كان مقفول لحد 06:00 ⇒ امبارح).
+ * - **غير كده الساعتين مش متفقين** (ساعة البنك أو الجوال قدام · فرق ساعة في التوقيت الصيفي) ⇒ **يوم الوصول** (قاعدة المالك) **والرسالة
+ *   بتستنى تأكيد** ([datelessClockConflict]) — مراجعة S1: «14:45» ووصلت 14:25 كانت بتتسجل لوحدها امبارح (يعني تأخير 23 ساعة و40 دقيقة).
  * الهامش عشان ساعة البنك وساعة الجوال مش متطابقين بالثانية (البنك كاتب 14:23 ووصلت 14:22 ⇒ النهارده، مش امبارح).
  * قبل كده (الجولتين السابعة والتامنة) الرسالة دي كانت **بتستنى** تأكيد المالك عشان ممكن تتسجل يوم متأخر.
  */
@@ -13,9 +17,13 @@ internal enum class SmsClock { RIYADH, CAIRO }
 
 private const val HOUR_MS = 3_600_000L
 private const val MINUTE_MS = 60_000L
+private const val DAY_MINUTES = 24 * 60
 
 /** هامش فرق الساعة بين البنك والجوال (دقايق) — اختيار Claude. */
 internal const val CLOCK_SKEW_MINUTES = 15
+
+/** أطول تأخير معقول لرسالة اتكتبت بالليل ووصلت الصبح (الجوال مقفول طول الليل) — 8 ساعات، اختيار Claude (مراجعة S1). */
+internal const val MAX_OVERNIGHT_DELAY_MINUTES = 8 * 60
 
 /** آخر [weekday] في الشهر (الأحد = 0). رقم اليوم 0 = 1970-01-01 = خميس. */
 private fun lastWeekday(year: Int, month: Int, lastDay: Int, weekday: Int): Int {
@@ -68,19 +76,41 @@ internal fun writtenClockTimes(body: String): List<Int> = WRITTEN_CLOCK.findAll(
     }
 }.distinct().toList()
 
-/**
- * يوم رسالة **مفيهاش تاريخ** (§77-C): يوم الوصول بتوقيت البلد، أو اللي قبله لو الساعة المكتوبة (أول ساعة) بعد ساعة الوصول بأكتر من
- * [CLOCK_SKEW_MINUTES]. وقت الوصول تاريخ بس («2026-10-09») ⇒ اليوم ده زي ما هو (مفيش ساعة نقارن بيها).
- */
-internal fun datelessDay(body: String, receivedAt: String, clock: SmsClock): IsoDate? {
-    if (receivedAt.length == 10) return receivedAt.takeIf(::isValidIsoDate)
+/** الساعة المكتوبة (أول ساعة) قصاد ساعة الوصول: نفس اليوم · عدّت نص الليل · مش متفقين. */
+private enum class WrittenClock { SAME_DAY, CROSSED_MIDNIGHT, CONFLICT }
+
+/** يوم الوصول (رقم اليوم بتوقيت البلد) والساعة المكتوبة قصاده، أو null لو وقت الوصول مش مقروء. */
+private fun arrivalAndClock(body: String, receivedAt: String, clock: SmsClock): Pair<Long, WrittenClock>? {
     val local = localArrivalMillis(receivedAt, clock) ?: return null
     val day = local.floorDiv(DAY_MS)
     val arrivalMinute = ((local - day * DAY_MS) / MINUTE_MS).toInt()
-    val written = writtenClockTimes(body).firstOrNull()
-    val crossedMidnight = written != null && written > arrivalMinute + CLOCK_SKEW_MINUTES
-    return dayNumberToIso((if (crossedMidnight) day - 1 else day).toInt())
+    val written = writtenClockTimes(body).firstOrNull() ?: return day to WrittenClock.SAME_DAY
+    val verdict = when {
+        written <= arrivalMinute + CLOCK_SKEW_MINUTES -> WrittenClock.SAME_DAY
+        // التأخير لو الرسالة اتكتبت امبارح الساعة دي: من المكتوب لنص الليل + من نص الليل للوصول
+        DAY_MINUTES - written + arrivalMinute <= MAX_OVERNIGHT_DELAY_MINUTES -> WrittenClock.CROSSED_MIDNIGHT
+        else -> WrittenClock.CONFLICT
+    }
+    return day to verdict
 }
+
+/**
+ * يوم رسالة **مفيهاش تاريخ** (§77-C): يوم الوصول بتوقيت البلد، أو اللي قبله لو الساعة المكتوبة بتقول إنها عدّت نص الليل وهي جاية (اتكتبت
+ * بالليل ووصلت الصبح — [MAX_OVERNIGHT_DELAY_MINUTES]). الساعتين مش متفقين ⇒ يوم الوصول (والرسالة بتستنى — [datelessClockConflict]).
+ * وقت الوصول تاريخ بس («2026-10-09») ⇒ اليوم ده زي ما هو (مفيش ساعة نقارن بيها).
+ */
+internal fun datelessDay(body: String, receivedAt: String, clock: SmsClock): IsoDate? {
+    if (receivedAt.length == 10) return receivedAt.takeIf(::isValidIsoDate)
+    val (day, written) = arrivalAndClock(body, receivedAt, clock) ?: return null
+    return dayNumberToIso((if (written == WrittenClock.CROSSED_MIDNIGHT) day - 1 else day).toInt())
+}
+
+/**
+ * رسالة من غير تاريخ **ساعتها المكتوبة قدام ساعة الوصول** ومش بفرق ليلة معقول (مراجعة S1): ساعة البنك أو الجوال غلط، أو فرق ساعة في التوقيت
+ * الصيفي ⇒ مش واضح اليوم ⇒ الشكل الواضح بيستنى تأكيد المالك (اليوم = يوم الوصول). وقت الوصول تاريخ بس ⇒ مفيش حاجة نقارنها ⇒ false.
+ */
+internal fun datelessClockConflict(body: String, receivedAt: String, clock: SmsClock): Boolean =
+    receivedAt.length != 10 && arrivalAndClock(body, receivedAt, clock)?.second == WrittenClock.CONFLICT
 
 /** رسالة من غير تاريخ فيها **أكتر من ساعة مختلفة** ⇒ مش واضح أنهي ساعة العملية ⇒ الشكل الواضح بيستنى (القراية بأول ساعة). */
 internal fun ambiguousClock(body: String): Boolean = writtenClockTimes(body).size > 1

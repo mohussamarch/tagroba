@@ -105,6 +105,28 @@ class SmsLearnKeyTest {
         assertEquals(a, egKey("تم اضافة تحويل لحظي لحسابكم رقم 9911 بمبلغ 1,500 جم من هالة مثال رقم مرجعي 900000777 يوم 10-05"))
     }
 
+    /**
+     * مراجعة S1: قيمة **رقم المرجع** (أرقام بس أو حروف وأرقام) ما بتغيّرش البصمة — بنك بيغيّر حروف أول المرجع كل عملية كان عمره ما
+     * هيسجّل لوحده. السعودية: نوع القيمة في سطر «Ref:» · مصر: الحروف في خانة المرجع.
+     */
+    @Test fun anAlphanumericReferenceIsAValueInBothCountries() {
+        val numeric = saKey("PoS Purchase\nAmount: SAR 25.00\nAt: TEST CAFE\nRef: 445566\nOn: 2026-10-07")
+        assertEquals(numeric, saKey("PoS Purchase\nAmount: SAR 25.00\nAt: TEST CAFE\nRef: FT4455\nOn: 2026-10-07"), "Saudi «Ref:» with letters")
+        assertEquals(numeric, saKey("PoS Purchase\nAmount: SAR 9.50\nAt: OTHER SHOP\nRef: MT9001\nOn: 2026-10-06"))
+        assertNotEquals(numeric, saKey("PoS Purchase\nAmount: SAR 25.00\nAt: TEST CAFE\nOn: 2026-10-07"), "the reference line itself is part of the layout")
+        val nbe = "تم اضافة تحويل لحظي لحسابكم رقم 2277 بمبلغ 60 جم من سامر التجريبي رقم مرجعي "
+        assertEquals(egKey(nbe + "778812 يوم 10-07"), egKey(nbe + "TT9921 يوم 10-07"), "Egypt NBE reference with letters")
+        val vf = "23:58: Received EGP320.00 from 00201001112244 to Mobile Account Number 01009998877. Ref: "
+        val night = "2026-10-08T21:03:00Z"
+        assertEquals(egKey(vf + "900000441123 Available Balance: 820.00", night), egKey(vf + "AB900000 Available Balance: 820.00", night), "Vodafone Cash")
+    }
+
+    /** مراجعة S1: الخانة الحرة بتتشال **بمكانها** — مرجع «5» كان بيمسح الـ5 اللي في المبلغ «500» كمان، فنفس الشكل كان بيطلع ببصمتين. */
+    @Test fun aShortReferenceDoesNotEatTheSameDigitsElsewhere() {
+        val nbe = "تم اضافة تحويل لحظي لحسابكم رقم 2277 بمبلغ 500 جم من سامر التجريبي رقم مرجعي "
+        assertEquals(egKey(nbe + "5 يوم 10-07"), egKey(nbe + "7 يوم 10-07"))
+    }
+
     // ── بدون بصمة ──
 
     @Test fun keywordFallbackHasNoKeyInEitherCountry() {
