@@ -85,6 +85,10 @@ data class ImportStatementDeps(
      * `null` = من غيرها (زي التطبيق الحالي).
      */
     val incomeSources: app.masroufy.port.IncomeSourceRepository? = null,
+    /** عقد C0: آثار وقت التسجيل بالترتيب (`RecordEffects.kt`). فاضية = زي التطبيق الحالي (ملفات المرجع). */
+    val effects: List<RecordEffect> = emptyList(),
+    /** عقد C0 (§75-10 — الشريحة S4): الكشف والرسالة نفس العملية لو الفرق بالأيام دي أو أقل. null = من غير دمج (ملفات المرجع). */
+    val crossSourceWindowDays: Int? = null,
 )
 
 data class ImportRequest(
@@ -106,4 +110,8 @@ data class ImportRequest(
      * (اتكشف 2026-10-01). الافتراضي ريال عشان الراجحي والتطبيق الحالي ما يتغيروش.
      */
     val currency: Currency = Currency.SAR,
+    /** عقد C0: صف رسالة البنك لكل رقم سطر (رسايل البنك بس) — الآثار اللي للرسايل بس بتبص عليه. فاضي = كشف. */
+    val smsRows: Map<Int, app.masroufy.core.SmsRow> = emptyMap(),
+    /** عقد C0: المالك هو اللي سجّل (الشاشة · التأكيد)؛ false = التسجيل التلقائي في الخلفية (§72). */
+    val byOwner: Boolean = true,
 )
