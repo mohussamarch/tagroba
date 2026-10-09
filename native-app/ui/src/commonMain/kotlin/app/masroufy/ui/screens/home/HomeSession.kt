@@ -36,6 +36,9 @@ object LookChoice {
     var look by mutableStateOf<Int?>(null)
 }
 
+/** الشكل اللي بيتعرض في الدواير: اختيار الجلسة ⇒ اللي في ملفك (`MeInfo.lookIndex`) ⇒ الأول. رقم برّه الستة ⇒ الأول. */
+fun avatarLook(choice: Int?, fromProfile: Int?): Int = (choice ?: fromProfile)?.takeIf { it in 1..LOOK_COUNT } ?: 1
+
 /**
  * «×» على الإشعار + «تراجع» ٤ ثواني (قرار المالك 2026-10-09). [gone] = اللي اتمسح في الجلسة دي، و[undo] = آخر واحد لسه ينفع يرجع.
  * ⚠️ **المسح نفسه منطقه بيتبني في فرع `assistant-engine`** (يتحفظ مع الحساب · يشيل النقطة الحمرا من التبويب · يشيل كارته من بداية الشات) —
