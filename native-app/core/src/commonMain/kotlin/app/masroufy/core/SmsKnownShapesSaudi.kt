@@ -176,3 +176,23 @@ internal fun saudiShape(body: String, direction: Direction, amount: Halalas? = n
     if (amount != null && !amountFromSlot(hit.key, body, amount)) return SmsShape.KeywordFallback
     return if (hit.bank == null) SmsShape.SamaTitle else SmsShape.KnownShape(hit.bank, hit.id!!)
 }
+
+/**
+ * S1 (§77-A «وضع التعلّم»): **شكل** الرسالة السعودية كلها من غير قيمها — سطر التحية (من غير الاسم) · العنوان (المبلغ اللي فيه واسم البنك
+ * بعد النقطتين مخفيين) · وكل سطر بعده بنوع خانته ولابله ونوع قيمته (`SmsSaudiLines.lineSkeletons`). null = مش شكل معروف.
+ * المحل والاسم والمبلغ والتاريخ والكارت والمرجع ما بيغيّروش الشكل؛ كلمة ثابتة اتغيّرت (العنوان · اللابل · جملة التحذير) بتغيّره.
+ */
+internal fun saudiLayoutSkeleton(body: String): String? {
+    val lines = body.split('\n').map(JsText::trim).filter { it.isNotEmpty() }
+    val hit = titleHit(lines) ?: return null
+    val head = (0 until hit.from).map { i ->
+        val key = shapeKey(lines[i], dropColons = false)
+        when {
+            i < hit.from - 1 -> if (key.startsWith("هلا")) "greeting:هلا" else "greeting:" + maskLayoutValues(key)
+            ':' in key && hit.bank == "d360" -> "title:" + key.substringBefore(':').trim() + ":<bank>"
+            else -> "title:" + maskLayoutValues(hit.key)
+        }
+    }
+    val rest = lineSkeletons(lines.drop(hit.from), hit.bank?.let { "$it/${hit.id}" }) ?: return null
+    return (head + rest).joinToString("\n")
+}

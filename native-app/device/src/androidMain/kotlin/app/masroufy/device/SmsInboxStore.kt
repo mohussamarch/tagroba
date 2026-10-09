@@ -71,6 +71,47 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
 
     private fun senderPrefix(uid: String, spaceId: String) = "senderWallet|$uid|$spaceId|"
 
+    /**
+     * §77-A «وضع التعلّم»: بصمات أشكال الرسايل اللي المالك أكّدها، لكل صاحب صندوق ولكل بلد ولكل مرسل (بعد `smsSenderKey`) —
+     * مفتاح لكل بصمة «smsShape|uid|space|sender|<بصمة>». **بصمة بس** (ولا حرف من نص رسالة)، على الجهاز بس زي محفظة كل بنك.
+     */
+    fun learnedShapes(uid: String, spaceId: String): Map<String, Set<String>> {
+        val prefix = shapePrefix(uid, spaceId)
+        return prefs.all.keys.filter { it.startsWith(prefix) && prefs.getBoolean(it, false) }
+            .map { it.removePrefix(prefix) }
+            .groupBy({ it.substringBeforeLast('|') }, { it.substringAfterLast('|') })
+            .mapValues { it.value.toSet() }
+    }
+
+    fun learnShapes(uid: String, spaceId: String, sender: String, keys: Set<String>) {
+        if (keys.isEmpty()) return
+        val edit = prefs.edit()
+        for (key in keys) edit.putBoolean(shapePrefix(uid, spaceId) + sender + "|" + key, true)
+        check(edit.commit()) { "settings write failed" }
+    }
+
+    fun forgetShapes(uid: String, spaceId: String, sender: String) {
+        val prefix = shapePrefix(uid, spaceId) + sender + "|"
+        val edit = prefs.edit()
+        prefs.all.keys.filter { it.startsWith(prefix) && '|' !in it.removePrefix(prefix) }.forEach { edit.remove(it) }
+        check(edit.commit()) { "settings write failed" }
+    }
+
+    private fun shapePrefix(uid: String, spaceId: String) = "smsShape|$uid|$spaceId|"
+
+    /** §75-2: رد المالك على «ده راتبك؟» لمرسل في بلد — «smsSalary|uid|space|sender». */
+    fun salaryAnswer(uid: String, spaceId: String, sender: String): Boolean? {
+        val key = "smsSalary|$uid|$spaceId|$sender"
+        return if (prefs.contains(key)) prefs.getBoolean(key, false) else null
+    }
+
+    fun setSalaryAnswer(uid: String, spaceId: String, sender: String, answer: Boolean?) {
+        val key = "smsSalary|$uid|$spaceId|$sender"
+        val edit = prefs.edit()
+        if (answer == null) edit.remove(key) else edit.putBoolean(key, answer)
+        check(edit.commit()) { "settings write failed" }
+    }
+
     private fun migrateLegacyTarget(uid: String, spaceId: String) {
         val legacyKey = "autoTarget|$uid|$spaceId"
         val legacy = prefs.getString(legacyKey, null) ?: return

@@ -122,7 +122,9 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     }
     // الجولة السادسة: «IPN transfer dated <التاريخ الأصلي> … returned» (بيت التمويل) — الفلوس رجعت **يوم وصول الرسالة**، مش يوم
     // التحويل الأصلي (كانت بتتسجل في يوم قديم وممكن شهر مالي قفل). الرسالة مفيهاش تاريخ الرجوع ⇒ يوم الوصول بتوقيت القاهرة
-    val date = (if (isReturnedTransferNotice(body)) cairoDayOf(message.receivedAt) else egyptTransactionDate(body, message.receivedAt))
+    // §77-C: الجملة اللي على قالب معروف ومفيهاش تاريخ بتاخد يوم الوصول (حتى من غير عبارة «تم …») — القالب بيتشاف **قبل** التاريخ
+    val layout = egyptShape(body, direction, amount)
+    val date = (if (isReturnedTransferNotice(body)) cairoDayOf(message.receivedAt) else egyptTransactionDate(body, message.receivedAt, layout.clear))
         ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     // الجولة السابعة: تاريخ العملية **بعد** يوم الوصول (بتوقيت القاهرة) = عملية لسه ما حصلتش ⇒ مرفوضة (مفيش ملف مرجع لمصر يقفل يوم بعد)
     val arrival = cairoDayOf(message.receivedAt)
@@ -137,7 +139,7 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: حروف مخفية ⇒ تستنى.
     // الجولة السابعة: محل برّه مصر (كود البلد في آخر اسمه «SAMPLE CLOUD USA» — §75-12) ⇒ تستنى
     val merchant = egyptMerchant(body, kind)
-    val known = egyptShape(body, direction, amount).let { if (it.clear && foreignCountryTail(merchant, EGYPT_TAIL)) SmsShape.KeywordFallback else it }
+    val known = layout.let { if (it.clear && foreignCountryTail(merchant, EGYPT_TAIL)) SmsShape.KeywordFallback else it }
     val shape = gateShape(egyptDateGate(known, body), body, date, arrival, message.body)
     // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها
     return smsRow(
@@ -146,15 +148,13 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     )
 }
 
-private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
-
 /**
- * الجولة التامنة: الشكل المعروف بيستنى لو **ساعة من غير تاريخ** (فودافون كاش «23:58: Received …» — وصلت بعد نص الليل بتوقيت القاهرة
- * فاتسجلت يوم متأخر؛ نفس قاعدة الأهلي السعودي) أو **أكتر من تاريخ** بعد عدّ «يوم/شهر» من غير سنة في أي مكان.
+ * الجولة التامنة: الشكل المعروف بيستنى لو **أكتر من تاريخ** بعد عدّ «يوم/شهر» من غير سنة في أي مكان. §77-C: **ساعة من غير تاريخ**
+ * (فودافون كاش «23:58: Received …») ما بقتش بتستنى — اليوم بيتحسب من الساعة المكتوبة (`SmsArrivalDay.kt`)، إلا لو فيها أكتر من ساعة.
  */
 private fun egyptDateGate(shape: SmsShape, body: String): SmsShape = when {
     !shape.clear -> shape
-    !egyptHasDateToken(body) && TIME_TOKEN.containsMatchIn(body) -> SmsShape.KeywordFallback
+    !egyptHasDateToken(body) && ambiguousClock(body) -> SmsShape.KeywordFallback
     egyptDistinctDateCount(body) > 1 -> SmsShape.KeywordFallback
     else -> shape
 }

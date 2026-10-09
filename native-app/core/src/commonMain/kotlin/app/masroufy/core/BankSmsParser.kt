@@ -103,8 +103,13 @@ private fun snbDatelessShape(body: String): Boolean {
     return lines.size in 3..5 && saudiTitle(body) != null && SNB_CARD_LINE.matches(lines.last()) && SNB_AMOUNT_LINE.containsMatchIn(body)
 }
 
-private fun datelessDate(body: String, receivedAt: String): IsoDate? =
-    if (!hasDateToken(body) && snbDatelessShape(body)) localDayOf(receivedAt, SAUDI_UTC_OFFSET_HOURS) else null
+/**
+ * §77-C (قرار المالك: «ياخد يوم وصول الرسالة بتوقيت البلد — لكل الأشكال اللي مفيهاش تاريخ»): رسالة مفيهاش تاريخ خالص وشكلها معروف
+ * ([knownLayout]) أو على شكل الأهلي ⇒ يوم الوصول بتوقيت الرياض (`SmsArrivalDay.kt` — وبعد نص الليل اليوم اللي قبله لو الساعة المكتوبة
+ * بتقول كده). الرسالة اللي فيها تاريخ القارئ مش قادر يقراه لسه بتترفض «التاريخ مش واضح».
+ */
+private fun datelessDate(body: String, receivedAt: String, knownLayout: Boolean = false): IsoDate? =
+    if (!hasDateToken(body) && (knownLayout || snbDatelessShape(body))) datelessDay(body, receivedAt, SmsClock.RIYADH) else null
 
 private fun dateOf(body: String, receivedAt: String): IsoDate? = saudiTransactionDate(body, receivedAt) ?: datelessDate(body, receivedAt)
 
@@ -153,16 +158,15 @@ private fun foreignUnread(
 
 /**
  * الجولة السابعة: الشكل المعروف بيستنى (بيتقري بس ما بيتسجلش لوحده) لو: شراء من محل **برّه البلد** (كود البلد في آخر اسم المحل —
- * `SmsMerchantCountry.kt`، §75-12) · رسالة الأهلي اللي من غير تاريخ وفيها **ساعة** (اتبعتت بعد نص الليل ممكن تتسجل يوم متأخر).
+ * `SmsMerchantCountry.kt`، §75-12). §77-C: رسالة **من غير تاريخ وفيها ساعة** ما بقتش بتستنى (اليوم بقى بيتحسب من الساعة المكتوبة —
+ * `SmsArrivalDay.kt`) — إلا لو فيها **أكتر من ساعة مختلفة** (مش واضح أنهي ساعة العملية).
  */
 private fun saudiExtraGate(shape: SmsShape, body: String, kind: SmsKind, dateless: Boolean): SmsShape = when {
     !shape.clear -> shape
     kind != SmsKind.TRANSFER_IN && kind != SmsKind.TRANSFER_OUT && foreignCountryTail(saudiMerchantOf(body, kind), SAUDI_TAIL) -> SmsShape.KeywordFallback
-    dateless && TIME_TOKEN.containsMatchIn(body) -> SmsShape.KeywordFallback
+    dateless && ambiguousClock(body) -> SmsShape.KeywordFallback
     else -> shape
 }
-
-private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
 private val CASH_MERCHANT = Regex(
     "(?<![A-Za-z])(?:ATM|cash\\s+withdrawal|cash\\s+advance)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:ال)?صراف(?![\\u0600-\\u06FF])|سحب\\s*نقدي",
     I,
@@ -201,13 +205,15 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
         is SaudiAmount.ForeignOnly -> return foreignOnly(plain, message.receivedAt, a, direction, kind)
         is SaudiAmount.Ok -> a
     }
-    val dated = saudiTransactionDate(body, message.receivedAt)
-    val date = dated ?: datelessDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72).
     // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: مبلغ «1.234 SAR»
-    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى. الجولة السابعة: محل برّه البلد · ساعة من غير تاريخ ⇒ تستنى
+    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى. الجولة السابعة: محل برّه البلد ⇒ تستنى
     // الجولة التامنة: الشكل المعروف لازم المبلغ من خانة المبلغ (مش من اسم المحل أو رقم المرجع) · «dd/mm/yyyy» اللي قرايته التانية يوم الوصول
-    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction, read.amountMinor), body, kind, dated == null)
+    // §77-C: الشكل **قبل** التاريخ — الشكل المعروف اللي مفيهوش تاريخ بياخد يوم الوصول (والساعة المكتوبة بتقول لو عدّت نص الليل)
+    val dated = saudiTransactionDate(body, message.receivedAt)
+    val dateless = dated == null && !hasDateToken(body)
+    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction, read.amountMinor), body, kind, dateless)
+    val date = dated ?: datelessDate(body, message.receivedAt, knownLayout = shape.clear) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val arrival = localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS)
     val gated = gateShape(if (swappedDateNearArrival(body, date, arrival)) SmsShape.KeywordFallback else shape, body, date, arrival, message.body)
     // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها

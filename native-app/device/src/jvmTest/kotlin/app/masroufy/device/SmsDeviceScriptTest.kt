@@ -38,7 +38,8 @@ import kotlin.test.fail
 /**
  * رسايل `scripts/device/sendTestSms.sh` لاختبار المحاكي `SmsAutoRecordOnDeviceTest` (الجولة الرابعة) — **على الكمبيوتر**: نفس النصوص
  * (والسكربت لازم فيه النص ده بالحرف) ⇒ «\n» سطر جديد زي ما المحاكي بيعمل ⇒ `SmsSafety` ⇒ التسجيل التلقائي بمستودعات الذاكرة.
- * المتوقع زي المحاكي: الشراء بالشكل المعروف بيتسجل لوحده، والشراء اللي من كلمات عامة والرسالة الملتبسة بيستنوا.
+ * المتوقع زي المحاكي (§77-A «وضع التعلّم»): الشراء بالشكل المعروف **أول مرة بيستنى** (شكل جديد) زي الشراء اللي من كلمات عامة والرسالة
+ * الملتبسة؛ بعد ما المالك يأكده، الشراء التاني **بنفس الشكل** بيتسجل لوحده.
  */
 class SmsDeviceScriptTest {
     private val sender = "5550003"
@@ -46,6 +47,7 @@ class SmsDeviceScriptTest {
     private val known = "PoS Purchase\\nAmount: SAR 25.00\\nAt: TEST CAFE\\nOn: \$today"
     private val keywordOnly = "TEST-FALLBACK Purchase SAR 12.00 at TEST SHOP on \$today"
     private val unclear = "TEST-WAIT transfer SAR 10.00 \$today"
+    private val sameLayout = "PoS Purchase\\nAmount: SAR 40.00\\nAt: TEST MART\\nOn: \$today"
 
     private fun script(): String {
         var dir: File? = File(System.getProperty("user.dir")).absoluteFile
@@ -71,10 +73,10 @@ class SmsDeviceScriptTest {
 
     @Test fun theScriptSendsExactlyTheseMessages() {
         val text = script()
-        for (t in listOf(known, keywordOnly, unclear)) assertTrue("emu sms send $sender \"$t\"" in text, "script must send: $t")
+        for (t in listOf(known, keywordOnly, unclear, sameLayout)) assertTrue("emu sms send $sender \"$t\"" in text, "script must send: $t")
     }
 
-    @Test fun storedMessagesAreReadAndOnlyTheKnownShapeIsRecordedAutomatically() = blocking {
+    @Test fun theFirstKnownShapeWaitsAndAfterConfirmingItTheSameLayoutRecordsItself() = blocking {
         val stored = listOf(known, keywordOnly, unclear).map { t -> assertNotNull(SmsSafety.sanitize(asReceived(t)), "dropped before storage: $t") }
         val receivedAt = "${today}T10:00:00Z"
         val shapes = stored.map { (parseBankSms(BankSmsMessage(sender, receivedAt, it), 1) as? SmsParseResult.Ok)?.row?.shape }
@@ -96,10 +98,22 @@ class SmsDeviceScriptTest {
         )
         val wallets = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")))
         val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, listOf(SmsLane.of("sa", importDeps, ManageSmsInbox(inbox, ::parseBankSms), wallets))))
-        val r = auto.run()
-        assertEquals(1, r.recorded)
+        val first = auto.run()
+        assertEquals(0, first.recorded, "§77-A: أول رسالة من الشكل ده بتستنى")
+        assertEquals(listOf("m0", "m1", "m2"), first.waiting)
+        assertEquals(listOf("m0"), first.newShape)
+        assertEquals(listOf("m1"), first.unknownShape)
+
+        // المالك أكّد الشراء المعروف (الاختبار على المحاكي بيعمل نفس الخطوة وبعدها بيكتب LEARNED)
+        assertEquals(1, auto.confirm(listOf("m0")))
         val txn = txns.listByDateRange("0000-01-01", "9999-12-31").single()
         assertEquals(2_500L to "TEST CAFE", txn.amountMinor to txn.rawMerchantName)
+
+        val second = assertNotNull(SmsSafety.sanitize(asReceived(sameLayout)))
+        inbox.receive(QueuedSms("m3", sender, receivedAt, second))
+        val r = auto.run()
+        assertEquals(1, r.recorded, "نفس الشكل بعد التأكيد ⇒ لوحده")
+        assertEquals(setOf(2_500L, 4_000L), txns.listByDateRange("0000-01-01", "9999-12-31").map { it.amountMinor }.toSet())
         assertEquals(listOf("m1", "m2"), r.waiting)
         assertEquals(listOf("m1"), r.unknownShape)
     }

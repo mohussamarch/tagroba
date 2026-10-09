@@ -54,6 +54,25 @@ interface SmsInboxPort {
 
     /** null = يشيل الربط (رسايل المرسل ترجع تستنى لو في البلد أكتر من حساب بنك). */
     suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?)
+
+    /**
+     * §77-A «وضع التعلّم»: بصمات **أشكال** الرسايل اللي المالك أكّد أول رسالة منها، لكل مرسل (بعد [smsSenderKey]) في البلد [spaceId].
+     * على الجهاز بس ولصاحب الصندوق (زي تعلّم التنبيهات §61) — **مش** في فايربيز ولا النسخة الشاملة: الجوال الجديد بيتعلّم كل شكل تاني مرة.
+     * بصمات بس (`SmsRow.learnKey`) — ولا حرف من نص رسالة.
+     */
+    suspend fun learnedShapes(spaceId: String): Map<String, Set<String>>
+
+    /** المالك أكّد رسايل بالأشكال دي من [sender] في [spaceId] ⇒ الرسايل الجاية بنفس الشكل بتتسجل لوحدها. */
+    suspend fun learnShapes(spaceId: String, sender: String, keys: Set<String>)
+
+    /** ينسى أشكال [sender] في [spaceId] ⇒ رسالته الجاية تستنى تأكيد مرة تاني. */
+    suspend fun forgetShapes(spaceId: String, sender: String)
+
+    /** §75-2: رد المالك على «ده راتبك؟» لرسايل راتب [sender] اللي من غير اسم جهة — null = لسه ما اتسألش. على الجهاز بس. */
+    suspend fun salaryAnswer(spaceId: String, sender: String): Boolean?
+
+    /** null = يشيل الرد (يتسأل تاني). */
+    suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?)
 }
 
 /** نفس المرسل مهما اتكتب بحروف كبيرة أو صغيرة أو مسافات (الصندوق بيقارن المرسلين من غير حالة الحروف). */

@@ -21,7 +21,13 @@ import app.masroufy.core.Direction.OUT
 private class EgyptShape(val bank: String, val id: String, head: String, rest: String, val direction: Direction?) {
     val headAnyCurrency = Regex("^(?:${head.replace(EGC, ANY_CURRENCY)})")
     val full = Regex("(?:$head)$rest")
+
+    /** S1 (§77-A): نفس [full] والخانات الحرة (المحل · الاسم) جوه مجموعات التقاط زيادة — عشان بصمة الشكل تشيل قيمها ([egyptLayoutSkeleton]). */
+    val named by lazy { Regex("(?:${withNameGroups(head)})${withNameGroups(rest)}") }
 }
+
+/** الخانات الحرة في القوالب: المحل ([M]) · المحل اللاتيني ([ML]) · الاسم ([NM]) — كل واحدة نص ثابت مش جوه التانية. */
+private fun withNameGroups(pattern: String): String = listOf(M, ML, NM).fold(pattern) { p, slot -> p.replace(slot, "($slot)") }
 
 private const val N = "(?:[\\d,٬]+(?:[.٫]\\d+)?|[.٫]\\d+)"
 private const val EGC = "(?:جم|جنيه|جنية|egp|l\\.?e|ج\\.م\\.?|ج|e£|£e)"
@@ -241,4 +247,21 @@ internal fun egyptShape(body: String, direction: Direction, amount: Halalas? = n
         return SmsShape.KnownShape(shape.bank, shape.id)
     }
     return SmsShape.KeywordFallback
+}
+
+/**
+ * S1 (§77-A «وضع التعلّم»): **شكل** رسالة مصر — القالب اللي [egyptShape] لقاه (أول قالب الجملة كلها عليه) + الجملة نفسها والمحل والاسم
+ * مكانهم علامة، والأرقام والتواريخ والساعات مخفية (`maskLayoutValues`). الكلمة الثابتة اللي ليها بديل في القالب («حسابكم/بطاقتكم» ·
+ * «جم/جنيه» · جملة الإعلان) والجزء الاختياري اللي ظهر أو اختفى بيغيّروا الشكل. null = مش على قالب.
+ */
+internal fun egyptLayoutSkeleton(body: String): String? {
+    val key = shapeKey(body, dropColons = false)
+    val shape = EGYPT_SHAPES.firstOrNull { it.full.matches(key) } ?: return null
+    val base = shape.full.matchEntire(key)?.groupValues?.drop(1) ?: return null
+    // الخانات الحرة = مجموعات [EgyptShape.named] اللي مش في [EgyptShape.full] (نفس الأرقام بالظبط في الاتنين)
+    val names = shape.named.matchEntire(key)?.groupValues?.drop(1)?.toMutableList() ?: return null
+    for (value in base) names.remove(value)
+    var text = key
+    for (name in names.filter { it.isNotBlank() }.sortedByDescending { it.length }) text = text.replace(name.trim(), "<name>")
+    return "${shape.bank}/${shape.id}\n" + maskLayoutValues(text)
 }

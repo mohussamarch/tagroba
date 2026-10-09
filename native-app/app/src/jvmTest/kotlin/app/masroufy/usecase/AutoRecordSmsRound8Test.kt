@@ -91,8 +91,11 @@ class AutoRecordSmsRound8Test {
         assertEquals(uiText(TextKey.SMS_WAIT_REFUND), ready.getValue("cashback").confirmReason)
     }
 
-    /** P-group: حساب المالك التاني بأي كتابة لسطر الحساب ⇒ بيستنى بدل ما يتسجل في محفظة البنك المربوط. */
-    @Test fun everyAccountSpellingOfTheOwnersOtherAccountWaits() = runBlocking<Unit> {
+    /**
+     * P-group: حساب المالك التاني بأي كتابة لسطر الحساب ⇒ ما بيتسجلش في محفظة البنك المربوط. §75-11 (قرار المالك — S1): بيتسجل **في محفظة
+     * الحساب التاني نفسه** (أرقامه في الرسالة)؛ قبل كده كان بيستنى.
+     */
+    @Test fun everyAccountSpellingOfTheOwnersOtherAccountGoesToThatAccount() = runBlocking<Unit> {
         val bankA = Wallet("sa-bank", "بنك وهمي أ", Currency.SAR, "bank", 0, "2026-01-01", accountLast4 = "6618")
         val bankB = Wallet("sa-bank2", "بنك وهمي ب", Currency.SAR, "bank", 0, "2026-01-01", accountLast4 = "4417")
         val space = SmsSpace(wallets = listOf(CASH, bankA, bankB))
@@ -107,12 +110,19 @@ class AutoRecordSmsRound8Test {
             "PoS Purchase\nAmount: SAR 64.25\nCard: *9001\nAccount: **4417\nAt: WOMBAT PANTRY\nOn: 2026-10-07 18:22",
         )
         world.receive(*bodies.mapIndexed { i, b -> sms("p$i", b) }.toTypedArray(), sms("cafe", CAFE))
-        val r = world.auto().run()
-        assertEquals(1, r.recorded, "الرسالة اللي مفيهاش رقم حساب بس")
-        assertEquals(bodies.indices.map { "p$it" }, r.waiting)
-        assertTrue(space.all().all { it.walletId == bankA.id })
+        // الشاشة على محفظة البنك المربوط لسه بتقول «حساب تاني» (الشاشة بتعرض محفظة واحدة؛ التوزيع بالأرقام في التسجيل)
         val target = SmsReviewTarget(bankA.id, bankA.name, accountLast4 = "6618", otherAccountsLast4 = setOf("4417"))
-        val ready = screen(world, space).load(target).ready
+        val ready = screen(world, space).load(target).ready.filter { it.messageId != "cafe" }
         assertTrue(ready.all { it.confirmReason == uiText(TextKey.SMS_WAIT_OTHER_ACCOUNT) }, ready.joinToString { "${it.messageId}: ${it.confirmReason}" })
+        // كل كتابة لوحدها (نفس التحويل بكذا كتابة — مع بعض كانوا هيبقوا «شبه عملية موجودة»)
+        for ((i, body) in bodies.withIndex()) {
+            val alone = SmsSpace(wallets = listOf(CASH, bankA, bankB))
+            val w = SmsWorld(listOf(alone)).enable()
+            w.auto().chooseWallet("sa", "TESTBANK", bankA.id)
+            w.receive(sms("p$i", body), sms("cafe", CAFE))
+            val r = w.auto().run()
+            assertEquals(2 to emptyList<String>(), r.recorded to r.waiting, body)
+            assertEquals(mapOf(bankB.id to 1, bankA.id to 1), alone.all().groupingBy { it.walletId!! }.eachCount(), body)
+        }
     }
 }

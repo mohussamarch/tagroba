@@ -1,6 +1,10 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.AskKind
 import app.masroufy.core.Id
+import app.masroufy.core.IsoDate
+import app.masroufy.core.MatchingState
+import app.masroufy.core.PendingAsk
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
@@ -12,20 +16,16 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * رسايل البنك بتتسجل لوحدها (OVERRIDES §72 — قرار المالك 2026-10-08): الرسالة المفهومة **الجديدة** بتتسجل وتتصنف لوحدها في الخلفية،
- * و**اللي بيستنى قرار المالك بس**: المرفوضة من القارئ · «شبه عملية موجودة» والتعارض · وبنك (مرسل) مالوش محفظة — البلد فيها أكتر
- * من حساب بنك والمالك لسه ما اختارش (رد المالك ١: مرة واحدة لكل بنك؛ حساب بنك واحد بس ⇒ بيتستخدم على طول).
- *
- * - **نفس خط الشاشة بالظبط** (`ReviewSmsInbox` ⇒ `ImportStatement`): منع التكرار · التصنيف · قرارات «زون التحويلات» · مصادر الدخل.
- *   التسجيل التلقائي **مش تأكيد**: التصنيف اللي جه من قاعدة بيفضل «مقترح» (§36)، والمحل اللي مالوش تصنيف بيتسجل «غير مصنف» (رد المالك ١).
- * - **مرة واحدة بس مهما اتكرر أو اتشغل مع الشاشة في نفس الوقت:** قفل واحد للعملية كلها ([SMS_RECORD_LOCK] — نفسه بتاع «سجّل الكل»)
- *   + منع التكرار في الاستيراد (المرجع `SMS:<بصمة>`) + شيل اللي خلص من الصندوق. لو الجهاز وقع بعد الحفظ وقبل الشيل، الرسالة
- *   بتطلع «مكررة» في المرة الجاية وبتتشال من غير ما تتسجل تاني؛ ولو وقع جوه الحفظ، وحدة العمل بترجّع كله والرسالة بتفضل في الصندوق.
- * - **مفيش إشعار للمسجّل لوحده** (رد المالك ٢) — الدالة دي ما بتعرفش حاجة عن الإشعارات أصلًا. اللي بيستنى بيتعد في [AutoRecordResult.waiting]
- *   ومنه مرشح تنبيه واحد (`smsConfirmCandidate`) والمحرك هو اللي بيقرر توقيته.
- * - **«المفهومة» = شكل معروف** (الجولة الرابعة — دفاع من جوه القارئ ومن برّه): بيتسجل لوحده بس الصف اللي [SmsShape.clear] (قالب بنك
- *   معروف أو عنوان موحّد من البنك المركزي واتجاهه نفس القارئ) **ومن مرسل المالك فعّله** في الصندوق. اللي اتفهم من كلمات عامة بس
- *   (`SmsShape.KeywordFallback`) بيفضل في الصندوق **مستني تأكيدك** وبيتحسب في التنبيه ([AutoRecordResult.unknownShape])، والشاشة
- *   بتعرضه جاهز بسببه (`SmsReviewLine.confirmReason`) و«سجّل الكل» بيسجله. الأجنبي (§75-12) مرفوض من القارئ أصلًا ⇒ مستني.
+ * و**اللي بيستنى قرار المالك بس**: المرفوضة من القارئ · «شبه عملية موجودة» والتعارض · وبنك (مرسل) مالوش محفظة.
+ * - **نفس خط الشاشة بالظبط** (`ReviewSmsInbox` ⇒ `ImportStatement`): منع التكرار · التصنيف · قرارات «زون التحويلات» · مصادر الدخل ·
+ *   آثار وقت التسجيل (عقد C0). التسجيل التلقائي **مش تأكيد**: التصنيف من قاعدة بيفضل «مقترح» (§36).
+ * - **مرة واحدة بس مهما اتكرر أو اتشغل مع الشاشة في نفس الوقت:** قفل واحد ([SMS_RECORD_LOCK]) + منع التكرار بالمرجع `SMS:<بصمة>` +
+ *   شيل اللي خلص من الصندوق.
+ * - **مفيش إشعار للمسجّل لوحده** (رد المالك ٢): اللي بيستنى بيتعد في [AutoRecordResult.waiting] ومنه مرشح تنبيه واحد.
+ * - **«المفهومة» = شكل معروف** (الجولة الرابعة) **اتأكد قبل كده** (§77-A «وضع التعلّم» — S1): أول رسالة من كل شكل من كل مرسل في كل بلد
+ *   بتستنى تأكيد المالك ([AutoRecordResult.newShape])، وبعد ما يأكدها (الشاشة أو [confirm]) رسايل الشكل ده بتتسجل لوحدها — حتى اللي كانت
+ *   مستنية في الصندوق (الدورة الجاية).
+ * - **بنك بحسابين** (§75-11 — S1): كل رسالة بتروح المحفظة اللي آخر 4 أرقامها في الرسالة (`SmsRouting.kt`)، ودفعة لكل محفظة.
  */
 
 /** بلد واحدة: قارئ رسايلها (جوه `ReviewSmsInbox`) ومحافظها ومستودع سجلات المصدر (عشان معرّفات العمليات اللي اتسجلت). */
@@ -39,9 +39,8 @@ class SmsLane private constructor(
 ) {
     companion object {
         /**
-         * [importDeps] = **نفس** اعتمادات استيراد الكشف في البلد دي. لازم فيها قرارات «زون التحويلات» (`transferParties`) — عشان
-         * التحويل لطرف المالك ربطه بشخص يتسجل عليه لوحده زي الكشف بالظبط (§60 · §72)؛ من غيرها بيرمي بدل ما يسجّل غلط في صمت.
-         * [inbox] = الصندوق بقارئ رسايل البلد دي (حزمة البلد).
+         * [importDeps] = **نفس** اعتمادات استيراد الكشف في البلد دي — فيها قرارات «زون التحويلات» (`transferParties`) لازم، وآثار وقت
+         * التسجيل (`effects` — S1: `OwnAccountByLast4Effect` · `SmsSalaryEffect`). [inbox] = الصندوق بقارئ رسايل البلد دي (حزمة البلد).
          */
         fun of(spaceId: String, importDeps: ImportStatementDeps, inbox: ManageSmsInbox, wallets: WalletRepository): SmsLane {
             require(importDeps.transferParties != null) { "SMS lane needs the transfer-party decisions (OVERRIDES §60/§72)" }
@@ -53,7 +52,7 @@ class SmsLane private constructor(
 }
 
 data class AutoRecordSmsDeps(
-    /** الصندوق نفسه (الجهاز) — المزامنة ومحفظة كل بلد. */
+    /** الصندوق نفسه (الجهاز) — المزامنة ومحفظة كل بنك والأشكال اللي اتعلّمت. */
     val inbox: SmsInboxPort,
     /** البلاد بالترتيب. رسالة بلد بتترفض من قارئ البلد التانية (العملة) فبتتسجل في بلدها بس. */
     val lanes: List<SmsLane>,
@@ -78,17 +77,24 @@ data class AutoRecordResult(
     val recordedTransactionIds: List<Id> = emptyList(),
     /** البنوك (المرسلين) اللي محتاجة المالك يختار محفظتها ⇒ رسايلها مستنية. */
     val unmappedSenders: List<UnmappedSender> = emptyList(),
-    /**
-     * جزء من [waiting]: رسايل جديدة اتفهمت **من كلمات عامة بس** (مش شكل معروف — الجولة الرابعة) ⇒ مستنية تأكيدك بسبب
-     * `TextKey.SMS_WAIT_UNKNOWN_SHAPE`. بترتيب الصندوق.
-     */
+    /** جزء من [waiting]: اتفهمت **من كلمات عامة بس** (`TextKey.SMS_WAIT_UNKNOWN_SHAPE`). بترتيب الصندوق. */
     val unknownShape: List<String> = emptyList(),
+    /** جزء من [waiting] (§77-A): **شكل واضح لسه ما اتأكدش** من المرسل ده (`TextKey.SMS_WAIT_NEW_SHAPE`). بترتيب الصندوق. */
+    val newShape: List<String> = emptyList(),
 )
 
-data class SmsWaiting(val messageIds: List<String>, val unknownShape: List<String> = emptyList())
+data class SmsWaiting(val messageIds: List<String>, val unknownShape: List<String> = emptyList(), val newShape: List<String> = emptyList())
 
-/** مرسل (بنك) في بلد ورسايله مفهومة بس مالوش محفظة: البلد فيها أكتر من حساب بنك (أو مفيش) والمالك لسه ما اختارش. */
+/** مرسل (بنك) في بلد ورسايله مفهومة بس مالهاش محفظة: البلد فيها أكتر من حساب بنك (أو مفيش) والمالك لسه ما اختارش. */
 data class UnmappedSender(val spaceId: String, val sender: String, val messages: Int)
+
+/** اللي مستني دلوقتي + فين ومتى كل رسالة وسؤالها (للأسئلة `SmsAskSource`). */
+private class WaitingState(
+    val waiting: SmsWaiting,
+    val unmapped: List<UnmappedSender>,
+    val questions: Map<String, AskKind>,
+    val where: Map<String, Pair<String, IsoDate?>>,
+)
 
 class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     val available: Boolean get() = deps.inbox.available
@@ -96,32 +102,30 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     private fun laneOf(spaceId: String): SmsLane =
         deps.lanes.firstOrNull { it.spaceId == spaceId } ?: throw IllegalArgumentException(uiText(TextKey.SMS_AUTO_WALLET_UNKNOWN))
 
-    /**
-     * محفظة رسايل [senderKey] في البلد (رد المالك ١ — 2026-10-08): اللي المالك ربطها بالبنك ده، وإلا **لو في البلد حساب بنك واحد بس** هو.
-     * أكتر من حساب بنك (أو مفيش) ومالوش ربط ⇒ null ⇒ الرسايل تستنى. ربط لمحفظة اتمسحت ⇒ null برضه (ما بنخمّنش).
-     */
-    private suspend fun walletFor(lane: SmsLane, senderKey: String, mapping: Map<String, String>): SmsReviewTarget? {
-        val all = lane.wallets.listAll()
-        val mapped = mapping[senderKey]
-        val wallet = (if (mapped != null) all.firstOrNull { it.id == mapped } else all.filter { it.kind == "bank" }.singleOrNull()) ?: return null
-        // الجولة السادسة: آخر 4 أرقام حسابات المالك التانية في البلد — رسالة عن واحد منهم ما بتتسجلش لوحدها في المحفظة دي (رد المالك ١
-        // «محفظة لكل بنك» كان مفترض حساب واحد للبنك؛ سؤال مفتوح للمالك في OVERRIDES §72.3)
-        val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
-        val cash = all.filter { it.kind == "cash" }.singleOrNull()?.id // عقد C0 (§75-4)
-        return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others, cash)
-    }
-
-    /** آخر 4 أرقام من خانة رقم الحساب (ممكن تبقى مكتوبة بمسافات أو كاملة في بيانات قديمة) — أقل من 4 أرقام ⇒ null. */
-    private fun last4(value: String?): String? = value?.filter { it in '0'..'9' }?.takeLast(4)?.takeIf { it.length == 4 }
+    private suspend fun off(): Boolean = !deps.inbox.available || !deps.inbox.sync().enabled
 
     /**
-     * المرسلين اللي ليهم رسايل **مفهومة بقارئ البلد دي** في الصندوق، بترتيب أول ظهور — **والمالك مفعّلهم** (دفاع تاني: الجهاز ما بيحفظش
-     * غيرهم أصلًا، بس لو المالك شال بنك من القايمة ورسايله لسه في الصندوق، ما بتتسجلش لوحدها — بتستنى).
+     * كل (بلد · محفظة) ورسايلها المفهومة من المرسلين **اللي المالك مفعّلهم** (دفاع تاني: لو شال بنك من القايمة ورسايله لسه في الصندوق،
+     * ما بتتسجلش لوحدها) — [visit] بياخد معاينة كل محفظة. بيرجّع المرسلين اللي رسايلهم مالهاش محفظة.
      */
-    private suspend fun sendersIn(lane: SmsLane): List<String> {
-        val view = lane.review.inboxView()
-        val enabled = view.senders.map(::smsSenderKey).toSet()
-        return view.items.filter { it.parsed is SmsParseResult.Ok }.map { smsSenderKey(it.sender) }.distinct().filter { it in enabled }
+    private suspend fun forEachRoute(only: (InboxItem) -> Boolean, visit: suspend (SmsLane, SmsReview) -> Unit): List<UnmappedSender> {
+        val unmapped = mutableListOf<UnmappedSender>()
+        for (lane in deps.lanes) {
+            val view = lane.review.inboxView()
+            val enabled = view.senders.map(::smsSenderKey).toSet()
+            val items = view.items.filter { it.parsed is SmsParseResult.Ok && only(it) }
+            val senders = items.map { smsSenderKey(it.sender) }.distinct().filter { it in enabled }
+            if (senders.isEmpty()) continue
+            val mapping = deps.inbox.senderWallets(lane.spaceId)
+            val wallets = lane.wallets.listAll()
+            val learning = SmsLearning(deps.inbox, lane.spaceId)
+            for (sender in senders) {
+                val routes = routeSender(wallets, sender, mapping, items)
+                if (routes.unrouted > 0) unmapped += UnmappedSender(lane.spaceId, sender, routes.unrouted)
+                for (route in routes.routes) visit(lane, lane.review.loadFor(route.target, learning) { it.id in route.messageIds })
+            }
+        }
+        return unmapped
     }
 
     /** المالك اختار محفظة بنك (مرسل) في بلد — مرة واحدة لكل بنك. null = يشيل الربط. المحفظة لازم تبقى من نفس البلد. */
@@ -132,69 +136,103 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     }
 
     /** المحفظة اللي رسايل المرسل ده هتتسجل فيها دلوقتي (الربط أو الحساب البنكي الوحيد)، أو null لو هتستنى. */
-    suspend fun walletOf(spaceId: String, sender: String): Id? {
-        val lane = laneOf(spaceId)
-        return walletFor(lane, smsSenderKey(sender), deps.inbox.senderWallets(spaceId))?.walletId
-    }
+    suspend fun walletOf(spaceId: String, sender: String): Id? =
+        senderWallet(laneOf(spaceId).wallets.listAll(), smsSenderKey(sender), deps.inbox.senderWallets(spaceId))?.id
 
     /** البنوك اللي محتاجة المالك يختار محفظتها دلوقتي (للشاشة) — من غير كتابة. */
-    suspend fun unmappedSenders(): List<UnmappedSender> = SMS_RECORD_LOCK.withLock {
-        if (!deps.inbox.available || !deps.inbox.sync().enabled) emptyList() else unmappedLocked()
-    }
+    suspend fun unmappedSenders(): List<UnmappedSender> = SMS_RECORD_LOCK.withLock { if (off()) emptyList() else waitingLocked().unmapped }
 
-    private suspend fun unmappedLocked(): List<UnmappedSender> = deps.lanes.flatMap { lane ->
-        val mapping = deps.inbox.senderWallets(lane.spaceId)
-        val view = lane.review.inboxView()
-        val enabled = view.senders.map(::smsSenderKey).toSet()
-        val parsed = view.items.filter { it.parsed is SmsParseResult.Ok }.groupBy { smsSenderKey(it.sender) }.filterKeys { it in enabled }
-        parsed.mapNotNull { (sender, items) -> if (walletFor(lane, sender, mapping) == null) UnmappedSender(lane.spaceId, sender, items.size) else null }
-    }
-
-    /** التشغيلة: كل بلد وكل بنك بالدور يسجّل الجديد بتاعه ويشيل المكرر، وبعدين حساب «مستنية» على اللي فاضل. */
+    /** التشغيلة: كل بلد وكل بنك وكل محفظة بالدور يسجّل الجديد **اللي شكله اتعلّم** ويشيل المكرر، وبعدين حساب «مستنية» على اللي فاضل. */
     suspend fun run(): AutoRecordResult = SMS_RECORD_LOCK.withLock {
-        if (!deps.inbox.available || !deps.inbox.sync().enabled) return@withLock AutoRecordResult(AutoRecordStatus.OFF)
+        if (off()) return@withLock AutoRecordResult(AutoRecordStatus.OFF)
         var recorded = 0
         var duplicates = 0
         val ids = mutableListOf<Id>()
-        for (lane in deps.lanes) {
-            val mapping = deps.inbox.senderWallets(lane.spaceId)
-            for (sender in sendersIn(lane)) {
-                val target = walletFor(lane, sender, mapping) ?: continue
-                lane.review.loadSender(target, sender)
-                // من غير اختيارات: الجديد **اللي شكله معروف** بس، والتصنيف المقترح يفضل مقترح، والشبيه والتعارض ما بيتلمسوش
-                val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true)
-                recorded += outcome.recorded
-                duplicates += outcome.duplicates
-                outcome.batchId?.let { batch -> ids += lane.sources.listByBatch(batch).mapNotNull { it.transactionId } }
-            }
+        forEachRoute({ true }) { lane, _ ->
+            // من غير اختيارات: الجديد **اللي شكله معروف واتعلّم** بس، والتصنيف المقترح يفضل مقترح، والشبيه والتعارض ما بيتلمسوش
+            val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true)
+            recorded += outcome.recorded
+            duplicates += outcome.duplicates
+            outcome.batchId?.let { batch -> ids += lane.sources.listByBatch(batch).mapNotNull { it.transactionId } }
         }
-        val waiting = waitingLocked()
-        AutoRecordResult(AutoRecordStatus.RAN, recorded, duplicates, waiting.messageIds, ids, unmappedLocked(), waiting.unknownShape)
+        val state = waitingLocked()
+        val w = state.waiting
+        AutoRecordResult(AutoRecordStatus.RAN, recorded, duplicates, w.messageIds, ids, state.unmapped, w.unknownShape, w.newShape)
     }
 
     /**
-     * اللي مستني قرار المالك دلوقتي — من غير ما يكتب حاجة: كل رسالة في الصندوق **ما عدا** اللي ليها محفظة وهتتسجل (جديدة وشكلها
-     * معروف) أو هتتشال (مكررة). يعني رسالة لسه واصلة وهتتسجل لوحدها **مش** مستنية ⇒ مفيش إشعار ليها؛ ورسالة بنك مالوش محفظة
-     * **مستنية**؛ والجديدة اللي اتفهمت من كلمات عامة بس **مستنية** ([SmsWaiting.unknownShape] — الجولة الرابعة).
+     * §77-A — **تأكيد المالك** لرسايل مستنية (من غير الشاشة): بتتسجل في محفظتها (الجديد · والشبيه لأنه اختاره) **وأشكالها بتتعلّم**، فرسايل
+     * الشكل ده الجاية (واللي مستنية) بتتسجل لوحدها. المكرر بيتشال من غير ما يعلّم. بيرجّع عدد اللي اتسجل.
      */
-    suspend fun waiting(): SmsWaiting = SMS_RECORD_LOCK.withLock {
-        if (!deps.inbox.available || !deps.inbox.sync().enabled) SmsWaiting(emptyList()) else waitingLocked()
+    suspend fun confirm(messageIds: List<String>): Int = SMS_RECORD_LOCK.withLock {
+        if (off()) return@withLock 0
+        val wanted = messageIds.toSet()
+        var recorded = 0
+        forEachRoute({ it.id in wanted }) { lane, view ->
+            val similar = view.similar.filter { it.state == MatchingState.SIMILAR }.map { it.lineNumber }
+            recorded += lane.review.recordLocked(emptyMap(), similar, clearOnly = false).recorded
+        }
+        recorded
     }
 
-    private suspend fun waitingLocked(): SmsWaiting {
+    /** §75-2 — رد المالك على «ده راتبك؟» لرسايل [sender] في [spaceId] (null = يتسأل تاني). أيوه ⇒ رسايل الراتب منه «راتب» مؤكد. */
+    suspend fun answerSalary(spaceId: String, sender: String, yes: Boolean?) {
+        laneOf(spaceId)
+        deps.inbox.setSalaryAnswer(spaceId, sender, yes)
+    }
+
+    /** §77-A — ينسى أشكال رسايل [sender] في [spaceId] ⇒ رسالته الجاية تستنى تأكيد مرة تاني. */
+    suspend fun forgetLayouts(spaceId: String, sender: String) {
+        laneOf(spaceId)
+        deps.inbox.forgetShapes(spaceId, sender)
+    }
+
+    /**
+     * اللي مستني قرار المالك دلوقتي — من غير ما يكتب حاجة: كل رسالة في الصندوق **ما عدا** اللي هتتسجل لوحدها (جديدة وشكلها معروف
+     * واتعلّم) أو هتتشال (مكررة). يعني رسالة هتتسجل لوحدها **مش** مستنية ⇒ مفيش إشعار ليها؛ وأول رسالة من شكل **مستنية**.
+     */
+    suspend fun waiting(): SmsWaiting = SMS_RECORD_LOCK.withLock { if (off()) SmsWaiting(emptyList()) else waitingLocked().waiting }
+
+    /** سؤال لكل رسالة مستنية (`SmsAskSource`): «ده راتبك؟» لو عليها، وإلا «مستنية تأكيدك» — بلدها ويومها لو اتقرت. */
+    internal suspend fun waitingAsks(): List<PendingAsk> = SMS_RECORD_LOCK.withLock {
+        if (off()) return@withLock emptyList()
+        val state = waitingLocked()
+        val fallback = deps.lanes.firstOrNull()?.spaceId.orEmpty()
+        state.waiting.messageIds.map { id ->
+            val (space, date) = state.where[id] ?: (fallback to null)
+            PendingAsk(state.questions[id] ?: AskKind.SMS_WAITING, space, messageId = id, date = date)
+        }
+    }
+
+    private suspend fun waitingLocked(): WaitingState {
         val all = deps.inbox.sync().messages.map { it.id }
         val handled = mutableSetOf<String>()
         val unknownShape = mutableSetOf<String>()
+        val newShape = mutableSetOf<String>()
+        val questions = mutableMapOf<String, AskKind>()
+        val where = mutableMapOf<String, Pair<String, IsoDate?>>()
+        val unmapped = forEachRoute({ true }) { lane, view ->
+            for (line in view.ready + view.similar) {
+                where.getOrPut(line.messageId) { lane.spaceId to line.date }
+                line.question?.let { questions[line.messageId] = it }
+            }
+            for (line in view.ready) when {
+                line.shape.clear -> handled += line.messageId
+                line.waitReason == TextKey.SMS_WAIT_NEW_SHAPE -> newShape += line.messageId
+                line.waitReason == TextKey.SMS_WAIT_UNKNOWN_SHAPE -> unknownShape += line.messageId
+            }
+            view.duplicates.forEach { handled += it.messageId }
+        }
+        // الرسايل اللي ما اتبنيلهاش معاينة (مرسل مالوش محفظة · مش مفعّل): بلدها = أول بلد قارئها قبلها
         for (lane in deps.lanes) {
-            val mapping = deps.inbox.senderWallets(lane.spaceId)
-            for (sender in sendersIn(lane)) {
-                val target = walletFor(lane, sender, mapping) ?: continue
-                val view = lane.review.loadSender(target, sender)
-                view.ready.forEach { line -> if (line.shape.clear) handled += line.messageId else unknownShape += line.messageId }
-                view.duplicates.forEach { handled += it.messageId }
+            for (item in lane.review.inboxView().items) {
+                val row = (item.parsed as? SmsParseResult.Ok)?.row ?: continue
+                where.getOrPut(item.id) { lane.spaceId to row.date }
             }
         }
         val waiting = all.filter { it !in handled }
-        return SmsWaiting(waiting, waiting.filter { it in unknownShape })
+        return WaitingState(
+            SmsWaiting(waiting, waiting.filter { it in unknownShape }, waiting.filter { it in newShape }), unmapped, questions, where,
+        )
     }
 }

@@ -1,5 +1,7 @@
 package app.masroufy.memory
 
+import app.masroufy.core.SmsParseResult
+import app.masroufy.port.BankSmsParser
 import app.masroufy.port.QueuedSms
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
@@ -45,6 +47,44 @@ class MemorySmsInbox(messages: List<QueuedSms> = emptyList(), override val avail
     override suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?) {
         val map = wallets.getOrPut(spaceId) { mutableMapOf() }
         if (walletId == null) map.remove(smsSenderKey(sender)) else map[smsSenderKey(sender)] = walletId
+    }
+
+    // ── §77-A وضع التعلّم · §75-2 «ده راتبك؟» (على الجهاز بس — هنا في الذاكرة) ──
+
+    private val learned = mutableMapOf<String, MutableMap<String, MutableSet<String>>>()
+    private val salary = mutableMapOf<String, MutableMap<String, Boolean>>()
+
+    override suspend fun learnedShapes(spaceId: String): Map<String, Set<String>> =
+        learned[spaceId].orEmpty().mapValues { it.value.toSet() }.filterValues { it.isNotEmpty() }
+
+    override suspend fun learnShapes(spaceId: String, sender: String, keys: Set<String>) {
+        if (keys.isEmpty()) return
+        learned.getOrPut(spaceId) { mutableMapOf() }.getOrPut(smsSenderKey(sender)) { mutableSetOf() } += keys
+    }
+
+    override suspend fun forgetShapes(spaceId: String, sender: String) {
+        learned[spaceId]?.remove(smsSenderKey(sender))
+    }
+
+    override suspend fun salaryAnswer(spaceId: String, sender: String): Boolean? = salary[spaceId]?.get(smsSenderKey(sender))
+
+    override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) {
+        val map = salary.getOrPut(spaceId) { mutableMapOf() }
+        if (answer == null) map.remove(smsSenderKey(sender)) else map[smsSenderKey(sender)] = answer
+    }
+
+    /**
+     * للاختبار (S1 — §77-A): المالك «أكّد قبل كده» رسالة بنفس شكل كل رسالة من [messages] (من مرسلها في [spaceId]) ⇒ الرسايل الجاية بنفس
+     * الشكل بتتسجل لوحدها. الرسالة اللي شكلها مش واضح (مالهاش بصمة) ما بتعلّمش حاجة. بيرجّع عدد البصمات اللي اتعلّمت.
+     */
+    fun preLearn(spaceId: String, parse: BankSmsParser, vararg messages: QueuedSms): Int {
+        var count = 0
+        for (message in messages) {
+            val key = (parse(message.message(), 1) as? SmsParseResult.Ok)?.row?.learnKey ?: continue
+            learned.getOrPut(spaceId) { mutableMapOf() }.getOrPut(smsSenderKey(message.sender)) { mutableSetOf() } += key
+            count++
+        }
+        return count
     }
 
     /** للاختبار: رسالة وصلت (زي الاستقبال في الخلفية). */

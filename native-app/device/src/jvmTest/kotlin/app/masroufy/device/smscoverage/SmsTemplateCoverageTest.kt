@@ -142,11 +142,11 @@ class SmsTemplateCoverageTest {
             "saudi#39" to "invented by a test author (research: «do not build on it»); no date in the message",
             "saudi#48" to "probably invented; no date in the message",
             "saudi#73" to "no currency at all («تم قيد مبلغ 87.50 لحسابكم») — riyal can't be assumed (rule 10)",
-            "saudi#97" to "STC «Purchase Reversal» template has no date (PennyWise test, likely trimmed)",
+            // §77-C (S1): saudi#97 (STC «Purchase Reversal») و saudi#106 (STC «Outward SARIE Transfer») اتشالوا — شكل معروف من غير تاريخ
+            // بقى بياخد يوم الوصول. اللي فاضل تحت مش شكل معروف، فالرسالة من غير تاريخ لسه بتترفض «التاريخ مش واضح»
             "saudi#103" to "STC «Internal transfer» has no date and no direction word (PennyWise test)",
-            "saudi#106" to "STC «Outward SARIE Transfer» template has no date",
-            "saudi#120" to "cashback accrual into a card's cashback wallet: no date in the template",
-            "saudi#121" to "cashback credited to card: no date in the template",
+            "saudi#120" to "cashback accrual into a card's cashback wallet: no date in the template, and not a known layout (§77-C needs one)",
+            "saudi#121" to "cashback credited to card: no date in the template, and this variant is not a known layout (§77-C needs one)",
             // egypt#49 اتشال (مراجعة جلسة 33): فلتر الجهاز بقى ما بيحجبش التاريخ، فرقم المرجع اللي قبله ما بقاش بياكله
         )
     }
