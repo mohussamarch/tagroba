@@ -31,7 +31,6 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
-import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.FieldError
 import app.masroufy.ui.components.PrimaryButton
@@ -80,7 +79,7 @@ fun LinkProjectEventCard(v: DetailView, locked: Boolean) {
         for (m in onProjects) TagLine(t(TextKey.LINK_PROJECT_EVENT_PROJECT_TAG), m.project.name, null)
         linked?.let { e ->
             val name = if (e.sharePercent < 100) t(TextKey.LINK_PROJECT_EVENT_NAME_SHARE, e.name, percentText(e.sharePercent)) else e.name
-            TagLine(t(TextKey.LINK_PROJECT_EVENT_EVENT_TAG), name, shareSplit(v.amountMinor, e.sharePercent)?.first?.let { amountLabel(it, v.currency) })
+            TagLine(t(TextKey.LINK_PROJECT_EVENT_EVENT_TAG), name, amountLabel(e.shareMinor, v.currency))
         }
     }
     var picked by remember { mutableStateOf<Set<Id>>(emptySet()) }
@@ -129,7 +128,7 @@ fun LinkProjectEventCard(v: DetailView, locked: Boolean) {
             if (pending != null && stillLinked != null) ConflictBox(stillLinked.name, choices.firstOrNull { it.id == pending }?.name.orEmpty()) {
                 unlinked = true; event = pending; pending = null; shareText = "100"
             }
-            if (event != null && pending == null) ShareBox(v, shareText, percent, choices.firstOrNull { it.id == event }?.name.orEmpty()) { shareText = it; error = null }
+            if (event != null && pending == null) ShareBox(shareText, percent, choices.firstOrNull { it.id == event }?.name.orEmpty()) { shareText = it; error = null }
         }
         BasicText(t(TextKey.LINK_PROJECT_EVENT_NOTE), style = Type.of(12).copy(color = Ink.muted))
         error?.let { FieldError(it) }
@@ -140,14 +139,9 @@ fun LinkProjectEventCard(v: DetailView, locked: Boolean) {
             scope.launch {
                 val err = failureOf {
                     for (m in projects) if ((m.project.id in picked) != m.member) deps.projects.setMember(v.id, m.project.id, m.project.id in picked)
-                    if (out) {
-                        val share = percent ?: 100
-                        val changed = linked != null && (event != linked.eventId || share != linked.sharePercent)
-                        // تغيير النسبة = فك وربط من جديد (مفيش تعديل نسبة بخطوة واحدة في كوتلن لسه)
-                        if (linked != null && (unlinked || changed)) deps.eventLinks.unlink(linked.eventId, v.id)
-                        val target = event
-                        if (target != null && (linked == null || unlinked || changed)) deps.eventLinks.link(target, v.id, EventRole.SPEND, sharePercent = share)
-                    }
+                    val plan = eventPlan(linked, event, unlinked, percent, out)
+                    plan.unlinkOld?.let { deps.eventLinks.unlink(it, v.id) }
+                    plan.linkTo?.let { deps.eventLinks.link(it, v.id, EventRole.SPEND, sharePercent = plan.share) }
                 }
                 saving = false
                 reload++
@@ -188,10 +182,13 @@ private fun ConflictBox(linkedName: String, wantedName: String, onUnlink: () -> 
     }
 }
 
-/** نصيب الحدث: الخانة (٪) + النسب السريعة + «على «الحدث»» و«الباقي خارج الحدث» (من `core`). */
+/**
+ * نصيب الحدث: الخانة (٪) + النسب السريعة + «على «الحدث»» و«الباقي خارج الحدث» **بالنسبة** — المبلغ بالريال بيتحسب في حالة الاستخدام وقت الربط
+ * وبيظهر على الكارت بعد الحفظ (معاينة المبلغ قبل الحفظ محتاجة حالة استخدام — ناقصة).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ShareBox(v: DetailView, text: String, percent: Int?, eventName: String, onText: (String) -> Unit) {
+private fun ShareBox(text: String, percent: Int?, eventName: String, onText: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(TextKey.LINK_PROJECT_EVENT_SHARE), style = Type.of(13, FontWeight.Bold))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -201,24 +198,24 @@ private fun ShareBox(v: DetailView, text: String, percent: Int?, eventName: Stri
                 for (q in QUICK_SHARES) SelectChip(percentText(q), percent == q, { onText(q.toString()) }, height = 44.dp)
             }
         }
-        val split = shareSplit(v.amountMinor, percent)
+        val split = sharePercents(percent)
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(androidx.compose.ui.graphics.Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            if (split == null) SplitLine(t(TextKey.LINK_PROJECT_EVENT_RANGE, sentenceNumber(1), sentenceNumber(100)), null, v)
+            if (split == null) SplitLine(t(TextKey.LINK_PROJECT_EVENT_RANGE, sentenceNumber(1), sentenceNumber(100)), null, Ink.muted)
             else {
-                SplitLine(t(TextKey.LINK_PROJECT_EVENT_ON, eventName), split.first, v, AmountTone.EXPENSE)
-                SplitLine(t(TextKey.LINK_PROJECT_EVENT_OUTSIDE), split.second, v)
+                SplitLine(t(TextKey.LINK_PROJECT_EVENT_ON, eventName), percentText(split.first), Ink.expense)
+                SplitLine(t(TextKey.LINK_PROJECT_EVENT_OUTSIDE), percentText(split.second), Ink.muted)
             }
         }
     }
 }
 
 @Composable
-private fun SplitLine(label: String, minor: app.masroufy.core.Halalas?, v: DetailView, tone: AmountTone = AmountTone.PLAIN) {
+private fun SplitLine(label: String, value: String?, ink: androidx.compose.ui.graphics.Color) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(label, Modifier.weight(1f), style = Type.of(13))
-        if (minor != null) AmountText(minor, v.currency, tone = if (tone == AmountTone.EXPENSE) AmountTone.PLAIN else tone, size = 13, color = if (tone == AmountTone.EXPENSE) Ink.expense else Ink.muted)
+        if (value != null) BasicText(value, style = Type.of(13, FontWeight.Bold).copy(color = ink))
     }
 }
