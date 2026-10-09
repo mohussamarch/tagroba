@@ -38,7 +38,9 @@ private const val NEG = "(?<!(?:\\bnot|\\bnever|\\bno|n't)[ \\t]{1,3})(?<![Uu]n)
  * «سيخصم» · «to be debited» · upcoming).
  */
 internal val SMS_OFFER_PATTERN = Regex(
-    "$NA(?:[وف])?(?:بال|لل|ال|ب|ل)?عرض|سيتم|عرض خاص|offer|will be|scheduled" +
+    // الجولة الخامسة: «لعرض تفاصيل العملية» مش عرض · «scheduled transfer … executed successfully» خلص · «هدية … صالحة لمدة» عرض
+    "$NA(?:[وف])?(?:بال|لل|ال|ب|ل)?عرض(?!$S*(?:ال)?(?:تفاصيل|رصيد|كشف|حساب))|سيتم|عرض خاص|offer|will be" +
+        "|scheduled(?![^\\n]{0,100}?${B}(?:executed|completed|processed)$S+successfully$B)|${NA}هدي[ةه][^\\n]{0,40}صالح" +
         "|shop$S+now|when$S+you$S+(?:pay|shop|spend|use)|pay$S+over$S+\\d" +
         "|${NA}و?احصل$S*(?:على|علي)?$S*(?:\\d|خصم|كاش|استرداد|نقاط|هدي|مكافأ|مكافا|جائز|عرض|ضعف|مضاعف|قسيم|كوبون)" +
         "|${NA}استمتع$S*(?:ب)?(?:ال)?(?:\\d|خصم|عرض|كاش|استرداد|نقاط|تقسيط|هدي)" +
@@ -70,36 +72,19 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         "مشاركة${S}*الرمز|الرمز$S*[:：]?$S*\\d{4,8}" +
         "|كلمة$S*مرور|رمز$S*(?:مؤقت|شراء)|رمز$S*[:：]$S*\\d{4,8}|الرقم$S*السري|security$S*code" +
         "|one.?time$S*(?:PIN|passcode)|verification$S*PIN|passcode|كود$S*(?:ال)?(?:تحقق|تفعيل|تأكيد|أمان)" +
-        "|(?<!(?:auth|approval|authori[sz]ation|merchant|branch|terminal|promo)[ \\t:]{1,2})$B(?:PIN|code)$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
+        "|(?<!(?:auth|approval|authori[sz]ation|merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})$B(?:PIN|code)$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         "|رمز$S*(?:ال)?(?:تأكيد|أمان|امان|سري)|الرمز$S*السري|(?:confirmation|authentication|security)$S*(?:code|PIN)" +
         "|$NA(?:ال)?(?:رمز|كود)ك?$S*(?:ال)?(?:تحقق|توثيق|تفعيل|دخول|تأكيد|تاكيد|أمان|امان|سري|مؤقت|شراء|مرور)$NZ" +
         "|$NA(?:ال)?رقم$S*(?:ال)?(?:تحقق|سري)$NZ|$NA(?:ال)?(?:رمز|كود)ك?$S*(?:هو$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         "|3D$S*-?$S*Secure$S+(?:code|password|PIN|OTP)|${B}password$S+(?:for|is)$B|${B}token$B$S*[:：]?$S*(?:is$S*)?\\d{4,8}(?!\\d)" +
         "|${B}to$S+authenticate$B|${B}(?:your|the)$S+code$S+(?:for|is|to)$B|${B}(?:enter|entering)$S+(?:the$S+)?(?:code$S+|OTP$S+)?\\d{4,8}(?!\\d)" +
-        "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)?$S*\\d{4,8}(?!\\d)",
-    GI,
-)
-
-/**
- * مرفوضة أو رصيد مش كفاية. الإضافات: «لم يتم تنفيذ» · «تم رفض المعاملة» (التجاري الدولي) · «رصيد غير كافي» · «لا يكفي» (الإنماء) ·
- * «لا يوجد رصيد كاف» (فودافون كاش) · «عدم كفاية» · Insufficient balance (إس تي سي — كانت بتتسجل شراء).
- * مراجعة جلسة 33: «was rejected» · denied · «could not be completed». الجولة التانية: «تعذر» · «فشلت» · «رفضت» · «لا يسمح» ·
- * «not approved». الجولة التالتة: «لن يتم» · «لم تكتمل/تنجح» · «not completed» · «unable to» · رقم سري غلط · «is stopped» ·
- * blocked · «تجاوز الحد» · «not enough» · محاولة شراء («Purchase attempt» — مش «If you did not attempt»).
- * «Cancelled»/«إلغاء»/«ملغاة» في [isCancelled] (لو مفيش استرداد).
- */
-internal val SMS_DECLINED_PATTERN = Regex(
-    "مرفوض|رفض العملية|${IF_NOT}لم تتم|غير ناجح|declined|failed|unsuccessful" +
-        "|${IF_NOT}لم$S*يتم|رفض$S*المعاملة|تم$S*رفض|insufficient|رصيد$S*غير$S*كا[فٍ]|لا$S*يكفي|لا$S*يوجد$S*رصيد|عدم$S*(?:وجود$S*رصيد|كفاية)" +
-        "|${B}rejected$B|${B}denied$B|could$S*not$S*be$S*(?:completed|processed)" +
-        "|تعذر|فشل|رفضت|لا$S*يسمح|${B}not$S+(?:been$S+)?approved$B" +
-        "|${NA}لن$S*(?:يتم|تتم)$S*$MONEY_VERB|${NA}${IF_NOT}لم$S*(?:تكتمل|يكتمل|تنجح|ينجح|تنفذ|ينفذ)|${B}not$S+(?:been$S+)?(?:completed|processed|successful)$B" +
-        "|${B}unable$S+to$S+(?:process|complete|authori[sz]e|approve|execute|perform|debit|charge)$B|${B}(?:incorrect|wrong|invalid)$S+(?:PIN|password|CVV|OTP)$B|${B}PIN$S+(?:is$S+)?(?:incorrect|wrong|invalid)$B" +
-        "|${NA}(?:ال)?رقم$S*(?:ال)?سري$S*(?:خاطئ|خطأ|غير$S*صحيح)|${B}(?:is|was|has$S+been)$S+(?:stopped|suspended|frozen)$B" +
-        "|${B}(?:purchase|transaction|payment|amount)$S+(?:is$S+|was$S+|has$S+been$S+)?blocked$B|\\d$S*blocked$B|${B}blocked$S+(?:on|against)$S+your$B|${NA}تجاوز$S*(?:ال)?حد|${B}not$S+enough$B" +
-        "|${B}exceed(?:s|ed)?$S+(?:the$S+|your$S+)?(?:daily$S+|monthly$S+)?(?:limit|balance)" +
-        "|${B}(?:purchase|transaction|payment|withdrawal|transfer)$S+attempt|$NEG${B}attempted$S+(?:purchase|transaction|payment|withdrawal)" +
-        "|${NA}محاولة$S*(?:شراء|سحب|دفع|تحويل|عملية|حوالة)",
+        "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)?$S*\\d{4,8}(?!\\d)" +
+        // ── الجولة الخامسة: «رمز لمرة واحدة 731905» · «الكود بتاعك 4829» · «أدخل الرمز المرسل 731905» · «رقمك السري المؤقت» ·
+        // «Verification No.» · «one-time 731905» · «Use 731905 to confirm» · «731905 is your code» («كود العملية» لسه رقم العملية)
+        "|(?:رمز|كود|كلمة$S*(?:ال)?(?:مرور|سر))[^\\n]{0,15}لمرة$S*واحدة|$NA(?:ال)?(?:رمز|كود)ك?[ \\t]+(?!(?:ال)?عملية)(?:[^\\s\\d]+[ \\t]+){1,2}\\d{4,8}(?!\\d)" +
+        "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)[^\\n\\d]{0,20}\\d{4,8}(?!\\d)|$NA(?:ال)?رقمك$S*(?:ال)?(?:سري|تحقق)" +
+        "|${B}verification$S*(?:no\\.?|number|num)(?![A-Za-z])|${B}one.?time(?:[ \\t]+[^\\s\\d]+){0,2}[ \\t]*[:：]?[ \\t]*\\d{4,8}(?!\\d)" +
+        "|${B}use$S+\\d{4,8}$S+to$B|\\d{4,8}$S+is$S+your$S+(?:[A-Za-z]+$S+)?(?:code|OTP|PIN|password|passcode)$B",
     GI,
 )
 
@@ -114,70 +99,21 @@ private val CANCEL_PHRASE = Regex(
 )
 private val REFUND_WORD = Regex("استرداد|استرجاع|مرتجع|${B}refund", GI)
 
-/**
- * مش حركة فلوس خلصت: تفويض/حجز (الخصم الحقيقي بييجي بعدين في رسالة تانية) · طلب استرداد أو طلب سحب لسه مستني · تحويل شراء قديم
- * لأقساط (مش صرف جديد) · كشف حساب البطاقة · دخول للتطبيق · تفعيل بطاقة · رقم سري اتعمل · رسالة رصيد بس · جايزة لازم تتطلب.
- * مراجعة جلسة 33: pending · «معلقة» · under review · «قيد المراجعة» · «تم استلام طلبك/طلب سحب» · refund request.
- * الجولة التانية: pre-authorization · «تم حجز» · on hold · «طلب استرداد» · dispute · chargeback · ميعاد سداد.
- * الجولة التالتة: التفويض **بعبارته** («Authorization» مش منفية · «has been authorized» · pre-auth — مش «If you have not authorized») ·
- * «اعتراض على» و«تذكير» في أول الرسالة بس ([HEAD_ONLY]) · «محجوز» · «تجميد» · «بشكل مؤقت» · «لحين إتمام» · temporary hold ·
- * «amount held» · «جاري تنفيذ» (مش «حساب جاري») · being processed · in progress.
- */
-private val NOT_TRANSACTION_ANYWHERE = Regex(
-    "حجز$S*مبلغ|Cash$S*Re(?:serve|lease)|تم$S*استلام$S*الطلب|تم$S*طلب|تم$S*تقسيط|كشف$S*حساب|الحد$S*الأدنى$S*للسداد|" +
-        "تسجيل$S*الدخول|logged$S*in|تم$S*تفعيل|${B}PIN$B[^\\n]*${B}SET$B|مبروك$S*كسبت" +
-        "|${B}pending$B|معلق(?:ة|ه)?(?![$AR])|under$S*review|قيد$S*(?:المراجعة|الانتظار|التنفيذ)|تم$S*استلام$S*طلب" +
-        "|$NEG(?<![A-Za-z])authori[sz]ation(?![A-Za-z])|${B}(?:has|have|was|were|is|been)$S+(?:been$S+)?authori[sz]ed$B|${B}pre.?auth" +
-        "|تم$S*حجز|حجز$S*مؤقت|${B}on$S+hold$B|${B}hold$S+(?:of|on|amount)$B" +
-        "|طلب$S*(?:استرداد|استرجاع|اعتراض)|تم$S*(?:تسجيل|استلام|رفع)$S*(?:ال)?اعتراض|${B}(?:your|the)$S+dispute$B" +
-        "|${B}dispute$S+(?:for|on|of|has|was|is|request|case|ref)$B|${B}disputed$B|chargeback" +
-        "|${B}refund$S+request$B|request(?:ed)?$S+(?:a$S+|for$S+(?:a$S+)?)?(?:refund|chargeback)|(?:withdrawal|cash.?out)$S+request" +
-        "|المستحق$S*للسداد|مستحق[ةه]?$S*(?:السداد|الدفع)|جاهز[ةه]?$S*للسداد|${B}(?:is|are)$S+due$B|${B}due$S+(?:on|by|date)$B" +
-        "|payment$S+due|${B}due$B$S*[:：]?$S*\\d|statement$S+(?:balance|amount)|minimum$S+(?:payment|due|amount)" +
-        "|$NA(?:ال)?مبلغ$S*(?:ال)?محجوز|${NA}تجميد$S*(?:ال)?مبلغ|تم$S*تجميد|بشكل$S*مؤقت|${NA}مؤقت(?:ا|ًا|اً)$NZ|لحين$S*(?:إتمام|اتمام|تسوية|التسوية|اكتمال)" +
-        "|${B}temporar(?:y|ily)$S+(?:hold|held|blocked|reserved|debit)|${B}(?:amount|funds?)$S+(?:is$S+|are$S+|has$S+been$S+|have$S+been$S+)?held$B" +
-        "|${B}held$S+(?:on|against)$S+your$B|جار[يى]$S*(?:ال)?(?:تنفيذ|معالجة|عمل|تحويل|إيداع|ايداع|سداد|خصم)" +
-        "|${B}being$S+processed$B|${B}in$S+progress$B|${B}(?:is|are)$S+processing$B",
-    GI,
-)
-
-/** كلام عام بيتفحص في **أول الرسالة** بس: تذكير · اعتراض · reminder · dispute (في آخر رسالة حقيقية = سطر تحذير). */
-private val HEAD_ONLY = Regex("$NA(?:ال)?(?:تذكير|اعتراض|محجوز(?:ة|ه)?)$NZ|${B}reminder$B|${B}dispute$B|${B}blocked$B", GI)
-
-/** «تفويض» في أي مكان = حجز مبلغ لشراء إنترنت. «خصم من التفويض» (الراجحي — الخصم الحقيقي) ما بيتلمسش. */
-private val HOLD_WORD = Regex("تفويض")
-private val DEBIT_FROM_HOLD = Regex("خصم$S*من$S*(?:ال)?تفويض")
-
-/**
- * الرسالة كلها رصيد: «رصيد حسابك فى فودافون كاش الحالي…» من غير حركة قبلها. الجولة التانية: بتبدأ بـ«رصيدك» · «الرصيد» لوحده
- * · «Your … balance». الجولة التالتة: **أول سطر بيبدأ بالرصيد** مهما كان بعده («الرصيد المتاح بعد عملية الشراء» · «Available Balance
- * after Purchase») — «Balance transfer» (تحويل رصيد بطاقة) مش هنا.
- */
-private val BALANCE_ONLY = Regex(
-    "^$S*(?:رصيد$S*حسابك|Your$S*current$S*Vodafone$S*Cash$S*balance|رصيدك|(?:ال)?رصيد$NZ" +
-        "|(?:(?:available|current|ledger|account|card|new|remaining)$S+)+balance$B(?!$S*transfer)|balance$B(?!$S*transfer)" +
-        "|Your$S+(?:[A-Za-z]+$S+){0,3}balance$B)",
-    GI,
-)
-
 private val GREETING = Regex("^(?:عزيزي|عميلنا|Dear)", GI)
 private val SENTENCE_END = Regex("[.!؟?](?:$S|$)")
 
 /**
- * أول الرسالة: أول سطر فيه كلام (والسطر اللي بعده لو الأولاني تحية «عزيزي العميل»)، ولو الرسالة سطر واحد (مصر) أول جملة —
- * «تم خصم … يوم 05/03/2026. تذكير: لا تشارك …» أولها «تم خصم …».
+ * أول الرسالة: أول سطر فيه كلام **والسطر اللي بعده** (الجولة الخامسة: في رسايل السعودية أول سطر = العنوان، و«سداد فاتورة\nتذكير
+ * بسداد …» · «Credit Card Payment\nYour card … has been blocked» كانت بتعدّي؛ ولو الأولاني تحية «عزيزي العميل» ⇒ التلات سطور)،
+ * ولو الرسالة سطر واحد (مصر) أول جملة — «تم خصم … يوم 05/03/2026. تذكير: لا تشارك …» أولها «تم خصم …».
  */
 internal fun headOf(body: String): String {
     val lines = body.split('\n').map(JsText::trim).filter { it.isNotEmpty() }
     if (lines.isEmpty()) return ""
-    if (lines.size > 1) return if (GREETING.containsMatchIn(lines[0])) lines[0] + " " + lines[1] else lines[0]
+    if (lines.size > 1) return lines.take(if (GREETING.containsMatchIn(lines[0])) 3 else 2).joinToString(" ")
     val end = SENTENCE_END.find(lines[0])?.range?.first ?: return lines[0]
     return lines[0].substring(0, end)
 }
-
-internal fun isNotATransaction(body: String): Boolean =
-    NOT_TRANSACTION_ANYWHERE.containsMatchIn(body) || BALANCE_ONLY.containsMatchIn(body) || HEAD_ONLY.containsMatchIn(headOf(body)) ||
-        (HOLD_WORD.containsMatchIn(body) && !DEBIT_FROM_HOLD.containsMatchIn(body))
 
 /** فيها إلغاء (في أولها أو بعبارة إلغاء عملية). */
 private fun mentionsCancel(body: String) = CANCEL_WORD.containsMatchIn(headOf(body)) || CANCEL_PHRASE.containsMatchIn(body)
@@ -195,7 +131,13 @@ internal fun cancelledWithRefund(body: String): Boolean = mentionsCancel(body) &
  * (بصمة الرسالة ووصفها في ملف المرجع فيهم «بـ» و«لـ»).
  */
 internal fun guardText(body: String): String =
-    body.filterNot { it.code == 0x0640 || it.code in 0x064B..0x065F || it.code == 0x0670 || it.code in 0x0610..0x061A }
+    body.filterNot { it.code == 0x0640 || it.code in 0x064B..0x065F || it.code == 0x0670 || it.code in 0x0610..0x061A || it.code in FORMAT_CODES }
+
+/**
+ * حروف تنسيق مخفية (الجولة الخامسة): مسافة من غير عرض (U+200B) · ZWNJ/ZWJ · word joiner · الشرطة الناعمة (U+00AD) · BOM — جوه كلمة
+ * حارس («مرف​وضة» · «Decl‌ined» · «OT­P») كانت بتعدّي الحارس والرسالة تتسجل. بتتشال من النص قبل الحراس والقراية.
+ */
+internal val FORMAT_CODES = setOf(0x200B, 0x200C, 0x200D, 0x2060, 0x00AD, 0xFEFF)
 
 /**
  * سبب تجاهل الرسالة أو null — الترتيب نفس التطبيق الحالي (عرض ⇒ رمز ⇒ مرفوض) وبعدهم «مش عملية» ⇒ اتلغت
@@ -213,17 +155,6 @@ internal fun smsIgnoreReason(body: String): TextKey? {
     }
 }
 
-/**
- * شيك رجع (اترفض) — في القارئين (الجولة التالتة: كان في السعودية بس، ومصر سجلت «was returned unpaid» استرداد داخل):
- * ممكن رصيد اتخصم تاني أو ما حصلش حاجة — مش استرداد داخل ⇒ «الاتجاه مش واضح».
- */
-private val RETURNED_CHEQUE = Regex(
-    "شيك$S*(?:مرتجع|مرفوض|راجع)|$NA(?:ارتجاع|إرجاع|ارجاع|رفض|رد)$S*(?:ال)?شيك|(?:returned|bounced|dishonou?red|unpaid)$S+cheque" +
-        "|cheque[^\\n]{0,80}?$B(?:returned|bounced|dishonou?red|unpaid)$B",
-    GI,
-)
-
-internal fun isReturnedCheque(body: String): Boolean = RETURNED_CHEQUE.containsMatchIn(body)
-
-/** نص الرسالة زي ما القارئ بيشوفه: أرقام لاتيني، من غير `\r` ولا علامات الاتجاه المخفية. */
-internal fun normalizeSmsBody(body: String): String = latinizeDigits(body).filterNot { it == '\r' || it.code in BIDI_CODES }
+/** نص الرسالة زي ما القارئ بيشوفه: أرقام لاتيني، من غير `\r` ولا علامات الاتجاه ولا حروف التنسيق المخفية ([FORMAT_CODES]). */
+internal fun normalizeSmsBody(body: String): String =
+    latinizeDigits(body).filterNot { it == '\r' || it.code in BIDI_CODES || it.code in FORMAT_CODES }

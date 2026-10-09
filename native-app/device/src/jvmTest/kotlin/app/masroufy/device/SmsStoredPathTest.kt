@@ -52,7 +52,6 @@ class SmsStoredPathTest {
         val dropped = listOf(
             "الرمز المؤقت 482913\nشراء عبر الإنترنت\nمبلغ: 64.25 ر.س\nلدى: TEST STORE\nفي: 2026-03-05 09:10",
             "Use 482913 to authenticate your purchase of EGP 500.00 at TEST STORE on 05/03/2026",
-            "شراء\nمبلغ محجوز: 500.00 ر.س\nلدى: TEST HOTEL\nفي: 2026-03-05 09:10",
             "لم تكتمل عملية الشراء\nمبلغ: SAR 64.25\nلدى: TEST STORE\nفي: 2026-03-05 09:10",
             "سوف يتم خصم مبلغ 230.00 ريال من حسابك 1188 لسداد فاتورة TEST POWER بتاريخ 2026-03-05",
             "سوف يتم خصم 500.00 جم من بطاقتك 6604 لدى TEST STORE يوم 05/03/2026",
@@ -60,6 +59,13 @@ class SmsStoredPathTest {
             "Win EGP 1,000 with every purchase using your credit card from 01/03/2026",
         )
         for (body in dropped) assertNull(SmsSafety.sanitize(body), body)
+        // الجولة الخامسة: عنوان بنك معروف («شراء») والحارس مسكها ⇒ **بتتحفظ** وتستنى في «المرفوضة» بسببها (§72: الانتظار مقبول،
+        // الضياع لا) — والقارئين بيرفضوها، فما بتتسجلش
+        val held = "شراء\nمبلغ محجوز: 500.00 ر.س\nلدى: TEST HOTEL\nفي: 2026-03-05 09:10"
+        val stored = assertNotNull(SmsSafety.sanitize(held))
+        for (parse in listOf(::parseBankSms, ::parseEgyptBankSms)) {
+            assertTrue(parse(BankSmsMessage("TESTBANK", "2026-03-05T06:10:30Z", stored), 1) is SmsParseResult.Rejected, held)
+        }
     }
 
     /** ملتبسة بتتحفظ وبتستنى (أي رفض) — بس ما تتسجلش في أي بلد. */

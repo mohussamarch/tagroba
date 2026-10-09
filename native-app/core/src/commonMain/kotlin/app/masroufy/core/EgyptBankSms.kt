@@ -19,10 +19,15 @@ private val EG_I = setOf(RegexOption.IGNORE_CASE)
  * عملة مش جنيه. الريال والـSR = رسالة سعودية (قارئ السعودية هو اللي يقراها) — إلا لو الرسالة فيها جنيه (كارت مصري اتخصم بالريال).
  * الحد حرف لاتيني مش حد كلمة («USD15.00» لازق في الرقم — الجولة التانية) + أسماء العملات بالعربي («ريال قطري» · دينار · درهم · ليرة).
  */
-private val EG_OTHER_CURRENCY = Regex(
-    "(?<![A-Za-z])(?:USD|EUR|GBP|SAR|AED|SR|KWD|BHD|QAR|OMR|JOD)(?![A-Za-z])|دولار|يورو|ريال|ر\\.س|$ARABIC_FOREIGN_WORD",
-    EG_I,
-)
+private val OTHER_NAME =
+    "(?<![A-Za-z])(?:USD|EUR|GBP|SAR|AED|SR|KWD|BHD|QAR|OMR|JOD)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:دولار|يورو|ريال|ر\\.س|$OTHER_RIYAL" +
+        "|دينار|درهم|ليرة|روب[يى][ةه]|(?:جنيه$S*)?[إا]سترلين[يى]|يوان|فرنك|روبل|رينغيت|رينجت|ين)(?![\\u0600-\\u06FF])"
+
+/**
+ * الجولة الخامسة: العملة لازم **جنبها رقم** («300.00 SAR» · «30 دولار» · «USD15.00») — اسم المحل «ريال للعطور» · «صيدلية يوروفارم» ·
+ * «SR TOYS» · «@SR TECH» كان بيخلي شراء بالجنيه يستنى بسبب «مش جنيه» (ومن غير ما يتسأل عن حاجة).
+ */
+private val EG_OTHER_CURRENCY = Regex("\\d$SP*(?:$OTHER_NAME)|(?:$OTHER_NAME)$SP*[:：]?$SP*\\d", EG_I)
 private val EGP_TOKEN = Regex(EG_CURRENCY, EG_I)
 
 /** نوع صرف (شراء · سحب · شحن) واتجاهه داخل ⇒ الرسالة متناقضة (مراجعة جلسة 33: «تم خصم … وتم إضافة 50 نقطة» اتسجلت دخل). */
@@ -42,7 +47,9 @@ private val INTERNATIONAL_TITLE = Regex("(?<![\\u0600-\\u06FF])(?:دولي|دو�
  */
 private fun egyptianForeign(body: String, currency: String): Boolean = when {
     INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body)) -> false
-    currency == "SAR" -> EGP_TOKEN.containsMatchIn(body) && (!hasEgyptianTransactionAmount(body) || hasLocalConversion(body, EGYPT_LOCAL))
+    // الجولة الخامسة: جملة على قالب مصري معروف والريال هو العملة الوحيدة («تم خصم 300.00 SAR من بطاقة الخصم المباشر رقم …») = كارت مصري
+    currency == "SAR" -> (EGP_TOKEN.containsMatchIn(body) && (!hasEgyptianTransactionAmount(body) || hasLocalConversion(body, EGYPT_LOCAL))) ||
+        (hasEgyptianKnownHead(body) && !EGP_TOKEN.containsMatchIn(body))
     else -> !hasSaudiCurrency(body) && (EGP_TOKEN.containsMatchIn(body) || '\n' !in body)
 }
 
@@ -80,8 +87,10 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     val date = egyptTransactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val kind = egyptKind(body, direction)
     if (contradicts(direction, kind)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
-    // الجولة الرابعة: الشكل علامة جنب القراية — جملة على قالب معروف بس هي اللي بتتسجل لوحدها (§72)
-    return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind, egyptShape(body, direction))
+    // الجولة الرابعة: الشكل علامة جنب القراية — جملة على قالب معروف بس هي اللي بتتسجل لوحدها (§72). الجولة الخامسة: الجملة **كلها**
+    // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`)
+    val shape = gateShape(egyptShape(body, direction, amount), body, date, cairoDayOf(message.receivedAt))
+    return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind, shape)
 }
 
 /** قارئ مصر لحزمة البلد. */

@@ -13,11 +13,23 @@ import app.masroufy.core.Direction.OUT
  * سداد» — البحث نفسه بيقول «الرسالة الكاملة مش منشورة») · القوالب المخترعة (#39 · #48) · «Internal transfer» (#103، مفيهوش اتجاه).
  */
 
-private class BankTitle(val bank: String, val id: String, pattern: String, val direction: Direction?) {
+/** [colon] = القالب بيتقارن بالنقطتين («Incoming Transfer: <بنك>» — «Incoming Transfer Request» مش هو). */
+private class BankTitle(val bank: String, val id: String, pattern: String, val direction: Direction?, val colon: Boolean) {
     val regex = Regex(pattern)
 }
 
-private fun t(bank: String, id: String, pattern: String, direction: Direction?) = BankTitle(bank, id, pattern, direction)
+private fun t(bank: String, id: String, pattern: String, direction: Direction?, colon: Boolean = false) =
+    BankTitle(bank, id, pattern, direction, colon)
+
+/**
+ * الجولة الخامسة: اللاحقة الحرة في العنوان («(?: .+)?») كانت بتقبل أي كلمة — «Incoming Transfer Request» · «حوالة داخلية واردة
+ * بانتظار التأكيد» · «شراء نقاط بيع مؤجل» · «شراء عبر Apple Pay - بانتظار التأكيد» كانوا شكل معروف. دلوقتي اللاحقة محصورة في اللي
+ * البحث كاتبه: مبلغ بالريال · اسم محفظة · اسم بنك (من غير كلمة حالة — [hasShapeDoubt]).
+ */
+private const val LOCAL_MONEY = "(?:(?:sar|sr|ريال|ر\\.? ?س\\.?) ?[\\d,.]+|[\\d,.]+ ?(?:sar|sr|ريال|ر\\.? ?س\\.?))"
+private const val WALLET =
+    "(?:apple|ابل|google|جوجل|samsung|سامسونج|stc|mada|مدي|huawei|هواوي|garmin|fitbit)? ?(?:pay|باي)|مدي|mada|اثير|atheer|(?:مدي|mada) (?:pay|باي)"
+private const val BANK_NAME = "[a-z\\u0600-\\u06FF][a-z\\u0600-\\u06FF .&-]{1,40}"
 
 private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
     // ── الراجحي ──
@@ -27,7 +39,7 @@ private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
     t("alrajhi", "purchase-current-account-estore", "عملية شراء ?- ?حساب جاري ?- ?المتجر الالكتروني", OUT), // #8
     t("alrajhi", "refund-online", "استرداد شراء الانترنت", IN), // #9
     t("alrajhi", "refund", "استرداد شراء", IN), // #10
-    t("alrajhi", "transfer-in-internal", "حوالة داخلية واردة(?: ب.*)?", IN), // #14 #15 (المبلغ ممكن في نفس السطر)
+    t("alrajhi", "transfer-in-internal", "حوالة داخلية واردة(?: ب ?$LOCAL_MONEY)?", IN), // #14 #15 (المبلغ ممكن في نفس السطر — مبلغ بس)
     t("alrajhi", "transfer-in-local", "حوالة محلية واردة", IN), // #17
     t("alrajhi", "transfer-out-internal", "حوالة داخلية صادرة", OUT), // #19 #20
     t("alrajhi", "transfer-out-local", "حوالة محلية صادرة", OUT), // #21
@@ -36,7 +48,7 @@ private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
     t("alrajhi", "salary", "راتب", IN), // #28
     t("alrajhi", "bill-payment-telecom", "مدفوعات سوا", OUT), // #30
     // ── الأهلي السعودي ──
-    t("snb", "purchase-pos", "شراء نقاط بيع(?: .+)?", OUT), // #40
+    t("snb", "purchase-pos", "شراء نقاط بيع(?: (?:$WALLET))?", OUT), // #40 «شراء نقاط بيع {wallet}» — اسم محفظة بس
     t("snb", "refund", "استرجاع شراء", IN), // #42
     t("snb", "cash-correction", "تصحيح سحب نقدي", IN), // #43
     // ── ساب ──
@@ -45,21 +57,22 @@ private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
     t("sab", "salary", "حوالة راتب", IN), // #53
     // ── الإنماء ──
     t("alinma", "purchase-pos-local", "شراء محلي من نقاط البيع", OUT), // #55
-    t("alinma", "purchase-via", "شراء عبر .+", OUT), // #56 «عبر Apple Pay» · #57 «عبر: POS» · #60 «عبر نقاط بيع»
-    t("alinma", "purchase-wallet", "شراء \\([^)]+\\)", OUT), // #58 «(مدى Pay)»
+    t("alinma", "purchase-via", "شراء عبر (?:$WALLET|pos|نقاط بيع)", OUT), // #56 «عبر Apple Pay» · #57 «عبر: POS» · #60 «عبر نقاط بيع»
+    t("alinma", "purchase-wallet", "شراء \\((?:$WALLET)\\)", OUT), // #58 «(مدى Pay)»
     t("alinma", "purchase-online-amount", "شراء انترنت [\\d.,]+ ?(?:sar|ريال|ر\\.?س)", OUT), // #62 (المبلغ في العنوان)
     t("alinma", "transfer-in-instant", "حوالة واردة محلية سريع", IN), // #65
-    t("alinma", "transfer-in-notice", "تم استلام حوالة واردة(?: .*)?", IN), // #67 (بعد «عميلنا العزيز،»)
-    t("alinma", "transfer-own-investment", "حوالة صادرة لحسابك الاستثماري.*", OUT), // #70
+    // #67 (بعد «عميلنا العزيز،») — الجملة كلها: «… من حساب جاري مبلغ SAR {amount} إلى **{acct} {date} {time}»
+    t("alinma", "transfer-in-notice", "تم استلام حوالة واردة من حساب جاري مبلغ $LOCAL_MONEY الي [*•x#\\d]+(?: [\\d/:.\\-]+)*", IN),
+    t("alinma", "transfer-own-investment", "حوالة صادرة لحسابك الاستثماري(?: في بنك الانماء)?", OUT), // #70
     t("alinma", "salary", "تم ايداع الراتب", IN), // #71 (بعد «هلا …») · #72
     // ── الفرنسي ──
     t("bsf", "transfer-out", "عملية حوالة مالية صادرة مقبولة", OUT), // #77
     // ── دي 360 ──
     t("d360", "purchase-online-local", "local online purchase", OUT), // #80
     t("d360", "purchase-online-international", "international online purchase", OUT), // #79 (أجنبي ⇒ بيستنى أصلًا)
-    t("d360", "transfer-in", "incoming transfer(?: .+)?", IN), // #82 «Incoming Transfer: <بنك>»
-    t("d360", "transfer-in-internal", "incoming internal transfer(?: .+)?", IN), // #83
-    t("d360", "transfer-out-internal", "outgoing internal transfer(?: .+)?", OUT), // #84
+    t("d360", "transfer-in", "incoming transfer ?: ?$BANK_NAME", IN, colon = true), // #82 «Incoming Transfer: <بنك>»
+    t("d360", "transfer-in-internal", "incoming internal transfer ?: ?$BANK_NAME", IN, colon = true), // #83
+    t("d360", "transfer-out-internal", "outgoing internal transfer ?: ?$BANK_NAME", OUT, colon = true), // #84
     t("d360", "transfer-out-local", "outgoing local transfer", OUT), // #85
     // ── بنك إس تي سي ──
     t("stc", "purchase-mada-pay", "mada pay \\(atheer\\) purchase", OUT), // #87
@@ -99,18 +112,50 @@ private val GREETING = Regex("عميلنا العزيز|هلا .+")
 /** عدد قوالب البنوك (للاختبار). */
 internal val SAUDI_BANK_TITLE_COUNT: Int get() = SAUDI_BANK_TITLES.size
 
+/** «Incoming Transfer: Returned» — اسم البنك بعد النقطتين لازم ما يبقاش كلمة حالة. */
+private val TITLE_STATUS = Regex("(?<![a-z])(?:returned?|refused|request)(?![a-z])")
+
+/**
+ * عملية **برّه البلد** (شراء أو سحب — مش حوالة دولية، دي بالريال عادي): «شراء دولي» · «PoS International Purchase» · «سحب صراف آلي
+ * دولي». الجولة الخامسة (§75-12 — قرار المالك: الشراء الأجنبي ما بيتسجلش لوحده): حتى لو المبلغ المكتوب بالريال بس، **بتستنى**.
+ */
+private val INTERNATIONAL = Regex("(?<![\\u0600-\\u06FF])(?:دولي|دولية)(?![\\u0600-\\u06FF])|(?<![a-z])international(?![a-z])")
+private val TRANSFER_TITLE = Regex("حوالة|تحويل|transfer|remittance")
+
+/** العنوان المعروف (أي اتجاه): [bank]/[id] للقالب (null = عنوان موحّد) · [from] = أول سطر بعد العنوان · [key] = العنوان بعد [shapeKey]. */
+private class TitleHit(val bank: String?, val id: String?, val direction: Direction?, val from: Int, val key: String)
+
+private fun titleHit(lines: List<String>): TitleHit? {
+    val first = shapeKey(lines.firstOrNull() ?: return null)
+    if (UNDIRECTED_TITLE.matches(first)) return TitleHit("alrajhi", "transfer-undirected", null, 1, first)
+    if (isSamaTitle(first)) return TitleHit(null, null, null, 1, first)
+    val index = if (GREETING.matches(first)) 1 else 0
+    val raw = lines.getOrNull(index) ?: return null
+    val title = shapeKey(raw)
+    val withColons = shapeKey(raw, dropColons = false)
+    val known = SAUDI_BANK_TITLES.firstOrNull { it.regex.matches(if (it.colon) withColons else title) } ?: return null
+    if (known.colon && (hasShapeDoubt(withColons) || TITLE_STATUS.containsMatchIn(withColons))) return null
+    return TitleHit(known.bank, known.id, known.direction, index + 1, title)
+}
+
+/** أول سطر (بعد التحية) عنوان سعودي معروف — موحّد أو قالب بنك، أي اتجاه. فلتر الجهاز بيستعملها (`SmsVocabulary`). */
+internal fun hasSaudiKnownTitle(body: String): Boolean = titleHit(body.split('\n').map(JsText::trim).filter { it.isNotEmpty() }) != null
+
 /**
  * الرسالة السعودية اللي القارئ قبلها على [direction]: عنوان موحّد بالحرف ⇒ [SmsShape.SamaTitle] · قالب بنك معروف ⇒ [SmsShape.KnownShape]
- * · غير كده ⇒ [SmsShape.KeywordFallback] (بتستنى). الشرط في الحالتين: اتجاه الشكل = اتجاه القارئ.
+ * · غير كده ⇒ [SmsShape.KeywordFallback] (بتستنى). الشرط: اتجاه الشكل = اتجاه القارئ، **وكل سطر بعد العنوان خانة معروفة**
+ * (`SmsSaudiLines.kt` — الجولة الخامسة)، والعملية مش شراء أو سحب برّه البلد.
  */
 internal fun saudiShape(body: String, direction: Direction): SmsShape {
     val lines = body.split('\n').map(JsText::trim).filter { it.isNotEmpty() }
-    val first = shapeKey(lines.firstOrNull() ?: return SmsShape.KeywordFallback)
-    if (UNDIRECTED_TITLE.matches(first)) {
-        return if (undirectedTransferDirection(body) == direction) SmsShape.KnownShape("alrajhi", "transfer-undirected") else SmsShape.KeywordFallback
+    val hit = titleHit(lines) ?: return SmsShape.KeywordFallback
+    val agrees = when {
+        hit.id == "transfer-undirected" -> undirectedTransferDirection(body) == direction
+        hit.bank == null -> samaTitleAgrees(hit.key, direction) == true
+        else -> hit.direction == null || hit.direction == direction
     }
-    samaTitleAgrees(first, direction)?.let { agrees -> return if (agrees) SmsShape.SamaTitle else SmsShape.KeywordFallback }
-    val title = if (GREETING.matches(first)) shapeKey(lines.getOrNull(1) ?: return SmsShape.KeywordFallback) else first
-    val known = SAUDI_BANK_TITLES.firstOrNull { it.regex.matches(title) } ?: return SmsShape.KeywordFallback
-    return if (known.direction == null || known.direction == direction) SmsShape.KnownShape(known.bank, known.id) else SmsShape.KeywordFallback
+    if (!agrees) return SmsShape.KeywordFallback
+    if (INTERNATIONAL.containsMatchIn(hit.key) && !TRANSFER_TITLE.containsMatchIn(hit.key)) return SmsShape.KeywordFallback
+    if (!allLinesKnown(lines.drop(hit.from), hit.bank?.let { "$it/${hit.id}" })) return SmsShape.KeywordFallback
+    return if (hit.bank == null) SmsShape.SamaTitle else SmsShape.KnownShape(hit.bank, hit.id!!)
 }

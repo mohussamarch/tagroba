@@ -111,16 +111,29 @@ class SmsTemplateCoverageTest {
         assertTrue(fragile.isEmpty(), "must-ignore rows stopped only by accident, not by a guard: $fragile")
         // الجولة الرابعة (§72 «المفهومة» = شكل معروف): كل قالب بحث بيتقري صح لازم يبقى **شكل معروف** في كل نسخه — لو بقى «كلمات
         // عامة» هيستنى تأكيد المالك بدل ما يتسجل لوحده (رجوع لورا). سطور «كلمات بس» في البحث (`keywordOnly`) بتتعد في التقرير بس.
-        val fallback = rows.filter { !it.keywordOnly && it.bookedShape == RowResult.FALLBACK }.map { "${it.file}#${it.index}" }
+        val fallback = rows.filter { !it.keywordOnly && it.bookedShape == RowResult.FALLBACK }.map { "${it.file}#${it.index}" } - WAIT_BY_DESIGN.keys
         assertTrue(fallback.isEmpty(), "researched templates read only by the keyword fallback (would wait instead of auto-recording): $fallback")
-        // وعناوين البنك المركزي لازم تتعرف **كعنوان موحّد** بالعربي والإنجليزي (مش قالب بنك بالصدفة)
-        val samaNotTitle = rows.filter { r -> r.isTitle && r.variants.any { it.shape != null && it.shape != "sama-title" } }.map { "${it.file}#${it.index}" }
+        // وعناوين البنك المركزي لازم تتعرف **كعنوان موحّد** بالعربي والإنجليزي (مش قالب بنك بالصدفة) — ما عدا [WAIT_BY_DESIGN]
+        val samaNotTitle = rows.filter { r -> r.isTitle && "${r.file}#${r.index}" !in WAIT_BY_DESIGN && r.variants.any { it.shape != null && it.shape != "sama-title" } }
+            .map { "${it.file}#${it.index}" }
         assertTrue(samaNotTitle.isEmpty(), "SAMA standard titles not recognised as SAMA titles: $samaNotTitle")
+        // الجولة الخامسة: الشراء/السحب **برّه البلد** بيستنى حتى لو المبلغ بالريال بس (§75-12) — لازم يفضل كده
+        val notWaiting = rows.filter { "${it.file}#${it.index}" in WAIT_BY_DESIGN && it.bookedShape != RowResult.FALLBACK }.map { "${it.file}#${it.index}" }
+        assertTrue(notWaiting.isEmpty(), "international purchase/withdrawal titles must wait for the owner: $notWaiting")
         val shapes = Report.shapeCounts(rows.filterNot { it.keywordOnly })
         assertTrue(shapes.getValue("known") > 0 && shapes.getValue("sama-title") > 0, "shape counts look empty: $shapes")
     }
 
     companion object {
+        /**
+         * الجولة الخامسة (§75-12 — قرار المالك: الشراء الأجنبي ما بيتسجلش لوحده): عنوان شراء أو سحب **دولي** بيستنى تأكيد المالك حتى لو
+         * المبلغ المكتوب بالريال بس (`SmsKnownShapesSaudi.kt` — `INTERNATIONAL`). بيتقري صح، بس شكله «مستني» عمدًا.
+         */
+        val WAIT_BY_DESIGN = mapOf(
+            "saudi#164" to "SAMA «International ATM Withdrawal / سحب صراف آلي دولي» with only a SAR amount",
+            "saudi#174" to "SAMA «PoS International Purchase / شراء عبر نقاط البيع دولية» with only a SAR amount",
+        )
+
         /** سطور معروف إنها بتترفض (بتستنى المالك) — والسبب. اللي يصلح سطر منهم يشيله من هنا. */
         val KNOWN_UNSUPPORTED = mapOf(
             "saudi#39" to "invented by a test author (research: «do not build on it»); no date in the message",

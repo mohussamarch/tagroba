@@ -65,8 +65,12 @@ class SmsMustIgnoreTest {
         }
     }
 
+    /** فلتر الجهاز بيرميها — إلا اللي أولها شكل بنك معروف (بتتحفظ وتستنى في «المرفوضة» — الجولة الخامسة). الرمز بيترمي دايمًا. */
     @Test fun theDeviceFilterDropsThemBeforeStorage() {
-        for ((name, body) in ignored) assertTrue(SmsVocabulary.ignoreBeforeStorage(body), name)
+        for ((name, body) in ignored) {
+            val stored = !SmsVocabulary.ignoreBeforeStorage(body)
+            assertTrue(!stored || (SmsVocabulary.hasKnownHead(body) && SmsVocabulary.ignoreReason(body) != TextKey.SMS_SENSITIVE), name)
+        }
     }
 
     /** الحراس ما بيمسكوش عمليات حقيقية شبههم: الخصم بعد التفويض · قسط التمويل · «دفعة» · رمز في كلمة تانية. */

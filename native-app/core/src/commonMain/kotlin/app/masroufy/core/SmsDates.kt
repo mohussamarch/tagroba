@@ -167,7 +167,16 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
     if (!hasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     if (EG_SHORT.containsMatchIn(body)) return shortCandidates(EG_SHORT, body, received).singleOrNull()
-    NBE_MONTH_DAY.find(body)?.let { m -> return withYear(m.groupValues[1].toInt(), m.groupValues[2].toInt(), receivedAt, received) }
+    NBE_MONTH_DAY.find(body)?.let { m ->
+        val a = m.groupValues[1].toInt()
+        val b = m.groupValues[2].toInt()
+        // الجولة الخامسة: «يوم MM-DD» شهر-يوم في جمل الأهلي المصري بس — مرسل تاني «يوم 08-10» ممكن يبقى يوم-شهر: لو القرايتين
+        // ممكنين (ومختلفين) ⇒ التاريخ مش واضح (كانت بتتسجل 10 أغسطس بدل 8 أكتوبر)
+        if (isNbeSentence(body)) return withYear(a, b, receivedAt, received)
+        val monthDay = withYear(a, b, receivedAt, received)
+        val dayMonth = withYear(b, a, receivedAt, received)
+        return if (monthDay != null && dayMonth != null && monthDay != dayMonth) null else monthDay ?: dayMonth
+    }
     DAY_MONTH.find(body)?.let { m ->
         val day = (m.groups[1] ?: m.groups[3])!!.value.toInt()
         val month = (m.groups[2] ?: m.groups[4])!!.value.toInt()

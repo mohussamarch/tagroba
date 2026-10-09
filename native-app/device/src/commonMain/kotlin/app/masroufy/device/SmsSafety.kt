@@ -48,7 +48,9 @@ object SmsSafety {
     fun sanitize(body: String?): String? {
         if (body == null || body.length > 8000) return null
         val text = latinizeDigits(body)
-        if (SmsVocabulary.ignoreBeforeStorage(text) || !SmsVocabulary.hasMovement(text) || !SmsVocabulary.hasMoney(text)) return null
+        // الجولة الخامسة (§72: الانتظار مقبول، الضياع لا): بترمي بسبب صريح بس — رمز · حارس على رسالة أولها مش شكل بنك معروف · مفيهاش
+        // مبلغ. كلمة الحركة ما بقتش شرط: القارئ بيرفض اللي مش فاهمه والرسالة تستنى المالك بدل ما تضيع
+        if (SmsVocabulary.ignoreBeforeStorage(text) || !SmsVocabulary.hasAmount(text)) return null
         // اللي ما بيتحجبش: المبلغ جنب عملة (محلية أو أجنبية) والتاريخ
         val kept = (
             financial.findAll(text).filterNot { afterReference(text, it.range.first) }.map { it.range } + SmsVocabulary.foreignMoneyRanges(text) +

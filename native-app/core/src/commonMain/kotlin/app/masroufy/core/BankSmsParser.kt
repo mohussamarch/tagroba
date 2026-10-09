@@ -35,8 +35,33 @@ private fun keywordDirection(body: String): Direction? {
     return if (out == incoming) null else if (incoming) Direction.IN else Direction.OUT
 }
 
-/** فعل خصم صريح في النص — مع عنوان داخل («تصحيح» · «استرداد») الرسالة متناقضة. */
-private val EXPLICIT_DEBIT = Regex("تم\\s*خصم|خصمت?\\s*من\\s*حساب|(?<![A-Za-z])debited(?![A-Za-z])", I)
+/**
+ * فعل خصم صريح في النص — مع عنوان داخل («تصحيح» · «استرداد») الرسالة متناقضة. الجولة الخامسة: «Debit from your account» ·
+ * علامة سالب قبل المبلغ («مبلغ: -1,250.00 SAR» — كانت بتتسجل +1,250 داخل).
+ */
+private val EXPLICIT_DEBIT = Regex(
+    "تم\\s*خصم|خصمت?\\s*من\\s*حساب|(?<![A-Za-z])debit(?:ed|\\s+from)(?![A-Za-z])|(?:^|[:：]|\\s)-\\s*\\d",
+    setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE),
+)
+
+/**
+ * الجولة الخامسة: عنوان **صرف** وفي باقي الرسالة (مش العنوان) كلمة فلوس راجعة — استرداد · عكس · مرتجع · إرجاع · إيداع · reversed ·
+ * credited · refund · returned · «SAR 87.40 CR» ⇒ الرسالة متناقضة («شراء\nتم استرداد مبلغ …» · «حوالة صادرة\nمرتجعة» · «سحب صراف
+ * آلي\nتم إيداع مبلغ») ⇒ «الاتجاه مش واضح» بدل ما تتسجل صرف جديد (كانت بتتسجل، والسحب كان بيحط كاش وهمي في محفظة الكاش §75-4).
+ */
+private val BODY_MONEY_BACK = Regex(
+    "استرداد|استرجاع|عكس|مرتجع|إرجاع|ارجاع|إيداع|ايداع|(?<![A-Za-z])(?:revers(?:ed|al|e)|credited|refund(?:ed)?|returned)(?![A-Za-z])|\\d\\s*CR(?![A-Za-z])",
+    I,
+)
+
+private fun bodyAfterTitle(body: String): String = body.substringAfter('\n', "")
+
+/** العنوان قال اتجاه وباقي الرسالة بيقول العكس (الجولة الخامسة — الفحص بقى في الناحيتين). */
+private fun contradictsTitle(body: String, title: SmsTitle?): Boolean = when (title?.direction) {
+    Direction.IN -> EXPLICIT_DEBIT.containsMatchIn(body)
+    Direction.OUT -> BODY_MONEY_BACK.containsMatchIn(bodyAfterTitle(body))
+    null -> false
+}
 
 /**
  * عكس أو استقطاع في العنوان **ومعاه** كلمة اتجاه تانية («Refund Reversal» · «ATM Withdrawal Reversal» · «عكس حوالة واردة» ·
@@ -112,7 +137,7 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val unclear = SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     if (isReturnedCheque(body) || reversalOfSomething(body)) return unclear
     val title = saudiTitle(body)
-    if (title?.direction == Direction.IN && EXPLICIT_DEBIT.containsMatchIn(body)) return unclear
+    if (contradictsTitle(body, title)) return unclear
     val direction = title?.direction ?: undirectedTransferDirection(body) ?: keywordDirection(body) ?: return unclear
     // «Purchase Cancelled … Refund»: إلغاء ومعاه استرداد = فلوس راجعة، مش صرف جديد (§75-6) ⇒ ما نسجلهاش صرف
     if (direction == Direction.OUT && cancelledWithRefund(body)) return unclear
@@ -123,6 +148,8 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
         is SaudiAmount.Ok -> a.amountMinor
     }
     val date = dateOf(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
-    // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72)
-    return smsRow(message, body, lineNumber, date, amount, direction, saudiMerchantOf(body, kind), kind, saudiShape(body, direction))
+    // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72).
+    // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`)
+    val shape = gateShape(saudiShape(body, direction), body, date, localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS))
+    return smsRow(message, body, lineNumber, date, amount, direction, saudiMerchantOf(body, kind), kind, shape)
 }

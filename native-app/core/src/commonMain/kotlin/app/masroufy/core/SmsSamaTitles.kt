@@ -116,6 +116,8 @@ internal val SAMA_TITLE_COUNT: Int get() = SAMA_TITLES.size
  * [titleKey] (بعد [shapeKey]) عنوان موحّد؟ null = لأ · true = أيوه واتجاهه زي اتجاه القارئ ([direction]) أو ملتبس ·
  * false = عنوان موحّد بس اتجاهه **عكس** القارئ (دفاع تاني — المفروض ما يحصلش، ولو حصل الرسالة تستنى).
  */
+internal fun isSamaTitle(titleKey: String): Boolean = titleKey in SAMA_BY_KEY
+
 internal fun samaTitleAgrees(titleKey: String, direction: Direction): Boolean? {
     val entry = SAMA_BY_KEY[titleKey] ?: return null
     return entry.direction == null || entry.direction == direction

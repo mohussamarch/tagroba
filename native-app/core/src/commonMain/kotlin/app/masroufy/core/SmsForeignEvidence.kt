@@ -39,20 +39,36 @@ private val LOCAL_GROUPING = Regex("^\\d{1,3}(?:[,٬]\\d{3})+(?:[.٫]\\d{1,2})?$
 
 // ── 1. رموز العملات ─────────────────────────────────────────────────────
 
-private const val SYMBOL = "(?:US|[A-Z]{1,2})?\\$|E?£E?|€|¥|₹|₺"
+// الجولة الخامسة: ₩ ₽ ₪ ฿ ₱ ₫ zł و«R$» (ريال برازيلي) — كانت بتترمي في فلتر الجهاز أو تتسجل بالمقابل المحلي
+private const val SYMBOL = "(?:US|[A-Z]{1,2})?\\$|E?£E?|€|¥|₹|₺|₩|₽|₪|฿|₱|₫|zł"
 private val SYMBOL_MONEY = Regex("(?<![A-Za-z])($SYMBOL)$SP*($FOREIGN_NUMBER)|($FOREIGN_NUMBER)$SP*($SYMBOL)(?![A-Za-z])")
-private val DOLLAR_PREFIX = mapOf("US" to "USD", "" to "USD", "C" to "CAD", "CA" to "CAD", "A" to "AUD", "AU" to "AUD", "HK" to "HKD", "S" to "SGD", "SG" to "SGD", "NZ" to "NZD")
+private val DOLLAR_PREFIX = mapOf(
+    "US" to "USD", "" to "USD", "C" to "CAD", "CA" to "CAD", "A" to "AUD", "AU" to "AUD", "HK" to "HKD", "S" to "SGD", "SG" to "SGD", "NZ" to "NZD",
+    "R" to "BRL",
+)
+private val SYMBOL_CODES = mapOf("€" to "EUR", "£" to "GBP", "₹" to "INR", "₺" to "TRY", "₩" to "KRW", "₽" to "RUB", "₪" to "ILS", "฿" to "THB", "₱" to "PHP", "₫" to "VND", "zł" to "PLN")
 
 /** «$» لوحده = دولار أمريكي (العرف في رسايل بنوك الخليج ومصر) · «C$/A$/HK$…» بلدهم · «¥» ين ولا يوان ⇒ null. */
 private fun symbolCode(symbol: String): String? = when {
     symbol.endsWith("$") -> DOLLAR_PREFIX[symbol.dropLast(1)]
-    symbol == "€" -> "EUR"
-    symbol == "£" -> "GBP"
+    symbol in SYMBOL_CODES -> SYMBOL_CODES.getValue(symbol)
     '£' in symbol -> "EGP" // «E£» / «£E»
-    symbol == "₹" -> "INR"
-    symbol == "₺" -> "TRY"
     else -> null
 }
+
+/**
+ * الجولة الخامسة: **اختصارات العملات** جنب رقم (حروف كبيرة وصغيرة زي ما بتتكتب): KD · BD · QR · RO · Dhs/DH · TL · RM · Rp · kr · Rs ·
+ * LE (الجنيه — أجنبي في قارئ السعودية) · د.إ · د.ك · ر.ق · ر.ع · د.ب · د.أ. «kr» و«Rs» أكتر من عملة ⇒ من غير كود (أجنبي أكيد بس ما بنخمّنش).
+ */
+private val ABBREV_CODES = mapOf(
+    "KD" to "KWD", "BD" to "BHD", "QR" to "QAR", "RO" to "OMR", "Dhs" to "AED", "DH" to "AED", "TL" to "TRY", "RM" to "MYR", "Rp" to "IDR",
+    "kr" to null, "Rs" to null, "LE" to "EGP", "L.E" to "EGP", "د.إ" to "AED", "د.ك" to "KWD", "ر.ق" to "QAR", "ر.ع" to "OMR",
+    "د.ب" to "BHD", "د.أ" to "JOD",
+)
+private const val ABBREV = "KD|BD|QR|RO|Dhs|DH|TL|RM|Rp|kr|Rs|L\\.E|LE|د\\.إ|د\\.ك|ر\\.ق|ر\\.ع|د\\.ب|د\\.أ"
+private val ABBREV_MONEY = Regex(
+    "(?<![A-Za-z\\u0600-\\u06FF])($ABBREV)\\.?$SP*[:：]?$SP*($FOREIGN_NUMBER)(?!\\d)|(?<![\\d.,٬٫])($FOREIGN_NUMBER)$SP*($ABBREV)\\.?(?![A-Za-z\\u0600-\\u06FF])",
+)
 
 // ── 2. أسماء العملات بالإنجليزي ─────────────────────────────────────────
 
@@ -84,7 +100,10 @@ internal fun namedMoneyIn(text: String): List<IsoMoney> {
         val name = m.groups[2]?.value ?: m.groups[3]!!.value
         IsoMoney(m.range, ENGLISH_NAME_RES.firstOrNull { it.first.matches(name) }?.second, m.groups[1]?.value ?: m.groups[4]!!.value)
     }
-    return ((symbols + english).toList() + arabicMoneyIn(text)).filter { it.inOneLine(text) }
+    val abbreviations = ABBREV_MONEY.findAll(text).map { m ->
+        IsoMoney(m.range, ABBREV_CODES[m.groups[1]?.value ?: m.groups[4]!!.value], m.groups[2]?.value ?: m.groups[3]!!.value)
+    }
+    return ((symbols + english + abbreviations).toList() + arabicMoneyIn(text)).filter { it.inOneLine(text) }
 }
 
 /** الرقم والعملة في نفس السطر («Currency: EUR\n2026-03-05» مش 2026 يورو). */
@@ -127,7 +146,7 @@ private fun localLabelOf(local: LocalCurrency) = Regex(
     FI,
 )
 
-private val ISO_LIKE = Regex("^[A-Z]{3}$")
+private val ISO_LIKE = Regex("^[A-Za-z]{3}$")
 private val SYMBOL_ONLY = Regex("^(?:$SYMBOL)$")
 
 /** الكلام بين الرقم والقوس كود أو رمز أو اسم عملة بس («12.50 Swiss Francs (SAR 52.10)» · «300 يوان\n(156.20 ريال)»). */

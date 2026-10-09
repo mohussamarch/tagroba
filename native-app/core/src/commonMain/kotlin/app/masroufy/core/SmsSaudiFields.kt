@@ -25,7 +25,10 @@ internal val SAUDI_LOCAL = LocalCurrency("SAR", CURRENCY)
  */
 private val NOT_TRANSACTION_AMOUNT = Regex(
     "الرصيد|رصيد|balance|المتاح|متاح|available|الحد|limit|رسوم|${B}fees?$B|عمولة|المتبقي" + "|${B}VAT$B|ضريبة|اعادة|إعادة" +
-        "|${B}bal$B|${B}charges?$B|commission|${B}tax$B|${B}discount$B|${B}points$B",
+        "|${B}bal$B|${B}charges?$B|commission|${B}tax$B|${B}discount$B|${B}points$B" +
+        // الجولة الخامسة: حد/سقف البطاقة · «المستحق» (مش «المبلغ المستحق» — ده الإجمالي) · outstanding · النقاط (مش «نقاط البيع»)
+        "|(?<![\\u0600-\\u06FF])حد(?![\\u0600-\\u06FF])|سقف|(?<!المبلغ$S)المستحق|${B}outstanding$B|${B}overdue$B" +
+        "|(?:ال)?(?:نقاط|نقطة)(?!$S*(?:ال)?بيع)",
     I,
 )
 
@@ -118,6 +121,11 @@ private fun oneLocalAmount(text: String, body: String): SaudiAmount {
     }
     val bare = BARE_AMOUNT.containsMatchIn(body)
     if (values.size == 1 && onlyGlued && bare && BARE_AMOUNT_NO_CURRENCY.containsMatchIn(body)) return SaudiAmount.Fail(uiText(TextKey.SMS_CURRENCY_UNCLEAR))
+    // الجولة الخامسة: «مبلغ: 87.40» من غير عملة **ورقم تاني** جنبه عملة («حد الائتمان: 6,000.00 SAR» · «Trace SR 5317» · «لدى: SR 9 MART»)
+    // ⇒ المبلغ الحقيقي ممكن يكون اللي من غير عملة — ما بنختارش (كان بيتسجل 6,000 ريال) — لازق أو مش لازق
+    if (values.size == 1 && BARE_AMOUNT_NO_CURRENCY.findAll(text).any { parse(it.groupValues[1]) != values.first() }) {
+        return SaudiAmount.Fail(uiText(TextKey.SMS_CURRENCY_UNCLEAR))
+    }
     if (values.size == 1) return SaudiAmount.Ok(values.first())
     if (values.size > 1) return SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
     return SaudiAmount.Fail(if (bare) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
@@ -125,7 +133,7 @@ private fun oneLocalAmount(text: String, body: String): SaudiAmount {
 
 /** «Amount 64.25» / «مبلغ: 64.25» من غير عملة جنبه (من الناحيتين). */
 private val BARE_AMOUNT_NO_CURRENCY = Regex(
-    "(?:بمبلغ|المبلغ|مبلغ|amount|قيمة)$S*[:：]?$S*\\d[\\d,٬]*(?:[.٫]\\d{1,2})?(?![\\d.,٬٫])(?!$S*(?:$CURRENCY))",
+    "(?:بمبلغ|المبلغ|مبلغ|amount|قيمة)$S*[:：]?$S*(\\d[\\d,٬]*(?:[.٫]\\d{1,2})?)(?![\\d.,٬٫])(?!$S*(?:$CURRENCY))",
     I,
 )
 
@@ -176,9 +184,10 @@ internal fun saudiAmount(body: String): SaudiAmount {
 
 // ── المحل ────────────────────────────────────────────────────────────────
 
-// الجولة التالتة: المحل بيقف قبل «(SAR 93.75)» (مقابل المبلغ مش جزء من اسم المحل)
+// الجولة التالتة: المحل بيقف قبل «(SAR 93.75)» (مقابل المبلغ مش جزء من اسم المحل). الجولة الخامسة: بين الكلمة والاسم مسافة في
+// **نفس السطر** بس — «Refund initiated by merchant\nAmount: SAR 245.60» كان بيطلّع المحل «Amount: SAR 245.60»
 private val MERCHANT_AT = Regex(
-    "(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)$S*[:：]?$S*([^\\n]+?)(?=$S+(?:في|بتاريخ|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$S*\\($S*(?:$CURRENCY|\\d)|$)",
+    "(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)[ \\t]*[:：]?[ \\t]*([^\\n]+?)(?=$S+(?:في|بتاريخ|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$S*\\($S*(?:$CURRENCY|\\d)|$)",
     IM,
 )
 private val MERCHANT_LAM = Regex("^$S*لـ$S*[:：]?$S*([^\\n]+)$", setOf(RegexOption.MULTILINE))
