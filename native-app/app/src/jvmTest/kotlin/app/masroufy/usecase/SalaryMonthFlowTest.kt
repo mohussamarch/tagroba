@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Budget
+import app.masroufy.core.Category
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
@@ -87,7 +88,10 @@ class SalaryMonthFlowTest {
         val money = LoadMoneySummary(LoadMoneySummaryDeps(MemoryTransactionRepository(rows), MemoryCategoryRepository(), MemoryAllocationRepository()))
         val sepSummary = money.load(sep.start, sep.end, 28)
         assertEquals(1_000_000L to 0L, sepSummary.incomeMinor to sepSummary.cash.inMinor)
-        assertEquals(listOf("sal-2026-09-26") to 1_000_000L, sepSummary.countedFromEarlier.map { it.id } to sepSummary.countedFromEarlierMinor, "الفرق متفسّر")
+        assertEquals(listOf("sal-2026-09-26") to 1_000_000L, sepSummary.countedFromEarlier.map { it.id } to sepSummary.countedFromEarlierMinor[Currency.SAR], "الفرق متفسّر")
+        assertEquals(listOf("sal-2026-09-26"), homeSep.countedFromEarlier.map { it.id }, "الرئيسية كمان بتفسّر الفرق")
+        assertEquals(emptyList(), homeAug.countedFromEarlier)
+        assertEquals(listOf("sal-2026-09-26"), homeAug.countedInNextPeriod.map { it.id })
         val twoMonths = money.load(aug.start, sep.end, 28)
         assertEquals(1_000_000L to 1_000_000L, twoMonths.incomeMinor to twoMonths.cash.inMinor, "مدى الشهرين: مرة واحدة في الاتنين")
         assertEquals(emptyList(), twoMonths.countedFromEarlier + twoMonths.countedInNextPeriod)
@@ -99,12 +103,34 @@ class SalaryMonthFlowTest {
         val money = LoadMoneySummary(LoadMoneySummaryDeps(MemoryTransactionRepository(rows), MemoryCategoryRepository(), MemoryAllocationRepository()))
         val toToday = money.load(sep.start, "2026-10-25", 28)
         assertEquals(0L to 1_000_000L, toToday.incomeMinor to toToday.cash.inMinor, "دخل الشهر الجاي، بس دخل فعلًا")
-        assertEquals(listOf("sal-2026-10-23") to 1_000_000L, toToday.countedInNextPeriod.map { it.id } to toToday.countedInNextPeriodMinor, "بعلامة «بيتحسب للشهر الجديد»")
+        assertEquals(listOf("sal-2026-10-23") to 1_000_000L, toToday.countedInNextPeriod.map { it.id } to toToday.countedInNextPeriodMinor[Currency.SAR], "بعلامة «بيتحسب للشهر الجديد»")
         assertEquals(1_000_000, money.load(sep.start, "2026-10-25").cash.inMinor, "من غير يوم راتب: نفس «اللي دخل»")
         EstimatePolicy.current = EstimatePolicy.LEGACY
         val old = money.load(sep.start, "2026-10-25", 28)
         assertEquals(1_000_000L to 1_000_000L, old.incomeMinor to old.cash.inMinor, "القديم: بتاريخه")
         assertEquals(emptyList(), old.countedInNextPeriod)
+    }
+
+    /**
+     * «اللي دخل» بالأنواع التقديرية زي قبل الشريحة: سحب من الصرّاف لسه ما اتأكدش (تصنيف «سحب نقدي» ⇒ نقل بين محافظك) مش حركة. والفرق
+     * بين «اللي دخل» والدخل متفسّر بالحرف: الدخل + اللي دخل ومش دخل − اللي اتحسب من قبل + اللي بيتحسب للجاي.
+     */
+    @Test fun moneySummaryCashKeepsEstimatedKindsAndTheGapIsExplained() = runBlocking<Unit> {
+        val atm = Category("atm", null, "سحب نقدي", "cash", "#000", "#fff", true, 1)
+        val rows = listOf(
+            salary("2026-09-26"),
+            txn("atm-1", "2026-10-03", 40_000, EconomicKind.UNCLASSIFIED, Direction.OUT).copy(categoryId = "atm"),
+            txn("gift", "2026-10-10", 30_000, EconomicKind.UNCLASSIFIED, Direction.IN),
+            salary("2026-10-20"),
+        )
+        val money = LoadMoneySummary(LoadMoneySummaryDeps(MemoryTransactionRepository(rows), MemoryCategoryRepository(listOf(atm)), MemoryAllocationRepository()))
+        val s = money.load(sep.start, sep.end, 28)
+        assertEquals(0L, s.cash.outMinor, "السحب من الصرّاف مش خروج")
+        assertEquals(1_030_000L, s.cash.inMinor, "راتب 20 أكتوبر + الداخل المستني (راتب 26 سبتمبر نزل قبل المدى)")
+        assertEquals(1_000_000L, s.incomeMinor)
+        val explained = s.incomeMinor!! + s.inflowNotIncome.values.sum() -
+            (s.countedFromEarlierMinor[Currency.SAR] ?: 0L) + (s.countedInNextPeriodMinor[Currency.SAR] ?: 0L)
+        assertEquals(s.cash.inMinor, explained)
     }
 
     /** الميزانية: «تقريبي» بيعدّ اللي اتحسب بنوع تقديري بس — الداخل المستني مش جوه الرقم. */

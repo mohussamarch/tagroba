@@ -15,7 +15,6 @@ import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.countsAsIncome
 import app.masroufy.core.countsAsPersonalExpense
 import app.masroufy.core.ruleFor
-import app.masroufy.core.sumMoney
 import app.masroufy.core.Transaction
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
@@ -50,13 +49,21 @@ data class MoneySummary(
      * - [countedInNextPeriod]: نزل في آخر المدى وبيتحسب للشهر اللي بعده ⇒ في «اللي دخل» ومش في [incomeMinor] (لما المدى «لحد النهارده»
      *   ده راتب الشهر الجاي اللي نزل بدري — الشاشة تعرضه بعلامة «بيتحسب للشهر الجديد»).
      * - [countedFromEarlier]: نزل قبل أول المدى بشوية واتحسب فيه ⇒ في [incomeMinor] ومش في «اللي دخل».
-     * مبالغهم جاهزة ([countedInNextPeriodMinor] · [countedFromEarlierMinor]) عشان الشاشة ما تحسبش.
+     * مبالغهم جاهزة لكل عملة ([countedInNextPeriodMinor] · [countedFromEarlierMinor] — ما بتتجمعش بين عملتين) عشان الشاشة ما تحسبش:
+     * «اللي دخل» = الدخل + [inflowNotIncome] − [countedFromEarlierMinor] + [countedInNextPeriodMinor].
      */
     val countedInNextPeriod: List<Transaction> = emptyList(),
-    val countedInNextPeriodMinor: Halalas = 0,
+    val countedInNextPeriodMinor: Map<Currency, Halalas> = emptyMap(),
     val countedFromEarlier: List<Transaction> = emptyList(),
-    val countedFromEarlierMinor: Halalas = 0,
+    val countedFromEarlierMinor: Map<Currency, Halalas> = emptyMap(),
 )
+
+/** مجموع كل عملة لوحدها. */
+private fun byCurrency(rows: List<Transaction>): Map<Currency, Halalas> {
+    val out = LinkedHashMap<Currency, Halalas>()
+    for (t in rows) out[t.currency] = addMoney(out[t.currency] ?: 0L, t.amountMinor)
+    return out
+}
 
 data class LoadMoneySummaryDeps(
     val txns: TransactionRepository,
@@ -93,17 +100,19 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             } ?: continue
             bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, t.amountMinor)
         }
+        // §58: اللي دخل وخرج فعلًا في المدى **بتاريخه** — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس. بالأنواع التقديرية زي الأول:
+        // التحويل بين محافظك (زي السحب من الصرّاف اللي لسه ما اتأكدش) مش حركة
+        val cash = cashMovement(if (range.arrived === raw) rows else withEstimatedKinds(range.arrived, names).transactions)
         return MoneySummary(
-            // §58: اللي دخل وخرج فعلًا في المدى بتاريخه — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس
-            from, to, cashMovement(range.arrived),
+            from, to, cash,
             incomeMinor = if (unknown) null else totals.incomeMinor,
             expenseMinor = if (unknown) null else totals.personalExpenseMinor,
             inflowNotIncome = notIncome, outflowNotExpense = notExpense, coverage = coverage,
             pendingIncomingCount = view.pendingIncomingCount, pendingIncomingMinor = view.pendingIncomingByCurrency,
             countedInNextPeriod = range.countedInNextPeriod,
-            countedInNextPeriodMinor = sumMoney(range.countedInNextPeriod.map { it.amountMinor }),
+            countedInNextPeriodMinor = byCurrency(range.countedInNextPeriod),
             countedFromEarlier = range.countedFromEarlier,
-            countedFromEarlierMinor = sumMoney(range.countedFromEarlier.map { it.amountMinor }),
+            countedFromEarlierMinor = byCurrency(range.countedFromEarlier),
         )
     }
 }

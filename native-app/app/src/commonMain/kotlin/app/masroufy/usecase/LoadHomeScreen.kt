@@ -79,7 +79,7 @@ data class HomeScreenData(
     val recentPeriods: List<PeriodSummary>,
     /**
      * «حركة الفلوس» (اللي دخل واللي خرج فعلًا) — جنب الدخل الحقيقي، مش بداله (§58). السلفة هنا، مش في الدخل. بتاريخ العملية: الراتب
-     * اللي نزل في آخر الفترة وبيتحسب للجاية ([countedInNextPeriod]) هنا، واللي نزل قبلها واتحسب فيها لأ.
+     * اللي نزل في آخر الفترة وبيتحسب للجاية ([countedInNextPeriod]) هنا، واللي نزل قبلها واتحسب فيها ([countedFromEarlier]) لأ.
      */
     val cash: CashMovement = CashMovement(0, 0),
     /**
@@ -91,6 +91,8 @@ data class HomeScreenData(
     val pendingIncomingIds: List<Id> = emptyList(),
     /** §75-3: راتب نزل في آخر الفترة دي وبيتحسب للفترة الجاية — برّه المجاميع، بيتعرض بعلامة «بيتحسب للشهر الجديد». */
     val countedInNextPeriod: List<Transaction> = emptyList(),
+    /** §75-3: راتب نزل قبل أول الفترة بشوية واتحسب فيها — جوه [incomeMinor] ومش في «اللي دخل» ([cash]) — عشان الشاشة تفسّر الفرق. */
+    val countedFromEarlier: List<Transaction> = emptyList(),
 )
 
 data class LoadHomeScreenDeps(
@@ -199,6 +201,7 @@ class LoadHomeScreen(private val deps: LoadHomeScreenDeps) {
             pendingIncomingMinor = estimated.pendingIncomingByCurrency,
             pendingIncomingIds = estimated.pendingIncomingIds,
             countedInNextPeriod = periodRows.countedInNextPeriod,
+            countedFromEarlier = periodRows.countedFromEarlier,
         )
     }
 }
