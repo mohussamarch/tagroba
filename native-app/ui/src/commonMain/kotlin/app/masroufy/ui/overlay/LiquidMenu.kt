@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
@@ -93,7 +94,8 @@ fun LiquidMenu(
         val a = anchor.bounds
         val p = enter.value
         var menuHeight by remember { mutableStateOf(0) }
-        BoxWithConstraints(Modifier.fillMaxSize()) {
+        // الأماكن بالبكسل من شمال الشاشة (`absoluteOffset`) ⇒ البداية لازم تبقى فوق-شمال حتى في العربي (`TopStart` في العربي = فوق-يمين)
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = AbsoluteAlignment.TopLeft) {
             val screenH = with(density) { maxHeight.toPx() }
             val gap = with(density) { 10.dp.toPx() }
             VeilLayer(Veil.MENU, p.coerceIn(0f, 1f), onDismiss, closeLabel)

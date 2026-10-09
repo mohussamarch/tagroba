@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -154,7 +155,8 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
 @Composable
 private fun ChatHeader(canStartNew: Boolean, onHistory: () -> Unit, onNew: () -> Unit, onClose: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp).height(48.dp),
+        // 48 زي النموذج، بس الخط العربي ارتفاع سطره أكبر من 1.3 ⇒ «على الأقل» 48 عشان اللقب ما يتقصش (اتشاف على المحاكي)
+        Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp).heightIn(min = 48.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -164,8 +166,8 @@ private fun ChatHeader(canStartNew: Boolean, onHistory: () -> Unit, onNew: () ->
             contentAlignment = Alignment.Center,
         ) { LucideIcon(Lucide.ASSISTANT, size = 20.dp, tint = Ink.lensInk) }
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.ASK_TITLE), style = Type.of(16, FontWeight.Bold), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            BasicText(t(TextKey.ASK_BRAND_TITLE), style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(t(TextKey.ASK_TITLE), style = Type.of(16, FontWeight.Bold, 1.3), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(t(TextKey.ASK_BRAND_TITLE), style = Type.of(12, lineHeight = 1.4).copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         IconButton44(Lucide.HISTORY, t(TextKey.ASK_HISTORY), onHistory)
         IconButton44(Lucide.SQUARE_PEN, t(TextKey.ASK_NEW), onNew, enabled = canStartNew)
@@ -202,7 +204,7 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
                 modifier = Modifier.fillMaxWidth().semantics { contentDescription = inputLabel },
             )
         }
-        BoxAction(Lucide.MIC, t(TextKey.ASK_TALK), Modifier.background(Ink.selected), Ink.primary, enabled = true, onMic)
+        BoxAction(Lucide.MIC, t(TextKey.ASK_TALK), Modifier.clip(RoundedCornerShape(14.dp)).background(Ink.selected), Ink.primary, enabled = true, onMic)
         val can = draft.isNotBlank()
         BoxAction(
             Lucide.ARROW_LEFT, t(TextKey.ASK_SEND),

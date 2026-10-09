@@ -2,6 +2,7 @@ package app.masroufy.android
 
 import android.content.Context
 import app.masroufy.core.TextKey
+import app.masroufy.firestore.FirstSyncMarks
 import app.masroufy.port.AuthPort
 import app.masroufy.port.AuthUser
 import app.masroufy.port.authError
@@ -16,6 +17,20 @@ class AndroidSeenAlerts(context: Context, uid: String) : SeenAlerts {
 
     override fun addAll(threadKeys: Collection<String>) {
         runCatching { prefs.edit().putStringSet(key, read() + threadKeys).apply() }
+    }
+}
+
+/**
+ * «الجهاز ده خلّص تنزيل أول كامل للحساب» (`AccountSession` — الفتح الجاي من نسخة الجهاز لو مفيش نت، §54). علامة لكل حساب، مش بيانات.
+ * بتتمسح مع بيانات التطبيق (إلغاء التثبيت) ⇒ الجهاز بيرجع يستنى التنزيل كله.
+ */
+class AndroidFirstSyncMarks(context: Context) : FirstSyncMarks {
+    private val prefs = context.getSharedPreferences("first-sync", Context.MODE_PRIVATE)
+
+    override fun completed(uid: String): Boolean = runCatching { prefs.getBoolean("done|$uid", false) }.getOrDefault(false)
+
+    override fun markCompleted(uid: String) {
+        runCatching { prefs.edit().putBoolean("done|$uid", true).apply() }
     }
 }
 

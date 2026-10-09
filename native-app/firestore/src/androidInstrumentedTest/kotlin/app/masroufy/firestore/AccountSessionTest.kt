@@ -59,4 +59,25 @@ class AccountSessionTest {
             scope.cancel()
         }
     }
+
+    /** بعد أول تنزيل كامل الجهاز بيتعلّم (`FirstSyncMarks`) ⇒ الفتح الجاي ما بيستناش السيرفر أكتر من مهلة (§54 — من غير نت من نسخة الجهاز). */
+    @Test fun aCompleteFirstSyncIsRememberedOnTheDevice() = runBlocking<Unit> {
+        withTimeout(60_000) {
+            val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+            val marks = object : FirstSyncMarks {
+                val done = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+                override fun completed(uid: String) = uid in done
+                override fun markCompleted(uid: String) { done += uid }
+            }
+            val auth = MemoryAuth(uidPrefix = "kt-first-" + java.util.UUID.randomUUID().toString().take(8) + "-")
+            val session = AccountSession(auth, Emulator.firestore("session-memory-auth"), scope, marks)
+            session.start()
+            val a = auth.registerWithEmail("a@example.com", "secret1")
+            session.state.first { it is AccountSession.State.Ready }
+            withTimeout(20_000) { while (a.uid !in marks.done) kotlinx.coroutines.delay(50) }
+            assertTrue(marks.completed(a.uid))
+            session.stop()
+            scope.cancel()
+        }
+    }
 }

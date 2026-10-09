@@ -52,7 +52,10 @@ fun rememberBackdrop(): Backdrop {
     return remember(layer) { Backdrop(layer) }
 }
 
-/** المحتوى اللي هيتموّه ورا الزجاج — بيترسم عادي وبيتسجل في نفس الوقت. */
+/**
+ * المحتوى اللي هيتموّه ورا الزجاج — بيترسم عادي وبيتسجل في نفس الوقت. ⚠️ **الخلفية المعتمة لازم تبقى جوه المتسجل**
+ * (`backdropSource(…).screenBackground()`): النسخة المموّهة بتترسم فوق الأصل، ولو حوالين النص شفاف الأصل الحاد بيبان من وراها.
+ */
 fun Modifier.backdropSource(backdrop: Backdrop): Modifier = this
     .onGloballyPositioned { backdrop.origin = it.positionInRoot() }
     .drawWithContent {

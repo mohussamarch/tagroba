@@ -93,8 +93,10 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
         LocalToaster provides shell.toaster,
         LocalBell provides BellHolder(bell) { bellTick++ },
     ) {
-        Box(Modifier.fillMaxSize().screenBackground()) {
-            Box(Modifier.fillMaxSize().backdropSource(backdrop)) {
+        Box(Modifier.fillMaxSize()) {
+            // الخلفية **جوه** المتسجل: النسخة المموّهة لازم تبقى معتمة عشان تغطي الأصل — من غيرها النص اللي على الخلفية كان بيبان حاد
+            // من ورا كل ستارة (اتشاف على المحاكي 2026-10-09: «مساء الخير» حاد ورا لوحة «+» والشات)
+            Box(Modifier.fillMaxSize().backdropSource(backdrop).screenBackground()) {
                 key(deps.space.id) { ScreenHost(nav, registry) }
             }
             val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()

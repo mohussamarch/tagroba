@@ -70,7 +70,9 @@ class AppContainer(private val context: Context) {
 
     val emulator: Boolean = firebase?.emulator == true
     private val auth: FirebaseAuthAdapter? = firebase?.let { FirebaseAuthAdapter(it.auth, scope, googleReady = it.webClientId != null) }
-    private val session: AccountSession? = firebase?.let { f -> AccountSession(auth!!, f.firestore, scope) { uid -> AndroidActiveSpaceStore(context, uid) } }
+    private val session: AccountSession? = firebase?.let { f ->
+        AccountSession(auth!!, f.firestore, scope, AndroidFirstSyncMarks(context)) { uid -> AndroidActiveSpaceStore(context, uid) }
+    }
     private val google = firebase?.webClientId?.let { AndroidGoogleIdTokens({ activity }, it) }
     val signIn = SignIn(auth ?: NoFirebaseAuth, google)
     val appLock = AppLock(AndroidDeviceLock(context) { activity }, AndroidAppLockSettings(context), nowMillis)

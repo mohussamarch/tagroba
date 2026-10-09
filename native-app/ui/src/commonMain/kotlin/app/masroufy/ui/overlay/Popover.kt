@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
@@ -95,7 +96,8 @@ fun GlassPopover(
         val density = LocalDensity.current
         val a = anchor.bounds
         val progress = enter.value
-        BoxWithConstraints(Modifier.fillMaxSize()) {
+        // الأماكن بالبكسل من شمال الشاشة (`absoluteOffset`) ⇒ البداية لازم تبقى فوق-شمال حتى في العربي (`TopStart` في العربي = فوق-يمين)
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = AbsoluteAlignment.TopLeft) {
             val screenW = with(density) { maxWidth.toPx() }
             val w = with(density) { minOf(width, maxWidth - 40.dp).toPx() }
             val margin = with(density) { 20.dp.toPx() }

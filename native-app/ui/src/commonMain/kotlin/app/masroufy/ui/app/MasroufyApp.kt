@@ -56,8 +56,9 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
     MasroufyTheme(reduceMotion) {
         CompositionLocalProvider(LocalApp provides app, LocalPermissions provides app.permissions) {
             val root = rememberBackdrop()
-            Box(Modifier.fillMaxSize().screenBackground()) {
-                Box(Modifier.fillMaxSize().backdropSource(root)) {
+            Box(Modifier.fillMaxSize()) {
+                // الخلفية جوه المتسجل (نفس سبب `AppShell`): بلور القفل لازم يغطي الأصل كله
+                Box(Modifier.fillMaxSize().backdropSource(root).screenBackground()) {
                     when (val s = session) {
                         AppSession.Starting -> OpeningScreen(null, null)
                         AppSession.SignedOut -> OverlayRoot(shell.overlays) { SignInFlow() }

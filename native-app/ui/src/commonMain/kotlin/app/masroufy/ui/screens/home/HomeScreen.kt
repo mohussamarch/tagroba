@@ -32,7 +32,6 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.components.HeroAmount
 import app.masroufy.ui.components.HeroCard
-import app.masroufy.ui.components.HeroDivider
 import app.masroufy.ui.components.IconButton44
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.amountLabel
@@ -127,7 +126,7 @@ private fun WithYouHero(now: WithYouNow?) {
                 BasicText(t(TextKey.HERO_NA_LINE), style = Type.of(13).copy(color = Ink.onHeroMuted))
             }
             now.cashMinor?.let { cash -> CashChip(t(TextKey.HERO_CASH_CHIP, amountLabel(cash, now.currency, showCurrency = false))) }
-            HeroDivider()
+            // الخط الرفيع وتحته «صرفت هذا الشهر» و«الراتب بعد N» (`LoadHomeScreen`) — شغل منطقة الرئيسية (`HeroDivider()` قبلهم)
         }
     }
 }

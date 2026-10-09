@@ -12,10 +12,12 @@ import app.masroufy.port.AuthPort
 import app.masroufy.port.AuthUser
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * جلسة الحساب: مين داخل ⇒ بيانات **الحساب ده بس** (`users/{uid}`). الشاشات بتاخد المستودعات من هنا، مش من فايربيز.
@@ -32,6 +34,12 @@ class AccountSession(
     private val auth: AuthPort,
     private val db: FirebaseFirestore,
     private val scope: CoroutineScope,
+    /**
+     * الجهاز ده خلّص تنزيل أول **كامل** للحساب قبل كده؟ (`AndroidFirstSyncMarks` في التشغيل). أيوه ⇒ الفتح الجاي ما بيستناش السيرفر أكتر من
+     * [OFFLINE_GRACE_MS] — من غير نت التطبيق بيفتح من نسخة الجهاز (قرار المالك §54) بدل ما يفضل على «نجهّز بياناتك» للأبد. أول دخول على
+     * جهاز جديد لسه بيستنى التنزيل كله (نسخة ناقصة = مجموع غلط من غير رسالة — القاعدة 10). الافتراضي: بيستنى دايمًا (السلوك القديم).
+     */
+    private val firstSync: FirstSyncMarks = FirstSyncMarks.NEVER,
     /** المساحة الشغالة على الجهاز لكل حساب (`AndroidActiveSpaceStore` / `IosActiveSpaceStore` في التشغيل). */
     private val activeStore: (uid: String) -> ActiveSpaceStore = { MemoryActiveSpaceStore() },
 ) {
@@ -123,17 +131,36 @@ class AccountSession(
         current.value = opening
         accountSync.start(scope)
         scope.launch {
-            accountSync.awaitComplete()
+            val seenBefore = firstSync.completed(user.uid)
+            upTo(seenBefore) { accountSync.awaitComplete() }
             val registry = FirestoreSpaceRegistry(account).listAll()
             val others = registry.filter { !it.archived }.map { openSpace(user.uid, it, account) }
-            saudi.sync.awaitComplete()
-            others.forEach { it.sync.awaitComplete() }
+            upTo(seenBefore) {
+                saudi.sync.awaitComplete()
+                others.forEach { it.sync.awaitComplete() }
+            }
             val spaces = (listOf(saudi) + others).associateBy { it.space.id }
             val active = activeSpaceOf(activeStore(user.uid).read(), registry)
             // لو الحساب اتغير في النص، ما نعلّمش الحساب القديم «جاهز»
-            if (current.compareAndSet(opening, State.Ready(user, account, accountSync, spaces, active.id))) Texts.followCountry(active.countryCode)
-            else others.forEach { it.sync.stop() }
+            val ready = State.Ready(user, account, accountSync, spaces, active.id)
+            if (current.compareAndSet(opening, ready)) {
+                Texts.followCountry(active.countryCode)
+                // التنزيل كله خلص فعلًا (مش بس اتفتح من نسخة الجهاز) ⇒ الجهاز ده عنده نسخة كاملة للحساب
+                completion?.cancel()
+                completion = scope.launch {
+                    accountSync.awaitComplete()
+                    spaces.values.forEach { it.sync.awaitComplete() }
+                    if ((current.value as? State.Ready)?.user?.uid == user.uid) firstSync.markCompleted(user.uid)
+                }
+            } else others.forEach { it.sync.stop() }
         }
+    }
+
+    private var completion: Job? = null
+
+    /** الجهاز خلّص تنزيل كامل قبل كده ⇒ ما نستناش السيرفر أكتر من [OFFLINE_GRACE_MS]؛ وإلا نستنى لحد ما يخلص. */
+    private suspend fun upTo(seenBefore: Boolean, block: suspend () -> Unit) {
+        if (seenBefore) withTimeoutOrNull(OFFLINE_GRACE_MS) { block() } else block()
     }
 
     private fun spaceOf(uid: String, spaceId: String?): FirestoreSpace =
@@ -147,10 +174,31 @@ class AccountSession(
     }
 
     private fun stopAll(state: State) {
+        completion?.cancel()
+        completion = null
         when (state) {
             is State.Opening -> { state.sync.stop(); state.accountSync.stop() }
             is State.Ready -> { state.spaces.values.forEach { it.sync.stop() }; state.accountSync.stop() }
             State.SignedOut -> Unit
+        }
+    }
+}
+
+/** أقصى انتظار للسيرفر عند الفتح على جهاز عنده نسخة كاملة قبل كده (بعده بيفتح من نسخة الجهاز والمزامنة بتكمّل في الخلفية). */
+const val OFFLINE_GRACE_MS: Long = 2_500
+
+/** «الجهاز ده خلّص تنزيل أول كامل للحساب ده» — على الجهاز بس (أندرويد: `AndroidFirstSyncMarks` في `:androidApp`). */
+interface FirstSyncMarks {
+    fun completed(uid: String): Boolean
+
+    fun markCompleted(uid: String)
+
+    companion object {
+        /** دايمًا بيستنى التنزيل كله (الاختبارات والسلوك القديم). */
+        val NEVER = object : FirstSyncMarks {
+            override fun completed(uid: String) = false
+
+            override fun markCompleted(uid: String) = Unit
         }
     }
 }
