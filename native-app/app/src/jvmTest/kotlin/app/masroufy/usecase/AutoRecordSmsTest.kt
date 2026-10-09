@@ -140,7 +140,8 @@ class AutoRecordSmsTest {
     }
 
     @Test fun eachBankHasItsOwnWallet() = runBlocking<Unit> {
-        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(BANK, BANK2)))).enable()
+        // البنكين مفعّلين (الجهاز ما بيحفظش رسايل مرسل مش مفعّل أصلًا — والتسجيل التلقائي بقى بيتأكد كمان، الجولة الرابعة)
+        val world = SmsWorld(listOf(SmsSpace(wallets = listOf(BANK, BANK2)))).enable("BANKA", "BANKB")
         world.receive(sms("a1", CAFE, sender = "BANKA"), sms("b1", MART, sender = "BANKB"))
         val auto = world.auto()
         auto.chooseWallet("sa", "BANKA", BANK.id)

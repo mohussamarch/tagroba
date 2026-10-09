@@ -564,5 +564,13 @@ enum class TextKey {
     INHERIT_SCENARIO_NAME_REQUIRED, INHERIT_SCENARIO_NAME_LENGTH, INHERIT_SCENARIO_NOT_FOUND, INHERIT_SCENARIO_PERSON_MINE, INHERIT_SCENARIO_COUNTRY, BACKUP_GROUP_INHERITANCE_SCENARIOS,
     // رسايل البنك بتتسجل لوحدها + إشعار الجوال (§72) — القيم في `TextsSmsAuto.kt`
     ALERT_LOCK_SMS_CONFIRM, ALERT_WHY_SMS_CONFIRM, ALERT_SMS_CONFIRM_TITLE, ALERT_SMS_CONFIRM_BODY, ALERT_CHANNEL_NAME, BACKGROUND_WORK_NOTICE,
-    SMS_AUTO_WALLET_UNKNOWN, ALERT_GROUP_BANK_SMS,
+    SMS_AUTO_WALLET_UNKNOWN, ALERT_GROUP_BANK_SMS, SMS_NOT_TRANSACTION,
+    // الجولة الرابعة: الرسالة اللي اتفهمت من كلمات عامة بس (مش شكل معروف) بتستنى تأكيد المالك — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_UNKNOWN_SHAPE,
+    // الجولة السادسة: الرسالة بتقول حساب تاني من حسابات المالك (مش حساب محفظة البنك ده) ⇒ بتستنى — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_OTHER_ACCOUNT,
+    // الجولة السابعة: الاسترداد (§75-6) والسحب من الصرّاف (§75-4) بيستنوا التأكيد · رسالة فيها علامة قلب اتجاه بتترفض — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_REFUND, SMS_WAIT_CASH_WITHDRAWAL, SMS_HIDDEN_TEXT, SMS_OTHER_COUNTRY,
+    // الجولة التامنة: فلوس داخلة على كارت ائتمان · إيداع كاش · شراء ومعاه كاش بيستنوا التأكيد — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_CARD_CREDIT, SMS_WAIT_CASH_DEPOSIT, SMS_WAIT_PURCHASE_CASH,
 }

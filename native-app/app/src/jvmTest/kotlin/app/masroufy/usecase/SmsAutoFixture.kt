@@ -47,6 +47,18 @@ internal val TO_PERSON = "حوالة داخلية صادرة\nمن:1111\nإلى:
 internal val FROM_PERSON = "حوالة محلية واردة\nمن:TEST PERSON\nبـSR 1000\nإلى:1111\n26/10/07"
 internal val EG_CARD = "Your Debit Card **1234 had a Successful transaction of EGP 41.25 @TEST STORE,your available bal.EGP174.40"
 
+/**
+ * الجولة الرابعة: القارئ بيقراها (عنوان «Purchase» لوحده = القاعدة القديمة بالكلمات) بس **مش شكل معروف** ⇒ ما بتتسجلش لوحدها، بتستنى.
+ * 30.00 ريال · TEST SHOP.
+ */
+internal val KEYWORD_ONLY = "Purchase\nبـSR 30\nلدى:TEST SHOP\n26/10/07"
+
+/** نفس الفكرة في مصر: جملة خصم مش على قالب بنك معروف (500.00 جنيه). */
+internal val EG_KEYWORD_ONLY = "تم خصم 500.00 جم من بطاقتك المنتهية بـ 6604 عند TEST GROCER يوم 07/10/2026"
+
+/** شراء بعملة أجنبية (§75-12): القارئ بيرفضه ومعاه المبلغ الأجنبي ⇒ بيستنى، عمره ما بيتسجل لوحده. */
+internal val FOREIGN = "شراء انترنت\nبطاقة:6604;مدى\nمبلغ:USD 20.00\nلدى:TEST SHOP\nفي:26-10-07 10:00"
+
 internal val BANK = Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")
 internal val CASH = Wallet("w-cash", "النقد", Currency.SAR, "cash", 0, "2026-01-01")
 internal val BANK2 = Wallet("w-bank2", "بنك وهمي تاني", Currency.SAR, "bank", 0, "2026-01-01")
@@ -118,7 +130,8 @@ internal class SmsWorld(val spaces: List<SmsSpace> = listOf(SmsSpace())) {
     val memory = MemorySmsInbox(emptyList(), available = true)
     val inbox = FlakyInbox(memory)
 
-    suspend fun enable(): SmsWorld = apply { memory.enable(listOf("TESTBANK")) }
+    /** المالك فعّل المرسلين دول (الافتراضي TESTBANK) — رسايل غيرهم ما بتتسجلش لوحدها (الجولة الرابعة). */
+    suspend fun enable(vararg senders: String): SmsWorld = apply { memory.enable(if (senders.isEmpty()) listOf("TESTBANK") else senders.toList()) }
 
     fun receive(vararg messages: QueuedSms) = messages.forEach { memory.receive(it) }
 

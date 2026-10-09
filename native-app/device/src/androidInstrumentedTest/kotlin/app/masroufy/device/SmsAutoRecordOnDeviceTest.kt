@@ -25,9 +25,10 @@ import kotlin.test.assertTrue
 
 /**
  * من الشبكة لحد العملية (OVERRIDES §72) على محاكي أندرويد — **رسايل وهمية** بيبعتها الكمبيوتر (`adb emu sms send`) لما الاختبار يكتب
- * «READY» تحت `MasroufySmsAuto` (`scripts/device/sendTestSms.sh`): شراء مفهوم من `5550003` + رسالة اتجاهها مش واضح.
- * المتوقع: الاستقبال ⇒ WorkManager ⇒ العامل ⇒ الشراء **اتسجل لوحده** ومن غير إشعار، والتانية **فضلت في الصندوق** وطلّعت إشعار واحد
- * عام (شاشة القفل من غير مبلغ ولا محل). من غير الكمبيوتر الاختبار بيفشل (مش بيتخطّى).
+ * «READY» تحت `MasroufySmsAuto` (`scripts/device/sendTestSms.sh`): من `5550003` شراء **بشكل معروف** + شراء مفهوم من كلمات عامة بس
+ * (الجولة الرابعة) + رسالة اتجاهها مش واضح. المتوقع: الاستقبال ⇒ WorkManager ⇒ العامل ⇒ الشراء المعروف **اتسجل لوحده** ومن غير
+ * إشعار، والاتنين التانيين **فضلوا في الصندوق** وطلّعوا إشعار واحد عام (شاشة القفل من غير مبلغ ولا محل). من غير الكمبيوتر الاختبار
+ * بيفشل (مش بيتخطّى). النصوص نفسها متجربة على الكمبيوتر في `SmsDeviceScriptTest`.
  */
 @RunWith(AndroidJUnit4::class)
 class SmsAutoRecordOnDeviceTest {
@@ -63,16 +64,18 @@ class SmsAutoRecordOnDeviceTest {
         assertEquals(2_500L, txn.amountMinor, "الشراء اتسجل لوحده")
         assertEquals("TEST CAFE", txn.rawMerchantName)
         val waiting = inbox.sync().messages
-        assertEquals(1, waiting.size, "اللي ما اتفهمش بس فضل في الصندوق")
-        assertTrue("TEST-WAIT" in waiting.single().body)
+        assertEquals(2, waiting.size, "اللي ما اتفهمش واللي اتفهم من كلمات عامة بس فضلوا في الصندوق")
+        assertTrue(waiting.any { "TEST-WAIT" in it.body } && waiting.any { "TEST-FALLBACK" in it.body }, "$waiting")
 
         val notes = ours()
-        assertEquals(1, notes.size, "إشعار واحد — للمستني بس، والمسجّل مالوش إشعار")
-        val n = notes.single()
-        assertEquals(NotificationCompat.VISIBILITY_PRIVATE, n.visibility)
-        for (shown in listOf(n, n.publicVersion!!)) {
-            val text = "${shown.extras.getCharSequence(Notification.EXTRA_TITLE)} ${shown.extras.getCharSequence(Notification.EXTRA_TEXT)}"
-            assertTrue(isLockSafe(text) && "CAFE" !in text, "شاشة القفل: $text")
+        // للمستني بس، والمسجّل مالوش إشعار: رسالتين مستنيين ممكن يوصلوا في دورتين ⇒ إشعار لكل «أحدث مستنية» (§72 اختيار ٤) — بالكتير 2
+        assertTrue(notes.size in 1..2, "إشعار للمستني بس: ${notes.size}")
+        for (n in notes) {
+            assertEquals(NotificationCompat.VISIBILITY_PRIVATE, n.visibility)
+            for (shown in listOf(n, n.publicVersion!!)) {
+                val text = "${shown.extras.getCharSequence(Notification.EXTRA_TITLE)} ${shown.extras.getCharSequence(Notification.EXTRA_TEXT)}"
+                assertTrue(isLockSafe(text) && "CAFE" !in text && "SHOP" !in text, "شاشة القفل: $text")
+            }
         }
         val runs = WorkManager.getInstance(context).getWorkInfosForUniqueWork(MasroufyBackground.SMS_WORK).get()
         assertTrue(runs.any { it.state == WorkInfo.State.SUCCEEDED }, "الاستقبال طلب دورة والعامل خلّصها: $runs")

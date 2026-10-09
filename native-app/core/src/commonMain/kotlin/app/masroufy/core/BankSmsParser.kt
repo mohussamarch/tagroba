@@ -1,182 +1,214 @@
 package app.masroufy.core
 
-import app.masroufy.core.JsText.B
-import app.masroufy.core.JsText.S
-
 /**
- * محلل رسايل البنك — نقل `src/infrastructure/import/bankSmsParser.ts` بنفس الأنماط ونفس أسباب الرفض.
- * المبلغ = رقم جنبه عملة الريال في سطر مش رصيد ولا حد ولا رسوم (قيمة واحدة بس). التاريخ بسنتين بيتفهم
- * بتاريخ وصول الرسالة (تاريخ واحد بس من 60 يوم قبل لحد يوم بعد). كل رسالة محتاجة تأكيد المستخدم.
- * الأنماط بـ`S` و`B` بدل `\s` و`\b` عشان تطابق جافاسكربت بالظبط (JsText).
+ * محلل رسايل البنوك السعودية — نقل `src/infrastructure/import/bankSmsParser.ts` (ملف المرجع `golden/sms.json` بيمسك سلوكه حرف بحرف)
+ * + أشكال البحث (`research/banks/saudi-sms-formats.json`، جلسة 32). كل رسالة بتعدّي على:
+ * 1. **التجاهل** (`SmsGuards.kt`): عرض · رمز تحقق (حتى لو فيه مبلغ ومحل) · مرفوضة/رصيد مش كفاية · حجز وتفويض وطلب ومعلومة.
+ * 2. **الاتجاه**: عنوان الرسالة لو معروف (`SmsSaudiTitles.kt` — عناوين البنك المركزي الموحّدة + البنوك) ⇒ حوالة الراجحي القديمة
+ *    من غير كلمة اتجاه (من مكان الاسم) ⇒ القاعدة القديمة: كلمات الصرف والدخل في الرسالة كلها، ولو الاتنين أو ولا واحد ⇒ ترفض.
+ *    عنوان داخل («تصحيح») والنص فيه «تم خصم» ⇒ ترفض · «شيك مرتجع» ⇒ ترفض (الاتجاه مش واضح — الجولة التانية من المراجعة).
+ *    الجولة التالتة: عكس/استقطاع لحاجة ليها اتجاه («Refund Reversal» · «Salary Deduction») ⇒ ترفض · إلغاء ومعاه استرداد والاتجاه
+ *    طالع ⇒ ترفض. والعملة الأجنبية بقت **دليل** (رمز · اسم · «X (SAR …)» — `SmsForeignEvidence.kt`) مش قايمة.
+ * 3. **المبلغ** (`SmsSaudiFields.kt`): «إجمالي المبلغ المستحق» لو موجود **و= المبلغ + الرسوم + الضريبة** (الجولة السادسة — غير كده
+ *    «أكتر من مبلغ») ⇒ رقم جنبه الريال في سطر مش رصيد ولا رسوم ولا ضريبة (قيمة واحدة). «1.234 SAR» (ملف المرجع) ⇒ ما بتتسجلش لوحدها.
+ *    **عملة أجنبية ⇒ ترفض دايمًا ومعاها كل اللي اتقري** (قرار المالك §75-12: تتسجل وتسأل عن المبلغ المحلي — مش تتسجل لوحدها حتى
+ *    لو المقابل بالريال مكتوب؛ المكتوب بيمشي معاها اقتراح بس) لحد ما شاشة السؤال تتبني.
+ * 4. **التاريخ** (`SmsDates.kt`): تاريخ واحد بس من 60 يوم قبل الوصول لحد يوم بعده (التاريخ بسنة كاملة: لحد يوم بعد الوصول).
+ *    رسالة الأهلي السعودي اللي شكلها كله ما فيهوش تاريخ ⇒ يوم الوصول بتوقيت السعودية (نفس قرار رسالة الكارت المصرية §40.3-١).
+ * 5. **الشكل** (الجولة الرابعة — `SmsKnownShapesSaudi.kt` و`SmsSamaTitles.kt`): أول سطر كله عنوان موحّد أو قالب بنك معروف واتجاهه نفس
+ *    اتجاه القارئ ⇒ بتتسجل لوحدها؛ غير كده (الاتجاه من الكلمات العامة بس) ⇒ `SmsShape.KeywordFallback` ⇒ **بتستنى تأكيد المالك** (§72).
+ *    الشكل ما بيغيّرش القراية نفسها (ملف المرجع `golden/sms.json` زي ما هو).
+ * الشكل المجهول بيترفض بسبب واضح ويستنى المالك (§72).
  */
-data class BankSmsMessage(val sender: String, val receivedAt: String, val body: String)
-
-data class SmsRow(
-    val lineNumber: Int,
-    val date: IsoDate,
-    val amountMinor: Halalas,
-    val direction: Direction,
-    val merchantName: String,
-    val reference: String?,
-    val sourceName: String,
-    val description: String,
-    val raw: String,
-)
-
-sealed interface SmsParseResult {
-    data class Ok(val row: SmsRow) : SmsParseResult
-    data class Rejected(val reason: String) : SmsParseResult
-}
 
 private val I = setOf(RegexOption.IGNORE_CASE)
-private val IM = setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
-
-// «ننصح بعدم مشاركة الرمز… الرمز:123456» — رسالة التحقق اللي قبل كل شراء إنترنت (مش عملية)
-internal val SMS_SENSITIVE_PATTERN = Regex("${B}OTP$B|verification${S}*code|one.time$S*(?:password|code)|رمز$S*(?:التحقق|التوثيق|التفعيل|الدخول)|كلمة$S*(?:المرور|السر)|مشاركة$S*الرمز|الرمز$S*[:：]?$S*\\d{4,8}", I)
-internal val SMS_OFFER_PATTERN = Regex("عرض|سيتم|عرض خاص|offer|will be|scheduled", I)
-internal val SMS_DECLINED_PATTERN = Regex("مرفوض|رفض العملية|لم تتم|غير ناجح|declined|failed|unsuccessful", I)
-private val OUT = Regex("شراء|سحب|خصم|سداد|مدفوعات|دفع|(?:حوالة|تحويل)[^\\n]{0,20}صادر|purchase|withdrawal|outgoing transfer", I)
-private val INCOMING = Regex("(?:حوالة|تحويل)[^\\n]{0,20}وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund", I)
-private val FOREIGN = Regex("$B(?:USD|EUR|EGP|AED|GBP)$B|دولار|يورو|جنيه", I)
-
-private val CURRENCY = "(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ر\\.$S?س\\.?|ريال)"
-private const val NUMBER = "\\d(?:[\\d,٬]*\\d)?(?:[.٫]\\d{1,2})?"
-private val CURRENCY_AMOUNT = Regex("$CURRENCY$S*[:：]?$S*($NUMBER)|($NUMBER)$S*$CURRENCY", I)
-private val NOT_TRANSACTION_AMOUNT = Regex("الرصيد|رصيد|balance|المتاح|متاح|available|الحد|limit|رسوم|${B}fees?$B|عمولة|المتبقي", I)
-private val BARE_AMOUNT = Regex("(?:بمبلغ|المبلغ|مبلغ|amount|بـ|قيمة)$S*[:：]?$S*\\d", I)
-internal const val DAY_MS = 86_400_000L
-
-/** علامات الاتجاه المخفية حوالين الأرقام والإنجليزي — بتقطع الأنماط من غير ما تبان. */
-internal val BIDI_CODES = setOf(0x200E, 0x200F, 0x202A, 0x202B, 0x202C, 0x202D, 0x202E, 0x2066, 0x2067, 0x2068, 0x2069, 0x061C)
-
-/** `SA[\d\s]{20,}` — الأرقام والمسافات (بمعنى جافاسكربت) في فئة واحدة. */
-private val REDACT_IBAN = Regex("SA[\\d" + S.substring(1, S.length - 1) + "]{20,}", I)
-private val REDACT_LONG = Regex("$B(?:\\d[ -]*){12,34}$B")
-private val REDACT_DIGITS = Regex("\\d{5,}")
-private val REDACT_KEEP = Regex(
-    "(?:(?:بمبلغ|المبلغ|مبلغ|amount|الرصيد|balance)$S*[:：]?$S*)?(?:(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ريال|ر\\.?س\\.?)$S*[:：]?$S*[\\d,٬]+(?:[.٫]\\d{1,2})?|[\\d,٬]+(?:[.٫]\\d{1,2})?$S*(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ريال|ر\\.?س\\.?))",
+// الجولة التامنة: «Your mada card **5093 was used for SAR 48.50 at …» (صيغة شائعة كانت «الاتجاه مش واضح»)
+private val OUT_WORDS = Regex(
+    "شراء|سحب|خصم|سداد|مدفوعات|دفع|(?:حوالة|تحويل)[^\\n]{0,20}صادر|purchase|withdrawal|outgoing transfer|مشتريات|(?<![A-Za-z])used\\s+(?:for|at)(?![A-Za-z])",
+    I,
+)
+// «was reversed» (الجولة التانية): الشراء اتعكس = فلوس راجعة أو عملية اتلغت — مع «Purchase» الاتجاه مش واضح، مش صرف
+private val IN_WORDS = Regex(
+    "(?:حوالة|تحويل)[^\\n]{0,20}وارد|إيداع|ايداع|راتب|استرداد|مرتجع|incoming transfer|salary|deposit|refund|(?<![A-Za-z])revers(?:ed|al)(?![A-Za-z])",
     I,
 )
 
-private fun lastFour(text: String) = if (text.length <= 4) text else text.substring(text.length - 4)
-
-/** حجب أرقام الحسابات والبطاقات — المبلغ اللي جنبه عملة ما بيتحجبش (زي SmsSafety.java). */
-fun redactSms(input: String): String {
-    val text = latinizeDigits(input)
-    fun redact(value: String) = value
-        .replace(REDACT_IBAN) { "••••" + lastFour(it.value.filterNot(JsText::isWhitespace)) }
-        .replace(REDACT_LONG) { "••••" + lastFour(it.value.filter { c -> c in '0'..'9' }) }
-        .replace(REDACT_DIGITS) { "••••" + lastFour(it.value) }
-    val out = StringBuilder()
-    var end = 0
-    for (match in REDACT_KEEP.findAll(text)) {
-        out.append(redact(text.substring(end, match.range.first))).append(match.value)
-        end = match.range.last + 1
-    }
-    return out.append(redact(text.substring(end))).toString()
+/** القاعدة القديمة: «حوالة داخلية صادرة» و«حوالة محلية واردة» — كلمة الاتجاه ممكن تيجي بعد نوع الحوالة. */
+private fun keywordDirection(body: String): Direction? {
+    val out = OUT_WORDS.containsMatchIn(body)
+    val incoming = IN_WORDS.containsMatchIn(body)
+    return if (out == incoming) null else if (incoming) Direction.IN else Direction.OUT
 }
-
-private sealed interface AmountResult {
-    data class Ok(val amountMinor: Halalas) : AmountResult
-    data class Fail(val reason: String) : AmountResult
-}
-
-private fun transactionAmount(body: String): AmountResult {
-    val values = LinkedHashSet<Long>()
-    for (line in body.split('\n')) {
-        for (match in CURRENCY_AMOUNT.findAll(line)) {
-            if (NOT_TRANSACTION_AMOUNT.containsMatchIn(line.substring(0, match.range.first))) continue
-            val number = match.groups[1]?.value ?: match.groups[2]!!.value
-            val amount = tryParseMoney(number.replace('٬', ',').replace('٫', '.'))
-            if (amount == null || amount <= 0) return AmountResult.Fail(uiText(TextKey.SMS_AMOUNT_INVALID))
-            values.add(amount)
-        }
-    }
-    if (values.size == 1) return AmountResult.Ok(values.first())
-    if (values.size > 1) return AmountResult.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
-    return AmountResult.Fail(if (BARE_AMOUNT.containsMatchIn(body)) uiText(TextKey.SMS_CURRENCY_UNCLEAR) else uiText(TextKey.SMS_AMOUNT_UNCLEAR))
-}
-
-private fun iso(y: Int, m: Int, d: Int) = "$y-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}"
-private val LONG_YMD = Regex("(?<!\\d)(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})(?!\\d)")
-private val LONG_DMY = Regex("(?<!\\d)(\\d{1,2})[-/](\\d{1,2})[-/](\\d{4})(?!\\d)")
-private val SHORT = Regex("(?<!\\d)(\\d{1,2})[-/](\\d{1,2})[-/](\\d{1,2})(?!\\d)")
-
-private fun transactionDate(body: String, receivedAt: String): IsoDate? {
-    LONG_YMD.find(body)?.let { m ->
-        val v = iso(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt())
-        return if (isValidIsoDate(v)) v else null
-    }
-    LONG_DMY.find(body)?.let { m ->
-        val v = iso(m.groupValues[3].toInt(), m.groupValues[2].toInt(), m.groupValues[1].toInt())
-        return if (isValidIsoDate(v)) v else null
-    }
-    val received = JsText.parseIsoMillis(receivedAt) ?: return null
-    val candidates = LinkedHashSet<String>()
-    for (m in SHORT.findAll(body)) {
-        val (a, b, c) = m.destructured.toList().map { it.toInt() }
-        for (value in listOf(iso(2000 + a, b, c), iso(2000 + c, b, a))) {
-            if (!isValidIsoDate(value)) continue
-            val time = toDayNumber(parseIsoDate(value)).toLong() * DAY_MS
-            if (time <= received + DAY_MS && time >= received - 60 * DAY_MS) candidates.add(value)
-        }
-    }
-    return if (candidates.size == 1) candidates.first() else null
-}
-
-private val MERCHANT_AT = Regex("(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)$S*[:：]?$S*([^\\n]+?)(?=$S+(?:في|بتاريخ|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$)", IM)
-private val MERCHANT_LAM = Regex("^$S*لـ$S*[:：]?$S*([^\\n]+)$", setOf(RegexOption.MULTILINE))
-private val MERCHANT_FROM_TO = Regex("^$S*(?:من|إلى|الى|${B}from$B|${B}to$B)$S*[:：]$S*([^\\n]+)$", IM)
-
-/** «لدى:»/«عند»، أو سطر بيبدأ بـ«لـ»، أو «من:/إلى:». الأرقام بس (حساب) مش تاجر. */
-private fun merchantOf(body: String): String {
-    fun clean(value: String?): String {
-        val text = JsText.trim(value ?: "")
-        return if (text.all { it in '0'..'9' || JsText.isWhitespace(it) || it in "*•.:-" }) "" else text
-    }
-    return clean(MERCHANT_AT.find(body)?.groupValues?.get(1)).ifEmpty { null }
-        ?: clean(MERCHANT_LAM.find(body)?.groupValues?.get(1)).ifEmpty { null }
-        ?: clean(MERCHANT_FROM_TO.find(body)?.groupValues?.get(1))
-}
-
-/** قوالب سعودية محافظة؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */
-fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
-    val body = latinizeDigits(message.body).filterNot { it == '\r' || it.code in BIDI_CODES }
-    if (SMS_OFFER_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OFFER))
-    if (SMS_SENSITIVE_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_SENSITIVE))
-    if (SMS_DECLINED_PATTERN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DECLINED))
-    // «حوالة داخلية صادرة» و«حوالة محلية واردة»: كلمة الاتجاه ممكن تيجي بعد نوع الحوالة
-    val out = OUT.containsMatchIn(body)
-    val incoming = INCOMING.containsMatchIn(body)
-    if (out == incoming) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
-    if (FOREIGN.containsMatchIn(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_FOREIGN_CURRENCY))
-    val amount = when (val a = transactionAmount(body)) {
-        is AmountResult.Fail -> return SmsParseResult.Rejected(a.reason)
-        is AmountResult.Ok -> a.amountMinor
-    }
-    val date = transactionDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
-    val safeBody = redactSms(body)
-    return SmsParseResult.Ok(
-        SmsRow(
-            lineNumber = lineNumber, date = date, amountMinor = amount,
-            direction = if (incoming) Direction.IN else Direction.OUT,
-            merchantName = redactSms(merchantOf(body)),
-            reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
-            sourceName = message.sender, description = safeBody, raw = safeBody,
-        ),
-    )
-}
-
-/** صف الرسالة كصف استيراد عادي — منع التكرار والتصنيف والحفظ بعدها زي الكشف بالظبط. */
-fun SmsRow.toParsedRow() = ParsedRow(lineNumber, date, amountMinor, direction, merchantName, reference, sourceName, description, raw)
 
 /**
- * نفس `JSON.stringify(rows)` بالحرف وبترتيب مفاتيح التطبيق الحالي — النص ده محتوى «ملف» الرسايل،
- * وبصمته هي اللي بتعرّف إن نفس الرسايل اتسجلت قبل كده.
+ * فعل خصم صريح في النص — مع عنوان داخل («تصحيح» · «استرداد») الرسالة متناقضة. الجولة الخامسة: «Debit from your account» ·
+ * علامة سالب قبل المبلغ («مبلغ: -1,250.00 SAR» — كانت بتتسجل +1,250 داخل).
  */
-fun smsRowsJson(rows: List<SmsRow>): String = rows.joinToString(",", "[", "]") { r ->
-    "{\"lineNumber\":${r.lineNumber},\"date\":${JsText.jsonString(r.date)},\"amountMinor\":${r.amountMinor}," +
-        "\"direction\":${JsText.jsonString(r.direction.wire)},\"merchantName\":${JsText.jsonString(r.merchantName)}," +
-        "\"reference\":${r.reference?.let(JsText::jsonString) ?: "null"},\"sourceName\":${JsText.jsonString(r.sourceName)}," +
-        "\"description\":${JsText.jsonString(r.description)},\"raw\":${JsText.jsonString(r.raw)}}"
+private val EXPLICIT_DEBIT = Regex(
+    "تم\\s*خصم|خصمت?\\s*من\\s*حساب|(?<![A-Za-z])debit(?:ed|\\s+from)(?![A-Za-z])|(?:^|[:：]|\\s)-\\s*\\d",
+    setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE),
+)
+
+/**
+ * الجولة الخامسة: عنوان **صرف** وفي باقي الرسالة (مش العنوان) كلمة فلوس راجعة — استرداد · عكس · مرتجع · إرجاع · إيداع · reversed ·
+ * credited · refund · returned · «SAR 87.40 CR» ⇒ الرسالة متناقضة («شراء\nتم استرداد مبلغ …» · «حوالة صادرة\nمرتجعة» · «سحب صراف
+ * آلي\nتم إيداع مبلغ») ⇒ «الاتجاه مش واضح» بدل ما تتسجل صرف جديد (كانت بتتسجل، والسحب كان بيحط كاش وهمي في محفظة الكاش §75-4).
+ */
+private val BODY_MONEY_BACK = Regex(
+    "استرداد|استرجاع|عكس|مرتجع|إرجاع|ارجاع|إيداع|ايداع|(?<![A-Za-z])(?:revers(?:ed|al|e)|credited|refund(?:ed)?|returned)(?![A-Za-z])|\\d\\s*CR(?![A-Za-z])",
+    I,
+)
+
+private fun bodyAfterTitle(body: String): String = body.substringAfter('\n', "")
+
+/** العنوان قال اتجاه وباقي الرسالة بيقول العكس (الجولة الخامسة — الفحص بقى في الناحيتين). */
+private fun contradictsTitle(body: String, title: SmsTitle?): Boolean = when (title?.direction) {
+    Direction.IN -> EXPLICIT_DEBIT.containsMatchIn(body)
+    Direction.OUT -> BODY_MONEY_BACK.containsMatchIn(bodyAfterTitle(body))
+    null -> false
+}
+
+/**
+ * عكس أو استقطاع في العنوان **ومعاه** كلمة اتجاه تانية («Refund Reversal» · «ATM Withdrawal Reversal» · «عكس حوالة واردة» ·
+ * «Salary Deduction» · «Debit Reversal» · «Cashback Reversal») ⇒ الاتجاه مش واضح (الجولة التالتة: كانت بتتسجل عكس اتجاهها —
+ * وعكس سحب الصرّاف كان هيحط كاش وهمي في محفظة الكاش §75-4). العناوين المعروفة بمعنى «استرداد» ([KNOWN_REVERSAL]) زي ما هي.
+ */
+private val REVERSAL_WORD = Regex("(?<![A-Za-z])(?:revers(?:al|ed|e)?|deduct(?:ion|ed)?)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:عكس|استقطاع)", I)
+private val KNOWN_REVERSAL = Regex(
+    "^(?:Purchase\\s*Reversal|Reverse\\s*Transaction|عكس\\s*(?:ال)?عملية|حوالة\\s*عكسية|كاش\\s*باك\\s*عكس)(?![A-Za-z])",
+    I,
+)
+private val DIRECTION_WORD = Regex(
+    OUT_WORDS.pattern + "|" + IN_WORDS.pattern.substringBefore("|(?<![A-Za-z])revers") +
+        "|(?<![A-Za-z])(?:ATM|debit|credit|cash\\s*back|cashback|refund|salary|deposit|transfer)(?![A-Za-z])|كاش\\s*باك|حوالة|تحويل|استرجاع",
+    I,
+)
+
+private fun reversalOfSomething(body: String): Boolean {
+    val title = smsTitleLine(body)
+    if (KNOWN_REVERSAL.containsMatchIn(title) || !REVERSAL_WORD.containsMatchIn(title)) return false
+    return DIRECTION_WORD.containsMatchIn(REVERSAL_WORD.replace(title, " "))
+}
+
+/**
+ * الأهلي السعودي (البحث: «no date in the message»): **الشكل كله** — عنوان معروف · سطر «بـ<مبلغ> SAR» أو «مبلغ <مبلغ> SAR» ·
+ * آخر سطر «مدى *1234» / «مدى-ابل *1234». سطر الكارت لوحده مش كفاية (رمز أو عرض بنفس الشكل كان بياخد تاريخ النهارده).
+ */
+private val SNB_CARD_LINE = Regex("^[ \\t]*(?:مدى|بطاقة)(?:-[^\\s*]+)?[ \\t]*\\*\\d{4}[ \\t]*$")
+private val SNB_AMOUNT_LINE = Regex("^[ \\t]*(?:بـ|مبلغ)[ \\t]*(?:SAR[ \\t]*)?\\d[\\d,.]*(?:[ \\t]*SAR)?[ \\t]*$", setOf(RegexOption.MULTILINE))
+private const val SAUDI_UTC_OFFSET_HOURS = 3
+
+private fun snbDatelessShape(body: String): Boolean {
+    val lines = body.split('\n').filter { it.isNotBlank() }
+    return lines.size in 3..5 && saudiTitle(body) != null && SNB_CARD_LINE.matches(lines.last()) && SNB_AMOUNT_LINE.containsMatchIn(body)
+}
+
+private fun datelessDate(body: String, receivedAt: String): IsoDate? =
+    if (!hasDateToken(body) && snbDatelessShape(body)) localDayOf(receivedAt, SAUDI_UTC_OFFSET_HOURS) else null
+
+private fun dateOf(body: String, receivedAt: String): IsoDate? = saudiTransactionDate(body, receivedAt) ?: datelessDate(body, receivedAt)
+
+/** «شراء دولي» / «International …» في أول سطر — رسالة بنك سعودي عن عملية برّه (حتى لو مبلغها بالجنيه). */
+private val INTERNATIONAL_TITLE = Regex("^[^\\n]*(?:دولي|دولية|International)", I)
+
+/**
+ * الرسالة الأجنبية دي **بتاعة البلد دي** (عشان ما تستناش في البلدين — الصندوق بيتقري بقارئ كل بلد): الجنيه = رسالة مصرية — إلا لو
+ * فيها ريال سعودي (رصيد بالريال) أو عنوانها «دولي» (كارت سعودي اتخصم بالجنيه). أي عملة تانية: مفيهاش جنيه (الكارت المصري بيكتب
+ * رصيده بالجنيه) والرسالة سطور أو فيها ريال (رسايل مصر سطر واحد).
+ */
+private fun saudiForeign(body: String, currency: String): Boolean = when (currency) {
+    // الجولة التالتة: الجنيه **مقابل** بعد مبلغ تاني («charged SAR 75.00 (EGP 980.00)») = كارت مصري ⇒ مش هنا
+    // الجولة التامنة: رسالة سطور تحت عنوان سعودي معروف («PoS Purchase\nAmount: EGP 1,250.00 …») = كارت سعودي اتخصم بالجنيه حتى من غير ريال
+    "EGP" -> (hasSaudiCurrency(body) || INTERNATIONAL_TITLE.containsMatchIn(smsTitleLine(body)) || ('\n' in body.trim() && hasSaudiKnownTitle(body))) &&
+        !hasLocalConversion(body, EGYPT_LOCAL)
+    else -> !hasEgyptianCurrency(body) && (hasSaudiCurrency(body) || '\n' in body)
+}
+
+/** عملة أجنبية (§75-12): سبب الرفض القديم + اللي اتقري (لو المبلغ الأجنبي والتاريخ واضحين) + المبلغ بالريال المكتوب كاقتراح. */
+private fun foreignOnly(
+    body: String, receivedAt: String, amount: SaudiAmount.ForeignOnly, direction: Direction, kind: SmsKind,
+): SmsParseResult.Rejected {
+    val reason = uiText(TextKey.SMS_FOREIGN_CURRENCY)
+    // الجولة التامنة: أجنبية أكيد بس المبلغ الأجنبي مش مقروء («Currency: USD» · «25.000 دينار») ⇒ بتستنى ومعاها اللي اتقري — في رسالة
+    // سطور تحت عنوان سعودي معروف بس (عشان ما تستناش في البلدين)
+    if (amount.foreign == null) return foreignUnread(body, receivedAt, amount.localSuggestion, direction, kind, reason)
+    val foreign = amount.foreign.takeIf { saudiForeign(body, it.currency) } ?: return SmsParseResult.Rejected(reason)
+    val date = dateOf(body, receivedAt) ?: return SmsParseResult.Rejected(reason)
+    val pending = SmsForeignPending(
+        date, foreign, direction, redactSms(saudiMerchantOf(body, kind)), kind, ownLast4Of(body, direction), amount.localSuggestion,
+    )
+    return SmsParseResult.Rejected(reason, pending)
+}
+
+private fun foreignUnread(
+    body: String, receivedAt: String, suggestion: Halalas?, direction: Direction, kind: SmsKind, reason: String,
+): SmsParseResult.Rejected {
+    val saudi = '\n' in body.trim() && hasSaudiKnownTitle(body) && !hasEgyptianCurrency(body)
+    val date = dateOf(body, receivedAt)
+    if (!saudi || date == null) return SmsParseResult.Rejected(reason)
+    val (code, written) = foreignUnreadDetails(body, SAUDI_LOCAL)
+    val merchant = redactSms(saudiMerchantOf(body, kind))
+    return SmsParseResult.Rejected(reason, foreignUnread = SmsForeignUnread(date, code, written, direction, merchant, kind, ownLast4Of(body, direction), suggestion))
+}
+
+/**
+ * الجولة السابعة: الشكل المعروف بيستنى (بيتقري بس ما بيتسجلش لوحده) لو: شراء من محل **برّه البلد** (كود البلد في آخر اسم المحل —
+ * `SmsMerchantCountry.kt`، §75-12) · رسالة الأهلي اللي من غير تاريخ وفيها **ساعة** (اتبعتت بعد نص الليل ممكن تتسجل يوم متأخر).
+ */
+private fun saudiExtraGate(shape: SmsShape, body: String, kind: SmsKind, dateless: Boolean): SmsShape = when {
+    !shape.clear -> shape
+    kind != SmsKind.TRANSFER_IN && kind != SmsKind.TRANSFER_OUT && foreignCountryTail(saudiMerchantOf(body, kind), SAUDI_TAIL) -> SmsShape.KeywordFallback
+    dateless && TIME_TOKEN.containsMatchIn(body) -> SmsShape.KeywordFallback
+    else -> shape
+}
+
+private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
+private val CASH_MERCHANT = Regex(
+    "(?<![A-Za-z])(?:ATM|cash\\s+withdrawal|cash\\s+advance)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:ال)?صراف(?![\\u0600-\\u06FF])|سحب\\s*نقدي",
+    I,
+)
+
+/** قوالب سعودية؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */
+fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
+    val body = normalizeSmsBody(message.body)
+    smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
+    // الجولة السابعة: علامة قلب اتجاه (LRO/RLO) ⇒ المعروض غير المقروء ⇒ ما بنقراش · جملة واحدة على قالب بنك مصري ⇒ بتتقري في مصر
+    // الجولة التامنة: علامة اتجاه **جوه رقم** («SAR 1⁧,234.5⁩0») ⇒ نفس الحكم (المعروض غير المقروء)
+    if (hasBidiOverride(message.body) || hasBidiInsideNumber(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
+    if ('\n' !in body.trim() && hasEgyptianKnownHead(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY))
+    // الجولة السابعة: سطرين مبلغ («Amount … Amount …») = أكتر من عملية في رسالة واحدة — أول مبلغ كان بيكسب والتاني بيضيع
+    if (repeatedAmountLines(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
+    val unclear = SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    if (isReturnedCheque(body) || reversalOfSomething(body)) return unclear
+    val title = saudiTitle(body)
+    if (contradictsTitle(body, title)) return unclear
+    val direction = title?.direction ?: undirectedTransferDirection(body) ?: keywordDirection(body) ?: return unclear
+    // «Purchase Cancelled … Refund»: إلغاء ومعاه استرداد = فلوس راجعة، مش صرف جديد (§75-6) ⇒ ما نسجلهاش صرف
+    if (direction == Direction.OUT && cancelledWithRefund(body)) return unclear
+    val kind = (title?.kind ?: saudiKindFromWords(body, direction)).let { k ->
+        when {
+            // الجولة التامنة: «Credit Card Credited» ومعاه محل («At: MARJAN TOYS») = استرداد من المحل على الكارت (§75-6)، مش سداد البطاقة
+            k == SmsKind.CARD_PAYMENT && direction == Direction.IN && saudiMerchantOf(body, SmsKind.REFUND).isNotEmpty() -> SmsKind.REFUND
+            // الجولة التامنة: عنوان شراء والمحل صرّاف («At: CASH WITHDRAWAL …» · «لدى: صراف …») = سحب كاش (§75-4)
+            k == SmsKind.PURCHASE && CASH_MERCHANT.containsMatchIn(saudiMerchantOf(body, k)) -> SmsKind.CASH_WITHDRAWAL
+            else -> k
+        }
+    }
+    // الجولة السادسة: العملة بتتعرف من غير التشكيل («9.50 ريال عُماني» كانت بتتقري ريال سعودي) — الوصف والبصمة من النص الأصلي
+    val plain = withoutTashkeel(body)
+    val read = when (val a = saudiAmount(plain, direction)) {
+        is SaudiAmount.Fail -> return SmsParseResult.Rejected(a.reason)
+        is SaudiAmount.ForeignOnly -> return foreignOnly(plain, message.receivedAt, a, direction, kind)
+        is SaudiAmount.Ok -> a
+    }
+    val dated = saudiTransactionDate(body, message.receivedAt)
+    val date = dated ?: datelessDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
+    // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72).
+    // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: مبلغ «1.234 SAR»
+    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى. الجولة السابعة: محل برّه البلد · ساعة من غير تاريخ ⇒ تستنى
+    // الجولة التامنة: الشكل المعروف لازم المبلغ من خانة المبلغ (مش من اسم المحل أو رقم المرجع) · «dd/mm/yyyy» اللي قرايته التانية يوم الوصول
+    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction, read.amountMinor), body, kind, dated == null)
+    val arrival = localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS)
+    val gated = gateShape(if (swappedDateNearArrival(body, date, arrival)) SmsShape.KeywordFallback else shape, body, date, arrival, message.body)
+    return smsRow(message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated)
 }
