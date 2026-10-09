@@ -131,10 +131,28 @@ private fun foreignOnly(
     return SmsParseResult.Rejected(reason, pending)
 }
 
+/**
+ * الجولة السابعة: الشكل المعروف بيستنى (بيتقري بس ما بيتسجلش لوحده) لو: شراء من محل **برّه البلد** (كود البلد في آخر اسم المحل —
+ * `SmsMerchantCountry.kt`، §75-12) · رسالة الأهلي اللي من غير تاريخ وفيها **ساعة** (اتبعتت بعد نص الليل ممكن تتسجل يوم متأخر).
+ */
+private fun saudiExtraGate(shape: SmsShape, body: String, kind: SmsKind, dateless: Boolean): SmsShape = when {
+    !shape.clear -> shape
+    kind != SmsKind.TRANSFER_IN && kind != SmsKind.TRANSFER_OUT && foreignCountryTail(saudiMerchantOf(body, kind), SAUDI_TAIL) -> SmsShape.KeywordFallback
+    dateless && TIME_TOKEN.containsMatchIn(body) -> SmsShape.KeywordFallback
+    else -> shape
+}
+
+private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
+
 /** قوالب سعودية؛ الشكل المجهول بيترفض بسبب واضح ويتضاف باليد. */
 fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
+    // الجولة السابعة: علامة قلب اتجاه (LRO/RLO) ⇒ المعروض غير المقروء ⇒ ما بنقراش · جملة واحدة على قالب بنك مصري ⇒ بتتقري في مصر
+    if (hasBidiOverride(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
+    if ('\n' !in body.trim() && hasEgyptianKnownHead(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_OTHER_COUNTRY))
+    // الجولة السابعة: سطرين مبلغ («Amount … Amount …») = أكتر من عملية في رسالة واحدة — أول مبلغ كان بيكسب والتاني بيضيع
+    if (repeatedAmountLines(body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
     val unclear = SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     if (isReturnedCheque(body) || reversalOfSomething(body)) return unclear
     val title = saudiTitle(body)
@@ -145,16 +163,17 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val kind = title?.kind ?: saudiKindFromWords(body, direction)
     // الجولة السادسة: العملة بتتعرف من غير التشكيل («9.50 ريال عُماني» كانت بتتقري ريال سعودي) — الوصف والبصمة من النص الأصلي
     val plain = withoutTashkeel(body)
-    val read = when (val a = saudiAmount(plain)) {
+    val read = when (val a = saudiAmount(plain, direction)) {
         is SaudiAmount.Fail -> return SmsParseResult.Rejected(a.reason)
         is SaudiAmount.ForeignOnly -> return foreignOnly(plain, message.receivedAt, a, direction, kind)
         is SaudiAmount.Ok -> a
     }
-    val date = dateOf(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
+    val dated = saudiTransactionDate(body, message.receivedAt)
+    val date = dated ?: datelessDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72).
     // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: مبلغ «1.234 SAR»
-    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى
-    val shape = if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction)
+    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى. الجولة السابعة: محل برّه البلد · ساعة من غير تاريخ ⇒ تستنى
+    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction), body, kind, dated == null)
     val gated = gateShape(shape, body, date, localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS), message.body)
     return smsRow(message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated)
 }

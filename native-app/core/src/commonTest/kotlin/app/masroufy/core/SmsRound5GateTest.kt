@@ -33,18 +33,26 @@ class SmsRound5GateTest {
         assertEquals(2, distinctDateCount("تم خصم … يوم 03-05 الساعة 09:40 - تاريخ آخر كشف 28/02/2026"))
     }
 
-    /** تاريخ بعد يوم الوصول (القارئ بيقبل لحد يوم بعده — ملف المرجع) ⇒ يستنى. */
+    /**
+     * تاريخ بعد يوم الوصول (القارئ السعودي بيقبل لحد يوم بعده — ملف المرجع) ⇒ يستنى. الجولة السابعة: قارئ مصر (مالوش ملف مرجع) بيرفضها
+     * «مش عملية خلصت» — أقوى من «جاهزة تستنى» (ضغطة «سجّل الكل» ما تسجلهاش).
+     */
     @Test fun aDateAfterTheArrivalDayWaits() {
         waitsReady("شراء\nمبلغ: SAR 87.40\nلدى: TEST BAKERY\nفي: 2026-03-06 09:00")
-        waitsReady("Your credit card ending with#7788 was charged for EGP 640.00 at TEST TOYS on 06/03/26 at 19:30.", egypt = true)
+        rejected("Your credit card ending with#7788 was charged for EGP 640.00 at TEST TOYS on 06/03/26 at 19:30.")
         assertEquals(SmsShape.SamaTitle, gateShape(SmsShape.SamaTitle, "x 2026-03-05", "2026-03-05", "2026-03-05", "x 2026-03-05"))
         assertEquals(SmsShape.KeywordFallback, gateShape(SmsShape.SamaTitle, "x 2026-03-06", "2026-03-06", "2026-03-05", "x 2026-03-06"))
     }
 
-    /** كلمة شك جوه خانة حرة في قالب مصري (مفيش حارس بيمسكها) ⇒ يستنى. */
+    /** كلمة شك جوه خانة حرة في قالب مصري (مفيش حارس بيمسكها) ⇒ ما بتتسجلش — الجولة السابعة: في أول جملة ⇒ مرفوضة «مش عملية خلصت». */
     @Test fun aDoubtWordInsideAnEgyptianFreeSlotWaits() {
-        waitsReady("Your credit card ending with#7788 was charged for EGP 640.00 at TEST SHOP SUSPENDED on 05/03/26 at 19:30.", egypt = true)
-        waitsReady("تم خصم 185.00 جم من بطاقة الخصم المباشر رقم 4455 عند المطعم القادم يوم 03-05 الساعة 14:30", egypt = true)
+        rejected("Your credit card ending with#7788 was charged for EGP 640.00 at TEST SHOP SUSPENDED on 05/03/26 at 19:30.")
+        rejected("تم خصم 185.00 جم من بطاقة الخصم المباشر رقم 4455 عند المطعم القادم يوم 03-05 الساعة 14:30")
+    }
+
+    private fun rejected(body: String) {
+        val r = assertIs<SmsParseResult.Rejected>(parseEgyptBankSms(smsMessage(body), 1), body)
+        assertEquals(uiText(TextKey.SMS_NOT_TRANSACTION), r.reason, body)
     }
 
     /** لاحقة العنوان: اسم محفظة بس (الأهلي) — «شراء نقاط بيع <أي كلام>» مش شكل معروف. */

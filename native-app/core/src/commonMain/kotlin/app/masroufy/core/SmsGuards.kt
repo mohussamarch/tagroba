@@ -72,7 +72,8 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         "مشاركة${S}*الرمز|الرمز$S*[:：]?$S*\\d{4,8}" +
         "|كلمة$S*مرور|رمز$S*(?:مؤقت|شراء)|رمز$S*[:：]$S*\\d{4,8}|الرقم$S*السري|security$S*code" +
         "|one.?time$S*(?:PIN|passcode)|verification$S*PIN|passcode|كود$S*(?:ال)?(?:تحقق|تفعيل|تأكيد|أمان)" +
-        "|(?<!(?:auth|approval|authori[sz]ation|merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})${B}code$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
+        // الجولة السابعة: «Auth. Code» · «Appr Code» · «Ref. Code» · «Txn Code» · «Approval No.» رقم موافقة/مرجع في شراء حقيقي، مش رمز
+        "|(?<!(?:auth|appr|approval|authori[sz]ation|merchant|branch|terminal|promo|transaction|txn|trx|ref|reference)\\.?[ \\t:#.]{1,3})${B}code$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         // الجولة السادسة: «Approval PIN: 553901» رمز (رقم الموافقة «Approval code» بس هو اللي مش رمز)
         "|(?<!(?:merchant|branch|terminal|promo|transaction|trx|ref|reference)[ \\t:]{1,2})${B}PIN$B$S*(?:is$S*)?[:：]?$S*\\d{4,8}(?!\\d)" +
         "|رمز$S*(?:ال)?(?:تأكيد|أمان|امان|سري)|الرمز$S*السري|(?:confirmation|authentication|security)$S*(?:code|PIN)" +
@@ -83,12 +84,18 @@ internal val SMS_SENSITIVE_PATTERN = Regex(
         "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)?$S*\\d{4,8}(?!\\d)" +
         // ── الجولة الخامسة: «رمز لمرة واحدة 731905» · «الكود بتاعك 4829» · «أدخل الرمز المرسل 731905» · «رقمك السري المؤقت» ·
         // «Verification No.» · «one-time 731905» · «Use 731905 to confirm» · «731905 is your code» («كود العملية» لسه رقم العملية)
-        "|(?:رمز|كود|كلمة$S*(?:ال)?(?:مرور|سر))[^\\n]{0,15}لمرة$S*واحدة|$NA(?:ال)?(?:رمز|كود)ك?[ \\t]+(?!(?:ال)?عملية)(?:[^\\s\\d]+[ \\t]+){1,2}\\d{4,8}(?!\\d)" +
+        // الجولة السابعة: «رمز/كود الموافقة 553120» · «رمز التفويض» = رقم موافقة في شراء حقيقي (زي «كود العملية»)، مش رمز
+        "|(?:رمز|كود|كلمة$S*(?:ال)?(?:مرور|سر))[^\\n]{0,15}لمرة$S*واحدة" +
+        "|$NA(?:ال)?(?:رمز|كود)ك?[ \\t]+(?!(?:ال)?(?:عملية|معاملة|موافقة|موافقه|تفويض|مرجع))(?:[^\\s\\d]+[ \\t]+){1,2}\\d{4,8}(?!\\d)" +
         "|$NA(?:أدخل|ادخل|بإدخال|إدخال|ادخال)$S*(?:ال)?(?:رمز|كود)[^\\n\\d]{0,20}\\d{4,8}(?!\\d)|$NA(?:ال)?رقمك$S*(?:ال)?(?:سري|تحقق)" +
         "|${B}verification$S*(?:no\\.?|number|num)(?![A-Za-z])|${B}one.?time(?:[ \\t]+[^\\s\\d]+){0,2}[ \\t]*[:：]?[ \\t]*\\d{4,8}(?!\\d)" +
         "|${B}use$S+\\d{4,8}$S+to$B|\\d{4,8}$S+is$S+your$S+(?:[A-Za-z]+$S+)?(?:code|OTP|PIN|password|passcode)$B" +
         // ── الجولة السادسة: «رقم التعريف المؤقت 662190» · «activation number 662190» · «Secure code for … : 662190» ──
-        "|$NA(?:ال)?رقم$S*(?:ال)?تعريف$S*(?:ال)?(?:مؤقت|شخصي)|${B}activation$S+(?:number|code|no\\.?)(?![A-Za-z])|${B}secure$S+code$B",
+        "|$NA(?:ال)?رقم$S*(?:ال)?تعريف$S*(?:ال)?(?:مؤقت|شخصي)|${B}activation$S+(?:number|code|no\\.?)(?![A-Za-z])|${B}secure$S+code$B" +
+        // ── الجولة السابعة: «Verification: 551204» · «Password: 551204» · «أدخل: 551204» · «registration code for card *7739 is 551204» ·
+        // «transaction PIN for InstaPay transfer … is 553320» ──
+        "|${B}verification$S*[:：]$S*\\d{4,8}(?!\\d)|${B}password$S*[:：]|$NA(?:أدخل|ادخل)$S*[:：]$S*\\d{4,8}(?!\\d)" +
+        "|${B}(?:code|PIN)$S+for$B[^\\n]{0,80}?${B}is$S*[:：]?$S*\\d{4,8}(?!\\d)",
     GI,
 )
 
@@ -101,7 +108,15 @@ private val CANCEL_PHRASE = Regex(
         "|$NA(?:ال)?(?:عملية|معاملة|شراء|حوالة|طلب)$S*(?:ال)?(?:ملغا[ةه]|ملغي[ةه]?|ملغى)$NZ",
     GI,
 )
-private val REFUND_WORD = Regex("استرداد|استرجاع|مرتجع|${B}refund", GI)
+/**
+ * فلوس راجعة مع الإلغاء. الجولة السابعة: «وإعادة مبلغ 212.00 ر.س إلى بطاقتك» · «وإرجاع 450.00 ر.س» · «تم رد مبلغ 89 جنيه» · «returned to
+ * your wallet» · «credited back» — كانت بتترمي «مرفوضة» قبل الحفظ والاسترداد الحقيقي يضيع.
+ */
+private val REFUND_WORD = Regex(
+    "استرداد|استرجاع|مرتجع|${B}refund|$NA[وف]?(?:إعادة|اعادة|إرجاع|ارجاع)$S*(?:ال)?(?:مبلغ|\\d)|$NA[وف]?(?:تم$S*)?رد$S*(?:ال)?مبلغ" +
+        "|${NA}تم$S*رد$NZ|${B}credited$S+back$B|${B}(?:returned|reversed|credited)$S+to$S+your$B",
+    GI,
+)
 
 private val GREETING = Regex("^(?:عزيزي|عميلنا|Dear)", GI)
 private val SENTENCE_END = Regex("[.!؟?](?:$S|$)")
@@ -181,6 +196,31 @@ private val CODE_DIGITS = Regex("(?<!\\d)\\d{4,8}(?!\\d)")
 /** فيها رمز تحقق أو كلمة سر **برّه** جمل التحذير اللي مفيهاش رقم. */
 internal fun isSensitiveText(text: String): Boolean =
     SMS_SENSITIVE_PATTERN.containsMatchIn(WARNING.replace(text) { if (CODE_DIGITS.containsMatchIn(it.value)) it.value else " " })
+
+/** رقم 4–8 أرقام لوحده: مش جوه رقم أطول ولا تاريخ ولا ساعة ولا مبلغ بكسور، ومش بعد نجمة أو «•» (كارت أو حساب متقص). */
+private val CODE_CANDIDATE = Regex("(?<![\\d.,٫٬*•xX#/:\\\\-])\\d{4,8}(?!\\d|[.,٫٬/:\\\\-]\\d)")
+private val MONEY_BEFORE = Regex("(?:${SmsVocabulary.CURRENCY}|بمبلغ|المبلغ|مبلغ|${B}amount|${B}of)$S*[:：]?$S*$", GI)
+private val MONEY_AFTER = Regex("^$S*(?:${SmsVocabulary.CURRENCY})", GI)
+private val ID_BEFORE = Regex(
+    // «Verification No. 731905» رمز — «No.» لوحدها مش رقم حساب
+    "(?:${B}ending(?:$S+(?:in|with))?|المنتهي[ةه]?$S*بـ?|${B}(?:ref(?:erence)?|id|trx|txn|transaction|card|account|acct|ac)(?:$S*(?:no|number|id)\\.?)?" +
+        "|بطاقة|البطاقة|بطاقتك|بطاقتكم|حساب|الحساب|حسابك|حسابكم|مرجع[يى]?|(?:ال)?عملية|رقم)$S*[:：#.]?$S*$",
+    GI,
+)
+private val MONTH_DAY_BEFORE = Regex("(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?$S+\\d{1,2},?$S*$", GI)
+
+/**
+ * الجولة السابعة: الرسالة فيها **رقم رمز فعلًا** — 4 لـ8 أرقام لوحدهم مش مبلغ (جنبه عملة أو «مبلغ») ولا سنة تاريخ ولا آخر 4 من كارت أو
+ * حساب ولا رقم مرجع. فلتر الجهاز بيرمي رسالة الرمز **بس لو فيها رمز**: «Keep your IPN PIN and OTP private» · «متشاركش الرقم السري
+ * مع حد» · «Verified with OTP» · «لو حد طلب منك كود التحقق اقفل السكة» تحت تحويل حقيقي **مش رمز** (كانت بتترمي والعملية تضيع).
+ */
+internal fun hasFreeCode(text: String): Boolean = CODE_CANDIDATE.findAll(text).any { m ->
+    val lineStart = text.lastIndexOf('\n', m.range.first - 1) + 1
+    val before = text.substring(maxOf(lineStart, m.range.first - 40), m.range.first)
+    val after = text.substring(m.range.last + 1, minOf(text.length, m.range.last + 12))
+    !MONEY_BEFORE.containsMatchIn(before) && !MONEY_AFTER.containsMatchIn(after) && !ID_BEFORE.containsMatchIn(before) &&
+        !MONTH_DAY_BEFORE.containsMatchIn(before)
+}
 
 /**
  * نص الرسالة زي ما القارئ بيشوفه: أرقام لاتيني، من غير `\r` ولا علامات الاتجاه ولا **أي** حرف تنسيق مخفي، وأشكال العرض العربية

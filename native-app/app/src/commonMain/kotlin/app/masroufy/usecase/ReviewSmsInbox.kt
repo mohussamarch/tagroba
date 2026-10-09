@@ -10,6 +10,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SchemaId
+import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
 import app.masroufy.core.SmsShape
@@ -107,6 +108,18 @@ private fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
     return own in otherAccountsLast4 && own != accountLast4
 }
 
+/**
+ * سبب إن رسالة **شكلها معروف** ما تتسجلش لوحدها، أو null: حساب تاني من حسابات المالك (الجولة السادسة) · **استرداد** (§75-6 ✗ — قرار
+ * المالك: «الاسترداد ⇒ يقترح «استرداد» ويستنى تأكيده»؛ كان بيتسجل لوحده زي أي عملية) · **سحب كاش** (§75-4 — النقل لمحفظة الكاش لسه ما
+ * اتبناش، فكان بيتسجل صرف عادي من البنك من غير ما يروح الكاش). الجولة السابعة.
+ */
+private fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
+    target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
+    row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
+    row.kind == SmsKind.CASH_WITHDRAWAL -> TextKey.SMS_WAIT_CASH_WITHDRAWAL
+    else -> null
+}
+
 /** اللي بيترفع للقايمة المشتركة (OVERRIDES §25) — المصروف بس. */
 data class MerchantContribution(val economicKind: EconomicKind, val observedDirection: Direction, val rawMerchantName: String)
 
@@ -145,10 +158,11 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
                     val row = parsed.row
                     rows += row
                     messageByLine[row.lineNumber] = item.id
-                    // الجولة السادسة: حساب تاني من حسابات المالك ⇒ مش واضحة للمحفظة دي (تستنى بسببها)
-                    val other = row.shape.clear && target.otherAccount(row)
-                    shapeByLine[row.lineNumber] = if (other) SmsShape.KeywordFallback else row.shape
-                    if (other) waitByLine[row.lineNumber] = uiText(TextKey.SMS_WAIT_OTHER_ACCOUNT)
+                    // الجولة السادسة: حساب تاني من حسابات المالك ⇒ مش واضحة للمحفظة دي (تستنى بسببها). الجولة السابعة: الاسترداد (§75-6 —
+                    // قرار المالك: يتقترح «استرداد» ويستنى تأكيده) والسحب من الصرّاف (§75-4 — النقل لمحفظة الكاش لسه ما اتبناش) بيستنوا
+                    val wait = if (row.shape.clear) waitReasonOf(row, target) else null
+                    shapeByLine[row.lineNumber] = if (wait != null) SmsShape.KeywordFallback else row.shape
+                    if (wait != null) waitByLine[row.lineNumber] = uiText(wait)
                 }
                 is SmsParseResult.Rejected -> failed += SmsFailed(item.id, item.sender, item.receivedAt.take(10), parsed.reason)
             }

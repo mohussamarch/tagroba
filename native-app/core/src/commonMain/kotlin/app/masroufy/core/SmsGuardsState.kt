@@ -72,9 +72,9 @@ internal val SMS_DECLINED_PATTERN = Regex(
 private val NOT_TRANSACTION_ANYWHERE = Regex(
     "حجز$S*مبلغ|Cash$S*Re(?:serve|lease)|تم$S*استلام$S*الطلب|تم$S*طلب|تم$S*تقسيط|كشف$S*حساب|الحد$S*الأدنى$S*للسداد|" +
         "تسجيل$S*الدخول|logged$S*in|تم$S*تفعيل|${B}PIN$B[^\\n]*${B}SET$B|مبروك$S*كسبت" +
-        "|${B}pending$B|${NA}معلق(?:ة|ه)?$NZ|under$S*review|قيد$S*(?:المراجعة|الانتظار|التنفيذ)|تم$S*استلام$S*طلب" +
+        "|${B}pending$B(?!$S*[:：]?$S*(?:EGP|SAR|SR|LE)?$S*0+(?:[.,]0+)?(?![\\d.,]))|${NA}معلق(?:ة|ه)?$NZ|under$S*review|قيد$S*(?:المراجعة|الانتظار|التنفيذ)|تم$S*استلام$S*طلب" +
         "|$NEG(?<![A-Za-z])authori[sz]ation(?![A-Za-z])|${B}(?:has|have|was|were|is|been)$S+(?:been$S+)?authori[sz]ed$B|${B}pre.?auth" +
-        "|تم$S*حجز|حجز$S*مؤقت|${B}on$S+hold$B|${B}hold$S+(?:of|on|amount)$B" +
+        "|تم$S*حجز(?!$S*(?:ال)?(?:تذكر|موعد|رحل|طاول|غرف|مقعد))|حجز$S*مؤقت|${B}on$S+hold$B|${B}hold$S+(?:of|on|amount)$B" +
         "|طلب$S*(?:ال)?(?:استرداد|استرجاع|اعتراض)|تم$S*(?:تسجيل|استلام|رفع)$S*(?:ال)?اعتراض|${B}(?:your|the)$S+dispute$B" +
         "|${B}dispute$S+(?:for|on|of|has|was|is|request|case|ref)$B|${B}disputed$B|chargeback" +
         "|${B}refund$S+request$B|request(?:ed)?$S+(?:a$S+|for$S+(?:a$S+)?)?(?:refund|chargeback)|(?:withdrawal|cash.?out)$S+request" +
@@ -98,7 +98,13 @@ private val NOT_TRANSACTION_ANYWHERE = Regex(
         "|${B}reserved$B|$NA(?:تم$S*)?تعليق$S*(?:ال)?مبلغ|${NA}مؤجل[ةه]?$NZ" +
         // ── الجولة السادسة: لسه في السكة أو مستني تأكيد («subject to bank verification» · «on its way» · «provisional credit») ──
         "|${B}subject$S+to$S+(?:bank$S+|further$S+)?(?:verification|approval|review|confirmation)$B|${B}on$S+(?:its|the)$S+way$B" +
-        "|${B}in$S+transit$B|${B}to$S+be$S+confirmed$B|${B}provisional(?:ly)?$S+credit",
+        "|${B}in$S+transit$B|${B}to$S+be$S+confirmed$B|${B}provisional(?:ly)?$S+credit" +
+        // ── الجولة السابعة: فلوس لسه هتتضاف أو هتتنفذ («To be credited/cleared/executed/released/posted/sent/reflected …» · «من المتوقع إيداع» ·
+        // «من المقرر تنفيذ» · «عند تحصيل الشيك» · «الى حين استكمال التحقق» · «حدّث بياناتك» · «update your ID» · «compliance check») ──
+        "|${B}to$S+be$S+(?:credited|cleared|executed|released|posted|sent|reflected|added|deposited|transferred|processed|completed|refunded|returned)$B" +
+        "|$NA(?:من$S*)?(?:ال)?(?:متوقع|مقرر)$S*(?:ان$S*)?(?:إيداع|ايداع|إضافة|اضافة|إضافت|اضافت|ظهور|وصول|تحويل|خصم|تنفيذ|صرف)" +
+        "|${NA}عند$S*(?:ال)?(?:تحصيل|اكتمال|استكمال|اتمام|إتمام)|$NA(?:الى|إلى|الي)$S*حين$NZ|(?:فضلك|يرجى|يرجي|برجاء|الرجاء)$S*(?:حد[ّ]?ث|تحديث)" +
+        "|${B}update$S+your$S+(?:id|iqama|kyc|details|data|information|info)$B|${B}compliance$S+(?:check|review)$B",
     GI,
 )
 
@@ -130,13 +136,36 @@ private val BALANCE_ONLY = Regex(
  */
 private val MOVEMENT_AFTER_BALANCE = Regex(
     "(?:بعد|${B}after)$S+(?:ال)?(?:تحويل|استلام|إيداع|ايداع|سحب|إضافة|اضافة|receiving|sending|transferring|withdrawing|depositing|receipt$S+of|transfer$S+of)" +
-        "$S+(?:مبلغ$S+|of$S+)?(?:[A-Za-z]{3}$S*)?\\d",
+        "$S+(?:مبلغ$S+|of$S+)?(?:[A-Za-z]{3}$S*)?\\d" +
+        // الجولة السابعة: «Available balance SAR 3,912.40 after PoS purchase of SAR 48.50 at …» — «of» ومبلغ **في نفس السطر** («Available Balance after
+        // Purchase\nSAR 4,100.00» لسه رصيد بس)
+        "|${B}after[ \\t]+(?:(?:pos|online|card)[ \\t]+)?purchase[ \\t]+of[ \\t]+(?:[A-Za-z]{3}[ \\t]*)?\\d",
+    GI,
+)
+
+/**
+ * الجولة السابعة: **حركة فلوس خلصت** بفعلها («تم خصم/تحويل/استلام/رد/تنفيذ/تسوية …» · «وخصم … من حسابك» · «اتحولك» · «has been credited» ·
+ * «was executed» · «credited to/returned to» · «completed successfully» · «You received»). فلتر الجهاز (`SmsVocabulary`)
+ * ما بيرميش رسالة فيها كده ومبلغ (§72: الضياع مش مقبول — القارئ يرفضها لو مش عملية فتستنى)، والرصيد في أولها ما بيخليهاش «رصيد بس».
+ * المستقبل والمنفي مش منها («سيتم/لم يتم» — «تم» لازم كلمة لوحدها · «will be/to be credited»).
+ */
+internal val COMPLETED_MOVEMENT = Regex(
+    // «تم استلام طلبك لاسترداد …» = طلب اتسجل مش فلوس (حارس «طلب استرداد» بيرميه)
+    "${NA}و?تمت?$S*(?:عملية$S*)?(?:ال)?(?:خصم|سحب|تحويل|استلام(?!$S*(?:ال)?طلب)|إيداع|ايداع|إضافة|اضافة|قيد|سداد|تسديد|دفع|شحن|رد|استرداد|استرجاع" +
+        "|إرجاع|ارجاع|إعادة|اعادة|تنفيذ|تسوية|شراء)" +
+        "|$NA[وف]?(?:اتخصم|اتخصملك|اتسحب|اتحول|اتحولك|اتحولّك|اترجع|اترجعلك|اتضاف|اتضافلك|استلمت|وصلك|وصلتك|وصلتلك|دفعت)$NZ" +
+        "|${NA}و(?:خصم|دفع)$S*[^\\n]{0,40}?من$S*(?:حساب|محفظت|بطاقت)" +
+        "|${B}(?:has|have|had|was|were|is|are)$S+(?:been$S+)?(?:successfully$S+)?(?:credited|debited|charged|deducted|withdrawn|transferred|received" +
+        "|paid|refunded|returned|executed|completed|processed|sent|deposited)$B" +
+        "|(?<!(?:will|to|shall|would|may|can)$S{1,3}be$S{1,3})${B}(?:credited|debited|deducted|withdrawn|refunded|returned|transferred)$S+(?:to|from|back|into)$B" +
+        "|${B}was$S+successful$B|${B}completed$S+successfully$B|${B}you$S+(?:have$S+)?(?:received|sent|paid|spent|withdrew|transferred)$B" +
+        "|${B}received$S+(?:towards|from|into)$B",
     GI,
 )
 
 internal fun isNotATransaction(body: String): Boolean =
     NOT_TRANSACTION_ANYWHERE.containsMatchIn(body) ||
-        (BALANCE_ONLY.containsMatchIn(body) && !MOVEMENT_AFTER_BALANCE.containsMatchIn(body)) ||
+        (BALANCE_ONLY.containsMatchIn(body) && !MOVEMENT_AFTER_BALANCE.containsMatchIn(body) && !COMPLETED_MOVEMENT.containsMatchIn(body)) ||
         HEAD_ONLY.containsMatchIn(headOf(body)) || (HOLD_WORD.containsMatchIn(body) && !DEBIT_FROM_HOLD.containsMatchIn(body))
 
 /**

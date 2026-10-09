@@ -132,6 +132,9 @@ private val REDACT_IBAN = Regex("SA[\\d" + S.substring(1, S.length - 1) + "]{20,
 private val REDACT_LONG = Regex("$B(?:\\d[ -]*){12,34}$B")
 private val REDACT_DIGITS = Regex("\\d{5,}")
 
+/** الجولة السابعة: موبايل بفواصل («010-6441-8273» · «055 123 4567») — كان بيعدّي الحجب (12 رقم أو 5 ورا بعض بس) ويتكتب في الوصف كامل. */
+private val REDACT_PHONE = Regex("(?<![\\d])0(?:1[0125]|5\\d)[ .\\-]\\d{3,4}[ .\\-]\\d{3,4}(?![\\d])")
+
 // العملة المصرية اتضافت للمحمي (مبلغ 5 أرقام بالجنيه كان بيتقص في الوصف) — ملف المرجع مفيهوش جنيه بخمس أرقام
 private const val KEEP_CURRENCY =
     "(?:(?<![A-Za-z])(?:SAR|SR|EGP)(?![A-Za-z])|ريال|ر\\.?س\\.?|جنيه|ج\\.م\\.?|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![A-Za-z])LE(?![A-Za-z]))"
@@ -146,6 +149,7 @@ private fun lastFour(text: String) = if (text.length <= 4) text else text.substr
 fun redactSms(input: String): String {
     val text = latinizeDigits(input)
     fun redact(value: String) = value
+        .replace(REDACT_PHONE) { "••••" + lastFour(it.value.filter { c -> c in '0'..'9' }) }
         .replace(REDACT_IBAN) { "••••" + lastFour(it.value.filterNot(JsText::isWhitespace)) }
         .replace(REDACT_LONG) { "••••" + lastFour(it.value.filter { c -> c in '0'..'9' }) }
         .replace(REDACT_DIGITS) { "••••" + lastFour(it.value) }

@@ -29,7 +29,12 @@ private fun t(bank: String, id: String, pattern: String, direction: Direction?, 
 private const val LOCAL_MONEY = "(?:(?:sar|sr|ريال|ر\\.? ?س\\.?) ?[\\d,.]+|[\\d,.]+ ?(?:sar|sr|ريال|ر\\.? ?س\\.?))"
 private const val WALLET =
     "(?:apple|ابل|google|جوجل|samsung|سامسونج|stc|mada|مدي|huawei|هواوي|garmin|fitbit)? ?(?:pay|باي)|مدي|mada|اثير|atheer|(?:مدي|mada) (?:pay|باي)"
-private const val BANK_NAME = "[a-z\\u0600-\\u06FF][a-z\\u0600-\\u06FF .&-]{1,40}"
+/**
+ * اسم البنك بعد النقطتين في عناوين دي 360 («Incoming Transfer: <بنك>»). الجولة السابعة: كان **أي كلام** («Incoming Transfer: Expected» ·
+ * «Incoming Internal Transfer: Unverified» · «Outgoing Internal Transfer: Draft» اتسجلوا) ⇒ بقى **اسم بنك سعودي من القايمة بس**
+ * (نفس قاعدة سطر اسم البنك `BANK_LINE`). غير كده ⇒ مش عنوان معروف ⇒ تستنى.
+ */
+private const val BANK_NAME = "(?:$SAUDI_BANK_NAMES)"
 
 private val SAUDI_BANK_TITLES: List<BankTitle> = listOf(
     // ── الراجحي ──

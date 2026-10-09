@@ -53,13 +53,19 @@ internal val SHAPE_DOUBT = Regex(
         // تأمين/ضمان **كمبلغ محجوز** بس («مبلغ تأمين» · «حجز ضمان») — مش «شركة التأمين» ولا «الضمان الاجتماعي» (دخل حقيقي)
         "|$NA(?:مبلغ|حجز|خطاب|وديع[ةه])$S*(?:ال)?(?:تأمين|تامين|ضمان)" +
         "|$NA[وف]?(?:اتعكس|انعكس|اتوقف|اوقف|توقف|اترفض|الغيت|الغي|اتحجز|اتجمد|اتعلق|اترجع|رجع|استرد|استرجع)(?:ت|تلك|لك|وا)?$SUF$NZ" +
-        "|$NA[وف]?[هح](?:يت|تت|ي|ت)(?:ضاف|نفذ|سحب|رجع|فك|حول|خصم|رد|صرف|حط|نزل)|$NA(?:ما$S*|م)ا?(?:تمت|تم|نجحت|نجح|كملت|كمل|طلعت|طلع" +
+        "|$NA[وف]?[هح](?:يت|تت|ي|ت)(?:ضاف|نفذ|سحب|رجع|فك|حول|خصم|رد|صرف|حط|نزل|سجل|اكد|فعل|ظهر|وصل|ودع|حجز|علق)|$NA(?:ما$S*|م)ا?(?:تمت|تم|نجحت|نجح|كملت|كمل|طلعت|طلع" +
         "|اتنفذت|اتنفذ|وصلت|وصل|اتحولت|اتحول)ش$NZ|${NA}في$S*(?:ال)?طريق|${NA}لحد$S+ما$NZ" +
         "|قيد$S*(?:ال)?(?:معالجة|تسوية|إجراء|اجراء|مراجعة|تحقق|انتظار|تنفيذ)|تحت$S*(?:ال)?(?:إجراء|اجراء|مراجعة|تحصيل|معالجة|تسوية|تحقق)" +
         "|جار[يى]$S*(?:ال)?(?:تنفيذ|معالجة|تأكيد|تاكيد|عمل|تحويل|إيداع|ايداع|سداد|خصم|مراجعة|تحقق)" +
         "|$NA(?:غير|عدم)$S*(?:مقبول|مكتمل|ناجح|منفذ|مسدد|مسوا[ةه]|مسوي[ةه]|مرحل[ةه]?|مقيد[ةه]?|نهائي[ةه]?)" +
         "|$NA(?:لم|لن|ماتمش|مانجحتش)$NZ|${NA}ما$S*(?:تمتش|نجحتش)$NZ" +
-        "|منتهي[ةه]?$S*الصلاحية|طلب$S*(?:ال)?(?:استرداد|استرجاع|سحب|دفع|تحويل)|(?:يرجى|يرجي|برجاء|الرجاء)$S*(?:إيداع|ايداع|سداد|دفع|تحويل)",
+        "|منتهي[ةه]?$S*الصلاحية|طلب$S*(?:ال)?(?:استرداد|استرجاع|سحب|دفع|تحويل)|(?:يرجى|يرجي|برجاء|الرجاء)$S*(?:إيداع|ايداع|سداد|دفع|تحويل)" +
+        // ── الجولة السابعة: «To be <أي فعل>» (sent · cleared · released …) · المتوقع/المقرر · «عند تحصيل الشيك» · «الى حين» · «حدّث بياناتك»
+        // · «يضاف/سيضاف» · الموافقة والقبول المصري · approval/kyc/aml/uncleared/unconfirmed/estimated/incremental/validation ──
+        "|${B}to$S+be$B|$NA(?:من$S*)?(?:ال)?(?:متوقع|مقرر)$NZ|${NA}عند$S*(?:ال)?(?:تحصيل|اكتمال|استكمال|اتمام|إتمام)" +
+        "|$NA(?:الي|الى|إلى)$S*حين$NZ|(?:فضلك|يرجي|يرجى|برجاء|الرجاء)$S*(?:حدث|تحديث)|$NA[وف]?(?:س)?[يت]ضاف$SUF$NZ" +
+        "|$NA(?:محتاج|محتاجة|محتاجه|موافقت|اقبل|ارفض)[$AR]*|$NA(?:لسه|لسة)$NZ" +
+        "|$B(?:approval|acceptance|kyc|aml|uncleared|unconfirmed|unverified|estimated|incremental|validation|awaits?|awaited|draft)$B",
     GI,
 )
 
@@ -67,7 +73,8 @@ internal val SHAPE_DOUBT = Regex(
 private fun unifyLetters(text: String): String =
     text.map { c -> if (c == 'أ' || c == 'إ' || c == 'آ' || c == 'ٱ') 'ا' else if (c == 'ى') 'ي' else c }.joinToString("")
 
-internal fun hasShapeDoubt(text: String): Boolean = SHAPE_DOUBT.containsMatchIn(unifyLetters(guardText(text)))
+/** الجولة السابعة: كلمة الحالة اللازقة في رقم («778812REVERSED») بتتفصل قبل الفحص (`\b` بتاع جافاسكربت بيعتبر الرقم والحرف كلمة واحدة). */
+internal fun hasShapeDoubt(text: String): Boolean = SHAPE_DOUBT.containsMatchIn(splitDigitLetter(unifyLetters(guardText(text))))
 
 /** أي تاريخ: بسنة كاملة أو سنتين («26-03-05» · «05/03/2026») · يوم/شهر في مكانه («يوم 03-05» · «on 05/03») · الشهر بالاسم. */
 private val DATE_TOKEN = Regex(
@@ -93,6 +100,18 @@ internal fun gateShape(shape: SmsShape, body: String, date: IsoDate, arrivalDay:
     !shape.clear -> shape
     distinctDateCount(body) > 1 -> SmsShape.KeywordFallback
     arrivalDay != null && date > arrivalDay -> SmsShape.KeywordFallback
+    arrivalDay != null && olderThanWindow(date, arrivalDay) -> SmsShape.KeywordFallback
     hasHiddenOrPresentationChars(raw) -> SmsShape.KeywordFallback
     else -> shape
 }
+
+/** أقصى فرق بين تاريخ العملية ويوم الوصول عشان الرسالة تتسجل لوحدها — نفس نافذة التاريخ من غير سنة (`SmsDates.kt`). */
+private const val WINDOW_DAYS = 60
+
+/**
+ * الجولة السابعة: التاريخ بسنة كاملة **أقدم من 60 يوم** قبل الوصول ⇒ تستنى. القراية نفسها زي ما هي (ملف المرجع بيقبل التاريخ القديم
+ * بسنة — سؤال (و) لسه مفتوح للمالك)، بس ما بتتسجلش لوحدها: «On: 10/07/2026» يوم 8 أكتوبر كانت بتتسجل 10 يوليو، والقراية التانية
+ * (7 أكتوبر) هي اللي في النافذة · «On: 2025-11-02» كانت بتتسجل في شهر مالي قديم.
+ */
+private fun olderThanWindow(date: IsoDate, arrivalDay: IsoDate): Boolean =
+    toDayNumber(parseIsoDate(date)) < toDayNumber(parseIsoDate(arrivalDay)) - WINDOW_DAYS

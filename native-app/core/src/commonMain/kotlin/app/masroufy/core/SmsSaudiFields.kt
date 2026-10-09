@@ -183,13 +183,13 @@ internal fun riyalAmountAsForeign(body: String): SmsForeignAmount? =
  * بالريال لو مكتوب (الإجمالي · بين قوسين بعد المبلغ الأجنبي · «ما يعادل» · «المبلغ بالريال») بيمشي معاها **اقتراح** للسؤال، وما
  * بيتسجلش لوحده. الجولة التالتة: الأجنبي = **أي دليل** (`SmsForeignEvidence.kt` — رمز · اسم · الشكل «X (SAR …)»)، مش القايمة بس.
  */
-internal fun saudiAmount(body: String): SaudiAmount {
+internal fun saudiAmount(body: String, direction: Direction? = null): SaudiAmount {
     val foreign = FOREIGN.containsMatchIn(body) || hasForeignEvidence(body, SAUDI_LOCAL)
     val totalLine = TOTAL_DUE_LINE.find(body)
     val total = totalLine?.let { oneLocalAmount(it.value, body) as? SaudiAmount.Ok }
     if (foreign) return SaudiAmount.ForeignOnly(foreignAmountOf(body, SAUDI_LOCAL), total?.amountMinor ?: localConversion(body, SAUDI_LOCAL))
     if (totalLine == null) return oneLocalAmount(body, body)
-    return consistentTotal(body.removeRange(totalLine.range), total)
+    return consistentTotal(body.removeRange(totalLine.range), total, incoming = direction == Direction.IN)
 }
 
 /** سطر رسوم أو ضريبة («VAT: 0.86 SAR» · «Fees {fee}SR» · «رسوم وضريبة: 5.75 SAR») — للجمع مع المبلغ. */
@@ -212,11 +212,14 @@ private fun feesOf(text: String): Long? {
  * #90 #94). غير كده ده رصيد البطاقة المستحق («بطاقة ائتمانية تسديد\nمبلغ: 1,000.00\nإجمالي المبلغ المستحق: 3,215.40» — كان بيتسجل 3,215.40)
  * أو السعر الكامل («Amount: SAR 250.00 … Total due amount: SAR 1,000.00» — كان 1,000) ⇒ «أكتر من مبلغ» (بتستنى، ما بنختارش).
  */
-private fun consistentTotal(withoutTotal: String, total: SaudiAmount.Ok?): SaudiAmount {
+private fun consistentTotal(withoutTotal: String, total: SaudiAmount.Ok?, incoming: Boolean): SaudiAmount {
     val multiple = SaudiAmount.Fail(uiText(TextKey.SMS_MULTIPLE_AMOUNTS))
     val base = oneLocalAmount(withoutTotal, withoutTotal)
     if (base !is SaudiAmount.Ok) return base
     total ?: return multiple
+    // الجولة السابعة: «الإجمالي المستحق» = المخصوم (مبلغ + رسوم + ضريبة) — على عملية **داخلة** بيكبّر المبلغ اللي اتضاف («Received transfer
+    // … Fees: 5.00 … Total due amount: 1,005.00» اتسجلت 1,005 دخل). الداخل: الإجمالي لازم = المبلغ نفسه، غير كده «أكتر من مبلغ»
+    if (incoming) return if (total.amountMinor == base.amountMinor) base.copy(doubtful = total.doubtful || base.doubtful) else multiple
     val fees = feesOf(withoutTotal) ?: return multiple
     if (total.amountMinor != base.amountMinor && total.amountMinor != base.amountMinor + fees) return multiple
     return total.copy(doubtful = total.doubtful || base.doubtful)
@@ -227,7 +230,7 @@ private fun consistentTotal(withoutTotal: String, total: SaudiAmount.Ok?): Saudi
 // الجولة التالتة: المحل بيقف قبل «(SAR 93.75)» (مقابل المبلغ مش جزء من اسم المحل). الجولة الخامسة: بين الكلمة والاسم مسافة في
 // **نفس السطر** بس — «Refund initiated by merchant\nAmount: SAR 245.60» كان بيطلّع المحل «Amount: SAR 245.60»
 private val MERCHANT_AT = Regex(
-    "(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)[ \\t]*[:：]?[ \\t]*([^\\n]+?)(?=$S+(?:في|بتاريخ|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$S*\\($S*(?:$CURRENCY|\\d)|$)",
+    "(?:لدى|عند|تاجر|${B}merchant$B|${B}at$B)[ \\t]*[:：]?[ \\t]*([^\\n]+?)(?=$S+(?:في|بتاريخ|يوم|${B}on$B|الرصيد|${B}balance$B)(?:$S|[:：])|$S*\\($S*(?:$CURRENCY|\\d)|$)",
     IM,
 )
 private val MERCHANT_LAM = Regex("^$S*لـ$S*[:：]?$S*([^\\n]+)$", setOf(RegexOption.MULTILINE))

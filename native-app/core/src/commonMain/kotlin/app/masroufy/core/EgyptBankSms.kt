@@ -85,6 +85,8 @@ private fun hasOtherCurrency(body: String): Boolean = EG_OTHER_CURRENCY.findAll(
 fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val body = normalizeSmsBody(message.body)
     smsIgnoreReason(body)?.let { return SmsParseResult.Rejected(uiText(it)) }
+    // الجولة السابعة: علامة قلب اتجاه (LRO/RLO) ⇒ الكلام المعروض غير المقروء («تم خصم ‮06.84‬ جم» بيتعرض 48.60) ⇒ ما بنقراش
+    if (hasBidiOverride(message.body)) return SmsParseResult.Rejected(uiText(TextKey.SMS_HIDDEN_TEXT))
     // الجولة السادسة: العملة بتتعرف من غير التشكيل («ريال عُماني») — النص نفسه (البصمة والوصف) زي ما هو
     val plain = withoutTashkeel(body)
     // أي دليل عملة أجنبية (كود · رمز «$» · اسم «US Dollars»/«ين» · مقابل بالجنيه بعد مبلغ تاني) زي الدولار بالظبط (§75-12)
@@ -100,12 +102,22 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     // التحويل الأصلي (كانت بتتسجل في يوم قديم وممكن شهر مالي قفل). الرسالة مفيهاش تاريخ الرجوع ⇒ يوم الوصول بتوقيت القاهرة
     val date = (if (isReturnedTransferNotice(body)) cairoDayOf(message.receivedAt) else egyptTransactionDate(body, message.receivedAt))
         ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
+    // الجولة السابعة: تاريخ العملية **بعد** يوم الوصول (بتوقيت القاهرة) = عملية لسه ما حصلتش ⇒ مرفوضة (مفيش ملف مرجع لمصر يقفل يوم بعد)
+    val arrival = cairoDayOf(message.receivedAt)
+    if (arrival != null && date > arrival) return SmsParseResult.Rejected(uiText(TextKey.SMS_NOT_TRANSACTION))
     val kind = egyptKind(body, direction)
     if (contradicts(direction, kind)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
+    // الجولة السابعة: كلمة حالة أو طلب أو جاي في **أول جملة** («هيتأكد بكره الصبح» · «لحين القبول» · «واتحجزت لحد التوثيق» ·
+    // «from … AWAITS APPROVAL») ⇒ **مرفوضة** (مش عملية خلصت) بدل «جاهزة» بمبلغ واتجاه و«سجّل الكل» يسجلها. سطر تحذير في جملة بعدها
+    // («تذكير: لا تشارك …» · «If you have not authorized …») ما بيرفضهاش — بتستنى زي الأول
+    if (hasShapeDoubt(headOf(body))) return SmsParseResult.Rejected(uiText(TextKey.SMS_NOT_TRANSACTION))
     // الجولة الرابعة: الشكل علامة جنب القراية — جملة على قالب معروف بس هي اللي بتتسجل لوحدها (§72). الجولة الخامسة: الجملة **كلها**
-    // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: حروف مخفية ⇒ تستنى
-    val shape = gateShape(egyptShape(body, direction, amount), body, date, cairoDayOf(message.receivedAt), message.body)
-    return smsRow(message, body, lineNumber, date, amount, direction, egyptMerchant(body, kind), kind, shape)
+    // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: حروف مخفية ⇒ تستنى.
+    // الجولة السابعة: محل برّه مصر (كود البلد في آخر اسمه «SAMPLE CLOUD USA» — §75-12) ⇒ تستنى
+    val merchant = egyptMerchant(body, kind)
+    val known = egyptShape(body, direction, amount).let { if (it.clear && foreignCountryTail(merchant, EGYPT_TAIL)) SmsShape.KeywordFallback else it }
+    val shape = gateShape(known, body, date, arrival, message.body)
+    return smsRow(message, body, lineNumber, date, amount, direction, merchant, kind, shape)
 }
 
 /** قارئ مصر لحزمة البلد. */

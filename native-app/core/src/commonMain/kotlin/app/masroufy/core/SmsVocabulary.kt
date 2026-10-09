@@ -32,7 +32,10 @@ object SmsVocabulary {
         "(?:(?<![A-Za-z])(?:SAR|SR|USD|EUR|GBP|AED|EGP|KWD|BHD|QAR|OMR|JOD)(?![A-Za-z])|ريال|ر\\.?س\\.?|ر\\.[ \\t]س\\.?|دولار|يورو|جنيه|جنية|دينار|درهم|ليرة|[إا]سترليني|" +
             "ج\\.م\\.?|(?<![\\u0600-\\u06FF])جم(?![\\u0600-\\u06FF])|(?<![\\u0600-\\u06FF])ج(?![\\u0600-\\u06FF.])|(?<![A-Za-z])L\\.?E(?![A-Za-z])" +
             // الجولة السادسة: عملات اسمها أو اختصارها ما كانش هنا (الشراء كان بيترمي «مفيهاش مبلغ» بدل ما يستنى §75-12)
-            "|(?<![\\u0600-\\u06FF])(?:بات|وون|بيزو|كرون[ةه]|كرونا|شيكل|دونغ|دونج)(?![\\u0600-\\u06FF])|(?<![A-Za-z])(?:Ft|Kč|L\\.L)(?![A-Za-z])|ل\\.ل|ل\\.س)"
+            "|(?<![\\u0600-\\u06FF])(?:بات|وون|بيزو|كرون[ةه]|كرونا|شيكل|دونغ|دونج)(?![\\u0600-\\u06FF])|(?<![A-Za-z])(?:Ft|Kč|L\\.L)(?![A-Za-z])|ل\\.ل|ل\\.س" +
+            // الجولة السابعة: رمز الريال الجديد (U+20C1) · «﷼» (U+FDFC) · «S.R» · أي رمز عملة (U+20A0…U+20C0 · $ € £ ¥) — الشراء كان بيترمي
+            // «مفيهاش مبلغ» قبل الحفظ حتى تحت عنوان موحّد (القارئ السعودي لسه ما بيقراش رمز الريال الجديد — سؤال للمالك، فبتستنى)
+            "|[\\u20A0-\\u20C1\\uFDFC\$€£¥]|(?<![A-Za-z])S\\.R\\.?(?![A-Za-z]))"
 
     private val MONEY = Regex(CURRENCY, GI)
 
@@ -50,7 +53,9 @@ object SmsVocabulary {
      * موبايلك ب 50 بنجاح وخصم 57 من محفظتك شاملة الضريبة جنيه» — الرقم مش لازق في العملة).
      */
     fun hasAmount(text: String): Boolean =
-        (hasMoney(text) && text.any { it in '0'..'9' }) || (AMOUNT_LABEL_NUMBER.containsMatchIn(text) && hasKnownHead(normalizeSmsBody(text)))
+        (hasMoney(text) && text.any { it in '0'..'9' }) || (AMOUNT_LABEL_NUMBER.containsMatchIn(text) && hasKnownHead(normalizeSmsBody(text))) ||
+            // الجولة السابعة: قالب مصري معروف ورقم من غير كلمة عملة («تم شحن رصيد موبايلك ب 30 بنجاح وخصم 34.20 من محفظتك …» كانت بتترمي)
+            (hasEgyptianKnownHead(normalizeSmsBody(text)) && text.any { it in '0'..'9' })
 
     /**
      * الجولة السادسة: تحت عنوان أو قالب بنك معروف، رقم بعد «مبلغ/Amount» ومعاه كلمة عملة ما نعرفهاش لسه («مبلغ: 1,500.00 بات») =
@@ -88,8 +93,14 @@ object SmsVocabulary {
      */
     fun ignoreBeforeStorage(text: String): Boolean {
         val body = normalizeSmsBody(text)
-        if (isSensitiveText(guardText(body))) return true
+        val guard = guardText(body)
+        // الجولة السابعة: رسالة الرمز بتترمي **لو فيها رمز فعلًا** ([hasFreeCode]) — «Keep your IPN PIN and OTP private» · «Verified with OTP» ·
+        // «متشاركش الرقم السري مع حد» تحت تحويل حقيقي كانوا بيرموه. من غير رقم رمز ⇒ بتتحفظ والقارئ يرفضها فتستنى
+        if (isSensitiveText(guard) && hasFreeCode(guard)) return true
         if (smsIgnoreReason(body) == null || hasKnownHead(body)) return false
+        // الجولة السابعة: حركة فلوس خلصت ومعاها مبلغ («تم خصم رسوم إصدار كشف حساب …» · «has been credited» · «اتحولك 300 جنيه … لعرض
+        // الإيصال» · «رصيدك الحالي … . تم استلام …») ⇒ بتتحفظ — الحارس اللي مسك كلمة تانية فيها بيخلي القارئ يرفضها فتستنى، مش تضيع
+        if (COMPLETED_MOVEMENT.containsMatchIn(guard) && hasAmount(body)) return false
         val head = headOf(body)
         val headReason = smsIgnoreReason(head) ?: return false
         return !(headReason == TextKey.SMS_OFFER && guardReasonBesidesOffer(head) == null && COMPLETED.containsMatchIn(guardText(head)))

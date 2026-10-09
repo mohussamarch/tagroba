@@ -51,23 +51,40 @@ private val ACCOUNT_FIELD = field(
     "$ACCT(?: ?- ?$ACCOUNT_TAIL)?",
 )
 
-/** خانات قيمتها حرة (اسم المحل · الطرف · البنك · الخدمة · المرجع) — الإنجليزي من غير «:» محصور في اللي البحث كاتبه كده. */
+/**
+ * خانات قيمتها حرة **بالنقطتين** (اسم المحل · الطرف · البنك · الخدمة · المرجع). الجولة السابعة: الشكل من غير «:» («To be credited
+ * within 2 working days» · «من المتوقع إيداع المبلغ …» · «عند تحصيل الشيك سيضاف المبلغ» · «الى حين استكمال التحقق …») كان بيتقري
+ * «To: be credited …» واسم الطرف «be credited …» — بقى محصور في [BARE_FIELD].
+ */
 private val FREE_FIELD = Regex(
-    "^(?:(?:لدي|عند|at|التاجر|من البائع|من|الي|to|from|ل|المستفيد|عبر|مصرف|البنك|من بنك|المفوتر|مفوتر|الخدمة|لخدمة|الفاتورة|الجهة" +
-        "|mtcn|مرجع|الرقم المرجعي|ref|ref\\. no\\.|ref no|مكان السحب|الصراف)$SEP" +
-        "|(?:merchant|transaction|receiver|biller|service|number) ?: ?|من(?=[\\d*•x]))(.+)$",
+    "^(?:لدي|عند|at|التاجر|من البائع|من|الي|to|from|ل|المستفيد|عبر|مصرف|البنك|من بنك|المفوتر|مفوتر|الخدمة|لخدمة|الجهة" +
+        "|mtcn|مرجع|الرقم المرجعي|ref|ref\\. no\\.|ref no|مكان السحب|الصراف|merchant|transaction|receiver|biller|service) ?: ?(.+)$",
 )
 
+/**
+ * من غير نقطتين — **بس** الكلمات اللي البحث كاتبها كده: الأهلي والإنماء «من <محل/اسم>» (#40 #59 #66) · الفرنسي «إلى <اسم>» (#77) ·
+ * إس تي سي «From/To <اسم/بنك/رقم>» (#100 #101 #105) · الإنماء «عبر <محفظة>» (#55) · «Ref. No. <رقم>» (#100) · «من7719;…» (#15).
+ * القيمة هنا لازم **اسم بس** ([MAX_BARE_WORDS] كلمات بالكتير، من غير كلمة مش اسم — `SmsSlotWords.kt`).
+ */
+private val BARE_FIELD = Regex("^(?:(?:من|الي|to|from|عبر|ref\\. no\\.|ref no) |من(?=[\\d*•x]))(.+)$")
+private const val MAX_BARE_WORDS = 6
+
+/** رقم الفاتورة (الراجحي #29 «الفاتورة:» · إس تي سي #109 «Number:») = مرجع بس (أرقام وحروف من غير مسافة) — «الفاتورة: مستحقة بعد اسبوع» لأ. */
+private val BILL_REF = Regex("^(?:الفاتورة|number) ?: ?[a-z]{0,4}[\\d*•#][\\d*•#./\\-]{2,30}$")
+
 /** سطر لوحده: اسم بنك من القايمة · المبلغ لوحده («1,250.00 SAR») · التاريخ والساعة · «{amount} SAR :المبلغ». */
-private val BANK_LINE = Regex("^(?:$SAUDI_BANK_NAMES)$")
+private val BANK_LINE = Regex("^(?:من خلال )?(?:$SAUDI_BANK_NAMES)$") // «من خلال الإنماء» (الإنماء #71)
 private val ALONE = Regex("^(?:$MONEY|$DT|$MONEY ?: ?المبلغ)$")
 private val STATUS_DONE = Regex("^(?:status|الحالة) ?: ?(?:successful|success|completed|approved|done|ناجحة|ناجح|مكتملة|تمت|منفذة|مقبولة)$")
 
-/** خانات زيادة في قالب بنك واحد بس (السطر ده مش خانة عامة). */
+/**
+ * خانات زيادة في قالب بنك واحد بس (السطر ده مش خانة عامة). الجولة السابعة: ملاحظة «دعم حكومي» بقت **قايمة مقفولة** (كانت أي كلام
+ * عربي لحد 40 حرف: «يتم الايداع خلال يومين» · «ستودع الدفعة خلال يومين» اتسجلوا دخل).
+ */
 private val TEMPLATE_EXTRA: Map<String, Regex> = mapOf(
     "stc/fee" to Regex("^reason ?: ?(.+)$"), // #112 «Reason: {reason}»
     "stc/reversal-ar" to Regex("^في ?: ?(.+)$"), // #96 «في: <المحل>» والتاريخ في «بتاريخ:»
-    "alrajhi/deposit-government-support" to Regex("^([\\u0600-\\u06FF ]{2,40})$"), // #26 «{note}» = «حساب المواطن»
+    "alrajhi/deposit-government-support" to Regex("^((?:دعم )?(?:حساب المواطن|الضمان الاجتماعي|حافز|ساند))$"), // #26 «{note}» = «حساب المواطن»
 )
 
 /** «لـTEST» · «بـSAR 25» · «بـ:87.50» ⇒ «ل: TEST» · «ب: SAR 25» (التطويل بيتشال في [shapeKey]، فـ«لـمطعم» كانت هتبقى «لمطعم»). */
@@ -82,28 +99,93 @@ private fun keyOf(line: String): String = shapeKey(GLUED_LAM_BA.replace(line, "$
 private val CLAUSE = Regex("[()\\[\\]{}]|\\s[-–—]|[-–—]\\s|[,،]\\s*\\S|[!؟?]")
 private const val MAX_FREE_WORDS = 8
 
-/** القيمة الحرة اسم بس (مش اسم وبعده جملة حالة). */
-internal fun freeValueOk(value: String): Boolean {
+/**
+ * القيمة الحرة اسم بس (مش اسم وبعده جملة حالة): من غير جملة زيادة ([CLAUSE])، 8 كلمات بالكتير، ومن غير كلمة حالة ([hasShapeDoubt])
+ * ولا كلمة **مش اسم** ([slotWordsOk] — الجولة السابعة: «YAZEED SAMPLE wasn't completed» · «on queue» · «OKAPI FUEL 14 ESTIMATED»).
+ */
+internal fun freeValueOk(value: String, maxWords: Int = MAX_FREE_WORDS): Boolean {
     val text = value.trim()
-    return text.isNotEmpty() && !CLAUSE.containsMatchIn(text) && text.split(' ').count { it.isNotEmpty() } <= MAX_FREE_WORDS && !hasShapeDoubt(text)
+    return text.isNotEmpty() && !CLAUSE.containsMatchIn(text) && text.split(' ').count { it.isNotEmpty() } <= maxWords &&
+        !hasShapeDoubt(text) && slotWordsOk(text)
 }
 
-/** سطر واحد معروف؟ القيمة الحرة (لو فيه) لازم تبقى اسم بس ([freeValueOk]). */
-private fun knownLine(line: String, template: String?): Boolean {
-    val key = keyOf(line)
-    if (key.isEmpty()) return true
-    if (AMOUNT.matches(key) || FEE_OR_BALANCE.matches(key) || RATE_LINE.matches(key) || COUNTRY_LINE.matches(key) ||
-        DATE_FIELD.matches(key) || CARD_FIELD.matches(key) || ACCOUNT_FIELD.matches(key) || ALONE.matches(key) ||
-        STATUS_DONE.matches(key) || BANK_LINE.matches(key) || isKnownFooter(key)
-    ) {
-        return true
+/**
+ * خانة السطر المعروف لفحص «كل لابل مرة واحدة» (الجولة السابعة): [group] نوع اللابل (مبلغ · محل · من · إلى · كارت · حساب …) ·
+ * [type] نوع القيمة (رقم · بنك · اسم) · [value] القيمة. [NO_SLOT] = سطر ما بيتعدّش (تاريخ · رصيد · رسوم · تحذير …).
+ */
+private class LineSlot(val group: String, val type: String, val value: String)
+
+private val NO_SLOT = LineSlot("", "", "")
+private val NUMBER_ONLY = Regex("^[^a-z\\u0600-\\u06FF]+$")
+private val BANK_VALUE = Regex("^(?:$SAUDI_BANK_NAMES)$")
+private val MERCHANT_LABEL = Regex("^(?:لدي|عند|at|التاجر|merchant|من البائع|transaction)$")
+private val FROM_LABEL = Regex("^(?:من|from|من حساب|from account)$")
+private val TO_LABEL = Regex("^(?:الي|to|ل|المستفيد|receiver|الي حساب|لحساب)$")
+private val PRIMARY_AMOUNT = Regex("^(?:مبلغ|المبلغ|بمبلغ|القيمة|القسط|amount|ب)$")
+private val COLON_SPLIT = Regex("^(.+?) ?: ?(.+)$")
+private val SPACE_SPLIT = Regex("^(من(?=[\\d*•x])|\\S+(?: no\\.?)?) ?(.+)$")
+
+private fun groupOf(label: String): String = when {
+    MERCHANT_LABEL.matches(label) -> "merchant"
+    FROM_LABEL.matches(label) -> "from"
+    TO_LABEL.matches(label) -> "to"
+    PRIMARY_AMOUNT.matches(label) -> "amount"
+    else -> label
+}
+
+/** لابل وقيمة سطر الخانة (أول «:»، أو أول مسافة في الشكل من غير نقطتين). */
+private fun slotOfLine(key: String): LineSlot {
+    val m = (if (':' in key) COLON_SPLIT else SPACE_SPLIT).matchEntire(key) ?: return NO_SLOT
+    val value = m.groupValues[2].trim()
+    val type = when {
+        NUMBER_ONLY.matches(value) -> "number"
+        BANK_VALUE.matches(value) -> "bank"
+        else -> "name"
     }
-    val free = FREE_FIELD.matchEntire(key) ?: template?.let { TEMPLATE_EXTRA[it]?.matchEntire(key) } ?: return false
-    return freeValueOk(free.groupValues[1])
+    return LineSlot(groupOf(m.groupValues[1].trim()), type, value)
 }
 
-/** كل السطور [lines] (اللي بعد العنوان) معروفة. [template] = `<البنك>/<القالب>` لو قالب بنك (للخانات الخاصة بيه). */
-internal fun allLinesKnown(lines: List<String>, template: String?): Boolean = lines.all { knownLine(it, template) }
+/** سطر واحد معروف ⇒ خانته ([NO_SLOT] لو ما بتتعدّش)، أو null = مش معروف. القيمة الحرة (لو فيه) لازم تبقى اسم بس ([freeValueOk]). */
+private fun knownLine(line: String, template: String?): LineSlot? {
+    val key = keyOf(line)
+    if (key.isEmpty()) return NO_SLOT
+    if (AMOUNT.matches(key) || CARD_FIELD.matches(key) || ACCOUNT_FIELD.matches(key)) return slotOfLine(key)
+    if (FEE_OR_BALANCE.matches(key) || RATE_LINE.matches(key) || COUNTRY_LINE.matches(key) || DATE_FIELD.matches(key) ||
+        ALONE.matches(key) || STATUS_DONE.matches(key) || BANK_LINE.matches(key) || isKnownFooter(key) || BILL_REF.matches(key)
+    ) {
+        return NO_SLOT
+    }
+    // الجولة السابعة: السطر كله (باللابل) من غير كلمة حالة — «To be credited …» كانت بتستخبى ورا اللابل «To». خط دفاع تاني: النهارده
+    // كلمات الخانة ([slotWordsOk]) بتمسك كل حالة بيمسكها (التحوير ما لقاش رسالة بيمسكها هو لوحده)
+    if (hasShapeDoubt(key)) return null
+    FREE_FIELD.matchEntire(key)?.let { return if (freeValueOk(it.groupValues[1])) slotOfLine(key) else null }
+    BARE_FIELD.matchEntire(key)?.let { return if (freeValueOk(it.groupValues[1], MAX_BARE_WORDS)) slotOfLine(key) else null }
+    val extra = template?.let { TEMPLATE_EXTRA[it]?.matchEntire(key) } ?: return null
+    return if (freeValueOk(extra.groupValues[1])) NO_SLOT else null
+}
+
+/** سطرين مبلغ أساسي أو أكتر («Amount: …» مرتين) = أكتر من عملية في رسالة واحدة (الجولة السابعة) — القارئ بيرفضها «أكتر من مبلغ». */
+internal fun repeatedAmountLines(body: String): Boolean =
+    body.split('\n').count { line -> keyOf(line).let { AMOUNT.matches(it) && slotOfLine(it).group == "amount" } } > 1
+
+/**
+ * كل السطور [lines] (اللي بعد العنوان) معروفة **وكل لابل مرة واحدة** (الجولة السابعة): نفس اللابل مرتين بقيمتين مختلفتين من نفس
+ * النوع («Amount … At: QUOLL BAKERY … Amount … At: MARLIN TOYS» = عمليتين · «From: **7741 / From: **2290» · «إلى: ريان / إلى: سلمان»)
+ * ⇒ مش معروف (كانت أول قيمة بتكسب في صمت والتانية بتضيع). اسم + رقم حساب تحت نفس اللابل («الى:{اسم}\nالى:{حساب}» — الراجحي #19)
+ * أو اسم + بنك (إس تي سي «From {name}\nFrom {bank}») ماشي. [template] = `<البنك>/<القالب>` لو قالب بنك (للخانات الخاصة بيه).
+ */
+internal fun allLinesKnown(lines: List<String>, template: String?): Boolean {
+    val seen = HashMap<String, String>()
+    for (line in lines) {
+        val slot = knownLine(line, template) ?: return false
+        if (slot.group.isEmpty()) continue
+        val key = slot.group + "|" + slot.type
+        val before = seen[key]
+        if (before != null && before != slot.value) return false
+        seen[key] = slot.value
+    }
+    return true
+}
 
 private val ONE = Regex("^1(?:[.٫]0*)?$")
 

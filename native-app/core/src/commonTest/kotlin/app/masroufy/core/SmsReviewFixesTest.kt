@@ -121,10 +121,13 @@ class SmsReviewFixesTest {
             "تم استلام طلب سحب 300.00 جنيه من محفظتك",
         )
         val guards = listOf(TextKey.SMS_OFFER, TextKey.SMS_SENSITIVE, TextKey.SMS_DECLINED, TextKey.SMS_NOT_TRANSACTION).map { uiText(it) }
+        // الجولة السابعة: «تم خصم … - عملية معلقة لحين التسوية» فيها فعل خصم خلص ومبلغ ⇒ فلتر الجهاز بيحفظها (§72: الضياع مش مقبول)
+        // والقارئ بيرفضها بالحارس ⇒ بتستنى، ما بتتسجلش
+        val storedButRejected = setOf("تم خصم 500 جم من حسابك يوم 05/03/2026 - عملية معلقة لحين التسوية")
         for (body in guarded) {
             val r = assertIs<SmsParseResult.Rejected>(egypt(body), body)
             assertTrue(r.reason in guards, "$body: rejected by accident («${r.reason}»), not by a guard")
-            assertTrue(SmsVocabulary.ignoreBeforeStorage(body), "device filter keeps: $body")
+            assertTrue(SmsVocabulary.ignoreBeforeStorage(body) != (body in storedButRejected), "device filter: $body")
         }
         // من غير حارس: رسالة من غير تاريخ ومن غير عبارة «عملية خلصت» ما بتاخدش يوم الوصول
         val promo = assertIs<SmsParseResult.Rejected>(egypt("Use your debit card at TEST GROCER and save EGP 50"))

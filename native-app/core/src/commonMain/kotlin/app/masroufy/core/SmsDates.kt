@@ -123,7 +123,9 @@ internal fun hasDateToken(body: String): Boolean =
  */
 private val DONE_PHRASE = Regex(
     "(?<![\\u0600-\\u06FF])و?تم(?![\\u0600-\\u06FF])|إيداع|ايداع|(?<![A-Za-z])(?:has|have)[ \\t]+been(?![A-Za-z])" +
-        "|(?<![A-Za-z])(?:received|credited|debited|deducted|returned|refunded|recharged|charged)(?![A-Za-z])|(?<![A-Za-z])successful",
+        "|(?<![A-Za-z])(?:received|credited|debited|deducted|returned|refunded|recharged|charged)(?![A-Za-z])|(?<![A-Za-z])successful" +
+        // الجولة السابعة: صيغ المحافظ («وصلتك 450 ج.م» · «دفعت 95 جنيه» · «بعتّ 275 جنيه» · «You sent EGP 820.00») — كانت «التاريخ مش واضح»
+        "|(?<![\\u0600-\\u06FF])(?:وصلتك|وصلتلك|وصلك|اتحولك|اترجعلك|دفعت|بعتّ?)(?![\\u0600-\\u06FF])|(?<![A-Za-z])(?:sent|paid)(?![A-Za-z])",
     RegexOption.IGNORE_CASE,
 )
 

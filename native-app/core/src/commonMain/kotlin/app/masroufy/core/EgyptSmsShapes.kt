@@ -41,7 +41,9 @@ internal val EGYPT_LOCAL = LocalCurrency("EGP", EG_CURRENCY)
 
 /** الكلام بين المبلغ اللي قبله والمبلغ ده فيه كلمة من دول ⇒ ده رصيد أو رسوم أو حد أو قسط، مش مبلغ العملية. */
 private val NOT_THE_AMOUNT = Regex(
-    "المتاح|متاح|رصيد|الرصيد|balance|available|${B}bal$B|limit|الحد|مصاريف|رسوم|عمولة|${B}fees?$B|قسط|installment|الأدنى|minimum" +
+    // الجولة السابعة: «تم سداد القسط بمبلغ 550 جنيه» — المبلغ المدفوع نفسه (القسط اللي بعد «سداد/تسديد») مش رقم تاني · «pending EGP 0.00»
+    "المتاح|متاح|رصيد|الرصيد|balance|available|${B}bal$B|limit|الحد|مصاريف|رسوم|عمولة|${B}fees?$B|(?<!سداد )(?<!سداد ال)(?<!تسديد ال)قسط|installment" +
+        "|الأدنى|minimum|${B}pending$B|معلق" +
         // الجولة الخامسة: «تكلفة الخدمة 1.50 جنيه» · «incl. VAT EGP 42.00» كانوا بيبقوا مبلغ العملية لما المبلغ نفسه من غير عملة أو اتساب
         "|تكلفة|ضريبة|${B}VAT$B|${B}tax$B",
     EI,
@@ -157,7 +159,9 @@ private val REVERSED = Regex(
 private val MONEY_BACK = Regex("استرداد|استرجاع|${B}refunded$B", EI)
 /** كلمات الوارد — بحدود كلمة («non-refundable» · «TEST HOTEL DEPOSIT» جوه كلمة تانية ما تتحسبش). */
 private val IN_VERB = Regex(
-    "$TM$H*استلام|$TM$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|[إا]يداع",
+    "$TM$H*استلام|$TM$H*(?:إضافة|اضافة)|${B}received$B|${B}credited$B|${B}deposit(?:ed)?$B|${B}salary$B|${B}refund(?:ed)?$B|[إا]يداع" +
+        // الجولة السابعة: «وصلتك 450 ج.م» · «اتحولك 300 جنيه» · «اترجعلك» · «Cash in of EGP 800.00» (كانت «الاتجاه مش واضح»)
+        "|(?<![\\u0600-\\u06FF])(?:وصلتك|وصلتلك|وصلك|اتحولك|اتحولّك|اترجعلك)(?![\\u0600-\\u06FF])|${B}cash$H*in$B",
     EI,
 )
 
@@ -165,7 +169,11 @@ private val IN_VERB = Regex(
 private val DEBIT_VERB = Regex(
     "$TM$H*خصم|$TM$H*سحب|$TM$H*شحن|$TM$H*سداد|${B}charged$B|${B}Trx$H+using|recharged|transfer$H+sent|(?<![\\u0600-\\u06FF])اتخصم" +
         // الجولة السادسة: «You paid USD 12.99 to …» · «EGP 640.00 was spent» (كارت المحفظة — الأجنبي كان بيستنى من غير تفاصيل)
-        "|${B}(?:paid|spent)$B",
+        "|${B}(?:paid|spent)$B" +
+        // الجولة السابعة: «تم دفع فاتورة …» · «دفعت 95 جنيه» · «You sent EGP 820.00» · «Transfer of EGP 500.00 to …» · «Your payment of EGP 312.40»
+        // («an IPN transfer of … to account» = وارد — «Transfer of» لازم أول الكلام، مش بعد كلمة تانية)
+        "|$TM$H*دفع|(?<![\\u0600-\\u06FF])دفعت(?![\\u0600-\\u06FF])|${B}you$H+(?:have$H+)?sent$B|(?<![A-Za-z]$H)${B}transfer$H+of$B[^\\n]{0,40}?${B}to$B" +
+        "|${B}payment$H+of$B",
     EI,
 )
 

@@ -45,6 +45,8 @@ private val GROUPING = Regex("^\\d{1,3}(?:[,٬]\\d{3})+(?:[.٫]\\d{1,2})?$|^\\d+
 private val SPACE_GROUP_BEFORE = Regex("(?<![\\d:/.\\\\-])\\d{1,3}$H$")
 private val SPACE_GROUP_AFTER = Regex("^$H\\d{3}(?!\\d)")
 
+private val MOVED_BEFORE = Regex("(?<![A-Za-z])(?:received|sent)$H+$", RegexOption.IGNORE_CASE)
+
 private sealed interface Side
 private data class Num(val start: Int, val end: Int, val number: String, val glued: Boolean = false, val goldenDot: Boolean = false) : Side
 private data class Bad(val start: Int, val end: Int) : Side
@@ -102,7 +104,8 @@ private fun after(line: String, tokenStart: Int, tokenEnd: Int, style: AmountSty
     val glued = m.groupValues[1].isEmpty()
     return when {
         next != null && next in ":/\\-" && isDigit(next2) -> null // تاريخ أو ساعة
-        glued && number.length >= 5 && number.all(::isDigit) -> null // «SR2026030512» رقم مرجع
+        // «SR2026030512» رقم مرجع — إلا بعد «Received/Sent» على طول (فودافون كاش «Received EGP12500» — الجولة السابعة، مصر بس)
+        glued && number.length >= 5 && number.all(::isDigit) && !(style == AmountStyle.EGYPT && MOVED_BEFORE.containsMatchIn(line.substring(0, tokenStart))) -> null
         isDigit(next) -> Bad(tokenStart, end) // كسور أكتر من منزلتين («SAR 1.234,50» · «SAR 12.345»)
         next != null && !plainNeighbour(next) && isDigit(next2) -> Bad(tokenStart, end) // «SAR 1,234.5,0» · «SAR 1'234.50»
         !wellGrouped(number) -> Bad(tokenStart, end)

@@ -58,6 +58,19 @@ internal fun foldHiddenText(text: String): String {
  */
 internal fun withoutTashkeel(text: String): String = text.filterNot { it.code in 0x064B..0x065F || it.code == 0x0670 }
 
+/**
+ * الجولة السابعة — **علامات قلب الاتجاه** (bidi override): U+202D (LRO) و U+202E (RLO) بيعرضوا الكلام **بالمقلوب**، فالنص اللي المالك
+ * شايفه غير النص اللي القارئ بيقراه: «SAR ‮06.84‬» بتتعرض 48.60 واتسجلت 6.84 · «QUOLL BAKERY ‮DENILCED‬» بتتعرض DECLINED واتسجلت
+ * شراء. القارئ **بيرفض** الرسالة دي ([hasBidiOverride] — مش هيقرا رقم أو كلمة المالك شايفها بشكل تاني). علامات التضمين U+202A/U+202B
+ * ما بتقلبش الحروف بس البنوك ما بتبعتهاش ⇒ الرسالة **تستنى** ([BIDI_EMBEDDING]). العلامات العادية (LRM · RLM · ALM · العزل U+2066…2069 ·
+ * PDF U+202C) زي ما هي.
+ */
+private val BIDI_OVERRIDE = setOf(0x202D, 0x202E)
+private val BIDI_EMBEDDING = setOf(0x202A, 0x202B, 0x202D, 0x202E)
+
+/** فيها علامة قلب اتجاه (LRO/RLO) ⇒ القارئ بيرفضها (الكلام المعروض غير المقروء). */
+internal fun hasBidiOverride(raw: String): Boolean = raw.any { it.code in BIDI_OVERRIDE }
+
 /** رمز الريال (U+FDFC) جوه كتلة أشكال العرض (أ) — مش حرف متشكل. */
 private const val RIAL_SIGN = 0xFDFC
 
@@ -67,6 +80,7 @@ private const val RIAL_SIGN = 0xFDFC
  */
 internal fun hasHiddenOrPresentationChars(raw: String): Boolean {
     for ((i, c) in raw.withIndex()) {
+        if (c.code in BIDI_EMBEDDING) return true
         if (c.code in BIDI_CODES || (i == 0 && c.code == 0xFEFF)) continue
         if (isHiddenFormat(c) || isTagPair(raw, i)) return true
         if ((c.code in 0xFB50..0xFDFF && c.code != RIAL_SIGN) || c.code in 0xFE70..0xFEFC) return true

@@ -569,4 +569,6 @@ enum class TextKey {
     SMS_WAIT_UNKNOWN_SHAPE,
     // الجولة السادسة: الرسالة بتقول حساب تاني من حسابات المالك (مش حساب محفظة البنك ده) ⇒ بتستنى — القيم في `TextsSmsAuto.kt`
     SMS_WAIT_OTHER_ACCOUNT,
+    // الجولة السابعة: الاسترداد (§75-6) والسحب من الصرّاف (§75-4) بيستنوا التأكيد · رسالة فيها علامة قلب اتجاه بتترفض — القيم في `TextsSmsAuto.kt`
+    SMS_WAIT_REFUND, SMS_WAIT_CASH_WITHDRAWAL, SMS_HIDDEN_TEXT, SMS_OTHER_COUNTRY,
 }

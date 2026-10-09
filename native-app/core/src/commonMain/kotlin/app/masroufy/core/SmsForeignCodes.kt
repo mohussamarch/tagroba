@@ -44,6 +44,10 @@ internal const val FOREIGN_NUMBER = "\\d(?:[\\d,٬]*\\d)?(?:[.٫]\\d+)?"
 
 private val GROUPED = Regex("^\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?$|^\\d+(?:\\.\\d+)?$")
 
+/** عملات من غير كسور (ISO 0) + الروبية الإندونيسية (كسورها مش مستعملة): النقطة فيها فاصل آلاف («1.250.000»). */
+private val DOT_THOUSANDS = ZERO_DECIMALS + "IDR"
+private val DOT_GROUPED = Regex("^\\d{1,3}(?:\\.\\d{3})+$")
+
 /**
  * المبلغ بالوحدة الصغرى **بتاعة العملة نفسها** («KWD 12.345» = 12345 فلس · «JPY 4500» = 4500 ين) — من غير أي عملية عشرية.
  * فواصل غلط («64,25») أو كسور أكتر من العملة («USD 1.234») ⇒ null (ما بنخمّنش).
@@ -51,6 +55,11 @@ private val GROUPED = Regex("^\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?$|^\\d+(?:\\.\\d+)
 internal fun parseForeignMinor(raw: String, code: String): Long? {
     val decimals = foreignDecimals(code)
     val text = raw.replace('٬', ',').replace('٫', '.')
+    // الجولة السابعة: «Rp 150.000» · «JPY 4.500» — العملات اللي من غير كسور مستعملة بتتجمع بالنقطة: «150.000» = 150,000 (كانت 150.00)
+    if (code.uppercase() in DOT_THOUSANDS && DOT_GROUPED.matches(text)) {
+        val whole = text.replace(".", "")
+        return if (whole.length + decimals > 15) null else (whole + "0".repeat(decimals)).toLong()
+    }
     if (!GROUPED.matches(text)) return null
     val plain = text.replace(",", "")
     val intPart = plain.substringBefore('.')
