@@ -193,7 +193,7 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
             k == SmsKind.PURCHASE && CASH_MERCHANT.containsMatchIn(saudiMerchantOf(body, k)) -> SmsKind.CASH_WITHDRAWAL
             else -> k
         }
-    }
+    }.let { refineSmsKind(body, it, direction) } // عقد C0 (§77-D — `SmsReturned.kt`)
     // الجولة السادسة: العملة بتتعرف من غير التشكيل («9.50 ريال عُماني» كانت بتتقري ريال سعودي) — الوصف والبصمة من النص الأصلي
     val plain = withoutTashkeel(body)
     val read = when (val a = saudiAmount(plain, direction)) {
@@ -210,5 +210,9 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction, read.amountMinor), body, kind, dated == null)
     val arrival = localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS)
     val gated = gateShape(if (swappedDateNearArrival(body, date, arrival)) SmsShape.KeywordFallback else shape, body, date, arrival, message.body)
-    return smsRow(message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated)
+    // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها
+    return smsRow(
+        message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated,
+        fee = saudiFeeOf(body, kind, read.amountMinor), bankReference = smsReferenceOf(body), learnKey = saudiLearnKey(body, gated),
+    )
 }

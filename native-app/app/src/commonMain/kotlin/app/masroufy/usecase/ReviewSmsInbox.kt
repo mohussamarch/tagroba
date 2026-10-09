@@ -65,6 +65,8 @@ data class SmsReviewLine(
      * الشاشة بتعرضها جاهزة (متعبّية) و«سجّل الكل» بيسجلها — ضغطة المالك هي التأكيد.
      */
     val confirmReason: String? = null,
+    /** عقد C0: نوع العملية زي ما الرسالة بتقوله (دليل — [SmsKind]). */
+    val kind: SmsKind = SmsKind.OTHER,
 )
 
 data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)
@@ -84,48 +86,6 @@ data class SmsReview(
     /** كل التصنيفات (حتى المخفية) عشان اسم ولون تصنيف قديم يبان؛ الاختيار من الظاهر بس. */
     val categories: List<Category>,
 )
-
-/**
- * `accountIdentity` = اسم المحفظة — نطاق تفرّد المرجع، زي شاشة الاستيراد. [currency] = عملة المحفظة: من غيرها رسايل QNB مصر
- * كانت هتتسجل بالريال (الاستيراد افتراضيه ريال) — اتكشف في جلسة 31. الافتراضي ريال عشان ملفات المرجع والتطبيق الحالي.
- */
-data class SmsReviewTarget(
-    val walletId: Id,
-    val accountIdentity: String,
-    val currency: Currency = Currency.SAR,
-    /** آخر 4 أرقام حساب المحفظة دي (لو مكتوبة). */
-    val accountLast4: String? = null,
-    /**
-     * آخر 4 أرقام حسابات المالك **التانية** في نفس البلد (الجولة السادسة): الرسالة اللي أرقام حسابها واحد منهم ومش المحفظة دي ⇒ ما
-     * بتتسجلش لوحدها في المحفظة دي (كانت بتتسجل في محفظة البنك المربوط لمجرد إن المرسل نفسه) — بتستنى ومعاها سببها.
-     */
-    val otherAccountsLast4: Set<String> = emptySet(),
-)
-
-/** الرسالة بتقول حساب تاني من حسابات المالك (مش حساب المحفظة دي). */
-private fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
-    val own = row.ownLast4 ?: return false
-    return own in otherAccountsLast4 && own != accountLast4
-}
-
-/**
- * سبب إن رسالة **شكلها معروف** ما تتسجلش لوحدها، أو null: حساب تاني من حسابات المالك (الجولة السادسة) · **استرداد** (§75-6 ✗ — قرار
- * المالك: «الاسترداد ⇒ يقترح «استرداد» ويستنى تأكيده»؛ كان بيتسجل لوحده زي أي عملية) · **سحب كاش** (§75-4 — النقل لمحفظة الكاش لسه ما
- * اتبناش، فكان بيتسجل صرف عادي من البنك من غير ما يروح الكاش). الجولة السابعة.
- */
-private fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
-    target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
-    row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
-    row.kind == SmsKind.CASH_WITHDRAWAL -> TextKey.SMS_WAIT_CASH_WITHDRAWAL
-    // الجولة التامنة: فلوس **داخلة على كارت ائتمان** («Credit Card Credited» · «تم قيد مبلغ … لبطاقتك الائتمانية») مش دخل لحساب البنك — كانت
-    // بتتسجل داخل المحفظة وتلغي خصم «Credit Card Payment» فالرصيد يزيد بمبلغ السداد كله. إلا لو المحفظة دي **هي** الكارت (أرقامها نفس الكارت)
-    row.kind == SmsKind.CARD_PAYMENT && row.direction == Direction.IN && (row.ownLast4 == null || row.ownLast4 != target.accountLast4) ->
-        TextKey.SMS_WAIT_CARD_CREDIT
-    // الجولة التامنة: إيداع كاش = نقل من محفظة الكاش (§75-4 بالعكس، لسه ما اتبناش) — كان بيتسجل دخل للبنك والسحب بيستنى · شراء ومعاه كاش
-    row.kind == SmsKind.CASH_DEPOSIT -> TextKey.SMS_WAIT_CASH_DEPOSIT
-    row.kind == SmsKind.PURCHASE_WITH_CASH -> TextKey.SMS_WAIT_PURCHASE_CASH
-    else -> null
-}
 
 /** اللي بيترفع للقايمة المشتركة (OVERRIDES §25) — المصروف بس. */
 data class MerchantContribution(val economicKind: EconomicKind, val observedDirection: Direction, val rawMerchantName: String)
@@ -189,6 +149,7 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
             schema = SchemaId.SMS,
             parsedRows = rows.map { it.toParsedRow() },
             currency = target.currency,
+            smsRows = rows.associateBy { it.lineNumber },
         )
         val preview = deps.importer.preview(request)
         session = Session(request, preview, messageByLine, shapeByLine)
@@ -207,6 +168,7 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
                 reason = line.reason,
                 shape = shape,
                 confirmReason = if (shape.clear) null else waitByLine[line.row.lineNumber] ?: uiText(TextKey.SMS_WAIT_UNKNOWN_SHAPE),
+                kind = request.smsRows[line.row.lineNumber]?.kind ?: SmsKind.OTHER,
             )
         }
         val newestFirst = Comparator<SmsReviewLine> { a, b -> if (a.date != b.date) b.date.compareTo(a.date) else b.lineNumber - a.lineNumber }
@@ -255,7 +217,8 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
         var recorded = 0
         var batchId: Id? = null
         if (selection.isNotEmpty()) {
-            val batch = deps.importer.commit(current.request, current.preview, selection, categories)
+            // عقد C0: التسجيل التلقائي مش تسجيل المالك (الآثار اللي بتفرّق بينهم بتبص على `byOwner`)
+            val batch = deps.importer.commit(current.request.copy(byOwner = !clearOnly), current.preview, selection, categories)
             if (current.preview.previousBatch?.id != batch.id) {
                 recorded = selection.size
                 batchId = batch.id

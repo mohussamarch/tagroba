@@ -17,6 +17,7 @@ import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
 import app.masroufy.core.importFingerprint
 import app.masroufy.core.uiText
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * ImportStatement — نقل `importStatement.ts`: قراءة الكشف، منع التكرار، إنشاء الدفعة.
@@ -77,16 +78,21 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             }
         }
 
-        return deps.uow.run {
+        var context: RecordContext? = null
+        val committed = deps.uow.run {
             val batchId = deps.ids.next("batch")
             val now = deps.clock.nowIso()
             val transactions = mutableListOf<Transaction>()
             val records = mutableListOf<SourceRecord>()
+            val includedLines = mutableListOf<ImportPreviewLine>()
 
             for (line in previewResult.lines) {
                 val included = line.row.lineNumber in selection
                 val txnId = if (included) deps.ids.next("txn") else null
-                if (txnId != null) transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
+                if (txnId != null) {
+                    transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
+                    includedLines += line
+                }
 
                 records += SourceRecord(
                     id = deps.ids.next("src"),
@@ -140,12 +146,36 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now)
             }
 
+            // عقد C0: آثار وقت التسجيل بالترتيب (`RecordEffects.kt`) على العمليات **بعد** القرارين اللي فوق — والزيادة بتتحفظ مع الدفعة
+            if (deps.effects.isNotEmpty()) {
+                val lines = includedLines.indices.map { i -> RecordedLine(includedLines[i], request.smsRows[includedLines[i].row.lineNumber], transactions[i]) }
+                val ctx = RecordContext(request, batchId, now, request.byOwner, chosenCategories.orEmpty(), lines.toMutableList(), mutableListOf(), deps.ids)
+                for (effect in deps.effects) effect.prepare(ctx)
+                transactions.clear()
+                transactions += ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
+                records += ctx.extra.map { it.second }
+                context = ctx
+            }
+
             deps.batches.save(batch) // ١
             deps.sources.saveMany(records) // ٢ — الفهرس الأول
             deps.txns.saveMany(transactions) //     وبعده العمليات
             deps.batches.updateState(batchId, ImportBatchState.COMMITTED) // ٣
 
             batch.copy(state = ImportBatchState.COMMITTED)
+        }
+        context?.let { ctx -> for (effect in deps.effects) afterCommitIsolated(effect, ctx) }
+        return committed
+    }
+
+    /** الدفعة اتقفلت خلاص ⇒ فشل أثر بعد الحفظ ما بيرجّعش حاجة (الشرائح اللي بتستعمله ليها تصليح ولحاق بعدين). */
+    private suspend fun afterCommitIsolated(effect: RecordEffect, ctx: RecordContext) {
+        try {
+            effect.afterCommit(ctx)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // مقصود: الأثر بعد الحفظ اختياري
         }
     }
 
