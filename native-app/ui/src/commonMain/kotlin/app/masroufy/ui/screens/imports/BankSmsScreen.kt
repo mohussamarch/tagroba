@@ -76,8 +76,8 @@ fun BankSmsScreen() {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            // ما بنعرضش «القراءة تعمل» من غير ما نعرف — الحالة بتفضل null والخطأ بسببه بس (قاعدة 10)
             failure = e.message ?: t(TextKey.IMPORTS_LOAD_FAILED)
-            if (ui == null) ui = BankSmsUi(SmsStatus.READING)
         }
     }
 
@@ -128,7 +128,7 @@ fun BankSmsScreen() {
         item(key = "status") {
             SmsStatusBanner(u?.status, onSettings = { nav.push(BankSmsSettingsRoute) }, onPaste = { nav.push(SmsPasteRoute) })
         }
-        if (u == null) {
+        if (u == null && failure == null) {
             item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(120.dp))
@@ -146,6 +146,7 @@ fun BankSmsScreen() {
                 }
             }
         }
+        if (u == null) return@InnerScaffold
         if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.waitingCount > 0)) {
             item(key = "waiting") { SmsWaitingSection(u, currency, categories, chosen, included, busy, handError, actions) }
         }
