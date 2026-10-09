@@ -100,6 +100,7 @@ class WiringSmokeTest {
         val bell = shell.bell()
         assertEquals(1, bell.unread)
         assertEquals(setOf(Tab.OPERATIONS), bell.dots, "رسايل البنك ⇒ نقطة على العمليات")
+        assertEquals(Tab.OPERATIONS, bell.items.single().tab, "السطر شايل تبويبه ⇒ مسحه بـ«×» بيشيل النقطة")
         shell.markAllRead()
         val read = shell.bell()
         assertEquals(0, read.unread)

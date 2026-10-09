@@ -58,7 +58,7 @@ class ShellGraph(
         val seen = env.seenAlerts.read()
         val items = engine.inbox().map { v ->
             val unread = v.entry.openedAt == null && v.entry.threadKey !in seen && !v.muted
-            BellItem(v.entry.threadKey, v.entry.title, v.group, toneOf(v.entry.kind), unread)
+            BellItem(v.entry.threadKey, v.entry.title, v.group, toneOf(v.entry.kind), unread, tabOf(v.entry.kind))
         }
         val unread = items.filter { it.unread }
         val kinds = engine.inbox().filter { v -> unread.any { it.threadKey == v.entry.threadKey } }.map { it.entry.kind }
@@ -86,9 +86,11 @@ internal fun toneOf(kind: AlertKind): BellTone = when (kind.group) {
  * النقط الحمرا على التبويبات (OVERRIDES §76 ٣): **العمليات** من رسايل البنك وأسئلة المراجعة · **الأشخاص** من المواعيد اللي فاتت والمناسبات.
  * اختيار Claude للربط بالأنواع (المالك يقدر يغيّره). «تعليم الكل كمقروء» بيشيلها.
  */
-internal fun dotsOf(kinds: List<AlertKind>): Set<Tab> = buildSet {
-    for (k in kinds) when {
-        k.group == AlertGroup.BANK_SMS || k.group == AlertGroup.QUESTIONS -> add(Tab.OPERATIONS)
-        k == AlertKind.DUE_OVERDUE || k.group == AlertGroup.OCCASIONS -> add(Tab.PEOPLE)
-    }
+internal fun dotsOf(kinds: List<AlertKind>): Set<Tab> = kinds.mapNotNull(::tabOf).toSet()
+
+/** التبويب اللي بياخد نقطة النوع ده (null = مالوش نقطة) — نفس ربط [dotsOf]. */
+internal fun tabOf(k: AlertKind): Tab? = when {
+    k.group == AlertGroup.BANK_SMS || k.group == AlertGroup.QUESTIONS -> Tab.OPERATIONS
+    k == AlertKind.DUE_OVERDUE || k.group == AlertGroup.OCCASIONS -> Tab.PEOPLE
+    else -> null
 }

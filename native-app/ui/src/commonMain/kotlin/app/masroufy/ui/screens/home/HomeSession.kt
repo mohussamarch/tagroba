@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.masroufy.ui.app.BellState
 
 /**
  * اختيارات **على الجهاز للجلسة دي بس** (زي `sessionStorage` في النموذج) — مش بيانات، ومش بتتحفظ بعد ما التطبيق يتقفل.
@@ -69,7 +70,7 @@ class Dismissals {
     }
 
     companion object {
-        private val bySpace = HashMap<String, Dismissals>()
+        private val bySpace = mutableMapOf<String, Dismissals>()
 
         /** نفس الحالة في صفحة الإشعارات ونافذة الجرس للبلد دي. */
         fun of(spaceId: String): Dismissals = bySpace.getOrPut(spaceId) { Dismissals() }
@@ -77,4 +78,15 @@ class Dismissals {
         /** مدة «تراجع» (قرار المالك: ٤ ثواني). */
         const val UNDO_MS = 4_000L
     }
+}
+
+/**
+ * الجرس بعد «×» (قرار المالك 2026-10-09): الممسوح بيختفي من النافذة، وما بيتعدّش في «جديد»، و**بيشيل نقطة تبويبه** لو مفيش غيره
+ * (النقطة من السطور اللي لسه ما اتقرتش وليها تبويب — `BellItem.tab`). مفيش ممسوح ⇒ الحالة زي ما هي.
+ */
+fun BellState.without(gone: Set<String>): BellState {
+    if (gone.isEmpty()) return this
+    val left = items.filter { it.threadKey !in gone }
+    val unread = left.filter { it.unread }
+    return BellState(left, unread.size, unread.mapNotNull { it.tab }.toSet())
 }

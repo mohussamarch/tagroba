@@ -62,22 +62,23 @@ fun HomeScreen() {
     val gone = Dismissals.of(deps.space.id).goneKeys
     LaunchedEffect(deps, tick) {
         me = runCatching { shell.me() }.getOrNull()
-        load = loadHome(deps, gone)
+        load = loadHome(deps)
     }
     TabScaffold(t(TextKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
         when (val s = load) {
             HomeLoad.Loading -> item(key = "loading") { HomeSkeleton() }
             HomeLoad.Failed -> item(key = "failed") { HomeErrorBanner { load = HomeLoad.Loading; tick++ } }
             is HomeLoad.Ready -> {
+                // حساب جديد خالص ⇒ الشاشة الفاضية لوحدها (النموذج: حالة «فاضي» من غير البطاقة ولا «القادم»)
                 if (isBrandNew(s.now, s.month)) {
                     item(key = "empty") { EmptyState(t(TextKey.HOME_EMPTY_TITLE), t(TextKey.HOME_EMPTY_BODY)) }
                 } else {
                     item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }) }
                     if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard() }
-                    else s.advisor?.let { card -> item(key = "advisor") { AdvisorCardView(card) } }
+                    else s.inbox?.let { advisorCardOf(it, gone) }?.let { card -> item(key = "advisor") { AdvisorCardView(card) } }
+                    item(key = "upcoming") { UpcomingSection() }
+                    if (s.profileCard) item(key = "profile") { ProfileCardView() }
                 }
-                item(key = "upcoming") { UpcomingSection() }
-                if (s.profileCard) item(key = "profile") { ProfileCardView() }
             }
         }
     }
@@ -88,7 +89,7 @@ fun HomeScreen() {
  * قراية الرئيسية: «معك الآن» (لازم) ثم الشهر (يوم الراتب ⇒ الفترة ⇒ `LoadHomeScreen` + الراتب الجاي من `LoadCalendar.summary`) ثم صفحة
  * الإشعارات (كارت المساعد) والملف (كارت «كمّل ملفك»). أي جزء غير «معك الآن» يفشل ⇒ مكانه «غير متاح»/مخفي، مش الشاشة كلها.
  */
-internal suspend fun loadHome(deps: SpaceDeps, gone: Set<String>): HomeLoad {
+internal suspend fun loadHome(deps: SpaceDeps): HomeLoad {
     val now = runCatching { deps.shell.withYouNow() }.getOrElse { return HomeLoad.Failed }
     val today = deps.shell.today()
     val home = deps.home
@@ -99,8 +100,8 @@ internal suspend fun loadHome(deps: SpaceDeps, gone: Set<String>): HomeLoad {
         val next = runCatching { home.calendar.summary(today).untilPayday?.nextPayday }.getOrNull()
         homeMonthOf(data, next)
     }.getOrNull()
-    val advisor = runCatching { advisorCardOf(home.alerts.inbox(), gone) }.getOrNull()
-    return HomeLoad.Ready(now, month, advisor, profileCard = profile != null && nextProfileCard(profile) != null)
+    val inbox = runCatching { home.alerts.inbox() }.getOrNull()
+    return HomeLoad.Ready(now, month, inbox, profileCard = profile != null && nextProfileCard(profile) != null)
 }
 
 /** رأس الرئيسية (KOTLIN-MAP §٣): دايرتك 46 ⇒ «ملفك» · التحية 18 + شارة البلد حرفين والتاريخ 12 · الجرس 48 · الترس 48 آخر حاجة على الشمال. */

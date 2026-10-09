@@ -37,6 +37,8 @@ import app.masroufy.ui.overlay.LocalBackdrop
 import app.masroufy.ui.overlay.LocalOverlayHost
 import app.masroufy.ui.overlay.OverlayHost
 import app.masroufy.ui.overlay.OverlayLayer
+import app.masroufy.ui.screens.home.Dismissals
+import app.masroufy.ui.screens.home.without
 import app.masroufy.ui.shell.AddOperationSheet
 import app.masroufy.ui.shell.BottomBars
 import app.masroufy.ui.shell.LocalToaster
@@ -84,6 +86,9 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     var bellTick by remember { mutableStateOf(0) }
     var bell by remember(deps) { mutableStateOf<BellState?>(null) }
     LaunchedEffect(deps, bellTick) { bell = runCatching { deps.shell.bell() }.getOrNull() }
+    // «×» على إشعار بيشيله من الجرس ومن عدّ «جديد» ومن نقطة تبويبه (قرار المالك 2026-10-09) — المسح للجلسة دي (`Dismissals`)
+    // لحد ما حفظه مع الحساب يتوصل من فرع `assistant-engine`
+    val shownBell = bell?.without(Dismissals.of(deps.space.id).goneKeys)
     CompositionLocalProvider(
         LocalNavigator provides nav,
         LocalRegistry provides registry,
@@ -91,7 +96,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
         LocalBackdrop provides backdrop,
         LocalSpace provides deps,
         LocalToaster provides shell.toaster,
-        LocalBell provides BellHolder(bell) { bellTick++ },
+        LocalBell provides BellHolder(shownBell) { bellTick++ },
     ) {
         Box(Modifier.fillMaxSize()) {
             // الخلفية **جوه** المتسجل: النسخة المموّهة لازم تبقى معتمة عشان تغطي الأصل — من غيرها النص اللي على الخلفية كان بيبان حاد
@@ -103,7 +108,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
             // صفحة الشات بتغطي الشاشة كلها ومستطيل الكتابة مكان الشريطين (النموذج: `AssistantChat` — `inset 0`) ⇒ الشريطين بيستخبوا وهي مفتوحة
             if (nav.atTabRoot && ask == null) {
                 BottomBars(
-                    current = nav.tab, dots = bell?.dots.orEmpty(), backdrop = backdrop, onTab = nav::switchTab,
+                    current = nav.tab, dots = shownBell?.dots.orEmpty(), backdrop = backdrop, onTab = nav::switchTab,
                     onAdd = { adding = true }, onAsk = { ask = false }, onMic = { ask = true },
                 )
             }

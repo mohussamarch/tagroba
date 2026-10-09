@@ -45,8 +45,11 @@ data class MeInfo(val displayName: String?, val profilePercent: Int?, val lookIn
 /** بلد في لوحة التبديل: «معك الآن» بعملتها (null = غير متاح). */
 data class SpaceChoice(val space: Space, val withYouNowMinor: Halalas?, val currency: Currency, val active: Boolean)
 
-/** سطر في نافذة الجرس (عرض بس — الأفعال في صفحة الإشعارات الكاملة). [unread] = لسه ما اتقراش. */
-data class BellItem(val threadKey: String, val title: String, val subtitle: String, val tone: BellTone, val unread: Boolean)
+/**
+ * سطر في نافذة الجرس (عرض بس — الأفعال في صفحة الإشعارات الكاملة). [unread] = لسه ما اتقراش. [tab] = التبويب اللي بياخد النقطة الحمرا منه
+ * (null = مالوش نقطة) — عشان مسح الإشعار بـ«×» يشيل نقطة تبويبه (قرار المالك 2026-10-09).
+ */
+data class BellItem(val threadKey: String, val title: String, val subtitle: String, val tone: BellTone, val unread: Boolean, val tab: Tab? = null)
 
 /** لون نقطة السطر بالمجموعة. */
 enum class BellTone { PRIMARY, TRANSFER, EXPENSE, ALERT }

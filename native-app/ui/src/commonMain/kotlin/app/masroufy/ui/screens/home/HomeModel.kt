@@ -34,7 +34,8 @@ sealed interface HomeLoad {
 
     data object Failed : HomeLoad
 
-    data class Ready(val now: WithYouNow, val month: HomeMonth?, val advisor: AdvisorCard?, val profileCard: Boolean) : HomeLoad
+    /** [inbox] = صفحة الإشعارات (null = ما اتقرتش) — كارت المساعد بيتختار منها وقت العرض عشان «×» يخفيه على طول. */
+    data class Ready(val now: WithYouNow, val month: HomeMonth?, val inbox: List<AlertInboxView>?, val profileCard: Boolean) : HomeLoad
 }
 
 /** كارت المساعد (§68 — زي «القهوة هذا الشهر» في النموذج): **آخر سطر من مجموعة المساعد** في صفحة الإشعارات، مش كلام مخترع. */
