@@ -34,6 +34,8 @@ class SmsLane private constructor(
     internal val review: ReviewSmsInbox,
     internal val wallets: WalletRepository,
     internal val sources: SourceRecordRepository,
+    /** عقد C0: نفس المستورد اللي جوه [review] (الآثار والسجلات). */
+    internal val importer: ImportStatement,
 ) {
     companion object {
         /**
@@ -43,8 +45,9 @@ class SmsLane private constructor(
          */
         fun of(spaceId: String, importDeps: ImportStatementDeps, inbox: ManageSmsInbox, wallets: WalletRepository): SmsLane {
             require(importDeps.transferParties != null) { "SMS lane needs the transfer-party decisions (OVERRIDES §60/§72)" }
-            val review = ReviewSmsInbox(ReviewSmsInboxDeps(inbox, ImportStatement(importDeps), importDeps.merchants, importDeps.categories, importDeps.ids))
-            return SmsLane(spaceId, review, wallets, importDeps.sources)
+            val importer = ImportStatement(importDeps)
+            val review = ReviewSmsInbox(ReviewSmsInboxDeps(inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids))
+            return SmsLane(spaceId, review, wallets, importDeps.sources, importer)
         }
     }
 }
@@ -104,7 +107,8 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         // الجولة السادسة: آخر 4 أرقام حسابات المالك التانية في البلد — رسالة عن واحد منهم ما بتتسجلش لوحدها في المحفظة دي (رد المالك ١
         // «محفظة لكل بنك» كان مفترض حساب واحد للبنك؛ سؤال مفتوح للمالك في OVERRIDES §72.3)
         val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
-        return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others)
+        val cash = all.filter { it.kind == "cash" }.singleOrNull()?.id // عقد C0 (§75-4)
+        return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others, cash)
     }
 
     /** آخر 4 أرقام من خانة رقم الحساب (ممكن تبقى مكتوبة بمسافات أو كاملة في بيانات قديمة) — أقل من 4 أرقام ⇒ null. */

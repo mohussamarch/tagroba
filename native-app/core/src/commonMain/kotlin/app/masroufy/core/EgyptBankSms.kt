@@ -127,7 +127,7 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     // الجولة السابعة: تاريخ العملية **بعد** يوم الوصول (بتوقيت القاهرة) = عملية لسه ما حصلتش ⇒ مرفوضة (مفيش ملف مرجع لمصر يقفل يوم بعد)
     val arrival = cairoDayOf(message.receivedAt)
     if (arrival != null && date > arrival) return SmsParseResult.Rejected(uiText(TextKey.SMS_NOT_TRANSACTION))
-    val kind = egyptKind(body, direction)
+    val kind = refineSmsKind(body, egyptKind(body, direction), direction) // عقد C0 (§77-D — `SmsReturned.kt`)
     if (contradicts(direction, kind)) return SmsParseResult.Rejected(uiText(TextKey.SMS_DIRECTION_UNCLEAR))
     // الجولة السابعة: كلمة حالة أو طلب أو جاي في **أول جملة** («هيتأكد بكره الصبح» · «لحين القبول» · «واتحجزت لحد التوثيق» ·
     // «from … AWAITS APPROVAL») ⇒ **مرفوضة** (مش عملية خلصت) بدل «جاهزة» بمبلغ واتجاه و«سجّل الكل» يسجلها. سطر تحذير في جملة بعدها
@@ -139,7 +139,11 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     val merchant = egyptMerchant(body, kind)
     val known = egyptShape(body, direction, amount).let { if (it.clear && foreignCountryTail(merchant, EGYPT_TAIL)) SmsShape.KeywordFallback else it }
     val shape = gateShape(egyptDateGate(known, body), body, date, arrival, message.body)
-    return smsRow(message, body, lineNumber, date, amount, direction, merchant, kind, shape)
+    // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها
+    return smsRow(
+        message, body, lineNumber, date, amount, direction, merchant, kind, shape,
+        fee = egyptFeeOf(body, kind, amount), bankReference = smsReferenceOf(body), learnKey = egyptLearnKey(body, shape),
+    )
 }
 
 private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
