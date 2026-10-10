@@ -30,6 +30,9 @@ class SpaceGraph(
     override val investment = InvestmentGraph(c)
     override val more = MoreGraph(c)
     override val onboarding = OnboardingGraph(c)
+
+    // منطقة تاسعة (قرار مكتوب — ARCHITECTURE §31.32)
+    override val budgets = BudgetsGraph(c)
 }
 
 /** المستحقات بكل مصادرها (الجمعيات · الأقساط · الديون بمواعيدها · الاشتراكات) — مشتركة بين الرئيسية والمستحقات والتقويم والخلفية. */

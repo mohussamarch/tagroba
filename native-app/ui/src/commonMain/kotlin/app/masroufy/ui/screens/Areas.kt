@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens
 
 import app.masroufy.ui.nav.RouteRegistry
+import app.masroufy.ui.screens.budgets.registerBudgets
 import app.masroufy.ui.screens.dues.registerDues
 import app.masroufy.ui.screens.home.registerHome
 import app.masroufy.ui.screens.imports.registerImports
@@ -23,4 +24,6 @@ fun buildRegistry(): RouteRegistry = RouteRegistry().apply {
     registerInvestment()
     registerMore()
     registerOnboarding()
+    // منطقة تاسعة (قرار مكتوب — ARCHITECTURE §31.32): الميزانيات والخطط والتصنيفات والقواعد
+    registerBudgets()
 }
