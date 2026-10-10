@@ -57,4 +57,6 @@ fun FirestoreContainer.toRepositories() = SpaceRepositories(
     profile = profile,
     spaces = spaces,
     spaceTransfers = spaceTransfers,
+    fullBackup = fullBackup,
+    spacesBackup = spacesBackup,
 )

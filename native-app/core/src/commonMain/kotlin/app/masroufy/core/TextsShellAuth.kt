@@ -58,6 +58,9 @@ internal val MSA_SHELL_AUTH_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.SIGNIN_SUBMIT_NEW to "إنشاء الحساب",
     TextKey.SIGNIN_BUSY_IN to "جارٍ الدخول…",
     TextKey.SIGNIN_BUSY_NEW to "جارٍ إنشاء الحساب…",
+    TextKey.SIGNIN_DONE_IN to "تم الدخول",
+    TextKey.SIGNIN_DONE_NEW to "أُنشئ حسابك",
+    TextKey.SIGNIN_DONE_LINE to "نكمل تجهيز حسابك من حيث توقفت.",
     TextKey.SIGNIN_OFFLINE_NOTE to "الدخول يحتاج اتصالًا بالإنترنت.",
     // نسخة الاختبار المتصلة بمحاكي فايربيز على الكمبيوتر (`assembleEmulator`) — اختيار Claude عشان ما تتلخبطش مع الحقيقية
     TextKey.SIGNIN_EMULATOR_NOTE to "نسخة اختبار متصلة بمحاكي فايربيز على الكمبيوتر — بيانات وهمية فقط.",

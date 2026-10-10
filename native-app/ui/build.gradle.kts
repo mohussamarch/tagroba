@@ -51,6 +51,7 @@ kotlin {
                 // خط Noto Sans Arabic من خدمة خطوط جوجل على الجهاز (من غير ملف خط في المستودع) — ARCHITECTURE §31.31
                 implementation("androidx.compose.ui:ui-text-google-fonts:$androidxComposeVersion")
                 // منتقي ملفات الجوال لـ«كشف الحساب» (`rememberLauncherForActivityResult` + `OpenDocument`) — نفس المكتبة اللي `:androidApp` بيستعملها (ARCHITECTURE §31.31)
+                // نافذة النظام لحفظ ملف واختياره (النسخة الاحتياطية والتصدير — `CreateDocument`/`OpenDocument`) — نفس نسخة `:androidApp` (ARCHITECTURE §31.32)
                 implementation("androidx.activity:activity-compose:1.11.0")
             }
         }

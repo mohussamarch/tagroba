@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +41,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val WAIT_SECONDS = 60
+
+/** نوع اللوحة: «نسيت كلمة المرور؟» في الدخول بالبريد · «تغيير كلمة السر» في «ملفك» (نفس الرابط على الإيميل — رد المالك 2026-10-09). */
+enum class ResetMode { FORGOT, CHANGE }
 private val EMAIL = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$")
 
 /**
@@ -48,7 +52,8 @@ private val EMAIL = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$")
  * أخطاء الشكل والشبكة جنب الخانة (ما بتكشفش حاجة).
  */
 @Composable
-fun ResetPasswordSheet(prefill: String) {
+fun ResetPasswordSheet(prefill: String, mode: ResetMode = ResetMode.FORGOT) {
+    val change = mode == ResetMode.CHANGE
     val app = LocalApp.current
     val scope = rememberCoroutineScope()
     var open by remember { mutableStateOf(false) }
@@ -77,21 +82,29 @@ fun ResetPasswordSheet(prefill: String) {
     }
 
     val press = rememberPress()
-    Box(Modifier.heightIn(min = 44.dp).pressScale(press).tap(press, onClick = { open = true; error = null; email = sentTo ?: prefill.trim() }), contentAlignment = Alignment.CenterStart) {
+    val openSheet = { open = true; error = null; email = sentTo ?: prefill.trim() }
+    if (change) {
+        // «تغيير كلمة السر» في «ملفك» (رد المالك 2026-10-09): صف في مجموعة «الحساب» بنفس اللوحة، والإيميل مكتوب
+        Column(Modifier.fillMaxWidth().heightIn(min = 56.dp).pressScale(press).tap(press, onClick = openSheet).padding(horizontal = 8.dp, vertical = 8.dp)) {
+            BasicText(t(TextKey.RESET_CHANGE_TRIGGER), style = Type.of(15, FontWeight.Medium))
+            BasicText(t(TextKey.RESET_CHANGE_HINT), style = Type.caption().copy(color = Ink.muted))
+        }
+    } else Box(Modifier.heightIn(min = 44.dp).pressScale(press).tap(press, onClick = openSheet), contentAlignment = Alignment.CenterStart) {
         BasicText(t(TextKey.RESET_TRIGGER), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
     }
+    val title = if (change) t(TextKey.RESET_CHANGE_TITLE) else t(TextKey.RESET_TITLE)
 
-    Sheet(open, { open = false }, title = t(TextKey.RESET_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, minHeight = 400.dp, spacing = 12.dp) {
+    Sheet(open, { open = false }, title = title, closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, minHeight = 400.dp, spacing = 12.dp) {
         val sent = sentTo
         if (sent == null) {
-            BasicText(t(TextKey.RESET_TITLE), style = Type.of(17, FontWeight.Bold))
-            BasicText(t(TextKey.RESET_BODY), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(title, style = Type.of(17, FontWeight.Bold))
+            BasicText(if (change) t(TextKey.RESET_CHANGE_BODY) else t(TextKey.RESET_BODY), style = Type.of(13).copy(color = Ink.muted))
             TextInput(
                 email, { email = it; error = null }, label = t(TextKey.SIGNIN_EMAIL), placeholder = "name@example.com", error = error,
                 enabled = !busy, ltr = true, keyboard = KeyboardType.Email, imeAction = ImeAction.Send,
             )
             PrimaryButton(
-                if (busy) t(TextKey.RESET_SENDING) else t(TextKey.RESET_SEND),
+                if (busy) t(TextKey.RESET_SENDING) else if (change) t(TextKey.RESET_CHANGE_SEND) else t(TextKey.RESET_SEND),
                 onClick = {
                     val e = email.trim()
                     error = when {
@@ -103,7 +116,7 @@ fun ResetPasswordSheet(prefill: String) {
                 },
                 loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             )
-            BasicText(t(TextKey.RESET_PRIVACY), style = Type.caption().copy(color = Ink.muted))
+            if (!change) BasicText(t(TextKey.RESET_PRIVACY), style = Type.caption().copy(color = Ink.muted))
         } else {
             BasicText(t(TextKey.RESET_SENT_TITLE), style = Type.of(17, FontWeight.Bold))
             BasicText(t(TextKey.RESET_SENT_BODY, sent), style = Type.body())
@@ -123,7 +136,7 @@ fun ResetPasswordSheet(prefill: String) {
             if (note.isNotEmpty()) BasicText(note, style = Type.caption().copy(color = Ink.muted))
             if (error != null) BasicText(error!!, style = Type.of(13).copy(color = Ink.expense))
             Column(Modifier.fillMaxWidth().height(4.dp)) {}
-            PrimaryButton(t(TextKey.RESET_FINISH), onClick = { open = false }, height = 48.dp, modifier = Modifier.fillMaxWidth())
+            PrimaryButton(if (change) t(TextKey.MORE_DONE) else t(TextKey.RESET_FINISH), onClick = { open = false }, height = 48.dp, modifier = Modifier.fillMaxWidth())
         }
     }
 }
