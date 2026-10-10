@@ -5,6 +5,7 @@ import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.MainWalletSource
+import app.masroufy.core.countryPack
 import app.masroufy.ui.screens.more.MainWalletAccess
 import app.masroufy.ui.screens.more.MoreDeps
 import app.masroufy.ui.screens.more.NewWallet
@@ -84,7 +85,10 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
     override val walletEditor: WalletEditor = object : WalletEditor {
-        private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency)
+        private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency, countryPack(c.space.countryCode).timeZone)
+
+        /** يوم البلد (مش يوم الجوال ولا جرينتش) — نفس اللي `ManageWallets` بيتأكد بيه. */
+        override fun today(): IsoDate = manage.today()
 
         override suspend fun add(wallet: NewWallet): String? = attempt {
             manage.add(AddWalletInput(wallet.kind, wallet.name, wallet.last4, wallet.openingMinor, wallet.openingAt, wallet.bankId))

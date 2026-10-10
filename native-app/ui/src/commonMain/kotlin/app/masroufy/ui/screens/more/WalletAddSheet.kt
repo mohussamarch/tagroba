@@ -65,7 +65,8 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
     val deps = LocalSpace.current
     val editor = deps.more.walletEditor
     val currency = deps.space.currency
-    val today = deps.shell.today()
+    // يوم البلد (نفس اللي الحفظ بيتأكد بيه) — يوم الجوال كان بيبقى «بعد النهارده» في التأكد بين 00:00 و03:00 بالرياض
+    val today = editor?.today() ?: deps.shell.today()
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     val edit = mode as? WalletSheetMode.Edit

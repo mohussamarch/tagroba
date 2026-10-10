@@ -76,6 +76,9 @@ data class OnboardAccountDeps(
 class OnboardAccount(private val deps: OnboardAccountDeps) {
     private suspend fun findCashWallet() = deps.wallets.listAll().find { it.kind == "cash" }
 
+    /** النهارده في البلد (`ManageWallets.today` — يوم البلد مش جرينتش، جولة 0.3)؛ من غيره (اختبارات قديمة) يوم جرينتش. */
+    private fun today(): IsoDate = deps.manageWallets?.today() ?: deps.clock.nowIso().take(10)
+
     /**
      * الهيكل يفتح أسئلة البداية لوحده؟ **حساب جديد خالص بس**: البلد الأساسية + الأسئلة ما خلصتش + **مفيش ولا محفظة**.
      * حساب قديم فيه بيانات (زي حساب المالك المشترك مع التطبيق القديم في السعودية) عنده محافظ ⇒ `false` حتى لو `onboardedAt` فاضي.
@@ -94,7 +97,7 @@ class OnboardAccount(private val deps: OnboardAccountDeps) {
     private suspend fun seedNewAccount(s: NewAccountSeeding) {
         SeedUserReferences(s.categories, s.rules, s.progress).seed(s.source.load(s.pack).copy(merchants = emptyList()))
         if (deps.wallets.listAll().isEmpty()) {
-            deps.wallets.save(Wallet(CASH_WALLET_ID, s.pack.cashWalletName, s.pack.currency, "cash", 0, deps.clock.nowIso().take(10)))
+            deps.wallets.save(Wallet(CASH_WALLET_ID, s.pack.cashWalletName, s.pack.currency, "cash", 0, today()))
         }
     }
 
@@ -128,7 +131,7 @@ class OnboardAccount(private val deps: OnboardAccountDeps) {
 
         val cashWallet = if (cashMinor != null) findCashWallet() ?: return OnboardingResult.Failed("cash", uiText(TextKey.ONBOARD_NO_CASH_WALLET)) else null
         if (cashWallet != null && cashMinor != cashWallet.openingBalanceMinor) {
-            deps.wallets.save(cashWallet.copy(openingBalanceMinor = cashMinor!!, openingAt = deps.clock.nowIso().take(10)))
+            deps.wallets.save(cashWallet.copy(openingBalanceMinor = cashMinor!!, openingAt = today()))
         }
 
         if (bankWallet != null) deps.wallets.save(bankWallet)

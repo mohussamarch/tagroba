@@ -53,6 +53,9 @@ interface WalletEditor {
 
     /** رصيد البداية في تاريخ — الرصيد الجديد بيتحسب في المنطق مش في الشاشة. */
     suspend fun setOpening(walletId: Id, openingMinor: Halalas, openingAt: IsoDate): String?
+
+    /** «النهارده» اللي التأكد بيقارن بيه (يوم البلد — `ManageWallets.today`) — اللوحة بتبدأ بيه. null ⇒ يوم الجوال. */
+    fun today(): IsoDate? = null
 }
 
 interface SpacesAdmin {

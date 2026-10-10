@@ -6,6 +6,8 @@ import app.masroufy.core.COUNTRY_PACKS
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
+import app.masroufy.core.countryPack
+import app.masroufy.core.dayIn
 import app.masroufy.ui.text.t
 
 /**
@@ -41,11 +43,14 @@ private fun spaceMeta(space: Space, wallets: Int?, archived: Boolean): String {
     val created = when {
         archived -> t(UiKey.SPC_META_ARCHIVED)
         space.id == DEFAULT_SPACE_ID -> t(UiKey.SPC_META_AUTO)
-        else -> fullDate(space.createdAt)?.let { t(UiKey.SPC_META_ADDED, it) } ?: ""
+        else -> fullDate(addedDay(space))?.let { t(UiKey.SPC_META_ADDED, it) } ?: ""
     }
     val count = wallets?.let { countText(it, WALLET_WORDS) }
     return listOfNotNull(count, created.takeIf { it.isNotEmpty() }).joinToString("، ")
 }
+
+/** «أضفتها في …» = يوم الإنشاء **بتوقيت البلد نفسها** (`core/CountryTime.kt`) — وقت الإنشاء متخزن بجرينتش، فأول 3 ساعات بالرياض كانت بتبان امبارح. */
+internal fun addedDay(space: Space): String? = dayIn(countryPack(space.countryCode).timeZone, space.createdAt) ?: space.createdAt.takeIf { it.isNotEmpty() }
 
 /** حالة البلد في لوحة «أضف بلدًا». */
 enum class CountryState { AVAILABLE, TAKEN, ARCHIVED }

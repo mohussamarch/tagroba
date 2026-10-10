@@ -111,6 +111,19 @@ class MoreStateTest {
         assertTrue(eg.meta.contains(fullDate(egypt.createdAt)!!))
     }
 
+    /** جولة 0.3: «أضفتها في …» بيوم البلد — الإنشاء متخزن بجرينتش. */
+    @Test
+    fun theAddedDayIsTheCountryDay() {
+        // 00:30 بالقاهرة صيفًا (+3) = 21:30 جرينتش من اليوم اللي قبله
+        val lateNight = egypt.copy(createdAt = "2026-07-14T21:30:00Z")
+        assertEquals("2026-07-15", addedDay(lateNight))
+        val eg = spaceSections(listOf(SpaceCard(saudi, true, 1), SpaceCard(lateNight, false, 1)), emptyList())[0].cards[1]
+        assertTrue(eg.meta.contains(fullDate("2026-07-15")!!), eg.meta)
+        // 23:30 بالقاهرة شتاءً (+2) = 21:30 جرينتش — نفس اليوم (الرياض كانت هتقول بكرة)
+        assertEquals("2026-01-15", addedDay(egypt.copy(createdAt = "2026-01-15T21:30:00Z")))
+        assertNull(addedDay(egypt.copy(createdAt = "")))
+    }
+
     @Test
     fun archivedCountriesGetTheirOwnSection() {
         val old = egypt.copy(archived = true)
