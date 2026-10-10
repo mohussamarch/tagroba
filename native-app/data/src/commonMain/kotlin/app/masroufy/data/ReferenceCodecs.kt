@@ -21,12 +21,13 @@ object ReferenceCodecs {
             doc {
                 req("id", w.id); req("name", w.name); req("currency", w.currency.name); req("kind", w.kind)
                 req("openingBalanceMinor", w.openingBalanceMinor); req("openingAt", w.openingAt); opt("accountLast4", w.accountLast4)
+                opt("bankId", w.bankId)
             }
         },
         { r ->
             Wallet(
                 r.str("id"), r.str("name"), r.wire("currency", Currency::valueOf), r.str("kind"), r.long("openingBalanceMinor"),
-                r.str("openingAt"), r.strOrNull("accountLast4"),
+                r.str("openingAt"), r.strOrNull("accountLast4"), r.strOrNull("bankId"),
             )
         },
     )
