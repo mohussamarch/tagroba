@@ -6,9 +6,9 @@ package app.masroufy.core
  */
 internal val MSA_ASSIST_ANSWER2_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSIST_OWED_TO_ME to "لك عند الناس {0} — منهم: {1}.",
-    TextKey.ASSIST_OWED_NONE to "لا أحد عليه فلوس لك.",
+    TextKey.ASSIST_OWED_NONE to "لا أحد مدين لك بشيء.",
     TextKey.ASSIST_I_OWE to "عليك للناس {0} — منهم: {1}.",
-    TextKey.ASSIST_I_OWE_NONE to "ليس عليك فلوس لأحد.",
+    TextKey.ASSIST_I_OWE_NONE to "لست مدينًا لأحد.",
     TextKey.ASSIST_PERSON_OWES_ME to "لك عند {0} {1}.",
     TextKey.ASSIST_I_OWE_PERSON to "عليك لـ{0} {1}.",
     TextKey.ASSIST_CUSTODY to "وعندك أمانة لـ{0} {1}.",

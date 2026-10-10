@@ -7,7 +7,8 @@ import app.masroufy.core.ScreenLink
 import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
 import app.masroufy.core.shiftDays
-import app.masroufy.core.countsAsSalaried
+import app.masroufy.core.IncomeSource
+import app.masroufy.core.IncomeSourceKind
 import app.masroufy.core.daysBetween
 import app.masroufy.core.nextPayDate
 import app.masroufy.core.sourcesActiveOn
@@ -20,7 +21,7 @@ internal suspend fun AnswerKit.nextSalary(): AssistReply {
     val all = s.incomeSources?.list() ?: return na()
     val active = sourcesActiveOn(all, ctx.today)
     val b = rb()
-    val salaried = active.firstOrNull(::countsAsSalaried)
+    val salaried = active.firstOrNull(::isWage)
     if (salaried != null) {
         val next = nextPayDate(salaried, ctx.today, payday)
         when {
@@ -42,7 +43,7 @@ internal suspend fun AnswerKit.nextSalary(): AssistReply {
 /** المبلغ المتوقع المتخزن (مصدر الراتب أو الملف) — **عمره ما بيتحسب متوسط من الإيداعات**. */
 internal suspend fun AnswerKit.salaryAmount(): AssistReply {
     val sources = s.incomeSources?.list().orEmpty()
-    val stored = sourcesActiveOn(sources, ctx.today).firstOrNull(::countsAsSalaried)?.expectedMinor ?: profile?.salaryMinor
+    val stored = sourcesActiveOn(sources, ctx.today).firstOrNull(::isWage)?.expectedMinor ?: profile?.salaryMinor
     val b = rb()
     if (stored == null) b.line(TextKey.ASSIST_SALARY_NA) else b.line(TextKey.ASSIST_SALARY_AMOUNT, b.money(stored))
     b.link(ScreenLink.of(AssistScreen.INCOME_SOURCES))
@@ -225,6 +226,12 @@ internal suspend fun AnswerKit.installments(): AssistReply {
     b.link(if (picked.size == 1) ScreenLink.of(AssistScreen.INSTALLMENT_DETAIL, "planId" to picked[0].plan.id) else ScreenLink.of(AssistScreen.INSTALLMENTS))
     return b.build()
 }
+
+/**
+ * «مصدر راتب» لسؤال الراتب (التصميم: «لا يوجد مصدر وظيفة/راتب نشط»): وظيفة · بارت تايم · معاش. **أضيق من `countsAsSalaried`** عن قصد:
+ * الإيجار الشهري بيعدّ «بمرتب» في «فاضلك تقريبًا» (§65)، بس مش «راتب» لما تسأل «إمتى الراتب؟» ⇒ بيظهر تحت «دخل البلد» بميعاده.
+ */
+internal fun isWage(s: IncomeSource): Boolean = s.kind == IncomeSourceKind.JOB || s.kind == IncomeSourceKind.PART_TIME || s.kind == IncomeSourceKind.PENSION
 
 /** المناسبات خلال ٣٠ يوم (§67). */
 internal suspend fun AnswerKit.occasions(): AssistReply {

@@ -19,7 +19,6 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
 import app.masroufy.core.UnknownQuestion
 import app.masroufy.core.shiftDays
-import app.masroufy.core.countsAsSalaried
 import app.masroufy.core.frequentTopics
 import app.masroufy.core.historyGroupOf
 import app.masroufy.core.inOrder
@@ -54,7 +53,7 @@ class AssistantMemory(private val deps: AssistantDeps) {
     suspend fun facts(today: IsoDate): List<LearnedItem> {
         val out = mutableListOf<LearnedItem>()
         val src = deps.sources
-        sourcesActiveOn(src.incomeSources?.list().orEmpty(), today).firstOrNull { countsAsSalaried(it) && it.expectedDayOfMonth != null }?.let { s ->
+        sourcesActiveOn(src.incomeSources?.list().orEmpty(), today).firstOrNull { isWage(it) && it.expectedDayOfMonth != null }?.let { s ->
             out += LearnedItem(FactKeys.salary(s.id, s.expectedDayOfMonth!!), LearnedKind.FACT, uiText(TextKey.ASSIST_FACT_SALARY, s.expectedDayOfMonth.toString(), s.name), uiText(TextKey.ASSIST_FACT_FROM_INCOME))
         }
         val lex = deps.lexicon.load()

@@ -74,7 +74,7 @@ class DocCodecsTest {
         val terms = DebtTerms("o-1", "p-1", "2026-02-01", 1, 50_000, false)
         assertEquals("o-1", DuesCodecs.debtTerms.id(terms))
         assertEquals(setOf("obligationId", "personId", "firstDueAt", "cycleMonths"), roundTrip(DuesCodecs.debtTerms, terms.copy(installmentMinor = null, hasInterest = null)).keys)
-        assertEquals(50, DocumentCodecs.byGroup.size, "44 + إعدادات التنبيهات وصفحتها وإيصالاتها (جلسة 18) + خطط الادخار وإيداعاتها (§68) + حسابات الورث (§69.4)")
+        assertEquals(57, DocumentCodecs.byGroup.size, "44 + إعدادات التنبيهات وصفحتها وإيصالاتها (جلسة 18) + خطط الادخار وإيداعاتها (§68) + حسابات الورث (§69.4) + المساعد والإعدادات والإشعارات الممسوحة (§78)")
     }
 
     @Test

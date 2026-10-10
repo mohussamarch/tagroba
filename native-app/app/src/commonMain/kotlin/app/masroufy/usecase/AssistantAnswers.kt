@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.AssistEntityType
 import app.masroufy.core.AssistIntent
+import app.masroufy.core.AssistPeriodKind
 import app.masroufy.core.AssistRange
 import app.masroufy.core.AssistScreen
 import app.masroufy.core.AssistUnderstanding
@@ -179,7 +180,8 @@ internal suspend fun AnswerKit.spendBiggest(): AssistReply {
 
 /** الفرق بيظهر بس لما الرقمين معروفين (طرح رقمين من حالة الاستخدام — مش تقدير). */
 internal suspend fun AnswerKit.spendCompare(): AssistReply {
-    val period = range.period ?: current
+    // «الشهر اللي فات» في سؤال المقارنة هو اللي بنقارن بيه ⇒ الأساس الشهر الحالي
+    val period = if (u.signals.period?.kind == AssistPeriodKind.PREVIOUS_FISCAL) current else range.period ?: current
     val previous = periodForDate(dayBefore(period.start), payday)
     val cat = subject(AssistEntityType.CATEGORY)
     val (now, before) = if (cat != null) {
