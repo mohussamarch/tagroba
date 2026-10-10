@@ -3,11 +3,13 @@ package app.masroufy.wiring
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.DEFAULT_SPACE_ID
+import app.masroufy.core.EGYPT_TIME_ZONE
 import app.masroufy.core.Space
 import app.masroufy.core.SpaceError
 import app.masroufy.core.Texts
 import app.masroufy.core.activeSpaceOf
 import app.masroufy.core.countryPack
+import app.masroufy.core.dayIn
 import app.masroufy.core.defaultSpace
 import app.masroufy.memory.MemoryAccount
 import app.masroufy.memory.MemoryActiveSpaceStore
@@ -19,6 +21,8 @@ import app.masroufy.port.SpaceSeedTargets
 import app.masroufy.ui.screens.more.NewWallet
 import app.masroufy.ui.screens.onboarding.countryOptions
 import app.masroufy.usecase.AddKind
+import app.masroufy.usecase.AddWalletInput
+import app.masroufy.usecase.OnboardingResult
 import app.masroufy.usecase.AddOperationDraft
 import app.masroufy.usecase.AddOperationResult
 import app.masroufy.usecase.LoadOnlineFeeds
@@ -190,6 +194,24 @@ class SpacesAdminWiringTest {
         assertTrue(graph.shell.switchSpace("eg"))
         assertEquals("eg", s.graph().space.id)
         assertFailsWith<SpaceError> { admin.archive(DEFAULT_SPACE_ID) }
+    }
+
+    /** جولة 0.3: الحساب الجديد اللي اختار مصر بياخد كارتين الفلوس (§81) — الكاش والبنك في محافظ مصر بعد إنشائها، والسعودية ما اتلمستش. */
+    @Test fun newAccountMoneyForEgyptLandsInEgyptWallets() = runBlocking<Unit> {
+        val s = Session()
+        val graph = s.graph()
+        val money = assertNotNull(graph.onboarding.countryMoney, "متوصّلة مع إدارة البلاد")
+        assertIs<OnboardingResult.Failed>(money.apply("eg", 300_000, null), "مصر لسه ما اتعملتش ⇒ «غير متاح» مش كتابة في مكان غلط")
+        graph.onboarding.spacesAdmin!!.create("EG")
+        val nbe = AddWalletInput("bank", "البنك الأهلي المصري", "0042", 1_250_000, null, "eg-national-bank-of-egypt")
+        assertIs<OnboardingResult.Ok>(money.apply("eg", 300_000, nbe))
+        val eg = s.stores.getValue("eg").wallets.listAll()
+        assertEquals(setOf("cash", "bank"), eg.map { it.kind }.toSet())
+        assertTrue(eg.all { it.currency == Currency.EGP })
+        assertEquals(300_000, eg.single { it.kind == "cash" }.openingBalanceMinor)
+        assertTrue(s.stores.getValue(DEFAULT_SPACE_ID).wallets.listAll().isEmpty(), "السعودية ما اتلمستش")
+        assertTrue(s.links.switchSpace("eg"))
+        assertEquals(dayIn(EGYPT_TIME_ZONE, env.clock.nowIso()), s.graph().more.walletEditor.today(), "«أضف محفظة» في مصر بيوم القاهرة")
     }
 
     /** التبديل بيفتح بيانات البلد: كاش ومصروف في مصر بالجنيه ⇒ رجوع للسعودية (ما شافتش حاجة) ⇒ مصر تاني (البيانات زي ما هي). */

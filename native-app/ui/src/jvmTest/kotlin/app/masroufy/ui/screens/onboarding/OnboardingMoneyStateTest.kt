@@ -4,10 +4,13 @@ import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Language
 import app.masroufy.core.Texts
 import app.masroufy.core.UserProfile
+import app.masroufy.usecase.OnboardingResult
+import kotlinx.coroutines.runBlocking
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -41,6 +44,26 @@ class OnboardingMoneyStateTest {
         assertFalse(money(egypt))
         assertEquals(OnbStep.PAYDAY, next(egypt).step)
         assertTrue(money(pickCountry(egypt, "SA")), "رجع لبلد الحساب ⇒ الكارتين رجعوا")
+    }
+
+    /** جولة 0.3: §81 رحلة الحساب الجديد لأي بلد — مصر بنفس الكارتين (بالجنيه وبنوك مصر) لما الفلوس تقدر تتكتب في محافظها. */
+    @Test fun egyptGetsTheSameTwoCardsWhenItsMoneyCanGoThere() = runBlocking<Unit> {
+        val start = fresh.copy(otherCountryMoney = true)
+        val egypt = pickCountry(next(start), "EG")
+        assertTrue(money(egypt) && moneyElsewhere(egypt))
+        assertEquals(OnbStep.CASH, next(egypt).step, "بعد البلد: الكاش — مش «المحافظ»")
+        assertEquals("EG", moneyCountry(egypt, "SA"), "عملة وبنوك مصر")
+        assertFalse(moneyElsewhere(pickCountry(egypt, "SA")), "السعودية ⇒ في `OnboardAccount.finish` زي الأول")
+        assertEquals("SA", moneyCountry(start, "SA"))
+
+        val answers = OnbAnswers(countryCode = "EG", cashMinor = 300_000, bank = OnbBank("eg-national-bank-of-egypt", "0042", 1_250_000))
+        var got: Triple<String, Long?, String?>? = null
+        val sink = CountryMoney { id, cash, bank -> got = Triple(id, cash, bank?.bankId); OnboardingResult.Ok }
+        assertEquals(OnboardingResult.Ok, moneyInto("eg", profile, answers, sink))
+        assertEquals(Triple("eg", 300_000L, "eg-national-bank-of-egypt"), got, "الكاش والبنك رايحين لمحافظ مصر")
+        assertIs<OnboardingResult.Failed>(moneyInto(null, profile, answers, sink), "البلد ما اتعملتش ⇒ نفضل على «جاهز»")
+        assertIs<OnboardingResult.Failed>(moneyInto("eg", profile, answers, null))
+        assertIs<OnboardingResult.Failed>(moneyInto("eg", profile, answers) { _, _, _ -> error("انقطع") }, "عطل ⇒ رسالة مش وقوع")
     }
 
     @Test fun addOrSkipAndBackFromTheBankOnly() {

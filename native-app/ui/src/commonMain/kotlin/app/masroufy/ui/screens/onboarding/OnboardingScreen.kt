@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
+import app.masroufy.core.countryPack
 import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.FieldError
@@ -83,8 +84,8 @@ fun OnboardingScreen() {
         loadFailed = false
         val r = runCatching { onb.onboard.start() }
         start = r.getOrNull()
-        // حساب جديد خالص ⇒ كارتين الفلوس (§81) بعملة وبنوك بلد الحساب
-        if (start?.freshAccount == true && !s.fresh) s = s.copy(fresh = true, home = deps.space.countryCode)
+        // حساب جديد خالص ⇒ كارتين الفلوس (§81) بعملة وبنوك البلد المختارة (مصر كمان لو الفلوس تقدر تتكتب هناك)
+        if (start?.freshAccount == true && !s.fresh) s = s.copy(fresh = true, home = deps.space.countryCode, otherCountryMoney = onb.countryMoney != null)
         loadFailed = r.isFailure
         open = runCatching { deps.shell.spaces().map { it.space } }.getOrNull()?.takeIf { it.isNotEmpty() } ?: listOf(deps.space)
     }
@@ -94,7 +95,9 @@ fun OnboardingScreen() {
         saving = true
         failure = null
         scope.launch {
-            when (val r = runCatching { onb.onboard.finish(finishInput(st.profile, s.answers, money(s))) }.getOrNull()) {
+            // اختار مصر ⇒ الكاش والبنك بيتكتبوا في محافظها بعد ما تتعمل (مش في البلد الشغالة)
+            val elsewhere = moneyElsewhere(s)
+            when (val r = runCatching { onb.onboard.finish(finishInput(st.profile, s.answers, money(s) && !elsewhere)) }.getOrNull()) {
                 OnboardingResult.Ok -> {
                     val made = countrySpaceFor(s.answers, open, onb.spacesAdmin)
                     // مصر ما اتعملتش (غالبًا النت) ⇒ نفضل على «جاهز» برسالة و«ادخل التطبيق» تاني بيكمّل (الإجابات اتحفظت والإنشاء ما بيتكررش)
@@ -104,10 +107,16 @@ fun OnboardingScreen() {
                         return@launch
                     }
                     val target = spaceToOpen(s.answers, open, deps.space.id) ?: made.getOrNull()
+                    val put = if (elsewhere) moneyInto(target, st.profile, s.answers, onb.countryMoney) else OnboardingResult.Ok
+                    if (put is OnboardingResult.Failed) {
+                        failure = put.message
+                        saving = false
+                        return@launch
+                    }
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
                     nav.pop()
                     if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
-                    // حساب جديد خالص من غير كارتين الفلوس (اختار بلد تانية) ⇒ «المحافظ» عشان يضيف محافظه هناك، والرئيسية تقرا تاني
+                    // حساب جديد خالص من غير كارتين الفلوس (بلد تانية من غير طريق للفلوس — المعاينة) ⇒ «المحافظ» عشان يضيف محافظه هناك
                     if (st.freshAccount && !money(s)) nav.push(WalletsRoute)
                     changes.changed()
                 }
@@ -143,7 +152,8 @@ fun OnboardingScreen() {
         }
         val reply = s.reply
         if (reply != null) {
-            val (title, line) = replyText(reply, s.answers, start?.profile?.payday ?: app.masroufy.core.DEFAULT_PAYDAY, deps.space.currency)
+            val currency = countryPack(moneyCountry(s, deps.space.countryCode)).currency
+            val (title, line) = replyText(reply, s.answers, start?.profile?.payday ?: app.masroufy.core.DEFAULT_PAYDAY, currency)
             Box(Modifier.align(Alignment.BottomCenter)) {
                 OnbReplyPanel(title, line, nextLabel(s), pad.calculateBottomPadding()) { s = next(s) }
             }
@@ -176,8 +186,9 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
                 OnbOptionRow(o, s.answers.countryCode == o.id, null) { onChange(pickCountry(s, o.id)) }
             }
         }
-        OnbStep.CASH -> CashCard(s, LocalSpace.current.space.currency, onChange)
-        OnbStep.BANK -> LocalSpace.current.space.let { BankCard(s, it.countryCode, it.currency, onChange) }
+        // عملة وبنوك البلد المختارة (مصر ⇒ جنيه وبنوك مصر) — الكتابة بعدين في محافظ البلد دي
+        OnbStep.CASH -> CashCard(s, countryPack(moneyCountry(s, LocalSpace.current.space.countryCode)).currency, onChange)
+        OnbStep.BANK -> moneyCountry(s, LocalSpace.current.space.countryCode).let { BankCard(s, it, countryPack(it).currency, onChange) }
         OnbStep.PAYDAY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             DayGrid(s.answers.day, onPick = { onChange(pickDay(s, it)) })
             TonalButton(t(UiKey.ONB_NOT_FIXED), onClick = { onChange(skip(s)) }, height = 44.dp, modifier = Modifier.fillMaxWidth())
@@ -221,7 +232,7 @@ private val OnbStateSaver = listSaver<OnbState, Any?>(
     save = { st ->
         val a = st.answers
         listOf(st.step.ordinal, a.look, a.countryCode, a.day, a.dayLater, a.source?.ordinal, st.reply?.ordinal, st.fresh, st.home, a.cashMinor,
-            a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor)
+            a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor, st.otherCountryMoney)
     },
     restore = { v ->
         OnbState(
@@ -233,6 +244,7 @@ private val OnbStateSaver = listSaver<OnbState, Any?>(
             (v[6] as Int?)?.let { OnbReply.entries[it] },
             fresh = v[7] as Boolean,
             home = v[8] as String?,
+            otherCountryMoney = v.getOrNull(13) as Boolean? ?: false,
         )
     },
 )

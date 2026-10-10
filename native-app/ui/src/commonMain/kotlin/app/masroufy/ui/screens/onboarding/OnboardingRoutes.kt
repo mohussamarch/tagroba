@@ -1,11 +1,14 @@
 package app.masroufy.ui.screens.onboarding
 
+import app.masroufy.core.Halalas
 import app.masroufy.ui.nav.Route
 import app.masroufy.ui.nav.RouteRegistry
 import app.masroufy.ui.screens.more.LookSetting
 import app.masroufy.ui.screens.more.SpacesAdmin
 import app.masroufy.usecase.ManageProfile
+import app.masroufy.usecase.AddWalletInput
 import app.masroufy.usecase.OnboardAccount
+import app.masroufy.usecase.OnboardingResult
 
 /**
  * منطقة «أول تشغيل» (`SCREENS.md` §2.9 — Onboarding · SignInEmail · ProfileQuestion · Lock). الملف ده بتاع المنطقة بس.
@@ -31,6 +34,14 @@ interface OnboardingDeps {
      * وتتفتح في نفس الجلسة وبعدين التبديل لها. null (المعاينة · جلسة مالهاش إدارة بلاد) ⇒ مصر مقفولة بسببها.
      */
     val spacesAdmin: SpacesAdmin? get() = null
+
+    /** كارتين الفلوس (§81) لبلد اتعملت في نفس الرحلة (مصر) — بيكتب في محافظ البلد دي (`NewCountryMoney`). null ⇒ الكارتين لبلد الحساب بس. */
+    val countryMoney: CountryMoney? get() = null
+}
+
+/** الكاش والبنك من كارتين الفلوس ⇒ محافظ البلد [spaceId] (لازم تكون مفتوحة في الجلسة). */
+fun interface CountryMoney {
+    suspend fun apply(spaceId: String, cashMinor: Halalas?, bank: AddWalletInput?): OnboardingResult
 }
 
 /** الحساب ده لسه ما خلّصش أسئلة البداية؟ (للرئيسية/الهيكل وقت الدمج — `ManageProfile.needsOnboarding`). */

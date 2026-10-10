@@ -1,15 +1,20 @@
 package app.masroufy.wiring
 
 import app.masroufy.core.DEFAULT_SPACE_ID
+import app.masroufy.core.TextKey
 import app.masroufy.core.countryPack
+import app.masroufy.core.uiText
 import app.masroufy.seed.BundledSeeds
+import app.masroufy.ui.screens.onboarding.CountryMoney
 import app.masroufy.ui.screens.onboarding.OnboardingDeps
 import app.masroufy.usecase.ManagePeople
 import app.masroufy.usecase.ManagePeopleDeps
 import app.masroufy.usecase.ManageWallets
 import app.masroufy.usecase.NewAccountSeeding
+import app.masroufy.usecase.NewCountryMoney
 import app.masroufy.usecase.OnboardAccount
 import app.masroufy.usecase.OnboardAccountDeps
+import app.masroufy.usecase.OnboardingResult
 
 /**
  * «أول تشغيل» — ملفك (`c.shell.profile` نفس كائن الهيكل) · `OnboardAccount` (`start` القيم الموجودة · `finish` التأكد ثم الكتابة).
@@ -33,7 +38,20 @@ class OnboardingGraph(c: AreaContext) : OnboardingDeps {
         val seeding = r.referenceSeed?.takeIf { c.space.id == DEFAULT_SPACE_ID }?.let {
             NewAccountSeeding(r.categories, r.rules, it, BundledSeeds, countryPack(c.space.countryCode))
         }
-        val wallets = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency)
+        val wallets = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency, countryPack(c.space.countryCode).timeZone)
         OnboardAccount(OnboardAccountDeps(c.shell.profile, people, r.wallets, c.env.clock, seeding, wallets))
+    }
+
+    /**
+     * كارتين الفلوس لمصر لما الحساب الجديد يختارها (§81 = رحلة الحساب الجديد لأي بلد — جولة 0.3): بعد ما البلد تتعمل وتتفتح في الجلسة،
+     * الكاش والبنك بيتكتبوا في **محافظها هي** (`NewCountryMoney` على مستودعات البلد من `SessionLinks.spaces`). من غير إدارة بلاد ⇒ null.
+     */
+    override val countryMoney: CountryMoney? = c.shell.spacesAdmin?.let {
+        CountryMoney { spaceId, cashMinor, bank ->
+            val (space, repos) = c.session.spaces().firstOrNull { it.first.id == spaceId }
+                ?: return@CountryMoney OnboardingResult.Failed("cash", uiText(TextKey.NOT_AVAILABLE))
+            val pack = countryPack(space.countryCode)
+            NewCountryMoney(repos.wallets, ManageWallets(repos.wallets, c.env.ids, c.env.clock, space.currency, pack.timeZone), pack).apply(cashMinor, bank)
+        }
     }
 }

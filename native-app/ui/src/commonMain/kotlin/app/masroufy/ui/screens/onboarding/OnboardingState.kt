@@ -16,17 +16,18 @@ import app.masroufy.ui.screens.more.SpacesAdmin
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.AddWalletInput
 import app.masroufy.usecase.OnboardingInput
+import app.masroufy.usecase.OnboardingResult
 
 /**
  * رحلة «أول دقيقة» بعد الدخول (`Onboarding` — §63) كحالة **نقية** (بتتختبر على JVM). الترحيب والدخول قبلها في `SignInFlow` (هيكل التطبيق)،
  * فالكروت هنا: الشكل ⇒ البلد ⇒ [الكاش ⇒ البنك] ⇒ يوم الراتب ⇒ مصدر العمليات ⇒ جاهز. شريط التقدم: الدخول أول جزء خلصان + جزء لكل كارت.
  * **كارتين الفلوس** (§81 — المالك: «الاول يسأله معاك كام كاش وبعدين يسأله عندك حساب بنكي؟ ويكون في اضافة او تخطي») للحساب الجديد
- * بس ([OnbState.fresh]) وبعد البلد (العملة والبنوك بتاعة البلد): لو اختار بلد غير بلد الحساب ([OnbState.home]) الكارتين بيستخبوا.
+ * بس ([OnbState.fresh]) وبعد البلد (العملة والبنوك بتاعة البلد المختارة — مصر كمان، [moneyElsewhere]).
  * مفيش ولا رقم بيتحسب هنا: المبالغ اللي اتكتبت بتروح زي ما هي لـ`OnboardAccount.finish` (التأكد قبل أي كتابة وتسجيل الانتهاء آخر حاجة).
  */
 enum class OnbStep { LOOK, COUNTRY, CASH, BANK, PAYDAY, SOURCE, READY }
 
-/** عدد الأجزاء من غير كارتين الفلوس (الحساب القديم · بلد تانية) — الدخول + 5 كروت. */
+/** عدد الأجزاء من غير كارتين الفلوس (الحساب القديم · بلد تانية من غير `countryMoney`) — الدخول + 5 كروت. */
 const val ONB_SEGMENTS = 6
 
 /** مصدر العمليات (الخطوة 5) — ما بيتخزنش: بيحدد بس الشاشة اللي بعد «ادخل التطبيق» (رسايل البنك ⇒ شاشتها والإذن هناك). */
@@ -51,17 +52,32 @@ data class OnbAnswers(
     val bank: OnbBank? = null,
 )
 
-/** [fresh] = حساب جديد خالص (`OnboardingStart.freshAccount`) · [home] = بلد الحساب اللي الفلوس هتتكتب فيه. */
+/**
+ * [fresh] = حساب جديد خالص (`OnboardingStart.freshAccount`) · [home] = بلد الحساب الشغالة · [otherCountryMoney] = الفلوس تقدر تتكتب في بلد
+ * تانية بتتعمل في نفس الرحلة (`OnboardingDeps.countryMoney` — مصر).
+ */
 data class OnbState(
     val step: OnbStep,
     val answers: OnbAnswers = OnbAnswers(),
     val reply: OnbReply? = null,
     val fresh: Boolean = false,
     val home: String? = null,
+    val otherCountryMoney: Boolean = false,
 )
 
-/** كارتين الفلوس ظاهرين؟ حساب جديد + البلد المختارة (لو اختار) هي بلد الحساب. */
-fun money(s: OnbState): Boolean = s.fresh && (s.answers.countryCode == null || s.home == null || s.answers.countryCode.equals(s.home, true))
+private fun sameCountry(s: OnbState): Boolean = s.answers.countryCode == null || s.home == null || s.answers.countryCode.equals(s.home, true)
+
+/**
+ * كارتين الفلوس ظاهرين؟ حساب جديد — في **أي بلد** (§81 رحلة الحساب الجديد العامة، جولة 0.3): بلد الحساب، أو بلد تانية لو الفلوس تقدر
+ * تتكتب فيها ([OnbState.otherCountryMoney]). من غيرها ⇒ الكارتين بيستخبوا والانتهاء بيفتح «المحافظ» زي الأول.
+ */
+fun money(s: OnbState): Boolean = s.fresh && (sameCountry(s) || s.otherCountryMoney)
+
+/** الكاش والبنك رايحين لبلد غير الشغالة (اختار مصر) ⇒ بيتكتبوا بعد إنشائها في محافظها (`CountryMoney`) مش في `OnboardAccount.finish`. */
+fun moneyElsewhere(s: OnbState): Boolean = money(s) && !sameCountry(s)
+
+/** بلد كارتين الفلوس (عملتها وبنوكها): المختارة، وإلا الشغالة [activeCode]. */
+fun moneyCountry(s: OnbState, activeCode: String): String = s.answers.countryCode ?: s.home ?: activeCode
 
 /** الكروت بالترتيب للحالة دي. */
 fun steps(s: OnbState): List<OnbStep> = if (money(s)) OnbStep.entries else OnbStep.entries.filter { it != OnbStep.CASH && it != OnbStep.BANK }
@@ -210,6 +226,16 @@ suspend fun countrySpaceFor(answers: OnbAnswers, open: List<Space>, admin: Space
         val old = admin.archived().firstOrNull { it.countryCode.equals(code, true) }
         (if (old != null) admin.unarchive(old.id) else admin.create(code)).id
     }
+}
+
+/**
+ * «ادخل التطبيق» والفلوس لبلد تانية ([moneyElsewhere]): الكاش والبنك ⇒ محافظ البلد [spaceId] بعد إنشائها ([money] = `CountryMoney`).
+ * مفيش بلد أو مفيش طريق ⇒ «غير متاح» (الشاشة بتفضل على «جاهز»). الإعادة ما بتكررش (`NewCountryMoney`).
+ */
+suspend fun moneyInto(spaceId: String?, profile: UserProfile, answers: OnbAnswers, money: CountryMoney?): OnboardingResult {
+    if (spaceId == null || money == null) return OnboardingResult.Failed("cash", t(TextKey.NOT_AVAILABLE))
+    val input = finishInput(profile, answers, withMoney = true)
+    return runCatching { money.apply(spaceId, input.cashMinor, input.bank) }.getOrElse { OnboardingResult.Failed("cash", t(UiKey.ONB_FINISH_FAILED)) }
 }
 
 /** البلد اللي هنتبدل لها بعد الحفظ: مصر اختارها ومساحتها مفتوحة ومش هي الشغالة. null = نفضل مكاننا. */
