@@ -45,6 +45,8 @@ data class CategorizeTransactionsDeps(
     val rules: RuleRepository,
     val uow: UnitOfWork,
     val clock: Clock,
+    /** §75-16: التصنيف اللي المالك بيأكده بيتحفظ لمحل العملية لوحده. **التشغيل الحقيقي لازم يدّيه**؛ null = سلوك ما قبل §75-16. */
+    val merchantMemory: MerchantMemory? = null,
 )
 
 class CategorizeTransactions(private val deps: CategorizeTransactionsDeps) {
@@ -116,11 +118,17 @@ class CategorizeTransactions(private val deps: CategorizeTransactionsDeps) {
         }
     }
 
-    /** تأكيد المستخدم لتصنيف عملية — بيرفع الحماية ضد الكتابة الآلية (spec/05). */
+    /**
+     * تأكيد المستخدم لتصنيف عملية — بيرفع الحماية ضد الكتابة الآلية (spec/05)، ومع [CategorizeTransactionsDeps.merchantMemory]
+     * التصنيف بيتحفظ لمحلها من غير سؤال (§75-16).
+     */
     suspend fun confirm(transactionId: Id, categoryId: Id) {
         deps.txns.update(
             transactionId,
             TransactionPatch(categoryId = categoryId, categoryConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = deps.clock.nowIso()),
         )
+        val memory = deps.merchantMemory ?: return
+        val transaction = deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: return
+        memory.remember(MerchantPick.of(transaction, categoryId))
     }
 }

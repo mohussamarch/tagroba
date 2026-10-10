@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.AskKind
 import app.masroufy.core.Currency
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Person
@@ -10,13 +11,15 @@ import app.masroufy.core.TransferPartyRef
 import app.masroufy.core.TransferVerdict
 import app.masroufy.core.transferPartyOf
 import app.masroufy.memory.FixedClock
+import app.masroufy.memory.MemoryAllocationRepository
+import app.masroufy.memory.MemoryObligationRepository
 import app.masroufy.memory.MemoryPersonRepository
+import app.masroufy.memory.MemorySettlementRepository
 import app.masroufy.memory.MemoryUnitOfWork
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /**
  * الأطراف المربوطة في «زون التحويلات» (§60) بتتطبق على تحويلات **رسايل البنك** اللي اتسجلت لوحدها (§72) زي الكشف بالظبط.
@@ -45,8 +48,9 @@ class SmsTransferDecisionsTest {
         val person = partyOf(TO_PERSON)
         val (out, incoming) = recordWith(listOf(decision(person, TransferVerdict.PERSON, "p-1")), TO_PERSON, FROM_PERSON).sortedBy { it.observedDirection.wire }
             .let { list -> list.single { it.amountMinor == 50_000L } to list.single { it.amountMinor == 100_000L } }
-        assertEquals(EconomicKind.SUPPORT_GIFT, out.economicKind, "الصادر لشخص = دعم (§39)")
-        assertTrue(out.economicKindConfirmed)
+        assertEquals(EconomicKind.UNCLASSIFIED, out.economicKind, "الصادر لشخص بيتسأل «سلفة ولا دعم؟» كل مرة (§75-5) — مش دعم لوحده")
+        assertFalse(out.economicKindConfirmed)
+        assertEquals(ReviewState.NEEDS_REVIEW, out.reviewState)
         assertEquals(ReviewState.NEEDS_REVIEW, incoming.reviewState, "الوارد منه بيتسأل (§39.1)")
         assertFalse(incoming.economicKindConfirmed)
     }
@@ -77,7 +81,14 @@ class SmsTransferDecisionsTest {
         val zone = ManageTransfers(ManageTransfersDeps(space.txnStore, space.parties, people, MemoryUnitOfWork(listOf(space.txnStore, space.parties)), FixedClock("2026-10-08T00:00:00.000Z")))
         val row = zone.zone().rows.single()
         assertEquals("TEST PERSON" to Currency.SAR, row.party.label to row.currency)
-        assertEquals(1, zone.markPerson(row.party, "p-1"), "القرار من الزون بيصلّح تحويل الرسالة اللي اتسجل قبله")
-        assertEquals(EconomicKind.SUPPORT_GIFT, space.all().single().economicKind)
+        val before = space.all().single()
+        assertEquals(EconomicKind.UNCLASSIFIED to ReviewState.NEEDS_REVIEW, before.economicKind to before.reviewState)
+        // الصادر لشخص ما بقاش بيتحط «دعم» (§75-5): العملية كانت مستنية أصلًا ⇒ مفيش كتابة، والسؤال بيطلع من مصدر الأسئلة
+        assertEquals(0, zone.markPerson(row.party, "p-1"), "مستنية زي ما هي — مفيش حاجة تتكتب")
+        assertEquals(before, space.all().single())
+        val asks = TransferAskSource(
+            TransferAskSourceDeps("sa", space.txnStore, space.parties, MemoryObligationRepository(), MemorySettlementRepository(), MemoryAllocationRepository()),
+        ).pending("2026-10-01", "2026-10-31")
+        assertEquals(listOf(AskKind.LOAN_OR_SUPPORT to before.id), asks.map { it.kind to it.transactionId }, "القرار من الزون بيوصل لتحويل الرسالة اللي اتسجل قبله")
     }
 }

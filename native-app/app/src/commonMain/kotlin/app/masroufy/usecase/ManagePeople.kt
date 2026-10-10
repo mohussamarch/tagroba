@@ -105,6 +105,8 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
      * بينشئ التزامًا من عملية: دفعت عن حد أو سلّفت أو استلمت قرض/أمانة.
      * spec/02: «مجموع التخصيصات للشخص **لا يتجاوز قيمة الشراء**»،
      * والهدية تخصيص بلا التزام (spec/06).
+     * [requestId] (زي `settle`) = معرّفات ثابتة `alloc-<الطلب>` و`obl-<الطلب>`: نفس الطلب مرتين بيكتب نفس المستندين (إعادة بعد انقطاع
+     * ما بتعملش دين تاني) — والتخصيص اللي بنفس المعرّف ما بيتحسبش مرتين في حد قيمة العملية.
      */
     suspend fun linkToPerson(
         transactionId: Id,
@@ -112,14 +114,17 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         kind: ObligationKind,
         amountMinor: Halalas,
         asGift: Boolean = false,
+        requestId: String? = null,
     ): LinkResult {
         if (amountMinor <= 0) throw IllegalStateException(uiText(TextKey.AMOUNT_POSITIVE))
+        if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException(uiText(TextKey.SETTLEMENT_REQUEST_ID_INVALID))
 
         val transaction = deps.txns.findByIds(listOf(transactionId)).firstOrNull()
             ?: throw IllegalStateException(uiText(TextKey.TXN_NOT_FOUND))
         if (deps.spaceLegs?.isLeg(transactionId) == true) throw IllegalStateException(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_TRANSFER_LEG_LOCKED))
 
-        val already = deps.allocations.listByTransactionIds(listOf(transactionId)).fold(0L) { sum, a -> sum + a.amountMinor }
+        val sameRequest = requestId?.let { "alloc-$it" }
+        val already = deps.allocations.listByTransactionIds(listOf(transactionId)).filter { it.id != sameRequest }.fold(0L) { sum, a -> sum + a.amountMinor }
         if (already + amountMinor > transaction.amountMinor) {
             throw IllegalStateException(
                 uiText(TextKey.LEDGER_ALLOCATIONS_EXCEED, formatMoney(already + amountMinor), formatMoney(transaction.amountMinor)),
@@ -128,7 +133,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
 
         return deps.uow.run {
             val allocation = PersonAllocation(
-                id = deps.ids.next("alloc"),
+                id = sameRequest ?: deps.ids.next("alloc"),
                 transactionId = transactionId,
                 personId = personId,
                 allocationKind = if (asGift) AllocationKind.GIFT else AllocationKind.RECEIVABLE,
@@ -140,7 +145,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
             if (asGift) return@run LinkResult(obligation = null, allocation = allocation)
 
             val obligation = Obligation(
-                id = deps.ids.next("obl"),
+                id = requestId?.let { "obl-$it" } ?: deps.ids.next("obl"),
                 personId = personId,
                 originTransactionId = transactionId,
                 kind = kind,

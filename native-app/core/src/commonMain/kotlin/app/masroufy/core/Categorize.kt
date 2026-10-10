@@ -150,3 +150,37 @@ fun rememberMerchant(all: List<Merchant>, rawName: String, categoryId: Id, newId
     if (existing != null) return existing.copy(verifiedCategoryId = categoryId)
     return Merchant(newId, displayName.take(120), normalizedName, verifiedCategoryId = categoryId)
 }
+
+/**
+ * الاسم اللي تصنيف [t] بيتحفظ له لما المالك يختاره بإيده (§75-16: «التصنيف اللي يختاره بإيده **لمحل** بيتحفظ للمحل») — أو null
+ * لو اسم العملية **مش محل** (لو اتحفظ، كل عملية بنفس الاسم العام بتاخد نفس التصنيف **مؤكد** وفوق القواعد):
+ * - **سطر نوع العملية** اللي قارئ الكشف حطه مكان التاجر لما ما لقاش اسم (`merchantNameFor` في كشف الراجحي).
+ * - **اسم عام** ([isGenericOperationName]) حتى لو جه في خانة التاجر: عنوان عملية موحّد («شراء عبر نقاط البيع» · «حوالة واردة» ·
+ *   «خصم رسوم») أو اسم نوع اقتصادي («تحويل داخلي» — اسم رجل التحويل بين بلدين §64).
+ * - **التحويل** (الاسم اسم شخص أو حساب — زون التحويلات هو اللي بيتعامل معاه، §60) و**التحويل الداخلي المؤكد**.
+ */
+fun rememberableMerchantName(t: Transaction): String? {
+    val name = t.rawMerchantName?.takeIf { it.isNotBlank() } ?: return null
+    val op = t.sourceOperationType?.takeIf { it.isNotBlank() }
+    if (op != null && normalizeText(name).let { it == normalizeText(op) || it == normalizeText(tidy(op, 60)) }) return null
+    if (isGenericOperationName(name)) return null
+    if (isTransferLike(t) || (t.economicKindConfirmed && t.economicKind == EconomicKind.INTERNAL_TRANSFER)) return null
+    return name
+}
+
+/**
+ * أسماء الأنواع الاقتصادية **بكل لغات العرض** (فصحى · مصري · إنجليزي): الاسم المتخزن على عملية (زي رجل التحويل بين بلدين) بيتكتب
+ * باللغة اللي كانت شغالة وقتها، فبيتقارن بالكل.
+ */
+private val KIND_LABEL_KEYS: Set<String> by lazy {
+    listOf(MSA_TEXTS, EGYPTIAN_TEXTS, ENGLISH_TEXTS)
+        .flatMap { table -> ALL_ECONOMIC_KINDS.mapNotNull { table[ruleFor(it).labelKey] } }
+        .map { shapeKey(it) }
+        .toSet()
+}
+
+/** [name] اسم عملية عام مش محل: عنوان من عناوين البنك المركزي الموحّدة (`SmsSamaTitles.kt`) أو اسم نوع اقتصادي. */
+fun isGenericOperationName(name: String): Boolean {
+    val key = shapeKey(name)
+    return isSamaTitle(key) || key in KIND_LABEL_KEYS
+}

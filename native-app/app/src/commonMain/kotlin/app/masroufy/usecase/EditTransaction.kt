@@ -51,6 +51,11 @@ data class EditTransactionDeps(
     val settlements: SettlementRepository? = null,
     /** رجول التحويل لنفسك (§64): مبلغ الرجل متسجل في الزوج ⇒ ما يتعدلش غير بعد الفك. التشغيل الحقيقي بيدّيه. */
     val spaceLegs: app.masroufy.port.SpaceTransferLegs? = null,
+    /**
+     * §75-16: التصنيف اللي المالك بيختاره بيتحفظ لمحل العملية لوحده (من غير «نفتكره؟»). **التشغيل الحقيقي لازم يدّيه**؛ null = سلوك
+     * ما قبل §75-16 (ملفات المرجع بتشتغل كده). الرفع للقايمة المشتركة هنا من [onCategoryConfirmed] زي ما هو، مش منه.
+     */
+    val merchantMemory: MerchantMemory? = null,
 )
 
 class EditTransaction(private val deps: EditTransactionDeps) {
@@ -64,7 +69,10 @@ class EditTransaction(private val deps: EditTransactionDeps) {
         return TransactionDetail(transaction, links.mapNotNull { byId[it.tagId] })
     }
 
-    /** بيغيّر التصنيف. `null` بيشيله. التغيير اليدوي بيتأكد فورًا فالقواعد ما تكتبش فوقه. */
+    /**
+     * بيغيّر التصنيف. `null` بيشيله. التغيير اليدوي بيتأكد فورًا فالقواعد ما تكتبش فوقه — ومع [EditTransactionDeps.merchantMemory]
+     * التصنيف بيتحفظ لمحل العملية (§75-16، آخر اختيار يكسب). شيل التصنيف ما بيمسحش اللي المحل فاكره.
+     */
     suspend fun setCategory(transactionId: Id, categoryId: Id?) {
         val transaction = find(transactionId)
 
@@ -83,7 +91,11 @@ class EditTransaction(private val deps: EditTransactionDeps) {
                 updatedAt = deps.clock.nowIso(),
             ),
         )
-        if (categoryId != null) deps.onCategoryConfirmed?.let { share -> runCatching { share(transaction, categoryId) } }
+        if (categoryId != null) {
+            // الحفظ على الحساب فشله بيبان (ما بنقولش «اتحفظ» وهو ما اتحفظش)؛ الرفع للقايمة المشتركة اختياري وبيتبلع زي الأول
+            deps.merchantMemory?.remember(MerchantPick.of(transaction, categoryId), share = false)
+            deps.onCategoryConfirmed?.let { share -> runCatching { share(transaction, categoryId) } }
+        }
     }
 
     /** بيعدّل المبلغ — OVERRIDES §32. الأصلي من المصدر بيتحفظ مرة واحدة. */
