@@ -1,8 +1,16 @@
 package app.masroufy.wiring
 
 import app.masroufy.core.AlertGroup
+import app.masroufy.core.Halalas
+import app.masroufy.core.Id
+import app.masroufy.core.IsoDate
 import app.masroufy.ui.screens.more.MoreDeps
+import app.masroufy.ui.screens.more.NewWallet
 import app.masroufy.ui.screens.more.SpaceCard
+import app.masroufy.ui.screens.more.WalletEditor
+import app.masroufy.usecase.AddWalletInput
+import app.masroufy.usecase.ManageWallets
+import app.masroufy.usecase.WalletError
 import app.masroufy.usecase.ExportCsv
 import app.masroufy.usecase.FullBackup
 import app.masroufy.usecase.IncomeSignalsDeps
@@ -19,7 +27,7 @@ import app.masroufy.usecase.ReconcileDeps
  * «المزيد» — ملفك (`c.shell.profile` نفس كائن الهيكل) · مصادر الدخل وإشاراتها · إعدادات الإشعارات (`c.shell.engine`) · المحافظ
  * (`LoadWithYouNow` + حركات الشهر + `ReconcileBalance`) · البلدان · التصدير والنسخة الشاملة. (`AppLock` و`SignIn` على مستوى التطبيق: `LocalApp`.)
  * **الملف ده بتاع المنطقة بس.** حالة الاستخدام بتتبني من [AreaContext] بنفس اعتماداتها في اختبارات `:app`.
- * نقاط الربط في `MoreHooks` (المحفظة الأساسية · إضافة محفظة · إنشاء بلد وأرشفته · اللغة · الشكل · نطاق الراتب · سؤال الكاش) **null** هنا لحد
+ * إضافة محفظة متوصلة (`ManageWallets`). باقي نقاط الربط في `MoreHooks` (المحفظة الأساسية · إنشاء بلد وأرشفته · اللغة · الشكل · نطاق الراتب · سؤال الكاش) **null** هنا لحد
  * ما منطقها يتبني (المحفظة الأساسية على فرع `assistant-engine`) ⇒ الشاشات بتقول «غير متاح بعد» بدل ما تزيّف.
  */
 class MoreGraph(private val c: AreaContext) : MoreDeps {
@@ -57,4 +65,24 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     override val fullBackup: FullBackup? = r.fullBackup?.let { FullBackup(it, r.spacesBackup) }
 
     override fun nowIso(): String = c.env.clock.nowIso()
+
+    /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
+    override val walletEditor: WalletEditor = object : WalletEditor {
+        private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency)
+
+        override suspend fun add(wallet: NewWallet): String? = attempt {
+            manage.add(AddWalletInput(wallet.kind, wallet.name, wallet.last4, wallet.openingMinor, wallet.openingAt))
+        }
+
+        override suspend fun setOpening(walletId: Id, openingMinor: Halalas, openingAt: IsoDate): String? = attempt {
+            manage.setOpening(walletId, openingMinor, openingAt)
+        }
+
+        private suspend fun attempt(block: suspend () -> Unit): String? = try {
+            block()
+            null
+        } catch (e: WalletError) {
+            e.message
+        }
+    }
 }

@@ -58,7 +58,7 @@ import app.masroufy.usecase.WithYouNow
 /**
  * «المحافظ» (`Wallets` — spec/02 «الكاش» · §26 · §41): محافظ البلد الشغالة بس. فوق «معك الآن» (نفس رقم الرئيسية — `LoadWithYouNow`)،
  * وتحته البنوك · المحافظ الإلكترونية · الكاش، ولكل محفظة رصيدها أو «غير متاح» ورصيد بدايتها، و«الأساسية» على محفظتك الأساسية.
- * «أضف محفظة» (`WalletAddSheet`) نقطة ربط ([WalletEditor]) — مفيش حالة استخدام لإدارة المحافظ لسه.
+ * «أضف محفظة» (`WalletAddSheet`) نقطة ربط ([WalletEditor]) — متوصلة بـ`ManageWallets` (الإضافة ورصيد البداية).
  */
 @Composable
 fun WalletsScreen() {
