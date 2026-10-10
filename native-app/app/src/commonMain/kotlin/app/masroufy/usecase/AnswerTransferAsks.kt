@@ -203,7 +203,7 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
      * §82-19 — رد «دفعت أكتر من اللي عليك» على صادر لشخص أكبر من ديونك المفتوحة ليه: الديون بتتقفل كلها (**الأقدم الأول**، نفس معرّفات
      * «أيوه، سداد» الثابتة) والعملية «سداد دين عليك» مؤكد، والزيادة نصيب الشخص من العملية بنفس طريق شاشة الأشخاص (`linkToPerson` بمعرّف
      * السؤال الثابت ⇒ الإعادة بعد انقطاع بتكتب نفس المستندات): «أمانة ليك عنده» ⇒ دين ليك معلّم أمانة · «سلفة جديدة ليه» ⇒ دين ليك ·
-     * «دعم» ⇒ نصيب «هدية» من غير دين (⚠️ العملية نوعها واحد «سداد دين» ⇒ الزيادة ما بتدخلش المصروف — سؤال مفتوح للمالك) ·
+     * «دعم» ⇒ نصيب «هدية» من غير دين، و**بيتحسب مصروف** في شهر العملية زي أي هدية (§88 — `givenAwayShareOf`؛ السداد نفسه مش مصروف) ·
      * «غلطة في المبلغ» ⇒ [DebtAnswer.FixAmount] من غير ولا كتابة.
      */
     suspend fun answerOverpay(txnId: Id, choice: app.masroufy.core.OverpayChoice): DebtAnswer {
@@ -222,6 +222,7 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
             deps.people.linkToPerson(
                 p.t.id, p.personId, ObligationKind.RECEIVABLE, over.surplusMinor, asGift = choice == app.masroufy.core.OverpayChoice.SUPPORT,
                 requestId = request, custodyHeld = choice == app.masroufy.core.OverpayChoice.HELD_FOR_YOU,
+                countedAsSpend = choice == app.masroufy.core.OverpayChoice.SUPPORT,
             )
             DebtAnswer.Recorded(confirmKind(p.t, EconomicKind.DEBT_REPAID), written)
         }

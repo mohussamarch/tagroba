@@ -84,12 +84,14 @@ object LedgerCodecs {
             doc {
                 req("id", a.id); req("transactionId", a.transactionId); req("personId", a.personId); req("allocationKind", a.allocationKind.wire)
                 req("amountMinor", a.amountMinor); req("currency", a.currency.name)
+                // §88 — لو true بس (المستند القديم زي ما هو)
+                opt("countedAsSpend", a.countedAsSpend.takeIf { it })
             }
         },
         { r ->
             PersonAllocation(
                 r.str("id"), r.str("transactionId"), r.str("personId"), r.wire("allocationKind", AllocationKind::fromWire),
-                r.long("amountMinor"), r.wire("currency", Currency::valueOf),
+                r.long("amountMinor"), r.wire("currency", Currency::valueOf), countedAsSpend = r.boolOrNull("countedAsSpend") == true,
             )
         },
     )

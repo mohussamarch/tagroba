@@ -14,7 +14,9 @@ import app.masroufy.core.cashMovement
 import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.countsAsIncome
 import app.masroufy.core.countsAsPersonalExpense
+import app.masroufy.core.givenAwayShareOf
 import app.masroufy.core.ruleFor
+import app.masroufy.core.subtractMoney
 import app.masroufy.core.Transaction
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
@@ -83,7 +85,8 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
         // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (OVERRIDES §18)، والداخل المستني برّه الدخل (§75-1)
         val view = withEstimatedKinds(raw, names)
         val rows = view.transactions
-        val totals = computePeriodTotals(rows, deps.allocations.listByTransactionIds(rows.map { it.id }))
+        val shares = deps.allocations.listByTransactionIds(rows.map { it.id })
+        val totals = computePeriodTotals(rows, shares)
         val coverage = assessCoverage(rows)
         // الداخل المستني مش «صرف مش معروف» ⇒ ما بيخلّيش الملخص كله «غير متاح»
         val spend = assessCoverage(view.withoutPendingIncoming)
@@ -98,7 +101,9 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
                 t.observedDirection == Direction.OUT && !countsAsPersonalExpense(t.economicKind) -> notExpense
                 else -> null
             } ?: continue
-            bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, t.amountMinor)
+            // §88: «الدعم» جوه سداد دين عليك اتحسب مصروف ⇒ مش هنا كمان
+            val notCounted = subtractMoney(t.amountMinor, givenAwayShareOf(t, shares))
+            if (notCounted > 0) bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, notCounted)
         }
         // §58: اللي دخل وخرج فعلًا في المدى **بتاريخه** — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس. بالأنواع التقديرية زي الأول:
         // التحويل بين محافظك (زي السحب من الصرّاف اللي لسه ما اتأكدش) مش حركة

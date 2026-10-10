@@ -119,6 +119,8 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         asGift: Boolean = false,
         requestId: String? = null,
         custodyHeld: Boolean = false,
+        /** §88: «دعم» جوه عملية مش مصروف (الزيادة على سداد دين) ⇒ بيتحسب مصروف — على «هدية» بس. */
+        countedAsSpend: Boolean = false,
     ): LinkResult {
         if (amountMinor <= 0) throw IllegalStateException(uiText(TextKey.AMOUNT_POSITIVE))
         if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException(uiText(TextKey.SETTLEMENT_REQUEST_ID_INVALID))
@@ -143,6 +145,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
                 allocationKind = if (asGift) AllocationKind.GIFT else AllocationKind.RECEIVABLE,
                 amountMinor = amountMinor,
                 currency = transaction.currency,
+                countedAsSpend = asGift && countedAsSpend,
             )
             deps.allocations.saveMany(listOf(allocation))
 

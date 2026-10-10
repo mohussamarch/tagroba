@@ -67,7 +67,7 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     ASSISTANT_UNKNOWN_GROUP to listOf("id", "text", "normalized", "askCount", "firstAskedAt", "lastAskedAt", "screen", "spaceId"),
     ALERT_DISMISSALS_GROUP to listOf("id", "threadKey", "dismissedAt"),
 )
-private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred", "custodyHeld")
+private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred", "custodyHeld", "countedAsSpend")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday", "messageCount", "askCount")
 private val DATES = setOf("occurredAt", "openingAt", "periodStart", "periodEnd", "purchasedAt", "soldAt", "asOf", "nextDueAt", "firstDueAt", "hawlStart", "dueAt", "paidAt", "date", "startedAt", "endedAt", "occurrenceDate", "deadline")
 private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(

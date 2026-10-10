@@ -88,6 +88,11 @@ data class PersonAllocation(
     val allocationKind: AllocationKind,
     val amountMinor: Halalas,
     val currency: Currency,
+    /**
+     * §88: «دعم» ([AllocationKind.GIFT]) جوه عملية نوعها مش مصروف (الزيادة على سداد دين عليك — §82-19) ⇒ **بيتحسب مصروف** (`givenAwayShareOf`).
+     * بيتخزن بس لو true ⇒ أي تخصيص قديم بيتكتب هو هو، والتطبيق القديم بيقرا الحقل الزيادة وبيسيبه.
+     */
+    val countedAsSpend: Boolean = false,
 )
 
 enum class ObligationKind(val wire: String) {

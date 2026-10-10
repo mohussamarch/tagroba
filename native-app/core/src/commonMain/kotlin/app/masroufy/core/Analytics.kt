@@ -19,7 +19,7 @@ fun categoryDistribution(transactions: List<Transaction>, allocations: List<Pers
     val byCategory = LinkedHashMap<Id?, Pair<Halalas, Int>>()
     var total = 0L
     for (t in transactions) {
-        if (!countsAsPersonalExpense(t.economicKind) || t.excludedFromBudget) continue
+        if (!countsAsPersonalSpend(t, allocations) || t.excludedFromBudget) continue
         val share = personalShareOf(t, allocations)
         if (share == 0L) continue
         val (amount, count) = byCategory[t.categoryId] ?: (0L to 0)

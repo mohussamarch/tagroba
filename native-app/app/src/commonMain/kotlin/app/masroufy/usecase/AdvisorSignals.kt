@@ -16,7 +16,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.assessCoverage
 import app.masroufy.core.capPaceCandidate
-import app.masroufy.core.countsAsPersonalExpense
+import app.masroufy.core.countsAsPersonalSpend
 import app.masroufy.core.goalForHabit
 import app.masroufy.core.habitVsGoalCandidate
 import app.masroufy.core.isDiscretionary
@@ -164,6 +164,6 @@ class AdvisorSignals(private val deps: AdvisorSignalsDeps) {
 internal suspend fun spendLinesOf(rows: List<Transaction>, names: Map<Id, String>, allocations: AllocationRepository): List<SpendLine> {
     val counted = withEstimatedKinds(rows, names).transactions
     val shares = allocations.listByTransactionIds(counted.map { it.id })
-    return counted.filter { countsAsPersonalExpense(it.economicKind) && !it.excludedFromBudget }
+    return counted.filter { countsAsPersonalSpend(it, shares) && !it.excludedFromBudget }
         .map { SpendLine(it.id, it.occurredAt, it.categoryId, personalShareOf(it, shares), recurringKey(it)) }.filter { it.amountMinor > 0 }
 }

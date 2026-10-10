@@ -13,11 +13,14 @@ import app.masroufy.core.ReviewState
 import app.masroufy.core.Transaction
 import app.masroufy.core.TransferParty
 import app.masroufy.core.TransferVerdict
+import app.masroufy.core.categoryDistribution
+import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.computePersonBalance
 import app.masroufy.core.overpayOf
 import app.masroufy.core.transferPartyOf
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAllocationRepository
+import app.masroufy.memory.MemoryCategoryRepository
 import app.masroufy.memory.MemoryObligationRepository
 import app.masroufy.memory.MemoryPersonRepository
 import app.masroufy.memory.MemorySettlementRepository
@@ -68,6 +71,7 @@ class OverpayTest {
 
         fun balance() = computePersonBalance("p-1", obligations.all(), settlements.all())
         suspend fun shares() = allocations.listByTransactionIds(listOf("t-out", "t-back"))
+        fun money() = LoadMoneySummary(LoadMoneySummaryDeps(txns, MemoryCategoryRepository(), allocations))
         suspend fun kind(id: String) = txns.findByIds(listOf(id)).single().let { it.economicKind to it.economicKindConfirmed }
     }
 
@@ -171,6 +175,28 @@ class OverpayTest {
         assertEquals(listOf(AllocationKind.GIFT to 20_000L), w.shares().map { it.allocationKind to it.amountMinor })
         val b = w.balance()
         assertEquals(listOf(0L, 0L), listOf(b.payableLoanMinor, b.receivableMinor))
+        // §88: الزيادة «دعم» = مصروف الشهر زي أي هدية · السداد نفسه (500) مش مصروف ومكانه «خرج ومش مصروف»
+        val month = w.money().load("2026-10-01", "2026-10-31")
+        assertEquals(20_000L, month.expenseMinor)
+        assertEquals(mapOf(EconomicKind.DEBT_REPAID to 50_000L), month.outflowNotExpense)
+        val txn = w.txns.findByIds(listOf("t-out")).single()
+        assertEquals(20_000L, categoryDistribution(listOf(txn), w.shares()).totalMinor, "توزيع التصنيفات نفس الرقم")
+        assertTrue(w.shares().single().countedAsSpend)
+        // «هدية» قديمة على سداد دين (من غير العلامة) ⇒ زي التطبيق القديم بالظبط: مش مصروف
+        val old = w.shares().map { it.copy(countedAsSpend = false) }
+        assertEquals(0L, computePeriodTotals(listOf(txn), old).personalExpenseMinor)
+    }
+
+    /** §88: «أمانة» و«سلفة جديدة» فلوس راجعة ⇒ مش مصروف؛ والعملية كلها «خرج ومش مصروف». */
+    @Test fun heldOrNewLoanIsNotSpending() = runBlocking<Unit> {
+        for (choice in listOf(OverpayChoice.HELD_FOR_YOU, OverpayChoice.NEW_LOAN)) {
+            val w = World(listOf(transfer("t-out", Direction.OUT, 70_000)))
+            w.people.addOpeningDebt("p-1", ObligationKind.LOAN_PAYABLE, 50_000)
+            w.answers.answerOverpay("t-out", choice)
+            val month = w.money().load("2026-10-01", "2026-10-31")
+            assertEquals(0L, month.expenseMinor, "$choice")
+            assertEquals(mapOf(EconomicKind.DEBT_REPAID to 70_000L), month.outflowNotExpense, "$choice")
+        }
     }
 
     @Test fun aTransferWrongAmountWritesNothingAndStaysAsked() = runBlocking<Unit> {
