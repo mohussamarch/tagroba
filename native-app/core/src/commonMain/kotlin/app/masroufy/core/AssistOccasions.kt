@@ -9,10 +9,16 @@ private class SpokenOccasion(val arabic: String, val english: String, vararg spo
     val phrases: List<List<String>> = spoken.map { assistTokens(assistNormalize(it)) }.filter { it.isNotEmpty() }
 }
 
+private val EID_FITR = SpokenOccasion("عيد الفطر", "Eid al-Fitr", "عيد الفطر", "العيد الصغير", "eid al fitr", "eid alfitr")
+private val EID_ADHA = SpokenOccasion("عيد الأضحى", "Eid al-Adha", "عيد الأضحى", "عيد الاضحي", "العيد الكبير", "eid al adha", "eid aladha")
+
+/** «العيد» لوحده — مش معروف أنهي عيد (§89-2). */
+private val ANY_EID = SpokenOccasion("العيد", "Eid", "العيد", "eid")
+
 // العبارة الأطول الأول («عيد الفطر» قبل «العيد»). «صفر» لوحدها = رقم ⇒ «شهر صفر» بس. «عيد» لوحدها اسم شخص ⇒ «العيد».
 private val OCCASIONS = listOf(
-    SpokenOccasion("عيد الفطر", "Eid al-Fitr", "عيد الفطر", "العيد الصغير", "eid al fitr", "eid alfitr"),
-    SpokenOccasion("عيد الأضحى", "Eid al-Adha", "عيد الأضحى", "عيد الاضحي", "العيد الكبير", "eid al adha", "eid aladha"),
+    EID_FITR,
+    EID_ADHA,
     SpokenOccasion("ربيع الأول", "Rabi al-Awwal", "ربيع الأول", "ربيع اول"),
     SpokenOccasion("ربيع الآخر", "Rabi al-Akhir", "ربيع الآخر", "ربيع الثاني", "ربيع التاني"),
     SpokenOccasion("جمادى الأولى", "Jumada al-Ula", "جمادى الأولى", "جماد اول"),
@@ -28,7 +34,7 @@ private val OCCASIONS = listOf(
     SpokenOccasion("رجب", "Rajab", "رجب", "rajab"),
     SpokenOccasion("عاشوراء", "Ashura", "عاشوراء", "ashura"),
     SpokenOccasion("الحج", "Hajj", "الحج", "hajj"),
-    SpokenOccasion("العيد", "Eid", "العيد", "eid"),
+    ANY_EID,
 )
 
 /** كل كلمات أسامي المناسبات (بعد التوحيد) — كلمة منهم بعد «في» مش «موضوع مش معروف» لما المناسبة نفسها اتفهمت. */
@@ -40,10 +46,26 @@ val PERIOD_ASK_INTENTS: Set<AssistIntent> = setOf(
 )
 
 /** اسم المناسبة اللي في الكلام (بلغة العرض) — أو null. كلمة جوه اسم معروف (شخص اسمه «رجب») ما بتتحسبش. */
-fun occasionIn(s: AssistSignals): String? {
-    val hit = OCCASIONS.firstOrNull { o -> o.phrases.any { p -> phraseOutsideEntities(s, p) } } ?: return null
-    return if (Texts.language == Language.EN) hit.english else hit.arabic
-}
+fun occasionIn(s: AssistSignals): String? = hitIn(s)?.let(::shown)
+
+private fun hitIn(s: AssistSignals): SpokenOccasion? = OCCASIONS.firstOrNull { o -> o.phrases.any { p -> phraseOutsideEntities(s, p) } }
+
+private fun shown(o: SpokenOccasion): String = if (Texts.language == Language.EN) o.english else o.arabic
+
+/**
+ * §89-2 (المالك 2026-10-11): «العيد» لوحده (من غير «الفطر» ولا «الأضحى») ⇒ **ما بنخمّنش** أنهي عيد. السعودية: سؤال باختيارين ([eidChoices])
+ * وبعده نفس كارت اليومين للعيد اللي اتختار · مصر (وأي بلد تاني): كارت اليومين على طول. «عيد الفطر» و«عيد الأضحى» بالاسم زي ما هم.
+ */
+fun isAnyEid(s: AssistSignals): Boolean = hitIn(s) === ANY_EID
+
+/** السعودية بس بتسأل «أنهي عيد؟» — غيرها كارت اليومين على طول (§89-2). */
+fun asksWhichEid(countryCode: String?): Boolean = countryCode == "SA"
+
+/** اختياري «أنهي عيد؟»: المعرّف الثابت ← الاسم بلغة العرض (اللي بيتحط في كارت اليومين). */
+fun eidChoices(): List<Pair<String, String>> = listOf(EID_FITR_ID to shown(EID_FITR), EID_ADHA_ID to shown(EID_ADHA))
+
+const val EID_FITR_ID = "eidFitr"
+const val EID_ADHA_ID = "eidAdha"
 
 /** الكلمة (بأداتها أو من غيرها) من أسامي المناسبات. */
 internal fun isOccasionWord(word: String): Boolean = cliticForms(word).any { it in OCCASION_WORDS }

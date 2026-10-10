@@ -249,6 +249,8 @@ internal suspend fun TurnKit.pick(msg: AssistMessage, optionId: String): TurnOut
         }
         // §82-1: الكارت ده باليومين بس (`AssistantChat.pickPeriod`) — زرار ما يقفلوش
         AssistChoiceKind.PICK_PERIOD -> return TurnOut(countTopic = false)
+        // §89-2: «أنهي عيد؟» ⇒ كارت اليومين للعيد اللي اتختار
+        AssistChoiceKind.PICK_OCCASION -> pickEid(msg, optionId) ?: return TurnOut(countTopic = false)
         null -> TurnOut()
     }
     return out.copy(updates = listOf(picked) + out.updates)

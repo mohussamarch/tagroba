@@ -8,6 +8,8 @@ import app.masroufy.core.AssistSpeaker
 import app.masroufy.core.AssistantReply
 import app.masroufy.core.CardState
 import app.masroufy.core.Currency
+import app.masroufy.core.EID_ADHA_ID
+import app.masroufy.core.EID_FITR_ID
 import app.masroufy.core.Language
 import app.masroufy.core.Texts
 import app.masroufy.core.formatMoney
@@ -57,7 +59,8 @@ class AssistantPeriodPickTest {
 
     @Test fun aCategoryInAnOccasionUsesTheCategorySpend() = runBlocking<Unit> {
         val w = AssistantWorld()
-        val card = w.chat.send("كم صرفت على القهوة في العيد", w.ctx()).messages.periodCard()
+        val which = w.chat.send("كم صرفت على القهوة في العيد", w.ctx()).messages.last { it.choice == AssistChoiceKind.PICK_OCCASION }
+        val card = w.chat.pick(which.id, EID_FITR_ID, w.ctx()).messages.periodCard()
         val answered = w.chat.pickPeriod(card.id, "2026-09-29", "2026-10-03", w.ctx())
         val expected = assertNotNull(w.categorySpend.load("2026-09-29", "2026-10-03", setOf(w.coffeeId)).amountMinor)
         assertEquals(5_000L, expected)
@@ -72,6 +75,52 @@ class AssistantPeriodPickTest {
         val future = w.chat.pickPeriod(card.id, "2026-10-01", "2026-10-20", w.ctx())
         assertEquals(uiText(AskKey.CHAT_PERIOD_FUTURE), future.messages.last().text)
         assertTrue(future.messages.first { it.id == card.id }.pending, "الكارت مستني لحد مدى صح")
+    }
+
+    /** §89-2 السعودية: «العيد» لوحده ⇒ «أنهي عيد؟» بزرارين، وبعدها كارت اليومين باسم العيد اللي اتختار والإجابة من نفس حالة الاستخدام. */
+    @Test fun saudiPlainEidAsksWhichEidFirst() = runBlocking<Unit> {
+        val w = AssistantWorld()
+        val asked = w.chat.send("صرفت كام في العيد؟", w.ctx()).messages
+        val which = asked.last()
+        assertEquals(AssistChoiceKind.PICK_OCCASION, which.choice)
+        assertTrue(asked.none { it.choice == AssistChoiceKind.PICK_PERIOD }, "مفيش كارت أيام قبل ما يختار العيد")
+        assertEquals(listOf(EID_FITR_ID to "عيد الفطر", EID_ADHA_ID to "عيد الأضحى"), which.options.map { it.id to it.label })
+        assertIs<AssistantReply.Choice>(which.reply)
+        // اختيار مش من الاتنين ⇒ ولا حاجة
+        assertTrue(w.chat.pick(which.id, "other", w.ctx()).messages.first { it.id == which.id }.pending)
+        val chosen = w.chat.pick(which.id, EID_ADHA_ID, w.ctx())
+        val closed = chosen.messages.first { it.id == which.id }
+        assertEquals(CardState.DONE to EID_ADHA_ID, closed.state to closed.picked)
+        val card = chosen.messages.periodCard()
+        assertTrue("عيد الأضحى" in card.text, card.text)
+        val answered = w.chat.pickPeriod(card.id, "2026-10-01", "2026-10-06", w.ctx())
+        val reply = answered.messages.last { it.from == AssistSpeaker.BOT }
+        assertTrue(money(35_000) in reply.text && "عيد الأضحى" in reply.text, reply.text)
+    }
+
+    /** §89-2 مصر: «العيد» لوحده ⇒ كارت اليومين على طول — ما بنخمّنش أنهي عيد. */
+    @Test fun egyptianPlainEidGoesStraightToTheDays() = runBlocking<Unit> {
+        val w = AssistantWorld()
+        val egypt = AssistContext("2026-10-10T09:00:00.000Z", "2026-10-10", 12, w.space.copy(countryCode = "EG"))
+        val asked = w.chat.send("صرفت كام في العيد؟", egypt).messages
+        assertTrue(asked.none { it.choice == AssistChoiceKind.PICK_OCCASION })
+        val card = asked.periodCard()
+        assertTrue(card.pending && "العيد" in card.text, card.text)
+        val answered = w.chat.pickPeriod(card.id, "2026-10-01", "2026-10-06", egypt)
+        assertTrue(money(35_000) in answered.messages.last { it.from == AssistSpeaker.BOT }.text)
+    }
+
+    /** العيد بالاسم ⇒ زي ما هو (كارت اليومين على طول) في البلدين. */
+    @Test fun namedEidsKeepTheirCard() = runBlocking<Unit> {
+        val w = AssistantWorld()
+        val egypt = AssistContext("2026-10-10T09:00:00.000Z", "2026-10-10", 12, w.space.copy(countryCode = "EG"))
+        for (ctx in listOf(w.ctx(), egypt)) {
+            for ((said, name) in listOf("صرفت كام في عيد الفطر" to "عيد الفطر", "صرفت كام في العيد الكبير" to "عيد الأضحى")) {
+                val last = w.chat.send(said, ctx).messages.last()
+                assertEquals(AssistChoiceKind.PICK_PERIOD, last.choice, said)
+                assertTrue(name in last.text, last.text)
+            }
+        }
     }
 
     @Test fun otherMonthsAndOccasionsAskToo() = runBlocking<Unit> {

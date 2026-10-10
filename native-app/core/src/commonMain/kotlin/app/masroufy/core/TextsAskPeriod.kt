@@ -15,6 +15,7 @@ internal val MSA_ASK_PERIOD_TEXTS: Map<AskKey, String> = mapOf(
     AskKey.CHAT_PERIOD_BETWEEN to "من {0} إلى {1}",
     AskKey.CHAT_PERIOD_NAMED to "في {0} (من {1} إلى {2})",
     AskKey.CHAT_PERIOD_PICKED to "من {0} إلى {1}",
+    AskKey.CHAT_EID_WHICH to "أيّ عيد تقصد؟",
 )
 
 internal val EGYPTIAN_ASK_PERIOD_TEXTS: Map<AskKey, String> = mapOf(
@@ -28,6 +29,7 @@ internal val EGYPTIAN_ASK_PERIOD_TEXTS: Map<AskKey, String> = mapOf(
     AskKey.CHAT_PERIOD_BETWEEN to "من {0} لـ{1}",
     AskKey.CHAT_PERIOD_NAMED to "في {0} (من {1} لـ{2})",
     AskKey.CHAT_PERIOD_PICKED to "من {0} لـ{1}",
+    AskKey.CHAT_EID_WHICH to "أنهي عيد؟",
 )
 
 internal val ENGLISH_ASK_PERIOD_TEXTS: Map<AskKey, String> = mapOf(
@@ -41,4 +43,5 @@ internal val ENGLISH_ASK_PERIOD_TEXTS: Map<AskKey, String> = mapOf(
     AskKey.CHAT_PERIOD_BETWEEN to "from {0} to {1}",
     AskKey.CHAT_PERIOD_NAMED to "in {0} ({1} to {2})",
     AskKey.CHAT_PERIOD_PICKED to "{0} to {1}",
+    AskKey.CHAT_EID_WHICH to "Which Eid do you mean?",
 )
