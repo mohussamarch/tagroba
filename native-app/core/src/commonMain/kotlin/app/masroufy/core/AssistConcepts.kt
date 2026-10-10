@@ -14,7 +14,7 @@ object AssistWords {
     val INCOME = vocab("دخلي", "دخل", "الدخل", "ايراد", "ايرادات", "دخلنا", "earn", "earned", "income", "حركه الفلوس", "cash flow", "money in")
     // «بقالي» مش هنا عن قصد (مصري = «من مدة»)
     val REMAINING = vocab("فاضل", "فاضلي", "فاضلك", "فضل لي", "فضلي", "باقي", "باقيلي", "بقي", "متبقي", "يتبقي", "ضل لي", "left", "remaining", "remain")
-    val PER_DAY = vocab("في اليوم", "باليوم", "يوميا", "لليوم", "كل يوم", "per day", "daily", "a day")
+    val PER_DAY = vocab("في اليوم", "باليوم", "يوميا", "لليوم", "كل يوم", "per day", "daily", "a day", fuzzy = false)
     val CAN_SPEND = vocab("اصرف", "اقدر", "المتاح", "متاح", "allowance", "can i spend", "afford")
     val FORECAST = vocab("اخر الشهر", "نهايه الشهر", "بنهايه الشهر", "اخر الفتره", "توقع", "توقعات", "forecast", "end of the month", "end of month", "ساصرف", "سأصرف")
 

@@ -8,7 +8,7 @@ package app.masroufy.core
  */
 fun assistNormalize(raw: String): String {
     val out = StringBuilder(raw.length)
-    for (c in raw) {
+    for ((i, c) in raw.withIndex()) {
         val code = c.code
         when {
             code in 0x064B..0x065F || code == 0x0670 || code in 0x0610..0x061A || code in 0x06D6..0x06ED || code == 0x0640 -> Unit
@@ -31,6 +31,8 @@ fun assistNormalize(raw: String): String {
             c == '؟' -> out.append('?')
             c in 'A'..'Z' -> out.append(c.lowercaseChar())
             c.isLetterOrDigit() || c == '.' || c == ',' || c == '?' || c == '%' || c == '$' -> out.append(c)
+            // «٢٨/٩» تاريخ: الشرطة المايلة بين رقمين بتفضل (غير كده مسافة)
+            c == '/' && out.lastOrNull()?.isDigit() == true && raw.getOrNull(i + 1)?.isDigit() == true -> out.append(c)
             else -> out.append(' ')
         }
     }

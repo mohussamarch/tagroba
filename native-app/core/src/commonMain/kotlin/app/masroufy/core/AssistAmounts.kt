@@ -55,6 +55,23 @@ private val DURATION_AFTER = words(
 private val WEEKDAYS = words("السبت", "الاحد", "الحد", "الاثنين", "الاتنين", "الثلاثاء", "التلات", "الاربعاء", "الاربع", "الخميس", "الجمعه")
 private val PEOPLE_AFTER = words("اشخاص", "افراد", "ناس", "انفار", "people", "persons", "ways")
 private val DAY_BEFORE = words("يوم", "تاريخ", "الساعه", "ساعه", "day", "at", "قبل", "بعد", "اخر", "خلال", "last", "past")
+
+/** «شهر ٩» · «الشهر 8» = رقم شهر (١–١٢) مش مبلغ. */
+private val MONTH_BEFORE = words("شهر", "month")
+
+/** تاريخ مكتوب بالأرقام («٢٨/٩» · «5/10/2026» · «2026-10-05») — مش مبلغ. */
+private val DATE_TOKEN = Regex("""\d{1,2}/\d{1,2}(?:/\d{2,4})?|\d{4}-\d{1,2}-\d{1,2}""")
+
+private val HALF = words("ونص", "ونصف")
+
+/** «ونص» بعد المبلغ (أو بعد العملة: «15 ريال ونص») ⇒ true. */
+private fun halfAfter(tokens: List<String>, k: Int): Boolean {
+    var at = k
+    if (tokens.getOrNull(at)?.let { t -> cliticForms(t).any { it in CURRENCY_WORDS } } == true) at++
+    val t = tokens.getOrNull(at) ?: return false
+    val next = tokens.getOrNull(at + 1)
+    return t in HALF || (t == "و" && (next == "نص" || next == "نصف")) || (t == "and" && (next == "half" || (next == "a" && tokens.getOrNull(at + 2) == "half")))
+}
 private val THOUSAND = words("الف", "الاف", "الوف", "k", "thousand", "تلاف")
 
 /**
@@ -65,7 +82,11 @@ private val NUMBER_WORDS: Map<String, Long> = buildMap {
     // الأشكال القصيرة («ست» · «خمس» · «تلات» · «اربع») مش هنا عن قصد: كلمات تانية («الست» · يوم «التلات» · «الاربع»)
     put(2, "اتنين", "اثنين", "اثنان"); put(3, "تلاته", "ثلاثه"); put(4, "اربعه"); put(5, "خمسه")
     put(6, "سته"); put(7, "سبعه"); put(8, "تمانيه", "ثمانيه"); put(9, "تسعه"); put(10, "عشره")
-    put(11, "حداشر", "احدعشر"); put(12, "اتناشر", "اثنعشر"); put(15, "خمستاشر", "خمسطعش"); put(20, "عشرين", "عشرون"); put(25, "خمسه وعشرين")
+    // «خمسة عشر» = خمسة + عشر بالجمع (زي «خمسة وعشرين»)، و«اثنا عشر» = اتنين + عشر
+    put(2, "اثنا", "اثني"); put(10, "عشر")
+    put(11, "حداشر", "احدعشر"); put(12, "اتناشر", "اثنعشر"); put(13, "تلتاشر", "ثلطعش"); put(14, "اربعتاشر", "اربعطعش"); put(15, "خمستاشر", "خمسطعش")
+    put(16, "ستاشر", "سطعش"); put(17, "سبعتاشر", "سبعطعش"); put(18, "تمنتاشر", "ثمنطعش"); put(19, "تسعتاشر", "تسعطعش")
+    put(20, "عشرين", "عشرون"); put(25, "خمسه وعشرين")
     put(30, "تلاتين", "ثلاثين", "ثلاثون"); put(40, "اربعين", "اربعون"); put(50, "خمسين", "خمسون"); put(60, "ستين", "ستون")
     put(70, "سبعين", "سبعون"); put(80, "تمانين", "ثمانين", "ثمانون"); put(90, "تسعين", "تسعون")
     put(100, "ميه", "مية", "مائه", "مايه"); put(200, "ميتين", "مئتين", "مائتين", "مايتين"); put(300, "تلتميه", "ثلاثمائه", "تلاتمية", "ثلاثميه")
@@ -95,7 +116,8 @@ internal fun digitsToMinor(text: String, multiplier: Long = 1, minorUnits: Boole
 private fun isDuration(after: String?, afterNext: String?): Boolean {
     if (after == null || cliticForms(after).none { it in DURATION_AFTER }) return false
     // «١٥ يوم الجمعة» = مبلغ وبعده يوم في الأسبوع، مش مدة
-    return afterNext == null || cliticForms(afterNext).none { it in WEEKDAYS }
+    // «١٥ يوم ٥» = مبلغ وبعده رقم اليوم، مش مدة
+    return afterNext == null || (cliticForms(afterNext).none { it in WEEKDAYS } && afterNext.any { !it.isDigit() })
 }
 
 /** الكلمة نفسها أو بعد «و»/«ب» بس — مش بعد «ال» («الاتنين» يوم في الأسبوع). */
@@ -130,16 +152,21 @@ fun scanMoney(tokens: List<String>): AssistMoneyScan {
             if (j < tokens.size && cliticForms(tokens[j]).any { it in THOUSAND } && total in 1..999) { total *= 1000; j++ }
             val next = tokens.getOrNull(j)
             val notMoney = isDuration(next, tokens.getOrNull(j + 1)) || (next != null && cliticForms(next).any { it in PEOPLE_AFTER })
-            if (!notMoney && total > 0) amounts += AssistAmount(total * 100, i)
+            // «ألف ونص» = ١٥٠٠ · «مية ونص» = ١٥٠ · «خمسة ونص» = ٥٫٥٠ (النص من آخر خانة اتقالت)
+            val half = if (!halfAfter(tokens, j)) 0L else when { total % 1000 == 0L -> 50_000L; total % 100 == 0L -> 5_000L; else -> 50L }
+            if (!notMoney && total > 0) amounts += AssistAmount(total * 100 + half, i)
             i = j
             continue
         }
+        if (DATE_TOKEN.matches(token)) { i++; continue }
         for (m in NUMBER.findAll(token)) {
             val glued = token.substring(m.range.last + 1)
             if (glued.isNotEmpty()) CURRENCY_WORDS[glued]?.let { currency = currency ?: it }
             if (isDuration(after, tokens.getOrNull(i + 2))) continue
             if (glued.startsWith('%') || after == "%" || '%' in token) continue
             if (before != null && cliticForms(before).any { it in DAY_BEFORE }) continue
+            val monthNumber = m.value.toIntOrNull()?.let { it in 1..12 } == true && before != null && cliticForms(before).any { it in MONTH_BEFORE }
+            if (monthNumber && (after == null || cliticForms(after).none { it in CURRENCY_WORDS })) continue
             val people = after != null && cliticForms(after).any { it in PEOPLE_AFTER }
             val onCount = before != null && tokenIsWord(before, "علي") && (after == null || cliticForms(after).none { it in CURRENCY_WORDS })
             if (people || onCount) {
@@ -154,7 +181,15 @@ fun scanMoney(tokens: List<String>): AssistMoneyScan {
             val times = if (after != null && cliticForms(after).any { it in THOUSAND }) 1000L else 1L
             if (times == 1000L) skipNext = true
             val minor = digitsToMinor(m.value, times)
-            if (minor == null) invalid = true else amounts += AssistAmount(minor, i)
+            // «15 ونص» = ١٥٫٥٠ · «2 ألف ونص» = ٢٥٠٠ — و«150 ونص» ملتبس (١٥٠٫٥٠ ولا ٢٠٠؟) ⇒ سؤال بصراحة مش تخمين
+            val half = minor != null && halfAfter(tokens, i + if (times == 1000L) 2 else 1)
+            when {
+                minor == null -> invalid = true
+                !half -> amounts += AssistAmount(minor, i)
+                times == 1000L -> amounts += AssistAmount(minor + 50_000, i)
+                minor % 100 == 0L && minor < 10_000 -> amounts += AssistAmount(minor + 50, i)
+                else -> invalid = true
+            }
         }
         // «٢ ألف»: كلمة «ألف» اتحسبت مع الرقم — ما تتعدّش مبلغ لوحدها
         i += if (skipNext) 2 else 1

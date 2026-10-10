@@ -177,7 +177,9 @@ internal class TurnKit(
             deps.stores.unknown.save(saved)
             if (drop.isNotEmpty()) deps.stores.unknown.remove(drop)
         }
-        val (t, key) = vary(AssistVariants.UNKNOWN, clipText(u.signals.raw.trim(), 60))
+        // سؤال عن المستقبل أو «لو …» ⇒ «غير متاح» صريح بدل «مش فاهم» (فهمناه، بس ما فيش رقم لحاجة ما حصلتش)
+        val (t, key) = if (u.note == AssistNote.NO_FUTURE) uiText(TextKey.ASSIST_NO_FUTURE) to null
+        else vary(AssistVariants.UNKNOWN, clipText(u.signals.raw.trim(), 60))
         val msg = bot(AssistMessageKind.LINKS, t, ASSIST_UNKNOWN_TOPIC).copy(links = screens.map { ScreenLink.of(it) }, openerKey = key)
         return TurnOut(listOf(msg), countTopic = false)
     }

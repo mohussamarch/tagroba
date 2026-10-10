@@ -68,7 +68,7 @@ class AssistantAnswers(private val s: AssistantSources) {
 /** أدوات الإجابة: الفترة المطلوبة (نفس الشهر المالي بتاع الرئيسية) واسمها، ومنشئ الرد. */
 internal class AnswerKit(val s: AssistantSources, val ctx: AssistContext, val u: AssistUnderstanding, val profile: UserProfile?, val payday: Int) {
     val range: AssistRange = resolveAssistRange(u.signals.period, ctx.today, payday)
-    val label: String = assistPeriodLabel(u.signals.period)
+    val label: String = assistPeriodLabel(u.signals.period, range)
     val current: Period get() = periodForDate(ctx.today, payday)
     val lexicon get() = u.signals.lexicon
 

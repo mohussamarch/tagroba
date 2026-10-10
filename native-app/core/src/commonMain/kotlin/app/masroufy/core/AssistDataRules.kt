@@ -43,7 +43,7 @@ internal fun dataTopicOf(s: AssistSignals, ctx: AssistUnderstandContext): Topic?
     }
     if (s.has(w.FORECAST_STRONG)) return AssistIntent.FORECAST to null
     if (s.has(w.FORECAST) && !s.has(w.SAVING) && (s.has(w.SPEND) || s.has(vocab("هوصل", "اوصل", "توقع")) || asking)) return AssistIntent.FORECAST to null
-    if (s.has(w.PER_DAY) && (s.has(w.CAN_SPEND) || s.has(w.SPEND) || asking)) return AssistIntent.DAILY_ALLOWANCE to null
+    if (s.has(w.PER_DAY) && s.period?.kind != AssistPeriodKind.SINCE_DATE && (s.has(w.CAN_SPEND) || s.has(w.SPEND) || asking)) return AssistIntent.DAILY_ALLOWANCE to null
     if (category != null && s.has(w.BUDGET) && (asking || s.has(w.REMAINING) || s.has(vocab("وصل", "وصلت", fuzzy = false)))) return AssistIntent.CATEGORY_BUDGET to category
     if (s.has(w.ON_PLAN) && goal == null) return AssistIntent.BUDGET_STATUS to null
     if (s.has(w.REMAINING) && (asking || s.has(w.BUDGET))) return AssistIntent.REMAINING to null

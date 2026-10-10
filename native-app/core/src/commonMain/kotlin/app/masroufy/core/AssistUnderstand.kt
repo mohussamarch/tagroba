@@ -20,6 +20,27 @@ enum class AssistNote {
 
     /** رقم مكتوب كمبلغ ومش صالح (أكتر من خانتين كسر · كبير جدًا) ⇒ سؤال بصراحة. */
     INVALID_AMOUNT,
+
+    /** فلوس دخلت (راتب · استلمت · قبضت) ⇒ مش مصروف، من غير كارت. */
+    NOT_EXPENSE_IN,
+
+    /** فلوس رجعت (استرجاع · «رجعلي») ⇒ مش مصروف، من غير كارت. */
+    NOT_EXPENSE_REFUND,
+
+    /** سلفة أو دين أو دفع عن حد ⇒ مش مصروف، من غير كارت. */
+    NOT_EXPENSE_DEBT,
+
+    /** تحويل لحد أو لمحفظة ⇒ مش مصروف بالضرورة، من غير كارت. */
+    NOT_EXPENSE_TRANSFER,
+
+    /** سحب من الصراف أو إيداع ⇒ نقل بين المحافظ، من غير كارت. */
+    NOT_EXPENSE_CASH_MOVE,
+
+    /** «ما تسجلش …» ⇒ ولا حاجة بتتسجل. */
+    DONT_RECORD,
+
+    /** سؤال عن المستقبل أو «لو …» ⇒ «غير متاح» (ما بنقولش رقم حاجة ما حصلتش). */
+    NO_FUTURE,
 }
 
 data class AssistUnderstanding(
@@ -69,6 +90,9 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
     }
     // ٣. مصروف بمبلغ (مش سؤال) — والرقم اللي مكتوب كمبلغ ومش صالح («١٥٫٥٥٥٥» — ٣ خانات بس = فاصل آلاف) ⇒ سؤال بصراحة من غير كارت
     if ((s.hasAmount || (s.money.invalid && !s.question)) && !s.question && controlOf(s) == null) {
+        // «ما تسجلش …» ⇒ ولا كارت · فلوس داخلة أو سلفة أو تحويل أو سحب ⇒ مش مصروف، رد صريح من غير كارت (الشخص للرابط)
+        if (saysDontRecord(s)) return done(AssistIntent.QUICK_ADD, note = AssistNote.DONT_RECORD)
+        notExpenseNote(s)?.let { return done(AssistIntent.QUICK_ADD, s.entities.ofType(AssistEntityType.PERSON).firstOrNull(), note = it) }
         val note = when {
             !s.hasAmount -> AssistNote.INVALID_AMOUNT
             s.money.distinct.size > 1 -> AssistNote.TWO_AMOUNTS
@@ -120,7 +144,9 @@ private fun navTo(
 /** سؤال البيانات + ملاحظة «الاسم ملتبس» لو الشخص ليه اتنين بنفس الاسم. */
 private fun dataTopic(s: AssistSignals, ctx: AssistUnderstandContext): Triple<AssistIntent, AssistEntity?, AssistNote?>? {
     val (intent, subject) = dataTopicOf(s, ctx) ?: return null
-    val note = if (subject != null && subject.start >= 0 && s.entities.ambiguous(subject.type)) AssistNote.AMBIGUOUS else null
+    // اسم أو فترة ما اتفهمتش · سعر · مستقبل ⇒ «مش فاهم»/«غير متاح» بدل إجابة بثقة عن حاجة تانية (القاعدة 10)
+    dataBlock(s, intent, subject)?.let { return Triple(AssistIntent.UNKNOWN, null, it.note) }
+    val note =if (subject != null && subject.start >= 0 && s.entities.ambiguous(subject.type)) AssistNote.AMBIGUOUS else null
     return Triple(intent, subject, note)
 }
 
@@ -131,7 +157,7 @@ private fun isPendingEdit(s: AssistSignals): Boolean {
     if (explicitCategory) return true
     val newExpense = s.entity(AssistEntityType.CATEGORY) != null || s.specific(AssistEntityType.MERCHANT) != null || s.has(AssistWords.SPLIT)
     if (newExpense) return false
-    return s.hasAmount || s.entity(AssistEntityType.WALLET) != null || (s.dayOffset != null && s.dayOffset >= 0)
+    return s.hasAmount || s.entity(AssistEntityType.WALLET) != null || namesSpendDay(s.dayOffset, s.period)
 }
 
 private val PREP_WORDS = vocab("تجهيز", "تجهيزات", "التجهيزات", "prep")

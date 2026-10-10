@@ -52,6 +52,15 @@ private fun spans(tokens: List<String>, name: List<String>): List<IntRange> {
     return (0..tokens.size - name.size).filter { s -> name.indices.all { k -> sameWord(tokens[s + k], name[k]) } }.map { it until it + name.size }
 }
 
+/** كلمات عامة ما ينفعش تبقى «أول كلمة» تدل على تصنيف لوحدها («مصاريف البيت» ⇒ «المصاريف» مش التصنيف ده). */
+private val HEAD_STOP = setOf(
+    "مصاريف", "مصروفات", "مصروف", "رسوم", "فواتير", "تحويلات", "اقساط", "التزامات", "اشتراكات", "مدفوعات", "ايرادات", "متفرقات", "اخري", "عام", "عامه", "شخصيه",
+).map(::assistNormalize).toSet()
+
+/** أول كلمة من اسم تصنيف من كلمتين أو أكتر (٤ حروف على الأقل ومش كلمة عامة). */
+private fun headWord(name: String): String? = formsOf(name).takeIf { it.size >= 2 }?.first()
+    ?.takeIf { it.length >= 4 && cliticForms(it).none { f -> f in GENERIC_NAME_WORDS || f in HEAD_STOP } }
+
 /** الجزء المميز من الاسم (من غير الكلمات العامة زي «مقهى» و«مصرف») — حرفين على الأقل. */
 private fun distinctive(name: List<String>): List<String> = name.filter { t -> cliticForms(t).none { it in GENERIC_NAME_WORDS } && t.length >= 3 }
 
@@ -91,6 +100,13 @@ fun findEntities(tokens: List<String>, lex: AssistLexicon): List<AssistEntity> {
         val targets = cliticForms(t).firstNotNullOfOrNull { SEED_WORD_INDEX[it.removePrefix("ال")] ?: SEED_WORD_INDEX[it] } ?: continue
         val c = targets.firstNotNullOfOrNull { known[it] } ?: continue
         out += AssistEntity(AssistEntityType.CATEGORY, c.id, c.name, i, i + 1, generic = true)
+    }
+    // أول كلمة من اسم تصنيف من كلمتين أو أكتر («المطاعم» ⇒ «مطاعم ومقاهي») — مطابقة أضعف (عامة) بعد الاسم الكامل وكلمات البذرة
+    for ((i, t) in tokens.withIndex()) {
+        if (out.any { it.type == AssistEntityType.CATEGORY && i in it.start until it.end }) continue
+        val forms = cliticForms(t)
+        val c = lex.categories.firstOrNull { c -> c.active && headWord(c.name)?.let { h -> cliticForms(h).any { it in forms } } == true } ?: continue
+        out += AssistEntity(AssistEntityType.CATEGORY, c.id, c.name, i, i + 1, generic = true, partial = true)
     }
     for (m in lex.merchants) {
         val names = listOf(m.displayName, m.normalizedName) + m.aliases.orEmpty()

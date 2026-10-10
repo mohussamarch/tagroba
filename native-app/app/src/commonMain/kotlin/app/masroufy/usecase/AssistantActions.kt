@@ -23,6 +23,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
 import app.masroufy.core.TxnDraft
 import app.masroufy.core.Wallet
+import app.masroufy.core.assistSpendDate
 import app.masroufy.core.shiftDays
 import app.masroufy.core.pendingCard
 import app.masroufy.core.resolveSpendWallet
@@ -49,8 +50,23 @@ private fun TurnKit.nothingPending(u: AssistUnderstanding) = TurnOut(listOf(text
 
 private fun TurnKit.say(key: TextKey, topic: String?, vararg args: String) = TurnOut(listOf(text(uiText(key, *args), topic)), countTopic = false)
 
-/** سؤال بصراحة من غير كارت: عملة تانية · مبلغين · يوم جاي · رقم مش صالح. */
-private fun TurnKit.honestQuestion(u: AssistUnderstanding): TurnOut? = when {
+/** فلوس مش مصروف (دخل · استرجاع · سلفة · تحويل · سحب) أو «ما تسجلش» ⇒ رد صريح + رابط المكان الصح (صفحة الشخص لو اتذكر) — من غير كارت. */
+private fun TurnKit.notExpenseReply(u: AssistUnderstanding): TurnOut? {
+    val (key, screen) = when (u.note) {
+        AssistNote.DONT_RECORD -> return say(TextKey.ASSIST_NOT_RECORDED, u.wire)
+        AssistNote.NOT_EXPENSE_IN -> TextKey.ASSIST_NOT_EXPENSE_IN to AssistScreen.ADD_OPERATION
+        AssistNote.NOT_EXPENSE_REFUND -> TextKey.ASSIST_NOT_EXPENSE_REFUND to AssistScreen.ADD_OPERATION
+        AssistNote.NOT_EXPENSE_DEBT -> TextKey.ASSIST_NOT_EXPENSE_DEBT to AssistScreen.DEBTS
+        AssistNote.NOT_EXPENSE_TRANSFER -> TextKey.ASSIST_NOT_EXPENSE_TRANSFER to AssistScreen.TRANSFERS
+        AssistNote.NOT_EXPENSE_CASH_MOVE -> TextKey.ASSIST_NOT_EXPENSE_CASH_MOVE to AssistScreen.TRANSFERS
+        else -> return null
+    }
+    val person = u.subject?.takeIf { it.type == AssistEntityType.PERSON }?.let { linkFor(AssistScreen.PERSON_PROFILE, it) }
+    return TurnOut(listOf(text(uiText(key), u.wire, listOfNotNull(person, ScreenLink.of(screen)))), countTopic = false)
+}
+
+/** سؤال بصراحة من غير كارت: مش مصروف · عملة تانية · مبلغين · يوم جاي · رقم مش صالح. */
+private fun TurnKit.honestQuestion(u: AssistUnderstanding): TurnOut? = notExpenseReply(u) ?: when {
     u.signals.money.isForeign(ctx.currency) -> say(TextKey.ASSIST_FOREIGN, u.wire, ctx.space.name)
     u.note == AssistNote.INVALID_AMOUNT -> say(TextKey.ASSIST_INVALID_AMOUNT, u.wire)
     u.note == AssistNote.TWO_AMOUNTS -> say(TextKey.ASSIST_TWO_AMOUNTS, u.wire)
@@ -61,7 +77,7 @@ private fun TurnKit.honestQuestion(u: AssistUnderstanding): TurnOut? = when {
 private suspend fun TurnKit.quickAdd(u: AssistUnderstanding): TurnOut {
     honestQuestion(u)?.let { return it }
     val amount = u.signals.money.amounts.firstOrNull()?.minor ?: return say(TextKey.ASSIST_INVALID_AMOUNT, u.wire)
-    val date = shiftDays(ctx.today, -(u.signals.dayOffset ?: 0))
+    val date = assistSpendDate(u.signals.dayOffset, u.signals.period, ctx.today) ?: ctx.today
     val recurring = u.signals.specific(AssistEntityType.RECURRING)?.let { e -> lex.recurring.firstOrNull { it.id == e.id } }
     return cardOut(draftFrom(u.signals, amount, date, recurring), u.wire)
 }
@@ -123,7 +139,7 @@ private suspend fun TurnKit.editPending(pending: AssistMessage, u: AssistUnderst
     val cat = u.subject?.takeIf { it.type == AssistEntityType.CATEGORY } ?: s.entity(AssistEntityType.CATEGORY)?.takeIf { s.has(AssistWords.CATEGORY_WORD) }
     val draft = old.copy(
         amountMinor = s.money.amounts.firstOrNull()?.minor ?: old.amountMinor,
-        occurredOn = s.dayOffset?.takeIf { it >= 0 }?.let { shiftDays(ctx.today, -it) } ?: old.occurredOn,
+        occurredOn = assistSpendDate(s.dayOffset, s.period, ctx.today) ?: old.occurredOn,
         walletId = wallet?.id ?: old.walletId, walletName = wallet?.name ?: old.walletName,
         categoryId = cat?.id ?: old.categoryId, categoryName = cat?.let { c -> lex.categories.firstOrNull { it.id == c.id }?.name } ?: old.categoryName,
         categoryChanged = old.categoryChanged || (cat != null && cat.id != old.categoryId),
