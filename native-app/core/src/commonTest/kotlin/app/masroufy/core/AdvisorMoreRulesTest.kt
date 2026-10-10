@@ -75,6 +75,15 @@ class AdvisorMoreRulesTest {
         assertNull(payFirstCandidate("2026-09-28", p, "2026-10-01", period, Currency.EGP), "عملة تانية")
     }
 
+    /** §75-3: الراتب اللي بيتحسب للشهر الجديد ([countedIn]) — التنبيه يوم نزوله، وموضوعه شهر حسابه. */
+    @Test fun payFirstFollowsTheSalaryMonth() {
+        val p = goalProgress(summer, 125_000, 0, "2026-10-01")
+        val aug = buildPeriod(2026, 8, 28)
+        assertEquals("payfirst|2026-09-28|g-1", payFirstCandidate("2026-09-26", p, "2026-09-26", aug, Currency.SAR, countedIn = period)?.threadKey, "نزل في أغسطس وبيتحسب لسبتمبر")
+        assertEquals("payfirst|2026-09-28|g-1", payFirstCandidate("2026-09-27", p, "2026-09-28", period, Currency.SAR, countedIn = period)?.threadKey)
+        assertNull(payFirstCandidate("2026-08-26", p, "2026-08-28", period, Currency.SAR, countedIn = aug), "راتب فترة فاتت")
+    }
+
     private val bill = RecurringItem("r-1", "فاتورة الكهرباء", "id:m-1", "bill", 1, 41_000, Currency.SAR, "2026-11-01", true, true)
 
     @Test fun billJumpComparesOnePaymentWithItsUsual() {

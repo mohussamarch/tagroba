@@ -34,8 +34,11 @@ import app.masroufy.port.TransactionRepository
  *   (اختيار Claude) ⇒ «المطلوب في الشهر» في الخطة = رقم الحاسبة بالظبط.
  */
 
-/** تحويش شهر مالي واحد — null = الشهر مش معروف. */
-data class MonthSaving(val period: Period, val savedMinor: Halalas?)
+/**
+ * تحويش شهر مالي واحد — null = الشهر مش معروف. [pendingIncomingCount] > 0 ⇒ فيه داخل مستني تأكيدك (§75-1) برّه الدخل، فالرقم
+ * «لحد دلوقتي» (من الدخل المؤكد بس) وبيتعرض بالملاحظة — نفس قاعدة الرئيسية (§18).
+ */
+data class MonthSaving(val period: Period, val savedMinor: Halalas?, val pendingIncomingCount: Int = 0)
 
 /** آخر 3 شهور مالية مكتملة (الأقدم الأول) ومتوسطها — null = «غير متاح». */
 data class ActualSaving(val months: List<MonthSaving>, val averageMinor: Halalas?)
@@ -56,10 +59,13 @@ class LoadActualSaving(private val deps: LoadActualSavingDeps) {
         val current = periodForDate(today, payday)
         val months = (ACTUAL_SAVING_MONTHS downTo 1).map { back ->
             val p = shiftPeriod(current, -back, payday)
-            val rows = deps.txns.listByDateRange(p.start, p.end).filter { it.currency == currency }
-            // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (§18)، واللي لسه مش معروف بيخلّي الشهر مش معروف
-            val counted = withEstimatedKinds(rows, names).transactions
-            MonthSaving(p, monthSavingMinor(counted, deps.allocations.listByTransactionIds(counted.map { it.id })))
+            // الراتب اللي نزل قبل أول الشهر بشوية تحويش الشهر الجديد (§75-3)
+            val rows = loadPeriodRows(deps.txns, p, payday, names).rows.filter { it.currency == currency }
+            // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (§18)، واللي لسه مش معروف بيخلّي الشهر مش معروف — إلا الداخل
+            // المستني (§75-1): برّه الدخل ومعدود لوحده، والتحويش من الدخل المؤكد (زي المتبقي في الرئيسية)
+            val view = withEstimatedKinds(rows, names)
+            val counted = view.withoutPendingIncoming
+            MonthSaving(p, monthSavingMinor(counted, deps.allocations.listByTransactionIds(counted.map { it.id })), view.pendingIncomingCount)
         }
         return ActualSaving(months, averageSavingMinor(months.map { it.savedMinor }))
     }

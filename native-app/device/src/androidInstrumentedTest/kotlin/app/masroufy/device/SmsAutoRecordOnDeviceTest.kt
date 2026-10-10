@@ -53,7 +53,9 @@ class SmsAutoRecordOnDeviceTest {
         Log.i("MasroufySmsAuto", "READY")
 
         val lockText = systemNoticeFor(AlertKind.SMS_CONFIRM).body
+        // من غير ملخص المجموعة اللي النظام بيعمله لوحده لما الإشعارات تكتر (مالوش نسخة شاشة قفل — مش إشعارنا)
         fun ours(): List<Notification> = manager.activeNotifications.filter { it.notification.channelId == AndroidDeviceNotifier.CHANNEL_ALERTS }.map { it.notification }
+            .filter { it.flags and Notification.FLAG_GROUP_SUMMARY == 0 }
         suspend fun all() = graph.txns.listByDateRange("0000-01-01", "9999-12-31")
         // ١) التلاتة وصلوا وبيستنوا (الشراء المعروف شكله جديد — §77-A) ومعاهم إشعار
         withTimeout(180_000) {
@@ -82,7 +84,7 @@ class SmsAutoRecordOnDeviceTest {
         assertTrue(notes.size in 1..3, "إشعار للمستني بس: ${notes.size}")
         for (n in notes) {
             assertEquals(NotificationCompat.VISIBILITY_PRIVATE, n.visibility)
-            for (shown in listOf(n, n.publicVersion!!)) {
+            for (shown in listOf(n, checkNotNull(n.publicVersion) { "no lock-screen version: flags=${n.flags} group=${n.group}" })) {
                 val text = "${shown.extras.getCharSequence(Notification.EXTRA_TITLE)} ${shown.extras.getCharSequence(Notification.EXTRA_TEXT)}"
                 assertTrue(isLockSafe(text) && "CAFE" !in text && "SHOP" !in text && "MART" !in text, "شاشة القفل: $text")
             }

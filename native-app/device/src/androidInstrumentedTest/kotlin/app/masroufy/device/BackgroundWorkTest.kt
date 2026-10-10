@@ -15,6 +15,7 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import app.masroufy.core.AlertKind
 import app.masroufy.core.LocalMoment
 import app.masroufy.core.isLockSafe
+import app.masroufy.core.parseBankSms
 import app.masroufy.core.systemNoticeFor
 import app.masroufy.memory.MemoryDeviceNotifier
 import app.masroufy.memory.MemorySmsInbox
@@ -59,6 +60,8 @@ class BackgroundWorkTest {
     @Test fun workerRunsTheRegisteredCycleAndRecordsWithoutNotifying() = runBlocking<Unit> {
         val inbox = MemorySmsInbox(listOf(QueuedSms("m1", "TESTBANK", "2026-10-07T10:00:00Z", "شراء\nبـSR 25\nلدى:TEST CAFE\n26/10/07")), available = true)
         inbox.enable(listOf("TESTBANK"))
+        // §77-A (S1): المالك أكّد قبل كده رسالة بنفس الشكل — من غيره أول رسالة من الشكل بتستنى
+        inbox.preLearn("sa", ::parseBankSms, inbox.sync().messages.single())
         val notifier = MemoryDeviceNotifier()
         val graph = TestBackgroundGraph(inbox, notifier)
         MasroufyBackground.install(context, graph)
