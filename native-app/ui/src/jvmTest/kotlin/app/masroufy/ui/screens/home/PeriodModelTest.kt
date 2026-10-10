@@ -31,6 +31,13 @@ class PeriodModelTest {
         assertEquals("2026-10-31", periodEndingIn(2026, 10, 1).end)
     }
 
+    /** L7 (OVERRIDES §79): كل مكان بيكتب اسم الشهر المالي — العمليات والميزانيات والمستحقات — بشهر النهاية مش البداية. */
+    @Test fun everyScreenNamesTheMonthItEndsIn() {
+        assertEquals("أكتوبر", app.masroufy.ui.screens.operations.periodLabel(current))
+        assertEquals("أكتوبر", app.masroufy.ui.screens.budgets.periodMonthName(current))
+        assertEquals("يناير", app.masroufy.ui.screens.operations.periodLabel(periodForDate("2026-01-10", 28)), "28 ديسمبر–27 يناير = يناير")
+    }
+
     @Test fun stepsAndBoardStates() {
         val prev = previousPeriod(current, 28)
         assertEquals("2026-08-28", prev.start)
