@@ -6,7 +6,10 @@ import app.masroufy.core.Obligation
 import app.masroufy.core.PendingAsk
 import app.masroufy.core.Settlement
 import app.masroufy.core.TransferParty
+import app.masroufy.core.LEGACY_AUTO_SUPPORT_UNTIL
 import app.masroufy.core.TransferVerdict
+import app.masroufy.core.isLegacySupportBefore
+import app.masroufy.core.legacySupportAsk
 import app.masroufy.core.transferAskOf
 import app.masroufy.core.transferPartyOf
 import app.masroufy.port.AllocationRepository
@@ -39,9 +42,14 @@ class TransferAskSource(private val deps: TransferAskSourceDeps) : AskSource {
         val candidates = deps.txns.listByDateRange(from, to).mapNotNull { t ->
             if (t.economicKindConfirmed) null else transferPartyOf(t)?.let { people[it.key] }?.let { t to it }
         }
-        if (candidates.isEmpty()) return emptyList()
+        // §82-13: «دعم» اتسجل لوحده قبل «سلفة ولا دعم؟» — **مهما كان تاريخه** (سؤال لمرة واحدة، مش من النافذة): من غير تاريخ في السؤال
+        // عشان العدّ (`CountNeedsConfirmation`) ما يشيلوش بالنافذة
+        val legacy = deps.txns.listByDateRange(EARLIEST, LEGACY_AUTO_SUPPORT_UNTIL.take(10)).mapNotNull { t ->
+            transferPartyOf(t)?.let { people[it.key] }?.takeIf { isLegacySupportBefore(t, it) == true }?.let { t to it }
+        }
+        if (candidates.isEmpty() && legacy.isEmpty()) return emptyList()
         val debtsOf = PersonLedger(deps.obligations, deps.settlements, deps.txns)
-        val links = PersonLedgerRepos(deps.obligations, deps.settlements, deps.allocations).linksOf(candidates.map { it.first.id })
+        val links = PersonLedgerRepos(deps.obligations, deps.settlements, deps.allocations).linksOf((candidates + legacy).map { it.first.id }.distinct())
         val out = mutableListOf<PendingAsk>()
         for ((t, party) in candidates) {
             val debts = debtsOf.of(party.personId ?: continue)
@@ -49,7 +57,16 @@ class TransferAskSource(private val deps: TransferAskSourceDeps) : AskSource {
                 ?: continue
             out += PendingAsk(kind, deps.spaceId, transactionId = t.id, date = t.occurredAt)
         }
+        for ((t, party) in legacy) {
+            val debts = debtsOf.of(party.personId ?: continue)
+            val kind = legacySupportAsk(t, party, debts.settlements, links.getValue(t.id)) ?: continue
+            out += PendingAsk(kind, deps.spaceId, transactionId = t.id, date = null)
+        }
         return out
+    }
+
+    private companion object {
+        const val EARLIEST = "0000-01-01"
     }
 }
 

@@ -6,6 +6,7 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.INCOMING_FROM_PERSON_KINDS
 import app.masroufy.core.Id
+import app.masroufy.core.LEGACY_AUTO_SUPPORT_UNTIL
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.RepaymentPlan
 import app.masroufy.core.ReviewState
@@ -14,7 +15,10 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.TransactionLedgerLinks
 import app.masroufy.core.TransferParty
+import app.masroufy.core.UiKey
 import app.masroufy.core.formatMoney
+import app.masroufy.core.isLegacySupportBefore
+import app.masroufy.core.legacySupportAsk
 import app.masroufy.core.openDebtsFor
 import app.masroufy.core.planRepayment
 import app.masroufy.core.sumMoney
@@ -104,8 +108,12 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
         val debts: PersonLedger.Debts,
         val links: TransactionLedgerLinks,
     ) {
+        /** §82-13: «دعم» اتسجل لوحده قبل القرار بياخد «سلفة ولا دعم؟» كمان (`legacySupportAsk`) — ولا حاجة بتتغيّر لحد الإجابة. */
         fun ask(debtRuledOut: Boolean = false): AskKind? =
             transferAskOf(t, party, debts.obligations, debts.settlements, debtRuledOut, links, debts.originDates)
+                ?: legacySupportAsk(t, party, debts.settlements, links)
+
+        val legacy: Boolean get() = isLegacySupportBefore(t, party) == true
 
         /** الديون المفتوحة اللي العملية ممكن تسددها — من غير اللي اتعمل بعدها. */
         fun openDebts() = openDebtsFor(t, personId, debts.obligations, debts.settlements, debts.originDates)
@@ -131,7 +139,8 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
         val name = deps.persons.listAll().firstOrNull { it.id == p.personId }?.name ?: p.party.label
         val amount = formatMoney(p.t.amountMinor, p.t.currency)
         if (kind == AskKind.LOAN_OR_SUPPORT) {
-            return TransferQuestion(kind, p.t, p.personId, uiText(TextKey.ASK_LOAN_OR_SUPPORT), uiText(TextKey.ASK_LOAN_OR_SUPPORT_BODY, amount, name))
+            val body = if (p.legacy) uiText(UiKey.ASK_LEGACY_SUPPORT_BODY, amount, name) else uiText(TextKey.ASK_LOAN_OR_SUPPORT_BODY, amount, name)
+            return TransferQuestion(kind, p.t, p.personId, uiText(TextKey.ASK_LOAN_OR_SUPPORT), body)
         }
         val open = sumMoney(p.openDebts().map { it.remainingMinor })
         val incoming = p.t.observedDirection == Direction.IN
@@ -214,7 +223,8 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
     }
 
     private suspend fun confirmKind(t: Transaction, kind: EconomicKind): Transaction {
-        val now = deps.clock.nowIso()
+        // §82-13: الإجابة لازم تبان «بعد القرار» حتى لو ساعة الجوال متأخرة — وإلا «دعم» اللي المالك أكّده يرجع يتسأل (`legacySupportAsk`)
+        val now = maxOf(deps.clock.nowIso(), LEGACY_AUTO_SUPPORT_UNTIL)
         deps.txns.update(t.id, TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now))
         return t.copy(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now)
     }
