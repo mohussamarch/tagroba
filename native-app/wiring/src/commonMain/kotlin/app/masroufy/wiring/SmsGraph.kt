@@ -57,14 +57,14 @@ internal class SmsGraph(
     private var last: List<Pair<SenderReview, ReviewSmsInbox>> = emptyList()
 
     // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
-    private fun review(m: ManageSmsInbox): ReviewSmsInbox = SmsLane.of(space.id, importDeps(c.repos, c.env), m, c.repos.wallets).screen()
+    private fun review(m: ManageSmsInbox): ReviewSmsInbox = SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets).screen()
 
     /** كل البلاد المفتوحة (رسالة بلد بتترفض من قارئ البلد التانية بالعملة ⇒ بتتسجل في بلدها بس). */
     private fun auto(): AutoRecordSms {
         val spaces = c.session.spaces().ifEmpty { listOf(space to c.repos) }
         val lanes = spaces.mapNotNull { (s, repos) ->
             val reader = countryPack(s.countryCode).smsReader ?: return@mapNotNull null
-            SmsLane.of(s.id, importDeps(repos, c.env), ManageSmsInbox(inbox, reader::parse), repos.wallets)
+            SmsLane.of(s.id, smsImportDeps(s.id, repos, c.env, inbox), ManageSmsInbox(inbox, reader::parse), repos.wallets)
         }
         return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
     }

@@ -14,12 +14,11 @@ import app.masroufy.ui.screens.operations.ReviewQueueRoute
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
  * الحاسبات متسجّلة من ملف منطقة «الاستثمار» (`registerInvestment` ⇒ `registerCalculators`) بأسماء لوحات النموذج، والحسبة المحفوظة بتفتح
- * نفس الشاشة. «المراجعة» بتاعة «العمليات» لسه مش متسجّلة هنا ⇒ «قيد البناء» لحد الدمج (مش وقوع). وصيغ المدد والسن في الجمل.
+ * نفس الشاشة. «المراجعة» بتاعة «العمليات» متسجّلة بعد الدمج. وصيغ المدد والسن في الجمل.
  */
 class CalculatorRoutesTest {
     @AfterTest
@@ -38,7 +37,7 @@ class CalculatorRoutesTest {
             listOf("SavingsCalculator", "RetirementCalculator", "InheritanceCalculator", "InheritanceCalculator", "InheritanceSaved"),
             listOf(SavingsCalculatorRoute, RetirementCalculatorRoute, InheritanceCalculatorRoute, InheritanceScenarioRoute("x"), InheritanceSavedRoute).map { it.name },
         )
-        assertFalse(r.has(ReviewQueueRoute), "شاشة «العمليات» — بتتسجّل من منطقتها وقت الدمج")
+        assertTrue(r.has(ReviewQueueRoute), "«المراجعة» متسجّلة بعد الدمج (بتتفتح من «حدّد نوع هذه العمليات»)")
     }
 
     @Test

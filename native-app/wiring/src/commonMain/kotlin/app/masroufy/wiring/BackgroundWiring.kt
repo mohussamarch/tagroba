@@ -9,13 +9,28 @@ import app.masroufy.usecase.AutoRecordSmsDeps
 import app.masroufy.usecase.BackgroundCycleDeps
 import app.masroufy.usecase.ImportStatementDeps
 import app.masroufy.usecase.ManageSmsInbox
+import app.masroufy.usecase.MerchantMemory
+import app.masroufy.usecase.RememberChosenCategoryEffect
 import app.masroufy.usecase.RunBackgroundCycle
 import app.masroufy.usecase.SmsLane
+import app.masroufy.usecase.smsRecordEffects
 
 /** نفس اعتمادات استيراد الكشف في البلد (ومعاها قرارات «زون التحويلات» ومصادر الدخل — §60 · §64) — رسايل البنك والكشف بخط واحد. */
 fun importDeps(r: SpaceRepositories, env: DeviceEnv) = ImportStatementDeps(
     r.transactions, r.sourceRecords, r.importBatches, r.merchants, r.categories, r.rules, r.uow, env.ids, env.clock,
     transferParties = r.transferParties, incomeSources = r.incomeSources,
+)
+
+/**
+ * نفس [importDeps] + آثار وقت التسجيل لرسايل البنك بالترتيب اللي عقد الدامج حدده (`smsRecordEffects` — decisions-77، §75/§77): `SmsLane.of`
+ * بيرفض من غير آثار S1. التصنيف اللي المالك اختاره بيتحفظ للمحل (`MerchantMemory` من غير رفع للقايمة المشتركة)، وخصم الاشتراك بيحرّك
+ * ميعاده. ⚠️ «اللي رجع» من غير روابط الدين (`ReturnsWiring` محتاج روابط الأشخاص والمستحقات) ⇒ `SmsLane.of` بيضيفها بتسأل بس — HANDOVER.
+ */
+fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort) = importDeps(r, env).copy(
+    effects = smsRecordEffects(
+        spaceId, r.wallets, inbox, r.categories,
+        remember = RememberChosenCategoryEffect(MerchantMemory(r.merchants, env.ids)), subscriptions = r.recurring,
+    ),
 )
 
 /**
@@ -28,7 +43,7 @@ fun importDeps(r: SpaceRepositories, env: DeviceEnv) = ImportStatementDeps(
 fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv): RunBackgroundCycle {
     val lanes = spaces.mapNotNull { (space, r) ->
         val reader = countryPack(space.countryCode).smsReader ?: return@mapNotNull null
-        SmsLane.of(space.id, importDeps(r, env), ManageSmsInbox(inbox, reader::parse), r.wallets)
+        SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets)
     }
     return RunBackgroundCycle(BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes)), candidates = null, engine = null, notifier = notifier))
 }
