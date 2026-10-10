@@ -64,6 +64,8 @@ fun SignInEmailScreen(onBack: () -> Unit) {
     var passErr by remember { mutableStateOf<String?>(null) }
     var formErr by remember { mutableStateOf<String?>(null) }
     var canSwitch by remember { mutableStateOf(false) }
+    // النموذج: بعد النجاح السطر الأخضر مكان الخانات لحد ما الجلسة تنقل لشاشة الفتح
+    var done by remember { mutableStateOf(false) }
 
     fun submit() {
         if (busy) return
@@ -81,6 +83,7 @@ fun SignInEmailScreen(onBack: () -> Unit) {
         scope.launch {
             try {
                 if (newAccount) app.signIn.register(e, pass) else app.signIn.withEmail(e, pass)
+                done = true
             } catch (x: AuthError) {
                 when (x.field) {
                     AuthField.EMAIL -> {
@@ -110,6 +113,10 @@ fun SignInEmailScreen(onBack: () -> Unit) {
             { newAccount = it; emailErr = null; passErr = null; formErr = null; canSwitch = false },
             style = SegmentStyle.QUIET, enabled = !busy, height = 44.dp,
         )
+        if (done) {
+            SignedInNote(newAccount)
+            return@Column
+        }
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 TextInput(
@@ -135,6 +142,25 @@ fun SignInEmailScreen(onBack: () -> Unit) {
                     },
                     onClick = { submit() }, loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
                 )
+            }
+        }
+    }
+}
+
+/** «تم الدخول» / «أُنشئ حسابك» + «نكمل تجهيز حسابك من حيث توقفت.» (حالة النجاح في النموذج). */
+@Composable
+private fun SignedInNote(newAccount: Boolean) {
+    FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
+        androidx.compose.foundation.layout.Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            app.masroufy.ui.components.IconTile(Ink.income) {
+                app.masroufy.ui.icons.LucideIcon(app.masroufy.ui.icons.Lucide.CHECK, size = 20.dp, tint = Ink.income)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                BasicText(t(if (newAccount) TextKey.SIGNIN_DONE_NEW else TextKey.SIGNIN_DONE_IN), style = Type.bodyBold().copy(color = Ink.text))
+                BasicText(t(TextKey.SIGNIN_DONE_LINE), style = Type.caption().copy(color = Ink.muted))
             }
         }
     }
