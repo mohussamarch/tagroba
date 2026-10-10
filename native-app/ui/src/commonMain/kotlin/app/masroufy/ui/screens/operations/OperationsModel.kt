@@ -49,8 +49,8 @@ data class OpsView(
 /** اسم الفترة = اسم الشهر اللي بتخلص فيه («28 سبتمبر – 27 أكتوبر» ⇒ «أكتوبر»). */
 fun periodLabel(period: Period): String = monthName(parseIsoDate(period.end).month)
 
-fun operationsView(data: TransactionsScreenData, wallets: List<Wallet>, today: IsoDate, currency: Currency): OpsView {
-    val ctx = RowContext(data.categories, data.merchantNamesByTransaction, wallets)
+fun operationsView(data: TransactionsScreenData, wallets: List<Wallet>, today: IsoDate, currency: Currency, country: String? = null): OpsView {
+    val ctx = RowContext(data.categories, data.merchantNamesByTransaction, wallets, country)
     return OpsView(
         periodLabel = periodLabel(data.period),
         currency = currency,

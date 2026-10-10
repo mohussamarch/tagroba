@@ -6,18 +6,20 @@ package app.masroufy.core
  * (كتابة Claude — مستني مراجعة المالك §40). النص من النموذج التفاعلي بالحرف (الفصحى من `space = السعودية` والمصري من `مصر`).
  * **ممنوع «·» جنب رقم عربي** ⇒ «،». الملفات التانية بتتضم هنا بـ`+`: ملفك (`TextsMoreAccount`) · الإشعارات والقفل واللغة (`TextsMoreSettings`) ·
  * البلدان والمحافظ (`TextsMoreSpaces`) · تفاصيل المحفظة (`TextsMoreWallet`) · محفظة جديدة (`TextsMoreWalletAdd`) · مصادر الدخل (`TextsMoreIncome`) ·
- * تعديل المصدر وتغيير الشغل (`TextsMoreJob`) · النسخة الاحتياطية والاسترجاع (`TextsMoreBackup`).
+ * تعديل المصدر وتغيير الشغل (`TextsMoreJob`) · النسخة الاحتياطية والاسترجاع (`TextsMoreBackup`) ·
+ * «اختار بنكك» وكارتين البداية للحساب الجديد (`TextsMoreBanks` — §81).
  */
 internal val MSA_AREA_MORE_TEXTS: Map<UiKey, String> get() = MSA_MORE_MENU_TEXTS + MSA_MORE_ACCOUNT_TEXTS + MSA_MORE_SETTINGS_TEXTS + MSA_MORE_SPACES_TEXTS +
-    MSA_MORE_WALLET_TEXTS + MSA_MORE_WALLET_ADD_TEXTS + MSA_MORE_INCOME_TEXTS + MSA_MORE_JOB_TEXTS + MSA_MORE_BACKUP_TEXTS
+    MSA_MORE_WALLET_TEXTS + MSA_MORE_WALLET_ADD_TEXTS + MSA_MORE_INCOME_TEXTS + MSA_MORE_JOB_TEXTS + MSA_MORE_BACKUP_TEXTS +
+    MSA_MORE_BANK_TEXTS
 
 internal val EGYPTIAN_AREA_MORE_TEXTS: Map<UiKey, String> get() = EGYPTIAN_MORE_MENU_TEXTS + EGYPTIAN_MORE_ACCOUNT_TEXTS + EGYPTIAN_MORE_SETTINGS_TEXTS +
     EGYPTIAN_MORE_SPACES_TEXTS + EGYPTIAN_MORE_WALLET_TEXTS + EGYPTIAN_MORE_WALLET_ADD_TEXTS + EGYPTIAN_MORE_INCOME_TEXTS + EGYPTIAN_MORE_JOB_TEXTS +
-    EGYPTIAN_MORE_BACKUP_TEXTS
+    EGYPTIAN_MORE_BACKUP_TEXTS + EGYPTIAN_MORE_BANK_TEXTS
 
 internal val ENGLISH_AREA_MORE_TEXTS: Map<UiKey, String> get() = ENGLISH_MORE_MENU_TEXTS + ENGLISH_MORE_ACCOUNT_TEXTS + ENGLISH_MORE_SETTINGS_TEXTS +
     ENGLISH_MORE_SPACES_TEXTS + ENGLISH_MORE_WALLET_TEXTS + ENGLISH_MORE_WALLET_ADD_TEXTS + ENGLISH_MORE_INCOME_TEXTS + ENGLISH_MORE_JOB_TEXTS +
-    ENGLISH_MORE_BACKUP_TEXTS
+    ENGLISH_MORE_BACKUP_TEXTS + ENGLISH_MORE_BANK_TEXTS
 
 /** «المزيد» نفسها + الكلمات المشتركة بين شاشات المنطقة + «اختر شكلك» + «تغيير كلمة السر» في «ملفك». */
 private val MSA_MORE_MENU_TEXTS: Map<UiKey, String> = mapOf(

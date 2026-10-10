@@ -33,6 +33,7 @@ import app.masroufy.core.Tag
 import app.masroufy.core.TextKey
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
+import app.masroufy.ui.components.BankLogo
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.IconButton44
@@ -81,7 +82,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
             val merchants = attempt { deps.merchants.listMerchants().map { it.merchant } }.orEmpty()
             val decided = attempt { app.masroufy.perf.PerfTrace.span("detail:zone") { deps.transfers.zone() }.rows.filter { it.decision != null }.map { it.party.key }.toSet() }.orEmpty()
             val locked = attempt { deps.spaceTransfers.legsIn(space.space.id).isLeg(transactionId) } ?: false
-            val view = detailView(detail.transaction, categories, attempt { deps.wallets() }.orEmpty(), merchants, decided, space.shell.today())
+            val view = detailView(detail.transaction, categories, attempt { deps.wallets() }.orEmpty(), merchants, decided, space.shell.today(), space.space.countryCode)
             DetailState.Ready(view, detail.tags, categories, locked)
         } } ?: DetailState.Failed
         (state as? DetailState.Ready)?.view?.askParty?.let { partyShown = it }
@@ -221,6 +222,7 @@ private fun FieldRow(f: DetailField, actions: (@Composable () -> Unit)? = null) 
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(f.label, style = Type.caption().copy(color = Ink.muted))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                f.logo?.let { BankLogo(it.bank, it.name, size = 24.dp) }
                 BasicText(f.value, style = Type.of(15, FontWeight.Bold))
                 f.chip?.let { StatusChip(it.text, it.ink, it.background) }
             }

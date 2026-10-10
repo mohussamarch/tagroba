@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.Bank
+import app.masroufy.core.bankForWallet
 import app.masroufy.core.UiKey
 import androidx.compose.ui.graphics.Color
 import app.masroufy.core.Category
@@ -34,7 +36,11 @@ enum class CategoryStatus { SUGGESTED, CONFIRMED, NONE }
 data class CategoryField(val name: String?, val status: CategoryStatus, val categoryId: Id?)
 
 /** سطر في كارت الحقول: العنوان الصغير · القيمة · شارة اختيارية · سطر شرح اختياري. */
-data class DetailField(val label: String, val value: String, val chip: FieldChip? = null, val hint: String? = null)
+/** [logo] = لوجو بنك المحفظة جنب اسمها (خانة «المحفظة» — §81). */
+data class DetailField(val label: String, val value: String, val chip: FieldChip? = null, val hint: String? = null, val logo: FieldLogo? = null)
+
+/** لوجو جنب قيمة الخانة: البنك من دليل البنوك (null ⇒ أول حرف من [name]). */
+data class FieldLogo(val bank: Bank?, val name: String)
 
 data class FieldChip(val text: String, val ink: Color, val background: Color)
 
@@ -90,13 +96,16 @@ fun detailView(
     merchants: List<Merchant>,
     decidedParties: Set<String>,
     today: IsoDate,
+    country: String? = null,
 ): DetailView {
     val known = tx.rawMerchantName?.let { merchantIndex(merchants)[normalizeText(it)] }
-    val ctx = RowContext(categories, known?.let { mapOf(tx.id to listOf(it.displayName)) }.orEmpty(), wallets)
+    val ctx = RowContext(categories, known?.let { mapOf(tx.id to listOf(it.displayName)) }.orEmpty(), wallets, country)
     val flow = linkFlowOf(tx)
     val rule = ruleFor(tx.economicKind)
     val direction = t(if (tx.observedDirection == Direction.IN) UiKey.OPERATION_DETAIL_IN else UiKey.OPERATION_DETAIL_OUT)
-    val walletName = ctx.wallet(tx.walletId)?.name ?: t(TextKey.NOT_AVAILABLE)
+    val wallet = ctx.wallet(tx.walletId)
+    val walletName = wallet?.name ?: t(TextKey.NOT_AVAILABLE)
+    val walletLogo = wallet?.takeIf { it.kind != "cash" }?.let { FieldLogo(bankForWallet(it, country), it.name) }
     val kindField = if (tx.economicKind == EconomicKind.UNCLASSIFIED) {
         DetailField(t(UiKey.OPERATION_DETAIL_KIND), t(UiKey.OPERATION_DETAIL_KIND_WAITING), FieldChip(t(UiKey.OPERATION_DETAIL_WAITING_CHIP), ChipInk.amber, ChipInk.amberBg))
     } else {
@@ -116,7 +125,7 @@ fun detailView(
         merchant = known,
         unrecorded = false,
         category = categoryFieldOf(tx, categories),
-        fields = listOf(DetailField(t(UiKey.OPERATION_DETAIL_WALLET), walletName), kindField),
+        fields = listOf(DetailField(t(UiKey.OPERATION_DETAIL_WALLET), walletName, logo = walletLogo), kindField),
         flow = flow,
         askParty = party?.takeIf { tx.economicKind == EconomicKind.UNCLASSIFIED || !tx.economicKindConfirmed },
         transaction = tx,

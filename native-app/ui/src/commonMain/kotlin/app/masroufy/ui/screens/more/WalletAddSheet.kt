@@ -21,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import app.masroufy.core.Bank
 import app.masroufy.core.Currency
+import app.masroufy.core.bankLabel
 import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
@@ -48,19 +50,12 @@ sealed interface WalletSheetMode {
     data class Edit(val wallet: Wallet) : WalletSheetMode
 }
 
-/** اقتراحات القايمة القصيرة لكل نوع وبلد (الاسم بيتكتب في الخانة ويتعدّل). «آخر» ⇒ الخانة فاضية. */
-private fun suggestions(kind: String, currency: Currency): List<TextRef> = when (kind) {
-    "cash" -> listOf(UiKey.WADD_CASH_HOME, UiKey.WADD_CASH_WORK, UiKey.WADD_CASH_TRAVEL, UiKey.WADD_CASH_CAR)
-    "digital_wallet" -> if (currency == Currency.EGP) listOf(UiKey.WADD_EG_VODAFONE, UiKey.WADD_EG_ORANGE, UiKey.WADD_OTHER_WALLET)
-    else listOf(UiKey.WADD_SA_STCPAY, UiKey.WADD_SA_URPAY, UiKey.WADD_OTHER_WALLET)
-    else -> if (currency == Currency.EGP) listOf(UiKey.WADD_EG_NBE, UiKey.WADD_EG_QNB, UiKey.WADD_EG_MISR, UiKey.WADD_EG_CIB, UiKey.WADD_EG_ALEX, UiKey.WADD_OTHER_BANK)
-    else listOf(UiKey.WADD_SA_RAJHI, UiKey.WADD_SA_SNB, UiKey.WADD_SA_INMA, UiKey.WADD_SA_RIYAD, UiKey.WADD_SA_ANB, UiKey.WADD_OTHER_BANK)
-}
-
-private val OTHER = setOf(UiKey.WADD_OTHER_BANK, UiKey.WADD_OTHER_WALLET)
+/** أسماء مقترحة للكاش (الاسم بيتكتب في الخانة ويتعدّل). البنوك والمحافظ من «اختار بنكك» (دليل البنوك — §81). */
+private val CASH_NAMES: List<TextRef> = listOf(UiKey.WADD_CASH_HOME, UiKey.WADD_CASH_WORK, UiKey.WADD_CASH_TRAVEL, UiKey.WADD_CASH_CAR)
 
 /**
- * لوحة المحفظة: النوع (حساب بنكي · محفظة إلكترونية · كاش — رد المالك «ضيف كاش تاني») · البنك من قايمة قصيرة · الاسم (من غير تكرار) ·
+ * لوحة المحفظة: النوع (حساب بنكي · محفظة إلكترونية · كاش — رد المالك «ضيف كاش تاني») · **«اختار بنكك»** (بحث + لوجوهات من دليل البنوك،
+ * أو «بنك تاني» باسم بيتكتب — §81) · الاسم (اسم البنك مقترح ويتعدّل، من غير تكرار) ·
  * **آخر 4 أرقام بس** (اللي اتلصق أطول بيتقص ويتقال ليه — CLAUDE.md #11) · رصيد البداية وتاريخه (فاضي = «غير متاح» مش صفر).
  * الحفظ نقطة ربط ([WalletEditor]) — مفيش حالة استخدام لإدارة المحافظ ⇒ «غير متاح بعد». سطر الأثر **من غير حساب** (بيكرر اللي اتكتب بس).
  */
@@ -75,7 +70,8 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
     val scope = rememberCoroutineScope()
     val edit = mode as? WalletSheetMode.Edit
     var kind by remember { mutableStateOf("bank") }
-    var picked by remember { mutableStateOf<TextRef?>(null) }
+    var bank by remember { mutableStateOf<Bank?>(null) }
+    var other by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
     var last4 by remember { mutableStateOf("") }
     var cut by remember { mutableStateOf(false) }
@@ -85,17 +81,18 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
     var serverError by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(visible) {
         if (!visible) return@LaunchedEffect
-        kind = "bank"; picked = null; name = ""; last4 = ""; cut = false; tried = false; serverError = null
+        kind = "bank"; bank = null; other = false; name = ""; last4 = ""; cut = false; tried = false; serverError = null
         amountText = edit?.let { amountLabel(it.wallet.openingBalanceMinor, currency, showCurrency = false) } ?: ""
         date = edit?.wallet?.openingAt ?: today
     }
     val isCash = kind == "cash"
+    val picking = edit == null && !isCash && bank == null && !other
     val amount = amountText.trim().takeIf { it.isNotEmpty() }?.let { tryParseMoney(it, currency) }
     val amountBad = amountText.isNotBlank() && (amount == null || amount < 0)
     val dateOk = isValidIsoDate(date) && date <= today
     val dup = edit == null && walletNameTaken(name, existing)
     val errors = listOfNotNull(
-        if (edit == null && !isCash && picked == null) t(if (kind == "bank") UiKey.WADD_ERR_BANK else UiKey.WADD_ERR_WALLET) else null,
+        if (edit == null && !isCash && bank == null && !other) t(if (kind == "bank") UiKey.WADD_ERR_BANK else UiKey.WADD_ERR_WALLET) else null,
         if (edit == null && name.isBlank()) t(UiKey.WADD_ERR_NAME) else null,
         if (dup) t(UiKey.WADD_ERR_DUP) else null,
         if (edit == null && !isCash && last4.isNotEmpty() && last4.length != 4) t(UiKey.WADD_ERR_LAST4) else null,
@@ -117,17 +114,24 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
             FieldLabelText(t(UiKey.WADD_KIND))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for ((k, label) in listOf("bank" to UiKey.WLIST_KIND_BANK, "digital_wallet" to UiKey.WLIST_KIND_DIGITAL, "cash" to UiKey.WLIST_KIND_CASH)) {
-                    SelectChip(t(label), kind == k, onClick = { kind = k; picked = null; name = "" }, modifier = Modifier.weight(1f), height = 48.dp)
+                    SelectChip(t(label), kind == k, onClick = { kind = k; bank = null; other = false; name = "" }, modifier = Modifier.weight(1f), height = 48.dp)
                 }
             }
-            FieldLabelText(t(if (isCash) UiKey.WADD_SUGGESTED else if (kind == "bank") UiKey.WADD_BANK else UiKey.WADD_WALLET))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                for (s in suggestions(kind, currency)) SelectChip(t(s), if (isCash) name == t(s) else picked == s, onClick = {
-                    if (!isCash) picked = s
-                    name = if (s in OTHER) "" else t(s)
-                }, height = 44.dp)
+            FieldLabelText(t(if (isCash) UiKey.WADD_SUGGESTED else if (kind == "bank") UiKey.BANK_PICK_TITLE else UiKey.BANK_PICK_TITLE_WALLET))
+            if (isCash) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for (s in CASH_NAMES) SelectChip(t(s), name == t(s), onClick = { name = t(s) }, height = 44.dp)
+                }
+                NoteBox(t(UiKey.WADD_CASH_NOTE), title = t(UiKey.WADD_CASH_HEAD))
+            } else if (picking) {
+                BankPickerList(deps.space.countryCode, kind, onPick = { b -> bank = b; other = b == null; name = b?.let(::bankLabel).orEmpty() }, maxHeight = 260.dp)
+            } else {
+                bank?.let { PickedBankRow(it) { bank = null; name = "" } }
+                    ?: PickedOtherRow(t(if (kind == "bank") UiKey.BANK_OTHER else UiKey.BANK_OTHER_WALLET)) { other = false; name = "" }
             }
-            if (isCash) NoteBox(t(UiKey.WADD_CASH_NOTE), title = t(UiKey.WADD_CASH_HEAD))
+        }
+        if (picking) return@Sheet
+        if (edit == null) {
             TextInput(name, { name = it }, label = t(UiKey.WADD_NAME), placeholder = t(if (isCash) UiKey.WADD_NAME_PH_CASH else UiKey.WADD_NAME_PH),
                 error = when {
                     dup -> t(UiKey.WADD_ERR_DUP)
@@ -159,7 +163,7 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
                 scope.launch {
                     val error = runCatching {
                         if (edit != null) editor.setOpening(edit.wallet.id, amount!!, date)
-                        else editor.add(NewWallet(kind, name.trim(), if (isCash) null else last4.ifEmpty { null }, amount, if (amount == null) null else date))
+                        else editor.add(NewWallet(kind, name.trim(), if (isCash) null else last4.ifEmpty { null }, amount, if (amount == null) null else date, bank?.key))
                     }.getOrElse { it.message ?: t(UiKey.MORE_SAVE_FAILED) }
                     if (error == null) {
                         toaster.show(if (edit != null) t(UiKey.WADD_OPENING_SAVED) else t(UiKey.WADD_ADDED, name.trim()), dark = true)

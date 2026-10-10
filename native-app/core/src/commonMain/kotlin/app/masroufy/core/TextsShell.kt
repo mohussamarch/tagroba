@@ -144,6 +144,6 @@ internal val MSA_SHELL_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.HERO_BANK_SUB to "حساب بنكي",
     UiKey.HERO_DIGITAL_SUB to "محفظة إلكترونية",
     UiKey.HERO_CASH_SUB to "الذي معك",
-    UiKey.HERO_LOGO_NOTE to "يحل شعار كل بنك محل الحرف بعد اعتماد بحث الشعارات.",
+    UiKey.HERO_LOGO_NOTE to "شعارات البنوك من مواقعها، للتعريف بالبنك فقط.",
     UiKey.HERO_NA_LINE to "رصيد إحدى المحافظ غير متاح بعد — يبدأ من يوم فتحها في التطبيق.",
 )

@@ -136,6 +136,6 @@ internal val ENGLISH_SHELL_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.HERO_BANK_SUB to "Bank account",
     UiKey.HERO_DIGITAL_SUB to "Digital wallet",
     UiKey.HERO_CASH_SUB to "In your pocket",
-    UiKey.HERO_LOGO_NOTE to "Each bank's logo replaces the letter once the logo research is approved.",
+    UiKey.HERO_LOGO_NOTE to "Bank logos come from the banks' own sites, for identification only.",
     UiKey.HERO_NA_LINE to "A wallet's balance isn't available yet — it starts from the day it was opened in the app.",
 )

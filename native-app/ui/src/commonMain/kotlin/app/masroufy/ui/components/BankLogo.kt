@@ -56,14 +56,21 @@ fun logoInitial(name: String): String {
  * لوجو البنك (OVERRIDES §81 · §76): الصورة زي ما هي جوه مربع أبيض بحواف مدورة (أو غامق لو اللوجو أبيض)، و**من غير لوجو** (بنك مش في
  * الدليل · التجاري الدولي · الكمبيوتر) ⇒ أول حرف من [name] في دايرة ملوّنة. [wide] = مستطيل أعرض للوجوهات الطويلة (قايمة «اختار بنكك»).
  * [name] = اسم المحفظة أو المرسل — بيتقري لقارئ الشاشة. [fallback] = false ⇒ من غير لوجو ما يترسمش حاجة (الشارة الصغيرة على صف العملية).
+ * [letterInk] = الحرف لوحده باللون ده من غير دايرة (جوه عدسة زجاج على البطاقة البطلة — الدايرة الفاتحة ما بتبانش على الغامق).
  */
 @Composable
-fun BankLogo(bank: Bank?, name: String, modifier: Modifier = Modifier, size: Dp = 40.dp, wide: Boolean = false, fallback: Boolean = true) {
+fun BankLogo(bank: Bank?, name: String, modifier: Modifier = Modifier, size: Dp = 40.dp, wide: Boolean = false, fallback: Boolean = true, letterInk: Color? = null) {
     val label = bank?.let(::bankLabel) ?: name
     val a11y = Modifier.semantics { contentDescription = label; role = Role.Image }
     val paint = bank?.logo?.let { bankLogoPaint(it) }
     if (paint == null) {
         if (!fallback) return
+        if (letterInk != null) {
+            Box(modifier.size(size).then(a11y), contentAlignment = Alignment.Center) {
+                BasicText(logoInitial(label), style = Type.of((size.value * 0.5f).toInt().coerceAtLeast(10), FontWeight.Bold).copy(color = letterInk))
+            }
+            return
+        }
         val tint = TINTS[(label.hashCode() and Int.MAX_VALUE) % TINTS.size]
         Box(modifier.size(size).clip(CircleShape).background(tint.copy(alpha = 0.14f)).then(a11y), contentAlignment = Alignment.Center) {
             BasicText(logoInitial(label), style = Type.of((size.value * 0.4f).toInt().coerceAtLeast(10), FontWeight.Bold).copy(color = tint))

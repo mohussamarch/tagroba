@@ -27,7 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
+import app.masroufy.core.Bank
 import app.masroufy.core.TextKey
+import app.masroufy.core.bankForWallet
+import app.masroufy.ui.app.LocalSpace
+import app.masroufy.ui.components.BankLogo
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.LensOnHero
 import app.masroufy.ui.components.pressScale
@@ -46,7 +50,7 @@ import app.masroufy.usecase.WithYouNow
 
 /**
  * بنوك «معك الآن» جوه البطاقة البطلة (`HeroBanks` — OVERRIDES §74): عدسة زجاج لكل بنك في البلد الشغالة فوق بعض شوية (الأول على اليمين)،
- * وجواها **مكان اللوجو** (أول حرف لحد ما بحث اللوجوهات يتعتمد — العلامات التجارية بتتحط زي ما هي من مصدر رخصته معروفة).
+ * وجواها **لوجو البنك** من دليل البنوك (§81 · §76 — زي ما هو من موقع البنك، للتعريف بس)، ولو مالوش لوجو أول حرف في دايرة ([BankLogo]).
  * الضغط ⇒ نافذة «أين ما معك الآن؟»: كل بنك برصيده + الكاش + المجموع (= الرقم الكبير بالظبط — نفس `LoadWithYouNow`).
  */
 @Composable
@@ -57,6 +61,7 @@ fun HeroBanks(now: WithYouNow, modifier: Modifier = Modifier) {
     val anchor = remember { Anchor() }
     val press = rememberPress()
     val names = banks.joinToString("، ") { it.wallet.name }
+    val country = LocalSpace.current.space.countryCode
     Row(
         modifier.defaultMinSize(minHeight = 48.dp).onGloballyPositioned { anchor.update(it) }.pressScale(press)
             .tap(press, label = t(UiKey.HERO_BANKS_LABEL, names), onClick = { open = true }),
@@ -67,13 +72,13 @@ fun HeroBanks(now: WithYouNow, modifier: Modifier = Modifier) {
                 Modifier.zIndex((banks.size - i).toFloat()).offset(x = if (i == 0) 0.dp else (-10 * i).dp).size(42.dp),
                 shape = RoundedCornerShape(15.dp),
                 background = Glass.heroBank,
-            ) { BasicText(b.wallet.name.take(1), style = Type.of(15, FontWeight.Bold).copy(color = Ink.lensInk)) }
+            ) { BankLogo(bankForWallet(b.wallet, country), b.wallet.name, size = 30.dp, letterInk = Ink.lensInk) }
         }
     }
     GlassPopover(visible = open, onDismiss = { open = false }, anchor = anchor, title = t(UiKey.HERO_BANKS_TITLE), veil = Veil.NORMAL, width = 310.dp, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(t(UiKey.HERO_BANKS_TITLE), Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp), style = Type.of(16, FontWeight.Bold))
-        for (w in banks) BankLine(w, if (w.wallet.kind == "digital_wallet") t(UiKey.HERO_DIGITAL_SUB) else t(UiKey.HERO_BANK_SUB), now, cash = false)
-        for (w in now.cash) BankLine(w, t(UiKey.HERO_CASH_SUB), now, cash = true)
+        for (w in banks) BankLine(w, if (w.wallet.kind == "digital_wallet") t(UiKey.HERO_DIGITAL_SUB) else t(UiKey.HERO_BANK_SUB), now, bankForWallet(w.wallet, country), cash = false)
+        for (w in now.cash) BankLine(w, t(UiKey.HERO_CASH_SUB), now, null, cash = true)
         Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(1.dp).background(Color(0x1F193D33)))
         Row(
             Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 2.dp),
@@ -88,17 +93,15 @@ fun HeroBanks(now: WithYouNow, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun BankLine(w: WalletNow, sub: String, now: WithYouNow, cash: Boolean) {
+private fun BankLine(w: WalletNow, sub: String, now: WithYouNow, bank: Bank?, cash: Boolean) {
     Row(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).padding(horizontal = 6.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val tile = RoundedCornerShape(12.dp)
-        Box(
-            Modifier.size(34.dp).clip(tile).background(if (cash) Ink.selected else Color.White).insetRing(tile, 1.dp, Ink.fieldEdge),
-            contentAlignment = Alignment.Center,
-        ) { if (!cash) BasicText(w.wallet.name.take(1), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }
+        if (cash) Box(Modifier.size(34.dp).clip(tile).background(Ink.selected).insetRing(tile, 1.dp, Ink.fieldEdge))
+        else BankLogo(bank, w.wallet.name, size = 34.dp)
         Column(Modifier.weight(1f)) {
             BasicText(w.wallet.name, style = Type.bodyBold(), maxLines = 1)
             BasicText(sub, style = Type.caption().copy(color = Ink.muted))

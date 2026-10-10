@@ -136,6 +136,6 @@ internal val EGYPTIAN_SHELL_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.HERO_BANK_SUB to "حساب بنك",
     UiKey.HERO_DIGITAL_SUB to "محفظة إلكترونية",
     UiKey.HERO_CASH_SUB to "اللي في جيبك",
-    UiKey.HERO_LOGO_NOTE to "لوجو كل بنك هيتحط مكان الحرف بعد ما بحث اللوجوهات يتعتمد.",
+    UiKey.HERO_LOGO_NOTE to "لوجوهات البنوك من مواقعها، للتعريف بالبنك بس.",
     UiKey.HERO_NA_LINE to "رصيد محفظة لسه مش متاح — بيبدأ من يوم ما اتفتحت في التطبيق.",
 )

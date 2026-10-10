@@ -47,4 +47,20 @@ class ManageWalletsTest {
         assertEquals("2026-09-06", repo.findById("wallet-cash")!!.openingAt)
         assertFailsWith<WalletError> { manage.setOpening("wallet-cash", 5, "2027-01-01") }
     }
+
+    @Test fun keepsTheBankPickedFromTheCatalogue() = runBlocking<Unit> {
+        val w = manage.add(AddWalletInput("bank", "مصرف الراجحي", "0042", 50_000, null, "sa-al-rajhi-bank"))
+        assertEquals("sa-al-rajhi-bank", repo.findById(w.id)?.bankId)
+        assertEquals("2026-10-10", w.openingAt, "رصيد من غير تاريخ = النهارده")
+        assertNull(manage.add(AddWalletInput("cash", "كاش الشغل", null, null, null, "sa-al-rajhi-bank")).bankId, "الكاش ما لوش بنك")
+        assertNull(manage.add(AddWalletInput("bank", "بنك تاني", null, null, null, null)).bankId, "«بنك تاني» باسم بيتكتب")
+        assertFailsWith<WalletError> { manage.add(AddWalletInput("bank", "بنك مش موجود", null, null, null, "sa-not-in-catalogue")) }
+    }
+
+    @Test fun prepareChecksEverythingWithoutWriting() = runBlocking<Unit> {
+        val w = manage.prepare(AddWalletInput("bank", "بنك الرياض", "1234", 10_000, "2026-10-01", "sa-riyad-bank"))
+        assertEquals("sa-riyad-bank", w.bankId)
+        assertEquals(1, repo.listAll().size, "ما اتكتبش حاجة")
+        assertFailsWith<WalletError> { manage.prepare(AddWalletInput("bank", "كاش", null, null, null)) }
+    }
 }

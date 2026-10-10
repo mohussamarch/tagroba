@@ -77,7 +77,7 @@ fun OperationsScreen() {
                 val trace = app.masroufy.perf.PerfTrace
                 val payday = trace.span("ops:payday") { deps.payday() }
                 val data = trace.span("ops:transactions") { deps.transactions.load(LoadTransactionsScreenRequest(PeriodChoice.periodOf(chosenKey, payday), today, payday)) }
-                trace.span("ops:view") { operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency) }
+                trace.span("ops:view") { operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency, space.space.countryCode) }
             }
             ui = ui.loaded(view, attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } })
         }

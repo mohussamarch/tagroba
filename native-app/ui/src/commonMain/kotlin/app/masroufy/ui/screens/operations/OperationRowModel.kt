@@ -14,6 +14,8 @@ import app.masroufy.core.Liquidity
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
+import app.masroufy.core.Bank
+import app.masroufy.core.bankForWallet
 import app.masroufy.core.dayMonth
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.groupByDay
@@ -42,16 +44,19 @@ data class OpRow(
     val currency: Currency,
     val tone: AmountTone,
     val unrecorded: Boolean = false,
+    /** بنك المحفظة (لوجو صغير على ركن الأيقونة — §81). null = كاش أو بنك مش معروف. */
+    val bank: Bank? = null,
 )
 
 /** مجموعة يوم: «اليوم» · «أمس» · «7 أكتوبر». */
 data class OpDay(val date: IsoDate, val label: String, val rows: List<OpRow>)
 
-/** اللي الصف محتاجه من برّه العملية: التصنيفات · أسماء التجار · المحافظ. */
+/** اللي الصف محتاجه من برّه العملية: التصنيفات · أسماء التجار · المحافظ · بلد المساحة ([country] — عشان لوجو بنك المحفظة من اسمها). */
 class RowContext(
     categories: List<Category>,
     private val merchantNames: Map<Id, List<String>> = emptyMap(),
     wallets: List<Wallet> = emptyList(),
+    val country: String? = null,
 ) {
     private val categoryById = categories.associateBy { it.id }
     private val walletById = wallets.associateBy { it.id }
@@ -116,7 +121,10 @@ fun colorOf(tx: Transaction, ctx: RowContext): Color {
 }
 
 fun opRow(tx: Transaction, ctx: RowContext): OpRow =
-    OpRow(tx.id, titleOf(tx, ctx), subtitleOf(tx, ctx), iconOf(tx, ctx), colorOf(tx, ctx), tx.amountMinor, tx.currency, toneOf(tx))
+    OpRow(
+        tx.id, titleOf(tx, ctx), subtitleOf(tx, ctx), iconOf(tx, ctx), colorOf(tx, ctx), tx.amountMinor, tx.currency, toneOf(tx),
+        bank = ctx.wallet(tx.walletId)?.let { bankForWallet(it, ctx.country) },
+    )
 
 /** «اليوم» · «أمس» · «7 أكتوبر» — [today] من الجهاز (`ShellDeps.today`). */
 fun dayLabel(date: IsoDate, today: IsoDate): String {

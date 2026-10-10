@@ -31,6 +31,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.Badge
 import app.masroufy.ui.components.BadgeKind
+import app.masroufy.ui.components.BankLogo
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.HeroAmount
@@ -84,11 +85,12 @@ fun WalletDetailScreen(walletId: Id) {
             item(key = "gone") { EmptyState(t(UiKey.WDET_GONE)) }
             return@InnerScaffold
         }
-        val row = walletRow(w, mainId)
+        val row = walletRow(w, mainId, deps.space.countryCode)
         item(key = "hero") {
             HeroCard(Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (!row.isCash) BankLogo(row.bank, row.name, size = 36.dp, letterInk = Ink.lensInk)
                         BasicText(row.name, Modifier.weight(1f), style = Type.of(18, FontWeight.Bold).copy(color = Ink.onPrimary))
                         if (row.last4 != null) BasicText("•••• " + row.last4, style = Type.of(13).copy(color = Ink.onHeroMuted, textDirection = TextDirection.Ltr))
                     }

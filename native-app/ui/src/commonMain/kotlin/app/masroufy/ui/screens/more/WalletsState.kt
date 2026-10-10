@@ -2,6 +2,7 @@ package app.masroufy.ui.screens.more
 
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
+import app.masroufy.core.Bank
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -9,6 +10,7 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
+import app.masroufy.core.bankForWallet
 import app.masroufy.core.sentenceDigits
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.text.t
@@ -35,6 +37,8 @@ data class WalletRowView(
     val approx: Boolean,
     val openingMinor: Halalas,
     val openingAt: IsoDate,
+    /** البنك من دليل البنوك (للوجو — §81): المحفوظ في المحفظة أو من اسمها. null = كاش · بنك مش في الدليل ⇒ الحرف. */
+    val bank: Bank? = null,
 )
 
 data class WalletGroupView(val kind: WalletGroupKind, val rows: List<WalletRowView>)
@@ -54,15 +58,17 @@ private fun groupOf(kind: String) = when (kind) {
     else -> WalletGroupKind.BANKS
 }
 
-fun walletRow(w: WalletNow, mainId: Id?): WalletRowView = WalletRowView(
+/** [country] = بلد المساحة الشغالة (عشان الاسم المختصر «الأهلي» يتعرف صح) — null ⇒ البنك من المحفوظ في المحفظة بس. */
+fun walletRow(w: WalletNow, mainId: Id?, country: String? = null): WalletRowView = WalletRowView(
     id = w.wallet.id, name = w.wallet.name, kindLabel = kindLabel(w.wallet.kind), last4 = w.wallet.accountLast4?.let(::sentenceDigits),
     balanceMinor = w.balanceMinor, isCash = w.wallet.kind == "cash", isMain = mainId != null && mainId == w.wallet.id,
     approx = w.wallet.kind == "cash" && w.balanceMinor != null, openingMinor = w.wallet.openingBalanceMinor, openingAt = w.wallet.openingAt,
+    bank = bankForWallet(w.wallet, country),
 )
 
 /** القايمة: البنوك · المحافظ الإلكترونية (لو فيه) · الكاش — بترتيب «معك الآن» جوه كل مجموعة. */
-fun walletsView(now: WithYouNow, mainId: Id?): WalletsView {
-    val rows = now.wallets.map { walletRow(it, mainId) to groupOf(it.wallet.kind) }
+fun walletsView(now: WithYouNow, mainId: Id?, country: String? = null): WalletsView {
+    val rows = now.wallets.map { walletRow(it, mainId, country) to groupOf(it.wallet.kind) }
     val groups = WalletGroupKind.entries.mapNotNull { g ->
         rows.filter { it.second == g }.map { it.first }.takeIf { it.isNotEmpty() }?.let { WalletGroupView(g, it) }
     }
