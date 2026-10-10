@@ -24,6 +24,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.periodForDate
 import app.masroufy.core.weekdayDayMonth
 import app.masroufy.ui.app.LocalBell
+import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.app.SpaceDeps
@@ -49,18 +50,21 @@ import app.masroufy.usecase.LoadHomeScreenRequest
  * الرئيسية (`Home` = لوحة `Main` + `CashDetails`): الرأس · البطاقة البطلة «معك الآن» (+ `HeroBanks` · «يشمل X كاش» ⇒ لوحة الكاش ·
  * «صرفت هذا الشهر» و«الراتب بعد N») · كارت المساعد · «القادم» · كارت «كمّل ملفك». الحالات: بيحمّل (هيكل) · فشل (شريط + أعد المحاولة) ·
  * فاضي (حساب جديد) · غير متاح (رصيد محفظة مش معروف). كل رقم من حالة استخدام — الشاشة بتعرض بس.
+ * لوحة «+» بتتفتح **فوق** الرئيسية وهي لسه ظاهرة ⇒ بعد الحفظ `DataChanges.version` بيزيد والرئيسية بتقرا تاني (من غير هيكل: الأرقام القديمة
+ * بتفضل لحد ما الجديدة توصل).
  */
 @Composable
 fun HomeScreen() {
     val deps = LocalSpace.current
     val shell = deps.shell
+    val changes = LocalDataChanges.current
     var me by remember(deps) { mutableStateOf<MeInfo?>(null) }
     var load by remember(deps) { mutableStateOf<HomeLoad>(HomeLoad.Loading) }
     var tick by remember { mutableStateOf(0) }
     var cashOpen by remember { mutableStateOf(false) }
     val bell = LocalBell.current
     val gone = Dismissals.of(deps.space.id).goneKeys
-    LaunchedEffect(deps, tick) {
+    LaunchedEffect(deps, tick, changes.version) {
         me = runCatching { shell.me() }.getOrNull()
         load = loadHome(deps)
     }

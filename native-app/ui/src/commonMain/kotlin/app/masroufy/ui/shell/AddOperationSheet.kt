@@ -32,6 +32,7 @@ import app.masroufy.core.Category
 import app.masroufy.core.TextKey
 import app.masroufy.core.currencySymbol
 import app.masroufy.core.ruleFor
+import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.FieldError
@@ -61,7 +62,9 @@ import kotlinx.coroutines.launch
  * لوحة «+» ⇒ «عملية جديدة» (`AddSheet`/`AddOperation` جوه `BottomBar` في النموذج): صرف · دخل · تحويل، المبلغ بلون النوع، التصنيف (أو نوع الدخل،
  * أو «إلى أين؟» للتحويل) **في مكان محجوز على صفين (88) عشان طول اللوحة ما يتغيرش**، و«من أين؟» (المحفظة الأساسية مختارة لوحدها — ولو لسه
  * مفيش أساسية: فاضية و«من أين تصرف عادةً؟»، `MainWallet.kt`)، و«احفظ» (معطّل لحد ما الأساسي يكمل — والمحفظة منه).
- * الحفظ ⇒ `QuickAddOperation` (`AddTransaction`) ⇒ اللوحة تقفل ورسالة «سُجّلت: …». الخطأ جنب المبلغ. «بصوتك» ⇒ «غير متاحة بعد» (مفيش خدمة صوت).
+ * الحفظ ⇒ `QuickAddOperation` (`AddTransaction`) ⇒ اللوحة تقفل ورسالة «سُجّلت: …» و**الشاشة اللي تحتها تقرا تاني** (`DataChanges` — الرئيسية
+ * بتفضل ظاهرة تحت اللوحة، فمن غيرها «معك الآن» و«صرفت هذا الشهر» كانوا بيفضلوا قدام لحد ما تسيب التبويب). الخطأ جنب المبلغ.
+ * «بصوتك» ⇒ «غير متاحة بعد» (مفيش خدمة صوت).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -69,6 +72,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
     val space = LocalSpace.current
     val shell = space.shell
     val toaster = LocalToaster.current
+    val changes = LocalDataChanges.current
     val scope = rememberCoroutineScope()
     var options by remember { mutableStateOf<AddOperationOptions?>(null) }
     var kind by remember { mutableStateOf(AddKind.OUT) }
@@ -154,6 +158,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
                             if (firstMain != null) MainWalletChoice.set(space.space.id, firstMain)
                             val mainName = firstMain?.let { id -> o?.wallets?.firstOrNull { it.id == id }?.name }
                             toaster.show(if (mainName != null) t(TextKey.ADD_SAVED_MAIN, saved, mainName) else saved)
+                            changes.changed()
                             onClose()
                         }
                     }

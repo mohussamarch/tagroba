@@ -60,6 +60,9 @@ class ShellState {
     val overlays = OverlayHost()
     val toaster = Toaster()
 
+    /** كتابة من لوحة فوق شاشة لسه ظاهرة ⇒ الشاشة تقرا تاني (الرئيسية بعد «+») — [DataChanges]. */
+    val changes = DataChanges()
+
     /** المحادثة مع المساعد — بتفضل لو الشات اتقفل أو اتنقلت أو البلد اتبدّل، لحد «محادثة جديدة» (§67 · آخر §76). */
     val ask = AskState()
 
@@ -85,7 +88,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     var ask by remember { mutableStateOf<Boolean?>(null) }
     var bellTick by remember { mutableStateOf(0) }
     var bell by remember(deps) { mutableStateOf<BellState?>(null) }
-    LaunchedEffect(deps, bellTick) { bell = runCatching { deps.shell.bell() }.getOrNull() }
+    // الجرس بيتقري تاني كمان بعد أي كتابة (عملية جديدة ممكن تغيّر الأسئلة ونقط التبويبات)
+    LaunchedEffect(deps, bellTick, shell.changes.version) { bell = runCatching { deps.shell.bell() }.getOrNull() }
     // «×» على إشعار بيشيله من الجرس ومن عدّ «جديد» ومن نقطة تبويبه (قرار المالك 2026-10-09) — المسح للجلسة دي (`Dismissals`)
     // لحد ما حفظه مع الحساب يتوصل من فرع `assistant-engine`
     val shownBell = bell?.without(Dismissals.of(deps.space.id).goneKeys)
@@ -97,6 +101,7 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
         LocalSpace provides deps,
         LocalToaster provides shell.toaster,
         LocalBell provides BellHolder(shownBell) { bellTick++ },
+        LocalDataChanges provides shell.changes,
     ) {
         Box(Modifier.fillMaxSize()) {
             // الخلفية **جوه** المتسجل: النسخة المموّهة لازم تبقى معتمة عشان تغطي الأصل — من غيرها النص اللي على الخلفية كان بيبان حاد
