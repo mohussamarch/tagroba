@@ -77,7 +77,7 @@ class EventsPresenterTest {
         assertEquals(listOf(MoneyLine(20_000, app.masroufy.core.Currency.SAR)), d.spend)
         val row = d.spends.single()
         assertEquals(20_000, row.amountMinor)
-        assertEquals(sentenceNumber(50) + "٪ من 400.00", row.share)
+        assertEquals(sentenceNumber(50) + "% من 400.00", row.share)
         assertTrue(row.sub.endsWith("، الكاش"), row.sub)
         assertEquals("سارة وهمية", d.giftRows.single().name)
         assertTrue(d.hasGiftsIn)
