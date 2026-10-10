@@ -19,7 +19,11 @@ object CalendarRoute : Route {
     override val name = "Calendar"
 }
 
-/** «اختر الشهر» — الاختيار بيتحفظ في [PeriodChoice] للبلد الشغالة (شاشة العمليات بتقراه من هناك). */
+/**
+ * «اختر الشهر» — الاختيار بيتحفظ في [PeriodChoice] للبلد الشغالة. ⚠️ **مدخلها الوحيد** زرار الشهر («أكتوبر») في شاشة العمليات (§76) — مش
+ * موجود على الفرع ده (العمليات هنا «قيد البناء») ⇒ الشاشة دي ما حدش بيفتحها لحد الدمج. فرع `screens-operations` فيه المدخل فعلًا
+ * (`OperationsScreen.kt`: `MonthButton(…) { nav.push(PeriodPickerRoute) }`) بس **لسه ما بيقراش** [PeriodChoice] — لازم يتوصل وقت الدمج.
+ */
 object PeriodPickerRoute : Route {
     override val name = "PeriodPicker"
 }
@@ -29,7 +33,11 @@ object ReviewQueueRoute : Route {
     override val name = "ReviewQueue"
 }
 
-/** «اختر شكلك» — بتتفتح من «ملفك» (`Account` في منطقة «المزيد»): `LocalNavigator.current.open(LookSheetRoute)`. */
+/**
+ * «اختر شكلك» — مدخلها الوحيد «ملفك» (`Account` في منطقة «المزيد»)، ومش موجود على الفرع ده ⇒ اللوحة دي **ما حدش بيفتحها هنا**.
+ * ⚠️ وفرع `screens-more` بيفتح نسخته هو (`more/LookSheet.kt` جوه `AccountScreen.kt`) مش المسار ده ⇒ حتى بعد الدمج تفضل مقفولة لحد ما
+ * تتحسم «نسخة واحدة» (سؤال مفتوح في HANDOVER — جلسة 43): يا «ملفك» يفتح `open(LookSheetRoute)` وتتشال نسخة المزيد، يا العكس.
+ */
 object LookSheetRoute : SheetRoute {
     override val name = "LookSheet"
 }
