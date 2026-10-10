@@ -76,7 +76,7 @@ internal val MSA_PEOPLE_AREA_1: Map<UiKey, String> = mapOf(
     UiKey.PEOPLE_ROW_DONE to "تم",
     UiKey.PEOPLE_ROW_END_EDIT to "إنهاء التعديل",
     UiKey.PEOPLE_ROW_DRAG to "{0}، اسحب لتغيير مكانه",
-    UiKey.PEOPLE_ROW_REMOVE to "شيل {0} من الصف",
+    UiKey.PEOPLE_ROW_REMOVE to "أزِل {0} من الصف",
     UiKey.PEOPLE_ROW_REMOVED to "أُزيل «{0}» من الصف",
     UiKey.PEOPLE_ROW_UNDO to "تراجع",
     UiKey.PEOPLE_ROW_ADD to "إضافة",

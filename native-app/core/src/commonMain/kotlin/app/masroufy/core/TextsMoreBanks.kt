@@ -30,7 +30,7 @@ internal val MSA_MORE_BANK_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.ONB_R_CASH_L to "تبدأ محفظة الكاش بـ {0}.",
     UiKey.ONB_R_CASH_SKIP_L to "محفظة الكاش تبدأ من صفر، وتعدّل رصيدها متى شئت من «المحافظ».",
     UiKey.ONB_R_BANK_L to "سنضيف «{0}» إلى محافظك.",
-    UiKey.ONB_R_BANK_SKIP_L to "تقدر تضيف بنكك لاحقًا من «المحافظ».",
+    UiKey.ONB_R_BANK_SKIP_L to "يمكنك إضافة بنكك لاحقًا من «المحافظ».",
 )
 
 internal val EGYPTIAN_MORE_BANK_TEXTS: Map<UiKey, String> = mapOf(

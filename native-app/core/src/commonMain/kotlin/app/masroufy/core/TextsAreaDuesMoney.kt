@@ -20,7 +20,7 @@ internal val MSA_DUES_MONEY_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SMS_FEE_TWIN_REASON to "الرسوم نفسها وصلت في رسالة رسوم مستقلة، فحُسبت مرة واحدة",
     UiKey.INST_F_COUNT to "عدد الأقساط",
     UiKey.INST_F_COUNT_HINT to "مثلًا 4",
-    UiKey.INST_F_TOTAL_IF_NO_COUNT to "إجمالي ما ستدفعه (لو لا تعرف عدد الأقساط)",
+    UiKey.INST_F_TOTAL_IF_NO_COUNT to "إجمالي ما ستدفعه (إن لم تعرف عدد الأقساط)",
     UiKey.INST_ERR_COUNT to "عدد الأقساط من 1 إلى {0}.",
     UiKey.INST_PAYLATER to "اشترِ الآن وادفع لاحقًا",
     UiKey.INST_PAYLATER_HINT to "تابي، تمارا — أول قسط يُدفع وقت الشراء",
