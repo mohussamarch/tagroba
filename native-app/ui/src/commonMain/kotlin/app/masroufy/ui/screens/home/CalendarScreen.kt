@@ -74,25 +74,29 @@ fun CalendarScreen() {
     var month by rememberSaveable { mutableStateOf(now.month) }
     var selected by rememberSaveable { mutableStateOf<Int?>(null) }
     var all by rememberSaveable { mutableStateOf(false) }
-    var upcoming by remember(deps) { mutableStateOf<List<CalendarItem>?>(null) }
-    var summary by remember(deps) { mutableStateOf<SmartSummary?>(null) }
-    var monthItems by remember(deps) { mutableStateOf<List<CalendarItem>>(emptyList()) }
-    LaunchedEffect(deps) {
+    // الفشل حالة لوحدها — مش «لا أحداث قادمة» ولا «لا مواعيد في هذا اليوم» (CLAUDE.md #10): شريط «تعذّر التحميل» + «أعد المحاولة»
+    var upcoming by remember(deps) { mutableStateOf<ReadState<UpcomingRead>>(ReadState.Loading) }
+    var monthRead by remember(deps) { mutableStateOf<ReadState<List<CalendarItem>>>(ReadState.Loading) }
+    var tick by remember { mutableStateOf(0) }
+    var monthTick by remember { mutableStateOf(0) }
+    LaunchedEffect(deps, tick) {
         val day = toDayNumber(now)
-        val items = runCatching { deps.home.calendar.items(dayNumberToIso(day - BEHIND_DAYS), dayNumberToIso(day + AHEAD_DAYS), today) }.getOrDefault(emptyList())
-        summary = runCatching { deps.home.calendar.summary(today) }.getOrNull()
-        upcoming = upcomingOf(items)
+        upcoming = readState {
+            val items = deps.home.calendar.items(dayNumberToIso(day - BEHIND_DAYS), dayNumberToIso(day + AHEAD_DAYS), today)
+            UpcomingRead(upcomingOf(items), deps.home.calendar.summary(today))
+        }
     }
-    LaunchedEffect(deps, year, month) {
-        monthItems = runCatching { deps.home.calendar.month(year, month, today).items }.getOrDefault(emptyList())
+    LaunchedEffect(deps, year, month, monthTick) {
+        monthRead = readState { deps.home.calendar.month(year, month, today).items }
     }
     InnerScaffold(t(TextKey.CALENDAR_TITLE)) {
-        val ups = upcoming
-        when {
-            ups == null -> item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
-            ups.isEmpty() -> item(key = "empty") { EmptyState(t(TextKey.CALENDAR_EMPTY_TITLE), t(TextKey.CALENDAR_EMPTY_BODY)) }
-            else -> item(key = "summary") {
-                SummaryCard(ups, summary, all, onToggle = { all = !all }, onOpen = { openSource(nav, it) })
+        when (val u = upcoming) {
+            ReadState.Loading -> item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
+            ReadState.Failed -> item(key = "failed") { HomeErrorBanner { upcoming = ReadState.Loading; tick++ } }
+            is ReadState.Ready -> if (u.value.items.isEmpty()) {
+                item(key = "empty") { EmptyState(t(TextKey.CALENDAR_EMPTY_TITLE), t(TextKey.CALENDAR_EMPTY_BODY)) }
+            } else {
+                item(key = "summary") { SummaryCard(u.value.items, u.value.summary, all, onToggle = { all = !all }, onOpen = { openSource(nav, it) }) }
             }
         }
         item(key = "add") {
@@ -101,7 +105,7 @@ fun CalendarScreen() {
         }
         item(key = "grid") {
             CalendarGrid(
-                year = year, month = month, today = today, marks = marksOf(monthItems, year, month), selectedDay = selected,
+                year = year, month = month, today = today, marks = marksOf(monthRead.valueOrNull().orEmpty(), year, month), selectedDay = selected,
                 onPick = { d -> selected = if (selected == d) null else d },
                 onMonth = { delta ->
                     val total = year * 12 + (month - 1) + delta
@@ -112,9 +116,17 @@ fun CalendarScreen() {
                 onToday = { year = now.year; month = now.month; selected = null },
             )
         }
-        item(key = "day") { DayBlock(year, month, selected, monthItems, onClear = { selected = null }, onOpen = { openSource(nav, it) }) }
+        item(key = "day") {
+            when (val m = monthRead) {
+                ReadState.Failed -> HomeErrorBanner { monthRead = ReadState.Loading; monthTick++ }
+                else -> DayBlock(year, month, selected, m.valueOrNull(), onClear = { selected = null }, onOpen = { openSource(nav, it) })
+            }
+        }
     }
 }
+
+/** «الأحداث القادمة» والجملة الذكية بيتقروا مع بعض — لو واحدة فشلت الكارت كله «تعذّر التحميل» (مش جملة ناقصة من غير ما يقول). */
+private class UpcomingRead(val items: List<CalendarItem>, val summary: SmartSummary)
 
 /** فين بيودّي الميعاد (أقرب تبويب لصفحة مصدره). */
 private fun openSource(nav: app.masroufy.ui.nav.Navigator, type: CalendarItemType) {
@@ -178,7 +190,7 @@ internal fun CalRowView(row: CalRow, onOpen: (CalendarItemType) -> Unit) {
 
 /** «اضغط يومًا لترى مواعيده» ⇒ «يوم ١٤ أكتوبر» + مواعيده (أو «لا مواعيد في هذا اليوم»). */
 @Composable
-private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<CalendarItem>, onClear: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
+private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<CalendarItem>?, onClear: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             val title = if (selected == null) t(TextKey.CALENDAR_PICK_DAY) else t(TextKey.CALENDAR_DAY_TITLE, dayMonth(formatIsoDate(DateParts(year, month, selected))))
@@ -186,6 +198,8 @@ private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<Cal
             if (selected != null) TonalButton(t(TextKey.CALENDAR_CLEAR), onClick = onClear, height = 44.dp)
         }
         if (selected == null) return@Column
+        // لسه بيتقري (شهر جديد) ⇒ هيكل، مش «لا مواعيد»
+        if (monthItems == null) return@Column Skeleton(Modifier.fillMaxWidth().height(56.dp))
         val date: IsoDate = formatIsoDate(DateParts(year, month, selected))
         val day = monthItems.filter { it.date == date }
         if (day.isEmpty()) BasicText(t(TextKey.CALENDAR_DAY_EMPTY), style = Type.of(13).copy(color = Ink.muted))
