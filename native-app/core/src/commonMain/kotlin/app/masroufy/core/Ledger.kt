@@ -6,9 +6,26 @@ package app.masroufy.core
  */
 class LedgerError(message: String) : IllegalStateException(message)
 
-/** نصيب المستخدم = المبلغ − اللي اتخصص للآخرين كـ**دين**. الهدية ما بتخصمش (spec/06). */
+/**
+ * §88 (المالك 2026-10-11): «دعم» **جوه** عملية صادرة نوعها مش مصروف — زي الزيادة على سداد دين عليك (§82-19، تخصيص «هدية» على عملية
+ * «سداد دين عليك») — فلوس خرجت ومش راجعة ⇒ **مصروف** زي أي هدية، في شهر العملية. النصيب ده بس (السداد نفسه مش مصروف)؛ غير كده صفر.
+ * التخصيص المعلّم بس ([PersonAllocation.countedAsSpend]): أي «هدية» قديمة على عملية مش مصروف بتفضل زي التطبيق القديم بالظبط (ملفات المرجع).
+ */
+fun givenAwayShareOf(transaction: Transaction, allocations: List<PersonAllocation>): Halalas {
+    if (countsAsPersonalExpense(transaction.economicKind) || transaction.observedDirection != Direction.OUT) return 0
+    if (ruleFor(transaction.economicKind).liquidity != Liquidity.OUT) return 0
+    return sumMoney(
+        allocations.filter { it.transactionId == transaction.id && it.allocationKind == AllocationKind.GIFT && it.countedAsSpend }.map { it.amountMinor },
+    )
+}
+
+/** العملية ليها نصيب في المصروف: نوعها مصروف، أو جواها «دعم» ([givenAwayShareOf]). */
+fun countsAsPersonalSpend(transaction: Transaction, allocations: List<PersonAllocation>): Boolean =
+    countsAsPersonalExpense(transaction.economicKind) || givenAwayShareOf(transaction, allocations) > 0
+
+/** نصيب المستخدم = المبلغ − اللي اتخصص للآخرين كـ**دين**. الهدية ما بتخصمش (spec/06). نوع مش مصروف ⇒ «الدعم» اللي جواه بس (§88). */
 fun personalShareOf(transaction: Transaction, allocations: List<PersonAllocation>): Halalas {
-    if (!countsAsPersonalExpense(transaction.economicKind)) return 0
+    if (!countsAsPersonalExpense(transaction.economicKind)) return givenAwayShareOf(transaction, allocations)
     val mine = allocations.filter { it.transactionId == transaction.id }
     val allocatedTotal = sumMoney(mine.map { it.amountMinor })
     if (allocatedTotal > transaction.amountMinor) {
@@ -45,7 +62,7 @@ fun computePeriodTotals(transactions: List<Transaction>, allocations: List<Perso
             if (t.excludedFromBudget) excluded = subtractMoney(excluded, t.amountMinor) else expense = subtractMoney(expense, t.amountMinor)
             continue
         }
-        if (!countsAsPersonalExpense(t.economicKind)) continue
+        if (!countsAsPersonalSpend(t, allocations)) continue
         val share = personalShareOf(t, allocations)
         if (t.excludedFromBudget) excluded = addMoney(excluded, share) else expense = addMoney(expense, share)
     }
@@ -72,6 +89,8 @@ data class PersonBalance(
     val payableLoanMinor: Halalas,
     /** «له عندك» — أمانات. ما بتتقاصش مع القرض. */
     val payableCustodyMinor: Halalas,
+    /** §82-19: **جزء** من [receivableMinor] أمانة ليك عنده (`Obligation.custodyHeld`) — مش رقم زيادة عليه. */
+    val receivableCustodyMinor: Halalas = 0,
 )
 
 /** المتبقي من التزام = الأصل − تسوياته. السالب ممنوع ومش بيتسكت عليه. */
@@ -85,8 +104,12 @@ fun remainingOfObligation(obligation: Obligation, settlements: List<Settlement>)
 /** أرصدة شخص — **مفيش تقاص تلقائي** بين «لك» و«عليك»، والقرض والأمانة منفصلين (spec/02). */
 fun computePersonBalance(personId: String, obligations: List<Obligation>, settlements: List<Settlement>): PersonBalance {
     val mine = obligations.filter { it.personId == personId }
-    fun totalOf(kind: ObligationKind) = sumMoney(mine.filter { it.kind == kind }.map { remainingOfObligation(it, settlements) })
-    return PersonBalance(personId, totalOf(ObligationKind.RECEIVABLE), totalOf(ObligationKind.LOAN_PAYABLE), totalOf(ObligationKind.CUSTODY_PAYABLE))
+    fun totalOf(kind: ObligationKind, only: (Obligation) -> Boolean = { true }) =
+        sumMoney(mine.filter { it.kind == kind && only(it) }.map { remainingOfObligation(it, settlements) })
+    return PersonBalance(
+        personId, totalOf(ObligationKind.RECEIVABLE), totalOf(ObligationKind.LOAN_PAYABLE), totalOf(ObligationKind.CUSTODY_PAYABLE),
+        receivableCustodyMinor = totalOf(ObligationKind.RECEIVABLE) { it.custodyHeld },
+    )
 }
 
 data class SettlementCheck(
@@ -105,7 +128,7 @@ fun checkSettlement(obligation: Obligation, settlements: List<Settlement>, amoun
     val remaining = remainingOfObligation(obligation, settlements)
     if (remaining == 0L) return SettlementCheck(false, uiText(TextKey.SETTLEMENT_FULLY_PAID), 0, amountMinor)
     if (amountMinor <= remaining) return SettlementCheck(true, null, amountMinor, 0)
-    val kindLabel = when (obligation.kind) {
+    val kindLabel = if (obligation.custodyHeld) uiText(TextKey.OBLIGATION_CUSTODY) else when (obligation.kind) {
         ObligationKind.CUSTODY_PAYABLE -> uiText(TextKey.OBLIGATION_CUSTODY)
         ObligationKind.LOAN_PAYABLE -> uiText(TextKey.OBLIGATION_LOAN)
         ObligationKind.RECEIVABLE -> uiText(TextKey.OBLIGATION_RECEIVABLE)

@@ -49,7 +49,8 @@ internal fun DebtDetailUi.settleTarget() = SettleTarget(obligationId, personId, 
 /**
  * جسم لوحة «سداد أو تحصيل» (`SettleSheet`): المتبقي · المبلغ (ما يزيدش عن المتبقي — الخطأ جنب الخانة) · «المتبقي كاملًا» · حفظ ⇒
  * `ManagePeople.settle` (من غير عملية). [onSaved] بياخد «اتسدد بالكامل؟» (المبلغ = المتبقي — مقارنة مش حساب).
- * ⚠️ مش متاح بعد: ربطها بعملية موجودة (الحوالة المستنية) · تسجيل الزيادة أمانة في نفس الخطوة · حالة «يحتاج اتصالًا» (مفيش إشارة نت للشاشات).
+ * §82-19: دين **عليك** والمبلغ أكبر من الباقي ⇒ سؤال «دفعت أكتر من اللي عليك» ([OverpayQuestion] ⇒ `ManagePeople.overpay`)؛ الدين ليك ⇒ الزيادة ممنوعة.
+ * ⚠️ مش متاح بعد: ربطها بعملية موجودة (الحوالة المستنية) · حالة «يحتاج اتصالًا» (مفيش إشارة نت للشاشات).
  */
 @Composable
 internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) {
@@ -60,7 +61,30 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
     var linkMode by remember(target.obligationId) { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
-    val check = if (linkMode) SettleInput.Empty else settleInput(text, target.remainingMinor, target.currency)
+    // §82-19: دين عليك والمبلغ أكبر من الباقي ⇒ «دفعت أكتر من اللي عليك» (الأرقام من حالة الاستخدام)
+    var overpay by remember(target.obligationId) { mutableStateOf<app.masroufy.core.Overpay?>(null) }
+    val check = if (linkMode) SettleInput.Empty else settleInput(text, target.remainingMinor, target.currency, allowOver = !target.forYou)
+    fun choose(choice: app.masroufy.core.OverpayChoice, go: SettleInput.Over) {
+        saving = true
+        scope.launch {
+            try {
+                val outcome = deps.people.overpay.resolve(target.obligationId, target.personId, go.minor, choice)
+                if (outcome.editAmount) {
+                    overpay = null
+                    failure = t(UiKey.OVERPAY_FIX_HINT)
+                } else {
+                    overpaySavedToast(outcome, choice, target.personName, target.currency)?.let { toaster.show(it) }
+                    DuesChanges.bump()
+                    onSaved(true)
+                }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                failure = failText(e)
+            } finally {
+                saving = false
+            }
+        }
+    }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
         BasicText(t(if (target.forYou) UiKey.SETTLE_TITLE_FOR else UiKey.SETTLE_TITLE_ON, target.personName), Modifier.weight(1f), style = Type.section())
         BasicText(t(UiKey.SETTLE_REMAINING, amountLabel(target.remainingMinor, target.currency)), style = Type.caption().copy(color = Ink.muted))
@@ -79,18 +103,41 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
             BasicText(t(UiKey.SETTLE_NO_CAND_SUB, target.personName), style = Type.caption().copy(color = Ink.muted))
         }
     } else {
-        MoneyField(text, { text = it; failure = null }, t(UiKey.SETTLE_AMOUNT), target.currency, check.errorText(target.remainingMinor, target.currency), big = true)
+        MoneyField(text, { text = it; failure = null; overpay = null }, t(UiKey.SETTLE_AMOUNT), target.currency, check.errorText(target.remainingMinor, target.currency), big = true)
         TonalButton(
             t(UiKey.SETTLE_FILL, amountLabel(target.remainingMinor, target.currency, showCurrency = false)),
             { text = formatAmount(target.remainingMinor, target.currency, grouping = false); failure = null }, height = 44.dp,
         )
     }
     failure?.let { FieldError(it) }
+    val over = check as? SettleInput.Over
+    val shownOverpay = overpay
+    if (over != null && shownOverpay != null) {
+        OverpayQuestion(shownOverpay, target.currency, saving) { choose(it, over) }
+        return
+    }
     val ok = check as? SettleInput.Ok
+    val chosen = ok?.minor ?: over?.minor
     PrimaryButton(
-        if (ok == null) t(if (target.forYou) UiKey.SETTLE_SAVE_FOR else UiKey.SETTLE_SAVE_ON)
-        else t(if (target.forYou) UiKey.SETTLE_SAVE_FOR_AMOUNT else UiKey.SETTLE_SAVE_ON_AMOUNT, amountLabel(ok.minor, target.currency, showCurrency = false)),
+        if (chosen == null) t(if (target.forYou) UiKey.SETTLE_SAVE_FOR else UiKey.SETTLE_SAVE_ON)
+        else t(if (target.forYou) UiKey.SETTLE_SAVE_FOR_AMOUNT else UiKey.SETTLE_SAVE_ON_AMOUNT, amountLabel(chosen, target.currency, showCurrency = false)),
         onClick = {
+            if (over != null) {
+                // الزيادة بتتسأل قبل أي كتابة — الأرقام من حالة الاستخدام (الباقي ممكن يكون اتغيّر من جهاز تاني)
+                saving = true
+                scope.launch {
+                    try {
+                        val found = deps.people.overpay.check(target.obligationId, target.personId, over.minor)
+                        if (found != null) overpay = found else failure = t(UiKey.SETTLE_ERR_OVER, amountLabel(target.remainingMinor, target.currency))
+                    } catch (e: Exception) {
+                        if (e is kotlinx.coroutines.CancellationException) throw e
+                        failure = failText(e)
+                    } finally {
+                        saving = false
+                    }
+                }
+                return@PrimaryButton
+            }
             val go = ok ?: return@PrimaryButton
             saving = true
             scope.launch {
@@ -107,7 +154,7 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
                 }
             }
         },
-        enabled = check is SettleInput.Ok, loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth(),
+        enabled = check is SettleInput.Ok || check is SettleInput.Over, loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth(),
     )
 }
 

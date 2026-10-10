@@ -16,13 +16,15 @@ import app.masroufy.core.sharedMerchantKey
 import app.masroufy.core.toDayNumber
 import app.masroufy.port.Clock
 import app.masroufy.port.MerchantRepository
+import app.masroufy.port.PersonRepository
 import app.masroufy.port.SharedMerchantCatalogPort
 import app.masroufy.port.SyncCursorPort
+import app.masroufy.port.TransferPartyRepository
 
 /**
  * قاعدة التجار المشتركة — نقل `sharedMerchants.ts` (OVERRIDES §25 و§25.1).
  * `sync`: التغييرات من آخر مرة، **وكل المؤكدين مرة في اليوم**، وبيضيف للحساب المؤكد الناقص من غير ما يكتب فوق تصنيف المستخدم.
- * `contribute`: لما المستخدم يأكد تصنيف شراء، اسم المحل وتصنيفه بيتبعتوا **مش مؤكدين**.
+ * `contribute`: لما المستخدم يأكد تصنيف شراء، اسم المحل وتصنيفه بيتبعتوا **مش مؤكدين** — وأبدًا مش اسم شخص أو طرف تحويل (§80).
  */
 
 data class SharedSyncResult(val changes: Int, val added: Int, val filled: Int)
@@ -40,6 +42,10 @@ data class SharedMerchantsDeps(
     /** آخر مراجعة لكل المؤكدين. */
     val confirmedCursor: SyncCursorPort,
     val clock: Clock,
+    /** §80: أسامي «الأشخاص» — **إجباري** عشان أي توصيل جديد ما ينساش الحماية: اسم شخص عمره ما يترفع للقايمة المشتركة. */
+    val people: PersonRepository,
+    /** §80: أطراف التحويل (بأي قرار) — نفس الحماية: اسم طرف تحويل عمره ما يترفع. */
+    val transferParties: TransferPartyRepository,
 )
 
 /** كل المؤكدين بيتقروا مرة في اليوم على الأكتر (حد القراية المجانية 50 ألف في اليوم). */
@@ -96,11 +102,13 @@ class SharedMerchants(private val deps: SharedMerchantsDeps) {
 
     suspend fun contribute(economicKind: EconomicKind, observedDirection: Direction, rawMerchantName: String?, categoryId: Id): ContributionResult {
         // الفحص الرخيص الأول: مفيش قراية من السيرفر لعملية مش هتتبعت أصلًا
-        val probe = contributionFor(economicKind, observedDirection, rawMerchantName, categoryId, deps.treeCategoryIds, null)
+        // §80: أسامي الأشخاص وأطراف التحويل من الحساب نفسه (محليًا) — الاسم اللي يطابق واحد منهم ما بيتبعتش
+        val personNames = deps.people.listAll().map { it.name } + deps.transferParties.listAll().map { it.label }
+        val probe = contributionFor(economicKind, observedDirection, rawMerchantName, categoryId, deps.treeCategoryIds, null, personNames)
         val normalized = shareableName(rawMerchantName)
         if (probe == null || normalized == null) return ContributionResult.SKIPPED
         val current = effectiveEntry(baseline[sharedMerchantKey(normalized)], deps.catalog.get(normalized))
-        val entry = contributionFor(economicKind, observedDirection, rawMerchantName, categoryId, deps.treeCategoryIds, current)
+        val entry = contributionFor(economicKind, observedDirection, rawMerchantName, categoryId, deps.treeCategoryIds, current, personNames)
             ?: return ContributionResult.SKIPPED
         deps.catalog.save(entry)
         return ContributionResult.SHARED

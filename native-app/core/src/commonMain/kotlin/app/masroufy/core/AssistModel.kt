@@ -57,6 +57,18 @@ enum class AssistChoiceKind(val wire: String) {
 
     /** «بطّل تتعلم من أسئلتي» ⇒ تأكيد قبل ما المفتاح يتغير. */
     CONFIRM_LEARNING("confirmLearning"),
+
+    /**
+     * §82-1 «صرفت كام في رمضان؟» ⇒ «من إمتى لإمتى؟» بيومين (مش زراير): [AssistMessage.payload] = الكلام والنية والمناسبة، و[AssistMessage.picked]
+     * بعد الاختيار = «من|لحد». نوع الرسالة «اختيار» عن قصد: نسخة أقدم من التطبيق بتعرض النص بس من غير ما تقع.
+     */
+    PICK_PERIOD("pickPeriod"),
+
+    /**
+     * §89-2: «العيد» لوحده في السعودية ⇒ «أنهي عيد؟» بزرارين (عيد الفطر · عيد الأضحى) وبعدها كارت [PICK_PERIOD] للعيد اللي اتختار. نوع الرسالة
+     * «اختيار» بزراير زي «تقصد مين؟» ⇒ نسخة أقدم بتعرضها من غير ما تقع (والضغطة فيها ما بتعملش حاجة).
+     */
+    PICK_OCCASION("pickOccasion"),
     ;
 
     companion object {
@@ -182,7 +194,8 @@ data class AssistMessage(
             AssistMessageKind.TXN_CARD -> card?.let { AssistantReply.TxnCard(text, it, state ?: CardState.PENDING) }
             AssistMessageKind.SPLIT_CARD -> split?.let { AssistantReply.SplitCard(text, it, state ?: CardState.PENDING) }
             AssistMessageKind.WALLET_PICK -> AssistantReply.WalletPick(text, options, picked)
-            AssistMessageKind.CHOICE -> AssistantReply.Choice(text, options, picked)
+            AssistMessageKind.CHOICE -> if (choice == AssistChoiceKind.PICK_PERIOD) AssistantReply.PeriodPick(text, picked?.let(::pickedRange))
+            else AssistantReply.Choice(text, options, picked)
         }
 }
 
@@ -201,7 +214,14 @@ sealed interface AssistantReply {
     data class Choice(val text: String, val options: List<AssistOption>, val picked: String?) : AssistantReply
 
     data class Unknown(val text: String, val links: List<ScreenLink>) : AssistantReply
+
+    /** §82-1: «من إمتى لإمتى؟» — [picked] = اليومين بعد ما المالك اختار (null = لسه مستني). */
+    data class PeriodPick(val text: String, val picked: Pair<IsoDate, IsoDate>?) : AssistantReply
 }
+
+/** «من|لحد» المتخزن في [AssistMessage.picked] لكارت الفترة ⇒ اليومين (null لو الشكل غلط). */
+fun pickedRange(picked: String): Pair<IsoDate, IsoDate>? =
+    picked.split('|').takeIf { it.size == 2 && it.all(::isValidIsoDate) }?.let { it[0] to it[1] }
 
 /** رأس المحادثة في السجل. [messageCount] بيتحسب تاني من الرسايل وقت الفتح (جوالين في نفس الوقت) — مش بيتصدّق. */
 data class AssistConversation(

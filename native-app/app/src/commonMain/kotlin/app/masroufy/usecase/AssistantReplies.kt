@@ -88,6 +88,8 @@ internal class TurnKit(
     }
 
     private suspend fun dataReply(u: AssistUnderstanding): TurnOut {
+        // §82-1: «في رمضان» ⇒ «من إمتى لإمتى؟» (`AssistantPeriodPick.kt`)
+        if (u.asksPeriod()) return askPeriod(u)
         if (u.note == AssistNote.AMBIGUOUS && u.subject != null) return pickSubject(u)
         val r = chat.answers.answer(u, ctx)
         return TurnOut(listOf(text(opener(u) + r.text, u.wire, r.links, r.approximate).copy(subjectId = u.subject?.id)))

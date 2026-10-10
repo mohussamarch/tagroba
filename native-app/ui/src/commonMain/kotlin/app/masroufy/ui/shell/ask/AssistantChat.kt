@@ -121,6 +121,7 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
     val actions = MessageActions(
         confirm = { go { p.confirm(it) } }, cancel = { go { p.cancel(it) } }, edit = { go { p.edit(it) } }, keep = { go { p.keep(it) } },
         pick = { id, opt -> go { p.pick(id, opt) } }, open = { navigate(targetOf(it)) },
+        period = { id, from, to -> go { p.period(id, from, to) } },
     )
 
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()

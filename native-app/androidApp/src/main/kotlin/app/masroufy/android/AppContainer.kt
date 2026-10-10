@@ -131,7 +131,7 @@ class AppContainer(private val context: Context) {
         // ثابت وقت البناء ⇒ في نسخة المالك الدالة كلها بتتشال (R8)
         if (BuildConfig.FIREBASE_EMULATOR_PROJECT.isEmpty()) return
         val f = firebase?.takeIf { it.emulator } ?: return
-        scope.launch { runCatching { f.auth.signInWithCustomToken(unsignedEmulatorToken(uid)) }.onFailure { PerfTrace.log("perf sign-in failed: ${it.message}") } }
+        scope.launch { runCatching { f.auth.signInWithCustomToken(unsignedEmulatorToken(uid)) }.onFailure { PerfTrace.log("perf sign-in failed: ${it::class.simpleName}") } }
     }
 
     private fun ready(st: AccountSession.State.Ready): AppSession {

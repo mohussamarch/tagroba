@@ -108,17 +108,32 @@ fun InstallmentEditScreen(planId: String?) {
         item(key = "money") {
             FloatingCard(Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    val principalLabel = t(if (form.kind == InstallmentKind.FINANCING) UiKey.INST_F_PRINCIPAL_FIN else UiKey.INST_F_PRINCIPAL_BUY)
-                    MoneyField(form.principal, { form = form.copy(principal = it); saved = false }, principalLabel, currency, err(PlanField.PRINCIPAL))
-                    MoneyField(form.total, { form = form.copy(total = it); saved = false }, t(UiKey.INST_F_TOTAL), currency, err(PlanField.TOTAL))
-                    MoneyField(form.installment, { form = form.copy(installment = it); saved = false }, t(UiKey.INST_F_INSTALLMENT), currency, err(PlanField.INSTALLMENT))
+                    // §82-20: «اشتري دلوقتي وادفع بعدين» (تابي · تمارا) — أول قسط يوم الشراء
+                    val payLater = form.payLater && form.payLaterShown(isNew)
+                    if (form.payLaterShown(isNew)) KindChoice(Modifier.fillMaxWidth(), t(UiKey.INST_PAYLATER), t(UiKey.INST_PAYLATER_HINT), form.payLater, true) {
+                        form = form.copy(payLater = !form.payLater, firstTxnId = null); saved = false
+                    }
+                    if (!payLater) {
+                        val principalLabel = t(if (form.kind == InstallmentKind.FINANCING) UiKey.INST_F_PRINCIPAL_FIN else UiKey.INST_F_PRINCIPAL_BUY)
+                        MoneyField(form.principal, { form = form.copy(principal = it); saved = false }, principalLabel, currency, err(PlanField.PRINCIPAL))
+                    }
+                    MoneyField(form.installment, { form = form.copy(installment = it, firstTxnId = null); saved = false }, t(UiKey.INST_F_INSTALLMENT), currency, err(PlanField.INSTALLMENT))
+                    TextInput(
+                        form.count, { form = form.copy(count = it); saved = false }, label = t(UiKey.INST_F_COUNT), placeholder = t(UiKey.INST_F_COUNT_HINT),
+                        error = err(PlanField.COUNT), ltr = true, keyboard = androidx.compose.ui.text.input.KeyboardType.Number,
+                    )
+                    // الإجمالي = القسط × العدد من حالة الاستخدام (`countPreview`) — من غير عدد ⇒ الإجمالي بإيدك زي الأول
+                    val preview = form.previewInputs(currency)?.let { (m, n, pl) -> runCatching { countPreviewLines(deps.installments.countPreview(m, n, pl), currency) }.getOrNull() }
+                    if (form.count.isBlank()) MoneyField(form.total, { form = form.copy(total = it); saved = false }, t(UiKey.INST_F_TOTAL_IF_NO_COUNT), currency, err(PlanField.TOTAL))
+                    preview?.forEach { BasicText(it, style = Type.bodyBold()) }
                     FieldLabel(t(UiKey.INST_F_CYCLE))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (c in PLAN_CYCLES) SelectChip(cycleText(c), form.cycleMonths == c, { form = form.copy(cycleMonths = c); saved = false }, height = 44.dp)
                     }
-                    FieldLabel(t(UiKey.INST_F_FIRST))
-                    DayPicker(form.firstDueAt, today, { form = form.copy(firstDueAt = it); saved = false }, cell = 36)
+                    FieldLabel(t(if (payLater) UiKey.INST_F_PURCHASE_DATE else UiKey.INST_F_FIRST))
+                    DayPicker(form.firstDueAt, today, { form = form.copy(firstDueAt = it, firstTxnId = null); saved = false }, cell = 36)
                     err(PlanField.FIRST)?.let { FieldError(it) }
+                    if (payLater) FirstPaymentPick(form, currency) { form = form.copy(firstTxnId = it); saved = false }
                     InterestQuestion(form.hasInterest) { form = form.copy(hasInterest = it); saved = false }
                 }
             }
@@ -137,7 +152,10 @@ fun InstallmentEditScreen(planId: String?) {
                         saving = true
                         scope.launch {
                             try {
-                                val plan = deps.installments.save(input)
+                                // §82-20: بالعدد ⇒ الإجمالي من حالة الاستخدام، و«ادفع بعدين» بيربط عملية أول قسط لو اتختارت
+                                val count = check.count
+                                val plan = if (count != null) deps.installments.saveCounted(input, count, form.firstTxnId.takeIf { form.payLater && isNew })
+                                else deps.installments.save(input)
                                 toaster.show(if (isNew) t(UiKey.INST_SAVED_NEW, plan.name) else t(UiKey.INST_SAVED))
                                 saved = true
                                 failure = null

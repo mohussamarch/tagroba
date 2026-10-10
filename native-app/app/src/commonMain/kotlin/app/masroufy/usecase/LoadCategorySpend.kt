@@ -13,7 +13,7 @@ import app.masroufy.core.shiftDays
 import app.masroufy.core.assessCoverage
 import app.masroufy.core.categoryDistribution
 import app.masroufy.core.computePeriodTotals
-import app.masroufy.core.countsAsPersonalExpense
+import app.masroufy.core.countsAsPersonalSpend
 import app.masroufy.core.normalizeText
 import app.masroufy.core.sumMoney
 import app.masroufy.core.withEstimatedKinds
@@ -72,7 +72,7 @@ class LoadCategorySpend(private val deps: LoadCategorySpendDeps) {
         val coverage = assessCoverage(mine)
         val unknown = coverage.total > 0 && coverage.unclassified == coverage.total
         val totals = computePeriodTotals(mine, allocations.filter { a -> mine.any { it.id == a.transactionId } })
-        val count = mine.count { countsAsPersonalExpense(it.economicKind) && !it.excludedFromBudget }
+        val count = mine.count { countsAsPersonalSpend(it, allocations) && !it.excludedFromBudget }
         return CategorySpend(if (unknown) null else totals.personalExpenseMinor, count, coverage, 0)
     }
 

@@ -88,7 +88,16 @@ sealed class DebtAnswer {
 
     /** «لأ» على الوارد ⇒ اختار نوعه من دول (§39.1) بـ`SetEconomicKind.setOne`. */
     data class ThenChooseIncomingKind(val choices: List<EconomicKind>) : DebtAnswer()
+
+    /** §82-19 «غلطة في المبلغ» ⇒ ولا كتابة: الشاشة تفتح تعديل مبلغ العملية (§32) والسؤال بيرجع بعدها. */
+    data class FixAmount(val transaction: Transaction) : DebtAnswer()
 }
+
+/**
+ * §82-19: «أيوه، سداد» على صادر **أكبر** من المفتوح ⇒ مش رفض وخلاص: «دفعت أكتر من اللي عليك» بالاختيارات (`answerOverpay`). الرسالة
+ * نفس رسالة الزيادة القديمة ⇒ اللي ما بيسألش (زي «أيوه للكل») بيعرضها زي ما هي.
+ */
+class TransferAskOverpaid(message: String, val overpay: app.masroufy.core.Overpay) : TransferAskError(message)
 
 /** إجابة لكذا عملية مرة واحدة: [skipped] = مالهاش السؤال ده دلوقتي · [refused] = اترفضت وسببها (زي الزيادة عن الدين). */
 data class TransferAskBulkResult(val answered: List<Id>, val skipped: List<Id>, val refused: Map<Id, String>)
@@ -176,8 +185,10 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
             return if (p.t.observedDirection == Direction.OUT) DebtAnswer.ThenAskLoanOrSupport
             else DebtAnswer.ThenChooseIncomingKind(INCOMING_FROM_PERSON_KINDS - EconomicKind.DEBT_COLLECTED)
         }
-        val parts = when (val plan = planRepayment(p.t.amountMinor, p.openDebts())) {
-            is RepaymentPlan.Refused -> throw TransferAskError(plan.reason) // قبل أي كتابة
+        val debts = p.openDebts()
+        val parts = when (val plan = planRepayment(p.t.amountMinor, debts)) {
+            // قبل أي كتابة — والصادر الأكبر من المفتوح ⇒ سؤال «دفعت أكتر» (§82-19)
+            is RepaymentPlan.Refused -> throw overpayOf(p, debts)?.let { TransferAskOverpaid(plan.reason, it) } ?: TransferAskError(plan.reason)
             is RepaymentPlan.Settle -> plan.parts
         }
         val request = transferAskRequestId(p.t.id)
@@ -190,6 +201,39 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
             ledger.remove(stale)
             val written = parts.map { (obligation, amount) -> deps.people.settle(obligation.id, p.personId, amount, p.t.id, request) }
             DebtAnswer.Recorded(confirmKind(p.t, kind), written)
+        }
+    }
+
+    /** الصادر أكبر من المفتوح مع الشخص (الديون اللي التحويل ممكن يسددها) ⇒ الزيادة، وإلا null. */
+    private fun overpayOf(p: Pending, debts: List<app.masroufy.core.OpenDebt>): app.masroufy.core.Overpay? =
+        if (p.t.observedDirection != Direction.OUT) null else app.masroufy.core.overpayOf(p.t.amountMinor, sumMoney(debts.map { it.remainingMinor }))
+
+    /**
+     * §82-19 — رد «دفعت أكتر من اللي عليك» على صادر لشخص أكبر من ديونك المفتوحة ليه: الديون بتتقفل كلها (**الأقدم الأول**، نفس معرّفات
+     * «أيوه، سداد» الثابتة) والعملية «سداد دين عليك» مؤكد، والزيادة نصيب الشخص من العملية بنفس طريق شاشة الأشخاص (`linkToPerson` بمعرّف
+     * السؤال الثابت ⇒ الإعادة بعد انقطاع بتكتب نفس المستندات): «أمانة ليك عنده» ⇒ دين ليك معلّم أمانة · «سلفة جديدة ليه» ⇒ دين ليك ·
+     * «دعم» ⇒ نصيب «هدية» من غير دين، و**بيتحسب مصروف** في شهر العملية زي أي هدية (§88 — `givenAwayShareOf`؛ السداد نفسه مش مصروف) ·
+     * «غلطة في المبلغ» ⇒ [DebtAnswer.FixAmount] من غير ولا كتابة.
+     */
+    suspend fun answerOverpay(txnId: Id, choice: app.masroufy.core.OverpayChoice): DebtAnswer {
+        val p = load(txnId) ?: throw TransferAskNotPending()
+        if (p.ask() != AskKind.DEBT_REPAYMENT) throw TransferAskNotPending()
+        val debts = p.openDebts()
+        val over = overpayOf(p, debts) ?: throw TransferAskError(uiText(app.masroufy.core.UiKey.OVERPAY_NOT_OVER))
+        if (choice == app.masroufy.core.OverpayChoice.WRONG_AMOUNT) return DebtAnswer.FixAmount(p.t)
+        val request = transferAskRequestId(p.t.id)
+        val planned = debts.associate { "stl-${it.obligation.id}-$request" to it.remainingMinor }
+        val stale = ledger.askWrites(listOf(p.links), withLoans = true) { planned[it.id] != it.amountMinor }
+        if (stale.blocking.isNotEmpty()) throw TransferAskError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
+        return deps.uow.run {
+            ledger.remove(stale)
+            val written = debts.map { deps.people.settle(it.obligation.id, p.personId, it.remainingMinor, p.t.id, request) }
+            deps.people.linkToPerson(
+                p.t.id, p.personId, ObligationKind.RECEIVABLE, over.surplusMinor, asGift = choice == app.masroufy.core.OverpayChoice.SUPPORT,
+                requestId = request, custodyHeld = choice == app.masroufy.core.OverpayChoice.HELD_FOR_YOU,
+                countedAsSpend = choice == app.masroufy.core.OverpayChoice.SUPPORT,
+            )
+            DebtAnswer.Recorded(confirmKind(p.t, EconomicKind.DEBT_REPAID), written)
         }
     }
 

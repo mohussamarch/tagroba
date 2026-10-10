@@ -155,6 +155,10 @@ class AssistantChat(private val deps: AssistantDeps) {
     /** اختيار زرار (محفظة «بتصرف عادةً منين؟» · «تقصد مين؟» · «أضيفه؟» · تأكيد). */
     suspend fun pick(messageId: String, optionId: String, ctx: AssistContext): ChatView = cardAction(messageId, ctx) { kit, msg -> kit.pick(msg, optionId) }
 
+    /** §82-1: اليومين اللي اتختاروا في كارت «من إمتى لإمتى؟» ⇒ الإجابة بالمدى ده (`AssistantPeriodPick.kt`). */
+    suspend fun pickPeriod(messageId: String, from: app.masroufy.core.IsoDate, to: app.masroufy.core.IsoDate, ctx: AssistContext): ChatView =
+        cardAction(messageId, ctx) { kit, msg -> kit.answerPeriod(msg, from, to) }
+
     /** تعديل الكارت من الشاشة (المبلغ · المحفظة · التصنيف · اليوم): الكارت القديم «اتعدّل تحت» وكارت جديد. */
     suspend fun editCard(messageId: String, draft: app.masroufy.core.TxnDraft, ctx: AssistContext): ChatView =
         cardAction(messageId, ctx) { kit, msg -> kit.replaceCard(msg, draft) }

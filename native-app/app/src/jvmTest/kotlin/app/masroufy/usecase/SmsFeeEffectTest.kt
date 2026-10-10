@@ -66,6 +66,8 @@ internal class S2Desk(
     extraCategories: List<Category> = emptyList(),
     /** آثار قبل آثار S2 (عقد الترتيب — زي المبلغ المحلي للشراء الأجنبي في شريحة تانية). */
     before: List<RecordEffect> = emptyList(),
+    /** §82-10: الأثر بيدوّر على رسالة رسوم اتسجلت قبل كده (زي التشغيل الحقيقي — `smsRecordEffects`). */
+    feeTwins: Boolean = false,
 ) {
     val space = SmsSpace(wallets = wallets, parse = parse)
     val inbox = MemorySmsInbox(emptyList(), available = true)
@@ -73,7 +75,7 @@ internal class S2Desk(
     /** نفس ذاكرة المحلات للشاشة («افتكره») وللاستيراد (التصنيف المتفتكر). */
     val merchants = MemoryMerchantRepository()
     val effects: List<RecordEffect> = before +
-        if (withEffects) listOf(CashWithdrawalEffect(space.wallets), SmsFeeEffect(space.categories), RefundConfirmEffect()) else emptyList()
+        if (withEffects) listOf(CashWithdrawalEffect(space.wallets), SmsFeeEffect(space.categories, space.txns.takeIf { feeTwins }, space.sources.takeIf { feeTwins }), RefundConfirmEffect()) else emptyList()
     val screen = ReviewSmsInbox(
         ReviewSmsInboxDeps(ManageSmsInbox(inbox, parse), ImportStatement(space.importDeps().copy(merchants = merchants, effects = effects)), merchants, space.categories, space.ids,
             SmsLearning(inbox, space.spaceId), space.wallets, movesCashWithdrawals = withEffects),

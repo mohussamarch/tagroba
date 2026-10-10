@@ -66,12 +66,14 @@ object LedgerCodecs {
             doc {
                 req("id", o.id); req("personId", o.personId); nul("originTransactionId", o.originTransactionId); req("kind", o.kind.wire)
                 req("originalMinor", o.originalMinor); req("currency", o.currency.name)
+                // §82-19 «أمانة ليك عنده»: بيتكتب لو true بس ⇒ أي دين قديم ونسخته هي هي بالحرف
+                opt("custodyHeld", o.custodyHeld.takeIf { it })
             }
         },
         { r ->
             Obligation(
                 r.str("id"), r.str("personId"), r.strOrNull("originTransactionId"), r.wire("kind", ObligationKind::fromWire),
-                r.long("originalMinor"), r.wire("currency", Currency::valueOf),
+                r.long("originalMinor"), r.wire("currency", Currency::valueOf), custodyHeld = r.boolOrNull("custodyHeld") == true,
             )
         },
     )
@@ -82,12 +84,14 @@ object LedgerCodecs {
             doc {
                 req("id", a.id); req("transactionId", a.transactionId); req("personId", a.personId); req("allocationKind", a.allocationKind.wire)
                 req("amountMinor", a.amountMinor); req("currency", a.currency.name)
+                // §88 — لو true بس (المستند القديم زي ما هو)
+                opt("countedAsSpend", a.countedAsSpend.takeIf { it })
             }
         },
         { r ->
             PersonAllocation(
                 r.str("id"), r.str("transactionId"), r.str("personId"), r.wire("allocationKind", AllocationKind::fromWire),
-                r.long("amountMinor"), r.wire("currency", Currency::valueOf),
+                r.long("amountMinor"), r.wire("currency", Currency::valueOf), countedAsSpend = r.boolOrNull("countedAsSpend") == true,
             )
         },
     )
