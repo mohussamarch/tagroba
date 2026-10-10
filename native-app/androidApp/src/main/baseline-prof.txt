@@ -1,0 +1,6 @@
+Lapp/masroufy/**;
+HSPLapp/masroufy/**->**(**)**
+Ldev/gitlive/firebase/**;
+HSPLdev/gitlive/firebase/**->**(**)**
+Lcom/google/firebase/firestore/**;
+HSPLcom/google/firebase/firestore/**->**(**)**
