@@ -14,8 +14,10 @@ import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAppLockSettings
 import app.masroufy.memory.MemoryDeviceLock
 import app.masroufy.memory.MemoryMerchantRepository
+import app.masroufy.memory.MemoryPersonRepository
 import app.masroufy.memory.MemorySharedMerchantCatalog
 import app.masroufy.memory.MemorySyncCursor
+import app.masroufy.memory.MemoryTransferPartyRepository
 import app.masroufy.port.DeviceLockAvailability
 import app.masroufy.port.LockResult
 import kotlinx.coroutines.runBlocking
@@ -74,6 +76,7 @@ class SettingsFlowGoldenTest {
                     baseline = input.field("baseline").jsonArray.map(ReferenceJson::merchant),
                     treeCategoryIds = input.field("tree").jsonArray.map { it.str }.toSet(),
                     cursor = cursor, confirmedCursor = confirmedCursor, clock = FixedClock("2026-09-22T10:00:00.000Z"),
+                    people = MemoryPersonRepository(), transferParties = MemoryTransferPartyRepository(),
                 ),
             )
             runBlocking {

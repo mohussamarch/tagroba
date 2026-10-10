@@ -99,7 +99,7 @@ class NoticeGoldenTest {
         check("contributionFor") {
             contributionFor(
                 EconomicKind.fromWire(it.field("kind").str), Direction.fromWire(it.field("dir").str), it.field("name").orNull()?.str,
-                it.field("cat").str, tree, it.field("current").orNull()?.let(::entry),
+                it.field("cat").str, tree, it.field("current").orNull()?.let(::entry), personNames = emptyList(),
             )?.toJson()
         }
         check("planAccountMerchantSync") {
