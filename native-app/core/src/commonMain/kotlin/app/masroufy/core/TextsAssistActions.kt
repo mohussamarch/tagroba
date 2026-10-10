@@ -64,6 +64,13 @@ internal val MSA_ASSIST_ACTION_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSIST_FACT_FROM_SPLITS to "من تقسيماتك",
     TextKey.ASSIST_FACT_FROM_GOALS to "من خطط الادخار",
     TextKey.ASSIST_FACT_ASKED to "سألت عنها {0}",
+    TextKey.BACKUP_GROUP_USER_SETTINGS to "إعدادات المستخدم",
+    TextKey.BACKUP_GROUP_ASSISTANT_CONVERSATIONS to "محادثات المساعد",
+    TextKey.BACKUP_GROUP_ASSISTANT_MESSAGES to "رسائل المساعد",
+    TextKey.BACKUP_GROUP_ASSISTANT_TOPICS to "ما تسأل عنه كثيرًا",
+    TextKey.BACKUP_GROUP_ASSISTANT_FORGOTTEN to "ما طلبت من المساعد نسيانه",
+    TextKey.BACKUP_GROUP_ASSISTANT_UNKNOWN to "أسئلة لم يفهمها المساعد",
+    TextKey.BACKUP_GROUP_ALERT_DISMISSALS to "الإشعارات الممسوحة",
 )
 
 internal val EGYPTIAN_ASSIST_ACTION_TEXTS: Map<TextKey, String> = mapOf(
@@ -126,6 +133,13 @@ internal val EGYPTIAN_ASSIST_ACTION_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSIST_FACT_FROM_SPLITS to "من تقسيماتك",
     TextKey.ASSIST_FACT_FROM_GOALS to "من خطط التحويش",
     TextKey.ASSIST_FACT_ASKED to "سألت عنها {0}",
+    TextKey.BACKUP_GROUP_USER_SETTINGS to "إعدادات المستخدم",
+    TextKey.BACKUP_GROUP_ASSISTANT_CONVERSATIONS to "محادثات المساعد",
+    TextKey.BACKUP_GROUP_ASSISTANT_MESSAGES to "رسايل المساعد",
+    TextKey.BACKUP_GROUP_ASSISTANT_TOPICS to "اللي بتسأل عنه كتير",
+    TextKey.BACKUP_GROUP_ASSISTANT_FORGOTTEN to "اللي طلبت من المساعد ينساه",
+    TextKey.BACKUP_GROUP_ASSISTANT_UNKNOWN to "أسئلة المساعد ما فهمهاش",
+    TextKey.BACKUP_GROUP_ALERT_DISMISSALS to "الإشعارات الممسوحة",
 )
 
 internal val ENGLISH_ASSIST_ACTION_TEXTS: Map<TextKey, String> = mapOf(
@@ -188,4 +202,11 @@ internal val ENGLISH_ASSIST_ACTION_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ASSIST_FACT_FROM_SPLITS to "From your splits",
     TextKey.ASSIST_FACT_FROM_GOALS to "From savings plans",
     TextKey.ASSIST_FACT_ASKED to "Asked {0}",
+    TextKey.BACKUP_GROUP_USER_SETTINGS to "User settings",
+    TextKey.BACKUP_GROUP_ASSISTANT_CONVERSATIONS to "Assistant conversations",
+    TextKey.BACKUP_GROUP_ASSISTANT_MESSAGES to "Assistant messages",
+    TextKey.BACKUP_GROUP_ASSISTANT_TOPICS to "Topics you ask often",
+    TextKey.BACKUP_GROUP_ASSISTANT_FORGOTTEN to "Things the assistant was asked to forget",
+    TextKey.BACKUP_GROUP_ASSISTANT_UNKNOWN to "Questions the assistant didn't understand",
+    TextKey.BACKUP_GROUP_ALERT_DISMISSALS to "Deleted notifications",
 )

@@ -58,6 +58,14 @@ private val REQUIRED: Map<String, List<String>> = mapOf(
     ALERT_INBOX_GROUP to listOf("threadKey", "eventKey", "kind", "flow", "title", "body", "delivery", "inAppWindow", "factors", "createdAt"),
     // حسابات الورث المحفوظة (§69.4) — نفس الحقول الإجبارية في `InheritanceCodecs`، والمتداخل بيتفحص في `checkInheritanceScenarioRow`
     INHERITANCE_SCENARIOS_GROUP to listOf("name", "estateOf", "countryCode", "heirs", "items", "funeralMinor", "debtsMinor", "createdAt", "updatedAt"),
+    // المساعد «مصروفي» (§78) والإعدادات الجديدة والإشعارات الممسوحة — نفس الحقول الإجبارية في `AssistantCodecs`
+    USER_SETTINGS_GROUP to listOf("id", "type", "updatedAt"),
+    ASSISTANT_CONVERSATIONS_GROUP to listOf("id", "spaceId", "createdAt", "lastMessageAt", "title", "firstReply", "messageCount"),
+    ASSISTANT_MESSAGES_GROUP to listOf("id", "conversationId", "createdAt", "from", "kind", "text"),
+    ASSISTANT_TOPICS_GROUP to listOf("id", "topic", "askCount", "lastAskedAt"),
+    ASSISTANT_FORGOTTEN_GROUP to listOf("id", "factKey", "createdAt"),
+    ASSISTANT_UNKNOWN_GROUP to listOf("id", "text", "normalized", "askCount", "firstAskedAt", "lastAskedAt", "screen", "spaceId"),
+    ALERT_DISMISSALS_GROUP to listOf("id", "threadKey", "dismissedAt"),
 )
 private val BOOLEANS = setOf("active", "archived", "enabled", "confirmed", "economicKindConfirmed", "categoryConfirmed", "excludedFromBudget", "isCashTagged", "notifyEnabled", "hasInterest", "mine", "yearly", "saudiCompany", "done", "inAppWindow", "starred")
 private val NUMERIC = setOf("order", "priority", "sourceOrder", "cycleMonths", "originalRowIndex", "quantity", "thresholdPercent", "every", "cycleCount", "karat", "fineness", "month", "day", "year", "leadDays", "sharePercent", "expectedDayOfMonth", "payWeekday")

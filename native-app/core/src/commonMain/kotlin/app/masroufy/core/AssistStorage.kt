@@ -137,3 +137,12 @@ data class AlertDismissal(val threadKey: String, val dismissedAt: String) {
 }
 
 const val ALERT_DISMISSALS_GROUP = "alertDismissals"
+
+/**
+ * مجموعات المساعد والإعدادات الجديدة في النسخة الشاملة (`BACKUP_GROUPS`): كل واحدة بتتكتب في الملف **لوحدها لو فيها حاجة** ⇒ ملف حساب
+ * ما استخدمش المساعد هو هو حرف بحرف زي قبل (ونفس البصمة)، والتطبيق القديم بيقرا مجموعاته بس ويتجاهل الباقي (`src/domain/checkFullBackup.ts`).
+ */
+val ASSISTANT_ALL_BACKUP_GROUPS: List<String> = listOf(
+    USER_SETTINGS_GROUP, ASSISTANT_CONVERSATIONS_GROUP, ASSISTANT_MESSAGES_GROUP, ASSISTANT_TOPICS_GROUP, ASSISTANT_FORGOTTEN_GROUP,
+    ASSISTANT_UNKNOWN_GROUP, ALERT_DISMISSALS_GROUP,
+)
