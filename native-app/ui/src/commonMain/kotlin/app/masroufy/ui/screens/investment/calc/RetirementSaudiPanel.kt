@@ -50,6 +50,8 @@ fun RetirementSaudiPanel() {
     val yearsUnit = t(UiKey.CALCUI_YEARS_UNIT)
     val legal = state.result?.outcome?.pension?.legalAgeMonths
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        // النتيجة **فوق** كل الخانات، حتى سؤال النظام (رد المالك OVERRIDES §82-22 — زي مصر)
+        RetirementResults(state, check, currency, t(UiKey.RETSA_HERO_LABEL), ::saudiHeroDetails, UiKey.RETCALC_GAP_SUB) { saudiHow(it, currency) }
         FloatingCard(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 BasicText(t(UiKey.RETSA_QUESTION), style = Type.of(15, FontWeight.Bold))
@@ -60,7 +62,6 @@ fun RetirementSaudiPanel() {
                 BasicText(t(if (old) UiKey.RETSA_LAW_LINE_OLD else UiKey.RETSA_LAW_LINE_NEW), style = Type.caption().copy(color = Ink.muted))
             }
         }
-        RetirementResults(state, check, currency, t(UiKey.RETSA_HERO_LABEL), ::saudiHeroDetails, UiKey.RETCALC_GAP_SUB) { saudiHow(it, currency) }
         RetirementSection(t(UiKey.RETCALC_SEC_CONTRIB)) {
             CalcDateField(t(UiKey.RETCALC_BIRTH), f[SaudiFields.BIRTH], { f[SaudiFields.BIRTH] = it }, today, error = e[SaudiFields.BIRTH])
             CalcField(t(UiKey.RETCALC_SO_FAR), f[SaudiFields.SO_FAR], { f[SaudiFields.SO_FAR] = it }, unit = monthsUnit, note = t(UiKey.RETCALC_SO_FAR_NOTE), error = e[SaudiFields.SO_FAR], keyboard = KeyboardType.Number)
