@@ -31,7 +31,7 @@ data class AssistMoneyScan(
 private val NUMBER = Regex("""\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?""")
 private val GROUPED = Regex("""\d{1,3}(?:,\d{3})+(?:\.\d+)?""")
 
-private fun words(vararg w: String): Set<String> = w.map(::assistNormalize).toSet()
+private fun words(vararg w: String): Set<String> = w.map(::assistNormalize).filter { it.isNotBlank() }.toSet()
 
 private val CURRENCY_WORDS: Map<String, Currency> = buildMap {
     for (w in words("ريال", "ريالات", "رس", "ر.س", "sar", "sr", "riyal", "riyals")) put(w, Currency.SAR)
@@ -136,7 +136,7 @@ fun scanMoney(tokens: List<String>): AssistMoneyScan {
         }
         for (m in NUMBER.findAll(token)) {
             val glued = token.substring(m.range.last + 1)
-            CURRENCY_WORDS[glued]?.let { currency = currency ?: it }
+            if (glued.isNotEmpty()) CURRENCY_WORDS[glued]?.let { currency = currency ?: it }
             if (isDuration(after, tokens.getOrNull(i + 2))) continue
             if (glued.startsWith('%') || after == "%" || '%' in token) continue
             if (before != null && cliticForms(before).any { it in DAY_BEFORE }) continue

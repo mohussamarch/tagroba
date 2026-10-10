@@ -15,9 +15,13 @@ private fun bestHit(screen: AssistScreen, tokens: List<String>): ScreenHit? {
     var best: ScreenHit? = null
     for (kw in SCREEN_KEYWORDS[screen].orEmpty()) {
         for (start in 0..tokens.size - kw.size) {
-            val ok = kw.indices.all { k -> tokenHasStem(tokens[start + k], stemOf(kw[k]), fuzzy = kw.size == 1 || k > 0) }
+            val ok = kw.indices.all { k -> tokenHasStem(tokens[start + k], stemOf(kw[k])) }
             if (!ok) continue
-            val weight = kw.sumOf { it.length } + 10 * (kw.size - 1)
+            // المطابقة الصح بتغلب المطابقة بغلطة («التحليلات» = التحليلات مش «التحويلات»)
+            val exact = kw.indices.all { k -> tokenHasStem(tokens[start + k], stemOf(kw[k]), fuzzy = false) }
+            // والكلمة نفسها بالظبط بتغلب الكلمة اللي جذرها جواها («ديوني» = اللي عليك، مش «الديون»)
+            val identical = kw.indices.all { k -> cliticForms(tokens[start + k]).any { it == kw[k] || it == stemOf(kw[k]) } }
+            val weight = kw.sumOf { it.length } + 10 * (kw.size - 1) + (if (exact) 3 else 0) + (if (identical) 3 else 0)
             if (best == null || weight > best.weight) best = ScreenHit(screen, start, start + kw.size, weight)
         }
     }

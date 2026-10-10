@@ -19,6 +19,10 @@ fun assistNormalize(raw: String): String {
             c == 'ئ' -> out.append('ي')
             // رمز الريال (القديم والجديد) ⇒ كلمة «ريال»
             code == 0xFDFC || code == 0x20C1 -> out.append(" ريال ")
+            // رموز العملات اللي مش حروف ⇒ كلمتها (عشان ما تضيعش) · «٪» العربي ⇒ «%»
+            c == '€' -> out.append(" يورو ")
+            c == '£' -> out.append(" استرليني ")
+            code == 0x066A -> out.append('%')
             c == 'ى' -> out.append('ي')
             code in 0x0660..0x0669 -> out.append('0' + (code - 0x0660))
             code in 0x06F0..0x06F9 -> out.append('0' + (code - 0x06F0))
@@ -91,16 +95,26 @@ internal fun editDistance(a: String, b: String): Int {
     return d[a.length][b.length]
 }
 
-/** أقصر جذر بيتسمح فيه بغلطة إملائية واحدة — الأقصر منه لازم يتكتب صح (عشان «دين» ما تمسكش «دبن» ولا «بين»). */
-const val ASSIST_FUZZY_MIN_STEM = 5
+/**
+ * أقصر جذر بيتسمح فيه بغلطة إملائية واحدة — الأقصر منه لازم يتكتب صح. **٦ مش ٥ زي التصميم (سبب مكتوب):** الجذر هنا بيطابق أول الكلمة
+ * (أي لاحقة بعده مقبولة)، فالغلطة على جذر من ٥ حروف كانت بتلم كلمات تانية: «بقاله» ⇒ «بقالي» · «ميرسي» ⇒ «ميراث» · «اصرف» ⇒ «ساصرف»
+ * (اتمسكوا في اختبار الكتالوج).
+ */
+const val ASSIST_FUZZY_MIN_STEM = 6
 
-/** الكلمة بتبدأ بالجذر (بأي أداة قبلها)، أو — لو الجذر طويل — بتبدأ بشكل قريب منه بغلطة واحدة. */
+/**
+ * الكلمة بتبدأ بالجذر (بأي أداة قبلها)، أو — لو الجذر عربي وطويل — بتبدأ بشكل قريب منه بغلطة واحدة (تبديل · زيادة · نقص في النص ·
+ * قلب حرفين). **النقص من آخر الجذر بس مش غلطة** («ديون» مش «ديوني» · «اخبار» مش «اخبارك» — كلمة تانية). الإنجليزي من غير غلطات.
+ */
 fun tokenHasStem(token: String, stem: String, fuzzy: Boolean = true): Boolean {
     val forms = cliticForms(token)
     if (forms.any { it.startsWith(stem) }) return true
-    if (!fuzzy || stem.length < ASSIST_FUZZY_MIN_STEM) return false
+    if (!fuzzy || stem.length < ASSIST_FUZZY_MIN_STEM || stem[0] !in 'ء'..'ي') return false
+    val target = loose(stem)
     return forms.any { f ->
-        f.length >= stem.length - 1 && (stem.length - 1..stem.length + 1).any { n -> n <= f.length && editDistance(loose(f.substring(0, n)), loose(stem)) <= 1 }
+        f.length >= stem.length - 1 && (stem.length - 1..stem.length + 1).any { n ->
+            n <= f.length && !stem.startsWith(f.substring(0, n)) && editDistance(loose(f.substring(0, n)), target) <= 1
+        }
     }
 }
 

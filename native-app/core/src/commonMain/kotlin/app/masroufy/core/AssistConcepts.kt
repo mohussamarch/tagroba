@@ -12,10 +12,19 @@ internal object AssistWords {
     )
     val GIVE = vocab("اعطيت", "اديت", "عطيت", "هدايا", "هديه", "اهديت", "give", "gave", "gifts")
     val INCOME = vocab("دخلي", "دخل", "الدخل", "ايراد", "ايرادات", "دخلنا", "earn", "earned", "income", "حركه الفلوس", "cash flow", "money in")
-    val REMAINING = vocab("فاضل", "فاضلي", "فاضلك", "فضل لي", "فضلي", "باقي", "باقيلي", "بقي", "بقالي", "متبقي", "يتبقي", "ضل لي", "left", "remaining", "remain")
+    // «بقالي» مش هنا عن قصد (مصري = «من مدة»)
+    val REMAINING = vocab("فاضل", "فاضلي", "فاضلك", "فضل لي", "فضلي", "باقي", "باقيلي", "بقي", "متبقي", "يتبقي", "ضل لي", "left", "remaining", "remain")
     val PER_DAY = vocab("في اليوم", "باليوم", "يوميا", "لليوم", "كل يوم", "per day", "daily", "a day")
     val CAN_SPEND = vocab("اصرف", "اقدر", "المتاح", "متاح", "allowance", "can i spend", "afford")
-    val FORECAST = vocab("اخر الشهر", "نهايه الشهر", "بنهايه الشهر", "اخر الفتره", "توقع", "توقعات", "forecast", "end of the month", "end of month", "هوصل لكام", "ساصرف", "سأصرف")
+    val FORECAST = vocab("اخر الشهر", "نهايه الشهر", "بنهايه الشهر", "اخر الفتره", "توقع", "توقعات", "forecast", "end of the month", "end of month", "ساصرف", "سأصرف")
+
+    /** «توقّع صرفي» · «forecast» لوحدها ⇒ التوقع. */
+    val FORECAST_STRONG = vocab("توقع صرفي", "توقعات الصرف", "forecast")
+
+    /** كلام الادخار («لو حوّشت هوصل لكام» · «مقارنة الادخار») ⇒ شاشة «هتوصل لكام» مش مقارنة صرف ولا توقّع. */
+    val SAVING = vocab("ادخار", "الادخار", "حوشت", "احوش", "التحويش", "savings", "saving")
+    val EVENT_WORD = vocab("حدث", "الحدث", "مناسبه", "event", fuzzy = false)
+    val PROJECT_WORD = vocab("مشروع", "المشروع", "project", fuzzy = false)
     val BUDGET = vocab("ميزانيه", "ميزانيتي", "ميزانيات", "سقف", "البادجت", "budget")
     val ON_PLAN = vocab(
         "على الخطه", "علي الخطه", "ماشي على", "ماشي علي", "وضع ميزانيتي", "الميزانيه عامله", "الميزانيه ماشيه", "on budget", "on track", "within budget",

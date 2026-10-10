@@ -13,12 +13,14 @@ internal fun dataTopicOf(s: AssistSignals, ctx: AssistUnderstandContext): Topic?
     val category = s.entity(AssistEntityType.CATEGORY)
     val merchant = s.specific(AssistEntityType.MERCHANT)
     // «فين/وين» سؤال عن مكان ⇒ تنقل مش بيانات («فين الزكاة؟» ⇒ الشاشة · «إمتى الزكاة؟» ⇒ الرقم)
-    val where = s.has(w.WHERE)
+    val where = s.asksWhere
     val asking = s.has(w.HOW_MUCH) || (s.question && !where)
+    val remaining = s.has(w.REMAINING)
 
     if (s.has(w.DUES) && (asking || s.has(w.DUE_CUES)) && !s.has(w.ROSCA)) return AssistIntent.DUES_UPCOMING to null
     if (s.has(w.SALARY) && s.has(w.WHEN)) return AssistIntent.NEXT_SALARY to null
-    if (s.has(w.SALARY) && asking && !s.has(w.SPEND)) return AssistIntent.SALARY_AMOUNT to null
+    // «فاضلي كام لحد المرتب» = فاضلي كام (مش المرتب كام)
+    if (s.has(w.SALARY) && asking && !s.has(w.SPEND) && !remaining) return AssistIntent.SALARY_AMOUNT to null
     s.specific(AssistEntityType.PLAN)?.takeIf { asking || s.has(w.INSTALLMENT_Q) }?.let { return AssistIntent.INSTALLMENTS to it }
     if (s.has(w.INSTALLMENT) && s.has(w.INSTALLMENT_Q) && !s.has(w.ROSCA)) return AssistIntent.INSTALLMENTS to null
     val rosca = s.specific(AssistEntityType.ROSCA)
@@ -33,11 +35,14 @@ internal fun dataTopicOf(s: AssistSignals, ctx: AssistUnderstandContext): Topic?
     if (s.has(w.OWED_TO_ME)) return AssistIntent.OWED_TO_ME to null
     if (s.has(w.I_OWE)) return AssistIntent.I_OWE to null
     if (s.has(w.CASH) && (s.has(w.HOW_MUCH) || s.has(w.SPEND) || s.has(w.ON_HAND))) return AssistIntent.CASH_ON_HAND to null
-    if (s.has(w.ON_HAND) && asking) return AssistIntent.ON_HAND to s.specific(AssistEntityType.WALLET)
-    if (s.has(w.COMPARE) && (s.period?.kind == AssistPeriodKind.PREVIOUS_FISCAL || s.has(vocab("compare", "قارن", "مقارنه")))) {
+    // «how much do I have left» = فاضلي كام (مش معايا كام)
+    if (s.has(w.ON_HAND) && asking && !remaining) return AssistIntent.ON_HAND to s.specific(AssistEntityType.WALLET)
+    // «مقارنة الادخار» شاشة «هتوصل لكام» — مش مقارنة صرف
+    if (s.has(w.COMPARE) && !s.has(w.SAVING) && (s.period?.kind == AssistPeriodKind.PREVIOUS_FISCAL || s.has(vocab("compare", "قارن", "مقارنه")))) {
         return AssistIntent.SPEND_COMPARE to category
     }
-    if (s.has(w.FORECAST) && (s.has(w.SPEND) || s.has(vocab("هوصل", "اوصل", "توقع")) || asking)) return AssistIntent.FORECAST to null
+    if (s.has(w.FORECAST_STRONG)) return AssistIntent.FORECAST to null
+    if (s.has(w.FORECAST) && !s.has(w.SAVING) && (s.has(w.SPEND) || s.has(vocab("هوصل", "اوصل", "توقع")) || asking)) return AssistIntent.FORECAST to null
     if (s.has(w.PER_DAY) && (s.has(w.CAN_SPEND) || s.has(w.SPEND) || asking)) return AssistIntent.DAILY_ALLOWANCE to null
     if (category != null && s.has(w.BUDGET) && (asking || s.has(w.REMAINING) || s.has(vocab("وصل", "وصلت", fuzzy = false)))) return AssistIntent.CATEGORY_BUDGET to category
     if (s.has(w.ON_PLAN) && goal == null) return AssistIntent.BUDGET_STATUS to null
@@ -48,6 +53,9 @@ internal fun dataTopicOf(s: AssistSignals, ctx: AssistUnderstandContext): Topic?
     if (s.has(w.ASSETS) && (asking || s.has(w.VALUE))) return AssistIntent.ASSETS to null
     s.specific(AssistEntityType.EVENT)?.takeIf { asking || s.has(w.SPEND) }?.let { return AssistIntent.EVENT_SPEND to it }
     s.specific(AssistEntityType.PROJECT)?.takeIf { asking || s.has(w.SPEND) }?.let { return AssistIntent.PROJECT_SPEND to it }
+    // من غير اسم: «event cost» · «project spend» ⇒ الإجابة بتسأل «أنهي حدث؟» من القايمة
+    if (s.has(w.EVENT_WORD) && s.has(w.SPEND)) return AssistIntent.EVENT_SPEND to null
+    if (s.has(w.PROJECT_WORD) && s.has(w.SPEND)) return AssistIntent.PROJECT_SPEND to null
     if (s.has(w.LAST)) return AssistIntent.LAST_AT_MERCHANT to merchant
     if (s.has(w.MOST) && (s.has(w.SPEND) || s.has(w.WHAT_ON)) && merchant == null) return AssistIntent.SPEND_BIGGEST to null
     if (s.has(w.INCOME) && (asking || s.period != null)) return AssistIntent.INCOME to null
@@ -56,7 +64,7 @@ internal fun dataTopicOf(s: AssistSignals, ctx: AssistUnderstandContext): Topic?
         return AssistIntent.SPEND_PERSON to person
     }
     if (merchant != null && (s.has(w.SPEND) || asking || s.has(w.PAY_VERB))) return AssistIntent.SPEND_MERCHANT to merchant
-    if (category != null && (s.has(w.SPEND) || asking || (s.tokens.size <= 2 && !s.has(w.BUDGET)))) return AssistIntent.SPEND_CATEGORY to category
+    if (category != null && (s.has(w.SPEND) || asking)) return AssistIntent.SPEND_CATEGORY to category
     if (s.has(w.SPEND) && (asking || s.period != null)) return AssistIntent.SPEND_TOTAL to null
     return null
 }

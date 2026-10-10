@@ -4,14 +4,19 @@ package app.masroufy.core
  * الكلام بعد التوحيد وكل اللي اتطلّع منه مرة واحدة: سؤال ولا لأ · المبالغ · الفترة · يوم المصروف · الأسامي. القواعد ([understandAssist])
  * بتقرا من هنا بس.
  */
-class AssistSignals(val raw: String, lexicon: AssistLexicon) {
+class AssistSignals(val raw: String, val lexicon: AssistLexicon) {
     val normalized: String = assistNormalize(raw)
     val tokens: List<String> = splitPunctuation(assistTokens(normalized))
     val money: AssistMoneyScan = scanMoney(tokens)
     val period: AssistPeriod? = detectAssistPeriod(tokens.joinToString(" "), tokens)
     val dayOffset: Int? = detectSpendDayOffset(raw, tokens)
     val entities: List<AssistEntity> = filterStopNames(findEntities(tokens, lexicon), tokens)
-    val question: Boolean = '?' in normalized || tokens.any { t -> cliticForms(t).any { it in QUESTION_WORDS } } || has(QUESTION_PHRASES)
+
+    /** كلمة سؤال: نفسها أو بحرف واحد قبلها («وكام» · «بكم» · «لفين») — **مش بعد «ال»** («الفين» = ألفين مش «فين»). */
+    val question: Boolean = '?' in normalized || tokens.any { t -> shortForms(t).any { it in QUESTION_WORDS } } || has(QUESTION_PHRASES)
+
+    /** سؤال عن مكان: «فين/وين/أين/where» لوحدها أو بعد «و» — «وصل لفين» = وصل لحد فين (سؤال كمية، مش مكان). */
+    val asksWhere: Boolean = tokens.any { t -> (t in WHERE_WORDS) || (t.startsWith("و") && t.drop(1) in WHERE_WORDS) }
 
     /** جذر من [stems] في أي كلمة. */
     fun has(v: Vocab): Boolean = v.single.any { s -> tokens.any { if (v.exact) tokenIsWord(it, s) else tokenHasStem(it, s, fuzzy = v.fuzzy) } } ||
@@ -59,8 +64,14 @@ class Vocab(words: List<String>, val fuzzy: Boolean = true, val exact: Boolean =
 fun vocab(vararg words: String, fuzzy: Boolean = true, exact: Boolean = false) = Vocab(words.toList(), fuzzy, exact)
 
 internal val QUESTION_WORDS = setOf(
-    "كم", "كام", "بكم", "بكام", "قديش", "امتي", "متي", "ايمتي", "امته", "فين", "وين", "اين", "هل", "ليه", "ليش", "لماذا", "ايش", "وش", "شو", "مين", "ماذا",
-    "كيف", "ازاي", "شلون", "how", "what", "when", "where", "who", "which", "whats", "is", "am", "are", "do", "does", "did", "can", "should",
+    "كم", "كام", "بكم", "بكام", "قديش", "امتي", "متي", "ايمتي", "امته", "فين", "وين", "اين", "هل", "ليه", "ليش", "لماذا", "ايش", "وش", "شو", "شنو", "مين", "ماذا",
+    "كيف", "ازاي", "شلون", "how", "what", "when", "where", "who", "which", "whats", "is", "am", "are", "do", "does", "did", "can", "should", "anything", "any",
 ).map(::assistNormalize).toSet()
+
+internal val WHERE_WORDS = setOf("فين", "وين", "اين", "where")
+
+/** الكلمة وهي من غير حرف واحد لاصق في أولها (و · ف · ب · ل · ك) — من غير «ال». */
+internal fun shortForms(token: String): List<String> =
+    if (token.length > 2 && token[0] in "وفبلك") listOf(token, token.substring(1)) else listOf(token)
 
 private val QUESTION_PHRASES = vocab("ايه اللي", "وش اللي", "عامل ايه", "عامله ايه", "ما المستحق", "ما الذي", "ما هو", "ما هي", "ما اكبر", "ما اكثر")

@@ -39,7 +39,7 @@ data class AssistUnderstanding(
     val wire: String get() = if (intent == AssistIntent.NAV) screens.firstOrNull()?.navWire ?: intent.wire else intent.wire
 
     /** مفتاح الموضوع في «بتسأل عنها كتير»: النية + الاسم الأساسي (القهوة غير البقالة). */
-    val topicKey: String get() = subject?.let { "$wire:${it.type.name.lowercase()}:${it.id}" } ?: wire
+    val topicKey: String get() = app.masroufy.core.topicKey(wire, subject?.id)
 }
 
 /** اللي الفهم محتاجه من برّه الرسالة: أسامي المستخدم · فيه كارت مستني؟ · الشخص اللي شاشته مفتوحة · الشاشات الظاهرة. */
@@ -67,7 +67,7 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
         val note = if (s.money.distinct.size > 1) AssistNote.TWO_AMOUNTS else null
         return done(AssistIntent.SPLIT, s.entities.ofType(AssistEntityType.PERSON).firstOrNull(), note = note)
     }
-    // ٣. مصروف بمبلغ (مش سؤال) — والرقم اللي مكتوب كمبلغ ومش صالح («١٥٫٥٥٥») ⇒ سؤال بصراحة من غير كارت
+    // ٣. مصروف بمبلغ (مش سؤال) — والرقم اللي مكتوب كمبلغ ومش صالح («١٥٫٥٥٥٥» — ٣ خانات بس = فاصل آلاف) ⇒ سؤال بصراحة من غير كارت
     if ((s.hasAmount || (s.money.invalid && !s.question)) && !s.question && controlOf(s) == null) {
         val note = when {
             !s.hasAmount -> AssistNote.INVALID_AMOUNT
@@ -89,20 +89,33 @@ fun understandAssist(text: String, ctx: AssistUnderstandContext = AssistUndersta
     }
     if (s.has(AssistTalkWords.ADVICE)) return done(AssistIntent.ADVICE_REQUEST)
     // «فين/وين/وريني/افتح …» من غير «كام/إمتى» ⇒ إجابة التنقل للموضوع (التصميم: سؤال «فين» ⇒ الشاشة)، ولو ما فيش شاشة ⇒ البيانات
-    val navMode = (s.has(AssistWords.WHERE) || s.has(AssistWords.NAV_VERB)) && !s.has(AssistWords.HOW_MUCH) && !s.has(AssistWords.WHEN)
+    val verb = s.has(AssistWords.NAV_VERB)
+    val navMode = (s.asksWhere || verb) && !s.has(AssistWords.HOW_MUCH) && !s.has(AssistWords.WHEN)
     if (!navMode) dataTopic(s, ctx)?.let { return done(it.first, it.second, note = it.third) }
-    // ٥. اسم شاشة: اسم من أسامي المستخدم (شخص · محفظة · تصنيف بسقف …) ثم كلمات الشاشات
-    entityScreen(s)?.let { (screen, entity) ->
-        val note = if (s.entities.ambiguous(entity.type)) AssistNote.AMBIGUOUS else null
-        return done(AssistIntent.NAV, entity, listOf(screen), note)
-    }
+    // ٥. اسم شاشة: اسم من أسامي المستخدم بفعل تنقل («افتح أحمد») ⇒ كلمات الشاشات ⇒ الاسم لوحده من غير فعل («أحمد» · «الراجحي»)
+    if (verb || s.has(AssistWords.OPEN)) entityScreen(s, partialOk = verb)?.let { (screen, entity) -> return navTo(s, screen, entity, ::done) }
+    // الاسم مع كلمة نوعه بيغلب كلمة الشاشة العامة: «ميزانية الأكل» · «محفظة الكاش» · «تاجر المرسى»
+    typedEntityScreen(s)?.let { (screen, entity) -> return navTo(s, screen, entity, ::done) }
     val named = screensNamedIn(s.tokens, ctx.visible)
     if (named.isNotEmpty()) return done(AssistIntent.NAV, screens = named)
+    if (s.tokens.size <= 3) entityScreen(s, partialOk = false)?.let { (screen, entity) -> return navTo(s, screen, entity, ::done) }
     if (navMode) dataTopic(s, ctx)?.let { return done(it.first, it.second, note = it.third) }
+    // اسم تصنيف لوحده («القهوة») ⇒ صرفه الشهر ده — بعد أسامي الشاشات («الالتزامات» · «التحويلات» · «الزكاة» تصنيفات وشاشات كمان)
+    if (s.tokens.size <= 2) s.entity(AssistEntityType.CATEGORY)?.let { return done(AssistIntent.SPEND_CATEGORY, it) }
     smallTalkOf(s)?.let { return done(it) }
+    // «أيوه» / «لا» من غير كارت مستني ⇒ نفس النية، والمحادثة بترد «مفيش حاجة مستنية تأكيدك» (التصميم: كلام عادي، مش «مش فاهم»)
+    if (isConfirm(s)) return done(AssistIntent.CONFIRM_PENDING)
+    if (isCancel(s)) return done(AssistIntent.CANCEL_PENDING)
     // ٦. مش فاهم (الأقرب بيتحسب في طبقة الاستخدامات بالتبويب والشاشات الظاهرة)
     return done(AssistIntent.UNKNOWN)
 }
+
+private fun navTo(
+    s: AssistSignals,
+    screen: AssistScreen,
+    entity: AssistEntity,
+    done: (AssistIntent, AssistEntity?, List<AssistScreen>, AssistNote?, Boolean?) -> AssistUnderstanding,
+): AssistUnderstanding = done(AssistIntent.NAV, entity, listOf(screen), if (s.entities.ambiguous(entity.type)) AssistNote.AMBIGUOUS else null, null)
 
 /** سؤال البيانات + ملاحظة «الاسم ملتبس» لو الشخص ليه اتنين بنفس الاسم. */
 private fun dataTopic(s: AssistSignals, ctx: AssistUnderstandContext): Triple<AssistIntent, AssistEntity?, AssistNote?>? {
@@ -121,23 +134,48 @@ private fun isPendingEdit(s: AssistSignals): Boolean {
     return s.hasAmount || s.entity(AssistEntityType.WALLET) != null || (s.dayOffset != null && s.dayOffset >= 0)
 }
 
-/**
- * اسم من أسامي المستخدم ⇒ شاشة تفاصيله (لو مفيش سؤال بيانات اتعرف قبلها): «افتح أحمد» · «محفظة الكاش» · «ميزانية الأكل» · «صفحة المرسى».
- * التصنيف بيفتح سقفه بس لو فيه كلمة ميزانية/سقف (غير كده كلمة «قهوة» لوحدها ما بتفتحش حاجة).
- */
-private fun entityScreen(s: AssistSignals): Pair<AssistScreen, AssistEntity>? {
-    val open = s.has(AssistWords.OPEN) || s.tokens.size <= 3
+private val PREP_WORDS = vocab("تجهيز", "تجهيزات", "التجهيزات", "prep")
+private val NUQOOT_WORDS = vocab("نقوط", "النقوط", "نقطه", "nuqoot")
+private val WALLET_WORDS = vocab("محفظه", "حساب", "wallet", fuzzy = false)
+private val MERCHANT_WORDS = vocab("تاجر", "التاجر", "محل", "merchant", "store", "shop", fuzzy = false)
+
+/** اسم مع كلمة نوعه (ميزانية + تصنيف · محفظة + محفظة · تاجر + محل — والجزء المميز من اسم المحل مقبول هنا). */
+private fun typedEntityScreen(s: AssistSignals): Pair<AssistScreen, AssistEntity>? {
     s.entity(AssistEntityType.CATEGORY)?.takeIf { s.has(AssistWords.BUDGET) }?.let { return AssistScreen.CATEGORY_BUDGET to it }
-    if (!open) return null
+    if (s.has(WALLET_WORDS)) s.entity(AssistEntityType.WALLET)?.let { return AssistScreen.WALLET_DETAIL to it }
+    if (s.has(MERCHANT_WORDS)) s.entities.ofType(AssistEntityType.MERCHANT).firstOrNull { !it.generic }?.let { return AssistScreen.MERCHANT to it }
+    return null
+}
+
+/**
+ * اسم من أسامي المستخدم ⇒ شاشة تفاصيله: «افتح أحمد» · «محفظة الكاش» · «ميزانية الأكل» · «صفحة المرسى» · «تجهيزات الفرح».
+ * التصنيف بيفتح سقفه بس لو فيه كلمة ميزانية/سقف. الجزء المميز من الاسم («البيت» من «مشروع البيت») بس بفعل تنقل ([partialOk]) — كلمة
+ * عامة زي «البيت» أو «الشغل» ما تفتحش تفاصيل لوحدها (التصميم: مخاطرة ٧). محفظة الكاش من غير كلمة «محفظة» ⇒ «تفاصيل الكاش».
+ */
+private fun entityScreen(s: AssistSignals, partialOk: Boolean): Pair<AssistScreen, AssistEntity>? {
+    fun pick(type: AssistEntityType) = s.entities.ofType(type).firstOrNull { !it.generic && (partialOk || !it.partial) }
+    s.entity(AssistEntityType.CATEGORY)?.takeIf { s.has(AssistWords.BUDGET) }?.let { return AssistScreen.CATEGORY_BUDGET to it }
+    pick(AssistEntityType.EVENT)?.let { e ->
+        return when {
+            s.has(NUQOOT_WORDS) -> AssistScreen.NUQOOT to e
+            s.has(PREP_WORDS) -> AssistScreen.EVENT_PREP to e
+            else -> AssistScreen.EVENT_DETAIL to e
+        }
+    }
     val order = listOf(
         AssistEntityType.PERSON to AssistScreen.PERSON_PROFILE, AssistEntityType.MERCHANT to AssistScreen.MERCHANT,
-        AssistEntityType.GOAL to AssistScreen.GOAL_DETAIL, AssistEntityType.EVENT to AssistScreen.EVENT_DETAIL, AssistEntityType.PROJECT to AssistScreen.PROJECT_DETAIL,
+        AssistEntityType.GOAL to AssistScreen.GOAL_DETAIL, AssistEntityType.PROJECT to AssistScreen.PROJECT_DETAIL,
         AssistEntityType.ROSCA to AssistScreen.ROSCA_DETAIL, AssistEntityType.PLAN to AssistScreen.INSTALLMENT_DETAIL,
         AssistEntityType.RECURRING to AssistScreen.SUBSCRIPTION_DETAIL, AssistEntityType.ASSET to AssistScreen.ASSET_DETAIL,
     )
-    for ((type, screen) in order) s.specific(type)?.let { return screen to it }
-    // المحفظة: اسمها، أو «محفظة الكاش» / «تفاصيل حساب البنك» (الكلمة العامة مع كلمة محفظة/حساب)
-    s.specific(AssistEntityType.WALLET)?.let { return AssistScreen.WALLET_DETAIL to it }
-    if (s.has(vocab("محفظه", "حساب", "wallet", fuzzy = false))) s.entity(AssistEntityType.WALLET)?.let { return AssistScreen.WALLET_DETAIL to it }
+    for ((type, screen) in order) pick(type)?.let { return screen to it }
+    val walletWord = s.has(WALLET_WORDS)
+    pick(AssistEntityType.WALLET)?.let { w ->
+        val cash = s.lexicon.wallets.firstOrNull { it.id == w.id }?.kind == "cash"
+        // «الكاش» لوحدها = «تفاصيل الكاش» (التصميم)، و«محفظة الكاش» = تفاصيل المحفظة
+        if (!cash || walletWord) return AssistScreen.WALLET_DETAIL to w
+    }
+    // الكلمة العامة مع كلمة محفظة/حساب: «تفاصيل حساب البنك»
+    if (walletWord) s.entity(AssistEntityType.WALLET)?.let { return AssistScreen.WALLET_DETAIL to it }
     return null
 }

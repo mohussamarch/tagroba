@@ -7,11 +7,13 @@ package app.masroufy.core
 enum class GreetingKind { SALAM, MORNING, EVENING, PLAIN }
 
 internal object AssistTalkWords {
-    val SALAM = vocab("السلام عليكم", "سلام عليكم", "السلام", "salam", "assalamu alaikum")
+    // «السلام» كلمة كاملة بس («مع السلامة» وداع مش سلام)
+    val SALAM = vocab("السلام عليكم", "سلام عليكم", "السلام", "salam", "assalamu alaikum", fuzzy = false, exact = true)
     val MORNING = vocab("صباح الخير", "صباح النور", "صباحو", "good morning")
     val EVENING = vocab("مساء الخير", "مساء النور", "مساكم", "good evening")
-    val HELLO = vocab("اهلا", "اهلين", "هلا", "هلا والله", "مرحبا", "مرحبتين", "هاي", "hi", "hello", "hey", "يا هلا", fuzzy = false, exact = true)
-    val HOW_ARE_YOU = vocab("عامل ايه", "عامله ايه", "كيف حالك", "كيف الحال", "شخبارك", "اخبارك", "ازيك", "كيفك", "how are you", "how r u", "شلونك")
+    // «إزيك» و«كيفك» تحية (التصميم) — «كيف حالك» و«عامل إيه» سؤال عن الحال
+    val HELLO = vocab("اهلا", "اهلين", "هلا", "هلا والله", "مرحبا", "مرحبتين", "هاي", "ازيك", "كيفك", "hi", "hello", "hey", "يا هلا", fuzzy = false, exact = true)
+    val HOW_ARE_YOU = vocab("عامل ايه", "عامله ايه", "كيف حالك", "كيف الحال", "شخبارك", "اخبارك", "how are you", "how r u", "شلونك", fuzzy = false, exact = true)
     val THANKS = vocab("شكرا", "شكر", "تسلم", "تسلمي", "مشكور", "يعطيك العافيه", "الله يعطيك العافيه", "ميرسي", "جزاك الله خير", "thanks", "thank you", "thx", "متشكر")
     val BYE = vocab("باي", "مع السلامه", "تصبح على خير", "تصبح علي خير", "في امان الله", "bye", "goodbye", "good night", "سلام", fuzzy = false, exact = true)
     val WHO = vocab("مين انت", "من انت", "انت مين", "وش انت", "انت ذكاء اصطناعي", "انت بوت", "انت روبوت", "who are you", "are you ai", "are you a bot", "what are you")
@@ -27,6 +29,9 @@ internal object AssistTalkWords {
     )
     val NEW_CONVERSATION = vocab("محادثه جديده", "ابدا من جديد", "نبدا من الاول", "نبدا من جديد", "ابدا محادثه", "new chat", "new conversation", "start over")
     val HISTORY = vocab("المحادثات القديمه", "سجل المحادثات", "كلامنا اللي فات", "المحادثات السابقه", "محادثاتي", "history", "old chats", "chat history")
+
+    /** «import history» = دفعات الاستيراد مش سجل المحادثات. */
+    val NOT_HISTORY = vocab("import", "استيراد", "الاستيرادات", fuzzy = false)
     val MEMORY = vocab("اتعلمته عني", "اتعلمت عني", "تعرف عني", "تعرفه عني", "وش تعرف عني", "ماذا تعرف عني", "what do you know about me", "what have you learned")
     val LEARN_OFF = vocab("بطل تتعلم", "اوقف التعلم", "وقف التعلم", "لا تتعلم", "ما تتعلمش", "stop learning", "اقفل التعلم")
     val LEARN_ON = vocab("ارجع اتعلم", "رجع التعلم", "شغل التعلم", "ابدا التعلم", "start learning", "resume learning", "ارجع تعلم", "اتعلم من اسئلتي")
@@ -70,7 +75,7 @@ internal fun controlOf(s: AssistSignals): Pair<AssistIntent, Boolean?>? = when {
     s.has(AssistTalkWords.LEARN_ON) -> AssistIntent.LEARNING_SWITCH to true
     s.has(AssistTalkWords.MEMORY) -> AssistIntent.MEMORY to null
     s.has(AssistTalkWords.NEW_CONVERSATION) -> AssistIntent.NEW_CONVERSATION to null
-    s.has(AssistTalkWords.HISTORY) -> AssistIntent.HISTORY to null
+    s.has(AssistTalkWords.HISTORY) && !s.has(AssistTalkWords.NOT_HISTORY) -> AssistIntent.HISTORY to null
     else -> null
 }
 
