@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +57,9 @@ private val EMAIL = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$")
 fun ResetPasswordSheet(prefill: String, mode: ResetMode = ResetMode.FORGOT) {
     val change = mode == ResetMode.CHANGE
     val app = LocalApp.current
+    // رد المالك L4: «تغيير كلمة السر» من غير نت ⇒ «أرسل الرابط» مقفول وجنبه السبب (نسيت كلمة المرور في الدخول زي ما هي — الخطأ جنب الخانة)
+    val online by app.online.collectAsState()
+    val offline = change && !online
     val scope = rememberCoroutineScope()
     var open by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
@@ -115,15 +119,16 @@ fun ResetPasswordSheet(prefill: String, mode: ResetMode = ResetMode.FORGOT) {
                     }
                     if (error == null) send(e, false)
                 },
-                loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
+                loading = busy, enabled = !offline, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             )
+            if (offline) BasicText(t(UiKey.RESET_CHANGE_OFFLINE), style = Type.caption().copy(color = Ink.muted))
             if (!change) BasicText(t(UiKey.RESET_PRIVACY), style = Type.caption().copy(color = Ink.muted))
         } else {
             BasicText(t(UiKey.RESET_SENT_TITLE), style = Type.of(17, FontWeight.Bold))
             BasicText(t(UiKey.RESET_SENT_BODY, sent), style = Type.body())
             BasicText(t(UiKey.RESET_SPAM), style = Type.of(13).copy(color = Ink.muted))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TonalButton(if (busy) t(UiKey.RESET_SENDING) else t(UiKey.RESET_RESEND), onClick = { send(sent, true) }, enabled = left == 0 && !busy, modifier = Modifier.weight(1f))
+                TonalButton(if (busy) t(UiKey.RESET_SENDING) else t(UiKey.RESET_RESEND), onClick = { send(sent, true) }, enabled = left == 0 && !busy && !offline, modifier = Modifier.weight(1f))
                 TonalButton(t(UiKey.RESET_CHANGE), onClick = { sentTo = null; left = 0; again = false; email = sent }, modifier = Modifier.weight(1f))
             }
             val wait = when {
@@ -133,7 +138,7 @@ fun ResetPasswordSheet(prefill: String, mode: ResetMode = ResetMode.FORGOT) {
                 left <= 10 -> t(UiKey.RESET_WAIT_FEW, sentenceNumber(left))
                 else -> t(UiKey.RESET_WAIT_MANY, sentenceNumber(left))
             }
-            val note = listOfNotNull(if (again && !busy) t(UiKey.RESET_AGAIN) else null, wait).joinToString(" ")
+            val note = listOfNotNull(if (again && !busy) t(UiKey.RESET_AGAIN) else null, wait, if (offline) t(UiKey.RESET_OFFLINE) else null).joinToString(" ")
             if (note.isNotEmpty()) BasicText(note, style = Type.caption().copy(color = Ink.muted))
             if (error != null) BasicText(error!!, style = Type.of(13).copy(color = Ink.expense))
             Column(Modifier.fillMaxWidth().height(4.dp)) {}

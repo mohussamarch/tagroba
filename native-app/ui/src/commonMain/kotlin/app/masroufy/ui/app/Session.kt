@@ -3,7 +3,11 @@ package app.masroufy.ui.app
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.masroufy.usecase.AppLock
 import app.masroufy.usecase.SignIn
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+
+/** «متصل دايمًا» — للنسخ اللي ما بتعرفش حالة الشبكة (الاختبارات · المعاينة). */
+val ALWAYS_ONLINE: StateFlow<Boolean> = MutableStateFlow(true)
 
 /**
  * الجلسة كلها (التطبيق بيرسم حسبها — `MasroufyApp`): بيبدأ ⇒ مفيش حد داخل (شاشة الدخول) ⇒ «بيفتح» (التنزيل الأول بشريط تقدم — §54) ⇒ جاهز
@@ -46,6 +50,9 @@ interface AppDeps {
 
     /** نسخة اختبار متصلة بمحاكي فايربيز على الكمبيوتر — بتتكتب على شاشة الدخول عشان ما تتلخبطش مع الحقيقية. */
     val emulator: Boolean
+
+    /** فيه نت؟ — الأزرار اللي محتاجة نت (زي «أرسل الرابط» في تغيير كلمة السر — رد المالك L4) بتتقفل من غيره. */
+    val online: StateFlow<Boolean> get() = ALWAYS_ONLINE
 }
 
 val LocalApp = staticCompositionLocalOf<AppDeps> { error("AppDeps مش متقدّم") }

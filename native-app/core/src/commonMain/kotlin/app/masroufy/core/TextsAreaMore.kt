@@ -69,6 +69,7 @@ private val MSA_MORE_MENU_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.RESET_CHANGE_TITLE to "تغيير كلمة السر",
     UiKey.RESET_CHANGE_BODY to "سنرسل إلى بريدك رابطًا تغيّر منه كلمة المرور.",
     UiKey.RESET_CHANGE_SEND to "أرسل الرابط",
+    UiKey.RESET_CHANGE_OFFLINE to "إرسال الرابط يحتاج اتصالًا بالإنترنت.",
 )
 
 private val EGYPTIAN_MORE_MENU_TEXTS: Map<UiKey, String> = mapOf(
@@ -120,6 +121,7 @@ private val EGYPTIAN_MORE_MENU_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.RESET_CHANGE_TITLE to "تغيير كلمة السر",
     UiKey.RESET_CHANGE_BODY to "هنبعت على إيميلك لينك تغيّر منه كلمة السر.",
     UiKey.RESET_CHANGE_SEND to "ابعت اللينك",
+    UiKey.RESET_CHANGE_OFFLINE to "إرسال اللينك محتاج نت.",
 )
 
 private val ENGLISH_MORE_MENU_TEXTS: Map<UiKey, String> = mapOf(
@@ -171,4 +173,5 @@ private val ENGLISH_MORE_MENU_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.RESET_CHANGE_TITLE to "Change password",
     UiKey.RESET_CHANGE_BODY to "We'll email you a link to change your password.",
     UiKey.RESET_CHANGE_SEND to "Send the link",
+    UiKey.RESET_CHANGE_OFFLINE to "Sending the link needs an internet connection.",
 )
