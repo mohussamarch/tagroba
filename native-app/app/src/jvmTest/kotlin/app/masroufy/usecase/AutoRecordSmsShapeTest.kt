@@ -28,9 +28,7 @@ import kotlin.test.assertTrue
  * الشاشة بتعرض المستني جاهز و«سجّل الكل» بيأكده. كل الرسايل مخترعة (`SmsAutoFixture.kt`).
  */
 class AutoRecordSmsShapeTest {
-    private fun screenOf(world: SmsWorld, space: SmsSpace = world.spaces.single()) = ReviewSmsInbox(
-        ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(space.importDeps()), MemoryMerchantRepository(), space.categories, space.ids),
-    )
+    private fun screenOf(world: SmsWorld, space: SmsSpace = world.spaces.single()) = space.screen(world.inbox)
 
     @Test fun knownShapeIsRecordedWhileKeywordOnlyAndForeignWait() = runBlocking<Unit> {
         // الرسايل نفسها: الأولى شكل معروف · التانية بتتقري بس من كلمات عامة · التالتة أجنبية مرفوضة ومعاها تفاصيلها

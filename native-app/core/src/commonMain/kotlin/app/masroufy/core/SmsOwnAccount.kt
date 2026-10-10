@@ -50,8 +50,13 @@ private val CARD = Regex("(?:بطاق\\S*|عبر|مدى|(?<![A-Za-z])(?:Card|Via
 /** آخر 4 أرقام القيمة المتقصة (4 أرقام على الأقل)، أو null. */
 private fun lastFourOf(value: String): String? = value.filter { it in '0'..'9' }.takeIf { it.length >= 4 }?.takeLast(4)
 
-internal fun ownLast4Of(body: String, direction: Direction): String? =
+internal fun ownLast4Of(body: String, direction: Direction): String? = ownAccountLast4Of(body, direction) ?: CARD.find(body)?.groupValues?.get(1)
+
+/**
+ * آخر 4 أرقام **حسابك** بس (سطر الحساب · «حسابك المنتهي ب» · رقم المحفظة) — **مش الكارت**. مراجعة S1: التوزيع على المحافظ بآخر 4 أرقام
+ * (§75-11 «بنك واحد بحسابين») بيبص على ده بس — آخر 4 أرقام كارت من بنك تاني ممكن تبقى زي آخر 4 أرقام حساب في البنك ده بالصدفة.
+ */
+internal fun ownAccountLast4Of(body: String, direction: Direction): String? =
     (if (direction == Direction.OUT) OUT_ACCOUNT else IN_ACCOUNT).findAll(body).firstNotNullOfOrNull { lastFourOf(it.groupValues[1]) }
         ?: EG_ACCOUNT.find(body)?.groupValues?.get(1)
         ?: WALLET.find(body)?.groupValues?.get(1)
-        ?: CARD.find(body)?.groupValues?.get(1)

@@ -64,9 +64,18 @@ class SmsRound8Test {
         waits(eg("IPN transfer received with amount of EGP 400.00 from 4417 on 07.10 at 13:00. Ref# 900000614 06/10"), "two dates")
     }
 
-    @Test fun anEgyptianTimeWithoutADateWaits() {
-        for ((body, at) in SmsRound8Cases.timeOnly) waits(eg(body, at), body)
-        // ونفس القالب بتاريخ لسه بيتسجل لوحده
+    /**
+     * §77-C (قرار المالك 2026-10-09 — بيلغي «بيستنى» بتاع الجولة التامنة): فودافون كاش **بالساعة من غير تاريخ** بياخد يوم الوصول بتوقيت
+     * القاهرة — وبعد نص الليل (الساعة المكتوبة بعد ساعة الوصول) اليوم اللي قبله — وبيتسجل (الشكل واضح).
+     */
+    @Test fun anEgyptianTimeWithoutADateTakesTheDayItsClockSays() {
+        val days = listOf("2026-10-08", "2026-10-08", "2026-10-08") // 23:58 وصلت 00:03 · 11:58 PM وصلت 00:04 · 14:22 وصلت 14:23 (+3 صيفي)
+        for ((i, pair) in SmsRound8Cases.timeOnly.withIndex()) {
+            val row = ok(eg(pair.first, pair.second), pair.first)
+            assertEquals(days[i], row.date, pair.first)
+            assertTrue(row.shape.clear, pair.first)
+        }
+        // نفس القالب بتاريخ لسه بيتسجل لوحده
         assertTrue(ok(eg(SmsRound8Cases.egyptPartialDates.first().first, "2026-10-09T06:00:00Z")).shape.clear)
     }
 

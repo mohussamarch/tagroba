@@ -56,6 +56,19 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
     override suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?) =
         withStore { it.setSenderWallet(uid, spaceId, smsSenderKey(sender), walletId) }
 
+    // §77-A وضع التعلّم · §75-2 «ده راتبك؟» — على الجهاز لصاحب الصندوق ([uid]) ولكل بلد (`SmsInboxStore`)
+    override suspend fun learnedShapes(spaceId: String): Map<String, Set<String>> = withStore { it.learnedShapes(uid, spaceId) }
+
+    override suspend fun learnShapes(spaceId: String, sender: String, keys: Set<String>) =
+        withStore { it.learnShapes(uid, spaceId, smsSenderKey(sender), keys) }
+
+    override suspend fun forgetShapes(spaceId: String, sender: String) = withStore { it.forgetShapes(uid, spaceId, smsSenderKey(sender)) }
+
+    override suspend fun salaryAnswer(spaceId: String, sender: String): Boolean? = withStore { it.salaryAnswer(uid, spaceId, smsSenderKey(sender)) }
+
+    override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) =
+        withStore { it.setSalaryAnswer(uid, spaceId, smsSenderKey(sender), answer) }
+
     override suspend fun sync(): SmsInboxState = withStore { store ->
         // التحقق من الإذن ما بيفتحش نافذة أندرويد لوحده أبدًا
         val more = store.enabled(uid) && granted() && catchUp(store)

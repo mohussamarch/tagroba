@@ -573,4 +573,18 @@ enum class TextKey {
     SMS_WAIT_REFUND, SMS_WAIT_CASH_WITHDRAWAL, SMS_HIDDEN_TEXT, SMS_OTHER_COUNTRY,
     // الجولة التامنة: فلوس داخلة على كارت ائتمان · إيداع كاش · شراء ومعاه كاش بيستنوا التأكيد — القيم في `TextsSmsAuto.kt`
     SMS_WAIT_CARD_CREDIT, SMS_WAIT_CASH_DEPOSIT, SMS_WAIT_PURCHASE_CASH,
+    // ── عقد C0: كل شريحة بتضيف مفاتيحها تحت علامتها بس (سطر فاضي بين كل علامة والتانية) ──
+    // S1 — رسايل البنك: وضع التعلّم · رسالة من غير تاريخ · «ده راتبك؟» · بنك بحسابين (§77-A · §77-C · §75-2 · §75-11) — القيم في `TextsSmsLearn.kt`
+    SMS_WAIT_NEW_SHAPE, SMS_WAIT_IS_SALARY, SMS_ASK_IS_SALARY, SMS_ASK_OWN_ACCOUNT,
+
+    // S2 — الرسوم · السحب للكاش · الاسترداد (§77-B · §75-4 · §75-6) — القيم في `TextsSmsFees.kt`
+
+    // S3 — اللي رجع · الشراء الأجنبي (§77-D · §75-12) — القيم في `TextsReturns.kt`
+
+    // S4 — الكشف والرسالة · الاشتراكات · الأقساط (§75-10 · §75-7 · §75-8) — القيم في `TextsMatching.kt`
+
+    // S5 — «سلفة ولا دعم؟» · سداد السلفة · التصنيف بيتفتكر (§75-5 · §75-9 · §75-16) — القيم في `TextsAsks.kt`
+
+    // S6 — الداخل المستني · الراتب والشهر · التذكير الأسبوعي (§75-1 · §75-3 · §75-15) — القيم في `TextsMonth.kt`
+
 }

@@ -21,7 +21,16 @@ import app.masroufy.core.Direction.OUT
 private class EgyptShape(val bank: String, val id: String, head: String, rest: String, val direction: Direction?) {
     val headAnyCurrency = Regex("^(?:${head.replace(EGC, ANY_CURRENCY)})")
     val full = Regex("(?:$head)$rest")
+
+    /** S1 (§77-A): نفس [full] والخانات الحرة (المحل · الاسم) جوه مجموعات التقاط زيادة — عشان بصمة الشكل تشيل قيمها ([egyptLayoutSkeleton]). */
+    val named by lazy { Regex("(?:${withNameGroups(head)})${withNameGroups(rest)}") }
 }
+
+/**
+ * الخانات الحرة في القوالب: المحل ([M]) · المحل اللاتيني ([ML]) · الاسم ([NM]) · رقم المرجع ([REF] — مراجعة S1: الحروف اللي في أوله
+ * «TT9921» كانت بتفضل في البصمة) — كل واحدة نص ثابت مش جوه التانية.
+ */
+private fun withNameGroups(pattern: String): String = listOf(M, ML, NM, REF).fold(pattern) { p, slot -> p.replace(slot, "($slot)") }
 
 private const val N = "(?:[\\d,٬]+(?:[.٫]\\d+)?|[.٫]\\d+)"
 private const val EGC = "(?:جم|جنيه|جنية|egp|l\\.?e|ج\\.م\\.?|ج|e£|£e)"
@@ -241,4 +250,22 @@ internal fun egyptShape(body: String, direction: Direction, amount: Halalas? = n
         return SmsShape.KnownShape(shape.bank, shape.id)
     }
     return SmsShape.KeywordFallback
+}
+
+/**
+ * S1 (§77-A «وضع التعلّم»): **شكل** رسالة مصر — القالب اللي [egyptShape] لقاه (أول قالب الجملة كلها عليه) + الجملة نفسها والمحل والاسم
+ * مكانهم علامة، والأرقام والتواريخ والساعات مخفية (`maskLayoutValues`). الكلمة الثابتة اللي ليها بديل في القالب («حسابكم/بطاقتكم» ·
+ * «جم/جنيه» · جملة الإعلان) والجزء الاختياري اللي ظهر أو اختفى بيغيّروا الشكل. null = مش على قالب.
+ */
+internal fun egyptLayoutSkeleton(body: String): String? {
+    val key = shapeKey(body, dropColons = false)
+    val shape = EGYPT_SHAPES.firstOrNull { it.full.matches(key) } ?: return null
+    val base = shape.full.matchEntire(key)?.groups?.drop(1)?.mapNotNull { it?.range }?.toMutableList() ?: return null
+    // الخانات الحرة = مجموعات [EgyptShape.named] اللي مش في [EgyptShape.full] (المجموعات الزيادة ما بتغيّرش المطابقة ⇒ نفس الأماكن بالظبط).
+    // مراجعة S1: بالمكان مش بالنص — «text.replace(القيمة)» كان بيمسح نفس الحروف في أي حتة تانية في الجملة (مرجع «5» جوه مبلغ «500»)
+    val slots = shape.named.matchEntire(key)?.groups?.drop(1)?.mapNotNull { it?.range }?.toMutableList() ?: return null
+    for (range in base) slots.remove(range)
+    val text = StringBuilder(key)
+    for (range in slots.filter { !it.isEmpty() }.distinct().sortedByDescending { it.first }) text.replace(range.first, range.last + 1, "<name>")
+    return "${shape.bank}/${shape.id}\n" + maskLayoutValues(text.toString())
 }

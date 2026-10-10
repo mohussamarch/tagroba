@@ -1,28 +1,16 @@
 package app.masroufy.usecase
 
-import app.masroufy.core.CategorizationSource
-import app.masroufy.core.Category
-import app.masroufy.core.Currency
+import app.masroufy.core.AskKind
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
-import app.masroufy.core.Halalas
 import app.masroufy.core.Id
-import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
-import app.masroufy.core.SchemaId
-import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsParseResult
-import app.masroufy.core.SmsRow
-import app.masroufy.core.SmsShape
-import app.masroufy.core.TextKey
-import app.masroufy.core.jsTrim
 import app.masroufy.core.rememberMerchant
-import app.masroufy.core.smsRowsJson
-import app.masroufy.core.toParsedRow
-import app.masroufy.core.uiText
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.MerchantRepository
+import app.masroufy.port.WalletRepository
 import app.masroufy.port.smsSenderKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -35,6 +23,10 @@ import kotlin.coroutines.cancellation.CancellationException
  * الكلاس ده، والشاشة بتعرض اللي مستني بس. الاتنين بيسجّلوا تحت [SMS_RECORD_LOCK].
  * الجولة الرابعة: الجديد اللي اتفهم من كلمات عامة بس (`SmsShape.KeywordFallback`) ما بيتسجلش في الخلفية — بيفضل في `ready`
  * جاهز ومعاه سببه ([SmsReviewLine.confirmReason])، و«سجّل الكل» هنا هو التأكيد.
+ * **§77-A «وضع التعلّم»** (S1): الشكل الواضح بيتسجل لوحده **بس لو المالك أكّد قبل كده رسالة بنفس الشكل من نفس المرسل** (`SmsLearning.kt`)؛
+ * و«سجّل الكل» (تسجيل المالك) بيعلّم أشكال الرسايل اللي اتسجلت فعلًا (الجديد والشبيه اللي اختاره) — مش المكرر ولا اللي اتشال ولا الكلمات العامة.
+ * **مراجعة S1:** الشاشة بتوزّع على المحافظ بآخر 4 أرقام الحساب زي الخلفية (§75-11 — `SmsSessionDraft`)، و«ده راتبك؟» لازم يترد قبل التسجيل.
+ * الشاشة الحقيقية تتبني من `SmsLane.screen` (نفس التعلّم والآثار بتوع الخلفية).
  */
 
 /**
@@ -43,185 +35,69 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 internal val SMS_RECORD_LOCK = Mutex()
 
-/** نتيجة التسجيل لحالات الاستخدام — [batchId] بس لو اتسجل حاجة فعلًا. */
-internal class SmsRecordOutcome(val recorded: Int, val duplicates: Int, val batchId: Id?)
-
-data class SmsReviewLine(
-    val messageId: String,
-    val lineNumber: Int,
-    val date: String,
-    val merchant: String,
-    val amountMinor: Halalas,
-    val direction: Direction,
-    val categoryId: Id?,
-    /** المستخدم افتكر المحل ده قبل كده — مفيش سؤال «نفتكره؟» تاني. */
-    val remembered: Boolean,
-    val state: MatchingState,
-    val reason: String,
-    /** القارئ فهمها إزاي (الجولة الرابعة) — مش واضحة ([SmsShape.clear] = false) ⇒ ما بتتسجلش لوحدها في الخلفية. */
-    val shape: SmsShape = SmsShape.KeywordFallback,
-    /**
-     * سبب إنها **مستنية تأكيدك** رغم إنها جديدة: اتفهمت من كلمات عامة بس (`TextKey.SMS_WAIT_UNKNOWN_SHAPE`)؛ null = شكل معروف.
-     * الشاشة بتعرضها جاهزة (متعبّية) و«سجّل الكل» بيسجلها — ضغطة المالك هي التأكيد.
-     */
-    val confirmReason: String? = null,
-)
-
-data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)
-
-data class SmsReview(
-    val enabled: Boolean,
-    val permission: Boolean,
-    val senders: List<String>,
-    val more: Boolean,
-    /** جديدة — بتتسجل بـ«سجّل الكل». */
-    val ready: List<SmsReviewLine>,
-    /** شبه عملية موجودة — ما بتتسجلش إلا لو المستخدم اختارها. التعارض ما بيتسجلش أبدًا. */
-    val similar: List<SmsReviewLine>,
-    /** موجودة فعلًا — بتتشال من القايمة مع «سجّل الكل». */
-    val duplicates: List<SmsReviewLine>,
-    val failed: List<SmsFailed>,
-    /** كل التصنيفات (حتى المخفية) عشان اسم ولون تصنيف قديم يبان؛ الاختيار من الظاهر بس. */
-    val categories: List<Category>,
-)
-
-/**
- * `accountIdentity` = اسم المحفظة — نطاق تفرّد المرجع، زي شاشة الاستيراد. [currency] = عملة المحفظة: من غيرها رسايل QNB مصر
- * كانت هتتسجل بالريال (الاستيراد افتراضيه ريال) — اتكشف في جلسة 31. الافتراضي ريال عشان ملفات المرجع والتطبيق الحالي.
- */
-data class SmsReviewTarget(
-    val walletId: Id,
-    val accountIdentity: String,
-    val currency: Currency = Currency.SAR,
-    /** آخر 4 أرقام حساب المحفظة دي (لو مكتوبة). */
-    val accountLast4: String? = null,
-    /**
-     * آخر 4 أرقام حسابات المالك **التانية** في نفس البلد (الجولة السادسة): الرسالة اللي أرقام حسابها واحد منهم ومش المحفظة دي ⇒ ما
-     * بتتسجلش لوحدها في المحفظة دي (كانت بتتسجل في محفظة البنك المربوط لمجرد إن المرسل نفسه) — بتستنى ومعاها سببها.
-     */
-    val otherAccountsLast4: Set<String> = emptySet(),
-)
-
-/** الرسالة بتقول حساب تاني من حسابات المالك (مش حساب المحفظة دي). */
-private fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
-    val own = row.ownLast4 ?: return false
-    return own in otherAccountsLast4 && own != accountLast4
-}
-
-/**
- * سبب إن رسالة **شكلها معروف** ما تتسجلش لوحدها، أو null: حساب تاني من حسابات المالك (الجولة السادسة) · **استرداد** (§75-6 ✗ — قرار
- * المالك: «الاسترداد ⇒ يقترح «استرداد» ويستنى تأكيده»؛ كان بيتسجل لوحده زي أي عملية) · **سحب كاش** (§75-4 — النقل لمحفظة الكاش لسه ما
- * اتبناش، فكان بيتسجل صرف عادي من البنك من غير ما يروح الكاش). الجولة السابعة.
- */
-private fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
-    target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
-    row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
-    row.kind == SmsKind.CASH_WITHDRAWAL -> TextKey.SMS_WAIT_CASH_WITHDRAWAL
-    // الجولة التامنة: فلوس **داخلة على كارت ائتمان** («Credit Card Credited» · «تم قيد مبلغ … لبطاقتك الائتمانية») مش دخل لحساب البنك — كانت
-    // بتتسجل داخل المحفظة وتلغي خصم «Credit Card Payment» فالرصيد يزيد بمبلغ السداد كله. إلا لو المحفظة دي **هي** الكارت (أرقامها نفس الكارت)
-    row.kind == SmsKind.CARD_PAYMENT && row.direction == Direction.IN && (row.ownLast4 == null || row.ownLast4 != target.accountLast4) ->
-        TextKey.SMS_WAIT_CARD_CREDIT
-    // الجولة التامنة: إيداع كاش = نقل من محفظة الكاش (§75-4 بالعكس، لسه ما اتبناش) — كان بيتسجل دخل للبنك والسحب بيستنى · شراء ومعاه كاش
-    row.kind == SmsKind.CASH_DEPOSIT -> TextKey.SMS_WAIT_CASH_DEPOSIT
-    row.kind == SmsKind.PURCHASE_WITH_CASH -> TextKey.SMS_WAIT_PURCHASE_CASH
-    else -> null
-}
-
-/** اللي بيترفع للقايمة المشتركة (OVERRIDES §25) — المصروف بس. */
-data class MerchantContribution(val economicKind: EconomicKind, val observedDirection: Direction, val rawMerchantName: String)
-
 data class ReviewSmsInboxDeps(
     val inbox: ManageSmsInbox,
     val importer: ImportStatement,
     val merchants: MerchantRepository,
     val categories: CategoryRepository,
     val ids: IdGenerator,
+    /**
+     * S1 (§77-A · §75-2): أشكال الرسايل اللي اتعلّمت وردود «ده راتبك؟» للبلد دي — **لازم** (مراجعة S1: كان اختياري، والشاشة اللي
+     * اتبنت من غيره ما كانتش بتعلّم ولا بتسأل، فولا رسالة كانت هتتسجل لوحدها أبدًا).
+     */
+    val learning: SmsLearning,
+    /** مراجعة S1 (§75-11 على الشاشة): محافظ البلد — الرسالة اللي أرقام حسابها لمحفظة تانية بتتسجل هناك (`SmsRouting.kt`). */
+    val wallets: WalletRepository,
     /** فشله ما يوقفش الحفظ على الجهاز. */
     val contribute: (suspend (MerchantContribution, Id) -> Unit)? = null,
 )
 
-class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
-    private class Session(
-        val request: ImportRequest,
-        val preview: ImportPreview,
-        val messageByLine: Map<Int, String>,
-        val shapeByLine: Map<Int, SmsShape>,
-    )
-
-    private var session: Session? = null
+/**
+ * المُنشئ داخلي (مراجعة S1): الشاشة الحقيقية **لازم** تيجي من `SmsLane.screen` — هناك التعلّم والمحافظ وآثار رسايل البنك (`SmsSalaryEffect` ·
+ * `OwnAccountByLast4Effect`) مطلوبين، فتجميع ناسي حاجة منهم ما بيعدّيش من غير ما يقع.
+ */
+class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) {
+    private var session: SmsSession? = null
 
     val available: Boolean get() = deps.inbox.available
 
-    private suspend fun build(inbox: InboxView, target: SmsReviewTarget, only: ((InboxItem) -> Boolean)? = null): SmsReview {
-        val rows = mutableListOf<SmsRow>()
-        val messageByLine = mutableMapOf<Int, String>()
-        val shapeByLine = mutableMapOf<Int, SmsShape>()
-        val waitByLine = mutableMapOf<Int, String>()
-        val failed = mutableListOf<SmsFailed>()
+    /** [route] = الشاشة (التوزيع بأرقام الحساب — §75-11)؛ التسجيل التلقائي بيوزّع بنفسه (`AutoRecordSms`) وبيدّي [only] لكل محفظة. */
+    private suspend fun build(
+        inbox: InboxView, target: SmsReviewTarget, only: ((InboxItem) -> Boolean)? = null, route: Boolean = true,
+    ): SmsReview {
+        val router = if (route) ScreenRouter.load(deps.wallets, deps.learning, target) else null
+        val draft = SmsSessionDraft(LearnSnapshot(deps.learning))
         for (item in inbox.items) {
             if (only != null && !only(item)) continue
             when (val parsed = item.parsed) {
                 is SmsParseResult.Ok -> {
-                    val row = parsed.row
-                    rows += row
-                    messageByLine[row.lineNumber] = item.id
-                    // الجولة السادسة: حساب تاني من حسابات المالك ⇒ مش واضحة للمحفظة دي (تستنى بسببها). الجولة السابعة: الاسترداد (§75-6 —
-                    // قرار المالك: يتقترح «استرداد» ويستنى تأكيده) والسحب من الصرّاف (§75-4 — النقل لمحفظة الكاش لسه ما اتبناش) بيستنوا
-                    val wait = if (row.shape.clear) waitReasonOf(row, target) else null
-                    shapeByLine[row.lineNumber] = if (wait != null) SmsShape.KeywordFallback else row.shape
-                    if (wait != null) waitByLine[row.lineNumber] = uiText(wait)
+                    val sender = smsSenderKey(item.sender)
+                    draft.add(item.id, sender, parsed.row, router?.targetFor(parsed.row, sender) ?: target)
                 }
-                is SmsParseResult.Rejected -> failed += SmsFailed(item.id, item.sender, item.receivedAt.take(10), parsed.reason)
+                is SmsParseResult.Rejected -> draft.failed += SmsFailed(item.id, item.sender, item.receivedAt.take(10), parsed.reason)
             }
         }
         val categories = deps.categories.listAll()
         session = null
-        fun review(ready: List<SmsReviewLine>, similar: List<SmsReviewLine>, duplicates: List<SmsReviewLine>) =
-            SmsReview(inbox.enabled, inbox.permission, inbox.senders, inbox.more, ready, similar, duplicates, failed, categories)
-        if (rows.isEmpty()) return review(emptyList(), emptyList(), emptyList())
-
-        val request = ImportRequest(
-            fileName = "bank-sms.json",
-            content = smsRowsJson(rows),
-            accountIdentity = target.accountIdentity,
-            sourceType = ImportSourceType.SMS,
-            walletId = target.walletId,
-            schema = SchemaId.SMS,
-            parsedRows = rows.map { it.toParsedRow() },
-            currency = target.currency,
-        )
-        val preview = deps.importer.preview(request)
-        session = Session(request, preview, messageByLine, shapeByLine)
-        val lines = preview.lines.map { line ->
-            val shape = shapeByLine[line.row.lineNumber] ?: SmsShape.KeywordFallback
-            SmsReviewLine(
-                messageId = messageByLine.getValue(line.row.lineNumber),
-                lineNumber = line.row.lineNumber,
-                date = line.row.date,
-                merchant = jsTrim(line.row.merchantName),
-                amountMinor = line.row.amountMinor,
-                direction = line.row.direction,
-                categoryId = line.categoryId?.takeIf { it.isNotEmpty() },
-                remembered = line.categorySource == CategorizationSource.VERIFIED_MERCHANT,
-                state = line.state,
-                reason = line.reason,
-                shape = shape,
-                confirmReason = if (shape.clear) null else waitByLine[line.row.lineNumber] ?: uiText(TextKey.SMS_WAIT_UNKNOWN_SHAPE),
-            )
-        }
+        val current = draft.build(deps.importer)
+        session = current
+        val lines = current?.lines().orEmpty()
         val newestFirst = Comparator<SmsReviewLine> { a, b -> if (a.date != b.date) b.date.compareTo(a.date) else b.lineNumber - a.lineNumber }
-        return review(
+        return SmsReview(
+            inbox.enabled, inbox.permission, inbox.senders, inbox.more,
             ready = lines.filter { it.state == MatchingState.NEW }.sortedWith(newestFirst),
             similar = lines.filter { it.state == MatchingState.SIMILAR || it.state == MatchingState.CONFLICT }.sortedWith(newestFirst),
             duplicates = lines.filter { it.state == MatchingState.DUPLICATE },
+            failed = draft.failed,
+            categories = categories,
         )
     }
 
     suspend fun load(target: SmsReviewTarget): SmsReview = build(deps.inbox.refresh(), target)
 
-    /** رسايل مرسل واحد بس (كل بنك ليه محفظته — §72 رد المالك ١). [senderKey] بعد `smsSenderKey`. */
-    internal suspend fun loadSender(target: SmsReviewTarget, senderKey: String): SmsReview =
-        build(deps.inbox.refresh(), target) { smsSenderKey(it.sender) == senderKey }
+    /** رسايل [target] بس ([only] — مرسل واحد، ولكل محفظة رسايلها بآخر 4 أرقام §75-11) — التسجيل التلقائي بيوزّع بنفسه. */
+    internal suspend fun loadFor(target: SmsReviewTarget, only: (InboxItem) -> Boolean): SmsReview =
+        build(deps.inbox.refresh(), target, only, route = false)
 
     /** الصندوق بقارئ البلد دي (من غير بناء معاينة). */
     internal suspend fun inboxView(): InboxView = deps.inbox.refresh()
@@ -230,44 +106,86 @@ class ReviewSmsInbox(private val deps: ReviewSmsInboxDeps) {
 
     suspend fun disable(target: SmsReviewTarget): SmsReview = build(deps.inbox.disable(), target)
 
+    /** «شيل»: الرسالة بتتشال من الصندوق من غير تسجيل — **وما بتعلّمش شكلها** (§77-A). */
     suspend fun dismiss(messageIds: List<String>, target: SmsReviewTarget): SmsReview = build(deps.inbox.dismiss(messageIds), target)
 
     /**
-     * «سجّل الكل»: الجديد كله + الشبيه اللي المستخدم اختاره. التصنيف اللي اختاره المستخدم بيتحفظ مؤكد.
-     * اللي اتسجل والمكرر بيتشالوا من الصندوق؛ الباقي (المرفوض والشبيه اللي ما اتختارش) بيفضل.
+     * §75-2 — رد المالك على «ده راتبك؟» على الرسالة [messageId] (المرسل بتاعها في البلد دي؛ null = يتسأل تاني). بعدها الشاشة تتحمّل تاني
+     * والرسالة تتسجل بـ«سجّل الكل» — وأيوه ⇒ «راتب» مؤكد (`SmsSalaryEffect`). رسالة مش في الصندوق ⇒ false.
+     */
+    suspend fun answerSalary(messageId: String, yes: Boolean?): Boolean {
+        val item = deps.inbox.refresh().items.firstOrNull { it.id == messageId } ?: return false
+        deps.learning.setSalaryAnswer(smsSenderKey(item.sender), yes)
+        return true
+    }
+
+    /**
+     * «سجّل الكل»: الجديد كله + الشبيه اللي المستخدم اختاره — كل رسالة في محفظتها. التصنيف اللي المستخدم اختاره بيتحفظ مؤكد.
+     * اللي اتسجل والمكرر بيتشالوا من الصندوق؛ الباقي (المرفوض · الشبيه اللي ما اتختارش · «ده راتبك؟» اللي ما اترّدش) بيفضل.
+     * §77-A: أشكال اللي اتسجل بتتعلّم.
      */
     suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>): Int =
         SMS_RECORD_LOCK.withLock { recordLocked(categories, includeSimilar).recorded }
 
     /**
      * «سجّل الكل» من غير القفل — للي ماسك [SMS_RECORD_LOCK] بالفعل (`AutoRecordSms`). [clearOnly] = التسجيل التلقائي (§72): الجديد
-     * اللي **شكله معروف** بس ([SmsShape.clear]) — اللي اتفهم من كلمات عامة بيفضل في الصندوق مستني تأكيد المالك (الجولة الرابعة).
-     * المكرر بيتشال في الحالتين (نفس الرسالة بالظبط اتسجلت قبل كده — مرجع `SMS:<بصمة>`).
+     * اللي **شكله معروف** بس ([app.masroufy.core.SmsShape.clear] — و§77-A: اتعلّم) — والباقي بيفضل في الصندوق مستني تأكيد المالك.
+     * المكرر بيتشال في الحالتين (نفس الرسالة بالظبط اتسجلت قبل كده — مرجع `SMS:<بصمة>`، في أي محفظة). تسجيل المالك (مش [clearOnly])
+     * بيعلّم الأشكال. [salaryAnswer] = رد المالك على «ده راتبك؟» للرسايل اللي عليها السؤال (بيتحفظ لمرسلها الأول)؛ null ⇒ ما بتتسجلش.
      */
-    internal suspend fun recordLocked(categories: Map<Int, Id>, includeSimilar: List<Int>, clearOnly: Boolean = false): SmsRecordOutcome {
-        val current = session ?: return SmsRecordOutcome(0, 0, null)
+    internal suspend fun recordLocked(
+        categories: Map<Int, Id>, includeSimilar: List<Int>, clearOnly: Boolean = false, salaryAnswer: Boolean? = null,
+    ): SmsRecordOutcome {
+        val current = session ?: return SmsRecordOutcome(0, 0, emptyList())
         val allowed = includeSimilar.toSet()
-        fun clear(line: Int) = current.shapeByLine[line]?.clear == true
-        val selection = current.preview.lines
-            .filter { it.state == MatchingState.NEW || (it.state == MatchingState.SIMILAR && it.row.lineNumber in allowed) }
-            .map { it.row.lineNumber }
-            .filter { !clearOnly || clear(it) }
-        var recorded = 0
-        var batchId: Id? = null
-        if (selection.isNotEmpty()) {
-            val batch = deps.importer.commit(current.request, current.preview, selection, categories)
-            if (current.preview.previousBatch?.id != batch.id) {
-                recorded = selection.size
-                batchId = batch.id
-            }
+        fun wanted(line: ImportPreviewLine) =
+            line.state == MatchingState.NEW || (line.state == MatchingState.SIMILAR && line.row.lineNumber in allowed)
+        fun asked(number: Int) = current.questionByLine[number] == AskKind.IS_SALARY
+        // §75-2 (مراجعة S1): الرد اللي جه مع التأكيد بيتحفظ **قبل** الحفظ — أثر الراتب بيقراه وهو بيسجّل
+        if (!clearOnly && salaryAnswer != null) {
+            val senders = current.parts.flatMap { it.preview.lines }.filter(::wanted).map { it.row.lineNumber }.filter(::asked)
+                .map { current.senderByLine.getValue(it) }.toSet()
+            for (sender in senders) deps.learning.setSalaryAnswer(sender, salaryAnswer)
         }
-        val lines = if (recorded > 0) selection else emptyList()
-        val duplicates = current.preview.lines.filter { it.state == MatchingState.DUPLICATE }.map { it.row.lineNumber }
-        val done = lines + duplicates
-        // بعد الحفظ بس: لو الشيل وقع، الرسالة بتفضل وبتطلع «مكررة» المرة الجاية (مش بتتسجل تاني)
-        deps.inbox.imported(done.map { InboxLine(current.messageByLine.getValue(it), it) }, done)
+        var recorded = 0
+        var duplicates = 0
+        val batches = mutableListOf<Id>()
+        for (part in current.parts) {
+            val selection = part.preview.lines.filter(::wanted).map { it.row.lineNumber }
+                .filter { !clearOnly || current.shapeByLine[it]?.clear == true }
+                .filter { salaryAnswer != null || !asked(it) }
+            var partRecorded = 0
+            if (selection.isNotEmpty()) {
+                // عقد C0: التسجيل التلقائي مش تسجيل المالك (الآثار اللي بتفرّق بينهم بتبص على `byOwner`)
+                val batch = deps.importer.commit(part.request.copy(byOwner = !clearOnly), part.preview, selection, categories)
+                if (part.preview.previousBatch?.id != batch.id) {
+                    partRecorded = selection.size
+                    batches += batch.id
+                }
+            }
+            val lines = if (partRecorded > 0) selection else emptyList()
+            // §77-A: المالك سجّل ⇒ أشكال اللي **اتسجل فعلًا** بتتعلّم (قبل الشيل — لو الشيل وقع، التعلّم ما بيضيعش)
+            if (!clearOnly) learnRecorded(current, part, lines)
+            val partDuplicates = part.preview.lines.filter { it.state == MatchingState.DUPLICATE }.map { it.row.lineNumber }
+            val done = lines + partDuplicates
+            // بعد الحفظ بس: لو الشيل وقع، الرسالة بتفضل وبتطلع «مكررة» المرة الجاية (مش بتتسجل تاني — حتى لو راحت محفظة تانية)
+            deps.inbox.imported(done.map { InboxLine(current.messageByLine.getValue(it), it) }, done)
+            recorded += partRecorded
+            duplicates += partDuplicates.size
+        }
         session = null
-        return SmsRecordOutcome(recorded, duplicates.size, batchId)
+        return SmsRecordOutcome(recorded, duplicates, batches)
+    }
+
+    /** الشكل الواضح بس (الكلمات العامة مالهاش بصمة — اختيار Claude §77-A)، لكل مرسل. */
+    private suspend fun learnRecorded(current: SmsSession, part: SmsPart, lines: List<Int>) {
+        val bySender = LinkedHashMap<String, MutableSet<String>>()
+        for (number in lines) {
+            val row = part.request.smsRows[number] ?: continue
+            val key = row.learnKey?.takeIf { row.shape.clear } ?: continue
+            bySender.getOrPut(current.senderByLine.getValue(number)) { mutableSetOf() } += key
+        }
+        for ((sender, keys) in bySender) deps.learning.learn(sender, keys)
     }
 
     /** «أيوه افتكره»: تصنيف المحل بيتثبت على الجهاز، ويترفع اقتراح للقايمة المشتركة لو مصروف. */

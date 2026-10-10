@@ -28,6 +28,11 @@ class MemorySourceRecordRepository(seed: List<SourceRecord> = emptyList()) : Sou
         return items.values.filter { it.transactionId != null && it.transactionId in wanted }
     }
 
+    override suspend fun listBySourceReferences(references: List<String>): List<SourceRecord> {
+        val wanted = references.toSet()
+        return items.values.filter { it.sourceReference != null && it.sourceReference in wanted }
+    }
+
     override suspend fun saveMany(records: List<SourceRecord>) {
         for (r in records) items[r.id] = r
     }

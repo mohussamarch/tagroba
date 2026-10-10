@@ -9,7 +9,7 @@ package app.masroufy.core
  */
 internal val MSA_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_LOCK_SMS_CONFIRM to "رسائل من البنك تنتظر تأكيدك",
-    TextKey.ALERT_WHY_SMS_CONFIRM to "رسالة من البنك لم تُفهم، أو شكلها غير معروف، أو تشبه عملية مسجلة، فلم تُسجَّل تلقائيًا",
+    TextKey.ALERT_WHY_SMS_CONFIRM to "رسالة من البنك لم تُفهم، أو شكلها جديد لم تؤكده بعد أو غير معروف، أو تشبه عملية مسجلة، فلم تُسجَّل تلقائيًا",
     TextKey.ALERT_SMS_CONFIRM_TITLE to "رسائل بنكية تنتظر تأكيدك: {0}",
     TextKey.ALERT_SMS_CONFIRM_BODY to "افتح رسائل البنك لتأكيدها أو حذفها",
     TextKey.ALERT_CHANNEL_NAME to "تنبيهات مصروفي",
@@ -30,7 +30,7 @@ internal val MSA_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
 
 internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_LOCK_SMS_CONFIRM to "فيه رسايل من البنك مستنية تأكيدك",
-    TextKey.ALERT_WHY_SMS_CONFIRM to "رسالة من البنك ما اتفهمتش، أو شكلها مش معروف، أو شبه عملية متسجلة، فما اتسجلتش لوحدها",
+    TextKey.ALERT_WHY_SMS_CONFIRM to "رسالة من البنك ما اتفهمتش، أو شكلها جديد لسه ما أكدتهوش أو مش معروف، أو شبه عملية متسجلة، فما اتسجلتش لوحدها",
     TextKey.ALERT_SMS_CONFIRM_TITLE to "رسايل بنك مستنية تأكيدك: {0}",
     TextKey.ALERT_SMS_CONFIRM_BODY to "افتح رسايل البنك وأكّدها أو شيلها",
     TextKey.ALERT_CHANNEL_NAME to "تنبيهات مصروفي",
@@ -51,7 +51,7 @@ internal val EGYPTIAN_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
 
 internal val ENGLISH_SMS_AUTO_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.ALERT_LOCK_SMS_CONFIRM to "Bank messages are waiting for your confirmation",
-    TextKey.ALERT_WHY_SMS_CONFIRM to "A bank message wasn't understood, has a layout the app doesn't know, or looks like a recorded transaction, so it wasn't recorded automatically",
+    TextKey.ALERT_WHY_SMS_CONFIRM to "A bank message wasn't understood, has a new layout you haven't confirmed yet or one the app doesn't know, or looks like a recorded transaction, so it wasn't recorded automatically",
     TextKey.ALERT_SMS_CONFIRM_TITLE to "Bank messages waiting for you: {0}",
     TextKey.ALERT_SMS_CONFIRM_BODY to "Open bank messages to confirm or remove them",
     TextKey.ALERT_CHANNEL_NAME to "Masroufy alerts",
