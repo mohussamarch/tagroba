@@ -4,18 +4,14 @@ import app.masroufy.core.UiKey
 import app.masroufy.core.CATEGORY_GROUPS
 import app.masroufy.core.Category
 import app.masroufy.core.ClassificationRule
-import app.masroufy.core.IsoDate
 import app.masroufy.core.Merchant
 import app.masroufy.core.RuleMatchMode
 import app.masroufy.core.TextKey
 import app.masroufy.core.arabicCompare
-import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.factsFromProfile
 import app.masroufy.core.normalizeText
-import app.masroufy.core.parseIsoDate
 import app.masroufy.core.presentCategories
 import app.masroufy.core.sentenceNumber
-import app.masroufy.core.toDayNumber
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.CategorizationReport
 import app.masroufy.usecase.MerchantRow
@@ -47,10 +43,10 @@ data class PickGroupUi(val key: String?, val name: String, val categories: List<
 
 data class RulesUi(val merchants: List<MerchantRowUi>, val rules: List<RuleRowUi>, val picker: List<PickGroupUi>)
 
-/** [keep] = تجار اتنسى تصنيفهم في الجلسة دي — بيفضلوا ظاهرين «بلا تصنيف ثابت» بدل ما يختفوا فجأة. */
-suspend fun loadRules(deps: BudgetsDeps, keep: Set<String> = emptySet()): RulesUi {
+/** **كل التجار** (رد المالك OVERRIDES §82-18 — مش اللي ليهم تصنيف ثابت بس): اللي من غير تصنيف بيظهر «بلا تصنيف ثابت» وتقدر تحدده له. */
+suspend fun loadRules(deps: BudgetsDeps): RulesUi {
     val categories = presentCategories(deps.categories.list(), factsFromProfile(deps.profile.load()))
-    return mapRules(deps.rules.listRules(), deps.rules.listMerchants(), categories, keep)
+    return mapRules(deps.rules.listRules(), deps.rules.listMerchants(), categories)
 }
 
 fun modeLabel(mode: RuleMatchMode): String = t(
@@ -61,7 +57,7 @@ fun modeLabel(mode: RuleMatchMode): String = t(
     },
 )
 
-fun mapRules(rules: List<RuleRow>, merchants: List<MerchantRow>, categories: List<Category>, keep: Set<String> = emptySet()): RulesUi {
+fun mapRules(rules: List<RuleRow>, merchants: List<MerchantRow>, categories: List<Category>): RulesUi {
     val byId = categories.associateBy { it.id }
     val ruleRows = rules.mapIndexed { i, row ->
         val r = row.rule
@@ -76,7 +72,8 @@ fun mapRules(rules: List<RuleRow>, merchants: List<MerchantRow>, categories: Lis
             rule = r,
         )
     }
-    val merchantRows = merchants.filter { it.merchant.verifiedCategoryId != null || it.merchant.id in keep }.map { row ->
+    // اللي ليهم تصنيف ثابت الأول (بالاسم)، وبعدهم الباقيين (بالاسم)
+    val merchantRows = merchants.sortedBy { it.merchant.verifiedCategoryId == null }.map { row ->
         val m = row.merchant
         val aliases = m.aliases.orEmpty()
         MerchantRowUi(
@@ -164,7 +161,3 @@ fun opsLabel(n: Int): String = when {
     else -> t(UiKey.RULES_OPS_MANY, sentenceNumber(n))
 }
 
-/** مدى «السابق»: آخر 1830 يوم (أقصى مدى بتقبله `ReviewHistory` — خمس سنين) لحد النهارده. */
-const val HISTORY_DAYS = 1830
-
-fun historyRange(today: IsoDate): Pair<IsoDate, IsoDate> = dayNumberToIso(toDayNumber(parseIsoDate(today)) - HISTORY_DAYS) to today

@@ -62,8 +62,7 @@ fun RulesScreen() {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var reload by remember { mutableIntStateOf(0) }
-    var keep by remember { mutableStateOf(emptySet<String>()) }
-    val state = rememberLoad(space, reload) { loadRules(deps, keep) }
+    val state = rememberLoad(space, reload) { loadRules(deps) }
     var sheet by remember { mutableStateOf<RulesSheet?>(null) }
     val apply = remember(space) { ApplyHolder() }
     val ui = (state as? Load.Ready)?.value
@@ -100,10 +99,9 @@ fun RulesScreen() {
             }
         }
     }
-    RulesSheetHost(sheet, ui, deps, onDismiss = { sheet = null }) { message, forgotId ->
+    RulesSheetHost(sheet, ui, deps, onDismiss = { sheet = null }) { message, _ ->
         sheet = null
         toaster.show(message)
-        if (forgotId != null) keep = keep + forgotId
         apply.reset()
         reload++
     }

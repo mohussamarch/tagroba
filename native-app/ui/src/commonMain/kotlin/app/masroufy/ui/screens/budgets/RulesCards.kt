@@ -52,7 +52,7 @@ class ApplyHolder {
 }
 
 /**
- * «طبّق القواعد على السابق»: «اعرض ما سيتغير» ⇒ `ReviewHistory.preview` (آخر خمس سنين) ⇒ عدد العمليات لكل تصنيف + المؤكد بإيدك + اللي
+ * «طبّق القواعد على السابق»: «اعرض ما سيتغير» ⇒ `ReviewHistory.previewAll` (**كل السجل** — رد المالك §82-16) ⇒ عدد العمليات لكل تصنيف + المؤكد بإيدك + اللي
  * مالهاش قاعدة ⇒ «طبّق (N)» ⇒ `applyCategories` (بيرفض لو الخطة اتغيرت من ساعة المعاينة). المؤكد عمره ما بيتلمس.
  */
 @Composable
@@ -89,9 +89,8 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
                     {
                         holder.phase = ApplyPhase.LOADING
                         scope.launch {
-                            val (from, to) = historyRange(today)
                             var result: HistoryPreview? = null
-                            val error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { result = deps.history.preview(from, to) }
+                            val error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { result = deps.history.previewAll(today) }
                             val preview = result
                             if (error != null || preview == null) {
                                 toaster.show(error ?: t(UiKey.BUDGETS_ERROR_TITLE))

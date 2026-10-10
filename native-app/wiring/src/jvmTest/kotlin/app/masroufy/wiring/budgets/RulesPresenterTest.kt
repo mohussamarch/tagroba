@@ -9,7 +9,6 @@ import app.masroufy.core.uiText
 import app.masroufy.ui.screens.budgets.RuleDraft
 import app.masroufy.ui.screens.budgets.RulesSheet
 import app.masroufy.ui.screens.budgets.applyPreview
-import app.masroufy.ui.screens.budgets.historyRange
 import app.masroufy.ui.screens.budgets.loadRules
 import app.masroufy.ui.screens.budgets.opsLabel
 import app.masroufy.ui.screens.budgets.planPriorities
@@ -55,7 +54,8 @@ class RulesPresenterTest {
         assertEquals(FOOD.lightColor, ui.rules[1].categoryHex)
     }
 
-    @Test fun onlyRememberedMerchantsShowAndForgottenOnesStayForTheSession() = runBlocking<Unit> {
+    /** **كل التجار** (رد المالك OVERRIDES §82-18): اللي ليه تصنيف ثابت واللي من غيره — واللي اتنسى تصنيفه بيفضل في القايمة. */
+    @Test fun everyMerchantShowsWithOrWithoutAFixedCategory() = runBlocking<Unit> {
         val w = world()
         w.repos.merchants.saveMany(
             listOf(
@@ -64,14 +64,15 @@ class RulesPresenterTest {
             ),
         )
         val ui = loadRules(w.deps)
-        val m = ui.merchants.single()
-        assertEquals("m-1", m.id)
+        assertEquals(listOf("m-1", "m-2"), ui.merchants.map { it.id })
+        val m = ui.merchants.first()
         assertEquals(FOOD.name, m.categoryName)
         assertEquals(uiText(UiKey.RULES_ALIASES, "1"), m.meta)
+        assertNull(ui.merchants[1].categoryName, "«بلا تصنيف ثابت — تُطبَّق القواعد»")
         w.deps.rules.setMerchantCategory("m-1", null)
-        val kept = loadRules(w.deps, keep = setOf("m-1")).merchants.single()
-        assertNull(kept.categoryName, "«بلا تصنيف ثابت — تُطبَّق القواعد»")
-        assertTrue(loadRules(w.deps).merchants.isEmpty())
+        val after = loadRules(w.deps).merchants
+        assertEquals(2, after.size, "اللي اتنسى تصنيفه ما بيختفيش")
+        assertTrue(after.all { it.categoryName == null })
     }
 
     @Test fun pickerListsVisibleCategoriesByGroupWithSubsAfterTheirParent() = runBlocking<Unit> {
@@ -108,10 +109,8 @@ class RulesPresenterTest {
     @Test fun applyToPreviousShowsCountsAndLeavesConfirmedAlone() = runBlocking<Unit> {
         val w = world()
         w.deps.rules.addRule("مطعم", RuleMatchMode.CONTAINS, FOOD.id)
-        val (from, to) = historyRange(TODAY)
-        assertEquals(TODAY, to)
-        assertEquals("2021-10-05", from, "آخر 1830 يوم")
-        val preview = w.deps.history.preview(from, to)
+        // **كل السجل** (رد المالك §82-16) — مش آخر 5 سنين
+        val preview = w.deps.history.previewAll(TODAY)
         val ui = applyPreview(preview.categoryPlan, w.deps.categories.list())
         assertEquals(1, ui.changed)
         assertEquals(listOf(FOOD.name, uiText(UiKey.RULES_APPLY_CONFIRMED), uiText(UiKey.RULES_APPLY_UNMATCHED)), ui.rows.map { it.label })
@@ -121,6 +120,17 @@ class RulesPresenterTest {
         assertEquals(uiText(UiKey.RULES_OPS_ONE), opsLabel(1))
         assertEquals(uiText(UiKey.RULES_OPS_FEW, "3"), opsLabel(3))
         assertEquals(uiText(UiKey.RULES_OPS_MANY, "12"), opsLabel(12))
+    }
+
+    /** «طبّق القواعد على السابق» = **كل حاجة** (رد المالك OVERRIDES §82-16) — عملية من 11 سنة بتدخل، مش آخر 5 سنين بس. */
+    @Test fun applyToPreviousCoversTheWholeHistory() = runBlocking<Unit> {
+        val old = spend("2015-03-01", 3_000, null, merchant = "مطعم قديم وهمي").copy(categoryConfirmed = false)
+        val w = BudgetsWorld(transactions = listOf(old, spend("2026-09-30", 4_000, null, merchant = "مطعم البيت الوهمي").copy(categoryConfirmed = false)))
+        w.deps.rules.addRule("مطعم", RuleMatchMode.CONTAINS, FOOD.id)
+        val preview = w.deps.history.previewAll(TODAY)
+        assertEquals(2, applyPreview(preview.categoryPlan, w.deps.categories.list()).changed)
+        assertEquals(listOf("2015-03-01", "2026-09-30"), preview.rows.map { it.occurredAt }, "الأقدم الأول ومن غير تكرار")
+        assertEquals(2, w.deps.history.applyCategories(preview.rows.map { it.id }, preview.categoryPlan).changed.size)
     }
 
     private fun rule(id: String, priority: Int) = ClassificationRule(id, priority, id, RuleMatchMode.CONTAINS, FOOD.id, enabled = true)
