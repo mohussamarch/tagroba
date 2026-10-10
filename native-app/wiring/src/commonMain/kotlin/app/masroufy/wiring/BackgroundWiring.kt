@@ -30,6 +30,7 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
     effects = smsRecordEffects(
         spaceId, r.wallets, inbox, r.categories,
         remember = RememberChosenCategoryEffect(MerchantMemory(r.merchants, env.ids)), subscriptions = r.recurring,
+        txns = r.transactions, sources = r.sourceRecords,
     ),
 )
 

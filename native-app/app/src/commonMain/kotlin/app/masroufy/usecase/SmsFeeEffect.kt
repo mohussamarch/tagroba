@@ -17,6 +17,8 @@ import app.masroufy.core.hashContent
 import app.masroufy.core.subtractMoney
 import app.masroufy.core.uiText
 import app.masroufy.port.CategoryRepository
+import app.masroufy.port.SourceRecordRepository
+import app.masroufy.port.TransactionRepository
 
 /**
  * الرسوم = **عملية لوحدها «رسوم بنكية»** جنب العملية الأصلية (§77-B — قرار المالك 2026-10-09 ✓): الرسوم المكتوبة في رسالة البنك
@@ -35,11 +37,20 @@ import app.masroufy.port.CategoryRepository
  * - رسالة الرسوم نفسها ([SmsKind.FEE] — «خصم رسوم» · «Debit fees») ⇒ عمليتها نفسها بتبقى «رسوم» مؤكد. التصنيف: اللي المالك اختاره
  *   (دلوقتي، أو **للمحل ده قبل كده** — §75-16 · §36) بيفضل زي ما الشاشة عرضته؛ «رسوم بنكية» بس لو مفيش تصنيف من المالك.
  */
-class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
+class SmsFeeEffect(
+    private val categories: CategoryRepository,
+    /**
+     * §82-10 «رسالة رسوم لوحدها + نفس الرسوم في التحويل = رسوم واحدة»: عمليات وسجلات المصدر عشان رسالة الرسوم اللي **اتسجلت قبل** التحويل
+     * تتلاقى ([SmsFeeTwins]). null (اختبارات قديمة) ⇒ اللي في نفس الدفعة بس.
+     */
+    private val txns: TransactionRepository? = null,
+    private val sources: SourceRecordRepository? = null,
+) : RecordEffect {
     override suspend fun prepare(ctx: RecordContext) {
         val feeKind = ctx.lines.filter { it.sms?.kind == SmsKind.FEE && it.transaction.observedDirection == Direction.OUT }
         val withFee = ctx.lines.mapNotNull { line -> line.sms?.let(::smsFeeToRecord)?.let { line to it } }
         if (feeKind.isEmpty() && withFee.isEmpty()) return
+        val twins = SmsFeeTwins(txns, sources, feeKind)
         // «رسوم بنكية» بيتعمل بس لو فيه عملية هتتسجل تحته
         var bankFees: Id? = null
         val bankFeeCategory: suspend () -> Id = { bankFees ?: bankFeeCategoryId().also { bankFees = it } }
@@ -56,7 +67,7 @@ class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
                 )
             }
         }
-        for ((line, fee) in withFee) split(ctx, line, fee, bankFeeCategory)
+        for ((line, fee) in withFee) split(ctx, line, fee, bankFeeCategory, twins)
     }
 
     /** «رسوم بنكية» (بيتعمل لو مش موجود — اللي المالك غيّره ما يتكتبش فوقه). */
@@ -67,7 +78,7 @@ class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
         return created.id
     }
 
-    private suspend fun split(ctx: RecordContext, line: RecordedLine, fee: SmsFee, category: suspend () -> Id) {
+    private suspend fun split(ctx: RecordContext, line: RecordedLine, fee: SmsFee, category: suspend () -> Id, twins: SmsFeeTwins) {
         val main = line.transaction
         val reference = line.line.row.reference ?: return
         if (fee.includedInAmount) {
@@ -75,6 +86,8 @@ class SmsFeeEffect(private val categories: CategoryRepository) : RecordEffect {
             if (main.amountMinor != line.line.row.amountMinor) return
             line.transaction = main.copy(amountMinor = subtractMoney(main.amountMinor, fee.amountMinor), originalAmountMinor = main.amountMinor, updatedAt = ctx.nowIso)
         }
+        // §82-10: رسالة رسوم لوحدها بنفس الرسوم (نفس المحفظة والعملة واليوم) اتسجلت ⇒ **هي** رسوم التحويل ده: مفيش عملية رسوم تانية
+        twins.claim(ctx, main, fee.amountMinor, reference + FEE_REFERENCE_SUFFIX, line)?.let { return }
         val txn = Transaction(
             id = ctx.ids.next("txn"),
             occurredAt = main.occurredAt,

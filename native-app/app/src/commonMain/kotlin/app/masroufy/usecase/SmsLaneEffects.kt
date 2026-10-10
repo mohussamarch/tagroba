@@ -3,6 +3,8 @@ package app.masroufy.usecase
 import app.masroufy.port.CategoryRepository
 import app.masroufy.port.RecurringRepository
 import app.masroufy.port.SmsInboxPort
+import app.masroufy.port.SourceRecordRepository
+import app.masroufy.port.TransactionRepository
 import app.masroufy.port.WalletRepository
 
 /**
@@ -23,12 +25,15 @@ fun smsRecordEffects(
     returns: List<RecordEffect> = emptyList(),
     remember: RememberChosenCategoryEffect? = null,
     subscriptions: RecurringRepository? = null,
+    /** §82-10: رسالة الرسوم اللي اتسجلت قبل التحويل بتتلاقى (`SmsFeeTwins`) — من غيرهم الدفعة نفسها بس. */
+    txns: TransactionRepository? = null,
+    sources: SourceRecordRepository? = null,
 ): List<RecordEffect> = buildList {
     add(OwnAccountByLast4Effect(wallets))
     add(SmsSalaryEffect(inbox, spaceId))
     add(CashWithdrawalEffect(wallets))
     addAll(returns)
-    add(SmsFeeEffect(categories))
+    add(SmsFeeEffect(categories, txns, sources))
     add(RefundConfirmEffect())
     remember?.let(::add)
     subscriptions?.let { add(SubscriptionChargeEffect(it)) }
