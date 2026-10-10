@@ -39,6 +39,7 @@ import app.masroufy.ui.overlay.OverlayHost
 import app.masroufy.ui.overlay.OverlayLayer
 import app.masroufy.ui.screens.home.Dismissals
 import app.masroufy.ui.screens.home.without
+import app.masroufy.ui.screens.onboarding.OnboardingRoute
 import app.masroufy.ui.shell.AddOperationSheet
 import app.masroufy.ui.shell.BottomBars
 import app.masroufy.ui.shell.LocalToaster
@@ -90,6 +91,10 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     var bell by remember(deps) { mutableStateOf<BellState?>(null) }
     // الجرس بيتقري تاني كمان بعد أي كتابة (عملية جديدة ممكن تغيّر الأسئلة ونقط التبويبات)
     LaunchedEffect(deps, bellTick, shell.changes.version) { bell = runCatching { deps.shell.bell() }.getOrNull() }
+    // حساب جديد خالص (مفيش ولا محفظة والأسئلة ما خلصتش) ⇒ أسئلة البداية لوحدها بدل رئيسية فاضية. حساب فيه بيانات ما بيتفتحلوش (`shouldStart`)
+    LaunchedEffect(deps) {
+        if (runCatching { deps.onboarding.onboard.shouldStart() }.getOrDefault(false) && nav.stack.none { it.route == OnboardingRoute }) nav.push(OnboardingRoute)
+    }
     // «×» على إشعار بيشيله من الجرس ومن عدّ «جديد» ومن نقطة تبويبه (قرار المالك 2026-10-09) — المسح للجلسة دي (`Dismissals`)
     // لحد ما حفظه مع الحساب يتوصل من فرع `assistant-engine`
     val shownBell = bell?.without(Dismissals.of(deps.space.id).goneKeys)

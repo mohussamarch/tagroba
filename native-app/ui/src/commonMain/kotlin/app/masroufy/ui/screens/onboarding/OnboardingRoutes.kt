@@ -12,8 +12,8 @@ import app.masroufy.usecase.OnboardAccount
  * **الدخول نفسه** (قبل ما الحساب يجهز) مش هنا: `screens/auth/` (`SignInFlow` — الترحيب · جوجل · الإيميل · نسيت كلمة المرور) —
  * وكروت أول تشغيل بعد الدخول (الشكل · البلد · يوم الراتب · مصدر العمليات · جاهز) هنا: [OnboardingRoute].
  *
- * ⚠️ **للدمج:** مين يفتح [OnboardingRoute]؟ الرئيسية (أو الهيكل) لما `needsOnboarding()` = true — ده مش في المنطقة دي (ملف الرئيسية
- * والهيكل بتوع مناطق تانية)، فمكتوب في HANDOVER «missingLogic». `ProfileQuestionRoute` بتسجّله منطقة الرئيسية (فرع `screens-home`) —
+ * مين يفتح [OnboardingRoute]؟ **الهيكل** (`AppShell`) لما `OnboardAccount.shouldStart()` = true — حساب جديد خالص بس (الأسئلة ما خلصتش
+ * ومفيش ولا محفظة في البلد الأساسية)؛ حساب فيه بيانات ما بيتفتحلوش. `ProfileQuestionRoute` بتسجّله منطقة الرئيسية (فرع `screens-home`) —
  * **ما يتسجلش هنا** (التسجيل مرتين بيوقّع التطبيق وقت التشغيل).
  */
 interface OnboardingDeps {
