@@ -34,7 +34,7 @@ class SmsRoutingReviewTest {
         w.auto().chooseWallet("sa", "TESTBANK", a.id)
         w.receive(sms("toB", toB), sms("cafe", CAFE))
         val screen = space.screen(w.inbox)
-        val ready = screen.load(targetOf(a, space.wallets.listAll())).ready.associateBy { it.messageId }
+        val ready = screen.load(targetOf(a, space.wallets.listAll(), movesCash = false)).ready.associateBy { it.messageId }
         assertEquals(b.id to TextKey.SMS_WAIT_NEW_SHAPE, ready.getValue("toB").let { it.walletId to it.waitReason }, "مش «حساب تاني»")
         assertEquals(a.id, ready.getValue("cafe").walletId)
         assertEquals(2, screen.recordAll(emptyMap(), emptyList()))
@@ -67,7 +67,7 @@ class SmsRoutingReviewTest {
         val body = buy("200.00", "TEST GROCER", "Account: **2222\n")
         w.receive(sms("m1", body))
         val screen = space.screen(w.inbox)
-        screen.load(targetOf(a, space.wallets.listAll()))
+        screen.load(targetOf(a, space.wallets.listAll(), movesCash = false))
         w.inbox.failAcks = 1
         assertFailsWith<IllegalStateException> { screen.recordAll(emptyMap(), emptyList()) }
         assertEquals(a.id, space.all().single().walletId, "الأرقام 2222 مش لمحفظة لسه ⇒ محفظة الشاشة")
@@ -98,7 +98,7 @@ class SmsRoutingReviewTest {
         assertEquals(mapOf(7_700L to b.id, 8_800L to c.id), where, "ب مش مربوطة ببنك تاني ⇒ حسابه · من غير أرقام ⇒ محفظة البنك")
         // رقم كارت · حساب مربوط ببنك تاني ⇒ محفظة البنك نفسه وبتستنى «حساب تاني» (ما بتتسجلش في أي حتة لوحدها)
         assertEquals(listOf("card", "mappedElsewhere"), r.waiting)
-        val target = targetOf(c, space.wallets.listAll())
+        val target = targetOf(c, space.wallets.listAll(), movesCash = false)
         val ready = space.screen(w.inbox).load(target).ready.associateBy { it.messageId }
         for (id in listOf("card", "mappedElsewhere")) {
             assertEquals(c.id to TextKey.SMS_WAIT_OTHER_ACCOUNT, ready.getValue(id).let { it.walletId to it.waitReason }, id)

@@ -83,7 +83,8 @@ internal class S2Desk(
         runBlocking { extraCategories.forEach { space.categories.save(it) } }
     }
 
-    fun receive(id: String, body: String, at: String = S2_MARCH) = inbox.receive(QueuedSms(id, "TESTBANK", at, body))
+    /** S1 (§77-A): المالك أكّد قبل كده رسالة بنفس الشكل — اختبارات S2 عن الرسوم والكاش مش عن وضع التعلّم. */
+    fun receive(id: String, body: String, at: String = S2_MARCH) = QueuedSms(id, "TESTBANK", at, body).let { inbox.receive(it); inbox.preLearn(space.spaceId, parse, it) }
 
     /** الهدف زي ما `AutoRecordSms.targetFor` بيبنيه: نفس قاعدة `cashWalletFor`، ومن غير الأثر مفيش محفظة كاش. */
     suspend fun target(wallet: Wallet = BANK) =
