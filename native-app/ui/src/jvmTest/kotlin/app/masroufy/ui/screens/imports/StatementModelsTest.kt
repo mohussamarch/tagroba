@@ -79,4 +79,20 @@ class StatementModelsTest {
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertEquals("العمود 2", columnWord(1))
     }
+
+    /** رد المالك L3: الرصيد مش متسلسل ⇒ تنبيه بس (السطور بتتقال) · مش أرقام ⇒ بيوقف · من غير عمود رصيد ⇒ ولا حاجة. */
+    @Test fun balanceColumnWarnsOrBlocks() {
+        val roles = listOf(ColumnRole.DATE, ColumnRole.DESC, ColumnRole.DEBIT, ColumnRole.CREDIT, ColumnRole.BALANCE)
+        val broken = listOf(listOf("2026-10-01", "بقالة", "", "", "500.00"), listOf("2026-10-02", "قهوة", "20", "", "300.00"))
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        val warn = balanceNote(broken, roles, Currency.SAR)!!
+        assertEquals(BalanceTone.WARN, warn.tone)
+        assertTrue(warn.text.startsWith("تنبيه: الرصيد مش متسلسل (السطور 2)"), warn.text)
+        assertTrue(!warn.blocks, "التنبيه ما بيوقفش الاستيراد")
+        val words = listOf(listOf("2026-10-01", "بقالة", "", "", "رصيد"))
+        assertTrue(balanceNote(words, roles, Currency.SAR)!!.blocks)
+        val ok = listOf(listOf("2026-10-01", "بقالة", "", "", "500.00"), listOf("2026-10-02", "قهوة", "20", "", "480.00"))
+        assertEquals(BalanceTone.OK, balanceNote(ok, roles, Currency.SAR)!!.tone)
+        assertNull(balanceNote(ok, roles.map { if (it == ColumnRole.BALANCE) ColumnRole.SKIP else it }, Currency.SAR))
+    }
 }
