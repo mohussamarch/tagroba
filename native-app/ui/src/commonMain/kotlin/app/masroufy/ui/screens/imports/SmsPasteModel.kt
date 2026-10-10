@@ -30,8 +30,14 @@ data class SmsReadUi(val messages: Int, val rows: List<PastedRowUi>, val skipped
     val selected: List<Int> get() = rows.filter { it.state == PastedState.NEW }.map { it.lineNumber }
 }
 
-fun smsReadUi(batch: SmsBatch, preview: ImportPreview?): SmsReadUi {
-    val states = preview?.lines?.associate { it.row.lineNumber to it.state }
+fun smsReadUi(batch: SmsBatch, preview: ImportPreview?): SmsReadUi = smsReadUi(batch, listOfNotNull(preview))
+
+/**
+ * §82-15: «اقرأ فترة» بيتعاين **لكل محفظة لوحدها** (كل بنك على محفظته — `ReadBankSms.byWallet`) — حالة كل سطر من معاينة محفظته (أرقام
+ * السطور واحدة في الدفعة كلها). السطر اللي محفظته لسه مش معروفة ⇒ «لسه» (`PENDING` — ما بيتسجلش).
+ */
+fun smsReadUi(batch: SmsBatch, previews: List<ImportPreview>): SmsReadUi {
+    val states = previews.flatMap { it.lines }.associate { it.row.lineNumber to it.state }.takeIf { previews.isNotEmpty() }
     val rows = batch.rows.map { r ->
         val state = when (states?.get(r.lineNumber)) {
             null -> PastedState.PENDING

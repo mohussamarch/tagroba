@@ -128,7 +128,8 @@ class SmsFlowGoldenTest {
                         override val available = false
                         override suspend fun read(from: String, to: String, senders: List<String>) = BankSmsRead(emptyList(), false)
                     }
-                    batchJson(ReadBankSms(port, ::parseBankSms).paste(input.field("body").str))
+                    // ملف المرجع اتعمل من غير وقت وصول (التطبيق القديم) — الشاشة دلوقتي بتطلب التاريخ (§82-14، `ReadBankSmsPasteTest`)
+                    batchJson(ReadBankSms(port, ::parseBankSms).pasteWithoutDate(input.field("body").str))
                 } else {
                     val r = input.field("request")
                     val messages = input.field("messages").jsonArray.map { BankSmsMessage(it.field("sender").str, it.field("receivedAt").str, it.field("body").str) }

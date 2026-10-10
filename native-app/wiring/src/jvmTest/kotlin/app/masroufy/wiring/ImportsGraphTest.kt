@@ -53,12 +53,12 @@ class ImportsGraphTest {
         val reader = assertNotNull(g.readSms, "السعودية ليها قارئ رسايل")
         assertFalse(reader.available, "قراية فترة محتاجة الجوال")
         // نفس الرسايل المخترعة في `golden/smsFlow.json`: تاريخ كامل ⇒ بتتقري
-        val batch = reader.paste("شراء 25 SAR عند محل تجريبي بتاريخ 2026-09-10")
+        val batch = reader.paste("شراء 25 SAR عند محل تجريبي بتاريخ 2026-09-10", "2026-09-10")
         assertEquals(listOf(2500L), batch.rows.map { it.amountMinor })
-        // ⚠️ ناقص في المنطق: الملصوق مالوش «تاريخ وصول» ⇒ شكل البنك بالتاريخ القصير (26/9/18) بيتعدّى بسببه (`ReadBankSms.paste`)
-        val short = reader.paste("شراء PoS\nعبر1111;مدى\nبـSR 24\nلـTEST STORE\n26/9/18 09:35")
-        assertTrue(short.rows.isEmpty())
-        assertEquals(1, short.skipped.size, "بيتعرض في «تجاوزناها» بسببه، مش بيضيع في صمت")
+        // §82-14: الملصوق بقى ليه تاريخ (المالك بيكتبه) ⇒ شكل البنك بالتاريخ القصير (26/9/18) بيتقري بيه — كان بيتعدّى «التاريخ مش واضح»
+        val short = reader.paste("شراء PoS\nعبر1111;مدى\nبـSR 24\nلـTEST STORE\n26/9/18 09:35", "2026-09-18")
+        assertEquals(listOf("2026-09-18" to 2400L), short.rows.map { it.date to it.amountMinor })
+        assertTrue(short.skipped.isEmpty())
         assertEquals(SmsStatus.UNAVAILABLE, bankSmsUi(null, emptyList(), emptySet()).status)
     }
 
