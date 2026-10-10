@@ -14,6 +14,8 @@ data class Wallet(
     val openingAt: IsoDate,
     /** آخر أربعة أرقام بس (CLAUDE.md #11). */
     val accountLast4: String? = null,
+    /** البنك من دليل البنوك (`Bank.key` — «sa-al-rajhi-bank») لو اتختار من «اختار بنكك» (OVERRIDES §81). null = محفظة قديمة أو بنك مش في الدليل. */
+    val bankId: String? = null,
 )
 
 data class CashSummary(

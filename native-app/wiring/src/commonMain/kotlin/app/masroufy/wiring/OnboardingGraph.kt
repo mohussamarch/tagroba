@@ -6,6 +6,7 @@ import app.masroufy.seed.BundledSeeds
 import app.masroufy.ui.screens.onboarding.OnboardingDeps
 import app.masroufy.usecase.ManagePeople
 import app.masroufy.usecase.ManagePeopleDeps
+import app.masroufy.usecase.ManageWallets
 import app.masroufy.usecase.NewAccountSeeding
 import app.masroufy.usecase.OnboardAccount
 import app.masroufy.usecase.OnboardAccountDeps
@@ -29,6 +30,7 @@ class OnboardingGraph(c: AreaContext) : OnboardingDeps {
         val seeding = r.referenceSeed?.takeIf { c.space.id == DEFAULT_SPACE_ID }?.let {
             NewAccountSeeding(r.categories, r.rules, it, BundledSeeds, countryPack(c.space.countryCode))
         }
-        OnboardAccount(OnboardAccountDeps(c.shell.profile, people, r.wallets, c.env.clock, seeding))
+        val wallets = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency)
+        OnboardAccount(OnboardAccountDeps(c.shell.profile, people, r.wallets, c.env.clock, seeding, wallets))
     }
 }

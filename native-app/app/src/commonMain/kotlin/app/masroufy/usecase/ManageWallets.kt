@@ -8,6 +8,7 @@ import app.masroufy.core.MAX_SAFE_HALALAS
 import app.masroufy.core.TextKey
 import app.masroufy.core.UiKey
 import app.masroufy.core.Wallet
+import app.masroufy.core.bankByKey
 import app.masroufy.core.isValidIsoDate
 import app.masroufy.core.jsTrim
 import app.masroufy.core.normalizeDigits
@@ -17,8 +18,18 @@ import app.masroufy.port.Clock
 import app.masroufy.port.IdGenerator
 import app.masroufy.port.WalletRepository
 
-/** محفظة جديدة من «أضف محفظة»: [openingMinor] null = صفر من النهارده. [last4] آخر 4 أرقام بس (CLAUDE.md #11) — الكاش من غيرها. */
-data class AddWalletInput(val kind: String, val name: String, val last4: String?, val openingMinor: Halalas?, val openingAt: IsoDate?)
+/**
+ * محفظة جديدة من «أضف محفظة»: [openingMinor] null = صفر من النهارده. [last4] آخر 4 أرقام بس (CLAUDE.md #11) — الكاش من غيرها.
+ * [bankId] = البنك من «اختار بنكك» (`Bank.key` في دليل البنوك — OVERRIDES §81) أو null («بنك تاني» باسم بيكتبه).
+ */
+data class AddWalletInput(
+    val kind: String,
+    val name: String,
+    val last4: String?,
+    val openingMinor: Halalas?,
+    val openingAt: IsoDate?,
+    val bankId: String? = null,
+)
 
 class WalletError(message: String) : IllegalArgumentException(message)
 
@@ -34,6 +45,13 @@ class ManageWallets(
     private val currency: Currency,
 ) {
     suspend fun add(input: AddWalletInput): Wallet {
+        val wallet = prepare(input)
+        wallets.save(wallet)
+        return wallet
+    }
+
+    /** نفس التأكد بتاع [add] **من غير كتابة** — للي محتاج يتأكد من كل حاجة قبل أول كتابة (أسئلة البداية: «عندك حساب بنكي؟»). */
+    suspend fun prepare(input: AddWalletInput): Wallet {
         val name = jsTrim(input.name).replace(Regex("\\s+"), " ")
         if (name.isEmpty()) throw WalletError(uiText(UiKey.WADD_ERR_NAME))
         if (name.length > MAX_WALLET_NAME) throw WalletError(uiText(TextKey.PROFILE_NAME_TOO_LONG, MAX_WALLET_NAME.toString()))
@@ -45,9 +63,9 @@ class ManageWallets(
         val opening = input.openingMinor ?: 0L
         val at = if (input.openingMinor == null) today else input.openingAt ?: today
         checkOpening(opening, at, today)
-        val wallet = Wallet(ids.next("wallet"), name, currency, input.kind, opening, at, last4)
-        wallets.save(wallet)
-        return wallet
+        val bankId = if (input.kind == "cash") null else input.bankId?.takeIf { it.isNotBlank() }
+        if (bankId != null && bankByKey(bankId) == null) throw WalletError(uiText(UiKey.WADD_ERR_BANK))
+        return Wallet(ids.next("wallet"), name, currency, input.kind, opening, at, last4, bankId)
     }
 
     suspend fun setOpening(walletId: Id, openingMinor: Halalas, openingAt: IsoDate): Wallet {

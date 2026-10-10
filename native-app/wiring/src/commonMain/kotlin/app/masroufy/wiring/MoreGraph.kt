@@ -83,7 +83,7 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
         private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency)
 
         override suspend fun add(wallet: NewWallet): String? = attempt {
-            manage.add(AddWalletInput(wallet.kind, wallet.name, wallet.last4, wallet.openingMinor, wallet.openingAt))
+            manage.add(AddWalletInput(wallet.kind, wallet.name, wallet.last4, wallet.openingMinor, wallet.openingAt, wallet.bankId))
         }
 
         override suspend fun setOpening(walletId: Id, openingMinor: Halalas, openingAt: IsoDate): String? = attempt {

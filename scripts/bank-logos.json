@@ -1,0 +1,523 @@
+{
+ "EG:abk-egypt": {
+  "logo": "eg_abk_egypt",
+  "from": "EG-abk-egypt-logo.png",
+  "source": "https://www.abkegypt.com/-/media/Images/Navigation/Logos/ABK_LongLogo_Personal.png",
+  "size": "192x37"
+ },
+ "EG:adcb-egypt": {
+  "logo": "eg_adcb_egypt",
+  "from": "EG-adcb-egypt-icon.png",
+  "source": "https://www.adcb.com.eg/wp-content/uploads/2020/08/cropped-logo-180x180.png",
+  "size": "144x144"
+ },
+ "EG:adib-egypt": {
+  "logo": "eg_adib_egypt",
+  "from": "EG-adib-egypt-logo.png",
+  "source": "https://www.adib.eg/media/146118/logo.png",
+  "size": "192x76"
+ },
+ "EG:agricultural-bank-of-egypt": {
+  "logo": "eg_agricultural_bank_of_egypt",
+  "from": "EG-agricultural-bank-of-egypt-logo.png",
+  "source": "https://abe.com.eg/assets/img/logo.png",
+  "size": "168x58"
+ },
+ "EG:al-baraka-bank-egypt": {
+  "logo": "eg_al_baraka_bank_egypt",
+  "from": "EG-al-baraka-bank-egypt-logo.png",
+  "source": "https://www.albaraka.com.eg/media/33theevh/logo.png",
+  "size": "192x71"
+ },
+ "EG:alexbank": {
+  "logo": "eg_alexbank",
+  "from": "EG-alexbank-icon.png",
+  "source": "https://www.alexbank.com/.resources/intesaSanPaolo-templating-module/templates/webresources/CIB/images/favicon-96x96.png",
+  "size": "96x96"
+ },
+ "EG:arab-bank-egypt": {
+  "logo": "eg_arab_bank_egypt",
+  "from": "EG-arab-bank-egypt-logo.svg",
+  "source": "https://www.arabbank.com.eg/Mvc/Content/images/logo.svg",
+  "size": "192x61"
+ },
+ "EG:arab-international-bank": {
+  "logo": "eg_arab_international_bank",
+  "from": "EG-arab-international-bank-logo.png",
+  "source": "https://www.aib.com.eg/img/AIB%20Logo%20FF-03.png",
+  "size": "192x51",
+  "onDark": true
+ },
+ "EG:attijariwafa-bank-egypt": {
+  "logo": "eg_attijariwafa_bank_egypt",
+  "from": "EG-attijariwafa-bank-egypt-icon.png",
+  "source": "https://www.attijariwafabank.com.eg/apple-touch-icon.png",
+  "size": "144x144"
+ },
+ "EG:bank-abc-egypt": {
+  "logo": "eg_bank_abc_egypt",
+  "from": "EG-bank-abc-egypt-logo.png",
+  "source": "https://www.bank-abc.com/Style%20Library/Images/BankABClogo.png",
+  "size": "192x36"
+ },
+ "EG:banque-du-caire": {
+  "logo": "eg_banque_du_caire",
+  "from": "EG-banque-du-caire-logo.png",
+  "source": "https://www.bdc.com.eg/.resources/bdc/webresources/img/BDC_logo.png",
+  "size": "192x46",
+  "onDark": true
+ },
+ "EG:citibank-egypt": {
+  "logo": "eg_citibank_egypt",
+  "from": "EG-citibank-egypt-logo.png",
+  "source": "https://www.citi.com/content/dam/cfs/uspb/usmkt/cbol-homepage/en/static/images/citilogo-skelheader-compressed.png",
+  "size": "88x88"
+ },
+ "EG:credit-agricole-egypt": {
+  "logo": "eg_credit_agricole_egypt",
+  "from": "EG-credit-agricole-egypt-icon.gif",
+  "source": "https://www.ca-egypt.com/app/uploads/2022/06/cropped-favicon-180x180.gif",
+  "size": "144x144"
+ },
+ "EG:e-and-money": {
+  "logo": "eg_e_and_money",
+  "from": "EG-e-and-money-logo.svg",
+  "source": "https://www.eandmoney.com/content/dam/emoney/img/common/logoetisalatmoney.svg",
+  "size": "187x144"
+ },
+ "EG:egyptian-arab-land-bank": {
+  "logo": "eg_egyptian_arab_land_bank",
+  "from": "EG-egyptian-arab-land-bank-icon.png",
+  "source": "https://www.eal-bank.com/VI/images/logo-icon.png",
+  "size": "148x144"
+ },
+ "EG:egyptian-gulf-bank": {
+  "logo": "eg_egyptian_gulf_bank",
+  "from": "EG-egyptian-gulf-bank-logo.png",
+  "source": "https://www.eg-bank.com/images/En_logo_EGB_.png",
+  "size": "163x23"
+ },
+ "EG:emirates-nbd-egypt": {
+  "logo": "eg_emirates_nbd_egypt",
+  "from": "EG-emirates-nbd-egypt-icon.png",
+  "source": "https://www.emiratesnbd.com.eg/-/media/enbd/images/logos/favicon.png",
+  "size": "144x144"
+ },
+ "EG:export-development-bank-of-egypt": {
+  "logo": "eg_export_development_bank_of_egypt",
+  "from": "EG-export-development-bank-of-egypt-logo.png",
+  "source": "https://ebank.com.eg/media/2021/12/Group.png",
+  "size": "103x25"
+ },
+ "EG:fabmisr": {
+  "logo": "eg_fabmisr",
+  "from": "EG-fabmisr-logo.svg",
+  "source": "https://www.fabmisr.com.eg/-/jssmedia/Project/FAB2/Fab2/data/media/img/fab-logo/FABMISR-ICON.svg?iar=0&hash=925AA53982F7D882CF4E597AFE0E6990",
+  "size": "192x56",
+  "onDark": true
+ },
+ "EG:faisal-islamic-bank-of-egypt": {
+  "logo": "eg_faisal_islamic_bank_of_egypt",
+  "from": "EG-faisal-islamic-bank-of-egypt-logo.svg",
+  "source": "https://www.faisalbank.com.eg/-/media/Images/Logo/logo-img.ashx",
+  "size": "192x137"
+ },
+ "EG:fawry": {
+  "logo": "eg_fawry",
+  "from": "EG-fawry-icon.png",
+  "source": "https://www.fawry.com/wp-content/uploads/2022/07/emblem500.png",
+  "size": "144x144",
+  "onDark": true
+ },
+ "EG:halan": {
+  "logo": "eg_halan",
+  "from": "EG-halan-icon.webp",
+  "source": "https://halan.com/wp-content/uploads/2022/07/favicon-150x150.png",
+  "size": "144x144"
+ },
+ "EG:housing-and-development-bank": {
+  "logo": "eg_housing_and_development_bank",
+  "from": "EG-housing-and-development-bank-logo.png",
+  "source": "https://www.hdb-egy.com/img/HD%20Bank%20logo%20f-01.png",
+  "size": "192x46"
+ },
+ "EG:hsbc-egypt": {
+  "logo": "eg_hsbc_egypt",
+  "from": "EG-hsbc-egypt-icon.png",
+  "source": "https://www.hsbc.com.eg/etc.clientlibs/dpws/clientlibs-public/clientlib-site/resources/favicons/apple-touch-icon.png",
+  "size": "144x144"
+ },
+ "EG:industrial-development-bank": {
+  "logo": "eg_industrial_development_bank",
+  "from": "EG-industrial-development-bank-logo.webp",
+  "source": "https://www.idb.com.eg/media/bpij0tty/logo.webp",
+  "size": "192x69"
+ },
+ "EG:kfh-egypt": {
+  "logo": "eg_kfh_egypt",
+  "from": "EG-kfh-egypt-icon.png",
+  "source": "https://www.eg.kfh.com/wp-content/uploads/2025/01/cropped-kfh-favicon.png",
+  "size": "144x144"
+ },
+ "EG:mashreq-egypt": {
+  "logo": "eg_mashreq_egypt",
+  "from": "EG-mashreq-egypt-logo.svg",
+  "source": "https://www.mashreq.com/-/jssmedia/Images/Logos/mashreq-logo-en.ashx?h=29&iar=0&w=250&hash=25B7A2BD9FE1850CAA18B55E08A971D2",
+  "size": "192x39"
+ },
+ "EG:nasser-social-bank": {
+  "logo": "eg_nasser_social_bank",
+  "from": "EG-nasser-social-bank-logo.png",
+  "source": "https://www.nsb.gov.eg/img/Asset3.png",
+  "size": "192x136"
+ },
+ "EG:national-bank-of-greece-egypt": {
+  "logo": "eg_national_bank_of_greece_egypt",
+  "from": "EG-national-bank-of-greece-egypt-logo.svg",
+  "source": "https://www.nbg.gr/-/jssmedia/nbgportal/src/en-logo-black.svg",
+  "size": "192x41"
+ },
+ "EG:nbk-egypt": {
+  "logo": "eg_nbk_egypt",
+  "from": "EG-nbk-egypt-logo.svg",
+  "source": "https://www.nbk.com/dam/jcr:281bc4f7-7256-48c6-a05e-761bacea00a3/nbk-logo.svg",
+  "size": "192x92"
+ },
+ "EG:onebank": {
+  "logo": "eg_onebank",
+  "from": "EG-onebank-icon.png",
+  "source": "https://www.onebank.eg/resources/img/favicon/apple-icon-180x180.png",
+  "size": "144x144"
+ },
+ "EG:orange-cash": {
+  "logo": "eg_orange_cash",
+  "from": "EG-orange-cash-logo.jpg",
+  "source": "https://cdn.orange.eg/images/OrangeSubMenus/OrangeCash_220x115_20250922083816809.jpg",
+  "size": "192x100"
+ },
+ "EG:saib-bank": {
+  "logo": "eg_saib_bank",
+  "from": "EG-saib-bank-logo.png",
+  "source": "https://www.saib.com.eg/img/SAIB-50-Years-Logo.png",
+  "size": "192x41"
+ },
+ "EG:standard-chartered-egypt": {
+  "logo": "eg_standard_chartered_egypt",
+  "from": "EG-standard-chartered-egypt-icon.png",
+  "source": "https://www.sc.com/eg/content/themes/standard-chartered-non-retail/assets/src/images/site-icons/apple-touch-icon.png",
+  "size": "144x144"
+ },
+ "EG:suez-canal-bank": {
+  "logo": "eg_suez_canal_bank",
+  "from": "EG-suez-canal-bank-logo.png",
+  "source": "https://scbank.com.eg/img/logo/logo.png",
+  "size": "192x68"
+ },
+ "EG:telda": {
+  "logo": "eg_telda",
+  "from": "EG-telda-icon.png",
+  "source": "https://telda.app/_next/static/media/telda-icon.f39ac0de.png",
+  "size": "144x144"
+ },
+ "EG:united-bank": {
+  "logo": "eg_united_bank",
+  "from": "EG-united-bank-logo.png",
+  "source": "https://www.theubeg.com/images/logo.png",
+  "size": "180x62"
+ },
+ "EG:valu": {
+  "logo": "eg_valu",
+  "from": "EG-valu-icon.svg",
+  "source": "https://valugroup.com/icon.svg",
+  "size": "144x144"
+ },
+ "EG:vodafone-cash": {
+  "logo": "eg_vodafone_cash",
+  "from": "EG-vodafone-cash-icon.jpg",
+  "source": "https://www.vodafone.com/~/media/Images/V/vodafone/universal/logos/og-logo.jpg",
+  "size": "144x144"
+ },
+ "EG:we-pay": {
+  "logo": "eg_we_pay",
+  "from": "EG-we-pay-logo.png",
+  "source": "https://te.eg/documents/d/guest/we-logo-ar?imagePreview=1",
+  "size": "192x54"
+ },
+ "SA:abu-dhabi-commercial-bank": {
+  "logo": "eg_adcb_egypt",
+  "from": "EG-adcb-egypt-icon.png",
+  "source": "https://www.adcb.com.eg/wp-content/uploads/2020/08/cropped-logo-180x180.png",
+  "size": "144x144",
+  "sameBrandAs": "EG:adcb-egypt"
+ },
+ "SA:al-rajhi-bank": {
+  "logo": "sa_al_rajhi_bank",
+  "from": "SA-al-rajhi-bank-logo.svg",
+  "source": "https://www.alrajhibank.com.sa/-/media/Project/AlRajhi/ARBRevamp/Temp/AlRajhiBankLogo.svg",
+  "size": "192x68"
+ },
+ "SA:alinma-bank": {
+  "logo": "sa_alinma_bank",
+  "from": "SA-alinma-bank-logo.svg",
+  "source": "https://www.alinma.com/-/media/Project/AlinmaRevamp/shared/alinma-logo.svg",
+  "size": "192x74",
+  "onDark": true
+ },
+ "SA:alinmapay": {
+  "logo": "sa_alinmapay",
+  "from": "SA-alinmapay-logo.svg",
+  "source": "https://www.alinmapay.com.sa/-/media/Project/AlinmaPay/AlinmaPay/Images/logo.svg?iar=0&hash=12028CEDD0C089CCC4B56B9D4C23BD6A",
+  "size": "192x78"
+ },
+ "SA:arab-national-bank": {
+  "logo": "sa_arab_national_bank",
+  "from": "SA-arab-national-bank-logo.png",
+  "source": "https://www.anb.com.sa/image/layout_set_logo?img_id=1212212&t=1791364902136",
+  "size": "192x97"
+ },
+ "SA:bank-albilad": {
+  "logo": "sa_bank_albilad",
+  "from": "SA-bank-albilad-logo.png",
+  "source": "https://www.bankalbilad.com.sa/az/images/logo.png",
+  "size": "192x62"
+ },
+ "SA:bank-aljazira": {
+  "logo": "sa_bank_aljazira",
+  "from": "SA-bank-aljazira-logo.svg",
+  "source": "https://www.aljazirabank.com.sa/Portals/0/ajb_Logo-04.svg",
+  "size": "192x83",
+  "onDark": true
+ },
+ "SA:bank-muscat": {
+  "logo": "sa_bank_muscat",
+  "from": "SA-bank-muscat-logo.png",
+  "source": "https://www.bankmuscat.om/_catalogs/masterpage/images/bm_logo_color.png",
+  "size": "192x48"
+ },
+ "SA:bank-of-china": {
+  "logo": "sa_bank_of_china",
+  "from": "SA-bank-of-china-logo.gif",
+  "source": "https://www.bankofchina.com/uk/images/bankofchina_LOGO.gif",
+  "size": "183x52"
+ },
+ "SA:bank-of-jordan": {
+  "logo": "sa_bank_of_jordan",
+  "from": "SA-bank-of-jordan-logo.png",
+  "source": "https://bankofjordan.com/images/boj-logo.png",
+  "size": "192x101"
+ },
+ "SA:banque-misr": {
+  "logo": "sa_banque_misr",
+  "from": "SA-banque-misr-logo.png",
+  "source": "https://www.banquemisr.com/Assets/Images/bmp-logo.png",
+  "size": "192x95"
+ },
+ "SA:banque-saudi-fransi": {
+  "logo": "sa_banque_saudi_fransi",
+  "from": "SA-banque-saudi-fransi-logo.svg",
+  "source": "https://bsf.sa/images/revampLogo.svg",
+  "size": "192x60"
+ },
+ "SA:bnp-paribas": {
+  "logo": "sa_bnp_paribas",
+  "from": "SA-bnp-paribas-logo.svg",
+  "source": "https://cdn.invest.bnpparibas/build/images/logo-bnp.svg",
+  "size": "192x39"
+ },
+ "SA:d360-bank": {
+  "logo": "sa_d360_bank",
+  "from": "SA-d360-bank-logo.png",
+  "source": "https://axa3tigaf4dy.objectstorage.me-jeddah-1.oci.customer-oci.com/n/axa3tigaf4dy/b/webcms-prod-bucket/o/logo2_a240e6aea9.png",
+  "size": "58x87"
+ },
+ "SA:deutsche-bank": {
+  "logo": "sa_deutsche_bank",
+  "from": "SA-deutsche-bank-logo.png",
+  "source": "https://www.db.com/application/project/images/logos/identifier_RETINA.png",
+  "size": "192x56"
+ },
+ "SA:emirates-nbd": {
+  "logo": "sa_emirates_nbd",
+  "from": "SA-emirates-nbd-logo.svg",
+  "source": "https://www.emiratesnbd.com/-/media/enbd/images/logos/horizontal_logo.svg?la=en&hash=A33654369475CF9B1FA76FEB570F9B9D",
+  "size": "192x53",
+  "onDark": true
+ },
+ "SA:enjaz": {
+  "logo": "sa_enjaz",
+  "from": "SA-enjaz-logo.svg",
+  "source": "https://enjaz.com/white-logo.svg",
+  "size": "192x80",
+  "onDark": true
+ },
+ "SA:first-abu-dhabi-bank": {
+  "logo": "sa_first_abu_dhabi_bank",
+  "from": "SA-first-abu-dhabi-bank-logo.svg",
+  "source": "https://www.bankfab.com/-/media/project/fab2/fab2/data/media/img/fab-logo.svg?iar=0&hash=A347BC84EEF1BA82ED1A74E455D9E992",
+  "size": "192x115",
+  "onDark": true
+ },
+ "SA:friendi-pay": {
+  "logo": "sa_friendi_pay",
+  "from": "SA-friendi-pay-logo.svg",
+  "source": "https://www.friendipay.sa/images/home/home_logo.svg",
+  "size": "192x97",
+  "onDark": true
+ },
+ "SA:gulf-international-bank-sa": {
+  "logo": "sa_gulf_international_bank_sa",
+  "from": "SA-gulf-international-bank-sa-logo.png",
+  "source": "https://www.gib.com/ksa/sites/default/files/gib_arabic_3_0.png",
+  "size": "117x83"
+ },
+ "SA:hala": {
+  "logo": "sa_hala",
+  "from": "SA-hala-logo.svg",
+  "source": "https://cdn.hala.com/website/images/logos/logo-white.svg",
+  "size": "192x63",
+  "onDark": true
+ },
+ "SA:icbc": {
+  "logo": "sa_icbc",
+  "from": "SA-icbc-logo.jpg",
+  "source": "https://v.icbc.com.cn/userfiles/Resources/ICBC/yingwen/images/2016new/logo2.jpg",
+  "size": "192x26"
+ },
+ "SA:jpmorgan-chase": {
+  "logo": "sa_jpmorgan_chase",
+  "from": "SA-jpmorgan-chase-logo.svg",
+  "source": "https://www.jpmorganchase.com/content/dam/jpmorganchase/images/logos/jpmc-logo.svg",
+  "size": "192x27"
+ },
+ "SA:mobily-pay": {
+  "logo": "sa_mobily_pay",
+  "from": "SA-mobily-pay-logo.png",
+  "source": "https://mobilypay.sa/assets/images/logo/logo.png",
+  "size": "127x40",
+  "onDark": true
+ },
+ "SA:mufg-bank": {
+  "logo": "sa_mufg_bank",
+  "from": "SA-mufg-bank-logo.png",
+  "source": "https://www.bk.mufg.jp/global/shared/cmn/cmn_logo_mufg_001.png",
+  "size": "192x46"
+ },
+ "SA:national-bank-of-bahrain": {
+  "logo": "sa_national_bank_of_bahrain",
+  "from": "SA-national-bank-of-bahrain-icon.png",
+  "source": "https://nbbonline.com/wp-content/uploads/2024/07/cropped-nbbfavicon-180x180.png",
+  "size": "144x144"
+ },
+ "SA:national-bank-of-iraq": {
+  "logo": "sa_national_bank_of_iraq",
+  "from": "SA-national-bank-of-iraq-logo.svg",
+  "source": "https://www.nbi.iq/-/media/logo-en-colored.ashx",
+  "size": "192x65"
+ },
+ "SA:national-bank-of-kuwait": {
+  "logo": "eg_nbk_egypt",
+  "from": "SA-national-bank-of-kuwait-logo.svg",
+  "source": "https://www.nbk.com/dam/jcr:281bc4f7-7256-48c6-a05e-761bacea00a3/nbk-logo.svg",
+  "size": "192x92"
+ },
+ "SA:national-bank-of-pakistan": {
+  "logo": "sa_national_bank_of_pakistan",
+  "from": "SA-national-bank-of-pakistan-logo.jpg",
+  "source": "https://www.nbp.com.pk/images/NBPFinalBand-2018-left.jpg",
+  "size": "192x48"
+ },
+ "SA:qatar-national-bank": {
+  "logo": "sa_qatar_national_bank",
+  "from": "SA-qatar-national-bank-logo.png",
+  "source": "https://www.qnb.com.tr/_assets/img/logo.png",
+  "size": "192x56"
+ },
+ "SA:riyad-bank": {
+  "logo": "sa_riyad_bank",
+  "from": "SA-riyad-bank-icon.svg",
+  "source": "https://www.riyadbank.com/documents/56211/7527405/bank-logo-icon.svg/0ace88ba-3916-f0ab-2ae8-7720c85a3286?t=1759241435098&download=true",
+  "size": "144x144"
+ },
+ "SA:saudi-awwal-bank": {
+  "logo": "sa_saudi_awwal_bank",
+  "from": "SA-saudi-awwal-bank-icon.png",
+  "source": "https://www.sab.com/content/dam/sabpws/about-us/newsroom/sab-logo.png",
+  "size": "145x144"
+ },
+ "SA:saudi-investment-bank": {
+  "logo": "sa_saudi_investment_bank",
+  "from": "SA-saudi-investment-bank-logo.png",
+  "source": "https://www.saib.com.sa/sites/default/files/2025-09/saib-logo1.png",
+  "size": "192x56",
+  "onDark": true
+ },
+ "SA:saudi-national-bank": {
+  "logo": "sa_saudi_national_bank",
+  "from": "SA-saudi-national-bank-logo.svg",
+  "source": "https://www.alahli.com/-/media/project/snb/snb-web/light/shared/assets/logo.svg?iar=0&hash=70F026510EAF8C3092C3D4A0911ED20A",
+  "size": "192x115"
+ },
+ "SA:sohar-international": {
+  "logo": "sa_sohar_international",
+  "from": "SA-sohar-international-logo.svg",
+  "source": "https://res.cloudinary.com/dtqjagydd/image/upload/v1721631135/sohardevelopment/Logo_245331cf55.svg",
+  "size": "192x95"
+ },
+ "SA:standard-chartered": {
+  "logo": "sa_standard_chartered",
+  "from": "SA-standard-chartered-logo.svg",
+  "source": "https://www.sc.com/sa/content/themes/standard-chartered-non-retail/assets/src/images/svg/standard-chartered-logo-full.svg",
+  "size": "192x76"
+ },
+ "SA:stc-bank": {
+  "logo": "sa_stc_bank",
+  "from": "SA-stc-bank-logo.svg",
+  "source": "https://stcbank.com.sa/documents/20117/220956/stc-inverted.svg/19718a25-45a2-3e1b-ba9a-fc3098e8a75a?version=1.0&t=1788368587238",
+  "size": "192x49",
+  "onDark": true
+ },
+ "SA:tiqmo": {
+  "logo": "sa_tiqmo",
+  "from": "SA-tiqmo-logo.png",
+  "source": "https://tiqmo.com/assets/homepage-logo.png",
+  "size": "109x98"
+ },
+ "SA:trade-bank-of-iraq": {
+  "logo": "sa_trade_bank_of_iraq",
+  "from": "SA-trade-bank-of-iraq-logo.png",
+  "source": "https://tbi.com.iq/wp-content/uploads/2021/10/logo_white.png",
+  "size": "192x63"
+ },
+ "SA:urpay": {
+  "logo": "sa_urpay",
+  "from": "SA-urpay-logo.jpg",
+  "source": "https://www.urpay.com.sa/_next/image?url=https%3A%2F%2Fcms-portal.apps.ocpryd.neoleap.com.sa%2Fneo-api%2Fmedia%2Ffile%2Furpay_revamp_logo-3.webp&w=384&q=50",
+  "size": "192x47"
+ },
+ "SA:vision-bank": {
+  "logo": "sa_vision_bank",
+  "from": "SA-vision-bank-icon.png",
+  "source": "https://assets.visionbank.com.sa/web/uploads/vb_io_logo_purple_0086dfc590.png",
+  "size": "144x144"
+ },
+ "SA:ziraat-bank": {
+  "logo": "sa_ziraat_bank",
+  "from": "SA-ziraat-bank-logo.png",
+  "source": "https://www.ziraatbank.com.tr/SiteAssets/images/logo.png",
+  "size": "192x41"
+ },
+ "EG:banque-misr": {
+  "logo": "sa_banque_misr",
+  "from": "SA-banque-misr-logo.png",
+  "source": "https://www.banquemisr.com/Assets/Images/bmp-logo.png",
+  "size": "192x95",
+  "sameBrandAs": "SA:banque-misr"
+ },
+ "EG:qnb-egypt": {
+  "logo": "sa_qatar_national_bank",
+  "from": "SA-qatar-national-bank-logo.png",
+  "source": "https://www.qnb.com.tr/_assets/img/logo.png",
+  "size": "192x56",
+  "sameBrandAs": "SA:qatar-national-bank"
+ }
+}

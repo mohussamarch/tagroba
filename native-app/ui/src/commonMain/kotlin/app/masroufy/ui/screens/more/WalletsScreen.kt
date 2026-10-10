@@ -23,10 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.masroufy.core.Bank
 import app.masroufy.core.Id
 import app.masroufy.core.TextKey
 import app.masroufy.core.currencySymbol
@@ -34,17 +34,18 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.ApproxBadge
 import app.masroufy.ui.components.Badge
+import app.masroufy.ui.components.BankLogo
 import app.masroufy.ui.components.BadgeKind
 import app.masroufy.ui.components.HeroAmount
 import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.amountLabel
+import app.masroufy.ui.components.logoInitial
 import app.masroufy.ui.components.mirrorInLtr
 import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
-import app.masroufy.ui.glass.insetRing
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
@@ -81,7 +82,7 @@ fun WalletsScreen() {
             item(key = "sk") { Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { Skeleton(Modifier.fillMaxWidth().height(120.dp), radius = 26.dp, strong = true); Skeleton(Modifier.fillMaxWidth().height(220.dp)) } }
             return@InnerScaffold
         }
-        val view = walletsView(n, mainId)
+        val view = walletsView(n, mainId, deps.space.countryCode)
         item(key = "total") {
             HeroCard(Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -114,7 +115,7 @@ private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick:
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            WalletLens(r.name, r.isCash)
+            WalletLens(r.name, r.isCash, bank = r.bank)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(r.name, Modifier.weight(1f), style = Type.of(15, FontWeight.Bold), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -137,22 +138,15 @@ private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick:
 /** «حساب بنكي · •••• 4407» — أو النوع لوحده. */
 fun walletMeta(r: WalletRowView): String = if (r.last4 != null) t(UiKey.WLIST_META_LAST4, t(r.kindLabel), r.last4) else t(r.kindLabel)
 
-/** عدسة المحفظة 40: الكاش أخضر فاتح برمز الفلوس، والبنك أبيض بحد رفيع وأول حرف من اسمه (مكان اللوجو لحد ما يتعتمد — §74). */
+/** عدسة المحفظة 40: الكاش أخضر فاتح برمز الفلوس، والبنك لوجوه من دليل البنوك ([bank] — §81)، وإلا أول حرف من اسمه في دايرة ([BankLogo]). */
 @Composable
-fun WalletLens(name: String, cash: Boolean, size: androidx.compose.ui.unit.Dp = 40.dp) {
+fun WalletLens(name: String, cash: Boolean, size: androidx.compose.ui.unit.Dp = 40.dp, bank: Bank? = null) {
+    if (!cash) return BankLogo(bank, name, size = size)
     val shape = RoundedCornerShape(14.dp)
-    Box(
-        Modifier.size(size).clip(shape).background(if (cash) Ink.selected else Color.White).then(if (cash) Modifier else Modifier.insetRing(shape, 1.dp, Ink.fieldEdge)),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (cash) LucideIcon(Lucide.BANKNOTE, size = 20.dp, tint = Ink.primary)
-        else BasicText(walletMark(name), style = Type.of(16, FontWeight.Bold).copy(color = Ink.primary))
+    Box(Modifier.size(size).clip(shape).background(Ink.selected), contentAlignment = Alignment.Center) {
+        LucideIcon(Lucide.BANKNOTE, size = 20.dp, tint = Ink.primary)
     }
 }
 
-/** حرف مكان اللوجو: أول حرف من الاسم من غير «بنك/مصرف» و«ال». */
-fun walletMark(name: String): String {
-    val skip = setOf("بنك", "مصرف", "البنك", "المصرف")
-    val word = name.trim().split(Regex("\\s+")).firstOrNull { it !in skip } ?: name.trim()
-    return word.removePrefix("ال").take(1).uppercase()
-}
+/** حرف مكان اللوجو: أول حرف من الاسم من غير «بنك/مصرف» و«ال» (نفس [logoInitial] بتاع [BankLogo]). */
+fun walletMark(name: String): String = logoInitial(name)

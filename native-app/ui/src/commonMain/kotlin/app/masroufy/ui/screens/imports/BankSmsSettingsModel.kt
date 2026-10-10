@@ -2,10 +2,15 @@ package app.masroufy.ui.screens.imports
 
 import app.masroufy.core.Id
 import app.masroufy.core.Wallet
+import app.masroufy.core.Bank
+import app.masroufy.core.bankForSender
 import app.masroufy.port.smsSenderKey
 
-/** بنك (مرسل) في «إعداد القراءة»: محفظته (null = مستني تختار) وعدد رسايله المستنية المحفظة. */
-data class SenderUi(val sender: String, val walletId: Id?, val walletName: String?, val waiting: Int)
+/**
+ * بنك (مرسل) في «إعداد القراءة»: محفظته (null = مستني تختار) وعدد رسايله المستنية المحفظة. [bank] = البنك المقترح من اسم المرسل
+ * (دليل البنوك — §74: المؤكد بس)؛ null ⇒ الاسم الخام زي ما جه في الرسالة.
+ */
+data class SenderUi(val sender: String, val walletId: Id?, val walletName: String?, val waiting: Int, val bank: Bank? = null)
 
 /** حالة «إعداد القراءة» (`BankSmsSettings`). [available] = الجهاز بيقرا رسايل. */
 data class SmsSettingsUi(val available: Boolean, val enabled: Boolean, val permission: Boolean, val senders: List<SenderUi>) {
@@ -23,13 +28,13 @@ data class SmsSettingsUi(val available: Boolean, val enabled: Boolean, val permi
     }
 }
 
-/** من صورة الصندوق (من غير تسجيل) ومحافظ البلد. [overview] = null ⇒ الجهاز ما بيقراش رسايل. */
-fun smsSettingsUi(overview: SmsOverview?, wallets: List<Wallet>): SmsSettingsUi {
+/** من صورة الصندوق (من غير تسجيل) ومحافظ البلد. [overview] = null ⇒ الجهاز ما بيقراش رسايل. [country] = بلد المساحة (اقتراح البنك من المرسل). */
+fun smsSettingsUi(overview: SmsOverview?, wallets: List<Wallet>, country: String? = null): SmsSettingsUi {
     if (overview == null) return SmsSettingsUi(available = false, enabled = false, permission = false, senders = emptyList())
     val senders = overview.inbox.senders.map { sender ->
         val walletId = overview.senderWallets[sender]
         val waiting = overview.unmapped.firstOrNull { smsSenderKey(it.sender) == smsSenderKey(sender) }?.messages ?: 0
-        SenderUi(sender, walletId, wallets.firstOrNull { it.id == walletId }?.name, waiting)
+        SenderUi(sender, walletId, wallets.firstOrNull { it.id == walletId }?.name, waiting, bankForSender(sender, country))
     }
     return SmsSettingsUi(available = true, enabled = overview.inbox.enabled, permission = overview.inbox.permission, senders = senders)
 }

@@ -41,8 +41,8 @@ interface MainWalletAccess {
     suspend fun set(walletId: Id)
 }
 
-/** المحفظة اللي المستخدم بيضيفها (`WalletAddSheet`): العملة = عملة البلد، و[last4] آخر 4 أرقام بس (CLAUDE.md #11). */
-data class NewWallet(val kind: String, val name: String, val last4: String?, val openingMinor: Halalas?, val openingAt: IsoDate?)
+/** المحفظة اللي المستخدم بيضيفها (`WalletAddSheet`): العملة = عملة البلد، و[last4] آخر 4 أرقام بس (CLAUDE.md #11). [bankId] = `Bank.key` من «اختار بنكك» (§81). */
+data class NewWallet(val kind: String, val name: String, val last4: String?, val openingMinor: Halalas?, val openingAt: IsoDate?, val bankId: String? = null)
 
 interface WalletEditor {
     /** بيرجّع رسالة الغلط (اسم مكرر …) أو null لو اتحفظت. */

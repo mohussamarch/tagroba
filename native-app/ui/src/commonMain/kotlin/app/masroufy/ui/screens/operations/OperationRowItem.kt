@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
 import app.masroufy.ui.components.AmountText
+import app.masroufy.ui.components.BankLogo
 import app.masroufy.ui.components.IconTile
 import app.masroufy.ui.components.ListRow
 import app.masroufy.ui.components.NotificationDot
@@ -64,7 +66,7 @@ internal fun OperationListRow(row: OpRow, onOpen: () -> Unit, onMenu: (Anchor) -
     }
 }
 
-/** أيقونة الصف 36 بزاوية 12 + النقطة الحمرا «غير مسجّلة» (8) فوق شمالها. */
+/** أيقونة الصف 36 بزاوية 12 + النقطة الحمرا «غير مسجّلة» (8) فوق شمالها + لوجو بنك المحفظة صغير على الركن التاني تحت (لو له لوجو — §81). */
 @Composable
 internal fun RowTile(row: OpRow, size: Int = 36) {
     Box {
@@ -73,6 +75,7 @@ internal fun RowTile(row: OpRow, size: Int = 36) {
             val label = t(UiKey.OPERATIONS_UNRECORDED)
             NotificationDot(Modifier.align(AbsoluteAlignment.TopLeft).semantics { contentDescription = label }, size = 8.dp, color = Ink.expense)
         }
+        row.bank?.let { BankLogo(it, it.nameAr, Modifier.align(Alignment.BottomEnd).offset(x = 4.dp, y = 4.dp), size = (size * 0.45f).dp, fallback = false) }
     }
 }
 

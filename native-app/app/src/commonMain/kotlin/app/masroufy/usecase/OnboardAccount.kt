@@ -29,8 +29,11 @@ import app.masroufy.port.WalletRepository
 /** «ليا عنده» = RECEIVABLE، «عليا ليه» = LOAN_PAYABLE (OVERRIDES §27). */
 data class OpeningDebtInput(val name: String, val kind: ObligationKind, val amountMinor: Halalas)
 
-/** `cashMinor` = null ⇒ اتخطى السؤال. */
-data class OnboardingInput(val profile: UserProfile, val cashMinor: Halalas?, val debts: List<OpeningDebtInput>)
+/**
+ * `cashMinor` = null ⇒ اتخطى السؤال. [bank] = «عندك حساب بنكي؟» (§81 — البنك من الدليل + آخر 4 + رصيده) أو null لو اتخطى؛
+ * بيتأكد بـ`ManageWallets.prepare` قبل أي كتابة وبيتكتب بعد الكاش.
+ */
+data class OnboardingInput(val profile: UserProfile, val cashMinor: Halalas?, val debts: List<OpeningDebtInput>, val bank: AddWalletInput? = null)
 
 data class CashOpening(val amountMinor: Halalas, val openingAt: IsoDate)
 
@@ -43,7 +46,7 @@ data class OnboardingStart(val profile: UserProfile, val cashOpening: CashOpenin
 sealed interface OnboardingResult {
     data object Ok : OnboardingResult
 
-    /** `step`: "profile" / "cash" / "debts". */
+    /** `step`: "profile" / "cash" / "debts" / "bank". */
     data class Failed(val step: String, val message: String) : OnboardingResult
 }
 
@@ -66,6 +69,8 @@ data class OnboardAccountDeps(
     val clock: Clock,
     /** null = مفيش تجهيز ولا فتح تلقائي (بلد تانية غير الأساسية · اختبارات قديمة). */
     val seeding: NewAccountSeeding? = null,
+    /** إضافة البنك من أسئلة البداية (نفس «أضف محفظة») — null ⇒ سؤال البنك مش متاح. */
+    val manageWallets: ManageWallets? = null,
 )
 
 class OnboardAccount(private val deps: OnboardAccountDeps) {
@@ -107,6 +112,17 @@ class OnboardAccount(private val deps: OnboardAccountDeps) {
             if (debt.amountMinor <= 0 || debt.amountMinor > MAX_SAFE_HALALAS) return OnboardingResult.Failed("debts", uiText(TextKey.ONBOARD_DEBT_AMOUNT, name))
         }
 
+        // البنك: نفس تأكيد «أضف محفظة» قبل أي كتابة — ولو اتضاف قبل كده (إعادة بعد انقطاع) ما يتكررش
+        val bank = input.bank?.takeUnless { b -> b.bankId != null && deps.wallets.listAll().any { it.bankId == b.bankId } }
+        val bankWallet = if (bank == null) null else {
+            val manage = deps.manageWallets ?: return OnboardingResult.Failed("bank", uiText(TextKey.NOT_AVAILABLE))
+            try {
+                manage.prepare(bank)
+            } catch (e: WalletError) {
+                return OnboardingResult.Failed("bank", e.message ?: uiText(TextKey.NOT_AVAILABLE))
+            }
+        }
+
         // بعد التأكد وقبل أي كتابة تانية: حساب جديد خالص بياخد تصنيفاته ومحفظة الكاش (وده كمان بيخلّي سؤال الكاش يلاقي محفظته)
         deps.seeding?.let { if (shouldStart()) seedNewAccount(it) }
 
@@ -114,6 +130,8 @@ class OnboardAccount(private val deps: OnboardAccountDeps) {
         if (cashWallet != null && cashMinor != cashWallet.openingBalanceMinor) {
             deps.wallets.save(cashWallet.copy(openingBalanceMinor = cashMinor!!, openingAt = deps.clock.nowIso().take(10)))
         }
+
+        if (bankWallet != null) deps.wallets.save(bankWallet)
 
         if (input.debts.isNotEmpty()) {
             val rows = deps.people.listWithBalances()

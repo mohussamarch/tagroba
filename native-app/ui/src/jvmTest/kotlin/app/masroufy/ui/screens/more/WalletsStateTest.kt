@@ -96,6 +96,16 @@ class WalletsStateTest {
         assertEquals(UiKey.WLIST_KIND_ABROAD, kindLabel("own_abroad"))
     }
 
+    /** لوجو المحفظة من دليل البنوك (§81): المحفوظ فيها أو اسمها في بلد المساحة — والكاش ما لوش بنك. */
+    @Test
+    fun rowsCarryTheirBankForTheLogo() {
+        assertEquals("sa-al-rajhi-bank", walletRow(WalletNow(bank, 1), null, "SA").bank?.key, "«الراجحي» من غير bankId")
+        assertEquals(null, walletRow(WalletNow(bank, 1), null).bank, "من غير بلد الاسم ما يتخمنش")
+        assertEquals("sa-riyad-bank", walletRow(WalletNow(bank.copy(bankId = "sa-riyad-bank"), 1), null).bank?.key)
+        assertEquals(null, walletRow(WalletNow(cash, 1), null, "SA").bank)
+        assertEquals("sa-al-rajhi-bank", walletsView(now(WalletNow(bank, 1), WalletNow(cash, 2)), null, "SA").groups.first().rows.first().bank?.key)
+    }
+
     private fun tx(id: String, date: String, order: Int, dir: Direction, amount: Long, wallet: String?, to: String? = null, merchant: String? = null) =
         Transaction(
             id, date, "day", order, EconomicKind.PURCHASE, false, dir, amount, Currency.SAR, false, false, ReviewState.CONFIRMED, false, "", "",
