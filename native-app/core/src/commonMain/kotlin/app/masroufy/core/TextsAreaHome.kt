@@ -36,10 +36,6 @@ internal val MSA_AREA_HOME_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.LOCK_SCREEN_RELEASED_TITLE to "أُوقف قفل التطبيق",
     UiKey.LOCK_SCREEN_RELEASED_BODY to "لا قفل شاشة ولا بصمة مسجلة في الجوال. فعّل قفل الشاشة من إعدادات الجوال أولًا، ثم شغّل القفل من جديد من الإعدادات.",
     UiKey.LOCK_SCREEN_CONTINUE to "متابعة",
-    UiKey.LOOK_SHEET_TITLE to "اختر شكلك",
-    UiKey.LOOK_SHEET_ITEM to "الشكل {0}",
-    UiKey.LOOK_SHEET_NOTE to "أشكال مؤقتة — الكاركتر النهائي قيد التصميم.",
-    UiKey.LOOK_SHEET_SAVE to "احفظ",
     UiKey.ADD_FROM_USUAL to "من أين تصرف عادةً؟",
     UiKey.ADD_SAVED_MAIN to "{0} — وصار «{1}» الأساسي",
 ) + MSA_AREA_HOME_NOTIFY_TEXTS + MSA_AREA_HOME_CALENDAR_TEXTS + MSA_AREA_HOME_PROFILE_TEXTS + MSA_AREA_HOME_REVIEW_TEXTS
@@ -72,10 +68,6 @@ internal val EGYPTIAN_AREA_HOME_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.LOCK_SCREEN_RELEASED_TITLE to "القفل اتوقف",
     UiKey.LOCK_SCREEN_RELEASED_BODY to "الجوال مالوش قفل شاشة ولا بصمة متسجلة. اعمل قفل شاشة من إعدادات الجوال الأول، وبعدين شغّل القفل تاني من الإعدادات.",
     UiKey.LOCK_SCREEN_CONTINUE to "كمّل",
-    UiKey.LOOK_SHEET_TITLE to "اختر شكلك",
-    UiKey.LOOK_SHEET_ITEM to "الشكل {0}",
-    UiKey.LOOK_SHEET_NOTE to "أشكال مؤقتة — الكاركتر النهائي لسه بيتصمم.",
-    UiKey.LOOK_SHEET_SAVE to "احفظ",
     UiKey.ADD_FROM_USUAL to "بتصرف عادةً منين؟",
     UiKey.ADD_SAVED_MAIN to "{0} — و«{1}» بقى الأساسي",
 ) + EGYPTIAN_AREA_HOME_NOTIFY_TEXTS + EGYPTIAN_AREA_HOME_CALENDAR_TEXTS + EGYPTIAN_AREA_HOME_PROFILE_TEXTS + EGYPTIAN_AREA_HOME_REVIEW_TEXTS
@@ -108,10 +100,6 @@ internal val ENGLISH_AREA_HOME_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.LOCK_SCREEN_RELEASED_TITLE to "App lock turned off",
     UiKey.LOCK_SCREEN_RELEASED_BODY to "Your phone has no screen lock or fingerprint. Set a screen lock in the phone settings first, then turn the lock on again in Settings.",
     UiKey.LOCK_SCREEN_CONTINUE to "Continue",
-    UiKey.LOOK_SHEET_TITLE to "Choose your look",
-    UiKey.LOOK_SHEET_ITEM to "Look {0}",
-    UiKey.LOOK_SHEET_NOTE to "Temporary looks — the final character is still being designed.",
-    UiKey.LOOK_SHEET_SAVE to "Save",
     UiKey.ADD_FROM_USUAL to "Where do you usually spend from?",
     UiKey.ADD_SAVED_MAIN to "{0} — and “{1}” is now your main wallet",
 ) + ENGLISH_AREA_HOME_NOTIFY_TEXTS + ENGLISH_AREA_HOME_CALENDAR_TEXTS + ENGLISH_AREA_HOME_PROFILE_TEXTS + ENGLISH_AREA_HOME_REVIEW_TEXTS

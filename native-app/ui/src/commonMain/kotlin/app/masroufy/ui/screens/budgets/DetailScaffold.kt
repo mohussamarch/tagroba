@@ -54,6 +54,7 @@ fun DetailScaffold(
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     LazyColumn(
         Modifier.fillMaxSize(),
+        state = app.masroufy.ui.nav.rememberEntryLazyListState(),
         contentPadding = PaddingValues(start = Space.gutter, end = Space.gutter, top = Space.gutter + top, bottom = 48.dp),
         verticalArrangement = Arrangement.spacedBy(Space.block),
     ) {

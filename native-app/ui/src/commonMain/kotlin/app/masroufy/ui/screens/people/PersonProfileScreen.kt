@@ -90,7 +90,7 @@ internal fun PersonProfileScreen(personId: String) {
         }
     }
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(Space.block)) {
+    LazyColumn(Modifier.fillMaxSize(), state = app.masroufy.ui.nav.rememberEntryLazyListState(), contentPadding = PaddingValues(bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(Space.block)) {
         when (val l = load) {
             Load.Loading -> item { Head(null, top) { nav.pop() }; Skeleton(Modifier.padding(Space.gutter).fillMaxWidth().height(220.dp)) }
             Load.Failed -> item { Head(null, top) { nav.pop() }; ErrorCard({ retry++ }, Modifier.padding(Space.gutter), t(UiKey.PPL_LOAD_FAILED), "") }

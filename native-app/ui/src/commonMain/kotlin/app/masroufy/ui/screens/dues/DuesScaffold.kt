@@ -42,6 +42,7 @@ internal fun DuesScaffold(
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
             Modifier.fillMaxSize(),
+            state = app.masroufy.ui.nav.rememberEntryLazyListState(),
             contentPadding = PaddingValues(
                 start = Space.gutter, end = Space.gutter, top = Space.gutter + top,
                 bottom = (if (bottomBar != null) 116.dp else 48.dp) + bottom,

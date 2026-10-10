@@ -1,8 +1,9 @@
 package app.masroufy.ui.screens.people
 
 import app.masroufy.core.UiKey
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -14,49 +15,41 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import app.masroufy.core.TextKey
+import androidx.compose.ui.zIndex
+import app.masroufy.core.Id
 import app.masroufy.ui.app.LocalSpace
-import app.masroufy.ui.components.AmountText
-import app.masroufy.ui.components.EmptyState
-import app.masroufy.ui.components.FloatingCard
-import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SecondaryButton
-import app.masroufy.ui.components.Skeleton
-import app.masroufy.ui.components.mirrorInLtr
-import app.masroufy.ui.icons.Lucide
-import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.nav.rememberEntryScrollState
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.text.t
-import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.LocalReduceMotion
 import app.masroufy.ui.theme.Space
-import app.masroufy.ui.theme.Type
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -66,6 +59,8 @@ import kotlin.math.roundToInt
  * تبويب «الأشخاص» (لوحة `People`): المسرح البترولي (أقرب 5 فوق «أنت») وتحته شبكة الناس كلهم 5 في الصف و«لك» و«عليك».
  * **السحب لفوق** بيطوي المسرح ويفرد صفوف الشبكة زي الأسطوانة (`p` من 0 لـ1 على 420)، و«الكل (N)» بيعمل نفس الحركة.
  * الحالات: بيحمّل (هيكل) · فاضي («لم تُضف أحدًا بعد») · خطأ («تعذّر تحميل الأرصدة» + «أعد المحاولة») · عادي.
+ * **وضع تعديل الصف** (§84 — `PeopleOrbit.kt`/`PeopleRowEdit.kt`): الخروج بـ«تم» أو ضغطة برّه الأشخاص (طبقة شفافة فوق الشاشة تحت المسرح) أو التمرير
+ * أو تبديل التبويب (الحالة بـ`remember` ⇒ بتروح مع الشاشة).
  */
 private const val RANGE = 420f
 private const val ROW = 106f
@@ -86,17 +81,23 @@ internal fun PeopleScreen() {
     val deps = LocalSpace.current
     val nav = LocalNavigator.current
     val version = PeopleChanges.version
+    val scope = rememberCoroutineScope()
     var retry by remember { mutableStateOf(0) }
     var load by remember(deps) { mutableStateOf<Load<PeopleTabUi>>(Load.Loading) }
     var me by remember(deps) { mutableStateOf<String?>(null) }
+    val editor = remember(deps) { RowEditor(scope) { deps.people.row.save(it) } }
     LaunchedEffect(deps, version, retry) {
-        val full = loadOf { app.masroufy.perf.PerfTrace.span("screen:people") { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency) } }
-        load = if (full !is Load.Failed) full else loadOf { peopleWithoutBalances(deps.people.people.listWithBalances()) }.let { if (it is Load.Ready) it else full }
+        val row = runCatching { deps.people.row.row() }.getOrNull()
+        val full = loadOf { app.masroufy.perf.PerfTrace.span("screen:people") { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency, row) } }
+        load = if (full !is Load.Failed) full else loadOf { peopleWithoutBalances(deps.people.people.listWithBalances(), row) }.let { if (it is Load.Ready) it else full }
+        (load as? Load.Ready)?.value?.let { editor.load(it.orbit.map { c -> c.id }, it.custom) }
         me = runCatching { deps.shell.me().displayName }.getOrNull()
     }
+    val pickable by produceState(emptyList<Id>(), deps, editor.ids, version) { value = runCatching { deps.people.row.pickable(editor.ids) }.getOrDefault(emptyList()) }
     val open = { p: PersonChip -> nav.push(PersonProfileRoute(p.id)) }
     val add = { nav.open(AddPersonSheetRoute) }
-    val ui = (load as? Load.Ready)?.value
+    val ui = (load as? Load.Ready)?.value?.withRow(editor.ids)
+    val chips = remember(ui) { ui?.all.orEmpty().associateBy { it.id } }
     val empty = ui != null && ui.total == 0
     val failed = load is Load.Failed
 
@@ -108,8 +109,8 @@ internal fun PeopleScreen() {
         val fullDrum = groups.size * (ROW + GAP)
         val scrolls = ui != null && !empty
         val extra = if (scrolls) max(0f, top + HERO_TOP + fullDrum - (viewDp - Space.tabContentBottom.value)) else 0f
-        val scroll = rememberScrollState()
-        val scope = rememberCoroutineScope()
+        // بيرجع لمكانه (المسرح مطوي ولا مفرود) مع الرجوع وتبديل التبويب — §85
+        val scroll = rememberEntryScrollState()
         val reduce = LocalReduceMotion.current
         val rangePx = with(density) { RANGE.dp.toPx() }
         val p = (scroll.value / rangePx).coerceIn(0f, 1f)
@@ -120,6 +121,14 @@ internal fun PeopleScreen() {
                 val target = if (p > 0.5f) rangePx.roundToInt() else 0
                 if (reduce) scroll.scrollTo(target) else scroll.animateScrollTo(target)
             }
+        }
+        // التمرير بيخرج من وضع التعديل (زي النموذج: أكتر من 8)
+        LaunchedEffect(editor.editing) {
+            if (!editor.editing) return@LaunchedEffect
+            val start = scroll.value
+            val limit = with(density) { 8.dp.toPx() }
+            snapshotFlow { scroll.value }.first { abs(it - start) > limit }
+            editor.exit()
         }
         val toggleAll = {
             scope.launch {
@@ -144,8 +153,8 @@ internal fun PeopleScreen() {
                     else {
                         val heroAlpha = max(0f, 1f - 2.2f * p)
                         PeopleStage(
-                            ui?.orbit.orEmpty(), me, open,
-                            Modifier.padding(horizontal = Space.gutter).offset(y = (top + HERO_TOP).dp)
+                            chips, editor, pickable.isNotEmpty(), me, open,
+                            Modifier.zIndex(5f).padding(horizontal = Space.gutter).offset(y = (top + HERO_TOP).dp)
                                 .graphicsLayer {
                                     translationY = -70f * p * density.density
                                     scaleX = 1f - 0.18f * p
@@ -153,6 +162,7 @@ internal fun PeopleScreen() {
                                     transformOrigin = TransformOrigin(0.5f, 0f)
                                     alpha = heroAlpha
                                 }.height(STAGE_H.dp),
+                            interactive = heroAlpha > 0.5f,
                         )
                     }
                     when {
@@ -171,10 +181,28 @@ internal fun PeopleScreen() {
                             else Boxes(ui, nav, below, enabled = p < 0.3f)
                         }
                     }
+                    // ضغطة في أي حتة برّه الأشخاص بتخرج من وضع التعديل (طبقة شفافة فوق الشاشة وتحت المسرح — ما بتمنعش التمرير)
+                    if (editor.editing) {
+                        Box(
+                            Modifier.fillMaxSize().zIndex(4f).pointerInput(editor) {
+                                awaitEachGesture {
+                                    awaitFirstDown(requireUnconsumed = false)
+                                    if (waitForUpOrCancellation() != null) editor.exit()
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }
+        val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        RowUndoBar(
+            editor,
+            Modifier.align(Alignment.BottomCenter)
+                .padding(start = Space.gutter, end = Space.gutter, bottom = Space.navBottom + Space.navHeight + Space.askGap + Space.askHeight + 14.dp + inset),
+        )
     }
+    PeopleRowPick(editor, pickable.mapNotNull { chips[it] })
 }
 
 /** الصفوف: أقرب 5 (مطوي فوق — بيظهر في الصفحة الكاملة بس)، وبعده الباقيين 5 5، و«إضافة» في الآخر. */
@@ -231,57 +259,4 @@ private fun Drum(groups: List<List<Cell>>, p: Float, reduce: Boolean, open: (Per
         }
     }
     return y
-}
-
-@Composable
-private fun Boxes(ui: PeopleTabUi, nav: app.masroufy.ui.nav.Navigator, modifier: Modifier, enabled: Boolean) {
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        SideBox(t(UiKey.PEOPLE_OWED_BOX), ui.owed, app.masroufy.ui.components.AmountTone.INCOME, t(UiKey.PEOPLE_OWED_COUNT, countOf(ui.owedPeople, Noun.PEOPLE)), enabled, Modifier.weight(1f)) { nav.push(OwedToYouRoute) }
-        val oweCount = if (ui.owePeople == 2) t(UiKey.PEOPLE_OWE_TWO) else t(UiKey.PEOPLE_OWE_COUNT, countOf(ui.owePeople, Noun.PEOPLE))
-        SideBox(t(UiKey.PEOPLE_OWE_BOX), ui.owe, app.masroufy.ui.components.AmountTone.EXPENSE, oweCount, enabled, Modifier.weight(1f)) { nav.push(YouOweRoute) }
-    }
-}
-
-@Composable
-private fun SideBox(title: String, lines: List<MoneyLine>?, tone: app.masroufy.ui.components.AmountTone, count: String, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
-    FloatingCard(modifier, onClick = onClick, enabled = enabled, clickLabel = title) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            BasicText(title, style = Type.bodyBold())
-            LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
-        }
-        if (lines == null) AmountText(null, LocalSpace.current.space.currency, Modifier.fillMaxWidth(), size = 22)
-        else for (l in lines) AmountText(l.minor, l.currency, Modifier.fillMaxWidth(), size = 22, color = tone.color)
-        BasicText(count, style = Type.caption().copy(color = Ink.muted))
-    }
-}
-
-@Composable
-private fun LoadingStage(top: Float) {
-    Column(Modifier.padding(horizontal = Space.gutter).offset(y = (top + HERO_TOP).dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Skeleton(Modifier.fillMaxWidth().height(STAGE_H.dp), radius = 28.dp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { repeat(5) { Skeleton(Modifier.size(56.dp), radius = 28.dp) } }
-    }
-}
-
-@Composable
-private fun EmptyPeople(add: () -> Unit, modifier: Modifier) {
-    EmptyState(
-        t(UiKey.PEOPLE_EMPTY_TITLE), t(UiKey.PEOPLE_EMPTY_BODY), modifier.padding(horizontal = Space.gutter),
-        action = { PrimaryButton(t(UiKey.PEOPLE_ADD_PERSON), onClick = add, modifier = Modifier.padding(top = 8.dp)) },
-    )
-}
-
-@Composable
-internal fun ErrorCard(onRetry: () -> Unit, modifier: Modifier = Modifier, title: String = t(UiKey.PEOPLE_ERROR_TITLE), body: String = t(UiKey.PEOPLE_ERROR_BODY)) {
-    Row(
-        modifier.fillMaxWidth().background(Ink.alertBg, RoundedCornerShape(18.dp)).padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            BasicText(title, style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
-            if (body.isNotBlank()) BasicText(body, style = Type.caption().copy(color = Ink.focus))
-        }
-        SecondaryButton(t(UiKey.PPL_RETRY), onClick = onRetry)
-    }
 }

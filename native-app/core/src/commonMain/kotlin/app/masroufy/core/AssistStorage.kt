@@ -55,6 +55,14 @@ sealed interface UserSetting {
     data class SmsReadPoint(val spaceId: String, val point: String, val asked: List<String>, override val updatedAt: String) : UserSetting {
         override val key: String get() = smsReadPointKey(spaceId)
     }
+
+    /**
+     * صف «أهم 5» في «الأشخاص» بترتيبك (OVERRIDES §84 — `core/PeopleRow.kt`): مستند واحد للحساب (الشخص مشترك بين البلاد). مفيش مستند =
+     * لسه ما رتبتش بإيدك ⇒ الافتراضي. التطبيق القديم ما بيقراش `userSettings` ⇒ ما بيتأثرش (زي طريقة الفضة §69.9).
+     */
+    data class PeopleRow(val personIds: List<Id>, override val updatedAt: String) : UserSetting {
+        override val key: String get() = PEOPLE_ROW_KEY
+    }
 }
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"

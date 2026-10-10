@@ -75,4 +75,17 @@ class OperationFiltersModelTest {
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertEquals("الشهر اللي فات", periodName(FilterPeriod.LAST))
     }
+
+    /** §85: فتحت عملية من نتايج التصفية ورجعت ⇒ نفس الفلتر (بيتحفظ مع خانته في سجل الرجوع بأنواع بسيطة بس). */
+    @Test fun filtersSurviveTheBackStack() {
+        val f = Filters(
+            query = "قهوة", amountText = "25", near = true, period = FilterPeriod.THREE, kinds = setOf(KindGroup.OUT, KindGroup.DEBT),
+            categories = setOf("c-food", NO_CATEGORY), wallets = setOf("w-bank"), review = ReviewFilter.NEEDS,
+        )
+        val scope = androidx.compose.runtime.saveable.SaverScope { it is String || it is Boolean || it is java.util.ArrayList<*> || it is List<*> }
+        for (x in listOf(f, Filters())) {
+            val saved = with(FiltersSaver) { scope.save(x) }!!
+            assertEquals(x, FiltersSaver.restore(saved))
+        }
+    }
 }

@@ -70,18 +70,19 @@ fun investmentUi(view: PortfolioView, projections: Map<Id, AssetProjectionView>,
     val others = view.rows.filter { !(it.asset.isRealEstate && !it.asset.archived) }.map { assetLine(it, today) }
     val missing = view.rows.filter { !it.asset.archived && it.position.marketValueMinor == null }
     val totalNa = when {
-        view.totals.marketValueMinor != null -> null
+        view.owned.marketValueMinor != null -> null
         missing.size == 1 -> uiText(UiKey.INVEST_TOTAL_NA_ONE, missing.single().asset.name)
-        else -> uiText(UiKey.INVEST_TOTAL_NA_MANY, sentenceNumber(view.totals.assetsWithoutPrice))
+        else -> uiText(UiKey.INVEST_TOTAL_NA_MANY, sentenceNumber(view.owned.assetsWithoutPrice))
     }
     return InvestmentUi(
         currency = currency,
         empty = view.rows.isEmpty(),
-        totalMinor = view.totals.marketValueMinor,
+        // الإجمالي من غير المتأرشف (رد المالك §82-21)
+        totalMinor = view.owned.marketValueMinor,
         totalNa = totalNa,
-        costMinor = view.totals.costBasisMinor,
-        unrealizedMinor = view.totals.unrealizedGainMinor,
-        realizedMinor = view.totals.realizedGainMinor.takeIf { view.rows.any { it.sales.isNotEmpty() } },
+        costMinor = view.owned.costBasisMinor,
+        unrealizedMinor = view.owned.unrealizedGainMinor,
+        realizedMinor = view.owned.realizedGainMinor.takeIf { view.rows.any { !it.asset.archived && it.sales.isNotEmpty() } },
         estates = estates,
         others = others,
     )

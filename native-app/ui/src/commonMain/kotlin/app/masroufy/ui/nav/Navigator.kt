@@ -16,7 +16,9 @@ import app.masroufy.ui.icons.Lucide
  * - **تبويب** (الرئيسية · العمليات · الأشخاص · الاستثمار) = تبديل سريع، والرجوع بيتمسح. الضغط على نفس التبويب وإنت عليه = ولا حاجة.
  * - **شاشة داخلية** ([push]) = بتدخل من الشمال (في العربي) فوق التبويب ومن غير شريط التنقل. **الرجوع** ([pop]) = بتخرج.
  * - **لوحة** ([open] بـ[SheetRoute]) = بتطلع من تحت فوق أي حاجة. زرار الرجوع بيقفل اللوحة الأول.
- * - حالة كل شاشة (التمرير والخانات) **بتتحفظ** لما تسيبها وترجعلها (`AppShell` — `SaveableStateHolder`)، ومنها التبويبات الأربعة.
+ * - حالة كل شاشة **بتتحفظ** لما تسيبها وترجعلها، على أي عمق، ومنها التبويبات الأربعة (OVERRIDES §85): الخانات والتبويب الفرعي والفلتر
+ *   والمفتوح بـ`rememberSaveable` (`AppShell` — `SaveableStateHolder` بمفتاح الخانة)، والتمرير في [scrolls] (`EntryScroll.kt` — بيرجّعه
+ *   حتى لو المحتوى لسه بيحمّل).
  * زرار الرجوع ([back]): لوحة ⇒ شاشة داخلية ⇒ تبويب غير الرئيسية ⇒ الرئيسية ⇒ `false` (التطبيق يتقفل).
  */
 interface Route {
@@ -65,7 +67,18 @@ class Navigator(start: Tab = Tab.HOME) {
     val atTabRoot: Boolean get() = screens.isEmpty()
 
     /** مفتاح الشاشة الظاهرة — لحفظ حالتها. */
-    val visibleKey: String get() = top?.let { "s${it.id}" } ?: "tab-${tab.name}"
+    val visibleKey: String get() = top?.let { keyOf(it) } ?: "tab-${tab.name}"
+
+    /**
+     * مكان التمرير لكل خانة في السجل (OVERRIDES §85): بيتكتب وإنت خارج من الشاشة، وبيرجع مع الرجوع على أي عمق، والتبويبات الأربعة كل واحد
+     * بمكانه. الخانة اللي بتخرج من السجل مكانها بيتمسح معاها (`ScrollMemory.kt` · `EntryScroll.kt`).
+     */
+    val scrolls = ScrollMemory(::isLive)
+
+    /** الخانة دي لسه في السجل؟ (التبويبات الأربعة دايمًا.) */
+    fun isLive(key: String): Boolean = key.startsWith("tab-") || screens.any { keyOf(it) == key }
+
+    private fun keyOf(e: StackEntry) = "s${e.id}"
 
     private fun entry(route: Route) = StackEntry(nextId++, route)
 
@@ -85,6 +98,7 @@ class Navigator(start: Tab = Tab.HOME) {
         if (screens.isEmpty()) return false
         app.masroufy.perf.PerfTrace.log("nav pop")
         screens.removeAt(screens.lastIndex)
+        scrolls.prune()
         motion = NavMotion.POP
         return true
     }
@@ -94,6 +108,7 @@ class Navigator(start: Tab = Tab.HOME) {
         val i = screens.indexOfLast { it.route.name == name }
         if (i < 0 || i == screens.lastIndex) return false
         while (screens.lastIndex > i) screens.removeAt(screens.lastIndex)
+        scrolls.prune()
         motion = NavMotion.POP
         return true
     }
@@ -102,15 +117,20 @@ class Navigator(start: Tab = Tab.HOME) {
     fun replace(route: Route) {
         if (screens.isNotEmpty()) screens.removeAt(screens.lastIndex)
         screens += entry(route)
+        scrolls.prune()
         motion = NavMotion.PUSH
     }
 
-    /** تبديل تبويب: الرجوع بيتمسح (زي النموذج). نفس التبويب ومفيش شاشة فوقه ⇒ ولا حاجة. */
+    /**
+     * تبديل تبويب: الشاشات الداخلية بتتمسح (زي النموذج)، و**كل تبويب بيرجع لمكانه** (التمرير وحالته — §85). نفس التبويب ومفيش شاشة فوقه
+     * ⇒ ولا حاجة.
+     */
     fun switchTab(target: Tab) {
         if (target == tab && screens.isEmpty()) return
         app.masroufy.perf.PerfTrace.log("nav tab $target")
         tab = target
         screens.clear()
+        scrolls.prune()
         motion = NavMotion.TAB
     }
 
@@ -141,6 +161,7 @@ class Navigator(start: Tab = Tab.HOME) {
     fun reset(target: Tab = Tab.HOME) {
         openSheets.clear()
         screens.clear()
+        scrolls.clear()
         tab = target
         motion = NavMotion.NONE
     }

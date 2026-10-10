@@ -11,6 +11,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.PeopleOverview
+import app.masroufy.core.PeopleRow
 import app.masroufy.core.PeopleSection
 import app.masroufy.core.PersonOutlineState
 import app.masroufy.core.PersonOverviewRow
@@ -46,26 +47,42 @@ internal data class PeopleTabUi(
     val owePeople: Int,
     /** الأشخاص ظاهرين من غير أرقام لأن قراية الأرصدة فشلت (حالة الخطأ في النموذج). */
     val balancesFailed: Boolean = false,
+    /** الصف بترتيبك (§84) ⇒ جملة «المُعالون أولًا…» بتختفي لأنها مابقتش صح. */
+    val custom: Boolean = false,
+    /** الكل بترتيب الشبكة (للصف بعد التعديل — [withRow]). */
+    val all: List<PersonChip> = orbit + rest,
 )
+
+/** نفس الشاشة بالصف [ids] بعد تعديل (سحب · «×» · «+»): اللي في الصف فوق بالترتيب ده، والباقي في الشبكة بترتيبها. */
+internal fun PeopleTabUi.withRow(ids: List<Id>): PeopleTabUi {
+    if (ids == orbit.map { it.id }) return this
+    val byId = all.associateBy { it.id }
+    val set = ids.toSet()
+    return copy(orbit = ids.mapNotNull { byId[it] }.take(ORBIT_SIZE), rest = all.filter { it.id !in set })
+}
 
 internal const val ORBIT_SIZE = 5
 
 /**
  * حالة الخطأ: `PeopleOverview` فشل، فالأسماء بس من `ManagePeople.listWithBalances` (من غير المؤرشفين ومن غير أي رقم) و«لك/عليك» «غير متاح».
+ * [row] = صف «أهم 5» من `ManagePeopleRow` (null = ما اتقراش ⇒ أول 5 بالترتيب ده).
  */
-internal fun peopleWithoutBalances(rows: List<PersonRow>): PeopleTabUi {
+internal fun peopleWithoutBalances(rows: List<PersonRow>, row: PeopleRow? = null): PeopleTabUi {
     val active = rows.filter { !it.person.archived }.map { PersonChip(it.person.id, it.person.name, initialOf(it.person.name), null, null) }
-    return PeopleTabUi(active.take(ORBIT_SIZE), active.drop(ORBIT_SIZE), active.size, null, 0, null, 0, balancesFailed = true)
+    val byId = active.associateBy { it.id }
+    val orbit = (row?.ids ?: active.map { it.id }).mapNotNull { byId[it] }.take(ORBIT_SIZE)
+    return PeopleTabUi(orbit, active.filter { it !in orbit }, active.size, null, 0, null, 0, balancesFailed = true, custom = row?.custom == true, all = active)
 }
 
 /**
- * الترتيب: «لك عندهم» ثم «عليك لهم» ثم «مناسبات قريبة» ثم الباقي — زي أقسام `PeopleOverview` (من غير تكرار).
- * ⚠️ النموذج بيقول «المُعالون أولًا ثم الأكثر تعاملًا» — **مالوش حسبة في كوتلن** (missingLogic) ⇒ الترتيب ده لحد ما تتبني.
+ * الشبكة: «لك عندهم» ثم «عليك لهم» ثم «مناسبات قريبة» ثم الباقي — زي أقسام `PeopleOverview` (من غير تكرار).
+ * الصف فوق شخصيتك من [row] (`ManagePeopleRow` — ترتيبك، أو «المُعالون أولًا ثم الأكثر تعاملًا» — §84)؛ اللي مش في الصف بيفضل في الشبكة.
  */
-internal fun peopleTabUi(o: PeopleOverview, spaceId: String, currency: Currency): PeopleTabUi {
+internal fun peopleTabUi(o: PeopleOverview, spaceId: String, currency: Currency, row: PeopleRow? = null): PeopleTabUi {
     val byId = o.rows.associateBy { it.person.id }
     val order = (o.sections.flatMap { it.personIds } + o.rows.map { it.person.id }).distinct().mapNotNull { byId[it] }
-    val orbit = order.filter { !it.person.archived }.take(ORBIT_SIZE)
+    val active = order.filter { !it.person.archived }.associateBy { it.person.id }
+    val orbit = (row?.ids ?: active.keys.toList()).mapNotNull { active[it] }.take(ORBIT_SIZE)
     val rest = order.filter { it !in orbit }
     val totals = o.totals.filter { it.spaceId == spaceId }
     fun lines(pick: (app.masroufy.core.PeopleTotal) -> Halalas) =
@@ -74,11 +91,13 @@ internal fun peopleTabUi(o: PeopleOverview, spaceId: String, currency: Currency)
     return PeopleTabUi(
         orbit = orbit.map { chipOf(it) },
         rest = rest.map { chipOf(it) },
+        all = order.map { chipOf(it) },
         total = order.size,
         owed = lines { it.owedToYouMinor },
         owedPeople = count(PeopleSection.OWED_TO_YOU),
         owe = lines { it.youOweMinor },
         owePeople = count(PeopleSection.YOU_OWE),
+        custom = row?.custom == true,
     )
 }
 

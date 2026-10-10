@@ -206,7 +206,7 @@ private fun LimitSection(ui: CategoryBudgetUi, deps: BudgetsDeps, refresh: () ->
         monthName = ui.monthName,
         current = ui.limit,
         spentMinor = ui.spentMinor,
-        averageMinor = ui.averageMinor,
+        averageMinor = ui.limitAverageMinor,
         currency = ui.currency,
         onDismiss = { open = false },
         onSave = { ok ->

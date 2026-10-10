@@ -23,6 +23,9 @@ val BULK_KINDS = listOf(
     EconomicKind.COMMISSION, EconomicKind.OVERTIME, EconomicKind.FREELANCE, EconomicKind.PERSONAL_SALE,
 )
 
+/** أقدم يوم بتقراه «كل السجل» ([ReviewHistory.previewAll]) — قبل أي رسالة بنك أو كشف ممكن يتستورد. */
+const val ALL_HISTORY_FLOOR = "1970-01-01"
+
 data class HistoryPreview(
     val rows: List<Transaction>,
     val categoryPlan: CategorizationReport,
@@ -52,8 +55,25 @@ class ReviewHistory(private val deps: CategorizeTransactionsDeps) {
         return rows.values.toList()
     }
 
-    suspend fun preview(from: String, to: String): HistoryPreview {
-        val rows = read(from, to)
+    suspend fun preview(from: String, to: String): HistoryPreview = previewOf(read(from, to))
+
+    /**
+     * «طبّق القواعد على السابق» على **كل السجل** (رد المالك OVERRIDES §82-16 — مش آخر 5 سنين): من [ALL_HISTORY_FLOOR] لحد [to]،
+     * على دفعات بالسنة (كل استعلام محدود بمداه — ARCHITECTURE §5.6). المعاينة والتطبيق زي [preview] بالظبط.
+     */
+    suspend fun previewAll(to: String): HistoryPreview {
+        parseIsoDate(to)
+        val rows = LinkedHashMap<Id, Transaction>()
+        var end = to
+        while (end >= ALL_HISTORY_FLOOR) {
+            val start = maxOf(ALL_HISTORY_FLOOR, dayNumberToIso(toDayNumber(parseIsoDate(end)) - 365))
+            for (t in deps.txns.listByDateRange(start, end)) rows[t.id] = t
+            end = dayNumberToIso(toDayNumber(parseIsoDate(start)) - 1)
+        }
+        return previewOf(rows.values.sortedWith(compareBy<Transaction> { it.occurredAt }.thenBy { it.sourceOrder }))
+    }
+
+    private suspend fun previewOf(rows: List<Transaction>): HistoryPreview {
         val plan = categorize.plan(rows)
         val groups = LinkedHashMap<String, MutableList<Transaction>>()
         for (t in rows) {

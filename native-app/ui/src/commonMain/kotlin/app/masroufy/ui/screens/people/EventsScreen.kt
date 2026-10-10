@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +61,7 @@ internal fun EventsScreen() {
     val version = PeopleChanges.version
     var retry by remember { mutableStateOf(0) }
     var load by remember(deps) { mutableStateOf<Load<EventsUi>>(Load.Loading) }
-    var archivedOpen by remember { mutableStateOf(false) }
+    var archivedOpen by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(deps, version, retry) {
         load = loadOf {
             val names = runCatching { deps.people.people.listWithBalances().associate { it.person.id to it.person.name } }.getOrDefault(emptyMap())

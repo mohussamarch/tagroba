@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.rememberLazyListState
+import app.masroufy.ui.nav.rememberEntryLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,7 +54,8 @@ fun TabScaffold(
     header: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
-    val state = rememberLazyListState()
+    // بيرجع لمكانه مع الرجوع وتبديل التبويب (§85 — في الملّاح، مش في كل شاشة)
+    val state = rememberEntryLazyListState()
     LazyColumn(
         modifier.fillMaxSize(),
         state = state,
@@ -94,6 +95,7 @@ fun InnerScaffold(
     val nav = LocalNavigator.current
     LazyColumn(
         modifier.fillMaxSize(),
+        state = rememberEntryLazyListState(),
         contentPadding = PaddingValues(start = Space.gutter, end = Space.gutter, top = Space.gutter + statusTop, bottom = 48.dp),
         verticalArrangement = Arrangement.spacedBy(Space.block),
     ) {

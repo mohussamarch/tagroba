@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.glass.backdropSource
 import app.masroufy.ui.glass.rememberBackdrop
+import app.masroufy.ui.nav.LocalEntryKey
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.LocalRegistry
 import app.masroufy.ui.nav.NavMotion
@@ -129,7 +130,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 val sheet = s.route as SheetRoute
                 registry.Sheet(sheet) { nav.close(sheet) }
             }
-            AddOperationSheet(adding) { adding = false }
+            // «بصوتك» في «+» ⇒ المساعد بيتفتح ويسمعك هناك (رد المالك §82-2 — زي ميكروفون الشريط)
+            AddOperationSheet(adding, onClose = { adding = false }, onVoice = { adding = false; ask = true })
             // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`). القفل ⇒ «البيانات اتغيرت»: المساعد ممكن يكون
             // سجّل عملية أو قفل كارت ⇒ الرئيسية والجرس يقروا تاني (اتلقطت في تجربة المحاكي: «معك الآن» فضل زي ما هو)
             AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null; shell.changes.changed() }) { target ->
@@ -190,7 +192,10 @@ private fun ScreenHost(nav: Navigator, registry: RouteRegistry) {
             },
         ) {
             holder.SaveableStateProvider(visible) {
-                if (top == null) registry.Root(tab) else registry.Screen(top.route)
+                // مفتاح الخانة ⇒ مكان التمرير بيتحفظ معاها ويرجع مع الرجوع (§85 — `EntryScroll.kt`)
+                CompositionLocalProvider(LocalEntryKey provides visible) {
+                    if (top == null) registry.Root(tab) else registry.Screen(top.route)
+                }
             }
         }
     }

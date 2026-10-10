@@ -14,6 +14,7 @@ import app.masroufy.usecase.ManageEventPrep
 import app.masroufy.usecase.ManageEvents
 import app.masroufy.usecase.ManageOccasions
 import app.masroufy.usecase.ManagePeople
+import app.masroufy.usecase.ManagePeopleRow
 import app.masroufy.usecase.ManagePersonCircles
 import app.masroufy.usecase.ManageProjects
 
@@ -27,6 +28,9 @@ interface PeopleDeps {
 
     /** الأشخاص بالتزاماتهم المفتوحة · إضافة · أرشفة · دين قديم. */
     val people: ManagePeople
+
+    /** صف «أهم 5» فوق شخصيتك بترتيبك (OVERRIDES §84): الصف · الحفظ مع كل تغيير · «أضف للصف». */
+    val row: ManagePeopleRow
 
     /** الدايرة والصلة بيك والصلات بين الأشخاص. */
     val circles: ManagePersonCircles

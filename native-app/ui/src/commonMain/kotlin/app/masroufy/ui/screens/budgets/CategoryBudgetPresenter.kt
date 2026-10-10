@@ -56,6 +56,8 @@ data class CategoryBudgetUi(
     val pace2: String?,
     val averageMinor: Halalas?,
     val averageNote: String,
+    /** «استخدم المتوسط» في لوحة السقف = متوسط آخر 3 شهور (رد المالك §82-17 — من `LoadBudgetScreen`، null = غير متاح). */
+    val limitAverageMinor: Halalas? = null,
     val anomalyText: String,
     val anomalyAlert: Boolean,
     val limit: LimitCurrent,
@@ -146,6 +148,7 @@ fun mapCategoryBudget(
         pace2 = if (known && status == null && spent != 0L) t(UiKey.CAT_BUDGET_PACE_HINT) else null,
         averageMinor = line?.averageMinor,
         averageNote = if (line?.averageMinor != null) t(UiKey.BUDGETS_AVG_NOTE) else t(UiKey.CAT_BUDGET_AVG_NA_NOTE, sentenceNumber(MIN_PERIODS_FOR_AVERAGE)),
+        limitAverageMinor = data.limitAverageByCategory[categoryId],
         anomalyText = when {
             !known -> t(TextKey.NOT_AVAILABLE)
             spent == 0L -> t(UiKey.CAT_BUDGET_ANOM_NONE)

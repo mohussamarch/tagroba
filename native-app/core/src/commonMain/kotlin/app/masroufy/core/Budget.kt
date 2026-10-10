@@ -75,6 +75,19 @@ fun averageCompletedSpend(periods: List<CompletedPeriodSpend>): AverageResult {
     return AverageResult(JsText.round(total.toDouble() / used.size).toLong(), used.map { it.periodKey }, excluded, uiText(TextKey.AVERAGE_OF_PERIODS, used.size.toString()))
 }
 
+/** «استخدم المتوسط» في لوحة السقف = متوسط **آخر 3 شهور** (رد المالك OVERRIDES §82-17). */
+const val LIMIT_AVERAGE_PERIODS = 3
+
+/**
+ * متوسط آخر [LIMIT_AVERAGE_PERIODS] فترات مكتملة **بالظبط** ([periods] الأحدث الأول — الجارية برّه): التلاتة لازم موثوقين وفيهم عمليات،
+ * وإلا null («غير متاح» — مش متوسط من شهرين ولا صفر مؤكد، CLAUDE.md #10). شهر التصنيف ما صرفش فيه = صفر (لو الشهر نفسه موثوق).
+ */
+fun lastPeriodsAverage(periods: List<CompletedPeriodSpend>): Halalas? {
+    val last = periods.take(LIMIT_AVERAGE_PERIODS)
+    if (last.size < LIMIT_AVERAGE_PERIODS || last.any { !it.reliable || it.transactionCount == 0 }) return null
+    return averageCompletedSpend(last).averageMinor
+}
+
 const val MIN_HISTORY_FOR_ANOMALY = 3
 private const val MIN_RELATIVE_DEVIATION_PER_THOUSAND = 200L
 private const val ROBUST_MULTIPLIER = 3L

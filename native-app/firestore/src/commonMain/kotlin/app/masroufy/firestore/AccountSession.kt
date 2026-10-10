@@ -143,7 +143,7 @@ class AccountSession(
             // **مهلة واحدة** للفتح كله (كانت مهلتين ورا بعض + قراية سجل البلاد من السيرفر ⇒ ~14 ثانية على المحاكي)
             suspend fun upTo(block: suspend () -> Unit) {
                 if (!seenBefore) return block()
-                val left = OFFLINE_GRACE_MS - started.elapsedNow().inWholeMilliseconds
+                val left = openingWaitLeft(started.elapsedNow().inWholeMilliseconds)
                 if (left > 0) withTimeoutOrNull(left) { block() }
             }
             upTo { accountSync.awaitComplete() }
@@ -202,8 +202,15 @@ class AccountSession(
     }
 }
 
-/** أقصى انتظار للسيرفر عند الفتح على جهاز عنده نسخة كاملة قبل كده (بعده بيفتح من نسخة الجهاز والمزامنة بتكمّل في الخلفية). */
-const val OFFLINE_GRACE_MS: Long = 2_500
+/**
+ * أقصى انتظار للسيرفر عند الفتح على جهاز عنده نسخة كاملة قبل كده (بعده بيفتح من نسخة الجهاز والمزامنة بتكمّل في الخلفية).
+ * **نص ثانية** (اختيار المالك OVERRIDES §86 — كانت 2.5 ثانية): الفتح أسرع، والمقابل إن رقم ممكن يتغيّر قدامه بعد لحظة لو حاجة اتغيّرت
+ * من التطبيق القديم أو جهاز تاني (اللحاق `FirestoreSync.remoteChanges` بيقرا تاني لوحده).
+ */
+const val OFFLINE_GRACE_MS: Long = 500
+
+/** الباقي من مهلة الفتح الواحدة بعد [elapsedMs] (0 = ما تستناش خالص). */
+fun openingWaitLeft(elapsedMs: Long): Long = (OFFLINE_GRACE_MS - elapsedMs).coerceAtLeast(0)
 
 /** «الجهاز ده خلّص تنزيل أول كامل للحساب ده» — على الجهاز بس (أندرويد: `AndroidFirstSyncMarks` في `:androidApp`). */
 interface FirstSyncMarks {

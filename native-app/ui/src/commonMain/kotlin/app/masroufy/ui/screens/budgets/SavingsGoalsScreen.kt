@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,7 +69,7 @@ fun SavingsGoalsScreen() {
     }
     var openId by remember { mutableStateOf<String?>(null) }
     var newOpen by remember { mutableStateOf(false) }
-    var archivedOpen by remember { mutableStateOf(false) }
+    var archivedOpen by rememberSaveable { mutableStateOf(false) }
     val ui = (state as? Load.Ready)?.value
     DetailScaffold(
         title = t(UiKey.GOALS_TITLE),

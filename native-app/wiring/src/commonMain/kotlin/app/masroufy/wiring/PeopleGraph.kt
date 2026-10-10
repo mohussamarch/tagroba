@@ -29,6 +29,8 @@ import app.masroufy.usecase.ManageOccasions
 import app.masroufy.usecase.ManageOccasionsDeps
 import app.masroufy.usecase.ManagePeople
 import app.masroufy.usecase.ManagePeopleDeps
+import app.masroufy.usecase.ManagePeopleRow
+import app.masroufy.usecase.ManagePeopleRowDeps
 import app.masroufy.usecase.ManagePersonCircles
 import app.masroufy.usecase.ManagePersonCirclesDeps
 import app.masroufy.usecase.ManageProjects
@@ -46,13 +48,21 @@ class PeopleGraph(c: AreaContext) : PeopleDeps {
     private val env = c.env
     private val legs = SpaceLegsOf(c.space.id, r.spaceTransfers)
 
-    override val overview: LoadPeopleOverview by lazy {
-        // البلد الشغالة الأول، وبعدها باقي البلاد المفتوحة (لـ`acrossSpaces`) — كل بلد بديونها وأحداثها، من غير جمع بين عملتين
+    // البلد الشغالة الأول، وبعدها باقي البلاد المفتوحة (لـ`acrossSpaces`) — كل بلد بديونها وأحداثها، من غير جمع بين عملتين
+    private val sources: List<PeopleSpaceSource> by lazy {
         val others = runCatching { c.session.spaces() }.getOrDefault(emptyList()).filter { it.first.id != c.space.id }
-        val sources = (listOf(c.space to r) + others).map { (s, repos) ->
+        (listOf(c.space to r) + others).map { (s, repos) ->
             PeopleSpaceSource(s, repos.obligations, repos.settlements, repos.lifeEvents, repos.eventLinks, repos.transactions)
         }
+    }
+
+    override val overview: LoadPeopleOverview by lazy {
         LoadPeopleOverview(LoadPeopleOverviewDeps(r.people, r.personProfiles, r.personRelations, r.occasions, sources))
+    }
+
+    // الترتيب في `userSettings` على الحساب (بيتزامن ويدخل النسخة الشاملة — §84)، والتعاملات من نفس بلاد الشاشة
+    override val row: ManagePeopleRow by lazy {
+        ManagePeopleRow(ManagePeopleRowDeps(r.people, r.personProfiles, r.assistant.settings, sources, env.clock))
     }
 
     override val people = ManagePeople(

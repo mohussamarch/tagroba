@@ -37,7 +37,11 @@ import app.masroufy.port.IdGenerator
 
 data class AssetRow(val asset: Asset, val position: AssetPosition, val lots: List<AssetLot>, val sales: List<AssetSale>)
 
-data class PortfolioView(val rows: List<AssetRow>, val totals: PortfolioTotals)
+/**
+ * [totals] = كل الأصول (زي التطبيق القديم — ملف المرجع `investFlow`)، و[owned] = **من غير المتأرشف** (رد المالك OVERRIDES §82-21:
+ * «أصل متأرشف برّه الإجمالي») — ده اللي الشاشة والمساعد بيعرضوه.
+ */
+data class PortfolioView(val rows: List<AssetRow>, val totals: PortfolioTotals, val owned: PortfolioTotals = totals)
 
 data class NewAsset(
     val name: String,
@@ -121,7 +125,7 @@ class ManageAssets(private val deps: ManageAssetsDeps) {
                 b.position.costBasisMinor.compareTo(a.position.costBasisMinor)
             }
         }
-        return PortfolioView(rows, computePortfolioTotals(rows.map { it.position }))
+        return PortfolioView(rows, computePortfolioTotals(rows.map { it.position }), computePortfolioTotals(rows.filter { !it.asset.archived }.map { it.position }))
     }
 
     suspend fun addAsset(input: NewAsset): Asset {

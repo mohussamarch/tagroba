@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,7 +63,7 @@ internal fun ProjectsScreen() {
     val version = PeopleChanges.version
     var retry by remember { mutableStateOf(0) }
     var load by remember(deps) { mutableStateOf<Load<ProjectsUi>>(Load.Loading) }
-    var archOpen by remember { mutableStateOf(false) }
+    var archOpen by rememberSaveable { mutableStateOf(false) }
     var creating by remember { mutableStateOf(false) }
     LaunchedEffect(deps, version, retry) {
         load = loadOf { projectsUi(deps.people.projects.list(), deps.space.currency, deps.shell.today()) { k, s -> deps.people.money.projectHeadline(k, s) } }
