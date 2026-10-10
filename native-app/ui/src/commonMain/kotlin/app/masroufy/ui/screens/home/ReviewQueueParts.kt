@@ -36,6 +36,7 @@ import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SelectChip
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.mintSheen
+import app.masroufy.ui.text.failureText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -121,7 +122,7 @@ internal fun RulesCard() {
                                 val today = deps.shell.today()
                                 val from = dayNumberToIso(toDayNumber(parseIsoDate(today)) - RULES_DAYS)
                                 RulesState.Preview(deps.home.history.preview(from, today), deps.home.categories.list())
-                            }.getOrElse { RulesState.Failed(it.message ?: t(TextKey.SHELL_LOAD_FAILED)) }
+                            }.getOrElse { RulesState.Failed(failureText(it, TextKey.SHELL_LOAD_FAILED)) }
                         }
                     }, modifier = Modifier.fillMaxWidth(), enabled = state != RulesState.Loading)
                 }
@@ -143,7 +144,7 @@ internal fun RulesCard() {
                         scope.launch {
                             state = runCatching {
                                 RulesState.Done(deps.home.history.applyCategories(s.preview.rows.map { it.id }, s.preview.categoryPlan).changed.size)
-                            }.getOrElse { RulesState.Failed(it.message ?: t(TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY)) }
+                            }.getOrElse { RulesState.Failed(failureText(it, TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY)) }
                         }
                     }, modifier = Modifier.fillMaxWidth())
                 }

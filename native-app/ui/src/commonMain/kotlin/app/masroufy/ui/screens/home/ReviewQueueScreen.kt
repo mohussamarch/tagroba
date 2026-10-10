@@ -36,6 +36,7 @@ import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.screens.common.InnerScaffold
+import app.masroufy.ui.text.failureText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -75,7 +76,7 @@ fun ReviewQueueScreen() {
         scope.launch {
             runCatching { deps.home.kinds.setOne(item.id, kind) }
                 .onSuccess { done = done + (item.id to kind); error = null }
-                .onFailure { error = it.message ?: t(TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
+                .onFailure { error = failureText(it, TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
         }
     }
     fun confirmGroup(group: ReviewGroup) {
@@ -87,7 +88,7 @@ fun ReviewQueueScreen() {
                     if (r.applied > 0) done = done + group.items.filter { it.id in ids && it.suggestion != null }.associate { it.id to it.suggestion!! }
                     error = null
                 }
-                .onFailure { error = it.message ?: t(TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
+                .onFailure { error = failureText(it, TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
         }
     }
     InnerScaffold(t(TextKey.REVIEW_QUEUE_TITLE)) {
