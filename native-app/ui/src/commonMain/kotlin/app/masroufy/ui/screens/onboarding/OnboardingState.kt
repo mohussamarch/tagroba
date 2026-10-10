@@ -12,6 +12,7 @@ import app.masroufy.core.bankLabel
 import app.masroufy.core.currencySymbol
 import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.components.amountLabel
+import app.masroufy.ui.screens.more.SpacesAdmin
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.AddWalletInput
 import app.masroufy.usecase.OnboardingInput
@@ -195,6 +196,20 @@ fun finishInput(profile: UserProfile, answers: OnbAnswers, withMoney: Boolean = 
         bankByKey(b.bankKey)?.let { AddWalletInput(it.walletKind, bankLabel(it), b.last4, b.openingMinor, null, it.key) }
     }
     return OnboardingInput(profile.copy(payday = answers.day ?: profile.payday), cashMinor = answers.cashMinor?.takeIf { withMoney }, debts = emptyList(), bank = bank)
+}
+
+/**
+ * البلد المختارة مش مفتوحة في الحساب ⇒ إنشاؤها من نفس طريق «البلدان» ([admin] — بتتفتح في نفس الجلسة)، أو رجوعها من الأرشيف لو كانت
+ * اتعملت قبل كده (بلد واحدة = حساب واحد). نجاح بـnull = مفيش حاجة تتعمل (مفتوحة أصلًا · ما اختارش · الإنشاء مش متاح والخيار كان مقفول).
+ * فشل ⇒ الشاشة بتفضل على «جاهز» برسالة (مش بتدخل السعودية في صمت).
+ */
+suspend fun countrySpaceFor(answers: OnbAnswers, open: List<Space>, admin: SpacesAdmin?): Result<String?> {
+    val code = answers.countryCode ?: return Result.success(null)
+    if (open.any { it.countryCode.equals(code, true) } || admin == null) return Result.success(null)
+    return runCatching {
+        val old = admin.archived().firstOrNull { it.countryCode.equals(code, true) }
+        (if (old != null) admin.unarchive(old.id) else admin.create(code)).id
+    }
 }
 
 /** البلد اللي هنتبدل لها بعد الحفظ: مصر اختارها ومساحتها مفتوحة ومش هي الشغالة. null = نفضل مكاننا. */

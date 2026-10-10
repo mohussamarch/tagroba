@@ -18,7 +18,10 @@ interface MoreHooks {
     /** إضافة محفظة وتعديل رصيد البداية (`WalletAddSheet` — مفيش حالة استخدام لإدارة المحافظ: SCREENS.md «Wallets»). */
     val walletEditor: WalletEditor? get() = null
 
-    /** إضافة بلد · أرشفة · رجوع من الأرشيف (`ManageSpaces` مش متجمّع على الجوال: مصدر شجرة التصنيفات وإعادة فتح البلاد في الجلسة). */
+    /**
+     * إضافة بلد · أرشفة · رجوع من الأرشيف — **متوصّل** في `MoreGraph` (`ManageSpaces` بالشجرة المضمّنة `BundledSeeds`، والجلسة بتفتح البلد
+     * الجديدة وتقفل المؤرشفة من غير إعادة تشغيل — `SessionSpacesAdmin`). null بس لو الجلسة مالهاش إدارة بلاد (المعاينة).
+     */
     val spacesAdmin: SpacesAdmin? get() = null
 
     /** لغة التطبيق المحفوظة على الجهاز (`Texts.language` بتتظبط مرة عند البداية — مفيش مكان بيتحفظ فيه الاختيار). */

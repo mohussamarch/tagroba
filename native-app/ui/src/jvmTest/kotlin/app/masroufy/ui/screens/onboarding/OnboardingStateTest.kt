@@ -78,6 +78,30 @@ class OnboardingStateTest {
         assertEquals(OnbReply.COUNTRY_EG, pickCountry(OnbState(OnbStep.COUNTRY), "eg").reply)
     }
 
+    /** «ادخل التطبيق» بمصر (رد المالك §88-8): بتتعمل من طريق «البلدان»، أو بترجع من الأرشيف، والفشل بيرجع فشل (مش السعودية في صمت). */
+    @Test
+    fun egyptIsCreatedOrBroughtBackThroughTheSpacesAdmin() = kotlinx.coroutines.runBlocking<Unit> {
+        val calls = mutableListOf<String>()
+        fun admin(archived: List<Space> = emptyList(), fail: Boolean = false) = object : app.masroufy.ui.screens.more.SpacesAdmin {
+            override suspend fun create(countryCode: String): Space { calls += "create:$countryCode"; if (fail) error("مفيش نت"); return egypt }
+            override suspend fun archive(spaceId: String): Space = error("مش متوقع")
+            override suspend fun unarchive(spaceId: String): Space { calls += "back:$spaceId"; return egypt }
+            override suspend fun archived(): List<Space> = archived
+        }
+        val eg = OnbAnswers(countryCode = "EG")
+        assertEquals("eg", countrySpaceFor(eg, listOf(saudi), admin()).getOrNull())
+        assertEquals("eg", countrySpaceFor(eg, listOf(saudi), admin(archived = listOf(egypt.copy(archived = true)))).getOrNull())
+        assertEquals(listOf("create:EG", "back:eg"), calls)
+        assertTrue(countrySpaceFor(eg, listOf(saudi), admin(fail = true)).isFailure)
+        calls.clear()
+        // مفتوحة أصلًا · اختار السعودية · ما اختارش · الإنشاء مش متاح ⇒ ولا نداء
+        assertNull(countrySpaceFor(eg, listOf(saudi, egypt), admin()).getOrThrow())
+        assertNull(countrySpaceFor(OnbAnswers(countryCode = "SA"), listOf(saudi), admin()).getOrThrow())
+        assertNull(countrySpaceFor(OnbAnswers(), listOf(saudi), admin()).getOrThrow())
+        assertNull(countrySpaceFor(eg, listOf(saudi), null).getOrThrow())
+        assertTrue(calls.isEmpty())
+    }
+
     @Test
     fun bankSmsIsOffOnIphoneWithItsReason() {
         val ios = sourceOptions(smsReadable = false)

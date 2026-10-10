@@ -10,6 +10,7 @@ import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.app.ShellDeps
 import app.masroufy.ui.app.SpaceChoice
 import app.masroufy.ui.nav.Tab
+import app.masroufy.ui.screens.more.SpacesAdmin
 import app.masroufy.core.MainWalletSource
 import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
@@ -46,6 +47,9 @@ class ShellGraph(
     val addTransaction = AddTransaction(AddTransactionDeps(repos.transactions, repos.wallets, env.ids, env.clock))
     private val quickAdd = QuickAddOperation(repos.wallets, repos.categories, repos.profile, addTransaction, space.currency, env.today)
     val profile = ManageProfile(ManageProfileDeps(repos.profile, session.account, env.clock, repos.incomeSources))
+
+    /** إنشاء بلد · أرشفة · رجوع (§41 · §64) — **نفس الكائن** لـ«البلدان» (`MoreGraph`) و«أول تشغيل» (`OnboardingGraph`). null لو الجلسة مالهاش. */
+    val spacesAdmin: SpacesAdmin? = session.spaceAdmin()?.let { SessionSpacesAdmin(it, env.clock) }
 
     override fun today() = env.today()
 

@@ -14,14 +14,17 @@ import app.masroufy.usecase.OnboardAccountDeps
 /**
  * «أول تشغيل» — ملفك (`c.shell.profile` نفس كائن الهيكل) · `OnboardAccount` (`start` القيم الموجودة · `finish` التأكد ثم الكتابة).
  * **الملف ده بتاع المنطقة بس.** حالة الاستخدام بتتبني من [AreaContext] بنفس اعتماداتها في اختبارات `:app`. `ManagePeople` هنا عشان
- * `OnboardAccount` محتاجه للديون الافتتاحية — رحلة §63 ما بتسألش عن ديون، فمش بيتنادى فعلًا. نقاط الربط (الشكل · إنشاء بلد) **null**
- * لحد ما منطقهم يتبني (نفس نقط «المزيد») ⇒ الشاشة بتقول «غير متاح بعد».
+ * `OnboardAccount` محتاجه للديون الافتتاحية — رحلة §63 ما بتسألش عن ديون، فمش بيتنادى فعلًا. إنشاء بلد **متوصّل** (نفس كائن «البلدان» —
+ * `c.shell.spacesAdmin`) ⇒ مصر مفتوحة في كارت البلد. نقطة ربط الشكل **null** لحد ما منطقها يتبني ⇒ الشاشة بتقول «غير متاح بعد».
  * **حساب جديد خالص** (البلد الأساسية بس — الحساب الجديد بيبدأ فيها): التجهيز بالمراجع المضمّنة في التطبيق ([BundledSeeds]) وعلامة التجهيز.
  */
 class OnboardingGraph(c: AreaContext) : OnboardingDeps {
     private val r = c.repos
 
     override val profile = c.shell.profile
+
+    /** مصر في كارت البلد (رد المالك §88-8): نفس طريق «البلدان» — بتتعمل وتتفتح في نفس الجلسة وبعدين التبديل لها. */
+    override val spacesAdmin = c.shell.spacesAdmin
 
     override val onboard: OnboardAccount by lazy {
         val people = ManagePeople(

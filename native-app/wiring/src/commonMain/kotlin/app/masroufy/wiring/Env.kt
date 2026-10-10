@@ -59,6 +59,13 @@ interface SessionLinks {
      * بـ«غير متاح» والقايمة بتتعرض عادي.
      */
     fun spaceTransferWriter(): app.masroufy.port.SpaceTransferWriter? = null
+
+    /**
+     * إدارة البلاد (`ManageSpaces` — §41 · §64 · رد المالك §88-8 «اضافة دولة زي مصر»): مكانها الجلسة — السجل على مستوى الحساب، والبلد
+     * الجديدة محتاجة مكان في فايربيز، وبعد أي تغيير الجلسة بتفتحها أو تقفلها من غير إعادة تشغيل ([SpaceAdminLinks.reopen]).
+     * `null` (الافتراضي — المعاينة والآيفون لحد ما يتجمّع) ⇒ «إضافة بلد غير متاحة بعد» في «البلدان» و«أول تشغيل».
+     */
+    fun spaceAdmin(): SpaceAdminLinks? = null
 }
 
 /**

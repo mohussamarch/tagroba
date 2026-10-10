@@ -1,6 +1,7 @@
 package app.masroufy.firestore
 
 import app.masroufy.core.ACCOUNT_GROUPS
+import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.SPACE_GROUPS
 import app.masroufy.core.Space
 import app.masroufy.core.Texts
@@ -11,6 +12,7 @@ import app.masroufy.port.ActiveSpaceStore
 import app.masroufy.port.AuthPort
 import app.masroufy.port.AuthUser
 import dev.gitlive.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -102,16 +104,33 @@ class AccountSession(
         return switched
     }
 
-    /** بعد ما بلد اتعملت أو اترجعت من الأرشيف (هنا أو من جهاز تاني): مزامنة للبلاد الجديدة، والجلسة بتفضل «جاهز». */
+    /**
+     * بعد ما بلد اتعملت أو اتأرشفت أو رجعت من الأرشيف (هنا أو من جهاز تاني — «البلدان» و«أول تشغيل» بينادوها): الجديدة بتتفتح
+     * (مزامنة لحد التنزيل الأول) والمؤرشفة بتتقفل (مستمعينها بيقفوا وذاكرتها بتتمسح)، والبلد الشغالة من الجهاز تاني (المؤرشفة ⇒ السعودية).
+     * الجلسة بتفضل «جاهز» **من غير إعادة تشغيل**. الحالة اتغيرت في النص (تبديل بلد مثلًا) ⇒ بيعيد على الجديدة بدل ما التغيير يضيع.
+     */
     suspend fun refreshSpaces() {
-        val ready = current.value as? State.Ready ?: return
-        val registry = FirestoreSpaceRegistry(ready.account).listAll()
-        val added = registry.filter { !it.archived && it.id !in ready.spaces }.map { openSpace(ready.user.uid, it, ready.account) }
-        added.forEach { it.sync.awaitComplete() }
-        val spaces = ready.spaces + added.associateBy { it.space.id }
-        val active = activeSpaceOf(activeStore(ready.user.uid).read(), registry.filter { it.id in spaces })
-        if (current.compareAndSet(ready, ready.copy(spaces = spaces, activeSpaceId = active.id))) Texts.followCountry(active.countryCode)
-        else added.forEach { it.sync.stop() }
+        repeat(REFRESH_ATTEMPTS) {
+            val ready = current.value as? State.Ready ?: return
+            val registry = FirestoreSpaceRegistry(ready.account).listAll()
+            val changes = spaceChanges(ready.spaces.keys, registry)
+            val added = changes.open.map { openSpace(ready.user.uid, it, ready.account) }
+            try {
+                added.forEach { it.sync.awaitComplete() }
+            } catch (e: CancellationException) {
+                // المهلة خلصت أو الشاشة اتقفلت ⇒ ما نسيبش مستمعين شغالين لبلد مش في الجلسة
+                added.forEach { it.sync.stop() }
+                throw e
+            }
+            val spaces = ready.spaces.filterKeys { it !in changes.close } + added.associateBy { it.space.id }
+            val active = activeSpaceOf(activeStore(ready.user.uid).read(), registry.filter { it.id in spaces })
+            if (current.compareAndSet(ready, ready.copy(spaces = spaces, activeSpaceId = active.id))) {
+                changes.close.forEach { id -> ready.spaces[id]?.sync?.stop() }
+                Texts.followCountry(active.countryCode)
+                return
+            }
+            added.forEach { it.sync.stop() }
+        }
     }
 
     private fun switchTo(user: AuthUser?) {
@@ -211,6 +230,21 @@ const val OFFLINE_GRACE_MS: Long = 500
 
 /** الباقي من مهلة الفتح الواحدة بعد [elapsedMs] (0 = ما تستناش خالص). */
 fun openingWaitLeft(elapsedMs: Long): Long = (OFFLINE_GRACE_MS - elapsedMs).coerceAtLeast(0)
+
+private const val REFRESH_ATTEMPTS = 3
+
+/** اللي الجلسة لازم تعمله بعد تغيير في سجل البلاد: [open] تتفتح · [close] (معرّفات) تتقفل. */
+internal data class SpaceChanges(val open: List<Space>, val close: Set<String>)
+
+/**
+ * [opened] = البلاد المفتوحة في الجلسة دلوقتي · [registry] = السجل. اللي في السجل ومش مؤرشفة ومش مفتوحة ⇒ تتفتح؛ المفتوحة اللي
+ * اتأرشفت أو مش في السجل ⇒ تتقفل. **السعودية ([DEFAULT_SPACE_ID]) دايمًا مفتوحة** (مش في السجل وما بتتأرشفش).
+ */
+internal fun spaceChanges(opened: Set<String>, registry: List<Space>): SpaceChanges {
+    val live = registry.filter { !it.archived && it.id != DEFAULT_SPACE_ID }
+    val liveIds = live.map { it.id }.toSet()
+    return SpaceChanges(live.filter { it.id !in opened }, opened.filter { it != DEFAULT_SPACE_ID && it !in liveIds }.toSet())
+}
 
 /** «الجهاز ده خلّص تنزيل أول كامل للحساب ده» — على الجهاز بس (أندرويد: `AndroidFirstSyncMarks` في `:androidApp`). */
 interface FirstSyncMarks {
