@@ -68,6 +68,25 @@ data class SourceRecord(
      * ⚠️ بيتخزن كجملة جاهزة، فلغته بتتثبت وقت الحفظ (OVERRIDES §40.1 — يتحول لمفتاح مع طبقة البيانات).
      */
     val reason: String,
+    /**
+     * §75-10 (الشريحة S4): سجل **دمج** (سطر كشف أو رسالة اتدمج في عملية موجودة من المصدر التاني — `matchingState` = مكرر و[transactionId] =
+     * العملية الموجودة) و**سطر الكشف غيّر** تاريخها ورصيدها المعلن ⇒ القيم القديمة عشان التراجع عن الدفعة يرجّعها. null = مفيش حاجة اتغيرت.
+     */
+    val mergeUndo: MergeRestore? = null,
+)
+
+/**
+ * القيم اللي سطر الكشف كتب فوقها في العملية اللي اتدمج فيها (§75-10) — التراجع عن دفعته بيرجّعها زي ما كانت.
+ * [mergedOccurredAt] و[mergedStatedBalanceMinor] = اللي سطر الكشف **كتبه** (مراجعة S4): التراجع بيرجّع كل حقل **بس لو لسه** فيه اللي الكشف
+ * كتبه — تعديل المالك بعد الدمج (التاريخ مثلًا) بيفضل. ترتيب السطر المكتوب = `SourceRecord.originalRowIndex`. [mergedStatedBalanceMinor] null =
+ * السطر ما كانش فيه رصيد (الرصيد ما اتغيرش). [mergedOccurredAt] null = سجل أقدم من المراجعة ⇒ بيرجع زي الأول (من غير شرط).
+ */
+data class MergeRestore(
+    val occurredAt: IsoDate,
+    val sourceOrder: Int,
+    val statedBalanceMinor: Halalas?,
+    val mergedOccurredAt: IsoDate? = null,
+    val mergedStatedBalanceMinor: Halalas? = null,
 )
 
 data class Budget(

@@ -15,6 +15,7 @@ import app.masroufy.core.RoscaMember
  * «المستحقات» (OVERRIDES §50) — مجموعات **جديدة في كوتلن بس**، فمالهاش شكل قديم تتطابق معاه؛ الشكل هنا اتقرر
  * على نفس قواعد الباقي (أسماء حقول زي الكيان، الأعداد صحيحة، والاختياري ما بيتكتبش).
  * قواعد فايربيز (`firestore.rules`) بتسمح بأي مجموعة تحت `users/{uid}` لصاحبها ⇒ المجموعات دي مش محتاجة نشر قواعد جديد (اتأكد 2026-09-30).
+ * `dismissedTxnIds` (§75-8، الشريحة S4) بيتكتب **لو فيه حاجة بس** ⇒ مستند من غيره هو هو زي قبل كده، ولو اتفضى بيتمسح صريح (الحفظ بـmerge).
  */
 object DuesCodecs {
     val roscas: DocCodec<Rosca> = codec(
@@ -26,6 +27,7 @@ object DuesCodecs {
                 req("myTurns", r.myTurns.map { it.toLong() }); req("payoutMinor", r.payoutMinor)
                 req("members", r.members.map { m -> doc { req("turn", m.turn); req("name", m.name); opt("personId", m.personId) } })
                 opt("organizerPersonId", r.organizerPersonId); req("createdAt", r.createdAt)
+                opt("dismissedTxnIds", r.dismissedTxnIds.takeIf { it.isNotEmpty() })
             }
         },
         { d ->
@@ -35,6 +37,7 @@ object DuesCodecs {
                 payoutMinor = d.long("payoutMinor"),
                 members = d.maps("members").map { m -> RoscaMember(m.int("turn"), m.str("name"), m.strOrNull("personId")) },
                 organizerPersonId = d.strOrNull("organizerPersonId"), createdAt = d.str("createdAt"), unit = d.wire("unit", CycleUnit::fromWire),
+                dismissedTxnIds = d.strings("dismissedTxnIds").orEmpty(),
             )
         },
     )
@@ -53,13 +56,14 @@ object DuesCodecs {
                 req("principalMinor", p.principalMinor); req("totalMinor", p.totalMinor); req("installmentMinor", p.installmentMinor)
                 req("cycleMonths", p.cycleMonths); req("firstDueAt", p.firstDueAt); opt("hasInterest", p.hasInterest); req("createdAt", p.createdAt)
                 opt("receivedTransactionId", p.receivedTransactionId)
+                opt("dismissedTxnIds", p.dismissedTxnIds.takeIf { it.isNotEmpty() })
             }
         },
         { d ->
             InstallmentPlan(
                 d.str("id"), d.str("name"), d.str("provider"), d.wire("kind", InstallmentKind::fromWire), d.wire("currency", Currency::valueOf),
                 d.long("principalMinor"), d.long("totalMinor"), d.long("installmentMinor"), d.int("cycleMonths"), d.str("firstDueAt"),
-                d.boolOrNull("hasInterest"), d.str("createdAt"), d.strOrNull("receivedTransactionId"),
+                d.boolOrNull("hasInterest"), d.str("createdAt"), d.strOrNull("receivedTransactionId"), d.strings("dismissedTxnIds").orEmpty(),
             )
         },
     )

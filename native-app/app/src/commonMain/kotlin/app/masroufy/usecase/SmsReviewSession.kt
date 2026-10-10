@@ -56,6 +56,7 @@ internal class SmsSession(
             question = questionByLine[number],
             walletId = part.request.walletId,
             fee = part.request.smsRows[number]?.let(::smsFeeToRecord),
+            mergeCandidates = line.mergeCandidates,
         )
     }
 }

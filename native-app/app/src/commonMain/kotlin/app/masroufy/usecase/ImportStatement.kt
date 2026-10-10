@@ -17,7 +17,6 @@ import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
 import app.masroufy.core.importFingerprint
 import app.masroufy.core.uiText
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * ImportStatement — نقل `importStatement.ts`: قراءة الكشف، منع التكرار، إنشاء الدفعة.
@@ -79,6 +78,9 @@ class ImportStatement(private val deps: ImportStatementDeps) {
         }
 
         var context: RecordContext? = null
+        // §75-10 (S4): سطور الدمج ما بتعملش عملية، وسجلها بيتكتب **بعد** ما الدفعة تتقفل (`MergeUndo.kt`) — فدفعة معلّقة عمرها ما بتشاور
+        // على عملية دفعة تانية (التنظيف بعد الانقطاع كان هيمسحها)
+        val merges = previewResult.lines.filter { it.mergeInto != null && it.row.lineNumber in selection }
         val committed = deps.uow.run {
             val batchId = deps.ids.next("batch")
             val now = deps.clock.nowIso()
@@ -88,6 +90,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
             for (line in previewResult.lines) {
                 val included = line.row.lineNumber in selection
+                if (included && line.mergeInto != null) continue
                 val txnId = if (included) deps.ids.next("txn") else null
                 if (txnId != null) {
                     transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
@@ -166,19 +169,11 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
             batch.copy(state = ImportBatchState.COMMITTED)
         }
+        // الدمج فشل (العملية اتمسحت بعد المعاينة مثلًا) ⇒ الآثار بتشتغل برضه والخطأ بيطلع بعدها: الرسالة بتفضل في الصندوق والسطر بيرجع جديد
+        val mergeFailure = if (merges.isEmpty()) null else captureFailure { recordMerges(deps, request, committed.id, committed.importedAt, merges) }
         context?.let { ctx -> for (effect in deps.effects) afterCommitIsolated(effect, ctx) }
+        mergeFailure?.let { throw it }
         return committed
-    }
-
-    /** الدفعة اتقفلت خلاص ⇒ فشل أثر بعد الحفظ ما بيرجّعش حاجة (الشرائح اللي بتستعمله ليها تصليح ولحاق بعدين). */
-    private suspend fun afterCommitIsolated(effect: RecordEffect, ctx: RecordContext) {
-        try {
-            effect.afterCommit(ctx)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            // مقصود: الأثر بعد الحفظ اختياري
-        }
     }
 
     private fun firstByLineNumber(lines: List<ImportPreviewLine>): Map<Int, ImportPreviewLine> {
@@ -189,12 +184,17 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
     private var committing = false
 
-    /** `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد. */
+    /**
+     * `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد.
+     * `mergeChoices` (§75-10 — مراجعة S4): رد المالك على «أكتر من احتمال» — رقم السطر ← العملية اللي «هي دي» من
+     * [ImportPreviewLine.mergeCandidates] ⇒ السطر بيتدمج فيها (مش محتاج يبقى في `selected`). اختيار مش من الاحتمالات ⇒ خطأ.
+     */
     suspend fun commit(
         request: ImportRequest,
         previous: ImportPreview,
         selected: List<Int>? = null,
         chosenCategories: Map<Int, Id>? = null,
+        mergeChoices: Map<Int, Id> = emptyMap(),
     ): ImportBatch {
         if (committing) throw IllegalStateException(uiText(TextKey.IMPORT_COMMIT_RUNNING))
         committing = true
@@ -216,18 +216,22 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 val line = freshByNumber[number]
                 line != null && line.state != MatchingState.DUPLICATE && line.state != MatchingState.INVALID
             }
-            if (fresh.previousBatch != null && addable.isEmpty()) return fresh.previousBatch
+            if (fresh.previousBatch != null && addable.isEmpty() && mergeChoices.isEmpty()) return fresh.previousBatch
             for (number in selection) {
                 val before = previousByNumber[number]
                 val now = freshByNumber[number]
-                if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId) {
+                if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId ||
+                    now.mergeInto != before.mergeInto
+                ) {
                     throw IllegalStateException(uiText(TextKey.IMPORT_CHANGED_AFTER_PREVIEW))
                 }
                 if (now.state == MatchingState.DUPLICATE || now.state == MatchingState.INVALID) {
                     throw IllegalStateException(uiText(TextKey.IMPORT_LINE_NOT_ADDABLE))
                 }
             }
-            return commitPrepared(request, fresh, selection, chosenCategories)
+            // «هي دي» (`MergeUndo.kt`): السطور اللي المالك اختار عمليتها بتتدمج فيها
+            val lines = applyMergeChoices(request, previous, fresh, selection.toSet(), mergeChoices)
+            return commitPrepared(request, fresh.copy(lines = lines), selection + mergeChoices.keys, chosenCategories)
         } finally {
             committing = false
         }

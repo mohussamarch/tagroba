@@ -125,9 +125,10 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
      * «سجّل الكل»: الجديد كله + الشبيه اللي المستخدم اختاره — كل رسالة في محفظتها. التصنيف اللي المستخدم اختاره بيتحفظ مؤكد.
      * اللي اتسجل والمكرر بيتشالوا من الصندوق؛ الباقي (المرفوض · الشبيه اللي ما اتختارش · «ده راتبك؟» اللي ما اترّدش) بيفضل.
      * §77-A: أشكال اللي اتسجل بتتعلّم.
+     * [mergeChoices] (§75-10 — S4): رقم السطر ⇐ عملية الكشف اللي «هي دي» من [SmsReviewLine.mergeCandidates] ⇒ الرسالة بتتدمج فيها وتتشال.
      */
-    suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>): Int =
-        SMS_RECORD_LOCK.withLock { recordLocked(categories, includeSimilar).recorded }
+    suspend fun recordAll(categories: Map<Int, Id>, includeSimilar: List<Int>, mergeChoices: Map<Int, Id> = emptyMap()): Int =
+        SMS_RECORD_LOCK.withLock { recordLocked(categories, includeSimilar, mergeChoices = mergeChoices).recorded }
 
     /**
      * «سجّل الكل» من غير القفل — للي ماسك [SMS_RECORD_LOCK] بالفعل (`AutoRecordSms`). [clearOnly] = التسجيل التلقائي (§72): الجديد
@@ -137,6 +138,7 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
      */
     internal suspend fun recordLocked(
         categories: Map<Int, Id>, includeSimilar: List<Int>, clearOnly: Boolean = false, salaryAnswer: Boolean? = null,
+        mergeChoices: Map<Int, Id> = emptyMap(),
     ): SmsRecordOutcome {
         val current = session ?: return SmsRecordOutcome(0, 0, emptyList())
         val allowed = includeSimilar.toSet()
@@ -156,16 +158,20 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
             val selection = part.preview.lines.filter(::wanted).map { it.row.lineNumber }
                 .filter { !clearOnly || current.shapeByLine[it]?.clear == true }
                 .filter { salaryAnswer != null || !asked(it) }
+            // §75-10 (S4): «هي دي» بيتدمج ويتشال من الصندوق زي المسجّل — اختيار المالك بس (التسجيل التلقائي ما بيبعتش اختيارات)، لسطور الجزء ده
+            val numbers = part.preview.lines.map { it.row.lineNumber }.toSet()
+            val merges = mergeChoices.filterKeys { it in numbers }
+            val handled = (selection + merges.keys).distinct()
             var partRecorded = 0
-            if (selection.isNotEmpty()) {
+            if (handled.isNotEmpty()) {
                 // عقد C0: التسجيل التلقائي مش تسجيل المالك (الآثار اللي بتفرّق بينهم بتبص على `byOwner`)
-                val batch = deps.importer.commit(part.request.copy(byOwner = !clearOnly), part.preview, selection, categories)
+                val batch = deps.importer.commit(part.request.copy(byOwner = !clearOnly), part.preview, selection, categories, merges)
                 if (part.preview.previousBatch?.id != batch.id) {
-                    partRecorded = selection.size
+                    partRecorded = handled.size
                     batches += batch.id
                 }
             }
-            val lines = if (partRecorded > 0) selection else emptyList()
+            val lines = if (partRecorded > 0) handled else emptyList()
             // §77-A: المالك سجّل ⇒ أشكال اللي **اتسجل فعلًا** بتتعلّم (قبل الشيل — لو الشيل وقع، التعلّم ما بيضيعش)
             if (!clearOnly) learnRecorded(current, part, lines)
             val partDuplicates = part.preview.lines.filter { it.state == MatchingState.DUPLICATE }.map { it.row.lineNumber }

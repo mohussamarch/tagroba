@@ -5,6 +5,7 @@ import app.masroufy.core.SmsRow
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
 import app.masroufy.port.IdGenerator
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * عقد C0 — **أثر وقت التسجيل** (قرارات §75 · §77): كل قرار من قرارات المالك اللي بتغيّر العملية وهي بتتسجل (الراتب · حسابي التاني ·
@@ -43,4 +44,25 @@ interface RecordEffect {
 /** عقد C0: التراجع عن دفعة ([RevertImportBatch]) بينادي ده **قبل** ما سجلات المصدر والعمليات تتمسح — عشان الأثر يرجّع اللي غيّره. */
 fun interface BatchUndo {
     suspend fun undo(batchId: Id, records: List<SourceRecord>, deleting: List<Id>)
+}
+
+/** الخطأ (لو حصل) من غير ما يطلع — الإلغاء بس بيطلع. */
+internal suspend fun captureFailure(block: suspend () -> Unit): Exception? = try {
+    block()
+    null
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    e
+}
+
+/** الدفعة اتقفلت خلاص ⇒ فشل أثر بعد الحفظ ما بيرجّعش حاجة (الشرائح اللي بتستعمله ليها تصليح ولحاق بعدين). */
+internal suspend fun afterCommitIsolated(effect: RecordEffect, ctx: RecordContext) {
+    try {
+        effect.afterCommit(ctx)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        // مقصود: الأثر بعد الحفظ اختياري
+    }
 }

@@ -278,6 +278,7 @@ fun mergeFullBackupDetailed(
                 val mapped = maps[target]?.get(jsString(value))
                 if (mapped != null) row[field] = mapped else if (target == group) later += Triple(row, field, jsString(value))
             }
+            remapDismissedTxnIds(group, row, maps["transactions"]) // §75-8 (S4): «مش ده» قايمة عمليات
             val id = backupRowId(group, row)
             val key = semantic(group, row)
             val found = byId[id] ?: key?.let { k -> byContent[k]?.firstOrNull { backupRowId(group, it) !in consumed } }

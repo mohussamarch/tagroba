@@ -53,6 +53,8 @@ data class SmsReviewLine(
      * [SmsFee.includedInAmount] = [amountMinor] فيه الرسوم (الأصلية هتتسجل المبلغ − الرسوم). الشاشة بتعرضها قبل «سجّل الكل».
      */
     val fee: SmsFee? = null,
+    /** §75-10 (مراجعة S4): عمليات من الكشف ممكن تكون هي الرسالة دي (أكتر من احتمال) — المالك يختار «هي دي» بـ`recordAll(mergeChoices)`. */
+    val mergeCandidates: List<Id> = emptyList(),
 )
 
 data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)

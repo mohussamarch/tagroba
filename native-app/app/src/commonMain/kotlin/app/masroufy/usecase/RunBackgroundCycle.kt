@@ -30,6 +30,8 @@ data class BackgroundCycleDeps(
      * بيقرا العمليات المربوطة بس (`listReversalLinked`) — مش فترة عمليات كاملة كل دورة.
      */
     val reversalRepairs: List<RepairReversals> = emptyList(),
+    /** §75-7 (S4): لحاق خصومات الاشتراكات — واحد لكل بلد — بعد تسجيل الرسايل وقبل تجميع المرشحين (الاشتراك اللي اتدفع ما يطلعش «متأخر»). */
+    val subscriptions: List<MatchSubscriptions> = emptyList(),
 )
 
 data class NoticeDelivery(val shown: Int, val scheduled: Int, val blocked: Boolean, val unavailable: Boolean = false)
@@ -41,6 +43,8 @@ data class BackgroundCycleResult(
     val alertsFailed: Boolean,
     /** null = مفيش حاجة تتبعت أو مفيش منفذ. [NoticeDelivery.blocked] = الإشعارات مقفولة — الشاشة تقدر تقول للمستخدم. */
     val delivery: NoticeDelivery?,
+    /** لحاق الاشتراكات فشل في بلد واحدة على الأقل (الباقي كمّل). */
+    val subscriptionsFailed: Boolean = false,
 )
 
 class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
@@ -58,9 +62,11 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
             }
         }
         for (repair in deps.reversalRepairs) runCatchingNotCancel { repair.run() }
+        var subscriptionsFailed = false
+        for (match in deps.subscriptions) if (runCatchingNotCancel { match.catchUp(now.date) } == null) subscriptionsFailed = true
         val candidates = deps.candidates
         val engine = deps.engine
-        if (candidates == null || engine == null) return BackgroundCycleResult(sms, smsFailed, null, false, null)
+        if (candidates == null || engine == null) return BackgroundCycleResult(sms, smsFailed, null, false, null, subscriptionsFailed)
 
         var alertsFailed = false
         val run = try {
@@ -76,7 +82,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
             null
         }
         val delivery = run?.let { deliver(it) }
-        return BackgroundCycleResult(sms, smsFailed, run, alertsFailed, delivery)
+        return BackgroundCycleResult(sms, smsFailed, run, alertsFailed, delivery, subscriptionsFailed)
     }
 
     private suspend fun deliver(run: AlertRun): NoticeDelivery? {
