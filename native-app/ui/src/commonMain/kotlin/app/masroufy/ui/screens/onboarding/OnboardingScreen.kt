@@ -96,7 +96,14 @@ fun OnboardingScreen() {
         scope.launch {
             when (val r = runCatching { onb.onboard.finish(finishInput(st.profile, s.answers, money(s))) }.getOrNull()) {
                 OnboardingResult.Ok -> {
-                    val target = spaceToOpen(s.answers, open, deps.space.id) ?: createdSpace(s.answers, open, onb)
+                    val made = countrySpaceFor(s.answers, open, onb.spacesAdmin)
+                    // مصر ما اتعملتش (غالبًا النت) ⇒ نفضل على «جاهز» برسالة و«ادخل التطبيق» تاني بيكمّل (الإجابات اتحفظت والإنشاء ما بيتكررش)
+                    if (made.isFailure) {
+                        failure = t(UiKey.ONB_FINISH_FAILED)
+                        saving = false
+                        return@launch
+                    }
+                    val target = spaceToOpen(s.answers, open, deps.space.id) ?: made.getOrNull()
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
                     nav.pop()
                     if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
@@ -142,13 +149,6 @@ fun OnboardingScreen() {
             }
         }
     }
-}
-
-/** مصر مش مفتوحة في الحساب ⇒ إنشاؤها من نقطة الربط لو موجودة (وإلا الخيار كان مقفول من الأول). */
-private suspend fun createdSpace(a: OnbAnswers, open: List<Space>, onb: OnboardingDeps): String? {
-    val code = a.countryCode ?: return null
-    if (open.any { it.countryCode.equals(code, true) }) return null
-    return runCatching { onb.spacesAdmin?.create(code)?.id }.getOrNull()
 }
 
 @Composable
