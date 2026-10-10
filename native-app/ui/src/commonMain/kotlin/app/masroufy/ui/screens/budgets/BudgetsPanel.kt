@@ -116,7 +116,7 @@ private fun BudgetsContent(ui: BudgetsUi, deps: BudgetsDeps, today: String, refr
         monthName = ui.monthName,
         current = ui.totalLimit,
         spentMinor = ui.spentMinor,
-        averageMinor = ui.averageMinor,
+        averageMinor = ui.limitAverageMinor,
         currency = ui.currency,
         onDismiss = { totalSheet = false },
         onSave = { ok ->

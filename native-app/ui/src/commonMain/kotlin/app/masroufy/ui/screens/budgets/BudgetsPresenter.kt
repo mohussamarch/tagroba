@@ -85,6 +85,8 @@ data class BudgetsUi(
     val spentMinor: Halalas?,
     val averageMinor: Halalas?,
     val averageReason: String,
+    /** «استخدم المتوسط» في لوحة سقف الشهر = متوسط آخر 3 شهور (§82-17). */
+    val limitAverageMinor: Halalas? = null,
     val anomalyText: String,
     val anomalyAlert: Boolean,
     val lines: List<LineUi>,
@@ -164,6 +166,7 @@ fun mapBudgets(
         spentMinor = data.spentMinor.takeIf { data.spentKnown },
         averageMinor = data.average.averageMinor,
         averageReason = data.average.reason,
+        limitAverageMinor = data.limitAverageMinor,
         // الحكم بالمقارنة بالفترات اللي فاتت: null = ما نقدرش نحكم (مش «مفيش») — السبب بيتعرض زي ما هو
         anomalyText = if (data.spentKnown) anomaly.reason else t(TextKey.NOT_AVAILABLE),
         anomalyAlert = data.spentKnown && anomaly.isAnomaly == true,

@@ -23,6 +23,8 @@ import app.masroufy.core.categoryDistribution
 import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.dailyAllowance
 import app.masroufy.core.detectAnomaly
+import app.masroufy.core.LIMIT_AVERAGE_PERIODS
+import app.masroufy.core.lastPeriodsAverage
 import app.masroufy.core.uiText
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
@@ -61,6 +63,12 @@ data class BudgetScreenData(
     val categories: List<Category>,
     val lines: List<CategoryBudgetLine>,
     val categoryBudgets: List<CategoryBudget>,
+    /**
+     * «استخدم المتوسط» في لوحة السقف (رد المالك OVERRIDES §82-17) = متوسط **آخر 3 شهور** مكتملة (`lastPeriodsAverage`): للشهر كله
+     * ([limitAverageMinor]) ولكل تصنيف ([limitAverageByCategory] — اللي مالوش مفتاح أو null = غير متاح). مش [average] (اللي بيتعرض كمعلومة).
+     */
+    val limitAverageMinor: Halalas? = null,
+    val limitAverageByCategory: Map<Id, Halalas?> = emptyMap(),
 )
 
 data class LoadBudgetScreenDeps(
@@ -108,6 +116,8 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
         // ─── تاريخ الفترات السابقة: للمتوسط والشذوذ بس ───
         val history = mutableListOf<CompletedPeriodSpend>()
         val historyByCategory = LinkedHashMap<Id, MutableList<Halalas>>()
+        // آخر 3 شهور لكل تصنيف (لـ«استخدم المتوسط») — الشهر اللي التصنيف ما صرفش فيه = صفر لو الشهر نفسه موثوق
+        val recentSlices = mutableListOf<Map<Id, Halalas>>()
 
         for (i in 1..HISTORY_PERIODS) {
             val p = shiftPeriod(period, -i, request.payday)
@@ -127,12 +137,19 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
             )
 
             // تاريخ كل تصنيف — من الفترات الموثوقة بس
+            val slices = LinkedHashMap<Id, Halalas>()
             if (c.unclassified == 0 && rows.isNotEmpty()) {
                 for (slice in categoryDistribution(rows, rowAllocations).slices) {
                     val categoryId = slice.categoryId ?: continue
                     historyByCategory.getOrPut(categoryId) { mutableListOf() }.add(slice.amountMinor)
+                    slices[categoryId] = slice.amountMinor
                 }
             }
+            if (i <= LIMIT_AVERAGE_PERIODS) recentSlices += slices
+        }
+        val recent = history.take(LIMIT_AVERAGE_PERIODS)
+        val limitAverageByCategory = (categories.map { it.id } + spendByCategoryIds(recentSlices) + categoryBudgets.map { it.categoryId }).associateWith { id ->
+            lastPeriodsAverage(recent.mapIndexed { k, p -> p.copy(spentMinor = recentSlices.getOrNull(k)?.get(id) ?: 0L) })
         }
 
         val average = averageCompletedSpend(history)
@@ -182,6 +199,11 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
             categories = categories,
             lines = buildCategoryLines(spendByCategory, limitByCategory, averageByCategory, historyByCategory),
             categoryBudgets = categoryBudgets,
+            limitAverageMinor = lastPeriodsAverage(recent),
+            limitAverageByCategory = limitAverageByCategory,
         )
     }
 }
+
+/** كل التصنيفات اللي ليها صرف في الشهور الأخيرة (بترتيب ظهورها). */
+private fun spendByCategoryIds(slices: List<Map<Id, Halalas>>): Set<Id> = slices.flatMapTo(LinkedHashSet()) { it.keys }
