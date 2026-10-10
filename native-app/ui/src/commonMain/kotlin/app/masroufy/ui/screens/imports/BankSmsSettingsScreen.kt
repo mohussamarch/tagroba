@@ -24,7 +24,9 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
 import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.app.LocalPermissions
+import app.masroufy.core.bankLabel
 import app.masroufy.ui.app.LocalSpace
+import app.masroufy.ui.components.BankLogo
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.IconTile
@@ -58,6 +60,7 @@ sealed interface SenderSheet {
 @Composable
 fun BankSmsSettingsScreen() {
     val deps = LocalSpace.current.imports
+    val country = LocalSpace.current.space.countryCode
     val sms = deps.sms
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
@@ -71,9 +74,9 @@ fun BankSmsSettingsScreen() {
     var denied by remember { mutableStateOf(false) }
     var afterGrant by remember { mutableStateOf<(suspend () -> Unit)?>(null) }
 
-    LaunchedEffect(deps, reload) {
+    LaunchedEffect(deps, reload, country) {
         wallets = runCatching { deps.wallets() }.getOrDefault(wallets)
-        ui = smsSettingsUi(sms?.let { runCatching { it.overview(record = false) }.getOrNull() }, wallets)
+        ui = smsSettingsUi(sms?.let { runCatching { it.overview(record = false) }.getOrNull() }, wallets, country)
     }
 
     fun act(done: TextRef?, vararg args: String, block: suspend () -> Unit) {
@@ -218,11 +221,14 @@ private fun SenderRow(s: SenderUi, onClick: () -> Unit) {
         s.waiting > 0 -> t(UiKey.SMS_SETTINGS_WAITING_WALLET, msgsCount(s.waiting))
         else -> t(UiKey.SMS_SETTINGS_NO_WALLET)
     }
+    // البنك المعروف من اسم المرسل (§74) بلوجوه واسمه بالعربي والاسم الخام تحته — والمش معروف بيفضل باسمه زي ما جه
+    val bank = s.bank
     ListRow(
-        title = s.sender,
-        subtitle = sub,
+        title = bank?.let(::bankLabel) ?: s.sender,
+        subtitle = if (bank != null) t(UiKey.BANK_SENDER_RAW, s.sender) + " · " + sub else sub,
         leading = {
-            IconTile(if (waiting) Ink.focus else Ink.primary) { LucideIcon(Lucide.BUILDING_2, size = 18.dp, tint = if (waiting) Ink.focus else Ink.primary) }
+            if (bank != null) BankLogo(bank, s.sender, size = 36.dp)
+            else IconTile(if (waiting) Ink.focus else Ink.primary) { LucideIcon(Lucide.BUILDING_2, size = 18.dp, tint = if (waiting) Ink.focus else Ink.primary) }
         },
         onClick = onClick,
         padding = PaddingValues(8.dp),
