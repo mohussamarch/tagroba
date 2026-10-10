@@ -108,11 +108,16 @@ private fun snbDatelessShape(body: String): Boolean {
  * بتوقيت الرياض (`SmsArrivalDay.kt` — وبعد نص الليل اليوم اللي قبله لو الساعة المكتوبة بتقول كده) **لو** فيها دليل إنها عملية حصلت:
  * شكلها معروف ([knownLayout]) · شكل الأهلي · أو **عبارة عملية خلصت** («تم …» — `hasDoneWording`، نفس قاعدة مصر). مراجعة S1: كانت للشكل
  * المعروف والأهلي بس، فكاش باك البطاقة اللي سؤال (د) سمّاه («تم استرداد و إضافة …») كان لسه بيترفض، ومصر كانت بتقبل بالعبارة والسعودية
- * لأ. اللي من غير أي دليل (إعلان مفيش حارس بيمسكه) بيفضل «التاريخ مش واضح» — اختيار Claude، سؤال مفتوح للمالك. الشكل المجهول بيستنى
- * تأكيد المالك (§72). الرسالة اللي فيها تاريخ القارئ مش قادر يقراه لسه بتترفض «التاريخ مش واضح».
+ * لأ. الشكل المجهول بيستنى تأكيد المالك (§72). الرسالة اللي فيها تاريخ القارئ مش قادر يقراه لسه بتترفض «التاريخ مش واضح».
+ * **§82-7 (رد المالك 2026-10-10 ✱):** اللي من غير أي دليل (لا شكل معروف ولا «تم» — زي إعلان مفيش حارس بيمسكه) ما بقتش بتترفض: [orArrival] ⇒
+ * يوم الوصول **وبتستنى تأكيد المالك** (شكلها `KeywordFallback` — عمرها ما بتتسجل لوحدها ولا بتتعلّم — [noEvidence]).
  */
-private fun datelessDate(body: String, receivedAt: String, knownLayout: Boolean = false): IsoDate? =
-    if (!hasDateToken(body) && (knownLayout || snbDatelessShape(body) || hasDoneWording(body))) datelessDay(body, receivedAt, SmsClock.RIYADH) else null
+private fun datelessDate(body: String, receivedAt: String, knownLayout: Boolean = false, orArrival: Boolean = false): IsoDate? =
+    if (!hasDateToken(body) && (orArrival || knownLayout || snbDatelessShape(body) || hasDoneWording(body))) datelessDay(body, receivedAt, SmsClock.RIYADH) else null
+
+/** §82-7: رسالة من غير تاريخ ومن غير أي دليل إنها عملية حصلت (لا شكل معروف ولا شكل الأهلي ولا «تم») ⇒ بتستنى مهما كان. */
+private fun noEvidence(body: String, knownLayout: Boolean): Boolean =
+    !hasDateToken(body) && !knownLayout && !snbDatelessShape(body) && !hasDoneWording(body)
 
 private fun dateOf(body: String, receivedAt: String): IsoDate? = saudiTransactionDate(body, receivedAt) ?: datelessDate(body, receivedAt)
 
@@ -218,8 +223,10 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
     // مراجعة S1: الشكل المعروف دليل إن الرسالة اللي مفيهاش تاريخ عملية حصلت **قبل** بوابات الانتظار (ساعتين مختلفتين · الساعة مش متفقة) —
     // كانت بتترفض بدل ما تستنى
     val layout = saudiShape(body, direction, read.amountMinor)
-    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else layout, body, kind, dateless, message.receivedAt)
-    val date = dated ?: datelessDate(body, message.receivedAt, knownLayout = layout.clear) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
+    val unproven = dated == null && noEvidence(body, layout.clear) // §82-7: يوم الوصول وتستنى
+    val shape = saudiExtraGate(if (read.doubtful || unproven) SmsShape.KeywordFallback else layout, body, kind, dateless, message.receivedAt)
+    val date = dated ?: datelessDate(body, message.receivedAt, knownLayout = layout.clear, orArrival = true)
+        ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val arrival = localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS)
     val gated = gateShape(if (swappedDateNearArrival(body, date, arrival)) SmsShape.KeywordFallback else shape, body, date, arrival, message.body)
     // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها

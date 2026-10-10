@@ -129,9 +129,9 @@ class SmsReviewFixesTest {
             assertTrue(r.reason in guards, "$body: rejected by accident («${r.reason}»), not by a guard")
             assertTrue(SmsVocabulary.ignoreBeforeStorage(body) != (body in storedButRejected), "device filter: $body")
         }
-        // من غير حارس: رسالة من غير تاريخ ومن غير عبارة «عملية خلصت» ما بتاخدش يوم الوصول
-        val promo = assertIs<SmsParseResult.Rejected>(egypt("Use your debit card at TEST GROCER and save EGP 50"))
-        assertEquals(uiText(TextKey.SMS_DATE_UNCLEAR), promo.reason)
+        // من غير حارس: رسالة من غير تاريخ ومن غير عبارة «عملية خلصت» — §82-7 (رد المالك ✱): بتاخد يوم الوصول **وتستنى** (عمرها ما بتتسجل لوحدها)
+        val promo = ok(egypt("Use your debit card at TEST GROCER and save EGP 50"), "promo")
+        assertEquals(false to null, promo.shape.clear to promo.learnKey)
         // «كود العملية» (أورانج كاش) رقم عملية مش رمز
         val orange = ok(egypt("تم استلام مبلغ 900.00 جنيه من رقم 01100000777 رصيدك الحالي 4,100.00 جنيه كود العملية 123456789012"), "orange")
         assertEquals(90000L, orange.amountMinor)

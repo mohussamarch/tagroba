@@ -141,9 +141,11 @@ class SmsReviewRound2Test {
     @Test fun snbArrivalDayNeedsTheWholeShape() {
         assertEquals(SMS_TX_DAY, ok(saudi("شراء انترنت\nبـ64.25 SAR\nمن TEST GROCER\nمدى-ابل *6604"), "snb").date)
         assertEquals(SMS_TX_DAY, ok(saudi("تصحيح سحب نقدي\nمبلغ 64.25 SAR\nمدى *6604"), "snb correction").date)
-        // عنوان مش معروف (من غير كلمة رمز ولا عرض) ⇒ ما ياخدش تاريخ النهارده
-        assertEquals(uiText(TextKey.SMS_DATE_UNCLEAR), reason(saudi("رسالة من البنك\nشراء\nبـ64.25 SAR\nمن TEST GROCER\nمدى *6604")))
-        assertEquals(uiText(TextKey.SMS_DATE_UNCLEAR), reason(saudi("شراء انترنت\nمن TEST GROCER 64.25 SAR\nمدى *6604")))
+        // عنوان مش معروف (من غير كلمة رمز ولا عرض) ⇒ §82-7 (رد المالك ✱): يوم الوصول بس **بيستنى** تأكيد المالك (مش شكل الأهلي)
+        for (body in listOf("رسالة من البنك\nشراء\nبـ64.25 SAR\nمن TEST GROCER\nمدى *6604", "شراء انترنت\nمن TEST GROCER 64.25 SAR\nمدى *6604")) {
+            val row = ok(saudi(body), body)
+            assertEquals(false to null, row.shape.clear to row.learnKey, body)
+        }
     }
 
     /** «تصحيح» (عنوان داخل) والنص فيه «تم خصم» ⇒ مش واضح · «شيك مرتجع» مش استرداد · «Purchase … was reversed» مش صرف. */

@@ -57,6 +57,7 @@ class SmsGoldenTest {
         assertTrue(cases.isNotEmpty())
         val unexpected = mutableListOf<String>()
         val seen = mutableSetOf<Pair<String, String>>()
+        var waitingNow = 0
         cases.forEachIndexed { i, case ->
             val input = case["in"] ?: JsonNull
             val message = BankSmsMessage(input.field("sender").str, input.field("receivedAt").str, input.field("body").str)
@@ -64,6 +65,10 @@ class SmsGoldenTest {
             val r = parseBankSms(message, (i + 2) / 2)
             val diff = Golden.firstDiff(plain(case["out"] ?: JsonNull), resultJson(r), "") ?: return@forEachIndexed
             val known = KNOWN_DIVERGENCE[message.body]
+            if (known == null && waitsSince82(case, message, r)) {
+                waitingNow++
+                return@forEachIndexed
+            }
             if (known == null) {
                 unexpected += "${message.body.replace("\n", "\\n")} @ ${message.receivedAt}: $diff"
                 return@forEachIndexed
@@ -80,6 +85,21 @@ class SmsGoldenTest {
         assertTrue(unexpected.isEmpty(), "golden sms.json differences outside KNOWN_DIVERGENCE:\n" + unexpected.joinToString("\n"))
         val listed = KNOWN_DIVERGENCE.flatMap { (body, known) -> known.days.keys.map { body to it } }.toSet()
         assertEquals(listed, seen, "KNOWN_DIVERGENCE must list exactly the changed entries (body and arrival time)")
+        assertEquals(WAITING_SINCE_82_7, waitingNow, "§82-7: the number of golden rejections that now wait must not drift")
+    }
+
+    /**
+     * §82-7 (رد المالك 2026-10-10 ✱): رسالة من غير تاريخ ولا شكل معروف ولا «تم» — التطبيق الحالي كان بيرفضها «التاريخ مش واضح» — بقت
+     * **بتاخد يوم وصولها وتستنى**: مقروءة بشكل «كلمات عامة» (ما بتتسجلش لوحدها ولا بتتعلّم)، ويومها = يوم الوصول بتوقيت الرياض محسوب هنا
+     * بـ`java.time` (مش بالدالة اللي بنختبرها). الحالات دي مش بالاسم (كتير ومتولّدة) — عددها مقفول بـ[WAITING_SINCE_82_7].
+     */
+    private fun waitsSince82(case: Map<String, JsonElement>, message: BankSmsMessage, r: SmsParseResult): Boolean {
+        val old = case["out"]?.field("reason")?.str?.let(::plainEgyptian) ?: return false
+        if (old != uiText(TextKey.SMS_DATE_UNCLEAR)) return false
+        val row = (r as? SmsParseResult.Ok)?.row ?: return false
+        val at = message.receivedAt
+        val riyadhDay = if (at.length == 10) at else java.time.OffsetDateTime.parse(at).toInstant().plusSeconds(3 * 3600).toString().take(10)
+        return !row.shape.clear && row.learnKey == null && row.date == riyadhDay
     }
 
     @Test fun redactSms() { check("redactSms") { redactSms(it.str) } }
@@ -88,6 +108,9 @@ class SmsGoldenTest {
     class Divergence(val reason: String, val days: Map<String, String>, val clear: Boolean)
 
     companion object {
+        /** §82-7: حالات ملف المرجع اللي كانت «التاريخ مش واضح» وبقت مستنية بيوم الوصول ([waitsSince82]). */
+        const val WAITING_SINCE_82_7 = 24
+
         /**
          * حالات ملف المرجع اللي **قرار مالك** غيّر نتيجتها — النص بالحرف ⇒ السبب واليوم المتوقع. ملف المرجع نفسه ما اتلمسش.
          * §77-C (2026-10-09): «الرسالة من غير تاريخ ⇒ ياخد يوم وصول الرسالة بتوقيت البلد — لكل الأشكال اللي مفيهاش تاريخ»: التطبيق
