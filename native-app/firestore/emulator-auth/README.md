@@ -22,4 +22,14 @@ firebase emulators:start --only auth,firestore --project demo-masroufy-kt
 
 ثم من `native-app`: `./gradlew :androidApp:assembleEmulator` ⇒ `F:/masroufy-build/<النسخة>/androidApp/outputs/apk/emulator/androidApp-emulator.apk`.
 **حساب تجربة للمحاكي بس** (بيتمسح لما المحاكي يتقفل — اعمله من «حساب جديد» في التطبيق): `shell-check@example.com` / `Emu-only-7391`.
+
+## قياس السرعة (HANDOVER §7 — 2026-10-10)
+
+1. المحاكيين شغالين (فوق) ⇒ `node perf-seed.mjs` (3,500 عملية **مخترعة** + محافظ وتصنيفات وأشخاص وديون واشتراكات لحساب `perf-user`).
+2. نسخة المحاكي (`assembleEmulator`) أو «السريعة» على المحاكي (`assembleFastEmulator`) ⇒ `adb install -r …`.
+3. الدخول من غير كلمة سر (مفتاح غير موقّع — محاكي الدخول بس بيقبله):
+   `adb shell am start -n app.masroufy.mobile/app.masroufy.android.MainActivity --es perf_uid perf-user`
+4. `bash perf/flow.sh <ملف-السجل>` ⇒ جدول: من اللمسة لحد ما الشاشة اتملت · قراءات السيرفر · القراءات من الذاكرة. `perf/gfx.sh` = الإطارات (التمويه).
+   سطور `MPERF` في logcat بتطلع **في نسخ المحاكي بس**. أماكن اللمس في `flow.sh` لشاشة 1080×2400 (`masroufy-fbtrial`).
+- ⚠️ لو التطبيق مش شايف `10.0.2.2` («Network is unreachable»): واي فاي المحاكي من غير مسار ⇒ `adb shell svc wifi disable` (بيمشي على بيانات الجوال).
 ممنوع حسابات تجربة على مشروع المالك الحقيقي.

@@ -1,10 +1,14 @@
 package app.masroufy.firestore
 
+import app.masroufy.perf.PerfTrace
 import dev.gitlive.firebase.firestore.ChangeType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -43,6 +47,19 @@ class FirestoreSync(private val space: FirestoreSpace, private val groups: List<
      */
     val errors: SharedFlow<Throwable> = failures.asSharedFlow()
 
+    private val remote = MutableStateFlow(0L)
+
+    /**
+     * بيزيد لما نسخة من **السيرفر** تغيّر الذاكرة (مجموعة لحقت بالسيرفر بعد الفتح من نسخة الجهاز، أو تعديل من جهاز تاني/التطبيق القديم)
+     * ⇒ الشاشة اللي بتعرض أرقام تقرا تاني (`AppDeps.remoteChanges`). كتابة التطبيق نفسه لسه معلّقة ما بتزودوش.
+     */
+    val remoteChanges: StateFlow<Long> = remote.asStateFlow()
+
+    /** الجهاز ده خلّص تنزيل كامل قبل كده ⇒ القراية من نسخة الجهاز لحد ما السيرفر يرد ([LocalMirror.deviceCopyComplete]). */
+    fun trustDeviceCopy() {
+        mirror.deviceCopyComplete = true
+    }
+
     fun start(scope: CoroutineScope) {
         if (jobs.isNotEmpty()) return
         space.mirror = mirror
@@ -50,12 +67,25 @@ class FirestoreSync(private val space: FirestoreSpace, private val groups: List<
         space.writeScope = scope
         for (group in groups) {
             jobs += scope.launch {
+                val start = PerfTrace.mark()
                 try {
                     space.collection(group).snapshots(includeMetadataChanges = true).collect { snap ->
-                        mirror.applyChanges(group, snap.documentChanges.map { change ->
+                        val changes = snap.documentChanges.map { change ->
                             change.document.id to if (change.type == ChangeType.REMOVED) null else change.document.rawData()
-                        })
-                        if (!snap.metadata.isFromCache) mirror.markSynced(group)
+                        }
+                        mirror.applyChanges(group, changes)
+                        mirror.markDelivered(group)
+                        if (PerfTrace.enabled && changes.isNotEmpty()) {
+                            ReadMeter.server("listen:$group", changes.map { it.second }, snap.metadata.isFromCache, start)
+                        }
+                        val fromServer = !snap.metadata.isFromCache
+                        if (fromServer && !mirror.isSynced(group)) {
+                            mirror.markSynced(group)
+                            PerfTrace.log("synced group=$group ms=${start.elapsedNow().inWholeMilliseconds}")
+                            remote.update { it + 1 }
+                        } else if (fromServer && changes.isNotEmpty() && !snap.metadata.hasPendingWrites) {
+                            remote.update { it + 1 }
+                        }
                     }
                 } catch (e: CancellationException) {
                     throw e

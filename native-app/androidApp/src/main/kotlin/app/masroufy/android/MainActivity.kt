@@ -45,6 +45,8 @@ class MainActivity : FragmentActivity() {
                 }
             },
         )
+        // نسخ المحاكي بس: دخول حساب القياس الوهمي من سطر الأوامر (adb … --es perf_uid <المعرّف>) — من غير كلمة سر
+        intent?.getStringExtra("perf_uid")?.let(container::perfSignIn)
         val deps = container.appDeps(permissions)
         // ميكروفون المساعد: نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — لازم تتسجل هنا قبل ما الشاشة تبدأ
         val speech = AndroidSpeech(this)

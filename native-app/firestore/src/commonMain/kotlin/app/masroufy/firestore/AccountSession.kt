@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.TimeSource
 
 /**
  * جلسة الحساب: مين داخل ⇒ بيانات **الحساب ده بس** (`users/{uid}`). الشاشات بتاخد المستودعات من هنا، مش من فايربيز.
@@ -125,17 +126,30 @@ class AccountSession(
             return
         }
         val account = spaceOf(user.uid, null)
-        val accountSync = FirestoreSync(account, ACCOUNT_GROUPS)
+        val accountSync = FirestoreSync(account, ACCOUNT_GROUPS + ACCOUNT_DOC_GROUPS)
         val saudi = openSpace(user.uid, defaultSpace(), account)
         val opening = State.Opening(user, saudi.repos, saudi.sync, accountSync)
         current.value = opening
+        val seenBefore = firstSync.completed(user.uid)
+        // الجهاز عنده نسخة كاملة قبل كده ⇒ القراية من نسخة الجهاز لحد ما السيرفر يرد (بدل استعلام للسيرفر لكل قراية — HANDOVER §7)
+        if (seenBefore) {
+            accountSync.trustDeviceCopy()
+            saudi.sync.trustDeviceCopy()
+        }
         accountSync.start(scope)
-        scope.launch {
-            val seenBefore = firstSync.completed(user.uid)
-            upTo(seenBefore) { accountSync.awaitComplete() }
+        openingJob = scope.launch {
+            val started = TimeSource.Monotonic.markNow()
+
+            // **مهلة واحدة** للفتح كله (كانت مهلتين ورا بعض + قراية سجل البلاد من السيرفر ⇒ ~14 ثانية على المحاكي)
+            suspend fun upTo(block: suspend () -> Unit) {
+                if (!seenBefore) return block()
+                val left = OFFLINE_GRACE_MS - started.elapsedNow().inWholeMilliseconds
+                if (left > 0) withTimeoutOrNull(left) { block() }
+            }
+            upTo { accountSync.awaitComplete() }
             val registry = FirestoreSpaceRegistry(account).listAll()
-            val others = registry.filter { !it.archived }.map { openSpace(user.uid, it, account) }
-            upTo(seenBefore) {
+            val others = registry.filter { !it.archived }.map { openSpace(user.uid, it, account, trustDevice = seenBefore) }
+            upTo {
                 saudi.sync.awaitComplete()
                 others.forEach { it.sync.awaitComplete() }
             }
@@ -158,22 +172,26 @@ class AccountSession(
 
     private var completion: Job? = null
 
-    /** الجهاز خلّص تنزيل كامل قبل كده ⇒ ما نستناش السيرفر أكتر من [OFFLINE_GRACE_MS]؛ وإلا نستنى لحد ما يخلص. */
-    private suspend fun upTo(seenBefore: Boolean, block: suspend () -> Unit) {
-        if (seenBefore) withTimeoutOrNull(OFFLINE_GRACE_MS) { block() } else block()
-    }
+    /**
+     * فتح الحساب الشغال دلوقتي. حساب تاني دخل في النص ⇒ بيتلغي: من غيره، بعد المهلة كان بيقرا سجل بلاد الحساب **القديم** من السيرفر
+     * بصلاحيات الجديد ⇒ PERMISSION_DENIED من غير التقاط ⇒ **التطبيق كله بيقع** (اتشاف على المحاكي 2026-10-10).
+     */
+    private var openingJob: Job? = null
 
     private fun spaceOf(uid: String, spaceId: String?): FirestoreSpace =
         if (spaceId == null) FirestoreSpace.forAccount(db, uid) else FirestoreSpace.forSpace(db, uid, spaceId)
 
-    private fun openSpace(uid: String, space: Space, account: FirestoreSpace): SpaceSession {
+    private fun openSpace(uid: String, space: Space, account: FirestoreSpace, trustDevice: Boolean = false): SpaceSession {
         val root = spaceOf(uid, space.id)
         val sync = FirestoreSync(root, SPACE_GROUPS)
+        if (trustDevice) sync.trustDeviceCopy()
         sync.start(scope)
         return SpaceSession(space, FirestoreContainer(account, root, space.id), sync)
     }
 
     private fun stopAll(state: State) {
+        openingJob?.cancel()
+        openingJob = null
         completion?.cancel()
         completion = null
         when (state) {

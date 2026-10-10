@@ -3,8 +3,10 @@ package app.masroufy.ui.app
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.masroufy.usecase.AppLock
 import app.masroufy.usecase.SignIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 
 /** «متصل دايمًا» — للنسخ اللي ما بتعرفش حالة الشبكة (الاختبارات · المعاينة). */
 val ALWAYS_ONLINE: StateFlow<Boolean> = MutableStateFlow(true)
@@ -53,6 +55,12 @@ interface AppDeps {
 
     /** فيه نت؟ — الأزرار اللي محتاجة نت (زي «أرسل الرابط» في تغيير كلمة السر — رد المالك L4) بتتقفل من غيره. */
     val online: StateFlow<Boolean> get() = ALWAYS_ONLINE
+
+    /**
+     * بيزيد لما بيانات الحساب تتغير **من السيرفر** (لحاق بعد الفتح من نسخة الجهاز · تعديل من جهاز تاني أو التطبيق القديم)
+     * ⇒ الشاشات اللي بتعرض أرقام بتقرا تاني (`DataChanges`). النسخ اللي من غير فايربيز ⇒ ولا حاجة.
+     */
+    val remoteChanges: Flow<Long> get() = emptyFlow()
 }
 
 val LocalApp = staticCompositionLocalOf<AppDeps> { error("AppDeps مش متقدّم") }

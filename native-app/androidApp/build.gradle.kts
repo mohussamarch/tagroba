@@ -24,8 +24,8 @@ android {
         applicationId = "app.masroufy.mobile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "kotlin-0.1"
+        versionCode = 2
+        versionName = "kotlin-0.2"
         buildConfigField("String", "FIREBASE_EMULATOR_PROJECT", "\"\"")
         buildConfigField("boolean", "HAS_FIREBASE_SETTINGS", (firebaseSettings != null).toString())
     }
@@ -41,6 +41,33 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+        /*
+         * «السريعة» (HANDOVER §7 «السرعة»): نسخة المالك على الجوال — **مش debug**: R8 (تصغير + تحسين، من غير تغيير أسماء — `proguard-rules.pro`)
+         * + تصغير الموارد + من غير `debuggable` (Compose والمكتبات بتشتغل بسرعتها) + ملف الكود السريع (`baseline-prof.txt` + `profileinstaller`).
+         * موقّعة بنفس مفتاح التطوير ⇒ دخول جوجل بيفضل شغال (البصمة مسجلة) وبتتثبت فوق نسخة 0.1 من غير مسح البيانات.
+         */
+        create("fast") {
+            initWith(getByName("release"))
+            matchingFallbacks += "release"
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
+            versionNameSuffix = "-fast"
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        // نفس «السريعة» بالظبط بس على محاكي فايربيز (بيانات وهمية) — عشان نجرّبها ونقيسها قبل ما توصل للمالك
+        create("fastEmulator") {
+            initWith(getByName("fast"))
+            matchingFallbacks += "release"
+            buildConfigField("String", "FIREBASE_EMULATOR_PROJECT", "\"demo-masroufy-kt\"")
+        }
+    }
+
+    // «السريعة» على المحاكي محتاجة نفس إذن HTTP لـ10.0.2.2 بتاع نسخة المحاكي (محاكي الدخول من غير TLS) — نفس الملفات، من غير نسخ
+    sourceSets.getByName("fastEmulator") {
+        manifest.srcFile("src/emulator/AndroidManifest.xml")
+        res.srcDirs("src/emulator/res")
     }
 
     buildFeatures {
@@ -79,6 +106,9 @@ dependencies {
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    // ملف الكود السريع (baseline profile) بيتسجّل على الجوال حتى لو التثبيت من ملف مش من المتجر (ARCHITECTURE §31.37) —
+    // كان جاي أصلًا مع Compose بشكل غير مباشر، هنا صريح عشان «السريعة» بتعتمد عليه
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 }
 
 if (firebaseSettings != null) {

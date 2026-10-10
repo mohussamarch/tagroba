@@ -75,15 +75,15 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
     // كارت «مَن هذا؟» بيفضل بعد القرار (بحالة «تم» و«تراجع») حتى لو التحميل الجديد شال السؤال
     var partyShown by remember { mutableStateOf<app.masroufy.core.TransferPartyRef?>(null) }
     LaunchedEffect(deps, reload) {
-        state = attempt {
+        state = app.masroufy.perf.PerfTrace.span("screen:detail") { attempt {
             val detail = deps.edit.load(transactionId)
             val categories = deps.categories.list()
             val merchants = attempt { deps.merchants.listMerchants().map { it.merchant } }.orEmpty()
-            val decided = attempt { deps.transfers.zone().rows.filter { it.decision != null }.map { it.party.key }.toSet() }.orEmpty()
+            val decided = attempt { app.masroufy.perf.PerfTrace.span("detail:zone") { deps.transfers.zone() }.rows.filter { it.decision != null }.map { it.party.key }.toSet() }.orEmpty()
             val locked = attempt { deps.spaceTransfers.legsIn(space.space.id).isLeg(transactionId) } ?: false
             val view = detailView(detail.transaction, categories, attempt { deps.wallets() }.orEmpty(), merchants, decided, space.shell.today())
             DetailState.Ready(view, detail.tags, categories, locked)
-        } ?: DetailState.Failed
+        } } ?: DetailState.Failed
         (state as? DetailState.Ready)?.view?.askParty?.let { partyShown = it }
     }
     val ready = state as? DetailState.Ready

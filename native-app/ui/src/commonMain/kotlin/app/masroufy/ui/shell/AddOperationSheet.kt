@@ -92,9 +92,11 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
     LaunchedEffect(visible, shell) {
         if (!visible) return@LaunchedEffect
         kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null; voiceNote = false
+        val start = app.masroufy.perf.PerfTrace.mark()
         val o = shell.addOptions()
         options = o
         val d = runCatching { shell.addWalletDefault() }.getOrNull()
+        app.masroufy.perf.PerfTrace.log("span sheet:add ms=${start.elapsedNow().inWholeMilliseconds}")
         from = initialFromWallet(d?.wallet?.id, o.wallets)
         hadMain = from != null
         askPrompt = d?.prompt

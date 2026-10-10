@@ -66,8 +66,10 @@ fun HomeScreen() {
     val bell = LocalBell.current
     val gone = Dismissals.of(deps.space.id).goneKeys
     LaunchedEffect(deps, tick, changes.version) {
-        me = runCatching { shell.me() }.getOrNull()
-        load = loadHome(deps)
+        app.masroufy.perf.PerfTrace.span("screen:home") {
+            me = runCatching { shell.me() }.getOrNull()
+            load = loadHome(deps)
+        }
     }
     TabScaffold(t(UiKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
         when (val s = load) {
@@ -95,17 +97,18 @@ fun HomeScreen() {
  * الإشعارات (كارت المساعد) والملف (كارت «كمّل ملفك»). أي جزء غير «معك الآن» يفشل ⇒ مكانه «غير متاح»/مخفي، مش الشاشة كلها.
  */
 internal suspend fun loadHome(deps: SpaceDeps): HomeLoad {
-    val now = runCatching { deps.shell.withYouNow() }.getOrElse { return HomeLoad.Failed }
+    val trace = app.masroufy.perf.PerfTrace
+    val now = runCatching { trace.span("home:withYouNow") { deps.shell.withYouNow() } }.getOrElse { return HomeLoad.Failed }
     val today = deps.shell.today()
     val home = deps.home
-    val profile = runCatching { home.profile.load() }.getOrNull()
+    val profile = runCatching { trace.span("home:profile") { home.profile.load() } }.getOrNull()
     val month = runCatching {
         val payday = profile?.payday ?: app.masroufy.core.DEFAULT_PAYDAY
-        val data = home.homeScreen.load(LoadHomeScreenRequest(periodForDate(today, payday), today, payday, includeHistory = false))
-        val next = runCatching { home.calendar.summary(today).untilPayday?.nextPayday }.getOrNull()
+        val data = trace.span("home:homeScreen") { home.homeScreen.load(LoadHomeScreenRequest(periodForDate(today, payday), today, payday, includeHistory = false)) }
+        val next = runCatching { trace.span("home:calendar") { home.calendar.summary(today).untilPayday?.nextPayday } }.getOrNull()
         homeMonthOf(data, next)
     }.getOrNull()
-    val inbox = runCatching { home.alerts.inbox() }.getOrNull()
+    val inbox = runCatching { trace.span("home:inbox") { home.alerts.inbox() } }.getOrNull()
     return HomeLoad.Ready(now, month, inbox, profileCard = profile != null && nextProfileCard(profile) != null)
 }
 

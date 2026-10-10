@@ -90,7 +90,7 @@ internal fun PeopleScreen() {
     var load by remember(deps) { mutableStateOf<Load<PeopleTabUi>>(Load.Loading) }
     var me by remember(deps) { mutableStateOf<String?>(null) }
     LaunchedEffect(deps, version, retry) {
-        val full = loadOf { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency) }
+        val full = loadOf { app.masroufy.perf.PerfTrace.span("screen:people") { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency) } }
         load = if (full !is Load.Failed) full else loadOf { peopleWithoutBalances(deps.people.people.listWithBalances()) }.let { if (it is Load.Ready) it else full }
         me = runCatching { deps.shell.me().displayName }.getOrNull()
     }
