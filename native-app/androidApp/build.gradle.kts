@@ -24,8 +24,8 @@ android {
         applicationId = "app.masroufy.mobile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "kotlin-0.2"
+        versionCode = 3
+        versionName = "kotlin-0.3"
         buildConfigField("String", "FIREBASE_EMULATOR_PROJECT", "\"\"")
         buildConfigField("boolean", "HAS_FIREBASE_SETTINGS", (firebaseSettings != null).toString())
     }
