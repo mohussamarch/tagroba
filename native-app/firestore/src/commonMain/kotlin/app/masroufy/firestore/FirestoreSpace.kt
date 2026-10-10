@@ -6,6 +6,7 @@ import app.masroufy.data.Doc
 import app.masroufy.data.DocCodec
 import app.masroufy.data.omittedFields
 import app.masroufy.data.toStore
+import app.masroufy.perf.PerfTrace
 import dev.gitlive.firebase.firestore.CollectionReference
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.FirebaseFirestore
@@ -115,8 +116,10 @@ internal suspend fun FirestoreSpace.deleteAll(group: String, ids: List<String>) 
 
 /** مستند واحد بمعرّفه — من الذاكرة لو المجموعة اتزامنت، وإلا من فايربيز. */
 internal suspend fun FirestoreSpace.readDoc(group: String, id: String): Doc? {
-    mirror?.docsOf(group)?.let { return it[id]?.doc }
-    return collection(group).document(id).get().rawData()
+    mirror?.awaitDocs(group, MIRROR_WAIT_MS)?.let { return it[id]?.doc }
+    val start = PerfTrace.mark()
+    val snap = collection(group).document(id).get()
+    return snap.rawData().also { if (PerfTrace.enabled) ReadMeter.server("$group/doc", listOf(it), snap.metadata.isFromCache, start) }
 }
 
 /** تعديل حقول بعينها في مستند موجود (`update()`) — ويتطبّق على الذاكرة لحظتها. */

@@ -45,6 +45,11 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.MasroufyTheme
 import app.masroufy.ui.theme.Type
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+
+/** تغييرات السيرفر بتوصل دفعات (مستمع لكل مجموعة) ⇒ قراية واحدة بعد ما تهدى. */
+private const val REMOTE_SETTLE_MS = 400L
 
 /**
  * التطبيق كله (أندرويد بيناديه من `MainActivity`): الثيم · الجلسة (بيبدأ ⇒ الدخول ⇒ «بيفتح» ⇒ الهيكل) · بوابة القفل فوق الكل.
@@ -55,6 +60,8 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
     val registry = remember { buildRegistry() }
     val session by app.session.collectAsState()
     LaunchedEffect(session is AppSession.Ready) { if (session !is AppSession.Ready) shell.navigator.reset() }
+    // تغيير من السيرفر ⇒ اللي بيعرض أرقام يقرا تاني — بعد ما الدفعة تهدى (المستمعين بيسلّموا ورا بعض في نفس اللحظة)
+    LaunchedEffect(app) { app.remoteChanges.collectLatest { delay(REMOTE_SETTLE_MS); shell.changes.changed() } }
     MasroufyTheme(reduceMotion) {
         CompositionLocalProvider(LocalApp provides app, LocalPermissions provides app.permissions) {
             val root = rememberBackdrop()

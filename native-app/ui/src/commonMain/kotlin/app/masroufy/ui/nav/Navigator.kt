@@ -71,6 +71,7 @@ class Navigator(start: Tab = Tab.HOME) {
 
     /** يفتح شاشة داخلية (أو لوحة لو [route] لوحة). */
     fun push(route: Route) {
+        app.masroufy.perf.PerfTrace.log("nav push ${route.name}")
         if (route is SheetRoute) {
             open(route)
             return
@@ -82,6 +83,7 @@ class Navigator(start: Tab = Tab.HOME) {
     /** يقفل الشاشة الظاهرة. `false` = مفيش شاشة داخلية (إنت على التبويب). */
     fun pop(): Boolean {
         if (screens.isEmpty()) return false
+        app.masroufy.perf.PerfTrace.log("nav pop")
         screens.removeAt(screens.lastIndex)
         motion = NavMotion.POP
         return true
@@ -106,6 +108,7 @@ class Navigator(start: Tab = Tab.HOME) {
     /** تبديل تبويب: الرجوع بيتمسح (زي النموذج). نفس التبويب ومفيش شاشة فوقه ⇒ ولا حاجة. */
     fun switchTab(target: Tab) {
         if (target == tab && screens.isEmpty()) return
+        app.masroufy.perf.PerfTrace.log("nav tab $target")
         tab = target
         screens.clear()
         motion = NavMotion.TAB

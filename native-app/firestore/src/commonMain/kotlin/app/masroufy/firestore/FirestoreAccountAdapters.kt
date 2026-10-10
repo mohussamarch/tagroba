@@ -8,6 +8,7 @@ import app.masroufy.data.Doc
 import app.masroufy.data.DocCodec
 import app.masroufy.data.ReferenceCodecs
 import app.masroufy.data.toStore
+import app.masroufy.perf.PerfTrace
 import app.masroufy.port.ProfileRepository
 import app.masroufy.port.ReferenceSeedPort
 import app.masroufy.port.SeedSource
@@ -23,9 +24,13 @@ import dev.gitlive.firebase.firestore.FirebaseFirestore
  * والحفظ بيكتب الملف كله (زي `setDoc` في التطبيق الحالي) — بكل حقوله حتى الفاضية (`null` = ما اتجاوبش).
  */
 class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRepository {
-    private fun ref() = space.db.document("${space.root}/profile/main")
+    private fun ref() = space.collection(PROFILE_GROUP).document(PROFILE_ID)
 
-    override suspend fun load(): UserProfile? = ref().get().rawData()?.let(::parseStoredProfile)
+    /**
+     * من الذاكرة (مستمع الحساب على `profile` — [ACCOUNT_DOC_GROUPS]) لو شغال، وإلا من فايربيز.
+     * ⚠️ قبل كده كان `get()` من السيرفر **كل مرة**: الرئيسية لوحدها 5 مرات في التحميل الواحد (اتقاس 2026-10-10 — HANDOVER §7).
+     */
+    override suspend fun load(): UserProfile? = space.readDoc(PROFILE_GROUP, PROFILE_ID)?.let(::parseStoredProfile)
 
     override suspend fun save(profile: UserProfile) {
         val doc: Doc = linkedMapOf(
@@ -40,8 +45,20 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             profile.carToWork?.let { put("carToWork", it) }
         }
         space.write { ref().set(doc) }
+        // القراية الجاية من الذاكرة لازم تشوف الحفظ ده لحظتها (المستمع بيأكده بعدها)
+        space.mirror?.applyReplace(PROFILE_GROUP, PROFILE_ID, doc)
     }
 }
+
+/** ملف المستخدم: مستند واحد `users/{uid}/profile/main`. */
+internal const val PROFILE_GROUP = "profile"
+internal const val PROFILE_ID = "main"
+
+/**
+ * مجموعات على مستوى الحساب **برا** النسخة الشاملة ([app.masroufy.core.ACCOUNT_GROUPS]) بس محتاجة مستمع: ملف المستخدم بيتقري في كل شاشة تقريبًا
+ * (يوم الراتب · الاسم · كارت «كمّل ملفك»).
+ */
+internal val ACCOUNT_DOC_GROUPS: List<String> = listOf(PROFILE_GROUP)
 
 /**
  * علامة «المراجع اتجهزت» (`users/{uid}/initialization/references-v1`) — مش طريقة لاسترجاع افتراضيات اتمسحت.
@@ -62,7 +79,9 @@ class FirestoreReferenceSeed(
 
     override suspend fun begin(hasExistingCategories: Boolean): SeedState {
         // علامة «خلص» محلية بتسمح بالفتح من غير نت بعد كده
+        val start = PerfTrace.mark()
         val cached = marker().get().rawData()
+        if (PerfTrace.enabled) ReadMeter.server("initialization/doc", listOf(cached), false, start)
         if (cached != null && stateOf(cached) == SeedState.COMPLETE) return SeedState.COMPLETE
         return space.db.runTransaction {
             val current = get(marker()).rawData()
@@ -118,14 +137,26 @@ class FirestoreSharedMerchantCatalog(private val db: FirebaseFirestore) : Shared
 
     override suspend fun listChangedSince(sinceIso: String?): List<SharedMerchantEntry> {
         val base = if (sinceIso != null) col().where { "updatedAt" greaterThan timestampOf(sinceIso) } else col()
-        return base.orderBy("updatedAt").get().documents.mapNotNull { it.rawData()?.let(::entryOf) }
+        val start = PerfTrace.mark()
+        val docs = base.orderBy("updatedAt").get().documents.map { it.rawData() }
+        if (PerfTrace.enabled) ReadMeter.server("sharedMerchants/changed", docs, false, start)
+        return docs.mapNotNull { it?.let(::entryOf) }
     }
 
     /** حقل واحد بمساواة ⇒ فهرس تلقائي. */
-    override suspend fun listConfirmed(): List<SharedMerchantEntry> =
-        col().where { "confirmed" equalTo true }.get().documents.mapNotNull { it.rawData()?.let(::entryOf) }
+    override suspend fun listConfirmed(): List<SharedMerchantEntry> {
+        val start = PerfTrace.mark()
+        val docs = col().where { "confirmed" equalTo true }.get().documents.map { it.rawData() }
+        if (PerfTrace.enabled) ReadMeter.server("sharedMerchants/confirmed", docs, false, start)
+        return docs.mapNotNull { it?.let(::entryOf) }
+    }
 
-    override suspend fun get(normalizedName: String): SharedMerchantEntry? = col().document(sharedMerchantKey(normalizedName)).get().rawData()?.let(::entryOf)
+    override suspend fun get(normalizedName: String): SharedMerchantEntry? {
+        val start = PerfTrace.mark()
+        val doc = col().document(sharedMerchantKey(normalizedName)).get().rawData()
+        if (PerfTrace.enabled) ReadMeter.server("sharedMerchants/doc", listOf(doc), false, start)
+        return doc?.let(::entryOf)
+    }
 
     override suspend fun save(entry: SharedMerchantEntry) {
         col().document(sharedMerchantKey(entry.normalizedName)).set(

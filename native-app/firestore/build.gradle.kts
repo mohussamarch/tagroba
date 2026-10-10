@@ -37,6 +37,10 @@ kotlin {
             // تسجيل الدخول — نفس عيلة GitLive (§31.3)، ARCHITECTURE §31.6
             implementation("dev.gitlive:firebase-auth:2.7.0")
         }
+        // منطق الذاكرة بس ([LocalMirror] — من غير فايربيز): الكتابة تبان في القراية اللي بعدها، وكذا قراية مع بعض بتستنى نفس المستمع
+        jvmTest.dependencies {
+            implementation(kotlin("test"))
+        }
         if (withAndroid) {
             getByName("androidInstrumentedTest").dependencies {
                 implementation(kotlin("test"))

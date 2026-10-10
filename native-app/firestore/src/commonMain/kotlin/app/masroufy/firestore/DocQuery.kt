@@ -2,6 +2,7 @@ package app.masroufy.firestore
 
 import app.masroufy.data.Doc
 import app.masroufy.data.DocCodec
+import app.masroufy.perf.PerfTrace
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.Query
 
@@ -67,9 +68,21 @@ internal data class DocQuery(val conds: List<Cond> = emptyList(), val descending
     }
 }
 
-/** القراية الوحيدة للمستودعات: من الذاكرة لو المجموعة اتزامنت، وإلا من فايربيز (السيرفر لو فيه نت، والنسخة المحلية لو مفيش). */
+/**
+ * أقصى انتظار لمستمع المجموعة قبل ما القراية تروح لفايربيز بنفسها ([LocalMirror.awaitDocs]). المستمع بينزّل نفس البيانات،
+ * فالاستعلام جنبه بيتأخر بنفس القدر (اتقاس 2026-10-10: قراية `spaces` جنب 57 مستمع خدت 8.5 ثانية على المحاكي).
+ */
+internal const val MIRROR_WAIT_MS: Long = 15_000
+
+/**
+ * القراية الوحيدة للمستودعات: من الذاكرة لو المجموعة اتزامنت (أو نسخة الجهاز — [LocalMirror.docsOf])، ولو المستمع لسه ما سلّمش بتستناه،
+ * وإلا من فايربيز (السيرفر لو فيه نت، والنسخة المحلية لو مفيش).
+ */
 internal suspend fun <T> FirestoreSpace.select(codec: DocCodec<T>, query: DocQuery = DocQuery()): List<T> {
-    val local = mirror?.docsOf(codec.group)
-    if (local != null) return query.runOn(local).map { it.entity(codec::decode) }
-    return codec.decodeAll(query.applyTo(collection(codec.group)).get())
+    val local = mirror?.awaitDocs(codec.group, MIRROR_WAIT_MS)
+    if (local != null) return ReadMeter.mirror(codec.group, local.size) { query.runOn(local).map { it.entity(codec::decode) } }
+    val start = PerfTrace.mark()
+    val snap = query.applyTo(collection(codec.group)).get()
+    if (PerfTrace.enabled) ReadMeter.server(codec.group, snap.documents.map { it.rawData() }, snap.metadata.isFromCache, start)
+    return codec.decodeAll(snap)
 }

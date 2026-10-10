@@ -104,7 +104,7 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
     fun go(block: suspend () -> Unit) {
         scope.launch { runCatching { block() }.onFailure { toaster.show(it.message ?: failed, dark = true) } }
     }
-    LaunchedEffect(p) { runCatching { p.open() }.onFailure { toaster.show(it.message ?: failed, dark = true) } }
+    LaunchedEffect(p) { runCatching { app.masroufy.perf.PerfTrace.span("screen:assistant") { p.open() } }.onFailure { toaster.show(it.message ?: failed, dark = true) } }
     val undo = p.undo
     LaunchedEffect(undo) { if (undo != null) { delay(ASK_UNDO_MS); p.expireUndo() } }
     val noVoice = t(AskKey.CHAT_VOICE_UNAVAILABLE)

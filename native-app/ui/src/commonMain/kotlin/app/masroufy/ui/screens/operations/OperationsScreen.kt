@@ -71,13 +71,16 @@ fun OperationsScreen() {
     // قراية المختار في الرسم نفسه ⇒ الرجوع من «اختر الشهر» بيعيد القراية بالشهر الجديد
     val chosenKey = PeriodChoice.of(space.space.id)
     LaunchedEffect(deps, reload, chosenKey) {
-        val today = space.shell.today()
-        val view = attempt {
-            val payday = deps.payday()
-            val data = deps.transactions.load(LoadTransactionsScreenRequest(PeriodChoice.periodOf(chosenKey, payday), today, payday))
-            operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency)
+        app.masroufy.perf.PerfTrace.span("screen:operations") {
+            val today = space.shell.today()
+            val view = attempt {
+                val trace = app.masroufy.perf.PerfTrace
+                val payday = trace.span("ops:payday") { deps.payday() }
+                val data = trace.span("ops:transactions") { deps.transactions.load(LoadTransactionsScreenRequest(PeriodChoice.periodOf(chosenKey, payday), today, payday)) }
+                trace.span("ops:view") { operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency) }
+            }
+            ui = ui.loaded(view, attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } })
         }
-        ui = ui.loaded(view, attempt { deps.transfers.zone().questions.size })
     }
     val title = t(UiKey.TAB_OPERATIONS)
     TabScaffold(title, header = {

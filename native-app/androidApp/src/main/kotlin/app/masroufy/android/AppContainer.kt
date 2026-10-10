@@ -39,14 +39,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import app.masroufy.perf.PerfTrace
 import java.lang.ref.WeakReference
 import java.time.ZoneId
 import java.util.Calendar
@@ -108,9 +113,29 @@ class AppContainer(private val context: Context) {
         override val permissions = permissions
         override val emulator = this@AppContainer.emulator
         override val online = this@AppContainer.online
+        override val remoteChanges = this@AppContainer.remoteChanges
+    }
+
+    /** تغييرات السيرفر في البلد الشغالة والحساب (`FirestoreSync.remoteChanges`) — من غير القيمة الأولى (مش تغيير). */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val remoteChanges: Flow<Long> = (session?.state ?: flowOf(AccountSession.State.SignedOut)).flatMapLatest { st ->
+        if (st is AccountSession.State.Ready) combine(st.sync.remoteChanges, st.accountSync.remoteChanges) { a, b -> a + b }.drop(1)
+        else emptyFlow()
+    }
+
+    /**
+     * نسخ المحاكي بس (قياس السرعة — HANDOVER §7): دخول حساب وهمي على محاكي الدخول بمفتاح **غير موقّع** — المحاكي بيقبله
+     * وفايربيز الحقيقي بيرفضه، والدالة ما بتعملش حاجة خالص برا المحاكي.
+     */
+    fun perfSignIn(uid: String) {
+        // ثابت وقت البناء ⇒ في نسخة المالك الدالة كلها بتتشال (R8)
+        if (BuildConfig.FIREBASE_EMULATOR_PROJECT.isEmpty()) return
+        val f = firebase?.takeIf { it.emulator } ?: return
+        scope.launch { runCatching { f.auth.signInWithCustomToken(unsignedEmulatorToken(uid)) }.onFailure { PerfTrace.log("perf sign-in failed: ${it.message}") } }
     }
 
     private fun ready(st: AccountSession.State.Ready): AppSession {
+        PerfTrace.log("session ready spaces=${st.spaces.size}")
         // الفصحى/المصري من بلد الحساب الشغال قبل أول رسم (الجلسة بتعملها هي كمان — هنا عشان الترتيب يبقى مضمون)
         Texts.followCountry(st.active.space.countryCode)
         val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid, st.active.space), links(), feeds)
@@ -155,4 +180,15 @@ class AppContainer(private val context: Context) {
         val ready = withTimeoutOrNull(30_000) { s.state.first { it is AccountSession.State.Ready } } as? AccountSession.State.Ready ?: return null
         return backgroundCycle(spacesOf(ready), AndroidSmsInbox(context, ready.user.uid), AndroidDeviceNotifier(context), envFor(ready.user.uid))
     }
+}
+
+/** مفتاح دخول مخصص **غير موقّع** (`alg: none`) — محاكي الدخول بس بيقبله (فايربيز الحقيقي بيرفضه). */
+internal fun unsignedEmulatorToken(uid: String): String {
+    fun b64(s: String) = android.util.Base64.encodeToString(
+        s.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP,
+    )
+    val now = System.currentTimeMillis() / 1000
+    val aud = "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit"
+    val payload = """{"aud":"$aud","iat":$now,"exp":${now + 3600},"iss":"perf@emulator","sub":"perf@emulator","uid":"$uid"}"""
+    return b64("""{"alg":"none","typ":"JWT"}""") + "." + b64(payload) + "."
 }
