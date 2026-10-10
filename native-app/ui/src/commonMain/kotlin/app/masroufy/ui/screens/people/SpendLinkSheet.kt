@@ -62,7 +62,7 @@ import app.masroufy.usecase.ManageEvents
 import kotlinx.coroutines.launch
 
 /**
- * «اربط مصروفًا بنسبة» (لوحة `EventSpendLinkSheet` جوه تفاصيل الحدث): مصروف آخر ٣٠ يوم (الأحدث الأول) · بحث · لكل عملية مختارة نسبة 1–100
+ * «اربط مصروفًا بنسبة» (لوحة `EventSpendLinkSheet` جوه تفاصيل الحدث): مصروف آخر 30 يوم (الأحدث الأول) · بحث · لكل عملية مختارة نسبة 1–100
  * (المبدئي 100) ونصيب الحدث منها (`eventShareMinor` في `:wiring`) · المجموع اللي هيتضاف من غير «صافي».
  * الحفظ: `EventGifts.link(…, SPEND, نسبة)` لكل عملية — ⚠️ مش كتابة واحدة (missingLogic)؛ المربوطة بحدث تاني بتبان مقفولة باسمه (والحالة نفسها بترفض لو وصلت).
  */
@@ -216,7 +216,7 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
     }
 }
 
-/** النسبة (١–١٠٠) + ١٠٠/٧٥/٥٠/٢٥ + نصيب الحدث. */
+/** النسبة (1–100) + 100/75/50/25 + نصيب الحدث. */
 @Composable
 private fun PercentRow(tx: Transaction, text: String, onText: (String) -> Unit, share: Halalas?) {
     Column(Modifier.fillMaxWidth().padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

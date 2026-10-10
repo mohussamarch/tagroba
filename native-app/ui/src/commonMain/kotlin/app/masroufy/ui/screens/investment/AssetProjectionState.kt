@@ -97,7 +97,7 @@ data class ProjectionUi(
     val sellYear: Int,
     val yearsLabel: String,
     val chip: RateChip,
-    /** «١٫٧٤٪ سنويًا» أو «غير متاح». */
+    /** «1.74% سنويًا» أو «غير متاح». */
     val rateValue: String,
     val rateKnown: Boolean,
     val rateSource: String,
@@ -152,7 +152,7 @@ fun projectionUi(v: AssetProjectionView, currency: Currency): ProjectionUi {
     )
 }
 
-/** «بعد ٤ سنوات» بقاعدة العدد (صفر · ١ · ٢ · ٣–١٠ · ١١+). */
+/** «بعد 4 سنوات» بقاعدة العدد (صفر · 1 · 2 · 3–10 · 11+). */
 fun yearsAhead(years: Int): String = when {
     years <= 0 -> uiText(UiKey.ASSET_PROJ_YEARS_ZERO)
     years == 1 -> uiText(UiKey.ASSET_PROJ_YEARS_ONE)

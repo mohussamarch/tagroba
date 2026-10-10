@@ -4,10 +4,10 @@ package app.masroufy.core
  * نصوص شاشات منطقة «الاستيراد» (`ui/screens/imports/`) — **الملف ده بتاع المنطقة بس** (المناطق بتتبني بالتوازي، ARCHITECTURE §31.31).
  * المفاتيح في `TextKeys.kt` **تحت سطر «منطقة الاستيراد»** بس. الفصحى للسعودية والافتراضي · المصري لمصر (OVERRIDES §66) · الإنجليزي
  * (كتابة Claude — مستني مراجعة المالك §40). النص من النموذج التفاعلي بالحرف (الفصحى من `space = السعودية` والمصري من `مصر`).
- * **ممنوع «·» جنب رقم عربي** ⇒ «،». الجداول في خمس ملفات (كل واحد تحت ٣٠٠ سطر):
- * ١ `TextsAreaImportsSms` (المشترك · `BankSms` · `SmsWaiting` · `CategoryPicker`) · ٢ `TextsAreaImportsSettings` (`BankSmsSettings` · `SmsPermission` ·
- * `SmsPaste`) · ٣ `TextsAreaImportsStatement` (`StatementImport` · `StatementColumns`) · ٤ `TextsAreaImportsReview` (`ImportReview` ·
- * `ImportDuplicateSheet`) · ٥ `TextsAreaImportsBatches` (`ImportBatches` · `RevertBatchSheet`).
+ * **ممنوع «·» جنب رقم عربي** ⇒ «،». الجداول في خمس ملفات (كل واحد تحت 300 سطر):
+ * 1 `TextsAreaImportsSms` (المشترك · `BankSms` · `SmsWaiting` · `CategoryPicker`) · 2 `TextsAreaImportsSettings` (`BankSmsSettings` · `SmsPermission` ·
+ * `SmsPaste`) · 3 `TextsAreaImportsStatement` (`StatementImport` · `StatementColumns`) · 4 `TextsAreaImportsReview` (`ImportReview` ·
+ * `ImportDuplicateSheet`) · 5 `TextsAreaImportsBatches` (`ImportBatches` · `RevertBatchSheet`).
  */
 internal val MSA_AREA_IMPORTS_TEXTS: Map<UiKey, String> =
     MSA_IMPORTS_SMS_TEXTS + MSA_IMPORTS_SETTINGS_TEXTS + MSA_IMPORTS_STATEMENT_TEXTS + MSA_IMPORTS_REVIEW_TEXTS + MSA_IMPORTS_BATCHES_TEXTS

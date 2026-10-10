@@ -127,7 +127,7 @@ private fun RecordedRow(row: RecordedUi, category: Category?, onConfirm: (Record
     }
 }
 
-/** زرار صغير 32 (أخضر على أخضر ٨٪) جوه الصف — «تأكيد» · «صنّفها» · «قارن». */
+/** زرار صغير 32 (أخضر على أخضر 8%) جوه الصف — «تأكيد» · «صنّفها» · «قارن». */
 @Composable
 fun SmallAction(text: String, onClick: () -> Unit) {
     val press = rememberPress()

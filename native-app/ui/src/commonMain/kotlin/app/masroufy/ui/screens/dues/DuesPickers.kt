@@ -47,7 +47,7 @@ import app.masroufy.ui.theme.Type
 
 /**
  * اختيار يوم من شهر (سؤال «أول دفعة» في الجمعية · «الموعد القادم» في الاشتراك · «أول موعد» في الخطة): رأس الشهر بسهمين + أيام الشهر
- * في شبكة ٧ (زي النموذج — من غير محاذاة أيام الأسبوع). المختار أخضر مليان، والنهارده أخضر خفيف. تاريخ بس — من غير فلوس.
+ * في شبكة 7 (زي النموذج — من غير محاذاة أيام الأسبوع). المختار أخضر مليان، والنهارده أخضر خفيف. تاريخ بس — من غير فلوس.
  */
 @Composable
 internal fun DayPicker(selected: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit, cell: Int = 40) {
@@ -107,5 +107,5 @@ private fun MonthArrow(icon: Lucide, label: String, onClick: () -> Unit) {
     ) { LucideIcon(icon, size = 20.dp, modifier = Modifier.mirrorInLtr()) }
 }
 
-/** اسم التاريخ المختار للقارئ («٧ أكتوبر») — للأزرار اللي بتفتح الاختيار. */
+/** اسم التاريخ المختار للقارئ («7 أكتوبر») — للأزرار اللي بتفتح الاختيار. */
 internal fun pickedLabel(date: IsoDate?): String = date?.let(::dayMonth).orEmpty()

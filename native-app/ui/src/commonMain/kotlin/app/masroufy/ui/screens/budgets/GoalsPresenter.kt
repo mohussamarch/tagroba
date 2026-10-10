@@ -20,8 +20,8 @@ import app.masroufy.ui.text.t
 
 /**
  * مقدِّم «خطط الادخار» (`SavingsGoals` + تفاصيل الخطة): كل رقم من `LoadGoalsOverview` ([GoalProgress] — المدّخر · المفروض اليوم · قدام/ورا ·
- * المطلوب شهريًا · «ستصل إلى») وأي `null` بيبان «غير متاح». الحاجة الوحيدة اللي بتتحسب هنا **نسبة الشريط** (المدّخر ÷ الهدف ×١٠٠ لتحت —
- * `GoalProgress` مالهاش نسبة: missingLogic)، و«جديدة» = عدد الأيام من البداية أقل من ٣٠ (`GOAL_PACE_MIN_DAYS`).
+ * المطلوب شهريًا · «ستصل إلى») وأي `null` بيبان «غير متاح». الحاجة الوحيدة اللي بتتحسب هنا **نسبة الشريط** (المدّخر ÷ الهدف ×100 لتحت —
+ * `GoalProgress` مالهاش نسبة: missingLogic)، و«جديدة» = عدد الأيام من البداية أقل من 30 (`GOAL_PACE_MIN_DAYS`).
  */
 enum class StatTone { PLAIN, GOOD, BAD, WARN, MUTED }
 
@@ -67,16 +67,16 @@ fun mapGoals(list: List<GoalProgress>, today: IsoDate, wallets: List<Wallet>): G
     )
 }
 
-/** «٣١ ديسمبر ٢٠٢٦». */
+/** «31 ديسمبر 2026». */
 fun longDate(date: IsoDate): String = t(UiKey.GOAL_EDIT_DATE_VALUE, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
 
-/** نسبة الشريط: المدّخر ÷ الهدف ×١٠٠ لتحت، بين ٠ و١٠٠ — null لو المدّخر مش معروف. عرض بس (أعداد صحيحة). */
+/** نسبة الشريط: المدّخر ÷ الهدف ×100 لتحت، بين 0 و100 — null لو المدّخر مش معروف. عرض بس (أعداد صحيحة). */
 fun goalPercent(saved: Halalas?, target: Halalas): Int? {
     if (saved == null || target <= 0) return null
     return (saved.coerceAtLeast(0) * 100 / target).coerceIn(0, 100).toInt()
 }
 
-/** اسم الحساب المربوط: «الاسم ••••١٢٣٤» (آخر أربعة بس — CLAUDE.md #11) أو «حساب مربوط» لو في بلد تانية. */
+/** اسم الحساب المربوط: «الاسم ••••1234» (آخر أربعة بس — CLAUDE.md #11) أو «حساب مربوط» لو في بلد تانية. */
 fun walletLabel(wallet: Wallet?): String = when {
     wallet == null -> t(UiKey.GOALS_LINKED_OTHER)
     wallet.accountLast4 != null -> t(UiKey.GOALS_WALLET_LAST4, wallet.name, wallet.accountLast4!!)
@@ -123,7 +123,7 @@ private fun goalCard(p: GoalProgress, today: IsoDate, wallets: Map<String, Walle
 
 private fun money(minor: Halalas?, currency: Currency): String = minor?.let { amount(absMoney(it), currency) } ?: t(TextKey.NOT_AVAILABLE)
 
-/** الأربع أرقام (٢×٢): المفروض اليوم · قدام/ورا · المطلوب شهريًا · «ستصل إلى» (بعد ٣٠ يوم بس). */
+/** الأربع أرقام (2×2): المفروض اليوم · قدام/ورا · المطلوب شهريًا · «ستصل إلى» (بعد 30 يوم بس). */
 private fun stats(p: GoalProgress, young: Boolean): List<GoalStat> {
     val c = p.goal.currency
     val na = p.savedMinor == null
@@ -149,7 +149,7 @@ private fun stats(p: GoalProgress, young: Boolean): List<GoalStat> {
     )
 }
 
-/** سطر «المدّخر» تحت الرقم في تفاصيل الخطة: «٦١٪، بقي X» · «اكتملت!» · «رصيد الحساب غير معروف». */
+/** سطر «المدّخر» تحت الرقم في تفاصيل الخطة: «61%، بقي X» · «اكتملت!» · «رصيد الحساب غير معروف». */
 fun detailProgressLine(card: GoalCardUi): String = when {
     card.savedMinor == null || card.percent == null -> t(UiKey.GOAL_DETAIL_UNKNOWN)
     card.reached -> t(UiKey.GOAL_DETAIL_REACHED, sentenceNumber(card.percent))

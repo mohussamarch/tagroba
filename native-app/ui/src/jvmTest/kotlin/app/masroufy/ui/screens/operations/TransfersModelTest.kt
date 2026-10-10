@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 
 /**
  * زون التحويلات (`Transfers`) و«من هذا؟» (`TransferParty`): من `ManageTransfers.zone()` للأقسام (بانتظار ردك · بلا قرار · تقرّر)، الداخل والخارج
- * زي ما هما من حالة الاستخدام (كل عملة لوحدها، والصفر ما بيتعرضش)، وآخر ٤ أرقام بس.
+ * زي ما هما من حالة الاستخدام (كل عملة لوحدها، والصفر ما بيتعرضش)، وآخر 4 أرقام بس.
  */
 class TransfersModelTest {
     @AfterTest fun reset() {
@@ -48,9 +48,9 @@ class TransfersModelTest {
         val v = transfersView(zone, mapOf("p-l" to "ليلى"))
         assertEquals(listOf(PartySection.WAITING, PartySection.UNDECIDED, PartySection.DECIDED), v.sections.map { it.first })
         val waiting = v.sections.first().second.single()
-        assertEquals("٦ تحويلات في أكتوبر، آخرها ٧ أكتوبر", waiting.meta)
+        assertEquals("6 تحويلات في أكتوبر، آخرها 7 أكتوبر", waiting.meta)
         assertEquals("من هذا؟", waiting.chip.text)
-        assertEquals("٤٨٢١", waiting.last4)
+        assertEquals("4821", waiting.last4)
         assertEquals(900_000L, waiting.incomingMinor)
         assertNull(waiting.outgoingMinor, "الصفر ما بيتعرضش (مش «غير متاح» — مفيش تحويلات خارجة)")
         val decided = v.sections.last().second
@@ -63,20 +63,20 @@ class TransfersModelTest {
     }
 
     @Test fun countsAndEgyptianWording() {
-        assertEquals(listOf("تحويل واحد", "تحويلان", "٥ تحويلات", "١٤ تحويلًا"), listOf(1, 2, 5, 14).map(::transfersCount))
+        assertEquals(listOf("تحويل واحد", "تحويلان", "5 تحويلات", "14 تحويلًا"), listOf(1, 2, 5, 14).map(::transfersCount))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         val v = transfersView(zone, mapOf("p-l" to "ليلى"))
         assertEquals("مين ده؟", v.sections.first().second.single().chip.text)
-        assertEquals("٦ تحويلات في أكتوبر، آخر واحد ٧ أكتوبر", v.sections.first().second.single().meta)
-        assertEquals("١٤ تحويل", transfersCount(14))
+        assertEquals("6 تحويلات في أكتوبر، آخر واحد 7 أكتوبر", v.sections.first().second.single().meta)
+        assertEquals("14 تحويل", transfersCount(14))
     }
 
     @Test fun decisionCardSaysWhatHappened() {
-        assertEquals("حساب ينتهي بـ ٤٨٢١", partyAccount(salem))
+        assertEquals("حساب ينتهي بـ 4821", partyAccount(salem))
         assertEquals("فهد", partyAccount(fahd), "من غير أرقام ⇒ اسم الطرف")
         val person = decisionTexts(PartyDecision.AsPerson("سالم", EconomicKind.GIFT_RECEIVED, added = true), salem)
         assertTrue(person.first.startsWith("رُبط بـسالم، "))
-        assertTrue(person.second.startsWith("أُضيف سالم إلى أشخاصك. أي تحويل من حساب ينتهي بـ ٤٨٢١"))
+        assertTrue(person.second.startsWith("أُضيف سالم إلى أشخاصك. أي تحويل من حساب ينتهي بـ 4821"))
         assertEquals("تحويل بين محافظك" to "ليس دخلًا ولا مصروفًا. وصُحّحت عمليتان من الطرف نفسه.", decisionTexts(PartyDecision.OwnAccount(2), salem))
         assertEquals("تم" to "لن نسألك عن هذا الحساب مجددًا.", decisionTexts(PartyDecision.NotThis, salem))
         assertEquals("سالم", partyNewName(salem, "  "), "الاسم الفاضي ⇒ الاسم زي ما جه")

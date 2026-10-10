@@ -20,7 +20,7 @@ import app.masroufy.ui.icons.Lucide
  * زرار الرجوع ([back]): لوحة ⇒ شاشة داخلية ⇒ تبويب غير الرئيسية ⇒ الرئيسية ⇒ `false` (التطبيق يتقفل).
  */
 interface Route {
-    /** اسم اللوحة في النموذج = اسم الشاشة في كوتلن (KOTLIN-MAP §١ — `SCREENS.md`). */
+    /** اسم اللوحة في النموذج = اسم الشاشة في كوتلن (KOTLIN-MAP §1 — `SCREENS.md`). */
     val name: String
 }
 

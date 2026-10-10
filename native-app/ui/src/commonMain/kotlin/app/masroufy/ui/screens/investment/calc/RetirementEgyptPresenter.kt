@@ -71,7 +71,7 @@ fun checkEgypt(f: Map<String, String>, category: EgyptInsuredCategory, currency:
     return RetirementCheck(e, request, eosChosen = true)
 }
 
-/** «التقاعد على ٦٠ سنة في يونيو ٢٠٥٤، ٤٥٩ شهر اشتراك». */
+/** «التقاعد على 60 سنة في يونيو 2054، 459 شهر اشتراك». */
 fun egyptHeroDetails(o: RetirementOutcome): String? {
     val p = o.pension
     val date = p.retirementDate ?: return null

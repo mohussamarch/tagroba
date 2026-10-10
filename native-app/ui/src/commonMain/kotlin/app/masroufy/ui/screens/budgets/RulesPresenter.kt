@@ -27,7 +27,7 @@ import app.masroufy.usecase.RuleRow
  */
 data class RuleRowUi(
     val id: String,
-    /** المكان في الترتيب (١ = بيتطبق الأول) — مش رقم الأولوية المتخزن (١٠ · ٢٠ …). */
+    /** المكان في الترتيب (1 = بيتطبق الأول) — مش رقم الأولوية المتخزن (10 · 20 …). */
     val position: Int,
     val modeLabel: String,
     val text: String,
@@ -119,7 +119,7 @@ fun ruleDuplicate(rules: List<RuleRowUi>, editingId: String?, text: String, mode
 }
 
 /**
- * الترتيب بعد «قدّمها/أخّرها»: القاعدة [id] (أو الجديدة لو null) في المكان [position] ⇒ أولويات ١٠ · ٢٠ · ٣٠ … بالترتيب، و[updates] = القواعد
+ * الترتيب بعد «قدّمها/أخّرها»: القاعدة [id] (أو الجديدة لو null) في المكان [position] ⇒ أولويات 10 · 20 · 30 … بالترتيب، و[updates] = القواعد
  * التانية اللي رقمها اتغير بس. ⚠️ `ManageRules` مالهاش «حرّك لمكان» (missingLogic) ⇒ الشاشة بتنادي `updateRule` لكل واحدة اتغيرت.
  */
 data class PriorityPlan(val updates: List<Pair<String, Int>>, val priority: Int)
@@ -156,7 +156,7 @@ fun applyPreview(plan: CategorizationReport, categories: List<Category>): ApplyP
 private const val CONFIRMED_HEX = "#13764D"
 private const val UNMATCHED_HEX = "#956000"
 
-/** «عملية واحدة» · «عمليتان» · «٣ عمليات» · «١١ عملية». */
+/** «عملية واحدة» · «عمليتان» · «3 عمليات» · «11 عملية». */
 fun opsLabel(n: Int): String = when {
     n == 1 -> t(UiKey.RULES_OPS_ONE)
     n == 2 -> t(UiKey.RULES_OPS_TWO)
@@ -164,7 +164,7 @@ fun opsLabel(n: Int): String = when {
     else -> t(UiKey.RULES_OPS_MANY, sentenceNumber(n))
 }
 
-/** مدى «السابق»: آخر ١٨٣٠ يوم (أقصى مدى بتقبله `ReviewHistory` — خمس سنين) لحد النهارده. */
+/** مدى «السابق»: آخر 1830 يوم (أقصى مدى بتقبله `ReviewHistory` — خمس سنين) لحد النهارده. */
 const val HISTORY_DAYS = 1830
 
 fun historyRange(today: IsoDate): Pair<IsoDate, IsoDate> = dayNumberToIso(toDayNumber(parseIsoDate(today)) - HISTORY_DAYS) to today

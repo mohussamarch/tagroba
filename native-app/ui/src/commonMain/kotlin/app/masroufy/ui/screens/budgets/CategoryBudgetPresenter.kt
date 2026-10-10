@@ -24,7 +24,7 @@ import app.masroufy.usecase.TransactionsScreenData
 /**
  * مقدِّم «ميزانية تصنيف» (`CategoryBudget`): من `LoadBudgetScreen` (سطر التصنيف وسقفه ومتوسطه وحكم الصرف غير المعتاد) و`LoadTransactionsScreen`
  * (عمليات الفترة — بتتفلتر بالتصنيف وفرعياته للعرض بس). **مفيش حساب فلوس**: المصروف والسقف والباقي والنسبة من `BudgetStatus`.
- * «يوم ١٠ من ٣٠» = عدّ أيام (مش فلوس). ⚠️ مالهاش حالة استخدام (missingLogic): توقّع نهاية الشهر للتصنيف · يوم تجاوز السقف ·
+ * «يوم 10 من 30» = عدّ أيام (مش فلوس). ⚠️ مالهاش حالة استخدام (missingLogic): توقّع نهاية الشهر للتصنيف · يوم تجاوز السقف ·
  * المتاح يوميًا للتصنيف · نصيب كل فرعي من أبوه · ضمّ مصروف الفرعيات على أبوها في سطر الميزانية.
  */
 data class SubUi(val id: String, val name: String, val colorHex: String?, val spentMinor: Halalas?)

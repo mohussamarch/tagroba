@@ -68,7 +68,7 @@ fun targetOf(kind: AlertKind): NotifTarget = when (kind.group) {
     else -> NotifTarget.MORE
 }
 
-/** «اليوم» · «أمس» · «قبل يومين» · «قبل ٣–١٠ أيام» · «قبل ١١+ يومًا» — من تاريخ السطر (أول ١٠ حروف من `createdAt`). */
+/** «اليوم» · «أمس» · «قبل يومين» · «قبل 3–10 أيام» · «قبل 11+ يومًا» — من تاريخ السطر (أول 10 حروف من `createdAt`). */
 fun whenText(createdAt: String, today: IsoDate): String {
     val day = createdAt.take(10)
     if (!isValidIsoDate(day)) return ""

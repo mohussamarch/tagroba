@@ -25,7 +25,7 @@ data class CashView(
     val currency: Currency,
     val balanceMinor: Halalas,
     val spentInPeriodMinor: Halalas,
-    /** «من رصيد البداية في ١ سبتمبر». */
+    /** «من رصيد البداية في 1 سبتمبر». */
     val sinceLine: String,
     val rows: List<CashRow>,
 )

@@ -56,7 +56,7 @@ data class DuesDebtsUi(
 )
 
 /**
- * مواعيد الديون لحد ١٠ سنين قدام (`LoadDues.dueItems`) — `LoadDues.load` بيرجّع شهر واحد قدام بس، فدين ميعاده بعد شهرين كان بيبان
+ * مواعيد الديون لحد 10 سنين قدام (`LoadDues.dueItems`) — `LoadDues.load` بيرجّع شهر واحد قدام بس، فدين ميعاده بعد شهرين كان بيبان
  * «بلا موعد» غلط. المتأخر بيرجع برضه (اللي فات وما اتسددش).
  */
 internal suspend fun debtDueItems(deps: DuesDeps, today: IsoDate): List<DueItem> =
@@ -75,7 +75,7 @@ internal fun reasonOf(o: Obligation): String = when {
     else -> t(UiKey.DEBTS_REASON_CUSTODY)
 }
 
-/** إشارة الدين من ميعاده: فات موعدها ⇒ أحمر · قرّب (٣ أيام) ⇒ كهرماني · بعدين ⇒ هادي. */
+/** إشارة الدين من ميعاده: فات موعدها ⇒ أحمر · قرّب (3 أيام) ⇒ كهرماني · بعدين ⇒ هادي. */
 internal fun debtSignal(due: DueItem?, today: IsoDate): Pair<Chip, String?> {
     if (due == null) return Chip.CALM to null
     val days = daysBetween(today, due.dueAt)

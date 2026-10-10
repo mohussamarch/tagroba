@@ -70,7 +70,7 @@ private class Undo(val text: String, val restore: InheritanceScenario?)
 
 /**
  * «الحسبات المحفوظة» (لوحة `InheritanceSaved`): على حسابك كله وبتبان على كل أجهزتك · افتح (على النتيجة) · إعادة تسمية (لوحة) · حذف (لوحة
- * تأكيد + «تراجع» ٤ ثواني) · فاضية ⇒ «احسب تركة». كل حاجة من `ManageInheritanceScenarios`.
+ * تأكيد + «تراجع» 4 ثواني) · فاضية ⇒ «احسب تركة». كل حاجة من `ManageInheritanceScenarios`.
  */
 @Composable
 fun InheritanceSavedScreen() {
@@ -232,7 +232,7 @@ private fun DangerButton(text: String, onClick: () -> Unit) {
     ) { BasicText(text, style = Type.of(15, FontWeight.Bold).copy(color = Color.White)) }
 }
 
-/** الرسالة تحت بعد الحذف أو تغيير الاسم، و«تراجع» للحذف (٤ ثواني — النموذج). */
+/** الرسالة تحت بعد الحذف أو تغيير الاسم، و«تراجع» للحذف (4 ثواني — النموذج). */
 @Composable
 private fun UndoBar(u: Undo, modifier: Modifier, onUndo: () -> Unit) {
     Row(

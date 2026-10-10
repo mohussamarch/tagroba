@@ -37,7 +37,7 @@ class MerchantProfileModelTest {
         assertTrue(v.confirmed)
         assertEquals(listOf("الريف للمأكولات"), v.aliases)
         assertEquals(listOf("a", "b"), v.txns.map { it.id }, "الاسم والاسم البديل ⇒ نفس التاجر، والأحدث الأول")
-        assertEquals(listOf("اليوم", "٢ أكتوبر"), v.txns.map { it.date })
+        assertEquals(listOf("اليوم", "2 أكتوبر"), v.txns.map { it.date })
         assertEquals(listOf("حساب الراتب", "الكاش"), v.txns.map { it.wallet })
         assertEquals(listOf(4_200L, 6_850L), v.txns.map { it.amountMinor }, "كل عملية بمبلغها — مفيش مجموع محسوب هنا")
         assertEquals(AmountTone.EXPENSE, v.txns.first().tone)

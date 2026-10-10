@@ -99,7 +99,7 @@ fun BoxScope.BackdropBlur(backdrop: Backdrop?, radius: Dp, shape: Shape = Rectan
 
 /**
  * `blur(Npx)` في CSS = انحراف معياري (sigma) N، لكن `BlurEffect` بياخد «نصف قطر» وبيحوّله لـ`sigma = 0.57735·r + 0.5` (نفس Skia على
- * أندرويد والكمبيوتر) ⇒ من غير التحويل ده كل زجاج كان بيطلع أخف من الوصفة بحوالي ٤٠٪ (اتشاف في لقطة المحادثة على المحاكي 2026-10-09).
+ * أندرويد والكمبيوتر) ⇒ من غير التحويل ده كل زجاج كان بيطلع أخف من الوصفة بحوالي 40% (اتشاف في لقطة المحادثة على المحاكي 2026-10-09).
  */
 internal fun cssBlurToRadius(sigmaPx: Float): Float = if (sigmaPx <= 0.5f) 0f else (sigmaPx - 0.5f) / 0.57735f
 

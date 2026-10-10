@@ -31,7 +31,7 @@ fun assignRole(roles: List<ColumnRole?>, column: Int, role: ColumnRole): List<Co
 /** العمود الجاي اللي لسه مالوش معنى (أو نفس العمود لو كله اتحدد). */
 fun nextUnset(roles: List<ColumnRole?>, current: Int): Int = roles.indexOfFirst { it == null }.takeIf { it >= 0 } ?: current
 
-/** «العمود ٣» (الترقيم من ١). */
+/** «العمود 3» (الترقيم من 1). */
 fun columnWord(index: Int): String = t(UiKey.STATEMENT_COLUMNS_WORD, sentenceNumber(index + 1))
 
 /**

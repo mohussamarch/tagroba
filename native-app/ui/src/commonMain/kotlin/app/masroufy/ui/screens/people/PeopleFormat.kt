@@ -12,7 +12,7 @@ import app.masroufy.ui.text.t
 
 /**
  * كتابة الكلام في شاشات المنطقة (عرض بس — من غير أي حساب فلوس): العدّ بالمفرد والمثنى والجمع، «بعد/قبل كام يوم»، اسم العملية، التاريخ بالسنة.
- * الأرقام جوه الجمل عربي شرقي (`sentenceNumber`) والفاصل جنبها «،» مش «·» (KOTLIN-MAP §٣).
+ * الأرقام جوه الجمل عربي شرقي (`sentenceNumber`) والفاصل جنبها «،» مش «·» (KOTLIN-MAP §3).
  */
 internal enum class Noun(val one: TextRef, val two: TextRef, val few: TextRef, val many: TextRef) {
     OPS(UiKey.PPL_OPS_ONE, UiKey.PPL_OPS_TWO, UiKey.PPL_OPS_FEW, UiKey.PPL_OPS_MANY),
@@ -27,7 +27,7 @@ internal enum class Noun(val one: TextRef, val two: TextRef, val few: TextRef, v
     ITEMS_OBJ(UiKey.PPL_ITEMS_ONE, UiKey.PPL_ITEMS_TWO_OBJ, UiKey.PPL_ITEMS_FEW, UiKey.PPL_ITEMS_MANY),
 }
 
-/** «عملية واحدة» · «عمليتان» · «٣ عمليات» · «١١ عملية». */
+/** «عملية واحدة» · «عمليتان» · «3 عمليات» · «11 عملية». */
 internal fun countOf(n: Int, noun: Noun): String = when (n) {
     1 -> t(noun.one)
     2 -> t(noun.two)
@@ -35,14 +35,14 @@ internal fun countOf(n: Int, noun: Noun): String = when (n) {
     else -> t(noun.many, sentenceNumber(n))
 }
 
-/** «اليوم» · «بعد ٣ أيام» · «قبل يومين» — [days] موجب = جاي، سالب = فات. */
+/** «اليوم» · «بعد 3 أيام» · «قبل يومين» — [days] موجب = جاي، سالب = فات. */
 internal fun relativeDays(days: Int): String = when {
     days == 0 -> t(UiKey.UPCOMING_TODAY)
     days > 0 -> t(UiKey.PPL_IN_DAYS, countOf(days, Noun.DAYS))
     else -> t(UiKey.PPL_AGO_DAYS, countOf(-days, Noun.DAYS))
 }
 
-/** «١٨ أكتوبر ٢٠٢٦». */
+/** «18 أكتوبر 2026». */
 internal fun dayMonthYear(date: IsoDate): String = t(UiKey.PPL_DATE_WITH_YEAR, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
 
 /** أجزاء سطر بالفاصل العربي «، » (من غير الفاضي). */

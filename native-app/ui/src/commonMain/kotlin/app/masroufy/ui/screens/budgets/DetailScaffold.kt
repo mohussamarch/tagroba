@@ -63,7 +63,7 @@ fun DetailScaffold(
                 Column(Modifier.weight(1f)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (dot != null) {
-                            // نقطة 12 بهالة 4 من نفس اللون (النموذج: `box-shadow: 0 0 0 4px` بلون التصنيف 12٪)
+                            // نقطة 12 بهالة 4 من نفس اللون (النموذج: `box-shadow: 0 0 0 4px` بلون التصنيف 12%)
                             Box(Modifier.size(20.dp).clip(CircleShape).background(dot.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
                                 ColorDot(dot, size = 12.dp)
                             }

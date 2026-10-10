@@ -21,7 +21,7 @@ import app.masroufy.usecase.SyncAssetPrices
 import app.masroufy.usecase.TransactionsScreenData
 
 /**
- * منطقة «الاستثمار» (`SCREENS.md` §٢.٧ — Investment · AssetDetail · AssetTradeSheet · AssetProjection · Zakat · ZakatPay · الحاسبات ·
+ * منطقة «الاستثمار» (`SCREENS.md` §2.7 — Investment · AssetDetail · AssetTradeSheet · AssetProjection · Zakat · ZakatPay · الحاسبات ·
  * Advisor · SavingsGoals · GoalDetail). الملف ده بتاع المنطقة بس. **حالات استخدام بس** (CLAUDE.md #4) — التنفيذ في `:wiring` (`InvestmentGraph`).
  */
 interface InvestmentDeps {

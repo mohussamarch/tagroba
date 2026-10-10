@@ -105,8 +105,8 @@ class InheritanceDraftTest {
         assertEquals(case, d.toCase(), "فتح وحفظ من غير تعديل = نفس المسألة")
         assertEquals("تركة الوالد — للتخطيط", d.toScenarioDraft("تركة الوالد — للتخطيط")!!.name)
         assertEquals("تركة الوالد — للتخطيط", defaultScenarioName(d, "2026-10-07"), "المحفوظة بتحتفظ باسمها")
-        assertEquals("تركتي — ٧ أكتوبر", defaultScenarioName(InheritanceDraft("SA"), "2026-10-07"))
-        assertEquals("تركة سالم — ٧ أكتوبر", defaultScenarioName(InheritanceDraft("SA", estateOf = EstateOwner.OTHER, personName = " سالم "), "2026-10-07"))
+        assertEquals("تركتي — 7 أكتوبر", defaultScenarioName(InheritanceDraft("SA"), "2026-10-07"))
+        assertEquals("تركة سالم — 7 أكتوبر", defaultScenarioName(InheritanceDraft("SA", estateOf = EstateOwner.OTHER, personName = " سالم "), "2026-10-07"))
     }
 
     @Test
@@ -118,8 +118,8 @@ class InheritanceDraftTest {
         assertEquals("تركتي أنا", row.whose)
         assertEquals("بقانون السعودية", row.law)
         assertEquals("شيئان", row.itemsLine)
-        assertEquals("الزوجة، الابن ٢، البنت", row.heirs)
-        assertEquals("عُدّلت ٥ أكتوبر، أُنشئت ٢ سبتمبر", row.whenText)
+        assertEquals("الزوجة، الابن 2، البنت", row.heirs)
+        assertEquals("عُدّلت 5 أكتوبر، أُنشئت 2 سبتمبر", row.whenText)
 
         val draft = s.copy(input = case.copy(countryCode = "EG", heirs = emptyMap()), estateOf = EstateOwner.OTHER, personId = "p-1")
         val dRow = savedRowUi(draft, listOf(PersonChoice("p-1", "سالم")), calculateInheritance(draft.input))

@@ -24,10 +24,10 @@ interface MoreHooks {
     /** لغة التطبيق المحفوظة على الجهاز (`Texts.language` بتتظبط مرة عند البداية — مفيش مكان بيتحفظ فيه الاختيار). */
     val appLanguage: LanguageSetting? get() = null
 
-    /** «اختر شكلك» (الكاركتر المؤقت ١–٦) — `UserProfile` مالوش حقل للشكل (SCREENS.md §٣ سؤال ١٢). */
+    /** «اختر شكلك» (الكاركتر المؤقت 1–6) — `UserProfile` مالوش حقل للشكل (SCREENS.md §3 سؤال 12). */
     val look: LookSetting? get() = null
 
-    /** نطاق الراتب («أقل من ٥ آلاف» …) — `UserProfile` فيه راتب بالهللة بس، والنموذج بيسأل نطاقات (§63). */
+    /** نطاق الراتب («أقل من 5 آلاف» …) — `UserProfile` فيه راتب بالهللة بس، والنموذج بيسأل نطاقات (§63). */
     val salaryRange: SalaryRangeSetting? get() = null
 
     /** «سؤال الكاش» وتكراره في إعدادات الإشعارات (§74 — مالوش إعداد ولا تنبيه في كوتلن). */
@@ -41,7 +41,7 @@ interface MainWalletAccess {
     suspend fun set(walletId: Id)
 }
 
-/** المحفظة اللي المستخدم بيضيفها (`WalletAddSheet`): العملة = عملة البلد، و[last4] آخر ٤ أرقام بس (CLAUDE.md #11). */
+/** المحفظة اللي المستخدم بيضيفها (`WalletAddSheet`): العملة = عملة البلد، و[last4] آخر 4 أرقام بس (CLAUDE.md #11). */
 data class NewWallet(val kind: String, val name: String, val last4: String?, val openingMinor: Halalas?, val openingAt: IsoDate?)
 
 interface WalletEditor {

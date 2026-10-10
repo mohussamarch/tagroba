@@ -14,7 +14,7 @@ sealed interface RulesSheet {
     data class Merchant(val row: MerchantRowUi) : RulesSheet
 }
 
-/** خانات لوحة القاعدة. [position] = المكان في الترتيب (١ = الأول). */
+/** خانات لوحة القاعدة. [position] = المكان في الترتيب (1 = الأول). */
 data class RuleDraft(val text: String, val mode: RuleMatchMode, val categoryId: String?, val group: String?, val position: Int)
 
 /** خانات لوحة التاجر. */
@@ -35,7 +35,7 @@ fun RulesSheet.Merchant.startDraft(ui: RulesUi): MerchantDraft {
     return MerchantDraft(row.name, category, groupOf(ui.picker, category), "")
 }
 
-/** أقصى مكان في الترتيب: عدد القواعد (+١ للجديدة). */
+/** أقصى مكان في الترتيب: عدد القواعد (+1 للجديدة). */
 fun maxPosition(ui: RulesUi, editing: RuleRowUi?): Int = ui.rules.size + if (editing == null) 1 else 0
 
 /** رسالة تمنع الحفظ قبل حالة الاستخدام: نص فاضي · أطول من الحد · مكرر بنفس طريقة المطابقة · من غير تصنيف. */
@@ -51,7 +51,7 @@ fun ruleProblem(ui: RulesUi, editing: RuleRowUi?, d: RuleDraft): String? {
 
 /**
  * حفظ القاعدة عن طريق `ManageRules`: الجديدة في آخر الترتيب ⇒ `addRule` لوحدها (الأولوية بتحسبها حالة الاستخدام). لو المكان اتغير ⇒ القواعد
- * التانية بتاخد ١٠ · ٢٠ · ٣٠ … بالترتيب (`planPriorities` — `updateRule` لكل واحدة اتغيرت) والقاعدة دي في مكانها.
+ * التانية بتاخد 10 · 20 · 30 … بالترتيب (`planPriorities` — `updateRule` لكل واحدة اتغيرت) والقاعدة دي في مكانها.
  */
 suspend fun saveRule(deps: BudgetsDeps, ui: RulesUi, editing: RuleRowUi?, d: RuleDraft) {
     val categoryId = d.categoryId ?: return

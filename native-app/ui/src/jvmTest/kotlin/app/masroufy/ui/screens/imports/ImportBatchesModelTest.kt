@@ -69,7 +69,7 @@ class ImportBatchesModelTest {
         val details = mapOf("k1" to Fx.txn("k1", "عشاء مع خالد", 36000), "d1" to Fx.txn("d1", "سوبرماركت الحي", 27410, direction = Direction.OUT))
         val ui = revertUi(plan, details)
         assertEquals(6, ui.deleteCount)
-        assertEquals(4, ui.deleted.size, "أول ٤ بس من اللي هيتمسح")
+        assertEquals(4, ui.deleted.size, "أول 4 بس من اللي هيتمسح")
         assertEquals(2, ui.more)
         assertEquals(listOf("عشاء مع خالد", null), ui.kept.map { it.txn.name }, "عملية ما اتقرتش ⇒ «غير متاح» مش اسم مخترع")
         assertNull(ui.kept[1].txn.amountMinor)
@@ -95,10 +95,10 @@ class ImportBatchesModelTest {
     }
 
     @Test fun theRevertResultInBothArabicVariantsAndEnglish() {
-        assertEquals("حُذفت ٤ عمليات، وبقيت عمليتان لارتباطها بغيرها.", revertResult(4, 2))
+        assertEquals("حُذفت 4 عمليات، وبقيت عمليتان لارتباطها بغيرها.", revertResult(4, 2))
         assertEquals("حُذفت عملية واحدة.", revertResult(1, 0))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("اتمسحت ٤ عمليات، وفضلت عمليتين متربطة بحاجات تانية.", revertResult(4, 2))
+        assertEquals("اتمسحت 4 عمليات، وفضلت عمليتين متربطة بحاجات تانية.", revertResult(4, 2))
         Texts.language = Language.EN
         assertEquals("deleted 12 transactions.", revertResult(12, 0))
     }

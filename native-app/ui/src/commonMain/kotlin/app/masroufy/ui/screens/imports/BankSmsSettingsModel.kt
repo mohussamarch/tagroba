@@ -15,7 +15,7 @@ data class SmsSettingsUi(val available: Boolean, val enabled: Boolean, val permi
     /** الإذن اتسحب وهي متفعّلة ⇒ تنبيه «سُحب إذن الرسائل». */
     val permissionLost: Boolean get() = enabled && !permission
 
-    /** أقصى ١٠ مرسلين (`ManageSmsInbox.enable`). */
+    /** أقصى 10 مرسلين (`ManageSmsInbox.enable`). */
     val full: Boolean get() = senders.size >= MAX_SENDERS
 
     companion object {

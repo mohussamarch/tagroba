@@ -51,11 +51,11 @@ class InheritanceResultPresenterTest {
         assertEquals("من تركة 2,400.00 ر.س، لا تجهيز ولا ديون ولا وصية، شيء واحد", v.heroSub)
         val wife = v.heirs.first { it.name == "الزوجة" }
         assertEquals(30_000, wife.amountMinor)
-        assertEquals("١/٨", wife.fraction)
+        assertEquals("1/8", wife.fraction)
         assertEquals("الثمن", wife.basis)
         val son = v.heirs.first { it.name == "الابن" }
         assertEquals(140_000, son.amountMinor)
-        assertEquals("٧/١٢", son.fraction)
+        assertEquals("7/12", son.fraction)
         assertEquals("الباقي، للذكر مثل حظ الأنثيين", son.basis)
         assertEquals(70_000, v.heirs.first { it.name == "البنت" }.amountMinor)
         assertEquals(240_000, v.heirs.sumOf { it.amountMinor }, "المجموع = اللي بيتقسم بالظبط")
@@ -102,12 +102,12 @@ class InheritanceResultPresenterTest {
         assertEquals(200_000, v.poolMinor, "2,400 − 100 − 300 (من المحرك)")
         assertTrue(v.heroSub.startsWith("من تركة 2,400.00 ج.م بعد"), v.heroSub)
         val sons = v.heirs.first { it.name.startsWith("الابن") }
-        assertEquals("الابن (٢)", sons.name)
+        assertEquals("الابن (2)", sons.name)
         assertTrue(sons.sub.startsWith("لكل واحد "), sons.sub)
         assertEquals("كل حاجة شايلة من الديون والوصية بنسبة قيمتها، والمجاميع مظبوطة بالقرش.", v.itemsNote)
         val parts = v.items.single().parts
         assertEquals(240_000, parts.sumOf { it.amountMinor })
-        assertTrue(parts.any { it.label == "الابن ١" } && parts.any { it.label == "الابن ٢" }, "كل ابن لوحده في القسمة: ${parts.map { it.label }}")
+        assertTrue(parts.any { it.label == "الابن 1" } && parts.any { it.label == "الابن 2" }, "كل ابن لوحده في القسمة: ${parts.map { it.label }}")
         assertNull(parts.first { it.label == "تجهيز الميت" }.color, "التجهيز رمادي")
     }
 }

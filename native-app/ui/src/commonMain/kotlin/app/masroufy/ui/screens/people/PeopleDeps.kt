@@ -18,7 +18,7 @@ import app.masroufy.usecase.ManagePersonCircles
 import app.masroufy.usecase.ManageProjects
 
 /**
- * منطقة «الأشخاص» (`SCREENS.md` §٢.٥ — الأشخاص والأحداث والمشاريع): **حالات استخدام بس** (CLAUDE.md #4 — ممنوع مستودع هنا).
+ * منطقة «الأشخاص» (`SCREENS.md` §2.5 — الأشخاص والأحداث والمشاريع): **حالات استخدام بس** (CLAUDE.md #4 — ممنوع مستودع هنا).
  * التنفيذ: `:wiring` → `PeopleGraph` (بنفس اعتماداتها في اختبارات `:app`). الشاشة: `val deps = LocalSpace.current.people`.
  */
 interface PeopleDeps {
@@ -70,7 +70,7 @@ interface PeopleMoney {
     /** مجموع مبالغ (المعاينة قبل الحفظ). */
     fun total(amounts: List<Halalas>): Halalas
 
-    /** المصروف على بند من مبلغه المخطط بالعُشر من المية (855 = 85.5٪) — لشريط البند. */
+    /** المصروف على بند من مبلغه المخطط بالعُشر من المية (855 = 85.5%) — لشريط البند. */
     fun usedTenthPercent(plannedMinor: Halalas, spentMinor: Halalas): Long
 }
 

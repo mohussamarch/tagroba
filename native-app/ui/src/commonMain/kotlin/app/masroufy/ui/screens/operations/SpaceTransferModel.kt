@@ -15,7 +15,7 @@ import app.masroufy.core.spaceTransferRateText
 import app.masroufy.ui.text.t
 
 /**
- * رجل في زوج: علامة البلد · [title] المحفظة (أو «خرجت من السعودية» لو عملية الرجل ما اتقرتش) · [sub] «خرجت، ٥ أكتوبر» · المبلغ بعملتها
+ * رجل في زوج: علامة البلد · [title] المحفظة (أو «خرجت من السعودية» لو عملية الرجل ما اتقرتش) · [sub] «خرجت، 5 أكتوبر» · المبلغ بعملتها
  * زي ما هو في الزوج.
  */
 data class LegView(val mark: String, val title: String, val sub: String?, val amountMinor: Halalas, val currency: Currency, val out: Boolean)
@@ -37,8 +37,8 @@ fun spaceMark(space: Space?): String {
 fun routeName(from: Space?, to: Space?): String = t(UiKey.SPACE_TRANSFER_SCREEN_ROUTE, from?.name.orEmpty(), to?.name.orEmpty())
 
 /**
- * السعر للعرض بس من المبلغين (`spaceTransferRateText` من `core` — نص العرض اللي الدومين نفسه بيطلّعه: أعداد صحيحة و٤ أرقام والتقريب نص لفوق)
- * ⇒ «12.8200 ج.م لكل ١ ر.س». مش بيتخزن ومش بيحوّل أي رقم تاني. مبلغ صفر أو ناقص ⇒ `null`.
+ * السعر للعرض بس من المبلغين (`spaceTransferRateText` من `core` — نص العرض اللي الدومين نفسه بيطلّعه: أعداد صحيحة و4 أرقام والتقريب نص لفوق)
+ * ⇒ «12.8200 ج.م لكل 1 ر.س». مش بيتخزن ومش بيحوّل أي رقم تاني. مبلغ صفر أو ناقص ⇒ `null`.
  */
 fun rateLine(fromMinor: Halalas?, fromCurrency: Currency, toMinor: Halalas?, toCurrency: Currency): String? {
     if (fromMinor == null || toMinor == null || fromMinor <= 0 || toMinor <= 0) return null

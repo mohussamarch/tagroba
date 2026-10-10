@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 /**
  * التقويم: السطر الصغير جنب كل ميعاد (فات · ستستلمه · محجوز ✓ · غير محجوز · بلا مبلغ — من `reservationState`) · «بعد كام يوم» ·
- * الجاي (من النهارده + اللي فات وعليك) · أقرب ٦ في ٣٠ يوم · الجملة الذكية · علامات الشبكة.
+ * الجاي (من النهارده + اللي فات وعليك) · أقرب 6 في 30 يوم · الجملة الذكية · علامات الشبكة.
  */
 class CalendarModelTest {
     @AfterTest fun reset() {
@@ -39,9 +39,9 @@ class CalendarModelTest {
         assertEquals(CalTone.OPEN, calRowOf(car).statusTone)
         assertEquals("ستستلمه", calRowOf(pay).status, "يوم الراتب من غير مبلغ")
         assertEquals("بعد يومين", calRowOf(gym).whenText)
-        assertEquals(CalTone.OPEN, calRowOf(gym).whenTone, "قريب (≤٣) ⇒ كهرماني")
-        assertEquals("منذ ٤ أيام", calRowOf(late).whenText)
-        assertEquals("٣ أكتوبر، اشتراك", calRowOf(late).sub)
+        assertEquals(CalTone.OPEN, calRowOf(gym).whenTone, "قريب (≤3) ⇒ كهرماني")
+        assertEquals("منذ 4 أيام", calRowOf(late).whenText)
+        assertEquals("3 أكتوبر، اشتراك", calRowOf(late).sub)
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertEquals("مش محجوز، 1,450.00 ر.س", calRowOf(car).status)
     }
@@ -50,7 +50,7 @@ class CalendarModelTest {
         val passedOccasion = item(CalendarItemType.OCCASION, "2026-10-01", -6, flow = null)
         val ups = upcomingOf(listOf(far, car, passedOccasion, late, gym))
         assertEquals(listOf(late, gym, car, far), ups, "اللي فات من غير فلوس عليك بيختفي، والمتأخر بيفضل")
-        assertEquals(listOf(late, gym, car), shownOf(ups, all = false), "الـ٣٠ يوم بس")
+        assertEquals(listOf(late, gym, car), shownOf(ups, all = false), "الـ30 يوم بس")
         assertEquals(ups, shownOf(ups, all = true))
         val many = (1..9).map { item(CalendarItemType.EVENT, "2026-10-1$it", it, flow = null) }
         assertEquals(6, shownOf(many, all = false).size)
@@ -60,11 +60,11 @@ class CalendarModelTest {
         val ups = upcomingOf(listOf(late, gym, bday, owed, car, pay, far))
         val s = smartSentence(ups, beforePayday = listOf(car), nextPayday = "2026-10-28")!!
         assertTrue(s.startsWith("الأقرب: اشتراك النادي بعد يومين."), s)
-        assertTrue("في الـ٣٠ يومًا القادمة ٥ مواعيد، منها ١ غير محجوزة" in s, s)
+        assertTrue("في الـ30 يومًا القادمة 5 مواعيد، منها 1 غير محجوزة" in s, s)
         assertTrue(s.endsWith("قسط السيارة قبل الراتب بيوم."), s)
         assertNull(smartSentence(emptyList(), emptyList(), null))
         assertEquals("موعدان", datesCount(2))
-        assertEquals("١٢ موعدًا", datesCount(12))
+        assertEquals("12 موعدًا", datesCount(12))
     }
 
     @Test fun gridMarksOnlyThisMonthAndLateIsRed() {

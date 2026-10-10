@@ -11,8 +11,8 @@ import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.text.t
 
 /**
- * عرض بس (من غير أي حساب فلوس): صيغة العدد بالعربي (واحد · اتنين · ٣–١٠ · ١١+) والتاريخ الكامل «١٢ مايو ٢٠٢٦».
- * الأرقام العربية بالفاصلة «،» جنبها مش «·» (KOTLIN-MAP §٣).
+ * عرض بس (من غير أي حساب فلوس): صيغة العدد بالعربي (واحد · اتنين · 3–10 · 11+) والتاريخ الكامل «12 مايو 2026».
+ * الأرقام العربية بالفاصلة «،» جنبها مش «·» (KOTLIN-MAP §3).
  */
 data class CountWords(val one: TextRef, val two: TextRef, val few: TextRef, val many: TextRef)
 
@@ -20,7 +20,7 @@ val WALLET_WORDS = CountWords(UiKey.WLIST_ONE, UiKey.WLIST_TWO, UiKey.WLIST_FEW,
 val RECORD_WORDS = CountWords(UiKey.RST_REC_ONE, UiKey.RST_REC_TWO, UiKey.RST_REC_FEW, UiKey.RST_REC_MANY)
 val DAY_WORDS = CountWords(UiKey.BAK_DAY_ONE, UiKey.BAK_DAY_TWO, UiKey.BAK_DAY_FEW, UiKey.BAK_DAY_MANY)
 
-/** «محفظة واحدة» · «محفظتان» · «٣ محافظ» · «١١ محفظة». */
+/** «محفظة واحدة» · «محفظتان» · «3 محافظ» · «11 محفظة». */
 fun countText(n: Int, words: CountWords): String = when {
     n == 1 -> t(words.one)
     n == 2 -> t(words.two)
@@ -28,7 +28,7 @@ fun countText(n: Int, words: CountWords): String = when {
     else -> t(words.many, sentenceNumber(n))
 }
 
-/** «١٢ مايو ٢٠٢٦» من ISO (أو من أول ١٠ حروف في وقت ISO كامل). مش تاريخ صالح ⇒ null. */
+/** «12 مايو 2026» من ISO (أو من أول 10 حروف في وقت ISO كامل). مش تاريخ صالح ⇒ null. */
 fun fullDate(iso: String?): String? {
     val d: IsoDate = iso?.take(10) ?: return null
     if (!isValidIsoDate(d)) return null

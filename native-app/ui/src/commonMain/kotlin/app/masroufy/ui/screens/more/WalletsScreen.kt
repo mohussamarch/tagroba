@@ -134,7 +134,7 @@ private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick:
     }
 }
 
-/** «حساب بنكي · •••• ٤٤٠٧» — أو النوع لوحده. */
+/** «حساب بنكي · •••• 4407» — أو النوع لوحده. */
 fun walletMeta(r: WalletRowView): String = if (r.last4 != null) t(UiKey.WLIST_META_LAST4, t(r.kindLabel), r.last4) else t(r.kindLabel)
 
 /** عدسة المحفظة 40: الكاش أخضر فاتح برمز الفلوس، والبنك أبيض بحد رفيع وأول حرف من اسمه (مكان اللوجو لحد ما يتعتمد — §74). */

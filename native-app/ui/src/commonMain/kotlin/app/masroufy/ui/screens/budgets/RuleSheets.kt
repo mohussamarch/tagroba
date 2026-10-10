@@ -192,7 +192,7 @@ private fun CategoryPicker(ui: RulesUi, group: String?, selected: String?, onGro
     }
 }
 
-/** «الترتيب»: − [الرقم] + (١ = بيتطبق الأول). */
+/** «الترتيب»: − [الرقم] + (1 = بيتطبق الأول). */
 @Composable
 private fun PositionStepper(position: Int, max: Int, onChange: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

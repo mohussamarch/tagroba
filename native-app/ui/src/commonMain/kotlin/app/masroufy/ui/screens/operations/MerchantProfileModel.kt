@@ -26,7 +26,7 @@ data class MerchantView(
     val category: Category?,
     /** مؤكد = تصنيفه المثبّت في البلد دي. غير كده = مقترح (من قاعدة عامة أو من بلدك التانية). */
     val confirmed: Boolean,
-    /** الاقتراح جاي من تصنيفه في بلدك التانية (§64-٢). */
+    /** الاقتراح جاي من تصنيفه في بلدك التانية (§64-2). */
     val fromOtherCountry: Boolean,
     val aliases: List<String>,
     val periodLabel: String,

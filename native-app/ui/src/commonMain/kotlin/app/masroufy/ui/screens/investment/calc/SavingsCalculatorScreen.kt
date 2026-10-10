@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
 
 /**
  * «حاسبة الادخار» (لوحة `SavingsCalculator`): الاتجاهين (أصل إلى مبلغ بتاريخ ⇐⇒ أدّخر مبلغًا كل شهر لمدة) · المقارنة بما تدّخره فعلًا
- * (آخر ٣ أشهر مالية) · «لو وضعتها في…» (`SavingsGrowth`) · «حوّلها لخطة ادخار». كل رقم من `SavingsCalculator`.
+ * (آخر 3 أشهر مالية) · «لو وضعتها في…» (`SavingsGrowth`) · «حوّلها لخطة ادخار». كل رقم من `SavingsCalculator`.
  */
 @Composable
 fun SavingsCalculatorScreen() {
@@ -195,7 +195,7 @@ private fun SavingsFieldsCard(mode: SavingsMode, f: FieldsState, errors: Map<Str
     }
 }
 
-/** اختيارات سريعة تحت الخانة (سنة · سنتان · ٣ سنوات …). */
+/** اختيارات سريعة تحت الخانة (سنة · سنتان · 3 سنوات …). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun QuickChips(options: List<Pair<String, String>>, current: String, onPick: (String) -> Unit) {

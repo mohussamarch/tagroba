@@ -92,7 +92,7 @@ fun ApproxBadge(modifier: Modifier = Modifier) = Badge(t(UiKey.BADGE_APPROX), Ba
 @Composable
 fun NotAvailableBadge(modifier: Modifier = Modifier) = Badge(t(TextKey.NOT_AVAILABLE), BadgeKind.NOT_AVAILABLE, modifier)
 
-/** نقطة الإشعار (KOTLIN-MAP §٣): ٦×٦ `#D93A47` **من غير إطار أبيض**. */
+/** نقطة الإشعار (KOTLIN-MAP §3): 6×6 `#D93A47` **من غير إطار أبيض**. */
 @Composable
 fun NotificationDot(modifier: Modifier = Modifier, size: Dp = 6.dp, color: Color = Ink.dot) {
     Box(modifier.size(size).clip(CircleShape).background(color))

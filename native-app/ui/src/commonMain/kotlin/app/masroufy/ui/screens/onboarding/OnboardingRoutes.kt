@@ -8,7 +8,7 @@ import app.masroufy.usecase.ManageProfile
 import app.masroufy.usecase.OnboardAccount
 
 /**
- * منطقة «أول تشغيل» (`SCREENS.md` §٢.٩ — Onboarding · SignInEmail · ProfileQuestion · Lock). الملف ده بتاع المنطقة بس.
+ * منطقة «أول تشغيل» (`SCREENS.md` §2.9 — Onboarding · SignInEmail · ProfileQuestion · Lock). الملف ده بتاع المنطقة بس.
  * **الدخول نفسه** (قبل ما الحساب يجهز) مش هنا: `screens/auth/` (`SignInFlow` — الترحيب · جوجل · الإيميل · نسيت كلمة المرور) —
  * وكروت أول تشغيل بعد الدخول (الشكل · البلد · يوم الراتب · مصدر العمليات · جاهز) هنا: [OnboardingRoute].
  *
@@ -33,7 +33,7 @@ interface OnboardingDeps {
 /** الحساب ده لسه ما خلّصش أسئلة البداية؟ (للرئيسية/الهيكل وقت الدمج — `ManageProfile.needsOnboarding`). */
 suspend fun OnboardingDeps.needsOnboarding(): Boolean = profile.needsOnboarding(profile.load())
 
-/** كروت أول تشغيل بعد الدخول (`Onboarding` الخطوات ١ و٣–٦). */
+/** كروت أول تشغيل بعد الدخول (`Onboarding` الخطوات 1 و3–6). */
 object OnboardingRoute : Route {
     override val name = "Onboarding"
 }

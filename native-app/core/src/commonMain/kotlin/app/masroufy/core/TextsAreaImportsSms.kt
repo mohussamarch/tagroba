@@ -1,7 +1,7 @@
 package app.masroufy.core
 
 /**
- * «الاستيراد» ١/٥: المشترك (العدّ · غير مصنّف) + `BankSms` + `SmsWaiting` + `CategoryPicker`. النص من النموذج التفاعلي بالحرف (الفصحى من
+ * «الاستيراد» 1/5: المشترك (العدّ · غير مصنّف) + `BankSms` + `SmsWaiting` + `CategoryPicker`. النص من النموذج التفاعلي بالحرف (الفصحى من
  * `space = السعودية` والمصري من `مصر`)، واللي مالوش مقابل في النموذج (حالات المنطق الزيادة) كتابة Claude بنفس النبرة.
  */
 internal val MSA_IMPORTS_SMS_TEXTS: Map<UiKey, String> = mapOf(

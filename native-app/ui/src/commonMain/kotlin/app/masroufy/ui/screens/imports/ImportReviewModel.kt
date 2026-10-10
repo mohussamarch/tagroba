@@ -42,7 +42,7 @@ data class ImportReviewUi(
     val counts: ImportCountsPreview,
     /** أثر **الاختيار المبدئي** (الجديد بس) من المعاينة نفسها. */
     val impact: ImportImpact,
-    /** نفس الملف اتستورد قبل كده (الدرجة ١). */
+    /** نفس الملف اتستورد قبل كده (الدرجة 1). */
     val previous: ImportBatch?,
     val defaultSelection: Set<Int>,
 ) {
@@ -91,7 +91,7 @@ fun savedToast(imported: Int, lines: Int): String {
     return if (notAdded > 0) t(UiKey.IMPORT_REVIEW_SAVED_TOAST, opsCount(imported), opsCount(notAdded)) else t(UiKey.IMPORT_REVIEW_DONE_TITLE, opsCount(imported))
 }
 
-/** الحالة «فاضي»: الدفعة القديمة ونتيجتها («في ٢ أكتوبر: سُجّلت ١١ عملية، ولم تُضف عمليتان»). */
+/** الحالة «فاضي»: الدفعة القديمة ونتيجتها («في 2 أكتوبر: سُجّلت 11 عملية، ولم تُضف عمليتان»). */
 fun alreadyImportedBody(previous: ImportBatch): String {
     val day = dayMonth(previous.importedAt.take(10))
     val notAdded = previous.counts.total - previous.counts.imported

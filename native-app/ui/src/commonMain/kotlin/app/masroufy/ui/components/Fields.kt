@@ -38,10 +38,22 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
+import app.masroufy.core.latinizeDigits
+import app.masroufy.core.normalizeDigits
+
+/**
+ * الأرقام اللي بتتكتب في أي خانة بتتحول لـ0-9 وقت الكتابة (قرار المالك OVERRIDES §79 — L5): العربي الهندي والفارسي.
+ * خانة الأرقام (مبلغ · عدد · تليفون) كمان بتحوّل «٫» لنقطة و«٬» لفاصلة. **كلمة السر ما بتتلمسش** (تغيير حرف فيها يغيّرها).
+ */
+fun typedDigits(text: String, keyboard: KeyboardType, password: Boolean = false): String = when {
+    password || keyboard == KeyboardType.Password || keyboard == KeyboardType.NumberPassword -> text
+    keyboard == KeyboardType.Number || keyboard == KeyboardType.Decimal || keyboard == KeyboardType.Phone -> normalizeDigits(text)
+    else -> latinizeDigits(text)
+}
 
 /**
  * الحقول (النموذج: `SignInEmail` · `BottomBar`): أبيض بحد رفيع `rgba(204,216,204,0.9)`، والخطأ حد أحمر 1.5 + جملة **جنب الخانة**
- * بأيقونة — ممنوع خطأ صامت (مستوى ١). [ltr] للإيميل والأرقام.
+ * بأيقونة — ممنوع خطأ صامت (مستوى 1). [ltr] للإيميل والأرقام.
  */
 @Composable
 fun FieldLabel(text: String, modifier: Modifier = Modifier) {
@@ -89,7 +101,7 @@ fun TextInput(
                     if (value.isEmpty() && placeholder != null) BasicText(placeholder, style = style.copy(color = Color(0xFF8A9A95)), maxLines = 1)
                     BasicTextField(
                         value = value,
-                        onValueChange = onChange,
+                        onValueChange = { onChange(typedDigits(it, keyboard, password)) },
                         enabled = enabled,
                         singleLine = true,
                         textStyle = style,

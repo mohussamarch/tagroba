@@ -73,10 +73,10 @@ class StatementModelsTest {
     @Test fun checksListTheChosenColumnsInEachVariant() {
         val roles = listOf(ColumnRole.DATE, ColumnRole.DESC, ColumnRole.DEBIT, ColumnRole.CREDIT, null)
         val checks = columnChecks(roles)
-        assertEquals("العمود ١", checks[0].second)
-        assertEquals("العمود ٣، العمود ٤", checks[2].second)
+        assertEquals("العمود 1", checks[0].second)
+        assertEquals("العمود 3، العمود 4", checks[2].second)
         assertTrue(checks[3].second.isEmpty(), "الرصيد مش متحدد ⇒ «لم يُحدَّد» في الشاشة")
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("العمود ٢", columnWord(1))
+        assertEquals("العمود 2", columnWord(1))
     }
 }

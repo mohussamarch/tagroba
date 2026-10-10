@@ -54,7 +54,7 @@ fun advisorCardOf(inbox: List<AlertInboxView>, gone: Set<String> = emptySet()): 
 fun spentLine(month: HomeMonth?, currency: Currency): String =
     t(UiKey.HOME_SPENT_MONTH, amountLabel(month?.spentMinor, currency, showCurrency = false))
 
-/** «الراتب بعد ٢١ يومًا» (العدد بقواعد العربي: اليوم · غدًا · يومين · ٣–١٠ أيام · ١١+ يومًا). null = مفيش يوم راتب معروف. */
+/** «الراتب بعد 21 يومًا» (العدد بقواعد العربي: اليوم · غدًا · يومين · 3–10 أيام · 11+ يومًا). null = مفيش يوم راتب معروف. */
 fun salaryLine(nextPayday: IsoDate?, today: IsoDate): String? {
     if (nextPayday == null) return null
     val days = daysBetween(today, nextPayday)

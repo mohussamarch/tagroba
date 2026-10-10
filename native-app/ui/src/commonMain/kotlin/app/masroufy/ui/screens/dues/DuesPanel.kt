@@ -42,7 +42,7 @@ import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
-/** صفوف «حسب الموعد» الظاهرة قبل «اعرض الكل» (النموذج بيعرض ٥). */
+/** صفوف «حسب الموعد» الظاهرة قبل «اعرض الكل» (النموذج بيعرض 5). */
 private const val AGENDA_SHOWN = 6
 
 /**

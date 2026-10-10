@@ -110,7 +110,7 @@ fun OverlayLayer(host: OverlayHost, modifier: Modifier = Modifier) {
 }
 
 /**
- * الستارة ورا اللوحات والقوائم (KOTLIN-MAP §٣ · DESIGN-SYSTEM):
+ * الستارة ورا اللوحات والقوائم (KOTLIN-MAP §3 · DESIGN-SYSTEM):
  * [NORMAL] اللوحات: `rgba(32,59,48,0.22)` + بلور 6 · [MENU] الضغط المطوّل والإضافة: `rgba(32,59,48,0.16)` + بلور 8 وتشبّع 0.88 ·
  * [LIGHT] نافذة الجرس: `rgba(32,59,48,0.06)` **من غير بلور** · [CHAT] صفحة الشات (`AssistantChat`): `rgba(250,249,243,0.76)` + بلور 22 وتشبّع 1.1.
  * تحت أندرويد 12: نفس اللون أتقل شوية من غير بلور.

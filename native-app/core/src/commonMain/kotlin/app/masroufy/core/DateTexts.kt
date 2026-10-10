@@ -1,18 +1,14 @@
 package app.masroufy.core
 
 /**
- * عرض التواريخ والأرقام **جوه الجمل** (DESIGN-SYSTEM «الخط والأرقام»): التواريخ والعدّ بالأرقام العربية الشرقية (١٨ أكتوبر) في العربي،
- * واللاتيني في الإنجليزي. **المبالغ مش من هنا** — المبالغ دايمًا `formatMoney` (لاتيني، `dir=ltr`، أرقام جدولية).
- * عرض بس، من غير أي حساب فلوس.
+ * عرض التواريخ والأرقام **جوه الجمل**: **أرقام 0-9 بس في كل اللغات** (قرار المالك OVERRIDES §79 — L5: «18 أكتوبر»).
+ * **المبالغ مش من هنا** — المبالغ دايمًا `formatMoney`. عرض بس، من غير أي حساب فلوس.
  */
 
-private const val EASTERN_DIGITS = "٠١٢٣٤٥٦٧٨٩"
+/** كانت بتحوّل للأرقام العربية الشرقية؛ من §79 الأرقام لاتيني في كل مكان، فبقت بترجع النص زي ما هو (نقطة واحدة لو القرار اتغير). */
+fun sentenceDigits(text: String): String = text
 
-/** الأرقام اللاتيني في [text] ⇒ عربي شرقي (لو اللغة عربي). */
-fun sentenceDigits(text: String): String =
-    if (Texts.language == Language.EN) text else text.map { c -> if (c in '0'..'9') EASTERN_DIGITS[c - '0'] else c }.joinToString("")
-
-/** عدد في جملة (٧ · ٢٠٢٦ — من غير فواصل آلاف). */
+/** عدد في جملة (7 · 2026 — من غير فواصل آلاف). */
 fun sentenceNumber(n: Long): String = sentenceDigits(n.toString())
 
 fun sentenceNumber(n: Int): String = sentenceNumber(n.toLong())
@@ -53,17 +49,17 @@ fun weekdayName(date: IsoDate): String = uiText(WEEKDAY_KEYS[isoWeekday(date) - 
 /** أسماء الأيام المختصرة من السبت للجمعة. */
 fun weekdayShortNamesFromSaturday(): List<String> = SHORT_FROM_SATURDAY.map { uiText(it) }
 
-/** مكان أول يوم في الشهر في شبكة بتبدأ بالسبت (السبت = ٠ … الجمعة = ٦). */
+/** مكان أول يوم في الشهر في شبكة بتبدأ بالسبت (السبت = 0 … الجمعة = 6). */
 fun saturdayColumnOf(date: IsoDate): Int = (isoWeekday(date) + 1) % 7
 
-/** «٧ أكتوبر». */
+/** «7 أكتوبر». */
 fun dayMonth(date: IsoDate): String {
     val p = parseIsoDate(date)
     return uiText(UiKey.DATE_DAY_MONTH, sentenceNumber(p.day), monthName(p.month))
 }
 
-/** «الأربعاء، ٧ أكتوبر». */
+/** «الأربعاء، 7 أكتوبر». */
 fun weekdayDayMonth(date: IsoDate): String = uiText(UiKey.DATE_WEEKDAY_DAY_MONTH, weekdayName(date), dayMonth(date))
 
-/** «أكتوبر ٢٠٢٦». */
+/** «أكتوبر 2026». */
 fun monthYear(year: Int, month: Int): String = uiText(UiKey.DATE_MONTH_YEAR, monthName(month), sentenceNumber(year))

@@ -9,20 +9,20 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-/** العدّ في الجمل بقواعد العربي (المفرد · المثنى · ٣–١٠ · ١١+) بالنسختين والإنجليزي، والملف اللي بيتنقل بين الخطوات في الذاكرة. */
+/** العدّ في الجمل بقواعد العربي (المفرد · المثنى · 3–10 · 11+) بالنسختين والإنجليزي، والملف اللي بيتنقل بين الخطوات في الذاكرة. */
 class ImportsTextTest {
     @AfterTest fun reset() = Fx.resetTexts()
 
-    @Test fun countsFollowArabicGrammarWithEasternDigits() {
-        assertEquals(listOf("عملية واحدة", "عمليتان", "٣ عمليات", "١٠ عمليات", "١١ عملية"), listOf(1, 2, 3, 10, 11).map(::opsCount))
+    @Test fun countsFollowArabicGrammarWithWesternDigits() {
+        assertEquals(listOf("عملية واحدة", "عمليتان", "3 عمليات", "10 عمليات", "11 عملية"), listOf(1, 2, 3, 10, 11).map(::opsCount))
         assertEquals("رسالتان", msgsCount(2))
-        assertEquals("١٢ سطرًا", linesCount(12))
-        assertEquals("٤ صفحات", pagesCount(4))
+        assertEquals("12 سطرًا", linesCount(12))
+        assertEquals("4 صفحات", pagesCount(4))
     }
 
     @Test fun egyptianAndEnglishCounts() {
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals(listOf("عمليتين", "رسالتين", "٥ رسايل", "٤٢ سطر"), listOf(opsCount(2), msgsCount(2), msgsCount(5), linesCount(42)))
+        assertEquals(listOf("عمليتين", "رسالتين", "5 رسايل", "42 سطر"), listOf(opsCount(2), msgsCount(2), msgsCount(5), linesCount(42)))
         Texts.language = Language.EN
         assertEquals(listOf("1 transaction", "2 transactions", "11 transactions"), listOf(opsCount(1), opsCount(2), opsCount(11)))
     }

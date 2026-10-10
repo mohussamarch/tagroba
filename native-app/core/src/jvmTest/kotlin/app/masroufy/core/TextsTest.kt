@@ -32,7 +32,8 @@ class TextsTest {
             val expected = if (key in EGYPTIAN_PLAIN_WORDS_KEYS) plainEgyptian(old) else old
             if (key in EGYPTIAN_PLAIN_WORDS_KEYS) assertNotEquals(old, expected, "التبسيط ما غيّرش $name")
             else assertEquals(old, plainEgyptian(old), "مقطع تبسيط بيلمس نص مش في القايمة: $name")
-            assertEquals(expected, EGYPTIAN_TEXTS[key], "المصري اتغير في $name")
+            // الأرقام بس اتوحدت لـ0-9 (قرار المالك §79 — L5)
+            assertEquals(westernized(expected), EGYPTIAN_TEXTS[key], "المصري اتغير في $name")
         }
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68) · حاسبة الورث (§69) · هتوصل لكام (§69.6) · رسايل البنك لوحدها (§72)
         val newer = ALL_TEXT_KEYS.map { it.name }.filter { it !in snapshot }

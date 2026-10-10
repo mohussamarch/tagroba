@@ -46,7 +46,7 @@ private sealed interface CashLoad {
 }
 
 /**
- * لوحة الكاش (`CashDetails` — جوه `Main`): من شريحة «يشمل X كاش». الطول ثابت (٤٢٠) وهي بتحمّل، والصفوف بتتمرر جواها مع اللوحة.
+ * لوحة الكاش (`CashDetails` — جوه `Main`): من شريحة «يشمل X كاش». الطول ثابت (420) وهي بتحمّل، والصفوف بتتمرر جواها مع اللوحة.
  */
 @Composable
 internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {

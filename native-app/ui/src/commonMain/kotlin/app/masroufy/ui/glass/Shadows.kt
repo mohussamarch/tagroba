@@ -20,7 +20,7 @@ private fun drop(x: Int, y: Int, blur: Int, color: Long) = ShadowLayer(x.dp, y.d
 private fun inset(x: Int, y: Int, blur: Int, color: Long) = ShadowLayer(x.dp, y.dp, blur.dp, Color(color), inset = true)
 private fun ring(width: Double, color: Long) = ShadowLayer(0.dp, 0.dp, 0.dp, Color(color), spread = width.dp)
 
-/** الوصفات بأسمائها — ممنوع ظل من برّه الجدول ده (قائمة الفحص بند ٤). الألوان `0xAARRGGBB` من `rgba` بالظبط. */
+/** الوصفات بأسمائها — ممنوع ظل من برّه الجدول ده (قائمة الفحص بند 4). الألوان `0xAARRGGBB` من `rgba` بالظبط. */
 object Shadows {
     /** الكارت الطافي: `inset 0 1px 0 #FFF, 0 1px 2px rgba(29,54,53,.05), 0 14px 32px rgba(29,54,53,.09)`. */
     val card = listOf(inset(0, 1, 0, 0xFFFFFFFF), drop(0, 1, 2, 0x0D1D3635), drop(0, 14, 32, 0x171D3635))
@@ -37,7 +37,7 @@ object Shadows {
     /** التبويب المختار جوه شريط تبويبات (زاوية 14): `0 6px 14px rgba(8,99,79,.25)`. */
     val segment = listOf(inset(0, 1, 0, 0x40FFFFFF), drop(0, 6, 14, 0x4008634F))
 
-    /** زرار «+»: من غير هالة بيضا (KOTLIN-MAP §٣). */
+    /** زرار «+»: من غير هالة بيضا (KOTLIN-MAP §3). */
     val plus = listOf(inset(0, 1, 0, 0x4DFFFFFF), inset(0, -2, 4, 0x40002820), drop(0, 2, 5, 0x38064B40), drop(0, 10, 22, 0x4D064B40))
 
     /** شريط التنقل الزجاج. */

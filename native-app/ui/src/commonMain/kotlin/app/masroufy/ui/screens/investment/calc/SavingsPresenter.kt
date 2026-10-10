@@ -147,7 +147,7 @@ private fun bars(actual: ActualSaving?, currency: Currency): List<SavingBar> {
     }
 }
 
-/** يوم بداية الشهر المالي (يوم الراتب) من الفترات نفسها — أي ٣ شهور ورا بعض فيهم شهر ٣١ يوم، فالأكبر = يوم الراتب. */
+/** يوم بداية الشهر المالي (يوم الراتب) من الفترات نفسها — أي 3 شهور ورا بعض فيهم شهر 31 يوم، فالأكبر = يوم الراتب. */
 private fun compareNote(actual: ActualSaving?): String {
     val payday = actual?.months?.maxOfOrNull { parseIsoDate(it.period.start).day }
     return if (payday == null) t(UiKey.SAVCALC_COMPARE_NOTE_PLAIN) else t(UiKey.SAVCALC_COMPARE_NOTE, sentenceNumber(payday))

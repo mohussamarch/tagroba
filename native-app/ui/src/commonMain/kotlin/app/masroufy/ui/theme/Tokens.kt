@@ -24,7 +24,7 @@ object Ink {
     val focus = Color(0xFF956000)
     val alertBg = Color(0xFFFBF0DD)
     val surface = Color(0xFFFFFDF9)
-    /** نقطة الإشعار (KOTLIN-MAP §٣): ٦×٦ من غير إطار. */
+    /** نقطة الإشعار (KOTLIN-MAP §3): 6×6 من غير إطار. */
     val dot = Color(0xFFD93A47)
     /** نص ثانوي على البطاقة البترولية. */
     val onHeroMuted = Color(0xFFDCEBD6)
@@ -76,12 +76,12 @@ object Space {
     /** v0.4.1: الشريط على خط المحتوى (OVERRIDES §73) — مش 12. */
     val navInset = 20.dp
     val navBottom = 14.dp
-    /** شريط «اسأل مصروفي»: ٤٤ مرئي جوه مساحة لمس ٤٨، اللمس على بعد ٦ بس فوق شريط التنقل (`14 + 70 + 6 = 90` — طلب المالك §76، KOTLIN-MAP §٣). */
+    /** شريط «اسأل مصروفي»: 44 مرئي جوه مساحة لمس 48، اللمس على بعد 6 بس فوق شريط التنقل (`14 + 70 + 6 = 90` — طلب المالك §76، KOTLIN-MAP §3). */
     val askHeight = 44.dp
     val askGap = 6.dp
     /** المسافة تحت آخر عنصر في قايمة جوه تبويب (الشريطين تحت) ≈ 156. */
     val tabContentBottom = 156.dp
-    /** رأس الأقسام الأربعة: صف أول ٤٨ والزراير ٤٨×٤٨ بزاوية ١٨. */
+    /** رأس الأقسام الأربعة: صف أول 48 والزراير 48×48 بزاوية 18. */
     val headerRow = 48.dp
 }
 

@@ -54,19 +54,19 @@ class CalculatorRoutesTest {
 
     @Test
     fun durationsAndAgesReadNaturallyInBothArabics() {
-        assertEquals(listOf("شهر واحد", "شهران", "٣ أشهر", "١١ شهرًا"), listOf(1, 2, 3, 11).map(::monthsPhrase))
-        assertEquals(listOf("سنة", "سنتان", "١٠ سنوات", "١٥ شهرًا"), listOf(12, 24, 120, 15).map(::durationPhrase), "سنين كاملة بالسنين")
-        assertEquals("٦٤ سنة و٨ أشهر", agePhrase(64 * 12 + 8))
-        assertEquals("٦٥ سنة", agePhrase(65 * 12))
-        assertEquals("٧ أكتوبر ٢٠٢٨", fullDate("2028-10-07"))
+        assertEquals(listOf("شهر واحد", "شهران", "3 أشهر", "11 شهرًا"), listOf(1, 2, 3, 11).map(::monthsPhrase))
+        assertEquals(listOf("سنة", "سنتان", "10 سنوات", "15 شهرًا"), listOf(12, 24, 120, 15).map(::durationPhrase), "سنين كاملة بالسنين")
+        assertEquals("64 سنة و8 أشهر", agePhrase(64 * 12 + 8))
+        assertEquals("65 سنة", agePhrase(65 * 12))
+        assertEquals("7 أكتوبر 2028", fullDate("2028-10-07"))
         Texts.followCountry("EG")
-        assertEquals(listOf("شهرين", "٣ شهور", "١١ شهر", "سنتين", "٥ سنين"), listOf(monthsPhrase(2), monthsPhrase(3), monthsPhrase(11), yearsPhrase(2), yearsPhrase(5)))
+        assertEquals(listOf("شهرين", "3 شهور", "11 شهر", "سنتين", "5 سنين"), listOf(monthsPhrase(2), monthsPhrase(3), monthsPhrase(11), yearsPhrase(2), yearsPhrase(5)))
     }
 
     @Test
     fun fieldsAreReadAsTextWithoutGuessing() {
         assertEquals(Parsed.Empty, parseCountField("  "))
-        assertEquals(Parsed.Ok(36), parseCountField("٣٦"))
+        assertEquals(Parsed.Ok(36), parseCountField("36"))
         assertEquals(Parsed.Bad, parseCountField("3.5"))
         assertEquals(Parsed.Bad, parseCountField("1234567"))
         assertEquals(Parsed.Ok("2028-10-07"), parseDateField("2028-10-07"))

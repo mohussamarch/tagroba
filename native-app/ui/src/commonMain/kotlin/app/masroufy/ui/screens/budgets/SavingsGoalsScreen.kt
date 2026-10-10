@@ -140,7 +140,7 @@ private fun GoalCard(card: GoalCardUi, onOpen: () -> Unit, onStar: () -> Unit) {
     }
 }
 
-/** الأربع أرقام ٢×٢. */
+/** الأربع أرقام 2×2. */
 @Composable
 fun StatsGrid(stats: List<GoalStat>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

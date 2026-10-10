@@ -26,7 +26,7 @@ import kotlin.test.assertTrue
 
 /**
  * «اربطها بـ» في التفاصيل: `LinkPersonSheet` (الأشخاص بأرصدتهم من `ManagePeople.listWithBalances` · الربط القديم من التزامات العملية ·
- * الأثر **من غير حساب**) و`LinkProjectEventSheet` (الحدث المربوط ونصيبه **من حالة الاستخدام** · النسبة ١–١٠٠ · فك وربط).
+ * الأثر **من غير حساب**) و`LinkProjectEventSheet` (الحدث المربوط ونصيبه **من حالة الاستخدام** · النسبة 1–100 · فك وربط).
  */
 class LinkModelsTest {
     @AfterTest fun reset() {
@@ -89,18 +89,18 @@ class LinkModelsTest {
         assertEquals(45_001L, now.shareMinor, "النصيب بالهللة من `EventLinkedTransaction.shareMinor` — مش محسوب هنا")
         assertNull(eventLinkOf(details, "t2"))
         assertEquals(listOf("ولادة جود", "زواج خالد"), eventChoices(details).map { it.name }, "المؤرشف ما بيظهرش في الاختيار")
-        assertEquals("١٨ أكتوبر، حدث خالد", eventChoices(details)[1].sub)
-        assertEquals("١٨ أكتوبر، حدثك", eventChoices(details)[0].sub)
+        assertEquals("18 أكتوبر، حدث خالد", eventChoices(details)[1].sub)
+        assertEquals("18 أكتوبر، حدثك", eventChoices(details)[0].sub)
     }
 
     @Test fun shareIsAWholePercentAndSavingIsUnlinkThenLink() {
-        assertEquals(50, parsePercent("٥٠"))
+        assertEquals(50, parsePercent("50"))
         assertNull(parsePercent("abc"))
         assertEquals(75 to 25, sharePercents(75))
         assertNull(sharePercents(0))
         assertNull(sharePercents(101))
-        assertEquals("٥٠٪", percentText(50))
-        assertEquals("نسبة الحدث من العملية يجب أن تكون من ١ إلى ١٠٠.", projectEventError(false, true, 0))
+        assertEquals("50%", percentText(50))
+        assertEquals("نسبة الحدث من العملية يجب أن تكون من 1 إلى 100.", projectEventError(false, true, 0))
         assertEquals("فكّ الربط القديم أولًا، أو اختر الحدث نفسه.", projectEventError(true, true, 50))
         assertNull(projectEventError(false, false, null))
 

@@ -4,9 +4,9 @@ import app.masroufy.ui.nav.Route
 import app.masroufy.ui.nav.RouteRegistry
 
 /**
- * منطقة «الاستيراد» (`SCREENS.md` §٢.٤ — BankSms · BankSmsSettings · SmsPermission · SmsPaste · SmsWaiting · StatementImport ·
+ * منطقة «الاستيراد» (`SCREENS.md` §2.4 — BankSms · BankSmsSettings · SmsPermission · SmsPaste · SmsWaiting · StatementImport ·
  * StatementColumns · ImportReview · ImportDuplicateSheet · ImportBatches · RevertBatchSheet). الملف ده بتاع المنطقة بس.
- * - `SmsWaiting` قسم جوه `BankSms` · `CategoryPicker` لوحة جوه `BankSms` · `SmsPermission` لوحة جوه `BankSmsSettings` (KOTLIN-MAP §١).
+ * - `SmsWaiting` قسم جوه `BankSms` · `CategoryPicker` لوحة جوه `BankSms` · `SmsPermission` لوحة جوه `BankSmsSettings` (KOTLIN-MAP §1).
  * - `ImportDuplicateSheet` جوه `ImportReview` · `RevertBatchSheet` جوه `ImportBatches` (لوحات شاشة واحدة ⇒ `Sheet` جوه الشاشة).
  * - الدخول: «المزيد» (رسائل البنك · كشف الحساب · دفعات الاستيراد) ولوحة «+» — منطقتهم بتعمل `push` للمسارات دي.
  */

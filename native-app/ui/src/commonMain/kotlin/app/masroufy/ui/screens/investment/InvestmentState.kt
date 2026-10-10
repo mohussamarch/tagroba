@@ -23,7 +23,7 @@ import app.masroufy.usecase.ProjectionRateFrom
 /**
  * «الاستثمار» — من نتايج حالات الاستخدام لشكل الشاشة (`ManageAssets.listPortfolio` · `ManageAssetGrowth.project` · `LoadOnlineFeeds`).
  * **مفيش حساب فلوس هنا:** كل مبلغ جاي من حالة الاستخدام زي ما هو، و`null` بيفضل `null` («غير متاح» — CLAUDE.md #10).
- * ⚠️ تقسيم الإجمالي الملوّن (عقار ٨٠٪ · ذهب ٧٪ …) مالوش حالة استخدام ⇒ مش مرسوم (HANDOVER «ناقص في المنطق»).
+ * ⚠️ تقسيم الإجمالي الملوّن (عقار 80% · ذهب 7% …) مالوش حالة استخدام ⇒ مش مرسوم (HANDOVER «ناقص في المنطق»).
  */
 data class InvestmentUi(
     val currency: Currency,
@@ -50,7 +50,7 @@ data class EstateCard(
     val rentLabel: String,
     val rentMinor: Halalas?,
     val gainMinor: Halalas?,
-    /** «بزيادة ١٫٧٤٪ سنويًا = المصدر» أو سبب «غير متاح». */
+    /** «بزيادة 1.74% سنويًا = المصدر» أو سبب «غير متاح». */
     val rateLine: String,
 )
 
@@ -58,7 +58,7 @@ data class EstateCard(
 data class AssetLine(val assetId: Id, val name: String, val kind: String, val subtitle: String, val valueMinor: Halalas?, val archived: Boolean)
 
 /**
- * سنة البيع في كارت العقار لحد ما تبقى محفوظة على الأصل: بعد ٤ سنين زي النموذج (٢٠٢٦ ⇒ ٢٠٣٠). ⚠️ `Asset` مالوش «سنة البيع»
+ * سنة البيع في كارت العقار لحد ما تبقى محفوظة على الأصل: بعد 4 سنين زي النموذج (2026 ⇒ 2030). ⚠️ `Asset` مالوش «سنة البيع»
  * (`ManageAssetGrowth.setProfile` ما بيحفظهاش) — HANDOVER «ناقص في المنطق».
  */
 const val DEFAULT_SELL_YEARS_AHEAD = 4
@@ -145,7 +145,7 @@ fun feedProblem(state: FeedState<*>?): String? = when (state) {
     is FeedState.Unavailable -> state.reason
 }
 
-/** «٣ خطط» بقاعدة العدد العربي (١ · ٢ · ٣–١٠ · ١١+). */
+/** «3 خطط» بقاعدة العدد العربي (1 · 2 · 3–10 · 11+). */
 fun goalsHint(count: Int): String = when {
     count <= 0 -> uiText(UiKey.INVEST_GOALS_NONE)
     count == 1 -> uiText(UiKey.INVEST_GOALS_ONE)

@@ -10,7 +10,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
- * الحركة (DESIGN-SYSTEM v0.4 «٣ نوابض بأسماء»): **استعمل الاسم، مش رقم جديد**. ممنوع حركة خطية وممنوع نابض رابع من غير قرار.
+ * الحركة (DESIGN-SYSTEM v0.4 «3 نوابض بأسماء»): **استعمل الاسم، مش رقم جديد**. ممنوع حركة خطية وممنوع نابض رابع من غير قرار.
  * «تقليل الحركة» في الجهاز ([LocalReduceMotion]) ⇒ كل حركة تبقى شفافية بس ≤ 150ms ([motion]).
  */
 enum class Springs {

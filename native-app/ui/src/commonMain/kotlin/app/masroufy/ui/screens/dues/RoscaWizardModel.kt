@@ -47,7 +47,7 @@ fun previousQuestion(d: RoscaDraft, current: RoscaQuestion?): RoscaQuestion? {
     return order.getOrNull(order.indexOf(current) - 1)
 }
 
-/** «السؤال ٣ من ٨» — [current] null ⇒ التحليل. */
+/** «السؤال 3 من 8» — [current] null ⇒ التحليل. */
 fun wizardStep(state: RoscaSetupState, current: RoscaQuestion?): Pair<Int, Int> {
     val order = wizardOrder(state.draft)
     return if (current == null) order.size to order.size else (order.indexOf(current) + 1) to order.size
@@ -83,14 +83,14 @@ fun answerOf(q: RoscaQuestion, i: WizardInputs, currency: Currency): Pair<RoscaA
     else tryParseMoney(i.payout, currency)?.let { RoscaAnswer.Payout(it) to null } ?: (null to t(TextKey.ROSCA_PAYOUT_POSITIVE))
 }
 
-/** عدد الأدوار في سؤال «كم دورًا؟» (من ٢ لـ٦٠). */
+/** عدد الأدوار في سؤال «كم دورًا؟» (من 2 لـ60). */
 fun stepCount(count: Int, delta: Int): Int = (count + delta).coerceIn(2, ROSCA_MAX_CYCLES)
 
 /** اختيار دور: لو وصلت للعدد المطلوب، الأقدم بيتشال (نفس النموذج). */
 fun toggleTurn(turns: List<Int>, turn: Int, needed: Int): List<Int> =
     if (turn in turns) turns - turn else (if (turns.size >= needed) turns.drop(1) else turns) + turn
 
-/** «أكتوبر» تحت رقم الدور (أو «٧ أكتوبر» لو بالأسبوع) — تاريخ قبض الدور من أول دفعة والدورية. */
+/** «أكتوبر» تحت رقم الدور (أو «7 أكتوبر» لو بالأسبوع) — تاريخ قبض الدور من أول دفعة والدورية. */
 fun turnWhen(d: RoscaDraft, turn: Int, today: IsoDate): String? {
     val first = d.firstDueAt ?: return null
     val f = d.frequency ?: return null

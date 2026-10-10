@@ -17,9 +17,9 @@ import app.masroufy.usecase.RecurringSaveInput
 import app.masroufy.usecase.RecurringView
 
 /**
- * «الاشتراكات والفواتير» و«تفاصيل الاشتراك» من `ManageRecurring.load` (المرشحين + المؤكدين بالمدفوع آخر ١٢ شهر والمتوقع سنويًا ومتأخر).
+ * «الاشتراكات والفواتير» و«تفاصيل الاشتراك» من `ManageRecurring.load` (المرشحين + المؤكدين بالمدفوع آخر 12 شهر والمتوقع سنويًا ومتأخر).
  * ⚠️ ناقص في حالة الاستخدام: مجموع «شهريًا» و«سنويًا تقريبًا» فوق القايمة ⇒ ما بيظهرش · قايمة الدفعات وآخر دفعة · «وصل خصم مطابق» وتحريك
- * الموعد لوحده (§75-٧) · حفظ «لا، مش اشتراك» للمرشح (بيتشال لحد ما الشاشة تتفتح تاني بس).
+ * الموعد لوحده (§75-7) · حفظ «لا، مش اشتراك» للمرشح (بيتشال لحد ما الشاشة تتفتح تاني بس).
  */
 data class SubRowUi(val itemId: String, val name: String, val sub: String, val chip: Chip, val chipText: String, val amountMinor: Halalas, val currency: Currency, val cycle: String)
 
@@ -36,7 +36,7 @@ internal fun subCycle(months: Int): String = when (months) {
 
 internal fun subKind(item: RecurringItem): String = t(if (item.kind == "bill") UiKey.SUBS_KIND_BILL else UiKey.SUBS_KIND_SUB)
 
-/** حالة الاشتراك: متوقف · متأخرة (من حالة الاستخدام) · قريبة (٣ أيام) · قادمة. */
+/** حالة الاشتراك: متوقف · متأخرة (من حالة الاستخدام) · قريبة (3 أيام) · قادمة. */
 internal fun subStatus(v: RecurringItemView, today: IsoDate): Pair<Chip, String> = when {
     !v.item.active -> Chip.MUTED to t(UiKey.SUBS_CHIP_STOPPED)
     v.overdue -> Chip.OVERDUE to t(UiKey.SUBS_CHIP_LATE)
@@ -97,7 +97,7 @@ fun subDetailUi(v: RecurringItemView, today: IsoDate): SubDetailUi {
     )
 }
 
-/** الدورات المسموحة (`validateRecurring`): كل شهر · كل ٣ أشهر · كل سنة. */
+/** الدورات المسموحة (`validateRecurring`): كل شهر · كل 3 أشهر · كل سنة. */
 val SUB_CYCLES = listOf(1, 3, 12)
 
 /** تعديل المبلغ والدورة والموعد (نص المبلغ بيتقري بالهللة — قراية مش حساب). null + رسالة لو المبلغ مش صالح. */

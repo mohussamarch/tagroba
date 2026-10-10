@@ -19,7 +19,7 @@ import app.masroufy.ui.text.t
 
 /**
  * «اختر الشهر» (`PeriodPicker` — spec/02 · §30 · §31): الشهر المالي من يوم الراتب لليوم اللي قبله في الشهر اللي بعده (`core` `periodForDate`).
- * **اسم الشهر = الشهر اللي بيخلص فيه** (رد المالك آخر §76: ٢٨ سبتمبر–٢٧ أكتوبر = «أكتوبر»). ⚠️ مفتاح الفترة في كوتلن (`Period.key`) بشهر
+ * **اسم الشهر = الشهر اللي بيخلص فيه** (رد المالك آخر §76: 28 سبتمبر–27 أكتوبر = «أكتوبر»). ⚠️ مفتاح الفترة في كوتلن (`Period.key`) بشهر
  * البداية (`2026-09`) — ده عرض بس، والمفتاح زي ما هو. ما بيروحش للمستقبل، ولا قبل أول بياناتك (أقدم رصيد بداية لمحفظة).
  * كله تواريخ (أيام) — مفيش فلوس.
  */
@@ -35,13 +35,13 @@ fun previousPeriod(p: Period, payday: Int): Period = periodForDate(dayBefore(p.s
 
 fun nextPeriod(p: Period, payday: Int): Period = periodForDate(dayAfter(p.end), payday)
 
-/** «أكتوبر ٢٠٢٦» — بشهر النهاية. */
+/** «أكتوبر 2026» — بشهر النهاية. */
 fun fiscalName(p: Period): String {
     val end = parseIsoDate(p.end)
     return monthYear(end.year, end.month)
 }
 
-/** «٢٨ سبتمبر – ٢٧ أكتوبر ٢٠٢٦» ([withYear]) — السنة بتتكتب جنب البداية كمان لو مختلفة. */
+/** «28 سبتمبر – 27 أكتوبر 2026» ([withYear]) — السنة بتتكتب جنب البداية كمان لو مختلفة. */
 fun fiscalRange(p: Period, withYear: Boolean): String {
     val s = parseIsoDate(p.start)
     val e = parseIsoDate(p.end)
@@ -81,14 +81,14 @@ data class PeriodProgress(val day: Int, val days: Int) {
 
 fun progressOf(current: Period, today: IsoDate): PeriodProgress = PeriodProgress(daysBetween(current.start, today) + 1, current.days)
 
-/** «اليوم ١٠ من ٣٠، بقي ٢١ يومًا على الراتب» / «كان ٣٠ يومًا». */
+/** «اليوم 10 من 30، بقي 21 يومًا على الراتب» / «كان 30 يومًا». */
 fun periodNote(selected: Period, current: Period, today: IsoDate): String {
     if (selected.key != current.key) return t(UiKey.PERIOD_PICKER_WAS, daysWord(selected.days))
     val pr = progressOf(current, today)
     return t(UiKey.PERIOD_PICKER_NOW_NOTE, sentenceNumber(pr.day), sentenceNumber(pr.days), daysWord(pr.left))
 }
 
-/** «يوم واحد» · «يومان» · «٥ أيام» · «٢١ يومًا». */
+/** «يوم واحد» · «يومان» · «5 أيام» · «21 يومًا». */
 fun daysWord(n: Int): String = when {
     n == 1 -> t(UiKey.PERIOD_PICKER_DAYS_ONE)
     n == 2 -> t(UiKey.PERIOD_PICKER_DAYS_TWO)

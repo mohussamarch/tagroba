@@ -25,7 +25,7 @@ internal val EGYPTIAN_SHELL_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.GREETING_MORNING to "صباح الخير",
     UiKey.GREETING_EVENING to "مساء الخير",
     UiKey.ME_PROFILE to "ملفك",
-    UiKey.ME_PROFILE_PERCENT to "ملفك — مكتمل {0}٪",
+    UiKey.ME_PROFILE_PERCENT to "ملفك — مكتمل {0}%",
     UiKey.WEEKDAY_MON to "الاتنين",
     UiKey.WEEKDAY_TUE to "التلات",
     UiKey.WEEKDAY_WED to "الأربع",

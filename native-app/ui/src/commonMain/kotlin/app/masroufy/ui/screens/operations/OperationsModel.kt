@@ -46,7 +46,7 @@ data class OpsView(
     val empty: Boolean get() = days.isEmpty()
 }
 
-/** اسم الفترة = اسم الشهر اللي بتخلص فيه («٢٨ سبتمبر – ٢٧ أكتوبر» ⇒ «أكتوبر»). */
+/** اسم الفترة = اسم الشهر اللي بتخلص فيه («28 سبتمبر – 27 أكتوبر» ⇒ «أكتوبر»). */
 fun periodLabel(period: Period): String = monthName(parseIsoDate(period.end).month)
 
 fun operationsView(data: TransactionsScreenData, wallets: List<Wallet>, today: IsoDate, currency: Currency): OpsView {

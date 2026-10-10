@@ -48,7 +48,7 @@ class RetirementPresenterTest {
 
         assertNotNull(ui.pensionMinor)
         assertEquals(outcome.pension.pensionMinor, ui.pensionMinor, "الرقم الكبير من حالة الاستخدام بالظبط")
-        assertTrue(ui.heroSub.startsWith("النظام الجديد، التقاعد عند ٦٥ سنة في أبريل ٢٠٥٥، "), ui.heroSub)
+        assertTrue(ui.heroSub.startsWith("النظام الجديد، التقاعد عند 65 سنة في أبريل 2055، "), ui.heroSub)
         val (eos, gap) = ui.outs
         assertEquals("مكافأة نهاية الخدمة", eos.label)
         assertEquals((outcome.endOfService as EosPart.Known).result.payableMinor, eos.amountMinor)
@@ -128,6 +128,6 @@ class RetirementPresenterTest {
         )
         assertNull(check.request)
         assertEquals(setOf(EgyptFields.LEGAL, EgyptFields.MAX), check.errors.keys)
-        assertEquals("٨١.٨", coefficientText(818), "معامل جدول ٥ (× ١٠) بأرقام الجملة")
+        assertEquals("81.8", coefficientText(818), "معامل جدول 5 (× 10) بأرقام الجملة")
     }
 }

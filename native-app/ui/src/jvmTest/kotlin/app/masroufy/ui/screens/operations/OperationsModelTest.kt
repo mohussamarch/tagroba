@@ -31,7 +31,7 @@ class OperationsModelTest {
         val v = view(Fx.tx("t1"))
         assertEquals(1_250_000L, v.incomeMinor)
         assertEquals(665_000L, v.expenseMinor)
-        assertEquals("أكتوبر", v.periodLabel, "الشهر المالي ٢٨ سبتمبر–٢٧ أكتوبر اسمه الشهر اللي بيخلص فيه")
+        assertEquals("أكتوبر", v.periodLabel, "الشهر المالي 28 سبتمبر–27 أكتوبر اسمه الشهر اللي بيخلص فيه")
         assertFalse(v.approx)
         val unknown = view(Fx.tx("t1"), income = null, expense = null)
         assertNull(unknown.incomeMinor, "غير متاح مش صفر")
@@ -41,7 +41,7 @@ class OperationsModelTest {
 
     @Test fun daysAreNewestFirstWithTodayAndYesterday() {
         val v = view(Fx.tx("old", date = "2026-10-01"), Fx.tx("today", date = Fx.TODAY), Fx.tx("y", date = "2026-10-08"))
-        assertEquals(listOf("اليوم", "أمس", "١ أكتوبر"), v.days.map { it.label })
+        assertEquals(listOf("اليوم", "أمس", "1 أكتوبر"), v.days.map { it.label })
         assertEquals(listOf("today"), v.days.first().rows.map { it.id })
         assertTrue(view().empty, "مفيش عمليات ⇒ الحالة الفاضية")
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
@@ -75,13 +75,13 @@ class OperationsModelTest {
         assertTrue(banners(bankSmsWaiting = null, reviewCount = 0, partiesWaiting = 0).isEmpty())
         val all = banners(bankSmsWaiting = 4, reviewCount = 8, partiesWaiting = 2)
         assertEquals(listOf(BannerKind.BANK_SMS, BannerKind.REVIEW, BannerKind.TRANSFERS), all.map { it.kind })
-        assertEquals(listOf("٤ رسائل من البنك بانتظار تأكيدك", "٨ عمليات نوعها غير مؤكد", "طرفان بانتظار ردك"), all.map { it.text })
+        assertEquals(listOf("4 رسائل من البنك بانتظار تأكيدك", "8 عمليات نوعها غير مؤكد", "طرفان بانتظار ردك"), all.map { it.text })
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals(listOf("٨ عمليات نوعها مش أكيد", "طرفين مستنيين ردك"), banners(null, 8, 2).map { it.text })
+        assertEquals(listOf("8 عمليات نوعها مش أكيد", "طرفين مستنيين ردك"), banners(null, 8, 2).map { it.text })
     }
 
     @Test fun arabicCountWordsFollowTheNumber() {
-        assertEquals(listOf("عملية واحدة", "عمليتان", "٥ عمليات", "١٢ عملية"), listOf(1, 2, 5, 12).map(::operationsCount))
+        assertEquals(listOf("عملية واحدة", "عمليتان", "5 عمليات", "12 عملية"), listOf(1, 2, 5, 12).map(::operationsCount))
     }
 
     @Test fun aFailedReloadKeepsTheLastListUnderTheBanner() {

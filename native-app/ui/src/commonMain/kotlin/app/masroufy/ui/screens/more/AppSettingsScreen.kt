@@ -56,7 +56,7 @@ import app.masroufy.usecase.LockChange
 import kotlinx.coroutines.launch
 
 /**
- * القفل واللغة والمحتوى الإسلامي (`AppSettings` = LockSettings · LanguageSettings · IslamicContentSettings — KOTLIN-MAP §١).
+ * القفل واللغة والمحتوى الإسلامي (`AppSettings` = LockSettings · LanguageSettings · IslamicContentSettings — KOTLIN-MAP §1).
  * - **القفل** (`AppLock`): التشغيل والإيقاف **الاتنين بتأكيد الجهاز** (نافذة النظام نفسها — البصمة أو رمز الجوال)، والرفض جنب المفتاح بإعادة.
  * - **اللغة**: الاختيار بيتحفظ عن طريق [LanguageSetting] (لسه مالوش مكان ⇒ «غير متاح بعد»). العربي فصحى للسعودية ومصري لمصر لوحده (§66).
  * - **المحتوى الإسلامي**: `ManageProfile.save(islamicContentVisible)` — إخفاء بس، مفيش حاجة بتتمسح.

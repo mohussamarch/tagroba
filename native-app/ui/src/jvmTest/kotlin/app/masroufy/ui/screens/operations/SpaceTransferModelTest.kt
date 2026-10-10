@@ -32,11 +32,11 @@ class SpaceTransferModelTest {
         val v = pairViews(listOf(pair), books, legs).single()
         assertEquals("من السعودية إلى مصر", v.route)
         assertEquals(listOf("حساب الراتب", "بنك مصر الوهمي"), v.legs.map { it.title })
-        assertEquals(listOf("خرجت، ٣ أكتوبر", "وصلت، ٤ أكتوبر"), v.legs.map { it.sub })
+        assertEquals(listOf("خرجت، 3 أكتوبر", "وصلت، 4 أكتوبر"), v.legs.map { it.sub })
         assertEquals(listOf(200_000L, 2_564_000L), v.legs.map { it.amountMinor })
         assertEquals(listOf(Currency.SAR, Currency.EGP), v.legs.map { it.currency }, "كل رجل بعملتها — مفيش تحويل عملة")
         assertEquals(listOf("س", "م"), v.legs.map { it.mark })
-        assertEquals("12.8200 ج.م لكل ١ ر.س", v.rate, "نص السعر من الدومين (للعرض بس)")
+        assertEquals("12.8200 ج.م لكل 1 ر.س", v.rate, "نص السعر من الدومين (للعرض بس)")
         assertEquals("ملاحظتك: مصروف البيت", v.note)
     }
 
@@ -46,13 +46,13 @@ class SpaceTransferModelTest {
         assertTrue(v.legs.all { it.sub == null })
         assertNull(v.note)
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("طلعت، ٣ أكتوبر", pairViews(listOf(pair), books, mapOf("t-out" to Fx.tx("t-out", date = "2026-10-03"))).single().legs.first().sub)
+        assertEquals("طلعت، 3 أكتوبر", pairViews(listOf(pair), books, mapOf("t-out" to Fx.tx("t-out", date = "2026-10-03"))).single().legs.first().sub)
     }
 
     @Test fun rateNeedsBothAmounts() {
         assertNull(rateLine(null, Currency.SAR, 100, Currency.EGP))
         assertNull(rateLine(0, Currency.SAR, 100, Currency.EGP))
-        assertEquals("12.8200 ج.م لكل ١ ر.س", rateLine(10_000, Currency.SAR, 128_200, Currency.EGP))
+        assertEquals("12.8200 ج.م لكل 1 ر.س", rateLine(10_000, Currency.SAR, 128_200, Currency.EGP))
     }
 
     @Test fun statesFollowThePrototype() {

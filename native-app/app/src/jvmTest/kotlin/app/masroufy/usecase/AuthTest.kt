@@ -39,7 +39,7 @@ class AuthTest {
             "auth/wrong-password" to ("كلمة السر غلط" to AuthField.PASSWORD),
             "auth/invalid-credential" to ("الإيميل أو كلمة السر غلط" to AuthField.FORM),
             "auth/email-already-in-use" to ("الإيميل ده مسجّل قبل كده — جرّب تسجيل الدخول" to AuthField.EMAIL),
-            "auth/weak-password" to ("كلمة السر قصيرة — لازم ٦ حروف على الأقل" to AuthField.PASSWORD),
+            "auth/weak-password" to ("كلمة السر قصيرة — لازم 6 حروف على الأقل" to AuthField.PASSWORD),
             "auth/missing-password" to ("اكتب كلمة السر" to AuthField.PASSWORD),
             "auth/too-many-requests" to ("محاولات كتير. استنى شوية وجرّب تاني" to AuthField.FORM),
             "auth/network-request-failed" to ("مفيش إنترنت. اتأكد من الاتصال وجرّب تاني" to AuthField.FORM),

@@ -22,7 +22,7 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 
 /**
- * التقويم (`Calendar` — §65 + رد المالك آخر §76: «ملخص أحداث أكتر ما هو ملخص فلوس»): الأحداث القادمة بجملة ذكية + أقرب ٦ في ٣٠ يوم
+ * التقويم (`Calendar` — §65 + رد المالك آخر §76: «ملخص أحداث أكتر ما هو ملخص فلوس»): الأحداث القادمة بجملة ذكية + أقرب 6 في 30 يوم
  * وجنب كل واحد سطر صغير «محجوز ✓ / غير محجوز / بلا مبلغ / ستستلمه / فات موعده» ⇒ «حدث جديد» ⇒ شبكة الشهر ⇒ مواعيد اليوم المختار.
  * المواعيد والمبالغ والحجز من `LoadCalendar` (`reservationState` من `core`) — هنا ترتيب وعدّ وكلام بس.
  */
@@ -35,9 +35,9 @@ enum class CalTone(val color: Color) { LATE(Ink.expense), GOOD(Ink.income), OPEN
 data class CalRow(
     val key: String,
     val title: String,
-    /** «١٤ أكتوبر، مناسبة». */
+    /** «14 أكتوبر، مناسبة». */
     val sub: String,
-    /** «بعد يومين» / «منذ ٣ أيام» (لو فات). */
+    /** «بعد يومين» / «منذ 3 أيام» (لو فات). */
     val whenText: String,
     val whenTone: CalTone,
     val status: String,
@@ -72,7 +72,7 @@ private fun typeLabel(type: CalendarItemType): String = t(
     },
 )
 
-/** «اليوم» · «غدًا» · «بعد يومين» · «بعد ٥ أيام» · «بعد ١٢ يومًا» — و«منذ …» لو فات. */
+/** «اليوم» · «غدًا» · «بعد يومين» · «بعد 5 أيام» · «بعد 12 يومًا» — و«منذ …» لو فات. */
 fun afterText(days: Int): String = when {
     days == 0 -> t(UiKey.CALENDAR_WHEN_TODAY)
     days == 1 -> t(UiKey.CALENDAR_WHEN_TOMORROW)
@@ -118,7 +118,7 @@ fun upcomingOf(items: List<CalendarItem>): List<CalendarItem> = items.filter { i
 fun shownOf(upcoming: List<CalendarItem>, all: Boolean): List<CalendarItem> =
     if (all) upcoming else upcoming.filter { it.daysLeft <= CALENDAR_WINDOW_DAYS }.take(CALENDAR_SHOWN)
 
-/** «موعد واحد» · «موعدان» · «٥ مواعيد» · «١٢ موعدًا». */
+/** «موعد واحد» · «موعدان» · «5 مواعيد» · «12 موعدًا». */
 fun datesCount(n: Int): String = when {
     n == 1 -> t(UiKey.CALENDAR_COUNT_ONE)
     n == 2 -> t(UiKey.CALENDAR_COUNT_TWO)
@@ -127,7 +127,7 @@ fun datesCount(n: Int): String = when {
 }
 
 /**
- * الجملة الذكية: الأقرب · كام ميعاد في الـ٣٠ يوم ومنهم كام دفع مش محجوز · ميعاد دفع قبل الراتب على طول (من `SmartSummary.beforePayday`).
+ * الجملة الذكية: الأقرب · كام ميعاد في الـ30 يوم ومنهم كام دفع مش محجوز · ميعاد دفع قبل الراتب على طول (من `SmartSummary.beforePayday`).
  * [nextPayday] من `SmartSummary.untilPayday`. فاضي ⇒ null.
  */
 fun smartSentence(upcoming: List<CalendarItem>, beforePayday: List<CalendarItem>, nextPayday: IsoDate?): String? {
@@ -143,7 +143,7 @@ fun smartSentence(upcoming: List<CalendarItem>, beforePayday: List<CalendarItem>
     val before = beforePayday.firstOrNull { it.daysLeft >= 0 }
     if (before != null && nextPayday != null) {
         val gap = daysBetween(before.date, nextPayday)
-        // «قبل الراتب بيوم» بالظبط زي النموذج، وغيره (يومين أو ٣ — `beforePayday`) «قبل الراتب بأيام»
+        // «قبل الراتب بيوم» بالظبط زي النموذج، وغيره (يومين أو 3 — `beforePayday`) «قبل الراتب بأيام»
         parts += if (gap <= 1) t(UiKey.CALENDAR_SMART_BEFORE_PAY_ONE, before.title) else t(UiKey.CALENDAR_SMART_BEFORE_PAY, before.title)
     }
     return if (parts.isEmpty()) null else parts.joinToString(t(UiKey.CALENDAR_SMART_JOIN)) + t(UiKey.CALENDAR_SMART_END)

@@ -60,7 +60,7 @@ sealed interface PartyDecision {
     data object NotThis : PartyDecision
 }
 
-/** «حساب ينتهي بـ ٤٨٢١» أو اسم الطرف لو مفيش أرقام. */
+/** «حساب ينتهي بـ 4821» أو اسم الطرف لو مفيش أرقام. */
 fun partyAccount(party: TransferPartyRef): String = party.last4?.let { t(UiKey.TRANSFER_PARTY_ACCOUNT, sentenceDigits(it)) } ?: party.label
 
 /** العنوان والسطر بعد القرار. */

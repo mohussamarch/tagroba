@@ -41,7 +41,7 @@ object Golden {
             val result = runCatching { run(input) }
             if (expectedError != null) {
                 val error = result.exceptionOrNull() ?: fail("$function($input): كان المفروض خطأ «$expectedError» وطلع ${result.getOrNull()}")
-                assertEquals(expectedError, error.message, "$function($input)")
+                assertEquals(westernized(expectedError), error.message?.let(::westernized), "$function($input)")
             } else {
                 val actual = result.getOrElse { fail("$function(${short(input)}): خطأ مش متوقع «${it.message}»") }
                 val diff = firstDiff(plainJson(case["out"] ?: JsonNull), actual, "")
@@ -81,12 +81,29 @@ object Golden {
         a is JsonArray && b is JsonArray -> a.size == b.size && a.indices.all { same(a[it], b[it]) }
         a is JsonObject && b is JsonObject -> a.keys == b.keys && a.keys.all { same(a[it]!!, b[it]!!) }
         a is JsonPrimitive && b is JsonPrimitive -> when {
-            a.isString || b.isString -> a.isString == b.isString && a.content == b.content
+            a.isString || b.isString -> a.isString == b.isString && westernized(a.content) == westernized(b.content)
             a.booleanOrNull != null || b.booleanOrNull != null -> a.booleanOrNull == b.booleanOrNull
             else -> a.content.toBigDecimal().compareTo(b.content.toBigDecimal()) == 0
         }
         else -> false
     }
+}
+
+/**
+ * قرار المالك OVERRIDES §79 (L5): التطبيق الجديد بيعرض **0-9 بس**، والقديم (اللي ولّد ملفات المرجع) كان بيعرض الأرقام العربية الشرقية
+ * في الجمل. فالنصوص بتتقارن بعد توحيد الأرقام والفواصل (٠-٩ ٪ ٫ ٬ ⇒ 0-9 % . ,) — باقي الحروف بالحرف زي ما هي.
+ */
+fun westernized(s: String): String = buildString(s.length) {
+    for (c in s) append(
+        when (c) {
+            in '٠'..'٩' -> '0' + (c - '٠')
+            in '۰'..'۹' -> '0' + (c - '۰')
+            '٪' -> '%'
+            '٫' -> '.'
+            '٬' -> ','
+            else -> c
+        },
+    )
 }
 
 val JsonElement.str: String get() = jsonPrimitive.content

@@ -74,15 +74,15 @@ class ImportReviewModelTest {
         val old = Fx.batch("b1", "2026-10-02T21:40:00.000Z", counts = ImportCounts(13, 11, 2, 0, 0, 0))
         val nothingNew = importReviewUi(preview(listOf(line(2, MatchingState.DUPLICATE)), previous = old))
         assertTrue(nothingNew.alreadyImported)
-        assertEquals("في ٢ أكتوبر: سُجّلت ١١ عملية، ولم تُضف عمليتان. كل ما فيه مسجل، فلا جديد.", alreadyImportedBody(old))
+        assertEquals("في 2 أكتوبر: سُجّلت 11 عملية، ولم تُضف عمليتان. كل ما فيه مسجل، فلا جديد.", alreadyImportedBody(old))
         val partial = importReviewUi(preview(lines, previous = old))
         assertFalse(partial.alreadyImported, "الملف اللي اتستورد منه جزء لازم يكمل")
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("يوم ٢ أكتوبر: اتسجلت عملية واحدة. كل اللي فيه متسجل، فمفيش حاجة جديدة.", alreadyImportedBody(old.copy(counts = ImportCounts(1, 1, 0, 0, 0, 0))))
+        assertEquals("يوم 2 أكتوبر: اتسجلت عملية واحدة. كل اللي فيه متسجل، فمفيش حاجة جديدة.", alreadyImportedBody(old.copy(counts = ImportCounts(1, 1, 0, 0, 0, 0))))
     }
 
     @Test fun theSavedMessageSaysWhatWasNotAdded() {
-        assertEquals("سُجّلت ٣ عمليات، ولم تُضف عمليتان", savedToast(3, 5))
+        assertEquals("سُجّلت 3 عمليات، ولم تُضف عمليتان", savedToast(3, 5))
         assertEquals("سُجّلت عملية واحدة", savedToast(1, 1))
     }
 

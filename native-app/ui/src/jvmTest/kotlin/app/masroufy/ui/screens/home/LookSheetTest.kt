@@ -22,7 +22,7 @@ class LookSheetTest {
 
     @Test fun sixTemporaryLooksWithArabicLabels() {
         assertEquals(6, LOOK_COUNT)
-        assertEquals("الشكل ٣", t(UiKey.LOOK_SHEET_ITEM, sentenceNumber(3)))
+        assertEquals("الشكل 3", t(UiKey.LOOK_SHEET_ITEM, sentenceNumber(3)))
         assertEquals("أشكال مؤقتة — الكاركتر النهائي قيد التصميم.", t(UiKey.LOOK_SHEET_NOTE))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertEquals("أشكال مؤقتة — الكاركتر النهائي لسه بيتصمم.", t(UiKey.LOOK_SHEET_NOTE))

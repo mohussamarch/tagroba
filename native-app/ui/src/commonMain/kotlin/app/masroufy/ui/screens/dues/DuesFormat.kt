@@ -14,23 +14,23 @@ import app.masroufy.ui.text.t
 
 /**
  * عرض التواريخ والعدّ في شاشات المستحقات — **كلام بس، من غير أي حساب فلوس** (CLAUDE.md #4). الأرقام جوه الجمل بالعربي الشرقي
- * (`sentenceNumber`)، و**ممنوع «·» جنب رقم عربي** (KOTLIN-MAP §٣) ⇒ «،».
+ * (`sentenceNumber`)، و**ممنوع «·» جنب رقم عربي** (KOTLIN-MAP §3) ⇒ «،».
  */
 
 /** لون شريحة الحالة: فات موعده · قرّب · جاي · هادي (بلا موعد أو بعيد) · متوقف/خلص. */
 enum class Chip { OVERDUE, SOON, UPCOMING, CALM, MUTED }
 
-/** «٢٠ سبتمبر» — والسنة لو مش سنة النهارده («٢٧ سبتمبر ٢٠٢٨»). */
+/** «20 سبتمبر» — والسنة لو مش سنة النهارده («27 سبتمبر 2028»). */
 internal fun dateText(date: IsoDate, today: IsoDate): String =
     if (date.take(4) == today.take(4)) dayMonth(date) else t(UiKey.DUES_DATE_WITH_YEAR, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
 
-/** «سبتمبر ٢٠٢٦» (عنوان سطر في جدول الأقساط). */
+/** «سبتمبر 2026» (عنوان سطر في جدول الأقساط). */
 internal fun monthYearText(date: IsoDate): String {
     val p = parseIsoDate(date)
     return t(UiKey.DATE_MONTH_YEAR, monthName(p.month), sentenceNumber(p.year))
 }
 
-/** «اليوم» · «غدًا» · «بعد يومين» · «بعد ٥ أيام» · «بعد ٢٥ يومًا» (نفس كلام «القادم» في الرئيسية). */
+/** «اليوم» · «غدًا» · «بعد يومين» · «بعد 5 أيام» · «بعد 25 يومًا» (نفس كلام «القادم» في الرئيسية). */
 internal fun afterText(days: Int): String = when {
     days <= 0 -> t(UiKey.UPCOMING_TODAY)
     days == 1 -> t(UiKey.UPCOMING_TOMORROW)
@@ -39,7 +39,7 @@ internal fun afterText(days: Int): String = when {
     else -> t(UiKey.UPCOMING_MANY_DAYS, sentenceNumber(days))
 }
 
-/** «منذ يوم واحد» · «منذ يومين» · «منذ ٥ أيام» · «منذ ١٧ يومًا». */
+/** «منذ يوم واحد» · «منذ يومين» · «منذ 5 أيام» · «منذ 17 يومًا». */
 internal fun agoText(days: Int): String = when {
     days <= 1 -> t(UiKey.DUES_AGO_ONE)
     days == 2 -> t(UiKey.DUES_AGO_TWO)
@@ -53,7 +53,7 @@ internal fun relativeText(date: IsoDate, today: IsoDate): String {
     return if (d < 0) agoText(-d) else afterText(d)
 }
 
-/** عدّ بصيغ العربي الأربعة: واحد · اتنين · ٣–١٠ · ١١ وأكتر ([few]/[many] فيهم `{0}`) — و[zero] لو الصفر ليه جملة («لا أقساط» مش «٠ قسطًا»). */
+/** عدّ بصيغ العربي الأربعة: واحد · اتنين · 3–10 · 11 وأكتر ([few]/[many] فيهم `{0}`) — و[zero] لو الصفر ليه جملة («لا أقساط» مش «0 قسطًا»). */
 internal fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef, zero: TextRef? = null): String = when {
     n == 0 && zero != null -> t(zero)
     n == 1 -> t(one)
@@ -62,11 +62,11 @@ internal fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: T
     else -> t(many, sentenceNumber(n))
 }
 
-/** «قسط واحد» · «قسطان» · «٥ أقساط» · «١٢ قسطًا». */
+/** «قسط واحد» · «قسطان» · «5 أقساط» · «12 قسطًا». */
 internal fun installmentsCount(n: Int): String =
     countText(n, UiKey.DUES_INST_ONE, UiKey.DUES_INST_TWO, UiKey.DUES_INST_FEW, UiKey.DUES_INST_MANY, zero = UiKey.DUES_INST_NONE)
 
-/** الدورة بالكلام: «كل شهر» · «كل شهرين» · «كل ٣ أشهر» · «كل سنة» · «كل أسبوع» · «كل أسبوعين». */
+/** الدورة بالكلام: «كل شهر» · «كل شهرين» · «كل 3 أشهر» · «كل سنة» · «كل أسبوع» · «كل أسبوعين». */
 internal fun cycleText(every: Int, unit: CycleUnit = CycleUnit.MONTH): String = when (unit) {
     CycleUnit.WEEK -> when (every) {
         1 -> t(TextKey.ROSCA_FREQ_WEEKLY)

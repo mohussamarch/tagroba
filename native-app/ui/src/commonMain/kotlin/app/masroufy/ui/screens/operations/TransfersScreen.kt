@@ -52,8 +52,8 @@ import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
 
 /**
- * زون التحويلات (`Transfers`): لكل طرف (الاسم وآخر ٤ أرقام بس) بكل عملة لوحدها — العدد · آخرها · الداخل والخارج · القرار. «بانتظار ردك» للأطراف اللي
- * ليها ٥ تحويلات أو أكتر في شهر. الأفعال: «حسابي الآخر» (`markOwnAccount` — القديم والجديد) · «شخص» (`markPerson` بشخص جديد أو من أشخاصك)
+ * زون التحويلات (`Transfers`): لكل طرف (الاسم وآخر 4 أرقام بس) بكل عملة لوحدها — العدد · آخرها · الداخل والخارج · القرار. «بانتظار ردك» للأطراف اللي
+ * ليها 5 تحويلات أو أكتر في شهر. الأفعال: «حسابي الآخر» (`markOwnAccount` — القديم والجديد) · «شخص» (`markPerson` بشخص جديد أو من أشخاصك)
  * · «ليس هذا» (`dismiss`) · «إلغاء القرار» (`forget`). التحويلات اللي مالهاش طرف بتتعد بس، من غير تخمين.
  */
 @Composable
@@ -114,7 +114,7 @@ fun TransfersScreen() {
     }
 }
 
-/** كارت الطرف: الحرف الأول · الاسم و•••• آخر ٤ · العدد وآخرها · القرار · الداخل والخارج — الضغط بيفتح الأفعال. «بانتظار ردك» بحد كهرماني. */
+/** كارت الطرف: الحرف الأول · الاسم و•••• آخر 4 · العدد وآخرها · القرار · الداخل والخارج — الضغط بيفتح الأفعال. «بانتظار ردك» بحد كهرماني. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PartyCard(r: PartyRowView, open: Boolean, onToggle: () -> Unit, actions: @Composable () -> Unit) {
@@ -146,7 +146,7 @@ private fun PartyCard(r: PartyRowView, open: Boolean, onToggle: () -> Unit, acti
     }
 }
 
-/** «مَن صاحب الحساب ٤٨٢١؟»: شخص جديد بالاسم أو واحد من أشخاصك ⇒ «اربط». */
+/** «مَن صاحب الحساب 4821؟»: شخص جديد بالاسم أو واحد من أشخاصك ⇒ «اربط». */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PersonForPartySheet(ref: TransferPartyRef?, people: List<Person>, onDismiss: () -> Unit, onSave: (TransferPartyRef, Person?, String) -> Unit) {

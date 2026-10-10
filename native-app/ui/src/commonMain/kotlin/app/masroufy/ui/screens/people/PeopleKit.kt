@@ -182,7 +182,7 @@ internal fun ExpandRow(label: String, open: Boolean, onToggle: () -> Unit, modif
     }
 }
 
-/** شبكة الشهور الميلادية (٤ أعمدة). */
+/** شبكة الشهور الميلادية (4 أعمدة). */
 @Composable
 internal fun MonthGrid(selected: Int?, onPick: (Int) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {

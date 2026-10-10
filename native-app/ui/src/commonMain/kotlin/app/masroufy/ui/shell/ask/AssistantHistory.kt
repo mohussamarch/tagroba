@@ -143,7 +143,7 @@ private fun SearchBox(query: String, onQuery: (String) -> Unit) {
     }
 }
 
-/** «اتمسحت «…»» + «تراجع» (٥ ثواني) — زي النموذج. */
+/** «اتمسحت «…»» + «تراجع» (5 ثواني) — زي النموذج. */
 @Composable
 private fun UndoBar(text: String, onUndo: () -> Unit) {
     val shape = RoundedCornerShape(18.dp)

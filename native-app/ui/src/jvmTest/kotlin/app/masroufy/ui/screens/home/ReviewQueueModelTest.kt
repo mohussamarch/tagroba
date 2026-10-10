@@ -65,7 +65,7 @@ class ReviewQueueModelTest {
     }
 
     @Test fun heroTitleAndProgress() {
-        assertEquals("٥ عمليات نوعها غير مؤكد", reviewHeroTitle(5))
+        assertEquals("5 عمليات نوعها غير مؤكد", reviewHeroTitle(5))
         assertEquals("عمليتان نوعهما غير مؤكد", reviewHeroTitle(2))
         assertEquals("اكتملت المراجعة", reviewHeroTitle(0))
         assertEquals(40, reviewDonePercent(5, 2))
@@ -99,6 +99,6 @@ class ReviewQueueModelTest {
         assertEquals(AmountTone.EXPENSE, view.rows[1].tone)
         assertEquals("شاي", view.rows[1].title)
         assertEquals(68_400, view.balanceMinor, "الرقم من حالة الاستخدام زي ما هو")
-        assertEquals("منذ رصيد البداية في ١ سبتمبر", view.sinceLine)
+        assertEquals("منذ رصيد البداية في 1 سبتمبر", view.sinceLine)
     }
 }

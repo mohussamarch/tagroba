@@ -60,10 +60,10 @@ import kotlin.math.roundToInt
 data class MenuItem(val label: String, val icon: Lucide? = null, val highlight: Boolean = false, val onClick: () -> Unit)
 
 /**
- * قائمة الضغط المطوّل — ٣ طبقات (DESIGN-SYSTEM «وصفات الزجاج ٤»): (١) ستارة بتموّه الشاشة كلها (`rgba(32,59,48,.16)` + بلور 8 وتشبّع .88)
- * (٢) **العملية المرفوعة** = نفس الصف في مكانه مكبّر 1.025 بسطح زجاجي وظل بعيد (٣) القائمة زجاج سائل زاوية 28 تحتها (أو فوقها لو مفيش مكان).
+ * قائمة الضغط المطوّل — 3 طبقات (DESIGN-SYSTEM «وصفات الزجاج 4»): (1) ستارة بتموّه الشاشة كلها (`rgba(32,59,48,.16)` + بلور 8 وتشبّع .88)
+ * (2) **العملية المرفوعة** = نفس الصف في مكانه مكبّر 1.025 بسطح زجاجي وظل بعيد (3) القائمة زجاج سائل زاوية 28 تحتها (أو فوقها لو مفيش مكان).
  * الفتح بالنابض **المرن** (420ms في النموذج). الضغط المطوّل نفسه (440ms ويتلغي بحركة > 9) شغل الصف: `Modifier.tap(onLongClick = …)`.
- * المالك اختار «الاتنين» (§73): ضغط مطوّل **و** ٣ نقط على كل صف — الاتنين بيفتحوا نفس القائمة.
+ * المالك اختار «الاتنين» (§73): ضغط مطوّل **و** 3 نقط على كل صف — الاتنين بيفتحوا نفس القائمة.
  */
 @Composable
 fun LiquidMenu(
@@ -99,7 +99,7 @@ fun LiquidMenu(
             val screenH = with(density) { maxHeight.toPx() }
             val gap = with(density) { 10.dp.toPx() }
             VeilLayer(Veil.MENU, p.coerceIn(0f, 1f), onDismiss, closeLabel)
-            // (٢) الصف المرفوع في مكانه
+            // (2) الصف المرفوع في مكانه
             val rowShape = RoundedCornerShape(Radius.card)
             Box(
                 Modifier.absoluteOffset { IntOffset(a.left.roundToInt(), a.top.roundToInt()) }
@@ -116,7 +116,7 @@ fun LiquidMenu(
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center,
             ) { lifted() }
-            // (٣) القائمة: تحت الصف لو فيه مكان، وإلا فوقه
+            // (3) القائمة: تحت الصف لو فيه مكان، وإلا فوقه
             val below = a.bottom + gap + menuHeight < screenH - with(density) { 24.dp.toPx() }
             val top = if (below) a.bottom + gap else a.top - gap - menuHeight
             val shape = RoundedCornerShape(Radius.menu)

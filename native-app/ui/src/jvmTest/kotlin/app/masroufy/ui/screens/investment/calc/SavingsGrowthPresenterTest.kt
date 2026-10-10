@@ -31,7 +31,7 @@ class SavingsGrowthPresenterTest {
     @Test
     fun withoutTheAveragesFileEveryRateIsUnavailableExceptCash() {
         val ui = growthUi(growth.compare(100_000, 120, 0, today, feed = null, countryCode = "SA"), Currency.SAR)
-        assertEquals("من جيبك: 120,000.00 ر.س خلال ١٠ سنوات", ui.paidLine)
+        assertEquals("من جيبك: 120,000.00 ر.س خلال 10 سنوات", ui.paidLine)
         assertEquals(GrowthClass.entries.toList(), ui.rows.map { it.growthClass }, "الخمسة بالترتيب")
         for (r in ui.rows.filter { it.growthClass != GrowthClass.CASH }) {
             assertNull(r.amountMinor, "${r.growthClass}: «غير متاح» مش صفر")
@@ -85,8 +85,8 @@ class SavingsGrowthPresenterTest {
     @Test
     fun theTypedRateIsReadInBasisPointsWithinTheLimits() {
         assertEquals(1488, parseRateBp("14.88"))
-        assertEquals(450, parseRateBp("٤٫٥"))
-        assertEquals(450, parseRateBp("4.5 ٪"))
+        assertEquals(450, parseRateBp("4.5"))
+        assertEquals(450, parseRateBp("4.5 %"))
         assertEquals(-200, parseRateBp("-2"))
         assertNull(parseRateBp("1001"), "أكبر من 1000% سنويًا")
         assertNull(parseRateBp("abc"))

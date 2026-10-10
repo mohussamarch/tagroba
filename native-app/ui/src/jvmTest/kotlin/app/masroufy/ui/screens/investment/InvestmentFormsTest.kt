@@ -45,7 +45,7 @@ class InvestmentFormsTest {
         assertEquals(TradeRequest.Invalid("اكتب المبلغ المدفوع."), tradeRequest(TradeMode.BUY, "a-1", Currency.SAR, TradeForm(qty = "1")))
         assertIs<TradeRequest.Invalid>(tradeRequest(TradeMode.BUY, "a-1", Currency.SAR, TradeForm(qty = "1", amount = "10.555")), "أكتر من رقمين بعد العلامة ⇒ مرفوض مش متقرّب")
         assertEquals(TradeRequest.Invalid("اكتب سعرًا أكبر من صفر."), tradeRequest(TradeMode.PRICE, "a-1", Currency.SAR, TradeForm(price = "0")))
-        assertEquals(TradeRequest.Price(43_800), tradeRequest(TradeMode.PRICE, "a-1", Currency.SAR, TradeForm(price = "٤٣٨")))
+        assertEquals(TradeRequest.Price(43_800), tradeRequest(TradeMode.PRICE, "a-1", Currency.SAR, TradeForm(price = "438")))
 
         val add = assertIs<TradeRequest.Add>(tradeRequest(TradeMode.ADD, null, Currency.EGP, TradeForm(name = "دهب وهمي", kind = "gold", unit = " ")))
         assertEquals(Currency.EGP, add.input.currency)
@@ -74,7 +74,7 @@ class InvestmentFormsTest {
         assertNull(empty.input.rent.monthlyMinor, "الخانة الفاضية فاضية — حالة الاستخدام بتعتبرها صفر")
         assertEquals(57_600_000L, empty.wholeMinor)
 
-        assertEquals(DraftParse.Invalid("الأشهر الفارغة في السنة من ٠ إلى ١٢"), parseDraft(ProjectionDraft(vacant = "13"), flat, Currency.SAR))
+        assertEquals(DraftParse.Invalid("الأشهر الفارغة في السنة من 0 إلى 12"), parseDraft(ProjectionDraft(vacant = "13"), flat, Currency.SAR))
         assertEquals(DraftParse.Invalid("في إحدى الخانات قيمة ليست رقمًا."), parseDraft(ProjectionDraft(rent = "abc"), flat, Currency.SAR))
         assertEquals(DraftParse.Invalid("في إحدى الخانات قيمة ليست رقمًا."), parseDraft(ProjectionDraft(rate = "99999999999"), flat, Currency.SAR))
     }
@@ -85,20 +85,20 @@ class InvestmentFormsTest {
         assertEquals(ZakatPayRequest.Invalid("اختر العملية التي دفعت بها، أو «دفعتها كاشًا»."), zakatPayRequest(lines, null, "", Currency.SAR))
         assertEquals(ZakatPayRequest.Invalid("اكتب المبلغ الذي دفعته كاشًا."), zakatPayRequest(lines, PAY_CASH, "", Currency.SAR))
         assertEquals(ZakatPayRequest.Invalid("اكتب المبلغ الذي دفعته كاشًا."), zakatPayRequest(lines, PAY_CASH, "-5", Currency.SAR))
-        val cash = assertIs<ZakatPayRequest.Cash>(zakatPayRequest(lines, PAY_CASH, "١٬٢٠٠٫٥٠", Currency.SAR))
+        val cash = assertIs<ZakatPayRequest.Cash>(zakatPayRequest(lines, PAY_CASH, "1,200.50", Currency.SAR))
         assertEquals(120_050L, cash.amountMinor)
         assertEquals(listOf(ZakatLineKind.entries.first(), ZakatLineKind.entries.last()), cash.lines, "بترتيب سطور السنة مش بترتيب الاختيار")
         assertEquals(ZakatPayRequest.FromOperation(cash.lines, "t-1"), zakatPayRequest(lines, "t-1", "", Currency.SAR))
     }
 
     @Test fun countsAndDatesInSentences() {
-        assertEquals(listOf("اليوم", "غدًا", "بعد يومين", "بعد ٥ أيام", "بعد ٢٤ يومًا", "مضى موعدها"), listOf(0, 1, 2, 5, 24, -1).map(::relativeDays))
-        assertEquals(listOf("خطة واحدة", "خطتان", "٣ خطط", "١٢ خطة"), listOf(1, 2, 3, 12).map(::goalsHint))
-        assertEquals("١٫٧٤٪", pctText(174))
-        assertEquals("−٢٫٥٪", pctText(-250))
-        assertEquals("١٦٪", pctText(1600))
+        assertEquals(listOf("اليوم", "غدًا", "بعد يومين", "بعد 5 أيام", "بعد 24 يومًا", "مضى موعدها"), listOf(0, 1, 2, 5, 24, -1).map(::relativeDays))
+        assertEquals(listOf("خطة واحدة", "خطتان", "3 خطط", "12 خطة"), listOf(1, 2, 3, 12).map(::goalsHint))
+        assertEquals("1.74%", pctText(174))
+        assertEquals("−2.5%", pctText(-250))
+        assertEquals("16%", pctText(1600))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals(listOf("النهارده", "بكرة", "كمان يومين", "كمان ٢٤ يوم"), listOf(0, 1, 2, 24).map(::relativeDays))
+        assertEquals(listOf("النهارده", "بكرة", "كمان يومين", "كمان 24 يوم"), listOf(0, 1, 2, 24).map(::relativeDays))
         assertEquals("خطتين", goalsHint(2))
         Texts.language = Language.EN
         assertEquals("1.74%", pctText(174))

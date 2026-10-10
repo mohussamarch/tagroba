@@ -40,7 +40,7 @@ fun weekdayLabel(day: Int): TextRef = listOf(
     UiKey.WEEKDAY_MON, UiKey.WEEKDAY_TUE, UiKey.WEEKDAY_WED, UiKey.WEEKDAY_THU, UiKey.WEEKDAY_FRI, UiKey.WEEKDAY_SAT, UiKey.WEEKDAY_SUN,
 )[(day - 1).coerceIn(0, 6)]
 
-/** «يوم ٢٨ شهريًا» · «كل الخميس» · «الموعد غير محدد» (للي ليه مرتب) · «بلا موعد ثابت». */
+/** «يوم 28 شهريًا» · «كل الخميس» · «الموعد غير محدد» (للي ليه مرتب) · «بلا موعد ثابت». */
 fun payText(s: IncomeSource): String = when {
     s.payFrequency == PayFrequency.WEEKLY -> s.payWeekday?.let { t(UiKey.INCSRC_PAY_WEEKLY, t(weekdayLabel(it))) } ?: t(UiKey.INCSRC_PAY_WEEKLY_UNSET)
     s.expectedDayOfMonth != null -> t(UiKey.INCSRC_PAY_MONTHLY, sentenceNumber(s.expectedDayOfMonth!!))
@@ -48,7 +48,7 @@ fun payText(s: IncomeSource): String = when {
     else -> t(UiKey.INCSRC_PAY_NONE)
 }
 
-/** «منذ ٢٨ أبريل ٢٠٢٦» أو «١ مارس ٢٠٢٥ – ٢٧ أبريل ٢٠٢٦». */
+/** «منذ 28 أبريل 2026» أو «1 مارس 2025 – 27 أبريل 2026». */
 fun periodText(s: IncomeSource): String {
     val from = fullDate(s.startedAt) ?: s.startedAt
     return s.endedAt?.let { t(UiKey.INCSRC_PERIOD_RANGE, from, fullDate(it) ?: it) } ?: t(UiKey.INCSRC_PERIOD_SINCE, from)
@@ -67,7 +67,7 @@ data class IncomeSections(val current: List<IncomeRowView>, val past: List<Incom
 fun incomeSections(sources: List<IncomeSource>): IncomeSections =
     IncomeSections(sources.filter { it.endedAt == null }.map(::incomeRow), sources.filter { it.endedAt != null }.map(::incomeRow))
 
-/** نسبة بالعُشر من المية ⇒ «+٢٦٫٣٪» (صياغة بس — القسمة على ١٠ عدد صحيح للعرض). null ⇒ «—». */
+/** نسبة بالعُشر من المية ⇒ «+26.3%» (صياغة بس — القسمة على 10 عدد صحيح للعرض). null ⇒ «—». */
 fun tenthPercentText(tenth: Long?): String {
     if (tenth == null) return "—"
     val abs = if (tenth < 0) -tenth else tenth
@@ -76,7 +76,7 @@ fun tenthPercentText(tenth: Long?): String {
         tenth < 0 -> "−"
         else -> ""
     }
-    return sign + sentenceDigits("${abs / 10}") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("${abs % 10}") + "٪"
+    return sign + sentenceDigits("${abs / 10}") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("${abs % 10}") + "%"
 }
 
 enum class Trend { GOOD, BAD, FLAT }
