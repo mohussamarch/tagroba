@@ -199,4 +199,47 @@ class SpacesOnFirestoreTest {
         session.stop()
         scope.cancel()
     }
+
+    /** «البلدان» على الجوال: أرشفة الشغالة ⇒ الجلسة بتقفلها وترجع للسعودية من غير إعادة تشغيل · الرجوع ⇒ تتفتح تاني ببياناتها. */
+    @Test fun archivingClosesTheCountryInTheSessionAndBringingItBackReopensIt() = run {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val auth = MemoryAuth(uidPrefix = "kt-archive-" + java.util.UUID.randomUUID().toString().take(8) + "-")
+        val store = MemoryActiveSpaceStore()
+        val session = AccountSession(auth, Emulator.firestore("session-archive"), scope) { store }
+        session.start()
+        val user = auth.registerWithEmail("archive@example.com", "secret1")
+        val ready = session.state.first { it is AccountSession.State.Ready } as AccountSession.State.Ready
+        // نفس مخزن البلد الشغالة بتاع الجلسة (زي الجوال) — أرشفة الشغالة بترجّعه للسعودية
+        val manage = ManageSpaces(
+            ManageSpacesDeps(
+                FirestoreSpaceRegistry(ready.account), store, FixedClock("2026-10-11T08:00:00.000Z"),
+                targets = { s ->
+                    val root = FirestoreSpace.forSpace(ready.account.db, user.uid, s.id)
+                    SpaceSeedTargets(FirestoreCategoryRepository(root), FirestoreRuleRepository(root), FirestoreReferenceSeed(root, merchantsAt = ready.account))
+                },
+                seeds = { pack -> SeedSource(buildCountryCategoryTree(raw, pack).categories, emptyList(), emptyList()) },
+            ),
+        )
+        manage.create("EG")
+        session.refreshSpaces()
+        assertTrue(session.switchSpace("eg"))
+        val egSession = (session.state.value as AccountSession.State.Ready).active
+        egSession.repos.transactions.saveMany(listOf(txn("t-eg", Currency.EGP)))
+
+        manage.archive("eg")
+        session.refreshSpaces()
+        val back = session.state.value as AccountSession.State.Ready
+        assertEquals(DEFAULT_SPACE_ID, back.activeSpaceId, "أرشفة الشغالة ⇒ السعودية")
+        assertEquals(setOf(DEFAULT_SPACE_ID), back.spaces.keys)
+        assertTrue(!egSession.sync.isRunning, "مستمعين مصر وقفوا")
+        assertTrue(!session.switchSpace("eg"), "المؤرشفة ما بيتبدّلش لها")
+
+        manage.unarchive("eg")
+        session.refreshSpaces()
+        assertTrue(session.switchSpace("eg"))
+        val reopened = session.state.value as AccountSession.State.Ready
+        assertEquals(listOf("t-eg"), reopened.repos.transactions.listByDateRange("2026-09-01", "2026-09-30").map { it.id }, "البيانات رجعت زي ما هي")
+        session.stop()
+        scope.cancel()
+    }
 }
