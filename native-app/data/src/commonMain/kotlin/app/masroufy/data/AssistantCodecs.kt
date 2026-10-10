@@ -95,8 +95,8 @@ object AssistantCodecs {
 
     val alertDismissals: DocCodec<AlertDismissal> = codec(
         ALERT_DISMISSALS_GROUP, { it.id },
-        { a -> doc { req("id", a.id); req("threadKey", a.threadKey); req("dismissedAt", a.dismissedAt) } },
-        { d -> AlertDismissal(d.str("threadKey"), d.str("dismissedAt")) },
+        { a -> doc { req("id", a.id); req("threadKey", a.threadKey); req("dismissedAt", a.dismissedAt); opt("eventKey", a.eventKey) } },
+        { d -> AlertDismissal(d.str("threadKey"), d.str("dismissedAt"), d.strOrNull("eventKey")) },
     )
 
     val all: List<DocCodec<*>> = listOf(userSettings, conversations, messages, topics, forgotten, unknown, alertDismissals)

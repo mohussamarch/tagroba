@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.masroufy.ui.app.BellState
+import app.masroufy.ui.app.ShellDeps
+import app.masroufy.usecase.DismissedAlert
 
 /**
  * اختيارات **على الجهاز للجلسة دي بس** (زي `sessionStorage` في النموذج) — مش بيانات، ومش بتتحفظ بعد ما التطبيق يتقفل.
@@ -40,13 +42,36 @@ object LookChoice {
 fun avatarLook(choice: Int?, fromProfile: Int?): Int = (choice ?: fromProfile)?.takeIf { it in 1..LOOK_COUNT } ?: 1
 
 /**
- * «×» على الإشعار + «تراجع» ٤ ثواني (قرار المالك 2026-10-09). [gone] = اللي اتمسح في الجلسة دي، و[undo] = آخر واحد لسه ينفع يرجع.
- * ⚠️ **المسح نفسه منطقه بيتبني في فرع `assistant-engine`** (يتحفظ مع الحساب · يشيل النقطة الحمرا من التبويب · يشيل كارته من بداية الشات) —
- * هنا الشكل بس للجلسة، زي النموذج بالظبط (`masroufy-notif-gone` في `sessionStorage`).
+ * «×» على الإشعار + «تراجع» ٤ ثواني (قرار المالك 2026-10-09). [gone] = اللي اتمسح (بيستخبى على طول في الجرس والصفحة)، و[undo] = آخر واحد
+ * لسه ينفع يرجع. **المسح نفسه على الحساب** من المحرك ([dropAndSave] ⇒ `ShellDeps.dismissAlert` — علامة `alertDismissals` + السطر بيتشال):
+ * نقطة التبويب بتروح، وكارته في بداية الشات بيختفي، وما بيرجعش غير لو صعّد لدرجة جديدة (§79.2-1). «تراجع» ⇒ [undoAndSave].
  */
 @Stable
 class Dismissals {
     private val gone = mutableStateMapOf<String, Boolean>()
+
+    /** سجل المسح اللي المحرك رجّعه لكل موضوع (عشان «تراجع» يرجّع السطر زي ما كان). */
+    private val records = mutableMapOf<String, DismissedAlert>()
+
+    /** «×»: يستخبى دلوقتي ويتحفظ على الحساب — لو الحفظ فشل بيرجع ظاهر والغلط بيطلع للشاشة. */
+    suspend fun dropAndSave(threadKey: String, shell: ShellDeps) {
+        drop(threadKey)
+        try {
+            records[threadKey] = shell.dismissAlert(threadKey)
+        } catch (e: Exception) {
+            gone.remove(threadKey)
+            if (undo == threadKey) undo = null
+            throw e
+        }
+    }
+
+    /** «تراجع» خلال الأربع ثواني: السطر والعلامة بيرجعوا زي ما كانوا. */
+    suspend fun undoAndSave(shell: ShellDeps) {
+        val key = undo ?: return
+        val record = records.remove(key)
+        restore()
+        record?.let { shell.undoDismiss(it) }
+    }
 
     var undo by mutableStateOf<String?>(null)
         private set

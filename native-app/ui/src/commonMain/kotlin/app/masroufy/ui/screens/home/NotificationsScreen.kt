@@ -112,13 +112,13 @@ fun NotificationsScreen() {
                                 bell.refresh()
                             }
                             openTarget(nav, row.target)
-                        }, onDrop = { dismissals.drop(it.threadKey) })
+                        }, onDrop = { row -> scope.launch { runCatching { dismissals.dropAndSave(row.threadKey, deps.shell) }; bell.refresh() } })
                     }
                     lockPreviewOf(list, gone)?.let { notice -> item(key = "lock") { LockPreview(notice.title, notice.body) } }
                 }
             }
         }
-        if (undo != null) UndoBar(Modifier.align(Alignment.BottomCenter)) { dismissals.restore() }
+        if (undo != null) UndoBar(Modifier.align(Alignment.BottomCenter)) { scope.launch { runCatching { dismissals.undoAndSave(deps.shell) }; bell.refresh() } }
     }
 }
 

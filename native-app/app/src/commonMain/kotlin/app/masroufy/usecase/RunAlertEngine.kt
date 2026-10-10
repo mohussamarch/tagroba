@@ -67,7 +67,13 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
         val dismissed = deps.dismissals?.listAll().orEmpty()
         val finished = dismissed.map { it.threadKey }.filter { it !in candidateThreads }
         if (finished.isNotEmpty()) deps.dismissals?.remove(finished)
-        val dismissedThreads = dismissed.map { it.threadKey }.toSet() - finished.toSet()
+        // §79.2-1: الممسوح بيرجع **بالدرجة الجديدة بس** — مرشح على نفس الموضوع بدرجة تانية (`eventKey`) ⇒ العلامة بتتشال والتنبيه بيظهر
+        val byThread = dismissed.filter { it.threadKey !in finished }.associateBy { it.threadKey }
+        val escalated = candidates.mapNotNull { c ->
+            byThread[c.threadKey]?.takeIf { d -> d.eventKey != null && candidates.none { it.threadKey == c.threadKey && it.eventKey == d.eventKey } }?.threadKey
+        }.distinct()
+        if (escalated.isNotEmpty()) deps.dismissals?.remove(escalated)
+        val dismissedThreads = byThread.keys - escalated.toSet()
         val live = candidates.filter { !it.kind.needsServer && it.threadKey !in dismissedThreads }.distinctBy { it.eventKey }
         val liveThreads = live.map { it.threadKey }.toSet()
 

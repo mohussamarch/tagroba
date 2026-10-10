@@ -131,8 +131,10 @@ fun unknownAsText(questions: List<UnknownQuestion>): String =
  * إشعار اتمسح بـ«×» من الجرس أو صفحة الإشعارات: **على الحساب ويتزامن ويدخل النسخة الشاملة** (`alertDismissals/{id}`) — المحرك ما
  * بيرجّعوش، وكارته في «أمور لم تُنجزها بعد» بيختفي، والنقطة الحمرا على التبويب بتروح. «رجّعه» (٤ ثواني في الشاشة) بيشيل العلامة.
  * المعرّف = بصمة موضوع التنبيه (فيه `|` و`:`). الموضوع لما يخلص (الحاجة اتعملت) العلامة بتتشال لوحدها.
+ * [eventKey] = الدرجة اللي اتمسحت (`threadKey|النوع` — §79.2-1): لو التنبيه صعّد لدرجة جديدة (من «قرّبت» لـ«عدّيت» مثلًا) بيرجع **بالدرجة الجديدة
+ * بس**. null = كارت بداية من غير إشعار، أو علامة قديمة ⇒ الموضوع كله.
  */
-data class AlertDismissal(val threadKey: String, val dismissedAt: String) {
+data class AlertDismissal(val threadKey: String, val dismissedAt: String, val eventKey: String? = null) {
     val id: String get() = hashContent(threadKey)
 }
 

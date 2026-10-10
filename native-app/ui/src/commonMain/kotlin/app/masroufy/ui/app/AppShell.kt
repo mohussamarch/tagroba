@@ -91,8 +91,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
     var bell by remember(deps) { mutableStateOf<BellState?>(null) }
     // الجرس بيتقري تاني كمان بعد أي كتابة (عملية جديدة ممكن تغيّر الأسئلة ونقط التبويبات)
     LaunchedEffect(deps, bellTick, shell.changes.version) { bell = runCatching { deps.shell.bell() }.getOrNull() }
-    // «×» على إشعار بيشيله من الجرس ومن عدّ «جديد» ومن نقطة تبويبه (قرار المالك 2026-10-09) — المسح للجلسة دي (`Dismissals`)
-    // لحد ما حفظه مع الحساب يتوصل من فرع `assistant-engine`
+    // «×» على إشعار بيشيله من الجرس ومن عدّ «جديد» ومن نقطة تبويبه (قرار المالك 2026-10-09) — بيستخبى على طول هنا (`Dismissals`)،
+    // والمسح نفسه على الحساب من المحرك (`ShellDeps.dismissAlert`) ⇒ القراية الجاية من غيره
     val shownBell = bell?.without(Dismissals.of(deps.space.id).goneKeys)
     CompositionLocalProvider(
         LocalNavigator provides nav,

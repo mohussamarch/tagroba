@@ -94,6 +94,27 @@ class AssistantWiringTest {
         assertEquals(cash.id, access.current(), "أول صرف من اللوحة بيغيّرها")
     }
 
+    /** «×» في الجرس أو الصفحة (رد المالك ٣): على الحساب — العدّ ونقطة التبويب بيروحوا، و«تراجع» بيرجّعه زي ما كان. */
+    @Test fun bellDeleteIsStoredOnTheAccountAndClearsTheTabDot() = runBlocking<Unit> {
+        val kind = app.masroufy.core.AlertKind.DUE_OVERDUE
+        saRepos.alertInbox.save(
+            app.masroufy.port.AlertInboxEntry(
+                "due|debt|p-1|2026-10-01|receive", "due|debt|p-1|2026-10-01|receive|due_overdue", kind, app.masroufy.core.DueFlow.RECEIVE, "دين فات ميعاده", "تفاصيل",
+                app.masroufy.core.AlertDecision(kind, app.masroufy.core.AlertDelivery.INBOX_ONLY, null, false, emptyList()), env.clock.nowIso(),
+            ),
+        )
+        assertEquals(setOf(app.masroufy.ui.nav.Tab.PEOPLE), graph.shell.bell().dots)
+        val dismissals = app.masroufy.ui.screens.home.Dismissals()
+        dismissals.dropAndSave("due|debt|p-1|2026-10-01|receive", graph.shell)
+        val after = graph.shell.bell()
+        assertTrue(after.items.isEmpty() && after.dots.isEmpty() && after.unread == 0)
+        assertEquals(1, saRepos.assistant.alertDismissals!!.listAll().size, "العلامة على الحساب")
+
+        dismissals.undoAndSave(graph.shell)
+        assertEquals(1, graph.shell.bell().items.size, "«تراجع» رجّعه")
+        assertTrue(saRepos.assistant.alertDismissals!!.listAll().isEmpty())
+    }
+
     @Test fun remainingIsAnsweredFromTheScreensUseCases() = runBlocking<Unit> {
         val suite = graph.ask.suite()
         val view = suite.chat.send("فاضلي كام", graph.ask.context(AssistTab.HOME))

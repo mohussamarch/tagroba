@@ -85,7 +85,8 @@ class AssistantLearning(private val settings: UserSettingsStore, private val clo
 class ManageAlertDismissals(private val store: AlertDismissalStore, private val inbox: AlertInboxStore, private val clock: Clock) {
     suspend fun dismiss(threadKey: String): DismissedAlert {
         val entry = inbox.listAll().firstOrNull { it.threadKey == threadKey }
-        store.save(AlertDismissal(threadKey, clock.nowIso()))
+        // الدرجة اللي اتمسحت (§79.2-1): لو صعّد لدرجة جديدة بيرجع
+        store.save(AlertDismissal(threadKey, clock.nowIso(), entry?.eventKey))
         if (entry != null) inbox.remove(listOf(threadKey))
         return DismissedAlert(threadKey, entry)
     }

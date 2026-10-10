@@ -93,8 +93,8 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
                 style = Type.caption().copy(color = Ink.muted),
             )
         }
-        // «×» على كل سطر + «تراجع» ٤ ثواني (قرار المالك 2026-10-09) — نفس الحالة اللي في صفحة الإشعارات (`Dismissals` — للجلسة بس،
-        // والحفظ مع الحساب وشيل نقطة التبويب منطقهم في فرع `assistant-engine`)
+        // «×» على كل سطر + «تراجع» ٤ ثواني (قرار المالك 2026-10-09) — نفس الحالة اللي في صفحة الإشعارات (`Dismissals`)، والمسح نفسه على
+        // الحساب من المحرك (`ShellDeps.dismissAlert`) ⇒ نقطة التبويب وكارت بداية الشات بيروحوا
         val dismissals = Dismissals.of(LocalSpace.current.space.id)
         val undo = dismissals.undo
         LaunchedEffect(undo) {
@@ -105,11 +105,11 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
         }
         val items = state?.items.orEmpty().filter { !dismissals.isGone(it.threadKey) }.take(4)
         if (items.isEmpty()) BasicText(t(UiKey.BELL_EMPTY), Modifier.padding(8.dp), style = Type.of(13).copy(color = Ink.muted))
-        for (item in items) BellRow(item) { dismissals.drop(item.threadKey) }
+        for (item in items) BellRow(item) { scope.launch { runCatching { dismissals.dropAndSave(item.threadKey, shell) }; onChanged() } }
         if (undo != null) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 BasicText(t(UiKey.NOTIFICATIONS_DROPPED), style = Type.of(13, FontWeight.Bold))
-                TonalButton(t(UiKey.NOTIFICATIONS_UNDO), onClick = { dismissals.restore() }, height = 44.dp)
+                TonalButton(t(UiKey.NOTIFICATIONS_UNDO), onClick = { scope.launch { runCatching { dismissals.undoAndSave(shell) }; onChanged() } }, height = 44.dp)
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
