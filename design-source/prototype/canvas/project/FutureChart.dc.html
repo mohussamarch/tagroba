@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تشارت مستقبلي — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.fc-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.fc-press:active{transform:scale(.97)}
+.fc-line{transition:d 450ms cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){.fc-press,.fc-line{transition:none}.fc-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 10px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div dir="ltr" style="{{boxStyle}}">
+    <svg width="{{W}}" height="{{H}}" viewBox="{{viewBox}}" role="img" aria-label="{{aria}}" tabindex="{{tab}}" onKeyDown="{{key}}" style="display: block; overflow: visible">
+      <sc-for list="{{grid}}" as="g" hint-placeholder-count="4">
+        <line x1="{{g.x1}}" x2="{{g.x2}}" y1="{{g.y}}" y2="{{g.y}}" stroke="rgba(25,61,51,0.10)" stroke-width="1"></line>
+        <text x="{{g.tx}}" y="{{g.ty}}" text-anchor="end" font-size="10" fill="#637570" style="font-variant-numeric: tabular-nums">{{g.label}}</text>
+      </sc-for>
+      <sc-for list="{{xl}}" as="x" hint-placeholder-count="3">
+        <text x="{{x.x}}" y="{{x.y}}" text-anchor="{{x.anchor}}" font-size="10" fill="#637570" style="font-variant-numeric: tabular-nums">{{x.label}}</text>
+      </sc-for>
+      <path d="{{area}}" fill="{{areaColor}}" fill-opacity="0.10" stroke="none"></path>
+      <sc-for list="{{lines}}" as="l" hint-placeholder-count="3">
+        <path class="fc-line" d="{{l.d}}" fill="none" stroke="{{l.color}}" stroke-width="{{l.w}}" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="{{l.ex}}" cy="{{l.ey}}" r="4" fill="{{l.color}}" stroke="#FFFFFF" stroke-width="2"></circle>
+      </sc-for>
+      <sc-for list="{{flags}}" as="f" hint-placeholder-count="2">
+        <path d="{{f.d}}" fill="#637570"><title>{{f.label}}</title></path>
+      </sc-for>
+      <sc-for list="{{marks}}" as="m" hint-placeholder-count="2">
+        <rect x="{{m.rx}}" y="{{m.ry}}" width="{{m.rw}}" height="16" rx="8" fill="#FFFFFF" stroke="rgba(25,61,51,0.12)" stroke-width="1"></rect>
+        <text x="{{m.tx}}" y="{{m.ty}}" text-anchor="middle" font-size="10" font-weight="700" fill="#193D33">{{m.label}}</text>
+        <circle cx="{{m.x}}" cy="{{m.y}}" r="4.5" fill="{{m.color}}" stroke="#FFFFFF" stroke-width="2"></circle>
+      </sc-for>
+      <sc-if value="{{hovering}}" hint-placeholder-val="{{ false }}">
+        <line x1="{{hx}}" x2="{{hx}}" y1="{{top}}" y2="{{bottom}}" stroke="rgba(25,61,51,0.35)" stroke-width="1"></line>
+        <sc-for list="{{hdots}}" as="d" hint-placeholder-count="3"><circle cx="{{hx}}" cy="{{d.y}}" r="4" fill="{{d.color}}" stroke="#FFFFFF" stroke-width="2"></circle></sc-for>
+      </sc-if>
+      <rect x="0" y="0" width="{{W}}" height="{{H}}" fill="transparent" onPointerMove="{{move}}" onPointerDown="{{move}}" onPointerLeave="{{leave}}" style="{{hitStyle}}"></rect>
+    </svg>
+    <sc-if value="{{hovering}}" hint-placeholder-val="{{ false }}">
+      <div dir="rtl" role="status" style="{{tipStyle}}">
+        <span style="font-size: 12px; font-weight: 700">{{tipTitle}}</span>
+        <sc-for list="{{tipRows}}" as="r" hint-placeholder-count="3">
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 12px"><span style="{{r.key}}"></span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{r.value}}</span><span style="color: #637570">{{r.label}}</span></span>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{full}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-for list="{{legend}}" as="g" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 8px; min-height: 24px">
+          <span aria-hidden="true" style="{{g.key}}"></span>
+          <span style="flex: 1 1 auto; min-width: 0; font-size: 13px">{{g.label}}</span>
+          <span dir="ltr" style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums">{{g.value}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <button type="button" class="fc-press" onClick="{{toggleTable}}" aria-expanded="{{tableOpen}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{tableLabel}}</button>
+    <sc-if value="{{showTable}}" hint-placeholder-val="{{ false }}">
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+        <thead><tr><sc-for list="{{thead}}" as="h" hint-placeholder-count="4"><th style="{{h.style}}">{{h.label}}</th></sc-for></tr></thead>
+        <tbody><sc-for list="{{tbody}}" as="row" hint-placeholder-count="5"><tr><sc-for list="{{row.cells}}" as="c" hint-placeholder-count="4"><td style="{{c.style}}">{{c.v}}</td></sc-for></tr></sc-for></tbody>
+      </table>
+    </sc-if>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mini":{"editor":"boolean","default":false,"section":"الحالة"},"$preview":{"width":318,"height":360}}'>
+// تشارت «مستقبلي» (عرض بس — الحساب في Future): خط لكل سيناريو · محطات على خط واحد · أهدافك على محور الزمن · خط رأسي بيتبع الصباع ويقول القيم كلها
+// الألوان اتفحصت بأداة فحص الألوان (عمى الألوان والتباين على الكارت الفاتح): #3866A7 · #0E8A6E · #B7791F — والهوية مش باللون بس: المفتاح تحت فيه الاسم والقيمة
+// الزمن من الشمال لليمين زي الأرقام (dir=ltr) · خطوط رفيعة 2 (والأساسي 2.5) · شبكة شعرة · من غير تقريب أرقام على كل نقطة
+const DEMO = { start: 2026, cur: 'ر.س', series: [
+  { key: 'l1', label: 'لو كمّلت زي ما إنت', color: '#3866A7', values: [68666000, 75100000, 82000000, 89500000, 97600000, 106400000] },
+  { key: 'l2', label: 'لو استثمرت تحويشي', color: '#0E8A6E', main: true, values: [68666000, 76000000, 84300000, 93400000, 103400000, 114400000] },
+  { key: 'l3', label: 'لو زوّدت المبلغ', color: '#B7791F', values: [68666000, 77200000, 86900000, 97500000, 109200000, 122000000] }],
+  marks: [{ key: 'l2', i: 4, label: 'أول مليون' }], flags: [{ x: 0.2, label: 'هدف «السفر»' }] };
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { hover: null, table: false }; }
+  major(minor) { const a = Math.abs(minor); return (a - (a % 100)) / 100; }
+  fmt(minor) { return (minor < 0 ? '−' : '') + String(this.major(minor)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  // للمحاور بس (عرض): 1.2 مليون · 850 ألف
+  short(minor) {
+    const v = this.major(minor), s = minor < 0 ? '−' : '';
+    if (v >= 1000000) { const t = Math.round(v / 100000); return s + (t % 10 ? Math.floor(t / 10) + '.' + (t % 10) : String(t / 10)) + ' مليون'; }
+    if (v >= 1000) return s + Math.round(v / 1000) + ' ألف';
+    return s + v;
+  }
+  nice(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw || 1))); return [1, 2, 2.5, 5, 10].map((k) => k * p).find((s) => s >= raw) || 10 * p; }
+  renderVals() {
+    const mini = this.props.mini === true || this.props.mini === 'true';
+    const series = Array.isArray(this.props.series) && this.props.series.length ? this.props.series : DEMO.series;
+    const start = Number(this.props.start) || DEMO.start, cur = this.props.cur || DEMO.cur;
+    const marks = Array.isArray(this.props.marks) ? this.props.marks : this.props.series ? [] : DEMO.marks;
+    const flags = Array.isArray(this.props.flags) ? this.props.flags : this.props.series ? [] : DEMO.flags;
+    const N = Math.max(1, series[0].values.length - 1);
+    const W = mini ? 300 : 318, H = mini ? 84 : 210;
+    const L = mini ? 4 : 50, R = mini ? 8 : 12, T = mini ? 8 : 14, B = mini ? 8 : 28;
+    const pw = W - L - R, ph = H - T - B;
+    const all = [].concat(...series.map((s) => s.values));
+    let lo = Math.min(0, ...all), hi = Math.max(...all, 1);
+    const step = this.nice((hi - lo) / 4);
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step; if (hi === lo) hi = lo + step;
+    const X = (i) => L + (i / N) * pw, Y = (v) => T + ((hi - v) / (hi - lo)) * ph;
+    const path = (vals) => vals.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+    const main = series.find((s) => s.main) || series[0];
+    const base = Y(Math.max(lo, 0));
+    const grid = [];
+    if (!mini) for (let v = lo; v <= hi + 1; v += step) grid.push({ x1: L, x2: W - R, y: Y(v).toFixed(1), tx: L - 6, ty: (Y(v) + 3).toFixed(1), label: this.short(v) });
+    const every = N <= 5 ? 1 : N <= 10 ? (N % 2 ? 5 : 2) : N <= 20 ? 5 : 10;
+    const xl = [];
+    if (!mini) {
+      const idx = [];
+      for (let i = 0; i <= N; i += every) idx.push(i);
+      if (idx[idx.length - 1] !== N) { if (N - idx[idx.length - 1] < every / 2 && idx.length > 1) idx.pop(); idx.push(N); }
+      idx.forEach((i) => xl.push({ x: X(i).toFixed(1), y: H - 8, label: String(start + i), anchor: i === 0 ? 'start' : i === N ? 'end' : 'middle' }));
+    }
+    const lines = series.map((s) => ({ d: path(s.values), color: s.color, w: s.main ? 2.5 : 2, ex: X(N).toFixed(1), ey: Y(s.values[N]).toFixed(1) }));
+    const h = this.state.hover != null && !mini ? Math.min(N, this.state.hover) : null;
+    const age = Number(this.props.ageStart) > 0 ? Number(this.props.ageStart) : null;
+    const tipW = 168;
+    const ageText = (i) => (age ? ' · عمرك ' + (age + i) : '');
+    return {
+      W, H, viewBox: '0 0 ' + W + ' ' + H, top: T, bottom: T + ph, full: !mini, tab: mini ? '-1' : '0',
+      boxStyle: 'position: relative; width: ' + W + 'px; align-self: center',
+      aria: (this.props.title || 'مستقبلي') + ': ' + series.map((s) => s.label + ' ' + this.fmt(s.values[N]) + ' ' + cur + ' سنة ' + (start + N)).join('، '),
+      grid, xl, lines,
+      area: mini || !main ? '' : path(main.values) + ' L' + X(N).toFixed(1) + ' ' + base.toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + base.toFixed(1) + ' Z',
+      areaColor: main.color,
+      flags: mini ? [] : flags.filter((f) => f.x >= 0 && f.x <= N).map((f) => { const x = X(f.x), y = T + ph; return { label: f.label, d: 'M' + x.toFixed(1) + ' ' + (y - 5).toFixed(1) + ' l4 5 l-4 5 l-4 -5 z' }; }),
+      marks: mini ? [] : marks.filter((m) => m.i >= 0 && m.i <= N).map((m) => {
+        const s = series.find((q) => q.key === m.key) || main, x = X(m.i), y = Y(s.values[m.i]), rw = 12 + m.label.length * 6.2;
+        const cx = Math.max(L + rw / 2, Math.min(W - R - rw / 2, x)), ty = Math.max(T + 12, y - 12);
+        return { x: x.toFixed(1), y: y.toFixed(1), color: s.color, label: m.label, rw: rw.toFixed(0), rx: (cx - rw / 2).toFixed(1), ry: (ty - 12).toFixed(1), tx: cx.toFixed(1), ty: ty.toFixed(1) };
+      }),
+      hovering: h != null, hx: h != null ? X(h).toFixed(1) : 0,
+      hdots: h != null ? series.map((s) => ({ y: Y(s.values[h]).toFixed(1), color: s.color })) : [],
+      tipStyle: 'position: absolute; top: 0; left: ' + (h != null ? Math.max(0, Math.min(W - tipW, X(h) - tipW / 2)) : 0).toFixed(0) + 'px; width: ' + tipW + 'px; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; display: flex; flex-direction: column; gap: 3px; pointer-events: none; background: rgba(255,255,255,0.96); box-shadow: 0 8px 20px rgba(29,54,53,0.16)',
+      tipTitle: h != null ? 'سنة ' + (start + h) + ageText(h) : '',
+      tipRows: h != null ? series.map((s) => ({ key: 'width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; background: ' + s.color, value: this.fmt(s.values[h]), label: s.label })) : [],
+      hitStyle: mini ? 'pointer-events: none' : 'cursor: crosshair; touch-action: pan-y',
+      move: (e) => { const r = e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null; if (!r || !r.width) return; const px = ((e.clientX - r.left) / r.width) * W; const i = Math.max(0, Math.min(N, Math.round(((px - L) / pw) * N))); if (i !== this.state.hover) this.setState({ hover: i }); },
+      leave: () => this.setState({ hover: null }),
+      key: (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const d = e.key === 'ArrowRight' ? 1 : -1; this.setState({ hover: Math.max(0, Math.min(N, (this.state.hover == null ? N : this.state.hover) + d)) }); } if (e.key === 'Escape') this.setState({ hover: null }); },
+      legend: series.map((s) => ({ key: 'width: 16px; height: 3px; border-radius: 2px; flex-shrink: 0; background: ' + s.color, label: s.label, value: '≈ ' + this.fmt(s.values[N]) + ' ' + cur })),
+      tableOpen: this.state.table ? 'true' : 'false', showTable: this.state.table,
+      tableLabel: this.state.table ? 'اخفِ الجدول' : 'اعرض كجدول',
+      toggleTable: () => this.setState({ table: !this.state.table }),
+      thead: [{ label: 'السنة' }].concat(series.map((s) => ({ label: s.label }))).map((x, i) => ({ label: x.label, style: 'text-align: ' + (i ? 'left' : 'right') + '; font-weight: 700; color: #637570; padding: 6px 4px; border-bottom: 1px solid rgba(204,216,204,0.9)' })),
+      tbody: series[0].values.map((_, i) => i).filter((i) => N <= 10 || i % 5 === 0 || i === N).map((i) => ({ cells: [{ v: String(start + i), style: 'padding: 6px 4px; border-bottom: 1px solid rgba(204,216,204,0.55)' }].concat(series.map((s) => ({ v: this.fmt(s.values[i]), style: 'direction: ltr; text-align: left; font-variant-numeric: tabular-nums; padding: 6px 4px; border-bottom: 1px solid rgba(204,216,204,0.55)' }))) }))
+    };
+  }
+}
+</script>
+</body>
+</html>
