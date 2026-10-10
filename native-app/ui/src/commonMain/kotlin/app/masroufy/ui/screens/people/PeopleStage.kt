@@ -21,6 +21,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +31,8 @@ import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,47 +57,57 @@ import kotlin.math.min
  * المسرح البترولي في «الأشخاص» (لوحة `People`): أقرب 5 فوق «أنت» بخيوط ملتوية من راسك لكل واحد (بتترسم أول ما الشاشة تفتح)،
  * و«أنت» تحت في النص (دايرتك + مكان الكاركتر — §73: الكاركتر لسه بيتصمم). الأماكن من النموذج بعرض 350 وبتتمدّ مع عرض الشاشة.
  */
-private val SPOTS = listOf(298f to 184f, 250f to 112f, 175f to 82f, 100f to 112f, 52f to 184f)
+internal val SPOTS = listOf(298f to 184f, 250f to 112f, 175f to 82f, 100f to 112f, 52f to 184f)
 private const val HEAD_X = 175f
 private const val HEAD_Y = 196f
-private const val STAGE_W = 350f
+internal const val STAGE_W = 350f
 internal const val STAGE_H = 360
 
+/**
+ * [chips] = كل الناس اللي ممكن يظهروا (بالمعرّف) — الصف نفسه بترتيب [editor] (`RowEditor.shown`). [canAdd] = فيه ناس مش في الصف (لـ«+»).
+ * جملة «المُعالون أولًا…» بتختفي في وضع التعديل **وبعد أول ترتيب بإيدك** (§84).
+ */
 @Composable
-internal fun PeopleStage(orbit: List<PersonChip>, meName: String?, onOpen: (PersonChip) -> Unit, modifier: Modifier = Modifier) {
+internal fun PeopleStage(
+    chips: Map<app.masroufy.core.Id, PersonChip>,
+    editor: RowEditor,
+    canAdd: Boolean,
+    meName: String?,
+    onOpen: (PersonChip) -> Unit,
+    modifier: Modifier = Modifier,
+    /** المسرح باين كفاية (`opacity > 0.5` في النموذج) ⇒ بيستقبل اللمس. مطوي ⇒ لأ. */
+    interactive: Boolean = true,
+) {
+    val haptics = LocalHapticFeedback.current
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    // اللمس بيتسجّل مرة (`pointerInput`) ⇒ الناس والفتح بيتقروا وقت الضغطة نفسها (بعد أي تحميل جديد) مش من أول رسمة
+    val latestChips by rememberUpdatedState(chips)
+    val latestOpen by rememberUpdatedState(onOpen)
     HeroCard(modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
         BoxWithConstraints(Modifier.fillMaxWidth().padding(0.dp)) {
             val w = maxWidth
-            val k = w.value / STAGE_W
-            Box(Modifier.fillMaxWidth().size(width = w, height = STAGE_H.dp)) {
-                Threads(orbit.size)
-                BasicText(
-                    t(UiKey.PEOPLE_ORBIT_NOTE),
-                    Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 14.dp),
-                    style = Type.caption().copy(color = Ink.onHeroMuted),
-                )
-                // الأماكن في النموذج من الشمال (left)؛ الإزاحة هنا من بداية السطر ⇒ في العربي نفس مكان النموذج، وفي الإنجليزي بالمراية
-                orbit.take(SPOTS.size).forEachIndexed { i, p ->
-                    val (x, y) = SPOTS[i]
-                    val start = w.value - (x * k - 32f) - 64f
-                    OrbitPerson(p, { onOpen(p) }, Modifier.offset(x = start.dp, y = (y - 48f).dp).zIndex(1f))
+            val touch = if (!interactive) Modifier else Modifier.orbitGestures(
+                editor, w.value, rtl,
+                onOpen = { id -> latestChips[id]?.let(latestOpen) },
+                onEnter = { haptics.performHapticFeedback(HapticFeedbackType.LongPress); editor.enter() },
+            )
+            Box(Modifier.fillMaxWidth().size(width = w, height = STAGE_H.dp).then(touch)) {
+                Threads(editor.shown.size)
+                if (!editor.editing && !editor.custom) {
+                    BasicText(
+                        t(UiKey.PEOPLE_ORBIT_NOTE),
+                        Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 14.dp),
+                        style = Type.caption().copy(color = Ink.onHeroMuted),
+                    )
+                }
+                OrbitPeople(chips, editor, w.value, rtl, onOpen)
+                if (editor.editing) {
+                    RowDone(editor::exit)
+                    if (canAdd && editor.shown.size < SPOTS.size) RowAddSpot(editor.shown.size, w.value, rtl) { editor.picking = true }
                 }
                 You(meName, Modifier.align(Alignment.BottomCenter))
             }
         }
-    }
-}
-
-@Composable
-private fun OrbitPerson(p: PersonChip, onClick: () -> Unit, modifier: Modifier) {
-    val press = rememberPress()
-    Column(
-        modifier.width(64.dp).pressScale(press).tap(press, label = p.name, onClick = onClick),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        BasicText(p.name, style = Type.of(12, FontWeight.Bold).copy(color = Ink.onPrimary, textAlign = TextAlign.Center), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        InitialCircle(p.name, 56.dp, onHero = true)
     }
 }
 

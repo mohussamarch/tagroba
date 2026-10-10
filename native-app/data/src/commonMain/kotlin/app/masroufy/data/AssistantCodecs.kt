@@ -45,6 +45,8 @@ object AssistantCodecs {
                     is UserSetting.MainWallet -> { req("type", "mainWallet"); req("spaceId", s.spaceId); req("walletId", s.walletId); req("setFrom", s.setFrom.wire) }
                     // «يتعلّم من أسئلتي» بيتكتب بس لو واقف (من غيره = شغال)
                     is UserSetting.Assistant -> { req("type", "assistant"); opt("learningOn", if (s.learningOn) null else false) }
+                    // صف «أهم 5» بترتيبك (§84) — القايمة بتتكتب حتى لو فاضية (شال الكل = ترتيب بإيده، مش «لسه ما رتبش»)
+                    is UserSetting.PeopleRow -> { req("type", "peopleRow"); req("personIds", s.personIds) }
                 }
             }
         },
@@ -52,6 +54,7 @@ object AssistantCodecs {
             when (val type = d.str("type")) {
                 "mainWallet" -> UserSetting.MainWallet(d.str("spaceId"), d.str("walletId"), d.wire("setFrom") { MainWalletSource.fromWire(it)!! }, d.str("updatedAt"))
                 "assistant" -> UserSetting.Assistant(d.boolOrNull("learningOn") ?: true, d.str("updatedAt"))
+                "peopleRow" -> UserSetting.PeopleRow(d.strings("personIds") ?: emptyList(), d.str("updatedAt"))
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },
