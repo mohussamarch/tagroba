@@ -11,7 +11,17 @@ import app.masroufy.core.InstallmentError
 import app.masroufy.core.InstallmentKind
 import app.masroufy.core.InstallmentPayment
 import app.masroufy.core.InstallmentPlan
+import app.masroufy.core.InstallmentCountPreview
 import app.masroufy.core.IsoDate
+import app.masroufy.core.DUE_LINK_DAYS
+import app.masroufy.core.Transaction
+import app.masroufy.core.dueLinkCandidate
+import app.masroufy.core.installmentCountPreview
+import app.masroufy.core.isValidIsoDate
+import app.masroufy.core.parseIsoDate
+import app.masroufy.core.shiftDays
+import app.masroufy.core.toDayNumber
+import app.masroufy.core.totalFromCount
 import app.masroufy.core.TextKey
 import app.masroufy.core.checkDueSchedule
 import app.masroufy.core.checkInstallmentPlan
@@ -135,6 +145,39 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             links.markKind(transactionId, installmentPaymentKind(plan), DuesCategories.forInstallment(plan.kind))
         }
         return payment
+    }
+
+    /** §82-20: معاينة «عدد الأقساط × القسط ⇒ الإجمالي» (و«ادفع بعدين»: المدفوع وقت الشراء والباقي) — الشاشة بتعرضها وما بتحسبش. */
+    fun countPreview(installmentMinor: Halalas, count: Int, payLater: Boolean): InstallmentCountPreview =
+        installmentCountPreview(installmentMinor, count, payLater)
+
+    /**
+     * §82-20: خطة بالعدد — الإجمالي = [InstallmentInput.installmentMinor] × [count] (اللي في [InstallmentInput.totalMinor] بيتجاهل). تقسيط
+     * مشتريات من غير سعر (صفر) ⇒ السعر = الإجمالي (تابي وتمارا من غير زيادة). [firstPaymentTxnId] = عملية أول قسط («اشتري دلوقتي وادفع
+     * بعدين» — أول ميعاد = يوم الشراء) ⇒ بتتفحص **قبل** الحفظ وبتتربط بالقسط بعده (القسط مصروف بعمليته — §56).
+     */
+    suspend fun saveCounted(input: InstallmentInput, count: Int, firstPaymentTxnId: Id? = null): InstallmentPlan {
+        val total = totalFromCount(input.installmentMinor, count)
+        val principal = if (input.kind == InstallmentKind.PURCHASE_PLAN && input.principalMinor <= 0) total else input.principalMinor
+        if (firstPaymentTxnId != null) links.check(firstPaymentTxnId, Direction.OUT, input.currency, input.name, input.installmentMinor)
+        val plan = save(input.copy(totalMinor = total, principalMinor = principal))
+        if (firstPaymentTxnId != null) link(plan.id, firstPaymentTxnId, input.installmentMinor)
+        return plan
+    }
+
+    /**
+     * عمليات ممكن تكون أول قسط («ادفع بعدين»): صادرة بنفس العملة وبالقسط بالظبط، ±[DUE_LINK_DAYS] من يوم الشراء، مش مربوطة بحاجة — الأقرب
+     * لليوم الأول (نفس قاعدة اقتراح الربط §75-8).
+     */
+    suspend fun firstPaymentCandidates(currency: Currency, installmentMinor: Halalas, purchaseDate: IsoDate): List<Transaction> {
+        if (installmentMinor <= 0 || !isValidIsoDate(purchaseDate)) return emptyList()
+        val near = deps.txns.listByDateRange(shiftDays(purchaseDate, -DUE_LINK_DAYS), shiftDays(purchaseDate, DUE_LINK_DAYS)).filter {
+            it.observedDirection == Direction.OUT && it.currency == currency && it.amountMinor == installmentMinor && dueLinkCandidate(it)
+        }
+        val ids = near.map { it.id }
+        val taken = (deps.payments.listByTransactionIds(ids).map { it.transactionId } + deps.roscaEntries.listByTransactionIds(ids).map { it.transactionId }).toSet()
+        val day = toDayNumber(parseIsoDate(purchaseDate))
+        return near.filter { it.id !in taken }.sortedWith(compareBy({ kotlin.math.abs(toDayNumber(parseIsoDate(it.occurredAt.take(10))) - day) }, { it.occurredAt }, { it.id }))
     }
 
     /** مبلغ التمويل اللي نزل في الحساب (§59) — مرة واحدة لكل خطة تمويل، وبالعملية كلها. */
