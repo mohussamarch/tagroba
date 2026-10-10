@@ -5,15 +5,18 @@ import androidx.fragment.app.FragmentActivity
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Space
 import app.masroufy.core.Texts
+import app.masroufy.core.countryPack
 import app.masroufy.device.AndroidAlertInteractionStore
 import app.masroufy.device.AndroidActiveSpaceStore
 import app.masroufy.device.AndroidAppLockSettings
+import app.masroufy.device.AndroidBankSms
 import app.masroufy.device.AndroidDeviceLock
 import app.masroufy.device.AndroidDeviceNotifier
 import app.masroufy.device.AndroidFeedCache
 import app.masroufy.device.AndroidSmsInbox
 import app.masroufy.device.AndroidUsualHoursStore
 import app.masroufy.device.MasroufyBackground
+import app.masroufy.device.PdfBoxPages
 import app.masroufy.device.PlatformHttpText
 import app.masroufy.firestore.AccountSession
 import app.masroufy.firestore.FirebaseAuthAdapter
@@ -45,6 +48,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withTimeoutOrNull
 import java.lang.ref.WeakReference
+import java.time.ZoneId
 import java.util.Calendar
 
 /**
@@ -106,7 +110,7 @@ class AppContainer(private val context: Context) {
     private fun ready(st: AccountSession.State.Ready): AppSession {
         // الفصحى/المصري من بلد الحساب الشغال قبل أول رسم (الجلسة بتعملها هي كمان — هنا عشان الترتيب يبقى مضمون)
         Texts.followCountry(st.active.space.countryCode)
-        val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid), links(), feeds)
+        val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid, st.active.space), links(), feeds)
         return AppSession.Ready(st.user.uid, graph)
     }
 
@@ -124,10 +128,17 @@ class AppContainer(private val context: Context) {
     private fun spacesOf(ready: AccountSession.State.Ready?): List<Pair<Space, SpaceRepositories>> =
         ready?.spaces?.values.orEmpty().sortedBy { if (it.space.id == DEFAULT_SPACE_ID) "" else it.space.id }.map { it.space to it.repos.toRepositories() }
 
-    private fun envFor(uid: String) = DeviceEnv(
+    /**
+     * [space] = البلد الشغالة (شاشات «الاستيراد» — ARCHITECTURE §31.31): صندوق رسايل البنك (§72) · قراية رسايل فترة بالطلب بمنطقة وقت البلد ·
+     * كلمات صفحات الـPDF. الخلفية (من غير [space]) بتاخد الصندوق لوحدها.
+     */
+    private fun envFor(uid: String, space: Space? = null) = DeviceEnv(
         clock = clock, ids = ids, today = { MasroufyBackground.localNow().date }, hourNow = { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) },
         nowMillis = nowMillis, interactions = AndroidAlertInteractionStore(context, uid), usualHours = AndroidUsualHoursStore(context, uid),
         seenAlerts = AndroidSeenAlerts(context, uid), http = PlatformHttpText(), feedCache = AndroidFeedCache(context),
+        smsInbox = space?.let { AndroidSmsInbox(context, uid) },
+        bankSms = space?.let { AndroidBankSms(context, ZoneId.of(countryPack(it.countryCode).timeZone)) },
+        pdfPages = space?.let { PdfBoxPages(context) },
     )
 
     /**
