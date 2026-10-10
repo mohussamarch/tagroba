@@ -45,11 +45,23 @@ sealed interface UserSetting {
     data class Assistant(val learningOn: Boolean, override val updatedAt: String) : UserSetting {
         override val key: String get() = ASSISTANT_SETTINGS_KEY
     }
+
+    /**
+     * §83 (المالك 2026-10-10: «يقرأ كل تاريخ الرسايل ويحدث نفسه ويشوف ايه اللي ناقص»): **نقطة قراية رسايل البنك للبلد [spaceId]** — مستند لكل
+     * بلد (`smsRead.<spaceId>`) في الحساب، فبيعيش بعد مسح البرنامج وعلى جوال جديد (الجهاز بيرجع يقرا من هنا — `SmsCatchUp`).
+     * [point] = وقت (ISO): كل رسايل البنك قبله اتعاملت في البلد دي (اتسجلت · اتشالت · مكررة). [asked] = البنوك (المرسلين بعد `smsSenderKey`)
+     * اللي اتسألت «اقرأ اللي فات؟» (أيوه أو لأ) — بنك مربوط مش فيها ⇒ يتسأل. أسامي مرسلين البنوك بس — ولا حرف من رسالة.
+     */
+    data class SmsReadPoint(val spaceId: String, val point: String, val asked: List<String>, override val updatedAt: String) : UserSetting {
+        override val key: String get() = smsReadPointKey(spaceId)
+    }
 }
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"
 
 fun mainWalletKey(spaceId: String) = "mainWallet.$spaceId"
+
+fun smsReadPointKey(spaceId: String) = "smsRead.$spaceId"
 
 // ─── «اللي اتعلمته عنك» والأسئلة ───
 

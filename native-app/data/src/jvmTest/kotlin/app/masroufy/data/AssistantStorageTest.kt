@@ -59,6 +59,10 @@ class AssistantStorageTest {
         roundTrip(AssistantCodecs.userSettings, UserSetting.MainWallet("egypt", "w-cib", MainWalletSource.WALLET_DETAIL, "2026-10-10T09:00:00.000Z"))
         roundTrip(AssistantCodecs.userSettings, UserSetting.Assistant(false, "2026-10-10T09:00:00.000Z"))
         roundTrip(AssistantCodecs.userSettings, UserSetting.Assistant(true, "2026-10-10T09:00:00.000Z"))
+        // §83: نقطة قراية رسايل البنك للبلد + البنوك اللي اتسألت (أسامي مرسلين بس) — والفاضية بترجع فاضية
+        roundTrip(AssistantCodecs.userSettings, UserSetting.SmsReadPoint("sa", "2026-07-02T10:00:00Z", listOf("testbank", "otherbank"), "2026-10-10T09:00:00.000Z"))
+        roundTrip(AssistantCodecs.userSettings, UserSetting.SmsReadPoint("eg", "2026-07-02T10:00:00Z", emptyList(), "2026-10-10T09:00:00.000Z"))
+        assertEquals("smsRead.sa", UserSetting.SmsReadPoint("sa", "x", emptyList(), "x").key)
         roundTrip(AssistantCodecs.conversations, AssistConversation("conv-1", "default", "2026-10-10T09:00:00.000Z", "2026-10-10T09:01:00.000Z", "كم صرفت؟", "صرفت 85 ر.س", 2))
         roundTrip(AssistantCodecs.messages, message)
         roundTrip(AssistantCodecs.messages, message.copy(card = null, split = null, options = emptyList(), links = emptyList(), payload = emptyMap(), state = null, choice = null))

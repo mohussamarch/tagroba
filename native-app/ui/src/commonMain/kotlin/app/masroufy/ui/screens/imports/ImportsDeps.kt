@@ -15,6 +15,8 @@ import app.masroufy.usecase.ReadBankSms
 import app.masroufy.usecase.ReadPdfStatement
 import app.masroufy.usecase.ResumeStagedBatch
 import app.masroufy.usecase.RevertImportBatch
+import app.masroufy.usecase.SmsHistoryQuestion
+import app.masroufy.usecase.SmsHistoryReport
 import app.masroufy.usecase.SmsReview
 import app.masroufy.usecase.UnmappedSender
 
@@ -88,6 +90,23 @@ interface SmsDeps {
 
     /** رسالة ما اتفهمتش ⇒ تتسجل صرف بالمبلغ اللي المالك كتبه في محفظة بنكها، وبعدها تتشال من الصندوق. */
     suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult
+
+    // ── §83 «اقرأ اللي فات؟» (`SmsHistory`) — الافتراضي: مفيش ──
+
+    /** السؤال على البلد دي دلوقتي، أو null. */
+    suspend fun historyQuestion(): SmsHistoryQuestion? = null
+
+    /** «لأ، من دلوقتي بس». */
+    suspend fun historyDecline(senders: List<String>) = Unit
+
+    /** «أيوه» من أول يوم [from] (null = من أقدم رسالة). */
+    suspend fun historyStart(senders: List<String>, from: IsoDate?): SmsHistoryReport? = null
+
+    /** قايمة «أكّد رسالة واحدة من كل شكل» دلوقتي. */
+    suspend fun historyReport(): SmsHistoryReport? = null
+
+    /** «أكّد الأشكال». */
+    suspend fun confirmShapes(messageIds: List<String>): SmsHistoryReport? = null
 }
 
 /**
