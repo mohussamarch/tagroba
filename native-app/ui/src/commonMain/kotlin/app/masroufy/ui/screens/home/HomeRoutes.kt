@@ -36,7 +36,8 @@ object LookSheetRoute : SheetRoute {
 
 /**
  * «حدث جديد» من التقويم بيومه المختار — اللوحة نفسها (`EventAddSheet`) مشتركة مع صفحة الأحداث (منطقة «الأشخاص»)، فمش متسجّلة هنا:
- * لحد الدمج بتفتح «قيد البناء». ⚠️ وقت الدمج: لوحة واحدة متسجّلة بالمسار ده (أو مسار منطقة الأشخاص بنفس الاسم).
+ * لحد الدمج زرار التقويم **مقفول** (`EVENT_ADD_READY` في `CalendarScreen.kt`) — مش بيفتح «قيد البناء». ⚠️ وقت الدمج: فرع `screens-people`
+ * مسجّل `people.EventAddSheetRoute(defaultDate)` ⇒ التقويم يستعمله و`EVENT_ADD_READY = true`، والمسار المؤقت ده يتشال.
  */
 data class EventAddSheetRoute(val defaultDate: IsoDate?) : SheetRoute {
     override val name = "EventAddSheet"

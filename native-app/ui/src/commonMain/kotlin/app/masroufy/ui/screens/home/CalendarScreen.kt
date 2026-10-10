@@ -60,6 +60,13 @@ private const val AHEAD_DAYS = 90
 private const val BEHIND_DAYS = 31
 
 /**
+ * لوحة «حدث جديد» (`EventAddSheet`) بتاعة منطقة «الأشخاص» ومش متسجّلة على الفرع ده ⇒ الزرار **مقفول** وتحته «إضافة الأحداث غير متاحة بعد»
+ * (من غير القفل كان بيفتح «قيد البناء» وهو شكله شغال — CLAUDE.md #15). ⚠️ وقت الدمج: `true` + `nav.open(people.EventAddSheetRoute(date))`
+ * بدل المسار المؤقت هنا (والنص «لا مواعيد…» بيرجع يقول «تقدر تضيف حدث من الزرار اللي فوق» لوحده).
+ */
+private const val EVENT_ADD_READY = false
+
+/**
  * التقويم: «الأحداث القادمة» (الجملة الذكية + أقرب ٦ + «كل القادم») ⇒ «حدث جديد» (`EventAddSheet` بيوم الشبكة المختار) ⇒ الشبكة ⇒ مواعيد اليوم.
  * الضغط على ميعاد ⇒ تبويب مصدره (الاشتراكات والأقساط والجمعيات والديون في «العمليات»/المستحقات · المناسبات والأحداث في «الأشخاص» · الزكاة في
  * «الاستثمار») — ⚠️ صفحة المصدر نفسها بتتوصل وقت الدمج.
@@ -101,7 +108,13 @@ fun CalendarScreen() {
         }
         item(key = "add") {
             val date = selected?.let { formatIsoDate(DateParts(year, month, it)) }
-            PrimaryButton(t(TextKey.CALENDAR_ADD_EVENT), onClick = { nav.open(EventAddSheetRoute(date)) }, modifier = Modifier.fillMaxWidth(), height = 52.dp, leading = Lucide.PLUS)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                PrimaryButton(
+                    t(TextKey.CALENDAR_ADD_EVENT), onClick = { nav.open(EventAddSheetRoute(date)) }, modifier = Modifier.fillMaxWidth(),
+                    enabled = EVENT_ADD_READY, height = 52.dp, leading = Lucide.PLUS,
+                )
+                if (!EVENT_ADD_READY) BasicText(t(TextKey.CALENDAR_ADD_EVENT_LATER), style = Type.caption().copy(color = Ink.muted))
+            }
         }
         item(key = "grid") {
             CalendarGrid(
@@ -202,7 +215,7 @@ private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<Cal
         if (monthItems == null) return@Column Skeleton(Modifier.fillMaxWidth().height(56.dp))
         val date: IsoDate = formatIsoDate(DateParts(year, month, selected))
         val day = monthItems.filter { it.date == date }
-        if (day.isEmpty()) BasicText(t(TextKey.CALENDAR_DAY_EMPTY), style = Type.of(13).copy(color = Ink.muted))
+        if (day.isEmpty()) BasicText(t(if (EVENT_ADD_READY) TextKey.CALENDAR_DAY_EMPTY else TextKey.CALENDAR_DAY_EMPTY_NO_ADD), style = Type.of(13).copy(color = Ink.muted))
         for (item in day) FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)) { CalRowView(calRowOf(item), onOpen) }
     }
 }
