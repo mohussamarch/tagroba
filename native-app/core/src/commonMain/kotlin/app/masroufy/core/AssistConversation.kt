@@ -15,9 +15,15 @@ fun conversationAlive(c: AssistConversation, nowIso: String): Boolean {
     return now - last < CONVERSATION_IDLE_MS
 }
 
-/** المحادثة الحالية: الأحدث لو لسه شغالة، وإلا null (⇒ تبدأ جديدة، والقديمة في السجل). */
+/**
+ * المحادثة الحالية: الأحدث لو لسه شغالة، وإلا null (⇒ تبدأ جديدة، والقديمة في السجل). نفس اللحظة ⇒ الأحدث بداية، وبعدها الفاضية
+ * («محادثة جديدة» اتداست بعد آخر رسالة في نفس الثانية).
+ */
 fun currentConversation(all: List<AssistConversation>, nowIso: String): AssistConversation? =
-    all.maxWithOrNull(compareBy<AssistConversation> { isoInstantMillis(it.lastMessageAt) ?: Long.MIN_VALUE }.thenBy { it.id })?.takeIf { conversationAlive(it, nowIso) }
+    all.maxWithOrNull(
+        compareBy<AssistConversation> { isoInstantMillis(it.lastMessageAt) ?: Long.MIN_VALUE }
+            .thenBy { isoInstantMillis(it.createdAt) ?: Long.MIN_VALUE }.thenBy { it.messageCount == 0 }.thenBy { it.id },
+    )?.takeIf { conversationAlive(it, nowIso) }
 
 /** مجموعات السجل: النهارده · امبارح · الأسبوع ده (من السبت — رد المالك في النافذة التالتة) · أقدم. */
 enum class HistoryGroup { TODAY, YESTERDAY, THIS_WEEK, OLDER }

@@ -124,3 +124,16 @@ fun recordUnknown(
 /** «انسخ القايمة»: الأسئلة كنص عادي (المالك بيبعته بنفسه — مفيش حاجة بتتبعت لوحدها). */
 fun unknownAsText(questions: List<UnknownQuestion>): String =
     questions.sortedByDescending { isoInstantMillis(it.lastAskedAt) ?: Long.MIN_VALUE }.joinToString("\n") { "${it.text} (${it.askCount})" }
+
+// ─── إشعارات الجرس الممسوحة (رد المالك ٣ — 2026-10-09) ───
+
+/**
+ * إشعار اتمسح بـ«×» من الجرس أو صفحة الإشعارات: **على الحساب ويتزامن ويدخل النسخة الشاملة** (`alertDismissals/{id}`) — المحرك ما
+ * بيرجّعوش، وكارته في «أمور لم تُنجزها بعد» بيختفي، والنقطة الحمرا على التبويب بتروح. «رجّعه» (٤ ثواني في الشاشة) بيشيل العلامة.
+ * المعرّف = بصمة موضوع التنبيه (فيه `|` و`:`). الموضوع لما يخلص (الحاجة اتعملت) العلامة بتتشال لوحدها.
+ */
+data class AlertDismissal(val threadKey: String, val dismissedAt: String) {
+    val id: String get() = hashContent(threadKey)
+}
+
+const val ALERT_DISMISSALS_GROUP = "alertDismissals"

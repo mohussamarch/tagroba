@@ -1,24 +1,35 @@
 package app.masroufy.port
 
+import app.masroufy.core.AlertDismissal
 import app.masroufy.core.AssistConversation
-import app.masroufy.core.AssistPrefs
+import app.masroufy.core.AssistMessage
 import app.masroufy.core.AssistTopic
-import app.masroufy.core.Dismissal
-import app.masroufy.core.ForgottenFact
-import app.masroufy.core.MainSpendingWallet
+import app.masroufy.core.ForgottenMark
 import app.masroufy.core.UnknownQuestion
+import app.masroufy.core.UserSetting
 
 /**
  * مخازن المساعد «مصروفي» (OVERRIDES §78) — **كلها على مستوى الحساب** (`users/{uid}/…`) وبتتزامن وبتدخل النسخة الشاملة (قرار المالك:
- * «الذاكرة والأسئلة في حساب المالك وتتزامن»، والرد ٤ على فرع التصميم: السجل كمان). `listAll` مسموح: الأعداد صغيرة بطبيعتها (آخر ١٠٠
- * محادثة · مواضيع · أسئلة). نسخ الذاكرة (`MemoryAssistant.kt`) للاختبار، وفايربيز (`FirestoreAssistant.kt`) للتشغيل.
+ * «الذاكرة والأسئلة في حساب المالك وتتزامن»، والرد ٤ على فرع التصميم: السجل كمان). `listAll` مسموح: الأعداد صغيرة بطبيعتها.
+ * نسخ الذاكرة (`MemoryAssistant.kt`) للاختبار، وفايربيز (`FirestoreAssistant.kt`) للتشغيل.
  */
 interface AssistantConversationStore {
     suspend fun listAll(): List<AssistConversation>
 
     suspend fun save(conversation: AssistConversation)
 
-    suspend fun remove(id: String)
+    suspend fun remove(ids: List<String>)
+}
+
+/** كل رسالة مستند لوحدها بمعرّف محادثتها (جوالين في نفس الوقت ما بيكتبوش فوق بعض). */
+interface AssistantMessageStore {
+    suspend fun listByConversation(conversationId: String): List<AssistMessage>
+
+    suspend fun listAll(): List<AssistMessage>
+
+    suspend fun save(message: AssistMessage)
+
+    suspend fun removeByConversations(conversationIds: List<String>)
 }
 
 interface AssistantTopicStore {
@@ -29,41 +40,37 @@ interface AssistantTopicStore {
     suspend fun remove(keys: List<String>)
 }
 
-/** مستند واحد للحساب: مفتاح «يتعلّم من أسئلتي». null = لسه ما اتغيرش ⇒ شغال. */
-interface AssistantPrefsStore {
-    suspend fun load(): AssistPrefs?
-
-    suspend fun save(prefs: AssistPrefs)
-}
-
+/** علامات «امسح دي» (`fact:…` · `topic:…` · `card:…`). */
 interface AssistantForgottenStore {
-    suspend fun listAll(): List<ForgottenFact>
+    suspend fun listAll(): List<ForgottenMark>
 
-    suspend fun saveMany(facts: List<ForgottenFact>)
+    suspend fun save(mark: ForgottenMark)
 
-    suspend fun clear()
+    suspend fun remove(ids: List<String>)
 }
 
 interface AssistantUnknownStore {
     suspend fun listAll(): List<UnknownQuestion>
 
     suspend fun save(question: UnknownQuestion)
+
+    suspend fun remove(ids: List<String>)
 }
 
-/** المحفظة الأساسية لكل بلد (رد المالك ٢ — 2026-10-09). مستند لكل بلد بمعرّف البلد. */
-interface MainSpendingWalletStore {
-    suspend fun listAll(): List<MainSpendingWallet>
+/** إعدادات المستخدم الجديدة (`userSettings/{key}`): المحفظة الأساسية لكل بلد · مفتاح التعلم. مش في `profile/main` (شوف `AssistStorage.kt`). */
+interface UserSettingsStore {
+    suspend fun listAll(): List<UserSetting>
 
-    suspend fun save(main: MainSpendingWallet)
-
-    suspend fun remove(spaceId: String)
-}
-
-/** المسح بـ«×»: إشعارات الجرس ([alertDismissals]) وكروت «أمور لم تُنجزها بعد» — نفس الشكل، مجموعتين منفصلتين. */
-interface DismissalStore {
-    suspend fun listAll(): List<Dismissal>
-
-    suspend fun save(dismissal: Dismissal)
+    suspend fun save(setting: UserSetting)
 
     suspend fun remove(keys: List<String>)
+}
+
+/** إشعارات الجرس الممسوحة بـ«×» (رد المالك ٣). */
+interface AlertDismissalStore {
+    suspend fun listAll(): List<AlertDismissal>
+
+    suspend fun save(dismissal: AlertDismissal)
+
+    suspend fun remove(threadKeys: List<String>)
 }

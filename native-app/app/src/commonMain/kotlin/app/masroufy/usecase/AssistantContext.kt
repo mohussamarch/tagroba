@@ -120,13 +120,20 @@ data class AssistLexiconSource(
 /**
  * رد المساعد: النص + الروابط + **كل مبلغ اتحط في النص** ([amounts]) بالترتيب — الاختبارات بتقارنه برقم حالة الاستخدام نفسها.
  */
-data class AssistReply(val text: String, val links: List<ScreenLink> = emptyList(), val amounts: List<Halalas> = emptyList())
+data class AssistReply(
+    val text: String,
+    val links: List<ScreenLink> = emptyList(),
+    val amounts: List<Halalas> = emptyList(),
+    /** المصدر قال «تقريبي» (عمليات محتاجة تأكيد · رصيد مش متطابق). */
+    val approximate: Boolean = false,
+)
 
 /** بيبني نص الرد ويجمّع المبالغ اللي اتكتبت فيه. */
 class ReplyBuilder(private val currency: Currency) {
     val amounts = mutableListOf<Halalas>()
     val lines = mutableListOf<String>()
     val links = mutableListOf<ScreenLink>()
+    var approximate = false
 
     fun money(minor: Halalas, c: Currency = currency): String {
         amounts += minor
@@ -137,11 +144,18 @@ class ReplyBuilder(private val currency: Currency) {
         lines += uiText(key, *args)
     }
 
+    /** «تقريبي» + سببه (لو فيه نص) — مرة واحدة في الرد. */
+    fun approx(key: TextKey?, vararg args: String) {
+        if (approximate) return
+        approximate = true
+        line(key ?: TextKey.ASSIST_APPROXIMATE, *args)
+    }
+
     fun link(l: ScreenLink) {
         if (links.none { it == l }) links += l
     }
 
-    fun build(): AssistReply = AssistReply(lines.joinToString(" "), links.toList(), amounts.toList())
+    fun build(): AssistReply = AssistReply(lines.joinToString(" "), links.toList(), amounts.toList(), approximate)
 }
 
 /** «٢٨ أكتوبر» (والسنة لو مش السنة دي). أسامي الشهور من جدول النصوص. */
