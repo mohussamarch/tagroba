@@ -110,7 +110,7 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
         if (kind != t.economicKind && deps.spaceLegs?.isLeg(transactionId) == true) throw IncomeSourceError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
         deps.txns.update(
             transactionId,
-            TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = deps.clock.nowIso()),
+            TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, clearSuggestedKind = true, updatedAt = deps.clock.nowIso()),
         )
     }
 

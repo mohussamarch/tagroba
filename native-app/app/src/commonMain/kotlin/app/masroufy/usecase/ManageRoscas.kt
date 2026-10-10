@@ -107,6 +107,8 @@ class ManageRoscas(private val deps: ManageRoscasDeps) {
             members = input.members.sortedBy { it.turn },
             organizerPersonId = input.organizerPersonId,
             createdAt = existing?.createdAt ?: deps.clock.nowIso(),
+            // §75-8: «مش من الجمعية دي» بيفضل بعد التعديل
+            dismissedTxnIds = existing?.dismissedTxnIds.orEmpty(),
         )
         val rosca = draft.copy(name = checkRosca(draft).name)
         if (existing != null) {

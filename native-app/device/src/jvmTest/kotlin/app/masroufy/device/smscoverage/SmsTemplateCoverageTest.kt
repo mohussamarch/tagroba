@@ -135,6 +135,10 @@ class SmsTemplateCoverageTest {
             // الجولة السادسة: سعر صرف ≠ 1 ودولة غير السعودية تحت عنوان محلي = شراء برّه البلد بالريال (نفس اختيار (م))
             "saudi#90" to "STC «Online Purchase» abroad: Exchange rate 3.7612 + Country GB, SAR total only",
             "saudi#94" to "STC «شراء إنترنت» abroad: رسوم تحويل العملات + الدولة GB, SAR total only",
+            // مراجعة S1 (§77-C): كاش باك البطاقة من غير تاريخ بقى بيتقري بيوم الوصول (عبارة «تم …») — مش قالب في القايمة، واسترداد بيستنى
+            // تأكيد المالك على أي حال (§75-6)، فما اتضافش شكل معروف
+            "saudi#120" to "card cashback accrual (no date, «تم استرداد و إضافة …»): arrival day, a refund that waits for the owner",
+            "saudi#121" to "card cashback credited (no date, «تم إضافة …»): arrival day, a refund that waits for the owner",
         )
 
         /** سطور معروف إنها بتترفض (بتستنى المالك) — والسبب. اللي يصلح سطر منهم يشيله من هنا. */
@@ -142,11 +146,11 @@ class SmsTemplateCoverageTest {
             "saudi#39" to "invented by a test author (research: «do not build on it»); no date in the message",
             "saudi#48" to "probably invented; no date in the message",
             "saudi#73" to "no currency at all («تم قيد مبلغ 87.50 لحسابكم») — riyal can't be assumed (rule 10)",
-            "saudi#97" to "STC «Purchase Reversal» template has no date (PennyWise test, likely trimmed)",
+            // §77-C (S1): saudi#97 (STC «Purchase Reversal») و saudi#106 (STC «Outward SARIE Transfer») اتشالوا — شكل معروف من غير تاريخ
+            // بقى بياخد يوم الوصول. اللي فاضل تحت مش شكل معروف، فالرسالة من غير تاريخ لسه بتترفض «التاريخ مش واضح»
             "saudi#103" to "STC «Internal transfer» has no date and no direction word (PennyWise test)",
-            "saudi#106" to "STC «Outward SARIE Transfer» template has no date",
-            "saudi#120" to "cashback accrual into a card's cashback wallet: no date in the template",
-            "saudi#121" to "cashback credited to card: no date in the template",
+            // مراجعة S1: saudi#120 و saudi#121 (كاش باك البطاقة — سؤال (د) في §75.1 سمّاه) اتشالوا — الرسالة من غير تاريخ وفيها عبارة عملية
+            // خلصت («تم استرداد و إضافة …» · «تم إضافة …») بتاخد يوم الوصول زي مصر (§77-C)، وبتستنى تأكيد المالك (استرداد · مش شكل معروف)
             // egypt#49 اتشال (مراجعة جلسة 33): فلتر الجهاز بقى ما بيحجبش التاريخ، فرقم المرجع اللي قبله ما بقاش بياكله
         )
     }

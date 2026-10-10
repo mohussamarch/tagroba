@@ -164,8 +164,11 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     if (group == PERSON_PROFILES_GROUP || group == PERSON_RELATIONS_GROUP) checkPeopleRow(group, row)
     if (group == SAVINGS_GOALS_GROUP || group == GOAL_CONTRIBUTIONS_GROUP) checkGoalRow(group, row)
     if (group == INHERITANCE_SCENARIOS_GROUP) checkInheritanceScenarioRow(row)
+    // سجل الدمج و«مش ده» على الخطة والجمعية (§75-10 · §75-8 — الشريحة S4) — بيتفحصوا لو موجودين بس
+    matchingBackupProblem(group, row)?.let { throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, it)) }
     if (group == ALERT_INBOX_GROUP && (row["factors"] as? List<*>)?.all { it is String } != true) throw BackupError(uiText(TextKey.BACKUP_TEXT_INVALID, group, "factors"))
     if (group == "transactions" && ALL_ECONOMIC_KINDS.none { it.wire == row["economicKind"] }) throw BackupError(uiText(TextKey.BACKUP_KIND_INVALID))
+    if (group == "transactions") checkTransactionExtras(row)?.let { throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, it)) }
     for ((field, allowed) in ENUMS[group].orEmpty()) if (jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     for ((field, allowed) in OPTIONAL_ENUMS[group].orEmpty()) if (row[field] != null && jsString(row[field]) !in allowed) throw BackupError(uiText(TextKey.BACKUP_VALUE_UNSUPPORTED, group, field))
     if (group == "importBatches") {
@@ -207,6 +210,24 @@ fun checkBackupFinance(data: FullBackupData) {
         if (!isSafeInteger(sum) || sum > num(obligation?.get("originalMinor"))) throw BackupError(uiText(TextKey.BACKUP_SETTLEMENTS_EXCEED))
         settlements[row["obligationId"]] = sum
     }
+}
+
+/**
+ * حقول الشريحة S3 على العملية (بتتفحص لو موجودة بس) ⇒ اسم الحقل الغلط أو null: النوع المقترح والنوع قبل الإلغاء نوع معروف · العملة الأجنبية كود ISO
+ * (3 حروف كبيرة) · المبلغ الأجنبي أكبر من صفر ومعاه عملته (العدد الصحيح والسالب بيتفحصوا فوق زي أي `…Minor`) · العملية ما ترجعش نفسها.
+ */
+private fun checkTransactionExtras(row: Map<String, Any?>): String? {
+    for (field in listOf("suggestedKind", "kindBeforeReversal")) {
+        val kind = row[field]
+        if (kind != null && ALL_ECONOMIC_KINDS.none { it.wire == kind }) return field
+    }
+    val currency = row["foreignCurrency"]
+    if (currency != null && (currency !is String || !CURRENCY_CODE.matches(currency))) return "foreignCurrency"
+    val foreign = row["foreignAmountMinor"]
+    if (foreign != null && (currency == null || (numberOf(foreign) ?: 0.0) <= 0)) return "foreignAmountMinor"
+    // الربط لين (`BACKUP_SOFT_RELATIONS`): العملية اللي بيشاور عليها ممكن ما تبقاش في الملف (بيتصلح مش بيترفض) — بس لازم نص ومش نفسها
+    for (field in listOf("reversalOfId", "reversedById")) if (row[field] != null && (row[field] !is String || row[field] == row["id"])) return field
+    return null
 }
 
 /** خطة الادخار (§68): الهدف والإيداع أكبر من صفر، وتاريخ الهدف بعد البداية، والمحفظة والبلد مع بعض. */

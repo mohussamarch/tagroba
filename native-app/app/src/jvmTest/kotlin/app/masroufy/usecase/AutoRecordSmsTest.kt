@@ -83,7 +83,7 @@ class AutoRecordSmsTest {
         val world = SmsWorld().enable()
         world.receive(sms("m1", CAFE))
         val space = world.spaces.single()
-        val screen = ReviewSmsInbox(ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(space.importDeps()), app.masroufy.memory.MemoryMerchantRepository(), space.categories, space.ids))
+        val screen = space.screen(world.inbox)
         screen.load(SmsReviewTarget(BANK.id, BANK.name))
         world.auto().run() // الخلفية سجّلت والشاشة لسه مفتوحة على نفس الرسالة
         runCatching { screen.recordAll(emptyMap(), emptyList()) }

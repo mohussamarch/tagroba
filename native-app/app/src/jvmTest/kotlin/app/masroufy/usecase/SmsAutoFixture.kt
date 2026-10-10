@@ -103,6 +103,8 @@ internal class SmsSpace(
     wallets: List<Wallet> = listOf(CASH, BANK),
     parties: List<TransferParty> = emptyList(),
     val parse: (BankSmsMessage, Int) -> SmsParseResult = ::parseBankSms,
+    /** §75-10: نافذة الدمج بين الكشف والرسالة (null = من غير دمج — زي الأول). */
+    val window: Int? = null,
 ) {
     val txnStore = MemoryTransactionRepository()
     val txns = FlakyTxns(txnStore)
@@ -115,25 +117,42 @@ internal class SmsSpace(
     val rules = MemoryRuleRepository(listOf(ClassificationRule("rule-1", 1, "TEST CAFE", RuleMatchMode.CONTAINS, "cat-food", true)))
     val ids = SequentialIdGenerator()
 
-    fun importDeps() = ImportStatementDeps(
+    fun importDeps(effects: List<RecordEffect> = emptyList()) = ImportStatementDeps(
         txns = txns, sources = sources, batches = batches, merchants = MemoryMerchantRepository(), categories = categories, rules = rules,
         uow = MemoryUnitOfWork(listOf(txnStore, sources, batchStore, parties)), ids = ids, clock = FixedClock("2026-10-07T11:00:00.000Z"),
-        transferParties = parties,
+        transferParties = parties, effects = effects, crossSourceWindowDays = window,
     )
 
-    fun lane(inbox: SmsInboxPort) = SmsLane.of(spaceId, importDeps(), ManageSmsInbox(inbox, parse), wallets)
+    /** آثار رسايل البنك بتاعة S1 زي التشغيل الحقيقي: «حسابي التاني» بآخر 4 أرقام (§75-11) · «ده راتبك؟» (§75-2). */
+    fun smsEffects(inbox: SmsInboxPort): List<RecordEffect> = listOf(OwnAccountByLast4Effect(wallets), SmsSalaryEffect(inbox, spaceId))
+
+    fun lane(inbox: SmsInboxPort) = SmsLane.of(spaceId, importDeps(smsEffects(inbox)), ManageSmsInbox(inbox, parse), wallets)
+
+    /** شاشة رسايل البنك للبلد دي — زي التشغيل الحقيقي (مراجعة S1): من البلد نفسها (`SmsLane.screen`) بالتعلّم والآثار والمحافظ. */
+    fun screen(inbox: SmsInboxPort) = lane(inbox).screen()
 
     suspend fun all(): List<Transaction> = txnStore.listByDateRange("0000-01-01", "9999-12-31")
 }
 
-internal class SmsWorld(val spaces: List<SmsSpace> = listOf(SmsSpace())) {
+/**
+ * [learnOnReceive] (§77-A «وضع التعلّم» — S1): الافتراضي إن المالك **أكّد قبل كده** رسالة بنفس شكل كل رسالة بتوصل (من نفس مرسلها في
+ * كل بلد قارئها فاهمها) — عشان اختبارات المحافظ والقفل والتكرار تفضل عن اللي بتختبره. وضع التعلّم نفسه بيتختبر بـ`false`
+ * (`SmsLearnModeTest` · `SmsSalaryAskTest` · `SmsRoutingTest`). الشكل اللي مش واضح عمره ما بيتعلّم في الحالتين.
+ */
+internal class SmsWorld(val spaces: List<SmsSpace> = listOf(SmsSpace()), private val learnOnReceive: Boolean = true) {
     val memory = MemorySmsInbox(emptyList(), available = true)
     val inbox = FlakyInbox(memory)
 
     /** المالك فعّل المرسلين دول (الافتراضي TESTBANK) — رسايل غيرهم ما بتتسجلش لوحدها (الجولة الرابعة). */
     suspend fun enable(vararg senders: String): SmsWorld = apply { memory.enable(if (senders.isEmpty()) listOf("TESTBANK") else senders.toList()) }
 
-    fun receive(vararg messages: QueuedSms) = messages.forEach { memory.receive(it) }
+    fun receive(vararg messages: QueuedSms) = messages.forEach {
+        memory.receive(it)
+        if (learnOnReceive) learn(it)
+    }
+
+    /** §77-A: المالك أكّد قبل كده رسالة بنفس شكل كل واحدة من [messages] (من مرسلها) — في كل بلد قارئها فاهمها (`MemorySmsInbox.preLearn`). */
+    fun learn(vararg messages: QueuedSms) = messages.forEach { m -> spaces.forEach { s -> memory.preLearn(s.spaceId, s.parse, m) } }
 
     /** كل تشغيلة بنسخة جديدة من حالة الاستخدام — زي عامل خلفية جديد. */
     fun auto() = AutoRecordSms(AutoRecordSmsDeps(inbox, spaces.map { it.lane(inbox) }))

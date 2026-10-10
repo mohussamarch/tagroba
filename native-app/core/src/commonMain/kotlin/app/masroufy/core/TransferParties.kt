@@ -2,7 +2,8 @@ package app.masroufy.core
 
 /**
  * «زون التحويلات» (OVERRIDES §39 · §39.1 · §42 · §60): مين الطرف التاني في كل تحويل، والطرف اللي التحويلات معاه كترت
- * بيتسأل عنه: «ده حسابك التاني؟» (⇒ تحويل داخلي، والقديم كله بيتصلح) ولا «شخص» (⇒ الصادر ليه دعم، والوارد منه يتسأل).
+ * بيتسأل عنه: «ده حسابك التاني؟» (⇒ تحويل داخلي، والقديم كله بيتصلح) ولا «شخص» (⇒ الصادر ليه بيتسأل «سلفة ولا دعم؟» كل مرة
+ * — قرار المالك §75-5 لغى «الصادر = دعم» — والوارد منه يتسأل). الأسئلة نفسها في `TransferAsks.kt`.
  *
  * الطرف بيتعرف **بالاسم + آخر 4 أرقام بس** (قاعدة 11). الوصف المتخزن في فايربيز متقص (`****` + آخر 4) والوصف قبل التخزين
  * كامل — والمفتاح بياخد **آخر 4 أرقام بس** فبيطلع هو هو في الحالتين.
@@ -12,7 +13,7 @@ enum class TransferVerdict(val wire: String) {
     /** حسابك التاني ⇒ تحويل داخلي (مش دخل ولا مصروف). */
     OWN_ACCOUNT("own_account"),
 
-    /** شخص ⇒ الصادر ليه «دعم» (مصروف)، والوارد منه بيتسأل عن نوعه (§39.1). */
+    /** شخص ⇒ الصادر ليه بيتسأل «سلفة ولا دعم؟» كل مرة (§75-5)، والوارد منه بيتسأل عن نوعه (§39.1) أو «ده سداد السلفة؟» (§75-9). */
     PERSON("person"),
 
     /** «مش ده» ⇒ ما يتسألش عنه تاني. */
@@ -179,8 +180,9 @@ fun suspiciousTransferParties(transactions: List<Transaction>, decided: Set<Stri
 
 /**
  * القرار على الطرف ⇒ العملية (§39 · §39.1): «حسابك التاني» ⇒ تحويل داخلي مؤكد (حتى لو كان متأكد قبل كده — قرار المالك (ج):
- * القديم كله يتصلح) · «شخص» ⇒ الصادر «دعم» مؤكد لو نوعه لسه ما اتأكدش، والوارد **يتسأل** (ما بيتصنفش لوحده) · «مش ده» ⇒ ولا حاجة.
- * بترجع نفس العملية لو مفيش تغيير.
+ * القديم كله يتصلح) · «شخص» ⇒ الاتنين **بيتسألوا** لو نوعهم لسه ما اتأكدش: الصادر بيبقى «لسه ما اتحددش» ومستني «سلفة ولا دعم؟»
+ * (قرار المالك §75-5 — كان «دعم» مؤكد لوحده)، والوارد ما بيتصنفش لوحده (§39.1) · «مش ده» ⇒ ولا حاجة.
+ * النوع اللي المالك أكده ما بيتلمسش (فالدعم اللي اتأكد لوحده قبل §75-5 بيفضل زي ما هو). بترجع نفس العملية لو مفيش تغيير.
  */
 fun applyTransferVerdict(t: Transaction, party: TransferParty?, nowIso: String): Transaction {
     if (party == null) return t
@@ -191,7 +193,8 @@ fun applyTransferVerdict(t: Transaction, party: TransferParty?, nowIso: String):
         TransferVerdict.PERSON -> when {
             t.economicKindConfirmed -> t
             t.observedDirection == Direction.OUT ->
-                t.copy(economicKind = EconomicKind.SUPPORT_GIFT, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = nowIso)
+                if (t.economicKind == EconomicKind.UNCLASSIFIED && t.reviewState == ReviewState.NEEDS_REVIEW) t
+                else t.copy(economicKind = EconomicKind.UNCLASSIFIED, reviewState = ReviewState.NEEDS_REVIEW, updatedAt = nowIso)
             t.reviewState == ReviewState.NEEDS_REVIEW -> t
             else -> t.copy(reviewState = ReviewState.NEEDS_REVIEW, updatedAt = nowIso)
         }

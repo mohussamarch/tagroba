@@ -101,6 +101,8 @@ data class RevertDeps(
     val obligations: ObligationRepository,
     val uow: UnitOfWork,
     val links: RevertLinkDeps,
+    /** عقد C0: آثار وقت التسجيل اللي بترجّع اللي غيّرته (`RecordEffects.kt` — [BatchUndo]) — بتتنادى قبل المسح في نفس وحدة العمل. */
+    val undoers: List<BatchUndo> = emptyList(),
 )
 
 val REVERT_BLOCKED_MESSAGE: String get() = uiText(TextKey.REVERT_BLOCKED)
@@ -197,6 +199,10 @@ class RevertImportBatch(private val deps: RevertDeps) {
         if (revertPlan.blocked) throw IllegalStateException(REVERT_BLOCKED_MESSAGE)
 
         return deps.uow.run {
+            if (deps.undoers.isNotEmpty()) {
+                val records = deps.sources.listByBatch(batchId)
+                for (undo in deps.undoers) undo.undo(batchId, records, revertPlan.toDelete)
+            }
             if (revertPlan.toDelete.isNotEmpty()) {
                 // الروابط الأول وبعدين العمليات — كله في نفس وحدة العمل (فشل في النص ⇒ ولا حاجة اتشالت)
                 val detach = detachFor(revertPlan.toDelete)

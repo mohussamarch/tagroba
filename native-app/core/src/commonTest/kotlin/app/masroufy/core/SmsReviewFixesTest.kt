@@ -62,7 +62,7 @@ class SmsReviewFixesTest {
     @Test fun twentyFourSevenInAMerchantNameIsNotADate() {
         val cib = ok(egypt("لقد تم رد EGP415.50 على بطاقتكم الائتمانية المنتهية بـ# 4417 من PHARMA 24/7", "2026-08-10T09:00:00Z"), "cib 24/7")
         assertEquals("2026-08-10", cib.date)
-        assertEquals(REFUND, cib.kind)
+        assertEquals(SmsKind.RETURNED, cib.kind) // §77-D: «تم رد» = عملية رجعت
         assertEquals("PHARMA 24/7", cib.merchantName)
         val snb = ok(saudi("شراء انترنت\nبـ19.90 SAR\nمن PHARMA 24/7\nمدى-ابل *4417"), "snb 24/7")
         assertEquals(SMS_TX_DAY, snb.date)

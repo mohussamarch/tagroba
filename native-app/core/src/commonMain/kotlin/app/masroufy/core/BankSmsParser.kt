@@ -14,7 +14,7 @@ package app.masroufy.core
  *    **عملة أجنبية ⇒ ترفض دايمًا ومعاها كل اللي اتقري** (قرار المالك §75-12: تتسجل وتسأل عن المبلغ المحلي — مش تتسجل لوحدها حتى
  *    لو المقابل بالريال مكتوب؛ المكتوب بيمشي معاها اقتراح بس) لحد ما شاشة السؤال تتبني.
  * 4. **التاريخ** (`SmsDates.kt`): تاريخ واحد بس من 60 يوم قبل الوصول لحد يوم بعده (التاريخ بسنة كاملة: لحد يوم بعد الوصول).
- *    رسالة الأهلي السعودي اللي شكلها كله ما فيهوش تاريخ ⇒ يوم الوصول بتوقيت السعودية (نفس قرار رسالة الكارت المصرية §40.3-١).
+ *    رسالة ما فيهاش تاريخ خالص ⇒ يوم الوصول بتوقيت السعودية (§77-C — أي شكل؛ كان للأهلي السعودي بس).
  * 5. **الشكل** (الجولة الرابعة — `SmsKnownShapesSaudi.kt` و`SmsSamaTitles.kt`): أول سطر كله عنوان موحّد أو قالب بنك معروف واتجاهه نفس
  *    اتجاه القارئ ⇒ بتتسجل لوحدها؛ غير كده (الاتجاه من الكلمات العامة بس) ⇒ `SmsShape.KeywordFallback` ⇒ **بتستنى تأكيد المالك** (§72).
  *    الشكل ما بيغيّرش القراية نفسها (ملف المرجع `golden/sms.json` زي ما هو).
@@ -103,8 +103,16 @@ private fun snbDatelessShape(body: String): Boolean {
     return lines.size in 3..5 && saudiTitle(body) != null && SNB_CARD_LINE.matches(lines.last()) && SNB_AMOUNT_LINE.containsMatchIn(body)
 }
 
-private fun datelessDate(body: String, receivedAt: String): IsoDate? =
-    if (!hasDateToken(body) && snbDatelessShape(body)) localDayOf(receivedAt, SAUDI_UTC_OFFSET_HOURS) else null
+/**
+ * §77-C (قرار المالك: «ياخد يوم وصول الرسالة بتوقيت البلد — لكل الأشكال اللي مفيهاش تاريخ»): رسالة مفيهاش تاريخ خالص ⇒ يوم الوصول
+ * بتوقيت الرياض (`SmsArrivalDay.kt` — وبعد نص الليل اليوم اللي قبله لو الساعة المكتوبة بتقول كده) **لو** فيها دليل إنها عملية حصلت:
+ * شكلها معروف ([knownLayout]) · شكل الأهلي · أو **عبارة عملية خلصت** («تم …» — `hasDoneWording`، نفس قاعدة مصر). مراجعة S1: كانت للشكل
+ * المعروف والأهلي بس، فكاش باك البطاقة اللي سؤال (د) سمّاه («تم استرداد و إضافة …») كان لسه بيترفض، ومصر كانت بتقبل بالعبارة والسعودية
+ * لأ. اللي من غير أي دليل (إعلان مفيش حارس بيمسكه) بيفضل «التاريخ مش واضح» — اختيار Claude، سؤال مفتوح للمالك. الشكل المجهول بيستنى
+ * تأكيد المالك (§72). الرسالة اللي فيها تاريخ القارئ مش قادر يقراه لسه بتترفض «التاريخ مش واضح».
+ */
+private fun datelessDate(body: String, receivedAt: String, knownLayout: Boolean = false): IsoDate? =
+    if (!hasDateToken(body) && (knownLayout || snbDatelessShape(body) || hasDoneWording(body))) datelessDay(body, receivedAt, SmsClock.RIYADH) else null
 
 private fun dateOf(body: String, receivedAt: String): IsoDate? = saudiTransactionDate(body, receivedAt) ?: datelessDate(body, receivedAt)
 
@@ -153,16 +161,15 @@ private fun foreignUnread(
 
 /**
  * الجولة السابعة: الشكل المعروف بيستنى (بيتقري بس ما بيتسجلش لوحده) لو: شراء من محل **برّه البلد** (كود البلد في آخر اسم المحل —
- * `SmsMerchantCountry.kt`، §75-12) · رسالة الأهلي اللي من غير تاريخ وفيها **ساعة** (اتبعتت بعد نص الليل ممكن تتسجل يوم متأخر).
+ * `SmsMerchantCountry.kt`، §75-12). §77-C: رسالة **من غير تاريخ وفيها ساعة** ما بقتش بتستنى (اليوم بقى بيتحسب من الساعة المكتوبة —
+ * `SmsArrivalDay.kt`) — إلا لو فيها **أكتر من ساعة مختلفة** (مش واضح أنهي ساعة العملية) أو **الساعة المكتوبة والوصول مش متفقين**.
  */
-private fun saudiExtraGate(shape: SmsShape, body: String, kind: SmsKind, dateless: Boolean): SmsShape = when {
+private fun saudiExtraGate(shape: SmsShape, body: String, kind: SmsKind, dateless: Boolean, receivedAt: String): SmsShape = when {
     !shape.clear -> shape
     kind != SmsKind.TRANSFER_IN && kind != SmsKind.TRANSFER_OUT && foreignCountryTail(saudiMerchantOf(body, kind), SAUDI_TAIL) -> SmsShape.KeywordFallback
-    dateless && TIME_TOKEN.containsMatchIn(body) -> SmsShape.KeywordFallback
+    dateless && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, SmsClock.RIYADH)) -> SmsShape.KeywordFallback
     else -> shape
 }
-
-private val TIME_TOKEN = Regex("(?<![\\d:])\\d{1,2}:\\d{2}(?![\\d])")
 private val CASH_MERCHANT = Regex(
     "(?<![A-Za-z])(?:ATM|cash\\s+withdrawal|cash\\s+advance)(?![A-Za-z])|(?<![\\u0600-\\u06FF])(?:ال)?صراف(?![\\u0600-\\u06FF])|سحب\\s*نقدي",
     I,
@@ -193,7 +200,7 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
             k == SmsKind.PURCHASE && CASH_MERCHANT.containsMatchIn(saudiMerchantOf(body, k)) -> SmsKind.CASH_WITHDRAWAL
             else -> k
         }
-    }
+    }.let { refineSmsKind(body, it, direction) } // عقد C0 (§77-D — `SmsReturned.kt`)
     // الجولة السادسة: العملة بتتعرف من غير التشكيل («9.50 ريال عُماني» كانت بتتقري ريال سعودي) — الوصف والبصمة من النص الأصلي
     val plain = withoutTashkeel(body)
     val read = when (val a = saudiAmount(plain, direction)) {
@@ -201,14 +208,23 @@ fun parseBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult {
         is SaudiAmount.ForeignOnly -> return foreignOnly(plain, message.receivedAt, a, direction, kind)
         is SaudiAmount.Ok -> a
     }
-    val dated = saudiTransactionDate(body, message.receivedAt)
-    val date = dated ?: datelessDate(body, message.receivedAt) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     // الجولة الرابعة: القراية زي ما هي (ملف المرجع)، والشكل علامة جنبها — الكلمات العامة بس ⇒ ما بتتسجلش لوحدها (§72).
     // الجولة الخامسة: الشكل على الرسالة كلها + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: مبلغ «1.234 SAR»
-    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى. الجولة السابعة: محل برّه البلد · ساعة من غير تاريخ ⇒ تستنى
+    // (قراية ملف المرجع) أو حروف مخفية ⇒ تستنى. الجولة السابعة: محل برّه البلد ⇒ تستنى
     // الجولة التامنة: الشكل المعروف لازم المبلغ من خانة المبلغ (مش من اسم المحل أو رقم المرجع) · «dd/mm/yyyy» اللي قرايته التانية يوم الوصول
-    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else saudiShape(body, direction, read.amountMinor), body, kind, dated == null)
+    // §77-C: الشكل **قبل** التاريخ — الشكل المعروف اللي مفيهوش تاريخ بياخد يوم الوصول (والساعة المكتوبة بتقول لو عدّت نص الليل)
+    val dated = saudiTransactionDate(body, message.receivedAt)
+    val dateless = dated == null && !hasDateToken(body)
+    // مراجعة S1: الشكل المعروف دليل إن الرسالة اللي مفيهاش تاريخ عملية حصلت **قبل** بوابات الانتظار (ساعتين مختلفتين · الساعة مش متفقة) —
+    // كانت بتترفض بدل ما تستنى
+    val layout = saudiShape(body, direction, read.amountMinor)
+    val shape = saudiExtraGate(if (read.doubtful) SmsShape.KeywordFallback else layout, body, kind, dateless, message.receivedAt)
+    val date = dated ?: datelessDate(body, message.receivedAt, knownLayout = layout.clear) ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     val arrival = localDayOf(message.receivedAt, SAUDI_UTC_OFFSET_HOURS)
     val gated = gateShape(if (swappedDateNearArrival(body, date, arrival)) SmsShape.KeywordFallback else shape, body, date, arrival, message.body)
-    return smsRow(message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated)
+    // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها
+    return smsRow(
+        message, body, lineNumber, date, read.amountMinor, direction, saudiMerchantOf(body, kind), kind, gated,
+        fee = saudiFeeOf(body, kind, read.amountMinor), bankReference = smsReferenceOf(body), learnKey = saudiLearnKey(body, gated),
+    )
 }

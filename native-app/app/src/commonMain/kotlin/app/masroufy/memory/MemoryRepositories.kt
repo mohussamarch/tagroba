@@ -39,6 +39,9 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
 
     override suspend fun findByIds(ids: List<Id>): List<Transaction> = ids.mapNotNull { items[it] }
 
+    override suspend fun listReversalLinked(): List<Transaction> =
+        items.values.filter { it.reversalOfId != null || it.reversedById != null }.sortedWith(compareBy({ it.occurredAt }, { it.sourceOrder }))
+
     override suspend fun saveMany(transactions: List<Transaction>) {
         for (t in transactions) items[t.id] = t
     }
@@ -59,6 +62,10 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
             excludedFromBudget = patch.excludedFromBudget ?: old.excludedFromBudget,
             isCashTagged = patch.isCashTagged ?: old.isCashTagged,
             updatedAt = patch.updatedAt ?: old.updatedAt,
+            suggestedKind = if (patch.clearSuggestedKind) null else patch.suggestedKind ?: old.suggestedKind,
+            reversalOfId = if (patch.clearReversalOfId) null else patch.reversalOfId ?: old.reversalOfId,
+            reversedById = if (patch.clearReversedById) null else patch.reversedById ?: old.reversedById,
+            kindBeforeReversal = if (patch.clearKindBeforeReversal) null else patch.kindBeforeReversal ?: old.kindBeforeReversal,
         )
     }
 

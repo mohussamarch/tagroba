@@ -78,7 +78,8 @@ class SetEconomicKind(private val deps: SetEconomicKindDeps) {
 
             val line = SuggestionLine(transaction, suggestion)
             when {
-                isBulkConfirmable(suggestion) -> confirmable += line
+                // عليها سؤال مستني (§77-D) ⇒ ما تتأكدش جماعي بالتخمين من الكلام
+                isBulkConfirmable(suggestion) && transaction.suggestedKind == null -> confirmable += line
                 suggestion.kind != null -> needsLook += line
                 else -> ambiguous += line
             }
@@ -105,7 +106,8 @@ class SetEconomicKind(private val deps: SetEconomicKindDeps) {
 
         deps.txns.update(
             transactionId,
-            TransactionPatch(economicKind = kind, economicKindConfirmed = true, updatedAt = deps.clock.nowIso()),
+            // نوع المالك بيشيل أي اقتراح مستني (§77-D «ده استرداد؟») — ما يفضلش متخزن ولا يسافر في النسخة
+            TransactionPatch(economicKind = kind, economicKindConfirmed = true, clearSuggestedKind = true, updatedAt = deps.clock.nowIso()),
         )
     }
 
@@ -127,7 +129,7 @@ class SetEconomicKind(private val deps: SetEconomicKindDeps) {
             for (line in eligible) {
                 deps.txns.update(
                     line.transaction.id,
-                    TransactionPatch(economicKind = line.suggestion.kind!!, economicKindConfirmed = true, updatedAt = now),
+                    TransactionPatch(economicKind = line.suggestion.kind!!, economicKindConfirmed = true, clearSuggestedKind = true, updatedAt = now),
                 )
             }
             BulkConfirmResult(applied = eligible.size, skipped = skipped)

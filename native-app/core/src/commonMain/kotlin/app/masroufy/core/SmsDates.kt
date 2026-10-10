@@ -140,8 +140,10 @@ internal fun hasDateToken(body: String): Boolean =
         VF_SLOT.containsMatchIn(body)
 
 /**
- * الرسالة اللي مفيهاش تاريخ بتاخد يوم الوصول **بس** لو فيها عبارة عملية خلصت (تم … · إيداع · received · credited · has been …
- * · Successful). رمز أو عرض أو طلب أو «pending» من غير تاريخ ما يتسجلش بتاريخ النهارده (مراجعة جلسة 33).
+ * الرسالة اللي مفيهاش تاريخ ومش على شكل معروف بتاخد يوم الوصول **بس** لو فيها عبارة عملية خلصت (تم … · إيداع · received · credited ·
+ * has been … · Successful). رمز أو عرض أو طلب أو «pending» من غير تاريخ ما يتسجلش بتاريخ النهارده (مراجعة جلسة 33): إعلان زي «Use your
+ * debit card at TEST GROCER and save EGP 50» مفيش حارس بيمسكه، وكان هيبقى «جاهز» و«سجّل الكل» يسجله صرف. مراجعة S1: **البلدين**
+ * بنفس القاعدة ([hasDoneWording]) — السعودية كانت للشكل المعروف بس، فكاش باك البطاقة («تم استرداد و إضافة …») كان بيترفض.
  */
 private val DONE_PHRASE = Regex(
     "(?<![\\u0600-\\u06FF])و?تم(?![\\u0600-\\u06FF])|إيداع|ايداع|(?<![A-Za-z])(?:has|have)[ \\t]+been(?![A-Za-z])" +
@@ -153,28 +155,8 @@ private val DONE_PHRASE = Regex(
     RegexOption.IGNORE_CASE,
 )
 
-private const val HOUR_MS = 3_600_000L
-
-/** آخر [weekday] في الشهر (الأحد = 0). رقم اليوم 0 = 1970-01-01 = خميس. */
-private fun lastWeekday(year: Int, month: Int, lastDay: Int, weekday: Int): Int {
-    val last = toDayNumber(DateParts(year, month, lastDay))
-    return last - (last + 4 - weekday).mod(7)
-}
-
-/**
- * يوم الوصول بتوقيت القاهرة. `receivedAt` من أندرويد = `Instant.toString()` بتوقيت جرينتش، فـ«أول 10 حروف» كانت بتسجل رسالة
- * وصلت بعد نص الليل بتوقيت القاهرة على اليوم اللي قبله (مراجعة جلسة 33). مصر +2، والتوقيت الصيفي (+3، من 2023) من أول آخر جمعة
- * في أبريل لحد آخر خميس في أكتوبر.
- */
-internal fun cairoDayOf(receivedAt: String): IsoDate? {
-    if (receivedAt.length == 10) return receivedAt.takeIf(::isValidIsoDate)
-    val standard = (JsText.parseIsoMillis(receivedAt) ?: return null) + 2 * HOUR_MS
-    val year = parseIsoDate(dayNumberToIso(standard.floorDiv(DAY_MS).toInt())).year
-    val summer = year >= 2023 &&
-        standard >= lastWeekday(year, 4, 30, 5) * DAY_MS &&
-        standard < (lastWeekday(year, 10, 31, 4) + 1) * DAY_MS - HOUR_MS
-    return dayNumberToIso((if (summer) standard + HOUR_MS else standard).floorDiv(DAY_MS).toInt())
-}
+/** الرسالة فيها عبارة عملية خلصت ([DONE_PHRASE]) — دليل إن الرسالة اللي مفيهاش تاريخ عملية حصلت فعلًا (السعودية ومصر). */
+internal fun hasDoneWording(body: String): Boolean = DONE_PHRASE.containsMatchIn(body)
 
 /** يوم/شهر من غير سنة: سنة الوصول (بتوقيت القاهرة) أو اللي قبلها، والمقبول واحد بس. */
 private fun withYear(month: Int, day: Int, receivedAt: String, received: Long): IsoDate? {
@@ -185,9 +167,10 @@ private fun withYear(month: Int, day: Int, receivedAt: String, received: Long): 
 
 /**
  * مصر: الشهر بالاسم ⇒ سنة كاملة ⇒ سنتين أرقام ⇒ «يوم MM-DD» ⇒ يوم/شهر في مكان التاريخ ⇒ ولا تاريخ خالص = يوم الوصول بتوقيت
- * القاهرة (لو الرسالة فيها عبارة عملية خلصت — [DONE_PHRASE]).
+ * القاهرة ([datelessDay] — §77-C: وبعد نص الليل اليوم اللي قبله لو الساعة المكتوبة بتقول كده) **لو** الجملة على قالب معروف
+ * ([knownLayout] — قرار المالك §77-C «لكل الأشكال اللي مفيهاش تاريخ») أو فيها عبارة عملية خلصت ([DONE_PHRASE] — زي الأول للباقي).
  */
-internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
+internal fun egyptTransactionDate(body: String, receivedAt: String, knownLayout: Boolean = false): IsoDate? {
     MONTH_NAME.find(body)?.let { m ->
         return notFuture(iso(m.groupValues[3].toInt(), MONTHS.indexOf(m.groupValues[1].lowercase()) + 1, m.groupValues[2].toInt()), receivedAt)
     }
@@ -208,7 +191,7 @@ internal fun egyptTransactionDate(body: String, receivedAt: String): IsoDate? {
         return if (dayMonth != null && monthDay != null && dayMonth != monthDay) null else dayMonth ?: monthDay
     }
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
-    if (!egyptHasDateToken(body)) return if (DONE_PHRASE.containsMatchIn(body)) cairoDayOf(receivedAt) else null
+    if (!egyptHasDateToken(body)) return if (knownLayout || DONE_PHRASE.containsMatchIn(body)) datelessDay(body, receivedAt, SmsClock.CAIRO) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     if (EG_SHORT.containsMatchIn(body)) return shortCandidates(EG_SHORT, body, received).singleOrNull()
     NBE_MONTH_DAY.find(body)?.let { m ->

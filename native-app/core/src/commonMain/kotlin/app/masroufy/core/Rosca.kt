@@ -39,6 +39,8 @@ data class Rosca(
     val organizerPersonId: Id? = null,
     val createdAt: String = "",
     val unit: CycleUnit = CycleUnit.MONTH,
+    /** §75-8 (الشريحة S4): عمليات المالك قال عنها «مش من الجمعية دي» ⇒ ما تتقترحش عليها تاني (`SuggestDueLinks`). */
+    val dismissedTxnIds: List<Id> = emptyList(),
 )
 
 enum class RoscaEntryKind(val wire: String) {

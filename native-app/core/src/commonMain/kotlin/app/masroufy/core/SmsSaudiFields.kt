@@ -281,7 +281,7 @@ private fun cleanMerchant(value: String?): String {
  * في الشراء والاسترداد: «من:» اللي فيها اسم بس (إس تي سي: أول «من:» الكارت والتاني المحل)، و«إلى:» مش محل.
  */
 internal fun saudiMerchantOf(body: String, kind: SmsKind): String {
-    val shopping = kind == SmsKind.PURCHASE || kind == SmsKind.REFUND
+    val shopping = kind == SmsKind.PURCHASE || kind == SmsKind.REFUND || kind == SmsKind.RETURNED // §77-D: اللي رجع زي الاسترداد
     cleanMerchant(MERCHANT_AT.find(body)?.groupValues?.get(1)).ifEmpty { null }?.let { return it }
     cleanMerchant(MERCHANT_LABEL.find(body)?.groupValues?.get(1)).ifEmpty { null }?.let { return it }
     if (DATE_LABEL_LINE.containsMatchIn(body)) cleanMerchant(FI_LINE.find(body)?.groupValues?.get(1)).ifEmpty { null }?.let { return it }

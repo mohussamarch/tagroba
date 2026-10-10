@@ -28,9 +28,14 @@ class SmsRound7Test {
     private val all = SmsRound7Cases.mustNotAutoRecord + SmsRound7Cases2.mustNotAutoRecord
     private val byName = all.associate { it.first to it }
 
+    /** حالات المراجعة اللي قرار المالك §77-C حلّها (الأهلي بالساعة بس بعد نص الليل ⇒ اليوم الصح من الساعة المكتوبة). */
+    private val RESOLVED_BY_77C = setOf("H07")
+
     @Test fun noAdversarialMessageIsRecordedAutomaticallyInAnyCountry() {
         val leaks = mutableListOf<String>()
         for ((name, at, body) in all) {
+            // §77-C (قرار المالك): «ساعة من غير تاريخ» بقت بتتقري باليوم الصح من الساعة المكتوبة ⇒ مش تسريب (`oldAndTimeOnlyDates…` تحت)
+            if (name in RESOLVED_BY_77C) continue
             for ((country, parse) in readers) {
                 val r = parse(msg(body, at), 1)
                 if (r is SmsParseResult.Ok && r.row.shape.clear) leaks += "$name [$country] AUTO ${r.row.amountMinor} ${r.row.direction} ${r.row.date} ${r.row.shape.wire}"
@@ -125,9 +130,12 @@ class SmsRound7Test {
         // القراية زي ما هي (ملف المرجع — سؤال (و) مفتوح)، بس ما بتتسجلش لوحدها
         assertEquals("2026-07-10", assertIs<SmsParseResult.Ok>(sa(byName.getValue("D09").third)).row.date)
         assertEquals("2025-11-02", assertIs<SmsParseResult.Ok>(sa(byName.getValue("D10").third)).row.date)
+        // §77-C (قرار المالك 2026-10-09): الساعة المكتوبة 23:58 ووصلت 00:05 بتوقيت الرياض ⇒ اليوم اللي قبل الوصول، وبتتسجل (مش بتستنى)
         val h07 = assertIs<SmsParseResult.Ok>(sa(byName.getValue("H07").third, SmsRound7Cases.AFTER_MIDNIGHT)).row
-        assertEquals("2026-10-08", h07.date)
-        assertFalse(h07.shape.clear)
+        assertEquals("2026-10-07", h07.date)
+        assertTrue(h07.shape.clear)
+        // ساعتين مختلفتين من غير تاريخ ⇒ مش واضح أنهي ساعة العملية ⇒ لسه بتستنى
+        assertFalse(assertIs<SmsParseResult.Ok>(sa(byName.getValue("H13").third, SmsRound7Cases.AFTER_MIDNIGHT)).row.shape.clear)
         // نفس رسالة الأهلي من غير ساعة ⇒ لسه بتتسجل لوحدها بيوم الوصول
         assertTrue(assertIs<SmsParseResult.Ok>(sa("شراء نقاط بيع\nبـ48.60 SAR\nمن QUOLL BAKERY\nمدى *3906", SmsRound7Cases.AFTER_MIDNIGHT)).row.shape.clear)
     }

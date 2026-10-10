@@ -77,16 +77,25 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             }
         }
 
-        return deps.uow.run {
+        var context: RecordContext? = null
+        // §75-10 (S4): سطور الدمج ما بتعملش عملية، وسجلها بيتكتب **بعد** ما الدفعة تتقفل (`MergeUndo.kt`) — فدفعة معلّقة عمرها ما بتشاور
+        // على عملية دفعة تانية (التنظيف بعد الانقطاع كان هيمسحها)
+        val merges = previewResult.lines.filter { it.mergeInto != null && it.row.lineNumber in selection }
+        val committed = deps.uow.run {
             val batchId = deps.ids.next("batch")
             val now = deps.clock.nowIso()
             val transactions = mutableListOf<Transaction>()
             val records = mutableListOf<SourceRecord>()
+            val includedLines = mutableListOf<ImportPreviewLine>()
 
             for (line in previewResult.lines) {
                 val included = line.row.lineNumber in selection
+                if (included && line.mergeInto != null) continue
                 val txnId = if (included) deps.ids.next("txn") else null
-                if (txnId != null) transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
+                if (txnId != null) {
+                    transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
+                    includedLines += line
+                }
 
                 records += SourceRecord(
                     id = deps.ids.next("src"),
@@ -110,7 +119,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
              *      الاتصال، بتبقى يتيمة ومفيش طريق لتنظيفها
              *   ٣. التحويل لـ`committed` بكتابة واحدة ذرّية بطبيعتها
              */
-            val batch = ImportBatch(
+            var batch = ImportBatch(
                 id = batchId,
                 sourceType = request.sourceType,
                 fileHash = previewResult.fileHash,
@@ -140,6 +149,19 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now)
             }
 
+            // عقد C0: آثار وقت التسجيل بالترتيب (`RecordEffects.kt`) على العمليات **بعد** القرارين اللي فوق — والزيادة بتتحفظ مع الدفعة
+            if (deps.effects.isNotEmpty()) {
+                val lines = includedLines.indices.map { i -> RecordedLine(includedLines[i], request.smsRows[includedLines[i].row.lineNumber], transactions[i]) }
+                val ctx = RecordContext(request, batchId, now, request.byOwner, chosenCategories.orEmpty(), lines.toMutableList(), mutableListOf(), deps.ids)
+                for (effect in deps.effects) effect.prepare(ctx)
+                transactions.clear()
+                transactions += ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
+                records += ctx.extra.map { it.second }
+                context = ctx
+                // مراجعة S2: عدد الدفعة = كل اللي اتكتب فيها (ومعاه زيادة الآثار زي «رسوم بنكية») — نفس اللي التراجع بيمسحه والسجل بيعرضه
+                batch = batch.copy(counts = batch.counts.copy(imported = transactions.size))
+            }
+
             deps.batches.save(batch) // ١
             deps.sources.saveMany(records) // ٢ — الفهرس الأول
             deps.txns.saveMany(transactions) //     وبعده العمليات
@@ -147,6 +169,11 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
             batch.copy(state = ImportBatchState.COMMITTED)
         }
+        // الدمج فشل (العملية اتمسحت بعد المعاينة مثلًا) ⇒ الآثار بتشتغل برضه والخطأ بيطلع بعدها: الرسالة بتفضل في الصندوق والسطر بيرجع جديد
+        val mergeFailure = if (merges.isEmpty()) null else captureFailure { recordMerges(deps, request, committed.id, committed.importedAt, merges) }
+        context?.let { ctx -> for (effect in deps.effects) afterCommitIsolated(effect, ctx) }
+        mergeFailure?.let { throw it }
+        return committed
     }
 
     private fun firstByLineNumber(lines: List<ImportPreviewLine>): Map<Int, ImportPreviewLine> {
@@ -157,12 +184,17 @@ class ImportStatement(private val deps: ImportStatementDeps) {
 
     private var committing = false
 
-    /** `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد. */
+    /**
+     * `chosenCategories`: تصنيف اختاره المستخدم لسطر (رقم السطر ← التصنيف) — بيتحفظ مؤكد.
+     * `mergeChoices` (§75-10 — مراجعة S4): رد المالك على «أكتر من احتمال» — رقم السطر ← العملية اللي «هي دي» من
+     * [ImportPreviewLine.mergeCandidates] ⇒ السطر بيتدمج فيها (مش محتاج يبقى في `selected`). اختيار مش من الاحتمالات ⇒ خطأ.
+     */
     suspend fun commit(
         request: ImportRequest,
         previous: ImportPreview,
         selected: List<Int>? = null,
         chosenCategories: Map<Int, Id>? = null,
+        mergeChoices: Map<Int, Id> = emptyMap(),
     ): ImportBatch {
         if (committing) throw IllegalStateException(uiText(TextKey.IMPORT_COMMIT_RUNNING))
         committing = true
@@ -184,18 +216,22 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 val line = freshByNumber[number]
                 line != null && line.state != MatchingState.DUPLICATE && line.state != MatchingState.INVALID
             }
-            if (fresh.previousBatch != null && addable.isEmpty()) return fresh.previousBatch
+            if (fresh.previousBatch != null && addable.isEmpty() && mergeChoices.isEmpty()) return fresh.previousBatch
             for (number in selection) {
                 val before = previousByNumber[number]
                 val now = freshByNumber[number]
-                if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId) {
+                if (before == null || now == null || before.row != now.row || now.state != before.state || now.matchedTransactionId != before.matchedTransactionId ||
+                    now.mergeInto != before.mergeInto
+                ) {
                     throw IllegalStateException(uiText(TextKey.IMPORT_CHANGED_AFTER_PREVIEW))
                 }
                 if (now.state == MatchingState.DUPLICATE || now.state == MatchingState.INVALID) {
                     throw IllegalStateException(uiText(TextKey.IMPORT_LINE_NOT_ADDABLE))
                 }
             }
-            return commitPrepared(request, fresh, selection, chosenCategories)
+            // «هي دي» (`MergeUndo.kt`): السطور اللي المالك اختار عمليتها بتتدمج فيها
+            val lines = applyMergeChoices(request, previous, fresh, selection.toSet(), mergeChoices)
+            return commitPrepared(request, fresh.copy(lines = lines), selection + mergeChoices.keys, chosenCategories)
         } finally {
             committing = false
         }

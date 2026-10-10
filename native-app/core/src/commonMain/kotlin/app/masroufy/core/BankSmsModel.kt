@@ -37,7 +37,16 @@ enum class SmsKind(val wire: String) {
     /** سداد بطاقة ائتمانية (تحويل داخلي غالبًا). */
     CARD_PAYMENT("card_payment"),
     OTHER("other"),
+
+    /** عقد C0 (§77-D): «تم رد المبلغ» / «التحويل رجع» — العملية الأصلية بتتلغي برقمها المرجعي (`SmsReturned.kt`). */
+    RETURNED("returned"),
 }
+
+/**
+ * عقد C0 (§77-B): رسوم التحويل أو المحفظة اللي في الرسالة — بالوحدة الصغرى بعملة الرسالة. [includedInAmount] = الرسوم جوه المبلغ
+ * المقروء (مش فوقه). القراية في `SmsFees.kt`.
+ */
+data class SmsFee(val amountMinor: Halalas, val includedInAmount: Boolean)
 
 /**
  * مبلغ بعملة أجنبية: [currency] كود العملة (USD…)، و[amountMinor] بالوحدة الصغرى **بتاعة العملة دي** حسب ISO 4217
@@ -100,6 +109,19 @@ data class SmsRow(
      * مش جوه بصمة الملف ([smsRowsJson]) ولا ملفات المرجع.
      */
     val shape: SmsShape = SmsShape.KeywordFallback,
+    // ── عقد C0 (قرارات §75 · §77) — كلها اختيارية ومش جوه [smsRowsJson] ولا ملفات المرجع ──
+    /** §77-B: رسوم التحويل/المحفظة (`SmsFees.kt`). */
+    val fee: SmsFee? = null,
+    /** §77-D: رقم البنك المرجعي للعملية (`SmsReferences.kt`) — عشان «التحويل رجع» يلاقي الأصلية. */
+    val bankReference: String? = null,
+    /** §77-A: بصمة شكل الرسالة (`SmsLearnKeys.kt`) — null لو الشكل مش واضح. بصمة بس، مش نص. */
+    val learnKey: String? = null,
+    /** §75-12: كود العملة الأجنبية لو العملية أجنبية. */
+    val foreignCurrency: String? = null,
+    /** §75-12: المبلغ الأجنبي بالوحدة الصغرى **بتاعة العملة دي**. */
+    val foreignAmountMinor: Long? = null,
+    /** مراجعة S1 (§75-11): آخر 4 أرقام **حسابك** بس (مش الكارت — `SmsOwnAccount.kt`) — التوزيع على المحافظ بيبص على ده بس. */
+    val accountLast4: String? = null,
 )
 
 /**
@@ -202,6 +224,8 @@ fun smsRowsJson(rows: List<SmsRow>): String = rows.joinToString(",", "[", "]") {
 internal fun smsRow(
     message: BankSmsMessage, body: String, lineNumber: Int, date: IsoDate, amount: Halalas, direction: Direction,
     merchant: String, kind: SmsKind, shape: SmsShape,
+    fee: SmsFee? = null, bankReference: String? = null, learnKey: String? = null,
+    foreignCurrency: String? = null, foreignAmountMinor: Long? = null,
 ): SmsParseResult.Ok {
     val safeBody = redactSms(body)
     return SmsParseResult.Ok(
@@ -211,6 +235,9 @@ internal fun smsRow(
             reference = "SMS:" + hashContent(message.sender + "|" + message.receivedAt + "|" + body),
             sourceName = message.sender, description = safeBody, raw = safeBody, kind = kind,
             ownLast4 = ownLast4Of(body, direction), shape = shape,
+            fee = fee, bankReference = bankReference, learnKey = learnKey,
+            foreignCurrency = foreignCurrency, foreignAmountMinor = foreignAmountMinor,
+            accountLast4 = ownAccountLast4Of(body, direction),
         ),
     )
 }

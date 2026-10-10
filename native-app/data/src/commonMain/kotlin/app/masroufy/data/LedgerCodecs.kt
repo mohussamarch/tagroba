@@ -9,6 +9,7 @@ import app.masroufy.core.ImportBatchState
 import app.masroufy.core.ImportCounts
 import app.masroufy.core.ImportSourceType
 import app.masroufy.core.MatchingState
+import app.masroufy.core.MergeRestore
 import app.masroufy.core.Obligation
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.PersonAllocation
@@ -33,6 +34,9 @@ object LedgerCodecs {
                 opt("statedBalanceMinor", t.statedBalanceMinor); opt("rawDescription", t.rawDescription); opt("rawMerchantName", t.rawMerchantName)
                 req("isCashTagged", t.isCashTagged); opt("sourceCategory", t.sourceCategory); opt("sourceOperationType", t.sourceOperationType)
                 req("createdAt", t.createdAt); req("updatedAt", t.updatedAt)
+                // الشريحة S3 (§75-6 · §75-12 · §77-D): بتتكتب لو موجودة بس ⇒ أي مستند قديم ونسخته هي هي بالحرف
+                opt("suggestedKind", t.suggestedKind?.wire); opt("reversalOfId", t.reversalOfId); opt("reversedById", t.reversedById)
+                opt("foreignAmountMinor", t.foreignAmountMinor); opt("foreignCurrency", t.foreignCurrency); opt("kindBeforeReversal", t.kindBeforeReversal?.wire)
             }
         },
         { r ->
@@ -48,6 +52,10 @@ object LedgerCodecs {
                 transferToWalletId = r.strOrNull("transferToWalletId"), statedBalanceMinor = r.longOrNull("statedBalanceMinor"),
                 rawDescription = r.strOrNull("rawDescription"), rawMerchantName = r.strOrNull("rawMerchantName"),
                 sourceCategory = r.strOrNull("sourceCategory"), sourceOperationType = r.strOrNull("sourceOperationType"),
+                suggestedKind = if (r.has("suggestedKind")) r.wire("suggestedKind", EconomicKind::fromWire) else null,
+                reversalOfId = r.strOrNull("reversalOfId"), reversedById = r.strOrNull("reversedById"),
+                foreignAmountMinor = r.longOrNull("foreignAmountMinor"), foreignCurrency = r.strOrNull("foreignCurrency"),
+                kindBeforeReversal = if (r.has("kindBeforeReversal")) r.wire("kindBeforeReversal", EconomicKind::fromWire) else null,
             )
         },
     )
@@ -97,12 +105,30 @@ object LedgerCodecs {
                 req("id", s.id); req("batchId", s.batchId); req("accountIdentity", s.accountIdentity); nul("sourceReference", s.sourceReference)
                 req("sourceHash", s.sourceHash); req("originalRowIndex", s.originalRowIndex); req("rawLine", s.rawLine)
                 nul("transactionId", s.transactionId); req("matchingState", s.matchingState.wire); req("reason", s.reason)
+                // §75-10 (S4): سجل الدمج بس — خريطة متداخلة (النسخة الشاملة في التطبيق القديم بتفحص المستوى الأول بس) وما بتتكتبش من غيرها
+                opt(
+                    "mergeUndo",
+                    s.mergeUndo?.let { m ->
+                        doc {
+                            req("occurredAt", m.occurredAt); req("sourceOrder", m.sourceOrder); opt("statedBalanceMinor", m.statedBalanceMinor)
+                            // اللي سطر الكشف كتبه (مراجعة S4): التراجع بيرجّع الحقل بس لو لسه فيه ده
+                            opt("mergedOccurredAt", m.mergedOccurredAt); opt("mergedStatedBalanceMinor", m.mergedStatedBalanceMinor)
+                        }
+                    },
+                )
             }
         },
         { r ->
             SourceRecord(
                 r.str("id"), r.str("batchId"), r.str("accountIdentity"), r.strOrNull("sourceReference"), r.str("sourceHash"),
                 r.int("originalRowIndex"), r.str("rawLine"), r.strOrNull("transactionId"), r.wire("matchingState", MatchingState::fromWire), r.str("reason"),
+                mergeUndo = if (r.has("mergeUndo")) {
+                    r.map("mergeUndo").let { m ->
+                        MergeRestore(m.str("occurredAt"), m.int("sourceOrder"), m.longOrNull("statedBalanceMinor"), m.strOrNull("mergedOccurredAt"), m.longOrNull("mergedStatedBalanceMinor"))
+                    }
+                } else {
+                    null
+                },
             )
         },
     )

@@ -102,7 +102,7 @@ class EventGifts(private val deps: EventGiftsDeps) {
                     txn.id,
                     TransactionPatch(
                         economicKind = kindFor(role), economicKindConfirmed = true, categoryId = GiftCategories.EVENT_GIFTS,
-                        categoryConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now,
+                        categoryConfirmed = true, reviewState = ReviewState.CONFIRMED, clearSuggestedKind = true, updatedAt = now,
                     ),
                 )
             }

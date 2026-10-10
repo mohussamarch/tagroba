@@ -107,6 +107,8 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
             hasInterest = input.hasInterest,
             createdAt = existing?.createdAt ?: deps.clock.nowIso(),
             receivedTransactionId = existing?.receivedTransactionId,
+            // §75-8: «مش قسط الخطة دي» بيفضل بعد التعديل
+            dismissedTxnIds = existing?.dismissedTxnIds.orEmpty(),
         )
         val plan = draft.copy(name = checkInstallmentPlan(draft).name)
         if (existing != null) {

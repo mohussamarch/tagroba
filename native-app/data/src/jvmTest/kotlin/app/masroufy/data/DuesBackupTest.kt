@@ -107,6 +107,47 @@ class DuesBackupTest {
         assertTrue("installmentPlans" in (e.message ?: ""), e.message)
     }
 
+    /**
+     * §75-8 (الشريحة S4): «مش ده» على الخطة والجمعية ([InstallmentPlan.dismissedTxnIds]) — **ما بيتكتبش لو فاضي** (المستند القديم هو هو)،
+     * بيرجع زي ما هو من المحوّل ومن النسخة الشاملة، وبيتحوّل لمعرّف العملية الموجودة لو نفس العملية متخزنة بمعرّف تاني.
+     */
+    @Test fun dismissedSuggestionsTravelInTheBackup() = runBlocking<Unit> {
+        val rosca = Rosca("rc-1", "جمعية وهمية", Currency.SAR, 100_000, 1, "2026-01-01", 10, listOf(4), 1_000_000, createdAt = "x", dismissedTxnIds = listOf("t-1"))
+        val plan = InstallmentPlan("ip-1", "تمويل وهمي", "بنك وهمي", InstallmentKind.FINANCING, Currency.SAR, 1_000_000, 1_200_000, 100_000, 1, "2026-01-10", true, "x", dismissedTxnIds = listOf("t-1"))
+        assertEquals(rosca, DuesCodecs.roscas.decode(DuesCodecs.roscas.toStore(rosca)))
+        assertEquals(plan, DuesCodecs.installmentPlans.decode(DuesCodecs.installmentPlans.toStore(plan)))
+        assertEquals(listOf("t-1"), DuesCodecs.installmentPlans.toStore(plan)["dismissedTxnIds"])
+        for (doc in listOf(DuesCodecs.roscas.toStore(rosca.copy(dismissedTxnIds = emptyList())), DuesCodecs.installmentPlans.toStore(plan.copy(dismissedTxnIds = emptyList())))) {
+            assertFalse("dismissedTxnIds" in doc, "فاضي ⇒ ما بيتكتبش")
+        }
+        // ولو اتفضى بعد ما كان فيه حاجة ⇒ الحفظ بـmerge بيمسحه صريح
+        assertTrue("dismissedTxnIds" in DuesCodecs.roscas.omittedFields(rosca.copy(dismissedTxnIds = emptyList())))
+
+        val t1 = txn(EconomicKind.UNCLASSIFIED).copy(id = "t-1")
+        val source = emptyBackupData().also {
+            it.getValue("transactions") += LedgerCodecs.transactions.toStore(t1)
+            it.getValue("roscas") += DuesCodecs.roscas.toStore(rosca)
+            it.getValue("installmentPlans") += DuesCodecs.installmentPlans.toStore(plan)
+        }
+        val file = FullBackup(MemoryFullBackup(source)).create("2026-10-01T00:00:00.000Z")
+        val target = MemoryFullBackup()
+        FullBackup(target).apply(FullBackup(target).plan(file.toJsonText()).file)
+        assertEquals(rosca, DuesCodecs.roscas.decode(target.read().getValue("roscas").single()))
+        assertEquals(plan, DuesCodecs.installmentPlans.decode(target.read().getValue("installmentPlans").single()))
+        assertEquals(file.checksum, FullBackup(target).create("2026-10-01T00:00:00.000Z").checksum, "اللي اترجع = الأصل")
+
+        // نفس العملية على الجهاز التاني بمعرّف تاني ⇒ «مش ده» بيشاور على الموجودة
+        val other = MemoryFullBackup(emptyBackupData().also { it.getValue("transactions") += LedgerCodecs.transactions.toStore(t1.copy(id = "t-other-device")) })
+        FullBackup(other).apply(FullBackup(other).plan(file.toJsonText()).file)
+        assertEquals(listOf("t-other-device"), other.read().getValue("roscas").single()["dismissedTxnIds"])
+        assertEquals(listOf("t-other-device"), other.read().getValue("installmentPlans").single()["dismissedTxnIds"])
+
+        // قايمة غلط ⇒ النسخة بترفض
+        val bad = emptyBackupData().also { it.getValue("roscas") += DuesCodecs.roscas.toStore(rosca.copy(dismissedTxnIds = emptyList())) + ("dismissedTxnIds" to listOf(5L)) }
+        val e = assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(bad)).create("2026-10-01T00:00:00.000Z") }
+        assertTrue("dismissedTxnIds" in (e.message ?: ""), e.message)
+    }
+
     @Test fun brokenDuesLinkIsRefused() = runBlocking<Unit> {
         val broken = account(withDues = true).also { it.getValue("roscas").clear() }
         val e = assertFailsWith<IllegalArgumentException> { FullBackup(MemoryFullBackup(broken)).create("2026-10-01T00:00:00.000Z") }

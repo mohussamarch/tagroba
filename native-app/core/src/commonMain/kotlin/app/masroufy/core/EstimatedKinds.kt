@@ -4,6 +4,8 @@ package app.masroufy.core
  * «تقريبي» — نقل `src/domain/estimatedKinds.ts` (OVERRIDES §18: الأرقام دايمًا ظاهرة).
  * العملية «غير المحددة» بتتحسب **في المجاميع بس** بنوع مفترض — مفيش حاجة بتتكتب، ولا نوع أكده المستخدم بيتلمس:
  *   ١. اقتراح عالي الثقة ⇒ نوعه · ٢. اقتراح مرجّح ⇒ المقترح (محتاج تأكيد) · ٣. مفيش ⇒ الصادر مصروف والوارد دخل (محتاج تأكيد)
+ * **إلا** العملية اللي عليها سؤال مستني ([Transaction.suggestedKind] — «ده استرداد؟» · «نلغي الاتنين؟» §77-D): بتفضل «غير محددة» (مش في
+ * الدخل ولا المصروف) وبتتعد في «محتاجة تأكيد» — قبل كده الفلوس اللي رجعت كانت بتبان «دخل» في الرئيسية والميزانية والملخص.
  */
 data class EstimatedView(
     val transactions: List<Transaction>,
@@ -18,6 +20,12 @@ fun withEstimatedKinds(transactions: List<Transaction>, categoryNameById: Map<St
     var needsReviewCount = 0
     val view = transactions.map { t ->
         if (t.economicKind != EconomicKind.UNCLASSIFIED || t.economicKindConfirmed) return@map t
+        // §75-6 · §77-D: عليها سؤال لسه ما اتجاوبش («ده استرداد؟» · «نلغي الاتنين؟») ⇒ مستنية برّه أي مجموع، مش «دخل» بالتخمين
+        if (awaitsKindAnswer(t)) {
+            estimatedCount += 1
+            needsReviewCount += 1
+            return@map t
+        }
         val categoryName = t.categoryId?.let { categoryNameById[it] }?.ifEmpty { null }
         val suggestion = suggestEconomicKind(
             SuggestionInput(
