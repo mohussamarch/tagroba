@@ -58,8 +58,8 @@ class EgyptSmsFormatsTest {
             "cib credit card", "Your credit card ending with#6604 was charged for EGP 64.25 at $m on 05/03/26 at 09:10. Card available limit is EGP 4,100.00.",
             6425, OUT, PURCHASE, m,
         ),
-        SmsCase("cib refunded", "The transaction on your credit card#6604 from $m with EGP 12.40 on 05/03/26 at 09:10 has been refunded.", 1240, IN, REFUND, m),
-        SmsCase("cib refund ar (no date)", "لقد تم رد EGP12.40 على بطاقتكم الائتمانية المنتهية بـ# 6604 من $m", 1240, IN, REFUND, m),
+        SmsCase("cib refunded", "The transaction on your credit card#6604 from $m with EGP 12.40 on 05/03/26 at 09:10 has been refunded.", 1240, IN, SmsKind.RETURNED, m),
+        SmsCase("cib refund ar (no date)", "لقد تم رد EGP12.40 على بطاقتكم الائتمانية المنتهية بـ# 6604 من $m", 1240, IN, SmsKind.RETURNED, m),
         SmsCase(
             "cib debit card", "تم خصم مبلغ EGP 64.25 من بطاقة الخصم المباشر المنتهية بـ **6604 عند $m في 05/03/26 09:10 ، الرصيد المتاح EGP 4,100.00",
             6425, OUT, PURCHASE, m,
@@ -83,7 +83,7 @@ class EgyptSmsFormatsTest {
             90000, IN, TRANSFER_IN, party = en,
         ),
         SmsCase("kfh out (no party)", "IPN Transfer with EGP 900.00 deducted on 05/03 09:10 from your AC ending with 188 with Ref# $ref. For info call 19533", 90000, OUT, TRANSFER_OUT),
-        SmsCase("kfh returned", "IPN Transfer dated 05/03 09:10 with EGP 900.00 returned with Ref# $ref. For info call 19533", 90000, IN, REFUND),
+        SmsCase("kfh returned", "IPN Transfer dated 05/03 09:10 with EGP 900.00 returned with Ref# $ref. For info call 19533", 90000, IN, SmsKind.RETURNED),
         SmsCase("arab bank card", "A Trx using Card XXXX6604 from $m for EGP 64.25 on 05/03/2026 at 09:10 GMT+2. Available balance is EGP 4,100.00.", 6425, OUT, PURCHASE, m),
         // الجولة التامنة: فلوس داخلة على كارت ائتمان = سداد البطاقة (CARD_PAYMENT) — بتستنى في المحفظة البنكية (مش دخل)
         SmsCase("arab bank card credit", "تم قيد مبلغ 12.40 جنيه لبطاقتك الائتمانية رقم #6604", 1240, IN, CARD_PAYMENT),

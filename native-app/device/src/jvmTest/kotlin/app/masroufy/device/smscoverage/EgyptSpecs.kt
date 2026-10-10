@@ -2,6 +2,7 @@ package app.masroufy.device.smscoverage
 
 import app.masroufy.core.SmsKind.CASH_WITHDRAWAL
 import app.masroufy.core.SmsKind.REFUND
+import app.masroufy.core.SmsKind.RETURNED
 import app.masroufy.core.SmsKind.SALARY
 
 /**
@@ -25,8 +26,9 @@ internal object EgyptSpecs {
         9 to out(),
         // ── التجاري الدولي ──
         10 to out(merchant = true),
-        11 to inn(merchant = true, kind = REFUND),
-        12 to inn(merchant = true, kind = REFUND),
+        // «has been refunded» · «لقد تم رد» ⇒ عملية رجعت (§77-D — بتدوّر على الأصلية، وإلا «استرداد» مقترح)
+        11 to inn(merchant = true, kind = RETURNED),
+        12 to inn(merchant = true, kind = RETURNED),
         13 to ignore("refund REQUEST (money not moved yet)", values = mapOf("amount" to "-42.25")),
         14 to out(merchant = true),
         15 to anyDir(), // سداد البطاقة الائتمانية = تحويل داخلي؛ الاتجاه حسب المحفظة
@@ -48,7 +50,7 @@ internal object EgyptSpecs {
         30 to out(),
         // IPN رجع ⇒ الفلوس رجعت. الجولة السادسة: «dated {date}» = يوم **التحويل الأصلي** (البحث) ⇒ العملية بيوم وصول الرسالة، مش {date}
         // (القالب هنا بتاريخ أصلي قبلها بأربع أيام — المتوقع لسه يوم الوصول [Fill.TX_DATE])
-        31 to inn(kind = REFUND, values = mapOf("date" to "10/09")),
+        31 to inn(kind = RETURNED, values = mapOf("date" to "10/09")),
         32 to custom(
             CustomBody("ar", "عزيزي العميل لقد قمت بتسجيل الدخول في بنك بيت التمويل الكويتي – مصر في {date}, {time}", Expect(false, what = "info: login")),
             CustomBody("en", "Dear Customer, You have logged in to KFH - Egypt Mobile Banking service at {date}, {time}", Expect(false, what = "info: login")),

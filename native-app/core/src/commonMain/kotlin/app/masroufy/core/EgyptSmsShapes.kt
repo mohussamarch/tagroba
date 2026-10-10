@@ -290,7 +290,8 @@ private val MERCHANTS = listOf(
 )
 
 internal fun egyptMerchant(body: String, kind: SmsKind): String {
-    if (kind != SmsKind.PURCHASE && kind != SmsKind.REFUND && kind != SmsKind.CASH_WITHDRAWAL) return ""
+    // الشريحة S3 (§77-D): اللي رجع (`SmsKind.RETURNED`) زي الاسترداد — «لقد تم رد … من <المحل>»
+    if (kind != SmsKind.PURCHASE && kind != SmsKind.REFUND && kind != SmsKind.RETURNED && kind != SmsKind.CASH_WITHDRAWAL) return ""
     for (regex in MERCHANTS) {
         val raw = JsText.trim(regex.find(body)?.groupValues?.get(1) ?: continue)
         if (raw.isNotEmpty() && !raw.all { it in '0'..'9' || JsText.isWhitespace(it) || it in "*•.:-/" }) return raw

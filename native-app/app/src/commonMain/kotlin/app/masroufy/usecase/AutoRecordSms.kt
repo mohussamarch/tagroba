@@ -64,13 +64,15 @@ class SmsLane private constructor(
             require(importDeps.effects.any { it is SmsSalaryEffect } && importDeps.effects.any { it is OwnAccountByLast4Effect }) {
                 "SMS lane needs the S1 record effects: SmsSalaryEffect and OwnAccountByLast4Effect (OVERRIDES §75-2/§75-11)"
             }
-            val importer = ImportStatement(importDeps)
+            // الشريحة S3: آثار «اللي رجع» والأجنبي لازم (`ReturnsWiring.kt`) — للخلفية **وللشاشة** ([screen] بيبني مستورد من [full])
+            val full = withReturnEffects(importDeps)
+            val importer = ImportStatement(full)
             val learning = SmsLearning(inbox.port, spaceId)
-            val movesCash = importDeps.effects.any { it is CashWithdrawalEffect }
+            val movesCash = full.effects.any { it is CashWithdrawalEffect }
             val deps = ReviewSmsInboxDeps(
-                inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids, learning, wallets, movesCashWithdrawals = movesCash,
+                inbox, importer, full.merchants, full.categories, full.ids, learning, wallets, movesCashWithdrawals = movesCash,
             )
-            return SmsLane(spaceId, ReviewSmsInbox(deps), wallets, importDeps.sources, importer, importDeps, deps)
+            return SmsLane(spaceId, ReviewSmsInbox(deps), wallets, full.sources, importer, full, deps)
         }
     }
 }

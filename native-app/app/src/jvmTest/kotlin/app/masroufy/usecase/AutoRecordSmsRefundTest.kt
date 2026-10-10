@@ -47,6 +47,11 @@ class AutoRecordSmsRefundTest {
         assertEquals(sar.size, screen.recordAll(emptyMap(), emptyList()))
     }
 
+    /**
+     * §77-D (الشريحة S3): «لقد تم رد …» (التجاري الدولي) و«IPN transfer … returned» (بيت التمويل) بقوا **عملية رجعت** (`SmsKind.RETURNED`)
+     * مش استرداد ⇒ ما بيستنوش زي الاسترداد: بيتسجلوا لوحدهم و`ReturnedSmsEffect` بيدوّر على الأصلية ويلغيها أو يخليها «استرداد» مقترح
+     * ويسأل (`ReturnedSmsTest`). السحب من فودافون كاش لسه بيستنى.
+     */
     @Test fun egyptianRefundsAndCashOutWaitToo() = runBlocking<Unit> {
         val eg = Wallet("eg-bank", "بنك مصري وهمي", Currency.EGP, "bank", 0, "2026-01-01")
         val space = SmsSpace("eg", wallets = listOf(eg), parse = ::parseEgyptBankSms)
@@ -61,10 +66,16 @@ class AutoRecordSmsRefundTest {
             val row = (space.parse(app.masroufy.core.BankSmsMessage("TESTBANK", SENT_AT, world.memory.sync().messages.first { it.id == id }.body), 1)
                 as app.masroufy.core.SmsParseResult.Ok).row
             assertTrue(row.shape is SmsShape.KnownShape, "$id: ${row.shape.wire}")
+            if (id == "cib" || id == "kfh") assertEquals(app.masroufy.core.SmsKind.RETURNED, row.kind, id)
         }
         val r = world.auto().run()
-        assertEquals(1, r.recorded, "الشراء بس")
-        assertEquals(listOf("cib", "kfh", "vf"), r.waiting)
-        assertEquals(listOf(64_000L), space.all().map { it.amountMinor })
+        assertEquals(3, r.recorded, "الشراء + العمليتين اللي رجعوا (§77-D)")
+        assertEquals(listOf("vf"), r.waiting)
+        assertEquals(listOf(7_550L, 64_000L, 150_000L), space.all().map { it.amountMinor }.sorted())
+        // خط الرسايل بيضيف أثر «اللي رجع» لوحده (`SmsLane.of`): ما لقيناش الأصلية ⇒ «استرداد» مقترح ويسأل — مش داخل بيتقدّر دخل
+        val returns = space.all().filter { it.observedDirection == app.masroufy.core.Direction.IN }
+        assertTrue(returns.all { it.suggestedKind == app.masroufy.core.EconomicKind.REFUND_RECEIVED }, "$returns")
+        val estimated = app.masroufy.core.withEstimatedKinds(space.all(), emptyMap()).transactions
+        assertEquals(0L, app.masroufy.core.computePeriodTotals(estimated, emptyList()).incomeMinor)
     }
 }
