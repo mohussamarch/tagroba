@@ -30,8 +30,9 @@ import app.masroufy.usecase.ReconcileDeps
  * «المزيد» — ملفك (`c.shell.profile` نفس كائن الهيكل) · مصادر الدخل وإشاراتها · إعدادات الإشعارات (`c.shell.engine`) · المحافظ
  * (`LoadWithYouNow` + حركات الشهر + `ReconcileBalance`) · البلدان · التصدير والنسخة الشاملة. (`AppLock` و`SignIn` على مستوى التطبيق: `LocalApp`.)
  * **الملف ده بتاع المنطقة بس.** حالة الاستخدام بتتبني من [AreaContext] بنفس اعتماداتها في اختبارات `:app`.
- * إضافة محفظة متوصلة (`ManageWallets`). المحفظة الأساسية **متوصّلة** (محرك المساعد — `MainSpendingWallets`). باقي نقاط الربط في `MoreHooks`
- * (إنشاء بلد وأرشفته · اللغة · الشكل · نطاق الراتب · سؤال الكاش) **null** هنا لحد ما منطقها يتبني ⇒ الشاشات بتقول «غير متاح بعد» بدل ما تزيّف.
+ * إضافة محفظة متوصلة (`ManageWallets`). المحفظة الأساسية **متوصّلة** (محرك المساعد — `MainSpendingWallets`). إنشاء بلد وأرشفته **متوصّلين**
+ * (`ManageSpaces` من الجلسة — [SessionSpacesAdmin]). باقي نقاط الربط في `MoreHooks` (اللغة · الشكل · نطاق الراتب · سؤال الكاش) **null** هنا
+ * لحد ما منطقها يتبني ⇒ الشاشات بتقول «غير متاح بعد» بدل ما تزيّف.
  */
 class MoreGraph(private val c: AreaContext) : MoreDeps {
     private val r = c.repos
@@ -71,6 +72,9 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
         val count = runCatching { LoadWithYouNow(repos.wallets, repos.transactions, s.currency).load(c.env.today()).wallets.size }.getOrNull()
         SpaceCard(s, s.id == c.space.id, count)
     }
+
+    /** «أضف بلدًا» · «أرشفة» · «استعادة» (`ManageSpaces` بالشجرة المضمّنة — [SessionSpacesAdmin]): البلد الجديدة بتتفتح في نفس الجلسة. */
+    override val spacesAdmin = c.shell.spacesAdmin
 
     override val exportCsv = ExportCsv(r.transactions)
 

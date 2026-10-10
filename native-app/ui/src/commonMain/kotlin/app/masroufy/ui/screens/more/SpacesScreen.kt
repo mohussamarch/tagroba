@@ -65,8 +65,9 @@ import kotlinx.coroutines.launch
 
 /**
  * «البلدان» (`Spaces` — §41 · §64): لكل بلد حساب منفصل. الشغالة (والحالية عليها «الحالية») · المؤرشفة · «أضف بلدًا» · التحويل لنفسك ·
- * المشترك بين البلدان. التبديل على الجهاز بس (`ShellDeps.switchSpace`). الإنشاء والأرشفة نقطة ربط ([SpacesAdmin] — `ManageSpaces`
- * مش متجمّع على الجوال) ⇒ الزرار بيقول «غير متاح بعد» بدل ما يعمل نص بلد.
+ * المشترك بين البلدان. التبديل على الجهاز بس (`ShellDeps.switchSpace`). الإنشاء والأرشفة والرجوع من [SpacesAdmin] (`ManageSpaces` من الجلسة —
+ * البلد الجديدة بتتفتح في نفس الجلسة، رد المالك §88-8)؛ لو مش متاح (المعاينة) الزرار بيقول «غير متاح بعد» بدل ما يعمل نص بلد.
+ * وقت الشغل الزرار بيلف وأي ضغطة تانية بتتجاهل — الإنشاء بياخد ثواني (التصنيفات + فتح البلد).
  */
 @Composable
 fun SpacesScreen() {
@@ -80,14 +81,18 @@ fun SpacesScreen() {
     var failed by remember { mutableStateOf(false) }
     var sheet by remember { mutableStateOf<SpaceSheet?>(null) }
     var tick by remember { mutableIntStateOf(0) }
+    var busy by remember { mutableStateOf(false) }
     LaunchedEffect(deps, tick) {
         open = runCatching { deps.more.spaces() }.getOrNull() ?: emptyList()
         archived = runCatching { admin?.archived() }.getOrNull().orEmpty()
     }
 
     fun act(block: suspend () -> String?) {
+        if (busy) return
+        busy = true
         scope.launch {
             val done = runCatching { block() }
+            busy = false
             failed = done.isFailure
             sheet = null
             done.getOrNull()?.let { toaster.show(it, dark = true) }
@@ -119,7 +124,7 @@ fun SpacesScreen() {
     }
 
     SpacesSheet(
-        sheet, admin != null, list = open.orEmpty().map { it.space }, archived = archived, onClose = { sheet = null },
+        sheet, admin != null, busy, list = open.orEmpty().map { it.space }, archived = archived, onClose = { sheet = null },
         onCreate = { code -> act { admin?.create(code); t(UiKey.SPC_CREATED, countryLabel(code)) } },
         onArchive = { s -> act { admin?.archive(s.id); t(UiKey.SPC_ARCHIVED_DONE, countryLabel(s.countryCode)) } },
     )
@@ -181,6 +186,7 @@ private fun MenuRowCard(label: String, onClick: () -> Unit) {
 private fun SpacesSheet(
     sheet: SpaceSheet?,
     canAdmin: Boolean,
+    busy: Boolean,
     list: List<Space>,
     archived: List<Space>,
     onClose: () -> Unit,
@@ -206,13 +212,13 @@ private fun SpacesSheet(
                 val code = pick
                 TwoButtons(
                     if (code != null) t(UiKey.SPC_CREATE_NAMED, countryLabel(code)) else t(UiKey.SPC_CREATE),
-                    enabled = canAdmin && code != null, onFirst = { code?.let(onCreate) }, onCancel = onClose,
+                    enabled = canAdmin && code != null, busy = busy, onFirst = { code?.let(onCreate) }, onCancel = onClose,
                 )
             }
             is SpaceSheet.Archive -> {
                 val body = t(UiKey.SPC_ARCHIVE_BODY) + if (current.wasActive) " " + t(UiKey.SPC_ARCHIVE_BACK_TO_SA) else ""
                 BasicText(body, style = Type.of(13).copy(color = Ink.muted))
-                TwoButtons(t(UiKey.SPC_ARCHIVE), enabled = canAdmin, onFirst = { onArchive(current.space) }, onCancel = onClose)
+                TwoButtons(t(UiKey.SPC_ARCHIVE), enabled = canAdmin, busy = busy, onFirst = { onArchive(current.space) }, onCancel = onClose)
             }
         }
     }
@@ -241,9 +247,9 @@ private fun CountryRow(o: CountryOption, on: Boolean, onPick: () -> Unit) {
 }
 
 @Composable
-private fun TwoButtons(first: String, enabled: Boolean, onFirst: () -> Unit, onCancel: () -> Unit) {
+private fun TwoButtons(first: String, enabled: Boolean, busy: Boolean, onFirst: () -> Unit, onCancel: () -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        PrimaryButton(first, onClick = onFirst, enabled = enabled, modifier = Modifier.weight(1f))
+        PrimaryButton(first, onClick = onFirst, enabled = enabled, loading = busy, modifier = Modifier.weight(1f))
         TonalButton(t(UiKey.MORE_CANCEL), onClick = onCancel, modifier = Modifier.weight(1f), muted = true)
     }
 }

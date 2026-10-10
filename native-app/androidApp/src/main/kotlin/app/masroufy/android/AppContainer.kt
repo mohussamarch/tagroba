@@ -138,11 +138,11 @@ class AppContainer(private val context: Context) {
         PerfTrace.log("session ready spaces=${st.spaces.size}")
         // الفصحى/المصري من بلد الحساب الشغال قبل أول رسم (الجلسة بتعملها هي كمان — هنا عشان الترتيب يبقى مضمون)
         Texts.followCountry(st.active.space.countryCode)
-        val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid, st.active.space), links(), feeds)
+        val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid, st.active.space), links(st), feeds)
         return AppSession.Ready(st.user.uid, graph)
     }
 
-    private fun links() = object : SessionLinks {
+    private fun links(st: AccountSession.State.Ready) = object : SessionLinks {
         override val account: AccountPort = auth ?: error("no Firebase")
 
         override fun spaces(): List<Pair<Space, SpaceRepositories>> = spacesOf(session?.state?.value as? AccountSession.State.Ready)
@@ -151,6 +151,9 @@ class AppContainer(private val context: Context) {
 
         // التحويل لنفسك بين بلدين (`SpaceTransfer`): كاتب ذرّي على الحساب بأماكن الجلسة نفسها
         override fun spaceTransferWriter() = (session?.state?.value as? AccountSession.State.Ready)?.spaceTransferWriter()
+
+        // «البلدان» و«أول تشغيل»: إنشاء بلد · أرشفة · رجوع ⇒ الجلسة بتفتحها أو تقفلها من غير إعادة تشغيل (`SpaceAdminSetup.kt`)
+        override fun spaceAdmin() = session?.let { spaceAdminLinks(context, it, st) }
     }
 
     private fun spacesOf(ready: AccountSession.State.Ready?): List<Pair<Space, SpaceRepositories>> =
