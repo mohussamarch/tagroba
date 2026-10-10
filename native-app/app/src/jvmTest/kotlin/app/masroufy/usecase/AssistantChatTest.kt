@@ -166,6 +166,26 @@ class AssistantChatTest {
         assertEquals(2, w.stores.unknown.listAll().single().askCount)
     }
 
+    /** رد المالك ٣: الإشعار الممسوح المحرك ما بيرجّعوش طول ما موضوعه شغال، ولما الموضوع يخلص العلامة بتتشال. */
+    @Test fun alertEngineDoesNotBringBackADeletedNotification() = runBlocking<Unit> {
+        val inbox = app.masroufy.memory.MemoryAlertInbox()
+        val dismissals = app.masroufy.memory.MemoryAlertDismissalStore()
+        val engine = RunAlertEngine(
+            AlertEngineDeps(
+                app.masroufy.memory.MemoryAlertSettings(), app.masroufy.memory.MemoryAlertInteractions(), app.masroufy.memory.MemoryUsualHours(),
+                app.masroufy.memory.MemoryAlertReceipts(), inbox, w.clock, dismissals,
+            ),
+        )
+        val c = app.masroufy.core.AlertCandidate(app.masroufy.core.AlertKind.entries.first { !it.needsServer }, "budget|x", "عنوان", "تفاصيل")
+        engine.run(listOf(c), app.masroufy.core.LocalMoment("2026-10-10", 14))
+        assertEquals(listOf("budget|x"), inbox.listAll().map { it.threadKey })
+        ManageAlertDismissals(dismissals, inbox, w.clock).dismiss("budget|x")
+        engine.run(listOf(c), app.masroufy.core.LocalMoment("2026-10-10", 15))
+        assertTrue(inbox.listAll().isEmpty())
+        engine.run(emptyList(), app.masroufy.core.LocalMoment("2026-10-11", 15))
+        assertTrue(dismissals.listAll().isEmpty())
+    }
+
     @Test fun deletedBellNotificationCanBeUndone() = runBlocking<Unit> {
         val inbox = app.masroufy.memory.MemoryAlertInbox()
         val entry = app.masroufy.port.AlertInboxEntry(
