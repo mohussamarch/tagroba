@@ -92,6 +92,14 @@ class FirestoreContainer(val accountRoot: FirestoreSpace, val spaceRoot: Firesto
     val goalContributions = FirestoreGoalContributionRepository(account)
     /** حسابات الورث المحفوظة (§69.4) — على الحساب (تبان على كل الأجهزة ومن أي بلد). */
     val inheritanceScenarios = FirestoreInheritanceScenarioRepository(account)
+    /** المساعد «مصروفي» (§78) وإعدادات المستخدم الجديدة والإشعارات الممسوحة (ردود المالك 2026-10-09) — كله على الحساب ويتزامن. */
+    val userSettings = FirestoreUserSettings(account)
+    val assistantConversations = FirestoreAssistantConversations(account)
+    val assistantMessages = FirestoreAssistantMessages(account)
+    val assistantTopics = FirestoreAssistantTopics(account)
+    val assistantForgotten = FirestoreAssistantForgotten(account)
+    val assistantUnknown = FirestoreAssistantUnknown(account)
+    val alertDismissals = FirestoreAlertDismissals(account)
     val incomeSources = FirestoreIncomeSourceRepository(space)
     val reservations = FirestoreReservationRepository(space)
     val eventPrep = FirestorePrepItemRepository(space)

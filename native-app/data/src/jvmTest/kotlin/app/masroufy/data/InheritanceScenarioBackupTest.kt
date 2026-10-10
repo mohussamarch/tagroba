@@ -68,7 +68,7 @@ class InheritanceScenarioBackupTest {
         )
         // الحفظ بـmerge: الوصية اللي اتشالت بتتمسح من المستند صراحة
         assertTrue("bequest" in InheritanceCodecs.scenarios.omittedFields(simple))
-        assertEquals(50, DocumentCodecs.byGroup.size)
+        assertEquals(57, DocumentCodecs.byGroup.size)
     }
 
     @Test

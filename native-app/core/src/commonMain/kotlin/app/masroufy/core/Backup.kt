@@ -32,6 +32,8 @@ val BACKUP_GROUPS = listOf(
     ALERT_INBOX_GROUP,
     // حسابات الورث المحفوظة (رد المالك §69.3) — على مستوى الحساب، بتتكتب بس لو فيها حاجة
     INHERITANCE_SCENARIOS_GROUP,
+    // المساعد «مصروفي» والإعدادات الجديدة والإشعارات الممسوحة (§78 + ردود المالك 2026-10-09) — على الحساب، التطبيق الجديد بس، كل واحدة لو فيها حاجة
+    *ASSISTANT_ALL_BACKUP_GROUPS.toTypedArray(),
 )
 
 /** المجموعات الخمسة بتوع «المستحقات» — مش في نسخ التطبيق الحالي. */
@@ -59,7 +61,7 @@ val CALENDAR_BACKUP_GROUPS = listOf("reservations", "eventPrep")
 
 val NEW_APP_BACKUP_GROUPS = DUES_BACKUP_GROUPS + TRANSFER_PARTIES_GROUP + ZAKAT_BACKUP_GROUPS + EVENT_BACKUP_GROUPS + INCOME_SOURCES_GROUP +
     MERCHANT_CATEGORIES_GROUP + CALENDAR_BACKUP_GROUPS + PEOPLE_BACKUP_GROUPS + ALERT_SETTINGS_GROUP + GOAL_BACKUP_GROUPS + ALERT_INBOX_GROUP +
-    INHERITANCE_SCENARIOS_GROUP
+    INHERITANCE_SCENARIOS_GROUP + ASSISTANT_ALL_BACKUP_GROUPS
 
 val LATER_BACKUP_GROUPS = listOf("projects", "projectLinks", "projectRules") + NEW_APP_BACKUP_GROUPS
 
@@ -105,8 +107,9 @@ fun emptyBackupData(): Map<String, MutableList<BackupRow>> = BACKUP_GROUPS.assoc
  * زي ملف التطبيق الحالي (ونفس البصمة). لو فيها أي حاجة، الخمسة بيتكتبوا. القراية بتكمّل الناقص فاضي (`LATER_BACKUP_GROUPS`).
  */
 fun exportedBackupData(data: FullBackupData): FullBackupData {
-    val dropped = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS, listOf(ALERT_INBOX_GROUP), listOf(INHERITANCE_SCENARIOS_GROUP))
-        .filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
+    val blocks = listOf(DUES_BACKUP_GROUPS, listOf(TRANSFER_PARTIES_GROUP), ZAKAT_BACKUP_GROUPS, EVENT_BACKUP_GROUPS, listOf(INCOME_SOURCES_GROUP), listOf(MERCHANT_CATEGORIES_GROUP), CALENDAR_BACKUP_GROUPS, PEOPLE_BACKUP_GROUPS, listOf(ALERT_SETTINGS_GROUP), GOAL_BACKUP_GROUPS, listOf(ALERT_INBOX_GROUP), listOf(INHERITANCE_SCENARIOS_GROUP)) +
+        ASSISTANT_ALL_BACKUP_GROUPS.map { listOf(it) }
+    val dropped = blocks.filter { block -> block.all { data[it].isNullOrEmpty() } }.flatten().toSet()
     return if (dropped.isEmpty()) data else data.filterKeys { it !in dropped }
 }
 

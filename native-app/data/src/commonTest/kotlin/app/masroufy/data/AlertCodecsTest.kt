@@ -2,6 +2,7 @@ package app.masroufy.data
 
 import app.masroufy.core.ACCOUNT_DATA_GROUPS
 import app.masroufy.core.ACCOUNT_GROUPS
+import app.masroufy.core.ALERT_DISMISSALS_GROUP
 import app.masroufy.core.ALERT_INBOX_GROUP
 import app.masroufy.core.ALERT_RECEIPTS_GROUP
 import app.masroufy.core.ALERT_SETTINGS_GROUP
@@ -94,6 +95,7 @@ class AlertCodecsTest {
         // التعلّم على الجوال بس (قرار المالك): ولا مجموعة متزامنة ولا محوّل بيخزن ساعاتك أو تفاعلك
         val stored = (ACCOUNT_GROUPS + BACKUP_GROUPS + DocumentCodecs.byGroup.keys).map { it.lowercase() }
         assertTrue(stored.none { "learn" in it || "hour" in it || "interaction" in it || "engagement" in it || "stats" in it }, stored.toString())
-        assertEquals(alertGroups.toSet(), DocumentCodecs.byGroup.keys.filter { it.startsWith("alert") }.toSet())
+        // + الإشعارات الممسوحة بـ«×» (رد المالك ٣ — 2026-10-09): على الحساب وفي النسخة، ومش تعلّم
+        assertEquals(alertGroups.toSet() + ALERT_DISMISSALS_GROUP, DocumentCodecs.byGroup.keys.filter { it.startsWith("alert") }.toSet())
     }
 }

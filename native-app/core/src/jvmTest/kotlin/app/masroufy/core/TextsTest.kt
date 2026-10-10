@@ -43,7 +43,7 @@ class TextsTest {
             EGYPTIAN_SMS_LEARN_TEXTS.keys + EGYPTIAN_SMS_FEE_TEXTS.keys + EGYPTIAN_RETURNS_TEXTS.keys + EGYPTIAN_MATCHING_TEXTS.keys +
             EGYPTIAN_ASKS_TEXTS.keys + EGYPTIAN_MONTH_TEXTS.keys +
             // الواجهة: الهيكل والمكوّنات المشتركة والدخول والقفل + شاشات المناطق (`TextsArea*.kt` — ARCHITECTURE §31.31)
-            EGYPTIAN_SHELL_TEXTS.keys + EGYPTIAN_SHELL_AUTH_TEXTS.keys + EGYPTIAN_AREA_TEXTS.keys
+            EGYPTIAN_SHELL_TEXTS.keys + EGYPTIAN_SHELL_AUTH_TEXTS.keys + EGYPTIAN_AREA_TEXTS.keys + EGYPTIAN_ASSIST_ALL_TEXTS.keys
         assertTrue(newer.all { textKeyNamed(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 

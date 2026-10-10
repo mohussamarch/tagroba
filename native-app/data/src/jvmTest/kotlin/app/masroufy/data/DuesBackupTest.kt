@@ -61,9 +61,9 @@ class DuesBackupTest {
         val file = FullBackup(MemoryFullBackup(source)).create("2026-10-01T00:00:00.000Z")
         val text = file.toJsonText()
         assertTrue("\"roscas\"" in text && "\"debtTerms\"" in text)
-        File("build/kotlin-dues-backup.json").writeText(text)
+        reportFile("kotlin-dues-backup.json").writeText(text)
         // نفس الحساب بس العملية بنوع يعرفه التطبيق الحالي — عشان نشوف التطبيق الحالي بيعمل إيه في «المستحقات» نفسها
-        File("build/kotlin-dues-backup-old-kinds.json").writeText(FullBackup(MemoryFullBackup(account(withDues = true, kind = EconomicKind.PURCHASE))).create("2026-10-01T00:00:00.000Z").toJsonText())
+        reportFile("kotlin-dues-backup-old-kinds.json").writeText(FullBackup(MemoryFullBackup(account(withDues = true, kind = EconomicKind.PURCHASE))).create("2026-10-01T00:00:00.000Z").toJsonText())
 
         val target = MemoryFullBackup()
         val restore = FullBackup(target)

@@ -14,7 +14,8 @@ class SpacesTest {
         assertEquals(
             listOf(
                 "merchants", "people", "tags", "occasions", "personProfiles", "personRelations", "alertSettings", "savingsGoals", "goalContributions", "alertInbox",
-                "inheritanceScenarios",
+                "inheritanceScenarios", "userSettings", "assistantConversations", "assistantMessages", "assistantTopics", "assistantForgotten",
+                "assistantUnknown", "alertDismissals",
             ),
             ACCOUNT_DATA_GROUPS,
             "المشترك بقرار §41 و§64 + دواير الأشخاص وصلاتهم (جلسة 16) + إعدادات التنبيهات (جلسة 18) + خطط الادخار (§68) + صفحة الإشعارات (§69) + حسابات الورث (§69.4) بس",

@@ -16,6 +16,7 @@ import app.masroufy.core.digestNotice
 import app.masroufy.core.muted
 import app.masroufy.core.mutedAlertDecision
 import app.masroufy.core.systemNoticeFor
+import app.masroufy.port.AlertDismissalStore
 import app.masroufy.port.AlertInboxEntry
 import app.masroufy.port.AlertInboxStore
 import app.masroufy.port.AlertInteractionStore
@@ -41,6 +42,8 @@ data class AlertEngineDeps(
     val receipts: AlertReceiptStore,
     val inbox: AlertInboxStore,
     val clock: Clock,
+    /** الإشعارات الممسوحة بـ«×» (رد المالك ٣ — 2026-10-09): المحرك ما بيرجّعهاش طول ما موضوعها شغال. */
+    val dismissals: AlertDismissalStore? = null,
 )
 
 /** إشعار للشريط: النص العام + إمتى (null = دلوقتي) + مفاتيح التنبيهات اللي جواه. */
@@ -60,7 +63,12 @@ data class AlertInboxView(val entry: AlertInboxEntry, val reason: String, val gr
 class RunAlertEngine(private val deps: AlertEngineDeps) {
     suspend fun run(candidates: List<AlertCandidate>, now: LocalMoment): AlertRun {
         val off = deps.settings.disabledGroups()
-        val live = candidates.filter { !it.kind.needsServer }.distinctBy { it.eventKey }
+        val candidateThreads = candidates.map { it.threadKey }.toSet()
+        val dismissed = deps.dismissals?.listAll().orEmpty()
+        val finished = dismissed.map { it.threadKey }.filter { it !in candidateThreads }
+        if (finished.isNotEmpty()) deps.dismissals?.remove(finished)
+        val dismissedThreads = dismissed.map { it.threadKey }.toSet() - finished.toSet()
+        val live = candidates.filter { !it.kind.needsServer && it.threadKey !in dismissedThreads }.distinctBy { it.eventKey }
         val liveThreads = live.map { it.threadKey }.toSet()
 
         val resolved = deps.inbox.listAll().map { it.threadKey }.filter { it !in liveThreads }

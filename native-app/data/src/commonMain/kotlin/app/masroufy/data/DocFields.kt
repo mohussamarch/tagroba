@@ -25,6 +25,9 @@ class DocReader(private val group: String, private val doc: Doc) {
 
     fun has(name: String): Boolean = doc[name] != null
 
+    /** أسامي الحقول (لخريطة مفاتيحها مش ثابتة — معرّفات رابط الشاشة في رسالة المساعد). */
+    fun keys(): Set<String> = doc.keys
+
     fun str(name: String): String = strOrNull(name) ?: missing(name)
 
     fun strOrNull(name: String): String? = when (val v = doc[name]) {

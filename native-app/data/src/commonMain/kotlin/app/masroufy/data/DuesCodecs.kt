@@ -132,6 +132,9 @@ object DocumentCodecs {
     /** حسابات الورث المحفوظة (§69.4) — على مستوى الحساب. */
     val inheritance: List<DocCodec<*>> = listOf(InheritanceCodecs.scenarios)
 
+    /** المساعد «مصروفي» والإعدادات الجديدة والإشعارات الممسوحة (§78) — على مستوى الحساب. */
+    val assistant: List<DocCodec<*>> = AssistantCodecs.all
+
     val byGroup: Map<String, DocCodec<*>> =
-        (current + dues + transfers + zakat + events + income + spaces + calendar + circles + alerts + goals + inheritance).associateBy { it.group }
+        (current + dues + transfers + zakat + events + income + spaces + calendar + circles + alerts + goals + inheritance + assistant).associateBy { it.group }
 }
