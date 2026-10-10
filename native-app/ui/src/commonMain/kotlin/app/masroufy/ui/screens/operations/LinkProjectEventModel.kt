@@ -11,7 +11,7 @@ import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.EventDetail
 
-/** حدث في اللوحة: الاسم + «١٨ أكتوبر، حدث خالد» أو «حدثك». */
+/** حدث في اللوحة: الاسم + «18 أكتوبر، حدث خالد» أو «حدثك». */
 data class EventChoice(val id: Id, val name: String, val sub: String)
 
 /**
@@ -39,13 +39,13 @@ fun eventLinkOf(details: List<EventDetail>, transactionId: Id): EventLinkNow? {
 fun parsePercent(text: String): Int? = latinizeDigits(text).filter { it in '0'..'9' }.takeIf { it.isNotEmpty() && it.length <= 3 }?.toInt()
 
 /**
- * سطرين «على «الحدث»» و«الباقي خارج الحدث» **بالنسبة** (٥٠٪ · ٥٠٪) — عدد صحيح من ١٠٠ مش فلوس. نصيب الحدث بالريال بيتحسب في حالة الاستخدام
+ * سطرين «على «الحدث»» و«الباقي خارج الحدث» **بالنسبة** (50% · 50%) — عدد صحيح من 100 مش فلوس. نصيب الحدث بالريال بيتحسب في حالة الاستخدام
  * وقت الربط وبيظهر على الكارت بعد الحفظ (`EventLinkNow.shareMinor`)؛ المعاينة بالمبلغ قبل الحفظ محتاجة حالة استخدام (ناقصة). برّه 1..100 ⇒ `null`.
  */
 fun sharePercents(percent: Int?): Pair<Int, Int>? =
     if (percent == null || percent !in 1..EVENT_SHARE_WHOLE) null else percent to (EVENT_SHARE_WHOLE - percent)
 
-/** «٥٠٪» في الجمل. */
+/** «50%» في الجمل. */
 fun percentText(p: Int): String = t(UiKey.LINK_PROJECT_EVENT_PERCENT, sentenceNumber(p))
 
 /** النسب السريعة جنب الخانة. */

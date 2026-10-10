@@ -145,7 +145,7 @@ private fun RadioCard(label: String, sub: String?, on: Boolean, onClick: () -> U
     }
 }
 
-/** عدّاد «كم دورًا؟»: + الرقم − (من ٢ لـ٦٠). */
+/** عدّاد «كم دورًا؟»: + الرقم − (من 2 لـ60). */
 @Composable
 private fun Stepper(count: Int, onStep: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {

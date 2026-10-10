@@ -170,7 +170,7 @@ class AdvisorMoreFlowTest {
     @Test fun weeklySummaryForTheWeekThatEnded() = runBlocking<Unit> {
         val weeks = listOf(txn("2026-09-21", 20_000, grocery), txn("2026-09-28", 25_000, grocery), txn("2026-10-02", 6_000, coffee))
         val w = advisor(weeks, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY).single()
-        assertEquals("weekly|2026-10-03", w.threadKey)
+        assertEquals("weekly|2026-10-02", w.threadKey)
         assertEquals("صرفت 310.00 ر.س هذا الأسبوع · أكثر بـ110.00 ر.س من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (250.00 ر.س)", w.body)
         val shaky = weeks + txn("2026-09-30", 1_000, null, kind = EconomicKind.UNCLASSIFIED)
         assertEquals(emptyList(), advisor(shaky, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY), "الأسبوع فيه عملية من غير نوع ⇒ مش معروف")
@@ -230,7 +230,7 @@ class AdvisorMoreFlowTest {
         val shaky = weeks + txn("2026-09-30", 1_000, null, kind = EconomicKind.UNCLASSIFIED)
         assertEquals("لديك 3 عمليات تحتاج إلى تأكيد", weekly(shaky, 3).single().body, "الصرف مش معروف ⇒ التذكير لوحده")
         assertEquals(emptyList(), weekly(shaky, 0), "ولا صرف معروف ولا تذكير ⇒ ساكت")
-        assertEquals("weekly|2026-10-03", weekly(emptyList(), 2).single().threadKey, "أسبوعين فاضيين بس فيه حاجة مستنية")
+        assertEquals("weekly|2026-10-02", weekly(emptyList(), 2).single().threadKey, "أسبوعين فاضيين بس فيه حاجة مستنية")
     }
 
     @Test fun arabicNumberAgreementInTheReminder() {

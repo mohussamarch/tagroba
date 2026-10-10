@@ -59,7 +59,7 @@ sealed interface InheritanceView {
 
 data class InheritanceResultUi(val view: InheritanceView, val disclaimer: String, val currency: Currency)
 
-/** عدد ألوان الورثة في اللوحة (النموذج: ٨). */
+/** عدد ألوان الورثة في اللوحة (النموذج: 8). */
 const val HEIR_COLORS = 8
 
 fun inheritanceResultUi(result: InheritanceResult, currency: Currency): InheritanceResultUi {
@@ -167,10 +167,10 @@ private fun fardName(f: Frac): String? = when (f.num to f.den) {
     else -> null
 }
 
-/** «١/٨» أو «٠». */
+/** «1/8» أو «0». */
 fun fractionText(f: Frac): String = if (f.isZero) sentenceDigits("0") else sentenceDigits("${f.num}/${f.den}")
 
-/** «شيء واحد · شيئان · ٣ أشياء · ١١ شيئًا». */
+/** «شيء واحد · شيئان · 3 أشياء · 11 شيئًا». */
 fun thingsPhrase(n: Int): String = when (n) {
     1 -> t(UiKey.INHCALC_THINGS_ONE)
     2 -> t(UiKey.INHCALC_THINGS_TWO)

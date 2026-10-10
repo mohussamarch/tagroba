@@ -48,7 +48,7 @@ internal val EGYPTIAN_SHELL_AUTH_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SIGNIN_MODE_NEW to "حساب جديد",
     UiKey.SIGNIN_EMAIL to "الإيميل",
     UiKey.SIGNIN_PASSWORD to "كلمة السر",
-    UiKey.SIGNIN_PASS_HINT to "٦ حروف على الأقل.",
+    UiKey.SIGNIN_PASS_HINT to "6 حروف على الأقل.",
     UiKey.SIGNIN_SHOW_PASS to "اظهر كلمة السر",
     UiKey.SIGNIN_HIDE_PASS to "اخفي كلمة السر",
     UiKey.SIGNIN_SUBMIT_IN to "دخول",

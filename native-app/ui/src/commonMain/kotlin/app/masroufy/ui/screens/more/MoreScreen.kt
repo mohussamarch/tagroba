@@ -41,8 +41,8 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /**
- * «المزيد» (`More` — من الترس، OVERRIDES §74): كارت «ملفك» فوق + ٣ مجموعات (حسابك · بياناتك · الإعدادات — §76). السطور التانية من
- * البيانات بس: يوم الراتب من الملف · أسماء البلاد المفتوحة. اللي مالوش مصدر لسه (نسبة «ملفك ٪» · «٤ بانتظار تأكيدك») **ما بيتكتبش** (القاعدة 10).
+ * «المزيد» (`More` — من الترس، OVERRIDES §74): كارت «ملفك» فوق + 3 مجموعات (حسابك · بياناتك · الإعدادات — §76). السطور التانية من
+ * البيانات بس: يوم الراتب من الملف · أسماء البلاد المفتوحة. اللي مالوش مصدر لسه (نسبة «ملفك %» · «4 بانتظار تأكيدك») **ما بيتكتبش** (القاعدة 10).
  */
 @Composable
 fun MoreScreen() {
@@ -86,7 +86,7 @@ private fun MeCard(me: MeInfo?, view: MoreView, onClick: () -> Unit) {
     }
 }
 
-/** سطر في قايمة «المزيد»: [hint] = null ⇒ مفيش سطر تاني (مش «٠»). */
+/** سطر في قايمة «المزيد»: [hint] = null ⇒ مفيش سطر تاني (مش «0»). */
 data class MoreItem(val icon: Lucide, val label: TextRef, val hint: String?, val to: Route)
 
 data class MoreGroup(val title: TextRef, val items: List<MoreItem>)

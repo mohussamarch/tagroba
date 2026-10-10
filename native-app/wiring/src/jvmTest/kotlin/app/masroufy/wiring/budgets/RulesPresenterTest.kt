@@ -59,7 +59,7 @@ class RulesPresenterTest {
         val w = world()
         w.repos.merchants.saveMany(
             listOf(
-                Merchant("m-1", "مخبز وهمي", "مخبز وهمي", aliases = listOf("مخبز وهمي ٢"), verifiedCategoryId = FOOD.id),
+                Merchant("m-1", "مخبز وهمي", "مخبز وهمي", aliases = listOf("مخبز وهمي 2"), verifiedCategoryId = FOOD.id),
                 Merchant("m-2", "محل بلا تصنيف", "محل بلا تصنيف"),
             ),
         )
@@ -67,7 +67,7 @@ class RulesPresenterTest {
         val m = ui.merchants.single()
         assertEquals("m-1", m.id)
         assertEquals(FOOD.name, m.categoryName)
-        assertEquals(uiText(UiKey.RULES_ALIASES, "١"), m.meta)
+        assertEquals(uiText(UiKey.RULES_ALIASES, "1"), m.meta)
         w.deps.rules.setMerchantCategory("m-1", null)
         val kept = loadRules(w.deps, keep = setOf("m-1")).merchants.single()
         assertNull(kept.categoryName, "«بلا تصنيف ثابت — تُطبَّق القواعد»")
@@ -110,17 +110,17 @@ class RulesPresenterTest {
         w.deps.rules.addRule("مطعم", RuleMatchMode.CONTAINS, FOOD.id)
         val (from, to) = historyRange(TODAY)
         assertEquals(TODAY, to)
-        assertEquals("2021-10-05", from, "آخر ١٨٣٠ يوم")
+        assertEquals("2021-10-05", from, "آخر 1830 يوم")
         val preview = w.deps.history.preview(from, to)
         val ui = applyPreview(preview.categoryPlan, w.deps.categories.list())
         assertEquals(1, ui.changed)
         assertEquals(listOf(FOOD.name, uiText(UiKey.RULES_APPLY_CONFIRMED), uiText(UiKey.RULES_APPLY_UNMATCHED)), ui.rows.map { it.label })
-        assertEquals(listOf("١", "١", "١"), ui.rows.map { it.count })
+        assertEquals(listOf("1", "1", "1"), ui.rows.map { it.count })
         val applied = w.deps.history.applyCategories(preview.rows.map { it.id }, preview.categoryPlan)
         assertEquals(1, applied.changed.size)
         assertEquals(uiText(UiKey.RULES_OPS_ONE), opsLabel(1))
-        assertEquals(uiText(UiKey.RULES_OPS_FEW, "٣"), opsLabel(3))
-        assertEquals(uiText(UiKey.RULES_OPS_MANY, "١٢"), opsLabel(12))
+        assertEquals(uiText(UiKey.RULES_OPS_FEW, "3"), opsLabel(3))
+        assertEquals(uiText(UiKey.RULES_OPS_MANY, "12"), opsLabel(12))
     }
 
     private fun rule(id: String, priority: Int) = ClassificationRule(id, priority, id, RuleMatchMode.CONTAINS, FOOD.id, enabled = true)

@@ -1,6 +1,7 @@
 package app.masroufy.wiring
 
 import app.masroufy.port.AlertInboxStore
+import app.masroufy.port.ReferenceSeedPort
 import app.masroufy.port.AlertReceiptStore
 import app.masroufy.port.AlertSettingsStore
 import app.masroufy.port.AllocationRepository
@@ -121,4 +122,6 @@ data class SpaceRepositories(
     val fullBackup: FullBackupPort? = null,
     /** البلاد التانية في النسخة الشاملة (الإصدار 3). */
     val spacesBackup: SpacesBackupPort? = null,
+    /** علامة تجهيز المراجع للبلد دي (حساب جديد خالص بياخد تصنيفاته في أسئلة البداية). null = من غير تجهيز (اختبار من غيرها). */
+    val referenceSeed: ReferenceSeedPort? = null,
 )

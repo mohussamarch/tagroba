@@ -23,7 +23,7 @@ data class MainRowUi(
     val name: String,
     val iconKey: String,
     val colorHex: String,
-    /** «٣ فروع» · «بلا فروع». */
+    /** «3 فروع» · «بلا فروع». */
     val subsLabel: String,
     val subs: List<SubRowUi>,
 )
@@ -47,7 +47,7 @@ suspend fun loadCategories(deps: BudgetsDeps): CategoriesUi = mapCategories(deps
 /** ترتيب التصنيفات: الترتيب المحفوظ ثم الاسم بالحروف العربي (زي `categoryOrder` في `core`). */
 private val byOrder = Comparator<Category> { a, b -> if (a.order != b.order) a.order.compareTo(b.order) else arabicCompare(a.name, b.name) }
 
-/** «فرع واحد» · «فرعان» · «٣ فروع» · «١١ فرعًا» — العدّ للعرض بس. */
+/** «فرع واحد» · «فرعان» · «3 فروع» · «11 فرعًا» — العدّ للعرض بس. */
 fun subsLabel(count: Int): String = when {
     count <= 0 -> t(UiKey.CATS_NO_SUBS)
     count == 1 -> t(UiKey.CATS_SUBS_ONE)

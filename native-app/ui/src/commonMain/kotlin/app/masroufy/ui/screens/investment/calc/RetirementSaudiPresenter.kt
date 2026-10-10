@@ -118,7 +118,7 @@ fun checkSaudi(f: Map<String, String>, contributedBefore2024: Boolean, end: EosE
     return RetirementCheck(e, request, end != null)
 }
 
-/** «النظام القديم، التقاعد عند ٦٥ سنة في أبريل ٢٠٥٥، ٤٥٨ شهر اشتراك». */
+/** «النظام القديم، التقاعد عند 65 سنة في أبريل 2055، 458 شهر اشتراك». */
 fun saudiHeroDetails(o: RetirementOutcome): String? {
     val p = o.pension
     val date = p.retirementDate ?: return null

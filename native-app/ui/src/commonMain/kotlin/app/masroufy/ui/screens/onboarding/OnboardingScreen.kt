@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
+import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.FieldError
 import app.masroufy.ui.components.FloatingCard
@@ -47,6 +48,7 @@ import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.imports.BankSmsRoute
 import app.masroufy.ui.screens.more.DayGrid
 import app.masroufy.ui.screens.more.LookGrid
+import app.masroufy.ui.screens.more.WalletsRoute
 import app.masroufy.ui.screens.more.NotYetLine
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -57,7 +59,7 @@ import app.masroufy.usecase.OnboardingStart
 import kotlinx.coroutines.launch
 
 /**
- * «أول تشغيل» بعد الدخول (`Onboarding` الخطوات ١ و٣–٦): كارت = سؤال، والرد الأخضر تحت بعد كل إجابة. الحالات: بيحمّل (القيم الموجودة
+ * «أول تشغيل» بعد الدخول (`Onboarding` الخطوات 1 و3–6): كارت = سؤال، والرد الأخضر تحت بعد كل إجابة. الحالات: بيحمّل (القيم الموجودة
  * من `OnboardAccount.start`) · خطأ (القراية أو الحفظ ⇒ «أعد المحاولة») · غير متاح (رسايل البنك على الآيفون · مصر لو إنشاء البلد مش متاح ·
  * حفظ الشكل). «محتاج نت» بتاع كارت الدخول في `SignInFlow` (الكتابة هنا بتستنى في نسخة الجهاز لو النت قاطع).
  * «ادخل التطبيق» ⇒ `OnboardAccount.finish` (يوم الراتب بس — مفيش كاش ولا ديون في رحلة §63) ⇒ البلد المختارة ⇒ رسايل البنك لو اختارها.
@@ -67,6 +69,7 @@ fun OnboardingScreen() {
     val deps = LocalSpace.current
     val onb = deps.onboarding
     val nav = LocalNavigator.current
+    val changes = LocalDataChanges.current
     val scope = rememberCoroutineScope()
     var reload by remember { mutableIntStateOf(0) }
     var start by remember(deps) { mutableStateOf<OnboardingStart?>(null) }
@@ -94,6 +97,9 @@ fun OnboardingScreen() {
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
                     nav.pop()
                     if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
+                    // حساب جديد خالص اتجهز بتصنيفاته ومحفظة الكاش ⇒ «المحافظ» عشان يضيف محفظة البنك بنفسه، والرئيسية تقرا تاني
+                    if (st.freshAccount) nav.push(WalletsRoute)
+                    changes.changed()
                 }
                 is OnboardingResult.Failed -> failure = r.message
                 null -> failure = t(UiKey.ONB_FINISH_FAILED)

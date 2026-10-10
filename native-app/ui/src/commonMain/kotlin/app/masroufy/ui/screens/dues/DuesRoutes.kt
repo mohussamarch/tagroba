@@ -22,7 +22,7 @@ import app.masroufy.usecase.ManageRoscas
 import app.masroufy.usecase.RoscaSetup
 
 /**
- * منطقة «المستحقات» (`SCREENS.md` §٢.٦ + تفاصيل الدين والتسوية والدين القديم): خانة «المستحقات» جوه مبدّل «العمليات» ([Slots.DUES]) ·
+ * منطقة «المستحقات» (`SCREENS.md` §2.6 + تفاصيل الدين والتسوية والدين القديم): خانة «المستحقات» جوه مبدّل «العمليات» ([Slots.DUES]) ·
  * `DuesDebts` · `DebtDetail` · `SettleSheet` · `OpeningDebtSheet` · `Installments` · `InstallmentDetail` · `InstallmentEdit` · `Roscas` ·
  * `RoscaDetail` · `RoscaWizard` · `Subscriptions` · `SubscriptionDetail`. **الملف ده بتاع المنطقة بس.**
  * الأشخاص (`PersonProfile`) بيفتحوا [DebtDetailRoute] و[SettleSheetRoute] و[OpeningDebtSheetRoute] من هنا.

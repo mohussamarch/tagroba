@@ -33,7 +33,7 @@ import app.masroufy.ui.theme.CategoryInk
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
-/** «مقارنة بما تدّخره فعلًا»: الحكم + أعمدة آخر ٣ أشهر مالية + السطر والشرح + «حدّد نوع هذه العمليات» لو شهر غير معروف. */
+/** «مقارنة بما تدّخره فعلًا»: الحكم + أعمدة آخر 3 أشهر مالية + السطر والشرح + «حدّد نوع هذه العمليات» لو شهر غير معروف. */
 @Composable
 internal fun CompareCard(ui: SavingsResultUi, onReview: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {

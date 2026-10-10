@@ -113,7 +113,7 @@ fun duesPanelUi(view: DuesView, counts: DuesCounts, period: Period, today: IsoDa
     )
 }
 
-/** صف ميعاد: «٢٠ سبتمبر، منذ ١٧ يومًا» + الحالة + «ستستلم/ستدفع». */
+/** صف ميعاد: «20 سبتمبر، منذ 17 يومًا» + الحالة + «ستستلم/ستدفع». */
 internal fun agendaRow(item: DueItem, today: IsoDate): AgendaRowUi {
     val kind = when (item.source) {
         DueSource.DEBT -> DueKind.DEBT

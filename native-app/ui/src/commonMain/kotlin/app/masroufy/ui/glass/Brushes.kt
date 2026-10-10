@@ -73,7 +73,7 @@ object Glass {
     /** الزر الأساسي: `linear-gradient(160deg, #0A7A62 0%, #08634F 100%)`. */
     val primary = cssLinear(160f, 0f to Color(0xFF0A7A62), 1f to Color(0xFF08634F))
 
-    /** زرار «+»: `linear-gradient(160deg, #0E8A6E 0%, #08634F 60%, #064B40 100%)` من غير هالة (KOTLIN-MAP §٣). */
+    /** زرار «+»: `linear-gradient(160deg, #0E8A6E 0%, #08634F 60%, #064B40 100%)` من غير هالة (KOTLIN-MAP §3). */
     val plus = cssLinear(160f, 0f to Color(0xFF0E8A6E), 0.6f to Color(0xFF08634F), 1f to Color(0xFF064B40))
 
     /** أساس البطاقة البطلة: `linear-gradient(125deg, #064B40 0%, #08705A 100%)`. */

@@ -28,7 +28,7 @@ import app.masroufy.ui.text.trueMinus
  * قراية المبلغ من `core` (`tryParseMoney` — نفس قراية كل التطبيق)، والعدّ بالأرقام العربية في الجمل (`sentenceNumber`).
  */
 
-/** «شهر واحد · شهران · ٣ أشهر · ١١ شهرًا» (المصري: «شهرين · ٣ شهور · ١١ شهر»). */
+/** «شهر واحد · شهران · 3 أشهر · 11 شهرًا» (المصري: «شهرين · 3 شهور · 11 شهر»). */
 fun monthsPhrase(n: Int): String = when (n) {
     1 -> t(UiKey.CALCUI_MONTHS_ONE)
     2 -> t(UiKey.CALCUI_MONTHS_TWO)
@@ -36,7 +36,7 @@ fun monthsPhrase(n: Int): String = when (n) {
     else -> t(UiKey.CALCUI_MONTHS_MANY, sentenceNumber(n))
 }
 
-/** «سنة · سنتان · ٣ سنوات · ١١ سنة». */
+/** «سنة · سنتان · 3 سنوات · 11 سنة». */
 fun yearsPhrase(n: Int): String = when (n) {
     1 -> t(UiKey.CALCUI_YEARS_ONE)
     2 -> t(UiKey.CALCUI_YEARS_TWO)
@@ -47,13 +47,13 @@ fun yearsPhrase(n: Int): String = when (n) {
 /** مدة بالشهور: سنين كاملة بالسنين، وإلا بالشهور. */
 fun durationPhrase(months: Int): String = if (months > 0 && months % 12 == 0) yearsPhrase(months / 12) else monthsPhrase(months)
 
-/** «٧ أكتوبر ٢٠٢٨». */
+/** «7 أكتوبر 2028». */
 fun fullDate(iso: IsoDate): String = t(UiKey.CALCUI_DAY_MONTH_YEAR, dayMonth(iso), sentenceNumber(parseIsoDate(iso).year))
 
-/** «أبريل ٢٠٥٥». */
+/** «أبريل 2055». */
 fun monthYearOf(iso: IsoDate): String = parseIsoDate(iso).let { monthYear(it.year, it.month) }
 
-/** السن بالشهور ⇒ «٦٥ سنة» أو «٦٤ سنة و٨ أشهر». */
+/** السن بالشهور ⇒ «65 سنة» أو «64 سنة و8 أشهر». */
 fun agePhrase(months: Int): String {
     val years = sentenceNumber(months / 12)
     val rest = months % 12
@@ -81,7 +81,7 @@ fun parseAmountField(text: String, currency: Currency): Parsed<Halalas> {
     return tryParseMoney(text, currency)?.let { Parsed.Ok(it) } ?: Parsed.Bad
 }
 
-/** عدد صحيح من الخانة (شهور · سنين) — أرقام بس، لحد ٦ خانات. */
+/** عدد صحيح من الخانة (شهور · سنين) — أرقام بس، لحد 6 خانات. */
 fun parseCountField(text: String): Parsed<Int> {
     val s = normalizeDigits(text).trim()
     if (s.isEmpty()) return Parsed.Empty

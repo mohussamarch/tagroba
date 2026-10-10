@@ -61,7 +61,7 @@ import app.masroufy.ui.theme.Type
 
 /**
  * ملف الشخص (لوحة `PersonProfile`): رأس بترولي 168 بالرجوع ودايرته · الاسم وصلته · مناسباته (`OccasionSheet`) · «لك عنده» و«عليك له»
- * جنب بعض من غير مقاصة · «معًا» (٤ أفعال) · «السجل بينكما» (الالتزامات المفتوحة ⇒ `DebtDetail`) · النقوط بينكما.
+ * جنب بعض من غير مقاصة · «معًا» (4 أفعال) · «السجل بينكما» (الالتزامات المفتوحة ⇒ `DebtDetail`) · النقوط بينكما.
  */
 @Composable
 internal fun PersonProfileScreen(personId: String) {
@@ -107,7 +107,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(ui: Person
     item(key = "head") {
         Head(ui, top, back)
         Column(Modifier.fillMaxWidth().offset(y = (-66).dp).padding(horizontal = Space.gutter), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            // دايرة 104 بحلقة ٤ بلون الخلفية (`0 0 0 4px #FAF9F3`)
+            // دايرة 104 بحلقة 4 بلون الخلفية (`0 0 0 4px #FAF9F3`)
             Box(Modifier.size(112.dp).clip(CircleShape).background(Ink.surface), contentAlignment = Alignment.Center) {
                 InitialCircle(ui.name, 104.dp, onHero = true)
             }

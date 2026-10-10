@@ -16,7 +16,7 @@ import app.masroufy.usecase.ReconcileBalance
 import app.masroufy.usecase.RunAlertEngine
 
 /**
- * منطقة «المزيد» (`SCREENS.md` §٢.٨): More · Account (+ LookSheet) · AppSettings (القفل واللغة والمحتوى الإسلامي) · NotificationSettings ·
+ * منطقة «المزيد» (`SCREENS.md` §2.8): More · Account (+ LookSheet) · AppSettings (القفل واللغة والمحتوى الإسلامي) · NotificationSettings ·
  * Spaces · Wallets · WalletDetail (+ WalletAddSheet) · IncomeSources · IncomeSourceDetail (+ IncomeSourceEditSheet · JobChangeSheet) ·
  * Backup · RestorePreview. الملف ده بتاع المنطقة بس. Categories · Rules · Projects لسه «قيد البناء» (روابطهم في `MoreLinks.kt`).
  * تسجيل الخروج: `LocalApp.current.signIn.signOut()` (الجلسة بترجع لشاشة الدخول لوحدها).
@@ -82,7 +82,7 @@ object NotificationSettingsRoute : Route {
     override val name = "NotificationSettings"
 }
 
-/** القفل واللغة والمحتوى الإسلامي في صفحة واحدة (KOTLIN-MAP §١ — LockSettings · LanguageSettings · IslamicContentSettings). */
+/** القفل واللغة والمحتوى الإسلامي في صفحة واحدة (KOTLIN-MAP §1 — LockSettings · LanguageSettings · IslamicContentSettings). */
 object AppSettingsRoute : Route {
     override val name = "AppSettings"
 }

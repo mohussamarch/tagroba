@@ -75,9 +75,9 @@ class ZakatAdvisorScreensTest {
         assertFalse(c.hawl.canConfirm)
         assertEquals(OutcomeChip.DUE, c.chip)
         assertEquals(a.dueMinor, c.heroMinor, "المطلوب من الحساب نفسه")
-        assertEquals(75_000L, c.heroMinor, "٢٫٥٪ من ٣٠٬٠٠٠")
+        assertEquals(75_000L, c.heroMinor, "2.5% من 30,000")
         assertEquals(a.nisabMinor, c.nisabMinor)
-        assertEquals(208_250L, c.nisabMinor, "الأقل: فضة ٥٩٥ جم × ٣٫٥٠")
+        assertEquals(208_250L, c.nisabMinor, "الأقل: فضة 595 جم × 3.50")
         assertEquals(a.lines.map { it.dueMinor }, c.lines.map { it.dueMinor })
         assertTrue(c.canClose)
 
@@ -90,7 +90,7 @@ class ZakatAdvisorScreensTest {
         assertNull(p.heroMinor)
         assertFalse(p.canClose)
         val q = partial.questions.first { it.subjectId == bar.id && it.missing }
-        assertEquals("ينقص ١", factsSummary(partial.questions).chip)
+        assertEquals("ينقص 1", factsSummary(partial.questions).chip)
         assertTrue(factsSummary(partial.questions).missing)
         val saving = q.options.first { it.answer == FactAnswer.Purpose(ZakatPurpose.SAVING) }
         assertFalse(saving.selected)

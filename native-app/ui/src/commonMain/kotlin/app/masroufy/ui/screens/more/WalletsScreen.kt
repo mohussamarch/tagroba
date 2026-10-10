@@ -58,7 +58,7 @@ import app.masroufy.usecase.WithYouNow
 /**
  * «المحافظ» (`Wallets` — spec/02 «الكاش» · §26 · §41): محافظ البلد الشغالة بس. فوق «معك الآن» (نفس رقم الرئيسية — `LoadWithYouNow`)،
  * وتحته البنوك · المحافظ الإلكترونية · الكاش، ولكل محفظة رصيدها أو «غير متاح» ورصيد بدايتها، و«الأساسية» على محفظتك الأساسية.
- * «أضف محفظة» (`WalletAddSheet`) نقطة ربط ([WalletEditor]) — مفيش حالة استخدام لإدارة المحافظ لسه.
+ * «أضف محفظة» (`WalletAddSheet`) نقطة ربط ([WalletEditor]) — متوصلة بـ`ManageWallets` (الإضافة ورصيد البداية).
  */
 @Composable
 fun WalletsScreen() {
@@ -134,7 +134,7 @@ private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick:
     }
 }
 
-/** «حساب بنكي · •••• ٤٤٠٧» — أو النوع لوحده. */
+/** «حساب بنكي · •••• 4407» — أو النوع لوحده. */
 fun walletMeta(r: WalletRowView): String = if (r.last4 != null) t(UiKey.WLIST_META_LAST4, t(r.kindLabel), r.last4) else t(r.kindLabel)
 
 /** عدسة المحفظة 40: الكاش أخضر فاتح برمز الفلوس، والبنك أبيض بحد رفيع وأول حرف من اسمه (مكان اللوجو لحد ما يتعتمد — §74). */

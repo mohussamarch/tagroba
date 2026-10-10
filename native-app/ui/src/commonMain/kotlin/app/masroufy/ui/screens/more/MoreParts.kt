@@ -75,7 +75,7 @@ fun RowRule() {
     Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0x8CCCD8CC)))
 }
 
-/** صف في قايمة «المزيد»: أيقونة 36 · الاسم 15 · السطر التاني 12 · سهم 16. صفوف القوايم بتفضل بكلامها (KOTLIN-MAP §٣). */
+/** صف في قايمة «المزيد»: أيقونة 36 · الاسم 15 · السطر التاني 12 · سهم 16. صفوف القوايم بتفضل بكلامها (KOTLIN-MAP §3). */
 @Composable
 fun MenuRow(icon: Lucide?, label: String, hint: String?, last: Boolean, onClick: () -> Unit, trailing: (@Composable RowScope.() -> Unit)? = null) {
     val press = rememberPress()
@@ -144,7 +144,7 @@ fun FillChip(label: String, on: Boolean, modifier: Modifier = Modifier, height: 
     }
 }
 
-/** شبكة أيام الشهر ١–٣١ (٧ أعمدة، الخانة 44 بزاوية 12) — يوم الراتب في «ملفك» و«أول مرة» و«غيّرت شغلي». */
+/** شبكة أيام الشهر 1–31 (7 أعمدة، الخانة 44 بزاوية 12) — يوم الراتب في «ملفك» و«أول مرة» و«غيّرت شغلي». */
 @Composable
 fun DayGrid(selected: Int?, onPick: (Int) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {

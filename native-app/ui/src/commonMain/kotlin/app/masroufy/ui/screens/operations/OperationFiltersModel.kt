@@ -25,7 +25,7 @@ import app.masroufy.core.withinRelativeTolerance
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.TransactionsScreenData
 
-/** الفترة في التصفية: هذا الشهر · الشهر الماضي · آخر ٣ أشهر (الشهر المالي من يوم الراتب). */
+/** الفترة في التصفية: هذا الشهر · الشهر الماضي · آخر 3 أشهر (الشهر المالي من يوم الراتب). */
 enum class FilterPeriod(val months: Int, val skip: Int) { THIS(1, 0), LAST(1, 1), THREE(3, 0) }
 
 /** النوع في التصفية (مجموعات العرض): مصروف · دخل · بين محافظك · ديون وأقساط. */
@@ -77,7 +77,7 @@ private val DUES_KINDS = setOf(EconomicKind.INSTALLMENT_PAID, EconomicKind.ROSCA
 private fun needsReview(tx: Transaction): Boolean = tx.reviewState != ReviewState.CONFIRMED || tx.economicKind == EconomicKind.UNCLASSIFIED
 
 /**
- * النتايج: البحث بالكلام (`searchTransactions` — التاجر · الوصف · الملاحظة · التصنيف · الوسم) · المبلغ بالظبط أو «قريب منه ±٥٪»
+ * النتايج: البحث بالكلام (`searchTransactions` — التاجر · الوصف · الملاحظة · التصنيف · الوسم) · المبلغ بالظبط أو «قريب منه ±5%»
  * (`withinRelativeTolerance`) · النوع · التصنيف · المحفظة · المراجعة. **اختيار بس — مفيش جمع مبالغ هنا.**
  */
 fun applyFilters(data: List<TransactionsScreenData>, f: Filters, currency: Currency): List<Transaction> {

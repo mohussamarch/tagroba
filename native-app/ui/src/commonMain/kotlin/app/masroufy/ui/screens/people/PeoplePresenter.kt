@@ -34,7 +34,7 @@ internal data class PersonChip(val id: Id, val name: String, val initial: String
 internal data class MoneyLine(val minor: Halalas, val currency: Currency)
 
 internal data class PeopleTabUi(
-    /** فوق الكاركتر (أقصى ٥). */
+    /** فوق الكاركتر (أقصى 5). */
     val orbit: List<PersonChip>,
     /** الباقيين في الشبكة (المؤرشف اللي عليه أو ليه فلوس هنا بس). */
     val rest: List<PersonChip>,
@@ -101,7 +101,7 @@ internal enum class OwedSide(val kinds: Set<ObligationKind>) {
     YOU_OWE(setOf(ObligationKind.LOAN_PAYABLE, ObligationKind.CUSTODY_PAYABLE)),
 }
 
-/** إشارة السطر: فات موعده > قرّب (٧ أيام) > عادي. ⚠️ «منتظر من زمان» محتاجة تاريخ الدين — مش متاحة (missingLogic). */
+/** إشارة السطر: فات موعده > قرّب (7 أيام) > عادي. ⚠️ «منتظر من زمان» محتاجة تاريخ الدين — مش متاحة (missingLogic). */
 internal enum class OwedSignal { OVERDUE, SOON, CALM }
 
 internal data class OwedRowUi(

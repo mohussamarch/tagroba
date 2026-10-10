@@ -13,13 +13,13 @@ import app.masroufy.core.sentenceDigits
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.TransferZone
 
-/** أقسام الزون: بانتظار ردك (٥ تحويلات أو أكتر في شهر) · بلا قرار · تقرّر. */
+/** أقسام الزون: بانتظار ردك (5 تحويلات أو أكتر في شهر) · بلا قرار · تقرّر. */
 enum class PartySection { WAITING, UNDECIDED, DECIDED }
 
 data class PartyRowView(
     val ref: TransferPartyRef,
     val initial: String,
-    /** آخر ٤ أرقام بس (CLAUDE.md #11) — بأرقام الجملة. */
+    /** آخر 4 أرقام بس (CLAUDE.md #11) — بأرقام الجملة. */
     val last4: String?,
     val meta: String,
     val chip: FieldChip,
@@ -36,7 +36,7 @@ data class TransfersView(val sections: List<Pair<PartySection, List<PartyRowView
     val empty: Boolean get() = sections.isEmpty()
 }
 
-/** «تحويل واحد» · «تحويلان» · «٥ تحويلات» · «١٤ تحويلًا». */
+/** «تحويل واحد» · «تحويلان» · «5 تحويلات» · «14 تحويلًا». */
 fun transfersCount(n: Int): String =
     countText(n, UiKey.TRANSFERS_COUNT_ONE, UiKey.TRANSFERS_COUNT_TWO, UiKey.TRANSFERS_COUNT_FEW, UiKey.TRANSFERS_COUNT_MANY)
 

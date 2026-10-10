@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.AskKey
+import app.masroufy.core.latinizeDigits
 import app.masroufy.core.ChipBar
 import app.masroufy.core.ChipRef
 import app.masroufy.core.UiKey
@@ -221,7 +222,7 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
         Box(Modifier.weight(1f).padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
             if (draft.isEmpty()) BasicText(t(UiKey.ASK_INPUT_HINT), style = Type.of(15).copy(color = Color(0xFF6E7F7A)), maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicTextField(
-                draft, onDraft, singleLine = true, textStyle = Type.of(15), cursorBrush = SolidColor(Ink.primary), interactionSource = focus,
+                draft, { onDraft(latinizeDigits(it)) }, singleLine = true, textStyle = Type.of(15), cursorBrush = SolidColor(Ink.primary), interactionSource = focus,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { onSend() }),
                 modifier = Modifier.fillMaxWidth().semantics { contentDescription = inputLabel },
             )

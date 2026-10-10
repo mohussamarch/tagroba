@@ -4,7 +4,7 @@ package app.masroufy.core
  * نصوص الواجهة المشتركة (الهيكل · شريطي التنقل والسؤال · لوحة الإضافة · الجرس · البلد · «معك الآن» · «القادم» · التقويم · الدخول · القفل ·
  * التواريخ) — **بالفصحى المختصرة** للسعودية والافتراضي (OVERRIDES §66). منقولة من نصوص النموذج التفاعلي (`design-source/prototype` على
  * فرع التصميم) بالحرف، إلا المكتوب جنبه. المصري في `TextsShellEgyptian.kt` والإنجليزي في `TextsShellEnglish.kt` (كتابة Claude — مستني
- * مراجعة المالك §40). **ممنوع «·» جنب رقم عربي** (KOTLIN-MAP §٣) ⇒ «،».
+ * مراجعة المالك §40). **ممنوع «·» جنب رقم عربي** (KOTLIN-MAP §3) ⇒ «،».
  */
 internal val MSA_SHELL_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.TAB_HOME to "الرئيسية",
@@ -30,7 +30,7 @@ internal val MSA_SHELL_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.GREETING_MORNING to "صباح الخير",
     UiKey.GREETING_EVENING to "مساء الخير",
     UiKey.ME_PROFILE to "ملفك",
-    UiKey.ME_PROFILE_PERCENT to "ملفك — مكتمل {0}٪",
+    UiKey.ME_PROFILE_PERCENT to "ملفك — مكتمل {0}%",
     UiKey.WEEKDAY_MON to "الإثنين",
     UiKey.WEEKDAY_TUE to "الثلاثاء",
     UiKey.WEEKDAY_WED to "الأربعاء",

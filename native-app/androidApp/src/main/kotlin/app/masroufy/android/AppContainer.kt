@@ -99,12 +99,15 @@ class AppContainer(private val context: Context) {
         session?.start()
     }
 
+    private val online = networkStatus(context)
+
     fun appDeps(permissions: Permissions): AppDeps = object : AppDeps {
         override val session = appSession
         override val signIn = this@AppContainer.signIn
         override val lock: AppLock? = appLock
         override val permissions = permissions
         override val emulator = this@AppContainer.emulator
+        override val online = this@AppContainer.online
     }
 
     private fun ready(st: AccountSession.State.Ready): AppSession {

@@ -52,7 +52,7 @@ import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
 
 /**
- * «ملفك» (`Account` — من دايرتك في الرئيسية وكارت «المزيد»): الدايرة والاسم والإيميل · «ملفك ٪» (الحسبة لسه مالهاش منطق ⇒ «غير متاح بعد»)
+ * «ملفك» (`Account` — من دايرتك في الرئيسية وكارت «المزيد»): الدايرة والاسم والإيميل · «ملفك %» (الحسبة لسه مالهاش منطق ⇒ «غير متاح بعد»)
  * · «غيّر شكلك» · عنك · الدخل · حياتك · المستحقات في الميزانية · الحساب (الإيميل للعرض · تغيير كلمة السر بلوحة الرابط · الخروج).
  * كل تعديل بيعدّي على `ManageProfile.saveWithQuestions` («هل تذهب بها للدوام؟» بيطلع منه هو — §64).
  */
@@ -171,10 +171,10 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?) {
                     if (email != null) BasicText(email, style = Type.of(13).copy(color = Ink.muted, textAlign = TextAlign.End, textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
                 }
             }
-            // نسبة «ملفك ٪» مالهاش حسبة في كوتلن لسه (OVERRIDES §76 «ناقص») ⇒ من غير شريط ولا رقم
+            // نسبة «ملفك %» مالهاش حسبة في كوتلن لسه (OVERRIDES §76 «ناقص») ⇒ من غير شريط ولا رقم
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
-                if (me?.profilePercent == null) NotYetBadge() else BasicText(app.masroufy.core.sentenceNumber(me.profilePercent) + "٪", style = Type.of(13, FontWeight.Bold))
+                if (me?.profilePercent == null) NotYetBadge() else BasicText(app.masroufy.core.sentenceNumber(me.profilePercent) + "%", style = Type.of(13, FontWeight.Bold))
             }
             LookButton(me?.lookIndex ?: 1)
             BasicText(t(UiKey.ACC_LOOK_SOON), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))

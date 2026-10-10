@@ -35,7 +35,7 @@ internal fun ZakatFactsSheet(visible: Boolean, questions: List<FactQuestion>, on
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         BasicText(t(UiKey.ZAKAT_FACTS_INTRO), style = Type.of(13).copy(color = Ink.muted))
         if (questions.isEmpty()) BasicText(t(UiKey.ZAKAT_FACTS_EMPTY), style = Type.of(13).copy(color = Ink.muted))
-        // الأسئلة ممكن تبقى كتير ⇒ بتتمرر جوه اللوحة (أقصاها ٤٨٠) والزرار تحت ثابت
+        // الأسئلة ممكن تبقى كتير ⇒ بتتمرر جوه اللوحة (أقصاها 480) والزرار تحت ثابت
         Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             for (q in questions) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

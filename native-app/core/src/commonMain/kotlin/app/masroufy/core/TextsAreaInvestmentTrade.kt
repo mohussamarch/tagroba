@@ -37,7 +37,7 @@ internal val MSA_INVEST_TRADE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.ASSET_TRADE_DONE_SELL to "سُجّل بيع {0} — مبلغ البيع ليس دخلًا",
     UiKey.ASSET_TRADE_DONE_PRICE to "حُفظ سعر يدوي {0} بتاريخ اليوم",
     UiKey.ASSET_TRADE_NAME to "اسم الأصل",
-    UiKey.ASSET_TRADE_NAME_HINT to "مثل: ذهب عيار ٢١",
+    UiKey.ASSET_TRADE_NAME_HINT to "مثل: ذهب عيار 21",
     UiKey.ASSET_TRADE_KIND to "النوع",
     UiKey.ASSET_TRADE_UNIT to "الوحدة (اختياري)",
     UiKey.ASSET_PROJ_SUB to "{0}، اشتريتها {1} بـ {2} مع الرسوم",
@@ -78,7 +78,7 @@ internal val MSA_INVEST_TRADE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.ASSET_PROJ_SAVE to "احفظ على الأصل",
     UiKey.ASSET_PROJ_SAVED to "حُفظ على «{0}»: القيمة والإيجار والنسبة",
     UiKey.ASSET_PROJ_ERR_NUMBER to "في إحدى الخانات قيمة ليست رقمًا.",
-    UiKey.ASSET_PROJ_ERR_VACANT to "الأشهر الفارغة في السنة من ٠ إلى ١٢",
+    UiKey.ASSET_PROJ_ERR_VACANT to "الأشهر الفارغة في السنة من 0 إلى 12",
 )
 
 internal val EGYPTIAN_INVEST_TRADE_TEXTS: Map<UiKey, String> = mapOf(
@@ -114,7 +114,7 @@ internal val EGYPTIAN_INVEST_TRADE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.ASSET_TRADE_DONE_SELL to "اتسجّل بيع {0} — الفلوس دي مش دخل",
     UiKey.ASSET_TRADE_DONE_PRICE to "اتسجّل سعر بإيدك {0} بتاريخ النهارده",
     UiKey.ASSET_TRADE_NAME to "اسم الأصل",
-    UiKey.ASSET_TRADE_NAME_HINT to "زي: دهب عيار ٢١",
+    UiKey.ASSET_TRADE_NAME_HINT to "زي: دهب عيار 21",
     UiKey.ASSET_TRADE_KIND to "النوع",
     UiKey.ASSET_TRADE_UNIT to "الوحدة (لو عايز تغيّرها)",
     UiKey.ASSET_PROJ_SUB to "{0}، اشتريتها {1} بـ {2} بالرسوم",
@@ -155,7 +155,7 @@ internal val EGYPTIAN_INVEST_TRADE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.ASSET_PROJ_SAVE to "احفظ على الأصل",
     UiKey.ASSET_PROJ_SAVED to "اتحفظت على «{0}»: القيمة والإيجار والنسبة",
     UiKey.ASSET_PROJ_ERR_NUMBER to "فيه خانة مكتوب فيها حاجة مش رقم.",
-    UiKey.ASSET_PROJ_ERR_VACANT to "الشهور الفاضية في السنة من ٠ لـ ١٢",
+    UiKey.ASSET_PROJ_ERR_VACANT to "الشهور الفاضية في السنة من 0 لـ 12",
 )
 
 internal val ENGLISH_INVEST_TRADE_TEXTS: Map<UiKey, String> = mapOf(

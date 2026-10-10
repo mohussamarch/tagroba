@@ -2,7 +2,7 @@ package app.masroufy.core
 
 /**
  * نصوص منطقة «الرئيسية» — التقويم (`Calendar` — رد المالك آخر §76: ملخص أحداث + «حدث جديد» + الشبكة). مضمومة في `TextsAreaHome.kt`.
- * العدّ بقواعد العربي: واحد · اتنين · ٣–١٠ جمع · ١١+ مفرد منصوب.
+ * العدّ بقواعد العربي: واحد · اتنين · 3–10 جمع · 11+ مفرد منصوب.
  */
 internal val MSA_AREA_HOME_CALENDAR_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.CALENDAR_TITLE to "التقويم",
@@ -40,8 +40,8 @@ internal val MSA_AREA_HOME_CALENDAR_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.CALENDAR_COUNT_FEW to "{0} مواعيد",
     UiKey.CALENDAR_COUNT_MANY to "{0} موعدًا",
     UiKey.CALENDAR_SMART_NEAREST to "الأقرب: {0} {1}",
-    UiKey.CALENDAR_SMART_WINDOW to "في الـ٣٠ يومًا القادمة {0}",
-    UiKey.CALENDAR_SMART_WINDOW_OPEN to "في الـ٣٠ يومًا القادمة {0}، منها {1} غير محجوزة",
+    UiKey.CALENDAR_SMART_WINDOW to "في الـ30 يومًا القادمة {0}",
+    UiKey.CALENDAR_SMART_WINDOW_OPEN to "في الـ30 يومًا القادمة {0}، منها {1} غير محجوزة",
     UiKey.CALENDAR_SMART_BEFORE_PAY to "{0} قبل الراتب بأيام",
     UiKey.CALENDAR_SMART_BEFORE_PAY_ONE to "{0} قبل الراتب بيوم",
     UiKey.CALENDAR_SMART_JOIN to ". ",
@@ -92,8 +92,8 @@ internal val EGYPTIAN_AREA_HOME_CALENDAR_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.CALENDAR_COUNT_FEW to "{0} مواعيد",
     UiKey.CALENDAR_COUNT_MANY to "{0} ميعاد",
     UiKey.CALENDAR_SMART_NEAREST to "الأقرب: {0} {1}",
-    UiKey.CALENDAR_SMART_WINDOW to "في الـ٣٠ يوم الجايين {0}",
-    UiKey.CALENDAR_SMART_WINDOW_OPEN to "في الـ٣٠ يوم الجايين {0}، منهم {1} مش محجوزين",
+    UiKey.CALENDAR_SMART_WINDOW to "في الـ30 يوم الجايين {0}",
+    UiKey.CALENDAR_SMART_WINDOW_OPEN to "في الـ30 يوم الجايين {0}، منهم {1} مش محجوزين",
     UiKey.CALENDAR_SMART_BEFORE_PAY to "{0} قبل المرتب بكام يوم",
     UiKey.CALENDAR_SMART_BEFORE_PAY_ONE to "{0} قبل المرتب بيوم",
     UiKey.CALENDAR_SMART_JOIN to ". ",

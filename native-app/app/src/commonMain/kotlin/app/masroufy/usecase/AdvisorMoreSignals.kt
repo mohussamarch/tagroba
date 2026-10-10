@@ -111,7 +111,7 @@ internal suspend fun moreAdvisorCandidates(
         bigOneCandidate(line.id, line.amountMinor, line.date, usualOutsideDues, currency)?.let { out += it }
     }
 
-    // weekly: الأسبوع اللي خلص (الحد ⇒ السبت) مقارنة باللي قبله
+    // weekly: الأسبوع اللي خلص (السبت ⇒ الجمعة — §79 L9) مقارنة باللي قبله
     val weekEnd = lastWeekEnd(input.today)
     val weekStart = plusDays(weekEnd, -6)
     val prevEnd = plusDays(weekStart, -1)

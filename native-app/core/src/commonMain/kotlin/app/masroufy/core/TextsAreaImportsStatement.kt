@@ -1,7 +1,7 @@
 package app.masroufy.core
 
 /**
- * «الاستيراد» ٣/٥: `StatementImport` + `StatementColumns`. النص من النموذج التفاعلي بالحرف (الفصحى من `space = السعودية` والمصري من `مصر`)،
+ * «الاستيراد» 3/5: `StatementImport` + `StatementColumns`. النص من النموذج التفاعلي بالحرف (الفصحى من `space = السعودية` والمصري من `مصر`)،
  * واللي مالوش مقابل في النموذج (حالات المنطق الزيادة: ملف كبير · مش PDF ولا CSV · التعيين اليدوي لسه مالوش حالة استخدام) كتابة Claude بنفس النبرة.
  * **ممنوع «·» جنب رقم عربي** ⇒ «،».
  */
@@ -44,12 +44,12 @@ internal val MSA_IMPORTS_STATEMENT_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.STATEMENT_IMPORT_COLS_TITLE to "الأعمدة غير معروفة",
     UiKey.STATEMENT_IMPORT_MAP_COLUMNS to "حدّد الأعمدة يدويًا",
     UiKey.STATEMENT_IMPORT_BATCHES_LINK to "الكشوف المستوردة سابقًا",
-    UiKey.STATEMENT_IMPORT_TOO_LARGE to "الملف أكبر من ٢٥ ميجابايت. صدّر من تطبيق البنك فترة أقصر ثم أعد المحاولة.",
+    UiKey.STATEMENT_IMPORT_TOO_LARGE to "الملف أكبر من 25 ميجابايت. صدّر من تطبيق البنك فترة أقصر ثم أعد المحاولة.",
     UiKey.STATEMENT_IMPORT_UNSUPPORTED to "هذا الملف ليس PDF ولا CSV. اختر كشفًا من تطبيق البنك.",
     UiKey.STATEMENT_IMPORT_NO_PDF to "قراءة ملفات PDF غير متاحة على هذا الجهاز.",
     UiKey.STATEMENT_COLUMNS_TITLE to "تحديد الأعمدة",
     UiKey.STATEMENT_COLUMNS_INTRO to "اختر معنى كل عمود. لا نخمّن الأعمدة المالية، ولا يُسجَّل شيء قبل المراجعة.",
-    UiKey.STATEMENT_COLUMNS_TABLE to "أول ٤ أسطر",
+    UiKey.STATEMENT_COLUMNS_TABLE to "أول 4 أسطر",
     UiKey.STATEMENT_COLUMNS_TABLE_NOTE to "من {0}، اسحب جانبًا",
     UiKey.STATEMENT_COLUMNS_PICK to "اختر",
     UiKey.STATEMENT_COLUMNS_WORD to "العمود {0}",
@@ -72,6 +72,9 @@ internal val MSA_IMPORTS_STATEMENT_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.STATEMENT_COLUMNS_CHECK_AMOUNT to "المبلغ",
     UiKey.STATEMENT_COLUMNS_CHECK_BALANCE to "الرصيد (اختياري)",
     UiKey.STATEMENT_COLUMNS_BALANCE_WHY to "عمود الرصيد يتيح التحقق من أن كل سطر = الرصيد السابق − المدين + الدائن، فيظهر أي سطر ناقص أو مقروء خطأ قبل التسجيل.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_CHAINED to "الرصيد متسلسل في كل الأسطر.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_NOT_CHAINED to "تنبيه: الرصيد غير متسلسل (الأسطر {0}). لن يوقف ذلك الاستيراد، وستظهر هذه الأسطر في المراجعة.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_NOT_NUMBERS to "عمود الرصيد فيه قيم ليست أرقامًا (الأسطر {0}) — اختر العمود الصحيح للمتابعة.",
     UiKey.STATEMENT_COLUMNS_PENDING to "قراءة الملف بالأعمدة التي تختارها لم تُبنَ في التطبيق بعد، لذلك لا يمكن المتابعة الآن.",
 )
 
@@ -114,12 +117,12 @@ internal val EGYPTIAN_IMPORTS_STATEMENT_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.STATEMENT_IMPORT_COLS_TITLE to "الأعمدة مش معروفة",
     UiKey.STATEMENT_IMPORT_MAP_COLUMNS to "حدد الأعمدة بإيدك",
     UiKey.STATEMENT_IMPORT_BATCHES_LINK to "الكشوف اللي اتستوردت قبل كده",
-    UiKey.STATEMENT_IMPORT_TOO_LARGE to "الملف أكبر من ٢٥ ميجا. صدّر من تطبيق البنك فترة أقصر وجرّب تاني.",
+    UiKey.STATEMENT_IMPORT_TOO_LARGE to "الملف أكبر من 25 ميجا. صدّر من تطبيق البنك فترة أقصر وجرّب تاني.",
     UiKey.STATEMENT_IMPORT_UNSUPPORTED to "الملف ده مش PDF ولا CSV. اختار كشف من تطبيق البنك.",
     UiKey.STATEMENT_IMPORT_NO_PDF to "قراية ملفات PDF مش متاحة على الجهاز ده.",
     UiKey.STATEMENT_COLUMNS_TITLE to "تحديد الأعمدة",
     UiKey.STATEMENT_COLUMNS_INTRO to "اختار معنى كل عمود. مش بنخمّن أعمدة الفلوس، ومفيش حاجة بتتسجل قبل المراجعة.",
-    UiKey.STATEMENT_COLUMNS_TABLE to "أول ٤ سطور",
+    UiKey.STATEMENT_COLUMNS_TABLE to "أول 4 سطور",
     UiKey.STATEMENT_COLUMNS_TABLE_NOTE to "من {0}، اسحب للجنب",
     UiKey.STATEMENT_COLUMNS_PICK to "اختار",
     UiKey.STATEMENT_COLUMNS_WORD to "العمود {0}",
@@ -142,6 +145,9 @@ internal val EGYPTIAN_IMPORTS_STATEMENT_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.STATEMENT_COLUMNS_CHECK_AMOUNT to "المبلغ",
     UiKey.STATEMENT_COLUMNS_CHECK_BALANCE to "الرصيد (مش لازم)",
     UiKey.STATEMENT_COLUMNS_BALANCE_WHY to "الرصيد بيخلّينا نتأكد إن كل سطر = الرصيد اللي قبله − المدين + الدائن، فأي سطر ناقص أو متقري غلط يبان قبل التسجيل.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_CHAINED to "الرصيد متسلسل في كل السطور.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_NOT_CHAINED to "تنبيه: الرصيد مش متسلسل (السطور {0}). ده مش هيوقف الاستيراد، والسطور دي هتظهر في المراجعة.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_NOT_NUMBERS to "عمود الرصيد فيه قيم مش أرقام (السطور {0}) — اختار العمود الصح عشان تكمّل.",
     UiKey.STATEMENT_COLUMNS_PENDING to "قراية الملف بالأعمدة اللي بتختارها لسه ما اتبنتش في البرنامج، فمش هينفع تكمّل دلوقتي.",
 )
 
@@ -212,5 +218,8 @@ internal val ENGLISH_IMPORTS_STATEMENT_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.STATEMENT_COLUMNS_CHECK_AMOUNT to "Amount",
     UiKey.STATEMENT_COLUMNS_CHECK_BALANCE to "Balance (optional)",
     UiKey.STATEMENT_COLUMNS_BALANCE_WHY to "A balance column lets us check that every line = previous balance − debit + credit, so a missing or misread line shows up before saving.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_CHAINED to "The balance chains across every line.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_NOT_CHAINED to "Heads-up: the balance doesn't chain (lines {0}). This won't stop the import; these lines will show up in review.",
+    UiKey.STATEMENT_COLUMNS_BALANCE_NOT_NUMBERS to "The balance column has values that aren't numbers (lines {0}) — pick the right column to continue.",
     UiKey.STATEMENT_COLUMNS_PENDING to "Reading a file with the columns you choose isn't built into the app yet, so you can't continue right now.",
 )

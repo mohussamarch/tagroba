@@ -25,7 +25,7 @@ enum class CatEditMode { EDIT, NEW_MAIN, NEW_SUB }
 /** اللي بيتعدّل: تصنيف موجود ([id]) أو جديد (رئيسي أو فرعي تحت [parentId]). */
 data class CatEditTarget(val mode: CatEditMode, val id: String? = null, val parentId: String? = null)
 
-/** [swatchKey] = null ⇒ «لونه الحالي» (لون قديم مش من الدرجات الـ١٨) — الحفظ ما بيغيّروش. */
+/** [swatchKey] = null ⇒ «لونه الحالي» (لون قديم مش من الدرجات الـ18) — الحفظ ما بيغيّروش. */
 data class CatDraft(val name: String, val iconKey: String?, val parentId: String?, val groupKey: String?, val swatchKey: String?)
 
 data class SwatchUi(val key: String?, val name: String, val colorHex: String)

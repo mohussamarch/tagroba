@@ -64,7 +64,7 @@ data class InheritanceDraft(
     val currency: Currency get() = countryPack(countryCode).currency
 }
 
-/** الحد الأقصى لكل نوع وارث (النموذج): زوج واحد · ٤ زوجات · أب وأم وجد وجدة واحدة من كل جهة · الباقي لحد ١٠٠. */
+/** الحد الأقصى لكل نوع وارث (النموذج): زوج واحد · 4 زوجات · أب وأم وجد وجدة واحدة من كل جهة · الباقي لحد 100. */
 fun maxCount(kind: HeirKind): Int = when (kind) {
     HeirKind.HUSBAND, HeirKind.FATHER, HeirKind.MOTHER, HeirKind.GRANDFATHER, HeirKind.PATERNAL_GRANDMOTHER, HeirKind.MATERNAL_GRANDMOTHER -> 1
     HeirKind.WIFE -> 4
@@ -127,7 +127,7 @@ fun InheritanceDraft.toScenarioDraft(name: String): InheritanceScenarioDraft? {
     return InheritanceScenarioDraft(name, estateOf, person, case)
 }
 
-/** الاسم الافتراضي للحفظ: «تركتي — ٧ أكتوبر» · «تركة سالم — ٧ أكتوبر». */
+/** الاسم الافتراضي للحفظ: «تركتي — 7 أكتوبر» · «تركة سالم — 7 أكتوبر». */
 fun defaultScenarioName(d: InheritanceDraft, today: String): String =
     d.scenarioName ?: if (d.estateOf == EstateOwner.MINE) t(UiKey.INHCALC_NAME_MINE, dayMonth(today))
     else t(UiKey.INHCALC_NAME_OTHER, d.personName.trim(), dayMonth(today))

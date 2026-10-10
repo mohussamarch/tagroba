@@ -18,7 +18,7 @@ import app.masroufy.ui.shell.countryLabel
  */
 data class ExportRange(val ok: Boolean, val line: String, val days: Int)
 
-/** «٢٨ سبتمبر ٢٠٢٦ ← ٧ أكتوبر ٢٠٢٦، ١٠ أيام» — أو السبب لو المدى غلط. */
+/** «28 سبتمبر 2026 ← 7 أكتوبر 2026، 10 أيام» — أو السبب لو المدى غلط. */
 fun exportRange(from: IsoDate, to: IsoDate, today: IsoDate): ExportRange {
     if (!isValidIsoDate(from) || !isValidIsoDate(to) || to > today) return ExportRange(false, t(UiKey.BAK_RANGE_BAD_DATE), 0)
     if (from > to) return ExportRange(false, t(UiKey.BAK_RANGE_BAD_ORDER), 0)
@@ -52,7 +52,7 @@ fun planView(plan: FullBackupPlan): PlanView {
     return PlanView(plan.totalToAdd, incoming, profile, listOf(root) + others, plan.warnings)
 }
 
-/** «سيُضاف ٣٢ سجلًا» / «كل شيء موجود عندك». */
+/** «سيُضاف 32 سجلًا» / «كل شيء موجود عندك». */
 fun planSpaceLine(s: PlanSpace, done: Boolean): String =
     if (s.toAdd == 0) t(UiKey.RST_ALL_THERE) else t(if (done) UiKey.RST_ADDED_N else UiKey.RST_WILL_ADD_N, countText(s.toAdd, RECORD_WORDS))
 

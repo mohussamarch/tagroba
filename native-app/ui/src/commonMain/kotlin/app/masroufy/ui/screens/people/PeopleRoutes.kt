@@ -8,9 +8,9 @@ import app.masroufy.ui.nav.SheetRoute
 import app.masroufy.ui.nav.Tab
 
 /**
- * منطقة «الأشخاص» (`SCREENS.md` §٢.٥): People · PersonProfile · AddPersonSheet · OwedToYou · YouOwe · ProfileDebtSheet · OccasionSheet ·
+ * منطقة «الأشخاص» (`SCREENS.md` §2.5): People · PersonProfile · AddPersonSheet · OwedToYou · YouOwe · ProfileDebtSheet · OccasionSheet ·
  * Events · EventDetail · EventAddSheet · EventEditSheet · EventPrep · EventSpendLinkSheet · NuqootSheet · Projects · ProjectDetail.
- * الملف ده بتاع المنطقة بس. اسم المسار = اسم اللوحة في النموذج (KOTLIN-MAP §١).
+ * الملف ده بتاع المنطقة بس. اسم المسار = اسم اللوحة في النموذج (KOTLIN-MAP §1).
  * - **لوحات بتتفتح من مناطق تانية** (`SheetRoute`): «إضافة شخص» (زرار «+») · «الديون القديمة» (سؤال الملف) · «مناسبة» (ملفك) · «حدث جديد» (التقويم).
  * - **جوه شاشة واحدة** (`Sheet` جوه الشاشة): EventEditSheet · EventSpendLinkSheet · NuqootSheet (تفاصيل الحدث).
  */

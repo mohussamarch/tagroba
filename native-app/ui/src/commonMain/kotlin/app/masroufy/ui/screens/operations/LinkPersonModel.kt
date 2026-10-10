@@ -29,7 +29,7 @@ fun existingPersonLinks(rows: List<PersonRow>, transactionId: Id): List<PersonLi
     }
 }
 
-/** الأشخاص في اللوحة: المطابقين للبحث (بالاسم المطبّع)، وأول ٨ لو مفيش بحث — والمختار دايمًا ظاهر. */
+/** الأشخاص في اللوحة: المطابقين للبحث (بالاسم المطبّع)، وأول 8 لو مفيش بحث — والمختار دايمًا ظاهر. */
 fun personChoices(people: List<Person>, query: String, chosen: Person?): List<Person> {
     val q = normalizeText(query)
     val live = people.filter { !it.archived }

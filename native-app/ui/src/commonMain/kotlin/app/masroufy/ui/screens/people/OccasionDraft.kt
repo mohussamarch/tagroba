@@ -16,7 +16,7 @@ import app.masroufy.usecase.UpcomingOccasion
 
 /**
  * لوحة «مناسبة» (`OccasionSheet`) من غير رسم: الخانات · سطر «المرة القادمة» لايف · التذكير · الفحص قبل الحفظ.
- * التواريخ من `core` (`checkOccasion` · `nextOccurrence`) — ميلادي بس، ٢٩ فبراير ⇒ ٢٨ في السنين العادية، والتذكير ١–٦٠ يوم (المبدئي أسبوع).
+ * التواريخ من `core` (`checkOccasion` · `nextOccurrence`) — ميلادي بس، 29 فبراير ⇒ 28 في السنين العادية، والتذكير 1–60 يوم (المبدئي أسبوع).
  */
 internal data class OccasionDraft(
     val kind: OccasionKind = OccasionKind.BIRTHDAY,
@@ -53,7 +53,7 @@ private fun draftOccasion(d: OccasionDraft): Occasion? {
     }.getOrNull()
 }
 
-/** «قبلها بأسبوع» · «قبلها بيومين» · «قبلها بـ١٠ أيام». */
+/** «قبلها بأسبوع» · «قبلها بيومين» · «قبلها بـ10 أيام». */
 internal fun leadName(days: Int): String = when (days) {
     1 -> t(UiKey.OCC_LEAD_ONE)
     2 -> t(UiKey.OCC_LEAD_TWO)
@@ -106,7 +106,7 @@ internal fun checkDraft(d: OccasionDraft, personId: String?): OccasionCheck {
     }.getOrElse { OccasionCheck.Bad(it.message ?: t(UiKey.PPL_DATE_INVALID)) }
 }
 
-/** كارت المناسبة: العنوان («زواج خالد») وتحته «١٨ أكتوبر ٢٠٢٦، بعد ١١ يومًا، التذكير قبلها بأسبوع». */
+/** كارت المناسبة: العنوان («زواج خالد») وتحته «18 أكتوبر 2026، بعد 11 يومًا، التذكير قبلها بأسبوع». */
 internal fun occasionCardTitle(u: UpcomingOccasion): String = occasionTitle(u.occasion, u.personName, null)
 
 internal fun occasionCardSub(u: UpcomingOccasion, today: IsoDate): String =

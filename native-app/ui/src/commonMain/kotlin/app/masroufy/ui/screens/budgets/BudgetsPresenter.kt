@@ -92,7 +92,7 @@ data class BudgetsUi(
     val leftover: LeftoverUi?,
 )
 
-/** اسم الشهر المالي = الشهر اللي **بيخلص** فيه (٢٨ سبتمبر–٢٧ أكتوبر = «أكتوبر» — OVERRIDES §76 ٣ بترقيم فرع التصميم). */
+/** اسم الشهر المالي = الشهر اللي **بيخلص** فيه (28 سبتمبر–27 أكتوبر = «أكتوبر» — OVERRIDES §76 3 بترقيم فرع التصميم). */
 fun periodMonthName(period: Period): String = monthName(parseIsoDate(period.end).month)
 
 /** النسبة المعروضة من `BudgetStatus` (عُشر في المية ⇒ نسبة صحيحة لتحت). */

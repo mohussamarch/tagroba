@@ -11,6 +11,7 @@ import app.masroufy.core.ChipRef
 import app.masroufy.core.ForgottenMark
 import app.masroufy.core.LearnedItem
 import app.masroufy.core.StartItem
+import app.masroufy.core.latinizeDigits
 import app.masroufy.core.UnknownQuestion
 import app.masroufy.core.uiText
 import app.masroufy.ui.app.AskDeps
@@ -94,7 +95,8 @@ class AskPresenter(private val deps: AskDeps, private val tab: () -> AssistTab) 
     suspend fun open() = run { suite().chat.open(ctx()) }
 
     suspend fun send(text: String): Boolean {
-        val clean = text.trim()
+        // الأرقام العربي الهندي والفارسي بتتحول لـ0-9 قبل الفهم وقبل ما تتحفظ في الشات (OVERRIDES §79 — L5) — للمكتوب والصوت
+        val clean = latinizeDigits(text).trim()
         if (clean.isEmpty() || busy) return false
         past = null
         run { suite().chat.send(clean, ctx()) }

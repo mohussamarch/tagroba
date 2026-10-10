@@ -57,7 +57,7 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
-/** الجاي بيتقري ٩٠ يوم قدام و٣١ ورا (اللي فات ولسه عليك يبان أحمر). */
+/** الجاي بيتقري 90 يوم قدام و31 ورا (اللي فات ولسه عليك يبان أحمر). */
 private const val AHEAD_DAYS = 90
 private const val BEHIND_DAYS = 31
 
@@ -69,7 +69,7 @@ private const val BEHIND_DAYS = 31
 private const val EVENT_ADD_READY = true
 
 /**
- * التقويم: «الأحداث القادمة» (الجملة الذكية + أقرب ٦ + «كل القادم») ⇒ «حدث جديد» (`EventAddSheet` بيوم الشبكة المختار) ⇒ الشبكة ⇒ مواعيد اليوم.
+ * التقويم: «الأحداث القادمة» (الجملة الذكية + أقرب 6 + «كل القادم») ⇒ «حدث جديد» (`EventAddSheet` بيوم الشبكة المختار) ⇒ الشبكة ⇒ مواعيد اليوم.
  * الضغط على ميعاد ⇒ تبويب مصدره (الاشتراكات والأقساط والجمعيات والديون في «العمليات»/المستحقات · المناسبات والأحداث في «الأشخاص» · الزكاة في
  * «الاستثمار») — ⚠️ صفحة المصدر نفسها بتتوصل وقت الدمج.
  */
@@ -203,7 +203,7 @@ internal fun CalRowView(row: CalRow, onOpen: (CalendarItemType) -> Unit) {
     }
 }
 
-/** «اضغط يومًا لترى مواعيده» ⇒ «يوم ١٤ أكتوبر» + مواعيده (أو «لا مواعيد في هذا اليوم»). */
+/** «اضغط يومًا لترى مواعيده» ⇒ «يوم 14 أكتوبر» + مواعيده (أو «لا مواعيد في هذا اليوم»). */
 @Composable
 private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<CalendarItem>?, onClear: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

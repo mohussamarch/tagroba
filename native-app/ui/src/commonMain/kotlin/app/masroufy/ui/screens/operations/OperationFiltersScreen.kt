@@ -63,7 +63,7 @@ import app.masroufy.usecase.LoadTransactionsScreenRequest
 import app.masroufy.usecase.TransactionsScreenData
 
 /**
- * تصفية العمليات (`OperationFilters`): بحث · المبلغ و«قريب منه ±٥٪» · الفترة · النوع · التصنيف · المحفظة · المراجعة ⇒ «اعرض N» بالعدد الحقيقي
+ * تصفية العمليات (`OperationFilters`): بحث · المبلغ و«قريب منه ±5%» · الفترة · النوع · التصنيف · المحفظة · المراجعة ⇒ «اعرض N» بالعدد الحقيقي
  * ⇒ النتايج بشرايح بتتشال. القراية من `LoadTransactionsScreen` لكل شهر في الفترة، والاختيار بدوال `core` (`searchTransactions` …).
  * ⚠️ «المصدر» (رسالة · كشف · يدوي) و«الشخص» ومجموع النتايج مالهمش حالة استخدام لسه ⇒ مش معروضين.
  */

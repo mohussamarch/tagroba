@@ -9,14 +9,14 @@ import app.masroufy.core.TextKey
 import app.masroufy.ui.text.t
 
 /**
- * «البلدان» (`Spaces`) — من البلاد للعرض، **دالة نقية** (بتتختبر على JVM). السعودية بتتعمل لوحدها وما بتتأرشفش (§41 · §64-٣)،
+ * «البلدان» (`Spaces`) — من البلاد للعرض، **دالة نقية** (بتتختبر على JVM). السعودية بتتعمل لوحدها وما بتتأرشفش (§41 · §64-3)،
  * وبلد واحدة = حساب واحد (`SPACE_COUNTRY_TAKEN`) — الموجودة أو المؤرشفة ما بتتعملش تاني.
  */
 data class SpaceCardView(
     val space: Space,
     val active: Boolean,
     val archived: Boolean,
-    /** «٤ محافظ، أُنشئ تلقائيًا» — العدد بيتشال لو مش معروف (مش صفر). */
+    /** «4 محافظ، أُنشئ تلقائيًا» — العدد بيتشال لو مش معروف (مش صفر). */
     val meta: String,
     val canSwitch: Boolean,
     val canArchive: Boolean,

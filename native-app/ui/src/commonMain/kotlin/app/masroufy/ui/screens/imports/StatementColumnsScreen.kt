@@ -46,9 +46,9 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /**
- * «تحديد الأعمدة» (`StatementColumns`) لملف CSV أعمدته مش معروفة: أول ٤ أسطر · اختيار معنى كل عمود · المحفظة.
+ * «تحديد الأعمدة» (`StatementColumns`) لملف CSV أعمدته مش معروفة: أول 4 أسطر · اختيار معنى كل عمود · المحفظة.
  * ⚠️ **التعيين اليدوي نفسه لسه مالوش حالة استخدام** (`SchemaId` فيه أشكال ثابتة بس — OVERRIDES §76 «ناقص في كوتلن»: لا ربط يدوي ولا مبلغ بإشارة
- * ولا صيغة التاريخ ولا سلسلة الرصيد ولا حفظ القالب) ⇒ الاختيار بيتعرض، والمعاينة «غير متاح»، و«راجع العمليات» معطّل وبيقول ليه — من غير تخمين.
+ * ولا صيغة التاريخ ولا حفظ القالب؛ فحص الرصيد بس اتبنى — `checkBalanceColumn` رد المالك L3) ⇒ الاختيار بيتعرض، والمعاينة «غير متاح»، و«راجع العمليات» معطّل وبيقول ليه — من غير تخمين.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -61,6 +61,10 @@ fun StatementColumnsScreen(draftId: Long) {
     var wallets by remember(deps) { mutableStateOf<List<Wallet>>(emptyList()) }
     var wallet by remember { mutableStateOf<Wallet?>(null) }
     LaunchedEffect(deps) { wallets = runCatching { deps.wallets() }.getOrDefault(emptyList()); wallet = defaultWallet(wallets) }
+    // فحص الرصيد على **كل** سطور الملف (مش الأربعة المعروضين بس) بعملة المحفظة المختارة — الحساب في `core`
+    val allRows = remember(draft) { draft?.csv?.let { deps.csvTable(it, Int.MAX_VALUE) }?.rows.orEmpty() }
+    val currency = wallet?.currency ?: LocalSpace.current.space.currency
+    val balance = remember(allRows, roles, currency) { balanceNote(allRows, roles, currency) }
 
     InnerScaffold(t(UiKey.STATEMENT_COLUMNS_TITLE)) {
         if (draft == null || table == null) {
@@ -92,7 +96,7 @@ fun StatementColumnsScreen(draftId: Long) {
                 }
             }
         }
-        item(key = "checks") { ColumnChecks(table, roles) }
+        item(key = "checks") { ColumnChecks(table, roles, balance) }
         item(key = "wallet") {
             FloatingCard(Modifier.fillMaxWidth()) {
                 BasicText(t(UiKey.STATEMENT_IMPORT_WALLET_Q), style = Type.of(14, FontWeight.Bold))
@@ -126,7 +130,7 @@ private fun ColumnCell(head: String, cells: List<String>, role: ColumnRole?, sel
 }
 
 @Composable
-private fun ColumnChecks(table: CsvTable, roles: List<ColumnRole?>) {
+private fun ColumnChecks(table: CsvTable, roles: List<ColumnRole?>, balance: BalanceNote?) {
     FloatingCard(Modifier.fillMaxWidth()) {
         BasicText(t(UiKey.STATEMENT_COLUMNS_PREVIEW), style = Type.of(14, FontWeight.Bold))
         val first = table.rows.firstOrNull().orEmpty()
@@ -148,6 +152,18 @@ private fun ColumnChecks(table: CsvTable, roles: List<ColumnRole?>) {
                     BasicText(t(label), style = Type.of(13, FontWeight.Bold))
                     BasicText(chosen.ifEmpty { t(UiKey.STATEMENT_COLUMNS_UNSET) }, style = Type.caption().copy(color = Ink.muted))
                 }
+            }
+        }
+        // رد المالك L3: مش متسلسل ⇒ تنبيه (كهرماني) والاستيراد بيكمل · مش أرقام ⇒ بيوقف (أحمر) · متسلسل ⇒ أخضر
+        if (balance != null) {
+            val color = when (balance.tone) {
+                BalanceTone.OK -> Ink.income
+                BalanceTone.WARN -> Ink.focus
+                BalanceTone.BLOCK -> Ink.expense
+            }
+            Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                StatusDot(color, 8.dp)
+                BasicText(balance.text, Modifier.weight(1f), style = Type.of(13, FontWeight.Bold).copy(color = color))
             }
         }
         BasicText(t(UiKey.STATEMENT_COLUMNS_BALANCE_WHY), style = Type.of(12, lineHeight = 1.7).copy(color = Ink.muted))

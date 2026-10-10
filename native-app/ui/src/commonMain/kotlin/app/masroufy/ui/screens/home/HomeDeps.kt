@@ -10,7 +10,7 @@ import app.masroufy.usecase.RunAlertEngine
 import app.masroufy.usecase.SetEconomicKind
 
 /**
- * منطقة «الرئيسية» (`SCREENS.md` §٢.٢ + القفل وسؤال الملف و«اختر شكلك» والمراجعة — توزيع جلسة البناء): حالات الاستخدام اللي شاشاتها محتاجاها **بس**.
+ * منطقة «الرئيسية» (`SCREENS.md` §2.2 + القفل وسؤال الملف و«اختر شكلك» والمراجعة — توزيع جلسة البناء): حالات الاستخدام اللي شاشاتها محتاجاها **بس**.
  * التنفيذ: `:wiring` → `HomeGraph`. **ممنوع** مستودع هنا (CLAUDE.md #4). «معك الآن» والجرس والبلد في `ShellDeps` (`LocalSpace.current.shell`).
  */
 interface HomeDeps {

@@ -51,7 +51,7 @@ internal val MSA_SHELL_AUTH_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SIGNIN_MODE_NEW to "حساب جديد",
     UiKey.SIGNIN_EMAIL to "البريد الإلكتروني",
     UiKey.SIGNIN_PASSWORD to "كلمة المرور",
-    UiKey.SIGNIN_PASS_HINT to "٦ أحرف على الأقل.",
+    UiKey.SIGNIN_PASS_HINT to "6 أحرف على الأقل.",
     UiKey.SIGNIN_SHOW_PASS to "إظهار كلمة المرور",
     UiKey.SIGNIN_HIDE_PASS to "إخفاء كلمة المرور",
     UiKey.SIGNIN_SUBMIT_IN to "دخول",

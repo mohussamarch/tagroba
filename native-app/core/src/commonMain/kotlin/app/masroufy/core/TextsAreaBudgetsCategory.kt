@@ -16,7 +16,7 @@ internal val MSA_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
     UiKey.CAT_BUDGET_NO_LIMIT_LINE to "بلا سقف — حدّد سقفًا بالأسفل لتتابع ما بقي منه.",
     UiKey.CAT_BUDGET_PACE_TITLE to "الوتيرة",
     UiKey.CAT_BUDGET_PACE_NONE to "لا مصروف في هذا التصنيف هذا الشهر بعد",
-    UiKey.CAT_BUDGET_PACE_USED to "صُرف {0}٪ ومضى {1}٪ من الشهر",
+    UiKey.CAT_BUDGET_PACE_USED to "صُرف {0}% ومضى {1}% من الشهر",
     UiKey.CAT_BUDGET_PACE_NO_LIMIT to "بلا سقف، فلا وتيرة مقابل حد",
     UiKey.CAT_BUDGET_PACE_HINT to "حدّد سقفًا لتقارن صرفك بما مضى من الشهر.",
     UiKey.CAT_BUDGET_AVG_NA_NOTE to "يحتاج {0} أشهر مكتملة",
@@ -31,7 +31,7 @@ internal val MSA_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
     UiKey.CAT_BUDGET_EMPTY_TITLE to "لا عمليات في {0} هذا الشهر",
     UiKey.CAT_BUDGET_EMPTY_BODY to "تظهر هنا أول عملية فيه، ويبقى السقف كما هو.",
     UiKey.CAT_BUDGET_TX_NOTE to "آخر {0} من {1} عملية — البقية في «العمليات».",
-    UiKey.CAT_BUDGET_SAVED_ALERT to "حُفظ السقف {0}، والتنبيه عند {1}٪",
+    UiKey.CAT_BUDGET_SAVED_ALERT to "حُفظ السقف {0}، والتنبيه عند {1}%",
     UiKey.CAT_BUDGET_SAVED_NO_ALERT to "حُفظ السقف {0} بلا تنبيه",
     UiKey.CAT_BUDGET_CLEARED to "أُزيل السقف — المصروف يُحسب كما هو",
     UiKey.LIMIT_SHEET_TITLE to "سقف {0}",
@@ -49,10 +49,10 @@ internal val MSA_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
     UiKey.LIMIT_SHEET_SAVE to "احفظ",
     UiKey.LIMIT_SHEET_CLEAR to "إزالة السقف",
     UiKey.LIMIT_SHEET_EDIT to "عدّل السقف",
-    UiKey.LIMIT_SHEET_NOTE_SET to "السقف {0}، التنبيه عند {1}٪",
+    UiKey.LIMIT_SHEET_NOTE_SET to "السقف {0}، التنبيه عند {1}%",
     UiKey.LIMIT_SHEET_NOTE_OFF to "السقف {0}، التنبيه متوقف",
     UiKey.LIMIT_SHEET_NOTE_NONE to "بلا سقف — المصروف يُحسب على أي حال",
-    UiKey.LIMIT_SHEET_PERCENT to "{0}٪",
+    UiKey.LIMIT_SHEET_PERCENT to "{0}%",
 )
 
 internal val EGYPTIAN_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
@@ -70,7 +70,7 @@ internal val EGYPTIAN_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
     UiKey.CAT_BUDGET_NO_LIMIT_LINE to "من غير سقف — حدّد سقف تحت عشان تتابع فاضل منه كام.",
     UiKey.CAT_BUDGET_PACE_TITLE to "الوتيرة",
     UiKey.CAT_BUDGET_PACE_NONE to "لسه ما صرفتش حاجة في التصنيف ده الشهر ده",
-    UiKey.CAT_BUDGET_PACE_USED to "صرفت {0}٪ وعدّى {1}٪ من الشهر",
+    UiKey.CAT_BUDGET_PACE_USED to "صرفت {0}% وعدّى {1}% من الشهر",
     UiKey.CAT_BUDGET_PACE_NO_LIMIT to "من غير سقف، فمفيش وتيرة قصاد حد",
     UiKey.CAT_BUDGET_PACE_HINT to "حدّد سقف عشان تقارن صرفك باللي عدّى من الشهر.",
     UiKey.CAT_BUDGET_AVG_NA_NOTE to "محتاج {0} شهور مكتملة",
@@ -85,7 +85,7 @@ internal val EGYPTIAN_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
     UiKey.CAT_BUDGET_EMPTY_TITLE to "مفيش عمليات في {0} الشهر ده",
     UiKey.CAT_BUDGET_EMPTY_BODY to "أول ما تصرف فيه هتلاقي العملية هنا، والسقف بيفضل زي ما هو.",
     UiKey.CAT_BUDGET_TX_NOTE to "آخر {0} من {1} عملية — الباقي في «العمليات».",
-    UiKey.CAT_BUDGET_SAVED_ALERT to "اتحفظ السقف {0}، والتنبيه عند {1}٪",
+    UiKey.CAT_BUDGET_SAVED_ALERT to "اتحفظ السقف {0}، والتنبيه عند {1}%",
     UiKey.CAT_BUDGET_SAVED_NO_ALERT to "اتحفظ السقف {0} من غير تنبيه",
     UiKey.CAT_BUDGET_CLEARED to "اتشال السقف — المصروف بيتحسب زي ما هو",
     UiKey.LIMIT_SHEET_TITLE to "سقف {0}",
@@ -103,10 +103,10 @@ internal val EGYPTIAN_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(
     UiKey.LIMIT_SHEET_SAVE to "احفظ",
     UiKey.LIMIT_SHEET_CLEAR to "شيل السقف",
     UiKey.LIMIT_SHEET_EDIT to "غيّر السقف",
-    UiKey.LIMIT_SHEET_NOTE_SET to "السقف {0}، التنبيه عند {1}٪",
+    UiKey.LIMIT_SHEET_NOTE_SET to "السقف {0}، التنبيه عند {1}%",
     UiKey.LIMIT_SHEET_NOTE_OFF to "السقف {0}، التنبيه مقفول",
     UiKey.LIMIT_SHEET_NOTE_NONE to "من غير سقف — المصروف بيتحسب برضه",
-    UiKey.LIMIT_SHEET_PERCENT to "{0}٪",
+    UiKey.LIMIT_SHEET_PERCENT to "{0}%",
 )
 
 internal val ENGLISH_BUDGETS_CATEGORY: Map<UiKey, String> = mapOf(

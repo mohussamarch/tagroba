@@ -64,7 +64,7 @@ internal fun OperationListRow(row: OpRow, onOpen: () -> Unit, onMenu: (Anchor) -
     }
 }
 
-/** أيقونة الصف 36 بزاوية 12 + النقطة الحمرا «غير مسجّلة» (٨) فوق شمالها. */
+/** أيقونة الصف 36 بزاوية 12 + النقطة الحمرا «غير مسجّلة» (8) فوق شمالها. */
 @Composable
 internal fun RowTile(row: OpRow, size: Int = 36) {
     Box {

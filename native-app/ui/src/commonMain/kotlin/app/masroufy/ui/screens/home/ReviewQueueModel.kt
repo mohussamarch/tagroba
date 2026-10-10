@@ -26,7 +26,7 @@ import app.masroufy.usecase.SuggestionSummary
 data class ReviewItem(
     val id: Id,
     val name: String,
-    /** «٣ أكتوبر». */
+    /** «3 أكتوبر». */
     val sub: String,
     /** سبب الاقتراح من المنطق (`KindSuggestion.reason`). */
     val note: String,
@@ -84,7 +84,7 @@ fun reviewGroups(summary: SuggestionSummary): List<ReviewGroup> {
 /** كل اللي محتاج مراجعة في الشهر (للعنوان والشريط). */
 fun reviewTotal(summary: SuggestionSummary): Int = summary.confirmable.size + summary.needsLook.size + summary.ambiguous.size
 
-/** «٦ عمليات نوعها غير مؤكد» / «اكتملت المراجعة». */
+/** «6 عمليات نوعها غير مؤكد» / «اكتملت المراجعة». */
 fun reviewHeroTitle(left: Int): String = when {
     left <= 0 -> t(UiKey.REVIEW_QUEUE_DONE_TITLE)
     left == 1 -> t(UiKey.REVIEW_QUEUE_LEFT_ONE)

@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 /** ملف اختاره المالك من منتقي ملفات الجوال. [tooLarge] = أكبر من [MAX_FILE_BYTES] ⇒ ما اتقراش. [bytes] فاضية لو القراية فشلت. */
 class PickedFile(val name: String, val bytes: ByteArray, val tooLarge: Boolean = false)
 
-/** أكبر ملف كشف بنقراه (٢٥ ميجا — كشف سنة كاملة PDF أقل من كده بكتير). */
+/** أكبر ملف كشف بنقراه (25 ميجا — كشف سنة كاملة PDF أقل من كده بكتير). */
 const val MAX_FILE_BYTES = 25L * 1024 * 1024
 
 /**

@@ -162,7 +162,7 @@ private fun EventForm(existing: LifeEvent?, defaultDate: IsoDate?, data: EventSc
     }
 }
 
-/** خانة التاريخ: النص («١٨ أكتوبر ٢٠٢٦») والضغط بيفتح شبكة الشهر (`CalendarGrid` — السبت أول الأسبوع). */
+/** خانة التاريخ: النص («18 أكتوبر 2026») والضغط بيفتح شبكة الشهر (`CalendarGrid` — السبت أول الأسبوع). */
 @Composable
 internal fun DateField(date: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit, modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }

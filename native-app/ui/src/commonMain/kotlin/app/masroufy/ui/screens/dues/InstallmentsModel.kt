@@ -20,7 +20,7 @@ import app.masroufy.usecase.InstallmentView
  * «الأقساط» و«تفاصيل الخطة» من `ManageInstallments.list` (الخطة + `DueProgress`: المتبقي والمدفوع بالعدّ والقسط الجاي + المبلغ المستلم).
  * «المتبقي عليك في الأقساط» = `DuesTotals.installmentsLeftMinor` (من `LoadDues`). المواعيد في الجدول = `dueDateOf` (تواريخ بس، من غير فلوس).
  * ⚠️ ناقص في حالات الاستخدام: أرباح التمويل للخطة (الإجمالي − الأصل · المدفوع منها · الباقي · في كل قسط) ⇒ «غير متاح» ·
- * مجموع الأقساط الشهري ⇒ ما بيظهرش · الأقساط المربوطة بتواريخها ⇒ ما بتظهرش · اقتراح ربط عملية تشبه القسط (§75-٨).
+ * مجموع الأقساط الشهري ⇒ ما بيظهرش · الأقساط المربوطة بتواريخها ⇒ ما بتظهرش · اقتراح ربط عملية تشبه القسط (§75-8).
  */
 data class PlanCardUi(
     val planId: String,
@@ -47,7 +47,7 @@ internal fun kindText(p: InstallmentPlan): String {
     return if (p.provider.isBlank()) withProfit else t(UiKey.DUES_COMMA_JOIN, withProfit, p.provider)
 }
 
-/** «القادم ٢٧ أكتوبر» · «متأخر منذ ٢٧ سبتمبر» · «اكتملت». */
+/** «القادم 27 أكتوبر» · «متأخر منذ 27 سبتمبر» · «اكتملت». */
 internal fun nextLine(v: InstallmentView, today: IsoDate, withNumber: Boolean): Pair<String, Boolean> {
     val next = v.progress.nextDueAt ?: return t(UiKey.INST_DONE) to false
     if (next < today) return t(UiKey.INST_LATE_SINCE, dateText(next, today)) to true

@@ -8,7 +8,7 @@ import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.text.t
 
 /**
- * العدّ في الجمل بقواعد العربي (عملية واحدة · عمليتان · ٣ عمليات · ١٢ عملية) — زي `plural` في النموذج. الأرقام شرقية في العربي
+ * العدّ في الجمل بقواعد العربي (عملية واحدة · عمليتان · 3 عمليات · 12 عملية) — زي `plural` في النموذج. الأرقام شرقية في العربي
  * (`sentenceNumber`). النص نفسه من خرايط النصوص (الفصحى · المصري · الإنجليزي).
  */
 fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef): String = when (n) {

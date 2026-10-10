@@ -123,14 +123,14 @@ class AdvisorMoreRulesTest {
     }
 
     @Test fun weeklySummary() {
-        assertEquals("2026-10-03", lastWeekEnd("2026-10-05"), "الاتنين ⇒ السبت اللي فات")
-        assertEquals("2026-10-03", lastWeekEnd("2026-10-04"))
-        assertEquals("2026-09-26", lastWeekEnd("2026-10-03"), "السبت نفسه لسه ما خلصش")
+        assertEquals("2026-10-02", lastWeekEnd("2026-10-05"), "الاتنين ⇒ الجمعة اللي فاتت (الأسبوع سبت–جمعة — §79 L9)")
+        assertEquals("2026-10-02", lastWeekEnd("2026-10-03"), "السبت أول يوم في الأسبوع الجديد ⇒ اللي قبله خلص")
+        assertEquals("2026-09-25", lastWeekEnd("2026-10-02"), "الجمعة نفسها لسه ما خلصتش")
         val names = mapOf("cat-a" to "مطاعم", "cat-b" to "بقالة")
         val now = WeekSpend(50_000, mapOf("cat-a" to 30_000L, "cat-b" to 20_000L, null to 5_000L), 4)
-        val c = assertNotNull(weeklySummaryCandidate("2026-10-03", now, WeekSpend(40_000, emptyMap(), 2), names, Currency.SAR))
+        val c = assertNotNull(weeklySummaryCandidate("2026-10-02", now, WeekSpend(40_000, emptyMap(), 2), names, Currency.SAR))
         assertEquals("صرفت 500.00 ر.س هذا الأسبوع · أكثر بـ100.00 ر.س من الأسبوع الماضي · الأعلى: «مطاعم» (300.00 ر.س)", c.body)
-        assertEquals("weekly|2026-10-03", c.threadKey)
+        assertEquals("weekly|2026-10-02", c.threadKey)
         assertTrue(weeklySummaryCandidate("w", now, WeekSpend(60_000, emptyMap(), 1), names, Currency.SAR)!!.body.contains("أقل بـ100.00"))
         assertTrue(weeklySummaryCandidate("w", now, WeekSpend(50_000, emptyMap(), 1), names, Currency.SAR)!!.body.contains(uiText(TextKey.ADVISOR_WEEKLY_SAME)))
         assertTrue(!weeklySummaryCandidate("w", now, null, names, Currency.SAR)!!.body.contains("الماضي"), "من غير مقارنة لو الأسبوع اللي فات مش معروف")

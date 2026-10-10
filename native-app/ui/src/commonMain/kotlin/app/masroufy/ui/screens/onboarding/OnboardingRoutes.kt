@@ -8,12 +8,12 @@ import app.masroufy.usecase.ManageProfile
 import app.masroufy.usecase.OnboardAccount
 
 /**
- * منطقة «أول تشغيل» (`SCREENS.md` §٢.٩ — Onboarding · SignInEmail · ProfileQuestion · Lock). الملف ده بتاع المنطقة بس.
+ * منطقة «أول تشغيل» (`SCREENS.md` §2.9 — Onboarding · SignInEmail · ProfileQuestion · Lock). الملف ده بتاع المنطقة بس.
  * **الدخول نفسه** (قبل ما الحساب يجهز) مش هنا: `screens/auth/` (`SignInFlow` — الترحيب · جوجل · الإيميل · نسيت كلمة المرور) —
  * وكروت أول تشغيل بعد الدخول (الشكل · البلد · يوم الراتب · مصدر العمليات · جاهز) هنا: [OnboardingRoute].
  *
- * ⚠️ **للدمج:** مين يفتح [OnboardingRoute]؟ الرئيسية (أو الهيكل) لما `needsOnboarding()` = true — ده مش في المنطقة دي (ملف الرئيسية
- * والهيكل بتوع مناطق تانية)، فمكتوب في HANDOVER «missingLogic». `ProfileQuestionRoute` بتسجّله منطقة الرئيسية (فرع `screens-home`) —
+ * مين يفتح [OnboardingRoute]؟ **الهيكل** (`AppShell`) لما `OnboardAccount.shouldStart()` = true — حساب جديد خالص بس (الأسئلة ما خلصتش
+ * ومفيش ولا محفظة في البلد الأساسية)؛ حساب فيه بيانات ما بيتفتحلوش. `ProfileQuestionRoute` بتسجّله منطقة الرئيسية (فرع `screens-home`) —
  * **ما يتسجلش هنا** (التسجيل مرتين بيوقّع التطبيق وقت التشغيل).
  */
 interface OnboardingDeps {
@@ -33,7 +33,7 @@ interface OnboardingDeps {
 /** الحساب ده لسه ما خلّصش أسئلة البداية؟ (للرئيسية/الهيكل وقت الدمج — `ManageProfile.needsOnboarding`). */
 suspend fun OnboardingDeps.needsOnboarding(): Boolean = profile.needsOnboarding(profile.load())
 
-/** كروت أول تشغيل بعد الدخول (`Onboarding` الخطوات ١ و٣–٦). */
+/** كروت أول تشغيل بعد الدخول (`Onboarding` الخطوات 1 و3–6). */
 object OnboardingRoute : Route {
     override val name = "Onboarding"
 }

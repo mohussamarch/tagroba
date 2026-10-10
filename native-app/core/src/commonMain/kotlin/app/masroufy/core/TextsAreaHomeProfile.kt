@@ -6,7 +6,7 @@ package app.masroufy.core
  */
 internal val MSA_AREA_HOME_PROFILE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PROFILE_QUESTION_TITLE to "أكمل ملفك",
-    UiKey.PROFILE_QUESTION_LEAD to "بطاقة واحدة (١٠ ثوانٍ) تجعل أرقامك أدق",
+    UiKey.PROFILE_QUESTION_LEAD to "بطاقة واحدة (10 ثوانٍ) تجعل أرقامك أدق",
     UiKey.PROFILE_QUESTION_YES to "نعم",
     UiKey.PROFILE_QUESTION_NO to "لا",
     UiKey.PROFILE_QUESTION_LATER to "ليس الآن",
@@ -41,7 +41,7 @@ internal val MSA_AREA_HOME_PROFILE_TEXTS: Map<UiKey, String> = mapOf(
 
 internal val EGYPTIAN_AREA_HOME_PROFILE_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PROFILE_QUESTION_TITLE to "كمّل ملفك",
-    UiKey.PROFILE_QUESTION_LEAD to "كارت واحد (١٠ ثواني) بيخلّي أرقامك أدق",
+    UiKey.PROFILE_QUESTION_LEAD to "كارت واحد (10 ثواني) بيخلّي أرقامك أدق",
     UiKey.PROFILE_QUESTION_YES to "أيوه",
     UiKey.PROFILE_QUESTION_NO to "لأ",
     UiKey.PROFILE_QUESTION_LATER to "مش دلوقتي",

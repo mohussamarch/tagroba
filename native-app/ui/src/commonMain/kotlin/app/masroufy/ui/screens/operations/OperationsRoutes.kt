@@ -21,7 +21,7 @@ import app.masroufy.usecase.SetEconomicKind
 import app.masroufy.usecase.TransferBetweenSpaces
 
 /**
- * منطقة «العمليات» (`SCREENS.md` §٢.٣). الشرايح المبنية هنا: Operations (+ OperationMenu) · OperationDetail (+ CategoryPicker) ·
+ * منطقة «العمليات» (`SCREENS.md` §2.3). الشرايح المبنية هنا: Operations (+ OperationMenu) · OperationDetail (+ CategoryPicker) ·
  * OperationFilters · LinkPersonSheet · LinkProjectEventSheet · TagsSheet · MerchantProfile · Transfers · TransferParty · SpaceTransfer.
  * ReviewQueue · Budgets · CategoryBudget · BudgetLimitSheet شغل شريحة تانية: «الميزانيات» قطعة [app.masroufy.ui.nav.Slots.BUDGETS] و
  * «المراجعة» مسار [ReviewQueueRoute] (متعرّف هنا عشان الشريط بيفتحه — صاحب الشاشة بيسجّلها بس). `AddSheet` في الهيكل.

@@ -48,14 +48,14 @@ val MORE_HEIRS = listOf(
     HeirKind.FULL_COUSIN, HeirKind.PATERNAL_COUSIN,
 )
 
-/** «الزوجة، الابن ٢، البنت» — null لو مفيش ورثة. */
+/** «الزوجة، الابن 2، البنت» — null لو مفيش ورثة. */
 fun heirsSummary(heirs: Map<HeirKind, Int>): String? {
     val picked = HeirKind.entries.filter { (heirs[it] ?: 0) > 0 }
     if (picked.isEmpty()) return null
     return picked.joinToString("، ") { k -> heirs.getValue(k).let { n -> if (n > 1) t(UiKey.INHRES_HEIR_NUMBER, k.label, sentenceNumber(n)) else k.label } }
 }
 
-/** الخطوة ٣ (لوحة `InheritanceHeirs`): مَن الورثة؟ بالعدد، والأسماء اختيارية. */
+/** الخطوة 3 (لوحة `InheritanceHeirs`): مَن الورثة؟ بالعدد، والأسماء اختيارية. */
 @Composable
 fun InheritanceHeirsStep(d: InheritanceDraft, onChange: (InheritanceDraft) -> Unit) {
     var moreChoice by rememberSaveable { mutableStateOf<Boolean?>(null) }

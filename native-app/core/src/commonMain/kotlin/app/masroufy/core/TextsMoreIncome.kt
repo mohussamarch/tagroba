@@ -2,7 +2,7 @@ package app.masroufy.core
 
 /**
  * «مصادر الدخل» و«تفاصيل المصدر» (`IncomeSources` · `IncomeSourceDetail`) — منطقة «المزيد». من النموذج بالحرف، إلا:
- * - «٣ أكتوبر، من …» بفاصلة بدل «·» جنب الرقم (KOTLIN-MAP §٣)، و«النوع، الموعد» كذلك.
+ * - «3 أكتوبر، من …» بفاصلة بدل «·» جنب الرقم (KOTLIN-MAP §3)، و«النوع، الموعد» كذلك.
  * - الجهة المحوِّلة «معروفة» من غير اسمها (المحفوظ مفتاح مطابقة مش اسم).
  * - سطر «غير متاح بعد» للعمليات المنسوبة (مالهاش حالة استخدام) — كتابة Claude.
  */
@@ -53,14 +53,14 @@ internal val MSA_MORE_INCOME_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.INCSRC_CMP_TITLE to "قبل البداية وبعدها",
     UiKey.INCSRC_CMP_PARTIAL to "الأرقام ناقصة",
     UiKey.INCSRC_CMP_PARTIAL_NOTE to "بعض عمليات الأشهر الستة نوعها غير محدد بعد.",
-    UiKey.INCSRC_CMP_NA to "تظهر بعد انتهاء ٣ أشهر مالية كاملة من البداية، ولا تظهر إن خلا شهر من الستة من أي عملية.",
+    UiKey.INCSRC_CMP_NA to "تظهر بعد انتهاء 3 أشهر مالية كاملة من البداية، ولا تظهر إن خلا شهر من الستة من أي عملية.",
     UiKey.INCSRC_CMP_NO_PCT to "لا دخل قبلها، فلا نسبة.",
     UiKey.INCSRC_CMP_NOTE to "بعملة المصدر، بلا النقوط ومكافأة نهاية الخدمة. الشهر الذي بدأ في منتصفه خارج المقارنة.",
     UiKey.INCSRC_CMP_INCOME to "الدخل",
     UiKey.INCSRC_CMP_EXPENSE to "المصروف",
-    UiKey.INCSRC_CMP_BEFORE to "متوسط ٣ أشهر قبل",
-    UiKey.INCSRC_CMP_AFTER to "متوسط ٣ أشهر بعد",
-    UiKey.INCSRC_DECIMAL_SEP to "٫",
+    UiKey.INCSRC_CMP_BEFORE to "متوسط 3 أشهر قبل",
+    UiKey.INCSRC_CMP_AFTER to "متوسط 3 أشهر بعد",
+    UiKey.INCSRC_DECIMAL_SEP to ".",
     UiKey.INCSRC_EDIT to "تعديل",
     UiKey.INCSRC_CLOSE to "إنهاء المصدر",
 )
@@ -112,14 +112,14 @@ internal val EGYPTIAN_MORE_INCOME_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.INCSRC_CMP_TITLE to "قبل وبعد البداية",
     UiKey.INCSRC_CMP_PARTIAL to "الأرقام ناقصة",
     UiKey.INCSRC_CMP_PARTIAL_NOTE to "فيه عمليات في الشهور الستة نوعها لسه ما اتحددش.",
-    UiKey.INCSRC_CMP_NA to "بتظهر بعد ما تخلص ٣ شهور مالية كاملة من البداية، ومش بتظهر لو فيه شهر من الستة مفيهوش ولا عملية.",
+    UiKey.INCSRC_CMP_NA to "بتظهر بعد ما تخلص 3 شهور مالية كاملة من البداية، ومش بتظهر لو فيه شهر من الستة مفيهوش ولا عملية.",
     UiKey.INCSRC_CMP_NO_PCT to "مفيش دخل قبلها، فمفيش نسبة.",
     UiKey.INCSRC_CMP_NOTE to "بعملة المصدر، من غير النقوط ومكافأة نهاية الخدمة. الشهر اللي بدأ في نصه برا المقارنة.",
     UiKey.INCSRC_CMP_INCOME to "الدخل",
     UiKey.INCSRC_CMP_EXPENSE to "المصروف",
-    UiKey.INCSRC_CMP_BEFORE to "متوسط ٣ شهور قبل",
-    UiKey.INCSRC_CMP_AFTER to "متوسط ٣ شهور بعد",
-    UiKey.INCSRC_DECIMAL_SEP to "٫",
+    UiKey.INCSRC_CMP_BEFORE to "متوسط 3 شهور قبل",
+    UiKey.INCSRC_CMP_AFTER to "متوسط 3 شهور بعد",
+    UiKey.INCSRC_DECIMAL_SEP to ".",
     UiKey.INCSRC_EDIT to "تعديل",
     UiKey.INCSRC_CLOSE to "المصدر ده خلص",
 )

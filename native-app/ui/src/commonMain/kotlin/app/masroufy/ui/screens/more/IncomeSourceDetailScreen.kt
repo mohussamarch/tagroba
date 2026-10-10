@@ -50,7 +50,7 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /**
- * تفاصيل مصدر الدخل (`IncomeSourceDetail` — §48 · §64 · §65-٧): الحالة والنوع والمدة · موعد القبض والمتوقع والجهة المحوِّلة ·
+ * تفاصيل مصدر الدخل (`IncomeSourceDetail` — §48 · §64 · §65-7): الحالة والنوع والمدة · موعد القبض والمتوقع والجهة المحوِّلة ·
  * العمليات المنسوبة له (مالهاش حالة استخدام ⇒ «غير متاح بعد») · قبل البداية وبعدها (`compareAroundStart` — `null` ⇒ «غير متاح» بسببه) ·
  * «تعديل» (`IncomeSourceEditSheet`) · «إنهاء المصدر» (`JobChangeSheet`).
  */
@@ -131,7 +131,7 @@ private fun SourceHero(s: IncomeSource) {
     }
 }
 
-/** «قبل البداية وبعدها»: الدخل والمصروف (متوسط ٣ أشهر قبل وبعد) والنسبة من حالة الاستخدام، و«الأرقام ناقصة» لو فيه نوع مش محدد. */
+/** «قبل البداية وبعدها»: الدخل والمصروف (متوسط 3 أشهر قبل وبعد) والنسبة من حالة الاستخدام، و«الأرقام ناقصة» لو فيه نوع مش محدد. */
 @Composable
 private fun CompareCard(c: SourceStartComparison?, loaded: Boolean) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) {

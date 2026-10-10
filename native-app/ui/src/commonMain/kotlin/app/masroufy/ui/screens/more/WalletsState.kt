@@ -26,7 +26,7 @@ data class WalletRowView(
     val id: Id,
     val name: String,
     val kindLabel: TextRef,
-    /** آخر ٤ أرقام بالأرقام العربية في العربي (CLAUDE.md #11 — مفيش رقم حساب كامل). */
+    /** آخر 4 أرقام بالأرقام العربية في العربي (CLAUDE.md #11 — مفيش رقم حساب كامل). */
     val last4: String?,
     val balanceMinor: Halalas?,
     val isCash: Boolean,
@@ -108,7 +108,7 @@ fun walletNameTaken(name: String, existing: List<Wallet>): Boolean {
     return clean.isNotEmpty() && existing.any { it.name.trim().replace(Regex("\\s+"), " ") == clean }
 }
 
-/** آخر ٤ أرقام بس من اللي اتكتب أو اتلصق (رقم حساب كامل أو آيبان) — [cut] = كان أطول واتقص. */
+/** آخر 4 أرقام بس من اللي اتكتب أو اتلصق (رقم حساب كامل أو آيبان) — [cut] = كان أطول واتقص. */
 data class Last4(val digits: String, val cut: Boolean)
 
 fun lastFour(typed: String): Last4 {

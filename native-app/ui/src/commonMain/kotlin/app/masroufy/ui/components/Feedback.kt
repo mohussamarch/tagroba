@@ -50,7 +50,7 @@ import app.masroufy.ui.theme.Type
 
 private val calm = CubicBezierEasing(0.2f, 0.7f, 0.3f, 1f)
 
-/** هيكل «بيحمّل» (مستوى ١): نفس شكل المحتوى رمادي بينبض `0.5↔1` كل 1.4 ثانية — مش دوّامة في نص الشاشة. «تقليل الحركة» ⇒ ثابت. */
+/** هيكل «بيحمّل» (مستوى 1): نفس شكل المحتوى رمادي بينبض `0.5↔1` كل 1.4 ثانية — مش دوّامة في نص الشاشة. «تقليل الحركة» ⇒ ثابت. */
 @Composable
 fun Skeleton(modifier: Modifier = Modifier, radius: Dp = 22.dp, strong: Boolean = false) {
     val reduce = LocalReduceMotion.current
@@ -84,7 +84,7 @@ fun EmptyState(
 }
 
 /**
- * لمعة نعناعي على صف اتسجّل من رسالة البنك لوحده (اختيار المالك `magic` — مستوى ٣): شريط `transparent 30% → rgba(166,222,193,.75) 50%
+ * لمعة نعناعي على صف اتسجّل من رسالة البنك لوحده (اختيار المالك `magic` — مستوى 3): شريط `transparent 30% → rgba(166,222,193,.75) 50%
  * → transparent 70%` بيعدّي **من اليمين للشمال مرة واحدة** في 1200ms بالنابض الهادي. «تقليل الحركة» ⇒ من غير لمعة.
  */
 @Composable

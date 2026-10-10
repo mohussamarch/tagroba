@@ -42,7 +42,7 @@ import app.masroufy.usecase.RecurringSaveInput
 import kotlinx.coroutines.launch
 
 /**
- * «تفاصيل الاشتراك» (`SubscriptionDetail`): الموعد القادم بحالته · المدفوع آخر ١٢ شهرًا (من عمليات نفس الجهة — `RecurringItemView.paidMinor`،
+ * «تفاصيل الاشتراك» (`SubscriptionDetail`): الموعد القادم بحالته · المدفوع آخر 12 شهرًا (من عمليات نفس الجهة — `RecurringItemView.paidMinor`،
  * «غير متاح» للخطة اليدوية) · المتوقع سنويًا · المواعيد · «عدّل المبلغ والدورة والموعد» (لوحة) · إيقاف/استئناف المتابعة — كله `ManageRecurring.save`.
  */
 @OptIn(ExperimentalLayoutApi::class)

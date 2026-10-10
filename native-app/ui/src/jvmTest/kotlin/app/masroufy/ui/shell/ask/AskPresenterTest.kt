@@ -3,6 +3,7 @@ package app.masroufy.ui.shell.ask
 import app.masroufy.core.AskKey
 import app.masroufy.core.AssistMessageKind
 import app.masroufy.core.AssistScreen
+import app.masroufy.core.AssistSpeaker
 import app.masroufy.core.AssistTab
 import app.masroufy.core.CardState
 import app.masroufy.core.Category
@@ -107,6 +108,14 @@ class AskPresenterTest {
         assertEquals(CardState.DONE, p.messages.first { it.id == card.id }.state)
         assertEquals(listOf(1_500L), all().map { it.amountMinor })
         assertFalse(p.busy)
+    }
+
+    @Test fun easternDigitsInTheChatBecomeWesternBeforeTheEngineReadsThem() = runBlocking<Unit> {
+        p.open()
+        assertTrue(p.send("قهوة ١٥"))
+        assertEquals("قهوة 15", p.messages.last { it.from == AssistSpeaker.ME }.text, "اللي اتكتب بيتحفظ بـ0-9 (OVERRIDES §79 — L5)")
+        p.pick(p.messages.last().id, cash.id)
+        assertEquals(1_500L, p.messages.last { it.kind == AssistMessageKind.TXN_CARD }.card!!.amountMinor, "۱۵ فارسي أو ١٥ عربي = 15")
     }
 
     @Test fun similarSameDayCardLetsTheOwnerKeepTheExistingOne() = runBlocking<Unit> {

@@ -19,7 +19,7 @@ import app.masroufy.usecase.SmsReview
 import app.masroufy.usecase.UnmappedSender
 
 /**
- * منطقة «الاستيراد» (`SCREENS.md` §٢.٤): حالات الاستخدام اللي شاشاتها محتاجاها **بس** — التنفيذ في `:wiring` (`ImportsGraph`).
+ * منطقة «الاستيراد» (`SCREENS.md` §2.4): حالات الاستخدام اللي شاشاتها محتاجاها **بس** — التنفيذ في `:wiring` (`ImportsGraph`).
  * **ممنوع** مستودع هنا (CLAUDE.md #4): الشاشة بتنادي حالة استخدام، وما بتحسبش مبلغ.
  */
 interface ImportsDeps {
@@ -53,7 +53,7 @@ interface ImportsDeps {
     /** أول [rows] سطر من ملف CSV بعناوينه (تحديد الأعمدة يدويًا) — null = الملف مش CSV مقروء. */
     fun csvTable(content: String, rows: Int = 4): CsvTable?
 
-    /** فترات «اقرأ فترة» الجاهزة: من أول الشهر المالي · آخر ٧ أيام · آخر ٣٠ يومًا. */
+    /** فترات «اقرأ فترة» الجاهزة: من أول الشهر المالي · آخر 7 أيام · آخر 30 يومًا. */
     suspend fun smsRanges(): List<SmsRange>
 }
 
@@ -80,7 +80,7 @@ interface SmsDeps {
     /** إيقاف القراية — اللي اتسجل قبل كده زي ما هو. */
     suspend fun disable(): InboxView
 
-    /** «تم — «المحل» سيُصنَّف دائمًا»: تصنيف المحل بيتحفظ (من غير سؤال «نفتكره؟» — OVERRIDES §76 (١٦)). */
+    /** «تم — «المحل» سيُصنَّف دائمًا»: تصنيف المحل بيتحفظ (من غير سؤال «نفتكره؟» — OVERRIDES §76 (16)). */
     suspend fun remember(merchant: String, categoryId: Id, direction: Direction): Boolean
 
     /** اللي اتسجل من رسايل البنك النهارده، الأحدث الأول. */

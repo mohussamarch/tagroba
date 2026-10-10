@@ -29,8 +29,8 @@ const val BIG_ONE_PERCENT = 20
 /** goalNear: المدّخر ≥ 90% من الهدف. */
 const val GOAL_NEAR_PERCENT = 90
 
-/** weekly: الأسبوع من الحد للسبت (السبت = 6 بنظام ISO)، والملخص بعد ما الأسبوع يخلص. */
-const val WEEK_END_WEEKDAY = 6
+/** weekly: الأسبوع **من السبت للجمعة في البلدين** (قرار المالك OVERRIDES §79 — L9؛ الجمعة = 5 بنظام ISO)، والملخص بعد ما الأسبوع يخلص. */
+const val WEEK_END_WEEKDAY = 5
 
 /** unusual: «التسوق هذا الشهر 1,500 — بهذا المعدل ضعف المعتاد أو أكثر (950)». */
 fun unusualSpendCandidate(categoryId: Id, name: String, reading: PaceReading, usualMinor: Halalas?, period: Period, currency: Currency): AlertCandidate? {
@@ -164,7 +164,7 @@ fun goalNearCandidate(p: GoalProgress): AlertCandidate? {
     }
 }
 
-/** آخر سبت خلص (قبل النهارده) — نهاية الأسبوع اللي بنلخصه. */
+/** آخر جمعة خلصت (قبل النهارده) — نهاية الأسبوع (السبت–الجمعة) اللي بنلخصه. */
 fun lastWeekEnd(today: IsoDate): IsoDate {
     var d = addDaysIso(today, -1)
     while (isoWeekday(d) != WEEK_END_WEEKDAY) d = addDaysIso(d, -1)

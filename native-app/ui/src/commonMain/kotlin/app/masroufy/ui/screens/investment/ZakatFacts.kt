@@ -32,7 +32,7 @@ data class FactOption(val label: String, val selected: Boolean, val answer: Fact
 /** سؤال على حاجة بعينها ([subjectId] = الأصل أو الدين). [missing] = لسه ما اتجاوبش والحساب مستنيه. */
 data class FactQuestion(val subjectId: Id, val title: String, val ask: String, val options: List<FactOption>, val missing: Boolean)
 
-/** ملخص الكارت: «ينقص ١» (كهرماني) · «٥ مُجابة» · «لا أسئلة». */
+/** ملخص الكارت: «ينقص 1» (كهرماني) · «5 مُجابة» · «لا أسئلة». */
 data class FactsSummary(val chip: String, val missing: Boolean)
 
 private val KARATS = listOf(24, 22, 21, 18)

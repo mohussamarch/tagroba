@@ -40,7 +40,7 @@ import app.masroufy.ui.theme.Type
 
 /**
  * قطع مشتركة بين شاشات «الاستيراد» بنفس قيم النموذج (`BankSms` · `SmsWaiting` · `ImportReview` · `ImportBatches` …) — الألوان كلها من `Ink`
- * (الشفافيات زي النموذج: الرمادي `Ink.text` ٦٪ · الأخضر `Ink.primary` ٨٪ · الأحمر `Ink.expense` ٨–١٠٪).
+ * (الشفافيات زي النموذج: الرمادي `Ink.text` 6% · الأخضر `Ink.primary` 8% · الأحمر `Ink.expense` 8–10%).
  */
 
 /** نبرة الشارة الصغيرة (11 عريض بزاوية 10) — جديد · مكرر · شبيه · تعارض · غير صالح · بمصدرين. */
@@ -80,7 +80,7 @@ fun PanelTitle(text: String, tone: PanelTone) {
     BasicText(text, style = Type.of(14, FontWeight.Bold).copy(color = tone.title))
 }
 
-/** زرار هادي (رمادي ٦٪ — «إلغاء» · «هي نفسها») أو خطر (أحمر ٨٪ — «أوقف القراءة» · «إرجاع الدفعة»). */
+/** زرار هادي (رمادي 6% — «إلغاء» · «هي نفسها») أو خطر (أحمر 8% — «أوقف القراءة» · «إرجاع الدفعة»). */
 @Composable
 fun QuietButton(
     text: String,
@@ -118,7 +118,7 @@ fun CountTitle(title: String, count: String? = null, modifier: Modifier = Modifi
     }
 }
 
-/** سطر رابط لشاشة تانية (أخضر على خلفية خضرا ٦٪ + سهم) — «الكشوف المستوردة سابقًا» · «إشعارات رسائل البنك». */
+/** سطر رابط لشاشة تانية (أخضر على خلفية خضرا 6% + سهم) — «الكشوف المستوردة سابقًا» · «إشعارات رسائل البنك». */
 @Composable
 fun LinkRow(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val press = rememberPress()

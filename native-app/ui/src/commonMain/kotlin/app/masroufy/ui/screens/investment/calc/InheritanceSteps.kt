@@ -82,7 +82,7 @@ internal fun StepsBar(step: Int, onGo: (Int) -> Unit) {
     }
 }
 
-/** الخطوة ١: تركة مَن؟ (تركتي أنا · تركة شخص آخر من أشخاصك أو اسم جديد). */
+/** الخطوة 1: تركة مَن؟ (تركتي أنا · تركة شخص آخر من أشخاصك أو اسم جديد). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun WhoseStep(d: InheritanceDraft, people: List<PersonChoice>, onChange: (InheritanceDraft) -> Unit) {
@@ -124,7 +124,7 @@ private fun WhoseOption(title: String, sub: String, on: Boolean, onClick: () -> 
     }
 }
 
-/** الخطوة ٢: ماذا يترك؟ — «هات أملاكي من مصروفي» (لتركتك أنت فقط) + الأشياء بأسمائها وقيمها التقريبية (كل رقم يتعدّل). */
+/** الخطوة 2: ماذا يترك؟ — «هات أملاكي من مصروفي» (لتركتك أنت فقط) + الأشياء بأسمائها وقيمها التقريبية (كل رقم يتعدّل). */
 @Composable
 internal fun ItemsStep(d: InheritanceDraft, canBring: Boolean, onChange: (InheritanceDraft) -> Unit, onBring: () -> Unit) {
     val unit = currencySymbol(d.currency)

@@ -144,7 +144,7 @@ internal fun SmallAction(label: String, strong: Boolean = false, enabled: Boolea
     ) { BasicText(label, style = Type.of(12, FontWeight.Bold).copy(color = if (strong) Ink.onPrimary else Ink.primary)) }
 }
 
-/** صندوق ملاحظة خفيف (`rgba(25,61,51,0.04)`) — «٣ تحويلات بلا طرف…» · ملاحظة القفل. */
+/** صندوق ملاحظة خفيف (`rgba(25,61,51,0.04)`) — «3 تحويلات بلا طرف…» · ملاحظة القفل. */
 @Composable
 internal fun NoteBox(text: String, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.control)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 12.dp)) {

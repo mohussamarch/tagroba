@@ -14,7 +14,7 @@ import app.masroufy.usecase.InstallmentView
 
 /**
  * «خطة جديدة / تعديل الخطة» (`InstallmentEdit`): الخانات كنص زي ما المستخدم كتبها، والفحص هنا **قراية ومقارنة بس** (فاضي · مش رقم · صفر)
- * عشان الخطأ يبان جنب الخانة. باقي القواعد (الإجمالي أقل من الأصل · أكتر من ٣٦٠ قسط · المدفوع أكبر من الإجمالي · العملة والنوع بعد الربط)
+ * عشان الخطأ يبان جنب الخانة. باقي القواعد (الإجمالي أقل من الأصل · أكتر من 360 قسط · المدفوع أكبر من الإجمالي · العملة والنوع بعد الربط)
  * بتيجي من `ManageInstallments.save` نفسها برسالتها.
  * ⚠️ النموذج بيسأل «عدد الأقساط» ويحسب الإجمالي = القسط × العدد، ولوحة «النتيجة» بتتحدّث وإنت بتكتب — الحسبتين دول مش في حالة استخدام
  * ⇒ الشاشة بتسأل «إجمالي ما ستدفعه» مباشرة (زي `SCREENS.md` و`InstallmentInput.totalMinor`)، و«النتيجة» ما بتظهرش.
@@ -44,7 +44,7 @@ enum class PlanField { NAME, PRINCIPAL, TOTAL, INSTALLMENT, FIRST }
 
 data class PlanFormCheck(val errors: Map<PlanField, String>, val input: InstallmentInput?)
 
-/** دورات الخطة المعروضة (كل شهر · شهرين · ٣ · ٦ · سنة). */
+/** دورات الخطة المعروضة (كل شهر · شهرين · 3 · 6 · سنة). */
 val PLAN_CYCLES = listOf(1, 2, 3, 6, 12)
 
 fun checkPlanForm(f: PlanForm, id: String?, currency: Currency): PlanFormCheck {

@@ -5,10 +5,8 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.HijriDate
 import app.masroufy.core.IsoDate
-import app.masroufy.core.Language
 import app.masroufy.core.Quantity
 import app.masroufy.core.TextKey
-import app.masroufy.core.Texts
 import app.masroufy.core.dayMonth
 import app.masroufy.core.formatQuantity
 import app.masroufy.core.parseIsoDate
@@ -24,31 +22,31 @@ import app.masroufy.ui.icons.Lucide
  * `amountLabel` (لاتيني، `ltr`). المبالغ نفسها جاية جاهزة من حالات الاستخدام بالهللة.
  */
 
-/** كمية في جملة: «١٢٠» · «٠٫٥» (من غير أصفار زيادة). */
+/** كمية في جملة: «120» · «0.5» (من غير أصفار زيادة). */
 internal fun qtyText(q: Quantity): String {
     val raw = formatQuantity(q)
-    return if (Texts.language == Language.EN) raw else sentenceDigits(raw).replace('.', '٫')
+    return sentenceDigits(raw)
 }
 
-/** «١٢٠ جرام» — الوحدة متخزنة مع الأصل (ما بتتترجمش). */
+/** «120 جرام» — الوحدة متخزنة مع الأصل (ما بتتترجمش). */
 internal fun qtyUnit(q: Quantity, unit: String): String = uiText(UiKey.INVEST_QTY_UNIT, qtyText(q), unit)
 
-/** نسبة من نقاط أساس: 174 ⇒ «١٫٧٤٪» · -250 ⇒ «−٢٫٥٪». عرض بس — زي `formatBp` في `core`. */
+/** نسبة من نقاط أساس: 174 ⇒ «1.74%» · -250 ⇒ «−2.5%». عرض بس — زي `formatBp` في `core`. */
 internal fun pctText(bp: Int): String {
     val abs = if (bp < 0) -bp else bp
     val frac = abs % 100
     val raw = if (frac == 0) "${abs / 100}" else "${abs / 100}." + frac.toString().padStart(2, '0').trimEnd('0')
-    val local = if (Texts.language == Language.EN) raw else sentenceDigits(raw).replace('.', '٫')
+    val local = sentenceDigits(raw)
     return (if (bp < 0) "−" else "") + uiText(UiKey.INVEST_PERCENT, local)
 }
 
-/** «١٢ مارس ٢٠٢٤». */
+/** «12 مارس 2024». */
 internal fun dateText(date: IsoDate): String = uiText(UiKey.INVEST_DATE_YEAR, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
 
-/** «اليوم» لو التاريخ النهارده، وإلا «١٢ مارس ٢٠٢٤». */
+/** «اليوم» لو التاريخ النهارده، وإلا «12 مارس 2024». */
 internal fun dateOrToday(date: IsoDate, today: IsoDate): String = if (date == today) uiText(UiKey.ASSET_DETAIL_TODAY) else dateText(date)
 
-/** سنة في جملة («٢٠٣٠»). */
+/** سنة في جملة («2030»). */
 internal fun yearText(year: Int): String = sentenceNumber(year)
 
 /** مبلغ بعملته في جملة («4,800.00 ر.س»). `null` ⇒ «غير متاح». */
@@ -65,10 +63,10 @@ private val HIJRI_MONTHS = listOf(
 
 internal fun hijriMonthName(month: Int): String = uiText(HIJRI_MONTHS[(month - 1).coerceIn(0, 11)])
 
-/** «١ جمادى الأولى ١٤٤٨». */
+/** «1 جمادى الأولى 1448». */
 internal fun hijriText(h: HijriDate): String = uiText(UiKey.HAWL_DATE, sentenceNumber(h.day), hijriMonthName(h.month), sentenceNumber(h.year))
 
-/** «١ جمادى الأولى» (من غير سنة). */
+/** «1 جمادى الأولى» (من غير سنة). */
 internal fun hijriDayMonth(month: Int, day: Int): String = uiText(UiKey.DATE_DAY_MONTH, sentenceNumber(day), hijriMonthName(month))
 
 /** رمز النوع (المعروض — `displayKind`). */

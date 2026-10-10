@@ -70,7 +70,7 @@ class InvestmentScreensTest {
         val line = ui.others.single()
         assertEquals(id, line.assetId)
         assertNull(line.valueMinor)
-        assertEquals("١٢٠ جرام، سعر اليوم غير متاح", line.subtitle)
+        assertEquals("120 جرام، سعر اليوم غير متاح", line.subtitle)
 
         // سعر يدوي ⇒ كل المبالغ من المركز نفسه
         w.deps.assets.setPrice(id, 43_800, "2026-10-09")
@@ -81,7 +81,7 @@ class InvestmentScreensTest {
         assertEquals(view.totals.unrealizedGainMinor, priced.unrealizedMinor)
         assertNull(priced.totalNa)
         assertNull(priced.realizedMinor, "مفيش بيع ⇒ مفيش سطر «المكسب المحقق»")
-        assertEquals("١٢٠ جرام، السعر اليوم", priced.others.single().subtitle)
+        assertEquals("120 جرام، السعر اليوم", priced.others.single().subtitle)
 
         w.deps.assets.recordSale(SaleInput(id, "2026-10-01", 20 * g, 876_000))
         val sold = assertNotNull(loadInvestment(w.deps, w.space).ui)
@@ -96,7 +96,7 @@ class InvestmentScreensTest {
         assertEquals("إرشادية حسب دار الإفتاء المصرية", load.zakatHint)
         val ui = assertNotNull(load.ui)
         assertEquals("سعر «دهب وهمي» النهارده غير متاح، فالإجمالي مش كامل.", ui.totalNa)
-        assertEquals("١٢٠ جرام، سعر النهارده غير متاح", ui.others.single().subtitle)
+        assertEquals("120 جرام، سعر النهارده غير متاح", ui.others.single().subtitle)
         assertEquals("مفيش خطط لسه", goalsHint(0))
     }
 
@@ -105,7 +105,7 @@ class InvestmentScreensTest {
         val id = fresh.gold(symbol = "GOLD_21K_GRAM")
         val load = loadInvestment(fresh.deps, fresh.space)
         assertEquals(0, load.skipped)
-        assertEquals(3_150_000L, load.ui?.totalMinor, "١٢٠ جرام × ٢٦٢٫٥٠ من ملف الأسعار (SyncAssetPrices)")
+        assertEquals(3_150_000L, load.ui?.totalMinor, "120 جرام × 262.50 من ملف الأسعار (SyncAssetPrices)")
         val detail = assertNotNull(loadAssetDetail(fresh.deps, fresh.space, id))
         assertEquals(PriceChip.FRESH, detail.chip)
         assertFalse(detail.staleLinked)
@@ -116,7 +116,7 @@ class InvestmentScreensTest {
         loadInvestment(old.deps, old.space)
         val stale = assertNotNull(loadAssetDetail(old.deps, old.space, oldId))
         assertEquals(PriceChip.STALE, stale.chip)
-        assertTrue(stale.staleLinked, "مربوط وسعره أقدم من ٧ أيام ⇒ شريط «تعذّر تحديث الأسعار»")
+        assertTrue(stale.staleLinked, "مربوط وسعره أقدم من 7 أيام ⇒ شريط «تعذّر تحديث الأسعار»")
         assertEquals("تحدّثت الأسعار", refreshPrices(old.deps))
     }
 
@@ -139,7 +139,7 @@ class InvestmentScreensTest {
         assertEquals(position.realizedGainMinor, ui.realizedMinor)
         assertEquals(listOf(TradeKind.SELL, TradeKind.BUY), ui.log.map { it.kind }, "الأحدث فوق")
         assertEquals(876_000L, ui.log.first().amountMinor)
-        assertEquals("١٠٠ جرام", ui.qtyText)
+        assertEquals("100 جرام", ui.qtyText)
         assertNull(loadAssetDetail(w.deps, w.space, "asset-not-there"))
     }
 
@@ -152,9 +152,9 @@ class InvestmentScreensTest {
             AssetGrowthInput(RealEstateValuation.AREA, 120 * g, 480_000, rent = RentTerms(400_000, 150, 0)),
         )
         val estate = assertNotNull(loadInvestment(w.deps, w.space).ui).estates.single()
-        assertEquals(57_600_000L, estate.valueMinor, "١٢٠ م² × ٤٬٨٠٠")
-        assertEquals("عقار، ١٢٠ م² × 4,800.00 ر.س للمتر", estate.subtitle)
-        assertEquals("كم ستساوي لو بعتها في ٢٠٣٠؟", estate.ask)
+        assertEquals(57_600_000L, estate.valueMinor, "120 م² × 4,800")
+        assertEquals("عقار، 120 م² × 4,800.00 ر.س للمتر", estate.subtitle)
+        assertEquals("كم ستساوي لو بعتها في 2030؟", estate.ask)
         assertNull(estate.saleMinor, "ملف المتوسطات مش موجود ⇒ مفيش معدل ⇒ سعر البيع «غير متاح»")
 
         val defaults = defaultRatesFor(w.deps, w.space)
@@ -166,11 +166,11 @@ class InvestmentScreensTest {
         val typedView = loadProjection(w.deps, w.space, flat.id, 2030, 174, defaults)
         val typed = projectionUi(typedView, w.space.currency)
         assertEquals(RateChip.TYPED, typed.chip)
-        assertEquals("١٫٧٤٪ سنويًا", typed.rateValue)
+        assertEquals("1.74% سنويًا", typed.rateValue)
         assertEquals(typedView.projection.valueAtSaleMinor, typed.saleMinor)
         assertEquals(typedView.projection.rentTotalMinor, typed.rentMinor)
         assertEquals(typedView.projection.totalGainMinor, typed.gainMinor)
-        assertEquals("بعد ٤ سنوات", typed.yearsLabel)
-        assertEquals("لو بعتها في ٢٠٣٠", typed.resultTitle)
+        assertEquals("بعد 4 سنوات", typed.yearsLabel)
+        assertEquals("لو بعتها في 2030", typed.resultTitle)
     }
 }

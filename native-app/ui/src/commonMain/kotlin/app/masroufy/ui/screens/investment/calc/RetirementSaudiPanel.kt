@@ -28,7 +28,7 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /**
- * «حاسبة التقاعد» في السعودية (لوحة `RetirementSaudi` جوه `RetirementCalculator`): سؤال واحد بيحدد النظام (قبل يوليو ٢٠٢٤ ⇒ القديم) ·
+ * «حاسبة التقاعد» في السعودية (لوحة `RetirementSaudi` جوه `RetirementCalculator`): سؤال واحد بيحدد النظام (قبل يوليو 2024 ⇒ القديم) ·
  * المعاش المتوقع · المكافأة · كم تدّخر شهريًا · الخانات. الراتب وبداية العمل اقتراح من مصادر الدخل (فارغ = الاقتراح) ويتعدّلوا.
  */
 @Composable

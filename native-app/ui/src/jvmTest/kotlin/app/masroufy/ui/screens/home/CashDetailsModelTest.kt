@@ -42,14 +42,14 @@ class CashDetailsModelTest {
         val v = cashViewOf(summary())!!
         assertEquals(90_000, v.balanceMinor)
         assertEquals(110_000, v.spentInPeriodMinor)
-        assertEquals("منذ رصيد البداية في ١ سبتمبر", v.sinceLine)
+        assertEquals("منذ رصيد البداية في 1 سبتمبر", v.sinceLine)
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("من رصيد البداية في ١ سبتمبر", cashViewOf(summary())!!.sinceLine)
+        assertEquals("من رصيد البداية في 1 سبتمبر", cashViewOf(summary())!!.sinceLine)
     }
 
     @Test fun rowsAreTheNewestFiveWithToneFromTheDirection() {
         val v = cashViewOf(summary(rows = 8))!!
-        assertEquals(CASH_ROWS, v.rows.size, "اللوحة طولها ثابت ⇒ أحدث ٥ بس")
+        assertEquals(CASH_ROWS, v.rows.size, "اللوحة طولها ثابت ⇒ أحدث 5 بس")
         assertEquals(listOf("atm", "cafe"), v.rows.take(2).map { it.id })
         assertEquals(AmountTone.INCOME, v.rows[0].tone, "سحب من البنك للكاش = داخل الكاش")
         assertEquals(AmountTone.EXPENSE, v.rows[1].tone, "دفع كاش = خارج منه")

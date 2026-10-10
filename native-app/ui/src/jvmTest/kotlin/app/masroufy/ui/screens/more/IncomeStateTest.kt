@@ -67,16 +67,16 @@ class IncomeStateTest {
         assertEquals(listOf("b"), s.past.map { it.id })
         assertTrue(s.past.single().ended)
         assertEquals(amountLabel(1_250_000, Currency.SAR), s.current[0].expected)
-        assertNull(s.current[1].expected, "ما كتبش المتوقع ⇒ null مش «٠»")
+        assertNull(s.current[1].expected, "ما كتبش المتوقع ⇒ null مش «0»")
         assertEquals(t(UiKey.INCSRC_META, t(UiKey.INCSRC_KIND_RENT), t(UiKey.INCSRC_PAY_NONE)), s.current[1].meta)
         assertFalse(s.current[1].meta.contains("·"), "مفيش «·» جنب الأرقام العربي")
     }
 
     @Test
     fun tenthPercentIsFormattedNotComputed() {
-        assertEquals("+" + sentenceDigits("26") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("3") + "٪", tenthPercentText(263))
-        assertEquals("−" + sentenceDigits("0") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("5") + "٪", tenthPercentText(-5))
-        assertEquals(sentenceDigits("0") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("0") + "٪", tenthPercentText(0))
+        assertEquals("+" + sentenceDigits("26") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("3") + "%", tenthPercentText(263))
+        assertEquals("−" + sentenceDigits("0") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("5") + "%", tenthPercentText(-5))
+        assertEquals(sentenceDigits("0") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("0") + "%", tenthPercentText(0))
         assertEquals("—", tenthPercentText(null))
     }
 

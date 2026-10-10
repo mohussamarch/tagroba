@@ -2,6 +2,8 @@
 <!-- تطبيق مصروفي الجديد (كوتلن) — إذن النت لفايربيز وملفات الأسعار. أذونات الرسايل والإشعارات جاية من `:device` (الطلب نفسه بنافذة الجهاز). -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- حالة النت عشان الأزرار اللي محتاجاه تتقفل من غيره (رد المالك L4) — إذن عادي من غير نافذة. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- ميكروفون المساعد = نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — أندرويد 11+ لازم يعرف إننا بندوّر عليها -->
     <queries>

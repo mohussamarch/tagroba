@@ -36,11 +36,11 @@ class HomeModelTest {
         assertEquals("الراتب اليوم", salaryLine("2026-10-07", "2026-10-07"))
         assertEquals("الراتب غدًا", salaryLine("2026-10-08", "2026-10-07"))
         assertEquals("الراتب بعد يومين", salaryLine("2026-10-09", "2026-10-07"))
-        assertEquals("الراتب بعد ٥ أيام", salaryLine("2026-10-12", "2026-10-07"))
-        assertEquals("الراتب بعد ٢١ يومًا", salaryLine("2026-10-28", "2026-10-07"))
+        assertEquals("الراتب بعد 5 أيام", salaryLine("2026-10-12", "2026-10-07"))
+        assertEquals("الراتب بعد 21 يومًا", salaryLine("2026-10-28", "2026-10-07"))
         assertNull(salaryLine(null, "2026-10-07"), "مفيش يوم راتب ⇒ مفيش سطر")
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("المرتب بعد ٢١ يوم", salaryLine("2026-10-28", "2026-10-07"))
+        assertEquals("المرتب بعد 21 يوم", salaryLine("2026-10-28", "2026-10-07"))
     }
 
     @Test fun advisorCardIsTheNewestAdvisorAlertThatIsNotMutedOrDeleted() {

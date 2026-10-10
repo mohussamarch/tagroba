@@ -36,11 +36,18 @@ sealed interface SavingsRequest {
     data class Reach(val monthlyMinor: Halalas, val months: Int, val haveMinor: Halalas) : SavingsRequest
 }
 
-/** الخانات بعد القراية: أخطاء كل خانة، والطلب لو كله صح. */
+/**
+ * الخانات بعد القراية: أخطاء كل خانة، والطلب لو كله صح.
+ * **الخانة الفاضية ما بتطلعش خطأ** (المحاكي 2026-10-10: الحاسبة كانت بتعرض أخطاء قبل ما المستخدم يكتب) — الخطأ للي اتكتب غلط بس،
+ * والفاضي بيفضل من غير طلب لحد ما يتملى.
+ */
 data class SavingsCheck(val errors: Map<String, String>, val request: SavingsRequest?)
 
 fun checkSavings(mode: SavingsMode, f: Map<String, String>, currency: Currency, today: IsoDate): SavingsCheck {
     val errors = mutableMapOf<String, String>()
+    fun error(id: String, message: String) {
+        if (!f[id].isNullOrBlank()) errors[id] = message
+    }
     val have = when (val p = parseAmountField(f[SavingsFields.HAVE].orEmpty(), currency)) {
         Parsed.Empty -> 0L
         Parsed.Bad -> null.also { errors[SavingsFields.HAVE] = t(TextKey.MONEY_BAD_FORMAT) }
@@ -48,16 +55,16 @@ fun checkSavings(mode: SavingsMode, f: Map<String, String>, currency: Currency, 
     }
     if (mode == SavingsMode.TARGET) {
         val target = parseAmountField(f[SavingsFields.TARGET].orEmpty(), currency).orNull?.takeIf { it > 0 }
-        if (target == null) errors[SavingsFields.TARGET] = t(TextKey.CALC_TARGET_POSITIVE)
+        if (target == null) error(SavingsFields.TARGET, t(TextKey.CALC_TARGET_POSITIVE))
         val date = parseDateField(f[SavingsFields.DATE].orEmpty()).orNull?.takeIf { it > today }
-        if (date == null) errors[SavingsFields.DATE] = t(TextKey.CALC_DATE_AFTER_TODAY)
+        if (date == null) error(SavingsFields.DATE, t(TextKey.CALC_DATE_AFTER_TODAY))
         val ok = target != null && date != null && have != null
         return SavingsCheck(errors, if (ok) SavingsRequest.Target(target!!, have!!, date!!) else null)
     }
     val monthly = parseAmountField(f[SavingsFields.MONTHLY].orEmpty(), currency).orNull?.takeIf { it > 0 }
-    if (monthly == null) errors[SavingsFields.MONTHLY] = t(TextKey.CALC_MONTHLY_POSITIVE)
+    if (monthly == null) error(SavingsFields.MONTHLY, t(TextKey.CALC_MONTHLY_POSITIVE))
     val months = parseCountField(f[SavingsFields.MONTHS].orEmpty()).orNull?.takeIf { it in 1..MAX_CALC_MONTHS }
-    if (months == null) errors[SavingsFields.MONTHS] = t(TextKey.CALC_MONTHS_RANGE, MAX_CALC_MONTHS.toString())
+    if (months == null) error(SavingsFields.MONTHS, t(TextKey.CALC_MONTHS_RANGE, MAX_CALC_MONTHS.toString()))
     val ok = monthly != null && months != null && have != null
     return SavingsCheck(errors, if (ok) SavingsRequest.Reach(monthly!!, months!!, have!!) else null)
 }
@@ -147,7 +154,7 @@ private fun bars(actual: ActualSaving?, currency: Currency): List<SavingBar> {
     }
 }
 
-/** يوم بداية الشهر المالي (يوم الراتب) من الفترات نفسها — أي ٣ شهور ورا بعض فيهم شهر ٣١ يوم، فالأكبر = يوم الراتب. */
+/** يوم بداية الشهر المالي (يوم الراتب) من الفترات نفسها — أي 3 شهور ورا بعض فيهم شهر 31 يوم، فالأكبر = يوم الراتب. */
 private fun compareNote(actual: ActualSaving?): String {
     val payday = actual?.months?.maxOfOrNull { parseIsoDate(it.period.start).day }
     return if (payday == null) t(UiKey.SAVCALC_COMPARE_NOTE_PLAIN) else t(UiKey.SAVCALC_COMPARE_NOTE, sentenceNumber(payday))

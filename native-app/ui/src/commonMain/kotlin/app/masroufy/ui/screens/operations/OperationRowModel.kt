@@ -44,7 +44,7 @@ data class OpRow(
     val unrecorded: Boolean = false,
 )
 
-/** مجموعة يوم: «اليوم» · «أمس» · «٧ أكتوبر». */
+/** مجموعة يوم: «اليوم» · «أمس» · «7 أكتوبر». */
 data class OpDay(val date: IsoDate, val label: String, val rows: List<OpRow>)
 
 /** اللي الصف محتاجه من برّه العملية: التصنيفات · أسماء التجار · المحافظ. */
@@ -118,7 +118,7 @@ fun colorOf(tx: Transaction, ctx: RowContext): Color {
 fun opRow(tx: Transaction, ctx: RowContext): OpRow =
     OpRow(tx.id, titleOf(tx, ctx), subtitleOf(tx, ctx), iconOf(tx, ctx), colorOf(tx, ctx), tx.amountMinor, tx.currency, toneOf(tx))
 
-/** «اليوم» · «أمس» · «٧ أكتوبر» — [today] من الجهاز (`ShellDeps.today`). */
+/** «اليوم» · «أمس» · «7 أكتوبر» — [today] من الجهاز (`ShellDeps.today`). */
 fun dayLabel(date: IsoDate, today: IsoDate): String {
     val yesterday = dayNumberToIso(toDayNumber(parseIsoDate(today)) - 1)
     return when (date) {
@@ -132,7 +132,7 @@ fun dayLabel(date: IsoDate, today: IsoDate): String {
 fun dayGroups(transactions: List<Transaction>, ctx: RowContext, today: IsoDate): List<OpDay> =
     groupByDay(transactions).map { g -> OpDay(g.date, dayLabel(g.date, today), g.transactions.map { opRow(it, ctx) }) }
 
-/** العدد في جملة بقاعدة العربي: واحدة · اتنين · ٣–١٠ جمع · ١١+ مفرد. [few]/[many] فيهم `{0}`. */
+/** العدد في جملة بقاعدة العربي: واحدة · اتنين · 3–10 جمع · 11+ مفرد. [few]/[many] فيهم `{0}`. */
 fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef): String = when {
     n == 1 -> t(one)
     n == 2 -> t(two)
@@ -140,6 +140,6 @@ fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef): 
     else -> t(many, sentenceNumber(n))
 }
 
-/** «عملية واحدة» · «عمليتان» · «٥ عمليات» · «١٢ عملية». */
+/** «عملية واحدة» · «عمليتان» · «5 عمليات» · «12 عملية». */
 fun operationsCount(n: Int): String =
     countText(n, UiKey.OPERATIONS_COUNT_ONE, UiKey.OPERATIONS_COUNT_TWO, UiKey.OPERATIONS_COUNT_FEW, UiKey.OPERATIONS_COUNT_MANY)

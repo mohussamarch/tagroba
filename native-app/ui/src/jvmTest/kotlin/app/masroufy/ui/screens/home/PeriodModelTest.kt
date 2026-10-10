@@ -10,7 +10,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * «اختر الشهر»: الشهر المالي **باسم الشهر اللي بيخلص فيه** (٢٨ سبتمبر–٢٧ أكتوبر = «أكتوبر» — رد المالك آخر §76) ومفتاحه في كوتلن زي ما هو ·
+ * «اختر الشهر»: الشهر المالي **باسم الشهر اللي بيخلص فيه** (28 سبتمبر–27 أكتوبر = «أكتوبر» — رد المالك آخر §76) ومفتاحه في كوتلن زي ما هو ·
  * اللي قبله واللي بعده · لوحة السنة (المستقبل مقفول · قبل بياناتك مقفول) · اليوم كام من كام.
  */
 class PeriodModelTest {
@@ -22,13 +22,28 @@ class PeriodModelTest {
 
     @Test fun theFiscalMonthIsNamedByTheMonthItEndsIn() {
         assertEquals("2026-09", current.key, "مفتاح كوتلن بشهر البداية — ما اتغيرش")
-        assertEquals("أكتوبر ٢٠٢٦", fiscalName(current))
-        assertEquals("٢٨ سبتمبر – ٢٧ أكتوبر ٢٠٢٦", fiscalRange(current, withYear = true))
-        assertEquals("٢٨ سبتمبر – ٢٧ أكتوبر", fiscalRange(current, withYear = false))
+        assertEquals("أكتوبر 2026", fiscalName(current))
+        assertEquals("28 سبتمبر – 27 أكتوبر 2026", fiscalRange(current, withYear = true))
+        assertEquals("28 سبتمبر – 27 أكتوبر", fiscalRange(current, withYear = false))
         val january = periodEndingIn(2026, 1, 28)
-        assertEquals("٢٨ ديسمبر ٢٠٢٥ – ٢٧ يناير", fiscalRange(january, withYear = false), "السنة جنب البداية لو مختلفة")
-        assertEquals("أكتوبر ٢٠٢٦", fiscalName(periodEndingIn(2026, 10, 1)), "يوم الراتب ١ ⇒ الشهر نفسه")
+        assertEquals("28 ديسمبر 2025 – 27 يناير", fiscalRange(january, withYear = false), "السنة جنب البداية لو مختلفة")
+        assertEquals("أكتوبر 2026", fiscalName(periodEndingIn(2026, 10, 1)), "يوم الراتب 1 ⇒ الشهر نفسه")
         assertEquals("2026-10-31", periodEndingIn(2026, 10, 1).end)
+    }
+
+    /** «اختر الشهر» ⇒ العمليات والمراجعة بيقروا نفس الفترة (المحاكي 2026-10-10: العمليات كانت بتتجاهله). */
+    @Test fun thePickedMonthKeyBecomesThePeriodForOperations() {
+        assertEquals(current, PeriodChoice.periodOf(current.key, 28))
+        assertEquals("2026-07-28", PeriodChoice.periodOf("2026-07", 28)?.start)
+        assertEquals(null, PeriodChoice.periodOf(null, 28), "مفيش اختيار ⇒ الشهر الحالي")
+        assertEquals(null, PeriodChoice.periodOf("بايظ", 28))
+    }
+
+    /** L7 (OVERRIDES §79): كل مكان بيكتب اسم الشهر المالي — العمليات والميزانيات والمستحقات — بشهر النهاية مش البداية. */
+    @Test fun everyScreenNamesTheMonthItEndsIn() {
+        assertEquals("أكتوبر", app.masroufy.ui.screens.operations.periodLabel(current))
+        assertEquals("أكتوبر", app.masroufy.ui.screens.budgets.periodMonthName(current))
+        assertEquals("يناير", app.masroufy.ui.screens.operations.periodLabel(periodForDate("2026-01-10", 28)), "28 ديسمبر–27 يناير = يناير")
     }
 
     @Test fun stepsAndBoardStates() {
@@ -51,10 +66,10 @@ class PeriodModelTest {
         assertEquals(10, pr.day)
         assertEquals(30, pr.days)
         assertEquals(21, pr.left)
-        assertEquals("اليوم ١٠ من ٣٠، بقي ٢١ يومًا على الراتب", periodNote(current, current, "2026-10-07"))
-        assertEquals("كان ٣١ يومًا", periodNote(previousPeriod(current, 28), current, "2026-10-07"))
+        assertEquals("اليوم 10 من 30، بقي 21 يومًا على الراتب", periodNote(current, current, "2026-10-07"))
+        assertEquals("كان 31 يومًا", periodNote(previousPeriod(current, 28), current, "2026-10-07"))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("النهارده يوم ١٠ من ٣٠، فاضل ٢١ يوم على المرتب", periodNote(current, current, "2026-10-07"))
+        assertEquals("النهارده يوم 10 من 30، فاضل 21 يوم على المرتب", periodNote(current, current, "2026-10-07"))
         assertEquals("يومين", daysWord(2))
     }
 }

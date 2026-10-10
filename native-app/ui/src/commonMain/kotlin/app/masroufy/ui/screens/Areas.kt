@@ -12,7 +12,7 @@ import app.masroufy.ui.screens.operations.registerOperations
 import app.masroufy.ui.screens.people.registerPeople
 
 /**
- * المناطق الثمانية (`SCREENS.md` §٢) — **القايمة دي ثابتة** عشان المناطق تتبني بالتوازي: كل منطقة بتضيف شاشاتها في
+ * المناطق الثمانية (`SCREENS.md` §2) — **القايمة دي ثابتة** عشان المناطق تتبني بالتوازي: كل منطقة بتضيف شاشاتها في
  * `screens/<المنطقة>/<Area>Routes.kt` بس، والملف ده ما بيتلمسش. منطقة جديدة = قرار مكتوب.
  */
 fun buildRegistry(): RouteRegistry = RouteRegistry().apply {

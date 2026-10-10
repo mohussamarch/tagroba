@@ -45,7 +45,7 @@ enum class OutcomeChip(val key: TextRef) {
 
 data class HawlCard(
     val confirmed: Boolean,
-    /** «١ جمادى الأولى ١٤٤٨ — بعد ٥ أيام» أو null لو مفيش يوم (لا مؤكد ولا مقترح). */
+    /** «1 جمادى الأولى 1448 — بعد 5 أيام» أو null لو مفيش يوم (لا مؤكد ولا مقترح). */
     val dateLine: String?,
     val gregorian: String?,
     val why: String,
@@ -139,7 +139,7 @@ private fun hawlCard(d: ZakatData, today: IsoDate, rule: ZakatRule?): HawlCard {
     )
 }
 
-/** «اليوم» · «غدًا» · «بعد يومين» · «بعد ٥ أيام» · «بعد ٢٤ يومًا» · «مضى موعدها». */
+/** «اليوم» · «غدًا» · «بعد يومين» · «بعد 5 أيام» · «بعد 24 يومًا» · «مضى موعدها». */
 fun relativeDays(days: Int): String = when {
     days < 0 -> uiText(UiKey.ZAKAT_SCREEN_REL_PAST)
     days == 0 -> uiText(UiKey.ZAKAT_SCREEN_REL_TODAY)
