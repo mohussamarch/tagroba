@@ -5,7 +5,10 @@ import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
+import app.masroufy.core.SAUDI_TIME_ZONE
 import app.masroufy.core.SmsParseResult
+import app.masroufy.core.dayIn
+import app.masroufy.core.dayStartIn
 import app.masroufy.port.Clock
 import app.masroufy.port.UserSettingsStore
 import app.masroufy.port.smsSenderKey
@@ -83,7 +86,8 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
         val oldest = inbox.oldestMessageAt(fresh) ?: return null
         // بنك اتضاف بعد الربط: رسايله اللي قبل المؤشر عمرها ما اتقريت ⇒ نفس السؤال
         if (millisOf(oldest) >= millisOf(marks.point)) return null
-        return SmsHistoryQuestion(spaceId, fresh, riyadhDayOf(oldest), openingOf(lane, fresh))
+        // §88: اليوم بتوقيت البلد (القاهرة بالصيفي · الرياض)
+        return SmsHistoryQuestion(spaceId, fresh, dayIn(lane.timeZone, oldest) ?: oldest.take(10), openingOf(lane, fresh))
     }
 
     /** المحفظة اللي رسايل البنوك دي بتتسجل فيها (الربط أو الحساب البنكي الوحيد) — الأقدم رصيد بداية لو أكتر من واحدة. */
@@ -104,7 +108,9 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
      * اتقفلت في النص، الخلفية بتكمّل من المؤشر)، وبعدين الصندوق بيتملى كله وكل اللي شكله اتعلّم بيتسجل.
      */
     suspend fun start(spaceId: String, senders: List<String>, from: IsoDate?): SmsHistoryReport {
-        val point = if (from != null) dayStartIso(from) else inbox.oldestMessageAt(senders)
+        // §88: أول اليوم بتوقيت البلد — مصر من 00:00 القاهرة (22:00 أو 21:00 جرينتش حسب الصيفي)، مش 21:00 ثابتة
+        val zone = deps.sms.lanes.firstOrNull { it.spaceId == spaceId }?.timeZone ?: SAUDI_TIME_ZONE
+        val point = if (from != null) dayStartIn(zone, from) else inbox.oldestMessageAt(senders)
         if (point != null) inbox.readFrom(point)
         remember(spaceId, senders, point)
         return drain(0)

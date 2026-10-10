@@ -49,10 +49,7 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
  * الإشعارات (`GatherAllSpaceAlerts`). لحد ما يتوصل: التسجيل لوحده شغال، ومفيش إشعار جوال.
  */
 fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv): RunBackgroundCycle {
-    val lanes = spaces.mapNotNull { (space, r) ->
-        val reader = countryPack(space.countryCode).smsReader ?: return@mapNotNull null
-        SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets)
-    }
+    val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
     // §83-2: من آخر نقطة لكل بلد (إعدادات الحساب — نفس المخزن في كل البلاد)
     val catchUp = spaces.firstOrNull()?.let { (_, r) -> SmsCatchUp(inbox, r.assistant.settings, lanes.map { it.spaceId }, env.clock) }
     return RunBackgroundCycle(
@@ -63,9 +60,13 @@ fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInbo
 /** §83-1: «اقرأ اللي فات؟» بنفس صندوق وحارات التسجيل لوحده ([backgroundCycle]) — للشاشة (`SmsGraph`). */
 fun smsHistory(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, env: DeviceEnv): SmsHistory? {
     val (_, first) = spaces.firstOrNull() ?: return null
-    val lanes = spaces.mapNotNull { (space, r) ->
-        val reader = countryPack(space.countryCode).smsReader ?: return@mapNotNull null
-        SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets)
-    }
+    val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
     return SmsHistory(SmsHistoryDeps(AutoRecordSmsDeps(inbox, lanes), first.assistant.settings, env.clock))
+}
+
+/** حارة رسايل البلد [space]: قارئها **ومنطقة وقتها** من حزمتها (§88 — حدود اليوم بتوقيت كل بلد)، أو null لو البلد مالهاش قارئ. */
+internal fun smsLaneOf(space: Space, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort): SmsLane? {
+    val pack = countryPack(space.countryCode)
+    val reader = pack.smsReader ?: return null
+    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets, pack.timeZone)
 }

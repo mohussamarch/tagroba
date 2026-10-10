@@ -1,7 +1,9 @@
 package app.masroufy.wiring
 
 import app.masroufy.core.DEFAULT_PAYDAY
+import app.masroufy.core.IsoDate
 import app.masroufy.core.countryPack
+import app.masroufy.core.dayIn
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.parseCsv
 import app.masroufy.core.parseIsoDate
@@ -77,8 +79,10 @@ class ImportsGraph(private val c: AreaContext) : ImportsDeps {
         return CsvTable(doc.header, doc.rows.take(rows).map { it.cells }, doc.rows.size)
     }
 
+    override fun smsToday(): IsoDate = dayIn(countryPack(c.space.countryCode).timeZone, env.clock.nowIso()) ?: env.today()
+
     override suspend fun smsRanges(): List<SmsRange> {
-        val today = env.today()
+        val today = smsToday()
         val day = toDayNumber(parseIsoDate(today))
         val payday = runCatching { c.shell.profile.load().payday }.getOrNull() ?: DEFAULT_PAYDAY
         return listOf(

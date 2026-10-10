@@ -3,6 +3,7 @@ package app.masroufy.usecase
 import app.masroufy.core.CROSS_SOURCE_WINDOW_DAYS
 import app.masroufy.core.Currency
 import app.masroufy.core.ImportSourceType
+import app.masroufy.core.SAUDI_TIME_ZONE
 import app.masroufy.core.SchemaId
 import app.masroufy.core.Wallet
 import app.masroufy.core.dayNumberToIso
@@ -42,10 +43,15 @@ internal class HistoryWorld(
     val memory: MemorySmsInbox = MemorySmsInbox(available = true, now = HISTORY_NOW, window = window, perSync = perSync),
     val settings: MemoryUserSettingsStore = MemoryUserSettingsStore(),
     val space: SmsSpace = SmsSpace(wallets = listOf(CASH, HISTORY_BANK), window = CROSS_SOURCE_WINDOW_DAYS),
+    /** منطقة وقت البلد (§88) — الافتراضي السعودية زي `SmsSpace`. */
+    val zone: String = SAUDI_TIME_ZONE,
 ) {
     val clock = FixedClock("2026-07-01T12:30:00.000Z")
 
-    fun deps(inbox: MemorySmsInbox = memory) = AutoRecordSmsDeps(inbox, listOf(space.lane(inbox)))
+    private fun lane(inbox: MemorySmsInbox) =
+        SmsLane.of(space.spaceId, space.importDeps(space.smsEffects(inbox)), ManageSmsInbox(inbox, space.parse), space.wallets, zone)
+
+    fun deps(inbox: MemorySmsInbox = memory) = AutoRecordSmsDeps(inbox, listOf(lane(inbox)))
 
     fun history(inbox: MemorySmsInbox = memory) = SmsHistory(SmsHistoryDeps(deps(inbox), settings, clock))
 

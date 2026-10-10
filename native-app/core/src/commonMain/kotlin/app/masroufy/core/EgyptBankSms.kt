@@ -159,7 +159,7 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
  */
 private fun egyptDateGate(shape: SmsShape, body: String, receivedAt: String): SmsShape = when {
     !shape.clear -> shape
-    !egyptHasDateToken(body) && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, SmsClock.CAIRO)) -> SmsShape.KeywordFallback
+    !egyptHasDateToken(body) && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, EGYPT_TIME_ZONE)) -> SmsShape.KeywordFallback
     egyptDistinctDateCount(body) > 1 -> SmsShape.KeywordFallback
     else -> shape
 }

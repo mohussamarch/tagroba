@@ -113,7 +113,7 @@ private fun snbDatelessShape(body: String): Boolean {
  * يوم الوصول **وبتستنى تأكيد المالك** (شكلها `KeywordFallback` — عمرها ما بتتسجل لوحدها ولا بتتعلّم — [noEvidence]).
  */
 private fun datelessDate(body: String, receivedAt: String, knownLayout: Boolean = false, orArrival: Boolean = false): IsoDate? =
-    if (!hasDateToken(body) && (orArrival || knownLayout || snbDatelessShape(body) || hasDoneWording(body))) datelessDay(body, receivedAt, SmsClock.RIYADH) else null
+    if (!hasDateToken(body) && (orArrival || knownLayout || snbDatelessShape(body) || hasDoneWording(body))) datelessDay(body, receivedAt, SAUDI_TIME_ZONE) else null
 
 /** §82-7: رسالة من غير تاريخ ومن غير أي دليل إنها عملية حصلت (لا شكل معروف ولا شكل الأهلي ولا «تم») ⇒ بتستنى مهما كان. */
 private fun noEvidence(body: String, knownLayout: Boolean): Boolean =
@@ -172,7 +172,7 @@ private fun foreignUnread(
 private fun saudiExtraGate(shape: SmsShape, body: String, kind: SmsKind, dateless: Boolean, receivedAt: String): SmsShape = when {
     !shape.clear -> shape
     kind != SmsKind.TRANSFER_IN && kind != SmsKind.TRANSFER_OUT && foreignCountryTail(saudiMerchantOf(body, kind), SAUDI_TAIL) -> SmsShape.KeywordFallback
-    dateless && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, SmsClock.RIYADH)) -> SmsShape.KeywordFallback
+    dateless && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, SAUDI_TIME_ZONE)) -> SmsShape.KeywordFallback
     else -> shape
 }
 private val CASH_MERCHANT = Regex(

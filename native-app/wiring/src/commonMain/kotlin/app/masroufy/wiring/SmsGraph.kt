@@ -58,7 +58,8 @@ internal class SmsGraph(
     private var last: List<Pair<SenderReview, ReviewSmsInbox>> = emptyList()
 
     // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
-    private fun review(m: ManageSmsInbox): ReviewSmsInbox = SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets).screen()
+    private fun review(m: ManageSmsInbox): ReviewSmsInbox =
+        SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets, countryPack(space.countryCode).timeZone).screen()
 
     private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
 
@@ -160,10 +161,7 @@ internal class SmsGraph(
  */
 internal fun autoRecordSms(c: AreaContext, inbox: SmsInboxPort): AutoRecordSms {
     val spaces = c.session.spaces().ifEmpty { listOf(c.space to c.repos) }
-    val lanes = spaces.mapNotNull { (s, repos) ->
-        val reader = countryPack(s.countryCode).smsReader ?: return@mapNotNull null
-        SmsLane.of(s.id, smsImportDeps(s.id, repos, c.env, inbox), ManageSmsInbox(inbox, reader::parse), repos.wallets)
-    }
+    val lanes = spaces.mapNotNull { (s, repos) -> smsLaneOf(s, repos, c.env, inbox) }
     return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
 }
 

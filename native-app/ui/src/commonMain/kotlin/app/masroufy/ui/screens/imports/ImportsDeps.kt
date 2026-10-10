@@ -57,6 +57,9 @@ interface ImportsDeps {
 
     /** فترات «اقرأ فترة» الجاهزة: من أول الشهر المالي · آخر 7 أيام · آخر 30 يومًا. */
     suspend fun smsRanges(): List<SmsRange>
+
+    /** النهارده **بتوقيت البلد** (§88 — مش الجوال): «النهاردة؟» في الرسالة الملصوقة (§82-14) وآخر يوم في «اقرأ فترة». */
+    fun smsToday(): IsoDate
 }
 
 /** صندوق رسايل البنك والتسجيل لوحده (OVERRIDES §72) — كله من `AutoRecordSms` · `ReviewSmsInbox` · `ManageSmsInbox`. */

@@ -151,7 +151,7 @@ fun BankSmsScreen() {
         // §83: «اقرأ اللي فات؟» وقايمة «أكّد رسالة واحدة من كل شكل» (`SmsHistorySection`)
         val history = deps.sms
         if (history != null && u.status == SmsStatus.READING) {
-            item(key = "history") { SmsHistorySection(history, currency, space.shell.today()) { reload++ } }
+            item(key = "history") { SmsHistorySection(history, currency, deps.smsToday()) { reload++ } }
         }
         if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.waitingCount > 0)) {
             item(key = "waiting") { SmsWaitingSection(u, currency, categories, chosen, included, busy, handError, actions) }

@@ -4,6 +4,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Space
 import app.masroufy.core.Wallet
 import app.masroufy.core.emptyProfile
+import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAccount
 import app.masroufy.memory.MemorySmsInbox
 import app.masroufy.port.QueuedSms
@@ -28,20 +29,34 @@ class ImportsGraphTest {
     private val bank = Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")
     private val cash = Wallet("w-cash", "الكاش", Currency.SAR, "cash", 0, "2026-01-01")
 
-    private fun graph(inbox: MemorySmsInbox? = null, payday: Int? = null): Pair<ImportsGraph, SpaceRepositories> {
+    private fun graph(
+        inbox: MemorySmsInbox? = null,
+        payday: Int? = null,
+        space: Space = saudi,
+        now: String? = null,
+    ): Pair<ImportsGraph, SpaceRepositories> {
         val repos = memorySpaceRepositories(listOf(bank, cash), profile = payday?.let { emptyProfile().copy(payday = it) })
         val base = memoryEnv()
         val env = DeviceEnv(
-            base.clock, base.ids, base.today, base.hourNow, base.nowMillis, base.interactions, base.usualHours, base.seenAlerts, base.http, base.feedCache,
+            now?.let(::FixedClock) ?: base.clock, base.ids, base.today, base.hourNow, base.nowMillis, base.interactions, base.usualHours, base.seenAlerts, base.http, base.feedCache,
             smsInbox = inbox,
         )
         val session = object : SessionLinks {
             override val account = MemoryAccount()
-            override fun spaces() = listOf(saudi to repos)
+            override fun spaces() = listOf(space to repos)
             override fun switchSpace(spaceId: String) = false
         }
         val feeds = LoadOnlineFeeds(env.http, env.feedCache, env.clock, env.nowMillis)
-        return SpaceGraph(saudi, repos, env, session, feeds).imports as ImportsGraph to repos
+        return SpaceGraph(space, repos, env, session, feeds).imports as ImportsGraph to repos
+    }
+
+    /** §88: «النهاردة؟» (اللصق) وآخر يوم في «اقرأ فترة» بتوقيت البلد — 23:30 القاهرة لسه نفس اليوم في مصر وهو بكرة في الرياض. */
+    @Test fun todayForBankMessagesIsTheCountryDay() = runBlocking<Unit> {
+        val egypt = Space("eg", "مصر", "EG", Currency.EGP, "2026-01-01T00:00:00.000Z")
+        assertEquals("2026-01-15", graph(space = egypt, now = "2026-01-15T21:30:00.000Z").first.smsToday(), "winter 23:30 Cairo")
+        assertEquals("2026-07-15", graph(space = egypt, now = "2026-07-15T20:30:00.000Z").first.smsToday(), "summer 23:30 Cairo")
+        assertEquals("2026-01-16", graph(now = "2026-01-15T21:30:00.000Z").first.smsToday(), "00:30 Riyadh — unchanged")
+        assertEquals("2026-01-15", graph(space = egypt, now = "2026-01-15T21:30:00.000Z").first.smsRanges().first { it.kind == SmsRangeKind.WEEK }.to)
     }
 
     private fun sms(id: String, body: String) = QueuedSms(id, "TESTBANK", "2026-10-09T06:00:00Z", body)

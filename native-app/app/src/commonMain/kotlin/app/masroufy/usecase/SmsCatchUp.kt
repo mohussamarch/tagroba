@@ -1,11 +1,7 @@
 package app.masroufy.usecase
 
-import app.masroufy.core.IsoDate
 import app.masroufy.core.UserSetting
-import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.isoInstantMillis
-import app.masroufy.core.parseIsoDate
-import app.masroufy.core.toDayNumber
 import app.masroufy.port.Clock
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.UserSettingsStore
@@ -65,12 +61,3 @@ internal class SmsReadPoints(private val settings: UserSettingsStore, private va
 
 /** وقت ISO بالمللي — اللي مش مقروء بيبقى الأقدم (ما يعدّيش حاجة). */
 internal fun millisOf(iso: String): Long = isoInstantMillis(iso) ?: Long.MIN_VALUE
-
-/**
- * أول اليوم [day] بتوقيت السعودية (+3) كوقت ISO — §83 «اقرأ من يوم كذا». مصر في الشتا (+2) بتاخد ساعة من اليوم اللي قبله: أحسن من إنها
- * تفوّت أول ساعة من اليوم (اختيار Claude).
- */
-internal fun dayStartIso(day: IsoDate): String = dayNumberToIso(toDayNumber(parseIsoDate(day)) - 1) + "T21:00:00Z"
-
-/** اليوم بتوقيت السعودية لوقت ISO (للعرض: «أقدم رسالة يوم كذا»). */
-internal fun riyadhDayOf(iso: String): IsoDate = dayNumberToIso((millisOf(iso) + 3 * 3_600_000L).floorDiv(86_400_000L).toInt())

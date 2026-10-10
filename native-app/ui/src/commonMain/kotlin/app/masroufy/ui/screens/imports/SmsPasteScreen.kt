@@ -161,7 +161,7 @@ fun SmsPasteScreen() {
             item(key = "paste") {
                 PasteCard(
                     text, { text = it; if (phase == PastePhase.ERROR) phase = PastePhase.INPUT },
-                    pastedOn, space.shell.today(), { pastedOn = it; if (phase == PastePhase.ERROR) phase = PastePhase.INPUT }, busy,
+                    pastedOn, deps.smsToday(), { pastedOn = it; if (phase == PastePhase.ERROR) phase = PastePhase.INPUT }, busy,
                 ) { pastedOn?.let { day -> read { reader.paste(text, day) } } }
             }
         }

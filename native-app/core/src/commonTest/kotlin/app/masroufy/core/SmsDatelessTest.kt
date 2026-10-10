@@ -74,8 +74,8 @@ class SmsDatelessTest {
         val vf = "15:10: Received EGP260.00 from 00201001112296 to Mobile Account Number 01009998877. Ref: 900000441127 Available Balance: 560.00"
         val dst = ok(eg(vf, "2026-10-08T11:10:00Z")) // 14:10 القاهرة (الصيفي +3)
         assertEquals("2026-10-08" to false, dst.date to dst.shape.clear)
-        assertTrue(datelessClockConflict(vf, "2026-10-08T11:10:00Z", SmsClock.CAIRO))
-        assertTrue(!datelessClockConflict(vf, "2026-10-08", SmsClock.CAIRO), "a date-only arrival has no clock to compare")
+        assertTrue(datelessClockConflict(vf, "2026-10-08T11:10:00Z", EGYPT_TIME_ZONE))
+        assertTrue(!datelessClockConflict(vf, "2026-10-08", EGYPT_TIME_ZONE), "a date-only arrival has no clock to compare")
     }
 
     @Test fun aDateTheReaderCannotReadIsStillRejected() {
@@ -142,6 +142,6 @@ class SmsDatelessTest {
         assertEquals(listOf(23 * 60 + 58), writtenClockTimes("الساعة 11:58 م"))
         assertEquals(listOf(14 * 60 + 22), writtenClockTimes("14:22:05 14:22"))
         assertEquals(emptyList(), writtenClockTimes("25:70"))
-        assertEquals("2026-10-09", datelessDay("no clock", "2026-10-09", SmsClock.RIYADH), "a date-only arrival stays as it is")
+        assertEquals("2026-10-09", datelessDay("no clock", "2026-10-09", SAUDI_TIME_ZONE), "a date-only arrival stays as it is")
     }
 }

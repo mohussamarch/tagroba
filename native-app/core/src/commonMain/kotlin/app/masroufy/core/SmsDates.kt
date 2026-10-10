@@ -192,7 +192,7 @@ internal fun egyptTransactionDate(body: String, receivedAt: String, knownLayout:
         return if (dayMonth != null && monthDay != null && dayMonth != monthDay) null else dayMonth ?: monthDay
     }
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
-    if (!egyptHasDateToken(body)) return if (orArrival || knownLayout || DONE_PHRASE.containsMatchIn(body)) datelessDay(body, receivedAt, SmsClock.CAIRO) else null
+    if (!egyptHasDateToken(body)) return if (orArrival || knownLayout || DONE_PHRASE.containsMatchIn(body)) datelessDay(body, receivedAt, EGYPT_TIME_ZONE) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     if (EG_SHORT.containsMatchIn(body)) return shortCandidates(EG_SHORT, body, received).singleOrNull()
     NBE_MONTH_DAY.find(body)?.let { m ->
