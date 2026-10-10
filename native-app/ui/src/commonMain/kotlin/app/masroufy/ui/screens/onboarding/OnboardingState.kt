@@ -3,28 +3,39 @@ package app.masroufy.ui.screens.onboarding
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
+import app.masroufy.core.Halalas
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
 import app.masroufy.core.UserProfile
+import app.masroufy.core.bankByKey
+import app.masroufy.core.bankLabel
 import app.masroufy.core.currencySymbol
 import app.masroufy.core.sentenceNumber
+import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.text.t
+import app.masroufy.usecase.AddWalletInput
 import app.masroufy.usecase.OnboardingInput
 
 /**
  * رحلة «أول دقيقة» بعد الدخول (`Onboarding` — §63) كحالة **نقية** (بتتختبر على JVM). الترحيب والدخول قبلها في `SignInFlow` (هيكل التطبيق)،
- * فالكروت هنا: الشكل ⇒ البلد ⇒ يوم الراتب ⇒ مصدر العمليات ⇒ جاهز. شريط التقدم 6 أجزاء زي النموذج والدخول أول جزء خلصان.
- * مفيش ولا رقم بيتحسب هنا: يوم الراتب اختيار، والحفظ كله في `OnboardAccount.finish` (التأكد قبل أي كتابة وتسجيل الانتهاء آخر حاجة).
+ * فالكروت هنا: الشكل ⇒ البلد ⇒ [الكاش ⇒ البنك] ⇒ يوم الراتب ⇒ مصدر العمليات ⇒ جاهز. شريط التقدم: الدخول أول جزء خلصان + جزء لكل كارت.
+ * **كارتين الفلوس** (§81 — المالك: «الاول يسأله معاك كام كاش وبعدين يسأله عندك حساب بنكي؟ ويكون في اضافة او تخطي») للحساب الجديد
+ * بس ([OnbState.fresh]) وبعد البلد (العملة والبنوك بتاعة البلد): لو اختار بلد غير بلد الحساب ([OnbState.home]) الكارتين بيستخبوا.
+ * مفيش ولا رقم بيتحسب هنا: المبالغ اللي اتكتبت بتروح زي ما هي لـ`OnboardAccount.finish` (التأكد قبل أي كتابة وتسجيل الانتهاء آخر حاجة).
  */
-enum class OnbStep(val position: Int) { LOOK(2), COUNTRY(3), PAYDAY(4), SOURCE(5), READY(6) }
+enum class OnbStep { LOOK, COUNTRY, CASH, BANK, PAYDAY, SOURCE, READY }
 
+/** عدد الأجزاء من غير كارتين الفلوس (الحساب القديم · بلد تانية) — الدخول + 5 كروت. */
 const val ONB_SEGMENTS = 6
 
 /** مصدر العمليات (الخطوة 5) — ما بيتخزنش: بيحدد بس الشاشة اللي بعد «ادخل التطبيق» (رسايل البنك ⇒ شاشتها والإذن هناك). */
 enum class OnbSource { SMS, FILE, LATER }
 
 /** الرد الأخضر تحت الكارت بعد كل إجابة (عنوان + سطر). */
-enum class OnbReply { LOOK, COUNTRY_SA, COUNTRY_EG, DAY, DAY_LATER, SMS, FILE, LATER }
+enum class OnbReply { LOOK, COUNTRY_SA, COUNTRY_EG, DAY, DAY_LATER, SMS, FILE, LATER, CASH, CASH_SKIP, BANK, BANK_SKIP }
+
+/** البنك من «عندك حساب بنكي؟»: مفتاحه في الدليل · آخر 4 (أو null) · رصيده دلوقتي بالهللة (null = ما كتبش ⇒ صفر من النهارده). */
+data class OnbBank(val bankKey: String, val last4: String?, val openingMinor: Halalas?)
 
 data class OnbAnswers(
     val look: Int? = null,
@@ -33,26 +44,56 @@ data class OnbAnswers(
     val day: Int? = null,
     val dayLater: Boolean = false,
     val source: OnbSource? = null,
+    /** «معاك كام كاش؟» — null = اتخطى (أو لسه). */
+    val cashMinor: Halalas? = null,
+    /** «عندك حساب بنكي؟» — null = اتخطى (أو لسه). */
+    val bank: OnbBank? = null,
 )
 
-data class OnbState(val step: OnbStep, val answers: OnbAnswers = OnbAnswers(), val reply: OnbReply? = null)
+/** [fresh] = حساب جديد خالص (`OnboardingStart.freshAccount`) · [home] = بلد الحساب اللي الفلوس هتتكتب فيه. */
+data class OnbState(
+    val step: OnbStep,
+    val answers: OnbAnswers = OnbAnswers(),
+    val reply: OnbReply? = null,
+    val fresh: Boolean = false,
+    val home: String? = null,
+)
+
+/** كارتين الفلوس ظاهرين؟ حساب جديد + البلد المختارة (لو اختار) هي بلد الحساب. */
+fun money(s: OnbState): Boolean = s.fresh && (s.answers.countryCode == null || s.home == null || s.answers.countryCode.equals(s.home, true))
+
+/** الكروت بالترتيب للحالة دي. */
+fun steps(s: OnbState): List<OnbStep> = if (money(s)) OnbStep.entries else OnbStep.entries.filter { it != OnbStep.CASH && it != OnbStep.BANK }
+
+/** كل الأجزاء (الدخول + الكروت) ورقم الكارت ده فيهم. */
+fun segmentCount(s: OnbState): Int = steps(s).size + 1
+
+fun stepNumber(s: OnbState): Int = steps(s).indexOf(s.step).coerceAtLeast(0) + 2
 
 /** الأجزاء المليانة: اللي خلص قبل الكارت ده + الكارت نفسه لو اتجاوب (و«جاهز» = كله). */
-fun filledSegments(s: OnbState): Int = if (s.step == OnbStep.READY) ONB_SEGMENTS else s.step.position - 1 + if (s.reply != null) 1 else 0
+fun filledSegments(s: OnbState): Int = if (s.step == OnbStep.READY) segmentCount(s) else stepNumber(s) - 1 + if (s.reply != null) 1 else 0
 
-/** الرجوع: من يوم الراتب ومصدر العمليات بس (النموذج: بعد الحساب ما يتعمل مفيش رجوع للدخول، والبلد ما بيرجعش). */
-fun canBack(s: OnbState): Boolean = s.step == OnbStep.PAYDAY || s.step == OnbStep.SOURCE
+/** الرجوع: من البنك ويوم الراتب ومصدر العمليات بس (النموذج: بعد الحساب ما يتعمل مفيش رجوع للدخول، والبلد ما بيرجعش). */
+fun canBack(s: OnbState): Boolean = s.step == OnbStep.BANK || s.step == OnbStep.PAYDAY || s.step == OnbStep.SOURCE
 
 /** التخطي في كله ما عدا الدخول والبلد (ملف الهاندأوف §7) — ومش وقت ما الرد ظاهر. */
-fun canSkip(s: OnbState): Boolean = s.reply == null && (s.step == OnbStep.LOOK || s.step == OnbStep.PAYDAY || s.step == OnbStep.SOURCE)
+fun canSkip(s: OnbState): Boolean = s.reply == null && s.step != OnbStep.COUNTRY && s.step != OnbStep.READY
 
-fun next(s: OnbState): OnbState = OnbState(OnbStep.entries[(s.step.ordinal + 1).coerceAtMost(OnbStep.entries.size - 1)], s.answers)
+private fun move(s: OnbState, by: Int): OnbState {
+    val list = steps(s)
+    val at = list.indexOf(s.step).coerceAtLeast(0)
+    return s.copy(step = list[(at + by).coerceIn(0, list.size - 1)], reply = null)
+}
 
-fun back(s: OnbState): OnbState = OnbState(OnbStep.entries[(s.step.ordinal - 1).coerceAtLeast(0)], s.answers)
+fun next(s: OnbState): OnbState = move(s, 1)
 
-/** «تخطَّ»: الشكل ⇒ الكارت اللي بعده على طول · يوم الراتب ⇒ «ليس ثابتًا» · المصدر ⇒ «لاحقًا». */
+fun back(s: OnbState): OnbState = move(s, -1)
+
+/** «تخطَّ»/«تخطي»: الشكل ⇒ الكارت اللي بعده على طول · الكاش والبنك ⇒ من غير · يوم الراتب ⇒ «ليس ثابتًا» · المصدر ⇒ «لاحقًا». */
 fun skip(s: OnbState): OnbState = when (s.step) {
     OnbStep.LOOK -> next(s)
+    OnbStep.CASH -> answer(s, s.answers.copy(cashMinor = null), OnbReply.CASH_SKIP)
+    OnbStep.BANK -> answer(s, s.answers.copy(bank = null), OnbReply.BANK_SKIP)
     OnbStep.PAYDAY -> answer(s, s.answers.copy(day = null, dayLater = true), OnbReply.DAY_LATER)
     OnbStep.SOURCE -> answer(s, s.answers.copy(source = OnbSource.LATER), OnbReply.LATER)
     else -> s
@@ -65,6 +106,12 @@ fun pickLook(s: OnbState, look: Int) = answer(s, s.answers.copy(look = look), On
 fun pickCountry(s: OnbState, code: String) =
     answer(s, s.answers.copy(countryCode = code), if (code.equals("EG", true)) OnbReply.COUNTRY_EG else OnbReply.COUNTRY_SA)
 
+/** «إضافة» في «معاك كام كاش؟» — [minor] بالهللة (من الخانة زي ما اتكتبت؛ صفر مسموح). */
+fun addCash(s: OnbState, minor: Halalas) = answer(s, s.answers.copy(cashMinor = minor), OnbReply.CASH)
+
+/** «إضافة» في «عندك حساب بنكي؟» بعد اختيار البنك من الدليل. */
+fun addBank(s: OnbState, bank: OnbBank) = answer(s, s.answers.copy(bank = bank), OnbReply.BANK)
+
 fun pickDay(s: OnbState, day: Int) = answer(s, s.answers.copy(day = day, dayLater = false), OnbReply.DAY)
 
 fun pickSource(s: OnbState, source: OnbSource) = answer(
@@ -76,11 +123,18 @@ fun pickSource(s: OnbState, source: OnbSource) = answer(
     },
 )
 
-/** عنوان الرد وسطره — [payday] = اليوم اللي هيفضل لو قال «ليس ثابتًا» (المحفوظ في ملفه، مش «أول الشهر»). */
-fun replyText(r: OnbReply, answers: OnbAnswers, payday: Int): Pair<String, String> = when (r) {
+/** اسم البنك المختار + آخر 4 («مصرف الراجحي •••• 1234»). */
+fun bankLine(b: OnbBank): String = (bankByKey(b.bankKey)?.let(::bankLabel) ?: b.bankKey) + (b.last4?.let { " •••• $it" } ?: "")
+
+/** عنوان الرد وسطره — [payday] = اليوم اللي هيفضل لو قال «ليس ثابتًا» (المحفوظ في ملفه، مش «أول الشهر») · [currency] لمبلغ الكاش. */
+fun replyText(r: OnbReply, answers: OnbAnswers, payday: Int, currency: Currency = Currency.SAR): Pair<String, String> = when (r) {
     OnbReply.LOOK -> t(UiKey.ONB_R_LOOK_T) to t(UiKey.ONB_R_LOOK_L)
     OnbReply.COUNTRY_SA -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_SA_L)
     OnbReply.COUNTRY_EG -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_EG_L)
+    OnbReply.CASH -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_CASH_L, amountLabel(answers.cashMinor ?: 0, currency))
+    OnbReply.CASH_SKIP -> t(UiKey.ONB_R_LATER_T) to t(UiKey.ONB_R_CASH_SKIP_L)
+    OnbReply.BANK -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_BANK_L, answers.bank?.let(::bankLine).orEmpty())
+    OnbReply.BANK_SKIP -> t(UiKey.ONB_R_LATER_T) to t(UiKey.ONB_R_BANK_SKIP_L)
     OnbReply.DAY -> t(UiKey.ONB_R_DAY_T) to t(UiKey.ONB_R_DAY_L, sentenceNumber(answers.day ?: payday))
     OnbReply.DAY_LATER -> t(UiKey.ONB_R_LATER_T) to t(UiKey.ONB_R_DAY_LATER_L, sentenceNumber(payday))
     OnbReply.SMS -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_SMS_L)
@@ -93,6 +147,8 @@ fun nextLabel(s: OnbState): String = t(if (s.step == OnbStep.SOURCE) UiKey.ONB_D
 fun stepTitle(step: OnbStep): TextRef = when (step) {
     OnbStep.LOOK -> UiKey.ONB_LOOK_TITLE
     OnbStep.COUNTRY -> UiKey.ONB_COUNTRY_TITLE
+    OnbStep.CASH -> UiKey.ONB_CASH_TITLE
+    OnbStep.BANK -> UiKey.ONB_BANK_TITLE
     OnbStep.PAYDAY -> UiKey.ONB_PAY_TITLE
     OnbStep.SOURCE -> UiKey.ONB_SRC_TITLE
     OnbStep.READY -> UiKey.ONB_READY_TITLE
@@ -101,6 +157,8 @@ fun stepTitle(step: OnbStep): TextRef = when (step) {
 fun stepSub(step: OnbStep): String = when (step) {
     OnbStep.LOOK -> t(UiKey.ONB_LOOK_SUB)
     OnbStep.COUNTRY -> t(UiKey.ONB_COUNTRY_SUB)
+    OnbStep.CASH -> t(UiKey.ONB_CASH_SUB)
+    OnbStep.BANK -> t(UiKey.ONB_BANK_SUB)
     OnbStep.PAYDAY -> t(UiKey.ONB_PAY_SUB)
     OnbStep.SOURCE -> t(UiKey.ONB_SRC_SUB)
     OnbStep.READY -> t(UiKey.ONB_READY_SUB, sentenceNumber(10))
@@ -128,9 +186,16 @@ fun sourceOptions(smsReadable: Boolean): List<OnbOption> = listOf(
     OnbOption(OnbSource.LATER.name, t(UiKey.ONB_SRC_LATER), t(UiKey.ONB_SRC_LATER_SUB), null, off = false),
 )
 
-/** اللي بيروح لـ`OnboardAccount.finish`: الملف بيوم الراتب المختار (أو زي ما هو لو «ليس ثابتًا»/اتخطى) — من غير كاش ولا ديون (مش في رحلة §63). */
-fun finishInput(profile: UserProfile, answers: OnbAnswers): OnboardingInput =
-    OnboardingInput(profile.copy(payday = answers.day ?: profile.payday), cashMinor = null, debts = emptyList())
+/**
+ * اللي بيروح لـ`OnboardAccount.finish`: الملف بيوم الراتب المختار (أو زي ما هو لو «ليس ثابتًا»/اتخطى) + **الكاش والبنك لو الكارتين ظهروا**
+ * ([money]) — البنك بنوعه واسمه من الدليل، ورصيده من النهارده (تاريخ الرصيد بيتحط في `ManageWallets`). من غير ديون (مش في الرحلة).
+ */
+fun finishInput(profile: UserProfile, answers: OnbAnswers, withMoney: Boolean = false): OnboardingInput {
+    val bank = answers.bank?.takeIf { withMoney }?.let { b ->
+        bankByKey(b.bankKey)?.let { AddWalletInput(it.walletKind, bankLabel(it), b.last4, b.openingMinor, null, it.key) }
+    }
+    return OnboardingInput(profile.copy(payday = answers.day ?: profile.payday), cashMinor = answers.cashMinor?.takeIf { withMoney }, debts = emptyList(), bank = bank)
+}
 
 /** البلد اللي هنتبدل لها بعد الحفظ: مصر اختارها ومساحتها مفتوحة ومش هي الشغالة. null = نفضل مكاننا. */
 fun spaceToOpen(answers: OnbAnswers, open: List<Space>, activeId: String): String? {

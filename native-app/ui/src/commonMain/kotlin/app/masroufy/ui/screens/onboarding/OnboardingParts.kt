@@ -59,17 +59,18 @@ import app.masroufy.ui.theme.Type
 @Composable
 internal fun OnbTopBar(s: OnbState, onBack: () -> Unit, onSkip: () -> Unit) {
     val filled = filledSegments(s)
+    val total = segmentCount(s)
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (canBack(s)) Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(UiKey.SHELL_BACK), onBack) }
-        val label = t(UiKey.ONB_STEP_OF, sentenceNumber(s.step.position), sentenceNumber(ONB_SEGMENTS))
+        val label = t(UiKey.ONB_STEP_OF, sentenceNumber(stepNumber(s)), sentenceNumber(total))
         Row(
             Modifier.weight(1f).semantics {
                 contentDescription = label
-                progressBarRangeInfo = ProgressBarRangeInfo(filled.toFloat(), 0f..ONB_SEGMENTS.toFloat(), ONB_SEGMENTS)
+                progressBarRangeInfo = ProgressBarRangeInfo(filled.toFloat(), 0f..total.toFloat(), total)
             },
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            for (i in 1..ONB_SEGMENTS) Segment(i <= filled, Modifier.weight(1f))
+            for (i in 1..total) Segment(i <= filled, Modifier.weight(1f))
         }
         if (canSkip(s)) {
             val press = rememberPress()
@@ -95,6 +96,8 @@ internal fun OnbIllustration(step: OnbStep) {
     val icon = when (step) {
         OnbStep.LOOK -> Lucide.USER
         OnbStep.COUNTRY -> Lucide.GLOBE
+        OnbStep.CASH -> Lucide.BANKNOTE
+        OnbStep.BANK -> Lucide.BUILDING_2
         OnbStep.PAYDAY -> Lucide.CALENDAR
         OnbStep.SOURCE -> Lucide.MESSAGE_SQUARE_TEXT
         OnbStep.READY -> Lucide.CHECK

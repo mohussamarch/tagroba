@@ -62,7 +62,8 @@ import kotlinx.coroutines.launch
  * «أول تشغيل» بعد الدخول (`Onboarding` الخطوات 1 و3–6): كارت = سؤال، والرد الأخضر تحت بعد كل إجابة. الحالات: بيحمّل (القيم الموجودة
  * من `OnboardAccount.start`) · خطأ (القراية أو الحفظ ⇒ «أعد المحاولة») · غير متاح (رسايل البنك على الآيفون · مصر لو إنشاء البلد مش متاح ·
  * حفظ الشكل). «محتاج نت» بتاع كارت الدخول في `SignInFlow` (الكتابة هنا بتستنى في نسخة الجهاز لو النت قاطع).
- * «ادخل التطبيق» ⇒ `OnboardAccount.finish` (يوم الراتب بس — مفيش كاش ولا ديون في رحلة §63) ⇒ البلد المختارة ⇒ رسايل البنك لو اختارها.
+ * «ادخل التطبيق» ⇒ `OnboardAccount.finish` (يوم الراتب + للحساب الجديد الكاش والبنك من كارتين §81 — من غير ديون) ⇒ البلد المختارة ⇒
+ * رسايل البنك لو اختارها.
  */
 @Composable
 fun OnboardingScreen() {
@@ -82,6 +83,8 @@ fun OnboardingScreen() {
         loadFailed = false
         val r = runCatching { onb.onboard.start() }
         start = r.getOrNull()
+        // حساب جديد خالص ⇒ كارتين الفلوس (§81) بعملة وبنوك بلد الحساب
+        if (start?.freshAccount == true && !s.fresh) s = s.copy(fresh = true, home = deps.space.countryCode)
         loadFailed = r.isFailure
         open = runCatching { deps.shell.spaces().map { it.space } }.getOrNull()?.takeIf { it.isNotEmpty() } ?: listOf(deps.space)
     }
@@ -91,14 +94,14 @@ fun OnboardingScreen() {
         saving = true
         failure = null
         scope.launch {
-            when (val r = runCatching { onb.onboard.finish(finishInput(st.profile, s.answers)) }.getOrNull()) {
+            when (val r = runCatching { onb.onboard.finish(finishInput(st.profile, s.answers, money(s))) }.getOrNull()) {
                 OnboardingResult.Ok -> {
                     val target = spaceToOpen(s.answers, open, deps.space.id) ?: createdSpace(s.answers, open, onb)
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
                     nav.pop()
                     if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
-                    // حساب جديد خالص اتجهز بتصنيفاته ومحفظة الكاش ⇒ «المحافظ» عشان يضيف محفظة البنك بنفسه، والرئيسية تقرا تاني
-                    if (st.freshAccount) nav.push(WalletsRoute)
+                    // حساب جديد خالص من غير كارتين الفلوس (اختار بلد تانية) ⇒ «المحافظ» عشان يضيف محافظه هناك، والرئيسية تقرا تاني
+                    if (st.freshAccount && !money(s)) nav.push(WalletsRoute)
                     changes.changed()
                 }
                 is OnboardingResult.Failed -> failure = r.message
@@ -133,7 +136,7 @@ fun OnboardingScreen() {
         }
         val reply = s.reply
         if (reply != null) {
-            val (title, line) = replyText(reply, s.answers, start?.profile?.payday ?: app.masroufy.core.DEFAULT_PAYDAY)
+            val (title, line) = replyText(reply, s.answers, start?.profile?.payday ?: app.masroufy.core.DEFAULT_PAYDAY, deps.space.currency)
             Box(Modifier.align(Alignment.BottomCenter)) {
                 OnbReplyPanel(title, line, nextLabel(s), pad.calculateBottomPadding()) { s = next(s) }
             }
@@ -173,6 +176,8 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
                 OnbOptionRow(o, s.answers.countryCode == o.id, null) { onChange(pickCountry(s, o.id)) }
             }
         }
+        OnbStep.CASH -> CashCard(s, LocalSpace.current.space.currency, onChange)
+        OnbStep.BANK -> LocalSpace.current.space.let { BankCard(s, it.countryCode, it.currency, onChange) }
         OnbStep.PAYDAY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             DayGrid(s.answers.day, onPick = { onChange(pickDay(s, it)) })
             TonalButton(t(UiKey.ONB_NOT_FIXED), onClick = { onChange(skip(s)) }, height = 44.dp, modifier = Modifier.fillMaxWidth())
@@ -215,13 +220,19 @@ private fun LoadFailed(onRetry: () -> Unit) {
 private val OnbStateSaver = listSaver<OnbState, Any?>(
     save = { st ->
         val a = st.answers
-        listOf(st.step.ordinal, a.look, a.countryCode, a.day, a.dayLater, a.source?.ordinal, st.reply?.ordinal)
+        listOf(st.step.ordinal, a.look, a.countryCode, a.day, a.dayLater, a.source?.ordinal, st.reply?.ordinal, st.fresh, st.home, a.cashMinor,
+            a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor)
     },
     restore = { v ->
         OnbState(
             OnbStep.entries[v[0] as Int],
-            OnbAnswers(v[1] as Int?, v[2] as String?, v[3] as Int?, v[4] as Boolean, (v[5] as Int?)?.let { OnbSource.entries[it] }),
+            OnbAnswers(
+                v[1] as Int?, v[2] as String?, v[3] as Int?, v[4] as Boolean, (v[5] as Int?)?.let { OnbSource.entries[it] }, v[9] as Long?,
+                (v[10] as String?)?.let { OnbBank(it, v[11] as String?, v[12] as Long?) },
+            ),
             (v[6] as Int?)?.let { OnbReply.entries[it] },
+            fresh = v[7] as Boolean,
+            home = v[8] as String?,
         )
     },
 )
