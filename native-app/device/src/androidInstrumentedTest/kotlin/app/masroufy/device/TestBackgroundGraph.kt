@@ -27,11 +27,10 @@ import app.masroufy.usecase.AutoRecordSmsDeps
 import app.masroufy.usecase.BackgroundCycleDeps
 import app.masroufy.usecase.ImportStatementDeps
 import app.masroufy.usecase.ManageSmsInbox
-import app.masroufy.usecase.OwnAccountByLast4Effect
+import app.masroufy.usecase.smsRecordEffects
 import app.masroufy.usecase.RunAlertEngine
 import app.masroufy.usecase.RunBackgroundCycle
 import app.masroufy.usecase.SmsLane
-import app.masroufy.usecase.SmsSalaryEffect
 
 /**
  * التجميع اللي التطبيق الجاي هيعمله في `Application.onCreate` (ARCHITECTURE §31.29) — هنا بمستودعات الذاكرة ومحفظة بنك **وهمية**.
@@ -44,12 +43,14 @@ class TestBackgroundGraph(inbox: SmsInboxPort, notifier: DeviceNotifier) : Backg
     private val parties = MemoryTransferPartyRepository()
     private val wallets = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 0, "2026-01-01")))
 
-    // آثار رسايل البنك زي التشغيل الحقيقي (S1): «حسابي التاني» بآخر 4 أرقام (§75-11) · «ده راتبك؟» (§75-2)
+    private val categories = MemoryCategoryRepository()
+
+    // آثار رسايل البنك زي التشغيل الحقيقي — كل الشرايح بترتيب العقد (`smsRecordEffects` — S1 · S2 · S3 · S5)
     private val importDeps = ImportStatementDeps(
-        txns = txns, sources = sources, batches = batches, merchants = MemoryMerchantRepository(), categories = MemoryCategoryRepository(),
+        txns = txns, sources = sources, batches = batches, merchants = MemoryMerchantRepository(), categories = categories,
         rules = MemoryRuleRepository(), uow = MemoryUnitOfWork(listOf(txns, sources, batches, parties)), ids = SequentialIdGenerator(),
         clock = FixedClock("2026-10-08T00:00:00.000Z"), transferParties = parties,
-        effects = listOf(OwnAccountByLast4Effect(wallets), SmsSalaryEffect(inbox, "sa")),
+        effects = smsRecordEffects("sa", wallets, inbox, categories),
     )
     val auto = AutoRecordSms(AutoRecordSmsDeps(inbox, listOf(SmsLane.of("sa", importDeps, ManageSmsInbox(inbox, ::parseBankSms), wallets))))
     val alertInbox = MemoryAlertInbox()

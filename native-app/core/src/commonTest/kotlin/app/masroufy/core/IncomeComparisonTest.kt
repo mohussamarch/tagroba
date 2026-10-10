@@ -80,6 +80,22 @@ class IncomeComparisonTest {
         assertEquals(250, c.expenseChangeTenthPercent)
     }
 
+    /**
+     * مراجعة S6 (§75-3): المقارنة بتحط كل راتب في شهر حسابه زي الرئيسية — راتب 26 ديسمبر في فترة 28 ديسمبر (أول «قبل»)، مش راتب 26 يناير.
+     * القديم (LEGACY) بتاريخها زي الأول.
+     */
+    @Test fun earlySalariesCountInTheirNewMonthLikeHome() {
+        val job = IncomeSource("j", "شركة وهمية", "شركة وهمية", IncomeSourceKind.JOB, Currency.SAR, "2026-03-28")
+        val salaries = listOf("2025-12-26", "2026-01-26", "2026-02-26", "2026-03-26", "2026-04-26", "2026-05-26", "2026-06-26")
+            .mapIndexed { i, d -> t(d, 1_000_000L + i * 100_000L, EconomicKind.SALARY) }
+        val c = assertNotNull(compareAroundSourceStart(job, salaries, emptyList(), 28, "2026-07-10", EstimatePolicy.OWNER_2026_10))
+        assertEquals("2025-12-28", c.before.first().start)
+        assertEquals(1_100_000, c.incomeBeforeAvgMinor, "ديسمبر ويناير وفبراير (26) ⇒ فترات 28 ديسمبر · يناير · فبراير")
+        assertEquals(1_400_000, c.incomeAfterAvgMinor, "مارس وأبريل ومايو (26)")
+        val old = assertNotNull(compareAroundSourceStart(job, salaries, emptyList(), 28, "2026-07-10", EstimatePolicy.LEGACY))
+        assertEquals(1_200_000, old.incomeBeforeAvgMinor, "القديم: يناير وفبراير ومارس بتاريخها")
+    }
+
     @Test fun tenthsOfAPercentRoundHalfAwayFromZero() {
         assertEquals(1, changeTenthPercent(1000, 1001))
         assertEquals(333, changeTenthPercent(3, 4))

@@ -18,6 +18,7 @@ import app.masroufy.core.applyKnownPayerSalary
 import app.masroufy.core.transferPartyOf
 import app.masroufy.core.compareAroundSourceStart
 import app.masroufy.core.comparisonPeriods
+import app.masroufy.core.countingReadStart
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.emptyProfile
 import app.masroufy.core.lateIncomeCandidates
@@ -128,7 +129,8 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
         val source = deps.sources.listAll().firstOrNull { it.id == sourceId } ?: throw IncomeSourceError(uiText(TextKey.INCOME_SOURCE_NOT_FOUND))
         val payday = (deps.profiles.load() ?: emptyProfile()).payday
         val (before, after) = comparisonPeriods(source.startedAt, payday)
-        val txns = deps.txns.listByDateRange(before.first().start, after.last().end)
+        // §75-3: راتب أول شهر ممكن ينزل قبله بشوية ⇒ القراية من `countingReadStart` (والمقارنة بتحط كل عملية في شهر حسابها)
+        val txns = deps.txns.listByDateRange(countingReadStart(before.first().start), after.last().end)
         val allocations = deps.allocations.listByTransactionIds(txns.map { it.id })
         return compareAroundSourceStart(source, txns, allocations, payday, today)
     }

@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.CashMovement
+import app.masroufy.core.Currency
 import app.masroufy.core.DataCoverage
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
@@ -14,6 +15,7 @@ import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.countsAsIncome
 import app.masroufy.core.countsAsPersonalExpense
 import app.masroufy.core.ruleFor
+import app.masroufy.core.Transaction
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.CategoryRepository
@@ -36,7 +38,32 @@ data class MoneySummary(
     /** اللي خرج ومش مصروف شخصي، بالنوع. */
     val outflowNotExpense: Map<EconomicKind, Halalas>,
     val coverage: DataCoverage,
+    /**
+     * §75-1: الداخل المستني برّه الدخل لحد ما يتأكد — هو نفسه `inflowNotIncome[UNCLASSIFIED]` (غير المؤكد منه)، بعدده ومبلغه لكل عملة.
+     * لو فيه: [incomeMinor] «لحد دلوقتي».
+     */
+    val pendingIncomingCount: Int = 0,
+    val pendingIncomingMinor: Map<Currency, Halalas> = emptyMap(),
+    /**
+     * §75-3 (لما المدى شهور مالية): [cash] بتاريخ العملية (§58 — اللي دخل فعلًا)، والدخل بشهر الراتب. الفرق بينهم راتبين:
+     * - [countedInNextPeriod]: نزل في آخر المدى وبيتحسب للشهر اللي بعده ⇒ في «اللي دخل» ومش في [incomeMinor] (لما المدى «لحد النهارده»
+     *   ده راتب الشهر الجاي اللي نزل بدري — الشاشة تعرضه بعلامة «بيتحسب للشهر الجديد»).
+     * - [countedFromEarlier]: نزل قبل أول المدى بشوية واتحسب فيه ⇒ في [incomeMinor] ومش في «اللي دخل».
+     * مبالغهم جاهزة لكل عملة ([countedInNextPeriodMinor] · [countedFromEarlierMinor] — ما بتتجمعش بين عملتين) عشان الشاشة ما تحسبش:
+     * «اللي دخل» = الدخل + [inflowNotIncome] − [countedFromEarlierMinor] + [countedInNextPeriodMinor].
+     */
+    val countedInNextPeriod: List<Transaction> = emptyList(),
+    val countedInNextPeriodMinor: Map<Currency, Halalas> = emptyMap(),
+    val countedFromEarlier: List<Transaction> = emptyList(),
+    val countedFromEarlierMinor: Map<Currency, Halalas> = emptyMap(),
 )
+
+/** مجموع كل عملة لوحدها. */
+private fun byCurrency(rows: List<Transaction>): Map<Currency, Halalas> {
+    val out = LinkedHashMap<Currency, Halalas>()
+    for (t in rows) out[t.currency] = addMoney(out[t.currency] ?: 0L, t.amountMinor)
+    return out
+}
 
 data class LoadMoneySummaryDeps(
     val txns: TransactionRepository,
@@ -45,14 +72,22 @@ data class LoadMoneySummaryDeps(
 )
 
 class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
-    suspend fun load(from: IsoDate, to: IsoDate): MoneySummary {
-        val raw = deps.txns.listByDateRange(from, to)
+    /**
+     * [payday] لما المدى شهور مالية (من يوم الراتب): الراتب اللي نزل قبل أول المدى بشوية جوه، وراتب الشهر اللي بعد المدى برّه (§75-3).
+     * null (سنة ميلادية مثلًا) ⇒ العمليات بتاريخها.
+     */
+    suspend fun load(from: IsoDate, to: IsoDate, payday: Int? = null): MoneySummary {
         val names = deps.categories.listAll().associate { it.id to it.name }
-        // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (OVERRIDES §18)
-        val rows = withEstimatedKinds(raw, names).transactions
+        val range = loadRangeRows(deps.txns, from, to, payday, names)
+        val raw = range.rows
+        // نفس قاعدة الرئيسية: الواضح بيتحسب بنوعه التقديري (OVERRIDES §18)، والداخل المستني برّه الدخل (§75-1)
+        val view = withEstimatedKinds(raw, names)
+        val rows = view.transactions
         val totals = computePeriodTotals(rows, deps.allocations.listByTransactionIds(rows.map { it.id }))
         val coverage = assessCoverage(rows)
-        val unknown = coverage.total > 0 && coverage.unclassified == coverage.total
+        // الداخل المستني مش «صرف مش معروف» ⇒ ما بيخلّيش الملخص كله «غير متاح»
+        val spend = assessCoverage(view.withoutPendingIncoming)
+        val unknown = spend.total > 0 && spend.unclassified == spend.total
 
         val notIncome = LinkedHashMap<EconomicKind, Halalas>()
         val notExpense = LinkedHashMap<EconomicKind, Halalas>()
@@ -65,11 +100,19 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             } ?: continue
             bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, t.amountMinor)
         }
+        // §58: اللي دخل وخرج فعلًا في المدى **بتاريخه** — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس. بالأنواع التقديرية زي الأول:
+        // التحويل بين محافظك (زي السحب من الصرّاف اللي لسه ما اتأكدش) مش حركة
+        val cash = cashMovement(if (range.arrived === raw) rows else withEstimatedKinds(range.arrived, names).transactions)
         return MoneySummary(
-            from, to, cashMovement(rows),
+            from, to, cash,
             incomeMinor = if (unknown) null else totals.incomeMinor,
             expenseMinor = if (unknown) null else totals.personalExpenseMinor,
             inflowNotIncome = notIncome, outflowNotExpense = notExpense, coverage = coverage,
+            pendingIncomingCount = view.pendingIncomingCount, pendingIncomingMinor = view.pendingIncomingByCurrency,
+            countedInNextPeriod = range.countedInNextPeriod,
+            countedInNextPeriodMinor = byCurrency(range.countedInNextPeriod),
+            countedFromEarlier = range.countedFromEarlier,
+            countedFromEarlierMinor = byCurrency(range.countedFromEarlier),
         )
     }
 }

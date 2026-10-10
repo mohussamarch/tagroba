@@ -57,18 +57,23 @@ private fun average(sum: Halalas, n: Int): Halalas {
     return if (2 * (if (r < 0) -r else r) >= n) q + (if (sum < 0) -1 else 1) else q
 }
 
-/** المقارنة، أو `null` لو المصدر لسه ما كمّلش 3 شهور كاملة لحد [today] أو فيه شهر من غير بيانات. */
+/**
+ * المقارنة، أو `null` لو المصدر لسه ما كمّلش 3 شهور كاملة لحد [today] أو فيه شهر من غير بيانات.
+ * كل عملية في شهر **حسابها** زي الرئيسية (§75-3 — `countingDate`: الراتب اللي نزل قبل يوم الراتب بشوية في الشهر الجديد) ⇒ [transactions]
+ * لازم تبدأ من `countingReadStart` لأول شهر.
+ */
 fun compareAroundSourceStart(
     source: IncomeSource,
     transactions: List<Transaction>,
     allocations: List<PersonAllocation>,
     payday: Int,
     today: IsoDate,
+    policy: EstimatePolicy = EstimatePolicy.current,
 ): SourceStartComparison? {
     val (before, after) = comparisonPeriods(source.startedAt, payday)
     if (after.last().end >= today) return null
-    val mine = transactions.filter { it.currency == source.currency }
-    fun inPeriod(p: Period) = mine.filter { it.occurredAt >= p.start && it.occurredAt <= p.end }
+    val mine = transactions.filter { it.currency == source.currency }.map { countingDate(it, payday, policy) to it }
+    fun inPeriod(p: Period) = mine.filter { (day, _) -> day >= p.start && day <= p.end }.map { it.second }
     val months = (before + after).map(::inPeriod)
     if (months.any { it.isEmpty() }) return null
     fun income(txns: List<Transaction>) = computePeriodTotals(txns.filter { it.economicKind !in NOT_IN_INCOME_AVERAGES }, allocations).incomeMinor

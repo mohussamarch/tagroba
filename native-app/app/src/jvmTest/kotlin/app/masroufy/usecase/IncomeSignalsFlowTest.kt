@@ -194,4 +194,19 @@ class IncomeSignalsFlowTest {
         assertEquals(100, c.incomeChangeTenthPercent, "10.0٪")
         assertNull(c.expenseChangeTenthPercent, "مفيش مصروف قبل ⇒ مفيش نسبة")
     }
+
+    /**
+     * مراجعة S6 (§75-3): المرتب بينزل يوم 26 (قبل يوم 28 بيومين) ⇒ كل مرتب في شهر حسابه زي الرئيسية. أول شهر «قبل» (من 28 يناير) راتبه
+     * نزل 26 يناير — القراية لازم تبدأ قبله، وإلا الشهر يطلع فاضي والمقارنة تختفي.
+     */
+    @Test fun comparisonPutsEarlySalariesInTheirCountingMonth() = runBlocking<Unit> {
+        profiles.save(app.masroufy.core.emptyProfile().copy(payday = 28))
+        val job = manage.add(IncomeSourceInput("مصدر وهمي", "2026-04-28"))
+        for ((i, day) in listOf("2026-01-26", "2026-02-26", "2026-03-26", "2026-04-26", "2026-05-26", "2026-06-26").withIndex()) {
+            txns.saveMany(listOf(deposit(star, day, if (i < 3) 1_000_000 else 1_100_000, EconomicKind.SALARY, confirmed = true)))
+        }
+        val c = assertNotNull(signals.compareAroundStart(job.id, "2026-07-28"))
+        assertEquals(1_000_000L to 1_100_000L, c.incomeBeforeAvgMinor to c.incomeAfterAvgMinor, "راتب 26 أبريل أول «بعد» — زي الرئيسية")
+        assertEquals(100, c.incomeChangeTenthPercent)
+    }
 }

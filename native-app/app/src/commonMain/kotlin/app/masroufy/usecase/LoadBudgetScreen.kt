@@ -81,18 +81,22 @@ data class LoadBudgetScreenRequest(
 class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
     suspend fun load(request: LoadBudgetScreenRequest): BudgetScreenData {
         val period = request.period
-        val transactions = deps.txns.listByDateRange(period.start, period.end)
         val categories = deps.categories.listAll()
+        val names = categories.associate { it.id to it.name }
+        // نفس عمليات الرئيسية للفترة (§75-3 — الراتب ما بيغيّرش الصرف، بس الشاشتين بيقروا نفس الصفوف)
+        val transactions = loadPeriodRows(deps.txns, period, request.payday, names).rows
         val budget = deps.budgets.findByPeriod(period.key)
         val allocations = deps.allocations.listByTransactionIds(transactions.map { it.id })
 
         // الواضح بيتحسب بنوعه المقترح، بنفس قاعدة الرئيسية (OVERRIDES §18)
-        val names = categories.associate { it.id to it.name }
         val estimated = withEstimatedKinds(transactions, names)
         val counted = estimated.transactions
+        val estimatedSpend = estimated.estimatedCount - estimated.pendingIncomingCount
+        val needsReviewSpend = estimated.needsReviewCount - estimated.pendingIncomingCount
 
         val totals = computePeriodTotals(counted, allocations)
-        val coverage = assessCoverage(counted)
+        // الداخل المستني (§75-1) عمره ما بيبقى صرف ⇒ ما بيخلّيش الصرف «مش معروف»
+        val coverage = assessCoverage(estimated.withoutPendingIncoming)
         // «المستحقات» برا الحد لو صاحب الحساب اختار كده — المصروف الشهري نفسه (الرئيسية) فيها دايمًا
         val duesIds = if (request.duesInBudget) emptySet() else DuesCategories.idsIn(categories)
         val spentMinor = subtractMoney(totals.personalExpenseMinor, DuesCategories.spendMinor(counted, allocations, duesIds))
@@ -107,11 +111,12 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
 
         for (i in 1..HISTORY_PERIODS) {
             val p = shiftPeriod(period, -i, request.payday)
-            val rawRows = deps.txns.listByDateRange(p.start, p.end)
+            val rawRows = loadPeriodRows(deps.txns, p, request.payday, names).rows
             val rowAllocations = deps.allocations.listByTransactionIds(rawRows.map { it.id })
-            val rows = withEstimatedKinds(rawRows, names).transactions
+            val view = withEstimatedKinds(rawRows, names)
+            val rows = view.transactions
             val t = computePeriodTotals(rows, rowAllocations)
-            val c = assessCoverage(rows)
+            val c = assessCoverage(view.withoutPendingIncoming)
 
             history += CompletedPeriodSpend(
                 periodKey = p.key,
@@ -159,10 +164,11 @@ class LoadBudgetScreen(private val deps: LoadBudgetScreenDeps) {
             // من غير مصروف معروف ما تتبنيش حالة سقف: «0 من 3000» راحة كاذبة
             totalStatus = if (totalLimit == null || !spentKnown) null else budgetStatus(totalLimit, spentMinor, budget!!.thresholdPercent),
             spentMinor = spentMinor,
-            spentReliable = coverage.totalsReliable && estimated.estimatedCount == 0,
+            // الداخل المستني (§75-1) مش داخل الرقم ولا بتخمين ⇒ ما بيخلّيهوش «تقريبي» (اللي بيتعد هنا = المحسوب بنوع تقديري)
+            spentReliable = coverage.totalsReliable && estimatedSpend == 0,
             spentNote = when {
-                estimated.needsReviewCount > 0 -> uiText(TextKey.BUDGET_SPENT_NEEDS_REVIEW, estimated.needsReviewCount.toString())
-                estimated.estimatedCount > 0 -> uiText(TextKey.BUDGET_SPENT_ESTIMATED, estimated.estimatedCount.toString())
+                needsReviewSpend > 0 -> uiText(TextKey.BUDGET_SPENT_NEEDS_REVIEW, needsReviewSpend.toString())
+                estimatedSpend > 0 -> uiText(TextKey.BUDGET_SPENT_ESTIMATED, estimatedSpend.toString())
                 else -> coverage.note
             },
             spentKnown = spentKnown,

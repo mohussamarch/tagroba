@@ -3,6 +3,7 @@ package app.masroufy.usecase
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Category
 import app.masroufy.core.EntityJson
+import app.masroufy.core.EstimatePolicy
 import app.masroufy.core.Golden
 import app.masroufy.core.Merchant
 import app.masroufy.core.Tag
@@ -42,11 +43,14 @@ class TransactionsGoldenTest {
     @BeforeTest
     fun egyptianText() {
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        // ملف المرجع من التطبيق القديم: الداخل المجهول «راتب» تقديري وكل عملية في شهر تاريخها ⇒ السياسة القديمة صراحةً (§75-1 · §75-3)
+        EstimatePolicy.current = EstimatePolicy.LEGACY
     }
 
     @AfterTest
     fun defaultText() {
         Texts.arabicVariant = ArabicVariant.MSA
+        EstimatePolicy.current = EstimatePolicy.OWNER_2026_10
     }
 
     private fun nullable(value: Any?): JsonElement = if (value == null) JsonNull else json(value)

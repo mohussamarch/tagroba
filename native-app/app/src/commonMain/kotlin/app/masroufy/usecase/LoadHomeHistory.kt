@@ -1,7 +1,6 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.Period
-import app.masroufy.core.assessCoverage
 import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
@@ -11,7 +10,8 @@ import app.masroufy.port.TransactionRepository
 /**
  * LoadHomeHistory — نقل `loadHomeHistory.ts`: الفترة الحالية + آخر خمس فترات قبلها.
  * بتتطلب بعد ما الرئيسية تفتح (الرئيسية نفسها ما بتستناش التاريخ).
- * الأرقام بنفس قاعدة الرئيسية: الواضح بيتحسب تقديري (OVERRIDES §18).
+ * الأرقام بنفس قاعدة الرئيسية: الواضح بيتحسب تقديري (OVERRIDES §18)، والراتب اللي نزل قبل أول الفترة بشوية في فترته الجديدة (§75-3)،
+ * والداخل المستني برّه الدخل وبيتعد لوحده (§75-1).
  */
 data class LoadHomeHistoryDeps(
     val txns: TransactionRepository,
@@ -25,18 +25,10 @@ class LoadHomeHistory(private val deps: LoadHomeHistoryDeps) {
         val names = (deps.categories?.listAll() ?: current.categories).associate { it.id to it.name }
         val older = (0 until 5).map { index ->
             val p = shiftPeriod(period, -1 - index, payday)
-            val rows = withEstimatedKinds(deps.txns.listByDateRange(p.start, p.end), names).transactions
-            val allocations = deps.allocations.listByTransactionIds(rows.map { it.id })
-            val totals = computePeriodTotals(rows, allocations)
-            val coverage = assessCoverage(rows)
-            val unknown = coverage.total > 0 && coverage.unclassified == coverage.total
-            PeriodSummary(
-                period = p,
-                expenseMinor = if (unknown) null else totals.personalExpenseMinor,
-                incomeMinor = if (unknown) null else totals.incomeMinor,
-                transactionCount = rows.size,
-            )
+            val view = withEstimatedKinds(loadPeriodRows(deps.txns, p, payday, names).rows, names)
+            val allocations = deps.allocations.listByTransactionIds(view.transactions.map { it.id })
+            periodSummaryOf(p, view, computePeriodTotals(view.transactions, allocations))
         }
-        return listOf(PeriodSummary(period, current.expenseMinor, current.incomeMinor, current.transactionCount)) + older
+        return listOf(PeriodSummary(period, current.expenseMinor, current.incomeMinor, current.transactionCount, current.pendingIncomingCount)) + older
     }
 }

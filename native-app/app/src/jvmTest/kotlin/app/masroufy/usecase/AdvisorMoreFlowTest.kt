@@ -3,19 +3,29 @@ package app.masroufy.usecase
 import app.masroufy.core.AlertCandidate
 import app.masroufy.core.AlertGroup
 import app.masroufy.core.AlertKind
+import app.masroufy.core.ArabicVariant
+import app.masroufy.core.AskKind
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
+import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Direction
 import app.masroufy.core.DuesCategories
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.GoalContribution
+import app.masroufy.core.Language
 import app.masroufy.core.LocalMoment
+import app.masroufy.core.PendingAsk
+import app.masroufy.core.Period
 import app.masroufy.core.RecurringItem
 import app.masroufy.core.ReviewState
 import app.masroufy.core.SavingsGoal
+import app.masroufy.core.Texts
 import app.masroufy.core.Transaction
 import app.masroufy.core.buildPeriod
 import app.masroufy.core.emptyProfile
+import app.masroufy.core.isLockSafe
+import app.masroufy.core.systemNoticeFor
+import app.masroufy.core.weeklyAsksLine
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAlertInbox
 import app.masroufy.memory.MemoryAlertInteractions
@@ -29,7 +39,9 @@ import app.masroufy.memory.MemoryRecurringRepository
 import app.masroufy.memory.MemorySavingsGoalRepository
 import app.masroufy.memory.MemoryTransactionRepository
 import app.masroufy.memory.MemoryUsualHours
+import app.masroufy.port.AskSource
 import kotlinx.coroutines.runBlocking
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -70,16 +82,19 @@ class AdvisorMoreFlowTest {
         goal: Boolean = false,
         saved: Long = 1_000_000,
         recurring: List<RecurringItem> = emptyList(),
+        asks: List<AskSource>? = null,
+        extraHistory: List<Transaction> = emptyList(),
+        inputPeriod: Period = period,
     ): List<AlertCandidate> {
-        val txns = MemoryTransactionRepository(history() + current)
+        val txns = MemoryTransactionRepository(history() + extraHistory + current)
         val goals = LoadGoalsOverview(
             LoadGoalsOverviewDeps(MemorySavingsGoalRepository(listOfNotNull(summer.takeIf { goal })), MemoryGoalContributionRepository(listOf(GoalContribution("c-1", "g-1", "2026-02-01", saved, "x")))),
         )
         val deps = AdvisorSignalsDeps(
             txns, MemoryAllocationRepository(), MemoryCategoryRepository(categories), MemoryProfileRepository(emptyProfile().copy(payday = 28)),
-            goals = goals, recurring = MemoryRecurringRepository(recurring),
+            goals = goals, recurring = MemoryRecurringRepository(recurring), needsConfirmation = asks?.let(::CountNeedsConfirmation),
         )
-        return AdvisorSignals(deps).alertCandidates(AlertGatherInput(today, period, Currency.SAR))
+        return AdvisorSignals(deps).alertCandidates(AlertGatherInput(today, inputPeriod, Currency.SAR))
     }
 
     private fun List<AlertCandidate>.of(kind: AlertKind) = filter { it.kind == kind }
@@ -135,6 +150,23 @@ class AdvisorMoreFlowTest {
         assertEquals(emptyList(), advisor(listOf(salary), "2026-10-02", goal = true).of(AlertKind.PAY_FIRST), "بعد 4 أيام")
     }
 
+    /**
+     * مراجعة S6 (§75-3): راتب نزل 26 سبتمبر (قبل يوم 28 بيومين) = راتب فترة 28 سبتمبر. التنبيه يوم ما ينزل، وموضوعه فترته الجديدة ⇒
+     * يوم 28 نفس الموضوع (المحرك ما بيكرروش). كان مربوط بفترة أغسطس، وبعد 28 ما كانش فيه حاجة.
+     */
+    @Test fun payFirstOnAnEarlySalaryBelongsToItsNewMonth() = runBlocking<Unit> {
+        val aug = buildPeriod(2026, 8, 28)
+        val early = txn("2026-09-26", 1_500_000, null, kind = EconomicKind.SALARY, dir = Direction.IN)
+        val onArrival = advisor(listOf(early), "2026-09-26", goal = true, saved = 1_080_000, inputPeriod = aug).of(AlertKind.PAY_FIRST).single()
+        assertEquals("payfirst|2026-09-28|g-1", onArrival.threadKey)
+        val onPayday = advisor(listOf(early), "2026-09-28", goal = true, saved = 1_080_000).of(AlertKind.PAY_FIRST).single()
+        assertEquals(onArrival.threadKey, onPayday.threadKey, "نفس الموضوع ⇒ مرة واحدة")
+        assertEquals(emptyList(), advisor(listOf(early), "2026-09-30", goal = true).of(AlertKind.PAY_FIRST), "بعد 4 أيام من نزوله")
+        // راتب أغسطس نفسه (نزل 28 أغسطس) ما بيتحسبش لسبتمبر
+        val august = txn("2026-08-28", 1_500_000, null, kind = EconomicKind.SALARY, dir = Direction.IN)
+        assertEquals("payfirst|2026-08-28|g-1", advisor(listOf(august), "2026-08-30", goal = true, inputPeriod = aug).of(AlertKind.PAY_FIRST).single().threadKey)
+    }
+
     @Test fun weeklySummaryForTheWeekThatEnded() = runBlocking<Unit> {
         val weeks = listOf(txn("2026-09-21", 20_000, grocery), txn("2026-09-28", 25_000, grocery), txn("2026-10-02", 6_000, coffee))
         val w = advisor(weeks, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY).single()
@@ -153,5 +185,82 @@ class AdvisorMoreFlowTest {
         val run = engine.run(many, LocalMoment("2026-10-05", 14))
         assertEquals(emptyList(), run.posts, "المجموعة مقفولة ⇒ ولا شريط")
         assertEquals(many.size, inbox.listAll().size, "بس السطور في الصفحة (قرار المالك §61)")
+    }
+
+    // ─── §75-15: «عندك كذا عملية محتاجة تأكيد» جوه الملخص الأسبوعي ───
+
+    @AfterTest
+    fun defaultLanguage() {
+        Texts.language = Language.AR
+        Texts.arabicVariant = ArabicVariant.MSA
+    }
+
+    private val weeks get() = listOf(txn("2026-09-21", 20_000, grocery), txn("2026-09-28", 25_000, grocery), txn("2026-10-02", 6_000, coffee))
+    /** [n] سؤال في البلد الافتراضية (بلد المساعد في الاختبار) و[other] في مصر. */
+    private fun asks(n: Int, other: Int = 0) = listOf(
+        AskSource { _, _ ->
+            (1..n).map { PendingAsk(AskKind.LOAN_OR_SUPPORT, DEFAULT_SPACE_ID, transactionId = "q-$it", date = "2026-10-01") } +
+                (1..other).map { PendingAsk(AskKind.LOAN_OR_SUPPORT, "eg", transactionId = "q-$it", date = "2026-10-01") }
+        },
+    )
+    private suspend fun weekly(current: List<Transaction>, n: Int?) = advisor(current, "2026-10-05", asks = n?.let(::asks)).of(AlertKind.WEEKLY_SUMMARY)
+
+    /** مراجعة S6: المساعد بيشتغل مرة لكل بلد ⇒ الملخص بيعدّ أسئلة بلده بس، فعدّ واحد مشترك لكل البلاد ما يطلعش نفس التذكير مرتين. */
+    @Test fun reminderCountsOnlyThisCountrysAsks() = runBlocking<Unit> {
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        val mixed = advisor(emptyList(), "2026-10-05", asks = asks(2, other = 3)).of(AlertKind.WEEKLY_SUMMARY).single()
+        assertEquals("عندك عمليتين محتاجين تأكيد", mixed.body, "التلاتة اللي في مصر في ملخص مصر")
+        assertEquals(emptyList(), advisor(emptyList(), "2026-10-05", asks = asks(0, other = 3)).of(AlertKind.WEEKLY_SUMMARY))
+    }
+
+    @Test fun weeklySummaryRemindsWhatNeedsConfirmation() = runBlocking<Unit> {
+        val spent = "صرفت 310.00 ر.س هذا الأسبوع · أكثر بـ110.00 ر.س من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (250.00 ر.س)"
+        assertEquals("$spent · لديك 3 عمليات تحتاج إلى تأكيد", weekly(weeks, 3).single().body)
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        assertTrue(weekly(weeks, 3).single().body.endsWith(" · عندك 3 عمليات محتاجة تأكيد"), "كلمة المالك بالمصري")
+        Texts.language = Language.EN
+        assertTrue(weekly(weeks, 3).single().body.endsWith(" · 3 transactions need your confirmation"))
+        Texts.language = Language.AR
+        Texts.arabicVariant = ArabicVariant.MSA
+        assertEquals(spent, weekly(weeks, 0).single().body, "صفر ⇒ من غير سطر")
+        assertEquals(spent, weekly(weeks, null).single().body, "العدّ مش متوصل ⇒ زي الأول")
+    }
+
+    @Test fun reminderComesEvenWhenTheWeeksSpendIsUnknown() = runBlocking<Unit> {
+        val shaky = weeks + txn("2026-09-30", 1_000, null, kind = EconomicKind.UNCLASSIFIED)
+        assertEquals("لديك 3 عمليات تحتاج إلى تأكيد", weekly(shaky, 3).single().body, "الصرف مش معروف ⇒ التذكير لوحده")
+        assertEquals(emptyList(), weekly(shaky, 0), "ولا صرف معروف ولا تذكير ⇒ ساكت")
+        assertEquals("weekly|2026-10-03", weekly(emptyList(), 2).single().threadKey, "أسبوعين فاضيين بس فيه حاجة مستنية")
+    }
+
+    @Test fun arabicNumberAgreementInTheReminder() {
+        val msa = mapOf(1 to "لديك عملية واحدة تحتاج إلى تأكيد", 2 to "لديك عمليتان تحتاجان إلى تأكيد", 10 to "لديك 10 عمليات تحتاج إلى تأكيد", 11 to "لديك 11 عملية تحتاج إلى تأكيد", 103 to "لديك 103 عمليات تحتاج إلى تأكيد")
+        for ((n, text) in msa) assertEquals(text, weeklyAsksLine(n), "$n")
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        assertEquals("عندك عملية واحدة محتاجة تأكيد", weeklyAsksLine(1))
+        assertEquals("عندك عمليتين محتاجين تأكيد", weeklyAsksLine(2))
+        assertEquals("عندك 25 عملية محتاجة تأكيد", weeklyAsksLine(25))
+        assertEquals(null, weeklyAsksLine(0))
+    }
+
+    @Test fun reminderFollowsTheAdvisorSwitchAndHidesTheNumberOnTheLockScreen() = runBlocking<Unit> {
+        val reminder = weekly(emptyList(), 3)
+        val inbox = MemoryAlertInbox()
+        val muted = RunAlertEngine(AlertEngineDeps(MemoryAlertSettings(setOf(AlertGroup.ADVISOR)), MemoryAlertInteractions(), MemoryUsualHours(), MemoryAlertReceipts(), inbox, FixedClock("2026-10-05T09:00:00.000Z")))
+        assertEquals(emptyList(), muted.run(reminder, LocalMoment("2026-10-05", 14)).posts, "المساعد مقفول ⇒ ولا إشعار")
+        for (lang in listOf(Language.AR, Language.EN)) {
+            Texts.language = lang
+            val notice = systemNoticeFor(AlertKind.WEEKLY_SUMMARY)
+            assertTrue(isLockSafe(notice.title) && isLockSafe(notice.body) && notice.body.none { it.isDigit() }, "[$lang] $notice")
+        }
+    }
+
+    @Test fun pendingIncomingNeverSilencesSpendingSignals() = runBlocking<Unit> {
+        fun pending(date: String) = txn(date, 150_000, null, kind = EconomicKind.UNCLASSIFIED, dir = Direction.IN).copy(economicKindConfirmed = false)
+        val history = listOf("2026-07-01", "2026-08-01", "2026-09-01").map(::pending)
+        val withWaiting = advisor(weeks + pending("2026-09-30"), "2026-10-05", extraHistory = history)
+        assertEquals(advisor(weeks, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY).single().body, withWaiting.of(AlertKind.WEEKLY_SUMMARY).single().body, "صرف الأسبوع معروف")
+        val big = advisor(listOf(txn("2026-10-01", 43_000, grocery), pending("2026-10-02")), "2026-10-03", extraHistory = history)
+        assertEquals("عملية 430.00 ر.س — ربع مصروف شهرك أو أكثر", big.of(AlertKind.BIG_ONE).single().body, "المعتاد من الشهور اللي فاتت لسه معروف")
     }
 }
