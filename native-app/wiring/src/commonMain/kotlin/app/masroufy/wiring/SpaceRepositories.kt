@@ -54,6 +54,7 @@ import app.masroufy.port.WalletRepository
 import app.masroufy.port.ZakatFactRepository
 import app.masroufy.port.ZakatPaymentRepository
 import app.masroufy.port.ZakatYearRepository
+import app.masroufy.usecase.AssistantStores
 
 /**
  * مستودعات بلد واحدة في حساب — **واجهات بس** (ports من `:app`)، بنفس أسماء `FirestoreContainer` عشان التحويل يبقى سطر بسطر.
@@ -114,6 +115,8 @@ data class SpaceRepositories(
     val profile: ProfileRepository,
     val spaces: SpaceRegistry,
     val spaceTransfers: SpaceTransferRepository,
+    /** المساعد «مصروفي» (§78 · §79.2): المحادثات والرسايل والمواضيع والعلامات والأسئلة وإعدادات المستخدم والإشعارات الممسوحة — كلها على الحساب. */
+    val assistant: AssistantStores,
     /** النسخة الشاملة للحساب كله (منطقة «المزيد» — `FullBackup`). null = مش متوصلة (اختبار من غيرها) ⇒ الشاشة بتقول «غير متاح بعد». */
     val fullBackup: FullBackupPort? = null,
     /** البلاد التانية في النسخة الشاملة (الإصدار 3). */

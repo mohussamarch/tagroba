@@ -33,7 +33,9 @@ class ShellGraph(
     private val session: SessionLinks,
 ) : ShellDeps {
     private val withYou = LoadWithYouNow(repos.wallets, repos.transactions, space.currency)
-    val engine = RunAlertEngine(AlertEngineDeps(repos.alertSettings, env.interactions, env.usualHours, repos.alertReceipts, repos.alertInbox, env.clock))
+    val engine = RunAlertEngine(
+        AlertEngineDeps(repos.alertSettings, env.interactions, env.usualHours, repos.alertReceipts, repos.alertInbox, env.clock, dismissals = repos.assistant.alertDismissals),
+    )
     val addTransaction = AddTransaction(AddTransactionDeps(repos.transactions, repos.wallets, env.ids, env.clock))
     private val quickAdd = QuickAddOperation(repos.wallets, repos.categories, repos.profile, addTransaction, space.currency, env.today)
     val profile = ManageProfile(ManageProfileDeps(repos.profile, session.account, env.clock, repos.incomeSources))

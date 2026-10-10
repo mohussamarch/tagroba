@@ -59,15 +59,7 @@ internal class SmsGraph(
     // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
     private fun review(m: ManageSmsInbox): ReviewSmsInbox = SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets).screen()
 
-    /** كل البلاد المفتوحة (رسالة بلد بتترفض من قارئ البلد التانية بالعملة ⇒ بتتسجل في بلدها بس). */
-    private fun auto(): AutoRecordSms {
-        val spaces = c.session.spaces().ifEmpty { listOf(space to c.repos) }
-        val lanes = spaces.mapNotNull { (s, repos) ->
-            val reader = countryPack(s.countryCode).smsReader ?: return@mapNotNull null
-            SmsLane.of(s.id, smsImportDeps(s.id, repos, c.env, inbox), ManageSmsInbox(inbox, reader::parse), repos.wallets)
-        }
-        return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
-    }
+    private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
 
     override suspend fun overview(record: Boolean): SmsOverview {
         val auto = auto()
@@ -144,6 +136,19 @@ internal class SmsGraph(
         if (result is AddOperationResult.Saved) manage.dismiss(listOf(messageId))
         return result
     }
+}
+
+/**
+ * التسجيل لوحده لكل البلاد المفتوحة (رسالة بلد بتترفض من قارئ البلد التانية بالعملة ⇒ بتتسجل في بلدها بس) — شاشة رسايل البنك والمساعد
+ * («رسايل مستنية» في «أمور لم تُنجزها بعد») بنفس الحارات.
+ */
+internal fun autoRecordSms(c: AreaContext, inbox: SmsInboxPort): AutoRecordSms {
+    val spaces = c.session.spaces().ifEmpty { listOf(c.space to c.repos) }
+    val lanes = spaces.mapNotNull { (s, repos) ->
+        val reader = countryPack(s.countryCode).smsReader ?: return@mapNotNull null
+        SmsLane.of(s.id, smsImportDeps(s.id, repos, c.env, inbox), ManageSmsInbox(inbox, reader::parse), repos.wallets)
+    }
+    return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
 }
 
 /** نفس هدف التشغيلة (`AutoRecordSms.walletFor`): المحفظة وعملتها وآخر ٤ أرقامها + آخر ٤ أرقام حسابات المالك التانية في البلد (الجولة السادسة). */

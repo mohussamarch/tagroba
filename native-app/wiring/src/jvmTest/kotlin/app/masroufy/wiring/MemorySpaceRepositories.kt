@@ -69,6 +69,7 @@ fun memorySpaceRepositories(
     categories: List<Category> = emptyList(),
     transactions: List<Transaction> = emptyList(),
     profile: UserProfile? = null,
+    assistant: app.masroufy.usecase.AssistantStores = app.masroufy.memory.memoryAssistantStores(),
 ): SpaceRepositories {
     val txns = MemoryTransactionRepository(transactions)
     val sources = MemorySourceRecordRepository()
@@ -95,6 +96,7 @@ fun memorySpaceRepositories(
         goalContributions = MemoryGoalContributionRepository(), inheritanceScenarios = MemoryInheritanceScenarioRepository(),
         incomeSources = MemoryIncomeSourceRepository(), reservations = MemoryReservationRepository(), eventPrep = MemoryPrepItemRepository(),
         profile = MemoryProfileRepository(profile), spaces = MemorySpaceRegistry(), spaceTransfers = MemorySpaceTransferRepository(),
+        assistant = assistant,
     )
 }
 

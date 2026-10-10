@@ -1,6 +1,7 @@
 package app.masroufy.android
 
 import app.masroufy.firestore.FirestoreContainer
+import app.masroufy.usecase.AssistantStores
 import app.masroufy.wiring.SpaceRepositories
 
 /** مستودعات فايربيز لبلد (`FirestoreContainer` — بذاكرتها `LocalMirror`) ⇒ واجهات بس للتجميع. سطر بسطر بنفس الأسماء. */
@@ -57,6 +58,10 @@ fun FirestoreContainer.toRepositories() = SpaceRepositories(
     profile = profile,
     spaces = spaces,
     spaceTransfers = spaceTransfers,
+    assistant = AssistantStores(
+        conversations = assistantConversations, messages = assistantMessages, topics = assistantTopics, forgotten = assistantForgotten,
+        unknown = assistantUnknown, settings = userSettings, alertDismissals = alertDismissals,
+    ),
     fullBackup = fullBackup,
     spacesBackup = spacesBackup,
 )

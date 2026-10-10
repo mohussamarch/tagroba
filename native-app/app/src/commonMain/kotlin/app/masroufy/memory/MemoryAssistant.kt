@@ -74,3 +74,9 @@ class MemoryAlertDismissalStore(seed: List<AlertDismissal> = emptyList()) :
 
     override suspend fun remove(threadKeys: List<String>) = drop(threadKeys)
 }
+
+/** كل مخازن المساعد في الذاكرة مرة واحدة (التجميع في الاختبار — `memorySpaceRepositories`). */
+fun memoryAssistantStores(): app.masroufy.usecase.AssistantStores = app.masroufy.usecase.AssistantStores(
+    MemoryConversationStore(), MemoryMessageStore(), MemoryTopicStore(), MemoryForgottenStore(), MemoryUnknownStore(), MemoryUserSettingsStore(),
+    MemoryAlertDismissalStore(),
+)

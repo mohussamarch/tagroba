@@ -15,6 +15,9 @@ import app.masroufy.ui.screens.more.MoreDeps
 import app.masroufy.ui.screens.onboarding.OnboardingDeps
 import app.masroufy.ui.screens.operations.OperationsDeps
 import app.masroufy.ui.screens.people.PeopleDeps
+import app.masroufy.core.AssistTab
+import app.masroufy.usecase.AssistContext
+import app.masroufy.usecase.AssistantSuite
 import app.masroufy.usecase.AddOperationDraft
 import app.masroufy.usecase.AddOperationOptions
 import app.masroufy.usecase.AddOperationResult
@@ -39,6 +42,19 @@ interface SpaceDeps {
 
     /** منطقة تاسعة (ARCHITECTURE §31.32): الميزانيات · ميزانية تصنيف · خطط الادخار · التصنيفات · القواعد والتجار. */
     val budgets: BudgetsDeps
+
+    /** المساعد «مصروفي» (ARCHITECTURE §31.36 — OVERRIDES §78 · §79.2): المحرك بس، والشاشة ما بتحسبش ولا رقم. */
+    val ask: AskDeps
+}
+
+/**
+ * المساعد للبلد الشغالة: [suite] = حالات استخدام المحرك (بتتبني مرة واحدة للبلد — أسعار الزكاة من الملف المحفوظ)، و[context] = الوقت والبلد
+ * وعدد البلاد للتبويب اللي المساعد اتفتح منه.
+ */
+interface AskDeps {
+    suspend fun suite(): AssistantSuite
+
+    suspend fun context(tab: AssistTab): AssistContext
 }
 
 val LocalSpace = staticCompositionLocalOf<SpaceDeps> { error("SpaceDeps مش متقدّم — الشاشة لازم تبقى جوه AppShell بعد ما الحساب يجهز") }
