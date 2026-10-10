@@ -118,7 +118,7 @@ class TransferAsksFlowTest {
     @Test fun anOutgoingSmsTransferToAPersonWaitsAndAsks() = runBlocking<Unit> {
         val space = SmsSpace()
         val world = SmsWorld(listOf(space)).enable()
-        val screen = ReviewSmsInbox(ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(space.importDeps()), MemoryMerchantRepository(), space.categories, space.ids))
+        val screen = ReviewSmsInbox(ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(space.importDeps()), MemoryMerchantRepository(), space.categories, space.ids, SmsLearning(world.inbox, space.spaceId), space.wallets))
         world.receive(sms("m1", TO_PERSON))
         screen.load(SmsReviewTarget(BANK.id, BANK.name))
         assertEquals(1, screen.recordAll(emptyMap(), emptyList()))

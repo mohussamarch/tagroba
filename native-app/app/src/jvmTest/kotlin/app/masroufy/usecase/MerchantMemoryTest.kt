@@ -217,7 +217,7 @@ class MerchantMemoryTest {
         val space = SmsSpace()
         val world = SmsWorld(listOf(space)).enable()
         val deps = space.importDeps().copy(merchants = merchants, categories = categories, effects = listOf(RememberChosenCategoryEffect(memory)))
-        val screen = ReviewSmsInbox(ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(deps), merchants, categories, space.ids))
+        val screen = ReviewSmsInbox(ReviewSmsInboxDeps(ManageSmsInbox(world.inbox, space.parse), ImportStatement(deps), merchants, categories, space.ids, SmsLearning(world.inbox, space.spaceId), space.wallets))
         world.receive(sms("m1", MART), sms("m2", CAFE))
         val mart = screen.load(SmsReviewTarget(BANK.id, BANK.name)).ready.single { it.merchant == "TEST MART" }
         assertFalse(mart.remembered)
