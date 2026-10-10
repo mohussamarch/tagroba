@@ -74,6 +74,26 @@ class AssistantWiringTest {
         assertNull(egRepos.assistant.settings.listAll().firstOrNull(), "مخازن مصر منفصلة في الاختبار")
     }
 
+    /** §78 ٢: إعداد واحد على الحساب لكل بلد — لوحة «+» و«اجعلها الأساسية» وعلامة «الأساسية» والمساعد كلهم بيقروا نفس المكان. */
+    @Test fun mainWalletIsOneSettingForTheAddSheetTheWalletScreensAndTheAssistant() = runBlocking<Unit> {
+        val d = graph.shell.addWalletDefault()
+        assertTrue(d.needsAsk, "لسه ⇒ «بتصرف عادةً منين؟» والحفظ مقفول")
+        val access = assertNotNull(graph.more.mainWallet, "تفاصيل المحفظة متوصّلة")
+        assertNull(access.current())
+
+        access.set(bank.id)
+        assertEquals(bank.id, access.current(), "علامة «الأساسية» في القايمة")
+        assertEquals(bank.id, graph.shell.addWalletDefault().wallet?.id, "لوحة «+» بتختارها لوحدها")
+        val card = graph.ask.suite().chat.send("قهوة 15", graph.ask.context(AssistTab.HOME)).messages.last()
+        assertEquals(AssistMessageKind.TXN_CARD, card.kind, "المساعد ما سألش تاني")
+        assertEquals(bank.id, card.card?.walletId)
+
+        val eg = SpaceGraph(egypt, egRepos, env, session, LoadOnlineFeeds(env.http, env.feedCache, env.clock, env.nowMillis))
+        assertTrue(eg.shell.addWalletDefault().needsAsk, "مصر ليها أساسيتها لوحدها")
+        graph.shell.setMainWallet(cash.id)
+        assertEquals(cash.id, access.current(), "أول صرف من اللوحة بيغيّرها")
+    }
+
     @Test fun remainingIsAnsweredFromTheScreensUseCases() = runBlocking<Unit> {
         val suite = graph.ask.suite()
         val view = suite.chat.send("فاضلي كام", graph.ask.context(AssistTab.HOME))

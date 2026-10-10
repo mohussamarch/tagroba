@@ -10,6 +10,13 @@ import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.app.ShellDeps
 import app.masroufy.ui.app.SpaceChoice
 import app.masroufy.ui.nav.Tab
+import app.masroufy.core.MainWalletSource
+import app.masroufy.core.TextKey
+import app.masroufy.core.uiText
+import app.masroufy.usecase.AddWalletDefault
+import app.masroufy.usecase.DismissedAlert
+import app.masroufy.usecase.MainSpendingWallets
+import app.masroufy.usecase.ManageAlertDismissals
 import app.masroufy.usecase.AddOperationDraft
 import app.masroufy.usecase.AddOperationOptions
 import app.masroufy.usecase.AddOperationResult
@@ -74,6 +81,26 @@ class ShellGraph(
     override suspend fun addOptions(): AddOperationOptions = quickAdd.options()
 
     override suspend fun addOperation(draft: AddOperationDraft): AddOperationResult = quickAdd.save(draft)
+
+    /** المحفظة الأساسية للبلد (§78 ٢) — نفس الكائن للوحة «+» وتفاصيل المحفظة وقايمة المحافظ (`MoreGraph`) والمساعد بيقرا نفس المخزن. */
+    val mainWallet = MainSpendingWallets(repos.assistant.settings, repos.wallets, space.id, env.clock)
+
+    override suspend fun addWalletDefault(): AddWalletDefault = mainWallet.defaultForAdd()
+
+    override suspend fun setMainWallet(walletId: String) {
+        mainWallet.set(walletId, MainWalletSource.ADD_SHEET)
+    }
+
+    /** «×» على إشعار (رد المالك ٣): علامة على الحساب + السطر بيتشال — `bell()` بيقرا من غيره ⇒ العدّ ونقطة التبويب بيروحوا. */
+    val alertDismissals = repos.assistant.alertDismissals?.let { ManageAlertDismissals(it, repos.alertInbox, env.clock) }
+
+    // مخزن المسح مش متوصل ⇒ «غير متاح» صريح (مش مسح للجلسة بس في صمت)
+    override suspend fun dismissAlert(threadKey: String): DismissedAlert =
+        (alertDismissals ?: throw IllegalStateException(uiText(TextKey.ASSIST_NA))).dismiss(threadKey)
+
+    override suspend fun undoDismiss(dismissed: DismissedAlert) {
+        alertDismissals?.undo(dismissed)
+    }
 }
 
 /** لون النقطة في الجرس بالمجموعة (النموذج: رسايل البنك أخضر · التحويلات أزرق · الميزانية أحمر · المواعيد كهرماني). */

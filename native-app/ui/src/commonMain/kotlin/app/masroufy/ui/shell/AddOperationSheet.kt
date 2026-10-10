@@ -85,15 +85,19 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
     var voiceNote by remember { mutableStateOf(false) }
-    // فيه محفظة أساسية للبلد دي وقت ما اللوحة اتفتحت؟ لأ ⇒ «من أين تصرف عادةً؟» واللي يختاره بيبقى الأساسي بعد الحفظ (`MainWallet.kt`)
+    // فيه محفظة أساسية للبلد دي وقت ما اللوحة اتفتحت؟ لأ ⇒ «بتصرف عادةً منين؟» واللي يختاره بيبقى الأساسي بعد الحفظ (المحرك —
+    // `ShellDeps.addWalletDefault` على الحساب لكل بلد · `MainWallet.kt`)
     var hadMain by remember { mutableStateOf(false) }
+    var askPrompt by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(visible, shell) {
         if (!visible) return@LaunchedEffect
         kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null; voiceNote = false
         val o = shell.addOptions()
         options = o
-        from = initialFromWallet(MainWalletChoice.of(space.space.id), o.wallets)
+        val d = runCatching { shell.addWalletDefault() }.getOrNull()
+        from = initialFromWallet(d?.wallet?.id, o.wallets)
         hadMain = from != null
+        askPrompt = d?.prompt
         to = null
     }
     val o = options
@@ -138,7 +142,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            FieldLabel(t(fromLabelKey(hadMain)), Modifier.weight(1f))
+            FieldLabel(if (hadMain) t(fromLabelKey(true)) else askPrompt ?: t(fromLabelKey(false)), Modifier.weight(1f))
             for (w in o?.wallets.orEmpty().take(3)) SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null })
         }
         if (o != null && o.wallets.isEmpty()) FieldError(t(UiKey.ADD_NO_WALLET))
@@ -154,9 +158,9 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
                         is AddOperationResult.Saved -> {
                             val label = category?.name ?: income?.let { ruleFor(it).label }
                             val saved = t(UiKey.ADD_SAVED, amountLabel(r.transaction.amountMinor, r.transaction.currency, tone) + (label?.let { " · $it" } ?: ""))
-                            // أول مصروف من غير أساسية ⇒ اللي اختاره بقى الأساسي («وصار «البنك» الأساسي» — النموذج)
-                            val firstMain = from?.takeIf { !hadMain }
-                            if (firstMain != null) MainWalletChoice.set(space.space.id, firstMain)
+                            // أول مصروف من غير أساسية ⇒ اللي اختاره بقى الأساسي للبلد على الحساب («وصار «البنك» الأساسي» — النموذج)
+                            val firstMain = from?.takeIf { !hadMain && kind == AddKind.OUT }
+                                ?.takeIf { id -> runCatching { shell.setMainWallet(id) }.isSuccess }
                             val mainName = firstMain?.let { id -> o?.wallets?.firstOrNull { it.id == id }?.name }
                             toaster.show(if (mainName != null) t(UiKey.ADD_SAVED_MAIN, saved, mainName) else saved)
                             changes.changed()

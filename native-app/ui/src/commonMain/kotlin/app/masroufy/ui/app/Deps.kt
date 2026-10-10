@@ -18,6 +18,8 @@ import app.masroufy.ui.screens.people.PeopleDeps
 import app.masroufy.core.AssistTab
 import app.masroufy.usecase.AssistContext
 import app.masroufy.usecase.AssistantSuite
+import app.masroufy.usecase.AddWalletDefault
+import app.masroufy.usecase.DismissedAlert
 import app.masroufy.usecase.AddOperationDraft
 import app.masroufy.usecase.AddOperationOptions
 import app.masroufy.usecase.AddOperationResult
@@ -108,4 +110,16 @@ interface ShellDeps {
     suspend fun addOptions(): AddOperationOptions
 
     suspend fun addOperation(draft: AddOperationDraft): AddOperationResult
+
+    /** لوحة «+»: المحفظة الأساسية للبلد (§78 ٢ — `MainSpendingWallets`): مفيش ⇒ فاضية و«بتصرف عادةً منين؟» والحفظ مقفول لحد ما يختار. */
+    suspend fun addWalletDefault(): AddWalletDefault
+
+    /** أول مصروف من غير أساسية ⇒ اللي اختاره بقى الأساسي للبلد دي (على الحساب). */
+    suspend fun setMainWallet(walletId: String)
+
+    /** «×» على إشعار في الجرس أو صفحة الإشعارات (رد المالك ٣ · §79.2-1): بيتشال وعلامته على الحساب — بيرجع لو صعّد لدرجة جديدة بس. */
+    suspend fun dismissAlert(threadKey: String): DismissedAlert
+
+    /** «تراجع» (٤ ثواني) — الإشعار بيرجع زي ما كان. */
+    suspend fun undoDismiss(dismissed: DismissedAlert)
 }

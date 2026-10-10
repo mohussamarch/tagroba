@@ -183,7 +183,7 @@ private fun TurnKit.setMainWallet(u: AssistUnderstanding): TurnOut {
     return TurnOut(listOf(msg), countTopic = false)
 }
 
-/** «سجّل فاتورة الكهرباء»: مبلغها المتوقع ومحفظتها المعتادة (محفظة آخر دفعة — لسه مستني المالك، سؤال ١) — المبلغ يتعدّل قبل التأكيد. */
+/** «سجّل فاتورة الكهرباء»: مبلغها المتوقع ومحفظتها المعتادة (محفظة آخر دفعة، ولو عمرها ما اتدفعت ⇒ الأساسية — المالك أكّد، L2) — المبلغ يتعدّل قبل التأكيد. */
 private suspend fun TurnKit.recordBill(u: AssistUnderstanding): TurnOut {
     val item = u.subject?.takeIf { it.type == AssistEntityType.RECURRING }?.let { e -> lex.recurring.firstOrNull { it.id == e.id } }
         ?: return TurnOut(listOf(text(uiText(TextKey.ASSIST_RECORD_BILL_NONE), u.wire, listOf(ScreenLink.of(AssistScreen.SUBSCRIPTIONS)))))

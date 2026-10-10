@@ -1,7 +1,11 @@
 package app.masroufy.wiring
 
 import app.masroufy.core.AlertGroup
+import app.masroufy.core.Id
+import app.masroufy.core.MainWalletSource
+import app.masroufy.ui.screens.more.MainWalletAccess
 import app.masroufy.ui.screens.more.MoreDeps
+import app.masroufy.usecase.badgeWalletId
 import app.masroufy.ui.screens.more.SpaceCard
 import app.masroufy.usecase.ExportCsv
 import app.masroufy.usecase.FullBackup
@@ -19,8 +23,8 @@ import app.masroufy.usecase.ReconcileDeps
  * «المزيد» — ملفك (`c.shell.profile` نفس كائن الهيكل) · مصادر الدخل وإشاراتها · إعدادات الإشعارات (`c.shell.engine`) · المحافظ
  * (`LoadWithYouNow` + حركات الشهر + `ReconcileBalance`) · البلدان · التصدير والنسخة الشاملة. (`AppLock` و`SignIn` على مستوى التطبيق: `LocalApp`.)
  * **الملف ده بتاع المنطقة بس.** حالة الاستخدام بتتبني من [AreaContext] بنفس اعتماداتها في اختبارات `:app`.
- * نقاط الربط في `MoreHooks` (المحفظة الأساسية · إضافة محفظة · إنشاء بلد وأرشفته · اللغة · الشكل · نطاق الراتب · سؤال الكاش) **null** هنا لحد
- * ما منطقها يتبني (المحفظة الأساسية على فرع `assistant-engine`) ⇒ الشاشات بتقول «غير متاح بعد» بدل ما تزيّف.
+ * نقاط الربط في `MoreHooks`: المحفظة الأساسية **متوصّلة** (محرك المساعد — `MainSpendingWallets`)؛ الباقي (إضافة محفظة · إنشاء بلد وأرشفته ·
+ * اللغة · الشكل · نطاق الراتب · سؤال الكاش) **null** هنا لحد ما منطقها يتبني ⇒ الشاشات بتقول «غير متاح بعد» بدل ما تزيّف.
  */
 class MoreGraph(private val c: AreaContext) : MoreDeps {
     private val r = c.repos
@@ -45,6 +49,15 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     )
 
     override val reconcile = ReconcileBalance(ReconcileDeps(r.transactions, r.wallets))
+
+    /** «اجعلها الأساسية» في تفاصيل المحفظة + علامة «الأساسية» في القايمة (§78 ٢) — نفس `MainSpendingWallets` بتاع لوحة «+» والمساعد. */
+    override val mainWallet: MainWalletAccess = object : MainWalletAccess {
+        override suspend fun current(): Id? = c.shell.mainWallet.badgeWalletId()
+
+        override suspend fun set(walletId: Id) {
+            c.shell.mainWallet.set(walletId, MainWalletSource.WALLET_DETAIL)
+        }
+    }
 
     /** البلاد المفتوحة في الجلسة بعدد محافظ كل واحدة (من «معك الآن» بتاعها) — العدد `null` لو القراية فشلت (مش صفر). */
     override suspend fun spaces(): List<SpaceCard> = c.session.spaces().map { (s, repos) ->

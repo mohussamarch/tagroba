@@ -2,31 +2,14 @@ package app.masroufy.ui.shell
 
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateMapOf
-import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
 
 /**
- * **المحفظة الأساسية لكل بلد** (قرار المالك 2026-10-09 — آخر §76): أول مصروف بيسأل «من أين تصرف عادةً؟» (لوحة «+» مفتوحة **من غير محفظة
+ * **المحفظة الأساسية لكل بلد** (قرار المالك 2026-10-09 — OVERRIDES §78 ٢): أول مصروف بيسأل «بتصرف عادةً منين؟» (لوحة «+» مفتوحة **من غير محفظة
  * مختارة** والحفظ مقفول لحد ما يختار)، والاختيار بيبقى الأساسي ⇒ بعدها بتتختار لوحدها في كل إضافة، وتتغير في أي عملية عادي.
- * ⚠️ **ناقص في المنطق هنا** (بيتبني على فرع `assistant-engine`، ويتوصل وقت الدمج): حفظها مع الحساب
- * (`AssistantSettings.set(walletId, MainWalletSource.ADD_SHEET)`) · «اجعلها الأساسية» في تفاصيل المحفظة وعلامة «الأساسية» في قايمة المحافظ
- * (منطقة المحافظ) · نفس السؤال في المساعد. لحد ده: **للجلسة دي بس** — زي النموذج بالظبط (`masroufy-main-wallet` في `sessionStorage`).
+ * متخزنة **على الحساب لكل بلد** من المحرك (`MainSpendingWallets` عن طريق `ShellDeps.addWalletDefault` / `setMainWallet`) — تفاصيل المحفظة
+ * «اجعلها الأساسية» وعلامة «الأساسية» في قايمة المحافظ من نفس المكان (`MoreGraph.mainWallet`).
  */
-@Stable
-object MainWalletChoice {
-    private val bySpace = mutableStateMapOf<String, String>()
-
-    fun of(spaceId: String): String? = bySpace[spaceId]
-
-    fun set(spaceId: String, walletId: String) {
-        bySpace[spaceId] = walletId
-    }
-
-    /** للاختبارات بس. */
-    internal fun clear() = bySpace.clear()
-}
 
 /** المحفظة أول ما اللوحة تفتح: الأساسية لو لسه موجودة — وإلا **فاضية** (مش أول بنك زي الأول). */
 fun initialFromWallet(mainWalletId: String?, wallets: List<Wallet>): String? = mainWalletId?.takeIf { id -> wallets.any { it.id == id } }
