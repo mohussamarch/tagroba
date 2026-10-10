@@ -60,6 +60,7 @@ fun debtDetailUi(people: List<PersonRow>, dueItems: List<DueItem>, obligationId:
     val opening = o.originTransactionId == null
     val (chip, text) = debtSignal(due, today)
     val typeKey = when {
+        forYou && o.custodyHeld -> UiKey.OVERPAY_HELD_TAG
         forYou -> UiKey.DEBT_TYPE_RECEIVABLE
         o.kind == ObligationKind.CUSTODY_PAYABLE -> UiKey.DEBT_TYPE_CUSTODY
         opening -> UiKey.DEBT_TYPE_OLD_ON_YOU
@@ -116,13 +117,18 @@ sealed interface SettleInput {
     data object NotPositive : SettleInput
     data object OverRemaining : SettleInput
     data class Ok(val minor: Halalas, val full: Boolean) : SettleInput
+
+    /** §82-19: دفعت (دين **عليك**) أكتر من الباقي ⇒ مش خطأ: الحفظ بيسأل «دفعت أكتر من اللي عليك» (`ManagePeople.overpay`). */
+    data class Over(val minor: Halalas) : SettleInput
 }
 
-fun settleInput(text: String, remainingMinor: Halalas, currency: Currency): SettleInput {
+/** [allowOver] = الدين عليك (إنت اللي بتدفع) ⇒ الزيادة سؤال مش خطأ (§82-19). الدين ليك ⇒ الزيادة ممنوعة زي الأول. */
+fun settleInput(text: String, remainingMinor: Halalas, currency: Currency, allowOver: Boolean = false): SettleInput {
     if (text.isBlank()) return SettleInput.Empty
     val minor = tryParseMoney(text, currency) ?: return SettleInput.BadFormat
     return when {
         minor <= 0 -> SettleInput.NotPositive
+        minor > remainingMinor && allowOver -> SettleInput.Over(minor)
         minor > remainingMinor -> SettleInput.OverRemaining
         else -> SettleInput.Ok(minor, minor == remainingMinor)
     }
@@ -136,7 +142,7 @@ fun settledToast(ok: SettleInput.Ok, target: SettleTarget): String = when {
 }
 
 fun SettleInput.errorText(remainingMinor: Halalas, currency: Currency): String? = when (this) {
-    SettleInput.Empty, is SettleInput.Ok -> null
+    SettleInput.Empty, is SettleInput.Ok, is SettleInput.Over -> null
     SettleInput.BadFormat -> t(UiKey.DUES_ERR_FORMAT)
     SettleInput.NotPositive -> t(UiKey.DUES_ERR_POSITIVE)
     SettleInput.OverRemaining -> t(UiKey.SETTLE_ERR_OVER, amountLabel(remainingMinor, currency))

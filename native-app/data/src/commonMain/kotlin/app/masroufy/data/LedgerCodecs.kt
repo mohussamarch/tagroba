@@ -66,12 +66,14 @@ object LedgerCodecs {
             doc {
                 req("id", o.id); req("personId", o.personId); nul("originTransactionId", o.originTransactionId); req("kind", o.kind.wire)
                 req("originalMinor", o.originalMinor); req("currency", o.currency.name)
+                // §82-19 «أمانة ليك عنده»: بيتكتب لو true بس ⇒ أي دين قديم ونسخته هي هي بالحرف
+                opt("custodyHeld", o.custodyHeld.takeIf { it })
             }
         },
         { r ->
             Obligation(
                 r.str("id"), r.str("personId"), r.strOrNull("originTransactionId"), r.wire("kind", ObligationKind::fromWire),
-                r.long("originalMinor"), r.wire("currency", Currency::valueOf),
+                r.long("originalMinor"), r.wire("currency", Currency::valueOf), custodyHeld = r.boolOrNull("custodyHeld") == true,
             )
         },
     )

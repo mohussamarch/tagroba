@@ -69,6 +69,8 @@ internal fun debtDueMap(items: List<DueItem>): Map<String, DueItem> =
     items.filter { it.source == DueSource.DEBT }.groupBy { it.sourceId }.mapValues { (_, v) -> v.minBy { it.dueAt } }
 
 internal fun reasonOf(o: Obligation): String = when {
+    // §82-19: زيادة دفعتها وهو شايلها لك
+    o.custodyHeld -> t(UiKey.OVERPAY_HELD_TAG)
     o.originTransactionId == null -> t(UiKey.DEBTS_REASON_OPENING)
     o.kind == ObligationKind.RECEIVABLE -> t(UiKey.DEBTS_REASON_RECEIVABLE)
     o.kind == ObligationKind.LOAN_PAYABLE -> t(UiKey.DEBTS_REASON_LOAN)

@@ -60,6 +60,9 @@ data class LinkResult(val obligation: Obligation?, val allocation: PersonAllocat
 private val REQUEST_ID = Regex("^[a-zA-Z0-9_-]{1,100}$")
 
 class ManagePeople(private val deps: ManagePeopleDeps) {
+    /** §82-19 «دفعت أكتر من اللي عليك» — بنفس الاعتمادات (`SettleOverpay.kt`). */
+    val overpay: SettleOverpay by lazy { SettleOverpay(deps, this) }
+
     /** كل الأشخاص بأرصدتهم — القراية محدودة بعدد الأشخاص مش بالعمليات. */
     suspend fun listWithBalances(): List<PersonRow> {
         val rows = deps.people.listAll().map { person ->
@@ -115,6 +118,7 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
         amountMinor: Halalas,
         asGift: Boolean = false,
         requestId: String? = null,
+        custodyHeld: Boolean = false,
     ): LinkResult {
         if (amountMinor <= 0) throw IllegalStateException(uiText(TextKey.AMOUNT_POSITIVE))
         if (requestId != null && !REQUEST_ID.matches(requestId)) throw IllegalStateException(uiText(TextKey.SETTLEMENT_REQUEST_ID_INVALID))
@@ -151,6 +155,8 @@ class ManagePeople(private val deps: ManagePeopleDeps) {
                 kind = kind,
                 originalMinor = amountMinor,
                 currency = transaction.currency,
+                // §82-19 «أمانة ليك عنده» — على دين ليك بس
+                custodyHeld = custodyHeld && kind == ObligationKind.RECEIVABLE,
             )
             deps.obligations.saveMany(listOf(obligation))
             LinkResult(obligation = obligation, allocation = allocation)

@@ -106,6 +106,11 @@ data class Obligation(
     val kind: ObligationKind,
     val originalMinor: Halalas,
     val currency: Currency,
+    /**
+     * §82-19 «أمانة ليك عنده»: دين **ليك** ([ObligationKind.RECEIVABLE]) أصله زيادة دفعتها فوق اللي عليك وهو شايلها لك. بيتخزن بنفس نوع
+     * «لك عنده» (التطبيق القديم ونسخته الشاملة بيقبلوا الأنواع التلاتة بس، وبيقروه دين ليك عادي) + الحقل ده **لو true بس**.
+     */
+    val custodyHeld: Boolean = false,
 )
 
 data class Settlement(val id: Id, val transactionId: Id, val obligationId: Id, val amountMinor: Halalas)
