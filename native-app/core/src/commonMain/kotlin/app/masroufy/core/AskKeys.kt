@@ -1,0 +1,34 @@
+package app.masroufy.core
+
+/**
+ * مفاتيح شاشة المساعد «مصروفي» وإضافات المحرك (فرع `assistant-ui` — OVERRIDES §78 · §79.2 · §79.3 · late-changes L1 · L2 · L6). نوع لوحده تحت
+ * [TextRef] عشان [TextKey] و[UiKey] قريبين من حد الـJVM (64KB في دالة بداية الـenum) — القيم في `TextsAsk.kt`. كلها بادئة `CHAT_` (الأسامي
+ * لازم تفضل فريدة بين الأنواع التلاتة — `textKeyNamed`).
+ */
+enum class AskKey : TextRef {
+    // الكروت جوه المحادثة
+    CHAT_CARD_SAVE, CHAT_CARD_EDIT, CHAT_CARD_CANCEL, CHAT_CARD_DONE, CHAT_CARD_DROPPED, CHAT_CARD_CANCELLED, CHAT_SPLIT_SAVE,
+    CHAT_SIMILAR_TODAY, CHAT_SIMILAR_RECORD, CHAT_SIMILAR_KEEP, CHAT_SIMILAR_KEPT,
+    CHAT_SUB_INCOME, CHAT_SUB_LENT, CHAT_SUB_BORROWED, CHAT_SUB_MOVE,
+
+    // كروت البداية والإشعارات (× وتراجع ٤ ثواني)
+    CHAT_START_CLOSE, CHAT_START_CLOSED, CHAT_UNDO, CHAT_NOTIF_DELETE, CHAT_NOTIF_DELETED,
+
+    // السجل
+    CHAT_HISTORY_TODAY, CHAT_HISTORY_YESTERDAY, CHAT_HISTORY_THIS_WEEK, CHAT_HISTORY_OLDER, CHAT_HISTORY_VIEWING, CHAT_HISTORY_BACK, CHAT_HISTORY_AUTO_DELETE,
+
+    // «اللي اتعلمته عنك»
+    CHAT_MEMORY_TITLE, CHAT_MEMORY_LEARNING, CHAT_MEMORY_LEARNING_NOTE, CHAT_MEMORY_EMPTY, CHAT_MEMORY_FORGET, CHAT_MEMORY_CLEAR_ALL,
+    CHAT_MEMORY_CLEAR_TITLE, CHAT_MEMORY_CLEAR_BODY, CHAT_MEMORY_CLEAR_YES, CHAT_MEMORY_CLEAR_NO,
+    CHAT_UNKNOWN_TITLE, CHAT_UNKNOWN_REMOVE, CHAT_UNKNOWN_REMOVED, CHAT_UNKNOWN_COPY, CHAT_UNKNOWN_COPIED,
+
+    // الصوت (التعرّف على الكلام بتاع الجوال — §79.2-8)
+    CHAT_VOICE_UNAVAILABLE, CHAT_VOICE_FAILED,
+
+    // محفظة الصرف الأساسية (§78 ٢)
+    CHAT_MAIN_BADGE, CHAT_MAKE_MAIN, CHAT_IS_MAIN, CHAT_MAIN_DONE,
+
+    // المحرك: «عدّل» · كروت الدخل والسلفة والتحويل · «فاضلي كام» بالرقمين (§79.2)
+    CHAT_EDIT_HOW, CHAT_CARD_INCOME, CHAT_CARD_LENT, CHAT_CARD_BORROWED, CHAT_CARD_MOVE, CHAT_NEEDS_PERSON, CHAT_MOVE_NEEDS_WALLETS,
+    CHAT_UNTIL_SALARY, CHAT_INCOME_TITLE, CHAT_LENT_TITLE, CHAT_BORROWED_TITLE, CHAT_MOVE_TITLE,
+}

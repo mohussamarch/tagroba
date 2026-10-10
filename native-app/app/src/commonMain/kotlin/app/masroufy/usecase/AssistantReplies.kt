@@ -172,11 +172,10 @@ internal class TurnKit(
     private suspend fun unknownReply(u: AssistUnderstanding): TurnOut {
         val zakat = chat.zakatShown()
         val screens = nearestScreens(u.signals.normalized, ctx.tab, { s -> zakat || (s != AssistScreen.ZAKAT && s != AssistScreen.ZAKAT_PAY) })
-        if (chat.learning.isOn()) {
-            val (saved, drop) = recordUnknown(deps.stores.unknown.listAll(), u.signals.raw, ctx.nowIso, ctx.tab.wire, ctx.space.id)
-            deps.stores.unknown.save(saved)
-            if (drop.isNotEmpty()) deps.stores.unknown.remove(drop)
-        }
+        // رد المالك §79.2-2: الأسئلة اللي ما اتفهمتش **بتفضل تتحفظ** حتى والتعلّم مقفول (المفتاح بيوقف الاقتراحات واللي بيتعلمه عنه بس)
+        val (saved, drop) = recordUnknown(deps.stores.unknown.listAll(), u.signals.raw, ctx.nowIso, ctx.tab.wire, ctx.space.id)
+        deps.stores.unknown.save(saved)
+        if (drop.isNotEmpty()) deps.stores.unknown.remove(drop)
         // سؤال عن المستقبل أو «لو …» ⇒ «غير متاح» صريح بدل «مش فاهم» (فهمناه، بس ما فيش رقم لحاجة ما حصلتش)
         val (t, key) = if (u.note == AssistNote.NO_FUTURE) uiText(TextKey.ASSIST_NO_FUTURE) to null
         else vary(AssistVariants.UNKNOWN, clipText(u.signals.raw.trim(), 60))

@@ -119,7 +119,22 @@ class AssistantHistory(private val deps: AssistantDeps) {
 class AssistantUnknownLog(private val deps: AssistantDeps) {
     suspend fun list(): List<UnknownQuestion> = deps.stores.unknown.listAll().sortedByDescending { isoInstantMillis(it.lastAskedAt) ?: Long.MIN_VALUE }
 
+    /** «أسئلة لم أفهمها بعد (n)» (§79.2-10): آخر [limit] بس، والعدد كله من [list]. */
+    suspend fun recent(limit: Int = UNKNOWN_SHOWN): List<UnknownQuestion> = list().take(limit)
+
     suspend fun asText(): String = unknownAsText(deps.stores.unknown.listAll())
+
+    /** «×» على سؤال — بيرجّع السؤال عشان «تراجع» (٤ ثواني في الشاشة) يرجّعه زي ما كان. */
+    suspend fun remove(id: String): UnknownQuestion? {
+        val q = deps.stores.unknown.listAll().firstOrNull { it.id == id } ?: return null
+        deps.stores.unknown.remove(listOf(id))
+        return q
+    }
+
+    suspend fun restore(question: UnknownQuestion) = deps.stores.unknown.save(question)
 
     suspend fun clear() = deps.stores.unknown.remove(deps.stores.unknown.listAll().map { it.id })
 }
+
+/** عدد الأسئلة اللي ما اتفهمتش الظاهرة في «اللي اتعلمته عنك» (المالك: آخر ٥). */
+const val UNKNOWN_SHOWN = 5

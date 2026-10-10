@@ -1,7 +1,5 @@
 package app.masroufy.ui.shell.ask
 
-import app.masroufy.core.TextRef
-import app.masroufy.core.UiKey
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -35,10 +33,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +49,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.masroufy.core.TextKey
+import app.masroufy.core.AskKey
+import app.masroufy.core.ChipBar
+import app.masroufy.core.ChipRef
+import app.masroufy.core.UiKey
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.IconButton44
 import app.masroufy.ui.components.pressScale
@@ -81,38 +81,46 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * «اسأل مصروفي» — صفحة الشات (`AskSheet` = `AssistantChat` + `AssistantStart` + `AssistantMessage` + `AssistantHistory` في النموذج، آخر §76):
- * فوق الشاشة كلها (الشريطين بيستخبوا)، رأس فيه «مصروفي» و«مساعدك المالي الذكي» والسجل و«محادثة جديدة» والقفل، البداية (ترحيب + «أمور لم تُنجزها
- * بعد»)، الفقاعات، ومستطيل كتابة 52 واضح والاقتراحات تحته حسب التبويب.
- * ⚠️ **مفيش مساعد فعلًا:** مفيش خدمة ذكاء اصطناعي على الباقة المجانية ومزوّدها مش معتمد (§73 ❓)، و«أمور لم تُنجزها» والتعلّم من الأسئلة
- * مالهمش حالات استخدام لسه (آخر §76 «ناقص في كوتلن») ⇒ أي سؤال بيترد بصراحة «غير متاح بعد» (من غير ردود ولا أرقام مخترعة)، والصوت كمان.
- * الشكل كله زي النموذج عشان لما المساعد يتوصل يتحط مكان الرد بس. المحادثة نفسها في [AskState] (بتفضل لحد «محادثة جديدة»).
+ * «اسأل مصروفي» — صفحة الشات (`AssistantChat` + `AssistantStart` + `AssistantMessage` + `AssistantHistory` + `AssistantChips` + `AssistantInput`
+ * في النموذج) **فوق المحرك** ([AskPresenter] ⇒ `AssistantSuite`): الرأس (السجل · محادثة جديدة · القفل)، البداية (تحية + «أمور لم تُنجزها بعد»
+ * بـ«×»)، الردود بأنواعها (نص · كارت عملية · كارت تقسيم · «بتصرف عادةً منين؟» · اختيار · زراير شاشات بتنقل)، الخانة والاقتراحات من المحرك.
+ * الميكروفون = التعرّف على الكلام بتاع الجوال ([LocalSpeech]). **الشاشة ما بتحسبش ولا رقم.**
  */
 @Composable
-fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: AskState, onClose: () -> Unit) {
+fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: AskState, onClose: () -> Unit, onNavigate: (AssistTarget) -> Unit) {
     if (!visible) return
+    val deps = LocalSpace.current.ask
+    val currentTab by rememberUpdatedState(tab)
+    val p = remember(deps) { AskPresenter(deps) { assistTabOf(currentTab) } }
     val reduce = LocalReduceMotion.current
     val scope = rememberCoroutineScope()
     val toaster = remember { Toaster() }
-    var historyOpen by remember { mutableStateOf(false) }
+    val speech = LocalSpeech.current
     val rise = remember { Animatable(if (reduce) 1f else 0f) }
     val riseSpec = motion<Float>(Springs.GENTLE)
     LaunchedEffect(Unit) { rise.animateTo(1f, riseSpec) }
-    val notReady = t(UiKey.ASK_NOT_READY)
-    val voiceNotReady = t(UiKey.ASK_VOICE_NOT_READY)
-    LaunchedEffect(startListening) { if (startListening) toaster.show(voiceNotReady, dark = true) }
-
-    fun ask(text: String) {
-        val clean = text.trim()
-        if (clean.isEmpty()) return
-        state.add(mine = true, text = clean)
-        scope.launch {
-            state.typing = true
-            delay(700)
-            state.typing = false
-            state.add(mine = false, text = notReady)
-        }
+    val failed = t(UiKey.ASK_NOT_READY)
+    fun go(block: suspend () -> Unit) {
+        scope.launch { runCatching { block() }.onFailure { toaster.show(it.message ?: failed, dark = true) } }
     }
+    LaunchedEffect(p) { runCatching { p.open() }.onFailure { toaster.show(it.message ?: failed, dark = true) } }
+    val undo = p.undo
+    LaunchedEffect(undo) { if (undo != null) { delay(ASK_UNDO_MS); p.expireUndo() } }
+    val noVoice = t(AskKey.CHAT_VOICE_UNAVAILABLE)
+    val unheard = t(AskKey.CHAT_VOICE_FAILED)
+    fun listen() {
+        if (!speech.available) toaster.show(noVoice, dark = true)
+        else speech.listen { heard -> if (heard.isNullOrBlank()) toaster.show(unheard, dark = true) else go { p.send(heard) } }
+    }
+    LaunchedEffect(startListening) { if (startListening) listen() }
+    fun navigate(target: AssistTarget) {
+        onClose()
+        onNavigate(target)
+    }
+    val actions = MessageActions(
+        confirm = { go { p.confirm(it) } }, cancel = { go { p.cancel(it) } }, edit = { go { p.edit(it) } }, keep = { go { p.keep(it) } },
+        pick = { id, opt -> go { p.pick(id, opt) } }, open = { navigate(targetOf(it)) },
+    )
 
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -124,38 +132,50 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
             val lift = Modifier.graphicsLayer { alpha = rise.value.coerceIn(0f, 1f); translationY = (1f - rise.value) * 16.dp.toPx() }
             Column(Modifier.fillMaxSize().padding(top = top, bottom = bottom).imePadding().then(lift)) {
                 ChatHeader(
-                    canStartNew = !state.current.isEmpty,
-                    onHistory = { historyOpen = true },
-                    onNew = { if (state.startNew()) toaster.show(newStarted, dark = true) },
+                    title = p.view?.title ?: title, subtitle = p.view?.subtitle ?: t(UiKey.ASK_BRAND_TITLE),
+                    canStartNew = p.view?.messages?.isNotEmpty() == true,
+                    onHistory = { go { p.showHistory() } },
+                    onNew = { go { if (p.newConversation()) toaster.show(newStarted, dark = true) } },
                     onClose = onClose,
                 )
                 val listState = rememberLazyListState()
-                val messages = state.current.messages
-                LaunchedEffect(messages.size, state.typing) { if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size + 1) }
+                val messages = p.messages
+                LaunchedEffect(messages.size, p.busy) { if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size + 1) }
                 LazyColumn(
                     Modifier.weight(1f).fillMaxWidth(),
                     state = listState,
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    if (messages.isEmpty()) item(key = "start") { AssistantStart() }
-                    items(messages, key = { it.id }) { MessageBubble(it) }
-                    item(key = "typing") { if (state.typing) TypingDots() }
+                    if (p.past != null) item(key = "past") { PastBanner { p.backToCurrent() } }
+                    val v = p.view
+                    if (p.past == null && v != null && v.messages.isEmpty()) item(key = "start") {
+                        AssistantStart(
+                            v, onClose = { go { p.closeStart(it) } },
+                            onOpen = { navigate(targetOf(it)) }, onAsk = { ref: ChipRef -> go { p.chip(ref) } },
+                        )
+                    }
+                    items(messages, key = { it.id }) { MessageBubble(it, p.today, actions, live = p.past == null && !p.busy) }
+                    item(key = "typing") { if (p.busy) TypingDots() }
                 }
                 Column(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    InputBox(state.draft, { state.draft = it }, onMic = { toaster.show(voiceNotReady, dark = true) }, onSend = { ask(state.draft); state.draft = "" })
-                    Suggestions(tab) { key -> if (key == UiKey.ASK_CHIP_VOICE) toaster.show(voiceNotReady, dark = true) else ask(t(key)) }
+                    if (undo != null && !p.historyOpen) UndoBar(undo.message) { go { p.runUndo() } }
+                    InputBox(state.draft, { state.draft = it }, onMic = ::listen, onSend = {
+                        val text = state.draft
+                        go { if (p.send(text)) state.draft = "" }
+                    })
+                    p.view?.chips?.let { bar -> Suggestions(bar) { chip -> if (chip.voice) listen() else go { p.chip(chip) } } }
                 }
             }
             ToastHost(toaster, Modifier.align(Alignment.BottomCenter).padding(bottom = 166.dp + bottom, start = 20.dp, end = 20.dp))
-            AssistantHistory(historyOpen, state) { historyOpen = false }
+            AssistantHistory(p, onClose = { p.historyOpen = false; go { p.expireUndo() } }, onCopied = { toaster.show(it, dark = true) }, go = ::go)
         }
     }
 }
 
 /** الرأس (ارتفاع 48 على بعد 20): عدسة المساعد 40 · الاسم 16 واللقب 12 · السجل · محادثة جديدة (معطّلة لو فاضية) · القفل — أزرار 44 بزاوية 16. */
 @Composable
-private fun ChatHeader(canStartNew: Boolean, onHistory: () -> Unit, onNew: () -> Unit, onClose: () -> Unit) {
+private fun ChatHeader(title: String, subtitle: String, canStartNew: Boolean, onHistory: () -> Unit, onNew: () -> Unit, onClose: () -> Unit) {
     Row(
         // 48 زي النموذج، بس الخط العربي ارتفاع سطره أكبر من 1.3 ⇒ «على الأقل» 48 عشان اللقب ما يتقصش (اتشاف على المحاكي)
         Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp).heightIn(min = 48.dp),
@@ -168,8 +188,8 @@ private fun ChatHeader(canStartNew: Boolean, onHistory: () -> Unit, onNew: () ->
             contentAlignment = Alignment.Center,
         ) { LucideIcon(Lucide.ASSISTANT, size = 20.dp, tint = Ink.lensInk) }
         Column(Modifier.weight(1f)) {
-            BasicText(t(UiKey.ASK_TITLE), style = Type.of(16, FontWeight.Bold, 1.3), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            BasicText(t(UiKey.ASK_BRAND_TITLE), style = Type.of(12, lineHeight = 1.4).copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(title, style = Type.of(16, FontWeight.Bold, 1.3), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(subtitle, style = Type.of(12, lineHeight = 1.4).copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         IconButton44(Lucide.HISTORY, t(UiKey.ASK_HISTORY), onHistory)
         IconButton44(Lucide.SQUARE_PEN, t(UiKey.ASK_NEW), onNew, enabled = canStartNew)
@@ -226,51 +246,30 @@ private fun BoxAction(icon: Lucide, label: String, surface: Modifier, ink: Color
     ) { LucideIcon(icon, size = 20.dp, tint = ink) }
 }
 
-/** الاقتراحات تحت المستطيل حسب التبويب اللي إنت فيه (`BY_CTX` في النموذج — من غير أسامي ناس مخترعة). التعلّم من أسئلتك لسه ما اتبناش. */
-private fun suggestionsFor(tab: Tab): List<TextRef> = when (tab) {
-    Tab.HOME -> listOf(UiKey.ASK_CHIP_SPENT, UiKey.ASK_CHIP_VOICE, UiKey.ASK_CHIP_SPLIT, UiKey.ASK_CHIP_PLAN)
-    Tab.OPERATIONS -> listOf(UiKey.ASK_CHIP_VOICE, UiKey.ASK_CHIP_SPENT, UiKey.ASK_CHIP_SPLIT)
-    Tab.PEOPLE -> listOf(UiKey.ASK_CHIP_OWED, UiKey.ASK_CHIP_SPLIT, UiKey.ASK_CHIP_VOICE)
-    Tab.INVESTMENT -> listOf(UiKey.ASK_CHIP_PLAN, UiKey.ASK_CHIP_SPENT, UiKey.ASK_CHIP_VOICE)
-}
-
+/** الاقتراحات تحت المستطيل من المحرك: «بتسأل عنها كتير» (لو التعلم شغال) · أسئلة متابعة · اقتراحات الصفحة — والصوت بيفتح الميكروفون. */
 @Composable
-private fun Suggestions(tab: Tab, onPick: (TextRef) -> Unit) {
-    val label = t(UiKey.ASK_CHIPS_FOR, t(tab.label))
-    BasicText(label, Modifier.padding(horizontal = 4.dp).height(18.dp), style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+private fun Suggestions(bar: ChipBar, onPick: (ChipRef) -> Unit) {
+    val label = bar.label.orEmpty()
+    if (label.isNotEmpty()) {
+        BasicText(label, Modifier.padding(horizontal = 4.dp).height(18.dp), style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).semantics { contentDescription = label }.padding(top = 2.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        for (key in suggestionsFor(tab)) SuggestionChip(t(key)) { onPick(key) }
+        for (chip in bar.chips) SuggestionChip(chip.label, chip.learned) { onPick(chip.ref) }
     }
 }
 
 private val chipShadow = listOf(ShadowLayer(0.dp, 4.dp, 10.dp, Color(0x0F1D3635)))
 
 @Composable
-private fun SuggestionChip(label: String, onClick: () -> Unit) {
+private fun SuggestionChip(label: String, learned: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     val shape = RoundedCornerShape(22.dp)
     Box(
-        Modifier.height(44.dp).pressScale(press).layeredShadow(shape, chipShadow).clip(shape).background(Color(0xE0FFFFFF))
+        Modifier.height(44.dp).pressScale(press).layeredShadow(shape, chipShadow).clip(shape).background(if (learned) Ink.selected else Color(0xE0FFFFFF))
             .insetRing(shape, 1.dp, Color(0x2E08634F)).tap(press, label = label, onClick = onClick).padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) { BasicText(label, style = Type.of(13, FontWeight.Medium).copy(color = Ink.primary), maxLines = 1) }
-}
-
-/** الاسم ونص الساعة للتحية — من الهيكل (`ShellDeps.me` · `hourNow`). */
-@Composable
-internal fun rememberGreeting(): String {
-    val shell = LocalSpace.current.shell
-    var name by remember(shell) { mutableStateOf<String?>(null) }
-    LaunchedEffect(shell) { name = runCatching { shell.me().displayName }.getOrNull()?.takeIf { it.isNotBlank() } }
-    val morning = shell.hourNow() in 4..11
-    val who = name
-    return when {
-        who != null && morning -> t(UiKey.GREETING_MORNING_NAME, who)
-        who != null -> t(UiKey.GREETING_EVENING_NAME, who)
-        morning -> t(UiKey.GREETING_MORNING)
-        else -> t(UiKey.GREETING_EVENING)
-    }
 }

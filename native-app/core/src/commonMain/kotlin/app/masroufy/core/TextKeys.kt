@@ -1,12 +1,12 @@
 package app.masroufy.core
 
-/** أي مفتاح نص: [TextKey] (المنطق وحالات الاستخدام) أو [UiKey] (الشاشات). الجداول والبحث (`Texts.of` · `uiText`) بالنوع ده. */
+/** أي مفتاح نص: [TextKey] (المنطق وحالات الاستخدام) أو [UiKey] (الشاشات) أو [AskKey] (شاشة المساعد). الجداول والبحث (`Texts.of` · `uiText`) بالنوع ده. */
 sealed interface TextRef {
     val name: String
 }
 
-/** كل المفاتيح بالنوعين (اختبارات الاكتمال و`isUiText`). */
-val ALL_TEXT_KEYS: List<TextRef> by lazy { TextKey.entries + UiKey.entries }
+/** كل المفاتيح بالأنواع التلاتة (اختبارات الاكتمال و`isUiText`). */
+val ALL_TEXT_KEYS: List<TextRef> by lazy { TextKey.entries + UiKey.entries + AskKey.entries }
 
 /** المفتاح باسمه (للاختبارات ولقطة الأسماء) — مش موجود ⇒ استثناء زي `valueOf`. */
 fun textKeyNamed(name: String): TextRef = ALL_TEXT_KEYS.firstOrNull { it.name == name } ?: throw IllegalArgumentException(name)

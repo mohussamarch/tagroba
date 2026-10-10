@@ -146,12 +146,13 @@ class AssistantChatTest {
         assertEquals(AssistIntent.SPEND_BIGGEST.wire, after.chips.chips.first().ref.topic)
     }
 
-    @Test fun learningOffCountsNothingAndSavesNoQuestion() = runBlocking<Unit> {
+    /** رد المالك §79.2-2: المفتاح بيوقف المواضيع والاقتراحات بس — السؤال اللي ما اتفهمش **بيفضل يتحفظ** عشان نعلّمه. */
+    @Test fun learningOffCountsNothingButStillSavesUnknownQuestions() = runBlocking<Unit> {
         AssistantMemory(w.deps).setLearning(false)
         repeat(3) { w.chat.send("فاضلي كام؟", ctx) }
         w.chat.send("كوكو واوا", ctx)
         assertTrue(w.stores.topics.listAll().isEmpty())
-        assertTrue(w.stores.unknown.listAll().isEmpty())
+        assertEquals(listOf("كوكو واوا"), w.stores.unknown.listAll().map { it.text })
         assertTrue(w.chat.newConversation(ctx).chips.chips.none { it.learned })
     }
 

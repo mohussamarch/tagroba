@@ -158,6 +158,21 @@ class AssistantChat(private val deps: AssistantDeps) {
     suspend fun editCard(messageId: String, draft: app.masroufy.core.TxnDraft, ctx: AssistContext): ChatView =
         cardAction(messageId, ctx) { kit, msg -> kit.replaceCard(msg, draft) }
 
+    /** «عدّل» على كارت مستني: «تعدّل إيه؟» — التعديل نفسه بالكتابة («خليها ٢٠» · «كاش»)، والكارت بيفضل بنفس نوعه. */
+    suspend fun askEdit(messageId: String, ctx: AssistContext): ChatView = cardAction(messageId, ctx) { kit, msg ->
+        if (!msg.pending) TurnOut() else TurnOut(listOf(kit.text(uiText(app.masroufy.core.AskKey.CHAT_EDIT_HOW), msg.topic)), countTopic = false)
+    }
+
+    /** «دي هي، سيبها» على كارت شبه عملية اتسجلت النهارده (§79.2-6): الكارت بيتلغي، والرد فيه زرار العملية اللي اتسجلت. */
+    suspend fun keepExisting(messageId: String, ctx: AssistContext): ChatView = cardAction(messageId, ctx) { kit, msg ->
+        val existing = msg.card?.similarTransactionId
+        if (!msg.pending || existing == null) TurnOut() else TurnOut(
+            listOf(kit.text(uiText(app.masroufy.core.AskKey.CHAT_SIMILAR_KEPT), msg.topic, listOf(app.masroufy.core.ScreenLink.of(AssistScreen.OPERATION_DETAIL, "transactionId" to existing)))),
+            listOf(msg.copy(state = app.masroufy.core.CardState.CANCELLED)),
+            countTopic = false,
+        )
+    }
+
     private suspend fun cardAction(messageId: String, ctx: AssistContext, act: suspend (TurnKit, AssistMessage) -> TurnOut): ChatView {
         val msg = st.messages.listAll().firstOrNull { it.id == messageId } ?: return open(ctx)
         val conv = st.conversations.listAll().firstOrNull { it.id == msg.conversationId } ?: return open(ctx)

@@ -45,6 +45,7 @@ import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.shell.ToastHost
 import app.masroufy.ui.shell.Toaster
 import app.masroufy.ui.shell.ask.AskState
+import app.masroufy.ui.shell.ask.AssistTarget
 import app.masroufy.ui.shell.ask.AssistantChat
 import app.masroufy.ui.theme.LocalReduceMotion
 import app.masroufy.ui.theme.Springs
@@ -124,7 +125,15 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 registry.Sheet(sheet) { nav.close(sheet) }
             }
             AddOperationSheet(adding) { adding = false }
-            AssistantChat(ask != null, ask == true, nav.tab, shell.ask) { ask = null }
+            // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`)
+            AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null }) { target ->
+                when (target) {
+                    is AssistTarget.Push -> nav.push(target.route)
+                    is AssistTarget.Open -> nav.open(target.sheet)
+                    is AssistTarget.SwitchTab -> nav.switchTab(target.tab)
+                    AssistTarget.AddOperation -> adding = true
+                }
+            }
             OverlayLayer(shell.overlays)
         }
     }

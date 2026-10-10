@@ -89,6 +89,34 @@ data class TxnDraft(
     /** المستخدم غيّر التصنيف على الكارت ⇒ بيتحفظ للمحل لما يأكد (§75-16). */
     val categoryChanged: Boolean = false,
     val transactionId: Id? = null,
+    /** السلفة بالكتابة (§79.2-7): الشخص اللي سلّفته أو سلّفك. */
+    val personId: Id? = null,
+    val personName: String? = null,
+    /** التحويل بين محافظك (§79.2-7): المحفظة اللي الفلوس راحتلها. */
+    val toWalletId: Id? = null,
+    val toWalletName: String? = null,
+) {
+    /** نوع الكارت من النوع الاقتصادي (§79.2-7) — الشاشة بتعرض الإشارة واللون منه بس. */
+    val cardType: CardType
+        get() = when (kind) {
+            EconomicKind.LOAN_GRANTED -> CardType.LENT
+            EconomicKind.LOAN_RECEIVED -> CardType.BORROWED
+            EconomicKind.INTERNAL_TRANSFER -> CardType.MOVE
+            in CARD_INCOME_KINDS -> CardType.INCOME
+            else -> CardType.EXPENSE
+        }
+}
+
+/**
+ * كروت الإضافة بالكتابة (§78-٣ + §79.2-7): مصروف «−» · دخل «+» · سلفة إديتها «−» (بتظهر في «لك») · سلفة خدتها «+» (في «عليك») · تحويل بين
+ * محافظك من غير إشارة.
+ */
+enum class CardType(val sign: String) { EXPENSE("−"), INCOME("+"), LENT("−"), BORROWED("+"), MOVE("") }
+
+/** أنواع الدخل اللي كارت «قبضت …» بيسجّلها. */
+val CARD_INCOME_KINDS: Set<EconomicKind> = setOf(
+    EconomicKind.SALARY, EconomicKind.BONUS, EconomicKind.COMMISSION, EconomicKind.OVERTIME, EconomicKind.FREELANCE, EconomicKind.PERSONAL_SALE,
+    EconomicKind.GIFT_RECEIVED, EconomicKind.SUPPORT_RECEIVED, EconomicKind.BENEFIT_RECEIVED, EconomicKind.INVESTMENT_INCOME,
 )
 
 data class SplitShare(val personId: Id?, val name: String, val amountMinor: Halalas, val isMe: Boolean = false)
