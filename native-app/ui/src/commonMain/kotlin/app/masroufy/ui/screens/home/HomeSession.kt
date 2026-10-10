@@ -37,17 +37,14 @@ object PeriodChoice {
     }
 }
 
-/**
- * «اختر شكلك» (`LookSheet`): الشكل المختار (1–6) للجلسة. ⚠️ **ناقص في المنطق:** مفيش حقل للشكل في ملفك (`UserProfile`) ولا حالة استخدام
- * تحفظه — لحد ما تتبني، الاختيار بيضيع لما التطبيق يتقفل (`MeInfo.lookIndex` من الهيكل بيرجع للأول).
- */
-@Stable
-object LookChoice {
-    var look by mutableStateOf<Int?>(null)
-}
+/** عدد الأشكال المؤقتة (الكاركتر النهائي لسه بيتصمم §73). */
+const val LOOK_COUNT = 6
 
-/** الشكل اللي بيتعرض في الدواير: اختيار الجلسة ⇒ اللي في ملفك (`MeInfo.lookIndex`) ⇒ الأول. رقم برّه الستة ⇒ الأول. */
-fun avatarLook(choice: Int?, fromProfile: Int?): Int = (choice ?: fromProfile)?.takeIf { it in 1..LOOK_COUNT } ?: 1
+/**
+ * الشكل اللي بيتعرض في الدواير: اللي في ملفك (`MeInfo.lookIndex`) ⇒ الأول. رقم برّه الستة ⇒ الأول.
+ * «اختر شكلك» نسخة واحدة بس — اللي في الإعدادات («المزيد» ⇒ «ملفك» — `more/LookSheet.kt`)؛ نسخة الرئيسية اتشالت (رد المالك OVERRIDES §82-6).
+ */
+fun avatarLook(fromProfile: Int?): Int = fromProfile?.takeIf { it in 1..LOOK_COUNT } ?: 1
 
 /**
  * «×» على الإشعار + «تراجع» 4 ثواني (قرار المالك 2026-10-09). [gone] = اللي اتمسح (بيستخبى على طول في الجرس والصفحة)، و[undo] = آخر واحد
