@@ -115,21 +115,38 @@ private suspend fun AwaitPointerEventScope.tapOrCancel(down: PointerInputChange,
 }
 
 /**
+ * الضغطة بدأت على «×» (لمسها 40 وبيتمدّ لـ48 فبيغطي ربع الدايرة): رفع من غير حركة = «×» هي اللي بتتصرف (false) ·
+ * اتحرك أكتر من [slop] = سحب للشخص (true) — والحركة دي بتتاكل عشان «×» تتلغي والصفحة ما تتمررش.
+ */
+private suspend fun AwaitPointerEventScope.dragsPast(down: PointerInputChange, slop: Float): Boolean {
+    while (true) {
+        val ch = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: return false
+        if (ch.changedToUpIgnoreConsumed() || ch.isConsumed) return false
+        if ((ch.position - down.position).getDistance() > slop) return true.also { ch.consume() }
+    }
+}
+
+/**
  * لمس المسرح كله (مش كل شخص لوحده — عشان الصباع يفضل ماسك الشخص وهو بيتحرك): ضغطة على شخص تفتحه · ضغطة طويلة تدخل وضع التعديل
- * وتسحب على طول · في وضع التعديل الضغط على شخص بيسحبه على طول، والضغط في حتة فاضية جوه الكارت بيخرج. «×» و«تم» و«+» ليهم ضغطتهم.
+ * وتسحب على طول · في وضع التعديل الضغط على شخص بيسحبه على طول، والضغط في حتة فاضية جوه الكارت بيخرج. «×» و«تم» و«+» ليهم ضغطتهم — بس السحب اللي بدأ على «×» بيسحب الشخص.
  */
 internal fun Modifier.orbitGestures(editor: RowEditor, w: Float, rtl: Boolean, onOpen: (Id) -> Unit, onEnter: () -> Unit): Modifier =
     pointerInput(editor, w, rtl) {
         val slop = MotionMs.holdCancelPx.dp.toPx()
+        // نفس مسافة التمرير ⇒ السحب من على «×» بياخد الحركة قبل الصفحة
+        val buttonSlop = minOf(slop, viewConfiguration.touchSlop)
         awaitEachGesture {
-            val down = awaitFirstDown(requireUnconsumed = true)
+            val down = awaitFirstDown(requireUnconsumed = false)
+            // «×» و«تم» و«+» بياخدوا الضغطة (combinedClickable) — اللمس هنا بيسيبها لهم إلا لو بقت سحب لشخص
+            val byButton = down.isConsumed
             val shown = editor.shown
             val hit = orbitHit(Offset(down.position.x.toDp().value, down.position.y.toDp().value), shown.size, w, rtl)
             if (hit < 0) {
-                if (editor.editing && waitForUpOrCancellation() != null) editor.exit()
+                if (!byButton && editor.editing && waitForUpOrCancellation() != null) editor.exit()
                 return@awaitEachGesture
             }
             val id = shown[hit]
+            if (byButton && (!editor.editing || !dragsPast(down, buttonSlop))) return@awaitEachGesture
             if (!editor.editing) {
                 when (withTimeoutOrNull(MotionMs.holdThreshold) { tapOrCancel(down, slop) }) {
                     true -> return@awaitEachGesture onOpen(id)
