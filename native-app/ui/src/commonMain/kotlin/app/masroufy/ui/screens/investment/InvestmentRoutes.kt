@@ -8,6 +8,8 @@ import app.masroufy.core.ZakatFact
 import app.masroufy.ui.nav.Route
 import app.masroufy.ui.nav.RouteRegistry
 import app.masroufy.ui.nav.Tab
+import app.masroufy.ui.screens.investment.calc.CalculatorsDeps
+import app.masroufy.ui.screens.investment.calc.registerCalculators
 import app.masroufy.usecase.LoadDefaultRates
 import app.masroufy.usecase.LoadOnlineFeeds
 import app.masroufy.usecase.ManageAssetGrowth
@@ -64,6 +66,9 @@ interface InvestmentDeps {
 
     /** «هل يُرجى سداده؟» على دين ليك بمعرّفه بس — `ManageZakat.setReceivableFact` محتاج صاحب الدين، و`InvestmentGraph` بيلاقيه. */
     suspend fun setReceivableFact(obligationId: Id, collectability: ZakatCollectability): ZakatFact
+
+    /** الحاسبات (الادخار · التقاعد · الورث) — ملفاتها في `investment/calc/` (`CalcRoutes.kt`). */
+    val calculators: CalculatorsDeps
 }
 
 /** تفاصيل أصل (من «الاستثمار»). */
@@ -92,27 +97,8 @@ object AdvisorRoute : Route {
     override val name = "Advisor"
 }
 
-/*
- * روابط لشاشات مناطق تانية (مسارها بتاع منطقتها — مش متعرّف في الأساس): لحد الدمج النهائي بتفتح «قيد البناء» بصراحة (`PendingScreen`)،
- * **ووقت الدمج بتتبدّل بمسار المنطقة الحقيقي** (نفس اسم اللوحة): `SavingsGoals` ⇐ `screens/budgets` (`SavingsGoalsRoute`) ·
- * الحاسبات التلاتة ⇐ `screens/investment/calc` (`SavingsCalculatorRoute` · `RetirementCalculatorRoute` · `InheritanceCalculatorRoute`).
- * **مش متسجّلة هنا عمدًا.**
- */
-internal object SavingsGoalsLink : Route {
-    override val name = "SavingsGoals"
-}
-
-internal object SavingsCalculatorLink : Route {
-    override val name = "SavingsCalculator"
-}
-
-internal object RetirementCalculatorLink : Route {
-    override val name = "RetirementCalculator"
-}
-
-internal object InheritanceCalculatorLink : Route {
-    override val name = "InheritanceCalculator"
-}
+// الدمج (app-integration): روابط «خطط الادخار» والحاسبات بقت المسارات الحقيقية — `SavingsGoalsRoute` من `screens/budgets` والحاسبات
+// من `CalculatorRoutes.kt` (متسجّلة في `registerCalculators`).
 
 fun RouteRegistry.registerInvestment() {
     tabRoot(Tab.INVESTMENT) { InvestmentScreen() }
@@ -121,4 +107,5 @@ fun RouteRegistry.registerInvestment() {
     screen<ZakatRoute> { ZakatScreen() }
     screen<ZakatPayRoute> { r -> ZakatPayScreen(r.yearId) }
     screen<AdvisorRoute> { AdvisorScreen() }
+    registerCalculators()
 }

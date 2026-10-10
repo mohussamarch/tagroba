@@ -41,6 +41,7 @@ import app.masroufy.ui.components.mirrorInLtr
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.screens.budgets.SavingsGoalsRoute
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.screens.common.TabScaffold
 import app.masroufy.ui.shell.LocalToaster
@@ -194,7 +195,7 @@ private fun ToolsCard(zakatHint: String?, goals: Int?) {
         }
         ToolRow(t(TextKey.INVEST_TOOL_ADVISOR), t(TextKey.INVEST_TOOL_ADVISOR_HINT), { nav.push(AdvisorRoute) }, trailing = chevron)
         RowGap()
-        ToolRow(t(TextKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsLink) }, trailing = chevron)
+        ToolRow(t(TextKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsRoute) }, trailing = chevron)
     }
 }
 
@@ -204,9 +205,9 @@ private fun CalculatorsGrid() {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(TextKey.INVEST_CALCS), style = Type.section())
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            CalcTile(t(TextKey.INVEST_CALC_SAVINGS), InvestmentIcons.SAVINGS, Modifier.weight(1f)) { nav.push(SavingsCalculatorLink) }
-            CalcTile(t(TextKey.INVEST_CALC_RETIREMENT), InvestmentIcons.RETIREMENT, Modifier.weight(1f)) { nav.push(RetirementCalculatorLink) }
-            CalcTile(t(TextKey.INVEST_CALC_INHERITANCE), InvestmentIcons.INHERITANCE, Modifier.weight(1f)) { nav.push(InheritanceCalculatorLink) }
+            CalcTile(t(TextKey.INVEST_CALC_SAVINGS), InvestmentIcons.SAVINGS, Modifier.weight(1f)) { nav.push(SavingsCalculatorRoute) }
+            CalcTile(t(TextKey.INVEST_CALC_RETIREMENT), InvestmentIcons.RETIREMENT, Modifier.weight(1f)) { nav.push(RetirementCalculatorRoute) }
+            CalcTile(t(TextKey.INVEST_CALC_INHERITANCE), InvestmentIcons.INHERITANCE, Modifier.weight(1f)) { nav.push(InheritanceCalculatorRoute) }
         }
     }
 }

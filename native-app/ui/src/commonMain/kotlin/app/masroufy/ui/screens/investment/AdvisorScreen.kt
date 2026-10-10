@@ -42,6 +42,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Tab
+import app.masroufy.ui.screens.budgets.SavingsGoalsRoute
 import app.masroufy.ui.screens.common.InnerScaffold
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
@@ -87,7 +88,7 @@ fun AdvisorScreen() {
                         onAction = {
                             scope.launch { runCatching { deps.alerts.opened(c.threadKey) } }
                             when (c.link) {
-                                AdvisorLink.GOALS -> nav.push(SavingsGoalsLink)
+                                AdvisorLink.GOALS -> nav.push(SavingsGoalsRoute)
                                 // ⚠️ «الميزانيات» خانة جوه مبدّل «العمليات» (منطقة تانية) ومفيش طريقة نفتحها على خانة بعينها ⇒ تبويب العمليات
                                 AdvisorLink.BUDGETS, AdvisorLink.OPS -> nav.switchTab(Tab.OPERATIONS)
                                 null -> Unit
