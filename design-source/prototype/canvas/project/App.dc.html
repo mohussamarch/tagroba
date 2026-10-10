@@ -90,7 +90,7 @@ body{margin:0}
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"start":{"editor":"enum","options":["الرئيسية","أول مرة","القفل"],"default":"الرئيسية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   // التطبيق كله في لوحة واحدة: كل شاشة لوحة لوحدها، وهنا بنعرض واحدة بس ونمسك الروابط جواها.
-  // رابط لتبويب = تبديل تبويب (الرجوع يتمسح) · رابط لشاشة تانية = دخول · رابط عليه data-back = رجوع للي قبله.
+  // رابط لتبويب = تبديل تبويب (الرجوع يتمسح) · رابط لشاشة تانية = دخول · رابط عليه data-back = رجوع للي قبله (وبيرجّع مكان التمرير).
   constructor(props) {
     super(props);
     this.TABS = ['Main', 'Operations', 'People', 'Investment'];
@@ -98,6 +98,7 @@ class Component extends DCLogic {
     // «أول مرة» = رحلة أول دقيقة · «القفل» = فتح البرنامج والقفل شغال — الاتنين بيخلصوا على الرئيسية
     this.startOf = (p) => ({ 'أول مرة': 'Onboarding', 'القفل': 'Lock' })[p] || 'Main';
     this.state = { screen: this.startOf(props.start), stack: [], anim: 'a-tab', n: 0, space: null };
+    this.scrolls = [];
     this.setSpace = (v) => { if (v === 'السعودية' || v === 'مصر') this.setState({ space: v }); };
     this.onClick = (e) => {
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
@@ -115,6 +116,7 @@ class Component extends DCLogic {
     // سحب أي قايمة طالعة من تحت بالصباع من مقبضها (طلب المالك 2026-10-08 «عمّم دي على أي قايمة منبثقة»):
     // بتمشي مع الصباع، ولو نزلت كفاية بتتقفل (بنضغط الستارة اللي وراها)، وإلا بترجع مكانها
     this.onDown = (e) => {
+      if (this.restoreT) { clearTimeout(this.restoreT); this.restoreT = 0; }
       const t = e.target, dlg = t && t.closest ? t.closest('[role="dialog"]') : null;
       if (!dlg || !this.root || t.closest('button, a, input, textarea, select, label')) return;
       const r = dlg.getBoundingClientRect();
@@ -151,16 +153,41 @@ class Component extends DCLogic {
     const { screen, stack } = this.state;
     if (back) {
       const prev = stack.length ? stack[stack.length - 1] : name;
+      const pos = this.scrolls.length > stack.length - 1 ? this.scrolls[stack.length - 1] : null;
+      this.scrolls = this.scrolls.slice(0, Math.max(0, stack.length - 1));
       this.setState({ screen: prev, stack: stack.slice(0, -1), anim: 'a-pop' });
+      this.restore(pos);
     } else if (this.TABS.indexOf(name) >= 0) {
       if (name === screen && !stack.length) return;
+      this.scrolls = [];
       this.setState({ screen: name, stack: [], anim: 'a-tab' });
     } else {
+      this.scrolls = this.scrolls.slice(0, stack.length).concat([this.capture()]);
       this.setState({ screen: name, stack: stack.concat([screen]), anim: 'a-push' });
     }
   }
+  capture() {
+    const out = [];
+    if (!this.root) return out;
+    const all = this.root.querySelectorAll('*');
+    for (let i = 0; i < all.length; i++) { const el = all[i]; if (el.scrollTop > 0 || el.scrollLeft !== 0) out.push({ path: this.pathOf(el), top: el.scrollTop, left: el.scrollLeft }); }
+    return out;
+  }
+  pathOf(el) { const p = []; while (el && el !== this.root && el.parentElement) { p.unshift(Array.prototype.indexOf.call(el.parentElement.children, el)); el = el.parentElement; } return p; }
+  at(path) { let el = this.root; for (let i = 0; i < path.length; i++) { if (!el || !el.children || !el.children[path[i]]) return null; el = el.children[path[i]]; } return el; }
+  // بنعيدها كام مرة في أول نص ثانية (المحتوى ممكن يكمل بعد أول رسمة)، وأول ما تلمس الشاشة بنبطّل
+  restore(list) {
+    if (this.restoreT) clearTimeout(this.restoreT);
+    if (!list || !list.length) return;
+    let n = 0;
+    const tick = () => {
+      list.forEach((r) => { const el = this.at(r.path); if (el) { el.scrollTop = r.top; el.scrollLeft = r.left; el.dispatchEvent(new Event('scroll')); } }); // الحدث يدوي: الشاشة اللي بتحسب حاجة من التمرير (الأسطوانة في الأشخاص) تلحق
+      this.restoreT = ++n < 6 ? setTimeout(tick, n < 3 ? 40 : 120) : 0;
+    };
+    this.restoreT = setTimeout(tick, 0);
+  }
   componentDidUpdate(prev) { if (prev.space !== this.props.space && this.state.space) this.setState({ space: null }); if (prev.start !== this.props.start) this.setState({ screen: this.startOf(this.props.start), stack: [], anim: 'a-tab' }); }
-  componentWillUnmount() { if (this.root) ['click', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach((n) => this.root.removeEventListener(n, n === 'click' ? this.onClick : n === 'pointerdown' ? this.onDown : n === 'pointermove' ? this.onMove : this.onUp, true)); }
+  componentWillUnmount() { if (this.restoreT) clearTimeout(this.restoreT); if (this.root) ['click', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach((n) => this.root.removeEventListener(n, n === 'click' ? this.onClick : n === 'pointerdown' ? this.onDown : n === 'pointermove' ? this.onMove : this.onUp, true)); }
   renderVals() {
     const s = {};
     this.SCREENS.forEach((k) => { s[k] = this.state.screen === k; });

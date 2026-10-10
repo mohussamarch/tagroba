@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>أهم 5 فوق شخصيتك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.o-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.o-press:active{transform:scale(.97)}
+.o-thread{animation:o-draw 1100ms cubic-bezier(.2,.7,.3,1) 200ms forwards}
+.o-item{transition:left 220ms cubic-bezier(.2,.7,.3,1),top 220ms cubic-bezier(.2,.7,.3,1)}
+.o-wig{animation:o-wig 260ms cubic-bezier(.45,0,.55,1) infinite alternate}
+.o-pop{animation:o-pop 220ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes o-draw{to{stroke-dashoffset:0}}
+@keyframes o-wig{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+@keyframes o-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.o-press,.o-item{transition:none}.o-press:active{transform:none}.o-thread{animation:none;stroke-dashoffset:0!important}.o-wig,.o-pop{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div ref="{{setRoot}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{cancel}}" onClick="{{tapCard}}" style="position: relative; width: 350px; height: 360px; border-radius: 28px; overflow: hidden; touch-action: {{touch}}; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+  <a href="PersonProfile.dc.html" ref="{{setLink}}" tabindex="-1" aria-hidden="true" style="display: none"></a>
+  <svg width="350" height="360" viewBox="0 0 350 360" aria-hidden="true" style="position: absolute; left: 0; top: 0" fill="none" stroke-linecap="round">
+    <sc-for list="{{threads}}" as="t" hint-placeholder-count="5">
+      <path class="o-thread" d="{{t.d}}" stroke="rgba(220,235,214,0.55)" stroke-width="1.5" style="{{t.dash}}"></path>
+    </sc-for>
+  </svg>
+
+  <sc-if value="{{showRule}}" hint-placeholder-val="{{ true }}">
+    <span style="position: absolute; right: 16px; top: 14px; font-size: 12px; color: #DCEBD6">المُعالون أولًا · ثم الأكثر تعاملًا</span>
+  </sc-if>
+  <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+    <button type="button" data-done="1" class="o-press o-pop" onClick="{{done}}" style="position: absolute; left: 8px; top: 4px; height: 48px; padding: 0 8px; border: 0; background: transparent; font: inherit; cursor: pointer; display: flex; align-items: center"><span style="height: 32px; padding: 0 16px; border-radius: 16px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #08634F; background: #FFFDF9; box-shadow: 0 6px 14px rgba(0,30,25,0.25)">تم</span></button>
+  </sc-if>
+
+  <sc-for list="{{items}}" as="p" hint-placeholder-count="5">
+    <div data-item="1" role="link" tabindex="0" aria-label="{{p.label}}" class="{{p.cls}}" onPointerDown="{{p.down}}" onKeyDown="{{p.key}}" style="{{p.pos}}">
+      <span style="font-size: 12px; font-weight: 700; color: #FFFFFF; pointer-events: none">{{p.name}}</span>
+      <span class="{{p.wig}}" style="{{p.wigStyle}}">
+        <span style="{{p.circle}}">{{p.initial}}</span>
+        <sc-if value="{{p.showX}}" hint-placeholder-val="{{ false }}">
+          <button type="button" data-x="1" class="o-pop" onClick="{{p.remove}}" aria-label="{{p.xLabel}}" style="position: absolute; right: -14px; top: -14px; width: 40px; height: 40px; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span style="width: 22px; height: 22px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: rgba(25,61,51,0.92); box-shadow: 0 0 0 1.5px #FFFDF9, 0 4px 10px rgba(0,30,25,0.30)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span></button>
+        </sc-if>
+      </span>
+    </div>
+  </sc-for>
+
+  <sc-if value="{{showPlus}}" hint-placeholder-val="{{ false }}">
+    <button type="button" data-plus="1" class="o-press o-pop" onClick="{{add}}" aria-label="أضف شخصًا للصف" style="{{plusPos}}">
+      <span style="font-size: 12px; font-weight: 700; color: #DCEBD6">إضافة</span>
+      <span style="width: 56px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1.5px dashed rgba(220,235,214,0.75); display: flex; align-items: center; justify-content: center; color: #DCEBD6"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
+    </button>
+  </sc-if>
+
+  <div aria-label="أنت" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none">
+    <div style="width: 96px; height: 96px; border-radius: 48px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06) 48%, rgba(150,243,204,0.20)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
+      <span style="position: absolute; top: 3px; left: 18%; width: 52%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span>
+      <span style="font-size: 34px; font-weight: 700; color: #FFFFFF">م</span>
+    </div>
+    <div style="margin-top: -8px; width: 220px; height: 96px; border-radius: 110px 110px 0 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.05) 75%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 2px 2px rgba(200,255,235,0.40), inset -1px 0 3px rgba(0,47,48,0.20)">
+      <span style="font-size: 11px; color: #DCEBD6; padding: 2px 10px; border-radius: 12px; background: rgba(0,47,48,0.28)">مكان الكاركتر بتاعك</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"editing":{"editor":"boolean","default":false,"section":"الحالة"},"count":{"editor":"enum","options":["5","4","3"],"default":"5","section":"الحالة"},"$preview":{"width":350,"height":360}}'>
+// أهم 5 فوق شخصيتك في «الأشخاص» + وضع التعديل (طلب المالك 2026-10-10 عن طريق جلسة كوتلن):
+// ضغطة طويلة (440ms، وتتلغي لو الصباع اتحرك أكتر من 9) ⇒ وضع التعديل: اهتزاز خفيف + «×» + «تم» فوق · السحب بيبدّل الأماكن والباقي بيتزق
+// جملة «المُعالون أولًا…» بتختفي بعد أول ترتيب بإيدك (custom) لأنها مابقتش صح · «×» بيشيل من الصف بس (الشخص بيفضل في القايمة) · «+» في أول مكان فاضي · الخروج: «تم» أو ضغطة برّه الأشخاص · شخصيتك ثابتة
+// الأم بتمسك الترتيب (people + on-reorder/on-remove/on-add/on-edit/on-done). لو اللوحة لوحدها: بيانات مخترعة وحالة محلية
+const SPOTS = [[298, 184], [250, 112], [175, 82], [100, 112], [52, 184]];
+const HEAD = [175, 196];
+const DEMO = [['ليلى', true], ['يوسف', true], ['سارة', false], ['خالد', false], ['أحمد', false]].map(([name, dep]) => ({ name, dep, initial: name.charAt(0) }));
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { edit: false, order: null, draft: null, drag: null };
+    this.setRoot = (el) => { this.root = el; };
+    this.setLink = (el) => { this.link = el; };
+    this.move = (e) => this.onMove(e);
+    this.up = (e) => this.onUp(e, false);
+    this.cancel = (e) => this.onUp(e, true);
+  }
+  open() { if (this.link && typeof this.link.click === 'function') this.link.click(); }
+  componentWillUnmount() { if (this.lp && this.lp.t) clearTimeout(this.lp.t); }
+  ctl() { return typeof this.props.onEdit === 'function'; }
+  people() {
+    if (this.ctl()) return Array.isArray(this.props.people) ? this.props.people : [];
+    if (this.state.order) return this.state.order;
+    return DEMO.slice(0, Number(this.props.count) || 5);
+  }
+  editing() { return this.ctl() ? this.props.editing === true || this.props.editing === 'true' : this.state.edit || this.props.editing === true; }
+  setEdit(v) { if (this.ctl()) this.props.onEdit(v); else this.setState({ edit: v }); if (!v && this.ctl() && typeof this.props.onDone === 'function') this.props.onDone(); }
+  commit(list) { if (this.ctl()) { if (typeof this.props.onReorder === 'function') this.props.onReorder(list.map((q) => q.name)); } else this.setState({ order: list }); }
+  remove(i) { const list = this.people(); if (this.ctl()) { if (typeof this.props.onRemove === 'function') this.props.onRemove(i); } else this.setState({ order: list.filter((_, k) => k !== i) }); }
+  local(e) {
+    const r = this.root.getBoundingClientRect(), s = r.width / 350 || 1;
+    return [(e.clientX - r.left) / s, (e.clientY - r.top) / s];
+  }
+  down(i, e) {
+    if (e.button > 0 || (e.target.closest && e.target.closest('[data-x]'))) return;
+    const [x, y] = this.local(e);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    if (this.editing()) { this.startDrag(i, x, y); return; }
+    // مش في وضع التعديل: ضغطة قصيرة = تفتح ملف الشخص · ضغطة طويلة = وضع التعديل وتقدر تسحب على طول
+    this.lp = { i, x0: x, y0: y, fired: false, t: setTimeout(() => { if (!this.lp) return; this.lp.fired = true; this.setEdit(true); this.startDrag(this.lp.i, this.lp.x0, this.lp.y0); }, 440) };
+  }
+  startDrag(i, x, y) {
+    const list = this.people();
+    if (!list[i]) return;
+    this.dragging = { name: list[i].name, x0: x, y0: y, moved: false };
+    this.setState({ draft: list.slice(), drag: { name: list[i].name, x, y } });
+  }
+  onMove(e) {
+    if (this.lp && !this.lp.fired) {
+      const [x, y] = this.local(e);
+      if (Math.hypot(x - this.lp.x0, y - this.lp.y0) > 9) { clearTimeout(this.lp.t); this.lp = null; }
+      return;
+    }
+    if (!this.dragging || !this.state.draft) return;
+    const [x, y] = this.local(e);
+    if (Math.hypot(x - this.dragging.x0, y - this.dragging.y0) > 6) this.dragging.moved = true;
+    const draft = this.state.draft, from = draft.findIndex((q) => q.name === this.dragging.name);
+    let to = from, best = 1e9;
+    draft.forEach((_, k) => { const d = Math.hypot(SPOTS[k][0] - x, SPOTS[k][1] - y); if (d < best) { best = d; to = k; } });
+    let next = draft;
+    if (to !== from && from >= 0) { next = draft.slice(); const [m] = next.splice(from, 1); next.splice(to, 0, m); }
+    this.setState({ draft: next, drag: { name: this.dragging.name, x, y } });
+  }
+  onUp(e, cancelled) {
+    if (this.lp && !this.lp.fired) {
+      clearTimeout(this.lp.t); this.lp = null;
+      if (!cancelled) this.open();
+      return;
+    }
+    this.lp = null;
+    if (!this.dragging) return;
+    const draft = this.state.draft, moved = this.dragging.moved;
+    this.dragging = null;
+    this.justDragged = Date.now();
+    if (!cancelled && moved && draft) this.commit(draft);
+    this.setState({ draft: null, drag: null });
+  }
+  renderVals() {
+    const editing = this.editing();
+    const base = this.people();
+    const order = this.state.draft || base;
+    const drag = this.state.drag;
+    // كل شخص له عنصر ثابت (مترتبين بالاسم) ومكانه من ترتيبه ⇒ الباقي بيتزق بحركة لما تسحب
+    const stable = base.slice().sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+    const items = stable.map((q, n) => {
+      const k = order.findIndex((o) => o.name === q.name);
+      const lifted = drag && drag.name === q.name;
+      const [cx, cy] = lifted ? [drag.x, drag.y] : SPOTS[Math.max(0, k)];
+      return {
+        name: q.name, initial: q.initial, label: q.name + (editing ? '، اسحب لتغيير مكانه' : ''),
+        cls: lifted ? '' : 'o-item',
+        pos: 'position: absolute; left: ' + (cx - 32).toFixed(1) + 'px; top: ' + (cy - 48).toFixed(1) + 'px; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: ' + (editing ? (lifted ? 'grabbing' : 'grab') : 'pointer') + '; z-index: ' + (lifted ? 3 : 2) + '; touch-action: none; user-select: none; -webkit-user-select: none',
+        wig: editing && !lifted ? 'o-wig' : '',
+        wigStyle: 'position: relative; display: flex; animation-delay: ' + (-90 * n) + 'ms; transform: ' + (lifted ? 'scale(1.08)' : 'none') + '; transition: transform 220ms cubic-bezier(.2,.7,.3,1)',
+        circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; background: #FFFDF9; color: #08634F; pointer-events: none; box-shadow: ' + (q.dep ? '0 0 0 3px #A6DEC1, ' : '') + (lifted ? '0 18px 34px rgba(0,30,25,0.40)' : '0 8px 18px rgba(0,30,25,0.30)'),
+        showX: editing && !lifted, xLabel: 'شيل ' + q.name + ' من الصف',
+        down: (e) => this.down(k, e),
+        remove: (e) => { e.stopPropagation(); this.remove(k); },
+        key: (e) => { if (e.key === 'Enter' && !editing) this.open(); }
+      };
+    });
+    const threads = order.map((_, i) => {
+      const [x, y] = SPOTS[i], ex = x, ey = y + 30;
+      const dx = ex - HEAD[0], dy = ey - HEAD[1], len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len, amp = (i % 2 ? 1 : -1) * Math.min(26, len * 0.22);
+      const c1 = [HEAD[0] + dx * 0.3 + nx * amp, HEAD[1] + dy * 0.3 + ny * amp], c2 = [HEAD[0] + dx * 0.7 - nx * amp, HEAD[1] + dy * 0.7 - ny * amp];
+      const L = Math.round(len * 1.3 + 24);
+      return { d: 'M' + HEAD[0] + ' ' + HEAD[1] + ' C' + c1[0].toFixed(1) + ' ' + c1[1].toFixed(1) + ' ' + c2[0].toFixed(1) + ' ' + c2[1].toFixed(1) + ' ' + ex + ' ' + ey, dash: 'stroke-dasharray: ' + L + '; stroke-dashoffset: ' + L };
+    });
+    const free = order.length < 5 ? SPOTS[order.length] : null;
+    const canAdd = this.ctl() ? this.props.canAdd !== false : true;
+    return {
+      setRoot: this.setRoot, setLink: this.setLink, move: this.move, up: this.up, cancel: this.cancel,
+      editing, showRule: !editing && !(this.props.custom === true || this.props.custom === 'true'), touch: editing ? 'none' : 'pan-y', items, threads,
+      done: (e) => { e.stopPropagation(); this.setEdit(false); },
+      tapCard: (e) => { if (!editing || Date.now() - (this.justDragged || 0) < 300) return; if (e.target.closest && e.target.closest('[data-item],[data-x],[data-plus],[data-done]')) return; this.setEdit(false); },
+      showPlus: editing && !!free && canAdd,
+      plusPos: free ? 'position: absolute; left: ' + (free[0] - 32) + 'px; top: ' + (free[1] - 48) + 'px; width: 64px; border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px' : '',
+      add: (e) => {
+        e.stopPropagation();
+        if (typeof this.props.onAdd === 'function') { this.props.onAdd(); return; }
+        const back = DEMO.find((q) => !order.some((o) => o.name === q.name)); // اللوحة لوحدها: بيرجّع أول واحد اتشال
+        if (back) this.setState({ order: order.concat([back]) });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

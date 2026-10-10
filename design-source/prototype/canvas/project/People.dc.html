@@ -16,11 +16,9 @@ a{color:#08634F}a:hover{color:#064B40}
 .m-snap{scroll-snap-align:start}
 .m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
 .m-press:active{transform:scale(.97)}
-.m-thread{animation:m-draw 1100ms cubic-bezier(.2,.7,.3,1) 200ms forwards}
 .m-skel{animation:m-pulse 1.4s cubic-bezier(.2,.7,.3,1) infinite alternate}
-@keyframes m-draw{to{stroke-dashoffset:0}}
 @keyframes m-pulse{from{opacity:.5}to{opacity:1}}
-@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-thread{animation:none;stroke-dashoffset:0!important}.m-skel{animation:none}}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}.m-skel{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
@@ -51,31 +49,10 @@ a{color:#08634F}a:hover{color:#064B40}
           </div>
         </sc-if>
 
+        <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{endEdit}}" aria-label="إنهاء التعديل" style="position: absolute; inset: 0; z-index: 4; border: 0; padding: 0; background: transparent; cursor: default"></button></sc-if>
         <sc-if value="{{showStage}}" hint-placeholder-val="{{ true }}">
           <div style="{{heroStyle}}">
-            <div style="position: absolute; inset: 0; border-radius: 28px; overflow: hidden; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
-              <svg width="350" height="360" viewBox="0 0 350 360" aria-hidden="true" style="position: absolute; left: 0; top: 0" fill="none" stroke-linecap="round">
-                <sc-for list="{{threads}}" as="t" hint-placeholder-count="5">
-                  <path class="m-thread" d="{{t.d}}" stroke="rgba(220,235,214,0.55)" stroke-width="1.5" style="{{t.dash}}"></path>
-                </sc-for>
-              </svg>
-              <span style="position: absolute; right: 16px; top: 14px; font-size: 12px; color: #DCEBD6">المُعالون أولًا · ثم الأكثر تعاملًا</span>
-              <sc-for list="{{orbit}}" as="p" hint-placeholder-count="5">
-                <a href="PersonProfile.dc.html" class="m-press" aria-label="{{p.name}}" style="{{p.pos}}">
-                  <span style="font-size: 12px; font-weight: 700; color: #FFFFFF">{{p.name}}</span>
-                  <span style="{{p.circle}}">{{p.initial}}</span>
-                </a>
-              </sc-for>
-              <div aria-label="أنت" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none">
-                <div style="width: 96px; height: 96px; border-radius: 48px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.30), rgba(255,255,255,0.06) 48%, rgba(150,243,204,0.20)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 1px 2px rgba(200,255,235,0.45), inset -1px -2px 3px rgba(0,47,48,0.28), 0 8px 16px rgba(0,42,53,0.14)">
-                  <span style="position: absolute; top: 3px; left: 18%; width: 52%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); transform: rotate(-8deg)"></span>
-                  <span style="font-size: 34px; font-weight: 700; color: #FFFFFF">م</span>
-                </div>
-                <div style="margin-top: -8px; width: 220px; height: 96px; border-radius: 110px 110px 0 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.05) 75%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 2px 2px rgba(200,255,235,0.40), inset -1px 0 3px rgba(0,47,48,0.20)">
-                  <span style="font-size: 11px; color: #DCEBD6; padding: 2px 10px; border-radius: 12px; background: rgba(0,47,48,0.28)">مكان الكاركتر بتاعك</span>
-                </div>
-              </div>
-            </div>
+            <dc-import name="PeopleOrbit" people="{{rowPeople}}" custom="{{customRow}}" editing="{{editing}}" can-add="{{canAdd}}" on-edit="{{setEditing}}" on-reorder="{{reorder}}" on-remove="{{removeAt}}" on-add="{{openPick}}" hint-size="350px,360px"></dc-import>
           </div>
         </sc-if>
 
@@ -140,14 +117,21 @@ a{color:#08634F}a:hover{color:#064B40}
   <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
     <dc-import name="BottomBar" active="People" context="الأشخاص" space="{{spaceName}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import>
   </div>
+  <sc-if value="{{hasUndo}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 20px; right: 20px; bottom: 148px; z-index: 7; min-height: 52px; box-sizing: border-box; border-radius: 18px; padding: 4px 16px 4px 4px; display: flex; align-items: center; gap: 8px; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 14px 30px rgba(16,45,53,0.25)"><span style="flex: 1 1 auto; font-size: 13px; font-weight: 700">{{undoText}}</span><button type="button" class="m-press" onClick="{{undo}}" style="height: 44px; border: 0; padding: 0 14px; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #DCEBD6; cursor: pointer; background: rgba(255,255,255,0.10)">{{undoLabel}}</button></div>
+  </sc-if>
+  <sc-if value="{{pickOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="PeopleRowPick" space="{{spaceName}}" people="{{pickList}}" on-pick="{{pickOne}}" on-close="{{closePick}}" hint-size="390px,844px"></dc-import></sc-if>
   <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="AddPersonSheet" auto-open="{{true}}" space="{{spaceName}}" on-save="{{onAddPerson}}" on-close="{{closeAdd}}" hint-size="390px,844px"></dc-import></sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ"],"default":"عادي","section":"الحالة"},"edit":{"editor":"boolean","default":false,"section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { p: 0, addOpen: false, added: [] };
+    // ترتيب صف «أهم 5» (طلب المالك 2026-10-10): بيتحفظ في الحساب في التطبيق — هنا masroufy-people-top (أسماء)
+    let order = null;
+    try { const v = JSON.parse(window.sessionStorage.getItem('masroufy-people-top') || 'null'); if (Array.isArray(v)) order = v; } catch (e) {}
+    this.state = { p: 0, addOpen: false, added: [], order, editing: props.edit === true, undo: null, pickOpen: false };
     this.RANGE = 420;
     this.setScroller = (el) => { this.scroller = el; };
     this.onScroll = () => {
@@ -156,6 +140,7 @@ class Component extends DCLogic {
         this.raf = 0;
         const p = Math.max(0, Math.min(1, this.scroller.scrollTop / this.RANGE));
         if (Math.abs(p - this.state.p) > 0.002) this.setState({ p });
+        if (this.state.editing && this.scroller.scrollTop > 8) this.setState({ editing: false });
       }, 16);
     };
     this.toggleAll = () => {
@@ -163,7 +148,10 @@ class Component extends DCLogic {
       this.scroller.scrollTo({ top: this.state.p > 0.5 ? 0 : this.RANGE, behavior: this.reduced() ? 'auto' : 'smooth' });
     };
   }
-  componentWillUnmount() { if (this.raf) clearTimeout(this.raf); }
+  componentWillUnmount() { if (this.raf) clearTimeout(this.raf); if (this.undoT) clearTimeout(this.undoT); }
+  componentDidUpdate(prev) { if (prev.edit !== this.props.edit) this.setState({ editing: this.props.edit === true }); }
+  saveOrder(order) { if (!Array.isArray(order)) return; order = order.filter((n) => typeof n === 'string'); try { window.sessionStorage.setItem('masroufy-people-top', JSON.stringify(order)); } catch (e) {} this.setState({ order }); }
+  rowNames(all) { const names = all.map((q) => q.name); return (Array.isArray(this.state.order) ? this.state.order : names.slice(0, 5)).filter((n) => names.indexOf(n) >= 0).slice(0, 5); }
   reduced() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
   people(eg) {
     // مخترعة بالكامل. b = الرصيد مع الشخص بالوحدة الصغرى: موجب = لك، سالب = عليك (من غير مقاصة)
@@ -184,31 +172,10 @@ class Component extends DCLogic {
     const reduced = this.reduced();
     const smooth = (x) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
     const all = this.people(eg);
-    const top = all.slice(0, 5);
-    const rest = all.slice(5).concat(this.state.added.map((name) => ({ name, initial: name.charAt(0), b: 0 })));
-
-    // أهم 5 فوق الكاركتر، وخيوط ملتوية من راسه لكل واحد
-    const spots = [[298, 184], [250, 112], [175, 82], [100, 112], [52, 184]];
-    const head = [175, 196];
-    const orbit = top.map((q, i) => ({
-      name: q.name, initial: q.initial,
-      pos: 'position: absolute; left: ' + (spots[i][0] - 32) + 'px; top: ' + (spots[i][1] - 48) + 'px; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none',
-      circle: 'width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; background: #FFFDF9; color: #08634F; box-shadow: ' + (q.dep ? '0 0 0 3px #A6DEC1, ' : '') + '0 8px 18px rgba(0,30,25,0.30)'
-    }));
-    const threads = spots.map(([x, y], i) => {
-      const ex = x, ey = y + 30;
-      const dx = ex - head[0], dy = ey - head[1];
-      const len = Math.hypot(dx, dy) || 1;
-      const nx = -dy / len, ny = dx / len;
-      const amp = (i % 2 ? 1 : -1) * Math.min(26, len * 0.22);
-      const c1 = [head[0] + dx * 0.3 + nx * amp, head[1] + dy * 0.3 + ny * amp];
-      const c2 = [head[0] + dx * 0.7 - nx * amp, head[1] + dy * 0.7 - ny * amp];
-      const L = Math.round(len * 1.3 + 24);
-      return {
-        d: 'M' + head[0] + ' ' + head[1] + ' C' + c1[0].toFixed(1) + ' ' + c1[1].toFixed(1) + ' ' + c2[0].toFixed(1) + ' ' + c2[1].toFixed(1) + ' ' + ex + ' ' + ey,
-        dash: 'stroke-dasharray: ' + L + '; stroke-dashoffset: ' + L
-      };
-    });
+    const everyone = all.concat(this.state.added.map((name) => ({ name, initial: name.charAt(0), b: 0 })));
+    const rowN = this.rowNames(everyone);
+    const top = rowN.map((nm) => everyone.find((q) => q.name === nm));
+    const rest = everyone.filter((q) => rowN.indexOf(q.name) < 0);
 
     // الأسطوانة: صف أهم 5 مطوي فوق (بيظهر في الصفحة الكاملة بس)، وتحته الباقيين؛ السحب لفوق بيلف الصفوف ناحيتك
     const cell = (q) => ({
@@ -255,8 +222,16 @@ class Component extends DCLogic {
       isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isError: st === 'خطأ',
       showStage: st !== 'بيحمّل',
       showPeople,
-      heroStyle: 'position: absolute; top: 82px; left: 20px; right: 20px; height: 360px; transform-origin: center top; transform: translateY(' + (-70 * p).toFixed(1) + 'px) scale(' + (1 - 0.18 * p).toFixed(3) + '); opacity: ' + heroO.toFixed(3) + '; pointer-events: ' + (heroO > 0.5 ? 'auto' : 'none'),
-      threads, orbit, rows,
+      heroStyle: 'position: absolute; top: 82px; left: 20px; right: 20px; height: 360px; transform-origin: center top; transform: translateY(' + (-70 * p).toFixed(1) + 'px) scale(' + (1 - 0.18 * p).toFixed(3) + '); opacity: ' + heroO.toFixed(3) + '; pointer-events: ' + (heroO > 0.5 ? 'auto' : 'none') + '; z-index: ' + (this.state.editing ? 5 : 'auto'),
+      rows, editing: this.state.editing, rowPeople: top, customRow: Array.isArray(this.state.order), canAdd: rest.length > 0,
+      setEditing: (v) => this.setState({ editing: !!v }), endEdit: () => this.setState({ editing: false }),
+      reorder: (names) => this.saveOrder(names),
+      removeAt: (i) => { if (!rowN[i]) return; const order = rowN.filter((_, k) => k !== i); this.saveOrder(order); if (this.undoT) clearTimeout(this.undoT); this.undoT = setTimeout(() => this.setState({ undo: null }), 4000); this.setState({ undo: { name: rowN[i], i } }); },
+      hasUndo: !!this.state.undo, undoLabel: 'تراجع',
+      undoText: this.state.undo ? (eg ? 'اتشال «' + this.state.undo.name + '» من الصف' : 'أُزيل «' + this.state.undo.name + '» من الصف') : '',
+      undo: () => { const u = this.state.undo; if (!u) return; const order = this.rowNames(everyone); order.splice(Math.min(u.i, order.length), 0, u.name); this.saveOrder(order.slice(0, 5)); if (this.undoT) clearTimeout(this.undoT); this.setState({ undo: null }); },
+      pickOpen: this.state.pickOpen, openPick: () => this.setState({ pickOpen: true }), closePick: () => this.setState({ pickOpen: false }),
+      pickList: rest, pickOne: (nm) => { if (typeof nm !== 'string') return; this.saveOrder(rowN.concat([nm]).slice(0, 5)); this.setState({ pickOpen: false }); },
       drumStyle: 'position: absolute; left: 20px; right: 20px; top: ' + drumTop.toFixed(1) + 'px; height: ' + y.toFixed(1) + 'px; perspective: 700px; perspective-origin: center top',
       boxesStyle: 'position: absolute; left: 20px; right: 20px; top: ' + (drumTop + y + 4).toFixed(1) + 'px; display: flex; gap: 10px; opacity: ' + Math.max(0, 1 - 2.4 * p).toFixed(3) + '; pointer-events: ' + (p < 0.3 ? 'auto' : 'none'),
       lakTotal: (st === 'خطأ' ? '—' : this.fmt(sum(lak))) + ' ' + cur,

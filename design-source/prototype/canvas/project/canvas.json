@@ -945,6 +945,22 @@
       "y": 24950,
       "w": 350,
       "h": 52
+    },
+    "PeopleOrbit.dc.html": {
+      "is_interactive": true,
+      "title": "أهم 5 فوق شخصيتك + وضع التعديل (ضغطة طويلة · سحب · «×» · «+») · PeopleOrbit (قطعة)",
+      "x": 2860,
+      "y": 0,
+      "w": 350,
+      "h": 360
+    },
+    "PeopleRowPick.dc.html": {
+      "is_interactive": true,
+      "title": "أضف للصف (من «+» في وضع التعديل) · PeopleRowPick",
+      "x": 3260,
+      "y": 0,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1220,7 +1236,9 @@
     "AssistantStart.dc.html",
     "AssistantMessage.dc.html",
     "AssistantChips.dc.html",
-    "AssistantInput.dc.html"
+    "AssistantInput.dc.html",
+    "PeopleOrbit.dc.html",
+    "PeopleRowPick.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
