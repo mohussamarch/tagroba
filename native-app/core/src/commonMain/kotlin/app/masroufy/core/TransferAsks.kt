@@ -113,6 +113,29 @@ fun transferAskOf(
     return if (t.observedDirection == Direction.OUT) AskKind.LOAN_OR_SUPPORT else null
 }
 
+/**
+ * **§82-13 (رد المالك 2026-10-10 ✱ «يسألك عليها»)**: قبل §75-5 الصادر لشخص كان بيتكتب «دعم / هدية» **مؤكد لوحده** (`applyTransferVerdict`
+ * القديم — في التطبيق القديم وكوتلن قبل الشريحة S5)، ومش ممكن نفرّقه في التخزين عن «دعم» المالك أكّده. فاللحظة دي هي الحد: «دعم» صادر لشخص
+ * **آخر تعديل عليه قبلها** بياخد نفس سؤال «سلفة ولا دعم؟» — **من غير ما يتغيّر حاجة لوحده** (النوع بيفضل «دعم» لحد ما المالك يجاوب).
+ * الإجابة (حتى «دعم» تاني) بتكتب العملية دلوقتي ⇒ تعديلها بعد الحد ⇒ السؤال ما بيرجعش. ⚠️ أي تعديل تاني على العملية بعد الحد بيقفل السؤال
+ * كمان (المالك لمسها بعد القرار) — اختيار Claude.
+ */
+const val LEGACY_AUTO_SUPPORT_UNTIL = "2026-10-10T00:00:00.000Z"
+
+/** §82-13: سؤال «سلفة ولا دعم؟» على «دعم» قديم ([LEGACY_AUTO_SUPPORT_UNTIL]) لشخص مربوط، أو null. المربوطة بالدفتر من برّه ⇒ null. */
+fun legacySupportAsk(t: Transaction, party: TransferParty?, settlements: List<Settlement>, links: TransactionLedgerLinks = TransactionLedgerLinks()): AskKind? {
+    if (isLegacySupportBefore(t, party) != true) return null
+    if (linkedOutsideTheAsk(t, links.copy(settlements = links.settlements + settlements))) return null
+    return AskKind.LOAN_OR_SUPPORT
+}
+
+/** «دعم» صادر لشخص، مؤكد، وآخر تعديل عليه قبل [LEGACY_AUTO_SUPPORT_UNTIL] — من غير الدفتر. null = طرفه مش شخص مربوط. */
+fun isLegacySupportBefore(t: Transaction, party: TransferParty?): Boolean? {
+    if (party?.personId == null || party.verdict != TransferVerdict.PERSON) return null
+    return t.observedDirection == Direction.OUT && t.economicKind == EconomicKind.SUPPORT_GIFT && t.economicKindConfirmed &&
+        t.updatedAt < LEGACY_AUTO_SUPPORT_UNTIL
+}
+
 /** خطة «أيوه، ده سداد»: التسويات بالترتيب، أو الرفض بسببه. */
 sealed class RepaymentPlan {
     data class Settle(val parts: List<Pair<Obligation, Halalas>>) : RepaymentPlan()

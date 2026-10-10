@@ -74,8 +74,8 @@ class SmsDatelessTest {
         val vf = "15:10: Received EGP260.00 from 00201001112296 to Mobile Account Number 01009998877. Ref: 900000441127 Available Balance: 560.00"
         val dst = ok(eg(vf, "2026-10-08T11:10:00Z")) // 14:10 القاهرة (الصيفي +3)
         assertEquals("2026-10-08" to false, dst.date to dst.shape.clear)
-        assertTrue(datelessClockConflict(vf, "2026-10-08T11:10:00Z", SmsClock.CAIRO))
-        assertTrue(!datelessClockConflict(vf, "2026-10-08", SmsClock.CAIRO), "a date-only arrival has no clock to compare")
+        assertTrue(datelessClockConflict(vf, "2026-10-08T11:10:00Z", EGYPT_TIME_ZONE))
+        assertTrue(!datelessClockConflict(vf, "2026-10-08", EGYPT_TIME_ZONE), "a date-only arrival has no clock to compare")
     }
 
     @Test fun aDateTheReaderCannotReadIsStillRejected() {
@@ -102,14 +102,32 @@ class SmsDatelessTest {
         assertEquals(SmsKind.REFUND to SmsShape.KeywordFallback, cashback.kind to cashback.shape, "a refund waits for the owner anyway (§75-6)")
         val wallet = ok(sa("بطاقة ائتمانية استرجاع نقدي :\nتم إضافة 15.00 ريال إلى محفظة الاسترجاع النقدي لبطاقة SAMPLE GOLD", at), "cashback wallet")
         assertEquals("2026-10-08" to 1_500L, wallet.date to wallet.amountMinor)
-        // مصر: نفس القاعدة — بالعبارة يوم الوصول ومستنية، ومن غيرها «التاريخ مش واضح»
+        // مصر: نفس القاعدة — بالعبارة يوم الوصول ومستنية
         val egypt = ok(eg("تم خصم 500.00 جم من بطاقتك المنتهية بـ 6604 عند TEST GROCER", at))
         assertEquals("2026-10-08" to SmsShape.KeywordFallback, egypt.date to egypt.shape)
-        assertEquals(unclear, assertIs<SmsParseResult.Rejected>(eg("Use your debit card at TEST GROCER and save EGP 50", at)).reason)
-        // السعودية من غير دليل: عنوان «Purchase» لوحده (كلمات عامة) · عنوان مش معروف ⇒ زي الأول
-        assertEquals(unclear, assertIs<SmsParseResult.Rejected>(sa("Purchase\nبـSR 30\nلدى:TEST SHOP", at)).reason)
-        assertEquals(unclear, assertIs<SmsParseResult.Rejected>(sa("رسالة من البنك\nشراء\nبـ64.25 SAR\nمن TEST GROCER\nمدى *6604", at)).reason)
         assertTrue(cashback.learnKey == null && egypt.learnKey == null, "an unknown layout is never learned")
+        // الرسالة اللي فيها تاريخ مش مقروء لسه بتترفض
+        assertEquals(unclear, assertIs<SmsParseResult.Rejected>(sa("Purchase\nبـSR 30\nلدى:TEST SHOP\n1447/13/45", at)).reason)
+    }
+
+    /**
+     * §82-7 (رد المالك 2026-10-10 ✱ — غير المقترح): رسالة من غير تاريخ ولا شكل معروف ولا «تم» ⇒ **يوم وصولها وتستنى تأكيدك** (مش
+     * مرفوضة). الإعلان عمره ما بيتسجل لوحده: شكله «كلمات عامة» (ما بيتسجلش في الخلفية) ومالوش بصمة (ما بيتعلّمش).
+     */
+    @Test fun aDatelessMessageWithNoEvidenceTakesTheArrivalDayAndWaits() {
+        val at = "2026-10-08T21:30:00Z" // 00:30 الرياض يوم 9 · 23:30 القاهرة يوم 8 (الشتوي) — 00:30 يوم 9 (الصيفي لحد آخر أكتوبر)
+        val rows = listOf(
+            ok(sa("Purchase\nبـSR 30\nلدى:TEST SHOP", at), "keyword title"),
+            ok(sa("رسالة من البنك\nشراء\nبـ64.25 SAR\nمن TEST GROCER\nمدى *6604", at), "unknown title"),
+            ok(eg("Use your debit card at TEST GROCER and save EGP 50", at), "an advert"),
+        )
+        assertEquals(listOf("2026-10-09", "2026-10-09", "2026-10-09"), rows.map { it.date })
+        for (row in rows) {
+            assertEquals(SmsShape.KeywordFallback, row.shape, "${row.raw}: waits for the owner")
+            assertEquals(null, row.learnKey, "${row.raw}: never learned, so never records itself later either")
+        }
+        // من غير وقت وصول (نص ملصوق من غير تاريخ) ⇒ مفيش يوم ⇒ لسه «التاريخ مش واضح» (الشاشة بتطلب التاريخ — §82-14)
+        assertIs<SmsParseResult.Rejected>(sa("Purchase\nبـSR 30\nلدى:TEST SHOP", ""))
     }
 
     /** مراجعة S1: الشكل المعروف من غير تاريخ وفيه ساعتين مختلفتين **بيستنى** (كان بيترفض لو مش على شكل الأهلي). */
@@ -124,6 +142,6 @@ class SmsDatelessTest {
         assertEquals(listOf(23 * 60 + 58), writtenClockTimes("الساعة 11:58 م"))
         assertEquals(listOf(14 * 60 + 22), writtenClockTimes("14:22:05 14:22"))
         assertEquals(emptyList(), writtenClockTimes("25:70"))
-        assertEquals("2026-10-09", datelessDay("no clock", "2026-10-09", SmsClock.RIYADH), "a date-only arrival stays as it is")
+        assertEquals("2026-10-09", datelessDay("no clock", "2026-10-09", SAUDI_TIME_ZONE), "a date-only arrival stays as it is")
     }
 }

@@ -32,11 +32,17 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
 
     fun accepts(sender: String?): Boolean = sender != null && senders().any { it.equals(sender.trim(), ignoreCase = true) }
 
-    /** أول تفعيل بيبدأ من دلوقتي — الرسايل الأقدم ليها القراية بالطلب. */
+    /**
+     * أول تفعيل (أو صاحب صندوق جديد) بيبدأ من دلوقتي — اللي قبله ليه «اقرأ اللي فات؟» (§83 — `readFrom`). **§83: التفعيل بعد إيقاف بيكمّل من
+     * المؤشر** (كان بيبدأ من دلوقتي تاني، فالفترة اللي القراية كانت واقفة فيها كانت بتضيع) — الرسايل اللي اتقرت قبل كده ما بتدخلش تاني.
+     */
     fun configure(uid: String, senders: Set<String>) {
         val changedOwner = uid != owner()
         val edit = prefs.edit().putString("owner", uid).putStringSet("senders", senders).putBoolean("enabled", true)
-        if (changedOwner || !enabled(uid) || !prefs.contains("cursorDate")) edit.putLong("cursorDate", System.currentTimeMillis()).putLong("cursorId", -1)
+        if (changedOwner || !prefs.contains("cursorDate")) {
+            val now = System.currentTimeMillis()
+            edit.putLong("cursorDate", now).putLong("cursorId", -1).putLong("cursorFloor", now)
+        }
         check(edit.commit()) { "settings write failed" }
     }
 
@@ -47,6 +53,17 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
     fun cursorDate(): Long = prefs.getLong("cursorDate", System.currentTimeMillis())
 
     fun cursorId(): Long = prefs.getLong("cursorId", -1)
+
+    /** §83: أول نقطة الجهاز ده قرا منها (الصندوق اللي اتعمل قبل §83 مالوش ⇒ المؤشر نفسه). */
+    fun cursorFloor(): Long = prefs.getLong("cursorFloor", cursorDate())
+
+    /** §83: يرجّع المؤشر لـ[millis] لو أقدم (والأرضية كمان) — المزامنة الجاية بتقرا من هناك. */
+    fun rewind(millis: Long) {
+        val edit = prefs.edit()
+        if (millis < cursorDate()) edit.putLong("cursorDate", millis).putLong("cursorId", -1)
+        if (millis < cursorFloor()) edit.putLong("cursorFloor", millis)
+        check(edit.commit()) { "rewind failed" }
+    }
 
     fun checkpoint(date: Long, id: Long) = check(prefs.edit().putLong("cursorDate", date).putLong("cursorId", id).commit()) { "checkpoint failed" }
 
@@ -138,13 +155,21 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
         return writableDatabase.insertWithOnConflict("messages", null, row, SQLiteDatabase.CONFLICT_IGNORE) != -1L
     }
 
+    /**
+     * الصندوق: **أحدث** 200 رسالة لسه مستنية، بالترتيب من الأقدم (§83 — بعد قراية التاريخ كله ممكن يبقى فيه آلاف، واللي مستني من التاريخ
+     * القديم ما يوقفش رسايل النهارده؛ كانت أقدم 200) + العدد كله + وقت أقدم رسالة لسه فيه.
+     */
     fun snapshot(uid: String, permission: Boolean, more: Boolean): SmsInboxState {
         val items = mutableListOf<QueuedSms>()
-        readableDatabase.query("messages", arrayOf("id", "sender", "body", "received"), "owner=? AND done=0", arrayOf(uid), null, null, "received ASC,id ASC", "200").use { c ->
+        readableDatabase.query("messages", arrayOf("id", "sender", "body", "received"), "owner=? AND done=0", arrayOf(uid), null, null, "received DESC,id DESC", "200").use { c ->
             while (c.moveToNext()) items += QueuedSms(c.getString(0), c.getString(1), Instant.ofEpochMilli(c.getLong(3)).toString(), c.getString(2))
         }
-        val count = readableDatabase.rawQuery("SELECT COUNT(*) FROM messages WHERE owner=? AND done=0", arrayOf(uid)).use { it.moveToFirst(); it.getInt(0) }
-        return SmsInboxState(enabled(uid), permission, more, count, if (uid == owner()) senders().toList() else emptyList(), items)
+        items.reverse()
+        val (count, oldest) = readableDatabase.rawQuery("SELECT COUNT(*), MIN(received) FROM messages WHERE owner=? AND done=0", arrayOf(uid)).use {
+            it.moveToFirst()
+            it.getInt(0) to (if (it.isNull(1)) null else Instant.ofEpochMilli(it.getLong(1)).toString())
+        }
+        return SmsInboxState(enabled(uid), permission, more, count, if (uid == owner()) senders().toList() else emptyList(), items, oldest)
     }
 
     fun acknowledge(uid: String, ids: List<String>) {

@@ -3,7 +3,9 @@ package app.masroufy.usecase
 import app.masroufy.core.AskKind
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
+import app.masroufy.core.KNOWN_TIME_ZONES
 import app.masroufy.core.MatchingState
+import app.masroufy.core.SAUDI_TIME_ZONE
 import app.masroufy.core.PendingAsk
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.TextKey
@@ -39,6 +41,8 @@ class SmsLane private constructor(
     internal val importer: ImportStatement,
     private val importDeps: ImportStatementDeps,
     private val screenDeps: ReviewSmsInboxDeps,
+    /** منطقة وقت البلد (`CountryPack.timeZone` — §88): حدود اليوم في قراية التاريخ (§83). */
+    val timeZone: String,
 ) {
     /**
      * S2 (§75-4): استيراد البلد فيه `CashWithdrawalEffect` — من غيره `SmsReviewTarget.cashWalletId` = null فالسحب من الصرّاف بيستنى (ما
@@ -59,7 +63,14 @@ class SmsLane private constructor(
          * التسجيل لرسايل البنك لازم (`effects` — S1: [OwnAccountByLast4Effect] · [SmsSalaryEffect]؛ مراجعة S1: من غيرهم «ده راتبك؟ أيوه»
          * و«حسابي التاني» ما كانوش بيعملوا حاجة في صمت). [inbox] = الصندوق بقارئ رسايل البلد دي (حزمة البلد).
          */
-        fun of(spaceId: String, importDeps: ImportStatementDeps, inbox: ManageSmsInbox, wallets: WalletRepository): SmsLane {
+        fun of(
+            spaceId: String,
+            importDeps: ImportStatementDeps,
+            inbox: ManageSmsInbox,
+            wallets: WalletRepository,
+            timeZone: String = SAUDI_TIME_ZONE,
+        ): SmsLane {
+            require(timeZone in KNOWN_TIME_ZONES) { "unknown time zone $timeZone" }
             require(importDeps.transferParties != null) { "SMS lane needs the transfer-party decisions (OVERRIDES §60/§72)" }
             require(importDeps.effects.any { it is SmsSalaryEffect } && importDeps.effects.any { it is OwnAccountByLast4Effect }) {
                 "SMS lane needs the S1 record effects: SmsSalaryEffect and OwnAccountByLast4Effect (OVERRIDES §75-2/§75-11)"
@@ -72,7 +83,7 @@ class SmsLane private constructor(
             val deps = ReviewSmsInboxDeps(
                 inbox, importer, full.merchants, full.categories, full.ids, learning, wallets, movesCashWithdrawals = movesCash,
             )
-            return SmsLane(spaceId, ReviewSmsInbox(deps), wallets, full.sources, importer, full, deps)
+            return SmsLane(spaceId, ReviewSmsInbox(deps), wallets, full.sources, importer, full, deps, timeZone)
         }
     }
 }

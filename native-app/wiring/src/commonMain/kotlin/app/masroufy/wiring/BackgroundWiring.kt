@@ -1,5 +1,6 @@
 package app.masroufy.wiring
 
+import app.masroufy.core.CROSS_SOURCE_WINDOW_DAYS
 import app.masroufy.core.Space
 import app.masroufy.core.countryPack
 import app.masroufy.port.DeviceNotifier
@@ -12,13 +13,20 @@ import app.masroufy.usecase.ManageSmsInbox
 import app.masroufy.usecase.MerchantMemory
 import app.masroufy.usecase.RememberChosenCategoryEffect
 import app.masroufy.usecase.RunBackgroundCycle
+import app.masroufy.usecase.SmsCatchUp
+import app.masroufy.usecase.SmsHistory
+import app.masroufy.usecase.SmsHistoryDeps
 import app.masroufy.usecase.SmsLane
 import app.masroufy.usecase.smsRecordEffects
 
-/** نفس اعتمادات استيراد الكشف في البلد (ومعاها قرارات «زون التحويلات» ومصادر الدخل — §60 · §64) — رسايل البنك والكشف بخط واحد. */
+/**
+ * نفس اعتمادات استيراد الكشف في البلد (ومعاها قرارات «زون التحويلات» ومصادر الدخل — §60 · §64) — رسايل البنك والكشف بخط واحد.
+ * **§75-10 (الدمج) متوصّل** (الجولة 0.3 — §83): الكشف والرسالة لنفس الحركة في حدود يومين = عملية واحدة بمصدرين. كان مبني في حالة الاستخدام
+ * ومش متوصّل هنا، فقراية التاريخ كله (§83) على حساب متستورد كشفه كانت هتكرر كل عملية.
+ */
 fun importDeps(r: SpaceRepositories, env: DeviceEnv) = ImportStatementDeps(
     r.transactions, r.sourceRecords, r.importBatches, r.merchants, r.categories, r.rules, r.uow, env.ids, env.clock,
-    transferParties = r.transferParties, incomeSources = r.incomeSources,
+    transferParties = r.transferParties, incomeSources = r.incomeSources, crossSourceWindowDays = CROSS_SOURCE_WINDOW_DAYS,
 )
 
 /**
@@ -41,9 +49,24 @@ fun smsImportDeps(spaceId: String, r: SpaceRepositories, env: DeviceEnv, inbox: 
  * الإشعارات (`GatherAllSpaceAlerts`). لحد ما يتوصل: التسجيل لوحده شغال، ومفيش إشعار جوال.
  */
 fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, notifier: DeviceNotifier, env: DeviceEnv): RunBackgroundCycle {
-    val lanes = spaces.mapNotNull { (space, r) ->
-        val reader = countryPack(space.countryCode).smsReader ?: return@mapNotNull null
-        SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets)
-    }
-    return RunBackgroundCycle(BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes)), candidates = null, engine = null, notifier = notifier))
+    val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
+    // §83-2: من آخر نقطة لكل بلد (إعدادات الحساب — نفس المخزن في كل البلاد)
+    val catchUp = spaces.firstOrNull()?.let { (_, r) -> SmsCatchUp(inbox, r.assistant.settings, lanes.map { it.spaceId }, env.clock) }
+    return RunBackgroundCycle(
+        BackgroundCycleDeps(sms = AutoRecordSms(AutoRecordSmsDeps(inbox, lanes)), candidates = null, engine = null, notifier = notifier, smsCatchUp = catchUp),
+    )
+}
+
+/** §83-1: «اقرأ اللي فات؟» بنفس صندوق وحارات التسجيل لوحده ([backgroundCycle]) — للشاشة (`SmsGraph`). */
+fun smsHistory(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, env: DeviceEnv): SmsHistory? {
+    val (_, first) = spaces.firstOrNull() ?: return null
+    val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
+    return SmsHistory(SmsHistoryDeps(AutoRecordSmsDeps(inbox, lanes), first.assistant.settings, env.clock))
+}
+
+/** حارة رسايل البلد [space]: قارئها **ومنطقة وقتها** من حزمتها (§88 — حدود اليوم بتوقيت كل بلد)، أو null لو البلد مالهاش قارئ. */
+internal fun smsLaneOf(space: Space, r: SpaceRepositories, env: DeviceEnv, inbox: SmsInboxPort): SmsLane? {
+    val pack = countryPack(space.countryCode)
+    val reader = pack.smsReader ?: return null
+    return SmsLane.of(space.id, smsImportDeps(space.id, r, env, inbox), ManageSmsInbox(inbox, reader::parse), r.wallets, pack.timeZone)
 }

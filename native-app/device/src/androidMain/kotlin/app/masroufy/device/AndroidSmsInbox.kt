@@ -8,9 +8,12 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SmsInboxState
+import app.masroufy.port.SmsReadMarks
 import app.masroufy.port.smsSenderKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.time.OffsetDateTime
 
 /**
  * صندوق رسايل البنك لحساب واحد ([uid]) — نقل `SmsInboxPlugin.java`. التفعيل محتاج إذن القراية والاستقبال، والشاشة هي اللي
@@ -68,6 +71,30 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
 
     override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) =
         withStore { it.setSalaryAnswer(uid, spaceId, smsSenderKey(sender), answer) }
+
+    // ── §83 «يقرا كل التاريخ ويكمّل الناقص لوحده» ──
+
+    override suspend fun oldestMessageAt(senders: List<String>): String? = withContext(Dispatchers.IO) {
+        val names = senders.map { it.trim() }.filter { it.isNotEmpty() }
+        if (names.isEmpty() || context.checkSelfPermission(Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) return@withContext null
+        val selection = names.joinToString(" OR ") { "address = ? COLLATE NOCASE" }
+        try {
+            context.contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI, arrayOf("date"), selection, names.toTypedArray(), "date ASC")?.use { rows ->
+                if (rows.moveToFirst()) Instant.ofEpochMilli(rows.getLong(0)).toString() else null
+            }
+        } catch (_: SecurityException) {
+            null
+        }
+    }
+
+    override suspend fun readMarks(): SmsReadMarks? = withStore { store ->
+        if (!store.enabled(uid)) null else SmsReadMarks(Instant.ofEpochMilli(store.cursorDate()).toString(), Instant.ofEpochMilli(store.cursorFloor()).toString())
+    }
+
+    override suspend fun readFrom(point: String) {
+        val millis = runCatching { OffsetDateTime.parse(point).toInstant().toEpochMilli() }.getOrNull() ?: throw IllegalArgumentException(point)
+        withStore { store -> if (store.owner() == uid) store.rewind(millis) }
+    }
 
     override suspend fun sync(): SmsInboxState = withStore { store ->
         // التحقق من الإذن ما بيفتحش نافذة أندرويد لوحده أبدًا

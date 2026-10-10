@@ -169,8 +169,9 @@ private fun withYear(month: Int, day: Int, receivedAt: String, received: Long): 
  * مصر: الشهر بالاسم ⇒ سنة كاملة ⇒ سنتين أرقام ⇒ «يوم MM-DD» ⇒ يوم/شهر في مكان التاريخ ⇒ ولا تاريخ خالص = يوم الوصول بتوقيت
  * القاهرة ([datelessDay] — §77-C: وبعد نص الليل اليوم اللي قبله لو الساعة المكتوبة بتقول كده) **لو** الجملة على قالب معروف
  * ([knownLayout] — قرار المالك §77-C «لكل الأشكال اللي مفيهاش تاريخ») أو فيها عبارة عملية خلصت ([DONE_PHRASE] — زي الأول للباقي).
+ * §82-7 (رد المالك ✱): [orArrival] ⇒ يوم الوصول **حتى من غير دليل** — والقارئ بيخلّيها تستنى تأكيد المالك (`EgyptBankSms.kt`).
  */
-internal fun egyptTransactionDate(body: String, receivedAt: String, knownLayout: Boolean = false): IsoDate? {
+internal fun egyptTransactionDate(body: String, receivedAt: String, knownLayout: Boolean = false, orArrival: Boolean = false): IsoDate? {
     MONTH_NAME.find(body)?.let { m ->
         return notFuture(iso(m.groupValues[3].toInt(), MONTHS.indexOf(m.groupValues[1].lowercase()) + 1, m.groupValues[2].toInt()), receivedAt)
     }
@@ -191,7 +192,7 @@ internal fun egyptTransactionDate(body: String, receivedAt: String, knownLayout:
         return if (dayMonth != null && monthDay != null && dayMonth != monthDay) null else dayMonth ?: monthDay
     }
     // رسالة البطاقة مفيهاش تاريخ: بتوصل ساعة العملية، فيوم الوصول هو يومها
-    if (!egyptHasDateToken(body)) return if (knownLayout || DONE_PHRASE.containsMatchIn(body)) datelessDay(body, receivedAt, SmsClock.CAIRO) else null
+    if (!egyptHasDateToken(body)) return if (orArrival || knownLayout || DONE_PHRASE.containsMatchIn(body)) datelessDay(body, receivedAt, EGYPT_TIME_ZONE) else null
     val received = JsText.parseIsoMillis(receivedAt) ?: return null
     if (EG_SHORT.containsMatchIn(body)) return shortCandidates(EG_SHORT, body, received).singleOrNull()
     NBE_MONTH_DAY.find(body)?.let { m ->

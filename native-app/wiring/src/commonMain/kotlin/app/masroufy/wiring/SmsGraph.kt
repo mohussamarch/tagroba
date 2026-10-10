@@ -4,6 +4,7 @@ import app.masroufy.core.Direction
 import app.masroufy.core.Id
 import app.masroufy.core.ImportBatchState
 import app.masroufy.core.ImportSourceType
+import app.masroufy.core.IsoDate
 import app.masroufy.core.MatchingState
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
@@ -57,7 +58,8 @@ internal class SmsGraph(
     private var last: List<Pair<SenderReview, ReviewSmsInbox>> = emptyList()
 
     // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
-    private fun review(m: ManageSmsInbox): ReviewSmsInbox = SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets).screen()
+    private fun review(m: ManageSmsInbox): ReviewSmsInbox =
+        SmsLane.of(space.id, smsImportDeps(space.id, c.repos, c.env, inbox), m, c.repos.wallets, countryPack(space.countryCode).timeZone).screen()
 
     private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
 
@@ -130,6 +132,21 @@ internal class SmsGraph(
         return out.values.sortedByDescending { it.createdAt }
     }
 
+    // §83 «اقرأ اللي فات؟» — بنفس صندوق وحارات التسجيل لوحده (كل البلاد)
+    private fun history() = smsHistory(c.session.spaces().ifEmpty { listOf(c.space to c.repos) }, inbox, c.env)
+
+    override suspend fun historyQuestion() = history()?.question(space.id)
+
+    override suspend fun historyDecline(senders: List<String>) {
+        history()?.decline(space.id, senders)
+    }
+
+    override suspend fun historyStart(senders: List<String>, from: IsoDate?) = history()?.start(space.id, senders, from)
+
+    override suspend fun historyReport() = history()?.report()
+
+    override suspend fun confirmShapes(messageIds: List<String>) = history()?.confirmShapes(messageIds)
+
     override suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult {
         val walletId = runCatching { auto().walletOf(space.id, sender) }.getOrNull()
         val result = c.shell.addOperation(AddOperationDraft(AddKind.OUT, amountText, walletId))
@@ -144,10 +161,7 @@ internal class SmsGraph(
  */
 internal fun autoRecordSms(c: AreaContext, inbox: SmsInboxPort): AutoRecordSms {
     val spaces = c.session.spaces().ifEmpty { listOf(c.space to c.repos) }
-    val lanes = spaces.mapNotNull { (s, repos) ->
-        val reader = countryPack(s.countryCode).smsReader ?: return@mapNotNull null
-        SmsLane.of(s.id, smsImportDeps(s.id, repos, c.env, inbox), ManageSmsInbox(inbox, reader::parse), repos.wallets)
-    }
+    val lanes = spaces.mapNotNull { (s, repos) -> smsLaneOf(s, repos, c.env, inbox) }
     return AutoRecordSms(AutoRecordSmsDeps(inbox, lanes))
 }
 
@@ -189,4 +203,11 @@ internal class SenderInbox(private val inbox: SmsInboxPort, private val key: Str
     override suspend fun salaryAnswer(spaceId: String, sender: String) = inbox.salaryAnswer(spaceId, sender)
 
     override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) = inbox.setSalaryAnswer(spaceId, sender, answer)
+
+    // §83: مؤشر القراية للصندوق كله (مش للمرسل ده بس)
+    override suspend fun oldestMessageAt(senders: List<String>) = inbox.oldestMessageAt(senders)
+
+    override suspend fun readMarks() = inbox.readMarks()
+
+    override suspend fun readFrom(point: String) = inbox.readFrom(point)
 }

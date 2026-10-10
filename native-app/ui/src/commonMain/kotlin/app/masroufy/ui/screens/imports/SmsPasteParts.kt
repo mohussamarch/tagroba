@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Currency
+import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
 import app.masroufy.core.dayMonth
@@ -55,9 +56,21 @@ import app.masroufy.usecase.SmsBatch
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
+/**
+ * «الصق رسالة»: النص + **تاريخ الرسالة** (§82-14 — رد المالك ✱: «لازم تكتب التاريخ») — خانة التاريخ (`DateField`) وجنبها «النهاردة؟» بلمسة
+ * واحدة (كلام المالك: «لو هي فعلا النهاردة يختارها علطول»). «اقرأها» مقفول لحد ما النص والتاريخ يبقوا موجودين.
+ */
 @Suppress("DEPRECATION")
 @Composable
-internal fun PasteCard(text: String, onText: (String) -> Unit, busy: Boolean, onRead: () -> Unit) {
+internal fun PasteCard(
+    text: String,
+    onText: (String) -> Unit,
+    date: IsoDate?,
+    today: IsoDate,
+    onDate: (IsoDate) -> Unit,
+    busy: Boolean,
+    onRead: () -> Unit,
+) {
     val clipboard = LocalClipboardManager.current
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -65,9 +78,14 @@ internal fun PasteCard(text: String, onText: (String) -> Unit, busy: Boolean, on
                 if (text.isEmpty()) BasicText(t(UiKey.SMS_PASTE_HINT), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.faded))
                 BasicTextField(text, onText, Modifier.fillMaxWidth(), textStyle = Type.of(14, lineHeight = 1.7), cursorBrush = SolidColor(Ink.primary))
             }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                BasicText(t(UiKey.SMS_PASTE_DATE), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
+                SelectChip(t(UiKey.SMS_PASTE_TODAY), date == today, { onDate(today) }, height = 44.dp)
+            }
+            app.masroufy.ui.screens.people.DateField(date, today, onDate)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TonalButton(t(UiKey.SMS_PASTE_FROM_CLIP), { clipboard.getText()?.text?.let(onText) }, Modifier.weight(1f))
-                PrimaryButton(t(UiKey.SMS_PASTE_READ), onRead, Modifier.weight(1f), enabled = text.isNotBlank(), loading = busy)
+                PrimaryButton(t(UiKey.SMS_PASTE_READ), onRead, Modifier.weight(1f), enabled = text.isNotBlank() && date != null, loading = busy)
             }
         }
     }
@@ -118,16 +136,23 @@ internal fun ResultsBlock(
     wallet: Wallet?,
     onWallet: (Wallet) -> Unit,
     busy: Boolean,
+    /** §82-15: «البنك ⇐ محفظته» للبنوك المربوطة («اقرأ فترة»). */
+    routes: List<Pair<String, String>> = emptyList(),
+    /** فيه رسايل محفظتها مش معروفة (اللصق، أو بنك مش مربوط) ⇒ المالك يختار محفظة. */
+    choose: Boolean = true,
     onSave: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         val understood = t(UiKey.SMS_PASTE_SUMMARY, opsCount(result.rows.size), msgsCount(result.skippedCount))
         BasicText(if (period) t(UiKey.SMS_PASTE_SUMMARY_READ, msgsCount(result.messages), understood) else understood, style = Type.of(15, FontWeight.Bold))
         if (result.truncated) BasicText(t(UiKey.SMS_PASTE_TRUNCATED), style = Type.caption().copy(color = Ink.focus))
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            BasicText(t(UiKey.SMS_PASTE_WALLET_Q), style = Type.of(13, FontWeight.Bold))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                for (w in wallets.filter { it.kind != "cash" }) SelectChip(w.name, w.id == wallet?.id, { onWallet(w) }, height = 44.dp)
+        for ((bank, walletName) in routes) BasicText(t(UiKey.SMS_PASTE_GOES_TO, bank, walletName), style = Type.of(13).copy(color = Ink.muted))
+        if (choose) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                BasicText(t(if (routes.isEmpty()) UiKey.SMS_PASTE_WALLET_Q else UiKey.SMS_PASTE_OTHERS_WALLET), style = Type.of(13, FontWeight.Bold))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for (w in wallets.filter { it.kind != "cash" }) SelectChip(w.name, w.id == wallet?.id, { onWallet(w) }, height = 44.dp)
+                }
             }
         }
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
@@ -163,10 +188,10 @@ internal fun ResultsBlock(
                 }
             }
         }
-        val ready = wallet != null && result.toSave > 0
-        PrimaryButton(t(UiKey.SMS_PASTE_SAVE, opsCount(result.toSave)), onSave, Modifier.fillMaxWidth(), enabled = ready, loading = busy)
+        val missing = choose && wallet == null
+        PrimaryButton(t(UiKey.SMS_PASTE_SAVE, opsCount(result.toSave)), onSave, Modifier.fillMaxWidth(), enabled = !missing && result.toSave > 0, loading = busy)
         val note = when {
-            wallet == null -> UiKey.SMS_PASTE_PICK_WALLET
+            missing -> UiKey.SMS_PASTE_PICK_WALLET
             result.duplicates > 0 -> UiKey.SMS_PASTE_NOTE_DUPS
             else -> UiKey.SMS_PASTE_NOTE_NOTHING
         }

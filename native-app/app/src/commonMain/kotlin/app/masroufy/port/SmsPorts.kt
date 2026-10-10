@@ -24,6 +24,11 @@ data class QueuedSms(val id: String, val sender: String, val receivedAt: String,
     fun message() = BankSmsMessage(sender, receivedAt, body)
 }
 
+/**
+ * [messages] = **أحدث** رسايل الصندوق لحد حد معيّن (الجهاز 200) بالترتيب من الأقدم — §83: بعد قراية التاريخ كله الصندوق ممكن يبقى فيه آلاف،
+ * واللي مستني تأكيد المالك من التاريخ القديم ما يوقفش تسجيل رسايل النهارده. [count] = كل اللي في الصندوق. [oldestQueuedAt] = وقت وصول أقدم
+ * رسالة لسه في الصندوق (حتى لو مش في [messages]) — null = فاضي.
+ */
 data class SmsInboxState(
     val enabled: Boolean,
     val permission: Boolean,
@@ -31,7 +36,14 @@ data class SmsInboxState(
     val count: Int,
     val senders: List<String>,
     val messages: List<QueuedSms>,
+    val oldestQueuedAt: String? = null,
 )
+
+/**
+ * §83: مؤشر قراية الصندوق على الجهاز ده (أوقات ISO): [point] = صندوق رسايل الجوال اتقري لحد هنا · [floor] = أول نقطة الجهاز ده قرا منها
+ * (اللي قبلها عمره ما اتقري هنا — برنامج اتثبت جديد أو جوال جديد).
+ */
+data class SmsReadMarks(val point: String, val floor: String)
 
 /** صندوق الرسايل اللي الجهاز بيلمّها في الخلفية من المرسلين اللي المستخدم فعّلهم. */
 interface SmsInboxPort {
@@ -73,6 +85,20 @@ interface SmsInboxPort {
 
     /** null = يشيل الرد (يتسأل تاني). */
     suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?)
+
+    // ── §83 «يقرا كل التاريخ ويكمّل الناقص لوحده» (المالك 2026-10-10) ──
+
+    /** وقت وصول أقدم رسالة **على الجوال** من [senders] (ISO) — null = مفيش، أو مفيش إذن، أو الجهاز ما بيقراش صندوق الرسايل. */
+    suspend fun oldestMessageAt(senders: List<String>): String?
+
+    /** مؤشر القراية على الجهاز ده — null = الصندوق مش مفعّل لصاحبه هنا. */
+    suspend fun readMarks(): SmsReadMarks?
+
+    /**
+     * يرجّع القراية لـ[point] (ISO) لو أقدم من المؤشر — المزامنة الجاية بتجيب كل اللي من هناك (من المرسلين المفعّلين). الرسالة اللي اتقرت
+     * قبل كده على الجهاز ده (اتسجلت · اتشالت · لسه مستنية) **ما بتدخلش تاني**، وأي رسالة اتسجلت قبل كده في أي جهاز بتطلع «مكررة» بمرجعها.
+     */
+    suspend fun readFrom(point: String)
 }
 
 /** نفس المرسل مهما اتكتب بحروف كبيرة أو صغيرة أو مسافات (الصندوق بيقارن المرسلين من غير حالة الحروف). */

@@ -45,6 +45,8 @@ object AssistantCodecs {
                     is UserSetting.MainWallet -> { req("type", "mainWallet"); req("spaceId", s.spaceId); req("walletId", s.walletId); req("setFrom", s.setFrom.wire) }
                     // «يتعلّم من أسئلتي» بيتكتب بس لو واقف (من غيره = شغال)
                     is UserSetting.Assistant -> { req("type", "assistant"); opt("learningOn", if (s.learningOn) null else false) }
+                    // §83: نقطة قراية رسايل البنك للبلد + البنوك اللي اتسألت «اقرأ اللي فات؟» (أسامي مرسلين بس)
+                    is UserSetting.SmsReadPoint -> { req("type", "smsRead"); req("spaceId", s.spaceId); req("point", s.point); req("asked", s.asked) }
                 }
             }
         },
@@ -52,6 +54,7 @@ object AssistantCodecs {
             when (val type = d.str("type")) {
                 "mainWallet" -> UserSetting.MainWallet(d.str("spaceId"), d.str("walletId"), d.wire("setFrom") { MainWalletSource.fromWire(it)!! }, d.str("updatedAt"))
                 "assistant" -> UserSetting.Assistant(d.boolOrNull("learningOn") ?: true, d.str("updatedAt"))
+                "smsRead" -> UserSetting.SmsReadPoint(d.str("spaceId"), d.str("point"), d.strings("asked").orEmpty(), d.str("updatedAt"))
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },

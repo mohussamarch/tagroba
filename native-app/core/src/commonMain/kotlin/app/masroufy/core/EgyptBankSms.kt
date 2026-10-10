@@ -125,7 +125,10 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     // §77-C: الجملة اللي على قالب معروف ومفيهاش تاريخ بتاخد يوم الوصول (حتى من غير عبارة «تم …») — القالب بيتشاف **قبل** التاريخ.
     // مراجعة S1: والجملة اللي مش على قالب معروف بس فيها عبارة عملية خلصت كمان (زي السعودية بالظبط — `hasDoneWording`)
     val layout = egyptShape(body, direction, amount)
-    val date = (if (isReturnedTransferNotice(body)) cairoDayOf(message.receivedAt) else egyptTransactionDate(body, message.receivedAt, layout.clear))
+    // §82-7 (رد المالك ✱): من غير تاريخ ولا قالب ولا «تم» ⇒ يوم الوصول وتستنى تأكيد المالك (مش مرفوضة — ولا بتتسجل لوحدها)
+    val returned = isReturnedTransferNotice(body)
+    val unproven = !returned && !egyptHasDateToken(body) && !layout.clear && !hasDoneWording(body)
+    val date = (if (returned) cairoDayOf(message.receivedAt) else egyptTransactionDate(body, message.receivedAt, layout.clear, orArrival = true))
         ?: return SmsParseResult.Rejected(uiText(TextKey.SMS_DATE_UNCLEAR))
     // الجولة السابعة: تاريخ العملية **بعد** يوم الوصول (بتوقيت القاهرة) = عملية لسه ما حصلتش ⇒ مرفوضة (مفيش ملف مرجع لمصر يقفل يوم بعد)
     val arrival = cairoDayOf(message.receivedAt)
@@ -140,7 +143,7 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
     // على القالب + المبلغ من خانة المبلغ + تاريخ واحد بس + مش بعد يوم الوصول (`SmsShapeGate.kt`). الجولة السادسة: حروف مخفية ⇒ تستنى.
     // الجولة السابعة: محل برّه مصر (كود البلد في آخر اسمه «SAMPLE CLOUD USA» — §75-12) ⇒ تستنى
     val merchant = egyptMerchant(body, kind)
-    val known = layout.let { if (it.clear && foreignCountryTail(merchant, EGYPT_TAIL)) SmsShape.KeywordFallback else it }
+    val known = layout.let { if (unproven || (it.clear && foreignCountryTail(merchant, EGYPT_TAIL))) SmsShape.KeywordFallback else it }
     val shape = gateShape(egyptDateGate(known, body, message.receivedAt), body, date, arrival, message.body)
     // عقد C0: الرسوم (§77-B) · المرجع (§77-D) · بصمة الشكل (§77-A) — كل واحدة في ملفها
     return smsRow(
@@ -156,7 +159,7 @@ fun parseEgyptBankSms(message: BankSmsMessage, lineNumber: Int): SmsParseResult 
  */
 private fun egyptDateGate(shape: SmsShape, body: String, receivedAt: String): SmsShape = when {
     !shape.clear -> shape
-    !egyptHasDateToken(body) && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, SmsClock.CAIRO)) -> SmsShape.KeywordFallback
+    !egyptHasDateToken(body) && (ambiguousClock(body) || datelessClockConflict(body, receivedAt, EGYPT_TIME_ZONE)) -> SmsShape.KeywordFallback
     egyptDistinctDateCount(body) > 1 -> SmsShape.KeywordFallback
     else -> shape
 }

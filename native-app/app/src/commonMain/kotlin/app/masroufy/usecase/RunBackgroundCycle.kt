@@ -32,6 +32,11 @@ data class BackgroundCycleDeps(
     val reversalRepairs: List<RepairReversals> = emptyList(),
     /** §75-7 (S4): لحاق خصومات الاشتراكات — واحد لكل بلد — بعد تسجيل الرسايل وقبل تجميع المرشحين (الاشتراك اللي اتدفع ما يطلعش «متأخر»). */
     val subscriptions: List<MatchSubscriptions> = emptyList(),
+    /**
+     * §83-2: «بيكمّل لوحده من آخر نقطة» — قبل التسجيل: الجهاز اللي بدأ يقرا بعد نقطة البلاد (اتثبت تاني) بيرجع يقرا الفجوة؛ وبعده: نقطة كل بلد
+     * بتتحفظ في الحساب. فشله ما بيوقفش حاجة (الدورة الجاية بتعيده).
+     */
+    val smsCatchUp: SmsCatchUp? = null,
 )
 
 data class NoticeDelivery(val shown: Int, val scheduled: Int, val blocked: Boolean, val unavailable: Boolean = false)
@@ -50,6 +55,7 @@ data class BackgroundCycleResult(
 class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
     suspend fun run(now: LocalMoment): BackgroundCycleResult {
         var smsFailed = false
+        deps.smsCatchUp?.let { catchUp -> runCatchingNotCancel { catchUp.before() } }
         val sms = deps.sms?.let {
             try {
                 it.run()
@@ -61,6 +67,7 @@ class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
                 null
             }
         }
+        if (!smsFailed) deps.smsCatchUp?.let { catchUp -> runCatchingNotCancel { catchUp.after() } }
         for (repair in deps.reversalRepairs) runCatchingNotCancel { repair.run() }
         var subscriptionsFailed = false
         for (match in deps.subscriptions) if (runCatchingNotCancel { match.catchUp(now.date) } == null) subscriptionsFailed = true
