@@ -578,6 +578,7 @@ enum class TextKey {
     SMS_WAIT_NEW_SHAPE, SMS_WAIT_IS_SALARY, SMS_ASK_IS_SALARY, SMS_ASK_OWN_ACCOUNT,
 
     // S2 — الرسوم · السحب للكاش · الاسترداد (§77-B · §75-4 · §75-6) — القيم في `TextsSmsFees.kt`
+    SMS_WAIT_CASH_ADVANCE, SMS_FEE_SOURCE_REASON,
 
     // S3 — اللي رجع · الشراء الأجنبي (§77-D · §75-12) — القيم في `TextsReturns.kt`
 

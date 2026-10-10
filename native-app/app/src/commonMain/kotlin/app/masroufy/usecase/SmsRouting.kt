@@ -25,10 +25,14 @@ internal class SmsSenderRoutes(val routes: List<SmsRoute>, val unrouted: Int)
 /** آخر 4 أرقام من خانة رقم الحساب (ممكن تبقى مكتوبة بمسافات أو كاملة في بيانات قديمة) — أقل من 4 أرقام ⇒ null. */
 internal fun walletLast4(value: String?): String? = value?.filter { it in '0'..'9' }?.takeLast(4)?.takeIf { it.length == 4 }
 
-/** المحفظة في البلد كهدف تسجيل: أرقامها · أرقام حسابات المالك التانية · محفظة الكاش الوحيدة (عقد C0). */
-internal fun targetOf(wallet: Wallet, all: List<Wallet>): SmsReviewTarget {
+/**
+ * المحفظة في البلد كهدف تسجيل: أرقامها · أرقام حسابات المالك التانية · محفظة الكاش (S2 §75-4: **نفس** قاعدة `CashWithdrawalEffect` —
+ * `cashWalletFor` — ولو استيراد البلد مافيهوش الأثر ([movesCash] = false) مفيش محفظة، فالسحب يستنى وما يتسجلش صرف من البنك).
+ * نفسه للخلفية ([routeSender]) وللشاشة ([ScreenRouter] · `AutoRecordSms.targetFor`).
+ */
+internal fun targetOf(wallet: Wallet, all: List<Wallet>, movesCash: Boolean): SmsReviewTarget {
     val others = all.filter { it.id != wallet.id }.mapNotNull { walletLast4(it.accountLast4) }.toSet()
-    val cash = all.filter { it.kind == "cash" }.singleOrNull()?.id // عقد C0 (§75-4)
+    val cash = if (movesCash) cashWalletFor(wallet, all)?.id else null
     return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, walletLast4(wallet.accountLast4), others, cash)
 }
 
@@ -57,7 +61,9 @@ internal fun accountWallet(row: SmsRow, senderKey: String, all: List<Wallet>, ma
 }
 
 /** كل رسايل [senderKey] المفهومة في [items] ⇒ محفظتها (§75-11). */
-internal fun routeSender(all: List<Wallet>, senderKey: String, mapping: Map<String, String>, items: List<InboxItem>): SmsSenderRoutes {
+internal fun routeSender(
+    all: List<Wallet>, senderKey: String, mapping: Map<String, String>, items: List<InboxItem>, movesCash: Boolean,
+): SmsSenderRoutes {
     val base = senderWallet(all, senderKey, mapping)
     val grouped = LinkedHashMap<Id, MutableSet<String>>()
     var unrouted = 0
@@ -67,7 +73,7 @@ internal fun routeSender(all: List<Wallet>, senderKey: String, mapping: Map<Stri
         val wallet = accountWallet(row, senderKey, all, mapping, base) ?: base
         if (wallet == null) unrouted++ else grouped.getOrPut(wallet.id) { linkedSetOf() } += item.id
     }
-    val routes = grouped.map { (walletId, ids) -> SmsRoute(targetOf(all.first { it.id == walletId }, all), ids) }
+    val routes = grouped.map { (walletId, ids) -> SmsRoute(targetOf(all.first { it.id == walletId }, all, movesCash), ids) }
     return SmsSenderRoutes(routes, unrouted)
 }
 
@@ -79,17 +85,18 @@ internal class ScreenRouter private constructor(
     private val all: List<Wallet>,
     private val mapping: Map<String, String>,
     private val screen: SmsReviewTarget,
+    private val movesCash: Boolean,
 ) {
     private val base = all.firstOrNull { it.id == screen.walletId }
 
     /** هدف تسجيل [row] من [senderKey]: محفظة أرقام حسابها لو غير محفظة الشاشة، وإلا الشاشة نفسها. */
     fun targetFor(row: SmsRow, senderKey: String): SmsReviewTarget {
         val routed = accountWallet(row, senderKey, all, mapping, base)?.takeIf { it.id != screen.walletId } ?: return screen
-        return targetOf(routed, all)
+        return targetOf(routed, all, movesCash)
     }
 
     companion object {
-        suspend fun load(wallets: WalletRepository, learning: SmsLearning, screen: SmsReviewTarget): ScreenRouter =
-            ScreenRouter(wallets.listAll(), learning.inbox.senderWallets(learning.spaceId), screen)
+        suspend fun load(wallets: WalletRepository, learning: SmsLearning, screen: SmsReviewTarget, movesCash: Boolean): ScreenRouter =
+            ScreenRouter(wallets.listAll(), learning.inbox.senderWallets(learning.spaceId), screen, movesCash)
     }
 }

@@ -7,6 +7,7 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.MatchingState
+import app.masroufy.core.SmsFee
 import app.masroufy.core.SmsKind
 import app.masroufy.core.SmsShape
 import app.masroufy.core.TextKey
@@ -47,6 +48,11 @@ data class SmsReviewLine(
     val question: AskKind? = null,
     /** مراجعة S1 (§75-11): المحفظة اللي الرسالة دي هتتسجل فيها — ممكن تبقى غير محفظة الشاشة (أرقام حسابها لمحفظة تانية). */
     val walletId: Id? = null,
+    /**
+     * S2 (§77-B): الرسوم اللي هتتسجل عملية «رسوم بنكية» لوحدها جنب السطر ده (`smsFeeToRecord` — نفس اللي `SmsFeeEffect` بيكتبه)، أو null.
+     * [SmsFee.includedInAmount] = [amountMinor] فيه الرسوم (الأصلية هتتسجل المبلغ − الرسوم). الشاشة بتعرضها قبل «سجّل الكل».
+     */
+    val fee: SmsFee? = null,
 )
 
 data class SmsFailed(val messageId: String, val sender: String, val date: String, val reason: String)

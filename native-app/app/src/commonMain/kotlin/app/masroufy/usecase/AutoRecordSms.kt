@@ -7,6 +7,7 @@ import app.masroufy.core.MatchingState
 import app.masroufy.core.PendingAsk
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.TextKey
+import app.masroufy.core.Wallet
 import app.masroufy.core.uiText
 import app.masroufy.port.SmsInboxPort
 import app.masroufy.port.SourceRecordRepository
@@ -40,6 +41,12 @@ class SmsLane private constructor(
     private val screenDeps: ReviewSmsInboxDeps,
 ) {
     /**
+     * S2 (§75-4): استيراد البلد فيه `CashWithdrawalEffect` — من غيره `SmsReviewTarget.cashWalletId` = null فالسحب من الصرّاف بيستنى (ما
+     * يتسجلش صرف من البنك لوحده). حارس توصيل: لو حد بنى البلد من غير الأثر. الشاشة بتاخد نفس القيمة (`ReviewSmsInboxDeps`).
+     */
+    internal val movesCashWithdrawals: Boolean get() = screenDeps.movesCashWithdrawals
+
+    /**
      * **شاشة رسايل البنك للبلد دي** (مراجعة S1): نفس التعلّم (§77-A) والآثار (§75-2 · §75-11) والمحافظ بتوع التسجيل التلقائي — الشاشة
      * اللي اتبنت لوحدها من غيرهم ما كانتش بتعلّم ولا بتسأل ولا بتوزّع. نسخة جديدة كل مرة (جلسة الشاشة ما تتخلطش بجلسة الخلفية).
      */
@@ -59,7 +66,10 @@ class SmsLane private constructor(
             }
             val importer = ImportStatement(importDeps)
             val learning = SmsLearning(inbox.port, spaceId)
-            val deps = ReviewSmsInboxDeps(inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids, learning, wallets)
+            val movesCash = importDeps.effects.any { it is CashWithdrawalEffect }
+            val deps = ReviewSmsInboxDeps(
+                inbox, importer, importDeps.merchants, importDeps.categories, importDeps.ids, learning, wallets, movesCashWithdrawals = movesCash,
+            )
             return SmsLane(spaceId, ReviewSmsInbox(deps), wallets, importDeps.sources, importer, importDeps, deps)
         }
     }
@@ -119,6 +129,16 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
     private suspend fun off(): Boolean = !deps.inbox.available || !deps.inbox.sync().enabled
 
     /**
+     * S2: الهدف اللي الشاشة بتحمّل بيه رسايل محفظة [walletId] (`ReviewSmsInbox.load`) — نفس اللي التسجيل في الخلفية بيبنيه بالظبط (محفظة
+     * الكاش وأرقام الحسابات التانية — `targetOf` في `SmsRouting.kt`)، فسبب الانتظار اللي الشاشة بتعرضه هو نفسه. null = المحفظة مش في البلد دي.
+     */
+    suspend fun targetFor(spaceId: String, walletId: Id): SmsReviewTarget? {
+        val lane = laneOf(spaceId)
+        val all = lane.wallets.listAll()
+        return all.firstOrNull { it.id == walletId }?.let { targetOf(it, all, lane.movesCashWithdrawals) }
+    }
+
+    /**
      * كل (بلد · محفظة) ورسايلها المفهومة من المرسلين **اللي المالك مفعّلهم** (دفاع تاني: لو شال بنك من القايمة ورسايله لسه في الصندوق،
      * ما بتتسجلش لوحدها) — [visit] بياخد معاينة كل محفظة. بيرجّع المرسلين اللي رسايلهم مالهاش محفظة.
      */
@@ -133,7 +153,7 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
             val mapping = deps.inbox.senderWallets(lane.spaceId)
             val wallets = lane.wallets.listAll()
             for (sender in senders) {
-                val routes = routeSender(wallets, sender, mapping, items)
+                val routes = routeSender(wallets, sender, mapping, items, lane.movesCashWithdrawals)
                 if (routes.unrouted > 0) unmapped += UnmappedSender(lane.spaceId, sender, routes.unrouted)
                 for (route in routes.routes) visit(lane, lane.review.loadFor(route.target) { it.id in route.messageIds })
             }

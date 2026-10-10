@@ -55,6 +55,7 @@ internal class SmsSession(
             waitReason = wait,
             question = questionByLine[number],
             walletId = part.request.walletId,
+            fee = part.request.smsRows[number]?.let(::smsFeeToRecord),
         )
     }
 }

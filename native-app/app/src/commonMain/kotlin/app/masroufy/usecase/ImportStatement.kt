@@ -116,7 +116,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
              *      الاتصال، بتبقى يتيمة ومفيش طريق لتنظيفها
              *   ٣. التحويل لـ`committed` بكتابة واحدة ذرّية بطبيعتها
              */
-            val batch = ImportBatch(
+            var batch = ImportBatch(
                 id = batchId,
                 sourceType = request.sourceType,
                 fileHash = previewResult.fileHash,
@@ -155,6 +155,8 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 transactions += ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
                 records += ctx.extra.map { it.second }
                 context = ctx
+                // مراجعة S2: عدد الدفعة = كل اللي اتكتب فيها (ومعاه زيادة الآثار زي «رسوم بنكية») — نفس اللي التراجع بيمسحه والسجل بيعرضه
+                batch = batch.copy(counts = batch.counts.copy(imported = transactions.size))
             }
 
             deps.batches.save(batch) // ١

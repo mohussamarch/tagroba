@@ -50,6 +50,8 @@ data class ReviewSmsInboxDeps(
     val wallets: WalletRepository,
     /** فشله ما يوقفش الحفظ على الجهاز. */
     val contribute: (suspend (MerchantContribution, Id) -> Unit)? = null,
+    /** S2 (§75-4): استيراد البلد فيه `CashWithdrawalEffect` — الشاشة بتوزّع على محفظة الكاش بنفس قاعدة الخلفية (`SmsLane.movesCashWithdrawals`). */
+    val movesCashWithdrawals: Boolean = false,
 )
 
 /**
@@ -65,7 +67,7 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
     private suspend fun build(
         inbox: InboxView, target: SmsReviewTarget, only: ((InboxItem) -> Boolean)? = null, route: Boolean = true,
     ): SmsReview {
-        val router = if (route) ScreenRouter.load(deps.wallets, deps.learning, target) else null
+        val router = if (route) ScreenRouter.load(deps.wallets, deps.learning, target, deps.movesCashWithdrawals) else null
         val draft = SmsSessionDraft(LearnSnapshot(deps.learning))
         for (item in inbox.items) {
             if (only != null && !only(item)) continue
