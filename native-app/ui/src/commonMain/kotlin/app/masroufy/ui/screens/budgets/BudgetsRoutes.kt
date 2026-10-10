@@ -77,15 +77,3 @@ fun RouteRegistry.registerBudgets() {
     screen<CategoriesRoute> { CategoriesScreen() }
     screen<RulesRoute> { RulesScreen() }
 }
-
-/**
- * روابط لشاشات مناطق تانية لسه ما اتعرّفتش في الأساس (مسارها بتاع منطقتها) — لحد الدمج النهائي بتفتح «قيد البناء» بصراحة
- * (`PendingScreen`)، ووقت الدمج بتتبدّل بمسار المنطقة الحقيقي. **مش متسجلة هنا عمدًا.**
- */
-internal object ReviewQueueLink : Route {
-    override val name = "ReviewQueue"
-}
-
-internal data class OperationDetailLink(val transactionId: String) : Route {
-    override val name = "OperationDetail"
-}

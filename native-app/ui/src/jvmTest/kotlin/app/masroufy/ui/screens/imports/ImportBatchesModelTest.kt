@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Direction
 import app.masroufy.core.ImportBatchState
@@ -40,12 +41,12 @@ class ImportBatchesModelTest {
     }
 
     @Test fun eachBatchShowsItsSourceAndOnlyNonZeroCounts() {
-        assertEquals(TextKey.IMPORT_BATCHES_SRC_SMS, batchSourceLabel(ImportSourceType.SMS))
-        assertEquals(TextKey.IMPORT_BATCHES_SRC_QNB, batchSourceLabel(ImportSourceType.PDF_QNB))
-        assertEquals(TextKey.IMPORT_BATCHES_SRC_CSV, batchSourceLabel(ImportSourceType.CSV_LEGACY))
+        assertEquals(UiKey.IMPORT_BATCHES_SRC_SMS, batchSourceLabel(ImportSourceType.SMS))
+        assertEquals(UiKey.IMPORT_BATCHES_SRC_QNB, batchSourceLabel(ImportSourceType.PDF_QNB))
+        assertEquals(UiKey.IMPORT_BATCHES_SRC_CSV, batchSourceLabel(ImportSourceType.CSV_LEGACY))
         val counts = batchCounts(Fx.batch("b", "2026-10-01T00:00:00.000Z", counts = ImportCounts(13, 6, 3, 2, 1, 1)))
         assertEquals(listOf(6, 3, 2, 1, 1), counts.map { it.second })
-        assertEquals(TextKey.IMPORT_BATCHES_ADDED, counts.first().first)
+        assertEquals(UiKey.IMPORT_BATCHES_ADDED, counts.first().first)
         assertEquals(1, batchCounts(Fx.batch("c", "2026-10-01T00:00:00.000Z", counts = ImportCounts(41, 41, 0, 0, 0, 0))).size)
     }
 
@@ -87,10 +88,10 @@ class ImportBatchesModelTest {
     }
 
     @Test fun keptReasonsHaveAWordForTheirChip() {
-        assertEquals(TextKey.REVERT_SHEET_KEEP_GIFT, keptLabel(RevertDecision.KEPT_HAS_GIFT))
-        assertEquals(TextKey.REVERT_SHEET_KEEP_DUE, keptLabel(RevertDecision.KEPT_HAS_DUE))
-        assertEquals(TextKey.REVERT_SHEET_KEEP_INVEST, keptLabel(RevertDecision.KEPT_HAS_INVESTMENT))
-        assertEquals(TextKey.REVERT_SHEET_KEEP_ALLOC, keptLabel(RevertDecision.KEPT_HAS_ALLOCATION))
+        assertEquals(UiKey.REVERT_SHEET_KEEP_GIFT, keptLabel(RevertDecision.KEPT_HAS_GIFT))
+        assertEquals(UiKey.REVERT_SHEET_KEEP_DUE, keptLabel(RevertDecision.KEPT_HAS_DUE))
+        assertEquals(UiKey.REVERT_SHEET_KEEP_INVEST, keptLabel(RevertDecision.KEPT_HAS_INVESTMENT))
+        assertEquals(UiKey.REVERT_SHEET_KEEP_ALLOC, keptLabel(RevertDecision.KEPT_HAS_ALLOCATION))
     }
 
     @Test fun theRevertResultInBothArabicVariantsAndEnglish() {

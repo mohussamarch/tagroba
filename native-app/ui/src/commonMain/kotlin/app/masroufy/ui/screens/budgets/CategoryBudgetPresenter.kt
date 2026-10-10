@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
@@ -100,19 +101,19 @@ fun mapCategoryBudget(
     }
     val chip = when {
         !known -> t(TextKey.NOT_AVAILABLE)
-        status == null -> t(TextKey.CAT_BUDGET_CHIP_NO_LIMIT)
-        status.level == app.masroufy.core.BudgetLevel.OVER -> t(TextKey.BUDGETS_CHIP_OVER)
-        status.thresholdCrossed -> t(TextKey.CAT_BUDGET_CHIP_THRESHOLD)
-        else -> t(TextKey.BUDGETS_CHIP_OK)
+        status == null -> t(UiKey.CAT_BUDGET_CHIP_NO_LIMIT)
+        status.level == app.masroufy.core.BudgetLevel.OVER -> t(UiKey.BUDGETS_CHIP_OVER)
+        status.thresholdCrossed -> t(UiKey.CAT_BUDGET_CHIP_THRESHOLD)
+        else -> t(UiKey.BUDGETS_CHIP_OK)
     }
     val day = (daysBetween(period.start, today) + 1).coerceIn(1, period.days)
     val used = status?.let { usedPercent(it) }
     val pace1 = when {
         !known -> t(TextKey.NOT_AVAILABLE)
-        spent == 0L -> t(TextKey.CAT_BUDGET_PACE_NONE)
-        status == null -> t(TextKey.CAT_BUDGET_PACE_NO_LIMIT)
-        status.level == app.masroufy.core.BudgetLevel.OVER -> t(TextKey.BUDGETS_CAT_OVER, plain(status.remainingMinor, currency))
-        else -> t(TextKey.CAT_BUDGET_PACE_USED, sentenceNumber(used ?: 0), sentenceNumber(day * 100 / period.days))
+        spent == 0L -> t(UiKey.CAT_BUDGET_PACE_NONE)
+        status == null -> t(UiKey.CAT_BUDGET_PACE_NO_LIMIT)
+        status.level == app.masroufy.core.BudgetLevel.OVER -> t(UiKey.BUDGETS_CAT_OVER, plain(status.remainingMinor, currency))
+        else -> t(UiKey.CAT_BUDGET_PACE_USED, sentenceNumber(used ?: 0), sentenceNumber(day * 100 / period.days))
     }
     val ids = setOf(categoryId) + categories.filter { it.parentId == categoryId }.map { it.id }
     val names = categories.associate { it.id to it.name }
@@ -125,7 +126,7 @@ fun mapCategoryBudget(
         colorHex = category.lightColor,
         iconKey = category.iconKey,
         period = period,
-        periodLine = t(TextKey.CAT_BUDGET_PERIOD, month, dayMonth(period.start), dayMonth(period.end)),
+        periodLine = t(UiKey.CAT_BUDGET_PERIOD, month, dayMonth(period.start), dayMonth(period.end)),
         monthName = month,
         currency = currency,
         known = known,
@@ -139,15 +140,15 @@ fun mapCategoryBudget(
         totalDays = period.days,
         elapsedPercent = day * 100 / period.days,
         leftLine = status?.takeIf { known }?.let {
-            if (it.remainingMinor >= 0) t(TextKey.BUDGETS_LEFT, plain(it.remainingMinor, currency)) else t(TextKey.BUDGETS_OVER_BY, plain(it.remainingMinor, currency))
+            if (it.remainingMinor >= 0) t(UiKey.BUDGETS_LEFT, plain(it.remainingMinor, currency)) else t(UiKey.BUDGETS_OVER_BY, plain(it.remainingMinor, currency))
         },
         pace1 = pace1,
-        pace2 = if (known && status == null && spent != 0L) t(TextKey.CAT_BUDGET_PACE_HINT) else null,
+        pace2 = if (known && status == null && spent != 0L) t(UiKey.CAT_BUDGET_PACE_HINT) else null,
         averageMinor = line?.averageMinor,
-        averageNote = if (line?.averageMinor != null) t(TextKey.BUDGETS_AVG_NOTE) else t(TextKey.CAT_BUDGET_AVG_NA_NOTE, sentenceNumber(MIN_PERIODS_FOR_AVERAGE)),
+        averageNote = if (line?.averageMinor != null) t(UiKey.BUDGETS_AVG_NOTE) else t(UiKey.CAT_BUDGET_AVG_NA_NOTE, sentenceNumber(MIN_PERIODS_FOR_AVERAGE)),
         anomalyText = when {
             !known -> t(TextKey.NOT_AVAILABLE)
-            spent == 0L -> t(TextKey.CAT_BUDGET_ANOM_NONE)
+            spent == 0L -> t(UiKey.CAT_BUDGET_ANOM_NONE)
             line == null -> t(TextKey.NOT_AVAILABLE)
             else -> line.anomaly.reason
         },
@@ -161,7 +162,7 @@ fun mapCategoryBudget(
             val title = txns.merchantNamesByTransaction[tx.id]?.firstOrNull() ?: tx.rawMerchantName ?: tx.rawDescription ?: category.name
             val sub = tx.categoryId?.takeIf { it != categoryId }?.let { names[it] }
             val date = dayMonth(tx.occurredAt.take(10))
-            TxUi(tx.id, title, if (sub != null) t(TextKey.BUDGETS_UP_WHEN, sub, date) else date, tx.amountMinor, tx.currency)
+            TxUi(tx.id, title, if (sub != null) t(UiKey.BUDGETS_UP_WHEN, sub, date) else date, tx.amountMinor, tx.currency)
         },
         approxNote = if (known && !data.spentReliable) data.spentNote else null,
     )

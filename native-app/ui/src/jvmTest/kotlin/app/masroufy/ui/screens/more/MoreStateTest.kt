@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.AlertGroup
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
@@ -31,12 +32,12 @@ class MoreStateTest {
 
     @Test
     fun countWordsFollowArabicNumberRules() {
-        assertEquals(t(TextKey.WLIST_ONE), countText(1, WALLET_WORDS))
-        assertEquals(t(TextKey.WLIST_TWO), countText(2, WALLET_WORDS))
-        assertEquals(t(TextKey.WLIST_FEW, sentenceNumber(3)), countText(3, WALLET_WORDS))
-        assertEquals(t(TextKey.WLIST_FEW, sentenceNumber(10)), countText(10, WALLET_WORDS))
-        assertEquals(t(TextKey.WLIST_MANY, sentenceNumber(11)), countText(11, WALLET_WORDS))
-        assertEquals(t(TextKey.WLIST_MANY, sentenceNumber(0)), countText(0, WALLET_WORDS))
+        assertEquals(t(UiKey.WLIST_ONE), countText(1, WALLET_WORDS))
+        assertEquals(t(UiKey.WLIST_TWO), countText(2, WALLET_WORDS))
+        assertEquals(t(UiKey.WLIST_FEW, sentenceNumber(3)), countText(3, WALLET_WORDS))
+        assertEquals(t(UiKey.WLIST_FEW, sentenceNumber(10)), countText(10, WALLET_WORDS))
+        assertEquals(t(UiKey.WLIST_MANY, sentenceNumber(11)), countText(11, WALLET_WORDS))
+        assertEquals(t(UiKey.WLIST_MANY, sentenceNumber(0)), countText(0, WALLET_WORDS))
     }
 
     @Test
@@ -53,7 +54,7 @@ class MoreStateTest {
     fun moreViewShowsOnlyWhatIsKnown() {
         val v = moreView(MeInfo("  محمد ", null), 28, listOf(SpaceCard(egypt, false, 1), SpaceCard(saudi, true, 3)), saudi)
         assertEquals("محمد", v.name)
-        assertEquals(t(TextKey.MORE_INCOME_HINT, sentenceNumber(28)), v.incomeHint)
+        assertEquals(t(UiKey.MORE_INCOME_HINT, sentenceNumber(28)), v.incomeHint)
         // البلد الشغالة الأول
         assertTrue(v.spacesHint!!.startsWith(t(TextKey.COUNTRY_SA)))
         assertTrue(v.spaceLine.contains(t(TextKey.COUNTRY_SA)))
@@ -68,12 +69,12 @@ class MoreStateTest {
     @Test
     fun moreGroupsLeadToTheAreaScreens() {
         val groups = moreGroups(moreView(null, 28, null, saudi))
-        assertEquals(listOf(TextKey.MORE_GROUP_ACCOUNT, TextKey.MORE_GROUP_DATA, TextKey.MORE_GROUP_SETTINGS), groups.map { it.title })
+        assertEquals(listOf(UiKey.MORE_GROUP_ACCOUNT, UiKey.MORE_GROUP_DATA, UiKey.MORE_GROUP_SETTINGS), groups.map { it.title })
         val routes = groups.flatMap { g -> g.items.map { it.to } }
         listOf(AccountRoute, IncomeSourcesRoute, SpacesRoute, WalletsRoute, BackupRoute, NotificationSettingsRoute, AppSettingsRoute)
             .forEach { assertTrue(it in routes, "$it مش في القايمة") }
         val income = groups[0].items.first { it.to == IncomeSourcesRoute }
-        assertEquals(t(TextKey.MORE_INCOME_HINT, sentenceNumber(28)), income.hint)
+        assertEquals(t(UiKey.MORE_INCOME_HINT, sentenceNumber(28)), income.hint)
         assertNull(groups[0].items.first { it.to == AccountRoute }.hint)
     }
 
@@ -84,13 +85,13 @@ class MoreStateTest {
         assertTrue(all.first().isNew)
         assertTrue(all.all { it.on })
         assertEquals(all.size, all.map { it.group }.toSet().size)
-        assertEquals(TextKey.NSET_BANK_DESC, all.first().desc)
+        assertEquals(UiKey.NSET_BANK_DESC, all.first().desc)
 
         val off = notificationRows(setOf(AlertGroup.BANK_SMS, AlertGroup.ZAKAT))
         assertFalse(off.first { it.group == AlertGroup.BANK_SMS }.on)
-        assertEquals(TextKey.NSET_BANK_OFF_DESC, off.first { it.group == AlertGroup.BANK_SMS }.desc)
+        assertEquals(UiKey.NSET_BANK_OFF_DESC, off.first { it.group == AlertGroup.BANK_SMS }.desc)
         assertFalse(off.first { it.group == AlertGroup.ZAKAT }.on)
-        assertEquals(TextKey.NSET_ZAKAT_DESC, off.first { it.group == AlertGroup.ZAKAT }.desc)
+        assertEquals(UiKey.NSET_ZAKAT_DESC, off.first { it.group == AlertGroup.ZAKAT }.desc)
         assertEquals(off.size - 2, off.count { it.on })
     }
 
@@ -103,10 +104,10 @@ class MoreStateTest {
         assertTrue(sa.isDefault)
         assertFalse(sa.canArchive)
         assertTrue(sa.canSwitch)
-        assertEquals(t(TextKey.SPC_META_AUTO), sa.meta, "عدد المحافظ مش معروف ⇒ بيتشال (مش صفر)")
+        assertEquals(t(UiKey.SPC_META_AUTO), sa.meta, "عدد المحافظ مش معروف ⇒ بيتشال (مش صفر)")
         assertFalse(eg.canSwitch, "الشغالة ما بتتبدلش لنفسها")
         assertTrue(eg.canArchive)
-        assertTrue(eg.meta.startsWith(t(TextKey.WLIST_TWO)))
+        assertTrue(eg.meta.startsWith(t(UiKey.WLIST_TWO)))
         assertTrue(eg.meta.contains(fullDate(egypt.createdAt)!!))
     }
 
@@ -114,12 +115,12 @@ class MoreStateTest {
     fun archivedCountriesGetTheirOwnSection() {
         val old = egypt.copy(archived = true)
         val sections = spaceSections(listOf(SpaceCard(saudi, true, 1)), listOf(old))
-        assertEquals(listOf(TextKey.SPC_ACTIVE_HEAD, TextKey.SPC_ARCHIVED_HEAD), sections.map { it.title })
+        assertEquals(listOf(UiKey.SPC_ACTIVE_HEAD, UiKey.SPC_ARCHIVED_HEAD), sections.map { it.title })
         val card = sections[1].cards.single()
         assertTrue(card.archived)
         assertFalse(card.canSwitch)
         assertFalse(card.canArchive)
-        assertEquals(t(TextKey.SPC_META_ARCHIVED), card.meta)
+        assertEquals(t(UiKey.SPC_META_ARCHIVED), card.meta)
     }
 
     @Test
@@ -139,7 +140,7 @@ class MoreStateTest {
         val egyptian = moreView(null, 28, null, egypt).incomeHint
         assertTrue(msa!!.contains("الراتب"))
         assertTrue(egyptian!!.contains("المرتب"))
-        assertEquals(t(TextKey.MORE_TODAY), dateChipLabel("2026-10-09", "2026-10-09"))
-        assertEquals("النهارده", t(TextKey.MORE_TODAY))
+        assertEquals(t(UiKey.MORE_TODAY), dateChipLabel("2026-10-09", "2026-10-09"))
+        assertEquals("النهارده", t(UiKey.MORE_TODAY))
     }
 }

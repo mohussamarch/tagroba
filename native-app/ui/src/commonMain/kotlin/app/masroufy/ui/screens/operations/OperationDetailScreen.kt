@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,7 +87,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
         (state as? DetailState.Ready)?.view?.askParty?.let { partyShown = it }
     }
     val ready = state as? DetailState.Ready
-    InnerScaffold(t(TextKey.OPERATION_DETAIL_TITLE)) {
+    InnerScaffold(t(UiKey.OPERATION_DETAIL_TITLE)) {
         when (val s = state) {
             DetailState.Loading -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -95,7 +96,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 }
             }
             DetailState.Failed -> item(key = "error") {
-                ErrorBanner(t(TextKey.OPERATION_DETAIL_ERROR_TITLE), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), { reload++ })
+                ErrorBanner(t(UiKey.OPERATION_DETAIL_ERROR_TITLE), t(UiKey.OPERATIONS_ERROR_BODY), t(UiKey.SHELL_RETRY), { reload++ })
             }
             is DetailState.Ready -> {
                 val v = s.view
@@ -107,14 +108,14 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                     FieldsCard(v, s.tags, onPick = { picking = true }, onConfirm = { id ->
                         scope.launch {
                             val err = failureOf { deps.edit.setCategory(v.id, id) }
-                            toaster.show(err ?: t(TextKey.OPERATION_DETAIL_CONFIRMED))
+                            toaster.show(err ?: t(UiKey.OPERATION_DETAIL_CONFIRMED))
                             reload++
                         }
                     }, onTagsChanged = { reload++ })
                 }
                 if (v.flow != LinkFlow.NONE) item(key = "links") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BasicText(t(TextKey.OPERATION_DETAIL_LINK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+                        BasicText(t(UiKey.OPERATION_DETAIL_LINK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
                         LinkPersonCard(v, s.locked, openInitially = openPerson)
                         LinkProjectEventCard(v, s.locked)
                     }
@@ -124,7 +125,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
     }
     CategoryPicker(
         visible = picking && ready != null,
-        title = ready?.view?.let { if (it.unrecorded) t(TextKey.CATEGORY_PICKER_CASH_TITLE) else t(TextKey.CATEGORY_PICKER_TITLE, it.title) }.orEmpty(),
+        title = ready?.view?.let { if (it.unrecorded) t(UiKey.CATEGORY_PICKER_CASH_TITLE) else t(UiKey.CATEGORY_PICKER_TITLE, it.title) }.orEmpty(),
         choices = ready?.let { pickerChoices(it.categories, it.view) }.orEmpty(),
         selectedId = ready?.view?.category?.categoryId,
         onDismiss = { picking = false },
@@ -157,13 +158,13 @@ private fun DetailHero(v: DetailView) {
             Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(v.title, style = Type.of(18, FontWeight.Bold).copy(textAlign = TextAlign.Center))
                 val name = v.merchantName
-                if (name != null) IconButton44(OperationsIcons.STORE, t(TextKey.OPERATION_DETAIL_MERCHANT), onClick = { nav.push(MerchantProfileRoute(name)) })
+                if (name != null) IconButton44(OperationsIcons.STORE, t(UiKey.OPERATION_DETAIL_MERCHANT), onClick = { nav.push(MerchantProfileRoute(name)) })
             }
             BasicText(v.sub, style = Type.of(13).copy(color = Ink.muted))
             AmountText(v.amountMinor, v.currency, tone = v.tone, size = 30)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 LucideIcon(Lucide.LOCK, size = 14.dp, tint = Ink.muted)
-                BasicText(t(if (v.unrecorded) TextKey.OPERATION_DETAIL_LOCK_CASH else TextKey.OPERATION_DETAIL_LOCK), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(if (v.unrecorded) UiKey.OPERATION_DETAIL_LOCK_CASH else UiKey.OPERATION_DETAIL_LOCK), style = Type.caption().copy(color = Ink.muted))
             }
         }
     }
@@ -176,9 +177,9 @@ private fun CashDifferenceBox(onPick: () -> Unit) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Color(0x14BE3D48)).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        BasicText(t(TextKey.OPERATION_DETAIL_CASH_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.expense))
-        BasicText(t(TextKey.OPERATION_DETAIL_CASH_BODY), style = Type.of(13))
-        PrimaryButton(t(TextKey.CATEGORY_PICKER_CASH_TITLE), onClick = onPick, modifier = Modifier.fillMaxWidth())
+        BasicText(t(UiKey.OPERATION_DETAIL_CASH_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.expense))
+        BasicText(t(UiKey.OPERATION_DETAIL_CASH_BODY), style = Type.of(13))
+        PrimaryButton(t(UiKey.CATEGORY_PICKER_CASH_TITLE), onClick = onPick, modifier = Modifier.fillMaxWidth())
     }
 }
 
@@ -190,18 +191,18 @@ private fun FieldsCard(v: DetailView, tags: List<Tag>, onPick: () -> Unit, onCon
         v.category?.let { c ->
             Divider()
             val field = when (c.status) {
-                CategoryStatus.SUGGESTED -> DetailField(t(TextKey.OPERATION_DETAIL_CATEGORY), c.name.orEmpty(), FieldChip(t(TextKey.OPERATION_DETAIL_SUGGESTED), ChipInk.amber, ChipInk.amberBg), t(TextKey.OPERATION_DETAIL_SUGGESTED_HINT))
-                CategoryStatus.CONFIRMED -> DetailField(t(TextKey.OPERATION_DETAIL_CATEGORY), c.name.orEmpty(), FieldChip(t(TextKey.OPERATION_DETAIL_CONFIRMED_CHIP), ChipInk.green, ChipInk.greenBg))
-                CategoryStatus.NONE -> DetailField(t(TextKey.OPERATION_DETAIL_CATEGORY), t(TextKey.OPERATIONS_ROW_UNCLASSIFIED))
+                CategoryStatus.SUGGESTED -> DetailField(t(UiKey.OPERATION_DETAIL_CATEGORY), c.name.orEmpty(), FieldChip(t(UiKey.OPERATION_DETAIL_SUGGESTED), ChipInk.amber, ChipInk.amberBg), t(UiKey.OPERATION_DETAIL_SUGGESTED_HINT))
+                CategoryStatus.CONFIRMED -> DetailField(t(UiKey.OPERATION_DETAIL_CATEGORY), c.name.orEmpty(), FieldChip(t(UiKey.OPERATION_DETAIL_CONFIRMED_CHIP), ChipInk.green, ChipInk.greenBg))
+                CategoryStatus.NONE -> DetailField(t(UiKey.OPERATION_DETAIL_CATEGORY), t(UiKey.OPERATIONS_ROW_UNCLASSIFIED))
             }
             FieldRow(field) {
                 when (c.status) {
                     CategoryStatus.SUGGESTED -> {
-                        SmallAction(t(TextKey.OPERATION_DETAIL_CHANGE), onClick = onPick)
-                        SmallAction(t(TextKey.OPERATION_DETAIL_CONFIRM), strong = true) { c.categoryId?.let(onConfirm) }
+                        SmallAction(t(UiKey.OPERATION_DETAIL_CHANGE), onClick = onPick)
+                        SmallAction(t(UiKey.OPERATION_DETAIL_CONFIRM), strong = true) { c.categoryId?.let(onConfirm) }
                     }
-                    CategoryStatus.CONFIRMED -> SmallAction(t(TextKey.OPERATION_DETAIL_CHANGE), onClick = onPick)
-                    CategoryStatus.NONE -> SmallAction(t(TextKey.OPERATION_DETAIL_CATEGORIZE), strong = true, onClick = onPick)
+                    CategoryStatus.CONFIRMED -> SmallAction(t(UiKey.OPERATION_DETAIL_CHANGE), onClick = onPick)
+                    CategoryStatus.NONE -> SmallAction(t(UiKey.OPERATION_DETAIL_CATEGORIZE), strong = true, onClick = onPick)
                 }
             }
         }

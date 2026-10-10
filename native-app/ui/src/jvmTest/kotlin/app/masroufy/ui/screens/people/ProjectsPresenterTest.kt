@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.Project
@@ -65,8 +66,8 @@ class ProjectsPresenterTest {
         val personal = ui.active[2]
         assertEquals(35_000, personal.headline!!.line.minor, "الشخصي = كلّفني (صرفت − جاءك)")
         assertEquals(AmountTone.PLAIN, personal.headline!!.tone)
-        assertEquals(t(TextKey.PROJECTS_Q_PERSONAL), personal.question)
-        assertEquals(t(TextKey.PROJECTS_NO_DEADLINE), personal.deadline)
+        assertEquals(t(UiKey.PROJECTS_Q_PERSONAL), personal.question)
+        assertEquals(t(UiKey.PROJECTS_NO_DEADLINE), personal.deadline)
         assertEquals(1, ui.archived.size)
     }
 
@@ -75,13 +76,13 @@ class ProjectsPresenterTest {
         val ui = projectsUi(ProjectLists(listOf(ProjectRow(project("pr-1", ProjectKind.WORK), summary(0, 0, 0))), emptyList()), Currency.SAR, TODAY, headline)
         val card = ui.active.single()
         assertNull(card.headline, "مفيش عمليات ⇒ «—» مش صفر مؤكد")
-        assertEquals(t(TextKey.PROJECTS_NO_OPS), card.line)
+        assertEquals(t(UiKey.PROJECTS_NO_OPS), card.line)
     }
 
     @Test
     fun aPassedDeadlineSaysSo() {
-        assertTrue(deadlineText("2026-09-01", TODAY).contains(t(TextKey.PROJECTS_PASSED)))
-        assertTrue(!deadlineText("2026-10-20", TODAY).contains(t(TextKey.PROJECTS_PASSED)))
+        assertTrue(deadlineText("2026-09-01", TODAY).contains(t(UiKey.PROJECTS_PASSED)))
+        assertTrue(!deadlineText("2026-10-20", TODAY).contains(t(UiKey.PROJECTS_PASSED)))
     }
 
     @Test
@@ -100,21 +101,21 @@ class ProjectsPresenterTest {
         assertEquals(30_000, ui.headline!!.line.minor)
         assertEquals(20_000, ui.out.minor)
         assertEquals(50_000, ui.inn.minor)
-        assertEquals(t(TextKey.PROJECT_DETAIL_FORMULA_WORK), ui.formula)
+        assertEquals(t(UiKey.PROJECT_DETAIL_FORMULA_WORK), ui.formula)
         val (byRule, manual) = ui.ops
         assertTrue(byRule.byRule && byRule.unsure)
         assertEquals(AmountTone.INCOME, byRule.tone)
         assertTrue(!manual.byRule && !manual.unsure)
         assertEquals(AmountTone.EXPENSE, manual.tone)
         val r = ui.rules.single()
-        assertEquals(t(TextKey.PROJECT_DETAIL_MODE_STARTS), r.mode)
-        assertEquals(t(TextKey.PROJECT_DETAIL_DIR, t(TextKey.PROJECT_DETAIL_DIR_IN)), r.direction)
+        assertEquals(t(UiKey.PROJECT_DETAIL_MODE_STARTS), r.mode)
+        assertEquals(t(UiKey.PROJECT_DETAIL_DIR, t(UiKey.PROJECT_DETAIL_DIR_IN)), r.direction)
     }
 
     @Test
     fun egyptianWordingDiffersFromSaudi() {
-        val saudi = t(TextKey.PROJECTS_Q_WORK)
+        val saudi = t(UiKey.PROJECTS_Q_WORK)
         egyptian()
-        assertNotEquals(saudi, t(TextKey.PROJECTS_Q_WORK), "مساحة مصر بالعامية (OVERRIDES §66)")
+        assertNotEquals(saudi, t(UiKey.PROJECTS_Q_WORK), "مساحة مصر بالعامية (OVERRIDES §66)")
     }
 }

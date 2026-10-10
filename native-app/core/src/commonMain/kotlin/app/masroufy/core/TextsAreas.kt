@@ -4,7 +4,7 @@ package app.masroufy.core
  * نصوص المناطق الثمانية مجمّعة (`Texts.kt` بياخدها مرة واحدة) — **الملف ده ثابت**: كل منطقة بتكتب في `TextsArea<المنطقة>.kt` بتاعها بس.
  * منطقة جديدة = قرار مكتوب (زي `ui/screens/Areas.kt`).
  */
-internal val MSA_AREA_TEXTS: Map<TextKey, String> =
+internal val MSA_AREA_TEXTS: Map<UiKey, String> =
     MSA_AREA_HOME_TEXTS +
     MSA_AREA_OPERATIONS_TEXTS +
     MSA_AREA_IMPORTS_TEXTS +
@@ -15,7 +15,7 @@ internal val MSA_AREA_TEXTS: Map<TextKey, String> =
     MSA_AREA_ONBOARDING_TEXTS +
     MSA_AREA_BUDGETS_TEXTS
 
-internal val EGYPTIAN_AREA_TEXTS: Map<TextKey, String> =
+internal val EGYPTIAN_AREA_TEXTS: Map<UiKey, String> =
     EGYPTIAN_AREA_HOME_TEXTS +
     EGYPTIAN_AREA_OPERATIONS_TEXTS +
     EGYPTIAN_AREA_IMPORTS_TEXTS +
@@ -26,7 +26,7 @@ internal val EGYPTIAN_AREA_TEXTS: Map<TextKey, String> =
     EGYPTIAN_AREA_ONBOARDING_TEXTS +
     EGYPTIAN_AREA_BUDGETS_TEXTS
 
-internal val ENGLISH_AREA_TEXTS: Map<TextKey, String> =
+internal val ENGLISH_AREA_TEXTS: Map<UiKey, String> =
     ENGLISH_AREA_HOME_TEXTS +
     ENGLISH_AREA_OPERATIONS_TEXTS +
     ENGLISH_AREA_IMPORTS_TEXTS +

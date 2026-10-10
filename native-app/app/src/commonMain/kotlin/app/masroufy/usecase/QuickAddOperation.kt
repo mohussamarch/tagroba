@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.CATEGORY_GROUPS
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
@@ -75,8 +76,8 @@ class QuickAddOperation(
 
     suspend fun save(draft: AddOperationDraft): AddOperationResult {
         val minor = tryParseMoney(draft.amountText, currency)
-        if (minor == null || minor <= 0) return AddOperationResult.Invalid(uiText(TextKey.ADD_AMOUNT_INVALID))
-        val walletId = draft.walletId ?: return AddOperationResult.Invalid(uiText(TextKey.ADD_NO_WALLET))
+        if (minor == null || minor <= 0) return AddOperationResult.Invalid(uiText(UiKey.ADD_AMOUNT_INVALID))
+        val walletId = draft.walletId ?: return AddOperationResult.Invalid(uiText(UiKey.ADD_NO_WALLET))
         val kind = when (draft.kind) {
             AddKind.OUT -> EconomicKind.PURCHASE
             AddKind.IN -> draft.incomeKind ?: return AddOperationResult.Invalid(uiText(TextKey.TXN_KIND_REQUIRED))
@@ -96,7 +97,7 @@ class QuickAddOperation(
             )
             AddOperationResult.Saved(txn)
         } catch (e: IllegalArgumentException) {
-            AddOperationResult.Invalid(e.message ?: uiText(TextKey.ADD_AMOUNT_INVALID))
+            AddOperationResult.Invalid(e.message ?: uiText(UiKey.ADD_AMOUNT_INVALID))
         }
     }
 }

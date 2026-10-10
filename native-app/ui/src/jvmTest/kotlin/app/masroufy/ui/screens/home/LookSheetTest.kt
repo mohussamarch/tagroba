@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.TextKey
 import app.masroufy.core.Texts
@@ -21,10 +22,10 @@ class LookSheetTest {
 
     @Test fun sixTemporaryLooksWithArabicLabels() {
         assertEquals(6, LOOK_COUNT)
-        assertEquals("الشكل ٣", t(TextKey.LOOK_SHEET_ITEM, sentenceNumber(3)))
-        assertEquals("أشكال مؤقتة — الكاركتر النهائي قيد التصميم.", t(TextKey.LOOK_SHEET_NOTE))
+        assertEquals("الشكل ٣", t(UiKey.LOOK_SHEET_ITEM, sentenceNumber(3)))
+        assertEquals("أشكال مؤقتة — الكاركتر النهائي قيد التصميم.", t(UiKey.LOOK_SHEET_NOTE))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("أشكال مؤقتة — الكاركتر النهائي لسه بيتصمم.", t(TextKey.LOOK_SHEET_NOTE))
+        assertEquals("أشكال مؤقتة — الكاركتر النهائي لسه بيتصمم.", t(UiKey.LOOK_SHEET_NOTE))
     }
 
     @Test fun theCirclesShowTheChosenLookThenTheProfileThenTheFirst() {

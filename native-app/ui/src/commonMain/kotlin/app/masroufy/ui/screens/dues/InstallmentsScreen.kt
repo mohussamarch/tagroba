@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,7 +41,7 @@ fun InstallmentsScreen() {
         val totals = deps.loadDues.load(today, deps.period(today), space.space.currency, null).totals
         installmentsUi(deps.installments.list(today), totals, today, space.space.currency)
     }
-    DuesScaffold(t(TextKey.INSTALLMENTS_TITLE), actions = { TonalButton(t(TextKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) }, height = 44.dp) }) {
+    DuesScaffold(t(UiKey.INSTALLMENTS_TITLE), actions = { TonalButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) }, height = 44.dp) }) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(130, 200) }
             Load.Failed -> item { LoadFailed(load::reload) }
@@ -48,8 +49,8 @@ fun InstallmentsScreen() {
                 val ui = s.value
                 if (ui.cards.isEmpty()) {
                     item {
-                        EmptyState(t(TextKey.INSTALLMENTS_EMPTY_TITLE), t(TextKey.INSTALLMENTS_EMPTY_BODY), action = {
-                            PrimaryButton(t(TextKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) })
+                        EmptyState(t(UiKey.INSTALLMENTS_EMPTY_TITLE), t(UiKey.INSTALLMENTS_EMPTY_BODY), action = {
+                            PrimaryButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) })
                         })
                     }
                     return@DuesScaffold
@@ -57,14 +58,14 @@ fun InstallmentsScreen() {
                 item(key = "hero") {
                     HeroCard(Modifier.fillMaxWidth()) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            BasicText(t(TextKey.INSTALLMENTS_LEFT), style = Type.body().copy(color = Ink.onHeroMuted))
+                            BasicText(t(UiKey.INSTALLMENTS_LEFT), style = Type.body().copy(color = Ink.onHeroMuted))
                             HeroAmount(ui.leftMinor, ui.currency, Modifier.fillMaxWidth(), size = 30)
                             BasicText(ui.plansCount, style = Type.caption().copy(color = Ink.onHeroMuted))
                         }
                     }
                 }
                 for (c in ui.cards) item(key = c.planId) { PlanCard(c) { nav.push(InstallmentDetailRoute(c.planId)) } }
-                item(key = "note") { BasicText(t(TextKey.INSTALLMENTS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
+                item(key = "note") { BasicText(t(UiKey.INSTALLMENTS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
             }
         }
     }
@@ -90,9 +91,9 @@ private fun PlanCard(c: PlanCardUi, onClick: () -> Unit) {
             }
             CountBar(c.paidCount, c.count, onHero = false, fill = CategoryInk.transport)
             if (c.financing) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.INSTALLMENTS_RECEIVED), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.INSTALLMENTS_RECEIVED), style = Type.caption().copy(color = Ink.muted))
                 if (c.receivedMinor != null) AmountText(c.receivedMinor, c.currency, size = 13)
-                else BasicText(t(TextKey.INST_NOT_LINKED), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+                else BasicText(t(UiKey.INST_NOT_LINKED), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
             }
         }
     }

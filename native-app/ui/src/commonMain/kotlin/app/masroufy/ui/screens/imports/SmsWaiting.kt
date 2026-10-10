@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -72,17 +73,17 @@ fun SmsWaitingSection(
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         val n = ui.waitingCount
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            BasicText(t(TextKey.SMS_WAITING_TITLE), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.SMS_WAITING_TITLE), style = Type.of(15, FontWeight.Bold))
             CountBadge(sentenceNumber(n), waiting = n > 0)
         }
-        if (n == 0) TintedPanel(PanelTone.MINT, radius = 18.dp) { BasicText(t(TextKey.SMS_WAITING_ALL_DONE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }
+        if (n == 0) TintedPanel(PanelTone.MINT, radius = 18.dp) { BasicText(t(UiKey.SMS_WAITING_ALL_DONE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }
         for (bank in ui.banks) BankCard(bank, currency) { actions.pickWallet(bank) }
         if (ui.confirm.isNotEmpty()) ConfirmCard(ui.confirm, currency, categories, chosen, actions.pickCategory)
         for (line in ui.similar) SimilarCard(line, currency, line.messageId in included, actions)
         for (f in ui.failed) FailedCard(f, currency, handError?.takeIf { it.first == f.messageId }?.second, actions)
         val toRecord = ui.confirm.size + ui.similar.count { it.messageId in included }
         if (toRecord > 0) {
-            PrimaryButton(t(TextKey.SMS_WAITING_RECORD, opsCount(toRecord)), actions.recordAll, Modifier.fillMaxWidth(), loading = busy)
+            PrimaryButton(t(UiKey.SMS_WAITING_RECORD, opsCount(toRecord)), actions.recordAll, Modifier.fillMaxWidth(), loading = busy)
         }
     }
 }
@@ -90,8 +91,8 @@ fun SmsWaitingSection(
 @Composable
 private fun BankCard(bank: BankWaitingUi, currency: Currency, onPick: () -> Unit) {
     TintedPanel(PanelTone.AMBER) {
-        BasicText(t(TextKey.SMS_WAITING_BANK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
-        BasicText(t(TextKey.SMS_WAITING_BANK_BODY, msgsCount(bank.count), bank.sender), style = Type.body())
+        BasicText(t(UiKey.SMS_WAITING_BANK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+        BasicText(t(UiKey.SMS_WAITING_BANK_BODY, msgsCount(bank.count), bank.sender), style = Type.body())
         if (bank.samples.isNotEmpty()) {
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.65f)).padding(horizontal = 12.dp, vertical = 4.dp)) {
                 bank.samples.forEachIndexed { i, s ->
@@ -103,15 +104,15 @@ private fun BankCard(bank: BankWaitingUi, currency: Currency, onPick: () -> Unit
                 }
             }
         }
-        BasicText(t(TextKey.SMS_WAITING_BANK_ONCE), style = Type.caption().copy(color = Ink.focus))
-        PrimaryButton(t(TextKey.SMS_WAITING_PICK_WALLET), onPick, Modifier.fillMaxWidth())
+        BasicText(t(UiKey.SMS_WAITING_BANK_ONCE), style = Type.caption().copy(color = Ink.focus))
+        PrimaryButton(t(UiKey.SMS_WAITING_PICK_WALLET), onPick, Modifier.fillMaxWidth())
     }
 }
 
 @Composable
 private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories: List<Category>, chosen: Map<String, String>, onPick: (WaitLineUi) -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {
-        BasicText(t(TextKey.SMS_WAITING_CONFIRM_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+        BasicText(t(UiKey.SMS_WAITING_CONFIRM_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
         lines.forEachIndexed { i, line ->
             if (i > 0) Divider()
             Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -123,7 +124,7 @@ private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories:
                 if (line.reason != null) BasicText(line.reason, style = Type.caption().copy(color = Ink.focus))
                 val catId = chosen[line.messageId] ?: line.categoryId
                 val cat = categories.firstOrNull { it.id == catId }
-                SelectChip(cat?.name ?: t(TextKey.IMPORTS_UNCATEGORIZED), chosen.containsKey(line.messageId), { onPick(line) }, dot = cat?.let { parseHex(it.lightColor) }, height = 36.dp)
+                SelectChip(cat?.name ?: t(UiKey.IMPORTS_UNCATEGORIZED), chosen.containsKey(line.messageId), { onPick(line) }, dot = cat?.let { parseHex(it.lightColor) }, height = 36.dp)
             }
         }
     }
@@ -132,20 +133,20 @@ private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories:
 @Composable
 private fun SimilarCard(line: WaitLineUi, currency: Currency, included: Boolean, actions: WaitingActions) {
     FloatingCard(Modifier.fillMaxWidth()) {
-        val title = if (line.conflict) TextKey.SMS_WAITING_CONFLICT_TITLE else TextKey.SMS_WAITING_SIMILAR_TITLE
+        val title = if (line.conflict) UiKey.SMS_WAITING_CONFLICT_TITLE else UiKey.SMS_WAITING_SIMILAR_TITLE
         BasicText(t(title), style = Type.of(13, FontWeight.Bold).copy(color = if (line.conflict) Ink.expense else Ink.focus))
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.text.copy(alpha = 0.04f)).padding(horizontal = 12.dp, vertical = 10.dp)) {
-            BasicText(t(TextKey.SMS_WAITING_FROM_MESSAGE), style = Type.of(11).copy(color = Ink.muted))
+            BasicText(t(UiKey.SMS_WAITING_FROM_MESSAGE), style = Type.of(11).copy(color = Ink.muted))
             BasicText(line.merchant.ifBlank { line.sender }, style = Type.bodyBold())
             AmountText(line.amountMinor, currency, tone = toneOf(line.direction), showCurrency = false)
             BasicText(dayMonth(line.date), style = Type.of(11).copy(color = Ink.muted))
         }
         if (line.reason != null) BasicText(line.reason, style = Type.caption().copy(color = Ink.muted))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            QuietButton(t(TextKey.SMS_WAITING_SAME_DROP), { actions.dismiss(line.messageId) }, Modifier.weight(1f))
+            QuietButton(t(UiKey.SMS_WAITING_SAME_DROP), { actions.dismiss(line.messageId) }, Modifier.weight(1f))
             if (!line.conflict) {
-                if (included) TonalButton(t(TextKey.SMS_WAITING_WILL_RECORD), { actions.toggleSimilar(line) }, Modifier.weight(1f))
-                else PrimaryButton(t(TextKey.SMS_WAITING_RECORD_IT), { actions.toggleSimilar(line) }, Modifier.weight(1f))
+                if (included) TonalButton(t(UiKey.SMS_WAITING_WILL_RECORD), { actions.toggleSimilar(line) }, Modifier.weight(1f))
+                else PrimaryButton(t(UiKey.SMS_WAITING_RECORD_IT), { actions.toggleSimilar(line) }, Modifier.weight(1f))
             }
         }
     }
@@ -156,29 +157,29 @@ private fun FailedCard(f: FailedUi, currency: Currency, error: String?, actions:
     var typing by remember(f.messageId) { mutableStateOf(false) }
     var amount by remember(f.messageId) { mutableStateOf("") }
     FloatingCard(Modifier.fillMaxWidth()) {
-        BasicText(t(TextKey.SMS_WAITING_UNCLEAR_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+        BasicText(t(UiKey.SMS_WAITING_UNCLEAR_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
         if (f.body != null) {
             BasicText(
-                t(TextKey.IMPORTS_QUOTED, f.body),
+                t(UiKey.IMPORTS_QUOTED, f.body),
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.text.copy(alpha = 0.04f)).padding(horizontal = 12.dp, vertical = 10.dp),
                 style = Type.of(13, lineHeight = 1.7).copy(color = Ink.muted),
                 maxLines = 6,
             )
         }
-        BasicText(t(TextKey.SMS_WAITING_REASON, f.reason), style = Type.caption().copy(color = Ink.muted))
-        if (f.foreign) BasicText(t(TextKey.SMS_WAITING_FOREIGN_NOTE), style = Type.caption().copy(color = Ink.focus))
+        BasicText(t(UiKey.SMS_WAITING_REASON, f.reason), style = Type.caption().copy(color = Ink.muted))
+        if (f.foreign) BasicText(t(UiKey.SMS_WAITING_FOREIGN_NOTE), style = Type.caption().copy(color = Ink.focus))
         if (typing) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 TextInput(
                     amount, { amount = it }, Modifier.weight(1f), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal, imeAction = ImeAction.Done,
                     error = error, trailing = { BasicText(currencySymbol(currency), Modifier.padding(end = 14.dp), style = Type.of(14).copy(color = Ink.muted)) },
                 )
-                PrimaryButton(t(TextKey.SMS_WAITING_SAVE), { actions.recordByHand(f, amount) }, enabled = amount.isNotBlank())
+                PrimaryButton(t(UiKey.SMS_WAITING_SAVE), { actions.recordByHand(f, amount) }, enabled = amount.isNotBlank())
             }
         } else {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                QuietButton(t(TextKey.SMS_WAITING_DROP), { actions.dismiss(f.messageId) }, Modifier.weight(1f))
-                TonalButton(t(TextKey.SMS_WAITING_BY_HAND), { typing = true }, Modifier.weight(1f))
+                QuietButton(t(UiKey.SMS_WAITING_DROP), { actions.dismiss(f.messageId) }, Modifier.weight(1f))
+                TonalButton(t(UiKey.SMS_WAITING_BY_HAND), { typing = true }, Modifier.weight(1f))
             }
         }
     }

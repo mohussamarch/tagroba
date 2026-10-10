@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.AveragesFeed
 import app.masroufy.core.PriceFeed
 import app.masroufy.core.PriceFeedError
@@ -79,7 +80,7 @@ class LoadOnlineFeeds(
         } catch (e: CancellationException) {
             throw e
         } catch (e: HttpFailure) {
-            if (e.status == null) uiText(TextKey.FEED_OFFLINE) else uiText(TextKey.FEED_HTTP_FAILED, e.status.toString())
+            if (e.status == null) uiText(UiKey.FEED_OFFLINE) else uiText(UiKey.FEED_HTTP_FAILED, e.status.toString())
         }
         return if (stored != null && cached != null) FeedState.Ready(cached, stored.fetchedAtIso, fromNetworkNow = false, refreshFailed = failure)
         else FeedState.Unavailable(failure)

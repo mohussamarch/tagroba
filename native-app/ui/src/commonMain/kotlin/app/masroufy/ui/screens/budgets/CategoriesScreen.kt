@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -83,14 +84,14 @@ fun CategoriesScreen() {
             openedOnce = true
         }
     }
-    DetailScaffold(title = t(TextKey.CATS_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.CATS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    DetailScaffold(title = t(UiKey.CATS_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.CATS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         when (state) {
             Load.Loading -> {
                 item { Skeleton(Modifier.fillMaxWidth().height(220.dp), strong = true) }
                 item { Skeleton(Modifier.fillMaxWidth().height(160.dp)) }
             }
-            is Load.Failed -> item { ErrorCard(t(TextKey.CATS_ERR_TITLE), t(TextKey.CATS_ERR_BODY), { reload++ }) }
+            is Load.Failed -> item { ErrorCard(t(UiKey.CATS_ERR_TITLE), t(UiKey.CATS_ERR_BODY), { reload++ }) }
             is Load.Ready -> {
                 val ui = state.value
                 ui.groups.forEach { g ->
@@ -102,14 +103,14 @@ fun CategoriesScreen() {
                     HiddenSection(ui.hidden) { row ->
                         val category = ui.stored.firstOrNull { it.id == row.id } ?: return@HiddenSection
                         scope.launch {
-                            val error = attempt(t(TextKey.CATS_ERR_TITLE)) { deps.categories.save(catVisibilityInput(category, active = true)) }
-                            toaster.show(error ?: t(TextKey.CATS_SHOWN_TOAST, row.name))
+                            val error = attempt(t(UiKey.CATS_ERR_TITLE)) { deps.categories.save(catVisibilityInput(category, active = true)) }
+                            toaster.show(error ?: t(UiKey.CATS_SHOWN_TOAST, row.name))
                             if (error == null) reload++
                         }
                     }
                 }
                 item(key = "add") {
-                    PrimaryButton(t(TextKey.CATS_ADD_MAIN), { editing = CatEditTarget(CatEditMode.NEW_MAIN) }, Modifier.fillMaxWidth(), leading = Lucide.PLUS)
+                    PrimaryButton(t(UiKey.CATS_ADD_MAIN), { editing = CatEditTarget(CatEditMode.NEW_MAIN) }, Modifier.fillMaxWidth(), leading = Lucide.PLUS)
                 }
                 item(key = "rules") { RulesLink { nav.push(RulesRoute) } }
             }
@@ -171,7 +172,7 @@ private fun MainRow(m: MainRowUi, isOpen: Boolean, onToggle: () -> Unit, onEdit:
                 }
                 LucideIcon(Lucide.CHEVRON_DOWN, Modifier.rotate(turn), size = 18.dp, tint = Ink.muted)
             }
-            SmallIconButton(Lucide.PENCIL, t(TextKey.CATS_EDIT_LABEL, m.name)) { onEdit(CatEditTarget(CatEditMode.EDIT, m.id)) }
+            SmallIconButton(Lucide.PENCIL, t(UiKey.CATS_EDIT_LABEL, m.name)) { onEdit(CatEditTarget(CatEditMode.EDIT, m.id)) }
         }
         if (isOpen) {
             Column(Modifier.padding(start = 28.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -179,7 +180,7 @@ private fun MainRow(m: MainRowUi, isOpen: Boolean, onToggle: () -> Unit, onEdit:
                     val subPress = rememberPress()
                     Row(
                         Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).pressScale(subPress).clip(RoundedCornerShape(14.dp))
-                            .tap(subPress, role = Role.Button, label = t(TextKey.CATS_EDIT_LABEL, sub.name)) { onEdit(CatEditTarget(CatEditMode.EDIT, sub.id)) }
+                            .tap(subPress, role = Role.Button, label = t(UiKey.CATS_EDIT_LABEL, sub.name)) { onEdit(CatEditTarget(CatEditMode.EDIT, sub.id)) }
                             .padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -189,7 +190,7 @@ private fun MainRow(m: MainRowUi, isOpen: Boolean, onToggle: () -> Unit, onEdit:
                         LucideIcon(Lucide.PENCIL, size = 16.dp, tint = Ink.muted)
                     }
                 }
-                TonalButton(t(TextKey.CATS_ADD_SUB), { onEdit(CatEditTarget(CatEditMode.NEW_SUB, parentId = m.id)) }, Modifier.padding(top = 4.dp), height = 44.dp)
+                TonalButton(t(UiKey.CATS_ADD_SUB), { onEdit(CatEditTarget(CatEditMode.NEW_SUB, parentId = m.id)) }, Modifier.padding(top = 4.dp), height = 44.dp)
             }
         }
     }
@@ -209,8 +210,8 @@ internal fun SmallIconButton(icon: Lucide, label: String, onClick: () -> Unit) {
 @Composable
 private fun HiddenSection(rows: List<HiddenRowUi>, onShow: (HiddenRowUi) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.CATS_HIDDEN_TITLE), Modifier.semantics { heading() }, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
-        BasicText(t(TextKey.CATS_HIDDEN_INTRO), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.CATS_HIDDEN_TITLE), Modifier.semantics { heading() }, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+        BasicText(t(UiKey.CATS_HIDDEN_INTRO), style = Type.caption().copy(color = Ink.muted))
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Color(0x8CFFFFFF)).padding(horizontal = 16.dp, vertical = 4.dp),
         ) {
@@ -225,7 +226,7 @@ private fun HiddenSection(rows: List<HiddenRowUi>, onShow: (HiddenRowUi) -> Unit
                         BasicText(row.name, style = Type.of(14, FontWeight.Bold).copy(color = Ink.soft), maxLines = 1)
                         BasicText(row.why, style = Type.caption().copy(color = Ink.muted))
                     }
-                    if (row.canShow) TonalButton(t(TextKey.CATS_SHOW), { onShow(row) }, height = 44.dp)
+                    if (row.canShow) TonalButton(t(UiKey.CATS_SHOW), { onShow(row) }, height = 44.dp)
                 }
                 if (i < rows.lastIndex) Divider()
             }
@@ -238,13 +239,13 @@ private fun RulesLink(onOpen: () -> Unit) {
     val press = rememberPress()
     Row(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).pressScale(press).clip(RoundedCornerShape(18.dp)).background(Color(0x8CFFFFFF))
-            .tap(press, role = Role.Button, label = t(TextKey.CATS_RULES_LINK), onClick = onOpen).padding(horizontal = 16.dp, vertical = 8.dp),
+            .tap(press, role = Role.Button, label = t(UiKey.CATS_RULES_LINK), onClick = onOpen).padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.CATS_RULES_LINK), style = Type.bodyBold())
-            BasicText(t(TextKey.CATS_RULES_HINT), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.CATS_RULES_LINK), style = Type.bodyBold())
+            BasicText(t(UiKey.CATS_RULES_HINT), style = Type.caption().copy(color = Ink.muted))
         }
         LucideIcon(Lucide.CHEVRON_LEFT, Modifier.mirrorInLtr(), size = 20.dp, tint = Ink.muted)
     }

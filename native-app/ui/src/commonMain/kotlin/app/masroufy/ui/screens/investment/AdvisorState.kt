@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.AlertDelivery
 import app.masroufy.core.AlertGroup
 import app.masroufy.core.AlertKind
@@ -15,10 +17,10 @@ import app.masroufy.usecase.AlertInboxView
 enum class AdvisorIcon { TREND, ALERT, PIGGY, RECEIPT, CALENDAR }
 
 /** فعل الكارت ⇒ الشاشة اللي بتتفتح (النموذج: خطط الادخار · الميزانيات · العمليات). */
-enum class AdvisorLink(val key: TextKey) {
-    GOALS(TextKey.ADVISOR_SCREEN_OPEN_GOALS),
-    BUDGETS(TextKey.ADVISOR_SCREEN_OPEN_BUDGETS),
-    OPS(TextKey.ADVISOR_SCREEN_OPEN_OPS),
+enum class AdvisorLink(val key: TextRef) {
+    GOALS(UiKey.ADVISOR_SCREEN_OPEN_GOALS),
+    BUDGETS(UiKey.ADVISOR_SCREEN_OPEN_BUDGETS),
+    OPS(UiKey.ADVISOR_SCREEN_OPEN_OPS),
 }
 
 data class AdvisorCard(
@@ -77,9 +79,9 @@ private fun linkOf(k: AlertKind): AdvisorLink? = when (k) {
 
 private fun whenText(d: AlertDelivery): String = uiText(
     when (d) {
-        AlertDelivery.DIGEST -> TextKey.ADVISOR_SCREEN_WHEN_DIGEST
-        AlertDelivery.AT_USUAL_TIME -> TextKey.ADVISOR_SCREEN_WHEN_USUAL
-        AlertDelivery.SEND_NOW -> TextKey.ADVISOR_SCREEN_WHEN_NOW
-        AlertDelivery.INBOX_ONLY -> TextKey.ADVISOR_SCREEN_WHEN_PAGE
+        AlertDelivery.DIGEST -> UiKey.ADVISOR_SCREEN_WHEN_DIGEST
+        AlertDelivery.AT_USUAL_TIME -> UiKey.ADVISOR_SCREEN_WHEN_USUAL
+        AlertDelivery.SEND_NOW -> UiKey.ADVISOR_SCREEN_WHEN_NOW
+        AlertDelivery.INBOX_ONLY -> UiKey.ADVISOR_SCREEN_WHEN_PAGE
     },
 )

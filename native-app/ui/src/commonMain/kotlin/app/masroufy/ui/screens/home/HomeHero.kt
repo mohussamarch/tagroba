@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,18 +46,18 @@ internal fun WithYouHero(now: WithYouNow, month: HomeMonth?, today: IsoDate, onC
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f).padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BasicText(t(TextKey.HERO_WITH_YOU), style = Type.body().copy(color = Ink.onHeroMuted))
+                    BasicText(t(UiKey.HERO_WITH_YOU), style = Type.body().copy(color = Ink.onHeroMuted))
                     HeroAmount(now.totalMinor, now.currency, Modifier.fillMaxWidth())
                 }
                 HeroBanks(now)
             }
             if (now.totalMinor == null && now.wallets.isNotEmpty()) {
-                val line = listOfNotNull(t(TextKey.HERO_NA_LINE), cashOnlyLine(now)).joinToString(" ")
+                val line = listOfNotNull(t(UiKey.HERO_NA_LINE), cashOnlyLine(now)).joinToString(" ")
                 BasicText(line, style = Type.of(13).copy(color = Ink.onHeroMuted))
             }
             // الكاش معروف والمجموع معروف ⇒ الشريحة (النموذج بيخفيها في «غير متاح» — الكاش وحده بيتقال في السطر فوق)
             val cash = now.cashMinor
-            if (cash != null && now.totalMinor != null) CashChip(t(TextKey.HERO_CASH_CHIP, amountLabel(cash, now.currency, showCurrency = false)), onCash)
+            if (cash != null && now.totalMinor != null) CashChip(t(UiKey.HERO_CASH_CHIP, amountLabel(cash, now.currency, showCurrency = false)), onCash)
             HeroDivider()
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 BasicText(spentLine(month, now.currency), Modifier.weight(1f), style = Type.caption().copy(color = Ink.onHeroMuted))
@@ -74,7 +75,7 @@ private fun CashChip(text: String, onClick: () -> Unit) {
     Row(
         Modifier.heightIn(min = 36.dp).pressScale(press).clip(shape)
             .background(cssLinear(145f, 0f to Color(0x38FFFFFF), 1f to Color(0x0FFFFFFF)))
-            .tap(press, label = t(TextKey.CASH_DETAILS_OPEN), onClick = onClick)
+            .tap(press, label = t(UiKey.CASH_DETAILS_OPEN), onClick = onClick)
             .padding(start = 10.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -94,9 +95,9 @@ internal fun HomeErrorBanner(onRetry: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.HOME_ERROR_TITLE), style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
-            BasicText(t(TextKey.HOME_ERROR_BODY), style = Type.caption().copy(color = Ink.focus))
+            BasicText(t(UiKey.HOME_ERROR_TITLE), style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
+            BasicText(t(UiKey.HOME_ERROR_BODY), style = Type.caption().copy(color = Ink.focus))
         }
-        app.masroufy.ui.components.SecondaryButton(t(TextKey.SHELL_RETRY), onClick = onRetry)
+        app.masroufy.ui.components.SecondaryButton(t(UiKey.SHELL_RETRY), onClick = onRetry)
     }
 }

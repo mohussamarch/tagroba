@@ -9,13 +9,13 @@ package app.masroufy.core
  * `SmsPaste`) · ٣ `TextsAreaImportsStatement` (`StatementImport` · `StatementColumns`) · ٤ `TextsAreaImportsReview` (`ImportReview` ·
  * `ImportDuplicateSheet`) · ٥ `TextsAreaImportsBatches` (`ImportBatches` · `RevertBatchSheet`).
  */
-internal val MSA_AREA_IMPORTS_TEXTS: Map<TextKey, String> =
+internal val MSA_AREA_IMPORTS_TEXTS: Map<UiKey, String> =
     MSA_IMPORTS_SMS_TEXTS + MSA_IMPORTS_SETTINGS_TEXTS + MSA_IMPORTS_STATEMENT_TEXTS + MSA_IMPORTS_REVIEW_TEXTS + MSA_IMPORTS_BATCHES_TEXTS
 
-internal val EGYPTIAN_AREA_IMPORTS_TEXTS: Map<TextKey, String> =
+internal val EGYPTIAN_AREA_IMPORTS_TEXTS: Map<UiKey, String> =
     EGYPTIAN_IMPORTS_SMS_TEXTS + EGYPTIAN_IMPORTS_SETTINGS_TEXTS + EGYPTIAN_IMPORTS_STATEMENT_TEXTS + EGYPTIAN_IMPORTS_REVIEW_TEXTS +
         EGYPTIAN_IMPORTS_BATCHES_TEXTS
 
-internal val ENGLISH_AREA_IMPORTS_TEXTS: Map<TextKey, String> =
+internal val ENGLISH_AREA_IMPORTS_TEXTS: Map<UiKey, String> =
     ENGLISH_IMPORTS_SMS_TEXTS + ENGLISH_IMPORTS_SETTINGS_TEXTS + ENGLISH_IMPORTS_STATEMENT_TEXTS + ENGLISH_IMPORTS_REVIEW_TEXTS +
         ENGLISH_IMPORTS_BATCHES_TEXTS

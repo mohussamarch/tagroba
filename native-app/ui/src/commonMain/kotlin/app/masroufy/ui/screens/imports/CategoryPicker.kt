@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -35,12 +36,12 @@ import app.masroufy.ui.theme.Type
 @Composable
 fun CategoryPickerSheet(visible: Boolean, title: String, categories: List<Category>, selectedId: String?, onPick: (Category) -> Unit, onDismiss: () -> Unit) {
     var query by remember(visible) { mutableStateOf("") }
-    Sheet(visible, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE)) {
+    Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(title, style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
-        TextInput(query, { query = it }, placeholder = t(TextKey.SMS_CATPICK_SEARCH))
+        TextInput(query, { query = it }, placeholder = t(UiKey.SMS_CATPICK_SEARCH))
         val groups = categoryGroups(pickableCategories(categories), query)
         Column(Modifier.fillMaxWidth().heightIn(max = 380.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (groups.isEmpty()) BasicText(t(TextKey.SMS_CATPICK_EMPTY), style = Type.body().copy(color = Ink.muted))
+            if (groups.isEmpty()) BasicText(t(UiKey.SMS_CATPICK_EMPTY), style = Type.body().copy(color = Ink.muted))
             for ((name, list) in groups) {
                 if (name != null) BasicText(name, style = Type.captionBold().copy(color = Ink.muted))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,28 +67,28 @@ fun RulesScreen() {
     var sheet by remember { mutableStateOf<RulesSheet?>(null) }
     val apply = remember(space) { ApplyHolder() }
     val ui = (state as? Load.Ready)?.value
-    DetailScaffold(title = t(TextKey.RULES_TITLE), actions = { GreenPlus(t(TextKey.RULES_NEW)) { if (ui != null) sheet = RulesSheet.Rule(null) } }) {
-        item(key = "intro") { BasicText(t(TextKey.RULES_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    DetailScaffold(title = t(UiKey.RULES_TITLE), actions = { GreenPlus(t(UiKey.RULES_NEW)) { if (ui != null) sheet = RulesSheet.Rule(null) } }) {
+        item(key = "intro") { BasicText(t(UiKey.RULES_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         when (state) {
             Load.Loading -> {
                 item { Skeleton(Modifier.fillMaxWidth().height(180.dp), strong = true) }
                 item { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
             }
-            is Load.Failed -> item { ErrorCard(t(TextKey.BUDGETS_ERROR_TITLE), t(TextKey.BUDGETS_ERROR_BODY), { reload++ }) }
+            is Load.Failed -> item { ErrorCard(t(UiKey.BUDGETS_ERROR_TITLE), t(UiKey.BUDGETS_ERROR_BODY), { reload++ }) }
             is Load.Ready -> {
                 val r = state.value
                 item(key = "merchants") {
-                    Section(t(TextKey.RULES_MERCHANTS_TITLE), t(TextKey.RULES_MERCHANTS_NOTE), r.merchants.isEmpty(), t(TextKey.RULES_MERCHANTS_EMPTY)) {
+                    Section(t(UiKey.RULES_MERCHANTS_TITLE), t(UiKey.RULES_MERCHANTS_NOTE), r.merchants.isEmpty(), t(UiKey.RULES_MERCHANTS_EMPTY)) {
                         r.merchants.forEach { m -> MerchantCard(m) { sheet = RulesSheet.Merchant(m) } }
                     }
                 }
                 item(key = "rules") {
-                    Section(t(TextKey.RULES_YOURS_TITLE), t(TextKey.RULES_YOURS_NOTE), r.rules.isEmpty(), t(TextKey.RULES_EMPTY)) {
+                    Section(t(UiKey.RULES_YOURS_TITLE), t(UiKey.RULES_YOURS_NOTE), r.rules.isEmpty(), t(UiKey.RULES_EMPTY)) {
                         r.rules.forEach { row ->
                             RuleCard(row, onOpen = { sheet = RulesSheet.Rule(row) }) {
                                 scope.launch {
-                                    val error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) { deps.rules.setRuleEnabled(row.id, !row.enabled) }
-                                    toaster.show(error ?: t(if (row.enabled) TextKey.RULES_OFF_TOAST else TextKey.RULES_ON_TOAST))
+                                    val error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { deps.rules.setRuleEnabled(row.id, !row.enabled) }
+                                    toaster.show(error ?: t(if (row.enabled) UiKey.RULES_OFF_TOAST else UiKey.RULES_ON_TOAST))
                                     if (error == null) { apply.reset(); reload++ }
                                 }
                             }
@@ -153,16 +154,16 @@ private fun CategoryLine(name: String, hex: String?, missing: Boolean) {
 private fun MerchantCard(m: MerchantRowUi, onOpen: () -> Unit) {
     FloatingCard(
         Modifier.fillMaxWidth().alpha(if (m.categoryName == null) 0.6f else 1f), shape = RoundedCornerShape(20.dp),
-        contentPadding = PaddingValues(start = 14.dp, end = 6.dp, top = 10.dp, bottom = 10.dp), onClick = onOpen, clickLabel = t(TextKey.CATS_EDIT_LABEL, m.name),
+        contentPadding = PaddingValues(start = 14.dp, end = 6.dp, top = 10.dp, bottom = 10.dp), onClick = onOpen, clickLabel = t(UiKey.CATS_EDIT_LABEL, m.name),
     ) {
         Row(Modifier.defaultMinSize(minHeight = 56.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Badge32({ LucideIcon(categoryIcon("store"), size = 18.dp, tint = Ink.primary) }, Ink.selected)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(t(TextKey.RULES_MERCHANT), style = Type.caption().copy(color = Ink.muted))
+                    BasicText(t(UiKey.RULES_MERCHANT), style = Type.caption().copy(color = Ink.muted))
                     BasicText(m.name, style = Type.of(15, FontWeight.Bold), maxLines = 1)
                 }
-                CategoryLine(m.categoryName ?: t(TextKey.RULES_NO_FIXED), m.categoryHex, missing = false)
+                CategoryLine(m.categoryName ?: t(UiKey.RULES_NO_FIXED), m.categoryHex, missing = false)
                 if (m.meta != null) BasicText(m.meta, style = Type.of(11).copy(color = Ink.muted))
             }
         }
@@ -179,7 +180,7 @@ private fun RuleCard(row: RuleRowUi, onOpen: () -> Unit, onToggle: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(
                 Modifier.weight(1f).defaultMinSize(minHeight = 56.dp).pressScale(press)
-                    .tap(press, role = Role.Button, label = t(TextKey.RULES_RULE_ARIA, row.rule.matchText), onClick = onOpen),
+                    .tap(press, role = Role.Button, label = t(UiKey.RULES_RULE_ARIA, row.rule.matchText), onClick = onOpen),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -193,7 +194,7 @@ private fun RuleCard(row: RuleRowUi, onOpen: () -> Unit, onToggle: () -> Unit) {
                     if (row.meta != null) BasicText(row.meta, style = Type.of(11).copy(color = Ink.muted))
                 }
             }
-            Switch(row.enabled, t(TextKey.RULES_SWITCH, row.rule.matchText), onToggle)
+            Switch(row.enabled, t(UiKey.RULES_SWITCH, row.rule.matchText), onToggle)
         }
     }
 }

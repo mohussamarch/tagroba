@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,25 +54,25 @@ internal fun ProjectForm(existing: Project?, onCreated: (Project) -> Unit, done:
     Column(Modifier.fillMaxWidth().heightIn(max = 640.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         val k = kind
         if (k == null) {
-            SheetHeading(t(TextKey.PROJECTS_ASK_KIND))
+            SheetHeading(t(UiKey.PROJECTS_ASK_KIND))
             for (option in ProjectKind.entries) {
                 FloatingCard(Modifier.fillMaxWidth(), onClick = { kind = option }, clickLabel = kindLabel(option)) {
                     BasicText(kindLabel(option), style = Type.of(16, FontWeight.Bold))
                     BasicText(questionOf(option), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
-                    BasicText(t(if (option == ProjectKind.WORK) TextKey.PROJECTS_EX_WORK else TextKey.PROJECTS_EX_PERSONAL), style = Type.caption().copy(color = Ink.muted))
+                    BasicText(t(if (option == ProjectKind.WORK) UiKey.PROJECTS_EX_WORK else UiKey.PROJECTS_EX_PERSONAL), style = Type.caption().copy(color = Ink.muted))
                 }
             }
             return@Column
         }
-        SheetHeading(t(if (existing != null) TextKey.PROJECTS_EDIT_TITLE else TextKey.PROJECTS_NEW))
+        SheetHeading(t(if (existing != null) UiKey.PROJECTS_EDIT_TITLE else UiKey.PROJECTS_NEW))
         Pill(joinLine(kindLabel(k), questionOf(k)), if (k == ProjectKind.WORK) Ink.transfer else Ink.primary, if (k == ProjectKind.WORK) PeopleInk.transferSoft else Ink.selected)
-        TextInput(name, { name = it.take(60); err = null }, label = t(TextKey.PROJECTS_NAME), placeholder = t(TextKey.PROJECTS_NAME_PH), error = err)
-        FieldTitle(t(TextKey.PROJECTS_DEADLINE))
+        TextInput(name, { name = it.take(60); err = null }, label = t(UiKey.PROJECTS_NAME), placeholder = t(UiKey.PROJECTS_NAME_PH), error = err)
+        FieldTitle(t(UiKey.PROJECTS_DEADLINE))
         DateField(deadline, today, { deadline = it })
-        if (deadline != null) TonalButton(t(TextKey.PROJECTS_NO_DEADLINE), onClick = { deadline = null }, muted = true)
-        Note(t(TextKey.PROJECTS_DEADLINE_NOTE))
+        if (deadline != null) TonalButton(t(UiKey.PROJECTS_NO_DEADLINE), onClick = { deadline = null }, muted = true)
+        Note(t(UiKey.PROJECTS_DEADLINE_NOTE))
         PrimaryButton(
-            t(if (existing != null) TextKey.PPL_SAVE else TextKey.PROJECTS_CREATE),
+            t(if (existing != null) UiKey.PPL_SAVE else UiKey.PROJECTS_CREATE),
             enabled = name.isNotBlank(), loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             onClick = {
                 scope.launch {
@@ -87,7 +88,7 @@ internal fun ProjectForm(existing: Project?, onCreated: (Project) -> Unit, done:
                     busy = false
                     r.onSuccess { made ->
                         PeopleChanges.bump()
-                        toaster.show(if (made != null) t(TextKey.PROJECTS_CREATED, made.name) else t(TextKey.PPL_SAVED))
+                        toaster.show(if (made != null) t(UiKey.PROJECTS_CREATED, made.name) else t(UiKey.PPL_SAVED))
                         done()
                         if (made != null) onCreated(made)
                     }.onFailure { err = it.message }
@@ -116,14 +117,14 @@ internal fun RuleForm(projectId: String, done: (Boolean) -> Unit) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         val a = added
         if (a == null) {
-            SheetHeading(t(TextKey.PROJECT_DETAIL_RULE_TITLE))
+            SheetHeading(t(UiKey.PROJECT_DETAIL_RULE_TITLE))
             val short = text.trim().length == 1
-            TextInput(text, { text = it.take(60); err = null }, label = t(TextKey.PROJECT_DETAIL_RULE_TEXT), placeholder = t(TextKey.PROJECT_DETAIL_RULE_PH), error = err ?: if (short) t(TextKey.PROJECT_DETAIL_RULE_ERR) else null)
-            FieldTitle(t(TextKey.PROJECT_DETAIL_MODE_LABEL))
+            TextInput(text, { text = it.take(60); err = null }, label = t(UiKey.PROJECT_DETAIL_RULE_TEXT), placeholder = t(UiKey.PROJECT_DETAIL_RULE_PH), error = err ?: if (short) t(UiKey.PROJECT_DETAIL_RULE_ERR) else null)
+            FieldTitle(t(UiKey.PROJECT_DETAIL_MODE_LABEL))
             SegmentedTabs(RuleMatchMode.entries.map { it to modeLabel(it) }, mode, { mode = it }, Modifier.fillMaxWidth(), height = 44.dp)
-            FieldTitle(t(TextKey.PROJECT_DETAIL_DIR_LABEL))
+            FieldTitle(t(UiKey.PROJECT_DETAIL_DIR_LABEL))
             SegmentedTabs(listOf("out", "in", "any").map { it to dirLabel(it) }, dir, { dir = it }, Modifier.fillMaxWidth(), height = 44.dp)
-            PrimaryButton(t(TextKey.PROJECT_DETAIL_NEXT), enabled = text.trim().length >= 2, loading = busy, modifier = Modifier.fillMaxWidth(), onClick = {
+            PrimaryButton(t(UiKey.PROJECT_DETAIL_NEXT), enabled = text.trim().length >= 2, loading = busy, modifier = Modifier.fillMaxWidth(), onClick = {
                 scope.launch {
                     busy = true
                     val r = runCatching { space.people.projects.addRule(projectId, text, mode, dir) }
@@ -132,18 +133,18 @@ internal fun RuleForm(projectId: String, done: (Boolean) -> Unit) {
                 }
             })
         } else {
-            SheetHeading(t(TextKey.PROJECT_DETAIL_OLD_TITLE))
-            Note(if (a.oldMatches > 0) t(TextKey.PROJECT_DETAIL_OLD_BODY, countOf(a.oldMatches, Noun.OPS)) else t(TextKey.PROJECT_DETAIL_OLD_NONE), color = Ink.text)
-            if (a.oldMatches > 0) PrimaryButton(t(TextKey.PROJECT_DETAIL_ADD_OLD), loading = busy, modifier = Modifier.fillMaxWidth(), onClick = {
+            SheetHeading(t(UiKey.PROJECT_DETAIL_OLD_TITLE))
+            Note(if (a.oldMatches > 0) t(UiKey.PROJECT_DETAIL_OLD_BODY, countOf(a.oldMatches, Noun.OPS)) else t(UiKey.PROJECT_DETAIL_OLD_NONE), color = Ink.text)
+            if (a.oldMatches > 0) PrimaryButton(t(UiKey.PROJECT_DETAIL_ADD_OLD), loading = busy, modifier = Modifier.fillMaxWidth(), onClick = {
                 scope.launch {
                     busy = true
                     val r = runCatching { space.people.projects.applyRuleToOld(a.rule.id) }
                     busy = false
                     PeopleChanges.bump()
-                    r.onSuccess { n -> toaster.show(t(TextKey.PROJECT_DETAIL_OLD_ADDED, countOf(n, Noun.OPS))); done(n > 0) }.onFailure { err = it.message }
+                    r.onSuccess { n -> toaster.show(t(UiKey.PROJECT_DETAIL_OLD_ADDED, countOf(n, Noun.OPS))); done(n > 0) }.onFailure { err = it.message }
                 }
             })
-            SecondaryButton(t(if (a.oldMatches > 0) TextKey.PROJECT_DETAIL_NEW_ONLY else TextKey.PROJECT_DETAIL_OK), onClick = { done(false) }, modifier = Modifier.fillMaxWidth())
+            SecondaryButton(t(if (a.oldMatches > 0) UiKey.PROJECT_DETAIL_NEW_ONLY else UiKey.PROJECT_DETAIL_OK), onClick = { done(false) }, modifier = Modifier.fillMaxWidth())
             ErrorLine(err)
         }
     }

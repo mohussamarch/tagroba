@@ -1,5 +1,7 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateMapOf
 import app.masroufy.core.TextKey
@@ -30,4 +32,4 @@ object MainWalletChoice {
 fun initialFromWallet(mainWalletId: String?, wallets: List<Wallet>): String? = mainWalletId?.takeIf { id -> wallets.any { it.id == id } }
 
 /** عنوان سطر المحفظة: «من أين؟» لو فيه أساسية · «من أين تصرف عادةً؟» لو لسه. */
-fun fromLabelKey(hasMain: Boolean): TextKey = if (hasMain) TextKey.ADD_FROM else TextKey.ADD_FROM_USUAL
+fun fromLabelKey(hasMain: Boolean): TextRef = if (hasMain) UiKey.ADD_FROM else UiKey.ADD_FROM_USUAL

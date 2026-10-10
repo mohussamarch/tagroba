@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.TextKey
@@ -34,7 +35,7 @@ class MainWalletTest {
     @Test fun onceSetTheMainWalletIsTheDefaultPerCountry() {
         MainWalletChoice.set("sa", cash.id)
         assertEquals(cash.id, initialFromWallet(MainWalletChoice.of("sa"), listOf(bank, cash)))
-        assertEquals(TextKey.ADD_FROM, fromLabelKey(hasMain = true))
+        assertEquals(UiKey.ADD_FROM, fromLabelKey(hasMain = true))
         assertNull(initialFromWallet(MainWalletChoice.of("eg"), listOf(bank, cash)), "مصر ليها أساسيتها لوحدها")
     }
 
@@ -44,8 +45,8 @@ class MainWalletTest {
     }
 
     @Test fun theSavedToastSaysWhichWalletBecameTheMain() {
-        assertEquals("سُجّلت: 42.00 — وصار «الكاش» الأساسي", t(TextKey.ADD_SAVED_MAIN, t(TextKey.ADD_SAVED, "42.00"), "الكاش"))
+        assertEquals("سُجّلت: 42.00 — وصار «الكاش» الأساسي", t(UiKey.ADD_SAVED_MAIN, t(UiKey.ADD_SAVED, "42.00"), "الكاش"))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("اتسجّلت: 42.00 — و«الكاش» بقى الأساسي", t(TextKey.ADD_SAVED_MAIN, t(TextKey.ADD_SAVED, "42.00"), "الكاش"))
+        assertEquals("اتسجّلت: 42.00 — و«الكاش» بقى الأساسي", t(UiKey.ADD_SAVED_MAIN, t(UiKey.ADD_SAVED, "42.00"), "الكاش"))
     }
 }

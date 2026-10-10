@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.IsoDate
 import app.masroufy.core.Occasion
 import app.masroufy.core.OccasionKind
@@ -54,12 +55,12 @@ private fun draftOccasion(d: OccasionDraft): Occasion? {
 
 /** «قبلها بأسبوع» · «قبلها بيومين» · «قبلها بـ١٠ أيام». */
 internal fun leadName(days: Int): String = when (days) {
-    1 -> t(TextKey.OCC_LEAD_ONE)
-    2 -> t(TextKey.OCC_LEAD_TWO)
-    7 -> t(TextKey.OCC_LEAD_WEEK)
-    14 -> t(TextKey.OCC_LEAD_TWO_WEEKS)
-    30 -> t(TextKey.OCC_LEAD_MONTH)
-    else -> t(TextKey.OCC_LEAD_DAYS, countOf(days, Noun.DAYS))
+    1 -> t(UiKey.OCC_LEAD_ONE)
+    2 -> t(UiKey.OCC_LEAD_TWO)
+    7 -> t(UiKey.OCC_LEAD_WEEK)
+    14 -> t(UiKey.OCC_LEAD_TWO_WEEKS)
+    30 -> t(UiKey.OCC_LEAD_MONTH)
+    else -> t(UiKey.OCC_LEAD_DAYS, countOf(days, Noun.DAYS))
 }
 
 /** سطرين لايف تحت التاريخ: «المرة القادمة: …، بعد N» و«يصلك التذكير …». */
@@ -69,14 +70,14 @@ internal fun occasionPreview(d: OccasionDraft, today: IsoDate): OccasionPreview 
     val o = draftOccasion(d)
     val next = o?.let { nextOccurrence(it, today) }
     val nextText = when {
-        next != null -> t(TextKey.OCC_NEXT, joinLine(dayMonthYear(next), relativeDays(daysBetween(today, next))))
-        o != null && !o.yearly -> t(TextKey.OCC_PAST)
-        else -> t(TextKey.OCC_PICK)
+        next != null -> t(UiKey.OCC_NEXT, joinLine(dayMonthYear(next), relativeDays(daysBetween(today, next))))
+        o != null && !o.yearly -> t(UiKey.OCC_PAST)
+        else -> t(UiKey.OCC_PICK)
     }
     val remind = when {
-        next == null -> t(TextKey.OCC_REMIND_PLAIN)
-        daysBetween(today, next) <= d.lead -> t(TextKey.OCC_REMIND_NOW)
-        else -> t(TextKey.OCC_REMIND_USUAL, leadName(d.lead))
+        next == null -> t(UiKey.OCC_REMIND_PLAIN)
+        daysBetween(today, next) <= d.lead -> t(UiKey.OCC_REMIND_NOW)
+        else -> t(UiKey.OCC_REMIND_USUAL, leadName(d.lead))
     }
     return OccasionPreview(nextText, remind)
 }
@@ -92,21 +93,21 @@ internal sealed interface OccasionCheck {
 
 internal fun checkDraft(d: OccasionDraft, personId: String?): OccasionCheck {
     val label = d.label.trim()
-    if (d.kind == OccasionKind.OTHER && label.isEmpty()) return OccasionCheck.Bad(t(TextKey.OCC_NEED_LABEL))
-    val month = d.month ?: return OccasionCheck.Bad(t(TextKey.OCC_NEED_MONTH))
+    if (d.kind == OccasionKind.OTHER && label.isEmpty()) return OccasionCheck.Bad(t(UiKey.OCC_NEED_LABEL))
+    val month = d.month ?: return OccasionCheck.Bad(t(UiKey.OCC_NEED_MONTH))
     val year = intOf(d.year)
-    if (d.year.isNotBlank() && year == null) return OccasionCheck.Bad(t(TextKey.PPL_DATE_INVALID))
-    val day = intOf(d.day) ?: return OccasionCheck.Bad(t(TextKey.OCC_NEED_DAY))
-    if (!d.yearly && year == null) return OccasionCheck.Bad(t(TextKey.PPL_ONCE_NEEDS_YEAR))
+    if (d.year.isNotBlank() && year == null) return OccasionCheck.Bad(t(UiKey.PPL_DATE_INVALID))
+    val day = intOf(d.day) ?: return OccasionCheck.Bad(t(UiKey.OCC_NEED_DAY))
+    if (!d.yearly && year == null) return OccasionCheck.Bad(t(UiKey.PPL_ONCE_NEEDS_YEAR))
     val input = OccasionInput(personId, d.kind, label.takeIf { d.kind == OccasionKind.OTHER }, month, day, year, d.yearly, d.lead)
     return runCatching {
         checkOccasion(Occasion("draft", personId, input.kind, input.label, month, day, year, input.yearly, input.leadDays, null, ""))
         OccasionCheck.Ok(input) as OccasionCheck
-    }.getOrElse { OccasionCheck.Bad(it.message ?: t(TextKey.PPL_DATE_INVALID)) }
+    }.getOrElse { OccasionCheck.Bad(it.message ?: t(UiKey.PPL_DATE_INVALID)) }
 }
 
 /** كارت المناسبة: العنوان («زواج خالد») وتحته «١٨ أكتوبر ٢٠٢٦، بعد ١١ يومًا، التذكير قبلها بأسبوع». */
 internal fun occasionCardTitle(u: UpcomingOccasion): String = occasionTitle(u.occasion, u.personName, null)
 
 internal fun occasionCardSub(u: UpcomingOccasion, today: IsoDate): String =
-    joinLine(dayMonthYear(u.date), relativeDays(daysBetween(today, u.date)), t(TextKey.OCC_REMIND_PREFIX, leadName(u.occasion.leadDays ?: OccasionDraft.DEFAULT_LEAD)))
+    joinLine(dayMonthYear(u.date), relativeDays(daysBetween(today, u.date)), t(UiKey.OCC_REMIND_PREFIX, leadName(u.occasion.leadDays ?: OccasionDraft.DEFAULT_LEAD)))

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -65,8 +66,8 @@ fun ImportBatchesScreen() {
         ui = importBatchesUi(history, staged)
     }
 
-    InnerScaffold(t(TextKey.IMPORT_BATCHES_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.IMPORT_BATCHES_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.IMPORT_BATCHES_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.IMPORT_BATCHES_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         val u = ui
         if (u == null) {
             item(key = "loading") { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { repeat(3) { Skeleton(Modifier.fillMaxWidth().height(120.dp)) } } }
@@ -75,17 +76,17 @@ fun ImportBatchesScreen() {
         cleaned?.let { c ->
             item(key = "cleaned") {
                 TintedPanel(if (c.error == null) PanelTone.MINT else PanelTone.AMBER) {
-                    PanelTitle(t(if (c.error == null) TextKey.IMPORT_BATCHES_CLEANED_TITLE else TextKey.IMPORT_BATCHES_CLEAN_FAILED), if (c.error == null) PanelTone.MINT else PanelTone.AMBER)
+                    PanelTitle(t(if (c.error == null) UiKey.IMPORT_BATCHES_CLEANED_TITLE else UiKey.IMPORT_BATCHES_CLEAN_FAILED), if (c.error == null) PanelTone.MINT else PanelTone.AMBER)
                     BasicText(c.fileName, style = Type.caption())
-                    BasicText(c.error ?: t(TextKey.IMPORT_BATCHES_CLEANED_BODY, opsCount(c.deletedTransactions)), style = Type.of(13, lineHeight = 1.7))
-                    QuietButton(t(TextKey.IMPORT_BATCHES_REIMPORT), { nav.push(StatementImportRoute) }, onTint = true, height = 44.dp)
+                    BasicText(c.error ?: t(UiKey.IMPORT_BATCHES_CLEANED_BODY, opsCount(c.deletedTransactions)), style = Type.of(13, lineHeight = 1.7))
+                    QuietButton(t(UiKey.IMPORT_BATCHES_REIMPORT), { nav.push(StatementImportRoute) }, onTint = true, height = 44.dp)
                 }
             }
         }
         if (u.isEmpty && cleaned == null) {
             item(key = "empty") {
-                EmptyState(t(TextKey.IMPORT_BATCHES_EMPTY_TITLE), t(TextKey.IMPORT_BATCHES_EMPTY_BODY), action = {
-                    PrimaryButton(t(TextKey.IMPORT_BATCHES_IMPORT), { nav.push(StatementImportRoute) })
+                EmptyState(t(UiKey.IMPORT_BATCHES_EMPTY_TITLE), t(UiKey.IMPORT_BATCHES_EMPTY_BODY), action = {
+                    PrimaryButton(t(UiKey.IMPORT_BATCHES_IMPORT), { nav.push(StatementImportRoute) })
                 })
             }
             return@InnerScaffold
@@ -93,11 +94,11 @@ fun ImportBatchesScreen() {
         for (s in u.staged) {
             item(key = "staged-${s.id}") {
                 TintedPanel(PanelTone.AMBER) {
-                    PanelTitle(t(TextKey.IMPORT_BATCHES_STAGED_TITLE), PanelTone.AMBER)
-                    BasicText(t(TextKey.IMPORT_REVIEW_HERO_META, s.fileName, dayMonth(s.importedAt.take(10))), style = Type.caption().copy(color = Ink.focus))
-                    BasicText(t(TextKey.IMPORT_BATCHES_STAGED_BODY), style = Type.of(13, lineHeight = 1.7))
+                    PanelTitle(t(UiKey.IMPORT_BATCHES_STAGED_TITLE), PanelTone.AMBER)
+                    BasicText(t(UiKey.IMPORT_REVIEW_HERO_META, s.fileName, dayMonth(s.importedAt.take(10))), style = Type.caption().copy(color = Ink.focus))
+                    BasicText(t(UiKey.IMPORT_BATCHES_STAGED_BODY), style = Type.of(13, lineHeight = 1.7))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PrimaryButton(t(if (cleaning == s.id) TextKey.IMPORT_BATCHES_CLEANING else TextKey.IMPORT_BATCHES_CLEAN), {
+                        PrimaryButton(t(if (cleaning == s.id) UiKey.IMPORT_BATCHES_CLEANING else UiKey.IMPORT_BATCHES_CLEAN), {
                             if (cleaning != null) return@PrimaryButton
                             cleaning = s.id
                             scope.launch {
@@ -106,14 +107,14 @@ fun ImportBatchesScreen() {
                                 } catch (e: CancellationException) {
                                     throw e
                                 } catch (e: Exception) {
-                                    StagedCleanupOutcome(s.id, s.fileName, 0, 0, e.message ?: t(TextKey.IMPORTS_LOAD_FAILED))
+                                    StagedCleanupOutcome(s.id, s.fileName, 0, 0, e.message ?: t(UiKey.IMPORTS_LOAD_FAILED))
                                 }
-                                cleaned?.takeIf { it.error == null }?.let { toaster.show(t(TextKey.IMPORT_BATCHES_CLEANED_TOAST, opsCount(it.deletedTransactions)), dark = true) }
+                                cleaned?.takeIf { it.error == null }?.let { toaster.show(t(UiKey.IMPORT_BATCHES_CLEANED_TOAST, opsCount(it.deletedTransactions)), dark = true) }
                                 cleaning = null
                                 reload++
                             }
                         }, loading = cleaning == s.id, height = 44.dp)
-                        QuietButton(t(TextKey.IMPORT_BATCHES_REIMPORT), { nav.push(StatementImportRoute) }, onTint = true, height = 44.dp)
+                        QuietButton(t(UiKey.IMPORT_BATCHES_REIMPORT), { nav.push(StatementImportRoute) }, onTint = true, height = 44.dp)
                     }
                 }
             }
@@ -123,7 +124,7 @@ fun ImportBatchesScreen() {
                 BatchCard(b) { revert = b }
             }
         }
-        item(key = "foot") { BasicText(t(TextKey.IMPORT_BATCHES_FOOT), style = Type.caption().copy(color = Ink.muted)) }
+        item(key = "foot") { BasicText(t(UiKey.IMPORT_BATCHES_FOOT), style = Type.caption().copy(color = Ink.muted)) }
     }
 
     RevertBatchSheet(
@@ -131,7 +132,7 @@ fun ImportBatchesScreen() {
         deps = deps,
         onDone = { plan ->
             revert = null
-            toaster.show(t(TextKey.IMPORT_BATCHES_REVERTED, revertResult(plan.toDelete.size, plan.toKeep.size)), dark = true)
+            toaster.show(t(UiKey.IMPORT_BATCHES_REVERTED, revertResult(plan.toDelete.size, plan.toKeep.size)), dark = true)
             reload++
         },
         onDismiss = { revert = null },
@@ -140,7 +141,7 @@ fun ImportBatchesScreen() {
 
 /** «حُذفت N عمليات، وبقيت M لارتباطها بغيرها.» */
 fun revertResult(deleted: Int, kept: Int): String =
-    if (kept > 0) t(TextKey.IMPORT_BATCHES_RESULT_KEPT, opsCount(deleted), opsCount(kept)) else t(TextKey.IMPORT_BATCHES_RESULT, opsCount(deleted))
+    if (kept > 0) t(UiKey.IMPORT_BATCHES_RESULT_KEPT, opsCount(deleted), opsCount(kept)) else t(UiKey.IMPORT_BATCHES_RESULT, opsCount(deleted))
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -152,15 +153,15 @@ private fun BatchCard(b: ImportBatch, onRevert: () -> Unit) {
                 LucideIcon(if (b.sourceType == ImportSourceType.SMS) Lucide.MESSAGE_SQUARE_TEXT else Lucide.FILE_TEXT, size = 18.dp, tint = if (reverted) Ink.faded else Ink.primary)
             }
             Column(Modifier.weight(1f)) {
-                val name = if (b.sourceType == ImportSourceType.SMS) t(TextKey.BANK_SMS_TITLE) else b.fileName
+                val name = if (b.sourceType == ImportSourceType.SMS) t(UiKey.BANK_SMS_TITLE) else b.fileName
                 BasicText(name, style = Type.bodyBold())
-                BasicText(t(TextKey.IMPORT_REVIEW_HERO_META, t(batchSourceLabel(b.sourceType)), dayMonth(b.importedAt.take(10))), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.IMPORT_REVIEW_HERO_META, t(batchSourceLabel(b.sourceType)), dayMonth(b.importedAt.take(10))), style = Type.caption().copy(color = Ink.muted))
             }
-            Tag(t(if (reverted) TextKey.IMPORT_BATCHES_REVERTED_CHIP else TextKey.IMPORT_BATCHES_COMMITTED_CHIP), if (reverted) TagTone.MUTED else TagTone.NEW)
+            Tag(t(if (reverted) UiKey.IMPORT_BATCHES_REVERTED_CHIP else UiKey.IMPORT_BATCHES_COMMITTED_CHIP), if (reverted) TagTone.MUTED else TagTone.NEW)
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            for ((label, n) in batchCounts(b)) Tag(t(TextKey.IMPORT_BATCHES_COUNT, t(label), sentenceNumber(n)), if (label == TextKey.IMPORT_BATCHES_ADDED) TagTone.NEW else TagTone.MUTED)
+            for ((label, n) in batchCounts(b)) Tag(t(UiKey.IMPORT_BATCHES_COUNT, t(label), sentenceNumber(n)), if (label == UiKey.IMPORT_BATCHES_ADDED) TagTone.NEW else TagTone.MUTED)
         }
-        if (!reverted) QuietButton(t(TextKey.IMPORT_BATCHES_REVERT), onRevert, danger = true, height = 44.dp)
+        if (!reverted) QuietButton(t(UiKey.IMPORT_BATCHES_REVERT), onRevert, danger = true, height = 44.dp)
     }
 }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.common
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,7 +80,7 @@ fun TabHeader(title: String, modifier: Modifier = Modifier, actions: (@Composabl
 /** الترس ← «المزيد» (قرار المالك: «مش عايز علامة الترس تختفي أبدًا»). */
 @Composable
 fun GearButton(onClick: () -> Unit) {
-    SurfaceIconButton(Lucide.SETTINGS, t(TextKey.SHELL_GEAR), onClick)
+    SurfaceIconButton(Lucide.SETTINGS, t(UiKey.SHELL_GEAR), onClick)
 }
 
 @Composable
@@ -106,7 +107,7 @@ fun InnerScaffold(
 fun ScreenHeader(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: (@Composable () -> Unit)? = null) {
     Row(modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (onBack != null) {
-            Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(TextKey.SHELL_BACK), onBack) }
+            Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(UiKey.SHELL_BACK), onBack) }
         }
         BasicText(title, Modifier.weight(1f).semantics { heading() }, style = Type.title(), maxLines = 1, overflow = TextOverflow.Ellipsis)
         actions?.invoke()
@@ -120,6 +121,6 @@ fun PendingScreen(boardName: String, showBack: Boolean = true) {
     Column(Modifier.fillMaxSize().testTag(boardName).padding(start = Space.gutter, end = Space.gutter, top = Space.gutter + statusTop)) {
         if (showBack) ScreenHeader("", onBack = { nav.pop(); Unit })
         Spacer(Modifier.height(24.dp))
-        EmptyState(title = t(TextKey.SHELL_PENDING_SCREEN))
+        EmptyState(title = t(UiKey.SHELL_PENDING_SCREEN))
     }
 }

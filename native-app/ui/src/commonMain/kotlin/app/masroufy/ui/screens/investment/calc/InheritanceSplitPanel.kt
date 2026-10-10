@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,7 +41,7 @@ import app.masroufy.ui.theme.Type
 fun InheritanceSplitPanel(v: InheritanceView.Computed, ui: InheritanceResultUi) {
     var open by rememberSaveable { mutableIntStateOf(0) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        BasicText(t(TextKey.INHSPLIT_TITLE), Modifier.padding(top = 4.dp), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.INHSPLIT_TITLE), Modifier.padding(top = 4.dp), style = Type.of(17, FontWeight.Bold))
         v.items.forEachIndexed { k, item ->
             val isOpen = open == k
             FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
@@ -65,7 +66,7 @@ fun InheritanceSplitPanel(v: InheritanceView.Computed, ui: InheritanceResultUi) 
                         }
                         Divider()
                         Row(Modifier.fillMaxWidth().heightIn(min = 32.dp).padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                            BasicText(t(TextKey.INHSPLIT_SUM), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
+                            BasicText(t(UiKey.INHSPLIT_SUM), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
                             AmountText(item.valueMinor, ui.currency, size = 13, showCurrency = false)
                         }
                     }
@@ -74,7 +75,7 @@ fun InheritanceSplitPanel(v: InheritanceView.Computed, ui: InheritanceResultUi) 
         }
         BasicText(v.itemsNote, style = Type.caption().copy(color = Ink.muted))
         if (v.notes.isNotEmpty()) {
-            BasicText(t(TextKey.INHSPLIT_NOTES), Modifier.padding(top = 4.dp), style = Type.of(17, FontWeight.Bold))
+            BasicText(t(UiKey.INHSPLIT_NOTES), Modifier.padding(top = 4.dp), style = Type.of(17, FontWeight.Bold))
             FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)) {
                 v.notes.forEachIndexed { i, n ->
                     if (i > 0) Divider()

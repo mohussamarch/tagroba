@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -88,58 +89,58 @@ fun OperationFiltersScreen() {
     val hits = loaded?.let { applyFilters(it, filters, currency) }
     val categories = loaded?.let(::filterCategories).orEmpty()
     val chips = activeChips(filters, categories, wallets, currency)
-    val title = t(if (results) TextKey.OPERATION_FILTERS_RESULTS else TextKey.OPERATION_FILTERS_TITLE)
+    val title = t(if (results) UiKey.OPERATION_FILTERS_RESULTS else UiKey.OPERATION_FILTERS_TITLE)
     Box(Modifier.fillMaxSize()) {
         InnerScaffold(title, actions = {
-            if (chips.isNotEmpty()) TonalButton(t(TextKey.OPERATION_FILTERS_CLEAR), { filters = Filters() }, height = 40.dp)
+            if (chips.isNotEmpty()) TonalButton(t(UiKey.OPERATION_FILTERS_CLEAR), { filters = Filters() }, height = 40.dp)
         }) {
             if (!results) {
                 item(key = "search") {
-                    TextInput(filters.query, { filters = filters.copy(query = it) }, placeholder = t(TextKey.OPERATION_FILTERS_SEARCH), height = 52.dp,
+                    TextInput(filters.query, { filters = filters.copy(query = it) }, placeholder = t(UiKey.OPERATION_FILTERS_SEARCH), height = 52.dp,
                         trailing = { LucideIcon(Lucide.SEARCH, Modifier.padding(end = 14.dp), size = 20.dp, tint = Ink.muted) })
                 }
                 item(key = "amount") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        GroupTitle(t(TextKey.OPERATION_FILTERS_AMOUNT, currencySymbol(currency)))
+                        GroupTitle(t(UiKey.OPERATION_FILTERS_AMOUNT, currencySymbol(currency)))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                             TextInput(filters.amountText, { filters = filters.copy(amountText = it) }, Modifier.weight(1f), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal)
-                            SelectChip(t(TextKey.OPERATION_FILTERS_NEAR), filters.near, { filters = filters.copy(near = !filters.near) }, height = 48.dp)
+                            SelectChip(t(UiKey.OPERATION_FILTERS_NEAR), filters.near, { filters = filters.copy(near = !filters.near) }, height = 48.dp)
                         }
                     }
                 }
                 item(key = "period") {
-                    Group(t(TextKey.OPERATION_FILTERS_PERIOD)) {
+                    Group(t(UiKey.OPERATION_FILTERS_PERIOD)) {
                         for (p in FilterPeriod.entries) SelectChip(periodName(p), filters.period == p, { filters = filters.copy(period = p) })
                     }
                 }
                 item(key = "kind") {
-                    Group(t(TextKey.OPERATION_FILTERS_KIND)) {
+                    Group(t(UiKey.OPERATION_FILTERS_KIND)) {
                         for (k in KindGroup.entries) SelectChip(kindName(k), k in filters.kinds, { filters = filters.copy(kinds = filters.kinds.toggle(k)) })
                     }
                 }
                 item(key = "category") {
-                    Group(t(TextKey.OPERATION_DETAIL_CATEGORY)) {
+                    Group(t(UiKey.OPERATION_DETAIL_CATEGORY)) {
                         for ((id, name) in categories) SelectChip(name, id in filters.categories, { filters = filters.copy(categories = filters.categories.toggle(id)) })
                     }
                 }
                 if (wallets.isNotEmpty()) item(key = "wallet") {
-                    Group(t(TextKey.OPERATION_DETAIL_WALLET)) {
+                    Group(t(UiKey.OPERATION_DETAIL_WALLET)) {
                         for (w in wallets) SelectChip(w.name, w.id in filters.wallets, { filters = filters.copy(wallets = filters.wallets.toggle(w.id)) })
                     }
                 }
                 item(key = "review") {
-                    Group(t(TextKey.OPERATION_FILTERS_REVIEW)) {
+                    Group(t(UiKey.OPERATION_FILTERS_REVIEW)) {
                         for (r in ReviewFilter.entries) SelectChip(reviewName(r), filters.review == r, { filters = filters.copy(review = r) })
                     }
                 }
             } else {
                 item(key = "chips") {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        for (c in chips) DropChip(c.label, t(TextKey.OPERATION_FILTERS_DROP, c.label)) { filters = c.clear(filters) }
+                        for (c in chips) DropChip(c.label, t(UiKey.OPERATION_FILTERS_DROP, c.label)) { filters = c.clear(filters) }
                     }
                 }
                 item(key = "count") { BasicText(hits?.let { operationsCount(it.size) }.orEmpty(), style = Type.of(13).copy(color = Ink.muted)) }
-                if (hits.isNullOrEmpty()) item(key = "none") { EmptyState(t(TextKey.OPERATION_FILTERS_NONE), t(TextKey.OPERATION_FILTERS_NONE_BODY)) }
+                if (hits.isNullOrEmpty()) item(key = "none") { EmptyState(t(UiKey.OPERATION_FILTERS_NONE), t(UiKey.OPERATION_FILTERS_NONE_BODY)) }
                 else item(key = "list") {
                     val all = loaded.orEmpty()
                     val ctx = RowContext(all.flatMap { it.categories }.distinctBy { it.id }, all.fold(emptyMap()) { a, d -> a + d.merchantNamesByTransaction }, wallets)
@@ -170,13 +171,13 @@ private fun BottomAction(modifier: Modifier, results: Boolean, hits: List<app.ma
         modifier.fillMaxWidth().background(Brush.verticalGradient(0f to Color(0x00EFF3ED), 0.3f to Color(0xF0EFF3ED)))
             .navigationBarsPadding().padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 26.dp),
     ) {
-        if (results) SecondaryButton(t(TextKey.OPERATION_FILTERS_EDIT), onClick, Modifier.fillMaxWidth(), height = 52.dp)
+        if (results) SecondaryButton(t(UiKey.OPERATION_FILTERS_EDIT), onClick, Modifier.fillMaxWidth(), height = 52.dp)
         else {
             val n = hits?.size
             when {
                 n == null -> Skeleton(Modifier.fillMaxWidth().height(52.dp), radius = 18.dp)
                 else -> PrimaryButton(
-                    if (n > 0) t(TextKey.OPERATION_FILTERS_SHOW, operationsCount(n)) else t(TextKey.OPERATION_FILTERS_NONE),
+                    if (n > 0) t(UiKey.OPERATION_FILTERS_SHOW, operationsCount(n)) else t(UiKey.OPERATION_FILTERS_NONE),
                     onClick = onClick, enabled = n > 0, height = 52.dp, modifier = Modifier.fillMaxWidth(),
                 )
             }

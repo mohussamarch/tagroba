@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +43,8 @@ import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
+import app.masroufy.ui.screens.operations.OperationDetailRoute
+import app.masroufy.ui.screens.operations.ReviewQueueRoute
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Radius
 import app.masroufy.ui.theme.Type
@@ -68,7 +71,7 @@ fun CategoryBudgetScreen(categoryId: String) {
                 item { Skeleton(Modifier.fillMaxWidth().height(150.dp), radius = Radius.hero, strong = true) }
                 item { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
             }
-            is Load.Failed -> item { ErrorCard(t(TextKey.BUDGETS_ERROR_TITLE), t(TextKey.BUDGETS_ERROR_BODY), { reload++ }) }
+            is Load.Failed -> item { ErrorCard(t(UiKey.BUDGETS_ERROR_TITLE), t(UiKey.BUDGETS_ERROR_BODY), { reload++ }) }
             is Load.Ready -> {
                 val ui = state.value
                 if (ui == null) item { EmptyState(t(TextKey.CATEGORY_THIS_NOT_FOUND)) } else categoryBudgetItems(ui, deps) { reload++ }
@@ -94,10 +97,10 @@ private fun UnknownCard(ui: CategoryBudgetUi) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        BasicText(t(TextKey.CAT_BUDGET_NA_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
-        BasicText(t(TextKey.CAT_BUDGET_NA_BODY), style = Type.caption().copy(color = Ink.focus))
+        BasicText(t(UiKey.CAT_BUDGET_NA_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+        BasicText(t(UiKey.CAT_BUDGET_NA_BODY), style = Type.caption().copy(color = Ink.focus))
         // «راجعها» ⇒ مراجعة الغامض (منطقة العمليات) — لحد الدمج «قيد البناء»
-        PrimaryButton(t(TextKey.CAT_BUDGET_REVIEW), { nav.push(ReviewQueueLink) }, height = 44.dp)
+        PrimaryButton(t(UiKey.CAT_BUDGET_REVIEW), { nav.push(ReviewQueueRoute) }, height = 44.dp)
     }
 }
 
@@ -113,7 +116,7 @@ private fun CategoryHero(ui: CategoryBudgetUi) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.CAT_BUDGET_HERO, ui.monthName), style = Type.body().copy(color = Ink.onHeroMuted))
+                BasicText(t(UiKey.CAT_BUDGET_HERO, ui.monthName), style = Type.body().copy(color = Ink.onHeroMuted))
                 val ink = heroInk(ui.tone)
                 BasicText(
                     ui.chip,
@@ -124,14 +127,14 @@ private fun CategoryHero(ui: CategoryBudgetUi) {
             val limit = ui.limitMinor
             if (!ui.known) {
                 BasicText(t(TextKey.NOT_AVAILABLE), style = Type.of(28, FontWeight.Bold).copy(color = Color.White))
-                val waiting = if (limit != null) t(TextKey.CAT_BUDGET_NA_LIMIT, plain(limit, ui.currency)) else t(TextKey.CAT_BUDGET_NA_WAIT)
+                val waiting = if (limit != null) t(UiKey.CAT_BUDGET_NA_LIMIT, plain(limit, ui.currency)) else t(UiKey.CAT_BUDGET_NA_WAIT)
                 BasicText(waiting, style = Type.caption().copy(color = Ink.onHeroMuted))
                 return@Column
             }
             androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End), verticalAlignment = Alignment.Bottom) {
                     AmountText(ui.spentMinor, ui.currency, size = 32, showCurrency = false, color = Color.White)
-                    val of = if (limit != null) t(TextKey.CAT_BUDGET_OF, plain(limit, ui.currency)) else app.masroufy.core.currencySymbol(ui.currency)
+                    val of = if (limit != null) t(UiKey.CAT_BUDGET_OF, plain(limit, ui.currency)) else app.masroufy.core.currencySymbol(ui.currency)
                     BasicText(of, style = Type.of(15).copy(color = Ink.onHeroMuted))
                 }
             }
@@ -139,10 +142,10 @@ private fun CategoryHero(ui: CategoryBudgetUi) {
                 HeroBar(ui.percent, ui.elapsedPercent, heroInk(ui.tone).takeIf { ui.tone != Tone.OK && ui.tone != Tone.MUTED } ?: Ink.heroProgress)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     BasicText(ui.leftLine ?: "", style = Type.caption().copy(color = Ink.onHeroMuted))
-                    BasicText(t(TextKey.CAT_BUDGET_TODAY_LINE, sentenceNumber(ui.dayIndex), sentenceNumber(ui.totalDays)), style = Type.caption().copy(color = Ink.onHeroMuted))
+                    BasicText(t(UiKey.CAT_BUDGET_TODAY_LINE, sentenceNumber(ui.dayIndex), sentenceNumber(ui.totalDays)), style = Type.caption().copy(color = Ink.onHeroMuted))
                 }
             } else {
-                BasicText(t(TextKey.CAT_BUDGET_NO_LIMIT_LINE), style = Type.caption().copy(color = Ink.onHeroMuted))
+                BasicText(t(UiKey.CAT_BUDGET_NO_LIMIT_LINE), style = Type.caption().copy(color = Ink.onHeroMuted))
             }
         }
     }
@@ -162,7 +165,7 @@ private fun HeroBar(percent: Int, todayPercent: Int, fill: Color) {
 private fun PaceCard(ui: CategoryBudgetUi) {
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            BasicText(t(TextKey.CAT_BUDGET_PACE_TITLE), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.CAT_BUDGET_PACE_TITLE), style = Type.of(15, FontWeight.Bold))
             val over = ui.tone == Tone.OVER
             BasicText(ui.pace1, style = Type.bodyBold().copy(color = if (over) Ink.expense else Ink.text))
             if (ui.pace2 != null) BasicText(ui.pace2, style = Type.of(13))
@@ -175,7 +178,7 @@ private fun PaceCard(ui: CategoryBudgetUi) {
 private fun Tiles(ui: CategoryBudgetUi) {
     Gap8Row(Modifier.fillMaxWidth()) {
         FloatingCard(Modifier.weight(1f), shape = RoundedCornerShape(Radius.control), contentPadding = PaddingValues(12.dp)) {
-            BasicText(t(TextKey.BUDGETS_AVG_LABEL), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.BUDGETS_AVG_LABEL), style = Type.caption().copy(color = Ink.muted))
             AmountText(ui.averageMinor, ui.currency, size = 17)
             BasicText(ui.averageNote, style = Type.of(11).copy(color = Ink.muted))
         }
@@ -183,7 +186,7 @@ private fun Tiles(ui: CategoryBudgetUi) {
             Modifier.weight(1f).clip(RoundedCornerShape(Radius.control)).background(if (ui.anomalyAlert) Ink.alertBg else Color(0x0D193D33)).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            BasicText(t(TextKey.CAT_BUDGET_ANOM_LABEL), style = Type.captionBold().copy(color = if (ui.anomalyAlert) Ink.focus else Ink.muted))
+            BasicText(t(UiKey.CAT_BUDGET_ANOM_LABEL), style = Type.captionBold().copy(color = if (ui.anomalyAlert) Ink.focus else Ink.muted))
             BasicText(ui.anomalyText, style = Type.of(13))
         }
     }
@@ -194,12 +197,12 @@ private fun LimitSection(ui: CategoryBudgetUi, deps: BudgetsDeps, refresh: () ->
     val toaster = LocalToaster.current
     var open by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.CAT_BUDGET_LIMIT_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.CAT_BUDGET_LIMIT_TITLE), style = Type.of(17, FontWeight.Bold))
         LimitTrigger(ui.limit, ui.currency) { open = true }
     }
     BudgetLimitSheet(
         visible = open,
-        title = t(TextKey.LIMIT_SHEET_TITLE, ui.name),
+        title = t(UiKey.LIMIT_SHEET_TITLE, ui.name),
         monthName = ui.monthName,
         current = ui.limit,
         spentMinor = ui.spentMinor,
@@ -207,13 +210,13 @@ private fun LimitSection(ui: CategoryBudgetUi, deps: BudgetsDeps, refresh: () ->
         currency = ui.currency,
         onDismiss = { open = false },
         onSave = { ok ->
-            attempt(t(TextKey.SHELL_LOAD_FAILED)) {
+            attempt(t(UiKey.SHELL_LOAD_FAILED)) {
                 deps.setBudget.setCategoryLimit(ui.period, ui.categoryId, ok.limitMinor, notifyEnabled = ok.notify, thresholdPercent = ok.thresholdPercent)
             }.also { if (it == null) { open = false; toaster.show(savedToast(ok, ui.currency)); refresh() } }
         },
         onClear = {
-            attempt(t(TextKey.SHELL_LOAD_FAILED)) { deps.setBudget.clearCategoryLimit(ui.period, ui.categoryId) }
-                .also { if (it == null) { open = false; toaster.show(t(TextKey.CAT_BUDGET_CLEARED)); refresh() } }
+            attempt(t(UiKey.SHELL_LOAD_FAILED)) { deps.setBudget.clearCategoryLimit(ui.period, ui.categoryId) }
+                .also { if (it == null) { open = false; toaster.show(t(UiKey.CAT_BUDGET_CLEARED)); refresh() } }
         },
     )
 }
@@ -222,12 +225,12 @@ private fun LimitSection(ui: CategoryBudgetUi, deps: BudgetsDeps, refresh: () ->
 private fun SubsSection(ui: CategoryBudgetUi) {
     val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.CAT_BUDGET_SUBS_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.CAT_BUDGET_SUBS_TITLE), style = Type.of(17, FontWeight.Bold))
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             if (ui.subs.isEmpty()) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(t(TextKey.CAT_BUDGET_NO_SUBS), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted))
-                    TonalButton(t(TextKey.CAT_BUDGET_ADD_SUB), { nav.push(CategoriesRoute) }, height = 44.dp)
+                    BasicText(t(UiKey.CAT_BUDGET_NO_SUBS), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted))
+                    TonalButton(t(UiKey.CAT_BUDGET_ADD_SUB), { nav.push(CategoriesRoute) }, height = 44.dp)
                 }
             }
             ui.subs.forEachIndexed { i, sub ->
@@ -246,11 +249,11 @@ private fun SubsSection(ui: CategoryBudgetUi) {
 private fun TransactionsSection(ui: CategoryBudgetUi) {
     val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        val title = if (ui.txCount == 0) t(TextKey.CAT_BUDGET_TX_TITLE_EMPTY, ui.monthName)
-        else t(TextKey.CAT_BUDGET_TX_TITLE, ui.monthName, sentenceNumber(ui.txCount))
+        val title = if (ui.txCount == 0) t(UiKey.CAT_BUDGET_TX_TITLE_EMPTY, ui.monthName)
+        else t(UiKey.CAT_BUDGET_TX_TITLE, ui.monthName, sentenceNumber(ui.txCount))
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         if (ui.txCount == 0) {
-            EmptyState(t(TextKey.CAT_BUDGET_EMPTY_TITLE, ui.name), t(TextKey.CAT_BUDGET_EMPTY_BODY))
+            EmptyState(t(UiKey.CAT_BUDGET_EMPTY_TITLE, ui.name), t(UiKey.CAT_BUDGET_EMPTY_BODY))
             return@Column
         }
         val color = parseHexColor(ui.colorHex)
@@ -258,14 +261,14 @@ private fun TransactionsSection(ui: CategoryBudgetUi) {
             ui.txRows.forEachIndexed { i, tx ->
                 OperationRow(
                     tx.title, tx.subtitle, categoryIcon(ui.iconKey), color, tx.amountMinor, tx.currency, AmountTone.EXPENSE,
-                    onClick = { nav.push(OperationDetailLink(tx.id)) },
+                    onClick = { nav.push(OperationDetailRoute(tx.id)) },
                 )
                 if (i < ui.txRows.lastIndex) app.masroufy.ui.components.Divider()
             }
         }
         if (ui.txCount > ui.txRows.size) {
             BasicText(
-                t(TextKey.CAT_BUDGET_TX_NOTE, sentenceNumber(ui.txRows.size), sentenceNumber(ui.txCount)),
+                t(UiKey.CAT_BUDGET_TX_NOTE, sentenceNumber(ui.txRows.size), sentenceNumber(ui.txCount)),
                 style = Type.caption().copy(color = Ink.muted),
             )
         }

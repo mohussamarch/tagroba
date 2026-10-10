@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.BudgetLevel
 import app.masroufy.core.BudgetStatus
 import app.masroufy.core.CalendarItem
@@ -130,20 +132,20 @@ fun mapBudgets(
     val limit = data.budget?.totalLimitMinor
     val status = data.totalStatus
     val total: TotalCard = when {
-        limit == null -> TotalCard.NoLimit(t(TextKey.BUDGETS_NO_TOTAL_TITLE, month), t(TextKey.BUDGETS_NO_TOTAL_BODY))
-        !data.spentKnown || status == null -> TotalCard.Unknown(t(TextKey.BUDGETS_TOTAL_TITLE, month), limit, data.spentNote ?: t(TextKey.BUDGETS_NA_REASON))
+        limit == null -> TotalCard.NoLimit(t(UiKey.BUDGETS_NO_TOTAL_TITLE, month), t(UiKey.BUDGETS_NO_TOTAL_BODY))
+        !data.spentKnown || status == null -> TotalCard.Unknown(t(UiKey.BUDGETS_TOTAL_TITLE, month), limit, data.spentNote ?: t(UiKey.BUDGETS_NA_REASON))
         else -> {
             val tone = toneOf(status)
             TotalCard.Known(
-                title = t(TextKey.BUDGETS_TOTAL_TITLE, month),
+                title = t(UiKey.BUDGETS_TOTAL_TITLE, month),
                 spentMinor = status.spentMinor,
                 limitMinor = status.limitMinor,
                 percent = usedPercent(status).coerceAtMost(100),
                 tone = tone,
                 chip = t(chipKey(tone)),
-                leftLine = if (status.remainingMinor >= 0) t(TextKey.BUDGETS_LEFT, plain(status.remainingMinor, currency))
-                else t(TextKey.BUDGETS_OVER_BY, plain(status.remainingMinor, currency)),
-                dailyLine = data.allowance.amountMinor?.takeIf { it > 0 }?.let { t(TextKey.BUDGETS_DAILY, plain(it, currency)) },
+                leftLine = if (status.remainingMinor >= 0) t(UiKey.BUDGETS_LEFT, plain(status.remainingMinor, currency))
+                else t(UiKey.BUDGETS_OVER_BY, plain(status.remainingMinor, currency)),
+                dailyLine = data.allowance.amountMinor?.takeIf { it > 0 }?.let { t(UiKey.BUDGETS_DAILY, plain(it, currency)) },
                 approxNote = if (data.spentReliable) null else data.spentNote,
             )
         }
@@ -173,20 +175,20 @@ fun mapBudgets(
 
 private const val MAX_UPCOMING = 6
 
-internal fun chipKey(tone: Tone): TextKey = when (tone) {
-    Tone.OVER -> TextKey.BUDGETS_CHIP_OVER
-    Tone.NEAR -> TextKey.BUDGETS_CHIP_NEAR
-    else -> TextKey.BUDGETS_CHIP_OK
+internal fun chipKey(tone: Tone): TextRef = when (tone) {
+    Tone.OVER -> UiKey.BUDGETS_CHIP_OVER
+    Tone.NEAR -> UiKey.BUDGETS_CHIP_NEAR
+    else -> UiKey.BUDGETS_CHIP_OK
 }
 
 private fun lineUi(line: app.masroufy.core.CategoryBudgetLine, category: Category?, known: Boolean, currency: Currency): LineUi {
     val status = line.status
     val over = known && status != null && status.level == BudgetLevel.OVER
     val note = when {
-        status == null -> t(TextKey.BUDGETS_CAT_NO_LIMIT)
+        status == null -> t(UiKey.BUDGETS_CAT_NO_LIMIT)
         !known -> t(TextKey.NOT_AVAILABLE)
-        over -> t(TextKey.BUDGETS_CAT_OVER, plain(status.remainingMinor, currency))
-        else -> t(TextKey.BUDGETS_CAT_LEFT, plain(status.remainingMinor, currency), sentenceNumber(usedPercent(status)))
+        over -> t(UiKey.BUDGETS_CAT_OVER, plain(status.remainingMinor, currency))
+        else -> t(UiKey.BUDGETS_CAT_LEFT, plain(status.remainingMinor, currency), sentenceNumber(usedPercent(status)))
     }
     return LineUi(
         categoryId = line.categoryId,
@@ -202,7 +204,7 @@ private fun lineUi(line: app.masroufy.core.CategoryBudgetLine, category: Categor
 }
 
 private fun upcomingUi(item: CalendarItem): UpcomingUi =
-    UpcomingUi(item, t(TextKey.BUDGETS_UP_WHEN, dayMonth(item.date), daysLeftText(item.daysLeft)), reserved = item.reservedMinor != null)
+    UpcomingUi(item, t(UiKey.BUDGETS_UP_WHEN, dayMonth(item.date), daysLeftText(item.daysLeft)), reserved = item.reservedMinor != null)
 
 private fun leftoverUi(p: LeftoverProjection, currency: Currency): LeftoverUi {
     val label = t(
@@ -213,5 +215,5 @@ private fun leftoverUi(p: LeftoverProjection, currency: Currency): LeftoverUi {
         },
     )
     val value = p.leftoverMinor?.let { amountLabel(it, currency) } ?: t(TextKey.NOT_AVAILABLE)
-    return LeftoverUi(t(TextKey.BUDGETS_LEFTOVER, label, value), negative = (p.leftoverMinor ?: 0L) < 0L, approximate = p.approximate)
+    return LeftoverUi(t(UiKey.BUDGETS_LEFTOVER, label, value), negative = (p.leftoverMinor ?: 0L) < 0L, approximate = p.approximate)
 }

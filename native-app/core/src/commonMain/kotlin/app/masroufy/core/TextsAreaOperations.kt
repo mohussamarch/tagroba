@@ -7,11 +7,11 @@ package app.masroufy.core
  * **ممنوع «·» جنب رقم عربي** ⇒ «،». القيم نفسها في ٩ ملفات (`TextsAreaOperations{Msa,Egyptian,English}{,Links,Transfers}.kt` — حد الـ300 سطر)
  * متضمومة هنا بـ`+`: القايمة والتفاصيل والتصفية والوسوم · الربط بشخص أو مشروع أو حدث وصفحة التاجر · التحويلات و«من هذا؟» والتحويل بين البلدين.
  */
-internal val MSA_AREA_OPERATIONS_TEXTS: Map<TextKey, String> =
+internal val MSA_AREA_OPERATIONS_TEXTS: Map<UiKey, String> =
     MSA_OPERATIONS_LIST_TEXTS + MSA_OPERATIONS_LINK_TEXTS + MSA_OPERATIONS_TRANSFER_TEXTS
 
-internal val EGYPTIAN_AREA_OPERATIONS_TEXTS: Map<TextKey, String> =
+internal val EGYPTIAN_AREA_OPERATIONS_TEXTS: Map<UiKey, String> =
     EGYPTIAN_OPERATIONS_LIST_TEXTS + EGYPTIAN_OPERATIONS_LINK_TEXTS + EGYPTIAN_OPERATIONS_TRANSFER_TEXTS
 
-internal val ENGLISH_AREA_OPERATIONS_TEXTS: Map<TextKey, String> =
+internal val ENGLISH_AREA_OPERATIONS_TEXTS: Map<UiKey, String> =
     ENGLISH_OPERATIONS_LIST_TEXTS + ENGLISH_OPERATIONS_LINK_TEXTS + ENGLISH_OPERATIONS_TRANSFER_TEXTS

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -70,12 +71,12 @@ internal fun EventDetailScreen(eventId: String) {
     }
     val ready = (load as? Load.Ready)?.value
     InnerScaffold(
-        ready?.ui?.event?.name ?: t(TextKey.EVENTS_TITLE),
-        actions = { if (ready?.ui?.event?.archived == true) Badge(t(TextKey.PPL_ARCHIVED), BadgeKind.NOT_AVAILABLE) },
+        ready?.ui?.event?.name ?: t(UiKey.EVENTS_TITLE),
+        actions = { if (ready?.ui?.event?.archived == true) Badge(t(UiKey.PPL_ARCHIVED), BadgeKind.NOT_AVAILABLE) },
     ) {
         when (val l = load) {
             Load.Loading -> items(2) { Skeleton(Modifier.fillMaxWidth().height(if (it == 0) 150.dp else 220.dp), radius = if (it == 0) 28.dp else 22.dp) }
-            Load.Failed -> item { ErrorCard({ retry++ }, title = t(TextKey.PPL_LOAD_FAILED), body = "") }
+            Load.Failed -> item { ErrorCard({ retry++ }, title = t(UiKey.PPL_LOAD_FAILED), body = "") }
             is Load.Ready -> {
                 val data = l.value
                 val ui = data.ui
@@ -101,7 +102,7 @@ private fun EventHero(ui: EventDetailUi) {
             Pill(ui.owner, Ink.onPrimary, Ink.onPrimary.copy(alpha = 0.16f))
         }
         Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            HeroStat(t(TextKey.EVENT_DETAIL_SPEND), ui.spend, t(TextKey.EVENTS_NOT_LINKED), Ink.onPrimary, null, Modifier.weight(1f))
+            HeroStat(t(UiKey.EVENT_DETAIL_SPEND), ui.spend, t(UiKey.EVENTS_NOT_LINKED), Ink.onPrimary, null, Modifier.weight(1f))
             val giftInk = if (ui.event.mine) Ink.mint else Ink.rose
             HeroStat(ui.giftLabel, ui.gifts, ui.giftEmpty, giftInk, if (ui.event.mine) "+" else "−", Modifier.weight(1f))
         }
@@ -146,8 +147,8 @@ private fun SpendSection(data: EventScreenData) {
     val ui = data.ui
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         val n = ui.spends.size
-        BasicText(t(TextKey.EVENT_DETAIL_SPEND_TITLE) + if (n > 0) " (" + app.masroufy.core.sentenceNumber(n) + ")" else "", style = Type.section())
-        LinkedRows(ui.spends, t(TextKey.EVENT_DETAIL_NO_SPEND), withInitial = false)
+        BasicText(t(UiKey.EVENT_DETAIL_SPEND_TITLE) + if (n > 0) " (" + app.masroufy.core.sentenceNumber(n) + ")" else "", style = Type.section())
+        LinkedRows(ui.spends, t(UiKey.EVENT_DETAIL_NO_SPEND), withInitial = false)
         SpendLinkButton(data)
     }
 }
@@ -158,7 +159,7 @@ private fun GiftSection(data: EventScreenData) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         val n = ui.giftRows.size
         BasicText(ui.giftLabel + if (n > 0) " (" + app.masroufy.core.sentenceNumber(n) + ")" else "", style = Type.section())
-        LinkedRows(ui.giftRows, t(if (ui.event.mine) TextKey.EVENT_DETAIL_NO_GIFTS_MINE else TextKey.EVENT_DETAIL_NO_GIFTS_OTHER), withInitial = true)
+        LinkedRows(ui.giftRows, t(if (ui.event.mine) UiKey.EVENT_DETAIL_NO_GIFTS_MINE else UiKey.EVENT_DETAIL_NO_GIFTS_OTHER), withInitial = true)
         NuqootButton(data)
     }
 }
@@ -170,22 +171,22 @@ private fun ReminderCard(ui: EventDetailUi) {
     val scope = rememberCoroutineScope()
     val on = ui.reminder != null
     val lead = ui.reminder?.leadDays ?: OccasionDraft.DEFAULT_LEAD
-    val title = t(if (ui.event.kind == LifeEventKind.WEDDING) TextKey.EVENT_DETAIL_REMIND_WEDDING else TextKey.EVENT_DETAIL_REMIND)
+    val title = t(if (ui.event.kind == LifeEventKind.WEDDING) UiKey.EVENT_DETAIL_REMIND_WEDDING else UiKey.EVENT_DETAIL_REMIND)
     fun set(enable: Boolean, days: Int) = scope.launch {
         val r = runCatching { if (enable) deps.occasions.remindOwnEvent(ui.event.id, days) else deps.occasions.remove(ownEventOccasionId(ui.event.id)) }
         PeopleChanges.bump()
-        r.onSuccess { toaster.show(if (enable) t(TextKey.EVENT_DETAIL_REMIND_ON, leadName(days)) else t(TextKey.EVENT_DETAIL_REMIND_OFF)) }.onFailure { toaster.show(it.message ?: "") }
+        r.onSuccess { toaster.show(if (enable) t(UiKey.EVENT_DETAIL_REMIND_ON, leadName(days)) else t(UiKey.EVENT_DETAIL_REMIND_OFF)) }.onFailure { toaster.show(it.message ?: "") }
     }
     FloatingCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 BasicText(title, style = Type.bodyBold())
-                BasicText(if (on) t(TextKey.EVENT_DETAIL_REMIND_SUB, leadName(lead)) else t(TextKey.PPL_SWITCH_OFF), style = Type.caption().copy(color = Ink.muted))
+                BasicText(if (on) t(UiKey.EVENT_DETAIL_REMIND_SUB, leadName(lead)) else t(UiKey.PPL_SWITCH_OFF), style = Type.caption().copy(color = Ink.muted))
             }
             ToggleSwitch(on, title, { set(!on, lead) })
         }
         if (on) ChoiceFlow(Modifier.padding(top = 8.dp)) {
-            for ((v, key) in listOf(1 to TextKey.OCC_LEAD_ONE, 7 to TextKey.OCC_CHIP_WEEK, 14 to TextKey.OCC_CHIP_TWO_WEEKS, 30 to TextKey.OCC_CHIP_MONTH)) {
+            for ((v, key) in listOf(1 to UiKey.OCC_LEAD_ONE, 7 to UiKey.OCC_CHIP_WEEK, 14 to UiKey.OCC_CHIP_TWO_WEEKS, 30 to UiKey.OCC_CHIP_MONTH)) {
                 Choice(t(key), lead == v, { set(true, v) }, filled = true, textSize = 13)
             }
         }
@@ -199,10 +200,10 @@ private fun PrepEntry(ui: EventDetailUi) {
         ui.noPrep?.let { Note(it) }
         return
     }
-    FloatingCard(onClick = { nav.push(EventPrepRoute(ui.event.id)) }, clickLabel = t(TextKey.EVENT_DETAIL_PREP)) {
+    FloatingCard(onClick = { nav.push(EventPrepRoute(ui.event.id)) }, clickLabel = t(UiKey.EVENT_DETAIL_PREP)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                BasicText(t(TextKey.EVENT_DETAIL_PREP), style = Type.bodyBold())
+                BasicText(t(UiKey.EVENT_DETAIL_PREP), style = Type.bodyBold())
                 BasicText(ui.prepLine, style = Type.caption().copy(color = Ink.muted))
             }
             LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())

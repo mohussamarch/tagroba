@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,8 +50,8 @@ fun hawlDayUi(today: IsoDate, due: IsoDate?): HawlDayUi {
     val start = due?.let(::hijriOf)
     val now = hijriOf(today)
     return HawlDayUi(
-        intro = if (start != null) uiText(TextKey.HAWL_INTRO, hijriDayMonth(start.month, start.day)) else uiText(TextKey.HAWL_INTRO_PLAIN),
-        todayLine = uiText(TextKey.HAWL_TODAY, hijriText(now)),
+        intro = if (start != null) uiText(UiKey.HAWL_INTRO, hijriDayMonth(start.month, start.day)) else uiText(UiKey.HAWL_INTRO_PLAIN),
+        todayLine = uiText(UiKey.HAWL_TODAY, hijriText(now)),
         month = (start ?: now).month,
         day = (start ?: now).day,
     )
@@ -67,31 +68,31 @@ internal fun HawlDaySheet(visible: Boolean, due: IsoDate?, onDismiss: () -> Unit
     val ui = remember(visible, due) { hawlDayUi(deps.today(), due) }
     var month by remember(visible, due) { mutableIntStateOf(ui.month) }
     var day by remember(visible, due) { mutableIntStateOf(ui.day) }
-    val title = t(TextKey.HAWL_TITLE)
-    Sheet(visible, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 8.dp) {
+    val title = t(UiKey.HAWL_TITLE)
+    Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 8.dp) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(title, style = Type.of(17, FontWeight.Bold))
             BasicText(ui.intro, style = Type.caption().copy(color = Ink.muted))
         }
         Column(Modifier.heightIn(max = 470.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                BasicText(t(TextKey.HAWL_MONTH), style = Type.of(13, FontWeight.Bold))
+                BasicText(t(UiKey.HAWL_MONTH), style = Type.of(13, FontWeight.Bold))
                 BasicText(ui.todayLine, style = Type.caption().copy(color = Ink.muted))
             }
             ChipGrid(12, 4) { i -> GridChip(hijriMonthName(i + 1), month == i + 1, 13) { month = i + 1 } }
-            BasicText(t(TextKey.HAWL_DAY), style = Type.of(13, FontWeight.Bold))
-            ChipGrid(30, 6) { i -> GridChip(sentenceNumber(i + 1), day == i + 1, 15, uiText(TextKey.HAWL_DAY_ARIA, sentenceNumber(i + 1))) { day = i + 1 } }
+            BasicText(t(UiKey.HAWL_DAY), style = Type.of(13, FontWeight.Bold))
+            ChipGrid(30, 6) { i -> GridChip(sentenceNumber(i + 1), day == i + 1, 15, uiText(UiKey.HAWL_DAY_ARIA, sentenceNumber(i + 1))) { day = i + 1 } }
         }
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.primary.copy(alpha = 0.06f)).padding(horizontal = 14.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
             BasicText(hijriDayMonth(month, day), style = Type.bodyBold().copy(color = Ink.primary))
-            BasicText(t(TextKey.HAWL_GREG_NA), style = Type.of(13))
-            BasicText(t(TextKey.HAWL_REMIND), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.HAWL_GREG_NA), style = Type.of(13))
+            BasicText(t(UiKey.HAWL_REMIND), style = Type.caption().copy(color = Ink.muted))
         }
-        BasicText(t(TextKey.HAWL_SAVE_BLOCKED), style = Type.captionBold().copy(color = Ink.focus))
-        PrimaryButton(t(TextKey.HAWL_SAVE), {}, Modifier.fillMaxWidth(), enabled = false, height = 52.dp)
+        BasicText(t(UiKey.HAWL_SAVE_BLOCKED), style = Type.captionBold().copy(color = Ink.focus))
+        PrimaryButton(t(UiKey.HAWL_SAVE), {}, Modifier.fillMaxWidth(), enabled = false, height = 52.dp)
     }
 }
 

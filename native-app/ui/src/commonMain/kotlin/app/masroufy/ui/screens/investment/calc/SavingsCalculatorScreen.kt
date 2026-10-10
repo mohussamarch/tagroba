@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -107,14 +108,14 @@ fun SavingsCalculatorScreen() {
     val ui = current?.let { savingsResultUi(it, currency) }
     val put = { id: String, v: String -> fields[id] = v; goalDone = false }
 
-    InnerScaffold(t(TextKey.SAVCALC_TITLE)) {
+    InnerScaffold(t(UiKey.SAVCALC_TITLE)) {
         item(key = "modes") { ModeSwitch(mode) { modeName = it.name; goalDone = false } }
         item(key = "fields") { SavingsFieldsCard(mode, fields, errors, currency, today, put) }
         item(key = "hero") {
             when {
-                failed && check.request != null -> CalcHero(heroLabel(mode), null, currency, t(TextKey.NOT_AVAILABLE), t(TextKey.SHELL_LOAD_FAILED))
+                failed && check.request != null -> CalcHero(heroLabel(mode), null, currency, t(TextKey.NOT_AVAILABLE), t(UiKey.SHELL_LOAD_FAILED))
                 check.request != null && ui == null && calcError == null -> Skeleton(Modifier.fillMaxWidth().height(132.dp), radius = 28.dp)
-                else -> CalcHero(heroLabel(mode), ui?.heroAmountMinor, currency, t(TextKey.SAVCALC_FILL), ui?.heroSub ?: t(TextKey.SAVCALC_FILL_SUB))
+                else -> CalcHero(heroLabel(mode), ui?.heroAmountMinor, currency, t(UiKey.SAVCALC_FILL), ui?.heroSub ?: t(UiKey.SAVCALC_FILL_SUB))
             }
         }
         if (ui != null) {
@@ -122,8 +123,8 @@ fun SavingsCalculatorScreen() {
             if (ui.growthMonthlyMinor > 0) item(key = "growth") { SavingsGrowthPanel(ui.growthMonthlyMinor, ui.growthMonths, ui.growthStartMinor, today) }
             item(key = "goal") {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (goalDone) TonalButton(t(TextKey.SAVCALC_GOAL_DONE), {}, Modifier.fillMaxWidth(), enabled = false, height = 52.dp)
-                    else PrimaryButton(t(TextKey.SAVCALC_GOAL), {
+                    if (goalDone) TonalButton(t(UiKey.SAVCALC_GOAL_DONE), {}, Modifier.fillMaxWidth(), enabled = false, height = 52.dp)
+                    else PrimaryButton(t(UiKey.SAVCALC_GOAL), {
                         val o = current
                         scope.launch {
                             try {
@@ -137,11 +138,11 @@ fun SavingsCalculatorScreen() {
                             } catch (e: CancellationException) {
                                 throw e
                             } catch (e: Exception) {
-                                toaster.show(e.message ?: t(TextKey.SAVCALC_GOAL_FAILED), dark = true)
+                                toaster.show(e.message ?: t(UiKey.SAVCALC_GOAL_FAILED), dark = true)
                             }
                         }
                     }, Modifier.fillMaxWidth(), height = 52.dp)
-                    BasicText(t(TextKey.SAVCALC_GOAL_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+                    BasicText(t(UiKey.SAVCALC_GOAL_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
                 }
             }
         }
@@ -155,7 +156,7 @@ private fun SavingsOutcome.matches(mode: SavingsMode): Boolean = (this is Saving
 private fun ModeSwitch(mode: SavingsMode, onPick: (SavingsMode) -> Unit) {
     val outer = RoundedCornerShape(20.dp)
     Row(Modifier.fillMaxWidth().clip(outer).background(Color(0x0F193D33)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        for ((m, key) in listOf(SavingsMode.TARGET to TextKey.SAVCALC_MODE_TARGET, SavingsMode.MONTHLY to TextKey.SAVCALC_MODE_MONTHLY)) {
+        for ((m, key) in listOf(SavingsMode.TARGET to UiKey.SAVCALC_MODE_TARGET, SavingsMode.MONTHLY to UiKey.SAVCALC_MODE_MONTHLY)) {
             val on = m == mode
             val press = rememberPress()
             val shape = RoundedCornerShape(16.dp)
@@ -178,18 +179,18 @@ private fun SavingsFieldsCard(mode: SavingsMode, f: FieldsState, errors: Map<Str
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (mode == SavingsMode.TARGET) {
-                CalcField(t(TextKey.SAVCALC_TARGET_LABEL), f[SavingsFields.TARGET], { put(SavingsFields.TARGET, it) }, unit = unit, error = errors[SavingsFields.TARGET])
-                CalcDateField(t(TextKey.SAVCALC_DATE_LABEL), f[SavingsFields.DATE], { put(SavingsFields.DATE, it) }, today, error = errors[SavingsFields.DATE])
+                CalcField(t(UiKey.SAVCALC_TARGET_LABEL), f[SavingsFields.TARGET], { put(SavingsFields.TARGET, it) }, unit = unit, error = errors[SavingsFields.TARGET])
+                CalcDateField(t(UiKey.SAVCALC_DATE_LABEL), f[SavingsFields.DATE], { put(SavingsFields.DATE, it) }, today, error = errors[SavingsFields.DATE])
                 QuickChips(listOf(12, 24, 36, 60).map { m -> yearsPhrase(m / 12) to addMonthsClamped(today, m) }, f[SavingsFields.DATE]) { put(SavingsFields.DATE, it) }
             } else {
-                CalcField(t(TextKey.SAVCALC_MONTHLY_LABEL), f[SavingsFields.MONTHLY], { put(SavingsFields.MONTHLY, it) }, unit = unit, error = errors[SavingsFields.MONTHLY])
+                CalcField(t(UiKey.SAVCALC_MONTHLY_LABEL), f[SavingsFields.MONTHLY], { put(SavingsFields.MONTHLY, it) }, unit = unit, error = errors[SavingsFields.MONTHLY])
                 CalcField(
-                    t(TextKey.SAVCALC_MONTHS_LABEL), f[SavingsFields.MONTHS], { put(SavingsFields.MONTHS, it) }, unit = t(TextKey.CALCUI_MONTHS_UNIT),
+                    t(UiKey.SAVCALC_MONTHS_LABEL), f[SavingsFields.MONTHS], { put(SavingsFields.MONTHS, it) }, unit = t(UiKey.CALCUI_MONTHS_UNIT),
                     error = errors[SavingsFields.MONTHS], keyboard = KeyboardType.Number,
                 )
                 QuickChips(listOf(12, 24, 36, 60, 120).map { m -> yearsPhrase(m / 12) to m.toString() }, f[SavingsFields.MONTHS]) { put(SavingsFields.MONTHS, it) }
             }
-            CalcField(t(TextKey.SAVCALC_HAVE_LABEL), f[SavingsFields.HAVE], { put(SavingsFields.HAVE, it) }, unit = unit, note = t(TextKey.SAVCALC_HAVE_NOTE), error = errors[SavingsFields.HAVE])
+            CalcField(t(UiKey.SAVCALC_HAVE_LABEL), f[SavingsFields.HAVE], { put(SavingsFields.HAVE, it) }, unit = unit, note = t(UiKey.SAVCALC_HAVE_NOTE), error = errors[SavingsFields.HAVE])
         }
     }
 }

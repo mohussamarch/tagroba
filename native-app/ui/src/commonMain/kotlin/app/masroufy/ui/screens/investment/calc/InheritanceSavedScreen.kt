@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -106,15 +107,15 @@ fun InheritanceSavedScreen() {
     }
 
     Box(Modifier.fillMaxSize()) {
-        InnerScaffold(t(TextKey.INHSAVED_TITLE)) {
-            item(key = "intro") { BasicText(t(TextKey.INHSAVED_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+        InnerScaffold(t(UiKey.INHSAVED_TITLE)) {
+            item(key = "intro") { BasicText(t(UiKey.INHSAVED_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
             val list = rows
             when {
-                failed -> item(key = "failed") { EmptyState(t(TextKey.INHSAVED_LOAD_FAILED)) }
+                failed -> item(key = "failed") { EmptyState(t(UiKey.INHSAVED_LOAD_FAILED)) }
                 list == null -> items(2) { Skeleton(Modifier.fillMaxWidth().height(176.dp)) }
                 list.isEmpty() -> item(key = "empty") {
-                    EmptyState(t(TextKey.INHSAVED_EMPTY_TITLE), t(TextKey.INHSAVED_EMPTY_BODY), action = {
-                        PrimaryButton(t(TextKey.INHSAVED_EMPTY_ACTION), { backToCalculator(null) }, Modifier.padding(top = 10.dp))
+                    EmptyState(t(UiKey.INHSAVED_EMPTY_TITLE), t(UiKey.INHSAVED_EMPTY_BODY), action = {
+                        PrimaryButton(t(UiKey.INHSAVED_EMPTY_ACTION), { backToCalculator(null) }, Modifier.padding(top = 10.dp))
                     })
                 }
                 else -> list.forEach { r ->
@@ -134,7 +135,7 @@ fun InheritanceSavedScreen() {
             undo = null
             scope.launch {
                 runCatching { deps.scenarios.save(InheritanceScenarioDraft(s.name, s.estateOf, s.personId, s.input)) }
-                undo = Undo(t(TextKey.INHSAVED_RESTORED, s.name), null)
+                undo = Undo(t(UiKey.INHSAVED_RESTORED, s.name), null)
                 reload++
             }
         } }
@@ -143,21 +144,21 @@ fun InheritanceSavedScreen() {
     Sheet(
         s != null, { sheet = null },
         when (s) {
-            is SavedSheet.Rename -> t(TextKey.INHCALC_SAVE_TITLE)
-            is SavedSheet.Delete -> t(TextKey.INHSAVED_DELETE_TITLE, s.name)
+            is SavedSheet.Rename -> t(UiKey.INHCALC_SAVE_TITLE)
+            is SavedSheet.Delete -> t(UiKey.INHSAVED_DELETE_TITLE, s.name)
             null -> ""
         },
     ) {
         when (s) {
             is SavedSheet.Rename -> {
-                BasicText(t(TextKey.INHSAVED_RENAME_BODY), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.INHSAVED_RENAME_BODY), style = Type.of(13).copy(color = Ink.muted))
                 TextInput(nameInput, { nameInput = it.take(60); sheetError = null }, error = sheetError)
-                PrimaryButton(t(TextKey.INHCALC_SAVE_BUTTON), {
+                PrimaryButton(t(UiKey.INHCALC_SAVE_BUTTON), {
                     scope.launch {
                         try {
                             val renamed = deps.scenarios.rename(s.id, nameInput.trim().ifEmpty { s.name })
                             sheet = null
-                            undo = Undo(t(TextKey.INHSAVED_RENAMED, renamed.name), null)
+                            undo = Undo(t(UiKey.INHSAVED_RENAMED, renamed.name), null)
                             reload++
                         } catch (e: CancellationException) {
                             throw e
@@ -168,13 +169,13 @@ fun InheritanceSavedScreen() {
                 }, Modifier.fillMaxWidth())
             }
             is SavedSheet.Delete -> {
-                BasicText(t(TextKey.INHSAVED_DELETE_BODY), style = Type.of(13).copy(color = Ink.muted))
-                DangerButton(t(TextKey.INHSAVED_DELETE)) {
+                BasicText(t(UiKey.INHSAVED_DELETE_BODY), style = Type.of(13).copy(color = Ink.muted))
+                DangerButton(t(UiKey.INHSAVED_DELETE)) {
                     val gone = scenarios?.firstOrNull { it.id == s.id }
                     scope.launch {
                         runCatching { deps.scenarios.delete(s.id) }
                         sheet = null
-                        undo = Undo(t(TextKey.INHSAVED_DELETED, s.name), gone)
+                        undo = Undo(t(UiKey.INHSAVED_DELETED, s.name), gone)
                         reload++
                     }
                 }
@@ -207,10 +208,10 @@ private fun SavedCard(r: SavedRowUi, onOpen: () -> Unit, onRename: () -> Unit, o
             BasicText(r.whenText, style = Type.of(11).copy(color = Ink.muted))
             Divider()
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                PrimaryButton(t(TextKey.INHSAVED_OPEN), onOpen, Modifier.weight(2f), height = 44.dp)
-                TonalButton(t(TextKey.INHSAVED_RENAME), onRename, Modifier.weight(1f), height = 44.dp)
+                PrimaryButton(t(UiKey.INHSAVED_OPEN), onOpen, Modifier.weight(2f), height = 44.dp)
+                TonalButton(t(UiKey.INHSAVED_RENAME), onRename, Modifier.weight(1f), height = 44.dp)
                 val press = rememberPress()
-                val label = t(TextKey.INHSAVED_DELETE_ONE, r.name)
+                val label = t(UiKey.INHSAVED_DELETE_ONE, r.name)
                 Box(
                     Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x14BE3D48))
                         .tap(press, label = label, onClick = onDelete).semantics { contentDescription = label },
@@ -246,7 +247,7 @@ private fun UndoBar(u: Undo, modifier: Modifier, onUndo: () -> Unit) {
             Box(
                 Modifier.height(40.dp).pressScale(press).clip(RoundedCornerShape(12.dp)).background(Color(0x1AFFFFFF)).tap(press, onClick = onUndo).padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center,
-            ) { BasicText(t(TextKey.INHSAVED_UNDO), style = Type.of(13, FontWeight.Bold).copy(color = Ink.mint)) }
+            ) { BasicText(t(UiKey.INHSAVED_UNDO), style = Type.of(13, FontWeight.Bold).copy(color = Ink.mint)) }
         }
     }
 }

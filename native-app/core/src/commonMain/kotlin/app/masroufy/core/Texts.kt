@@ -46,21 +46,21 @@ enum class ArabicVariant {
  * ([Texts.followCountry] — من الجلسة وإدارة البلاد)، فحالات الاستخدام والشاشات ما تعرفش عنها حاجة.
  */
 // كل نسخة مقسومة على كذا ملف عشان حد الـ300 سطر (CLAUDE.md #7). المصري = الجداول القديمة **بالاسم الجديد بس** (من غير ولا حرف اتغير).
-internal val EGYPTIAN_TEXTS: Map<TextKey, String> = EGYPTIAN_SCREEN_TEXTS + EGYPTIAN_DATA_TEXTS + EGYPTIAN_DUES_TEXTS + EGYPTIAN_STORAGE_TEXTS + EGYPTIAN_AUTH_TEXTS + EGYPTIAN_ZAKAT_TEXTS + EGYPTIAN_ALERT_TEXTS +
+internal val EGYPTIAN_TEXTS: Map<TextRef, String> = EGYPTIAN_SCREEN_TEXTS + EGYPTIAN_DATA_TEXTS + EGYPTIAN_DUES_TEXTS + EGYPTIAN_STORAGE_TEXTS + EGYPTIAN_AUTH_TEXTS + EGYPTIAN_ZAKAT_TEXTS + EGYPTIAN_ALERT_TEXTS +
     EGYPTIAN_EVENT_TEXTS + EGYPTIAN_INCOME_TEXTS + EGYPTIAN_SPACE_TEXTS + EGYPTIAN_CALENDAR_TEXTS + EGYPTIAN_USECASE_TEXTS + EGYPTIAN_PEOPLE_TEXTS +
     EGYPTIAN_FEED_ALERT_TEXTS + EGYPTIAN_ADVISOR_TEXTS + EGYPTIAN_ADVISOR_MORE_TEXTS + EGYPTIAN_INHERITANCE_TEXTS + EGYPTIAN_CALC_TEXTS + EGYPTIAN_RETIRE_TEXTS + EGYPTIAN_GROWTH_TEXTS +
     EGYPTIAN_INHERITANCE_DISTANT_TEXTS + EGYPTIAN_SMS_AUTO_TEXTS +
     // عقد C0: جدول لكل شريحة (S1…S6)
     EGYPTIAN_SMS_LEARN_TEXTS + EGYPTIAN_SMS_FEE_TEXTS + EGYPTIAN_RETURNS_TEXTS + EGYPTIAN_MATCHING_TEXTS + EGYPTIAN_ASKS_TEXTS + EGYPTIAN_MONTH_TEXTS +
     EGYPTIAN_SHELL_TEXTS + EGYPTIAN_SHELL_AUTH_TEXTS + EGYPTIAN_AREA_TEXTS
-internal val MSA_TEXTS: Map<TextKey, String> = MSA_SCREEN_TEXTS + MSA_DATA_TEXTS + MSA_DUES_TEXTS + MSA_STORAGE_TEXTS + MSA_AUTH_TEXTS + MSA_ZAKAT_TEXTS + MSA_ALERT_TEXTS +
+internal val MSA_TEXTS: Map<TextRef, String> = MSA_SCREEN_TEXTS + MSA_DATA_TEXTS + MSA_DUES_TEXTS + MSA_STORAGE_TEXTS + MSA_AUTH_TEXTS + MSA_ZAKAT_TEXTS + MSA_ALERT_TEXTS +
     MSA_EVENT_TEXTS + MSA_INCOME_TEXTS + MSA_SPACE_TEXTS + MSA_CALENDAR_TEXTS + MSA_USECASE_TEXTS + MSA_PEOPLE_TEXTS + MSA_FEED_ALERT_TEXTS + MSA_ADVISOR_TEXTS +
     MSA_ADVISOR_MORE_TEXTS + MSA_INHERITANCE_TEXTS + MSA_CALC_TEXTS + MSA_RETIRE_TEXTS + MSA_GROWTH_TEXTS +
     MSA_INHERITANCE_DISTANT_TEXTS + MSA_SMS_AUTO_TEXTS +
     // عقد C0: جدول لكل شريحة (S1…S6)
     MSA_SMS_LEARN_TEXTS + MSA_SMS_FEE_TEXTS + MSA_RETURNS_TEXTS + MSA_MATCHING_TEXTS + MSA_ASKS_TEXTS + MSA_MONTH_TEXTS +
     MSA_SHELL_TEXTS + MSA_SHELL_AUTH_TEXTS + MSA_AREA_TEXTS
-internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS + ENGLISH_DUES_TEXTS + ENGLISH_STORAGE_TEXTS + ENGLISH_AUTH_TEXTS + ENGLISH_ZAKAT_TEXTS + ENGLISH_ALERT_TEXTS +
+internal val ENGLISH_TEXTS: Map<TextRef, String> = ENGLISH_SCREEN_TEXTS + ENGLISH_DATA_TEXTS + ENGLISH_DUES_TEXTS + ENGLISH_STORAGE_TEXTS + ENGLISH_AUTH_TEXTS + ENGLISH_ZAKAT_TEXTS + ENGLISH_ALERT_TEXTS +
     ENGLISH_EVENT_TEXTS + ENGLISH_INCOME_TEXTS + ENGLISH_SPACE_TEXTS + ENGLISH_CALENDAR_TEXTS + ENGLISH_USECASE_TEXTS + ENGLISH_PEOPLE_TEXTS +
     ENGLISH_FEED_ALERT_TEXTS + ENGLISH_ADVISOR_TEXTS + ENGLISH_ADVISOR_MORE_TEXTS + ENGLISH_INHERITANCE_TEXTS + ENGLISH_CALC_TEXTS + ENGLISH_RETIRE_TEXTS + ENGLISH_GROWTH_TEXTS +
     ENGLISH_INHERITANCE_DISTANT_TEXTS + ENGLISH_SMS_AUTO_TEXTS +
@@ -69,7 +69,7 @@ internal val ENGLISH_TEXTS: Map<TextKey, String> = ENGLISH_SCREEN_TEXTS + ENGLIS
     ENGLISH_SHELL_TEXTS + ENGLISH_SHELL_AUTH_TEXTS + ENGLISH_AREA_TEXTS
 
 /** جدول نسخة العربي. */
-internal fun arabicTable(variant: ArabicVariant): Map<TextKey, String> = when (variant) {
+internal fun arabicTable(variant: ArabicVariant): Map<TextRef, String> = when (variant) {
     ArabicVariant.MSA -> MSA_TEXTS
     ArabicVariant.EGYPTIAN -> EGYPTIAN_TEXTS
 }
@@ -85,7 +85,7 @@ object Texts {
         arabicVariant = ArabicVariant.forCountry(countryCode)
     }
 
-    fun of(key: TextKey, vararg args: String): String {
+    fun of(key: TextRef, vararg args: String): String {
         // لو مفتاح لسه ماتترجمش للإنجليزي، بيرجع بالعربي بدل ما يختفي من الشاشة
         val pattern = when (language) {
             Language.AR -> arabic(key)
@@ -94,18 +94,18 @@ object Texts {
         return fill(pattern, args)
     }
 
-    private fun arabic(key: TextKey): String {
+    private fun arabic(key: TextRef): String {
         val other = if (arabicVariant == ArabicVariant.MSA) ArabicVariant.EGYPTIAN else ArabicVariant.MSA
         return resolveArabic(key, arabicTable(arabicVariant), arabicTable(other))
     }
 }
 
 /** النسخة الشغالة ⇒ النسخة التانية ⇒ اسم المفتاح (ما بيوقعش أبدًا — واختبار الاكتمال بيمنع إن ده يحصل أصلًا). */
-internal fun resolveArabic(key: TextKey, primary: Map<TextKey, String>, other: Map<TextKey, String>): String =
+internal fun resolveArabic(key: TextRef, primary: Map<TextRef, String>, other: Map<TextRef, String>): String =
     primary[key] ?: other[key] ?: key.name
 
 /** النص المعروض للمفتاح باللغة الحالية. `{0}` و`{1}` بيتبدلوا بالمتغيرات بالترتيب. */
-fun uiText(key: TextKey, vararg args: String): String = Texts.of(key, *args)
+fun uiText(key: TextRef, vararg args: String): String = Texts.of(key, *args)
 
 private fun fill(pattern: String, args: Array<out String>): String {
     if (args.isEmpty() || !pattern.contains('{')) return pattern

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -63,12 +64,12 @@ fun ImportDuplicateSheet(
     val state = line?.state ?: MatchingState.SIMILAR
     val title = t(
         when (state) {
-            MatchingState.CONFLICT -> TextKey.IMPORT_DUP_TITLE_CONFLICT
-            MatchingState.DUPLICATE -> TextKey.IMPORT_DUP_TITLE_DUP
-            else -> TextKey.IMPORT_DUP_TITLE_SIMILAR
+            MatchingState.CONFLICT -> UiKey.IMPORT_DUP_TITLE_CONFLICT
+            MatchingState.DUPLICATE -> UiKey.IMPORT_DUP_TITLE_DUP
+            else -> UiKey.IMPORT_DUP_TITLE_SIMILAR
         },
     )
-    Sheet(line != null, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 12.dp) {
+    Sheet(line != null, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         val l = line ?: return@Sheet
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(title, Modifier.weight(1f), style = Type.of(17, FontWeight.Bold))
@@ -77,28 +78,28 @@ fun ImportDuplicateSheet(
         val o = old
         val diff = o?.let { diffOf(l.amountMinor, l.date, it.amountMinor, it.occurredAt) }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Side(t(TextKey.IMPORT_DUP_NEW_SIDE), l.name, l.amountMinor, l.direction, l.date, t(TextKey.IMPORT_DUP_ROW_IN_FILE, t(TextKey.IMPORT_REVIEW_ROW, app.masroufy.core.sentenceNumber(l.lineNumber))), currency, diff, true, Modifier.weight(1f))
+            Side(t(UiKey.IMPORT_DUP_NEW_SIDE), l.name, l.amountMinor, l.direction, l.date, t(UiKey.IMPORT_DUP_ROW_IN_FILE, t(UiKey.IMPORT_REVIEW_ROW, app.masroufy.core.sentenceNumber(l.lineNumber))), currency, diff, true, Modifier.weight(1f))
             if (o != null) {
-                Side(t(TextKey.IMPORT_DUP_OLD_SIDE), jsTrim(o.rawMerchantName ?: o.rawDescription ?: ""), o.amountMinor, o.observedDirection, o.occurredAt, null, o.currency, diff, false, Modifier.weight(1f))
+                Side(t(UiKey.IMPORT_DUP_OLD_SIDE), jsTrim(o.rawMerchantName ?: o.rawDescription ?: ""), o.amountMinor, o.observedDirection, o.occurredAt, null, o.currency, diff, false, Modifier.weight(1f))
             }
         }
         if (diff != null) {
-            BasicText(t(TextKey.IMPORT_DUP_DIFF, t(if (diff == DiffField.AMOUNT) TextKey.IMPORT_DUP_DIFF_AMOUNT else TextKey.IMPORT_DUP_DIFF_DATE)), style = Type.captionBold().copy(color = Ink.focus))
+            BasicText(t(UiKey.IMPORT_DUP_DIFF, t(if (diff == DiffField.AMOUNT) UiKey.IMPORT_DUP_DIFF_AMOUNT else UiKey.IMPORT_DUP_DIFF_DATE)), style = Type.captionBold().copy(color = Ink.focus))
         }
         BasicText(
             l.reason,
             Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.text.copy(alpha = 0.04f)).padding(horizontal = 12.dp, vertical = 10.dp),
             style = Type.of(13, lineHeight = 1.7),
         )
-        if (state == MatchingState.CONFLICT) BasicText(t(TextKey.IMPORT_DUP_CONFLICT_NOTE), style = Type.caption().copy(color = Ink.muted))
+        if (state == MatchingState.CONFLICT) BasicText(t(UiKey.IMPORT_DUP_CONFLICT_NOTE), style = Type.caption().copy(color = Ink.muted))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             when (state) {
                 MatchingState.SIMILAR -> {
-                    QuietButton(t(TextKey.IMPORT_DUP_SKIP), { onDecide(l, false) }, Modifier.weight(1f))
-                    PrimaryButton(t(TextKey.IMPORT_DUP_ADD), { onDecide(l, true) }, Modifier.weight(1f))
+                    QuietButton(t(UiKey.IMPORT_DUP_SKIP), { onDecide(l, false) }, Modifier.weight(1f))
+                    PrimaryButton(t(UiKey.IMPORT_DUP_ADD), { onDecide(l, true) }, Modifier.weight(1f))
                 }
-                MatchingState.CONFLICT -> PrimaryButton(t(TextKey.IMPORT_DUP_KEEP), { onDecide(l, null) }, Modifier.weight(1f))
-                else -> PrimaryButton(t(TextKey.IMPORT_DUP_OK), { onDecide(l, null) }, Modifier.weight(1f))
+                MatchingState.CONFLICT -> PrimaryButton(t(UiKey.IMPORT_DUP_KEEP), { onDecide(l, null) }, Modifier.weight(1f))
+                else -> PrimaryButton(t(UiKey.IMPORT_DUP_OK), { onDecide(l, null) }, Modifier.weight(1f))
             }
         }
     }

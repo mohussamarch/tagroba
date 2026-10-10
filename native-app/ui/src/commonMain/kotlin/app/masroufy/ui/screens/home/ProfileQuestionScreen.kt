@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -97,18 +98,18 @@ fun ProfileQuestionScreen() {
                     }
                     is ProfileCheck.Invalid -> error = check.message
                 }
-            }.onFailure { error = t(TextKey.PROFILE_QUESTION_SAVE_FAILED) }
+            }.onFailure { error = t(UiKey.PROFILE_QUESTION_SAVE_FAILED) }
             saving = false
         }
     }
-    InnerScaffold(t(TextKey.PROFILE_QUESTION_TITLE)) {
+    InnerScaffold(t(UiKey.PROFILE_QUESTION_TITLE)) {
         val c = card
         when {
-            failed -> item(key = "failed") { EmptyState(t(TextKey.SHELL_LOAD_FAILED)) }
+            failed -> item(key = "failed") { EmptyState(t(UiKey.SHELL_LOAD_FAILED)) }
             profile == null -> item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(260.dp)) }
             c == null -> item(key = "done") {
-                EmptyState(t(TextKey.PROFILE_QUESTION_NONE_TITLE), t(TextKey.PROFILE_QUESTION_NONE_BODY), action = {
-                    TonalButton(t(TextKey.PROFILE_QUESTION_BACK_HOME), onClick = { nav.pop() })
+                EmptyState(t(UiKey.PROFILE_QUESTION_NONE_TITLE), t(UiKey.PROFILE_QUESTION_NONE_BODY), action = {
+                    TonalButton(t(UiKey.PROFILE_QUESTION_BACK_HOME), onClick = { nav.pop() })
                 })
             }
             else -> {
@@ -127,7 +128,7 @@ fun ProfileQuestionScreen() {
                         reply = null
                     }, onHome = { nav.pop() })
                 } else item(key = "later") {
-                    TonalButton(t(TextKey.PROFILE_QUESTION_LATER), onClick = { nav.pop() }, modifier = Modifier.fillMaxWidth(), muted = true)
+                    TonalButton(t(UiKey.PROFILE_QUESTION_LATER), onClick = { nav.pop() }, modifier = Modifier.fillMaxWidth(), muted = true)
                 }
             }
         }
@@ -139,8 +140,8 @@ private fun LeadLine() {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
         IconTile(Ink.primary, size = 44.dp, radius = 22.dp) { LucideIcon(Lucide.USER, size = 22.dp, tint = Ink.primary) }
         Column {
-            BasicText(t(TextKey.HOME_PROFILE_TITLE), style = Type.bodyBold())
-            BasicText(t(TextKey.PROFILE_QUESTION_LEAD), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.HOME_PROFILE_TITLE), style = Type.bodyBold())
+            BasicText(t(UiKey.PROFILE_QUESTION_LEAD), style = Type.caption().copy(color = Ink.muted))
         }
     }
 }
@@ -186,12 +187,12 @@ private fun ReplyCard(text: String, hasNext: Boolean, onNext: () -> Unit, onHome
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 LucideIcon(Lucide.CHECK, size = 22.dp, tint = Ink.income)
                 Column(Modifier.weight(1f)) {
-                    BasicText(t(TextKey.PROFILE_QUESTION_SAVED_TITLE), style = Type.bodyBold())
+                    BasicText(t(UiKey.PROFILE_QUESTION_SAVED_TITLE), style = Type.bodyBold())
                     BasicText(text, style = Type.of(13).copy(color = Ink.soft))
                 }
             }
-            if (hasNext) PrimaryButton(t(TextKey.PROFILE_QUESTION_NEXT), onClick = onNext, modifier = Modifier.fillMaxWidth())
-            TonalButton(t(TextKey.PROFILE_QUESTION_BACK_HOME), onClick = onHome, modifier = Modifier.fillMaxWidth())
+            if (hasNext) PrimaryButton(t(UiKey.PROFILE_QUESTION_NEXT), onClick = onNext, modifier = Modifier.fillMaxWidth())
+            TonalButton(t(UiKey.PROFILE_QUESTION_BACK_HOME), onClick = onHome, modifier = Modifier.fillMaxWidth())
         }
     }
 }

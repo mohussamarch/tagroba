@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.IncomeFollowUp
@@ -23,39 +25,39 @@ import app.masroufy.ui.text.t
  * مصادر الدخل للعرض — **دوال نقية** (JVM). المبالغ والنِسب جاهزة من حالات الاستخدام (`compareAroundStart` بيدّي النسبة بالعُشر من المية)؛
  * هنا بس الصياغة. المتوقع الفاضي «لم تكتبه» مش صفر (§48)، والمقارنة `null` ⇒ «غير متاح» (القاعدة 10).
  */
-fun incomeKindLabel(kind: IncomeSourceKind): TextKey = when (kind) {
-    IncomeSourceKind.JOB -> TextKey.INCSRC_KIND_JOB
-    IncomeSourceKind.PART_TIME -> TextKey.INCSRC_KIND_PART_TIME
-    IncomeSourceKind.CLIENT -> TextKey.INCSRC_KIND_CLIENT
-    IncomeSourceKind.RENT -> TextKey.INCSRC_KIND_RENT
-    IncomeSourceKind.INVESTMENT -> TextKey.INCSRC_KIND_INVESTMENT
-    IncomeSourceKind.PENSION -> TextKey.INCSRC_KIND_PENSION
-    IncomeSourceKind.OTHER -> TextKey.INCSRC_KIND_OTHER
+fun incomeKindLabel(kind: IncomeSourceKind): TextRef = when (kind) {
+    IncomeSourceKind.JOB -> UiKey.INCSRC_KIND_JOB
+    IncomeSourceKind.PART_TIME -> UiKey.INCSRC_KIND_PART_TIME
+    IncomeSourceKind.CLIENT -> UiKey.INCSRC_KIND_CLIENT
+    IncomeSourceKind.RENT -> UiKey.INCSRC_KIND_RENT
+    IncomeSourceKind.INVESTMENT -> UiKey.INCSRC_KIND_INVESTMENT
+    IncomeSourceKind.PENSION -> UiKey.INCSRC_KIND_PENSION
+    IncomeSourceKind.OTHER -> UiKey.INCSRC_KIND_OTHER
 }
 
 /** الاتنين = 1 … الأحد = 7 (ISO — زي `payWeekday`). */
-fun weekdayLabel(day: Int): TextKey = listOf(
-    TextKey.WEEKDAY_MON, TextKey.WEEKDAY_TUE, TextKey.WEEKDAY_WED, TextKey.WEEKDAY_THU, TextKey.WEEKDAY_FRI, TextKey.WEEKDAY_SAT, TextKey.WEEKDAY_SUN,
+fun weekdayLabel(day: Int): TextRef = listOf(
+    UiKey.WEEKDAY_MON, UiKey.WEEKDAY_TUE, UiKey.WEEKDAY_WED, UiKey.WEEKDAY_THU, UiKey.WEEKDAY_FRI, UiKey.WEEKDAY_SAT, UiKey.WEEKDAY_SUN,
 )[(day - 1).coerceIn(0, 6)]
 
 /** «يوم ٢٨ شهريًا» · «كل الخميس» · «الموعد غير محدد» (للي ليه مرتب) · «بلا موعد ثابت». */
 fun payText(s: IncomeSource): String = when {
-    s.payFrequency == PayFrequency.WEEKLY -> s.payWeekday?.let { t(TextKey.INCSRC_PAY_WEEKLY, t(weekdayLabel(it))) } ?: t(TextKey.INCSRC_PAY_WEEKLY_UNSET)
-    s.expectedDayOfMonth != null -> t(TextKey.INCSRC_PAY_MONTHLY, sentenceNumber(s.expectedDayOfMonth!!))
-    s.kind in SALARIED_KINDS || s.kind == IncomeSourceKind.PENSION -> t(TextKey.INCSRC_PAY_UNSET)
-    else -> t(TextKey.INCSRC_PAY_NONE)
+    s.payFrequency == PayFrequency.WEEKLY -> s.payWeekday?.let { t(UiKey.INCSRC_PAY_WEEKLY, t(weekdayLabel(it))) } ?: t(UiKey.INCSRC_PAY_WEEKLY_UNSET)
+    s.expectedDayOfMonth != null -> t(UiKey.INCSRC_PAY_MONTHLY, sentenceNumber(s.expectedDayOfMonth!!))
+    s.kind in SALARIED_KINDS || s.kind == IncomeSourceKind.PENSION -> t(UiKey.INCSRC_PAY_UNSET)
+    else -> t(UiKey.INCSRC_PAY_NONE)
 }
 
 /** «منذ ٢٨ أبريل ٢٠٢٦» أو «١ مارس ٢٠٢٥ – ٢٧ أبريل ٢٠٢٦». */
 fun periodText(s: IncomeSource): String {
     val from = fullDate(s.startedAt) ?: s.startedAt
-    return s.endedAt?.let { t(TextKey.INCSRC_PERIOD_RANGE, from, fullDate(it) ?: it) } ?: t(TextKey.INCSRC_PERIOD_SINCE, from)
+    return s.endedAt?.let { t(UiKey.INCSRC_PERIOD_RANGE, from, fullDate(it) ?: it) } ?: t(UiKey.INCSRC_PERIOD_SINCE, from)
 }
 
 data class IncomeRowView(val id: String, val name: String, val kind: IncomeSourceKind, val meta: String, val period: String, val expected: String?, val ended: Boolean)
 
 fun incomeRow(s: IncomeSource): IncomeRowView = IncomeRowView(
-    s.id, s.name, s.kind, t(TextKey.INCSRC_META, t(incomeKindLabel(s.kind)), payText(s)), periodText(s),
+    s.id, s.name, s.kind, t(UiKey.INCSRC_META, t(incomeKindLabel(s.kind)), payText(s)), periodText(s),
     s.expectedMinor?.let { amountLabel(it, s.currency) }, s.endedAt != null,
 )
 
@@ -74,7 +76,7 @@ fun tenthPercentText(tenth: Long?): String {
         tenth < 0 -> "−"
         else -> ""
     }
-    return sign + sentenceDigits("${abs / 10}") + t(TextKey.INCSRC_DECIMAL_SEP) + sentenceDigits("${abs % 10}") + "٪"
+    return sign + sentenceDigits("${abs / 10}") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("${abs % 10}") + "٪"
 }
 
 enum class Trend { GOOD, BAD, FLAT }
@@ -86,11 +88,11 @@ fun trend(tenth: Long?, isIncome: Boolean): Trend = when {
     else -> Trend.BAD
 }
 
-data class CompareRow(val label: TextKey, val before: Halalas, val after: Halalas, val change: String, val trend: Trend, val currency: Currency)
+data class CompareRow(val label: TextRef, val before: Halalas, val after: Halalas, val change: String, val trend: Trend, val currency: Currency)
 
 fun compareRows(c: SourceStartComparison): List<CompareRow> = listOf(
-    CompareRow(TextKey.INCSRC_CMP_INCOME, c.incomeBeforeAvgMinor, c.incomeAfterAvgMinor, tenthPercentText(c.incomeChangeTenthPercent), trend(c.incomeChangeTenthPercent, true), c.currency),
-    CompareRow(TextKey.INCSRC_CMP_EXPENSE, c.expenseBeforeAvgMinor, c.expenseAfterAvgMinor, tenthPercentText(c.expenseChangeTenthPercent), trend(c.expenseChangeTenthPercent, false), c.currency),
+    CompareRow(UiKey.INCSRC_CMP_INCOME, c.incomeBeforeAvgMinor, c.incomeAfterAvgMinor, tenthPercentText(c.incomeChangeTenthPercent), trend(c.incomeChangeTenthPercent, true), c.currency),
+    CompareRow(UiKey.INCSRC_CMP_EXPENSE, c.expenseBeforeAvgMinor, c.expenseAfterAvgMinor, tenthPercentText(c.expenseChangeTenthPercent), trend(c.expenseChangeTenthPercent, false), c.currency),
 )
 
 /** «غيّرت شغلي»: الأسئلة اللي فاضلة بالترتيب. الرد بيطلّع أسئلة جديدة (يوم الراتب ⇒ «تغيّر بداية شهرك؟») بتتحط قبل الباقي. */
@@ -118,4 +120,4 @@ fun startDateChoices(today: IsoDate, payday: Int, change: Boolean): List<IsoDate
     else listOf(today, periodForDate(today, payday).start, today.take(4) + "-01-01").distinct()
 
 /** كلمة اليوم في الشريحة: «اليوم» بدل تاريخ النهارده. */
-fun dateChipLabel(iso: IsoDate, today: IsoDate): String = if (iso == today) t(TextKey.MORE_TODAY) else fullDate(iso) ?: iso
+fun dateChipLabel(iso: IsoDate, today: IsoDate): String = if (iso == today) t(UiKey.MORE_TODAY) else fullDate(iso) ?: iso

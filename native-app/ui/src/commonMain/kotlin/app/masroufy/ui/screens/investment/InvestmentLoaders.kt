@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Id
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
@@ -33,7 +34,7 @@ suspend fun loadInvestment(deps: InvestmentDeps, space: Space, force: Boolean = 
     val skipped = if (prices is FeedState.Ready) runCatching { deps.syncPrices.sync(prices.feed).skipped.size }.getOrDefault(0) else 0
     val problem = feedProblem(prices)
     val zakatHint = runCatching {
-        if (deps.zakat.visible()) deps.zakat.rules().firstOrNull()?.source?.authority?.label?.let { uiText(TextKey.INVEST_TOOL_ZAKAT_HINT, it) } else null
+        if (deps.zakat.visible()) deps.zakat.rules().firstOrNull()?.source?.authority?.label?.let { uiText(UiKey.INVEST_TOOL_ZAKAT_HINT, it) } else null
     }.getOrNull()
     val goals = runCatching { deps.goals().size }.getOrNull()
     val view = runCatching { deps.assets.listPortfolio(today) }.getOrNull() ?: return InvestmentLoad(null, problem, zakatHint, goals, skipped)
@@ -49,7 +50,7 @@ suspend fun loadInvestment(deps: InvestmentDeps, space: Space, force: Boolean = 
 suspend fun refreshPrices(deps: InvestmentDeps): String = when (val feed = deps.feeds.prices(force = true)) {
     is FeedState.Ready -> {
         deps.syncPrices.sync(feed.feed)
-        feed.refreshFailed?.let { uiText(TextKey.INVEST_ERROR_BODY) } ?: uiText(TextKey.INVEST_REFRESHED)
+        feed.refreshFailed?.let { uiText(UiKey.INVEST_ERROR_BODY) } ?: uiText(UiKey.INVEST_REFRESHED)
     }
     is FeedState.Unavailable -> feed.reason
 }

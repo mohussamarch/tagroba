@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
@@ -69,14 +70,14 @@ class LoadOnlineFeedsTest {
     @Test fun offlineKeepsTheLastCopyWithItsTimeOrSaysNotAvailable() = runBlocking<Unit> {
         http.offline = true
         val none = assertIs<FeedState.Unavailable>(feeds.prices())
-        assertEquals(uiText(TextKey.FEED_OFFLINE), none.reason, "ولا نسخة ⇒ «غير متاح» بسببه، مش صفر")
+        assertEquals(uiText(UiKey.FEED_OFFLINE), none.reason, "ولا نسخة ⇒ «غير متاح» بسببه، مش صفر")
         http.offline = false
         feeds.prices()
         http.offline = true
         now += FEED_MAX_AGE_MILLIS + 1
         val kept = assertIs<FeedState.Ready<*>>(feeds.prices())
         assertEquals("2026-10-09T07:00:00.000Z", kept.fetchedAtIso)
-        assertEquals(uiText(TextKey.FEED_OFFLINE), kept.refreshFailed)
+        assertEquals(uiText(UiKey.FEED_OFFLINE), kept.refreshFailed)
     }
 
     @Test fun badFileIsRejectedAndNeverCached() = runBlocking<Unit> {
@@ -89,7 +90,7 @@ class LoadOnlineFeedsTest {
         http[FEEDS_BASE_URL + "prices.json"] = pricesJson
         http[FEEDS_BASE_URL + "averages.json"] = "{}"
         val missing = assertIs<FeedState.Unavailable>(LoadOnlineFeeds(http, cache, FixedClock("x"), { now }, baseUrl = "https://example.invalid/").prices())
-        assertEquals(uiText(TextKey.FEED_HTTP_FAILED, "404"), missing.reason)
+        assertEquals(uiText(UiKey.FEED_HTTP_FAILED, "404"), missing.reason)
     }
 
     @Test fun pricesFeedSyncAssets() = runBlocking<Unit> {

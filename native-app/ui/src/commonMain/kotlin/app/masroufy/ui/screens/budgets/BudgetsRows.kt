@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,7 +55,7 @@ fun CategoryLineRow(line: LineUi, ui: BudgetsUi, onOpen: () -> Unit) {
             val numbers = when {
                 line.spentMinor == null -> t(TextKey.NOT_AVAILABLE)
                 // «المصروف / السقف» — نفس شكل «المدّخر / الهدف» (`{0} / {1}`)
-                line.limitMinor != null -> t(TextKey.BUDGETS_SPENT_OF, amount(line.spentMinor, ui.currency), amount(line.limitMinor, ui.currency))
+                line.limitMinor != null -> t(UiKey.BUDGETS_SPENT_OF, amount(line.spentMinor, ui.currency), amount(line.limitMinor, ui.currency))
                 else -> amount(line.spentMinor, ui.currency)
             }
             val ink = when {
@@ -77,9 +78,9 @@ fun CategoryLineRow(line: LineUi, ui: BudgetsUi, onOpen: () -> Unit) {
 /** «مواعيد قادمة»: الاسم وميعاده · المبلغ · «احسبه من فلوسي» ⇄ «محجوز ✓ · إلغاء» — وتحتهم «المتبقي تقريبًا بعد المحجوز». */
 @Composable
 fun UpcomingSection(ui: BudgetsUi, onToggle: (UpcomingUi) -> Unit) {
-    BasicText(t(TextKey.BUDGETS_UP_TITLE), style = Type.section())
+    BasicText(t(UiKey.BUDGETS_UP_TITLE), style = Type.section())
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
-        if (ui.upcoming.isEmpty()) BasicText(t(TextKey.BUDGETS_UP_EMPTY), Modifier.padding(vertical = 12.dp), style = Type.of(13).copy(color = Ink.muted))
+        if (ui.upcoming.isEmpty()) BasicText(t(UiKey.BUDGETS_UP_EMPTY), Modifier.padding(vertical = 12.dp), style = Type.of(13).copy(color = Ink.muted))
         ui.upcoming.forEachIndexed { i, u ->
             Row(
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).padding(vertical = 12.dp),
@@ -93,8 +94,8 @@ fun UpcomingSection(ui: BudgetsUi, onToggle: (UpcomingUi) -> Unit) {
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     val amountMinor = u.item.amountMinor
                     if (amountMinor != null) AmountText(amountMinor, u.item.currency)
-                    else BasicText(t(TextKey.UPCOMING_NO_AMOUNT), style = Type.of(13).copy(color = Ink.muted))
-                    SmallToggleButton(t(if (u.reserved) TextKey.BUDGETS_RESERVED else TextKey.BUDGETS_RESERVE), u.reserved, { onToggle(u) })
+                    else BasicText(t(UiKey.UPCOMING_NO_AMOUNT), style = Type.of(13).copy(color = Ink.muted))
+                    SmallToggleButton(t(if (u.reserved) UiKey.BUDGETS_RESERVED else UiKey.BUDGETS_RESERVE), u.reserved, { onToggle(u) })
                 }
             }
             if (i < ui.upcoming.lastIndex) Divider()
@@ -116,21 +117,21 @@ fun ReserveAmountSheet(target: UpcomingUi?, onDismiss: () -> Unit, onSave: suspe
     var text by remember(shown) { mutableStateOf("") }
     var error by remember(shown) { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    val title = shown?.let { t(TextKey.BUDGETS_RESERVE_TITLE, it.item.title) } ?: ""
+    val title = shown?.let { t(UiKey.BUDGETS_RESERVE_TITLE, it.item.title) } ?: ""
     Sheet(target != null, onDismiss, title) {
         val item = shown ?: return@Sheet
         BasicText(title, style = Type.section())
         TextInput(
             value = text,
             onChange = { text = it; error = null },
-            label = t(TextKey.BUDGETS_RESERVE_AMOUNT),
+            label = t(UiKey.BUDGETS_RESERVE_AMOUNT),
             placeholder = "0",
             error = error,
             ltr = true,
             keyboard = KeyboardType.Decimal,
             trailing = { BasicText(currencySymbol(item.item.currency), Modifier.padding(end = 16.dp), style = Type.body().copy(color = Ink.muted)) },
         )
-        PrimaryButton(t(TextKey.BUDGETS_RESERVE_SAVE), {
+        PrimaryButton(t(UiKey.BUDGETS_RESERVE_SAVE), {
             val minor = tryParseMoney(text, item.item.currency)?.takeIf { it > 0 }
             if (minor == null) error = t(TextKey.RESERVATION_AMOUNT) else scope.launch { error = onSave(item, minor) }
         }, Modifier.fillMaxWidth(), height = 52.dp)

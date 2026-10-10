@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.TextKey
 import app.masroufy.core.currencySymbol
 import app.masroufy.core.sentenceNumber
@@ -15,8 +16,8 @@ enum class RecLineKind { OK, GAP_STATUS, GAP_DETAIL, GAP_AMOUNTS, NOTE }
 
 data class RecLine(val kind: RecLineKind, val text: String)
 
-val MOVE_WORDS = CountWords(TextKey.WDET_MOVE_ONE, TextKey.WDET_MOVE_TWO, TextKey.WDET_MOVE_FEW, TextKey.WDET_MOVE_MANY)
-val OPERATION_WORDS = CountWords(TextKey.WDET_OP_ONE, TextKey.WDET_OP_TWO, TextKey.WDET_OP_FEW, TextKey.WDET_OP_MANY)
+val MOVE_WORDS = CountWords(UiKey.WDET_MOVE_ONE, UiKey.WDET_MOVE_TWO, UiKey.WDET_MOVE_FEW, UiKey.WDET_MOVE_MANY)
+val OPERATION_WORDS = CountWords(UiKey.WDET_OP_ONE, UiKey.WDET_OP_TWO, UiKey.WDET_OP_FEW, UiKey.WDET_OP_MANY)
 
 fun reconcileLines(o: ReconcileOutcome): List<RecLine> {
     val r = o.result
@@ -27,18 +28,18 @@ fun reconcileLines(o: ReconcileOutcome): List<RecLine> {
     val first = r.mismatches.firstOrNull()
     if (first == null) {
         val until = fullDate(r.closingAt)
-        out += RecLine(RecLineKind.OK, if (until != null) t(TextKey.WDET_REC_OK_UNTIL, until) else t(TextKey.WDET_REC_OK))
+        out += RecLine(RecLineKind.OK, if (until != null) t(UiKey.WDET_REC_OK_UNTIL, until) else t(UiKey.WDET_REC_OK))
     } else {
-        out += RecLine(RecLineKind.GAP_STATUS, t(TextKey.WDET_REC_GAP))
+        out += RecLine(RecLineKind.GAP_STATUS, t(UiKey.WDET_REC_GAP))
         val day = fullDate(first.date) ?: first.date
         out += RecLine(
             RecLineKind.GAP_DETAIL,
-            if (first.sameDayCount > 1) t(TextKey.WDET_GAP_MANY, day, countText(first.sameDayCount, MOVE_WORDS)) else t(TextKey.WDET_GAP_ONE, day),
+            if (first.sameDayCount > 1) t(UiKey.WDET_GAP_MANY, day, countText(first.sameDayCount, MOVE_WORDS)) else t(UiKey.WDET_GAP_ONE, day),
         )
         out += RecLine(
             RecLineKind.GAP_AMOUNTS,
             t(
-                TextKey.WDET_GAP_AMOUNTS,
+                UiKey.WDET_GAP_AMOUNTS,
                 amountLabel(first.computedMinor, currency, showCurrency = false),
                 amountLabel(first.statedMinor, currency, showCurrency = false),
                 amountLabel(first.differenceMinor, currency, showCurrency = false),
@@ -46,9 +47,9 @@ fun reconcileLines(o: ReconcileOutcome): List<RecLine> {
             ),
         )
     }
-    val counts = t(TextKey.WDET_REC_COUNTS, countText(r.movementCount, MOVE_WORDS), sentenceNumber(r.checkedCount)) +
-        if (o.withoutStatedBalance > 0) t(TextKey.WDET_REC_COUNTS_NO_BAL, countText(o.withoutStatedBalance, MOVE_WORDS)) else ""
+    val counts = t(UiKey.WDET_REC_COUNTS, countText(r.movementCount, MOVE_WORDS), sentenceNumber(r.checkedCount)) +
+        if (o.withoutStatedBalance > 0) t(UiKey.WDET_REC_COUNTS_NO_BAL, countText(o.withoutStatedBalance, MOVE_WORDS)) else ""
     out += RecLine(RecLineKind.NOTE, counts)
-    if (o.unassignedCount > 0) out += RecLine(RecLineKind.NOTE, t(TextKey.WDET_REC_UNASSIGNED, countText(o.unassignedCount, OPERATION_WORDS)))
+    if (o.unassignedCount > 0) out += RecLine(RecLineKind.NOTE, t(UiKey.WDET_REC_UNASSIGNED, countText(o.unassignedCount, OPERATION_WORDS)))
     return out
 }

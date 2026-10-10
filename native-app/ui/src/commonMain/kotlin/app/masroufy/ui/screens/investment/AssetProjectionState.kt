@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Asset
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -58,8 +60,8 @@ private fun bpOf(text: String): Int? = text.trim().takeIf { it.isNotEmpty() }?.l
 fun parseDraft(d: ProjectionDraft, asset: Asset, currency: Currency): DraftParse {
     val vacantText = normalizeDigits(d.vacant).trim()
     val vacant = if (vacantText.isEmpty()) null else vacantText.toIntOrNull()
-    if (vacantText.isNotEmpty() && vacant == null) return DraftParse.Invalid(uiText(TextKey.ASSET_PROJ_ERR_NUMBER))
-    if (vacant != null && vacant !in 0..12) return DraftParse.Invalid(uiText(TextKey.ASSET_PROJ_ERR_VACANT))
+    if (vacantText.isNotEmpty() && vacant == null) return DraftParse.Invalid(uiText(UiKey.ASSET_PROJ_ERR_NUMBER))
+    if (vacant != null && vacant !in 0..12) return DraftParse.Invalid(uiText(UiKey.ASSET_PROJ_ERR_VACANT))
     return try {
         val byArea = d.method == RealEstateValuation.AREA
         val typed = bpOf(d.rate)
@@ -74,16 +76,16 @@ fun parseDraft(d: ProjectionDraft, asset: Asset, currency: Currency): DraftParse
         val whole = if (d.method == RealEstateValuation.WHOLE) d.whole.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) } else null
         DraftParse.Ok(input, typed, whole)
     } catch (e: IllegalArgumentException) {
-        DraftParse.Invalid(uiText(TextKey.ASSET_PROJ_ERR_NUMBER))
+        DraftParse.Invalid(uiText(UiKey.ASSET_PROJ_ERR_NUMBER))
     }
 }
 
-enum class RateChip(val key: TextKey) {
-    TYPED(TextKey.ASSET_PROJ_RATE_TYPED),
-    SAVED(TextKey.ASSET_PROJ_RATE_SAVED),
-    DEFAULT(TextKey.ASSET_PROJ_RATE_DEFAULT),
-    OLD(TextKey.ASSET_PROJ_RATE_OLD),
-    MISSING(TextKey.ASSET_PROJ_RATE_MISSING),
+enum class RateChip(val key: TextRef) {
+    TYPED(UiKey.ASSET_PROJ_RATE_TYPED),
+    SAVED(UiKey.ASSET_PROJ_RATE_SAVED),
+    DEFAULT(UiKey.ASSET_PROJ_RATE_DEFAULT),
+    OLD(UiKey.ASSET_PROJ_RATE_OLD),
+    MISSING(UiKey.ASSET_PROJ_RATE_MISSING),
 }
 
 data class ProjectionUi(
@@ -123,9 +125,9 @@ fun projectionUi(v: AssetProjectionView, currency: Currency): ProjectionUi {
     val bought = p.purchasedAt
     val cost = p.costBasisMinor
     val subtitle = if (cost != null && bought != null) {
-        uiText(TextKey.ASSET_PROJ_SUB, v.asset.name, dateText(bought), moneyText(cost, currency))
+        uiText(UiKey.ASSET_PROJ_SUB, v.asset.name, dateText(bought), moneyText(cost, currency))
     } else {
-        uiText(TextKey.ASSET_PROJ_SUB_NO_COST, v.asset.name)
+        uiText(UiKey.ASSET_PROJ_SUB_NO_COST, v.asset.name)
     }
     return ProjectionUi(
         name = v.asset.name,
@@ -136,13 +138,13 @@ fun projectionUi(v: AssetProjectionView, currency: Currency): ProjectionUi {
         sellYear = p.sellYear,
         yearsLabel = yearsAhead(p.years),
         chip = chip,
-        rateValue = p.rateBp?.let { uiText(TextKey.ASSET_PROJ_RATE_VALUE, pctText(it)) } ?: uiText(TextKey.NOT_AVAILABLE),
+        rateValue = p.rateBp?.let { uiText(UiKey.ASSET_PROJ_RATE_VALUE, pctText(it)) } ?: uiText(TextKey.NOT_AVAILABLE),
         rateKnown = p.rateBp != null,
         rateSource = v.rateSourceText,
-        resultTitle = uiText(TextKey.ASSET_PROJ_RESULT, year),
-        saleLabel = uiText(TextKey.ASSET_PROJ_SALE_PRICE, year),
+        resultTitle = uiText(UiKey.ASSET_PROJ_RESULT, year),
+        saleLabel = uiText(UiKey.ASSET_PROJ_SALE_PRICE, year),
         saleMinor = p.valueAtSaleMinor,
-        rentLabel = uiText(TextKey.INVEST_RE_RENT_UNTIL, year),
+        rentLabel = uiText(UiKey.INVEST_RE_RENT_UNTIL, year),
         rentMinor = p.rentTotalMinor,
         gainMinor = p.totalGainMinor,
         gaps = p.gaps.map { it.text },
@@ -152,9 +154,9 @@ fun projectionUi(v: AssetProjectionView, currency: Currency): ProjectionUi {
 
 /** «بعد ٤ سنوات» بقاعدة العدد (صفر · ١ · ٢ · ٣–١٠ · ١١+). */
 fun yearsAhead(years: Int): String = when {
-    years <= 0 -> uiText(TextKey.ASSET_PROJ_YEARS_ZERO)
-    years == 1 -> uiText(TextKey.ASSET_PROJ_YEARS_ONE)
-    years == 2 -> uiText(TextKey.ASSET_PROJ_YEARS_TWO)
-    years <= 10 -> uiText(TextKey.ASSET_PROJ_YEARS_FEW, sentenceNumber(years))
-    else -> uiText(TextKey.ASSET_PROJ_YEARS_MANY, sentenceNumber(years))
+    years <= 0 -> uiText(UiKey.ASSET_PROJ_YEARS_ZERO)
+    years == 1 -> uiText(UiKey.ASSET_PROJ_YEARS_ONE)
+    years == 2 -> uiText(UiKey.ASSET_PROJ_YEARS_TWO)
+    years <= 10 -> uiText(UiKey.ASSET_PROJ_YEARS_FEW, sentenceNumber(years))
+    else -> uiText(UiKey.ASSET_PROJ_YEARS_MANY, sentenceNumber(years))
 }

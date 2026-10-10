@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.Language
@@ -33,7 +34,7 @@ class BackupStateTest {
         val r = exportRange("2026-09-28", "2026-10-07", "2026-10-09")
         assertTrue(r.ok)
         assertEquals(10, r.days)
-        assertEquals(t(TextKey.BAK_RANGE_LINE, fullDate("2026-09-28")!!, fullDate("2026-10-07")!!, t(TextKey.BAK_DAY_FEW, sentenceNumber(10))), r.line)
+        assertEquals(t(UiKey.BAK_RANGE_LINE, fullDate("2026-09-28")!!, fullDate("2026-10-07")!!, t(UiKey.BAK_DAY_FEW, sentenceNumber(10))), r.line)
         assertEquals(1, exportRange("2026-10-09", "2026-10-09", "2026-10-09").days)
     }
 
@@ -41,11 +42,11 @@ class BackupStateTest {
     fun exportRangeRejectsBadInput() {
         val future = exportRange("2026-10-01", "2026-10-10", "2026-10-09")
         assertFalse(future.ok)
-        assertEquals(t(TextKey.BAK_RANGE_BAD_DATE), future.line)
-        assertEquals(t(TextKey.BAK_RANGE_BAD_DATE), exportRange("2026-13-01", "2026-10-01", "2026-10-09").line)
+        assertEquals(t(UiKey.BAK_RANGE_BAD_DATE), future.line)
+        assertEquals(t(UiKey.BAK_RANGE_BAD_DATE), exportRange("2026-13-01", "2026-10-01", "2026-10-09").line)
         val reversed = exportRange("2026-10-05", "2026-10-01", "2026-10-09")
         assertFalse(reversed.ok)
-        assertEquals(t(TextKey.BAK_RANGE_BAD_ORDER), reversed.line)
+        assertEquals(t(UiKey.BAK_RANGE_BAD_ORDER), reversed.line)
         assertEquals(0, reversed.days)
     }
 
@@ -73,9 +74,9 @@ class BackupStateTest {
         val v = planView(plan(BackupProfilePlan(incoming = true, toAdd = false)))
         assertEquals(32, v.totalToAdd)
         assertEquals(42, v.incoming)
-        assertEquals(TextKey.RST_PROFILE_KEEP, v.profileLine)
+        assertEquals(UiKey.RST_PROFILE_KEEP, v.profileLine)
         val root = v.spaces.single()
-        assertEquals(t(TextKey.RST_ROOT), root.title)
+        assertEquals(t(UiKey.RST_ROOT), root.title)
         assertNull(root.isNew)
         assertEquals(listOf("العمليات", "المحافظ"), root.rows.map { it.label }, "المجموعة اللي مفيهاش حاجة جاية بتستخبى")
         assertEquals(PlanRow("العمليات", 40, 32, 8), root.rows[0])
@@ -86,23 +87,23 @@ class BackupStateTest {
     fun planViewListsOtherCountriesAndWarnings() {
         val eg = SpaceRestorePlan(egypt, "eg", isNew = true, lines = listOf(BackupPlanLine("transactions", "العمليات", 5, 5, 0, null)), totalToAdd = 5)
         val v = planView(plan(BackupProfilePlan(incoming = true, toAdd = true), listOf(eg), listOf("ملاحظة من الملف")))
-        assertEquals(TextKey.RST_PROFILE_ADD, v.profileLine)
+        assertEquals(UiKey.RST_PROFILE_ADD, v.profileLine)
         assertEquals(2, v.spaces.size)
         assertEquals(t(TextKey.COUNTRY_EG), v.spaces[1].title)
         assertEquals(true, v.spaces[1].isNew)
         assertEquals(47, v.incoming)
         assertEquals(37, v.totalToAdd)
         assertEquals(listOf("ملاحظة من الملف"), v.notes)
-        assertEquals(TextKey.RST_PROFILE_NONE, planView(plan(BackupProfilePlan(incoming = false, toAdd = false))).profileLine)
+        assertEquals(UiKey.RST_PROFILE_NONE, planView(plan(BackupProfilePlan(incoming = false, toAdd = false))).profileLine)
     }
 
     @Test
     fun planSpaceLineBeforeAndAfterRestore() {
         val s = PlanSpace("x", null, emptyList(), 32)
-        assertEquals(t(TextKey.RST_WILL_ADD_N, t(TextKey.RST_REC_MANY, sentenceNumber(32))), planSpaceLine(s, done = false))
-        assertEquals(t(TextKey.RST_ADDED_N, t(TextKey.RST_REC_MANY, sentenceNumber(32))), planSpaceLine(s, done = true))
-        assertEquals(t(TextKey.RST_ALL_THERE), planSpaceLine(s.copy(toAdd = 0), done = false))
-        assertEquals(t(TextKey.RST_WILL_ADD_N, t(TextKey.RST_REC_ONE)), planSpaceLine(s.copy(toAdd = 1), done = false))
+        assertEquals(t(UiKey.RST_WILL_ADD_N, t(UiKey.RST_REC_MANY, sentenceNumber(32))), planSpaceLine(s, done = false))
+        assertEquals(t(UiKey.RST_ADDED_N, t(UiKey.RST_REC_MANY, sentenceNumber(32))), planSpaceLine(s, done = true))
+        assertEquals(t(UiKey.RST_ALL_THERE), planSpaceLine(s.copy(toAdd = 0), done = false))
+        assertEquals(t(UiKey.RST_WILL_ADD_N, t(UiKey.RST_REC_ONE)), planSpaceLine(s.copy(toAdd = 1), done = false))
     }
 
     @Test

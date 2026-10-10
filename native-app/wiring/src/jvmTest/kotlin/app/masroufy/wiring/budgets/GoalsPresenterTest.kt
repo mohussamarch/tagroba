@@ -1,5 +1,6 @@
 package app.masroufy.wiring.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
@@ -47,11 +48,11 @@ class GoalsPresenterTest {
         val card = loadGoals(w.deps, TODAY, listOf(BANK, savings)).active.single()
         assertEquals(700_000L, card.savedMinor)
         assertEquals(58, card.percent, "٧٠٠٠ من ١٢٠٠٠ = ٥٨٪ لتحت (عرض الشريط بس)")
-        assertEquals(uiText(TextKey.GOALS_CHIP_BEHIND), card.chip)
+        assertEquals(uiText(UiKey.GOALS_CHIP_BEHIND), card.chip)
         assertEquals(Tone.OVER, card.chipTone)
-        assertEquals(uiText(TextKey.GOALS_STAT_BEHIND), card.stats[1].label)
+        assertEquals(uiText(UiKey.GOALS_STAT_BEHIND), card.stats[1].label)
         assertEquals(StatTone.BAD, card.stats[1].tone)
-        assertTrue(card.sub.contains(uiText(TextKey.GOALS_MANUAL)))
+        assertTrue(card.sub.contains(uiText(UiKey.GOALS_MANUAL)))
         assertTrue(card.stats.none { it.value == uiText(TextKey.NOT_AVAILABLE) }, "كل الأرقام معروفة من حالة الاستخدام")
     }
 
@@ -61,7 +62,7 @@ class GoalsPresenterTest {
         val card = loadGoals(w.deps, TODAY, listOf(BANK, savings)).active.single()
         assertTrue(card.linked)
         assertEquals(300_000L, card.savedMinor, "رصيد الحساب المربوط كله")
-        assertEquals(uiText(TextKey.GOALS_WALLET_LAST4, savings.name, "1234"), card.walletLabel)
+        assertEquals(uiText(UiKey.GOALS_WALLET_LAST4, savings.name, "1234"), card.walletLabel)
     }
 
     @Test fun unknownBalanceIsNotAvailableEverywhere() = runBlocking<Unit> {
@@ -72,7 +73,7 @@ class GoalsPresenterTest {
         assertNull(card.percent)
         assertEquals(uiText(TextKey.NOT_AVAILABLE), card.chip)
         assertTrue(card.stats.all { it.value == uiText(TextKey.NOT_AVAILABLE) && it.tone == StatTone.MUTED }, "غير متاح — مش صفر")
-        assertEquals(uiText(TextKey.GOAL_DETAIL_UNKNOWN), detailProgressLine(card))
+        assertEquals(uiText(UiKey.GOAL_DETAIL_UNKNOWN), detailProgressLine(card))
     }
 
     @Test fun youngReachedAndArchivedGoals() = runBlocking<Unit> {
@@ -85,10 +86,10 @@ class GoalsPresenterTest {
         w.deps.goals.archive(old.id, true)
         val ui = loadGoals(w.deps, TODAY, listOf(BANK))
         val y = ui.active.single { it.id == young.id }
-        assertEquals(uiText(TextKey.GOALS_CHIP_NEW), y.chip, "أقل من ٣٠ يوم من البداية")
-        assertEquals(uiText(TextKey.GOALS_STAT_AFTER_30), y.stats[3].value)
+        assertEquals(uiText(UiKey.GOALS_CHIP_NEW), y.chip, "أقل من ٣٠ يوم من البداية")
+        assertEquals(uiText(UiKey.GOALS_STAT_AFTER_30), y.stats[3].value)
         val r = ui.active.single { it.id == done.id }
-        assertEquals(uiText(TextKey.GOALS_CHIP_REACHED), r.chip)
+        assertEquals(uiText(UiKey.GOALS_CHIP_REACHED), r.chip)
         assertTrue(r.reached)
         assertEquals(100, r.percent)
         assertEquals(listOf(old.id), ui.archived.map { it.id })
@@ -98,7 +99,7 @@ class GoalsPresenterTest {
         assertEquals(uiText(TextKey.GOAL_NAME_REQUIRED), assertIs<GoalCheck.Bad>(checkNewGoal(GoalNewDraft(" ", "100"), TODAY, Currency.SAR, "sa")).message)
         assertEquals(uiText(TextKey.GOAL_TARGET_POSITIVE), assertIs<GoalCheck.Bad>(checkNewGoal(GoalNewDraft("سفر", "0"), TODAY, Currency.SAR, "sa")).message)
         val noWallet = GoalNewDraft("سفر", "100", kind = GoalKind.LINKED)
-        assertEquals(uiText(TextKey.GOAL_NEW_PICK_WALLET), assertIs<GoalCheck.Bad>(checkNewGoal(noWallet, TODAY, Currency.SAR, "sa")).message)
+        assertEquals(uiText(UiKey.GOAL_NEW_PICK_WALLET), assertIs<GoalCheck.Bad>(checkNewGoal(noWallet, TODAY, Currency.SAR, "sa")).message)
         val ok = assertIs<GoalCheck.Ok>(checkNewGoal(GoalNewDraft("  سفر   الصيف ", "١٢٬٠٠٠"), TODAY, Currency.SAR, "sa")).input
         assertEquals("سفر الصيف", ok.name)
         assertEquals(1_200_000L, ok.targetMinor)
@@ -115,12 +116,12 @@ class GoalsPresenterTest {
         val draft = GoalEditDraft.from(p)
         assertEquals("12000", draft.targetText)
         assertIs<GoalEditCheck.Unchanged>(checkGoalEdit(draft, p, TODAY))
-        assertEquals(uiText(TextKey.GOAL_EDIT_DATE_AFTER), assertIs<GoalEditCheck.Bad>(checkGoalEdit(draft.copy(date = TODAY), p, TODAY)).message)
+        assertEquals(uiText(UiKey.GOAL_EDIT_DATE_AFTER), assertIs<GoalEditCheck.Bad>(checkGoalEdit(draft.copy(date = TODAY), p, TODAY)).message)
         val archive = assertIs<GoalEditCheck.Ok>(checkGoalEdit(draft.copy(archived = true), p, TODAY)).change
         assertNull(archive.input, "الأرشفة لوحدها ما بتعدّلش البيانات")
         assertEquals(true, archive.archived)
         val (head, note) = needLines(draft.copy(targetText = "15000"), p)
-        assertEquals(uiText(TextKey.GOAL_EDIT_NEED_NA), head)
-        assertEquals(uiText(TextKey.GOAL_EDIT_NEED_AFTER_SAVE), note, "مفيش معاينة قبل الحفظ ⇒ مش بنخترع رقم")
+        assertEquals(uiText(UiKey.GOAL_EDIT_NEED_NA), head)
+        assertEquals(uiText(UiKey.GOAL_EDIT_NEED_AFTER_SAVE), note, "مفيش معاينة قبل الحفظ ⇒ مش بنخترع رقم")
     }
 }

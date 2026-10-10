@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,14 +54,14 @@ fun LookSheet(visible: Boolean, current: Int, onClose: () -> Unit) {
     val toaster = LocalToaster.current
     var pick by remember { mutableIntStateOf(current) }
     LaunchedEffect(visible) { if (visible) pick = current }
-    Sheet(visible, onClose, title = t(TextKey.LOOK_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
-        BasicText(t(TextKey.LOOK_TITLE), style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
+    Sheet(visible, onClose, title = t(UiKey.LOOK_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
+        BasicText(t(UiKey.LOOK_TITLE), style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
         LookGrid(pick) { pick = it }
-        BasicText(t(TextKey.LOOK_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
-        if (hook == null) NotYetLine(t(TextKey.LOOK_NOT_YET))
+        BasicText(t(UiKey.LOOK_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+        if (hook == null) NotYetLine(t(UiKey.LOOK_NOT_YET))
         PrimaryButton(
-            t(TextKey.MORE_SAVE),
-            onClick = { scope.launch { runCatching { hook?.choose(pick) }; toaster.show(t(TextKey.LOOK_SAVED), dark = true); onClose() } },
+            t(UiKey.MORE_SAVE),
+            onClick = { scope.launch { runCatching { hook?.choose(pick) }; toaster.show(t(UiKey.LOOK_SAVED), dark = true); onClose() } },
             enabled = hook != null, modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -77,7 +78,7 @@ fun LookGrid(selected: Int?, onPick: (Int) -> Unit) {
                 Box(
                     Modifier.size(76.dp).pressScale(press).clip(CircleShape).background(Glass.lensOnLight)
                         .then(if (on) Modifier.insetRing(CircleShape, 3.dp, Ink.primary) else Modifier)
-                        .tap(press, role = Role.RadioButton, label = t(TextKey.LOOK_N, sentenceNumber(k)), onClick = { onPick(k) })
+                        .tap(press, role = Role.RadioButton, label = t(UiKey.LOOK_N, sentenceNumber(k)), onClick = { onPick(k) })
                         .semantics { this.selected = on },
                     contentAlignment = Alignment.Center,
                 ) { MeAvatar(60.dp, 100, look = k) }

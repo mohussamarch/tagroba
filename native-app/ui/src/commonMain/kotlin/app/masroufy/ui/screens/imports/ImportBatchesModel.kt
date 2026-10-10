@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
@@ -22,20 +24,20 @@ fun importBatchesUi(history: List<ImportBatch>, staged: List<ImportBatch>): Impo
     ImportBatchesUi(history.filter { it.state != ImportBatchState.STAGED }.sortedByDescending { it.importedAt }, staged)
 
 /** مصدر الدفعة بكلمتين (رسائل البنك · كشف الراجحي · كشف QNB مصر · ملف CSV). */
-fun batchSourceLabel(type: ImportSourceType): TextKey = when (type) {
-    ImportSourceType.SMS -> TextKey.IMPORT_BATCHES_SRC_SMS
-    ImportSourceType.PDF_ALRAJHI -> TextKey.IMPORT_BATCHES_SRC_ALRAJHI
-    ImportSourceType.PDF_QNB -> TextKey.IMPORT_BATCHES_SRC_QNB
-    ImportSourceType.CSV_PREVIEW, ImportSourceType.CSV_LEGACY -> TextKey.IMPORT_BATCHES_SRC_CSV
+fun batchSourceLabel(type: ImportSourceType): TextRef = when (type) {
+    ImportSourceType.SMS -> UiKey.IMPORT_BATCHES_SRC_SMS
+    ImportSourceType.PDF_ALRAJHI -> UiKey.IMPORT_BATCHES_SRC_ALRAJHI
+    ImportSourceType.PDF_QNB -> UiKey.IMPORT_BATCHES_SRC_QNB
+    ImportSourceType.CSV_PREVIEW, ImportSourceType.CSV_LEGACY -> UiKey.IMPORT_BATCHES_SRC_CSV
 }
 
 /** شارات العدّ (أُضيف · مكرر · شبيه · تعارض · غير صالح) — اللي مش صفر بس. */
-fun batchCounts(b: ImportBatch): List<Pair<TextKey, Int>> = listOf(
-    TextKey.IMPORT_BATCHES_ADDED to b.counts.imported,
-    TextKey.IMPORT_REVIEW_DUP to b.counts.duplicates,
-    TextKey.IMPORT_REVIEW_SIMILAR to b.counts.similar,
-    TextKey.IMPORT_REVIEW_CONFLICT to b.counts.conflicts,
-    TextKey.IMPORT_REVIEW_INVALID to b.counts.invalid,
+fun batchCounts(b: ImportBatch): List<Pair<TextRef, Int>> = listOf(
+    UiKey.IMPORT_BATCHES_ADDED to b.counts.imported,
+    UiKey.IMPORT_REVIEW_DUP to b.counts.duplicates,
+    UiKey.IMPORT_REVIEW_SIMILAR to b.counts.similar,
+    UiKey.IMPORT_REVIEW_CONFLICT to b.counts.conflicts,
+    UiKey.IMPORT_REVIEW_INVALID to b.counts.invalid,
 ).filter { it.second > 0 }
 
 /** عملية في معاينة الإرجاع (الاسم والمبلغ من تفاصيلها — null لو ما اتقرتش). */
@@ -76,11 +78,11 @@ fun revertUi(plan: RevertPlan, details: Map<Id, Transaction>): RevertUi {
 fun revertDetailIds(plan: RevertPlan): List<Id> = (plan.toKeep.map { it.transactionId } + plan.toDelete.take(RevertUi.SHOW)).distinct()
 
 /** سبب البقاء بكلمة (الشارة) — الجملة الكاملة من المنطق نفسه (`REVERT_KEPT_*`). */
-fun keptLabel(decision: RevertDecision): TextKey = when (decision) {
-    RevertDecision.KEPT_HAS_SETTLEMENT -> TextKey.REVERT_SHEET_KEEP_SETTLE
-    RevertDecision.KEPT_HAS_ALLOCATION -> TextKey.REVERT_SHEET_KEEP_ALLOC
-    RevertDecision.KEPT_HAS_DUE -> TextKey.REVERT_SHEET_KEEP_DUE
-    RevertDecision.KEPT_HAS_INVESTMENT -> TextKey.REVERT_SHEET_KEEP_INVEST
-    RevertDecision.KEPT_HAS_GIFT -> TextKey.REVERT_SHEET_KEEP_GIFT
-    RevertDecision.KEPT_OTHER_SOURCE, RevertDecision.DELETED -> TextKey.REVERT_SHEET_KEEP_SOURCE
+fun keptLabel(decision: RevertDecision): TextRef = when (decision) {
+    RevertDecision.KEPT_HAS_SETTLEMENT -> UiKey.REVERT_SHEET_KEEP_SETTLE
+    RevertDecision.KEPT_HAS_ALLOCATION -> UiKey.REVERT_SHEET_KEEP_ALLOC
+    RevertDecision.KEPT_HAS_DUE -> UiKey.REVERT_SHEET_KEEP_DUE
+    RevertDecision.KEPT_HAS_INVESTMENT -> UiKey.REVERT_SHEET_KEEP_INVEST
+    RevertDecision.KEPT_HAS_GIFT -> UiKey.REVERT_SHEET_KEEP_GIFT
+    RevertDecision.KEPT_OTHER_SOURCE, RevertDecision.DELETED -> UiKey.REVERT_SHEET_KEEP_SOURCE
 }

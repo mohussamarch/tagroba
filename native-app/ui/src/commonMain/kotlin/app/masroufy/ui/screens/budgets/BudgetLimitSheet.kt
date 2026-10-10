@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,10 +76,10 @@ fun BudgetLimitSheet(
         }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             val spent = spentMinor?.let { plain(it, currency) } ?: t(TextKey.NOT_AVAILABLE)
-            BasicText(t(TextKey.LIMIT_SHEET_SPENT, spent), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.LIMIT_SHEET_SPENT, spent), style = Type.caption().copy(color = Ink.muted))
             BasicText(
-                if (averageMinor != null) t(TextKey.LIMIT_SHEET_AVG, plain(averageMinor, currency))
-                else t(TextKey.LIMIT_SHEET_AVG_NA, sentenceNumber(MIN_PERIODS_FOR_AVERAGE)),
+                if (averageMinor != null) t(UiKey.LIMIT_SHEET_AVG, plain(averageMinor, currency))
+                else t(UiKey.LIMIT_SHEET_AVG_NA, sentenceNumber(MIN_PERIODS_FOR_AVERAGE)),
                 style = Type.caption().copy(color = Ink.muted),
             )
         }
@@ -87,7 +88,7 @@ fun BudgetLimitSheet(
         TextInput(
             value = draft.limitText,
             onChange = { draft = draft.copy(limitText = it); serverError = null },
-            label = t(TextKey.LIMIT_SHEET_LABEL),
+            label = t(UiKey.LIMIT_SHEET_LABEL),
             placeholder = "0",
             error = (if (tried) bad?.limitError else null) ?: serverError,
             ltr = true,
@@ -97,22 +98,22 @@ fun BudgetLimitSheet(
             trailing = { BasicText(currencySymbol(currency), Modifier.padding(end = 16.dp), style = Type.body().copy(color = Ink.muted)) },
         )
         if (averageMinor != null && averageMinor > 0) {
-            TonalButton(t(TextKey.LIMIT_SHEET_USE_AVG, plain(averageMinor, currency)), { draft = draft.copy(limitText = inputText(averageMinor, currency)) }, height = 44.dp)
+            TonalButton(t(UiKey.LIMIT_SHEET_USE_AVG, plain(averageMinor, currency)), { draft = draft.copy(limitText = inputText(averageMinor, currency)) }, height = 44.dp)
         }
         Divider()
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                BasicText(t(TextKey.LIMIT_SHEET_ALERT), style = Type.bodyBold())
-                BasicText(t(if (draft.alertOn) TextKey.LIMIT_SHEET_ALERT_ON else TextKey.LIMIT_SHEET_ALERT_OFF), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.LIMIT_SHEET_ALERT), style = Type.bodyBold())
+                BasicText(t(if (draft.alertOn) UiKey.LIMIT_SHEET_ALERT_ON else UiKey.LIMIT_SHEET_ALERT_OFF), style = Type.caption().copy(color = Ink.muted))
             }
-            Switch(draft.alertOn, t(TextKey.LIMIT_SHEET_ALERT), { draft = draft.copy(alertOn = !draft.alertOn) })
+            Switch(draft.alertOn, t(UiKey.LIMIT_SHEET_ALERT), { draft = draft.copy(alertOn = !draft.alertOn) })
         }
         if (draft.alertOn) {
-            FieldLabel(t(TextKey.LIMIT_SHEET_PCT))
+            FieldLabel(t(UiKey.LIMIT_SHEET_PCT))
             Gap8Row(Modifier.fillMaxWidth()) {
                 for (p in LimitDraft.PRESETS) {
                     SelectChip(
-                        t(TextKey.LIMIT_SHEET_PERCENT, sentenceNumber(p)),
+                        t(UiKey.LIMIT_SHEET_PERCENT, sentenceNumber(p)),
                         selected = draft.customText.isBlank() && draft.preset == p,
                         onClick = { draft = draft.copy(preset = p, customText = "") },
                         modifier = Modifier.weight(1f),
@@ -123,7 +124,7 @@ fun BudgetLimitSheet(
                     value = draft.customText,
                     onChange = { draft = draft.copy(customText = it) },
                     modifier = Modifier.weight(1f),
-                    placeholder = t(TextKey.LIMIT_SHEET_OTHER),
+                    placeholder = t(UiKey.LIMIT_SHEET_OTHER),
                     ltr = true,
                     keyboard = KeyboardType.Number,
                     height = 44.dp,
@@ -135,7 +136,7 @@ fun BudgetLimitSheet(
         }
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             PrimaryButton(
-                t(TextKey.LIMIT_SHEET_SAVE),
+                t(UiKey.LIMIT_SHEET_SAVE),
                 onClick = {
                     tried = true
                     val ok = check as? LimitCheck.Ok ?: return@PrimaryButton
@@ -150,7 +151,7 @@ fun BudgetLimitSheet(
                 height = 52.dp,
             )
             if (current.limitMinor != null) {
-                DangerButton(t(TextKey.LIMIT_SHEET_CLEAR), { scope.launch { serverError = onClear() } }, Modifier.weight(1f), height = 52.dp)
+                DangerButton(t(UiKey.LIMIT_SHEET_CLEAR), { scope.launch { serverError = onClear() } }, Modifier.weight(1f), height = 52.dp)
             }
         }
     }
@@ -161,12 +162,12 @@ fun BudgetLimitSheet(
 fun LimitTrigger(current: LimitCurrent, currency: Currency, onOpen: () -> Unit) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         val limit = current.limitMinor
-        if (limit != null) SecondaryButton(t(TextKey.LIMIT_SHEET_EDIT), onOpen, Modifier.fillMaxWidth())
-        else PrimaryButton(t(TextKey.BUDGETS_SET_CAP), onOpen, Modifier.fillMaxWidth())
+        if (limit != null) SecondaryButton(t(UiKey.LIMIT_SHEET_EDIT), onOpen, Modifier.fillMaxWidth())
+        else PrimaryButton(t(UiKey.BUDGETS_SET_CAP), onOpen, Modifier.fillMaxWidth())
         val note = when {
-            limit == null -> t(TextKey.LIMIT_SHEET_NOTE_NONE)
-            current.notify && current.thresholdPercent != null -> t(TextKey.LIMIT_SHEET_NOTE_SET, plain(limit, currency), sentenceNumber(current.thresholdPercent))
-            else -> t(TextKey.LIMIT_SHEET_NOTE_OFF, plain(limit, currency))
+            limit == null -> t(UiKey.LIMIT_SHEET_NOTE_NONE)
+            current.notify && current.thresholdPercent != null -> t(UiKey.LIMIT_SHEET_NOTE_SET, plain(limit, currency), sentenceNumber(current.thresholdPercent))
+            else -> t(UiKey.LIMIT_SHEET_NOTE_OFF, plain(limit, currency))
         }
         BasicText(note, style = Type.caption().copy(color = Ink.muted))
     }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,48 +79,48 @@ fun SpaceTransferScreen() {
     }
     val b = books
     val p = pairs
-    InnerScaffold(t(TextKey.SPACE_TRANSFER_SCREEN_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.SPACE_TRANSFER_SCREEN_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         when (spaceTransferState(b, p, failed)) {
             SpaceTransferState.FAILED -> item(key = "error") {
-                ErrorBanner(t(TextKey.SPACE_TRANSFER_SCREEN_ERROR), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), { reload++ })
+                ErrorBanner(t(UiKey.SPACE_TRANSFER_SCREEN_ERROR), t(UiKey.OPERATIONS_ERROR_BODY), t(UiKey.SHELL_RETRY), { reload++ })
             }
             SpaceTransferState.LOADING -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { repeat(2) { Skeleton(Modifier.fillMaxWidth().height(170.dp)) } }
             }
             SpaceTransferState.ONE_SPACE -> item(key = "na") {
                 FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
-                    BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_NA_TITLE), style = Type.of(15, FontWeight.Bold))
-                    BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_NA_BODY), Modifier.padding(vertical = 8.dp), style = Type.of(13).copy(color = Ink.muted))
-                    TonalButton(t(TextKey.SPACE_TRANSFER_SCREEN_ADD_SPACE), { nav.push(SpacesRoute) }, Modifier.fillMaxWidth())
+                    BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_NA_TITLE), style = Type.of(15, FontWeight.Bold))
+                    BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_NA_BODY), Modifier.padding(vertical = 8.dp), style = Type.of(13).copy(color = Ink.muted))
+                    TonalButton(t(UiKey.SPACE_TRANSFER_SCREEN_ADD_SPACE), { nav.push(SpacesRoute) }, Modifier.fillMaxWidth())
                 }
             }
             SpaceTransferState.EMPTY, SpaceTransferState.READY -> {
                 item(key = "actions") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            PrimaryButton(t(TextKey.SPACE_TRANSFER_SCREEN_NEW), onClick = { adding = true }, modifier = Modifier.weight(1f))
-                            TonalButton(t(TextKey.SPACE_TRANSFER_SCREEN_LINK), {}, Modifier.weight(1f), enabled = false)
+                            PrimaryButton(t(UiKey.SPACE_TRANSFER_SCREEN_NEW), onClick = { adding = true }, modifier = Modifier.weight(1f))
+                            TonalButton(t(UiKey.SPACE_TRANSFER_SCREEN_LINK), {}, Modifier.weight(1f), enabled = false)
                         }
-                        BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_LINK_SOON), style = Type.caption().copy(color = Ink.muted))
+                        BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_LINK_SOON), style = Type.caption().copy(color = Ink.muted))
                     }
                 }
                 val list = p.orEmpty()
-                if (list.isEmpty()) item(key = "empty") { EmptyState(t(TextKey.SPACE_TRANSFER_SCREEN_EMPTY), t(TextKey.SPACE_TRANSFER_SCREEN_EMPTY_BODY)) }
+                if (list.isEmpty()) item(key = "empty") { EmptyState(t(UiKey.SPACE_TRANSFER_SCREEN_EMPTY), t(UiKey.SPACE_TRANSFER_SCREEN_EMPTY_BODY)) }
                 for (pair in list) item(key = "pair-${pair.id}") { PairCard(pair) { unlinking = pair } }
-                if (list.isNotEmpty()) item(key = "lock") { BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE), Modifier.padding(horizontal = 4.dp), style = Type.of(12).copy(color = Ink.muted)) }
+                if (list.isNotEmpty()) item(key = "lock") { BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE), Modifier.padding(horizontal = 4.dp), style = Type.of(12).copy(color = Ink.muted)) }
             }
         }
     }
     NewSpaceTransferSheet(adding, b.orEmpty(), space.space.id, onDismiss = { adding = false }) {
         adding = false
-        toaster.show(t(TextKey.SPACE_TRANSFER_SCREEN_SAVED))
+        toaster.show(t(UiKey.SPACE_TRANSFER_SCREEN_SAVED))
         reload++
     }
     UnlinkSheet(unlinking, onDismiss = { unlinking = null }) { id ->
         scope.launch {
             val err = failureOf { deps.spaceTransfers.unlink(id) }
-            toaster.show(err ?: t(TextKey.SPACE_TRANSFER_SCREEN_UNLINKED))
+            toaster.show(err ?: t(UiKey.SPACE_TRANSFER_SCREEN_UNLINKED))
             unlinking = null
             reload++
         }
@@ -133,7 +134,7 @@ private fun PairCard(p: PairView, onUnlink: () -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 BasicText(p.route, style = Type.of(15, FontWeight.Bold))
-                StatusChip(t(TextKey.SPACE_TRANSFER_SCREEN_NOT_SPEND), ChipInk.blue, ChipInk.blueBg)
+                StatusChip(t(UiKey.SPACE_TRANSFER_SCREEN_NOT_SPEND), ChipInk.blue, ChipInk.blueBg)
             }
             for (leg in p.legs) Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(ChipInk.blueBg), contentAlignment = Alignment.Center) {
@@ -149,11 +150,11 @@ private fun PairCard(p: PairView, onUnlink: () -> Unit) {
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_RATE), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_RATE), style = Type.caption().copy(color = Ink.muted))
                 BasicText(p.rate, style = Type.of(13, FontWeight.Bold))
             }
             p.note?.let { BasicText(it, style = Type.caption().copy(color = Ink.muted)) }
-            TonalButton(t(TextKey.SPACE_TRANSFER_SCREEN_UNLINK), onUnlink, height = 44.dp)
+            TonalButton(t(UiKey.SPACE_TRANSFER_SCREEN_UNLINK), onUnlink, height = 44.dp)
         }
     }
 }
@@ -161,12 +162,12 @@ private fun PairCard(p: PairView, onUnlink: () -> Unit) {
 /** «فك ربط التحويل؟» — العمليتين ما بيتمسحوش، ونوع كل واحدة بيرجع «غير محدد» وتظهر في المراجعات. */
 @Composable
 private fun UnlinkSheet(pair: PairView?, onDismiss: () -> Unit, onConfirm: (Id) -> Unit) {
-    Sheet(pair != null, onDismiss, title = t(TextKey.SPACE_TRANSFER_SCREEN_UNLINK_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), spacing = 10.dp) {
-        BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_UNLINK_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_UNLINK_BODY), style = Type.of(13).copy(color = Ink.muted))
+    Sheet(pair != null, onDismiss, title = t(UiKey.SPACE_TRANSFER_SCREEN_UNLINK_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
+        BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_UNLINK_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_UNLINK_BODY), style = Type.of(13).copy(color = Ink.muted))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(TextKey.SPACE_TRANSFER_SCREEN_UNLINK), onClick = { pair?.let { onConfirm(it.id) } }, modifier = Modifier.weight(1.4f))
-            TonalButton(t(TextKey.SPACE_TRANSFER_SCREEN_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
+            PrimaryButton(t(UiKey.SPACE_TRANSFER_SCREEN_UNLINK), onClick = { pair?.let { onConfirm(it.id) } }, modifier = Modifier.weight(1.4f))
+            TonalButton(t(UiKey.SPACE_TRANSFER_SCREEN_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
         }
     }
 }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.AMOUNT_TOLERANCE_PER_THOUSAND
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
@@ -108,23 +109,23 @@ fun applyFilters(data: List<TransactionsScreenData>, f: Filters, currency: Curre
 fun filterCategories(data: List<TransactionsScreenData>): List<Pair<String, String>> {
     val used = data.flatMap { d -> d.transactions.mapNotNull { it.categoryId } }.toSet()
     val cats: List<Category> = data.flatMap { it.categories }.distinctBy { it.id }.filter { it.id in used }.sortedBy { it.order }
-    return cats.map { it.id to it.name } + (NO_CATEGORY to t(TextKey.OPERATIONS_ROW_UNCLASSIFIED))
+    return cats.map { it.id to it.name } + (NO_CATEGORY to t(UiKey.OPERATIONS_ROW_UNCLASSIFIED))
 }
 
-fun periodName(p: FilterPeriod): String = t(when (p) { FilterPeriod.THIS -> TextKey.OPERATION_FILTERS_THIS; FilterPeriod.LAST -> TextKey.OPERATION_FILTERS_LAST; FilterPeriod.THREE -> TextKey.OPERATION_FILTERS_THREE })
+fun periodName(p: FilterPeriod): String = t(when (p) { FilterPeriod.THIS -> UiKey.OPERATION_FILTERS_THIS; FilterPeriod.LAST -> UiKey.OPERATION_FILTERS_LAST; FilterPeriod.THREE -> UiKey.OPERATION_FILTERS_THREE })
 
-fun kindName(k: KindGroup): String = t(when (k) { KindGroup.OUT -> TextKey.OPERATION_FILTERS_KIND_OUT; KindGroup.IN -> TextKey.OPERATION_FILTERS_KIND_IN; KindGroup.MOVE -> TextKey.OPERATION_FILTERS_KIND_MOVE; KindGroup.DEBT -> TextKey.OPERATION_FILTERS_KIND_DEBT })
+fun kindName(k: KindGroup): String = t(when (k) { KindGroup.OUT -> UiKey.OPERATION_FILTERS_KIND_OUT; KindGroup.IN -> UiKey.OPERATION_FILTERS_KIND_IN; KindGroup.MOVE -> UiKey.OPERATION_FILTERS_KIND_MOVE; KindGroup.DEBT -> UiKey.OPERATION_FILTERS_KIND_DEBT })
 
-fun reviewName(r: ReviewFilter): String = t(when (r) { ReviewFilter.ALL -> TextKey.OPERATION_FILTERS_REVIEW_ALL; ReviewFilter.CONFIRMED -> TextKey.OPERATION_FILTERS_REVIEW_OK; ReviewFilter.NEEDS -> TextKey.OPERATION_FILTERS_REVIEW_NEEDS })
+fun reviewName(r: ReviewFilter): String = t(when (r) { ReviewFilter.ALL -> UiKey.OPERATION_FILTERS_REVIEW_ALL; ReviewFilter.CONFIRMED -> UiKey.OPERATION_FILTERS_REVIEW_OK; ReviewFilter.NEEDS -> UiKey.OPERATION_FILTERS_REVIEW_NEEDS })
 
 /** شريحة فلتر شغال في النتايج (الضغط بيشيله). */
 data class ActiveChip(val label: String, val clear: (Filters) -> Filters)
 
 fun activeChips(f: Filters, categories: List<Pair<String, String>>, wallets: List<Wallet>, currency: Currency): List<ActiveChip> = buildList {
-    if (f.query.isNotBlank()) add(ActiveChip(t(TextKey.OPERATION_FILTERS_QUOTED, f.query.trim())) { it.copy(query = "") })
+    if (f.query.isNotBlank()) add(ActiveChip(t(UiKey.OPERATION_FILTERS_QUOTED, f.query.trim())) { it.copy(query = "") })
     tryParseMoney(f.amountText, currency)?.takeIf { it > 0 }?.let { x ->
         val text = formatMoney(x, currency, showCurrency = false)
-        add(ActiveChip(if (f.near) t(TextKey.OPERATION_FILTERS_NEAR_CHIP, text) else text) { it.copy(amountText = "", near = false) })
+        add(ActiveChip(if (f.near) t(UiKey.OPERATION_FILTERS_NEAR_CHIP, text) else text) { it.copy(amountText = "", near = false) })
     }
     if (f.period != FilterPeriod.THIS) add(ActiveChip(periodName(f.period)) { it.copy(period = FilterPeriod.THIS) })
     for (k in f.kinds) add(ActiveChip(kindName(k)) { it.copy(kinds = it.kinds - k) })

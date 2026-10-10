@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,29 +73,29 @@ fun RestorePreviewScreen(fileName: String, text: String) {
     var phase by remember(deps, text) { mutableStateOf<Phase>(Phase.Reading) }
     var open by remember { mutableStateOf(setOf(0)) }
     LaunchedEffect(deps, text) {
-        phase = if (backup == null) Phase.Error(t(TextKey.BAK_NOT_WIRED))
-        else runCatching { backup.plan(text) }.fold({ Phase.Plan(it) }, { Phase.Error(it.message ?: t(TextKey.RST_BAD_FILE)) })
+        phase = if (backup == null) Phase.Error(t(UiKey.BAK_NOT_WIRED))
+        else runCatching { backup.plan(text) }.fold({ Phase.Plan(it) }, { Phase.Error(it.message ?: t(UiKey.RST_BAD_FILE)) })
     }
-    InnerScaffold(t(TextKey.RST_TITLE)) {
+    InnerScaffold(t(UiKey.RST_TITLE)) {
         item(key = "file") {
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x99FFFFFF)).padding(horizontal = 14.dp, vertical = 10.dp)) {
                 BasicText(fileName, Modifier.fillMaxWidth(), style = Type.of(13, FontWeight.Bold).copy(textDirection = TextDirection.Ltr, textAlign = TextAlign.End))
                 val plan = (phase as? Phase.Plan)?.plan ?: (phase as? Phase.Done)?.plan ?: (phase as? Phase.Applying)?.plan
-                plan?.let { p -> fullDate(p.file.exportedAt)?.let { BasicText(t(TextKey.RST_MADE_ON, it), style = Type.caption().copy(color = Ink.muted)) } }
+                plan?.let { p -> fullDate(p.file.exportedAt)?.let { BasicText(t(UiKey.RST_MADE_ON, it), style = Type.caption().copy(color = Ink.muted)) } }
             }
         }
         when (val p = phase) {
             Phase.Reading -> item(key = "reading") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    BasicText(t(TextKey.RST_READING), style = Type.of(13).copy(color = Ink.muted))
+                    BasicText(t(UiKey.RST_READING), style = Type.of(13).copy(color = Ink.muted))
                     Skeleton(Modifier.fillMaxWidth().height(120.dp), radius = 24.dp)
                     Skeleton(Modifier.fillMaxWidth().height(260.dp))
                 }
             }
             is Phase.Error -> item(key = "error") {
-                WarnBox(t(TextKey.RST_BAD_FILE), p.message) {
-                    BasicText(t(TextKey.RST_NOTHING_WRITTEN), style = Type.caption().copy(color = Color(0xFF6B4600)))
-                    TonalButton(t(TextKey.RST_OTHER_FILE), onClick = { nav.pop() }, height = 44.dp)
+                WarnBox(t(UiKey.RST_BAD_FILE), p.message) {
+                    BasicText(t(UiKey.RST_NOTHING_WRITTEN), style = Type.caption().copy(color = Color(0xFF6B4600)))
+                    TonalButton(t(UiKey.RST_OTHER_FILE), onClick = { nav.pop() }, height = 44.dp)
                 }
             }
             else -> {
@@ -105,13 +106,13 @@ fun RestorePreviewScreen(fileName: String, text: String) {
                     HeroCard(Modifier.fillMaxWidth()) {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             BasicText(
-                                if (done != null) t(TextKey.RST_ADDED_N, countText(done.added, RECORD_WORDS)) else t(TextKey.RST_WILL_ADD_N, countText(view.totalToAdd, RECORD_WORDS)),
+                                if (done != null) t(UiKey.RST_ADDED_N, countText(done.added, RECORD_WORDS)) else t(UiKey.RST_WILL_ADD_N, countText(view.totalToAdd, RECORD_WORDS)),
                                 style = Type.of(20, FontWeight.Bold).copy(color = Ink.onPrimary),
                             )
                             val body = when {
-                                done != null -> t(TextKey.RST_DONE_BODY)
-                                p is Phase.Applying -> t(TextKey.RST_APPLYING)
-                                else -> t(TextKey.RST_PLAN_BODY, sentenceNumber(view.incoming))
+                                done != null -> t(UiKey.RST_DONE_BODY)
+                                p is Phase.Applying -> t(UiKey.RST_APPLYING)
+                                else -> t(UiKey.RST_PLAN_BODY, sentenceNumber(view.incoming))
                             }
                             BasicText(body, style = Type.of(13).copy(color = Ink.onHeroMuted))
                         }
@@ -130,20 +131,20 @@ fun RestorePreviewScreen(fileName: String, text: String) {
                     }
                 }
                 item(key = "acts") {
-                    if (done != null) PrimaryButton(t(TextKey.MORE_DONE), onClick = { nav.pop() }, modifier = Modifier.fillMaxWidth())
+                    if (done != null) PrimaryButton(t(UiKey.MORE_DONE), onClick = { nav.pop() }, modifier = Modifier.fillMaxWidth())
                     else Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         PrimaryButton(
-                            if (p is Phase.Applying) t(TextKey.RST_ADDING) else t(TextKey.RST_CONFIRM, countText(view.totalToAdd, RECORD_WORDS)),
+                            if (p is Phase.Applying) t(UiKey.RST_ADDING) else t(UiKey.RST_CONFIRM, countText(view.totalToAdd, RECORD_WORDS)),
                             onClick = {
                                 val b = backup ?: return@PrimaryButton
                                 phase = Phase.Applying(plan)
                                 scope.launch {
-                                    phase = runCatching { b.apply(plan.file) }.fold({ Phase.Done(plan, it.totalAdded) }, { Phase.Error(it.message ?: t(TextKey.RST_APPLY_FAILED)) })
+                                    phase = runCatching { b.apply(plan.file) }.fold({ Phase.Done(plan, it.totalAdded) }, { Phase.Error(it.message ?: t(UiKey.RST_APPLY_FAILED)) })
                                 }
                             },
                             enabled = p is Phase.Plan, loading = p is Phase.Applying, modifier = Modifier.fillMaxWidth(),
                         )
-                        TonalButton(t(TextKey.RST_CANCEL), onClick = { nav.pop() }, enabled = p is Phase.Plan, muted = true, modifier = Modifier.fillMaxWidth())
+                        TonalButton(t(UiKey.RST_CANCEL), onClick = { nav.pop() }, enabled = p is Phase.Plan, muted = true, modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
@@ -162,7 +163,7 @@ private fun PlanSpaceCard(s: PlanSpace, done: Boolean, open: Boolean, onToggle: 
             Column(Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(s.title, style = Type.of(15, FontWeight.Bold))
-                    s.isNew?.let { Badge(t(if (it) TextKey.RST_SPACE_NEW else TextKey.RST_SPACE_MERGE), BadgeKind.INFO) }
+                    s.isNew?.let { Badge(t(if (it) UiKey.RST_SPACE_NEW else UiKey.RST_SPACE_MERGE), BadgeKind.INFO) }
                 }
                 BasicText(planSpaceLine(s, done), style = Type.caption().copy(color = Ink.muted))
             }
@@ -170,7 +171,7 @@ private fun PlanSpaceCard(s: PlanSpace, done: Boolean, open: Boolean, onToggle: 
         }
         if (open && s.rows.isNotEmpty()) {
             RowRule()
-            PlanRowLine(t(TextKey.RST_COL_GROUP), t(TextKey.RST_COL_IN), t(TextKey.RST_COL_ADD), t(TextKey.RST_COL_SKIP), header = true)
+            PlanRowLine(t(UiKey.RST_COL_GROUP), t(UiKey.RST_COL_IN), t(UiKey.RST_COL_ADD), t(UiKey.RST_COL_SKIP), header = true)
             s.rows.forEachIndexed { i, r ->
                 PlanRowLine(r.label, sentenceNumber(r.incoming), if (r.toAdd > 0) sentenceNumber(r.toAdd) else "—", sentenceNumber(r.skipped), added = r.toAdd > 0)
                 if (i != s.rows.lastIndex) RowRule()

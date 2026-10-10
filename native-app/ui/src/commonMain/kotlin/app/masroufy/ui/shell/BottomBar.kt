@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -125,7 +126,7 @@ private fun Fog(modifier: Modifier, backdrop: Backdrop) {
 @Composable
 private fun NavBar(modifier: Modifier, current: Tab, dots: Set<Tab>, backdrop: Backdrop, onTab: (Tab) -> Unit, onAdd: () -> Unit) {
     val shape = RoundedCornerShape(Radius.nav)
-    Box(modifier.fillMaxWidth().height(Space.navHeight).semantics { contentDescription = t(TextKey.SHELL_NAV) }) {
+    Box(modifier.fillMaxWidth().height(Space.navHeight).semantics { contentDescription = t(UiKey.SHELL_NAV) }) {
         Box(Modifier.matchParentSize().layeredShadow(shape, Shadows.nav).clip(shape)) {
             BackdropBlur(backdrop, BlurRadius.nav, shape, saturation = 1.3f)
             Box(Modifier.matchParentSize().background(Glass.nav(!blurSupported())).innerSheen(shape, Shadows.nav))
@@ -150,7 +151,7 @@ private fun TabItem(tab: Tab, current: Tab, dot: Boolean, onTab: (Tab) -> Unit) 
     Box(
         Modifier.defaultMinSize(minWidth = 62.dp).height(56.dp).pressScale(press)
             .tap(press, role = Role.Tab, onClick = { onTab(tab) })
-            .semantics { selected = on; contentDescription = if (dot) t(TextKey.SHELL_TAB_WITH_NEW, label) else label },
+            .semantics { selected = on; contentDescription = if (dot) t(UiKey.SHELL_TAB_WITH_NEW, label) else label },
         contentAlignment = Alignment.Center,
     ) {
         // الفقاعة على التبويب كله (الرمز والاسم) — بتظهر بالنابض المرن (الزجاج السائل)
@@ -172,7 +173,7 @@ private fun TabItem(tab: Tab, current: Tab, dot: Boolean, onTab: (Tab) -> Unit) 
 @Composable
 private fun PlusButton(onAdd: () -> Unit) {
     val press = rememberPress()
-    val label = t(TextKey.ADD_LABEL)
+    val label = t(UiKey.ADD_LABEL)
     Box(
         Modifier.offset(y = (-13).dp).size(64.dp).pressScale(press).layeredShadow(CircleShape, Shadows.plus).clip(CircleShape).background(Glass.plus)
             .innerSheen(CircleShape, Shadows.plus).tap(press, label = label, onClick = onAdd).semantics { contentDescription = label },
@@ -197,7 +198,7 @@ private fun AskBar(modifier: Modifier, backdrop: Backdrop, onAsk: () -> Unit, on
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 LucideIcon(Lucide.ASSISTANT, size = 18.dp, tint = Ink.primary)
-                BasicText(t(TextKey.ASK_BAR), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                BasicText(t(UiKey.ASK_BAR), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
             MicButton(onMic)
         }
@@ -214,7 +215,7 @@ private val micShadow = listOf(
 @Composable
 private fun MicButton(onMic: () -> Unit, size: Dp = 36.dp) {
     val press = rememberPress()
-    val label = t(TextKey.ASK_MIC)
+    val label = t(UiKey.ASK_MIC)
     Box(
         Modifier.size(44.dp, 48.dp).pressScale(press).tap(press, label = label, onClick = onMic).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,

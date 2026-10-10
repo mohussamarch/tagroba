@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -29,11 +30,11 @@ import app.masroufy.ui.theme.Type
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ZakatFactsSheet(visible: Boolean, questions: List<FactQuestion>, onDismiss: () -> Unit, onAnswer: (Id, FactAnswer) -> Unit) {
-    val title = t(TextKey.ZAKAT_SCREEN_FACTS)
-    Sheet(visible, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 12.dp) {
+    val title = t(UiKey.ZAKAT_SCREEN_FACTS)
+    Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.ZAKAT_FACTS_INTRO), style = Type.of(13).copy(color = Ink.muted))
-        if (questions.isEmpty()) BasicText(t(TextKey.ZAKAT_FACTS_EMPTY), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(t(UiKey.ZAKAT_FACTS_INTRO), style = Type.of(13).copy(color = Ink.muted))
+        if (questions.isEmpty()) BasicText(t(UiKey.ZAKAT_FACTS_EMPTY), style = Type.of(13).copy(color = Ink.muted))
         // الأسئلة ممكن تبقى كتير ⇒ بتتمرر جوه اللوحة (أقصاها ٤٨٠) والزرار تحت ثابت
         Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             for (q in questions) {
@@ -46,6 +47,6 @@ internal fun ZakatFactsSheet(visible: Boolean, questions: List<FactQuestion>, on
                 }
             }
         }
-        PrimaryButton(t(TextKey.ZAKAT_FACTS_DONE), onDismiss, Modifier.fillMaxWidth())
+        PrimaryButton(t(UiKey.ZAKAT_FACTS_DONE), onDismiss, Modifier.fillMaxWidth())
     }
 }

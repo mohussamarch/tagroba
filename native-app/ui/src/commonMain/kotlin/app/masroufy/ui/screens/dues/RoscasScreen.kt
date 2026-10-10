@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,14 +37,14 @@ fun RoscasScreen() {
     val deps = space.dues
     val nav = LocalNavigator.current
     val load = rememberLoad(deps) { deps.roscas.list(space.shell.today()).map(::roscaCard) }
-    DuesScaffold(t(TextKey.ROSCAS_TITLE)) {
+    DuesScaffold(t(UiKey.ROSCAS_TITLE)) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(200, 200) }
             Load.Failed -> item { LoadFailed(load::reload) }
             is Load.Ready -> {
-                if (s.value.isEmpty()) item { EmptyState(t(TextKey.ROSCAS_EMPTY_TITLE), t(TextKey.ROSCAS_EMPTY_BODY)) }
+                if (s.value.isEmpty()) item { EmptyState(t(UiKey.ROSCAS_EMPTY_TITLE), t(UiKey.ROSCAS_EMPTY_BODY)) }
                 for (c in s.value) item(key = c.roscaId) { RoscaCard(c) { nav.push(RoscaDetailRoute(c.roscaId)) } }
-                item(key = "new") { PrimaryButton(t(TextKey.ROSCAS_NEW), { nav.push(RoscaWizardRoute) }, Modifier.fillMaxWidth()) }
+                item(key = "new") { PrimaryButton(t(UiKey.ROSCAS_NEW), { nav.push(RoscaWizardRoute) }, Modifier.fillMaxWidth()) }
             }
         }
     }
@@ -68,12 +69,12 @@ private fun RoscaCard(c: RoscaCardUi, onClick: () -> Unit) {
                 CountBar(c.paidCount, c.count, onHero = false, fill = CategoryInk.savings)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Fact(Modifier.weight(1f), t(TextKey.ROSCAS_PAID)) { AmountText(c.paidMinor, c.currency, size = 14, showCurrency = false) }
-                Fact(Modifier.weight(1f), t(TextKey.ROSCAS_GOT)) {
-                    if (c.gotMinor == null) BasicText(t(TextKey.DUES_DASH), style = Type.of(14, FontWeight.Bold).copy(color = Ink.muted))
+                Fact(Modifier.weight(1f), t(UiKey.ROSCAS_PAID)) { AmountText(c.paidMinor, c.currency, size = 14, showCurrency = false) }
+                Fact(Modifier.weight(1f), t(UiKey.ROSCAS_GOT)) {
+                    if (c.gotMinor == null) BasicText(t(UiKey.DUES_DASH), style = Type.of(14, FontWeight.Bold).copy(color = Ink.muted))
                     else AmountText(c.gotMinor, c.currency, size = 14, showCurrency = false)
                 }
-                Fact(Modifier.weight(1f), t(TextKey.ROSCAS_GAIN)) { GainValue(c.gainMinor, c.currency, size = 13) }
+                Fact(Modifier.weight(1f), t(UiKey.ROSCAS_GAIN)) { GainValue(c.gainMinor, c.currency, size = 13) }
             }
             BasicText(c.position, style = Type.of(13, FontWeight.Bold).copy(color = if (c.positionPositive) Ink.income else Ink.muted))
         }
@@ -93,7 +94,7 @@ private fun Fact(modifier: Modifier, label: String, value: @Composable () -> Uni
 internal fun GainValue(gain: Halalas?, currency: Currency, size: Int = 16) {
     when {
         gain == null -> AmountText(null, currency, size = size)
-        gain == 0L -> BasicText(t(TextKey.ROSCA_GAIN_NONE), style = Type.of(size, FontWeight.Bold).copy(color = Ink.muted))
+        gain == 0L -> BasicText(t(UiKey.ROSCA_GAIN_NONE), style = Type.of(size, FontWeight.Bold).copy(color = Ink.muted))
         else -> AmountText(gain, currency, size = size, tone = if (gain > 0) AmountTone.INCOME else AmountTone.EXPENSE, showCurrency = false)
     }
 }

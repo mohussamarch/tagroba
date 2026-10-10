@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,26 +67,26 @@ internal fun EventsScreen() {
             eventsUi(deps.people.events.list(), names, deps.shell.today())
         }
     }
-    InnerScaffold(t(TextKey.EVENTS_TITLE)) {
+    InnerScaffold(t(UiKey.EVENTS_TITLE)) {
         when (val l = load) {
             Load.Loading -> items(3) { Skeleton(Modifier.fillMaxWidth().height(if (it == 0) 72.dp else 150.dp)) }
-            Load.Failed -> item { ErrorCard({ retry++ }, title = t(TextKey.PPL_LOAD_FAILED), body = "") }
+            Load.Failed -> item { ErrorCard({ retry++ }, title = t(UiKey.PPL_LOAD_FAILED), body = "") }
             is Load.Ready -> {
                 val ui = l.value
                 if (ui.active.isEmpty() && ui.archived.isEmpty()) {
-                    item { EmptyState(t(TextKey.EVENTS_EMPTY_TITLE), t(TextKey.EVENTS_EMPTY_BODY)) }
+                    item { EmptyState(t(UiKey.EVENTS_EMPTY_TITLE), t(UiKey.EVENTS_EMPTY_BODY)) }
                 } else {
                     ui.next?.let { n -> item(key = "next") { NextCard(n) { nav.push(EventDetailRoute(n.id)) } } }
-                    item(key = "activeTitle") { BasicText(t(TextKey.EVENTS_ACTIVE, app.masroufy.core.sentenceNumber(ui.active.size)), style = Type.section()) }
+                    item(key = "activeTitle") { BasicText(t(UiKey.EVENTS_ACTIVE, app.masroufy.core.sentenceNumber(ui.active.size)), style = Type.section()) }
                     items(ui.active, key = { it.id }) { e -> EventCard(e) { nav.push(EventDetailRoute(e.id)) } }
                     if (ui.archived.isNotEmpty()) {
-                        item(key = "archTitle") { ArchivedToggle(t(TextKey.EVENTS_ARCHIVED, app.masroufy.core.sentenceNumber(ui.archived.size)), archivedOpen) { archivedOpen = !archivedOpen } }
+                        item(key = "archTitle") { ArchivedToggle(t(UiKey.EVENTS_ARCHIVED, app.masroufy.core.sentenceNumber(ui.archived.size)), archivedOpen) { archivedOpen = !archivedOpen } }
                         if (archivedOpen) item(key = "archived") { ArchivedList(ui.archived) { nav.push(EventDetailRoute(it)) } }
                     }
                 }
             }
         }
-        item(key = "add") { PrimaryButton(t(TextKey.EVENTS_NEW), onClick = { nav.open(EventAddSheetRoute()) }, leading = Lucide.PLUS, height = 52.dp, modifier = Modifier.fillMaxWidth()) }
+        item(key = "add") { PrimaryButton(t(UiKey.EVENTS_NEW), onClick = { nav.open(EventAddSheetRoute()) }, leading = Lucide.PLUS, height = 52.dp, modifier = Modifier.fillMaxWidth()) }
     }
 }
 
@@ -105,7 +106,7 @@ internal fun kindIcon(k: LifeEventKind): Pair<Lucide, Color> = when (k) {
 private fun NextCard(n: NextEventUi, onClick: () -> Unit) {
     val press = rememberPress()
     HeroCard(Modifier.fillMaxWidth().pressScale(press).tap(press, label = n.name, onClick = onClick), contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp)) {
-        BasicText(t(TextKey.EVENTS_NEXT), style = Type.caption().copy(color = Ink.onHeroMuted))
+        BasicText(t(UiKey.EVENTS_NEXT), style = Type.caption().copy(color = Ink.onHeroMuted))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(n.name, Modifier.weight(1f), style = Type.of(18, FontWeight.Bold).copy(color = Ink.onPrimary))
             BasicText(n.rel, style = Type.of(13, FontWeight.Bold).copy(color = Ink.mint))

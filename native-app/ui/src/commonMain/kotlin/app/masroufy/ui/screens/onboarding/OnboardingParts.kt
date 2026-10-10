@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.onboarding
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -59,8 +60,8 @@ import app.masroufy.ui.theme.Type
 internal fun OnbTopBar(s: OnbState, onBack: () -> Unit, onSkip: () -> Unit) {
     val filled = filledSegments(s)
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (canBack(s)) Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(TextKey.SHELL_BACK), onBack) }
-        val label = t(TextKey.ONB_STEP_OF, sentenceNumber(s.step.position), sentenceNumber(ONB_SEGMENTS))
+        if (canBack(s)) Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(UiKey.SHELL_BACK), onBack) }
+        val label = t(UiKey.ONB_STEP_OF, sentenceNumber(s.step.position), sentenceNumber(ONB_SEGMENTS))
         Row(
             Modifier.weight(1f).semantics {
                 contentDescription = label
@@ -75,7 +76,7 @@ internal fun OnbTopBar(s: OnbState, onBack: () -> Unit, onSkip: () -> Unit) {
             Box(
                 Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).tap(press, onClick = onSkip).padding(horizontal = 12.dp),
                 contentAlignment = Alignment.Center,
-            ) { BasicText(t(TextKey.ONB_SKIP), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }
+            ) { BasicText(t(UiKey.ONB_SKIP), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }
         }
     }
 }
@@ -158,7 +159,7 @@ internal fun OnbReplyPanel(title: String, line: String, nextLabel: String, botto
  */
 @Composable
 internal fun OnbRing() {
-    val label = t(TextKey.ONB_RING_NO_PERCENT)
+    val label = t(UiKey.ONB_RING_NO_PERCENT)
     Box(Modifier.size(132.dp).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val stroke = 8.dp.toPx()

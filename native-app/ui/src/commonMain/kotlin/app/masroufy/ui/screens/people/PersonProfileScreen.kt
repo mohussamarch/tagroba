@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,6 +52,7 @@ import app.masroufy.ui.glass.Glass
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.screens.dues.DebtDetailRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Radius
@@ -91,10 +93,10 @@ internal fun PersonProfileScreen(personId: String) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(Space.block)) {
         when (val l = load) {
             Load.Loading -> item { Head(null, top) { nav.pop() }; Skeleton(Modifier.padding(Space.gutter).fillMaxWidth().height(220.dp)) }
-            Load.Failed -> item { Head(null, top) { nav.pop() }; ErrorCard({ retry++ }, Modifier.padding(Space.gutter), t(TextKey.PPL_LOAD_FAILED), "") }
+            Load.Failed -> item { Head(null, top) { nav.pop() }; ErrorCard({ retry++ }, Modifier.padding(Space.gutter), t(UiKey.PPL_LOAD_FAILED), "") }
             is Load.Ready -> {
                 val ui = l.value
-                if (ui == null) item { Head(null, top) { nav.pop() }; EmptyState(t(TextKey.PERSON_PAGE_NOT_FOUND)) }
+                if (ui == null) item { Head(null, top) { nav.pop() }; EmptyState(t(UiKey.PERSON_PAGE_NOT_FOUND)) }
                 else personBody(ui, top) { nav.pop() }
             }
         }
@@ -111,21 +113,21 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(ui: Person
             }
             BasicText(ui.name, Modifier.padding(top = 6.dp), style = Type.of(22, FontWeight.Bold))
             ui.relLine?.let { BasicText(it, style = Type.of(13).copy(color = Ink.muted)) }
-            if (ui.archived) Badge(t(TextKey.PPL_ARCHIVED), BadgeKind.NOT_AVAILABLE)
+            if (ui.archived) Badge(t(UiKey.PPL_ARCHIVED), BadgeKind.NOT_AVAILABLE)
             OccasionCards(ui.id, ui.name, ui.occasions, Modifier.padding(top = 8.dp))
         }
     }
     item(key = "balances") {
         Row(Modifier.fillMaxWidth().offset(y = (-66).dp).padding(horizontal = Space.gutter), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            BalanceBox(t(TextKey.PERSON_PAGE_LAK), ui.owed, AmountTone.INCOME, ui.overdue, null, Modifier.weight(1f))
-            BalanceBox(t(TextKey.PERSON_PAGE_ALEK), ui.owe, AmountTone.EXPENSE, null, t(TextKey.PERSON_PAGE_NO_NETTING), Modifier.weight(1f))
+            BalanceBox(t(UiKey.PERSON_PAGE_LAK), ui.owed, AmountTone.INCOME, ui.overdue, null, Modifier.weight(1f))
+            BalanceBox(t(UiKey.PERSON_PAGE_ALEK), ui.owe, AmountTone.EXPENSE, null, t(UiKey.PERSON_PAGE_NO_NETTING), Modifier.weight(1f))
         }
     }
     item(key = "together") { Together(ui, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
     item(key = "history") { History(ui, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
     if (ui.badges.isNotEmpty()) item(key = "badges") {
         Column(Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(TextKey.PERSON_PAGE_BADGES), style = Type.section())
+            BasicText(t(UiKey.PERSON_PAGE_BADGES), style = Type.section())
             FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
                 ui.badges.forEach { BasicText(it, Modifier.padding(vertical = 4.dp), style = Type.body()) }
             }
@@ -143,7 +145,7 @@ private fun Head(ui: PersonPageUi?, top: androidx.compose.ui.unit.Dp, back: () -
         verticalAlignment = Alignment.Top,
     ) {
         val press = rememberPress()
-        LensOnHero(Modifier.size(48.dp).pressScale(press).tap(press, label = t(TextKey.SHELL_BACK), onClick = back)) {
+        LensOnHero(Modifier.size(48.dp).pressScale(press).tap(press, label = t(UiKey.SHELL_BACK), onClick = back)) {
             LucideIcon(Lucide.CHEVRON_RIGHT, size = 22.dp, tint = Ink.lensInk, modifier = Modifier.align(Alignment.Center).mirrorInLtr())
         }
         if (ui != null) BasicText(ui.circleLine, Modifier.padding(top = 14.dp), style = Type.caption().copy(color = Ink.onHeroMuted))
@@ -156,7 +158,7 @@ private fun BalanceBox(title: String, lines: List<MoneyLine>?, tone: AmountTone,
         BasicText(title, style = Type.caption().copy(color = Ink.muted))
         when {
             lines == null -> AmountText(null, app.masroufy.core.Currency.SAR, size = 20)
-            lines.isEmpty() -> BasicText(t(TextKey.PERSON_PAGE_NOTHING), style = Type.of(20, FontWeight.Bold).copy(color = Ink.muted))
+            lines.isEmpty() -> BasicText(t(UiKey.PERSON_PAGE_NOTHING), style = Type.of(20, FontWeight.Bold).copy(color = Ink.muted))
             else -> lines.forEach { AmountText(it.minor, it.currency, Modifier.fillMaxWidth(), size = 20, color = tone.color) }
         }
         chip?.let { Pill(it, Ink.focus, Ink.alertBg, Modifier.padding(top = 2.dp)) }
@@ -168,12 +170,12 @@ private fun BalanceBox(title: String, lines: List<MoneyLine>?, tone: AmountTone,
 private fun History(ui: PersonPageUi, modifier: Modifier) {
     val nav = LocalNavigator.current
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.PERSON_PAGE_HISTORY), style = Type.section())
+        BasicText(t(UiKey.PERSON_PAGE_HISTORY), style = Type.section())
         FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
-            if (ui.history.isEmpty()) BasicText(t(TextKey.PERSON_PAGE_HISTORY_EMPTY), Modifier.padding(vertical = 16.dp), style = Type.body().copy(color = Ink.muted))
+            if (ui.history.isEmpty()) BasicText(t(UiKey.PERSON_PAGE_HISTORY_EMPTY), Modifier.padding(vertical = 16.dp), style = Type.body().copy(color = Ink.muted))
             ui.history.forEachIndexed { i, h ->
                 val press = rememberPress()
-                Rowed(i == ui.history.lastIndex, Modifier.pressScale(press).tap(press, label = h.title, onClick = { nav.push(DebtDetailLink(h.obligationId)) })) {
+                Rowed(i == ui.history.lastIndex, Modifier.pressScale(press).tap(press, label = h.title, onClick = { nav.push(DebtDetailRoute(h.obligationId)) })) {
                     Column(Modifier.weight(1f)) {
                         BasicText(h.title, style = Type.bodyBold())
                         BasicText(h.sub, style = Type.caption().copy(color = Ink.muted))

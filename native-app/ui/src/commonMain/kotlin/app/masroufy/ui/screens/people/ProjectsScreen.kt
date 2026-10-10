@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,20 +67,20 @@ internal fun ProjectsScreen() {
     LaunchedEffect(deps, version, retry) {
         load = loadOf { projectsUi(deps.people.projects.list(), deps.space.currency, deps.shell.today()) { k, s -> deps.people.money.projectHeadline(k, s) } }
     }
-    InnerScaffold(t(TextKey.PROJECTS_TITLE), actions = { SurfaceIconButton(Lucide.PLUS, t(TextKey.PROJECTS_NEW), { creating = true }) }) {
-        item(key = "intro") { Note(t(TextKey.PROJECTS_INTRO)) }
+    InnerScaffold(t(UiKey.PROJECTS_TITLE), actions = { SurfaceIconButton(Lucide.PLUS, t(UiKey.PROJECTS_NEW), { creating = true }) }) {
+        item(key = "intro") { Note(t(UiKey.PROJECTS_INTRO)) }
         when (val l = load) {
             Load.Loading -> items(3) { Skeleton(Modifier.fillMaxWidth().height(130.dp)) }
-            Load.Failed -> item { ErrorCard({ retry++ }, title = t(TextKey.PPL_LOAD_FAILED), body = "") }
+            Load.Failed -> item { ErrorCard({ retry++ }, title = t(UiKey.PPL_LOAD_FAILED), body = "") }
             is Load.Ready -> {
                 val ui = l.value
-                if (ui.active.isEmpty()) item(key = "empty") { EmptyState(t(TextKey.PROJECTS_EMPTY_TITLE), t(TextKey.PROJECTS_EMPTY_BODY)) }
+                if (ui.active.isEmpty()) item(key = "empty") { EmptyState(t(UiKey.PROJECTS_EMPTY_TITLE), t(UiKey.PROJECTS_EMPTY_BODY)) }
                 items(ui.active, key = { it.project.id }) { p -> ProjectCard(p) { nav.push(ProjectDetailRoute(p.project.id)) } }
                 if (ui.archived.isNotEmpty()) item(key = "archived") {
                     ArchivedProjects(ui, archOpen, { archOpen = !archOpen }) { card ->
                         scope.launch {
                             runCatching { deps.people.projects.setArchived(card.project.id, false) }
-                                .onSuccess { PeopleChanges.bump(); toaster.show(t(TextKey.PROJECTS_RESTORED, card.project.name)) }
+                                .onSuccess { PeopleChanges.bump(); toaster.show(t(UiKey.PROJECTS_RESTORED, card.project.name)) }
                                 .onFailure { toaster.show(it.message ?: "") }
                         }
                     }
@@ -87,14 +88,14 @@ internal fun ProjectsScreen() {
             }
         }
     }
-    Sheet(creating, onDismiss = { creating = false }, title = t(TextKey.PROJECTS_NEW)) {
+    Sheet(creating, onDismiss = { creating = false }, title = t(UiKey.PROJECTS_NEW)) {
         ProjectForm(null, onCreated = { nav.push(ProjectDetailRoute(it.id)) }, done = { creating = false })
     }
 }
 
 @Composable
 internal fun HeadlineText(h: Headline?, size: Int) {
-    if (h == null) BasicText(t(TextKey.PPL_DASH), style = Type.of(size, FontWeight.Bold).copy(color = Ink.muted))
+    if (h == null) BasicText(t(UiKey.PPL_DASH), style = Type.of(size, FontWeight.Bold).copy(color = Ink.muted))
     else AmountText(h.line.minor, h.line.currency, size = size, tone = h.tone, color = if (h.colorExpense) Ink.expense else Ink.income)
 }
 
@@ -125,7 +126,7 @@ private fun ArchivedProjects(ui: ProjectsUi, open: Boolean, toggle: () -> Unit, 
     val turn by animateFloatAsState(if (open) 180f else 0f, motion(Springs.SNAPPY), label = "chev")
     FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
         val press = rememberPress()
-        val title = t(TextKey.PROJECTS_ARCHIVED, sentenceNumber(ui.archived.size))
+        val title = t(UiKey.PROJECTS_ARCHIVED, sentenceNumber(ui.archived.size))
         Row(
             Modifier.fillMaxWidth().heightIn(min = 52.dp).pressScale(press).tap(press, label = title, onClick = toggle),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -142,10 +143,10 @@ private fun ArchivedProjects(ui: ProjectsUi, open: Boolean, toggle: () -> Unit, 
                         BasicText(joinLine(c.kindLabel, c.question), style = Type.caption().copy(color = Ink.muted))
                     }
                     HeadlineText(c.headline, 14)
-                    TonalButton(t(TextKey.PROJECTS_RESTORE), onClick = { restore(c) })
+                    TonalButton(t(UiKey.PROJECTS_RESTORE), onClick = { restore(c) })
                 }
             }
-            Note(t(TextKey.PROJECTS_ARCH_NOTE))
+            Note(t(UiKey.PROJECTS_ARCH_NOTE))
         }
     }
 }

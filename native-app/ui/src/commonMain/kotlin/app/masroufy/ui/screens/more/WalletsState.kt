@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -18,12 +20,12 @@ import app.masroufy.usecase.WithYouNow
  * المحافظ وتفاصيل المحفظة — من «معك الآن» (`LoadWithYouNow`) وحركات الشهر (`LoadTransactionsScreen`) للعرض، **دوال نقية** (JVM).
  * مفيش جمع ولا طرح هنا: الأرصدة والمجموع جايين جاهزين من حالة الاستخدام، والرصيد المجهول `null` ⇒ «غير متاح» (القاعدة 10).
  */
-enum class WalletGroupKind(val title: TextKey) { BANKS(TextKey.WLIST_BANKS), DIGITAL(TextKey.WLIST_DIGITAL), CASH(TextKey.WLIST_CASH) }
+enum class WalletGroupKind(val title: TextRef) { BANKS(UiKey.WLIST_BANKS), DIGITAL(UiKey.WLIST_DIGITAL), CASH(UiKey.WLIST_CASH) }
 
 data class WalletRowView(
     val id: Id,
     val name: String,
-    val kindLabel: TextKey,
+    val kindLabel: TextRef,
     /** آخر ٤ أرقام بالأرقام العربية في العربي (CLAUDE.md #11 — مفيش رقم حساب كامل). */
     val last4: String?,
     val balanceMinor: Halalas?,
@@ -39,11 +41,11 @@ data class WalletGroupView(val kind: WalletGroupKind, val rows: List<WalletRowVi
 
 data class WalletsView(val totalMinor: Halalas?, val count: Int, val unknown: List<String>, val groups: List<WalletGroupView>)
 
-fun kindLabel(kind: String): TextKey = when (kind) {
-    "cash" -> TextKey.WLIST_KIND_CASH
-    "digital_wallet" -> TextKey.WLIST_KIND_DIGITAL
-    "own_abroad" -> TextKey.WLIST_KIND_ABROAD
-    else -> TextKey.WLIST_KIND_BANK
+fun kindLabel(kind: String): TextRef = when (kind) {
+    "cash" -> UiKey.WLIST_KIND_CASH
+    "digital_wallet" -> UiKey.WLIST_KIND_DIGITAL
+    "own_abroad" -> UiKey.WLIST_KIND_ABROAD
+    else -> UiKey.WLIST_KIND_BANK
 }
 
 private fun groupOf(kind: String) = when (kind) {
@@ -69,9 +71,9 @@ fun walletsView(now: WithYouNow, mainId: Id?): WalletsView {
 
 /** سطر تحت «معك الآن»: اللي رصيدها مش معروف بالاسم، وإلا «في N محافظ في هذا البلد». */
 fun walletsTotalLine(v: WalletsView): String = when {
-    v.count == 0 -> t(TextKey.WLIST_EMPTY_LINE)
-    v.unknown.isNotEmpty() -> t(TextKey.WLIST_UNKNOWN_LINE, v.unknown.joinToString(t(TextKey.WLIST_AND)))
-    else -> t(TextKey.WLIST_TOTAL_LINE, countText(v.count, WALLET_WORDS))
+    v.count == 0 -> t(UiKey.WLIST_EMPTY_LINE)
+    v.unknown.isNotEmpty() -> t(UiKey.WLIST_UNKNOWN_LINE, v.unknown.joinToString(t(UiKey.WLIST_AND)))
+    else -> t(UiKey.WLIST_TOTAL_LINE, countText(v.count, WALLET_WORDS))
 }
 
 /** حركة في «آخر الحركات»: الاسم · التاريخ · المبلغ بنبرة اتجاهه **على المحفظة دي** (الطرف الداخل لتحويل = وارد بالأزرق). */
@@ -93,8 +95,8 @@ fun walletMoves(data: TransactionsScreenData, walletId: Id, limit: Int = 8): Lis
             ?: tx.rawMerchantName?.takeIf { it.isNotBlank() }
             ?: tx.rawDescription?.takeIf { it.isNotBlank() }
             ?: data.categories.firstOrNull { it.id == tx.categoryId }?.name
-            ?: t(TextKey.WDET_MOVE_UNNAMED)
-        WalletMove(tx.id, if (incomingLeg) t(TextKey.WDET_MOVE_IN_PREFIX, name) else name, tx.occurredAt, tx.amountMinor, tone)
+            ?: t(UiKey.WDET_MOVE_UNNAMED)
+        WalletMove(tx.id, if (incomingLeg) t(UiKey.WDET_MOVE_IN_PREFIX, name) else name, tx.occurredAt, tx.amountMinor, tone)
     }
 
 /** المحفظة اللي في الشاشة (أو null لو اتشالت). */

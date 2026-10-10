@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -82,7 +83,7 @@ fun MerchantProfileScreen(merchantName: String) {
         toaster.show(err ?: done)
         if (err == null) { sheet = null; reload++ }
     }
-    InnerScaffold(t(TextKey.MERCHANT_PROFILE_TITLE)) {
+    InnerScaffold(t(UiKey.MERCHANT_PROFILE_TITLE)) {
         val v = view
         if (v == null) {
             item(key = "loading") {
@@ -104,43 +105,43 @@ fun MerchantProfileScreen(merchantName: String) {
                     val color = categoryColor(v.category, Ink.muted)
                     IconTile(color, size = 64.dp, radius = Radius.control) { LucideIcon(categoryIcon(v.category?.iconKey), size = 28.dp, tint = color) }
                     BasicText(v.name, Modifier.padding(top = 4.dp), style = Type.of(20, FontWeight.Bold))
-                    BasicText(t(TextKey.MERCHANT_PROFILE_IN_PERIOD, operationsCount(v.txns.size), v.periodLabel), style = Type.of(13).copy(color = Ink.muted))
-                    TonalButton(t(TextKey.MERCHANT_PROFILE_RENAME), { sheet = "rename" }, enabled = saved, height = 44.dp)
+                    BasicText(t(UiKey.MERCHANT_PROFILE_IN_PERIOD, operationsCount(v.txns.size), v.periodLabel), style = Type.of(13).copy(color = Ink.muted))
+                    TonalButton(t(UiKey.MERCHANT_PROFILE_RENAME), { sheet = "rename" }, enabled = saved, height = 44.dp)
                 }
             }
         }
         item(key = "stats") {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StatCard(t(TextKey.MERCHANT_PROFILE_SPENT_PERIOD, v.periodLabel), Modifier.weight(1f))
-                StatCard(t(TextKey.MERCHANT_PROFILE_SPENT_ALL), Modifier.weight(1f))
+                StatCard(t(UiKey.MERCHANT_PROFILE_SPENT_PERIOD, v.periodLabel), Modifier.weight(1f))
+                StatCard(t(UiKey.MERCHANT_PROFILE_SPENT_ALL), Modifier.weight(1f))
             }
         }
         item(key = "category") {
             FloatingCard(Modifier.fillMaxWidth()) {
-                BasicText(t(TextKey.MERCHANT_PROFILE_CATEGORY_IN, space.space.name), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.MERCHANT_PROFILE_CATEGORY_IN, space.space.name), style = Type.caption().copy(color = Ink.muted))
                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        BasicText(v.category?.name ?: t(TextKey.OPERATIONS_ROW_UNCLASSIFIED), style = Type.of(16, FontWeight.Bold))
+                        BasicText(v.category?.name ?: t(UiKey.OPERATIONS_ROW_UNCLASSIFIED), style = Type.of(16, FontWeight.Bold))
                         if (v.category != null) {
-                            if (v.confirmed) StatusChip(t(TextKey.OPERATION_DETAIL_CONFIRMED_CHIP), ChipInk.green, ChipInk.greenBg)
-                            else StatusChip(t(TextKey.OPERATION_DETAIL_SUGGESTED), ChipInk.amber, ChipInk.amberBg)
+                            if (v.confirmed) StatusChip(t(UiKey.OPERATION_DETAIL_CONFIRMED_CHIP), ChipInk.green, ChipInk.greenBg)
+                            else StatusChip(t(UiKey.OPERATION_DETAIL_SUGGESTED), ChipInk.amber, ChipInk.amberBg)
                         }
                     }
                     val cat = v.category
                     val id = v.merchantId
-                    if (!v.confirmed && cat != null && id != null) SmallAction(t(TextKey.OPERATION_DETAIL_CONFIRM), strong = true) {
-                        act(t(TextKey.OPERATION_DETAIL_REMEMBERED, v.name, cat.name)) { deps.merchants.setMerchantCategory(id, cat.id) }
+                    if (!v.confirmed && cat != null && id != null) SmallAction(t(UiKey.OPERATION_DETAIL_CONFIRM), strong = true) {
+                        act(t(UiKey.OPERATION_DETAIL_REMEMBERED, v.name, cat.name)) { deps.merchants.setMerchantCategory(id, cat.id) }
                     }
-                    SmallAction(t(TextKey.OPERATION_DETAIL_CHANGE), enabled = saved) { sheet = "category" }
+                    SmallAction(t(UiKey.OPERATION_DETAIL_CHANGE), enabled = saved) { sheet = "category" }
                 }
                 BasicText(merchantCategoryHint(v, space.space.name), style = Type.of(12).copy(color = Ink.muted))
             }
         }
-        item(key = "aliases") { AliasesCard(v, saved) { raw -> v.merchantId?.let { id -> act(t(TextKey.MERCHANT_PROFILE_ALIAS_ADDED)) { deps.merchants.addAlias(id, raw) } } } }
-        item(key = "list-title") { BasicText(t(TextKey.MERCHANT_PROFILE_LIST), Modifier.padding(top = 4.dp), style = Type.of(15, FontWeight.Bold)) }
+        item(key = "aliases") { AliasesCard(v, saved) { raw -> v.merchantId?.let { id -> act(t(UiKey.MERCHANT_PROFILE_ALIAS_ADDED)) { deps.merchants.addAlias(id, raw) } } } }
+        item(key = "list-title") { BasicText(t(UiKey.MERCHANT_PROFILE_LIST), Modifier.padding(top = 4.dp), style = Type.of(15, FontWeight.Bold)) }
         item(key = "list") {
             FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
-                if (v.txns.isEmpty()) BasicText(t(TextKey.MERCHANT_PROFILE_NONE_PERIOD, v.periodLabel), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
+                if (v.txns.isEmpty()) BasicText(t(UiKey.MERCHANT_PROFILE_NONE_PERIOD, v.periodLabel), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
                 v.txns.forEachIndexed { i, x ->
                     if (i > 0) Divider()
                     ListRow(x.date, subtitle = x.wallet, trailing = { AmountText(x.amountMinor, x.currency, tone = x.tone) }, onClick = { nav.push(OperationDetailRoute(x.id)) }, chevron = true)
@@ -150,18 +151,18 @@ fun MerchantProfileScreen(merchantName: String) {
     }
     CategoryPicker(
         visible = sheet == "category",
-        title = t(TextKey.CATEGORY_PICKER_TITLE, view?.name.orEmpty()),
+        title = t(UiKey.CATEGORY_PICKER_TITLE, view?.name.orEmpty()),
         choices = pickerChoices(categories, true, view?.category?.id),
         selectedId = view?.category?.id,
         onDismiss = { sheet = null },
-        body = t(TextKey.MERCHANT_PROFILE_CATEGORY_BODY),
+        body = t(UiKey.MERCHANT_PROFILE_CATEGORY_BODY),
     ) { cat ->
         val v = view ?: return@CategoryPicker
         val id = v.merchantId ?: return@CategoryPicker
-        act(t(TextKey.OPERATION_DETAIL_REMEMBERED, v.name, cat.name)) { deps.merchants.setMerchantCategory(id, cat.id) }
+        act(t(UiKey.OPERATION_DETAIL_REMEMBERED, v.name, cat.name)) { deps.merchants.setMerchantCategory(id, cat.id) }
     }
     RenameSheet(sheet == "rename", view?.name.orEmpty(), onDismiss = { sheet = null }) { name ->
-        view?.merchantId?.let { id -> act(t(TextKey.MERCHANT_PROFILE_RENAMED)) { deps.merchants.renameMerchant(id, name) } }
+        view?.merchantId?.let { id -> act(t(UiKey.MERCHANT_PROFILE_RENAMED)) { deps.merchants.renameMerchant(id, name) } }
     }
 }
 
@@ -182,22 +183,22 @@ private fun AliasesCard(v: MerchantView, saved: Boolean, onAdd: (String) -> Unit
     val toaster = LocalToaster.current
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(TextKey.MERCHANT_PROFILE_ALIASES), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.MERCHANT_PROFILE_ALIASES), style = Type.of(15, FontWeight.Bold))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (a in v.aliases) BasicText(a, Modifier.clip(RoundedCornerShape(12.dp)).background(Color(0x0F193D33)).padding(horizontal = 10.dp, vertical = 6.dp), style = Type.of(13))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
-                TextInput(text, { if (it.length <= 120) text = it; error = null }, Modifier.weight(1f), placeholder = t(TextKey.MERCHANT_PROFILE_ALIAS_HINT), enabled = saved)
-                PrimaryButton(t(TextKey.TAGS_SHEET_ADD), enabled = saved, onClick = {
+                TextInput(text, { if (it.length <= 120) text = it; error = null }, Modifier.weight(1f), placeholder = t(UiKey.MERCHANT_PROFILE_ALIAS_HINT), enabled = saved)
+                PrimaryButton(t(UiKey.TAGS_SHEET_ADD), enabled = saved, onClick = {
                     when {
                         text.isBlank() -> error = t(TextKey.MERCHANT_ALIAS_LENGTH)
-                        aliasExists(v, text) -> { toaster.show(t(TextKey.MERCHANT_PROFILE_ALIAS_EXISTS)); text = "" }
+                        aliasExists(v, text) -> { toaster.show(t(UiKey.MERCHANT_PROFILE_ALIAS_EXISTS)); text = "" }
                         else -> { onAdd(text); text = "" }
                     }
                 })
             }
             error?.let { FieldError(it) }
-            BasicText(t(TextKey.MERCHANT_PROFILE_ALIAS_NOTE), style = Type.of(12).copy(color = Ink.muted))
+            BasicText(t(UiKey.MERCHANT_PROFILE_ALIAS_NOTE), style = Type.of(12).copy(color = Ink.muted))
         }
     }
 }
@@ -207,11 +208,11 @@ private fun AliasesCard(v: MerchantView, saved: Boolean, onAdd: (String) -> Unit
 private fun RenameSheet(visible: Boolean, current: String, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var draft by remember(visible) { mutableStateOf(current) }
     var error by remember(visible) { mutableStateOf<String?>(null) }
-    Sheet(visible, onDismiss, title = t(TextKey.MERCHANT_PROFILE_RENAME_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), spacing = 12.dp) {
-        BasicText(t(TextKey.MERCHANT_PROFILE_RENAME_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.MERCHANT_PROFILE_RENAME_BODY), style = Type.of(13).copy(color = Ink.muted))
+    Sheet(visible, onDismiss, title = t(UiKey.MERCHANT_PROFILE_RENAME_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
+        BasicText(t(UiKey.MERCHANT_PROFILE_RENAME_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.MERCHANT_PROFILE_RENAME_BODY), style = Type.of(13).copy(color = Ink.muted))
         TextInput(draft, { if (it.length <= 120) draft = it; error = null }, error = error)
-        PrimaryButton(t(TextKey.LINK_PROJECT_EVENT_SAVE), modifier = Modifier.fillMaxWidth(), onClick = {
+        PrimaryButton(t(UiKey.LINK_PROJECT_EVENT_SAVE), modifier = Modifier.fillMaxWidth(), onClick = {
             if (draft.isBlank()) error = t(TextKey.MERCHANT_NAME_REQUIRED) else onSave(draft.trim())
         })
     }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,7 +60,7 @@ fun RoscaDetailScreen(roscaId: String) {
         }
     }
     val ui = (load.value as? Load.Ready)?.value
-    DuesScaffold(ui?.card?.name ?: t(TextKey.ROSCAS_TITLE)) {
+    DuesScaffold(ui?.card?.name ?: t(UiKey.ROSCAS_TITLE)) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(190, 260) }
             Load.Failed -> item { LoadFailed(load::reload) }
@@ -72,7 +73,7 @@ fun RoscaDetailScreen(roscaId: String) {
                 item(key = "hero") { RoscaHero(d) }
                 item(key = "turns") { Turns(d) }
                 item(key = "analysis") { Analysis(d) }
-                item(key = "kind") { BasicText(t(TextKey.ROSCA_KIND_NOTE), style = Type.caption().copy(color = Ink.muted)) }
+                item(key = "kind") { BasicText(t(UiKey.ROSCA_KIND_NOTE), style = Type.caption().copy(color = Ink.muted)) }
             }
         }
     }
@@ -103,7 +104,7 @@ private fun Turns(d: RoscaDetailUi) {
     var all by rememberSaveable { mutableStateOf(false) }
     val rows = if (all) d.rows else d.focusRows
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.ROSCA_TURNS_TITLE), style = Type.section())
+        BasicText(t(UiKey.ROSCA_TURNS_TITLE), style = Type.section())
         CardList {
             rows.forEachIndexed { i, r ->
                 if (i > 0) Divider()
@@ -112,7 +113,7 @@ private fun Turns(d: RoscaDetailUi) {
         }
         if (d.rows.size > d.focusRows.size) {
             TonalButton(
-                if (all) t(TextKey.DUES_SHOW_LESS) else t(TextKey.ROSCA_ALL_TURNS, app.masroufy.core.sentenceNumber(d.rows.size)),
+                if (all) t(UiKey.DUES_SHOW_LESS) else t(UiKey.ROSCA_ALL_TURNS, app.masroufy.core.sentenceNumber(d.rows.size)),
                 { all = !all }, Modifier.fillMaxWidth(), height = 44.dp,
             )
         }
@@ -151,7 +152,7 @@ private fun TurnRow(r: TurnRowUi, currency: Currency) {
 @Composable
 private fun Analysis(d: RoscaDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.ROSCA_ANALYSIS), style = Type.section())
+        BasicText(t(UiKey.ROSCA_ANALYSIS), style = Type.section())
         for (pair in d.stats.chunked(2)) Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             for (st in pair) FloatingCard(Modifier.weight(1f).fillMaxHeight(), shape = RoundedCornerShape(18.dp), contentPadding = PaddingValues(12.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

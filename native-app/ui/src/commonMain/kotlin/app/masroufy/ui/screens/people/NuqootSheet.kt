@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,11 +55,11 @@ private const val QUICK_PEOPLE = 4
 internal fun NuqootButton(data: EventScreenData) {
     var open by remember { mutableStateOf(false) }
     val e = data.ui.event
-    val gave = t(if (e.kind == LifeEventKind.CONDOLENCE) TextKey.EVENTS_GAVE_CONDOLENCE else TextKey.EVENTS_GAVE)
-    val label = if (e.mine) t(TextKey.NUQOOT_OPEN_MINE) else t(TextKey.NUQOOT_OPEN_OTHER, gave)
+    val gave = t(if (e.kind == LifeEventKind.CONDOLENCE) UiKey.EVENTS_GAVE_CONDOLENCE else UiKey.EVENTS_GAVE)
+    val label = if (e.mine) t(UiKey.NUQOOT_OPEN_MINE) else t(UiKey.NUQOOT_OPEN_OTHER, gave)
     TonalButton(label, onClick = { open = true }, modifier = Modifier.fillMaxWidth())
-    Sheet(open, onDismiss = { open = false }, title = if (e.mine) t(TextKey.EVENTS_GIFTS_IN) else gave) {
-        NuqootForm(data, if (e.mine) t(TextKey.EVENTS_GIFTS_IN) else gave) { open = false }
+    Sheet(open, onDismiss = { open = false }, title = if (e.mine) t(UiKey.EVENTS_GIFTS_IN) else gave) {
+        NuqootForm(data, if (e.mine) t(UiKey.EVENTS_GIFTS_IN) else gave) { open = false }
     }
 }
 
@@ -91,22 +92,22 @@ private fun NuqootForm(data: EventScreenData, title: String, done: () -> Unit) {
     Column(Modifier.fillMaxWidth().heightIn(max = 660.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SheetHeading(title)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Choice(t(TextKey.NUQOOT_MODE_CASH), !link, { link = false; err = null }, Modifier.weight(1f), filled = true)
-            Choice(t(TextKey.NUQOOT_MODE_LINK), link, { link = true; err = null }, Modifier.weight(1f), filled = true)
+            Choice(t(UiKey.NUQOOT_MODE_CASH), !link, { link = false; err = null }, Modifier.weight(1f), filled = true)
+            Choice(t(UiKey.NUQOOT_MODE_LINK), link, { link = true; err = null }, Modifier.weight(1f), filled = true)
         }
         if (!link) {
-            FieldTitle(t(TextKey.NUQOOT_WALLET))
+            FieldTitle(t(UiKey.NUQOOT_WALLET))
             ChoiceFlow { for (w in data.wallets) Choice(w.name, wallet == w.id, { wallet = w.id }, filled = true, textSize = 13) }
-            FieldTitle(t(TextKey.NUQOOT_ROWS))
+            FieldTitle(t(UiKey.NUQOOT_ROWS))
             rows.forEachIndexed { i, r ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    TextInput(r.name, { v -> rows = rows.mapIndexed { j, x -> if (j == i) x.copy(name = v.take(80)) else x }; err = null }, Modifier.weight(1.4f), placeholder = t(TextKey.NUQOOT_NAME))
+                    TextInput(r.name, { v -> rows = rows.mapIndexed { j, x -> if (j == i) x.copy(name = v.take(80)) else x }; err = null }, Modifier.weight(1.4f), placeholder = t(UiKey.NUQOOT_NAME))
                     NumberInput(r.amount, { v -> rows = rows.mapIndexed { j, x -> if (j == i) x.copy(amount = v) else x }; err = null }, Modifier.weight(1f), placeholder = "0.00")
-                    SquareIcon(Lucide.X, t(TextKey.PPL_REMOVE_ROW), { rows = rows.filterIndexed { j, _ -> j != i } }, enabled = rows.size > 1)
+                    SquareIcon(Lucide.X, t(UiKey.PPL_REMOVE_ROW), { rows = rows.filterIndexed { j, _ -> j != i } }, enabled = rows.size > 1)
                 }
             }
             ChoiceFlow {
-                Choice(t(TextKey.NUQOOT_ADD_ROW), false, { if (rows.size < MAX_ROWS) rows = rows + GiftLine() }, textSize = 13)
+                Choice(t(UiKey.NUQOOT_ADD_ROW), false, { if (rows.size < MAX_ROWS) rows = rows + GiftLine() }, textSize = 13)
                 val used = rows.map { it.name.trim() }.toSet()
                 for (p in data.people.filter { !it.archived && it.name !in used }.take(QUICK_PEOPLE)) {
                     Choice(p.name, false, {
@@ -116,11 +117,11 @@ private fun NuqootForm(data: EventScreenData, title: String, done: () -> Unit) {
                 }
             }
             val ok = plan as? GiftPlan.Ready
-            Note(if (ok != null && ok.amounts.isNotEmpty()) t(TextKey.NUQOOT_SUM, amountLabel(space.people.money.total(ok.amounts), currency), countOf(ok.amounts.size, Noun.OPS), walletName) else t(TextKey.NUQOOT_EACH))
+            Note(if (ok != null && ok.amounts.isNotEmpty()) t(UiKey.NUQOOT_SUM, amountLabel(space.people.money.total(ok.amounts), currency), countOf(ok.amounts.size, Noun.OPS), walletName) else t(UiKey.NUQOOT_EACH))
         } else {
             val list = candidates
             if (list == null) app.masroufy.ui.components.Skeleton(Modifier.fillMaxWidth().heightIn(min = 96.dp))
-            else if (list.isEmpty()) Note(t(TextKey.NUQOOT_NO_CANDIDATES))
+            else if (list.isEmpty()) Note(t(UiKey.NUQOOT_NO_CANDIDATES))
             list.orEmpty().forEach { tx ->
                 val on = cand == tx.id
                 PickRow(on, txnTitle(tx), { cand = tx.id; err = null }) {
@@ -131,29 +132,29 @@ private fun NuqootForm(data: EventScreenData, title: String, done: () -> Unit) {
                     BasicText(joinLine(dayMonth(tx.occurredAt), data.wallets.firstOrNull { it.id == tx.walletId }?.name), style = Type.caption().copy(color = Ink.muted))
                 }
             }
-            FieldTitle(t(TextKey.PROFILE_DEBT_WHO))
+            FieldTitle(t(UiKey.PROFILE_DEBT_WHO))
             ChoiceFlow { for (p in data.people.filter { !it.archived }) Choice(p.name, who == p.id, { who = p.id; err = null }, filled = true, textSize = 13) }
         }
-        Note(t(TextKey.NUQOOT_KIND_NOTE))
+        Note(t(UiKey.NUQOOT_KIND_NOTE))
         ErrorLine(err)
         val count = (plan as? GiftPlan.Ready)?.amounts?.size ?: 0
         PrimaryButton(
-            when { link -> t(TextKey.NUQOOT_SAVE_LINK); count > 0 -> t(TextKey.NUQOOT_SAVE_N, countOf(count, Noun.GIFTS_OBJ)); else -> t(TextKey.NUQOOT_SAVE) },
+            when { link -> t(UiKey.NUQOOT_SAVE_LINK); count > 0 -> t(UiKey.NUQOOT_SAVE_N, countOf(count, Noun.GIFTS_OBJ)); else -> t(UiKey.NUQOOT_SAVE) },
             loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             onClick = {
                 val gifts = space.people.gifts
                 if (link) {
-                    val tx = cand ?: run { err = t(TextKey.NUQOOT_NEED_TXN); return@PrimaryButton }
-                    val person = who ?: run { err = t(TextKey.NUQOOT_NEED_WHO); return@PrimaryButton }
+                    val tx = cand ?: run { err = t(UiKey.NUQOOT_NEED_TXN); return@PrimaryButton }
+                    val person = who ?: run { err = t(UiKey.NUQOOT_NEED_WHO); return@PrimaryButton }
                     scope.launch {
                         busy = true
                         val r = runCatching { gifts.link(e.id, tx, if (e.mine) EventRole.GIFT_IN else EventRole.GIFT_OUT, person) }
                         busy = false
-                        r.onSuccess { PeopleChanges.bump(); toaster.show(t(TextKey.NUQOOT_LINKED)); done() }.onFailure { err = it.message }
+                        r.onSuccess { PeopleChanges.bump(); toaster.show(t(UiKey.NUQOOT_LINKED)); done() }.onFailure { err = it.message }
                     }
                     return@PrimaryButton
                 }
-                val w = wallet ?: run { err = t(TextKey.NUQOOT_NO_WALLET); return@PrimaryButton }
+                val w = wallet ?: run { err = t(UiKey.NUQOOT_NO_WALLET); return@PrimaryButton }
                 when (plan) {
                     is GiftPlan.Bad -> err = plan.message
                     is GiftPlan.Ready -> scope.launch {
@@ -161,7 +162,7 @@ private fun NuqootForm(data: EventScreenData, title: String, done: () -> Unit) {
                         val r = runCatching { saveGifts(space.people, e.id, if (e.mine) Direction.IN else Direction.OUT, w, space.shell.today(), plan) }
                         busy = false
                         PeopleChanges.bump()
-                        r.onSuccess { toaster.show(t(TextKey.NUQOOT_DONE, countOf(plan.amounts.size, Noun.GIFTS), walletName)); done() }.onFailure { err = it.message }
+                        r.onSuccess { toaster.show(t(UiKey.NUQOOT_DONE, countOf(plan.amounts.size, Noun.GIFTS), walletName)); done() }.onFailure { err = it.message }
                     }
                 }
             },

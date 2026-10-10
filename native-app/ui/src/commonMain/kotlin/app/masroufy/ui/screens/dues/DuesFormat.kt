@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.CycleUnit
 import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
@@ -20,29 +22,29 @@ enum class Chip { OVERDUE, SOON, UPCOMING, CALM, MUTED }
 
 /** «٢٠ سبتمبر» — والسنة لو مش سنة النهارده («٢٧ سبتمبر ٢٠٢٨»). */
 internal fun dateText(date: IsoDate, today: IsoDate): String =
-    if (date.take(4) == today.take(4)) dayMonth(date) else t(TextKey.DUES_DATE_WITH_YEAR, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
+    if (date.take(4) == today.take(4)) dayMonth(date) else t(UiKey.DUES_DATE_WITH_YEAR, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
 
 /** «سبتمبر ٢٠٢٦» (عنوان سطر في جدول الأقساط). */
 internal fun monthYearText(date: IsoDate): String {
     val p = parseIsoDate(date)
-    return t(TextKey.DATE_MONTH_YEAR, monthName(p.month), sentenceNumber(p.year))
+    return t(UiKey.DATE_MONTH_YEAR, monthName(p.month), sentenceNumber(p.year))
 }
 
 /** «اليوم» · «غدًا» · «بعد يومين» · «بعد ٥ أيام» · «بعد ٢٥ يومًا» (نفس كلام «القادم» في الرئيسية). */
 internal fun afterText(days: Int): String = when {
-    days <= 0 -> t(TextKey.UPCOMING_TODAY)
-    days == 1 -> t(TextKey.UPCOMING_TOMORROW)
-    days == 2 -> t(TextKey.UPCOMING_TWO_DAYS)
-    days <= 10 -> t(TextKey.UPCOMING_FEW_DAYS, sentenceNumber(days))
-    else -> t(TextKey.UPCOMING_MANY_DAYS, sentenceNumber(days))
+    days <= 0 -> t(UiKey.UPCOMING_TODAY)
+    days == 1 -> t(UiKey.UPCOMING_TOMORROW)
+    days == 2 -> t(UiKey.UPCOMING_TWO_DAYS)
+    days <= 10 -> t(UiKey.UPCOMING_FEW_DAYS, sentenceNumber(days))
+    else -> t(UiKey.UPCOMING_MANY_DAYS, sentenceNumber(days))
 }
 
 /** «منذ يوم واحد» · «منذ يومين» · «منذ ٥ أيام» · «منذ ١٧ يومًا». */
 internal fun agoText(days: Int): String = when {
-    days <= 1 -> t(TextKey.DUES_AGO_ONE)
-    days == 2 -> t(TextKey.DUES_AGO_TWO)
-    days <= 10 -> t(TextKey.DUES_AGO_FEW, sentenceNumber(days))
-    else -> t(TextKey.DUES_AGO_MANY, sentenceNumber(days))
+    days <= 1 -> t(UiKey.DUES_AGO_ONE)
+    days == 2 -> t(UiKey.DUES_AGO_TWO)
+    days <= 10 -> t(UiKey.DUES_AGO_FEW, sentenceNumber(days))
+    else -> t(UiKey.DUES_AGO_MANY, sentenceNumber(days))
 }
 
 /** موعد بالنسبة للنهارده: اللي فات ⇒ «منذ …»، والجاي ⇒ «بعد …». */
@@ -52,7 +54,7 @@ internal fun relativeText(date: IsoDate, today: IsoDate): String {
 }
 
 /** عدّ بصيغ العربي الأربعة: واحد · اتنين · ٣–١٠ · ١١ وأكتر ([few]/[many] فيهم `{0}`) — و[zero] لو الصفر ليه جملة («لا أقساط» مش «٠ قسطًا»). */
-internal fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: TextKey, zero: TextKey? = null): String = when {
+internal fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef, zero: TextRef? = null): String = when {
     n == 0 && zero != null -> t(zero)
     n == 1 -> t(one)
     n == 2 -> t(two)
@@ -62,20 +64,20 @@ internal fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: T
 
 /** «قسط واحد» · «قسطان» · «٥ أقساط» · «١٢ قسطًا». */
 internal fun installmentsCount(n: Int): String =
-    countText(n, TextKey.DUES_INST_ONE, TextKey.DUES_INST_TWO, TextKey.DUES_INST_FEW, TextKey.DUES_INST_MANY, zero = TextKey.DUES_INST_NONE)
+    countText(n, UiKey.DUES_INST_ONE, UiKey.DUES_INST_TWO, UiKey.DUES_INST_FEW, UiKey.DUES_INST_MANY, zero = UiKey.DUES_INST_NONE)
 
 /** الدورة بالكلام: «كل شهر» · «كل شهرين» · «كل ٣ أشهر» · «كل سنة» · «كل أسبوع» · «كل أسبوعين». */
 internal fun cycleText(every: Int, unit: CycleUnit = CycleUnit.MONTH): String = when (unit) {
     CycleUnit.WEEK -> when (every) {
         1 -> t(TextKey.ROSCA_FREQ_WEEKLY)
         2 -> t(TextKey.ROSCA_FREQ_BIWEEKLY)
-        else -> t(TextKey.DUES_CYCLE_WEEKS, sentenceNumber(every))
+        else -> t(UiKey.DUES_CYCLE_WEEKS, sentenceNumber(every))
     }
     CycleUnit.MONTH -> when (every) {
         1 -> t(TextKey.ROSCA_FREQ_MONTHLY)
         2 -> t(TextKey.ROSCA_FREQ_BIMONTHLY)
-        12 -> t(TextKey.DUES_CYCLE_YEAR)
-        else -> t(TextKey.DUES_CYCLE_MONTHS, sentenceNumber(every))
+        12 -> t(UiKey.DUES_CYCLE_YEAR)
+        else -> t(UiKey.DUES_CYCLE_MONTHS, sentenceNumber(every))
     }
 }
 

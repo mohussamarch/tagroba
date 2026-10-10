@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,33 +71,33 @@ fun SavingsGoalsScreen() {
     var archivedOpen by remember { mutableStateOf(false) }
     val ui = (state as? Load.Ready)?.value
     DetailScaffold(
-        title = t(TextKey.GOALS_TITLE),
+        title = t(UiKey.GOALS_TITLE),
         actions = { NewGoalButton { newOpen = true } },
     ) {
         when (state) {
             Load.Loading -> item { Skeleton(Modifier.fillMaxWidth().height(260.dp)) }
-            is Load.Failed -> item { ErrorCard(t(TextKey.SHELL_LOAD_FAILED), state.message ?: t(TextKey.BUDGETS_ERROR_BODY), { reload++ }) }
+            is Load.Failed -> item { ErrorCard(t(UiKey.SHELL_LOAD_FAILED), state.message ?: t(UiKey.BUDGETS_ERROR_BODY), { reload++ }) }
             is Load.Ready -> {
                 val goals = state.value
                 if (goals.active.isEmpty() && goals.archived.isEmpty()) {
                     item {
-                        EmptyState(t(TextKey.GOALS_EMPTY_TITLE), t(TextKey.GOALS_EMPTY_BODY)) {
-                            PrimaryButton(t(TextKey.GOALS_NEW), { newOpen = true }, Modifier.padding(top = 10.dp))
+                        EmptyState(t(UiKey.GOALS_EMPTY_TITLE), t(UiKey.GOALS_EMPTY_BODY)) {
+                            PrimaryButton(t(UiKey.GOALS_NEW), { newOpen = true }, Modifier.padding(top = 10.dp))
                         }
                     }
                 } else {
-                    item { BasicText(t(TextKey.GOALS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+                    item { BasicText(t(UiKey.GOALS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
                     for (card in goals.active) item(key = card.id) {
                         GoalCard(card, onOpen = { openId = card.id }) {
                             scope.launch {
-                                val error = attempt(t(TextKey.SHELL_LOAD_FAILED)) { deps.goals.star(card.id, !card.starred) }
-                                toaster.show(error ?: if (card.starred) t(TextKey.GOALS_UNSTARRED) else t(TextKey.GOALS_STARRED, card.name))
+                                val error = attempt(t(UiKey.SHELL_LOAD_FAILED)) { deps.goals.star(card.id, !card.starred) }
+                                toaster.show(error ?: if (card.starred) t(UiKey.GOALS_UNSTARRED) else t(UiKey.GOALS_STARRED, card.name))
                                 if (error == null) reload++
                             }
                         }
                     }
                     if (goals.archived.isNotEmpty()) item(key = "archived") { ArchivedSection(goals.archived, archivedOpen) { archivedOpen = !archivedOpen } }
-                    item { BasicText(t(TextKey.GOALS_METHOD), style = Type.caption().copy(color = Ink.muted)) }
+                    item { BasicText(t(UiKey.GOALS_METHOD), style = Type.caption().copy(color = Ink.muted)) }
                 }
             }
         }
@@ -111,7 +112,7 @@ private fun NewGoalButton(onClick: () -> Unit) {
     val press = rememberPress()
     Box(
         Modifier.size(48.dp).pressScale(press).clip(RoundedCornerShape(Radius.control)).background(Glass.primary)
-            .tap(press, label = t(TextKey.GOALS_NEW), onClick = onClick),
+            .tap(press, label = t(UiKey.GOALS_NEW), onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(Lucide.PLUS, size = 22.dp, tint = Ink.onPrimary) }
 }
@@ -134,7 +135,7 @@ private fun GoalCard(card: GoalCardUi, onOpen: () -> Unit, onStar: () -> Unit) {
             }
             ProgressBar(card.percent ?: 0, if (card.reached) Ink.income else Ink.primary)
             StatsGrid(card.stats)
-            TonalButton(t(if (card.linked) TextKey.GOALS_OPEN_LINKED else TextKey.GOALS_OPEN_MANUAL), onOpen, Modifier.fillMaxWidth(), height = 44.dp)
+            TonalButton(t(if (card.linked) UiKey.GOALS_OPEN_LINKED else UiKey.GOALS_OPEN_MANUAL), onOpen, Modifier.fillMaxWidth(), height = 44.dp)
         }
     }
 }
@@ -158,7 +159,7 @@ private fun StarButton(starred: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
     Box(
         Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(if (starred) Ink.alertBg else Color(0x0A193D33))
-            .tap(press, label = t(if (starred) TextKey.GOALS_STAR_REMOVE else TextKey.GOALS_STAR_ADD), onClick = onClick),
+            .tap(press, label = t(if (starred) UiKey.GOALS_STAR_REMOVE else UiKey.GOALS_STAR_ADD), onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { LucideIcon(BudgetsIcons.STAR, size = 20.dp, tint = if (starred) Ink.focus else Ink.faded) }
 }
@@ -166,7 +167,7 @@ private fun StarButton(starred: Boolean, onClick: () -> Unit) {
 @Composable
 private fun ArchivedSection(list: List<ArchivedUi>, open: Boolean, onToggle: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        TonalButton(t(TextKey.GOALS_ARCHIVED, app.masroufy.core.sentenceNumber(list.size)), onToggle, height = 44.dp, muted = true)
+        TonalButton(t(UiKey.GOALS_ARCHIVED, app.masroufy.core.sentenceNumber(list.size)), onToggle, height = 44.dp, muted = true)
         if (open) {
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.control)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 4.dp)) {
                 for (a in list) {

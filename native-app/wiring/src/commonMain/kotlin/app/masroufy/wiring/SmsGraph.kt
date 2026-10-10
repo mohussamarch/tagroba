@@ -56,8 +56,8 @@ internal class SmsGraph(
     /** مراجعة كل بنك من آخر [overview] — «سجّل الكل» بيسجّل نفس اللي اتعرض (الجلسة جوه كل `ReviewSmsInbox`). */
     private var last: List<Pair<SenderReview, ReviewSmsInbox>> = emptyList()
 
-    private fun review(m: ManageSmsInbox) =
-        ReviewSmsInbox(ReviewSmsInboxDeps(m, ImportStatement(importDeps(c.repos, c.env)), c.repos.merchants, c.repos.categories, c.env.ids))
+    // decisions-77 (مراجعة S1): الشاشة لازم تيجي من `SmsLane.screen` — نفس التعلّم والآثار والمحافظ بتوع الخلفية.
+    private fun review(m: ManageSmsInbox): ReviewSmsInbox = SmsLane.of(space.id, importDeps(c.repos, c.env), m, c.repos.wallets).screen()
 
     /** كل البلاد المفتوحة (رسالة بلد بتترفض من قارئ البلد التانية بالعملة ⇒ بتتسجل في بلدها بس). */
     private fun auto(): AutoRecordSms {
@@ -173,4 +173,15 @@ internal class SenderInbox(private val inbox: SmsInboxPort, private val key: Str
     override suspend fun senderWallets(spaceId: String) = inbox.senderWallets(spaceId)
 
     override suspend fun setSenderWallet(spaceId: String, sender: String, walletId: String?) = inbox.setSenderWallet(spaceId, sender, walletId)
+
+    // §77-A (decisions-77): التعلّم وردّ «ده راتبك؟» بيروحوا للصندوق الحقيقي زي ما هم (مش بيتفلتروا بالمرسل).
+    override suspend fun learnedShapes(spaceId: String) = inbox.learnedShapes(spaceId)
+
+    override suspend fun learnShapes(spaceId: String, sender: String, keys: Set<String>) = inbox.learnShapes(spaceId, sender, keys)
+
+    override suspend fun forgetShapes(spaceId: String, sender: String) = inbox.forgetShapes(spaceId, sender)
+
+    override suspend fun salaryAnswer(spaceId: String, sender: String) = inbox.salaryAnswer(spaceId, sender)
+
+    override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) = inbox.setSalaryAnswer(spaceId, sender, answer)
 }

@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -34,26 +36,26 @@ import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
 
 /** سطر مجموعة في إعدادات الإشعارات — [on] من المجموعات المقفولة، و[desc] بيتغيّر لرسائل البنك المقفولة (§74). */
-data class NotifRow(val group: AlertGroup, val title: TextKey, val desc: TextKey, val on: Boolean, val isNew: Boolean = false)
+data class NotifRow(val group: AlertGroup, val title: TextRef, val desc: TextRef, val on: Boolean, val isNew: Boolean = false)
 
 /** الترتيب من OVERRIDES §74 (رسائل البنك أول مجموعة وعليها «جديد») + «ملفك» آخر حاجة (مجموعة في المحرك — SCREENS.md). */
 private val ORDER = listOf(
-    AlertGroup.BANK_SMS to (TextKey.NSET_BANK to TextKey.NSET_BANK_DESC),
-    AlertGroup.DUES to (TextKey.NSET_DUES to TextKey.NSET_DUES_DESC),
-    AlertGroup.BUDGET to (TextKey.NSET_BUDGET to TextKey.NSET_BUDGET_DESC),
-    AlertGroup.QUESTIONS to (TextKey.NSET_ASK to TextKey.NSET_ASK_DESC),
-    AlertGroup.INCOME to (TextKey.NSET_INCOME to TextKey.NSET_INCOME_DESC),
-    AlertGroup.OCCASIONS to (TextKey.NSET_OCC to TextKey.NSET_OCC_DESC),
-    AlertGroup.ZAKAT to (TextKey.NSET_ZAKAT to TextKey.NSET_ZAKAT_DESC),
-    AlertGroup.BALANCE to (TextKey.NSET_BALANCE to TextKey.NSET_BALANCE_DESC),
-    AlertGroup.ADVISOR to (TextKey.NSET_ADVISOR to TextKey.NSET_ADVISOR_DESC),
-    AlertGroup.PROFILE to (TextKey.NSET_PROFILE to TextKey.NSET_PROFILE_DESC),
+    AlertGroup.BANK_SMS to (UiKey.NSET_BANK to UiKey.NSET_BANK_DESC),
+    AlertGroup.DUES to (UiKey.NSET_DUES to UiKey.NSET_DUES_DESC),
+    AlertGroup.BUDGET to (UiKey.NSET_BUDGET to UiKey.NSET_BUDGET_DESC),
+    AlertGroup.QUESTIONS to (UiKey.NSET_ASK to UiKey.NSET_ASK_DESC),
+    AlertGroup.INCOME to (UiKey.NSET_INCOME to UiKey.NSET_INCOME_DESC),
+    AlertGroup.OCCASIONS to (UiKey.NSET_OCC to UiKey.NSET_OCC_DESC),
+    AlertGroup.ZAKAT to (UiKey.NSET_ZAKAT to UiKey.NSET_ZAKAT_DESC),
+    AlertGroup.BALANCE to (UiKey.NSET_BALANCE to UiKey.NSET_BALANCE_DESC),
+    AlertGroup.ADVISOR to (UiKey.NSET_ADVISOR to UiKey.NSET_ADVISOR_DESC),
+    AlertGroup.PROFILE to (UiKey.NSET_PROFILE to UiKey.NSET_PROFILE_DESC),
 )
 
 /** دالة نقية (بتتختبر على JVM): كل المجموعات شغالة ما عدا اللي المستخدم قفلها. «سؤال الكاش» مش هنا — مالوش مجموعة في المحرك (§74 ⚠️). */
 fun notificationRows(disabled: Set<AlertGroup>): List<NotifRow> = ORDER.map { (group, keys) ->
     val on = group !in disabled
-    val desc = if (group == AlertGroup.BANK_SMS && !on) TextKey.NSET_BANK_OFF_DESC else keys.second
+    val desc = if (group == AlertGroup.BANK_SMS && !on) UiKey.NSET_BANK_OFF_DESC else keys.second
     NotifRow(group, keys.first, desc, on, isNew = group == AlertGroup.BANK_SMS)
 }
 
@@ -75,8 +77,8 @@ fun NotificationSettingsScreen() {
         disabled = runCatching { more.disabledAlertGroups() }.getOrDefault(emptySet())
         cash = runCatching { more.cashQuestion?.current() }.getOrNull()
     }
-    InnerScaffold(t(TextKey.NSET_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.NSET_INTRO), Modifier.padding(horizontal = 4.dp), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.NSET_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.NSET_INTRO), Modifier.padding(horizontal = 4.dp), style = Type.of(13).copy(color = Ink.muted)) }
         val off = disabled
         if (off == null) {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(420.dp)) }
@@ -89,7 +91,7 @@ fun NotificationSettingsScreen() {
                     GroupSwitch(t(r.title), t(r.desc), r.on, r.isNew, last = i == rows.lastIndex) {
                         scope.launch {
                             val ok = runCatching { more.alerts.setGroupEnabled(r.group, !r.on) }.isSuccess
-                            if (ok) disabled = if (r.on) off + r.group else off - r.group else toaster.show(t(TextKey.MORE_SAVE_FAILED), dark = true)
+                            if (ok) disabled = if (r.on) off + r.group else off - r.group else toaster.show(t(UiKey.MORE_SAVE_FAILED), dark = true)
                         }
                     }
                     // «سؤال الكاش» بعد «الأسئلة» (ترتيب §74)
@@ -99,8 +101,8 @@ fun NotificationSettingsScreen() {
                 }
             }
         }
-        item(key = "later") { NoteBox(t(TextKey.NSET_LATER_BODY), title = t(TextKey.NSET_LATER_TITLE)) }
-        item(key = "lock") { BasicText(t(TextKey.NSET_LOCK_NOTE), Modifier.padding(horizontal = 4.dp), style = Type.caption().copy(color = Ink.muted)) }
+        item(key = "later") { NoteBox(t(UiKey.NSET_LATER_BODY), title = t(UiKey.NSET_LATER_TITLE)) }
+        item(key = "lock") { BasicText(t(UiKey.NSET_LOCK_NOTE), Modifier.padding(horizontal = 4.dp), style = Type.caption().copy(color = Ink.muted)) }
     }
 }
 
@@ -111,7 +113,7 @@ private fun GroupSwitch(title: String, desc: String, on: Boolean, isNew: Boolean
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(title, style = Type.of(15, FontWeight.Bold))
-                    if (isNew) Badge(t(TextKey.NSET_NEW), BadgeKind.INFO)
+                    if (isNew) Badge(t(UiKey.NSET_NEW), BadgeKind.INFO)
                 }
                 BasicText(desc, style = Type.caption().copy(color = Ink.muted))
             }
@@ -126,19 +128,19 @@ private fun GroupSwitch(title: String, desc: String, on: Boolean, isNew: Boolean
 @Composable
 private fun CashQuestionRow(every: CashQuestionEvery?, editable: Boolean, onChoose: (CashQuestionEvery?) -> Unit) {
     Column {
-        GroupSwitch(t(TextKey.NSET_CASH), t(TextKey.NSET_CASH_DESC), every != null, isNew = false, last = !editable, enabled = editable) {
+        GroupSwitch(t(UiKey.NSET_CASH), t(UiKey.NSET_CASH_DESC), every != null, isNew = false, last = !editable, enabled = editable) {
             onChoose(if (every == null) CashQuestionEvery.WEEK else null)
         }
         if (!editable) {
-            NotYetLine(t(TextKey.NSET_CASH_NOT_YET), Modifier.padding(bottom = 10.dp))
+            NotYetLine(t(UiKey.NSET_CASH_NOT_YET), Modifier.padding(bottom = 10.dp))
             RowRule()
         } else if (every != null) Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                for ((value, key) in listOf(CashQuestionEvery.WEEK to TextKey.NSET_EVERY_WEEK, CashQuestionEvery.TWO_WEEKS to TextKey.NSET_EVERY_2WEEKS, CashQuestionEvery.MONTH to TextKey.NSET_EVERY_MONTH)) {
+                for ((value, key) in listOf(CashQuestionEvery.WEEK to UiKey.NSET_EVERY_WEEK, CashQuestionEvery.TWO_WEEKS to UiKey.NSET_EVERY_2WEEKS, CashQuestionEvery.MONTH to UiKey.NSET_EVERY_MONTH)) {
                     FillChip(t(key), every == value, height = 40.dp) { onChoose(value) }
                 }
             }
-            BasicText(t(TextKey.NSET_CASH_NOTE), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.NSET_CASH_NOTE), style = Type.caption().copy(color = Ink.muted))
             RowRule()
         }
     }

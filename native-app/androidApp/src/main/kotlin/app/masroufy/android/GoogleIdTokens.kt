@@ -1,5 +1,6 @@
 package app.masroufy.android
 
+import app.masroufy.core.UiKey
 import android.app.Activity
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -22,21 +23,21 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 class AndroidGoogleIdTokens(private val activity: () -> Activity?, private val webClientId: String) : GoogleIdTokenSource {
     override suspend fun request(): GoogleIdToken {
-        val host = activity() ?: return GoogleIdToken.Unavailable(uiText(TextKey.AUTH_GOOGLE_FAILED))
+        val host = activity() ?: return GoogleIdToken.Unavailable(uiText(UiKey.AUTH_GOOGLE_FAILED))
         val request = GetCredentialRequest.Builder().addCredentialOption(GetSignInWithGoogleOption.Builder(webClientId).build()).build()
         return try {
             val credential = CredentialManager.create(host).getCredential(host, request).credential
             if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 GoogleIdToken.Token(GoogleIdTokenCredential.createFrom(credential.data).idToken)
-            } else GoogleIdToken.Unavailable(uiText(TextKey.AUTH_GOOGLE_FAILED))
+            } else GoogleIdToken.Unavailable(uiText(UiKey.AUTH_GOOGLE_FAILED))
         } catch (e: CancellationException) {
             throw e
         } catch (_: GetCredentialCancellationException) {
             GoogleIdToken.Cancelled
         } catch (_: NoCredentialException) {
-            GoogleIdToken.Unavailable(uiText(TextKey.AUTH_GOOGLE_NO_ACCOUNT))
+            GoogleIdToken.Unavailable(uiText(UiKey.AUTH_GOOGLE_NO_ACCOUNT))
         } catch (_: GetCredentialException) {
-            GoogleIdToken.Unavailable(uiText(TextKey.AUTH_GOOGLE_FAILED))
+            GoogleIdToken.Unavailable(uiText(UiKey.AUTH_GOOGLE_FAILED))
         }
     }
 }

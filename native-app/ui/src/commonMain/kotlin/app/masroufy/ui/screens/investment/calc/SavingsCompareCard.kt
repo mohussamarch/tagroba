@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +39,7 @@ internal fun CompareCard(ui: SavingsResultUi, onReview: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.SAVCALC_COMPARE_TITLE), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.SAVCALC_COMPARE_TITLE), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
                 VerdictChip(ui.verdict, ui.verdictTone)
             }
             Row(Modifier.fillMaxWidth().height(84.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
@@ -86,5 +87,5 @@ private fun ReviewLink(onClick: () -> Unit) {
     Box(
         Modifier.height(44.dp).pressScale(press).clip(shape).background(Ink.alertBg).tap(press, onClick = onClick).padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
-    ) { BasicText(t(TextKey.SAVCALC_REVIEW), style = Type.of(13, FontWeight.Bold).copy(color = warnInk)) }
+    ) { BasicText(t(UiKey.SAVCALC_REVIEW), style = Type.of(13, FontWeight.Bold).copy(color = warnInk)) }
 }

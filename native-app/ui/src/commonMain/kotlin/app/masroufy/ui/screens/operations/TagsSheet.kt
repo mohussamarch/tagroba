@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,9 +56,9 @@ fun offTags(all: List<Tag>, on: List<Tag>, query: String): List<Tag> {
 
 /** رسالة بعد الإضافة: موجود على العملية · أُضيف · وسم جديد وأُضيف. */
 fun tagAddedStatus(name: String, wasOnTxn: Boolean, existed: Boolean): String = when {
-    wasOnTxn -> t(TextKey.TAGS_SHEET_ALREADY, name)
-    existed -> t(TextKey.TAGS_SHEET_ADDED, name)
-    else -> t(TextKey.TAGS_SHEET_CREATED, name)
+    wasOnTxn -> t(UiKey.TAGS_SHEET_ALREADY, name)
+    existed -> t(UiKey.TAGS_SHEET_ADDED, name)
+    else -> t(UiKey.TAGS_SHEET_CREATED, name)
 }
 
 /**
@@ -78,11 +79,11 @@ fun TagsRow(transactionId: Id, tags: List<Tag>, onChanged: () -> Unit) {
     LaunchedEffect(open) { if (open) all = attempt { deps.edit.listTags() }.orEmpty() }
     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            BasicText(t(TextKey.TAGS_SHEET_LABEL), style = Type.caption().copy(color = Ink.muted))
-            if (on.isEmpty()) BasicText(t(TextKey.TAGS_SHEET_NONE), style = Type.of(15, FontWeight.Bold).copy(color = Ink.muted))
+            BasicText(t(UiKey.TAGS_SHEET_LABEL), style = Type.caption().copy(color = Ink.muted))
+            if (on.isEmpty()) BasicText(t(UiKey.TAGS_SHEET_NONE), style = Type.of(15, FontWeight.Bold).copy(color = Ink.muted))
             else FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) { for (tag in on) TagPill(tag.displayName) }
         }
-        TonalButton(t(if (on.isEmpty()) TextKey.TAGS_SHEET_ADD_TRIGGER else TextKey.TAGS_SHEET_EDIT), { open = true; text = ""; error = null; status = "" }, height = 44.dp)
+        TonalButton(t(if (on.isEmpty()) UiKey.TAGS_SHEET_ADD_TRIGGER else UiKey.TAGS_SHEET_EDIT), { open = true; text = ""; error = null; status = "" }, height = 44.dp)
     }
     fun add(raw: String) = scope.launch {
         val name = raw.trim()
@@ -102,38 +103,38 @@ fun TagsRow(transactionId: Id, tags: List<Tag>, onChanged: () -> Unit) {
         status = tagAddedStatus(tag.displayName, wasOn, existed)
         onChanged()
     }
-    Sheet(open, { open = false }, title = t(TextKey.TAGS_SHEET_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), spacing = 12.dp) {
-        BasicText(t(TextKey.TAGS_SHEET_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.TAGS_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
+    Sheet(open, { open = false }, title = t(UiKey.TAGS_SHEET_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
+        BasicText(t(UiKey.TAGS_SHEET_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.TAGS_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (on.isEmpty()) BasicText(t(TextKey.TAGS_SHEET_EMPTY_LINE), style = Type.of(13).copy(color = Ink.muted))
-            for (tag in on) RemovableTag(tag.displayName, t(TextKey.TAGS_SHEET_REMOVE, tag.displayName)) {
+            if (on.isEmpty()) BasicText(t(UiKey.TAGS_SHEET_EMPTY_LINE), style = Type.of(13).copy(color = Ink.muted))
+            for (tag in on) RemovableTag(tag.displayName, t(UiKey.TAGS_SHEET_REMOVE, tag.displayName)) {
                 scope.launch {
                     val err = failureOf { deps.edit.removeTag(transactionId, tag.id) }
                     if (err != null) error = err else {
                         on = on.filter { it.id != tag.id }
-                        status = t(TextKey.TAGS_SHEET_REMOVED, tag.displayName)
+                        status = t(UiKey.TAGS_SHEET_REMOVED, tag.displayName)
                         onChanged()
                     }
                 }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
-            TextInput(text, { if (it.length <= MAX_TAG_NAME) text = it; error = null }, Modifier.weight(1f), placeholder = t(TextKey.TAGS_SHEET_INPUT))
-            PrimaryButton(t(TextKey.TAGS_SHEET_ADD), onClick = { add(text) })
+            TextInput(text, { if (it.length <= MAX_TAG_NAME) text = it; error = null }, Modifier.weight(1f), placeholder = t(UiKey.TAGS_SHEET_INPUT))
+            PrimaryButton(t(UiKey.TAGS_SHEET_ADD), onClick = { add(text) })
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             error?.let { FieldError(it, Modifier.weight(1f)) } ?: BasicText("", Modifier.weight(1f))
-            BasicText(t(TextKey.TAGS_SHEET_COUNTER, sentenceNumber(text.length), sentenceNumber(MAX_TAG_NAME)), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.TAGS_SHEET_COUNTER, sentenceNumber(text.length), sentenceNumber(MAX_TAG_NAME)), style = Type.caption().copy(color = Ink.muted))
         }
-        BasicText(t(TextKey.TAGS_SHEET_ALL), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+        BasicText(t(UiKey.TAGS_SHEET_ALL), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
         val off = offTags(all, on, text)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (off.isEmpty()) BasicText(t(if (text.isBlank()) TextKey.TAGS_SHEET_ALL_ON else TextKey.TAGS_SHEET_NO_MATCH), style = Type.of(13).copy(color = Ink.muted))
-            for (tag in off) AddableTag(tag.displayName, t(TextKey.TAGS_SHEET_ADD_ONE, tag.displayName)) { add(tag.displayName) }
+            if (off.isEmpty()) BasicText(t(if (text.isBlank()) UiKey.TAGS_SHEET_ALL_ON else UiKey.TAGS_SHEET_NO_MATCH), style = Type.of(13).copy(color = Ink.muted))
+            for (tag in off) AddableTag(tag.displayName, t(UiKey.TAGS_SHEET_ADD_ONE, tag.displayName)) { add(tag.displayName) }
         }
         BasicText(status, Modifier.heightIn(min = 18.dp), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
-        PrimaryButton(t(TextKey.TAGS_SHEET_DONE), onClick = { open = false }, modifier = Modifier.fillMaxWidth())
+        PrimaryButton(t(UiKey.TAGS_SHEET_DONE), onClick = { open = false }, modifier = Modifier.fillMaxWidth())
     }
 }
 

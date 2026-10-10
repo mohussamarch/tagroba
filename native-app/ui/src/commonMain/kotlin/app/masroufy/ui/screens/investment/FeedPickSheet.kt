@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
@@ -38,19 +39,19 @@ internal fun FeedPickSheet(visible: Boolean, asset: AssetDetailUi?, onDismiss: (
         when (val feed = runCatching { deps.feeds.prices() }.getOrNull()) {
             is FeedState.Ready -> rows = feed.feed.prices.filter { it.currency == asset.currency.name }
             is FeedState.Unavailable -> { reason = feed.reason; rows = emptyList() }
-            null -> { reason = t(TextKey.SHELL_LOAD_FAILED); rows = emptyList() }
+            null -> { reason = t(UiKey.SHELL_LOAD_FAILED); rows = emptyList() }
         }
     }
-    val title = t(TextKey.ASSET_DETAIL_PICK_FEED)
-    Sheet(visible, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 10.dp) {
+    val title = t(UiKey.ASSET_DETAIL_PICK_FEED)
+    Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         val list = rows
         when {
             list == null -> Skeleton(Modifier.fillMaxWidth().height(120.dp))
-            list.isEmpty() -> BasicText(reason ?: t(TextKey.ASSET_DETAIL_PICK_FEED_EMPTY), style = Type.of(13).copy(color = Ink.muted))
+            list.isEmpty() -> BasicText(reason ?: t(UiKey.ASSET_DETAIL_PICK_FEED_EMPTY), style = Type.of(13).copy(color = Ink.muted))
             else -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (p in list) {
-                    OpChoice(t(TextKey.INVEST_ROW_SUB, p.name, dateText(p.asOf)), null, false) { onPick(p.symbol, p.name); onDismiss() }
+                    OpChoice(t(UiKey.INVEST_ROW_SUB, p.name, dateText(p.asOf)), null, false) { onPick(p.symbol, p.name); onDismiss() }
                 }
             }
         }

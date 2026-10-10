@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,7 +69,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
         val view = deps.loadDues.load(today, deps.period(today), space.space.currency, null)
         DebtsData(deps.people.listWithBalances(), view.totals, debtDueItems(deps, today), today)
     }
-    DuesScaffold(t(TextKey.DEBTS_TITLE), t(TextKey.DEBTS_SUB)) {
+    DuesScaffold(t(UiKey.DEBTS_TITLE), t(UiKey.DEBTS_SUB)) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks() }
             Load.Failed -> item { LoadFailed(load::reload) }
@@ -77,8 +78,8 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                 val ui = duesDebtsUi(d.people, d.totals, d.dues, d.today, space.space.currency, side, query)
                 if (ui.empty) {
                     item {
-                        EmptyState(t(TextKey.DEBTS_EMPTY_TITLE), t(TextKey.DEBTS_EMPTY_BODY), action = {
-                            PrimaryButton(t(TextKey.DEBTS_EMPTY_GO), { nav.switchTab(Tab.PEOPLE) })
+                        EmptyState(t(UiKey.DEBTS_EMPTY_TITLE), t(UiKey.DEBTS_EMPTY_BODY), action = {
+                            PrimaryButton(t(UiKey.DEBTS_EMPTY_GO), { nav.switchTab(Tab.PEOPLE) })
                         })
                     }
                     return@DuesScaffold
@@ -88,20 +89,20 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                         for (sd in ui.sides) SideFilter(Modifier.weight(1f), sd, side == sd.side, ui.currency) { side = if (side == sd.side) DebtSide.ALL else sd.side }
                     }
                 }
-                item(key = "netting") { BasicText(t(TextKey.DUES_NO_NETTING), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center)) }
+                item(key = "netting") { BasicText(t(UiKey.DUES_NO_NETTING), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center)) }
                 item(key = "search") {
                     TextInput(
-                        query, { query = it }, placeholder = t(TextKey.DEBTS_SEARCH_HINT), imeAction = ImeAction.Search, height = 52.dp,
+                        query, { query = it }, placeholder = t(UiKey.DEBTS_SEARCH_HINT), imeAction = ImeAction.Search, height = 52.dp,
                         trailing = { if (query.isNotEmpty()) ClearButton { query = "" } },
                     )
                 }
                 for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency) { nav.push(DebtDetailRoute(it)) } }
                 if (ui.noHitsTitle != null) item(key = "nohits") {
                     EmptyState(ui.noHitsTitle, ui.noHitsBody, action = {
-                        TonalButton(t(TextKey.DUES_SHOW_ALL), { query = ""; side = DebtSide.ALL }, height = 44.dp)
+                        TonalButton(t(UiKey.DUES_SHOW_ALL), { query = ""; side = DebtSide.ALL }, height = 44.dp)
                     })
                 }
-                item(key = "foot") { BasicText(t(TextKey.DEBTS_FOOT), style = Type.caption().copy(color = Ink.muted)) }
+                item(key = "foot") { BasicText(t(UiKey.DEBTS_FOOT), style = Type.caption().copy(color = Ink.muted)) }
             }
         }
     }
@@ -146,7 +147,7 @@ private fun Group(g: DebtGroupUi, currency: Currency, onOpen: (String) -> Unit) 
 @Composable
 private fun ClearButton(onClick: () -> Unit) {
     val press = rememberPress()
-    val label = t(TextKey.DEBTS_SEARCH_CLEAR)
+    val label = t(UiKey.DEBTS_SEARCH_CLEAR)
     Box(
         Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).tap(press, label = label, onClick = onClick).semantics { contentDescription = label },
         contentAlignment = Alignment.Center,

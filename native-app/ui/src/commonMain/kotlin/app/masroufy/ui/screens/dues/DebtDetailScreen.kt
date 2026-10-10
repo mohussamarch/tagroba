@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,15 +66,15 @@ fun DebtDetailScreen(obligationId: String) {
     }
     val ready = (load.value as? Load.Ready)?.value
     LaunchedEffect(ready) { if (ready != null) last = ready }
-    val sideChip = (ready ?: last)?.let { t(if (it.forYou) TextKey.DUES_FOR_YOU else TextKey.DUES_ON_YOU) }
-    DuesScaffold(t(TextKey.DEBT_TITLE), actions = { sideChip?.let { StatusChip(it, if ((ready ?: last)?.forYou == true) Chip.UPCOMING else Chip.OVERDUE) } }) {
+    val sideChip = (ready ?: last)?.let { t(if (it.forYou) UiKey.DUES_FOR_YOU else UiKey.DUES_ON_YOU) }
+    DuesScaffold(t(UiKey.DEBT_TITLE), actions = { sideChip?.let { StatusChip(it, if ((ready ?: last)?.forYou == true) Chip.UPCOMING else Chip.OVERDUE) } }) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(180, 240) }
             Load.Failed -> item { LoadFailed(load::reload) }
             is Load.Ready -> {
                 // اختفى من القايمة النشطة بعد ما اتسدد هنا ⇒ «سُدّد بالكامل»؛ اتفتح وهو مش موجود ⇒ جملة صريحة
                 val ui = s.value ?: last?.settledFully()
-                if (ui == null) item { EmptyState(t(TextKey.DEBT_NOT_OPEN)) } else debtBody(ui, celebrate) { celebrate = it }
+                if (ui == null) item { EmptyState(t(UiKey.DEBT_NOT_OPEN)) } else debtBody(ui, celebrate) { celebrate = it }
             }
         }
     }
@@ -104,7 +105,7 @@ private fun Hero(ui: DebtDetailUi, celebrate: Boolean) {
                 BasicText(ui.remainLabel, style = Type.of(13).copy(color = Ink.onHeroMuted))
                 HeroAmount(ui.remainingMinor, ui.currency, Modifier.fillMaxWidth(), size = 34)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(if (ui.done) t(TextKey.DEBT_DONE) else ui.ofOriginal, Modifier.weight(1f), style = Type.caption().copy(color = Ink.onHeroMuted))
+                    BasicText(if (ui.done) t(UiKey.DEBT_DONE) else ui.ofOriginal, Modifier.weight(1f), style = Type.caption().copy(color = Ink.onHeroMuted))
                     if (ui.signal != null && ui.signalText != null) StatusChip(ui.signalText, ui.signal, onHero = true)
                 }
             }
@@ -116,15 +117,15 @@ private fun Hero(ui: DebtDetailUi, celebrate: Boolean) {
 @Composable
 private fun Origin(ui: DebtDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.DEBT_ORIGIN_TITLE), style = Type.section())
+        BasicText(t(UiKey.DEBT_ORIGIN_TITLE), style = Type.section())
         CardList {
-            StackedRow(t(TextKey.DEBT_ORIGIN_LABEL), ui.originHint, chip = if (ui.opening) ({ StatusChip(t(TextKey.DEBT_ORIGIN_OLD_CHIP), Chip.SOON) }) else null) {
+            StackedRow(t(UiKey.DEBT_ORIGIN_LABEL), ui.originHint, chip = if (ui.opening) ({ StatusChip(t(UiKey.DEBT_ORIGIN_OLD_CHIP), Chip.SOON) }) else null) {
                 ValueText(ui.originValue)
             }
             Divider()
-            StackedRow(t(TextKey.DEBT_ORIGINAL)) { AmountText(ui.originalMinor, ui.currency) }
+            StackedRow(t(UiKey.DEBT_ORIGINAL)) { AmountText(ui.originalMinor, ui.currency) }
             Divider()
-            StackedRow(t(TextKey.DEBT_TYPE), ui.typeHint) { ValueText(ui.typeText) }
+            StackedRow(t(UiKey.DEBT_TYPE), ui.typeHint) { ValueText(ui.typeText) }
         }
     }
 }
@@ -152,7 +153,7 @@ private fun Terms(ui: DebtDetailUi) {
     }
     fun save(date: String, hasInterest: Boolean?) = DebtTerms(ui.obligationId, ui.personId, firstDueAt = date, hasInterest = hasInterest)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.DEBT_TERMS_TITLE), style = Type.section())
+        BasicText(t(UiKey.DEBT_TERMS_TITLE), style = Type.section())
         FloatingCard(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -160,17 +161,17 @@ private fun Terms(ui: DebtDetailUi) {
                         BasicText(ui.termsValue, style = Type.bodyBold())
                         if (ui.signal != null && ui.signalText != null) StatusChip(ui.signalText, ui.signal)
                     }
-                    if (ui.dueAt == null) PrimaryButton(t(TextKey.DEBT_TERMS_SET), { editing = !editing }, height = 44.dp)
+                    if (ui.dueAt == null) PrimaryButton(t(UiKey.DEBT_TERMS_SET), { editing = !editing }, height = 44.dp)
                     else {
-                        TonalButton(t(TextKey.DEBT_TERMS_CHANGE), { editing = !editing }, height = 44.dp)
-                        TonalButton(t(TextKey.DEBT_TERMS_REMOVE), { run(t(TextKey.DEBT_TERMS_REMOVED)) { deps.installments.clearDebtTerms(ui.obligationId) } }, height = 44.dp)
+                        TonalButton(t(UiKey.DEBT_TERMS_CHANGE), { editing = !editing }, height = 44.dp)
+                        TonalButton(t(UiKey.DEBT_TERMS_REMOVE), { run(t(UiKey.DEBT_TERMS_REMOVED)) { deps.installments.clearDebtTerms(ui.obligationId) } }, height = 44.dp)
                     }
                 }
                 if (editing) {
-                    BasicText(t(TextKey.DEBT_TERMS_PICK), style = Type.caption().copy(color = Ink.muted))
+                    BasicText(t(UiKey.DEBT_TERMS_PICK), style = Type.caption().copy(color = Ink.muted))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        for (o in ui.termOptions) SelectChip(t(TextKey.DUES_COMMA_JOIN, o.label, o.rel), o.date == ui.dueAt, {
-                            run(t(TextKey.DEBT_TERMS_SAVED, o.label)) { deps.installments.setDebtTerms(save(o.date, interest)) }
+                        for (o in ui.termOptions) SelectChip(t(UiKey.DUES_COMMA_JOIN, o.label, o.rel), o.date == ui.dueAt, {
+                            run(t(UiKey.DEBT_TERMS_SAVED, o.label)) { deps.installments.setDebtTerms(save(o.date, interest)) }
                         }, height = 44.dp)
                     }
                 }
@@ -178,7 +179,7 @@ private fun Terms(ui: DebtDetailUi) {
                     Divider()
                     InterestQuestion(interest) { v ->
                         interest = v
-                        run(t(TextKey.DEBT_INTEREST_SAVED)) { deps.installments.setDebtTerms(save(ui.dueAt, v)) }
+                        run(t(UiKey.DEBT_INTEREST_SAVED)) { deps.installments.setDebtTerms(save(ui.dueAt, v)) }
                     }
                 }
                 error?.let { app.masroufy.ui.components.FieldError(it) }
@@ -192,12 +193,12 @@ private fun SettleAction(ui: DebtDetailUi, onCelebrate: (Boolean) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         PrimaryButton(
-            t(if (ui.forYou) TextKey.SETTLE_TRIGGER_FOR else TextKey.SETTLE_TRIGGER_ON), { open = true },
+            t(if (ui.forYou) UiKey.SETTLE_TRIGGER_FOR else UiKey.SETTLE_TRIGGER_ON), { open = true },
             Modifier.fillMaxWidth(), enabled = !ui.done, height = 52.dp,
         )
-        if (ui.done) BasicText(t(TextKey.SETTLE_DONE_WHY), style = Type.caption().copy(color = Ink.muted))
+        if (ui.done) BasicText(t(UiKey.SETTLE_DONE_WHY), style = Type.caption().copy(color = Ink.muted))
     }
-    Sheet(open, { open = false }, t(TextKey.SETTLE_SHEET_TITLE_GENERIC), closeLabel = t(TextKey.SHELL_CLOSE)) {
+    Sheet(open, { open = false }, t(UiKey.SETTLE_SHEET_TITLE_GENERIC), closeLabel = t(UiKey.SHELL_CLOSE)) {
         SettleForm(ui.settleTarget()) { full ->
             open = false
             if (full) onCelebrate(true)
@@ -212,13 +213,13 @@ private fun OpeningCard(ui: DebtDetailUi) {
     FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(TextKey.OPENING_DEBT_CARD_TITLE, ui.personName), style = Type.bodyBold())
-                BasicText(t(TextKey.OPENING_DEBT_CARD_BODY), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.OPENING_DEBT_CARD_TITLE, ui.personName), style = Type.bodyBold())
+                BasicText(t(UiKey.OPENING_DEBT_CARD_BODY), style = Type.caption().copy(color = Ink.muted))
             }
-            TonalButton(t(TextKey.OPENING_DEBT_OPEN), { open = true }, height = 44.dp)
+            TonalButton(t(UiKey.OPENING_DEBT_OPEN), { open = true }, height = 44.dp)
         }
     }
-    Sheet(open, { open = false }, t(TextKey.OPENING_DEBT_TITLE, ui.personName), closeLabel = t(TextKey.SHELL_CLOSE)) {
+    Sheet(open, { open = false }, t(UiKey.OPENING_DEBT_TITLE, ui.personName), closeLabel = t(UiKey.SHELL_CLOSE)) {
         OpeningDebtBody(ui.personId, ui.personName) { o ->
             open = false
             nav.replace(DebtDetailRoute(o.id))

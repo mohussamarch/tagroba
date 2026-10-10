@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,10 +76,10 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
     }
     val name = asset?.name.orEmpty()
     val title = when (mode) {
-        TradeMode.ADD -> t(TextKey.ASSET_TRADE_ADD_TITLE)
-        TradeMode.BUY -> t(TextKey.ASSET_TRADE_BUY_TITLE, name)
-        TradeMode.SELL -> t(TextKey.ASSET_TRADE_SELL_TITLE, name)
-        TradeMode.PRICE -> t(TextKey.ASSET_TRADE_PRICE_TITLE, name)
+        TradeMode.ADD -> t(UiKey.ASSET_TRADE_ADD_TITLE)
+        TradeMode.BUY -> t(UiKey.ASSET_TRADE_BUY_TITLE, name)
+        TradeMode.SELL -> t(UiKey.ASSET_TRADE_SELL_TITLE, name)
+        TradeMode.PRICE -> t(UiKey.ASSET_TRADE_PRICE_TITLE, name)
     }
     fun save() {
         val request = tradeRequest(mode, asset?.assetId, currency, form)
@@ -87,10 +88,10 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
         scope.launch {
             try {
                 val id = when (request) {
-                    is TradeRequest.Add -> deps.assets.addAsset(request.input).also { toaster.show(t(TextKey.ASSET_TRADE_DONE_ADD, it.name)) }.id
-                    is TradeRequest.Buy -> deps.assets.recordPurchase(request.input).also { toaster.show(t(TextKey.ASSET_TRADE_DONE_BUY, qtyUnit(it.quantity, asset!!.unit))) }.assetId
-                    is TradeRequest.Sell -> deps.assets.recordSale(request.input).also { toaster.show(t(TextKey.ASSET_TRADE_DONE_SELL, qtyUnit(it.sale.quantity, asset!!.unit))) }.sale.assetId
-                    is TradeRequest.Price -> deps.assets.setPrice(asset!!.assetId, request.minor).also { toaster.show(t(TextKey.ASSET_TRADE_DONE_PRICE, moneyText(it.pricePerUnitMinor, currency))) }.assetId
+                    is TradeRequest.Add -> deps.assets.addAsset(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_ADD, it.name)) }.id
+                    is TradeRequest.Buy -> deps.assets.recordPurchase(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_BUY, qtyUnit(it.quantity, asset!!.unit))) }.assetId
+                    is TradeRequest.Sell -> deps.assets.recordSale(request.input).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_SELL, qtyUnit(it.sale.quantity, asset!!.unit))) }.sale.assetId
+                    is TradeRequest.Price -> deps.assets.setPrice(asset!!.assetId, request.minor).also { toaster.show(t(UiKey.ASSET_TRADE_DONE_PRICE, moneyText(it.pricePerUnitMinor, currency))) }.assetId
                     is TradeRequest.Invalid -> return@launch
                 }
                 onSaved(id)
@@ -104,40 +105,40 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
             }
         }
     }
-    Sheet(visible, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 10.dp) {
+    Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         if (asset != null && mode != TradeMode.ADD) {
-            BasicText(t(TextKey.ASSET_TRADE_SUB, asset.qtyText, moneyText(asset.costMinor, currency)), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(t(UiKey.ASSET_TRADE_SUB, asset.qtyText, moneyText(asset.costMinor, currency)), style = Type.of(13).copy(color = Ink.muted))
         }
         when (mode) {
             TradeMode.ADD -> {
-                TextInput(form.name, { form = form.copy(name = it); error = null }, label = t(TextKey.ASSET_TRADE_NAME), placeholder = t(TextKey.ASSET_TRADE_NAME_HINT))
-                BasicText(t(TextKey.ASSET_TRADE_KIND), style = Type.of(13, FontWeight.Bold))
+                TextInput(form.name, { form = form.copy(name = it); error = null }, label = t(UiKey.ASSET_TRADE_NAME), placeholder = t(UiKey.ASSET_TRADE_NAME_HINT))
+                BasicText(t(UiKey.ASSET_TRADE_KIND), style = Type.of(13, FontWeight.Bold))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (k in TRADE_KINDS) SelectChip(ASSET_KIND_LABELS[k] ?: k, form.kind == k, { form = form.copy(kind = k); error = null }, height = 44.dp)
                 }
-                TextInput(form.unit, { form = form.copy(unit = it) }, label = t(TextKey.ASSET_TRADE_UNIT), placeholder = ASSET_UNIT_DEFAULTS[form.kind])
+                TextInput(form.unit, { form = form.copy(unit = it) }, label = t(UiKey.ASSET_TRADE_UNIT), placeholder = ASSET_UNIT_DEFAULTS[form.kind])
             }
             TradeMode.BUY, TradeMode.SELL -> TradeFields(form, ops, asset, mode == TradeMode.BUY, { form = it; error = null })
             TradeMode.PRICE -> TextInput(
-                form.price, { form = form.copy(price = it); error = null }, label = t(TextKey.ASSET_TRADE_PRICE_LABEL, asset?.unit.orEmpty()),
+                form.price, { form = form.copy(price = it); error = null }, label = t(UiKey.ASSET_TRADE_PRICE_LABEL, asset?.unit.orEmpty()),
                 placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, height = 56.dp, textSize = 22,
                 trailing = { FieldUnit(app.masroufy.core.currencySymbol(currency)) },
             )
         }
         val note = when (mode) {
-            TradeMode.BUY -> TextKey.ASSET_TRADE_NOTE_BUY
-            TradeMode.SELL -> TextKey.ASSET_TRADE_NOTE_SELL
-            TradeMode.PRICE -> TextKey.ASSET_TRADE_NOTE_PRICE
+            TradeMode.BUY -> UiKey.ASSET_TRADE_NOTE_BUY
+            TradeMode.SELL -> UiKey.ASSET_TRADE_NOTE_SELL
+            TradeMode.PRICE -> UiKey.ASSET_TRADE_NOTE_PRICE
             TradeMode.ADD -> null
         }
         if (note != null) BasicText(t(note), style = Type.caption().copy(color = Ink.muted))
         error?.let { FieldError(it) }
         val saveKey = when (mode) {
-            TradeMode.ADD -> TextKey.ASSET_TRADE_SAVE_ADD
-            TradeMode.BUY -> TextKey.ASSET_TRADE_SAVE_BUY
-            TradeMode.SELL -> TextKey.ASSET_TRADE_SAVE_SELL
-            TradeMode.PRICE -> TextKey.ASSET_TRADE_SAVE_PRICE
+            TradeMode.ADD -> UiKey.ASSET_TRADE_SAVE_ADD
+            TradeMode.BUY -> UiKey.ASSET_TRADE_SAVE_BUY
+            TradeMode.SELL -> UiKey.ASSET_TRADE_SAVE_SELL
+            TradeMode.PRICE -> UiKey.ASSET_TRADE_SAVE_PRICE
         }
         PrimaryButton(t(saveKey), ::save, Modifier.fillMaxWidth(), loading = saving)
     }
@@ -150,27 +151,27 @@ private fun TradeFields(form: TradeForm, ops: List<LinkableOp>, asset: AssetDeta
     val today = LocalSpace.current.investment.today()
     val yesterday = yesterdayOf(today)
     val linked = ops.firstOrNull { it.id == form.linkId }
-    BasicText(t(TextKey.ASSET_TRADE_WHEN), style = Type.of(13, FontWeight.Bold))
+    BasicText(t(UiKey.ASSET_TRADE_WHEN), style = Type.of(13, FontWeight.Bold))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SelectChip(t(TextKey.ASSET_TRADE_TODAY), form.day == today, { onChange(form.copy(day = today)) }, height = 44.dp)
-        SelectChip(t(TextKey.ASSET_TRADE_YESTERDAY), form.day == yesterday, { onChange(form.copy(day = yesterday)) }, height = 44.dp)
+        SelectChip(t(UiKey.ASSET_TRADE_TODAY), form.day == today, { onChange(form.copy(day = today)) }, height = 44.dp)
+        SelectChip(t(UiKey.ASSET_TRADE_YESTERDAY), form.day == yesterday, { onChange(form.copy(day = yesterday)) }, height = 44.dp)
         if (linked != null && linked.date != today && linked.date != yesterday) {
             SelectChip(dateText(linked.date), form.day == linked.date, { onChange(form.copy(day = linked.date)) }, height = 44.dp)
         }
     }
-    TextInput(form.qty, { onChange(form.copy(qty = it)) }, label = t(TextKey.ASSET_TRADE_QTY), placeholder = "0", ltr = true,
+    TextInput(form.qty, { onChange(form.copy(qty = it)) }, label = t(UiKey.ASSET_TRADE_QTY), placeholder = "0", ltr = true,
         keyboard = KeyboardType.Decimal, trailing = { FieldUnit(asset?.unit.orEmpty()) })
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        TextInput(form.amount, { onChange(form.copy(amount = it)) }, Modifier.weight(1f), label = t(if (buy) TextKey.ASSET_TRADE_PAID else TextKey.ASSET_TRADE_PROCEEDS),
+        TextInput(form.amount, { onChange(form.copy(amount = it)) }, Modifier.weight(1f), label = t(if (buy) UiKey.ASSET_TRADE_PAID else UiKey.ASSET_TRADE_PROCEEDS),
             placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, trailing = { FieldUnit(app.masroufy.core.currencySymbol(currency)) })
-        TextInput(form.fee, { onChange(form.copy(fee = it)) }, Modifier.weight(1f), label = t(TextKey.ASSET_TRADE_FEES),
+        TextInput(form.fee, { onChange(form.copy(fee = it)) }, Modifier.weight(1f), label = t(UiKey.ASSET_TRADE_FEES),
             placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, trailing = { FieldUnit(app.masroufy.core.currencySymbol(currency)) })
     }
-    BasicText(t(if (buy) TextKey.ASSET_TRADE_LINK_BUY else TextKey.ASSET_TRADE_LINK_SELL), style = Type.of(13, FontWeight.Bold))
+    BasicText(t(if (buy) UiKey.ASSET_TRADE_LINK_BUY else UiKey.ASSET_TRADE_LINK_SELL), style = Type.of(13, FontWeight.Bold))
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        OpChoice(t(TextKey.ASSET_TRADE_NO_LINK), null, form.linkId == null) { onChange(form.copy(linkId = null)) }
+        OpChoice(t(UiKey.ASSET_TRADE_NO_LINK), null, form.linkId == null) { onChange(form.copy(linkId = null)) }
         for (op in ops) {
-            OpChoice(t(TextKey.INVEST_ROW_SUB, op.title, dateText(op.date)), op, form.linkId == op.id) {
+            OpChoice(t(UiKey.INVEST_ROW_SUB, op.title, dateText(op.date)), op, form.linkId == op.id) {
                 onChange(form.copy(linkId = op.id, day = op.date, amount = form.amount.ifBlank { app.masroufy.ui.text.amount(op.amountMinor, currency) }))
             }
         }

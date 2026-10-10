@@ -1,5 +1,6 @@
 package app.masroufy.wiring.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.TextKey
@@ -41,12 +42,12 @@ class CategoryBudgetPresenterTest {
         assertEquals(50_000L, ui.limitMinor)
         assertEquals(40, ui.percent)
         assertEquals(Tone.OK, ui.tone)
-        assertEquals(uiText(TextKey.BUDGETS_CHIP_OK), ui.chip)
-        assertEquals(uiText(TextKey.BUDGETS_LEFT, amountLabel(30_000, Currency.SAR)), ui.leftLine)
+        assertEquals(uiText(UiKey.BUDGETS_CHIP_OK), ui.chip)
+        assertEquals(uiText(UiKey.BUDGETS_LEFT, amountLabel(30_000, Currency.SAR)), ui.leftLine)
         // يوم ١٢ من ٣٠ ⇒ ٤٠٪ من الأيام عدّت (عدّ أيام مش فلوس)
         assertEquals(12, ui.dayIndex)
         assertEquals(30, ui.totalDays)
-        assertEquals(uiText(TextKey.CAT_BUDGET_PACE_USED, sentenceNumber(40), sentenceNumber(40)), ui.pace1)
+        assertEquals(uiText(UiKey.CAT_BUDGET_PACE_USED, sentenceNumber(40), sentenceNumber(40)), ui.pace1)
         assertEquals(80, ui.limit.thresholdPercent)
         assertTrue(ui.limit.notify)
         // الفرعي بمصروفه · عمليات التصنيف وفرعياته (البقالة برّه) — الأحدث الأول
@@ -62,11 +63,11 @@ class CategoryBudgetPresenterTest {
         w.deps.setBudget.setCategoryLimit(period, FOOD.id, 50_000, notifyEnabled = true, thresholdPercent = 80)
         w.deps.setBudget.setCategoryLimit(period, GROCERY.id, 50_000, notifyEnabled = false, thresholdPercent = 80)
         val food = assertNotNull(loadCategoryBudget(w.deps, FOOD.id, TODAY, Currency.SAR))
-        assertEquals(uiText(TextKey.CAT_BUDGET_CHIP_THRESHOLD), food.chip, "عدّى نسبة التنبيه ولسه ما عدّاش السقف")
+        assertEquals(uiText(UiKey.CAT_BUDGET_CHIP_THRESHOLD), food.chip, "عدّى نسبة التنبيه ولسه ما عدّاش السقف")
         val grocery = assertNotNull(loadCategoryBudget(w.deps, GROCERY.id, TODAY, Currency.SAR))
         assertEquals(Tone.OVER, grocery.tone)
-        assertEquals(uiText(TextKey.BUDGETS_CHIP_OVER), grocery.chip)
-        assertEquals(uiText(TextKey.BUDGETS_OVER_BY, amountLabel(10_000, Currency.SAR)), grocery.leftLine)
+        assertEquals(uiText(UiKey.BUDGETS_CHIP_OVER), grocery.chip)
+        assertEquals(uiText(UiKey.BUDGETS_OVER_BY, amountLabel(10_000, Currency.SAR)), grocery.leftLine)
         assertFalse(grocery.limit.notify, "التنبيه مقفول بيتعرض مقفول")
     }
 
@@ -75,8 +76,8 @@ class CategoryBudgetPresenterTest {
         assertEquals(0L, ui.spentMinor, "الأنواع معروفة ومفيش صرف ⇒ صفر معروف")
         assertNull(ui.limitMinor)
         assertNull(ui.percent)
-        assertEquals(uiText(TextKey.CAT_BUDGET_CHIP_NO_LIMIT), ui.chip)
-        assertEquals(uiText(TextKey.CAT_BUDGET_PACE_NONE), ui.pace1)
+        assertEquals(uiText(UiKey.CAT_BUDGET_CHIP_NO_LIMIT), ui.chip)
+        assertEquals(uiText(UiKey.CAT_BUDGET_PACE_NONE), ui.pace1)
         assertEquals(0, ui.txCount)
         assertTrue(ui.subs.isEmpty())
     }

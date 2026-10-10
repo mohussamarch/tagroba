@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.BalanceMismatch
 import app.masroufy.core.Currency
@@ -73,26 +74,26 @@ class WalletsStateTest {
         assertNull(v.groups[0].rows.single().balanceMinor)
         assertFalse(v.groups[0].rows.single().approx)
         assertEquals(listOf("الراجحي"), v.unknown)
-        assertEquals(t(TextKey.WLIST_UNKNOWN_LINE, "الراجحي"), walletsTotalLine(v))
+        assertEquals(t(UiKey.WLIST_UNKNOWN_LINE, "الراجحي"), walletsTotalLine(v))
     }
 
     @Test
     fun totalLineCountsWallets() {
-        assertEquals(t(TextKey.WLIST_TOTAL_LINE, t(TextKey.WLIST_TWO)), walletsTotalLine(walletsView(now(WalletNow(bank, 1), WalletNow(cash, 2)), null)))
-        assertEquals(t(TextKey.WLIST_EMPTY_LINE), walletsTotalLine(walletsView(now(total = null), null)))
+        assertEquals(t(UiKey.WLIST_TOTAL_LINE, t(UiKey.WLIST_TWO)), walletsTotalLine(walletsView(now(WalletNow(bank, 1), WalletNow(cash, 2)), null)))
+        assertEquals(t(UiKey.WLIST_EMPTY_LINE), walletsTotalLine(walletsView(now(total = null), null)))
         val two = walletsView(now(WalletNow(bank, null), WalletNow(stc, null), total = null), null)
-        assertEquals(t(TextKey.WLIST_UNKNOWN_LINE, "الراجحي" + t(TextKey.WLIST_AND) + "STC Pay"), walletsTotalLine(two))
+        assertEquals(t(UiKey.WLIST_UNKNOWN_LINE, "الراجحي" + t(UiKey.WLIST_AND) + "STC Pay"), walletsTotalLine(two))
     }
 
     @Test
     fun metaAndMark() {
         val row = walletRow(WalletNow(bank, 1), null)
-        assertEquals(t(TextKey.WLIST_META_LAST4, t(TextKey.WLIST_KIND_BANK), sentenceDigits("4407")), walletMeta(row))
-        assertEquals(t(TextKey.WLIST_KIND_CASH), walletMeta(walletRow(WalletNow(cash, 1), null)))
+        assertEquals(t(UiKey.WLIST_META_LAST4, t(UiKey.WLIST_KIND_BANK), sentenceDigits("4407")), walletMeta(row))
+        assertEquals(t(UiKey.WLIST_KIND_CASH), walletMeta(walletRow(WalletNow(cash, 1), null)))
         assertEquals("ر", walletMark("مصرف الراجحي"))
         assertEquals("أ", walletMark("البنك الأهلي"))
         assertEquals("S", walletMark("stc pay"))
-        assertEquals(TextKey.WLIST_KIND_ABROAD, kindLabel("own_abroad"))
+        assertEquals(UiKey.WLIST_KIND_ABROAD, kindLabel("own_abroad"))
     }
 
     private fun tx(id: String, date: String, order: Int, dir: Direction, amount: Long, wallet: String?, to: String? = null, merchant: String? = null) =
@@ -118,13 +119,13 @@ class WalletsStateTest {
         assertEquals(listOf("c", "b", "a"), bankMoves.map { it.id })
         assertEquals(AmountTone.TRANSFER, bankMoves[0].tone)
         assertEquals(AmountTone.INCOME, bankMoves[1].tone)
-        assertEquals(t(TextKey.WDET_MOVE_UNNAMED), bankMoves[1].title)
+        assertEquals(t(UiKey.WDET_MOVE_UNNAMED), bankMoves[1].title)
         assertEquals(AmountTone.EXPENSE, bankMoves[2].tone)
         assertEquals("بنده للتجزئة", bankMoves[2].title, "اسم التاجر الأساسي قبل النص الخام")
 
         val cashMoves = walletMoves(data, "w-cash")
         assertEquals(listOf("c"), cashMoves.map { it.id })
-        assertTrue(cashMoves[0].title.startsWith(t(TextKey.WDET_MOVE_IN_PREFIX, "").trimEnd()), "طرف التحويل الداخل بيتقال إنه وارد")
+        assertTrue(cashMoves[0].title.startsWith(t(UiKey.WDET_MOVE_IN_PREFIX, "").trimEnd()), "طرف التحويل الداخل بيتقال إنه وارد")
         assertEquals(1, walletMoves(data, "w-bank", limit = 1).size)
         assertTrue(walletMoves(data, "w-none").isEmpty())
     }
@@ -158,10 +159,10 @@ class WalletsStateTest {
     fun reconcileMatchSaysUntilWhenAndCounts() {
         val lines = reconcileLines(outcome(emptyList()))
         assertEquals(RecLineKind.OK, lines[0].kind)
-        assertEquals(t(TextKey.WDET_REC_OK_UNTIL, fullDate("2026-09-04")!!), lines[0].text)
+        assertEquals(t(UiKey.WDET_REC_OK_UNTIL, fullDate("2026-09-04")!!), lines[0].text)
         assertEquals(RecLineKind.NOTE, lines[1].kind)
         assertTrue(lines[1].text.contains(sentenceNumber(40)))
-        assertTrue(lines[1].text.contains(t(TextKey.WDET_MOVE_TWO)), "عدد الحركات اللي مالهاش رصيد معلن")
+        assertTrue(lines[1].text.contains(t(UiKey.WDET_MOVE_TWO)), "عدد الحركات اللي مالهاش رصيد معلن")
         assertEquals(2, lines.size)
     }
 
@@ -170,12 +171,12 @@ class WalletsStateTest {
         val gap = BalanceMismatch(5, "2026-03-10", 10_000, 9_500, 500, null, null, sameDayCount = 3)
         val lines = reconcileLines(outcome(listOf(gap), unassigned = 1))
         assertEquals(listOf(RecLineKind.GAP_STATUS, RecLineKind.GAP_DETAIL, RecLineKind.GAP_AMOUNTS, RecLineKind.NOTE, RecLineKind.NOTE), lines.map { it.kind })
-        assertEquals(t(TextKey.WDET_GAP_MANY, fullDate("2026-03-10")!!, t(TextKey.WDET_MOVE_FEW, sentenceNumber(3))), lines[1].text)
-        assertEquals(t(TextKey.WDET_REC_UNASSIGNED, t(TextKey.WDET_OP_ONE)), lines[4].text)
+        assertEquals(t(UiKey.WDET_GAP_MANY, fullDate("2026-03-10")!!, t(UiKey.WDET_MOVE_FEW, sentenceNumber(3))), lines[1].text)
+        assertEquals(t(UiKey.WDET_REC_UNASSIGNED, t(UiKey.WDET_OP_ONE)), lines[4].text)
 
         val single = reconcileLines(outcome(listOf(gap.copy(sameDayCount = 1)), without = 0))
-        assertEquals(t(TextKey.WDET_GAP_ONE, fullDate("2026-03-10")!!), single[1].text)
-        assertEquals(t(TextKey.WDET_REC_COUNTS, countText(42, MOVE_WORDS), sentenceNumber(40)), single.last().text, "كلها برصيد معلن ⇒ مفيش «بلا رصيد»")
+        assertEquals(t(UiKey.WDET_GAP_ONE, fullDate("2026-03-10")!!), single[1].text)
+        assertEquals(t(UiKey.WDET_REC_COUNTS, countText(42, MOVE_WORDS), sentenceNumber(40)), single.last().text, "كلها برصيد معلن ⇒ مفيش «بلا رصيد»")
     }
 
     @Test

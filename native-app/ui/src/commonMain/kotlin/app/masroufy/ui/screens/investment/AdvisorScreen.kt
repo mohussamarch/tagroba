@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -68,17 +69,17 @@ fun AdvisorScreen() {
     }
     LaunchedEffect(space) { reload() }
     val u = ui
-    InnerScaffold(t(TextKey.ADVISOR_SCREEN_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.ADVISOR_SCREEN_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.ADVISOR_SCREEN_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.ADVISOR_SCREEN_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         when {
             u == null -> item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(180.dp)) }
             !u.enabled -> item(key = "off") {
-                BasicText(t(TextKey.ADVISOR_SCREEN_OFF), Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.text.copy(alpha = 0.05f))
+                BasicText(t(UiKey.ADVISOR_SCREEN_OFF), Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.text.copy(alpha = 0.05f))
                     .padding(horizontal = 16.dp, vertical = 14.dp), style = Type.of(13).copy(color = Ink.soft))
             }
-            u.quiet -> item(key = "quiet") { EmptyState(t(TextKey.ADVISOR_SCREEN_QUIET_TITLE), t(TextKey.ADVISOR_SCREEN_QUIET_BODY)) }
+            u.quiet -> item(key = "quiet") { EmptyState(t(UiKey.ADVISOR_SCREEN_QUIET_TITLE), t(UiKey.ADVISOR_SCREEN_QUIET_BODY)) }
             else -> {
-                item(key = "now") { BasicText(t(TextKey.ADVISOR_SCREEN_NOW), style = Type.section()) }
+                item(key = "now") { BasicText(t(UiKey.ADVISOR_SCREEN_NOW), style = Type.section()) }
                 for (c in u.cards) item(key = c.threadKey) {
                     AdvisorCardView(c, expanded = open == c.threadKey,
                         onWhy = {
@@ -104,7 +105,7 @@ fun AdvisorScreen() {
                     runCatching { deps.alerts.setGroupEnabled(AlertGroup.ADVISOR, turnOn) }
                     open = null
                     reload()
-                    toaster.show(t(if (turnOn) TextKey.ADVISOR_SCREEN_TURNED_ON else TextKey.ADVISOR_SCREEN_TURNED_OFF))
+                    toaster.show(t(if (turnOn) UiKey.ADVISOR_SCREEN_TURNED_ON else UiKey.ADVISOR_SCREEN_TURNED_OFF))
                 }
             }
         }
@@ -134,12 +135,12 @@ private fun AdvisorCardView(c: AdvisorCard, expanded: Boolean, onWhy: () -> Unit
             val press = rememberPress()
             Row(
                 Modifier.height(36.dp).pressScale(press).clip(RoundedCornerShape(12.dp)).background(Ink.text.copy(alpha = 0.05f))
-                    .tap(press, label = t(TextKey.ADVISOR_SCREEN_WHY), onClick = onWhy)
+                    .tap(press, label = t(UiKey.ADVISOR_SCREEN_WHY), onClick = onWhy)
                     .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BasicText(t(TextKey.ADVISOR_SCREEN_WHY), style = Type.captionBold().copy(color = Ink.soft))
+                BasicText(t(UiKey.ADVISOR_SCREEN_WHY), style = Type.captionBold().copy(color = Ink.soft))
                 BasicText(c.whenText, style = Type.of(11).copy(color = Ink.muted))
             }
             if (expanded) {
@@ -164,13 +165,13 @@ private fun GroupSwitch(on: Boolean, onToggle: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {
         val press = rememberPress()
         Row(
-            Modifier.fillMaxWidth().tap(press, role = Role.Switch, label = t(TextKey.ADVISOR_SCREEN_GROUP), onClick = onToggle).semantics { toggleableState = ToggleableState(on) },
+            Modifier.fillMaxWidth().tap(press, role = Role.Switch, label = t(UiKey.ADVISOR_SCREEN_GROUP), onClick = onToggle).semantics { toggleableState = ToggleableState(on) },
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(TextKey.ADVISOR_SCREEN_GROUP), style = Type.of(15, FontWeight.Bold))
-                BasicText(t(TextKey.ADVISOR_SCREEN_GROUP_DESC), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.ADVISOR_SCREEN_GROUP), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.ADVISOR_SCREEN_GROUP_DESC), style = Type.caption().copy(color = Ink.muted))
             }
             Box(
                 Modifier.size(44.dp, 26.dp).clip(RoundedCornerShape(13.dp)).background(if (on) Ink.primary else Ink.text.copy(alpha = 0.16f)),

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.AlertGroup
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -51,18 +52,18 @@ fun advisorCardOf(inbox: List<AlertInboxView>, gone: Set<String> = emptySet()): 
 
 /** «صرفت هذا الشهر 6,650.00» — المبلغ من غير عملة زي النموذج، و«غير متاح» لو مش معروف. */
 fun spentLine(month: HomeMonth?, currency: Currency): String =
-    t(TextKey.HOME_SPENT_MONTH, amountLabel(month?.spentMinor, currency, showCurrency = false))
+    t(UiKey.HOME_SPENT_MONTH, amountLabel(month?.spentMinor, currency, showCurrency = false))
 
 /** «الراتب بعد ٢١ يومًا» (العدد بقواعد العربي: اليوم · غدًا · يومين · ٣–١٠ أيام · ١١+ يومًا). null = مفيش يوم راتب معروف. */
 fun salaryLine(nextPayday: IsoDate?, today: IsoDate): String? {
     if (nextPayday == null) return null
     val days = daysBetween(today, nextPayday)
     return when {
-        days <= 0 -> t(TextKey.HOME_SALARY_TODAY)
-        days == 1 -> t(TextKey.HOME_SALARY_TOMORROW)
-        days == 2 -> t(TextKey.HOME_SALARY_TWO_DAYS)
-        days <= 10 -> t(TextKey.HOME_SALARY_FEW_DAYS, sentenceNumber(days))
-        else -> t(TextKey.HOME_SALARY_MANY_DAYS, sentenceNumber(days))
+        days <= 0 -> t(UiKey.HOME_SALARY_TODAY)
+        days == 1 -> t(UiKey.HOME_SALARY_TOMORROW)
+        days == 2 -> t(UiKey.HOME_SALARY_TWO_DAYS)
+        days <= 10 -> t(UiKey.HOME_SALARY_FEW_DAYS, sentenceNumber(days))
+        else -> t(UiKey.HOME_SALARY_MANY_DAYS, sentenceNumber(days))
     }
 }
 
@@ -77,4 +78,4 @@ fun isQuietMonth(now: WithYouNow, month: HomeMonth?): Boolean = now.wallets.isNo
 
 /** «الكاش وحده X» جوه سطر «غير متاح» — بس لو رصيد الكاش نفسه معروف. */
 fun cashOnlyLine(now: WithYouNow): String? =
-    now.cashMinor?.let { t(TextKey.HOME_NA_CASH_ONLY, amountLabel(it, now.currency)) }
+    now.cashMinor?.let { t(UiKey.HOME_NA_CASH_ONLY, amountLabel(it, now.currency)) }

@@ -1,5 +1,7 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,12 +58,12 @@ enum class UpcomingIcon(val icon: Lucide, val color: Color) {
 }
 
 /** حالة الميعاد: محجوز (أخضر) · غير محجوز (أحمر) · بلا مبلغ · دخل متوقع · فات موعده. */
-enum class UpcomingStatus(val text: TextKey, val color: Color) {
-    HELD(TextKey.UPCOMING_HELD, Color(0xFF13764D)),
-    OPEN(TextKey.UPCOMING_OPEN, Color(0xFFBE3D48)),
-    NO_AMOUNT(TextKey.UPCOMING_NO_AMOUNT, Color(0xFF637570)),
-    INCOMING(TextKey.UPCOMING_INCOMING, Color(0xFF13764D)),
-    LATE(TextKey.UPCOMING_LATE, Color(0xFFBE3D48)),
+enum class UpcomingStatus(val text: TextRef, val color: Color) {
+    HELD(UiKey.UPCOMING_HELD, Color(0xFF13764D)),
+    OPEN(UiKey.UPCOMING_OPEN, Color(0xFFBE3D48)),
+    NO_AMOUNT(UiKey.UPCOMING_NO_AMOUNT, Color(0xFF637570)),
+    INCOMING(UiKey.UPCOMING_INCOMING, Color(0xFF13764D)),
+    LATE(UiKey.UPCOMING_LATE, Color(0xFFBE3D48)),
 }
 
 /** كارت «القادم» جاهز للعرض — الحالة والمبلغ من حالة الاستخدام (`LoadCalendar` + `reservationState`)، مش محسوبين هنا. */
@@ -79,11 +81,11 @@ data class UpcomingCard(
 
 /** «بعد كام يوم»: النهارده · بكرة · بعد يومين · بعد ٣–١٠ أيام · بعد ١١+ يومًا. */
 fun daysLeftText(days: Int): String = when {
-    days <= 0 -> t(TextKey.UPCOMING_TODAY)
-    days == 1 -> t(TextKey.UPCOMING_TOMORROW)
-    days == 2 -> t(TextKey.UPCOMING_TWO_DAYS)
-    days <= 10 -> t(TextKey.UPCOMING_FEW_DAYS, sentenceNumber(days))
-    else -> t(TextKey.UPCOMING_MANY_DAYS, sentenceNumber(days))
+    days <= 0 -> t(UiKey.UPCOMING_TODAY)
+    days == 1 -> t(UiKey.UPCOMING_TOMORROW)
+    days == 2 -> t(UiKey.UPCOMING_TWO_DAYS)
+    days <= 10 -> t(UiKey.UPCOMING_FEW_DAYS, sentenceNumber(days))
+    else -> t(UiKey.UPCOMING_MANY_DAYS, sentenceNumber(days))
 }
 
 /**
@@ -94,11 +96,11 @@ fun daysLeftText(days: Int): String = when {
 @Composable
 fun UpcomingStrip(cards: List<UpcomingCard>, modifier: Modifier = Modifier) {
     if (cards.isEmpty()) {
-        BasicText(t(TextKey.UPCOMING_EMPTY), modifier.padding(vertical = 8.dp), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(t(UiKey.UPCOMING_EMPTY), modifier.padding(vertical = 8.dp), style = Type.of(13).copy(color = Ink.muted))
         return
     }
     LazyRow(
-        modifier.fullBleed().semantics { contentDescription = t(TextKey.UPCOMING_LIST) },
+        modifier.fullBleed().semantics { contentDescription = t(UiKey.UPCOMING_LIST) },
         contentPadding = PaddingValues(start = Space.gutter, end = Space.gutter, top = 6.dp, bottom = 22.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {

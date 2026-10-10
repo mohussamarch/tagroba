@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,10 +55,10 @@ private fun promptOf(q: RoscaQuestion, s: RoscaSetupState): Pair<String, String?
     RoscaQuestion.TURNS_COUNT -> t(TextKey.ROSCA_Q_TURNS_COUNT) to t(TextKey.ROSCA_Q_TURNS_COUNT_HINT)
     RoscaQuestion.SHARE_AMOUNT -> t(TextKey.ROSCA_Q_SHARE_AMOUNT) to t(TextKey.ROSCA_Q_SHARE_AMOUNT_HINT)
     RoscaQuestion.FREQUENCY -> t(TextKey.ROSCA_Q_FREQUENCY) to null
-    RoscaQuestion.FIRST_DATE -> t(TextKey.ROSCA_Q_FIRST_DATE) to t(TextKey.RW_FIRST_HINT)
+    RoscaQuestion.FIRST_DATE -> t(TextKey.ROSCA_Q_FIRST_DATE) to t(UiKey.RW_FIRST_HINT)
     RoscaQuestion.SHARE -> t(TextKey.ROSCA_Q_SHARE) to null
-    RoscaQuestion.MY_TURN -> t(TextKey.ROSCA_Q_MY_TURN) to ((s.draft.share ?: RoscaShare.ONE).turns.let { n -> if (n > 1) t(TextKey.ROSCA_TURNS_FOR_SHARE, sentenceNumber(n)) else t(TextKey.RW_TURN_HINT) })
-    RoscaQuestion.PAYOUT -> t(TextKey.ROSCA_Q_PAYOUT) to (s.prompt?.takeIf { it.question == RoscaQuestion.PAYOUT }?.hint ?: t(TextKey.RW_PAYOUT_HINT))
+    RoscaQuestion.MY_TURN -> t(TextKey.ROSCA_Q_MY_TURN) to ((s.draft.share ?: RoscaShare.ONE).turns.let { n -> if (n > 1) t(TextKey.ROSCA_TURNS_FOR_SHARE, sentenceNumber(n)) else t(UiKey.RW_TURN_HINT) })
+    RoscaQuestion.PAYOUT -> t(TextKey.ROSCA_Q_PAYOUT) to (s.prompt?.takeIf { it.question == RoscaQuestion.PAYOUT }?.hint ?: t(UiKey.RW_PAYOUT_HINT))
 }
 
 @Composable
@@ -76,7 +77,7 @@ internal fun QuestionCard(q: RoscaQuestion, s: RoscaSetupState, i: WizardInputs,
                 RoscaQuestion.SHARE_AMOUNT -> MoneyField(i.amount, { onInputs(i.copy(amount = it)) }, null, currency, big = true)
                 RoscaQuestion.PAYOUT -> MoneyField(i.payout, { onInputs(i.copy(payout = it)) }, null, currency, big = true)
                 RoscaQuestion.FREQUENCY -> for (f in RoscaFrequency.entries) {
-                    RadioCard(t(f.labelKey), if (f == RoscaFrequency.MONTHLY) t(TextKey.RW_FREQ_COMMON) else null, i.frequency == f) { onInputs(i.copy(frequency = f)) }
+                    RadioCard(t(f.labelKey), if (f == RoscaFrequency.MONTHLY) t(UiKey.RW_FREQ_COMMON) else null, i.frequency == f) { onInputs(i.copy(frequency = f)) }
                 }
                 RoscaQuestion.SHARE -> for (sh in RoscaShare.entries) RadioCard(t(sh.labelKey), null, i.share == sh) { onInputs(i.copy(share = sh)) }
                 RoscaQuestion.FIRST_DATE -> DayPicker(i.first, today, { onInputs(i.copy(first = it)) })
@@ -112,7 +113,7 @@ private fun TurnChip(modifier: Modifier, num: String, whenText: String?, on: Boo
     else Modifier.background(Color.White).insetRing(shape, 1.dp, Ink.fieldEdge)
     Column(
         modifier.height(56.dp).pressScale(press).clip(shape).then(surface).tap(press, onClick = onClick)
-            .semantics { selected = on; contentDescription = listOfNotNull(num, whenText).joinToString(t(TextKey.DUES_COMMA)) },
+            .semantics { selected = on; contentDescription = listOfNotNull(num, whenText).joinToString(t(UiKey.DUES_COMMA)) },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -148,9 +149,9 @@ private fun RadioCard(label: String, sub: String?, on: Boolean, onClick: () -> U
 @Composable
 private fun Stepper(count: Int, onStep: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        StepButton(Lucide.PLUS, t(TextKey.RW_COUNT_UP)) { onStep(1) }
+        StepButton(Lucide.PLUS, t(UiKey.RW_COUNT_UP)) { onStep(1) }
         BasicText(sentenceNumber(count), Modifier.weight(1f), style = Type.of(32, FontWeight.Bold).copy(textAlign = TextAlign.Center))
-        StepButton(DuesIcons.MINUS, t(TextKey.RW_COUNT_DOWN)) { onStep(-1) }
+        StepButton(DuesIcons.MINUS, t(UiKey.RW_COUNT_DOWN)) { onStep(-1) }
     }
 }
 
@@ -182,7 +183,7 @@ internal fun SummaryView(s: WizardSummaryUi, currency: Currency, onEdit: (RoscaQ
                 LabelValue(f.label) { StatValueView(f.value, currency) }
             }
         }
-        BasicText(t(TextKey.RW_ANSWERS), style = Type.section())
+        BasicText(t(UiKey.RW_ANSWERS), style = Type.section())
         CardList {
             s.answers.forEachIndexed { idx, a ->
                 if (idx > 0) Divider()
@@ -196,7 +197,7 @@ internal fun SummaryView(s: WizardSummaryUi, currency: Currency, onEdit: (RoscaQ
 private fun AnswerRow(a: WizardAnswer, onClick: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(press).tap(press, label = t(TextKey.RW_EDIT, a.label), onClick = onClick),
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(press).tap(press, label = t(UiKey.RW_EDIT, a.label), onClick = onClick),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

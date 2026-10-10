@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.Language
@@ -36,15 +37,15 @@ class AccountStateTest {
         listOf(AccountField.NAME, AccountField.GENDER, AccountField.DEPENDENTS, AccountField.SALARY, AccountField.CAR, AccountField.RENTER, AccountField.MAID, AccountField.BUSINESS)
             .forEach { assertNull(rows.getValue(it).value, "$it اتعرض كأنه اتجاوب") }
         // يوم الراتب ليه قيمة افتراضية دايمًا
-        assertEquals(t(TextKey.ACC_DAY_N, sentenceNumber(blank.payday)), rows.getValue(AccountField.PAYDAY).value)
+        assertEquals(t(UiKey.ACC_DAY_N, sentenceNumber(blank.payday)), rows.getValue(AccountField.PAYDAY).value)
     }
 
     @Test
     fun groupsFollowThePrototypeOrder() {
         val groups = accountGroups(blank, Currency.SAR)
-        assertEquals(listOf(TextKey.ACC_GROUP_ABOUT, TextKey.ACC_GROUP_INCOME, TextKey.ACC_GROUP_LIFE), groups.map { it.title })
-        assertEquals(TextKey.ACC_LIFE_NOTE, groups[2].note)
-        assertEquals(TextKey.ACC_SALARY_HINT, groups[1].rows[0].hint)
+        assertEquals(listOf(UiKey.ACC_GROUP_ABOUT, UiKey.ACC_GROUP_INCOME, UiKey.ACC_GROUP_LIFE), groups.map { it.title })
+        assertEquals(UiKey.ACC_LIFE_NOTE, groups[2].note)
+        assertEquals(UiKey.ACC_SALARY_HINT, groups[1].rows[0].hint)
     }
 
     @Test
@@ -55,34 +56,34 @@ class AccountStateTest {
         )
         val rows = rowsOf(p)
         assertEquals("محمد", rows.getValue(AccountField.NAME).value)
-        assertEquals(t(TextKey.ACC_GENDER_MALE), rows.getValue(AccountField.GENDER).value)
-        assertEquals(t(TextKey.ACC_DEP_SPOUSE) + "، " + t(TextKey.ACC_DEP_CHILDREN), rows.getValue(AccountField.DEPENDENTS).value)
+        assertEquals(t(UiKey.ACC_GENDER_MALE), rows.getValue(AccountField.GENDER).value)
+        assertEquals(t(UiKey.ACC_DEP_SPOUSE) + "، " + t(UiKey.ACC_DEP_CHILDREN), rows.getValue(AccountField.DEPENDENTS).value)
         assertEquals(amountLabel(1_250_000, Currency.SAR), rows.getValue(AccountField.SALARY).value)
-        assertEquals(t(TextKey.ACC_CAR_WITH_WORK, t(TextKey.MORE_YES), t(TextKey.ACC_CAR_NOT_WORK)), rows.getValue(AccountField.CAR).value)
-        assertEquals(t(TextKey.MORE_NO), rows.getValue(AccountField.RENTER).value)
-        assertEquals(t(TextKey.MORE_YES), rows.getValue(AccountField.MAID).value)
+        assertEquals(t(UiKey.ACC_CAR_WITH_WORK, t(UiKey.MORE_YES), t(UiKey.ACC_CAR_NOT_WORK)), rows.getValue(AccountField.CAR).value)
+        assertEquals(t(UiKey.MORE_NO), rows.getValue(AccountField.RENTER).value)
+        assertEquals(t(UiKey.MORE_YES), rows.getValue(AccountField.MAID).value)
         assertNull(rows.getValue(AccountField.BUSINESS).value)
     }
 
     @Test
     fun dependentsNoneAndYesWithoutKinds() {
-        assertEquals(t(TextKey.ACC_DEP_NONE), dependentsValue(blank.copy(supportsDependents = false)))
-        assertEquals(t(TextKey.MORE_YES), dependentsValue(blank.copy(supportsDependents = true, dependentKinds = emptyList())))
+        assertEquals(t(UiKey.ACC_DEP_NONE), dependentsValue(blank.copy(supportsDependents = false)))
+        assertEquals(t(UiKey.MORE_YES), dependentsValue(blank.copy(supportsDependents = true, dependentKinds = emptyList())))
         assertNull(dependentsValue(blank))
     }
 
     @Test
     fun carWithoutTheWorkAnswerIsJustYes() {
-        assertEquals(t(TextKey.MORE_YES), carValue(blank.copy(hasCar = true)))
-        assertEquals(t(TextKey.MORE_NO), carValue(blank.copy(hasCar = false, carToWork = true)))
+        assertEquals(t(UiKey.MORE_YES), carValue(blank.copy(hasCar = true)))
+        assertEquals(t(UiKey.MORE_NO), carValue(blank.copy(hasCar = false, carToWork = true)))
         assertNull(carValue(blank))
     }
 
     @Test
     fun salaryRangeWinsOverTheStoredAmountAndFollowsTheCountry() {
-        assertEquals(t(TextKey.ACC_SAL_SA_R2), salaryValue(blank.copy(salaryMinor = 500_000), Currency.SAR, SalaryRange.R2))
-        assertEquals(t(TextKey.ACC_SAL_EG_R2), salaryValue(blank, Currency.EGP, SalaryRange.R2))
-        assertEquals(t(TextKey.ACC_SAL_SKIP), salaryValue(blank, Currency.EGP, SalaryRange.SKIP))
+        assertEquals(t(UiKey.ACC_SAL_SA_R2), salaryValue(blank.copy(salaryMinor = 500_000), Currency.SAR, SalaryRange.R2))
+        assertEquals(t(UiKey.ACC_SAL_EG_R2), salaryValue(blank, Currency.EGP, SalaryRange.R2))
+        assertEquals(t(UiKey.ACC_SAL_SKIP), salaryValue(blank, Currency.EGP, SalaryRange.SKIP))
         assertNull(salaryValue(blank, Currency.SAR, null))
     }
 
@@ -111,10 +112,10 @@ class AccountStateTest {
     @Test
     fun duesInBudgetDefaultsToCountedUntilAsked() {
         assertTrue(duesOn(blank))
-        assertEquals(TextKey.ACC_DUES_UNSET, duesDescription(blank))
-        assertEquals(TextKey.ACC_DUES_ON, duesDescription(blank.copy(duesInBudget = true)))
+        assertEquals(UiKey.ACC_DUES_UNSET, duesDescription(blank))
+        assertEquals(UiKey.ACC_DUES_ON, duesDescription(blank.copy(duesInBudget = true)))
         assertFalse(duesOn(blank.copy(duesInBudget = false)))
-        assertEquals(TextKey.ACC_DUES_OFF, duesDescription(blank.copy(duesInBudget = false)))
+        assertEquals(UiKey.ACC_DUES_OFF, duesDescription(blank.copy(duesInBudget = false)))
     }
 
     @Test

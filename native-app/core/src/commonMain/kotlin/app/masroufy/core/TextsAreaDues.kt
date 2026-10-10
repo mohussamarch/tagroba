@@ -8,8 +8,8 @@ package app.masroufy.core
  * - `TextsAreaDuesDebts*.kt`: خانة المستحقات · الديون · تفاصيل الدين · السداد · الدين القديم
  * - `TextsAreaDuesPlans*.kt`: الأقساط · الجمعيات ومعالجها · الاشتراكات
  */
-internal val MSA_AREA_DUES_TEXTS: Map<TextKey, String> = MSA_DUES_DEBTS_TEXTS + MSA_DUES_PLANS_TEXTS
+internal val MSA_AREA_DUES_TEXTS: Map<UiKey, String> = MSA_DUES_DEBTS_TEXTS + MSA_DUES_PLANS_TEXTS
 
-internal val EGYPTIAN_AREA_DUES_TEXTS: Map<TextKey, String> = EGYPTIAN_DUES_DEBTS_TEXTS + EGYPTIAN_DUES_PLANS_TEXTS
+internal val EGYPTIAN_AREA_DUES_TEXTS: Map<UiKey, String> = EGYPTIAN_DUES_DEBTS_TEXTS + EGYPTIAN_DUES_PLANS_TEXTS
 
-internal val ENGLISH_AREA_DUES_TEXTS: Map<TextKey, String> = ENGLISH_DUES_DEBTS_TEXTS + ENGLISH_DUES_PLANS_TEXTS
+internal val ENGLISH_AREA_DUES_TEXTS: Map<UiKey, String> = ENGLISH_DUES_DEBTS_TEXTS + ENGLISH_DUES_PLANS_TEXTS

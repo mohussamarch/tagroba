@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,6 +57,7 @@ import app.masroufy.ui.overlay.Sheet
 import app.masroufy.ui.screens.common.InnerScaffold
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.shell.countryMark
+import app.masroufy.ui.screens.operations.SpaceTransferRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -93,9 +95,9 @@ fun SpacesScreen() {
         }
     }
 
-    InnerScaffold(t(TextKey.SPC_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.SPC_INTRO), Modifier.padding(horizontal = 4.dp), style = Type.of(13).copy(color = Ink.muted)) }
-        if (failed) item(key = "err") { WarnBox(t(TextKey.SPC_ERR_TITLE), t(TextKey.SPC_ERR_BODY)) }
+    InnerScaffold(t(UiKey.SPC_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.SPC_INTRO), Modifier.padding(horizontal = 4.dp), style = Type.of(13).copy(color = Ink.muted)) }
+        if (failed) item(key = "err") { WarnBox(t(UiKey.SPC_ERR_TITLE), t(UiKey.SPC_ERR_BODY)) }
         val list = open
         if (list == null) {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(260.dp)) }
@@ -105,21 +107,21 @@ fun SpacesScreen() {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BasicText(t(section.title, sentenceNumber(section.count)), style = Type.of(15, FontWeight.Bold))
                 for (c in section.cards) SpaceCardBox(c, admin != null,
-                    onSwitch = { act { if (deps.shell.switchSpace(c.space.id)) t(TextKey.SPACE_SWITCHED, countryLabel(c.space.countryCode)) else null } },
+                    onSwitch = { act { if (deps.shell.switchSpace(c.space.id)) t(UiKey.SPACE_SWITCHED, countryLabel(c.space.countryCode)) else null } },
                     onArchive = { sheet = SpaceSheet.Archive(c.space, c.active) },
-                    onUnarchive = { act { admin?.unarchive(c.space.id); t(TextKey.SPC_UNARCHIVED, countryLabel(c.space.countryCode)) } },
+                    onUnarchive = { act { admin?.unarchive(c.space.id); t(UiKey.SPC_UNARCHIVED, countryLabel(c.space.countryCode)) } },
                 )
             }
         }
-        item(key = "add") { TonalButton(t(TextKey.SPC_ADD), onClick = { sheet = SpaceSheet.Add }, modifier = Modifier.fillMaxWidth()) }
-        item(key = "transfer") { MenuRowCard(t(TextKey.SPC_TRANSFER)) { nav.push(SpaceTransferLink) } }
-        item(key = "shared") { NoteBox(t(TextKey.SPC_SHARED_BODY), title = t(TextKey.SPC_SHARED_TITLE)) }
+        item(key = "add") { TonalButton(t(UiKey.SPC_ADD), onClick = { sheet = SpaceSheet.Add }, modifier = Modifier.fillMaxWidth()) }
+        item(key = "transfer") { MenuRowCard(t(UiKey.SPC_TRANSFER)) { nav.push(SpaceTransferRoute) } }
+        item(key = "shared") { NoteBox(t(UiKey.SPC_SHARED_BODY), title = t(UiKey.SPC_SHARED_TITLE)) }
     }
 
     SpacesSheet(
         sheet, admin != null, list = open.orEmpty().map { it.space }, archived = archived, onClose = { sheet = null },
-        onCreate = { code -> act { admin?.create(code); t(TextKey.SPC_CREATED, countryLabel(code)) } },
-        onArchive = { s -> act { admin?.archive(s.id); t(TextKey.SPC_ARCHIVED_DONE, countryLabel(s.countryCode)) } },
+        onCreate = { code -> act { admin?.create(code); t(UiKey.SPC_CREATED, countryLabel(code)) } },
+        onArchive = { s -> act { admin?.archive(s.id); t(UiKey.SPC_ARCHIVED_DONE, countryLabel(s.countryCode)) } },
     )
 }
 
@@ -143,9 +145,9 @@ private fun SpaceCardBox(c: SpaceCardView, canAdmin: Boolean, onSwitch: () -> Un
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         BasicText(name, style = Type.of(17, FontWeight.Bold))
-                        if (c.active) Badge(t(TextKey.SPACE_ACTIVE), BadgeKind.INFO)
+                        if (c.active) Badge(t(UiKey.SPACE_ACTIVE), BadgeKind.INFO)
                     }
-                    BasicText(t(TextKey.SPACE_SUB, currencyName(c.space.currency), currencySymbol(c.space.currency)), style = Type.of(13).copy(color = Ink.muted))
+                    BasicText(t(UiKey.SPACE_SUB, currencyName(c.space.currency), currencySymbol(c.space.currency)), style = Type.of(13).copy(color = Ink.muted))
                     if (c.meta.isNotEmpty()) BasicText(c.meta, style = Type.caption().copy(color = Ink.muted))
                 }
             }
@@ -153,12 +155,12 @@ private fun SpaceCardBox(c: SpaceCardView, canAdmin: Boolean, onSwitch: () -> Un
             if (acts) {
                 RowRule()
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (c.archived) PrimaryButton(t(TextKey.SPC_UNARCHIVE), onClick = onUnarchive, height = 44.dp)
-                    if (c.canSwitch) PrimaryButton(t(TextKey.SPC_SWITCH), onClick = onSwitch, height = 44.dp)
-                    if (c.canArchive && canAdmin) TonalButton(t(TextKey.SPC_ARCHIVE), onClick = onArchive, height = 44.dp)
+                    if (c.archived) PrimaryButton(t(UiKey.SPC_UNARCHIVE), onClick = onUnarchive, height = 44.dp)
+                    if (c.canSwitch) PrimaryButton(t(UiKey.SPC_SWITCH), onClick = onSwitch, height = 44.dp)
+                    if (c.canArchive && canAdmin) TonalButton(t(UiKey.SPC_ARCHIVE), onClick = onArchive, height = 44.dp)
                 }
             }
-            if (c.isDefault) BasicText(t(TextKey.SPC_DEFAULT_NOTE), style = Type.caption().copy(color = Ink.muted))
+            if (c.isDefault) BasicText(t(UiKey.SPC_DEFAULT_NOTE), style = Type.caption().copy(color = Ink.muted))
         }
     }
     if (c.archived) Column(
@@ -190,27 +192,27 @@ private fun SpacesSheet(
     val current = shown ?: return
     var pick by remember(current) { mutableStateOf<String?>(null) }
     val title = when (current) {
-        SpaceSheet.Add -> t(TextKey.SPC_ADD)
-        is SpaceSheet.Archive -> t(TextKey.SPC_ARCHIVE_Q, countryLabel(current.space.countryCode))
+        SpaceSheet.Add -> t(UiKey.SPC_ADD)
+        is SpaceSheet.Archive -> t(UiKey.SPC_ARCHIVE_Q, countryLabel(current.space.countryCode))
     }
-    Sheet(sheet != null, onClose, title = title, closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
+    Sheet(sheet != null, onClose, title = title, closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         when (current) {
             SpaceSheet.Add -> {
-                BasicText(t(TextKey.SPC_ADD_BODY), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.SPC_ADD_BODY), style = Type.of(13).copy(color = Ink.muted))
                 for (o in countryOptions(list, archived)) CountryRow(o, pick == o.countryCode) { if (o.state == CountryState.AVAILABLE) pick = o.countryCode }
-                BasicText(t(TextKey.SPC_SUPPORTED), style = Type.caption().copy(color = Ink.muted))
-                if (!canAdmin) NotYetLine(t(TextKey.SPC_ADMIN_NOT_YET))
+                BasicText(t(UiKey.SPC_SUPPORTED), style = Type.caption().copy(color = Ink.muted))
+                if (!canAdmin) NotYetLine(t(UiKey.SPC_ADMIN_NOT_YET))
                 val code = pick
                 TwoButtons(
-                    if (code != null) t(TextKey.SPC_CREATE_NAMED, countryLabel(code)) else t(TextKey.SPC_CREATE),
+                    if (code != null) t(UiKey.SPC_CREATE_NAMED, countryLabel(code)) else t(UiKey.SPC_CREATE),
                     enabled = canAdmin && code != null, onFirst = { code?.let(onCreate) }, onCancel = onClose,
                 )
             }
             is SpaceSheet.Archive -> {
-                val body = t(TextKey.SPC_ARCHIVE_BODY) + if (current.wasActive) " " + t(TextKey.SPC_ARCHIVE_BACK_TO_SA) else ""
+                val body = t(UiKey.SPC_ARCHIVE_BODY) + if (current.wasActive) " " + t(UiKey.SPC_ARCHIVE_BACK_TO_SA) else ""
                 BasicText(body, style = Type.of(13).copy(color = Ink.muted))
-                TwoButtons(t(TextKey.SPC_ARCHIVE), enabled = canAdmin, onFirst = { onArchive(current.space) }, onCancel = onClose)
+                TwoButtons(t(UiKey.SPC_ARCHIVE), enabled = canAdmin, onFirst = { onArchive(current.space) }, onCancel = onClose)
             }
         }
     }
@@ -223,9 +225,9 @@ private fun CountryRow(o: CountryOption, on: Boolean, onPick: () -> Unit) {
     val shape = RoundedCornerShape(16.dp)
     val name = countryLabel(o.countryCode)
     val sub = when (o.state) {
-        CountryState.TAKEN -> t(TextKey.SPC_TAKEN, name)
-        CountryState.ARCHIVED -> t(TextKey.SPC_TAKEN_ARCHIVED)
-        CountryState.AVAILABLE -> countryPack(o.countryCode).currency.let { t(TextKey.SPACE_SUB, currencyName(it), currencySymbol(it)) }
+        CountryState.TAKEN -> t(UiKey.SPC_TAKEN, name)
+        CountryState.ARCHIVED -> t(UiKey.SPC_TAKEN_ARCHIVED)
+        CountryState.AVAILABLE -> countryPack(o.countryCode).currency.let { t(UiKey.SPACE_SUB, currencyName(it), currencySymbol(it)) }
     }
     Column(
         Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).alpha(if (off) 0.55f else 1f).pressScale(press, !off).clip(shape)
@@ -242,6 +244,6 @@ private fun CountryRow(o: CountryOption, on: Boolean, onPick: () -> Unit) {
 private fun TwoButtons(first: String, enabled: Boolean, onFirst: () -> Unit, onCancel: () -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         PrimaryButton(first, onClick = onFirst, enabled = enabled, modifier = Modifier.weight(1f))
-        TonalButton(t(TextKey.MORE_CANCEL), onClick = onCancel, modifier = Modifier.weight(1f), muted = true)
+        TonalButton(t(UiKey.MORE_CANCEL), onClick = onCancel, modifier = Modifier.weight(1f), muted = true)
     }
 }

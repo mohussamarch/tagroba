@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,15 +57,15 @@ internal fun SavedButton(onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LucideIcon(Lucide.LIST, size = 18.dp, tint = Ink.primary)
-        BasicText(t(TextKey.INHCALC_SAVED), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
+        BasicText(t(UiKey.INHCALC_SAVED), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
     }
 }
 
 /** الخطوات الأربعة (شريط 6 + الاسم 11): اللي خلصت تتلمس وترجعلها. */
 @Composable
 internal fun StepsBar(step: Int, onGo: (Int) -> Unit) {
-    val labels = listOf(TextKey.INHCALC_STEP_WHOSE, TextKey.INHCALC_STEP_ITEMS, TextKey.INHCALC_STEP_HEIRS, TextKey.INHCALC_STEP_BEFORE)
-    Row(Modifier.fillMaxWidth().semantics { contentDescription = t(TextKey.INHCALC_STEPS) }, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    val labels = listOf(UiKey.INHCALC_STEP_WHOSE, UiKey.INHCALC_STEP_ITEMS, UiKey.INHCALC_STEP_HEIRS, UiKey.INHCALC_STEP_BEFORE)
+    Row(Modifier.fillMaxWidth().semantics { contentDescription = t(UiKey.INHCALC_STEPS) }, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         labels.forEachIndexed { i, key ->
             val k = i + 1
             val on = step == k
@@ -86,9 +87,9 @@ internal fun StepsBar(step: Int, onGo: (Int) -> Unit) {
 @Composable
 internal fun WhoseStep(d: InheritanceDraft, people: List<PersonChoice>, onChange: (InheritanceDraft) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        BasicText(t(TextKey.INHCALC_WHOSE_Q), style = Type.section())
-        WhoseOption(t(TextKey.INHCALC_MINE), t(TextKey.INHCALC_MINE_SUB), d.estateOf == EstateOwner.MINE) { onChange(d.copy(estateOf = EstateOwner.MINE)) }
-        WhoseOption(t(TextKey.INHCALC_OTHER), t(TextKey.INHCALC_OTHER_SUB), d.estateOf == EstateOwner.OTHER) { onChange(d.copy(estateOf = EstateOwner.OTHER)) }
+        BasicText(t(UiKey.INHCALC_WHOSE_Q), style = Type.section())
+        WhoseOption(t(UiKey.INHCALC_MINE), t(UiKey.INHCALC_MINE_SUB), d.estateOf == EstateOwner.MINE) { onChange(d.copy(estateOf = EstateOwner.MINE)) }
+        WhoseOption(t(UiKey.INHCALC_OTHER), t(UiKey.INHCALC_OTHER_SUB), d.estateOf == EstateOwner.OTHER) { onChange(d.copy(estateOf = EstateOwner.OTHER)) }
         if (d.estateOf == EstateOwner.OTHER) {
             if (people.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -98,7 +99,7 @@ internal fun WhoseStep(d: InheritanceDraft, people: List<PersonChoice>, onChange
             TextInput(
                 if (d.personId == null) d.personName else "",
                 { onChange(d.copy(personId = null, personName = it.take(40))) },
-                placeholder = t(TextKey.INHCALC_NEW_NAME),
+                placeholder = t(UiKey.INHCALC_NEW_NAME),
             )
         }
     }
@@ -128,28 +129,28 @@ private fun WhoseOption(title: String, sub: String, on: Boolean, onClick: () -> 
 internal fun ItemsStep(d: InheritanceDraft, canBring: Boolean, onChange: (InheritanceDraft) -> Unit, onBring: () -> Unit) {
     val unit = currencySymbol(d.currency)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        BasicText(t(TextKey.INHCALC_ITEMS_Q), style = Type.section())
-        BasicText(t(TextKey.INHCALC_ITEMS_INTRO), style = Type.of(13).copy(color = Ink.muted))
-        PrimaryButton(t(TextKey.INHCALC_BRING), onBring, Modifier.fillMaxWidth(), enabled = canBring, height = 52.dp)
-        BasicText(t(if (canBring) TextKey.INHCALC_BRING_NOTE else TextKey.INHCALC_BRING_ONLY_MINE), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.INHCALC_ITEMS_Q), style = Type.section())
+        BasicText(t(UiKey.INHCALC_ITEMS_INTRO), style = Type.of(13).copy(color = Ink.muted))
+        PrimaryButton(t(UiKey.INHCALC_BRING), onBring, Modifier.fillMaxWidth(), enabled = canBring, height = 52.dp)
+        BasicText(t(if (canBring) UiKey.INHCALC_BRING_NOTE else UiKey.INHCALC_BRING_ONLY_MINE), style = Type.caption().copy(color = Ink.muted))
         d.items.forEachIndexed { i, row ->
             val missing = (parseAmountField(row.value, d.currency).orNull ?: 0L) <= 0L
             FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 10.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextInput(row.name, { v -> onChange(d.copy(items = d.items.mapIndexed { j, r -> if (j == i) r.copy(name = v.take(60)) else r })) }, placeholder = t(TextKey.INHCALC_ITEM_NAME), height = 44.dp, textSize = 15)
+                    TextInput(row.name, { v -> onChange(d.copy(items = d.items.mapIndexed { j, r -> if (j == i) r.copy(name = v.take(60)) else r })) }, placeholder = t(UiKey.INHCALC_ITEM_NAME), height = 44.dp, textSize = 15)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                         TextInput(
                             row.value, { v -> onChange(d.copy(items = d.items.mapIndexed { j, r -> if (j == i) r.copy(value = v) else r })) },
-                            Modifier.weight(1f), placeholder = t(TextKey.INHCALC_VALUE_UNKNOWN), ltr = true, keyboard = KeyboardType.Decimal, height = 44.dp,
+                            Modifier.weight(1f), placeholder = t(UiKey.INHCALC_VALUE_UNKNOWN), ltr = true, keyboard = KeyboardType.Decimal, height = 44.dp,
                             trailing = { BasicText(unit, Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
                         )
-                        RemoveButton(t(TextKey.INHCALC_REMOVE, row.name.ifBlank { t(TextKey.INHCALC_THIS_THING) })) { onChange(d.copy(items = d.items.filterIndexed { j, _ -> j != i })) }
+                        RemoveButton(t(UiKey.INHCALC_REMOVE, row.name.ifBlank { t(UiKey.INHCALC_THIS_THING) })) { onChange(d.copy(items = d.items.filterIndexed { j, _ -> j != i })) }
                     }
-                    if (missing) BasicText(t(TextKey.INHCALC_VALUE_MISSING), style = Type.captionBold().copy(color = warnInk))
+                    if (missing) BasicText(t(UiKey.INHCALC_VALUE_MISSING), style = Type.captionBold().copy(color = warnInk))
                 }
             }
         }
-        TonalButton(t(TextKey.INHCALC_ADD_ITEM), { onChange(d.copy(items = d.items + EstateRow("", ""))) }, Modifier.fillMaxWidth())
+        TonalButton(t(UiKey.INHCALC_ADD_ITEM), { onChange(d.copy(items = d.items + EstateRow("", ""))) }, Modifier.fillMaxWidth())
         // المجموع من الأملاك المكتوبة بيبان في النتيجة («من تركة …» — من المحرك)، مش محسوب هنا
     }
 }
@@ -167,9 +168,9 @@ private fun RemoveButton(label: String, onClick: () -> Unit) {
 /** لوحة «اسم الحسبة» قبل الحفظ. */
 @Composable
 internal fun SaveSheet(visible: Boolean, name: String, error: String?, saving: Boolean, onName: (String) -> Unit, onDismiss: () -> Unit, onSave: () -> Unit) {
-    Sheet(visible, onDismiss, t(TextKey.INHCALC_SAVE_TITLE)) {
-        BasicText(t(TextKey.INHCALC_SAVE_BODY), style = Type.of(13).copy(color = Ink.muted))
+    Sheet(visible, onDismiss, t(UiKey.INHCALC_SAVE_TITLE)) {
+        BasicText(t(UiKey.INHCALC_SAVE_BODY), style = Type.of(13).copy(color = Ink.muted))
         TextInput(name, onName, error = error)
-        PrimaryButton(t(TextKey.INHCALC_SAVE_BUTTON), onSave, Modifier.fillMaxWidth(), loading = saving)
+        PrimaryButton(t(UiKey.INHCALC_SAVE_BUTTON), onSave, Modifier.fillMaxWidth(), loading = saving)
     }
 }

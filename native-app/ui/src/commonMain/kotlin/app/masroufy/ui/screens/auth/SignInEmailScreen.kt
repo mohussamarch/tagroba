@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.auth
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -106,10 +107,10 @@ fun SignInEmailScreen(onBack: () -> Unit) {
             .padding(start = Space.gutter, end = Space.gutter, top = pad.calculateTopPadding() + Space.gutter, bottom = 48.dp),
         verticalArrangement = Arrangement.spacedBy(Space.block),
     ) {
-        ScreenHeader(t(TextKey.SIGNIN_TITLE), onBack = onBack)
+        ScreenHeader(t(UiKey.SIGNIN_TITLE), onBack = onBack)
         if (app.emulator) EmulatorNote()
         SegmentedTabs(
-            listOf(false to t(TextKey.SIGNIN_MODE_IN), true to t(TextKey.SIGNIN_MODE_NEW)), newAccount,
+            listOf(false to t(UiKey.SIGNIN_MODE_IN), true to t(UiKey.SIGNIN_MODE_NEW)), newAccount,
             { newAccount = it; emailErr = null; passErr = null; formErr = null; canSwitch = false },
             style = SegmentStyle.QUIET, enabled = !busy, height = 44.dp,
         )
@@ -120,25 +121,25 @@ fun SignInEmailScreen(onBack: () -> Unit) {
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 TextInput(
-                    email, { email = it; emailErr = null; canSwitch = false }, label = t(TextKey.SIGNIN_EMAIL), placeholder = "name@example.com",
+                    email, { email = it; emailErr = null; canSwitch = false }, label = t(UiKey.SIGNIN_EMAIL), placeholder = "name@example.com",
                     error = emailErr, enabled = !busy, ltr = true, keyboard = KeyboardType.Email,
                 )
-                if (canSwitch) TonalButton(t(TextKey.SIGNIN_MODE_IN), onClick = { newAccount = false; emailErr = null; canSwitch = false }, height = 40.dp)
+                if (canSwitch) TonalButton(t(UiKey.SIGNIN_MODE_IN), onClick = { newAccount = false; emailErr = null; canSwitch = false }, height = 40.dp)
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     PasswordInput(
-                        pass, { pass = it; passErr = null }, shown, { shown = !shown }, t(TextKey.SIGNIN_SHOW_PASS), t(TextKey.SIGNIN_HIDE_PASS),
-                        label = t(TextKey.SIGNIN_PASSWORD), error = passErr, enabled = !busy, imeAction = ImeAction.Done,
+                        pass, { pass = it; passErr = null }, shown, { shown = !shown }, t(UiKey.SIGNIN_SHOW_PASS), t(UiKey.SIGNIN_HIDE_PASS),
+                        label = t(UiKey.SIGNIN_PASSWORD), error = passErr, enabled = !busy, imeAction = ImeAction.Done,
                     )
-                    if (newAccount && passErr == null) BasicText(t(TextKey.SIGNIN_PASS_HINT), style = Type.caption().copy(color = Ink.muted))
+                    if (newAccount && passErr == null) BasicText(t(UiKey.SIGNIN_PASS_HINT), style = Type.caption().copy(color = Ink.muted))
                 }
                 if (!newAccount) ResetPasswordSheet(prefill = email)
                 if (formErr != null) FieldError(formErr!!)
                 PrimaryButton(
                     when {
-                        busy && newAccount -> t(TextKey.SIGNIN_BUSY_NEW)
-                        busy -> t(TextKey.SIGNIN_BUSY_IN)
-                        newAccount -> t(TextKey.SIGNIN_SUBMIT_NEW)
-                        else -> t(TextKey.SIGNIN_SUBMIT_IN)
+                        busy && newAccount -> t(UiKey.SIGNIN_BUSY_NEW)
+                        busy -> t(UiKey.SIGNIN_BUSY_IN)
+                        newAccount -> t(UiKey.SIGNIN_SUBMIT_NEW)
+                        else -> t(UiKey.SIGNIN_SUBMIT_IN)
                     },
                     onClick = { submit() }, loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
                 )
@@ -159,8 +160,8 @@ private fun SignedInNote(newAccount: Boolean) {
                 app.masroufy.ui.icons.LucideIcon(app.masroufy.ui.icons.Lucide.CHECK, size = 20.dp, tint = Ink.income)
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(if (newAccount) TextKey.SIGNIN_DONE_NEW else TextKey.SIGNIN_DONE_IN), style = Type.bodyBold().copy(color = Ink.text))
-                BasicText(t(TextKey.SIGNIN_DONE_LINE), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(if (newAccount) UiKey.SIGNIN_DONE_NEW else UiKey.SIGNIN_DONE_IN), style = Type.bodyBold().copy(color = Ink.text))
+                BasicText(t(UiKey.SIGNIN_DONE_LINE), style = Type.caption().copy(color = Ink.muted))
             }
         }
     }

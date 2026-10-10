@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.GoalProgress
 import app.masroufy.core.GoalState
@@ -57,7 +58,7 @@ fun checkNewGoal(d: GoalNewDraft, today: IsoDate, currency: Currency, spaceId: S
     val name = cleanName(d.name)
     if (name.isEmpty()) return GoalCheck.Bad(t(TextKey.GOAL_NAME_REQUIRED))
     val target = tryParseMoney(d.targetText, currency)?.takeIf { it > 0 } ?: return GoalCheck.Bad(t(TextKey.GOAL_TARGET_POSITIVE))
-    if (d.kind == GoalKind.LINKED && d.walletId == null) return GoalCheck.Bad(t(TextKey.GOAL_NEW_PICK_WALLET))
+    if (d.kind == GoalKind.LINKED && d.walletId == null) return GoalCheck.Bad(t(UiKey.GOAL_NEW_PICK_WALLET))
     val linked = d.kind == GoalKind.LINKED
     return GoalCheck.Ok(
         GoalInput(
@@ -94,7 +95,7 @@ fun checkGoalEdit(d: GoalEditDraft, p: GoalProgress, today: IsoDate): GoalEditCh
     if (!dataChanged && !archiveChanged) return GoalEditCheck.Unchanged
     if (name.isEmpty()) return GoalEditCheck.Bad(t(TextKey.GOAL_NAME_REQUIRED))
     if (target == null || target <= 0) return GoalEditCheck.Bad(t(TextKey.GOAL_TARGET_POSITIVE))
-    if (dataChanged && d.date <= today) return GoalEditCheck.Bad(t(TextKey.GOAL_EDIT_DATE_AFTER))
+    if (dataChanged && d.date <= today) return GoalEditCheck.Bad(t(UiKey.GOAL_EDIT_DATE_AFTER))
     val input = if (!dataChanged) null else GoalInput(name, target, g.currency, g.startDate, d.date, g.linkedWalletId, g.linkedSpaceId)
     return GoalEditCheck.Ok(GoalEditChange(input, if (archiveChanged) d.archived else null))
 }
@@ -108,11 +109,11 @@ fun needLines(d: GoalEditDraft, p: GoalProgress): Pair<String, String> {
     val changed = tryParseMoney(d.targetText, g.currency) != g.targetMinor || d.date != g.targetDate
     val required: Halalas? = p.requiredPerMonthMinor
     return when {
-        p.savedMinor == null -> t(TextKey.GOAL_EDIT_NEED_NA) to t(TextKey.GOAL_EDIT_NEED_NA_NOTE)
-        changed -> t(TextKey.GOAL_EDIT_NEED_NA) to t(TextKey.GOAL_EDIT_NEED_AFTER_SAVE)
-        p.state == GoalState.REACHED -> t(TextKey.GOAL_EDIT_COVERED) to t(TextKey.GOAL_EDIT_SUB_SAVED, amountLabel(p.savedMinor, g.currency))
-        required != null -> t(TextKey.GOAL_EDIT_NEED, amountLabel(required, g.currency)) to
-            t(TextKey.GOAL_EDIT_NEED_NOTE, amountLabel(p.remainingMinor, g.currency), longDate(g.targetDate))
-        else -> t(TextKey.GOAL_EDIT_NEED_NA) to t(TextKey.GOAL_EDIT_NEED_NA_NOTE)
+        p.savedMinor == null -> t(UiKey.GOAL_EDIT_NEED_NA) to t(UiKey.GOAL_EDIT_NEED_NA_NOTE)
+        changed -> t(UiKey.GOAL_EDIT_NEED_NA) to t(UiKey.GOAL_EDIT_NEED_AFTER_SAVE)
+        p.state == GoalState.REACHED -> t(UiKey.GOAL_EDIT_COVERED) to t(UiKey.GOAL_EDIT_SUB_SAVED, amountLabel(p.savedMinor, g.currency))
+        required != null -> t(UiKey.GOAL_EDIT_NEED, amountLabel(required, g.currency)) to
+            t(UiKey.GOAL_EDIT_NEED_NOTE, amountLabel(p.remainingMinor, g.currency), longDate(g.targetDate))
+        else -> t(UiKey.GOAL_EDIT_NEED_NA) to t(UiKey.GOAL_EDIT_NEED_NA_NOTE)
     }
 }

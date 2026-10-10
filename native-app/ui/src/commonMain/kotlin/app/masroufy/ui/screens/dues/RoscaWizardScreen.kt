@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -64,7 +65,7 @@ fun RoscaWizardScreen() {
             scope.launch {
                 try {
                     val r = deps.roscas.createFromDraft(state.draft)
-                    toaster.show(t(TextKey.RW_SAVED, r.name))
+                    toaster.show(t(UiKey.RW_SAVED, r.name))
                     saved = true
                     DuesChanges.bump()
                 } catch (e: Exception) {
@@ -93,18 +94,18 @@ fun RoscaWizardScreen() {
 
     // الزرارين ثابتين تحت زي النموذج: «السابق» (لو فيه) · «التالي»/«احفظ الجمعية» — وبعد الحفظ «إلى الجمعيات»
     val bar: @Composable RowScope.() -> Unit = {
-        if (saved) PrimaryButton(t(TextKey.RW_DONE), { nav.pop() }, Modifier.weight(1f), height = 52.dp)
+        if (saved) PrimaryButton(t(UiKey.RW_DONE), { nav.pop() }, Modifier.weight(1f), height = 52.dp)
         else {
             val prev = previousQuestion(state.draft, q)
-            if (prev != null) SecondaryButton(t(TextKey.RW_PREV), { goTo(prev) }, Modifier.weight(1f), height = 52.dp)
-            PrimaryButton(t(if (q == null) TextKey.RW_SAVE else TextKey.RW_NEXT), { next() }, Modifier.weight(2f), loading = saving, height = 52.dp)
+            if (prev != null) SecondaryButton(t(UiKey.RW_PREV), { goTo(prev) }, Modifier.weight(1f), height = 52.dp)
+            PrimaryButton(t(if (q == null) UiKey.RW_SAVE else UiKey.RW_NEXT), { next() }, Modifier.weight(2f), loading = saving, height = 52.dp)
         }
     }
-    DuesScaffold(t(TextKey.RW_TITLE), bottomBar = bar) {
+    DuesScaffold(t(UiKey.RW_TITLE), bottomBar = bar) {
         item(key = "progress") {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 BasicText(
-                    if (q == null) t(TextKey.RW_SUMMARY_STEP) else t(TextKey.RW_STEP, sentenceNumber(step), sentenceNumber(total)),
+                    if (q == null) t(UiKey.RW_SUMMARY_STEP) else t(UiKey.RW_STEP, sentenceNumber(step), sentenceNumber(total)),
                     style = Type.caption().copy(color = Ink.muted),
                 )
                 CountBar(if (q == null) total else step - 1, total, onHero = false)

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -74,7 +75,7 @@ fun DuesPanel() {
                 Skeleton(Modifier.fillMaxWidth().height(280.dp))
             }
             Load.Failed -> LoadFailed(load::reload)
-            is Load.Ready -> if (s.value.empty) EmptyState(t(TextKey.DUES_EMPTY_TITLE), t(TextKey.DUES_EMPTY_BODY)) else DuesMain(s.value)
+            is Load.Ready -> if (s.value.empty) EmptyState(t(UiKey.DUES_EMPTY_TITLE), t(UiKey.DUES_EMPTY_BODY)) else DuesMain(s.value)
         }
     }
 }
@@ -83,10 +84,10 @@ fun DuesPanel() {
 private fun DuesMain(ui: DuesPanelUi) {
     val nav = LocalNavigator.current
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        SideCard(Modifier.weight(1f), t(TextKey.DUES_FOR_YOU), ui.forYouTotal, ui.forYou, ui.currency, forYou = true) { nav.push(DuesDebtsRoute(DebtSide.FOR_YOU)) }
-        SideCard(Modifier.weight(1f), t(TextKey.DUES_ON_YOU), ui.onYouTotal, ui.onYou, ui.currency, forYou = false) { nav.push(DuesDebtsRoute(DebtSide.ON_YOU)) }
+        SideCard(Modifier.weight(1f), t(UiKey.DUES_FOR_YOU), ui.forYouTotal, ui.forYou, ui.currency, forYou = true) { nav.push(DuesDebtsRoute(DebtSide.FOR_YOU)) }
+        SideCard(Modifier.weight(1f), t(UiKey.DUES_ON_YOU), ui.onYouTotal, ui.onYou, ui.currency, forYou = false) { nav.push(DuesDebtsRoute(DebtSide.ON_YOU)) }
     }
-    BasicText(t(TextKey.DUES_NO_NETTING), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+    BasicText(t(UiKey.DUES_NO_NETTING), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.selected).padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -94,13 +95,13 @@ private fun DuesMain(ui: DuesPanelUi) {
     ) {
         BasicText(ui.monthLabel, style = Type.of(13, FontWeight.Bold))
         BasicText(
-            t(TextKey.DUES_MONTH_LINE, amountLabel(ui.monthPayMinor, ui.currency), amountLabel(ui.monthReceiveMinor, ui.currency)),
+            t(UiKey.DUES_MONTH_LINE, amountLabel(ui.monthPayMinor, ui.currency), amountLabel(ui.monthReceiveMinor, ui.currency)),
             Modifier.weight(1f), style = Type.of(13).copy(textAlign = TextAlign.End),
         )
     }
     if (ui.agenda.isNotEmpty()) AgendaList(ui.agenda, nav)
     Tiles(ui.tiles, nav)
-    ui.financingMinor?.let { BasicText(t(TextKey.DUES_FINANCING, amountLabel(it, ui.currency)), style = Type.caption().copy(color = Ink.muted)) }
+    ui.financingMinor?.let { BasicText(t(UiKey.DUES_FINANCING, amountLabel(it, ui.currency)), style = Type.caption().copy(color = Ink.muted)) }
 }
 
 @Composable
@@ -122,14 +123,14 @@ private fun AgendaList(rows: List<AgendaRowUi>, nav: Navigator) {
     var all by rememberSaveable { mutableStateOf(false) }
     val shown = if (all) rows else rows.take(AGENDA_SHOWN)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.DUES_LIST_TITLE), style = Type.section())
+        BasicText(t(UiKey.DUES_LIST_TITLE), style = Type.section())
         CardList {
             shown.forEachIndexed { i, row ->
                 if (i > 0) Divider()
                 DueRow(row) { open(nav, row.target) }
             }
         }
-        if (rows.size > AGENDA_SHOWN) TonalButton(t(if (all) TextKey.DUES_SHOW_LESS else TextKey.DUES_SHOW_ALL), { all = !all }, Modifier.fillMaxWidth(), height = 44.dp)
+        if (rows.size > AGENDA_SHOWN) TonalButton(t(if (all) UiKey.DUES_SHOW_LESS else UiKey.DUES_SHOW_ALL), { all = !all }, Modifier.fillMaxWidth(), height = 44.dp)
     }
 }
 

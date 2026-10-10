@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,8 +93,8 @@ fun AccountScreen() {
         }
     }
 
-    InnerScaffold(t(TextKey.ACC_TITLE)) {
-        if (failed) item(key = "err") { WarnBox(t(TextKey.ACC_ERR_TITLE), t(TextKey.ACC_ERR_BODY)) }
+    InnerScaffold(t(UiKey.ACC_TITLE)) {
+        if (failed) item(key = "err") { WarnBox(t(UiKey.ACC_ERR_TITLE), t(UiKey.ACC_ERR_BODY)) }
         val p = profile
         if (p == null) {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
@@ -111,14 +112,14 @@ fun AccountScreen() {
         }
         item(key = "dues") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                GroupTitle(t(TextKey.ACC_GROUP_BUDGET))
+                GroupTitle(t(UiKey.ACC_GROUP_BUDGET))
                 FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            BasicText(t(TextKey.ACC_DUES_TITLE), style = Type.of(15, FontWeight.Bold))
+                            BasicText(t(UiKey.ACC_DUES_TITLE), style = Type.of(15, FontWeight.Bold))
                             BasicText(t(duesDescription(p)), style = Type.caption().copy(color = Ink.muted))
                         }
-                        ToggleSwitch(duesOn(p), t(TextKey.ACC_DUES_TITLE)) { save(p.copy(duesInBudget = !duesOn(p))) }
+                        ToggleSwitch(duesOn(p), t(UiKey.ACC_DUES_TITLE)) { save(p.copy(duesInBudget = !duesOn(p))) }
                     }
                 }
             }
@@ -134,7 +135,7 @@ fun AccountScreen() {
         onCarToWork = { yes ->
             scope.launch {
                 when (val check = runCatching { more.profile.answerCarToWork(yes) }.getOrNull()) {
-                    is ProfileCheck.Ok -> { profile = check.profile; if (yes) toaster.show(t(TextKey.ACC_CAR_TO_WORK_SAVED), dark = true) }
+                    is ProfileCheck.Ok -> { profile = check.profile; if (yes) toaster.show(t(UiKey.ACC_CAR_TO_WORK_SAVED), dark = true) }
                     else -> failed = true
                 }
                 editing = null
@@ -145,7 +146,7 @@ fun AccountScreen() {
 
 /** «أصبح شهرك المالي يبدأ يوم N» لما يوم الراتب يتغير بس. */
 private fun paydayToast(before: UserProfile, after: UserProfile): String? =
-    if (before.payday != after.payday) t(TextKey.ACC_PAYDAY_SAVED, app.masroufy.core.sentenceNumber(after.payday)) else null
+    if (before.payday != after.payday) t(UiKey.ACC_PAYDAY_SAVED, app.masroufy.core.sentenceNumber(after.payday)) else null
 
 private fun draftOf(p: UserProfile, field: AccountField, range: SalaryRange?): Any? = when (field) {
     AccountField.NAME -> p.displayName.orEmpty()
@@ -166,17 +167,17 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?) {
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
                 MeAvatar(64.dp, me?.profilePercent, look = me?.lookIndex ?: 1)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    BasicText(p.displayName?.takeIf { it.isNotBlank() } ?: t(TextKey.ACC_NO_NAME), style = Type.of(18, FontWeight.Bold))
+                    BasicText(p.displayName?.takeIf { it.isNotBlank() } ?: t(UiKey.ACC_NO_NAME), style = Type.of(18, FontWeight.Bold))
                     if (email != null) BasicText(email, style = Type.of(13).copy(color = Ink.muted, textAlign = TextAlign.End, textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
                 }
             }
             // نسبة «ملفك ٪» مالهاش حسبة في كوتلن لسه (OVERRIDES §76 «ناقص») ⇒ من غير شريط ولا رقم
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
+                BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
                 if (me?.profilePercent == null) NotYetBadge() else BasicText(app.masroufy.core.sentenceNumber(me.profilePercent) + "٪", style = Type.of(13, FontWeight.Bold))
             }
             LookButton(me?.lookIndex ?: 1)
-            BasicText(t(TextKey.ACC_LOOK_SOON), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+            BasicText(t(UiKey.ACC_LOOK_SOON), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
         }
     }
 }
@@ -198,7 +199,7 @@ private fun AnswerRow(r: AccountRow, last: Boolean, onClick: () -> Unit) {
             }
             if (r.value != null) BasicText(r.value, Modifier.widthIn(max = 150.dp), style = Type.of(14, FontWeight.Bold).copy(textAlign = TextAlign.End))
             else Box(Modifier.clip(RoundedCornerShape(12.dp)).background(Ink.alertBg).padding(horizontal = 10.dp, vertical = 3.dp)) {
-                BasicText(t(TextKey.ACC_NOT_ANSWERED), style = Type.of(12, FontWeight.Bold).copy(color = Ink.focus))
+                BasicText(t(UiKey.ACC_NOT_ANSWERED), style = Type.of(12, FontWeight.Bold).copy(color = Ink.focus))
             }
             LucideIcon(Lucide.CHEVRON_LEFT, size = 16.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
         }
@@ -209,14 +210,14 @@ private fun AnswerRow(r: AccountRow, last: Boolean, onClick: () -> Unit) {
 @Composable
 private fun AccountActions(email: String?, onSignOut: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        GroupTitle(t(TextKey.ACC_GROUP_ACCOUNT))
+        GroupTitle(t(UiKey.ACC_GROUP_ACCOUNT))
         GroupCard {
-            FactRow(t(TextKey.ACC_EMAIL), email ?: "", last = false, muted = true, valueContent = {
+            FactRow(t(UiKey.ACC_EMAIL), email ?: "", last = false, muted = true, valueContent = {
                 Column(horizontalAlignment = Alignment.End) {
                     BasicText(email ?: t(TextKey.NOT_AVAILABLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted, textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
                 }
             })
-            BasicText(t(TextKey.ACC_EMAIL_HINT), Modifier.padding(start = 8.dp, bottom = 6.dp), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.ACC_EMAIL_HINT), Modifier.padding(start = 8.dp, bottom = 6.dp), style = Type.caption().copy(color = Ink.muted))
             RowRule()
             ResetPasswordSheet(prefill = email.orEmpty(), mode = ResetMode.CHANGE)
             RowRule()
@@ -224,7 +225,7 @@ private fun AccountActions(email: String?, onSignOut: () -> Unit) {
             Box(
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).pressScale(press).tap(press, onClick = onSignOut).padding(horizontal = 8.dp),
                 contentAlignment = Alignment.CenterStart,
-            ) { BasicText(t(TextKey.ACC_SIGN_OUT), style = Type.of(15, FontWeight.Bold).copy(color = Ink.expense)) }
+            ) { BasicText(t(UiKey.ACC_SIGN_OUT), style = Type.of(15, FontWeight.Bold).copy(color = Ink.expense)) }
         }
     }
 }
@@ -233,6 +234,6 @@ private fun AccountActions(email: String?, onSignOut: () -> Unit) {
 @Composable
 private fun LookButton(current: Int) {
     var open by remember { mutableStateOf(false) }
-    TonalButton(t(TextKey.LOOK_OPEN), onClick = { open = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
+    TonalButton(t(UiKey.LOOK_OPEN), onClick = { open = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
     LookSheet(open, current) { open = false }
 }

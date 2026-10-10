@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,32 +73,32 @@ fun IncomeSourceDetailScreen(sourceId: Id) {
         cmp = runCatching { more.incomeSignals.compareAroundStart(sourceId, deps.shell.today()) }.getOrNull()
         cmpLoaded = true
     }
-    InnerScaffold(t(TextKey.INCSRC_DETAIL_TITLE)) {
+    InnerScaffold(t(UiKey.INCSRC_DETAIL_TITLE)) {
         val s = source
         if (s == null) {
-            item(key = "x") { if (loaded) EmptyState(t(TextKey.INCSRC_GONE)) else Skeleton(Modifier.fillMaxWidth().height(160.dp), radius = 26.dp, strong = true) }
+            item(key = "x") { if (loaded) EmptyState(t(UiKey.INCSRC_GONE)) else Skeleton(Modifier.fillMaxWidth().height(160.dp), radius = 26.dp, strong = true) }
             return@InnerScaffold
         }
         item(key = "hero") { SourceHero(s) }
         item(key = "facts") {
             GroupCard(horizontal = 16.dp) {
-                FactRow(t(TextKey.INCSRC_PAY_DAY), payText(s), last = false)
-                FactRow(t(TextKey.INCSRC_EXPECTED), s.expectedMinor?.let { amountLabel(it, s.currency) } ?: t(TextKey.INCSRC_EXPECTED_NONE), last = false, muted = s.expectedMinor == null)
-                FactRow(t(TextKey.INCSRC_PAYER), t(payerKey(s)), last = true, muted = s.kind !in SALARIED_KINDS || s.payerKeys.isEmpty())
+                FactRow(t(UiKey.INCSRC_PAY_DAY), payText(s), last = false)
+                FactRow(t(UiKey.INCSRC_EXPECTED), s.expectedMinor?.let { amountLabel(it, s.currency) } ?: t(UiKey.INCSRC_EXPECTED_NONE), last = false, muted = s.expectedMinor == null)
+                FactRow(t(UiKey.INCSRC_PAYER), t(payerKey(s)), last = true, muted = s.kind !in SALARIED_KINDS || s.payerKeys.isEmpty())
             }
         }
         item(key = "tx") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                BasicText(t(TextKey.INCSRC_TX_TITLE), Modifier.padding(horizontal = 4.dp), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.INCSRC_TX_TITLE), Modifier.padding(horizontal = 4.dp), style = Type.of(15, FontWeight.Bold))
                 // العمليات المنسوبة للمصدر مالهاش حالة استخدام (بيتنسب بالجهة المحوِّلة جوه المنطق بس) ⇒ مش «لا عمليات» (القاعدة 10)
-                NotYetLine(t(TextKey.INCSRC_TX_NOT_YET))
+                NotYetLine(t(UiKey.INCSRC_TX_NOT_YET))
             }
         }
         item(key = "cmp") { CompareCard(cmp, cmpLoaded) }
         item(key = "acts") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (s.endedAt == null) SecondaryButton(t(TextKey.INCSRC_CLOSE), onClick = { closing = JobSheetMode.Close(s) }, modifier = Modifier.fillMaxWidth())
-                TonalButton(t(TextKey.INCSRC_EDIT), onClick = { editing = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
+                if (s.endedAt == null) SecondaryButton(t(UiKey.INCSRC_CLOSE), onClick = { closing = JobSheetMode.Close(s) }, modifier = Modifier.fillMaxWidth())
+                TonalButton(t(UiKey.INCSRC_EDIT), onClick = { editing = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
             }
         }
     }
@@ -106,10 +108,10 @@ fun IncomeSourceDetailScreen(sourceId: Id) {
     }
 }
 
-private fun payerKey(s: IncomeSource): TextKey = when {
-    s.kind !in SALARIED_KINDS -> TextKey.INCSRC_PAYER_NOT_ASKED
-    s.payerKeys.isEmpty() -> TextKey.INCSRC_PAYER_UNKNOWN
-    else -> TextKey.INCSRC_PAYER_KNOWN
+private fun payerKey(s: IncomeSource): TextRef = when {
+    s.kind !in SALARIED_KINDS -> UiKey.INCSRC_PAYER_NOT_ASKED
+    s.payerKeys.isEmpty() -> UiKey.INCSRC_PAYER_UNKNOWN
+    else -> UiKey.INCSRC_PAYER_KNOWN
 }
 
 @Composable
@@ -120,10 +122,10 @@ private fun SourceHero(s: IncomeSource) {
                 BasicText(s.name, Modifier.weight(1f), style = Type.of(20, FontWeight.Bold).copy(color = Ink.onPrimary))
                 val ended = s.endedAt != null
                 Box(Modifier.clip(RoundedCornerShape(12.dp)).background(if (ended) Color(0x29FFFFFF) else Ink.mint).padding(horizontal = 10.dp, vertical = 3.dp)) {
-                    BasicText(t(if (ended) TextKey.INCSRC_ENDED else TextKey.INCSRC_ONGOING), style = Type.of(12, FontWeight.Bold).copy(color = if (ended) Color.White else Ink.heroStart))
+                    BasicText(t(if (ended) UiKey.INCSRC_ENDED else UiKey.INCSRC_ONGOING), style = Type.of(12, FontWeight.Bold).copy(color = if (ended) Color.White else Ink.heroStart))
                 }
             }
-            BasicText(t(TextKey.INCSRC_META, t(incomeKindLabel(s.kind)), t(if (s.currency == Currency.EGP) TextKey.INCSRC_IN_EGP else TextKey.INCSRC_IN_SAR)), style = Type.of(13).copy(color = Ink.onHeroMuted))
+            BasicText(t(UiKey.INCSRC_META, t(incomeKindLabel(s.kind)), t(if (s.currency == Currency.EGP) UiKey.INCSRC_IN_EGP else UiKey.INCSRC_IN_SAR)), style = Type.of(13).copy(color = Ink.onHeroMuted))
             BasicText(periodText(s), style = Type.of(14, FontWeight.Bold).copy(color = Ink.onPrimary))
         }
     }
@@ -135,22 +137,22 @@ private fun CompareCard(c: SourceStartComparison?, loaded: Boolean) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.INCSRC_CMP_TITLE), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
-                if (c != null && !c.totalsReliable) Badge(t(TextKey.INCSRC_CMP_PARTIAL), BadgeKind.APPROX)
+                BasicText(t(UiKey.INCSRC_CMP_TITLE), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
+                if (c != null && !c.totalsReliable) Badge(t(UiKey.INCSRC_CMP_PARTIAL), BadgeKind.APPROX)
             }
             when {
                 !loaded -> Skeleton(Modifier.fillMaxWidth().height(120.dp), radius = 16.dp)
                 c == null -> Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     NotAvailableBadge()
-                    BasicText(t(TextKey.INCSRC_CMP_NA), style = Type.caption().copy(color = Ink.muted))
+                    BasicText(t(UiKey.INCSRC_CMP_NA), style = Type.caption().copy(color = Ink.muted))
                 }
                 else -> {
                     for (row in compareRows(c)) CompareBox(row)
-                    if (!c.totalsReliable) BasicText(t(TextKey.INCSRC_CMP_PARTIAL_NOTE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.focus))
-                    if (c.incomeChangeTenthPercent == null) BasicText(t(TextKey.INCSRC_CMP_NO_PCT), style = Type.caption().copy(color = Ink.muted))
+                    if (!c.totalsReliable) BasicText(t(UiKey.INCSRC_CMP_PARTIAL_NOTE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.focus))
+                    if (c.incomeChangeTenthPercent == null) BasicText(t(UiKey.INCSRC_CMP_NO_PCT), style = Type.caption().copy(color = Ink.muted))
                 }
             }
-            BasicText(t(TextKey.INCSRC_CMP_NOTE), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.INCSRC_CMP_NOTE), style = Type.caption().copy(color = Ink.muted))
         }
     }
 }
@@ -170,7 +172,7 @@ private fun CompareBox(r: CompareRow) {
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for ((label, minor) in listOf(TextKey.INCSRC_CMP_BEFORE to r.before, TextKey.INCSRC_CMP_AFTER to r.after)) Column(Modifier.weight(1f)) {
+            for ((label, minor) in listOf(UiKey.INCSRC_CMP_BEFORE to r.before, UiKey.INCSRC_CMP_AFTER to r.after)) Column(Modifier.weight(1f)) {
                 BasicText(t(label), style = Type.of(11).copy(color = Ink.muted))
                 AmountText(minor, r.currency, showCurrency = false)
             }

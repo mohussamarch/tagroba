@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,9 +57,9 @@ internal fun DayPicker(selected: IsoDate?, today: IsoDate, onPick: (IsoDate) -> 
     val month = ym.mod(12) + 1
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            MonthArrow(Lucide.CHEVRON_RIGHT, t(TextKey.CAL_PREV)) { ym -= 1 }
+            MonthArrow(Lucide.CHEVRON_RIGHT, t(UiKey.CAL_PREV)) { ym -= 1 }
             BasicText(monthYear(year, month), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold).copy(textAlign = TextAlign.Center))
-            MonthArrow(Lucide.CHEVRON_LEFT, t(TextKey.CAL_NEXT)) { ym += 1 }
+            MonthArrow(Lucide.CHEVRON_LEFT, t(UiKey.CAL_NEXT)) { ym += 1 }
         }
         val days = daysInMonth(year, month)
         for (r in 0 until (days + 6) / 7) {

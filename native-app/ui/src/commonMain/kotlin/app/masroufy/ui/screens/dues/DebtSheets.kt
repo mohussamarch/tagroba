@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,34 +62,34 @@ internal fun SettleForm(target: SettleTarget, onSaved: (full: Boolean) -> Unit) 
     var saving by remember { mutableStateOf(false) }
     val check = if (linkMode) SettleInput.Empty else settleInput(text, target.remainingMinor, target.currency)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
-        BasicText(t(if (target.forYou) TextKey.SETTLE_TITLE_FOR else TextKey.SETTLE_TITLE_ON, target.personName), Modifier.weight(1f), style = Type.section())
-        BasicText(t(TextKey.SETTLE_REMAINING, amountLabel(target.remainingMinor, target.currency)), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(if (target.forYou) UiKey.SETTLE_TITLE_FOR else UiKey.SETTLE_TITLE_ON, target.personName), Modifier.weight(1f), style = Type.section())
+        BasicText(t(UiKey.SETTLE_REMAINING, amountLabel(target.remainingMinor, target.currency)), style = Type.caption().copy(color = Ink.muted))
     }
     // «كيف تمّت؟»: بلا عملية · عملية موجودة (الحوالة اللي مستنية سؤال «هل هي سداد؟» — §75، مش متبني لسه ⇒ مفيش مرشح)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        SelectChip(t(TextKey.SETTLE_HOW_FREE), !linkMode, { linkMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
-        SelectChip(t(TextKey.SETTLE_HOW_LINK), linkMode, { linkMode = true; failure = null }, Modifier.weight(1f), height = 44.dp)
+        SelectChip(t(UiKey.SETTLE_HOW_FREE), !linkMode, { linkMode = false; failure = null }, Modifier.weight(1f), height = 44.dp)
+        SelectChip(t(UiKey.SETTLE_HOW_LINK), linkMode, { linkMode = true; failure = null }, Modifier.weight(1f), height = 44.dp)
     }
     if (linkMode) {
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.text.copy(alpha = 0.04f)).padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            BasicText(t(TextKey.SETTLE_NO_CAND), style = Type.bodyBold())
-            BasicText(t(TextKey.SETTLE_NO_CAND_SUB, target.personName), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.SETTLE_NO_CAND), style = Type.bodyBold())
+            BasicText(t(UiKey.SETTLE_NO_CAND_SUB, target.personName), style = Type.caption().copy(color = Ink.muted))
         }
     } else {
-        MoneyField(text, { text = it; failure = null }, t(TextKey.SETTLE_AMOUNT), target.currency, check.errorText(target.remainingMinor, target.currency), big = true)
+        MoneyField(text, { text = it; failure = null }, t(UiKey.SETTLE_AMOUNT), target.currency, check.errorText(target.remainingMinor, target.currency), big = true)
         TonalButton(
-            t(TextKey.SETTLE_FILL, amountLabel(target.remainingMinor, target.currency, showCurrency = false)),
+            t(UiKey.SETTLE_FILL, amountLabel(target.remainingMinor, target.currency, showCurrency = false)),
             { text = formatAmount(target.remainingMinor, target.currency, grouping = false); failure = null }, height = 44.dp,
         )
     }
     failure?.let { FieldError(it) }
     val ok = check as? SettleInput.Ok
     PrimaryButton(
-        if (ok == null) t(if (target.forYou) TextKey.SETTLE_SAVE_FOR else TextKey.SETTLE_SAVE_ON)
-        else t(if (target.forYou) TextKey.SETTLE_SAVE_FOR_AMOUNT else TextKey.SETTLE_SAVE_ON_AMOUNT, amountLabel(ok.minor, target.currency, showCurrency = false)),
+        if (ok == null) t(if (target.forYou) UiKey.SETTLE_SAVE_FOR else UiKey.SETTLE_SAVE_ON)
+        else t(if (target.forYou) UiKey.SETTLE_SAVE_FOR_AMOUNT else UiKey.SETTLE_SAVE_ON_AMOUNT, amountLabel(ok.minor, target.currency, showCurrency = false)),
         onClick = {
             val go = ok ?: return@PrimaryButton
             saving = true
@@ -121,7 +122,7 @@ internal fun SettleSheetBody(obligationId: String, dismiss: () -> Unit) {
     when (val s = load.value) {
         Load.Loading -> Skeleton(Modifier.fillMaxWidth().height(200.dp))
         Load.Failed -> LoadFailed(load::reload)
-        is Load.Ready -> s.value?.let { SettleForm(it) { dismiss() } } ?: EmptyState(t(TextKey.DEBT_NOT_OPEN))
+        is Load.Ready -> s.value?.let { SettleForm(it) { dismiss() } } ?: EmptyState(t(UiKey.DEBT_NOT_OPEN))
     }
 }
 
@@ -139,17 +140,17 @@ internal fun OpeningDebtBody(personId: String, personName: String, onSaved: (Obl
     var shown by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
     val currency = space.space.currency
-    BasicText(t(TextKey.OPENING_DEBT_TITLE, personName), style = Type.section())
-    BasicText(t(TextKey.OPENING_DEBT_BODY), style = Type.of(13).copy(color = Ink.soft))
+    BasicText(t(UiKey.OPENING_DEBT_TITLE, personName), style = Type.section())
+    BasicText(t(UiKey.OPENING_DEBT_BODY), style = Type.of(13).copy(color = Ink.soft))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        SelectChip(t(TextKey.OPENING_DEBT_FOR), kind == ObligationKind.RECEIVABLE, { kind = ObligationKind.RECEIVABLE; shown = null }, Modifier.weight(1f), height = 48.dp)
-        SelectChip(t(TextKey.OPENING_DEBT_ON), kind == ObligationKind.LOAN_PAYABLE, { kind = ObligationKind.LOAN_PAYABLE; shown = null }, Modifier.weight(1f), height = 48.dp)
+        SelectChip(t(UiKey.OPENING_DEBT_FOR), kind == ObligationKind.RECEIVABLE, { kind = ObligationKind.RECEIVABLE; shown = null }, Modifier.weight(1f), height = 48.dp)
+        SelectChip(t(UiKey.OPENING_DEBT_ON), kind == ObligationKind.LOAN_PAYABLE, { kind = ObligationKind.LOAN_PAYABLE; shown = null }, Modifier.weight(1f), height = 48.dp)
     }
-    FieldLabel(t(TextKey.SETTLE_AMOUNT))
+    FieldLabel(t(UiKey.SETTLE_AMOUNT))
     MoneyField(text, { text = it; shown = null }, null, currency)
     shown?.let { FieldError(it) }
     PrimaryButton(
-        t(TextKey.OPENING_DEBT_SAVE),
+        t(UiKey.OPENING_DEBT_SAVE),
         onClick = {
             val check = openingInput(kind, text, currency)
             val ok = check as? OpeningInput.Ok
@@ -161,7 +162,7 @@ internal fun OpeningDebtBody(personId: String, personName: String, onSaved: (Obl
             scope.launch {
                 try {
                     val o = space.dues.people.addOpeningDebt(personId, ok.kind, ok.minor)
-                    toaster.show(t(TextKey.OPENING_DEBT_SAVED))
+                    toaster.show(t(UiKey.OPENING_DEBT_SAVED))
                     DuesChanges.bump()
                     onSaved(o)
                 } catch (e: Exception) {

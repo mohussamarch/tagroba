@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,7 @@ val MORE_HEIRS = listOf(
 fun heirsSummary(heirs: Map<HeirKind, Int>): String? {
     val picked = HeirKind.entries.filter { (heirs[it] ?: 0) > 0 }
     if (picked.isEmpty()) return null
-    return picked.joinToString("، ") { k -> heirs.getValue(k).let { n -> if (n > 1) t(TextKey.INHRES_HEIR_NUMBER, k.label, sentenceNumber(n)) else k.label } }
+    return picked.joinToString("، ") { k -> heirs.getValue(k).let { n -> if (n > 1) t(UiKey.INHRES_HEIR_NUMBER, k.label, sentenceNumber(n)) else k.label } }
 }
 
 /** الخطوة ٣ (لوحة `InheritanceHeirs`): مَن الورثة؟ بالعدد، والأسماء اختيارية. */
@@ -62,18 +63,18 @@ fun InheritanceHeirsStep(d: InheritanceDraft, onChange: (InheritanceDraft) -> Un
     val summary = heirsSummary(d.heirs)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(t(TextKey.INHHEIRS_TITLE), style = Type.section())
-            BasicText(t(TextKey.INHHEIRS_INTRO), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(t(UiKey.INHHEIRS_TITLE), style = Type.section())
+            BasicText(t(UiKey.INHHEIRS_INTRO), style = Type.of(13).copy(color = Ink.muted))
         }
         BasicText(
-            summary ?: t(TextKey.INHHEIRS_NONE),
+            summary ?: t(UiKey.INHHEIRS_NONE),
             Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (summary != null) Ink.selected else Ink.alertBg).padding(horizontal = 12.dp, vertical = 8.dp),
             style = Type.of(13, FontWeight.Bold).copy(color = if (summary != null) Ink.primary else warnInk),
         )
         HeirsCard(MAIN_HEIRS, d, onChange)
         MoreToggle(moreOpen) { moreChoice = !moreOpen }
         if (moreOpen) HeirsCard(MORE_HEIRS, d, onChange)
-        BasicText(t(TextKey.INHHEIRS_FOOT), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.INHHEIRS_FOOT), style = Type.caption().copy(color = Ink.muted))
     }
 }
 
@@ -90,8 +91,8 @@ private fun HeirsCard(kinds: List<HeirKind>, d: InheritanceDraft, onChange: (Inh
                     c,
                     onMinus = { if (c > 0) onChange(d.copy(heirs = d.heirs + (k to c - 1))) },
                     onPlus = { if (c < max) onChange(d.copy(heirs = d.heirs + (k to c + 1))) },
-                    minusLabel = t(TextKey.INHHEIRS_LESS, k.label),
-                    plusLabel = t(TextKey.INHHEIRS_MORE_ONE, k.label),
+                    minusLabel = t(UiKey.INHHEIRS_LESS, k.label),
+                    plusLabel = t(UiKey.INHHEIRS_MORE_ONE, k.label),
                     atMin = c <= 0,
                     atMax = c >= max,
                 )
@@ -99,7 +100,7 @@ private fun HeirsCard(kinds: List<HeirKind>, d: InheritanceDraft, onChange: (Inh
             if (c > 0) {
                 TextInput(
                     d.names[k].orEmpty(), { v -> onChange(d.copy(names = d.names + (k to v.take(60)))) }, Modifier.padding(bottom = 10.dp),
-                    placeholder = t(TextKey.INHHEIRS_NAMES), height = 44.dp, textSize = 14,
+                    placeholder = t(UiKey.INHHEIRS_NAMES), height = 44.dp, textSize = 14,
                 )
             }
         }
@@ -115,7 +116,7 @@ private fun MoreToggle(open: Boolean, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(t(TextKey.INHHEIRS_MORE), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
+        BasicText(t(UiKey.INHHEIRS_MORE), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
         LucideIcon(Lucide.CHEVRON_DOWN, Modifier.rotate(if (open) 180f else 0f), size = 18.dp, tint = Ink.primary)
     }
 }

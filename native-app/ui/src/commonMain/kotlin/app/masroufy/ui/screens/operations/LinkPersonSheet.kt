@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,12 +65,12 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
     LaunchedEffect(v.id, reload) { rows = attempt { deps.people.listWithBalances() }.orEmpty() }
     val links = existingPersonLinks(rows, v.id) + added
     val sub = when {
-        locked -> t(TextKey.LINK_PERSON_LOCKED)
-        v.flow != LinkFlow.PURCHASE -> t(TextKey.LINK_PERSON_TRANSFER_SOON)
-        links.isEmpty() -> t(TextKey.LINK_PERSON_SUB)
-        else -> t(TextKey.LINK_PERSON_SUB_MORE)
+        locked -> t(UiKey.LINK_PERSON_LOCKED)
+        v.flow != LinkFlow.PURCHASE -> t(UiKey.LINK_PERSON_TRANSFER_SOON)
+        links.isEmpty() -> t(UiKey.LINK_PERSON_SUB)
+        else -> t(UiKey.LINK_PERSON_SUB_MORE)
     }
-    LinkCard(Lucide.USERS, t(TextKey.LINK_PERSON_CARD), sub, if (links.isEmpty()) t(TextKey.LINK_PERSON_OPEN) else t(TextKey.LINK_PERSON_ANOTHER), enabled = !blocked, onOpen = { open = true }) {
+    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, if (links.isEmpty()) t(UiKey.LINK_PERSON_OPEN) else t(UiKey.LINK_PERSON_ANOTHER), enabled = !blocked, onOpen = { open = true }) {
         for (l in links) {
             Divider()
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -89,42 +90,42 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
     val people = rows.map { it.person }
     val amount = tryParseMoney(amountText, v.currency)
     val who = newName ?: person?.name
-    Sheet(open, { open = false }, title = t(TextKey.LINK_PERSON_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), spacing = 10.dp) {
+    Sheet(open, { open = false }, title = t(UiKey.LINK_PERSON_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(t(TextKey.LINK_PERSON_TITLE), style = Type.of(17, FontWeight.Bold))
+            BasicText(t(UiKey.LINK_PERSON_TITLE), style = Type.of(17, FontWeight.Bold))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(v.title, style = Type.of(13).copy(color = Ink.muted))
                 AmountText(v.amountMinor, v.currency, tone = v.tone, size = 13)
             }
         }
-        FieldLabel(t(TextKey.LINK_PERSON_WHO))
-        TextInput(query, { query = it; error = null }, placeholder = t(TextKey.LINK_PERSON_SEARCH))
+        FieldLabel(t(UiKey.LINK_PERSON_WHO))
+        TextInput(query, { query = it; error = null }, placeholder = t(UiKey.LINK_PERSON_SEARCH))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             newName?.let { n -> SelectChip(n, true, {}, height = 44.dp) }
             for (p in personChoices(people, query, person)) SelectChip(p.name, newName == null && person?.id == p.id, { person = p; newName = null; error = null }, height = 44.dp)
-            if (canAddPerson(people, query)) SelectChip(t(TextKey.LINK_PERSON_ADD_NEW, query.trim()), false, { newName = query.trim(); person = null; query = ""; error = null }, height = 44.dp)
+            if (canAddPerson(people, query)) SelectChip(t(UiKey.LINK_PERSON_ADD_NEW, query.trim()), false, { newName = query.trim(); person = null; query = ""; error = null }, height = 44.dp)
         }
         if (who != null) {
-            val line = if (newName != null) t(TextKey.LINK_PERSON_WILL_ADD) else personBalanceLine(rows.firstOrNull { it.person.id == person?.id }, v.currency)
+            val line = if (newName != null) t(UiKey.LINK_PERSON_WILL_ADD) else personBalanceLine(rows.firstOrNull { it.person.id == person?.id }, v.currency)
             BasicText(line, style = Type.caption().copy(color = Ink.muted))
         }
-        FieldLabel(t(TextKey.LINK_PERSON_KIND))
+        FieldLabel(t(UiKey.LINK_PERSON_KIND))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SelectChip(t(TextKey.LINK_PERSON_KIND_RECEIVABLE), kind == PersonLinkKind.RECEIVABLE, { kind = PersonLinkKind.RECEIVABLE; error = null }, height = 44.dp)
-            SelectChip(t(TextKey.LINK_PERSON_KIND_GIFT), kind == PersonLinkKind.GIFT, { kind = PersonLinkKind.GIFT; error = null }, height = 44.dp)
+            SelectChip(t(UiKey.LINK_PERSON_KIND_RECEIVABLE), kind == PersonLinkKind.RECEIVABLE, { kind = PersonLinkKind.RECEIVABLE; error = null }, height = 44.dp)
+            SelectChip(t(UiKey.LINK_PERSON_KIND_GIFT), kind == PersonLinkKind.GIFT, { kind = PersonLinkKind.GIFT; error = null }, height = 44.dp)
         }
         BasicText(
-            t(when (kind) { PersonLinkKind.RECEIVABLE -> TextKey.LINK_PERSON_NOTE_RECEIVABLE; PersonLinkKind.GIFT -> TextKey.LINK_PERSON_NOTE_GIFT; null -> TextKey.LINK_PERSON_NOTE_NONE }),
+            t(when (kind) { PersonLinkKind.RECEIVABLE -> UiKey.LINK_PERSON_NOTE_RECEIVABLE; PersonLinkKind.GIFT -> UiKey.LINK_PERSON_NOTE_GIFT; null -> UiKey.LINK_PERSON_NOTE_NONE }),
             style = Type.of(12).copy(color = Ink.muted),
         )
         TextInput(
-            amountText, { amountText = it; error = null }, label = t(TextKey.LINK_PERSON_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
+            amountText, { amountText = it; error = null }, label = t(UiKey.LINK_PERSON_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
             height = 56.dp, textSize = 22,
             trailing = { BasicText(currencySymbol(v.currency), Modifier.padding(end = 16.dp), style = Type.of(14).copy(color = Ink.muted)) },
         )
         EffectBox(personEffect(kind, who, amount, v.currency))
         error?.let { FieldError(it) }
-        PrimaryButton(t(TextKey.LINK_PERSON_SAVE), loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth(), onClick = {
+        PrimaryButton(t(UiKey.LINK_PERSON_SAVE), loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth(), onClick = {
             val k = kind
             error = personLinkError(who != null, k, amount)
             if (error != null || k == null || amount == null || saving) return@PrimaryButton
@@ -133,7 +134,7 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
                 val err = failureOf {
                     val p = person ?: deps.people.addPerson(newName.orEmpty())
                     deps.people.linkToPerson(v.id, p.id, ObligationKind.RECEIVABLE, amount, asGift = k == PersonLinkKind.GIFT)
-                    if (k == PersonLinkKind.GIFT) added = added + PersonLinkLine(t(TextKey.LINK_PERSON_LINE, p.name, t(TextKey.LINK_PERSON_KIND_GIFT)), amount, v.currency, app.masroufy.ui.components.AmountTone.EXPENSE)
+                    if (k == PersonLinkKind.GIFT) added = added + PersonLinkLine(t(UiKey.LINK_PERSON_LINE, p.name, t(UiKey.LINK_PERSON_KIND_GIFT)), amount, v.currency, app.masroufy.ui.components.AmountTone.EXPENSE)
                 }
                 saving = false
                 if (err != null) error = err else {
@@ -152,7 +153,7 @@ internal fun EffectBox(lines: List<EffectLine>) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        BasicText(t(TextKey.LINK_PERSON_EFFECT_TITLE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
+        BasicText(t(UiKey.LINK_PERSON_EFFECT_TITLE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
         for (l in lines) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(l.label, Modifier.weight(1f), style = Type.of(13))
             val style = Type.of(13, FontWeight.Bold).copy(color = l.tone?.color ?: Ink.muted)

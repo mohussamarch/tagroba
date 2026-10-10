@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.DateParts
 import app.masroufy.core.IsoDate
 import app.masroufy.core.Period
@@ -44,9 +45,9 @@ fun fiscalName(p: Period): String {
 fun fiscalRange(p: Period, withYear: Boolean): String {
     val s = parseIsoDate(p.start)
     val e = parseIsoDate(p.end)
-    val start = if (s.year != e.year) t(TextKey.PERIOD_PICKER_DAY_MONTH_YEAR, dayMonth(p.start), sentenceNumber(s.year)) else dayMonth(p.start)
-    val end = if (withYear) t(TextKey.PERIOD_PICKER_DAY_MONTH_YEAR, dayMonth(p.end), sentenceNumber(e.year)) else dayMonth(p.end)
-    return t(TextKey.PERIOD_PICKER_RANGE, start, end)
+    val start = if (s.year != e.year) t(UiKey.PERIOD_PICKER_DAY_MONTH_YEAR, dayMonth(p.start), sentenceNumber(s.year)) else dayMonth(p.start)
+    val end = if (withYear) t(UiKey.PERIOD_PICKER_DAY_MONTH_YEAR, dayMonth(p.end), sentenceNumber(e.year)) else dayMonth(p.end)
+    return t(UiKey.PERIOD_PICKER_RANGE, start, end)
 }
 
 /** حالة خانة شهر في لوحة السنة. */
@@ -55,8 +56,8 @@ enum class TileState { OPEN, FUTURE, BEFORE_DATA }
 data class PeriodTile(val month: Int, val name: String, val period: Period, val state: TileState, val isNow: Boolean, val selected: Boolean) {
     val range: String
         get() = when (state) {
-            TileState.FUTURE -> t(TextKey.PERIOD_PICKER_NOT_STARTED)
-            TileState.BEFORE_DATA -> t(TextKey.PERIOD_PICKER_BEFORE_DATA)
+            TileState.FUTURE -> t(UiKey.PERIOD_PICKER_NOT_STARTED)
+            TileState.BEFORE_DATA -> t(UiKey.PERIOD_PICKER_BEFORE_DATA)
             TileState.OPEN -> fiscalRange(period, withYear = false)
         }
 }
@@ -82,15 +83,15 @@ fun progressOf(current: Period, today: IsoDate): PeriodProgress = PeriodProgress
 
 /** «اليوم ١٠ من ٣٠، بقي ٢١ يومًا على الراتب» / «كان ٣٠ يومًا». */
 fun periodNote(selected: Period, current: Period, today: IsoDate): String {
-    if (selected.key != current.key) return t(TextKey.PERIOD_PICKER_WAS, daysWord(selected.days))
+    if (selected.key != current.key) return t(UiKey.PERIOD_PICKER_WAS, daysWord(selected.days))
     val pr = progressOf(current, today)
-    return t(TextKey.PERIOD_PICKER_NOW_NOTE, sentenceNumber(pr.day), sentenceNumber(pr.days), daysWord(pr.left))
+    return t(UiKey.PERIOD_PICKER_NOW_NOTE, sentenceNumber(pr.day), sentenceNumber(pr.days), daysWord(pr.left))
 }
 
 /** «يوم واحد» · «يومان» · «٥ أيام» · «٢١ يومًا». */
 fun daysWord(n: Int): String = when {
-    n == 1 -> t(TextKey.PERIOD_PICKER_DAYS_ONE)
-    n == 2 -> t(TextKey.PERIOD_PICKER_DAYS_TWO)
-    n <= 10 -> t(TextKey.PERIOD_PICKER_DAYS_FEW, sentenceNumber(n))
-    else -> t(TextKey.PERIOD_PICKER_DAYS_MANY, sentenceNumber(n))
+    n == 1 -> t(UiKey.PERIOD_PICKER_DAYS_ONE)
+    n == 2 -> t(UiKey.PERIOD_PICKER_DAYS_TWO)
+    n <= 10 -> t(UiKey.PERIOD_PICKER_DAYS_FEW, sentenceNumber(n))
+    else -> t(UiKey.PERIOD_PICKER_DAYS_MANY, sentenceNumber(n))
 }

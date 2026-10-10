@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -76,8 +77,8 @@ fun aliasExists(view: MerchantView, raw: String): Boolean {
 
 /** سطر الشرح تحت التصنيف. */
 fun merchantCategoryHint(view: MerchantView, country: String): String = when {
-    view.merchantId == null -> t(TextKey.MERCHANT_PROFILE_NOT_SAVED)
-    view.confirmed -> t(TextKey.MERCHANT_PROFILE_HINT_SAVED, country)
-    view.fromOtherCountry -> t(TextKey.MERCHANT_PROFILE_HINT_OTHER_COUNTRY)
-    else -> t(TextKey.MERCHANT_PROFILE_HINT_SUGGESTED)
+    view.merchantId == null -> t(UiKey.MERCHANT_PROFILE_NOT_SAVED)
+    view.confirmed -> t(UiKey.MERCHANT_PROFILE_HINT_SAVED, country)
+    view.fromOtherCountry -> t(UiKey.MERCHANT_PROFILE_HINT_OTHER_COUNTRY)
+    else -> t(UiKey.MERCHANT_PROFILE_HINT_SUGGESTED)
 }

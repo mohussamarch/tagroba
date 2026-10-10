@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.auth
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,15 +76,15 @@ private fun WelcomeCard(onEmail: () -> Unit) {
     ) {
         if (app.emulator) EmulatorNote()
         LensOnLight(Modifier.size(76.dp), shape = RoundedCornerShape(26.dp)) { LucideIcon(Lucide.WALLET, size = 32.dp, tint = Ink.primary) }
-        BasicText(t(TextKey.SIGNIN_WELCOME_TITLE), Modifier.semantics { heading() }, style = Type.of(24, FontWeight.Bold).copy(textAlign = TextAlign.Center))
-        BasicText(t(TextKey.SIGNIN_WELCOME_SUB), style = Type.body().copy(color = Ink.muted, textAlign = TextAlign.Center))
+        BasicText(t(UiKey.SIGNIN_WELCOME_TITLE), Modifier.semantics { heading() }, style = Type.of(24, FontWeight.Bold).copy(textAlign = TextAlign.Center))
+        BasicText(t(UiKey.SIGNIN_WELCOME_SUB), style = Type.body().copy(color = Ink.muted, textAlign = TextAlign.Center))
         FloatingCard(Modifier.fillMaxWidth().padding(top = 8.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(18.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                BasicText(t(TextKey.SIGNIN_HOW), style = Type.section())
-                BasicText(t(TextKey.SIGNIN_HOW_SUB), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.SIGNIN_HOW), style = Type.section())
+                BasicText(t(UiKey.SIGNIN_HOW_SUB), style = Type.of(13).copy(color = Ink.muted))
                 if (googleReason == null) {
                     PrimaryButton(
-                        if (busy) t(TextKey.SIGNIN_BUSY_IN) else t(TextKey.SIGNIN_GOOGLE),
+                        if (busy) t(UiKey.SIGNIN_BUSY_IN) else t(UiKey.SIGNIN_GOOGLE),
                         onClick = {
                             busy = true
                             error = null
@@ -103,7 +104,7 @@ private fun WelcomeCard(onEmail: () -> Unit) {
                     )
                 } else BasicText(googleReason, style = Type.of(13).copy(color = Ink.muted))
                 if (error != null) FieldError(error!!)
-                SecondaryButton(t(TextKey.SIGNIN_WITH_EMAIL), onClick = onEmail, enabled = !busy, height = 52.dp, leading = Lucide.MAIL, modifier = Modifier.fillMaxWidth())
+                SecondaryButton(t(UiKey.SIGNIN_WITH_EMAIL), onClick = onEmail, enabled = !busy, height = 52.dp, leading = Lucide.MAIL, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -118,7 +119,7 @@ internal fun EmulatorNote() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LucideIcon(Lucide.TRIANGLE_ALERT, size = 18.dp, tint = Ink.focus)
-        BasicText(t(TextKey.SIGNIN_EMULATOR_NOTE), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.focus))
+        BasicText(t(UiKey.SIGNIN_EMULATOR_NOTE), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.focus))
     }
     Box(Modifier.size(0.dp))
 }

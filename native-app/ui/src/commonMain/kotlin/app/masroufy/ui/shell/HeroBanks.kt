@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,7 +59,7 @@ fun HeroBanks(now: WithYouNow, modifier: Modifier = Modifier) {
     val names = banks.joinToString("، ") { it.wallet.name }
     Row(
         modifier.defaultMinSize(minHeight = 48.dp).onGloballyPositioned { anchor.update(it) }.pressScale(press)
-            .tap(press, label = t(TextKey.HERO_BANKS_LABEL, names), onClick = { open = true }),
+            .tap(press, label = t(UiKey.HERO_BANKS_LABEL, names), onClick = { open = true }),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         banks.forEachIndexed { i, b ->
@@ -69,20 +70,20 @@ fun HeroBanks(now: WithYouNow, modifier: Modifier = Modifier) {
             ) { BasicText(b.wallet.name.take(1), style = Type.of(15, FontWeight.Bold).copy(color = Ink.lensInk)) }
         }
     }
-    GlassPopover(visible = open, onDismiss = { open = false }, anchor = anchor, title = t(TextKey.HERO_BANKS_TITLE), veil = Veil.NORMAL, width = 310.dp, closeLabel = t(TextKey.SHELL_CLOSE)) {
-        BasicText(t(TextKey.HERO_BANKS_TITLE), Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp), style = Type.of(16, FontWeight.Bold))
-        for (w in banks) BankLine(w, if (w.wallet.kind == "digital_wallet") t(TextKey.HERO_DIGITAL_SUB) else t(TextKey.HERO_BANK_SUB), now, cash = false)
-        for (w in now.cash) BankLine(w, t(TextKey.HERO_CASH_SUB), now, cash = true)
+    GlassPopover(visible = open, onDismiss = { open = false }, anchor = anchor, title = t(UiKey.HERO_BANKS_TITLE), veil = Veil.NORMAL, width = 310.dp, closeLabel = t(UiKey.SHELL_CLOSE)) {
+        BasicText(t(UiKey.HERO_BANKS_TITLE), Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp), style = Type.of(16, FontWeight.Bold))
+        for (w in banks) BankLine(w, if (w.wallet.kind == "digital_wallet") t(UiKey.HERO_DIGITAL_SUB) else t(UiKey.HERO_BANK_SUB), now, cash = false)
+        for (w in now.cash) BankLine(w, t(UiKey.HERO_CASH_SUB), now, cash = true)
         Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(1.dp).background(Color(0x1F193D33)))
         Row(
             Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            BasicText(t(TextKey.HERO_WITH_YOU), style = Type.bodyBold())
+            BasicText(t(UiKey.HERO_WITH_YOU), style = Type.bodyBold())
             AmountText(now.totalMinor, now.currency, size = 18, color = Ink.primary)
         }
-        BasicText(t(TextKey.HERO_LOGO_NOTE), Modifier.padding(horizontal = 6.dp), style = Type.of(11).copy(color = Ink.muted))
+        BasicText(t(UiKey.HERO_LOGO_NOTE), Modifier.padding(horizontal = 6.dp), style = Type.of(11).copy(color = Ink.muted))
     }
 }
 

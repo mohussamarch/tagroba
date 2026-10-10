@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,7 +97,7 @@ fun SpaceSwitcher(modifier: Modifier = Modifier) {
     else Modifier.layeredShadow(chipShape, Shadows.chip).clip(chipShape).background(Glass.card).innerSheen(chipShape, Shadows.chip)
     Box(
         modifier.defaultMinSize(minWidth = 44.dp).height(44.dp).padding(vertical = 11.dp).pressScale(press)
-            .tap(press, label = t(TextKey.SPACE_TRIGGER, countryLabel(active)), onClick = { open = true }),
+            .tap(press, label = t(UiKey.SPACE_TRIGGER, countryLabel(active)), onClick = { open = true }),
         contentAlignment = Alignment.Center,
     ) {
         Row(chip.height(22.dp).padding(start = 8.dp, end = 5.dp), horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -106,9 +107,9 @@ fun SpaceSwitcher(modifier: Modifier = Modifier) {
         }
     }
 
-    Sheet(visible = open, onDismiss = { if (pending == null) open = false }, title = t(TextKey.SPACE_SWITCH_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
-        BasicText(t(TextKey.SPACE_SWITCH_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.SPACE_SWITCH_BODY), style = Type.of(13).copy(color = Ink.muted))
+    Sheet(visible = open, onDismiss = { if (pending == null) open = false }, title = t(UiKey.SPACE_SWITCH_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
+        BasicText(t(UiKey.SPACE_SWITCH_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.SPACE_SWITCH_BODY), style = Type.of(13).copy(color = Ink.muted))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val list = choices
             if (list == null) {
@@ -122,12 +123,12 @@ fun SpaceSwitcher(modifier: Modifier = Modifier) {
                     val ok = shell.switchSpace(c.space.id)
                     pending = null
                     open = false
-                    if (ok) toaster.show(t(TextKey.SPACE_SWITCHED, countryLabel(c.space)))
+                    if (ok) toaster.show(t(UiKey.SPACE_SWITCHED, countryLabel(c.space)))
                 }
             }
         }
-        BasicText(t(TextKey.SPACE_SHARED_NOTE), style = Type.caption().copy(color = Ink.muted))
-        TonalButton(t(TextKey.SPACE_MANAGE), onClick = { open = false; nav.push(SpacesRoute) }, modifier = Modifier.fillMaxWidth())
+        BasicText(t(UiKey.SPACE_SHARED_NOTE), style = Type.caption().copy(color = Ink.muted))
+        TonalButton(t(UiKey.SPACE_MANAGE), onClick = { open = false; nav.push(SpacesRoute) }, modifier = Modifier.fillMaxWidth())
     }
 }
 
@@ -151,15 +152,15 @@ private fun SpaceRow(c: SpaceChoice, going: Boolean, onPick: () -> Unit) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(name, style = Type.of(16, FontWeight.Bold))
-                if (c.active) Badge(t(TextKey.SPACE_ACTIVE), BadgeKind.INFO)
+                if (c.active) Badge(t(UiKey.SPACE_ACTIVE), BadgeKind.INFO)
             }
-            BasicText(t(TextKey.SPACE_SUB, currencyName(c.currency), currencySymbol(c.currency)), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.SPACE_SUB, currencyName(c.currency), currencySymbol(c.currency)), style = Type.caption().copy(color = Ink.muted))
         }
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(t(TextKey.SPACE_WITH_YOU), style = Type.of(11).copy(color = Ink.muted))
+            BasicText(t(UiKey.SPACE_WITH_YOU), style = Type.of(11).copy(color = Ink.muted))
             if (going) Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Spinner(size = 14.dp, color = Ink.primary)
-                BasicText(t(TextKey.SPACE_OPENING), style = Type.captionBold().copy(color = Ink.primary))
+                BasicText(t(UiKey.SPACE_OPENING), style = Type.captionBold().copy(color = Ink.primary))
             } else AmountText(c.withYouNowMinor, c.currency)
         }
     }

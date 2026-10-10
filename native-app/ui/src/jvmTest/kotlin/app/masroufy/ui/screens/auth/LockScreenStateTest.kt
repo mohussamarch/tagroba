@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.auth
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.TextKey
 import app.masroufy.port.AppLockSettingsPort
 import app.masroufy.port.DeviceLockAvailability
@@ -36,10 +37,10 @@ class LockScreenStateTest {
     }
 
     @Test fun buttonSaysRetryOnlyAfterAFailedFingerprint() {
-        assertEquals(TextKey.LOCK_SCREEN_OPEN, lockButtonKey(null), "أول مرة ⇒ «فتح»")
-        assertEquals(TextKey.LOCK_SCREEN_RETRY, lockButtonKey(LockResult.FAILED), "ما اتطابقتش ⇒ «إعادة المحاولة»")
-        assertEquals(TextKey.LOCK_SCREEN_OPEN, lockButtonKey(LockResult.CANCELLED), "اتلغت ⇒ «فتح»")
-        assertEquals(TextKey.LOCK_SCREEN_OPEN, lockButtonKey(LockResult.UNAVAILABLE))
+        assertEquals(UiKey.LOCK_SCREEN_OPEN, lockButtonKey(null), "أول مرة ⇒ «فتح»")
+        assertEquals(UiKey.LOCK_SCREEN_RETRY, lockButtonKey(LockResult.FAILED), "ما اتطابقتش ⇒ «إعادة المحاولة»")
+        assertEquals(UiKey.LOCK_SCREEN_OPEN, lockButtonKey(LockResult.CANCELLED), "اتلغت ⇒ «فتح»")
+        assertEquals(UiKey.LOCK_SCREEN_OPEN, lockButtonKey(LockResult.UNAVAILABLE))
     }
 
     @Test fun failedThenOkUnlocksAndClearsTheMessage() = runBlocking {

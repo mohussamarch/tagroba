@@ -1,5 +1,6 @@
 package app.masroufy.wiring.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Category
 import app.masroufy.core.CategoryColorPair
@@ -39,22 +40,22 @@ class CategoriesPresenterTest {
         val food = ui.groups.first()
         assertEquals(listOf(FOOD.id, GROCERY.id), food.mains.map { it.id })
         assertEquals(listOf(COFFEE.id), food.mains.first().subs.map { it.id })
-        assertEquals(uiText(TextKey.CATS_SUBS_ONE), food.mains.first().subsLabel)
-        assertEquals(uiText(TextKey.CATS_NO_SUBS), food.mains[1].subsLabel)
-        assertEquals(uiText(TextKey.CATS_NO_GROUP), ui.groups.last().name)
+        assertEquals(uiText(UiKey.CATS_SUBS_ONE), food.mains.first().subsLabel)
+        assertEquals(uiText(UiKey.CATS_NO_SUBS), food.mains[1].subsLabel)
+        assertEquals(uiText(UiKey.CATS_NO_GROUP), ui.groups.last().name)
         // السيارة مخفية بشرط «عندك سيارة؟» (ملفك ما جاوبش) — ما بتتظهرش بزرار · الهدايا إنت اللي خفيتها ⇒ «إظهار»
         val car = ui.hidden.single { it.id == CAR.id }
-        assertEquals(uiText(TextKey.CATS_REQ_HAS_CAR), car.why)
+        assertEquals(uiText(UiKey.CATS_REQ_HAS_CAR), car.why)
         assertFalse(car.canShow)
         val gift = ui.hidden.single { it.id == gifts.id }
-        assertEquals(uiText(TextKey.CATS_HIDDEN_BY_YOU), gift.why)
+        assertEquals(uiText(UiKey.CATS_HIDDEN_BY_YOU), gift.why)
         assertTrue(gift.canShow)
     }
 
     @Test fun pluralsOfSubsFollowTheCount() {
-        assertEquals(uiText(TextKey.CATS_SUBS_TWO), subsLabel(2))
-        assertEquals(uiText(TextKey.CATS_SUBS_FEW, "٣"), subsLabel(3))
-        assertEquals(uiText(TextKey.CATS_SUBS_MANY, "١١"), subsLabel(11))
+        assertEquals(uiText(UiKey.CATS_SUBS_TWO), subsLabel(2))
+        assertEquals(uiText(UiKey.CATS_SUBS_FEW, "٣"), subsLabel(3))
+        assertEquals(uiText(UiKey.CATS_SUBS_MANY, "١١"), subsLabel(11))
         val saudi = subsLabel(2)
         resetTexts(ArabicVariant.EGYPTIAN)
         assertNotEquals(saudi, subsLabel(2), "«فرعان» ⇄ «فرعيين»")
@@ -70,7 +71,7 @@ class CategoriesPresenterTest {
         assertTrue(view.parentLocked)
         assertTrue(view.isMain)
         assertEquals(19, view.swatches.size, "١٨ درجة + لونه الحالي")
-        assertEquals(uiText(TextKey.CAT_EDIT_COLOR, uiText(TextKey.CAT_EDIT_CURRENT_COLOR)), view.colorLabel)
+        assertEquals(uiText(UiKey.CAT_EDIT_COLOR, uiText(UiKey.CAT_EDIT_CURRENT_COLOR)), view.colorLabel)
         assertEquals(FOOD.lightColor, view.previewHex)
         assertTrue(view.canSave)
         assertTrue(view.canHide)
@@ -91,7 +92,7 @@ class CategoriesPresenterTest {
         val view = catEditView(target, draft, ui.stored, ui.visibleMains)
         assertFalse(view.isMain)
         assertEquals(childColors(CategoryColorPair(FOOD.lightColor, FOOD.darkColor), 1).lightColor, view.previewHex, "تاني فرعي ⇒ الدرجة رقم ٢")
-        assertEquals(uiText(TextKey.CAT_EDIT_PATH, uiText(TextKey.GROUP_FOOD), FOOD.name), view.path)
+        assertEquals(uiText(UiKey.CAT_EDIT_PATH, uiText(TextKey.GROUP_FOOD), FOOD.name), view.path)
         val saved = w.deps.categories.save(catSaveInput(target, draft, ui.stored))
         assertEquals(FOOD.id, saved.parentId)
         assertEquals(view.previewHex, saved.lightColor, "المعاينة = اللي اتخزن")

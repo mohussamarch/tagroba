@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -67,7 +68,7 @@ internal fun PeopleStage(orbit: List<PersonChip>, meName: String?, onOpen: (Pers
             Box(Modifier.fillMaxWidth().size(width = w, height = STAGE_H.dp)) {
                 Threads(orbit.size)
                 BasicText(
-                    t(TextKey.PEOPLE_ORBIT_NOTE),
+                    t(UiKey.PEOPLE_ORBIT_NOTE),
                     Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 14.dp),
                     style = Type.caption().copy(color = Ink.onHeroMuted),
                 )
@@ -101,14 +102,14 @@ private fun OrbitPerson(p: PersonChip, onClick: () -> Unit, modifier: Modifier) 
 private fun You(meName: String?, modifier: Modifier) {
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         LensOnHero(Modifier.size(96.dp).zIndex(1f), shape = CircleShape) {
-            BasicText(meName?.let { initialOf(it) }?.ifEmpty { null } ?: t(TextKey.PEOPLE_YOU).take(1), Modifier.align(Alignment.Center), style = Type.of(34, FontWeight.Bold).copy(color = Ink.onPrimary))
+            BasicText(meName?.let { initialOf(it) }?.ifEmpty { null } ?: t(UiKey.PEOPLE_YOU).take(1), Modifier.align(Alignment.Center), style = Type.of(34, FontWeight.Bold).copy(color = Ink.onPrimary))
         }
         LensOnHero(
             Modifier.offset(y = (-8).dp).size(width = 220.dp, height = 96.dp),
             shape = RoundedCornerShape(topStart = 110.dp, topEnd = 110.dp),
         ) {
             BasicText(
-                t(TextKey.PEOPLE_CHARACTER_SLOT),
+                t(UiKey.PEOPLE_CHARACTER_SLOT),
                 Modifier.align(Alignment.Center).clip(RoundedCornerShape(12.dp)).background(Ink.heroStart.copy(alpha = 0.28f)).padding(horizontal = 10.dp, vertical = 2.dp),
                 style = Type.of(11).copy(color = Ink.onHeroMuted),
             )
@@ -181,13 +182,13 @@ internal fun GridPerson(p: PersonChip, onClick: () -> Unit, modifier: Modifier =
 internal fun GridAdd(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val press = rememberPress()
     Column(
-        modifier.pressScale(press).tap(press, label = t(TextKey.PEOPLE_ADD_PERSON), onClick = onClick),
+        modifier.pressScale(press).tap(press, label = t(UiKey.PEOPLE_ADD_PERSON), onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Box(Modifier.size(56.dp).clip(CircleShape).border(1.5.dp, Ink.primary.copy(alpha = 0.45f), CircleShape), contentAlignment = Alignment.Center) {
             app.masroufy.ui.icons.LucideIcon(app.masroufy.ui.icons.Lucide.PLUS, size = 22.dp, tint = Ink.primary)
         }
-        BasicText(t(TextKey.PEOPLE_ADD), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
+        BasicText(t(UiKey.PEOPLE_ADD), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
     }
 }

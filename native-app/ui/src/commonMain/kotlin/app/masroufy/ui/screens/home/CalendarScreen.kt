@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Tab
 import app.masroufy.ui.screens.common.InnerScaffold
+import app.masroufy.ui.screens.people.EventAddSheetRoute
 import app.masroufy.ui.shell.CalendarGrid
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -64,7 +66,7 @@ private const val BEHIND_DAYS = 31
  * (من غير القفل كان بيفتح «قيد البناء» وهو شكله شغال — CLAUDE.md #15). ⚠️ وقت الدمج: `true` + `nav.open(people.EventAddSheetRoute(date))`
  * بدل المسار المؤقت هنا (والنص «لا مواعيد…» بيرجع يقول «تقدر تضيف حدث من الزرار اللي فوق» لوحده).
  */
-private const val EVENT_ADD_READY = false
+private const val EVENT_ADD_READY = true
 
 /**
  * التقويم: «الأحداث القادمة» (الجملة الذكية + أقرب ٦ + «كل القادم») ⇒ «حدث جديد» (`EventAddSheet` بيوم الشبكة المختار) ⇒ الشبكة ⇒ مواعيد اليوم.
@@ -96,12 +98,12 @@ fun CalendarScreen() {
     LaunchedEffect(deps, year, month, monthTick) {
         monthRead = readState { deps.home.calendar.month(year, month, today).items }
     }
-    InnerScaffold(t(TextKey.CALENDAR_TITLE)) {
+    InnerScaffold(t(UiKey.CALENDAR_TITLE)) {
         when (val u = upcoming) {
             ReadState.Loading -> item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
             ReadState.Failed -> item(key = "failed") { HomeErrorBanner { upcoming = ReadState.Loading; tick++ } }
             is ReadState.Ready -> if (u.value.items.isEmpty()) {
-                item(key = "empty") { EmptyState(t(TextKey.CALENDAR_EMPTY_TITLE), t(TextKey.CALENDAR_EMPTY_BODY)) }
+                item(key = "empty") { EmptyState(t(UiKey.CALENDAR_EMPTY_TITLE), t(UiKey.CALENDAR_EMPTY_BODY)) }
             } else {
                 item(key = "summary") { SummaryCard(u.value.items, u.value.summary, all, onToggle = { all = !all }, onOpen = { openSource(nav, it) }) }
             }
@@ -110,10 +112,10 @@ fun CalendarScreen() {
             val date = selected?.let { formatIsoDate(DateParts(year, month, it)) }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 PrimaryButton(
-                    t(TextKey.CALENDAR_ADD_EVENT), onClick = { nav.open(EventAddSheetRoute(date)) }, modifier = Modifier.fillMaxWidth(),
+                    t(UiKey.CALENDAR_ADD_EVENT), onClick = { nav.open(EventAddSheetRoute(date)) }, modifier = Modifier.fillMaxWidth(),
                     enabled = EVENT_ADD_READY, height = 52.dp, leading = Lucide.PLUS,
                 )
-                if (!EVENT_ADD_READY) BasicText(t(TextKey.CALENDAR_ADD_EVENT_LATER), style = Type.caption().copy(color = Ink.muted))
+                if (!EVENT_ADD_READY) BasicText(t(UiKey.CALENDAR_ADD_EVENT_LATER), style = Type.caption().copy(color = Ink.muted))
             }
         }
         item(key = "grid") {
@@ -157,7 +159,7 @@ private fun SummaryCard(ups: List<CalendarItem>, summary: SmartSummary?, all: Bo
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 LucideIcon(Lucide.SPARKLES, size = 18.dp, tint = Ink.primary)
-                BasicText(t(TextKey.CALENDAR_UPCOMING), style = Type.of(16, FontWeight.Bold))
+                BasicText(t(UiKey.CALENDAR_UPCOMING), style = Type.of(16, FontWeight.Bold))
             }
             smartSentence(ups, summary?.beforePayday.orEmpty(), summary?.untilPayday?.nextPayday)?.let {
                 BasicText(it, style = Type.of(13).copy(color = Ink.soft))
@@ -169,7 +171,7 @@ private fun SummaryCard(ups: List<CalendarItem>, summary: SmartSummary?, all: Bo
             }
             if (ups.size > shownOf(ups, false).size) {
                 TonalButton(
-                    if (all) t(TextKey.CALENDAR_LESS) else t(TextKey.CALENDAR_ALL, sentenceNumber(ups.size)),
+                    if (all) t(UiKey.CALENDAR_LESS) else t(UiKey.CALENDAR_ALL, sentenceNumber(ups.size)),
                     onClick = onToggle, modifier = Modifier.fillMaxWidth(), height = 44.dp,
                 )
             }
@@ -206,16 +208,16 @@ internal fun CalRowView(row: CalRow, onOpen: (CalendarItemType) -> Unit) {
 private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<CalendarItem>?, onClear: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            val title = if (selected == null) t(TextKey.CALENDAR_PICK_DAY) else t(TextKey.CALENDAR_DAY_TITLE, dayMonth(formatIsoDate(DateParts(year, month, selected))))
+            val title = if (selected == null) t(UiKey.CALENDAR_PICK_DAY) else t(UiKey.CALENDAR_DAY_TITLE, dayMonth(formatIsoDate(DateParts(year, month, selected))))
             BasicText(title, Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
-            if (selected != null) TonalButton(t(TextKey.CALENDAR_CLEAR), onClick = onClear, height = 44.dp)
+            if (selected != null) TonalButton(t(UiKey.CALENDAR_CLEAR), onClick = onClear, height = 44.dp)
         }
         if (selected == null) return@Column
         // لسه بيتقري (شهر جديد) ⇒ هيكل، مش «لا مواعيد»
         if (monthItems == null) return@Column Skeleton(Modifier.fillMaxWidth().height(56.dp))
         val date: IsoDate = formatIsoDate(DateParts(year, month, selected))
         val day = monthItems.filter { it.date == date }
-        if (day.isEmpty()) BasicText(t(if (EVENT_ADD_READY) TextKey.CALENDAR_DAY_EMPTY else TextKey.CALENDAR_DAY_EMPTY_NO_ADD), style = Type.of(13).copy(color = Ink.muted))
+        if (day.isEmpty()) BasicText(t(if (EVENT_ADD_READY) UiKey.CALENDAR_DAY_EMPTY else UiKey.CALENDAR_DAY_EMPTY_NO_ADD), style = Type.of(13).copy(color = Ink.muted))
         for (item in day) FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)) { CalRowView(calRowOf(item), onOpen) }
     }
 }

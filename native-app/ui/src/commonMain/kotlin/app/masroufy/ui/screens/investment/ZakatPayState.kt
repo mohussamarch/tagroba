@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -35,31 +36,31 @@ data class ZakatPayUi(
 fun zakatPayUi(yearId: Id, dueAt: IsoDate, status: ZakatYearStatus, payments: List<ZakatPayment>, ops: TransactionsScreenData?, currency: Currency): ZakatPayUi {
     val lines = status.lines.map { l ->
         val sub = when {
-            l.paid -> uiText(TextKey.ZAKAT_PAY_LINE_DONE)
-            l.paidMinor > 0 -> uiText(TextKey.ZAKAT_PAY_LINE_PART, moneyText(l.paidMinor, currency), moneyText(l.remainingMinor, currency))
-            else -> uiText(TextKey.ZAKAT_PAY_LINE_NONE)
+            l.paid -> uiText(UiKey.ZAKAT_PAY_LINE_DONE)
+            l.paidMinor > 0 -> uiText(UiKey.ZAKAT_PAY_LINE_PART, moneyText(l.paidMinor, currency), moneyText(l.remainingMinor, currency))
+            else -> uiText(UiKey.ZAKAT_PAY_LINE_NONE)
         }
         PayLine(l.kind, l.kind.label, l.dueMinor, sub, l.paid)
     }
     val rows = payments.sortedWith(compareByDescending<ZakatPayment> { it.paidAt }.thenByDescending { it.createdAt }).map { p ->
         val txn = p.transactionId?.let { id -> ops?.transactions?.firstOrNull { it.id == id } }
         val label = when {
-            p.transactionId == null -> uiText(TextKey.ZAKAT_PAY_CASH_ROW)
+            p.transactionId == null -> uiText(UiKey.ZAKAT_PAY_CASH_ROW)
             txn != null && ops != null -> opTitle(txn, ops)
-            else -> uiText(TextKey.ZAKAT_PAY_FROM_STATEMENT)
+            else -> uiText(UiKey.ZAKAT_PAY_FROM_STATEMENT)
         }
         val names = p.lines.joinToString("، ") { it.label }
-        PaymentRow(p.id, label, uiText(TextKey.INVEST_ROW_SUB, names, dateText(p.paidAt)), p.amountMinor)
+        PaymentRow(p.id, label, uiText(UiKey.INVEST_ROW_SUB, names, dateText(p.paidAt)), p.amountMinor)
     }
     val allPaid = status.remainingMinor <= 0L && status.dueMinor > 0L
     val allPaidText = when {
         !allPaid -> null
-        status.extraCharityMinor > 0 -> uiText(TextKey.ZAKAT_PAY_ALL_DONE_EXTRA, moneyText(status.extraCharityMinor, currency))
-        else -> uiText(TextKey.ZAKAT_PAY_ALL_DONE)
+        status.extraCharityMinor > 0 -> uiText(UiKey.ZAKAT_PAY_ALL_DONE_EXTRA, moneyText(status.extraCharityMinor, currency))
+        else -> uiText(UiKey.ZAKAT_PAY_ALL_DONE)
     }
     return ZakatPayUi(
         yearId = yearId,
-        yearLabel = uiText(TextKey.ZAKAT_PAY_FOR, dateText(dueAt)),
+        yearLabel = uiText(UiKey.ZAKAT_PAY_FOR, dateText(dueAt)),
         dueMinor = status.dueMinor,
         paidMinor = status.paidMinor,
         leftMinor = status.remainingMinor,
@@ -87,10 +88,10 @@ fun zakatPayRequest(picked: Set<ZakatLineKind>, how: Id?, cash: String, currency
     val lines = ZakatLineKind.entries.filter { it in picked }
     return when {
         lines.isEmpty() -> ZakatPayRequest.Invalid(uiText(TextKey.ZAKAT_LINES_INVALID))
-        how == null -> ZakatPayRequest.Invalid(uiText(TextKey.ZAKAT_PAY_ERR_HOW))
+        how == null -> ZakatPayRequest.Invalid(uiText(UiKey.ZAKAT_PAY_ERR_HOW))
         how == PAY_CASH -> {
             val amount = runCatching { parseMoney(cash, currency) }.getOrNull()
-            if (amount == null || amount <= 0) ZakatPayRequest.Invalid(uiText(TextKey.ZAKAT_PAY_ERR_CASH)) else ZakatPayRequest.Cash(lines, amount)
+            if (amount == null || amount <= 0) ZakatPayRequest.Invalid(uiText(UiKey.ZAKAT_PAY_ERR_CASH)) else ZakatPayRequest.Cash(lines, amount)
         }
         else -> ZakatPayRequest.FromOperation(lines, how)
     }

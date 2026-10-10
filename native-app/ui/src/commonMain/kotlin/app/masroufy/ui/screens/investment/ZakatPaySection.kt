@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,7 +72,7 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, showTitle: Boo
     LaunchedEffect(pay.yearId) { ops = linkableOps(runCatching { deps.recentOperations() }.getOrNull(), outgoing = true, currency) }
     fun submit(block: suspend () -> Unit) {
         scope.launch {
-            try { block(); status = t(TextKey.ZAKAT_PAY_RECORDED); error = null; onChanged() } catch (e: IllegalArgumentException) { error = e.message }
+            try { block(); status = t(UiKey.ZAKAT_PAY_RECORDED); error = null; onChanged() } catch (e: IllegalArgumentException) { error = e.message }
         }
     }
     fun record() {
@@ -83,13 +84,13 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, showTitle: Boo
     }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column {
-            if (showTitle) BasicText(t(TextKey.ZAKAT_PAY_TITLE), style = Type.section())
+            if (showTitle) BasicText(t(UiKey.ZAKAT_PAY_TITLE), style = Type.section())
             BasicText(pay.yearLabel, style = Type.caption().copy(color = Ink.muted))
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SumTile(t(TextKey.ZAKAT_PAY_DUE), pay.dueMinor, currency, Ink.text, Modifier.weight(1f))
-            SumTile(t(TextKey.ZAKAT_PAY_PAID), pay.paidMinor, currency, Ink.income, Modifier.weight(1f))
-            SumTile(t(TextKey.ZAKAT_PAY_LEFT), pay.leftMinor, currency, if (pay.leftMinor > 0) Ink.expense else Ink.income, Modifier.weight(1f))
+            SumTile(t(UiKey.ZAKAT_PAY_DUE), pay.dueMinor, currency, Ink.text, Modifier.weight(1f))
+            SumTile(t(UiKey.ZAKAT_PAY_PAID), pay.paidMinor, currency, Ink.income, Modifier.weight(1f))
+            SumTile(t(UiKey.ZAKAT_PAY_LEFT), pay.leftMinor, currency, if (pay.leftMinor > 0) Ink.expense else Ink.income, Modifier.weight(1f))
         }
         // الشريط بأوزان المبلغين نفسهم (من حالة الاستخدام) — من غير نسبة محسوبة
         Row(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(Ink.text.copy(alpha = 0.08f))) {
@@ -108,26 +109,26 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, showTitle: Boo
                 }
             }
         }
-        TonalButton(t(TextKey.ZAKAT_PAY_ALL), { picked = unpaidKinds(pay); error = null; status = null }, Modifier.fillMaxWidth(), enabled = unpaidKinds(pay).isNotEmpty())
+        TonalButton(t(UiKey.ZAKAT_PAY_ALL), { picked = unpaidKinds(pay); error = null; status = null }, Modifier.fillMaxWidth(), enabled = unpaidKinds(pay).isNotEmpty())
         if (picked.isNotEmpty()) FloatingCard(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                BasicText(t(TextKey.ZAKAT_PAY_HOW), style = Type.bodyBold())
-                if (ops.isNotEmpty()) BasicText(t(TextKey.ZAKAT_PAY_FROM_STATEMENT), style = Type.caption().copy(color = Ink.muted))
-                else BasicText(t(TextKey.ZAKAT_PAY_NO_OPS), style = Type.caption().copy(color = Ink.muted))
-                for (op in ops) OpChoice(t(TextKey.INVEST_ROW_SUB, op.title, dateText(op.date)), op, how == op.id) { how = op.id; error = null }
-                OpChoice(t(TextKey.ZAKAT_PAY_CASH), null, how == PAY_CASH) { how = PAY_CASH; error = null }
+                BasicText(t(UiKey.ZAKAT_PAY_HOW), style = Type.bodyBold())
+                if (ops.isNotEmpty()) BasicText(t(UiKey.ZAKAT_PAY_FROM_STATEMENT), style = Type.caption().copy(color = Ink.muted))
+                else BasicText(t(UiKey.ZAKAT_PAY_NO_OPS), style = Type.caption().copy(color = Ink.muted))
+                for (op in ops) OpChoice(t(UiKey.INVEST_ROW_SUB, op.title, dateText(op.date)), op, how == op.id) { how = op.id; error = null }
+                OpChoice(t(UiKey.ZAKAT_PAY_CASH), null, how == PAY_CASH) { how = PAY_CASH; error = null }
                 if (how == PAY_CASH) {
-                    BasicText(t(TextKey.ZAKAT_PAY_CASH_SUB), style = Type.caption().copy(color = Ink.muted))
-                    TextInput(cash, { cash = it; error = null }, label = t(TextKey.ZAKAT_PAY_CASH_LABEL), placeholder = "0.00", ltr = true,
+                    BasicText(t(UiKey.ZAKAT_PAY_CASH_SUB), style = Type.caption().copy(color = Ink.muted))
+                    TextInput(cash, { cash = it; error = null }, label = t(UiKey.ZAKAT_PAY_CASH_LABEL), placeholder = "0.00", ltr = true,
                         keyboard = KeyboardType.Decimal, trailing = { FieldUnit(currencySymbol(currency)) })
                 }
-                BasicText(t(TextKey.ZAKAT_PAY_NOTE), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.ZAKAT_PAY_NOTE), style = Type.caption().copy(color = Ink.muted))
                 error?.let { FieldError(it) }
-                PrimaryButton(t(TextKey.ZAKAT_PAY_RECORD), ::record, Modifier.fillMaxWidth())
+                PrimaryButton(t(UiKey.ZAKAT_PAY_RECORD), ::record, Modifier.fillMaxWidth())
             }
         }
         if (pay.payments.isNotEmpty()) {
-            BasicText(t(TextKey.ZAKAT_PAY_PAYMENTS), style = Type.bodyBold())
+            BasicText(t(UiKey.ZAKAT_PAY_PAYMENTS), style = Type.bodyBold())
             for (p in pay.payments) {
                 QuietBox {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -136,7 +137,7 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, showTitle: Boo
                             BasicText(p.sub, style = Type.caption().copy(color = Ink.muted))
                         }
                         AmountText(p.amountMinor, currency, tone = AmountTone.EXPENSE, size = 14, showCurrency = false)
-                        TonalButton(t(TextKey.ZAKAT_PAY_UNLINK), { submit { deps.payZakat.unlink(pay.yearId, p.id); t(TextKey.ZAKAT_PAY_UNLINKED) } }, height = 44.dp)
+                        TonalButton(t(UiKey.ZAKAT_PAY_UNLINK), { submit { deps.payZakat.unlink(pay.yearId, p.id); t(UiKey.ZAKAT_PAY_UNLINKED) } }, height = 44.dp)
                     }
                 }
             }

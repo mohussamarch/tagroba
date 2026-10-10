@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,18 +47,18 @@ import kotlinx.coroutines.launch
  * - **طلب اتصال** محتاج ربط الحسابات (مرحلة جاية — مكتوب في اللوحة زي النموذج).
  * - **الجمعية مع شخص** و**تقسيم فاتورة من غير عملية** مالهمش حالة استخدام ⇒ الزرار مقفول وجنبه السبب (missingLogic).
  */
-private enum class Act(val label: TextKey, val icon: Lucide, val title: TextKey, val body: TextKey, val go: TextKey, val amount: TextKey?) {
-    ROSCA(TextKey.PERSON_PAGE_ACT_ROSCA, Lucide.COINS, TextKey.PERSON_PAGE_ROSCA_TITLE, TextKey.PERSON_PAGE_ROSCA_BODY, TextKey.PERSON_PAGE_ROSCA_GO, TextKey.PERSON_PAGE_ROSCA_AMOUNT),
-    PROJECT(TextKey.PERSON_PAGE_ACT_PROJECT, Lucide.BRIEFCASE, TextKey.PERSON_PAGE_PROJECT_TITLE, TextKey.PERSON_PAGE_PROJECT_BODY, TextKey.PERSON_PAGE_PROJECT_GO, null),
-    LINK(TextKey.PERSON_PAGE_ACT_LINK, PeopleIcons.USER_PLUS, TextKey.PERSON_PAGE_LINK_TITLE, TextKey.PERSON_PAGE_LINK_BODY, TextKey.PERSON_PAGE_LINK_GO, null),
-    SPLIT(TextKey.PERSON_PAGE_ACT_SPLIT, PeopleIcons.SPLIT_BILL, TextKey.PERSON_PAGE_SPLIT_TITLE, TextKey.PERSON_PAGE_SPLIT_BODY, TextKey.PERSON_PAGE_SPLIT_GO, TextKey.PERSON_PAGE_SPLIT_AMOUNT),
+private enum class Act(val label: TextRef, val icon: Lucide, val title: TextRef, val body: TextRef, val go: TextRef, val amount: TextRef?) {
+    ROSCA(UiKey.PERSON_PAGE_ACT_ROSCA, Lucide.COINS, UiKey.PERSON_PAGE_ROSCA_TITLE, UiKey.PERSON_PAGE_ROSCA_BODY, UiKey.PERSON_PAGE_ROSCA_GO, UiKey.PERSON_PAGE_ROSCA_AMOUNT),
+    PROJECT(UiKey.PERSON_PAGE_ACT_PROJECT, Lucide.BRIEFCASE, UiKey.PERSON_PAGE_PROJECT_TITLE, UiKey.PERSON_PAGE_PROJECT_BODY, UiKey.PERSON_PAGE_PROJECT_GO, null),
+    LINK(UiKey.PERSON_PAGE_ACT_LINK, PeopleIcons.USER_PLUS, UiKey.PERSON_PAGE_LINK_TITLE, UiKey.PERSON_PAGE_LINK_BODY, UiKey.PERSON_PAGE_LINK_GO, null),
+    SPLIT(UiKey.PERSON_PAGE_ACT_SPLIT, PeopleIcons.SPLIT_BILL, UiKey.PERSON_PAGE_SPLIT_TITLE, UiKey.PERSON_PAGE_SPLIT_BODY, UiKey.PERSON_PAGE_SPLIT_GO, UiKey.PERSON_PAGE_SPLIT_AMOUNT),
 }
 
 @Composable
 internal fun Together(ui: PersonPageUi, modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf<Act?>(null) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.PERSON_PAGE_TOGETHER), style = Type.section())
+        BasicText(t(UiKey.PERSON_PAGE_TOGETHER), style = Type.section())
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (a in Act.entries) {
                 FloatingCard(
@@ -75,7 +77,7 @@ internal fun Together(ui: PersonPageUi, modifier: Modifier = Modifier) {
                 }
             }
         }
-        Note(t(TextKey.PERSON_PAGE_FUTURE, ui.name))
+        Note(t(UiKey.PERSON_PAGE_FUTURE, ui.name))
     }
     val act = open
     Sheet(act != null, onDismiss = { open = null }, title = act?.let { t(it.title, ui.name) } ?: "", veil = app.masroufy.ui.overlay.Veil.MENU) {
@@ -96,8 +98,8 @@ private fun TogetherSheet(act: Act, name: String, close: () -> Unit) {
         BasicText(t(act.body, name), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.muted))
         act.amount?.let { NumberInput(amount, { amount = it }, label = t(it), currency = space.space.currency) }
         when (act) {
-            Act.LINK -> Pill(t(TextKey.PERSON_PAGE_LINK_NOTE), Ink.focus, Ink.alertBg)
-            Act.ROSCA, Act.SPLIT -> Pill(t(TextKey.PPL_NOT_BUILT), Ink.focus, Ink.alertBg)
+            Act.LINK -> Pill(t(UiKey.PERSON_PAGE_LINK_NOTE), Ink.focus, Ink.alertBg)
+            Act.ROSCA, Act.SPLIT -> Pill(t(UiKey.PPL_NOT_BUILT), Ink.focus, Ink.alertBg)
             Act.PROJECT -> Unit
         }
         ErrorLine(err)
@@ -111,13 +113,13 @@ private fun TogetherSheet(act: Act, name: String, close: () -> Unit) {
                     if (act != Act.PROJECT) return@PrimaryButton
                     scope.launch {
                         busy = true
-                        val made = runCatching { space.people.projects.create(t(TextKey.PERSON_PAGE_PROJECT_TITLE, name), ProjectKind.PERSONAL) }
+                        val made = runCatching { space.people.projects.create(t(UiKey.PERSON_PAGE_PROJECT_TITLE, name), ProjectKind.PERSONAL) }
                         busy = false
                         made.onSuccess { PeopleChanges.bump(); close(); nav.push(ProjectDetailRoute(it.id)) }.onFailure { err = it.message }
                     }
                 },
             )
-            SecondaryButton(t(TextKey.PPL_CANCEL), onClick = close, modifier = Modifier.weight(1f))
+            SecondaryButton(t(UiKey.PPL_CANCEL), onClick = close, modifier = Modifier.weight(1f))
         }
     }
 }

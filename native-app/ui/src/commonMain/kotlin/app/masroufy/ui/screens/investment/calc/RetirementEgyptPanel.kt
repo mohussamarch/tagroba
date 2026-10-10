@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,41 +40,41 @@ fun RetirementEgyptPanel() {
     val outcome = state.result?.outcome
     val e = check.errors
     val unit = currencySymbol(currency)
-    val monthsUnit = t(TextKey.CALCUI_MONTHS_UNIT)
-    val yearsUnit = t(TextKey.CALCUI_YEARS_UNIT)
+    val monthsUnit = t(UiKey.CALCUI_MONTHS_UNIT)
+    val yearsUnit = t(UiKey.CALCUI_YEARS_UNIT)
     val legal = outcome?.pension?.legalAgeMonths
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        RetirementResults(state, check, currency, t(TextKey.RETEG_HERO_LABEL), ::egyptHeroDetails, TextKey.RETEG_GAP_SUB) { egyptHow(it, currency) }
+        RetirementResults(state, check, currency, t(UiKey.RETEG_HERO_LABEL), ::egyptHeroDetails, UiKey.RETEG_GAP_SUB) { egyptHow(it, currency) }
         val notes = egyptNotes(outcome?.takeIf { it.pension.pensionMinor != null }, state.defaults, currency)
         notes.forEach { NoteBox(it) }
-        RetirementSection(t(TextKey.RETCALC_SEC_CONTRIB)) {
+        RetirementSection(t(UiKey.RETCALC_SEC_CONTRIB)) {
             ChoiceChips(
-                t(TextKey.RETEG_CATEGORY),
-                listOf(EgyptInsuredCategory.EMPLOYEE to t(TextKey.RETEG_CAT_EMPLOYEE), EgyptInsuredCategory.SELF_EMPLOYED_OR_ABROAD to t(TextKey.RETEG_CAT_SELF)),
-                category, t(TextKey.RETEG_CATEGORY_NOTE),
+                t(UiKey.RETEG_CATEGORY),
+                listOf(EgyptInsuredCategory.EMPLOYEE to t(UiKey.RETEG_CAT_EMPLOYEE), EgyptInsuredCategory.SELF_EMPLOYED_OR_ABROAD to t(UiKey.RETEG_CAT_SELF)),
+                category, t(UiKey.RETEG_CATEGORY_NOTE),
             ) { categoryName = it.name }
-            CalcDateField(t(TextKey.RETCALC_BIRTH), f[EgyptFields.BIRTH], { f[EgyptFields.BIRTH] = it }, today, error = e[EgyptFields.BIRTH])
-            CalcField(t(TextKey.RETCALC_SO_FAR), f[EgyptFields.SO_FAR], { f[EgyptFields.SO_FAR] = it }, unit = monthsUnit, note = t(TextKey.RETCALC_SO_FAR_NOTE), error = e[EgyptFields.SO_FAR], keyboard = KeyboardType.Number)
-            CalcField(t(TextKey.RETEG_PRE), f[EgyptFields.PRE], { f[EgyptFields.PRE] = it }, unit = monthsUnit, note = t(TextKey.RETEG_PRE_NOTE), error = e[EgyptFields.PRE], keyboard = KeyboardType.Number)
+            CalcDateField(t(UiKey.RETCALC_BIRTH), f[EgyptFields.BIRTH], { f[EgyptFields.BIRTH] = it }, today, error = e[EgyptFields.BIRTH])
+            CalcField(t(UiKey.RETCALC_SO_FAR), f[EgyptFields.SO_FAR], { f[EgyptFields.SO_FAR] = it }, unit = monthsUnit, note = t(UiKey.RETCALC_SO_FAR_NOTE), error = e[EgyptFields.SO_FAR], keyboard = KeyboardType.Number)
+            CalcField(t(UiKey.RETEG_PRE), f[EgyptFields.PRE], { f[EgyptFields.PRE] = it }, unit = monthsUnit, note = t(UiKey.RETEG_PRE_NOTE), error = e[EgyptFields.PRE], keyboard = KeyboardType.Number)
             CalcField(
-                t(TextKey.RETEG_LEGAL), f[EgyptFields.LEGAL], { f[EgyptFields.LEGAL] = it }, unit = yearsUnit,
+                t(UiKey.RETEG_LEGAL), f[EgyptFields.LEGAL], { f[EgyptFields.LEGAL] = it }, unit = yearsUnit,
                 note = egyptLegalNote(outcome, !f[EgyptFields.LEGAL].isBlankField(), category), error = e[EgyptFields.LEGAL],
                 placeholder = legal?.let { (it / 12).toString() } ?: "", keyboard = KeyboardType.Number,
             )
             CalcField(
-                t(TextKey.RETCALC_RETIRE), f[EgyptFields.RETIRE], { f[EgyptFields.RETIRE] = it }, unit = yearsUnit, note = t(TextKey.RETEG_RETIRE_NOTE),
+                t(UiKey.RETCALC_RETIRE), f[EgyptFields.RETIRE], { f[EgyptFields.RETIRE] = it }, unit = yearsUnit, note = t(UiKey.RETEG_RETIRE_NOTE),
                 error = e[EgyptFields.RETIRE], placeholder = legal?.let { (it / 12).toString() } ?: "", keyboard = KeyboardType.Number,
             )
         }
-        RetirementSection(t(TextKey.RETEG_SEC_WAGE)) {
-            CalcField(t(TextKey.RETEG_WAGE), f[EgyptFields.WAGE], { f[EgyptFields.WAGE] = it }, unit = unit, note = t(TextKey.CALC_EGYPT_SETTLEMENT_WAGE_HELP), error = e[EgyptFields.WAGE])
+        RetirementSection(t(UiKey.RETEG_SEC_WAGE)) {
+            CalcField(t(UiKey.RETEG_WAGE), f[EgyptFields.WAGE], { f[EgyptFields.WAGE] = it }, unit = unit, note = t(TextKey.CALC_EGYPT_SETTLEMENT_WAGE_HELP), error = e[EgyptFields.WAGE])
         }
-        RetirementSection(t(TextKey.RETEG_SEC_LIMITS)) {
-            CalcField(t(TextKey.RETEG_MIN), f[EgyptFields.MIN], { f[EgyptFields.MIN] = it }, unit = unit, note = t(TextKey.RETEG_MIN_NOTE), error = e[EgyptFields.MIN])
-            CalcField(t(TextKey.RETEG_MAX), f[EgyptFields.MAX], { f[EgyptFields.MAX] = it }, unit = unit, note = t(TextKey.RETEG_MAX_NOTE), error = e[EgyptFields.MAX])
+        RetirementSection(t(UiKey.RETEG_SEC_LIMITS)) {
+            CalcField(t(UiKey.RETEG_MIN), f[EgyptFields.MIN], { f[EgyptFields.MIN] = it }, unit = unit, note = t(UiKey.RETEG_MIN_NOTE), error = e[EgyptFields.MIN])
+            CalcField(t(UiKey.RETEG_MAX), f[EgyptFields.MAX], { f[EgyptFields.MAX] = it }, unit = unit, note = t(UiKey.RETEG_MAX_NOTE), error = e[EgyptFields.MAX])
             state.defaults?.egyptLatestLimits?.let { latest ->
                 TonalButton(
-                    t(TextKey.RETEG_SUGGEST, money(latest.minMinor, currency), money(latest.maxMinor, currency), sentenceNumber(latest.year)),
+                    t(UiKey.RETEG_SUGGEST, money(latest.minMinor, currency), money(latest.maxMinor, currency), sentenceNumber(latest.year)),
                     {
                         f[EgyptFields.MIN] = plainAmount(latest.minMinor, currency)
                         f[EgyptFields.MAX] = plainAmount(latest.maxMinor, currency)
@@ -82,12 +83,12 @@ fun RetirementEgyptPanel() {
                 )
             }
         }
-        RetirementSection(t(TextKey.RETCALC_SEC_LIVING)) {
-            CalcField(t(TextKey.RETCALC_WANT), f[EgyptFields.WANT], { f[EgyptFields.WANT] = it }, unit = unit, error = e[EgyptFields.WANT])
-            CalcField(t(TextKey.RETCALC_YEARS), f[EgyptFields.YEARS], { f[EgyptFields.YEARS] = it }, unit = yearsUnit, note = t(TextKey.RETCALC_YEARS_NOTE), error = e[EgyptFields.YEARS], keyboard = KeyboardType.Number)
-            CalcField(t(TextKey.RETCALC_HAVE), f[EgyptFields.HAVE], { f[EgyptFields.HAVE] = it }, unit = unit, note = t(TextKey.RETCALC_HAVE_NOTE), error = e[EgyptFields.HAVE])
+        RetirementSection(t(UiKey.RETCALC_SEC_LIVING)) {
+            CalcField(t(UiKey.RETCALC_WANT), f[EgyptFields.WANT], { f[EgyptFields.WANT] = it }, unit = unit, error = e[EgyptFields.WANT])
+            CalcField(t(UiKey.RETCALC_YEARS), f[EgyptFields.YEARS], { f[EgyptFields.YEARS] = it }, unit = yearsUnit, note = t(UiKey.RETCALC_YEARS_NOTE), error = e[EgyptFields.YEARS], keyboard = KeyboardType.Number)
+            CalcField(t(UiKey.RETCALC_HAVE), f[EgyptFields.HAVE], { f[EgyptFields.HAVE] = it }, unit = unit, note = t(UiKey.RETCALC_HAVE_NOTE), error = e[EgyptFields.HAVE])
         }
-        FootNote(t(TextKey.RETEG_ASSUME))
-        FootNote(t(TextKey.RETEG_SOURCES))
+        FootNote(t(UiKey.RETEG_ASSUME))
+        FootNote(t(UiKey.RETEG_SOURCES))
     }
 }

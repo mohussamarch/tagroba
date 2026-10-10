@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
@@ -73,11 +74,11 @@ data class Banner(val kind: BannerKind, val text: String)
  */
 fun banners(bankSmsWaiting: Int?, reviewCount: Int, partiesWaiting: Int): List<Banner> = buildList {
     if (bankSmsWaiting != null && bankSmsWaiting > 0) {
-        add(Banner(BannerKind.BANK_SMS, countText(bankSmsWaiting, TextKey.OPERATIONS_SMS_ONE, TextKey.OPERATIONS_SMS_TWO, TextKey.OPERATIONS_SMS_FEW, TextKey.OPERATIONS_SMS_MANY)))
+        add(Banner(BannerKind.BANK_SMS, countText(bankSmsWaiting, UiKey.OPERATIONS_SMS_ONE, UiKey.OPERATIONS_SMS_TWO, UiKey.OPERATIONS_SMS_FEW, UiKey.OPERATIONS_SMS_MANY)))
     }
-    if (reviewCount > 0) add(Banner(BannerKind.REVIEW, t(TextKey.OPERATIONS_BANNER_REVIEW, operationsCount(reviewCount))))
+    if (reviewCount > 0) add(Banner(BannerKind.REVIEW, t(UiKey.OPERATIONS_BANNER_REVIEW, operationsCount(reviewCount))))
     if (partiesWaiting > 0) {
-        add(Banner(BannerKind.TRANSFERS, countText(partiesWaiting, TextKey.OPERATIONS_PARTIES_ONE, TextKey.OPERATIONS_PARTIES_TWO, TextKey.OPERATIONS_PARTIES_FEW, TextKey.OPERATIONS_PARTIES_MANY)))
+        add(Banner(BannerKind.TRANSFERS, countText(partiesWaiting, UiKey.OPERATIONS_PARTIES_ONE, UiKey.OPERATIONS_PARTIES_TWO, UiKey.OPERATIONS_PARTIES_FEW, UiKey.OPERATIONS_PARTIES_MANY)))
     }
 }
 

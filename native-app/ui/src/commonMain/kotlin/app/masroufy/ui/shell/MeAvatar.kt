@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -58,7 +59,7 @@ fun MeAvatar(size: Dp, percent: Int?, modifier: Modifier = Modifier, look: Int =
     val showRing = pct != null && pct < 100
     val sweep by animateFloatAsState(((pct ?: 0) / 100f) * 360f, motion(Springs.GENTLE), label = "ring")
     val (head, body) = LOOKS[(look - 1).coerceIn(0, LOOKS.lastIndex)]
-    val label = if (showRing) t(TextKey.ME_PROFILE_PERCENT, sentenceNumber(pct!!)) else t(TextKey.ME_PROFILE)
+    val label = if (showRing) t(UiKey.ME_PROFILE_PERCENT, sentenceNumber(pct!!)) else t(UiKey.ME_PROFILE)
     Box(modifier.size(size).semantics { contentDescription = label; role = Role.Image }, contentAlignment = Alignment.Center) {
         if (showRing) {
             val thick = max(3f, size.value / 16f)

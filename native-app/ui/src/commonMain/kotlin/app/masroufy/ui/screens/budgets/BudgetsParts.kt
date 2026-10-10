@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -150,7 +151,7 @@ fun ErrorCard(title: String, body: String, onRetry: () -> Unit, modifier: Modifi
             Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(Radius.lensSmall)).background(Color(0xCCFFFFFF))
                 .tap(press, onClick = onRetry).padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center,
-        ) { BasicText(t(TextKey.SHELL_RETRY), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }
+        ) { BasicText(t(UiKey.SHELL_RETRY), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary)) }
     }
 }
 

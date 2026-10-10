@@ -1,5 +1,7 @@
 package app.masroufy.ui.nav
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -25,11 +27,11 @@ interface Route {
 /** لوحة بتطلع من تحت وبتتفتح من أكتر من مكان (`navigator.open(…)`). اللوحة الخاصة بشاشة واحدة بتتكتب جوه الشاشة بـ`Sheet` على طول. */
 interface SheetRoute : Route
 
-enum class Tab(val label: TextKey, val icon: Lucide, val boardName: String) {
-    HOME(TextKey.TAB_HOME, Lucide.HOUSE, "Main"),
-    OPERATIONS(TextKey.TAB_OPERATIONS, Lucide.LIST, "Operations"),
-    PEOPLE(TextKey.TAB_PEOPLE, Lucide.USERS, "People"),
-    INVESTMENT(TextKey.TAB_INVESTMENT, Lucide.TRENDING_UP, "Investment"),
+enum class Tab(val label: TextRef, val icon: Lucide, val boardName: String) {
+    HOME(UiKey.TAB_HOME, Lucide.HOUSE, "Main"),
+    OPERATIONS(UiKey.TAB_OPERATIONS, Lucide.LIST, "Operations"),
+    PEOPLE(UiKey.TAB_PEOPLE, Lucide.USERS, "People"),
+    INVESTMENT(UiKey.TAB_INVESTMENT, Lucide.TRENDING_UP, "Investment"),
 }
 
 /** نوع الحركة لآخر تغيير (`AppShell` بيرسم بيها): تبويب · دخول · رجوع. */

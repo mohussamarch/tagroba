@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -118,24 +119,24 @@ fun SmsPasteScreen() {
         }
     }
 
-    InnerScaffold(t(TextKey.SMS_PASTE_TITLE)) {
+    InnerScaffold(t(UiKey.SMS_PASTE_TITLE)) {
         item(key = "tabs") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SegmentedTabs(
-                    listOf(PasteTab.PASTE to t(TextKey.SMS_PASTE_TAB_PASTE), PasteTab.PERIOD to t(TextKey.SMS_PASTE_TAB_PERIOD)),
+                    listOf(PasteTab.PASTE to t(UiKey.SMS_PASTE_TAB_PASTE), PasteTab.PERIOD to t(UiKey.SMS_PASTE_TAB_PERIOD)),
                     tab, { if (it == PasteTab.PASTE || canPeriod) { tab = it; phase = PastePhase.INPUT; batch = null } },
                     Modifier.fillMaxWidth(), style = SegmentStyle.QUIET, height = 44.dp,
                 )
                 val note = when {
-                    !canPeriod -> TextKey.SMS_PASTE_NOTE_IOS
-                    tab == PasteTab.PERIOD -> TextKey.SMS_PASTE_NOTE_PERIOD
-                    else -> TextKey.SMS_PASTE_NOTE_PASTE
+                    !canPeriod -> UiKey.SMS_PASTE_NOTE_IOS
+                    tab == PasteTab.PERIOD -> UiKey.SMS_PASTE_NOTE_PERIOD
+                    else -> UiKey.SMS_PASTE_NOTE_PASTE
                 }
                 BasicText(t(note), style = Type.caption().copy(color = Ink.muted))
             }
         }
         if (reader == null) {
-            item(key = "none") { TintedPanel(PanelTone.QUIET) { BasicText(t(TextKey.SMS_PASTE_NO_READER), style = Type.of(13).copy(color = Ink.muted)) } }
+            item(key = "none") { TintedPanel(PanelTone.QUIET) { BasicText(t(UiKey.SMS_PASTE_NO_READER), style = Type.of(13).copy(color = Ink.muted)) } }
             return@InnerScaffold
         }
         if (phase != PastePhase.DONE && tab == PasteTab.PASTE) {
@@ -154,9 +155,9 @@ fun SmsPasteScreen() {
         if (phase == PastePhase.ERROR) {
             item(key = "error") {
                 TintedPanel(PanelTone.AMBER) {
-                    PanelTitle(t(TextKey.SMS_PASTE_ERR_TITLE), PanelTone.AMBER)
-                    BasicText(error ?: t(TextKey.SMS_PASTE_ERR_BODY), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.focus))
-                    if (error != null) BasicText(t(TextKey.SMS_PASTE_ERR_BODY), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.focus))
+                    PanelTitle(t(UiKey.SMS_PASTE_ERR_TITLE), PanelTone.AMBER)
+                    BasicText(error ?: t(UiKey.SMS_PASTE_ERR_BODY), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.focus))
+                    if (error != null) BasicText(t(UiKey.SMS_PASTE_ERR_BODY), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.focus))
                 }
             }
         }
@@ -174,11 +175,11 @@ fun SmsPasteScreen() {
                             saved = done.counts.imported
                             phase = PastePhase.DONE
                             text = ""
-                            toaster.show(t(TextKey.SMS_PASTE_SAVED, opsCount(saved)), dark = true)
+                            toaster.show(t(UiKey.SMS_PASTE_SAVED, opsCount(saved)), dark = true)
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Exception) {
-                            toaster.show(e.message ?: t(TextKey.IMPORTS_LOAD_FAILED), dark = true)
+                            toaster.show(e.message ?: t(UiKey.IMPORTS_LOAD_FAILED), dark = true)
                         }
                         busy = false
                     }
@@ -188,11 +189,11 @@ fun SmsPasteScreen() {
         if (phase == PastePhase.DONE) {
             item(key = "done") {
                 TintedPanel(PanelTone.MINT) {
-                    PanelTitle(t(TextKey.SMS_PASTE_SAVED, opsCount(saved)), PanelTone.MINT)
-                    BasicText(t(TextKey.SMS_PASTE_DONE_BODY, wallet?.name.orEmpty()), style = Type.of(13))
+                    PanelTitle(t(UiKey.SMS_PASTE_SAVED, opsCount(saved)), PanelTone.MINT)
+                    BasicText(t(UiKey.SMS_PASTE_DONE_BODY, wallet?.name.orEmpty()), style = Type.of(13))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        QuietButton(t(TextKey.SMS_PASTE_AGAIN), { phase = PastePhase.INPUT; batch = null; wallet = null }, Modifier.weight(1f), onTint = true)
-                        PrimaryButton(t(TextKey.BANK_SMS_TITLE), { if (!nav.popTo(BankSmsRoute.name)) nav.replace(BankSmsRoute) }, Modifier.weight(1f))
+                        QuietButton(t(UiKey.SMS_PASTE_AGAIN), { phase = PastePhase.INPUT; batch = null; wallet = null }, Modifier.weight(1f), onTint = true)
+                        PrimaryButton(t(UiKey.BANK_SMS_TITLE), { if (!nav.popTo(BankSmsRoute.name)) nav.replace(BankSmsRoute) }, Modifier.weight(1f))
                     }
                 }
             }

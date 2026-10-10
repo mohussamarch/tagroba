@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -54,7 +56,7 @@ fun SubscriptionDetailScreen(itemId: String) {
     val load = rememberLoad(deps, itemId) { deps.recurring.load(today).items.firstOrNull { it.item.id == itemId }?.let { subDetailUi(it, today) } }
     var sheet by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
-    fun save(input: RecurringSaveInput, done: TextKey) = scope.launch {
+    fun save(input: RecurringSaveInput, done: TextRef) = scope.launch {
         try {
             deps.recurring.save(input)
             toaster.show(t(done))
@@ -67,7 +69,7 @@ fun SubscriptionDetailScreen(itemId: String) {
         }
     }
     val ui = (load.value as? Load.Ready)?.value
-    DuesScaffold(ui?.view?.item?.name ?: t(TextKey.SUBS_TITLE), ui?.kindLine) {
+    DuesScaffold(ui?.view?.item?.name ?: t(UiKey.SUBS_TITLE), ui?.kindLine) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(150, 240) }
             Load.Failed -> item { LoadFailed(load::reload) }
@@ -93,40 +95,40 @@ fun SubscriptionDetailScreen(itemId: String) {
                 item(key = "numbers") {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         FloatingCard(Modifier.weight(1f)) {
-                            BasicText(t(TextKey.SUBS_PAID_12), style = Type.caption().copy(color = Ink.muted))
+                            BasicText(t(UiKey.SUBS_PAID_12), style = Type.caption().copy(color = Ink.muted))
                             AmountText(d.view.paidMinor, item.currency, size = 18)
                             BasicText(d.paidCount, style = Type.of(11).copy(color = Ink.muted))
                         }
                         FloatingCard(Modifier.weight(1f)) {
-                            BasicText(t(TextKey.SUBS_ANNUAL), style = Type.caption().copy(color = Ink.muted))
+                            BasicText(t(UiKey.SUBS_ANNUAL), style = Type.caption().copy(color = Ink.muted))
                             if (item.active) AmountText(d.view.annualMinor, item.currency, size = 18)
-                            else ValueText(t(TextKey.SUBS_CHIP_STOPPED), muted = true)
+                            else ValueText(t(UiKey.SUBS_CHIP_STOPPED), muted = true)
                             BasicText(d.annualNote, style = Type.of(11).copy(color = Ink.muted))
                         }
                     }
                 }
                 item(key = "dates") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BasicText(t(TextKey.SUBS_DATES), style = Type.section())
+                        BasicText(t(UiKey.SUBS_DATES), style = Type.section())
                         FloatingCard(Modifier.fillMaxWidth()) {
-                            LabelValue(t(TextKey.SUBS_F_CYCLE)) { ValueText(d.cycle) }
+                            LabelValue(t(UiKey.SUBS_F_CYCLE)) { ValueText(d.cycle) }
                             Divider()
-                            LabelValue(t(TextKey.SUBS_F_EXPECTED)) { AmountText(item.expectedMinor, item.currency) }
+                            LabelValue(t(UiKey.SUBS_F_EXPECTED)) { AmountText(item.expectedMinor, item.currency) }
                             Divider()
-                            LabelValue(t(TextKey.SUBS_F_NEXT)) { ValueText(d.nextText) }
+                            LabelValue(t(UiKey.SUBS_F_NEXT)) { ValueText(d.nextText) }
                             TonalButton(
-                                t(if (item.active) TextKey.SUBS_EDIT else TextKey.SUBS_EDIT_LOCKED), { if (item.active) sheet = "edit" },
+                                t(if (item.active) UiKey.SUBS_EDIT else UiKey.SUBS_EDIT_LOCKED), { if (item.active) sheet = "edit" },
                                 Modifier.fillMaxWidth(), enabled = item.active,
                             )
                         }
-                        BasicText(t(TextKey.SUBS_PAY_NOTE, item.name), style = Type.caption().copy(color = Ink.muted))
+                        BasicText(t(UiKey.SUBS_PAY_NOTE, item.name), style = Type.caption().copy(color = Ink.muted))
                     }
                 }
                 item(key = "stop") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        if (item.active) DangerButton(t(TextKey.SUBS_STOP), { sheet = "stop" }, Modifier.fillMaxWidth())
-                        else PrimaryButton(t(TextKey.SUBS_RESUME), { save(item.withActive(true), TextKey.SUBS_RESUMED) }, Modifier.fillMaxWidth())
-                        BasicText(t(TextKey.SUBS_STOP_NOTE), style = Type.caption().copy(color = Ink.muted))
+                        if (item.active) DangerButton(t(UiKey.SUBS_STOP), { sheet = "stop" }, Modifier.fillMaxWidth())
+                        else PrimaryButton(t(UiKey.SUBS_RESUME), { save(item.withActive(true), UiKey.SUBS_RESUMED) }, Modifier.fillMaxWidth())
+                        BasicText(t(UiKey.SUBS_STOP_NOTE), style = Type.caption().copy(color = Ink.muted))
                         error?.let { FieldError(it) }
                     }
                 }
@@ -135,10 +137,10 @@ fun SubscriptionDetailScreen(itemId: String) {
     }
     val d = ui ?: return
     ConfirmSheet(
-        sheet == "stop", t(TextKey.SUBS_STOP_TITLE, d.view.item.name), t(TextKey.SUBS_STOP_BODY), t(TextKey.SUBS_STOP_YES),
-        onConfirm = { save(d.view.item.withActive(false), TextKey.SUBS_STOPPED) }, onDismiss = { sheet = null },
+        sheet == "stop", t(UiKey.SUBS_STOP_TITLE, d.view.item.name), t(UiKey.SUBS_STOP_BODY), t(UiKey.SUBS_STOP_YES),
+        onConfirm = { save(d.view.item.withActive(false), UiKey.SUBS_STOPPED) }, onDismiss = { sheet = null },
     )
-    EditSheet(sheet == "edit", d, onSave = { save(it, TextKey.SUBS_EDIT_SAVED) }, onDismiss = { sheet = null; error = null })
+    EditSheet(sheet == "edit", d, onSave = { save(it, UiKey.SUBS_EDIT_SAVED) }, onDismiss = { sheet = null; error = null })
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -150,21 +152,21 @@ private fun EditSheet(visible: Boolean, d: SubDetailUi, onSave: (RecurringSaveIn
     var cycle by remember(visible) { mutableStateOf(item.cycleMonths) }
     var next by remember(visible) { mutableStateOf(item.nextDueAt) }
     var problem by remember(visible) { mutableStateOf<String?>(null) }
-    Sheet(visible, onDismiss, t(TextKey.SUBS_EDIT_TITLE, item.name), closeLabel = t(TextKey.SHELL_CLOSE)) {
-        BasicText(t(TextKey.SUBS_EDIT_TITLE, item.name), style = Type.section())
-        MoneyField(amount, { amount = it; problem = null }, t(TextKey.SUBS_F_AMOUNT), item.currency, problem)
-        FieldLabel(t(TextKey.SUBS_F_CYCLE))
+    Sheet(visible, onDismiss, t(UiKey.SUBS_EDIT_TITLE, item.name), closeLabel = t(UiKey.SHELL_CLOSE)) {
+        BasicText(t(UiKey.SUBS_EDIT_TITLE, item.name), style = Type.section())
+        MoneyField(amount, { amount = it; problem = null }, t(UiKey.SUBS_F_AMOUNT), item.currency, problem)
+        FieldLabel(t(UiKey.SUBS_F_CYCLE))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (c in SUB_CYCLES) SelectChip(subCycle(c), cycle == c, { cycle = c }, height = 44.dp)
         }
-        FieldLabel(t(TextKey.SUBS_F_NEXT))
+        FieldLabel(t(UiKey.SUBS_F_NEXT))
         DayPicker(next, today, { next = it }, cell = 36)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PrimaryButton(t(TextKey.SUBS_SAVE), {
+            PrimaryButton(t(UiKey.SUBS_SAVE), {
                 val (input, err) = subEditInput(item, amount, cycle, next)
                 if (input == null) problem = err else onSave(input)
             }, Modifier.weight(2f))
-            TonalButton(t(TextKey.DUES_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
+            TonalButton(t(UiKey.DUES_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
         }
     }
 }

@@ -5,7 +5,7 @@ package app.masroufy.core
  * أخطاء تحقق حالات الاستخدام بتتكتب بـ`uiText` ⇒ تتعرض زي ما هي. أي رسالة تانية (فايرستور · الشبكة · رسالة داخلية مكتوبة في الكود)
  * **ما تتعرضش** للمستخدم — الشاشة بتعرض بدلها نص ثابت من الجداول (`failureText` في `ui/text`).
  */
-fun isUiText(message: String): Boolean = TextKey.entries.any { key -> templateMatches(Texts.of(key), message) }
+fun isUiText(message: String): Boolean = ALL_TEXT_KEYS.any { key -> templateMatches(Texts.of(key), message) }
 
 /** القالب (`{0}` و`{1}` متغيرات) بيطابق الرسالة؟ قالب كله متغيرات (مفيش حرف ثابت) ممكن يطابق أي حاجة ⇒ ما بيتحسبش. */
 internal fun templateMatches(template: String, message: String): Boolean {

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.onboarding
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.DEFAULT_SPACE_ID
@@ -60,7 +61,7 @@ class OnboardingStateTest {
         assertNull(s.answers.day)
         assertEquals(OnbReply.DAY_LATER, s.reply)
         assertEquals(28, finishInput(profile, s.answers).profile.payday)
-        assertEquals(t(TextKey.ONB_R_DAY_LATER_L, sentenceNumber(28)), replyText(OnbReply.DAY_LATER, s.answers, 28).second)
+        assertEquals(t(UiKey.ONB_R_DAY_LATER_L, sentenceNumber(28)), replyText(OnbReply.DAY_LATER, s.answers, 28).second)
         val picked = pickDay(OnbState(OnbStep.PAYDAY), 25)
         assertEquals(25, finishInput(profile, picked.answers).profile.payday)
         assertNull(finishInput(profile, picked.answers).cashMinor)
@@ -71,7 +72,7 @@ class OnboardingStateTest {
         val locked = countryOptions(listOf(saudi), canCreate = false)
         assertFalse(locked[0].off)
         assertTrue(locked[1].off)
-        assertEquals(t(TextKey.ONB_COUNTRY_NOT_YET), locked[1].sub)
+        assertEquals(t(UiKey.ONB_COUNTRY_NOT_YET), locked[1].sub)
         assertFalse(countryOptions(listOf(saudi, egypt), canCreate = false)[1].off)
         assertFalse(countryOptions(listOf(saudi), canCreate = true)[1].off)
         assertEquals(OnbReply.COUNTRY_EG, pickCountry(OnbState(OnbStep.COUNTRY), "eg").reply)
@@ -81,9 +82,9 @@ class OnboardingStateTest {
     fun bankSmsIsOffOnIphoneWithItsReason() {
         val ios = sourceOptions(smsReadable = false)
         assertTrue(ios[0].off)
-        assertEquals(t(TextKey.ONB_SRC_SMS_IOS), ios[0].sub)
+        assertEquals(t(UiKey.ONB_SRC_SMS_IOS), ios[0].sub)
         assertFalse(sourceOptions(smsReadable = true)[0].off)
-        assertEquals(t(TextKey.ONB_DONE_NEXT), nextLabel(OnbState(OnbStep.SOURCE)))
+        assertEquals(t(UiKey.ONB_DONE_NEXT), nextLabel(OnbState(OnbStep.SOURCE)))
     }
 
     @Test

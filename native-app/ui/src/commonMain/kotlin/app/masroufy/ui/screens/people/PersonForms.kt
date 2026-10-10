@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -48,10 +49,10 @@ internal sealed interface PlanCheck<out T> {
 /** نفس ترتيب رسايل النموذج. الاسم المكرر بيترفض من `addPerson` نفسها (أول كتابة — مفيش حاجة اتكتبت قبلها). */
 internal fun checkNewPerson(d: NewPersonDraft, currency: Currency): PlanCheck<NewPersonPlan> {
     val name = jsTrim(d.name).replace(Regex("\\s+"), " ")
-    if (name.isEmpty()) return PlanCheck.Bad(t(TextKey.ADD_PERSON_NEED_NAME))
+    if (name.isEmpty()) return PlanCheck.Bad(t(UiKey.ADD_PERSON_NEED_NAME))
     var occasion: OccasionInput? = null
     if (d.occOpen) {
-        if (d.occ.month == null) return PlanCheck.Bad(t(TextKey.ADD_PERSON_NEED_MONTH))
+        if (d.occ.month == null) return PlanCheck.Bad(t(UiKey.ADD_PERSON_NEED_MONTH))
         // من الإضافة: الفرح مرة واحدة والباقي كل سنة، والتذكير قبلها بأسبوع (بيتغير من ملفه)
         val draft = d.occ.copy(yearly = d.occ.kind != OccasionKind.WEDDING, lead = OccasionDraft.DEFAULT_LEAD)
         when (val c = checkDraft(draft, null)) {
@@ -61,10 +62,10 @@ internal fun checkNewPerson(d: NewPersonDraft, currency: Currency): PlanCheck<Ne
     }
     var debt: Pair<ObligationKind, Halalas>? = null
     if (d.debtOpen) {
-        val side = d.side ?: return PlanCheck.Bad(t(TextKey.ADD_PERSON_NEED_SIDE))
+        val side = d.side ?: return PlanCheck.Bad(t(UiKey.ADD_PERSON_NEED_SIDE))
         val minor = tryParseMoney(d.amount, currency)
-        if (minor == null || minor <= 0) return PlanCheck.Bad(t(TextKey.ADD_PERSON_NEED_AMOUNT))
-        if (currency != Currency.SAR) return PlanCheck.Bad(t(TextKey.PPL_SAR_ONLY))
+        if (minor == null || minor <= 0) return PlanCheck.Bad(t(UiKey.ADD_PERSON_NEED_AMOUNT))
+        if (currency != Currency.SAR) return PlanCheck.Bad(t(UiKey.PPL_SAR_ONLY))
         debt = side.kind to minor
     }
     return PlanCheck.Ok(NewPersonPlan(name, d.circle, d.relation.trim().ifEmpty { null }, occasion, debt))
@@ -103,9 +104,9 @@ internal fun checkOldDebt(d: OldDebtDraft, currency: Currency): OldDebtCheck {
     val amountBad = minor == null || minor <= 0
     if (nameBad || amountBad) {
         val msg = when {
-            nameBad -> t(TextKey.PROFILE_DEBT_NEED_NAME)
-            name.isNotEmpty() -> t(TextKey.PROFILE_DEBT_NEED_AMOUNT_OF, name)
-            else -> t(TextKey.PROFILE_DEBT_NEED_AMOUNT)
+            nameBad -> t(UiKey.PROFILE_DEBT_NEED_NAME)
+            name.isNotEmpty() -> t(UiKey.PROFILE_DEBT_NEED_AMOUNT_OF, name)
+            else -> t(UiKey.PROFILE_DEBT_NEED_AMOUNT)
         }
         return OldDebtCheck.Bad(nameBad, amountBad, msg)
     }
@@ -114,7 +115,7 @@ internal fun checkOldDebt(d: OldDebtDraft, currency: Currency): OldDebtCheck {
 
 /** كل سطر: الشخص الجديد بيتضاف الأول، وبعدين الدين من غير عملية (`addOpeningDebt` — ما بيدخلش المصروف ولا الدخل ولا الكاش). */
 internal suspend fun saveOldDebts(deps: PeopleDeps, rows: List<OldDebtRow>, currency: Currency) {
-    if (currency != Currency.SAR) throw IllegalStateException(t(TextKey.PPL_SAR_ONLY))
+    if (currency != Currency.SAR) throw IllegalStateException(t(UiKey.PPL_SAR_ONLY))
     val made = HashMap<String, Id>()
     for (r in rows) {
         // نفس الاسم الجديد في سطرين ⇒ شخص واحد

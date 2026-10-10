@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.BalanceDirection
 import app.masroufy.core.Currency
 import app.masroufy.core.DueItem
@@ -68,12 +69,12 @@ internal fun personPageUi(
     val history = row.obligations.map { o ->
         val ob = o.obligation
         val title = when (ob.kind) {
-            ObligationKind.RECEIVABLE -> t(TextKey.PERSON_PAGE_DEBT_RECEIVABLE)
-            ObligationKind.LOAN_PAYABLE -> t(TextKey.PERSON_PAGE_DEBT_LOAN)
-            ObligationKind.CUSTODY_PAYABLE -> t(TextKey.PERSON_PAGE_DEBT_CUSTODY)
+            ObligationKind.RECEIVABLE -> t(UiKey.PERSON_PAGE_DEBT_RECEIVABLE)
+            ObligationKind.LOAN_PAYABLE -> t(UiKey.PERSON_PAGE_DEBT_LOAN)
+            ObligationKind.CUSTODY_PAYABLE -> t(UiKey.PERSON_PAGE_DEBT_CUSTODY)
         }
-        val remaining = t(TextKey.PERSON_PAGE_REMAINING, amountLabel(o.remainingMinor, ob.currency), amountLabel(ob.originalMinor, ob.currency))
-        val sub = if (ob.originTransactionId == null) joinLine(t(TextKey.OWED_REASON_OPENING), remaining) else remaining
+        val remaining = t(UiKey.PERSON_PAGE_REMAINING, amountLabel(o.remainingMinor, ob.currency), amountLabel(ob.originalMinor, ob.currency))
+        val sub = if (ob.originTransactionId == null) joinLine(t(UiKey.OWED_REASON_OPENING), remaining) else remaining
         // سلفة منك = فلوس طلعت منك (−) · سلفة أو أمانة منه = فلوس دخلتلك (+)
         val tone = if (ob.kind == ObligationKind.RECEIVABLE) AmountTone.EXPENSE else AmountTone.INCOME
         HistoryRow(ob.id, title, sub, ob.originalMinor, ob.currency, tone)
@@ -90,7 +91,7 @@ internal fun personPageUi(
         archived = p.archived,
         owed = lines(BalanceDirection.OWED_TO_YOU),
         owe = lines(BalanceDirection.YOU_OWE),
-        overdue = late?.let { t(TextKey.OWED_SIGNAL_OVERDUE, countOf(-daysBetween(today, it.dueAt), Noun.DAYS)) },
+        overdue = late?.let { t(UiKey.OWED_SIGNAL_OVERDUE, countOf(-daysBetween(today, it.dueAt), Noun.DAYS)) },
         occasions = occasions,
         history = history,
         badges = badgeLines,

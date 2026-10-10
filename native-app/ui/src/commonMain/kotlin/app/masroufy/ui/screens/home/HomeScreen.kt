@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,14 +69,14 @@ fun HomeScreen() {
         me = runCatching { shell.me() }.getOrNull()
         load = loadHome(deps)
     }
-    TabScaffold(t(TextKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
+    TabScaffold(t(UiKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
         when (val s = load) {
             HomeLoad.Loading -> item(key = "loading") { HomeSkeleton() }
             HomeLoad.Failed -> item(key = "failed") { HomeErrorBanner { load = HomeLoad.Loading; tick++ } }
             is HomeLoad.Ready -> {
                 // حساب جديد خالص ⇒ الشاشة الفاضية لوحدها (النموذج: حالة «فاضي» من غير البطاقة ولا «القادم»)
                 if (isBrandNew(s.now, s.month)) {
-                    item(key = "empty") { EmptyState(t(TextKey.HOME_EMPTY_TITLE), t(TextKey.HOME_EMPTY_BODY)) }
+                    item(key = "empty") { EmptyState(t(UiKey.HOME_EMPTY_TITLE), t(UiKey.HOME_EMPTY_BODY)) }
                 } else {
                     item(key = "hero") { WithYouHero(s.now, s.month, shell.today(), onCash = { cashOpen = true }) }
                     if (isQuietMonth(s.now, s.month)) item(key = "quiet") { QuietMonthCard() }
@@ -116,15 +117,15 @@ private fun HomeHeader(me: MeInfo?, bell: app.masroufy.ui.app.BellState?, refres
     val name = me?.displayName?.takeIf { it.isNotBlank() }
     val morning = shell.hourNow() < 12
     val greeting = when {
-        name != null && morning -> t(TextKey.GREETING_MORNING_NAME, name)
-        name != null -> t(TextKey.GREETING_EVENING_NAME, name)
-        morning -> t(TextKey.GREETING_MORNING)
-        else -> t(TextKey.GREETING_EVENING)
+        name != null && morning -> t(UiKey.GREETING_MORNING_NAME, name)
+        name != null -> t(UiKey.GREETING_EVENING_NAME, name)
+        morning -> t(UiKey.GREETING_MORNING)
+        else -> t(UiKey.GREETING_EVENING)
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
         val press = rememberPress()
         Box(
-            Modifier.size(48.dp).pressScale(press).tap(press, label = t(TextKey.ME_PROFILE), onClick = { nav.push(AccountRoute) }),
+            Modifier.size(48.dp).pressScale(press).tap(press, label = t(UiKey.ME_PROFILE), onClick = { nav.push(AccountRoute) }),
             contentAlignment = Alignment.Center,
         ) { MeAvatar(46.dp, me?.profilePercent, look = avatarLook(LookChoice.look, me?.lookIndex)) }
         Column(Modifier.weight(1f).heightIn(min = 48.dp), verticalArrangement = Arrangement.Center) {

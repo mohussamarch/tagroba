@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
@@ -91,7 +92,7 @@ data class SavingsResultUi(
     val endDate: IsoDate,
 )
 
-fun heroLabel(mode: SavingsMode): String = t(if (mode == SavingsMode.TARGET) TextKey.SAVCALC_HERO_TARGET else TextKey.SAVCALC_HERO_REACH)
+fun heroLabel(mode: SavingsMode): String = t(if (mode == SavingsMode.TARGET) UiKey.SAVCALC_HERO_TARGET else UiKey.SAVCALC_HERO_REACH)
 
 fun savingsResultUi(outcome: SavingsOutcome, currency: Currency): SavingsResultUi {
     val (comparison, actual) = when (outcome) {
@@ -104,20 +105,20 @@ fun savingsResultUi(outcome: SavingsOutcome, currency: Currency): SavingsResultU
         SavingVerdict.SHORT -> VerdictTone.SHORT
     }
     val verdict = when (comparison.verdict) {
-        SavingVerdict.UNKNOWN -> t(TextKey.SAVCALC_VERDICT_UNKNOWN)
-        SavingVerdict.ENOUGH -> t(TextKey.SAVCALC_VERDICT_ENOUGH)
-        SavingVerdict.SHORT -> t(TextKey.SAVCALC_VERDICT_SHORT, money(absMoney(comparison.gapMinor!!), currency))
+        SavingVerdict.UNKNOWN -> t(UiKey.SAVCALC_VERDICT_UNKNOWN)
+        SavingVerdict.ENOUGH -> t(UiKey.SAVCALC_VERDICT_ENOUGH)
+        SavingVerdict.SHORT -> t(UiKey.SAVCALC_VERDICT_SHORT, money(absMoney(comparison.gapMinor!!), currency))
     }
     val avg = comparison.actualMinor
     val compareLine = if (avg == null) t(TextKey.CALC_ACTUAL_UNKNOWN)
-    else t(TextKey.SAVCALC_COMPARE_LINE, money(avg, currency), money(comparison.requiredMinor, currency)) +
-        (comparison.gapMinor?.takeIf { it >= 0 }?.let { t(TextKey.SAVCALC_COMPARE_EXTRA, money(it, currency)) } ?: "")
+    else t(UiKey.SAVCALC_COMPARE_LINE, money(avg, currency), money(comparison.requiredMinor, currency)) +
+        (comparison.gapMinor?.takeIf { it >= 0 }?.let { t(UiKey.SAVCALC_COMPARE_EXTRA, money(it, currency)) } ?: "")
     val common = Triple(verdict, verdictTone, compareLine)
     return when (outcome) {
         is SavingsOutcome.Target -> {
             val plan = outcome.value.plan
-            val sub = if (plan.remainingMinor > 0) t(TextKey.SAVCALC_SUB_TARGET, monthsPhrase(plan.months), fullDate(plan.targetDate), money(plan.remainingMinor, currency))
-            else t(TextKey.SAVCALC_SUB_HAVE_ALL)
+            val sub = if (plan.remainingMinor > 0) t(UiKey.SAVCALC_SUB_TARGET, monthsPhrase(plan.months), fullDate(plan.targetDate), money(plan.remainingMinor, currency))
+            else t(UiKey.SAVCALC_SUB_HAVE_ALL)
             SavingsResultUi(
                 heroLabel(SavingsMode.TARGET), plan.perMonthMinor, sub, common.first, common.second, bars(actual, currency), common.third,
                 compareNote(actual), avg == null, plan.perMonthMinor, plan.months, plan.alreadySavedMinor, plan.perMonthMinor, plan.targetDate,
@@ -125,7 +126,7 @@ fun savingsResultUi(outcome: SavingsOutcome, currency: Currency): SavingsResultU
         }
         is SavingsOutcome.Reach -> {
             val r = outcome.value.reach
-            val sub = t(TextKey.SAVCALC_SUB_REACH, fullDate(r.endDate), monthsPhrase(r.months), money(r.monthlyMinor, currency))
+            val sub = t(UiKey.SAVCALC_SUB_REACH, fullDate(r.endDate), monthsPhrase(r.months), money(r.monthlyMinor, currency))
             SavingsResultUi(
                 heroLabel(SavingsMode.MONTHLY), r.reachedMinor, sub, common.first, common.second, bars(actual, currency), common.third,
                 compareNote(actual), avg == null, r.monthlyMinor, r.months, r.alreadySavedMinor, r.monthlyMinor, r.endDate,
@@ -141,7 +142,7 @@ private fun bars(actual: ActualSaving?, currency: Currency): List<SavingBar> {
     return months.map { m ->
         val label = monthName(parseIsoDate(m.period.end).month)
         val v = m.savedMinor
-        if (v == null) SavingBar(label, t(TextKey.SAVCALC_MONTH_UNKNOWN), 40, unknown = true)
+        if (v == null) SavingBar(label, t(UiKey.SAVCALC_MONTH_UNKNOWN), 40, unknown = true)
         else SavingBar(label, plainAmount(v, currency), maxOf(6L, v * 48 / top).toInt(), unknown = false)
     }
 }
@@ -149,9 +150,9 @@ private fun bars(actual: ActualSaving?, currency: Currency): List<SavingBar> {
 /** يوم بداية الشهر المالي (يوم الراتب) من الفترات نفسها — أي ٣ شهور ورا بعض فيهم شهر ٣١ يوم، فالأكبر = يوم الراتب. */
 private fun compareNote(actual: ActualSaving?): String {
     val payday = actual?.months?.maxOfOrNull { parseIsoDate(it.period.start).day }
-    return if (payday == null) t(TextKey.SAVCALC_COMPARE_NOTE_PLAIN) else t(TextKey.SAVCALC_COMPARE_NOTE, sentenceNumber(payday))
+    return if (payday == null) t(UiKey.SAVCALC_COMPARE_NOTE_PLAIN) else t(UiKey.SAVCALC_COMPARE_NOTE, sentenceNumber(payday))
 }
 
 /** الرسالة بعد «حوّلها لخطة ادخار». */
 fun goalToast(goalName: String, ui: SavingsResultUi, currency: Currency): String =
-    t(TextKey.SAVCALC_GOAL_TOAST, goalName, money(ui.perMonthMinor, currency), fullDate(ui.endDate))
+    t(UiKey.SAVCALC_GOAL_TOAST, goalName, money(ui.perMonthMinor, currency), fullDate(ui.endDate))

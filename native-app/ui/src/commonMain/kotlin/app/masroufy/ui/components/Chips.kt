@@ -1,5 +1,6 @@
 package app.masroufy.ui.components
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,7 +86,7 @@ fun Badge(text: String, kind: BadgeKind, modifier: Modifier = Modifier) {
 
 /** شارة «تقريبي» (الرقم مبني على نوع مش مؤكد — §18). */
 @Composable
-fun ApproxBadge(modifier: Modifier = Modifier) = Badge(t(TextKey.BADGE_APPROX), BadgeKind.APPROX, modifier)
+fun ApproxBadge(modifier: Modifier = Modifier) = Badge(t(UiKey.BADGE_APPROX), BadgeKind.APPROX, modifier)
 
 /** شارة «غير متاح» (CLAUDE.md #10). */
 @Composable

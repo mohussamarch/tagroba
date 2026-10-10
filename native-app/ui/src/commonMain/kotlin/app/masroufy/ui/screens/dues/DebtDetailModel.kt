@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.DueItem
 import app.masroufy.core.DueStatus
@@ -59,10 +60,10 @@ fun debtDetailUi(people: List<PersonRow>, dueItems: List<DueItem>, obligationId:
     val opening = o.originTransactionId == null
     val (chip, text) = debtSignal(due, today)
     val typeKey = when {
-        forYou -> TextKey.DEBT_TYPE_RECEIVABLE
-        o.kind == ObligationKind.CUSTODY_PAYABLE -> TextKey.DEBT_TYPE_CUSTODY
-        opening -> TextKey.DEBT_TYPE_OLD_ON_YOU
-        else -> TextKey.DEBT_TYPE_LOAN
+        forYou -> UiKey.DEBT_TYPE_RECEIVABLE
+        o.kind == ObligationKind.CUSTODY_PAYABLE -> UiKey.DEBT_TYPE_CUSTODY
+        opening -> UiKey.DEBT_TYPE_OLD_ON_YOU
+        else -> UiKey.DEBT_TYPE_LOAN
     }
     return DebtDetailUi(
         obligationId = o.id,
@@ -72,24 +73,24 @@ fun debtDetailUi(people: List<PersonRow>, dueItems: List<DueItem>, obligationId:
         forYou = forYou,
         kind = o.kind,
         kindLine = reasonOf(o),
-        remainLabel = t(if (forYou) TextKey.DEBT_REMAIN_FOR else TextKey.DEBT_REMAIN_ON),
+        remainLabel = t(if (forYou) UiKey.DEBT_REMAIN_FOR else UiKey.DEBT_REMAIN_ON),
         remainingMinor = row.remainingMinor,
         originalMinor = o.originalMinor,
         currency = o.currency,
         // المتبقي = الأصل (مقارنة مش حساب) ⇒ «لم يُسدَّد شيء بعد»؛ غير كده «من أصل X» بس (المسدَّد مش في حالة الاستخدام)
         ofOriginal = t(
-            if (row.remainingMinor == o.originalMinor) TextKey.DEBT_OF_ORIGINAL_NONE else TextKey.DEBT_OF_ORIGINAL,
+            if (row.remainingMinor == o.originalMinor) UiKey.DEBT_OF_ORIGINAL_NONE else UiKey.DEBT_OF_ORIGINAL,
             amountLabel(o.originalMinor, o.currency, showCurrency = false),
         ),
         signal = if (due == null) null else chip,
         signalText = text,
         opening = opening,
-        originValue = t(if (opening) TextKey.DEBT_ORIGIN_BEFORE_APP else TextKey.DEBT_ORIGIN_TXN),
-        originHint = if (opening) t(TextKey.DEBT_ORIGIN_OLD_HINT) else null,
+        originValue = t(if (opening) UiKey.DEBT_ORIGIN_BEFORE_APP else UiKey.DEBT_ORIGIN_TXN),
+        originHint = if (opening) t(UiKey.DEBT_ORIGIN_OLD_HINT) else null,
         typeText = t(typeKey),
-        typeHint = t(TextKey.DEBT_TYPE_HINT, t(if (forYou) TextKey.DUES_ON_YOU else TextKey.DUES_FOR_YOU)),
+        typeHint = t(UiKey.DEBT_TYPE_HINT, t(if (forYou) UiKey.DUES_ON_YOU else UiKey.DUES_FOR_YOU)),
         dueAt = due?.dueAt,
-        termsValue = due?.let { t(TextKey.DEBT_TERMS_ONE_PAYMENT, t(TextKey.DEBTS_DUE_ON, dateText(it.dueAt, today))) } ?: t(TextKey.DEBTS_NO_DUE),
+        termsValue = due?.let { t(UiKey.DEBT_TERMS_ONE_PAYMENT, t(UiKey.DEBTS_DUE_ON, dateText(it.dueAt, today))) } ?: t(UiKey.DEBTS_NO_DUE),
         termOptions = termOptions(today),
         done = false,
     )
@@ -129,16 +130,16 @@ fun settleInput(text: String, remainingMinor: Halalas, currency: Currency): Sett
 
 /** رسالة بعد الحفظ: «سُدّد الدين بالكامل» · «سُجّل التحصيل من فهد» · «سُجّل السداد لعمر» (المتبقي الجديد بيظهر في الصفحة من حالة الاستخدام). */
 fun settledToast(ok: SettleInput.Ok, target: SettleTarget): String = when {
-    ok.full -> t(TextKey.SETTLE_SAVED_FULL)
-    target.forYou -> t(TextKey.SETTLE_SAVED_FOR, target.personName)
-    else -> t(TextKey.SETTLE_SAVED_ON, target.personName)
+    ok.full -> t(UiKey.SETTLE_SAVED_FULL)
+    target.forYou -> t(UiKey.SETTLE_SAVED_FOR, target.personName)
+    else -> t(UiKey.SETTLE_SAVED_ON, target.personName)
 }
 
 fun SettleInput.errorText(remainingMinor: Halalas, currency: Currency): String? = when (this) {
     SettleInput.Empty, is SettleInput.Ok -> null
-    SettleInput.BadFormat -> t(TextKey.DUES_ERR_FORMAT)
-    SettleInput.NotPositive -> t(TextKey.DUES_ERR_POSITIVE)
-    SettleInput.OverRemaining -> t(TextKey.SETTLE_ERR_OVER, amountLabel(remainingMinor, currency))
+    SettleInput.BadFormat -> t(UiKey.DUES_ERR_FORMAT)
+    SettleInput.NotPositive -> t(UiKey.DUES_ERR_POSITIVE)
+    SettleInput.OverRemaining -> t(UiKey.SETTLE_ERR_OVER, amountLabel(remainingMinor, currency))
 }
 
 /** «دين قديم»: لازم الاتجاه والمبلغ. ⚠️ `addOpeningDebt` بيحفظ بالريال دايمًا ⇒ في بلد عملتها غير الريال الحفظ مقفول (عشان ما يتسجلش رقم بعملة غلط). */
@@ -159,10 +160,10 @@ fun openingInput(kind: ObligationKind?, text: String, spaceCurrency: Currency): 
 
 fun OpeningInput.errorText(): String? = when (this) {
     is OpeningInput.Ok -> null
-    OpeningInput.NoSide -> t(TextKey.OPENING_ERR_SIDE)
-    OpeningInput.BadAmount -> t(TextKey.DUES_ERR_FORMAT)
-    OpeningInput.NotPositive -> t(TextKey.DUES_ERR_POSITIVE)
-    OpeningInput.CurrencyNotReady -> t(TextKey.OPENING_ERR_CURRENCY)
+    OpeningInput.NoSide -> t(UiKey.OPENING_ERR_SIDE)
+    OpeningInput.BadAmount -> t(UiKey.DUES_ERR_FORMAT)
+    OpeningInput.NotPositive -> t(UiKey.DUES_ERR_POSITIVE)
+    OpeningInput.CurrencyNotReady -> t(UiKey.OPENING_ERR_CURRENCY)
 }
 
 /** «فات موعدها منذ …» على البطاقة البترولية (أو «بعد …»). */

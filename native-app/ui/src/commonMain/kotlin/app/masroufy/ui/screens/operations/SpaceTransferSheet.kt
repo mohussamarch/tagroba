@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -74,33 +75,33 @@ fun NewSpaceTransferSheet(visible: Boolean, books: List<SpaceWallets>, activeId:
     val fromMinor = d?.let { tryParseMoney(fromText, it.from.currency) }
     val toMinor = d?.let { tryParseMoney(toText, it.to.currency) }
     val ready = d != null && fromWallet != null && toWallet != null && (fromMinor ?: 0) > 0 && (toMinor ?: 0) > 0 && date.isNotBlank()
-    Sheet(visible, onDismiss, title = t(TextKey.SPACE_TRANSFER_SCREEN_NEW_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), spacing = 10.dp) {
-        BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_NEW_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_NEW_BODY), style = Type.of(13).copy(color = Ink.muted))
+    Sheet(visible, onDismiss, title = t(UiKey.SPACE_TRANSFER_SCREEN_NEW_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
+        BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_NEW_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_NEW_BODY), style = Type.of(13).copy(color = Ink.muted))
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (dirs.size > 1) SegmentedTabs(dirs.map { it.key to routeName(it.from, it.to) }, dir ?: "", { dir = it; error = null }, style = SegmentStyle.QUIET, height = 44.dp)
             if (d != null) {
-                LegForm(t(TextKey.SPACE_TRANSFER_SCREEN_LEFT, d.from.name), fromBook, fromWallet, { fromWallet = it }, fromText, { fromText = it; error = null },
-                    t(TextKey.SPACE_TRANSFER_SCREEN_AMOUNT_OUT, currencySymbol(d.from.currency)))
-                LegForm(t(TextKey.SPACE_TRANSFER_SCREEN_ARRIVED, d.to.name), toBook, toWallet, { toWallet = it }, toText, { toText = it; error = null },
-                    t(TextKey.SPACE_TRANSFER_SCREEN_AMOUNT_IN, currencySymbol(d.to.currency)))
+                LegForm(t(UiKey.SPACE_TRANSFER_SCREEN_LEFT, d.from.name), fromBook, fromWallet, { fromWallet = it }, fromText, { fromText = it; error = null },
+                    t(UiKey.SPACE_TRANSFER_SCREEN_AMOUNT_OUT, currencySymbol(d.from.currency)))
+                LegForm(t(UiKey.SPACE_TRANSFER_SCREEN_ARRIVED, d.to.name), toBook, toWallet, { toWallet = it }, toText, { toText = it; error = null },
+                    t(UiKey.SPACE_TRANSFER_SCREEN_AMOUNT_IN, currencySymbol(d.to.currency)))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextInput(date, { date = it; error = null }, Modifier.weight(1f), label = t(TextKey.SPACE_TRANSFER_SCREEN_DATE), placeholder = "2026-10-07", ltr = true)
-                TextInput(note, { if (it.length <= 1000) note = it }, Modifier.weight(1.4f), label = t(TextKey.SPACE_TRANSFER_SCREEN_NOTE))
+                TextInput(date, { date = it; error = null }, Modifier.weight(1f), label = t(UiKey.SPACE_TRANSFER_SCREEN_DATE), placeholder = "2026-10-07", ltr = true)
+                TextInput(note, { if (it.length <= 1000) note = it }, Modifier.weight(1.4f), label = t(UiKey.SPACE_TRANSFER_SCREEN_NOTE))
             }
             val live = d?.let { rateLine(fromMinor, it.from.currency, toMinor, it.to.currency) }
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x142469BA)).padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                BasicText(t(TextKey.SPACE_TRANSFER_SCREEN_LIVE_RATE), style = Type.caption().copy(color = Ink.transfer))
-                BasicText(live ?: t(TextKey.SPACE_TRANSFER_SCREEN_AFTER_AMOUNTS), style = Type.of(13, FontWeight.Bold).copy(color = Ink.transfer))
+                BasicText(t(UiKey.SPACE_TRANSFER_SCREEN_LIVE_RATE), style = Type.caption().copy(color = Ink.transfer))
+                BasicText(live ?: t(UiKey.SPACE_TRANSFER_SCREEN_AFTER_AMOUNTS), style = Type.of(13, FontWeight.Bold).copy(color = Ink.transfer))
             }
         }
         SheetError(error)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(TextKey.SPACE_TRANSFER_SCREEN_RECORD), loading = saving, enabled = ready, modifier = Modifier.weight(1.4f), onClick = {
+            PrimaryButton(t(UiKey.SPACE_TRANSFER_SCREEN_RECORD), loading = saving, enabled = ready, modifier = Modifier.weight(1.4f), onClick = {
                 val dd = d ?: return@PrimaryButton
                 val fw = fromWallet ?: return@PrimaryButton
                 val tw = toWallet ?: return@PrimaryButton
@@ -114,7 +115,7 @@ fun NewSpaceTransferSheet(visible: Boolean, books: List<SpaceWallets>, activeId:
                     if (err != null) error = err else onSaved()
                 }
             })
-            TonalButton(t(TextKey.SPACE_TRANSFER_SCREEN_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
+            TonalButton(t(UiKey.SPACE_TRANSFER_SCREEN_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
         }
     }
 }

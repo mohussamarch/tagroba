@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -77,7 +78,7 @@ fun BankSmsScreen() {
             throw e
         } catch (e: Exception) {
             // ما بنعرضش «القراءة تعمل» من غير ما نعرف — الحالة بتفضل null والخطأ بسببه بس (قاعدة 10)
-            failure = e.message ?: t(TextKey.IMPORTS_LOAD_FAILED)
+            failure = e.message ?: t(UiKey.IMPORTS_LOAD_FAILED)
         }
     }
 
@@ -89,7 +90,7 @@ fun BankSmsScreen() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                toaster.show(e.message ?: t(TextKey.IMPORTS_LOAD_FAILED), dark = true)
+                toaster.show(e.message ?: t(UiKey.IMPORTS_LOAD_FAILED), dark = true)
             }
             busy = false
             reload++
@@ -100,19 +101,19 @@ fun BankSmsScreen() {
         pickCategory = { picking = PickFor.Line(it) },
         pickWallet = { bankSheet = it },
         toggleSimilar = { line -> included = if (line.messageId in included) included - line.messageId else included + line.messageId },
-        dismiss = { id -> act { deps.sms?.dismiss(listOf(id)); toaster.show(t(TextKey.BANK_SMS_DROPPED), dark = true) } },
+        dismiss = { id -> act { deps.sms?.dismiss(listOf(id)); toaster.show(t(UiKey.BANK_SMS_DROPPED), dark = true) } },
         recordAll = {
             act {
                 val n = deps.sms?.record(chosen.toMap(), included) ?: 0
                 chosen.clear()
                 included = emptySet()
-                toaster.show(t(TextKey.BANK_SMS_RECORDED, opsCount(n)), dark = true)
+                toaster.show(t(UiKey.BANK_SMS_RECORDED, opsCount(n)), dark = true)
             }
         },
         recordByHand = { f, amount ->
             scope.launch {
                 when (val r = deps.sms?.recordByHand(f.messageId, f.sender, amount)) {
-                    is AddOperationResult.Saved -> { handError = null; toaster.show(t(TextKey.BANK_SMS_HAND_SAVED), dark = true); reload++ }
+                    is AddOperationResult.Saved -> { handError = null; toaster.show(t(UiKey.BANK_SMS_HAND_SAVED), dark = true); reload++ }
                     is AddOperationResult.Invalid -> handError = f.messageId to r.message
                     null -> Unit
                 }
@@ -121,8 +122,8 @@ fun BankSmsScreen() {
     )
 
     InnerScaffold(
-        t(TextKey.BANK_SMS_TITLE),
-        actions = { SurfaceIconButton(Lucide.SETTINGS, t(TextKey.BANK_SMS_GEAR), { nav.push(BankSmsSettingsRoute) }) },
+        t(UiKey.BANK_SMS_TITLE),
+        actions = { SurfaceIconButton(Lucide.SETTINGS, t(UiKey.BANK_SMS_GEAR), { nav.push(BankSmsSettingsRoute) }) },
     ) {
         val u = ui
         item(key = "status") {
@@ -140,9 +141,9 @@ fun BankSmsScreen() {
         failure?.let { msg ->
             item(key = "failure") {
                 TintedPanel(PanelTone.AMBER) {
-                    PanelTitle(t(TextKey.IMPORTS_LOAD_FAILED), PanelTone.AMBER)
+                    PanelTitle(t(UiKey.IMPORTS_LOAD_FAILED), PanelTone.AMBER)
                     BasicText(msg, style = Type.of(13))
-                    QuietButton(t(TextKey.IMPORTS_RETRY), { reload++ }, onTint = true, height = 44.dp)
+                    QuietButton(t(UiKey.IMPORTS_RETRY), { reload++ }, onTint = true, height = 44.dp)
                 }
             }
         }
@@ -151,7 +152,7 @@ fun BankSmsScreen() {
             item(key = "waiting") { SmsWaitingSection(u, currency, categories, chosen, included, busy, handError, actions) }
         }
         if (u.live && u.isEmpty) {
-            item(key = "empty") { EmptyState(t(TextKey.BANK_SMS_EMPTY_TITLE), t(TextKey.BANK_SMS_EMPTY_BODY)) }
+            item(key = "empty") { EmptyState(t(UiKey.BANK_SMS_EMPTY_TITLE), t(UiKey.BANK_SMS_EMPTY_BODY)) }
         }
         if (u.recorded.isNotEmpty()) {
             item(key = "recorded") {
@@ -175,7 +176,7 @@ fun BankSmsScreen() {
     }
     CategoryPickerSheet(
         visible = pick != null,
-        title = t(TextKey.SMS_CATPICK_TITLE, title),
+        title = t(UiKey.SMS_CATPICK_TITLE, title),
         categories = categories,
         selectedId = when (pick) { is PickFor.Line -> chosen[pick.line.messageId] ?: pick.line.categoryId; is PickFor.Row -> pick.row.categoryId; null -> null },
         onPick = { cat ->
@@ -192,7 +193,7 @@ fun BankSmsScreen() {
                 }
                 null -> Unit
             }
-            if (title.isNotBlank()) toaster.show(t(TextKey.BANK_SMS_REMEMBERED, title, cat.name), dark = true)
+            if (title.isNotBlank()) toaster.show(t(UiKey.BANK_SMS_REMEMBERED, title, cat.name), dark = true)
         },
         onDismiss = { picking = null },
     )
@@ -204,7 +205,7 @@ fun BankSmsScreen() {
             bankSheet = null
             act {
                 val r = deps.sms?.chooseWallet(bank.sender, wallet.id)
-                toaster.show(t(TextKey.BANK_SMS_WALLET_SAVED, opsCount(r?.recorded ?: 0), wallet.name), dark = true)
+                toaster.show(t(UiKey.BANK_SMS_WALLET_SAVED, opsCount(r?.recorded ?: 0), wallet.name), dark = true)
             }
         },
     )

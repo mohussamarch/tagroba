@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.auth
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,29 +87,29 @@ fun ResetPasswordSheet(prefill: String, mode: ResetMode = ResetMode.FORGOT) {
     if (change) {
         // «تغيير كلمة السر» في «ملفك» (رد المالك 2026-10-09): صف في مجموعة «الحساب» بنفس اللوحة، والإيميل مكتوب
         Column(Modifier.fillMaxWidth().heightIn(min = 56.dp).pressScale(press).tap(press, onClick = openSheet).padding(horizontal = 8.dp, vertical = 8.dp)) {
-            BasicText(t(TextKey.RESET_CHANGE_TRIGGER), style = Type.of(15, FontWeight.Medium))
-            BasicText(t(TextKey.RESET_CHANGE_HINT), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.RESET_CHANGE_TRIGGER), style = Type.of(15, FontWeight.Medium))
+            BasicText(t(UiKey.RESET_CHANGE_HINT), style = Type.caption().copy(color = Ink.muted))
         }
     } else Box(Modifier.heightIn(min = 44.dp).pressScale(press).tap(press, onClick = openSheet), contentAlignment = Alignment.CenterStart) {
-        BasicText(t(TextKey.RESET_TRIGGER), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
+        BasicText(t(UiKey.RESET_TRIGGER), style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
     }
-    val title = if (change) t(TextKey.RESET_CHANGE_TITLE) else t(TextKey.RESET_TITLE)
+    val title = if (change) t(UiKey.RESET_CHANGE_TITLE) else t(UiKey.RESET_TITLE)
 
-    Sheet(open, { open = false }, title = title, closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, minHeight = 400.dp, spacing = 12.dp) {
+    Sheet(open, { open = false }, title = title, closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, minHeight = 400.dp, spacing = 12.dp) {
         val sent = sentTo
         if (sent == null) {
             BasicText(title, style = Type.of(17, FontWeight.Bold))
-            BasicText(if (change) t(TextKey.RESET_CHANGE_BODY) else t(TextKey.RESET_BODY), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(if (change) t(UiKey.RESET_CHANGE_BODY) else t(UiKey.RESET_BODY), style = Type.of(13).copy(color = Ink.muted))
             TextInput(
-                email, { email = it; error = null }, label = t(TextKey.SIGNIN_EMAIL), placeholder = "name@example.com", error = error,
+                email, { email = it; error = null }, label = t(UiKey.SIGNIN_EMAIL), placeholder = "name@example.com", error = error,
                 enabled = !busy, ltr = true, keyboard = KeyboardType.Email, imeAction = ImeAction.Send,
             )
             PrimaryButton(
-                if (busy) t(TextKey.RESET_SENDING) else if (change) t(TextKey.RESET_CHANGE_SEND) else t(TextKey.RESET_SEND),
+                if (busy) t(UiKey.RESET_SENDING) else if (change) t(UiKey.RESET_CHANGE_SEND) else t(UiKey.RESET_SEND),
                 onClick = {
                     val e = email.trim()
                     error = when {
-                        e.isEmpty() -> t(TextKey.RESET_EMAIL_EMPTY)
+                        e.isEmpty() -> t(UiKey.RESET_EMAIL_EMPTY)
                         !EMAIL.matches(e) -> t(TextKey.AUTH_INVALID_EMAIL)
                         else -> null
                     }
@@ -116,27 +117,27 @@ fun ResetPasswordSheet(prefill: String, mode: ResetMode = ResetMode.FORGOT) {
                 },
                 loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             )
-            if (!change) BasicText(t(TextKey.RESET_PRIVACY), style = Type.caption().copy(color = Ink.muted))
+            if (!change) BasicText(t(UiKey.RESET_PRIVACY), style = Type.caption().copy(color = Ink.muted))
         } else {
-            BasicText(t(TextKey.RESET_SENT_TITLE), style = Type.of(17, FontWeight.Bold))
-            BasicText(t(TextKey.RESET_SENT_BODY, sent), style = Type.body())
-            BasicText(t(TextKey.RESET_SPAM), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(t(UiKey.RESET_SENT_TITLE), style = Type.of(17, FontWeight.Bold))
+            BasicText(t(UiKey.RESET_SENT_BODY, sent), style = Type.body())
+            BasicText(t(UiKey.RESET_SPAM), style = Type.of(13).copy(color = Ink.muted))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TonalButton(if (busy) t(TextKey.RESET_SENDING) else t(TextKey.RESET_RESEND), onClick = { send(sent, true) }, enabled = left == 0 && !busy, modifier = Modifier.weight(1f))
-                TonalButton(t(TextKey.RESET_CHANGE), onClick = { sentTo = null; left = 0; again = false; email = sent }, modifier = Modifier.weight(1f))
+                TonalButton(if (busy) t(UiKey.RESET_SENDING) else t(UiKey.RESET_RESEND), onClick = { send(sent, true) }, enabled = left == 0 && !busy, modifier = Modifier.weight(1f))
+                TonalButton(t(UiKey.RESET_CHANGE), onClick = { sentTo = null; left = 0; again = false; email = sent }, modifier = Modifier.weight(1f))
             }
             val wait = when {
                 left <= 0 -> null
-                left == 1 -> t(TextKey.RESET_WAIT_ONE)
-                left == 2 -> t(TextKey.RESET_WAIT_TWO)
-                left <= 10 -> t(TextKey.RESET_WAIT_FEW, sentenceNumber(left))
-                else -> t(TextKey.RESET_WAIT_MANY, sentenceNumber(left))
+                left == 1 -> t(UiKey.RESET_WAIT_ONE)
+                left == 2 -> t(UiKey.RESET_WAIT_TWO)
+                left <= 10 -> t(UiKey.RESET_WAIT_FEW, sentenceNumber(left))
+                else -> t(UiKey.RESET_WAIT_MANY, sentenceNumber(left))
             }
-            val note = listOfNotNull(if (again && !busy) t(TextKey.RESET_AGAIN) else null, wait).joinToString(" ")
+            val note = listOfNotNull(if (again && !busy) t(UiKey.RESET_AGAIN) else null, wait).joinToString(" ")
             if (note.isNotEmpty()) BasicText(note, style = Type.caption().copy(color = Ink.muted))
             if (error != null) BasicText(error!!, style = Type.of(13).copy(color = Ink.expense))
             Column(Modifier.fillMaxWidth().height(4.dp)) {}
-            PrimaryButton(if (change) t(TextKey.MORE_DONE) else t(TextKey.RESET_FINISH), onClick = { open = false }, height = 48.dp, modifier = Modifier.fillMaxWidth())
+            PrimaryButton(if (change) t(UiKey.MORE_DONE) else t(UiKey.RESET_FINISH), onClick = { open = false }, height = 48.dp, modifier = Modifier.fillMaxWidth())
         }
     }
 }

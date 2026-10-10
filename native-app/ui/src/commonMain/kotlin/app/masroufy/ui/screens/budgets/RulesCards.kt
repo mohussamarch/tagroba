@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,11 +62,11 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
     val view = holder.view
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.RULES_APPLY_TITLE), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.RULES_APPLY_TITLE), style = Type.of(15, FontWeight.Bold))
             val body = when {
-                holder.phase == ApplyPhase.DONE -> t(TextKey.RULES_APPLY_DONE)
-                !hasRules || (view != null && view.changed == 0) -> t(TextKey.RULES_APPLY_NONE)
-                else -> t(TextKey.RULES_APPLY_BODY)
+                holder.phase == ApplyPhase.DONE -> t(UiKey.RULES_APPLY_DONE)
+                !hasRules || (view != null && view.changed == 0) -> t(UiKey.RULES_APPLY_NONE)
+                else -> t(UiKey.RULES_APPLY_BODY)
             }
             BasicText(body, style = Type.of(13).copy(color = Ink.muted))
             if (holder.phase == ApplyPhase.PREVIEW && view != null) {
@@ -84,16 +85,16 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
             }
             when (holder.phase) {
                 ApplyPhase.IDLE, ApplyPhase.LOADING -> TonalButton(
-                    t(TextKey.RULES_APPLY_PREVIEW),
+                    t(UiKey.RULES_APPLY_PREVIEW),
                     {
                         holder.phase = ApplyPhase.LOADING
                         scope.launch {
                             val (from, to) = historyRange(today)
                             var result: HistoryPreview? = null
-                            val error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) { result = deps.history.preview(from, to) }
+                            val error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { result = deps.history.preview(from, to) }
                             val preview = result
                             if (error != null || preview == null) {
-                                toaster.show(error ?: t(TextKey.BUDGETS_ERROR_TITLE))
+                                toaster.show(error ?: t(UiKey.BUDGETS_ERROR_TITLE))
                                 holder.phase = ApplyPhase.IDLE
                                 return@launch
                             }
@@ -106,20 +107,20 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
                     enabled = hasRules && holder.phase == ApplyPhase.IDLE,
                 )
                 ApplyPhase.PREVIEW -> PrimaryButton(
-                    t(TextKey.RULES_APPLY_GO, app.masroufy.core.sentenceNumber(view?.changed ?: 0)),
+                    t(UiKey.RULES_APPLY_GO, app.masroufy.core.sentenceNumber(view?.changed ?: 0)),
                     {
                         val preview = holder.preview ?: return@PrimaryButton
                         holder.phase = ApplyPhase.LOADING
                         scope.launch {
                             var changed = 0
-                            val error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) {
+                            val error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) {
                                 changed = deps.history.applyCategories(preview.rows.map { it.id }, preview.categoryPlan).changed.size
                             }
                             if (error != null) {
                                 toaster.show(error)
                                 holder.reset()
                             } else {
-                                toaster.show(t(TextKey.RULES_APPLIED_TOAST, opsLabel(changed)))
+                                toaster.show(t(UiKey.RULES_APPLIED_TOAST, opsLabel(changed)))
                                 holder.phase = ApplyPhase.DONE
                                 onApplied()
                             }
@@ -128,7 +129,7 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
                     Modifier.fillMaxWidth(),
                     enabled = (view?.changed ?: 0) > 0,
                 )
-                ApplyPhase.DONE -> TonalButton(t(TextKey.RULES_APPLY_DONE_BTN), {}, Modifier.fillMaxWidth(), enabled = false)
+                ApplyPhase.DONE -> TonalButton(t(UiKey.RULES_APPLY_DONE_BTN), {}, Modifier.fillMaxWidth(), enabled = false)
             }
         }
     }
@@ -142,10 +143,10 @@ fun ApplyCard(holder: ApplyHolder, deps: BudgetsDeps, today: IsoDate, hasRules: 
 fun SyncCard() {
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.RULES_SYNC_TITLE), style = Type.of(15, FontWeight.Bold))
-            BasicText(t(TextKey.RULES_SYNC_BODY), style = Type.of(13).copy(color = Ink.muted))
-            BasicText(t(TextKey.RULES_SYNC_NA), style = Type.captionBold().copy(color = Ink.focus))
-            TonalButton(t(TextKey.RULES_SYNC_BTN), {}, Modifier.fillMaxWidth(), enabled = false)
+            BasicText(t(UiKey.RULES_SYNC_TITLE), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.RULES_SYNC_BODY), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(t(UiKey.RULES_SYNC_NA), style = Type.captionBold().copy(color = Ink.focus))
+            TonalButton(t(UiKey.RULES_SYNC_BTN), {}, Modifier.fillMaxWidth(), enabled = false)
         }
     }
 }

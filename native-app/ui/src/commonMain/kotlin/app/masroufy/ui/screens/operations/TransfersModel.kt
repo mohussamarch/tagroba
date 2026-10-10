@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -37,7 +38,7 @@ data class TransfersView(val sections: List<Pair<PartySection, List<PartyRowView
 
 /** «تحويل واحد» · «تحويلان» · «٥ تحويلات» · «١٤ تحويلًا». */
 fun transfersCount(n: Int): String =
-    countText(n, TextKey.TRANSFERS_COUNT_ONE, TextKey.TRANSFERS_COUNT_TWO, TextKey.TRANSFERS_COUNT_FEW, TextKey.TRANSFERS_COUNT_MANY)
+    countText(n, UiKey.TRANSFERS_COUNT_ONE, UiKey.TRANSFERS_COUNT_TWO, UiKey.TRANSFERS_COUNT_FEW, UiKey.TRANSFERS_COUNT_MANY)
 
 /**
  * الزون (`ManageTransfers.zone`) ⇒ الأقسام. [personNames] أسماء الأشخاص (للقرار «شخص: …»). المبالغ زي ما هي من حالة الاستخدام (كل عملة لوحدها).
@@ -54,24 +55,24 @@ fun transfersView(zone: TransferZone, personNames: Map<Id, String>): TransfersVi
         }
         val why = if (section == PartySection.WAITING && q != null) {
             val month = q.month.split('-').getOrNull(1)?.toIntOrNull()?.let(::monthName).orEmpty()
-            t(TextKey.TRANSFERS_IN_MONTH, transfersCount(q.count), month)
+            t(UiKey.TRANSFERS_IN_MONTH, transfersCount(q.count), month)
         } else transfersCount(r.count)
         val chip = when (d?.verdict) {
-            null -> if (section == PartySection.WAITING) FieldChip(t(TextKey.TRANSFER_PARTY_ASK), ChipInk.amber, ChipInk.amberBg) else FieldChip(t(TextKey.TRANSFERS_UNDECIDED), ChipInk.grey, ChipInk.greyBg)
-            TransferVerdict.OWN_ACCOUNT -> FieldChip(t(TextKey.TRANSFER_PARTY_OWN), ChipInk.blue, ChipInk.blueBg)
-            TransferVerdict.PERSON -> FieldChip(t(TextKey.TRANSFERS_PERSON_CHIP, d.personId?.let(personNames::get) ?: t(TextKey.NOT_AVAILABLE)), ChipInk.green, ChipInk.greenBg)
-            TransferVerdict.DISMISSED -> FieldChip(t(TextKey.TRANSFER_PARTY_NOT), ChipInk.grey, ChipInk.greyBg)
+            null -> if (section == PartySection.WAITING) FieldChip(t(UiKey.TRANSFER_PARTY_ASK), ChipInk.amber, ChipInk.amberBg) else FieldChip(t(UiKey.TRANSFERS_UNDECIDED), ChipInk.grey, ChipInk.greyBg)
+            TransferVerdict.OWN_ACCOUNT -> FieldChip(t(UiKey.TRANSFER_PARTY_OWN), ChipInk.blue, ChipInk.blueBg)
+            TransferVerdict.PERSON -> FieldChip(t(UiKey.TRANSFERS_PERSON_CHIP, d.personId?.let(personNames::get) ?: t(TextKey.NOT_AVAILABLE)), ChipInk.green, ChipInk.greenBg)
+            TransferVerdict.DISMISSED -> FieldChip(t(UiKey.TRANSFER_PARTY_NOT), ChipInk.grey, ChipInk.greyBg)
         }
         val hint = when (d?.verdict) {
-            null -> t(TextKey.TRANSFERS_HINT_ASK)
-            TransferVerdict.OWN_ACCOUNT -> t(TextKey.TRANSFERS_HINT_OWN)
-            else -> t(TextKey.TRANSFERS_HINT_UNDO)
+            null -> t(UiKey.TRANSFERS_HINT_ASK)
+            TransferVerdict.OWN_ACCOUNT -> t(UiKey.TRANSFERS_HINT_OWN)
+            else -> t(UiKey.TRANSFERS_HINT_UNDO)
         }
         PartyRowView(
             ref = r.party,
             initial = r.party.label.trim().take(1),
             last4 = r.party.last4?.let(::sentenceDigits),
-            meta = t(TextKey.TRANSFERS_META, why, dayMonth(r.lastAt)),
+            meta = t(UiKey.TRANSFERS_META, why, dayMonth(r.lastAt)),
             chip = chip,
             incomingMinor = r.incomingMinor.takeIf { it > 0 },
             outgoingMinor = r.outgoingMinor.takeIf { it > 0 },
@@ -86,7 +87,7 @@ fun transfersView(zone: TransferZone, personNames: Map<Id, String>): TransfersVi
 }
 
 fun sectionTitle(s: PartySection): String = t(when (s) {
-    PartySection.WAITING -> TextKey.TRANSFERS_WAITING
-    PartySection.UNDECIDED -> TextKey.TRANSFERS_UNDECIDED
-    PartySection.DECIDED -> TextKey.TRANSFERS_DECIDED
+    PartySection.WAITING -> UiKey.TRANSFERS_WAITING
+    PartySection.UNDECIDED -> UiKey.TRANSFERS_UNDECIDED
+    PartySection.DECIDED -> UiKey.TRANSFERS_DECIDED
 })

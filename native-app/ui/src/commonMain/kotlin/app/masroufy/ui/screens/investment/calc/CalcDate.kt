@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,13 +71,13 @@ fun CalcDateField(
             Modifier.fillMaxWidth().height(48.dp).pressScale(press).clip(shape).background(Color.White)
                 .insetRing(shape, if (error != null) 1.5.dp else 1.dp, if (error != null) Ink.expense else Ink.fieldEdge)
                 .tap(press, label = label) { open = true }
-                .semantics { contentDescription = shown?.let(::fullDate) ?: t(TextKey.CALCUI_PICK_DATE) }
+                .semantics { contentDescription = shown?.let(::fullDate) ?: t(UiKey.CALCUI_PICK_DATE) }
                 .padding(horizontal = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicText(
-                shown?.let(::fullDate) ?: t(TextKey.CALCUI_PICK_DATE),
+                shown?.let(::fullDate) ?: t(UiKey.CALCUI_PICK_DATE),
                 Modifier.weight(1f),
                 style = Type.of(17, FontWeight.Bold).copy(color = if (shown != null) Ink.text else Color(0xFF8A9A95)),
             )
@@ -95,11 +96,11 @@ private fun DateSheet(visible: Boolean, title: String, start: IsoDate, today: Is
     val selected = if (year == first.year && month == first.month) first.day else null
     Sheet(visible, onDismiss, title) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton44(Lucide.CHEVRON_RIGHT, t(TextKey.CALCUI_PREV_YEAR), { year -= 1 }, enabled = year > 1900)
+            IconButton44(Lucide.CHEVRON_RIGHT, t(UiKey.CALCUI_PREV_YEAR), { year -= 1 }, enabled = year > 1900)
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                 BasicText(sentenceNumber(year), style = Type.of(18, FontWeight.Bold))
             }
-            IconButton44(Lucide.CHEVRON_LEFT, t(TextKey.CALCUI_NEXT_YEAR), { year += 1 }, enabled = year < 2200)
+            IconButton44(Lucide.CHEVRON_LEFT, t(UiKey.CALCUI_NEXT_YEAR), { year += 1 }, enabled = year < 2200)
         }
         CalendarGrid(
             year = year,

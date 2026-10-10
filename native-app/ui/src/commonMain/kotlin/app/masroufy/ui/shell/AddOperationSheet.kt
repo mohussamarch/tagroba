@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -101,19 +102,19 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
         AddKind.IN -> income != null
         AddKind.MOVE -> to != null && to != from
     }
-    Sheet(visible, onClose, title = t(TextKey.ADD_TITLE), veil = Veil.MENU, closeLabel = t(TextKey.SHELL_CLOSE)) {
+    Sheet(visible, onClose, title = t(UiKey.ADD_TITLE), veil = Veil.MENU, closeLabel = t(UiKey.SHELL_CLOSE)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            BasicText(t(TextKey.ADD_TITLE), style = Type.section())
+            BasicText(t(UiKey.ADD_TITLE), style = Type.section())
             VoiceButton { voiceNote = true }
         }
         if (voiceNote) {
             LaunchedEffect(Unit) { kotlinx.coroutines.delay(2400); voiceNote = false }
             Box(Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(18.dp)).background(Ink.selected), contentAlignment = Alignment.Center) {
-                BasicText(t(TextKey.ASK_VOICE_NOT_READY), style = Type.bodyBold().copy(color = Ink.primary))
+                BasicText(t(UiKey.ASK_VOICE_NOT_READY), style = Type.bodyBold().copy(color = Ink.primary))
             }
         }
         SegmentedTabs(
-            listOf(AddKind.OUT to t(TextKey.ADD_TYPE_OUT), AddKind.IN to t(TextKey.ADD_TYPE_IN), AddKind.MOVE to t(TextKey.ADD_TYPE_MOVE)),
+            listOf(AddKind.OUT to t(UiKey.ADD_TYPE_OUT), AddKind.IN to t(UiKey.ADD_TYPE_IN), AddKind.MOVE to t(UiKey.ADD_TYPE_MOVE)),
             kind, { kind = it; error = null },
         )
         val tone = when (kind) {
@@ -122,12 +123,12 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
             AddKind.MOVE -> AmountTone.TRANSFER
         }
         TextInput(
-            amountText, { amountText = it; error = null }, label = t(TextKey.ADD_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
+            amountText, { amountText = it; error = null }, label = t(UiKey.ADD_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
             imeAction = ImeAction.Done, height = 60.dp, textSize = 28, error = error,
             trailing = { BasicText(o?.currency?.let(::currencySymbol).orEmpty(), Modifier.padding(end = 16.dp), style = Type.of(15).copy(color = Ink.muted)) },
         )
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            FieldLabel(t(when (kind) { AddKind.OUT -> TextKey.ADD_CATEGORY; AddKind.IN -> TextKey.ADD_INCOME_KIND; AddKind.MOVE -> TextKey.ADD_TO }))
+            FieldLabel(t(when (kind) { AddKind.OUT -> UiKey.ADD_CATEGORY; AddKind.IN -> UiKey.ADD_INCOME_KIND; AddKind.MOVE -> UiKey.ADD_TO }))
             FlowRow(Modifier.fillMaxWidth().heightIn(min = 88.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when (kind) {
                     AddKind.OUT -> for (c in o?.categories.orEmpty()) SelectChip(c.name, category?.id == c.id, { category = c }, dot = parseHex(c.lightColor))
@@ -140,9 +141,9 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
             FieldLabel(t(fromLabelKey(hadMain)), Modifier.weight(1f))
             for (w in o?.wallets.orEmpty().take(3)) SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null })
         }
-        if (o != null && o.wallets.isEmpty()) FieldError(t(TextKey.ADD_NO_WALLET))
+        if (o != null && o.wallets.isEmpty()) FieldError(t(UiKey.ADD_NO_WALLET))
         PrimaryButton(
-            if (saving) t(TextKey.ADD_SAVING) else t(TextKey.ADD_SAVE),
+            if (saving) t(UiKey.ADD_SAVING) else t(UiKey.ADD_SAVE),
             onClick = {
                 if (!ready || saving) return@PrimaryButton
                 saving = true
@@ -152,12 +153,12 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
                         is AddOperationResult.Invalid -> error = r.message
                         is AddOperationResult.Saved -> {
                             val label = category?.name ?: income?.let { ruleFor(it).label }
-                            val saved = t(TextKey.ADD_SAVED, amountLabel(r.transaction.amountMinor, r.transaction.currency, tone) + (label?.let { " · $it" } ?: ""))
+                            val saved = t(UiKey.ADD_SAVED, amountLabel(r.transaction.amountMinor, r.transaction.currency, tone) + (label?.let { " · $it" } ?: ""))
                             // أول مصروف من غير أساسية ⇒ اللي اختاره بقى الأساسي («وصار «البنك» الأساسي» — النموذج)
                             val firstMain = from?.takeIf { !hadMain }
                             if (firstMain != null) MainWalletChoice.set(space.space.id, firstMain)
                             val mainName = firstMain?.let { id -> o?.wallets?.firstOrNull { it.id == id }?.name }
-                            toaster.show(if (mainName != null) t(TextKey.ADD_SAVED_MAIN, saved, mainName) else saved)
+                            toaster.show(if (mainName != null) t(UiKey.ADD_SAVED_MAIN, saved, mainName) else saved)
                             changes.changed()
                             onClose()
                         }
@@ -179,7 +180,7 @@ private fun VoiceButton(onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LucideIcon(Lucide.MIC, size = 18.dp, tint = Ink.primary)
-        BasicText(t(TextKey.ADD_VOICE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
+        BasicText(t(UiKey.ADD_VOICE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
     }
 }
 

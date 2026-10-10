@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -74,7 +76,7 @@ fun BankSmsSettingsScreen() {
         ui = smsSettingsUi(sms?.let { runCatching { it.overview(record = false) }.getOrNull() }, wallets)
     }
 
-    fun act(done: TextKey?, vararg args: String, block: suspend () -> Unit) {
+    fun act(done: TextRef?, vararg args: String, block: suspend () -> Unit) {
         scope.launch {
             try {
                 block()
@@ -82,7 +84,7 @@ fun BankSmsSettingsScreen() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                toaster.show(e.message ?: t(TextKey.IMPORTS_LOAD_FAILED), dark = true)
+                toaster.show(e.message ?: t(UiKey.IMPORTS_LOAD_FAILED), dark = true)
             }
             reload++
         }
@@ -93,7 +95,7 @@ fun BankSmsSettingsScreen() {
         if (permissions.hasSms()) act(null) { block() } else { afterGrant = block; denied = false; explain = true }
     }
 
-    InnerScaffold(t(TextKey.SMS_SETTINGS_TITLE)) {
+    InnerScaffold(t(UiKey.SMS_SETTINGS_TITLE)) {
         val u = ui
         if (u == null) {
             item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(160.dp)) }
@@ -102,9 +104,9 @@ fun BankSmsSettingsScreen() {
         if (!u.available) {
             item(key = "ios") {
                 TintedPanel(PanelTone.QUIET) {
-                    PanelTitle(t(TextKey.BANK_SMS_STATUS_IOS), PanelTone.QUIET)
-                    BasicText(t(TextKey.BANK_SMS_STATUS_IOS_BODY), style = Type.of(13).copy(color = Ink.muted))
-                    QuietButton(t(TextKey.BANK_SMS_PASTE), { nav.push(SmsPasteRoute) }, onTint = true, height = 44.dp)
+                    PanelTitle(t(UiKey.BANK_SMS_STATUS_IOS), PanelTone.QUIET)
+                    BasicText(t(UiKey.BANK_SMS_STATUS_IOS_BODY), style = Type.of(13).copy(color = Ink.muted))
+                    QuietButton(t(UiKey.BANK_SMS_PASTE), { nav.push(SmsPasteRoute) }, onTint = true, height = 44.dp)
                 }
             }
             return@InnerScaffold
@@ -112,19 +114,19 @@ fun BankSmsSettingsScreen() {
         if (u.permissionLost) {
             item(key = "perm") {
                 TintedPanel(PanelTone.AMBER) {
-                    PanelTitle(t(TextKey.SMS_SETTINGS_PERM_TITLE), PanelTone.AMBER)
-                    BasicText(t(TextKey.SMS_SETTINGS_PERM_BODY), style = Type.of(13).copy(color = Ink.focus))
-                    QuietButton(t(TextKey.SMS_SETTINGS_PERM_BUTTON), { withPermission { toaster.show(t(TextKey.SMS_SETTINGS_PERM_BACK), dark = true) } }, onTint = true, height = 44.dp)
+                    PanelTitle(t(UiKey.SMS_SETTINGS_PERM_TITLE), PanelTone.AMBER)
+                    BasicText(t(UiKey.SMS_SETTINGS_PERM_BODY), style = Type.of(13).copy(color = Ink.focus))
+                    QuietButton(t(UiKey.SMS_SETTINGS_PERM_BUTTON), { withPermission { toaster.show(t(UiKey.SMS_SETTINGS_PERM_BACK), dark = true) } }, onTint = true, height = 44.dp)
                 }
             }
         }
-        item(key = "auto") { AutoCard(u, onStop = { act(TextKey.SMS_SETTINGS_STOPPED) { sms?.disable() } }, onStart = {
+        item(key = "auto") { AutoCard(u, onStop = { act(UiKey.SMS_SETTINGS_STOPPED) { sms?.disable() } }, onStart = {
             if (u.senders.isEmpty()) sheet = SenderSheet.Add
-            else withPermission { sms?.enable(u.senders.map { it.sender }); toaster.show(t(TextKey.SMS_SETTINGS_STARTED), dark = true) }
+            else withPermission { sms?.enable(u.senders.map { it.sender }); toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true) }
         }) }
         item(key = "senders") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CountTitle(t(TextKey.SMS_SETTINGS_SENDERS), t(TextKey.SMS_SETTINGS_SENDERS_COUNT, sentenceNumber(u.senders.size), sentenceNumber(SmsSettingsUi.MAX_SENDERS)))
+                CountTitle(t(UiKey.SMS_SETTINGS_SENDERS), t(UiKey.SMS_SETTINGS_SENDERS_COUNT, sentenceNumber(u.senders.size), sentenceNumber(SmsSettingsUi.MAX_SENDERS)))
                 if (u.senders.isNotEmpty()) {
                     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
                         u.senders.forEachIndexed { i, s ->
@@ -133,11 +135,11 @@ fun BankSmsSettingsScreen() {
                         }
                     }
                 }
-                TonalButton(t(TextKey.SMS_SETTINGS_ADD), { sheet = SenderSheet.Add }, Modifier.fillMaxWidth(), enabled = !u.full)
-                BasicText(t(TextKey.SMS_SETTINGS_RULES), style = Type.of(12, lineHeight = 1.7).copy(color = Ink.muted))
+                TonalButton(t(UiKey.SMS_SETTINGS_ADD), { sheet = SenderSheet.Add }, Modifier.fillMaxWidth(), enabled = !u.full)
+                BasicText(t(UiKey.SMS_SETTINGS_RULES), style = Type.of(12, lineHeight = 1.7).copy(color = Ink.muted))
             }
         }
-        item(key = "notif") { LinkRow(t(TextKey.SMS_SETTINGS_NOTIF_LINK), { nav.push(NotificationSettingsRoute) }) }
+        item(key = "notif") { LinkRow(t(UiKey.SMS_SETTINGS_NOTIF_LINK), { nav.push(NotificationSettingsRoute) }) }
     }
 
     SenderSheetView(
@@ -148,20 +150,20 @@ fun BankSmsSettingsScreen() {
         onSave = { name, wallet ->
             val current = ui?.senders?.map { it.sender }.orEmpty()
             when (val s = sheet) {
-                is SenderSheet.Edit -> act(TextKey.SMS_SETTINGS_LINKED, s.sender.sender, wallet.name) { sms?.chooseWallet(s.sender.sender, wallet.id) }
+                is SenderSheet.Edit -> act(UiKey.SMS_SETTINGS_LINKED, s.sender.sender, wallet.name) { sms?.chooseWallet(s.sender.sender, wallet.id) }
                 SenderSheet.Add -> withPermission {
                     sms?.enable(sendersWith(current, name))
                     sms?.chooseWallet(name.trim(), wallet.id)
-                    toaster.show(t(TextKey.SMS_SETTINGS_ADDED, name.trim()), dark = true)
+                    toaster.show(t(UiKey.SMS_SETTINGS_ADDED, name.trim()), dark = true)
                 }
                 null -> Unit
             }
             sheet = null
         },
-        onUnlink = { s -> sheet = null; act(TextKey.SMS_SETTINGS_UNLINKED) { sms?.chooseWallet(s.sender, null) } },
+        onUnlink = { s -> sheet = null; act(UiKey.SMS_SETTINGS_UNLINKED) { sms?.chooseWallet(s.sender, null) } },
         onRemove = { s ->
             sheet = null
-            act(TextKey.SMS_SETTINGS_REMOVED, s.sender) { sms?.enable(sendersWithout(ui?.senders?.map { it.sender }.orEmpty(), s.sender)) }
+            act(UiKey.SMS_SETTINGS_REMOVED, s.sender) { sms?.enable(sendersWithout(ui?.senders?.map { it.sender }.orEmpty(), s.sender)) }
         },
     )
     SmsPermissionSheet(
@@ -189,20 +191,20 @@ private fun AutoCard(u: SmsSettingsUi, onStop: () -> Unit, onStart: () -> Unit) 
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.SMS_SETTINGS_AUTO_TITLE), Modifier.weight(1f), style = Type.of(16, FontWeight.Bold))
-                Tag(t(if (u.reading) TextKey.SMS_SETTINGS_ON else TextKey.SMS_SETTINGS_OFF), if (u.reading) TagTone.NEW else TagTone.AMBER)
+                BasicText(t(UiKey.SMS_SETTINGS_AUTO_TITLE), Modifier.weight(1f), style = Type.of(16, FontWeight.Bold))
+                Tag(t(if (u.reading) UiKey.SMS_SETTINGS_ON else UiKey.SMS_SETTINGS_OFF), if (u.reading) TagTone.NEW else TagTone.AMBER)
             }
             val body = when {
-                u.permissionLost -> TextKey.SMS_SETTINGS_BODY_PERM
-                u.enabled -> TextKey.SMS_SETTINGS_BODY_ON
-                else -> TextKey.SMS_SETTINGS_BODY_OFF
+                u.permissionLost -> UiKey.SMS_SETTINGS_BODY_PERM
+                u.enabled -> UiKey.SMS_SETTINGS_BODY_ON
+                else -> UiKey.SMS_SETTINGS_BODY_OFF
             }
             BasicText(t(body), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.muted))
-            if (u.enabled && !u.permissionLost) QuietButton(t(TextKey.SMS_SETTINGS_STOP), onStop, Modifier.fillMaxWidth(), danger = true)
-            if (!u.enabled) PrimaryButton(t(TextKey.SMS_SETTINGS_START), onStart, Modifier.fillMaxWidth())
+            if (u.enabled && !u.permissionLost) QuietButton(t(UiKey.SMS_SETTINGS_STOP), onStop, Modifier.fillMaxWidth(), danger = true)
+            if (!u.enabled) PrimaryButton(t(UiKey.SMS_SETTINGS_START), onStart, Modifier.fillMaxWidth())
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 StatusDot(if (u.permissionLost) Ink.focus else Ink.income, 8.dp)
-                BasicText(t(if (u.permissionLost) TextKey.SMS_SETTINGS_PERM_LINE_OFF else TextKey.SMS_SETTINGS_PERM_LINE_ON), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(if (u.permissionLost) UiKey.SMS_SETTINGS_PERM_LINE_OFF else UiKey.SMS_SETTINGS_PERM_LINE_ON), style = Type.caption().copy(color = Ink.muted))
             }
         }
     }
@@ -212,9 +214,9 @@ private fun AutoCard(u: SmsSettingsUi, onStop: () -> Unit, onStart: () -> Unit) 
 private fun SenderRow(s: SenderUi, onClick: () -> Unit) {
     val waiting = s.walletId == null
     val sub = when {
-        !waiting -> t(TextKey.SMS_SETTINGS_RECORDS_IN, s.walletName ?: t(TextKey.NOT_AVAILABLE))
-        s.waiting > 0 -> t(TextKey.SMS_SETTINGS_WAITING_WALLET, msgsCount(s.waiting))
-        else -> t(TextKey.SMS_SETTINGS_NO_WALLET)
+        !waiting -> t(UiKey.SMS_SETTINGS_RECORDS_IN, s.walletName ?: t(TextKey.NOT_AVAILABLE))
+        s.waiting > 0 -> t(UiKey.SMS_SETTINGS_WAITING_WALLET, msgsCount(s.waiting))
+        else -> t(UiKey.SMS_SETTINGS_NO_WALLET)
     }
     ListRow(
         title = s.sender,

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,11 +27,11 @@ import app.masroufy.ui.theme.Type
 internal fun FactsCard(summary: FactsSummary, onOpen: () -> Unit) {
     val shape = RoundedCornerShape(22.dp)
     val ring = if (summary.missing) Modifier.insetRing(shape, 1.5.dp, Ink.focus.copy(alpha = 0.35f)) else Modifier
-    FloatingCard(Modifier.fillMaxWidth().then(ring), onClick = onOpen, clickLabel = t(TextKey.ZAKAT_SCREEN_FACTS)) {
+    FloatingCard(Modifier.fillMaxWidth().then(ring), onClick = onOpen, clickLabel = t(UiKey.ZAKAT_SCREEN_FACTS)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                BasicText(t(TextKey.ZAKAT_SCREEN_FACTS), style = Type.of(15, FontWeight.Bold))
-                BasicText(t(TextKey.ZAKAT_SCREEN_FACTS_SUB), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.ZAKAT_SCREEN_FACTS), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.ZAKAT_SCREEN_FACTS_SUB), style = Type.caption().copy(color = Ink.muted))
             }
             if (summary.missing) ToneChip(summary.chip, Ink.focus, Ink.alertBg) else ToneChip(summary.chip, Ink.income, Ink.selected)
         }
@@ -41,11 +42,11 @@ internal fun FactsCard(summary: FactsSummary, onOpen: () -> Unit) {
 @Composable
 internal fun LinesSection(ui: ZakatUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.ZAKAT_SCREEN_LINES), style = Type.section())
+        BasicText(t(UiKey.ZAKAT_SCREEN_LINES), style = Type.section())
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             when {
-                !ui.hasYear -> BasicText(t(TextKey.ZAKAT_SCREEN_NO_YEAR), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
-                ui.lines.isEmpty() -> BasicText(t(TextKey.ZAKAT_SCREEN_LINES_EMPTY), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
+                !ui.hasYear -> BasicText(t(UiKey.ZAKAT_SCREEN_NO_YEAR), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
+                ui.lines.isEmpty() -> BasicText(t(UiKey.ZAKAT_SCREEN_LINES_EMPTY), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
             }
             ui.lines.forEachIndexed { i, line ->
                 if (i > 0) RowGap()
@@ -66,7 +67,7 @@ internal fun LinesSection(ui: ZakatUi) {
 @Composable
 internal fun OutsSection(ui: ZakatUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.ZAKAT_SCREEN_OUT), style = Type.of(15, FontWeight.Bold).copy(color = Ink.soft))
+        BasicText(t(UiKey.ZAKAT_SCREEN_OUT), style = Type.of(15, FontWeight.Bold).copy(color = Ink.soft))
         for (o in ui.outs) {
             QuietBox {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

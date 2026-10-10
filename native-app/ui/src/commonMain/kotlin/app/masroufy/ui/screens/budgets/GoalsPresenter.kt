@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.GOAL_PACE_MIN_DAYS
 import app.masroufy.core.GoalProgress
@@ -61,13 +62,13 @@ fun mapGoals(list: List<GoalProgress>, today: IsoDate, wallets: List<Wallet>): G
         active = active.map { goalCard(it, today, byId) },
         archived = archived.map { p ->
             val saved = p.savedMinor?.let { amount(it, p.goal.currency) } ?: t(TextKey.NOT_AVAILABLE)
-            ArchivedUi(p.goal.id, p.goal.name, t(TextKey.GOALS_ARCHIVED_ROW, saved, amount(p.goal.targetMinor, p.goal.currency)))
+            ArchivedUi(p.goal.id, p.goal.name, t(UiKey.GOALS_ARCHIVED_ROW, saved, amount(p.goal.targetMinor, p.goal.currency)))
         },
     )
 }
 
 /** «٣١ ديسمبر ٢٠٢٦». */
-fun longDate(date: IsoDate): String = t(TextKey.GOAL_EDIT_DATE_VALUE, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
+fun longDate(date: IsoDate): String = t(UiKey.GOAL_EDIT_DATE_VALUE, dayMonth(date), sentenceNumber(parseIsoDate(date).year))
 
 /** نسبة الشريط: المدّخر ÷ الهدف ×١٠٠ لتحت، بين ٠ و١٠٠ — null لو المدّخر مش معروف. عرض بس (أعداد صحيحة). */
 fun goalPercent(saved: Halalas?, target: Halalas): Int? {
@@ -77,8 +78,8 @@ fun goalPercent(saved: Halalas?, target: Halalas): Int? {
 
 /** اسم الحساب المربوط: «الاسم ••••١٢٣٤» (آخر أربعة بس — CLAUDE.md #11) أو «حساب مربوط» لو في بلد تانية. */
 fun walletLabel(wallet: Wallet?): String = when {
-    wallet == null -> t(TextKey.GOALS_LINKED_OTHER)
-    wallet.accountLast4 != null -> t(TextKey.GOALS_WALLET_LAST4, wallet.name, wallet.accountLast4!!)
+    wallet == null -> t(UiKey.GOALS_LINKED_OTHER)
+    wallet.accountLast4 != null -> t(UiKey.GOALS_WALLET_LAST4, wallet.name, wallet.accountLast4!!)
     else -> wallet.name
 }
 
@@ -90,19 +91,19 @@ private fun goalCard(p: GoalProgress, today: IsoDate, wallets: Map<String, Walle
     val young = today >= g.startDate && daysBetween(g.startDate, today) < GOAL_PACE_MIN_DAYS
     val (chip, tone) = when (p.state) {
         GoalState.UNKNOWN -> t(TextKey.NOT_AVAILABLE) to Tone.MUTED
-        GoalState.REACHED -> t(TextKey.GOALS_CHIP_REACHED) to Tone.OK
-        GoalState.OVERDUE -> t(TextKey.GOALS_CHIP_OVERDUE) to Tone.OVER
-        GoalState.NOT_STARTED -> t(TextKey.GOALS_CHIP_NEW) to Tone.NEW
+        GoalState.REACHED -> t(UiKey.GOALS_CHIP_REACHED) to Tone.OK
+        GoalState.OVERDUE -> t(UiKey.GOALS_CHIP_OVERDUE) to Tone.OVER
+        GoalState.NOT_STARTED -> t(UiKey.GOALS_CHIP_NEW) to Tone.NEW
         GoalState.PACE_UNKNOWN -> null to Tone.MUTED
-        GoalState.ON_TRACK -> (if (young) t(TextKey.GOALS_CHIP_NEW) to Tone.NEW else t(TextKey.GOALS_CHIP_AHEAD) to Tone.OK)
-        GoalState.BEHIND -> (if (young) t(TextKey.GOALS_CHIP_NEW) to Tone.NEW else t(TextKey.GOALS_CHIP_BEHIND) to Tone.OVER)
+        GoalState.ON_TRACK -> (if (young) t(UiKey.GOALS_CHIP_NEW) to Tone.NEW else t(UiKey.GOALS_CHIP_AHEAD) to Tone.OK)
+        GoalState.BEHIND -> (if (young) t(UiKey.GOALS_CHIP_NEW) to Tone.NEW else t(UiKey.GOALS_CHIP_BEHIND) to Tone.OVER)
     }
     val percent = goalPercent(p.savedMinor, g.targetMinor)
     val target = amount(g.targetMinor, g.currency)
     return GoalCardUi(
         id = g.id,
         name = g.name,
-        sub = t(TextKey.GOALS_SUB_UNTIL, until, wallet ?: t(TextKey.GOALS_MANUAL)),
+        sub = t(UiKey.GOALS_SUB_UNTIL, until, wallet ?: t(UiKey.GOALS_MANUAL)),
         untilText = until,
         starred = g.starred,
         chip = chip,
@@ -115,7 +116,7 @@ private fun goalCard(p: GoalProgress, today: IsoDate, wallets: Map<String, Walle
         linked = linked,
         walletLabel = wallet,
         stats = stats(p, young),
-        ofText = if (percent == null) t(TextKey.GOALS_OF_ONLY, target) else t(TextKey.GOALS_OF, target, sentenceNumber(percent)),
+        ofText = if (percent == null) t(UiKey.GOALS_OF_ONLY, target) else t(UiKey.GOALS_OF, target, sentenceNumber(percent)),
         progress = p,
     )
 }
@@ -128,29 +129,29 @@ private fun stats(p: GoalProgress, young: Boolean): List<GoalStat> {
     val na = p.savedMinor == null
     val ahead = p.aheadMinor
     val aheadStat = when {
-        na || ahead == null -> GoalStat(t(TextKey.GOALS_STAT_AHEAD), t(TextKey.NOT_AVAILABLE), StatTone.MUTED)
-        ahead > 0 -> GoalStat(t(TextKey.GOALS_STAT_AHEAD), money(ahead, c), StatTone.GOOD)
-        ahead < 0 -> GoalStat(t(TextKey.GOALS_STAT_BEHIND), money(ahead, c), StatTone.BAD)
-        else -> GoalStat(t(TextKey.GOALS_STAT_ON_TIME), money(ahead, c), StatTone.PLAIN)
+        na || ahead == null -> GoalStat(t(UiKey.GOALS_STAT_AHEAD), t(TextKey.NOT_AVAILABLE), StatTone.MUTED)
+        ahead > 0 -> GoalStat(t(UiKey.GOALS_STAT_AHEAD), money(ahead, c), StatTone.GOOD)
+        ahead < 0 -> GoalStat(t(UiKey.GOALS_STAT_BEHIND), money(ahead, c), StatTone.BAD)
+        else -> GoalStat(t(UiKey.GOALS_STAT_ON_TIME), money(ahead, c), StatTone.PLAIN)
     }
     val projected = p.projectedAtTargetMinor
     val reach = when {
-        na -> GoalStat(t(TextKey.GOALS_STAT_REACH), t(TextKey.NOT_AVAILABLE), StatTone.MUTED)
-        projected != null -> GoalStat(t(TextKey.GOALS_STAT_REACH), money(projected, c), if (projected < p.goal.targetMinor) StatTone.WARN else StatTone.PLAIN)
-        young && (p.state == GoalState.ON_TRACK || p.state == GoalState.BEHIND) -> GoalStat(t(TextKey.GOALS_STAT_REACH), t(TextKey.GOALS_STAT_AFTER_30), StatTone.PLAIN)
-        else -> GoalStat(t(TextKey.GOALS_STAT_REACH), t(TextKey.NOT_AVAILABLE), StatTone.MUTED)
+        na -> GoalStat(t(UiKey.GOALS_STAT_REACH), t(TextKey.NOT_AVAILABLE), StatTone.MUTED)
+        projected != null -> GoalStat(t(UiKey.GOALS_STAT_REACH), money(projected, c), if (projected < p.goal.targetMinor) StatTone.WARN else StatTone.PLAIN)
+        young && (p.state == GoalState.ON_TRACK || p.state == GoalState.BEHIND) -> GoalStat(t(UiKey.GOALS_STAT_REACH), t(UiKey.GOALS_STAT_AFTER_30), StatTone.PLAIN)
+        else -> GoalStat(t(UiKey.GOALS_STAT_REACH), t(TextKey.NOT_AVAILABLE), StatTone.MUTED)
     }
     return listOf(
-        GoalStat(t(TextKey.GOALS_STAT_EXPECTED), money(p.expectedMinor, c), if (p.expectedMinor == null) StatTone.MUTED else StatTone.PLAIN),
+        GoalStat(t(UiKey.GOALS_STAT_EXPECTED), money(p.expectedMinor, c), if (p.expectedMinor == null) StatTone.MUTED else StatTone.PLAIN),
         aheadStat,
-        GoalStat(t(TextKey.GOALS_STAT_REQUIRED), money(p.requiredPerMonthMinor, c), if (p.requiredPerMonthMinor == null) StatTone.MUTED else StatTone.PLAIN),
+        GoalStat(t(UiKey.GOALS_STAT_REQUIRED), money(p.requiredPerMonthMinor, c), if (p.requiredPerMonthMinor == null) StatTone.MUTED else StatTone.PLAIN),
         reach,
     )
 }
 
 /** سطر «المدّخر» تحت الرقم في تفاصيل الخطة: «٦١٪، بقي X» · «اكتملت!» · «رصيد الحساب غير معروف». */
 fun detailProgressLine(card: GoalCardUi): String = when {
-    card.savedMinor == null || card.percent == null -> t(TextKey.GOAL_DETAIL_UNKNOWN)
-    card.reached -> t(TextKey.GOAL_DETAIL_REACHED, sentenceNumber(card.percent))
-    else -> t(TextKey.GOAL_DETAIL_PROGRESS, sentenceNumber(card.percent), amountLabel(card.progress.remainingMinor, card.currency))
+    card.savedMinor == null || card.percent == null -> t(UiKey.GOAL_DETAIL_UNKNOWN)
+    card.reached -> t(UiKey.GOAL_DETAIL_REACHED, sentenceNumber(card.percent))
+    else -> t(UiKey.GOAL_DETAIL_PROGRESS, sentenceNumber(card.percent), amountLabel(card.progress.remainingMinor, card.currency))
 }

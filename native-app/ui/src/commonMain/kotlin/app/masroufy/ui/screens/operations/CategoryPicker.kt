@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -53,11 +54,11 @@ fun CategoryPicker(
     body: String? = null,
     onPick: (Category) -> Unit,
 ) {
-    Sheet(visible, onDismiss, title = title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 12.dp) {
+    Sheet(visible, onDismiss, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         BasicText(title, style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
         if (body != null) BasicText(body, style = Type.of(13).copy(color = app.masroufy.ui.theme.Ink.muted))
         if (choices.isEmpty()) {
-            EmptyState(t(TextKey.CATEGORY_PICKER_EMPTY))
+            EmptyState(t(UiKey.CATEGORY_PICKER_EMPTY))
             return@Sheet
         }
         FlowRow(

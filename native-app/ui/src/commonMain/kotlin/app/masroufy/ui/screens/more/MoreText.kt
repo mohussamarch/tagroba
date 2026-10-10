@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
 import app.masroufy.core.dayMonth
@@ -12,11 +14,11 @@ import app.masroufy.ui.text.t
  * عرض بس (من غير أي حساب فلوس): صيغة العدد بالعربي (واحد · اتنين · ٣–١٠ · ١١+) والتاريخ الكامل «١٢ مايو ٢٠٢٦».
  * الأرقام العربية بالفاصلة «،» جنبها مش «·» (KOTLIN-MAP §٣).
  */
-data class CountWords(val one: TextKey, val two: TextKey, val few: TextKey, val many: TextKey)
+data class CountWords(val one: TextRef, val two: TextRef, val few: TextRef, val many: TextRef)
 
-val WALLET_WORDS = CountWords(TextKey.WLIST_ONE, TextKey.WLIST_TWO, TextKey.WLIST_FEW, TextKey.WLIST_MANY)
-val RECORD_WORDS = CountWords(TextKey.RST_REC_ONE, TextKey.RST_REC_TWO, TextKey.RST_REC_FEW, TextKey.RST_REC_MANY)
-val DAY_WORDS = CountWords(TextKey.BAK_DAY_ONE, TextKey.BAK_DAY_TWO, TextKey.BAK_DAY_FEW, TextKey.BAK_DAY_MANY)
+val WALLET_WORDS = CountWords(UiKey.WLIST_ONE, UiKey.WLIST_TWO, UiKey.WLIST_FEW, UiKey.WLIST_MANY)
+val RECORD_WORDS = CountWords(UiKey.RST_REC_ONE, UiKey.RST_REC_TWO, UiKey.RST_REC_FEW, UiKey.RST_REC_MANY)
+val DAY_WORDS = CountWords(UiKey.BAK_DAY_ONE, UiKey.BAK_DAY_TWO, UiKey.BAK_DAY_FEW, UiKey.BAK_DAY_MANY)
 
 /** «محفظة واحدة» · «محفظتان» · «٣ محافظ» · «١١ محفظة». */
 fun countText(n: Int, words: CountWords): String = when {
@@ -30,5 +32,5 @@ fun countText(n: Int, words: CountWords): String = when {
 fun fullDate(iso: String?): String? {
     val d: IsoDate = iso?.take(10) ?: return null
     if (!isValidIsoDate(d)) return null
-    return t(TextKey.MORE_DATE_FULL, dayMonth(d), sentenceNumber(parseIsoDate(d).year))
+    return t(UiKey.MORE_DATE_FULL, dayMonth(d), sentenceNumber(parseIsoDate(d).year))
 }

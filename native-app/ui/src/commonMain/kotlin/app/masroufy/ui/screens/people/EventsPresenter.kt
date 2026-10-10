@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.EventRole
 import app.masroufy.core.EventSummary
@@ -45,7 +46,7 @@ internal data class NextEventUi(val id: Id, val name: String, val rel: String)
 internal data class EventsUi(val next: NextEventUi?, val active: List<EventCardUi>, val archived: List<EventCardUi>)
 
 internal fun ownerOf(e: LifeEvent, hostName: String?): String =
-    if (e.mine) t(TextKey.PPL_MINE) else hostName?.let { t(TextKey.PPL_HOST_OF, it) } ?: t(TextKey.EVENTS_OTHER_OWNER)
+    if (e.mine) t(UiKey.PPL_MINE) else hostName?.let { t(UiKey.PPL_HOST_OF, it) } ?: t(UiKey.EVENTS_OTHER_OWNER)
 
 private fun lines(s: EventSummary, pick: (app.masroufy.core.EventCurrencyTotals) -> Halalas?): List<MoneyLine> =
     s.totals.mapNotNull { c -> pick(c)?.let { MoneyLine(it, c.currency) } }
@@ -54,16 +55,16 @@ private fun lines(s: EventSummary, pick: (app.masroufy.core.EventCurrencyTotals)
 internal fun eventStats(e: LifeEvent, s: EventSummary): List<EventStat> {
     val out = mutableListOf(
         EventStat(
-            t(TextKey.EVENTS_SPEND), if (s.spendCount > 0) lines(s) { it.spentMinor } else emptyList(), AmountTone.PLAIN,
-            if (s.spendCount > 0) countOf(s.spendCount, Noun.OPS) else null, if (s.spendCount > 0) null else t(TextKey.EVENTS_NOT_LINKED),
+            t(UiKey.EVENTS_SPEND), if (s.spendCount > 0) lines(s) { it.spentMinor } else emptyList(), AmountTone.PLAIN,
+            if (s.spendCount > 0) countOf(s.spendCount, Noun.OPS) else null, if (s.spendCount > 0) null else t(UiKey.EVENTS_NOT_LINKED),
         ),
     )
     val giftsIn = s.giftInCount ?: 0
-    if (e.mine && giftsIn > 0) out += EventStat(t(TextKey.EVENTS_GIFTS_IN), lines(s) { it.giftsInMinor }, AmountTone.INCOME, countOf(giftsIn, Noun.GIFTS), null)
+    if (e.mine && giftsIn > 0) out += EventStat(t(UiKey.EVENTS_GIFTS_IN), lines(s) { it.giftsInMinor }, AmountTone.INCOME, countOf(giftsIn, Noun.GIFTS), null)
     if (!e.mine) {
-        val label = t(if (e.kind == LifeEventKind.CONDOLENCE) TextKey.EVENTS_GAVE_CONDOLENCE else TextKey.EVENTS_GAVE)
+        val label = t(if (e.kind == LifeEventKind.CONDOLENCE) UiKey.EVENTS_GAVE_CONDOLENCE else UiKey.EVENTS_GAVE)
         out += if (s.giftOutCount > 0) EventStat(label, lines(s) { it.giftsOutMinor }, AmountTone.EXPENSE, countOf(s.giftOutCount, Noun.OPS), null)
-        else EventStat(label, emptyList(), AmountTone.EXPENSE, null, t(TextKey.EVENTS_NOT_YET))
+        else EventStat(label, emptyList(), AmountTone.EXPENSE, null, t(UiKey.EVENTS_NOT_YET))
     }
     return out
 }
@@ -114,12 +115,12 @@ internal fun eventDetailUi(d: EventDetail, wallets: Map<Id, String>, prep: List<
     val e = d.event
     val s = d.summary
     val condolence = e.kind == LifeEventKind.CONDOLENCE
-    val gaveWord = t(if (condolence) TextKey.EVENTS_GAVE_CONDOLENCE else TextKey.EVENTS_GAVE)
+    val gaveWord = t(if (condolence) UiKey.EVENTS_GAVE_CONDOLENCE else UiKey.EVENTS_GAVE)
     val giftRole = if (e.mine) EventRole.GIFT_IN else EventRole.GIFT_OUT
     val spends = d.transactions.filter { it.link.role == EventRole.SPEND }.map { l ->
         val txn = l.transaction
-        val share = if (l.link.sharePercent == EVENT_SHARE_WHOLE) t(TextKey.EVENT_DETAIL_WHOLE)
-        else t(TextKey.EVENT_DETAIL_SHARE_OF, sentenceNumber(l.link.sharePercent), amountLabel(txn.amountMinor, txn.currency, showCurrency = false))
+        val share = if (l.link.sharePercent == EVENT_SHARE_WHOLE) t(UiKey.EVENT_DETAIL_WHOLE)
+        else t(UiKey.EVENT_DETAIL_SHARE_OF, sentenceNumber(l.link.sharePercent), amountLabel(txn.amountMinor, txn.currency, showCurrency = false))
         LinkedRowUi(txn.id, txnTitle(txn), joinLine(dayMonth(txn.occurredAt), txn.walletId?.let(wallets::get)), l.shareMinor, txn.currency, share, AmountTone.EXPENSE)
     }
     val giftRows = d.transactions.filter { it.link.role == giftRole }.map { l ->
@@ -128,26 +129,26 @@ internal fun eventDetailUi(d: EventDetail, wallets: Map<Id, String>, prep: List<
     }
     val giftCount = if (e.mine) s.giftInCount ?: 0 else s.giftOutCount
     val done = prep.count { it.done }
-    val prepLine = if (prep.isEmpty()) t(TextKey.EVENT_PREP_NO_ITEMS)
-    else joinLine(countOf(prep.size, Noun.ITEMS), if (done > 0) t(TextKey.EVENT_DETAIL_PREP_DONE, sentenceNumber(done)) else t(TextKey.EVENT_DETAIL_PREP_NONE_DONE))
+    val prepLine = if (prep.isEmpty()) t(UiKey.EVENT_PREP_NO_ITEMS)
+    else joinLine(countOf(prep.size, Noun.ITEMS), if (done > 0) t(UiKey.EVENT_DETAIL_PREP_DONE, sentenceNumber(done)) else t(UiKey.EVENT_DETAIL_PREP_NONE_DONE))
     val canPrep = eventNeedsPrep(e, today)
     return EventDetailUi(
         event = e,
         hostName = d.hostName,
         kindLine = joinLine(e.kind.label, dayMonth(e.date)),
         whenLine = relativeDays(daysBetween(today, e.date)),
-        owner = if (e.mine) t(TextKey.PPL_MINE) else d.hostName?.let { t(TextKey.EVENT_DETAIL_HOST, it) } ?: t(TextKey.EVENTS_OTHER_OWNER),
+        owner = if (e.mine) t(UiKey.PPL_MINE) else d.hostName?.let { t(UiKey.EVENT_DETAIL_HOST, it) } ?: t(UiKey.EVENTS_OTHER_OWNER),
         spend = if (s.spendCount > 0) lines(s) { it.spentMinor } else null,
-        giftLabel = if (e.mine) t(TextKey.EVENTS_GIFTS_IN) else gaveWord,
+        giftLabel = if (e.mine) t(UiKey.EVENTS_GIFTS_IN) else gaveWord,
         gifts = if (giftCount > 0) lines(s) { if (e.mine) it.giftsInMinor else it.giftsOutMinor } else null,
-        giftEmpty = t(if (e.mine) TextKey.EVENT_DETAIL_GIFTS_NONE else TextKey.EVENTS_NOT_YET),
-        heroNote = if (e.mine) t(TextKey.EVENT_DETAIL_NOTE_MINE) else t(TextKey.EVENT_DETAIL_NOTE_OTHER, d.hostName ?: t(TextKey.EVENTS_OTHER_OWNER)),
+        giftEmpty = t(if (e.mine) UiKey.EVENT_DETAIL_GIFTS_NONE else UiKey.EVENTS_NOT_YET),
+        heroNote = if (e.mine) t(UiKey.EVENT_DETAIL_NOTE_MINE) else t(UiKey.EVENT_DETAIL_NOTE_OTHER, d.hostName ?: t(UiKey.EVENTS_OTHER_OWNER)),
         spends = spends,
         giftRows = giftRows,
         hasGiftsIn = e.mine && (s.giftInCount ?: 0) > 0,
         canPrep = canPrep,
         prepLine = prepLine,
-        noPrep = if (canPrep) null else t(if (!prepAllowed(e)) TextKey.EVENT_DETAIL_NO_PREP_CONDOLENCE else TextKey.EVENT_DETAIL_NO_PREP_PAST),
+        noPrep = if (canPrep) null else t(if (!prepAllowed(e)) UiKey.EVENT_DETAIL_NO_PREP_CONDOLENCE else UiKey.EVENT_DETAIL_NO_PREP_PAST),
         reminder = reminder,
         linkedTxnIds = d.transactions.map { it.transaction.id }.toSet(),
     )

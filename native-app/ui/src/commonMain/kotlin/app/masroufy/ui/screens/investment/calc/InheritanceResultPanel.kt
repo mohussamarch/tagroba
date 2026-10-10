@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +66,7 @@ fun InheritanceResultPanel(ui: InheritanceResultUi, onDistantAnswer: (Boolean) -
 private fun Computed(v: InheritanceView.Computed, ui: InheritanceResultUi) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.INHRES_HERO_LABEL), style = Type.of(14).copy(color = Ink.onHeroMuted))
+            BasicText(t(UiKey.INHRES_HERO_LABEL), style = Type.of(14).copy(color = Ink.onHeroMuted))
             HeroAmount(v.poolMinor, ui.currency, Modifier.fillMaxWidth(), size = 32)
             if (v.segments.isNotEmpty()) {
                 Row(Modifier.fillMaxWidth().height(10.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -119,8 +120,8 @@ private fun AskDistant(onAnswer: (Boolean) -> Unit) {
     ) {
         BasicText(t(TextKey.INHERIT_UNSUPPORTED_ASK_DISTANT), style = Type.of(15, FontWeight.Bold).copy(color = warnDeep))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(TextKey.CALCUI_NO), { onAnswer(false) }, Modifier.weight(1f))
-            SecondaryButton(t(TextKey.CALCUI_YES), { onAnswer(true) }, Modifier.weight(1f))
+            PrimaryButton(t(UiKey.CALCUI_NO), { onAnswer(false) }, Modifier.weight(1f))
+            SecondaryButton(t(UiKey.CALCUI_YES), { onAnswer(true) }, Modifier.weight(1f))
         }
     }
 }

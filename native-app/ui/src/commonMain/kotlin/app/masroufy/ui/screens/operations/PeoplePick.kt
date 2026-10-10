@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,8 +46,8 @@ internal fun NewPersonBox(name: String, selected: Boolean, circle: PersonCircle?
     val shape = RoundedCornerShape(Radius.control)
     val surface = if (selected) Modifier.background(Ink.selected).insetRing(shape, 1.5.dp, Ink.primary) else Modifier.background(Color(0x0A193D33))
     Column(Modifier.fillMaxWidth().clip(shape).then(surface).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.TRANSFER_PARTY_NEW_TITLE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
-        TextInput(name, onName, placeholder = t(TextKey.TRANSFER_PARTY_NAME_LABEL))
+        BasicText(t(UiKey.TRANSFER_PARTY_NEW_TITLE), style = Type.of(12, FontWeight.Bold).copy(color = Ink.primary))
+        TextInput(name, onName, placeholder = t(UiKey.TRANSFER_PARTY_NAME_LABEL))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             for (c in NEW_PERSON_CIRCLES) SelectChip(c.label, circle == c, { onCircle(c) })
         }

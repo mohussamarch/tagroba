@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,7 +55,7 @@ internal fun OperationListRow(row: OpRow, onOpen: () -> Unit, onMenu: (Anchor) -
             )
         }
         val press = rememberPress()
-        val label = t(TextKey.OPERATIONS_ROW_ACTIONS, row.title)
+        val label = t(UiKey.OPERATIONS_ROW_ACTIONS, row.title)
         Box(
             Modifier.size(36.dp, 48.dp).pressScale(press).tap(press, label = label) { onMenu(anchor) }
                 .semantics { contentDescription = label },
@@ -69,7 +70,7 @@ internal fun RowTile(row: OpRow, size: Int = 36) {
     Box {
         IconTile(row.color, size = size.dp) { LucideIcon(row.icon, size = (size / 2).dp, tint = row.color) }
         if (row.unrecorded) {
-            val label = t(TextKey.OPERATIONS_UNRECORDED)
+            val label = t(UiKey.OPERATIONS_UNRECORDED)
             NotificationDot(Modifier.align(AbsoluteAlignment.TopLeft).semantics { contentDescription = label }, size = 8.dp, color = Ink.expense)
         }
     }
@@ -87,17 +88,17 @@ internal fun OperationMenu(open: Pair<OpRow, Anchor>?, onDismiss: () -> Unit, on
     val last = open ?: memo[0]
     val row = last?.first
     val items = if (row == null) emptyList() else buildList {
-        add(MenuItem(t(TextKey.OPERATION_MENU_DETAIL)) { onDetail(row) })
-        if (row.tone == app.masroufy.ui.components.AmountTone.EXPENSE) add(MenuItem(t(TextKey.OPERATION_MENU_PERSON)) { onPerson(row) })
-        add(MenuItem(t(TextKey.OPERATION_MENU_ALL), highlight = true) { onDetail(row) })
+        add(MenuItem(t(UiKey.OPERATION_MENU_DETAIL)) { onDetail(row) })
+        if (row.tone == app.masroufy.ui.components.AmountTone.EXPENSE) add(MenuItem(t(UiKey.OPERATION_MENU_PERSON)) { onPerson(row) })
+        add(MenuItem(t(UiKey.OPERATION_MENU_ALL), highlight = true) { onDetail(row) })
     }
     LiquidMenu(
         visible = open != null,
         onDismiss = onDismiss,
         anchor = last?.second ?: Anchor(),
-        title = t(TextKey.OPERATION_MENU_TITLE),
+        title = t(UiKey.OPERATION_MENU_TITLE),
         items = items,
-        closeLabel = t(TextKey.SHELL_CLOSE),
+        closeLabel = t(UiKey.SHELL_CLOSE),
     ) {
         if (row != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,7 +97,7 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
     }
 
     Box(Modifier.fillMaxSize()) {
-        InnerScaffold(t(TextKey.INHCALC_TITLE), actions = { SavedButton { nav.push(InheritanceSavedRoute) } }) {
+        InnerScaffold(t(UiKey.INHCALC_TITLE), actions = { SavedButton { nav.push(InheritanceSavedRoute) } }) {
             item(key = "law") { LawLines(draft, foreign) }
             item(key = "steps") { StepsBar(draft.step) { k -> if (k < draft.step) go(k) } }
             // حسبة محفوظة لسه بتتقري ⇒ هيكل مكان النتيجة (مش خطوة «تركة مَن» للحظة)
@@ -112,9 +113,9 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
                             update(draft.copy(items = draft.items + add))
                             toaster.show(
                                 when {
-                                    add.isNotEmpty() -> t(TextKey.INHCALC_BROUGHT, thingsPhrase(add.size))
-                                    got.isEmpty() -> t(TextKey.INHCALC_BRING_NONE)
-                                    else -> t(TextKey.INHCALC_BRING_ALREADY)
+                                    add.isNotEmpty() -> t(UiKey.INHCALC_BROUGHT, thingsPhrase(add.size))
+                                    got.isEmpty() -> t(UiKey.INHCALC_BRING_NONE)
+                                    else -> t(UiKey.INHCALC_BRING_ALREADY)
                                 },
                             )
                         }
@@ -131,13 +132,13 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
         }
         if (loaded) BottomActions(
             Modifier.align(Alignment.BottomCenter),
-            backLabel = if (draft.step > 1) t(if (draft.step == 5) TextKey.INHCALC_EDIT else TextKey.INHCALC_PREV) else null,
+            backLabel = if (draft.step > 1) t(if (draft.step == 5) UiKey.INHCALC_EDIT else UiKey.INHCALC_PREV) else null,
             onBack = { go(if (draft.step == 5) 3 else draft.step - 1) },
             mainLabel = t(
                 when (draft.step) {
-                    5 -> TextKey.INHCALC_SAVE
-                    4 -> TextKey.INHCALC_CALC
-                    else -> TextKey.INHCALC_NEXT
+                    5 -> UiKey.INHCALC_SAVE
+                    4 -> UiKey.INHCALC_CALC
+                    else -> UiKey.INHCALC_NEXT
                 },
             ),
         ) {
@@ -159,7 +160,7 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
                 val s = deps.scenarios.save(sd, draft.scenarioId)
                 update(draft.copy(scenarioId = s.id, scenarioName = s.name))
                 sheetOpen = false
-                toaster.show(t(TextKey.INHCALC_SAVED_TOAST, s.name))
+                toaster.show(t(UiKey.INHCALC_SAVED_TOAST, s.name))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: IllegalArgumentException) {
@@ -176,13 +177,13 @@ fun InheritanceCalculatorScreen(scenarioId: String?) {
 private fun LawLines(d: InheritanceDraft, foreign: Boolean) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         val whose = when {
-            d.step == 1 -> t(TextKey.INHCALC_WHOSE_LINE_START)
-            d.estateOf == EstateOwner.MINE -> t(TextKey.INHCALC_MINE)
-            else -> t(TextKey.INHCALC_OF, d.personName.ifBlank { t(TextKey.INHCALC_OTHER) })
+            d.step == 1 -> t(UiKey.INHCALC_WHOSE_LINE_START)
+            d.estateOf == EstateOwner.MINE -> t(UiKey.INHCALC_MINE)
+            else -> t(UiKey.INHCALC_OF, d.personName.ifBlank { t(UiKey.INHCALC_OTHER) })
         }
         BasicText(whose, style = Type.caption().copy(color = Ink.muted))
-        val law = t(if (d.law == InheritanceLaw.EG) TextKey.INHCALC_LAW_EG else TextKey.INHCALC_LAW_SA) +
-            if (foreign) t(TextKey.INHCALC_LAW_FOREIGN, t(if (d.law == InheritanceLaw.EG) TextKey.INHCALC_COUNTRY_EG else TextKey.INHCALC_COUNTRY_SA)) else ""
+        val law = t(if (d.law == InheritanceLaw.EG) UiKey.INHCALC_LAW_EG else UiKey.INHCALC_LAW_SA) +
+            if (foreign) t(UiKey.INHCALC_LAW_FOREIGN, t(if (d.law == InheritanceLaw.EG) UiKey.INHCALC_COUNTRY_EG else UiKey.INHCALC_COUNTRY_SA)) else ""
         BasicText(
             law,
             Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Ink.selected).padding(horizontal = 12.dp, vertical = 8.dp),

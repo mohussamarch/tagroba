@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Claimant
 import app.masroufy.core.Currency
 import app.masroufy.core.Frac
@@ -64,7 +65,7 @@ const val HEIR_COLORS = 8
 fun inheritanceResultUi(result: InheritanceResult, currency: Currency): InheritanceResultUi {
     val view = when (result) {
         is InheritanceResult.Computed -> computed(result, currency)
-        is InheritanceResult.NoText -> InheritanceView.Stop(StopKind.COURT, t(TextKey.INHRES_COURT_TITLE), uiText(result.reason.textKey), result.citation.text)
+        is InheritanceResult.NoText -> InheritanceView.Stop(StopKind.COURT, t(UiKey.INHRES_COURT_TITLE), uiText(result.reason.textKey), result.citation.text)
         is InheritanceResult.Unsupported ->
             if (result.reason == UnsupportedReason.ASK_DISTANT_RELATIVES) InheritanceView.AskDistant
             else InheritanceView.Stop(StopKind.UNSUPPORTED, null, result.text, null)
@@ -79,9 +80,9 @@ fun badAmountResultUi(law: InheritanceLaw?, currency: Currency): InheritanceResu
 
 fun stopKindLabel(kind: StopKind): String = t(
     when (kind) {
-        StopKind.INVALID -> TextKey.INHRES_KIND_INVALID
-        StopKind.UNSUPPORTED -> TextKey.INHRES_KIND_UNSUPPORTED
-        StopKind.COURT -> TextKey.INHRES_KIND_COURT
+        StopKind.INVALID -> UiKey.INHRES_KIND_INVALID
+        StopKind.UNSUPPORTED -> UiKey.INHRES_KIND_UNSUPPORTED
+        StopKind.COURT -> UiKey.INHRES_KIND_COURT
     },
 )
 
@@ -96,13 +97,13 @@ private fun computed(r: InheritanceResult.Computed, currency: Currency): Inherit
         if (r.debtsMinor > 0) add(ClaimUi(uiText(TextKey.INHERIT_CLAIMANT_DEBTS), r.debtsMinor))
         if (r.wajibaMinor > 0) {
             val son = r.wajiba.firstOrNull()?.child?.isSon ?: true
-            add(ClaimUi(t(TextKey.INHRES_WAJIBA_FOR, (if (son) HeirKind.SON else HeirKind.DAUGHTER).label), r.wajibaMinor))
+            add(ClaimUi(t(UiKey.INHRES_WAJIBA_FOR, (if (son) HeirKind.SON else HeirKind.DAUGHTER).label), r.wajibaMinor))
         }
         if (r.bequestMinor > 0) add(ClaimUi(uiText(TextKey.INHERIT_CLAIMANT_BEQUEST), r.bequestMinor))
     }
     val things = thingsPhrase(r.items.size)
-    val heroSub = if (claims.isEmpty()) t(TextKey.INHRES_HERO_SUB_PLAIN, money(r.grossMinor, currency), things)
-    else t(TextKey.INHRES_HERO_SUB_CLAIMS, money(r.grossMinor, currency), things)
+    val heroSub = if (claims.isEmpty()) t(UiKey.INHRES_HERO_SUB_PLAIN, money(r.grossMinor, currency), things)
+    else t(UiKey.INHRES_HERO_SUB_CLAIMS, money(r.grossMinor, currency), things)
     val items = r.items.map { item ->
         SplitItemUi(item.name, item.valueMinor, item.parts.map { p -> SplitPartUi(claimantLabel(p.claimant, r), p.amountMinor, (p.claimant as? Claimant.Heir)?.let { colors[it.kind] }) })
     }
@@ -113,7 +114,7 @@ private fun computed(r: InheritanceResult.Computed, currency: Currency): Inherit
         claims = claims,
         heirs = heirs,
         items = items,
-        itemsNote = t(if (r.law == InheritanceLaw.EG) TextKey.INHSPLIT_NOTE_EG else TextKey.INHSPLIT_NOTE),
+        itemsNote = t(if (r.law == InheritanceLaw.EG) UiKey.INHSPLIT_NOTE_EG else UiKey.INHSPLIT_NOTE),
         notes = r.notes.map { NoteUi(it.text, it.citation?.text, warn = it.kind == InheritanceNoteKind.UNCLEAR_TEXT) },
     )
 }
@@ -125,11 +126,11 @@ private val PAIRS = listOf(
 )
 
 private fun heirRow(h: HeirShare, r: InheritanceResult.Computed, color: Int?, awl: Boolean, currency: Currency): HeirRowUi {
-    val name = if (h.count > 1) t(TextKey.INHRES_HEIR_COUNT, h.kind.label, sentenceNumber(h.count)) else h.kind.label
+    val name = if (h.count > 1) t(UiKey.INHRES_HEIR_COUNT, h.kind.label, sentenceNumber(h.count)) else h.kind.label
     val names = h.names.filterNotNull().filter { it.isNotBlank() }
     val each = if (h.count > 1 && h.totalMinor > 0) {
         val same = h.amountsMinor.distinct().size == 1
-        t(TextKey.INHRES_EACH, money(h.amountsMinor.first(), currency)) + if (same) "" else t(if (r.law == InheritanceLaw.EG) TextKey.INHRES_EXTRA_PIASTRE else TextKey.INHRES_EXTRA_HALALA)
+        t(UiKey.INHRES_EACH, money(h.amountsMinor.first(), currency)) + if (same) "" else t(if (r.law == InheritanceLaw.EG) UiKey.INHRES_EXTRA_PIASTRE else UiKey.INHRES_EXTRA_HALALA)
     } else null
     return HeirRowUi(
         name = name,
@@ -142,27 +143,27 @@ private fun heirRow(h: HeirShare, r: InheritanceResult.Computed, color: Int?, aw
 }
 
 private fun basisText(h: HeirShare, r: InheritanceResult.Computed, awl: Boolean): String = when (h.basis) {
-    ShareBasis.FARD -> (if (!awl) fardName(h.share) else null) ?: (t(TextKey.INHRES_BASIS_FARD) + if (awl) t(TextKey.INHRES_AFTER_AWL) else "")
+    ShareBasis.FARD -> (if (!awl) fardName(h.share) else null) ?: (t(UiKey.INHRES_BASIS_FARD) + if (awl) t(UiKey.INHRES_AFTER_AWL) else "")
     ShareBasis.RESIDUARY -> {
         val pair = PAIRS.firstOrNull { (m, f) -> h.kind == m || h.kind == f }
         val mixed = pair != null && r.heir(pair.first)?.basis == ShareBasis.RESIDUARY && r.heir(pair.second)?.basis == ShareBasis.RESIDUARY
-        t(if (mixed) TextKey.INHRES_BASIS_REST_MF else TextKey.INHRES_BASIS_REST)
+        t(if (mixed) UiKey.INHRES_BASIS_REST_MF else UiKey.INHRES_BASIS_REST)
     }
-    ShareBasis.FARD_AND_RESIDUARY -> t(TextKey.INHRES_BASIS_FARD_REST)
-    ShareBasis.RADD -> t(TextKey.INHRES_BASIS_RADD)
-    ShareBasis.BLOCKED -> t(TextKey.INHRES_BASIS_BLOCKED)
-    ShareBasis.NOTHING_LEFT -> t(TextKey.INHRES_BASIS_NOTHING)
-    ShareBasis.DISTANT -> t(TextKey.INHRES_BASIS_DISTANT)
+    ShareBasis.FARD_AND_RESIDUARY -> t(UiKey.INHRES_BASIS_FARD_REST)
+    ShareBasis.RADD -> t(UiKey.INHRES_BASIS_RADD)
+    ShareBasis.BLOCKED -> t(UiKey.INHRES_BASIS_BLOCKED)
+    ShareBasis.NOTHING_LEFT -> t(UiKey.INHRES_BASIS_NOTHING)
+    ShareBasis.DISTANT -> t(UiKey.INHRES_BASIS_DISTANT)
 }
 
 /** اسم الفرض لو النصيب كسر من الفروض المعروفة (من غير عول): النصف · الربع · الثمن · الثلث · الثلثان · السدس. */
 private fun fardName(f: Frac): String? = when (f.num to f.den) {
-    1L to 2L -> t(TextKey.INHRES_FRAC_HALF)
-    1L to 4L -> t(TextKey.INHRES_FRAC_QUARTER)
-    1L to 8L -> t(TextKey.INHRES_FRAC_EIGHTH)
-    1L to 3L -> t(TextKey.INHRES_FRAC_THIRD)
-    2L to 3L -> t(TextKey.INHRES_FRAC_TWO_THIRDS)
-    1L to 6L -> t(TextKey.INHRES_FRAC_SIXTH)
+    1L to 2L -> t(UiKey.INHRES_FRAC_HALF)
+    1L to 4L -> t(UiKey.INHRES_FRAC_QUARTER)
+    1L to 8L -> t(UiKey.INHRES_FRAC_EIGHTH)
+    1L to 3L -> t(UiKey.INHRES_FRAC_THIRD)
+    2L to 3L -> t(UiKey.INHRES_FRAC_TWO_THIRDS)
+    1L to 6L -> t(UiKey.INHRES_FRAC_SIXTH)
     else -> null
 }
 
@@ -171,18 +172,18 @@ fun fractionText(f: Frac): String = if (f.isZero) sentenceDigits("0") else sente
 
 /** «شيء واحد · شيئان · ٣ أشياء · ١١ شيئًا». */
 fun thingsPhrase(n: Int): String = when (n) {
-    1 -> t(TextKey.INHCALC_THINGS_ONE)
-    2 -> t(TextKey.INHCALC_THINGS_TWO)
-    in 3..10 -> t(TextKey.INHCALC_THINGS_FEW, sentenceNumber(n))
-    else -> t(TextKey.INHCALC_THINGS_MANY, sentenceNumber(n))
+    1 -> t(UiKey.INHCALC_THINGS_ONE)
+    2 -> t(UiKey.INHCALC_THINGS_TWO)
+    in 3..10 -> t(UiKey.INHCALC_THINGS_FEW, sentenceNumber(n))
+    else -> t(UiKey.INHCALC_THINGS_MANY, sentenceNumber(n))
 }
 
 private fun claimantLabel(c: Claimant, r: InheritanceResult.Computed): String = when (c) {
     is Claimant.Heir -> {
         val share = r.heir(c.kind)
         share?.names?.getOrNull(c.index)?.takeIf { it.isNotBlank() }
-            ?: if ((share?.count ?: 1) > 1) t(TextKey.INHRES_HEIR_NUMBER, c.kind.label, sentenceNumber(c.index + 1)) else c.kind.label
+            ?: if ((share?.count ?: 1) > 1) t(UiKey.INHRES_HEIR_NUMBER, c.kind.label, sentenceNumber(c.index + 1)) else c.kind.label
     }
-    is Claimant.Wajiba -> t(TextKey.INHRES_WAJIBA_PERSON, t(if (c.son) TextKey.INHRES_GRANDSON else TextKey.INHRES_GRANDDAUGHTER), sentenceNumber(c.index + 1))
+    is Claimant.Wajiba -> t(UiKey.INHRES_WAJIBA_PERSON, t(if (c.son) UiKey.INHRES_GRANDSON else UiKey.INHRES_GRANDDAUGHTER), sentenceNumber(c.index + 1))
     else -> c.label
 }

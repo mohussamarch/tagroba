@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.BalanceDirection
 import app.masroufy.core.Currency
 import app.masroufy.core.DueItem
@@ -84,8 +85,8 @@ internal fun peopleTabUi(o: PeopleOverview, spaceId: String, currency: Currency)
 /** الشريحة تحت الاسم بلون الإطار (`outlineState`): عليك > لك. */
 internal fun chipOf(row: PersonOverviewRow): PersonChip {
     val (direction, key, tone) = when (row.state) {
-        PersonOutlineState.YOU_OWE -> Triple(BalanceDirection.YOU_OWE, TextKey.PEOPLE_CHIP_OWE, AmountTone.EXPENSE)
-        PersonOutlineState.OWED_TO_YOU -> Triple(BalanceDirection.OWED_TO_YOU, TextKey.PEOPLE_CHIP_OWED, AmountTone.INCOME)
+        PersonOutlineState.YOU_OWE -> Triple(BalanceDirection.YOU_OWE, UiKey.PEOPLE_CHIP_OWE, AmountTone.EXPENSE)
+        PersonOutlineState.OWED_TO_YOU -> Triple(BalanceDirection.OWED_TO_YOU, UiKey.PEOPLE_CHIP_OWED, AmountTone.INCOME)
         else -> return PersonChip(row.person.id, row.person.name, initialOf(row.person.name), null, null)
     }
     val line = row.balances.first { it.direction == direction }
@@ -129,15 +130,15 @@ internal fun owedUi(side: OwedSide, rows: List<PersonRow>, overview: PeopleOverv
     }.sortedWith(compareBy({ rank(it.third) }, { it.third?.dueAt ?: "9999" }))
     val out = items.map { (r, o, due) ->
         val reason = when {
-            o.obligation.originTransactionId == null -> t(TextKey.OWED_REASON_OPENING)
-            o.obligation.kind == ObligationKind.RECEIVABLE -> t(TextKey.OWED_REASON_RECEIVABLE)
-            o.obligation.kind == ObligationKind.LOAN_PAYABLE -> t(TextKey.OWED_REASON_LOAN)
-            else -> t(TextKey.OWED_REASON_CUSTODY)
+            o.obligation.originTransactionId == null -> t(UiKey.OWED_REASON_OPENING)
+            o.obligation.kind == ObligationKind.RECEIVABLE -> t(UiKey.OWED_REASON_RECEIVABLE)
+            o.obligation.kind == ObligationKind.LOAN_PAYABLE -> t(UiKey.OWED_REASON_LOAN)
+            else -> t(UiKey.OWED_REASON_CUSTODY)
         }
         val (signal, text) = signalOf(due, today)
         OwedRowUi(
             r.person.id, o.obligation.id, r.person.name, initialOf(r.person.name), reason, o.remainingMinor, o.obligation.currency,
-            due?.let { t(TextKey.OWED_DUE_ON, dayMonth(it.dueAt)) } ?: t(TextKey.OWED_NO_DUE), signal, text,
+            due?.let { t(UiKey.OWED_DUE_ON, dayMonth(it.dueAt)) } ?: t(UiKey.OWED_NO_DUE), signal, text,
         )
     }
     val totals = overview?.totals?.filter { it.spaceId == spaceId }?.map {
@@ -157,8 +158,8 @@ private fun signalOf(due: DueItem?, today: IsoDate): Pair<OwedSignal?, String?> 
     due ?: return null to null
     val days = daysBetween(today, due.dueAt)
     return when (due.status) {
-        DueStatus.OVERDUE -> OwedSignal.OVERDUE to t(TextKey.OWED_SIGNAL_OVERDUE, countOf(-days, Noun.DAYS))
-        DueStatus.SOON -> OwedSignal.SOON to t(TextKey.OWED_SIGNAL_SOON, relativeDays(days))
+        DueStatus.OVERDUE -> OwedSignal.OVERDUE to t(UiKey.OWED_SIGNAL_OVERDUE, countOf(-days, Noun.DAYS))
+        DueStatus.SOON -> OwedSignal.SOON to t(UiKey.OWED_SIGNAL_SOON, relativeDays(days))
         DueStatus.UPCOMING -> OwedSignal.CALM to relativeDays(days)
     }
 }

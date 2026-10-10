@@ -27,7 +27,7 @@ class TextsTest {
         val snapshot = Json.parseToJsonElement(raw).jsonObject.mapValues { it.value.jsonPrimitive.content }
         assertEquals(710, snapshot.size, "اللقطة فيها كل مفاتيح ما قبل الفصحى")
         for ((name, old) in snapshot) {
-            val key = TextKey.valueOf(name)
+            val key = textKeyNamed(name)
             // تبسيط الكلمات الثقيلة (جلسة 18 — `PlainWords.kt`): المفاتيح دي بس اتغيرت، وبالمقاطع المعتمدة بالظبط
             val expected = if (key in EGYPTIAN_PLAIN_WORDS_KEYS) plainEgyptian(old) else old
             if (key in EGYPTIAN_PLAIN_WORDS_KEYS) assertNotEquals(old, expected, "التبسيط ما غيّرش $name")
@@ -35,7 +35,7 @@ class TextsTest {
             assertEquals(expected, EGYPTIAN_TEXTS[key], "المصري اتغير في $name")
         }
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68) · حاسبة الورث (§69) · هتوصل لكام (§69.6) · رسايل البنك لوحدها (§72)
-        val newer = TextKey.entries.map { it.name }.filter { it !in snapshot }
+        val newer = ALL_TEXT_KEYS.map { it.name }.filter { it !in snapshot }
         val afterSnapshot = EGYPTIAN_USECASE_TEXTS.keys + EGYPTIAN_PEOPLE_TEXTS.keys + EGYPTIAN_FEED_ALERT_TEXTS.keys + EGYPTIAN_ADVISOR_TEXTS.keys +
             EGYPTIAN_ADVISOR_MORE_TEXTS.keys + EGYPTIAN_INHERITANCE_TEXTS.keys + EGYPTIAN_CALC_TEXTS.keys + EGYPTIAN_RETIRE_TEXTS.keys + EGYPTIAN_GROWTH_TEXTS.keys +
             EGYPTIAN_INHERITANCE_DISTANT_TEXTS.keys + EGYPTIAN_SMS_AUTO_TEXTS.keys +
@@ -44,7 +44,7 @@ class TextsTest {
             EGYPTIAN_ASKS_TEXTS.keys + EGYPTIAN_MONTH_TEXTS.keys +
             // الواجهة: الهيكل والمكوّنات المشتركة والدخول والقفل + شاشات المناطق (`TextsArea*.kt` — ARCHITECTURE §31.31)
             EGYPTIAN_SHELL_TEXTS.keys + EGYPTIAN_SHELL_AUTH_TEXTS.keys + EGYPTIAN_AREA_TEXTS.keys
-        assertTrue(newer.all { TextKey.valueOf(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
+        assertTrue(newer.all { textKeyNamed(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 
     /**

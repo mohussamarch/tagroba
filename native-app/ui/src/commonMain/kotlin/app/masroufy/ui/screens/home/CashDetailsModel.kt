@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.CashSummary
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
@@ -42,7 +43,7 @@ fun cashViewOf(summary: CashSummary?): CashView? {
         currency = w.currency,
         balanceMinor = s.balanceMinor,
         spentInPeriodMinor = s.spentInPeriodMinor,
-        sinceLine = t(TextKey.CASH_DETAILS_SINCE, dayMonth(w.openingAt)),
+        sinceLine = t(UiKey.CASH_DETAILS_SINCE, dayMonth(w.openingAt)),
         // اللوحة طولها ثابت ⇒ أحدث [CASH_ROWS] بس (القايمة الكاملة في «العمليات» بفلتر المحفظة)
         rows = s.periodTransactions.take(CASH_ROWS).map { tx ->
             // داخل الكاش (سحب من البنك للكاش أو وارد عليه) أخضر، والخارج منه أحمر — من اتجاه الحركة نفسها، من غير حساب

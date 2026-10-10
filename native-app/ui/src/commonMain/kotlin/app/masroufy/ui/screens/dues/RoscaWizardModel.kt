@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
@@ -71,11 +72,11 @@ fun answerOf(q: RoscaQuestion, i: WizardInputs, currency: Currency): Pair<RoscaA
     RoscaQuestion.TURNS_COUNT -> RoscaAnswer.TurnsCount(i.count) to null
     RoscaQuestion.SHARE_AMOUNT -> tryParseMoney(i.amount, currency)?.let { RoscaAnswer.ShareAmount(it) to null } ?: (null to t(TextKey.DUE_INSTALLMENT_POSITIVE))
     RoscaQuestion.FREQUENCY -> RoscaAnswer.Frequency(i.frequency) to null
-    RoscaQuestion.FIRST_DATE -> i.first?.let { RoscaAnswer.FirstDate(it) to null } ?: (null to t(TextKey.RW_ERR_FIRST))
+    RoscaQuestion.FIRST_DATE -> i.first?.let { RoscaAnswer.FirstDate(it) to null } ?: (null to t(UiKey.RW_ERR_FIRST))
     RoscaQuestion.SHARE -> RoscaAnswer.Share(i.share) to null
     RoscaQuestion.MY_TURN -> when {
         i.unknownTurn -> RoscaAnswer.MyTurns(emptyList()) to null
-        i.turns.isEmpty() -> null to t(TextKey.RW_ERR_TURN)
+        i.turns.isEmpty() -> null to t(UiKey.RW_ERR_TURN)
         else -> RoscaAnswer.MyTurns(i.turns) to null
     }
     RoscaQuestion.PAYOUT -> if (i.payout.isBlank()) RoscaAnswer.Payout(null) to null
@@ -107,30 +108,30 @@ fun wizardSummary(state: RoscaSetupState, today: IsoDate): WizardSummaryUi? {
     val cur = d.currency
     val payout = d.payoutMinor ?: 0
     val facts = listOf(
-        WizardFact(t(TextKey.ROSCA_ST_TOTAL_PAY), StatValue.Money(f.totalPayMinor)),
-        WizardFact(t(TextKey.ROSCA_ST_TOTAL_GET), f.totalReceiveMinor?.let { StatValue.Money(it) } ?: StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_GAIN), f.gainMinor?.let { if (it == 0L) StatValue.Text(t(TextKey.ROSCA_GAIN_NONE)) else StatValue.Money(it, signed = true) } ?: StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_BEFORE), f.paymentsBeforePayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_AFTER), f.paymentsAfterPayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_PEAK_SAVED), if (known) StatValue.Money(f.peakSavedMinor, tint = StatTint.INCOME) else StatValue.NA),
-        WizardFact(t(TextKey.ROSCA_ST_PEAK_OWED), if (known) StatValue.Money(f.peakOwedMinor, tint = StatTint.EXPENSE) else StatValue.NA),
-        WizardFact(t(TextKey.RW_LAST), StatValue.Text(dateText(f.lastDueAt, today))),
+        WizardFact(t(UiKey.ROSCA_ST_TOTAL_PAY), StatValue.Money(f.totalPayMinor)),
+        WizardFact(t(UiKey.ROSCA_ST_TOTAL_GET), f.totalReceiveMinor?.let { StatValue.Money(it) } ?: StatValue.NA),
+        WizardFact(t(UiKey.ROSCA_ST_GAIN), f.gainMinor?.let { if (it == 0L) StatValue.Text(t(UiKey.ROSCA_GAIN_NONE)) else StatValue.Money(it, signed = true) } ?: StatValue.NA),
+        WizardFact(t(UiKey.ROSCA_ST_BEFORE), f.paymentsBeforePayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
+        WizardFact(t(UiKey.ROSCA_ST_AFTER), f.paymentsAfterPayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
+        WizardFact(t(UiKey.ROSCA_ST_PEAK_SAVED), if (known) StatValue.Money(f.peakSavedMinor, tint = StatTint.INCOME) else StatValue.NA),
+        WizardFact(t(UiKey.ROSCA_ST_PEAK_OWED), if (known) StatValue.Money(f.peakOwedMinor, tint = StatTint.EXPENSE) else StatValue.NA),
+        WizardFact(t(UiKey.RW_LAST), StatValue.Text(dateText(f.lastDueAt, today))),
     )
     val answers = buildList {
-        add(WizardAnswer(RoscaQuestion.NAME, t(TextKey.RW_A_NAME), d.name.orEmpty()))
-        add(WizardAnswer(RoscaQuestion.TURNS_COUNT, t(TextKey.RW_A_COUNT), sentenceNumber(d.cycleCount ?: 0)))
-        add(WizardAnswer(RoscaQuestion.SHARE_AMOUNT, t(TextKey.RW_A_AMOUNT), amountLabel(d.shareAmountMinor ?: 0, cur)))
-        add(WizardAnswer(RoscaQuestion.FREQUENCY, t(TextKey.RW_A_FREQ), d.frequency?.let { t(it.labelKey) }.orEmpty()))
-        add(WizardAnswer(RoscaQuestion.FIRST_DATE, t(TextKey.RW_A_FIRST), d.firstDueAt?.let { dateText(it, today) }.orEmpty()))
-        add(WizardAnswer(RoscaQuestion.SHARE, t(TextKey.RW_A_SHARE), d.share?.let { t(it.labelKey) }.orEmpty()))
+        add(WizardAnswer(RoscaQuestion.NAME, t(UiKey.RW_A_NAME), d.name.orEmpty()))
+        add(WizardAnswer(RoscaQuestion.TURNS_COUNT, t(UiKey.RW_A_COUNT), sentenceNumber(d.cycleCount ?: 0)))
+        add(WizardAnswer(RoscaQuestion.SHARE_AMOUNT, t(UiKey.RW_A_AMOUNT), amountLabel(d.shareAmountMinor ?: 0, cur)))
+        add(WizardAnswer(RoscaQuestion.FREQUENCY, t(UiKey.RW_A_FREQ), d.frequency?.let { t(it.labelKey) }.orEmpty()))
+        add(WizardAnswer(RoscaQuestion.FIRST_DATE, t(UiKey.RW_A_FIRST), d.firstDueAt?.let { dateText(it, today) }.orEmpty()))
+        add(WizardAnswer(RoscaQuestion.SHARE, t(UiKey.RW_A_SHARE), d.share?.let { t(it.labelKey) }.orEmpty()))
         val turns = d.myTurns.orEmpty()
-        add(WizardAnswer(RoscaQuestion.MY_TURN, t(TextKey.RW_A_TURN), if (turns.isEmpty()) t(TextKey.ROSCA_TURN_UNKNOWN_CHOICE) else turns.joinToString(t(TextKey.ROSCA_AND)) { sentenceNumber(it) }))
-        if (known) add(WizardAnswer(RoscaQuestion.PAYOUT, t(TextKey.RW_A_PAYOUT), amountLabel(payout, cur)))
+        add(WizardAnswer(RoscaQuestion.MY_TURN, t(UiKey.RW_A_TURN), if (turns.isEmpty()) t(TextKey.ROSCA_TURN_UNKNOWN_CHOICE) else turns.joinToString(t(UiKey.ROSCA_AND)) { sentenceNumber(it) }))
+        if (known) add(WizardAnswer(RoscaQuestion.PAYOUT, t(UiKey.RW_A_PAYOUT), amountLabel(payout, cur)))
     }
     return WizardSummaryUi(
-        heroLabel = t(if (known) TextKey.RW_HERO_GET else TextKey.RW_HERO_WHEN),
-        heroValue = if (known) f.payoutDates.joinToString(t(TextKey.ROSCA_AND)) { dateText(it, today) } else null,
-        heroSub = if (!known) t(TextKey.RW_HERO_UNKNOWN_SUB) else if (d.myTurns.orEmpty().size > 1) t(TextKey.RW_HERO_EACH, amountLabel(payout, cur)) else amountLabel(payout, cur),
+        heroLabel = t(if (known) UiKey.RW_HERO_GET else UiKey.RW_HERO_WHEN),
+        heroValue = if (known) f.payoutDates.joinToString(t(UiKey.ROSCA_AND)) { dateText(it, today) } else null,
+        heroSub = if (!known) t(UiKey.RW_HERO_UNKNOWN_SUB) else if (d.myTurns.orEmpty().size > 1) t(UiKey.RW_HERO_EACH, amountLabel(payout, cur)) else amountLabel(payout, cur),
         facts = facts,
         answers = answers,
     )

@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.COUNTRY_PACKS
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Space
@@ -21,7 +23,7 @@ data class SpaceCardView(
     val isDefault: Boolean,
 )
 
-data class SpaceSection(val title: TextKey, val count: Int, val cards: List<SpaceCardView>)
+data class SpaceSection(val title: TextRef, val count: Int, val cards: List<SpaceCardView>)
 
 fun spaceSections(open: List<SpaceCard>, archived: List<Space>): List<SpaceSection> {
     val live = open.sortedBy { if (it.space.id == DEFAULT_SPACE_ID) "" else it.space.createdAt }.map { c ->
@@ -30,16 +32,16 @@ fun spaceSections(open: List<SpaceCard>, archived: List<Space>): List<SpaceSecti
     }
     val old = archived.map { s -> SpaceCardView(s, false, true, spaceMeta(s, null, true), canSwitch = false, canArchive = false, isDefault = false) }
     return listOfNotNull(
-        SpaceSection(TextKey.SPC_ACTIVE_HEAD, live.size, live),
-        old.takeIf { it.isNotEmpty() }?.let { SpaceSection(TextKey.SPC_ARCHIVED_HEAD, it.size, it) },
+        SpaceSection(UiKey.SPC_ACTIVE_HEAD, live.size, live),
+        old.takeIf { it.isNotEmpty() }?.let { SpaceSection(UiKey.SPC_ARCHIVED_HEAD, it.size, it) },
     )
 }
 
 private fun spaceMeta(space: Space, wallets: Int?, archived: Boolean): String {
     val created = when {
-        archived -> t(TextKey.SPC_META_ARCHIVED)
-        space.id == DEFAULT_SPACE_ID -> t(TextKey.SPC_META_AUTO)
-        else -> fullDate(space.createdAt)?.let { t(TextKey.SPC_META_ADDED, it) } ?: ""
+        archived -> t(UiKey.SPC_META_ARCHIVED)
+        space.id == DEFAULT_SPACE_ID -> t(UiKey.SPC_META_AUTO)
+        else -> fullDate(space.createdAt)?.let { t(UiKey.SPC_META_ADDED, it) } ?: ""
     }
     val count = wallets?.let { countText(it, WALLET_WORDS) }
     return listOfNotNull(count, created.takeIf { it.isNotEmpty() }).joinToString("، ")

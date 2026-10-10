@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,11 +79,11 @@ fun SavingsGrowthPanel(monthlyMinor: Halalas, months: Int, startMinor: Halalas, 
     val ui = growthUi(outcome, currency)
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(t(TextKey.SAVGROW_TITLE), style = Type.of(18, FontWeight.Bold))
+            BasicText(t(UiKey.SAVGROW_TITLE), style = Type.of(18, FontWeight.Bold))
             BasicText(ui.paidLine, style = Type.caption().copy(color = Ink.muted))
         }
         Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0x0D193D33)).padding(horizontal = 14.dp)) {
-            CalcSwitchRow(t(TextKey.SAVGROW_TODAY), ui.todaySub, ui.todayOn, { todayMoney = !todayMoney }, subWarn = ui.todaySubWarn)
+            CalcSwitchRow(t(UiKey.SAVGROW_TODAY), ui.todaySub, ui.todayOn, { todayMoney = !todayMoney }, subWarn = ui.todaySubWarn)
         }
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             ui.rows.forEachIndexed { i, r ->
@@ -93,11 +94,11 @@ fun SavingsGrowthPanel(monthlyMinor: Halalas, months: Int, startMinor: Halalas, 
                     inputError = null
                 }
                 if (r.canReset) {
-                    TonalButton(t(TextKey.SAVGROW_RESET), { ratesText = encodeRates(userRates - r.growthClass) }, Modifier.padding(bottom = 12.dp), height = 40.dp, muted = true)
+                    TonalButton(t(UiKey.SAVGROW_RESET), { ratesText = encodeRates(userRates - r.growthClass) }, Modifier.padding(bottom = 12.dp), height = 40.dp, muted = true)
                 }
             }
         }
-        FootNote(t(TextKey.SAVGROW_FOOT))
+        FootNote(t(UiKey.SAVGROW_FOOT))
     }
     val cls = sheetFor
     Sheet(cls != null, { sheetFor = null }, cls?.let(::rateSheetTitle).orEmpty()) {
@@ -105,9 +106,9 @@ fun SavingsGrowthPanel(monthlyMinor: Halalas, months: Int, startMinor: Halalas, 
             BasicText(rateSheetBody(cls), style = Type.of(13).copy(color = Ink.muted))
             TextInput(
                 input, { input = it; inputError = null }, placeholder = "0.00", error = inputError, ltr = true, keyboard = KeyboardType.Decimal, height = 56.dp, textSize = 24,
-                trailing = { BasicText(t(TextKey.CALCUI_PERCENT_SIGN), Modifier.padding(end = 16.dp), style = Type.of(16).copy(color = Ink.muted)) },
+                trailing = { BasicText(t(UiKey.CALCUI_PERCENT_SIGN), Modifier.padding(end = 16.dp), style = Type.of(16).copy(color = Ink.muted)) },
             )
-            PrimaryButton(t(TextKey.SAVGROW_SAVE), {
+            PrimaryButton(t(UiKey.SAVGROW_SAVE), {
                 val bp = parseRateBp(input)
                 if (bp == null) inputError = t(TextKey.CALC_RATE_RANGE)
                 else {

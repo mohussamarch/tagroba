@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -60,17 +61,17 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
             CashLoad.Ready(cashViewOf(deps.home.cash.load(periodForDate(today, payday), today)))
         }.getOrElse { CashLoad.Failed }
     }
-    Sheet(visible, onDismiss, t(TextKey.CASH_DETAILS_TITLE), minHeight = 420.dp, closeLabel = t(TextKey.SHELL_CLOSE)) {
+    Sheet(visible, onDismiss, t(UiKey.CASH_DETAILS_TITLE), minHeight = 420.dp, closeLabel = t(UiKey.SHELL_CLOSE)) {
         when (val s = load) {
             CashLoad.Loading -> {
                 Skeleton(Modifier.fillMaxWidth().height(64.dp))
                 Skeleton(Modifier.fillMaxWidth().height(44.dp), radius = 16.dp)
                 Skeleton(Modifier.fillMaxWidth().height(120.dp))
             }
-            CashLoad.Failed -> EmptyState(t(TextKey.SHELL_LOAD_FAILED))
+            CashLoad.Failed -> EmptyState(t(UiKey.SHELL_LOAD_FAILED))
             is CashLoad.Ready -> {
                 val v = s.view
-                if (v == null) EmptyState(t(TextKey.CASH_DETAILS_NO_WALLET_TITLE), t(TextKey.CASH_DETAILS_NO_WALLET_BODY))
+                if (v == null) EmptyState(t(UiKey.CASH_DETAILS_NO_WALLET_TITLE), t(UiKey.CASH_DETAILS_NO_WALLET_BODY))
                 else CashBody(v)
             }
         }
@@ -85,7 +86,7 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
 private fun CashBody(v: CashView) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.CASH_DETAILS_TITLE), style = Type.section())
+            BasicText(t(UiKey.CASH_DETAILS_TITLE), style = Type.section())
             BasicText(v.sinceLine, style = Type.caption().copy(color = Ink.muted))
         }
         AmountText(v.balanceMinor, v.currency, size = 30)
@@ -96,11 +97,11 @@ private fun CashBody(v: CashView) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(t(TextKey.CASH_DETAILS_SPENT), style = Type.of(13))
+        BasicText(t(UiKey.CASH_DETAILS_SPENT), style = Type.of(13))
         AmountText(v.spentInPeriodMinor, v.currency, size = 13, weight = FontWeight.Bold)
     }
-    BasicText(t(TextKey.CASH_DETAILS_OPS), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
-    if (v.rows.isEmpty()) BasicText(t(TextKey.CASH_DETAILS_NO_OPS), style = Type.of(13).copy(color = Ink.muted))
+    BasicText(t(UiKey.CASH_DETAILS_OPS), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+    if (v.rows.isEmpty()) BasicText(t(UiKey.CASH_DETAILS_NO_OPS), style = Type.of(13).copy(color = Ink.muted))
     v.rows.forEachIndexed { i, r ->
         ListRow(
             title = r.title,
@@ -110,5 +111,5 @@ private fun CashBody(v: CashView) {
         )
         if (i < v.rows.lastIndex) Divider()
     }
-    BasicText(t(TextKey.CASH_DETAILS_NOTE), style = Type.caption().copy(color = Ink.muted))
+    BasicText(t(UiKey.CASH_DETAILS_NOTE), style = Type.caption().copy(color = Ink.muted))
 }

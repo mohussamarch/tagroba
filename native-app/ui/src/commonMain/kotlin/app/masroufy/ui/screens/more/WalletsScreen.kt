@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,8 +73,8 @@ fun WalletsScreen() {
         mainId = runCatching { deps.more.mainWallet?.current() }.getOrNull()
     }
     val space = deps.space
-    InnerScaffold(t(TextKey.WLIST_TITLE), actions = {
-        Badge(t(TextKey.SPACE_SUB, countryLabel(space), currencySymbol(space.currency)), BadgeKind.INFO)
+    InnerScaffold(t(UiKey.WLIST_TITLE), actions = {
+        Badge(t(UiKey.SPACE_SUB, countryLabel(space), currencySymbol(space.currency)), BadgeKind.INFO)
     }) {
         val n = now
         if (n == null) {
@@ -84,7 +85,7 @@ fun WalletsScreen() {
         item(key = "total") {
             HeroCard(Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BasicText(t(TextKey.SPACE_WITH_YOU), style = Type.of(13).copy(color = Ink.onHeroMuted))
+                    BasicText(t(UiKey.SPACE_WITH_YOU), style = Type.of(13).copy(color = Ink.onHeroMuted))
                     HeroAmount(view.totalMinor, n.currency, Modifier.fillMaxWidth(), size = 30)
                     BasicText(walletsTotalLine(view), style = Type.caption().copy(color = Ink.onHeroMuted))
                 }
@@ -98,7 +99,7 @@ fun WalletsScreen() {
                 }
             }
         }
-        item(key = "add") { TonalButton(t(TextKey.WADD_OPEN), onClick = { adding = true }, modifier = Modifier.fillMaxWidth()) }
+        item(key = "add") { TonalButton(t(UiKey.WADD_OPEN), onClick = { adding = true }, modifier = Modifier.fillMaxWidth()) }
     }
     WalletAddSheet(adding, WalletSheetMode.Add, existing = now?.wallets?.map { it.wallet }.orEmpty(), onClose = { adding = false }, onSaved = { tick++ })
 }
@@ -121,11 +122,11 @@ private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick:
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(walletMeta(r), Modifier.weight(1f, fill = false), style = Type.caption().copy(color = Ink.muted), maxLines = 1)
-                    if (r.isMain) Badge(t(TextKey.WLIST_MAIN), BadgeKind.INFO)
+                    if (r.isMain) Badge(t(UiKey.WLIST_MAIN), BadgeKind.INFO)
                     Box(Modifier.weight(1f))
                     if (r.approx) ApproxBadge()
                 }
-                BasicText(t(TextKey.WLIST_OPENING, amountLabel(r.openingMinor, now.currency, showCurrency = false), fullDate(r.openingAt) ?: r.openingAt), style = Type.of(11).copy(color = Ink.muted))
+                BasicText(t(UiKey.WLIST_OPENING, amountLabel(r.openingMinor, now.currency, showCurrency = false), fullDate(r.openingAt) ?: r.openingAt), style = Type.of(11).copy(color = Ink.muted))
             }
             LucideIcon(Lucide.CHEVRON_LEFT, size = 16.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
         }
@@ -134,7 +135,7 @@ private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick:
 }
 
 /** «حساب بنكي · •••• ٤٤٠٧» — أو النوع لوحده. */
-fun walletMeta(r: WalletRowView): String = if (r.last4 != null) t(TextKey.WLIST_META_LAST4, t(r.kindLabel), r.last4) else t(r.kindLabel)
+fun walletMeta(r: WalletRowView): String = if (r.last4 != null) t(UiKey.WLIST_META_LAST4, t(r.kindLabel), r.last4) else t(r.kindLabel)
 
 /** عدسة المحفظة 40: الكاش أخضر فاتح برمز الفلوس، والبنك أبيض بحد رفيع وأول حرف من اسمه (مكان اللوجو لحد ما يتعتمد — §74). */
 @Composable

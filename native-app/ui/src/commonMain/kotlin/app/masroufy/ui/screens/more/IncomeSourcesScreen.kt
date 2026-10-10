@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,8 +74,8 @@ fun IncomeSourcesScreen() {
         question = runCatching { more.incomeSignals.payerQuestions().firstOrNull() }.getOrNull()
         monthStart = runCatching { more.profile.load().payday }.getOrDefault(monthStart)
     }
-    InnerScaffold(t(TextKey.INCSRC_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.INCSRC_INTRO), Modifier.padding(horizontal = 4.dp), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.INCSRC_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.INCSRC_INTRO), Modifier.padding(horizontal = 4.dp), style = Type.of(13).copy(color = Ink.muted)) }
         val list = sources
         if (list == null) {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(260.dp)) }
@@ -85,15 +86,15 @@ fun IncomeSourcesScreen() {
                 PayerCard(q) { yes ->
                     scope.launch {
                         val ok = runCatching { more.incomeSignals.answerPayer(q, yes) }.isSuccess
-                        toaster.show(t(if (!ok) TextKey.MORE_SAVE_FAILED else if (yes) TextKey.INCSRC_PAYER_YES_DONE else TextKey.INCSRC_PAYER_NO_DONE), dark = true)
+                        toaster.show(t(if (!ok) UiKey.MORE_SAVE_FAILED else if (yes) UiKey.INCSRC_PAYER_YES_DONE else UiKey.INCSRC_PAYER_NO_DONE), dark = true)
                         tick++
                     }
                 }
             }
         }
-        if (list.isEmpty()) item(key = "empty") { EmptyState(t(TextKey.INCSRC_EMPTY_TITLE), t(TextKey.INCSRC_EMPTY_BODY)) }
+        if (list.isEmpty()) item(key = "empty") { EmptyState(t(UiKey.INCSRC_EMPTY_TITLE), t(UiKey.INCSRC_EMPTY_BODY)) }
         val sections = incomeSections(list)
-        for ((key, rows) in listOf(TextKey.INCSRC_CURRENT to sections.current, TextKey.INCSRC_PAST to sections.past)) {
+        for ((key, rows) in listOf(UiKey.INCSRC_CURRENT to sections.current, UiKey.INCSRC_PAST to sections.past)) {
             if (rows.isEmpty()) continue
             item(key = key.name) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -104,9 +105,9 @@ fun IncomeSourcesScreen() {
         }
         item(key = "actions") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (sections.current.isNotEmpty()) PrimaryButton(t(TextKey.INCSRC_CHANGE), onClick = { sheet = JobSheetMode.Change }, height = 52.dp, modifier = Modifier.fillMaxWidth())
-                if (list.isEmpty()) PrimaryButton(t(TextKey.INCSRC_ADD), onClick = { sheet = JobSheetMode.Add }, modifier = Modifier.fillMaxWidth())
-                else TonalButton(t(TextKey.INCSRC_ADD), onClick = { sheet = JobSheetMode.Add }, modifier = Modifier.fillMaxWidth())
+                if (sections.current.isNotEmpty()) PrimaryButton(t(UiKey.INCSRC_CHANGE), onClick = { sheet = JobSheetMode.Change }, height = 52.dp, modifier = Modifier.fillMaxWidth())
+                if (list.isEmpty()) PrimaryButton(t(UiKey.INCSRC_ADD), onClick = { sheet = JobSheetMode.Add }, modifier = Modifier.fillMaxWidth())
+                else TonalButton(t(UiKey.INCSRC_ADD), onClick = { sheet = JobSheetMode.Add }, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -120,12 +121,12 @@ private fun PayerCard(q: PayerQuestion, onAnswer: (Boolean) -> Unit) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        BasicText(t(TextKey.INCSRC_PAYER_Q, q.sourceName), style = Type.of(15, FontWeight.Bold).copy(color = Color(0xFF6B4600)))
-        val from = q.party.last4?.let { t(TextKey.INCSRC_PAYER_FROM_LAST4, dayMonth(q.date), q.party.label, sentenceDigits(it)) } ?: t(TextKey.INCSRC_PAYER_FROM, dayMonth(q.date), q.party.label)
+        BasicText(t(UiKey.INCSRC_PAYER_Q, q.sourceName), style = Type.of(15, FontWeight.Bold).copy(color = Color(0xFF6B4600)))
+        val from = q.party.last4?.let { t(UiKey.INCSRC_PAYER_FROM_LAST4, dayMonth(q.date), q.party.label, sentenceDigits(it)) } ?: t(UiKey.INCSRC_PAYER_FROM, dayMonth(q.date), q.party.label)
         BasicText(from, style = Type.caption().copy(color = Color(0xFF6B4600)))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(TextKey.MORE_YES), onClick = { onAnswer(true) }, modifier = Modifier.weight(1f))
-            TonalButton(t(TextKey.MORE_NO), onClick = { onAnswer(false) }, modifier = Modifier.weight(1f), muted = true)
+            PrimaryButton(t(UiKey.MORE_YES), onClick = { onAnswer(true) }, modifier = Modifier.weight(1f))
+            TonalButton(t(UiKey.MORE_NO), onClick = { onAnswer(false) }, modifier = Modifier.weight(1f), muted = true)
         }
     }
 }
@@ -140,7 +141,7 @@ private fun SourceCard(r: IncomeRowView, onClick: () -> Unit) {
                 BasicText(r.meta, style = Type.caption().copy(color = Ink.muted))
                 BasicText(r.period, style = Type.of(12, FontWeight.Bold))
                 if (r.expected != null) Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BasicText(t(TextKey.INCSRC_EXPECTED), style = Type.caption().copy(color = Ink.muted))
+                    BasicText(t(UiKey.INCSRC_EXPECTED), style = Type.caption().copy(color = Ink.muted))
                     BasicText(r.expected, style = Type.of(12, FontWeight.Bold).copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
                 }
             }

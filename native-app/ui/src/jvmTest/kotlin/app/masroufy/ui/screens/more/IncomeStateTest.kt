@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.IncomeFollowUp
@@ -35,26 +36,26 @@ class IncomeStateTest {
 
     @Test
     fun payTextCoversMonthlyWeeklyAndUnknown() {
-        assertEquals(t(TextKey.INCSRC_PAY_MONTHLY, sentenceNumber(28)), payText(source("a").copy(expectedDayOfMonth = 28)))
-        assertEquals(t(TextKey.INCSRC_PAY_WEEKLY, t(TextKey.WEEKDAY_THU)), payText(source("a").copy(payFrequency = PayFrequency.WEEKLY, payWeekday = 4)))
-        assertEquals(t(TextKey.INCSRC_PAY_WEEKLY_UNSET), payText(source("a").copy(payFrequency = PayFrequency.WEEKLY)))
-        assertEquals(t(TextKey.INCSRC_PAY_UNSET), payText(source("a")), "وظيفة من غير يوم ⇒ «غير محدد» (مش يوم صفر)")
-        assertEquals(t(TextKey.INCSRC_PAY_UNSET), payText(source("p", IncomeSourceKind.PENSION)))
-        assertEquals(t(TextKey.INCSRC_PAY_NONE), payText(source("c", IncomeSourceKind.CLIENT)))
+        assertEquals(t(UiKey.INCSRC_PAY_MONTHLY, sentenceNumber(28)), payText(source("a").copy(expectedDayOfMonth = 28)))
+        assertEquals(t(UiKey.INCSRC_PAY_WEEKLY, t(UiKey.WEEKDAY_THU)), payText(source("a").copy(payFrequency = PayFrequency.WEEKLY, payWeekday = 4)))
+        assertEquals(t(UiKey.INCSRC_PAY_WEEKLY_UNSET), payText(source("a").copy(payFrequency = PayFrequency.WEEKLY)))
+        assertEquals(t(UiKey.INCSRC_PAY_UNSET), payText(source("a")), "وظيفة من غير يوم ⇒ «غير محدد» (مش يوم صفر)")
+        assertEquals(t(UiKey.INCSRC_PAY_UNSET), payText(source("p", IncomeSourceKind.PENSION)))
+        assertEquals(t(UiKey.INCSRC_PAY_NONE), payText(source("c", IncomeSourceKind.CLIENT)))
     }
 
     @Test
     fun weekdaysAreIsoMondayFirst() {
-        assertEquals(TextKey.WEEKDAY_MON, weekdayLabel(1))
-        assertEquals(TextKey.WEEKDAY_SUN, weekdayLabel(7))
-        assertEquals(TextKey.WEEKDAY_MON, weekdayLabel(0))
+        assertEquals(UiKey.WEEKDAY_MON, weekdayLabel(1))
+        assertEquals(UiKey.WEEKDAY_SUN, weekdayLabel(7))
+        assertEquals(UiKey.WEEKDAY_MON, weekdayLabel(0))
     }
 
     @Test
     fun periodTextSinceOrRange() {
-        assertEquals(t(TextKey.INCSRC_PERIOD_SINCE, fullDate("2026-04-28")!!), periodText(source("a")))
+        assertEquals(t(UiKey.INCSRC_PERIOD_SINCE, fullDate("2026-04-28")!!), periodText(source("a")))
         assertEquals(
-            t(TextKey.INCSRC_PERIOD_RANGE, fullDate("2025-03-01")!!, fullDate("2026-04-27")!!),
+            t(UiKey.INCSRC_PERIOD_RANGE, fullDate("2025-03-01")!!, fullDate("2026-04-27")!!),
             periodText(source("b", start = "2025-03-01", end = "2026-04-27")),
         )
     }
@@ -67,15 +68,15 @@ class IncomeStateTest {
         assertTrue(s.past.single().ended)
         assertEquals(amountLabel(1_250_000, Currency.SAR), s.current[0].expected)
         assertNull(s.current[1].expected, "ما كتبش المتوقع ⇒ null مش «٠»")
-        assertEquals(t(TextKey.INCSRC_META, t(TextKey.INCSRC_KIND_RENT), t(TextKey.INCSRC_PAY_NONE)), s.current[1].meta)
+        assertEquals(t(UiKey.INCSRC_META, t(UiKey.INCSRC_KIND_RENT), t(UiKey.INCSRC_PAY_NONE)), s.current[1].meta)
         assertFalse(s.current[1].meta.contains("·"), "مفيش «·» جنب الأرقام العربي")
     }
 
     @Test
     fun tenthPercentIsFormattedNotComputed() {
-        assertEquals("+" + sentenceDigits("26") + t(TextKey.INCSRC_DECIMAL_SEP) + sentenceDigits("3") + "٪", tenthPercentText(263))
-        assertEquals("−" + sentenceDigits("0") + t(TextKey.INCSRC_DECIMAL_SEP) + sentenceDigits("5") + "٪", tenthPercentText(-5))
-        assertEquals(sentenceDigits("0") + t(TextKey.INCSRC_DECIMAL_SEP) + sentenceDigits("0") + "٪", tenthPercentText(0))
+        assertEquals("+" + sentenceDigits("26") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("3") + "٪", tenthPercentText(263))
+        assertEquals("−" + sentenceDigits("0") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("5") + "٪", tenthPercentText(-5))
+        assertEquals(sentenceDigits("0") + t(UiKey.INCSRC_DECIMAL_SEP) + sentenceDigits("0") + "٪", tenthPercentText(0))
         assertEquals("—", tenthPercentText(null))
     }
 
@@ -134,7 +135,7 @@ class IncomeStateTest {
         assertEquals(fullDate("2026-10-08"), dateChipLabel("2026-10-08", "2026-10-09"))
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertEquals("النهارده", dateChipLabel("2026-10-09", "2026-10-09"))
-        assertEquals(t(TextKey.INCSRC_PAY_MONTHLY, sentenceNumber(28)), payText(source("a").copy(expectedDayOfMonth = 28)))
+        assertEquals(t(UiKey.INCSRC_PAY_MONTHLY, sentenceNumber(28)), payText(source("a").copy(expectedDayOfMonth = 28)))
         assertTrue(payText(source("a").copy(expectedDayOfMonth = 28)).endsWith("كل شهر"))
         Texts.arabicVariant = ArabicVariant.MSA
         assertTrue(payText(source("a").copy(expectedDayOfMonth = 28)).endsWith("شهريًا"))

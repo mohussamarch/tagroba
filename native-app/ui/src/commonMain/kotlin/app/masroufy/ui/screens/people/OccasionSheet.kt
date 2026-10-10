@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,12 +62,12 @@ internal fun OccasionCards(personId: Id?, personName: String?, items: List<Upcom
                         BasicText(occasionCardTitle(u), style = Type.bodyBold())
                         BasicText(occasionCardSub(u, today), style = Type.caption().copy(color = Ink.muted))
                     }
-                    TonalButton(t(TextKey.OCC_EDIT), onClick = { editing = u.occasion })
+                    TonalButton(t(UiKey.OCC_EDIT), onClick = { editing = u.occasion })
                 }
             }
         }
         TonalButton(
-            if (personName != null) t(TextKey.OCC_ADD_FOR, personName) else t(TextKey.OCC_ADD),
+            if (personName != null) t(UiKey.OCC_ADD_FOR, personName) else t(UiKey.OCC_ADD),
             onClick = { adding = true },
             modifier = Modifier.fillMaxWidth(),
         )
@@ -78,9 +79,9 @@ internal fun OccasionCards(personId: Id?, personName: String?, items: List<Upcom
 }
 
 private fun occasionSheetTitle(existing: Occasion?, personName: String?): String = when {
-    existing != null -> t(TextKey.OCC_TITLE_EDIT)
-    personName != null -> t(TextKey.OCC_TITLE_FOR, personName)
-    else -> t(TextKey.OCC_TITLE_OWN)
+    existing != null -> t(UiKey.OCC_TITLE_EDIT)
+    personName != null -> t(UiKey.OCC_TITLE_FOR, personName)
+    else -> t(UiKey.OCC_TITLE_OWN)
 }
 
 /** اللوحة من مكان تاني (ملفك): بتقرا اسم الشخص والمناسبة الأول. */
@@ -116,18 +117,18 @@ private fun OccasionForm(personId: Id?, personName: String?, existing: Occasion?
         SheetHeading(occasionSheetTitle(existing, personName))
         ChoiceFlow {
             for ((k, key) in listOf(
-                OccasionKind.BIRTHDAY to TextKey.OCC_CHIP_BIRTHDAY, OccasionKind.WEDDING_ANNIVERSARY to TextKey.OCC_CHIP_ANNIV,
-                OccasionKind.WEDDING to TextKey.OCC_CHIP_WEDDING, OccasionKind.OTHER to TextKey.OCC_CHIP_OTHER,
+                OccasionKind.BIRTHDAY to UiKey.OCC_CHIP_BIRTHDAY, OccasionKind.WEDDING_ANNIVERSARY to UiKey.OCC_CHIP_ANNIV,
+                OccasionKind.WEDDING to UiKey.OCC_CHIP_WEDDING, OccasionKind.OTHER to UiKey.OCC_CHIP_OTHER,
             )) Choice(t(key), d.kind == k, { d = d.withKind(k); err = null })
         }
         if (d.kind == OccasionKind.OTHER) {
-            app.masroufy.ui.components.TextInput(d.label, { d = d.copy(label = it.take(60)); err = null }, placeholder = t(TextKey.OCC_LABEL_PH))
+            app.masroufy.ui.components.TextInput(d.label, { d = d.copy(label = it.take(60)); err = null }, placeholder = t(UiKey.OCC_LABEL_PH))
         }
-        FieldTitle(t(TextKey.PPL_MONTH_LABEL))
+        FieldTitle(t(UiKey.PPL_MONTH_LABEL))
         MonthGrid(d.month, { d = d.copy(month = it); err = null })
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberInput(d.day, { d = d.copy(day = it.take(2)); err = null }, Modifier.weight(1f), label = t(TextKey.PPL_DAY_LABEL), placeholder = "1–31", decimal = false)
-            NumberInput(d.year, { d = d.copy(year = it.take(4)); err = null }, Modifier.weight(1f), label = t(TextKey.PPL_YEAR_OPTIONAL), placeholder = t(TextKey.PPL_YEAR_UNKNOWN), decimal = false)
+            NumberInput(d.day, { d = d.copy(day = it.take(2)); err = null }, Modifier.weight(1f), label = t(UiKey.PPL_DAY_LABEL), placeholder = "1–31", decimal = false)
+            NumberInput(d.year, { d = d.copy(year = it.take(4)); err = null }, Modifier.weight(1f), label = t(UiKey.PPL_YEAR_OPTIONAL), placeholder = t(UiKey.PPL_YEAR_UNKNOWN), decimal = false)
         }
         BasicText(
             preview.next,
@@ -135,24 +136,24 @@ private fun OccasionForm(personId: Id?, personName: String?, existing: Occasion?
             style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Choice(t(TextKey.OCC_YEARLY), d.yearly, { d = d.copy(yearly = true); err = null }, Modifier.weight(1f), height = 48.dp)
-            Choice(t(TextKey.OCC_ONCE), !d.yearly, { d = d.copy(yearly = false); err = null }, Modifier.weight(1f), height = 48.dp)
+            Choice(t(UiKey.OCC_YEARLY), d.yearly, { d = d.copy(yearly = true); err = null }, Modifier.weight(1f), height = 48.dp)
+            Choice(t(UiKey.OCC_ONCE), !d.yearly, { d = d.copy(yearly = false); err = null }, Modifier.weight(1f), height = 48.dp)
         }
-        FieldTitle(t(TextKey.OCC_LEAD_LABEL))
+        FieldTitle(t(UiKey.OCC_LEAD_LABEL))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SquareIcon(PeopleIcons.MINUS, t(TextKey.OCC_LESS), { d = d.withLead(d.lead - 1) }, size = 48.dp, tint = Ink.primary)
+            SquareIcon(PeopleIcons.MINUS, t(UiKey.OCC_LESS), { d = d.withLead(d.lead - 1) }, size = 48.dp, tint = Ink.primary)
             BasicText(leadName(d.lead), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold).copy(textAlign = androidx.compose.ui.text.style.TextAlign.Center))
-            SquareIcon(Lucide.PLUS, t(TextKey.OCC_MORE), { d = d.withLead(d.lead + 1) }, size = 48.dp, tint = Ink.primary)
+            SquareIcon(Lucide.PLUS, t(UiKey.OCC_MORE), { d = d.withLead(d.lead + 1) }, size = 48.dp, tint = Ink.primary)
         }
         ChoiceFlow {
-            for ((v, key) in listOf(1 to TextKey.OCC_CHIP_DAY, 7 to TextKey.OCC_CHIP_WEEK, 14 to TextKey.OCC_CHIP_TWO_WEEKS, 30 to TextKey.OCC_CHIP_MONTH)) {
+            for ((v, key) in listOf(1 to UiKey.OCC_CHIP_DAY, 7 to UiKey.OCC_CHIP_WEEK, 14 to UiKey.OCC_CHIP_TWO_WEEKS, 30 to UiKey.OCC_CHIP_MONTH)) {
                 Choice(t(key), d.lead == v, { d = d.withLead(v) }, textSize = 13)
             }
         }
         Note(preview.remind)
         if (existing != null) {
             DangerButton(
-                t(if (confirm) TextKey.OCC_REMOVE_CONFIRM else TextKey.OCC_REMOVE),
+                t(if (confirm) UiKey.OCC_REMOVE_CONFIRM else UiKey.OCC_REMOVE),
                 armed = confirm,
                 onClick = {
                     if (!confirm) confirm = true
@@ -166,7 +167,7 @@ private fun OccasionForm(personId: Id?, personName: String?, existing: Occasion?
         }
         ErrorLine(err)
         PrimaryButton(
-            t(if (existing != null) TextKey.PPL_SAVE_EDIT else TextKey.OCC_SAVE_NEW),
+            t(if (existing != null) UiKey.PPL_SAVE_EDIT else UiKey.OCC_SAVE_NEW),
             onClick = {
                 when (val c = checkDraft(d, personId)) {
                     is OccasionCheck.Bad -> err = c.message

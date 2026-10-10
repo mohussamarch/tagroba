@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.BasicText
@@ -38,11 +39,11 @@ fun ZakatPayScreen(yearId: Id) {
         try { pay = loadZakatPay(deps, space.space, yearId); failed = null } catch (e: IllegalArgumentException) { failed = e.message }
     }
     LaunchedEffect(space, yearId) { reload() }
-    InnerScaffold(t(TextKey.ZAKAT_PAY_TITLE)) {
+    InnerScaffold(t(UiKey.ZAKAT_PAY_TITLE)) {
         val p = pay
         val f = failed
         when {
-            f != null -> item(key = "failed") { AlertBanner(t(TextKey.SHELL_LOAD_FAILED), f, t(TextKey.SHELL_RETRY)) { scope.launch { reload() } } }
+            f != null -> item(key = "failed") { AlertBanner(t(UiKey.SHELL_LOAD_FAILED), f, t(UiKey.SHELL_RETRY)) { scope.launch { reload() } } }
             p == null -> item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(320.dp)) }
             else -> {
                 item(key = "pay") { ZakatPaySection(p, space.space.currency, showTitle = false) { scope.launch { reload() } } }

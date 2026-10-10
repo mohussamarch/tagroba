@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.INSTALLMENT_NAME_MAX
 import app.masroufy.core.InstallmentKind
@@ -52,8 +53,8 @@ fun checkPlanForm(f: PlanForm, id: String?, currency: Currency): PlanFormCheck {
     fun money(field: PlanField, text: String): Long? {
         val v = tryParseMoney(text, currency)
         when {
-            text.isBlank() || v == null -> errors[field] = t(TextKey.DUES_ERR_FORMAT)
-            v <= 0 -> errors[field] = t(TextKey.DUES_ERR_POSITIVE)
+            text.isBlank() || v == null -> errors[field] = t(UiKey.DUES_ERR_FORMAT)
+            v <= 0 -> errors[field] = t(UiKey.DUES_ERR_POSITIVE)
         }
         return v
     }

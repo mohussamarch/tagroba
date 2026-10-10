@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Bequest
 import app.masroufy.core.Currency
 import app.masroufy.core.EstateItem
@@ -105,11 +106,11 @@ fun InheritanceDraft.toCase(): InheritanceCase? {
 
 /** فحص الخطوة قبل «التالي» — null = تمام. */
 fun checkStep(d: InheritanceDraft): String? = when (d.step) {
-    1 -> if (d.estateOf == EstateOwner.OTHER && d.personId == null && d.personName.isBlank()) t(TextKey.INHCALC_PICK_PERSON) else null
+    1 -> if (d.estateOf == EstateOwner.OTHER && d.personId == null && d.personName.isBlank()) t(UiKey.INHCALC_PICK_PERSON) else null
     2 -> when {
         d.items.isEmpty() -> t(TextKey.INHERIT_INVALID_NO_ITEMS)
         d.items.any { it.name.isBlank() } -> t(TextKey.INHERIT_INVALID_ITEM_NAME)
-        d.items.any { (parseAmountField(it.value, d.currency).orNull ?: 0L) <= 0L } -> t(TextKey.INHCALC_ITEM_VALUE)
+        d.items.any { (parseAmountField(it.value, d.currency).orNull ?: 0L) <= 0L } -> t(UiKey.INHCALC_ITEM_VALUE)
         else -> null
     }
     4 -> {
@@ -128,8 +129,8 @@ fun InheritanceDraft.toScenarioDraft(name: String): InheritanceScenarioDraft? {
 
 /** الاسم الافتراضي للحفظ: «تركتي — ٧ أكتوبر» · «تركة سالم — ٧ أكتوبر». */
 fun defaultScenarioName(d: InheritanceDraft, today: String): String =
-    d.scenarioName ?: if (d.estateOf == EstateOwner.MINE) t(TextKey.INHCALC_NAME_MINE, dayMonth(today))
-    else t(TextKey.INHCALC_NAME_OTHER, d.personName.trim(), dayMonth(today))
+    d.scenarioName ?: if (d.estateOf == EstateOwner.MINE) t(UiKey.INHCALC_NAME_MINE, dayMonth(today))
+    else t(UiKey.INHCALC_NAME_OTHER, d.personName.trim(), dayMonth(today))
 
 /** حسبة محفوظة ⇒ مسودة على النتيجة. [people] لاسم الشخص لو التركة لشخص من أشخاصك. */
 fun draftFrom(s: InheritanceScenario, people: List<PersonChoice>): InheritanceDraft {

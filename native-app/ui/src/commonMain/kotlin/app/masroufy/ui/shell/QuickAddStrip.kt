@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,7 +95,7 @@ fun QuickAddStrip(
     var amountText by remember { mutableStateOf("") }
     var walletId by remember { mutableStateOf<Id?>(null) }
     LazyRow(
-        modifier.fullBleed().semantics { contentDescription = t(TextKey.QUICK_TITLE) },
+        modifier.fullBleed().semantics { contentDescription = t(UiKey.QUICK_TITLE) },
         contentPadding = PaddingValues(start = Space.gutter, end = Space.gutter, top = 2.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -107,20 +108,20 @@ fun QuickAddStrip(
         }
     }
     val current = open
-    Sheet(visible = current != null, onDismiss = { open = null }, title = current?.question.orEmpty(), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
+    Sheet(visible = current != null, onDismiss = { open = null }, title = current?.question.orEmpty(), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
         if (current == null) return@Sheet
         BasicText(current.question, style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.QUICK_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(t(UiKey.QUICK_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
         TextInput(
             amountText, { amountText = it }, ltr = true, keyboard = KeyboardType.Decimal, height = 56.dp, textSize = 24, error = error,
             trailing = { BasicText(currencySymbol(current.currency), Modifier.padding(end = 16.dp), style = Type.of(14).copy(color = Ink.muted)) },
         )
-        BasicText(t(TextKey.QUICK_FROM), style = Type.of(13, FontWeight.Bold))
+        BasicText(t(UiKey.QUICK_FROM), style = Type.of(13, FontWeight.Bold))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (w in wallets) SelectChip(w.label, w.id == walletId, { walletId = w.id }, Modifier.weight(1f), height = 44.dp)
         }
-        PrimaryButton(t(TextKey.QUICK_SAVE), onClick = { onRecord(current, amountText, walletId) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
-        TonalButton(t(TextKey.QUICK_SKIP), onClick = { onSkip(current); open = null }, modifier = Modifier.fillMaxWidth(), muted = true, height = 44.dp)
+        PrimaryButton(t(UiKey.QUICK_SAVE), onClick = { onRecord(current, amountText, walletId) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
+        TonalButton(t(UiKey.QUICK_SKIP), onClick = { onSkip(current); open = null }, modifier = Modifier.fillMaxWidth(), muted = true, height = 44.dp)
     }
 }
 
@@ -128,7 +129,7 @@ fun QuickAddStrip(
 private fun QuickPill(item: QuickAddItem, onClick: () -> Unit) {
     val shape = RoundedCornerShape(26.dp)
     val press = rememberPress()
-    val usual = t(TextKey.QUICK_USUAL, amountLabel(item.usualMinor, item.currency), sentenceNumber(item.usualDay))
+    val usual = t(UiKey.QUICK_USUAL, amountLabel(item.usualMinor, item.currency), sentenceNumber(item.usualDay))
     Row(
         Modifier.height(52.dp).pressScale(press).layeredShadow(shape, Shadows.chip).clip(shape).background(Glass.card).innerSheen(shape, Shadows.chip)
             .tap(press, label = item.question, onClick = onClick).semantics { contentDescription = item.question + " — " + usual }

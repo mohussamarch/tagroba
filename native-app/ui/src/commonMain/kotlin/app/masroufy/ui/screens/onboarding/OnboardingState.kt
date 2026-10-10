@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.onboarding
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
@@ -76,32 +78,32 @@ fun pickSource(s: OnbState, source: OnbSource) = answer(
 
 /** عنوان الرد وسطره — [payday] = اليوم اللي هيفضل لو قال «ليس ثابتًا» (المحفوظ في ملفه، مش «أول الشهر»). */
 fun replyText(r: OnbReply, answers: OnbAnswers, payday: Int): Pair<String, String> = when (r) {
-    OnbReply.LOOK -> t(TextKey.ONB_R_LOOK_T) to t(TextKey.ONB_R_LOOK_L)
-    OnbReply.COUNTRY_SA -> t(TextKey.ONB_OK) to t(TextKey.ONB_R_SA_L)
-    OnbReply.COUNTRY_EG -> t(TextKey.ONB_OK) to t(TextKey.ONB_R_EG_L)
-    OnbReply.DAY -> t(TextKey.ONB_R_DAY_T) to t(TextKey.ONB_R_DAY_L, sentenceNumber(answers.day ?: payday))
-    OnbReply.DAY_LATER -> t(TextKey.ONB_R_LATER_T) to t(TextKey.ONB_R_DAY_LATER_L, sentenceNumber(payday))
-    OnbReply.SMS -> t(TextKey.ONB_OK) to t(TextKey.ONB_R_SMS_L)
-    OnbReply.FILE -> t(TextKey.ONB_OK) to t(TextKey.ONB_R_FILE_L)
-    OnbReply.LATER -> t(TextKey.ONB_OK) to t(TextKey.ONB_R_SRC_LATER_L)
+    OnbReply.LOOK -> t(UiKey.ONB_R_LOOK_T) to t(UiKey.ONB_R_LOOK_L)
+    OnbReply.COUNTRY_SA -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_SA_L)
+    OnbReply.COUNTRY_EG -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_EG_L)
+    OnbReply.DAY -> t(UiKey.ONB_R_DAY_T) to t(UiKey.ONB_R_DAY_L, sentenceNumber(answers.day ?: payday))
+    OnbReply.DAY_LATER -> t(UiKey.ONB_R_LATER_T) to t(UiKey.ONB_R_DAY_LATER_L, sentenceNumber(payday))
+    OnbReply.SMS -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_SMS_L)
+    OnbReply.FILE -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_FILE_L)
+    OnbReply.LATER -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_SRC_LATER_L)
 }
 
-fun nextLabel(s: OnbState): String = t(if (s.step == OnbStep.SOURCE) TextKey.ONB_DONE_NEXT else TextKey.ONB_NEXT)
+fun nextLabel(s: OnbState): String = t(if (s.step == OnbStep.SOURCE) UiKey.ONB_DONE_NEXT else UiKey.ONB_NEXT)
 
-fun stepTitle(step: OnbStep): TextKey = when (step) {
-    OnbStep.LOOK -> TextKey.ONB_LOOK_TITLE
-    OnbStep.COUNTRY -> TextKey.ONB_COUNTRY_TITLE
-    OnbStep.PAYDAY -> TextKey.ONB_PAY_TITLE
-    OnbStep.SOURCE -> TextKey.ONB_SRC_TITLE
-    OnbStep.READY -> TextKey.ONB_READY_TITLE
+fun stepTitle(step: OnbStep): TextRef = when (step) {
+    OnbStep.LOOK -> UiKey.ONB_LOOK_TITLE
+    OnbStep.COUNTRY -> UiKey.ONB_COUNTRY_TITLE
+    OnbStep.PAYDAY -> UiKey.ONB_PAY_TITLE
+    OnbStep.SOURCE -> UiKey.ONB_SRC_TITLE
+    OnbStep.READY -> UiKey.ONB_READY_TITLE
 }
 
 fun stepSub(step: OnbStep): String = when (step) {
-    OnbStep.LOOK -> t(TextKey.ONB_LOOK_SUB)
-    OnbStep.COUNTRY -> t(TextKey.ONB_COUNTRY_SUB)
-    OnbStep.PAYDAY -> t(TextKey.ONB_PAY_SUB)
-    OnbStep.SOURCE -> t(TextKey.ONB_SRC_SUB)
-    OnbStep.READY -> t(TextKey.ONB_READY_SUB, sentenceNumber(10))
+    OnbStep.LOOK -> t(UiKey.ONB_LOOK_SUB)
+    OnbStep.COUNTRY -> t(UiKey.ONB_COUNTRY_SUB)
+    OnbStep.PAYDAY -> t(UiKey.ONB_PAY_SUB)
+    OnbStep.SOURCE -> t(UiKey.ONB_SRC_SUB)
+    OnbStep.READY -> t(UiKey.ONB_READY_SUB, sentenceNumber(10))
 }
 
 /** سطر اختيار (البلد أو المصدر): [off] = مقفول وسببه في [sub] (النموذج: رسايل البنك على الآيفون). */
@@ -112,18 +114,18 @@ data class OnbOption(val id: String, val label: String, val sub: String, val mar
  * ([canCreate] — نقطة ربط `SpacesAdmin`)، وإلا مقفولة بسببها بدل ما نختارها ونفشل بعدين.
  */
 fun countryOptions(open: List<Space>, canCreate: Boolean): List<OnbOption> = listOf(
-    OnbOption("SA", t(TextKey.COUNTRY_SA), t(TextKey.ONB_CUR_SAR), currencySymbol(Currency.SAR), off = false),
+    OnbOption("SA", t(TextKey.COUNTRY_SA), t(UiKey.ONB_CUR_SAR), currencySymbol(Currency.SAR), off = false),
     open.any { it.countryCode.equals("EG", true) }.let { has ->
         val on = has || canCreate
-        OnbOption("EG", t(TextKey.COUNTRY_EG), if (on) t(TextKey.ONB_CUR_EGP) else t(TextKey.ONB_COUNTRY_NOT_YET), currencySymbol(Currency.EGP), off = !on)
+        OnbOption("EG", t(TextKey.COUNTRY_EG), if (on) t(UiKey.ONB_CUR_EGP) else t(UiKey.ONB_COUNTRY_NOT_YET), currencySymbol(Currency.EGP), off = !on)
     },
 )
 
 /** مصادر العمليات: رسايل البنك على أندرويد بس ([smsReadable] = false على الآيفون ⇒ مقفولة بسببها — حالة «غير متاح» في النموذج). */
 fun sourceOptions(smsReadable: Boolean): List<OnbOption> = listOf(
-    OnbOption(OnbSource.SMS.name, t(TextKey.ONB_SRC_SMS), t(if (smsReadable) TextKey.ONB_SRC_SMS_SUB else TextKey.ONB_SRC_SMS_IOS), null, off = !smsReadable),
-    OnbOption(OnbSource.FILE.name, t(TextKey.ONB_SRC_FILE), t(TextKey.ONB_SRC_FILE_SUB), null, off = false),
-    OnbOption(OnbSource.LATER.name, t(TextKey.ONB_SRC_LATER), t(TextKey.ONB_SRC_LATER_SUB), null, off = false),
+    OnbOption(OnbSource.SMS.name, t(UiKey.ONB_SRC_SMS), t(if (smsReadable) UiKey.ONB_SRC_SMS_SUB else UiKey.ONB_SRC_SMS_IOS), null, off = !smsReadable),
+    OnbOption(OnbSource.FILE.name, t(UiKey.ONB_SRC_FILE), t(UiKey.ONB_SRC_FILE_SUB), null, off = false),
+    OnbOption(OnbSource.LATER.name, t(UiKey.ONB_SRC_LATER), t(UiKey.ONB_SRC_LATER_SUB), null, off = false),
 )
 
 /** اللي بيروح لـ`OnboardAccount.finish`: الملف بيوم الراتب المختار (أو زي ما هو لو «ليس ثابتًا»/اتخطى) — من غير كاش ولا ديون (مش في رحلة §63). */

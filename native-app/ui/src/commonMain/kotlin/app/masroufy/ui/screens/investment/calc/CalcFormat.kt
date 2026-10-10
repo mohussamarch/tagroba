@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateMapOf
@@ -29,25 +30,25 @@ import app.masroufy.ui.text.trueMinus
 
 /** «شهر واحد · شهران · ٣ أشهر · ١١ شهرًا» (المصري: «شهرين · ٣ شهور · ١١ شهر»). */
 fun monthsPhrase(n: Int): String = when (n) {
-    1 -> t(TextKey.CALCUI_MONTHS_ONE)
-    2 -> t(TextKey.CALCUI_MONTHS_TWO)
-    in 3..10 -> t(TextKey.CALCUI_MONTHS_FEW, sentenceNumber(n))
-    else -> t(TextKey.CALCUI_MONTHS_MANY, sentenceNumber(n))
+    1 -> t(UiKey.CALCUI_MONTHS_ONE)
+    2 -> t(UiKey.CALCUI_MONTHS_TWO)
+    in 3..10 -> t(UiKey.CALCUI_MONTHS_FEW, sentenceNumber(n))
+    else -> t(UiKey.CALCUI_MONTHS_MANY, sentenceNumber(n))
 }
 
 /** «سنة · سنتان · ٣ سنوات · ١١ سنة». */
 fun yearsPhrase(n: Int): String = when (n) {
-    1 -> t(TextKey.CALCUI_YEARS_ONE)
-    2 -> t(TextKey.CALCUI_YEARS_TWO)
-    in 3..10 -> t(TextKey.CALCUI_YEARS_FEW, sentenceNumber(n))
-    else -> t(TextKey.CALCUI_YEARS_MANY, sentenceNumber(n))
+    1 -> t(UiKey.CALCUI_YEARS_ONE)
+    2 -> t(UiKey.CALCUI_YEARS_TWO)
+    in 3..10 -> t(UiKey.CALCUI_YEARS_FEW, sentenceNumber(n))
+    else -> t(UiKey.CALCUI_YEARS_MANY, sentenceNumber(n))
 }
 
 /** مدة بالشهور: سنين كاملة بالسنين، وإلا بالشهور. */
 fun durationPhrase(months: Int): String = if (months > 0 && months % 12 == 0) yearsPhrase(months / 12) else monthsPhrase(months)
 
 /** «٧ أكتوبر ٢٠٢٨». */
-fun fullDate(iso: IsoDate): String = t(TextKey.CALCUI_DAY_MONTH_YEAR, dayMonth(iso), sentenceNumber(parseIsoDate(iso).year))
+fun fullDate(iso: IsoDate): String = t(UiKey.CALCUI_DAY_MONTH_YEAR, dayMonth(iso), sentenceNumber(parseIsoDate(iso).year))
 
 /** «أبريل ٢٠٥٥». */
 fun monthYearOf(iso: IsoDate): String = parseIsoDate(iso).let { monthYear(it.year, it.month) }
@@ -56,7 +57,7 @@ fun monthYearOf(iso: IsoDate): String = parseIsoDate(iso).let { monthYear(it.yea
 fun agePhrase(months: Int): String {
     val years = sentenceNumber(months / 12)
     val rest = months % 12
-    return if (rest == 0) t(TextKey.CALCUI_AGE, years) else t(TextKey.CALCUI_AGE_MONTHS, years, monthsPhrase(rest))
+    return if (rest == 0) t(UiKey.CALCUI_AGE, years) else t(UiKey.CALCUI_AGE_MONTHS, years, monthsPhrase(rest))
 }
 
 /** «14.88%» بعلامة الطرح الحقيقية. */

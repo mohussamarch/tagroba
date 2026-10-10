@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -79,34 +80,34 @@ fun TransfersScreen() {
         toaster.show(err ?: done(n))
         if (err == null) { expanded = null; personFor = null; reload++ }
     }
-    InnerScaffold(t(TextKey.TRANSFERS_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.TRANSFERS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.TRANSFERS_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.TRANSFERS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         val v = view
         when {
-            failed -> item(key = "error") { ErrorBanner(t(TextKey.TRANSFERS_ERROR), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), { reload++ }) }
+            failed -> item(key = "error") { ErrorBanner(t(UiKey.TRANSFERS_ERROR), t(UiKey.OPERATIONS_ERROR_BODY), t(UiKey.SHELL_RETRY), { reload++ }) }
             v == null -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { repeat(3) { Skeleton(Modifier.fillMaxWidth().height(84.dp), radius = 20.dp) } }
             }
-            v.empty -> item(key = "empty") { EmptyState(t(TextKey.TRANSFERS_EMPTY), t(TextKey.TRANSFERS_EMPTY_BODY)) }
+            v.empty -> item(key = "empty") { EmptyState(t(UiKey.TRANSFERS_EMPTY), t(UiKey.TRANSFERS_EMPTY_BODY)) }
             else -> for ((section, rows) in v.sections) {
                 item(key = "title-$section") { BasicText(sectionTitle(section), style = Type.of(15, FontWeight.Bold)) }
                 for (r in rows) item(key = "party-${r.ref.key}-${r.currency}") {
                     PartyCard(r, expanded == r.ref.key, onToggle = { expanded = if (expanded == r.ref.key) null else r.ref.key }) {
                         if (r.verdict == null) {
-                            SmallAction(t(TextKey.TRANSFER_PARTY_OWN)) { act({ n -> t(TextKey.TRANSFERS_DONE_OWN, transfersCount(n)) }) { deps.transfers.markOwnAccount(r.ref) } }
-                            SmallAction(t(TextKey.TRANSFERS_PERSON), strong = true) { personFor = r.ref }
-                            SmallAction(t(TextKey.TRANSFER_PARTY_NOT)) { act({ t(TextKey.TRANSFERS_DONE_NOT) }) { deps.transfers.dismiss(r.ref); 0 } }
+                            SmallAction(t(UiKey.TRANSFER_PARTY_OWN)) { act({ n -> t(UiKey.TRANSFERS_DONE_OWN, transfersCount(n)) }) { deps.transfers.markOwnAccount(r.ref) } }
+                            SmallAction(t(UiKey.TRANSFERS_PERSON), strong = true) { personFor = r.ref }
+                            SmallAction(t(UiKey.TRANSFER_PARTY_NOT)) { act({ t(UiKey.TRANSFERS_DONE_NOT) }) { deps.transfers.dismiss(r.ref); 0 } }
                         } else {
-                            SmallAction(t(TextKey.TRANSFERS_FORGET)) { act({ t(TextKey.TRANSFERS_DONE_FORGET) }) { deps.transfers.forget(r.ref.key) } }
+                            SmallAction(t(UiKey.TRANSFERS_FORGET)) { act({ t(UiKey.TRANSFERS_DONE_FORGET) }) { deps.transfers.forget(r.ref.key) } }
                         }
                     }
                 }
             }
         }
-        if (v != null && v.unidentified > 0) item(key = "no-party") { NoteBox(t(TextKey.TRANSFERS_NO_PARTY, transfersCount(v.unidentified))) }
+        if (v != null && v.unidentified > 0) item(key = "no-party") { NoteBox(t(UiKey.TRANSFERS_NO_PARTY, transfersCount(v.unidentified))) }
     }
     PersonForPartySheet(personFor, people, onDismiss = { personFor = null }) { ref, who, newName ->
-        act({ t(if (who == null) TextKey.TRANSFERS_DONE_PERSON_NEW else TextKey.TRANSFERS_DONE_PERSON, who?.name ?: newName) }) {
+        act({ t(if (who == null) UiKey.TRANSFERS_DONE_PERSON_NEW else UiKey.TRANSFERS_DONE_PERSON, who?.name ?: newName) }) {
             val person = who ?: deps.people.addPerson(newName)
             deps.transfers.markPerson(ref, person.id)
         }
@@ -127,7 +128,7 @@ private fun PartyCard(r: PartyRowView, open: Boolean, onToggle: () -> Unit, acti
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(r.ref.label, style = Type.of(15, FontWeight.Bold))
-                    r.last4?.let { BasicText(t(TextKey.TRANSFERS_LAST4, it), style = Type.of(12).copy(color = Ink.muted)) }
+                    r.last4?.let { BasicText(t(UiKey.TRANSFERS_LAST4, it), style = Type.of(12).copy(color = Ink.muted)) }
                 }
                 BasicText(r.meta, style = Type.caption().copy(color = Ink.muted))
                 StatusChip(r.chip.text, r.chip.ink, r.chip.background)
@@ -152,17 +153,17 @@ private fun PersonForPartySheet(ref: TransferPartyRef?, people: List<Person>, on
     var who by remember(ref) { mutableStateOf<Person?>(null) }
     var name by remember(ref) { mutableStateOf("") }
     val shown = ref
-    val title = shown?.let { t(TextKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(it)) }.orEmpty()
-    Sheet(ref != null, onDismiss, title = title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 10.dp) {
+    val title = shown?.let { t(UiKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(it)) }.orEmpty()
+    Sheet(ref != null, onDismiss, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.TRANSFERS_PERSON_BODY), style = Type.of(13).copy(color = Ink.muted))
-        TextInput(name, { name = it; if (it.isNotBlank()) who = null }, placeholder = t(TextKey.TRANSFERS_NEW_PERSON))
+        BasicText(t(UiKey.TRANSFERS_PERSON_BODY), style = Type.of(13).copy(color = Ink.muted))
+        TextInput(name, { name = it; if (it.isNotBlank()) who = null }, placeholder = t(UiKey.TRANSFERS_NEW_PERSON))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (p in people.filter { !it.archived }.take(8)) SelectChip(p.name, who?.id == p.id && name.isBlank(), { who = p; name = "" })
         }
         val ready = name.isNotBlank() || who != null
-        if (!ready) FieldError(t(TextKey.LINK_PERSON_ERR_PERSON))
-        PrimaryButton(t(TextKey.TRANSFERS_LINK), enabled = ready, modifier = Modifier.fillMaxWidth(), onClick = {
+        if (!ready) FieldError(t(UiKey.LINK_PERSON_ERR_PERSON))
+        PrimaryButton(t(UiKey.TRANSFERS_LINK), enabled = ready, modifier = Modifier.fillMaxWidth(), onClick = {
             if (shown != null && ready) onSave(shown, if (name.isNotBlank()) null else who, name.trim())
         })
     }

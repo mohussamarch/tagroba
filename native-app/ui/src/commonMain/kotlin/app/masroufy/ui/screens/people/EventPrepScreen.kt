@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,10 +76,10 @@ internal fun EventPrepScreen(eventId: String) {
         }
     }
     val ui = (load as? Load.Ready)?.value
-    InnerScaffold(ui?.let { t(TextKey.EVENT_PREP_TITLE, it.event.name) } ?: t(TextKey.EVENT_DETAIL_PREP)) {
+    InnerScaffold(ui?.let { t(UiKey.EVENT_PREP_TITLE, it.event.name) } ?: t(UiKey.EVENT_DETAIL_PREP)) {
         when (val l = load) {
             Load.Loading -> items(2) { Skeleton(Modifier.fillMaxWidth().height(if (it == 0) 130.dp else 220.dp)) }
-            Load.Failed -> item { ErrorCard({ retry++ }, title = t(TextKey.PPL_LOAD_FAILED), body = "") }
+            Load.Failed -> item { ErrorCard({ retry++ }, title = t(UiKey.PPL_LOAD_FAILED), body = "") }
             is Load.Ready -> prepBody(l.value)
         }
     }
@@ -87,8 +88,8 @@ internal fun EventPrepScreen(eventId: String) {
 private fun androidx.compose.foundation.lazy.LazyListScope.prepBody(ui: PrepUi) {
     item(key = "line") { Note(ui.eventLine) }
     when (ui.block) {
-        PrepBlock.CONDOLENCE -> { item { EmptyState(t(TextKey.EVENT_PREP_BLOCK_CONDOLENCE_TITLE), t(TextKey.EVENT_PREP_BLOCK_CONDOLENCE_BODY)) }; return }
-        PrepBlock.PAST -> { item { EmptyState(t(TextKey.EVENT_PREP_BLOCK_PAST_TITLE), t(TextKey.EVENT_DETAIL_NO_PREP_PAST)) }; return }
+        PrepBlock.CONDOLENCE -> { item { EmptyState(t(UiKey.EVENT_PREP_BLOCK_CONDOLENCE_TITLE), t(UiKey.EVENT_PREP_BLOCK_CONDOLENCE_BODY)) }; return }
+        PrepBlock.PAST -> { item { EmptyState(t(UiKey.EVENT_PREP_BLOCK_PAST_TITLE), t(UiKey.EVENT_DETAIL_NO_PREP_PAST)) }; return }
         null -> Unit
     }
     item(key = "hero") { PrepHero(ui) }
@@ -103,11 +104,11 @@ private fun PrepHero(ui: PrepUi) {
     HeroCard(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) {
-                BasicText(t(TextKey.EVENT_PREP_SPENT), style = Type.caption().copy(color = Ink.onHeroMuted))
+                BasicText(t(UiKey.EVENT_PREP_SPENT), style = Type.caption().copy(color = Ink.onHeroMuted))
                 AmountText(ui.spent?.minor, ui.spent?.currency ?: ui.currency, size = 22, color = Ink.onPrimary)
             }
             Column(Modifier.weight(1f)) {
-                BasicText(t(TextKey.EVENT_PREP_PLANNED), style = Type.caption().copy(color = Ink.onHeroMuted))
+                BasicText(t(UiKey.EVENT_PREP_PLANNED), style = Type.caption().copy(color = Ink.onHeroMuted))
                 if (ui.planned == null) BasicText(t(TextKey.NOT_AVAILABLE), Modifier.padding(top = 4.dp), style = Type.of(16, FontWeight.Bold).copy(color = Ink.onHeroMuted))
                 else AmountText(ui.planned.minor, ui.planned.currency, size = 22, color = Ink.onPrimary)
                 BasicText(ui.plannedSub, style = Type.of(11).copy(color = Ink.onHeroMuted))
@@ -130,18 +131,18 @@ private fun Suggestions(ui: PrepUi) {
     var err by remember { mutableStateOf<String?>(null) }
     FloatingCard {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(TextKey.EVENT_PREP_SUG_TITLE), style = Type.bodyBold())
-            Note(t(TextKey.EVENT_PREP_SUG_BODY))
+            BasicText(t(UiKey.EVENT_PREP_SUG_TITLE), style = Type.bodyBold())
+            Note(t(UiKey.EVENT_PREP_SUG_BODY))
             ChoiceFlow { for (s in ui.suggestions) Choice(s, s in on, { on = if (s in on) on - s else on + s }) }
             ErrorLine(err)
             val chosen = ui.suggestions.filter { it in on }
             PrimaryButton(
-                if (chosen.isEmpty()) t(TextKey.EVENT_PREP_SUG_PICK) else t(TextKey.EVENT_PREP_SUG_SAVE, countOf(chosen.size, Noun.ITEMS_OBJ)),
+                if (chosen.isEmpty()) t(UiKey.EVENT_PREP_SUG_PICK) else t(UiKey.EVENT_PREP_SUG_SAVE, countOf(chosen.size, Noun.ITEMS_OBJ)),
                 enabled = chosen.isNotEmpty(), modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     scope.launch {
                         runCatching { deps.prep.addMany(ui.event.id, chosen) }
-                            .onSuccess { PeopleChanges.bump(); toaster.show(t(TextKey.EVENT_PREP_SUG_SAVED, countOf(chosen.size, Noun.ITEMS))) }
+                            .onSuccess { PeopleChanges.bump(); toaster.show(t(UiKey.EVENT_PREP_SUG_SAVED, countOf(chosen.size, Noun.ITEMS))) }
                             .onFailure { err = it.message }
                     }
                 },
@@ -154,7 +155,7 @@ private fun Suggestions(ui: PrepUi) {
 private fun Items(ui: PrepUi) {
     var editing by remember { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.EVENT_PREP_ITEMS, sentenceNumber(ui.items.size)), style = Type.section())
+        BasicText(t(UiKey.EVENT_PREP_ITEMS, sentenceNumber(ui.items.size)), style = Type.section())
         FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             ui.items.forEachIndexed { i, it -> ItemRow(it, i == ui.items.lastIndex, editing == it.item.id) { editing = if (editing == it.item.id) null else it.item.id } }
         }
@@ -176,7 +177,7 @@ private fun ItemRow(row: PrepItemUi, last: Boolean, editing: Boolean, toggleEdit
             val press = rememberPress()
             Box(
                 Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(if (item.done) Ink.primary else Ink.onPrimary)
-                    .tap(press, label = t(TextKey.EVENT_PREP_DONE_LABEL, item.name), role = androidx.compose.ui.semantics.Role.Checkbox, onClick = { act { deps.prep.setDone(item.id, !item.done) } }),
+                    .tap(press, label = t(UiKey.EVENT_PREP_DONE_LABEL, item.name), role = androidx.compose.ui.semantics.Role.Checkbox, onClick = { act { deps.prep.setDone(item.id, !item.done) } }),
                 contentAlignment = Alignment.Center,
             ) { if (item.done) LucideIcon(Lucide.CHECK, size = 20.dp, tint = Ink.onPrimary) else Box(Modifier.size(20.dp).clip(RoundedCornerShape(6.dp)).background(PeopleInk.tonal)) }
             val p2 = rememberPress()
@@ -193,18 +194,18 @@ private fun ItemRow(row: PrepItemUi, last: Boolean, editing: Boolean, toggleEdit
         if (editing) {
             Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    NumberInput(amount, { amount = it; err = null }, Modifier.weight(1f), placeholder = t(TextKey.EVENT_PREP_PLANNED_INPUT), currency = space.space.currency)
-                    PrimaryButton(t(TextKey.PPL_SAVE), onClick = {
+                    NumberInput(amount, { amount = it; err = null }, Modifier.weight(1f), placeholder = t(UiKey.EVENT_PREP_PLANNED_INPUT), currency = space.space.currency)
+                    PrimaryButton(t(UiKey.PPL_SAVE), onClick = {
                         val v = tryParseMoney(amount, space.space.currency)
-                        if (v == null || v <= 0) err = t(TextKey.EVENT_PREP_AMOUNT_ERR) else act { deps.prep.update(item.id, item.name, v) }
+                        if (v == null || v <= 0) err = t(UiKey.EVENT_PREP_AMOUNT_ERR) else act { deps.prep.update(item.id, item.name, v) }
                     })
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TonalButton(t(TextKey.EVENT_PREP_NO_AMOUNT), onClick = { act { deps.prep.update(item.id, item.name, null) } }, Modifier.weight(1f))
-                    TonalButton(t(TextKey.EVENT_PREP_REMOVE), onClick = {
+                    TonalButton(t(UiKey.EVENT_PREP_NO_AMOUNT), onClick = { act { deps.prep.update(item.id, item.name, null) } }, Modifier.weight(1f))
+                    TonalButton(t(UiKey.EVENT_PREP_REMOVE), onClick = {
                         act {
                             deps.prep.remove(item.id)
-                            toaster.show(t(if (row.spentMinor > 0) TextKey.EVENT_PREP_REMOVED_SPENT else TextKey.EVENT_PREP_REMOVED))
+                            toaster.show(t(if (row.spentMinor > 0) UiKey.EVENT_PREP_REMOVED_SPENT else UiKey.EVENT_PREP_REMOVED))
                         }
                     }, Modifier.weight(1f))
                 }
@@ -223,8 +224,8 @@ private fun NewItem(ui: PrepUi) {
     var err by remember { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextInput(name, { name = it.take(60); err = null }, Modifier.weight(1f), placeholder = t(TextKey.EVENT_PREP_NEW))
-            PrimaryButton(t(TextKey.EVENT_PREP_ADD), onClick = {
+            TextInput(name, { name = it.take(60); err = null }, Modifier.weight(1f), placeholder = t(UiKey.EVENT_PREP_NEW))
+            PrimaryButton(t(UiKey.EVENT_PREP_ADD), onClick = {
                 scope.launch {
                     runCatching { deps.prep.add(ui.event.id, name) }.onSuccess { name = ""; PeopleChanges.bump() }.onFailure { err = it.message }
                 }
@@ -240,7 +241,7 @@ private fun Loose(ui: PrepUi) {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.EVENT_PREP_LOOSE_TITLE), style = Type.section())
+        BasicText(t(UiKey.EVENT_PREP_LOOSE_TITLE), style = Type.section())
         for (l in ui.loose) {
             FloatingCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -250,12 +251,12 @@ private fun Loose(ui: PrepUi) {
                     }
                     AmountText(l.amountMinor, l.currency, tone = AmountTone.EXPENSE)
                 }
-                BasicText(t(TextKey.EVENT_PREP_ASSIGN), Modifier.padding(top = 8.dp, bottom = 6.dp), style = Type.captionBold())
+                BasicText(t(UiKey.EVENT_PREP_ASSIGN), Modifier.padding(top = 8.dp, bottom = 6.dp), style = Type.captionBold())
                 ChoiceFlow {
                     for (row in ui.items) Choice(row.item.name, false, {
                         scope.launch {
                             runCatching { deps.prep.assignSpend(ui.event.id, l.txnId, row.item.id) }
-                                .onSuccess { PeopleChanges.bump(); toaster.show(t(TextKey.EVENT_PREP_ASSIGNED, row.item.name)) }
+                                .onSuccess { PeopleChanges.bump(); toaster.show(t(UiKey.EVENT_PREP_ASSIGNED, row.item.name)) }
                                 .onFailure { e -> toaster.show(e.message ?: "") }
                         }
                     }, textSize = 13)

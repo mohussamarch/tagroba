@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -74,16 +75,16 @@ fun OperationsScreen() {
         }
         ui = ui.loaded(view, attempt { deps.transfers.zone().questions.size })
     }
-    val title = t(TextKey.TAB_OPERATIONS)
+    val title = t(UiKey.TAB_OPERATIONS)
     TabScaffold(title, header = {
         TabHeader(title, actions = {
-            SurfaceIconButton(Lucide.FILTER, t(TextKey.OPERATIONS_FILTER), onClick = { nav.push(OperationFiltersRoute) }, iconSize = 20.dp)
-            MonthButton(ui.view?.periodLabel ?: t(TextKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
+            SurfaceIconButton(Lucide.FILTER, t(UiKey.OPERATIONS_FILTER), onClick = { nav.push(OperationFiltersRoute) }, iconSize = 20.dp)
+            MonthButton(ui.view?.periodLabel ?: t(UiKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
         })
     }) {
         item(key = "tabs") {
             SegmentedTabs(
-                listOf(OpsTab.OPERATIONS to t(TextKey.OPERATIONS_TAB_OPS), OpsTab.BUDGETS to t(TextKey.OPERATIONS_TAB_BUDGETS), OpsTab.DUES to t(TextKey.OPERATIONS_TAB_DUES)),
+                listOf(OpsTab.OPERATIONS to t(UiKey.OPERATIONS_TAB_OPS), OpsTab.BUDGETS to t(UiKey.OPERATIONS_TAB_BUDGETS), OpsTab.DUES to t(UiKey.OPERATIONS_TAB_DUES)),
                 tab, { tab = it }, Modifier.fillMaxWidth(),
             )
         }
@@ -107,11 +108,11 @@ private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: 
         return
     }
     if (ui.failed) item(key = "error") {
-        ErrorBanner(t(TextKey.OPERATIONS_ERROR_TITLE), t(TextKey.OPERATIONS_ERROR_BODY), t(TextKey.SHELL_RETRY), onRetry)
+        ErrorBanner(t(UiKey.OPERATIONS_ERROR_TITLE), t(UiKey.OPERATIONS_ERROR_BODY), t(UiKey.SHELL_RETRY), onRetry)
     }
     val v = ui.view ?: return
     if (v.empty) {
-        item(key = "empty") { EmptyState(t(TextKey.OPERATIONS_EMPTY_TITLE, v.periodLabel), t(TextKey.OPERATIONS_EMPTY_BODY)) }
+        item(key = "empty") { EmptyState(t(UiKey.OPERATIONS_EMPTY_TITLE, v.periodLabel), t(UiKey.OPERATIONS_EMPTY_BODY)) }
         return
     }
     // شريط رسايل البنك: عددها مالوش حالة استخدام في «العمليات» لسه (صندوق الرسايل شغل منطقة الاستيراد) ⇒ `null` ⇒ ما بيظهرش
@@ -143,12 +144,12 @@ private fun BannerItem(b: Banner) {
 private fun Summary(income: Halalas?, expense: Halalas?, currency: Currency, approx: Boolean) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            SummaryCard(t(TextKey.OPERATIONS_INCOME), income, currency, AmountTone.INCOME, Modifier.weight(1f))
-            SummaryCard(t(TextKey.OPERATIONS_EXPENSE), expense, currency, AmountTone.EXPENSE, Modifier.weight(1f))
+            SummaryCard(t(UiKey.OPERATIONS_INCOME), income, currency, AmountTone.INCOME, Modifier.weight(1f))
+            SummaryCard(t(UiKey.OPERATIONS_EXPENSE), expense, currency, AmountTone.EXPENSE, Modifier.weight(1f))
         }
         if (approx) Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             ApproxBadge()
-            BasicText(t(TextKey.OPERATIONS_APPROX_NOTE), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.OPERATIONS_APPROX_NOTE), style = Type.caption().copy(color = Ink.muted))
         }
     }
 }
@@ -164,7 +165,7 @@ private fun SummaryCard(label: String, minor: Halalas?, currency: Currency, tone
 /** «بيحمّل»: نفس شكل المحتوى رمادي (مش دوّامة) — الكارتين · عنوان اليوم · كارت الصفوف. */
 @Composable
 private fun LoadingBlocks() {
-    val label = t(TextKey.SHELL_LOADING)
+    val label = t(UiKey.SHELL_LOADING)
     Column(Modifier.fillMaxWidth().semantics { contentDescription = label }, verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Skeleton(Modifier.weight(1f).height(66.dp), radius = 18.dp)

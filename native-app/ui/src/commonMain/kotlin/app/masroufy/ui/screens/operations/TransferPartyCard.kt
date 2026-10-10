@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,14 +61,14 @@ sealed interface PartyDecision {
 }
 
 /** «حساب ينتهي بـ ٤٨٢١» أو اسم الطرف لو مفيش أرقام. */
-fun partyAccount(party: TransferPartyRef): String = party.last4?.let { t(TextKey.TRANSFER_PARTY_ACCOUNT, sentenceDigits(it)) } ?: party.label
+fun partyAccount(party: TransferPartyRef): String = party.last4?.let { t(UiKey.TRANSFER_PARTY_ACCOUNT, sentenceDigits(it)) } ?: party.label
 
 /** العنوان والسطر بعد القرار. */
 fun decisionTexts(d: PartyDecision, party: TransferPartyRef): Pair<String, String> = when (d) {
-    is PartyDecision.AsPerson -> t(TextKey.TRANSFER_PARTY_DONE_PERSON, d.name, ruleFor(d.kind).label) to
-        ((if (d.added) t(TextKey.TRANSFER_PARTY_ADDED, d.name) + " " else "") + t(TextKey.TRANSFER_PARTY_DONE_PERSON_BODY, partyAccount(party)))
-    is PartyDecision.OwnAccount -> t(TextKey.TRANSFER_PARTY_DONE_OWN) to t(TextKey.TRANSFER_PARTY_DONE_OWN_BODY, operationsCount(d.changed))
-    PartyDecision.NotThis -> t(TextKey.TRANSFER_PARTY_DONE_NOT) to t(TextKey.TRANSFER_PARTY_DONE_NOT_BODY)
+    is PartyDecision.AsPerson -> t(UiKey.TRANSFER_PARTY_DONE_PERSON, d.name, ruleFor(d.kind).label) to
+        ((if (d.added) t(UiKey.TRANSFER_PARTY_ADDED, d.name) + " " else "") + t(UiKey.TRANSFER_PARTY_DONE_PERSON_BODY, partyAccount(party)))
+    is PartyDecision.OwnAccount -> t(UiKey.TRANSFER_PARTY_DONE_OWN) to t(UiKey.TRANSFER_PARTY_DONE_OWN_BODY, operationsCount(d.changed))
+    PartyDecision.NotThis -> t(UiKey.TRANSFER_PARTY_DONE_NOT) to t(UiKey.TRANSFER_PARTY_DONE_NOT_BODY)
 }
 
 /**
@@ -99,15 +100,15 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.card)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            BasicText(t(TextKey.TRANSFER_PARTY_ASK), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
+            BasicText(t(UiKey.TRANSFER_PARTY_ASK), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(TextKey.TRANSFER_PARTY_NAME, party.label), style = Type.of(16, FontWeight.Bold))
+                BasicText(t(UiKey.TRANSFER_PARTY_NAME, party.label), style = Type.of(16, FontWeight.Bold))
                 party.last4?.let { BasicText(partyAccount(party), style = Type.of(12).copy(color = PartyInk.brown)) }
             }
-            PrimaryButton(t(TextKey.TRANSFER_PARTY_PERSON), onClick = { sheet = true; error = null }, modifier = Modifier.fillMaxWidth())
+            PrimaryButton(t(UiKey.TRANSFER_PARTY_PERSON), onClick = { sheet = true; error = null }, modifier = Modifier.fillMaxWidth())
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PartyButton(t(TextKey.TRANSFER_PARTY_OWN), Modifier.weight(1f)) { act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party)) } }
-                PartyButton(t(TextKey.TRANSFER_PARTY_NOT), Modifier.weight(1f)) { act { deps.transfers.dismiss(party); PartyDecision.NotThis } }
+                PartyButton(t(UiKey.TRANSFER_PARTY_OWN), Modifier.weight(1f)) { act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party)) } }
+                PartyButton(t(UiKey.TRANSFER_PARTY_NOT), Modifier.weight(1f)) { act { deps.transfers.dismiss(party); PartyDecision.NotThis } }
             }
             error?.let { FieldError(it) }
         }
@@ -124,7 +125,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
         ) {
             BasicText(title, style = Type.of(13, FontWeight.Bold).copy(color = ink))
             BasicText(body, style = Type.of(13))
-            TonalButton(t(TextKey.TRANSFER_PARTY_UNDO), {
+            TonalButton(t(UiKey.TRANSFER_PARTY_UNDO), {
                 scope.launch {
                     val err = failureOf { deps.transfers.forget(party.key) }
                     if (err == null) {
@@ -189,21 +190,21 @@ private fun PartySheet(
         people = attempt { deps.people.listWithBalances().filter { !it.person.archived }.map { it.person } }.orEmpty()
     }
     val chosenName = if (isNew) partyNewName(party, name) else picked?.name.orEmpty()
-    val title = if (step == 0) t(TextKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(party)) else t(TextKey.TRANSFER_PARTY_KIND_TITLE, chosenName)
-    Sheet(visible, onDismiss, title = title, closeLabel = t(TextKey.SHELL_CLOSE), spacing = 12.dp) {
+    val title = if (step == 0) t(UiKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(party)) else t(UiKey.TRANSFER_PARTY_KIND_TITLE, chosenName)
+    Sheet(visible, onDismiss, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         if (step == 0) {
             NewPersonBox(name, isNew, circle, onName = { name = it; isNew = true; picked = null }, onCircle = { circle = if (circle == it) null else it; isNew = true; picked = null })
-            BasicText(t(TextKey.TRANSFER_PARTY_OR), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted))
+            BasicText(t(UiKey.TRANSFER_PARTY_OR), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted))
             PeopleList(people.take(8), picked) { picked = it; isNew = false }
-            PrimaryButton(t(TextKey.TRANSFER_PARTY_NEXT), onClick = { step = 1 }, enabled = picked != null || (isNew && chosenName.isNotBlank()), modifier = Modifier.fillMaxWidth())
+            PrimaryButton(t(UiKey.TRANSFER_PARTY_NEXT), onClick = { step = 1 }, enabled = picked != null || (isNew && chosenName.isNotBlank()), modifier = Modifier.fillMaxWidth())
         } else {
-            BasicText(t(TextKey.TRANSFER_PARTY_KIND_Q), style = Type.of(14).copy(color = Ink.muted))
+            BasicText(t(UiKey.TRANSFER_PARTY_KIND_Q), style = Type.of(14).copy(color = Ink.muted))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (k in INCOMING_FROM_PERSON_KINDS) SelectChip(ruleFor(k).label, kind == k, { kind = k })
             }
             error?.let { FieldError(it) }
-            PrimaryButton(t(TextKey.TRANSFER_PARTY_SAVE), onClick = {
+            PrimaryButton(t(UiKey.TRANSFER_PARTY_SAVE), onClick = {
                 val k = kind ?: return@PrimaryButton
                 onSave(if (isNew) null else picked, NewPersonDraft(name, circle), k)
             }, enabled = kind != null, modifier = Modifier.fillMaxWidth())

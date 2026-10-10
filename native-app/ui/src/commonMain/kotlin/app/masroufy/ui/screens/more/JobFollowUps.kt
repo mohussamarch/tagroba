@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -56,35 +57,35 @@ fun FollowUpQuestion(
     var amountText by remember(q) { mutableStateOf("") }
     val currency = LocalSpace.current.space.currency
     val text = when (q) {
-        is IncomeFollowUp.AskPayday -> t(TextKey.JOB_Q_PAYDAY)
-        is IncomeFollowUp.ChangeMonthStart -> t(TextKey.JOB_Q_MONTH_START, sentenceNumber(q.day))
+        is IncomeFollowUp.AskPayday -> t(UiKey.JOB_Q_PAYDAY)
+        is IncomeFollowUp.ChangeMonthStart -> t(UiKey.JOB_Q_MONTH_START, sentenceNumber(q.day))
         is IncomeFollowUp.AskPayFrequency -> when (freq) {
-            null -> t(TextKey.JOB_Q_FREQUENCY)
-            PayFrequency.WEEKLY -> t(TextKey.JOB_Q_WEEKDAY)
-            PayFrequency.MONTHLY -> t(TextKey.JOB_Q_MONTH_DAY)
+            null -> t(UiKey.JOB_Q_FREQUENCY)
+            PayFrequency.WEEKLY -> t(UiKey.JOB_Q_WEEKDAY)
+            PayFrequency.MONTHLY -> t(UiKey.JOB_Q_MONTH_DAY)
         }
-        is IncomeFollowUp.AskExpectedSalary -> t(TextKey.JOB_Q_EXPECTED)
-        IncomeFollowUp.CarToWork -> t(TextKey.ACC_CAR_TO_WORK_Q)
+        is IncomeFollowUp.AskExpectedSalary -> t(UiKey.JOB_Q_EXPECTED)
+        IncomeFollowUp.CarToWork -> t(UiKey.ACC_CAR_TO_WORK_Q)
     }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(text, Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
-            BasicText(t(TextKey.JOB_Q_STEP, sentenceNumber(step), sentenceNumber(total)), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.JOB_Q_STEP, sentenceNumber(step), sentenceNumber(total)), style = Type.caption().copy(color = Ink.muted))
         }
         when (q) {
             is IncomeFollowUp.AskPayday -> DayGrid(null, { if (!busy) onPayday(q.sourceId, it) })
             is IncomeFollowUp.ChangeMonthStart -> {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FillChip(t(TextKey.JOB_MONTH_YES), false, enabled = !busy) { onMonthStart(q.day, true) }
-                    FillChip(t(TextKey.JOB_MONTH_NO, sentenceNumber(monthStart)), false, enabled = !busy) { onMonthStart(q.day, false) }
+                    FillChip(t(UiKey.JOB_MONTH_YES), false, enabled = !busy) { onMonthStart(q.day, true) }
+                    FillChip(t(UiKey.JOB_MONTH_NO, sentenceNumber(monthStart)), false, enabled = !busy) { onMonthStart(q.day, false) }
                 }
                 // قرار المالك 2026-10-09: «من الشهر القادم بس» — كوتلن بيحرّك كل الشهور
-                NotYetLine(t(TextKey.ACC_PAYDAY_NEXT_ONLY))
+                NotYetLine(t(UiKey.ACC_PAYDAY_NEXT_ONLY))
             }
             is IncomeFollowUp.AskPayFrequency -> when (freq) {
                 null -> FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FillChip(t(TextKey.JOB_FREQ_MONTHLY), false) { freq = PayFrequency.MONTHLY }
-                    FillChip(t(TextKey.JOB_FREQ_WEEKLY), false) { freq = PayFrequency.WEEKLY }
+                    FillChip(t(UiKey.JOB_FREQ_MONTHLY), false) { freq = PayFrequency.MONTHLY }
+                    FillChip(t(UiKey.JOB_FREQ_WEEKLY), false) { freq = PayFrequency.WEEKLY }
                 }
                 PayFrequency.MONTHLY -> DayGrid(null, { if (!busy) onFrequency(q.sourceId, PayFrequency.MONTHLY, it) })
                 PayFrequency.WEEKLY -> FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -94,11 +95,11 @@ fun FollowUpQuestion(
             is IncomeFollowUp.AskExpectedSalary -> {
                 val minor = amountText.trim().takeIf { it.isNotEmpty() }?.let { tryParseMoney(it, currency) }?.takeIf { it > 0 }
                 TextInput(amountText, { amountText = it }, placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
-                    error = if (amountText.isNotBlank() && minor == null) t(TextKey.WADD_ERR_AMOUNT) else null)
-                PrimaryButton(t(TextKey.MORE_SAVE), onClick = { minor?.let { onExpected(q.sourceId, it) } }, enabled = minor != null && !busy, modifier = Modifier.fillMaxWidth())
+                    error = if (amountText.isNotBlank() && minor == null) t(UiKey.WADD_ERR_AMOUNT) else null)
+                PrimaryButton(t(UiKey.MORE_SAVE), onClick = { minor?.let { onExpected(q.sourceId, it) } }, enabled = minor != null && !busy, modifier = Modifier.fillMaxWidth())
             }
             IncomeFollowUp.CarToWork -> Unit
         }
-        TonalButton(t(TextKey.JOB_SKIP), onClick = onSkip, enabled = !busy, muted = true, height = 44.dp)
+        TonalButton(t(UiKey.JOB_SKIP), onClick = onSkip, enabled = !busy, muted = true, height = 44.dp)
     }
 }

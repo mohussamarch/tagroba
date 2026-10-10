@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -33,7 +34,7 @@ fun spaceMark(space: Space?): String {
 }
 
 /** «من السعودية إلى مصر». */
-fun routeName(from: Space?, to: Space?): String = t(TextKey.SPACE_TRANSFER_SCREEN_ROUTE, from?.name.orEmpty(), to?.name.orEmpty())
+fun routeName(from: Space?, to: Space?): String = t(UiKey.SPACE_TRANSFER_SCREEN_ROUTE, from?.name.orEmpty(), to?.name.orEmpty())
 
 /**
  * السعر للعرض بس من المبلغين (`spaceTransferRateText` من `core` — نص العرض اللي الدومين نفسه بيطلّعه: أعداد صحيحة و٤ أرقام والتقريب نص لفوق)
@@ -43,7 +44,7 @@ fun rateLine(fromMinor: Halalas?, fromCurrency: Currency, toMinor: Halalas?, toC
     if (fromMinor == null || toMinor == null || fromMinor <= 0 || toMinor <= 0) return null
     val text = spaceTransferRateText(SpaceTransfer("", "", "", fromMinor, fromCurrency, "", "", toMinor, toCurrency, ""))
     val number = text.substringAfter("= ").substringBefore(' ')
-    return t(TextKey.SPACE_TRANSFER_SCREEN_RATE_LINE, number, currencySymbol(toCurrency), sentenceNumber(1), currencySymbol(fromCurrency))
+    return t(UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE, number, currencySymbol(toCurrency), sentenceNumber(1), currencySymbol(fromCurrency))
 }
 
 /**
@@ -61,15 +62,15 @@ fun pairViews(pairs: List<SpaceTransfer>, books: List<SpaceWallets>, legs: Map<I
             legView(to, legs[p.toTransactionId], p.toAmountMinor, p.toCurrency, out = false),
         ),
         rate = rateLine(p.fromAmountMinor, p.fromCurrency, p.toAmountMinor, p.toCurrency).orEmpty(),
-        note = p.note?.takeIf { it.isNotBlank() }?.let { t(TextKey.SPACE_TRANSFER_SCREEN_NOTE_LINE, it) },
+        note = p.note?.takeIf { it.isNotBlank() }?.let { t(UiKey.SPACE_TRANSFER_SCREEN_NOTE_LINE, it) },
     )
 }
 
 private fun legView(book: SpaceWallets?, tx: Transaction?, amount: Halalas, currency: Currency, out: Boolean): LegView {
     val name = book?.space?.name.orEmpty()
     val wallet = tx?.walletId?.let { id -> book?.wallets?.firstOrNull { it.id == id }?.name }
-    val title = wallet ?: t(if (out) TextKey.SPACE_TRANSFER_SCREEN_LEFT else TextKey.SPACE_TRANSFER_SCREEN_ARRIVED, name)
-    val sub = tx?.let { t(if (out) TextKey.SPACE_TRANSFER_SCREEN_LEG_OUT else TextKey.SPACE_TRANSFER_SCREEN_LEG_IN, dayMonth(it.occurredAt)) }
+    val title = wallet ?: t(if (out) UiKey.SPACE_TRANSFER_SCREEN_LEFT else UiKey.SPACE_TRANSFER_SCREEN_ARRIVED, name)
+    val sub = tx?.let { t(if (out) UiKey.SPACE_TRANSFER_SCREEN_LEG_OUT else UiKey.SPACE_TRANSFER_SCREEN_LEG_IN, dayMonth(it.occurredAt)) }
     return LegView(spaceMark(book?.space), title, sub, amount, currency, out)
 }
 

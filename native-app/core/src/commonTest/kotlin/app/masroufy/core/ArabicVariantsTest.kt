@@ -23,7 +23,7 @@ class ArabicVariantsTest {
     @Test
     fun everyKeyHasAnMsaAndAnEgyptianAndAnEnglishText() {
         for ((name, table) in listOf("فصحى" to MSA_TEXTS, "مصري" to EGYPTIAN_TEXTS, "إنجليزي" to ENGLISH_TEXTS)) {
-            val missing = TextKey.entries.filter { it !in table }
+            val missing = ALL_TEXT_KEYS.filter { it !in table }
             assertTrue(missing.isEmpty(), "مفاتيح من غير نص $name: $missing")
             val blank = table.filterValues { it.isBlank() }.keys
             assertTrue(blank.isEmpty(), "نص $name فاضي: $blank")
@@ -32,21 +32,21 @@ class ArabicVariantsTest {
 
     @Test
     fun msaKeepsTheSamePlaceholdersAsEgyptian() {
-        val broken = TextKey.entries.filter { placeholders(MSA_TEXTS.getValue(it)) != placeholders(EGYPTIAN_TEXTS.getValue(it)) }
+        val broken = ALL_TEXT_KEYS.filter { placeholders(MSA_TEXTS.getValue(it)) != placeholders(EGYPTIAN_TEXTS.getValue(it)) }
         assertTrue(broken.isEmpty(), "متغيرات مختلفة بين الفصحى والمصري: " + broken.map { "$it: ${MSA_TEXTS[it]}" })
     }
 
     @Test
     fun msaKeepsCurrencySymbols() {
         for (symbol in listOf("ر.س", "ج.م")) {
-            val lost = TextKey.entries.filter { EGYPTIAN_TEXTS.getValue(it).contains(symbol) && !MSA_TEXTS.getValue(it).contains(symbol) }
+            val lost = ALL_TEXT_KEYS.filter { EGYPTIAN_TEXTS.getValue(it).contains(symbol) && !MSA_TEXTS.getValue(it).contains(symbol) }
             assertTrue(lost.isEmpty(), "الفصحى ضيّعت «$symbol»: $lost")
         }
     }
 
     @Test
     fun msaHasNoEgyptianWords() {
-        val found = TextKey.entries.mapNotNull { key ->
+        val found = ALL_TEXT_KEYS.mapNotNull { key ->
             val bad = egyptianTokens(MSA_TEXTS.getValue(key))
             if (bad.isEmpty()) null else "$key: $bad"
         }
@@ -55,7 +55,7 @@ class ArabicVariantsTest {
         assertEquals(listOf("مش", "دلوقتي", "هتدفع", "اتسجل"), egyptianTokens("ده مش متاح دلوقتي — هتدفع لما اتسجل").filter { it != "ده" })
         assertTrue(egyptianTokens("المشروع مشترك ودليل الإيداع والاتصالات والاتجاه وبيع الأصل").isEmpty(), "ما يمسكش جوه كلمة")
         // وعلى الجدول المصري الحقيقي بيمسك كتير — يعني الفحص فعلًا شغال مش فاضي
-        val egyptianHits = TextKey.entries.count { egyptianTokens(EGYPTIAN_TEXTS.getValue(it)).isNotEmpty() }
+        val egyptianHits = ALL_TEXT_KEYS.count { egyptianTokens(EGYPTIAN_TEXTS.getValue(it)).isNotEmpty() }
         assertTrue(egyptianHits >= 250, "الفحص مسك $egyptianHits نص مصري بس")
     }
 

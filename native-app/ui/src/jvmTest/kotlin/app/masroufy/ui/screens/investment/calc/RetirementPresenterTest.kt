@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.EgyptInsuredCategory
@@ -43,7 +44,7 @@ class RetirementPresenterTest {
         val check = checkSaudi(saudi, contributedBefore2024 = false, end = EosEnd.EMPLOYER_OR_CONTRACT_END, currency = Currency.SAR, today = today)
         assertTrue(check.errors.isEmpty(), "${check.errors}")
         val outcome = calc.calculate(check.request!!, today)
-        val ui = retirementUi(RetirementResult(outcome, check.eosChosen), Currency.SAR, ::saudiHeroDetails, TextKey.RETCALC_GAP_SUB)
+        val ui = retirementUi(RetirementResult(outcome, check.eosChosen), Currency.SAR, ::saudiHeroDetails, UiKey.RETCALC_GAP_SUB)
 
         assertNotNull(ui.pensionMinor)
         assertEquals(outcome.pension.pensionMinor, ui.pensionMinor, "الرقم الكبير من حالة الاستخدام بالظبط")
@@ -62,7 +63,7 @@ class RetirementPresenterTest {
         val check = checkSaudi(saudi, contributedBefore2024 = false, end = null, currency = Currency.SAR, today = today)
         val outcome = calc.calculate(check.request!!, today)
         assertNull(outcome.gap, "من غير اختيار ما بنفترضش — الفجوة ما بتتحسبش")
-        val ui = retirementUi(RetirementResult(outcome, check.eosChosen), Currency.SAR, ::saudiHeroDetails, TextKey.RETCALC_GAP_SUB)
+        val ui = retirementUi(RetirementResult(outcome, check.eosChosen), Currency.SAR, ::saudiHeroDetails, UiKey.RETCALC_GAP_SUB)
         assertNotNull(ui.pensionMinor, "المعاش نفسه بيتحسب")
         for (row in ui.outs) {
             assertNull(row.amountMinor)
@@ -75,7 +76,7 @@ class RetirementPresenterTest {
     @Test
     fun aMissingHousingAllowanceIsUnavailableNotZero() = runBlocking {
         val check = checkSaudi(saudi - SaudiFields.HOUSING, false, EosEnd.EMPLOYER_OR_CONTRACT_END, Currency.SAR, today)
-        val ui = retirementUi(RetirementResult(calc.calculate(check.request!!, today)), Currency.SAR, ::saudiHeroDetails, TextKey.RETCALC_GAP_SUB)
+        val ui = retirementUi(RetirementResult(calc.calculate(check.request!!, today)), Currency.SAR, ::saudiHeroDetails, UiKey.RETCALC_GAP_SUB)
         assertNull(ui.pensionMinor)
         assertEquals("غير متاح", ui.heroNa)
         val reason = ui.heroReason ?: ui.heroSub
@@ -108,7 +109,7 @@ class RetirementPresenterTest {
         val check = checkEgypt(fields, EgyptInsuredCategory.EMPLOYEE, Currency.EGP, today)
         assertTrue(check.errors.isEmpty(), "${check.errors}")
         val outcome = calc.calculate(check.request!!, today)
-        val ui = retirementUi(RetirementResult(outcome), Currency.EGP, ::egyptHeroDetails, TextKey.RETEG_GAP_SUB)
+        val ui = retirementUi(RetirementResult(outcome), Currency.EGP, ::egyptHeroDetails, UiKey.RETEG_GAP_SUB)
         assertEquals(outcome.pension.pensionMinor, ui.pensionMinor)
         val eos = ui.outs[0]
         assertNull(eos.amountMinor)

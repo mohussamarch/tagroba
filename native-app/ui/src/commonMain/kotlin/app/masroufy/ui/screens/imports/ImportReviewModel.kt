@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.CategorizationSource
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
@@ -86,34 +88,34 @@ fun importReviewUi(preview: ImportPreview): ImportReviewUi {
 /** رسالة بعد التسجيل: «سُجّلت N، ولم يُضف M» — ولو كل السطور اتضافت «سُجّلت N» بس (عدّ سطور، مش فلوس). */
 fun savedToast(imported: Int, lines: Int): String {
     val notAdded = lines - imported
-    return if (notAdded > 0) t(TextKey.IMPORT_REVIEW_SAVED_TOAST, opsCount(imported), opsCount(notAdded)) else t(TextKey.IMPORT_REVIEW_DONE_TITLE, opsCount(imported))
+    return if (notAdded > 0) t(UiKey.IMPORT_REVIEW_SAVED_TOAST, opsCount(imported), opsCount(notAdded)) else t(UiKey.IMPORT_REVIEW_DONE_TITLE, opsCount(imported))
 }
 
 /** الحالة «فاضي»: الدفعة القديمة ونتيجتها («في ٢ أكتوبر: سُجّلت ١١ عملية، ولم تُضف عمليتان»). */
 fun alreadyImportedBody(previous: ImportBatch): String {
     val day = dayMonth(previous.importedAt.take(10))
     val notAdded = previous.counts.total - previous.counts.imported
-    return if (notAdded > 0) t(TextKey.IMPORT_REVIEW_EMPTY_BODY, day, opsCount(previous.counts.imported), opsCount(notAdded))
-    else t(TextKey.IMPORT_REVIEW_EMPTY_BODY_ALL, day, opsCount(previous.counts.imported))
+    return if (notAdded > 0) t(UiKey.IMPORT_REVIEW_EMPTY_BODY, day, opsCount(previous.counts.imported), opsCount(notAdded))
+    else t(UiKey.IMPORT_REVIEW_EMPTY_BODY_ALL, day, opsCount(previous.counts.imported))
 }
 
 /** مصدر التصنيف بكلمتين (مقترح من قاعدة · تصنيف المتجر المؤكد · متجر جديد …). */
-fun sourceLabel(source: CategorizationSource?): TextKey = when (source) {
-    CategorizationSource.USER_CONFIRMED -> TextKey.IMPORT_REVIEW_SRC_CONFIRMED
-    CategorizationSource.VERIFIED_MERCHANT -> TextKey.IMPORT_REVIEW_SRC_MERCHANT
-    CategorizationSource.RULE -> TextKey.IMPORT_REVIEW_SRC_RULE
-    CategorizationSource.SOURCE_CATEGORY -> TextKey.IMPORT_REVIEW_SRC_BANK
-    CategorizationSource.OTHER_COUNTRY_MERCHANT -> TextKey.IMPORT_REVIEW_SRC_OTHER_COUNTRY
-    CategorizationSource.NONE, null -> TextKey.IMPORT_REVIEW_SRC_NEW
+fun sourceLabel(source: CategorizationSource?): TextRef = when (source) {
+    CategorizationSource.USER_CONFIRMED -> UiKey.IMPORT_REVIEW_SRC_CONFIRMED
+    CategorizationSource.VERIFIED_MERCHANT -> UiKey.IMPORT_REVIEW_SRC_MERCHANT
+    CategorizationSource.RULE -> UiKey.IMPORT_REVIEW_SRC_RULE
+    CategorizationSource.SOURCE_CATEGORY -> UiKey.IMPORT_REVIEW_SRC_BANK
+    CategorizationSource.OTHER_COUNTRY_MERCHANT -> UiKey.IMPORT_REVIEW_SRC_OTHER_COUNTRY
+    CategorizationSource.NONE, null -> UiKey.IMPORT_REVIEW_SRC_NEW
 }
 
 /** اسم الحالة (العدّادات والشارة). */
-fun stateLabel(state: MatchingState): TextKey = when (state) {
-    MatchingState.NEW -> TextKey.IMPORT_REVIEW_NEW
-    MatchingState.DUPLICATE -> TextKey.IMPORT_REVIEW_DUP
-    MatchingState.SIMILAR -> TextKey.IMPORT_REVIEW_SIMILAR
-    MatchingState.CONFLICT -> TextKey.IMPORT_REVIEW_CONFLICT
-    MatchingState.INVALID -> TextKey.IMPORT_REVIEW_INVALID
+fun stateLabel(state: MatchingState): TextRef = when (state) {
+    MatchingState.NEW -> UiKey.IMPORT_REVIEW_NEW
+    MatchingState.DUPLICATE -> UiKey.IMPORT_REVIEW_DUP
+    MatchingState.SIMILAR -> UiKey.IMPORT_REVIEW_SIMILAR
+    MatchingState.CONFLICT -> UiKey.IMPORT_REVIEW_CONFLICT
+    MatchingState.INVALID -> UiKey.IMPORT_REVIEW_INVALID
 }
 
 fun stateTone(state: MatchingState): TagTone = when (state) {

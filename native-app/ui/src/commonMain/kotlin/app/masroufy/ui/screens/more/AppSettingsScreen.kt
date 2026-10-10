@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,7 +84,7 @@ fun AppSettingsScreen() {
                 LockChange.Ok -> {
                     lockOn = want
                     lockError = null
-                    toaster.show(t(if (want) TextKey.APPS_LOCK_ON_DONE else TextKey.APPS_LOCK_OFF_DONE), dark = true)
+                    toaster.show(t(if (want) UiKey.APPS_LOCK_ON_DONE else UiKey.APPS_LOCK_OFF_DONE), dark = true)
                 }
                 is LockChange.Refused -> lockError = r.message
             }
@@ -90,37 +92,37 @@ fun AppSettingsScreen() {
         }
     }
 
-    InnerScaffold(t(TextKey.APPS_TITLE)) {
+    InnerScaffold(t(UiKey.APPS_TITLE)) {
         item(key = "lock") {
-            Section(t(TextKey.APPS_LOCK_HEAD)) {
-                SwitchHeader(Lucide.FINGERPRINT, t(TextKey.APPS_LOCK_TITLE), t(TextKey.APPS_LOCK_DESC), lockOn, enabled = available && !busy) { toggleLock() }
-                if (lockOn && available) Facts(listOf(TextKey.APPS_LOCK_FACT_1, TextKey.APPS_LOCK_FACT_2, TextKey.APPS_LOCK_FACT_3))
-                if (!available) WarnBox(null, t(TextKey.APPS_LOCK_NA))
-                lockError?.let { msg -> WarnBox(null, msg) { TonalButton(t(TextKey.MORE_RETRY), onClick = { toggleLock() }, height = 44.dp) } }
+            Section(t(UiKey.APPS_LOCK_HEAD)) {
+                SwitchHeader(Lucide.FINGERPRINT, t(UiKey.APPS_LOCK_TITLE), t(UiKey.APPS_LOCK_DESC), lockOn, enabled = available && !busy) { toggleLock() }
+                if (lockOn && available) Facts(listOf(UiKey.APPS_LOCK_FACT_1, UiKey.APPS_LOCK_FACT_2, UiKey.APPS_LOCK_FACT_3))
+                if (!available) WarnBox(null, t(UiKey.APPS_LOCK_NA))
+                lockError?.let { msg -> WarnBox(null, msg) { TonalButton(t(UiKey.MORE_RETRY), onClick = { toggleLock() }, height = 44.dp) } }
             }
         }
         item(key = "lang") { LanguageSection() }
         item(key = "islamic") {
             val p = profile
             val on = p?.islamicContentVisible != false
-            Section(t(TextKey.APPS_ISL_HEAD)) {
-                SwitchHeader(Lucide.MOON, t(TextKey.APPS_ISL_TITLE), t(if (on) TextKey.APPS_ISL_SHOWN else TextKey.APPS_ISL_HIDDEN), on, enabled = p != null) {
+            Section(t(UiKey.APPS_ISL_HEAD)) {
+                SwitchHeader(Lucide.MOON, t(UiKey.APPS_ISL_TITLE), t(if (on) UiKey.APPS_ISL_SHOWN else UiKey.APPS_ISL_HIDDEN), on, enabled = p != null) {
                     val now = p ?: return@SwitchHeader
                     scope.launch {
                         val saved = runCatching { deps.more.profile.save(now.copy(islamicContentVisible = !on)) }.getOrNull()
                         if (saved is app.masroufy.core.ProfileCheck.Ok) {
                             profile = saved.profile
-                            toaster.show(t(if (on) TextKey.APPS_ISL_HIDDEN_DONE else TextKey.APPS_ISL_SHOWN_DONE), dark = true)
-                        } else toaster.show(t(TextKey.MORE_SAVE_FAILED), dark = true)
+                            toaster.show(t(if (on) UiKey.APPS_ISL_HIDDEN_DONE else UiKey.APPS_ISL_SHOWN_DONE), dark = true)
+                        } else toaster.show(t(UiKey.MORE_SAVE_FAILED), dark = true)
                     }
                 }
                 RowRuleSpaced()
-                BasicText(t(if (on) TextKey.APPS_ISL_LIST_ON else TextKey.APPS_ISL_LIST_OFF), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted))
-                for (k in listOf(TextKey.APPS_ISL_ZAKAT, TextKey.APPS_ISL_CALENDAR)) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                BasicText(t(if (on) UiKey.APPS_ISL_LIST_ON else UiKey.APPS_ISL_LIST_OFF), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted))
+                for (k in listOf(UiKey.APPS_ISL_ZAKAT, UiKey.APPS_ISL_CALENDAR)) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(8.dp).clip(CircleShape).background(if (on) Ink.income else Color(0x40193D33)))
                     BasicText(t(k), style = Type.of(13).copy(color = if (on) Ink.text else Ink.muted, textDecoration = if (on) null else TextDecoration.LineThrough))
                 }
-                BasicText(t(TextKey.APPS_ISL_NOTE), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.APPS_ISL_NOTE), style = Type.caption().copy(color = Ink.muted))
             }
         }
     }
@@ -131,18 +133,18 @@ private fun LanguageSection() {
     val hook = LocalSpace.current.more.appLanguage
     val toaster = LocalToaster.current
     var lang by remember { mutableStateOf(hook?.current() ?: Texts.language) }
-    val variant = t(if (Texts.arabicVariant == ArabicVariant.EGYPTIAN) TextKey.APPS_LANG_EGYPTIAN else TextKey.APPS_LANG_MSA)
-    Section(t(TextKey.APPS_LANG_HEAD), horizontal = 16.dp) {
-        LangRow(t(TextKey.APPS_LANG_AR), null, t(TextKey.APPS_LANG_AR_DESC, variant), lang == Language.AR, hook != null) {
-            if (lang != Language.AR) { hook?.choose(Language.AR); lang = Language.AR; toaster.show(t(TextKey.APPS_LANG_NEXT_OPEN), dark = true) }
+    val variant = t(if (Texts.arabicVariant == ArabicVariant.EGYPTIAN) UiKey.APPS_LANG_EGYPTIAN else UiKey.APPS_LANG_MSA)
+    Section(t(UiKey.APPS_LANG_HEAD), horizontal = 16.dp) {
+        LangRow(t(UiKey.APPS_LANG_AR), null, t(UiKey.APPS_LANG_AR_DESC, variant), lang == Language.AR, hook != null) {
+            if (lang != Language.AR) { hook?.choose(Language.AR); lang = Language.AR; toaster.show(t(UiKey.APPS_LANG_NEXT_OPEN), dark = true) }
         }
         RowRule()
-        LangRow(t(TextKey.APPS_LANG_EN), t(TextKey.APPS_LANG_EN_ALT), t(TextKey.APPS_LANG_EN_DESC), lang == Language.EN, hook != null) {
-            if (lang != Language.EN) { hook?.choose(Language.EN); lang = Language.EN; toaster.show(t(TextKey.APPS_LANG_NEXT_OPEN), dark = true) }
+        LangRow(t(UiKey.APPS_LANG_EN), t(UiKey.APPS_LANG_EN_ALT), t(UiKey.APPS_LANG_EN_DESC), lang == Language.EN, hook != null) {
+            if (lang != Language.EN) { hook?.choose(Language.EN); lang = Language.EN; toaster.show(t(UiKey.APPS_LANG_NEXT_OPEN), dark = true) }
         }
         RowRule()
-        BasicText(t(if (lang == Language.EN) TextKey.APPS_DIR_LTR else TextKey.APPS_DIR_RTL), Modifier.padding(vertical = 12.dp), style = Type.caption().copy(color = Ink.muted))
-        if (hook == null) NotYetLine(t(TextKey.APPS_LANG_NOT_YET), Modifier.padding(bottom = 12.dp))
+        BasicText(t(if (lang == Language.EN) UiKey.APPS_DIR_LTR else UiKey.APPS_DIR_RTL), Modifier.padding(vertical = 12.dp), style = Type.caption().copy(color = Ink.muted))
+        if (hook == null) NotYetLine(t(UiKey.APPS_LANG_NOT_YET), Modifier.padding(bottom = 12.dp))
     }
 }
 
@@ -193,7 +195,7 @@ private fun SwitchHeader(icon: Lucide, title: String, desc: String, checked: Boo
 }
 
 @Composable
-private fun Facts(keys: List<TextKey>) {
+private fun Facts(keys: List<TextRef>) {
     RowRuleSpaced()
     for (k in keys) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
         LucideIcon(Lucide.CHECK, size = 16.dp, tint = Ink.income)

@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.auth
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -76,8 +78,8 @@ fun LockScreen(gate: LockGate, backdrop: Backdrop?) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             LensOnLight(Modifier.size(76.dp), shape = RoundedCornerShape(26.dp), backdrop = backdrop) { LucideIcon(Lucide.LOCK, size = 32.dp, tint = Ink.primary) }
-            BasicText(t(TextKey.ASK_TITLE), style = Type.of(26, FontWeight.Bold))
-            BasicText(t(TextKey.LOCK_SCREEN_BODY), style = Type.body().copy(color = Ink.muted, textAlign = TextAlign.Center))
+            BasicText(t(UiKey.ASK_TITLE), style = Type.of(26, FontWeight.Bold))
+            BasicText(t(UiKey.LOCK_SCREEN_BODY), style = Type.body().copy(color = Ink.muted, textAlign = TextAlign.Center))
             val msg = gate.message
             if (msg != null) BasicText(
                 msg,
@@ -95,7 +97,7 @@ fun LockScreen(gate: LockGate, backdrop: Backdrop?) {
 }
 
 /** زرار شاشة القفل (النموذج): البصمة ما اتطابقتش ⇒ «إعادة المحاولة» · اتلغت أو أول مرة أو مش متاحة ⇒ «فتح». */
-fun lockButtonKey(last: LockResult?): TextKey = if (last == LockResult.FAILED) TextKey.LOCK_SCREEN_RETRY else TextKey.LOCK_SCREEN_OPEN
+fun lockButtonKey(last: LockResult?): TextRef = if (last == LockResult.FAILED) UiKey.LOCK_SCREEN_RETRY else UiKey.LOCK_SCREEN_OPEN
 
 /**
  * «أُوقف قفل التطبيق» (حالة «غير متاح» في النموذج — `AppLock.releaseIfDeviceHasNoLock`): الجوال مالوش قفل شاشة ولا بصمة ⇒ القفل بيتوقف ويتقال
@@ -108,10 +110,10 @@ fun LockReleasedCard(onContinue: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     LucideIcon(Lucide.LOCK_OPEN, size = 22.dp, tint = Ink.focus)
-                    BasicText(t(TextKey.LOCK_SCREEN_RELEASED_TITLE), style = Type.of(16, FontWeight.Bold))
+                    BasicText(t(UiKey.LOCK_SCREEN_RELEASED_TITLE), style = Type.of(16, FontWeight.Bold))
                 }
-                BasicText(t(TextKey.LOCK_SCREEN_RELEASED_BODY), style = Type.of(13).copy(color = Ink.soft))
-                PrimaryButton(t(TextKey.LOCK_SCREEN_CONTINUE), onClick = onContinue, modifier = Modifier.fillMaxWidth())
+                BasicText(t(UiKey.LOCK_SCREEN_RELEASED_BODY), style = Type.of(13).copy(color = Ink.soft))
+                PrimaryButton(t(UiKey.LOCK_SCREEN_CONTINUE), onClick = onContinue, modifier = Modifier.fillMaxWidth())
             }
         }
     }

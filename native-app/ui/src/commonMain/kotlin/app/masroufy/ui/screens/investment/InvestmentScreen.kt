@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -72,12 +73,12 @@ fun InvestmentScreen() {
             if (next.feedProblem == null) toaster.show(refreshedText(next.skipped))
         }
     }
-    val title = t(TextKey.TAB_INVESTMENT)
+    val title = t(UiKey.TAB_INVESTMENT)
     TabScaffold(title, header = {
         TabHeader(title, actions = {
             // «تحديث الأسعار» و«إضافة أصل» (أفعال `Investment` في SCREENS.md) — بين العنوان والترس، والترس آخر حاجة على الشمال
-            SurfaceIconButton(Lucide.REFRESH_CW, t(TextKey.INVEST_REFRESH), ::refresh)
-            SurfaceIconButton(Lucide.PLUS, t(TextKey.INVEST_ADD_ASSET), { addOpen = true })
+            SurfaceIconButton(Lucide.REFRESH_CW, t(UiKey.INVEST_REFRESH), ::refresh)
+            SurfaceIconButton(Lucide.PLUS, t(UiKey.INVEST_ADD_ASSET), { addOpen = true })
         })
     }) {
         val l = load
@@ -86,13 +87,13 @@ fun InvestmentScreen() {
             return@TabScaffold
         }
         // الأصول ما اتحمّلتش ⇒ «تعذّر التحميل» · الملف ما نزلش ⇒ «تعذّر تحديث الأسعار» والمعروض بآخر نسخة (حالة «خطأ» في النموذج)
-        if (l.failed) item(key = "failed") { AlertBanner(t(TextKey.SHELL_LOAD_FAILED), null, t(TextKey.SHELL_RETRY), ::refresh) }
-        l.feedProblem?.let { problem -> item(key = "error") { AlertBanner(t(TextKey.INVEST_ERROR_TITLE), problem, t(TextKey.SHELL_RETRY), ::refresh) } }
+        if (l.failed) item(key = "failed") { AlertBanner(t(UiKey.SHELL_LOAD_FAILED), null, t(UiKey.SHELL_RETRY), ::refresh) }
+        l.feedProblem?.let { problem -> item(key = "error") { AlertBanner(t(UiKey.INVEST_ERROR_TITLE), problem, t(UiKey.SHELL_RETRY), ::refresh) } }
         val ui = l.ui
         if (ui != null && ui.empty) {
             item(key = "empty") {
-                EmptyState(t(TextKey.INVEST_EMPTY_TITLE), t(TextKey.INVEST_EMPTY_BODY), action = {
-                    PrimaryButton(t(TextKey.INVEST_ADD_ASSET), { addOpen = true }, Modifier.padding(top = 10.dp))
+                EmptyState(t(UiKey.INVEST_EMPTY_TITLE), t(UiKey.INVEST_EMPTY_BODY), action = {
+                    PrimaryButton(t(UiKey.INVEST_ADD_ASSET), { addOpen = true }, Modifier.padding(top = 10.dp))
                 })
             }
         } else if (ui != null) {
@@ -108,7 +109,7 @@ fun InvestmentScreen() {
 
 /** رسالة «تحديث الأسعار» بعد ما الملف نزل: «تحدّثت الأسعار» — أو ومعاها عدد الأصول المربوطة اللي ما لقتش سعرها. */
 fun refreshedText(skipped: Int): String =
-    if (skipped > 0) t(TextKey.INVEST_REFRESH_SKIPPED, sentenceNumber(skipped)) else t(TextKey.INVEST_REFRESHED)
+    if (skipped > 0) t(UiKey.INVEST_REFRESH_SKIPPED, sentenceNumber(skipped)) else t(UiKey.INVEST_REFRESHED)
 
 @Composable
 private fun LoadingBlocks() {
@@ -123,13 +124,13 @@ private fun LoadingBlocks() {
 private fun PortfolioHero(ui: InvestmentUi) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(TextKey.INVEST_TOTAL_LABEL), style = Type.body().copy(color = Ink.onHeroMuted))
+            BasicText(t(UiKey.INVEST_TOTAL_LABEL), style = Type.body().copy(color = Ink.onHeroMuted))
             HeroAmount(ui.totalMinor, ui.currency, Modifier.fillMaxWidth(), size = 34)
             ui.totalNa?.let { BasicText(it, style = Type.caption().copy(color = Ink.onHeroMuted)) }
             HeroDivider(Modifier.padding(top = 2.dp))
-            AmountLine(t(TextKey.INVEST_COST), ui.costMinor, ui.currency, ink = Color.White, labelInk = Ink.onHeroMuted)
-            HeroSigned(t(TextKey.INVEST_UNREALIZED), ui.unrealizedMinor, ui)
-            ui.realizedMinor?.let { HeroSigned(t(TextKey.INVEST_REALIZED), it, ui) }
+            AmountLine(t(UiKey.INVEST_COST), ui.costMinor, ui.currency, ink = Color.White, labelInk = Ink.onHeroMuted)
+            HeroSigned(t(UiKey.INVEST_UNREALIZED), ui.unrealizedMinor, ui)
+            ui.realizedMinor?.let { HeroSigned(t(UiKey.INVEST_REALIZED), it, ui) }
         }
     }
 }
@@ -160,9 +161,9 @@ private fun EstateCardView(e: EstateCard, ui: InvestmentUi, onOpen: () -> Unit) 
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 BasicText(e.ask, style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary))
-                AmountLine(t(TextKey.INVEST_RE_PRICE_THEN), e.saleMinor, ui.currency)
+                AmountLine(t(UiKey.INVEST_RE_PRICE_THEN), e.saleMinor, ui.currency)
                 AmountLine(e.rentLabel, e.rentMinor, ui.currency)
-                AmountLine(t(TextKey.INVEST_RE_GAIN), e.gainMinor, ui.currency, bold = true)
+                AmountLine(t(UiKey.INVEST_RE_GAIN), e.gainMinor, ui.currency, bold = true)
                 BasicText(e.rateLine, style = Type.caption().copy(color = Ink.soft))
             }
         }
@@ -190,12 +191,12 @@ private fun ToolsCard(zakatHint: String?, goals: Int?) {
         }
         // الزكاة بتظهر بس لو «المحتوى الإسلامي: ظاهر» وبلد ليها مرجع (`ManageZakat.visible` — §62-د)
         if (zakatHint != null) {
-            ToolRow(t(TextKey.INVEST_TOOL_ZAKAT), zakatHint, { nav.push(ZakatRoute) }, trailing = chevron)
+            ToolRow(t(UiKey.INVEST_TOOL_ZAKAT), zakatHint, { nav.push(ZakatRoute) }, trailing = chevron)
             RowGap()
         }
-        ToolRow(t(TextKey.INVEST_TOOL_ADVISOR), t(TextKey.INVEST_TOOL_ADVISOR_HINT), { nav.push(AdvisorRoute) }, trailing = chevron)
+        ToolRow(t(UiKey.INVEST_TOOL_ADVISOR), t(UiKey.INVEST_TOOL_ADVISOR_HINT), { nav.push(AdvisorRoute) }, trailing = chevron)
         RowGap()
-        ToolRow(t(TextKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsRoute) }, trailing = chevron)
+        ToolRow(t(UiKey.INVEST_TOOL_GOALS), goals?.let(::goalsHint), { nav.push(SavingsGoalsRoute) }, trailing = chevron)
     }
 }
 
@@ -203,11 +204,11 @@ private fun ToolsCard(zakatHint: String?, goals: Int?) {
 private fun CalculatorsGrid() {
     val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.INVEST_CALCS), style = Type.section())
+        BasicText(t(UiKey.INVEST_CALCS), style = Type.section())
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            CalcTile(t(TextKey.INVEST_CALC_SAVINGS), InvestmentIcons.SAVINGS, Modifier.weight(1f)) { nav.push(SavingsCalculatorRoute) }
-            CalcTile(t(TextKey.INVEST_CALC_RETIREMENT), InvestmentIcons.RETIREMENT, Modifier.weight(1f)) { nav.push(RetirementCalculatorRoute) }
-            CalcTile(t(TextKey.INVEST_CALC_INHERITANCE), InvestmentIcons.INHERITANCE, Modifier.weight(1f)) { nav.push(InheritanceCalculatorRoute) }
+            CalcTile(t(UiKey.INVEST_CALC_SAVINGS), InvestmentIcons.SAVINGS, Modifier.weight(1f)) { nav.push(SavingsCalculatorRoute) }
+            CalcTile(t(UiKey.INVEST_CALC_RETIREMENT), InvestmentIcons.RETIREMENT, Modifier.weight(1f)) { nav.push(RetirementCalculatorRoute) }
+            CalcTile(t(UiKey.INVEST_CALC_INHERITANCE), InvestmentIcons.INHERITANCE, Modifier.weight(1f)) { nav.push(InheritanceCalculatorRoute) }
         }
     }
 }

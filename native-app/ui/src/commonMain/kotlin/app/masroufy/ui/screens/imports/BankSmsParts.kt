@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,10 +50,10 @@ import app.masroufy.ui.theme.Type
 fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> Unit) {
     if (status == null) return
     val (title, body) = when (status) {
-        SmsStatus.READING -> TextKey.BANK_SMS_STATUS_OK to TextKey.BANK_SMS_STATUS_OK_BODY
-        SmsStatus.OFF -> TextKey.BANK_SMS_STATUS_STOPPED to TextKey.BANK_SMS_STATUS_OFF_BODY
-        SmsStatus.PERMISSION -> TextKey.BANK_SMS_STATUS_STOPPED to TextKey.BANK_SMS_STATUS_PERM_BODY
-        SmsStatus.UNAVAILABLE -> TextKey.BANK_SMS_STATUS_IOS to TextKey.BANK_SMS_STATUS_IOS_BODY
+        SmsStatus.READING -> UiKey.BANK_SMS_STATUS_OK to UiKey.BANK_SMS_STATUS_OK_BODY
+        SmsStatus.OFF -> UiKey.BANK_SMS_STATUS_STOPPED to UiKey.BANK_SMS_STATUS_OFF_BODY
+        SmsStatus.PERMISSION -> UiKey.BANK_SMS_STATUS_STOPPED to UiKey.BANK_SMS_STATUS_PERM_BODY
+        SmsStatus.UNAVAILABLE -> UiKey.BANK_SMS_STATUS_IOS to UiKey.BANK_SMS_STATUS_IOS_BODY
     }
     val (ink, bg) = when (status) {
         SmsStatus.READING -> Ink.primary to Ink.selected
@@ -71,9 +72,9 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
         }
         val button = when (status) {
             SmsStatus.READING -> null
-            SmsStatus.OFF -> TextKey.BANK_SMS_OPEN_SETTINGS to onSettings
-            SmsStatus.PERMISSION -> TextKey.BANK_SMS_REGRANT to onSettings
-            SmsStatus.UNAVAILABLE -> TextKey.BANK_SMS_PASTE to onPaste
+            SmsStatus.OFF -> UiKey.BANK_SMS_OPEN_SETTINGS to onSettings
+            SmsStatus.PERMISSION -> UiKey.BANK_SMS_REGRANT to onSettings
+            SmsStatus.UNAVAILABLE -> UiKey.BANK_SMS_PASTE to onPaste
         }
         if (button != null) {
             val press = rememberPress()
@@ -90,7 +91,7 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
 @Composable
 fun RecordedToday(rows: List<RecordedUi>, categories: List<Category>, onConfirm: (RecordedUi) -> Unit, onCategorize: (RecordedUi) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        CountTitle(t(TextKey.BANK_SMS_AUTO_TITLE), opsCount(rows.size))
+        CountTitle(t(UiKey.BANK_SMS_AUTO_TITLE), opsCount(rows.size))
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
             rows.forEachIndexed { i, row ->
                 if (i > 0) Divider()
@@ -112,11 +113,11 @@ private fun RecordedRow(row: RecordedUi, category: Category?, onConfirm: (Record
         IconTile(color) { LucideIcon(Lucide.TAG, size = 18.dp, tint = color) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(row.merchant, style = Type.bodyBold(), maxLines = 1)
-            BasicText(category?.name ?: t(TextKey.IMPORTS_UNCATEGORIZED), style = Type.caption().copy(color = Ink.muted), maxLines = 1)
+            BasicText(category?.name ?: t(UiKey.IMPORTS_UNCATEGORIZED), style = Type.caption().copy(color = Ink.muted), maxLines = 1)
             if (row.need != RecordedNeed.NONE) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    if (row.need == RecordedNeed.CONFIRM) Tag(t(TextKey.BANK_SMS_SUGGESTED), TagTone.AMBER) else Tag(t(TextKey.BANK_SMS_NEW_SHOP), TagTone.MUTED)
-                    SmallAction(t(if (row.need == RecordedNeed.CONFIRM) TextKey.BANK_SMS_CONFIRM else TextKey.BANK_SMS_CATEGORIZE)) {
+                    if (row.need == RecordedNeed.CONFIRM) Tag(t(UiKey.BANK_SMS_SUGGESTED), TagTone.AMBER) else Tag(t(UiKey.BANK_SMS_NEW_SHOP), TagTone.MUTED)
+                    SmallAction(t(if (row.need == RecordedNeed.CONFIRM) UiKey.BANK_SMS_CONFIRM else UiKey.BANK_SMS_CATEGORIZE)) {
                         if (row.need == RecordedNeed.CONFIRM) onConfirm(row) else onCategorize(row)
                     }
                 }
@@ -142,9 +143,9 @@ fun SmallAction(text: String, onClick: () -> Unit) {
 @Composable
 fun SmsFooter(onLink: () -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        BasicText(t(TextKey.BANK_SMS_FOOTER), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.BANK_SMS_FOOTER), style = Type.caption().copy(color = Ink.muted))
         val press = rememberPress()
-        BasicText(t(TextKey.BANK_SMS_FOOTER_LINK), Modifier.tap(press, onClick = onLink), style = Type.captionBold().copy(color = Ink.primary))
+        BasicText(t(UiKey.BANK_SMS_FOOTER_LINK), Modifier.tap(press, onClick = onLink), style = Type.captionBold().copy(color = Ink.primary))
     }
 }
 
@@ -152,17 +153,17 @@ fun SmsFooter(onLink: () -> Unit) {
 @Composable
 fun BankWalletSheet(bank: BankWaitingUi?, wallets: List<Wallet>, onDismiss: () -> Unit, onSave: (BankWaitingUi, Wallet) -> Unit) {
     var picked by remember(bank) { mutableStateOf<Wallet?>(null) }
-    val title = bank?.let { t(TextKey.SMS_WAITING_SHEET_TITLE, it.sender) }.orEmpty()
-    Sheet(bank != null, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE)) {
+    val title = bank?.let { t(UiKey.SMS_WAITING_SHEET_TITLE, it.sender) }.orEmpty()
+    Sheet(bank != null, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.SMS_WAITING_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(t(UiKey.SMS_WAITING_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (w in wallets.filter { it.kind != "cash" }) {
-                RadioRow(w.name, t(TextKey.SMS_WAITING_SHEET_BANK), picked?.id == w.id, { picked = w })
+                RadioRow(w.name, t(UiKey.SMS_WAITING_SHEET_BANK), picked?.id == w.id, { picked = w })
             }
         }
         PrimaryButton(
-            t(TextKey.SMS_WAITING_SHEET_SAVE),
+            t(UiKey.SMS_WAITING_SHEET_SAVE),
             { val b = bank; val w = picked; if (b != null && w != null) onSave(b, w) },
             Modifier.fillMaxWidth(),
             enabled = picked != null,

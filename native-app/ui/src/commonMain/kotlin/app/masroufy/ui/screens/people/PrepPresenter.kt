@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.EventRole
 import app.masroufy.core.Halalas
@@ -64,9 +65,9 @@ internal fun prepUi(
         val planned = st.item.plannedMinor
         val over = planned != null && st.spentMinor > planned
         val sub = joinLine(
-            planned?.let { t(TextKey.EVENT_PREP_PLANNED_OF, amountLabel(it, currency, showCurrency = false)) } ?: t(TextKey.EVENT_PREP_NO_AMOUNT),
-            if (st.spentMinor > 0) t(TextKey.EVENT_PREP_SPENT_OF, amountLabel(st.spentMinor, currency, showCurrency = false)) else t(TextKey.EVENT_PREP_NOT_SPENT),
-        ) + if (over) " — " + t(TextKey.EVENT_PREP_OVER) else ""
+            planned?.let { t(UiKey.EVENT_PREP_PLANNED_OF, amountLabel(it, currency, showCurrency = false)) } ?: t(UiKey.EVENT_PREP_NO_AMOUNT),
+            if (st.spentMinor > 0) t(UiKey.EVENT_PREP_SPENT_OF, amountLabel(st.spentMinor, currency, showCurrency = false)) else t(UiKey.EVENT_PREP_NOT_SPENT),
+        ) + if (over) " — " + t(UiKey.EVENT_PREP_OVER) else ""
         PrepItemUi(st.item, sub, planned?.let { usage(it, st.spentMinor) }, over, st.spentMinor)
     }
     val known = items.map { it.item.id }.toSet()
@@ -75,10 +76,10 @@ internal fun prepUi(
         .map { LooseUi(it.transaction.id, txnTitle(it.transaction), dayMonth(it.transaction.occurredAt), it.shareMinor, it.transaction.currency) }
     val count = items.size
     val plannedSub = when {
-        count == 0 -> t(TextKey.EVENT_PREP_NO_ITEMS)
-        s?.plannedTotalMinor == null -> t(TextKey.EVENT_PREP_NO_PRICED)
-        s.unpricedCount > 0 -> t(TextKey.EVENT_PREP_UNPRICED, countOf(s.unpricedCount, Noun.ITEMS))
-        else -> t(TextKey.EVENT_PREP_ALL_PRICED)
+        count == 0 -> t(UiKey.EVENT_PREP_NO_ITEMS)
+        s?.plannedTotalMinor == null -> t(UiKey.EVENT_PREP_NO_PRICED)
+        s.unpricedCount > 0 -> t(UiKey.EVENT_PREP_UNPRICED, countOf(s.unpricedCount, Noun.ITEMS))
+        else -> t(UiKey.EVENT_PREP_ALL_PRICED)
     }
     return PrepUi(
         event = e,
@@ -88,9 +89,9 @@ internal fun prepUi(
         currency = currency,
         planned = s?.plannedTotalMinor?.let { MoneyLine(it, currency) },
         plannedSub = plannedSub,
-        leftLine = if (count == 0) null else if ((s?.remainingCount ?: 0) > 0) t(TextKey.EVENT_PREP_LEFT, countOf(s!!.remainingCount, Noun.ITEMS)) else t(TextKey.EVENT_PREP_ALL_DONE),
-        looseLine = s?.unassignedSpentMinor?.takeIf { it > 0 }?.let { t(TextKey.EVENT_PREP_LOOSE_LINE, amountLabel(it, currency, showCurrency = false)) },
-        otherCurrencyLine = s?.otherCurrencyCount?.takeIf { it > 0 }?.let { t(TextKey.EVENT_PREP_OTHER_CURRENCY, countOf(it, Noun.OPS)) },
+        leftLine = if (count == 0) null else if ((s?.remainingCount ?: 0) > 0) t(UiKey.EVENT_PREP_LEFT, countOf(s!!.remainingCount, Noun.ITEMS)) else t(UiKey.EVENT_PREP_ALL_DONE),
+        looseLine = s?.unassignedSpentMinor?.takeIf { it > 0 }?.let { t(UiKey.EVENT_PREP_LOOSE_LINE, amountLabel(it, currency, showCurrency = false)) },
+        otherCurrencyLine = s?.otherCurrencyCount?.takeIf { it > 0 }?.let { t(UiKey.EVENT_PREP_OTHER_CURRENCY, countOf(it, Noun.OPS)) },
         suggestions = if (count == 0) suggestions else emptyList(),
         items = items,
         loose = if (count == 0) emptyList() else loose,

@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.CalcReason
 import app.masroufy.core.Currency
 import app.masroufy.core.EosPart
@@ -43,20 +45,20 @@ fun stripNa(text: String): String = text.removePrefix(t(TextKey.NOT_AVAILABLE) +
 
 /** البطاقة البطلة لما الخانات لسه مش كاملة. */
 fun retirementIncomplete(message: String? = null): RetirementUi =
-    RetirementUi(null, t(TextKey.RETCALC_FILL), message ?: t(TextKey.RETCALC_FILL_SUB), null, emptyList(), null)
+    RetirementUi(null, t(UiKey.RETCALC_FILL), message ?: t(UiKey.RETCALC_FILL_SUB), null, emptyList(), null)
 
 /** الحسبة نفسها وقعت (قراية مصادر الدخل) ⇒ «غير متاح» بسببه — مش «أكمل البيانات» ولا صفر. */
-fun retirementFailed(): RetirementUi = RetirementUi(null, t(TextKey.NOT_AVAILABLE), t(TextKey.SHELL_LOAD_FAILED), null, emptyList(), null)
+fun retirementFailed(): RetirementUi = RetirementUi(null, t(TextKey.NOT_AVAILABLE), t(UiKey.SHELL_LOAD_FAILED), null, emptyList(), null)
 
 /**
  * [heroDetails] سطر «النظام · التقاعد عند … في … ، N شهر اشتراك» (بيختلف بين البلدين). [withEos] = السعودية (مصر «لا تنطبق» بتيجي من حالة الاستخدام).
  */
-fun retirementUi(result: RetirementResult, currency: Currency, heroDetails: (RetirementOutcome) -> String?, gapSubKey: TextKey): RetirementUi {
+fun retirementUi(result: RetirementResult, currency: Currency, heroDetails: (RetirementOutcome) -> String?, gapSubKey: TextRef): RetirementUi {
     val o = result.outcome
     val p = o.pension
     val heroNa = when (p.status) {
         PensionStatus.ESTIMATED -> ""
-        PensionStatus.NOT_ELIGIBLE -> t(TextKey.RETCALC_NO_PENSION)
+        PensionStatus.NOT_ELIGIBLE -> t(UiKey.RETCALC_NO_PENSION)
         PensionStatus.UNAVAILABLE -> t(TextKey.NOT_AVAILABLE)
     }
     val reason = p.reason?.let { stripNa(it.text) }
@@ -72,31 +74,31 @@ fun retirementUi(result: RetirementResult, currency: Currency, heroDetails: (Ret
 }
 
 private fun eosRow(r: RetirementResult, currency: Currency): OutRow {
-    val label = t(TextKey.RETCALC_EOS)
+    val label = t(UiKey.RETCALC_EOS)
     val na = t(TextKey.NOT_AVAILABLE)
     if (r.eosError != null) return OutRow(label, null, na, r.eosError, warn = true)
     return when (val e = r.outcome.endOfService) {
-        is EosPart.NotApplicable -> OutRow(label, null, t(TextKey.RETCALC_NOT_APPLICABLE), stripNa(uiText(e.key)).substringAfter(": "), warn = true)
+        is EosPart.NotApplicable -> OutRow(label, null, t(UiKey.RETCALC_NOT_APPLICABLE), stripNa(uiText(e.key)).substringAfter(": "), warn = true)
         is EosPart.Unavailable -> OutRow(label, null, na, stripNa(e.reason.text), warn = true)
-        is EosPart.Known -> if (!r.eosChosen) OutRow(label, null, na, t(TextKey.RETCALC_EOS_PICK_END), warn = true)
+        is EosPart.Known -> if (!r.eosChosen) OutRow(label, null, na, t(UiKey.RETCALC_EOS_PICK_END), warn = true)
         else {
             val s = e.result.service
-            OutRow(label, e.result.payableMinor, null, t(TextKey.RETCALC_EOS_SUB, sentenceNumber(s.fullYears), sentenceNumber(s.extraDays), shareLabel(e.result.share)), warn = false)
+            OutRow(label, e.result.payableMinor, null, t(UiKey.RETCALC_EOS_SUB, sentenceNumber(s.fullYears), sentenceNumber(s.extraDays), shareLabel(e.result.share)), warn = false)
         }
     }
 }
 
-private fun gapRow(r: RetirementResult, currency: Currency, subKey: TextKey): OutRow {
-    val label = t(TextKey.RETCALC_GAP)
+private fun gapRow(r: RetirementResult, currency: Currency, subKey: TextRef): OutRow {
+    val label = t(UiKey.RETCALC_GAP)
     val na = t(TextKey.NOT_AVAILABLE)
     if (r.eosError != null) return OutRow(label, null, na, r.eosError, warn = true)
-    if (!r.eosChosen && r.outcome.endOfService is EosPart.Known) return OutRow(label, null, na, t(TextKey.RETCALC_EOS_PICK_END), warn = true)
+    if (!r.eosChosen && r.outcome.endOfService is EosPart.Known) return OutRow(label, null, na, t(UiKey.RETCALC_EOS_PICK_END), warn = true)
     val g = r.outcome.gap
     if (g == null) {
         // المستخدم ما كتبش المبلغ اللي عايز يعيش بيه — لو المعاش نفسه مش معروف، سببه هو الأهم
         val pensionReason = r.outcome.pension.reason
         return if (r.outcome.pension.pensionMinor == null && pensionReason != null) OutRow(label, null, valueFor(pensionReason), stripNa(pensionReason.text), warn = true)
-        else OutRow(label, null, na, t(TextKey.RETCALC_GAP_NEED_WANT), warn = true)
+        else OutRow(label, null, na, t(UiKey.RETCALC_GAP_NEED_WANT), warn = true)
     }
     val gap = g.gap ?: return OutRow(label, null, valueFor(g.reason!!), stripNa(g.reason!!.text), warn = true)
     // السعودية: «… − المكافأة − ما معك …» · مصر: «… − اللي معاك …» (مفيش مكافأة) — نفس المتغيرات
@@ -104,16 +106,16 @@ private fun gapRow(r: RetirementResult, currency: Currency, subKey: TextKey): Ou
     return OutRow(label, gap.perMonthMinor, null, sub, warn = false)
 }
 
-private fun valueFor(reason: CalcReason): String = if (reason in NA_REASONS) t(TextKey.NOT_AVAILABLE) else t(TextKey.RETCALC_NOT_COUNTED)
+private fun valueFor(reason: CalcReason): String = if (reason in NA_REASONS) t(TextKey.NOT_AVAILABLE) else t(UiKey.RETCALC_NOT_COUNTED)
 
 private fun shareLabel(share: EosShare): String = t(
     when (share) {
-        EosShare.NONE -> TextKey.RETCALC_EOS_NONE
-        EosShare.THIRD -> TextKey.RETCALC_EOS_THIRD
-        EosShare.TWO_THIRDS -> TextKey.RETCALC_EOS_TWO_THIRDS
-        EosShare.FULL -> TextKey.RETCALC_EOS_FULL
+        EosShare.NONE -> UiKey.RETCALC_EOS_NONE
+        EosShare.THIRD -> UiKey.RETCALC_EOS_THIRD
+        EosShare.TWO_THIRDS -> UiKey.RETCALC_EOS_TWO_THIRDS
+        EosShare.FULL -> UiKey.RETCALC_EOS_FULL
     },
 )
 
 /** « ← طُبّق». */
-fun applied(yes: Boolean): String = if (yes) t(TextKey.RETCALC_HOW_APPLIED) else ""
+fun applied(yes: Boolean): String = if (yes) t(UiKey.RETCALC_HOW_APPLIED) else ""

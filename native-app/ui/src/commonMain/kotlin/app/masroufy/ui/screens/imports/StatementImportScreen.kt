@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,10 +69,10 @@ fun StatementImportScreen() {
         csvText = null
         columns = false
         when {
-            file.tooLarge -> fail(t(TextKey.STATEMENT_IMPORT_TOO_LARGE))
+            file.tooLarge -> fail(t(UiKey.STATEMENT_IMPORT_TOO_LARGE))
             file.bytes.isEmpty() -> fail(t(TextKey.FILE_EMPTY))
             else -> when (statementKind(file.name, file.bytes)) {
-                null -> fail(t(TextKey.STATEMENT_IMPORT_UNSUPPORTED))
+                null -> fail(t(UiKey.STATEMENT_IMPORT_UNSUPPORTED))
                 StatementKind.CSV -> {
                     val text = file.bytes.decodeToString()
                     csvText = text
@@ -80,7 +81,7 @@ fun StatementImportScreen() {
                     stage = StatementStage.READY
                 }
                 StatementKind.PDF -> {
-                    val reader = deps.pdf ?: return@rememberFilePicker fail(t(TextKey.STATEMENT_IMPORT_NO_PDF))
+                    val reader = deps.pdf ?: return@rememberFilePicker fail(t(UiKey.STATEMENT_IMPORT_NO_PDF))
                     page = 0
                     pages = 0
                     stage = StatementStage.READING
@@ -94,7 +95,7 @@ fun StatementImportScreen() {
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Exception) {
-                            fail(e.message ?: t(TextKey.STATEMENT_IMPORT_ERR_TITLE))
+                            fail(e.message ?: t(UiKey.STATEMENT_IMPORT_ERR_TITLE))
                         }
                     }
                 }
@@ -120,9 +121,9 @@ fun StatementImportScreen() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: app.masroufy.core.SchemaError) {
-                fail(e.message ?: t(TextKey.STATEMENT_IMPORT_ERR_TITLE), cols = true)
+                fail(e.message ?: t(UiKey.STATEMENT_IMPORT_ERR_TITLE), cols = true)
             } catch (e: Exception) {
-                fail(e.message ?: t(TextKey.STATEMENT_IMPORT_ERR_TITLE))
+                fail(e.message ?: t(UiKey.STATEMENT_IMPORT_ERR_TITLE))
             }
             busy = false
         }
@@ -135,8 +136,8 @@ fun StatementImportScreen() {
         Unit
     }
 
-    InnerScaffold(t(TextKey.STATEMENT_IMPORT_TITLE)) {
-        item(key = "intro") { BasicText(t(TextKey.STATEMENT_IMPORT_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
+    InnerScaffold(t(UiKey.STATEMENT_IMPORT_TITLE)) {
+        item(key = "intro") { BasicText(t(UiKey.STATEMENT_IMPORT_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
         when (stage) {
             StatementStage.PICK -> item(key = "pick") {
                 PickBlock(pdfSchemas(countryPack(space.space.countryCode).statementSchemas), space.space.currency, picker)
@@ -145,7 +146,7 @@ fun StatementImportScreen() {
                 ReadingCard(fileName, page, pages) {
                     job?.cancel()
                     stage = StatementStage.PICK
-                    toaster.show(t(TextKey.STATEMENT_IMPORT_CANCELLED), dark = true)
+                    toaster.show(t(UiKey.STATEMENT_IMPORT_CANCELLED), dark = true)
                 }
             }
             StatementStage.READY -> ready?.let { r ->
@@ -158,6 +159,6 @@ fun StatementImportScreen() {
                 }, onAgain = again)
             }
         }
-        item(key = "batches") { LinkRow(t(TextKey.STATEMENT_IMPORT_BATCHES_LINK), { nav.push(ImportBatchesRoute) }, Modifier) }
+        item(key = "batches") { LinkRow(t(UiKey.STATEMENT_IMPORT_BATCHES_LINK), { nav.push(ImportBatchesRoute) }, Modifier) }
     }
 }

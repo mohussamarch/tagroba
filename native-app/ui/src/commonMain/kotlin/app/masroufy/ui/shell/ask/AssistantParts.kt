@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell.ask
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -59,9 +60,9 @@ internal fun AssistantStart() {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Column(Modifier.padding(start = 2.dp, end = 2.dp, top = 8.dp, bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             BasicText(rememberGreeting(), Modifier.semantics { heading() }, style = Type.of(22, FontWeight.Bold))
-            BasicText(t(TextKey.ASK_INTRO, t(TextKey.ASK_TITLE), t(TextKey.ASK_BRAND_TITLE)), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.soft))
+            BasicText(t(UiKey.ASK_INTRO, t(UiKey.ASK_TITLE), t(UiKey.ASK_BRAND_TITLE)), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.soft))
         }
-        BasicText(t(TextKey.ASK_TODO_TITLE), Modifier.padding(start = 2.dp, end = 2.dp, top = 6.dp).semantics { heading() }, style = Type.of(15, FontWeight.Bold))
+        BasicText(t(UiKey.ASK_TODO_TITLE), Modifier.padding(start = 2.dp, end = 2.dp, top = 6.dp).semantics { heading() }, style = Type.of(15, FontWeight.Bold))
         val shape = RoundedCornerShape(20.dp)
         Row(
             Modifier.fillMaxWidth().layeredShadow(shape, calmShadow).clip(shape).background(Glass.card).innerSheen(shape, calmShadow)
@@ -72,9 +73,9 @@ internal fun AssistantStart() {
             Box(Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color(0x1A637570)), contentAlignment = Alignment.Center) {
                 LucideIcon(Lucide.CLOCK, size = 20.dp, tint = Ink.muted)
             }
-            BasicText(t(TextKey.ASK_TODO_NOT_READY), Modifier.weight(1f), style = Type.of(14, lineHeight = 1.6))
+            BasicText(t(UiKey.ASK_TODO_NOT_READY), Modifier.weight(1f), style = Type.of(14, lineHeight = 1.6))
         }
-        BasicText(t(TextKey.ASK_TODO_BASIS), Modifier.padding(horizontal = 2.dp), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.ASK_TODO_BASIS), Modifier.padding(horizontal = 2.dp), style = Type.caption().copy(color = Ink.muted))
     }
 }
 
@@ -108,7 +109,7 @@ internal fun TypingDots() {
     val anim = rememberInfiniteTransition(label = "typing")
     val shape = AbsoluteRoundedCornerShape(18.dp, 18.dp, 18.dp, 6.dp)
     Row(
-        Modifier.semantics { contentDescription = t(TextKey.ASK_TYPING) }.layeredShadow(shape, Shadows.chip).clip(shape).background(Glass.card)
+        Modifier.semantics { contentDescription = t(UiKey.ASK_TYPING) }.layeredShadow(shape, Shadows.chip).clip(shape).background(Glass.card)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.CategorizationSource
 import app.masroufy.core.ImportCounts
@@ -86,10 +87,10 @@ class ImportReviewModelTest {
     }
 
     @Test fun labelsForStatesAndCategorySources() {
-        assertEquals(TextKey.IMPORT_REVIEW_SRC_RULE, sourceLabel(CategorizationSource.RULE))
-        assertEquals(TextKey.IMPORT_REVIEW_SRC_NEW, sourceLabel(null))
-        assertEquals(TextKey.IMPORT_REVIEW_SRC_OTHER_COUNTRY, sourceLabel(CategorizationSource.OTHER_COUNTRY_MERCHANT))
-        assertEquals(TextKey.IMPORT_REVIEW_CONFLICT, stateLabel(MatchingState.CONFLICT))
+        assertEquals(UiKey.IMPORT_REVIEW_SRC_RULE, sourceLabel(CategorizationSource.RULE))
+        assertEquals(UiKey.IMPORT_REVIEW_SRC_NEW, sourceLabel(null))
+        assertEquals(UiKey.IMPORT_REVIEW_SRC_OTHER_COUNTRY, sourceLabel(CategorizationSource.OTHER_COUNTRY_MERCHANT))
+        assertEquals(UiKey.IMPORT_REVIEW_CONFLICT, stateLabel(MatchingState.CONFLICT))
         assertEquals(TagTone.DANGER, stateTone(MatchingState.CONFLICT))
         assertEquals(TagTone.NEW, stateTone(MatchingState.NEW))
     }

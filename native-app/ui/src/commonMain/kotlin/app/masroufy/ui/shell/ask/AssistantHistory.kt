@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell.ask
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,11 +65,11 @@ internal fun AssistantHistory(visible: Boolean, state: AskState, onClose: () -> 
     var query by remember { mutableStateOf("") }
     var undo by remember { mutableStateOf<Conversation?>(null) }
     LaunchedEffect(undo) { if (undo != null) { delay(5000); undo = null } }
-    val title = t(TextKey.ASK_HISTORY)
-    Sheet(visible, onClose, title, corner = Radius.menu, closeLabel = t(TextKey.ASK_HISTORY_CLOSE), spacing = 12.dp) {
+    val title = t(UiKey.ASK_HISTORY)
+    Sheet(visible, onClose, title, corner = Radius.menu, closeLabel = t(UiKey.ASK_HISTORY_CLOSE), spacing = 12.dp) {
         Row(Modifier.fillMaxWidth().height(44.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(title, Modifier.weight(1f).semantics { heading() }, style = Type.section())
-            IconButton44(Lucide.X, t(TextKey.ASK_HISTORY_CLOSE), onClose)
+            IconButton44(Lucide.X, t(UiKey.ASK_HISTORY_CLOSE), onClose)
         }
         SearchBox(query) { query = it }
         val q = query.trim()
@@ -76,12 +77,12 @@ internal fun AssistantHistory(visible: Boolean, state: AskState, onClose: () -> 
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 520.dp), contentPadding = PaddingValues(top = 2.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (rows.isEmpty()) item {
                 BasicText(
-                    t(if (q.isEmpty()) TextKey.ASK_HISTORY_EMPTY else TextKey.ASK_HISTORY_NO_MATCH),
+                    t(if (q.isEmpty()) UiKey.ASK_HISTORY_EMPTY else UiKey.ASK_HISTORY_NO_MATCH),
                     Modifier.fillMaxWidth().padding(vertical = 28.dp, horizontal = 12.dp),
                     style = Type.body().copy(color = Ink.muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
                 )
             } else {
-                item { BasicText(t(TextKey.ASK_HISTORY_TODAY), Modifier.padding(horizontal = 4.dp).semantics { heading() }, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted)) }
+                item { BasicText(t(UiKey.ASK_HISTORY_TODAY), Modifier.padding(horizontal = 4.dp).semantics { heading() }, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted)) }
                 item {
                     val shape = RoundedCornerShape(20.dp)
                     Column(Modifier.fillMaxWidth().layeredShadow(shape, listShadow).clip(shape).background(Color.White).innerSheen(shape, listShadow).padding(start = 2.dp, end = 4.dp)) {
@@ -93,7 +94,7 @@ internal fun AssistantHistory(visible: Boolean, state: AskState, onClose: () -> 
                 }
             }
         }
-        undo?.let { gone -> UndoBar(t(TextKey.ASK_HISTORY_DELETED, gone.title)) { state.restore(gone); undo = null } }
+        undo?.let { gone -> UndoBar(t(UiKey.ASK_HISTORY_DELETED, gone.title)) { state.restore(gone); undo = null } }
     }
 }
 
@@ -108,14 +109,14 @@ private fun HistoryRow(c: Conversation, current: Boolean, onOpen: () -> Unit, on
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(c.title, Modifier.weight(1f, fill = false), style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (current) BasicText(
-                    t(TextKey.ASK_HISTORY_CURRENT),
+                    t(UiKey.ASK_HISTORY_CURRENT),
                     Modifier.clip(RoundedCornerShape(10.dp)).background(Ink.selected).padding(horizontal = 8.dp, vertical = 1.dp),
                     style = Type.of(11, FontWeight.Bold).copy(color = Ink.primary),
                 )
             }
             BasicText(c.firstReply, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        val label = t(TextKey.ASK_HISTORY_DELETE, c.title)
+        val label = t(UiKey.ASK_HISTORY_DELETE, c.title)
         val del = rememberPress()
         Box(Modifier.padding(4.dp).clip(RoundedCornerShape(14.dp)).tap(del, label = label, onClick = onDelete).semantics { contentDescription = label }.padding(13.dp)) {
             LucideIcon(Lucide.TRASH_2, size = 18.dp, tint = Ink.muted)
@@ -125,7 +126,7 @@ private fun HistoryRow(c: Conversation, current: Boolean, onOpen: () -> Unit, on
 
 @Composable
 private fun SearchBox(query: String, onQuery: (String) -> Unit) {
-    val hint = t(TextKey.ASK_HISTORY_SEARCH)
+    val hint = t(UiKey.ASK_HISTORY_SEARCH)
     Row(
         Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(16.dp)).background(Color(0x0D193D33)).padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -153,7 +154,7 @@ private fun UndoBar(text: String, onUndo: () -> Unit) {
     ) {
         BasicText(text, Modifier.weight(1f), style = Type.of(13, FontWeight.Bold).copy(color = Color.White), maxLines = 2, overflow = TextOverflow.Ellipsis)
         val press = rememberPress()
-        val label = t(TextKey.ASK_HISTORY_UNDO)
+        val label = t(UiKey.ASK_HISTORY_UNDO)
         Box(
             Modifier.height(40.dp).clip(RoundedCornerShape(12.dp)).background(Color(0x1AFFFFFF)).tap(press, label = label, onClick = onUndo).padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -54,15 +55,15 @@ import app.masroufy.usecase.ImportImpact
 internal fun ImpactHero(fileName: String, walletName: String, selected: Int, impact: ImportImpact?, done: ImportBatch?, currency: Currency) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.IMPORT_REVIEW_HERO_META, fileName, walletName), style = Type.caption().copy(color = Ink.onHeroMuted))
-            val title = if (done != null) t(TextKey.IMPORT_REVIEW_DONE_TITLE, opsCount(done.counts.imported)) else t(TextKey.IMPORT_REVIEW_IMPACT, opsCount(selected))
+            BasicText(t(UiKey.IMPORT_REVIEW_HERO_META, fileName, walletName), style = Type.caption().copy(color = Ink.onHeroMuted))
+            val title = if (done != null) t(UiKey.IMPORT_REVIEW_DONE_TITLE, opsCount(done.counts.imported)) else t(UiKey.IMPORT_REVIEW_IMPACT, opsCount(selected))
             BasicText(title, style = Type.of(18, FontWeight.Bold).copy(color = Color.White))
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.10f)).padding(horizontal = 12.dp, vertical = 2.dp)) {
                 val delta = impact?.walletDeltaMinor
                 val rows = listOf(
-                    Triple(TextKey.IMPORT_REVIEW_ON_WALLET, delta, if ((delta ?: 0L) < 0L) AmountTone.EXPENSE else AmountTone.INCOME),
-                    Triple(TextKey.IMPORT_REVIEW_EXPENSE, impact?.expenseMinor, AmountTone.EXPENSE),
-                    Triple(TextKey.IMPORT_REVIEW_INCOME, impact?.incomeMinor, AmountTone.INCOME),
+                    Triple(UiKey.IMPORT_REVIEW_ON_WALLET, delta, if ((delta ?: 0L) < 0L) AmountTone.EXPENSE else AmountTone.INCOME),
+                    Triple(UiKey.IMPORT_REVIEW_EXPENSE, impact?.expenseMinor, AmountTone.EXPENSE),
+                    Triple(UiKey.IMPORT_REVIEW_INCOME, impact?.incomeMinor, AmountTone.INCOME),
                 )
                 rows.forEachIndexed { i, (label, minor, tone) ->
                     if (i > 0) HeroDivider()
@@ -73,7 +74,7 @@ internal fun ImpactHero(fileName: String, walletName: String, selected: Int, imp
                     }
                 }
             }
-            if (impact == null && done == null) BasicText(t(TextKey.IMPORT_REVIEW_IMPACT_NA), style = Type.caption().copy(color = Ink.onHeroMuted))
+            if (impact == null && done == null) BasicText(t(UiKey.IMPORT_REVIEW_IMPACT_NA), style = Type.caption().copy(color = Ink.onHeroMuted))
         }
     }
 }
@@ -123,14 +124,14 @@ internal fun ReviewLines(
                         val dir = l.direction
                         AmountText(l.amountMinor, currency, tone = if (dir != null) toneOf(dir) else AmountTone.PLAIN, size = if (l.amountMinor == null) 12 else 14)
                     }
-                    val row = t(TextKey.IMPORT_REVIEW_ROW, sentenceNumber(l.lineNumber))
-                    BasicText(l.date?.let { t(TextKey.IMPORT_REVIEW_DATE_ROW, dayMonth(it), row) } ?: row, style = Type.caption().copy(color = Ink.muted))
+                    val row = t(UiKey.IMPORT_REVIEW_ROW, sentenceNumber(l.lineNumber))
+                    BasicText(l.date?.let { t(UiKey.IMPORT_REVIEW_DATE_ROW, dayMonth(it), row) } ?: row, style = Type.caption().copy(color = Ink.muted))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Tag(t(stateLabel(l.state)), stateTone(l.state))
-                        if (l.selectable) Tag(t(TextKey.IMPORT_REVIEW_CAT_SRC, categoryName(l.categoryId, categories), t(sourceLabel(l.source))), TagTone.MUTED, bold = false)
+                        if (l.selectable) Tag(t(UiKey.IMPORT_REVIEW_CAT_SRC, categoryName(l.categoryId, categories), t(sourceLabel(l.source))), TagTone.MUTED, bold = false)
                     }
                     if (l.state != MatchingState.NEW) BasicText(l.reason, style = Type.of(12, lineHeight = 1.6).copy(color = Ink.muted))
-                    if (l.canCompare && !locked) SmallAction(t(TextKey.IMPORT_REVIEW_COMPARE)) { onCompare(l) }
+                    if (l.canCompare && !locked) SmallAction(t(UiKey.IMPORT_REVIEW_COMPARE)) { onCompare(l) }
                 }
             }
         }

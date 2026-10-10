@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.ui.graphics.Color
 import app.masroufy.core.AlertGroup
 import app.masroufy.core.AlertKind
@@ -73,11 +74,11 @@ fun whenText(createdAt: String, today: IsoDate): String {
     if (!isValidIsoDate(day)) return ""
     val ago = daysBetween(day, today)
     return when {
-        ago <= 0 -> t(TextKey.NOTIFICATIONS_TODAY)
-        ago == 1 -> t(TextKey.NOTIFICATIONS_YESTERDAY)
-        ago == 2 -> t(TextKey.NOTIFICATIONS_TWO_DAYS)
-        ago <= 10 -> t(TextKey.NOTIFICATIONS_FEW_DAYS, sentenceNumber(ago))
-        else -> t(TextKey.NOTIFICATIONS_MANY_DAYS, sentenceNumber(ago))
+        ago <= 0 -> t(UiKey.NOTIFICATIONS_TODAY)
+        ago == 1 -> t(UiKey.NOTIFICATIONS_YESTERDAY)
+        ago == 2 -> t(UiKey.NOTIFICATIONS_TWO_DAYS)
+        ago <= 10 -> t(UiKey.NOTIFICATIONS_FEW_DAYS, sentenceNumber(ago))
+        else -> t(UiKey.NOTIFICATIONS_MANY_DAYS, sentenceNumber(ago))
     }
 }
 
@@ -95,8 +96,8 @@ fun notificationSections(inbox: List<AlertInboxView>, unread: Set<String>, gone:
     }
     val decision = inbox.filter { it.entry.kind.needsDecision }.map { it.entry.threadKey }.toSet()
     return listOf(
-        NotifSection(t(TextKey.NOTIFICATIONS_WAITING), rows.filter { it.threadKey in decision }),
-        NotifSection(t(TextKey.NOTIFICATIONS_NEW), rows.filter { it.threadKey !in decision }),
+        NotifSection(t(UiKey.NOTIFICATIONS_WAITING), rows.filter { it.threadKey in decision }),
+        NotifSection(t(UiKey.NOTIFICATIONS_NEW), rows.filter { it.threadKey !in decision }),
     ).filter { it.rows.isNotEmpty() }
 }
 

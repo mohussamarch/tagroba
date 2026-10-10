@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -57,8 +58,8 @@ internal fun ReviewItemCard(item: ReviewItem, chosen: EconomicKind?, onAccept: (
             }
             if (chosen != null) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(t(TextKey.REVIEW_QUEUE_CHOSEN, kindLabel(chosen)), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold).copy(color = Ink.income))
-                    TonalButton(t(TextKey.REVIEW_QUEUE_UNDO), onClick = { onUndo(item) }, height = 44.dp)
+                    BasicText(t(UiKey.REVIEW_QUEUE_CHOSEN, kindLabel(chosen)), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold).copy(color = Ink.income))
+                    TonalButton(t(UiKey.REVIEW_QUEUE_UNDO), onClick = { onUndo(item) }, height = 44.dp)
                 }
             } else {
                 BasicText(item.note, style = Type.caption().copy(color = Ink.muted))
@@ -68,9 +69,9 @@ internal fun ReviewItemCard(item: ReviewItem, chosen: EconomicKind?, onAccept: (
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        BasicText(t(TextKey.REVIEW_QUEUE_SUGGESTED), style = Type.caption().copy(color = Ink.muted))
+                        BasicText(t(UiKey.REVIEW_QUEUE_SUGGESTED), style = Type.caption().copy(color = Ink.muted))
                         BasicText(kindLabel(s), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold))
-                        PrimaryButton(t(TextKey.REVIEW_QUEUE_ACCEPT), onClick = { onAccept(item, s) }, height = 44.dp)
+                        PrimaryButton(t(UiKey.REVIEW_QUEUE_ACCEPT), onClick = { onAccept(item, s) }, height = 44.dp)
                     }
                 }
                 if (item.alternatives.isNotEmpty()) {
@@ -110,11 +111,11 @@ internal fun RulesCard() {
     var state by remember(deps) { mutableStateOf<RulesState>(RulesState.Idle) }
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.REVIEW_QUEUE_RULES_TITLE), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.REVIEW_QUEUE_RULES_TITLE), style = Type.of(15, FontWeight.Bold))
             when (val s = state) {
                 RulesState.Idle, RulesState.Loading -> {
-                    BasicText(t(TextKey.REVIEW_QUEUE_RULES_BODY), style = Type.of(13).copy(color = Ink.muted))
-                    TonalButton(t(TextKey.REVIEW_QUEUE_RULES_PREVIEW), onClick = {
+                    BasicText(t(UiKey.REVIEW_QUEUE_RULES_BODY), style = Type.of(13).copy(color = Ink.muted))
+                    TonalButton(t(UiKey.REVIEW_QUEUE_RULES_PREVIEW), onClick = {
                         if (state == RulesState.Loading) return@TonalButton
                         state = RulesState.Loading
                         scope.launch {
@@ -122,7 +123,7 @@ internal fun RulesCard() {
                                 val today = deps.shell.today()
                                 val from = dayNumberToIso(toDayNumber(parseIsoDate(today)) - RULES_DAYS)
                                 RulesState.Preview(deps.home.history.preview(from, today), deps.home.categories.list())
-                            }.getOrElse { RulesState.Failed(failureText(it, TextKey.SHELL_LOAD_FAILED)) }
+                            }.getOrElse { RulesState.Failed(failureText(it, UiKey.SHELL_LOAD_FAILED)) }
                         }
                     }, modifier = Modifier.fillMaxWidth(), enabled = state != RulesState.Loading)
                 }
@@ -130,7 +131,7 @@ internal fun RulesCard() {
                     val rows = ruleRows(s.preview.categoryPlan, s.categories)
                     val count = s.preview.categoryPlan.changed.size
                     BasicText(
-                        if (count == 0) t(TextKey.REVIEW_QUEUE_RULES_NONE) else t(TextKey.REVIEW_QUEUE_RULES_COUNT, sentenceNumber(count)),
+                        if (count == 0) t(UiKey.REVIEW_QUEUE_RULES_NONE) else t(UiKey.REVIEW_QUEUE_RULES_COUNT, sentenceNumber(count)),
                         style = Type.of(13).copy(color = Ink.muted),
                     )
                     rows.forEachIndexed { i, (name, n) ->
@@ -140,18 +141,18 @@ internal fun RulesCard() {
                         }
                         if (i < rows.lastIndex) Divider()
                     }
-                    if (count > 0) PrimaryButton(t(TextKey.REVIEW_QUEUE_RULES_APPLY, sentenceNumber(count)), onClick = {
+                    if (count > 0) PrimaryButton(t(UiKey.REVIEW_QUEUE_RULES_APPLY, sentenceNumber(count)), onClick = {
                         scope.launch {
                             state = runCatching {
                                 RulesState.Done(deps.home.history.applyCategories(s.preview.rows.map { it.id }, s.preview.categoryPlan).changed.size)
-                            }.getOrElse { RulesState.Failed(failureText(it, TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY)) }
+                            }.getOrElse { RulesState.Failed(failureText(it, UiKey.REVIEW_QUEUE_SAVE_FAILED_BODY)) }
                         }
                     }, modifier = Modifier.fillMaxWidth())
                 }
-                is RulesState.Done -> BasicText(t(TextKey.REVIEW_QUEUE_RULES_DONE, sentenceNumber(s.changed)), style = Type.of(13).copy(color = Ink.income))
+                is RulesState.Done -> BasicText(t(UiKey.REVIEW_QUEUE_RULES_DONE, sentenceNumber(s.changed)), style = Type.of(13).copy(color = Ink.income))
                 is RulesState.Failed -> {
                     BasicText(s.message, style = Type.of(13).copy(color = Ink.expense))
-                    TonalButton(t(TextKey.SHELL_RETRY), onClick = { state = RulesState.Idle }, modifier = Modifier.fillMaxWidth())
+                    TonalButton(t(UiKey.SHELL_RETRY), onClick = { state = RulesState.Idle }, modifier = Modifier.fillMaxWidth())
                 }
             }
         }

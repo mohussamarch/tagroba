@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,20 +65,20 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
     var editOpen by remember { mutableStateOf(false) }
     OnceWhen(pending == shown.id && shown.reached) {
         confetti++
-        toaster.show(t(TextKey.GOAL_DETAIL_DONE, shown.name))
+        toaster.show(t(UiKey.GOAL_DETAIL_DONE, shown.name))
         pending = null
     }
-    val title = t(if (shown.starred) TextKey.GOAL_DETAIL_TITLE_STAR else TextKey.GOAL_DETAIL_TITLE, shown.name)
+    val title = t(if (shown.starred) UiKey.GOAL_DETAIL_TITLE_STAR else UiKey.GOAL_DETAIL_TITLE, shown.name)
     Sheet(card != null, onDismiss, title, spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
-        val how = shown.walletLabel ?: t(TextKey.GOALS_MANUAL)
+        val how = shown.walletLabel ?: t(UiKey.GOALS_MANUAL)
         BasicText(
-            t(TextKey.GOAL_DETAIL_SUB, amountLabel(shown.targetMinor, shown.currency), t(TextKey.BUDGETS_UP_WHEN, shown.untilText, how)),
+            t(UiKey.GOAL_DETAIL_SUB, amountLabel(shown.targetMinor, shown.currency), t(UiKey.BUDGETS_UP_WHEN, shown.untilText, how)),
             style = Type.of(13).copy(color = Ink.muted),
         )
         Box(Modifier.fillMaxWidth()) {
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ink.selected).padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                BasicText(t(if (shown.linked) TextKey.GOAL_DETAIL_SAVED_LINKED else TextKey.GOAL_DETAIL_SAVED), style = Type.caption().copy(color = Ink.soft))
+                BasicText(t(if (shown.linked) UiKey.GOAL_DETAIL_SAVED_LINKED else UiKey.GOAL_DETAIL_SAVED), style = Type.caption().copy(color = Ink.soft))
                 AmountText(shown.savedMinor, shown.currency, size = 26)
                 ProgressBar(shown.percent ?: 0, if (shown.reached) Ink.income else Ink.primary, track = Color(0x2408634F))
                 BasicText(detailProgressLine(shown), style = Type.captionBold().copy(color = Ink.primary))
@@ -94,7 +96,7 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
         }
         if (shown.linked) {
             BasicText(
-                t(TextKey.GOAL_DETAIL_LINKED, shown.walletLabel ?: ""),
+                t(UiKey.GOAL_DETAIL_LINKED, shown.walletLabel ?: ""),
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x142469BA)).padding(horizontal = 12.dp, vertical = 10.dp),
                 style = Type.of(13).copy(color = Ink.transfer),
             )
@@ -105,14 +107,14 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
                     keyboard = KeyboardType.Decimal, textSize = 17,
                     trailing = { BasicText(currencySymbol(shown.currency), Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
                 )
-                PrimaryButton(t(TextKey.GOAL_DETAIL_DEPOSIT), {
+                PrimaryButton(t(UiKey.GOAL_DETAIL_DEPOSIT), {
                     val minor = tryParseMoney(deposit, shown.currency)?.takeIf { it > 0 }
                     if (minor == null) error = t(TextKey.GOAL_CONTRIBUTION_POSITIVE)
                     else scope.launch {
-                        error = attempt(t(TextKey.SHELL_LOAD_FAILED)) { deps.goals.recordContribution(shown.id, today, minor) }
+                        error = attempt(t(UiKey.SHELL_LOAD_FAILED)) { deps.goals.recordContribution(shown.id, today, minor) }
                         if (error == null) {
                             deposit = ""
-                            toaster.show(t(TextKey.GOAL_DETAIL_DEPOSITED, amountLabel(minor, shown.currency), shown.name))
+                            toaster.show(t(UiKey.GOAL_DETAIL_DEPOSITED, amountLabel(minor, shown.currency), shown.name))
                             if (!shown.reached) pending = shown.id
                             refresh()
                         }
@@ -121,12 +123,12 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
             }
         }
         Gap8Row(Modifier.fillMaxWidth()) {
-            TonalButton(t(TextKey.GOAL_DETAIL_EDIT), { editOpen = true }, Modifier.weight(1f))
-            TonalButton(t(TextKey.GOAL_DETAIL_ARCHIVE), {
+            TonalButton(t(UiKey.GOAL_DETAIL_EDIT), { editOpen = true }, Modifier.weight(1f))
+            TonalButton(t(UiKey.GOAL_DETAIL_ARCHIVE), {
                 scope.launch {
-                    error = attempt(t(TextKey.SHELL_LOAD_FAILED)) { deps.goals.archive(shown.id, true) }
+                    error = attempt(t(UiKey.SHELL_LOAD_FAILED)) { deps.goals.archive(shown.id, true) }
                     if (error == null) {
-                        toaster.show(t(TextKey.GOAL_DETAIL_ARCHIVED_TOAST, shown.name))
+                        toaster.show(t(UiKey.GOAL_DETAIL_ARCHIVED_TOAST, shown.name))
                         onDismiss()
                         refresh()
                     }
@@ -165,32 +167,32 @@ fun GoalNewSheet(
     val scope = rememberCoroutineScope()
     var d by remember(visible) { mutableStateOf(GoalNewDraft()) }
     var error by remember(visible) { mutableStateOf<String?>(null) }
-    val title = t(TextKey.GOALS_NEW)
+    val title = t(UiKey.GOALS_NEW)
     Sheet(visible, onDismiss, title, spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.GOAL_NEW_SUB), style = Type.of(13).copy(color = Ink.muted))
-        TextInput(d.name, { d = d.copy(name = it.take(40)); error = null }, label = t(TextKey.GOAL_NEW_NAME), placeholder = t(TextKey.GOAL_NEW_NAME_HINT))
+        BasicText(t(UiKey.GOAL_NEW_SUB), style = Type.of(13).copy(color = Ink.muted))
+        TextInput(d.name, { d = d.copy(name = it.take(40)); error = null }, label = t(UiKey.GOAL_NEW_NAME), placeholder = t(UiKey.GOAL_NEW_NAME_HINT))
         TextInput(
-            d.targetText, { d = d.copy(targetText = it); error = null }, label = t(TextKey.GOAL_NEW_TARGET, currencySymbol(currency)), placeholder = "0",
+            d.targetText, { d = d.copy(targetText = it); error = null }, label = t(UiKey.GOAL_NEW_TARGET, currencySymbol(currency)), placeholder = "0",
             ltr = true, keyboard = KeyboardType.Decimal,
         )
-        ChoiceRow(t(TextKey.GOAL_NEW_WHEN), GoalWhen.entries.map { it to t(whenKey(it)) }, d.whenChoice) { d = d.copy(whenChoice = it) }
+        ChoiceRow(t(UiKey.GOAL_NEW_WHEN), GoalWhen.entries.map { it to t(whenKey(it)) }, d.whenChoice) { d = d.copy(whenChoice = it) }
         ChoiceRow(
-            t(TextKey.GOAL_NEW_HOW), listOf(GoalKind.MANUAL to t(TextKey.GOAL_NEW_MANUAL), GoalKind.LINKED to t(TextKey.GOAL_NEW_LINKED)), d.kind,
+            t(UiKey.GOAL_NEW_HOW), listOf(GoalKind.MANUAL to t(UiKey.GOAL_NEW_MANUAL), GoalKind.LINKED to t(UiKey.GOAL_NEW_LINKED)), d.kind,
         ) { d = d.copy(kind = it, walletId = null) }
         if (d.kind == GoalKind.LINKED) {
             val choices = wallets.filter { it.currency == currency && it.kind != "cash" }
-            if (choices.isEmpty()) BasicText(t(TextKey.GOAL_NEW_NO_WALLETS), style = Type.caption().copy(color = Ink.muted))
-            else ChoiceRow(t(TextKey.GOAL_NEW_WHICH), choices.map { it.id to it.name }, d.walletId) { d = d.copy(walletId = it); error = null }
+            if (choices.isEmpty()) BasicText(t(UiKey.GOAL_NEW_NO_WALLETS), style = Type.caption().copy(color = Ink.muted))
+            else ChoiceRow(t(UiKey.GOAL_NEW_WHICH), choices.map { it.id to it.name }, d.walletId) { d = d.copy(walletId = it); error = null }
         }
-        BasicText(t(if (d.kind == GoalKind.LINKED) TextKey.GOAL_NEW_NOTE_LINKED else TextKey.GOAL_NEW_NOTE_MANUAL), style = Type.caption().copy(color = Ink.muted))
-        PrimaryButton(t(TextKey.GOAL_NEW_CREATE), {
+        BasicText(t(if (d.kind == GoalKind.LINKED) UiKey.GOAL_NEW_NOTE_LINKED else UiKey.GOAL_NEW_NOTE_MANUAL), style = Type.caption().copy(color = Ink.muted))
+        PrimaryButton(t(UiKey.GOAL_NEW_CREATE), {
             when (val c = checkNewGoal(d, today, currency, spaceId)) {
                 is GoalCheck.Bad -> error = c.message
                 is GoalCheck.Ok -> scope.launch {
-                    error = attempt(t(TextKey.SHELL_LOAD_FAILED)) { deps.goals.create(c.input) }
+                    error = attempt(t(UiKey.SHELL_LOAD_FAILED)) { deps.goals.create(c.input) }
                     if (error == null) {
-                        toaster.show(t(TextKey.GOAL_NEW_CREATED, c.input.name))
+                        toaster.show(t(UiKey.GOAL_NEW_CREATED, c.input.name))
                         onDismiss()
                         refresh()
                     }
@@ -201,10 +203,10 @@ fun GoalNewSheet(
     }
 }
 
-private fun whenKey(w: GoalWhen): TextKey = when (w) {
-    GoalWhen.YEAR_END -> TextKey.GOAL_NEW_YEAR_END
-    GoalWhen.ONE_YEAR -> TextKey.GOAL_NEW_ONE_YEAR
-    GoalWhen.TWO_YEARS -> TextKey.GOAL_NEW_TWO_YEARS
+private fun whenKey(w: GoalWhen): TextRef = when (w) {
+    GoalWhen.YEAR_END -> UiKey.GOAL_NEW_YEAR_END
+    GoalWhen.ONE_YEAR -> UiKey.GOAL_NEW_ONE_YEAR
+    GoalWhen.TWO_YEARS -> UiKey.GOAL_NEW_TWO_YEARS
 }
 
 /** عنوان صغير + شرايح اختيار (44) بتلف لو كترت. */

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.DueFlow
 import app.masroufy.core.DueItem
@@ -79,21 +80,21 @@ data class DuesPanelUi(
 fun duesPanelUi(view: DuesView, counts: DuesCounts, period: Period, today: IsoDate, currency: Currency): DuesPanelUi {
     val totals = view.totals
     val forYou = buildList {
-        add(DuesLineUi(t(TextKey.DUES_LINE_RECEIVABLE), totals.receivableMinor))
-        if (totals.roscaSavedMinor > 0) add(DuesLineUi(t(TextKey.DUES_LINE_ROSCA_SAVED), totals.roscaSavedMinor))
+        add(DuesLineUi(t(UiKey.DUES_LINE_RECEIVABLE), totals.receivableMinor))
+        if (totals.roscaSavedMinor > 0) add(DuesLineUi(t(UiKey.DUES_LINE_ROSCA_SAVED), totals.roscaSavedMinor))
     }
     val onYou = buildList {
-        add(DuesLineUi(t(TextKey.DUES_LINE_LOANS), totals.payableLoanMinor))
-        if (totals.payableCustodyMinor > 0) add(DuesLineUi(t(TextKey.DUES_LINE_CUSTODY), totals.payableCustodyMinor))
-        if (totals.installmentsLeftMinor > 0) add(DuesLineUi(t(TextKey.DUES_LINE_INSTALLMENTS), totals.installmentsLeftMinor))
-        if (totals.roscaOwedMinor > 0) add(DuesLineUi(t(TextKey.DUES_LINE_ROSCA_OWED), totals.roscaOwedMinor))
+        add(DuesLineUi(t(UiKey.DUES_LINE_LOANS), totals.payableLoanMinor))
+        if (totals.payableCustodyMinor > 0) add(DuesLineUi(t(UiKey.DUES_LINE_CUSTODY), totals.payableCustodyMinor))
+        if (totals.installmentsLeftMinor > 0) add(DuesLineUi(t(UiKey.DUES_LINE_INSTALLMENTS), totals.installmentsLeftMinor))
+        if (totals.roscaOwedMinor > 0) add(DuesLineUi(t(UiKey.DUES_LINE_ROSCA_OWED), totals.roscaOwedMinor))
     }
     val agenda = view.agenda.map { agendaRow(it, today) }
     val tiles = listOf(
-        DuesTileUi(t(TextKey.DUES_TILE_DEBTS), counts.debts, DuesTarget.Debts(DebtSide.ALL)),
-        DuesTileUi(t(TextKey.DUES_TILE_ROSCAS), counts.roscas, DuesTarget.Roscas),
-        DuesTileUi(t(TextKey.DUES_TILE_INSTALLMENTS), counts.installments, DuesTarget.Installments),
-        DuesTileUi(t(TextKey.DUES_TILE_SUBSCRIPTIONS), counts.subscriptions, DuesTarget.Subscriptions),
+        DuesTileUi(t(UiKey.DUES_TILE_DEBTS), counts.debts, DuesTarget.Debts(DebtSide.ALL)),
+        DuesTileUi(t(UiKey.DUES_TILE_ROSCAS), counts.roscas, DuesTarget.Roscas),
+        DuesTileUi(t(UiKey.DUES_TILE_INSTALLMENTS), counts.installments, DuesTarget.Installments),
+        DuesTileUi(t(UiKey.DUES_TILE_SUBSCRIPTIONS), counts.subscriptions, DuesTarget.Subscriptions),
     )
     val nothing = agenda.isEmpty() && counts.debts == 0 && counts.roscas == 0 && counts.installments == 0 && counts.subscriptions == 0
     return DuesPanelUi(
@@ -121,11 +122,11 @@ internal fun agendaRow(item: DueItem, today: IsoDate): AgendaRowUi {
         DueSource.ROSCA_CONTRIBUTION, DueSource.ROSCA_PAYOUT -> DueKind.ROSCA
     }
     val incoming = item.flow == DueFlow.RECEIVE
-    val tail = if (item.source == DueSource.ROSCA_PAYOUT) t(TextKey.DUES_ROW_YOUR_TURN) else relativeText(item.dueAt, today)
+    val tail = if (item.source == DueSource.ROSCA_PAYOUT) t(UiKey.DUES_ROW_YOUR_TURN) else relativeText(item.dueAt, today)
     val (chip, chipKey) = when (item.status) {
-        DueStatus.OVERDUE -> Chip.OVERDUE to TextKey.DUES_CHIP_LATE
-        DueStatus.SOON -> Chip.SOON to TextKey.DUES_CHIP_SOON
-        DueStatus.UPCOMING -> Chip.UPCOMING to TextKey.DUES_CHIP_NEXT
+        DueStatus.OVERDUE -> Chip.OVERDUE to UiKey.DUES_CHIP_LATE
+        DueStatus.SOON -> Chip.SOON to UiKey.DUES_CHIP_SOON
+        DueStatus.UPCOMING -> Chip.UPCOMING to UiKey.DUES_CHIP_NEXT
     }
     val target = when (kind) {
         DueKind.DEBT -> DuesTarget.Debts(if (incoming) DebtSide.FOR_YOU else DebtSide.ON_YOU)
@@ -137,13 +138,13 @@ internal fun agendaRow(item: DueItem, today: IsoDate): AgendaRowUi {
         key = "${item.source.wire}-${item.sourceId}-${item.dueAt}",
         kind = kind,
         title = item.title,
-        sub = t(TextKey.DUES_COMMA_JOIN, dateText(item.dueAt, today), tail),
+        sub = t(UiKey.DUES_COMMA_JOIN, dateText(item.dueAt, today), tail),
         chip = chip,
         chipText = t(chipKey),
         amountMinor = item.amountMinor,
         currency = item.currency,
         incoming = incoming,
-        dirText = t(if (incoming) TextKey.DUES_DIR_IN else TextKey.DUES_DIR_OUT),
+        dirText = t(if (incoming) UiKey.DUES_DIR_IN else UiKey.DUES_DIR_OUT),
         target = target,
     )
 }

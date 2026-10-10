@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.EosEnd
 import app.masroufy.core.Halalas
@@ -60,12 +62,12 @@ internal fun checkLiving(f: Map<String, String>, ids: Triple<String, String, Str
 /** عدد شهور اختياري: فاضي ⇒ null · مش رقم ⇒ خطأ. */
 internal fun optionalCount(f: Map<String, String>, id: String, errors: MutableMap<String, String>): Int? = when (val p = parseCountField(f[id].orEmpty())) {
     Parsed.Empty -> null
-    Parsed.Bad -> null.also { errors[id] = t(TextKey.CALCUI_WHOLE_NUMBER) }
+    Parsed.Bad -> null.also { errors[id] = t(UiKey.CALCUI_WHOLE_NUMBER) }
     is Parsed.Ok -> p.value
 }
 
 /** مبلغ اختياري: فاضي ⇒ null · مش مقروء ⇒ خطأ · [min] أقل قيمة مقبولة. */
-internal fun optionalAmount(f: Map<String, String>, id: String, currency: Currency, min: Long, minKey: TextKey, errors: MutableMap<String, String>): Halalas? =
+internal fun optionalAmount(f: Map<String, String>, id: String, currency: Currency, min: Long, minKey: TextRef, errors: MutableMap<String, String>): Halalas? =
     when (val p = parseAmountField(f[id].orEmpty(), currency)) {
         Parsed.Empty -> null
         Parsed.Bad -> null.also { errors[id] = t(TextKey.MONEY_BAD_FORMAT) }
@@ -77,7 +79,7 @@ fun checkSaudi(f: Map<String, String>, contributedBefore2024: Boolean, end: EosE
     val birth = parseDateField(f[SaudiFields.BIRTH].orEmpty()).orNull?.takeIf { it < today }
     if (birth == null) e[SaudiFields.BIRTH] = t(TextKey.CALC_BIRTH_DATE)
     val soFar = parseCountField(f[SaudiFields.SO_FAR].orEmpty()).orNull?.takeIf { it <= MAX_CALC_MONTHS }
-    if (soFar == null) e[SaudiFields.SO_FAR] = t(TextKey.RETCALC_SOFAR_RANGE)
+    if (soFar == null) e[SaudiFields.SO_FAR] = t(UiKey.RETCALC_SOFAR_RANGE)
     val at2024 = if (contributedBefore2024) optionalCount(f, SaudiFields.AT_2024, e) else null
     if (at2024 != null && soFar != null && at2024 > soFar) e[SaudiFields.AT_2024] = t(TextKey.CALC_MONTHS_AT_2024)
     val m1422 = if (contributedBefore2024) optionalCount(f, SaudiFields.M_1422, e) ?: 0 else 0
@@ -120,8 +122,8 @@ fun checkSaudi(f: Map<String, String>, contributedBefore2024: Boolean, end: EosE
 fun saudiHeroDetails(o: RetirementOutcome): String? {
     val p = o.pension
     val date = p.retirementDate ?: return null
-    val law = t(if (p.law == PensionLaw.SA_OLD) TextKey.RETSA_LAW_OLD else TextKey.RETSA_LAW_NEW)
-    return t(TextKey.RETSA_HERO_SUB, law, agePhrase(p.retireAgeMonths!!), monthYearOf(date), sentenceNumber(p.contributionMonths!!))
+    val law = t(if (p.law == PensionLaw.SA_OLD) UiKey.RETSA_LAW_OLD else UiKey.RETSA_LAW_NEW)
+    return t(UiKey.RETSA_HERO_SUB, law, agePhrase(p.retireAgeMonths!!), monthYearOf(date), sentenceNumber(p.contributionMonths!!))
 }
 
 /** سطور «كيف حُسب المعاش؟» من تفصيل المعاش (`SaudiNewPension` · `SaudiOldPension`). */
@@ -129,26 +131,26 @@ fun saudiHow(o: RetirementOutcome, currency: Currency): List<String> {
     val p = o.pension
     p.newDetail?.let { d ->
         val adjust = when {
-            d.reductionMinor > 0 -> t(TextKey.RETSA_HOW_NEW_REDUCE, money(d.reductionMinor, currency), sentenceNumber(d.reductionMonths))
-            d.increaseMinor > 0 -> t(TextKey.RETSA_HOW_NEW_INCREASE, money(d.increaseMinor, currency))
-            else -> t(TextKey.RETSA_HOW_NEW_NONE)
+            d.reductionMinor > 0 -> t(UiKey.RETSA_HOW_NEW_REDUCE, money(d.reductionMinor, currency), sentenceNumber(d.reductionMonths))
+            d.increaseMinor > 0 -> t(UiKey.RETSA_HOW_NEW_INCREASE, money(d.increaseMinor, currency))
+            else -> t(UiKey.RETSA_HOW_NEW_NONE)
         }
         return listOf(
-            t(TextKey.RETSA_HOW_NEW_WAGE, money(d.averageWageMinor, currency)),
-            t(TextKey.RETSA_HOW_NEW_ACCRUED, sentenceNumber(d.contributionMonths), money(d.accruedMinor, currency)) + (if (d.baseMinor < d.accruedMinor) t(TextKey.RETSA_HOW_CAPPED) else ""),
-            t(TextKey.RETSA_HOW_NEW_MIN, money(d.minimumMinor, currency)) + applied(d.minimumMinor > d.baseMinor),
+            t(UiKey.RETSA_HOW_NEW_WAGE, money(d.averageWageMinor, currency)),
+            t(UiKey.RETSA_HOW_NEW_ACCRUED, sentenceNumber(d.contributionMonths), money(d.accruedMinor, currency)) + (if (d.baseMinor < d.accruedMinor) t(UiKey.RETSA_HOW_CAPPED) else ""),
+            t(UiKey.RETSA_HOW_NEW_MIN, money(d.minimumMinor, currency)) + applied(d.minimumMinor > d.baseMinor),
             adjust,
         )
     }
     p.oldDetail?.let { d ->
-        val accrued = if (d.monthsBefore1422 > 0) t(TextKey.RETSA_HOW_OLD_ACCRUED_1422, sentenceNumber(d.monthsAfter1422), sentenceNumber(d.monthsBefore1422), money(d.accruedMinor, currency))
-        else t(TextKey.RETSA_HOW_OLD_ACCRUED, sentenceNumber(d.monthsAfter1422), money(d.accruedMinor, currency))
+        val accrued = if (d.monthsBefore1422 > 0) t(UiKey.RETSA_HOW_OLD_ACCRUED_1422, sentenceNumber(d.monthsAfter1422), sentenceNumber(d.monthsBefore1422), money(d.accruedMinor, currency))
+        else t(UiKey.RETSA_HOW_OLD_ACCRUED, sentenceNumber(d.monthsAfter1422), money(d.accruedMinor, currency))
         val legal = p.legalAgeMonths ?: SA_OLD_LEGAL_AGE_MONTHS
         return listOf(
-            t(TextKey.RETSA_HOW_OLD_WAGE, money(d.averageWageMinor, currency)),
-            accrued + (if (d.baseMinor < d.accruedMinor) t(TextKey.RETSA_HOW_CAPPED) else ""),
-            t(TextKey.RETSA_HOW_OLD_MIN, money(SA_OLD_MIN_PENSION_MINOR, currency)) + applied(d.baseMinor < SA_OLD_MIN_PENSION_MINOR),
-            t(if (legal == SA_OLD_LEGAL_AGE_MONTHS) TextKey.RETSA_HOW_OLD_AGE_60 else TextKey.RETSA_HOW_OLD_AGE_FIFTH, agePhrase(legal)),
+            t(UiKey.RETSA_HOW_OLD_WAGE, money(d.averageWageMinor, currency)),
+            accrued + (if (d.baseMinor < d.accruedMinor) t(UiKey.RETSA_HOW_CAPPED) else ""),
+            t(UiKey.RETSA_HOW_OLD_MIN, money(SA_OLD_MIN_PENSION_MINOR, currency)) + applied(d.baseMinor < SA_OLD_MIN_PENSION_MINOR),
+            t(if (legal == SA_OLD_LEGAL_AGE_MONTHS) UiKey.RETSA_HOW_OLD_AGE_60 else UiKey.RETSA_HOW_OLD_AGE_FIFTH, agePhrase(legal)),
         )
     }
     return emptyList()

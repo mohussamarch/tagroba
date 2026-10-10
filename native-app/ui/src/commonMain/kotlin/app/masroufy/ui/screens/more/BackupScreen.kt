@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -66,43 +67,43 @@ fun BackupScreen() {
     val saveJson = rememberFileSaver("application/json") { r ->
         making = false
         when (r) {
-            is FileSaveResult.Saved -> if (r.bytes == expected) { made = true; backupError = null; toaster.show(t(TextKey.BAK_SAVED), dark = true) } else backupError = t(TextKey.BAK_PARTIAL)
-            is FileSaveResult.Failed -> backupError = t(TextKey.BAK_FAILED)
-            FileSaveResult.Unavailable -> backupError = t(TextKey.BAK_NO_FILES)
+            is FileSaveResult.Saved -> if (r.bytes == expected) { made = true; backupError = null; toaster.show(t(UiKey.BAK_SAVED), dark = true) } else backupError = t(UiKey.BAK_PARTIAL)
+            is FileSaveResult.Failed -> backupError = t(UiKey.BAK_FAILED)
+            FileSaveResult.Unavailable -> backupError = t(UiKey.BAK_NO_FILES)
             FileSaveResult.Cancelled -> Unit
         }
     }
     val saveCsv = rememberFileSaver("text/csv") { r ->
         exporting = false
         when (r) {
-            is FileSaveResult.Saved -> toaster.show(t(TextKey.BAK_EXPORTED, exportFileName(from, to)), dark = true)
-            is FileSaveResult.Failed -> toaster.show(t(TextKey.BAK_FAILED), dark = true)
-            FileSaveResult.Unavailable -> toaster.show(t(TextKey.BAK_NO_FILES), dark = true)
+            is FileSaveResult.Saved -> toaster.show(t(UiKey.BAK_EXPORTED, exportFileName(from, to)), dark = true)
+            is FileSaveResult.Failed -> toaster.show(t(UiKey.BAK_FAILED), dark = true)
+            FileSaveResult.Unavailable -> toaster.show(t(UiKey.BAK_NO_FILES), dark = true)
             FileSaveResult.Cancelled -> Unit
         }
     }
     val pick = rememberFilePicker { r ->
         when (r) {
             is FilePickResult.Picked -> nav.push(RestorePreviewRoute(r.name, r.text))
-            is FilePickResult.Failed -> toaster.show(t(TextKey.BAK_PICK_FAILED), dark = true)
-            FilePickResult.Unavailable -> toaster.show(t(TextKey.BAK_NO_FILES), dark = true)
+            is FilePickResult.Failed -> toaster.show(t(UiKey.BAK_PICK_FAILED), dark = true)
+            FilePickResult.Unavailable -> toaster.show(t(UiKey.BAK_NO_FILES), dark = true)
             FilePickResult.Cancelled -> Unit
         }
     }
     val backup = more.fullBackup
-    InnerScaffold(t(TextKey.BAK_TITLE)) {
+    InnerScaffold(t(UiKey.BAK_TITLE)) {
         item(key = "full") {
-            BackupCard(MoreIcons.DATABASE_BACKUP, t(TextKey.BAK_FULL_TITLE), t(TextKey.BAK_FULL_BODY)) {
-                if (made) BasicText(t(TextKey.BAK_LAST_NOW), style = Type.of(13, FontWeight.Bold).copy(color = Ink.income))
+            BackupCard(MoreIcons.DATABASE_BACKUP, t(UiKey.BAK_FULL_TITLE), t(UiKey.BAK_FULL_BODY)) {
+                if (made) BasicText(t(UiKey.BAK_LAST_NOW), style = Type.of(13, FontWeight.Bold).copy(color = Ink.income))
                 backupError?.let { WarnBox(null, it) }
-                if (backup == null) NotYetLine(t(TextKey.BAK_NOT_WIRED))
+                if (backup == null) NotYetLine(t(UiKey.BAK_NOT_WIRED))
                 PrimaryButton(
                     t(
                         when {
-                            making -> TextKey.BAK_MAKING
-                            backupError != null -> TextKey.MORE_RETRY
-                            made -> TextKey.BAK_MAKE_ANOTHER
-                            else -> TextKey.BAK_MAKE
+                            making -> UiKey.BAK_MAKING
+                            backupError != null -> UiKey.MORE_RETRY
+                            made -> UiKey.BAK_MAKE_ANOTHER
+                            else -> UiKey.BAK_MAKE
                         },
                     ),
                     onClick = {
@@ -112,35 +113,35 @@ fun BackupScreen() {
                         scope.launch {
                             runCatching { b.create(more.nowIso()).toJsonText() }
                                 .onSuccess { text -> expected = text.encodeToByteArray().size.toLong(); saveJson(backupFileName(today), text) }
-                                .onFailure { making = false; backupError = it.message ?: t(TextKey.BAK_FAILED) }
+                                .onFailure { making = false; backupError = it.message ?: t(UiKey.BAK_FAILED) }
                         }
                     },
                     enabled = backup != null, loading = making, modifier = Modifier.fillMaxWidth(),
                 )
-                BasicText(t(TextKey.BAK_SCOPE_NOTE), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.BAK_SCOPE_NOTE), style = Type.caption().copy(color = Ink.muted))
             }
         }
         item(key = "restore") {
-            BackupCard(Lucide.CLOUD_UPLOAD, t(TextKey.BAK_RESTORE_TITLE), t(TextKey.BAK_RESTORE_BODY)) {
-                TonalButton(t(TextKey.BAK_PICK), onClick = pick, enabled = backup != null, modifier = Modifier.fillMaxWidth())
+            BackupCard(Lucide.CLOUD_UPLOAD, t(UiKey.BAK_RESTORE_TITLE), t(UiKey.BAK_RESTORE_BODY)) {
+                TonalButton(t(UiKey.BAK_PICK), onClick = pick, enabled = backup != null, modifier = Modifier.fillMaxWidth())
             }
         }
         item(key = "csv") {
-            BackupCard(MoreIcons.TABLE, t(TextKey.BAK_CSV_TITLE), t(TextKey.BAK_CSV_BODY, countryLabel(deps.space))) {
+            BackupCard(MoreIcons.TABLE, t(UiKey.BAK_CSV_TITLE), t(UiKey.BAK_CSV_BODY, countryLabel(deps.space))) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextInput(from, { from = it.trim() }, Modifier.weight(1f), label = t(TextKey.BAK_FROM), ltr = true)
-                    TextInput(to, { to = it.trim() }, Modifier.weight(1f), label = t(TextKey.BAK_TO), ltr = true)
+                    TextInput(from, { from = it.trim() }, Modifier.weight(1f), label = t(UiKey.BAK_FROM), ltr = true)
+                    TextInput(to, { to = it.trim() }, Modifier.weight(1f), label = t(UiKey.BAK_TO), ltr = true)
                 }
                 val range = exportRange(from, to, today)
                 if (range.ok) BasicText(range.line, style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted)) else FieldError(range.line)
                 TonalButton(
-                    t(TextKey.BAK_EXPORT),
+                    t(UiKey.BAK_EXPORT),
                     onClick = {
                         exporting = true
                         scope.launch {
                             runCatching { more.exportCsv.export(from, to, payday) }
                                 .onSuccess { saveCsv(exportFileName(from, to), it) }
-                                .onFailure { exporting = false; toaster.show(it.message ?: t(TextKey.BAK_FAILED), dark = true) }
+                                .onFailure { exporting = false; toaster.show(it.message ?: t(UiKey.BAK_FAILED), dark = true) }
                         }
                     },
                     enabled = range.ok && !exporting, modifier = Modifier.fillMaxWidth(),

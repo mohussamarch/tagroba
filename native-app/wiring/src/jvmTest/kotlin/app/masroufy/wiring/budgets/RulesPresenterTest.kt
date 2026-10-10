@@ -1,5 +1,6 @@
 package app.masroufy.wiring.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ClassificationRule
 import app.masroufy.core.Merchant
 import app.masroufy.core.RuleMatchMode
@@ -45,11 +46,11 @@ class RulesPresenterTest {
         assertEquals(listOf(1, 2, 3), ui.rules.map { it.position })
         val gone = ui.rules.first()
         assertTrue(gone.missing)
-        assertEquals(uiText(TextKey.RULES_MISSING_META), gone.meta)
-        assertEquals(uiText(TextKey.RULES_MODE_EXACT), gone.modeLabel)
+        assertEquals(uiText(UiKey.RULES_MISSING_META), gone.meta)
+        assertEquals(uiText(UiKey.RULES_MODE_EXACT), gone.modeLabel)
         val off = ui.rules.last()
-        assertEquals(uiText(TextKey.RULES_OFF_META), off.meta, "المقفولة بتفضل ظاهرة")
-        assertEquals(uiText(TextKey.RULES_QUOTED, "كافيه"), off.text)
+        assertEquals(uiText(UiKey.RULES_OFF_META), off.meta, "المقفولة بتفضل ظاهرة")
+        assertEquals(uiText(UiKey.RULES_QUOTED, "كافيه"), off.text)
         assertNull(ui.rules[1].meta)
         assertEquals(FOOD.lightColor, ui.rules[1].categoryHex)
     }
@@ -66,7 +67,7 @@ class RulesPresenterTest {
         val m = ui.merchants.single()
         assertEquals("m-1", m.id)
         assertEquals(FOOD.name, m.categoryName)
-        assertEquals(uiText(TextKey.RULES_ALIASES, "١"), m.meta)
+        assertEquals(uiText(UiKey.RULES_ALIASES, "١"), m.meta)
         w.deps.rules.setMerchantCategory("m-1", null)
         val kept = loadRules(w.deps, keep = setOf("m-1")).merchants.single()
         assertNull(kept.categoryName, "«بلا تصنيف ثابت — تُطبَّق القواعد»")
@@ -113,13 +114,13 @@ class RulesPresenterTest {
         val preview = w.deps.history.preview(from, to)
         val ui = applyPreview(preview.categoryPlan, w.deps.categories.list())
         assertEquals(1, ui.changed)
-        assertEquals(listOf(FOOD.name, uiText(TextKey.RULES_APPLY_CONFIRMED), uiText(TextKey.RULES_APPLY_UNMATCHED)), ui.rows.map { it.label })
+        assertEquals(listOf(FOOD.name, uiText(UiKey.RULES_APPLY_CONFIRMED), uiText(UiKey.RULES_APPLY_UNMATCHED)), ui.rows.map { it.label })
         assertEquals(listOf("١", "١", "١"), ui.rows.map { it.count })
         val applied = w.deps.history.applyCategories(preview.rows.map { it.id }, preview.categoryPlan)
         assertEquals(1, applied.changed.size)
-        assertEquals(uiText(TextKey.RULES_OPS_ONE), opsLabel(1))
-        assertEquals(uiText(TextKey.RULES_OPS_FEW, "٣"), opsLabel(3))
-        assertEquals(uiText(TextKey.RULES_OPS_MANY, "١٢"), opsLabel(12))
+        assertEquals(uiText(UiKey.RULES_OPS_ONE), opsLabel(1))
+        assertEquals(uiText(UiKey.RULES_OPS_FEW, "٣"), opsLabel(3))
+        assertEquals(uiText(UiKey.RULES_OPS_MANY, "١٢"), opsLabel(12))
     }
 
     private fun rule(id: String, priority: Int) = ClassificationRule(id, priority, id, RuleMatchMode.CONTAINS, FOOD.id, enabled = true)

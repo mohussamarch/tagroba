@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,8 +61,8 @@ fun InstallmentDetailScreen(planId: String) {
     }
     val ui = (load.value as? Load.Ready)?.value
     DuesScaffold(
-        ui?.card?.name ?: t(TextKey.INSTALLMENTS_TITLE), ui?.card?.kindText,
-        actions = { IconButton44(Lucide.PENCIL, t(TextKey.INST_EDIT), { nav.push(InstallmentEditRoute(planId)) }) },
+        ui?.card?.name ?: t(UiKey.INSTALLMENTS_TITLE), ui?.card?.kindText,
+        actions = { IconButton44(Lucide.PENCIL, t(UiKey.INST_EDIT), { nav.push(InstallmentEditRoute(planId)) }) },
     ) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(170, 220) }
@@ -101,7 +102,7 @@ private fun PlanHero(d: PlanDetailUi) {
 @Composable
 private fun Schedule(d: PlanDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.INST_SCHEDULE), style = Type.section())
+        BasicText(t(UiKey.INST_SCHEDULE), style = Type.section())
         FloatingCard(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = d.schedAria }) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 for (y in d.years) Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -111,7 +112,7 @@ private fun Schedule(d: PlanDetailUi) {
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    for ((cell, key) in listOf(Cell.PAID to TextKey.INST_LEG_PAID, Cell.LATE to TextKey.INST_LEG_LATE, Cell.NEXT to TextKey.INST_LEG_NEXT, Cell.UP to TextKey.INST_LEG_UP)) {
+                    for ((cell, key) in listOf(Cell.PAID to UiKey.INST_LEG_PAID, Cell.LATE to UiKey.INST_LEG_LATE, Cell.NEXT to UiKey.INST_LEG_NEXT, Cell.UP to UiKey.INST_LEG_UP)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                             CellBox(cell, Modifier.size(12.dp))
                             BasicText(t(key), style = Type.of(11).copy(color = Ink.muted))
@@ -147,30 +148,30 @@ private fun Received(d: PlanDetailUi) {
     FloatingCard(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(TextKey.INSTALLMENTS_RECEIVED), style = Type.bodyBold())
+                BasicText(t(UiKey.INSTALLMENTS_RECEIVED), style = Type.bodyBold())
                 val sub = when {
-                    !c.financing -> t(TextKey.INST_RECV_NA_SUB)
-                    c.receivedMinor == null -> t(TextKey.INST_RECV_HINT)
+                    !c.financing -> t(UiKey.INST_RECV_NA_SUB)
+                    c.receivedMinor == null -> t(UiKey.INST_RECV_HINT)
                     else -> null
                 }
                 if (sub != null) BasicText(sub, style = Type.caption().copy(color = Ink.muted))
             }
             when {
-                !c.financing -> ValueText(t(TextKey.INST_RECV_NA), muted = true)
-                c.receivedMinor == null -> ValueText(t(TextKey.INST_NOT_LINKED), color = Ink.focus)
+                !c.financing -> ValueText(t(UiKey.INST_RECV_NA), muted = true)
+                c.receivedMinor == null -> ValueText(t(UiKey.INST_NOT_LINKED), color = Ink.focus)
                 else -> AmountText(c.receivedMinor, c.currency, color = Ink.income)
             }
         }
-        if (d.receivedTransactionId != null) TonalButton(t(TextKey.INST_UNLINK), { ask = true }, Modifier.fillMaxWidth(), height = 44.dp)
+        if (d.receivedTransactionId != null) TonalButton(t(UiKey.INST_UNLINK), { ask = true }, Modifier.fillMaxWidth(), height = 44.dp)
         error?.let { FieldError(it) }
     }
-    ConfirmSheet(ask, t(TextKey.INST_UNLINK_RECV_TITLE), t(TextKey.DUES_UNLINK_BODY), t(TextKey.DUES_UNLINK_YES), onConfirm = {
+    ConfirmSheet(ask, t(UiKey.INST_UNLINK_RECV_TITLE), t(UiKey.DUES_UNLINK_BODY), t(UiKey.DUES_UNLINK_YES), onConfirm = {
         val txn = d.receivedTransactionId ?: return@ConfirmSheet
         ask = false
         scope.launch {
             try {
                 deps.installments.unlink(txn)
-                toaster.show(t(TextKey.DUES_UNLINKED))
+                toaster.show(t(UiKey.DUES_UNLINKED))
                 DuesChanges.bump()
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
@@ -185,14 +186,14 @@ private fun Profit(d: PlanDetailUi) {
     val c = d.card
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            BasicText(t(TextKey.INST_PROFIT_TITLE), style = Type.section())
-            StatusChip(t(TextKey.INST_INFO_ONLY), Chip.SOON)
+            BasicText(t(UiKey.INST_PROFIT_TITLE), style = Type.section())
+            StatusChip(t(UiKey.INST_INFO_ONLY), Chip.SOON)
         }
         CardList {
-            LabelValue(t(TextKey.INST_TOTAL_PAY)) { AmountText(d.totalMinor, c.currency) }
+            LabelValue(t(UiKey.INST_TOTAL_PAY)) { AmountText(d.totalMinor, c.currency) }
             Divider()
-            LabelValue(t(TextKey.INST_PRINCIPAL)) { AmountText(d.principalMinor, c.currency) }
-            for (key in listOf(TextKey.INST_PROFIT, TextKey.INST_PROFIT_PAID, TextKey.INST_PROFIT_LEFT, TextKey.INST_PROFIT_PER)) {
+            LabelValue(t(UiKey.INST_PRINCIPAL)) { AmountText(d.principalMinor, c.currency) }
+            for (key in listOf(UiKey.INST_PROFIT, UiKey.INST_PROFIT_PAID, UiKey.INST_PROFIT_LEFT, UiKey.INST_PROFIT_PER)) {
                 Divider()
                 // الأجزاء دي محتاجة حسبة تكلفة التمويل للخطة — مش في حالة الاستخدام ⇒ «غير متاح» (القاعدة 10)
                 LabelValue(t(key)) { AmountText(null, c.currency) }

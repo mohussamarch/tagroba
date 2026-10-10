@@ -1,5 +1,6 @@
 package app.masroufy.ui.app
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -84,14 +85,14 @@ fun OpeningScreen(synced: Int?, total: Int?) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         LensOnLight(Modifier.size(76.dp), shape = RoundedCornerShape(26.dp)) { LucideIcon(Lucide.REFRESH_CW, size = 30.dp, tint = Ink.primary) }
-        BasicText(t(TextKey.SHELL_OPENING), style = Type.of(18, FontWeight.Bold))
+        BasicText(t(UiKey.SHELL_OPENING), style = Type.of(18, FontWeight.Bold))
         if (synced != null && total != null && total > 0) {
             val fraction = (synced.toFloat() / total).coerceIn(0f, 1f)
             Box(
                 Modifier.width(220.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color(0x1F193D33))
                     .semantics { progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f) },
             ) { Box(Modifier.fillMaxWidth(fraction).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Ink.primary)) }
-            BasicText(t(TextKey.SHELL_OPENING_PROGRESS, sentenceNumber(synced), sentenceNumber(total)), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.SHELL_OPENING_PROGRESS, sentenceNumber(synced), sentenceNumber(total)), style = Type.caption().copy(color = Ink.muted))
         }
     }
 }

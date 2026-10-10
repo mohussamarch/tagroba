@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.GrowthClass
 import app.masroufy.core.Halalas
@@ -58,9 +59,9 @@ fun growthUi(outcome: GrowthCompareOutcome, currency: Currency): GrowthUi {
     val rows = outcome.choices.map { choice -> row(choice, shown[choice.line.growthClass], top, deflated) }
     val inflation = outcome.inflation
     return GrowthUi(
-        paidLine = t(TextKey.SAVGROW_PAID, money(c.paidInMinor, currency), durationPhrase(c.months)),
+        paidLine = t(UiKey.SAVGROW_PAID, money(c.paidInMinor, currency), durationPhrase(c.months)),
         todayOn = c.todayMoney,
-        todaySub = if (inflation == null) t(TextKey.GROWTH_NA_INFLATION) else t(TextKey.SAVGROW_TODAY_SUB, percentText(inflation.valueBp)),
+        todaySub = if (inflation == null) t(TextKey.GROWTH_NA_INFLATION) else t(UiKey.SAVGROW_TODAY_SUB, percentText(inflation.valueBp)),
         todaySubWarn = inflation == null,
         rows = rows,
     )
@@ -79,14 +80,14 @@ private fun row(choice: GrowthChoice, shownMinor: Halalas?, top: Long, todayMone
     val info = d.info
     val source = when {
         rate == null -> ""
-        !choice.typedByUser && cls == GrowthClass.DEPOSIT && info != null -> t(TextKey.SAVGROW_INFO, describeEntry(info), percentText(info.valueBp))
+        !choice.typedByUser && cls == GrowthClass.DEPOSIT && info != null -> t(UiKey.SAVGROW_INFO, describeEntry(info), percentText(info.valueBp))
         else -> choice.sourceText
     }
     val gain = if (todayMoney) null else choice.line.gainMinor?.takeIf { it != 0L }
     return GrowthRowUi(
         growthClass = cls,
         name = cls.label,
-        rateText = rate?.let { t(TextKey.SAVGROW_RATE_YEARLY, percentText(it)) } ?: why,
+        rateText = rate?.let { t(UiKey.SAVGROW_RATE_YEARLY, percentText(it)) } ?: why,
         rateMissing = rate == null,
         amountMinor = shownMinor,
         gainMinor = gain,
@@ -96,9 +97,9 @@ private fun row(choice: GrowthChoice, shownMinor: Halalas?, top: Long, todayMone
         stale = d.stale && !choice.typedByUser && !cash,
         editLabel = t(
             when {
-                cash -> TextKey.SAVGROW_CASH_FIXED
-                rate == null -> TextKey.SAVGROW_TYPE_RATE
-                else -> TextKey.SAVGROW_EDIT_RATE
+                cash -> UiKey.SAVGROW_CASH_FIXED
+                rate == null -> UiKey.SAVGROW_TYPE_RATE
+                else -> UiKey.SAVGROW_EDIT_RATE
             },
         ),
         editEnabled = !cash,
@@ -119,6 +120,6 @@ fun parseRateBp(text: String): Int? {
 fun rateInputText(bp: Int?): String = bp?.let { percentText(it).removeSuffix("%") } ?: ""
 
 /** عنوان لوحة النسبة وشرحها. */
-fun rateSheetTitle(cls: GrowthClass): String = t(TextKey.SAVGROW_SHEET_TITLE, cls.label)
+fun rateSheetTitle(cls: GrowthClass): String = t(UiKey.SAVGROW_SHEET_TITLE, cls.label)
 
-fun rateSheetBody(cls: GrowthClass): String = t(if (cls == GrowthClass.DEPOSIT) TextKey.SAVGROW_SHEET_BODY_DEPOSIT else TextKey.SAVGROW_SHEET_BODY)
+fun rateSheetBody(cls: GrowthClass): String = t(if (cls == GrowthClass.DEPOSIT) UiKey.SAVGROW_SHEET_BODY_DEPOSIT else UiKey.SAVGROW_SHEET_BODY)

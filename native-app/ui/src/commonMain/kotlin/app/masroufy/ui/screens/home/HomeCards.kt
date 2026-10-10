@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,13 +34,13 @@ import app.masroufy.ui.theme.Type
 @Composable
 internal fun AdvisorCardView(card: AdvisorCard) {
     val nav = LocalNavigator.current
-    FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.switchTab(Tab.INVESTMENT) }, clickLabel = t(TextKey.HOME_ADVISOR_OPEN)) {
+    FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.switchTab(Tab.INVESTMENT) }, clickLabel = t(UiKey.HOME_ADVISOR_OPEN)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
             IconTile(Ink.focus, size = 40.dp) { LucideIcon(Lucide.COFFEE, size = 20.dp, tint = Ink.focus) }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 BasicText(card.title, style = Type.bodyBold())
                 BasicText(card.body, style = Type.of(13).copy(color = Ink.muted))
-                BasicText(t(TextKey.HOME_ADVISOR_OPEN), style = Type.of(13, androidx.compose.ui.text.font.FontWeight.Bold).copy(color = Ink.primary))
+                BasicText(t(UiKey.HOME_ADVISOR_OPEN), style = Type.of(13, androidx.compose.ui.text.font.FontWeight.Bold).copy(color = Ink.primary))
             }
         }
     }
@@ -49,8 +50,8 @@ internal fun AdvisorCardView(card: AdvisorCard) {
 @Composable
 internal fun QuietMonthCard() {
     FloatingCard(Modifier.fillMaxWidth()) {
-        BasicText(t(TextKey.HOME_EMPTY_TITLE), style = Type.bodyBold())
-        BasicText(t(TextKey.HOME_EMPTY_BODY), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(t(UiKey.HOME_EMPTY_TITLE), style = Type.bodyBold())
+        BasicText(t(UiKey.HOME_EMPTY_BODY), style = Type.of(13).copy(color = Ink.muted))
     }
 }
 
@@ -60,8 +61,8 @@ internal fun UpcomingSection() {
     val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            BasicText(t(TextKey.UPCOMING_TITLE), style = Type.section())
-            IconButton44(Lucide.CALENDAR, t(TextKey.CALENDAR_OPEN), onClick = { nav.push(CalendarRoute) })
+            BasicText(t(UiKey.UPCOMING_TITLE), style = Type.section())
+            IconButton44(Lucide.CALENDAR, t(UiKey.CALENDAR_OPEN), onClick = { nav.push(CalendarRoute) })
         }
         val cards = rememberUpcomingCards()
         if (cards == null) Skeleton(Modifier.fillMaxWidth().height(150.dp))
@@ -80,8 +81,8 @@ internal fun ProfileCardView() {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             IconTile(Ink.primary, size = 44.dp, radius = 22.dp) { LucideIcon(Lucide.USER, size = 22.dp, tint = Ink.primary) }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(TextKey.HOME_PROFILE_TITLE), style = Type.bodyBold())
-                BasicText(t(TextKey.HOME_PROFILE_BODY), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.HOME_PROFILE_TITLE), style = Type.bodyBold())
+                BasicText(t(UiKey.HOME_PROFILE_BODY), style = Type.caption().copy(color = Ink.muted))
             }
             LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
         }

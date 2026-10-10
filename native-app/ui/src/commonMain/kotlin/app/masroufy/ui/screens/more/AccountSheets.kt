@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,37 +71,37 @@ fun AccountSheet(
     if (edit != null) shown = edit
     val current = shown ?: return
     val currency = LocalSpace.current.space.currency
-    Sheet(edit != null, onClose, title = sheetTitle(current, currency), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
+    Sheet(edit != null, onClose, title = sheetTitle(current, currency), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
         BasicText(sheetTitle(current, currency), style = Type.of(17, FontWeight.Bold))
         when (current) {
             is AccountEdit.Field -> FieldBody(current, rangeEditable, currency, onDraft, onSave, onRange)
             AccountEdit.CarToWork -> {
-                BasicText(t(TextKey.ACC_CAR_TO_WORK_BODY), style = Type.of(13).copy(color = Ink.muted))
-                TwoActions(t(TextKey.MORE_YES), danger = false, onFirst = { onCarToWork(true) }, second = t(TextKey.MORE_NO), onSecond = { onCarToWork(false) })
+                BasicText(t(UiKey.ACC_CAR_TO_WORK_BODY), style = Type.of(13).copy(color = Ink.muted))
+                TwoActions(t(UiKey.MORE_YES), danger = false, onFirst = { onCarToWork(true) }, second = t(UiKey.MORE_NO), onSecond = { onCarToWork(false) })
             }
             AccountEdit.SignOut -> {
-                BasicText(t(TextKey.ACC_SIGN_OUT_BODY), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.ACC_SIGN_OUT_BODY), style = Type.of(13).copy(color = Ink.muted))
                 val app = LocalApp.current
                 val scope = rememberCoroutineScope()
-                TwoActions(t(TextKey.ACC_SIGN_OUT_GO), danger = true, onFirst = { scope.launch { runCatching { app.signIn.signOut() } } }, second = t(TextKey.MORE_CANCEL), onSecond = onClose)
+                TwoActions(t(UiKey.ACC_SIGN_OUT_GO), danger = true, onFirst = { scope.launch { runCatching { app.signIn.signOut() } } }, second = t(UiKey.MORE_CANCEL), onSecond = onClose)
             }
         }
     }
 }
 
 private fun sheetTitle(e: AccountEdit, currency: Currency): String = when (e) {
-    AccountEdit.CarToWork -> t(TextKey.ACC_CAR_TO_WORK_Q)
-    AccountEdit.SignOut -> t(TextKey.ACC_SIGN_OUT_Q)
+    AccountEdit.CarToWork -> t(UiKey.ACC_CAR_TO_WORK_Q)
+    AccountEdit.SignOut -> t(UiKey.ACC_SIGN_OUT_Q)
     is AccountEdit.Field -> when (e.field) {
-        AccountField.NAME -> t(TextKey.ACC_NAME)
-        AccountField.GENDER -> t(TextKey.ACC_GENDER)
-        AccountField.DEPENDENTS -> t(TextKey.ACC_DEP_TITLE)
-        AccountField.SALARY -> t(TextKey.ACC_SALARY_TITLE, currencySymbol(currency))
-        AccountField.PAYDAY -> t(TextKey.ACC_PAYDAY_TITLE)
-        AccountField.CAR -> t(TextKey.ACC_CAR)
-        AccountField.RENTER -> t(TextKey.ACC_RENTER)
-        AccountField.MAID -> t(TextKey.ACC_MAID)
-        AccountField.BUSINESS -> t(TextKey.ACC_BUSINESS)
+        AccountField.NAME -> t(UiKey.ACC_NAME)
+        AccountField.GENDER -> t(UiKey.ACC_GENDER)
+        AccountField.DEPENDENTS -> t(UiKey.ACC_DEP_TITLE)
+        AccountField.SALARY -> t(UiKey.ACC_SALARY_TITLE, currencySymbol(currency))
+        AccountField.PAYDAY -> t(UiKey.ACC_PAYDAY_TITLE)
+        AccountField.CAR -> t(UiKey.ACC_CAR)
+        AccountField.RENTER -> t(UiKey.ACC_RENTER)
+        AccountField.MAID -> t(UiKey.ACC_MAID)
+        AccountField.BUSINESS -> t(UiKey.ACC_BUSINESS)
     }
 }
 
@@ -115,16 +116,16 @@ private fun FieldBody(
     onRange: (SalaryRange) -> Unit,
 ) {
     val body = when (e.field) {
-        AccountField.NAME -> TextKey.ACC_NAME_BODY
-        AccountField.GENDER -> TextKey.ACC_GENDER_BODY
-        AccountField.DEPENDENTS -> TextKey.ACC_DEP_BODY
-        AccountField.SALARY -> TextKey.ACC_SALARY_BODY
-        AccountField.PAYDAY -> TextKey.ACC_PAYDAY_BODY
+        AccountField.NAME -> UiKey.ACC_NAME_BODY
+        AccountField.GENDER -> UiKey.ACC_GENDER_BODY
+        AccountField.DEPENDENTS -> UiKey.ACC_DEP_BODY
+        AccountField.SALARY -> UiKey.ACC_SALARY_BODY
+        AccountField.PAYDAY -> UiKey.ACC_PAYDAY_BODY
         else -> null
     }
     if (body != null) BasicText(t(body), style = Type.of(13).copy(color = Ink.muted))
     var ok = e.draft != null
-    var saveLabel = t(TextKey.MORE_SAVE)
+    var saveLabel = t(UiKey.MORE_SAVE)
     when (e.field) {
         AccountField.NAME -> {
             val text = e.draft as? String ?: ""
@@ -141,7 +142,7 @@ private fun FieldBody(
         AccountField.DEPENDENTS -> {
             val kinds = (e.draft as? List<*>)?.filterIsInstance<String>().orEmpty()
             ok = true
-            if (kinds.isEmpty()) saveLabel = t(TextKey.ACC_SAVE_WITH, t(TextKey.ACC_DEP_NONE))
+            if (kinds.isEmpty()) saveLabel = t(UiKey.ACC_SAVE_WITH, t(UiKey.ACC_DEP_NONE))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (k in DEPENDENT_KINDS) FillChip(dependentLabel(k), k in kinds) {
                     onDraft(e.copy(draft = if (k in kinds) kinds - k else kinds + k))
@@ -153,16 +154,16 @@ private fun FieldBody(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (r in SalaryRange.entries) FillChip(salaryRangeLabel(r, currency), e.draft == r, enabled = rangeEditable) { onDraft(e.copy(draft = r)) }
             }
-            if (!rangeEditable) NotYetLine(t(TextKey.ACC_SALARY_NOT_YET))
+            if (!rangeEditable) NotYetLine(t(UiKey.ACC_SALARY_NOT_YET))
         }
         AccountField.PAYDAY -> {
             DayGrid(e.draft as? Int, { onDraft(e.copy(draft = it)) })
-            BasicText(t(TextKey.ACC_PAYDAY_NOTE), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.ACC_PAYDAY_NOTE), style = Type.caption().copy(color = Ink.muted))
             // قرار المالك 2026-10-09: التغيير «من الشهر القادم بس» — كوتلن عنده يوم راتب واحد بيحرّك كل الشهور (OVERRIDES §76 ⚠️)
-            NotYetLine(t(TextKey.ACC_PAYDAY_NEXT_ONLY))
+            NotYetLine(t(UiKey.ACC_PAYDAY_NEXT_ONLY))
         }
         else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (v in listOf(true, false)) FillChip(t(if (v) TextKey.MORE_YES else TextKey.MORE_NO), e.draft == v) { onDraft(e.copy(draft = v)) }
+            for (v in listOf(true, false)) FillChip(t(if (v) UiKey.MORE_YES else UiKey.MORE_NO), e.draft == v) { onDraft(e.copy(draft = v)) }
         }
     }
     if (e.error != null) FieldError(e.error)

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
@@ -39,30 +40,30 @@ data class RoscaCardUi(
     val currency: Currency,
 )
 
-internal fun turnsCount(n: Int) = countText(n, TextKey.ROSCA_TURNS_ONE, TextKey.ROSCA_TURNS_TWO, TextKey.ROSCA_TURNS_FEW, TextKey.ROSCA_TURNS_MANY)
+internal fun turnsCount(n: Int) = countText(n, UiKey.ROSCA_TURNS_ONE, UiKey.ROSCA_TURNS_TWO, UiKey.ROSCA_TURNS_FEW, UiKey.ROSCA_TURNS_MANY)
 
-internal fun roscaTerms(r: Rosca): String = t(TextKey.ROSCAS_TERMS, turnsCount(r.cycleCount), amountLabel(r.contributionMinor, r.currency), cycleText(r.every, r.unit))
+internal fun roscaTerms(r: Rosca): String = t(UiKey.ROSCAS_TERMS, turnsCount(r.cycleCount), amountLabel(r.contributionMinor, r.currency), cycleText(r.every, r.unit))
 
 internal fun turnText(r: Rosca): String = when (r.myTurns.size) {
-    0 -> t(TextKey.ROSCA_TURN_UNKNOWN_LINE)
-    1 -> t(TextKey.ROSCA_TURN_N, sentenceNumber(r.myTurns[0]))
-    else -> t(TextKey.ROSCA_TURNS_N2, sentenceNumber(r.myTurns[0]), sentenceNumber(r.myTurns[1]))
+    0 -> t(UiKey.ROSCA_TURN_UNKNOWN_LINE)
+    1 -> t(UiKey.ROSCA_TURN_N, sentenceNumber(r.myTurns[0]))
+    else -> t(UiKey.ROSCA_TURNS_N2, sentenceNumber(r.myTurns[0]), sentenceNumber(r.myTurns[1]))
 }
 
 internal fun phaseOf(p: RoscaPhase): Pair<String, Chip> = when (p) {
-    RoscaPhase.SAVING -> t(TextKey.ROSCA_PHASE_SAVING) to Chip.UPCOMING
-    RoscaPhase.REPAYING -> t(TextKey.ROSCA_PHASE_REPAYING) to Chip.SOON
-    RoscaPhase.DONE -> t(TextKey.ROSCA_PHASE_DONE) to Chip.MUTED
+    RoscaPhase.SAVING -> t(UiKey.ROSCA_PHASE_SAVING) to Chip.UPCOMING
+    RoscaPhase.REPAYING -> t(UiKey.ROSCA_PHASE_REPAYING) to Chip.SOON
+    RoscaPhase.DONE -> t(UiKey.ROSCA_PHASE_DONE) to Chip.MUTED
 }
 
 /** «الجمعية تحفظ لك 500» · «عليك للجمعية 500» · «انتهت بلا ربح ولا خسارة» · «لا لك ولا عليك». */
 internal fun positionText(v: RoscaView): String {
     val pos = v.status.positionMinor
     return when {
-        pos > 0 -> t(TextKey.ROSCA_POS_SAVED, amountLabel(pos, v.rosca.currency))
-        pos < 0 -> t(TextKey.ROSCA_POS_OWED, amountLabel(absMoney(pos), v.rosca.currency))
-        v.status.phase == RoscaPhase.DONE -> t(TextKey.ROSCA_POS_DONE)
-        else -> t(TextKey.ROSCA_POS_ZERO)
+        pos > 0 -> t(UiKey.ROSCA_POS_SAVED, amountLabel(pos, v.rosca.currency))
+        pos < 0 -> t(UiKey.ROSCA_POS_OWED, amountLabel(absMoney(pos), v.rosca.currency))
+        v.status.phase == RoscaPhase.DONE -> t(UiKey.ROSCA_POS_DONE)
+        else -> t(UiKey.ROSCA_POS_ZERO)
     }
 }
 
@@ -76,7 +77,7 @@ fun roscaCard(v: RoscaView): RoscaCardUi {
         terms = roscaTerms(r),
         stage = stage,
         stageChip = chip,
-        progressText = t(TextKey.INST_PAID_OF, sentenceNumber(s.contributions.paidCount), sentenceNumber(s.contributions.count)),
+        progressText = t(UiKey.INST_PAID_OF, sentenceNumber(s.contributions.paidCount), sentenceNumber(s.contributions.count)),
         turnText = turnText(r),
         paidCount = s.contributions.paidCount,
         count = s.contributions.count,
@@ -128,16 +129,16 @@ fun roscaDetailUi(v: RoscaView, f: RoscaForecast, today: IsoDate, organizer: Str
         val paid = row.number <= s.contributions.paidCount
         val late = !paid && row.dueAt < today
         val status = when {
-            mine -> t(if (row.number in received) TextKey.ROSCA_ROW_MINE_GOT else TextKey.ROSCA_ROW_MINE, payout)
-            paid -> t(TextKey.ROSCA_ROW_PAID)
-            late -> t(TextKey.DUES_CHIP_LATE)
-            else -> t(TextKey.DUES_CHIP_NEXT)
+            mine -> t(if (row.number in received) UiKey.ROSCA_ROW_MINE_GOT else UiKey.ROSCA_ROW_MINE, payout)
+            paid -> t(UiKey.ROSCA_ROW_PAID)
+            late -> t(UiKey.DUES_CHIP_LATE)
+            else -> t(UiKey.DUES_CHIP_NEXT)
         }
         val pos = row.positionAfterMinor
         val after = if (!known) null else when {
-            pos > 0 -> t(TextKey.ROSCA_ROW_SAVED, amountLabel(pos, r.currency, showCurrency = false))
-            pos < 0 -> t(TextKey.ROSCA_ROW_OWED, amountLabel(absMoney(pos), r.currency, showCurrency = false))
-            else -> t(TextKey.ROSCA_ROW_EVEN)
+            pos > 0 -> t(UiKey.ROSCA_ROW_SAVED, amountLabel(pos, r.currency, showCurrency = false))
+            pos < 0 -> t(UiKey.ROSCA_ROW_OWED, amountLabel(absMoney(pos), r.currency, showCurrency = false))
+            else -> t(UiKey.ROSCA_ROW_EVEN)
         }
         TurnRowUi(row.number, sentenceNumber(row.number), dateText(row.dueAt, today), status, mine, paid, late, row.payMinor, after)
     }
@@ -147,35 +148,35 @@ fun roscaDetailUi(v: RoscaView, f: RoscaForecast, today: IsoDate, organizer: Str
     val gain = f.gainMinor
     val stats = listOf(
         StatUi(
-            t(TextKey.ROSCA_ST_PAYOUT_DATE), if (known) turnText(r) else t(TextKey.ROSCA_TURN_UNKNOWN_LINE),
-            if (known) StatValue.Text(f.payoutDates.joinToString(t(TextKey.ROSCA_AND)) { dateText(it, today) }) else StatValue.NA,
+            t(UiKey.ROSCA_ST_PAYOUT_DATE), if (known) turnText(r) else t(UiKey.ROSCA_TURN_UNKNOWN_LINE),
+            if (known) StatValue.Text(f.payoutDates.joinToString(t(UiKey.ROSCA_AND)) { dateText(it, today) }) else StatValue.NA,
         ),
         StatUi(
-            t(TextKey.ROSCA_ST_GAIN),
-            t(when { gain == null -> TextKey.ROSCA_ST_GAIN_NEEDS_TURN; gain == 0L -> TextKey.ROSCA_ST_GAIN_EVEN; gain > 0 -> TextKey.ROSCA_ST_GAIN_PROFIT; else -> TextKey.ROSCA_ST_GAIN_FEES }),
-            when { gain == null -> StatValue.NA; gain == 0L -> StatValue.Text(t(TextKey.ROSCA_GAIN_NONE)); else -> StatValue.Money(gain, signed = true) },
+            t(UiKey.ROSCA_ST_GAIN),
+            t(when { gain == null -> UiKey.ROSCA_ST_GAIN_NEEDS_TURN; gain == 0L -> UiKey.ROSCA_ST_GAIN_EVEN; gain > 0 -> UiKey.ROSCA_ST_GAIN_PROFIT; else -> UiKey.ROSCA_ST_GAIN_FEES }),
+            when { gain == null -> StatValue.NA; gain == 0L -> StatValue.Text(t(UiKey.ROSCA_GAIN_NONE)); else -> StatValue.Money(gain, signed = true) },
         ),
-        StatUi(t(TextKey.ROSCA_ST_TOTAL_PAY), t(TextKey.ROSCA_ST_UNTIL, dateText(f.lastDueAt, today)), StatValue.Money(f.totalPayMinor)),
-        StatUi(t(TextKey.ROSCA_ST_TOTAL_GET), if (known) t(TextKey.ROSCA_ST_IN, turnsCount(r.myTurns.size)) else "", f.totalReceiveMinor?.let { StatValue.Money(it) } ?: StatValue.NA),
-        StatUi(t(TextKey.ROSCA_ST_BEFORE), t(TextKey.ROSCA_ST_BEFORE_NOTE), f.paymentsBeforePayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
-        StatUi(t(TextKey.ROSCA_ST_AFTER), t(TextKey.ROSCA_ST_AFTER_NOTE), f.paymentsAfterPayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
-        StatUi(t(TextKey.ROSCA_ST_PEAK_SAVED), t(TextKey.ROSCA_ST_PEAK_SAVED_NOTE), if (known) StatValue.Money(f.peakSavedMinor, tint = StatTint.INCOME) else StatValue.NA),
-        StatUi(t(TextKey.ROSCA_ST_PEAK_OWED), t(TextKey.ROSCA_ST_PEAK_OWED_NOTE), if (known) StatValue.Money(f.peakOwedMinor, tint = StatTint.EXPENSE) else StatValue.NA),
+        StatUi(t(UiKey.ROSCA_ST_TOTAL_PAY), t(UiKey.ROSCA_ST_UNTIL, dateText(f.lastDueAt, today)), StatValue.Money(f.totalPayMinor)),
+        StatUi(t(UiKey.ROSCA_ST_TOTAL_GET), if (known) t(UiKey.ROSCA_ST_IN, turnsCount(r.myTurns.size)) else "", f.totalReceiveMinor?.let { StatValue.Money(it) } ?: StatValue.NA),
+        StatUi(t(UiKey.ROSCA_ST_BEFORE), t(UiKey.ROSCA_ST_BEFORE_NOTE), f.paymentsBeforePayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
+        StatUi(t(UiKey.ROSCA_ST_AFTER), t(UiKey.ROSCA_ST_AFTER_NOTE), f.paymentsAfterPayout?.let { StatValue.Text(installmentsCount(it)) } ?: StatValue.NA),
+        StatUi(t(UiKey.ROSCA_ST_PEAK_SAVED), t(UiKey.ROSCA_ST_PEAK_SAVED_NOTE), if (known) StatValue.Money(f.peakSavedMinor, tint = StatTint.INCOME) else StatValue.NA),
+        StatUi(t(UiKey.ROSCA_ST_PEAK_OWED), t(UiKey.ROSCA_ST_PEAK_OWED_NOTE), if (known) StatValue.Money(f.peakOwedMinor, tint = StatTint.EXPENSE) else StatValue.NA),
     )
     val pos = s.positionMinor
     return RoscaDetailUi(
-        card = roscaCard(v).let { c -> if (organizer.isNullOrBlank()) c else c.copy(terms = t(TextKey.ROSCA_TERMS_TO, c.terms, organizer)) },
+        card = roscaCard(v).let { c -> if (organizer.isNullOrBlank()) c else c.copy(terms = t(UiKey.ROSCA_TERMS_TO, c.terms, organizer)) },
         heroLabel = t(
             when {
-                s.phase == RoscaPhase.DONE && pos == 0L -> TextKey.ROSCA_POS_DONE
-                pos >= 0 -> TextKey.ROSCA_HERO_SAVED
-                else -> TextKey.ROSCA_HERO_OWED
+                s.phase == RoscaPhase.DONE && pos == 0L -> UiKey.ROSCA_POS_DONE
+                pos >= 0 -> UiKey.ROSCA_HERO_SAVED
+                else -> UiKey.ROSCA_HERO_OWED
             },
         ),
         heroMinor = absMoney(pos),
         rows = rows,
         focusRows = focus,
         stats = stats,
-        note = t(if (known) TextKey.ROSCA_NOTE_KNOWN else TextKey.ROSCA_NOTE_UNKNOWN),
+        note = t(if (known) UiKey.ROSCA_NOTE_KNOWN else UiKey.ROSCA_NOTE_UNKNOWN),
     )
 }

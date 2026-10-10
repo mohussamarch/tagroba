@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -83,7 +84,7 @@ fun AssetDetailScreen(assetId: Id) {
     InnerScaffold(a?.name.orEmpty(), actions = { a?.let { ToneChip(it.kindLabel, Ink.primary, Ink.selected) } }) {
         if (a == null) {
             item(key = "state") {
-                if (failed) AlertBanner(t(TextKey.SHELL_LOAD_FAILED), null, t(TextKey.SHELL_RETRY)) { scope.launch { reload() } }
+                if (failed) AlertBanner(t(UiKey.SHELL_LOAD_FAILED), null, t(UiKey.SHELL_RETRY)) { scope.launch { reload() } }
                 else Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(150.dp), radius = 28.dp, strong = true)
                     Skeleton(Modifier.fillMaxWidth().height(160.dp))
@@ -92,13 +93,13 @@ fun AssetDetailScreen(assetId: Id) {
             return@InnerScaffold
         }
         if (a.staleLinked) item(key = "stale") {
-            AlertBanner(t(TextKey.INVEST_ERROR_TITLE), t(TextKey.ASSET_DETAIL_STALE_BODY), t(TextKey.SHELL_RETRY)) { act { refreshPrices(deps) } }
+            AlertBanner(t(UiKey.INVEST_ERROR_TITLE), t(UiKey.ASSET_DETAIL_STALE_BODY), t(UiKey.SHELL_RETRY)) { act { refreshPrices(deps) } }
         }
         if (a.archived) item(key = "archived") {
             QuietBox {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    BasicText(t(TextKey.ASSET_DETAIL_ARCHIVED), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.soft))
-                    TonalButton(t(TextKey.ASSET_DETAIL_UNARCHIVE), { act { deps.assets.archiveAsset(a.assetId, false); t(TextKey.ASSET_DETAIL_UNARCHIVED) } }, height = 44.dp)
+                    BasicText(t(UiKey.ASSET_DETAIL_ARCHIVED), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.soft))
+                    TonalButton(t(UiKey.ASSET_DETAIL_UNARCHIVE), { act { deps.assets.archiveAsset(a.assetId, false); t(UiKey.ASSET_DETAIL_UNARCHIVED) } }, height = 44.dp)
                 }
             }
         }
@@ -108,16 +109,16 @@ fun AssetDetailScreen(assetId: Id) {
         item(key = "trade") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PrimaryButton(t(TextKey.ASSET_DETAIL_BUY), { openTrade(TradeMode.BUY) }, Modifier.weight(1f))
-                    SecondaryButton(t(TextKey.ASSET_DETAIL_SELL), { openTrade(TradeMode.SELL) }, Modifier.weight(1f))
+                    PrimaryButton(t(UiKey.ASSET_DETAIL_BUY), { openTrade(TradeMode.BUY) }, Modifier.weight(1f))
+                    SecondaryButton(t(UiKey.ASSET_DETAIL_SELL), { openTrade(TradeMode.SELL) }, Modifier.weight(1f))
                 }
-                BasicText(t(TextKey.ASSET_DETAIL_RECORD_ONLY), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+                BasicText(t(UiKey.ASSET_DETAIL_RECORD_ONLY), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
             }
         }
         item(key = "log") { TradeLog(a) }
-        item(key = "source") { SourceCard(a, onManual = { openTrade(TradeMode.PRICE) }, onLink = { picking = true }) { act { deps.assets.linkToFeed(a.assetId, null); t(TextKey.ASSET_DETAIL_UNLINKED) } } }
+        item(key = "source") { SourceCard(a, onManual = { openTrade(TradeMode.PRICE) }, onLink = { picking = true }) { act { deps.assets.linkToFeed(a.assetId, null); t(UiKey.ASSET_DETAIL_UNLINKED) } } }
         if (!a.archived) item(key = "archive") {
-            TonalButton(t(TextKey.ASSET_DETAIL_ARCHIVE), { act { deps.assets.archiveAsset(a.assetId, true); t(TextKey.ASSET_DETAIL_ARCHIVED_TOAST) } }, Modifier.fillMaxWidth(), muted = true)
+            TonalButton(t(UiKey.ASSET_DETAIL_ARCHIVE), { act { deps.assets.archiveAsset(a.assetId, true); t(UiKey.ASSET_DETAIL_ARCHIVED_TOAST) } }, Modifier.fillMaxWidth(), muted = true)
         }
     }
     AssetTradeSheet(tradeOpen, tradeMode, a, onDismiss = { tradeOpen = false }) { scope.launch { reload() } }
@@ -125,7 +126,7 @@ fun AssetDetailScreen(assetId: Id) {
         act {
             deps.assets.linkToFeed(assetId, symbol)
             (deps.feeds.prices() as? FeedState.Ready)?.let { deps.syncPrices.sync(it.feed) }
-            t(TextKey.ASSET_DETAIL_LINKED_TO, name)
+            t(UiKey.ASSET_DETAIL_LINKED_TO, name)
         }
     }
 }
@@ -134,11 +135,11 @@ fun AssetDetailScreen(assetId: Id) {
 private fun DetailHero(a: AssetDetailUi, onPrice: () -> Unit, onArea: () -> Unit) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(TextKey.ASSET_DETAIL_HERO), style = Type.body().copy(color = Ink.onHeroMuted))
+            BasicText(t(UiKey.ASSET_DETAIL_HERO), style = Type.body().copy(color = Ink.onHeroMuted))
             if (a.valueMinor == null) {
                 BasicText(NOT_AVAILABLE, style = Type.of(30, FontWeight.Bold).copy(color = Color.White))
                 BasicText(a.naReason, style = Type.caption().copy(color = Ink.onHeroMuted))
-                val label = t(if (a.realEstate) TextKey.ASSET_DETAIL_WRITE_AREA else TextKey.ASSET_DETAIL_WRITE_PRICE)
+                val label = t(if (a.realEstate) UiKey.ASSET_DETAIL_WRITE_AREA else UiKey.ASSET_DETAIL_WRITE_PRICE)
                 Row(
                     Modifier.clip(RoundedCornerShape(14.dp)).background(Ink.selected),
                 ) { TonalButton(label, if (a.realEstate) onArea else onPrice, height = 44.dp) }
@@ -157,7 +158,7 @@ private fun DetailHero(a: AssetDetailUi, onPrice: () -> Unit, onArea: () -> Unit
             }
             HeroDivider(Modifier.padding(top = 2.dp))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.INVEST_UNREALIZED), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.onHeroMuted))
+                BasicText(t(UiKey.INVEST_UNREALIZED), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.onHeroMuted))
                 AmountText(a.unrealizedMinor, a.currency, tone = if ((a.unrealizedMinor ?: 0L) < 0) AmountTone.EXPENSE else AmountTone.INCOME, size = 13, showCurrency = false, color = Color.White)
             }
         }
@@ -168,15 +169,15 @@ private fun DetailHero(a: AssetDetailUi, onPrice: () -> Unit, onArea: () -> Unit
 private fun DetailStats(a: AssetDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            StatTile(t(TextKey.ASSET_DETAIL_QTY), a.qtySub, Modifier.weight(1f)) { BasicText(a.qtyText, style = Type.of(17, FontWeight.Bold)) }
+            StatTile(t(UiKey.ASSET_DETAIL_QTY), a.qtySub, Modifier.weight(1f)) { BasicText(a.qtyText, style = Type.of(17, FontWeight.Bold)) }
             // متوسط التكلفة للوحدة مالوش حالة استخدام ⇒ «غير متاح» (مش محسوب في الشاشة — CLAUDE.md #4)
-            StatTile(t(TextKey.ASSET_DETAIL_AVG), a.avgSub, Modifier.weight(1f)) { BasicText(NOT_AVAILABLE, style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted)) }
+            StatTile(t(UiKey.ASSET_DETAIL_AVG), a.avgSub, Modifier.weight(1f)) { BasicText(NOT_AVAILABLE, style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted)) }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            StatTile(t(TextKey.ASSET_DETAIL_COST), t(TextKey.ASSET_DETAIL_COST_SUB), Modifier.weight(1f)) { AmountText(a.costMinor, a.currency, size = 17, showCurrency = false) }
-            StatTile(t(TextKey.INVEST_REALIZED), a.realizedSub, Modifier.weight(1f)) {
+            StatTile(t(UiKey.ASSET_DETAIL_COST), t(UiKey.ASSET_DETAIL_COST_SUB), Modifier.weight(1f)) { AmountText(a.costMinor, a.currency, size = 17, showCurrency = false) }
+            StatTile(t(UiKey.INVEST_REALIZED), a.realizedSub, Modifier.weight(1f)) {
                 val r = a.realizedMinor
-                if (r == null) BasicText(t(TextKey.ASSET_DETAIL_NO_SALES), style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted))
+                if (r == null) BasicText(t(UiKey.ASSET_DETAIL_NO_SALES), style = Type.of(17, FontWeight.Bold).copy(color = Ink.muted))
                 else AmountText(r, a.currency, tone = if (r < 0) AmountTone.EXPENSE else AmountTone.INCOME, size = 17, showCurrency = false)
             }
         }
@@ -185,11 +186,11 @@ private fun DetailStats(a: AssetDetailUi) {
 
 @Composable
 private fun FullPictureLink(onOpen: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), onClick = onOpen, clickLabel = t(TextKey.ASSET_DETAIL_FULL_TITLE)) {
+    FloatingCard(Modifier.fillMaxWidth(), onClick = onOpen, clickLabel = t(UiKey.ASSET_DETAIL_FULL_TITLE)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                BasicText(t(TextKey.ASSET_DETAIL_FULL_TITLE), style = Type.of(15, FontWeight.Bold).copy(color = Ink.primary))
-                BasicText(t(TextKey.ASSET_DETAIL_FULL_BODY), style = Type.caption().copy(color = Ink.soft))
+                BasicText(t(UiKey.ASSET_DETAIL_FULL_TITLE), style = Type.of(15, FontWeight.Bold).copy(color = Ink.primary))
+                BasicText(t(UiKey.ASSET_DETAIL_FULL_BODY), style = Type.caption().copy(color = Ink.soft))
             }
             LucideIcon(Lucide.CHEVRON_LEFT, size = 20.dp, tint = Ink.primary, modifier = Modifier.mirrorInLtr())
         }
@@ -199,25 +200,25 @@ private fun FullPictureLink(onOpen: () -> Unit) {
 @Composable
 private fun TradeLog(a: AssetDetailUi) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.ASSET_DETAIL_LOG), style = Type.section())
+        BasicText(t(UiKey.ASSET_DETAIL_LOG), style = Type.section())
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
-            if (a.log.isEmpty()) BasicText(t(TextKey.ASSET_DETAIL_LOG_EMPTY), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
+            if (a.log.isEmpty()) BasicText(t(UiKey.ASSET_DETAIL_LOG_EMPTY), Modifier.padding(vertical = 14.dp), style = Type.of(13).copy(color = Ink.muted))
             a.log.forEachIndexed { i, r ->
                 if (i > 0) RowGap()
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         val buy = r.kind == TradeKind.BUY
-                        ToneChip(t(if (buy) TextKey.ASSET_DETAIL_BUY else TextKey.ASSET_DETAIL_SELL), if (buy) Ink.transfer else Ink.income,
+                        ToneChip(t(if (buy) UiKey.ASSET_DETAIL_BUY else UiKey.ASSET_DETAIL_SELL), if (buy) Ink.transfer else Ink.income,
                             if (buy) Ink.transfer.copy(alpha = 0.10f) else Ink.selected)
                         BasicText(r.date, Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted))
                         AmountText(r.amountMinor, a.currency, tone = if (buy) AmountTone.EXPENSE else AmountTone.INCOME, size = 14, showCurrency = false)
                     }
                     BasicText(r.line, style = Type.of(13))
-                    if (r.linked) BasicText(t(TextKey.ASSET_DETAIL_LINKED), style = Type.caption().copy(color = Ink.muted))
+                    if (r.linked) BasicText(t(UiKey.ASSET_DETAIL_LINKED), style = Type.caption().copy(color = Ink.muted))
                 }
             }
         }
-        BasicText(t(TextKey.ASSET_DETAIL_METHOD), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.ASSET_DETAIL_METHOD), style = Type.caption().copy(color = Ink.muted))
     }
 }
 
@@ -229,9 +230,9 @@ private fun SourceCard(a: AssetDetailUi, onManual: () -> Unit, onLink: () -> Uni
             BasicText(a.sourceTitle, style = Type.bodyBold())
             BasicText(a.sourceBody, style = Type.caption().copy(color = Ink.muted))
             if (!a.realEstate) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                TonalButton(t(TextKey.ASSET_DETAIL_ACT_MANUAL), onManual, height = 44.dp)
-                if (a.linked) TonalButton(t(TextKey.ASSET_DETAIL_ACT_UNLINK), onUnlink, height = 44.dp)
-                else TonalButton(t(TextKey.ASSET_DETAIL_ACT_LINK), onLink, height = 44.dp)
+                TonalButton(t(UiKey.ASSET_DETAIL_ACT_MANUAL), onManual, height = 44.dp)
+                if (a.linked) TonalButton(t(UiKey.ASSET_DETAIL_ACT_UNLINK), onUnlink, height = 44.dp)
+                else TonalButton(t(UiKey.ASSET_DETAIL_ACT_LINK), onLink, height = 44.dp)
             }
         }
     }

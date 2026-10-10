@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -39,23 +41,23 @@ import kotlinx.coroutines.delay
 @Composable
 fun RetirementCalculatorScreen() {
     val code = LocalSpace.current.space.countryCode.uppercase()
-    InnerScaffold(t(TextKey.RETCALC_TITLE)) {
+    InnerScaffold(t(UiKey.RETCALC_TITLE)) {
         item(key = "intro") {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 val law = when (code) {
-                    "SA" -> t(TextKey.RETCALC_LAW_SA)
-                    "EG" -> t(TextKey.RETCALC_LAW_EG)
+                    "SA" -> t(UiKey.RETCALC_LAW_SA)
+                    "EG" -> t(UiKey.RETCALC_LAW_EG)
                     else -> null
                 }
                 if (law != null) BasicText(law, style = Type.caption().copy(color = Ink.muted))
-                BasicText(t(TextKey.RETCALC_INTRO), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.RETCALC_INTRO), style = Type.of(13).copy(color = Ink.muted))
             }
         }
         item(key = "panel") {
             when (code) {
                 "SA" -> RetirementSaudiPanel()
                 "EG" -> RetirementEgyptPanel()
-                else -> EmptyState(t(TextKey.RETCALC_COUNTRY_NA))
+                else -> EmptyState(t(UiKey.RETCALC_COUNTRY_NA))
             }
         }
     }
@@ -112,7 +114,7 @@ internal fun RetirementResults(
     currency: Currency,
     heroLabel: String,
     details: (RetirementOutcome) -> String?,
-    gapSubKey: TextKey,
+    gapSubKey: TextRef,
     how: (RetirementOutcome) -> List<String>,
 ) {
     var howOpen by remember { mutableStateOf(false) }
@@ -132,7 +134,7 @@ internal fun RetirementResults(
     if (ui.outs.isNotEmpty()) {
         val lines = result?.takeIf { ui.pensionMinor != null }?.let { how(it.outcome) }.orEmpty()
         OutsCard(ui.outs, currency) {
-            if (lines.isNotEmpty()) HowToggle(howOpen, t(TextKey.RETCALC_HOW_SHOW), t(TextKey.RETCALC_HOW_HIDE), lines) { howOpen = !howOpen }
+            if (lines.isNotEmpty()) HowToggle(howOpen, t(UiKey.RETCALC_HOW_SHOW), t(UiKey.RETCALC_HOW_HIDE), lines) { howOpen = !howOpen }
         }
     }
 }

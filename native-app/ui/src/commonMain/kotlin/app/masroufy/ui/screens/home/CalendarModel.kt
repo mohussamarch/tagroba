@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.ui.graphics.Color
 import app.masroufy.core.CalendarItem
 import app.masroufy.core.CalendarItemType
@@ -60,47 +61,47 @@ fun iconOfType(type: CalendarItemType): UpcomingIcon = when (type) {
 
 private fun typeLabel(type: CalendarItemType): String = t(
     when (type) {
-        CalendarItemType.RECURRING -> TextKey.CALENDAR_TYPE_SUB
-        CalendarItemType.INSTALLMENT -> TextKey.CALENDAR_TYPE_INST
-        CalendarItemType.ROSCA_CONTRIBUTION, CalendarItemType.ROSCA_PAYOUT -> TextKey.CALENDAR_TYPE_ROSCA
-        CalendarItemType.DEBT -> TextKey.CALENDAR_TYPE_DEBT
-        CalendarItemType.EVENT, CalendarItemType.PROJECT -> TextKey.CALENDAR_TYPE_EVENT
-        CalendarItemType.OCCASION, CalendarItemType.PUBLIC_OCCASION -> TextKey.CALENDAR_TYPE_OCCASION
-        CalendarItemType.PAYDAY, CalendarItemType.INCOME_PAY -> TextKey.CALENDAR_TYPE_PAY
-        CalendarItemType.ZAKAT -> TextKey.CALENDAR_TYPE_ZAKAT
+        CalendarItemType.RECURRING -> UiKey.CALENDAR_TYPE_SUB
+        CalendarItemType.INSTALLMENT -> UiKey.CALENDAR_TYPE_INST
+        CalendarItemType.ROSCA_CONTRIBUTION, CalendarItemType.ROSCA_PAYOUT -> UiKey.CALENDAR_TYPE_ROSCA
+        CalendarItemType.DEBT -> UiKey.CALENDAR_TYPE_DEBT
+        CalendarItemType.EVENT, CalendarItemType.PROJECT -> UiKey.CALENDAR_TYPE_EVENT
+        CalendarItemType.OCCASION, CalendarItemType.PUBLIC_OCCASION -> UiKey.CALENDAR_TYPE_OCCASION
+        CalendarItemType.PAYDAY, CalendarItemType.INCOME_PAY -> UiKey.CALENDAR_TYPE_PAY
+        CalendarItemType.ZAKAT -> UiKey.CALENDAR_TYPE_ZAKAT
     },
 )
 
 /** «اليوم» · «غدًا» · «بعد يومين» · «بعد ٥ أيام» · «بعد ١٢ يومًا» — و«منذ …» لو فات. */
 fun afterText(days: Int): String = when {
-    days == 0 -> t(TextKey.CALENDAR_WHEN_TODAY)
-    days == 1 -> t(TextKey.CALENDAR_WHEN_TOMORROW)
-    days == 2 -> t(TextKey.CALENDAR_WHEN_TWO)
-    days in 3..10 -> t(TextKey.CALENDAR_WHEN_FEW, sentenceNumber(days))
-    days > 10 -> t(TextKey.CALENDAR_WHEN_MANY, sentenceNumber(days))
-    days == -1 -> t(TextKey.CALENDAR_AGO_ONE)
-    days == -2 -> t(TextKey.CALENDAR_AGO_TWO)
-    days >= -10 -> t(TextKey.CALENDAR_AGO_FEW, sentenceNumber(-days))
-    else -> t(TextKey.CALENDAR_AGO_MANY, sentenceNumber(-days))
+    days == 0 -> t(UiKey.CALENDAR_WHEN_TODAY)
+    days == 1 -> t(UiKey.CALENDAR_WHEN_TOMORROW)
+    days == 2 -> t(UiKey.CALENDAR_WHEN_TWO)
+    days in 3..10 -> t(UiKey.CALENDAR_WHEN_FEW, sentenceNumber(days))
+    days > 10 -> t(UiKey.CALENDAR_WHEN_MANY, sentenceNumber(days))
+    days == -1 -> t(UiKey.CALENDAR_AGO_ONE)
+    days == -2 -> t(UiKey.CALENDAR_AGO_TWO)
+    days >= -10 -> t(UiKey.CALENDAR_AGO_FEW, sentenceNumber(-days))
+    else -> t(UiKey.CALENDAR_AGO_MANY, sentenceNumber(-days))
 }
 
 fun calRowOf(item: CalendarItem): CalRow {
-    val money = item.amountMinor?.let { t(TextKey.CALENDAR_WITH_AMOUNT, amountLabel(it, item.currency, AmountTone.PLAIN)) }.orEmpty()
+    val money = item.amountMinor?.let { t(UiKey.CALENDAR_WITH_AMOUNT, amountLabel(it, item.currency, AmountTone.PLAIN)) }.orEmpty()
     val (status, tone) = when {
-        isLate(item) -> t(TextKey.CALENDAR_LATE) to CalTone.LATE
-        item.daysLeft < 0 -> t(TextKey.CALENDAR_PASSED) to CalTone.QUIET
+        isLate(item) -> t(UiKey.CALENDAR_LATE) to CalTone.LATE
+        item.daysLeft < 0 -> t(UiKey.CALENDAR_PASSED) to CalTone.QUIET
         item.flow == DueFlow.RECEIVE || item.type == CalendarItemType.PAYDAY || item.type == CalendarItemType.INCOME_PAY ->
-            (t(TextKey.CALENDAR_INCOMING) + money) to CalTone.GOOD
-        item.amountMinor == null -> t(TextKey.CALENDAR_NO_AMOUNT) to CalTone.QUIET
+            (t(UiKey.CALENDAR_INCOMING) + money) to CalTone.GOOD
+        item.amountMinor == null -> t(UiKey.CALENDAR_NO_AMOUNT) to CalTone.QUIET
         reservationState(item).let { it == ReservationState.COVERED || it == ReservationState.RESERVED } ->
-            (t(TextKey.CALENDAR_HELD) + money) to CalTone.GOOD
-        else -> (t(TextKey.CALENDAR_NOT_HELD) + money) to CalTone.OPEN
+            (t(UiKey.CALENDAR_HELD) + money) to CalTone.GOOD
+        else -> (t(UiKey.CALENDAR_NOT_HELD) + money) to CalTone.OPEN
     }
     val near = item.daysLeft in 0..3
     return CalRow(
         key = "${item.type.wire}-${item.sourceId}-${item.date}",
         title = item.title,
-        sub = t(TextKey.CALENDAR_SUB, dayMonth(item.date), typeLabel(item.type)),
+        sub = t(UiKey.CALENDAR_SUB, dayMonth(item.date), typeLabel(item.type)),
         whenText = afterText(item.daysLeft),
         whenTone = if (isLate(item)) CalTone.LATE else if (near) CalTone.OPEN else CalTone.QUIET,
         status = status,
@@ -119,10 +120,10 @@ fun shownOf(upcoming: List<CalendarItem>, all: Boolean): List<CalendarItem> =
 
 /** «موعد واحد» · «موعدان» · «٥ مواعيد» · «١٢ موعدًا». */
 fun datesCount(n: Int): String = when {
-    n == 1 -> t(TextKey.CALENDAR_COUNT_ONE)
-    n == 2 -> t(TextKey.CALENDAR_COUNT_TWO)
-    n <= 10 -> t(TextKey.CALENDAR_COUNT_FEW, sentenceNumber(n))
-    else -> t(TextKey.CALENDAR_COUNT_MANY, sentenceNumber(n))
+    n == 1 -> t(UiKey.CALENDAR_COUNT_ONE)
+    n == 2 -> t(UiKey.CALENDAR_COUNT_TWO)
+    n <= 10 -> t(UiKey.CALENDAR_COUNT_FEW, sentenceNumber(n))
+    else -> t(UiKey.CALENDAR_COUNT_MANY, sentenceNumber(n))
 }
 
 /**
@@ -132,20 +133,20 @@ fun datesCount(n: Int): String = when {
 fun smartSentence(upcoming: List<CalendarItem>, beforePayday: List<CalendarItem>, nextPayday: IsoDate?): String? {
     val ahead = upcoming.filter { it.daysLeft >= 0 }
     val parts = mutableListOf<String>()
-    ahead.firstOrNull()?.let { parts += t(TextKey.CALENDAR_SMART_NEAREST, it.title, afterText(it.daysLeft)) }
+    ahead.firstOrNull()?.let { parts += t(UiKey.CALENDAR_SMART_NEAREST, it.title, afterText(it.daysLeft)) }
     val window = ahead.filter { it.daysLeft <= CALENDAR_WINDOW_DAYS }
     if (window.isNotEmpty()) {
         val open = window.count { it.flow == DueFlow.PAY && it.amountMinor != null && reservationState(it).let { s -> s == ReservationState.NOT_RESERVED || s == ReservationState.PARTIAL } }
-        parts += if (open > 0) t(TextKey.CALENDAR_SMART_WINDOW_OPEN, datesCount(window.size), sentenceNumber(open))
-        else t(TextKey.CALENDAR_SMART_WINDOW, datesCount(window.size))
+        parts += if (open > 0) t(UiKey.CALENDAR_SMART_WINDOW_OPEN, datesCount(window.size), sentenceNumber(open))
+        else t(UiKey.CALENDAR_SMART_WINDOW, datesCount(window.size))
     }
     val before = beforePayday.firstOrNull { it.daysLeft >= 0 }
     if (before != null && nextPayday != null) {
         val gap = daysBetween(before.date, nextPayday)
         // «قبل الراتب بيوم» بالظبط زي النموذج، وغيره (يومين أو ٣ — `beforePayday`) «قبل الراتب بأيام»
-        parts += if (gap <= 1) t(TextKey.CALENDAR_SMART_BEFORE_PAY_ONE, before.title) else t(TextKey.CALENDAR_SMART_BEFORE_PAY, before.title)
+        parts += if (gap <= 1) t(UiKey.CALENDAR_SMART_BEFORE_PAY_ONE, before.title) else t(UiKey.CALENDAR_SMART_BEFORE_PAY, before.title)
     }
-    return if (parts.isEmpty()) null else parts.joinToString(t(TextKey.CALENDAR_SMART_JOIN)) + t(TextKey.CALENDAR_SMART_END)
+    return if (parts.isEmpty()) null else parts.joinToString(t(UiKey.CALENDAR_SMART_JOIN)) + t(UiKey.CALENDAR_SMART_END)
 }
 
 /** علامات الشبكة لشهر: اسم قصير (أول كلمة) بلون النوع، واللي فات وعليك أحمر. */

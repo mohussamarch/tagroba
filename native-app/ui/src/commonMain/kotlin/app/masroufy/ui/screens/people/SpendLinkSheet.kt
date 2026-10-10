@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -98,16 +99,16 @@ internal fun otherEventLinks(details: List<EventDetail>, eventId: Id): Map<Id, S
 
 /** السطر التاني في صف العملية: مربوطة هنا · مربوطة بحدث تاني · التاريخ والمحفظة. */
 internal fun spendRowLine(tx: Transaction, here: Boolean, otherEvent: String?, wallets: Map<Id, String>): String = when {
-    here -> joinLine(dayMonth(tx.occurredAt), t(TextKey.SPEND_LINK_HERE))
-    otherEvent != null -> t(TextKey.SPEND_LINK_OTHER_EVENT, otherEvent)
+    here -> joinLine(dayMonth(tx.occurredAt), t(UiKey.SPEND_LINK_HERE))
+    otherEvent != null -> t(UiKey.SPEND_LINK_OTHER_EVENT, otherEvent)
     else -> joinLine(dayMonth(tx.occurredAt), tx.walletId?.let(wallets::get))
 }
 
 @Composable
 internal fun SpendLinkButton(data: EventScreenData) {
     var open by remember { mutableStateOf(false) }
-    TonalButton(t(TextKey.SPEND_LINK_OPEN), onClick = { open = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
-    Sheet(open, onDismiss = { open = false }, title = t(TextKey.SPEND_LINK_TITLE, data.ui.event.name)) {
+    TonalButton(t(UiKey.SPEND_LINK_OPEN), onClick = { open = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
+    Sheet(open, onDismiss = { open = false }, title = t(UiKey.SPEND_LINK_TITLE, data.ui.event.name)) {
         SpendLinkForm(data) { open = false }
     }
 }
@@ -136,17 +137,17 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
     val shares: List<Halalas> = chosen.mapNotNull { tx -> pcts[tx.id]?.let { money.eventShare(tx.amountMinor, it) } }
     val currency = space.space.currency
     Column(Modifier.fillMaxWidth().heightIn(max = 660.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SheetHeading(t(TextKey.SPEND_LINK_TITLE, data.ui.event.name))
-        Note(t(TextKey.SPEND_LINK_INTRO))
-        TextInput(query, { query = it }, placeholder = t(TextKey.SPEND_LINK_SEARCH), trailing = { LucideIcon(Lucide.SEARCH, size = 18.dp, tint = Ink.muted, modifier = Modifier.padding(end = 14.dp)) })
+        SheetHeading(t(UiKey.SPEND_LINK_TITLE, data.ui.event.name))
+        Note(t(UiKey.SPEND_LINK_INTRO))
+        TextInput(query, { query = it }, placeholder = t(UiKey.SPEND_LINK_SEARCH), trailing = { LucideIcon(Lucide.SEARCH, size = 18.dp, tint = Ink.muted, modifier = Modifier.padding(end = 14.dp)) })
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            BasicText(t(TextKey.SPEND_LINK_LIST), style = Type.captionBold())
-            Note(t(TextKey.SPEND_LINK_HINT))
+            BasicText(t(UiKey.SPEND_LINK_LIST), style = Type.captionBold())
+            Note(t(UiKey.SPEND_LINK_HINT))
         }
         when {
             txns == null -> app.masroufy.ui.components.Skeleton(Modifier.fillMaxWidth().heightIn(min = 120.dp))
-            txns!!.none { it.observedDirection == app.masroufy.core.Direction.OUT } -> Note(t(TextKey.SPEND_LINK_NONE))
-            shown.isEmpty() -> Note(t(TextKey.SPEND_LINK_NO_MATCH, query.trim()))
+            txns!!.none { it.observedDirection == app.masroufy.core.Direction.OUT } -> Note(t(UiKey.SPEND_LINK_NONE))
+            shown.isEmpty() -> Note(t(UiKey.SPEND_LINK_NO_MATCH, query.trim()))
         }
         shown.forEachIndexed { i, tx ->
             val here = tx.id in data.ui.linkedTxnIds
@@ -175,29 +176,29 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
                 if (on) PercentRow(tx, picked.getValue(tx.id), { picked = picked + (tx.id to it); err = null }, pcts[tx.id]?.let { money.eventShare(tx.amountMinor, it) })
             }
         }
-        Note(t(TextKey.SPEND_LINK_TAG_NOTE))
+        Note(t(UiKey.SPEND_LINK_TAG_NOTE))
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(PeopleInk.tonalSoft).padding(horizontal = 14.dp, vertical = 10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.SPEND_LINK_TOTAL), style = Type.of(13, FontWeight.Bold))
+                BasicText(t(UiKey.SPEND_LINK_TOTAL), style = Type.of(13, FontWeight.Bold))
                 when {
-                    chosen.isEmpty() -> BasicText(t(TextKey.SPEND_LINK_NOT_PICKED), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+                    chosen.isEmpty() -> BasicText(t(UiKey.SPEND_LINK_NOT_PICKED), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
                     allOk -> AmountText(money.total(shares), currency, tone = AmountTone.EXPENSE)
                     else -> AmountText(null, currency)
                 }
             }
             Note(when {
-                chosen.isEmpty() -> t(TextKey.SPEND_LINK_PICK_HINT)
-                allOk -> t(TextKey.SPEND_LINK_EACH, countOf(chosen.size, Noun.OPS))
-                else -> t(TextKey.SPEND_LINK_BAD_PCT_SUB)
+                chosen.isEmpty() -> t(UiKey.SPEND_LINK_PICK_HINT)
+                allOk -> t(UiKey.SPEND_LINK_EACH, countOf(chosen.size, Noun.OPS))
+                else -> t(UiKey.SPEND_LINK_BAD_PCT_SUB)
             })
         }
         ErrorLine(err)
         PrimaryButton(
-            if (chosen.isEmpty()) t(TextKey.SPEND_LINK_SAVE_EMPTY) else t(TextKey.SPEND_LINK_SAVE, countOf(chosen.size, Noun.OPS_OBJ)),
+            if (chosen.isEmpty()) t(UiKey.SPEND_LINK_SAVE_EMPTY) else t(UiKey.SPEND_LINK_SAVE, countOf(chosen.size, Noun.OPS_OBJ)),
             loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             onClick = {
-                if (chosen.isEmpty()) { err = t(TextKey.SPEND_LINK_NEED_ONE); return@PrimaryButton }
-                if (!allOk) { err = t(TextKey.SPEND_LINK_NEED_PCT); return@PrimaryButton }
+                if (chosen.isEmpty()) { err = t(UiKey.SPEND_LINK_NEED_ONE); return@PrimaryButton }
+                if (!allOk) { err = t(UiKey.SPEND_LINK_NEED_PCT); return@PrimaryButton }
                 scope.launch {
                     busy = true
                     var linked = 0
@@ -206,7 +207,7 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
                     if (linked > 0) PeopleChanges.bump()
                     if (failure != null) err = failure.message
                     else {
-                        toaster.show(t(TextKey.SPEND_LINK_DONE, countOf(linked, Noun.OPS), data.ui.event.name, amountLabel(money.total(shares), currency)))
+                        toaster.show(t(UiKey.SPEND_LINK_DONE, countOf(linked, Noun.OPS), data.ui.event.name, amountLabel(money.total(shares), currency)))
                         done()
                     }
                 }
@@ -221,15 +222,15 @@ private fun PercentRow(tx: Transaction, text: String, onText: (String) -> Unit, 
     Column(Modifier.fillMaxWidth().padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             NumberInput(text, { onText(it.take(3)) }, Modifier.width(96.dp), placeholder = "100", decimal = false)
-            BasicText(t(TextKey.PPL_PERCENT_SIGN), style = Type.bodyBold())
-            for (v in listOf(100, 75, 50, 25)) Choice(t(TextKey.PPL_PERCENT, sentenceNumber(v)), intOf(text) == v, { onText(v.toString()) }, textSize = 13)
+            BasicText(t(UiKey.PPL_PERCENT_SIGN), style = Type.bodyBold())
+            for (v in listOf(100, 75, 50, 25)) Choice(t(UiKey.PPL_PERCENT, sentenceNumber(v)), intOf(text) == v, { onText(v.toString()) }, textSize = 13)
         }
         val p = intOf(text)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Note(when {
-                share == null -> t(TextKey.SPEND_LINK_RANGE)
-                p == 100 -> t(TextKey.SPEND_LINK_WHOLE)
-                else -> t(TextKey.SPEND_LINK_PART)
+                share == null -> t(UiKey.SPEND_LINK_RANGE)
+                p == 100 -> t(UiKey.SPEND_LINK_WHOLE)
+                else -> t(UiKey.SPEND_LINK_PART)
             })
             AmountText(share, tx.currency, size = 13, tone = AmountTone.EXPENSE)
         }

@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.DEPENDENT_KINDS
 import app.masroufy.core.MAX_NAME_LENGTH
@@ -15,33 +17,33 @@ import app.masroufy.ui.text.t
  */
 enum class AccountField { NAME, GENDER, DEPENDENTS, SALARY, PAYDAY, CAR, RENTER, MAID, BUSINESS }
 
-data class AccountRow(val field: AccountField, val label: TextKey, val value: String?, val hint: TextKey? = null)
+data class AccountRow(val field: AccountField, val label: TextRef, val value: String?, val hint: TextRef? = null)
 
-data class AccountGroup(val title: TextKey, val note: TextKey?, val rows: List<AccountRow>)
+data class AccountGroup(val title: TextRef, val note: TextRef?, val rows: List<AccountRow>)
 
 private fun yesNo(v: Boolean?): String? = when (v) {
-    true -> t(TextKey.MORE_YES)
-    false -> t(TextKey.MORE_NO)
+    true -> t(UiKey.MORE_YES)
+    false -> t(UiKey.MORE_NO)
     null -> null
 }
 
 fun genderLabel(gender: String?): String? = when (gender) {
-    "male" -> t(TextKey.ACC_GENDER_MALE)
-    "female" -> t(TextKey.ACC_GENDER_FEMALE)
+    "male" -> t(UiKey.ACC_GENDER_MALE)
+    "female" -> t(UiKey.ACC_GENDER_FEMALE)
     else -> null
 }
 
 fun dependentLabel(kind: String): String = when (kind) {
-    "spouse" -> t(TextKey.ACC_DEP_SPOUSE)
-    "children" -> t(TextKey.ACC_DEP_CHILDREN)
-    else -> t(TextKey.ACC_DEP_PARENTS)
+    "spouse" -> t(UiKey.ACC_DEP_SPOUSE)
+    "children" -> t(UiKey.ACC_DEP_CHILDREN)
+    else -> t(UiKey.ACC_DEP_PARENTS)
 }
 
 /** «من تعول»: «لا» ⇒ «لا أحد» · أنواع ⇒ أسماؤها بفاصلة · «نعم» من غير أنواع ⇒ «نعم» · ما اتجاوبش ⇒ null. */
 fun dependentsValue(p: UserProfile): String? = when {
-    p.supportsDependents == false -> t(TextKey.ACC_DEP_NONE)
+    p.supportsDependents == false -> t(UiKey.ACC_DEP_NONE)
     !p.dependentKinds.isNullOrEmpty() -> p.dependentKinds!!.joinToString("، ") { dependentLabel(it) }
-    p.supportsDependents == true -> t(TextKey.MORE_YES)
+    p.supportsDependents == true -> t(UiKey.MORE_YES)
     else -> null
 }
 
@@ -49,7 +51,7 @@ fun dependentsValue(p: UserProfile): String? = when {
 fun carValue(p: UserProfile): String? {
     val base = yesNo(p.hasCar) ?: return null
     if (p.hasCar != true || p.carToWork == null) return base
-    return t(TextKey.ACC_CAR_WITH_WORK, base, t(if (p.carToWork == true) TextKey.ACC_CAR_TO_WORK else TextKey.ACC_CAR_NOT_WORK))
+    return t(UiKey.ACC_CAR_WITH_WORK, base, t(if (p.carToWork == true) UiKey.ACC_CAR_TO_WORK else UiKey.ACC_CAR_NOT_WORK))
 }
 
 /** الراتب المحفوظ بالهللة (لو موجود) — بيتعرض زي ما هو؛ النطاقات (§63) نقطة ربط ([SalaryRangeSetting]). */
@@ -57,36 +59,36 @@ fun salaryValue(p: UserProfile, currency: Currency, range: SalaryRange?): String
     range?.let { salaryRangeLabel(it, currency) } ?: p.salaryMinor?.let { amountLabel(it, currency) }
 
 fun salaryRangeLabel(range: SalaryRange, currency: Currency): String = when (range) {
-    SalaryRange.R1 -> t(if (currency == Currency.EGP) TextKey.ACC_SAL_EG_R1 else TextKey.ACC_SAL_SA_R1)
-    SalaryRange.R2 -> t(if (currency == Currency.EGP) TextKey.ACC_SAL_EG_R2 else TextKey.ACC_SAL_SA_R2)
-    SalaryRange.R3 -> t(if (currency == Currency.EGP) TextKey.ACC_SAL_EG_R3 else TextKey.ACC_SAL_SA_R3)
-    SalaryRange.R4 -> t(if (currency == Currency.EGP) TextKey.ACC_SAL_EG_R4 else TextKey.ACC_SAL_SA_R4)
-    SalaryRange.SKIP -> t(TextKey.ACC_SAL_SKIP)
+    SalaryRange.R1 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R1 else UiKey.ACC_SAL_SA_R1)
+    SalaryRange.R2 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R2 else UiKey.ACC_SAL_SA_R2)
+    SalaryRange.R3 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R3 else UiKey.ACC_SAL_SA_R3)
+    SalaryRange.R4 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R4 else UiKey.ACC_SAL_SA_R4)
+    SalaryRange.SKIP -> t(UiKey.ACC_SAL_SKIP)
 }
 
 fun accountGroups(p: UserProfile, currency: Currency, range: SalaryRange? = null): List<AccountGroup> = listOf(
     AccountGroup(
-        TextKey.ACC_GROUP_ABOUT, null,
+        UiKey.ACC_GROUP_ABOUT, null,
         listOf(
-            AccountRow(AccountField.NAME, TextKey.ACC_NAME, p.displayName?.takeIf { it.isNotBlank() }),
-            AccountRow(AccountField.GENDER, TextKey.ACC_GENDER, genderLabel(p.gender)),
-            AccountRow(AccountField.DEPENDENTS, TextKey.ACC_DEPENDENTS, dependentsValue(p)),
+            AccountRow(AccountField.NAME, UiKey.ACC_NAME, p.displayName?.takeIf { it.isNotBlank() }),
+            AccountRow(AccountField.GENDER, UiKey.ACC_GENDER, genderLabel(p.gender)),
+            AccountRow(AccountField.DEPENDENTS, UiKey.ACC_DEPENDENTS, dependentsValue(p)),
         ),
     ),
     AccountGroup(
-        TextKey.ACC_GROUP_INCOME, null,
+        UiKey.ACC_GROUP_INCOME, null,
         listOf(
-            AccountRow(AccountField.SALARY, TextKey.ACC_SALARY, salaryValue(p, currency, range), TextKey.ACC_SALARY_HINT),
-            AccountRow(AccountField.PAYDAY, TextKey.ACC_PAYDAY, t(TextKey.ACC_DAY_N, sentenceNumber(p.payday)), TextKey.ACC_PAYDAY_HINT),
+            AccountRow(AccountField.SALARY, UiKey.ACC_SALARY, salaryValue(p, currency, range), UiKey.ACC_SALARY_HINT),
+            AccountRow(AccountField.PAYDAY, UiKey.ACC_PAYDAY, t(UiKey.ACC_DAY_N, sentenceNumber(p.payday)), UiKey.ACC_PAYDAY_HINT),
         ),
     ),
     AccountGroup(
-        TextKey.ACC_GROUP_LIFE, TextKey.ACC_LIFE_NOTE,
+        UiKey.ACC_GROUP_LIFE, UiKey.ACC_LIFE_NOTE,
         listOf(
-            AccountRow(AccountField.CAR, TextKey.ACC_CAR, carValue(p)),
-            AccountRow(AccountField.RENTER, TextKey.ACC_RENTER, yesNo(p.renter)),
-            AccountRow(AccountField.MAID, TextKey.ACC_MAID, yesNo(p.domesticWorker)),
-            AccountRow(AccountField.BUSINESS, TextKey.ACC_BUSINESS, yesNo(p.business)),
+            AccountRow(AccountField.CAR, UiKey.ACC_CAR, carValue(p)),
+            AccountRow(AccountField.RENTER, UiKey.ACC_RENTER, yesNo(p.renter)),
+            AccountRow(AccountField.MAID, UiKey.ACC_MAID, yesNo(p.domesticWorker)),
+            AccountRow(AccountField.BUSINESS, UiKey.ACC_BUSINESS, yesNo(p.business)),
         ),
     ),
 )
@@ -94,10 +96,10 @@ fun accountGroups(p: UserProfile, currency: Currency, range: SalaryRange? = null
 /** «المستحقات ضمن حد الميزانية»: ما اتحددش ⇒ بتتحسب احتياطًا (§56 — اختيار Claude في `UserProfile.duesInBudget`). */
 fun duesOn(p: UserProfile): Boolean = p.duesInBudget != false
 
-fun duesDescription(p: UserProfile): TextKey = when (p.duesInBudget) {
-    null -> TextKey.ACC_DUES_UNSET
-    true -> TextKey.ACC_DUES_ON
-    false -> TextKey.ACC_DUES_OFF
+fun duesDescription(p: UserProfile): TextRef = when (p.duesInBudget) {
+    null -> UiKey.ACC_DUES_UNSET
+    true -> UiKey.ACC_DUES_ON
+    false -> UiKey.ACC_DUES_OFF
 }
 
 /** الاسم أطول من الحد (`MAX_NAME_LENGTH`) — نفس فحص `checkProfile`، بيبان وإنت بتكتب. */

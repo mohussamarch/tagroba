@@ -1,5 +1,6 @@
 package app.masroufy.wiring
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
 import app.masroufy.core.LocalMoment
@@ -74,7 +75,7 @@ class WiringSmokeTest {
         assertEquals(115_750L, shell.withYouNow().totalMinor)
 
         val bad = shell.addOperation(AddOperationDraft(AddKind.OUT, "abc", bank.id, categoryId = food.id))
-        assertEquals(AddOperationResult.Invalid(uiText(TextKey.ADD_AMOUNT_INVALID)), bad)
+        assertEquals(AddOperationResult.Invalid(uiText(UiKey.ADD_AMOUNT_INVALID)), bad)
 
         // تحويل بين محافظي: المجموع ما بيتغيرش، والكاش زاد
         assertIs<AddOperationResult.Saved>(shell.addOperation(AddOperationDraft(AddKind.MOVE, "١٠٠", bank.id, toWalletId = cash.id)))

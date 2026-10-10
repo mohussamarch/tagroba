@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -124,7 +125,7 @@ internal fun ToggleSwitch(checked: Boolean, label: String, onToggle: () -> Unit,
             .semantics {
                 contentDescription = label
                 toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
-                stateDescription = t(if (checked) TextKey.PPL_SWITCH_ON else TextKey.PPL_SWITCH_OFF)
+                stateDescription = t(if (checked) UiKey.PPL_SWITCH_ON else UiKey.PPL_SWITCH_OFF)
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -177,7 +178,7 @@ internal fun ExpandRow(label: String, open: Boolean, onToggle: () -> Unit, modif
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BasicText((if (open) "− " else "+ ") + label, style = Type.of(14, FontWeight.Bold).copy(color = Ink.primary))
-        BasicText(t(TextKey.PPL_OPTIONAL), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.PPL_OPTIONAL), style = Type.caption().copy(color = Ink.muted))
     }
 }
 

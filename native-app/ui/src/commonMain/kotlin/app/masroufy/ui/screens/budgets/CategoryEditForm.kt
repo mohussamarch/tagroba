@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.CATEGORY_GROUPS
 import app.masroufy.core.CATEGORY_SWATCHES
 import app.masroufy.core.Category
@@ -70,7 +71,7 @@ fun CatEditTarget.startDraft(stored: List<Category>): CatDraft {
     }
 }
 
-private fun groupName(key: String?): String = CATEGORY_GROUPS.firstOrNull { it.key == key }?.name ?: t(TextKey.CATS_NO_GROUP)
+private fun groupName(key: String?): String = CATEGORY_GROUPS.firstOrNull { it.key == key }?.name ?: t(UiKey.CATS_NO_GROUP)
 
 fun catEditView(target: CatEditTarget, draft: CatDraft, stored: List<Category>, visibleMains: List<Category>): CatEditView {
     val byId = stored.associateBy { it.id }
@@ -89,32 +90,32 @@ fun catEditView(target: CatEditTarget, draft: CatDraft, stored: List<Category>, 
     val name = jsTrim(draft.name)
     val duplicate = name.isNotEmpty() && stored.any { it.id != cur?.id && normalizeText(it.name) == normalizeText(name) }
     val swatches = CATEGORY_SWATCHES.map { SwatchUi(it.key, it.name, swatchColors(it.key)!!.lightColor) } +
-        listOfNotNull(currentHex?.let { SwatchUi(null, t(TextKey.CAT_EDIT_CURRENT_COLOR), it) })
+        listOfNotNull(currentHex?.let { SwatchUi(null, t(UiKey.CAT_EDIT_CURRENT_COLOR), it) })
     val chosen = swatches.firstOrNull { it.key == draft.swatchKey && (it.key != null || currentHex != null) }
     return CatEditView(
         title = t(
             when (target.mode) {
-                CatEditMode.EDIT -> TextKey.CAT_EDIT_TITLE_EDIT
-                CatEditMode.NEW_MAIN -> TextKey.CAT_EDIT_TITLE_MAIN
-                CatEditMode.NEW_SUB -> TextKey.CAT_EDIT_TITLE_SUB
+                CatEditMode.EDIT -> UiKey.CAT_EDIT_TITLE_EDIT
+                CatEditMode.NEW_MAIN -> UiKey.CAT_EDIT_TITLE_MAIN
+                CatEditMode.NEW_SUB -> UiKey.CAT_EDIT_TITLE_SUB
             },
         ),
-        path = if (parent == null) groupName(draft.groupKey) else t(TextKey.CAT_EDIT_PATH, groupName(parent.groupKey), parent.name),
+        path = if (parent == null) groupName(draft.groupKey) else t(UiKey.CAT_EDIT_PATH, groupName(parent.groupKey), parent.name),
         previewHex = preview,
         isMain = isMain,
         parentLocked = hasSubs,
-        parents = listOf(ParentUi(null, t(TextKey.CAT_EDIT_NO_PARENT), null)) +
+        parents = listOf(ParentUi(null, t(UiKey.CAT_EDIT_NO_PARENT), null)) +
             visibleMains.filter { it.id != cur?.id }.map { ParentUi(it.id, it.name, it.lightColor) },
         swatches = swatches,
-        colorLabel = t(TextKey.CAT_EDIT_COLOR, chosen?.name.orEmpty()),
-        colorNote = t(if (hasSubs) TextKey.CAT_EDIT_SUBS_COLOR else TextKey.CAT_EDIT_MAIN_COLOR),
-        subNote = parent?.let { t(TextKey.CAT_EDIT_SUB_NOTE, it.name) },
+        colorLabel = t(UiKey.CAT_EDIT_COLOR, chosen?.name.orEmpty()),
+        colorNote = t(if (hasSubs) UiKey.CAT_EDIT_SUBS_COLOR else UiKey.CAT_EDIT_MAIN_COLOR),
+        subNote = parent?.let { t(UiKey.CAT_EDIT_SUB_NOTE, it.name) },
         nameError = if (duplicate) t(TextKey.CATEGORY_NAME_DUPLICATE) else null,
         needIcon = draft.iconKey == null,
         canSave = name.isNotEmpty() && !duplicate && draft.iconKey != null,
-        saveLabel = t(if (target.mode == CatEditMode.EDIT) TextKey.CAT_EDIT_SAVE else TextKey.CAT_EDIT_ADD),
+        saveLabel = t(if (target.mode == CatEditMode.EDIT) UiKey.CAT_EDIT_SAVE else UiKey.CAT_EDIT_ADD),
         canHide = cur != null && cur.active,
-        hideNote = t(if (hasSubs) TextKey.CAT_EDIT_HIDE_NOTE_SUBS else TextKey.CAT_EDIT_HIDE_NOTE),
+        hideNote = t(if (hasSubs) UiKey.CAT_EDIT_HIDE_NOTE_SUBS else UiKey.CAT_EDIT_HIDE_NOTE),
     )
 }
 

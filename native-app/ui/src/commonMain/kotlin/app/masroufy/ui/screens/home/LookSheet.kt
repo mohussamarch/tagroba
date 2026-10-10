@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,22 +46,22 @@ const val LOOK_COUNT = 6
 @Composable
 internal fun LookSheet(close: () -> Unit) {
     var pick by remember { mutableStateOf(LookChoice.look ?: 1) }
-    RouteSheet(t(TextKey.LOOK_SHEET_TITLE), close) { dismiss ->
-        BasicText(t(TextKey.LOOK_SHEET_TITLE), style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
+    RouteSheet(t(UiKey.LOOK_SHEET_TITLE), close) { dismiss ->
+        BasicText(t(UiKey.LOOK_SHEET_TITLE), style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
         for (row in (1..LOOK_COUNT).chunked(3)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 for (k in row) LookChoiceButton(k, pick == k) { pick = k }
             }
         }
-        BasicText(t(TextKey.LOOK_SHEET_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
-        PrimaryButton(t(TextKey.LOOK_SHEET_SAVE), onClick = { LookChoice.look = pick; dismiss() }, modifier = Modifier.fillMaxWidth())
+        BasicText(t(UiKey.LOOK_SHEET_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+        PrimaryButton(t(UiKey.LOOK_SHEET_SAVE), onClick = { LookChoice.look = pick; dismiss() }, modifier = Modifier.fillMaxWidth())
     }
 }
 
 @Composable
 private fun LookChoiceButton(look: Int, selected: Boolean, onClick: () -> Unit) {
     val press = rememberPress()
-    val label = t(TextKey.LOOK_SHEET_ITEM, sentenceNumber(look))
+    val label = t(UiKey.LOOK_SHEET_ITEM, sentenceNumber(look))
     val ring = if (selected) Modifier.insetRing(CircleShape, 3.dp, Ink.primary) else Modifier
     Box(
         Modifier.size(76.dp).pressScale(press).clip(CircleShape).background(Glass.lensOnLight).then(ring)

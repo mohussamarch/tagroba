@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -87,11 +88,11 @@ fun AssetProjectionScreen(assetId: Id) {
 
     val v = view
     val d = draft
-    InnerScaffold(t(TextKey.ASSET_DETAIL_FULL_TITLE)) {
+    InnerScaffold(t(UiKey.ASSET_DETAIL_FULL_TITLE)) {
         if (v == null || d == null) {
             item(key = "loading") {
                 val f = failed
-                if (f != null) AlertBanner(t(TextKey.SHELL_LOAD_FAILED), f) else Skeleton(Modifier.fillMaxWidth().height(220.dp))
+                if (f != null) AlertBanner(t(UiKey.SHELL_LOAD_FAILED), f) else Skeleton(Modifier.fillMaxWidth().height(220.dp))
             }
             return@InnerScaffold
         }
@@ -108,7 +109,7 @@ fun AssetProjectionScreen(assetId: Id) {
                 scope.launch {
                     try {
                         deps.growth.setProfile(assetId, parsed.input)
-                        toaster.show(t(TextKey.ASSET_PROJ_APPLIED))
+                        toaster.show(t(UiKey.ASSET_PROJ_APPLIED))
                         project(parsed.typedRateBp)
                     } catch (e: IllegalArgumentException) { error = e.message }
                 }
@@ -127,7 +128,7 @@ fun AssetProjectionScreen(assetId: Id) {
         item(key = "save") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 error?.let { FieldError(it) }
-                PrimaryButton(t(TextKey.ASSET_PROJ_SAVE), {
+                PrimaryButton(t(UiKey.ASSET_PROJ_SAVE), {
                     val parsed = parseDraft(d, v.asset, currency)
                     if (parsed !is DraftParse.Ok) { error = (parsed as DraftParse.Invalid).message; return@PrimaryButton }
                     scope.launch {
@@ -137,7 +138,7 @@ fun AssetProjectionScreen(assetId: Id) {
                             parsed.wholeMinor?.let { deps.assets.setPrice(assetId, it) }
                             draft = d.copy(rate = "")
                             project(null)
-                            toaster.show(t(TextKey.ASSET_PROJ_SAVED, v.asset.name))
+                            toaster.show(t(UiKey.ASSET_PROJ_SAVED, v.asset.name))
                         } catch (e: IllegalArgumentException) { error = e.message }
                     }
                 }, Modifier.fillMaxWidth())
@@ -151,22 +152,22 @@ private fun ValueCard(ui: ProjectionUi, d: ProjectionDraft, onEdit: (ProjectionD
     val currency = ui.currency
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.ASSET_PROJ_VALUE), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.ASSET_PROJ_VALUE), style = Type.of(15, FontWeight.Bold))
             SegmentedTabs(
-                listOf(RealEstateValuation.AREA to t(TextKey.ASSET_PROJ_BY_AREA), RealEstateValuation.WHOLE to t(TextKey.ASSET_PROJ_WHOLE)),
+                listOf(RealEstateValuation.AREA to t(UiKey.ASSET_PROJ_BY_AREA), RealEstateValuation.WHOLE to t(UiKey.ASSET_PROJ_WHOLE)),
                 d.method ?: RealEstateValuation.AREA, { onEdit(d.copy(method = it)) }, Modifier.fillMaxWidth(), style = SegmentStyle.QUIET, height = 44.dp,
             )
             if (d.method != RealEstateValuation.WHOLE) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    NumberField(t(TextKey.ASSET_PROJ_AREA), d.area, t(TextKey.ASSET_PROJ_SQM_UNIT), Modifier.weight(1f)) { onEdit(d.copy(area = it)) }
-                    NumberField(t(TextKey.ASSET_PROJ_SQM), d.sqm, currencySymbol(currency), Modifier.weight(1f)) { onEdit(d.copy(sqm = it)) }
+                    NumberField(t(UiKey.ASSET_PROJ_AREA), d.area, t(UiKey.ASSET_PROJ_SQM_UNIT), Modifier.weight(1f)) { onEdit(d.copy(area = it)) }
+                    NumberField(t(UiKey.ASSET_PROJ_SQM), d.sqm, currencySymbol(currency), Modifier.weight(1f)) { onEdit(d.copy(sqm = it)) }
                 }
             } else {
-                NumberField(t(TextKey.ASSET_PROJ_WHOLE), d.whole, currencySymbol(currency), Modifier.fillMaxWidth()) { onEdit(d.copy(whole = it)) }
+                NumberField(t(UiKey.ASSET_PROJ_WHOLE), d.whole, currencySymbol(currency), Modifier.fillMaxWidth()) { onEdit(d.copy(whole = it)) }
             }
             if (ui.valueMinor != null) AmountText(ui.valueMinor, currency, size = 16, color = Ink.primary)
-            else BasicText(ui.gaps.firstOrNull() ?: t(TextKey.ASSET_DETAIL_NA_RE), style = Type.captionBold().copy(color = Ink.focus))
-            if (d.method != RealEstateValuation.WHOLE) TonalButton(t(TextKey.ASSET_PROJ_APPLY), onApply, Modifier.fillMaxWidth(), height = 44.dp)
+            else BasicText(ui.gaps.firstOrNull() ?: t(UiKey.ASSET_DETAIL_NA_RE), style = Type.captionBold().copy(color = Ink.focus))
+            if (d.method != RealEstateValuation.WHOLE) TonalButton(t(UiKey.ASSET_PROJ_APPLY), onApply, Modifier.fillMaxWidth(), height = 44.dp)
         }
     }
 }
@@ -177,13 +178,13 @@ private fun RentCard(d: ProjectionDraft, onEdit: (ProjectionDraft) -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Column {
-                BasicText(t(TextKey.ASSET_PROJ_RENT), style = Type.of(15, FontWeight.Bold))
-                BasicText(t(TextKey.ASSET_PROJ_RENT_SUB), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.ASSET_PROJ_RENT), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.ASSET_PROJ_RENT_SUB), style = Type.caption().copy(color = Ink.muted))
             }
-            NumberField(t(TextKey.ASSET_PROJ_RENT_MONTHLY), d.rent, currencySymbol(currency), Modifier.fillMaxWidth()) { onEdit(d.copy(rent = it)) }
+            NumberField(t(UiKey.ASSET_PROJ_RENT_MONTHLY), d.rent, currencySymbol(currency), Modifier.fillMaxWidth()) { onEdit(d.copy(rent = it)) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                NumberField(t(TextKey.ASSET_PROJ_RENT_INC), d.increase, t(TextKey.INVEST_PERCENT, ""), Modifier.weight(1f)) { onEdit(d.copy(increase = it)) }
-                NumberField(t(TextKey.ASSET_PROJ_VACANT), d.vacant, t(TextKey.ASSET_PROJ_MONTH_UNIT), Modifier.weight(1f)) { onEdit(d.copy(vacant = it)) }
+                NumberField(t(UiKey.ASSET_PROJ_RENT_INC), d.increase, t(UiKey.INVEST_PERCENT, ""), Modifier.weight(1f)) { onEdit(d.copy(increase = it)) }
+                NumberField(t(UiKey.ASSET_PROJ_VACANT), d.vacant, t(UiKey.ASSET_PROJ_MONTH_UNIT), Modifier.weight(1f)) { onEdit(d.copy(vacant = it)) }
             }
         }
     }
@@ -194,12 +195,12 @@ private fun YearCard(ui: ProjectionUi, onUp: () -> Unit, onDown: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                BasicText(t(TextKey.ASSET_PROJ_YEAR), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.ASSET_PROJ_YEAR), style = Type.of(15, FontWeight.Bold))
                 BasicText(ui.yearsLabel, style = Type.caption().copy(color = Ink.muted))
             }
-            IconButton44(Lucide.PLUS, t(TextKey.ASSET_PROJ_YEAR_UP), onUp)
+            IconButton44(Lucide.PLUS, t(UiKey.ASSET_PROJ_YEAR_UP), onUp)
             BasicText(yearText(ui.sellYear), Modifier.widthIn(min = 64.dp), style = Type.of(20, FontWeight.Bold).copy(textAlign = TextAlign.Center))
-            IconButton44(InvestmentIcons.MINUS, t(TextKey.ASSET_PROJ_YEAR_DOWN), onDown)
+            IconButton44(InvestmentIcons.MINUS, t(UiKey.ASSET_PROJ_YEAR_DOWN), onDown)
         }
     }
 }
@@ -209,7 +210,7 @@ private fun RateCard(ui: ProjectionUi, d: ProjectionDraft, onRate: (String) -> U
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.ASSET_PROJ_RATE), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
+                BasicText(t(UiKey.ASSET_PROJ_RATE), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
                 val (ink, bg) = when (ui.chip) {
                     RateChip.TYPED -> Ink.transfer to Ink.transfer.copy(alpha = 0.10f)
                     RateChip.OLD -> Ink.focus to Ink.alertBg
@@ -220,8 +221,8 @@ private fun RateCard(ui: ProjectionUi, d: ProjectionDraft, onRate: (String) -> U
             }
             BasicText(ui.rateValue, style = Type.of(20, FontWeight.Bold).copy(color = if (ui.rateKnown) Ink.text else Ink.muted))
             BasicText(ui.rateSource, style = Type.caption().copy(color = Ink.muted))
-            NumberField(null, d.rate, t(TextKey.INVEST_PERCENT, ""), Modifier.fillMaxWidth(), onChange = onRate)
-            BasicText(t(TextKey.ASSET_PROJ_RATE_INPUT), style = Type.caption().copy(color = Ink.muted))
+            NumberField(null, d.rate, t(UiKey.INVEST_PERCENT, ""), Modifier.fillMaxWidth(), onChange = onRate)
+            BasicText(t(UiKey.ASSET_PROJ_RATE_INPUT), style = Type.caption().copy(color = Ink.muted))
         }
     }
 }
@@ -238,9 +239,9 @@ private fun ResultCard(ui: ProjectionUi) {
         }
         AmountLine(ui.saleLabel, ui.saleMinor, ui.currency)
         AmountLine(ui.rentLabel, ui.rentMinor, ui.currency)
-        AmountLine(t(TextKey.INVEST_RE_GAIN), ui.gainMinor, ui.currency, bold = true)
+        AmountLine(t(UiKey.INVEST_RE_GAIN), ui.gainMinor, ui.currency, bold = true)
         for (g in ui.gaps) BasicText(g, style = Type.captionBold().copy(color = Ink.focus))
-        BasicText(t(TextKey.ASSET_PROJ_METHOD), style = Type.caption().copy(color = Ink.soft))
+        BasicText(t(UiKey.ASSET_PROJ_METHOD), style = Type.caption().copy(color = Ink.soft))
     }
 }
 

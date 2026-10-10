@@ -1,5 +1,7 @@
 package app.masroufy.ui.shell.ask
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -96,8 +98,8 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
     val rise = remember { Animatable(if (reduce) 1f else 0f) }
     val riseSpec = motion<Float>(Springs.GENTLE)
     LaunchedEffect(Unit) { rise.animateTo(1f, riseSpec) }
-    val notReady = t(TextKey.ASK_NOT_READY)
-    val voiceNotReady = t(TextKey.ASK_VOICE_NOT_READY)
+    val notReady = t(UiKey.ASK_NOT_READY)
+    val voiceNotReady = t(UiKey.ASK_VOICE_NOT_READY)
     LaunchedEffect(startListening) { if (startListening) toaster.show(voiceNotReady, dark = true) }
 
     fun ask(text: String) {
@@ -114,10 +116,10 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
 
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val title = t(TextKey.ASK_TITLE)
-    val newStarted = t(TextKey.ASK_NEW_STARTED)
+    val title = t(UiKey.ASK_TITLE)
+    val newStarted = t(UiKey.ASK_NEW_STARTED)
     Overlay(onBack = onClose) {
-        Box(Modifier.fillMaxSize().semantics { paneTitle = t(TextKey.ASK_DIALOG, title) }) {
+        Box(Modifier.fillMaxSize().semantics { paneTitle = t(UiKey.ASK_DIALOG, title) }) {
             VeilLayer(Veil.CHAT, rise.value.coerceIn(0f, 1f), onDismiss = null, closeLabel = null)
             val lift = Modifier.graphicsLayer { alpha = rise.value.coerceIn(0f, 1f); translationY = (1f - rise.value) * 16.dp.toPx() }
             Column(Modifier.fillMaxSize().padding(top = top, bottom = bottom).imePadding().then(lift)) {
@@ -142,7 +144,7 @@ fun AssistantChat(visible: Boolean, startListening: Boolean, tab: Tab, state: As
                 }
                 Column(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     InputBox(state.draft, { state.draft = it }, onMic = { toaster.show(voiceNotReady, dark = true) }, onSend = { ask(state.draft); state.draft = "" })
-                    Suggestions(tab) { key -> if (key == TextKey.ASK_CHIP_VOICE) toaster.show(voiceNotReady, dark = true) else ask(t(key)) }
+                    Suggestions(tab) { key -> if (key == UiKey.ASK_CHIP_VOICE) toaster.show(voiceNotReady, dark = true) else ask(t(key)) }
                 }
             }
             ToastHost(toaster, Modifier.align(Alignment.BottomCenter).padding(bottom = 166.dp + bottom, start = 20.dp, end = 20.dp))
@@ -166,12 +168,12 @@ private fun ChatHeader(canStartNew: Boolean, onHistory: () -> Unit, onNew: () ->
             contentAlignment = Alignment.Center,
         ) { LucideIcon(Lucide.ASSISTANT, size = 20.dp, tint = Ink.lensInk) }
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.ASK_TITLE), style = Type.of(16, FontWeight.Bold, 1.3), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            BasicText(t(TextKey.ASK_BRAND_TITLE), style = Type.of(12, lineHeight = 1.4).copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(t(UiKey.ASK_TITLE), style = Type.of(16, FontWeight.Bold, 1.3), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(t(UiKey.ASK_BRAND_TITLE), style = Type.of(12, lineHeight = 1.4).copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        IconButton44(Lucide.HISTORY, t(TextKey.ASK_HISTORY), onHistory)
-        IconButton44(Lucide.SQUARE_PEN, t(TextKey.ASK_NEW), onNew, enabled = canStartNew)
-        IconButton44(Lucide.X, t(TextKey.ASK_CLOSE), onClose)
+        IconButton44(Lucide.HISTORY, t(UiKey.ASK_HISTORY), onHistory)
+        IconButton44(Lucide.SQUARE_PEN, t(UiKey.ASK_NEW), onNew, enabled = canStartNew)
+        IconButton44(Lucide.X, t(UiKey.ASK_CLOSE), onClose)
     }
 }
 
@@ -195,19 +197,19 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val inputLabel = t(TextKey.ASK_INPUT_LABEL, t(TextKey.ASK_TITLE))
+        val inputLabel = t(UiKey.ASK_INPUT_LABEL, t(UiKey.ASK_TITLE))
         Box(Modifier.weight(1f).padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-            if (draft.isEmpty()) BasicText(t(TextKey.ASK_INPUT_HINT), style = Type.of(15).copy(color = Color(0xFF6E7F7A)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (draft.isEmpty()) BasicText(t(UiKey.ASK_INPUT_HINT), style = Type.of(15).copy(color = Color(0xFF6E7F7A)), maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicTextField(
                 draft, onDraft, singleLine = true, textStyle = Type.of(15), cursorBrush = SolidColor(Ink.primary), interactionSource = focus,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { onSend() }),
                 modifier = Modifier.fillMaxWidth().semantics { contentDescription = inputLabel },
             )
         }
-        BoxAction(Lucide.MIC, t(TextKey.ASK_TALK), Modifier.clip(RoundedCornerShape(14.dp)).background(Ink.selected), Ink.primary, enabled = true, onMic)
+        BoxAction(Lucide.MIC, t(UiKey.ASK_TALK), Modifier.clip(RoundedCornerShape(14.dp)).background(Ink.selected), Ink.primary, enabled = true, onMic)
         val can = draft.isNotBlank()
         BoxAction(
-            Lucide.ARROW_LEFT, t(TextKey.ASK_SEND),
+            Lucide.ARROW_LEFT, t(UiKey.ASK_SEND),
             Modifier.layeredShadow(RoundedCornerShape(14.dp), if (can) Shadows.segment else emptyList()).clip(RoundedCornerShape(14.dp)).background(Glass.primary),
             Color.White, enabled = can, onSend,
         )
@@ -225,16 +227,16 @@ private fun BoxAction(icon: Lucide, label: String, surface: Modifier, ink: Color
 }
 
 /** الاقتراحات تحت المستطيل حسب التبويب اللي إنت فيه (`BY_CTX` في النموذج — من غير أسامي ناس مخترعة). التعلّم من أسئلتك لسه ما اتبناش. */
-private fun suggestionsFor(tab: Tab): List<TextKey> = when (tab) {
-    Tab.HOME -> listOf(TextKey.ASK_CHIP_SPENT, TextKey.ASK_CHIP_VOICE, TextKey.ASK_CHIP_SPLIT, TextKey.ASK_CHIP_PLAN)
-    Tab.OPERATIONS -> listOf(TextKey.ASK_CHIP_VOICE, TextKey.ASK_CHIP_SPENT, TextKey.ASK_CHIP_SPLIT)
-    Tab.PEOPLE -> listOf(TextKey.ASK_CHIP_OWED, TextKey.ASK_CHIP_SPLIT, TextKey.ASK_CHIP_VOICE)
-    Tab.INVESTMENT -> listOf(TextKey.ASK_CHIP_PLAN, TextKey.ASK_CHIP_SPENT, TextKey.ASK_CHIP_VOICE)
+private fun suggestionsFor(tab: Tab): List<TextRef> = when (tab) {
+    Tab.HOME -> listOf(UiKey.ASK_CHIP_SPENT, UiKey.ASK_CHIP_VOICE, UiKey.ASK_CHIP_SPLIT, UiKey.ASK_CHIP_PLAN)
+    Tab.OPERATIONS -> listOf(UiKey.ASK_CHIP_VOICE, UiKey.ASK_CHIP_SPENT, UiKey.ASK_CHIP_SPLIT)
+    Tab.PEOPLE -> listOf(UiKey.ASK_CHIP_OWED, UiKey.ASK_CHIP_SPLIT, UiKey.ASK_CHIP_VOICE)
+    Tab.INVESTMENT -> listOf(UiKey.ASK_CHIP_PLAN, UiKey.ASK_CHIP_SPENT, UiKey.ASK_CHIP_VOICE)
 }
 
 @Composable
-private fun Suggestions(tab: Tab, onPick: (TextKey) -> Unit) {
-    val label = t(TextKey.ASK_CHIPS_FOR, t(tab.label))
+private fun Suggestions(tab: Tab, onPick: (TextRef) -> Unit) {
+    val label = t(UiKey.ASK_CHIPS_FOR, t(tab.label))
     BasicText(label, Modifier.padding(horizontal = 4.dp).height(18.dp), style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).semantics { contentDescription = label }.padding(top = 2.dp, bottom = 6.dp),
@@ -266,9 +268,9 @@ internal fun rememberGreeting(): String {
     val morning = shell.hourNow() in 4..11
     val who = name
     return when {
-        who != null && morning -> t(TextKey.GREETING_MORNING_NAME, who)
-        who != null -> t(TextKey.GREETING_EVENING_NAME, who)
-        morning -> t(TextKey.GREETING_MORNING)
-        else -> t(TextKey.GREETING_EVENING)
+        who != null && morning -> t(UiKey.GREETING_MORNING_NAME, who)
+        who != null -> t(UiKey.GREETING_EVENING_NAME, who)
+        morning -> t(UiKey.GREETING_MORNING)
+        else -> t(UiKey.GREETING_EVENING)
     }
 }

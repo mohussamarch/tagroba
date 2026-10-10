@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import app.masroufy.ui.screens.imports.BankSmsRoute
 import app.masroufy.ui.screens.more.MoreRoute
 import app.masroufy.ui.screens.more.NotificationSettingsRoute
 import app.masroufy.ui.screens.onboarding.ProfileQuestionRoute
+import app.masroufy.ui.screens.operations.ReviewQueueRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -88,12 +90,12 @@ fun NotificationsScreen() {
     val today = deps.shell.today()
     Box(Modifier.fillMaxSize()) {
         InnerScaffold(
-            t(TextKey.NOTIFICATIONS_TITLE),
-            actions = { SurfaceIconButton(Lucide.SETTINGS, t(TextKey.NOTIFICATIONS_SETTINGS), { nav.push(NotificationSettingsRoute) }) },
+            t(UiKey.NOTIFICATIONS_TITLE),
+            actions = { SurfaceIconButton(Lucide.SETTINGS, t(UiKey.NOTIFICATIONS_SETTINGS), { nav.push(NotificationSettingsRoute) }) },
         ) {
             val list = inbox
             when {
-                failed -> item(key = "failed") { EmptyState(t(TextKey.SHELL_LOAD_FAILED)) }
+                failed -> item(key = "failed") { EmptyState(t(UiKey.SHELL_LOAD_FAILED)) }
                 list == null -> item(key = "loading") {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Skeleton(Modifier.fillMaxWidth().height(180.dp))
@@ -102,7 +104,7 @@ fun NotificationsScreen() {
                 }
                 else -> {
                     val sections = notificationSections(list, unread, gone, today)
-                    if (sections.isEmpty()) item(key = "empty") { EmptyState(t(TextKey.NOTIFICATIONS_EMPTY_TITLE), t(TextKey.NOTIFICATIONS_EMPTY_BODY)) }
+                    if (sections.isEmpty()) item(key = "empty") { EmptyState(t(UiKey.NOTIFICATIONS_EMPTY_TITLE), t(UiKey.NOTIFICATIONS_EMPTY_BODY)) }
                     for (sec in sections) item(key = "sec-${sec.title}") {
                         Section(sec, onOpen = { row ->
                             scope.launch {
@@ -172,7 +174,7 @@ private fun NotifRowView(row: NotifRow, onOpen: (NotifRow) -> Unit, onDrop: (Not
                 BasicText(row.why, style = Type.of(11).copy(color = Ink.muted))
                 if (row.muted || row.spaceLabel != null) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        if (row.muted) Badge(t(TextKey.NOTIFICATIONS_MUTED), BadgeKind.NOT_AVAILABLE)
+                        if (row.muted) Badge(t(UiKey.NOTIFICATIONS_MUTED), BadgeKind.NOT_AVAILABLE)
                         row.spaceLabel?.let { Badge(it, BadgeKind.INFO) }
                     }
                 }
@@ -181,9 +183,9 @@ private fun NotifRowView(row: NotifRow, onOpen: (NotifRow) -> Unit, onDrop: (Not
         val dropPress = rememberPress()
         Box(
             Modifier.padding(top = 8.dp).size(44.dp).pressScale(dropPress).clip(RoundedCornerShape(14.dp))
-                .tap(dropPress, label = t(TextKey.NOTIFICATIONS_DROP, row.title), onClick = { onDrop(row) }),
+                .tap(dropPress, label = t(UiKey.NOTIFICATIONS_DROP, row.title), onClick = { onDrop(row) }),
             contentAlignment = Alignment.Center,
-        ) { LucideIcon(Lucide.X, size = 18.dp, tint = Ink.muted, contentDescription = t(TextKey.NOTIFICATIONS_DROP, row.title)) }
+        ) { LucideIcon(Lucide.X, size = 18.dp, tint = Ink.muted, contentDescription = t(UiKey.NOTIFICATIONS_DROP, row.title)) }
     }
 }
 
@@ -191,22 +193,22 @@ private fun NotifRowView(row: NotifRow, onOpen: (NotifRow) -> Unit, onDrop: (Not
 @Composable
 private fun LockPreview(title: String, body: String) {
     Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        BasicText(t(TextKey.NOTIFICATIONS_LOCK_TITLE), style = Type.captionBold().copy(color = Ink.muted))
+        BasicText(t(UiKey.NOTIFICATIONS_LOCK_TITLE), style = Type.captionBold().copy(color = Ink.muted))
         Row(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xD1193D33)).padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.size(30.dp).clip(RoundedCornerShape(9.dp)).background(Ink.primary), contentAlignment = Alignment.Center) {
-                BasicText(t(TextKey.NOTIFICATIONS_LOCK_LETTER), style = Type.of(14, FontWeight.Bold).copy(color = Color.White))
+                BasicText(t(UiKey.NOTIFICATIONS_LOCK_LETTER), style = Type.of(14, FontWeight.Bold).copy(color = Color.White))
             }
             Column(Modifier.weight(1f)) {
                 BasicText(title, style = Type.captionBold().copy(color = Color.White))
                 BasicText(body, style = Type.of(13).copy(color = Color.White))
             }
-            BasicText(t(TextKey.NOTIFICATIONS_LOCK_NOW), style = Type.of(11).copy(color = Ink.onHeroMuted))
+            BasicText(t(UiKey.NOTIFICATIONS_LOCK_NOW), style = Type.of(11).copy(color = Ink.onHeroMuted))
         }
-        BasicText(t(TextKey.NOTIFICATIONS_LOCK_NOTE), style = Type.caption().copy(color = Ink.muted))
+        BasicText(t(UiKey.NOTIFICATIONS_LOCK_NOTE), style = Type.caption().copy(color = Ink.muted))
     }
 }
 
@@ -219,12 +221,12 @@ internal fun UndoBar(modifier: Modifier = Modifier, onUndo: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(t(TextKey.NOTIFICATIONS_DROPPED), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold).copy(color = Color.White))
+        BasicText(t(UiKey.NOTIFICATIONS_DROPPED), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold).copy(color = Color.White))
         val press = rememberPress()
         Box(
             Modifier.height(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).background(Color(0x1AFFFFFF))
                 .tap(press, onClick = onUndo).padding(horizontal = 14.dp),
             contentAlignment = Alignment.Center,
-        ) { BasicText(t(TextKey.NOTIFICATIONS_UNDO), style = Type.of(13, FontWeight.Bold).copy(color = Ink.selected)) }
+        ) { BasicText(t(UiKey.NOTIFICATIONS_UNDO), style = Type.of(13, FontWeight.Bold).copy(color = Ink.selected)) }
     }
 }

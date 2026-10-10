@@ -1,5 +1,6 @@
 package app.masroufy.wiring.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.EconomicKind
@@ -30,7 +31,7 @@ class BudgetsPresenterTest {
         val w = BudgetsWorld(transactions = listOf(spend("2026-10-01", 12_000, FOOD.id)))
         val ui = loadBudgets(w.deps, TODAY, Currency.SAR)
         val card = assertIs<TotalCard.NoLimit>(ui.total)
-        assertEquals(uiText(TextKey.BUDGETS_NO_TOTAL_TITLE, "أكتوبر"), card.title, "الشهر المالي باسم الشهر اللي بيخلص فيه")
+        assertEquals(uiText(UiKey.BUDGETS_NO_TOTAL_TITLE, "أكتوبر"), card.title, "الشهر المالي باسم الشهر اللي بيخلص فيه")
         assertEquals("سبتمبر", ui.prevMonthName)
         assertEquals("2026-08", ui.prevPeriodKey, "النسخ من مفتاح الفترة اللي فاتت (كوتلن بيسمّي المفتاح بشهر البداية)")
         assertEquals(12_000L, ui.spentMinor)
@@ -46,13 +47,13 @@ class BudgetsPresenterTest {
         assertEquals(100_000L, card.limitMinor)
         assertEquals(65, card.percent)
         assertEquals(Tone.OK, card.tone)
-        assertEquals(uiText(TextKey.BUDGETS_CHIP_OK), card.chip)
-        assertEquals(uiText(TextKey.BUDGETS_LEFT, amountLabel(35_000, Currency.SAR)), card.leftLine)
+        assertEquals(uiText(UiKey.BUDGETS_CHIP_OK), card.chip)
+        assertEquals(uiText(UiKey.BUDGETS_LEFT, amountLabel(35_000, Currency.SAR)), card.leftLine)
         assertTrue(card.dailyLine!!.isNotBlank(), "المتاح يوميًا من حالة الاستخدام (السقف موجود)")
         assertEquals(80, ui.totalLimit.thresholdPercent)
         // سطر لكل تصنيف — بلا سقف ⇒ «اضغط لتحديد سقف»، والأكبر صرفًا الأول
         assertEquals(listOf(FOOD.id, GROCERY.id), ui.lines.map { it.categoryId })
-        assertTrue(ui.lines.all { it.noLimit && it.note == uiText(TextKey.BUDGETS_CAT_NO_LIMIT) })
+        assertTrue(ui.lines.all { it.noLimit && it.note == uiText(UiKey.BUDGETS_CAT_NO_LIMIT) })
         assertEquals(FOOD.lightColor, ui.lines.first().colorHex)
     }
 
@@ -64,12 +65,12 @@ class BudgetsPresenterTest {
         val card = assertIs<TotalCard.Known>(ui.total)
         assertEquals(Tone.OVER, card.tone)
         assertEquals(100, card.percent, "الشريط ما بيعدّيش ١٠٠")
-        assertEquals(uiText(TextKey.BUDGETS_OVER_BY, amountLabel(30_000, Currency.SAR)), card.leftLine)
+        assertEquals(uiText(UiKey.BUDGETS_OVER_BY, amountLabel(30_000, Currency.SAR)), card.leftLine)
         assertNull(card.dailyLine, "مفيش متاح يومي بعد ما السقف اتعدّى")
         val line = ui.lines.single()
         assertTrue(line.over)
         assertEquals(120_000L, line.limitMinor)
-        assertEquals(uiText(TextKey.BUDGETS_CAT_OVER, amountLabel(10_000, Currency.SAR)), line.note)
+        assertEquals(uiText(UiKey.BUDGETS_CAT_OVER, amountLabel(10_000, Currency.SAR)), line.note)
     }
 
     @Test fun nearTheLimitIsAmber() = runBlocking<Unit> {
@@ -77,7 +78,7 @@ class BudgetsPresenterTest {
         w.deps.setBudget.setTotalLimit(period, 100_000, 80)
         val card = assertIs<TotalCard.Known>(loadBudgets(w.deps, TODAY, Currency.SAR).total)
         assertEquals(Tone.NEAR, card.tone)
-        assertEquals(uiText(TextKey.BUDGETS_CHIP_NEAR), card.chip)
+        assertEquals(uiText(UiKey.BUDGETS_CHIP_NEAR), card.chip)
     }
 
     @Test fun unknownSpendIsNotAvailableNeverZero() = runBlocking<Unit> {

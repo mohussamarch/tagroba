@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
@@ -71,11 +72,11 @@ fun reviewGroups(summary: SuggestionSummary): List<ReviewGroup> {
     val suggested = (summary.confirmable.map { it to true } + summary.needsLook.map { it to false })
         .filter { it.first.suggestion.kind != null }
         .groupBy { it.first.suggestion.kind!! }
-        .map { (kind, lines) -> ReviewGroup("kind-${kind.wire}", t(TextKey.REVIEW_QUEUE_GROUP_KIND, kindLabel(kind)), items(lines)) }
+        .map { (kind, lines) -> ReviewGroup("kind-${kind.wire}", t(UiKey.REVIEW_QUEUE_GROUP_KIND, kindLabel(kind)), items(lines)) }
     val (incoming, outgoing) = summary.ambiguous.map { it to false }.partition { it.first.transaction.observedDirection == Direction.IN }
     val ambiguous = listOfNotNull(
-        incoming.takeIf { it.isNotEmpty() }?.let { ReviewGroup("in", t(TextKey.REVIEW_QUEUE_GROUP_IN), items(it)) },
-        outgoing.takeIf { it.isNotEmpty() }?.let { ReviewGroup("out", t(TextKey.REVIEW_QUEUE_GROUP_OUT), items(it)) },
+        incoming.takeIf { it.isNotEmpty() }?.let { ReviewGroup("in", t(UiKey.REVIEW_QUEUE_GROUP_IN), items(it)) },
+        outgoing.takeIf { it.isNotEmpty() }?.let { ReviewGroup("out", t(UiKey.REVIEW_QUEUE_GROUP_OUT), items(it)) },
     )
     return suggested + ambiguous
 }
@@ -85,11 +86,11 @@ fun reviewTotal(summary: SuggestionSummary): Int = summary.confirmable.size + su
 
 /** «٦ عمليات نوعها غير مؤكد» / «اكتملت المراجعة». */
 fun reviewHeroTitle(left: Int): String = when {
-    left <= 0 -> t(TextKey.REVIEW_QUEUE_DONE_TITLE)
-    left == 1 -> t(TextKey.REVIEW_QUEUE_LEFT_ONE)
-    left == 2 -> t(TextKey.REVIEW_QUEUE_LEFT_TWO)
-    left <= 10 -> t(TextKey.REVIEW_QUEUE_LEFT_FEW, sentenceNumber(left))
-    else -> t(TextKey.REVIEW_QUEUE_LEFT_MANY, sentenceNumber(left))
+    left <= 0 -> t(UiKey.REVIEW_QUEUE_DONE_TITLE)
+    left == 1 -> t(UiKey.REVIEW_QUEUE_LEFT_ONE)
+    left == 2 -> t(UiKey.REVIEW_QUEUE_LEFT_TWO)
+    left <= 10 -> t(UiKey.REVIEW_QUEUE_LEFT_FEW, sentenceNumber(left))
+    else -> t(UiKey.REVIEW_QUEUE_LEFT_MANY, sentenceNumber(left))
 }
 
 /** نسبة الشريط (عدّ عمليات — مش فلوس). */
@@ -99,6 +100,6 @@ fun reviewDonePercent(total: Int, done: Int): Int = if (total <= 0) 100 else (do
 fun ruleRows(plan: CategorizationReport, categories: List<Category>): List<Pair<String, Int>> {
     val names = categories.associate { it.id to it.name }
     return plan.changed.groupBy { it.toCategoryId }
-        .map { (id, rows) -> (id?.let { names[it] } ?: t(TextKey.REVIEW_QUEUE_RULES_UNCATEGORIZED)) to rows.size }
+        .map { (id, rows) -> (id?.let { names[it] } ?: t(UiKey.REVIEW_QUEUE_RULES_UNCATEGORIZED)) to rows.size }
         .sortedByDescending { it.second }
 }

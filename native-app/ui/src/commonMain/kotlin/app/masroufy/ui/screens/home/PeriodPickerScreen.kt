@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,7 +72,7 @@ fun PeriodPickerScreen() {
         val start = runCatching { deps.shell.withYouNow().wallets.minOfOrNull { it.wallet.openingAt } }.getOrNull()
         base = PickerBase(payday, start)
     }
-    InnerScaffold(t(TextKey.PERIOD_PICKER_TITLE)) {
+    InnerScaffold(t(UiKey.PERIOD_PICKER_TITLE)) {
         val b = base
         if (b == null) {
             item(key = "loading") { Skeleton(Modifier.fillMaxWidth().height(180.dp), radius = 28.dp, strong = true) }
@@ -83,10 +84,10 @@ fun PeriodPickerScreen() {
         fun choose(p: Period, back: Boolean) {
             if (tileState(p, current, b.dataStart) != TileState.OPEN) return
             PeriodChoice.set(deps.space.id, if (p.key == current.key) null else p.key)
-            val msg = if (back) t(TextKey.PERIOD_PICKER_BACK_TOAST, fiscalName(p)) else t(TextKey.PERIOD_PICKER_PICKED_TOAST, fiscalName(p))
-            toaster.show(t(TextKey.PERIOD_PICKER_TOAST, msg, fiscalRange(p, withYear = false)))
+            val msg = if (back) t(UiKey.PERIOD_PICKER_BACK_TOAST, fiscalName(p)) else t(UiKey.PERIOD_PICKER_PICKED_TOAST, fiscalName(p))
+            toaster.show(t(UiKey.PERIOD_PICKER_TOAST, msg, fiscalRange(p, withYear = false)))
         }
-        item(key = "intro") { BasicText(t(TextKey.PERIOD_PICKER_INTRO, sentenceNumber(b.payday)), style = Type.of(13).copy(color = Ink.muted)) }
+        item(key = "intro") { BasicText(t(UiKey.PERIOD_PICKER_INTRO, sentenceNumber(b.payday)), style = Type.of(13).copy(color = Ink.muted)) }
         item(key = "hero") {
             val prev = previousPeriod(selected, b.payday)
             val next = nextPeriod(selected, b.payday)
@@ -97,7 +98,7 @@ fun PeriodPickerScreen() {
             )
         }
         if (selected.key != current.key) item(key = "back") {
-            TonalButton(t(TextKey.PERIOD_PICKER_BACK), onClick = { choose(current, true) }, modifier = Modifier.fillMaxWidth())
+            TonalButton(t(UiKey.PERIOD_PICKER_BACK), onClick = { choose(current, true) }, modifier = Modifier.fillMaxWidth())
         }
         item(key = "board") { YearBoard(selected, current, b, onPick = { choose(it, false) }) }
     }
@@ -109,15 +110,15 @@ private fun SelectedCard(sel: Period, current: Period, today: IsoDate, canPrev: 
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                GlassArrow(Lucide.CHEVRON_RIGHT, t(TextKey.PERIOD_PICKER_PREV), canPrev, onPrev)
+                GlassArrow(Lucide.CHEVRON_RIGHT, t(UiKey.PERIOD_PICKER_PREV), canPrev, onPrev)
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     BasicText(fiscalName(sel), style = Type.of(22, FontWeight.Bold).copy(color = Color.White, textAlign = TextAlign.Center))
                     BasicText(fiscalRange(sel, withYear = true), style = Type.of(13).copy(color = Ink.onHeroMuted, textAlign = TextAlign.Center))
                 }
-                GlassArrow(Lucide.CHEVRON_LEFT, t(TextKey.PERIOD_PICKER_NEXT), canNext, onNext)
+                GlassArrow(Lucide.CHEVRON_LEFT, t(UiKey.PERIOD_PICKER_NEXT), canNext, onNext)
             }
             BasicText(
-                if (isNow) t(TextKey.PERIOD_PICKER_CURRENT) else t(TextKey.PERIOD_PICKER_PAST),
+                if (isNow) t(UiKey.PERIOD_PICKER_CURRENT) else t(UiKey.PERIOD_PICKER_PAST),
                 Modifier.clip(RoundedCornerShape(12.dp)).background(if (isNow) Ink.mint else Color(0x29FFFFFF)).padding(horizontal = 12.dp, vertical = 3.dp),
                 style = Type.of(12, FontWeight.Bold).copy(color = if (isNow) Ink.heroStart else Color.White),
             )
@@ -150,9 +151,9 @@ private fun YearBoard(sel: Period, current: Period, b: PickerBase, onPick: (Peri
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                SoftArrow(Lucide.CHEVRON_RIGHT, t(TextKey.PERIOD_PICKER_YEAR_PREV), firstYear == null || year > firstYear) { year-- }
+                SoftArrow(Lucide.CHEVRON_RIGHT, t(UiKey.PERIOD_PICKER_YEAR_PREV), firstYear == null || year > firstYear) { year-- }
                 BasicText(sentenceNumber(year), Modifier.weight(1f), style = Type.of(17, FontWeight.Bold).copy(textAlign = TextAlign.Center))
-                SoftArrow(Lucide.CHEVRON_LEFT, t(TextKey.PERIOD_PICKER_YEAR_NEXT), year < lastYear) { year++ }
+                SoftArrow(Lucide.CHEVRON_LEFT, t(UiKey.PERIOD_PICKER_YEAR_NEXT), year < lastYear) { year++ }
             }
             val tiles = yearTiles(year, b.payday, current, sel, b.dataStart)
             for (row in tiles.chunked(3)) {
@@ -161,8 +162,8 @@ private fun YearBoard(sel: Period, current: Period, b: PickerBase, onPick: (Peri
                 }
             }
             val note = when {
-                firstYear != null && year <= firstYear -> t(TextKey.PERIOD_PICKER_DATA_FROM, fiscalName(periodForDate(b.dataStart!!, b.payday)))
-                year >= lastYear -> t(TextKey.PERIOD_PICKER_FUTURE_NOTE)
+                firstYear != null && year <= firstYear -> t(UiKey.PERIOD_PICKER_DATA_FROM, fiscalName(periodForDate(b.dataStart!!, b.payday)))
+                year >= lastYear -> t(UiKey.PERIOD_PICKER_FUTURE_NOTE)
                 else -> null
             }
             note?.let { BasicText(it, style = Type.caption().copy(color = Ink.muted)) }
@@ -200,7 +201,7 @@ private fun Tile(tile: PeriodTile, modifier: Modifier, onClick: () -> Unit) {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(tile.name, Modifier.weight(1f, fill = false), style = Type.of(14, FontWeight.Bold).copy(color = ink), maxLines = 1)
             if (tile.isNow) BasicText(
-                t(TextKey.PERIOD_PICKER_NOW),
+                t(UiKey.PERIOD_PICKER_NOW),
                 Modifier.clip(RoundedCornerShape(10.dp)).background(if (tile.selected) Color(0x2EFFFFFF) else Ink.selected).padding(horizontal = 6.dp),
                 style = Type.of(11, FontWeight.Bold).copy(color = if (tile.selected) Color.White else Ink.primary),
             )

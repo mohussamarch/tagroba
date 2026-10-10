@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.CATEGORY_GROUPS
 import app.masroufy.core.Category
 import app.masroufy.core.ClassificationRule
@@ -54,9 +55,9 @@ suspend fun loadRules(deps: BudgetsDeps, keep: Set<String> = emptySet()): RulesU
 
 fun modeLabel(mode: RuleMatchMode): String = t(
     when (mode) {
-        RuleMatchMode.CONTAINS -> TextKey.RULES_MODE_CONTAINS
-        RuleMatchMode.STARTS_WITH -> TextKey.RULES_MODE_STARTS
-        RuleMatchMode.EXACT -> TextKey.RULES_MODE_EXACT
+        RuleMatchMode.CONTAINS -> UiKey.RULES_MODE_CONTAINS
+        RuleMatchMode.STARTS_WITH -> UiKey.RULES_MODE_STARTS
+        RuleMatchMode.EXACT -> UiKey.RULES_MODE_EXACT
     },
 )
 
@@ -65,11 +66,11 @@ fun mapRules(rules: List<RuleRow>, merchants: List<MerchantRow>, categories: Lis
     val ruleRows = rules.mapIndexed { i, row ->
         val r = row.rule
         RuleRowUi(
-            id = r.id, position = i + 1, modeLabel = modeLabel(r.matchMode), text = t(TextKey.RULES_QUOTED, r.matchText),
+            id = r.id, position = i + 1, modeLabel = modeLabel(r.matchMode), text = t(UiKey.RULES_QUOTED, r.matchText),
             categoryName = row.categoryName, categoryHex = byId[r.categoryId]?.lightColor, missing = row.categoryMissing, enabled = r.enabled,
             meta = when {
-                !r.enabled -> t(TextKey.RULES_OFF_META)
-                row.categoryMissing -> t(TextKey.RULES_MISSING_META)
+                !r.enabled -> t(UiKey.RULES_OFF_META)
+                row.categoryMissing -> t(UiKey.RULES_MISSING_META)
                 else -> null
             },
             rule = r,
@@ -81,7 +82,7 @@ fun mapRules(rules: List<RuleRow>, merchants: List<MerchantRow>, categories: Lis
         MerchantRowUi(
             id = m.id, name = m.displayName, categoryName = row.verifiedCategoryName,
             categoryHex = m.verifiedCategoryId?.let { byId[it]?.lightColor },
-            meta = if (row.verifiedCategoryName != null && aliases.isNotEmpty()) t(TextKey.RULES_ALIASES, sentenceNumber(aliases.size)) else null,
+            meta = if (row.verifiedCategoryName != null && aliases.isNotEmpty()) t(UiKey.RULES_ALIASES, sentenceNumber(aliases.size)) else null,
             merchant = m,
         )
     }
@@ -94,7 +95,7 @@ fun pickerGroups(categories: List<Category>): List<PickGroupUi> {
     val order = Comparator<Category> { a, b -> if (a.order != b.order) a.order.compareTo(b.order) else arabicCompare(a.name, b.name) }
     val mains = categories.filter { it.active && (it.parentId == null || it.parentId !in ids) }.sortedWith(order)
     val known = CATEGORY_GROUPS.map { it.key }.toSet()
-    val groups = CATEGORY_GROUPS.map { it.key to it.name } + (null to t(TextKey.CATS_NO_GROUP))
+    val groups = CATEGORY_GROUPS.map { it.key to it.name } + (null to t(UiKey.CATS_NO_GROUP))
     return groups.mapNotNull { (key, name) ->
         val inGroup = mains.filter { if (key == null) it.groupKey !in known else it.groupKey == key }
         if (inGroup.isEmpty()) return@mapNotNull null
@@ -147,8 +148,8 @@ fun applyPreview(plan: CategorizationReport, categories: List<Category>): ApplyP
     val perCategory = LinkedHashMap<String, Int>()
     for (c in plan.changed) { val id = c.toCategoryId ?: continue; perCategory[id] = (perCategory[id] ?: 0) + 1 }
     val rows = perCategory.map { (id, n) -> ApplyRowUi(byId[id]?.name ?: t(TextKey.CATEGORY_DELETED), sentenceNumber(n), byId[id]?.lightColor) } +
-        ApplyRowUi(t(TextKey.RULES_APPLY_CONFIRMED), sentenceNumber(plan.skippedConfirmed.size), CONFIRMED_HEX) +
-        ApplyRowUi(t(TextKey.RULES_APPLY_UNMATCHED), sentenceNumber(plan.stillNeedsReview.size), UNMATCHED_HEX)
+        ApplyRowUi(t(UiKey.RULES_APPLY_CONFIRMED), sentenceNumber(plan.skippedConfirmed.size), CONFIRMED_HEX) +
+        ApplyRowUi(t(UiKey.RULES_APPLY_UNMATCHED), sentenceNumber(plan.stillNeedsReview.size), UNMATCHED_HEX)
     return ApplyPreviewUi(rows, plan.changed.size)
 }
 
@@ -157,10 +158,10 @@ private const val UNMATCHED_HEX = "#956000"
 
 /** «عملية واحدة» · «عمليتان» · «٣ عمليات» · «١١ عملية». */
 fun opsLabel(n: Int): String = when {
-    n == 1 -> t(TextKey.RULES_OPS_ONE)
-    n == 2 -> t(TextKey.RULES_OPS_TWO)
-    n in 3..10 -> t(TextKey.RULES_OPS_FEW, sentenceNumber(n))
-    else -> t(TextKey.RULES_OPS_MANY, sentenceNumber(n))
+    n == 1 -> t(UiKey.RULES_OPS_ONE)
+    n == 2 -> t(UiKey.RULES_OPS_TWO)
+    n in 3..10 -> t(UiKey.RULES_OPS_FEW, sentenceNumber(n))
+    else -> t(UiKey.RULES_OPS_MANY, sentenceNumber(n))
 }
 
 /** مدى «السابق»: آخر ١٨٣٠ يوم (أقصى مدى بتقبله `ReviewHistory` — خمس سنين) لحد النهارده. */

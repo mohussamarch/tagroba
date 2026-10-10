@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,12 +62,12 @@ internal fun PasteCard(text: String, onText: (String) -> Unit, busy: Boolean, on
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(Modifier.fillMaxWidth().heightIn(min = 132.dp).clip(RoundedCornerShape(16.dp)).background(Ink.text.copy(alpha = 0.05f)).padding(horizontal = 14.dp, vertical = 12.dp)) {
-                if (text.isEmpty()) BasicText(t(TextKey.SMS_PASTE_HINT), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.faded))
+                if (text.isEmpty()) BasicText(t(UiKey.SMS_PASTE_HINT), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.faded))
                 BasicTextField(text, onText, Modifier.fillMaxWidth(), textStyle = Type.of(14, lineHeight = 1.7), cursorBrush = SolidColor(Ink.primary))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TonalButton(t(TextKey.SMS_PASTE_FROM_CLIP), { clipboard.getText()?.text?.let(onText) }, Modifier.weight(1f))
-                PrimaryButton(t(TextKey.SMS_PASTE_READ), onRead, Modifier.weight(1f), enabled = text.isNotBlank(), loading = busy)
+                TonalButton(t(UiKey.SMS_PASTE_FROM_CLIP), { clipboard.getText()?.text?.let(onText) }, Modifier.weight(1f))
+                PrimaryButton(t(UiKey.SMS_PASTE_READ), onRead, Modifier.weight(1f), enabled = text.isNotBlank(), loading = busy)
             }
         }
     }
@@ -86,23 +87,23 @@ internal fun PeriodCard(
 ) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BasicText(t(TextKey.SMS_PASTE_RANGE), style = Type.of(13, FontWeight.Bold))
+            BasicText(t(UiKey.SMS_PASTE_RANGE), style = Type.of(13, FontWeight.Bold))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (r in ranges) {
                     val label = when (r.kind) {
-                        SmsRangeKind.MONTH -> t(TextKey.SMS_PASTE_RANGE_MONTH, dayMonth(r.from))
-                        SmsRangeKind.WEEK -> t(TextKey.SMS_PASTE_RANGE_WEEK)
-                        SmsRangeKind.DAYS30 -> t(TextKey.SMS_PASTE_RANGE_30)
+                        SmsRangeKind.MONTH -> t(UiKey.SMS_PASTE_RANGE_MONTH, dayMonth(r.from))
+                        SmsRangeKind.WEEK -> t(UiKey.SMS_PASTE_RANGE_WEEK)
+                        SmsRangeKind.DAYS30 -> t(UiKey.SMS_PASTE_RANGE_30)
                     }
                     SelectChip(label, r.kind == range, { onRange(r.kind) }, height = 44.dp)
                 }
             }
-            BasicText(t(TextKey.SMS_PASTE_BANKS), style = Type.of(13, FontWeight.Bold))
-            if (senders.isEmpty()) BasicText(t(TextKey.SMS_PASTE_NO_SENDERS), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.SMS_PASTE_BANKS), style = Type.of(13, FontWeight.Bold))
+            if (senders.isEmpty()) BasicText(t(UiKey.SMS_PASTE_NO_SENDERS), style = Type.caption().copy(color = Ink.muted))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (s in senders) SelectChip(s, s !in off, { onToggle(s) }, height = 44.dp)
             }
-            PrimaryButton(t(TextKey.SMS_PASTE_READ_PERIOD), onRead, Modifier.fillMaxWidth(), enabled = senders.any { it !in off }, loading = busy)
+            PrimaryButton(t(UiKey.SMS_PASTE_READ_PERIOD), onRead, Modifier.fillMaxWidth(), enabled = senders.any { it !in off }, loading = busy)
         }
     }
 }
@@ -120,11 +121,11 @@ internal fun ResultsBlock(
     onSave: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        val understood = t(TextKey.SMS_PASTE_SUMMARY, opsCount(result.rows.size), msgsCount(result.skippedCount))
-        BasicText(if (period) t(TextKey.SMS_PASTE_SUMMARY_READ, msgsCount(result.messages), understood) else understood, style = Type.of(15, FontWeight.Bold))
-        if (result.truncated) BasicText(t(TextKey.SMS_PASTE_TRUNCATED), style = Type.caption().copy(color = Ink.focus))
+        val understood = t(UiKey.SMS_PASTE_SUMMARY, opsCount(result.rows.size), msgsCount(result.skippedCount))
+        BasicText(if (period) t(UiKey.SMS_PASTE_SUMMARY_READ, msgsCount(result.messages), understood) else understood, style = Type.of(15, FontWeight.Bold))
+        if (result.truncated) BasicText(t(UiKey.SMS_PASTE_TRUNCATED), style = Type.caption().copy(color = Ink.focus))
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            BasicText(t(TextKey.SMS_PASTE_WALLET_Q), style = Type.of(13, FontWeight.Bold))
+            BasicText(t(UiKey.SMS_PASTE_WALLET_Q), style = Type.of(13, FontWeight.Bold))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (w in wallets.filter { it.kind != "cash" }) SelectChip(w.name, w.id == wallet?.id, { onWallet(w) }, height = 44.dp)
             }
@@ -140,9 +141,9 @@ internal fun ResultsBlock(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                         when (r.state) {
-                            PastedState.NEW -> Tag(t(TextKey.SMS_PASTE_NEW), TagTone.NEW)
-                            PastedState.DUPLICATE -> Tag(t(TextKey.SMS_PASTE_DUP), TagTone.MUTED)
-                            PastedState.SIMILAR, PastedState.CONFLICT -> Tag(t(TextKey.SMS_PASTE_SIMILAR), TagTone.AMBER)
+                            PastedState.NEW -> Tag(t(UiKey.SMS_PASTE_NEW), TagTone.NEW)
+                            PastedState.DUPLICATE -> Tag(t(UiKey.SMS_PASTE_DUP), TagTone.MUTED)
+                            PastedState.SIMILAR, PastedState.CONFLICT -> Tag(t(UiKey.SMS_PASTE_SIMILAR), TagTone.AMBER)
                             PastedState.PENDING -> Unit
                         }
                         BasicText(dayMonth(r.date), style = Type.caption().copy(color = Ink.muted))
@@ -151,7 +152,7 @@ internal fun ResultsBlock(
             }
         }
         if (result.skipped.isNotEmpty()) {
-            BasicText(t(TextKey.SMS_PASTE_SKIPPED, msgsCount(result.skippedCount)), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
+            BasicText(t(UiKey.SMS_PASTE_SKIPPED, msgsCount(result.skippedCount)), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.text.copy(alpha = 0.04f)).padding(horizontal = 16.dp, vertical = 4.dp)) {
                 result.skipped.forEachIndexed { i, s ->
                     if (i > 0) Divider()
@@ -163,11 +164,11 @@ internal fun ResultsBlock(
             }
         }
         val ready = wallet != null && result.toSave > 0
-        PrimaryButton(t(TextKey.SMS_PASTE_SAVE, opsCount(result.toSave)), onSave, Modifier.fillMaxWidth(), enabled = ready, loading = busy)
+        PrimaryButton(t(UiKey.SMS_PASTE_SAVE, opsCount(result.toSave)), onSave, Modifier.fillMaxWidth(), enabled = ready, loading = busy)
         val note = when {
-            wallet == null -> TextKey.SMS_PASTE_PICK_WALLET
-            result.duplicates > 0 -> TextKey.SMS_PASTE_NOTE_DUPS
-            else -> TextKey.SMS_PASTE_NOTE_NOTHING
+            wallet == null -> UiKey.SMS_PASTE_PICK_WALLET
+            result.duplicates > 0 -> UiKey.SMS_PASTE_NOTE_DUPS
+            else -> UiKey.SMS_PASTE_NOTE_NOTHING
         }
         BasicText(t(note), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = androidx.compose.ui.text.style.TextAlign.Center))
     }

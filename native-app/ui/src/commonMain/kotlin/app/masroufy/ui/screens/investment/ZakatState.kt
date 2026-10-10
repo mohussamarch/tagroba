@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
@@ -33,11 +35,11 @@ data class ZakatData(
     val assessment: ZakatAssessment?,
 )
 
-enum class OutcomeChip(val key: TextKey) {
-    DUE(TextKey.ZAKAT_SCREEN_DUE),
-    BELOW(TextKey.ZAKAT_SCREEN_BELOW),
-    PARTIAL(TextKey.ZAKAT_SCREEN_PARTIAL),
-    RESTARTED(TextKey.ZAKAT_SCREEN_RESTARTED),
+enum class OutcomeChip(val key: TextRef) {
+    DUE(UiKey.ZAKAT_SCREEN_DUE),
+    BELOW(UiKey.ZAKAT_SCREEN_BELOW),
+    PARTIAL(UiKey.ZAKAT_SCREEN_PARTIAL),
+    RESTARTED(UiKey.ZAKAT_SCREEN_RESTARTED),
     NA(TextKey.NOT_AVAILABLE),
 }
 
@@ -80,14 +82,14 @@ fun zakatUi(d: ZakatData, today: IsoDate): ZakatUi {
     val nisab = ruleOf(ZakatTopic.NISAB)
     return ZakatUi(
         currency = d.currency,
-        reference = uiText(TextKey.ZAKAT_SCREEN_REF, authority),
+        reference = uiText(UiKey.ZAKAT_SCREEN_REF, authority),
         scopeNote = d.scopeNote,
         hasYear = d.openYear != null,
         chip = chip,
         heroMinor = hero,
         heroSub = sub,
         nisabMinor = a?.nisabMinor,
-        nisabRule = nisab?.let { uiText(TextKey.ZAKAT_SCREEN_RULE_SRC, it.ruling, it.source.document) }.orEmpty(),
+        nisabRule = nisab?.let { uiText(UiKey.ZAKAT_SCREEN_RULE_SRC, it.ruling, it.source.document) }.orEmpty(),
         pricesLine = pricesLine(d.prices, d.currency),
         hawl = hawlCard(d, today, ruleOf(ZakatTopic.HAWL)),
         lines = a?.let { lines(it, d) }.orEmpty(),
@@ -97,23 +99,23 @@ fun zakatUi(d: ZakatData, today: IsoDate): ZakatUi {
 }
 
 private fun hero(a: ZakatAssessment?, currency: Currency): Triple<OutcomeChip?, Halalas?, String> {
-    if (a == null) return Triple(null, null, uiText(TextKey.ZAKAT_SCREEN_NO_YEAR))
+    if (a == null) return Triple(null, null, uiText(UiKey.ZAKAT_SCREEN_NO_YEAR))
     return when (a.outcome) {
-        ZakatOutcome.DUE -> Triple(OutcomeChip.DUE, a.dueMinor, uiText(TextKey.ZAKAT_SCREEN_SUB_DUE, moneyText(a.totalZakatableMinor, currency)))
-        ZakatOutcome.BELOW_NISAB -> Triple(OutcomeChip.BELOW, a.dueMinor, uiText(TextKey.ZAKAT_SCREEN_SUB_BELOW, moneyText(a.knownZakatableMinor, currency)))
-        ZakatOutcome.PARTIAL -> Triple(OutcomeChip.PARTIAL, null, uiText(TextKey.ZAKAT_SCREEN_SUB_PARTIAL, moneyText(a.knownZakatableMinor, currency)))
-        ZakatOutcome.HAWL_RESTARTED -> Triple(OutcomeChip.RESTARTED, a.dueMinor, uiText(TextKey.ZAKAT_SCREEN_SUB_RESTARTED))
+        ZakatOutcome.DUE -> Triple(OutcomeChip.DUE, a.dueMinor, uiText(UiKey.ZAKAT_SCREEN_SUB_DUE, moneyText(a.totalZakatableMinor, currency)))
+        ZakatOutcome.BELOW_NISAB -> Triple(OutcomeChip.BELOW, a.dueMinor, uiText(UiKey.ZAKAT_SCREEN_SUB_BELOW, moneyText(a.knownZakatableMinor, currency)))
+        ZakatOutcome.PARTIAL -> Triple(OutcomeChip.PARTIAL, null, uiText(UiKey.ZAKAT_SCREEN_SUB_PARTIAL, moneyText(a.knownZakatableMinor, currency)))
+        ZakatOutcome.HAWL_RESTARTED -> Triple(OutcomeChip.RESTARTED, a.dueMinor, uiText(UiKey.ZAKAT_SCREEN_SUB_RESTARTED))
         ZakatOutcome.UNAVAILABLE ->
-            Triple(OutcomeChip.NA, null, uiText(if (a.nisabMinor == null) TextKey.ZAKAT_SCREEN_SUB_NO_NISAB else TextKey.ZAKAT_SCREEN_SUB_NA))
+            Triple(OutcomeChip.NA, null, uiText(if (a.nisabMinor == null) UiKey.ZAKAT_SCREEN_SUB_NO_NISAB else UiKey.ZAKAT_SCREEN_SUB_NA))
     }
 }
 
 /** «الذهب الخالص X للجرام، الفضة Y للجرام، بتاريخ …» — اللي في ملف الأسعار بعملة البلد بس. */
 private fun pricesLine(p: ZakatPrices, currency: Currency): String? {
     val parts = listOfNotNull(
-        p.goldPureGramMinor?.let { uiText(TextKey.ZAKAT_SCREEN_PRICE_GOLD, moneyText(it, currency)) },
-        p.silverPureGramMinor?.let { uiText(TextKey.ZAKAT_SCREEN_PRICE_SILVER, moneyText(it, currency)) },
-        p.asOf?.let { uiText(TextKey.ZAKAT_SCREEN_PRICE_DATE, dateText(it)) },
+        p.goldPureGramMinor?.let { uiText(UiKey.ZAKAT_SCREEN_PRICE_GOLD, moneyText(it, currency)) },
+        p.silverPureGramMinor?.let { uiText(UiKey.ZAKAT_SCREEN_PRICE_SILVER, moneyText(it, currency)) },
+        p.asOf?.let { uiText(UiKey.ZAKAT_SCREEN_PRICE_DATE, dateText(it)) },
     )
     return parts.takeIf { it.isNotEmpty() }?.joinToString("، ")
 }
@@ -123,28 +125,28 @@ private fun hawlCard(d: ZakatData, today: IsoDate, rule: ZakatRule?): HawlCard {
     val confirmed = d.openYear != null
     return HawlCard(
         confirmed = confirmed,
-        dateLine = due?.let { uiText(TextKey.ZAKAT_SCREEN_HAWL_DATE, hijriText(hijriOf(it)), relativeDays(daysBetween(today, it))) },
+        dateLine = due?.let { uiText(UiKey.ZAKAT_SCREEN_HAWL_DATE, hijriText(hijriOf(it)), relativeDays(daysBetween(today, it))) },
         gregorian = due?.let(::dateText),
         why = uiText(
             when {
-                confirmed -> TextKey.ZAKAT_SCREEN_HAWL_WHY_CONFIRMED
-                d.suggestion != null -> TextKey.ZAKAT_SCREEN_HAWL_WHY_SUGGESTED
-                else -> TextKey.ZAKAT_SCREEN_HAWL_NA
+                confirmed -> UiKey.ZAKAT_SCREEN_HAWL_WHY_CONFIRMED
+                d.suggestion != null -> UiKey.ZAKAT_SCREEN_HAWL_WHY_SUGGESTED
+                else -> UiKey.ZAKAT_SCREEN_HAWL_NA
             },
         ),
-        rule = rule?.let { uiText(TextKey.ZAKAT_SCREEN_RULE_SRC, it.ruling, it.source.document) }.orEmpty(),
+        rule = rule?.let { uiText(UiKey.ZAKAT_SCREEN_RULE_SRC, it.ruling, it.source.document) }.orEmpty(),
         canConfirm = !confirmed && d.suggestion != null,
     )
 }
 
 /** «اليوم» · «غدًا» · «بعد يومين» · «بعد ٥ أيام» · «بعد ٢٤ يومًا» · «مضى موعدها». */
 fun relativeDays(days: Int): String = when {
-    days < 0 -> uiText(TextKey.ZAKAT_SCREEN_REL_PAST)
-    days == 0 -> uiText(TextKey.ZAKAT_SCREEN_REL_TODAY)
-    days == 1 -> uiText(TextKey.ZAKAT_SCREEN_REL_TOMORROW)
-    days == 2 -> uiText(TextKey.ZAKAT_SCREEN_REL_TWO)
-    days <= 10 -> uiText(TextKey.ZAKAT_SCREEN_REL_FEW, sentenceNumber(days))
-    else -> uiText(TextKey.ZAKAT_SCREEN_REL_MANY, sentenceNumber(days))
+    days < 0 -> uiText(UiKey.ZAKAT_SCREEN_REL_PAST)
+    days == 0 -> uiText(UiKey.ZAKAT_SCREEN_REL_TODAY)
+    days == 1 -> uiText(UiKey.ZAKAT_SCREEN_REL_TOMORROW)
+    days == 2 -> uiText(UiKey.ZAKAT_SCREEN_REL_TWO)
+    days <= 10 -> uiText(UiKey.ZAKAT_SCREEN_REL_FEW, sentenceNumber(days))
+    else -> uiText(UiKey.ZAKAT_SCREEN_REL_MANY, sentenceNumber(days))
 }
 
 /** «تجب فيه الزكاة»: سطر لكل نوع بمطلوبه (من الحساب)، وجنبه اللي عليه زكاة وقاعدته — أو الواقعة/السعر الناقص. */
@@ -154,7 +156,7 @@ private fun lines(a: ZakatAssessment, d: ZakatData): List<ZakatLineUi> = a.lines
     val rule = items.firstNotNullOfOrNull { it.topic }?.let { t -> d.rules.firstOrNull { it.topic == t } }
     val detail = when {
         blocker != null -> missingText(blocker)
-        line.zakatableMinor != null -> uiText(TextKey.ZAKAT_SCREEN_AMOUNT_RULE, moneyText(line.zakatableMinor, d.currency), rule?.ruling.orEmpty())
+        line.zakatableMinor != null -> uiText(UiKey.ZAKAT_SCREEN_AMOUNT_RULE, moneyText(line.zakatableMinor, d.currency), rule?.ruling.orEmpty())
         else -> rule?.ruling.orEmpty()
     }
     ZakatLineUi(line.kind.label, line.dueMinor, detail, rule?.source?.document.orEmpty())
@@ -178,12 +180,12 @@ private val OUT_STATUSES = setOf(ZakatItemStatus.EXEMPT, ZakatItemStatus.NOT_DED
 /** نص الواقعة الناقصة (أو السعر الناقص) للسطر. */
 fun missingText(item: ZakatItem): String = uiText(
     when (item.missingFact) {
-        "purpose" -> TextKey.ZAKAT_SCREEN_MISSING_PURPOSE
-        "holding" -> TextKey.ZAKAT_SCREEN_MISSING_HOLDING
-        "saudiCompany" -> TextKey.ZAKAT_SCREEN_MISSING_SAUDI
-        "collectability" -> TextKey.ZAKAT_SCREEN_MISSING_COLLECT
-        "karat" -> TextKey.ZAKAT_SCREEN_MISSING_KARAT
-        "fineness" -> TextKey.ZAKAT_SCREEN_MISSING_FINENESS
-        else -> TextKey.ZAKAT_SCREEN_MISSING_PRICE
+        "purpose" -> UiKey.ZAKAT_SCREEN_MISSING_PURPOSE
+        "holding" -> UiKey.ZAKAT_SCREEN_MISSING_HOLDING
+        "saudiCompany" -> UiKey.ZAKAT_SCREEN_MISSING_SAUDI
+        "collectability" -> UiKey.ZAKAT_SCREEN_MISSING_COLLECT
+        "karat" -> UiKey.ZAKAT_SCREEN_MISSING_KARAT
+        "fineness" -> UiKey.ZAKAT_SCREEN_MISSING_FINENESS
+        else -> UiKey.ZAKAT_SCREEN_MISSING_PRICE
     },
 )

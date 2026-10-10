@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -121,10 +122,10 @@ fun RouteRegistry.registerDues() {
     slot(Slots.DUES) { DuesPanel() }
     screen<DuesDebtsRoute> { r -> DuesDebtsScreen(r.side) }
     screen<DebtDetailRoute> { r -> DebtDetailScreen(r.obligationId) }
-    sheet<SettleSheetRoute> { r, close -> RouteSheet(t(TextKey.SETTLE_SHEET_TITLE_GENERIC), close) { dismiss -> SettleSheetBody(r.obligationId, dismiss) } }
+    sheet<SettleSheetRoute> { r, close -> RouteSheet(t(UiKey.SETTLE_SHEET_TITLE_GENERIC), close) { dismiss -> SettleSheetBody(r.obligationId, dismiss) } }
     sheet<OpeningDebtSheetRoute> { r, close ->
         val nav = LocalNavigator.current
-        RouteSheet(t(TextKey.OPENING_DEBT_TITLE, r.personName), close) { dismiss ->
+        RouteSheet(t(UiKey.OPENING_DEBT_TITLE, r.personName), close) { dismiss ->
             OpeningDebtBody(r.personId, r.personName, onSaved = { o -> dismiss(); nav.push(DebtDetailRoute(o.id)) })
         }
     }

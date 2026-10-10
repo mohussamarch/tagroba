@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,7 +77,7 @@ fun ReviewQueueScreen() {
         scope.launch {
             runCatching { deps.home.kinds.setOne(item.id, kind) }
                 .onSuccess { done = done + (item.id to kind); error = null }
-                .onFailure { error = failureText(it, TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
+                .onFailure { error = failureText(it, UiKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
         }
     }
     fun confirmGroup(group: ReviewGroup) {
@@ -88,14 +89,14 @@ fun ReviewQueueScreen() {
                     if (r.applied > 0) done = done + group.items.filter { it.id in ids && it.suggestion != null }.associate { it.id to it.suggestion!! }
                     error = null
                 }
-                .onFailure { error = failureText(it, TextKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
+                .onFailure { error = failureText(it, UiKey.REVIEW_QUEUE_SAVE_FAILED_BODY) }
         }
     }
-    InnerScaffold(t(TextKey.REVIEW_QUEUE_TITLE)) {
+    InnerScaffold(t(UiKey.REVIEW_QUEUE_TITLE)) {
         error?.let { msg -> item(key = "error") { SaveErrorBanner(msg) } }
         val d = data
         when {
-            loadFailed -> item(key = "failed") { EmptyState(t(TextKey.SHELL_LOAD_FAILED)) }
+            loadFailed -> item(key = "failed") { EmptyState(t(UiKey.SHELL_LOAD_FAILED)) }
             d == null -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(120.dp), radius = 28.dp, strong = true)
@@ -103,7 +104,7 @@ fun ReviewQueueScreen() {
                 }
             }
             reviewTotal(d.summary) == 0 -> {
-                item(key = "empty") { EmptyState(t(TextKey.REVIEW_QUEUE_EMPTY_TITLE), t(TextKey.REVIEW_QUEUE_EMPTY_BODY)) }
+                item(key = "empty") { EmptyState(t(UiKey.REVIEW_QUEUE_EMPTY_TITLE), t(UiKey.REVIEW_QUEUE_EMPTY_BODY)) }
                 item(key = "rules") { RulesCard() }
             }
             else -> {
@@ -125,7 +126,7 @@ private fun ReviewHero(total: Int, done: Int) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(reviewHeroTitle(left), style = Type.of(20, FontWeight.Bold).copy(color = Ink.onPrimary))
             BasicText(
-                if (left > 0) t(TextKey.REVIEW_QUEUE_HERO_BODY) else t(TextKey.REVIEW_QUEUE_DONE_BODY),
+                if (left > 0) t(UiKey.REVIEW_QUEUE_HERO_BODY) else t(UiKey.REVIEW_QUEUE_DONE_BODY),
                 style = Type.of(13).copy(color = Ink.onHeroMuted),
             )
             val pct = reviewDonePercent(total, done)
@@ -142,7 +143,7 @@ private fun SaveErrorBanner(message: String) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        BasicText(t(TextKey.REVIEW_QUEUE_SAVE_FAILED), style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
+        BasicText(t(UiKey.REVIEW_QUEUE_SAVE_FAILED), style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
         BasicText(message, style = Type.caption().copy(color = Ink.focus))
     }
 }
@@ -151,9 +152,9 @@ private fun SaveErrorBanner(message: String) {
 private fun GroupBlock(g: ReviewGroup, done: Map<Id, EconomicKind>, onAccept: (ReviewItem, EconomicKind) -> Unit, onUndo: (ReviewItem) -> Unit, onBulk: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            BasicText(t(TextKey.REVIEW_QUEUE_GROUP_COUNT, g.title, app.masroufy.core.sentenceNumber(g.items.size)), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
+            BasicText(t(UiKey.REVIEW_QUEUE_GROUP_COUNT, g.title, app.masroufy.core.sentenceNumber(g.items.size)), Modifier.weight(1f), style = Type.of(15, FontWeight.Bold))
             val bulk = g.bulkIds(done.keys)
-            if (bulk.isNotEmpty()) TonalButton(t(TextKey.REVIEW_QUEUE_BULK, app.masroufy.core.sentenceNumber(bulk.size)), onClick = onBulk, height = 44.dp)
+            if (bulk.isNotEmpty()) TonalButton(t(UiKey.REVIEW_QUEUE_BULK, app.masroufy.core.sentenceNumber(bulk.size)), onClick = onBulk, height = 44.dp)
         }
         for (item in g.items) ReviewItemCard(item, done[item.id], onAccept, onUndo)
     }

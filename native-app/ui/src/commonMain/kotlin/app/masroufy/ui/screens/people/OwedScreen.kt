@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -60,23 +61,23 @@ internal fun OwedScreen(side: OwedSide) {
         }
     }
     val owed = side == OwedSide.OWED_TO_YOU
-    InnerScaffold(t(if (owed) TextKey.OWED_TITLE_OWED else TextKey.OWED_TITLE_OWE)) {
+    InnerScaffold(t(if (owed) UiKey.OWED_TITLE_OWED else UiKey.OWED_TITLE_OWE)) {
         when (val l = load) {
             Load.Loading -> item { Skeleton(Modifier.fillMaxWidth().height(140.dp), radius = 28.dp) }
-            Load.Failed -> item { ErrorCard({ retry++ }, title = t(TextKey.PPL_LOAD_FAILED), body = "") }
+            Load.Failed -> item { ErrorCard({ retry++ }, title = t(UiKey.PPL_LOAD_FAILED), body = "") }
             is Load.Ready -> {
                 val ui = l.value
                 item(key = "total") { TotalHero(ui, owed) }
-                item(key = "note") { BasicText(t(TextKey.OWED_ORDER_NOTE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted)) }
+                item(key = "note") { BasicText(t(UiKey.OWED_ORDER_NOTE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted)) }
                 item(key = "rows") {
                     FloatingCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
                         if (ui.rows.isEmpty()) {
-                            BasicText(t(if (owed) TextKey.OWED_EMPTY_OWED else TextKey.OWED_EMPTY_OWE), Modifier.fillMaxWidth().height(56.dp), style = Type.body().copy(color = Ink.muted))
+                            BasicText(t(if (owed) UiKey.OWED_EMPTY_OWED else UiKey.OWED_EMPTY_OWE), Modifier.fillMaxWidth().height(56.dp), style = Type.body().copy(color = Ink.muted))
                         }
                         ui.rows.forEachIndexed { i, r -> OwedRow(r, owed, i == ui.rows.lastIndex) { nav.push(PersonProfileRoute(r.personId)) } }
                     }
                 }
-                item(key = "foot") { Note(t(TextKey.OWED_FOOT)) }
+                item(key = "foot") { Note(t(UiKey.OWED_FOOT)) }
             }
         }
     }
@@ -86,13 +87,13 @@ internal fun OwedScreen(side: OwedSide) {
 private fun TotalHero(ui: OwedUi, owed: Boolean) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            BasicText(t(if (owed) TextKey.OWED_TOTAL_OWED else TextKey.OWED_TOTAL_OWE), style = Type.body().copy(color = Ink.onHeroMuted))
+            BasicText(t(if (owed) UiKey.OWED_TOTAL_OWED else UiKey.OWED_TOTAL_OWE), style = Type.body().copy(color = Ink.onHeroMuted))
             val lines = ui.totals
             if (lines == null) HeroAmount(null, app.masroufy.core.Currency.SAR, Modifier.fillMaxWidth(), size = 34)
             else if (lines.isEmpty()) HeroAmount(0, LocalSpace.current.space.currency, Modifier.fillMaxWidth(), size = 34)
             else lines.forEach { HeroAmount(it.minor, it.currency, Modifier.fillMaxWidth(), size = 34) }
             val people = countOf(ui.people, Noun.PEOPLE)
-            BasicText(t(if (owed) TextKey.OWED_SUB_OWED else TextKey.OWED_SUB_OWE, people), style = Type.caption().copy(color = Ink.onHeroMuted))
+            BasicText(t(if (owed) UiKey.OWED_SUB_OWED else UiKey.OWED_SUB_OWE, people), style = Type.caption().copy(color = Ink.onHeroMuted))
         }
     }
 }

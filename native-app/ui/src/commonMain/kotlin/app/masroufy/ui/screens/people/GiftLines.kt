@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -41,11 +42,11 @@ internal sealed interface GiftPlan {
 
 internal fun checkGiftLines(rows: List<GiftLine>, people: List<Person>, currency: Currency): GiftPlan {
     val filled = rows.map { jsTrim(it.name) to it.amount }.filter { (n, a) -> n.isNotEmpty() || a.isNotBlank() }
-    if (filled.isEmpty()) return GiftPlan.Bad(t(TextKey.NUQOOT_NEED_ONE))
+    if (filled.isEmpty()) return GiftPlan.Bad(t(UiKey.NUQOOT_NEED_ONE))
     val parsed = filled.map { (n, a) -> n to tryParseMoney(a, currency) }
-    if (parsed.any { (n, m) -> n.isEmpty() || m == null || m <= 0 }) return GiftPlan.Bad(t(TextKey.NUQOOT_FILL_ROWS))
+    if (parsed.any { (n, m) -> n.isEmpty() || m == null || m <= 0 }) return GiftPlan.Bad(t(UiKey.NUQOOT_FILL_ROWS))
     val names = parsed.map { it.first }
-    if (names.toSet().size != names.size) return GiftPlan.Bad(t(TextKey.NUQOOT_DUP))
+    if (names.toSet().size != names.size) return GiftPlan.Bad(t(UiKey.NUQOOT_DUP))
     val known = people.filter { !it.archived }.associateBy { jsTrim(it.name) }
     return GiftPlan.Ready(parsed.map { (n, m) -> n to m!! }, names.mapNotNull { n -> known[n]?.let { n to it.id } }.toMap())
 }

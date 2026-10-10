@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.ASSET_KIND_LABELS
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -70,8 +71,8 @@ fun investmentUi(view: PortfolioView, projections: Map<Id, AssetProjectionView>,
     val missing = view.rows.filter { !it.asset.archived && it.position.marketValueMinor == null }
     val totalNa = when {
         view.totals.marketValueMinor != null -> null
-        missing.size == 1 -> uiText(TextKey.INVEST_TOTAL_NA_ONE, missing.single().asset.name)
-        else -> uiText(TextKey.INVEST_TOTAL_NA_MANY, sentenceNumber(view.totals.assetsWithoutPrice))
+        missing.size == 1 -> uiText(UiKey.INVEST_TOTAL_NA_ONE, missing.single().asset.name)
+        else -> uiText(UiKey.INVEST_TOTAL_NA_MANY, sentenceNumber(view.totals.assetsWithoutPrice))
     }
     return InvestmentUi(
         currency = currency,
@@ -91,7 +92,7 @@ private fun estateCard(row: AssetRow, p: AssetProjectionView?, currency: Currenc
     val area = a.areaSqm
     val sqm = a.pricePerSqmMinor
     val subtitle = if (a.valuation == RealEstateValuation.AREA && area != null && sqm != null) {
-        uiText(TextKey.INVEST_RE_SUB_AREA, qtyText(area), moneyText(sqm, currency))
+        uiText(UiKey.INVEST_RE_SUB_AREA, qtyText(area), moneyText(sqm, currency))
     } else {
         uiText(TextKey.ASSET_KIND_REAL_ESTATE)
     }
@@ -100,7 +101,7 @@ private fun estateCard(row: AssetRow, p: AssetProjectionView?, currency: Currenc
     val rate = proj?.rateBp
     val rateLine = when {
         p == null -> uiText(TextKey.NOT_AVAILABLE)
-        rate != null && p.rateFrom != ProjectionRateFrom.NONE -> uiText(TextKey.INVEST_RE_RATE, pctText(rate), p.rateSourceText)
+        rate != null && p.rateFrom != ProjectionRateFrom.NONE -> uiText(UiKey.INVEST_RE_RATE, pctText(rate), p.rateSourceText)
         else -> p.rateSourceText
     }
     return EstateCard(
@@ -108,9 +109,9 @@ private fun estateCard(row: AssetRow, p: AssetProjectionView?, currency: Currenc
         name = a.name,
         subtitle = subtitle,
         valueMinor = proj?.currentValueMinor ?: row.position.marketValueMinor.takeIf { row.lots.isNotEmpty() },
-        ask = uiText(TextKey.INVEST_RE_ASK, year?.let(::yearText) ?: uiText(TextKey.NOT_AVAILABLE)),
+        ask = uiText(UiKey.INVEST_RE_ASK, year?.let(::yearText) ?: uiText(TextKey.NOT_AVAILABLE)),
         saleMinor = proj?.valueAtSaleMinor,
-        rentLabel = uiText(TextKey.INVEST_RE_RENT_UNTIL, year?.let(::yearText) ?: ""),
+        rentLabel = uiText(UiKey.INVEST_RE_RENT_UNTIL, year?.let(::yearText) ?: ""),
         rentMinor = proj?.rentTotalMinor,
         gainMinor = proj?.totalGainMinor,
         rateLine = rateLine,
@@ -123,32 +124,32 @@ internal fun assetLine(row: AssetRow, today: IsoDate): AssetLine {
     val p = row.position
     val qty = qtyUnit(p.heldQuantity, a.unitLabel)
     val state = when {
-        a.archived -> uiText(TextKey.INVEST_ARCHIVED_SUB)
+        a.archived -> uiText(UiKey.INVEST_ARCHIVED_SUB)
         else -> priceStateText(p.priceState, today)
     }
     val kindLabel = ASSET_KIND_LABELS[a.displayKind] ?: a.displayKind
-    val sub = if (p.heldQuantity > 0) uiText(TextKey.INVEST_ROW_SUB, qty, state) else uiText(TextKey.INVEST_ROW_SUB, kindLabel, state)
+    val sub = if (p.heldQuantity > 0) uiText(UiKey.INVEST_ROW_SUB, qty, state) else uiText(UiKey.INVEST_ROW_SUB, kindLabel, state)
     return AssetLine(a.id, a.name, a.displayKind, sub, p.marketValueMinor, a.archived)
 }
 
 internal fun priceStateText(state: PriceState, today: IsoDate): String = when (state) {
-    PriceState.Missing -> uiText(TextKey.INVEST_PRICE_NONE)
-    is PriceState.Fresh -> if (state.price.asOf == today) uiText(TextKey.INVEST_PRICE_TODAY) else uiText(TextKey.INVEST_PRICE_ON, dateText(state.price.asOf))
-    is PriceState.Stale -> uiText(TextKey.INVEST_PRICE_OLD, dateText(state.price.asOf))
+    PriceState.Missing -> uiText(UiKey.INVEST_PRICE_NONE)
+    is PriceState.Fresh -> if (state.price.asOf == today) uiText(UiKey.INVEST_PRICE_TODAY) else uiText(UiKey.INVEST_PRICE_ON, dateText(state.price.asOf))
+    is PriceState.Stale -> uiText(UiKey.INVEST_PRICE_OLD, dateText(state.price.asOf))
 }
 
 /** شريط «تعذّر تحديث الأسعار»: الملف ما نزلش دلوقتي (والمعروض بآخر نسخة) أو ما نزلش خالص (بسببه). null = مفيش مشكلة. */
 fun feedProblem(state: FeedState<*>?): String? = when (state) {
     null -> null
-    is FeedState.Ready -> if (state.refreshFailed != null) uiText(TextKey.INVEST_ERROR_BODY) else null
+    is FeedState.Ready -> if (state.refreshFailed != null) uiText(UiKey.INVEST_ERROR_BODY) else null
     is FeedState.Unavailable -> state.reason
 }
 
 /** «٣ خطط» بقاعدة العدد العربي (١ · ٢ · ٣–١٠ · ١١+). */
 fun goalsHint(count: Int): String = when {
-    count <= 0 -> uiText(TextKey.INVEST_GOALS_NONE)
-    count == 1 -> uiText(TextKey.INVEST_GOALS_ONE)
-    count == 2 -> uiText(TextKey.INVEST_GOALS_TWO)
-    count <= 10 -> uiText(TextKey.INVEST_GOALS_FEW, sentenceNumber(count))
-    else -> uiText(TextKey.INVEST_GOALS_MANY, sentenceNumber(count))
+    count <= 0 -> uiText(UiKey.INVEST_GOALS_NONE)
+    count == 1 -> uiText(UiKey.INVEST_GOALS_ONE)
+    count == 2 -> uiText(UiKey.INVEST_GOALS_TWO)
+    count <= 10 -> uiText(UiKey.INVEST_GOALS_FEW, sentenceNumber(count))
+    else -> uiText(UiKey.INVEST_GOALS_MANY, sentenceNumber(count))
 }

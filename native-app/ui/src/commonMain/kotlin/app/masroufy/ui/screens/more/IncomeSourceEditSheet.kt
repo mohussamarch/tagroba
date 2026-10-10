@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -80,36 +81,36 @@ fun IncomeSourceEditSheet(visible: Boolean, s: IncomeSource, monthStart: Int, on
     val ask = job && dayChanged && day != null && day in 1..31 && day != monthStart
     val changed = name.trim() != s.name || dayChanged || (weekly && weekday != s.payWeekday) || expected != s.expectedMinor
     val problem = when {
-        name.isBlank() -> t(TextKey.INCEDIT_ERR_NAME)
-        dayBad -> t(TextKey.INCEDIT_ERR_DAY)
-        ask && answer == null -> t(TextKey.INCEDIT_ERR_MONTH)
-        expectedBad -> t(TextKey.INCEDIT_ERR_EXPECTED)
+        name.isBlank() -> t(UiKey.INCEDIT_ERR_NAME)
+        dayBad -> t(UiKey.INCEDIT_ERR_DAY)
+        ask && answer == null -> t(UiKey.INCEDIT_ERR_MONTH)
+        expectedBad -> t(UiKey.INCEDIT_ERR_EXPECTED)
         else -> null
     }
     val period = periodText(s)
-    Sheet(visible, onClose, title = t(TextKey.INCEDIT_TITLE), closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
-        BasicText(t(TextKey.INCEDIT_TITLE), style = Type.of(17, FontWeight.Bold))
-        BasicText(t(TextKey.INCSRC_META, t(incomeKindLabel(s.kind)), period), style = Type.of(13).copy(color = Ink.muted))
-        TextInput(name, { name = it; error = null }, label = t(TextKey.INCEDIT_NAME), error = if (tried && name.isBlank()) t(TextKey.INCEDIT_ERR_NAME) else null)
+    Sheet(visible, onClose, title = t(UiKey.INCEDIT_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
+        BasicText(t(UiKey.INCEDIT_TITLE), style = Type.of(17, FontWeight.Bold))
+        BasicText(t(UiKey.INCSRC_META, t(incomeKindLabel(s.kind)), period), style = Type.of(13).copy(color = Ink.muted))
+        TextInput(name, { name = it; error = null }, label = t(UiKey.INCEDIT_NAME), error = if (tried && name.isBlank()) t(UiKey.INCEDIT_ERR_NAME) else null)
         if (weekly) {
-            BasicText(t(TextKey.INCEDIT_WEEKDAY), style = Type.of(13, FontWeight.Bold))
+            BasicText(t(UiKey.INCEDIT_WEEKDAY), style = Type.of(13, FontWeight.Bold))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (d in WEEK_FROM_SATURDAY) SelectChip(t(weekdayLabel(d)), weekday == d, onClick = { weekday = d }, height = 44.dp)
             }
         } else {
-            TextInput(dayText, { dayText = it; answer = null }, label = t(TextKey.INCEDIT_DAY), placeholder = "1–31", ltr = true, keyboard = KeyboardType.Number,
-                error = if (dayBad) t(TextKey.INCEDIT_ERR_DAY) else null)
-            BasicText(t(if (day == null) TextKey.INCEDIT_DAY_EMPTY else TextKey.INCEDIT_DAY_NOTE), style = Type.caption().copy(color = Ink.muted))
+            TextInput(dayText, { dayText = it; answer = null }, label = t(UiKey.INCEDIT_DAY), placeholder = "1–31", ltr = true, keyboard = KeyboardType.Number,
+                error = if (dayBad) t(UiKey.INCEDIT_ERR_DAY) else null)
+            BasicText(t(if (day == null) UiKey.INCEDIT_DAY_EMPTY else UiKey.INCEDIT_DAY_NOTE), style = Type.caption().copy(color = Ink.muted))
         }
         if (job) MonthStartBox(ask, day, monthStart, answer) { answer = it }
-        TextInput(expectedText, { expectedText = it }, label = t(TextKey.INCEDIT_EXPECTED), placeholder = t(TextKey.INCEDIT_EXPECTED_PH), ltr = true,
-            keyboard = KeyboardType.Decimal, error = if (expectedBad) t(TextKey.INCEDIT_ERR_EXPECTED) else null)
-        BasicText(t(if (expected == null) TextKey.INCEDIT_EXPECTED_EMPTY else TextKey.INCEDIT_EXPECTED_NOTE), style = Type.caption().copy(color = Ink.muted))
-        s.endedAt?.let { NoteBox(t(TextKey.INCEDIT_PAST_NOTE), title = t(TextKey.INCEDIT_PAST_HEAD, fullDate(it) ?: it)) }
-        val shown = error ?: if (tried && !changed) t(TextKey.INCEDIT_UNCHANGED) else if (tried) problem else null
+        TextInput(expectedText, { expectedText = it }, label = t(UiKey.INCEDIT_EXPECTED), placeholder = t(UiKey.INCEDIT_EXPECTED_PH), ltr = true,
+            keyboard = KeyboardType.Decimal, error = if (expectedBad) t(UiKey.INCEDIT_ERR_EXPECTED) else null)
+        BasicText(t(if (expected == null) UiKey.INCEDIT_EXPECTED_EMPTY else UiKey.INCEDIT_EXPECTED_NOTE), style = Type.caption().copy(color = Ink.muted))
+        s.endedAt?.let { NoteBox(t(UiKey.INCEDIT_PAST_NOTE), title = t(UiKey.INCEDIT_PAST_HEAD, fullDate(it) ?: it)) }
+        val shown = error ?: if (tried && !changed) t(UiKey.INCEDIT_UNCHANGED) else if (tried) problem else null
         if (shown != null) FieldError(shown)
         PrimaryButton(
-            if (changed) t(TextKey.INCEDIT_SAVE) else t(TextKey.INCEDIT_UNCHANGED),
+            if (changed) t(UiKey.INCEDIT_SAVE) else t(UiKey.INCEDIT_UNCHANGED),
             onClick = {
                 tried = true
                 if (!changed || problem != null || busy) return@PrimaryButton
@@ -124,10 +125,10 @@ fun IncomeSourceEditSheet(visible: Boolean, s: IncomeSource, monthStart: Int, on
                         deps.more.incomeSources.edit(s.id, input)
                         if (ask && answer == true && day != null) deps.more.incomeSources.applyMonthStart(day)
                     }.onSuccess {
-                        toaster.show(if (ask && answer == true && day != null) t(TextKey.ACC_PAYDAY_SAVED, sentenceNumber(day)) else t(TextKey.INCEDIT_SAVED), dark = true)
+                        toaster.show(if (ask && answer == true && day != null) t(UiKey.ACC_PAYDAY_SAVED, sentenceNumber(day)) else t(UiKey.INCEDIT_SAVED), dark = true)
                         onSaved()
                         onClose()
-                    }.onFailure { error = it.message ?: t(TextKey.MORE_SAVE_FAILED) }
+                    }.onFailure { error = it.message ?: t(UiKey.MORE_SAVE_FAILED) }
                     busy = false
                 }
             },
@@ -145,17 +146,17 @@ private fun MonthStartBox(ask: Boolean, day: Int?, monthStart: Int, answer: Bool
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         val head = when {
-            ask -> t(TextKey.JOB_Q_MONTH_START, sentenceNumber(day ?: monthStart))
-            day == monthStart -> t(TextKey.INCEDIT_MONTH_SAME, sentenceNumber(monthStart))
-            else -> t(TextKey.INCEDIT_MONTH_INFO, sentenceNumber(monthStart))
+            ask -> t(UiKey.JOB_Q_MONTH_START, sentenceNumber(day ?: monthStart))
+            day == monthStart -> t(UiKey.INCEDIT_MONTH_SAME, sentenceNumber(monthStart))
+            else -> t(UiKey.INCEDIT_MONTH_INFO, sentenceNumber(monthStart))
         }
         BasicText(head, style = Type.of(14, FontWeight.Bold).copy(color = if (ask) Color(0xFF6B4600) else Ink.primary))
         if (ask) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SelectChip(t(TextKey.JOB_MONTH_YES), answer == true, onClick = { onAnswer(true) }, height = 48.dp)
-                SelectChip(t(TextKey.JOB_MONTH_NO, sentenceNumber(monthStart)), answer == false, onClick = { onAnswer(false) }, height = 48.dp)
+                SelectChip(t(UiKey.JOB_MONTH_YES), answer == true, onClick = { onAnswer(true) }, height = 48.dp)
+                SelectChip(t(UiKey.JOB_MONTH_NO, sentenceNumber(monthStart)), answer == false, onClick = { onAnswer(false) }, height = 48.dp)
             }
-            NotYetLine(t(TextKey.ACC_PAYDAY_NEXT_ONLY))
-        } else BasicText(t(TextKey.INCEDIT_MONTH_NOTE), style = Type.caption().copy(color = Ink.soft))
+            NotYetLine(t(UiKey.ACC_PAYDAY_NEXT_ONLY))
+        } else BasicText(t(UiKey.INCEDIT_MONTH_NOTE), style = Type.caption().copy(color = Ink.soft))
     }
 }

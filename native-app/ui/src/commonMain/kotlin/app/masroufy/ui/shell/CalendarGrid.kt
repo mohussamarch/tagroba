@@ -1,5 +1,7 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,14 +55,14 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 
 /** نوع الميعاد في الشبكة ولونه (النموذج: اشتراكات كهرماني · أقساط · جمعيات · ديون أزرق · أحداث وردي · الراتب أخضر مليان · فات موعده أحمر). */
-enum class MarkKind(val ink: Color, val bg: Color, val legend: TextKey) {
-    SUBSCRIPTION(Color(0xFF956000), Color(0x1F956000), TextKey.CAL_LEGEND_SUB),
-    INSTALLMENT(Color(0xFF4D747C), Color(0x244D747C), TextKey.CAL_LEGEND_INST),
-    ROSCA(Color(0xFF27785B), Color(0x2127785B), TextKey.CAL_LEGEND_ROSCA),
-    DEBT(Color(0xFF2469BA), Color(0x1F2469BA), TextKey.CAL_LEGEND_DEBT),
-    EVENT(Color(0xFFA55060), Color(0x1FA55060), TextKey.CAL_LEGEND_EVENT),
-    PAYDAY(Color(0xFFFFFFFF), Color(0xFF13764D), TextKey.CAL_LEGEND_PAY),
-    LATE(Color(0xFFBE3D48), Color(0x1FBE3D48), TextKey.CAL_LEGEND_LATE),
+enum class MarkKind(val ink: Color, val bg: Color, val legend: TextRef) {
+    SUBSCRIPTION(Color(0xFF956000), Color(0x1F956000), UiKey.CAL_LEGEND_SUB),
+    INSTALLMENT(Color(0xFF4D747C), Color(0x244D747C), UiKey.CAL_LEGEND_INST),
+    ROSCA(Color(0xFF27785B), Color(0x2127785B), UiKey.CAL_LEGEND_ROSCA),
+    DEBT(Color(0xFF2469BA), Color(0x1F2469BA), UiKey.CAL_LEGEND_DEBT),
+    EVENT(Color(0xFFA55060), Color(0x1FA55060), UiKey.CAL_LEGEND_EVENT),
+    PAYDAY(Color(0xFFFFFFFF), Color(0xFF13764D), UiKey.CAL_LEGEND_PAY),
+    LATE(Color(0xFFBE3D48), Color(0x1FBE3D48), UiKey.CAL_LEGEND_LATE),
 }
 
 /** ميعاد في يوم: [label] اسم قصير. [late] = فات ميعاده ⇒ أحمر. */
@@ -93,12 +95,12 @@ fun CalendarGrid(
     FloatingCard(modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), contentPadding = PaddingValues(start = 6.dp, end = 6.dp, top = 10.dp, bottom = 14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Arrow(Lucide.CHEVRON_RIGHT, t(TextKey.CAL_PREV), noPrev) { onMonth(-1) }
+                Arrow(Lucide.CHEVRON_RIGHT, t(UiKey.CAL_PREV), noPrev) { onMonth(-1) }
                 Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
                     BasicText(monthYear(year, month), style = Type.of(17, FontWeight.Bold))
                     if (showToday) TodayChip(onToday)
                 }
-                Arrow(Lucide.CHEVRON_LEFT, t(TextKey.CAL_NEXT), noNext) { onMonth(1) }
+                Arrow(Lucide.CHEVRON_LEFT, t(UiKey.CAL_NEXT), noNext) { onMonth(1) }
             }
             Row(Modifier.fillMaxWidth()) {
                 for (h in weekdayShortNamesFromSaturday()) BasicText(h, Modifier.weight(1f), style = Type.of(11).copy(color = Ink.muted, textAlign = TextAlign.Center))
@@ -137,7 +139,7 @@ private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: 
         else -> Modifier.background(Color(0x08193D33))
     }
     val shown = if (mine.size > 2) mine.take(1) else mine
-    val aria = dayMonth(iso) + (if (isToday) "، " + t(TextKey.CAL_TODAY) else "") + "، " + (if (mine.isEmpty()) t(TextKey.CAL_NO_DATES) else mine.joinToString("، ") { it.label })
+    val aria = dayMonth(iso) + (if (isToday) "، " + t(UiKey.CAL_TODAY) else "") + "، " + (if (mine.isEmpty()) t(UiKey.CAL_NO_DATES) else mine.joinToString("، ") { it.label })
     Column(
         modifier.defaultMinSize(minHeight = 60.dp).pressScale(press).clip(shape).then(bg).tap(press, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = aria; selected = on }.padding(horizontal = 2.dp, vertical = 4.dp),
@@ -160,7 +162,7 @@ private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: 
             )
         }
         if (mine.size > 2) BasicText(
-            t(TextKey.CAL_MORE, sentenceNumber(mine.size - 1)),
+            t(UiKey.CAL_MORE, sentenceNumber(mine.size - 1)),
             Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).background(Color(0x0F193D33)),
             style = Type.of(10, FontWeight.Bold, 1.5).copy(color = Ink.muted, textAlign = TextAlign.Center),
         )
@@ -183,5 +185,5 @@ private fun TodayChip(onClick: () -> Unit) {
     Box(
         Modifier.height(32.dp).pressScale(press).clip(RoundedCornerShape(12.dp)).background(Ink.selected).tap(press, onClick = onClick).padding(horizontal = 10.dp),
         contentAlignment = Alignment.Center,
-    ) { BasicText(t(TextKey.CAL_TODAY), style = Type.captionBold().copy(color = Ink.primary)) }
+    ) { BasicText(t(UiKey.CAL_TODAY), style = Type.captionBold().copy(color = Ink.primary)) }
 }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.DueItem
 import app.masroufy.core.DueSource
@@ -68,10 +69,10 @@ internal fun debtDueMap(items: List<DueItem>): Map<String, DueItem> =
     items.filter { it.source == DueSource.DEBT }.groupBy { it.sourceId }.mapValues { (_, v) -> v.minBy { it.dueAt } }
 
 internal fun reasonOf(o: Obligation): String = when {
-    o.originTransactionId == null -> t(TextKey.DEBTS_REASON_OPENING)
-    o.kind == ObligationKind.RECEIVABLE -> t(TextKey.DEBTS_REASON_RECEIVABLE)
-    o.kind == ObligationKind.LOAN_PAYABLE -> t(TextKey.DEBTS_REASON_LOAN)
-    else -> t(TextKey.DEBTS_REASON_CUSTODY)
+    o.originTransactionId == null -> t(UiKey.DEBTS_REASON_OPENING)
+    o.kind == ObligationKind.RECEIVABLE -> t(UiKey.DEBTS_REASON_RECEIVABLE)
+    o.kind == ObligationKind.LOAN_PAYABLE -> t(UiKey.DEBTS_REASON_LOAN)
+    else -> t(UiKey.DEBTS_REASON_CUSTODY)
 }
 
 /** إشارة الدين من ميعاده: فات موعدها ⇒ أحمر · قرّب (٣ أيام) ⇒ كهرماني · بعدين ⇒ هادي. */
@@ -79,8 +80,8 @@ internal fun debtSignal(due: DueItem?, today: IsoDate): Pair<Chip, String?> {
     if (due == null) return Chip.CALM to null
     val days = daysBetween(today, due.dueAt)
     return when (due.status) {
-        DueStatus.OVERDUE -> Chip.OVERDUE to t(TextKey.DEBTS_SIG_OVERDUE, agoText(-days))
-        DueStatus.SOON -> Chip.SOON to t(TextKey.DEBTS_SIG_SOON, afterText(days))
+        DueStatus.OVERDUE -> Chip.OVERDUE to t(UiKey.DEBTS_SIG_OVERDUE, agoText(-days))
+        DueStatus.SOON -> Chip.SOON to t(UiKey.DEBTS_SIG_SOON, afterText(days))
         DueStatus.UPCOMING -> Chip.CALM to afterText(days)
     }
 }
@@ -101,12 +102,12 @@ internal fun debtRows(people: List<PersonRow>, dues: Map<String, DueItem>, today
             amountMinor = row.remainingMinor,
             currency = o.currency,
             dueAt = due?.dueAt,
-            dueText = due?.let { t(TextKey.DEBTS_DUE_ON, dateText(it.dueAt, today)) } ?: t(TextKey.DEBTS_NO_DUE),
+            dueText = due?.let { t(UiKey.DEBTS_DUE_ON, dateText(it.dueAt, today)) } ?: t(UiKey.DEBTS_NO_DUE),
             chip = chip,
             chipText = chipText,
             forYou = forYou,
             kind = o.kind,
-            aria = t(if (forYou) TextKey.DEBTS_ARIA_FOR else TextKey.DEBTS_ARIA_ON, p.person.name, amount),
+            aria = t(if (forYou) UiKey.DEBTS_ARIA_FOR else UiKey.DEBTS_ARIA_ON, p.person.name, amount),
         )
     }
 }
@@ -127,37 +128,37 @@ fun duesDebtsUi(people: List<PersonRow>, totals: DuesTotals, dueItems: List<DueI
     val custody = hits.filter { it.kind == ObligationKind.CUSTODY_PAYABLE }.sortedBy { it.dueAt ?: "9999" }
     val groups = buildList {
         if (side != DebtSide.ON_YOU && forYou.isNotEmpty()) {
-            add(DebtGroupUi("for", t(TextKey.DUES_FOR_YOU), totals.receivableMinor.takeUnless { searching }, t(TextKey.DEBTS_ORDER_FOR_YOU), true, forYou))
+            add(DebtGroupUi("for", t(UiKey.DUES_FOR_YOU), totals.receivableMinor.takeUnless { searching }, t(UiKey.DEBTS_ORDER_FOR_YOU), true, forYou))
         }
         if (side != DebtSide.FOR_YOU && loans.isNotEmpty()) {
-            add(DebtGroupUi("on", t(TextKey.DUES_ON_YOU), totals.payableLoanMinor.takeUnless { searching }, t(TextKey.DEBTS_ORDER_ON_YOU), false, loans))
+            add(DebtGroupUi("on", t(UiKey.DUES_ON_YOU), totals.payableLoanMinor.takeUnless { searching }, t(UiKey.DEBTS_ORDER_ON_YOU), false, loans))
         }
         if (side != DebtSide.FOR_YOU && custody.isNotEmpty()) {
-            add(DebtGroupUi("custody", t(TextKey.DEBTS_CUSTODY_TITLE), totals.payableCustodyMinor.takeUnless { searching }, t(TextKey.DEBTS_ORDER_CUSTODY), false, custody))
+            add(DebtGroupUi("custody", t(UiKey.DEBTS_CUSTODY_TITLE), totals.payableCustodyMinor.takeUnless { searching }, t(UiKey.DEBTS_ORDER_CUSTODY), false, custody))
         }
     }
     val forYouPeople = all.filter { it.forYou }.map { it.personId }.distinct().size
     val onYouPeople = all.filter { it.kind == ObligationKind.LOAN_PAYABLE }.map { it.personId }.distinct().size
     val sides = listOf(
         DebtSideUi(
-            DebtSide.FOR_YOU, t(TextKey.DUES_FOR_YOU),
-            countText(forYouPeople, TextKey.DEBTS_AT_ONE, TextKey.DEBTS_AT_TWO, TextKey.DEBTS_AT_FEW, TextKey.DEBTS_AT_MANY, zero = TextKey.DEBTS_NOBODY),
-            totals.receivableMinor, t(TextKey.DEBTS_FOR_YOU_HINT),
+            DebtSide.FOR_YOU, t(UiKey.DUES_FOR_YOU),
+            countText(forYouPeople, UiKey.DEBTS_AT_ONE, UiKey.DEBTS_AT_TWO, UiKey.DEBTS_AT_FEW, UiKey.DEBTS_AT_MANY, zero = UiKey.DEBTS_NOBODY),
+            totals.receivableMinor, t(UiKey.DEBTS_FOR_YOU_HINT),
         ),
         DebtSideUi(
-            DebtSide.ON_YOU, t(TextKey.DUES_ON_YOU),
-            countText(onYouPeople, TextKey.DEBTS_TO_ONE, TextKey.DEBTS_TO_TWO, TextKey.DEBTS_TO_FEW, TextKey.DEBTS_TO_MANY, zero = TextKey.DEBTS_NOBODY),
-            totals.payableLoanMinor, t(TextKey.DEBTS_ON_YOU_HINT),
+            DebtSide.ON_YOU, t(UiKey.DUES_ON_YOU),
+            countText(onYouPeople, UiKey.DEBTS_TO_ONE, UiKey.DEBTS_TO_TWO, UiKey.DEBTS_TO_FEW, UiKey.DEBTS_TO_MANY, zero = UiKey.DEBTS_NOBODY),
+            totals.payableLoanMinor, t(UiKey.DEBTS_ON_YOU_HINT),
         ),
     )
     val none = groups.isEmpty()
-    val sideName = t(if (side == DebtSide.FOR_YOU) TextKey.DUES_FOR_YOU else TextKey.DUES_ON_YOU)
+    val sideName = t(if (side == DebtSide.FOR_YOU) UiKey.DUES_FOR_YOU else UiKey.DUES_ON_YOU)
     return DuesDebtsUi(
         currency = currency,
         sides = sides,
         groups = groups,
         empty = all.isEmpty(),
-        noHitsTitle = if (!none) null else if (searching) t(TextKey.DEBTS_NO_HITS_NAME, query.trim()) else t(TextKey.DEBTS_NO_HITS),
-        noHitsBody = if (!none) null else if (side != DebtSide.ALL) t(TextKey.DEBTS_NO_HITS_IN_SIDE, sideName) else t(TextKey.DEBTS_NO_HITS_TRY),
+        noHitsTitle = if (!none) null else if (searching) t(UiKey.DEBTS_NO_HITS_NAME, query.trim()) else t(UiKey.DEBTS_NO_HITS),
+        noHitsBody = if (!none) null else if (side != DebtSide.ALL) t(UiKey.DEBTS_NO_HITS_IN_SIDE, sideName) else t(UiKey.DEBTS_NO_HITS_TRY),
     )
 }

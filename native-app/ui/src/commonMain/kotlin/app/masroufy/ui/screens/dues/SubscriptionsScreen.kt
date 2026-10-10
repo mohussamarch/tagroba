@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,14 +56,14 @@ fun SubscriptionsScreen() {
     var error by remember { mutableStateOf<String?>(null) }
     val today = space.shell.today()
     val load = rememberLoad(deps) { deps.recurring.load(today) }
-    DuesScaffold(t(TextKey.SUBS_TITLE)) {
+    DuesScaffold(t(UiKey.SUBS_TITLE)) {
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks(90, 260) }
             Load.Failed -> item { LoadFailed(load::reload) }
             is Load.Ready -> {
                 val ui = subscriptionsUi(s.value, today, dismissed)
                 if (ui.empty) {
-                    item { EmptyState(t(TextKey.SUBS_EMPTY_TITLE), t(TextKey.SUBS_EMPTY_BODY)) }
+                    item { EmptyState(t(UiKey.SUBS_EMPTY_TITLE), t(UiKey.SUBS_EMPTY_BODY)) }
                     return@DuesScaffold
                 }
                 ui.candidate?.let { c ->
@@ -71,7 +72,7 @@ fun SubscriptionsScreen() {
                             scope.launch {
                                 try {
                                     deps.recurring.save(c.source.confirmInput())
-                                    toaster.show(t(TextKey.SUBS_CAND_ADDED, c.name))
+                                    toaster.show(t(UiKey.SUBS_CAND_ADDED, c.name))
                                     error = null
                                     DuesChanges.bump()
                                 } catch (e: Exception) {
@@ -90,7 +91,7 @@ fun SubscriptionsScreen() {
                         }
                     }
                 }
-                item(key = "note") { BasicText(t(TextKey.SUBS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
+                item(key = "note") { BasicText(t(UiKey.SUBS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
             }
         }
     }
@@ -103,7 +104,7 @@ private fun CandidateCard(c: CandidateUi, error: String?, onYes: () -> Unit, onN
         Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.alertBg).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        BasicText(t(TextKey.SUBS_CAND_TITLE), style = Type.captionBold().copy(color = Ink.focus))
+        BasicText(t(UiKey.SUBS_CAND_TITLE), style = Type.captionBold().copy(color = Ink.focus))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 BasicText(c.name, style = Type.of(15, FontWeight.Bold), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -112,8 +113,8 @@ private fun CandidateCard(c: CandidateUi, error: String?, onYes: () -> Unit, onN
             AmountText(c.amountMinor, c.currency)
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(TextKey.SUBS_CAND_YES), onYes, Modifier.weight(1f), height = 44.dp)
-            TonalButton(t(TextKey.DUES_NO), onNo, Modifier.weight(1f), height = 44.dp)
+            PrimaryButton(t(UiKey.SUBS_CAND_YES), onYes, Modifier.weight(1f), height = 44.dp)
+            TonalButton(t(UiKey.DUES_NO), onNo, Modifier.weight(1f), height = 44.dp)
         }
         error?.let { FieldError(it) }
     }

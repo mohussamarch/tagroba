@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment.calc
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.EstateOwner
 import app.masroufy.core.Halalas
@@ -31,19 +32,19 @@ data class SavedRowUi(
 fun savedRowUi(s: InheritanceScenario, people: List<PersonChoice>, result: InheritanceResult?): SavedRowUi {
     val eg = InheritanceLaw.of(s.input.countryCode) == InheritanceLaw.EG
     val whose = when (s.estateOf) {
-        EstateOwner.MINE -> t(TextKey.INHCALC_MINE)
-        EstateOwner.OTHER -> s.personId?.let { id -> people.firstOrNull { it.id == id }?.name }?.let { t(TextKey.INHCALC_OF, it) } ?: t(TextKey.INHCALC_OTHER)
+        EstateOwner.MINE -> t(UiKey.INHCALC_MINE)
+        EstateOwner.OTHER -> s.personId?.let { id -> people.firstOrNull { it.id == id }?.name }?.let { t(UiKey.INHCALC_OF, it) } ?: t(UiKey.INHCALC_OTHER)
     }
     return SavedRowUi(
         id = s.id,
         name = s.name,
         whose = whose,
-        law = t(if (eg) TextKey.INHSAVED_LAW_EG else TextKey.INHSAVED_LAW_SA),
+        law = t(if (eg) UiKey.INHSAVED_LAW_EG else UiKey.INHSAVED_LAW_SA),
         lawEg = eg,
         itemsLine = thingsPhrase(s.input.items.size),
         totalMinor = (result as? InheritanceResult.Computed)?.grossMinor,
         currency = countryPack(s.input.countryCode).currency,
-        heirs = heirsSummary(s.input.heirs) ?: t(TextKey.INHSAVED_DRAFT),
-        whenText = t(TextKey.INHSAVED_WHEN, dayMonth(s.updatedAt.take(10)), dayMonth(s.createdAt.take(10))),
+        heirs = heirsSummary(s.input.heirs) ?: t(UiKey.INHSAVED_DRAFT),
+        whenText = t(UiKey.INHSAVED_WHEN, dayMonth(s.updatedAt.take(10)), dayMonth(s.createdAt.take(10))),
     )
 }

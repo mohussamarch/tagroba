@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -68,7 +69,7 @@ private fun RuleSheet(sheet: RulesSheet.Rule?, ui: RulesUi?, deps: BudgetsDeps, 
     var draft by remember(shown) { mutableStateOf(if (shown != null && ui != null) shown.startDraft(ui) else null) }
     var error by remember(shown) { mutableStateOf<String?>(null) }
     var busy by remember(shown) { mutableStateOf(false) }
-    val title = t(if (shown?.row != null) TextKey.RULES_SHEET_EDIT else TextKey.RULES_NEW)
+    val title = t(if (shown?.row != null) UiKey.RULES_SHEET_EDIT else UiKey.RULES_NEW)
     Sheet(sheet != null, onDismiss, title, spacing = 10.dp) {
         val d = draft ?: return@Sheet
         val r = ui ?: return@Sheet
@@ -78,27 +79,27 @@ private fun RuleSheet(sheet: RulesSheet.Rule?, ui: RulesUi?, deps: BudgetsDeps, 
             val problem = ruleProblem(r, editing, d)
             val duplicate = problem?.takeIf { d.text.isNotBlank() && d.categoryId != null }
             TextInput(
-                d.text, { draft = d.copy(text = it.take(120)); error = null }, label = t(TextKey.RULES_TEXT_LABEL), placeholder = t(TextKey.RULES_TEXT_HINT),
+                d.text, { draft = d.copy(text = it.take(120)); error = null }, label = t(UiKey.RULES_TEXT_LABEL), placeholder = t(UiKey.RULES_TEXT_HINT),
                 error = duplicate,
             )
-            FieldLabel(t(TextKey.RULES_MODE_LABEL))
+            FieldLabel(t(UiKey.RULES_MODE_LABEL))
             SegmentedTabs(
                 listOf(RuleMatchMode.CONTAINS, RuleMatchMode.STARTS_WITH, RuleMatchMode.EXACT).map { it to modeLabel(it) }, d.mode,
                 { draft = d.copy(mode = it) }, Modifier.fillMaxWidth(), height = 44.dp,
             )
             CategoryPicker(r, d.group, d.categoryId, onGroup = { draft = d.copy(group = it) }) { draft = d.copy(categoryId = it) }
             PositionStepper(d.position, maxPosition(r, editing)) { draft = d.copy(position = it) }
-            BasicText(t(TextKey.RULES_NOTE_RULE), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.RULES_NOTE_RULE), style = Type.caption().copy(color = Ink.muted))
         }
         error?.let { FieldError(it) }
         PrimaryButton(
-            t(TextKey.RULES_SAVE),
+            t(UiKey.RULES_SAVE),
             {
                 busy = true
                 scope.launch {
-                    error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) { saveRule(deps, r, editing, d) }
+                    error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { saveRule(deps, r, editing, d) }
                     busy = false
-                    if (error == null) onDone(t(if (editing != null) TextKey.RULES_SAVED else TextKey.RULES_ADDED), null)
+                    if (error == null) onDone(t(if (editing != null) UiKey.RULES_SAVED else UiKey.RULES_ADDED), null)
                 }
             },
             Modifier.fillMaxWidth(),
@@ -119,15 +120,15 @@ private fun MerchantSheet(sheet: RulesSheet.Merchant?, ui: RulesUi?, deps: Budge
     var aliases by remember(shown) { mutableStateOf(shown?.row?.merchant?.aliases.orEmpty()) }
     var error by remember(shown) { mutableStateOf<String?>(null) }
     var busy by remember(shown) { mutableStateOf(false) }
-    val title = t(TextKey.RULES_SHEET_MERCHANT)
+    val title = t(UiKey.RULES_SHEET_MERCHANT)
     Sheet(sheet != null, onDismiss, title, spacing = 10.dp) {
         val d = draft ?: return@Sheet
         val r = ui ?: return@Sheet
         val row = shown?.row ?: return@Sheet
         BasicText(title, style = Type.of(18, FontWeight.Bold))
         Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            TextInput(d.name, { draft = d.copy(name = it.take(120)); error = null }, label = t(TextKey.RULES_MERCHANT_NAME), placeholder = t(TextKey.RULES_MERCHANT_NAME))
-            FieldLabel(t(TextKey.RULES_ALIAS_LABEL))
+            TextInput(d.name, { draft = d.copy(name = it.take(120)); error = null }, label = t(UiKey.RULES_MERCHANT_NAME), placeholder = t(UiKey.RULES_MERCHANT_NAME))
+            FieldLabel(t(UiKey.RULES_ALIAS_LABEL))
             if (aliases.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     aliases.forEach { a ->
@@ -136,11 +137,11 @@ private fun MerchantSheet(sheet: RulesSheet.Merchant?, ui: RulesUi?, deps: Budge
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
-                TextInput(d.alias, { draft = d.copy(alias = it.take(120)); error = null }, Modifier.weight(1f), placeholder = t(TextKey.RULES_ALIAS_HINT), height = 44.dp, textSize = 14)
-                TonalButton(t(TextKey.RULES_ALIAS_ADD), {
+                TextInput(d.alias, { draft = d.copy(alias = it.take(120)); error = null }, Modifier.weight(1f), placeholder = t(UiKey.RULES_ALIAS_HINT), height = 44.dp, textSize = 14)
+                TonalButton(t(UiKey.RULES_ALIAS_ADD), {
                     val alias = d.alias.trim()
                     if (alias.isNotEmpty()) scope.launch {
-                        error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) { deps.rules.addAlias(row.id, alias) }
+                        error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { deps.rules.addAlias(row.id, alias) }
                         if (error == null) {
                             aliases = deps.rules.listMerchants().firstOrNull { it.merchant.id == row.id }?.merchant?.aliases.orEmpty()
                             draft = d.copy(alias = "")
@@ -149,25 +150,25 @@ private fun MerchantSheet(sheet: RulesSheet.Merchant?, ui: RulesUi?, deps: Budge
                 }, height = 44.dp)
             }
             CategoryPicker(r, d.group, d.categoryId, onGroup = { draft = d.copy(group = it) }) { draft = d.copy(categoryId = it) }
-            BasicText(t(TextKey.RULES_NOTE_MERCHANT), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.RULES_NOTE_MERCHANT), style = Type.caption().copy(color = Ink.muted))
             if (row.merchant.verifiedCategoryId != null) {
-                DangerButton(t(TextKey.RULES_FORGET), {
+                DangerButton(t(UiKey.RULES_FORGET), {
                     scope.launch {
-                        error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) { deps.rules.setMerchantCategory(row.id, null) }
-                        if (error == null) onDone(t(TextKey.RULES_FORGOT), row.id)
+                        error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { deps.rules.setMerchantCategory(row.id, null) }
+                        if (error == null) onDone(t(UiKey.RULES_FORGOT), row.id)
                     }
                 }, Modifier.fillMaxWidth())
             }
         }
         error?.let { FieldError(it) }
         PrimaryButton(
-            t(TextKey.RULES_SAVE),
+            t(UiKey.RULES_SAVE),
             {
                 busy = true
                 scope.launch {
-                    error = attempt(t(TextKey.BUDGETS_ERROR_TITLE)) { saveMerchant(deps, row, d) }
+                    error = attempt(t(UiKey.BUDGETS_ERROR_TITLE)) { saveMerchant(deps, row, d) }
                     busy = false
-                    if (error == null) onDone(t(TextKey.RULES_MERCHANT_SAVED), null)
+                    if (error == null) onDone(t(UiKey.RULES_MERCHANT_SAVED), null)
                 }
             },
             Modifier.fillMaxWidth(),
@@ -181,7 +182,7 @@ private fun MerchantSheet(sheet: RulesSheet.Merchant?, ui: RulesUi?, deps: Budge
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CategoryPicker(ui: RulesUi, group: String?, selected: String?, onGroup: (String?) -> Unit, onPick: (String) -> Unit) {
-    FieldLabel(t(TextKey.RULES_CAT_LABEL))
+    FieldLabel(t(UiKey.RULES_CAT_LABEL))
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         ui.picker.forEach { g -> SelectChip(g.name, selected = g.key == group, onClick = { onGroup(g.key) }, height = 44.dp) }
     }
@@ -196,12 +197,12 @@ private fun CategoryPicker(ui: RulesUi, group: String?, selected: String?, onGro
 private fun PositionStepper(position: Int, max: Int, onChange: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.RULES_PRI_LABEL), style = Type.of(13, FontWeight.Bold))
-            BasicText(t(TextKey.RULES_PRI_NOTE), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.RULES_PRI_LABEL), style = Type.of(13, FontWeight.Bold))
+            BasicText(t(UiKey.RULES_PRI_NOTE), style = Type.caption().copy(color = Ink.muted))
         }
         // «−» = قدّمها (رقم أصغر) · «+» = أخّرها — زي النموذج
-        IconButton44(BudgetsIcons.MINUS, t(TextKey.RULES_PRI_UP), { onChange((position - 1).coerceAtLeast(1)) }, enabled = position > 1)
+        IconButton44(BudgetsIcons.MINUS, t(UiKey.RULES_PRI_UP), { onChange((position - 1).coerceAtLeast(1)) }, enabled = position > 1)
         BasicText(sentenceNumber(position), Modifier.width(32.dp), style = Type.of(16, FontWeight.Bold).copy(textAlign = TextAlign.Center))
-        IconButton44(Lucide.PLUS, t(TextKey.RULES_PRI_DOWN), { onChange((position + 1).coerceAtMost(max)) }, enabled = position < max)
+        IconButton44(Lucide.PLUS, t(UiKey.RULES_PRI_DOWN), { onChange((position + 1).coerceAtMost(max)) }, enabled = position < max)
     }
 }

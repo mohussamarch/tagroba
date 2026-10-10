@@ -1,5 +1,6 @@
 package app.masroufy.ui.shell
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -74,7 +75,7 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
     var open by remember { mutableStateOf(false) }
     val anchor = remember { Anchor() }
     val unread = state?.unread ?: 0
-    val label = if (unread > 0) t(TextKey.BELL_LABEL_NEW) else t(TextKey.BELL_TITLE)
+    val label = if (unread > 0) t(UiKey.BELL_LABEL_NEW) else t(UiKey.BELL_TITLE)
 
     val bell = @Composable { selected: Boolean ->
         SurfaceIconButton(Lucide.BELL, label, onClick = { open = !open }, selected = selected, badge = { BellDot(unread > 0) })
@@ -82,13 +83,13 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
     Box(modifier.onGloballyPositioned { anchor.update(it) }) { bell(false) }
 
     GlassPopover(
-        visible = open, onDismiss = { open = false }, anchor = anchor, title = t(TextKey.BELL_TITLE), closeLabel = t(TextKey.BELL_CLOSE),
+        visible = open, onDismiss = { open = false }, anchor = anchor, title = t(UiKey.BELL_TITLE), closeLabel = t(UiKey.BELL_CLOSE),
         anchorContent = { bell(true) },
     ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-            BasicText(t(TextKey.BELL_TITLE), style = Type.of(16, FontWeight.Bold))
+            BasicText(t(UiKey.BELL_TITLE), style = Type.of(16, FontWeight.Bold))
             BasicText(
-                if (unread > 0) t(TextKey.BELL_NEW_COUNT, sentenceNumber(unread)) else t(TextKey.BELL_ALL_READ),
+                if (unread > 0) t(UiKey.BELL_NEW_COUNT, sentenceNumber(unread)) else t(UiKey.BELL_ALL_READ),
                 style = Type.caption().copy(color = Ink.muted),
             )
         }
@@ -103,23 +104,23 @@ fun BellPopover(state: BellState?, onChanged: () -> Unit, modifier: Modifier = M
             }
         }
         val items = state?.items.orEmpty().filter { !dismissals.isGone(it.threadKey) }.take(4)
-        if (items.isEmpty()) BasicText(t(TextKey.BELL_EMPTY), Modifier.padding(8.dp), style = Type.of(13).copy(color = Ink.muted))
+        if (items.isEmpty()) BasicText(t(UiKey.BELL_EMPTY), Modifier.padding(8.dp), style = Type.of(13).copy(color = Ink.muted))
         for (item in items) BellRow(item) { dismissals.drop(item.threadKey) }
         if (undo != null) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.NOTIFICATIONS_DROPPED), style = Type.of(13, FontWeight.Bold))
-                TonalButton(t(TextKey.NOTIFICATIONS_UNDO), onClick = { dismissals.restore() }, height = 44.dp)
+                BasicText(t(UiKey.NOTIFICATIONS_DROPPED), style = Type.of(13, FontWeight.Bold))
+                TonalButton(t(UiKey.NOTIFICATIONS_UNDO), onClick = { dismissals.restore() }, height = 44.dp)
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             val readShape = RoundedCornerShape(18.dp)
             TonalButton(
-                if (unread > 0) t(TextKey.BELL_MARK_READ) else t(TextKey.BELL_ALL_READ),
+                if (unread > 0) t(UiKey.BELL_MARK_READ) else t(UiKey.BELL_ALL_READ),
                 onClick = { scope.launch { shell.markAllRead(); onChanged() } },
                 enabled = unread > 0,
                 modifier = Modifier.weight(1f).clip(readShape).background(Color(0xCCFFFFFF)).insetRing(readShape, 1.dp, Color(0x2E08634F)),
             )
-            PrimaryButton(t(TextKey.BELL_ALL), onClick = { open = false; nav.push(NotificationsRoute) }, modifier = Modifier.weight(1f))
+            PrimaryButton(t(UiKey.BELL_ALL), onClick = { open = false; nav.push(NotificationsRoute) }, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -158,7 +159,7 @@ private fun BellRow(item: BellItem, onDrop: () -> Unit) {
             BasicText(item.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         val press = rememberPress()
-        val label = t(TextKey.NOTIFICATIONS_DROP, item.title)
+        val label = t(UiKey.NOTIFICATIONS_DROP, item.title)
         Box(
             Modifier.size(44.dp).pressScale(press).clip(RoundedCornerShape(14.dp)).tap(press, label = label, onClick = onDrop),
             contentAlignment = Alignment.Center,

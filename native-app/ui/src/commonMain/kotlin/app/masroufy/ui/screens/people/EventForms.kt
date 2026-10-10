@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -60,22 +61,22 @@ internal data class EventDraft(
 /** الفحص قبل الحفظ (الاسم والتاريخ) — الباقي بتفحصه `ManageEvents` برسالته (الطول · التكرار · صاحب الحدث). */
 internal fun checkEventDraft(d: EventDraft): Pair<EventInput?, String?> {
     val name = d.name.trim()
-    if (name.isEmpty()) return null to t(TextKey.EVENT_FORM_NEED_NAME)
-    val date = d.date ?: return null to t(TextKey.PPL_PICK_DATE)
+    if (name.isEmpty()) return null to t(UiKey.EVENT_FORM_NEED_NAME)
+    val date = d.date ?: return null to t(UiKey.PPL_PICK_DATE)
     return EventInput(name, d.kind, date, d.mine, if (d.mine) null else d.host) to null
 }
 
 @Composable
 internal fun EventAddRouteSheet(defaultDate: IsoDate?, close: () -> Unit) {
-    RouteSheet(t(TextKey.EVENT_FORM_NEW), close) { dismiss -> EventForm(null, defaultDate, null, dismiss) }
+    RouteSheet(t(UiKey.EVENT_FORM_NEW), close) { dismiss -> EventForm(null, defaultDate, null, dismiss) }
 }
 
 /** زرار «تعديل الحدث» آخر صفحة الحدث ولوحته. */
 @Composable
 internal fun EventEditButton(data: EventScreenData) {
     var open by remember { mutableStateOf(false) }
-    SecondaryButton(t(TextKey.EVENT_FORM_EDIT_OPEN), onClick = { open = true }, leading = PeopleIcons.PEN, modifier = Modifier.fillMaxWidth())
-    Sheet(open, onDismiss = { open = false }, title = t(TextKey.EVENT_FORM_EDIT_TITLE)) {
+    SecondaryButton(t(UiKey.EVENT_FORM_EDIT_OPEN), onClick = { open = true }, leading = PeopleIcons.PEN, modifier = Modifier.fillMaxWidth())
+    Sheet(open, onDismiss = { open = false }, title = t(UiKey.EVENT_FORM_EDIT_TITLE)) {
         EventForm(data.ui.event, null, data, done = { open = false })
     }
 }
@@ -95,44 +96,44 @@ private fun EventForm(existing: LifeEvent?, defaultDate: IsoDate?, data: EventSc
     // حدثك اللي عليه نقوط جاتلك ما يتحوّلش لحدث حد تاني (EVENT_GIFT_IN_NOT_MINE)
     val lockMine = existing != null && existing.mine && data?.ui?.hasGiftsIn == true
     Column(Modifier.fillMaxWidth().heightIn(max = 640.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SheetHeading(t(if (existing == null) TextKey.EVENT_FORM_NEW else TextKey.EVENT_FORM_EDIT_TITLE))
-        TextInput(d.name, { d = d.copy(name = it.take(60)); err = null }, label = t(TextKey.EVENT_FORM_NAME), placeholder = t(TextKey.EVENT_FORM_NAME_PH))
-        FieldTitle(t(TextKey.EVENT_FORM_KIND))
+        SheetHeading(t(if (existing == null) UiKey.EVENT_FORM_NEW else UiKey.EVENT_FORM_EDIT_TITLE))
+        TextInput(d.name, { d = d.copy(name = it.take(60)); err = null }, label = t(UiKey.EVENT_FORM_NAME), placeholder = t(UiKey.EVENT_FORM_NAME_PH))
+        FieldTitle(t(UiKey.EVENT_FORM_KIND))
         ChoiceFlow { for (k in LifeEventKind.entries) Choice(k.label, d.kind == k, { d = d.copy(kind = k); err = null }) }
         when (d.kind) {
-            LifeEventKind.CONDOLENCE -> Note(t(TextKey.EVENT_DETAIL_NO_PREP_CONDOLENCE))
-            LifeEventKind.SCHOOL -> Note(t(TextKey.EVENT_FORM_SCHOOL_NOTE))
+            LifeEventKind.CONDOLENCE -> Note(t(UiKey.EVENT_DETAIL_NO_PREP_CONDOLENCE))
+            LifeEventKind.SCHOOL -> Note(t(UiKey.EVENT_FORM_SCHOOL_NOTE))
             else -> Unit
         }
-        FieldTitle(t(TextKey.EVENT_FORM_WHEN))
+        FieldTitle(t(UiKey.EVENT_FORM_WHEN))
         DateField(d.date, today, { d = d.copy(date = it); err = null })
-        if (existing == null) Note(t(TextKey.EVENT_FORM_DATE_NOTE))
-        FieldTitle(t(TextKey.EVENT_FORM_WHO))
+        if (existing == null) Note(t(UiKey.EVENT_FORM_DATE_NOTE))
+        FieldTitle(t(UiKey.EVENT_FORM_WHO))
         val visible = people.filter { !it.archived }.take(WHO_CHIPS).let { list ->
             val host = d.host?.let { h -> people.firstOrNull { it.id == h } }
             if (host != null && host !in list) list + host else list
         }
         ChoiceFlow {
-            Choice(t(TextKey.EVENT_FORM_ME), d.mine, { d = d.copy(mine = true, host = null); err = null })
+            Choice(t(UiKey.EVENT_FORM_ME), d.mine, { d = d.copy(mine = true, host = null); err = null })
             for (p in visible) Choice(p.name, !d.mine && d.host == p.id, { d = d.copy(mine = false, host = p.id); err = null }, enabled = !lockMine)
         }
         val hostName = d.host?.let { h -> people.firstOrNull { it.id == h }?.name }
         when {
-            lockMine -> Note(t(TextKey.EVENT_FORM_LOCK_MINE))
-            !d.mine && hostName != null -> Note(t(TextKey.EVENT_FORM_HOST_NOTE, hostName))
+            lockMine -> Note(t(UiKey.EVENT_FORM_LOCK_MINE))
+            !d.mine && hostName != null -> Note(t(UiKey.EVENT_FORM_HOST_NOTE, hostName))
         }
         if (existing != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    BasicText(t(TextKey.PPL_ARCHIVED), style = Type.bodyBold())
-                    Note(t(TextKey.EVENT_FORM_ARCHIVED_SUB))
+                    BasicText(t(UiKey.PPL_ARCHIVED), style = Type.bodyBold())
+                    Note(t(UiKey.EVENT_FORM_ARCHIVED_SUB))
                 }
-                ToggleSwitch(d.archived, t(TextKey.PPL_ARCHIVED), { d = d.copy(archived = !d.archived) })
+                ToggleSwitch(d.archived, t(UiKey.PPL_ARCHIVED), { d = d.copy(archived = !d.archived) })
             }
-        } else Note(t(TextKey.EVENT_FORM_HINT))
+        } else Note(t(UiKey.EVENT_FORM_HINT))
         ErrorLine(err)
         PrimaryButton(
-            t(if (existing == null) TextKey.EVENT_FORM_ADD else TextKey.PPL_SAVE_EDIT),
+            t(if (existing == null) UiKey.EVENT_FORM_ADD else UiKey.PPL_SAVE_EDIT),
             loading = busy,
             height = 52.dp,
             modifier = Modifier.fillMaxWidth(),
@@ -152,7 +153,7 @@ private fun EventForm(existing: LifeEvent?, defaultDate: IsoDate?, data: EventSc
                     busy = false
                     r.onSuccess {
                         PeopleChanges.bump()
-                        toaster.show(if (existing == null) t(TextKey.EVENT_FORM_ADDED, input.name) else t(TextKey.PPL_SAVED))
+                        toaster.show(if (existing == null) t(UiKey.EVENT_FORM_ADDED, input.name) else t(UiKey.PPL_SAVED))
                         done()
                     }.onFailure { err = it.message }
                 }
@@ -169,7 +170,7 @@ internal fun DateField(date: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit
     var year by remember(date) { mutableStateOf(base.year) }
     var month by remember(date) { mutableStateOf(base.month) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SecondaryButton(date?.let { dayMonthYear(it) } ?: t(TextKey.PPL_PICK_DATE), onClick = { open = !open }, leading = app.masroufy.ui.icons.Lucide.CALENDAR, modifier = Modifier.fillMaxWidth())
+        SecondaryButton(date?.let { dayMonthYear(it) } ?: t(UiKey.PPL_PICK_DATE), onClick = { open = !open }, leading = app.masroufy.ui.icons.Lucide.CALENDAR, modifier = Modifier.fillMaxWidth())
         if (open) {
             app.masroufy.ui.shell.CalendarGrid(
                 year = year, month = month, today = today, marks = emptyList(),

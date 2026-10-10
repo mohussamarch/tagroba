@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.imports
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -71,7 +72,7 @@ fun ImportReviewScreen(draftId: Long) {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            error = e.message ?: t(TextKey.IMPORTS_LOAD_FAILED)
+            error = e.message ?: t(UiKey.IMPORTS_LOAD_FAILED)
         }
     }
 
@@ -89,24 +90,24 @@ fun ImportReviewScreen(draftId: Long) {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                error = e.message ?: t(TextKey.IMPORTS_LOAD_FAILED)
+                error = e.message ?: t(UiKey.IMPORTS_LOAD_FAILED)
             }
             saving = false
         }
     }
 
-    InnerScaffold(t(TextKey.IMPORT_REVIEW_TITLE)) {
+    InnerScaffold(t(UiKey.IMPORT_REVIEW_TITLE)) {
         if (draft?.request == null) {
-            item(key = "gone") { EmptyState(t(TextKey.IMPORTS_DRAFT_GONE), t(TextKey.IMPORTS_DRAFT_GONE_BODY)) }
+            item(key = "gone") { EmptyState(t(UiKey.IMPORTS_DRAFT_GONE), t(UiKey.IMPORTS_DRAFT_GONE_BODY)) }
             return@InnerScaffold
         }
         error?.let { msg ->
             item(key = "error") {
                 TintedPanel(PanelTone.AMBER) {
-                    PanelTitle(t(TextKey.IMPORT_REVIEW_ERR_TITLE), PanelTone.AMBER)
+                    PanelTitle(t(UiKey.IMPORT_REVIEW_ERR_TITLE), PanelTone.AMBER)
                     BasicText(msg, style = Type.of(13).copy(color = Ink.focus))
-                    BasicText(t(TextKey.IMPORT_REVIEW_ERR_BODY), style = Type.of(13).copy(color = Ink.focus))
-                    QuietButton(t(TextKey.IMPORT_REVIEW_REDO), { round++; toaster.show(t(TextKey.IMPORT_REVIEW_REDONE), dark = true) }, onTint = true, height = 44.dp)
+                    BasicText(t(UiKey.IMPORT_REVIEW_ERR_BODY), style = Type.of(13).copy(color = Ink.focus))
+                    QuietButton(t(UiKey.IMPORT_REVIEW_REDO), { round++; toaster.show(t(UiKey.IMPORT_REVIEW_REDONE), dark = true) }, onTint = true, height = 44.dp)
                 }
             }
         }
@@ -119,9 +120,9 @@ fun ImportReviewScreen(draftId: Long) {
             val prev = u.previous
             item(key = "empty") {
                 EmptyState(
-                    t(TextKey.IMPORT_REVIEW_EMPTY_TITLE),
+                    t(UiKey.IMPORT_REVIEW_EMPTY_TITLE),
                     prev?.let(::alreadyImportedBody),
-                    action = { TonalButton(t(TextKey.IMPORT_BATCHES_TITLE), { nav.push(ImportBatchesRoute) }) },
+                    action = { TonalButton(t(UiKey.IMPORT_BATCHES_TITLE), { nav.push(ImportBatchesRoute) }) },
                 )
             }
             return@InnerScaffold
@@ -135,21 +136,21 @@ fun ImportReviewScreen(draftId: Long) {
                 onCompare = { compare = it },
             )
         }
-        item(key = "foot") { BasicText(t(TextKey.IMPORT_REVIEW_FOOT), style = Type.caption().copy(color = Ink.muted)) }
+        item(key = "foot") { BasicText(t(UiKey.IMPORT_REVIEW_FOOT), style = Type.caption().copy(color = Ink.muted)) }
         item(key = "bar") {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (done == null) {
                     PrimaryButton(
-                        if (saving) t(TextKey.IMPORT_REVIEW_SAVING) else t(TextKey.IMPORT_REVIEW_COMMIT, opsCount(selection.size)), ::commit, Modifier.fillMaxWidth(),
+                        if (saving) t(UiKey.IMPORT_REVIEW_SAVING) else t(UiKey.IMPORT_REVIEW_COMMIT, opsCount(selection.size)), ::commit, Modifier.fillMaxWidth(),
                         enabled = selection.isNotEmpty() && error == null, loading = saving, height = 52.dp,
                     )
                 } else {
-                    TonalButton(t(TextKey.IMPORT_BATCHES_TITLE), { nav.push(ImportBatchesRoute) }, Modifier.fillMaxWidth())
+                    TonalButton(t(UiKey.IMPORT_BATCHES_TITLE), { nav.push(ImportBatchesRoute) }, Modifier.fillMaxWidth())
                 }
                 val note = when {
-                    done != null -> TextKey.IMPORT_REVIEW_NOTE_DONE
-                    saving -> TextKey.IMPORT_REVIEW_NOTE_SAVING
-                    else -> TextKey.IMPORT_REVIEW_NOTE_ATOMIC
+                    done != null -> UiKey.IMPORT_REVIEW_NOTE_DONE
+                    saving -> UiKey.IMPORT_REVIEW_NOTE_SAVING
+                    else -> UiKey.IMPORT_REVIEW_NOTE_ATOMIC
                 }
                 BasicText(t(note), Modifier.fillMaxWidth(), style = Type.of(11).copy(color = Ink.muted, textAlign = TextAlign.Center))
             }

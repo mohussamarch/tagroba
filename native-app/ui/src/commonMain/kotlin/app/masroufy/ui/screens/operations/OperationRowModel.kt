@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import androidx.compose.ui.graphics.Color
 import app.masroufy.core.Category
 import app.masroufy.core.Currency
@@ -79,15 +81,15 @@ fun subtitleOf(tx: Transaction, ctx: RowContext): String {
     if (kind.liquidity == Liquidity.INTERNAL) {
         val from = ctx.wallet(tx.walletId)?.name
         val to = ctx.wallet(tx.transferToWalletId)?.name
-        return if (from != null && to != null) t(TextKey.OPERATIONS_ROW_MOVE, kind.label, from, to) else kind.label
+        return if (from != null && to != null) t(UiKey.OPERATIONS_ROW_MOVE, kind.label, from, to) else kind.label
     }
     ctx.category(tx.categoryId)?.let { return it.name }
     transferPartyOf(tx)?.let { party ->
-        val who = party.label.ifBlank { party.last4?.let { t(TextKey.OPERATIONS_ROW_ACCOUNT, sentenceDigitsOf(it)) }.orEmpty() }
-        if (who.isNotBlank()) return t(if (tx.observedDirection == Direction.IN) TextKey.OPERATIONS_ROW_FROM else TextKey.OPERATIONS_ROW_TO, who)
+        val who = party.label.ifBlank { party.last4?.let { t(UiKey.OPERATIONS_ROW_ACCOUNT, sentenceDigitsOf(it)) }.orEmpty() }
+        if (who.isNotBlank()) return t(if (tx.observedDirection == Direction.IN) UiKey.OPERATIONS_ROW_FROM else UiKey.OPERATIONS_ROW_TO, who)
     }
     if (tx.economicKind != EconomicKind.UNCLASSIFIED) return kind.label
-    return t(TextKey.OPERATIONS_ROW_UNCLASSIFIED)
+    return t(UiKey.OPERATIONS_ROW_UNCLASSIFIED)
 }
 
 private fun sentenceDigitsOf(digits: String): String = app.masroufy.core.sentenceDigits(digits)
@@ -120,8 +122,8 @@ fun opRow(tx: Transaction, ctx: RowContext): OpRow =
 fun dayLabel(date: IsoDate, today: IsoDate): String {
     val yesterday = dayNumberToIso(toDayNumber(parseIsoDate(today)) - 1)
     return when (date) {
-        today -> t(TextKey.OPERATIONS_TODAY)
-        yesterday -> t(TextKey.OPERATIONS_YESTERDAY)
+        today -> t(UiKey.OPERATIONS_TODAY)
+        yesterday -> t(UiKey.OPERATIONS_YESTERDAY)
         else -> dayMonth(date)
     }
 }
@@ -131,7 +133,7 @@ fun dayGroups(transactions: List<Transaction>, ctx: RowContext, today: IsoDate):
     groupByDay(transactions).map { g -> OpDay(g.date, dayLabel(g.date, today), g.transactions.map { opRow(it, ctx) }) }
 
 /** العدد في جملة بقاعدة العربي: واحدة · اتنين · ٣–١٠ جمع · ١١+ مفرد. [few]/[many] فيهم `{0}`. */
-fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: TextKey): String = when {
+fun countText(n: Int, one: TextRef, two: TextRef, few: TextRef, many: TextRef): String = when {
     n == 1 -> t(one)
     n == 2 -> t(two)
     n in 3..10 -> t(few, sentenceNumber(n))
@@ -140,4 +142,4 @@ fun countText(n: Int, one: TextKey, two: TextKey, few: TextKey, many: TextKey): 
 
 /** «عملية واحدة» · «عمليتان» · «٥ عمليات» · «١٢ عملية». */
 fun operationsCount(n: Int): String =
-    countText(n, TextKey.OPERATIONS_COUNT_ONE, TextKey.OPERATIONS_COUNT_TWO, TextKey.OPERATIONS_COUNT_FEW, TextKey.OPERATIONS_COUNT_MANY)
+    countText(n, UiKey.OPERATIONS_COUNT_ONE, UiKey.OPERATIONS_COUNT_TWO, UiKey.OPERATIONS_COUNT_FEW, UiKey.OPERATIONS_COUNT_MANY)

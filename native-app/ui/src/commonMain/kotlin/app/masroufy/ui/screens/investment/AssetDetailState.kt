@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.TextRef
+import app.masroufy.core.UiKey
 import app.masroufy.core.ASSET_KIND_LABELS
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
@@ -52,11 +54,11 @@ data class AssetDetailUi(
     val log: List<LogRow>,
 )
 
-enum class PriceChip(val key: TextKey) {
-    FRESH(TextKey.ASSET_DETAIL_CHIP_FRESH),
-    STALE(TextKey.ASSET_DETAIL_CHIP_STALE),
-    MANUAL(TextKey.ASSET_DETAIL_CHIP_MANUAL),
-    MISSING(TextKey.ASSET_DETAIL_CHIP_MISSING),
+enum class PriceChip(val key: TextRef) {
+    FRESH(UiKey.ASSET_DETAIL_CHIP_FRESH),
+    STALE(UiKey.ASSET_DETAIL_CHIP_STALE),
+    MANUAL(UiKey.ASSET_DETAIL_CHIP_MANUAL),
+    MISSING(UiKey.ASSET_DETAIL_CHIP_MISSING),
 }
 
 enum class TradeKind { BUY, SELL }
@@ -76,12 +78,12 @@ fun assetDetailUi(row: AssetRow, projection: AssetProjectionView?, currency: Cur
     val sqm = a.pricePerSqmMinor
     val priceLine = when {
         byArea && area != null && sqm != null ->
-            uiText(TextKey.ASSET_DETAIL_AREA_LINE, qtyText(area), moneyText(sqm, currency), dateOrToday(a.pricePerSqmAsOf ?: today, today))
-        byArea -> uiText(TextKey.ASSET_DETAIL_AREA_NONE)
+            uiText(UiKey.ASSET_DETAIL_AREA_LINE, qtyText(area), moneyText(sqm, currency), dateOrToday(a.pricePerSqmAsOf ?: today, today))
+        byArea -> uiText(UiKey.ASSET_DETAIL_AREA_NONE)
         else -> when (val s = p.priceState) {
-            PriceState.Missing -> uiText(TextKey.ASSET_DETAIL_PRICE_NONE)
-            is PriceState.Fresh -> uiText(TextKey.ASSET_DETAIL_PRICE_LINE, moneyText(s.price.pricePerUnitMinor, currency), unit, dateOrToday(s.price.asOf, today))
-            is PriceState.Stale -> uiText(TextKey.ASSET_DETAIL_PRICE_LINE, moneyText(s.price.pricePerUnitMinor, currency), unit, dateOrToday(s.price.asOf, today))
+            PriceState.Missing -> uiText(UiKey.ASSET_DETAIL_PRICE_NONE)
+            is PriceState.Fresh -> uiText(UiKey.ASSET_DETAIL_PRICE_LINE, moneyText(s.price.pricePerUnitMinor, currency), unit, dateOrToday(s.price.asOf, today))
+            is PriceState.Stale -> uiText(UiKey.ASSET_DETAIL_PRICE_LINE, moneyText(s.price.pricePerUnitMinor, currency), unit, dateOrToday(s.price.asOf, today))
         }
     }
     val linked = !a.feedSymbol.isNullOrEmpty()
@@ -107,29 +109,29 @@ fun assetDetailUi(row: AssetRow, projection: AssetProjectionView?, currency: Cur
         archived = a.archived,
         realEstate = realEstate,
         valueMinor = value,
-        naReason = uiText(if (realEstate) TextKey.ASSET_DETAIL_NA_RE else TextKey.ASSET_DETAIL_NA_PRICE),
+        naReason = uiText(if (realEstate) UiKey.ASSET_DETAIL_NA_RE else UiKey.ASSET_DETAIL_NA_PRICE),
         priceLine = priceLine,
         chip = chip,
         unrealizedMinor = if (realEstate) projection?.projection?.gainNowMinor else p.unrealizedGainMinor,
         heldQuantity = p.heldQuantity,
         qtyText = qtyUnit(p.heldQuantity, unit),
-        qtySub = if (realEstate && area != null) uiText(TextKey.INVEST_QTY_UNIT, qtyText(area), uiText(TextKey.ASSET_PROJ_SQM_UNIT)) else kindLabel,
-        avgSub = uiText(TextKey.ASSET_DETAIL_AVG_SUB, unit),
+        qtySub = if (realEstate && area != null) uiText(UiKey.INVEST_QTY_UNIT, qtyText(area), uiText(UiKey.ASSET_PROJ_SQM_UNIT)) else kindLabel,
+        avgSub = uiText(UiKey.ASSET_DETAIL_AVG_SUB, unit),
         costMinor = p.costBasisMinor,
         realizedMinor = if (row.sales.isEmpty()) null else p.realizedGainMinor,
-        realizedSub = if (row.sales.isEmpty()) uiText(TextKey.ASSET_DETAIL_NOT_SOLD) else uiText(TextKey.ASSET_DETAIL_FROM_SALES, sentenceNumber(row.sales.size)),
+        realizedSub = if (row.sales.isEmpty()) uiText(UiKey.ASSET_DETAIL_NOT_SOLD) else uiText(UiKey.ASSET_DETAIL_FROM_SALES, sentenceNumber(row.sales.size)),
         linked = linked,
         staleLinked = linked && p.priceState is PriceState.Stale,
-        sourceTitle = uiText(if (byArea) TextKey.ASSET_DETAIL_SRC_SQM else if (linked) TextKey.ASSET_DETAIL_SRC_LINKED else TextKey.ASSET_DETAIL_SRC_MANUAL),
+        sourceTitle = uiText(if (byArea) UiKey.ASSET_DETAIL_SRC_SQM else if (linked) UiKey.ASSET_DETAIL_SRC_LINKED else UiKey.ASSET_DETAIL_SRC_MANUAL),
         sourceBody = when {
-            byArea -> uiText(TextKey.ASSET_DETAIL_SRC_SQM_BODY)
-            linked -> uiText(TextKey.ASSET_DETAIL_SRC_LINKED_BODY, a.feedSymbol!!)
-            else -> uiText(TextKey.ASSET_DETAIL_SRC_MANUAL_BODY)
+            byArea -> uiText(UiKey.ASSET_DETAIL_SRC_SQM_BODY)
+            linked -> uiText(UiKey.ASSET_DETAIL_SRC_LINKED_BODY, a.feedSymbol!!)
+            else -> uiText(UiKey.ASSET_DETAIL_SRC_MANUAL_BODY)
         },
         log = log.sortedByDescending { it.sortKey },
     )
 }
 
 private fun feeLine(q: Quantity, unit: String, fee: Halalas, currency: Currency): String =
-    if (fee > 0) uiText(TextKey.ASSET_DETAIL_LINE_FEE, qtyUnit(q, unit), moneyText(fee, currency))
-    else uiText(TextKey.ASSET_DETAIL_LINE_NO_FEE, qtyUnit(q, unit))
+    if (fee > 0) uiText(UiKey.ASSET_DETAIL_LINE_FEE, qtyUnit(q, unit), moneyText(fee, currency))
+    else uiText(UiKey.ASSET_DETAIL_LINE_NO_FEE, qtyUnit(q, unit))

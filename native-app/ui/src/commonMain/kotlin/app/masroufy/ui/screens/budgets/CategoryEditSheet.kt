@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.background
@@ -87,13 +88,13 @@ fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -
             TextInput(
                 value = d.name,
                 onChange = { draft = d.copy(name = it.take(80)); error = null },
-                label = t(TextKey.CAT_EDIT_NAME),
-                placeholder = t(TextKey.CAT_EDIT_NAME_HINT),
+                label = t(UiKey.CAT_EDIT_NAME),
+                placeholder = t(UiKey.CAT_EDIT_NAME_HINT),
                 error = v.nameError ?: error,
             )
-            FieldLabel(t(TextKey.CAT_EDIT_PARENT))
+            FieldLabel(t(UiKey.CAT_EDIT_PARENT))
             if (v.parentLocked) {
-                BasicText(t(TextKey.CAT_EDIT_LOCKED), style = Type.caption().copy(color = Ink.muted))
+                BasicText(t(UiKey.CAT_EDIT_LOCKED), style = Type.caption().copy(color = Ink.muted))
             } else {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     v.parents.forEach { p ->
@@ -105,7 +106,7 @@ fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -
                 }
             }
             if (v.isMain) {
-                FieldLabel(t(TextKey.CAT_EDIT_GROUP))
+                FieldLabel(t(UiKey.CAT_EDIT_GROUP))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     CATEGORY_GROUPS.forEach { g ->
                         SelectChip(g.name, selected = d.groupKey == g.key, onClick = { draft = d.copy(groupKey = g.key) }, height = 44.dp)
@@ -122,15 +123,15 @@ fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -
                     BasicText(v.subNote, Modifier.weight(1f), style = Type.caption().copy(color = Ink.muted))
                 }
             }
-            FieldLabel(t(TextKey.CAT_EDIT_ICON))
+            FieldLabel(t(UiKey.CAT_EDIT_ICON))
             IconGrid(selected = d.iconKey, color = parseHexColor(v.previewHex)) { draft = d.copy(iconKey = it) }
-            if (v.needIcon) BasicText(t(TextKey.CAT_EDIT_NEED_ICON), style = Type.caption().copy(color = Ink.muted))
+            if (v.needIcon) BasicText(t(UiKey.CAT_EDIT_NEED_ICON), style = Type.caption().copy(color = Ink.muted))
             if (v.canHide) {
-                DangerButton(t(TextKey.CAT_EDIT_HIDE), {
+                DangerButton(t(UiKey.CAT_EDIT_HIDE), {
                     val category = stored.firstOrNull { it.id == t0.id } ?: return@DangerButton
                     scope.launch {
-                        error = attempt(t(TextKey.CATS_ERR_TITLE)) { deps.categories.save(catVisibilityInput(category, active = false)) }
-                        if (error == null) onSaved(t(TextKey.CATS_HIDDEN_TOAST, category.name), category.parentId)
+                        error = attempt(t(UiKey.CATS_ERR_TITLE)) { deps.categories.save(catVisibilityInput(category, active = false)) }
+                        if (error == null) onSaved(t(UiKey.CATS_HIDDEN_TOAST, category.name), category.parentId)
                     }
                 }, Modifier.fillMaxWidth())
                 BasicText(v.hideNote, style = Type.caption().copy(color = Ink.muted))
@@ -145,13 +146,13 @@ fun CategoryEditSheet(target: CatEditTarget?, ui: CategoriesUi?, onDismiss: () -
                     val input = catSaveInput(t0, d, stored)
                     val recolor = recolorsSubs(t0, d, stored)
                     var saved: app.masroufy.core.Category? = null
-                    error = attempt(t(TextKey.CATS_ERR_TITLE)) { saved = deps.categories.save(input) }
+                    error = attempt(t(UiKey.CATS_ERR_TITLE)) { saved = deps.categories.save(input) }
                     busy = false
                     val item = saved ?: return@launch
                     val message = when {
-                        t0.mode != CatEditMode.EDIT -> t(TextKey.CATS_ADDED, item.name)
-                        recolor -> t(TextKey.CATS_SAVED_RECOLOR)
-                        else -> t(TextKey.CATS_SAVED)
+                        t0.mode != CatEditMode.EDIT -> t(UiKey.CATS_ADDED, item.name)
+                        recolor -> t(UiKey.CATS_SAVED_RECOLOR)
+                        else -> t(UiKey.CATS_SAVED)
                     }
                     onSaved(message, item.parentId ?: item.id)
                 }

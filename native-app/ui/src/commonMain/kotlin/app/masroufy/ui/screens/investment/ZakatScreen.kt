@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,9 +69,9 @@ fun ZakatScreen() {
     }
     LaunchedEffect(space) { reload() }
     val l = load
-    InnerScaffold(t(TextKey.ZAKAT_SCREEN_TITLE)) {
+    InnerScaffold(t(UiKey.ZAKAT_SCREEN_TITLE)) {
         when {
-            failed != null -> item(key = "failed") { AlertBanner(t(TextKey.SHELL_LOAD_FAILED), failed, t(TextKey.SHELL_RETRY)) { scope.launch { reload() } } }
+            failed != null -> item(key = "failed") { AlertBanner(t(UiKey.SHELL_LOAD_FAILED), failed, t(UiKey.SHELL_RETRY)) { scope.launch { reload() } } }
             l == null -> item(key = "loading") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Skeleton(Modifier.fillMaxWidth().height(150.dp), radius = 28.dp, strong = true)
@@ -79,8 +80,8 @@ fun ZakatScreen() {
                 }
             }
             !l.visible -> item(key = "hidden") {
-                EmptyState(t(TextKey.ZAKAT_SCREEN_HIDDEN_TITLE), t(TextKey.ZAKAT_SCREEN_HIDDEN_BODY), action = {
-                    TonalButton(t(TextKey.ZAKAT_SCREEN_HIDDEN_ACTION), { nav.push(MoreRoute) }, Modifier.padding(top = 8.dp))
+                EmptyState(t(UiKey.ZAKAT_SCREEN_HIDDEN_TITLE), t(UiKey.ZAKAT_SCREEN_HIDDEN_BODY), action = {
+                    TonalButton(t(UiKey.ZAKAT_SCREEN_HIDDEN_ACTION), { nav.push(MoreRoute) }, Modifier.padding(top = 8.dp))
                 })
             }
             else -> {
@@ -90,7 +91,7 @@ fun ZakatScreen() {
                 item(key = "hero") { ZakatHero(ui) }
                 item(key = "hawl") {
                     HawlCardView(ui.hawl, onConfirm = {
-                        act { deps.zakat.confirmDate(data.suggestion!!.hawlStart); t(TextKey.ZAKAT_SCREEN_CONFIRMED_TOAST) }
+                        act { deps.zakat.confirmDate(data.suggestion!!.hawlStart); t(UiKey.ZAKAT_SCREEN_CONFIRMED_TOAST) }
                     }, onChange = { hawl = true })
                 }
                 if (l.questions.isNotEmpty()) item(key = "facts") { FactsCard(factsSummary(l.questions)) { facts = true } }
@@ -98,10 +99,10 @@ fun ZakatScreen() {
                 if (ui.outs.isNotEmpty()) item(key = "outs") { OutsSection(ui) }
                 if (ui.hasYear) item(key = "close") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        PrimaryButton(t(TextKey.ZAKAT_SCREEN_CLOSE), {
-                            act { deps.zakat.close(data.openYear!!.id, deps.today(), data.prices); t(TextKey.ZAKAT_SCREEN_CLOSED_TOAST) }
+                        PrimaryButton(t(UiKey.ZAKAT_SCREEN_CLOSE), {
+                            act { deps.zakat.close(data.openYear!!.id, deps.today(), data.prices); t(UiKey.ZAKAT_SCREEN_CLOSED_TOAST) }
                         }, Modifier.fillMaxWidth(), enabled = ui.canClose)
-                        BasicText(t(if (ui.canClose) TextKey.ZAKAT_SCREEN_CLOSE_NOTE else TextKey.ZAKAT_CANNOT_CLOSE), Modifier.fillMaxWidth(),
+                        BasicText(t(if (ui.canClose) UiKey.ZAKAT_SCREEN_CLOSE_NOTE else TextKey.ZAKAT_CANNOT_CLOSE), Modifier.fillMaxWidth(),
                             style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
                     }
                 }
@@ -135,7 +136,7 @@ private fun ReferenceBox(ui: ZakatUi) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         BasicText(ui.reference, style = Type.of(13, FontWeight.Bold))
-        BasicText(t(TextKey.ZAKAT_SCREEN_REF_BODY), style = Type.caption().copy(color = Ink.soft))
+        BasicText(t(UiKey.ZAKAT_SCREEN_REF_BODY), style = Type.caption().copy(color = Ink.soft))
         ui.scopeNote?.let { BasicText(it, style = Type.captionBold().copy(color = Ink.focus)) }
     }
 }
@@ -145,7 +146,7 @@ private fun ZakatHero(ui: ZakatUi) {
     HeroCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.ZAKAT_SCREEN_HERO), Modifier.weight(1f), style = Type.body().copy(color = Ink.onHeroMuted))
+                BasicText(t(UiKey.ZAKAT_SCREEN_HERO), Modifier.weight(1f), style = Type.body().copy(color = Ink.onHeroMuted))
                 ui.chip?.let { chip ->
                     val (ink, bg) = when (chip) {
                         OutcomeChip.DUE -> Ink.heroStart to Ink.mint
@@ -161,7 +162,7 @@ private fun ZakatHero(ui: ZakatUi) {
             if (ui.hasYear) {
                 HeroDivider(Modifier.padding(top = 2.dp))
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(t(TextKey.ZAKAT_SCREEN_NISAB), Modifier.weight(1f), style = Type.caption().copy(color = Ink.onHeroMuted))
+                    BasicText(t(UiKey.ZAKAT_SCREEN_NISAB), Modifier.weight(1f), style = Type.caption().copy(color = Ink.onHeroMuted))
                     AmountText(ui.nisabMinor, ui.currency, size = 12, color = Color.White)
                 }
                 BasicText(ui.nisabRule, style = Type.of(11).copy(color = Ink.mint))
@@ -176,10 +177,10 @@ private fun HawlCardView(h: HawlCard, onConfirm: () -> Unit, onChange: () -> Uni
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                BasicText(t(TextKey.ZAKAT_SCREEN_HAWL), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted))
+                BasicText(t(UiKey.ZAKAT_SCREEN_HAWL), Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted))
                 if (h.dateLine != null) {
-                    if (h.confirmed) ToneChip(t(TextKey.ZAKAT_SCREEN_CONFIRMED), Ink.income, Ink.selected)
-                    else ToneChip(t(TextKey.ZAKAT_SCREEN_SUGGESTED), Ink.focus, Ink.alertBg)
+                    if (h.confirmed) ToneChip(t(UiKey.ZAKAT_SCREEN_CONFIRMED), Ink.income, Ink.selected)
+                    else ToneChip(t(UiKey.ZAKAT_SCREEN_SUGGESTED), Ink.focus, Ink.alertBg)
                 }
             }
             BasicText(h.dateLine ?: NOT_AVAILABLE, style = Type.of(17, FontWeight.Bold).copy(color = if (h.dateLine == null) Ink.muted else Ink.text))
@@ -187,9 +188,9 @@ private fun HawlCardView(h: HawlCard, onConfirm: () -> Unit, onChange: () -> Uni
             BasicText(h.why, style = Type.caption().copy(color = Ink.soft))
             if (h.rule.isNotEmpty()) BasicText(h.rule, style = Type.of(11).copy(color = Ink.muted))
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (h.canConfirm) PrimaryButton(t(TextKey.ZAKAT_SCREEN_CONFIRM), onConfirm, Modifier.weight(1f))
+                if (h.canConfirm) PrimaryButton(t(UiKey.ZAKAT_SCREEN_CONFIRM), onConfirm, Modifier.weight(1f))
                 // «غيّره ليوم هجري» بيفضل ظاهر بعد «أكّده» (رد المالك §76 — 2026-10-09)
-                TonalButton(t(TextKey.HAWL_OPEN), onChange, Modifier.weight(1f))
+                TonalButton(t(UiKey.HAWL_OPEN), onChange, Modifier.weight(1f))
             }
         }
     }

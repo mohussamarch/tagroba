@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
@@ -57,13 +58,13 @@ fun tradeRequest(mode: TradeMode, assetId: Id?, currency: Currency, form: TradeF
         )
         TradeMode.PRICE -> {
             val price = form.price.trim().takeIf { it.isNotEmpty() }?.let { parseMoney(it, currency) }
-            if (price == null || price <= 0) TradeRequest.Invalid(uiText(TextKey.ASSET_TRADE_ERR_PRICE)) else TradeRequest.Price(price)
+            if (price == null || price <= 0) TradeRequest.Invalid(uiText(UiKey.ASSET_TRADE_ERR_PRICE)) else TradeRequest.Price(price)
         }
         TradeMode.BUY, TradeMode.SELL -> {
             val buy = mode == TradeMode.BUY
             when {
-                form.qty.isBlank() -> TradeRequest.Invalid(uiText(TextKey.ASSET_TRADE_ERR_QTY))
-                form.amount.isBlank() -> TradeRequest.Invalid(uiText(if (buy) TextKey.ASSET_TRADE_ERR_PAID else TextKey.ASSET_TRADE_ERR_PROCEEDS))
+                form.qty.isBlank() -> TradeRequest.Invalid(uiText(UiKey.ASSET_TRADE_ERR_QTY))
+                form.amount.isBlank() -> TradeRequest.Invalid(uiText(if (buy) UiKey.ASSET_TRADE_ERR_PAID else UiKey.ASSET_TRADE_ERR_PROCEEDS))
                 else -> {
                     val q = parseQuantity(form.qty)
                     val v = parseMoney(form.amount, currency)
@@ -76,7 +77,7 @@ fun tradeRequest(mode: TradeMode, assetId: Id?, currency: Currency, form: TradeF
         }
     }
 } catch (e: IllegalArgumentException) {
-    TradeRequest.Invalid(e.message ?: uiText(TextKey.SHELL_LOAD_FAILED))
+    TradeRequest.Invalid(e.message ?: uiText(UiKey.SHELL_LOAD_FAILED))
 }
 
 /** امبارح (تاريخ بس — مش فلوس). */

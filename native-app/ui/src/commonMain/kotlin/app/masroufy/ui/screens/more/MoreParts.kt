@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -190,7 +191,7 @@ fun WarnBox(title: String?, body: String?, modifier: Modifier = Modifier, action
 
 /** «غير متاح بعد» — المنطق لسه ما اتبناش في كوتلن ([MoreHooks]). شارة رمادي مش رقم ولا زرار ميت من غير سبب. */
 @Composable
-fun NotYetBadge(modifier: Modifier = Modifier) = Badge(t(TextKey.MORE_NOT_YET), BadgeKind.NOT_AVAILABLE, modifier)
+fun NotYetBadge(modifier: Modifier = Modifier) = Badge(t(UiKey.MORE_NOT_YET), BadgeKind.NOT_AVAILABLE, modifier)
 
 /** سطر «غير متاح بعد» بسبب — تحت زرار مقفول. */
 @Composable

@@ -22,25 +22,25 @@ fun currencySymbol(currency: Currency): String = currencyLabel(currency)
 
 /** اسم العملة بالكلام (لوحة تبديل البلد) — العملات اللي ليها بلد في التطبيق بس، وغيرها رمزها. */
 fun currencyName(currency: Currency): String = when (currency) {
-    Currency.SAR -> uiText(TextKey.CURRENCY_NAME_SAR)
-    Currency.EGP -> uiText(TextKey.CURRENCY_NAME_EGP)
+    Currency.SAR -> uiText(UiKey.CURRENCY_NAME_SAR)
+    Currency.EGP -> uiText(UiKey.CURRENCY_NAME_EGP)
     else -> currencyLabel(currency)
 }
 
 private val MONTH_KEYS = listOf(
-    TextKey.MONTH_1, TextKey.MONTH_2, TextKey.MONTH_3, TextKey.MONTH_4, TextKey.MONTH_5, TextKey.MONTH_6,
-    TextKey.MONTH_7, TextKey.MONTH_8, TextKey.MONTH_9, TextKey.MONTH_10, TextKey.MONTH_11, TextKey.MONTH_12,
+    UiKey.MONTH_1, UiKey.MONTH_2, UiKey.MONTH_3, UiKey.MONTH_4, UiKey.MONTH_5, UiKey.MONTH_6,
+    UiKey.MONTH_7, UiKey.MONTH_8, UiKey.MONTH_9, UiKey.MONTH_10, UiKey.MONTH_11, UiKey.MONTH_12,
 )
 
 /** أيام الأسبوع بترتيب ISO (الإتنين = 1 … الأحد = 7) — زي [isoWeekday]. */
 private val WEEKDAY_KEYS = listOf(
-    TextKey.WEEKDAY_MON, TextKey.WEEKDAY_TUE, TextKey.WEEKDAY_WED, TextKey.WEEKDAY_THU, TextKey.WEEKDAY_FRI, TextKey.WEEKDAY_SAT, TextKey.WEEKDAY_SUN,
+    UiKey.WEEKDAY_MON, UiKey.WEEKDAY_TUE, UiKey.WEEKDAY_WED, UiKey.WEEKDAY_THU, UiKey.WEEKDAY_FRI, UiKey.WEEKDAY_SAT, UiKey.WEEKDAY_SUN,
 )
 
 /** رأس شبكة التقويم: **السبت أول الأسبوع في البلدين** (رد المالك OVERRIDES §76). */
 private val SHORT_FROM_SATURDAY = listOf(
-    TextKey.WEEKDAY_SHORT_SAT, TextKey.WEEKDAY_SHORT_SUN, TextKey.WEEKDAY_SHORT_MON, TextKey.WEEKDAY_SHORT_TUE,
-    TextKey.WEEKDAY_SHORT_WED, TextKey.WEEKDAY_SHORT_THU, TextKey.WEEKDAY_SHORT_FRI,
+    UiKey.WEEKDAY_SHORT_SAT, UiKey.WEEKDAY_SHORT_SUN, UiKey.WEEKDAY_SHORT_MON, UiKey.WEEKDAY_SHORT_TUE,
+    UiKey.WEEKDAY_SHORT_WED, UiKey.WEEKDAY_SHORT_THU, UiKey.WEEKDAY_SHORT_FRI,
 )
 
 fun monthName(month: Int): String {
@@ -59,11 +59,11 @@ fun saturdayColumnOf(date: IsoDate): Int = (isoWeekday(date) + 1) % 7
 /** «٧ أكتوبر». */
 fun dayMonth(date: IsoDate): String {
     val p = parseIsoDate(date)
-    return uiText(TextKey.DATE_DAY_MONTH, sentenceNumber(p.day), monthName(p.month))
+    return uiText(UiKey.DATE_DAY_MONTH, sentenceNumber(p.day), monthName(p.month))
 }
 
 /** «الأربعاء، ٧ أكتوبر». */
-fun weekdayDayMonth(date: IsoDate): String = uiText(TextKey.DATE_WEEKDAY_DAY_MONTH, weekdayName(date), dayMonth(date))
+fun weekdayDayMonth(date: IsoDate): String = uiText(UiKey.DATE_WEEKDAY_DAY_MONTH, weekdayName(date), dayMonth(date))
 
 /** «أكتوبر ٢٠٢٦». */
-fun monthYear(year: Int, month: Int): String = uiText(TextKey.DATE_MONTH_YEAR, monthName(month), sentenceNumber(year))
+fun monthYear(year: Int, month: Int): String = uiText(UiKey.DATE_MONTH_YEAR, monthName(month), sentenceNumber(year))

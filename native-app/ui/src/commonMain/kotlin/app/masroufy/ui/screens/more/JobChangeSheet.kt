@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -93,26 +94,26 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
         busy = true
         error = null
         scope.launch {
-            runCatching { block() }.onFailure { error = it.message ?: t(TextKey.MORE_SAVE_FAILED) }
+            runCatching { block() }.onFailure { error = it.message ?: t(UiKey.MORE_SAVE_FAILED) }
             busy = false
         }
     }
 
     val title = when (m) {
-        JobSheetMode.Change -> t(TextKey.INCSRC_CHANGE)
-        JobSheetMode.Add -> t(TextKey.INCSRC_ADD)
-        is JobSheetMode.Close -> t(TextKey.JOB_CLOSE_TITLE, m.source.name)
+        JobSheetMode.Change -> t(UiKey.INCSRC_CHANGE)
+        JobSheetMode.Add -> t(UiKey.INCSRC_ADD)
+        is JobSheetMode.Close -> t(UiKey.JOB_CLOSE_TITLE, m.source.name)
     }
-    Sheet(mode != null, onClose, title = title, closeLabel = t(TextKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
+    Sheet(mode != null, onClose, title = title, closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 10.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         BasicText(
             t(
                 when {
-                    step == Step.ASK -> TextKey.JOB_SUB_ASK
-                    step == Step.NEW && m == JobSheetMode.Add -> TextKey.JOB_SUB_ADD
-                    step == Step.NEW -> TextKey.JOB_SUB_NEW
-                    m is JobSheetMode.Close -> TextKey.JOB_SUB_CLOSE
-                    else -> TextKey.JOB_SUB_CHANGE
+                    step == Step.ASK -> UiKey.JOB_SUB_ASK
+                    step == Step.NEW && m == JobSheetMode.Add -> UiKey.JOB_SUB_ADD
+                    step == Step.NEW -> UiKey.JOB_SUB_NEW
+                    m is JobSheetMode.Close -> UiKey.JOB_SUB_CLOSE
+                    else -> UiKey.JOB_SUB_CHANGE
                 },
             ),
             style = Type.of(13).copy(color = Ink.muted),
@@ -120,13 +121,13 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
         when (step) {
             Step.CLOSE -> {
                 if (m == JobSheetMode.Change && changeable.isNotEmpty()) {
-                    Label(t(TextKey.JOB_WHICH_ENDED))
+                    Label(t(UiKey.JOB_WHICH_ENDED))
                     for (s in changeable) SelectChip(s.name, oldId == s.id, onClick = { oldId = s.id }, modifier = Modifier.fillMaxWidth(), height = 52.dp)
                 }
-                Label(t(TextKey.JOB_WHEN_ENDED))
+                Label(t(UiKey.JOB_WHEN_ENDED))
                 DateChoices(endDateChoices(today, monthStart), end, today) { end = it }
                 PrimaryButton(
-                    t(if (m is JobSheetMode.Close) TextKey.JOB_CLOSE_GO else TextKey.JOB_NEXT),
+                    t(if (m is JobSheetMode.Close) UiKey.JOB_CLOSE_GO else UiKey.JOB_NEXT),
                     onClick = {
                         val id = oldId ?: return@PrimaryButton
                         if (m is JobSheetMode.Close) act { sources.close(id, end); onDone(); onClose() } else step = Step.NEW
@@ -135,20 +136,20 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
                 )
             }
             Step.NEW -> {
-                TextInput(name, { name = it; error = null }, label = t(TextKey.JOB_NAME), placeholder = t(TextKey.JOB_NAME_PH))
-                Label(t(TextKey.JOB_KIND))
+                TextInput(name, { name = it; error = null }, label = t(UiKey.JOB_NAME), placeholder = t(UiKey.JOB_NAME_PH))
+                Label(t(UiKey.JOB_KIND))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (k in IncomeSourceKind.entries) FillChip(t(incomeKindLabel(k)), kind == k) { kind = k }
                 }
-                Label(t(TextKey.JOB_WHEN_STARTED))
+                Label(t(UiKey.JOB_WHEN_STARTED))
                 DateChoices(startDateChoices(today, monthStart, m == JobSheetMode.Change), start, today) { start = it }
                 PrimaryButton(
-                    t(if (m == JobSheetMode.Add) TextKey.JOB_ADD_GO else TextKey.MORE_SAVE),
+                    t(if (m == JobSheetMode.Add) UiKey.JOB_ADD_GO else UiKey.MORE_SAVE),
                     onClick = {
                         val input = IncomeSourceInput(name.trim(), start, kind, deps.space.currency)
                         if (m == JobSheetMode.Add) act {
                             val added = sources.add(input)
-                            toaster.show(t(TextKey.JOB_ADDED, added.name), dark = true)
+                            toaster.show(t(UiKey.JOB_ADDED, added.name), dark = true)
                             onDone(); onClose()
                         } else act {
                             val r = sources.changeJob(JobChange(oldId, end, input))
@@ -167,19 +168,19 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Ink.selected).padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    if (r.congratulate && r.opened != null) BasicText(t(TextKey.JOB_CONGRATS, r.opened!!.name), style = Type.of(18, FontWeight.Bold).copy(color = Ink.primary))
-                    r.closed?.let { c -> BasicText(t(TextKey.JOB_CLOSED_LINE, c.name, fullDate(c.endedAt) ?: c.endedAt.orEmpty()), style = Type.of(13)) }
+                    if (r.congratulate && r.opened != null) BasicText(t(UiKey.JOB_CONGRATS, r.opened!!.name), style = Type.of(18, FontWeight.Bold).copy(color = Ink.primary))
+                    r.closed?.let { c -> BasicText(t(UiKey.JOB_CLOSED_LINE, c.name, fullDate(c.endedAt) ?: c.endedAt.orEmpty()), style = Type.of(13)) }
                 }
                 val q = queue.firstOrNull()
                 if (q != null) FollowUpQuestion(q, step = done.size + 1, total = done.size + queue.size, monthStart, busy,
-                    onPayday = { id, day -> act { val more = sources.answerPayday(id, day); done = done + t(TextKey.JOB_DONE_PAYDAY, app.masroufy.core.sentenceNumber(day)); queue = nextQueue(queue, more) } },
+                    onPayday = { id, day -> act { val more = sources.answerPayday(id, day); done = done + t(UiKey.JOB_DONE_PAYDAY, app.masroufy.core.sentenceNumber(day)); queue = nextQueue(queue, more) } },
                     onFrequency = { id, freq, day -> act { sources.answerPayFrequency(id, freq, day); done = done + payDone(freq, day); queue = nextQueue(queue, emptyList()) } },
-                    onMonthStart = { day, yes -> act { if (yes) { sources.applyMonthStart(day); done = done + t(TextKey.ACC_PAYDAY_SAVED, app.masroufy.core.sentenceNumber(day)) }; queue = nextQueue(queue, emptyList()) } },
-                    onExpected = { id, minor -> act { sources.answerExpectedSalary(id, minor); done = done + t(TextKey.JOB_DONE_EXPECTED, app.masroufy.ui.components.amountLabel(minor, deps.space.currency)); queue = nextQueue(queue, emptyList()) } },
+                    onMonthStart = { day, yes -> act { if (yes) { sources.applyMonthStart(day); done = done + t(UiKey.ACC_PAYDAY_SAVED, app.masroufy.core.sentenceNumber(day)) }; queue = nextQueue(queue, emptyList()) } },
+                    onExpected = { id, minor -> act { sources.answerExpectedSalary(id, minor); done = done + t(UiKey.JOB_DONE_EXPECTED, app.masroufy.ui.components.amountLabel(minor, deps.space.currency)); queue = nextQueue(queue, emptyList()) } },
                     onSkip = { queue = nextQueue(queue, emptyList()) },
                 ) else {
-                    BasicText(if (done.isEmpty()) t(TextKey.JOB_DONE_LATER) else done.joinToString("، "), style = Type.of(13).copy(color = Ink.muted))
-                    PrimaryButton(t(TextKey.MORE_DONE), onClick = onClose, modifier = Modifier.fillMaxWidth())
+                    BasicText(if (done.isEmpty()) t(UiKey.JOB_DONE_LATER) else done.joinToString("، "), style = Type.of(13).copy(color = Ink.muted))
+                    PrimaryButton(t(UiKey.MORE_DONE), onClick = onClose, modifier = Modifier.fillMaxWidth())
                 }
             }
         }
@@ -188,7 +189,7 @@ fun JobChangeSheet(mode: JobSheetMode?, current: List<IncomeSource>, monthStart:
 }
 
 private fun payDone(freq: app.masroufy.core.PayFrequency, day: Int): String =
-    if (freq == app.masroufy.core.PayFrequency.WEEKLY) t(TextKey.JOB_DONE_WEEKDAY, t(weekdayLabel(day))) else t(TextKey.JOB_DONE_PAYDAY, app.masroufy.core.sentenceNumber(day))
+    if (freq == app.masroufy.core.PayFrequency.WEEKLY) t(UiKey.JOB_DONE_WEEKDAY, t(weekdayLabel(day))) else t(UiKey.JOB_DONE_PAYDAY, app.masroufy.core.sentenceNumber(day))
 
 @Composable
 private fun Label(text: String) = BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
@@ -200,11 +201,11 @@ fun DateChoices(choices: List<IsoDate>, selected: IsoDate, today: IsoDate, onPic
     var custom by remember { mutableStateOf(false) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (d in choices) FillChip(dateChipLabel(d, today), !custom && selected == d) { custom = false; onPick(d) }
-        FillChip(t(TextKey.JOB_OTHER_DATE), custom) { custom = true }
+        FillChip(t(UiKey.JOB_OTHER_DATE), custom) { custom = true }
     }
     if (custom) {
         var text by remember { mutableStateOf(selected) }
         TextInput(text, { text = it.trim(); if (isValidIsoDate(text)) onPick(text) }, placeholder = today, ltr = true,
-            error = if (text.isNotEmpty() && !isValidIsoDate(text)) t(TextKey.JOB_DATE_BAD) else null)
+            error = if (text.isNotEmpty() && !isValidIsoDate(text)) t(UiKey.JOB_DATE_BAD) else null)
     }
 }

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -24,7 +25,7 @@ data class EffectLine(val label: String, val value: String, val tone: AmountTone
 /** الديون اللي اتعملت من العملية دي قبل كده (`ManagePeople.listWithBalances` ⇒ التزامات أصلها العملية). الهدايا ما بتبانش هنا (مالهاش التزام). */
 fun existingPersonLinks(rows: List<PersonRow>, transactionId: Id): List<PersonLinkLine> = rows.flatMap { row ->
     row.obligations.filter { it.obligation.originTransactionId == transactionId && it.obligation.kind == ObligationKind.RECEIVABLE }.map {
-        PersonLinkLine(t(TextKey.LINK_PERSON_LINE, row.person.name, t(TextKey.LINK_PERSON_KIND_RECEIVABLE)), it.obligation.originalMinor, it.obligation.currency, AmountTone.INCOME)
+        PersonLinkLine(t(UiKey.LINK_PERSON_LINE, row.person.name, t(UiKey.LINK_PERSON_KIND_RECEIVABLE)), it.obligation.originalMinor, it.obligation.currency, AmountTone.INCOME)
     }
 }
 
@@ -44,35 +45,35 @@ fun canAddPerson(people: List<Person>, query: String): Boolean {
 
 /** رصيدك مع الشخص (من غير جمع): لك عنده · عليك له · أمانة له عندك · لا رصيد. */
 fun personBalanceLine(row: PersonRow?, currency: Currency): String {
-    val b = row?.balance ?: return t(TextKey.LINK_PERSON_NO_BALANCE)
+    val b = row?.balance ?: return t(UiKey.LINK_PERSON_NO_BALANCE)
     return when {
-        b.receivableMinor > 0 -> t(TextKey.LINK_PERSON_OWES_YOU, amountLabel(b.receivableMinor, currency))
-        b.payableLoanMinor > 0 -> t(TextKey.LINK_PERSON_YOU_OWE, amountLabel(b.payableLoanMinor, currency))
-        b.payableCustodyMinor > 0 -> t(TextKey.LINK_PERSON_CUSTODY, amountLabel(b.payableCustodyMinor, currency))
-        else -> t(TextKey.LINK_PERSON_NO_BALANCE)
+        b.receivableMinor > 0 -> t(UiKey.LINK_PERSON_OWES_YOU, amountLabel(b.receivableMinor, currency))
+        b.payableLoanMinor > 0 -> t(UiKey.LINK_PERSON_YOU_OWE, amountLabel(b.payableLoanMinor, currency))
+        b.payableCustodyMinor > 0 -> t(UiKey.LINK_PERSON_CUSTODY, amountLabel(b.payableCustodyMinor, currency))
+        else -> t(UiKey.LINK_PERSON_NO_BALANCE)
     }
 }
 
 /** الأثر قبل الحفظ — **من غير حساب**: المبلغ اللي كتبته زي ما هو (الفرق نفسه)، أو «بلا تغيير». */
 fun personEffect(kind: PersonLinkKind?, person: String?, amount: Halalas?, currency: Currency): List<EffectLine> {
-    if (person == null || kind == null) return listOf(EffectLine(t(if (person == null) TextKey.LINK_PERSON_PICK_BOTH else TextKey.LINK_PERSON_PICK_KIND), t(TextKey.LINK_PERSON_EFFECT_HERE), null))
-    if (amount == null || amount <= 0) return listOf(EffectLine(t(TextKey.LINK_PERSON_WRITE_AMOUNT), t(TextKey.LINK_PERSON_EFFECT_HERE), null))
+    if (person == null || kind == null) return listOf(EffectLine(t(if (person == null) UiKey.LINK_PERSON_PICK_BOTH else UiKey.LINK_PERSON_PICK_KIND), t(UiKey.LINK_PERSON_EFFECT_HERE), null))
+    if (amount == null || amount <= 0) return listOf(EffectLine(t(UiKey.LINK_PERSON_WRITE_AMOUNT), t(UiKey.LINK_PERSON_EFFECT_HERE), null))
     return when (kind) {
         PersonLinkKind.RECEIVABLE -> listOf(
-            EffectLine(t(TextKey.LINK_PERSON_EFFECT_SPEND), amountLabel(amount, currency, AmountTone.EXPENSE), AmountTone.EXPENSE),
-            EffectLine(t(TextKey.LINK_PERSON_EFFECT_OWES, person), amountLabel(amount, currency, AmountTone.INCOME), AmountTone.INCOME),
+            EffectLine(t(UiKey.LINK_PERSON_EFFECT_SPEND), amountLabel(amount, currency, AmountTone.EXPENSE), AmountTone.EXPENSE),
+            EffectLine(t(UiKey.LINK_PERSON_EFFECT_OWES, person), amountLabel(amount, currency, AmountTone.INCOME), AmountTone.INCOME),
         )
         PersonLinkKind.GIFT -> listOf(
-            EffectLine(t(TextKey.LINK_PERSON_EFFECT_SPEND), t(TextKey.LINK_PERSON_SAME), null),
-            EffectLine(t(TextKey.LINK_PERSON_EFFECT_DEBT_ON, person), t(TextKey.LINK_PERSON_NOTHING), null),
+            EffectLine(t(UiKey.LINK_PERSON_EFFECT_SPEND), t(UiKey.LINK_PERSON_SAME), null),
+            EffectLine(t(UiKey.LINK_PERSON_EFFECT_DEBT_ON, person), t(UiKey.LINK_PERSON_NOTHING), null),
         )
     }
 }
 
 /** خطأ الحفظ قبل ما نكلّم حالة الاستخدام (الشخص · النوع · المبلغ)؛ `null` = جاهز. حد «مايزيدش عن العملية» بيقوله `linkToPerson` نفسه. */
 fun personLinkError(hasPerson: Boolean, kind: PersonLinkKind?, amount: Halalas?): String? = when {
-    !hasPerson -> t(TextKey.LINK_PERSON_ERR_PERSON)
-    kind == null -> t(TextKey.LINK_PERSON_ERR_KIND)
-    amount == null || amount <= 0 -> t(TextKey.LINK_PERSON_ERR_AMOUNT)
+    !hasPerson -> t(UiKey.LINK_PERSON_ERR_PERSON)
+    kind == null -> t(UiKey.LINK_PERSON_ERR_KIND)
+    amount == null || amount <= 0 -> t(UiKey.LINK_PERSON_ERR_AMOUNT)
     else -> null
 }

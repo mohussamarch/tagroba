@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,23 +66,23 @@ fun GoalEditSheet(
     var tried by remember(visible) { mutableStateOf(false) }
     var error by remember(visible) { mutableStateOf<String?>(null) }
     var picking by remember(visible) { mutableStateOf(false) }
-    val title = t(TextKey.GOAL_EDIT_TITLE)
+    val title = t(UiKey.GOAL_EDIT_TITLE)
     Sheet(visible, onDismiss, title, spacing = 10.dp) {
         Column(Modifier.heightIn(max = 620.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             BasicText(title, style = Type.of(17, FontWeight.Bold))
             val sub = when {
-                p.savedMinor == null -> t(TextKey.GOAL_EDIT_SUB_NA)
-                card.linked -> t(TextKey.GOAL_EDIT_SUB_LINKED, amountLabel(p.savedMinor, card.currency))
-                else -> t(TextKey.GOAL_EDIT_SUB_SAVED, amountLabel(p.savedMinor, card.currency))
+                p.savedMinor == null -> t(UiKey.GOAL_EDIT_SUB_NA)
+                card.linked -> t(UiKey.GOAL_EDIT_SUB_LINKED, amountLabel(p.savedMinor, card.currency))
+                else -> t(UiKey.GOAL_EDIT_SUB_SAVED, amountLabel(p.savedMinor, card.currency))
             }
             BasicText(sub, style = Type.of(13).copy(color = Ink.muted))
-            TextInput(d.name, { d = d.copy(name = it.take(40)); error = null }, label = t(TextKey.GOAL_NEW_NAME))
+            TextInput(d.name, { d = d.copy(name = it.take(40)); error = null }, label = t(UiKey.GOAL_NEW_NAME))
             TextInput(
-                d.targetText, { d = d.copy(targetText = it); error = null }, label = t(TextKey.GOAL_EDIT_TARGET), placeholder = "0.00", ltr = true,
+                d.targetText, { d = d.copy(targetText = it); error = null }, label = t(UiKey.GOAL_EDIT_TARGET), placeholder = "0.00", ltr = true,
                 keyboard = KeyboardType.Decimal,
                 trailing = { BasicText(currencySymbol(card.currency), Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
             )
-            FieldLabel(t(TextKey.GOAL_NEW_WHEN))
+            FieldLabel(t(UiKey.GOAL_NEW_WHEN))
             SecondaryButton(longDate(d.date), { picking = !picking }, Modifier.fillMaxWidth())
             if (picking) DatePicker(d.date, today) { picked -> d = d.copy(date = picked); picking = false; error = null }
             val (need, note) = needLines(d, p)
@@ -94,37 +95,37 @@ fun GoalEditSheet(
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    BasicText(t(TextKey.GOAL_DETAIL_ARCHIVE), style = Type.bodyBold())
-                    BasicText(t(TextKey.GOAL_EDIT_ARCHIVE_NOTE), style = Type.caption().copy(color = Ink.muted))
+                    BasicText(t(UiKey.GOAL_DETAIL_ARCHIVE), style = Type.bodyBold())
+                    BasicText(t(UiKey.GOAL_EDIT_ARCHIVE_NOTE), style = Type.caption().copy(color = Ink.muted))
                 }
-                Switch(d.archived, t(TextKey.GOAL_DETAIL_ARCHIVE), { d = d.copy(archived = !d.archived) })
+                Switch(d.archived, t(UiKey.GOAL_DETAIL_ARCHIVE), { d = d.copy(archived = !d.archived) })
             }
         }
         val check = checkGoalEdit(d, p, today)
         val shownError = error ?: when {
             !tried -> null
-            check is GoalEditCheck.Unchanged -> t(TextKey.GOAL_EDIT_NOTHING_CHANGED)
+            check is GoalEditCheck.Unchanged -> t(UiKey.GOAL_EDIT_NOTHING_CHANGED)
             check is GoalEditCheck.Bad -> check.message
             else -> null
         }
         if (shownError != null) FieldError(shownError)
         val label = when {
-            check is GoalEditCheck.Unchanged -> t(TextKey.GOAL_EDIT_NO_CHANGE)
-            d.archived && !p.goal.archived -> t(TextKey.GOAL_EDIT_SAVE_ARCHIVE)
-            else -> t(TextKey.GOAL_EDIT_SAVE)
+            check is GoalEditCheck.Unchanged -> t(UiKey.GOAL_EDIT_NO_CHANGE)
+            d.archived && !p.goal.archived -> t(UiKey.GOAL_EDIT_SAVE_ARCHIVE)
+            else -> t(UiKey.GOAL_EDIT_SAVE)
         }
         PrimaryButton(label, {
             tried = true
             val ok = check as? GoalEditCheck.Ok ?: return@PrimaryButton
             scope.launch {
-                error = attempt(t(TextKey.SHELL_LOAD_FAILED)) {
+                error = attempt(t(UiKey.SHELL_LOAD_FAILED)) {
                     ok.change.input?.let { deps.goals.edit(p.goal.id, it) }
                     ok.change.archived?.let { deps.goals.archive(p.goal.id, it) }
                 }
                 if (error == null) {
                     val name = ok.change.input?.name ?: p.goal.name
                     val archived = ok.change.archived == true
-                    toaster.show(t(if (archived) TextKey.GOAL_DETAIL_ARCHIVED_TOAST else TextKey.GOAL_EDIT_SAVED, name))
+                    toaster.show(t(if (archived) UiKey.GOAL_DETAIL_ARCHIVED_TOAST else UiKey.GOAL_EDIT_SAVED, name))
                     onDismiss()
                     if (archived) onArchived()
                     refresh()

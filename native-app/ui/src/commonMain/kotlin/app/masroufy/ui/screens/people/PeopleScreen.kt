@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -127,11 +128,11 @@ internal fun PeopleScreen() {
                 // المسرح لازق في الشاشة وإنت بتسحب (زي `position: sticky`)
                 Box(Modifier.fillMaxWidth().height(viewDp.dp).offset { IntOffset(0, scroll.value) }) {
                     TabHeader(
-                        t(TextKey.TAB_PEOPLE),
+                        t(UiKey.TAB_PEOPLE),
                         Modifier.padding(start = Space.gutter, end = Space.gutter, top = (Space.gutter.value + top).dp),
                         actions = {
-                            SecondaryButton(t(TextKey.PEOPLE_EVENTS), onClick = { nav.push(EventsRoute) })
-                            if (scrolls) SecondaryButton(if (p > 0.5f) t(TextKey.PEOPLE_BACK) else t(TextKey.PEOPLE_ALL, app.masroufy.core.sentenceNumber(ui!!.total)), onClick = toggleAll)
+                            SecondaryButton(t(UiKey.PEOPLE_EVENTS), onClick = { nav.push(EventsRoute) })
+                            if (scrolls) SecondaryButton(if (p > 0.5f) t(UiKey.PEOPLE_BACK) else t(UiKey.PEOPLE_ALL, app.masroufy.core.sentenceNumber(ui!!.total)), onClick = toggleAll)
                         },
                     )
                     if (load is Load.Loading) LoadingStage(top)
@@ -151,7 +152,7 @@ internal fun PeopleScreen() {
                     }
                     when {
                         empty -> EmptyPeople(add, Modifier.offset(y = (top + DRUM_TOP).dp))
-                        failed -> ErrorCard({ retry++ }, Modifier.padding(horizontal = Space.gutter).offset(y = (top + DRUM_TOP).dp), t(TextKey.PPL_LOAD_FAILED), "")
+                        failed -> ErrorCard({ retry++ }, Modifier.padding(horizontal = Space.gutter).offset(y = (top + DRUM_TOP).dp), t(UiKey.PPL_LOAD_FAILED), "")
                         ui != null -> {
                             val drumTop = top + DRUM_TOP - 374f * p - over
                             val height = Drum(groups, p, reduce, open, add, Modifier.padding(horizontal = Space.gutter).offset(y = drumTop.dp))
@@ -225,9 +226,9 @@ private fun Drum(groups: List<List<Cell>>, p: Float, reduce: Boolean, open: (Per
 @Composable
 private fun Boxes(ui: PeopleTabUi, nav: app.masroufy.ui.nav.Navigator, modifier: Modifier, enabled: Boolean) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        SideBox(t(TextKey.PEOPLE_OWED_BOX), ui.owed, app.masroufy.ui.components.AmountTone.INCOME, t(TextKey.PEOPLE_OWED_COUNT, countOf(ui.owedPeople, Noun.PEOPLE)), enabled, Modifier.weight(1f)) { nav.push(OwedToYouRoute) }
-        val oweCount = if (ui.owePeople == 2) t(TextKey.PEOPLE_OWE_TWO) else t(TextKey.PEOPLE_OWE_COUNT, countOf(ui.owePeople, Noun.PEOPLE))
-        SideBox(t(TextKey.PEOPLE_OWE_BOX), ui.owe, app.masroufy.ui.components.AmountTone.EXPENSE, oweCount, enabled, Modifier.weight(1f)) { nav.push(YouOweRoute) }
+        SideBox(t(UiKey.PEOPLE_OWED_BOX), ui.owed, app.masroufy.ui.components.AmountTone.INCOME, t(UiKey.PEOPLE_OWED_COUNT, countOf(ui.owedPeople, Noun.PEOPLE)), enabled, Modifier.weight(1f)) { nav.push(OwedToYouRoute) }
+        val oweCount = if (ui.owePeople == 2) t(UiKey.PEOPLE_OWE_TWO) else t(UiKey.PEOPLE_OWE_COUNT, countOf(ui.owePeople, Noun.PEOPLE))
+        SideBox(t(UiKey.PEOPLE_OWE_BOX), ui.owe, app.masroufy.ui.components.AmountTone.EXPENSE, oweCount, enabled, Modifier.weight(1f)) { nav.push(YouOweRoute) }
     }
 }
 
@@ -255,13 +256,13 @@ private fun LoadingStage(top: Float) {
 @Composable
 private fun EmptyPeople(add: () -> Unit, modifier: Modifier) {
     EmptyState(
-        t(TextKey.PEOPLE_EMPTY_TITLE), t(TextKey.PEOPLE_EMPTY_BODY), modifier.padding(horizontal = Space.gutter),
-        action = { PrimaryButton(t(TextKey.PEOPLE_ADD_PERSON), onClick = add, modifier = Modifier.padding(top = 8.dp)) },
+        t(UiKey.PEOPLE_EMPTY_TITLE), t(UiKey.PEOPLE_EMPTY_BODY), modifier.padding(horizontal = Space.gutter),
+        action = { PrimaryButton(t(UiKey.PEOPLE_ADD_PERSON), onClick = add, modifier = Modifier.padding(top = 8.dp)) },
     )
 }
 
 @Composable
-internal fun ErrorCard(onRetry: () -> Unit, modifier: Modifier = Modifier, title: String = t(TextKey.PEOPLE_ERROR_TITLE), body: String = t(TextKey.PEOPLE_ERROR_BODY)) {
+internal fun ErrorCard(onRetry: () -> Unit, modifier: Modifier = Modifier, title: String = t(UiKey.PEOPLE_ERROR_TITLE), body: String = t(UiKey.PEOPLE_ERROR_BODY)) {
     Row(
         modifier.fillMaxWidth().background(Ink.alertBg, RoundedCornerShape(18.dp)).padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -271,6 +272,6 @@ internal fun ErrorCard(onRetry: () -> Unit, modifier: Modifier = Modifier, title
             BasicText(title, style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
             if (body.isNotBlank()) BasicText(body, style = Type.caption().copy(color = Ink.focus))
         }
-        SecondaryButton(t(TextKey.PPL_RETRY), onClick = onRetry)
+        SecondaryButton(t(UiKey.PPL_RETRY), onClick = onRetry)
     }
 }

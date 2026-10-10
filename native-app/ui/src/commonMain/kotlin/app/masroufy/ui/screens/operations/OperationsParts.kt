@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,7 +67,7 @@ internal suspend inline fun failureOf(block: () -> Unit): String? = try {
  */
 fun userMessage(e: Throwable): String {
     val text = e.message?.takeIf { it.isNotBlank() }
-    return if ((e is IllegalArgumentException || e is IllegalStateException) && text != null) text else t(TextKey.OPERATIONS_SAVE_FAILED)
+    return if ((e is IllegalArgumentException || e is IllegalStateException) && text != null) text else t(UiKey.OPERATIONS_SAVE_FAILED)
 }
 
 /** شريط الخطأ الكهرماني (النموذج: «تعذّر تحميل العمليات» + «أعد المحاولة»). */

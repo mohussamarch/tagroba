@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.dues
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -101,7 +102,7 @@ internal fun <T> rememberLoad(vararg keys: Any?, block: suspend () -> T): LoadSt
  * رسالة فشل حفظ للمستخدم: رسالة حالة الاستخدام نفسها (متترجمة من `uiText`) — ولو مالهاش نص، جملة عامة «تعذّر الحفظ».
  * ممنوع خطأ صامت، وممنوع نص إنجليزي من استثناء يظهر في الشاشة.
  */
-internal fun failText(e: Throwable): String = e.message?.takeIf { it.isNotBlank() } ?: t(TextKey.DUES_SAVE_FAILED)
+internal fun failText(e: Throwable): String = e.message?.takeIf { it.isNotBlank() } ?: t(UiKey.DUES_SAVE_FAILED)
 
 /** الهيكل الرمادي مكان الكروت (بيحمّل) — مش دوّامة في نص الشاشة. */
 @Composable
@@ -115,7 +116,7 @@ internal fun LoadingBlocks(first: Int = 120, second: Int = 280) {
 /** فشل التحميل: جملة صريحة + «أعد المحاولة». */
 @Composable
 internal fun LoadFailed(onRetry: () -> Unit) {
-    EmptyState(t(TextKey.SHELL_LOAD_FAILED), action = { TonalButton(t(TextKey.SHELL_RETRY), onRetry, height = 44.dp) })
+    EmptyState(t(UiKey.SHELL_LOAD_FAILED), action = { TonalButton(t(UiKey.SHELL_RETRY), onRetry, height = 44.dp) })
 }
 
 /** شريحة الحالة الصغيرة (11 عريض، زاوية 12) بلون [chip]. [onHero] = على البطاقة البترولية (ألوان فاتحة من نفس العيلة). */
@@ -148,7 +149,7 @@ internal fun CountBar(done: Int, total: Int, onHero: Boolean, fill: Color = if (
 internal fun DuesHeader(title: String, subtitle: String? = null, actions: (@Composable RowScope.() -> Unit)? = null) {
     val nav = LocalNavigator.current
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(TextKey.SHELL_BACK), { nav.pop() }) }
+        Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(UiKey.SHELL_BACK), { nav.pop() }) }
         Column(Modifier.weight(1f)) {
             BasicText(title, Modifier.semantics { heading() }, style = Type.title(), maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (subtitle != null) BasicText(subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -209,10 +210,10 @@ internal fun MoneyField(value: String, onChange: (String) -> Unit, label: String
 internal fun InterestQuestion(value: Boolean?, onPick: (Boolean?) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            BasicText(t(TextKey.DUES_INTEREST_Q), style = Type.bodyBold())
-            BasicText(t(if (value != null) TextKey.DUES_INTEREST_SAVED else TextKey.DUES_INTEREST_UNSET), style = Type.caption().copy(color = Ink.muted))
+            BasicText(t(UiKey.DUES_INTEREST_Q), style = Type.bodyBold())
+            BasicText(t(if (value != null) UiKey.DUES_INTEREST_SAVED else UiKey.DUES_INTEREST_UNSET), style = Type.caption().copy(color = Ink.muted))
         }
-        for ((v, key) in listOf(true to TextKey.DUES_YES, false to TextKey.DUES_NO)) {
+        for ((v, key) in listOf(true to UiKey.DUES_YES, false to UiKey.DUES_NO)) {
             SelectChip(t(key), value == v, { onPick(if (value == v) null else v) }, height = 44.dp)
         }
     }
@@ -221,12 +222,12 @@ internal fun InterestQuestion(value: Boolean?, onPick: (Boolean?) -> Unit) {
 /** لوحة تأكيد صغيرة («فك الربط؟» · «إيقاف المتابعة؟»): عنوان + جملة + زرارين. */
 @Composable
 internal fun ConfirmSheet(visible: Boolean, title: String, body: String, confirm: String, onConfirm: () -> Unit, onDismiss: () -> Unit, danger: Boolean = true) {
-    Sheet(visible, onDismiss, title, closeLabel = t(TextKey.SHELL_CLOSE)) {
+    Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(title, style = Type.section())
         BasicText(body, style = Type.of(14).copy(color = Ink.soft))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (danger) DangerButton(confirm, onConfirm, Modifier.weight(2f)) else PrimaryButton(confirm, onConfirm, Modifier.weight(2f))
-            TonalButton(t(TextKey.DUES_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
+            TonalButton(t(UiKey.DUES_CANCEL), onDismiss, Modifier.weight(1f), muted = true)
         }
     }
 }

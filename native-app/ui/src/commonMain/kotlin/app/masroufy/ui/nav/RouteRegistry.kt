@@ -1,5 +1,6 @@
 package app.masroufy.ui.nav
 
+import app.masroufy.core.UiKey
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.masroufy.core.TextKey
@@ -85,13 +86,13 @@ class RouteRegistry {
     fun Sheet(route: SheetRoute, close: () -> Unit) {
         val content = sheets[route::class]
         if (content != null) content(route, close)
-        else RouteSheet(title = route.name, close = close) { EmptyState(t(TextKey.SHELL_PENDING_SCREEN)) }
+        else RouteSheet(title = route.name, close = close) { EmptyState(t(UiKey.SHELL_PENDING_SCREEN)) }
     }
 
     @Composable
     fun Slot(name: String) {
         val content = slots[name]
-        if (content == null) EmptyState(t(TextKey.SHELL_PENDING_SCREEN)) else content()
+        if (content == null) EmptyState(t(UiKey.SHELL_PENDING_SCREEN)) else content()
     }
 }
 

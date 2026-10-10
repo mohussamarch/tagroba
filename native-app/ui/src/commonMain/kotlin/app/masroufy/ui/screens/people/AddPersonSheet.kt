@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 internal fun AddPersonRouteSheet(close: () -> Unit) {
-    RouteSheet(t(TextKey.ADD_PERSON_TITLE), close) { dismiss -> AddPersonForm(dismiss) }
+    RouteSheet(t(UiKey.ADD_PERSON_TITLE), close) { dismiss -> AddPersonForm(dismiss) }
 }
 
 @Composable
@@ -48,45 +49,45 @@ private fun AddPersonForm(done: () -> Unit) {
         err = null
     }
     Column(Modifier.fillMaxWidth().heightIn(max = 640.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SheetHeading(t(TextKey.ADD_PERSON_TITLE))
-        TextInput(d.name, { edit(d.copy(name = it.take(80))) }, label = t(TextKey.ADD_PERSON_NAME), placeholder = t(TextKey.ADD_PERSON_NAME_PH))
-        FieldTitle(t(TextKey.ADD_PERSON_CIRCLE))
+        SheetHeading(t(UiKey.ADD_PERSON_TITLE))
+        TextInput(d.name, { edit(d.copy(name = it.take(80))) }, label = t(UiKey.ADD_PERSON_NAME), placeholder = t(UiKey.ADD_PERSON_NAME_PH))
+        FieldTitle(t(UiKey.ADD_PERSON_CIRCLE))
         ChoiceFlow {
             for (c in PersonCircle.entries) Choice(c.label, d.circle == c, { edit(d.copy(circle = if (d.circle == c) null else c)) })
         }
-        TextInput(d.relation, { edit(d.copy(relation = it.take(30))) }, label = t(TextKey.ADD_PERSON_REL), placeholder = t(TextKey.ADD_PERSON_REL_PH))
+        TextInput(d.relation, { edit(d.copy(relation = it.take(30))) }, label = t(UiKey.ADD_PERSON_REL), placeholder = t(UiKey.ADD_PERSON_REL_PH))
 
-        ExpandRow(t(TextKey.ADD_PERSON_OCC), d.occOpen, { edit(d.copy(occOpen = !d.occOpen)) })
+        ExpandRow(t(UiKey.ADD_PERSON_OCC), d.occOpen, { edit(d.copy(occOpen = !d.occOpen)) })
         if (d.occOpen) {
             ChoiceFlow {
-                for ((k, key) in listOf(OccasionKind.BIRTHDAY to TextKey.OCC_CHIP_BIRTHDAY, OccasionKind.WEDDING_ANNIVERSARY to TextKey.OCC_CHIP_ANNIV, OccasionKind.WEDDING to TextKey.OCC_CHIP_WEDDING)) {
+                for ((k, key) in listOf(OccasionKind.BIRTHDAY to UiKey.OCC_CHIP_BIRTHDAY, OccasionKind.WEDDING_ANNIVERSARY to UiKey.OCC_CHIP_ANNIV, OccasionKind.WEDDING to UiKey.OCC_CHIP_WEDDING)) {
                     Choice(t(key), d.occ.kind == k, { edit(d.copy(occ = d.occ.withKind(k))) })
                 }
             }
             MonthGrid(d.occ.month, { edit(d.copy(occ = d.occ.copy(month = it))) })
             val wedding = d.occ.kind == OccasionKind.WEDDING
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberInput(d.occ.day, { edit(d.copy(occ = d.occ.copy(day = it.take(2)))) }, Modifier.weight(1f), label = t(TextKey.PPL_DAY_LABEL), placeholder = "1–31", decimal = false)
+                NumberInput(d.occ.day, { edit(d.copy(occ = d.occ.copy(day = it.take(2)))) }, Modifier.weight(1f), label = t(UiKey.PPL_DAY_LABEL), placeholder = "1–31", decimal = false)
                 NumberInput(
                     d.occ.year, { edit(d.copy(occ = d.occ.copy(year = it.take(4)))) }, Modifier.weight(1f),
-                    label = t(if (wedding) TextKey.PPL_YEAR else TextKey.PPL_YEAR_OPTIONAL), placeholder = if (wedding) null else t(TextKey.PPL_YEAR_UNKNOWN), decimal = false,
+                    label = t(if (wedding) UiKey.PPL_YEAR else UiKey.PPL_YEAR_OPTIONAL), placeholder = if (wedding) null else t(UiKey.PPL_YEAR_UNKNOWN), decimal = false,
                 )
             }
-            Note(t(if (wedding) TextKey.ADD_PERSON_OCC_NOTE_ONCE else TextKey.ADD_PERSON_OCC_NOTE_YEARLY))
+            Note(t(if (wedding) UiKey.ADD_PERSON_OCC_NOTE_ONCE else UiKey.ADD_PERSON_OCC_NOTE_YEARLY))
         }
 
-        ExpandRow(t(TextKey.ADD_PERSON_DEBT), d.debtOpen, { edit(d.copy(debtOpen = !d.debtOpen)) })
+        ExpandRow(t(UiKey.ADD_PERSON_DEBT), d.debtOpen, { edit(d.copy(debtOpen = !d.debtOpen)) })
         if (d.debtOpen) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Choice(t(TextKey.ADD_PERSON_SIDE_LAK), d.side == DebtSide.LAK, { edit(d.copy(side = DebtSide.LAK)) }, Modifier.weight(1f), height = 48.dp)
-                Choice(t(TextKey.ADD_PERSON_SIDE_ALEK), d.side == DebtSide.ALEK, { edit(d.copy(side = DebtSide.ALEK)) }, Modifier.weight(1f), height = 48.dp)
+                Choice(t(UiKey.ADD_PERSON_SIDE_LAK), d.side == DebtSide.LAK, { edit(d.copy(side = DebtSide.LAK)) }, Modifier.weight(1f), height = 48.dp)
+                Choice(t(UiKey.ADD_PERSON_SIDE_ALEK), d.side == DebtSide.ALEK, { edit(d.copy(side = DebtSide.ALEK)) }, Modifier.weight(1f), height = 48.dp)
             }
-            NumberInput(d.amount, { edit(d.copy(amount = it)) }, label = t(TextKey.ADD_PERSON_AMOUNT), placeholder = "0.00", currency = space.space.currency)
-            Note(t(TextKey.ADD_PERSON_DEBT_NOTE))
+            NumberInput(d.amount, { edit(d.copy(amount = it)) }, label = t(UiKey.ADD_PERSON_AMOUNT), placeholder = "0.00", currency = space.space.currency)
+            Note(t(UiKey.ADD_PERSON_DEBT_NOTE))
         }
         ErrorLine(err)
         PrimaryButton(
-            t(TextKey.ADD_PERSON_SAVE),
+            t(UiKey.ADD_PERSON_SAVE),
             loading = busy,
             height = 52.dp,
             modifier = Modifier.fillMaxWidth(),
@@ -98,7 +99,7 @@ private fun AddPersonForm(done: () -> Unit) {
                         val saved = runCatching { saveNewPerson(space.people, c.plan) }
                         busy = false
                         PeopleChanges.bump()
-                        saved.onSuccess { toaster.show(t(TextKey.ADD_PERSON_ADDED, c.plan.name)); done() }.onFailure { err = it.message }
+                        saved.onSuccess { toaster.show(t(UiKey.ADD_PERSON_ADDED, c.plan.name)); done() }.onFailure { err = it.message }
                     }
                 }
             },

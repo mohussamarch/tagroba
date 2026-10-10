@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.onboarding
 
+import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -95,7 +96,7 @@ fun OnboardingScreen() {
                     if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
                 }
                 is OnboardingResult.Failed -> failure = r.message
-                null -> failure = t(TextKey.ONB_FINISH_FAILED)
+                null -> failure = t(UiKey.ONB_FINISH_FAILED)
             }
             saving = false
         }
@@ -158,8 +159,8 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
             val hook = onb.look
             // من غير مكان يتحفظ فيه الشكل ⇒ الاختيار ما بيتعملش «حُفظ» مزيّف — «تخطَّ» فوق بيكمّل
             LookGrid(s.answers.look) { k -> if (hook != null) scope.launch { if (runCatching { hook.choose(k) }.isSuccess) onChange(pickLook(s, k)) } }
-            BasicText(t(TextKey.LOOK_NOTE), Modifier.fillMaxWidth(), style = Type.of(12).copy(color = Ink.muted, textAlign = TextAlign.Center))
-            if (hook == null) NotYetLine(t(TextKey.LOOK_NOT_YET))
+            BasicText(t(UiKey.LOOK_NOTE), Modifier.fillMaxWidth(), style = Type.of(12).copy(color = Ink.muted, textAlign = TextAlign.Center))
+            if (hook == null) NotYetLine(t(UiKey.LOOK_NOT_YET))
         }
         OnbStep.COUNTRY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (o in countryOptions(open, onb.spacesAdmin != null)) {
@@ -168,7 +169,7 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
         }
         OnbStep.PAYDAY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             DayGrid(s.answers.day, onPick = { onChange(pickDay(s, it)) })
-            TonalButton(t(TextKey.ONB_NOT_FIXED), onClick = { onChange(skip(s)) }, height = 44.dp, modifier = Modifier.fillMaxWidth())
+            TonalButton(t(UiKey.ONB_NOT_FIXED), onClick = { onChange(skip(s)) }, height = 44.dp, modifier = Modifier.fillMaxWidth())
         }
         OnbStep.SOURCE -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (o in sourceOptions(bankSmsReadable())) {
@@ -182,7 +183,7 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
             }
         }
         OnbStep.READY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(if (saving) TextKey.ONB_SAVING else TextKey.ONB_ENTER), onClick = onFinish, loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth())
+            PrimaryButton(t(if (saving) UiKey.ONB_SAVING else UiKey.ONB_ENTER), onClick = onFinish, loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth())
             if (failure != null) FieldError(failure)
         }
     }
@@ -199,8 +200,8 @@ private fun Loading() {
 @Composable
 private fun LoadFailed(onRetry: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        FieldError(t(TextKey.SHELL_LOAD_FAILED))
-        TonalButton(t(TextKey.SHELL_RETRY), onClick = onRetry, height = 44.dp, modifier = Modifier.fillMaxWidth())
+        FieldError(t(UiKey.SHELL_LOAD_FAILED))
+        TonalButton(t(UiKey.SHELL_RETRY), onClick = onRetry, height = 44.dp, modifier = Modifier.fillMaxWidth())
     }
 }
 

@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.operations
 
+import app.masroufy.core.UiKey
 import app.masroufy.core.EVENT_SHARE_WHOLE
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
@@ -21,8 +22,8 @@ data class EventLinkNow(val eventId: Id, val name: String, val sharePercent: Int
 
 /** الأحداث الشغالة (المؤرشف ما بيتعرضش — النموذج) من تفاصيلها (`ManageEvents.detail`). */
 fun eventChoices(details: List<EventDetail>): List<EventChoice> = details.filter { !it.event.archived }.map { d ->
-    val whose = d.hostName?.let { t(TextKey.LINK_PROJECT_EVENT_HOSTED, it) } ?: t(TextKey.LINK_PROJECT_EVENT_MINE)
-    EventChoice(d.event.id, d.event.name, t(TextKey.LINK_PROJECT_EVENT_WHEN, dayMonth(d.event.date), whose))
+    val whose = d.hostName?.let { t(UiKey.LINK_PROJECT_EVENT_HOSTED, it) } ?: t(UiKey.LINK_PROJECT_EVENT_MINE)
+    EventChoice(d.event.id, d.event.name, t(UiKey.LINK_PROJECT_EVENT_WHEN, dayMonth(d.event.date), whose))
 }
 
 /** الحدث اللي العملية مربوطة بيه (أي دور) — العملية بحدث واحد بس. */
@@ -45,7 +46,7 @@ fun sharePercents(percent: Int?): Pair<Int, Int>? =
     if (percent == null || percent !in 1..EVENT_SHARE_WHOLE) null else percent to (EVENT_SHARE_WHOLE - percent)
 
 /** «٥٠٪» في الجمل. */
-fun percentText(p: Int): String = t(TextKey.LINK_PROJECT_EVENT_PERCENT, sentenceNumber(p))
+fun percentText(p: Int): String = t(UiKey.LINK_PROJECT_EVENT_PERCENT, sentenceNumber(p))
 
 /** النسب السريعة جنب الخانة. */
 val QUICK_SHARES = listOf(100, 75, 50, 25)
@@ -55,8 +56,8 @@ val QUICK_SHARES = listOf(100, 75, 50, 25)
  * [pending] = اختار حدث غير المربوط من غير «فك الربط».
  */
 fun projectEventError(pending: Boolean, eventPicked: Boolean, percent: Int?): String? = when {
-    pending -> t(TextKey.LINK_PROJECT_EVENT_ERR_PENDING)
-    eventPicked && (percent == null || percent !in 1..EVENT_SHARE_WHOLE) -> t(TextKey.LINK_PROJECT_EVENT_ERR_SHARE)
+    pending -> t(UiKey.LINK_PROJECT_EVENT_ERR_PENDING)
+    eventPicked && (percent == null || percent !in 1..EVENT_SHARE_WHOLE) -> t(UiKey.LINK_PROJECT_EVENT_ERR_SHARE)
     else -> null
 }
 
