@@ -234,6 +234,21 @@ internal fun Pill(text: String, ink: Color, bg: Color, modifier: Modifier = Modi
     }
 }
 
+/** زرار مسح بخطوتين (لوحة المناسبة): أحمر فاتح، وبعد أول ضغطة [armed] أحمر مليان بنص التأكيد. */
+@Composable
+internal fun DangerButton(text: String, armed: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(18.dp)
+    val press = rememberPress()
+    Box(
+        modifier.fillMaxWidth().height(48.dp).pressScale(press).clip(shape)
+            .background(if (armed) Ink.expense else Ink.expense.copy(alpha = 0.08f))
+            .tap(press, onClick = onClick).padding(horizontal = 14.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(text, style = Type.of(14, FontWeight.Bold).copy(color = if (armed) Ink.onPrimary else Ink.expense, textAlign = TextAlign.Center))
+    }
+}
+
 /** صف بفاصل رفيع تحته (لو مش الأخير). */
 @Composable
 internal fun Rowed(last: Boolean, modifier: Modifier = Modifier, minHeight: Dp = 56.dp, content: @Composable RowScope.() -> Unit) {

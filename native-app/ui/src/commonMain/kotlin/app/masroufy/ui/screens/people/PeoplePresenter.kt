@@ -38,13 +38,24 @@ internal data class PeopleTabUi(
     /** الباقيين في الشبكة (المؤرشف اللي عليه أو ليه فلوس هنا بس). */
     val rest: List<PersonChip>,
     val total: Int,
-    val owed: List<MoneyLine>,
+    /** null = الأرصدة ما اتحمّلتش ⇒ «غير متاح» (مش صفر). */
+    val owed: List<MoneyLine>?,
     val owedPeople: Int,
-    val owe: List<MoneyLine>,
+    val owe: List<MoneyLine>?,
     val owePeople: Int,
+    /** الأشخاص ظاهرين من غير أرقام لأن قراية الأرصدة فشلت (حالة الخطأ في النموذج). */
+    val balancesFailed: Boolean = false,
 )
 
 internal const val ORBIT_SIZE = 5
+
+/**
+ * حالة الخطأ: `PeopleOverview` فشل، فالأسماء بس من `ManagePeople.listWithBalances` (من غير المؤرشفين ومن غير أي رقم) و«لك/عليك» «غير متاح».
+ */
+internal fun peopleWithoutBalances(rows: List<PersonRow>): PeopleTabUi {
+    val active = rows.filter { !it.person.archived }.map { PersonChip(it.person.id, it.person.name, initialOf(it.person.name), null, null) }
+    return PeopleTabUi(active.take(ORBIT_SIZE), active.drop(ORBIT_SIZE), active.size, null, 0, null, 0, balancesFailed = true)
+}
 
 /**
  * الترتيب: «لك عندهم» ثم «عليك لهم» ثم «مناسبات قريبة» ثم الباقي — زي أقسام `PeopleOverview` (من غير تكرار).

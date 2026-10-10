@@ -55,13 +55,15 @@ import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
+import app.masroufy.usecase.EventDetail
 import app.masroufy.usecase.LoadTransactionsScreenRequest
+import app.masroufy.usecase.ManageEvents
 import kotlinx.coroutines.launch
 
 /**
  * «اربط مصروفًا بنسبة» (لوحة `EventSpendLinkSheet` جوه تفاصيل الحدث): مصروف آخر ٣٠ يوم (الأحدث الأول) · بحث · لكل عملية مختارة نسبة 1–100
  * (المبدئي 100) ونصيب الحدث منها (`eventShareMinor` في `:wiring`) · المجموع اللي هيتضاف من غير «صافي».
- * الحفظ: `EventGifts.link(…, SPEND, نسبة)` لكل عملية — ⚠️ مش كتابة واحدة (missingLogic)؛ المربوطة بحدث تاني بترفض برسالة الحالة.
+ * الحفظ: `EventGifts.link(…, SPEND, نسبة)` لكل عملية — ⚠️ مش كتابة واحدة (missingLogic)؛ المربوطة بحدث تاني بتبان مقفولة باسمه (والحالة نفسها بترفض لو وصلت).
  */
 internal const val RECENT_DAYS = 30
 
@@ -81,6 +83,26 @@ internal fun filterRecent(txns: List<Transaction>, query: String, inbound: Boole
         .sortedWith(compareByDescending<Transaction> { it.occurredAt }.thenByDescending { it.sourceOrder })
 }
 
+/**
+ * العمليات المربوطة بحدث **تاني** (العملية بتتربط بحدث واحد بس) ⇒ اسم الحدث ده، عشان تبان مقفولة بسببها بدل ما الحفظ يرفض بعدين.
+ * قراية من `ManageEvents` بس (القايمة ثم تفاصيل كل حدث).
+ */
+internal suspend fun linkedElsewhere(events: ManageEvents, eventId: Id): Map<Id, String> {
+    val lists = events.list()
+    return otherEventLinks((lists.active + lists.archived).filter { it.event.id != eventId }.map { events.detail(it.event.id) }, eventId)
+}
+
+/** من تفاصيل الأحداث: معرّف العملية ⇒ اسم الحدث التاني المربوطة بيه. */
+internal fun otherEventLinks(details: List<EventDetail>, eventId: Id): Map<Id, String> =
+    details.filter { it.event.id != eventId }.flatMap { d -> d.transactions.map { it.transaction.id to d.event.name } }.toMap()
+
+/** السطر التاني في صف العملية: مربوطة هنا · مربوطة بحدث تاني · التاريخ والمحفظة. */
+internal fun spendRowLine(tx: Transaction, here: Boolean, otherEvent: String?, wallets: Map<Id, String>): String = when {
+    here -> joinLine(dayMonth(tx.occurredAt), t(TextKey.SPEND_LINK_HERE))
+    otherEvent != null -> t(TextKey.SPEND_LINK_OTHER_EVENT, otherEvent)
+    else -> joinLine(dayMonth(tx.occurredAt), tx.walletId?.let(wallets::get))
+}
+
 @Composable
 internal fun SpendLinkButton(data: EventScreenData) {
     var open by remember { mutableStateOf(false) }
@@ -97,8 +119,10 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var txns by remember { mutableStateOf<List<Transaction>?>(null) }
+    var elsewhere by remember { mutableStateOf<Map<Id, String>>(emptyMap()) }
     LaunchedEffect(space) {
         txns = runCatching { space.people.transactions.load(LoadTransactionsScreenRequest(period = recentPeriod(space.shell.today()))).transactions }.getOrDefault(emptyList())
+        elsewhere = runCatching { linkedElsewhere(space.people.events, data.ui.event.id) }.getOrDefault(emptyMap())
     }
     val wallets = data.wallets.associate { it.id to it.name }
     var query by remember { mutableStateOf("") }
@@ -126,24 +150,26 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
         }
         shown.forEachIndexed { i, tx ->
             val here = tx.id in data.ui.linkedTxnIds
+            val other = elsewhere[tx.id]
+            val locked = here || other != null
             val on = tx.id in picked
             Column {
                 Rowed(i == shown.lastIndex && !on) {
                     val press = rememberPress()
                     Row(
-                        Modifier.weight(1f).pressScale(press, !here).tap(press, !here, label = txnTitle(tx), onClick = {
+                        Modifier.weight(1f).pressScale(press, !locked).tap(press, !locked, label = txnTitle(tx), onClick = {
                             picked = if (on) picked - tx.id else picked + (tx.id to "100")
                             err = null
                         }),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        CheckBox(on || here, filled = on)
+                        CheckBox(on || locked, filled = on)
                         Column(Modifier.weight(1f)) {
-                            BasicText(txnTitle(tx), style = Type.bodyBold().copy(color = if (here) Ink.muted else Ink.text))
-                            BasicText(if (here) joinLine(dayMonth(tx.occurredAt), t(TextKey.SPEND_LINK_HERE)) else joinLine(dayMonth(tx.occurredAt), tx.walletId?.let(wallets::get)), style = Type.caption().copy(color = if (here) Ink.primary else Ink.muted))
+                            BasicText(txnTitle(tx), style = Type.bodyBold().copy(color = if (locked) Ink.muted else Ink.text))
+                            BasicText(spendRowLine(tx, here, other, wallets), style = Type.caption().copy(color = if (locked) Ink.primary else Ink.muted))
                         }
-                        AmountText(tx.amountMinor, tx.currency, size = 14, tone = AmountTone.EXPENSE, color = if (here) Ink.faded else null)
+                        AmountText(tx.amountMinor, tx.currency, size = 14, tone = AmountTone.EXPENSE, color = if (locked) Ink.faded else null)
                     }
                 }
                 if (on) PercentRow(tx, picked.getValue(tx.id), { picked = picked + (tx.id to it); err = null }, pcts[tx.id]?.let { money.eventShare(tx.amountMinor, it) })
@@ -167,7 +193,7 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
         }
         ErrorLine(err)
         PrimaryButton(
-            if (chosen.isEmpty()) t(TextKey.SPEND_LINK_SAVE_EMPTY) else t(TextKey.SPEND_LINK_SAVE, countOf(chosen.size, Noun.OPS)),
+            if (chosen.isEmpty()) t(TextKey.SPEND_LINK_SAVE_EMPTY) else t(TextKey.SPEND_LINK_SAVE, countOf(chosen.size, Noun.OPS_OBJ)),
             loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             onClick = {
                 if (chosen.isEmpty()) { err = t(TextKey.SPEND_LINK_NEED_ONE); return@PrimaryButton }

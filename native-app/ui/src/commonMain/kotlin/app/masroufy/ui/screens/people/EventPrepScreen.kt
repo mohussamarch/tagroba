@@ -104,7 +104,7 @@ private fun PrepHero(ui: PrepUi) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) {
                 BasicText(t(TextKey.EVENT_PREP_SPENT), style = Type.caption().copy(color = Ink.onHeroMuted))
-                AmountText(ui.spent.minor, ui.spent.currency, size = 22, color = Ink.onPrimary)
+                AmountText(ui.spent?.minor, ui.spent?.currency ?: ui.currency, size = 22, color = Ink.onPrimary)
             }
             Column(Modifier.weight(1f)) {
                 BasicText(t(TextKey.EVENT_PREP_PLANNED), style = Type.caption().copy(color = Ink.onHeroMuted))
@@ -136,7 +136,7 @@ private fun Suggestions(ui: PrepUi) {
             ErrorLine(err)
             val chosen = ui.suggestions.filter { it in on }
             PrimaryButton(
-                if (chosen.isEmpty()) t(TextKey.EVENT_PREP_SUG_PICK) else t(TextKey.EVENT_PREP_SUG_SAVE, countOf(chosen.size, Noun.ITEMS)),
+                if (chosen.isEmpty()) t(TextKey.EVENT_PREP_SUG_PICK) else t(TextKey.EVENT_PREP_SUG_SAVE, countOf(chosen.size, Noun.ITEMS_OBJ)),
                 enabled = chosen.isNotEmpty(), modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     scope.launch {

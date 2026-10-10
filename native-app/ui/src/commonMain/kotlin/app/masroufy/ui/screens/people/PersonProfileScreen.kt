@@ -173,7 +173,7 @@ private fun History(ui: PersonPageUi, modifier: Modifier) {
             if (ui.history.isEmpty()) BasicText(t(TextKey.PERSON_PAGE_HISTORY_EMPTY), Modifier.padding(vertical = 16.dp), style = Type.body().copy(color = Ink.muted))
             ui.history.forEachIndexed { i, h ->
                 val press = rememberPress()
-                Rowed(i == ui.history.lastIndex, Modifier.pressScale(press).tap(press, label = h.title, onClick = { nav.push(DebtDetailRoute(h.obligationId, ui.id)) })) {
+                Rowed(i == ui.history.lastIndex, Modifier.pressScale(press).tap(press, label = h.title, onClick = { nav.push(DebtDetailLink(h.obligationId)) })) {
                     Column(Modifier.weight(1f)) {
                         BasicText(h.title, style = Type.bodyBold())
                         BasicText(h.sub, style = Type.caption().copy(color = Ink.muted))

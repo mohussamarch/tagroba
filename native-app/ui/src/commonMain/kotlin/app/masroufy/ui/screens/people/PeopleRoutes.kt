@@ -48,14 +48,6 @@ data class ProjectDetailRoute(val projectId: Id) : Route {
     override val name = "ProjectDetail"
 }
 
-/**
- * تفاصيل دين (`DebtDetail` — صف «سلفة منك» في ملف الشخص). **مش متسجّلة هنا** (مش من شاشات الدفعة دي) ⇒ «قيد البناء» لحد ما تتبني.
- * اللي هيبنيها يسجّل نفس المسار ده بنفس الاسم.
- */
-data class DebtDetailRoute(val obligationId: Id, val personId: Id) : Route {
-    override val name = "DebtDetail"
-}
-
 /** «إضافة شخص» — من خانة «إضافة» في الأشخاص ومن زرار «+». */
 object AddPersonSheetRoute : SheetRoute {
     override val name = "AddPersonSheet"

@@ -1,11 +1,14 @@
 package app.masroufy.ui.screens.people
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +20,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
 import app.masroufy.core.sentenceNumber
@@ -24,6 +30,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FloatingCard
+import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.SegmentedTabs
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.SurfaceIconButton
@@ -103,25 +110,30 @@ internal fun ProjectDetailScreen(projectId: String) {
     }
 }
 
+/** الملخص على البطاقة البترولية (زي اللوحة): السؤال · الرقم الكبير (العمل بإشارته) · صرفت (نصيبك) وجاءك · المعادلة · «تقريبي». */
 @Composable
 private fun Summary(d: ProjectDetailUi) {
-    FloatingCard {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            BasicText(d.question, style = Type.of(13).copy(color = Ink.muted))
-            HeadlineText(d.headline, 30)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(Modifier.weight(1f)) {
-                    BasicText(t(TextKey.PROJECT_DETAIL_OUT), style = Type.caption().copy(color = Ink.muted))
-                    AmountText(d.out.minor, d.out.currency, size = 15)
-                }
-                Column(Modifier.weight(1f)) {
-                    BasicText(t(TextKey.PROJECT_DETAIL_IN), style = Type.caption().copy(color = Ink.muted))
-                    AmountText(d.inn.minor, d.inn.currency, size = 15)
-                }
+    HeroCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 18.dp, vertical = 16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            BasicText(d.question, style = Type.of(14).copy(color = Ink.onHeroMuted))
+            val h = d.headline
+            if (h == null) BasicText(t(TextKey.PPL_DASH), style = Type.of(32, FontWeight.Bold).copy(color = Ink.onPrimary))
+            else AmountText(h.line.minor, h.line.currency, Modifier.fillMaxWidth(), size = 32, tone = h.tone, color = Ink.onPrimary)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                HeroCell(t(TextKey.PROJECT_DETAIL_OUT), d.out, Modifier.weight(1f))
+                HeroCell(t(TextKey.PROJECT_DETAIL_IN), d.inn, Modifier.weight(1f))
             }
-            Note(d.formula)
+            BasicText(d.formula, style = Type.of(12).copy(color = Ink.onHeroMuted))
             d.approx?.let { Pill(it, Ink.focus, Ink.alertBg) }
         }
+    }
+}
+
+@Composable
+private fun HeroCell(label: String, line: MoneyLine, modifier: Modifier) {
+    Column(modifier.clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.12f)).padding(horizontal = 10.dp, vertical = 8.dp)) {
+        BasicText(label, style = Type.of(11).copy(color = Ink.onHeroMuted))
+        AmountText(line.minor, line.currency, Modifier.fillMaxWidth(), size = 15, color = Ink.onPrimary)
     }
 }
 

@@ -138,7 +138,7 @@ private fun NuqootForm(data: EventScreenData, title: String, done: () -> Unit) {
         ErrorLine(err)
         val count = (plan as? GiftPlan.Ready)?.amounts?.size ?: 0
         PrimaryButton(
-            when { link -> t(TextKey.NUQOOT_SAVE_LINK); count > 0 -> t(TextKey.NUQOOT_SAVE_N, countOf(count, Noun.GIFTS)); else -> t(TextKey.NUQOOT_SAVE) },
+            when { link -> t(TextKey.NUQOOT_SAVE_LINK); count > 0 -> t(TextKey.NUQOOT_SAVE_N, countOf(count, Noun.GIFTS_OBJ)); else -> t(TextKey.NUQOOT_SAVE) },
             loading = busy, height = 52.dp, modifier = Modifier.fillMaxWidth(),
             onClick = {
                 val gifts = space.people.gifts

@@ -18,6 +18,11 @@ internal enum class Noun(val one: TextKey, val two: TextKey, val few: TextKey, v
     ITEMS(TextKey.PPL_ITEMS_ONE, TextKey.PPL_ITEMS_TWO, TextKey.PPL_ITEMS_FEW, TextKey.PPL_ITEMS_MANY),
     PEOPLE(TextKey.PPL_PEOPLE_ONE, TextKey.PPL_PEOPLE_TWO, TextKey.PPL_PEOPLE_FEW, TextKey.PPL_PEOPLE_MANY),
     DAYS(TextKey.PPL_DAYS_ONE, TextKey.PPL_DAYS_TWO, TextKey.PPL_DAYS_FEW, TextKey.PPL_DAYS_MANY),
+
+    // المفعول به بعد فعل الأمر («اربط عمليتين» · «سجّل نقطتين» · «احفظ بندين») — الفصحى بتفرق بين «عمليتان» و«عمليتين»
+    OPS_OBJ(TextKey.PPL_OPS_ONE, TextKey.PPL_OPS_TWO_OBJ, TextKey.PPL_OPS_FEW, TextKey.PPL_OPS_MANY),
+    GIFTS_OBJ(TextKey.PPL_GIFTS_ONE, TextKey.PPL_GIFTS_TWO_OBJ, TextKey.PPL_GIFTS_FEW, TextKey.PPL_GIFTS_MANY),
+    ITEMS_OBJ(TextKey.PPL_ITEMS_ONE, TextKey.PPL_ITEMS_TWO_OBJ, TextKey.PPL_ITEMS_FEW, TextKey.PPL_ITEMS_MANY),
 }
 
 /** «عملية واحدة» · «عمليتان» · «٣ عمليات» · «١١ عملية». */

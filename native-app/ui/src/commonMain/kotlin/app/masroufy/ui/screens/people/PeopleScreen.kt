@@ -84,7 +84,8 @@ internal fun PeopleScreen() {
     var load by remember(deps) { mutableStateOf<Load<PeopleTabUi>>(Load.Loading) }
     var me by remember(deps) { mutableStateOf<String?>(null) }
     LaunchedEffect(deps, version, retry) {
-        load = loadOf { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency) }
+        val full = loadOf { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency) }
+        load = if (full !is Load.Failed) full else loadOf { peopleWithoutBalances(deps.people.people.listWithBalances()) }.let { if (it is Load.Ready) it else full }
         me = runCatching { deps.shell.me().displayName }.getOrNull()
     }
     val open = { p: PersonChip -> nav.push(PersonProfileRoute(p.id)) }
@@ -150,11 +151,13 @@ internal fun PeopleScreen() {
                     }
                     when {
                         empty -> EmptyPeople(add, Modifier.offset(y = (top + DRUM_TOP).dp))
-                        failed -> ErrorCard({ retry++ }, Modifier.padding(horizontal = Space.gutter).offset(y = (top + DRUM_TOP).dp))
+                        failed -> ErrorCard({ retry++ }, Modifier.padding(horizontal = Space.gutter).offset(y = (top + DRUM_TOP).dp), t(TextKey.PPL_LOAD_FAILED), "")
                         ui != null -> {
                             val drumTop = top + DRUM_TOP - 374f * p - over
                             val height = Drum(groups, p, reduce, open, add, Modifier.padding(horizontal = Space.gutter).offset(y = drumTop.dp))
-                            Boxes(ui, nav, Modifier.padding(horizontal = Space.gutter).offset(y = (drumTop + height + 4f).dp).alpha(max(0f, 1f - 2.4f * p)), enabled = p < 0.3f)
+                            val below = Modifier.padding(horizontal = Space.gutter).offset(y = (drumTop + height + 4f).dp).alpha(max(0f, 1f - 2.4f * p))
+                            if (ui.balancesFailed) ErrorCard({ retry++ }, below)
+                            else Boxes(ui, nav, below, enabled = p < 0.3f)
                         }
                     }
                 }
@@ -229,13 +232,14 @@ private fun Boxes(ui: PeopleTabUi, nav: app.masroufy.ui.nav.Navigator, modifier:
 }
 
 @Composable
-private fun SideBox(title: String, lines: List<MoneyLine>, tone: app.masroufy.ui.components.AmountTone, count: String, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
+private fun SideBox(title: String, lines: List<MoneyLine>?, tone: app.masroufy.ui.components.AmountTone, count: String, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
     FloatingCard(modifier, onClick = onClick, enabled = enabled, clickLabel = title) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(title, style = Type.bodyBold())
             LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
         }
-        for (l in lines) AmountText(l.minor, l.currency, Modifier.fillMaxWidth(), size = 22, color = tone.color)
+        if (lines == null) AmountText(null, LocalSpace.current.space.currency, Modifier.fillMaxWidth(), size = 22)
+        else for (l in lines) AmountText(l.minor, l.currency, Modifier.fillMaxWidth(), size = 22, color = tone.color)
         BasicText(count, style = Type.caption().copy(color = Ink.muted))
     }
 }
@@ -265,7 +269,7 @@ internal fun ErrorCard(onRetry: () -> Unit, modifier: Modifier = Modifier, title
     ) {
         Column(Modifier.weight(1f)) {
             BasicText(title, style = Type.of(14, FontWeight.Bold).copy(color = Ink.focus))
-            BasicText(body, style = Type.caption().copy(color = Ink.focus))
+            if (body.isNotBlank()) BasicText(body, style = Type.caption().copy(color = Ink.focus))
         }
         SecondaryButton(t(TextKey.PPL_RETRY), onClick = onRetry)
     }

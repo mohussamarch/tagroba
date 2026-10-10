@@ -128,7 +128,8 @@ internal fun eventDetailUi(d: EventDetail, wallets: Map<Id, String>, prep: List<
     }
     val giftCount = if (e.mine) s.giftInCount ?: 0 else s.giftOutCount
     val done = prep.count { it.done }
-    val prepLine = joinLine(countOf(prep.size, Noun.ITEMS), if (done > 0) t(TextKey.EVENT_DETAIL_PREP_DONE, sentenceNumber(done)) else t(TextKey.EVENT_DETAIL_PREP_NONE_DONE))
+    val prepLine = if (prep.isEmpty()) t(TextKey.EVENT_PREP_NO_ITEMS)
+    else joinLine(countOf(prep.size, Noun.ITEMS), if (done > 0) t(TextKey.EVENT_DETAIL_PREP_DONE, sentenceNumber(done)) else t(TextKey.EVENT_DETAIL_PREP_NONE_DONE))
     val canPrep = eventNeedsPrep(e, today)
     return EventDetailUi(
         event = e,

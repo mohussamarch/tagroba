@@ -151,8 +151,9 @@ private fun OccasionForm(personId: Id?, personName: String?, existing: Occasion?
         }
         Note(preview.remind)
         if (existing != null) {
-            TonalButton(
+            DangerButton(
                 t(if (confirm) TextKey.OCC_REMOVE_CONFIRM else TextKey.OCC_REMOVE),
+                armed = confirm,
                 onClick = {
                     if (!confirm) confirm = true
                     else scope.launch {
