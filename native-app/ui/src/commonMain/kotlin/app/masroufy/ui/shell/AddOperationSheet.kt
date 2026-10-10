@@ -65,11 +65,11 @@ import kotlinx.coroutines.launch
  * مفيش أساسية: فاضية و«من أين تصرف عادةً؟»، `MainWallet.kt`)، و«احفظ» (معطّل لحد ما الأساسي يكمل — والمحفظة منه).
  * الحفظ ⇒ `QuickAddOperation` (`AddTransaction`) ⇒ اللوحة تقفل ورسالة «سُجّلت: …» و**الشاشة اللي تحتها تقرا تاني** (`DataChanges` — الرئيسية
  * بتفضل ظاهرة تحت اللوحة، فمن غيرها «معك الآن» و«صرفت هذا الشهر» كانوا بيفضلوا قدام لحد ما تسيب التبويب). الخطأ جنب المبلغ.
- * «بصوتك» ⇒ «غير متاحة بعد» (مفيش خدمة صوت).
+ * «بصوتك» ⇒ [onVoice]: اللوحة بتتقفل والمساعد بيتفتح ويسمعك هناك (رد المالك OVERRIDES §82-2 — نفس ميكروفون الشريط تحت).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
+fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit) {
     val space = LocalSpace.current
     val shell = space.shell
     val toaster = LocalToaster.current
@@ -84,14 +84,14 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
     var to by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
-    var voiceNote by remember { mutableStateOf(false) }
+
     // فيه محفظة أساسية للبلد دي وقت ما اللوحة اتفتحت؟ لأ ⇒ «بتصرف عادةً منين؟» واللي يختاره بيبقى الأساسي بعد الحفظ (المحرك —
     // `ShellDeps.addWalletDefault` على الحساب لكل بلد · `MainWallet.kt`)
     var hadMain by remember { mutableStateOf(false) }
     var askPrompt by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(visible, shell) {
         if (!visible) return@LaunchedEffect
-        kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null; voiceNote = false
+        kind = AddKind.OUT; amountText = ""; category = null; income = null; error = null
         val start = app.masroufy.perf.PerfTrace.mark()
         val o = shell.addOptions()
         options = o
@@ -111,13 +111,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit) {
     Sheet(visible, onClose, title = t(UiKey.ADD_TITLE), veil = Veil.MENU, closeLabel = t(UiKey.SHELL_CLOSE)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.ADD_TITLE), style = Type.section())
-            VoiceButton { voiceNote = true }
-        }
-        if (voiceNote) {
-            LaunchedEffect(Unit) { kotlinx.coroutines.delay(2400); voiceNote = false }
-            Box(Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(18.dp)).background(Ink.selected), contentAlignment = Alignment.Center) {
-                BasicText(t(UiKey.ASK_VOICE_NOT_READY), style = Type.bodyBold().copy(color = Ink.primary))
-            }
+            VoiceButton(onVoice)
         }
         SegmentedTabs(
             listOf(AddKind.OUT to t(UiKey.ADD_TYPE_OUT), AddKind.IN to t(UiKey.ADD_TYPE_IN), AddKind.MOVE to t(UiKey.ADD_TYPE_MOVE)),

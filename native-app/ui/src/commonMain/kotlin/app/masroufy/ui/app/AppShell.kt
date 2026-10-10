@@ -130,7 +130,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 val sheet = s.route as SheetRoute
                 registry.Sheet(sheet) { nav.close(sheet) }
             }
-            AddOperationSheet(adding) { adding = false }
+            // «بصوتك» في «+» ⇒ المساعد بيتفتح ويسمعك هناك (رد المالك §82-2 — زي ميكروفون الشريط)
+            AddOperationSheet(adding, onClose = { adding = false }, onVoice = { adding = false; ask = true })
             // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`). القفل ⇒ «البيانات اتغيرت»: المساعد ممكن يكون
             // سجّل عملية أو قفل كارت ⇒ الرئيسية والجرس يقروا تاني (اتلقطت في تجربة المحاكي: «معك الآن» فضل زي ما هو)
             AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null; shell.changes.changed() }) { target ->
