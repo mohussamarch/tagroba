@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.masroufy.core.Period
+import app.masroufy.core.buildPeriod
 import app.masroufy.ui.app.BellState
 
 /**
@@ -14,13 +16,19 @@ import app.masroufy.ui.app.BellState
 
 /**
  * الشهر المختار لكل بلد (مفتاح الفترة `YYYY-MM` من `Period.key`). `null` = الشهر الحالي.
- * «اختر الشهر» بيكتب هنا، والعمليات والمراجعة بيقروا من هنا (⚠️ شاشة العمليات بتتوصل وقت الدمج).
+ * «اختر الشهر» بيكتب هنا، والعمليات والمراجعة بيقروا من هنا.
  */
 @Stable
 object PeriodChoice {
     private val keys = mutableStateMapOf<String, String>()
 
     fun of(spaceId: String): String? = keys[spaceId]
+
+    /** مفتاح الفترة (`YYYY-MM`) ⇒ الفترة بيوم الراتب؛ null أو مفتاح بايظ = الشهر الحالي (null). تواريخ بس، من غير فلوس. */
+    fun periodOf(key: String?, payday: Int): Period? {
+        val parts = key?.split("-")?.mapNotNull { it.toIntOrNull() }?.takeIf { it.size == 2 && it[1] in 1..12 } ?: return null
+        return buildPeriod(parts[0], parts[1], payday)
+    }
 
     fun set(spaceId: String, key: String?) {
         if (key == null) keys.remove(spaceId) else keys[spaceId] = key

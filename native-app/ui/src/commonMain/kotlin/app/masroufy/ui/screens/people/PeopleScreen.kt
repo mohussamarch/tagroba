@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,6 +59,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -70,6 +72,9 @@ private const val ROW = 106f
 private const val GAP = 8f
 private const val HERO_TOP = 82f
 private const val DRUM_TOP = 456f
+
+/** طول تقريبي لكارت «لسه مفيش حد» (العنوان + السطرين + الزرار) — عشان يتحط فوق شريط السؤال والتنقل. */
+private const val EMPTY_H = 200f
 
 private sealed interface Cell {
     data class Person(val chip: PersonChip) : Cell
@@ -151,7 +156,12 @@ internal fun PeopleScreen() {
                         )
                     }
                     when {
-                        empty -> EmptyPeople(add, Modifier.offset(y = (top + DRUM_TOP).dp))
+                        empty -> {
+                            // فوق شريط السؤال والتنقل دايمًا (المحاكي 2026-10-10: «إضافة شخص» كان متغطي بشريط السؤال في الشاشات القصيرة)
+                            val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding().value
+                            val bars = (Space.navBottom + Space.navHeight + Space.askGap + Space.askHeight).value + inset + 12f
+                            EmptyPeople(add, Modifier.offset(y = max(top + HERO_TOP, min(top + DRUM_TOP, viewDp - bars - EMPTY_H)).dp))
+                        }
                         failed -> ErrorCard({ retry++ }, Modifier.padding(horizontal = Space.gutter).offset(y = (top + DRUM_TOP).dp), t(UiKey.PPL_LOAD_FAILED), "")
                         ui != null -> {
                             val drumTop = top + DRUM_TOP - 374f * p - over

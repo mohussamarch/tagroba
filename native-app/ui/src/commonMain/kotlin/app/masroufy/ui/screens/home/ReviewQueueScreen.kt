@@ -51,7 +51,7 @@ internal suspend fun loadReview(deps: SpaceDeps): ReviewData {
     val today = deps.shell.today()
     val payday = runCatching { deps.home.profile.load().payday }.getOrDefault(DEFAULT_PAYDAY)
     val current = periodForDate(today, payday)
-    val period = PeriodChoice.of(deps.space.id)?.split("-")?.let { (y, m) -> buildPeriod(y.toInt(), m.toInt(), payday) } ?: current
+    val period = PeriodChoice.periodOf(PeriodChoice.of(deps.space.id), payday) ?: current
     val to = if (period.end < today) period.end else today
     val rows = deps.home.history.preview(period.start, to).rows
     return ReviewData(rows, deps.home.kinds.summarize(rows))

@@ -40,7 +40,9 @@ class SavingsPresenterTest {
     fun theFieldsBecomeARequestOnlyWhenTheyAreValid() {
         val empty = checkSavings(SavingsMode.TARGET, emptyMap(), Currency.SAR, today)
         assertNull(empty.request)
-        assertEquals(setOf(SavingsFields.TARGET, SavingsFields.DATE), empty.errors.keys, "«كم معك» فاضي = صفر، مش خطأ")
+        assertTrue(empty.errors.isEmpty(), "قبل ما يكتب حاجة ⇒ ولا خطأ (المحاكي 2026-10-10)، و«كم معك» فاضي = صفر")
+        val typedZero = checkSavings(SavingsMode.TARGET, mapOf(SavingsFields.TARGET to "0"), Currency.SAR, today)
+        assertEquals(setOf(SavingsFields.TARGET), typedZero.errors.keys, "اللي اتكتب غلط بس بيطلع خطؤه، والتاريخ الفاضي ساكت")
 
         val ok = checkSavings(SavingsMode.TARGET, mapOf(SavingsFields.TARGET to "60,000", SavingsFields.DATE to "2028-10-07"), Currency.SAR, today)
         assertEquals(SavingsRequest.Target(6_000_000, 0, "2028-10-07"), ok.request)

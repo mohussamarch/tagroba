@@ -20,9 +20,8 @@ object CalendarRoute : Route {
 }
 
 /**
- * «اختر الشهر» — الاختيار بيتحفظ في [PeriodChoice] للبلد الشغالة. ⚠️ **مدخلها الوحيد** زرار الشهر («أكتوبر») في شاشة العمليات (§76) — مش
- * موجود على الفرع ده (العمليات هنا «قيد البناء») ⇒ الشاشة دي ما حدش بيفتحها لحد الدمج. فرع `screens-operations` فيه المدخل فعلًا
- * (`OperationsScreen.kt`: `MonthButton(…) { nav.push(PeriodPickerRoute) }`) بس **لسه ما بيقراش** [PeriodChoice] — لازم يتوصل وقت الدمج.
+ * «اختر الشهر» — الاختيار بيتحفظ في [PeriodChoice] للبلد الشغالة. مدخلها زرار الشهر («أكتوبر») في شاشة العمليات (§76)، والعمليات
+ * والمراجعة بيقروا الاختيار ([PeriodChoice.periodOf]).
  */
 object PeriodPickerRoute : Route {
     override val name = "PeriodPicker"

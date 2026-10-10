@@ -31,6 +31,14 @@ class PeriodModelTest {
         assertEquals("2026-10-31", periodEndingIn(2026, 10, 1).end)
     }
 
+    /** «اختر الشهر» ⇒ العمليات والمراجعة بيقروا نفس الفترة (المحاكي 2026-10-10: العمليات كانت بتتجاهله). */
+    @Test fun thePickedMonthKeyBecomesThePeriodForOperations() {
+        assertEquals(current, PeriodChoice.periodOf(current.key, 28))
+        assertEquals("2026-07-28", PeriodChoice.periodOf("2026-07", 28)?.start)
+        assertEquals(null, PeriodChoice.periodOf(null, 28), "مفيش اختيار ⇒ الشهر الحالي")
+        assertEquals(null, PeriodChoice.periodOf("بايظ", 28))
+    }
+
     /** L7 (OVERRIDES §79): كل مكان بيكتب اسم الشهر المالي — العمليات والميزانيات والمستحقات — بشهر النهاية مش البداية. */
     @Test fun everyScreenNamesTheMonthItEndsIn() {
         assertEquals("أكتوبر", app.masroufy.ui.screens.operations.periodLabel(current))

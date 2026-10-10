@@ -46,6 +46,7 @@ import app.masroufy.ui.nav.Slots
 import app.masroufy.ui.overlay.Anchor
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.screens.common.TabScaffold
+import app.masroufy.ui.screens.home.PeriodChoice
 import app.masroufy.ui.screens.home.PeriodPickerRoute
 import app.masroufy.ui.screens.imports.BankSmsRoute
 import app.masroufy.ui.text.t
@@ -56,7 +57,7 @@ import app.masroufy.usecase.LoadTransactionsScreenRequest
 /**
  * تبويب «العمليات» (`Operations` + `OperationMenu`): الرأس (الفلتر · الشهر · الترس) · المبدّل (العمليات · الميزانيات · المستحقات) ·
  * شرايط «مستنياك» · كارتين «دخل الشهر» و«المصروف الحقيقي» · العمليات بالأيام. كل الأرقام من `LoadTransactionsScreen` (CLAUDE.md #4).
- * ⚠️ الفترة = الشهر المالي الحالي: اختيار شهر تاني من `PeriodPicker` (منطقة الرئيسية) لسه مالوش طريق يرجّع الشهر هنا.
+ * الفترة = الشهر اللي اتختار في «اختر الشهر» ([PeriodChoice] للبلد الشغالة — المحاكي 2026-10-10: كانت بتتجاهله)، وإلا الشهر الحالي.
  */
 @Composable
 fun OperationsScreen() {
@@ -67,10 +68,13 @@ fun OperationsScreen() {
     var ui by remember(deps) { mutableStateOf(OpsUi()) }
     var reload by remember { mutableIntStateOf(0) }
     var menu by remember { mutableStateOf<Pair<OpRow, Anchor>?>(null) }
-    LaunchedEffect(deps, reload) {
+    // قراية المختار في الرسم نفسه ⇒ الرجوع من «اختر الشهر» بيعيد القراية بالشهر الجديد
+    val chosenKey = PeriodChoice.of(space.space.id)
+    LaunchedEffect(deps, reload, chosenKey) {
         val today = space.shell.today()
         val view = attempt {
-            val data = deps.transactions.load(LoadTransactionsScreenRequest(today = today, payday = deps.payday()))
+            val payday = deps.payday()
+            val data = deps.transactions.load(LoadTransactionsScreenRequest(PeriodChoice.periodOf(chosenKey, payday), today, payday))
             operationsView(data, attempt { deps.wallets() }.orEmpty(), today, space.space.currency)
         }
         ui = ui.loaded(view, attempt { deps.transfers.zone().questions.size })
