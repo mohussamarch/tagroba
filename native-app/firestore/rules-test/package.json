@@ -1,0 +1,13 @@
+{
+  "name": "masroufy-rules-test",
+  "private": true,
+  "type": "module",
+  "description": "Firestore security rules tests (firestore.rules at the repo root) on the Firebase emulator — OVERRIDES §80, CLAUDE.md security rule 2.",
+  "scripts": {
+    "test": "node --test rules.test.mjs"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
+    "firebase": "11.10.0"
+  }
+}
