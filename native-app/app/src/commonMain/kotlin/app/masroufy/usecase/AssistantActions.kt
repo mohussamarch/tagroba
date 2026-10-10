@@ -247,6 +247,8 @@ internal suspend fun TurnKit.pick(msg: AssistMessage, optionId: String): TurnOut
             val u = app.masroufy.core.understandAssist(payload["text"].orEmpty(), chat.understandContext(lex, msgs, ctx))
             splitReply(u, if (optionId == OPT_EXISTING) payload["transactionId"] else NEW_SPLIT)
         }
+        // §82-1: الكارت ده باليومين بس (`AssistantChat.pickPeriod`) — زرار ما يقفلوش
+        AssistChoiceKind.PICK_PERIOD -> return TurnOut(countTopic = false)
         null -> TurnOut()
     }
     return out.copy(updates = listOf(picked) + out.updates)

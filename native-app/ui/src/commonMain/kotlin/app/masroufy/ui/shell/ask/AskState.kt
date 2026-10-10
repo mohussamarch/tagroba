@@ -127,6 +127,9 @@ class AskPresenter(private val deps: AskDeps, private val tab: () -> AssistTab) 
 
     suspend fun keep(messageId: String) = run { suite().chat.keepExisting(messageId, ctx()) }
 
+    /** §82-1: اليومين في كارت «من إمتى لإمتى؟». */
+    suspend fun period(messageId: String, from: String, to: String) = run { suite().chat.pickPeriod(messageId, from, to, ctx()) }
+
     /** «×» على كارت في «أمور لم تُنجزها بعد» (L1): بيتقفل على الحساب حتى لو الحاجة ما اتعملتش، و«تراجع» ٤ ثواني. */
     suspend fun closeStart(item: StartItem) {
         commitUndo()

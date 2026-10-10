@@ -20,13 +20,24 @@ enum class AssistPeriodKind {
 
     /** من تاريخ لحد النهارده («من ٢٨/٩ لليوم») — نفس حقول [ON_DATE]. */
     SINCE_DATE,
+
+    /** §82-1: من يوم لحد يوم اختارهم المالك في الكارت ([AssistPeriod.from] · [AssistPeriod.to] — و[AssistPeriod.name] اسم المناسبة). */
+    BETWEEN,
 }
 
 /**
  * [days] = عدد الأيام/الشهور («آخر ٧ أيام» · «آخر ٣ شهور» · «أول امبارح» = ٢)، أو رقم الشهر (١–١٢) لـ[AssistPeriodKind.NAMED_MONTH]، أو
  * اليوم من الشهر لـ[AssistPeriodKind.ON_DATE]/[AssistPeriodKind.SINCE_DATE] ومعاه [month] و[year] (0 = ما اتكتبش).
  */
-data class AssistPeriod(val kind: AssistPeriodKind, val days: Int = 0, val month: Int = 0, val year: Int = 0) {
+data class AssistPeriod(
+    val kind: AssistPeriodKind,
+    val days: Int = 0,
+    val month: Int = 0,
+    val year: Int = 0,
+    val from: IsoDate? = null,
+    val to: IsoDate? = null,
+    val name: String? = null,
+) {
     val fiscal: Boolean
         get() = kind == AssistPeriodKind.CURRENT_FISCAL || kind == AssistPeriodKind.PREVIOUS_FISCAL || kind == AssistPeriodKind.NAMED_MONTH ||
             kind == AssistPeriodKind.FISCAL_AGO
@@ -220,6 +231,7 @@ fun resolveAssistRange(p: AssistPeriod?, today: IsoDate, payday: Int): AssistRan
         AssistPeriodKind.ON_DATE -> lastDateOn(p!!, today).let { AssistRange(it, it, null) }
         AssistPeriodKind.WEEKDAY -> addDaysIso(today, -((isoWeekday(today) - p!!.days).mod(7))).let { AssistRange(it, it, null) }
         AssistPeriodKind.SINCE_DATE -> AssistRange(minOf(lastDateOn(p!!, today), today), today, null)
+        AssistPeriodKind.BETWEEN -> AssistRange(p!!.from ?: today, p.to ?: today, null)
     }
 }
 
@@ -271,6 +283,8 @@ fun assistPeriodLabel(p: AssistPeriod?, range: AssistRange? = null): String = wh
     AssistPeriodKind.LAST_YEAR -> uiText(TextKey.ASSIST_PERIOD_LAST_YEAR)
     AssistPeriodKind.LAST_DAYS -> uiText(TextKey.ASSIST_PERIOD_LAST_DAYS, p!!.days.toString())
     AssistPeriodKind.LAST_MONTHS -> uiText(TextKey.ASSIST_PERIOD_LAST_MONTHS, p!!.days.toString())
+    AssistPeriodKind.BETWEEN -> p!!.name?.let { uiText(AskKey.CHAT_PERIOD_NAMED, it, assistDayLabel(p.from), assistDayLabel(p.to)) }
+        ?: uiText(AskKey.CHAT_PERIOD_BETWEEN, assistDayLabel(p.from), assistDayLabel(p.to))
 }
 
 /** «5 أكتوبر» من جدول النصوص (والتاريخ نفسه لو مش معروف). */

@@ -41,6 +41,9 @@ enum class AssistNote {
 
     /** سؤال عن المستقبل أو «لو …» ⇒ «غير متاح» (ما بنقولش رقم حاجة ما حصلتش). */
     NO_FUTURE,
+
+    /** §82-1: «في رمضان» وأي مناسبة بالاسم ⇒ كارت «من إمتى لإمتى؟» (يومين) والإجابة بعده من نفس حالة الاستخدام. */
+    ASK_PERIOD,
 }
 
 data class AssistUnderstanding(
@@ -55,7 +58,12 @@ data class AssistUnderstanding(
     val greeting: GreetingKind? = null,
     /** للتحكم في التعلّم: يشتغل (true) ولا يقف (false). */
     val learningOn: Boolean? = null,
+    /** §82-1: الفترة اللي المالك اختارها في كارت «من إمتى لإمتى؟» — بتغلب اللي في الكلام. */
+    val period: AssistPeriod? = null,
 ) {
+    /** الفترة اللي الإجابة بتتحسب عليها: المختارة في الكارت، وإلا اللي في الكلام (null = الشهر المالي الحالي). */
+    val askedPeriod: AssistPeriod? get() = period ?: signals.period
+
     /** المعرّف اللي بيتخزن ويتعدّ («nav.zakat» للتنقل — نفس قايمة التصميم). */
     val wire: String get() = if (intent == AssistIntent.NAV) screens.firstOrNull()?.navWire ?: intent.wire else intent.wire
 
@@ -145,7 +153,7 @@ private fun navTo(
 private fun dataTopic(s: AssistSignals, ctx: AssistUnderstandContext): Triple<AssistIntent, AssistEntity?, AssistNote?>? {
     val (intent, subject) = dataTopicOf(s, ctx) ?: return null
     // اسم أو فترة ما اتفهمتش · سعر · مستقبل ⇒ «مش فاهم»/«غير متاح» بدل إجابة بثقة عن حاجة تانية (القاعدة 10)
-    dataBlock(s, intent, subject)?.let { return Triple(AssistIntent.UNKNOWN, null, it.note) }
+    dataBlock(s, intent, subject)?.let { return if (it.note == AssistNote.ASK_PERIOD) Triple(intent, subject, it.note) else Triple(AssistIntent.UNKNOWN, null, it.note) }
     val note =if (subject != null && subject.start >= 0 && s.entities.ambiguous(subject.type)) AssistNote.AMBIGUOUS else null
     return Triple(intent, subject, note)
 }

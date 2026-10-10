@@ -144,7 +144,8 @@ class AssistReviewFixesTest {
         val wrong = cases.mapNotNull { (text, p) -> u(text).let { if (it.intent == AssistIntent.SPEND_TOTAL && it.signals.period == p) null else "«$text» ⇒ ${it.wire} ${it.signals.period}" } }
         assertTrue(wrong.isEmpty(), wrong.joinToString("\n"))
         assertTrue(u("كم صرفت في شهر ٩").signals.money.amounts.isEmpty(), "٩ رقم شهر مش مبلغ")
-        assertEquals(AssistIntent.UNKNOWN, u("كم صرفت في رمضان").intent)
+        // §82-1 (رد المالك 2026-10-10): «في رمضان» ⇒ كارت «من إمتى لإمتى؟» (كان «مش فاهم»)
+        assertEquals(AssistIntent.SPEND_TOTAL to AssistNote.ASK_PERIOD, u("كم صرفت في رمضان").let { it.intent to it.note })
         assertEquals(AssistIntent.UNKNOWN, u("كم صرفت آخر سنتين").intent)
         // المدى: الشهر قبل الماضي = الشهر المالي اللي بيخلص في أغسطس (الراتب يوم 28) · «يوم 5» = 5 أكتوبر · «يوم 25» = 25 سبتمبر
         assertEquals("2026-07-28", resolveAssistRange(AssistPeriod(AssistPeriodKind.FISCAL_AGO, 2), today, 28).from)

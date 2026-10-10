@@ -54,6 +54,8 @@ class MessageActions(
     val keep: (String) -> Unit,
     val pick: (messageId: String, optionId: String) -> Unit,
     val open: (ScreenLink) -> Unit,
+    /** §82-1: اليومين في كارت «من إمتى لإمتى؟». */
+    val period: (messageId: String, from: String, to: String) -> Unit = { _, _, _ -> },
 )
 
 private val mineShadow = listOf(ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x3808634F)))
@@ -67,7 +69,7 @@ private val mineShadow = listOf(ShadowLayer(0.dp, 8.dp, 18.dp, Color(0x3808634F)
 internal fun MessageBubble(m: AssistMessage, today: String, actions: MessageActions, live: Boolean) {
     val mine = m.from == AssistSpeaker.ME
     val reply = m.reply
-    val rich = reply is AssistantReply.TxnCard || reply is AssistantReply.SplitCard
+    val rich = reply is AssistantReply.TxnCard || reply is AssistantReply.SplitCard || (reply is AssistantReply.PeriodPick && reply.picked == null)
     Box(Modifier.fillMaxWidth(), contentAlignment = if (mine) Alignment.CenterEnd else Alignment.CenterStart) {
         Box(Modifier.fillMaxWidth(if (mine) 0.8f else 0.88f), contentAlignment = if (mine) Alignment.CenterEnd else Alignment.CenterStart) {
             val shape = if (mine) AbsoluteRoundedCornerShape(18.dp, 18.dp, 6.dp, 18.dp) else AbsoluteRoundedCornerShape(18.dp, 18.dp, 18.dp, 6.dp)
@@ -85,6 +87,7 @@ internal fun MessageBubble(m: AssistMessage, today: String, actions: MessageActi
                     is AssistantReply.SplitCard -> SplitCardView(m.id, reply.draft, reply.state, actions, live)
                     is AssistantReply.WalletPick -> Options(m.id, reply.options, reply.picked, live && m.pending, actions)
                     is AssistantReply.Choice -> Options(m.id, reply.options, reply.picked, live && m.pending, actions)
+                    is AssistantReply.PeriodPick -> PeriodPickCard(m.id, reply.picked, today, live && m.pending, actions)
                     null -> Unit
                 }
             }

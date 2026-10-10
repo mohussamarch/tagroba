@@ -186,7 +186,9 @@ internal fun dataBlock(s: AssistSignals, intent: AssistIntent, subject: AssistEn
     val futureVerb = s.has(FUTURE_SPEND) && intent in PERIOD_DATA
     if (intent in PAST_DATA && (s.has(FUTURE_PERIOD) || hypothetical(s) || futureVerb)) return DataBlock(AssistNote.NO_FUTURE)
     if (s.has(PRICE_WORDS)) return DataBlock(null)
-    if (intent in PERIOD_DATA && s.period == null) {
+    // §82-1: «في رمضان» (أو أي شهر هجري/مناسبة بالاسم) ⇒ «من إمتى لإمتى؟» بدل «مش فاهم» — للأسئلة اللي بتتجاوب بمدى بس
+    val occasion = intent in PERIOD_ASK_INTENTS && s.period == null && occasionIn(s) != null
+    if (intent in PERIOD_DATA && s.period == null && !occasion) {
         val hint = s.tokens.withIndex().any { (i, t) -> cliticForms(t).any { it in PERIOD_HINTS } && s.entities.none { i in it.start until it.end } }
         if (hint) return DataBlock(null)
     }
@@ -195,6 +197,10 @@ internal fun dataBlock(s: AssistSignals, intent: AssistIntent, subject: AssistEn
         intent == AssistIntent.SPEND_TOTAL -> unknownSubjectWord(s, SPEND_PREPS)
         intent == AssistIntent.INCOME -> unknownSubjectWord(s, INCOME_PREPS, named = false)
         else -> null
+    }?.takeUnless { occasion && isOccasionWord(it) }
+    return when {
+        unknown != null -> DataBlock(null)
+        occasion -> DataBlock(AssistNote.ASK_PERIOD)
+        else -> null
     }
-    return if (unknown != null) DataBlock(null) else null
 }
