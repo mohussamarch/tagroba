@@ -128,7 +128,11 @@ private fun MemoryCard(p: AskPresenter, onCopied: (String) -> Unit, go: (suspend
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         BasicText(t(AskKey.CHAT_MEMORY_TITLE), Modifier.semantics { heading() }, style = Type.bodyBold())
-        ToggleSwitch(m.learningOn, t(AskKey.CHAT_MEMORY_LEARNING)) { go { p.setLearning(!m.learningOn) } }
+        // اسم المفتاح ظاهر جنبه في نفس السطر (في المحاكي كان المفتاح لوحده في سطر من غير اسم مكتوب)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            BasicText(t(AskKey.CHAT_MEMORY_LEARNING), Modifier.weight(1f), style = Type.body())
+            ToggleSwitch(m.learningOn, t(AskKey.CHAT_MEMORY_LEARNING)) { go { p.setLearning(!m.learningOn) } }
+        }
         BasicText(t(AskKey.CHAT_MEMORY_LEARNING_NOTE), style = Type.caption().copy(color = Ink.muted))
         if (m.items.isEmpty()) BasicText(t(AskKey.CHAT_MEMORY_EMPTY), style = Type.body().copy(color = Ink.muted))
         for (item in m.items) {

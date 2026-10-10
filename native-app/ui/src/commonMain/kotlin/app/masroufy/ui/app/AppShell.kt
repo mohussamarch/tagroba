@@ -125,8 +125,9 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
                 registry.Sheet(sheet) { nav.close(sheet) }
             }
             AddOperationSheet(adding) { adding = false }
-            // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`)
-            AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null }) { target ->
+            // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`). القفل ⇒ «البيانات اتغيرت»: المساعد ممكن يكون
+            // سجّل عملية أو قفل كارت ⇒ الرئيسية والجرس يقروا تاني (اتلقطت في تجربة المحاكي: «معك الآن» فضل زي ما هو)
+            AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null; shell.changes.changed() }) { target ->
                 when (target) {
                     is AssistTarget.Push -> nav.push(target.route)
                     is AssistTarget.Open -> nav.open(target.sheet)
