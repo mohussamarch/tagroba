@@ -95,6 +95,7 @@ class AssistantChat(private val deps: AssistantDeps) {
     internal val mainWallet: (String) -> MainSpendingWallets = { spaceId -> MainSpendingWallets(st.settings, deps.sources.wallets, spaceId, deps.clock) }
 
     suspend fun open(ctx: AssistContext): ChatView {
+        AssistantHistory(deps).purgeOld(ctx.today)
         val conv = currentConversation(st.conversations.listAll(), ctx.nowIso)
         val msgs = conv?.let { st.messages.listByConversation(it.id).inOrder() }.orEmpty()
         return view(conv, msgs, ctx, AssistPanel.NONE)

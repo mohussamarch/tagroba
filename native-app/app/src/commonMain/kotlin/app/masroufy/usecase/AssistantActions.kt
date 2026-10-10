@@ -75,6 +75,8 @@ private fun TurnKit.honestQuestion(u: AssistUnderstanding): TurnOut? = notExpens
 }
 
 private suspend fun TurnKit.quickAdd(u: AssistUnderstanding): TurnOut {
+    // §79.2-7: الدخل والسلفة والتحويل بين محافظك ليهم كروت تأكيد (`AssistantMoneyCards.kt`)؛ الباقي رد صريح زي الأول
+    moneyCard(u)?.let { return it }
     honestQuestion(u)?.let { return it }
     val amount = u.signals.money.amounts.firstOrNull()?.minor ?: return say(TextKey.ASSIST_INVALID_AMOUNT, u.wire)
     val date = assistSpendDate(u.signals.dayOffset, u.signals.period, ctx.today) ?: ctx.today
@@ -116,13 +118,15 @@ private suspend fun TurnKit.pickWallet(named: String?, recurringWallet: String?)
 
 /** الكارت، أو «بتصرف عادةً منين؟» الأول لو مفيش محفظة (الكارت جواه لحد ما يختار). */
 private suspend fun TurnKit.cardOut(draft: TxnDraft, topic: String, updates: List<AssistMessage> = emptyList()): TurnOut {
+    // كارت دخل أو سلفة أو تحويل بيفضل بنوعه بعد التعديل بالكتابة (§79.2-7)
+    if (draft.cardType != app.masroufy.core.CardType.EXPENSE) return moneyCardOut(draft, topic, updates)
     if (draft.walletId == null) {
         val options = chat.mainWallet(ctx.space.id).askOptions().map { AssistOption(it.id, it.name) }
         val ask = bot(AssistMessageKind.WALLET_PICK, uiText(TextKey.ASSIST_ASK_MAIN_WALLET), topic).copy(card = draft, options = options, state = CardState.PENDING)
         return TurnOut(listOf(ask), updates)
     }
-    val warn = if (draft.similarTransactionId != null) " " + uiText(TextKey.ASSIST_SIMILAR_WARNING) else ""
-    val card = bot(AssistMessageKind.TXN_CARD, uiText(TextKey.ASSIST_TXN_CARD) + warn, topic).copy(card = draft, state = CardState.PENDING, subjectId = draft.merchantId ?: draft.categoryId)
+    // عملية شبهها النهارده (§79.2-6): «فيه عملية شبهها النهارده — أسجّلها كده؟» والشاشة بتعرض «سجّلها برضه» / «دي هي، سيبها»
+    val card = bot(AssistMessageKind.TXN_CARD, cardText(draft), topic).copy(card = draft, state = CardState.PENDING, subjectId = draft.merchantId ?: draft.categoryId)
     return TurnOut(listOf(card), updates)
 }
 
@@ -135,6 +139,17 @@ private suspend fun TurnKit.editPending(pending: AssistMessage, u: AssistUnderst
         return splitCardOut(d.copy(totalMinor = amount, shares = reshare(d.shares, amount)), u.wire, listOf(pending.copy(state = CardState.DROPPED)))
     }
     val old = pending.card ?: return TurnOut()
+    if (old.cardType == app.masroufy.core.CardType.MOVE) {
+        // التحويل: المبلغ واليوم، والمحفظتين لو اتذكروا الاتنين («من البنك للكاش») — بيفضل تحويل
+        val pair = app.masroufy.core.movePair(s)?.let { (f, t) -> lex.wallets.firstOrNull { it.id == f.id } to lex.wallets.firstOrNull { it.id == t.id } }
+        val draft = old.copy(
+            amountMinor = s.money.amounts.firstOrNull()?.minor ?: old.amountMinor,
+            occurredOn = assistSpendDate(s.dayOffset, s.period, ctx.today) ?: old.occurredOn,
+            walletId = pair?.first?.id ?: old.walletId, walletName = pair?.first?.name ?: old.walletName,
+            toWalletId = pair?.second?.id ?: old.toWalletId, toWalletName = pair?.second?.name ?: old.toWalletName,
+        )
+        return cardOut(draft, pending.topic ?: AssistIntent.QUICK_ADD.wire, listOf(pending.copy(state = CardState.DROPPED)))
+    }
     val wallet = namedWallet(s)
     val cat = u.subject?.takeIf { it.type == AssistEntityType.CATEGORY } ?: s.entity(AssistEntityType.CATEGORY)?.takeIf { s.has(AssistWords.CATEGORY_WORD) }
     val draft = old.copy(
@@ -158,6 +173,7 @@ internal suspend fun TurnKit.confirmCard(msg: AssistMessage): TurnOut {
     if (!msg.pending) return TurnOut()
     if (msg.kind == AssistMessageKind.SPLIT_CARD) return confirmSplit(msg)
     val d = msg.card ?: return TurnOut()
+    if (d.cardType != app.masroufy.core.CardType.EXPENSE) return confirmMoneyCard(msg, d)
     val add = deps.add ?: return say(TextKey.ASSIST_NA, msg.topic)
     val walletId = d.walletId ?: return say(TextKey.ASSIST_ASK_MAIN_WALLET, msg.topic)
     val cash = lex.wallets.firstOrNull { it.id == walletId }?.kind == "cash"
@@ -196,11 +212,13 @@ internal suspend fun TurnKit.pick(msg: AssistMessage, optionId: String): TurnOut
     val picked = msg.copy(picked = optionId, state = CardState.DONE)
     if (msg.kind == AssistMessageKind.WALLET_PICK) {
         val w = lex.wallets.firstOrNull { it.id == optionId } ?: return TurnOut()
-        chat.mainWallet(ctx.space.id).set(w.id, MainWalletSource.CHAT)
-        val note = text(uiText(TextKey.ASSIST_MAIN_SET, quoted(w.name)), msg.topic)
+        // كارت دخل أو سلفة أو تحويل: المحفظة للعملية دي بس — الأساسية للصرف (§78 ٢)
+        val setsMain = msg.payload[NOT_MAIN] != "1"
+        if (setsMain) chat.mainWallet(ctx.space.id).set(w.id, MainWalletSource.CHAT)
+        val note = text(uiText(TextKey.ASSIST_MAIN_SET, quoted(w.name)), msg.topic).takeIf { setsMain }
         val out = msg.split?.let { splitCardOut(it.copy(walletId = w.id, walletName = w.name), msg.topic.orEmpty(), listOf(picked)) }
             ?: msg.card?.let { cardOut(it.copy(walletId = w.id, walletName = w.name), msg.topic.orEmpty(), listOf(picked)) } ?: TurnOut(updates = listOf(picked))
-        return out.copy(messages = listOf(note) + out.messages)
+        return out.copy(messages = listOfNotNull(note) + out.messages)
     }
     val payload = msg.payload
     val out = when (msg.choice) {

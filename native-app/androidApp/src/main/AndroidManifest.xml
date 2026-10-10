@@ -3,6 +3,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- ميكروفون المساعد = نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — أندرويد 11+ لازم يعرف إننا بندوّر عليها -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MasroufyApplication"
         android:allowBackup="false"

@@ -66,6 +66,10 @@ class AssistantStorageTest {
         roundTrip(AssistantCodecs.forgotten, ForgottenMark("fact:store:m-marsa", "2026-10-10T09:00:00.000Z"))
         roundTrip(AssistantCodecs.unknown, UnknownQuestion("أخبار السوق", "اخبار السوق", 2, "2026-10-09T09:00:00.000Z", "2026-10-10T09:00:00.000Z", "home", "default"))
         roundTrip(AssistantCodecs.alertDismissals, AlertDismissal("default:bill|r-elec|2026-10-03", "2026-10-10T09:00:00.000Z"))
+        // §79.2-1: الدرجة اللي اتمسحت · §79.2-7: كارت سلفة وكارت تحويل بالكتابة
+        roundTrip(AssistantCodecs.alertDismissals, AlertDismissal("default:budget|x", "2026-10-10T09:00:00.000Z", "default:budget|x|budget_threshold"))
+        roundTrip(AssistantCodecs.messages, message.copy(card = draft.copy(kind = app.masroufy.core.EconomicKind.LOAN_GRANTED, personId = "p-ahmed", personName = "أحمد")))
+        roundTrip(AssistantCodecs.messages, message.copy(card = draft.copy(kind = app.masroufy.core.EconomicKind.INTERNAL_TRANSFER, toWalletId = "w-bank", toWalletName = "البنك")))
     }
 
     @Test fun learningOnIsOnlyWrittenWhenOff() {

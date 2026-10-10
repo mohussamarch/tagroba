@@ -115,10 +115,16 @@ class AssistantWiringTest {
         assertTrue(saRepos.assistant.alertDismissals!!.listAll().isEmpty())
     }
 
-    @Test fun remainingIsAnsweredFromTheScreensUseCases() = runBlocking<Unit> {
+    /** رد المالك §79.2-5: «فاضلي كام؟» بالرقمين — الباقي من سقف الشهر + اللي معاك تقريبًا لحد المرتب (من نفس حسبة الرئيسية). */
+    @Test fun remainingAnswersBothTheCapLeftAndRoughlyUntilPayday() = runBlocking<Unit> {
+        val period = app.masroufy.core.periodForDate("2026-10-09", 28)
+        saRepos.budgets.save(app.masroufy.core.Budget("b-1", period.key, period.start, period.end, 200_000, 80, env.clock.nowIso(), env.clock.nowIso()))
         val suite = graph.ask.suite()
         val view = suite.chat.send("فاضلي كام", graph.ask.context(AssistTab.HOME))
         assertIs<AssistantReply.Text>(view.messages.last().reply)
-        assertTrue(view.messages.last().text.isNotBlank())
+        val text = view.messages.last().text
+        val capLeft = app.masroufy.core.uiText(app.masroufy.core.TextKey.ASSIST_REMAINING_CAP, "X", "Y").substringBefore("X")
+        val untilPayday = app.masroufy.core.uiText(app.masroufy.core.AskKey.CHAT_UNTIL_SALARY, "X", "Y").substringBefore("X")
+        assertTrue(text.contains(capLeft) && text.contains(untilPayday), text)
     }
 }

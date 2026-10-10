@@ -131,6 +131,9 @@ private fun encodeTxn(t: TxnDraft): Map<String, Any> = linkedMapOf<String, Any>(
     t.walletId?.let { put("walletId", it) }; t.walletName?.let { put("walletName", it) }; t.categoryId?.let { put("categoryId", it) }
     t.categoryName?.let { put("categoryName", it) }; t.merchantId?.let { put("merchantId", it) }; t.merchantName?.let { put("merchantName", it) }
     t.recurringItemId?.let { put("recurringItemId", it) }; t.similarTransactionId?.let { put("similarTransactionId", it) }; t.transactionId?.let { put("transactionId", it) }
+    // كروت السلفة والتحويل بالكتابة (§79.2-7) — حقول اختيارية ⇒ الكروت القديمة بتتقري زي ما هي
+    t.personId?.let { put("personId", it) }; t.personName?.let { put("personName", sanitizeAccountNumbers(it)) }
+    t.toWalletId?.let { put("toWalletId", it) }; t.toWalletName?.let { put("toWalletName", it) }
 }
 
 private fun decodeTxn(d: DocReader) = TxnDraft(
@@ -138,6 +141,7 @@ private fun decodeTxn(d: DocReader) = TxnDraft(
     d.strOrNull("categoryId"), d.strOrNull("categoryName"), d.strOrNull("merchantId"), d.strOrNull("merchantName"),
     d.wire("kind") { w -> EconomicKind.entries.first { it.wire == w } }, d.strOrNull("recurringItemId"), d.strOrNull("similarTransactionId"),
     d.boolOrNull("categoryChanged") ?: false, d.strOrNull("transactionId"),
+    personId = d.strOrNull("personId"), personName = d.strOrNull("personName"), toWalletId = d.strOrNull("toWalletId"), toWalletName = d.strOrNull("toWalletName"),
 )
 
 private fun encodeSplit(s: SplitDraft): Map<String, Any> = linkedMapOf<String, Any>(

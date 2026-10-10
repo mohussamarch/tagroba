@@ -25,6 +25,13 @@ internal suspend fun AnswerKit.remaining(): AssistReply {
         else b.line(TextKey.ASSIST_OVER_CAP, b.money(st.limitMinor), b.money(-st.remainingMinor))
         val allowance = home(current)?.allowance
         allowance?.amountMinor?.takeIf { st.remainingMinor > 0 }?.let { b.line(TextKey.ASSIST_PER_DAY, b.money(it), assistDays(allowance.remainingDays)) }
+        // رد المالك §79.2-5: **الاتنين مع بعض** — الباقي من السقف + اللي معاك تقريبًا لحد المرتب (من نفس حسبة الرئيسية `LoadLeftover`)
+        s.leftover?.load(ctx.today, s.unreconciledWalletIds)?.let { lo ->
+            lo.leftoverMinor?.let { left ->
+                b.lines += uiText(app.masroufy.core.AskKey.CHAT_UNTIL_SALARY, b.money(left), lo.until?.let { assistDate(it, ctx.today) } ?: uiText(TextKey.ASSIST_PERIOD_END))
+                if (lo.approximate) b.approx(null)
+            }
+        }
         if (!bd.spentReliable) b.approx(null)
     } else {
         val lo = s.leftover?.load(ctx.today, s.unreconciledWalletIds)

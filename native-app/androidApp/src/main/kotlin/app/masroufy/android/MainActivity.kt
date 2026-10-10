@@ -5,6 +5,8 @@ import android.provider.Settings
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import app.masroufy.ui.shell.ask.LocalSpeech
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import app.masroufy.ui.app.AppSession
@@ -44,7 +46,9 @@ class MainActivity : FragmentActivity() {
             },
         )
         val deps = container.appDeps(permissions)
-        setContent { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) }
+        // ميكروفون المساعد: نافذة التعرّف على الكلام بتاعة الجوال (§79.2-8) — لازم تتسجل هنا قبل ما الشاشة تبدأ
+        val speech = AndroidSpeech(this)
+        setContent { CompositionLocalProvider(LocalSpeech provides speech) { MasroufyApp(deps, shell, lock, reduceMotion = animationsOff()) } }
         askNotificationsOnce(permissions)
     }
 

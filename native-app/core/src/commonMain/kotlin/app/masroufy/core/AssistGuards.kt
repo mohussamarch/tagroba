@@ -57,6 +57,59 @@ internal fun notExpenseNote(s: AssistSignals): AssistNote? {
 
 internal fun saysDontRecord(s: AssistSignals): Boolean = s.has(DONT_RECORD)
 
+// ─── كروت الدخل والسلفة والتحويل بالكتابة (رد المالك §79.2-7) ───
+
+/** السلفة: إنت اللي سلّفت (بتظهر في «لك») ولا اللي استلفت (في «عليك»). */
+enum class LoanSide { LENT, BORROWED }
+
+private val LENT_WORDS = vocab("سلفت", "اسلفت", "قرضت", "اقرضت", "lent", "loaned", fuzzy = false)
+private val BORROWED_WORDS = vocab("استلفت", "اتسلفت", "تسلفت", "اقترضت", "استدنت", "borrowed", fuzzy = false)
+
+/** «سلفت أحمد ٢٠٠» ⇒ [LoanSide.LENT] · «استلفت من خالد» ⇒ [LoanSide.BORROWED] · «دفعت عن …» و«سددت لـ…» ⇒ null (رد صريح زي الأول). */
+fun loanSide(s: AssistSignals): LoanSide? = when {
+    s.has(BORROWED_WORDS) -> LoanSide.BORROWED
+    s.has(LENT_WORDS) -> LoanSide.LENT
+    else -> null
+}
+
+/** السحب من الصراف (من البنك للكاش) ولا الإيداع (من الكاش للبنك). */
+enum class CashMove { WITHDRAW, DEPOSIT }
+
+private val DEPOSIT_WORDS = vocab("اودعت", "ايداع", "deposited", "deposit", fuzzy = false)
+
+fun cashMoveOf(s: AssistSignals): CashMove = if (s.has(DEPOSIT_WORDS)) CashMove.DEPOSIT else CashMove.WITHDRAW
+
+private val BONUS_WORDS = vocab("بونص", "مكافاه", "مكافأه", "bonus", fuzzy = false, exact = true)
+private val GIFT_WORDS = vocab("عيديه", "هديه", "gift", fuzzy = false, exact = true)
+
+/**
+ * نوع الدخل اللي كارت «قبضت …» بيسجّله: راتب/مرتب/معاش ⇒ راتب · بونص/مكافأة ⇒ مكافأة · عيدية/هدية ⇒ هدية · غير كده ⇒ «عمل حر»
+ * (اختيار Claude — المالك يقدر يغيّره: الدخل اللي من غير اسم ما يتحسبش راتب عشان ما يلخبطش يوم الراتب).
+ */
+fun incomeKindOf(s: AssistSignals): EconomicKind = when {
+    s.has(BONUS_WORDS) -> EconomicKind.BONUS
+    s.has(GIFT_WORDS) -> EconomicKind.GIFT_RECEIVED
+    s.has(SALARY_WORDS) -> EconomicKind.SALARY
+    else -> EconomicKind.FREELANCE
+}
+
+private val SALARY_WORDS = vocab("راتب", "الراتب", "مرتب", "المرتب", "معاش", "salary", "paycheck", fuzzy = false, exact = true)
+
+/** كلمة «من» قبل اسم المحفظة («من الكاش للبنك») — المحفظة اللي الفلوس طالعة منها. */
+private val FROM_WORDS = setOf("من", "from")
+
+/**
+ * المحفظتين في «حولت ٥٠٠ من الكاش للبنك» بالترتيب (من ⇒ إلى): المحفظة اللي قبلها «من» هي المصدر، والتانية الوجهة. أقل من محفظتين مختلفتين ⇒
+ * null. كلمة عامة («البنك») لأكتر من حساب ⇒ أول واحد في ترتيبك (الأساسية لو منهم — بيختارها المستدعي).
+ */
+fun movePair(s: AssistSignals): Pair<AssistEntity, AssistEntity>? {
+    val byPlace = s.entities.ofType(AssistEntityType.WALLET).groupBy { it.start }.toSortedMap().values.map { at -> at.firstOrNull { !it.generic } ?: at.first() }
+    if (byPlace.size < 2 || byPlace.map { it.id }.distinct().size < 2) return null
+    val from = byPlace.firstOrNull { e -> s.tokens.getOrNull(e.start - 1)?.let { t -> cliticForms(t).any { it in FROM_WORDS } } == true } ?: byPlace.first()
+    val to = byPlace.first { it.id != from.id }
+    return from to to
+}
+
 private val FUTURE_PERIOD = vocab(
     "الشهر الجاي", "الشهر القادم", "الشهر المقبل", "الشهر الياي", "الشهر اللي جاي", "السنه الجايه", "السنه القادمه", "السنه المقبله", "السنه اللي جايه",
     "العام القادم", "العام المقبل", "الاسبوع الجاي", "الاسبوع القادم", "الاسبوع المقبل", "بكره", "بكرا", "بعد بكره", "next month", "next year", "next week",

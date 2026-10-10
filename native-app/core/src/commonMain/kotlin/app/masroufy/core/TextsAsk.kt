@@ -62,6 +62,7 @@ internal val MSA_ASK_TEXTS: Map<AskKey, String> = mapOf(
     AskKey.CHAT_LENT_TITLE to "سلفة لـ{0}",
     AskKey.CHAT_BORROWED_TITLE to "سلفة من {0}",
     AskKey.CHAT_MOVE_TITLE to "تحويل بين محافظي",
+    AskKey.CHAT_WHICH_WALLET to "على أي محفظة؟",
 )
 
 /** نصوص [AskKey] — المصري. */
@@ -126,6 +127,7 @@ internal val EGYPTIAN_ASK_TEXTS: Map<AskKey, String> = mapOf(
     AskKey.CHAT_LENT_TITLE to "سلفة لـ{0}",
     AskKey.CHAT_BORROWED_TITLE to "سلفة من {0}",
     AskKey.CHAT_MOVE_TITLE to "تحويل بين محافظي",
+    AskKey.CHAT_WHICH_WALLET to "على أنهي محفظة؟",
 )
 
 /** نصوص [AskKey] — الإنجليزي. */
@@ -190,4 +192,5 @@ internal val ENGLISH_ASK_TEXTS: Map<AskKey, String> = mapOf(
     AskKey.CHAT_LENT_TITLE to "Loan to {0}",
     AskKey.CHAT_BORROWED_TITLE to "Loan from {0}",
     AskKey.CHAT_MOVE_TITLE to "Move between my wallets",
+    AskKey.CHAT_WHICH_WALLET to "Which wallet?",
 )

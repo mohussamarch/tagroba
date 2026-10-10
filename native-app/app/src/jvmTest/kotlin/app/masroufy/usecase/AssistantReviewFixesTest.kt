@@ -39,12 +39,14 @@ class AssistantReviewFixesTest {
     private fun ChatView.card(): AssistMessage = messages.last { it.kind == AssistMessageKind.TXN_CARD }
     private suspend fun AssistantWorld.count() = txns.listByDateRange("2000-01-01", "2100-01-01").size
 
-    /** ١ و٢: ولا كارت ولا عملية — رد صريح بالمكان الصح (وصفحة الشخص لو اتذكر). */
+    /**
+     * ١ و٢: ولا كارت ولا عملية — رد صريح بالمكان الصح (وصفحة الشخص لو اتذكر). الدخل والسلفة والسحب والتحويل بين محافظك بقى ليهم كروت
+     * (§79.2-7 — `AssistantMoneyCardsTest`)؛ الاسترجاع و«دفعت عن …» والتحويل لحد تاني و«ما تسجلش» لسه رد صريح.
+     */
     @Test fun moneyThatIsNotSpendingIsNeverSaved() = runBlocking<Unit> {
         val cases = listOf(
-            "جاني راتب 10000" to TextKey.ASSIST_NOT_EXPENSE_IN, "استلمت 500 من احمد" to TextKey.ASSIST_NOT_EXPENSE_IN,
-            "رجعلي 50 من المرسى" to TextKey.ASSIST_NOT_EXPENSE_REFUND, "سلفت خالد 200" to TextKey.ASSIST_NOT_EXPENSE_DEBT,
-            "حولت 1000 لسارة" to TextKey.ASSIST_NOT_EXPENSE_TRANSFER, "سحبت 500 من الصراف" to TextKey.ASSIST_NOT_EXPENSE_CASH_MOVE,
+            "رجعلي 50 من المرسى" to TextKey.ASSIST_NOT_EXPENSE_REFUND,
+            "حولت 1000 لسارة" to TextKey.ASSIST_NOT_EXPENSE_TRANSFER,
             "دفعت عن احمد 100" to TextKey.ASSIST_NOT_EXPENSE_DEBT, "ما تسجلش قهوة 15" to TextKey.ASSIST_NOT_RECORDED,
             "لا تسجل 50 بقالة" to TextKey.ASSIST_NOT_RECORDED,
         )
@@ -57,7 +59,7 @@ class AssistantReviewFixesTest {
             assertEquals(before, w.count(), "اتسجلت عملية: $text")
         }
         val w = world()
-        val links = w.chat.send("سلفت خالد 200", w.ctx()).lastBot().links
+        val links = w.chat.send("دفعت عن خالد 200", w.ctx()).lastBot().links
         assertEquals(listOf(AssistScreen.PERSON_PROFILE, AssistScreen.DEBTS), links.map { it.screen })
         assertEquals("p-khaled", links.first().args.values.single())
     }

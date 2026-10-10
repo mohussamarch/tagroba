@@ -97,7 +97,16 @@ data class HistoryRow(val conversation: AssistConversation, val group: HistoryGr
 class AssistantHistory(private val deps: AssistantDeps) {
     private val st = deps.stores
 
-    suspend fun list(today: IsoDate): List<HistoryRow> = st.conversations.listAll().filter { it.messageCount > 0 }
+    /** رد المالك §79.2-3: المحادثة بتتمسح **لوحدها بعد ٣ شهور** من آخر رسالة فيها (رسايلها كمان). */
+    suspend fun purgeOld(today: IsoDate) {
+        val cutoff = app.masroufy.core.shiftMonths(today, -HISTORY_KEEP_MONTHS)
+        val old = st.conversations.listAll().filter { it.lastMessageAt.take(10) < cutoff }.map { it.id }
+        if (old.isEmpty()) return
+        st.messages.removeByConversations(old)
+        st.conversations.remove(old)
+    }
+
+    suspend fun list(today: IsoDate): List<HistoryRow> = purgeOld(today).let { st.conversations.listAll() }.filter { it.messageCount > 0 }
         .sortedWith(compareByDescending<AssistConversation> { isoInstantMillis(it.lastMessageAt) ?: Long.MIN_VALUE }.thenBy { it.id })
         .map { HistoryRow(it, historyGroupOf(it.lastMessageAt.take(10), today)) }
 
@@ -135,6 +144,9 @@ class AssistantUnknownLog(private val deps: AssistantDeps) {
 
     suspend fun clear() = deps.stores.unknown.remove(deps.stores.unknown.listAll().map { it.id })
 }
+
+/** المحادثات بتفضل في السجل ٣ شهور (رد المالك §79.2-3). */
+const val HISTORY_KEEP_MONTHS = 3
 
 /** عدد الأسئلة اللي ما اتفهمتش الظاهرة في «اللي اتعلمته عنك» (المالك: آخر ٥). */
 const val UNKNOWN_SHOWN = 5
