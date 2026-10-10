@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,7 +64,7 @@ fun AdvisorScreen() {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var ui by remember(space) { mutableStateOf<AdvisorUi?>(null) }
-    var open by remember { mutableStateOf<String?>(null) }
+    var open by rememberSaveable { mutableStateOf<String?>(null) }
     suspend fun reload() {
         ui = loadAdvisor(deps)
     }

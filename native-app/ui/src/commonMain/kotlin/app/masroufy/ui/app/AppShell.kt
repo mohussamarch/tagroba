@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.glass.backdropSource
 import app.masroufy.ui.glass.rememberBackdrop
+import app.masroufy.ui.nav.LocalEntryKey
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.LocalRegistry
 import app.masroufy.ui.nav.NavMotion
@@ -190,7 +191,10 @@ private fun ScreenHost(nav: Navigator, registry: RouteRegistry) {
             },
         ) {
             holder.SaveableStateProvider(visible) {
-                if (top == null) registry.Root(tab) else registry.Screen(top.route)
+                // مفتاح الخانة ⇒ مكان التمرير بيتحفظ معاها ويرجع مع الرجوع (§85 — `EntryScroll.kt`)
+                CompositionLocalProvider(LocalEntryKey provides visible) {
+                    if (top == null) registry.Root(tab) else registry.Screen(top.route)
+                }
             }
         }
     }

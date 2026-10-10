@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,7 +66,7 @@ fun TransfersScreen() {
     var failed by remember { mutableStateOf(false) }
     var people by remember(deps) { mutableStateOf<List<Person>>(emptyList()) }
     var reload by remember { mutableIntStateOf(0) }
-    var expanded by remember { mutableStateOf<String?>(null) }
+    var expanded by rememberSaveable { mutableStateOf<String?>(null) }
     var personFor by remember { mutableStateOf<TransferPartyRef?>(null) }
     LaunchedEffect(deps, reload) {
         people = attempt { deps.people.listWithBalances().map { it.person } }.orEmpty()

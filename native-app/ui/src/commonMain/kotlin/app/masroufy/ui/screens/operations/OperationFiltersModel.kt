@@ -1,5 +1,7 @@
 package app.masroufy.ui.screens.operations
 
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import app.masroufy.core.UiKey
 import app.masroufy.core.AMOUNT_TOLERANCE_PER_THOUSAND
 import app.masroufy.core.Category
@@ -45,6 +47,22 @@ data class Filters(
     val categories: Set<String> = emptySet(),
     val wallets: Set<Id> = emptySet(),
     val review: ReviewFilter = ReviewFilter.ALL,
+)
+
+/**
+ * التصفية بتتحفظ مع خانتها في سجل الرجوع (§85: فتحت عملية من النتايج ورجعت ⇒ نفس الفلتر ونفس المكان) — بأنواع بسيطة بس (نصوص وقوايم نصوص)
+ * عشان تتحفظ في أي مكان (`rememberSaveable`).
+ */
+val FiltersSaver: Saver<Filters, Any> = listSaver(
+    save = { f -> listOf(f.query, f.amountText, f.near, f.period.name, ArrayList(f.kinds.map { it.name }), ArrayList(f.categories), ArrayList(f.wallets), f.review.name) },
+    restore = { v ->
+        @Suppress("UNCHECKED_CAST")
+        Filters(
+            query = v[0] as String, amountText = v[1] as String, near = v[2] as Boolean, period = FilterPeriod.valueOf(v[3] as String),
+            kinds = (v[4] as List<String>).map { KindGroup.valueOf(it) }.toSet(), categories = (v[5] as List<String>).toSet(),
+            wallets = (v[6] as List<String>).toSet(), review = ReviewFilter.valueOf(v[7] as String),
+        )
+    },
 )
 
 /** الفترات اللي التصفية بتقراها (الأحدث الأول) — حساب تواريخ بس (`buildPeriod` من `core`). */

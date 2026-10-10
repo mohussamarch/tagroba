@@ -74,7 +74,7 @@ fun OperationFiltersScreen() {
     val deps = space.operations
     val nav = LocalNavigator.current
     val currency = space.space.currency
-    var filters by remember { mutableStateOf(Filters()) }
+    var filters by rememberSaveable(stateSaver = FiltersSaver) { mutableStateOf(Filters()) }
     var results by rememberSaveable { mutableStateOf(false) }
     var data by remember(deps) { mutableStateOf<List<TransactionsScreenData>?>(null) }
     var wallets by remember(deps) { mutableStateOf<List<Wallet>>(emptyList()) }

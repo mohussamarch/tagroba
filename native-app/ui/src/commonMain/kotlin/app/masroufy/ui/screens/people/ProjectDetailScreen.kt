@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,7 +62,7 @@ internal fun ProjectDetailScreen(projectId: String) {
     val version = PeopleChanges.version
     var retry by remember { mutableStateOf(0) }
     var load by remember(deps, projectId) { mutableStateOf<Load<ProjectDetailUi>>(Load.Loading) }
-    var tab by remember { mutableStateOf(ProjectTab.OPS) }
+    var tab by rememberSaveable { mutableStateOf(ProjectTab.OPS) }
     var editing by remember { mutableStateOf(false) }
     var ruling by remember { mutableStateOf(false) }
     LaunchedEffect(deps, projectId, version, retry) {

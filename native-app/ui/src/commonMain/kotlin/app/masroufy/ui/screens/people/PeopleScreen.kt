@@ -41,7 +41,7 @@ import app.masroufy.core.Id
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.SecondaryButton
 import app.masroufy.ui.nav.LocalNavigator
-import androidx.compose.foundation.rememberScrollState
+import app.masroufy.ui.nav.rememberEntryScrollState
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.LocalReduceMotion
@@ -109,7 +109,8 @@ internal fun PeopleScreen() {
         val fullDrum = groups.size * (ROW + GAP)
         val scrolls = ui != null && !empty
         val extra = if (scrolls) max(0f, top + HERO_TOP + fullDrum - (viewDp - Space.tabContentBottom.value)) else 0f
-        val scroll = rememberScrollState()
+        // بيرجع لمكانه (المسرح مطوي ولا مفرود) مع الرجوع وتبديل التبويب — §85
+        val scroll = rememberEntryScrollState()
         val reduce = LocalReduceMotion.current
         val rangePx = with(density) { RANGE.dp.toPx() }
         val p = (scroll.value / rangePx).coerceIn(0f, 1f)
