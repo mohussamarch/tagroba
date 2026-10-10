@@ -162,13 +162,13 @@ internal suspend fun AnswerKit.pendingReview(): AssistReply {
 internal suspend fun AnswerKit.assets(): AssistReply {
     val pv = s.assets?.listPortfolio(ctx.today) ?: return na()
     val b = rb()
-    val value = pv.totals.marketValueMinor
+    val value = pv.owned.marketValueMinor
     when {
         pv.rows.isEmpty() -> b.line(TextKey.ASSIST_NO_ASSETS)
         value == null -> b.line(TextKey.ASSIST_ASSETS_NA)
         else -> {
             b.line(TextKey.ASSIST_ASSETS, b.money(value))
-            if (pv.totals.assetsWithoutPrice > 0) b.line(TextKey.ASSIST_ASSETS_PARTIAL, pv.totals.assetsWithoutPrice.toString())
+            if (pv.owned.assetsWithoutPrice > 0) b.line(TextKey.ASSIST_ASSETS_PARTIAL, pv.owned.assetsWithoutPrice.toString())
         }
     }
     val asset = subject(AssistEntityType.ASSET)

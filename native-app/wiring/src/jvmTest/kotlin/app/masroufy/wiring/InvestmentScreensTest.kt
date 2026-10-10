@@ -88,6 +88,29 @@ class InvestmentScreensTest {
         assertEquals(w.deps.assets.listPortfolio("2026-10-09").totals.realizedGainMinor, sold.realizedMinor)
     }
 
+    /** «أصل متأرشف برّه الإجمالي» (رد المالك OVERRIDES §82-21): الشاشة بتجمع المملوك بس، والأصل المتأرشف بيفضل في القايمة. */
+    @Test fun archivedAssetsStayOutOfTheTotal() = runBlocking<Unit> {
+        val w = InvestmentWorld(InvestmentWorld.SAUDI)
+        val kept = w.gold()
+        val gone = w.gold("ذهب قديم وهمي")
+        w.deps.assets.setPrice(kept, 43_800, "2026-10-09")
+        w.deps.assets.setPrice(gone, 43_800, "2026-10-09")
+        w.deps.assets.archiveAsset(gone, true)
+        val ui = assertNotNull(loadInvestment(w.deps, w.space).ui)
+        assertEquals(5_256_000L, ui.totalMinor, "أصل واحد مملوك (120 جرام) — المتأرشف برّه")
+        assertEquals(4_832_000L, ui.costMinor)
+        assertEquals(2, ui.others.size, "المتأرشف لسه ظاهر في القايمة (آخرها)")
+        val view = w.deps.assets.listPortfolio("2026-10-09")
+        assertEquals(10_512_000L, view.totals.marketValueMinor, "`totals` زي التطبيق القديم (ملف المرجع) — الشاشة ما بتستعملوش")
+        assertEquals(view.owned.marketValueMinor, ui.totalMinor)
+        // الأصل المتأرشف من غير سعر ما بيخلّيش الإجمالي «غير متاح»
+        val w2 = InvestmentWorld(InvestmentWorld.SAUDI)
+        val k2 = w2.gold()
+        w2.deps.assets.setPrice(k2, 43_800, "2026-10-09")
+        w2.deps.assets.archiveAsset(w2.gold("بلا سعر وهمي"), true)
+        assertEquals(5_256_000L, assertNotNull(loadInvestment(w2.deps, w2.space).ui).totalMinor)
+    }
+
     @Test fun egyptSpeaksEgyptian() = runBlocking<Unit> {
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         val w = InvestmentWorld(InvestmentWorld.EGYPT)
