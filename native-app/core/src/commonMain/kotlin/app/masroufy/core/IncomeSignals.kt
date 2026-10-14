@@ -60,13 +60,14 @@ fun payerQuestionText(q: PayerQuestion): String = uiText(TextKey.INCOME_Q_PAYER,
 /**
  * رد المالك (§64، اختياره — مش المقترح): بعد ما يأكد **مرة** إن الطرف ده بيحوّل مرتبه ⇒ **أي** إيداع منه بيتسجل «مرتب» لوحده
  * (المكافأة واسترداد مصاريف الشغل كمان). **اللي المستخدم غيّره بإيده عمره ما يتكتب فوقه**: العملية اللي نوعها متأكد ما بتتلمسش.
- * اختيارات Claude: أي مصدر عنده الطرف ده (حتى لو اتقفل — المكافأة بتيجي بعد ما تسيب) ومن غير شرط العملة. بترجع نفس العملية لو مفيش تغيير.
+ * **جوه فترة المصدر بس** (قايمة المالك 2026-10-15، البند 7 — «جهات الشغل بفترات»: تحويل من حساب الجهة **في فترتها** = راتبها). ده بيلغي
+ * اختيار Claude القديم (أ) «حتى لو اتقفل»: الإيداع من حساب جهة سبتها بعد تاريخ الخروج (المكافأة مثلًا) ما بيبقاش «مرتب» لوحده — بيفضل
+ * يتسأل، و«مكافأة نهاية الخدمة» بتتعلّم عليه بإيدك زي ما هي. من غير شرط العملة. بترجع نفس العملية لو مفيش تغيير.
  */
 fun applyKnownPayerSalary(t: Transaction, sources: List<IncomeSource>, nowIso: String): Transaction {
     if (t.observedDirection != Direction.IN || t.economicKindConfirmed) return t
-    val key = transferPartyOf(t)?.key ?: return t
-    if (sources.none { key in it.payerKeys }) return t
-    return t.copy(economicKind = EconomicKind.SALARY, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = nowIso)
+    if (employerOf(t, sources) == null) return t
+    return asConfirmedSalary(t, nowIso)
 }
 
 /** الرد على «ده مرتب من …؟» — المصدر بعد الرد. الرد مش بيلمس المبلغ المتوقع ولا أي رقم تاني. */
