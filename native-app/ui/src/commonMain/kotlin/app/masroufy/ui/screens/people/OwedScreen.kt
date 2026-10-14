@@ -1,5 +1,8 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,6 +48,7 @@ private const val DUE_HORIZON_DAYS = 400
 
 @Composable
 internal fun OwedScreen(side: OwedSide) {
+    val quick = rememberQuickMenu()
     val deps = LocalSpace.current
     val nav = LocalNavigator.current
     val version = PeopleChanges.version
@@ -74,13 +78,18 @@ internal fun OwedScreen(side: OwedSide) {
                         if (ui.rows.isEmpty()) {
                             BasicText(t(if (owed) UiKey.OWED_EMPTY_OWED else UiKey.OWED_EMPTY_OWE), Modifier.fillMaxWidth().height(56.dp), style = Type.body().copy(color = Ink.muted))
                         }
-                        ui.rows.forEachIndexed { i, r -> OwedRow(r, owed, i == ui.rows.lastIndex) { nav.push(PersonProfileRoute(r.personId)) } }
+                        ui.rows.forEachIndexed { i, r ->
+                            QuickTarget(quick, r.name, { personQuickItems(r.personId, nav) }, subtitle = r.reason) { long ->
+                                OwedRow(r, owed, i == ui.rows.lastIndex, long, quick.guardTap { nav.push(PersonProfileRoute(r.personId)) })
+                            }
+                        }
                     }
                 }
                 item(key = "foot") { Note(t(UiKey.OWED_FOOT)) }
             }
         }
     }
+    QuickMenuHost(quick)
 }
 
 @Composable
@@ -99,9 +108,9 @@ private fun TotalHero(ui: OwedUi, owed: Boolean) {
 }
 
 @Composable
-private fun OwedRow(r: OwedRowUi, owed: Boolean, last: Boolean, onClick: () -> Unit) {
+private fun OwedRow(r: OwedRowUi, owed: Boolean, last: Boolean, onLongClick: () -> Unit, onClick: () -> Unit) {
     val press = rememberPress()
-    Rowed(last, Modifier.pressScale(press).tap(press, label = r.name, onClick = onClick)) {
+    Rowed(last, Modifier.pressScale(press).tap(press, label = r.name, onLongClick = onLongClick, onClick = onClick)) {
         InitialCircle(r.name, 40.dp)
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             BasicText(r.name, style = Type.bodyBold())
