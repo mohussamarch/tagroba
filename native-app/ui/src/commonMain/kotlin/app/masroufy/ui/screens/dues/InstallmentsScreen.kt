@@ -22,6 +22,9 @@ import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.CategoryInk
 import app.masroufy.ui.theme.Ink
@@ -36,6 +39,7 @@ fun InstallmentsScreen() {
     val space = LocalSpace.current
     val deps = space.dues
     val nav = LocalNavigator.current
+    val quick = rememberQuickMenu()
     val load = rememberLoad(deps) {
         val today = space.shell.today()
         val totals = deps.loadDues.load(today, deps.period(today), space.space.currency, null).totals
@@ -64,16 +68,21 @@ fun InstallmentsScreen() {
                         }
                     }
                 }
-                for (c in ui.cards) item(key = c.planId) { PlanCard(c) { nav.push(InstallmentDetailRoute(c.planId)) } }
+                for (c in ui.cards) item(key = c.planId) {
+                    QuickTarget(quick, c.name, { planQuickItems(c.planId, nav) }, subtitle = c.kindText) { long ->
+                        PlanCard(c, onLongClick = long, onClick = quick.guardTap { nav.push(InstallmentDetailRoute(c.planId)) })
+                    }
+                }
                 item(key = "note") { BasicText(t(UiKey.INSTALLMENTS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
             }
         }
     }
+    QuickMenuHost(quick)
 }
 
 @Composable
-private fun PlanCard(c: PlanCardUi, onClick: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp), onClick = onClick, clickLabel = c.name) {
+private fun PlanCard(c: PlanCardUi, onLongClick: () -> Unit, onClick: () -> Unit) {
+    FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp), onClick = onClick, onLongClick = onLongClick, clickLabel = c.name) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

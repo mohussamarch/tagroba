@@ -44,6 +44,8 @@ import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.LocalRegistry
 import app.masroufy.ui.nav.Slots
 import app.masroufy.ui.overlay.Anchor
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.screens.common.TabScaffold
 import app.masroufy.ui.screens.home.PeriodChoice
@@ -67,7 +69,7 @@ fun OperationsScreen() {
     var tab by rememberSaveable { mutableStateOf(OpsTab.OPERATIONS) }
     var ui by remember(deps) { mutableStateOf(OpsUi()) }
     var reload by remember { mutableIntStateOf(0) }
-    var menu by remember { mutableStateOf<Pair<OpRow, Anchor>?>(null) }
+    val quick = rememberQuickMenu()
     // قراية المختار في الرسم نفسه ⇒ الرجوع من «اختر الشهر» بيعيد القراية بالشهر الجديد
     val chosenKey = PeriodChoice.of(space.space.id)
     LaunchedEffect(deps, reload, chosenKey) {
@@ -98,15 +100,12 @@ fun OperationsScreen() {
         when (tab) {
             OpsTab.BUDGETS -> item(key = "budgets") { LocalRegistry.current.Slot(Slots.BUDGETS) }
             OpsTab.DUES -> item(key = "dues") { LocalRegistry.current.Slot(Slots.DUES) }
-            OpsTab.OPERATIONS -> operationsTab(ui, onRetry = { ui = ui.retrying(); reload++ }, onOpen = { nav.push(OperationDetailRoute(it.id)) }, onMenu = { r, a -> menu = r to a })
+            OpsTab.OPERATIONS -> operationsTab(ui, onRetry = { ui = ui.retrying(); reload++ }, onOpen = { r -> quick.guardTap { nav.push(OperationDetailRoute(r.id)) }() }, onMenu = { r, a ->
+                quick.show(operationMenuRequest(r, a, onDetail = { nav.push(OperationDetailRoute(it.id)) }, onPerson = { nav.push(OperationDetailRoute(it.id, openPerson = true)) }))
+            })
         }
     }
-    OperationMenu(
-        menu,
-        onDismiss = { menu = null },
-        onDetail = { nav.push(OperationDetailRoute(it.id)) },
-        onPerson = { nav.push(OperationDetailRoute(it.id, openPerson = true)) },
-    )
+    QuickMenuHost(quick)
 }
 
 private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit) {

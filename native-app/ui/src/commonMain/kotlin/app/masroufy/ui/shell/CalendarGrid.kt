@@ -20,6 +20,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.onGloballyPositioned
+import app.masroufy.ui.overlay.Anchor
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -72,6 +75,7 @@ data class CalendarMark(val day: Int, val kind: MarkKind, val label: String, val
  * شبكة شهر ميلادي (`CalendarGrid` — OVERRIDES §65 · §76): **السبت أول الأسبوع في البلدين**، خانات واسعة فيها المواعيد بلون نوعها
  * (أكتر من اتنين ⇒ أول واحد + «+N»)، النهارده دايرة خضرا، اللي فات باهت، واليوم المختار أخضر فاتح بحد. السهم اليمين = الشهر اللي فات.
  * [onMonth] بياخد −1 / +1، و[onToday] يرجع للشهر الحالي. المواعيد بتيجي جاهزة من الشاشة (`LoadCalendar.month`).
+ * [onLongPick] = الضغطة الطويلة على يوم (القايمة السريعة — §6.5-13) بمكان خانته؛ null ⇒ مفيش (اختيار تاريخ في اللوحات).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -87,6 +91,7 @@ fun CalendarGrid(
     modifier: Modifier = Modifier,
     noPrev: Boolean = false,
     noNext: Boolean = false,
+    onLongPick: ((day: Int, anchor: Anchor) -> Unit)? = null,
 ) {
     val first = formatIsoDate(DateParts(year, month, 1))
     val lead = saturdayColumnOf(first)
@@ -111,7 +116,7 @@ fun CalendarGrid(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                     for (c in 0 until 7) {
                         val day = r * 7 + c - lead + 1
-                        if (day < 1 || day > days) Box(Modifier.weight(1f)) else DayCell(Modifier.weight(1f), year, month, day, today, marks.filter { it.day == day }, selectedDay == day) { onPick(day) }
+                        if (day < 1 || day > days) Box(Modifier.weight(1f)) else DayCell(Modifier.weight(1f), year, month, day, today, marks.filter { it.day == day }, selectedDay == day, onLongPick?.let { f -> { a: Anchor -> f(day, a) } }) { onPick(day) }
                     }
                 }
             }
@@ -127,7 +132,8 @@ fun CalendarGrid(
 }
 
 @Composable
-private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: IsoDate, mine: List<CalendarMark>, on: Boolean, onClick: () -> Unit) {
+private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: IsoDate, mine: List<CalendarMark>, on: Boolean, onLong: ((Anchor) -> Unit)?, onClick: () -> Unit) {
+    val anchor = remember { Anchor() }
     val iso = formatIsoDate(DateParts(year, month, day))
     val isToday = iso == today
     val past = iso < today
@@ -141,7 +147,8 @@ private fun DayCell(modifier: Modifier, year: Int, month: Int, day: Int, today: 
     val shown = if (mine.size > 2) mine.take(1) else mine
     val aria = dayMonth(iso) + (if (isToday) "، " + t(UiKey.CAL_TODAY) else "") + "، " + (if (mine.isEmpty()) t(UiKey.CAL_NO_DATES) else mine.joinToString("، ") { it.label })
     Column(
-        modifier.defaultMinSize(minHeight = 60.dp).pressScale(press).clip(shape).then(bg).tap(press, onClick = onClick)
+        modifier.defaultMinSize(minHeight = 60.dp).onGloballyPositioned { anchor.update(it) }.pressScale(press).clip(shape).then(bg)
+            .tap(press, onLongClick = onLong?.let { f -> { f(anchor) } }, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = aria; selected = on }.padding(horizontal = 2.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(2.dp),

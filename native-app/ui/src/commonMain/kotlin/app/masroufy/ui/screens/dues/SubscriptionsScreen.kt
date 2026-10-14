@@ -35,6 +35,9 @@ import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -50,6 +53,7 @@ fun SubscriptionsScreen() {
     val space = LocalSpace.current
     val deps = space.dues
     val nav = LocalNavigator.current
+    val quick = rememberQuickMenu()
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var dismissed by remember { mutableStateOf(emptySet<String>()) }
@@ -87,7 +91,9 @@ fun SubscriptionsScreen() {
                     CardList {
                         ui.rows.forEachIndexed { i, r ->
                             if (i > 0) Divider()
-                            SubRow(r) { nav.push(SubscriptionDetailRoute(r.itemId)) }
+                            QuickTarget(quick, r.name, { subscriptionQuickItems(r.itemId, nav) }, subtitle = r.sub) { long ->
+                                SubRow(r, onLongClick = long, onClick = quick.guardTap { nav.push(SubscriptionDetailRoute(r.itemId)) })
+                            }
                         }
                     }
                 }
@@ -95,6 +101,7 @@ fun SubscriptionsScreen() {
             }
         }
     }
+    QuickMenuHost(quick)
 }
 
 @Composable
@@ -124,10 +131,10 @@ private fun CandidateCard(c: CandidateUi, error: String?, onYes: () -> Unit, onN
 private val AMBER_INK = Color(0xFF6B4600)
 
 @Composable
-private fun SubRow(r: SubRowUi, onClick: () -> Unit) {
+private fun SubRow(r: SubRowUi, onLongClick: () -> Unit, onClick: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).pressScale(press).tap(press, label = r.name, onClick = onClick).padding(vertical = 12.dp),
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).pressScale(press).tap(press, label = r.name, onLongClick = onLongClick, onClick = onClick).padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

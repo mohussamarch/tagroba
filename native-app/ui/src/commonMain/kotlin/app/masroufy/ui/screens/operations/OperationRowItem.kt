@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.AbsoluteAlignment
@@ -31,7 +30,7 @@ import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.overlay.Anchor
-import app.masroufy.ui.overlay.LiquidMenu
+import app.masroufy.ui.overlay.QuickMenuRequest
 import app.masroufy.ui.overlay.MenuItem
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -80,38 +79,24 @@ internal fun RowTile(row: OpRow, size: Int = 36) {
 }
 
 /**
- * قايمة إجراءات العملية (`OperationMenu` — جوه `Operations`): ستارة + الصف مرفوع + زجاج سائل. البنود من النموذج: «عرض التفاصيل» ·
+ * قايمة إجراءات العملية (`OperationMenu` — جوه `Operations`): القايمة السريعة المشتركة (`QuickMenu` — ستارة + الصف مرفوع + زجاج سائل،
+ * ونفسها في كل الشاشات — قايمة المالك §6.5-13). البنود من النموذج: «عرض التفاصيل» ·
  * «تخصيص مبلغ لشخص» (للمصروف بس — بيفتح التفاصيل ولوحة الشخص) · «كل الإجراءات ←».
  */
-@Composable
-internal fun OperationMenu(open: Pair<OpRow, Anchor>?, onDismiss: () -> Unit, onDetail: (OpRow) -> Unit, onPerson: (OpRow) -> Unit) {
-    // آخر صف اتفتح بيفضل مرسوم وهي بتقفل بحركتها (مخزن عادي — مش حالة، فمفيش رسم زيادة)
-    val memo = remember { arrayOfNulls<Pair<OpRow, Anchor>>(1) }
-    SideEffect { if (open != null) memo[0] = open }
-    val last = open ?: memo[0]
-    val row = last?.first
-    val items = if (row == null) emptyList() else buildList {
+internal fun operationMenuRequest(row: OpRow, anchor: Anchor, onDetail: (OpRow) -> Unit, onPerson: (OpRow) -> Unit): QuickMenuRequest {
+    val items = buildList {
         add(MenuItem(t(UiKey.OPERATION_MENU_DETAIL)) { onDetail(row) })
         if (row.tone == app.masroufy.ui.components.AmountTone.EXPENSE) add(MenuItem(t(UiKey.OPERATION_MENU_PERSON)) { onPerson(row) })
         add(MenuItem(t(UiKey.OPERATION_MENU_ALL), highlight = true) { onDetail(row) })
     }
-    LiquidMenu(
-        visible = open != null,
-        onDismiss = onDismiss,
-        anchor = last?.second ?: Anchor(),
-        title = t(UiKey.OPERATION_MENU_TITLE),
-        items = items,
-        closeLabel = t(UiKey.SHELL_CLOSE),
-    ) {
-        if (row != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                RowTile(row)
-                Column(Modifier.weight(1f)) {
-                    BasicText(row.title, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    BasicText(row.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                AmountText(row.amountMinor, row.currency, tone = row.tone, size = 16, showCurrency = false)
+    return QuickMenuRequest(anchor, t(UiKey.OPERATION_MENU_TITLE), items) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            RowTile(row)
+            Column(Modifier.weight(1f)) {
+                BasicText(row.title, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                BasicText(row.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
+            AmountText(row.amountMinor, row.currency, tone = row.tone, size = 16, showCurrency = false)
         }
     }
 }
