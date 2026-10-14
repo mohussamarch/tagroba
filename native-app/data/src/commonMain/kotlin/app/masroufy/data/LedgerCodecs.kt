@@ -37,6 +37,8 @@ object LedgerCodecs {
                 // الشريحة S3 (§75-6 · §75-12 · §77-D): بتتكتب لو موجودة بس ⇒ أي مستند قديم ونسخته هي هي بالحرف
                 opt("suggestedKind", t.suggestedKind?.wire); opt("reversalOfId", t.reversalOfId); opt("reversedById", t.reversedById)
                 opt("foreignAmountMinor", t.foreignAmountMinor); opt("foreignCurrency", t.foreignCurrency); opt("kindBeforeReversal", t.kindBeforeReversal?.wire)
+                // «حدّث الرصيد» (`BalanceCheckpoint.kt`): الجزء اللي اتفصل من «فرق مش معروف» — لو موجود بس
+                opt("explainsCheckpointId", t.explainsCheckpointId)
             }
         },
         { r ->
@@ -56,6 +58,7 @@ object LedgerCodecs {
                 reversalOfId = r.strOrNull("reversalOfId"), reversedById = r.strOrNull("reversedById"),
                 foreignAmountMinor = r.longOrNull("foreignAmountMinor"), foreignCurrency = r.strOrNull("foreignCurrency"),
                 kindBeforeReversal = if (r.has("kindBeforeReversal")) r.wire("kindBeforeReversal", EconomicKind::fromWire) else null,
+                explainsCheckpointId = r.strOrNull("explainsCheckpointId"),
             )
         },
     )

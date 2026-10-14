@@ -23,6 +23,8 @@ private fun walletEvents(wallets: List<Wallet>, transactions: List<Transaction>)
         // الطرف الداخل للتحويل الداخلي دايمًا وارد على المحفظة دي
         byId[t.transferToWalletId]?.let { w -> if (t.occurredAt >= w.openingAt) events += Triple(w.id, t.occurredAt, t.amountMinor) }
     }
+    // «حدّث الرصيد»: فرق كل نقطة حركة يومها (`BalanceCheckpoint.kt`) — آخر اليوم الرصيد = المكتوب + اللي بعده في نفس اليوم
+    for (w in wallets) for (e in checkpointEffects(w, transactions)) events += Triple(w.id, e.checkpoint.day, e.adjustmentMinor)
     return events
 }
 

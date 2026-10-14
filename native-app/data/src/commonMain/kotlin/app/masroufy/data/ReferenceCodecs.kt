@@ -1,5 +1,6 @@
 package app.masroufy.data
 
+import app.masroufy.core.BalanceCheckpoint
 import app.masroufy.core.Budget
 import app.masroufy.core.Category
 import app.masroufy.core.CategoryBudget
@@ -22,14 +23,28 @@ object ReferenceCodecs {
                 req("id", w.id); req("name", w.name); req("currency", w.currency.name); req("kind", w.kind)
                 req("openingBalanceMinor", w.openingBalanceMinor); req("openingAt", w.openingAt); opt("accountLast4", w.accountLast4)
                 opt("bankId", w.bankId)
+                // «حدّث الرصيد» (`BalanceCheckpoint.kt`): قايمة جوه المستند **لو فيه نقط بس** ⇒ المحفظة القديمة هي هي بالحرف
+                opt("balanceCheckpoints", w.checkpoints.takeIf { it.isNotEmpty() }?.map(::checkpointDoc))
             }
         },
         { r ->
             Wallet(
                 r.str("id"), r.str("name"), r.wire("currency", Currency::valueOf), r.str("kind"), r.long("openingBalanceMinor"),
                 r.str("openingAt"), r.strOrNull("accountLast4"), r.strOrNull("bankId"),
+                r.maps("balanceCheckpoints").map(::checkpointOf),
             )
         },
+    )
+
+    /** نقطة «حدّث الرصيد» جوه مستند المحفظة — نفس أسامي الكيان، والأعداد صحيحة (الفرق ممكن يبقى سالب). */
+    private fun checkpointDoc(cp: BalanceCheckpoint): Doc = doc {
+        req("id", cp.id); req("day", cp.day); opt("atInstant", cp.atInstant); req("statedMinor", cp.statedMinor)
+        req("recordedDiffMinor", cp.recordedDiffMinor); req("createdAt", cp.createdAt); opt("keptMinor", cp.keptMinor)
+    }
+
+    private fun checkpointOf(r: DocReader): BalanceCheckpoint = BalanceCheckpoint(
+        r.str("id"), r.str("day"), r.strOrNull("atInstant"), r.long("statedMinor"), r.long("recordedDiffMinor"), r.str("createdAt"),
+        r.longOrNull("keptMinor"),
     )
 
     val categories: DocCodec<Category> = codec(
