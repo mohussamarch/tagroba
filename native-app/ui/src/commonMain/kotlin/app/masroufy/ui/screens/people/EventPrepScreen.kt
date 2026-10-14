@@ -39,6 +39,8 @@ import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.TextInput
+import app.masroufy.ui.components.choiceArea
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
@@ -128,9 +130,11 @@ private fun Suggestions(ui: PrepUi) {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var on by remember(ui.suggestions) { mutableStateOf(setOf<String>()) }
+    // الاقتراحات المختارة من غير «احفظ» ⇒ الضغط برّه الكارت أو الرجوع بيلغي الاختيار (HANDOVER §6.5 بند 11)
+    val sugChoice = rememberChoice(on.isNotEmpty(), onClose = { on = emptySet() })
     var err by remember { mutableStateOf<String?>(null) }
     FloatingCard {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.choiceArea(sugChoice), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.EVENT_PREP_SUG_TITLE), style = Type.bodyBold())
             Note(t(UiKey.EVENT_PREP_SUG_BODY))
             ChoiceFlow { for (s in ui.suggestions) Choice(s, s in on, { on = if (s in on) on - s else on + s }) }
@@ -168,11 +172,15 @@ private fun ItemRow(row: PrepItemUi, last: Boolean, editing: Boolean, toggleEdit
     val deps = space.people
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
-    var amount by remember(editing) { mutableStateOf(row.item.plannedMinor?.let { app.masroufy.ui.text.amount(it, space.space.currency).replace(",", "") } ?: "") }
+    val planned = row.item.plannedMinor?.let { app.masroufy.ui.text.amount(it, space.space.currency).replace(",", "") } ?: ""
+    var amount by remember(editing) { mutableStateOf(planned) }
+    // تعديل البند مفتوح ⇒ الضغط برّه البند أو الرجوع بيقفله من غير حفظ (HANDOVER §6.5 بند 11) — إلا لو اتكتب مبلغ جديد:
+    // يفضل مفتوح والكلام ما يضيعش (الضغطة برّه بتقفل الكيبورد بس)
+    val rowChoice = rememberChoice(editing && amount == planned, onClose = toggleEdit)
     var err by remember(editing) { mutableStateOf<String?>(null) }
     val item = row.item
     fun act(block: suspend () -> Unit) = scope.launch { runCatching { block() }.onSuccess { PeopleChanges.bump() }.onFailure { err = it.message } }
-    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+    Column(Modifier.fillMaxWidth().choiceArea(rowChoice).padding(vertical = 8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             val press = rememberPress()
             Box(

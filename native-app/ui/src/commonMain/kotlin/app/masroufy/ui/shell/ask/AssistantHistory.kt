@@ -38,6 +38,9 @@ import app.masroufy.core.HistoryGroup
 import app.masroufy.core.UiKey
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.IconButton44
+import app.masroufy.ui.components.keepsKeyboard
+import app.masroufy.ui.components.choiceArea
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.glass.ShadowLayer
@@ -139,8 +142,10 @@ private fun MemoryCard(p: AskPresenter, onCopied: (String) -> Unit, go: (suspend
             RemovableLine(item.text, item.sourceLabel, t(AskKey.CHAT_MEMORY_FORGET, item.text)) { go { p.forget(item) } }
         }
         if (m.items.isNotEmpty() && !confirming) SmallAction(t(AskKey.CHAT_MEMORY_CLEAR_ALL)) { confirming = true }
+        // التأكيد مفتوح ⇒ الضغط برّاه أو الرجوع = «لا» (ما بيمسحش حاجة — HANDOVER §6.5 بند 11)
+        val confirm = rememberChoice(confirming, onClose = { confirming = false })
         if (confirming) {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Ink.selected).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().choiceArea(confirm).clip(RoundedCornerShape(16.dp)).background(Ink.selected).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BasicText(t(AskKey.CHAT_MEMORY_CLEAR_TITLE), style = Type.bodyBold())
                 BasicText(t(AskKey.CHAT_MEMORY_CLEAR_BODY), style = Type.caption().copy(color = Ink.soft))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -209,7 +214,7 @@ private fun HistoryRowView(row: HistoryRow, current: Boolean, onOpen: () -> Unit
 private fun SearchBox(query: String, onQuery: (String) -> Unit) {
     val hint = t(UiKey.ASK_HISTORY_SEARCH)
     Row(
-        Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(16.dp)).background(Color(0x0D193D33)).padding(horizontal = 14.dp),
+        Modifier.fillMaxWidth().height(48.dp).keepsKeyboard().clip(RoundedCornerShape(16.dp)).background(Color(0x0D193D33)).padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

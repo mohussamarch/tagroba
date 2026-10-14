@@ -36,8 +36,10 @@ import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
+import app.masroufy.ui.components.choiceArea
 import app.masroufy.ui.overlay.RouteSheet
 import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -152,6 +154,8 @@ private fun OccasionForm(personId: Id?, personName: String?, existing: Occasion?
         }
         Note(preview.remind)
         if (existing != null) {
+            // «متأكد؟» مفتوح ⇒ الضغط برّه الزرار أو الرجوع بيلغيه من غير ما يمسح حاجة (HANDOVER §6.5 بند 11)
+            val removeChoice = rememberChoice(confirm, onClose = { confirm = false })
             DangerButton(
                 t(if (confirm) UiKey.OCC_REMOVE_CONFIRM else UiKey.OCC_REMOVE),
                 armed = confirm,
@@ -162,7 +166,7 @@ private fun OccasionForm(personId: Id?, personName: String?, existing: Occasion?
                         if (err == null) { PeopleChanges.bump(); onDone() }
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().choiceArea(removeChoice),
             )
         }
         ErrorLine(err)

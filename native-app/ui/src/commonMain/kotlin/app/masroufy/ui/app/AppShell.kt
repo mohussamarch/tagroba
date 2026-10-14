@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import app.masroufy.ui.components.OutsideTapRoot
 import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.glass.backdropSource
 import app.masroufy.ui.glass.rememberBackdrop
@@ -110,7 +111,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
         LocalBell provides BellHolder(shownBell) { bellTick++ },
         LocalDataChanges provides shell.changes,
     ) {
-        Box(Modifier.fillMaxSize()) {
+        // الضغط برّه أي اختيار مفتوح بيلغيه، وبرّه خانات الكتابة بيقفل الكيبورد (HANDOVER §6.5 بند 11 — `OutsideTap.kt`)
+        OutsideTapRoot(Modifier.fillMaxSize()) {
             // الخلفية **جوه** المتسجل: النسخة المموّهة لازم تبقى معتمة عشان تغطي الأصل — من غيرها النص اللي على الخلفية كان بيبان حاد
             // من ورا كل ستارة (اتشاف على المحاكي 2026-10-09: «مساء الخير» حاد ورا لوحة «+» والشات)
             Box(Modifier.fillMaxSize().backdropSource(backdrop).screenBackground()) {

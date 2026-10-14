@@ -3,6 +3,7 @@ package app.masroufy.ui.screens.budgets
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +37,9 @@ import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SecondaryButton
 import app.masroufy.ui.components.TextInput
 import app.masroufy.ui.components.amountLabel
+import app.masroufy.ui.components.choiceArea
 import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.shell.CalendarGrid
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
@@ -83,8 +86,12 @@ fun GoalEditSheet(
                 trailing = { BasicText(currencySymbol(card.currency), Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
             )
             FieldLabel(t(UiKey.GOAL_NEW_WHEN))
-            SecondaryButton(longDate(d.date), { picking = !picking }, Modifier.fillMaxWidth())
-            if (picking) DatePicker(d.date, today) { picked -> d = d.copy(date = picked); picking = false; error = null }
+            // شبكة التاريخ مفتوحة ⇒ الضغط برّاها أو الرجوع بيقفلها والتاريخ زي ما هو (HANDOVER §6.5 بند 11)
+            val dateChoice = rememberChoice(picking, onClose = { picking = false })
+            SecondaryButton(longDate(d.date), { picking = !picking }, Modifier.fillMaxWidth().choiceArea(dateChoice))
+            if (picking) Box(Modifier.choiceArea(dateChoice)) {
+                DatePicker(d.date, today) { picked -> d = d.copy(date = picked); picking = false; error = null }
+            }
             val (need, note) = needLines(d, p)
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x0F08634F)).padding(horizontal = 14.dp, vertical = 10.dp),

@@ -47,7 +47,7 @@ fun BankPickerList(country: String, walletKind: String, onPick: (Bank?) -> Unit,
     val banks = remember(country, walletKind, query, all) { banksIn(country, walletKind, query, all) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         TextInput(query, { query = it }, placeholder = t(UiKey.BANK_SEARCH), imeAction = ImeAction.Search,
-            trailing = { LucideIcon(Lucide.SEARCH, size = 18.dp, tint = Ink.muted) })
+            trailing = { LucideIcon(Lucide.SEARCH, size = 18.dp, tint = Ink.muted) }, draft = false)
         if (banks.isEmpty()) BasicText(t(UiKey.BANK_NONE), style = Type.caption().copy(color = Ink.muted))
         LazyColumn(Modifier.fillMaxWidth().heightIn(max = maxHeight)) {
             items(banks, key = { it.key }) { b -> BankRow(b) { onPick(b) } }

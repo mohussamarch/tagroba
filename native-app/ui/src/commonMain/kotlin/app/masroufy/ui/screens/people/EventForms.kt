@@ -31,6 +31,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SecondaryButton
 import app.masroufy.ui.components.TextInput
+import app.masroufy.ui.components.choiceArea
 import app.masroufy.ui.overlay.RouteSheet
 import app.masroufy.ui.overlay.Sheet
 import app.masroufy.ui.shell.LocalToaster
@@ -169,7 +170,9 @@ internal fun DateField(date: IsoDate?, today: IsoDate, onPick: (IsoDate) -> Unit
     val base = parseIsoDate(date ?: today)
     var year by remember(date) { mutableStateOf(base.year) }
     var month by remember(date) { mutableStateOf(base.month) }
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    // الشبكة مفتوحة ⇒ الضغط برّاها (والزرار) أو الرجوع بيقفلها والتاريخ زي ما هو، والشهر يرجع لشهر التاريخ (HANDOVER §6.5 بند 11)
+    val choice = app.masroufy.ui.overlay.rememberChoice(open, onClose = { open = false; year = base.year; month = base.month })
+    Column(modifier.fillMaxWidth().choiceArea(choice), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SecondaryButton(date?.let { dayMonthYear(it) } ?: t(UiKey.PPL_PICK_DATE), onClick = { open = !open }, leading = app.masroufy.ui.icons.Lucide.CALENDAR, modifier = Modifier.fillMaxWidth())
         if (open) {
             app.masroufy.ui.shell.CalendarGrid(

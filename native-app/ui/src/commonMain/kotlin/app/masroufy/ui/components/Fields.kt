@@ -84,12 +84,17 @@ fun TextInput(
     trailing: (@Composable () -> Unit)? = null,
     height: Dp = 48.dp,
     textSize: Int = 16,
+    draft: Boolean = true,
 ) {
+    // [draft] = `false` لخانة البحث: كلام البحث مش مسودة ⇒ اللوحة بتتقفل بالضغط برّه عادي حتى لو اتكتب فيها
     val shape = RoundedCornerShape(14.dp)
+    // الكتابة بتعلّم على اللوحة اللي فيها الخانة ⇒ الضغط برّه اللوحة ما يضيّعش الكلام (`FormGuard` — HANDOVER §6.5 بند 11)
+    val guard = LocalFormGuard.current.takeIf { draft }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (label != null) FieldLabel(label)
         Row(
-            Modifier.fillMaxWidth().height(height).clip(shape).background(Color.White)
+            // الضغط جوه الخانة (وزرارها اللي على الطرف) ما بيقفلش الكيبورد — برّاها بيقفله (`OutsideTapRoot`)
+            Modifier.fillMaxWidth().height(height).keepsKeyboard().clip(shape).background(Color.White)
                 .insetRing(shape, if (error != null) 1.5.dp else 1.dp, if (error != null) Ink.expense else Ink.fieldEdge)
                 .semantics { if (error != null) this.error(error); if (label != null) contentDescription = label },
             verticalAlignment = Alignment.CenterVertically,
@@ -101,7 +106,10 @@ fun TextInput(
                     if (value.isEmpty() && placeholder != null) BasicText(placeholder, style = style.copy(color = Color(0xFF8A9A95)), maxLines = 1)
                     BasicTextField(
                         value = value,
-                        onValueChange = { onChange(typedDigits(it, keyboard, password)) },
+                        onValueChange = {
+                            if (it != value) guard?.onTyped()
+                            onChange(typedDigits(it, keyboard, password))
+                        },
                         enabled = enabled,
                         singleLine = true,
                         textStyle = style,
