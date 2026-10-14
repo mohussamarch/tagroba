@@ -11,6 +11,9 @@ plugins {
     kotlin("plugin.compose") version "2.4.20" apply false
     // إعدادات فايربيز لأندرويد — بيتطبق **بس** لو ملف المالك موجود برا المستودع (ARCHITECTURE §31.31)
     id("com.google.gms.google-services") version "4.4.4" apply false
+    // تقارير الأعطال (OVERRIDES §90): رفع ملف الأسماء (mapping) لنسخة «السريعة» + رقم البناء اللي المكتبة بتطلبه — نفس إصدار BoM 34.18.0
+    // اللي GitLive 2.7.0 جايبها (السبب ARCHITECTURE — القاعدة 8). بيتطبق مع إعدادات فايربيز بس (`:androidApp`)
+    id("com.google.firebase.crashlytics") version "3.0.8" apply false
 }
 
 /*

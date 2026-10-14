@@ -35,3 +35,6 @@
 -dontwarn javax.imageio.**
 -dontwarn javax.annotation.**
 -dontwarn org.slf4j.**
+
+# Crash reports (OVERRIDES 90): keep exception class NAMES (not the classes) so a report stays readable even when the R8 mapping upload was skipped
+-keepnames class * extends java.lang.Throwable

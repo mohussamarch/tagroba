@@ -20,6 +20,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Masroufy">
+        <!-- تقارير الأعطال (OVERRIDES §90): مقفولة لحد ما التطبيق يقرر بنفسه (نوع البناء + مفتاح «ابعت تقارير الأعطال» — CrashReports.kt) -->
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
