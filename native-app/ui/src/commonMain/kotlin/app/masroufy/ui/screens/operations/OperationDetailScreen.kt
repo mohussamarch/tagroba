@@ -105,6 +105,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 if (v.unrecorded && v.category?.status == CategoryStatus.NONE) item(key = "cash") { CashDifferenceBox { picking = true } }
                 val party = v.askParty ?: partyShown
                 if (party != null) item(key = "party") { TransferPartyCard(party, v.id, onChanged = { reload++ }) }
+                // تغيير نوع تحويل داخل اتقرر (البند 6) — مش على رجل «التحويل لنفسك»
+                else if (v.flow == LinkFlow.TRANSFER_IN && !s.locked && deps.incomeAnswers != null) item(key = "income") { IncomeKindCard(v.id, onChanged = { reload++ }) }
                 item(key = "fields") {
                     FieldsCard(v, s.tags, onPick = { picking = true }, onConfirm = { id ->
                         scope.launch {

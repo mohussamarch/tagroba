@@ -95,6 +95,10 @@ data class WalletDetailRoute(val walletId: Id) : Route {
     override val name = "WalletDetail"
 }
 
+object EmployersRoute : Route {
+    override val name = "Employers"
+}
+
 object IncomeSourcesRoute : Route {
     override val name = "IncomeSources"
 }
@@ -121,6 +125,7 @@ fun RouteRegistry.registerMore() {
     screen<WalletsRoute> { WalletsScreen() }
     screen<WalletDetailRoute> { r -> WalletDetailScreen(r.walletId) }
     screen<IncomeSourcesRoute> { IncomeSourcesScreen() }
+    screen<EmployersRoute> { EmployersScreen() }
     screen<IncomeSourceDetailRoute> { r -> IncomeSourceDetailScreen(r.sourceId) }
     screen<BackupRoute> { BackupScreen() }
     screen<RestorePreviewRoute> { r -> RestorePreviewScreen(r.fileName, r.text) }
