@@ -2,6 +2,10 @@ package app.masroufy.ui.app
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.masroufy.usecase.AppLock
+import app.masroufy.usecase.ClearProblems
+import app.masroufy.usecase.ExportProblems
+import app.masroufy.usecase.ListProblems
+import app.masroufy.usecase.ManageCrashReports
 import app.masroufy.usecase.SignIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,6 +65,20 @@ interface AppDeps {
      * ⇒ الشاشات اللي بتعرض أرقام بتقرا تاني (`DataChanges`). النسخ اللي من غير فايربيز ⇒ ولا حاجة.
      */
     val remoteChanges: Flow<Long> get() = emptyFlow()
+
+    /** «سجل المشاكل» وتقارير الأعطال (OVERRIDES §90) — null = النسخة دي مالهاش (الاختبارات · المعاينة). */
+    val problems: ProblemLogDeps? get() = null
+}
+
+/**
+ * «سجل المشاكل» ومفتاح «ابعت تقارير الأعطال» (OVERRIDES §90) — على مستوى الجهاز (مش بلد ولا حساب). حالات استخدام بس (CLAUDE.md #4).
+ * [crashReports] مش متاحة (`available = false`) ⇒ النسخة دي مالهاش تقارير أعطال (المحاكي · من غير فايربيز).
+ */
+interface ProblemLogDeps {
+    val list: ListProblems
+    val export: ExportProblems
+    val clear: ClearProblems
+    val crashReports: ManageCrashReports
 }
 
 val LocalApp = staticCompositionLocalOf<AppDeps> { error("AppDeps مش متقدّم") }

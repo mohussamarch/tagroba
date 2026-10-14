@@ -1,6 +1,8 @@
 package app.masroufy.ui.screens.more
 
 import app.masroufy.core.UiKey
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -68,7 +70,7 @@ fun BackupScreen() {
         making = false
         when (r) {
             is FileSaveResult.Saved -> if (r.bytes == expected) { made = true; backupError = null; toaster.show(t(UiKey.BAK_SAVED), dark = true) } else backupError = t(UiKey.BAK_PARTIAL)
-            is FileSaveResult.Failed -> backupError = t(UiKey.BAK_FAILED)
+            is FileSaveResult.Failed -> { Problems.report(ProblemCode.BACKUP_FILE_SAVE_FAILED); backupError = t(UiKey.BAK_FAILED) }
             FileSaveResult.Unavailable -> backupError = t(UiKey.BAK_NO_FILES)
             FileSaveResult.Cancelled -> Unit
         }
@@ -77,7 +79,7 @@ fun BackupScreen() {
         exporting = false
         when (r) {
             is FileSaveResult.Saved -> toaster.show(t(UiKey.BAK_EXPORTED, exportFileName(from, to)), dark = true)
-            is FileSaveResult.Failed -> toaster.show(t(UiKey.BAK_FAILED), dark = true)
+            is FileSaveResult.Failed -> { Problems.report(ProblemCode.BACKUP_FILE_SAVE_FAILED); toaster.show(t(UiKey.BAK_FAILED), dark = true) }
             FileSaveResult.Unavailable -> toaster.show(t(UiKey.BAK_NO_FILES), dark = true)
             FileSaveResult.Cancelled -> Unit
         }
@@ -113,7 +115,7 @@ fun BackupScreen() {
                         scope.launch {
                             runCatching { b.create(more.nowIso()).toJsonText() }
                                 .onSuccess { text -> expected = text.encodeToByteArray().size.toLong(); saveJson(backupFileName(today), text) }
-                                .onFailure { making = false; backupError = it.message ?: t(UiKey.BAK_FAILED) }
+                                .onFailure { Problems.report(ProblemCode.BACKUP_CREATE_FAILED, it); making = false; backupError = it.message ?: t(UiKey.BAK_FAILED) }
                         }
                     },
                     enabled = backup != null, loading = making, modifier = Modifier.fillMaxWidth(),

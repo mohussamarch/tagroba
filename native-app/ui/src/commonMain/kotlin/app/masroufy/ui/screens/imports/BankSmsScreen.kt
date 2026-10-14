@@ -1,6 +1,8 @@
 package app.masroufy.ui.screens.imports
 
 import app.masroufy.core.UiKey
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,6 +80,7 @@ fun BankSmsScreen() {
             throw e
         } catch (e: Exception) {
             // ما بنعرضش «القراءة تعمل» من غير ما نعرف — الحالة بتفضل null والخطأ بسببه بس (قاعدة 10)
+            Problems.report(ProblemCode.SMS_READ_FAILED, e)
             failure = e.message ?: t(UiKey.IMPORTS_LOAD_FAILED)
         }
     }

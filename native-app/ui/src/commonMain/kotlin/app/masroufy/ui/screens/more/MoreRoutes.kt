@@ -124,4 +124,5 @@ fun RouteRegistry.registerMore() {
     screen<IncomeSourceDetailRoute> { r -> IncomeSourceDetailScreen(r.sourceId) }
     screen<BackupRoute> { BackupScreen() }
     screen<RestorePreviewRoute> { r -> RestorePreviewScreen(r.fileName, r.text) }
+    screen<ProblemLogRoute> { ProblemLogScreen() }
 }

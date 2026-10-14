@@ -125,6 +125,8 @@ fun AppSettingsScreen() {
                 BasicText(t(UiKey.APPS_ISL_NOTE), style = Type.caption().copy(color = Ink.muted))
             }
         }
+        // تقارير الأعطال + «سجل المشاكل» (OVERRIDES §90) — `ProblemLogScreen.kt`
+        item(key = "problems") { ProblemsSection() }
     }
 }
 
@@ -172,7 +174,7 @@ private fun LangRow(name: String, alt: String?, desc: String, on: Boolean, enabl
 
 /** عنوان 13 رمادي + كارت فيه المحتوى (`padding 14 16`). */
 @Composable
-private fun Section(title: String, horizontal: androidx.compose.ui.unit.Dp = 16.dp, content: @Composable () -> Unit) {
+internal fun Section(title: String, horizontal: androidx.compose.ui.unit.Dp = 16.dp, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         GroupTitle(title)
         FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = horizontal, vertical = 14.dp)) {
@@ -183,7 +185,7 @@ private fun Section(title: String, horizontal: androidx.compose.ui.unit.Dp = 16.
 
 /** رأس الكارت: أيقونة 36 · العنوان والوصف · المفتاح. */
 @Composable
-private fun SwitchHeader(icon: Lucide, title: String, desc: String, checked: Boolean, enabled: Boolean, onToggle: () -> Unit) {
+internal fun SwitchHeader(icon: Lucide, title: String, desc: String, checked: Boolean, enabled: Boolean, onToggle: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         IconTile(Ink.primary) { LucideIcon(icon, size = 20.dp, tint = Ink.primary) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
