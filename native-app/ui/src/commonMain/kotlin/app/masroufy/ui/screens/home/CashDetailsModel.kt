@@ -11,6 +11,8 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.dayMonth
 import app.masroufy.core.ruleFor
 import app.masroufy.ui.components.AmountTone
+import app.masroufy.ui.components.isOwnMove
+import app.masroufy.ui.components.moveSideLineOf
 import app.masroufy.ui.text.t
 
 /**
@@ -32,10 +34,14 @@ data class CashView(
 
 const val CASH_ROWS = 5
 
-data class CashRow(val id: String, val title: String, val date: IsoDate, val amountMinor: Halalas, val tone: AmountTone)
+/** [moveNote] = التحويل بين محافظك: «من الراجحي» / «إلى الراجحي» (الاتجاه بالكلمة — HANDOVER §6.5-10). */
+data class CashRow(val id: String, val title: String, val date: IsoDate, val amountMinor: Halalas, val tone: AmountTone, val moveNote: String? = null)
 
-/** null من حالة الاستخدام = مفيش محفظة كاش ⇒ «غير متاح» (مش صفر). */
-fun cashViewOf(summary: CashSummary?): CashView? {
+/**
+ * null من حالة الاستخدام = مفيش محفظة كاش ⇒ «غير متاح» (مش صفر). [walletNames] = أسامي المحافظ بالمعرّف (من «معك الآن») للطرف التاني
+ * في التحويل؛ مش موجود ⇒ «حسابك الآخر».
+ */
+fun cashViewOf(summary: CashSummary?, walletNames: Map<String, String> = emptyMap()): CashView? {
     val s = summary ?: return null
     val w = s.wallet
     return CashView(
@@ -46,9 +52,11 @@ fun cashViewOf(summary: CashSummary?): CashView? {
         sinceLine = t(UiKey.CASH_DETAILS_SINCE, dayMonth(w.openingAt)),
         // اللوحة طولها ثابت ⇒ أحدث [CASH_ROWS] بس (القايمة الكاملة في «العمليات» بفلتر المحفظة)
         rows = s.periodTransactions.take(CASH_ROWS).map { tx ->
-            // داخل الكاش (سحب من البنك للكاش أو وارد عليه) أخضر، والخارج منه أحمر — من اتجاه الحركة نفسها، من غير حساب
+            // التحويل بين محافظك (السحب من البنك للكاش · الإيداع منه في البنك) محايد من غير علامة والاتجاه بالكلمة (§6.5-10)؛
+            // غير كده: الداخل للكاش أخضر والخارج منه أحمر — من اتجاه الحركة نفسها، من غير حساب
             val intoCash = tx.transferToWalletId == w.id || (tx.walletId == w.id && tx.observedDirection == Direction.IN)
-            CashRow(tx.id, transactionTitle(tx), tx.occurredAt, tx.amountMinor, if (intoCash) AmountTone.INCOME else AmountTone.EXPENSE)
+            val tone = if (isOwnMove(tx)) AmountTone.TRANSFER else if (intoCash) AmountTone.INCOME else AmountTone.EXPENSE
+            CashRow(tx.id, transactionTitle(tx), tx.occurredAt, tx.amountMinor, tone, moveSideLineOf(tx, w.id) { id -> id?.let(walletNames::get) })
         },
     )
 }

@@ -3,7 +3,6 @@ package app.masroufy.ui.screens.more
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
 import app.masroufy.core.Bank
-import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
@@ -13,6 +12,8 @@ import app.masroufy.core.Wallet
 import app.masroufy.core.bankForWallet
 import app.masroufy.core.sentenceDigits
 import app.masroufy.ui.components.AmountTone
+import app.masroufy.ui.components.moneyToneOf
+import app.masroufy.ui.components.moveSideLineOf
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.TransactionsScreenData
 import app.masroufy.usecase.WalletNow
@@ -82,27 +83,30 @@ fun walletsTotalLine(v: WalletsView): String = when {
     else -> t(UiKey.WLIST_TOTAL_LINE, countText(v.count, WALLET_WORDS))
 }
 
-/** حركة في «آخر الحركات»: الاسم · التاريخ · المبلغ بنبرة اتجاهه **على المحفظة دي** (الطرف الداخل لتحويل = وارد بالأزرق). */
-data class WalletMove(val id: Id, val title: String, val date: IsoDate, val amountMinor: Halalas, val tone: AmountTone)
+/**
+ * حركة في «آخر الحركات»: الاسم · التاريخ · المبلغ بنبرة اتجاهه **على المحفظة دي**. التحويل بين محافظك (أي رجل منه) محايد من غير علامة،
+ * والاتجاه في [moveNote] بالكلمة: «إلى الكاش» / «من الراجحي» (HANDOVER §6.5-10 — `MoveLook.kt`).
+ */
+data class WalletMove(val id: Id, val title: String, val date: IsoDate, val amountMinor: Halalas, val tone: AmountTone, val moveNote: String? = null)
 
-/** حركات المحفظة من حركات الشهر (الأحدث الأول، [limit] بالكتير) — تصفية بالمعرّف بس، من غير أي حساب. */
-fun walletMoves(data: TransactionsScreenData, walletId: Id, limit: Int = 8): List<WalletMove> = data.transactions
+/**
+ * حركات المحفظة من حركات الشهر (الأحدث الأول، [limit] بالكتير) — تصفية بالمعرّف بس، من غير أي حساب.
+ * [walletNames] = أسامي المحافظ بالمعرّف (من «معك الآن») للطرف التاني في التحويل؛ مش موجود ⇒ «حسابك الآخر».
+ */
+fun walletMoves(data: TransactionsScreenData, walletId: Id, limit: Int = 8, walletNames: Map<Id, String> = emptyMap()): List<WalletMove> = data.transactions
     .filter { it.walletId == walletId || it.transferToWalletId == walletId }
     .sortedWith(compareByDescending<Transaction> { it.occurredAt }.thenByDescending { it.sourceOrder })
     .take(limit)
     .map { tx ->
         val incomingLeg = tx.transferToWalletId == walletId && tx.walletId != walletId
-        val tone = when {
-            tx.transferToWalletId != null -> AmountTone.TRANSFER
-            tx.observedDirection == Direction.IN -> AmountTone.INCOME
-            else -> AmountTone.EXPENSE
-        }
+        val tone = moneyToneOf(tx)
         val name = data.merchantNamesByTransaction[tx.id]?.firstOrNull()
             ?: tx.rawMerchantName?.takeIf { it.isNotBlank() }
             ?: tx.rawDescription?.takeIf { it.isNotBlank() }
             ?: data.categories.firstOrNull { it.id == tx.categoryId }?.name
             ?: t(UiKey.WDET_MOVE_UNNAMED)
-        WalletMove(tx.id, if (incomingLeg) t(UiKey.WDET_MOVE_IN_PREFIX, name) else name, tx.occurredAt, tx.amountMinor, tone)
+        val note = moveSideLineOf(tx, walletId) { id -> id?.let(walletNames::get) }
+        WalletMove(tx.id, if (incomingLeg) t(UiKey.WDET_MOVE_IN_PREFIX, name) else name, tx.occurredAt, tx.amountMinor, tone, note)
     }
 
 /** المحفظة اللي في الشاشة (أو null لو اتشالت). */

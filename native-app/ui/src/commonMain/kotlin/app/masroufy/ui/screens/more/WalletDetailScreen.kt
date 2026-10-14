@@ -39,6 +39,7 @@ import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.amountLabel
+import app.masroufy.ui.components.withMoveNote
 import app.masroufy.ui.screens.common.InnerScaffold
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
@@ -71,7 +72,8 @@ fun WalletDetailScreen(walletId: Id) {
         val today = deps.shell.today()
         now = runCatching { more.wallets.load(today) }.getOrNull()
         payday = runCatching { more.profile.load().payday }.getOrDefault(payday)
-        moves = runCatching { walletMoves(more.transactions.load(LoadTransactionsScreenRequest(today = today, payday = payday)), walletId) }.getOrNull()
+        val names = now?.wallets?.associate { it.wallet.id to it.wallet.name }.orEmpty()
+        moves = runCatching { walletMoves(more.transactions.load(LoadTransactionsScreenRequest(today = today, payday = payday)), walletId, walletNames = names) }.getOrNull()
         mainId = runCatching { more.mainWallet?.current() }.getOrNull()
     }
     val n = now
@@ -179,7 +181,7 @@ private fun MovesCard(moves: List<WalletMove>?, n: WithYouNow) {
                         Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 BasicText(m.title, style = Type.of(14, FontWeight.Bold), maxLines = 1)
-                                BasicText(fullDate(m.date) ?: m.date, style = Type.caption().copy(color = Ink.muted))
+                                BasicText(withMoveNote(fullDate(m.date) ?: m.date, m.moveNote), style = Type.caption().copy(color = Ink.muted), maxLines = 1)
                             }
                             AmountText(m.amountMinor, n.currency, tone = m.tone, showCurrency = false)
                         }

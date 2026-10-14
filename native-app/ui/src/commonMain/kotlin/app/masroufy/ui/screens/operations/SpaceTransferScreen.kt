@@ -144,7 +144,8 @@ private fun PairCard(p: PairView, onUnlink: () -> Unit) {
                     BasicText(leg.title, style = Type.of(14, FontWeight.Bold))
                     leg.sub?.let { BasicText(it, style = Type.caption().copy(color = Ink.muted)) }
                 }
-                AmountText(leg.amountMinor, leg.currency, tone = if (leg.out) AmountTone.EXPENSE else AmountTone.INCOME, color = Ink.transfer)
+                // فلوسك من جيب لجيب: محايد ورمز «منه فيه» من غير «−»/«+» — الاتجاه في السطر («خرجت» / «وصلت») — HANDOVER §6.5-10
+                AmountText(leg.amountMinor, leg.currency, tone = AmountTone.TRANSFER)
             }
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x0A193D33)).padding(horizontal = 12.dp, vertical = 8.dp),

@@ -19,9 +19,12 @@ import androidx.compose.ui.unit.sp
 import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.NOT_AVAILABLE
+import app.masroufy.core.UiKey
 import app.masroufy.core.absMoney
 import app.masroufy.core.currencySymbol
+import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.text.amount
+import app.masroufy.ui.text.t
 import app.masroufy.ui.text.trueMinus
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -38,7 +41,7 @@ enum class AmountTone(val color: Color, val sign: String) {
     /** دخل: أخضر بـ«+». */
     INCOME(Ink.income, "+"),
 
-    /** تحويل داخلي: أزرق من غير علامة. */
+    /** تحويل بين محافظك: لون التحويل المحايد من غير علامة، ورمز «منه فيه» مكانها في [AmountText] (HANDOVER §6.5-10 — `MoveLook.kt`). */
     TRANSFER(Ink.transfer, ""),
 
     /** رقم عادي (رصيد · مجموع): لون النص، والسالب بـ«−». */
@@ -75,12 +78,23 @@ fun AmountText(
         BasicText(NOT_AVAILABLE, modifier, style = Type.of(size, weight).copy(color = color ?: Ink.muted))
         return
     }
-    BasicText(
-        amountLabel(minor, currency, tone, showCurrency),
-        modifier,
-        style = Type.of(size, weight, 1.3).copy(color = color ?: tone.color).tabular(),
-        maxLines = 1,
-    )
+    val style = Type.of(size, weight, 1.3).copy(color = color ?: tone.color).tabular()
+    if (tone == AmountTone.TRANSFER) return MoveAmountText(amountLabel(minor, currency, tone, showCurrency), modifier, style, size)
+    BasicText(amountLabel(minor, currency, tone, showCurrency), modifier, style = style, maxLines = 1)
+}
+
+/**
+ * تحويل بين محافظك (HANDOVER §6.5-10): رمز «منه فيه» ([MOVE_SWAP]) **مكان العلامة** على شمال الرقم، بنفس لون المبلغ المحايد.
+ * الرمز عليه وصف لقارئ الشاشة («تحويل بين محافظك») عشان العلامة الغايبة ما تتقريش «صرف».
+ */
+@Composable
+private fun MoveAmountText(label: String, modifier: Modifier, style: TextStyle, size: Int) {
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
+            LucideIcon(MOVE_SWAP, size = (size * 0.9).dp, tint = style.color, contentDescription = t(UiKey.MOVE_SYMBOL))
+            BasicText(label, style = style, maxLines = 1)
+        }
+    }
 }
 
 /**

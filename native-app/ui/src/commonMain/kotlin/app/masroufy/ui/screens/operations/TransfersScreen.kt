@@ -30,9 +30,13 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.Person
 import app.masroufy.core.TextKey
 import app.masroufy.core.TransferPartyRef
+import app.masroufy.core.TransferVerdict
+import app.masroufy.core.Currency
+import app.masroufy.core.Halalas
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
-import app.masroufy.ui.components.AmountTone
+import app.masroufy.ui.components.partyAmountLabel
+import app.masroufy.ui.components.partyAmountTone
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FieldError
 import app.masroufy.ui.components.PrimaryButton
@@ -134,9 +138,11 @@ private fun PartyCard(r: PartyRowView, open: Boolean, onToggle: () -> Unit, acti
                 BasicText(r.meta, style = Type.caption().copy(color = Ink.muted))
                 StatusChip(r.chip.text, r.chip.ink, r.chip.background)
             }
+            // حسابك التاني (§60) ⇒ الداخل والطالع محايدين والاتجاه بالكلمة («وارد منه» / «صادر إليه») بدل الأخضر والأحمر (§6.5-10)
+            val own = r.verdict == TransferVerdict.OWN_ACCOUNT
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                r.incomingMinor?.let { AmountText(it, r.currency, tone = AmountTone.INCOME, size = 13) }
-                r.outgoingMinor?.let { AmountText(it, r.currency, tone = AmountTone.EXPENSE, size = 13) }
+                r.incomingMinor?.let { PartyAmount(it, r.currency, own, incoming = true) }
+                r.outgoingMinor?.let { PartyAmount(it, r.currency, own, incoming = false) }
             }
         }
         if (open) {
@@ -167,5 +173,14 @@ private fun PersonForPartySheet(ref: TransferPartyRef?, people: List<Person>, on
         PrimaryButton(t(UiKey.TRANSFERS_LINK), enabled = ready, modifier = Modifier.fillMaxWidth(), onClick = {
             if (shown != null && ready) onSave(shown, if (name.isNotBlank()) null else who, name.trim())
         })
+    }
+}
+
+/** مبلغ الطرف: أخضر «+» للداخل وأحمر «−» للطالع — إلا لو الطرف حسابك التاني ⇒ محايد ورمز «منه فيه» والكلمة جنبه (`MoveLook.kt`). */
+@Composable
+private fun PartyAmount(minor: Halalas, currency: Currency, own: Boolean, incoming: Boolean) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        partyAmountLabel(own, incoming)?.let { BasicText(it, style = Type.caption().copy(color = Ink.muted)) }
+        AmountText(minor, currency, tone = partyAmountTone(own, incoming), size = 13)
     }
 }

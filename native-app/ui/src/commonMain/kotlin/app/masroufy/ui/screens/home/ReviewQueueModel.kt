@@ -12,6 +12,7 @@ import app.masroufy.core.dayMonth
 import app.masroufy.core.ruleFor
 import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.components.AmountTone
+import app.masroufy.ui.components.moneyToneOf
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.CategorizationReport
 import app.masroufy.usecase.SuggestionLine
@@ -56,7 +57,7 @@ private fun itemOf(line: SuggestionLine, bulk: Boolean): ReviewItem {
         note = line.suggestion.reason,
         amountMinor = tx.amountMinor,
         currency = tx.currency,
-        tone = if (tx.observedDirection == Direction.IN) AmountTone.INCOME else AmountTone.EXPENSE,
+        tone = moneyToneOf(tx), // بين محافظك ⇒ محايد من غير علامة (HANDOVER §6.5-10) · غير كده بالاتجاه
         suggestion = line.suggestion.kind,
         alternatives = line.suggestion.alternatives.filter { it != line.suggestion.kind },
         bulk = bulk,
