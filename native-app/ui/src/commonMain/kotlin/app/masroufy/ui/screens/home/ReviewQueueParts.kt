@@ -51,7 +51,7 @@ internal fun ReviewItemCard(item: ReviewItem, chosen: EconomicKind?, onAccept: (
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
-                    BasicText(item.name, style = Type.bodyBold(), maxLines = 1)
+                    BasicText(item.name, style = Type.bodyBold(), maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                     BasicText(item.sub, style = Type.caption().copy(color = Ink.muted))
                 }
                 AmountText(item.amountMinor, item.currency, tone = item.tone)

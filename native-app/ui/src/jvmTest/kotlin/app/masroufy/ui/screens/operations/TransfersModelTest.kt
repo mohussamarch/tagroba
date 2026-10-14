@@ -3,6 +3,7 @@ package app.masroufy.ui.screens.operations
 import app.masroufy.core.ArabicVariant
 import app.masroufy.core.Currency
 import app.masroufy.core.EconomicKind
+import app.masroufy.core.NameCut
 import app.masroufy.core.SuspiciousParty
 import app.masroufy.core.Texts
 import app.masroufy.core.TransferParty
@@ -81,5 +82,12 @@ class TransfersModelTest {
         assertEquals("تم" to "لن نسألك عن هذا الحساب مجددًا.", decisionTexts(PartyDecision.NotThis, salem))
         assertEquals("سالم", partyNewName(salem, "  "), "الاسم الفاضي ⇒ الاسم زي ما جه")
         assertEquals("سالم العتيبي", partyNewName(salem, " سالم العتيبي "))
+    }
+
+    @Test fun aNameTheBankCutIsSaidSoAndTheNewPersonStartsWithoutTheMarks() {
+        val cut = TransferPartyRef("k-cut", "MOHAMMED ABDULRA…", null, NameCut.STATEMENT)
+        assertEquals("MOHAMMED ABDULRA", partyNewName(cut, " "))
+        assertEquals("كشف البنك", app.masroufy.core.nameCutText(cut.cut)!!.substringAfter("من "))
+        assertNull(app.masroufy.core.nameCutText(null))
     }
 }

@@ -107,8 +107,8 @@ internal fun OperationMenu(open: Pair<OpRow, Anchor>?, onDismiss: () -> Unit, on
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 RowTile(row)
                 Column(Modifier.weight(1f)) {
-                    BasicText(row.title, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    BasicText(row.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    BasicText(row.title, style = Type.bodyBold(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    BasicText(row.subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 AmountText(row.amountMinor, row.currency, tone = row.tone, size = 16, showCurrency = false)
             }

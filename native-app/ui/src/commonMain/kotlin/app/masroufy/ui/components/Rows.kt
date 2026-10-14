@@ -50,8 +50,8 @@ fun ListRow(
     ) {
         leading?.invoke()
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(title, style = Type.bodyBold(), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (subtitle != null) BasicText(subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            BasicText(title, style = Type.bodyBold(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (subtitle != null) BasicText(subtitle, style = Type.caption().copy(color = Ink.muted), maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         trailing?.invoke(this)
         // سهم «جوه» = ناحية آخر السطر (في العربي الشمال) — `chevron-left` بيتقلب لوحده مع الاتجاه في الإنجليزي

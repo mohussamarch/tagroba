@@ -78,7 +78,7 @@ fun toneOf(tx: Transaction): AmountTone = when {
 /** اسم العملية: التاجر المعروف ⇒ الاسم من المصدر ⇒ ملاحظتك ⇒ الوصف ⇒ اسم النوع. */
 fun titleOf(tx: Transaction, ctx: RowContext): String =
     ctx.merchant(tx.id) ?: tx.rawMerchantName?.takeIf { it.isNotBlank() } ?: tx.note?.takeIf { it.isNotBlank() }
-        ?: tx.rawDescription?.trim()?.takeIf { it.isNotEmpty() }?.take(60) ?: ruleFor(tx.economicKind).label
+        ?: tx.rawDescription?.trim()?.takeIf { it.isNotEmpty() } ?: ruleFor(tx.economicKind).label
 
 /** السطر التاني: التصنيف · أو النوع · أو الطرف · أو «بلا تصنيف». التحويل الداخلي: «تحويل داخلي، البنك ← الكاش». */
 fun subtitleOf(tx: Transaction, ctx: RowContext): String {
