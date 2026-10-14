@@ -1,6 +1,8 @@
 package app.masroufy.wiring
 
 import app.masroufy.core.DEFAULT_PAYDAY
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import app.masroufy.core.IsoDate
 import app.masroufy.core.countryPack
 import app.masroufy.core.dayIn
@@ -74,7 +76,7 @@ class ImportsGraph(private val c: AreaContext) : ImportsDeps {
     override suspend fun wallets() = c.shell.addOptions().wallets
 
     override fun csvTable(content: String, rows: Int): CsvTable? {
-        val doc = runCatching { parseCsv(content) }.getOrNull() ?: return null
+        val doc = runCatching { parseCsv(content) }.onFailure { Problems.report(ProblemCode.IMPORT_CSV_UNREADABLE, it) }.getOrNull() ?: return null
         if (doc.header.isEmpty()) return null
         return CsvTable(doc.header, doc.rows.take(rows).map { it.cells }, doc.rows.size)
     }

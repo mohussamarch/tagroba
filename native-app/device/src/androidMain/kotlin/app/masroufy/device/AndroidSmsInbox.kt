@@ -1,5 +1,7 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -29,7 +31,8 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
     private suspend fun <T> withStore(block: (SmsInboxStore) -> T): T = withContext(Dispatchers.IO) {
         try {
             synchronized(SmsInboxStore.LOCK) { SmsInboxStore(context).use(block) }
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
+            Problems.report(ProblemCode.SMS_PERMISSION_LOST, e)
             throw SmsPermissionError(uiText(TextKey.SMS_INBOX_PERMISSION_REVOKED))
         }
     }
@@ -82,7 +85,8 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
             context.contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI, arrayOf("date"), selection, names.toTypedArray(), "date ASC")?.use { rows ->
                 if (rows.moveToFirst()) Instant.ofEpochMilli(rows.getLong(0)).toString() else null
             }
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
+            Problems.report(ProblemCode.SMS_PERMISSION_LOST, e)
             null
         }
     }

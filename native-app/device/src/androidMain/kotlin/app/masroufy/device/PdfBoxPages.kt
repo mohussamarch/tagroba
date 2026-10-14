@@ -1,5 +1,7 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import android.content.Context
 import app.masroufy.core.PdfPage
 import app.masroufy.core.PositionedWord
@@ -27,9 +29,11 @@ class PdfBoxPages(private val context: Context) : PdfPagesPort {
         PDFBoxResourceLoader.init(context.applicationContext)
         val doc = try {
             PDDocument.load(data)
-        } catch (_: InvalidPasswordException) {
+        } catch (e: InvalidPasswordException) {
+            Problems.report(ProblemCode.IMPORT_PDF_LOCKED, e)
             throw PdfReadError(uiText(TextKey.PDF_PASSWORD))
         } catch (e: Exception) {
+            Problems.report(ProblemCode.IMPORT_PDF_UNREADABLE, e)
             throw PdfReadError(uiText(TextKey.PDF_INVALID))
         }
         doc.use { pdf ->

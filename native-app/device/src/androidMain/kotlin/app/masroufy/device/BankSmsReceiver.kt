@@ -1,5 +1,7 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -21,8 +23,9 @@ class BankSmsReceiver : BroadcastReceiver() {
                     SmsInboxStore(context).use { store -> receive(store, intent) }
                 }
                 if (queued) MasroufyBackground.requestRun(app)
-            } catch (_: Exception) {
-                // مفيش تسجيل لنص رسالة أبدًا
+            } catch (e: Exception) {
+                // مفيش تسجيل لنص رسالة أبدًا — «سجل المشاكل» بياخد نوع الخطأ بس (§90)
+                Problems.report(ProblemCode.SMS_RECEIVE_FAILED, e)
             } finally {
                 pending.finish()
             }

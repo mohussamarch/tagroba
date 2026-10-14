@@ -1,5 +1,7 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -55,7 +57,8 @@ class AndroidBankSms(private val context: Context, private val zone: ZoneId) : B
                     out += BankSmsMessage(c.getString(0), Instant.ofEpochMilli(c.getLong(2)).toString(), body)
                 }
             }
-        } catch (_: SecurityException) {
+        } catch (e: SecurityException) {
+            Problems.report(ProblemCode.SMS_PERMISSION_LOST, e)
             throw SmsPermissionError(uiText(TextKey.SMS_PERMISSION_REVOKED))
         }
         BankSmsRead(out, truncated)
