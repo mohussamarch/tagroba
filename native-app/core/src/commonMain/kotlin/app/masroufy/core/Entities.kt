@@ -71,6 +71,13 @@ data class Transaction(
      * بالظبط بدل «غير محددة». الأصلية اللي نوعها ما كانش مؤكد (الإلغاء لوحده) ⇒ null وبترجع «غير محددة».
      */
     val kindBeforeReversal: EconomicKind? = null,
+    /**
+     * §6.5-14 «عمليات تابعة»: الفلوس الداخلة دي **تابعة** للمصروف ده ⇒ ما بتتحسبش دخل ولا بتنقّص المصروف في يومها — المصروف نفسه بيتحسب
+     * بالصافي ([linkedInflowMinor]). رصيد المحفظة ما بيتغيرش (الفلوس دخلت فعلًا). آخر الاسم `Id` عن قصد (زي [reversalOfId]).
+     */
+    val linkedExpenseId: Id? = null,
+    /** §6.5-14: على المصروف — مجموع العمليات التابعة ليه (بيتحسب من جديد مع كل ربط وفك) ⇒ المصروف = المبلغ − ده (`netAfterLinks`). */
+    val linkedInflowMinor: Halalas? = null,
 )
 
 enum class AllocationKind(val wire: String) {

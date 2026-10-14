@@ -9,7 +9,8 @@ package app.masroufy.core
  * النسخة هيقف («علاقة ناقصة») لحد ما حد يصلّح، واسترجاع نسخة بترتيب «الرجوع قبل الأصلية» كان بيقف كمان.
  */
 val BACKUP_SOFT_RELATIONS: Map<String, Map<String, String>> = mapOf(
-    "transactions" to linkedMapOf("reversalOfId" to "transactions", "reversedById" to "transactions"),
+    // §6.5-14: «العمليات التابعة» لين برضه — بيتحوّل مع المعرّفات في الدمج، والمصروف اللي مش في الملف ما بيرفضش النسخة
+    "transactions" to linkedMapOf("reversalOfId" to "transactions", "reversedById" to "transactions", "linkedExpenseId" to "transactions"),
 )
 
 /** النسخة بعد تصليح أزواج «اللي رجعت» المكسورة — **نفس الكائن** لو مفيش حاجة اتصلحت (نفس الملف ونفس البصمة). */

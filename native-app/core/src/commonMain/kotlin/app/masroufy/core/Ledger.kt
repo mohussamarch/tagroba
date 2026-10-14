@@ -34,7 +34,8 @@ fun personalShareOf(transaction: Transaction, allocations: List<PersonAllocation
         )
     }
     val receivable = sumMoney(mine.filter { it.allocationKind == AllocationKind.RECEIVABLE }.map { it.amountMinor })
-    return subtractMoney(transaction.amountMinor, receivable)
+    // §6.5-14: العمليات التابعة بتنقّص المصروف نفسه (120 − 60 = 60) — الربط بيترفض لو هيعدّي نصيبك، فالصفر هنا حماية بس
+    return maxOf(0L, subtractMoney(subtractMoney(transaction.amountMinor, receivable), linkedOffsetOf(transaction)))
 }
 
 data class PeriodTotals(
@@ -53,6 +54,8 @@ fun computePeriodTotals(transactions: List<Transaction>, allocations: List<Perso
     var expense = 0L
     var excluded = 0L
     for (t in transactions) {
+        // §6.5-14: فلوس تابعة لمصروف ⇒ اتحسبت جوه صافي المصروف نفسه — لا دخل ولا استرداد في يومها
+        if (isLinkedInflow(t)) continue
         if (countsAsIncome(t.economicKind)) {
             income = addMoney(income, t.amountMinor)
             continue

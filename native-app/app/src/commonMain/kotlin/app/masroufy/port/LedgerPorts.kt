@@ -78,6 +78,11 @@ data class TransactionPatch(
     /** النوع اللي المالك كان أكده على الأصلية قبل ما تتلغي (§77-D) — `clear…` لما الزوج يتفك. */
     val kindBeforeReversal: app.masroufy.core.EconomicKind? = null,
     val clearKindBeforeReversal: Boolean = false,
+    /** §6.5-14 «عمليات تابعة»: على الداخلة المصروف اللي تبعته · على المصروف مجموع التابعة — `clear…` = فك الربط. */
+    val linkedExpenseId: Id? = null,
+    val clearLinkedExpenseId: Boolean = false,
+    val linkedInflowMinor: Long? = null,
+    val clearLinkedInflowMinor: Boolean = false,
 )
 
 interface SourceRecordRepository {

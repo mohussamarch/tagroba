@@ -234,7 +234,7 @@ private fun checkTransactionExtras(row: Map<String, Any?>): String? {
     val foreign = row["foreignAmountMinor"]
     if (foreign != null && (currency == null || (numberOf(foreign) ?: 0.0) <= 0)) return "foreignAmountMinor"
     // الربط لين (`BACKUP_SOFT_RELATIONS`): العملية اللي بيشاور عليها ممكن ما تبقاش في الملف (بيتصلح مش بيترفض) — بس لازم نص ومش نفسها
-    for (field in listOf("reversalOfId", "reversedById")) if (row[field] != null && (row[field] !is String || row[field] == row["id"])) return field
+    for (field in listOf("reversalOfId", "reversedById", "linkedExpenseId")) if (row[field] != null && (row[field] !is String || row[field] == row["id"])) return field
     return null
 }
 

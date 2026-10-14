@@ -55,6 +55,9 @@ fun withEstimatedKinds(
     val pendingIds = mutableListOf<Id>()
     val pendingMinor = LinkedHashMap<Currency, Halalas>()
     val view = transactions.map { t ->
+        // §6.5-14: فلوس تابعة لمصروف = فلوس رجعت عنه ⇒ «استرداد» في العرض المعدود (مش دخل ولا مستنية سؤال)، والمجاميع بتتخطاها
+        // لأن صافي المصروف نفسه شايلها (`computePeriodTotals`) — النوع المتخزن ما بيتلمسش
+        if (isLinkedInflow(t)) return@map if (t.economicKind == EconomicKind.REFUND_RECEIVED) t else t.copy(economicKind = EconomicKind.REFUND_RECEIVED)
         if (t.economicKind != EconomicKind.UNCLASSIFIED || t.economicKindConfirmed) return@map t
         // §75-6 · §77-D: عليها سؤال لسه ما اتجاوبش («ده استرداد؟» · «نلغي الاتنين؟») ⇒ مستنية برّه أي مجموع، مش «دخل» بالتخمين
         if (awaitsKindAnswer(t)) {
