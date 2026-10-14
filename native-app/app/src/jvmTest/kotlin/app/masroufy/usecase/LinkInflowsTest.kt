@@ -101,7 +101,7 @@ class LinkInflowsTest {
         assertEquals(listOf("friend", "refund", "salary"), view.candidates.map { it.id }, "نفس العملة بس، والأقرب الأول")
         assertNull(w.links.link("meal", listOf("friend", "refund")))
         assertEquals(4_000, w.totals().personalExpenseMinor, "120 − 60 − 20")
-        assertEquals(500_000, w.totals().incomeMinor, "الاسترداد التابع ما نقّصش المصروف مرتين")
+        assertEquals(501_000, w.totals().incomeMinor, "الراتب وهدية الدولار (الاختبار ما بيفلترش العملة زي البلد) — الاسترداد التابع مش دخل")
         assertEquals(8_000L, w.one("meal").linkedInflowMinor)
         val after = assertIs<LinkedInflowsView.Expense>(w.links.load("meal"))
         assertEquals(4_000, after.roomMinor)
@@ -145,5 +145,18 @@ class LinkInflowsTest {
         val view = assertIs<LinkedInflowsView.Expense>(w.links.load("meal"))
         assertEquals(12_000, view.netMinor)
         assertNull(w.one("meal").linkedInflowMinor)
+    }
+
+    /** التراجع عن دفعة فيها طرف واحد ⇒ التاني بيرجع زي ما كان (ولا ربط بيشاور على عملية مش موجودة). */
+    @Test fun revertingABatchReleasesTheOtherSide() = runBlocking<Unit> {
+        val w = World(listOf(meal, friend, refund))
+        w.links.link("meal", listOf("friend", "refund"))
+        val undo = LinkedUndo(w.txns, FixedClock("2026-09-21T10:00:00Z"))
+        undo.undo("b-1", emptyList(), listOf("refund"))
+        w.txns.deleteMany(listOf("refund"))
+        assertEquals(6_000L, w.one("meal").linkedInflowMinor)
+        undo.undo("b-2", emptyList(), listOf("meal"))
+        w.txns.deleteMany(listOf("meal"))
+        assertNull(w.one("friend").linkedExpenseId, "الداخلة بترجع تتحسب بنوعها")
     }
 }

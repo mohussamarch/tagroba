@@ -133,3 +133,28 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
         }.intersect(wanted)
     }
 }
+
+/**
+ * تراجع دفعة فيها طرف من «عمليات تابعة» (§6.5-14) — بيتوصّل في `ReturnsWiring.undoers` جنب `ReversalUndo` وبيتنادى جوه وحدة عمل
+ * التراجع قبل المسح: **الداخلة** هتتمسح والمصروف لأ ⇒ المصروف بيرجع بمجموع الباقي · **المصروف** هيتمسح والداخلة لأ ⇒ الداخلة بترجع
+ * زي ما كانت (تتحسب تاني بنوعها). الاتنين في نفس الدفعة ⇒ ولا حاجة. ولا ربط بيفضل بيشاور على عملية مش موجودة.
+ */
+class LinkedUndo(private val txns: TransactionRepository, private val clock: Clock) : BatchUndo {
+    override suspend fun undo(batchId: Id, records: List<app.masroufy.core.SourceRecord>, deleting: List<Id>) {
+        if (deleting.isEmpty()) return
+        val gone = deleting.toSet()
+        val now = clock.nowIso()
+        for (t in txns.findByIds(deleting)) {
+            val expenseId = t.linkedExpenseId
+            if (expenseId != null && expenseId !in gone) {
+                val expense = txns.findByIds(listOf(expenseId)).singleOrNull() ?: continue
+                val left = (expense.linkedInflowMinor ?: 0L) - t.amountMinor
+                txns.update(expenseId, if (left > 0) TransactionPatch(linkedInflowMinor = left, updatedAt = now) else TransactionPatch(clearLinkedInflowMinor = true, updatedAt = now))
+            }
+            if (t.linkedInflowMinor != null && t.observedDirection == Direction.OUT) {
+                val orphans = txns.listByDateRange(linkWindowStart(t.occurredAt), linkWindowEnd(t.occurredAt)).filter { it.linkedExpenseId == t.id && it.id !in gone }
+                for (o in orphans) txns.update(o.id, TransactionPatch(clearLinkedExpenseId = true, updatedAt = now))
+            }
+        }
+    }
+}
