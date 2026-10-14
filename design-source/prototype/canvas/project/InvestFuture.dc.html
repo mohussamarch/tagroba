@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>مستقبلي — مصروفي</title>
+<title>هتبقى معاك كام — مصروفي</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -23,98 +23,76 @@ input[type=range].f-range::-webkit-slider-thumb{-webkit-appearance:none;width:28
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
-<sc-if value="{{teaser}}" hint-placeholder-val="{{ false }}">
-  <a href="Future.dc.html" class="f-press" dir="rtl" style="display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: #193D33; border-radius: 22px; padding: 14px 16px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-    <span style="display: flex; align-items: center; justify-content: space-between"><span style="font-size: 18px; font-weight: 700">مستقبلي</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></span>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div class="f-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+    <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 20px; font-weight: 700">{{heroTitle}}</span><span style="font-size: 12px; color: #DCEBD6">{{ageLine}}</span></span>
     <sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
-      <dc-import name="FutureChart" mini="{{true}}" series="{{series}}" start="{{startYear}}" cur="{{cur}}" hint-size="300px,84px"></dc-import>
-      <span style="font-size: 13px; color: #637570">{{teaseLine}}</span>
-      <span dir="ltr" style="text-align: right; font-size: 26px; font-weight: 700">{{heroText}}</span>
-      <span style="font-size: 13px; font-weight: 700; color: #0E8A6E">{{teaseUp}}</span>
-    </sc-if>
-    <sc-if value="{{na}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #956000; font-weight: 700">{{naText}}</span></sc-if>
-  </a>
-</sc-if>
-<sc-if value="{{screen}}" hint-placeholder-val="{{ true }}">
-<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(60% 34% at 0% 62%, rgba(155,197,255,0.16), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
-  <div class="f-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
-    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
-      <a href="Investment.dc.html" data-back="1" class="f-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
-      <h1 style="margin: 0; font-size: 24px; font-weight: 700">مستقبلي</h1>
-    </div>
-    <span style="font-size: 13px; color: #637570; margin-top: -6px">{{intro}}</span>
-
-    <div class="f-scroll" role="radiogroup" aria-label="المدة" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px">
-      <sc-for list="{{chips}}" as="c" hint-placeholder-count="9"><button type="button" role="radio" aria-checked="{{c.on}}" class="f-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button></sc-for>
-    </div>
-    <div style="display: flex; gap: 8px; align-items: center">
-      <label style="flex: 1 1 auto; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
-        <span style="font-size: 13px; color: #637570; white-space: nowrap">أو اكتب السنة</span>
-        <input type="text" inputmode="numeric" dir="ltr" aria-label="السنة" value="{{yearInput}}" onInput="{{typeYear}}" placeholder="2030" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; outline: none; text-align: right">
-      </label>
-      <div role="radiogroup" aria-label="شكل الأرقام" style="display: flex; padding: 3px; border-radius: 16px; background: rgba(25,61,51,0.06)">
-        <sc-for list="{{modes}}" as="m" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{m.on}}" class="f-press" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button></sc-for>
+      <span style="font-size: 13px; color: #DCEBD6">{{heroLabel}}</span>
+      <span dir="ltr" style="text-align: right; font-size: 34px; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums">{{heroText}}</span>
+      <span style="font-size: 12px; color: #DCEBD6">{{modeNote}}</span>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.18)">
+        <sc-for list="{{ups}}" as="u" hint-placeholder-count="2"><span style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px"><span style="display: flex; align-items: center; gap: 6px; min-width: 0"><span style="{{u.key}}"></span>{{u.label}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">{{u.value}}</span></span></sc-for>
+        <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #DCEBD6"><span>{{nowLabel}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{nowText}}</span></span>
       </div>
-    </div>
-    <sc-if value="{{hasYearErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; margin-top: -8px">{{yearErr}}</span></sc-if>
+    </sc-if>
+    <sc-if value="{{na}}" hint-placeholder-val="{{ false }}"><span style="font-size: 30px; font-weight: 700">غير متاح</span><span style="font-size: 12px; color: #DCEBD6">{{naText}}</span></sc-if>
+    <sc-if value="{{noAge}}" hint-placeholder-val="{{ false }}"><a href="RetirementCalculator.dc.html" class="f-press" style="align-self: flex-start; min-height: 32px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #A6DEC1">{{ageLink}}</a></sc-if>
+  </div>
 
-    <div class="f-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
-      <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 20px; font-weight: 700">{{heroTitle}}</span><span style="font-size: 12px; color: #DCEBD6">{{ageLine}}</span></span>
-      <sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
-        <span style="font-size: 13px; color: #DCEBD6">{{heroLabel}}</span>
-        <span dir="ltr" style="text-align: right; font-size: 36px; font-weight: 700; line-height: 1.3">{{heroText}}</span>
-        <span style="font-size: 12px; color: #DCEBD6">{{modeNote}}</span>
-        <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.18)">
-          <sc-for list="{{ups}}" as="u" hint-placeholder-count="2"><span style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px"><span style="display: flex; align-items: center; gap: 6px"><span style="{{u.key}}"></span>{{u.label}}</span><span dir="ltr" style="font-weight: 700">{{u.value}}</span></span></sc-for>
-        </div>
-      </sc-if>
-      <sc-if value="{{na}}" hint-placeholder-val="{{ false }}"><span style="font-size: 30px; font-weight: 700">غير متاح</span><span style="font-size: 12px; color: #DCEBD6">{{naText}}</span></sc-if>
-      <sc-if value="{{noAge}}" hint-placeholder-val="{{ false }}"><a href="RetirementCalculator.dc.html" style="align-self: flex-start; font-size: 13px; font-weight: 700; color: #A6DEC1">اكتب سنك في حاسبة التقاعد ←</a></sc-if>
+  <div class="f-scroll" role="radiogroup" aria-label="المدة" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px">
+    <sc-for list="{{chips}}" as="c" hint-placeholder-count="9"><button type="button" role="radio" aria-checked="{{c.on}}" class="f-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button></sc-for>
+  </div>
+  <div style="display: flex; gap: 8px; align-items: center">
+    <label style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+      <span style="font-size: 13px; color: #637570; white-space: nowrap">{{yearLabel}}</span>
+      <input type="text" inputmode="numeric" dir="ltr" aria-label="السنة" value="{{yearInput}}" onInput="{{typeYear}}" placeholder="2030" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; outline: none; text-align: right">
+    </label>
+    <div role="radiogroup" aria-label="شكل الأرقام" style="display: flex; padding: 3px; border-radius: 16px; background: rgba(25,61,51,0.06)">
+      <sc-for list="{{modes}}" as="m" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{m.on}}" class="f-press" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button></sc-for>
     </div>
+  </div>
+  <sc-if value="{{hasYearErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; margin-top: -8px">{{yearErr}}</span></sc-if>
 
-    <sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
+  <sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 14px">
       <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
         <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{chartTitle}}</span><span style="font-size: 12px; color: #637570">{{modeNote}}</span></span>
-        <dc-import name="FutureChart" title="{{chartTitle}}" series="{{series}}" marks="{{marks}}" flags="{{flags}}" start="{{startYear}}" cur="{{cur}}" age-start="{{ageNow}}" hint-size="318px,330px"></dc-import>
+        <dc-import name="InvestChart" title="{{chartTitle}}" series="{{series}}" marks="{{marks}}" flags="{{flags}}" start="{{startYear}}" cur="{{cur}}" age-start="{{ageNow}}" hint-size="318px,330px"></dc-import>
       </div>
-
       <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
         <span style="font-size: 14px; font-weight: 700">{{amountTitle}}</span>
-        <span dir="ltr" style="text-align: right; font-size: 24px; font-weight: 700">{{amountText}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums">{{amountText}}</span>
         <input class="f-range" type="range" dir="ltr" min="0" max="{{amountMax}}" step="{{amountStep}}" value="{{amountMajor}}" onInput="{{slide}}" aria-label="{{amountTitle}}" aria-valuetext="{{amountText}}">
-        <span style="display: flex; justify-content: space-between; font-size: 12px; color: #637570"><span>{{amountMaxText}}</span><span>0</span></span>
+        <span dir="ltr" style="display: flex; justify-content: space-between; font-size: 12px; color: #637570"><span>0</span><span>{{amountMaxText}}</span></span>
         <span style="font-size: 12px; color: #637570">{{amountHint}}</span>
         <span style="font-size: 13px; font-weight: 700; margin-top: 4px">{{mixTitle}}</span>
         <div role="radiogroup" aria-label="{{mixTitle}}" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{mixes}}" as="x" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{x.on}}" class="f-press" onClick="{{x.pick}}" style="{{x.style}}">{{x.label}}</button></sc-for></div>
         <span style="font-size: 12px; color: #637570">{{mixSource}}</span>
       </div>
-    </sc-if>
-
-    <dc-import name="FutureCards" space="{{spaceName}}" ok="{{ok}}" miles="{{mileRows}}" passive="{{passive}}" countries="{{countries}}" hint-size="350px,620px"></dc-import>
-
-    <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: rgba(25,61,51,0.05)">
-      <span style="font-size: 14px; font-weight: 700">الحساب مبني على إيه؟</span>
-      <sc-for list="{{assume}}" as="a" hint-placeholder-count="4"><span style="{{a.style}}">{{a.text}}</span></sc-for>
-      <button type="button" class="f-press" onClick="{{toggleAssume}}" aria-expanded="{{assumeOpen}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{assumeLabel}}</button>
+      <dc-import name="InvestFutureCards" space="{{spaceName}}" miles="{{mileRows}}" focus="{{focusLabel}}" passive="{{passive}}" countries="{{countries}}" hint-size="350px,640px"></dc-import>
     </div>
+  </sc-if>
 
-    <dc-import name="FutureTip" space="{{spaceName}}" situation="{{situation}}" hint-size="350px,170px"></dc-import>
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: rgba(25,61,51,0.05)">
+    <span style="font-size: 14px; font-weight: 700">{{assumeTitle}}</span>
+    <sc-for list="{{assume}}" as="a" hint-placeholder-count="3"><span style="{{a.style}}">{{a.text}}</span></sc-for>
+    <button type="button" class="f-press" onClick="{{toggleAssume}}" aria-expanded="{{assumeOpen}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{assumeLabel}}</button>
   </div>
 </div>
-</sc-if>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["الشاشة","الكارت"],"default":"الشاشة","section":"الحالة"},"state":{"editor":"enum","options":["عادي","لسه ما بدأتش أحوّش","غير متاح"],"default":"عادي","section":"الحالة"},"age":{"editor":"enum","options":["معروف","مش مكتوب"],"default":"معروف","section":"الحالة"},"income":{"editor":"enum","options":["معروف","مش معروف"],"default":"معروف","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// «مستقبلي» (OVERRIDES §87 في فرع كوتلن): كل فلوسي = الكاش + البنوك + الأصول − الديون، بالمتوسطات الرسمية (averages.json) ومكتوب مصدر كل رقم
-// 3 خطوط: لو كمّلت (تحويشك كاش من غير أرباح) · لو استثمرت تحويشي (نفس المبلغ بمتوسط النوع اللي تختاره) · لو زوّدت المبلغ (بالشريط). في «لسه ما بدأتش»: الخط التاني بيختفي والتالت = «لو بدأت»
-// أعداد صحيحة بس (BigInt بالهللة/القرش) زي GrowthMath.kt: المعدل الشهري المكافئ بجزء من 10^8، وتقريب كل شهر · البيانات مخترعة (نفس أرقام الرئيسية والاستثمار والأشخاص والأقساط وخطط الادخار)
-const NOW = 2026, CH = [1, 2, 5, 10, 15, 20, 25, 30, 40], S = 100000000n;
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","لسه ما بدأتش أحوّش","المتوسطات غير متاحة"],"default":"عادي","section":"الحالة"},"age":{"editor":"enum","options":["معروف","مش مكتوب"],"default":"معروف","section":"الحالة"},"income":{"editor":"enum","options":["معروف","مش معروف"],"default":"معروف","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":1500}}'>
+// جزء «هتبقى معاك كام» في أول شاشة الاستثمار (§87 + §89 عند جلسة كوتلن: جوه الشاشة العادية، من غير اسم «مستقبلي»)
+// كل فلوسك = الحسابات والكاش + الأصول − الديون. حاجات الاستخدام الشخصي (العربية، الجوال) والمتأرشف (§82-21) برّه الحساب
+// 3 خطوط: لو كمّلت (تحويشك كاش من غير أرباح) · لو استثمرت تحويشي (بمتوسط النوع اللي تختاره) · لو زوّدت (بالشريط). في «لسه ما بدأتش»: التاني بيختفي والتالت = «لو بدأت»
+// أعداد صحيحة بس (BigInt) زي GrowthMath.kt: المعدل الشهري المكافئ بجزء من 10^8 · البيانات مخترعة ومطابقة لباقي اللوحات (الأصول = الاستثمار القديمة، الدخل = مصادر الدخل)
+const NOW = 2026, MONTH = 10, CH = [1, 2, 5, 10, 15, 20, 25, 30, 40], S = 100000000n, E12 = 1000000000000n;
 const C = {
-  sa: { cur: 'ر.س', cash: 735000, re: 57600000, gold: 5256000, stk: 8900000, debts: [[3480000, 145000], [100000, 25000], [245000, 0]], save: 180000, low: -45000, income: 1250000, unknownStart: 50000, passive: 0, cpi: 174, rg: 1488, rs: 795, step: 50, miles: [[10000000, '100 ألف'], [50000000, 'نص مليون'], [100000000, 'أول مليون']],
-    src: { cpi: 'التضخم 1.74% — الهيئة العامة للإحصاء عبر البنك الدولي (2016–2025)، رسمي', gold: 'الذهب 14.88% — متوسط سعره الشهري، البنك الدولي (ديسمبر 2015–ديسمبر 2025)، رسمي', stk: 'الأسهم 7.95% — مؤشر MSCI للسوق السعودية مع التوزيعات (10 سنوات لنهاية 2024)، خاص مش رسمي' } },
+  sa: { cur: 'ر.س', cash: 735000, re: 57600000, gold: 5256000, stk: 8900000, debts: [[3480000, 145000], [100000, 25000], [245000, 0]], save: 180000, low: -45000, income: 1596667, unknownStart: 50000, passive: 0, cpi: 174, rg: 1488, rs: 795, step: 50, miles: [[10000000, '100 ألف'], [50000000, 'نص مليون'], [100000000, 'أول مليون']],
+    src: { cpi: 'التضخم 1.74% — الهيئة العامة للإحصاء عبر البنك الدولي (2016–2025)، رسمي', gold: 'الذهب 14.88% — متوسط سعره الشهري، البنك الدولي (ديسمبر 2015–ديسمبر 2025)، رسمي', stk: 'الأسهم 7.95% — مؤشر السوق السعودية مع التوزيعات من مزوّد مؤشرات خاص (10 سنوات لنهاية 2024)، مش رسمي' } },
   eg: { cur: 'ج.م', cash: 2530000, re: 384000000, gold: 42000000, stk: 66000000, debts: [[735000, 0]], save: 600000, low: -150000, income: 1125000, unknownStart: 200000, passive: 1125000, cpi: 1633, rg: 3422, rs: 1942, step: 250, miles: [[100000000, 'أول مليون'], [500000000, '5 مليون'], [1000000000, '10 مليون']],
-    src: { cpi: 'التضخم 16.33% — الجهاز المركزي للتعبئة العامة والإحصاء عبر البنك الدولي (2016–2025)، رسمي', gold: 'الدهب 34.22% — البنك الدولي بسعر الصرف الرسمي للجنيه (2015–2025)، رسمي — أغلبه نزول الجنيه', stk: 'الأسهم 19.42% — مؤشر EGX30 من غير التوزيعات (2015–2025)، خاص مش رسمي' } }
+    src: { cpi: 'التضخم 16.33% — الجهاز المركزي للتعبئة العامة والإحصاء عبر البنك الدولي (2016–2025)، رسمي', gold: 'الدهب 34.22% — البنك الدولي بسعر الصرف الرسمي للجنيه (2015–2025)، رسمي — أغلبه نزول الجنيه', stk: 'الأسهم 19.42% — مؤشر البورصة المصرية الرئيسي من غير التوزيعات (2015–2025)، مش رسمي' } }
 };
-const GOALS = [['السفر', 2 / 12, 'ديسمبر 2026'], ['جوال جديد', 2 / 12, 'ديسمبر 2026'], ['الطوارئ', 8 / 12, 'يونيو 2027']];
+const GOALS = [['السفر', 2 / 12], ['جوال جديد', 2 / 12], ['الطوارئ', 8 / 12]];
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { years: 10, yearInput: '', today: true, amount: null, mix: 'mine', assume: false }; this.mo = {}; }
   mulDiv(a, n, d) { const neg = (a < 0n) !== (n < 0n) && a !== 0n && n !== 0n; const x = (a < 0n ? -a : a) * (n < 0n ? -n : n); const q = (x * 2n + d) / (d * 2n); return neg ? -q : q; }
@@ -122,111 +100,110 @@ class Component extends DCLogic {
   monthly(bp) { if (!bp) return 0n; if (this.mo[bp] != null) return this.mo[bp]; const t = S + BigInt(bp) * 10000n; let lo = -60000000n, hi = 25000000n; while (lo < hi) { const mid = lo + (hi - lo) / 2n; if (this.pow12(mid) >= t) hi = mid; else lo = mid + 1n; } const b = lo - 1n; return (this.mo[bp] = t - this.pow12(b) < this.pow12(lo) - t ? b : lo); }
   fmt(minor) { const a = Math.abs(minor); return (minor < 0 ? '−' : '') + String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   pct(bp) { const a = Math.abs(bp), f = a % 100; return (bp < 0 ? '−' : '') + (a - f) / 100 + '.' + (f < 10 ? '0' : '') + f + '%'; }
-  mixBp(c, mix) { if (mix === 'stk') return c.rs; if (mix === 'gold') return c.rg; if (mix === 're') return c.cpi; return Number((BigInt(c.re) * BigInt(c.cpi) + BigInt(c.gold) * BigInt(c.rg) + BigInt(c.stk) * BigInt(c.rs)) / BigInt(c.re + c.gold + c.stk)); }
-  // 40 سنة شهر بشهر، وبنسجّل آخر كل سنة: الخطوط التلاتة + الاستثمارات (للدخل من غير شغل) — وبفلوس النهارده بنقسم على التضخم كل سنة
+  digits(v) { return String(v || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).trim(); }
+  mixBp(c, mix) { if (mix === 'stk') return c.rs; if (mix === 'gold') return c.rg; if (mix === 're') return c.cpi; const w = c.re + c.gold + c.stk; return w ? Number((BigInt(c.re) * BigInt(c.cpi) + BigInt(c.gold) * BigInt(c.rg) + BigInt(c.stk) * BigInt(c.rs)) / BigInt(w)) : c.rs; }
+  // 40 سنة شهر بشهر، وبنسجّل آخر كل سنة: الخطوط التلاتة + الدهب والأسهم واللي استثمرته بفلوس النهارده (للدخل من غير شغل)
   project(c, save, amt2, amt3, mix, today) {
     const m = { re: this.monthly(c.cpi), gold: this.monthly(c.rg), stk: this.monthly(c.rs), mix: this.monthly(mix) };
-    let re = BigInt(c.re), gold = BigInt(c.gold), stk = BigInt(c.stk), p2 = 0n, p3 = 0n, F = 1000000000000n;
-    const out = { l1: [], l2: [], l3: [], inv: [], p2: [], F: [] };
+    let re = BigInt(c.re), gold = BigInt(c.gold), stk = BigInt(c.stk), p2 = 0n, p3 = 0n, F = E12;
+    const out = { l1: [], l2: [], l3: [], inv: [], F: [] };
     for (let t = 0; t <= 480; t++) {
       if (t % 12 === 0) {
         if (t) F = (F * 10000n + BigInt(10000 + c.cpi) / 2n) / BigInt(10000 + c.cpi);
-        const debt = c.debts.reduce((s, d) => s + BigInt(Math.max(0, d[0] - d[1] * t)), 0n);
-        const base = re + gold + stk + BigInt(c.cash) - debt;
-        const v = (x) => Number(today ? this.mulDiv(x, F, 1000000000000n) : x);
+        const debt = c.debts.reduce((x, d) => x + BigInt(Math.max(0, d[0] - d[1] * t)), 0n);
+        const base = re + gold + stk + BigInt(c.cash) - debt, real = (x) => Number(this.mulDiv(x, F, E12));
+        const v = (x) => (today ? real(x) : Number(x));
         out.l1.push(v(base + BigInt(save * t))); out.l2.push(v(base + p2)); out.l3.push(v(base + p3));
-        out.inv.push([Number(this.mulDiv(gold, F, 1000000000000n)), Number(this.mulDiv(stk, F, 1000000000000n))]); out.p2.push([Number(this.mulDiv(p2, F, 1000000000000n)), Number(this.mulDiv(p3, F, 1000000000000n))]); out.F.push(F);
+        out.inv.push({ g: real(gold), s: real(stk), p2: real(p2), p3: real(p3) }); out.F.push(F);
       }
       re += this.mulDiv(re, m.re, S); gold += this.mulDiv(gold, m.gold, S); stk += this.mulDiv(stk, m.stk, S);
       p2 += this.mulDiv(p2, m.mix, S) + BigInt(amt2); p3 += this.mulDiv(p3, m.mix, S) + BigInt(amt3);
     }
     return out;
   }
-  // الدخل من غير شغل في الشهر (بفلوس النهارده): الربح فوق الغلاء بس من الذهب والأسهم واللي استثمرته + الإيجار والعائد المعروفين
-  passiveAt(c, pr, y, which, mix) { const real = (bp) => BigInt(Math.max(0, bp - c.cpi)); const [g, s] = pr.inv[y], pot = pr.p2[y][which]; return Number((BigInt(g) * real(c.rg) + BigInt(s) * real(c.rs) + BigInt(pot) * real(mix)) / 120000n) + c.passive; }
+  // الدخل من غير شغل في الشهر (بفلوس النهارده): الربح فوق الغلاء بس من الدهب والأسهم واللي استثمرته + الإيجار والعائد المعروفين
+  passiveAt(c, pr, y, pot, mix) { const real = (bp) => BigInt(Math.max(0, bp - c.cpi)), q = pr.inv[y]; return Number((BigInt(q.g) * real(c.rg) + BigInt(q.s) * real(c.rs) + BigInt(pot) * real(mix)) / 120000n) + c.passive; }
   renderVals() {
-    const s = this.state, st = this.props.state ?? 'عادي', eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a);
-    const teaser = this.props.mode === 'الكارت', na = st === 'غير متاح', low = st === 'لسه ما بدأتش أحوّش';
-    const c = eg ? C.eg : C.sa, other = eg ? C.sa : C.eg, n = (x) => x.toLocaleString('en-US');
+    const s = this.state, st = this.props.state ?? 'عادي', eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), n = (x) => x.toLocaleString('en-US');
+    const na = st === 'المتوسطات غير متاحة', low = st === 'لسه ما بدأتش أحوّش';
+    const c = eg ? C.eg : C.sa, other = eg ? C.sa : C.eg;
     const save = low ? c.low : c.save, incomeKnown = this.props.income !== 'مش معروف';
-    const startAmt = low ? (incomeKnown ? (c.income - c.income % 1000) / 10 : c.unknownStart) : save + (incomeKnown ? (c.income - c.income % 1000) / 10 : c.unknownStart);
-    const amt = s.amount != null ? s.amount : startAmt, years = teaser ? 10 : s.years, Y = NOW + years, today = teaser ? true : s.today;
+    const tenth = incomeKnown ? (c.income - (c.income % 1000)) / 10 : c.unknownStart;
+    const startAmt = low ? tenth : save + tenth;
+    const amt = s.amount != null ? s.amount : startAmt, years = s.years, Y = NOW + years, today = s.today;
     const mix = this.mixBp(c, s.mix);
     let birth = null; try { birth = window.sessionStorage.getItem('masroufy-birth'); } catch (e) {}
-    if (!birth && this.props.age !== 'مش مكتوب') birth = '1990-04-12';
-    const ageNow = birth && /^\d{4}-\d{2}/.test(birth) ? NOW - Number(birth.slice(0, 4)) - (Number(birth.slice(5, 7)) > 10 ? 1 : 0) : null;
+    if (!birth && this.props.age !== 'مش مكتوب') birth = eg ? '1994-06-20' : '1990-04-12';
+    const ageNow = birth && /^\d{4}-\d{2}/.test(birth) ? NOW - Number(birth.slice(0, 4)) - (Number(birth.slice(5, 7)) > MONTH ? 1 : 0) : null;
     const pr = na ? null : this.project(c, save, low ? 0 : save, amt, mix, today);
-    const cut = (a) => a.slice(0, years + 1);
+    const cut = (a) => a.slice(0, years + 1), mk = (v) => '≈ ' + this.fmt(v) + ' ' + c.cur;
     const L1 = { key: 'l1', label: T('لو استمررت كما أنت', 'لو كمّلت زي ما إنت'), color: '#3866A7' };
     const L2 = { key: 'l2', label: T('لو استثمرت ادخارك', 'لو استثمرت تحويشي'), color: '#0E8A6E', main: true };
     const L3 = { key: 'l3', label: low ? T('لو بدأت تدّخر ', 'لو بدأت تحوّش ') + this.fmt(amt) + T(' شهريًا', ' في الشهر') : T('لو زدت المبلغ', 'لو زوّدت المبلغ'), color: '#B7791F', main: low };
     const series = pr ? [Object.assign({ values: cut(pr.l1) }, L1)].concat(low ? [] : [Object.assign({ values: cut(pr.l2) }, L2)]).concat([Object.assign({ values: cut(pr.l3) }, L3)]) : [];
     const focus = low ? 'l3' : 'l2', fv = pr ? pr[focus] : [];
-    const mk = (v) => '≈ ' + this.fmt(v) + ' ' + c.cur;
     const marks = [], mileRows = [];
     if (pr) c.miles.forEach(([th, label]) => {
       if (fv[0] >= th) { mileRows.push({ label, when: T('تجاوزته', 'عدّيته'), done: true }); return; }
       const i = fv.findIndex((v) => v >= th);
       if (i < 0) { mileRows.push({ label, when: T('ليس خلال 40 سنة', 'مش خلال 40 سنة'), done: false }); return; }
       if (i <= years) marks.push({ key: focus, i, label });
-      mileRows.push({ label, when: T('سنة ', 'سنة ') + (NOW + i) + T(' (بعد ', ' (بعد ') + n(i) + (i <= 10 ? T(' سنوات)', ' سنين)') : ' سنة)') + (i > years ? T(' — بعد المدة المختارة', ' — بعد المدة اللي مختارها') : ''), done: false });
+      mileRows.push({ label, when: T('سنة ', 'سنة ') + (NOW + i) + ' (' + T('بعد ', 'بعد ') + n(i) + (i <= 10 ? T(' سنوات)', ' سنين)') : ' سنة)'), done: false });
     });
-    GOALS.forEach(([g, x, when]) => mileRows.push({ label: T('هدف «', 'هدف «') + g + '»', when, done: false, goal: true }));
-    const yIdx = Math.min(years, 480 / 12);
-    const passive = pr ? { now: this.fmt(this.passiveAt(c, pr, 0, 0, mix)) + ' ' + c.cur, at: this.fmt(today ? this.passiveAt(c, pr, yIdx, 0, mix) : Number(this.mulDiv(BigInt(this.passiveAt(c, pr, yIdx, 0, mix)), 1000000000000n, pr.F[yIdx]))) + ' ' + c.cur, inv: low ? null : this.fmt(today ? this.passiveAt(c, pr, yIdx, 0, mix) + (this.passiveAt(c, pr, yIdx, 0, mix) - this.passiveAt(c, pr, yIdx, 0, mix)) : 0) + ' ' + c.cur, year: Y,
-      note: T('الربح فوق الغلاء فقط، دون أن تمس الأصل: الذهب ', 'الربح فوق الغلاء بس، من غير ما تلمس الأصل: الدهب ') + this.pct(Math.max(0, c.rg - c.cpi)) + T(' · الأسهم ', ' · الأسهم ') + this.pct(Math.max(0, c.rs - c.cpi)) + T(' سنويًا', ' في السنة') + (c.passive ? T(' + الإيجار وعائد الشهادة ', ' + الإيجار وعائد الشهادة ') + this.fmt(c.passive) + ' ' + c.cur : '') } : null;
-    if (passive && !low) passive.inv = this.fmt(today ? this.passiveAt(c, pr, yIdx, 0, mix) + Number((BigInt(pr.p2[yIdx][0]) * BigInt(Math.max(0, mix - c.cpi))) / 120000n) - Number((BigInt(pr.p2[yIdx][0]) * BigInt(Math.max(0, mix - c.cpi))) / 120000n) : 0) + ' ' + c.cur;
+    GOALS.forEach(([g]) => mileRows.push({ label: T('هدف «', 'هدف «') + g + '»', when: g === 'الطوارئ' ? T('يونيو 2027', 'يونيو 2027') : T('ديسمبر 2026', 'ديسمبر 2026'), done: false, goal: true }));
+    // الدخل من غير شغل: النهارده، ووقتها لو كمّلت، ووقتها لو استثمرت — وبالرقم الاسمي لو اختار «زي ما هيكون»
+    const nom = (v) => (today ? v : Number(this.mulDiv(BigInt(v), E12, pr.F[years])));
+    const potY = pr ? pr.inv[years][low ? 'p3' : 'p2'] : 0;
+    const passive = pr ? { now: this.fmt(this.passiveAt(c, pr, 0, 0, mix)) + ' ' + c.cur, year: Y, l1: this.fmt(nom(this.passiveAt(c, pr, years, 0, mix))) + ' ' + c.cur, l2: this.fmt(nom(this.passiveAt(c, pr, years, potY, mix))) + ' ' + c.cur, l2Label: low ? L3.label : L2.label, l1Label: L1.label,
+      note: T('الربح فوق الغلاء فقط دون أن تمس الأصل: الذهب ', 'الربح فوق الغلاء بس من غير ما تلمس الأصل: الدهب ') + this.pct(Math.max(0, c.rg - c.cpi)) + T(' · الأسهم ', ' · الأسهم ') + this.pct(Math.max(0, c.rs - c.cpi)) + T(' سنويًا', ' في السنة') + (c.passive ? T(' + الإيجار وعائد الشهادة ', ' + الإيجار وعائد الشهادة ') + this.fmt(c.passive) + ' ' + c.cur : '') } : null;
     // البلدين: «لو كمّلت» لكل بلد بعملته، والمجمّع بسعر صرف النهارده (1 ر.س = 13.9330 ج.م)
     const op = na ? null : this.project(other, other.save, other.save, other.save, this.mixBp(other, 'mine'), today);
-    const FX = 139330n, mine = pr ? pr.l1[yIdx] : null, theirs = op ? op.l1[yIdx] : null;
-    const conv = theirs == null ? null : Number(eg ? this.mulDiv(BigInt(theirs), FX, 10000n) : this.mulDiv(BigInt(theirs), 10000n, FX));
+    const FX = 139330n, mine = pr ? pr.l1[years] : null, theirs = op ? op.l1[years] : null;
+    const conv = theirs == null ? 0 : Number(eg ? this.mulDiv(BigInt(theirs), FX, 10000n) : this.mulDiv(BigInt(theirs), 10000n, FX));
     const countries = pr ? { rows: [[eg ? 'مصر' : 'السعودية', mk(mine)], [eg ? 'السعودية' : 'مصر', '≈ ' + this.fmt(theirs) + ' ' + other.cur]], total: mk(mine + conv), year: Y,
       fx: T('بسعر صرف اليوم: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)', 'بسعر صرف النهارده: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)'),
       warn: today ? '' : T('الرقم المجمّع بسعر صرف اليوم، والجنيه يتحرك كثيرًا — تقريبي جدًا.', 'الرقم المجمّع بسعر صرف النهارده، والجنيه بيتحرك كتير — تقريبي جدًا.') } : null;
-    const debtNow = c.debts.reduce((x, d) => x + d[0], 0), assetsNow = c.re + c.gold + c.stk;
+    const debtNow = c.debts.reduce((x, d) => x + d[0], 0), assetsNow = c.re + c.gold + c.stk, netNow = c.cash + assetsNow - debtNow;
     const assume = [
-      T('صافي مالك اليوم: الحسابات والكاش ', 'صافي فلوسك النهارده: الحسابات والكاش ') + this.fmt(c.cash) + T(' + الأصول ', ' + الأصول ') + this.fmt(assetsNow) + T(' − الديون ', ' − الديون ') + this.fmt(debtNow) + ' = ' + this.fmt(c.cash + assetsNow - debtNow) + ' ' + c.cur,
-      (low ? T('ادخارك الفعلي: ', 'تحويشك الفعلي: ') : T('ادخارك الفعلي: ', 'تحويشك الفعلي: ')) + this.fmt(save) + ' ' + c.cur + T(' شهريًا (متوسط آخر 3 أشهر: دخلك − صرفك)', ' في الشهر (متوسط آخر 3 شهور: دخلك − صرفك)'),
+      T('صافي مالك اليوم: الحسابات والكاش ', 'صافي فلوسك النهارده: الحسابات والكاش ') + this.fmt(c.cash) + T(' + الأصول ', ' + الأصول ') + this.fmt(assetsNow) + T(' − الديون ', ' − الديون ') + this.fmt(debtNow) + ' = ' + this.fmt(netNow) + ' ' + c.cur,
+      T('ادخارك الفعلي: ', 'تحويشك الفعلي: ') + this.fmt(save) + ' ' + c.cur + T(' شهريًا (متوسط آخر 3 أشهر: دخلك − صرفك)', ' في الشهر (متوسط آخر 3 شهور: دخلك − صرفك)'),
       c.src.gold, c.src.stk,
       T('العقار يزيد مثل الغلاء: ', 'العقار بيزيد زي الغلاء: ') + c.src.cpi,
       T('«بقيمة اليوم» = نخصم التضخم الرسمي ', '«بفلوس النهارده» = بنخصم التضخم الرسمي ') + this.pct(c.cpi) + T(' سنويًا', ' في السنة'),
-      T('«لو استمررت»: ادخارك يبقى كاشًا دون أرباح · والأقساط تنتهي في مواعيدها (السيارة بعد 24 شهرًا)', '«لو كمّلت»: تحويشك بيفضل كاش من غير أرباح · والأقساط بتخلص في مواعيدها') + (eg ? '' : ''),
+      T('«لو استمررت»: ادخارك يبقى كاشًا دون أرباح، والأقساط تنتهي في مواعيدها', '«لو كمّلت»: تحويشك بيفضل كاش من غير أرباح، والأقساط بتخلص في مواعيدها'),
+      T('العربية والجوال وحاجات الاستخدام الشخصي والأصول المؤرشفة ليست داخل الحساب', 'العربية والجوال وحاجات الاستخدام الشخصي والأصول المتأرشفة مش داخلة في الحساب'),
       T('هذا متوسط ما مضى، وليس وعدًا بما سيأتي.', 'ده متوسط اللي فات، مش وعد باللي جاي.')
     ];
     const shown = s.assume ? assume : assume.slice(0, 3);
     const chipStyle = (on) => 'flex-shrink: 0; height: 40px; min-width: 48px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.25)' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 6px 14px rgba(29,54,53,0.06)');
-    const typed = String(s.yearInput || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).trim();
-    const yearBad = typed.length === 4 && !(Number(typed) > NOW && Number(typed) <= NOW + 40);
-    const hero = pr ? pr.l1[yIdx] : null, up2 = pr && !low ? pr.l2[yIdx] : null, up3 = pr ? pr.l3[yIdx] : null;
+    const typed = this.digits(s.yearInput), yearBad = typed.length === 4 && !(Number(typed) > NOW && Number(typed) <= NOW + 40);
     const key = (col) => 'width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; background: ' + col;
-    const amtMax = Math.max(c.income / 2, save * 3, amt) / 100;
+    const amtMax = Math.max(c.income / 2, save * 3, amt) / 100, maxMajor = amtMax - (amtMax % c.step);
     return {
-      teaser, screen: !teaser, ok: !!pr, na, naText: T('غير متاح: ملف المتوسطات لم يصل بعد، فلا نستطيع حساب الأرباح.', 'غير متاح: ملف المتوسطات لسه ما وصلش، فمش هنقدر نحسب الأرباح.'),
+      ok: !!pr, na, naText: T('غير متاح: ملف المتوسطات لم يصل بعد، فلا نستطيع حساب الأرباح.', 'غير متاح: ملف المتوسطات لسه ما وصلش، فمش هنقدر نحسب الأرباح.'),
       spaceName: eg ? 'مصر' : 'السعودية', cur: c.cur, startYear: NOW, series, marks, flags: GOALS.map(([g, x]) => ({ x, label: 'هدف «' + g + '»' })), ageNow: ageNow || 0,
-      intro: T('كل مالك: الكاش + البنوك + الأصول − الديون، وكم سيصبح حسب ما تسير عليه.', 'كل فلوسك: الكاش + البنوك + الأصول − الديون، وهتبقى كام حسب اللي ماشي عليه.'),
       chips: CH.map((k) => ({ label: k === 1 ? 'سنة' : k === 2 ? T('سنتان', 'سنتين') : n(k) + (k <= 10 ? T(' سنوات', ' سنين') : ' سنة'), on: !s.yearInput && s.years === k ? 'true' : 'false', style: chipStyle(!s.yearInput && s.years === k), pick: () => this.setState({ years: k, yearInput: '' }) })),
-      yearInput: s.yearInput, hasYearErr: yearBad, yearErr: T('اكتب سنة من ', 'اكتب سنة من ') + (NOW + 1) + T(' إلى ', ' لـ') + (NOW + 40),
-      typeYear: (e) => { const v = e.target.value; const t = String(v).replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).trim(); const y = Number(t); this.setState(t.length === 4 && y > NOW && y <= NOW + 40 ? { yearInput: v, years: y - NOW } : { yearInput: v }); },
+      yearLabel: T('أو اكتب السنة', 'أو اكتب السنة'), yearInput: s.yearInput, hasYearErr: yearBad, yearErr: T('اكتب سنة من ', 'اكتب سنة من ') + (NOW + 1) + T(' إلى ', ' لـ') + (NOW + 40),
+      typeYear: (e) => { const v = e && e.target ? e.target.value : ''; const t = this.digits(v), y = Number(t); this.setState(t.length === 4 && y > NOW && y <= NOW + 40 ? { yearInput: v, years: y - NOW } : { yearInput: v }); },
       modes: [[true, T('بقيمة اليوم', 'بفلوس النهارده')], [false, T('وقتها', 'زي ما هيكون')]].map(([v, label]) => ({ label, on: s.today === v ? 'true' : 'false', pick: () => this.setState({ today: v }), style: 'height: 42px; padding: 0 10px; border: 0; border-radius: 13px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; ' + (s.today === v ? 'color: #08634F; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent') })),
       modeNote: today ? T('بقيمة المال اليوم (بعد خصم التضخم)', 'بفلوس النهارده (بعد خصم الغلاء)') : T('الرقم كما سيكون سنة ', 'الرقم زي ما هيكون سنة ') + Y,
-      heroTitle: T('أنت سنة ', 'إنت سنة ') + Y, ageLine: ageNow ? T('عمرك وقتها ', 'هتبقى ') + n(ageNow + years) + T(' سنة', ' سنة') : '', noAge: !ageNow && !teaser,
-      heroLabel: L1.label, heroText: hero != null ? mk(hero) : '',
-      ups: pr ? (low ? [] : [{ key: key('#A6DEC1'), label: L2.label, value: mk(up2) }]).concat([{ key: key('#F3C96B'), label: L3.label + (low ? '' : ' (' + this.fmt(amt) + ')'), value: mk(up3) }]) : [],
-      teaseLine: T('أنت سنة ', 'إنت سنة ') + Y + T('، لو استمررت كما أنت (بقيمة اليوم)', '، لو كمّلت زي ما إنت (بفلوس النهارده)'),
-      teaseUp: up2 != null ? L2.label + ': ' + mk(up2) : up3 != null ? L3.label + ': ' + mk(up3) : '',
+      heroTitle: T('أنت سنة ', 'إنت سنة ') + Y, ageLine: ageNow ? T('عمرك وقتها ', 'هتبقى ') + n(ageNow + years) + T(' سنة', ' سنة') : '', noAge: !ageNow, ageLink: T('اكتب عمرك في حاسبة التقاعد ←', 'اكتب سنك في حاسبة التقاعد ←'),
+      heroLabel: L1.label, heroText: pr ? mk(pr.l1[years]) : '',
+      ups: pr ? (low ? [] : [{ key: key('#A6DEC1'), label: L2.label, value: mk(pr.l2[years]) }]).concat([{ key: key('#F3C96B'), label: L3.label + (low ? '' : ' (' + this.fmt(amt) + ')'), value: mk(pr.l3[years]) }]) : [],
+      nowLabel: T('كل مالك اليوم', 'كل فلوسك النهارده'), nowText: mk(netNow),
       chartTitle: T('كم سيصبح معك', 'هيبقى معاك كام'),
       amountTitle: low ? T('لو بدأت تدّخر شهريًا', 'لو بدأت تحوّش في الشهر') : T('لو زدت ما تستثمره شهريًا', 'لو زوّدت اللي بتستثمره في الشهر'),
-      amountText: this.fmt(amt) + ' ' + c.cur, amountMajor: String(amt / 100), amountMax: String(amtMax - (amtMax % c.step)), amountStep: String(c.step), amountMaxText: this.fmt(amtMax * 100 - (amtMax * 100) % (c.step * 100)),
-      slide: (e) => { const v = Math.max(0, Math.round(Number(e.target.value) || 0)); this.setState({ amount: v * 100 }); },
+      amountText: this.fmt(amt) + ' ' + c.cur, amountMajor: String(amt / 100), amountMax: String(maxMajor), amountStep: String(c.step), amountMaxText: this.fmt(maxMajor * 100),
+      slide: (e) => { const v = Math.max(0, Math.round(Number(e && e.target ? e.target.value : 0) || 0)); this.setState({ amount: v * 100 }); },
       amountHint: low ? (incomeKnown ? T('بدأنا بـ10% من دخلك (ادفع لنفسك أولًا)، وحرّكه كما تريد.', 'بدأنا بـ10% من دخلك (ادفع لنفسك الأول)، وحرّكه زي ما تحب.') : T('دخلك غير معروف، فبدأنا بـ', 'دخلك مش معروف، فبدأنا بـ') + this.fmt(c.unknownStart) + ' ' + c.cur) : T('ادخارك الحالي ', 'تحويشك دلوقتي ') + this.fmt(save) + T('، وبدأنا بزيادة 10% من دخلك.', '، وبدأنا بزيادة 10% من دخلك.'),
       mixTitle: T('تستثمره في', 'بتستثمره في'),
       mixes: [['mine', T('مثل أملاكك', 'زي أملاكك')], ['stk', 'أسهم'], ['gold', T('ذهب', 'دهب')], ['re', 'عقار']].map(([k, label]) => ({ label, on: s.mix === k ? 'true' : 'false', pick: () => this.setState({ mix: k }), style: chipStyle(s.mix === k) })),
-      mixSource: T('بمتوسط ', 'بمتوسط ') + this.pct(mix) + T(' سنويًا', ' في السنة') + (s.mix === 'mine' ? T(' (متوسط أملاكك بحسب قيمة كل نوع)', ' (متوسط أملاكك حسب قيمة كل نوع)') : s.mix === 'stk' ? ' — ' + c.src.stk : s.mix === 'gold' ? ' — ' + c.src.gold : ' — ' + c.src.cpi),
-      mileRows, passive, countries,
+      mixSource: T('بمتوسط ', 'بمتوسط ') + this.pct(mix) + T(' سنويًا', ' في السنة') + (s.mix === 'mine' ? T(' (متوسط أملاكك بحسب قيمة كل نوع)', ' (متوسط أملاكك حسب قيمة كل نوع)') : ' — ' + (s.mix === 'stk' ? c.src.stk : s.mix === 'gold' ? c.src.gold : c.src.cpi)),
+      mileRows, passive, countries, focusLabel: low ? L3.label : L2.label,
+      assumeTitle: T('على ماذا بُني الحساب؟', 'الحساب مبني على إيه؟'),
       assume: shown.map((t, i) => ({ text: t, style: 'font-size: 12px; line-height: 1.6; color: ' + (i === shown.length - 1 && s.assume ? '#193D33; font-weight: 700' : '#4F625C') })),
-      assumeOpen: s.assume ? 'true' : 'false', assumeLabel: s.assume ? T('أقل', 'أقل') : T('كل الافتراضات (', 'كل الافتراضات (') + n(assume.length) + ')',
-      toggleAssume: () => this.setState({ assume: !s.assume }),
-      situation: low ? 'start' : (c.re * 100 >= (assetsNow + c.cash) * 70 ? 'spread' : 'long')
+      assumeOpen: s.assume ? 'true' : 'false', assumeLabel: s.assume ? 'أقل' : T('كل الافتراضات (', 'كل الافتراضات (') + n(assume.length) + ')',
+      toggleAssume: () => this.setState({ assume: !s.assume })
     };
   }
 }

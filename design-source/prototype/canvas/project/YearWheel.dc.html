@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>بكرة السنين — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.w-veil{animation:w-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.w-pop{animation:w-pop 420ms cubic-bezier(.18,.9,.28,1.08) both}
+.w-list{scrollbar-width:none;scroll-snap-type:y mandatory;overscroll-behavior:contain}.w-list::-webkit-scrollbar{display:none}
+.w-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.w-press:active{transform:scale(.96)}
+@keyframes w-fade{from{opacity:0}to{opacity:1}}
+@keyframes w-pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.w-pop{animation:w-fade 150ms both}.w-press{transition:none}.w-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="position: fixed; inset: 0; z-index: 9; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <button type="button" class="w-veil" onClick="{{close}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(20,48,40,0.30); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px)"></button>
+  <div role="dialog" aria-modal="true" aria-label="{{title}}" class="w-pop" style="position: relative; width: 300px; border-radius: 28px; padding: 16px 0 12px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(165deg, rgba(255,255,255,0.97) 0%, rgba(251,250,244,0.95) 100%); box-shadow: 0 24px 60px rgba(16,45,53,0.30)">
+    <span style="text-align: center; font-size: 16px; font-weight: 700">{{title}}</span>
+    <span style="text-align: center; font-size: 12px; color: #637570">{{hint}}</span>
+    <div style="position: relative; height: 260px">
+      <div aria-hidden="true" style="position: absolute; left: 16px; right: 16px; top: 104px; height: 52px; border-radius: 16px; background: #DCEBD6; box-shadow: inset 0 0 0 1.5px rgba(8,99,79,0.35)"></div>
+      <div class="w-list" ref="{{setList}}" onScroll="{{scroll}}" role="listbox" aria-label="{{title}}" style="position: relative; height: 260px; overflow-y: auto">
+        <div style="height: 104px"></div>
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="9">
+          <button type="button" role="option" aria-selected="{{it.on}}" onClick="{{it.pick}}" style="{{it.style}}"><span style="{{it.big}}">{{it.label}}</span><span style="font-size: 12px; color: #637570; font-variant-numeric: tabular-nums">{{it.year}}</span></button>
+        </sc-for>
+        <div style="scroll-snap-align: end; padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(204,216,204,0.8); margin-top: 8px">
+          <span style="font-size: 13px; font-weight: 700">{{typeTitle}}</span>
+          <div style="display: flex; gap: 8px">
+            <input type="text" inputmode="numeric" dir="ltr" aria-label="{{typeTitle}}" value="{{typed}}" onInput="{{type}}" placeholder="2030" style="flex: 1 1 auto; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 16px; font: inherit; font-size: 17px; font-weight: 700; text-align: center; color: #193D33; outline: none; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
+            <button type="button" class="w-press" onClick="{{mark}}" style="height: 48px; padding: 0 14px; border: 0; border-radius: 16px; font: inherit; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{markLabel}}</button>
+          </div>
+          <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{err}}</span></sc-if>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{marks}}" as="m" hint-placeholder-count="2"><button type="button" class="w-press" onClick="{{m.remove}}" aria-label="{{m.aria}}" style="height: 36px; padding: 0 10px; border: 0; border-radius: 12px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(183,121,31,0.14)">{{m.year}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></sc-for></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="w-press" onClick="{{close}}" style="position: relative; height: 48px; padding: 0 36px; border: 0; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #08634F; cursor: pointer; background: #FFFFFF; box-shadow: 0 10px 24px rgba(16,45,53,0.18)">{{doneLabel}}</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// بكرة السنين (طلب المالك 2026-10-15): الضغط على «10 سنين» بيفتحها فوق ضباب، والسنين فوق وتحت زي البكرة — بتسحب لفوق أو لتحت والاختيار بيتغير وإنت بتسحب
+// وفي آخر البكرة: «اكتب السنة» و«سجّلها علامة» — والعلامة بتفضل ظاهرة في التشارت لحد ما تشيلها (الـ×)
+const NOW = 2026, STEPS = [1, 2, 5, 10, 15, 20, 25, 30, 40], ROW = 52;
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const y = Number(props.years) || 10, i = STEPS.indexOf(y);
+    this.state = { pos: i >= 0 ? i : 3, typed: '', err: '' };
+    this.list = null; this.t = null;
+    this.setList = (el) => { if (el && el !== this.list) { this.list = el; el.scrollTop = this.state.pos * ROW; } };
+    // بنحدّث الشكل مع كل حركة، وبنبلّغ الاختيار لما الحركة تهدى
+    this.scroll = (e) => { const el = e && e.currentTarget; if (!el) return; const p = Math.max(0, Math.min(STEPS.length - 1, el.scrollTop / ROW)); this.setState({ pos: p }); clearTimeout(this.t); this.t = setTimeout(() => { const k = Math.round(p); if (typeof this.props.onPick === 'function') this.props.onPick(STEPS[k]); }, 120); };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  digits(v) { return String(v || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).trim(); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), s = this.state, n = (x) => x.toLocaleString('en-US');
+    const marks = Array.isArray(this.props.marks) ? this.props.marks : [];
+    const name = (k) => (k === 1 ? 'سنة' : k === 2 ? T('سنتان', 'سنتين') : n(k) + (k <= 10 ? T(' سنوات', ' سنين') : ' سنة'));
+    return {
+      title: T('بعد كم سنة؟', 'كمان كام سنة؟'), hint: T('اسحب لأعلى أو لأسفل', 'اسحب لفوق أو لتحت'), closeLabel: T('إغلاق', 'اقفل'), doneLabel: T('تم', 'تمام'),
+      items: STEPS.map((k, i) => { const d = Math.abs(i - s.pos), on = Math.round(s.pos) === i; return {
+        label: name(k), year: String(NOW + k), on: on ? 'true' : 'false',
+        pick: () => { if (this.list) this.list.scrollTo({ top: i * ROW, behavior: 'smooth' }); },
+        style: 'scroll-snap-align: center; width: 100%; height: ' + ROW + 'px; border: 0; background: transparent; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-sizing: border-box; font: inherit; color: #193D33; cursor: pointer; opacity: ' + Math.max(0.25, 1 - d * 0.32).toFixed(2) + '; transform: scale(' + Math.max(0.82, 1 - d * 0.08).toFixed(3) + ')',
+        big: 'font-size: ' + (on ? 20 : 17) + 'px; font-weight: 700' }; }),
+      typeTitle: T('أو اكتب السنة نفسها', 'أو اكتب السنة نفسها'), typed: s.typed, markLabel: T('سجّلها علامة', 'سجّلها علامة'),
+      type: (e) => this.setState({ typed: e && e.target ? e.target.value : '', err: '' }),
+      mark: () => { const y = Number(this.digits(s.typed)); if (!(y > NOW && y <= NOW + 40)) { this.setState({ err: T('اكتب سنة من ', 'اكتب سنة من ') + (NOW + 1) + T(' إلى ', ' لـ') + (NOW + 40) }); return; } if (typeof this.props.onMark === 'function') this.props.onMark(y); this.setState({ typed: '', err: '' }); },
+      hasErr: !!s.err, err: s.err,
+      marks: marks.map((y) => ({ year: String(y), aria: T('احذف علامة ', 'شيل علامة ') + y, remove: () => { if (typeof this.props.onUnmark === 'function') this.props.onUnmark(y); } })),
+      close: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

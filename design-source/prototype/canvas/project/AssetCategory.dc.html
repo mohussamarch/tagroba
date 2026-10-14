@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>نوع من حاجاتي — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.m-scroll{scrollbar-width:none}.m-scroll::-webkit-scrollbar{display:none}
+.m-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.m-press:active{transform:scale(.97)}
+input[type=range].c-range{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0}
+input[type=range].c-range::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:rgba(25,61,51,0.12)}
+input[type=range].c-range::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:14px;background:#FFFFFF;box-shadow:0 0 0 6px #B7791F inset,0 4px 10px rgba(16,45,53,0.22)}
+@media (prefers-reduced-motion: reduce){.m-press{transition:none}.m-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="m-scroll" style="height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 48px">
+      <a href="Investment.dc.html" data-back="1" class="m-press" aria-label="رجوع" style="width: 48px; height: 48px; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; text-decoration: none; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><h1 style="margin: 0; font-size: 24px; font-weight: 700; line-height: 1.4">{{title}}</h1><span style="font-size: 12px; color: #637570">{{sub}}</span></span>
+      <span dir="ltr" style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums">{{totalText}}</span>
+    </div>
+
+    <sc-if value="{{hasChart}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{chartTitle}}</span><span style="font-size: 12px; color: #637570">{{chartSub}}</span></span>
+        <div role="radiogroup" aria-label="المدة" style="display: flex; gap: 8px"><sc-for list="{{spans}}" as="p" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{p.on}}" class="m-press" onClick="{{p.pick}}" style="{{p.style}}">{{p.label}}</button></sc-for></div>
+        <dc-import name="InvestChart" title="{{chartTitle}}" series="{{series}}" start="{{2026}}" cur="{{cur}}" hint-size="318px,330px"></dc-import>
+      </div>
+    </sc-if>
+    <sc-if value="{{noChart}}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius: 18px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: #4F625C; background: rgba(25,61,51,0.05)">{{noChartText}}</div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{listTitle}}</h2>
+      <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="2">
+          <a href="{{it.href}}" data-keep="{{it.keep}}" class="m-press" onClick="{{it.tap}}" style="{{it.row}}">
+            <span style="{{it.box}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{it.icon}}"></path></svg></span>
+            <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{it.name}}</span><span style="font-size: 12px; color: #637570">{{it.sub}}</span></span>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span dir="ltr" style="{{it.valueStyle}}">{{it.value}}</span><span style="display: flex; gap: 3px"><sc-for list="{{it.tags}}" as="tg" hint-placeholder-count="1"><span style="{{tg.style}}">{{tg.label}}</span></sc-for></span></span>
+          </a>
+        </sc-for>
+      </div>
+      <button type="button" class="m-press" onClick="{{openAdd}}" style="height: 52px; border: 1.5px dashed rgba(8,99,79,0.40); border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.55)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>{{addLabel}}</button>
+    </div>
+
+    <sc-if value="{{hasChart}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="font-size: 16px; font-weight: 700">{{planTitle}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums">{{planText}}</span>
+        <input class="c-range" type="range" dir="ltr" min="0" max="{{planMax}}" step="{{planStep}}" value="{{planMajor}}" onInput="{{slide}}" aria-label="{{planTitle}}" aria-valuetext="{{planText}}">
+        <span style="font-size: 13px; line-height: 1.6">{{planResult}}</span>
+        <a href="SavingsGoals.dc.html" class="m-press" style="align-self: flex-start; min-height: 40px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none">{{planLink}}</a>
+      </div>
+    </sc-if>
+    <span style="font-size: 12px; line-height: 1.6; color: #637570">{{source}}</span>
+  </div>
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 20px; right: 20px; bottom: 28px; z-index: 7; border-radius: 16px; padding: 12px 16px; font-size: 14px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92)">{{toast}}</div></sc-if>
+  <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="AssetAddSheet" space="{{spaceName}}" only="{{group}}" on-close="{{closeAdd}}" on-save="{{saveAdd}}" hint-size="390px,844px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"group":{"editor":"enum","options":["معادن","عقار وأرض","أسهم وشركات","حاجات شخصية"],"default":"معادن","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// صفحة النوع (طلب المالك 2026-10-15: «لما ادوس عليهم اخش الصفحة بقا الاقي تشارت و تحتها الحاجات اللي معايا او خطتي»)
+// تشارت النوع بمتوسطه الرسمي (الدهب ← متوسط الدهب · العقار ← الغلاء · الأسهم ← متوسط الأسهم) بفلوس النهارده، وتحته حاجاتك من النوع ده، وتحتهم خطتك (تزوّد كل شهر)
+// الحاجات جاية من «حاجاتي» (masroufy-asset-group عن طريق data-keep) · الشخصي والمقتنيات مالهمش متوسط رسمي ⇒ مفيش تشارت (لا رقم بلا مصدر)
+const S = 100000000n, E12 = 1000000000000n;
+const NAMES = { metal: ['المعادن', 'المعادن'], re: ['العقار والأرض', 'العقار والأرض'], stk: ['الأسهم والشركات', 'الأسهم والشركات'], personal: ['الأشياء الشخصية', 'الحاجات الشخصية'], collect: ['المقتنيات', 'المقتنيات'], other: ['أشياء أخرى', 'حاجات تانية'] };
+const RATE = { sa: { metal: [1488, 'الذهب 14.88% سنويًا — البنك الدولي (2015–2025)، رسمي'], re: [174, 'العقار بزيادة الغلاء 1.74% — الهيئة العامة للإحصاء عبر البنك الدولي، رسمي'], stk: [795, 'الأسهم 7.95% — مؤشر السوق السعودية مع التوزيعات من مزوّد خاص، مش رسمي'], cpi: 174 },
+  eg: { metal: [3422, 'الدهب 34.22% في السنة — البنك الدولي بسعر الصرف الرسمي (2015–2025)، رسمي'], re: [1633, 'العقار بزيادة الغلاء 16.33% — الجهاز المركزي للتعبئة العامة والإحصاء عبر البنك الدولي، رسمي'], stk: [1942, 'الأسهم 19.42% — مؤشر البورصة المصرية من غير التوزيعات، مش رسمي'], cpi: 1633 } };
+const ICON = { gold: 'M4 18l3-7h10l3 7zM8 11l2-5h4l2 5', flat: 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6', stk: 'M3 17l6-6 4 4 8-8M15 7h6v6', car: 'M5 16h14M6 16l1.5-5h9L18 16M6 16v3M18 16v3', watch: 'M12 8v4l2 2M9 3h6l1 4H8zM9 21h6l1-4H8z', other: 'M5 12h.01M12 12h.01M19 12h.01' };
+const PURPOSE = { invest: ['استثمار', '#0E8A6E'], reserve: ['احتياط', '#B7791F'], personal: ['شخصي', '#8A9A95'], trade: ['تجارة', '#3866A7'] };
+const DEMO = { metal: [{ id: 'gold', name: 'ذهب', sub: '120 جرام · عيار 21', icon: 'gold', value: 5256000, tags: ['reserve'], keep: 'gold' }], re: [{ id: 'flat', name: 'شقة الياسمين', sub: '120 م²', icon: 'flat', value: 57600000, tags: ['invest'], keep: 'flat' }], stk: [{ id: 'stk', name: 'الأسهم', sub: '4 شركات', icon: 'stk', value: 8900000, tags: ['invest'] }], personal: [{ id: 'car', name: 'العربية', sub: 'قيمتها بتقل', icon: 'car', value: 4800000, tags: ['personal'] }] };
+const GROUP_OF = { 'معادن': 'metal', 'عقار وأرض': 're', 'أسهم وشركات': 'stk', 'حاجات شخصية': 'personal' };
+const TYPE_GROUP = { gold: 'metal', silver: 'metal', flat: 're', land: 're', shop: 're', stk: 'stk', co: 'stk', car: 'personal', phone: 'personal', pc: 'personal', watch: 'collect', oud: 'collect', art: 'collect', other: 'other' };
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let got = null; try { got = JSON.parse(window.sessionStorage.getItem('masroufy-asset-group') || 'null'); } catch (e) {}
+    const group = got && got.group ? got.group : GROUP_OF[props.group] || 'metal';
+    this.state = { group, items: got && Array.isArray(got.items) ? got.items : DEMO[group] || [], years: 10, amount: null, addOpen: false, toast: '' };
+    this.timers = []; this.mo = {};
+    this.openAdd = () => this.setState({ addOpen: true });
+    this.closeAdd = () => this.setState({ addOpen: false });
+    this.saveAdd = (it) => { if (!it || !it.type) return; const g = TYPE_GROUP[it.type]; const add = { id: 'new' + Date.now(), name: it.name, sub: it.grams ? (it.grams / 1000) + ' جرام · عيار ' + it.karat : 'لسه مضافة', icon: g === 'metal' ? 'gold' : g === 're' ? 'flat' : g === 'stk' ? 'stk' : 'other', value: it.value, tags: [it.purpose || 'personal'] };
+      this.setState({ addOpen: false, items: g === this.state.group ? this.state.items.concat([add]) : this.state.items, toast: ((this.props.space ?? 'السعودية') === 'مصر' ? 'اتضافت «' : 'أُضيف «') + it.name + '»' }); this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); };
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  mulDiv(a, n, d) { const x = a * n; return (x * 2n + d) / (d * 2n); }
+  pow12(m) { let x = S; for (let i = 0; i < 12; i++) x = (x * (S + m) + S / 2n) / S; return x; }
+  monthly(bp) { if (this.mo[bp] != null) return this.mo[bp]; const t = S + BigInt(bp) * 10000n; let lo = -60000000n, hi = 25000000n; while (lo < hi) { const mid = lo + (hi - lo) / 2n; if (this.pow12(mid) >= t) hi = mid; else lo = mid + 1n; } const b = lo - 1n; return (this.mo[bp] = t - this.pow12(b) < this.pow12(lo) - t ? b : lo); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  // سنة بسنة بفلوس النهارده: اللي معاك لوحده، واللي معاك + مبلغ كل شهر بنفس المتوسط
+  grow(start, add, bp, cpi, years) { const m = this.monthly(bp); let a = BigInt(start), b = BigInt(start), F = E12; const l1 = [], l2 = []; for (let t = 0; t <= years * 12; t++) { if (t % 12 === 0) { if (t) F = (F * 10000n + BigInt(10000 + cpi) / 2n) / BigInt(10000 + cpi); l1.push(Number(this.mulDiv(a, F, E12))); l2.push(Number(this.mulDiv(b, F, E12))); } a += this.mulDiv(a, m, S); b += this.mulDiv(b, m, S) + BigInt(add); } return [l1, l2]; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), L = (p) => (eg ? p[1] : p[0]), cur = eg ? 'ج.م' : 'ر.س', s = this.state, g = s.group;
+    const items = Array.isArray(s.items) ? s.items : [], known = items.filter((x) => x.value != null), sum = known.reduce((x, it) => x + it.value, 0);
+    const R = RATE[eg ? 'eg' : 'sa'], rate = R[g], step = eg ? 250 : 50, amt = s.amount != null ? s.amount : eg ? 200000 : 50000;
+    const [l1, l2] = rate ? this.grow(sum, amt, rate[0], R.cpi, s.years) : [[], []];
+    const chip = (on) => 'height: 36px; padding: 0 14px; border: 0; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const box = { metal: ['rgba(149,96,0,0.12)', '#956000'], re: ['#DCEBD6', '#08634F'], stk: ['rgba(36,105,186,0.12)', '#2469BA'] }[g] || ['rgba(25,61,51,0.07)', '#4F625C'];
+    const Y = 2026 + s.years, maxMajor = (eg ? 20000 : 5000);
+    return {
+      title: L(NAMES[g] || NAMES.other), sub: (items.length === 1 ? T('شيء واحد', 'حاجة واحدة') : items.length === 2 ? T('شيئان', 'حاجتين') : items.length + T(' أشياء', ' حاجات')) + T(' · بأسعار اليوم', ' · بأسعار النهارده'), totalText: known.length ? this.fmt(sum) + ' ' + cur : '', cur, spaceName: eg ? 'مصر' : 'السعودية', group: g,
+      hasChart: !!rate && sum > 0, noChart: !rate || sum <= 0,
+      noChartText: !rate ? T('لا يوجد متوسط رسمي لهذا النوع، فلن نرسم توقّعًا. القيمة هي التي كتبتها أنت.', 'مفيش متوسط رسمي للنوع ده، فمش هنرسم توقّع. القيمة هي اللي إنت كاتبها.') : T('القيمة غير متاحة الآن، فلا يكتمل التشارت.', 'القيمة مش متاحة دلوقتي، فالتشارت مش هيكمل.'),
+      chartTitle: T('كم ستساوي', 'هتساوي كام'), chartSub: T('بقيمة المال اليوم (بعد خصم التضخم)', 'بفلوس النهارده (بعد خصم الغلاء)') + (g === 're' ? T(' — العقار يزيد مثل الغلاء فيبقى ثابتًا بقيمة اليوم', ' — العقار بيزيد زي الغلاء فبيفضل ثابت بفلوس النهارده') : ''),
+      spans: [5, 10, 20].map((y) => ({ label: y + (y === 20 ? ' سنة' : T(' سنوات', ' سنين')), on: s.years === y ? 'true' : 'false', style: chip(s.years === y), pick: () => this.setState({ years: y }) })),
+      series: rate ? [{ key: 'a', label: T('لو تركتها كما هي', 'لو سبتها زي ما هي'), color: '#3866A7', values: l1 }, { key: 'b', label: T('لو أضفت كل شهر ', 'لو زوّدت كل شهر ') + this.fmt(amt), color: '#0E8A6E', main: true, values: l2 }] : [],
+      listTitle: T('ما تملكه', 'اللي معاك'),
+      items: items.map((it, i) => ({ name: it.name, sub: it.sub, icon: ICON[it.icon] || ICON.other, value: it.value == null ? T('غير متاح', 'مش متاح') : this.fmt(it.value) + ' ' + cur,
+        tags: (it.tags || []).map((p) => ({ label: PURPOSE[p] ? PURPOSE[p][0] : p, style: 'font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: ' + (PURPOSE[p] ? PURPOSE[p][1] : '#8A9A95') + '26' })),
+        href: it.keep ? 'AssetDetail.dc.html' : '#', keep: it.keep ? JSON.stringify({ 'masroufy-asset': it.keep }) : '', tap: (e) => { if (!it.keep && e && e.preventDefault) e.preventDefault(); },
+        row: 'display: flex; align-items: center; gap: 12px; min-height: 64px; color: inherit; text-decoration: none;' + (i < items.length - 1 ? ' border-bottom: 1px solid rgba(204,216,204,0.55);' : ''),
+        box: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + box[0] + '; color: ' + box[1],
+        valueStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (it.value == null ? '#637570' : '#193D33') })),
+      addLabel: T('أضف ', 'ضيف ') + T('إلى ', 'لـ') + L(NAMES[g] || NAMES.other), openAdd: this.openAdd, closeAdd: this.closeAdd, saveAdd: this.saveAdd, addOpen: !!s.addOpen,
+      planTitle: T('خطتي: أضيف كل شهر', 'خطتي: أزوّد كل شهر'), planText: this.fmt(amt) + ' ' + cur, planMax: String(maxMajor), planStep: String(step), planMajor: String(amt / 100),
+      slide: (e) => { const v = Math.max(0, Math.round(Number(e && e.target ? e.target.value : 0) || 0)); this.setState({ amount: v * 100 }); },
+      planResult: rate && l2.length ? T('سنة ', 'سنة ') + Y + T(' تصبح ≈ ', ' تبقى ≈ ') + this.fmt(l2[l2.length - 1]) + ' ' + cur + T(' بدل ≈ ', ' بدل ≈ ') + this.fmt(l1[l1.length - 1]) + T(' لو تركتها.', ' لو سبتها.') : '',
+      planLink: T('اجعلها خطة ادخار ←', 'اعملها خطة ادخار ←'),
+      source: rate ? rate[1] + T(' · متوسط ما مضى وليس وعدًا.', ' · متوسط اللي فات ومش وعد.') : '',
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

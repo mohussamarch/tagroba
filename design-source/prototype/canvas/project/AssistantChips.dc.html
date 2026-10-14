@@ -39,12 +39,12 @@ const Q = {
   budget: ['كم بقي من ميزانية الشهر؟', 'فاضل كام من ميزانية الشهر؟', 'plan'], goal: ['كم بقي لهدف السفر؟', 'فاضل كام على هدف السفر؟', 'goal'],
   salary: ['متى ينزل الراتب؟', 'المرتب بينزل امتى؟', 'salary'], store: ['آخر مرة في المرسى؟', 'آخر مرة في المرسى؟', 'store'],
   spent: ['كم صرفت على المطاعم؟', 'صرفت كام على الأكل؟', 'food'], voice: ['أضف عملية بصوتي', 'ضيف عملية بصوتي', 'voice'],
-  doSplit: ['قسّم فاتورة العشاء مع أحمد وسارة', 'قسّم فاتورة العشا مع أحمد وسارة', 'split'], plan: ['هل أنا على الخطة؟', 'أنا ماشي على الخطة؟', 'plan'],
+  future: ['كم سيكون معي بعد 10 سنوات؟', 'هبقى معايا كام بعد 10 سنين؟', 'future'], doSplit: ['قسّم فاتورة العشاء مع أحمد وسارة', 'قسّم فاتورة العشا مع أحمد وسارة', 'split'], plan: ['هل أنا على الخطة؟', 'أنا ماشي على الخطة؟', 'plan'],
   lak: ['كم لي عند خالد؟', 'ليّا كام عند خالد؟', 'lak'], left: ['كم بقي لي؟', 'فاضلي كام؟', 'left'], lock: ['أين أغيّر القفل؟', 'فين أغيّر القفل؟', 'lock'], find: ['أين أجد الزكاة؟', 'فين الزكاة؟', 'find']
 };
 // كل موضوع اتعلّمه ⇒ سؤالين متابعة (التاني قريب منه: القهوة بتأخّر هدف «السفر» مثلًا)
 const NEXT = { coffee: ['coffee', 'goal'], food: ['food', 'budget'], rent: ['rent', 'bills'], bills: ['bills', 'rent'], debts: ['debts', 'lak'], split: ['split', 'debts'], budget: ['budget', 'food'], goal: ['goal', 'coffee'], salary: ['salary', 'budget'], store: ['store', 'coffee'] };
-const BY_CTX = { 'الرئيسية': ['left', 'spent', 'voice', 'salary', 'doSplit'], 'العمليات': ['voice', 'spent', 'store', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['plan', 'find', 'spent', 'voice'], 'المزيد': ['lock', 'find', 'voice', 'doSplit'] };
+const BY_CTX = { 'الرئيسية': ['left', 'spent', 'voice', 'salary', 'doSplit'], 'العمليات': ['voice', 'spent', 'store', 'doSplit'], 'الأشخاص': ['lak', 'doSplit', 'voice'], 'الاستثمار': ['future', 'plan', 'find', 'voice'], 'المزيد': ['lock', 'find', 'voice', 'doSplit'] };
 class Component extends DCLogic {
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', ctx = this.props.context ?? 'الرئيسية', last = this.props.last || '';

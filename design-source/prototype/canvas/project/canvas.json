@@ -961,6 +961,102 @@
       "y": 0,
       "w": 390,
       "h": 844
+    },
+    "InvestFuture.dc.html": {
+      "is_interactive": true,
+      "title": "هيبقى معاك كام: الكارت الكبير · المدة · التشارت · لو زوّدت · InvestFuture (قطعة أول الاستثمار)",
+      "x": 470,
+      "y": 25202,
+      "w": 350,
+      "h": 1500
+    },
+    "InvestChart.dc.html": {
+      "is_interactive": true,
+      "title": "تشارت الخطوط التلاتة والمحطات والأهداف · InvestChart (قطعة)",
+      "x": 870,
+      "y": 25202,
+      "w": 318,
+      "h": 360
+    },
+    "InvestFutureCards.dc.html": {
+      "is_interactive": true,
+      "title": "من غير شغل · محطاتك · البلدين · InvestFutureCards (قطعة)",
+      "x": 1240,
+      "y": 25202,
+      "w": 350,
+      "h": 700
+    },
+    "InvestTipCard.dc.html": {
+      "is_interactive": true,
+      "title": "نصيحة واحدة تتقفل بـ«×» · InvestTipCard (قطعة)",
+      "x": 1640,
+      "y": 25202,
+      "w": 350,
+      "h": 220
+    },
+    "InvestTips.dc.html": {
+      "is_interactive": true,
+      "title": "صفحة النصايح · InvestTips",
+      "x": 2040,
+      "y": 25202,
+      "w": 390,
+      "h": 844
+    },
+    "InvestHoldings.dc.html": {
+      "is_interactive": true,
+      "title": "حاجاتي: مربع لكل نوع + شريط الأغراض · InvestHoldings (قطعة)",
+      "x": 2480,
+      "y": 25202,
+      "w": 350,
+      "h": 560
+    },
+    "AssetCategory.dc.html": {
+      "is_interactive": true,
+      "title": "صفحة النوع: تشارت + اللي معاك + خطتي · AssetCategory",
+      "x": 2880,
+      "y": 25202,
+      "w": 390,
+      "h": 844
+    },
+    "AssetAddSheet.dc.html": {
+      "is_interactive": true,
+      "title": "ضيف حاجة: النوع وتفاصيله (الدهب: سبايك/مشغولات · العيار · المصنعية) · AssetAddSheet",
+      "x": 3320,
+      "y": 25202,
+      "w": 390,
+      "h": 844
+    },
+    "InvestIncomeRope.dc.html": {
+      "is_interactive": true,
+      "title": "حبل مصادر دخلك (تجربة) · InvestIncomeRope (قطعة)",
+      "x": 3760,
+      "y": 25202,
+      "w": 350,
+      "h": 420
+    },
+    "InvestReturns.dc.html": {
+      "is_interactive": true,
+      "title": "اللي رجعلك من استثماراتك (تجربة) · InvestReturns (قطعة)",
+      "x": 4160,
+      "y": 25202,
+      "w": 350,
+      "h": 380
+    },
+    "CharacterArt.dc.html": {
+      "is_interactive": true,
+      "title": "رسم الكاركتر بالطبقات (أول نسخة) · CharacterArt (قطعة)",
+      "x": 470,
+      "y": 26902,
+      "w": 200,
+      "h": 200
+    },
+    "CharacterBuilder.dc.html": {
+      "is_interactive": true,
+      "title": "ابني شكلك (أول نسخة) · CharacterBuilder",
+      "x": 720,
+      "y": 26902,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1238,7 +1334,19 @@
     "AssistantChips.dc.html",
     "AssistantInput.dc.html",
     "PeopleOrbit.dc.html",
-    "PeopleRowPick.dc.html"
+    "PeopleRowPick.dc.html",
+    "InvestFuture.dc.html",
+    "InvestChart.dc.html",
+    "InvestFutureCards.dc.html",
+    "InvestTipCard.dc.html",
+    "InvestTips.dc.html",
+    "InvestHoldings.dc.html",
+    "AssetCategory.dc.html",
+    "AssetAddSheet.dc.html",
+    "InvestIncomeRope.dc.html",
+    "InvestReturns.dc.html",
+    "CharacterArt.dc.html",
+    "CharacterBuilder.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

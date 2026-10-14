@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حبل مصادر دخلك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.r-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.r-press:active{transform:scale(.97)}
+.r-draw{stroke-dasharray:900;stroke-dashoffset:900;animation:r-draw 1200ms cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes r-draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){.r-press{transition:none}.r-press:active{transform:none}.r-draw{animation:none;stroke-dashoffset:0}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; box-sizing: border-box; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+  <span style="font-size: 16px; font-weight: 700">{{title}}</span>
+  <sc-if value="{{has}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums">{{count}}</span><span style="font-size: 14px; font-weight: 700">{{countLabel}}</span></span>
+    <span style="font-size: 12px; color: #637570; margin-top: -6px">{{countSub}}</span>
+    <div dir="ltr" style="align-self: center; position: relative">
+      <svg width="318" height="96" viewBox="0 0 318 96" role="img" aria-label="{{aria}}" style="display: block; overflow: visible">
+        <line x1="4" x2="314" y1="44" y2="44" stroke="rgba(25,61,51,0.08)" stroke-width="18" stroke-linecap="round"></line>
+        <sc-for list="{{strands}}" as="s" hint-placeholder-count="3"><path class="r-draw" d="{{s.d}}" fill="none" stroke="{{s.color}}" stroke-width="3" stroke-linecap="round"></path></sc-for>
+        <sc-for list="{{ticks}}" as="t" hint-placeholder-count="1"><line x1="{{t.x}}" x2="{{t.x}}" y1="26" y2="62" stroke="#193D33" stroke-width="1" stroke-dasharray="2 3"></line></sc-for>
+        <sc-for list="{{knots}}" as="k" hint-placeholder-count="1"><circle cx="{{k.x}}" cy="44" r="5" fill="#FFFFFF" stroke="#637570" stroke-width="2"></circle></sc-for>
+      </svg>
+      <div aria-hidden="true" style="position: absolute; left: 0; top: 0; width: 318px; height: 96px; pointer-events: none; font-size: 10px; line-height: 14px; color: #637570">
+        <sc-for list="{{ticks}}" as="tl" hint-placeholder-count="1"><span style="{{tl.style}}">{{tl.label}}</span></sc-for>
+        <span style="{{fromStyle}}">{{fromLabel}}</span>
+        <span style="{{toStyle}}">{{toLabel}}</span>
+      </div>
+    </div>
+    <sc-for list="{{legend}}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 8px; min-height: 28px">
+        <span aria-hidden="true" style="{{g.key}}"></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700">{{g.name}}</span><span style="font-size: 11px; color: #637570">{{g.period}}</span></span>
+      </div>
+    </sc-for>
+    <span style="font-size: 12px; line-height: 1.6; color: #4F625C">{{line}}</span>
+  </sc-if>
+  <sc-if value="{{none}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{noneText}}</span></sc-if>
+  <a href="IncomeSources.dc.html" class="r-press" style="align-self: flex-start; min-height: 36px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none">{{linkLabel}}</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","مصدر واحد","مش معروف"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":420}}'>
+// تجربة من أفكار مذاكرة علي الحامد (اختيار المالك 2026-10-15): كل مصدر دخل خيط، والخيوط بتتلف حوالين بعض فالحبل بيتخن مع كل مصدر
+// آخر 12 شهر من الشمال لليمين (زي التشارت) · الراتب خيط واحد حتى لو جهة الشغل اتغيّرت (علامة «غيّرت الشغل») · المرة الواحدة (بيعة) عقدة مش خيط
+// مخترعة ومطابقة لـ IncomeSources: الريادة من 28 أبريل بعد السهم · الواحة بارت تايم من 10 أغسطس · نورة يناير–يونيو — وأنواع الدخل الجديدة عند جلسة كوتلن (§6.5: عمل إضافي · بيعة · جهات شغل بفترات)
+const DATA = {
+  sa: { strands: [
+    { kind: 'salary', name: ['الراتب', 'المرتب'], period: ['مجموعة السهم التجارية حتى 27 أبريل ← شركة الريادة للحلول', 'مجموعة السهم التجارية لحد 27 أبريل ← شركة الريادة للحلول'], from: 0, to: 12, color: '#0E8A6E', now: true },
+    { kind: 'part', name: ['دوام جزئي', 'بارت تايم'], period: ['مكتب الواحة للتصميم منذ 10 أغسطس', 'مكتب الواحة للتصميم من 10 أغسطس'], from: 9.3, to: 12, color: '#3866A7', now: true },
+    { kind: 'client', name: ['عميل', 'عميل'], period: ['متجر نورة للعطور، يناير–يونيو (انتهى)', 'متجر نورة للعطور، يناير–يونيو (خلص)'], from: 2, to: 8, color: '#B7791F', now: false }],
+    ticks: [{ at: 5.9, label: ['غيّرت العمل', 'غيّرت الشغل'] }], knots: [{ at: 4.4, label: ['بيعة: جوال قديم', 'بيعة: موبايل قديم'] }] },
+  eg: { strands: [
+    { kind: 'rent', name: ['إيجار', 'إيجار'], period: ['الشقة، منذ يناير', 'الشقة، من يناير'], from: 2, to: 12, color: '#0E8A6E', now: true },
+    { kind: 'cert', name: ['عائد شهادة', 'عائد شهادة'], period: ['شهادة ادخار، منذ يوليو', 'شهادة ادخار، من يوليو'], from: 8, to: 12, color: '#3866A7', now: true }],
+    ticks: [], knots: [] }
+};
+const MONTHS = ['نوفمبر 2025', 'أكتوبر 2026'];
+class Component extends DCLogic {
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), L = (p) => (eg ? p[1] : p[0]), n = (x) => x.toLocaleString('en-US');
+    const st = this.props.state ?? 'عادي', none = st === 'مش معروف';
+    const d = DATA[eg ? 'eg' : 'sa'], list = st === 'مصدر واحد' ? d.strands.slice(0, 1).map((x) => Object.assign({}, x, { from: 0 })) : d.strands;
+    const X = (m) => 4 + (m / 12) * 310;
+    // كل خيط موجة بطور مختلف حوالين نفس الخط، فلما يتجمعوا يبانوا متلفّفين
+    const k = list.length, amp = 4 + 3 * Math.min(k, 4);
+    const wave = (s, i) => { const pts = []; for (let x = X(s.from); x <= X(s.to) + 0.1; x += 3) pts.push((pts.length ? 'L' : 'M') + x.toFixed(1) + ' ' + (44 + amp * Math.sin(x / 11 + (i * 2 * Math.PI) / Math.max(k, 1))).toFixed(1)); return pts.join(' '); };
+    const now = list.filter((s) => s.now).length, ticks = st === 'مصدر واحد' ? [] : d.ticks, knots = st === 'مصدر واحد' ? [] : d.knots;
+    const word = (c) => (c === 1 ? T('مصدر واحد', 'مصدر واحد') : c === 2 ? T('مصدران', 'مصدرين') : n(c) + T(' مصادر', ' مصادر'));
+    return {
+      title: T('حبل مصادر دخلك', 'حبل مصادر دخلك'), has: !none && list.length > 0, none, noneText: T('لا يوجد دخل مسجّل بعد، فلا نعرف مصادره.', 'لسه مفيش دخل متسجّل، فمش عارفين مصادره.'),
+      count: n(now), countLabel: now === 1 ? T('مصدر الآن', 'مصدر دلوقتي') : T('مصادر الآن', 'مصادر دلوقتي'),
+      countSub: T('في آخر 12 شهرًا: ', 'في آخر 12 شهر: ') + word(list.length) + (knots.length ? T(' + دخل لمرة واحدة', ' + دخل مرة واحدة') : ''),
+      aria: T('مصادر دخلك في آخر 12 شهرًا: ', 'مصادر دخلك في آخر 12 شهر: ') + list.map((s) => L(s.name)).join('، '),
+      strands: list.map((s, i) => ({ d: wave(s, i), color: s.color })),
+      ticks: ticks.map((t) => ({ x: X(t.at).toFixed(1), label: L(t.label), style: 'position: absolute; top: 6px; left: ' + X(t.at).toFixed(1) + 'px; transform: translateX(-50%); white-space: nowrap; color: #4F625C' })), knots: knots.map((q) => ({ x: X(q.at).toFixed(1), label: L(q.label) })),
+      fromLabel: MONTHS[0], toLabel: MONTHS[1], fromStyle: 'position: absolute; top: 80px; left: 4px; white-space: nowrap', toStyle: 'position: absolute; top: 80px; left: 314px; transform: translateX(-100%); white-space: nowrap',
+      legend: list.map((s) => ({ name: L(s.name), period: L(s.period), key: 'width: 16px; height: 3px; border-radius: 2px; flex-shrink: 0; background: ' + s.color })).concat(knots.map((q) => ({ name: L(q.label), period: T('مرة واحدة، مارس', 'مرة واحدة، مارس'), key: 'width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; margin: 0 3px; box-shadow: inset 0 0 0 2px #637570' }))),
+      line: now <= 1 ? T('كل دخلك من مصدر واحد؛ أي ظرف في العمل يهزّك. كل مصدر إضافي يقوّي الحبل.', 'كل دخلك من مصدر واحد، فأي ظرف في الشغل بيهزّك. كل مصدر زيادة بيقوّي الحبل.') : T('كل مصدر إضافي يقوّي الحبل، فلو توقف واحد يبقى الباقي.', 'كل مصدر زيادة بيقوّي الحبل، فلو واحد وقف الباقي موجود.'),
+      linkLabel: T('مصادر الدخل ←', 'مصادر الدخل ←')
+    };
+  }
+}
+</script>
+</body>
+</html>

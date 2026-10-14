@@ -54,7 +54,7 @@ body{margin:0}
         <span style="display: flex; justify-content: space-between; font-size: 13px"><span style="font-weight: 700">{{pctLabel}}</span><span style="color: #637570">{{pctHint}}</span></span>
         <span role="progressbar" aria-valuenow="{{pct}}" aria-valuemin="0" aria-valuemax="100" aria-label="{{pctLabel}}" style="height: 8px; border-radius: 4px; overflow: hidden; background: rgba(25,61,51,0.08)"><span class="a-bar" style="{{barStyle}}"></span></span>
       </div>
-      <span style="display: flex; flex-direction: column; gap: 4px"><dc-import name="LookSheet" space="{{spaceName}}" on-save="{{onLook}}" hint-size="320px,44px"></dc-import><span style="font-size: 12px; color: #637570; text-align: center">{{avatarSoon}}</span></span>
+      <span style="display: flex; flex-direction: column; gap: 6px"><a href="CharacterBuilder.dc.html" class="m-press" style="height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; color: #FFFFFF; text-decoration: none; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.24)">{{buildLabel}}</a><dc-import name="LookSheet" space="{{spaceName}}" on-save="{{onLook}}" hint-size="320px,44px"></dc-import><span style="font-size: 12px; color: #637570; text-align: center">{{avatarSoon}}</span></span>
     </div>
 
     <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
@@ -221,7 +221,7 @@ class Component extends DCLogic {
       pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '%',
       pctHint: pct >= 100 ? (eg ? 'كامل' : 'مكتمل') : (eg ? 'كل إجابة بتخلي الأرقام أدق' : 'كل إجابة تجعل الأرقام أدق'),
       barStyle: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
-      avatarSoon: eg ? 'الكاركتر النهائي لسه بيتصمم.' : 'الكاركتر النهائي قيد التصميم.',
+      avatarSoon: eg ? 'دي أول نسخة من الكاركتر، وهتتطوّر.' : 'هذه أول نسخة من الكاركتر، وستتطوّر.', buildLabel: eg ? 'ابني شكلك' : 'ابنِ شكلك',
       look: s.look || 0, onLook: (k) => { this.setState({ look: k }); this.say(eg ? 'اتغيّر شكلك' : 'تغيّر شكلك'); },
       groups,
       budgetGroup: eg ? 'الميزانية' : 'الميزانية',

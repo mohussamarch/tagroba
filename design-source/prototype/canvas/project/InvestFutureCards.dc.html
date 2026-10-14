@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>محطات ودخل من غير شغل — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <span style="font-size: 16px; font-weight: 700">{{passiveTitle}}</span>
+    <div style="display: flex; gap: 10px">
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.05)">
+        <span style="font-size: 12px; color: #637570">{{nowLabel}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums">{{pNow}}</span>
+      </div>
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(14,138,110,0.10)">
+        <span style="font-size: 12px; color: #08634F">{{yearLabel}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums">{{pL2}}</span>
+        <span style="font-size: 11px; color: #4F625C">{{pL2Label}}</span>
+      </div>
+    </div>
+    <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px"><span style="color: #4F625C">{{pL1Label}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{pL1}}</span></span>
+    <span style="font-size: 12px; line-height: 1.6; color: #637570">{{pNote}}</span>
+  </div>
+
+  <div style="border-radius: 22px; padding: 6px 16px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <span style="font-size: 16px; font-weight: 700; padding: 8px 0 4px">{{milesTitle}}</span>
+    <sc-for list="{{miles}}" as="m" hint-placeholder-count="5">
+      <div style="{{m.row}}">
+        <span aria-hidden="true" style="{{m.dot}}"></span>
+        <span style="flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 700">{{m.label}}</span>
+        <span style="{{m.whenStyle}}">{{m.when}}</span>
+      </div>
+    </sc-for>
+    <span style="font-size: 12px; color: #637570; padding: 6px 0 10px">{{milesNote}}</span>
+  </div>
+
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <span style="font-size: 16px; font-weight: 700">{{cTitle}}</span>
+    <sc-for list="{{cRows}}" as="r" hint-placeholder-count="2"><span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; min-height: 28px; align-items: center"><span>{{r.name}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{r.value}}</span></span></sc-for>
+    <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; padding-top: 8px; border-top: 1px solid rgba(204,216,204,0.9)"><span>{{cTotalLabel}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{cTotal}}</span></span>
+    <span style="font-size: 12px; line-height: 1.6; color: #637570">{{cFx}}</span>
+    <sc-if value="{{hasWarn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #956000">{{cWarn}}</span></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":700}}'>
+// 3 كروت تحت التشارت (عرض بس — الحساب في InvestFuture): هتجيبلك كام في الشهر من غير شغل · المحطات وأهدافك · البلدين بعملة كل بلد والمجمّع بمصدر سعر الصرف
+const DEMO = {
+  passive: { now: '595 ر.س', year: 2036, l1: '1,108 ر.س', l2: '1,452 ر.س', l1Label: 'لو كمّلت زي ما إنت', l2Label: 'لو استثمرت تحويشي', note: 'الربح فوق الغلاء بس، من غير ما تلمس الأصل' },
+  miles: [{ label: '100 ألف', when: 'عدّيته', done: true }, { label: 'نص مليون', when: 'عدّيته', done: true }, { label: 'أول مليون', when: 'سنة 2033 (بعد 7 سنين)' }, { label: 'هدف «السفر»', when: 'ديسمبر 2026', goal: true }],
+  countries: { rows: [['السعودية', '≈ 1,032,000 ر.س'], ['مصر', '≈ 6,100,000 ج.م']], total: '≈ 1,470,000 ر.س', year: 2036, fx: 'بسعر صرف النهارده: 1 ر.س = 13.93 ج.م', warn: '' }
+};
+class Component extends DCLogic {
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a);
+    const p = this.props.passive && typeof this.props.passive === 'object' ? this.props.passive : DEMO.passive;
+    const miles = Array.isArray(this.props.miles) ? this.props.miles : DEMO.miles;
+    const c = this.props.countries && typeof this.props.countries === 'object' ? this.props.countries : DEMO.countries;
+    return {
+      passiveTitle: T('استثماراتك ستأتيك بكم شهريًا دون عمل', 'استثماراتك هتجيبلك كام في الشهر من غير شغل'),
+      nowLabel: T('اليوم', 'النهارده'), yearLabel: T('سنة ', 'سنة ') + p.year, pNow: p.now, pL2: p.l2, pL2Label: p.l2Label, pL1Label: p.l1Label + T(' سنة ', ' سنة ') + p.year, pL1: p.l1, pNote: p.note,
+      milesTitle: T('محطاتك', 'محطاتك'),
+      miles: miles.map((m, i) => ({
+        label: m.label, when: m.when,
+        row: 'display: flex; align-items: center; gap: 10px; min-height: 44px;' + (i < miles.length - 1 ? ' border-bottom: 1px solid rgba(204,216,204,0.55)' : ''),
+        dot: 'width: 10px; height: 10px; flex-shrink: 0; ' + (m.goal ? 'transform: rotate(45deg); border-radius: 2px; background: #637570' : 'border-radius: 5px; background: ' + (m.done ? '#0E8A6E' : '#FFFFFF') + '; box-shadow: inset 0 0 0 2px #0E8A6E'),
+        whenStyle: 'font-size: 12px; text-align: left; flex-shrink: 0; max-width: 60%; font-weight: ' + (m.done ? '700; color: #08634F' : '400; color: #4F625C')
+      })),
+      milesNote: T('المحطات على خط «', 'المحطات على خط «') + (this.props.focus || T('لو استثمرت ادخارك', 'لو استثمرت تحويشي')) + T('» · والمعيّنات أهداف خطط الادخار', '» · والمعيّنات أهداف خطط الادخار'),
+      cTitle: T('في البلدين سنة ', 'في البلدين سنة ') + c.year, cRows: (c.rows || []).map(([name, value]) => ({ name, value })),
+      cTotalLabel: T('المجموع التقريبي', 'المجموع التقريبي'), cTotal: c.total, cFx: c.fx, hasWarn: !!c.warn, cWarn: c.warn
+    };
+  }
+}
+</script>
+</body>
+</html>

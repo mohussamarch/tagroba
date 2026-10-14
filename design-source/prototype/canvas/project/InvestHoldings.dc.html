@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حاجاتي — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.h-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
+.h-press:active{transform:scale(.96)}
+.h-seg{transition:flex-grow 320ms cubic-bezier(.2,.7,.3,1),opacity 220ms cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){.h-press,.h-seg{transition:none}.h-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 12px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+    <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{title}}</h2>
+    <span dir="ltr" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{totalText}}</span>
+  </div>
+  <span style="font-size: 12px; color: #637570; margin-top: -8px">{{totalNote}}</span>
+
+  <sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}">
+    <div style="border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.07)">
+      <div role="img" aria-label="{{stripAria}}" style="display: flex; gap: 2px; height: 10px">
+        <sc-for list="{{segs}}" as="sg" hint-placeholder-count="3"><div class="h-seg" style="{{sg.style}}"></div></sc-for>
+      </div>
+      <div role="group" aria-label="{{filterLabel}}" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{chips}}" as="ch" hint-placeholder-count="4"><button type="button" class="h-press" aria-pressed="{{ch.on}}" onClick="{{ch.pick}}" style="{{ch.style}}"><span aria-hidden="true" style="{{ch.dot}}"></span>{{ch.label}}<span dir="ltr" style="font-variant-numeric: tabular-nums; color: #637570">{{ch.pct}}</span></button></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+    <sc-for list="{{tiles}}" as="t" hint-placeholder-count="4">
+      <a href="AssetCategory.dc.html" data-keep="{{t.keep}}" class="h-press" aria-label="{{t.aria}}" style="{{t.style}}">
+        <span style="{{t.iconBox}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg></span>
+        <span style="font-size: 13px; font-weight: 700; line-height: 1.4">{{t.name}}</span>
+        <span dir="ltr" style="{{t.valueStyle}}">{{t.value}}</span>
+        <span style="font-size: 11px; color: #637570; line-height: 1.4">{{t.sub}}</span>
+        <span style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto"><sc-for list="{{t.tags}}" as="tg" hint-placeholder-count="1"><span style="{{tg.style}}">{{tg.label}}</span></sc-for></span>
+      </a>
+    </sc-for>
+    <button type="button" class="h-press" onClick="{{add}}" aria-label="{{addLabel}}" style="box-sizing: border-box; min-height: 132px; border: 1.5px dashed rgba(8,99,79,0.40); border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(255,255,255,0.55)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>{{addLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","فاضي","سعر الدهب غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":760}}'>
+// «حاجاتي» (فكرة المالك 13 + اختياره 2026-10-15: بالنوع + وسم + شريط): مربع لكل نوع جنب بعض (معادن · عقار · أسهم…)، والضغط بيفتح صفحة النوع
+// الشريط فوق بالأغراض، والضغط على غرض بيظهر اللي عليه الوسم ده بس · الشخصي ظاهر بس برّه الإجمالي (والمتأرشف مش ظاهر هنا خالص، §82-21)
+// مخترعة · بالوحدة الصغرى · نفس أرقام AssetDetail والاستثمار القديمة (الشقة 576,000 والدهب 52,560 والأسهم 89,000 في السعودية)
+const PURPOSE = { invest: ['استثمار', 'استثمار', '#0E8A6E'], reserve: ['احتياط', 'احتياط', '#B7791F'], personal: ['شخصي', 'شخصي', '#8A9A95'], trade: ['تجارة', 'تجارة', '#3866A7'] };
+const TYPES = [['metal', 'معادن', 'معادن'], ['re', 'عقار وأرض', 'عقار وأرض'], ['stk', 'أسهم وشركات', 'أسهم وشركات'], ['personal', 'حاجات شخصية', 'حاجات شخصية'], ['collect', 'مقتنيات', 'مقتنيات'], ['other', 'أخرى', 'حاجات تانية']];
+const ICON = {
+  gold: 'M4 18l3-7h10l3 7zM8 11l2-5h4l2 5', flat: 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6', stk: 'M3 17l6-6 4 4 8-8M15 7h6v6',
+  car: 'M5 16h14M6 16l1.5-5h9L18 16M6 16v3M18 16v3M8 13.5h.01M16 13.5h.01', land: 'M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3zM9 4v13M15 7v13', shop: 'M4 9l1.5-5h13L20 9M4 9h16v11H4zM10 20v-5h4v5', co: 'M4 8h16v12H4zM9 8V5h6v3M4 13h16', phone: 'M8 3h8v18H8zM11 18h2', pc: 'M4 5h16v11H4zM2 19h20', oud: 'M10 3h4v3h-4zM8 6h8l1 4v10H7V10z', art: 'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4', other: 'M5 12h.01M12 12h.01M19 12h.01', watch: 'M12 8v4l2 2M9 3h6l1 4H8zM9 21h6l1-4H8zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10'
+};
+const BOX = { metal: ['rgba(149,96,0,0.12)', '#956000'], re: ['#DCEBD6', '#08634F'], stk: ['rgba(36,105,186,0.12)', '#2469BA'], personal: ['rgba(25,61,51,0.07)', '#4F625C'], collect: ['rgba(149,96,0,0.08)', '#7A5A1E'], other: ['rgba(25,61,51,0.07)', '#4F625C'] };
+const GROUP = { gold: 'metal', silver: 'metal', flat: 're', land: 're', shop: 're', stk: 'stk', co: 'stk', car: 'personal', phone: 'personal', pc: 'personal', watch: 'collect', oud: 'collect', art: 'collect', other: 'other' };
+const DATA = {
+  sa: [
+    { id: 'gold', type: 'metal', icon: 'gold', name: ['ذهب', 'دهب'], sub: ['120 جرام · عيار 21', '120 جرام · عيار 21'], parts: [['reserve', 5256000]], keep: 'gold' },
+    { id: 'flat', type: 're', icon: 'flat', name: ['شقة الياسمين', 'شقة الياسمين'], sub: ['120 م²', '120 م²'], parts: [['invest', 57600000]], keep: 'flat' },
+    { id: 'stk', type: 'stk', icon: 'stk', name: ['الأسهم', 'الأسهم'], sub: ['4 شركات', '4 شركات'], parts: [['invest', 8900000]] },
+    { id: 'car', type: 'personal', icon: 'car', name: ['السيارة', 'العربية'], sub: ['قيمتها تقل', 'قيمتها بتقل'], parts: [['personal', 4800000]] }
+  ],
+  eg: [
+    { id: 'gold', type: 'metal', icon: 'gold', name: ['ذهب', 'دهب'], sub: ['80 جرام · سبائك ومشغولات', '80 جرام · سبايك ومشغولات'], parts: [['invest', 15750000], ['personal', 26250000]], keep: 'gold' },
+    { id: 'flat', type: 're', icon: 'flat', name: ['شقة الياسمين', 'شقة الياسمين'], sub: ['120 م² · مؤجّرة', '120 م² · متأجّرة'], parts: [['invest', 384000000]], keep: 'flat' },
+    { id: 'stk', type: 'stk', icon: 'stk', name: ['الأسهم', 'الأسهم'], sub: ['4 شركات', '4 شركات'], parts: [['invest', 66000000]] },
+    { id: 'car', type: 'personal', icon: 'car', name: ['السيارة', 'العربية'], sub: ['قيمتها تقل', 'قيمتها بتقل'], parts: [['personal', 65000000]] },
+    { id: 'watch', type: 'collect', icon: 'watch', name: ['ساعة قديمة', 'ساعة قديمة'], sub: ['بالقيمة التي كتبتها', 'بالقيمة اللي كتبتها'], parts: [['personal', 4500000]] }
+  ]
+};
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { filter: null }; }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), L = (p) => (eg ? p[1] : p[0]), cur = eg ? 'ج.م' : 'ر.س';
+    const st = this.props.state ?? 'عادي', goldNA = st === 'سعر الدهب غير متاح', extra = (Array.isArray(this.props.extra) ? this.props.extra : []).filter((x) => x && GROUP[x.type]).map((x) => ({ id: x.id, type: GROUP[x.type], icon: x.type === 'silver' ? 'gold' : ICON[x.type] ? x.type : 'other', name: [x.name, x.name], sub: x.grams ? [(x.grams / 1000) + ' جرام · عيار ' + x.karat, (x.grams / 1000) + ' جرام · عيار ' + x.karat] : ['أضفتها الآن', 'لسه مضافة'], parts: [[x.purpose || 'personal', x.value == null ? 0 : x.value]], na: x.value == null }));
+    const items = (st === 'فاضي' ? [] : DATA[eg ? 'eg' : 'sa']).concat(extra);
+    const f = this.state.filter, val = (it) => ((goldNA && it.id === 'gold') || it.na ? null : it.parts.reduce((x, p) => x + p[1], 0));
+    // الإجمالي = كل حاجة مش شخصية (العربية والمقتنيات برّه زي حساب «هتبقى معاك كام»)
+    const byP = {}; let all = 0, total = 0;
+    items.forEach((it) => { if ((goldNA && it.id === 'gold') || it.na) return; it.parts.forEach(([p, v]) => { byP[p] = (byP[p] || 0) + v; all += v; if (p !== 'personal') total += v; }); });
+    const keys = Object.keys(PURPOSE).filter((k) => byP[k]);
+    // نسب صحيحة مجموعها 100 (أكبر باقي)
+    const raw = keys.map((k) => (all ? (byP[k] * 100) / all : 0)), base = raw.map(Math.floor); let rest = 100 - base.reduce((a, b) => a + b, 0);
+    raw.map((r, i) => [r - base[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rest > 0) { base[i]++; rest--; } });
+    const pct = {}; keys.forEach((k, i) => { pct[k] = base[i]; });
+    const chip = (on) => 'display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; color: #193D33; ' + (on ? 'background: #FFFFFF; box-shadow: inset 0 0 0 1.5px #08634F' : 'background: rgba(25,61,51,0.05)');
+    const tag = (p) => ({ label: L(PURPOSE[p]), style: 'font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; color: #193D33; background: ' + PURPOSE[p][2] + '26' });
+    const shown = items.filter((it) => !f || it.parts.some((p) => p[0] === f));
+    return {
+      title: T('ممتلكاتي', 'حاجاتي'), hasItems: items.length > 0,
+      totalText: items.length ? this.fmt(total) + ' ' + cur : '',
+      totalNote: !items.length ? T('لا توجد ممتلكات بعد. أضف ذهبًا أو عقارًا أو أي شيء له قيمة.', 'لسه مفيش حاجات. ضيف دهب أو عقار أو أي حاجة ليها قيمة.') : goldNA ? T('سعر الذهب اليوم غير متاح، فالذهب خارج الإجمالي مؤقتًا.', 'سعر الدهب النهارده مش متاح، فالدهب برّه الإجمالي لحد ما يرجع.') : T('بأسعار اليوم · الأشياء الشخصية خارج الإجمالي', 'بأسعار النهارده · الحاجات الشخصية برّه الإجمالي'),
+      stripAria: keys.map((k) => L(PURPOSE[k]) + ' ' + pct[k] + '%').join('، '),
+      segs: keys.map((k, i) => ({ style: 'flex: ' + byP[k] + ' 1 0; min-width: 6px; opacity: ' + (!f || f === k ? 1 : 0.25) + '; background: ' + PURPOSE[k][2] + '; border-radius: ' + (keys.length === 1 ? '5px' : i === 0 ? '0 5px 5px 0' : i === keys.length - 1 ? '5px 0 0 5px' : '0') })),
+      filterLabel: T('اعرض حسب الغرض', 'اعرض حسب الغرض'),
+      chips: [{ label: T('الكل', 'الكل'), pct: '', on: !f ? 'true' : 'false', style: chip(!f), dot: 'display: none', pick: () => this.setState({ filter: null }) }].concat(keys.map((k) => ({ label: L(PURPOSE[k]), pct: pct[k] + '%', on: f === k ? 'true' : 'false', style: chip(f === k), dot: 'width: 8px; height: 8px; border-radius: 4px; background: ' + PURPOSE[k][2], pick: () => this.setState({ filter: f === k ? null : k }) }))),
+      // مربع لكل نوع (طلب المالك 2026-10-15: «مربعات معادن و جنبها علطول مربعا عقار») — والضغط بيفتح صفحة النوع (AssetCategory) بالتشارت والحاجات والخطة
+      tiles: TYPES.map(([ty, a, b]) => {
+        const list = shown.filter((it) => it.type === ty); if (!list.length) return null;
+        const vals = list.map(val), known = vals.filter((v) => v != null), sum = known.reduce((x, v) => x + v, 0), allNA = !known.length;
+        const tags = []; list.forEach((it) => it.parts.forEach((p) => { if (tags.indexOf(p[0]) < 0) tags.push(p[0]); }));
+        const keepItems = list.map((it, i) => ({ id: it.id, name: L(it.name), sub: L(it.sub), icon: it.icon, value: vals[i], tags: it.parts.map((p) => p[0]).filter((p, j, q) => q.indexOf(p) === j), keep: it.keep || '' }));
+        return {
+          name: T(a, b), value: allNA ? T('غير متاح', 'مش متاح') : this.fmt(sum), icon: ICON[{ metal: 'gold', re: 'flat', stk: 'stk', personal: 'car', collect: 'watch', other: 'other' }[ty]],
+          sub: list.length === 1 ? L(list[0].name) : (list.length === 2 ? T('شيئان', 'حاجتين') : list.length + T(' أشياء', ' حاجات')) + ' · ' + list.slice(0, 2).map((it) => L(it.name)).join('، '),
+          tags: tags.map(tag), keep: JSON.stringify({ 'masroufy-asset-group': JSON.stringify({ group: ty, items: keepItems, na: goldNA }) }),
+          aria: T(a, b) + '، ' + (allNA ? T('غير متاح', 'مش متاح') : this.fmt(sum) + ' ' + cur) + '، ' + (list.length === 2 ? T('شيئان', 'حاجتين') : list.length + T(' أشياء', ' حاجات')),
+          style: 'box-sizing: border-box; min-height: 132px; border-radius: 18px; padding: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.07)',
+          iconBox: 'width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; background: ' + BOX[ty][0] + '; color: ' + BOX[ty][1],
+          valueStyle: 'font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (allNA ? '#637570' : '#193D33')
+        };
+      }).filter(Boolean),
+      addLabel: T('إضافة شيء', 'ضيف حاجة'),
+      add: () => { if (typeof this.props.onAdd === 'function') this.props.onAdd(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

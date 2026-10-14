@@ -121,6 +121,8 @@ class Component extends DCLogic {
     const birth = val('birth'), soFar = this.int(val('soFar')), at2024 = this.int(val('at2024')), m1422 = this.int(val('m1422')) || 0;
     const basic = this.toMinor(val('basic')), housing = this.toMinor(val('housing')), retireY = this.int(val('retire'));
     if (!this.P(birth) || birth >= TODAY) err.birth = 'اكتب تاريخ الميلاد (قبل اليوم)';
+    // السن بيتاخد من هنا في شاشة الاستثمار (§87-8): تاريخ الميلاد بيتحفظ مع الحساب (في النموذج masroufy-birth)
+    else { try { window.sessionStorage.setItem('masroufy-birth', birth); } catch (e) {} }
     if (soFar == null || soFar > 1200) err.soFar = 'المدة من 0 حتى 1200 شهر';
     if (s.old && at2024 != null && soFar != null && at2024 > soFar) err.at2024 = 'شهور الاشتراك في يوليو 2024 لا تزيد على مدة اشتراكك اليوم';
     if (s.old && soFar != null && m1422 > soFar) err.m1422 = 'شهور ما قبل 1422هـ جزء من مدة اشتراكك، فلا تزيد عليها';

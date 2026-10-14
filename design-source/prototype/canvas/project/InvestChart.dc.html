@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>تشارت مستقبلي — مصروفي</title>
+<title>تشارت الاستثمار — مصروفي</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -23,22 +23,17 @@ body{margin:0}
     <svg width="{{W}}" height="{{H}}" viewBox="{{viewBox}}" role="img" aria-label="{{aria}}" tabindex="{{tab}}" onKeyDown="{{key}}" style="display: block; overflow: visible">
       <sc-for list="{{grid}}" as="g" hint-placeholder-count="4">
         <line x1="{{g.x1}}" x2="{{g.x2}}" y1="{{g.y}}" y2="{{g.y}}" stroke="rgba(25,61,51,0.10)" stroke-width="1"></line>
-        <text x="{{g.tx}}" y="{{g.ty}}" text-anchor="end" font-size="10" fill="#637570" style="font-variant-numeric: tabular-nums">{{g.label}}</text>
-      </sc-for>
-      <sc-for list="{{xl}}" as="x" hint-placeholder-count="3">
-        <text x="{{x.x}}" y="{{x.y}}" text-anchor="{{x.anchor}}" font-size="10" fill="#637570" style="font-variant-numeric: tabular-nums">{{x.label}}</text>
       </sc-for>
       <path d="{{area}}" fill="{{areaColor}}" fill-opacity="0.10" stroke="none"></path>
       <sc-for list="{{lines}}" as="l" hint-placeholder-count="3">
-        <path class="fc-line" d="{{l.d}}" fill="none" stroke="{{l.color}}" stroke-width="{{l.w}}" stroke-linecap="round" stroke-linejoin="round"></path>
-        <circle cx="{{l.ex}}" cy="{{l.ey}}" r="4" fill="{{l.color}}" stroke="#FFFFFF" stroke-width="2"></circle>
+        <path class="fc-line" d="{{l.d}}" fill="none" stroke="{{l.color}}" stroke-width="{{l.w}}" stroke-opacity="{{l.op}}" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="{{l.ex}}" cy="{{l.ey}}" r="4" fill="{{l.color}}" fill-opacity="{{l.op}}" stroke="#FFFFFF" stroke-width="2"></circle>
       </sc-for>
+      <sc-for list="{{pins}}" as="pn" hint-placeholder-count="1"><line x1="{{pn.x}}" x2="{{pn.x}}" y1="{{top}}" y2="{{bottom}}" stroke="#B7791F" stroke-width="1.5" stroke-dasharray="3 3"></line><circle cx="{{pn.x}}" cy="{{pn.y}}" r="4" fill="#B7791F" stroke="#FFFFFF" stroke-width="2"></circle></sc-for>
       <sc-for list="{{flags}}" as="f" hint-placeholder-count="2">
-        <path d="{{f.d}}" fill="#637570"><title>{{f.label}}</title></path>
+        <path d="{{f.d}}" fill="#637570"></path>
       </sc-for>
       <sc-for list="{{marks}}" as="m" hint-placeholder-count="2">
-        <rect x="{{m.rx}}" y="{{m.ry}}" width="{{m.rw}}" height="16" rx="8" fill="#FFFFFF" stroke="rgba(25,61,51,0.12)" stroke-width="1"></rect>
-        <text x="{{m.tx}}" y="{{m.ty}}" text-anchor="middle" font-size="10" font-weight="700" fill="#193D33">{{m.label}}</text>
         <circle cx="{{m.x}}" cy="{{m.y}}" r="4.5" fill="{{m.color}}" stroke="#FFFFFF" stroke-width="2"></circle>
       </sc-for>
       <sc-if value="{{hovering}}" hint-placeholder-val="{{ false }}">
@@ -47,6 +42,12 @@ body{margin:0}
       </sc-if>
       <rect x="0" y="0" width="{{W}}" height="{{H}}" fill="transparent" onPointerMove="{{move}}" onPointerDown="{{move}}" onPointerLeave="{{leave}}" style="{{hitStyle}}"></rect>
     </svg>
+    <div aria-hidden="true" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; font-size: 10px; line-height: 14px; color: #637570; font-variant-numeric: tabular-nums">
+      <sc-for list="{{grid}}" as="gl" hint-placeholder-count="4"><span style="{{gl.lstyle}}">{{gl.label}}</span></sc-for>
+      <sc-for list="{{xl}}" as="x" hint-placeholder-count="3"><span style="{{x.style}}">{{x.label}}</span></sc-for>
+      <sc-for list="{{marks}}" as="mp" hint-placeholder-count="1"><span style="{{mp.pill}}">{{mp.label}}</span></sc-for>
+      <sc-for list="{{pins}}" as="pl" hint-placeholder-count="1"><span style="{{pl.style}}">{{pl.label}}</span></sc-for>
+    </div>
     <sc-if value="{{hovering}}" hint-placeholder-val="{{ false }}">
       <div dir="rtl" role="status" style="{{tipStyle}}">
         <span style="font-size: 12px; font-weight: 700">{{tipTitle}}</span>
@@ -57,28 +58,21 @@ body{margin:0}
     </sc-if>
   </div>
 
-  <sc-if value="{{full}}" hint-placeholder-val="{{ true }}">
+  <sc-if value="{{showLegend}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 6px">
-      <sc-for list="{{legend}}" as="g" hint-placeholder-count="3">
+      <sc-for list="{{legend}}" as="lg" hint-placeholder-count="3">
         <div style="display: flex; align-items: center; gap: 8px; min-height: 24px">
-          <span aria-hidden="true" style="{{g.key}}"></span>
-          <span style="flex: 1 1 auto; min-width: 0; font-size: 13px">{{g.label}}</span>
-          <span dir="ltr" style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums">{{g.value}}</span>
+          <span aria-hidden="true" style="{{lg.key}}"></span>
+          <span style="flex: 1 1 auto; min-width: 0; font-size: 13px">{{lg.label}}</span>
+          <span dir="ltr" style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums">{{lg.value}}</span>
         </div>
       </sc-for>
     </div>
-    <button type="button" class="fc-press" onClick="{{toggleTable}}" aria-expanded="{{tableOpen}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{tableLabel}}</button>
-    <sc-if value="{{showTable}}" hint-placeholder-val="{{ false }}">
-      <table style="width: 100%; border-collapse: collapse; font-size: 12px">
-        <thead><tr><sc-for list="{{thead}}" as="h" hint-placeholder-count="4"><th style="{{h.style}}">{{h.label}}</th></sc-for></tr></thead>
-        <tbody><sc-for list="{{tbody}}" as="row" hint-placeholder-count="5"><tr><sc-for list="{{row.cells}}" as="c" hint-placeholder-count="4"><td style="{{c.style}}">{{c.v}}</td></sc-for></tr></sc-for></tbody>
-      </table>
-    </sc-if>
   </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"mini":{"editor":"boolean","default":false,"section":"الحالة"},"$preview":{"width":318,"height":360}}'>
-// تشارت «مستقبلي» (عرض بس — الحساب في Future): خط لكل سيناريو · محطات على خط واحد · أهدافك على محور الزمن · خط رأسي بيتبع الصباع ويقول القيم كلها
+// تشارت «هيبقى معاك كام» في شاشة الاستثمار (عرض بس — الحساب في InvestFuture): خط لكل سيناريو · محطات على خط واحد · أهدافك على محور الزمن · خط رأسي بيتبع الصباع ويقول القيم كلها
 // الألوان اتفحصت بأداة فحص الألوان (عمى الألوان والتباين على الكارت الفاتح): #3866A7 · #0E8A6E · #B7791F — والهوية مش باللون بس: المفتاح تحت فيه الاسم والقيمة
 // الزمن من الشمال لليمين زي الأرقام (dir=ltr) · خطوط رفيعة 2 (والأساسي 2.5) · شبكة شعرة · من غير تقريب أرقام على كل نقطة
 const DEMO = { start: 2026, cur: 'ر.س', series: [
@@ -87,7 +81,7 @@ const DEMO = { start: 2026, cur: 'ر.س', series: [
   { key: 'l3', label: 'لو زوّدت المبلغ', color: '#B7791F', values: [68666000, 77200000, 86900000, 97500000, 109200000, 122000000] }],
   marks: [{ key: 'l2', i: 4, label: 'أول مليون' }], flags: [{ x: 0.2, label: 'هدف «السفر»' }] };
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { hover: null, table: false }; }
+  constructor(props) { super(props); this.state = { hover: null }; }
   major(minor) { const a = Math.abs(minor); return (a - (a % 100)) / 100; }
   fmt(minor) { return (minor < 0 ? '−' : '') + String(this.major(minor)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   // للمحاور بس (عرض): 1.2 مليون · 850 ألف
@@ -114,19 +108,21 @@ class Component extends DCLogic {
     lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step; if (hi === lo) hi = lo + step;
     const X = (i) => L + (i / N) * pw, Y = (v) => T + ((hi - v) / (hi - lo)) * ph;
     const path = (vals) => vals.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
-    const main = series.find((s) => s.main) || series[0];
+    const fk = this.props.focus, main = (fk && series.find((s) => s.key === fk)) || series.find((s) => s.main) || series[0];
     const base = Y(Math.max(lo, 0));
     const grid = [];
-    if (!mini) for (let v = lo; v <= hi + 1; v += step) grid.push({ x1: L, x2: W - R, y: Y(v).toFixed(1), tx: L - 6, ty: (Y(v) + 3).toFixed(1), label: this.short(v) });
+    if (!mini) for (let v = lo; v <= hi + 1; v += step) grid.push({ x1: L, x2: W - R, y: Y(v).toFixed(1), label: this.short(v), lstyle: 'position: absolute; left: 0; width: ' + (L - 6) + 'px; top: ' + (Y(v) - 7).toFixed(1) + 'px; text-align: right; white-space: nowrap' });
     const every = N <= 5 ? 1 : N <= 10 ? (N % 2 ? 5 : 2) : N <= 20 ? 5 : 10;
     const xl = [];
     if (!mini) {
       const idx = [];
       for (let i = 0; i <= N; i += every) idx.push(i);
       if (idx[idx.length - 1] !== N) { if (N - idx[idx.length - 1] < every / 2 && idx.length > 1) idx.pop(); idx.push(N); }
-      idx.forEach((i) => xl.push({ x: X(i).toFixed(1), y: H - 8, label: String(start + i), anchor: i === 0 ? 'start' : i === N ? 'end' : 'middle' }));
+      idx.forEach((i) => xl.push({ label: String(start + i), style: 'position: absolute; top: ' + (H - 18) + 'px; left: ' + X(i).toFixed(1) + 'px; white-space: nowrap; transform: translateX(' + (i === 0 ? '0' : i === N ? '-100%' : '-50%') + ')' }));
     }
-    const lines = series.map((s) => ({ d: path(s.values), color: s.color, w: s.main ? 2.5 : 2, ex: X(N).toFixed(1), ey: Y(s.values[N]).toFixed(1) }));
+    // الطريق المختار عريض وواضح، والباقي أرفع وباهت (لو فيه focus)
+    const lines = series.map((s) => ({ d: path(s.values), color: s.color, w: s === main ? 2.5 : fk ? 1.5 : 2, op: !fk || s === main ? 1 : 0.4, ex: X(N).toFixed(1), ey: Y(s.values[N]).toFixed(1) }));
+    const pins = mini ? [] : (Array.isArray(this.props.pins) ? this.props.pins : []).filter((p) => p.i > 0 && p.i <= N).map((p) => ({ x: X(p.i).toFixed(1), y: Y(main.values[p.i]).toFixed(1), label: p.label, style: 'position: absolute; top: ' + (T - 2) + 'px; left: ' + X(p.i).toFixed(1) + 'px; transform: translateX(-50%); padding: 0 6px; border-radius: 7px; font-weight: 700; color: #193D33; background: #F6E7C8' }));
     const h = this.state.hover != null && !mini ? Math.min(N, this.state.hover) : null;
     const age = Number(this.props.ageStart) > 0 ? Number(this.props.ageStart) : null;
     const tipW = 168;
@@ -134,15 +130,15 @@ class Component extends DCLogic {
     return {
       W, H, viewBox: '0 0 ' + W + ' ' + H, top: T, bottom: T + ph, full: !mini, tab: mini ? '-1' : '0',
       boxStyle: 'position: relative; width: ' + W + 'px; align-self: center',
-      aria: (this.props.title || 'مستقبلي') + ': ' + series.map((s) => s.label + ' ' + this.fmt(s.values[N]) + ' ' + cur + ' سنة ' + (start + N)).join('، '),
-      grid, xl, lines,
+      aria: (this.props.title || 'هيبقى معاك كام') + ': ' + series.map((s) => s.label + ' ' + this.fmt(s.values[N]) + ' ' + cur + ' سنة ' + (start + N)).join('، '),
+      grid, xl, lines, pins, showLegend: !mini && this.props.legend !== false && this.props.legend !== 'false',
       area: mini || !main ? '' : path(main.values) + ' L' + X(N).toFixed(1) + ' ' + base.toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + base.toFixed(1) + ' Z',
       areaColor: main.color,
       flags: mini ? [] : flags.filter((f) => f.x >= 0 && f.x <= N).map((f) => { const x = X(f.x), y = T + ph; return { label: f.label, d: 'M' + x.toFixed(1) + ' ' + (y - 5).toFixed(1) + ' l4 5 l-4 5 l-4 -5 z' }; }),
       marks: mini ? [] : marks.filter((m) => m.i >= 0 && m.i <= N).map((m) => {
         const s = series.find((q) => q.key === m.key) || main, x = X(m.i), y = Y(s.values[m.i]), rw = 12 + m.label.length * 6.2;
         const cx = Math.max(L + rw / 2, Math.min(W - R - rw / 2, x)), ty = Math.max(T + 12, y - 12);
-        return { x: x.toFixed(1), y: y.toFixed(1), color: s.color, label: m.label, rw: rw.toFixed(0), rx: (cx - rw / 2).toFixed(1), ry: (ty - 12).toFixed(1), tx: cx.toFixed(1), ty: ty.toFixed(1) };
+        return { x: x.toFixed(1), y: y.toFixed(1), color: s.color, label: m.label, pill: 'position: absolute; left: ' + (cx - rw / 2).toFixed(1) + 'px; top: ' + (ty - 13).toFixed(1) + 'px; width: ' + rw.toFixed(0) + 'px; height: 16px; box-sizing: border-box; border-radius: 8px; text-align: center; font-weight: 700; color: #193D33; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(25,61,51,0.12)' };
       }),
       hovering: h != null, hx: h != null ? X(h).toFixed(1) : 0,
       hdots: h != null ? series.map((s) => ({ y: Y(s.values[h]).toFixed(1), color: s.color })) : [],
@@ -154,11 +150,6 @@ class Component extends DCLogic {
       leave: () => this.setState({ hover: null }),
       key: (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const d = e.key === 'ArrowRight' ? 1 : -1; this.setState({ hover: Math.max(0, Math.min(N, (this.state.hover == null ? N : this.state.hover) + d)) }); } if (e.key === 'Escape') this.setState({ hover: null }); },
       legend: series.map((s) => ({ key: 'width: 16px; height: 3px; border-radius: 2px; flex-shrink: 0; background: ' + s.color, label: s.label, value: '≈ ' + this.fmt(s.values[N]) + ' ' + cur })),
-      tableOpen: this.state.table ? 'true' : 'false', showTable: this.state.table,
-      tableLabel: this.state.table ? 'اخفِ الجدول' : 'اعرض كجدول',
-      toggleTable: () => this.setState({ table: !this.state.table }),
-      thead: [{ label: 'السنة' }].concat(series.map((s) => ({ label: s.label }))).map((x, i) => ({ label: x.label, style: 'text-align: ' + (i ? 'left' : 'right') + '; font-weight: 700; color: #637570; padding: 6px 4px; border-bottom: 1px solid rgba(204,216,204,0.9)' })),
-      tbody: series[0].values.map((_, i) => i).filter((i) => N <= 10 || i % 5 === 0 || i === N).map((i) => ({ cells: [{ v: String(start + i), style: 'padding: 6px 4px; border-bottom: 1px solid rgba(204,216,204,0.55)' }].concat(series.map((s) => ({ v: this.fmt(s.values[i]), style: 'direction: ltr; text-align: left; font-variant-numeric: tabular-nums; padding: 6px 4px; border-bottom: 1px solid rgba(204,216,204,0.55)' }))) }))
     };
   }
 }

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اللي رجعلك من استثماراتك — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; box-sizing: border-box; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+  <span style="font-size: 16px; font-weight: 700">{{title}}</span>
+  <sc-if value="{{has}}" hint-placeholder-val="{{ true }}">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="3"><span style="display: flex; justify-content: space-between; gap: 8px; min-height: 28px; align-items: center; font-size: 14px"><span style="display: flex; flex-direction: column"><span>{{r.label}}</span><span style="font-size: 11px; color: #637570">{{r.sub}}</span></span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{r.value}}</span></span></sc-for>
+    <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; padding-top: 8px; border-top: 1px solid rgba(204,216,204,0.9)"><span>{{totalLabel}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{total}}</span></span>
+    <div style="display: flex; gap: 10px; margin-top: 4px">
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.05)">
+        <span style="font-size: 12px; color: #637570">{{spendLabel}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums">{{spendText}}</span>
+      </div>
+      <div style="flex: 1 1 0; min-width: 0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(14,138,110,0.10)">
+        <span style="font-size: 12px; color: #08634F">{{reLabel}}</span>
+        <span dir="ltr" style="text-align: right; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums">{{reText}}</span>
+      </div>
+    </div>
+    <span style="font-size: 12px; line-height: 1.6; color: #637570">{{note}}</span>
+  </sc-if>
+  <sc-if value="{{none}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #637570">{{noneText}}</span></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","مفيش"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":380}}'>
+// تجربة من أفكار مذاكرة علي الحامد (اختيار المالك 2026-10-15): اللي رجعلك السنة دي من استثماراتك، ولو رجّعته تستثمره كان هيبقى كام بعد 10 سنين
+// الحساب: نفس المبلغ كل شهر (متوسط اللي رجع من أول السنة) بمتوسط أملاكك، بفلوس النهارده — أعداد صحيحة بس زي InvestFuture
+// مخترعة: السعودية توزيعات أسهم بس · مصر إيجار الشقة (9,000 × 10 شهور) + عائد الشهادة (2,250 × 4 شهور) + توزيعات
+const S = 100000000n, E12 = 1000000000000n, MONTHS = 10;
+const C = {
+  sa: { cur: 'ر.س', cpi: 174, mixW: [[57600000, 174], [5256000, 1488], [8900000, 795]], rows: [['توزيعات الأسهم', 'توزيعات الأسهم', 'مرتين: مارس وسبتمبر', 'مرتين: مارس وسبتمبر', 267000]] },
+  eg: { cur: 'ج.م', cpi: 1633, mixW: [[384000000, 1633], [42000000, 3422], [66000000, 1942]], rows: [['إيجار الشقة', 'إيجار الشقة', '10 أشهر', '10 شهور', 9000000], ['عائد الشهادة', 'عائد الشهادة', '4 أشهر', '4 شهور', 900000], ['توزيعات الأسهم', 'توزيعات الأسهم', 'مرة: أبريل', 'مرة: أبريل', 1320000]] }
+};
+class Component extends DCLogic {
+  constructor(props) { super(props); this.mo = {}; }
+  mulDiv(a, n, d) { const x = a * n; return (x * 2n + d) / (d * 2n); }
+  pow12(m) { let x = S; for (let i = 0; i < 12; i++) x = (x * (S + m) + S / 2n) / S; return x; }
+  monthly(bp) { if (this.mo[bp] != null) return this.mo[bp]; const t = S + BigInt(bp) * 10000n; let lo = -60000000n, hi = 25000000n; while (lo < hi) { const mid = lo + (hi - lo) / 2n; if (this.pow12(mid) >= t) hi = mid; else lo = mid + 1n; } const b = lo - 1n; return (this.mo[bp] = t - this.pow12(b) < this.pow12(lo) - t ? b : lo); }
+  fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  pct(bp) { const f = bp % 100; return (bp - f) / 100 + '.' + (f < 10 ? '0' : '') + f + '%'; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), c = eg ? C.eg : C.sa, none = this.props.state === 'مفيش';
+    const total = c.rows.reduce((x, r) => x + r[4], 0);
+    const w = c.mixW.reduce((x, r) => x + BigInt(r[0]), 0n), mix = Number(c.mixW.reduce((x, r) => x + BigInt(r[0]) * BigInt(r[1]), 0n) / w);
+    // 120 شهر: كل شهر نضيف المتوسط ونكبّره بالمعدل الشهري، وبعدين نخصم الغلاء 10 سنين
+    const per = BigInt(Math.round(total / MONTHS)), m = this.monthly(mix); let pot = 0n, F = E12;
+    for (let t = 0; t < 120; t++) pot += this.mulDiv(pot, m, S) + per;
+    for (let y = 0; y < 10; y++) F = (F * 10000n + BigInt(10000 + c.cpi) / 2n) / BigInt(10000 + c.cpi);
+    const re = Number(this.mulDiv(pot, F, E12)), spent = Number(this.mulDiv(per * 120n, F, E12));
+    return {
+      title: T('ما عاد إليك من استثماراتك هذا العام', 'اللي رجعلك من استثماراتك السنة دي'), has: !none, none,
+      noneText: T('لم يصلك إيجار أو توزيعات أو عائد هذا العام.', 'ما وصلكش إيجار ولا توزيعات ولا عائد السنة دي.'),
+      rows: c.rows.map((r) => ({ label: T(r[0], r[1]), sub: T(r[2], r[3]), value: this.fmt(r[4]) + ' ' + c.cur })),
+      totalLabel: T('المجموع من يناير', 'المجموع من يناير'), total: this.fmt(total) + ' ' + c.cur,
+      spendLabel: T('لو صرفته كله', 'لو صرفته كله'), spendText: T('يبقى معك 0', 'يفضل معاك 0'),
+      reLabel: T('لو أعدت استثماره', 'لو رجّعته تستثمره'), reText: '≈ ' + this.fmt(re) + ' ' + c.cur,
+      note: T('بعد 10 سنوات وبقيمة المال اليوم: نفس المبلغ كل شهر (', 'بعد 10 سنين وبفلوس النهارده: نفس المبلغ كل شهر (') + this.fmt(Number(per)) + ' ' + c.cur + T(') بمتوسط أملاكك ', ') بمتوسط أملاكك ') + this.pct(mix) + T(' سنويًا، يعني ', ' في السنة، يعني ') + this.fmt(spent) + ' ' + c.cur + T(' تصبح ≈ ', ' يبقوا ≈ ') + this.fmt(re) + '.'
+    };
+  }
+}
+</script>
+</body>
+</html>

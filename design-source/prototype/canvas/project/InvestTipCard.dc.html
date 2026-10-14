@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>نصيحة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.t-press:active{transform:scale(.97)}
+.t-in{animation:t-in 320ms cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes t-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.t-press{transition:none}.t-press:active{transform:none}.t-in{animation:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <sc-if value="{{one}}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{hasTip}}" hint-placeholder-val="{{ true }}">
+      <div class="t-in" role="note" aria-label="{{ariaTip}}" style="position: relative; border-radius: 22px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(165deg, #FFFDF6 0%, #FBF4E2 100%); box-shadow: inset 0 0 0 1px rgba(183,121,31,0.22), 0 10px 24px rgba(29,54,53,0.07)">
+        <span style="display: flex; align-items: center; gap: 8px; padding-left: 40px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#956000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"></path><path d="M10 21h4"></path><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"></path></svg>
+          <span style="font-size: 13px; font-weight: 700; color: #956000">{{why}}</span>
+        </span>
+        <span style="font-size: 15px; font-weight: 700; line-height: 1.6">{{text}}</span>
+        <span style="font-size: 12px; color: #637570">{{srcLabel}}</span>
+        <a href="InvestTips.dc.html" class="t-press" style="align-self: flex-start; min-height: 36px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #08634F; text-decoration: none">{{allLabel}}</a>
+        <button type="button" class="t-press" onClick="{{close}}" aria-label="{{closeLabel}}" style="position: absolute; top: 4px; left: 4px; width: 44px; height: 44px; border: 0; border-radius: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #637570; background: transparent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+    </sc-if>
+  </sc-if>
+  <sc-if value="{{all}}" hint-placeholder-val="{{ false }}">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">{{g.title}}</h2>
+        <sc-for list="{{g.tips}}" as="t" hint-placeholder-count="2">
+          <div style="border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 10px 24px rgba(29,54,53,0.07)">
+            <span style="font-size: 14px; font-weight: 700; line-height: 1.6">{{t.text}}</span>
+            <span style="font-size: 12px; color: #637570">{{t.src}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <span style="font-size: 12px; line-height: 1.6; color: #4F625C">{{footer}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["واحدة","الكل"],"default":"واحدة","section":"الحالة"},"situation":{"editor":"enum","options":["كله في نوع واحد","لسه ما بدأتش","بيحوّش ومش بيستثمر","فيه أرباح بترجع"],"default":"كله في نوع واحد","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":220}}'>
+// النصايح (§87-12 + بنك النصايح في design-source/الاستثمار): كارت واحد في المرة حسب حالتك يتقفل بـ«×» · وصفحة لكل النصايح
+// كل نصيحة بمصدرها الرسمي، واليوتيوبرز أفكار بس (ما بيظهروش هنا) · ممنوع أبدًا «اشتري/بيع حاجة معيّنة» أو اسم منصة
+// ⚠ الروابط الرسمية لسه ما اتأكدتش (الحالة 🔎 في البنك) — قبل التنفيذ في التطبيق تتأكد واحدة واحدة
+const TIPS = [
+  { id: 'emergency', g: 'start', on: ['لسه ما بدأتش'], sa: 'قبل أن تستثمر، اجعل لديك احتياطي طوارئ يكفيك عدة أشهر.', eg: 'قبل ما تستثمر، خلّي معاك احتياطي طوارئ يكفيك كام شهر.', src: 'موقع توعية المستثمرين — هيئة الأوراق المالية الأمريكية', why: ['لا يوجد احتياطي طوارئ كافٍ', 'مفيش احتياطي طوارئ كفاية'] },
+  { id: 'monthly', g: 'start', on: ['بيحوّش ومش بيستثمر'], sa: 'الشراء بمبلغ ثابت كل شهر يوزّع سعر الشراء على الوقت، بدل انتظار «الوقت المناسب».', eg: 'الشرا بمبلغ ثابت كل شهر بيوزّع سعر الشرا على الوقت، بدل ما تستنى «الوقت المناسب».', src: 'موقع توعية المستثمرين — هيئة الأوراق المالية الأمريكية (متوسط تكلفة الشراء)', why: ['تدّخر كل شهر ولا تستثمر', 'بتحوّش كل شهر ومش بتستثمر'] },
+  { id: 'compound', g: 'start', on: ['فيه أرباح بترجع'], sa: 'الأرباح التي تعود إليك إن أعدت استثمارها تكبر أسرع، وهذا معنى الربح المركّب.', eg: 'الأرباح اللي بترجعلك لو رجّعتها تستثمرها بتكبر أسرع، وده معنى الربح المركّب.', src: 'موقع توعية المستثمرين — هيئة الأوراق المالية الأمريكية (حاسبة الربح المركّب)', why: ['يصلك إيجار أو توزيعات', 'بيدخلك إيجار أو توزيعات'] },
+  { id: 'spread', g: 'spread', on: ['كله في نوع واحد'], sa: 'لا تضع كل مالك في نوع واحد؛ التوزيع يقلّل أثر أي خسارة.', eg: 'متحطش كل فلوسك في نوع واحد، التوزيع بيقلّل أثر أي خسارة.', src: 'موقع توعية المستثمرين — دليل المبتدئين في توزيع الأصول والتنويع', why: ['أكثر من 70% من أصولك في نوع واحد', 'أكتر من 70% من أصولك في نوع واحد'] },
+  { id: 'daytrade', g: 'protect', on: [], sa: 'أغلب من يضاربون يوميًا يخسرون؛ وإن فعلت فبمال تتحمّل خسارته.', eg: 'أغلب اللي بيضاربوا يوميًا بيخسروا، ولو هتعمل كده فبفلوس تقدر تخسرها.', src: 'هيئة الأوراق المالية الأمريكية — نشرة «المضاربة اليومية»', why: [] },
+  { id: 'influencer', g: 'protect', on: [], sa: 'أي ناصح على وسائل التواصل: تأكد أنه مرخّص، واسأل: ماذا يكسب لو أخذت بكلامه؟', eg: 'أي حد بينصحك على السوشيال ميديا: اتأكد إنه مرخّص، واسأل نفسك: هو بيكسب إيه لو سمعت كلامه؟', src: 'المنظمة الدولية لهيئات الأوراق المالية — تقرير المؤثرين الماليين', why: [] },
+  { id: 'fraud', g: 'protect', on: [], sa: 'الوعد بربح كبير ومضمون في وقت قصير علامة احتيال.', eg: 'أي حد بيوعدك بمكسب كبير ومضمون في وقت قصير، ده علامة احتيال.', src: { sa: 'هيئة السوق المالية السعودية — التحذيرات', eg: 'الهيئة العامة للرقابة المالية — التحذيرات' }, why: [] },
+  { id: 'halal', g: 'halal', on: [], sa: 'للسهم المتوافق مع الشريعة شروط معروفة: ديون بفائدة أقل من 30% من قيمته السوقية، وودائع بفائدة أقل من 30%، ودخل غير مشروع أقل من 5%.', eg: 'السهم الحلال ليه شروط معروفة: ديون بفايدة أقل من 30% من قيمته السوقية، وودائع بفايدة أقل من 30%، ودخل غير مشروع أقل من 5%.', src: 'المعيار الشرعي 21 — هيئة المحاسبة والمراجعة للمؤسسات المالية الإسلامية', why: [] }
+];
+const GROUPS = [['start', 'ابدأ صح', 'ابدأ صح'], ['spread', 'وزّع', 'وزّع'], ['protect', 'احمِ مالك', 'احمي فلوسك'], ['halal', 'الحلال', 'الحلال']];
+const KEY = 'masroufy-tips-closed';
+class Component extends DCLogic {
+  constructor(props) { super(props); let closed = []; try { closed = JSON.parse(window.sessionStorage.getItem(KEY) || '[]'); } catch (e) {} this.state = { closed: Array.isArray(closed) ? closed : [] }; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), sp = eg ? 'eg' : 'sa';
+    const src = (t) => (typeof t.src === 'string' ? t.src : t.src[sp]);
+    const sit = this.props.situation ?? 'كله في نوع واحد', closed = Array.isArray(this.state.closed) ? this.state.closed : [];
+    // اللي تخص حالتك الأول، وبعدها العامة — والمقفولة ما بترجعش
+    const queue = TIPS.filter((t) => t.on.indexOf(sit) >= 0).concat(TIPS.filter((t) => t.on.indexOf(sit) < 0 && !t.on.length)).filter((t) => closed.indexOf(t.id) < 0);
+    const t = queue[0] || null;
+    return {
+      one: this.props.mode !== 'الكل', all: this.props.mode === 'الكل', hasTip: !!t,
+      why: t ? (t.why.length ? T(t.why[0], t.why[1]) : T('نصيحة', 'نصيحة')) : '', text: t ? t[sp] : '', srcLabel: t ? T('المصدر: ', 'المصدر: ') + src(t) : '',
+      ariaTip: t ? T('نصيحة: ', 'نصيحة: ') + t[sp] : '', allLabel: T('كل النصائح ←', 'كل النصايح ←'), closeLabel: T('إخفاء هذه النصيحة', 'اقفل النصيحة دي'),
+      close: () => { if (!t) return; const next = closed.concat([t.id]); try { window.sessionStorage.setItem(KEY, JSON.stringify(next)); } catch (e) {} this.setState({ closed: next }); },
+      groups: GROUPS.map(([g, a, b]) => ({ title: T(a, b), tips: TIPS.filter((x) => x.g === g).map((x) => ({ text: x[sp], src: T('المصدر: ', 'المصدر: ') + src(x) })) })),
+      footer: T('نصائح عامة للتوعية، وليست توصية بشراء أو بيع أي شيء. مصدر كل نصيحة مكتوب تحتها.', 'نصايح عامة للتوعية، ومش توصية بشرا أو بيع أي حاجة. مصدر كل نصيحة مكتوب تحتها.')
+    };
+  }
+}
+</script>
+</body>
+</html>

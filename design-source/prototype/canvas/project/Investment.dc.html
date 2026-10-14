@@ -53,67 +53,16 @@ a{color:#08634F}a:hover{color:#064B40}
       </div>
     </sc-if>
 
-    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 8px 8px; text-align: center">
-        <div aria-label="مكان رسمة الشاشة الفاضية" style="width: 120px; height: 80px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #637570">رسمة بخط واحد</div>
-        <span style="font-size: 14px; font-weight: 700; margin-top: 8px">لا توجد أصول بعد</span>
-        <span style="font-size: 13px; color: #637570">أضف عقارًا أو ذهبًا أو أسهمًا لترى قيمتها اليوم.</span>
-        <button type="button" class="m-press" style="margin-top: 10px; border: 0; height: 48px; padding: 0 28px; border-radius: 18px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.28)">إضافة أصل</button>
-      </div>
+    <sc-if value="{{showFuture}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="InvestFuture" state="{{futureState}}" age="{{age}}" income="{{income}}" space="{{spaceName}}" hint-size="350px,1500px"></dc-import>
+      <dc-import name="InvestTipCard" situation="{{situation}}" space="{{spaceName}}" hint-size="350px,200px"></dc-import>
     </sc-if>
-
+    <sc-if value="{{showHoldings}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="InvestHoldings" state="{{holdState}}" space="{{spaceName}}" extra="{{added}}" on-add="{{openAdd}}" hint-size="350px,760px"></dc-import>
+      <dc-import name="InvestIncomeRope" space="{{spaceName}}" hint-size="350px,420px"></dc-import>
+    </sc-if>
     <sc-if value="{{showContent}}" hint-placeholder-val="{{ true }}">
-      <div style="display: flex; flex-direction: column; gap: 14px">
-        <div class="m-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 8px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
-          <span style="font-size: 14px; color: #DCEBD6">إجمالي أملاكك بأسعار اليوم</span>
-          <sc-if value="{{isNA}}" hint-placeholder-val="{{ false }}">
-            <div style="display: flex; flex-direction: column; gap: 2px">
-              <span style="font-size: 30px; font-weight: 700">غير متاح</span>
-              <span style="font-size: 12px; color: #DCEBD6">سعر الذهب اليوم غير متاح، فلا يكتمل الإجمالي.</span>
-            </div>
-          </sc-if>
-          <sc-if value="{{hasTotal}}" hint-placeholder-val="{{ true }}">
-            <div dir="ltr" style="display: flex; justify-content: flex-end; align-items: baseline; gap: 8px">
-              <span style="font-size: 16px">{{currency}}</span>
-              <span style="font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{totalText}}</span>
-            </div>
-          </sc-if>
-          <div aria-hidden="true" style="display: flex; gap: 6px; height: 8px">
-            <div style="flex: 80 1 0; border-radius: 4px; background: #A6DEC1"></div>
-            <div style="flex: 7 1 0; border-radius: 4px; background: #F3C96B"></div>
-            <div style="flex: 13 1 0; border-radius: 4px; background: #9BC5FF"></div>
-          </div>
-          <div style="display: flex; gap: 14px; font-size: 12px; color: #DCEBD6"><span>عقار 80%</span><span>ذهب {{goldShare}}</span><span>أسهم 13%</span></div>
-        </div>
-
-        <a href="AssetDetail.dc.html" data-keep="{{flatKeep}}" class="m-press" style="color: inherit; text-decoration: none; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-          <div style="display: flex; align-items: center; gap: 12px">
-            <div style="width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #DCEBD6; color: #08634F"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path></svg></div>
-            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">شقة الياسمين</span><span style="font-size: 12px; color: #637570">عقار، 120 م² × {{meterText}} للمتر</span></div>
-            <span dir="ltr" style="font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums">{{flatText}}</span>
-          </div>
-          <div style="border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 4px; background: #DCEBD6">
-            <span style="font-size: 13px; font-weight: 700; color: #08634F">كم ستساوي لو بعتها في 2030؟</span>
-            <div style="display: flex; justify-content: space-between; font-size: 13px"><span>سعرها وقتها</span><span dir="ltr" style="font-variant-numeric: tabular-nums">≈ {{futureText}}</span></div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px"><span>+ الإيجار حتى 2030</span><span dir="ltr" style="font-variant-numeric: tabular-nums">≈ {{rentText}}</span></div>
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 700"><span>المجموع</span><span dir="ltr" style="font-variant-numeric: tabular-nums">≈ {{sumText}}</span></div>
-            <span style="font-size: 12px; color: #4F625C">{{rateSource}}</span>
-          </div>
-        </a>
-
-        <div style="border-radius: 22px; padding: 4px 16px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-          <a href="AssetDetail.dc.html" data-keep="{{goldKeep}}" class="m-press" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 12px; min-height: 56px; border-bottom: 1px solid rgba(204,216,204,0.55)">
-            <div style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: rgba(149,96,0,0.12); color: #956000"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4 18l3-7h10l3 7z"></path><path d="M8 11l2-5h4l2 5"></path></svg></div>
-            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">ذهب عيار 21</span><span style="font-size: 12px; color: #637570">{{goldSub}}</span></div>
-            <span dir="ltr" style="{{goldStyle}}">{{goldText}}</span>
-          </a>
-          <div class="m-press" style="display: flex; align-items: center; gap: 12px; min-height: 56px">
-            <div style="width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); background: rgba(36,105,186,0.12); color: #2469BA"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg></div>
-            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">محفظة الأسهم</span><span style="font-size: 12px; color: #637570">4 شركات</span></div>
-            <span dir="ltr" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{stocksText}}</span>
-          </div>
-        </div>
-      </div>
+      <dc-import name="InvestReturns" space="{{spaceName}}" hint-size="350px,360px"></dc-import>
     </sc-if>
 
     <div style="border-radius: 22px; padding: 4px 16px; display: flex; flex-direction: column; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
@@ -138,35 +87,47 @@ a{color:#08634F}a:hover{color:#064B40}
     </div>
   </div>
 
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 20px; right: 20px; bottom: 148px; z-index: 7; border-radius: 16px; padding: 12px 16px; font-size: 14px; font-weight: 700; color: #FFFFFF; background: rgba(25,61,51,0.92); box-shadow: 0 10px 24px rgba(16,45,53,0.25)">{{toast}}</div></sc-if>
   <div style="position: absolute; inset: 0; z-index: 6; pointer-events: none">
     <dc-import name="BottomBar" active="Investment" context="الاستثمار" space="{{spaceName}}" nav-style="{{navStyle}}" hint-size="390px,844px"></dc-import>
   </div>
+  <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="AssetAddSheet" space="{{spaceName}}" on-close="{{closeAdd}}" on-save="{{saveAdd}}" hint-size="390px,844px"></dc-import></sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","فاضي","بيحمّل","خطأ","غير متاح"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","لسه ما بدأتش أحوّش","فاضي","بيحمّل","خطأ","غير متاح","المتوسطات غير متاحة"],"default":"عادي","section":"الحالة"},"age":{"editor":"enum","options":["معروف","مش مكتوب"],"default":"معروف","section":"الحالة"},"income":{"editor":"enum","options":["معروف","مش معروف"],"default":"معروف","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// شاشة الاستثمار (§87 + §89 + فكرة المالك 13 عند جلسة كوتلن، واختياراته 2026-10-15): كله جوه الشاشة دي، من غير قسم ولا اسم «مستقبلي»
+// من فوق لتحت: هتبقى معاك كام (InvestFuture) · نصيحة واحدة (InvestTipCard) · حاجاتي (InvestHoldings) · حبل مصادر دخلك · اللي رجعلك · الأدوات والحاسبات
+// «غير متاح» = سعر الدهب النهارده مش موجود (الدهب برّه الإجمالي) · «المتوسطات غير متاحة» = مفيش حساب أرباح خالص
 class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { addOpen: false, added: [], toast: '' };
+    this.timers = [];
+    this.openAdd = () => this.setState({ addOpen: true });
+    this.closeAdd = () => this.setState({ addOpen: false });
+    this.saveAdd = (it) => {
+      if (!it || !it.type) return;
+      const eg = (this.props.space ?? 'السعودية') === 'مصر';
+      this.setState({ addOpen: false, added: (Array.isArray(this.state.added) ? this.state.added : []).concat([Object.assign({ id: 'new' + Date.now() }, it)]), toast: (eg ? 'اتضافت «' : 'أُضيف «') + it.name + (eg ? '» لحاجاتك' : '» إلى ممتلكاتك') });
+      this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700));
+    };
+  }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
   renderVals() {
-    const st = this.props.state ?? 'عادي';
-    const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const na = st === 'غير متاح';
-    const d = eg
-      ? { cur: 'ج.م', total: '4,920,000', meter: '32,000 ج.م', flat: '3,840,000', future: '7,032,312', rent: '668,304', sum: '7,700,616', gold: '420,000', gs: '8%', stocks: '660,000', goldSub: '80 جرام · السعر اليوم 5 ص', rate: 'بزيادة 16.33% سنويًا = غلاء الأسعار الرسمي في مصر · عدّلها' }
-      : { cur: 'ر.س', total: '717,560', meter: '4,800 ر.س', flat: '576,000', future: '617,148', rent: '196,363', sum: '813,511', gold: '52,560', gs: '7%', stocks: '89,000', goldSub: '120 جرام · السعر اليوم 5 ص', rate: 'بزيادة 1.74% سنويًا = غلاء الأسعار الرسمي (الهيئة العامة للإحصاء، 10 سنوات) · عدّلها' };
+    const st = this.props.state ?? 'عادي', eg = (this.props.space ?? 'السعودية') === 'مصر';
+    const low = st === 'لسه ما بدأتش أحوّش', normal = st === 'عادي' || low || st === 'خطأ' || st === 'غير متاح' || st === 'المتوسطات غير متاحة';
     return {
-      flatKeep: JSON.stringify({ 'masroufy-asset': 'flat' }), goldKeep: JSON.stringify({ 'masroufy-asset': 'gold' }),
-      tools: [['Zakat', 'الزكاة', eg ? 'إرشادية حسب دار الإفتاء' : 'إرشادية حسب هيئة الزكاة'], ['Advisor', 'التحليلات الذكية', eg ? 'أفكار من صرفك، وليه ظهرت' : 'أفكار من صرفك، ولماذا ظهرت'], ['SavingsGoals', 'خطط الادخار', eg ? '3 خطط' : '3 خطط']].map(([to, label, hint], i, a) => ({ href: to + '.dc.html', label, hint, style: 'display: flex; align-items: center; gap: 12px; min-height: 56px; color: inherit; text-decoration: none;' + (i < a.length - 1 ? ' border-bottom: 1px solid rgba(204,216,204,0.55);' : '') })),
-      navStyle: this.props.navStyle ?? "زرار في النص",
-      spaceName: (this.props.space ?? "السعودية") === "مصر" ? "مصر" : "السعودية",
-      isLoading: st === 'بيحمّل', isError: st === 'خطأ', isEmpty: st === 'فاضي', isNA: na,
-      showContent: st === 'عادي' || st === 'خطأ' || na,
-      hasTotal: !na,
-      currency: d.cur, totalText: d.total, meterText: d.meter, flatText: d.flat,
-      futureText: d.future, rentText: d.rent, sumText: d.sum, rateSource: d.rate,
-      goldShare: na ? '—' : d.gs,
-      goldSub: na ? 'سعر اليوم غير متاح' : d.goldSub,
-      goldText: na ? 'غير متاح' : d.gold,
-      goldStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (na ? '#637570' : '#193D33'),
-      stocksText: d.stocks
+      tools: [['Zakat', 'الزكاة', eg ? 'إرشادية حسب دار الإفتاء' : 'إرشادية حسب هيئة الزكاة'], ['Advisor', 'التحليلات الذكية', eg ? 'أفكار من صرفك، وليه ظهرت' : 'أفكار من صرفك، ولماذا ظهرت'], ['SavingsGoals', 'خطط الادخار', eg ? '3 خطط' : '3 خطط'], ['InvestTips', eg ? 'النصايح' : 'النصائح', eg ? 'من جهات رسمية' : 'من جهات رسمية']].map(([to, label, hint], i, a) => ({ href: to + '.dc.html', label, hint, style: 'display: flex; align-items: center; gap: 12px; min-height: 56px; color: inherit; text-decoration: none;' + (i < a.length - 1 ? ' border-bottom: 1px solid rgba(204,216,204,0.55);' : '') })),
+      navStyle: this.props.navStyle ?? 'زرار في النص',
+      spaceName: eg ? 'مصر' : 'السعودية',
+      isLoading: st === 'بيحمّل', isError: st === 'خطأ',
+      showFuture: normal, showHoldings: normal || st === 'فاضي', showContent: normal,
+      futureState: low ? 'لسه ما بدأتش أحوّش' : st === 'المتوسطات غير متاحة' ? 'المتوسطات غير متاحة' : 'عادي',
+      holdState: st === 'فاضي' ? 'فاضي' : st === 'غير متاح' ? 'سعر الدهب غير متاح' : 'عادي',
+      situation: low ? 'لسه ما بدأتش' : 'كله في نوع واحد',
+      age: this.props.age ?? 'معروف', income: this.props.income ?? 'معروف',
+      added: Array.isArray(this.state.added) ? this.state.added : [], openAdd: this.openAdd, closeAdd: this.closeAdd, saveAdd: this.saveAdd,
+      addOpen: !!this.state.addOpen, hasToast: !!this.state.toast, toast: this.state.toast
     };
   }
 }
