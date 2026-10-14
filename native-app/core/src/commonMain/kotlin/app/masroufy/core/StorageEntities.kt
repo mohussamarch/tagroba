@@ -73,6 +73,11 @@ data class SourceRecord(
      * العملية الموجودة) و**سطر الكشف غيّر** تاريخها ورصيدها المعلن ⇒ القيم القديمة عشان التراجع عن الدفعة يرجّعها. null = مفيش حاجة اتغيرت.
      */
     val mergeUndo: MergeRestore? = null,
+    /**
+     * HANDOVER §6.5 بند 12: المالك **مسح** العملية دي بإيده («امسح» في تفاصيل العملية — `DeleteTransaction`) ⇒ السجل بيفضل علامة
+     * ([transactionId] = null) عشان نفس الرسالة أو نفس سطر الكشف لو اتقرا تاني يطلع «مكررة» وما يرجعش (`ErasedSources.kt`). null = عادي.
+     */
+    val ownerDeletedAt: String? = null,
 )
 
 /**
