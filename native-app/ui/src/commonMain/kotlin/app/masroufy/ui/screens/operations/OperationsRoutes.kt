@@ -63,6 +63,18 @@ interface OperationsDeps {
     /** التحويل لنفسك بين بلدين (`list` · `recordNew` · `linkExisting` · `unlink`). */
     val spaceTransfers: TransferBetweenSpaces
 
+    /**
+     * ردود الداخل الجديدة (البند 6): «راتب الدوام» · «عمل إضافي» · «بيعة» · نوع تاني — في «مَن هذا؟» وفي تغيير نوع أي تحويل داخل.
+     * null (المعاينة) ⇒ الأزرار ما بتظهرش.
+     */
+    val incomeAnswers: app.masroufy.usecase.IncomeAnswers? get() = null
+
+    /** «جهات الشغل» (البند 7) — اختيار الجهة في «راتب الدوام». */
+    val employers: app.masroufy.usecase.ManageEmployers? get() = null
+
+    /** «طبّق على اللي فات» بعد «راتب الدوام» (معاينة ⇒ نسخة ⇒ تطبيق ⇒ تراجع). */
+    val employerRetro: app.masroufy.usecase.EmployerRetroApply? get() = null
+
     /** يوم الراتب (بداية الشهر المالي) من ملفك. */
     suspend fun payday(): Int
 

@@ -39,6 +39,11 @@ class DeviceEnv(
     val smsInbox: SmsInboxPort? = null,
     val bankSms: BankSmsPort? = null,
     val pdfPages: PdfPagesPort? = null,
+    /**
+     * ملف «نسخة قبل التغيير» على الجهاز (`saveVerifiedBackup`) — «طبّق على اللي فات» في «جهات الشغل» (البند 7) ما بيكتبش من غيره.
+     * null (الآيفون لحد ما يتجمّع · الاختبار) ⇒ التطبيق على اللي فات بيترفض برسالة، والباقي شغال.
+     */
+    val repairBackup: app.masroufy.port.RepairBackupPort? = null,
 )
 
 /**

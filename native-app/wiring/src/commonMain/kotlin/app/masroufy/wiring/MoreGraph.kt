@@ -46,6 +46,11 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
         IncomeSignalsDeps(r.incomeSources, r.transactions, r.allocations, r.profile, r.uow, c.env.clock, parties = r.transferParties),
     )
 
+    // «جهات الشغل» (البند 7) — نفس حالات استخدام «العمليات»
+    private val employerCases = EmployerUseCases(c)
+    override val employers = employerCases.employers
+    override val employerRetro = employerCases.retro
+
     override val alerts = c.shell.engine
 
     // `RunAlertEngine` مالوش دالة قراية للإعداد — نفس المخزن اللي `setGroupEnabled` بيكتب فيه
