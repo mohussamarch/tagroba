@@ -84,7 +84,14 @@ internal fun RowTile(row: OpRow, size: Int = 36) {
  * «تخصيص مبلغ لشخص» (للمصروف بس — بيفتح التفاصيل ولوحة الشخص) · «كل الإجراءات ←».
  */
 @Composable
-internal fun OperationMenu(open: Pair<OpRow, Anchor>?, onDismiss: () -> Unit, onDetail: (OpRow) -> Unit, onPerson: (OpRow) -> Unit) {
+internal fun OperationMenu(
+    open: Pair<OpRow, Anchor>?,
+    onDismiss: () -> Unit,
+    onDetail: (OpRow) -> Unit,
+    onPerson: (OpRow) -> Unit,
+    /** «تحديد» (قايمة المالك §6.5 بند 15): بيدخل وضع التحديد والصف ده متحدد. `null` ⇒ البند ما بيظهرش. */
+    onSelect: ((OpRow) -> Unit)? = null,
+) {
     // آخر صف اتفتح بيفضل مرسوم وهي بتقفل بحركتها (مخزن عادي — مش حالة، فمفيش رسم زيادة)
     val memo = remember { arrayOfNulls<Pair<OpRow, Anchor>>(1) }
     SideEffect { if (open != null) memo[0] = open }
@@ -93,6 +100,7 @@ internal fun OperationMenu(open: Pair<OpRow, Anchor>?, onDismiss: () -> Unit, on
     val items = if (row == null) emptyList() else buildList {
         add(MenuItem(t(UiKey.OPERATION_MENU_DETAIL)) { onDetail(row) })
         if (row.tone == app.masroufy.ui.components.AmountTone.EXPENSE) add(MenuItem(t(UiKey.OPERATION_MENU_PERSON)) { onPerson(row) })
+        if (onSelect != null) add(MenuItem(t(UiKey.OPS_SELECT)) { onSelect(row) })
         add(MenuItem(t(UiKey.OPERATION_MENU_ALL), highlight = true) { onDetail(row) })
     }
     LiquidMenu(

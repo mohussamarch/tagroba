@@ -63,6 +63,9 @@ interface OperationsDeps {
     /** التحويل لنفسك بين بلدين (`list` · `recordNew` · `linkExisting` · `unlink`). */
     val spaceTransfers: TransferBetweenSpaces
 
+    /** تحديد كذا عملية والأفعال الجماعية بـ«تراجع» واحد (قايمة المالك §6.5 بند 15). `null` ⇒ زرار «تحديد» ما بيظهرش. */
+    val bulk: app.masroufy.usecase.BulkTransactions? get() = null
+
     /** يوم الراتب (بداية الشهر المالي) من ملفك. */
     suspend fun payday(): Int
 

@@ -53,12 +53,14 @@ import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import app.masroufy.usecase.LoadTransactionsScreenRequest
+import kotlinx.coroutines.launch
 
 /**
  * تبويب «العمليات» (`Operations` + `OperationMenu`): الرأس (الفلتر · الشهر · الترس) · المبدّل (العمليات · الميزانيات · المستحقات) ·
  * شرايط «مستنياك» · كارتين «دخل الشهر» و«المصروف الحقيقي» · العمليات بالأيام. كل الأرقام من `LoadTransactionsScreen` (CLAUDE.md #4).
  * الفترة = الشهر اللي اتختار في «اختر الشهر» ([PeriodChoice] للبلد الشغالة — المحاكي 2026-10-10: كانت بتتجاهله)، وإلا الشهر الحالي.
  */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun OperationsScreen() {
     val space = LocalSpace.current
@@ -82,9 +84,33 @@ fun OperationsScreen() {
             ui = ui.loaded(view, attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } })
         }
     }
+    // وضع «تحديد» والأفعال الجماعية (قايمة المالك §6.5 بند 15) — الحالة في [OpsSelection]، والمجموع والكتابة من `BulkTransactions`
+    var sel by remember(deps) { mutableStateOf(OpsSelection()) }
+    var bulkOpen by remember { mutableStateOf<app.masroufy.usecase.BulkAction?>(null) }
+    var done by remember { mutableStateOf<BulkDone?>(null) }
+    val toaster = app.masroufy.ui.shell.LocalToaster.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val visibleIds = ui.view?.days?.flatMap { d -> d.rows.map { it.id } }.orEmpty()
+    val summary by androidx.compose.runtime.produceState<app.masroufy.usecase.SelectionSummary?>(null, sel.ids, reload) {
+        value = attempt { deps.bulk?.summary(sel.ids) }
+    }
+    LaunchedEffect(ui.view) { if (sel.active) sel = sel.keepOnly(visibleIds) }
+    LaunchedEffect(done) { if (done != null) kotlinx.coroutines.delay(8_000).also { done = null } }
+    if (sel.active) app.masroufy.ui.overlay.Overlay(onBack = { sel = sel.cancel() }) {}
+    fun undo(d: BulkDone) {
+        val u = d.undo ?: return
+        done = null
+        scope.launch {
+            toaster.show(failureOf { deps.bulk?.undo(u) } ?: t(UiKey.OPS_BULK_UNDONE))
+            reload++
+        }
+    }
     val title = t(UiKey.TAB_OPERATIONS)
     TabScaffold(title, header = {
         TabHeader(title, actions = {
+            if (deps.bulk != null && tab == OpsTab.OPERATIONS && !sel.active) {
+                SurfaceIconButton(Lucide.CHECK, t(UiKey.OPS_SELECT), onClick = { sel = sel.start() }, iconSize = 20.dp)
+            }
             SurfaceIconButton(Lucide.FILTER, t(UiKey.OPERATIONS_FILTER), onClick = { nav.push(OperationFiltersRoute) }, iconSize = 20.dp)
             MonthButton(ui.view?.periodLabel ?: t(UiKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
         })
@@ -92,13 +118,33 @@ fun OperationsScreen() {
         item(key = "tabs") {
             SegmentedTabs(
                 listOf(OpsTab.OPERATIONS to t(UiKey.OPERATIONS_TAB_OPS), OpsTab.BUDGETS to t(UiKey.OPERATIONS_TAB_BUDGETS), OpsTab.DUES to t(UiKey.OPERATIONS_TAB_DUES)),
-                tab, { tab = it }, Modifier.fillMaxWidth(),
+                tab, {
+                    tab = it
+                    sel = sel.cancel()
+                }, Modifier.fillMaxWidth(),
             )
         }
         when (tab) {
             OpsTab.BUDGETS -> item(key = "budgets") { LocalRegistry.current.Slot(Slots.BUDGETS) }
             OpsTab.DUES -> item(key = "dues") { LocalRegistry.current.Slot(Slots.DUES) }
-            OpsTab.OPERATIONS -> operationsTab(ui, onRetry = { ui = ui.retrying(); reload++ }, onOpen = { nav.push(OperationDetailRoute(it.id)) }, onMenu = { r, a -> menu = r to a })
+            OpsTab.OPERATIONS -> {
+                if (sel.active) stickyHeader(key = "select-bar") {
+                    SelectionBar(sel, summary, visibleIds, onToggleAll = { sel = sel.toggleAll(visibleIds) }, onCancel = { sel = sel.cancel() }) { action ->
+                        when {
+                            sel.count == 0 -> toaster.show(t(UiKey.OPS_BULK_PICK_FIRST))
+                            action == app.masroufy.usecase.BulkAction.DELETE && (summary?.deletable ?: 0) == 0 -> toaster.show(t(UiKey.OPS_BULK_DELETE_NONE))
+                            else -> bulkOpen = action
+                        }
+                    }
+                }
+                done?.let { d -> stickyHeader(key = "bulk-undo") { UndoStrip(d.text) { undo(d) } } }
+                operationsTab(
+                    ui, onRetry = { ui = ui.retrying(); reload++ },
+                    onOpen = { if (sel.active) sel = sel.toggle(it.id) else nav.push(OperationDetailRoute(it.id)) },
+                    onMenu = { r, a -> if (sel.active) sel = sel.toggle(r.id) else menu = r to a },
+                    selection = sel,
+                )
+            }
         }
     }
     OperationMenu(
@@ -106,10 +152,17 @@ fun OperationsScreen() {
         onDismiss = { menu = null },
         onDetail = { nav.push(OperationDetailRoute(it.id)) },
         onPerson = { nav.push(OperationDetailRoute(it.id, openPerson = true)) },
+        onSelect = if (deps.bulk == null) null else { r -> menu = null; sel = sel.start(r.id) },
     )
+    BulkSheets(bulkOpen, deps, sel.ids, summary?.deletable ?: 0, onDismiss = { bulkOpen = null }) { d ->
+        bulkOpen = null
+        sel = sel.cancel()
+        reload++
+        if (d.undo == null) toaster.show(d.text) else done = d
+    }
 }
 
-private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit) {
+private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: (OpRow) -> Unit, onMenu: (OpRow, Anchor) -> Unit, selection: OpsSelection) {
     if (ui.skeleton) {
         item(key = "loading") { LoadingBlocks() }
         return
@@ -130,7 +183,11 @@ private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: 
         DayGroup(day.label) {
             day.rows.forEachIndexed { i, row ->
                 if (i > 0) Divider()
-                OperationListRow(row, onOpen = { onOpen(row) }, onMenu = { a -> onMenu(row, a) })
+                if (selection.active) {
+                    SelectableOperationRow(row, selection.isSelected(row.id)) { onOpen(row) }
+                } else {
+                    OperationListRow(row, onOpen = { onOpen(row) }, onMenu = { a -> onMenu(row, a) })
+                }
             }
         }
     }
