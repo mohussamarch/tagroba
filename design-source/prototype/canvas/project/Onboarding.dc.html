@@ -39,8 +39,8 @@ body{margin:0}
         <button type="button" class="m-press" onClick="{{back}}" aria-label="رجوع" style="width: 48px; height: 48px; border: 0; padding: 0; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
       </sc-if>
       <sc-if value="{{showBar}}" hint-placeholder-val="{{ true }}">
-        <div role="progressbar" aria-label="{{barLabel}}" aria-valuemin="0" aria-valuemax="6" aria-valuenow="{{barNow}}" style="flex: 1 1 auto; display: flex; gap: 4px">
-          <sc-for list="{{segs}}" as="g" hint-placeholder-count="6">
+        <div role="progressbar" aria-label="{{barLabel}}" aria-valuemin="0" aria-valuemax="5" aria-valuenow="{{barNow}}" style="flex: 1 1 auto; display: flex; gap: 4px">
+          <sc-for list="{{segs}}" as="g" hint-placeholder-count="5">
             <span style="flex: 1 1 0; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(25,61,51,0.10)"><span class="o-fill" style="{{g.fill}}"></span></span>
           </sc-for>
         </div>
@@ -69,17 +69,6 @@ body{margin:0}
 
       <sc-if value="{{at.s0}}" hint-placeholder-val="{{ true }}">
         <button type="button" class="m-press" onClick="{{next}}" style="{{primary}}">{{startLabel}}</button>
-      </sc-if>
-
-      <sc-if value="{{at.s1}}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 10px">
-          <div role="radiogroup" aria-label="{{title}}" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; justify-items: center">
-            <sc-for list="{{avatars}}" as="av" hint-placeholder-count="6">
-              <button type="button" role="radio" aria-checked="{{av.on}}" aria-label="{{av.label}}" class="m-press" onClick="{{av.pick}}" style="{{av.style}}"><dc-import name="MeAvatar" size="{{60}}" pct="{{100}}" look="{{av.k}}" hint-size="60px,60px"></dc-import></button>
-            </sc-for>
-          </div>
-          <span style="font-size: 12px; color: #637570; text-align: center">{{avatarNote}}</span>
-        </div>
       </sc-if>
 
       <sc-if value="{{at.s2}}" hint-placeholder-val="{{ false }}">
@@ -158,7 +147,8 @@ class Component extends DCLogic {
     this.timers = [];
     this.state = this.fresh(props);
   }
-  // الخطوات: 0 أهلًا، 1 الشكل، 2 الدخول، 3 البلد، 4 يوم الراتب، 5 مصدر العمليات، 6 جاهز (§63)
+  // الخطوات: 0 أهلًا، 2 الدخول، 3 البلد، 4 يوم الراتب، 5 مصدر العمليات، 6 جاهز (§63)
+  // خطوة 1 «اختر شكلك» (6 أشكال مؤقتة) اتشالت (المالك 2026-10-15: «ده ايه لازمته») — الشكل من «ابني شكلك» في ملفك. الأرقام زي ما هي عشان باقي الكود
   // الحالات بتفتح على الكارت اللي يخصها: الدخول (بيحمّل · خطأ · محتاج نت) · مصدر العمليات على الآيفون (غير متاح)
   fresh(p) {
     const st = (p && p.state) || 'عادي';
@@ -166,7 +156,7 @@ class Component extends DCLogic {
     // راجع من «الدخول بالبريد» (SignInEmail بيكتبها قبل ما يرجع)
     try { viaEmail = st === 'عادي' && window.sessionStorage.getItem('masroufy-onb-signed') === 'email'; } catch (e) {}
     const step = st === 'غير متاح' ? 5 : st === 'عادي' ? (viaEmail ? 2 : 0) : 2;
-    return { step, reply: viaEmail ? 'signedEmail' : null, avatar: null, country: null, day: null, src: null, signed: viaEmail || step > 2, busy: st === 'بيحمّل', err: false, online: st !== 'محتاج نت' };
+    return { step, reply: viaEmail ? 'signedEmail' : null, country: null, day: null, src: null, signed: viaEmail || step > 2, busy: st === 'بيحمّل', err: false, online: st !== 'محتاج نت' };
   }
   componentDidMount() { try { window.sessionStorage.removeItem('masroufy-onb-signed'); } catch (e) {} }
   componentDidUpdate(prev) {
@@ -187,21 +177,20 @@ class Component extends DCLogic {
   }
   skip() {
     const s = this.state;
-    if (s.step === 1) this.go(2);
-    else if (s.step === 4) this.answer({ day: 'later' }, 'dayLater');
+    if (s.step === 4) this.answer({ day: 'later' }, 'dayLater');
     else if (s.step === 5) this.answer({ src: 'later' }, 'later');
   }
   renderVals() {
     const s = this.state, st = this.props.state ?? 'عادي';
     const n = (x) => x.toLocaleString('en-US');
     const country = s.country || ((this.props.space ?? 'السعودية') === 'مصر' ? 'eg' : 'sa');
-    // §66: قبل ما البلد يتحدد (أهلًا · الشكل · الدخول) فصحى دايمًا. بعده: صياغة البلد المختار
+    // §66: قبل ما البلد يتحدد (أهلًا · الدخول) فصحى دايمًا. بعده: صياغة البلد المختار
     const eg = s.step >= 3 && country === 'eg';
     const T = (msa, egy) => (eg ? egy : msa);
     const ios = st === 'غير متاح';
     const STEPS = [
       ['أهلًا بك في مصروفي', 'دقيقة واحدة نجهّز فيها حسابك، والباقي متى شئت.', 'دائرة تتنفس ومحفظة'],
-      ['اختر شكلك', 'يمكنك تغييره لاحقًا.', 'إطار يظهر فيه شكلك'],
+      null, // 1 كانت «اختر شكلك»
       ['كيف تريد الدخول؟', 'يحفظ حسابك بياناتك ويزامنها على كل أجهزتك.', 'قفل يُغلق بهدوء'],
       [T('أين تقيم؟', 'إنت فين؟'), T('يحدد العملة، والبنوك التي نفهم رسائلها، وقواعد الزكاة.', 'بيحدد العملة، والبنوك اللي بنفهم رسايلها، وقواعد الزكاة.'), 'كرة أرضية تدور ببطء'],
       [T('في أي يوم ينزل راتبك؟', 'مرتبك بينزل يوم كام؟'), T('يبدأ شهرك المالي من هذا اليوم.', 'شهرك المالي بيبدأ من اليوم ده.'), 'تقويم وعملة صغيرة'],
@@ -210,7 +199,6 @@ class Component extends DCLogic {
     ];
     const ok = T('تم', 'تمام');
     const R = {
-      avatar: ['حُفظ', 'هذا شكلك في التطبيق.'],
       signed: ['أُنشئ حسابك', 'كل شيء يُحفظ ويُزامَن على أجهزتك.'],
       signedEmail: ['دخلت بالبريد الإلكتروني', 'كل شيء يُحفظ ويُزامَن على أجهزتك.'],
       // البنوك اللي رسايلها متفهومة فعلًا النهارده (ملف الهاندأوف §3 · §40.3)
@@ -225,7 +213,7 @@ class Component extends DCLogic {
     const rep = s.reply ? R[s.reply] : null;
     const at = {};
     for (let i = 0; i <= 6; i++) at['s' + i] = s.step === i;
-    const filled = s.step === 6 ? 6 : Math.max(0, s.step - 1 + (s.reply ? 1 : 0));
+    const filled = s.step === 6 ? 5 : Math.max(0, s.step - 2 + (s.reply ? 1 : 0));
     // ملفك بعد الدقيقة: الدخول 10، البلد 10، يوم الراتب 10، مصدر العمليات 10 (§63 — الشكل ما بيتعدّش)
     const pct = (s.signed ? 10 : 0) + 10 + (typeof s.day === 'number' ? 10 : 0) + (s.src === 'sms' || s.src === 'file' ? 10 : 0);
     const primary = 'height: 52px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #FFFFFF; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 22px rgba(8,99,79,0.25)';
@@ -242,9 +230,6 @@ class Component extends DCLogic {
     const picked = s.step === 3 ? s.country : s.src;
     const opts = optDefs.map((o) => ({ label: o.label, sub: o.sub, cur: o.cur, i: o.i, on: picked === o.id ? 'true' : 'false', onB: picked === o.id, off: !!o.off,
       style: row(picked === o.id, o.off), pick: () => { if (!o.off) o.go(); } }));
-    const avatars = [1, 2, 3, 4, 5, 6].map((k) => ({ k, n: n(k), label: 'الشكل ' + n(k), on: s.avatar === k ? 'true' : 'false', pick: () => { try { window.sessionStorage.setItem('masroufy-avatar', String(k)); } catch (e) {} this.answer({ avatar: k }, 'avatar'); },
-      style: 'width: 76px; height: 76px; padding: 0; border: 0; border-radius: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: ' + (s.avatar === k ? 'inset 0 0 0 3px #08634F, 0 8px 18px rgba(8,99,79,0.20)' : 'inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.14), 0 8px 18px rgba(8,99,79,0.10)'),
-      inner: 'width: 56px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1.5px dashed rgba(8,99,79,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: ' + (s.avatar === k ? '#08634F' : '#637570') }));
     const days = [];
     for (let d = 1; d <= 31; d++) days.push({ n: n(d), on: s.day === d ? 'true' : 'false', pick: () => this.answer({ day: d }, 'day'),
       style: 'height: 44px; padding: 0; border: 0; border-radius: 12px; font: inherit; font-size: 15px; cursor: pointer; ' + (s.day === d ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.05)') });
@@ -253,17 +238,17 @@ class Component extends DCLogic {
       scrollStyle: 'height: 844px; box-sizing: border-box; overflow-y: auto; padding: 20px 20px ' + (s.reply ? 230 : 48) + 'px; display: flex; flex-direction: column; gap: 14px; justify-content: ' + (s.step === 0 ? 'center' : 'flex-start'),
       showTop: s.step > 0,
       // بعد ما الحساب يتعمل ما فيش رجوع للدخول
-      canBack: s.step === 1 || s.step === 2 || s.step === 4 || s.step === 5, back: () => this.go(s.step - 1),
-      showBar: s.step >= 1, barNow: String(filled), barLabel: 'الخطوة ' + n(Math.max(1, s.step)) + ' من 6',
-      segs: [1, 2, 3, 4, 5, 6].map((i) => ({ fill: 'display: block; height: 100%; border-radius: 3px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); width: ' + (i <= filled ? 100 : 0) + '%' })),
+      canBack: s.step === 2 || s.step === 4 || s.step === 5, back: () => this.go(s.step === 2 ? 0 : s.step - 1),
+      showBar: s.step >= 2, barNow: String(filled), barLabel: 'الخطوة ' + n(Math.max(1, s.step - 1)) + ' من 5',
+      segs: [1, 2, 3, 4, 5].map((i) => ({ fill: 'display: block; height: 100%; border-radius: 3px; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); width: ' + (i <= filled ? 100 : 0) + '%' })),
       // التخطي في كله ما عدا الدخول والبلد (ملف الهاندأوف §7)
-      canSkip: (s.step === 1 || s.step === 4 || s.step === 5) && !s.reply, skip: () => this.skip(), skipLabel: T('تخطَّ', 'تخطّي'),
+      canSkip: (s.step === 4 || s.step === 5) && !s.reply, skip: () => this.skip(), skipLabel: T('تخطَّ', 'تخطّي'),
       hasIllus: s.step < 6, illus: STEPS[s.step][2], isDone: s.step === 6,
       ringText: 'ملفك ' + n(pct) + '%', ringOffset: String(351.9 * (100 - pct) / 100),
       // دخول الكارت: ظهور + طلوع 8px في 500ms (الهاندأوف §5). الخطوة بتتغير ±1 دايمًا، فتبديل اسم الحركة بيعيدها
-      cardClass: s.step % 2 ? 'o-ca' : 'o-cb', title: STEPS[s.step][0], sub: STEPS[s.step][1], at, primary, secondary,
-      startLabel: 'لنبدأ', next: () => this.go(s.step + 1),
-      avatars, avatarNote: 'الأشكال النهائية قيد التصميم.',
+      cardClass: (s.step === 0 ? 0 : s.step - 1) % 2 ? 'o-ca' : 'o-cb', title: STEPS[s.step][0], sub: STEPS[s.step][1], at, primary, secondary,
+      startLabel: 'لنبدأ', next: () => this.go(s.step === 0 ? 2 : s.step + 1),
+
       offline, offlineText: 'لا اتصال بالإنترنت. تحقق من الاتصال وأعد المحاولة', reconnect: () => this.setState({ online: true }),
       google: () => this.google(), busy: s.busy, busyAttr: s.busy ? 'true' : 'false', googleOff: s.busy || offline,
       googleLabel: s.busy ? 'جارٍ الدخول…' : s.err ? 'أعد المحاولة' : 'الدخول بحساب Google',
