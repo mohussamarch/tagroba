@@ -48,7 +48,7 @@ class InheritanceResultPresenterTest {
         val v = assertIs<InheritanceView.Computed>(r.view)
         assertEquals(240_000, v.poolMinor)
         assertTrue(v.claims.isEmpty())
-        assertEquals("من تركة 2,400.00 ر.س، لا تجهيز ولا ديون ولا وصية، شيء واحد", v.heroSub)
+        assertEquals("من تركة \u2066\u20C1 2,400.00\u2069، لا تجهيز ولا ديون ولا وصية، شيء واحد", v.heroSub)
         val wife = v.heirs.first { it.name == "الزوجة" }
         assertEquals(30_000, wife.amountMinor)
         assertEquals("1/8", wife.fraction)

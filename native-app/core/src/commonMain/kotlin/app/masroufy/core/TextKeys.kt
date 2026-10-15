@@ -43,6 +43,9 @@ enum class TextKey : TextRef {
 
     // رموز العملات
     CURRENCY_SAR,
+
+    /** «ر.س»/«SAR» للنص اللي بيطلع برا التطبيق بس — [outgoingText]. */
+    CURRENCY_SAR_PLAIN,
     CURRENCY_EGP,
     CURRENCY_USD,
     CURRENCY_EUR,

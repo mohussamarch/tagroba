@@ -92,7 +92,7 @@ class ArabicVariantsTest {
         for (v in ArabicVariant.entries) {
             Texts.arabicVariant = v
             assertEquals("Salary", uiText(TextKey.KIND_SALARY))
-            assertEquals("96.47 SAR", formatMoney(9647))
+            assertEquals("\u2066\u20C1 96.47\u2069", formatMoney(9647))
         }
     }
 

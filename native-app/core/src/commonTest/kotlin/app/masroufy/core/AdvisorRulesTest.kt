@@ -106,7 +106,7 @@ class AdvisorRulesTest {
         val c = assertNotNull(habit(listOf(15_000, 15_000, 15_000), 40_000))
         // 450 في 6 أيام ⇒ 2,250 للشهر؛ زيادة 1,850 × 3 شهور ⇒ 12,221.90 − 5,550 = 6,671.90
         val shape = uiText(TextKey.ADVISOR_HABIT_BODY_YEAR_END, "القهوة", formatMoney(45_000), formatMoney(667_190), formatMoney(1_200_000))
-        assertEquals("القهوة هذا الشهر 450.00 ر.س — بهذا المعدل ستحوش 6,671.90 ر.س بدل 12,000.00 ر.س آخر السنة", shape)
+        assertEquals("القهوة هذا الشهر \u2066\u20C1 450.00\u2069 — بهذا المعدل ستحوش \u2066\u20C1 6,671.90\u2069 بدل \u2066\u20C1 12,000.00\u2069 آخر السنة", shape)
         // متوسط المرة 150 ⇒ 13 مرة في الشهر ⇒ 4 في الأسبوع (ومش أكتر من مراتك دلوقتي: 3 × 7 ÷ 6 ⇒ 4)
         assertEquals("$shape · ${uiText(TextKey.ADVISOR_HABIT_SUGGEST, "4")}", c.body)
         assertTrue(c.body.contains("قلّل 4 مرات في الأسبوع"))
@@ -132,7 +132,7 @@ class AdvisorRulesTest {
 
     @Test fun overcommitFiresOnceThenOnlyWhenTheGapGrows() {
         val c = assertNotNull(overcommitCandidate(projection(410_000, 520_000), Currency.SAR, "2026-09-28", emptyList()))
-        assertEquals("حجزت 5,200.00 ر.س لهذا الشهر ومعك 4,100.00 ر.س. ينقصك 1,100.00 ر.س", c.body)
+        assertEquals("حجزت \u2066\u20C1 5,200.00\u2069 لهذا الشهر ومعك \u2066\u20C1 4,100.00\u2069. ينقصك \u2066\u20C1 1,100.00\u2069", c.body)
         assertEquals("overcommit|2026-09-28|110000", c.threadKey)
         assertEquals(110_000L, c.amountMinor)
         assertNull(overcommitCandidate(projection(410_000, 410_000), Currency.SAR, "2026-09-28", emptyList()), "قد اللي معاك بالظبط")

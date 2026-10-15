@@ -124,7 +124,7 @@ class AdvisorMoreFlowTest {
             txn("2026-09-29", 3_000, tv, merchant = "m-a"), txn("2026-09-30", 3_500, tv, merchant = "m-b"),
         )
         val found = advisor(current, "2026-10-03", recurring = listOf(elec, sub("a"), sub("b")))
-        assertEquals("فاتورة الكهرباء 620.00 ر.س — أعلى من المعتاد (410.00 ر.س)", found.of(AlertKind.BILL_JUMP).single().body)
+        assertEquals("فاتورة الكهرباء \u2066\u20C1 620.00\u2069 — أعلى من المعتاد (\u2066\u20C1 410.00\u2069)", found.of(AlertKind.BILL_JUMP).single().body)
         assertEquals("لديك أكثر من اشتراك في «بث وأفلام»", found.of(AlertKind.DUP_SUBS).single().title)
         assertEquals(emptyList(), found.of(AlertKind.BIG_ONE), "الفاتورة الدورية معروفة ومستنية ⇒ مش «عملية كبيرة»")
         val usual = advisor(listOf(txn("2026-09-30", 42_000, null, merchant = "m-elec")), "2026-10-03", recurring = listOf(elec, sub("a")))
@@ -136,14 +136,14 @@ class AdvisorMoreFlowTest {
         val dues = advisor(listOf(txn("2026-10-01", 500_000, DuesCategories.FINANCING)), "2026-10-03")
         assertEquals(emptyList(), dues.of(AlertKind.BIG_ONE), "قسط في «المستحقات» ⇒ معروف")
         val big = advisor(listOf(txn("2026-10-01", 43_000, grocery)), "2026-10-03").of(AlertKind.BIG_ONE).single()
-        assertEquals("عملية 430.00 ر.س — ربع مصروف شهرك أو أكثر", big.body, "430 من معتاد 1,710 = 25.1%")
+        assertEquals("عملية \u2066\u20C1 430.00\u2069 — ربع مصروف شهرك أو أكثر", big.body, "430 من معتاد 1,710 = 25.1%")
     }
 
     @Test fun payFirstOnSalaryAndGoalNear() = runBlocking<Unit> {
         val salary = txn("2026-09-28", 1_500_000, null, kind = EconomicKind.SALARY, dir = Direction.IN)
         val found = advisor(listOf(salary), "2026-09-30", goal = true, saved = 1_080_000)
         // الباقي 1,200 على 4 شهور بالتقويم (30 سبتمبر ⇒ 31 ديسمبر) = 300
-        assertEquals("نزل الراتب — حوّل 300.00 ر.س لخطة «سفر الصيف» قبل أن تصرف", found.of(AlertKind.PAY_FIRST).single().body)
+        assertEquals("نزل الراتب — حوّل \u2066\u20C1 300.00\u2069 لخطة «سفر الصيف» قبل أن تصرف", found.of(AlertKind.PAY_FIRST).single().body)
         assertEquals("goalnear|g-1|near", found.of(AlertKind.GOAL_NEAR).single().threadKey, "1,080 من 1,200 = 90%")
         assertEquals(emptyList(), advisor(listOf(salary), "2026-09-30").of(AlertKind.PAY_FIRST), "مفيش خطة")
         assertEquals(emptyList(), advisor(emptyList(), "2026-09-30", goal = true).of(AlertKind.PAY_FIRST), "المرتب ما نزلش")
@@ -171,7 +171,7 @@ class AdvisorMoreFlowTest {
         val weeks = listOf(txn("2026-09-21", 20_000, grocery), txn("2026-09-28", 25_000, grocery), txn("2026-10-02", 6_000, coffee))
         val w = advisor(weeks, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY).single()
         assertEquals("weekly|2026-10-02", w.threadKey)
-        assertEquals("صرفت 310.00 ر.س هذا الأسبوع · أكثر بـ110.00 ر.س من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (250.00 ر.س)", w.body)
+        assertEquals("صرفت \u2066\u20C1 310.00\u2069 هذا الأسبوع · أكثر بـ\u2066\u20C1 110.00\u2069 من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (\u2066\u20C1 250.00\u2069)", w.body)
         val shaky = weeks + txn("2026-09-30", 1_000, null, kind = EconomicKind.UNCLASSIFIED)
         assertEquals(emptyList(), advisor(shaky, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY), "الأسبوع فيه عملية من غير نوع ⇒ مش معروف")
         assertEquals(emptyList(), advisor(emptyList(), "2026-10-05").of(AlertKind.WEEKLY_SUMMARY), "أسبوعين فاضيين")
@@ -214,7 +214,7 @@ class AdvisorMoreFlowTest {
     }
 
     @Test fun weeklySummaryRemindsWhatNeedsConfirmation() = runBlocking<Unit> {
-        val spent = "صرفت 310.00 ر.س هذا الأسبوع · أكثر بـ110.00 ر.س من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (250.00 ر.س)"
+        val spent = "صرفت \u2066\u20C1 310.00\u2069 هذا الأسبوع · أكثر بـ\u2066\u20C1 110.00\u2069 من الأسبوع الماضي · الأعلى: «بقالة وسوبرماركت» (\u2066\u20C1 250.00\u2069)"
         assertEquals("$spent · لديك 3 عمليات تحتاج إلى تأكيد", weekly(weeks, 3).single().body)
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
         assertTrue(weekly(weeks, 3).single().body.endsWith(" · عندك 3 عمليات محتاجة تأكيد"), "كلمة المالك بالمصري")
@@ -261,6 +261,6 @@ class AdvisorMoreFlowTest {
         val withWaiting = advisor(weeks + pending("2026-09-30"), "2026-10-05", extraHistory = history)
         assertEquals(advisor(weeks, "2026-10-05").of(AlertKind.WEEKLY_SUMMARY).single().body, withWaiting.of(AlertKind.WEEKLY_SUMMARY).single().body, "صرف الأسبوع معروف")
         val big = advisor(listOf(txn("2026-10-01", 43_000, grocery), pending("2026-10-02")), "2026-10-03", extraHistory = history)
-        assertEquals("عملية 430.00 ر.س — ربع مصروف شهرك أو أكثر", big.of(AlertKind.BIG_ONE).single().body, "المعتاد من الشهور اللي فاتت لسه معروف")
+        assertEquals("عملية \u2066\u20C1 430.00\u2069 — ربع مصروف شهرك أو أكثر", big.of(AlertKind.BIG_ONE).single().body, "المعتاد من الشهور اللي فاتت لسه معروف")
     }
 }

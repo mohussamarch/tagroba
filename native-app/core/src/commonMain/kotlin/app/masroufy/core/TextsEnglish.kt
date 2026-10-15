@@ -26,7 +26,8 @@ internal val ENGLISH_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_UNCLASSIFIED to "Undecided",
     TextKey.KIND_UNKNOWN_WIRE to "Unknown economic kind: {0}",
 
-    TextKey.CURRENCY_SAR to "SAR",
+    TextKey.CURRENCY_SAR to "\u20C1",
+    TextKey.CURRENCY_SAR_PLAIN to "SAR",
     TextKey.CURRENCY_EGP to "EGP",
     TextKey.CURRENCY_USD to "$",
     TextKey.CURRENCY_EUR to "€",

@@ -1,6 +1,6 @@
 package app.masroufy.ui.screens.home
 
-import androidx.compose.foundation.text.BasicText
+import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp

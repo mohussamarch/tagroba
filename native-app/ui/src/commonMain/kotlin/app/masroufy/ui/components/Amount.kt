@@ -2,7 +2,7 @@ package app.masroufy.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.text.BasicText
+import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -23,6 +23,7 @@ import app.masroufy.core.UiKey
 import app.masroufy.core.absMoney
 import app.masroufy.core.currencySymbol
 import app.masroufy.ui.icons.LucideIcon
+import app.masroufy.core.withCurrency
 import app.masroufy.ui.text.amount
 import app.masroufy.ui.text.t
 import app.masroufy.ui.text.trueMinus
@@ -56,11 +57,11 @@ fun amountLabel(minor: Halalas?, currency: Currency, tone: AmountTone = AmountTo
     if (minor == null) return NOT_AVAILABLE
     val number = trueMinus(amount(if (tone == AmountTone.EXPENSE || tone == AmountTone.INCOME) absMoney(minor) else minor, currency))
     val signed = tone.sign + number
-    return if (showCurrency) "$signed ${currencySymbol(currency)}" else signed
+    return if (showCurrency) withCurrency(signed, currency) else signed
 }
 
 /**
- * مبلغ في سطر: «−42.00 ر.س» من الشمال لليمين. [size] بالـsp من مقاسات النموذج (15 في الصفوف · 16 · 30 · 38 للبطل).
+ * مبلغ في سطر: «⃁ −42.00» من الشمال لليمين (علامة الريال الرسمية شمال الرقم). [size] بالـsp من مقاسات النموذج (15 في الصفوف · 16 · 30 · 38 للبطل).
  * [color] = null ⇒ لون النبرة.
  */
 @Composable

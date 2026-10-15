@@ -98,7 +98,7 @@ class CalculatorsFlowTest {
         val calc = calculator(history())
         val plan = calc.perMonth(1_200_000, 150_000, "2027-06-30", Currency.SAR, today).plan
         val goal = calc.turnIntoGoal(plan, Currency.SAR)
-        assertEquals("ادخار 12,000.00 ر.س", goal.name)
+        assertEquals("ادخار \u2066\u20C1 12,000.00\u2069", goal.name)
         assertEquals(today, goal.startDate)
         assertEquals("2027-06-30", goal.targetDate)
         val progress = LoadGoalsOverview(LoadGoalsOverviewDeps(goals, contributions)).load(today).single()

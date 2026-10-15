@@ -60,15 +60,15 @@ class LinkModelsTest {
     }
 
     @Test fun balanceLineAndEffectComeWithoutArithmetic() {
-        assertEquals("لك عنده 500.00 ر.س", personBalanceLine(row(khaled, receivable = 50_000), Currency.SAR))
-        assertEquals("عليك له 2,000.00 ر.س", personBalanceLine(row(omar, loan = 200_000), Currency.SAR))
+        assertEquals("لك عنده \u2066\u20C1 500.00\u2069", personBalanceLine(row(khaled, receivable = 50_000), Currency.SAR))
+        assertEquals("عليك له \u2066\u20C1 2,000.00\u2069", personBalanceLine(row(omar, loan = 200_000), Currency.SAR))
         assertEquals("لا رصيد بينكما", personBalanceLine(null, Currency.SAR))
         assertEquals(listOf("اختر الشخص والنوع"), personEffect(null, null, null, Currency.SAR).map { it.label })
         assertEquals(listOf("اختر النوع"), personEffect(null, "خالد", 2_000, Currency.SAR).map { it.label })
         assertEquals(listOf("اكتب المبلغ"), personEffect(PersonLinkKind.GIFT, "خالد", null, Currency.SAR).map { it.label })
         val debt = personEffect(PersonLinkKind.RECEIVABLE, "خالد", 2_000, Currency.SAR)
         assertEquals(listOf("مصروفك من العملية", "لك عند خالد"), debt.map { it.label })
-        assertEquals(listOf("−20.00 ر.س", "+20.00 ر.س"), debt.map { it.value }, "الفرق نفسه = المبلغ اللي كتبته (مفيش قبل ← بعد محسوب في الشاشة)")
+        assertEquals(listOf("\u2066\u20C1 −20.00\u2069", "\u2066\u20C1 +20.00\u2069"), debt.map { it.value }, "الفرق نفسه = المبلغ اللي كتبته (مفيش قبل ← بعد محسوب في الشاشة)")
         assertEquals(listOf("بلا تغيير", "لا شيء"), personEffect(PersonLinkKind.GIFT, "خالد", 2_000, Currency.SAR).map { it.value })
         assertEquals("اختر الشخص أو اكتب اسمًا جديدًا.", personLinkError(false, null, null))
         assertEquals("اختر: دين عليه أم هدية له.", personLinkError(true, null, 100))

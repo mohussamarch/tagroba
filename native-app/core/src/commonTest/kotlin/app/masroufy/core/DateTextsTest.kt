@@ -37,7 +37,7 @@ class DateTextsTest {
     }
 
     @Test fun currencyNamesAndSymbols() {
-        assertEquals("ر.س", currencySymbol(Currency.SAR))
+        assertEquals("\u20C1", currencySymbol(Currency.SAR))
         assertEquals("جنيه مصري", currencyName(Currency.EGP))
     }
 }

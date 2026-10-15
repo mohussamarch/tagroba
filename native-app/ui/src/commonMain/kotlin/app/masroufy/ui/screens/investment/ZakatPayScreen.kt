@@ -3,7 +3,7 @@ package app.masroufy.ui.screens.investment
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.BasicText
+import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue

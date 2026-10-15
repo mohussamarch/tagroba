@@ -53,6 +53,7 @@ fun MasroufyTheme(reduceMotion: Boolean = false, content: @Composable () -> Unit
     val direction = if (Texts.language == Language.EN) LayoutDirection.Ltr else LayoutDirection.Rtl
     CompositionLocalProvider(
         LocalFont provides rememberMasroufyFont(),
+        app.masroufy.ui.text.LocalRiyalFont provides app.masroufy.ui.text.rememberRiyalFont(),
         LocalLayoutDirection provides direction,
         LocalReduceMotion provides reduceMotion,
         LocalTextSelectionColors provides TextSelectionColors(handleColor = Ink.primary, backgroundColor = Ink.selected),

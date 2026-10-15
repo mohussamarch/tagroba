@@ -31,7 +31,7 @@ class SavingsGrowthPresenterTest {
     @Test
     fun withoutTheAveragesFileEveryRateIsUnavailableExceptCash() {
         val ui = growthUi(growth.compare(100_000, 120, 0, today, feed = null, countryCode = "SA"), Currency.SAR)
-        assertEquals("من جيبك: 120,000.00 ر.س خلال 10 سنوات", ui.paidLine)
+        assertEquals("من جيبك: \u2066\u20C1 120,000.00\u2069 خلال 10 سنوات", ui.paidLine)
         assertEquals(GrowthClass.entries.toList(), ui.rows.map { it.growthClass }, "الخمسة بالترتيب")
         for (r in ui.rows.filter { it.growthClass != GrowthClass.CASH }) {
             assertNull(r.amountMinor, "${r.growthClass}: «غير متاح» مش صفر")

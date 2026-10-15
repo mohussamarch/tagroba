@@ -33,6 +33,8 @@ class TextsTest {
             if (key in EGYPTIAN_PLAIN_WORDS_KEYS) assertNotEquals(old, expected, "التبسيط ما غيّرش $name")
             else assertEquals(old, plainEgyptian(old), "مقطع تبسيط بيلمس نص مش في القايمة: $name")
             // الأرقام بس اتوحدت لـ0-9 (قرار المالك §79 — L5)
+            // علامة الريال الرسمية بدل «ر.س» (قرار المالك 2026-10-15) — المفتاح الوحيد اللي اتغير عن قصد
+            if (key == TextKey.CURRENCY_SAR) { assertEquals("ر.س", old); assertEquals("\u20C1", EGYPTIAN_TEXTS[key]); continue }
             assertEquals(westernized(expected), EGYPTIAN_TEXTS[key], "المصري اتغير في $name")
         }
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68) · حاسبة الورث (§69) · هتوصل لكام (§69.6) · رسايل البنك لوحدها (§72)
@@ -47,8 +49,12 @@ class TextsTest {
             EGYPTIAN_SHELL_TEXTS.keys + EGYPTIAN_SHELL_AUTH_TEXTS.keys + EGYPTIAN_AREA_TEXTS.keys + EGYPTIAN_ASSIST_ALL_TEXTS.keys +
             // شاشة المساعد وإضافات المحرك (`TextsAsk.kt` — ARCHITECTURE §31.36)
             EGYPTIAN_ASK_TEXTS.keys +
+            // إصلاح رسايل البنك (r04-sms-fix): جدول لوحده (`TextsSmsFix`)
+            EGYPTIAN_SMS_FIX_TEXTS.keys +
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)
-            setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS }
+            setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS } +
+            // «ر.س» للنص الطالع برا التطبيق بس (علامة الريال الرسمية — قرار المالك 2026-10-15)
+            setOf(TextKey.CURRENCY_SAR_PLAIN)
         assertTrue(newer.all { textKeyNamed(it) in afterSnapshot }, "مفتاح جديد مالوش مكان معروف: $newer")
     }
 
@@ -76,7 +82,7 @@ class TextsTest {
         for ((key, text) in MSA_OWNER_WORDS) assertEquals(text, MSA_TEXTS[key], key.name)
         assertEquals("مجموع اللي اتقسم على الأشخاص ({0}) أكبر من قيمة العملية ({1})", EGYPTIAN_TEXTS[TextKey.LEDGER_ALLOCATIONS_EXCEED])
         Texts.arabicVariant = ArabicVariant.MSA
-        assertEquals("مجموع ما تم تقسيمه على الأشخاص (12.00 ر.س) أكبر من قيمة العملية (10.00 ر.س)", uiText(TextKey.LEDGER_ALLOCATIONS_EXCEED, formatMoney(1200), formatMoney(1000)))
+        assertEquals("مجموع ما تم تقسيمه على الأشخاص (\u2066\u20C1 12.00\u2069) أكبر من قيمة العملية (\u2066\u20C1 10.00\u2069)", uiText(TextKey.LEDGER_ALLOCATIONS_EXCEED, formatMoney(1200), formatMoney(1000)))
     }
 
     @Test
@@ -104,7 +110,7 @@ class TextsTest {
     fun backToArabicGivesTheSameTextAgain() {
         Texts.language = Language.EN
         Texts.language = Language.AR
-        assertEquals("96.47 ر.س", formatMoney(9647))
+        assertEquals("\u2066\u20C1 96.47\u2069", formatMoney(9647))
         assertEquals("غير متاح", formatMoneyOrNA(null))
     }
 }
