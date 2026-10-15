@@ -139,8 +139,14 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * كل (بلد · محفظة) ورسايلها المفهومة من المرسلين **اللي المالك مفعّلهم** (دفاع تاني: لو شال بنك من القايمة ورسايله لسه في الصندوق،
      * ما بتتسجلش لوحدها) — [visit] بياخد معاينة كل محفظة. بيرجّع المرسلين اللي رسايلهم مالهاش محفظة.
      */
-    private suspend fun forEachRoute(only: (InboxItem) -> Boolean, visit: suspend (SmsLane, SmsReview) -> Unit): List<UnmappedSender> {
+    private suspend fun forEachRoute(
+        only: (InboxItem) -> Boolean, visit: suspend (SmsLane, SmsReview, MutableList<String>) -> Unit,
+    ): List<UnmappedSender> {
         val unmapped = mutableListOf<UnmappedSender>()
+        // مراجعة r04: تحويل بين محفظتين من محافظ المالك = مسارين (رِجل في كل محفظة) — الرسالة بتتشال من الصندوق بعد ما **كل** مساراتها
+        // تخلص، مش بعد أول رِجل (التانية كانت بتضيع: الصندوق ما بقاش بيرجّعها للمحفظة التانية)
+        val expected = HashMap<String, Int>()
+        val done = mutableListOf<String>()
         for (lane in deps.lanes) {
             val view = lane.review.inboxView()
             val enabled = view.senders.map(::smsSenderKey).toSet()
@@ -152,9 +158,14 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
             for (sender in senders) {
                 val routes = routeSender(wallets, sender, mapping, items, lane.movesCashWithdrawals)
                 if (routes.unrouted > 0) unmapped += UnmappedSender(lane.spaceId, sender, routes.unrouted)
-                for (route in routes.routes) visit(lane, lane.review.loadFor(route.target) { it.id in route.messageIds })
+                for (route in routes.routes) {
+                    route.messageIds.forEach { expected[it] = (expected[it] ?: 0) + 1 }
+                    visit(lane, lane.review.loadFor(route.target) { it.id in route.messageIds }, done)
+                }
             }
         }
+        val finished = done.groupingBy { it }.eachCount().filter { (id, n) -> n >= (expected[id] ?: 1) }.keys.toList()
+        if (finished.isNotEmpty()) deps.inbox.acknowledge(finished)
         return unmapped
     }
 
@@ -183,9 +194,9 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         try {
             for (pass in 0 until MAX_PAGE_PASSES) {
                 var moved = 0
-                forEachRoute({ true }) { lane, _ ->
+                forEachRoute({ true }) { lane, _, done ->
                     // من غير اختيارات: الجديد **اللي شكله معروف واتعلّم** بس، والتصنيف المقترح يفضل مقترح، والشبيه والتعارض ما بيتلمسوش
-                    val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true)
+                    val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true, ackLater = done)
                     moved += outcome.recorded + outcome.duplicates
                     recorded += outcome.recorded
                     duplicates += outcome.duplicates
@@ -214,9 +225,9 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         if (off()) return@withLock 0
         val wanted = messageIds.toSet()
         var recorded = 0
-        forEachRoute({ it.id in wanted }) { lane, view ->
+        forEachRoute({ it.id in wanted }) { lane, view, done ->
             val similar = view.similar.filter { it.state == MatchingState.SIMILAR }.map { it.lineNumber }
-            recorded += lane.review.recordLocked(emptyMap(), similar, clearOnly = false, salaryAnswer = isSalary).recorded
+            recorded += lane.review.recordLocked(emptyMap(), similar, clearOnly = false, salaryAnswer = isSalary, ackLater = done).recorded
         }
         recorded
     }
@@ -267,7 +278,7 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         val newShape = mutableSetOf<String>()
         val questions = mutableMapOf<String, AskKind>()
         val where = mutableMapOf<String, Pair<String, IsoDate?>>()
-        val unmapped = forEachRoute({ true }) { lane, view ->
+        val unmapped = forEachRoute({ true }) { lane, view, _ ->
             for (line in view.ready + view.similar) {
                 where.getOrPut(line.messageId) { lane.spaceId to line.date }
                 line.question?.let { questions[line.messageId] = it }

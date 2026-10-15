@@ -145,7 +145,7 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
      */
     internal suspend fun recordLocked(
         categories: Map<Int, Id>, includeSimilar: List<Int>, clearOnly: Boolean = false, salaryAnswer: Boolean? = null,
-        mergeChoices: Map<Int, Id> = emptyMap(),
+        mergeChoices: Map<Int, Id> = emptyMap(), ackLater: MutableList<String>? = null,
     ): SmsRecordOutcome {
         val current = session ?: return SmsRecordOutcome(0, 0, emptyList())
         val allowed = includeSimilar.toSet()
@@ -184,7 +184,9 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
             val partDuplicates = part.preview.lines.filter { it.state == MatchingState.DUPLICATE }.map { it.row.lineNumber }
             val done = lines + partDuplicates
             // بعد الحفظ بس: لو الشيل وقع، الرسالة بتفضل وبتطلع «مكررة» المرة الجاية (مش بتتسجل تاني — حتى لو راحت محفظة تانية)
-            deps.inbox.imported(done.map { InboxLine(current.messageByLine.getValue(it), it) }, done)
+            // [ackLater] (التسجيل التلقائي): الشيل بيستنى لحد ما كل مسارات الرسالة تخلص — رجلين التحويل بين محفظتين في جلستين
+            if (ackLater != null) done.mapTo(ackLater) { current.messageByLine.getValue(it) }
+            else deps.inbox.imported(done.map { InboxLine(current.messageByLine.getValue(it), it) }, done)
             recorded += partRecorded
             duplicates += partDuplicates.size
         }
