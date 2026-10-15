@@ -88,7 +88,21 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     override val fullBackup: FullBackup? = r.fullBackup?.let { FullBackup(it, r.spacesBackup) }
 
     /** «افهم رصيدك» (بند المالك 3) — علامة «تعديل رصيد» بتتوصل مع فرع «حدّث الرصيد» (الافتراضي ولا عملية). */
-    override val balanceWhy = app.masroufy.usecase.ExplainBalance(app.masroufy.usecase.ExplainBalanceDeps(r.transactions, r.sourceRecords, r.importBatches, r.wallets))
+    /**
+     * «صلّح رسايل البنك القديمة» (r04-sms-fix): بقارئ رسايل بنوك البلد ونسخة «قبل الإصلاح» على الجهاز — من غير الاتنين مش متوصل. نفس
+     * `duplicates()` بيغذي «راجع المكرر» بأزواج عكس الاتجاه (التحويل بين حساباتك اللي اتسجل بعكس الكشف).
+     */
+    override val smsRepair: app.masroufy.usecase.RepairOldSms? = run {
+        val reader = countryPack(c.space.countryCode).smsReader
+        val backup = c.env.repairBackup
+        if (reader == null || backup == null) null
+        else app.masroufy.usecase.RepairOldSms(r.transactions, r.sourceRecords, r.importBatches, r.wallets, listOf(reader), backup, c.env.clock)
+    }
+    private val rematch: (suspend () -> List<app.masroufy.core.SmsStatementPair>)? = smsRepair?.let { s -> { s.duplicates() } }
+
+    override val balanceWhy = app.masroufy.usecase.ExplainBalance(
+        app.masroufy.usecase.ExplainBalanceDeps(r.transactions, r.sourceRecords, r.importBatches, r.wallets, rematch = rematch),
+    )
 
     /** «راجع المكرر» — نفس دمج الكشف والرسالة؛ من غير ملفات الجهاز (`repairBackup`) بيرفض بـ NO_BACKUP. */
     override val mergeDuplicates = app.masroufy.usecase.MergeDuplicates(
@@ -99,6 +113,7 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
                 r.zakatPayments, r.assetLots, r.assetSales,
             ),
             r.spaceTransfers,
+            rematch = rematch,
         ),
     )
 

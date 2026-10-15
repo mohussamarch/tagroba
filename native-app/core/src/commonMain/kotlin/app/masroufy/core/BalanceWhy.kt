@@ -31,7 +31,13 @@ data class BalanceItem(
 )
 
 /** رسالة وسطر كشف بنفس المبلغ (زي ما ورد) والاتجاه والعملة في ±النافذة، **والاتنين محسوبين** في الرصيد كعمليتين. */
-data class DuplicatePair(val sms: BalanceItem, val statement: BalanceItem, val days: Int)
+data class DuplicatePair(
+    val sms: BalanceItem,
+    val statement: BalanceItem,
+    val days: Int,
+    /** زوج من «صلّح رسايل البنك القديمة» (`withRematchPairs`): الرسالة اتسجلت بعكس اتجاه الكشف (تحويل بين حساباتك) — الدمج بياخد اتجاه الكشف. */
+    val oppositeDirection: Boolean = false,
+)
 
 data class BalanceReview(
     val duplicates: List<DuplicatePair>,
@@ -90,7 +96,8 @@ private fun sourceOf(t: Transaction, incomingLeg: Boolean, sources: Map<Id, TxnS
 /**
  * تفكيك رصيد [wallet] آخر يوم [asOf]. [transactions] = كل عمليات البلد اللي ممكن تلمس المحفظة (عليها أو تحويل ليها أو من غير محفظة) —
  * أي تاريخ (اللي قبل رصيد البداية بيتعرض ومش بيتحسب). [sources] = مصادر عمليات المحفظة. [wallets] = محافظ البلد (لتحويل لمحفظة مش موجودة).
- * [isAdjustment] = علامة «تعديل رصيد» (ميزة «حدّث الرصيد» في فرع تاني بتحددها وقت الدمج — الافتراضي ولا عملية).
+ * [isAdjustment] = عملية معلّمة «تعديل رصيد» (الافتراضي ولا عملية). نقط «حدّث الرصيد» نفسها (`BalanceCheckpoint.kt`) مش عمليات: فرق كل نقطة لحد [asOf]
+ * بيدخل سطر [BalanceSource.ADJUSTMENT] (موجب وارد · سالب صادر) ⇒ المجموع = «معك الآن» حتى مع النقط.
  */
 fun explainWalletBalance(
     wallet: Wallet,
@@ -143,6 +150,11 @@ fun explainWalletBalance(
             if (!incoming && t.transferToWalletId != null && t.transferToWalletId !in known) oneSided += item
         }
     }
+    // «حدّث الرصيد» (r04-balance-now): فرق كل نقطة لحد [asOf] سطر «تعديلات» لوحده — مش عملية، بس داخل في رقم «معك الآن» (`balanceAdjustments`)
+    if (open) for (e in balanceAdjustments(wallet, transactions, to = asOf)) {
+        if (e.adjustmentMinor > 0L) add(BalanceSource.ADJUSTMENT, Direction.IN, e.adjustmentMinor)
+        else if (e.adjustmentMinor < 0L) add(BalanceSource.ADJUSTMENT, Direction.OUT, subtractMoney(0L, e.adjustmentMinor))
+    }
     val review = BalanceReview(findLikelyDuplicates(counted, sources, windowDays, isAdjustment), before, other, foreign, reversals, oneSided, unassigned)
     val lines = BalanceSource.entries.mapNotNull { s -> totals[s]?.let { (n, i, o) -> SourceTotal(s, n, i, o) } }
     val computed = if (open) addMoney(wallet.openingBalanceMinor, inMinor, -outMinor) else null
@@ -193,3 +205,29 @@ fun findLikelyDuplicates(
 /** مجموع أثر المكرر المحتمل على الرصيد: الخارج المكرر بينقّص والداخل المكرر بيزوّد — بالسالب = الرصيد أقل من الحقيقي بالقيمة دي. */
 fun duplicateEffectMinor(pairs: List<DuplicatePair>): Halalas =
     sumMoney(pairs.map { if (it.sms.direction == Direction.IN) it.sms.amountMinor else -it.sms.amountMinor })
+
+/**
+ * «راجع المكرر» + «صلّح رسايل البنك القديمة» (r04-sms-fix — `RepairOldSms.duplicates`): أزواج رسالة⇄كشف **بعكس الاتجاه** (تحويل بين حساباتك
+ * اتسجل بعكس الكشف) بتنضاف للمكرر المحتمل — لو الاتنين على المحفظة دي ومحسوبين (من يوم البداية لحد [BalanceExplanation.asOf]) وبنفس العملة
+ * ومش تحويل لمحفظة ومش في زوج تاني. اقتراح بس — `MergeDuplicates` بيفحص الزوج من جديد من التخزين قبل أي كتابة.
+ */
+fun withRematchPairs(e: BalanceExplanation, pairs: List<SmsStatementPair>, byId: Map<Id, Transaction>): BalanceExplanation {
+    val used = e.review.duplicates.flatMap { listOf(it.sms.transactionId, it.statement.transactionId) }.toMutableSet()
+    val extra = mutableListOf<DuplicatePair>()
+    fun counted(t: Transaction) = t.walletId == e.walletId && t.transferToWalletId == null && t.occurredAt >= e.openingAt && t.occurredAt <= e.asOf
+    for (p in pairs) {
+        if (!p.oppositeDirection || p.smsTransactionId in used || p.statementTransactionId in used) continue
+        val sms = byId[p.smsTransactionId] ?: continue
+        val st = byId[p.statementTransactionId] ?: continue
+        if (!counted(sms) || !counted(st) || sms.currency != st.currency || sms.observedDirection == st.observedDirection) continue
+        used += sms.id
+        used += st.id
+        extra += DuplicatePair(
+            itemOf(sms, sms.observedDirection, BalanceSource.SMS), itemOf(st, st.observedDirection, BalanceSource.STATEMENT),
+            abs(daysBetween(sms.occurredAt, st.occurredAt)), oppositeDirection = true,
+        )
+    }
+    if (extra.isEmpty()) return e
+    val all = (e.review.duplicates + extra).sortedWith(compareBy({ it.statement.date }, { it.sms.transactionId }))
+    return e.copy(review = e.review.copy(duplicates = all))
+}

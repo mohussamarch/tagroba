@@ -64,6 +64,9 @@ interface MoreDeps : MoreHooks {
     /** «راجع المكرر»: دمج زوج كشف+رسالة **بعد تأكيد المالك بس** (نسخة قبل الكتابة + تراجع). null ⇒ الزرار مش ظاهر. */
     val mergeDuplicates: app.masroufy.usecase.MergeDuplicates? get() = null
 
+    /** «صلّح رسايل البنك القديمة» (r04-sms-fix): معاينة ⇒ نسخة ⇒ تصحيح ⇒ تراجع. null ⇒ الزرار في «تفاصيل المحفظة» مش ظاهر. */
+    val smsRepair: app.masroufy.usecase.RepairOldSms? get() = null
+
     /** وقت الجهاز ISO كامل (`exportedAt` في النسخة). */
     fun nowIso(): String
 }
@@ -131,6 +134,7 @@ fun RouteRegistry.registerMore() {
     screen<WalletsRoute> { WalletsScreen() }
     screen<WalletDetailRoute> { r -> WalletDetailScreen(r.walletId) }
     screen<BalanceWhyRoute> { r -> BalanceWhyScreen(r.walletId) }
+    screen<SmsRepairRoute> { r -> SmsRepairScreen(r.walletId) }
     screen<IncomeSourcesRoute> { IncomeSourcesScreen() }
     screen<EmployersRoute> { EmployersScreen() }
     screen<IncomeSourceDetailRoute> { r -> IncomeSourceDetailScreen(r.sourceId) }

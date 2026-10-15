@@ -8,7 +8,9 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
 import app.masroufy.core.TxnSources
+import app.masroufy.core.SmsStatementPair
 import app.masroufy.core.explainWalletBalance
+import app.masroufy.core.withRematchPairs
 import app.masroufy.core.isSmsReference
 import app.masroufy.port.ImportBatchRepository
 import app.masroufy.port.SourceRecordRepository
@@ -28,6 +30,8 @@ data class ExplainBalanceDeps(
     val windowDays: Int = CROSS_SOURCE_WINDOW_DAYS,
     /** علامة «تعديل رصيد» (فرع «حدّث الرصيد» بيحددها وقت الدمج) — الافتراضي ولا عملية. */
     val isAdjustment: (Transaction) -> Boolean = { false },
+    /** أزواج «صلّح رسايل البنك القديمة» (`RepairOldSms.duplicates`) — اللي بعكس الاتجاه بتنضاف لـ«راجع المكرر». null = مش متوصل. */
+    val rematch: (suspend () -> List<SmsStatementPair>)? = null,
 )
 
 /** أول يوم ممكن — عمليات قبل رصيد البداية بتتعرض (مش بتتحسب)، فالقراية من الأول (زي «طبّق القواعد على كل حاجة» — 1970-01-01). */
@@ -42,7 +46,9 @@ class ExplainBalance(private val deps: ExplainBalanceDeps) {
         val touching = all.filter { it.walletId == walletId || it.transferToWalletId == walletId || (it.walletId == null && it.transferToWalletId == null) }
         val own = touching.filter { it.walletId == walletId }.map { it.id }
         val sources = sourcesOf(deps.sources, deps.batches, own)
-        return explainWalletBalance(wallet, wallets, touching, sources, asOf, deps.windowDays, deps.isAdjustment)
+        val e = explainWalletBalance(wallet, wallets, touching, sources, asOf, deps.windowDays, deps.isAdjustment)
+        val pairs = deps.rematch?.let { f -> runCatching { f() }.getOrNull() }.orEmpty()
+        return if (pairs.isEmpty()) e else withRematchPairs(e, pairs, touching.associateBy { it.id })
     }
 }
 

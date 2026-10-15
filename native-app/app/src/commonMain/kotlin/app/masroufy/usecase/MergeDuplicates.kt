@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.SmsStatementPair
 import app.masroufy.core.CROSS_SOURCE_WINDOW_DAYS
 import app.masroufy.core.Id
 import app.masroufy.core.MatchingState
@@ -49,6 +50,11 @@ data class MergeDuplicatesDeps(
     val links: RevertLinkDeps,
     val spaceTransfers: SpaceTransferRepository? = null,
     val windowDays: Int = CROSS_SOURCE_WINDOW_DAYS,
+    /**
+     * أزواج «صلّح رسايل البنك القديمة» (`RepairOldSms.duplicates`): زوج **بعكس الاتجاه** بيتقبل بس لو القاعدة دي طلّعته من التخزين دلوقتي،
+     * واللي بتفضل بتاخد اتجاه الكشف. null = بعكس الاتجاه مرفوض دايمًا.
+     */
+    val rematch: (suspend () -> List<SmsStatementPair>)? = null,
 )
 
 enum class MergeRefusal { GONE, NOT_A_PAIR, LINKED, NO_BACKUP, CHANGED }
@@ -77,7 +83,10 @@ class MergeDuplicates(private val deps: MergeDuplicatesDeps) {
         val kinds = sourcesOf(deps.sources, deps.batches, listOf(smsId, statementId))
         val smsOk = kinds[smsId]?.let { it.sms && !it.statement } == true
         val statementOk = kinds[statementId]?.let { it.statement && !it.sms } == true
-        if (smsId == statementId || !smsOk || !statementOk || !samePair(sms, statement)) return MergeResult.Refused(MergeRefusal.NOT_A_PAIR)
+        val opposite = sms.observedDirection != statement.observedDirection && deps.rematch?.let { f ->
+            runCatching { f() }.getOrNull().orEmpty().any { it.oppositeDirection && it.smsTransactionId == smsId && it.statementTransactionId == statementId }
+        } == true
+        if (smsId == statementId || !smsOk || !statementOk || !samePair(sms, statement, opposite)) return MergeResult.Refused(MergeRefusal.NOT_A_PAIR)
         val smsFirst = sms.createdAt < statement.createdAt
         val keep = if (smsFirst) sms else statement
         val drop = if (smsFirst) statement else sms
@@ -100,7 +109,10 @@ class MergeDuplicates(private val deps: MergeDuplicatesDeps) {
                 mergeUndo = if (smsFirst) MergeRestore(keep.occurredAt, keep.sourceOrder, keep.statedBalanceMinor, drop.occurredAt, drop.statedBalanceMinor) else r.mergeUndo,
             )
         }
-        val kept = keptAfter(keep, drop, statementWins = smsFirst, now = now)
+        val kept = keptAfter(keep, drop, statementWins = smsFirst, now = now).let {
+            // بعكس الاتجاه: الكشف هو الصح (الرسالة القديمة اتقرت بعكس اتجاه التحويل بين حساباتك)
+            if (opposite && it.observedDirection != statement.observedDirection) it.copy(observedDirection = statement.observedDirection, updatedAt = now) else it
+        }
         deps.uow.run {
             deps.sources.saveMany(moved)
             if (kept != keep) deps.txns.saveMany(listOf(kept))
@@ -127,8 +139,8 @@ class MergeDuplicates(private val deps: MergeDuplicatesDeps) {
     }
 
     /** نفس المحفظة والعملة والاتجاه والمبلغ زي ما ورد، وجوه النافذة، ومش تحويل — نفس شروط «المكرر المحتمل». */
-    private fun samePair(a: Transaction, b: Transaction): Boolean =
-        a.walletId != null && a.walletId == b.walletId && a.currency == b.currency && a.observedDirection == b.observedDirection &&
+    private fun samePair(a: Transaction, b: Transaction, opposite: Boolean = false): Boolean =
+        a.walletId != null && a.walletId == b.walletId && a.currency == b.currency && (opposite || a.observedDirection == b.observedDirection) &&
             sourceAmountMinor(a.amountMinor, a.originalAmountMinor) == sourceAmountMinor(b.amountMinor, b.originalAmountMinor) &&
             a.transferToWalletId == null && b.transferToWalletId == null && abs(daysBetween(a.occurredAt, b.occurredAt)) <= deps.windowDays
 
