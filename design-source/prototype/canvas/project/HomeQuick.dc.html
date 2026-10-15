@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>كروت سريعة في الرئيسية — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>@font-face{font-family:SAR;src:url(data:font/otf;base64,T1RUTwAJAIAAAwAQQ0ZGIJDA82YAAAP4AAABIk9TLzKKOITzAAABAAAAAGBjbWFwQZLfewAAA6QAAAA0aGVhZC//fFYAAACcAAAANmhoZWEDhgHVAAAA1AAAACRobXR4BPIAAAAABRwAAAAIbWF4cAACUAAAAAD4AAAABm5hbWV3HHPFAAABYAAAAkNwb3N0AAMAAAAAA9gAAAAgAAEAAAABAADOkKIyXw889QADA+gAAAAA5vYcXQAAAADm9hxdAEUAAAK4ArwAAAADAAIAAAAAAAAAAQAAA4T+1AAAAv4AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAIAAFAAAAIAAAADAv4B9AAFAAACigK7AAAAjAKKArsAAAHfADEBAgAAAAAAAAAAAAAAAAAAAAEAAAACAAAAAAAAAABYWFhYAEAgwSDBA4T+1AAAArwAAAAAAAEAAAAAAcICvAAAAAAAAAAAACIBngABAAAAAAAAAAEAIQABAAAAAAABAAMAAAABAAAAAAACAAcACQABAAAAAAADAA0AfgABAAAAAAAEAAsAHgABAAAAAAAFAAsAXQABAAAAAAAGAAoAPwABAAAAAAAHAAEAIQABAAAAAAAIAAEAIQABAAAAAAAJAAEAIQABAAAAAAAKAAEAIQABAAAAAAALAAEAIQABAAAAAAAMAAEAIQABAAAAAAANAAEAIQABAAAAAAAOAAEAIQABAAAAAAAQAAMAAAABAAAAAAARAAcACQADAAEECQAAAAIALwADAAEECQABAAYAAwADAAEECQACAA4AEAADAAEECQADABoAiwADAAEECQAEABYAKQADAAEECQAFABYAaAADAAEECQAGABQASQADAAEECQAHAAIALwADAAEECQAIAAIALwADAAEECQAJAAIALwADAAEECQAKAAIALwADAAEECQALAAIALwADAAEECQAMAAIALwADAAEECQANAAIALwADAAEECQAOAAIALwADAAEECQAQAAYAAwADAAEECQARAA4AEFNBUgBTAEEAUlJlZ3VsYXIAUgBlAGcAdQBsAGEAclNBUiBSZWd1bGFyAFMAQQBSACAAUgBlAGcAdQBsAGEAclNBUlJlZ3VsYXIAUwBBAFIAUgBlAGcAdQBsAGEAclZlcnNpb24gMC4xAFYAZQByAHMAaQBvAG4AIAAwAC4AMSA6U0FSIFJlZ3VsYXIAIAA6AFMAQQBSACAAUgBlAGcAdQBsAGEAcgAAAAABAAMAAQAAAAwABAAoAAAABgAEAAEAAgAAIMH//wAAAAAgwf//AADfQAABAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAQBAAEBAQtTQVJSZWd1bGFyAAEBASf4GwD4HAL4HQP4HgSLi/oY+ZIFHQAAAHAPHQAAAHMRix0AAAEiEgAFAQEMFxohKFZlcnNpb24gMC4xU0FSIFJlZ3VsYXJTQVJSZWd1bGFydW5pMjBDMQAAAAGLAAIBAQSq+IgO+ZL4YNsVi4sFgHKEcIhvCPeBvQWWpJKmjqcI+4BZBfdr9w0VlqSSpo6nCPtMZAWL1gX3N64FlqOSpo6nCPtMZAWL96MFb3tydndyCIv7dAVCewWL9+cFbntydndyCIv7uQX7OWgFgHKEcIhvCPdOswWLLAX7XGEFgHKEcIhvCPdltwWcj5qVlZkIscMFi4sFj5GNkouTCIvfBdSaBYv7KgX3gb0FDgAAAfQAAAL+AAA=) format("opentype");unicode-range:U+20C1;font-weight:100 900}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.h-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1)}
+.h-press:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){.h-press{transition:none}.h-press:active{transform:none}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<a href="{{href}}" class="h-press" aria-label="{{aria}}" dir="rtl" style="display: flex; flex-direction: column; gap: 12px; border-radius: 22px; padding: 14px 16px; color: #193D33; text-decoration: none; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+  <span style="display: flex; align-items: center; gap: 12px">
+    <span aria-hidden="true" style="{{iconBox}}">
+      <sc-if value="{{is.review}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg></sc-if>
+      <sc-if value="{{is.recent}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></sc-if>
+      <sc-if value="{{is.people}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"></circle><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"></path></svg></sc-if>
+      <sc-if value="{{is.invest}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg></sc-if>
+    </span>
+    <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{sub}}</span></span>
+    <sc-if value="{{is.review}}" hint-placeholder-val="{{ true }}"><span style="height: 36px; padding: 0 14px; border-radius: 14px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)">{{action}}</span></sc-if>
+    <sc-if value="{{chev}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></sc-if>
+  </span>
+  <sc-if value="{{is.recent}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; flex-direction: column">
+      <sc-for list="{{ops}}" as="op" hint-placeholder-count="3">
+        <span style="{{op.row}}"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #4F625C; background: rgba(25,61,51,0.06)"><dc-import name="OpIcon" kind="{{op.kind}}" hint-size="18px,18px"></dc-import></span><span style="flex: 1 1 auto; min-width: 0; font-size: 13px">{{op.name}}</span><span style="{{op.amtStyle}}">{{op.amt}}</span></span>
+      </sc-for>
+    </span>
+  </sc-if>
+  <sc-if value="{{is.people}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; gap: 10px">
+      <sc-for list="{{sides}}" as="sd" hint-placeholder-count="2"><span style="flex: 1 1 0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; background: rgba(25,61,51,0.04)"><span style="font-size: 12px; color: #637570">{{sd.label}}</span><span style="{{sd.style}}">{{sd.amt}}</span></span></sc-for>
+    </span>
+  </sc-if>
+  <sc-if value="{{is.invest}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 28px; font-weight: 700; color: #13764D">{{pct}}</span><span style="font-size: 13px; color: #4F625C">{{gain}}</span></span>
+  </sc-if>
+</a>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["review","recent","people","invest"],"default":"review","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":180}}'>
+// كروت صغيرة في الرئيسية (اختيار المالك 2026-10-15): review «محتاجة مراجعة» · recent «آخر العمليات» — ودول ظاهرين أول مرة
+// people «ليك وعليك» · invest «استثماراتك النهارده» — ما اتختاروش، فمستخبيين أول مرة وتقدر تظهرهم من «عدّل الكروت»
+// الأرقام مخترعة بالوحدة الصغرى ومتسقة مع الشاشات (الأشخاص: لك 2,185 عند 4 · عليك 2,450 لـ 2) · مصر ×3 · في التطبيق من حالات استخدام
+const withCur = (v, c) => (c === '⃁' ? '⁦⃁ ' + v + '⁩' : v + ' ' + c);
+const OPS = [['shop', ['سوبر ماركت', 'سوبر ماركت'], -8600], ['car', ['وقود', 'بنزين'], -12000], ['income', ['حوالة من أحمد', 'حوالة من أحمد'], 50000]];
+class Component extends DCLogic {
+  fmt(m) { const a = Math.abs(m); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), cur = eg ? 'ج.م' : '⃁', x = eg ? 3 : 1;
+    const k = ['review', 'recent', 'people', 'invest'].indexOf(this.props.kind) >= 0 ? this.props.kind : 'review';
+    const box = (c, bg) => 'width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + c + '; background: ' + bg;
+    const M = {
+      review: [T('تحتاج مراجعة', 'محتاجة مراجعة'), T('3 عمليات بلا تصنيف', '3 عمليات من غير تصنيف'), 'ReviewQueue.dc.html', box('#956000', '#FBF0DD')],
+      recent: [T('آخر العمليات', 'آخر العمليات'), T('اليوم وأمس', 'النهارده وامبارح'), 'Operations.dc.html', box('#4F625C', 'rgba(25,61,51,0.07)')],
+      people: [T('لك وعليك', 'ليك وعليك'), T('مع من تتعامل معهم', 'مع الناس اللي بتتعامل معاهم'), 'People.dc.html', box('#3E5C9A', '#E7EDF8')],
+      invest: [T('استثماراتك اليوم', 'استثماراتك النهارده'), T('مقارنة بأمس', 'مقارنة بامبارح'), 'Investment.dc.html', box('#13764D', '#E3F1E6')]
+    }[k];
+    const ops = OPS.map(([kind, n, a], i) => ({ kind, name: eg ? n[1] : n[0], amt: (a > 0 ? '+' : '−') + withCur(this.fmt(a * x), cur),
+      amtStyle: 'font-size: 13px; font-weight: 700; color: ' + (a > 0 ? '#13764D' : '#193D33'), row: 'display: flex; align-items: center; gap: 10px; min-height: 44px' + (i ? '; box-shadow: inset 0 1px 0 rgba(25,61,51,0.07)' : '') }));
+    return {
+      is: { review: k === 'review', recent: k === 'recent', people: k === 'people', invest: k === 'invest' }, chev: k !== 'review',
+      title: M[0], sub: M[1], href: M[2], iconBox: M[3], action: T('صنّفها', 'صنّفها'), ops,
+      sides: [[T('لك عند 4', 'ليك عند 4'), 218500, '#13764D'], [T('عليك لـ 2', 'عليك لـ 2'), 245000, '#BE3D48']].map(([label, v, c]) => ({ label, amt: withCur(this.fmt(v * x), cur), style: 'font-size: 18px; font-weight: 700; color: ' + c })),
+      pct: '\u2066+1.2%\u2069', gain: '+' + withCur(this.fmt(170000 * x), cur) + T(' منذ أمس', ' من امبارح'),
+      aria: M[0] + ' — ' + M[1]
+    };
+  }
+}
+</script>
+</body>
+</html>

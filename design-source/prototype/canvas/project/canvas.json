@@ -1105,6 +1105,46 @@
       "y": 27852,
       "w": 350,
       "h": 520
+    },
+    "HomeCards.dc.html": {
+      "is_interactive": true,
+      "title": "كروت الرئيسية (ترتيب وإخفاء) · HomeCards",
+      "x": 0,
+      "y": 28816,
+      "w": 350,
+      "h": 1400
+    },
+    "HomeDaily.dc.html": {
+      "is_interactive": true,
+      "title": "تقدر تصرف النهارده · HomeDaily (قطعة)",
+      "x": 430,
+      "y": 28816,
+      "w": 350,
+      "h": 200
+    },
+    "HomeBuddy.dc.html": {
+      "is_interactive": true,
+      "title": "شخصيتك بتكلمك · HomeBuddy (قطعة)",
+      "x": 860,
+      "y": 28816,
+      "w": 350,
+      "h": 140
+    },
+    "HomeBars.dc.html": {
+      "is_interactive": true,
+      "title": "أكتر حاجة صرفت فيها / أهدافك · HomeBars (قطعة)",
+      "x": 1290,
+      "y": 28816,
+      "w": 350,
+      "h": 200
+    },
+    "HomeQuick.dc.html": {
+      "is_interactive": true,
+      "title": "محتاجة مراجعة / آخر العمليات / ليك وعليك / استثماراتك · HomeQuick (قطعة)",
+      "x": 1720,
+      "y": 28816,
+      "w": 350,
+      "h": 200
     }
   },
   "createdOnFiles": {
@@ -1400,7 +1440,12 @@
     "OpsQuickMenu.dc.html",
     "LinkedOps.dc.html",
     "OpIcon.dc.html",
-    "CharacterRewards.dc.html"
+    "CharacterRewards.dc.html",
+    "HomeCards.dc.html",
+    "HomeDaily.dc.html",
+    "HomeBuddy.dc.html",
+    "HomeBars.dc.html",
+    "HomeQuick.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
