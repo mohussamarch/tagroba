@@ -62,8 +62,10 @@ class SmsRoutingTest {
         val w = SmsWorld(listOf(space)).enable()
         w.auto().chooseWallet("sa", "TESTBANK", a.id)
         w.receive(sms("own", "Debit Transfer Internal\nAmount: SAR 300.00\nTo: **2222\nFrom: **1111\nOn: 2026-10-07 11:15"))
-        assertEquals(1, w.auto().run().recorded)
-        val t = space.all().single()
+        // مراجعة r04: رِجلين — الداخلة في حساب ب كانت بتضيع لأن الرِجل الأولى كانت بتشيل الرسالة من الصندوق
+        assertEquals(2, w.auto().run().recorded)
+        val t = space.all().single { it.observedDirection == Direction.OUT }
+        assertEquals(b.id, space.all().single { it.observedDirection == Direction.IN }.walletId, "الداخل في حساب ب")
         assertEquals(a.id, t.walletId, "الصادر من حساب أ")
         assertEquals(Triple(EconomicKind.INTERNAL_TRANSFER, true, ReviewState.CONFIRMED), Triple(t.economicKind, t.economicKindConfirmed, t.reviewState))
     }

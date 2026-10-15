@@ -36,7 +36,8 @@ fun smsLegVerdict(row: SmsRow, own: Set<String>): SmsLegVerdict {
     val fromOwn = from != null && from in own
     val toOwn = to != null && to in own
     return when {
-        fromOwn && toOwn && from != to -> SmsLegVerdict.Between(from!!, to!!)
+        // مراجعة r04 (الشكوى ٥): «الى:» فيها اسم ⇒ مش رِجلين — الطرف ممكن يكون شخص تاني أرقامه زي محفظتك بالصدفة، فبيتسأل (`OwnAccountAskSource`)
+        fromOwn && toOwn && from != to && !legs.toNamed -> SmsLegVerdict.Between(from!!, to!!)
         toOwn && !fromOwn -> SmsLegVerdict.Into(to!!)
         fromOwn && !toOwn -> SmsLegVerdict.OutOf(from!!)
         fromOwn -> SmsLegVerdict.Keep // نفس الأرقام في الناحيتين — ما بنخمّنش

@@ -64,13 +64,18 @@ internal fun ownAccountLast4Of(body: String, direction: Direction): String? =
 private val FROM_LINE = accountLine(OUT_ONLY)
 private val TO_LINE = accountLine(IN_ONLY)
 
+/** سطر «الى:» قيمته فيها حروف (اسم شخص أو جهة) — مش رقم حساب بس. */
+private val TO_NAMED = Regex("^$H*(?:$IN_ONLY)$H*[:：]$H*[^\n]*\\p{L}", OM)
+
 /**
  * sms-fix (HANDOVER §6.5-3): آخر 4 أرقام سطر «من:» وسطر «الى:/لـ/To:» في الرسالة **زي ما هما** — من غير ما نفترض اتجاه الشكل. «حوالة بين
  * حساباتك» كانت بتتقري صادر دايمًا فـ«من:» كانت بتتاخد حسابك حتى لو الفلوس داخلة المحفظة دي (القرار في `SmsAccountLegs.kt`).
  */
-data class SmsLegs(val fromLast4: String?, val toLast4: String?)
+/** [toNamed] = سطر «الى:» فيه اسم (شخص أو جهة) — الشكوى ٥: أرقام زي محفظتك التانية ومعاها اسم ما بتبقاش «بين حساباتك» لوحدها. */
+data class SmsLegs(val fromLast4: String?, val toLast4: String?, val toNamed: Boolean = false)
 
 fun smsLegsOf(body: String): SmsLegs = SmsLegs(
     FROM_LINE.findAll(body).firstNotNullOfOrNull { lastFourOf(it.groupValues[1]) },
     TO_LINE.findAll(body).firstNotNullOfOrNull { lastFourOf(it.groupValues[1]) },
+    TO_NAMED.containsMatchIn(body),
 )
