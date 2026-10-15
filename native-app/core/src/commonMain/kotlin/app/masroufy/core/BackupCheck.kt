@@ -153,6 +153,8 @@ private fun validateFields(row: Map<String, Any?>, group: String) {
     }
     if (row.containsKey("currency") && (row["currency"] !is String || !CURRENCY_CODE.matches(row["currency"] as String))) throw BackupError(uiText(TextKey.BACKUP_CURRENCY_INVALID))
     if (row.containsKey("accountLast4") && (row["accountLast4"] !is String || !LAST_FOUR.matches(row["accountLast4"] as String))) throw BackupError(uiText(TextKey.BACKUP_LAST_FOUR_ONLY))
+    // OVERRIDES §91-1: «مش بتاعي» على المحفظة — الأربعة أرقام بس برضه
+    if (row.containsKey("notMineLast4") && (row["notMineLast4"] as? List<*>)?.all { it is String && LAST_FOUR.matches(it) } != true) throw BackupError(uiText(TextKey.BACKUP_LAST_FOUR_ONLY))
     if (group == "transactions" && jsString(row["observedDirection"]) !in listOf("in", "out")) throw BackupError(uiText(TextKey.BACKUP_DIRECTION_INVALID))
     if (group == "transactions" && (numberOf(row["amountMinor"]) ?: Double.NaN) <= 0) throw BackupError(uiText(TextKey.BACKUP_AMOUNT_POSITIVE))
     // الحجز (§65) والبند اللي ليه مبلغ: أكبر من صفر (البند من غير مبلغ = الحقل مش مكتوب)

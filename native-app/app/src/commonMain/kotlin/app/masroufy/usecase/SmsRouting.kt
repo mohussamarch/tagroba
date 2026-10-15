@@ -35,7 +35,7 @@ internal fun walletLast4(value: String?): String? = value?.filter { it in '0'..'
 internal fun targetOf(wallet: Wallet, all: List<Wallet>, movesCash: Boolean): SmsReviewTarget {
     val others = all.filter { it.id != wallet.id }.mapNotNull { walletLast4(it.accountLast4) }.toSet()
     val cash = if (movesCash) cashWalletFor(wallet, all)?.id else null
-    return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, walletLast4(wallet.accountLast4), others, cash)
+    return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, walletLast4(wallet.accountLast4), others, cash, notMineDigits(all))
 }
 
 /**
@@ -65,8 +65,11 @@ internal fun accountWallet(row: SmsRow, senderKey: String, all: List<Wallet>, ma
 /** sms-fix (HANDOVER §6.5-3): آخر 4 أرقام كل محافظ البلد. */
 internal fun ownDigits(all: List<Wallet>): Set<String> = all.mapNotNull { walletLast4(it.accountLast4) }.toSet()
 
+/** OVERRIDES §91-1: الأرقام اللي المالك قال عليها «لأ، مش بتاعي» (على أي محفظة في البلد). */
+internal fun notMineDigits(all: List<Wallet>): Set<String> = all.flatMap { it.notMineLast4 }.toSet()
+
 /** sms-fix: صفوف الرسالة بعد قاعدة «من:/الى:» (`SmsAccountLegs.kt`) — اتجاه ومحفظة كل رِجل من أرقام الرسالة نفسها. */
-internal fun legRowsOf(row: SmsRow, all: List<Wallet>): List<SmsRow> = smsLegRows(row, smsLegVerdict(row, ownDigits(all)))
+internal fun legRowsOf(row: SmsRow, all: List<Wallet>): List<SmsRow> = smsLegRows(row, smsLegVerdict(row, ownDigits(all), notMineDigits(all)))
 
 /** sms-fix: محفظة رِجل في التسجيل التلقائي — نفس قاعدة [routeSender]. */
 internal fun legWallet(leg: SmsRow, senderKey: String, all: List<Wallet>, mapping: Map<String, String>): Wallet? {

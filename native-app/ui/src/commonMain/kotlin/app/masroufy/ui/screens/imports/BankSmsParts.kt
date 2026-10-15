@@ -151,14 +151,23 @@ fun SmsFooter(onLink: () -> Unit) {
 
 /** «رسائل «البنك» أين تُسجَّل؟» — مرة واحدة لكل بنك، والمستني بيتسجل أول ما تختار. المحافظ غير الكاش (حسابات بنك ومحافظ إلكترونية). */
 @Composable
-fun BankWalletSheet(bank: BankWaitingUi?, wallets: List<Wallet>, onDismiss: () -> Unit, onSave: (BankWaitingUi, Wallet) -> Unit) {
+fun BankWalletSheet(
+    bank: BankWaitingUi?,
+    wallets: List<Wallet>,
+    onDismiss: () -> Unit,
+    onSave: (BankWaitingUi, Wallet) -> Unit,
+    // OVERRIDES §91-1: نفس اللوحة لـ«أيوه، ده حسابي» — عنوان وشرح تانيين، والمحافظ اللي مالهاش أرقام بس
+    titleText: String? = null,
+    bodyText: String? = null,
+    choices: (Wallet) -> Boolean = { true },
+) {
     var picked by remember(bank) { mutableStateOf<Wallet?>(null) }
-    val title = bank?.let { t(UiKey.SMS_WAITING_SHEET_TITLE, it.sender) }.orEmpty()
+    val title = bank?.let { titleText ?: t(UiKey.SMS_WAITING_SHEET_TITLE, it.sender) }.orEmpty()
     Sheet(bank != null, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
-        BasicText(t(UiKey.SMS_WAITING_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
+        BasicText(bodyText ?: t(UiKey.SMS_WAITING_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (w in wallets.filter { it.kind != "cash" }) {
+            for (w in wallets.filter { it.kind != "cash" && choices(it) }) {
                 RadioRow(w.name, t(UiKey.SMS_WAITING_SHEET_BANK), picked?.id == w.id, { picked = w })
             }
         }

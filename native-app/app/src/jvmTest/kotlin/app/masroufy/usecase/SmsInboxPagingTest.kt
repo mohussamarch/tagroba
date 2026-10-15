@@ -12,8 +12,8 @@ class SmsInboxPagingTest {
     private val older = (1..3).map { HistoryTxn("in$it", day("2026-01-01", it), 50_000L + it, true, "TEST PAYER", 0) }
     private val newer = (1..201).map { HistoryTxn("buy$it", day("2026-02-01", it / 3), 1_000L + it, false, "TEST SHOP", 0) }
 
-    private suspend fun world(): HistoryWorld {
-        val w = HistoryWorld(window = 200)
+    private suspend fun world(digits: Boolean = true): HistoryWorld {
+        val w = if (digits) HistoryWorld(window = 200, space = digitsSpace()) else HistoryWorld(window = 200)
         w.memory.enable(listOf("TESTBANK"))
         // شكل الحوالة الواردة اتأكد قبل كده — شكل الشراء لأ (كل الـ201 شراء مستنية تأكيد)
         assertEquals(1, w.memory.preLearn(w.space.spaceId, w.space.parse, older.first().sms))
@@ -32,6 +32,13 @@ class SmsInboxPagingTest {
         assertEquals(200, box.messages.size, "back on the newest page after the run")
         assertEquals("buy201", box.messages.last().id)
         assertEquals(200, run.waiting.size)
+    }
+
+    @Test fun withoutTheAccountDigitsTheLearnedTransfersWaitAndAsk() = runBlocking<Unit> {
+        val w = world(digits = false)
+        assertEquals(0, AutoRecordSms(w.deps()).run().recorded, "OVERRIDES §91-1: «إلى:1111» مش لأي محفظة ⇒ «الحساب ده بتاعك؟»")
+        assertEquals(emptyList(), w.space.all())
+        assertEquals(204, w.memory.sync().count)
     }
 
     @Test fun historyReportSaysHowManyAreBehindTheShownPage() = runBlocking<Unit> {

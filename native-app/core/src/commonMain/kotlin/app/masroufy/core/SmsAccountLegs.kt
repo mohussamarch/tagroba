@@ -8,7 +8,9 @@ package app.masroufy.core
  * القاعدة (لكل أشكال التحويل — [LEG_KINDS] — السعودية ومصر): [own] = آخر 4 أرقام كل محافظ المالك في البلد.
  * - «الى:» محفظة من محافظه و«من:» محفظة تانية من محافظه ⇒ [SmsLegVerdict.Between]: تحويل داخلي برجلين (خارج من دي وداخل في دي).
  * - «الى:» محفظة من محافظه ⇒ [SmsLegVerdict.Into] (داخل) · «من:» محفظة من محافظه ⇒ [SmsLegVerdict.OutOf] (خارج).
- * - ولا رقم منهم محفظة من محافظه ⇒ [SmsLegVerdict.Unknown]: الرسالة تستنى بسؤال «الحساب ده بتاعك؟» — **عمرها ما تتحط في محفظة البنك الوحيدة**.
+ * - ولا رقم منهم محفظة من محافظه ⇒ [SmsLegVerdict.Unknown]: الرسالة تستنى بسؤال «الحساب ده بتاعك؟» — **عمرها ما تتحط في محفظة البنك الوحيدة**
+ *   (إجابة المالك 2026-10-15 — OVERRIDES §91-1). «أيوه، ده حسابي» ⇒ الأرقام على المحفظة اللي اختارها (`AnswerSmsAccount.mine`) ⇒ بتبقى في [own].
+ *   «لأ» ⇒ الأرقام في [notMine] (`Wallet.notMineLast4`) ⇒ [SmsLegVerdict.Keep]: فلوس لشخص تاني أو منه بالاتجاه اللي الرسالة بتقوله.
  * - مفيش سطور «من/الى» خالص ⇒ [SmsLegVerdict.Keep] (السلوك القديم).
  * وضع التعلّم (§77-A) ما بيغيرش ده: تأكيد مثال من الشكل بيسمح بالتسجيل التلقائي بس، وأرقام كل رسالة هي اللي بتقرر.
  */
@@ -27,7 +29,7 @@ sealed interface SmsLegVerdict {
 /** أشكال التحويل اللي اتجاهها بيتقرر من سطور الحساب (مش من اتجاه الشكل). */
 val LEG_KINDS: Set<SmsKind> = setOf(SmsKind.OWN_TRANSFER, SmsKind.TRANSFER_IN, SmsKind.TRANSFER_OUT)
 
-fun smsLegVerdict(row: SmsRow, own: Set<String>): SmsLegVerdict {
+fun smsLegVerdict(row: SmsRow, own: Set<String>, notMine: Set<String> = emptySet()): SmsLegVerdict {
     if (row.kind !in LEG_KINDS) return SmsLegVerdict.Keep
     val legs = smsLegsOf(row.raw)
     val from = legs.fromLast4
@@ -43,10 +45,19 @@ fun smsLegVerdict(row: SmsRow, own: Set<String>): SmsLegVerdict {
         toOwn && !fromOwn -> SmsLegVerdict.Into(to!!)
         fromOwn && !toOwn -> SmsLegVerdict.OutOf(from!!)
         fromOwn -> SmsLegVerdict.Keep // نفس الأرقام في الناحيتين — ما بنخمّنش
-        // ولا رقم بتاعه: نسأل عن رقم ناحيته حسب الشكل (الصادر «من:» · الوارد «الى:») ولو مش مكتوب الناحية التانية
-        else -> SmsLegVerdict.Unknown((if (row.direction == Direction.OUT) from ?: to else to ?: from)!!)
+        // ولا رقم بتاعه: نسأل عن رقم ناحيته حسب الشكل (الصادر «من:» · الوارد «الى:») ولو مش مكتوب الناحية التانية — إلا لو المالك قال «لأ» عليه
+        else -> askedLast4(row.direction, from, to)!!.let { if (it in notMine) SmsLegVerdict.Keep else SmsLegVerdict.Unknown(it) }
     }
 }
+
+/** الأرقام اللي سؤال «الحساب ده بتاعك؟» بيسأل عنها في [row] (نفس قاعدة [smsLegVerdict])، أو null لو الرسالة مالهاش سطور «من/الى». */
+fun smsAskedLast4(row: SmsRow): String? {
+    if (row.kind !in LEG_KINDS) return null
+    val legs = smsLegsOf(row.raw)
+    return askedLast4(row.direction, legs.fromLast4, legs.toLast4)
+}
+
+private fun askedLast4(direction: Direction, from: String?, to: String?): String? = if (direction == Direction.OUT) from ?: to else to ?: from
 
 /**
  * صفوف الرسالة بعد القاعدة: كل صف رايح محفظة أرقامها في [SmsRow.accountLast4] (التوزيع §75-11 بيوديه هناك) واتجاهه الصح. [Between] ⇒ صفين:

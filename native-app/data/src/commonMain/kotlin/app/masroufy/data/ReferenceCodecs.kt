@@ -25,6 +25,8 @@ object ReferenceCodecs {
                 opt("bankId", w.bankId)
                 // «حدّث الرصيد» (`BalanceCheckpoint.kt`): قايمة جوه المستند **لو فيه نقط بس** ⇒ المحفظة القديمة هي هي بالحرف
                 opt("balanceCheckpoints", w.checkpoints.takeIf { it.isNotEmpty() }?.map(::checkpointDoc))
+                // OVERRIDES §91-1: «لأ، مش بتاعي» — لو فيه أرقام بس
+                opt("notMineLast4", w.notMineLast4.takeIf { it.isNotEmpty() })
             }
         },
         { r ->
@@ -32,6 +34,7 @@ object ReferenceCodecs {
                 r.str("id"), r.str("name"), r.wire("currency", Currency::valueOf), r.str("kind"), r.long("openingBalanceMinor"),
                 r.str("openingAt"), r.strOrNull("accountLast4"), r.strOrNull("bankId"),
                 r.maps("balanceCheckpoints").map(::checkpointOf),
+                r.strings("notMineLast4").orEmpty(),
             )
         },
     )

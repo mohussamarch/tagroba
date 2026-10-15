@@ -21,6 +21,11 @@ data class Wallet(
      * **لو فيه نقط بس** ⇒ المحفظة القديمة ونسختها هي هي بالحرف. التطبيق القديم بيتجاهل الحقل (وبيمسحه لو حفظ المحفظة — هو متجمّد).
      */
     val checkpoints: List<BalanceCheckpoint> = emptyList(),
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-1): آخر 4 أرقام حسابات قال عليها «لأ، مش بتاعي» في سؤال «الحساب ده بتاعك؟» على رسايل بنك
+     * المحفظة دي ⇒ رسايلها بتتسجل فلوس لشخص تاني أو منه (`smsLegVerdict`). الأربعة بس (CLAUDE.md #11) · بتتكتب لو فيه أرقام بس.
+     */
+    val notMineLast4: List<String> = emptyList(),
 )
 
 data class CashSummary(

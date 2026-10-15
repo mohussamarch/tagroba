@@ -41,6 +41,8 @@ data class SmsReviewLine(
     val kind: SmsKind = SmsKind.OTHER,
     /** S1: مفتاح [confirmReason] (عشان العدّ يفرّق «شكل جديد» عن «كلمات عامة» من غير ما يقارن نصوص). */
     val waitReason: TextKey? = null,
+    /** OVERRIDES §91-1: لو [waitReason] = «الحساب ده بتاعك؟» — آخر 4 أرقام الحساب المسؤول عنه (`AnswerSmsAccount`)، وإلا null. */
+    val askLast4: String? = null,
     /**
      * S1 (§75-2): سؤال جوه التطبيق على الرسالة دي — «ده راتبك؟» ([AskKind.IS_SALARY]) — أو null. مراجعة S1: الرسالة اللي عليها السؤال
      * **ما بتتسجلش** بـ«سجّل الكل» لحد ما يترد عليه (`ReviewSmsInbox.answerSalary` · `AutoRecordSms.confirm(…, isSalary)`).

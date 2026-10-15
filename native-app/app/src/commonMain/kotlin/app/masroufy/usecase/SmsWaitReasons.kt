@@ -34,6 +34,8 @@ data class SmsReviewTarget(
      * (`cashWalletFor`) وبس لو استيراد البلد فيه `CashWithdrawalEffect` — `AutoRecordSms.targetFor` بيبنيه للشاشة زي الخلفية بالظبط.
      */
     val cashWalletId: Id? = null,
+    /** OVERRIDES §91-1: أرقام حسابات المالك قال عليها «لأ، مش بتاعي» (`Wallet.notMineLast4` في البلد كلها). */
+    val notMineLast4: Set<String> = emptySet(),
 )
 
 /** الرسالة بتقول حساب تاني من حسابات المالك (مش حساب المحفظة دي). */
@@ -52,7 +54,7 @@ internal fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
  */
 internal fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
     // sms-fix (HANDOVER §6.5-3): تحويل أرقام «من:/الى:» فيه مش لأي محفظة من محافظك ⇒ «الحساب ده بتاعك؟» — عمره ما يتسجل في محفظة البنك الوحيدة
-    smsLegVerdict(row, target.otherAccountsLast4 + setOfNotNull(target.accountLast4)) is SmsLegVerdict.Unknown -> TextKey.SMS_WAIT_UNKNOWN_ACCOUNT
+    smsLegVerdict(row, target.otherAccountsLast4 + setOfNotNull(target.accountLast4), target.notMineLast4) is SmsLegVerdict.Unknown -> TextKey.SMS_WAIT_UNKNOWN_ACCOUNT
     target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
     row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
     row.kind == SmsKind.CASH_WITHDRAWAL -> cashWithdrawalWait(row, target) // S2 (§75-4): نفس قاعدة `CashWithdrawalEffect.kt` — بيتنقل ⇒ null

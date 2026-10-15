@@ -53,6 +53,8 @@ class WaitingActions(
     val dismiss: (String) -> Unit,
     val recordAll: () -> Unit,
     val recordByHand: (FailedUi, String) -> Unit,
+    /** OVERRIDES §91-1: «الحساب ده بتاعك؟» — true = «أيوه، ده حسابي» (بيختار المحفظة) · false = «لأ». */
+    val answerAccount: (WaitLineUi, Boolean) -> Unit = { _, _ -> },
 )
 
 /**
@@ -78,7 +80,7 @@ fun SmsWaitingSection(
         }
         if (n == 0) TintedPanel(PanelTone.MINT, radius = 18.dp) { BasicText(t(UiKey.SMS_WAITING_ALL_DONE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.primary)) }
         for (bank in ui.banks) BankCard(bank, currency) { actions.pickWallet(bank) }
-        if (ui.confirm.isNotEmpty()) ConfirmCard(ui.confirm, currency, categories, chosen, actions.pickCategory)
+        if (ui.confirm.isNotEmpty()) ConfirmCard(ui.confirm, currency, categories, chosen, actions.pickCategory, actions.answerAccount)
         for (line in ui.similar) SimilarCard(line, currency, line.messageId in included, actions)
         for (f in ui.failed) FailedCard(f, currency, handError?.takeIf { it.first == f.messageId }?.second, actions)
         val toRecord = ui.confirm.size + ui.similar.count { it.messageId in included }
@@ -110,7 +112,14 @@ private fun BankCard(bank: BankWaitingUi, currency: Currency, onPick: () -> Unit
 }
 
 @Composable
-private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories: List<Category>, chosen: Map<String, String>, onPick: (WaitLineUi) -> Unit) {
+private fun ConfirmCard(
+    lines: List<WaitLineUi>,
+    currency: Currency,
+    categories: List<Category>,
+    chosen: Map<String, String>,
+    onPick: (WaitLineUi) -> Unit,
+    onAnswer: (WaitLineUi, Boolean) -> Unit,
+) {
     FloatingCard(Modifier.fillMaxWidth()) {
         BasicText(t(UiKey.SMS_WAITING_CONFIRM_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
         lines.forEachIndexed { i, line ->
@@ -122,6 +131,14 @@ private fun ConfirmCard(lines: List<WaitLineUi>, currency: Currency, categories:
                 }
                 BasicText(dayMonth(line.date), style = Type.caption().copy(color = Ink.muted))
                 if (line.reason != null) BasicText(line.reason, style = Type.caption().copy(color = Ink.focus))
+                val asked = line.askLast4
+                if (asked != null && line.walletId != null) {
+                    BasicText(t(UiKey.SMS_ACCOUNT_ASK, asked), style = Type.of(13, FontWeight.Bold))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TonalButton(t(UiKey.SMS_ACCOUNT_YES), { onAnswer(line, true) }, Modifier.weight(1f), height = 40.dp)
+                        TonalButton(t(UiKey.SMS_ACCOUNT_NO), { onAnswer(line, false) }, Modifier.weight(1f), height = 40.dp, muted = true)
+                    }
+                }
                 val catId = chosen[line.messageId] ?: line.categoryId
                 val cat = categories.firstOrNull { it.id == catId }
                 SelectChip(cat?.name ?: t(UiKey.IMPORTS_UNCATEGORIZED), chosen.containsKey(line.messageId), { onPick(line) }, dot = cat?.let { parseHex(it.lightColor) }, height = 36.dp)

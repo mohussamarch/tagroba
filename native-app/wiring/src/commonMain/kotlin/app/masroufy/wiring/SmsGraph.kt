@@ -20,6 +20,7 @@ import app.masroufy.ui.screens.imports.SenderReview
 import app.masroufy.ui.screens.imports.SmsDeps
 import app.masroufy.ui.screens.imports.SmsOverview
 import app.masroufy.usecase.AddKind
+import app.masroufy.usecase.AnswerSmsAccount
 import app.masroufy.usecase.AddOperationDraft
 import app.masroufy.usecase.AddOperationResult
 import app.masroufy.usecase.AutoRecordResult
@@ -105,6 +106,12 @@ internal class SmsGraph(
         return auto.run()
     }
 
+    override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean): AutoRecordResult {
+        val answer = AnswerSmsAccount(c.repos.wallets)
+        if (mine) answer.mine(walletId, last4) else answer.notMine(walletId, last4)
+        return auto().run()
+    }
+
     override suspend fun enable(senders: List<String>): InboxView = manage.enable(senders)
 
     override suspend fun disable(): InboxView = manage.disable()
@@ -169,7 +176,7 @@ internal fun autoRecordSms(c: AreaContext, inbox: SmsInboxPort): AutoRecordSms {
 internal fun targetOf(wallet: Wallet, all: List<Wallet>): SmsReviewTarget {
     fun last4(value: String?) = value?.filter { it in '0'..'9' }?.takeLast(4)?.takeIf { it.length == 4 }
     val others = all.filter { it.id != wallet.id }.mapNotNull { last4(it.accountLast4) }.toSet()
-    return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others)
+    return SmsReviewTarget(wallet.id, wallet.name, wallet.currency, last4(wallet.accountLast4), others, notMineLast4 = all.flatMap { it.notMineLast4 }.toSet())
 }
 
 /** الصندوق نفسه برسايل مرسل واحد بس ([key] بعد `smsSenderKey`) — الشيل والتفعيل بيروحوا للصندوق الحقيقي. */

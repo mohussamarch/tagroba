@@ -66,6 +66,8 @@ fun BankSmsScreen() {
     var handError by remember { mutableStateOf<Pair<String, String>?>(null) }
     var picking by remember { mutableStateOf<PickFor?>(null) }
     var bankSheet by remember { mutableStateOf<BankWaitingUi?>(null) }
+    // OVERRIDES §91-1: «أيوه، ده حسابي» ⇒ لوحة اختيار المحفظة
+    var accountLine by remember { mutableStateOf<WaitLineUi?>(null) }
 
     LaunchedEffect(deps, reload) {
         categories = runCatching { deps.categories.list() }.getOrDefault(categories)
@@ -120,6 +122,15 @@ fun BankSmsScreen() {
                     is AddOperationResult.Invalid -> handError = f.messageId to r.message
                     null -> Unit
                 }
+            }
+        },
+        answerAccount = { line, mine ->
+            val last4 = line.askLast4
+            val walletId = line.walletId
+            if (mine) accountLine = line
+            else if (last4 != null && walletId != null) act {
+                val r = deps.sms?.answerAccount(walletId, last4, mine = false)
+                toaster.show(t(UiKey.SMS_ACCOUNT_NOT_MINE_SAVED, last4, opsCount(r?.recorded ?: 0)), dark = true)
             }
         },
     )
@@ -204,6 +215,23 @@ fun BankSmsScreen() {
             if (title.isNotBlank()) toaster.show(t(UiKey.BANK_SMS_REMEMBERED, title, cat.name), dark = true)
         },
         onDismiss = { picking = null },
+    )
+    val asked = accountLine
+    BankWalletSheet(
+        bank = asked?.let { BankWaitingUi(it.sender, 1, emptyList()) },
+        wallets = wallets,
+        onDismiss = { accountLine = null },
+        onSave = { _, wallet ->
+            accountLine = null
+            val last4 = asked?.askLast4
+            if (last4 != null) act {
+                val r = deps.sms?.answerAccount(wallet.id, last4, mine = true)
+                toaster.show(t(UiKey.SMS_ACCOUNT_MINE_SAVED, last4, wallet.name, opsCount(r?.recorded ?: 0)), dark = true)
+            }
+        },
+        titleText = asked?.askLast4?.let { t(UiKey.SMS_ACCOUNT_SHEET_TITLE, it) },
+        bodyText = t(UiKey.SMS_ACCOUNT_SHEET_BODY),
+        choices = { it.accountLast4.isNullOrBlank() },
     )
     BankWalletSheet(
         bank = bankSheet,

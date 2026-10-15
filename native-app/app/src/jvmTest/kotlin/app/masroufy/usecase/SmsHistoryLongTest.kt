@@ -17,7 +17,8 @@ import kotlin.test.assertTrue
  */
 class SmsHistoryLongTest {
     @Test fun eighteenMonthsOfSmsOverAnImportedStatementMergeAndNothingDoubles() = runBlocking<Unit> {
-        val w = HistoryWorld()
+        // OVERRIDES §91-1: الحوالات الواردة «إلى:1111» بتتسجل لوحدها بس لما محفظة البنك عليها الأرقام دي
+        val w = HistoryWorld(space = digitsSpace())
         val txns = eighteenMonths()
         val twins = txns.filter { it.id.endsWith("twin") }.flatMap { twin -> listOf(twin.id, twin.id.removeSuffix("twin")) }.toSet()
         assertTrue(txns.size > 550 && twins.size >= 22, "${txns.size} transactions, ${twins.size} twins")

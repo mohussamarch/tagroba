@@ -26,8 +26,14 @@ import kotlin.test.assertFalse
  * كل الأسامي والأرقام مخترعة.
  */
 class SmsTransferDecisionsTest {
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-1): تحويل فيه «من:/الى:» وولا محفظة عندها آخر 4 أرقام ⇒ **بيستنى ويسأل «الحساب ده بتاعك؟»**
+     * ([withoutAnyWalletDigitsTheTransferWaitsAndAsks]). باقي الاختبارات عن قرارات الزون، فمحفظة البنك هنا عليها أرقامها (1111) — زي بعد «أيوه».
+     */
+    private fun space(parties: List<TransferParty> = emptyList()) = SmsSpace(wallets = listOf(CASH, BANK.copy(accountLast4 = "1111")), parties = parties)
+
     private suspend fun partyOf(body: String): TransferPartyRef {
-        val world = SmsWorld().enable()
+        val world = SmsWorld(listOf(space())).enable()
         world.receive(sms("probe", body))
         world.auto().run()
         return transferPartyOf(world.spaces.single().all().single())!!
@@ -37,7 +43,7 @@ class SmsTransferDecisionsTest {
         TransferParty(party.key, party.label, party.last4, verdict, personId, "2026-10-01T00:00:00.000Z")
 
     private suspend fun recordWith(decisions: List<TransferParty>, vararg bodies: String): List<Transaction> {
-        val space = SmsSpace(parties = decisions)
+        val space = space(decisions)
         val world = SmsWorld(listOf(space)).enable()
         bodies.forEachIndexed { i, b -> world.receive(sms("m$i", b)) }
         assertEquals(bodies.size, world.auto().run().recorded)
@@ -56,7 +62,7 @@ class SmsTransferDecisionsTest {
     }
 
     @Test fun ownAccountByLastFourBecomesAnInternalTransfer() = runBlocking<Unit> {
-        val body = "حوالة داخلية صادرة\nالرصيد: 1500 SAR\nمبلغ:SAR 35.62\nإلى: 9999\n26/10/07 09:35"
+        val body = "حوالة داخلية صادرة\nمن:1111\nالرصيد: 1500 SAR\nمبلغ:SAR 35.62\nإلى: 9999\n26/10/07 09:35"
         val own = partyOf(body)
         assertEquals("9999", own.last4)
         val t = recordWith(listOf(decision(own, TransferVerdict.OWN_ACCOUNT)), body).single()
@@ -72,8 +78,16 @@ class SmsTransferDecisionsTest {
         assertEquals(dismissed.copy(id = undecided.id), undecided.copy(id = undecided.id))
     }
 
+    @Test fun withoutAnyWalletDigitsTheTransferWaitsAndAsks() = runBlocking<Unit> {
+        val world = SmsWorld().enable()
+        world.receive(sms("m1", TO_PERSON), sms("m2", FROM_PERSON))
+        assertEquals(0, world.auto().run().recorded, "«الحساب ده بتاعك؟» — ولا واحدة بتتسجل في محفظة البنك الوحيدة")
+        assertEquals(emptyList(), world.spaces.single().all())
+        assertEquals(setOf("m1", "m2"), world.queued().toSet())
+    }
+
     @Test fun theZoneSeesSmsTransfersAndDecidingThereFixesThem() = runBlocking<Unit> {
-        val space = SmsSpace()
+        val space = space()
         val world = SmsWorld(listOf(space)).enable()
         world.receive(sms("m1", TO_PERSON))
         world.auto().run()

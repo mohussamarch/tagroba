@@ -10,6 +10,7 @@ import app.masroufy.core.SmsRow
 import app.masroufy.core.SmsShape
 import app.masroufy.core.TextKey
 import app.masroufy.core.jsTrim
+import app.masroufy.core.smsAskedLast4
 import app.masroufy.core.smsRowsJson
 import app.masroufy.core.toParsedRow
 import app.masroufy.core.uiText
@@ -53,6 +54,7 @@ internal class SmsSession(
             confirmReason = wait?.let { uiText(it) },
             kind = part.request.smsRows[number]?.kind ?: SmsKind.OTHER,
             waitReason = wait,
+            askLast4 = if (wait == TextKey.SMS_WAIT_UNKNOWN_ACCOUNT) part.request.smsRows[number]?.let(::smsAskedLast4) else null,
             question = questionByLine[number],
             walletId = part.request.walletId,
             fee = part.request.smsRows[number]?.let(::smsFeeToRecord),

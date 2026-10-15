@@ -79,6 +79,12 @@ interface SmsDeps {
     /** محفظة بنك (مرة واحدة لكل بنك) ثم تشغيلة بتسجّل المستني. [walletId] = null ⇒ يشيل الربط. */
     suspend fun chooseWallet(sender: String, walletId: Id?): AutoRecordResult
 
+    /**
+     * OVERRIDES §91-1 — «الحساب ده بتاعك؟» ([WaitLineUi.askLast4]): [mine] ⇒ الأرقام على المحفظة [walletId] اللي اختارها · لأ ⇒ «مش بتاعي» على محفظة
+     * الرسالة. وبعدها تشغيلة بتسجّل المستني. الافتراضي: مفيش.
+     */
+    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean): AutoRecordResult? = null
+
     /** تفعيل القراية بالمرسلين دول (الإذن قبلها من `LocalPermissions`). */
     suspend fun enable(senders: List<String>): InboxView
 

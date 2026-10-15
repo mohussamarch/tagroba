@@ -19,6 +19,12 @@ import app.masroufy.port.QueuedSms
  * ملفات المالك). بنك وهمي رصيد بدايته 2025-01-01 (زي حساب المالك) + كاش، والدمج مع الكشف شغال (±2 يوم — §75-10).
  */
 internal val HISTORY_BANK = Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 500_000, "2025-01-01")
+
+/**
+ * إجابة المالك 2026-10-15 (OVERRIDES §91-1): الحوالة الواردة «إلى:1111» من غير محفظة عليها الأرقام دي بتستنى «الحساب ده بتاعك؟». البلد دي
+ * محفظة بنكها عليها 1111 — زي ما المالك بيرد «أيوه، ده حسابي» — للاختبارات اللي عن حاجة تانية (الصفحات · التاريخ الطويل).
+ */
+internal fun digitsSpace(window: Int? = CROSS_SOURCE_WINDOW_DAYS) = SmsSpace(wallets = listOf(CASH, HISTORY_BANK.copy(accountLast4 = "1111")), window = window)
 internal const val HISTORY_NOW = "2026-07-01T12:00:00Z"
 
 internal fun day(iso: String, plus: Int): String = dayNumberToIso(toDayNumber(parseIsoDate(iso)) + plus)

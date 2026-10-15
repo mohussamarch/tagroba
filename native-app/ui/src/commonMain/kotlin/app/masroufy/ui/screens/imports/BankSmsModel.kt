@@ -47,6 +47,9 @@ data class WaitLineUi(
     val categoryId: Id?,
     val reason: String?,
     val conflict: Boolean = false,
+    /** OVERRIDES §91-1: «الحساب ده بتاعك؟» على آخر 4 أرقام دول (وإلا null) — [walletId] = محفظة الرسالة. */
+    val askLast4: String? = null,
+    val walletId: Id? = null,
 )
 
 /** رسالة ما اتفهمتش: سببها ونصها (لو موجود). [foreign] = بعملة أجنبية (§75-12 — السؤال عن المبلغ المحلي لسه ما اتبناش). */
@@ -111,7 +114,7 @@ fun bankSmsUi(overview: SmsOverview?, recordedToday: List<Transaction>, fresh: S
 }
 
 private fun SmsReviewLine.toUi(sender: String, reason: String?, conflict: Boolean = false) =
-    WaitLineUi(messageId, sender, merchant, date, amountMinor, direction, categoryId, reason, conflict)
+    WaitLineUi(messageId, sender, merchant, date, amountMinor, direction, categoryId, reason, conflict, askLast4, walletId)
 
 private fun Transaction.toRecorded(sheen: Boolean) = RecordedUi(
     id = id,
