@@ -2,6 +2,7 @@ package app.masroufy.wiring
 
 import app.masroufy.core.DEFAULT_SPACE_ID
 import app.masroufy.core.Space
+import app.masroufy.core.SpaceArchived
 import app.masroufy.port.ActiveSpaceStore
 import app.masroufy.port.Clock
 import app.masroufy.port.SpaceRegistry
@@ -48,6 +49,9 @@ class SessionSpacesAdmin(
     private val manage = ManageSpaces(ManageSpacesDeps(links.registry, links.active, clock, links.targets, seeds))
 
     override suspend fun create(countryCode: String): Space = step {
+        // مراجعة 0.3: البلد في الأرشيف ⇒ «رجّعها من الأرشيف» (`SpaceArchived` — زرار الرجوع على كارتها) بدل «عندك حساب … قبل كده»
+        manage.list(includeArchived = true).firstOrNull { it.archived && it.id != DEFAULT_SPACE_ID && it.countryCode.equals(countryCode, true) }
+            ?.let { throw SpaceArchived(it) }
         manage.list().firstOrNull { it.id != DEFAULT_SPACE_ID && it.countryCode.equals(countryCode, true) } ?: manage.create(countryCode)
     }
 

@@ -239,4 +239,15 @@ class SpacesAdminWiringTest {
         assertTrue(s.links.switchSpace("eg"))
         assertEquals(47_500L, s.graph().shell.withYouNow().totalMinor, "مصر رجعت ببياناتها")
     }
+
+    /** مراجعة 0.3: «أضف مصر» ومصر في الأرشيف ⇒ «رجّعها من الأرشيف» (مش «عندك حساب مصر قبل كده»)، والرجوع نفسه شغال. */
+    @Test fun addingAnArchivedCountryOffersToBringItBack() = runBlocking<Unit> {
+        val admin = Session().graph().more.spacesAdmin!!
+        val eg = admin.create("EG")
+        admin.archive(eg.id)
+        val offer = assertFailsWith<app.masroufy.core.SpaceArchived> { admin.create("EG") }
+        assertEquals(eg.id, offer.space.id)
+        assertEquals(app.masroufy.core.uiText(app.masroufy.core.TextKey.SPACE_COUNTRY_ARCHIVED, app.masroufy.core.countryLabel("EG")), offer.message)
+        assertFalse(admin.unarchive(offer.space.id).archived)
+    }
 }
