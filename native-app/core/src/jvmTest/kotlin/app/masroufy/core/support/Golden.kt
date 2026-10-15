@@ -41,10 +41,10 @@ object Golden {
             val result = runCatching { run(input) }
             if (expectedError != null) {
                 val error = result.exceptionOrNull() ?: fail("$function($input): كان المفروض خطأ «$expectedError» وطلع ${result.getOrNull()}")
-                assertEquals(westernized(expectedError), error.message?.let(::westernized), "$function($input)")
+                assertEquals(westernized(expectedError), error.message?.let { westernized(oldRiyalText(it)) }, "$function($input)")
             } else {
                 val actual = result.getOrElse { fail("$function(${short(input)}): خطأ مش متوقع «${it.message}»") }
-                val diff = firstDiff(plainJson(case["out"] ?: JsonNull), actual, "")
+                val diff = firstDiff(plainJson(case["out"] ?: JsonNull), oldRiyalJson(actual), "")
                 if (diff != null) fail("$function(${short(input)}): أول فرق عند $diff")
             }
         }
@@ -93,6 +93,21 @@ object Golden {
  * قرار المالك OVERRIDES §79 (L5): التطبيق الجديد بيعرض **0-9 بس**، والقديم (اللي ولّد ملفات المرجع) كان بيعرض الأرقام العربية الشرقية
  * في الجمل. فالنصوص بتتقارن بعد توحيد الأرقام والفواصل (٠-٩ ٪ ٫ ٬ ⇒ 0-9 % . ,) — باقي الحروف بالحرف زي ما هي.
  */
+/**
+ * قرار المالك 2026-10-15: الناتج الجديد «⁦⃁ 12.00⁩» (علامة الريال الرسمية شمال الرقم جوه عزل LTR) = «12.00 ر.س» بتاع التطبيق القديم.
+ * التحويل على **الناتج** بس وبالعزل بالظبط — نص رسالة البنك الخام («12.5 ر.س») بيفضل بيتقارن زي ما هو.
+ */
+private val NEW_RIYAL = Regex("\u2066\u20C1 ([^\u2069]*)\u2069")
+
+private fun oldRiyalText(s: String): String = NEW_RIYAL.replace(s) { "${it.groupValues[1]} ر.س" }.replace("\u20C1", "ر.س")
+
+private fun oldRiyalJson(e: JsonElement): JsonElement = when (e) {
+    is JsonArray -> JsonArray(e.map(::oldRiyalJson))
+    is JsonObject -> JsonObject(e.mapValues { oldRiyalJson(it.value) })
+    is JsonPrimitive -> if (e.isString) JsonPrimitive(oldRiyalText(e.content)) else e
+    else -> e
+}
+
 fun westernized(s: String): String = buildString(s.length) {
     for (c in s) append(
         when (c) {

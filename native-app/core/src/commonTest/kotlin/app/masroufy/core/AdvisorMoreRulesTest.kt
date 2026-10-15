@@ -43,7 +43,7 @@ class AdvisorMoreRulesTest {
 
     @Test fun beforePaydayBoundaries() {
         val c = assertNotNull(before(18_000, 100_000, null))
-        assertEquals("الراتب بعد 3 يومًا ومعك 180.00 ر.س — وعليك 1,000.00 ر.س مستحقات قبله", c.body)
+        assertEquals("الراتب بعد 3 يومًا ومعك \u2066\u20C1 180.00\u2069 — وعليك \u2066\u20C1 1,000.00\u2069 مستحقات قبله", c.body)
         assertEquals("beforepay|2026-10-28", c.threadKey)
         assertNotNull(before(18_000, 100_000, null, today = "2026-10-23"), "5 أيام")
         assertNull(before(18_000, 100_000, null, today = "2026-10-22"), "6 أيام ⇒ بدري")
@@ -65,7 +65,7 @@ class AdvisorMoreRulesTest {
         val p = goalProgress(summer, 125_000, 0, "2026-10-01")
         assertEquals(125_000L, p.requiredPerMonthMinor)
         val c = assertNotNull(payFirstCandidate("2026-09-28", p, "2026-10-01", period, Currency.SAR))
-        assertEquals("نزل الراتب — حوّل 1,250.00 ر.س لخطة «سفر الصيف» قبل أن تصرف", c.body)
+        assertEquals("نزل الراتب — حوّل \u2066\u20C1 1,250.00\u2069 لخطة «سفر الصيف» قبل أن تصرف", c.body)
         assertNull(payFirstCandidate("2026-09-28", p, "2026-10-02", period, Currency.SAR), "بعد 4 أيام")
         assertNull(payFirstCandidate(null, p, "2026-10-01", period, Currency.SAR), "المرتب ما نزلش")
         assertNull(payFirstCandidate("2026-09-27", p, "2026-09-28", period, Currency.SAR), "مرتب الفترة اللي فاتت")
@@ -88,7 +88,7 @@ class AdvisorMoreRulesTest {
 
     @Test fun billJumpComparesOnePaymentWithItsUsual() {
         val c = assertNotNull(billJumpCandidate(bill, "t-9", 62_000, listOf(41_000, 41_000, 40_000)))
-        assertEquals("فاتورة الكهرباء 620.00 ر.س — أعلى من المعتاد (410.00 ر.س)", c.body)
+        assertEquals("فاتورة الكهرباء \u2066\u20C1 620.00\u2069 — أعلى من المعتاد (\u2066\u20C1 410.00\u2069)", c.body)
         assertNotNull(billJumpCandidate(bill, "t-9", 51_250, listOf(30_000, 41_000, 41_000, 40_000)), "125% بالظبط من آخر 3")
         assertNull(billJumpCandidate(bill, "t-9", 51_249, listOf(41_000, 41_000, 40_000)))
         assertNull(billJumpCandidate(bill, "t-9", 90_000, listOf(41_000, 40_000)), "دفعتين بس قبلها ⇒ المعتاد مش معروف")
@@ -105,7 +105,7 @@ class AdvisorMoreRulesTest {
 
     @Test fun bigOneIsAShareOfTheUsualMonth() {
         val c = assertNotNull(bigOneCandidate("t-1", 230_000, "2026-10-01", 920_000, Currency.SAR))
-        assertEquals("عملية 2,300.00 ر.س — ربع مصروف شهرك أو أكثر", c.body)
+        assertEquals("عملية \u2066\u20C1 2,300.00\u2069 — ربع مصروف شهرك أو أكثر", c.body)
         assertTrue(bigOneCandidate("t-1", 184_000, "2026-10-01", 920_000, Currency.SAR)!!.body.endsWith(uiText(TextKey.ADVISOR_SHARE_FIFTH)), "20% بالظبط")
         assertNull(bigOneCandidate("t-1", 183_999, "2026-10-01", 920_000, Currency.SAR))
         assertNull(bigOneCandidate("t-1", 900_000, "2026-10-01", null, Currency.SAR), "المعتاد مش معروف")
@@ -115,7 +115,7 @@ class AdvisorMoreRulesTest {
     @Test fun goalNearEncouragesTwice() {
         val near = assertNotNull(goalNearCandidate(goalProgress(summer, 450_000, 0, "2026-10-01")))
         assertEquals("goalnear|g-1|near", near.threadKey)
-        assertEquals("جمعت 4,500.00 ر.س من 5,000.00 ر.س — بقي 500.00 ر.س", near.body)
+        assertEquals("جمعت \u2066\u20C1 4,500.00\u2069 من \u2066\u20C1 5,000.00\u2069 — بقي \u2066\u20C1 500.00\u2069", near.body)
         assertNull(goalNearCandidate(goalProgress(summer, 449_999, 0, "2026-10-01")))
         assertEquals("goalnear|g-1|reached", goalNearCandidate(goalProgress(summer, 500_000, 0, "2026-10-01"))?.threadKey)
         assertNull(goalNearCandidate(goalProgress(summer.copy(archived = true), 480_000, 0, "2026-10-01")))
@@ -129,9 +129,9 @@ class AdvisorMoreRulesTest {
         val names = mapOf("cat-a" to "مطاعم", "cat-b" to "بقالة")
         val now = WeekSpend(50_000, mapOf("cat-a" to 30_000L, "cat-b" to 20_000L, null to 5_000L), 4)
         val c = assertNotNull(weeklySummaryCandidate("2026-10-02", now, WeekSpend(40_000, emptyMap(), 2), names, Currency.SAR))
-        assertEquals("صرفت 500.00 ر.س هذا الأسبوع · أكثر بـ100.00 ر.س من الأسبوع الماضي · الأعلى: «مطاعم» (300.00 ر.س)", c.body)
+        assertEquals("صرفت \u2066\u20C1 500.00\u2069 هذا الأسبوع · أكثر بـ\u2066\u20C1 100.00\u2069 من الأسبوع الماضي · الأعلى: «مطاعم» (\u2066\u20C1 300.00\u2069)", c.body)
         assertEquals("weekly|2026-10-02", c.threadKey)
-        assertTrue(weeklySummaryCandidate("w", now, WeekSpend(60_000, emptyMap(), 1), names, Currency.SAR)!!.body.contains("أقل بـ100.00"))
+        assertTrue(weeklySummaryCandidate("w", now, WeekSpend(60_000, emptyMap(), 1), names, Currency.SAR)!!.body.contains("أقل بـ\u2066\u20C1 100.00\u2069"))
         assertTrue(weeklySummaryCandidate("w", now, WeekSpend(50_000, emptyMap(), 1), names, Currency.SAR)!!.body.contains(uiText(TextKey.ADVISOR_WEEKLY_SAME)))
         assertTrue(!weeklySummaryCandidate("w", now, null, names, Currency.SAR)!!.body.contains("الماضي"), "من غير مقارنة لو الأسبوع اللي فات مش معروف")
         assertNull(weeklySummaryCandidate("w", null, now, names, Currency.SAR), "الأسبوع ده مش معروف")

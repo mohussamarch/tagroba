@@ -32,10 +32,10 @@ class CalendarModelTest {
     @Test fun statusLineComesFromTheReservationNotFromTheScreen() {
         assertEquals("فات موعده", calRowOf(late).status)
         assertEquals(CalTone.LATE, calRowOf(late).statusTone)
-        assertEquals("محجوز ✓، 199.00 ر.س", calRowOf(gym).status)
+        assertEquals("محجوز ✓، \u2066\u20C1 199.00\u2069", calRowOf(gym).status)
         assertEquals("بلا مبلغ", calRowOf(bday).status)
-        assertEquals("ستستلمه، 300.00 ر.س", calRowOf(owed).status)
-        assertEquals("غير محجوز، 1,450.00 ر.س", calRowOf(car).status)
+        assertEquals("ستستلمه، \u2066\u20C1 300.00\u2069", calRowOf(owed).status)
+        assertEquals("غير محجوز، \u2066\u20C1 1,450.00\u2069", calRowOf(car).status)
         assertEquals(CalTone.OPEN, calRowOf(car).statusTone)
         assertEquals("ستستلمه", calRowOf(pay).status, "يوم الراتب من غير مبلغ")
         assertEquals("بعد يومين", calRowOf(gym).whenText)
@@ -43,7 +43,7 @@ class CalendarModelTest {
         assertEquals("منذ 4 أيام", calRowOf(late).whenText)
         assertEquals("3 أكتوبر، اشتراك", calRowOf(late).sub)
         Texts.arabicVariant = ArabicVariant.EGYPTIAN
-        assertEquals("مش محجوز، 1,450.00 ر.س", calRowOf(car).status)
+        assertEquals("مش محجوز، \u2066\u20C1 1,450.00\u2069", calRowOf(car).status)
     }
 
     @Test fun upcomingKeepsLateDuesAndTheSummaryShowsSixInThirtyDays() {

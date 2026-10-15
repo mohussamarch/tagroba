@@ -65,7 +65,7 @@ class HomeModelTest {
     }
 
     @Test fun cashOnlyLineNeedsAKnownCashBalance() {
-        assertEquals("الكاش وحده 200.00 ر.س.", cashOnlyLine(now(total = null, cashMinor = 20_000)))
+        assertEquals("الكاش وحده \u2066\u20C1 200.00\u2069.", cashOnlyLine(now(total = null, cashMinor = 20_000)))
         assertNull(cashOnlyLine(now(total = null, cashMinor = null)))
     }
 }

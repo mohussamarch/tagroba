@@ -176,7 +176,7 @@ class InvestmentScreensTest {
         )
         val estate = assertNotNull(loadInvestment(w.deps, w.space).ui).estates.single()
         assertEquals(57_600_000L, estate.valueMinor, "120 م² × 4,800")
-        assertEquals("عقار، 120 م² × 4,800.00 ر.س للمتر", estate.subtitle)
+        assertEquals("عقار، 120 م² × \u2066\u20C1 4,800.00\u2069 للمتر", estate.subtitle)
         assertEquals("كم ستساوي لو بعتها في 2030؟", estate.ask)
         assertNull(estate.saleMinor, "ملف المتوسطات مش موجود ⇒ مفيش معدل ⇒ سعر البيع «غير متاح»")
 

@@ -20,6 +20,7 @@ import app.masroufy.core.LocalMoment
 import app.masroufy.core.SystemNotice
 import app.masroufy.core.TextKey
 import app.masroufy.core.isLockSafe
+import app.masroufy.core.outgoingText
 import app.masroufy.core.uiText
 import app.masroufy.port.DeviceNotifier
 import app.masroufy.port.NoticeOutcome
@@ -91,8 +92,9 @@ class AndroidDeviceNotifier(private val context: Context) : DeviceNotifier {
         private fun build(context: Context, title: String, body: String, visibility: Int, publicVersion: Notification?): Notification {
             val builder = NotificationCompat.Builder(context, CHANNEL_ALERTS)
                 .setSmallIcon(R.drawable.ic_stat_masroufy)
-                .setContentTitle(title)
-                .setContentText(body)
+                // نص طالع برا التطبيق: خطوط النظام ما فيهاش علامة الريال U+20C1 ⇒ «ر.س» (قرار المالك 2026-10-15)
+                .setContentTitle(outgoingText(title))
+                .setContentText(outgoingText(body))
                 .setAutoCancel(true)
                 .setOnlyAlertOnce(true)
                 .setVisibility(visibility)

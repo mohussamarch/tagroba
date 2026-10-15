@@ -117,7 +117,7 @@ class AdvisorOvercommitFlowTest {
         assertEquals(1, first.posts.size, "أول مرة يحصل ⇒ يتبعت")
         val line = advisorLines().single()
         assertEquals(AlertKind.OVERCOMMITTED, line.kind)
-        assertEquals("حجزت 5,200.00 ر.س لهذا الشهر ومعك 4,100.00 ر.س. ينقصك 1,100.00 ر.س", line.body)
+        assertEquals("حجزت \u2066\u20C1 5,200.00\u2069 لهذا الشهر ومعك \u2066\u20C1 4,100.00\u2069. ينقصك \u2066\u20C1 1,100.00\u2069", line.body)
 
         assertEquals(emptyList(), runDay().posts, "نفس النقص تاني يوم ⇒ ما يتبعتش")
         spend(27_499) // النقص 1,374.99 < 1,100 × 1.25
@@ -126,7 +126,7 @@ class AdvisorOvercommitFlowTest {
         spend(1) // 1,375.00 = +25% بالظبط
         val grown = runDay()
         assertEquals(1, grown.posts.size, "كبر بوضوح ⇒ يتبعت تاني")
-        assertTrue(advisorLines().single().body.endsWith("ينقصك 1,375.00 ر.س"), "سطر واحد في الصفحة بالنقص الجديد")
+        assertTrue(advisorLines().single().body.endsWith("ينقصك \u2066\u20C1 1,375.00\u2069"), "سطر واحد في الصفحة بالنقص الجديد")
 
         counting.uncount(CalendarItemType.EVENT, "ev-2", "2026-10-20")
         val solved = runDay()
@@ -138,7 +138,7 @@ class AdvisorOvercommitFlowTest {
         // 180 في الحساب، والقسط 1,000 يوم 26، والراتب يوم 28
         val low = MemoryWalletRepository(listOf(Wallet("w-bank", "بنك وهمي", Currency.SAR, "bank", 18_000, "2026-01-01")))
         val near = advisor(low).alertCandidates(AlertGatherInput("2026-10-25", period, Currency.SAR)).filter { it.kind == AlertKind.BEFORE_PAYDAY }
-        assertEquals("الراتب بعد 3 يومًا ومعك 180.00 ر.س — وعليك 1,000.00 ر.س مستحقات قبله", near.single().body)
+        assertEquals("الراتب بعد 3 يومًا ومعك \u2066\u20C1 180.00\u2069 — وعليك \u2066\u20C1 1,000.00\u2069 مستحقات قبله", near.single().body)
         assertEquals(emptyList(), advisor(low).alertCandidates(AlertGatherInput("2026-10-22", period, Currency.SAR)).filter { it.kind == AlertKind.BEFORE_PAYDAY }, "6 أيام ⇒ بدري")
         assertEquals(emptyList(), advisor().alertCandidates(AlertGatherInput("2026-10-25", period, Currency.SAR)).filter { it.kind == AlertKind.BEFORE_PAYDAY }, "معاك 4,100 ⇒ مكفي")
     }

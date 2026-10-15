@@ -16,6 +16,7 @@ class SystemNotice internal constructor(val title: String, val body: String) {
 /** نص يصلح لشاشة القفل: من غير أي رقم (أي لغة)، ولا علامة نسبة، ولا رمز عملة. */
 fun isLockSafe(text: String): Boolean {
     if (text.any { it.isDigit() || it == '%' || it == '٪' }) return false
+    if (text.contains(RIYAL_SIGN) || text.contains(uiText(TextKey.CURRENCY_SAR_PLAIN))) return false
     return Currency.entries.none { c -> currencyLabel(c).let { it.isNotBlank() && text.contains(it) } } && !text.contains("•")
 }
 

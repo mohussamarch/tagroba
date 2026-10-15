@@ -149,7 +149,7 @@ class AdvisorPaceFlowTest {
         manage.star("g-far")
         val c = candidates(coffees, "2026-10-03", overview = overview).single()
         assertEquals(AlertKind.HABIT_VS_GOAL, c.kind)
-        assertTrue(c.body.contains("بدل 20,000.00 ر.س بحلول 2027-06-30"), "على الخطة اللي عليها نجمة رغم إن التانية أقرب: ${c.body}")
+        assertTrue(c.body.contains("بدل \u2066\u20C1 20,000.00\u2069 بحلول 2027-06-30"), "على الخطة اللي عليها نجمة رغم إن التانية أقرب: ${c.body}")
         manage.archive("g-far")
         assertEquals(emptySet(), candidates(coffees, "2026-10-03", overview = overview).kinds(), "النجمة على مؤرشفة ⇒ الأقرب تاني")
     }
@@ -160,8 +160,8 @@ class AdvisorPaceFlowTest {
         val three = listOf("2026-09-29", "2026-10-01", "2026-10-02").map { txn(it, 15_000, coffee) }
         val c = candidates(three, "2026-10-03").single()
         assertEquals(AlertKind.HABIT_VS_GOAL, c.kind)
-        assertTrue(c.body.startsWith("قهوة ومشروبات هذا الشهر 450.00 ر.س — بهذا المعدل ستحوش "), c.body)
-        assertTrue(c.body.contains("بدل 12,000.00 ر.س آخر السنة") && c.body.contains("مرات في الأسبوع"), c.body)
+        assertTrue(c.body.startsWith("قهوة ومشروبات هذا الشهر \u2066\u20C1 450.00\u2069 — بهذا المعدل ستحوش "), c.body)
+        assertTrue(c.body.contains("بدل \u2066\u20C1 12,000.00\u2069 آخر السنة") && c.body.contains("مرات في الأسبوع"), c.body)
     }
 
     @Test fun unknownInputsGiveNoAlertNotAFalseOne() = runBlocking<Unit> {

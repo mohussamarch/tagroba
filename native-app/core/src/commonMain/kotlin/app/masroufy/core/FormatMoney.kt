@@ -7,6 +7,16 @@ import kotlin.math.abs
  * بقسمة صحيحة وباقي (مفيش 96.46999 أبدًا).
  */
 
+/**
+ * علامة الريال السعودي **الرسمية** (البنك المركزي السعودي «ساما» · يونيكود 17: U+20C1) — قرار المالك 2026-10-15
+ * بدل «ر.س». بتتكتب **على الشمال** بمسافة: «⃁ 1,250.00».
+ */
+const val RIYAL_SIGN: Char = '\u20C1'
+
+/** عزل من الشمال لليمين (LRI … PDI): العلامة تفضل شمال الرقم حتى جوه جملة عربية. */
+const val LTR_ISOLATE: Char = '\u2066'
+const val POP_ISOLATE: Char = '\u2069'
+
 internal fun currencyLabel(currency: Currency): String = when (currency) {
     Currency.SAR -> uiText(TextKey.CURRENCY_SAR)
     Currency.EGP -> uiText(TextKey.CURRENCY_EGP)
@@ -45,7 +55,26 @@ fun formatAmount(
     return sign + wholeText + fracText
 }
 
-/** نص كامل برمز العملة: "96.47 ر.س". `hidden` = إخفاء المبالغ (spec/01). */
+/**
+ * الرقم + العملة — **المكان الوحيد** اللي بيرتّبهم. الريال: «⁦⃁ 96.47⁩» (العلامة شمال بمسافة جوه عزل LTR).
+ * غيره زي ما هو بعد الرقم: «1,000.00 ج.م».
+ */
+fun withCurrency(number: String, currency: Currency): String =
+    if (currency == Currency.SAR) "$LTR_ISOLATE$RIYAL_SIGN $number$POP_ISOLATE" else "$number ${currencyLabel(currency)}"
+
+private val ISOLATED_RIYAL = Regex("$LTR_ISOLATE$RIYAL_SIGN ([^$POP_ISOLATE]*)$POP_ISOLATE")
+
+/**
+ * نص **طالع برا التطبيق** (إشعار النظام · مشاركة): خطوط الجوال ما فيهاش U+20C1 فبيرجع «96.47 ر.س»/«96.47 SAR».
+ * جوه التطبيق ما يتنادهش (العلامة بتترسم بخطها).
+ */
+fun outgoingText(text: String): String {
+    if (text.indexOf(RIYAL_SIGN) < 0) return text
+    val plain = uiText(TextKey.CURRENCY_SAR_PLAIN)
+    return ISOLATED_RIYAL.replace(text) { "${it.groupValues[1]} $plain" }.replace(RIYAL_SIGN.toString(), plain)
+}
+
+/** نص كامل بالعملة: «⁦⃁ 96.47⁩» · «96.47 ج.م». `hidden` = إخفاء المبالغ (spec/01). */
 fun formatMoney(
     amount: Halalas,
     currency: Currency = Currency.SAR,
@@ -54,9 +83,8 @@ fun formatMoney(
     grouping: Boolean = true,
     hidden: Boolean = false,
 ): String {
-    if (hidden) return if (showCurrency) "•••• ${currencyLabel(currency)}" else "••••"
-    val number = formatAmount(amount, currency, alwaysSign, grouping)
-    return if (showCurrency) "$number ${currencyLabel(currency)}" else number
+    val number = if (hidden) "••••" else formatAmount(amount, currency, alwaysSign, grouping)
+    return if (showCurrency) withCurrency(number, currency) else number
 }
 
 /** القيمة المجهولة نص صريح مش صفر (CLAUDE.md #10). */

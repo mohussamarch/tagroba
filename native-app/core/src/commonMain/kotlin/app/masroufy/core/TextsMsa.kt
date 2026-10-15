@@ -27,7 +27,10 @@ internal val MSA_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_UNCLASSIFIED to "غير محدد",
     TextKey.KIND_UNKNOWN_WIRE to "نوع اقتصادي غير معروف: {0}",
 
-    TextKey.CURRENCY_SAR to "ر.س",
+    // علامة الريال الرسمية (ساما · U+20C1) — بتترسم بخط العلامة جوه التطبيق (ui/text/RiyalText.kt)
+    TextKey.CURRENCY_SAR to "\u20C1",
+    // للنص اللي بيطلع برا التطبيق (إشعار · مشاركة): خطوط الجوال ما فيهاش العلامة
+    TextKey.CURRENCY_SAR_PLAIN to "ر.س",
     TextKey.CURRENCY_EGP to "ج.م",
     TextKey.CURRENCY_USD to "$",
     TextKey.CURRENCY_EUR to "€",

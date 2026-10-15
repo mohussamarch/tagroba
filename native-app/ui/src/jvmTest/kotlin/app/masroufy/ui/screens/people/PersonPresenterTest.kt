@@ -65,7 +65,7 @@ class PersonPresenterTest {
         assertEquals("سلفة منك", ui.history[0].title)
         assertEquals(AmountTone.EXPENSE, ui.history[0].tone, "سلفة منك = فلوس طلعت منك")
         assertTrue(ui.history[0].sub.startsWith("دين قديم، "), ui.history[0].sub)
-        assertEquals("باقٍ 200.00 ر.س من 200.00 ر.س", ui.history[1].sub)
+        assertEquals("باقٍ \u2066\u20C1 200.00\u2069 من \u2066\u20C1 200.00\u2069", ui.history[1].sub)
         assertEquals(AmountTone.INCOME, ui.history[1].tone)
         assertEquals("فات موعدها منذ " + sentenceNumber(3) + " أيام", ui.overdue)
         assertEquals(1, ui.badges.size)

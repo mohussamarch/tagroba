@@ -172,7 +172,7 @@ class AdvisorSyncTest {
         assertEquals(1, b.run(12).posts.size, "كبر بوضوح ⇒ الجوال التاني بعته")
         assertTrue(a.run(13).posts.isEmpty(), "والأول ما بيعيدوش")
         val line = CloudInbox(cloud).listAll().single()
-        assertTrue(line.body.endsWith("ينقصك 1,375.00 ر.س"), "سطر واحد في الصفحة على الجوالين بالنقص الجديد")
+        assertTrue(line.body.endsWith("ينقصك \u2066\u20C1 1,375.00\u2069"), "سطر واحد في الصفحة على الجوالين بالنقص الجديد")
         assertEquals(2, cloud.list(AlertCodecs.alertReceipts).size, "إيصالين بس في السحابة: النقص الأول والنقص اللي كبر")
     }
 }

@@ -69,13 +69,13 @@ class SavingsPresenterTest {
 
         assertEquals(plan.perMonthMinor, ui.heroAmountMinor, "الرقم الكبير من حالة الاستخدام بالظبط")
         assertEquals("تحتاج أن تدّخر شهريًا", ui.heroLabel)
-        assertTrue(ui.heroSub.startsWith("لمدة 24 شهرًا حتى 7 أكتوبر 2028، المتبقي 48,000.00 ر.س"), ui.heroSub)
+        assertTrue(ui.heroSub.startsWith("لمدة 24 شهرًا حتى 7 أكتوبر 2028، المتبقي \u2066\u20C1 48,000.00\u2069"), ui.heroSub)
         assertEquals(VerdictTone.ENOUGH, ui.verdictTone)
         assertEquals("كافٍ", ui.verdict)
         assertEquals(listOf("يوليو", "أغسطس", "سبتمبر"), ui.bars.map { it.label }, "الشهر المالي باسم الشهر اللي بيخلص فيه")
         assertEquals(48, ui.bars.maxOf { it.heightDp }, "أعلى عمود 48")
         assertFalse(ui.compareUnknown)
-        assertTrue(ui.compareLine.startsWith("متوسط ادخارك: 2,150.17 ر.س شهريًا، المطلوب 2,000.00 ر.س"), ui.compareLine)
+        assertTrue(ui.compareLine.startsWith("متوسط ادخارك: \u2066\u20C1 2,150.17\u2069 شهريًا، المطلوب \u2066\u20C1 2,000.00\u2069"), ui.compareLine)
         assertTrue(ui.compareNote.contains("تبدأ يوم 28"), "يوم الراتب من الفترات نفسها")
         assertEquals(plan.perMonthMinor, ui.growthMonthlyMinor)
         assertEquals(1_200_000, ui.growthStartMinor, "«لو وضعتها في…» بتبدأ باللي معاك")
@@ -106,7 +106,7 @@ class SavingsPresenterTest {
         val plan = savingsPerMonth(6_000_000, 0, today, "2028-10-07")
         val ui = savingsResultUi(SavingsOutcome.Target(SavingsTargetOutcome(plan, months, compareWithActual(plan.perMonthMinor, months.averageMinor))), Currency.SAR)
         assertEquals(VerdictTone.SHORT, ui.verdictTone)
-        assertEquals("ينقصك 1,500.00 ر.س", ui.verdict)
+        assertEquals("ينقصك \u2066\u20C1 1,500.00\u2069", ui.verdict)
     }
 
     @Test
@@ -129,7 +129,7 @@ class SavingsPresenterTest {
         val outcome = calc.perMonth(6_000_000, 0, "2028-10-07", Currency.SAR, today)
         assertEquals(compareWithActual(outcome.plan.perMonthMinor, null), outcome.comparison)
         val ui = savingsResultUi(SavingsOutcome.Target(outcome), Currency.SAR)
-        assertEquals("أُنشئت خطة «ادخار 60,000»، 2,500.00 ر.س شهريًا حتى 7 أكتوبر 2028", goalToast("ادخار 60,000", ui, Currency.SAR))
+        assertEquals("أُنشئت خطة «ادخار 60,000»، \u2066\u20C1 2,500.00\u2069 شهريًا حتى 7 أكتوبر 2028", goalToast("ادخار 60,000", ui, Currency.SAR))
     }
 
     private fun actual(vararg saved: Long?): ActualSaving {

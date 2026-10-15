@@ -52,7 +52,7 @@ class WesternDigitsTest {
             assertEquals("2026", sentenceNumber(2026))
             assertTrue(dayMonth("2026-10-18").startsWith("18 "), dayMonth("2026-10-18"))
             assertTrue(monthYear(2026, 10).endsWith(" 2026"), monthYear(2026, 10))
-            assertEquals("1,234.50 ${currencyLabel(Currency.SAR)}", formatMoney(123450))
+            assertEquals("\u2066\u20C1 1,234.50\u2069", formatMoney(123450))
             assertEquals("12.5%", formatPercentOrNA(12.5))
         }
     }
