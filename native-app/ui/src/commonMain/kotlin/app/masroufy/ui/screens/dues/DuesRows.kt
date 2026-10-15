@@ -75,10 +75,10 @@ internal fun PersonInitial(initial: String, forYou: Boolean, size: Int = 40) {
 
 /** صف دين في «الديون»: دايرة · الاسم والسبب والإشارة · المبلغ والموعد · سهم. */
 @Composable
-internal fun DebtRow(row: DebtRowUi, onClick: () -> Unit) {
+internal fun DebtRow(row: DebtRowUi, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).pressScale(press).tap(press, onClick = onClick).padding(vertical = 10.dp)
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).pressScale(press).tap(press, onLongClick = onLongClick, onClick = onClick).padding(vertical = 10.dp)
             .semantics(mergeDescendants = true) { contentDescription = row.aria },
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,

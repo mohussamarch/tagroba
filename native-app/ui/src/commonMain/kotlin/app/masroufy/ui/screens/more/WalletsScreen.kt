@@ -1,5 +1,11 @@
 package app.masroufy.ui.screens.more
 
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
+import app.masroufy.ui.screens.common.QuickAct
+import app.masroufy.ui.screens.common.openOnlyQuickActs
+import app.masroufy.ui.screens.common.quickItems
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +69,7 @@ import app.masroufy.usecase.WithYouNow
  */
 @Composable
 fun WalletsScreen() {
+    val quick = rememberQuickMenu()
     val deps = LocalSpace.current
     val nav = LocalNavigator.current
     var now by remember(deps) { mutableStateOf<WithYouNow?>(null) }
@@ -96,22 +103,27 @@ fun WalletsScreen() {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BasicText(t(g.kind.title), Modifier.padding(horizontal = 4.dp), style = Type.of(15, FontWeight.Bold))
                 GroupCard {
-                    g.rows.forEachIndexed { i, r -> WalletRow(r, n, last = i == g.rows.lastIndex) { nav.push(WalletDetailRoute(r.id)) } }
+                    g.rows.forEachIndexed { i, r ->
+                        QuickTarget(quick, r.name, { quickItems(openOnlyQuickActs()) { if (it == QuickAct.OPEN) nav.push(WalletDetailRoute(r.id)) } }, subtitle = walletMeta(r)) { long ->
+                            WalletRow(r, n, last = i == g.rows.lastIndex, onLongClick = long, onClick = quick.guardTap { nav.push(WalletDetailRoute(r.id)) })
+                        }
+                    }
                 }
             }
         }
         item(key = "add") { TonalButton(t(UiKey.WADD_OPEN), onClick = { adding = true }, modifier = Modifier.fillMaxWidth()) }
     }
     WalletAddSheet(adding, WalletSheetMode.Add, existing = now?.wallets?.map { it.wallet }.orEmpty(), onClose = { adding = false }, onSaved = { tick++ })
+    QuickMenuHost(quick)
 }
 
 @Composable
-private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onClick: () -> Unit) {
+private fun WalletRow(r: WalletRowView, now: WithYouNow, last: Boolean, onLongClick: () -> Unit, onClick: () -> Unit) {
     val press = rememberPress()
     Column {
         Row(
             Modifier.fillMaxWidth().defaultMinSize(minHeight = 72.dp).pressScale(press).clip(RoundedCornerShape(16.dp))
-                .tap(press, label = r.name, onClick = onClick).padding(8.dp),
+                .tap(press, label = r.name, onLongClick = onLongClick, onClick = onClick).padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

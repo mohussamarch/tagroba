@@ -22,6 +22,9 @@ import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.CategoryInk
 import app.masroufy.ui.theme.Ink
@@ -36,6 +39,7 @@ fun RoscasScreen() {
     val space = LocalSpace.current
     val deps = space.dues
     val nav = LocalNavigator.current
+    val quick = rememberQuickMenu()
     val load = rememberLoad(deps) { deps.roscas.list(space.shell.today()).map(::roscaCard) }
     DuesScaffold(t(UiKey.ROSCAS_TITLE)) {
         when (val s = load.value) {
@@ -43,16 +47,21 @@ fun RoscasScreen() {
             Load.Failed -> item { LoadFailed(load::reload) }
             is Load.Ready -> {
                 if (s.value.isEmpty()) item { EmptyState(t(UiKey.ROSCAS_EMPTY_TITLE), t(UiKey.ROSCAS_EMPTY_BODY)) }
-                for (c in s.value) item(key = c.roscaId) { RoscaCard(c) { nav.push(RoscaDetailRoute(c.roscaId)) } }
+                for (c in s.value) item(key = c.roscaId) {
+                    QuickTarget(quick, c.name, { roscaQuickItems(c.roscaId, nav) }, subtitle = c.terms) { long ->
+                        RoscaCard(c, onLongClick = long, onClick = quick.guardTap { nav.push(RoscaDetailRoute(c.roscaId)) })
+                    }
+                }
                 item(key = "new") { PrimaryButton(t(UiKey.ROSCAS_NEW), { nav.push(RoscaWizardRoute) }, Modifier.fillMaxWidth()) }
             }
         }
     }
+    QuickMenuHost(quick)
 }
 
 @Composable
-private fun RoscaCard(c: RoscaCardUi, onClick: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp), onClick = onClick, clickLabel = c.name) {
+private fun RoscaCard(c: RoscaCardUi, onLongClick: () -> Unit, onClick: () -> Unit) {
+    FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp), onClick = onClick, onLongClick = onLongClick, clickLabel = c.name) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

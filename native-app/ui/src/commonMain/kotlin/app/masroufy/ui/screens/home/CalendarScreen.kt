@@ -50,6 +50,9 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Tab
+import app.masroufy.ui.overlay.QuickMenu
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.ui.screens.common.InnerScaffold
 import app.masroufy.ui.screens.people.EventAddSheetRoute
 import app.masroufy.ui.shell.CalendarGrid
@@ -77,6 +80,7 @@ private const val EVENT_ADD_READY = true
 fun CalendarScreen() {
     val deps = LocalSpace.current
     val nav = LocalNavigator.current
+    val quick = rememberQuickMenu()
     val today = deps.shell.today()
     val now = parseIsoDate(today)
     var year by rememberSaveable { mutableStateOf(now.year) }
@@ -105,7 +109,7 @@ fun CalendarScreen() {
             is ReadState.Ready -> if (u.value.items.isEmpty()) {
                 item(key = "empty") { EmptyState(t(UiKey.CALENDAR_EMPTY_TITLE), t(UiKey.CALENDAR_EMPTY_BODY)) }
             } else {
-                item(key = "summary") { SummaryCard(u.value.items, u.value.summary, all, onToggle = { all = !all }, onOpen = { openSource(nav, it) }) }
+                item(key = "summary") { SummaryCard(u.value.items, u.value.summary, all, quick, onToggle = { all = !all }, onOpen = { openSource(nav, it) }) }
             }
         }
         item(key = "add") {
@@ -121,7 +125,8 @@ fun CalendarScreen() {
         item(key = "grid") {
             CalendarGrid(
                 year = year, month = month, today = today, marks = marksOf(monthRead.valueOrNull().orEmpty(), year, month), selectedDay = selected,
-                onPick = { d -> selected = if (selected == d) null else d },
+                onPick = { d -> quick.guardTap { selected = if (selected == d) null else d }() },
+                onLongPick = { d, a -> quick.show(calendarDayRequest(a, year, month, d, EVENT_ADD_READY, nav, onShowDay = { selected = it })) },
                 onMonth = { delta ->
                     val total = year * 12 + (month - 1) + delta
                     year = total.floorDiv(12)
@@ -134,10 +139,11 @@ fun CalendarScreen() {
         item(key = "day") {
             when (val m = monthRead) {
                 ReadState.Failed -> HomeErrorBanner { monthRead = ReadState.Loading; monthTick++ }
-                else -> DayBlock(year, month, selected, m.valueOrNull(), onClear = { selected = null }, onOpen = { openSource(nav, it) })
+                else -> DayBlock(year, month, selected, m.valueOrNull(), quick, onClear = { selected = null }, onOpen = { openSource(nav, it) })
             }
         }
     }
+    QuickMenuHost(quick)
 }
 
 /** «الأحداث القادمة» والجملة الذكية بيتقروا مع بعض — لو واحدة فشلت الكارت كله «تعذّر التحميل» (مش جملة ناقصة من غير ما يقول). */
@@ -154,7 +160,8 @@ private fun openSource(nav: app.masroufy.ui.nav.Navigator, type: CalendarItemTyp
 }
 
 @Composable
-private fun SummaryCard(ups: List<CalendarItem>, summary: SmartSummary?, all: Boolean, onToggle: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
+private fun SummaryCard(ups: List<CalendarItem>, summary: SmartSummary?, all: Boolean, quick: QuickMenu, onToggle: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
+    val nav = LocalNavigator.current
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -166,7 +173,7 @@ private fun SummaryCard(ups: List<CalendarItem>, summary: SmartSummary?, all: Bo
             }
             val shown = shownOf(ups, all)
             shown.forEachIndexed { i, item ->
-                CalRowView(calRowOf(item), onOpen)
+                CalendarItemRow(item, quick, nav, onOpen)
                 if (i < shown.lastIndex) Divider()
             }
             if (ups.size > shownOf(ups, false).size) {
@@ -180,10 +187,10 @@ private fun SummaryCard(ups: List<CalendarItem>, summary: SmartSummary?, all: Bo
 }
 
 @Composable
-internal fun CalRowView(row: CalRow, onOpen: (CalendarItemType) -> Unit) {
+internal fun CalRowView(row: CalRow, onOpen: (CalendarItemType) -> Unit, onLong: (() -> Unit)? = null) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().pressScale(press).tap(press, onClick = { onOpen(row.type) }).padding(vertical = 6.dp),
+        Modifier.fillMaxWidth().pressScale(press).tap(press, onLongClick = onLong, onClick = { onOpen(row.type) }).padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -205,7 +212,8 @@ internal fun CalRowView(row: CalRow, onOpen: (CalendarItemType) -> Unit) {
 
 /** «اضغط يومًا لترى مواعيده» ⇒ «يوم 14 أكتوبر» + مواعيده (أو «لا مواعيد في هذا اليوم»). */
 @Composable
-private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<CalendarItem>?, onClear: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
+private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<CalendarItem>?, quick: QuickMenu, onClear: () -> Unit, onOpen: (CalendarItemType) -> Unit) {
+    val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             val title = if (selected == null) t(UiKey.CALENDAR_PICK_DAY) else t(UiKey.CALENDAR_DAY_TITLE, dayMonth(formatIsoDate(DateParts(year, month, selected))))
@@ -218,6 +226,6 @@ private fun DayBlock(year: Int, month: Int, selected: Int?, monthItems: List<Cal
         val date: IsoDate = formatIsoDate(DateParts(year, month, selected))
         val day = monthItems.filter { it.date == date }
         if (day.isEmpty()) BasicText(t(if (EVENT_ADD_READY) UiKey.CALENDAR_DAY_EMPTY else UiKey.CALENDAR_DAY_EMPTY_NO_ADD), style = Type.of(13).copy(color = Ink.muted))
-        for (item in day) FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)) { CalRowView(calRowOf(item), onOpen) }
+        for (item in day) FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)) { CalendarItemRow(item, quick, nav, onOpen) }
     }
 }

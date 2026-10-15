@@ -45,6 +45,10 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Tab
+import app.masroufy.ui.overlay.QuickMenu
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -62,6 +66,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
     val space = LocalSpace.current
     val deps = space.dues
     val nav = LocalNavigator.current
+    val quick = rememberQuickMenu()
     var side by rememberSaveable { mutableStateOf(initialSide) }
     var query by rememberSaveable { mutableStateOf("") }
     val load = rememberLoad(deps) {
@@ -96,7 +101,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                         trailing = { if (query.isNotEmpty()) ClearButton { query = "" } },
                     )
                 }
-                for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency) { nav.push(DebtDetailRoute(it)) } }
+                for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency, quick) { nav.push(DebtDetailRoute(it)) } }
                 if (ui.noHitsTitle != null) item(key = "nohits") {
                     EmptyState(ui.noHitsTitle, ui.noHitsBody, action = {
                         TonalButton(t(UiKey.DUES_SHOW_ALL), { query = ""; side = DebtSide.ALL }, height = 44.dp)
@@ -106,6 +111,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
             }
         }
     }
+    QuickMenuHost(quick)
 }
 
 @Composable
@@ -128,7 +134,8 @@ private fun SideFilter(modifier: Modifier, sd: DebtSideUi, on: Boolean, currency
 }
 
 @Composable
-private fun Group(g: DebtGroupUi, currency: Currency, onOpen: (String) -> Unit) {
+private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onOpen: (String) -> Unit) {
+    val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(g.title, style = Type.of(17, FontWeight.Bold))
@@ -138,7 +145,9 @@ private fun Group(g: DebtGroupUi, currency: Currency, onOpen: (String) -> Unit) 
         CardList {
             g.rows.forEachIndexed { i, row ->
                 if (i > 0) Divider()
-                DebtRow(row) { onOpen(row.obligationId) }
+                QuickTarget(quick, row.name, { debtQuickItems(row, nav) }, subtitle = row.reason) { long ->
+                    DebtRow(row, onLongClick = long, onClick = quick.guardTap { onOpen(row.obligationId) })
+                }
             }
         }
     }

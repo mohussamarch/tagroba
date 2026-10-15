@@ -70,7 +70,8 @@ fun FloatingCard(
 ) {
     val press = rememberPress()
     val far = farShadowFactor(press, enabled)
-    val clickable = if (onClick != null) Modifier.tap(press, enabled, label = clickLabel, onLongClick = onLongClick, onClick = onClick) else Modifier
+    // ضغط طويل من غير ضغطة (القايمة السريعة على كارت مالوش ضغطة — §6.5-13) ⇒ الضغطة العادية ما بتعملش حاجة ومن غير تصغير
+    val clickable = if (onClick != null || onLongClick != null) Modifier.tap(press, enabled, label = clickLabel, onLongClick = onLongClick, onClick = onClick ?: {}) else Modifier
     Column(
         modifier
             .pressScale(press, enabled && onClick != null)

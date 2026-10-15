@@ -1,5 +1,8 @@
 package app.masroufy.ui.screens.people
 
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
 import app.masroufy.core.UiKey
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +59,7 @@ import app.masroufy.ui.theme.motion
  */
 @Composable
 internal fun EventsScreen() {
+    val quick = rememberQuickMenu()
     val deps = LocalSpace.current
     val nav = LocalNavigator.current
     val version = PeopleChanges.version
@@ -79,7 +83,11 @@ internal fun EventsScreen() {
                 } else {
                     ui.next?.let { n -> item(key = "next") { NextCard(n) { nav.push(EventDetailRoute(n.id)) } } }
                     item(key = "activeTitle") { BasicText(t(UiKey.EVENTS_ACTIVE, app.masroufy.core.sentenceNumber(ui.active.size)), style = Type.section()) }
-                    items(ui.active, key = { it.id }) { e -> EventCard(e) { nav.push(EventDetailRoute(e.id)) } }
+                    items(ui.active, key = { it.id }) { e ->
+                        QuickTarget(quick, e.name, { eventQuickItems(e.id, archived = false, nav) }, subtitle = e.meta) { long ->
+                            EventCard(e, long, quick.guardTap { nav.push(EventDetailRoute(e.id)) })
+                        }
+                    }
                     if (ui.archived.isNotEmpty()) {
                         item(key = "archTitle") { ArchivedToggle(t(UiKey.EVENTS_ARCHIVED, app.masroufy.core.sentenceNumber(ui.archived.size)), archivedOpen) { archivedOpen = !archivedOpen } }
                         if (archivedOpen) item(key = "archived") { ArchivedList(ui.archived) { nav.push(EventDetailRoute(it)) } }
@@ -89,6 +97,7 @@ internal fun EventsScreen() {
         }
         item(key = "add") { PrimaryButton(t(UiKey.EVENTS_NEW), onClick = { nav.open(EventAddSheetRoute()) }, leading = Lucide.PLUS, height = 52.dp, modifier = Modifier.fillMaxWidth()) }
     }
+    QuickMenuHost(quick)
 }
 
 /** رمز ولون النوع (النموذج: الفرح والخطوبة جوهرة وردي · السفر كرة أزرق · العزا ناس رمادي · العيد هلال كهرماني …). */
@@ -121,8 +130,8 @@ internal fun OwnerPill(text: String, mine: Boolean) {
 }
 
 @Composable
-private fun EventCard(e: EventCardUi, onClick: () -> Unit) {
-    FloatingCard(onClick = onClick, clickLabel = e.name) {
+private fun EventCard(e: EventCardUi, onLongClick: () -> Unit, onClick: () -> Unit) {
+    FloatingCard(onClick = onClick, onLongClick = onLongClick, clickLabel = e.name) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             val (icon, ink) = kindIcon(e.kind)
             IconTile(ink, size = 44.dp, radius = 14.dp) { LucideIcon(icon, size = 22.dp, tint = ink) }

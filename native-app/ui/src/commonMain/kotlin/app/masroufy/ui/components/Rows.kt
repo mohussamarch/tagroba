@@ -42,7 +42,7 @@ fun ListRow(
     padding: PaddingValues = PaddingValues(vertical = 8.dp),
 ) {
     val press = rememberPress()
-    val click = if (onClick != null) Modifier.tap(press, onLongClick = onLongClick, onClick = onClick) else Modifier
+    val click = if (onClick != null || onLongClick != null) Modifier.tap(press, onLongClick = onLongClick, onClick = onClick ?: {}) else Modifier
     Row(
         modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).pressScale(press, onClick != null).then(click).padding(padding),
         horizontalArrangement = Arrangement.spacedBy(12.dp),

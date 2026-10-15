@@ -1,5 +1,13 @@
 package app.masroufy.ui.screens.investment
 
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
+import app.masroufy.ui.overlay.MenuItem
+import app.masroufy.ui.overlay.QuickMenu
+import app.masroufy.ui.screens.common.QuickAct
+import app.masroufy.ui.screens.common.assetQuickActs
+import app.masroufy.ui.screens.common.quickItems
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +62,7 @@ import kotlinx.coroutines.launch
 /** تبويب «الاستثمار» (لوحة `Investment`): البطل · العقار و«كم ستساوي» · الأصول · الزكاة والتحليلات والخطط · الحاسبات. */
 @Composable
 fun InvestmentScreen() {
+    val quick = rememberQuickMenu()
     val space = LocalSpace.current
     val deps = space.investment
     val nav = LocalNavigator.current
@@ -62,6 +71,14 @@ fun InvestmentScreen() {
     var load by remember(space) { mutableStateOf<InvestmentLoad?>(null) }
     var addOpen by remember { mutableStateOf(false) }
     var refreshing by remember { mutableStateOf(false) }
+    // الأرشفة من القايمة السريعة (§6.5-13) — نفس فعل تفاصيل الأصل (archiveAsset)، وبعدها تحميل من جديد
+    fun setArchived(id: Id, archived: Boolean) {
+        scope.launch {
+            val ok = runCatching { deps.assets.archiveAsset(id, archived) }.isSuccess
+            toaster.show(if (!ok) t(UiKey.SHELL_LOAD_FAILED) else if (archived) t(UiKey.ASSET_DETAIL_ARCHIVED_TOAST) else t(UiKey.ASSET_DETAIL_UNARCHIVED))
+            if (ok) load = loadInvestment(deps, space.space)
+        }
+    }
     LaunchedEffect(space) { load = loadInvestment(deps, space.space) }
     fun refresh() {
         if (refreshing) return
@@ -98,13 +115,16 @@ fun InvestmentScreen() {
             }
         } else if (ui != null) {
             item(key = "hero") { PortfolioHero(ui) }
-            for (e in ui.estates) item(key = "estate-${e.assetId}") { EstateCardView(e, ui) { nav.push(AssetDetailRoute(e.assetId)) } }
-            if (ui.others.isNotEmpty()) item(key = "assets") { AssetsCard(ui) { nav.push(AssetDetailRoute(it)) } }
+            for (e in ui.estates) item(key = "estate-${e.assetId}") { QuickTarget(quick, e.name, { assetQuickItems(false, { nav.push(AssetDetailRoute(e.assetId)) }, { setArchived(e.assetId, it) }) }) { long ->
+                    EstateCardView(e, ui, long, quick.guardTap { nav.push(AssetDetailRoute(e.assetId)) })
+                } }
+            if (ui.others.isNotEmpty()) item(key = "assets") { AssetsCard(ui, quick, { id, a -> setArchived(id, a) }) { nav.push(AssetDetailRoute(it)) } }
         }
         item(key = "tools") { ToolsCard(l.zakatHint, l.goals) }
         item(key = "calcs") { CalculatorsGrid() }
     }
     AssetTradeSheet(addOpen, TradeMode.ADD, null, onDismiss = { addOpen = false }) { id -> nav.push(AssetDetailRoute(id)) }
+    QuickMenuHost(quick)
 }
 
 /** رسالة «تحديث الأسعار» بعد ما الملف نزل: «تحدّثت الأسعار» — أو ومعاها عدد الأصول المربوطة اللي ما لقتش سعرها. */
@@ -145,8 +165,8 @@ private fun HeroSigned(label: String, minor: app.masroufy.core.Halalas?, ui: Inv
 }
 
 @Composable
-private fun EstateCardView(e: EstateCard, ui: InvestmentUi, onOpen: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth(), onClick = onOpen, clickLabel = e.name) {
+private fun EstateCardView(e: EstateCard, ui: InvestmentUi, onLongClick: () -> Unit, onOpen: () -> Unit) {
+    FloatingCard(Modifier.fillMaxWidth(), onClick = onOpen, onLongClick = onLongClick, clickLabel = e.name) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 KindTile("realEstate", size = 40)
@@ -171,12 +191,14 @@ private fun EstateCardView(e: EstateCard, ui: InvestmentUi, onOpen: () -> Unit) 
 }
 
 @Composable
-private fun AssetsCard(ui: InvestmentUi, onOpen: (Id) -> Unit) {
+private fun AssetsCard(ui: InvestmentUi, quick: QuickMenu, setArchived: (Id, Boolean) -> Unit, onOpen: (Id) -> Unit) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
         ui.others.forEachIndexed { i, line ->
             if (i > 0) RowGap()
-            ToolRow(line.name, line.subtitle, onClick = { onOpen(line.assetId) }, leading = { KindTile(line.kind) }) {
-                AmountText(line.valueMinor, ui.currency, showCurrency = false, color = if (line.valueMinor == null || line.archived) Ink.muted else null)
+            QuickTarget(quick, line.name, { assetQuickItems(line.archived, { onOpen(line.assetId) }, { setArchived(line.assetId, it) }) }, subtitle = line.subtitle) { long ->
+                ToolRow(line.name, line.subtitle, onClick = quick.guardTap { onOpen(line.assetId) }, leading = { KindTile(line.kind) }, trailing = {
+                    AmountText(line.valueMinor, ui.currency, showCurrency = false, color = if (line.valueMinor == null || line.archived) Ink.muted else null)
+                }, onLongClick = long)
             }
         }
     }
@@ -222,3 +244,15 @@ private fun CalcTile(label: String, icon: Lucide, modifier: Modifier, onClick: (
         }
     }
 }
+
+/** القايمة السريعة للأصل (§6.5-13): تفاصيله · أرشفة/رجوع. **المسح** (فرع r04-delete): [delete] = null لحد ما يتوصل. */
+internal fun assetQuickItems(archived: Boolean, open: () -> Unit, setArchived: (Boolean) -> Unit, delete: (() -> Unit)? = null): List<MenuItem> =
+    quickItems(assetQuickActs(archived, canDelete = delete != null)) { act ->
+        when (act) {
+            QuickAct.OPEN -> open()
+            QuickAct.ARCHIVE -> setArchived(true)
+            QuickAct.UNARCHIVE -> setArchived(false)
+            QuickAct.DELETE -> delete?.invoke()
+            else -> Unit
+        }
+    }

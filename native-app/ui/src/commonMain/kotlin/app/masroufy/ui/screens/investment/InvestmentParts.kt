@@ -123,10 +123,11 @@ internal fun ToolRow(
     onClick: () -> Unit,
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable RowScope.() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val press = rememberPress()
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).pressScale(press).tap(press, label = title, onClick = onClick).padding(vertical = 8.dp),
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).pressScale(press).tap(press, label = title, onLongClick = onLongClick, onClick = onClick).padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

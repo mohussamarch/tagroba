@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.masroufy.ui.components.mirrorInLtr
@@ -73,6 +74,7 @@ fun LiquidMenu(
     title: String,
     items: List<MenuItem>,
     closeLabel: String? = null,
+    liftedPadding: Dp = 12.dp,
     lifted: @Composable () -> Unit,
 ) {
     val enter = remember { Animatable(0f) }
@@ -97,7 +99,13 @@ fun LiquidMenu(
         // الأماكن بالبكسل من شمال الشاشة (`absoluteOffset`) ⇒ البداية لازم تبقى فوق-شمال حتى في العربي (`TopStart` في العربي = فوق-يمين)
         BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = AbsoluteAlignment.TopLeft) {
             val screenH = with(density) { maxHeight.toPx() }
+            val screenW = with(density) { maxWidth.toPx() }
             val gap = with(density) { 10.dp.toPx() }
+            val edge = with(density) { 16.dp.toPx() }
+            // عرض القايمة = عرض العنصر (زي صف العملية). العنصر الصغير (خانة يوم في التقويم) ⇒ 248 في نصّه، من غير ما تخرج برّه الشاشة
+            val minW = with(density) { 248.dp.toPx() }
+            val menuW = if (a.width >= minW) a.width else minOf(minW, screenW - 2 * edge)
+            val menuLeft = if (a.width >= minW) a.left else (a.center.x - menuW / 2).coerceIn(edge, maxOf(edge, screenW - edge - menuW))
             VeilLayer(Veil.MENU, p.coerceIn(0f, 1f), onDismiss, closeLabel)
             // (2) الصف المرفوع في مكانه
             val rowShape = RoundedCornerShape(Radius.card)
@@ -113,16 +121,16 @@ fun LiquidMenu(
                     .clip(rowShape)
                     .background(Glass.liftedRow)
                     .innerSheen(rowShape, Shadows.liftedRow)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = liftedPadding),
                 contentAlignment = Alignment.Center,
             ) { lifted() }
-            // (3) القائمة: تحت الصف لو فيه مكان، وإلا فوقه
+            // (3) القائمة: تحت الصف لو فيه مكان، وإلا فوقه (ومن غير ما تطلع فوق الشاشة)
             val below = a.bottom + gap + menuHeight < screenH - with(density) { 24.dp.toPx() }
-            val top = if (below) a.bottom + gap else a.top - gap - menuHeight
+            val top = (if (below) a.bottom + gap else a.top - gap - menuHeight).coerceAtLeast(edge)
             val shape = RoundedCornerShape(Radius.menu)
             Box(
-                Modifier.absoluteOffset { IntOffset(a.left.roundToInt(), top.roundToInt()) }
-                    .width(with(density) { a.width.toDp() })
+                Modifier.absoluteOffset { IntOffset(menuLeft.roundToInt(), top.roundToInt()) }
+                    .width(with(density) { menuW.toDp() })
                     .onSizeChanged { menuHeight = it.height }
                     .graphicsLayer {
                         alpha = p.coerceIn(0f, 1f)

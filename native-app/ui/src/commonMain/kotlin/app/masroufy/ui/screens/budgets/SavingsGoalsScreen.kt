@@ -1,5 +1,12 @@
 package app.masroufy.ui.screens.budgets
 
+import app.masroufy.ui.overlay.QuickMenuHost
+import app.masroufy.ui.overlay.QuickTarget
+import app.masroufy.ui.overlay.rememberQuickMenu
+import app.masroufy.ui.overlay.QuickMenu
+import app.masroufy.ui.screens.common.QuickAct
+import app.masroufy.ui.screens.common.goalQuickActs
+import app.masroufy.ui.screens.common.quickItems
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +63,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun SavingsGoalsScreen() {
+    val quick = rememberQuickMenu()
     val space = LocalSpace.current
     val deps = space.budgets
     val today = space.shell.today()
@@ -89,7 +97,7 @@ fun SavingsGoalsScreen() {
                 } else {
                     item { BasicText(t(UiKey.GOALS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
                     for (card in goals.active) item(key = card.id) {
-                        GoalCard(card, onOpen = { openId = card.id }) {
+                        GoalCard(card, quick, onOpen = { openId = card.id }) {
                             scope.launch {
                                 val error = attempt(t(UiKey.SHELL_LOAD_FAILED)) { deps.goals.star(card.id, !card.starred) }
                                 toaster.show(error ?: if (card.starred) t(UiKey.GOALS_UNSTARRED) else t(UiKey.GOALS_STARRED, card.name))
@@ -105,6 +113,7 @@ fun SavingsGoalsScreen() {
     }
     GoalDetailSheet(ui?.active?.firstOrNull { it.id == openId }, deps, today, onDismiss = { openId = null }) { reload++ }
     GoalNewSheet(newOpen, deps, today, space.space.currency, space.space.id, wallets, onDismiss = { newOpen = false }) { reload++ }
+    QuickMenuHost(quick)
 }
 
 /** «+» أخضر 48 في الرأس — «خطة جديدة». */
@@ -119,8 +128,13 @@ private fun NewGoalButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun GoalCard(card: GoalCardUi, onOpen: () -> Unit, onStar: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth()) {
+private fun GoalCard(card: GoalCardUi, quick: QuickMenu, onOpen: () -> Unit, onStar: () -> Unit) = QuickTarget(
+    quick, card.name,
+    { quickItems(goalQuickActs(card.starred)) { a -> if (a == QuickAct.OPEN) onOpen() else if (a == QuickAct.STAR || a == QuickAct.UNSTAR) onStar() } },
+    subtitle = card.sub,
+) { long ->
+    // ضغط طويل = القايمة السريعة (§6.5-13): فتح · نجمة — نفس زراير الكارت
+    FloatingCard(Modifier.fillMaxWidth(), onLongClick = long) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 StarButton(card.starred, onStar)
