@@ -16,7 +16,6 @@ import app.masroufy.core.SmsRow
 import app.masroufy.core.SmsStatementPair
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
-import app.masroufy.core.Wallet
 import app.masroufy.core.isSmsReference
 import app.masroufy.core.lateCardPosting
 import app.masroufy.core.smsRepairTarget
@@ -134,7 +133,7 @@ class RepairOldSms(
 
     /** كل سجل من دفعة مقفولة ومعاه: من رسالة ولا لأ. */
     private suspend fun recordsWithBatches(): List<Pair<SourceRecord, Boolean>> =
-        batches.listRecent(Int.MAX_VALUE).filter { it.state != ImportBatchState.STAGED && it.state != ImportBatchState.REVERTED }
+        batches.listRecent(ALL_BATCHES).filter { it.state != ImportBatchState.STAGED && it.state != ImportBatchState.REVERTED }
             .flatMap { b -> sources.listByBatch(b.id).map { it to (b.sourceType == ImportSourceType.SMS || isSmsReference(it.sourceReference)) } }
 
     private suspend fun recorded(): List<Recorded> {
@@ -157,5 +156,5 @@ class RepairOldSms(
     )
 }
 
-/** آخر 4 أرقام محفظة (مكتوبة) — اختصار للشاشات. */
-internal fun Wallet.digits(): String? = walletLast4(accountLast4)
+/** كل الدفعات (الإصلاح مرة واحدة على الدفاتر كلها). */
+private const val ALL_BATCHES = 100_000
