@@ -1,6 +1,8 @@
 package app.masroufy.ui.text
 
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -53,16 +55,48 @@ fun BasicText(
     color: ColorProducer? = null,
 ) {
     val riyal = LocalRiyalFont.current
-    if (riyal == null || text.indexOf(RIYAL_SIGN) < 0) {
+    if (text.indexOf(RIYAL_SIGN) < 0) {
         FoundationBasicText(
             text = text, modifier = modifier, style = style, onTextLayout = onTextLayout, overflow = overflow,
             softWrap = softWrap, maxLines = maxLines, minLines = minLines, color = color,
         )
+    } else if (riyal == null) {
+        FoundationBasicText(
+            text = keepRiyalTogether(text), modifier = modifier, style = style, onTextLayout = onTextLayout, overflow = overflow,
+            softWrap = softWrap, maxLines = maxLines, minLines = minLines, color = color,
+        )
     } else {
         FoundationBasicText(
-            text = withRiyalSign(AnnotatedString(text), riyal), modifier = modifier, style = style, onTextLayout = onTextLayout,
+            text = withRiyalSign(AnnotatedString(keepRiyalTogether(text)), riyal), modifier = modifier, style = style, onTextLayout = onTextLayout,
             overflow = overflow, softWrap = softWrap, maxLines = maxLines, minLines = minLines, color = color,
         )
+    }
+}
+
+/** مسافة ما بتنكسرش (U+00A0). */
+const val NO_BREAK_SPACE: Char = ' '
+
+/**
+ * العلامة والرقم **عمرهم ما يتفرقوا على سطرين** (المالك 2026-10-15 — العلامة كانت بتنزل لوحدها تحت الرقم): المسافة اللي بعد
+ * U+20C1 (من `withCurrency` — «⃁ 96.47») بتبقى مسافة ما بتنكسرش وقت الرسم بس. النص في `core` والاختبارات زي ما هو.
+ */
+fun keepRiyalTogether(text: String): String = text.replace("$RIYAL_SIGN ", "$RIYAL_SIGN$NO_BREAK_SPACE")
+
+/** نفس [keepRiyalTogether] للنص المنسّق: نفس الطول، فالتنسيقات والروابط بترجع في نفس أماكنها. */
+fun keepRiyalTogether(text: AnnotatedString): AnnotatedString {
+    val plain = keepRiyalTogether(text.text)
+    if (plain == text.text) return text
+    return buildAnnotatedString {
+        append(plain)
+        text.spanStyles.forEach { addStyle(it.item, it.start, it.end) }
+        text.paragraphStyles.forEach { addStyle(it.item, it.start, it.end) }
+        text.getStringAnnotations(0, text.length).forEach { addStringAnnotation(it.tag, it.item, it.start, it.end) }
+        text.getLinkAnnotations(0, text.length).forEach { r ->
+            when (val link = r.item) {
+                is LinkAnnotation.Url -> addLink(link, r.start, r.end)
+                is LinkAnnotation.Clickable -> addLink(link, r.start, r.end)
+            }
+        }
     }
 }
 
@@ -78,10 +112,13 @@ fun BasicText(
     minLines: Int = 1,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     color: ColorProducer? = null,
+    autoSize: TextAutoSize? = null,
 ) {
     val riyal = LocalRiyalFont.current
+    val together = keepRiyalTogether(text)
     FoundationBasicText(
-        text = if (riyal == null) text else withRiyalSign(text, riyal), modifier = modifier, style = style, onTextLayout = onTextLayout,
+        text = if (riyal == null) together else withRiyalSign(together, riyal), modifier = modifier, style = style, onTextLayout = onTextLayout,
         overflow = overflow, softWrap = softWrap, maxLines = maxLines, minLines = minLines, inlineContent = inlineContent, color = color,
+        autoSize = autoSize,
     )
 }

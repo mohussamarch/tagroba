@@ -9,9 +9,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.withStyle
+import app.masroufy.ui.text.NO_BREAK_SPACE
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -81,7 +88,7 @@ fun AmountText(
     }
     val style = Type.of(size, weight, 1.3).copy(color = color ?: tone.color).tabular()
     if (tone == AmountTone.TRANSFER) return MoveAmountText(amountLabel(minor, currency, tone, showCurrency), modifier, style, size)
-    BasicText(amountLabel(minor, currency, tone, showCurrency), modifier, style = style, maxLines = 1)
+    BasicText(amountLabel(minor, currency, tone, showCurrency), modifier, style = style, maxLines = 1, softWrap = false)
 }
 
 /**
@@ -93,7 +100,7 @@ private fun MoveAmountText(label: String, modifier: Modifier, style: TextStyle, 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
             LucideIcon(MOVE_SWAP, size = (size * 0.9).dp, tint = style.color, contentDescription = t(UiKey.MOVE_SYMBOL))
-            BasicText(label, style = style, maxLines = 1)
+            BasicText(label, style = style, maxLines = 1, softWrap = false)
         }
     }
 }
@@ -109,14 +116,24 @@ fun HeroAmount(minor: Halalas?, currency: Currency, modifier: Modifier = Modifie
         BasicText(NOT_AVAILABLE, modifier, style = Type.of(30, FontWeight.Bold).copy(color = ink))
         return
     }
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End), verticalAlignment = Alignment.Bottom) {
-            BasicText(currencySymbol(currency), style = Type.of(18).copy(color = ink, lineHeight = 1.6.em))
-            BasicText(
-                trueMinus(amount(minor, currency)),
-                style = Type.of(size, FontWeight.Bold, 1.2).copy(color = ink, letterSpacing = (-0.5).sp).tabular(),
-                maxLines = 1,
-            )
-        }
-    }
+    // نص واحد على سطر واحد (المالك 2026-10-15 — العلامة كانت بتنزل تحت الرقم لوحدها): العلامة والرقم على نفس الخط، ومسافة
+    // ما بتنكسرش بينهم، والرقم الطويل بيصغر لحد ما يدخل بدل ما يتقطع أو ينزل سطر
+    BasicText(
+        heroAmountText(trueMinus(amount(minor, currency)), currencySymbol(currency), size),
+        modifier,
+        style = Type.of(size, FontWeight.Bold, 1.2).copy(color = ink, letterSpacing = (-0.5).sp, textAlign = TextAlign.Right).tabular(),
+        maxLines = 1,
+        softWrap = false,
+        autoSize = TextAutoSize.StepBased(minFontSize = HERO_MIN_SP.sp, maxFontSize = size.sp, stepSize = 1.sp),
+    )
+}
+
+/** أصغر مقاس للرقم الكبير لما المبلغ طويل والمكان ضيق. */
+internal const val HERO_MIN_SP = 18
+
+/** العلامة صغيرة (18 من [size] زي النموذج) على الشمال + مسافة ما بتنكسرش + الرقم — بـ`em` عشان تصغر مع الرقم. */
+internal fun heroAmountText(number: String, symbol: String, size: Int): AnnotatedString = buildAnnotatedString {
+    withStyle(SpanStyle(fontSize = (18f / size).em, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)) { append(symbol) }
+    append(NO_BREAK_SPACE)
+    append(number)
 }
