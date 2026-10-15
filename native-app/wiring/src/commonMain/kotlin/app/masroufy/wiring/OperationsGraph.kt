@@ -107,6 +107,12 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         ),
     )
 
+    // «راتب الدوام» · «عمل إضافي» · «بيعة» وجهات الشغل (البندين 6 و7)
+    private val employerCases = EmployerUseCases(c, legs)
+    override val incomeAnswers = employerCases.answers
+    override val employers = employerCases.employers
+    override val employerRetro = employerCases.retro
+
     override suspend fun payday(): Int = c.shell.profile.load().payday
 
     override suspend fun wallets(): List<Wallet> = LoadWithYouNow(r.wallets, r.transactions, c.space.currency).load(c.env.today()).wallets.map { it.wallet }

@@ -39,6 +39,12 @@ interface MoreHooks {
 
     /** «سؤال الكاش» وتكراره في إعدادات الإشعارات (§74 — مالوش إعداد ولا تنبيه في كوتلن). */
     val cashQuestion: CashQuestionSetting? get() = null
+
+    /** «جهات الشغل» (قايمة المالك 2026-10-15، البند 7) — **متوصّلة** في `MoreGraph`. null (المعاينة) ⇒ «غير متاح بعد». */
+    val employers: app.masroufy.usecase.ManageEmployers? get() = null
+
+    /** «طبّق على اللي فات» بعد تغيير جهة أو حساباتها (معاينة بالعدد ⇒ نسخة ⇒ تطبيق ⇒ تراجع). */
+    val employerRetro: app.masroufy.usecase.EmployerRetroApply? get() = null
 }
 
 interface MainWalletAccess {

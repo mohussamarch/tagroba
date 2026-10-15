@@ -86,6 +86,8 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
     var decision by remember(party.key) { mutableStateOf<PartyDecision?>(null) }
     var sheet by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    // «راتب الدوام» · «عمل إضافي» · «بيعة» (البند 6) — نتيجتها بكارتها و«تراجع» بتاعها
+    var income by remember(party.key) { mutableStateOf<IncomeDone?>(null) }
     fun act(block: suspend () -> PartyDecision?) = scope.launch {
         var d: PartyDecision? = null
         val err = failureOf { d = block() }
@@ -95,6 +97,11 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             sheet = false
             onChanged()
         }
+    }
+    val done = income
+    if (done != null) {
+        IncomeDoneBox(done, onUndone = { income = null; onChanged() }, onChanged = onChanged)
+        return
     }
     val d = decision
     if (d == null) {
@@ -116,6 +123,10 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PartyButton(t(UiKey.TRANSFER_PARTY_OWN), Modifier.weight(1f)) { act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party)) } }
                 PartyButton(t(UiKey.TRANSFER_PARTY_NOT), Modifier.weight(1f)) { act { deps.transfers.dismiss(party); PartyDecision.NotThis } }
+            }
+            if (deps.incomeAnswers != null) {
+                BasicText(t(UiKey.INCOME_ANS_OR), style = Type.of(12, FontWeight.Bold).copy(color = PartyInk.brown))
+                IncomeAnswerChips(transactionId, withOther = false) { income = it; error = null; onChanged() }
             }
             error?.let { FieldError(it) }
         }

@@ -58,10 +58,10 @@ class EndOfServiceTest {
         txns.saveMany(listOf(salary))
         signals.answerPayer(signals.payerQuestions().single(), yes = true)
         manage.close(job.id, "2026-09-30")
-        // المكافأة بتيجي بعد القفل ⇒ «مرتب» لوحده (رد المالك §64-١) لحد ما المستخدم يعلّمها
+        // المكافأة بتيجي بعد القفل ⇒ **برّه فترة الجهة** ⇒ ما بتبقاش «مرتب» لوحدها (قايمة المالك 2026-10-15 البند 7) — بتفضل تتسأل
         txns.saveMany(listOf(benefit))
-        assertEquals(1, signals.applyKnownPayers())
-        assertEquals(Triple(EconomicKind.SALARY, true, ReviewState.CONFIRMED), kind(benefit.id))
+        assertEquals(0, signals.applyKnownPayers())
+        assertEquals(Triple(EconomicKind.UNCLASSIFIED, false, ReviewState.NEEDS_REVIEW), kind(benefit.id))
         return salary to benefit
     }
 
