@@ -59,6 +59,7 @@ fun WalletDetailScreen(walletId: Id) {
     val deps = LocalSpace.current
     val more = deps.more
     val toaster = LocalToaster.current
+    val nav = app.masroufy.ui.nav.LocalNavigator.current
     val scope = rememberCoroutineScope()
     var now by remember(deps) { mutableStateOf<WithYouNow?>(null) }
     var moves by remember(deps) { mutableStateOf<List<WalletMove>?>(null) }
@@ -127,6 +128,7 @@ fun WalletDetailScreen(walletId: Id) {
             }
         }
         item(key = "opening") { TonalButton(t(UiKey.WADD_EDIT_OPEN), onClick = { editing = true }, modifier = Modifier.fillMaxWidth(), height = 48.dp) }
+        if (more.balanceWhy != null) item(key = "why") { TonalButton(t(UiKey.BWHY_OPEN), onClick = { nav.push(BalanceWhyRoute(walletId)) }, modifier = Modifier.fillMaxWidth(), height = 48.dp) }
         item(key = "moves") { MovesCard(moves, n) }
         item(key = "rec") {
             if (row.isCash) NoteBox(t(UiKey.WDET_CASH_NOTE))

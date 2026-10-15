@@ -58,6 +58,12 @@ interface MoreDeps : MoreHooks {
     /** النسخة الشاملة (عمل · معاينة · استرجاع بالدمج) — null لو مستودعها مش متوصل (اختبار). */
     val fullBackup: FullBackup?
 
+    /** «افهم رصيدك» (بند المالك 3): رصيد البداية + المجاميع بالمصدر + «حاجات تستاهل تتراجع». null ⇒ «غير متاح». */
+    val balanceWhy: app.masroufy.usecase.ExplainBalance? get() = null
+
+    /** «راجع المكرر»: دمج زوج كشف+رسالة **بعد تأكيد المالك بس** (نسخة قبل الكتابة + تراجع). null ⇒ الزرار مش ظاهر. */
+    val mergeDuplicates: app.masroufy.usecase.MergeDuplicates? get() = null
+
     /** وقت الجهاز ISO كامل (`exportedAt` في النسخة). */
     fun nowIso(): String
 }
@@ -120,6 +126,7 @@ fun RouteRegistry.registerMore() {
     screen<SpacesRoute> { SpacesScreen() }
     screen<WalletsRoute> { WalletsScreen() }
     screen<WalletDetailRoute> { r -> WalletDetailScreen(r.walletId) }
+    screen<BalanceWhyRoute> { r -> BalanceWhyScreen(r.walletId) }
     screen<IncomeSourcesRoute> { IncomeSourcesScreen() }
     screen<IncomeSourceDetailRoute> { r -> IncomeSourceDetailScreen(r.sourceId) }
     screen<BackupRoute> { BackupScreen() }
