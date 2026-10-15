@@ -37,6 +37,7 @@ import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.HeroAmount
 import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.Skeleton
+import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.screens.common.InnerScaffold
@@ -66,6 +67,7 @@ fun WalletDetailScreen(walletId: Id) {
     var payday by remember(deps) { mutableStateOf(28) }
     var rec by remember { mutableStateOf<RecState>(RecState.Idle) }
     var editing by remember { mutableStateOf(false) }
+    var updating by remember { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     LaunchedEffect(deps, tick) {
         val today = deps.shell.today()
@@ -126,8 +128,13 @@ fun WalletDetailScreen(walletId: Id) {
                 }
             }
         }
+        // «حدّث الرصيد» / «حدّث الكاش» (قايمة المالك البنود 4 و5) — أول فعل في الشاشة، لأي محفظة (الكاش كمان)
+        if (more.updateBalance != null) item(key = "update") {
+            PrimaryButton(t(if (row.isCash) UiKey.BAL_UPDATE_CASH else UiKey.BAL_UPDATE_BALANCE), onClick = { updating = true }, modifier = Modifier.fillMaxWidth(), height = 48.dp)
+        }
         item(key = "opening") { TonalButton(t(UiKey.WADD_EDIT_OPEN), onClick = { editing = true }, modifier = Modifier.fillMaxWidth(), height = 48.dp) }
         item(key = "moves") { MovesCard(moves, n) }
+        item(key = "checkpoints") { BalanceCheckpointsCard(walletId, tick, onChanged = { tick++ }) }
         item(key = "rec") {
             if (row.isCash) NoteBox(t(UiKey.WDET_CASH_NOTE))
             else ReconcileCard(rec) {
@@ -139,6 +146,7 @@ fun WalletDetailScreen(walletId: Id) {
         }
     }
     if (w != null) WalletAddSheet(editing, WalletSheetMode.Edit(w.wallet), existing = emptyList(), onClose = { editing = false }, onSaved = { tick++ })
+    if (w != null) BalanceUpdateSheet(updating, walletId, w.wallet.name, w.wallet.kind == "cash", onClose = { updating = false }, onSaved = { tick++ })
 }
 
 @Composable

@@ -26,6 +26,7 @@ import app.masroufy.usecase.ManageIncomeSources
 import app.masroufy.usecase.ManageIncomeSourcesDeps
 import app.masroufy.usecase.ReconcileBalance
 import app.masroufy.usecase.ReconcileDeps
+import app.masroufy.usecase.UpdateBalance
 
 /**
  * «المزيد» — ملفك (`c.shell.profile` نفس كائن الهيكل) · مصادر الدخل وإشاراتها · إعدادات الإشعارات (`c.shell.engine`) · المحافظ
@@ -82,6 +83,9 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     override val fullBackup: FullBackup? = r.fullBackup?.let { FullBackup(it, r.spacesBackup) }
 
     override fun nowIso(): String = c.env.clock.nowIso()
+
+    /** «حدّث الرصيد» لأي محفظة — بيوم البلد (مش يوم الجوال) عشان «مش في المستقبل». */
+    override val updateBalance = UpdateBalance(r.wallets, r.transactions, r.categories, c.env.ids, c.env.clock, countryPack(c.space.countryCode).timeZone)
 
     /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
     override val walletEditor: WalletEditor = object : WalletEditor {

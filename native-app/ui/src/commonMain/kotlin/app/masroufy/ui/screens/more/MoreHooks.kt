@@ -5,6 +5,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.Language
 import app.masroufy.core.Space
+import app.masroufy.usecase.UpdateBalance
 
 /**
  * **نقاط ربط** لمنطق لسه ما اتبناش في كوتلن (CLAUDE.md #15 — «ميزة تصميمها ظاهر ليست ميزة مكتملة»). كل واحدة قيمتها `null` في
@@ -17,6 +18,9 @@ interface MoreHooks {
 
     /** إضافة محفظة وتعديل رصيد البداية (`WalletAddSheet` — مفيش حالة استخدام لإدارة المحافظ: SCREENS.md «Wallets»). */
     val walletEditor: WalletEditor? get() = null
+
+    /** «حدّث الرصيد» / «حدّث الكاش» (قايمة المالك البنود 4 و5 — UpdateBalance). null ⇒ الزرار مش ظاهر. */
+    val updateBalance: UpdateBalance? get() = null
 
     /**
      * إضافة بلد · أرشفة · رجوع من الأرشيف — **متوصّل** في `MoreGraph` (`ManageSpaces` بالشجرة المضمّنة `BundledSeeds`، والجلسة بتفتح البلد

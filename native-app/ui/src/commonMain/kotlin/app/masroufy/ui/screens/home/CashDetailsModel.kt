@@ -5,6 +5,7 @@ import app.masroufy.core.CashSummary
 import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.Halalas
+import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
@@ -21,6 +22,7 @@ import app.masroufy.ui.text.t
  * (`LoadCashSummary` بياخد أول واحدة بس).
  */
 data class CashView(
+    val walletId: Id,
     val walletName: String,
     val currency: Currency,
     val balanceMinor: Halalas,
@@ -39,6 +41,7 @@ fun cashViewOf(summary: CashSummary?): CashView? {
     val s = summary ?: return null
     val w = s.wallet
     return CashView(
+        walletId = w.id,
         walletName = w.name,
         currency = w.currency,
         balanceMinor = s.balanceMinor,
