@@ -17,6 +17,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import app.masroufy.core.LocalMoment
 import app.masroufy.core.TextKey
+import app.masroufy.core.outgoingText
 import app.masroufy.core.uiText
 import app.masroufy.usecase.RunBackgroundCycle
 import java.util.Calendar
@@ -125,7 +126,7 @@ class MasroufyCycleWorker(context: Context, params: WorkerParameters) : Coroutin
         AndroidDeviceNotifier.ensureChannels(applicationContext)
         val notification = NotificationCompat.Builder(applicationContext, AndroidDeviceNotifier.CHANNEL_BACKGROUND)
             .setSmallIcon(R.drawable.ic_stat_masroufy)
-            .setContentTitle(uiText(TextKey.BACKGROUND_WORK_NOTICE))
+            .setContentTitle(outgoingText(uiText(TextKey.BACKGROUND_WORK_NOTICE)))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()

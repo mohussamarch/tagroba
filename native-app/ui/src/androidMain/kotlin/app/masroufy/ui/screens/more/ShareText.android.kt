@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.more
 
 import android.content.Intent
+import app.masroufy.core.outgoingText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -12,7 +13,8 @@ actual fun rememberTextSharer(): ((text: String) -> Boolean)? {
     return remember(context) {
         { text: String ->
             runCatching {
-                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+                // OVERRIDES §91-8: النص الطالع برا التطبيق ⇒ «ر.س» (خطوط البرامج التانية ممكن ما يكونش فيها U+20C1)
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, outgoingText(text))
                 context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             }.isSuccess
         }

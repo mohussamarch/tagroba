@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.AskKey
 import app.masroufy.core.HistoryGroup
 import app.masroufy.core.UiKey
+import app.masroufy.core.outgoingText
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.IconButton44
 import app.masroufy.ui.components.keepsKeyboard
@@ -162,7 +163,7 @@ private fun MemoryCard(p: AskPresenter, onCopied: (String) -> Unit, go: (suspend
             }
             val copied = t(AskKey.CHAT_UNKNOWN_COPIED)
             SmallAction(t(AskKey.CHAT_UNKNOWN_COPY)) {
-                go { clipboard.setText(AnnotatedString(p.unknownText())); onCopied(copied) }
+                go { clipboard.setText(AnnotatedString(outgoingText(p.unknownText()))); onCopied(copied) }
             }
         }
     }
