@@ -27,6 +27,15 @@ class OpsSelectionTest {
         assertEquals(0, OpsSelection().start().count)
     }
 
+    /** «تحديد» من قايمة الصف (جولة 0.4): الوضع بيبدأ والصف ده محسوب (1)، وبيفضل بعد إعادة القراية طالما ظاهر. */
+    @Test fun menuSelectStartsAtOneAndSurvivesTheReload() {
+        val s = OpsSelection().start("b")
+        assertEquals(1, s.count)
+        assertTrue(s.isSelected("b"))
+        assertEquals(1, s.keepOnly(visible).count)
+        assertFalse(s.allSelected(visible))
+    }
+
     @Test fun selectAllVisibleAndBack() {
         val s = OpsSelection().start("x").toggle("a")
         val all = s.toggleAll(visible)

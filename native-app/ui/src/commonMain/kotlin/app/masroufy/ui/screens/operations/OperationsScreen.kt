@@ -16,6 +16,7 @@ import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -215,11 +216,15 @@ private fun LazyListScope.operationsTab(ui: OpsUi, onRetry: () -> Unit, onOpen: 
     items(v.days, key = { "day-${it.date}" }) { day ->
         DayGroup(day.label) {
             day.rows.forEachIndexed { i, row ->
-                if (i > 0) Divider()
-                if (selection.active) {
-                    SelectableOperationRow(row, selection.isSelected(row.id)) { onOpen(row) }
-                } else {
-                    OperationListRow(row, onOpen = { onOpen(row) }, onMenu = { a -> onMenu(row, a) })
+                // كل صف في مجموعة بمفتاحه ومفتاح الوضع: التبديل بين الصف العادي وصف التحديد ما يقراش خانات «remember» غلط
+                // (نفس سبب وقعة «تحويل» في لوحة «+» — جولة 0.4)
+                key(row.id, selection.active) {
+                    if (i > 0) Divider()
+                    if (selection.active) {
+                        SelectableOperationRow(row, selection.isSelected(row.id)) { onOpen(row) }
+                    } else {
+                        OperationListRow(row, onOpen = { onOpen(row) }, onMenu = { a -> onMenu(row, a) })
+                    }
                 }
             }
         }
