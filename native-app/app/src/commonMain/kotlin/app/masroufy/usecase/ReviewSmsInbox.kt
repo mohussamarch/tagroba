@@ -69,12 +69,19 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
     ): SmsReview {
         val router = if (route) ScreenRouter.load(deps.wallets, deps.learning, target, deps.movesCashWithdrawals) else null
         val draft = SmsSessionDraft(LearnSnapshot(deps.learning))
+        // sms-fix (HANDOVER §6.5-3): اتجاه ومحفظة التحويل من «من:/الى:» في كل رسالة — قبل التوزيع والتعلّم (§77-A ما بيغلبش أرقام الرسالة)
+        val wallets = deps.wallets.listAll()
+        val mapping = if (router == null) deps.learning.inbox.senderWallets(deps.learning.spaceId) else emptyMap()
         for (item in inbox.items) {
             if (only != null && !only(item)) continue
             when (val parsed = item.parsed) {
                 is SmsParseResult.Ok -> {
                     val sender = smsSenderKey(item.sender)
-                    draft.add(item.id, sender, parsed.row, router?.targetFor(parsed.row, sender) ?: target)
+                    val legs = legRowsOf(parsed.row, wallets)
+                    for (leg in legs) {
+                        if (router != null) draft.add(item.id, sender, leg, router.targetFor(leg, sender))
+                        else if (legs.size == 1 || legWallet(leg, sender, wallets, mapping)?.id == target.walletId) draft.add(item.id, sender, leg, target)
+                    }
                 }
                 is SmsParseResult.Rejected -> draft.failed += SmsFailed(item.id, item.sender, item.receivedAt.take(10), parsed.reason)
             }

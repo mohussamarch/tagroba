@@ -4,8 +4,10 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Direction
 import app.masroufy.core.Id
 import app.masroufy.core.SmsKind
+import app.masroufy.core.SmsLegVerdict
 import app.masroufy.core.SmsRow
 import app.masroufy.core.TextKey
+import app.masroufy.core.smsLegVerdict
 
 /**
  * المحفظة اللي رسايل البنك بتتسجل فيها + أسباب إن رسالة **شكلها معروف** تستنى تأكيد المالك (اتنقلوا من `ReviewSmsInbox.kt` — عقد C0:
@@ -49,6 +51,8 @@ internal fun SmsReviewTarget.otherAccount(row: SmsRow): Boolean {
  * وإيداع كاش = نقل من محفظة الكاش (§75-4 بالعكس، لسه ما اتبناش) · شراء ومعاه كاش.
  */
 internal fun waitReasonOf(row: SmsRow, target: SmsReviewTarget): TextKey? = when {
+    // sms-fix (HANDOVER §6.5-3): تحويل أرقام «من:/الى:» فيه مش لأي محفظة من محافظك ⇒ «الحساب ده بتاعك؟» — عمره ما يتسجل في محفظة البنك الوحيدة
+    smsLegVerdict(row, target.otherAccountsLast4 + setOfNotNull(target.accountLast4)) is SmsLegVerdict.Unknown -> TextKey.SMS_WAIT_UNKNOWN_ACCOUNT
     target.otherAccount(row) -> TextKey.SMS_WAIT_OTHER_ACCOUNT
     row.kind == SmsKind.REFUND -> TextKey.SMS_WAIT_REFUND
     row.kind == SmsKind.CASH_WITHDRAWAL -> cashWithdrawalWait(row, target) // S2 (§75-4): نفس قاعدة `CashWithdrawalEffect.kt` — بيتنقل ⇒ null
