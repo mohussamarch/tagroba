@@ -24,10 +24,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.TextKey
 import app.masroufy.core.sentenceNumber
+import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.pressScale
@@ -44,24 +44,34 @@ import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.launch
 
 /**
- * «اختر شكلك» (`LookSheet` — من «ملفك»): الأشكال الستة المؤقتة (الكاركتر النهائي لسه بيتصمم — §73) في شبكة 3 أعمدة. الحفظ بيعدّي على
- * [LookSetting] — `UserProfile` مالوش حقل للشكل لسه ⇒ «غير متاح بعد» والزرار مقفول (ما بنعملش حفظ شكلي بيضيع).
+ * «اختر شكلك» (`LookSheet` — من «حسابك» و«كمّل بروفايلك»): الأشكال الستة (المؤقتة لحد الكاركتر النهائي — §73) في شبكة 3 أعمدة.
+ * الحفظ بيعدّي على [LookSetting] ⇒ `ManageProfile.chooseLook` (`UserProfile.lookIndex`) ⇒ «البيانات اتغيرت» والدواير كلها بتتحدث.
+ * الحفظ فشل ⇒ رسالة واللوحة بتفضل مفتوحة (مفيش «حُفظ» مزيّف). من غير نقطة ربط (المعاينة) ⇒ «غير متاح بعد» والزرار مقفول.
  */
 @Composable
 fun LookSheet(visible: Boolean, current: Int, onClose: () -> Unit) {
     val hook = LocalSpace.current.more.look
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
+    val changes = LocalDataChanges.current
     var pick by remember { mutableIntStateOf(current) }
     LaunchedEffect(visible) { if (visible) pick = current }
     Sheet(visible, onClose, title = t(UiKey.LOOK_TITLE), closeLabel = t(UiKey.SHELL_CLOSE), corner = 28.dp, spacing = 12.dp) {
         BasicText(t(UiKey.LOOK_TITLE), style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
         LookGrid(pick) { pick = it }
-        BasicText(t(UiKey.LOOK_NOTE), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
         if (hook == null) NotYetLine(t(UiKey.LOOK_NOT_YET))
         PrimaryButton(
             t(UiKey.MORE_SAVE),
-            onClick = { scope.launch { runCatching { hook?.choose(pick) }; toaster.show(t(UiKey.LOOK_SAVED), dark = true); onClose() } },
+            onClick = {
+                scope.launch {
+                    val saved = hook != null && runCatching { hook.choose(pick) }.isSuccess
+                    toaster.show(t(if (saved) UiKey.LOOK_SAVED else UiKey.MORE_SAVE_FAILED), dark = true)
+                    if (saved) {
+                        changes.changed()
+                        onClose()
+                    }
+                }
+            },
             enabled = hook != null, modifier = Modifier.fillMaxWidth(),
         )
     }

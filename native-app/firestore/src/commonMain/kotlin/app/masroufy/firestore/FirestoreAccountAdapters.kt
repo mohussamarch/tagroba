@@ -43,6 +43,7 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             profile.duesInBudget?.let { put("duesInBudget", it) }
             profile.islamicContentVisible?.let { put("islamicContentVisible", it) }
             profile.carToWork?.let { put("carToWork", it) }
+            profile.lookIndex?.let { put("lookIndex", it.toLong()) }
         }
         space.write { ref().set(doc) }
         // القراية الجاية من الذاكرة لازم تشوف الحفظ ده لحظتها (المستمع بيأكده بعدها)

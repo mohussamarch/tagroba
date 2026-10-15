@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.ProfileCheck
 import app.masroufy.core.TextKey
 import app.masroufy.core.UserProfile
+import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.components.FloatingCard
@@ -57,7 +59,7 @@ import kotlinx.coroutines.launch
  * كل تعديل بيعدّي على `ManageProfile.saveWithQuestions` («هل تذهب بها للدوام؟» بيطلع منه هو — §64).
  */
 @Composable
-fun AccountScreen() {
+fun AccountScreen(openLook: Boolean = false) {
     val deps = LocalSpace.current
     val more = deps.more
     val toaster = LocalToaster.current
@@ -67,7 +69,9 @@ fun AccountScreen() {
     var range by remember(deps) { mutableStateOf<SalaryRange?>(null) }
     var failed by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<AccountEdit?>(null) }
-    LaunchedEffect(deps) {
+    val changes = LocalDataChanges.current
+    // «البيانات اتغيرت» (حفظ الشكل مثلًا) ⇒ الدايرة والملف بيتقروا تاني
+    LaunchedEffect(deps, changes.version) {
         profile = runCatching { more.profile.load() }.getOrNull()
         me = runCatching { deps.shell.me() }.getOrNull()
         range = runCatching { more.salaryRange?.current() }.getOrNull()
@@ -100,7 +104,7 @@ fun AccountScreen() {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
             return@InnerScaffold
         }
-        item(key = "head") { AccountHead(p, me, more.profile.email()) }
+        item(key = "head") { AccountHead(p, me, more.profile.email(), openLook) }
         for (g in accountGroups(p, deps.space.currency, range)) item(key = g.title.name) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 GroupTitle(t(g.title))
@@ -161,7 +165,7 @@ private fun draftOf(p: UserProfile, field: AccountField, range: SalaryRange?): A
 }
 
 @Composable
-private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?) {
+private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, openLook: Boolean) {
     FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), contentPadding = PaddingValues(16.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -176,8 +180,7 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?) {
                 BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
                 if (me?.profilePercent == null) NotYetBadge() else BasicText(app.masroufy.core.sentenceNumber(me.profilePercent) + "%", style = Type.of(13, FontWeight.Bold))
             }
-            LookButton(me?.lookIndex ?: 1)
-            BasicText(t(UiKey.ACC_LOOK_SOON), Modifier.fillMaxWidth(), style = Type.caption().copy(color = Ink.muted, textAlign = TextAlign.Center))
+            LookButton(me?.lookIndex ?: 1, openLook)
         }
     }
 }
@@ -230,10 +233,10 @@ private fun AccountActions(email: String?, onSignOut: () -> Unit) {
     }
 }
 
-/** «غيّر شكلك» + لوحته (`LookSheet`). */
+/** «غيّر شكلك» + لوحته (`LookSheet`). [startOpen] = جاي من «كمّل بروفايلك» (آخر أول تشغيل) ⇒ اللوحة مفتوحة من الأول. */
 @Composable
-private fun LookButton(current: Int) {
-    var open by remember { mutableStateOf(false) }
+private fun LookButton(current: Int, startOpen: Boolean) {
+    var open by rememberSaveable { mutableStateOf(startOpen) }
     TonalButton(t(UiKey.LOOK_OPEN), onClick = { open = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
     LookSheet(open, current) { open = false }
 }

@@ -34,7 +34,15 @@ data class UserProfile(
      * `null` = ما اتسألش أو مالوش عربية. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
      */
     val carToWork: Boolean? = null,
+    /**
+     * الشكل المختار (1..[LOOK_COUNT]) — «اختر شكلك» في «حسابك» (قرار المالك 2026-10-15 مساءً: اتنقل من أول تشغيل لـ«كمّل بروفايلك»).
+     * `null` = ما اختارش ⇒ الأول. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
+     */
+    val lookIndex: Int? = null,
 )
+
+/** عدد الأشكال (المؤقتة لحد ما الكاركتر النهائي يتصمم — §73). */
+const val LOOK_COUNT = 6
 
 val DEPENDENT_KINDS = listOf("spouse", "children", "parents")
 const val MAX_NAME_LENGTH = 60
@@ -68,6 +76,7 @@ fun parseStoredProfile(raw: Map<String, Any?>?): UserProfile {
         duesInBudget = bool("duesInBudget"),
         islamicContentVisible = bool("islamicContentVisible"),
         carToWork = bool("carToWork"),
+        lookIndex = safeInteger(data["lookIndex"])?.takeIf { it in 1..LOOK_COUNT }?.toInt(),
     )
 }
 
@@ -94,5 +103,7 @@ fun checkProfile(input: UserProfile): ProfileCheck {
     val kinds = if (input.supportsDependents == false || input.dependentKinds == null) null else DEPENDENT_KINDS.filter { it in input.dependentKinds }
     // «هتروح بيها الشغل؟» مالوش معنى من غير عربية ⇒ بيتمسح، والعربية الجاية بتتسأل من جديد
     val carToWork = if (input.hasCar == true) input.carToWork else null
-    return ProfileCheck.Ok(input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds, carToWork = carToWork))
+    // شكل برّه الستة ⇒ ما بيتحفظش (بيرجع «ما اختارش» ⇒ الأول)
+    val look = input.lookIndex?.takeIf { it in 1..LOOK_COUNT }
+    return ProfileCheck.Ok(input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds, carToWork = carToWork, lookIndex = look))
 }

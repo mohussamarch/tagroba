@@ -83,6 +83,11 @@ object AccountRoute : Route {
     override val name = "Account"
 }
 
+/** «حسابك» ولوحة «اختر شكلك» مفتوحة — «كمّل بروفايلك» في آخر أول تشغيل (قرار المالك 2026-10-15 مساءً). الرجوع ⇒ الرئيسية. */
+object AccountLookRoute : Route {
+    override val name = "AccountLook"
+}
+
 object SpacesRoute : Route {
     override val name = "Spaces"
 }
@@ -128,6 +133,7 @@ data class RestorePreviewRoute(val fileName: String, val text: String) : Route {
 fun RouteRegistry.registerMore() {
     screen<MoreRoute> { MoreScreen() }
     screen<AccountRoute> { AccountScreen() }
+    screen<AccountLookRoute> { AccountScreen(openLook = true) }
     screen<AppSettingsRoute> { AppSettingsScreen() }
     screen<NotificationSettingsRoute> { NotificationSettingsScreen() }
     screen<SpacesRoute> { SpacesScreen() }

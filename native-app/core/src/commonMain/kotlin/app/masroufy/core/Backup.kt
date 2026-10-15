@@ -180,6 +180,10 @@ fun checkBackupProfile(profile: Any?) {
         if (!kinds.all { it in DEPENDENT_KINDS }) bad("dependentKinds")
     }
     if (has("onboardedAt") && row["onboardedAt"] !is String) bad("onboardedAt")
+    if (has("lookIndex")) {
+        val look = numberOf(row["lookIndex"])
+        if (look == null || look % 1.0 != 0.0 || look < 1 || look > LOOK_COUNT) bad("lookIndex")
+    }
 }
 
 /** الميزانية القديمة بمعرّف عشوائي بتاخد مفتاح فترتها (في النسخة بس)، وسقوف التصنيفات بتتحوّل معاها. */

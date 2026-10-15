@@ -6,6 +6,7 @@ import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
 import app.masroufy.core.MainWalletSource
 import app.masroufy.core.countryPack
+import app.masroufy.ui.screens.more.LookSetting
 import app.masroufy.ui.screens.more.MainWalletAccess
 import app.masroufy.ui.screens.more.MoreDeps
 import app.masroufy.ui.screens.more.NewWallet
@@ -82,6 +83,16 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     /** «أضف بلدًا» · «أرشفة» · «استعادة» (`ManageSpaces` بالشجرة المضمّنة — [SessionSpacesAdmin]): البلد الجديدة بتتفتح في نفس الجلسة. */
     override val spacesAdmin = c.shell.spacesAdmin
+
+    /** «اختر شكلك» ⇒ ملفك (`ManageProfile.chooseLook`) — الحفظ الغلط بيرمي عشان اللوحة ما تقولش «حُفظ». */
+    override val look: LookSetting = object : LookSetting {
+        override suspend fun current(): Int = c.shell.profile.look()
+
+        override suspend fun choose(look: Int) {
+            val r = c.shell.profile.chooseLook(look)
+            if (r is app.masroufy.core.ProfileCheck.Invalid) throw IllegalArgumentException(r.message)
+        }
+    }
 
     override val exportCsv = ExportCsv(r.transactions)
 
