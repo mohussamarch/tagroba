@@ -139,6 +139,23 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
  * التراجع قبل المسح: **الداخلة** هتتمسح والمصروف لأ ⇒ المصروف بيرجع بمجموع الباقي · **المصروف** هيتمسح والداخلة لأ ⇒ الداخلة بترجع
  * زي ما كانت (تتحسب تاني بنوعها). الاتنين في نفس الدفعة ⇒ ولا حاجة. ولا ربط بيفضل بيشاور على عملية مش موجودة.
  */
+/** أطراف «عمليات تابعة» اللي ليها علاقة بـ[t]: مصروف الداخلة دي، أو الداخلات المربوطة بالمصروف ده — زي ما هي (للتراجع). */
+internal suspend fun linkedPartners(txns: TransactionRepository, t: Transaction): List<Transaction> = buildList {
+    t.linkedExpenseId?.let { addAll(txns.findByIds(listOf(it))) }
+    if (t.linkedInflowMinor != null) addAll(txns.listByDateRange(linkWindowStart(t.occurredAt), linkWindowEnd(t.occurredAt)).filter { it.linkedExpenseId == t.id })
+}
+
+/**
+ * مراجعة r04: قبل مسح [ids] بأي طريق (امسح · المسح الجماعي · «دول عملية واحدة» · شيل جزء الرصيد) — نفس [LinkedUndo]: المصروف بيرجع بمجموع الباقي
+ * والداخلة بترجع تتحسب بنوعها، فمفيش ربط بيشاور على عملية مش موجودة. بيرجّع الأطراف زي ما كانت **قبل** الفك (عشان «تراجع» يرجّعها).
+ */
+internal suspend fun unlinkBeforeDelete(txns: TransactionRepository, clock: Clock, ids: List<Id>): List<Transaction> {
+    val gone = ids.toSet()
+    val partners = txns.findByIds(ids).flatMap { linkedPartners(txns, it) }.filter { it.id !in gone }.distinctBy { it.id }
+    if (partners.isNotEmpty()) LinkedUndo(txns, clock).undo("", emptyList(), ids)
+    return partners
+}
+
 class LinkedUndo(private val txns: TransactionRepository, private val clock: Clock) : BatchUndo {
     override suspend fun undo(batchId: Id, records: List<app.masroufy.core.SourceRecord>, deleting: List<Id>) {
         if (deleting.isEmpty()) return

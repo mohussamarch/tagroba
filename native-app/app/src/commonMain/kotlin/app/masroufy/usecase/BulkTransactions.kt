@@ -115,7 +115,11 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
         if (kind !in BULK_KINDS) throw IllegalArgumentException(uiText(TextKey.NOT_AVAILABLE))
         val found = load(ids)
         val legs = deps.spaceLegs?.legsAmong(found.map { it.id }).orEmpty()
-        val fits = found.filter { isConsistentWithObservedDirection(kind, it.observedDirection) && (it.economicKind == kind || it.id !in legs) }
+        // مراجعة r04: التحويل بين محافظك ونص زوج «رجعت» بيتسابوا (نفس استثناءات المسح) — نوع تاني عليهم بيعدّ الفلوس مصروف وهي لسه في المحفظة التانية
+        val fits = found.filter {
+            isConsistentWithObservedDirection(kind, it.observedDirection) && (it.economicKind == kind || it.id !in legs) &&
+                it.transferToWalletId == null && it.reversalOfId == null && it.reversedById == null
+        }
         val now = deps.clock.nowIso()
         val changed = fits.map { it.copy(economicKind = kind, economicKindConfirmed = true, suggestedKind = null, updatedAt = now) }
         if (changed.isNotEmpty()) deps.uow.run { deps.txns.saveMany(changed) }
@@ -169,7 +173,8 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
 
     /** بيمسح اللي ينفع يتمسح بس (شوف أول الملف)، ومعاه وسومه — والباقي بيتساب ويتعدّ. */
     suspend fun delete(ids: List<Id>): BulkResult {
-        val gone = deletableAmong(load(ids))
+        // مراجعة r04: من غير طريق «امسح» (اللي بيفك «عمليات تابعة» ويرجّعها في التراجع) المربوطة بتتساب
+        val gone = deletableAmong(load(ids)).filter { deps.erase != null || (it.linkedExpenseId == null && it.linkedInflowMinor == null) }
         if (gone.isEmpty()) return result(ids, 0, null)
         deps.erase?.let { erase -> return deleteThrough(erase, ids, gone) }
         val goneIds = gone.map { it.id }

@@ -93,6 +93,16 @@ class BulkTransactionsTest {
         Unit
     }
 
+    /** مراجعة r04: تحويل بين محافظك ونص زوج «رجعت» ما بيتغيّرش نوعهم جماعي — كانوا بيتعدّوا مصروف والفلوس لسه في المحفظة التانية. */
+    @Test fun kindSkipsOwnWalletTransfersAndReversalHalves() = runBlocking {
+        txns.saveMany(listOf(txn("t-own", 5_000).copy(transferToWalletId = "w-2"), txn("t-rev", 700).copy(reversedById = "t-x")))
+        val r = bulk.setKind(listOf("t-own", "t-rev", "t-2"), EconomicKind.PURCHASE)
+        assertEquals(1, r.changed)
+        assertEquals(2, r.skipped)
+        assertEquals(EconomicKind.UNCLASSIFIED, txns.findByIds(listOf("t-own")).single().economicKind)
+        assertEquals(EconomicKind.UNCLASSIFIED, txns.findByIds(listOf("t-rev")).single().economicKind)
+    }
+
     @Test fun kindSkipsWrongDirectionAndUndoes() = runBlocking {
         val before = snapshot()
         val r = bulk.setKind(listOf("t-1", "t-in", "t-egp"), EconomicKind.PURCHASE)

@@ -42,6 +42,8 @@ data class TransactionRemoval(
     val gifts: List<PersonAllocation> = emptyList(),
     /** سجلات المصدر زي ما كانت قبل المسح (فاضية = عملية يدوية). */
     val sources: List<SourceRecord> = emptyList(),
+    /** أطراف «عمليات تابعة» زي ما كانت قبل ما الربط يتفك (للتراجع بس). */
+    val linkedBefore: List<Transaction> = emptyList(),
     /** الاشتراكات زي ما كانت قبل ما ميعادها يرجع (للتراجع بس). */
     val subscriptionsBefore: List<RecurringItem> = emptyList(),
 ) {
@@ -113,15 +115,17 @@ class DeleteTransaction(private val deps: DeleteTransactionDeps) {
             if (plan.gifts.isNotEmpty()) deps.allocations.deleteMany(plan.gifts.map { it.id })
             // العلامة: نفس السجل من غير عملية — النسخة الشاملة ما بتقبلش سجل بيشاور على عملية مش موجودة
             if (plan.sources.isNotEmpty()) deps.sources.saveMany(plan.sources.map { it.copy(transactionId = null, ownerDeletedAt = now) })
+            // مراجعة r04: «عمليات تابعة» — الطرف التاني بيتفك (ولا مصروف منقوص بداخلة ممسوحة، ولا داخلة مستخبية ورا مصروف ممسوح)
+            val partners = unlinkBeforeDelete(deps.txns, deps.clock, listOf(plan.transaction.id))
             deps.txns.deleteMany(listOf(plan.transaction.id))
-            plan.copy(subscriptionsBefore = before.filter { it !in moved })
+            plan.copy(subscriptionsBefore = before.filter { it !in moved }, linkedBefore = partners)
         }
     }
 
     /** «تراجع»: العملية وروابطها وسجلات مصدرها والاشتراكات — زي ما كانوا بالظبط. */
     suspend fun restore(removal: TransactionRemoval) {
         deps.uow.run {
-            deps.txns.saveMany(listOf(removal.transaction))
+            deps.txns.saveMany(listOf(removal.transaction) + removal.linkedBefore)
             val l = deps.links
             if (removal.sources.isNotEmpty()) deps.sources.saveMany(removal.sources)
             if (removal.tags.isNotEmpty()) l.transactionTags.saveMany(removal.tags)

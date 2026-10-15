@@ -59,7 +59,7 @@ data class MergeDuplicatesDeps(
 
 enum class MergeRefusal { GONE, NOT_A_PAIR, LINKED, NO_BACKUP, CHANGED }
 
-enum class MergeLink { PERSON, DEBT, TAG, PROJECT, EVENT, DUE, ZAKAT, INVESTMENT, REVERSAL, SPACE_TRANSFER }
+enum class MergeLink { PERSON, DEBT, TAG, PROJECT, EVENT, DUE, ZAKAT, INVESTMENT, REVERSAL, SPACE_TRANSFER, LINKED_INFLOW }
 
 /** التذكرة اللي التراجع بيحتاجها: العملية اللي فضلت قبل وبعد · اللي اتشالت · سجلات مصدرها قبل النقل. */
 data class MergeTicket(val keptBefore: Transaction, val keptAfter: Transaction, val removed: Transaction, val movedBefore: List<SourceRecord>)
@@ -163,6 +163,8 @@ class MergeDuplicates(private val deps: MergeDuplicatesDeps) {
             deps.txns.listReversalLinked().any { it.reversalOfId == t.id || it.reversedById == t.id }
         if (reversal) out += MergeLink.REVERSAL
         if (deps.spaceTransfers?.listAll()?.any { it.fromTransactionId == t.id || it.toTransactionId == t.id } == true) out += MergeLink.SPACE_TRANSFER
+        // مراجعة r04: طرف في «عمليات تابعة» — شيله كان بيسيب المصروف منقوص بداخلة مش موجودة (أو الداخلة مستخبية ورا مصروف مش موجود)
+        if (t.linkedExpenseId != null || t.linkedInflowMinor != null) out += MergeLink.LINKED_INFLOW
         return out
     }
 }
@@ -191,7 +193,8 @@ private fun txnDoc(t: Transaction): Map<String, Any?> = linkedMapOf(
     "isCashTagged" to t.isCashTagged, "sourceCategory" to t.sourceCategory, "sourceOperationType" to t.sourceOperationType,
     "createdAt" to t.createdAt, "updatedAt" to t.updatedAt, "suggestedKind" to t.suggestedKind?.wire, "reversalOfId" to t.reversalOfId,
     "reversedById" to t.reversedById, "foreignAmountMinor" to t.foreignAmountMinor, "foreignCurrency" to t.foreignCurrency,
-    "kindBeforeReversal" to t.kindBeforeReversal?.wire,
+    "kindBeforeReversal" to t.kindBeforeReversal?.wire, "linkedExpenseId" to t.linkedExpenseId, "linkedInflowMinor" to t.linkedInflowMinor,
+    "supportAskPending" to t.supportAskPending, "explainsCheckpointId" to t.explainsCheckpointId,
 )
 
 private fun recordDoc(r: SourceRecord): Map<String, Any?> = linkedMapOf(

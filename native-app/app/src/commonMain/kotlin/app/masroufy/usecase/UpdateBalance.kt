@@ -146,6 +146,8 @@ class UpdateBalance(
     suspend fun removePart(transactionId: Id) {
         val t = txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw gone()
         if (t.explainsCheckpointId == null) throw gone()
+        // مراجعة r04: الجزء ممكن يبقى طرف في «عمليات تابعة» ⇒ الربط بيتفك الأول (ولا مصروف بيفضل منقوص بداخلة مش موجودة)
+        unlinkBeforeDelete(txns, clock, listOf(t.id))
         txns.deleteMany(listOf(t.id))
     }
 
