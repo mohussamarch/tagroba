@@ -183,6 +183,8 @@ internal class SenderInbox(private val inbox: SmsInboxPort, private val key: Str
 
     override suspend fun sync() = only(inbox.sync())
 
+    override suspend fun page(skip: Int) = inbox.page(skip)
+
     override suspend fun enable(senders: List<String>) = only(inbox.enable(senders))
 
     override suspend fun disable() = only(inbox.disable())

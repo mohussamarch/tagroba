@@ -103,22 +103,6 @@ enum class AutoRecordStatus {
     OFF,
 }
 
-data class AutoRecordResult(
-    val status: AutoRecordStatus,
-    val recorded: Int = 0,
-    /** اتسجلت قبل كده (من الشاشة أو تشغيلة وقعت قبل الشيل) — اتشالت من الصندوق من غير تسجيل. */
-    val duplicates: Int = 0,
-    /** معرّفات الرسايل اللي مستنية قرار المالك، بترتيب الصندوق (الأقدم الأول). */
-    val waiting: List<String> = emptyList(),
-    /** العمليات اللي اتسجلت دلوقتي — الشاشة بتعمل عليها اللمعة النعناعي (§71). */
-    val recordedTransactionIds: List<Id> = emptyList(),
-    /** البنوك (المرسلين) اللي محتاجة المالك يختار محفظتها ⇒ رسايلها مستنية. */
-    val unmappedSenders: List<UnmappedSender> = emptyList(),
-    /** جزء من [waiting]: اتفهمت **من كلمات عامة بس** (`TextKey.SMS_WAIT_UNKNOWN_SHAPE`). بترتيب الصندوق. */
-    val unknownShape: List<String> = emptyList(),
-    /** جزء من [waiting] (§77-A): **شكل واضح لسه ما اتأكدش** من المرسل ده (`TextKey.SMS_WAIT_NEW_SHAPE`). بترتيب الصندوق. */
-    val newShape: List<String> = emptyList(),
-)
 
 data class SmsWaiting(val messageIds: List<String>, val unknownShape: List<String> = emptyList(), val newShape: List<String> = emptyList())
 
@@ -194,12 +178,26 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
         var recorded = 0
         var duplicates = 0
         val ids = mutableListOf<Id>()
-        forEachRoute({ true }) { lane, _ ->
-            // من غير اختيارات: الجديد **اللي شكله معروف واتعلّم** بس، والتصنيف المقترح يفضل مقترح، والشبيه والتعارض ما بيتلمسوش
-            val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true)
-            recorded += outcome.recorded
-            duplicates += outcome.duplicates
-            for (batch in outcome.batchIds) ids += lane.sources.listByBatch(batch).mapNotNull { it.transactionId }
+        // مراجعة 0.3: صفحة كلها مستنية تأكيد ما توقفش الأقدم اللي وراها — بنقلّب الصفحات لحد آخر الصندوق، وبعدين نرجع لأحدث صفحة
+        var skip = 0
+        try {
+            for (pass in 0 until MAX_PAGE_PASSES) {
+                var moved = 0
+                forEachRoute({ true }) { lane, _ ->
+                    // من غير اختيارات: الجديد **اللي شكله معروف واتعلّم** بس، والتصنيف المقترح يفضل مقترح، والشبيه والتعارض ما بيتلمسوش
+                    val outcome = lane.review.recordLocked(emptyMap(), emptyList(), clearOnly = true)
+                    moved += outcome.recorded + outcome.duplicates
+                    recorded += outcome.recorded
+                    duplicates += outcome.duplicates
+                    for (batch in outcome.batchIds) ids += lane.sources.listByBatch(batch).mapNotNull { it.transactionId }
+                }
+                val box = deps.inbox.sync()
+                if (box.messages.isEmpty() || skip + box.messages.size >= box.count) break
+                if (moved == 0) skip += box.messages.size
+                deps.inbox.page(skip)
+            }
+        } finally {
+            if (skip > 0) deps.inbox.page(0)
         }
         val state = waitingLocked()
         val w = state.waiting

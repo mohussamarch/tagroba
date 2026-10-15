@@ -152,5 +152,6 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
         } else if (r.waiting > 0) {
             BasicText(t(UiKey.SMS_HISTORY_LEFT, msgsCount(r.waiting)), style = Type.of(13).copy(color = Ink.muted))
         }
+        if (r.unread > 0) BasicText(t(UiKey.SMS_HISTORY_UNREAD, msgsCount(r.unread)), style = Type.of(13).copy(color = Ink.muted))
     }
 }

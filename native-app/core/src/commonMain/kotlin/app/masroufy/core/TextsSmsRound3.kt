@@ -33,6 +33,7 @@ internal val MSA_SMS_ROUND3_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SMS_HISTORY_SHAPE_MORE to "+{0} مثلها",
     UiKey.SMS_HISTORY_CONFIRM to "أكّد الأشكال",
     UiKey.SMS_HISTORY_LEFT to "باقي {0} بانتظار تأكيدك في الأسفل.",
+    UiKey.SMS_HISTORY_UNREAD to "{0} لم تُقرأ بعد، وستظهر بعد تأكيد ما سبقها.",
     UiKey.ASK_LEGACY_SUPPORT_BODY to "تحويل {0} إلى {1} سُجّل «دعم» تلقائيًا قبل أن نسألك. سلفة أم دعم؟",
 )
 
@@ -60,6 +61,7 @@ internal val EGYPTIAN_SMS_ROUND3_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SMS_HISTORY_SHAPE_MORE to "+{0} زيها",
     UiKey.SMS_HISTORY_CONFIRM to "أكّد الأشكال",
     UiKey.SMS_HISTORY_LEFT to "باقي {0} مستنية تأكيدك تحت.",
+    UiKey.SMS_HISTORY_UNREAD to "{0} لسه ما اتقريتش، وهتظهر لما تأكّد اللي قبلها.",
     UiKey.ASK_LEGACY_SUPPORT_BODY to "تحويل {0} لـ{1} اتسجل «دعم» لوحده قبل ما نسألك. سلفة ولا دعم؟",
 )
 
@@ -87,5 +89,6 @@ internal val ENGLISH_SMS_ROUND3_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SMS_HISTORY_SHAPE_MORE to "+{0} like it",
     UiKey.SMS_HISTORY_CONFIRM to "Confirm the shapes",
     UiKey.SMS_HISTORY_LEFT to "{0} still wait for you below.",
+    UiKey.SMS_HISTORY_UNREAD to "{0} not read yet — they show up once you confirm the ones before them.",
     UiKey.ASK_LEGACY_SUPPORT_BODY to "{0} to {1} was recorded as «support» automatically before we asked. Loan or support?",
 )

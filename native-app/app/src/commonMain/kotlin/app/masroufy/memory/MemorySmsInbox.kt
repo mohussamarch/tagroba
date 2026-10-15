@@ -30,12 +30,14 @@ class MemorySmsInbox(
     private var cursor: String? = null
     private var floor: String? = null
     private var more = false
+    private var skip = 0
 
     private fun millis(iso: String) = isoInstantMillis(iso) ?: Long.MIN_VALUE
 
     private fun state(): SmsInboxState {
         // الجهاز بيعرض أحدث رسايل الصندوق (من الأقدم للأحدث) — من غير حد: الصندوق زي ما هو بترتيب دخوله
-        val shown = if (queue.size <= window) queue.toList() else queue.sortedWith(compareBy({ millis(it.receivedAt) }, { it.id })).takeLast(window)
+        val shown = if (skip == 0 && queue.size <= window) queue.toList()
+        else queue.sortedWith(compareBy({ millis(it.receivedAt) }, { it.id })).dropLast(skip).takeLast(window)
         return SmsInboxState(
             enabled = enabled, permission = enabled, more = more, count = queue.size, senders = senders.toList(), messages = shown,
             oldestQueuedAt = queue.minByOrNull { millis(it.receivedAt) }?.receivedAt,
@@ -80,6 +82,10 @@ class MemorySmsInbox(
     override suspend fun acknowledge(ids: List<String>): SmsInboxState {
         queue = queue.filter { it.id !in ids }
         return state()
+    }
+
+    override suspend fun page(skip: Int) {
+        this.skip = maxOf(0, skip)
     }
 
     override suspend fun oldestMessageAt(senders: List<String>): String? {

@@ -40,18 +40,18 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         if (!granted()) throw SmsPermissionError(uiText(TextKey.SMS_INBOX_PERMISSION_MISSING))
         return withStore {
             it.configure(uid, names)
-            it.snapshot(uid, true, false)
+            it.snapshot(uid, true, false, skip)
         }
     }
 
     override suspend fun disable(): SmsInboxState = withStore {
         it.disable(uid)
-        it.snapshot(uid, granted(), false)
+        it.snapshot(uid, granted(), false, skip)
     }
 
     override suspend fun acknowledge(ids: List<String>): SmsInboxState = withStore {
         it.acknowledge(uid, ids)
-        it.snapshot(uid, granted(), false)
+        it.snapshot(uid, granted(), false, skip)
     }
 
     override suspend fun senderWallets(spaceId: String): Map<String, String> = withStore { it.senderWallets(uid, spaceId) }
@@ -96,10 +96,17 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         withStore { store -> if (store.owner() == uid) store.rewind(millis) }
     }
 
+    /** مراجعة 0.3: صفحة الصندوق (`SmsInboxPort.page`) — في الذاكرة بس، والبرنامج لما يفتح بيبدأ من أحدث صفحة. */
+    @Volatile private var skip = 0
+
+    override suspend fun page(skip: Int) {
+        this.skip = maxOf(0, skip)
+    }
+
     override suspend fun sync(): SmsInboxState = withStore { store ->
         // التحقق من الإذن ما بيفتحش نافذة أندرويد لوحده أبدًا
         val more = store.enabled(uid) && granted() && catchUp(store)
-        store.snapshot(uid, granted(), more)
+        store.snapshot(uid, granted(), more, skip)
     }
 
     /** الرسايل اللي وصلت والتطبيق مقفول (أو الاستقبال فاتها) — من آخر مؤشر، بالترتيب. */
