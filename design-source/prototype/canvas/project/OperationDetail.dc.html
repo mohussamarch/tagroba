@@ -46,6 +46,7 @@ body{margin:0}
       <span style="display: flex; align-items: center; gap: 8px; margin-top: 4px"><span style="font-size: 18px; font-weight: 700">{{name}}</span><sc-if value="{{isMerchant}}" hint-placeholder-val="{{ true }}"><a href="MerchantProfile.dc.html" data-keep="{{merchantKeep}}" class="m-press" aria-label="{{merchantLabel}}" style="width: 44px; height: 44px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; text-decoration: none; background: rgba(8,99,79,0.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"></path><path d="M3 9h18v2a3 3 0 0 1-6 0a3 3 0 0 1-6 0a3 3 0 0 1-6 0z"></path><path d="M5 13v8h14v-8"></path><path d="M10 21v-5h4v5"></path></svg></a></sc-if></span>
       <span style="font-size: 13px; color: #637570">{{sub}}</span>
       <span dir="ltr" style="{{amountStyle}}">{{amount}}</span>
+      <sc-if value="{{hasNet}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; color: #08634F; background: #DCEBD6"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"></path></svg><span dir="rtl">{{netLine}}</span></span></sc-if>
       <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #637570"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>{{lockLine}}</span>
     </div>
 
@@ -77,6 +78,7 @@ body{margin:0}
       <div style="border-top: 1px solid rgba(204,216,204,0.55); padding: 6px 0"><dc-import name="TagsSheet" space="{{spaceName}}" tags="" hint-size="350px,72px"></dc-import></div>
     </div>
 
+    <sc-if value="{{showLinked}}" hint-placeholder-val="{{ false }}"><dc-import name="LinkedOps" space="{{spaceName}}" spent="{{spentMinor}}" linked="{{linkedItems}}" on-change="{{onLinked}}" hint-size="350px,300px"></dc-import></sc-if>
     <div style="display: flex; flex-direction: column; gap: 8px">
       <span style="font-size: 13px; font-weight: 700; color: #637570">{{linkTitle}}</span>
       <sc-if value="{{showLinks}}" hint-placeholder-val="{{ true }}">
@@ -122,7 +124,8 @@ class Component extends DCLogic {
     this.picked = picked;
     const fromSms = !picked || String(picked.sub || '').indexOf('رسال') >= 0;
     this.fromSms = fromSms;
-    this.state = { cat: null, catSt: fromSms ? 'sug' : 'ok', sheet: false, kind: null, toast: '' };
+    const L = picked && picked.linked && Array.isArray(picked.linked.items) ? picked.linked.items : [];
+    this.state = { cat: null, catSt: fromSms ? 'sug' : 'ok', sheet: false, kind: null, toast: '', linkedSum: L.reduce((t, x) => t + x.amt, 0) }; // linkedSum: مجموع العمليات التابعة بالهللة
     this.timers = [];
     this.onKind = (kind) => this.setState({ kind });
   }
@@ -145,7 +148,8 @@ class Component extends DCLogic {
     }[v];
     const P = v === 'sms' && pickName === 'حسب اللي اتداس' ? this.picked : null;
     const dir = P ? P.dir : 'out';
-    if (P) Object.assign(T, { name: P.name, sub: P.sub.split(' · ')[0], amt: (dir === 'in' ? 1 : -1) * this.toMinor(P.amount), icon: P.kind });
+    // المصروف اللي فيه عملية تابعة بيتعرض بمبلغ البنك الأصلي، والصافي تحته · «tied» = فلوس دخلت تابعة لمصروف (مش دخل، ومبلغها رمادي)
+    if (P) Object.assign(T, { name: P.name, sub: P.sub.split(' · ')[0], amt: P.linked && P.linked.gross ? -P.linked.gross : (dir === 'in' || dir === 'tied' ? 1 : -1) * this.toMinor(P.amount), icon: P.kind });
     const chipS = (c, b) => 'font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: ' + c + '; background: ' + b;
     const act = (label, go, strong) => ({ label, go, style: 'height: 36px; padding: 0 12px; flex-shrink: 0; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (strong ? 'color: #FFFFFF; background: #08634F' : 'color: #08634F; background: rgba(8,99,79,0.08)') });
     const field = (label, value, o) => Object.assign({ label, value, hasChip: false, chip: '', chipStyle: '', hasHint: false, hint: '', acts: [] }, o || {});
@@ -157,10 +161,10 @@ class Component extends DCLogic {
       field('التصنيف', catValue, s.catSt === 'sug'
         ? { hasChip: true, chip: 'مقترح', chipStyle: chipS('#956000', '#FBF0DD'), hasHint: true, hint: eg ? 'من قاعدة عامة — محتاج تأكيدك' : 'من قاعدة عامة — يحتاج تأكيدك', acts: [act(eg ? 'غيّر' : 'غيّر', openCat), act(eg ? 'تمام' : 'تأكيد', () => { this.setState({ catSt: 'ok' }); this.say(eg ? 'اتأكد التصنيف' : 'تأكّد التصنيف'); }, true)] }
         : { hasChip: true, chip: eg ? 'مؤكد' : 'مؤكد', chipStyle: chipS('#08634F', '#DCEBD6'), acts: [act(eg ? 'غيّر' : 'غيّر', openCat)] }),
-      field('النوع', dir === 'in' ? 'دخل' : dir === 'move' ? (eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك') : 'مصروف حقيقي'),
+      dir === 'tied' ? field('النوع', eg ? 'تابعة لمصروف' : 'تابعة لمصروف', { hasHint: true, hint: P.sub.split(' · ')[0] + (eg ? ' — مش بتتحسب دخل، والمصروف بيتحسب بالصافي' : ' — لا تُحسب دخلًا، والمصروف يُحسب بالصافي') }) : field('النوع', dir === 'in' ? 'دخل' : dir === 'move' ? (eg ? 'تحويل بين محافظك' : 'تحويل بين محافظك') : 'مصروف حقيقي'),
       srcSms ? field('المصدر', eg ? 'رسالة البنك' : 'رسالة البنك', { hasChip: true, chip: eg ? 'اتسجلت لوحدها' : 'سُجّلت تلقائيًا', chipStyle: chipS('#08634F', '#DCEBD6'), hasHint: true, hint: eg ? 'كشف الحساب لما ييجي هيتدمج معاها، مش هيكررها' : 'حين يصل كشف الحساب تُدمج معه ولا تتكرر' })
         : field('المصدر', eg ? 'كشف الحساب' : 'كشف الحساب', { hasChip: true, chip: eg ? 'اتستورد' : 'مستورد', chipStyle: chipS('#2469BA', 'rgba(36,105,186,0.10)') })
-    ].filter((f) => !(dir === 'move' && f.label === 'التصنيف')) : v === 'cash' ? [
+    ].filter((f) => !((dir === 'move' || dir === 'tied') && f.label === 'التصنيف')) : v === 'cash' ? [
       field('المحفظة', eg ? 'الكاش' : 'الكاش'),
       field('التصنيف', s.cat ? CATS[s.cat] : (eg ? 'من غير تصنيف' : 'بلا تصنيف'), s.cat ? {} : { acts: [act(eg ? 'صنّفها' : 'صنّفها', openCat, true)] }),
       field('النوع', eg ? 'مصروف حقيقي' : 'مصروف حقيقي', { hasHint: true, hint: eg ? 'داخل في صرف الشهر' : 'داخل في صرف الشهر' }),
@@ -179,12 +183,14 @@ class Component extends DCLogic {
     }));
     return {
       title: eg ? 'تفاصيل العملية' : 'تفاصيل العملية',
-      tile: 'position: relative; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); ' + ({ shop: 'background: rgba(56,102,167,0.12); color: #3866A7', car: 'background: rgba(77,116,124,0.12); color: #4D747C', income: 'background: rgba(19,118,77,0.12); color: #13764D', food: 'background: rgba(163,106,33,0.12); color: #A36A21', cash: 'background: rgba(99,117,112,0.12); color: #637570', move: 'background: rgba(36,105,186,0.12); color: #2469BA' }[T.icon]),
-      isFood: T.icon === 'food', isCash: T.icon === 'cash', isMove: T.icon === 'move', isShop: T.icon === 'shop', isCar: T.icon === 'car', isIncome: T.icon === 'income',
+      tile: 'position: relative; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7); ' + ({ shop: 'background: rgba(56,102,167,0.12); color: #3866A7', car: 'background: rgba(77,116,124,0.12); color: #4D747C', income: 'background: rgba(19,118,77,0.12); color: #13764D', food: 'background: rgba(163,106,33,0.12); color: #A36A21', cash: 'background: rgba(99,117,112,0.12); color: #637570', move: 'background: rgba(36,105,186,0.12); color: #2469BA', own: 'background: rgba(99,117,112,0.12); color: #637570' }[T.icon]),
+      isFood: T.icon === 'food', isCash: T.icon === 'cash', isMove: T.icon === 'move' || T.icon === 'own', isShop: T.icon === 'shop', isCar: T.icon === 'car', isIncome: T.icon === 'income',
       redDot: v === 'cash' && !s.cat,
       name: T.name, sub: T.sub,
       amount: (T.amt < 0 ? '−' : '+') + this.fmt(T.amt) + ' ' + cur,
-      amountStyle: 'font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (T.amt < 0 ? '#BE3D48' : '#13764D'),
+      amountStyle: 'font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (T.amt < 0 ? '#BE3D48' : dir === 'tied' ? '#637570' : '#13764D'),
+      hasNet: T.amt < 0 && s.linkedSum > 0, netLine: (eg ? 'الصافي ' : 'الصافي ') + this.fmt(-T.amt - s.linkedSum) + ' ' + cur + (eg ? ' · فيه عملية تابعة' : ' · فيها عملية تابعة'),
+      showLinked: T.amt < 0 && v !== 'party', spentMinor: -T.amt, linkedItems: P && P.linked && Array.isArray(P.linked.items) ? P.linked.items : [], onLinked: (x) => { this.setState({ linkedSum: x ? x.sum : 0 }); this.say(x && x.count ? (eg ? 'اتربطت — المصروف بقى بالصافي' : 'رُبطت — المصروف صار بالصافي') : (eg ? 'اتفك الربط — رجعت زي ما كانت' : 'فُكّ الربط — عادت كما كانت')); },
       lockLine: v === 'cash' ? (eg ? 'المبلغ من فرق العدّ' : 'المبلغ من فرق العدّ') : (eg ? 'التاريخ والاتجاه جايين من البنك، ما بيتعدلوش' : 'التاريخ والاتجاه من البنك ولا يُعدَّلان'),
       cashOpen: v === 'cash' && !s.cat,
       cashTitle: eg ? 'دي مش عملية اتسجلت' : 'هذه ليست عملية مسجّلة',

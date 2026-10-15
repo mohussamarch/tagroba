@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>عمليات تابعة — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.l-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.l-press:active{transform:scale(.97)}
+.l-veil{animation:l-fade 220ms cubic-bezier(.2,.7,.3,1) both}
+.l-up{animation:l-up 450ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes l-fade{from{opacity:0}to{opacity:1}}
+@keyframes l-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.l-press{transition:none}.l-press:active{transform:none}.l-up{animation:l-fade 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" style="width: 100%; min-width: 0; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+    <span style="display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #08634F; background: rgba(8,99,79,0.08)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><path d="M8 12h8"></path></svg></span><span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">{{title}}</span><span style="font-size: 12px; color: #637570">{{sub}}</span></span></span>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="1">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 4px 0 12px; border-radius: 14px; background: rgba(25,61,51,0.04)">
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.when}}</span></span>
+        <span dir="ltr" style="font-size: 14px; font-weight: 700; color: #637570; font-variant-numeric: tabular-nums">{{r.amount}}</span>
+        <button type="button" class="l-press" onClick="{{r.remove}}" aria-label="{{r.removeLabel}}" style="width: 44px; height: 44px; border: 0; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #637570; cursor: pointer; background: transparent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+      </div>
+    </sc-for>
+    <sc-if value="{{hasRows}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; background: #DCEBD6">
+        <span dir="ltr" style="display: flex; justify-content: flex-end; gap: 6px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums"><span>{{mathNet}}</span><span>=</span><span>{{mathLinked}}</span><span>−</span><span>{{mathSpent}}</span></span>
+        <span style="font-size: 12px; color: #4F625C; line-height: 1.6">{{mathNote}}</span>
+      </div>
+    </sc-if>
+    <button type="button" class="l-press" onClick="{{open}}" style="height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{openLabel}}</button>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 9">
+      <button type="button" class="l-veil" onClick="{{close}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="l-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570">{{sheetSub}}</span>
+        <div role="group" aria-label="{{sheetTitle}}" style="display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{cands}}" as="c" hint-placeholder-count="3">
+            <button type="button" role="checkbox" aria-checked="{{c.on}}" class="l-press" onClick="{{c.pick}}" style="{{c.style}}">
+              <span aria-hidden="true" style="{{c.box}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: right"><span style="font-size: 14px; font-weight: 700">{{c.name}}</span><span style="font-size: 12px; color: #637570">{{c.when}}</span></span>
+              <span dir="ltr" style="font-size: 14px; font-weight: 700; color: #13764D; font-variant-numeric: tabular-nums">{{c.amount}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <span dir="ltr" style="text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: #4F625C">{{preview}}</span>
+        <sc-if value="{{tooMuch}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{tooMuchText}}</span></sc-if>
+        <button type="button" class="l-press" onClick="{{save}}" disabled="{{saveOff}}" style="{{saveStyle}}">{{saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":330}}'>
+// «عمليات تابعة» (طلب المالك عن طريق جلسة كوتلن، HANDOVER §6.5 بند 14 على فرع كوتلن): من أي مصروف تختار فلوس دخلت بسببه — حتى لو تحويل من شخص
+// المصروف بيتحسب بالصافي (120 − 60 = 60) وعليه علامة «فيه عملية تابعة»، والفلوس اللي دخلت مش بتتحسب دخل · الأرصدة ما بتتغيرش
+// props: spent (المصروف بالهللة، موجب) · linked (اللي متربط من الأول [{id,name,when,amt}]) · on-change({ sum, count }) — أعداد صحيحة بس
+// اختيارات Claude لحد ما المالك يقول: أكتر من عملية تابعة مسموح · مجموعها ما يعدّيش المصروف · المرشحين: فلوس دخلت آخر 30 يوم ولسه مش تابعة لحاجة
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const init = Array.isArray(props.linked) ? props.linked : [];
+    this.state = { linked: init, sheet: false, pick: init.map((x) => x.id) };
+  }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  tell(list) { if (typeof this.props.onChange === 'function') this.props.onChange({ sum: list.reduce((t, x) => t + x.amt, 0), count: list.length }); }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), cur = eg ? 'ج.م' : 'ر.س', s = this.state;
+    const spent = Math.abs(Number(this.props.spent) || (eg ? 36000 : 12000));
+    // مخترعة · بالهللة
+    const CANDS = eg ? [['c1', 'حوالة من أحمد', 'أمس · من حساب آخره 7710', 18000], ['c2', 'حوالة من سارة', 'من يومين · إنستاباي', 12000], ['c3', 'إيداع كاش', 'من 5 أيام', 50000]]
+      : [['c1', 'حوالة من أحمد', 'أمس · من حساب ينتهي بـ 7710', 6000], ['c2', 'حوالة من سارة', 'قبل يومين · تحويل فوري', 4000], ['c3', 'إيداع نقدي', 'قبل 5 أيام', 15000]];
+    const byId = (id) => { const c = CANDS.find((x) => x[0] === id); return c ? { id: c[0], name: c[1], when: c[2], amt: c[3] } : s.linked.find((x) => x.id === id); };
+    const sum = s.linked.reduce((t, x) => t + x.amt, 0), pickSum = s.pick.reduce((t, id) => t + ((byId(id) || {}).amt || 0), 0), over = pickSum > spent;
+    return {
+      title: T('عمليات تابعة', 'عمليات تابعة'), sub: T('فلوس دخلت بسبب هذا المصروف، كأن يردّ لك أحد نصيبه', 'فلوس دخلت بسبب المصروف ده، زي حد رجّعلك نصيبه'),
+      rows: s.linked.map((x) => ({ name: x.name, when: x.when, amount: '+' + this.fmt(x.amt), removeLabel: T('فك ربط ', 'فك ربط ') + x.name,
+        remove: () => { const list = s.linked.filter((y) => y.id !== x.id); this.setState({ linked: list, pick: list.map((y) => y.id) }); this.tell(list); } })),
+      hasRows: s.linked.length > 0,
+      mathSpent: this.fmt(spent), mathLinked: this.fmt(sum), mathNet: this.fmt(spent - sum) + ' ' + cur,
+      mathNote: T('الصافي هو الداخل في صرف الشهر، والمبلغ الذي دخل لا يُحسب دخلًا. أرصدتك لا تتغير.', 'الصافي هو اللي داخل في صرف الشهر، والفلوس اللي دخلت مش بتتحسب دخل. أرصدتك ما بتتغيرش.'),
+      openLabel: s.linked.length ? T('عدّل العمليات التابعة', 'عدّل العمليات التابعة') : T('+ اختر مبلغًا دخل', '+ اختار فلوس دخلت'),
+      open: () => this.setState({ sheet: true, pick: s.linked.map((x) => x.id) }), close: () => this.setState({ sheet: false }), closeLabel: T('إغلاق', 'اقفل'), sheet: !!s.sheet,
+      sheetTitle: T('اختر المبلغ الذي دخل', 'اختار الفلوس اللي دخلت'), sheetSub: T('من آخر 30 يومًا — دخل أو تحويل من شخص', 'من آخر 30 يوم — دخل أو تحويل من شخص'),
+      cands: CANDS.map(([id, name, when, amt]) => { const on = s.pick.indexOf(id) >= 0; return { name, when, amount: '+' + this.fmt(amt), on: on ? 'true' : 'false',
+        pick: () => this.setState({ pick: on ? s.pick.filter((x) => x !== id) : s.pick.concat([id]) }),
+        style: 'width: 100%; min-height: 56px; border: 0; border-radius: 16px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : 'rgba(25,61,51,0.04)') + '; box-shadow: ' + (on ? 'inset 0 0 0 1.5px #08634F' : 'none'),
+        box: 'width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; ' + (on ? 'background: #08634F' : 'border: 1.5px solid rgba(25,61,51,0.35); background: #FFFFFF') }; }),
+      preview: this.fmt(spent) + ' − ' + this.fmt(pickSum) + ' = ' + this.fmt(Math.max(0, spent - pickSum)) + ' ' + cur,
+      tooMuch: over, tooMuchText: T('المجموع أكبر من المصروف نفسه — اختر أقل.', 'المجموع أكبر من المصروف نفسه — اختار أقل.'),
+      saveOff: over, saveLabel: s.pick.length ? T('اربط (', 'اربط (') + s.pick.length + ')' : T('لا شيء تابع', 'مفيش تابع'),
+      saveStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: ' + (over ? 'default' : 'pointer') + '; opacity: ' + (over ? 0.45 : 1) + '; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)',
+      save: () => { if (over) return; const list = s.pick.map(byId).filter(Boolean); this.setState({ linked: list, sheet: false }); this.tell(list); }
+    };
+  }
+}
+</script>
+</body>
+</html>

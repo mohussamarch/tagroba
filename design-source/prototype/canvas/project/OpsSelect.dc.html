@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تحديد عمليات — مصروفي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+.s-scroll{scrollbar-width:none}.s-scroll::-webkit-scrollbar{display:none}.s-scroll>*{flex-shrink:0}
+.s-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),opacity 220ms cubic-bezier(.2,.7,.3,1)}
+.s-press:active{transform:scale(.97)}
+.s-in{animation:s-in 260ms cubic-bezier(.2,.7,.3,1) both}
+.s-veil{animation:s-in 220ms cubic-bezier(.2,.7,.3,1) both}
+.s-up{animation:s-up 450ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes s-in{from{opacity:0}to{opacity:1}}
+@keyframes s-up{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.s-press{transition:none}.s-press:active{transform:none}.s-up{animation:s-in 150ms both}}
+:focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
+</style>
+</helmet>
+<div dir="rtl" class="s-in" style="position: absolute; inset: 0; z-index: 8; overflow: hidden; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33; background: radial-gradient(70% 38% at 100% 0%, rgba(166,222,193,0.45), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(166,222,193,0.40), transparent 70%), linear-gradient(155deg, #FAF9F3 0%, #EFF3ED 48%, #DCE9DF 100%)">
+  <div class="s-scroll" ref="{{setScroll}}" style="height: 100%; box-sizing: border-box; overflow-y: auto; padding: 20px 20px 132px; display: flex; flex-direction: column; gap: 14px">
+    <div style="position: sticky; top: -20px; z-index: 2; margin: -20px -20px 0; padding: 20px 20px 10px; display: flex; align-items: center; gap: 10px; min-height: 48px; background: rgba(247,247,240,0.90); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px)">
+      <button type="button" class="s-press" onClick="{{close}}" aria-label="{{closeLabel}}" style="width: 48px; height: 48px; border: 0; border-radius: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #193D33; cursor: pointer; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span aria-live="polite" style="font-size: 20px; font-weight: 700">{{countText}}</span><span dir="rtl" style="font-size: 12px; color: #637570">{{totalText}}</span></span>
+      <button type="button" class="s-press" onClick="{{toggleAll}}" style="height: 40px; padding: 0 14px; border: 0; border-radius: 14px; flex-shrink: 0; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{allLabel}}</button>
+    </div>
+    <sc-for list="{{days}}" as="d" hint-placeholder-count="2">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; font-weight: 700; color: #637570">{{d.label}}</span>
+        <div role="group" aria-label="{{d.label}}" style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="3">
+            <button type="button" role="checkbox" aria-checked="{{r.on}}" data-first="{{r.first}}" class="s-press" onClick="{{r.pick}}" style="{{r.style}}">
+              <span aria-hidden="true" style="{{r.box}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
+              <span style="{{r.tile}}"><dc-import name="OpIcon" kind="{{r.kind}}" hint-size="18px,18px"></dc-import></span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: right"><span style="font-size: 14px; font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #637570">{{r.sub}}</span></span>
+              <span dir="ltr" style="{{r.amountStyle}}">{{r.amount}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div role="toolbar" aria-label="{{barLabel}}" style="position: absolute; left: 16px; right: 16px; bottom: 20px; border-radius: 26px; padding: 8px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: linear-gradient(125deg, rgba(239,249,239,0.92), rgba(231,241,227,0.80) 55%, rgba(205,232,210,0.88)); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.75), 0 18px 44px rgba(29,54,53,0.22)">
+    <sc-for list="{{acts}}" as="a" hint-placeholder-count="4">
+      <button type="button" class="s-press" onClick="{{a.go}}" disabled="{{a.off}}" style="{{a.style}}">
+        <sc-if value="{{a.isProject}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="M12 11v5M9.5 13.5h5"></path></svg></sc-if>
+        <sc-if value="{{a.isCat}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l9 9-8 8z"></path><circle cx="7.5" cy="8.5" r="1.2"></circle></svg></sc-if>
+        <sc-if value="{{a.isType}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3"></path><path d="M20 16H6l3 3"></path></svg></sc-if>
+        <sc-if value="{{a.isDelete}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></sc-if>
+        <span style="font-size: 11px; font-weight: 700">{{a.label}}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 9">
+      <button type="button" class="s-veil" onClick="{{closeSheet}}" aria-label="{{closeLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: rgba(32,59,48,0.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px)"></button>
+      <div role="dialog" aria-modal="true" aria-label="{{sheetTitle}}" class="s-up" style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: 0 -18px 44px rgba(29,54,53,0.18)">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: rgba(25,61,51,0.16)"></span>
+        <span style="font-size: 17px; font-weight: 700">{{sheetTitle}}</span>
+        <span style="font-size: 13px; color: #637570; line-height: 1.6">{{sheetSub}}</span>
+        <div role="radiogroup" aria-label="{{sheetTitle}}" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{opts}}" as="o" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{o.on}}" class="s-press" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+        <button type="button" class="s-press" onClick="{{confirm}}" disabled="{{confirmOff}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// وضع تحديد كذا عملية في «العمليات» (طلب المالك عن طريق جلسة كوتلن، HANDOVER §6.5 بند 15): «احدد كذا عملية… امسحهم او اضيفهم في مشروع مشترك مرة واحدة»
+// الدخول: «تحديد» فوق أول يوم، أو من القايمة السريعة (الضغطة الطويلة) والعملية دي متحددة من الأول · الخروج: «✕»
+// فوق: «X محددة» ومجموعها (الصرف والدخل لوحدهم، والتحويلات بين محافظك والفلوس التابعة مش داخلة) · تحت: لمشروع · التصنيف · النوع · امسح — كل واحد بشيت تأكيد، والأم بتعرض «تراجع»
+// props: days [{label, rows:[{id,kind,name,sub,amount,minor,dir}]}] · first (المتحددة من الأول) · on-close · on-done({ action, ids, label }) — المبالغ بالهللة
+const ACTS = [['project', 'لمشروع', 'لمشروع'], ['cat', 'التصنيف', 'التصنيف'], ['type', 'النوع', 'النوع'], ['delete', 'حذف', 'امسح']];
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { ids: props.first ? [props.first] : [], sheet: null, opt: null };
+    this.scrolled = false;
+    // أول ما الوضع يفتح من القايمة السريعة: العملية المتحددة تبان قدامك (مش أول القايمة)
+    this.setScroll = (el) => { if (!el || this.scrolled || typeof el.querySelector !== 'function') return; this.scrolled = true; const t = el.querySelector('[data-first="1"]'); if (t) el.scrollTop = Math.max(0, t.offsetTop - 260); };
+  }
+  fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
+  renderVals() {
+    const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), s = this.state, cur = eg ? 'ج.م' : 'ر.س';
+    const days = Array.isArray(this.props.days) ? this.props.days : [], all = [].concat(...days.map((d) => d.rows || []));
+    const sel = all.filter((r) => s.ids.indexOf(r.id) >= 0), n = sel.length;
+    const out = sel.filter((r) => r.dir === 'out').reduce((t, r) => t + r.minor, 0), inc = sel.filter((r) => r.dir === 'in').reduce((t, r) => t + r.minor, 0), moves = sel.some((r) => r.dir !== 'out' && r.dir !== 'in');
+    const word = n === 1 ? T('عملية واحدة', 'عملية واحدة') : n === 2 ? T('عمليتان', 'عمليتين') : n + T(' عمليات', ' عمليات');
+    const PROJECTS = eg ? ['رحلة الغردقة', 'تجهيز أوضة الأولاد', 'متجر جانبي', 'نقل الشقة'] : ['رحلة العلا', 'تجهيز غرفة الأولاد', 'متجر إلكتروني جانبي', 'نقل الشقة'];
+    const CATS = eg ? ['أكل وقهوة', 'بقالة', 'مواصلات', 'هدايا', 'بيت', 'أخرى'] : ['مطاعم وقهوة', 'بقالة وسوبرماركت', 'مواصلات', 'هدايا', 'منزل', 'أخرى'];
+    const TYPES = [T('مصروف حقيقي', 'مصروف حقيقي'), 'دخل', T('تحويل بين محافظك', 'تحويل بين محافظك'), T('سلفة لشخص', 'سلفة لشخص')];
+    const sheet = s.sheet, opts = sheet === 'project' ? PROJECTS : sheet === 'cat' ? CATS : sheet === 'type' ? TYPES : [];
+    const chip = (on) => 'min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const del = sheet === 'delete', ready = del || !!s.opt;
+    const done = () => { if (!ready || !n) return; if (typeof this.props.onDone === 'function') this.props.onDone({ action: sheet, ids: sel.map((r) => r.id), label: del ? '' : s.opt, count: n }); };
+    const parts = [];
+    if (out) parts.push(T('صرف ', 'صرف ') + this.fmt(out)); if (inc) parts.push(T('دخل ', 'دخل ') + this.fmt(inc));
+    return {
+      setScroll: this.setScroll,
+      countText: n ? n + ' محددة' : T('حدد العمليات', 'حدد العمليات'),
+      totalText: n ? (parts.length ? parts.join(' · ') + ' ' + cur : T('بلا مبلغ داخل في الحساب', 'مفيش مبلغ داخل في الحساب')) + (moves ? T(' · التحويلات لا تدخل في المجموع', ' · التحويلات مش داخلة في المجموع') : '') : T('اضغط على العمليات لتحددها', 'دوس على العمليات عشان تحددها'),
+      close: () => { if (typeof this.props.onClose === 'function') this.props.onClose(); }, closeLabel: T('إلغاء التحديد', 'إلغاء التحديد'),
+      allLabel: n === all.length && n ? T('إلغاء الكل', 'شيل الكل') : T('تحديد الكل', 'حدد الكل'),
+      toggleAll: () => this.setState({ ids: n === all.length ? [] : all.map((r) => r.id) }),
+      days: days.map((d) => ({ label: d.label, rows: (d.rows || []).map((r, j, a) => { const on = s.ids.indexOf(r.id) >= 0; return {
+        name: r.name, sub: r.sub, kind: r.kind, amount: r.amount, on: on ? 'true' : 'false', first: r.id === this.props.first ? '1' : '',
+        pick: () => this.setState((st) => ({ ids: st.ids.indexOf(r.id) >= 0 ? st.ids.filter((x) => x !== r.id) : st.ids.concat([r.id]) })),
+        style: 'width: 100%; min-height: 60px; border: 0; padding: 6px 8px; display: flex; align-items: center; gap: 10px; font: inherit; color: #193D33; cursor: pointer; border-radius: 16px; background: ' + (on ? '#DCEBD6' : 'transparent') + (j < a.length - 1 && !on ? '; box-shadow: 0 1px 0 rgba(204,216,204,0.55)' : ''),
+        box: 'width: 24px; height: 24px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; ' + (on ? 'background: #08634F' : 'border: 1.5px solid rgba(25,61,51,0.35); background: #FFFFFF'),
+        tile: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + ({ food: '#A36A21', shop: '#3866A7', car: '#4D747C', move: '#2469BA', own: '#637570', income: '#13764D', cash: '#637570' }[r.kind] || '#637570') + '; background: rgba(25,61,51,0.06)',
+        amountStyle: 'font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (r.dir === 'out' ? '#BE3D48' : r.dir === 'in' ? '#13764D' : '#637570') }; }) })),
+      barLabel: T('إجراءات العمليات المحددة', 'إجراءات العمليات المتحددة'),
+      acts: ACTS.map(([id, sa, e]) => ({ label: T(sa, e), off: !n, isProject: id === 'project', isCat: id === 'cat', isType: id === 'type', isDelete: id === 'delete',
+        go: () => { if (n) this.setState({ sheet: id, opt: null }); },
+        style: 'min-height: 56px; border: 0; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: inherit; cursor: ' + (n ? 'pointer' : 'default') + '; opacity: ' + (n ? 1 : 0.4) + '; background: transparent; color: ' + (id === 'delete' ? '#BE3D48' : '#08634F') })),
+      sheetOpen: !!sheet, closeSheet: () => this.setState({ sheet: null }),
+      sheetTitle: del ? T('حذف ', 'تمسح ') + word + T('؟', '؟') : sheet === 'project' ? T('أضفها لأي مشروع؟', 'تضيفهم لأنهي مشروع؟') : sheet === 'cat' ? T('التصنيف الجديد', 'التصنيف الجديد') : T('النوع الجديد', 'النوع الجديد'),
+      sheetSub: del ? (parts.length ? T('مجموعها ', 'مجموعهم ') + parts.join(' · ') + ' ' + cur + '. ' : '') + T('يمكنك التراجع خلال ثوانٍ بعد الحذف.', 'تقدر تتراجع في ثواني بعد المسح.') : word + T(' — التغيير على الكل مرة واحدة، ويمكنك التراجع.', ' — التغيير على الكل مرة واحدة، وتقدر تتراجع.'),
+      opts: opts.map((label) => ({ label, on: s.opt === label ? 'true' : 'false', style: chip(s.opt === label), pick: () => this.setState({ opt: label }) })),
+      confirm: done, confirmOff: !ready,
+      confirmLabel: del ? T('احذف ', 'امسح ') + word : sheet === 'project' ? T('أضف ', 'ضيف ') + word : T('غيّر ', 'غيّر ') + word,
+      confirmStyle: 'height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #FFFFFF; cursor: ' + (ready ? 'pointer' : 'default') + '; opacity: ' + (ready ? 1 : 0.45) + '; background: ' + (del ? '#BE3D48' : 'linear-gradient(160deg, #0A7A62 0%, #08634F 100%)')
+    };
+  }
+}
+</script>
+</body>
+</html>

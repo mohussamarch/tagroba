@@ -1073,6 +1073,38 @@
       "y": 26902,
       "w": 390,
       "h": 844
+    },
+    "OpsSelect.dc.html": {
+      "is_interactive": true,
+      "title": "تحديد كذا عملية · OpsSelect",
+      "x": 470,
+      "y": 27852,
+      "w": 390,
+      "h": 844
+    },
+    "OpsQuickMenu.dc.html": {
+      "is_interactive": true,
+      "title": "القايمة السريعة للعملية · OpsQuickMenu",
+      "x": 910,
+      "y": 27852,
+      "w": 390,
+      "h": 844
+    },
+    "LinkedOps.dc.html": {
+      "is_interactive": true,
+      "title": "عمليات تابعة · LinkedOps",
+      "x": 1350,
+      "y": 27852,
+      "w": 350,
+      "h": 330
+    },
+    "OpIcon.dc.html": {
+      "is_interactive": true,
+      "title": "رمز العملية · OpIcon",
+      "x": 1750,
+      "y": 27852,
+      "w": 24,
+      "h": 24
     }
   },
   "createdOnFiles": {
@@ -1364,7 +1396,11 @@
     "CharacterArt.dc.html",
     "CharacterBuilder.dc.html",
     "YearWheel.dc.html",
-    "Faq.dc.html"
+    "Faq.dc.html",
+    "OpsSelect.dc.html",
+    "OpsQuickMenu.dc.html",
+    "LinkedOps.dc.html",
+    "OpIcon.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

@@ -59,8 +59,9 @@ body{margin:0}
   </sc-if>
 
   <sc-if value="{{hasChar}}" hint-placeholder-val="{{ false }}">
-    <div aria-label="أنت" style="position: absolute; left: 0; right: 0; bottom: 4px; display: flex; flex-direction: column; align-items: center; pointer-events: none">
-      <dc-import name="CharacterArt" mode="الجسم كله" look="{{charLook}}" size="{{206}}" label="شكلك" hint-size="94px,206px"></dc-import>
+    <div aria-label="أنت" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none">
+      <div aria-hidden="true" style="position: absolute; bottom: 0; width: 220px; height: 96px; border-radius: 110px 110px 0 0; background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.04) 75%); box-shadow: inset 1px 2px 2px rgba(200,255,235,0.40), inset -1px 0 3px rgba(0,47,48,0.20)"></div>
+      <div style="position: relative; height: 188px; overflow: hidden; display: flex; justify-content: center"><dc-import name="CharacterArt" mode="الجسم كله" look="{{charLook}}" size="{{430}}" label="شكلك" hint-size="195px,430px"></dc-import></div>
     </div>
   </sc-if>
   <sc-if value="{{noChar}}" hint-placeholder-val="{{ true }}">

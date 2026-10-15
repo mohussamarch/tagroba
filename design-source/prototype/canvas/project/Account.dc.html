@@ -43,6 +43,7 @@ body{margin:0}
     </sc-if>
 
     <div style="border-radius: 26px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+      <sc-if value="{{hasChar}}" hint-placeholder-val="{{ false }}"><div style="height: 252px; border-radius: 22px; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), linear-gradient(125deg, #064B40 0%, #08705A 100%)"><dc-import name="CharacterArt" mode="الجسم كله" look="{{charLook}}" size="{{240}}" label="{{charLabel}}" hint-size="109px,240px"></dc-import></div></sc-if>
       <div style="display: flex; align-items: center; gap: 14px">
         <dc-import name="MeAvatar" size="{{64}}" pct="{{pct}}" look="{{look}}" hint-size="64px,64px"></dc-import>
         <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
@@ -160,6 +161,8 @@ class Component extends DCLogic {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
     const n = (x) => x.toLocaleString('en-US');
+    // الجسم كله بيظهر هنا بس (ملفك = لما تدوس على صورتك فوق) — في الدواير الراس، وفي «الأشخاص» لحد قبل البطن (طلب المالك 2026-10-16)
+    let charLook = null; try { charLook = JSON.parse(window.sessionStorage.getItem('masroufy-character') || 'null'); } catch (e) {}
     const s = this.state, p = s.p;
     const cur = eg ? 'ج.م' : 'ر.س';
     const YES = eg ? 'أيوه' : 'نعم', NO = eg ? 'لأ' : 'لا';
@@ -221,6 +224,7 @@ class Component extends DCLogic {
       pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '%',
       pctHint: pct >= 100 ? (eg ? 'كامل' : 'مكتمل') : (eg ? 'كل إجابة بتخلي الأرقام أدق' : 'كل إجابة تجعل الأرقام أدق'),
       barStyle: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
+      hasChar: !!charLook, charLook: charLook || {}, charLabel: eg ? 'شكلك بالجسم كله' : 'شكلك كاملًا',
       avatarSoon: eg ? 'دي أول نسخة من الكاركتر، وهتتطوّر.' : 'هذه أول نسخة من الكاركتر، وستتطوّر.', buildLabel: eg ? 'ابني شكلك' : 'ابنِ شكلك',
       look: s.look || 0, onLook: (k) => { this.setState({ look: k }); this.say(eg ? 'اتغيّر شكلك' : 'تغيّر شكلك'); },
       groups,
