@@ -48,6 +48,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.imports.BankSmsRoute
 import app.masroufy.ui.screens.more.DayGrid
+import app.masroufy.ui.screens.more.AccountLookRoute
 import app.masroufy.ui.screens.more.WalletsRoute
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -61,7 +62,7 @@ import kotlinx.coroutines.launch
  * «أول تشغيل» بعد الدخول (`Onboarding`): كارت = سؤال، والرد الأخضر تحت بعد كل إجابة. الحالات: بيحمّل (القيم الموجودة
  * من `OnboardAccount.start`) · خطأ (القراية أو الحفظ ⇒ «أعد المحاولة») · غير متاح (رسايل البنك على الآيفون · مصر لو إنشاء البلد مش متاح ·
  * الإذن). «محتاج نت» بتاع كارت الدخول في `SignInFlow` (الكتابة هنا بتستنى في نسخة الجهاز لو النت قاطع).
- * «ادخل التطبيق» ⇒ `OnboardAccount.finish` (يوم الراتب + للحساب الجديد الكاش والبنك من كارتين §81 — من غير ديون) ⇒ البلد المختارة ⇒
+ * «افتح الرئيسية» أو «كمّل بروفايلك» ⇒ `OnboardAccount.finish` (يوم الراتب + للحساب الجديد الكاش والبنك من كارتين §81 — من غير ديون) ⇒ البلد المختارة ⇒
  * رسايل البنك لو اختارها.
  */
 @Composable
@@ -76,7 +77,7 @@ fun OnboardingScreen() {
     var loadFailed by remember(deps) { mutableStateOf(false) }
     var open by remember(deps) { mutableStateOf(listOf(deps.space)) }
     var s by rememberSaveable(stateSaver = OnbStateSaver) { mutableStateOf(OnbState(OnbStep.COUNTRY)) }
-    var saving by remember { mutableStateOf(false) }
+    var saving by remember { mutableStateOf<OnbExit?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(deps, reload) {
         loadFailed = false
@@ -88,9 +89,10 @@ fun OnboardingScreen() {
         open = runCatching { deps.shell.spaces().map { it.space } }.getOrNull()?.takeIf { it.isNotEmpty() } ?: listOf(deps.space)
     }
 
-    fun finish() {
+    /** «افتح الرئيسية» / «كمّل بروفايلك» — نفس الانتهاء بالظبط، والفرق بس الشاشة اللي بعده. */
+    fun finish(exit: OnbExit) {
         val st = start ?: return
-        saving = true
+        saving = exit
         failure = null
         scope.launch {
             // اختار مصر ⇒ الكاش والبنك بيتكتبوا في محافظها بعد ما تتعمل (مش في البلد الشغالة)
@@ -101,14 +103,14 @@ fun OnboardingScreen() {
                     // مصر ما اتعملتش (غالبًا النت) ⇒ نفضل على «جاهز» برسالة و«ادخل التطبيق» تاني بيكمّل (الإجابات اتحفظت والإنشاء ما بيتكررش)
                     if (made.isFailure) {
                         failure = t(UiKey.ONB_FINISH_FAILED)
-                        saving = false
+                        saving = null
                         return@launch
                     }
                     val target = spaceToOpen(s.answers, open, deps.space.id) ?: made.getOrNull()
                     val put = if (elsewhere) moneyInto(target, st.profile, s.answers, onb.countryMoney) else OnboardingResult.Ok
                     if (put is OnboardingResult.Failed) {
                         failure = put.message
-                        saving = false
+                        saving = null
                         return@launch
                     }
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
@@ -116,12 +118,14 @@ fun OnboardingScreen() {
                     if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
                     // حساب جديد خالص من غير كارتين الفلوس (بلد تانية من غير طريق للفلوس — المعاينة) ⇒ «المحافظ» عشان يضيف محافظه هناك
                     if (st.freshAccount && !money(s)) nav.push(WalletsRoute)
+                    // «كمّل بروفايلك» ⇒ «حسابك» ولوحة الشكل مفتوحة (الرجوع منها ⇒ الرئيسية)
+                    if (exit == OnbExit.PROFILE) nav.push(AccountLookRoute)
                     changes.changed()
                 }
                 is OnboardingResult.Failed -> failure = r.message
                 null -> failure = t(UiKey.ONB_FINISH_FAILED)
             }
-            saving = false
+            saving = null
         }
     }
 
@@ -168,7 +172,7 @@ private fun StepHead(step: OnbStep) {
 }
 
 @Composable
-private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Unit, saving: Boolean, failure: String?, onFinish: () -> Unit) {
+private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Unit, saving: OnbExit?, failure: String?, onFinish: (OnbExit) -> Unit) {
     val onb = LocalSpace.current.onboarding
     val scope = rememberCoroutineScope()
     when (s.step) {
@@ -196,7 +200,15 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
             }
         }
         OnbStep.READY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            PrimaryButton(t(if (saving) UiKey.ONB_SAVING else UiKey.ONB_ENTER), onClick = onFinish, loading = saving, height = 52.dp, modifier = Modifier.fillMaxWidth())
+            // زرارين (قرار المالك 2026-10-15 مساءً): الاتنين بيخلّصوا الرحلة زي بعض — «كمّل بروفايلك» بيفتح «حسابك» بعدها
+            PrimaryButton(
+                t(if (saving == OnbExit.HOME) UiKey.ONB_SAVING else UiKey.ONB_OPEN_HOME), onClick = { onFinish(OnbExit.HOME) },
+                enabled = saving == null, loading = saving == OnbExit.HOME, height = 52.dp, modifier = Modifier.fillMaxWidth(),
+            )
+            TonalButton(
+                t(if (saving == OnbExit.PROFILE) UiKey.ONB_SAVING else UiKey.ONB_COMPLETE_PROFILE), onClick = { onFinish(OnbExit.PROFILE) },
+                enabled = saving == null, height = 48.dp, modifier = Modifier.fillMaxWidth(),
+            )
             if (failure != null) FieldError(failure)
         }
     }

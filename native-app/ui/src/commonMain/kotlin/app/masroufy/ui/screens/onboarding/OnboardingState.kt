@@ -34,6 +34,9 @@ const val ONB_SEGMENTS = 4
 /** مصدر العمليات (الخطوة 5) — ما بيتخزنش: بيحدد بس الشاشة اللي بعد «ادخل التطبيق» (رسايل البنك ⇒ شاشتها والإذن هناك). */
 enum class OnbSource { SMS, FILE, LATER }
 
+/** زرار «جاهز» اللي اتضغط: الرئيسية، أو «كمّل بروفايلك» ⇒ «حسابك» ولوحة الشكل مفتوحة (قرار المالك 2026-10-15 مساءً). */
+enum class OnbExit { HOME, PROFILE }
+
 /** الرد الأخضر تحت الكارت بعد كل إجابة (عنوان + سطر). */
 enum class OnbReply { COUNTRY_SA, COUNTRY_EG, DAY, DAY_LATER, SMS, FILE, LATER, CASH, CASH_SKIP, BANK, BANK_SKIP }
 

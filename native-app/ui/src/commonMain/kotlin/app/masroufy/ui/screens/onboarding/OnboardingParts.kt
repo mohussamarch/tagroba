@@ -161,7 +161,8 @@ internal fun OnbReplyPanel(title: String, line: String, nextLabel: String, botto
  */
 @Composable
 internal fun OnbRing() {
-    val label = t(UiKey.ONB_RING_NO_PERCENT)
+    // نسبة الملف مالهاش قيمة لسه ⇒ السطر مستخبي خالص (مش ملاحظة «غير متاحة» مكسورة جوه الحلقة — قرار المالك 2026-10-15 مساءً)
+    val label = t(UiKey.ONB_READY_TITLE)
     Box(Modifier.size(132.dp).semantics { contentDescription = label }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val stroke = 8.dp.toPx()
@@ -169,7 +170,6 @@ internal fun OnbRing() {
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             LucideIcon(Lucide.CHECK, size = 26.dp, tint = Ink.income)
-            BasicText(label, Modifier.padding(horizontal = 18.dp), style = Type.of(11).copy(color = Ink.muted, textAlign = TextAlign.Center))
         }
     }
 }
