@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
@@ -133,11 +135,13 @@ fun OnboardingScreen() {
     }
 
     val pad = WindowInsets.safeDrawing.asPaddingValues()
+    val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Box(Modifier.fillMaxSize().screenBackground()) {
+        // الكيبورد بيصغّر مساحة التمرير نفسها (`imePadding`) ⇒ «أضف البنك» يقدر يطلع فوقه (`BankCard` بيجيبه قدام العين)
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(
+            Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(
                 start = Gaps.gutter, end = Gaps.gutter, top = pad.calculateTopPadding() + 20.dp,
-                bottom = pad.calculateBottomPadding() + if (s.reply != null) 230.dp else 48.dp,
+                bottom = navBottom + if (s.reply != null) 230.dp else 48.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

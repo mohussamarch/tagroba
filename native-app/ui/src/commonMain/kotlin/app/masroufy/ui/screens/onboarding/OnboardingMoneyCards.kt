@@ -12,6 +12,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import kotlinx.coroutines.delay
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Currency
@@ -49,11 +60,19 @@ private fun MoneyField(value: String, onChange: (String) -> Unit, label: String,
 
 /** «إضافة» (أساسي) و«تخطي» جنب بعض — نص المالك (§81). */
 @Composable
-private fun AddOrSkip(addLabel: String, addEnabled: Boolean, onAdd: () -> Unit, onSkip: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+private fun AddOrSkip(addLabel: String, addEnabled: Boolean, onAdd: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         PrimaryButton(addLabel, onAdd, Modifier.weight(1f), enabled = addEnabled, height = 48.dp)
         TonalButton(t(UiKey.ONB_MONEY_SKIP), onSkip, Modifier.weight(1f), height = 48.dp)
     }
+}
+
+/** الكيبورد يقفل بعد «إضافة» (كان بيفضل مفتوح ورا لوحة الرد — رحلة أول تشغيل 2026-10-15). */
+@Composable
+private fun rememberHideKeyboard(): () -> Unit {
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focus = LocalFocusManager.current
+    return remember(keyboard, focus) { { focus.clearFocus(); keyboard?.hide() } }
 }
 
 /** «معاك كام كاش؟»: المبلغ ⇒ «إضافة» (رصيد افتتاح لمحفظة الكاش بتاريخ النهارده — `OnboardAccount`) · «تخطي». */
@@ -61,9 +80,15 @@ private fun AddOrSkip(addLabel: String, addEnabled: Boolean, onAdd: () -> Unit, 
 internal fun CashCard(s: OnbState, currency: Currency, onChange: (OnbState) -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
     val minor = typedMinor(text, currency)
+    val hideKeyboard = rememberHideKeyboard()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         MoneyField(text, { text = it }, t(UiKey.ONB_CASH_AMOUNT), currency, bad = minor == -1L)
-        AddOrSkip(t(UiKey.ONB_MONEY_ADD), minor != null && minor >= 0, onAdd = { if (minor != null && minor >= 0) onChange(addCash(s, minor)) }, onSkip = { onChange(skip(s)) })
+        AddOrSkip(t(UiKey.ONB_MONEY_ADD), minor != null && minor >= 0, onAdd = {
+            if (minor != null && minor >= 0) {
+                hideKeyboard()
+                onChange(addCash(s, minor))
+            }
+        }, onSkip = { hideKeyboard(); onChange(skip(s)) })
     }
 }
 
@@ -71,6 +96,7 @@ internal fun CashCard(s: OnbState, currency: Currency, onChange: (OnbState) -> U
  * «عندك حساب بنكي؟»: «إضافة» ⇒ «اختار بنكك» (دليل بلد الحساب — البنوك بس) ⇒ البنك المختار + آخر 4 أرقام + رصيده دلوقتي ⇒ «ضيف البنك».
  * «تخطي» في كل خطوة. الحفظ نفسه في `OnboardAccount.finish` (نفس تأكيد «أضف محفظة» — `ManageWallets`).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BankCard(s: OnbState, country: String, currency: Currency, onChange: (OnbState) -> Unit) {
     var picking by rememberSaveable { mutableStateOf(false) }
@@ -79,6 +105,16 @@ internal fun BankCard(s: OnbState, country: String, currency: Currency, onChange
     var cut by rememberSaveable { mutableStateOf(false) }
     var text by rememberSaveable { mutableStateOf("") }
     val bank = bankByKey(bankKey)
+    val hideKeyboard = rememberHideKeyboard()
+    // «أضف البنك» يفضل باين فوق الكيبورد وهو بيكتب آخر 4 أو الرصيد (كان بيستخبى تحته — رحلة أول تشغيل 2026-10-15)
+    val addRow = remember { BringIntoViewRequester() }
+    val imeOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    LaunchedEffect(imeOpen, last4, text, bankKey) {
+        if (imeOpen && bankKey != null) {
+            delay(250)
+            runCatching { addRow.bringIntoView() }
+        }
+    }
     // قايمة البنوك مفتوحة ⇒ الضغط برّه الكارت أو الرجوع بيقفلها والبنك المختار قبلها زي ما هو (HANDOVER §6.5 بند 11)
     val choice = rememberChoice(picking, onClose = { picking = false })
     Column(Modifier.choiceArea(choice), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -93,12 +129,17 @@ internal fun BankCard(s: OnbState, country: String, currency: Currency, onChange
                 TextInput(last4, { typed -> lastFour(typed).let { last4 = it.digits; cut = it.cut } }, label = t(UiKey.WADD_LAST4_BANK), ltr = true,
                     keyboard = KeyboardType.Number, error = if (last4.isNotEmpty() && last4.length != 4) t(UiKey.WADD_ERR_LAST4) else null)
                 BasicText((if (cut) t(UiKey.WADD_LAST4_CUT) + " " else "") + t(UiKey.WADD_LAST4_NOTE_BANK), style = Type.caption().copy(color = Ink.muted))
+                // من غير آخر 4: رسايل التحويل بين حساباتك بتستنى وتسألك (قرار المالك 2026-10-15 مساءً)
+                if (last4.isEmpty()) BasicText(t(UiKey.ONB_LAST4_TRANSFER_NOTE), style = Type.caption().copy(color = Ink.muted))
                 val minor = typedMinor(text, currency)
                 MoneyField(text, { text = it }, t(UiKey.ONB_BANK_BALANCE), currency, bad = minor == -1L)
                 val ok = minor != -1L && (last4.isEmpty() || last4.length == 4)
                 AddOrSkip(t(UiKey.ONB_BANK_ADD), ok, onAdd = {
-                    if (ok) onChange(addBank(s, OnbBank(bank.key, last4.ifEmpty { null }, minor)))
-                }, onSkip = { onChange(skip(s)) })
+                    if (ok) {
+                        hideKeyboard()
+                        onChange(addBank(s, OnbBank(bank.key, last4.ifEmpty { null }, minor)))
+                    }
+                }, onSkip = { hideKeyboard(); onChange(skip(s)) }, modifier = Modifier.bringIntoViewRequester(addRow))
             }
         }
     }
