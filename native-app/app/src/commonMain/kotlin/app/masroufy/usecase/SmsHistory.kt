@@ -12,6 +12,9 @@ import app.masroufy.core.dayStartIn
 import app.masroufy.port.Clock
 import app.masroufy.port.UserSettingsStore
 import app.masroufy.port.smsSenderKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * **§83-1 (المالك 2026-10-10): «لو اول مرة اضيفه يسألني اقرأ اللي فات ؟ ولو جاوبت ايوة المفروض كل اللي فات يتحمل في البرنامج»**.
@@ -30,6 +33,10 @@ data class SmsHistoryDeps(
     /** إعدادات الحساب — نقطة القراية لكل بلد (`SmsReadPoint`). */
     val settings: UserSettingsStore,
     val clock: Clock,
+    /**
+     * مراجعة 0.3 بند 7: قراية الصندوق كله واللحاق تقيلين — برّه خيط الواجهة. الاختبارات تقدر تحط منفّذ تاني.
+     */
+    val work: CoroutineContext = Dispatchers.Default,
 )
 
 /** المحفظة اللي رسايل البنك بتتسجل فيها ورصيد بدايتها. */
@@ -76,7 +83,9 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
     private val inbox get() = deps.sms.inbox
 
     /** السؤال على البلد [spaceId] دلوقتي، أو null (القراية واقفة · كل البنوك اتسألت · مفيش رسايل أقدم من اللي اتقري). من غير كتابة. */
-    suspend fun question(spaceId: String): SmsHistoryQuestion? {
+    suspend fun question(spaceId: String): SmsHistoryQuestion? = withContext(deps.work) { questionNow(spaceId) }
+
+    private suspend fun questionNow(spaceId: String): SmsHistoryQuestion? {
         val lane = deps.sms.lanes.firstOrNull { it.spaceId == spaceId } ?: return null
         if (!inbox.available) return null
         val state = inbox.sync()
@@ -109,20 +118,20 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
      * «أيوه، اقراها» من أول يوم [from] (null = من أقدم رسالة على الجوال): المؤشر بيرجع لهناك والبلد بتتحفظ «اتسألت» **قبل** القراية (لو الشاشة
      * اتقفلت في النص، الخلفية بتكمّل من المؤشر)، وبعدين الصندوق بيتملى كله وكل اللي شكله اتعلّم بيتسجل.
      */
-    suspend fun start(spaceId: String, senders: List<String>, from: IsoDate?): SmsHistoryReport {
+    suspend fun start(spaceId: String, senders: List<String>, from: IsoDate?): SmsHistoryReport = withContext(deps.work) {
         // §88: أول اليوم بتوقيت البلد — مصر من 00:00 القاهرة (22:00 أو 21:00 جرينتش حسب الصيفي)، مش 21:00 ثابتة
         val zone = deps.sms.lanes.firstOrNull { it.spaceId == spaceId }?.timeZone ?: SAUDI_TIME_ZONE
         val point = if (from != null) dayStartIn(zone, from) else inbox.oldestMessageAt(senders)
         if (point != null) inbox.readFrom(point)
         remember(spaceId, senders, point)
-        return drain(0)
+        drain(0)
     }
 
     /** «أكّد الأشكال»: الرسايل دي بتتسجل وأشكالها بتتعلّم (§77-A) ⇒ كل اللي بنفس الأشكال في الصندوق بيتسجل لوحده. */
-    suspend fun confirmShapes(messageIds: List<String>): SmsHistoryReport = drain(auto.confirm(messageIds))
+    suspend fun confirmShapes(messageIds: List<String>): SmsHistoryReport = withContext(deps.work) { drain(auto.confirm(messageIds)) }
 
     /** الصورة دلوقتي — من غير كتابة. */
-    suspend fun report(): SmsHistoryReport = reportOf(0, 0)
+    suspend fun report(): SmsHistoryReport = withContext(deps.work) { reportOf(0, 0) }
 
     private suspend fun remember(spaceId: String, senders: List<String>, point: String?) {
         val doc = points.all()[spaceId]

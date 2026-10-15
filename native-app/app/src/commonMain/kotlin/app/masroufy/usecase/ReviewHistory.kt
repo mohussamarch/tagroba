@@ -2,6 +2,7 @@ package app.masroufy.usecase
 
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
+import app.masroufy.port.WalletRepository
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.dayNumberToIso
@@ -33,7 +34,11 @@ data class HistoryPreview(
     val groups: List<List<Transaction>>,
 )
 
-class ReviewHistory(private val deps: CategorizeTransactionsDeps) {
+/**
+ * [wallets] (مراجعة 0.3 بند 9): «كل السجل» بيبدأ من أقدم رصيد بداية محفظة (ويكمّل لورا طول ما السنة لسه فيها عمليات — أقدم عملية)،
+ * مش من 1970 (56 استعلام على الفاضي). null ⇒ السلوك القديم من [ALL_HISTORY_FLOOR].
+ */
+class ReviewHistory(private val deps: CategorizeTransactionsDeps, private val wallets: WalletRepository? = null) {
     private val categorize = CategorizeTransactions(deps)
     private val kinds = SetEconomicKind(SetEconomicKindDeps(deps.txns, deps.categories, deps.uow, deps.clock))
 
@@ -64,14 +69,21 @@ class ReviewHistory(private val deps: CategorizeTransactionsDeps) {
     suspend fun previewAll(to: String): HistoryPreview {
         parseIsoDate(to)
         val rows = LinkedHashMap<Id, Transaction>()
+        val opening = historyFloor()
         var end = to
         while (end >= ALL_HISTORY_FLOOR) {
             val start = maxOf(ALL_HISTORY_FLOOR, dayNumberToIso(toDayNumber(parseIsoDate(end)) - 365))
-            for (t in deps.txns.listByDateRange(start, end)) rows[t.id] = t
+            val chunk = deps.txns.listByDateRange(start, end)
+            for (t in chunk) rows[t.id] = t
+            // عدّينا أقدم رصيد بداية والسنة دي فاضية ⇒ مفيش أقدم (أقدم عملية اتقرت خلاص)
+            if (opening != null && start <= opening && chunk.isEmpty()) break
             end = dayNumberToIso(toDayNumber(parseIsoDate(start)) - 1)
         }
         return previewOf(rows.values.sortedWith(compareBy<Transaction> { it.occurredAt }.thenBy { it.sourceOrder }))
     }
+
+    /** أقدم رصيد بداية في المحافظ — null لو مفيش مستودع محافظ أو مفيش محافظ (⇒ من [ALL_HISTORY_FLOOR] زي الأول). */
+    private suspend fun historyFloor(): String? = wallets?.listAll()?.minOfOrNull { it.openingAt }
 
     private suspend fun previewOf(rows: List<Transaction>): HistoryPreview {
         val plan = categorize.plan(rows)

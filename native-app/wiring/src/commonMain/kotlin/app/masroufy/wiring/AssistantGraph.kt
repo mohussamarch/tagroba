@@ -58,7 +58,7 @@ class AssistantGraph(private val c: AreaContext, private val areas: SpaceGraph) 
             txns = r.transactions,
             profile = r.profile,
             home = areas.home.homeScreen,
-            money = LoadMoneySummary(LoadMoneySummaryDeps(r.transactions, r.categories, r.allocations)),
+            money = LoadMoneySummary(LoadMoneySummaryDeps(r.transactions, r.categories, r.allocations, r.obligations)),
             history = LoadHomeHistory(LoadHomeHistoryDeps(r.transactions, r.allocations, r.categories)),
             budget = areas.budgets.budgetScreen,
             leftover = areas.budgets.leftover,

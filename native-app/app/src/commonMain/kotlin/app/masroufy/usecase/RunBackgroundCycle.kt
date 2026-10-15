@@ -6,6 +6,9 @@ import app.masroufy.core.hashContent
 import app.masroufy.core.smsConfirmCandidate
 import app.masroufy.port.DeviceNotifier
 import app.masroufy.port.NoticeOutcome
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -37,6 +40,8 @@ data class BackgroundCycleDeps(
      * بتتحفظ في الحساب. فشله ما بيوقفش حاجة (الدورة الجاية بتعيده).
      */
     val smsCatchUp: SmsCatchUp? = null,
+    /** مراجعة 0.3 بند 7: الدورة كلها (الصندوق واللحاق والمحرك) برّه خيط الواجهة — التطبيق ممكن يشغّلها وهو مفتوح. */
+    val work: CoroutineContext = Dispatchers.Default,
 )
 
 data class NoticeDelivery(val shown: Int, val scheduled: Int, val blocked: Boolean, val unavailable: Boolean = false)
@@ -53,7 +58,9 @@ data class BackgroundCycleResult(
 )
 
 class RunBackgroundCycle(private val deps: BackgroundCycleDeps) {
-    suspend fun run(now: LocalMoment): BackgroundCycleResult {
+    suspend fun run(now: LocalMoment): BackgroundCycleResult = withContext(deps.work) { runNow(now) }
+
+    private suspend fun runNow(now: LocalMoment): BackgroundCycleResult {
         var smsFailed = false
         deps.smsCatchUp?.let { catchUp -> runCatchingNotCancel { catchUp.before() } }
         val sms = deps.sms?.let {

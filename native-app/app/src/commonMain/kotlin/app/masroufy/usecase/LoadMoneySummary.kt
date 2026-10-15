@@ -5,6 +5,8 @@ import app.masroufy.core.Currency
 import app.masroufy.core.DataCoverage
 import app.masroufy.core.Direction
 import app.masroufy.core.EconomicKind
+import app.masroufy.core.ObligationKind
+import app.masroufy.core.Id
 import app.masroufy.core.Halalas
 import app.masroufy.core.IsoDate
 import app.masroufy.core.Liquidity
@@ -21,6 +23,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.CategoryRepository
+import app.masroufy.port.ObligationRepository
 import app.masroufy.port.TransactionRepository
 
 /**
@@ -71,6 +74,11 @@ data class LoadMoneySummaryDeps(
     val txns: TransactionRepository,
     val categories: CategoryRepository,
     val allocations: AllocationRepository,
+    /**
+     * مراجعة 0.3 بند 10: الزيادة في سداد دين عليك (§82-19) اللي اتسجلت «سلفة جديدة ليه» أو «أمانة ليك عنده» (دين ليك أصله العملية دي)
+     * مش «سداد». null ⇒ السلوك القديم (العملية كلها «سداد»).
+     */
+    val obligations: ObligationRepository? = null,
 )
 
 class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
@@ -92,6 +100,7 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
         val spend = assessCoverage(view.withoutPendingIncoming)
         val unknown = spend.total > 0 && spend.unclassified == spend.total
 
+        val surplus = overpaySurplus(rows)
         val notIncome = LinkedHashMap<EconomicKind, Halalas>()
         val notExpense = LinkedHashMap<EconomicKind, Halalas>()
         for (t in rows) {
@@ -103,7 +112,11 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             } ?: continue
             // §88: «الدعم» جوه سداد دين عليك اتحسب مصروف ⇒ مش هنا كمان
             val notCounted = subtractMoney(t.amountMinor, givenAwayShareOf(t, shares))
-            if (notCounted > 0) bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, notCounted)
+            // الزيادة اللي بقت دين ليك (سلفة جديدة أو أمانة عنده) ⇒ «سلفة لحد»، والباقي بس «سداد»
+            val lent = if (bucket === notExpense) minOf(surplus[t.id] ?: 0, notCounted) else 0
+            val own = subtractMoney(notCounted, lent)
+            if (own > 0) bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, own)
+            if (lent > 0) bucket[EconomicKind.LOAN_GRANTED] = addMoney(bucket[EconomicKind.LOAN_GRANTED] ?: 0, lent)
         }
         // §58: اللي دخل وخرج فعلًا في المدى **بتاريخه** — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس. بالأنواع التقديرية زي الأول:
         // التحويل بين محافظك (زي السحب من الصرّاف اللي لسه ما اتأكدش) مش حركة
@@ -119,5 +132,19 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             countedFromEarlier = range.countedFromEarlier,
             countedFromEarlierMinor = byCurrency(range.countedFromEarlier),
         )
+    }
+
+    /** لكل «سداد» طالع: الدين اللي ليك وأصله العملية دي = الزيادة اللي اتسجلت سلفة أو أمانة (`AnswerTransferAsks.answerOverpay` · `SettleOverpay`). */
+    private suspend fun overpaySurplus(rows: List<Transaction>): Map<Id, Halalas> {
+        val repo = deps.obligations ?: return emptyMap()
+        val ids = rows.filter { it.economicKind == EconomicKind.DEBT_REPAID && it.observedDirection == Direction.OUT }.map { it.id }
+        if (ids.isEmpty()) return emptyMap()
+        val out = LinkedHashMap<Id, Halalas>()
+        for (o in repo.listByTransactionIds(ids)) {
+            val origin = o.originTransactionId ?: continue
+            if (o.kind != ObligationKind.RECEIVABLE || origin !in ids) continue
+            out[origin] = addMoney(out[origin] ?: 0, o.originalMinor)
+        }
+        return out
     }
 }

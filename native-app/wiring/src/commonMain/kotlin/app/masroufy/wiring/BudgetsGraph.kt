@@ -55,5 +55,5 @@ class BudgetsGraph(c: AreaContext) : BudgetsDeps {
 
     override val categories = ManageCategories(ManageCategoriesDeps(r.categories, c.env.ids))
     override val rules = ManageRules(ManageRulesDeps(r.rules, r.merchants, r.categories, c.env.ids))
-    override val history = ReviewHistory(CategorizeTransactionsDeps(r.transactions, r.merchants, r.categories, r.rules, r.uow, c.env.clock))
+    override val history = ReviewHistory(CategorizeTransactionsDeps(r.transactions, r.merchants, r.categories, r.rules, r.uow, c.env.clock), r.wallets)
 }

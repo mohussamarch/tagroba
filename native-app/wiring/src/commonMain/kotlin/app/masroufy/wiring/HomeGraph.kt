@@ -41,7 +41,7 @@ class HomeGraph(c: AreaContext) : HomeDeps {
 
     override val kinds = SetEconomicKind(SetEconomicKindDeps(r.transactions, r.categories, r.uow, c.env.clock))
 
-    override val history = ReviewHistory(CategorizeTransactionsDeps(r.transactions, r.merchants, r.categories, r.rules, r.uow, c.env.clock))
+    override val history = ReviewHistory(CategorizeTransactionsDeps(r.transactions, r.merchants, r.categories, r.rules, r.uow, c.env.clock), r.wallets)
 
     override val categories = ManageCategories(ManageCategoriesDeps(r.categories, c.env.ids))
 }
