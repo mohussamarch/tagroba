@@ -36,7 +36,9 @@ import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SelectChip
 import app.masroufy.ui.components.TextInput
 import app.masroufy.ui.components.amountLabel
+import app.masroufy.ui.components.choiceArea
 import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -73,6 +75,7 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
     var kind by remember { mutableStateOf("bank") }
     var bank by remember { mutableStateOf<Bank?>(null) }
     var other by remember { mutableStateOf(false) }
+    var changing by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
     var last4 by remember { mutableStateOf("") }
     var cut by remember { mutableStateOf(false) }
@@ -82,12 +85,14 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
     var serverError by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(visible) {
         if (!visible) return@LaunchedEffect
-        kind = "bank"; bank = null; other = false; name = ""; last4 = ""; cut = false; tried = false; serverError = null
+        kind = "bank"; bank = null; other = false; changing = false; name = ""; last4 = ""; cut = false; tried = false; serverError = null
         amountText = edit?.let { amountLabel(it.wallet.openingBalanceMinor, currency, showCurrency = false) } ?: ""
         date = edit?.wallet?.openingAt ?: today
     }
     val isCash = kind == "cash"
-    val picking = edit == null && !isCash && bank == null && !other
+    // «غيّر» على البنك المختار بيفتح القايمة **من غير ما يشيله**: الضغط برّاها أو الرجوع بيرجّعه زي ما كان (HANDOVER §6.5 بند 11)
+    val picking = edit == null && !isCash && ((bank == null && !other) || changing)
+    val changeChoice = rememberChoice(picking && changing, onClose = { changing = false })
     val amount = amountText.trim().takeIf { it.isNotEmpty() }?.let { tryParseMoney(it, currency) }
     val amountBad = amountText.isNotBlank() && (amount == null || amount < 0)
     val dateOk = isValidIsoDate(date) && date <= today
@@ -115,7 +120,7 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
             FieldLabelText(t(UiKey.WADD_KIND))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for ((k, label) in listOf("bank" to UiKey.WLIST_KIND_BANK, "digital_wallet" to UiKey.WLIST_KIND_DIGITAL, "cash" to UiKey.WLIST_KIND_CASH)) {
-                    SelectChip(t(label), kind == k, onClick = { kind = k; bank = null; other = false; name = "" }, modifier = Modifier.weight(1f), height = 48.dp)
+                    SelectChip(t(label), kind == k, onClick = { kind = k; bank = null; other = false; changing = false; name = "" }, modifier = Modifier.weight(1f), height = 48.dp)
                 }
             }
             FieldLabelText(t(if (isCash) UiKey.WADD_SUGGESTED else if (kind == "bank") UiKey.BANK_PICK_TITLE else UiKey.BANK_PICK_TITLE_WALLET))
@@ -125,10 +130,12 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
                 }
                 NoteBox(t(UiKey.WADD_CASH_NOTE), title = t(UiKey.WADD_CASH_HEAD))
             } else if (picking) {
-                BankPickerList(deps.space.countryCode, kind, onPick = { b -> bank = b; other = b == null; name = b?.let(::bankLabel).orEmpty() }, maxHeight = 260.dp)
+                Column(Modifier.choiceArea(changeChoice)) {
+                    BankPickerList(deps.space.countryCode, kind, onPick = { b -> bank = b; other = b == null; changing = false; name = b?.let(::bankLabel).orEmpty() }, maxHeight = 260.dp)
+                }
             } else {
-                bank?.let { PickedBankRow(it) { bank = null; name = "" } }
-                    ?: PickedOtherRow(t(if (kind == "bank") UiKey.BANK_OTHER else UiKey.BANK_OTHER_WALLET)) { other = false; name = "" }
+                bank?.let { PickedBankRow(it) { changing = true } }
+                    ?: PickedOtherRow(t(if (kind == "bank") UiKey.BANK_OTHER else UiKey.BANK_OTHER_WALLET)) { changing = true }
             }
         }
         if (picking) return@Sheet

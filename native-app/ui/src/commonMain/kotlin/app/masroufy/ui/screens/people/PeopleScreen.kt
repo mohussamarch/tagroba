@@ -40,7 +40,9 @@ import androidx.compose.ui.zIndex
 import app.masroufy.core.Id
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.SecondaryButton
+import app.masroufy.ui.components.choiceArea
 import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.nav.rememberEntryScrollState
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.text.t
@@ -60,7 +62,7 @@ import kotlin.math.roundToInt
  * **السحب لفوق** بيطوي المسرح ويفرد صفوف الشبكة زي الأسطوانة (`p` من 0 لـ1 على 420)، و«الكل (N)» بيعمل نفس الحركة.
  * الحالات: بيحمّل (هيكل) · فاضي («لم تُضف أحدًا بعد») · خطأ («تعذّر تحميل الأرصدة» + «أعد المحاولة») · عادي.
  * **وضع تعديل الصف** (§84 — `PeopleOrbit.kt`/`PeopleRowEdit.kt`): الخروج بـ«تم» أو ضغطة برّه الأشخاص (طبقة شفافة فوق الشاشة تحت المسرح) أو التمرير
- * أو تبديل التبويب (الحالة بـ`remember` ⇒ بتروح مع الشاشة).
+ * أو تبديل التبويب (الحالة بـ`remember` ⇒ بتروح مع الشاشة) أو **زرار الرجوع** (`rememberChoice` — HANDOVER §6.5 بند 11).
  */
 private const val RANGE = 420f
 private const val ROW = 106f
@@ -86,6 +88,9 @@ internal fun PeopleScreen() {
     var load by remember(deps) { mutableStateOf<Load<PeopleTabUi>>(Load.Loading) }
     var me by remember(deps) { mutableStateOf<String?>(null) }
     val editor = remember(deps) { RowEditor(scope) { deps.people.row.save(it) } }
+    // وضع التعديل في الآلية الواحدة (HANDOVER §6.5 بند 11): زرار الرجوع بيخرج منه، والضغط برّه المسرح وشريط «تراجع» كمان
+    // (الطبقة الشفافة تحت بتفضل تاكل الضغطة اللي على الشاشة نفسها — §84)
+    val rowChoice = rememberChoice(editor.editing, onClose = editor::exit)
     LaunchedEffect(deps, version, retry) {
         val row = runCatching { deps.people.row.row() }.getOrNull()
         val full = loadOf { app.masroufy.perf.PerfTrace.span("screen:people") { peopleTabUi(deps.people.overview.forSpace(deps.shell.today(), deps.space.id), deps.space.id, deps.space.currency, row) } }
@@ -154,7 +159,7 @@ internal fun PeopleScreen() {
                         val heroAlpha = max(0f, 1f - 2.2f * p)
                         PeopleStage(
                             chips, editor, pickable.isNotEmpty(), me, open,
-                            Modifier.zIndex(5f).padding(horizontal = Space.gutter).offset(y = (top + HERO_TOP).dp)
+                            Modifier.zIndex(5f).padding(horizontal = Space.gutter).offset(y = (top + HERO_TOP).dp).choiceArea(rowChoice)
                                 .graphicsLayer {
                                     translationY = -70f * p * density.density
                                     scaleX = 1f - 0.18f * p
@@ -199,7 +204,8 @@ internal fun PeopleScreen() {
         RowUndoBar(
             editor,
             Modifier.align(Alignment.BottomCenter)
-                .padding(start = Space.gutter, end = Space.gutter, bottom = Space.navBottom + Space.navHeight + Space.askGap + Space.askHeight + 14.dp + inset),
+                .padding(start = Space.gutter, end = Space.gutter, bottom = Space.navBottom + Space.navHeight + Space.askGap + Space.askHeight + 14.dp + inset)
+                .choiceArea(rowChoice),
         )
     }
     PeopleRowPick(editor, pickable.mapNotNull { chips[it] })

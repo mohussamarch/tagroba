@@ -45,6 +45,7 @@ import app.masroufy.ui.components.SegmentStyle
 import app.masroufy.ui.components.SegmentedTabs
 import app.masroufy.ui.components.SelectChip
 import app.masroufy.ui.components.TonalButton
+import app.masroufy.ui.components.keepsKeyboard
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.common.InnerScaffold
 import app.masroufy.ui.shell.LocalToaster
@@ -74,7 +75,7 @@ internal fun PasteCard(
     val clipboard = LocalClipboardManager.current
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.fillMaxWidth().heightIn(min = 132.dp).clip(RoundedCornerShape(16.dp)).background(Ink.text.copy(alpha = 0.05f)).padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 132.dp).keepsKeyboard().clip(RoundedCornerShape(16.dp)).background(Ink.text.copy(alpha = 0.05f)).padding(horizontal = 14.dp, vertical = 12.dp)) {
                 if (text.isEmpty()) BasicText(t(UiKey.SMS_PASTE_HINT), style = Type.of(14, lineHeight = 1.7).copy(color = Ink.faded))
                 BasicTextField(text, onText, Modifier.fillMaxWidth(), textStyle = Type.of(14, lineHeight = 1.7), cursorBrush = SolidColor(Ink.primary))
             }

@@ -139,7 +139,7 @@ private fun SpendLinkForm(data: EventScreenData, done: () -> Unit) {
     Column(Modifier.fillMaxWidth().heightIn(max = 660.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SheetHeading(t(UiKey.SPEND_LINK_TITLE, data.ui.event.name))
         Note(t(UiKey.SPEND_LINK_INTRO))
-        TextInput(query, { query = it }, placeholder = t(UiKey.SPEND_LINK_SEARCH), trailing = { LucideIcon(Lucide.SEARCH, size = 18.dp, tint = Ink.muted, modifier = Modifier.padding(end = 14.dp)) })
+        TextInput(query, { query = it }, placeholder = t(UiKey.SPEND_LINK_SEARCH), trailing = { LucideIcon(Lucide.SEARCH, size = 18.dp, tint = Ink.muted, modifier = Modifier.padding(end = 14.dp)) }, draft = false)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.SPEND_LINK_LIST), style = Type.captionBold())
             Note(t(UiKey.SPEND_LINK_HINT))

@@ -30,6 +30,8 @@ import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SelectChip
+import app.masroufy.ui.components.choiceArea
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.screens.people.DateField
 import app.masroufy.ui.screens.people.dayMonthYear
 import app.masroufy.ui.shell.LocalToaster
@@ -87,8 +89,10 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
     }
 
     val q = question
+    // «من إمتى؟» مفتوح ⇒ الضغط برّه اللوحة أو الرجوع بيرجّع السؤال الأولاني ويلغي اللي اتختار من غير «ابدأ» (HANDOVER §6.5 بند 11)
+    val choice = rememberChoice(q != null && choosing && !busy, onClose = { choosing = false; from = HistoryFrom.OPENING; other = null })
     if (q != null) {
-        TintedPanel(PanelTone.MINT) {
+        TintedPanel(PanelTone.MINT, Modifier.choiceArea(choice)) {
             PanelTitle(t(if (choosing) UiKey.SMS_HISTORY_FROM_TITLE else UiKey.SMS_HISTORY_TITLE), PanelTone.MINT)
             val opening = q.opening
             if (!choosing || opening == null) {

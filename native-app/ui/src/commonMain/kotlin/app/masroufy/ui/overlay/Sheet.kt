@@ -42,6 +42,11 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.unit.IntOffset
+import app.masroufy.ui.components.FormGuard
+import app.masroufy.ui.components.LocalFormGuard
 import app.masroufy.ui.glass.Glass
 import app.masroufy.ui.glass.Shadows
 import app.masroufy.ui.glass.innerSheen
@@ -60,7 +65,8 @@ import kotlin.math.min
  * - **الشد لفوق (مطاط):** ما بتتفصلش عن تحت — بتطوّل لفوق بمقاومة `60·(1−e^(dy/140))` (أقصى 60) وترجع بنطّة. ⚠️ المنحنى المكتوب
  *   `cubic-bezier(.3,1.5,.5,1) 460ms` اتنقل للنابض **المرن** (أقرب نابض بالاسم — ممنوع نابض رابع، DESIGN-SYSTEM).
  * - **طولها ثابت** وإنت بتبدّل جواها: [minHeight] (المحتوى نفسه بيحجز مكانه — زي التصنيف على صفين 88).
- * - الظهور بالنابض الهادي من تحت، والستارة بالسريع. الرجوع والضغط على الستارة بيقفلوها ([onDismiss]).
+ * - الظهور بالنابض الهادي من تحت، والستارة بالسريع. الرجوع والضغط على الستارة بيقفلوها ([onDismiss]) — **إلا** لو المالك كتب في خانة
+ *   جواها (`FormGuard`): الضغط على الستارة وقتها بيقفل الكيبورد ويهزّ اللوحة بس (السحب لتحت والرجوع بيقفلوها عادي).
  */
 @Composable
 fun Sheet(
@@ -92,8 +98,23 @@ fun Sheet(
         }
     }
     if (!mounted) return
+    // اللي اتكتب في اللوحة ما يضيعش بضغطة برّه (HANDOVER §6.5 بند 11): الستارة بتقفل الكيبورد بس وتهزّ اللوحة (`FormGuard`)
+    val guard = remember { FormGuard() }
+    val nudge = remember { Animatable(0f) }
+    val nudgeOut = motion<Float>(Springs.SNAPPY)
+    val nudgeBack = motion<Float>(Springs.BOUNCY)
+    LaunchedEffect(guard.nudges) {
+        if (guard.nudges == 0) return@LaunchedEffect
+        nudge.animateTo(-14f, nudgeOut)
+        nudge.animateTo(0f, nudgeBack)
+    }
     Overlay(onBack = onDismiss) {
-        SheetFrame(enter.value, onDismiss, title, modifier, veil, closeLabel, corner, minHeight, contentPadding, spacing, content)
+        CompositionLocalProvider(LocalFormGuard provides guard) {
+            SheetFrame(
+                enter.value, onDismiss, { if (guard.outsideTap()) onDismiss() }, title,
+                modifier.offset { IntOffset(0, nudge.value.dp.roundToPx()) }, veil, closeLabel, corner, minHeight, contentPadding, spacing, content,
+            )
+        }
     }
 }
 
@@ -122,6 +143,7 @@ fun RouteSheet(
 private fun SheetFrame(
     enter: Float,
     onDismiss: () -> Unit,
+    onOutside: () -> Unit,
     title: String,
     modifier: Modifier,
     veil: Veil,
@@ -147,7 +169,7 @@ private fun SheetFrame(
     val fade = (1f - (down.value / height.coerceAtLeast(1f))).coerceIn(0.25f, 1f)
 
     Box(Modifier.fillMaxSize()) {
-        VeilLayer(veil, enter * fade, onDismiss, closeLabel)
+        VeilLayer(veil, enter * fade, onOutside, closeLabel)
         Column(
             modifier
                 .align(Alignment.BottomCenter)

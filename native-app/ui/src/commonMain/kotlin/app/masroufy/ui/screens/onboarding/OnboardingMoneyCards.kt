@@ -22,6 +22,8 @@ import app.masroufy.core.tryParseMoney
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.TextInput
 import app.masroufy.ui.components.TonalButton
+import app.masroufy.ui.components.choiceArea
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.screens.more.BankPickerList
 import app.masroufy.ui.screens.more.PickedBankRow
 import app.masroufy.ui.screens.more.lastFour
@@ -77,7 +79,9 @@ internal fun BankCard(s: OnbState, country: String, currency: Currency, onChange
     var cut by rememberSaveable { mutableStateOf(false) }
     var text by rememberSaveable { mutableStateOf("") }
     val bank = bankByKey(bankKey)
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    // قايمة البنوك مفتوحة ⇒ الضغط برّه الكارت أو الرجوع بيقفلها والبنك المختار قبلها زي ما هو (HANDOVER §6.5 بند 11)
+    val choice = rememberChoice(picking, onClose = { picking = false })
+    Column(Modifier.choiceArea(choice), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         when {
             picking -> {
                 BankPickerList(country, "bank", onPick = { b -> if (b != null) { bankKey = b.key; picking = false } }, allowOther = false, maxHeight = 300.dp)

@@ -38,7 +38,7 @@ fun CategoryPickerSheet(visible: Boolean, title: String, categories: List<Catego
     var query by remember(visible) { mutableStateOf("") }
     Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(title, style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
-        TextInput(query, { query = it }, placeholder = t(UiKey.SMS_CATPICK_SEARCH))
+        TextInput(query, { query = it }, placeholder = t(UiKey.SMS_CATPICK_SEARCH), draft = false)
         val groups = categoryGroups(pickableCategories(categories), query)
         Column(Modifier.fillMaxWidth().heightIn(max = 380.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (groups.isEmpty()) BasicText(t(UiKey.SMS_CATPICK_EMPTY), style = Type.body().copy(color = Ink.muted))

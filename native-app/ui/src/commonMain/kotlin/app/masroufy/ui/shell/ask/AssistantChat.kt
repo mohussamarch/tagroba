@@ -56,6 +56,7 @@ import app.masroufy.core.ChipRef
 import app.masroufy.core.UiKey
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.IconButton44
+import app.masroufy.ui.components.keepsKeyboard
 import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
@@ -213,8 +214,9 @@ private fun InputBox(draft: String, onDraft: (String) -> Unit, onMic: () -> Unit
     val focus = remember { MutableInteractionSource() }
     val focused by focus.collectIsFocusedAsState()
     val ring = if (focused) Modifier.insetRing(shape, 2.dp, Ink.primary) else Modifier.insetRing(shape, 1.5.dp, Color(0x4008634F))
+    // المستطيل كله بزراره (الإرسال · الميكروفون) ما بيقفلش الكيبورد — الضغط برّاه بيقفله (`OutsideTapRoot`)
     Row(
-        Modifier.fillMaxWidth().height(52.dp).layeredShadow(shape, if (focused) boxShadowFocused else boxShadow).clip(shape).background(Color.White)
+        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().layeredShadow(shape, if (focused) boxShadowFocused else boxShadow).clip(shape).background(Color.White)
             .then(ring).padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,

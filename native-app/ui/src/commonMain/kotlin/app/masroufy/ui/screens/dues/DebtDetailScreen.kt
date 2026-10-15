@@ -41,8 +41,10 @@ import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SelectChip
 import app.masroufy.ui.components.TonalButton
+import app.masroufy.ui.components.choiceArea
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.overlay.rememberChoice
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -152,7 +154,9 @@ private fun Terms(ui: DebtDetailUi) {
         }
     }
     fun save(date: String, hasInterest: Boolean?) = DebtTerms(ui.obligationId, ui.personId, firstDueAt = date, hasInterest = hasInterest)
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    // شرايح الموعد مفتوحة ⇒ الضغط برّه الكارت أو الرجوع بيقفلها من غير ما يغيّر الموعد (HANDOVER §6.5 بند 11)
+    val choice = rememberChoice(editing, onClose = { editing = false })
+    Column(Modifier.choiceArea(choice), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(t(UiKey.DEBT_TERMS_TITLE), style = Type.section())
         FloatingCard(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {

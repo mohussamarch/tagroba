@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.masroufy.ui.components.OutsideTapRoot
 import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.glass.Backdrop
 import app.masroufy.ui.glass.BackdropBlur
@@ -93,7 +94,7 @@ fun Overlay(onBack: (() -> Unit)?, content: @Composable () -> Unit) {
 fun OverlayRoot(host: OverlayHost, content: @Composable () -> Unit) {
     val backdrop = rememberBackdrop()
     CompositionLocalProvider(LocalOverlayHost provides host, LocalBackdrop provides backdrop) {
-        Box(Modifier.fillMaxSize()) {
+        OutsideTapRoot(Modifier.fillMaxSize()) {
             // الخلفية جوه المتسجل: النسخة المموّهة ورا الستارة لازم تبقى معتمة وتغطي النص الأصلي (مش شفافة حواليه)
             Box(Modifier.fillMaxSize().backdropSource(backdrop).screenBackground()) { content() }
             OverlayLayer(host)
