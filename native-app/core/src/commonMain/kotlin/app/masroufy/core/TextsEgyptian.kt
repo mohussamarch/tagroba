@@ -9,8 +9,9 @@ internal val EGYPTIAN_SCREEN_TEXTS: Map<TextKey, String> = mapOf(
     TextKey.KIND_BONUS to "بونص",
     TextKey.KIND_COMMISSION to "عمولة",
     TextKey.KIND_OVERTIME to "أوفر تايم",
-    TextKey.KIND_FREELANCE to "فري لانس",
-    TextKey.KIND_PERSONAL_SALE to "بيع شخصي",
+    // إجابة المالك 2026-10-15 (OVERRIDES §91-7): الاسم المعروض بس — النوع المخزّن زي ما هو
+    TextKey.KIND_FREELANCE to "عمل إضافي",
+    TextKey.KIND_PERSONAL_SALE to "بيعة",
     TextKey.KIND_LOAN_RECEIVED to "قرض مستلم",
     TextKey.KIND_DEBT_COLLECTED to "تحصيل دين لك",
     TextKey.KIND_CUSTODY_RECEIVED to "أمانة مستلمة",
