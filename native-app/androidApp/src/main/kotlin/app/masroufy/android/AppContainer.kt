@@ -173,6 +173,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         smsInbox = space?.let { AndroidSmsInbox(context, uid) },
         bankSms = space?.let { AndroidBankSms(context, ZoneId.of(countryPack(it.countryCode).timeZone)) },
         pdfPages = space?.let { PdfBoxPages(context) },
+        repairBackup = app.masroufy.device.AndroidRepairBackup(context),
     )
 
     /**

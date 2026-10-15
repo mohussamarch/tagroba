@@ -39,6 +39,8 @@ class DeviceEnv(
     val smsInbox: SmsInboxPort? = null,
     val bankSms: BankSmsPort? = null,
     val pdfPages: PdfPagesPort? = null,
+    /** «نسخة قبل الإصلاح» على ملفات الجهاز — «راجع المكرر» بيرفض يدمج من غيرها. null = الاختبار أو جهاز من غير ملفات. */
+    val repairBackup: app.masroufy.port.RepairBackupPort? = null,
 )
 
 /**

@@ -81,6 +81,21 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
     override val fullBackup: FullBackup? = r.fullBackup?.let { FullBackup(it, r.spacesBackup) }
 
+    /** «افهم رصيدك» (بند المالك 3) — علامة «تعديل رصيد» بتتوصل مع فرع «حدّث الرصيد» (الافتراضي ولا عملية). */
+    override val balanceWhy = app.masroufy.usecase.ExplainBalance(app.masroufy.usecase.ExplainBalanceDeps(r.transactions, r.sourceRecords, r.importBatches, r.wallets))
+
+    /** «راجع المكرر» — نفس دمج الكشف والرسالة؛ من غير ملفات الجهاز (`repairBackup`) بيرفض بـ NO_BACKUP. */
+    override val mergeDuplicates = app.masroufy.usecase.MergeDuplicates(
+        app.masroufy.usecase.MergeDuplicatesDeps(
+            r.transactions, r.sourceRecords, r.importBatches, r.uow, c.env.clock, c.env.repairBackup, r.allocations, r.settlements, r.obligations,
+            app.masroufy.usecase.RevertLinkDeps(
+                r.projectLinks, r.eventLinks, r.transactionTags, r.roscaEntries, r.installmentPayments, r.installmentPlans,
+                r.zakatPayments, r.assetLots, r.assetSales,
+            ),
+            r.spaceTransfers,
+        ),
+    )
+
     override fun nowIso(): String = c.env.clock.nowIso()
 
     /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
