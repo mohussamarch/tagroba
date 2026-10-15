@@ -21,7 +21,7 @@ class ReturnsWiring(
     private val uow: UnitOfWork? = null,
 ) {
     val effects: List<RecordEffect> = listOf(ReturnedSmsEffect(ReturnedSmsDeps(txns, sources, links)), ForeignSmsEffect())
-    val undoers: List<BatchUndo> = listOf(ReversalUndo(txns, clock))
+    val undoers: List<BatchUndo> = listOf(ReversalUndo(txns, clock), LinkedUndo(txns, clock))
     val repair: RepairReversals = RepairReversals(RepairReversalsDeps(txns, clock))
     val refunds: RefundAsks = RefundAsks(RefundAsksDeps(txns, sources, links, clock, uow))
 

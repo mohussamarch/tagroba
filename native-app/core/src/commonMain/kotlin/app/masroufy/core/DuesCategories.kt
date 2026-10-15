@@ -30,7 +30,7 @@ object DuesCategories {
         if (duesIds.isEmpty()) return 0
         var total = 0L
         for (t in transactions) {
-            if (t.categoryId !in duesIds || t.excludedFromBudget || countsAsIncome(t.economicKind)) continue
+            if (t.categoryId !in duesIds || t.excludedFromBudget || countsAsIncome(t.economicKind) || isLinkedInflow(t)) continue
             total = if (reducesExpense(t.economicKind)) subtractMoney(total, t.amountMinor) else addMoney(total, personalShareOf(t, allocations))
         }
         return total

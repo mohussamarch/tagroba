@@ -80,6 +80,9 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
             spaceLegs = legs,
         ),
     )
+    override val linkedInflows = app.masroufy.usecase.LinkInflows(
+        app.masroufy.usecase.LinkInflowsDeps(r.transactions, r.allocations, r.settlements, r.obligations, r.uow, clock),
+    )
     override val transfers = ManageTransfers(ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock))
 
     // تحديد كذا عملية (§6.5 بند 15): المسح بيرفض أي عملية متربطة بحاجة — نفس فحص رجول «التحويل لنفسك»

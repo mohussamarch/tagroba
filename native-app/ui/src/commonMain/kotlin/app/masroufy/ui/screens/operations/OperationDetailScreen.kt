@@ -114,6 +114,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                         }
                     }, onTagsChanged = { reload++ })
                 }
+                // §6.5-14 «عمليات تابعة»: على المصروف (اختار الفلوس اللي دخلت) وعلى الداخلة التابعة (علامة بترجّع للمصروف)
+                item(key = "linked") { LinkedInflowsCard(v.id, reloadKey = reload, onChanged = { reload++ }) }
                 if (v.flow != LinkFlow.NONE) item(key = "links") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         BasicText(t(UiKey.OPERATION_DETAIL_LINK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))

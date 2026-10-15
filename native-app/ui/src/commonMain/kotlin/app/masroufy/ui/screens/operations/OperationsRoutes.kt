@@ -27,6 +27,8 @@ import app.masroufy.usecase.TransferBetweenSpaces
  * «المراجعة» مسار [ReviewQueueRoute] (متعرّف هنا عشان الشريط بيفتحه — صاحب الشاشة بيسجّلها بس). `AddSheet` في الهيكل.
  */
 interface OperationsDeps {
+    /** «عمليات تابعة» (§6.5-14): `load` · `link` · `unlink`. null ⇒ الكارت ما بيظهرش (الاختبارات اللي ما بتحتاجهوش). */
+    val linkedInflows: app.masroufy.usecase.LinkInflows? get() = null
     /** سجل الفترة والمجاميع — `TransactionsScreenData` (المجاميع `null` ⇒ «غير متاح»). */
     val transactions: LoadTransactionsScreen
 
