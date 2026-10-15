@@ -164,5 +164,40 @@ class BulkTransactionsTest {
         assertEquals(0, blind.summary(listOf("t-1")).deletable)
         assertEquals(seed.size, txns.findByIds(all).size)
     }
+
+    /** «امسح» في وضع التحديد بيعدّي من نفس طريق مسح العملية الواحدة (`DeleteTransaction` — §6.5 بند 12) و«تراجع» بـ`restore`. */
+    @Test fun deleteGoesThroughTheSingleDeletePathWhenGivenAndUndoRestoresExactly() = runBlocking {
+        val uow = MemoryUnitOfWork(listOf(txns, links, tagLinks, sources))
+        val erase = DeleteTransaction(
+            DeleteTransactionDeps(
+                txns, sources, app.masroufy.memory.MemorySettlementRepository(), app.masroufy.memory.MemoryAllocationRepository(),
+                app.masroufy.memory.MemoryObligationRepository(),
+                RevertLinkDeps(
+                    links, app.masroufy.memory.MemoryEventLinkRepository(), tagLinks, app.masroufy.memory.MemoryRoscaEntryRepository(),
+                    app.masroufy.memory.MemoryInstallmentPaymentRepository(), app.masroufy.memory.MemoryInstallmentPlanRepository(),
+                    app.masroufy.memory.MemoryZakatPaymentRepository(), app.masroufy.memory.MemoryAssetLotRepository(),
+                    app.masroufy.memory.MemoryAssetSaleRepository(),
+                ),
+                uow, FixedClock("2026-10-15T10:00:00.000Z"),
+            ),
+        )
+        val through = BulkTransactions(
+            BulkTransactionsDeps(
+                txns, categories, projects, links, tags, tagLinks, sources, uow, SequentialIdGenerator(), FixedClock("2026-10-15T10:00:00.000Z"),
+                linked = { ids -> ids.filter { it == "t-debt" }.toSet() }, erase = erase,
+            ),
+        )
+        val before = snapshot()
+        val r = through.delete(listOf("t-1", "t-2", "t-imported", "t-debt"))
+        assertEquals(2, r.changed)
+        assertEquals(2, r.skipped)
+        assertEquals(2, r.undo!!.removals.size)
+        assertTrue(txns.findByIds(listOf("t-1", "t-2")).isEmpty())
+        assertTrue(tagLinks.listByTransactionIds(listOf("t-1")).isEmpty())
+        assertTrue(links.listByTransaction("t-2").isEmpty())
+        assertEquals(2, txns.findByIds(listOf("t-imported", "t-debt")).size)
+        through.undo(r.undo!!)
+        assertEquals(before, snapshot())
+    }
 }
 

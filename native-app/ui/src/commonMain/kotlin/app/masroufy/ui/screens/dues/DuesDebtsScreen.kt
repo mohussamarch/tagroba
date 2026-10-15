@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,7 +77,24 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
         val view = deps.loadDues.load(today, deps.period(today), space.space.currency, null)
         DebtsData(deps.people.listWithBalances(), view.totals, debtDueItems(deps, today), today)
     }
+    // «امسح» من القايمة السريعة (§6.5 بند 12 + 13): التأكيد في [DebtEraseSheet] و«تراجع» في شريط فوق القايمة 8 ثواني
+    var erasing by remember { mutableStateOf<DebtRowUi?>(null) }
+    var erased by remember { mutableStateOf<DebtErased?>(null) }
+    val toaster = app.masroufy.ui.shell.LocalToaster.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    LaunchedEffect(erased) { if (erased != null) kotlinx.coroutines.delay(8_000).also { erased = null } }
+    val onDelete: ((DebtRowUi) -> Unit)? = deps.deleteDebt?.let { { row -> erasing = row } }
+    fun undoErase(e: DebtErased) {
+        val erase = deps.deleteDebt ?: return
+        erased = null
+        scope.launch {
+            val failed = try { erase.restore(e.removal); null } catch (x: kotlin.coroutines.cancellation.CancellationException) { throw x } catch (x: Exception) { x.message }
+            toaster.show(failed ?: t(UiKey.ERASE_RESTORED))
+            load.reload()
+        }
+    }
     DuesScaffold(t(UiKey.DEBTS_TITLE), t(UiKey.DEBTS_SUB)) {
+        erased?.let { e -> item(key = "erase-undo") { app.masroufy.ui.screens.operations.UndoStrip(e.text) { undoErase(e) } } }
         when (val s = load.value) {
             Load.Loading -> item { LoadingBlocks() }
             Load.Failed -> item { LoadFailed(load::reload) }
@@ -101,7 +121,7 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                         trailing = { if (query.isNotEmpty()) ClearButton { query = "" } },
                     )
                 }
-                for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency, quick) { nav.push(DebtDetailRoute(it)) } }
+                for (g in ui.groups) item(key = "g-${g.key}") { Group(g, ui.currency, quick, onDelete) { nav.push(DebtDetailRoute(it)) } }
                 if (ui.noHitsTitle != null) item(key = "nohits") {
                     EmptyState(ui.noHitsTitle, ui.noHitsBody, action = {
                         TonalButton(t(UiKey.DUES_SHOW_ALL), { query = ""; side = DebtSide.ALL }, height = 44.dp)
@@ -112,6 +132,11 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
         }
     }
     QuickMenuHost(quick)
+    DebtEraseSheet(erasing, deps.deleteDebt, onDismiss = { erasing = null }) { e ->
+        erasing = null
+        erased = e
+        load.reload()
+    }
 }
 
 @Composable
@@ -134,7 +159,7 @@ private fun SideFilter(modifier: Modifier, sd: DebtSideUi, on: Boolean, currency
 }
 
 @Composable
-private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onOpen: (String) -> Unit) {
+private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onDelete: ((DebtRowUi) -> Unit)?, onOpen: (String) -> Unit) {
     val nav = LocalNavigator.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -145,7 +170,7 @@ private fun Group(g: DebtGroupUi, currency: Currency, quick: QuickMenu, onOpen: 
         CardList {
             g.rows.forEachIndexed { i, row ->
                 if (i > 0) Divider()
-                QuickTarget(quick, row.name, { debtQuickItems(row, nav) }, subtitle = row.reason) { long ->
+                QuickTarget(quick, row.name, { debtQuickItems(row, nav, onDelete) }, subtitle = row.reason) { long ->
                     DebtRow(row, onLongClick = long, onClick = quick.guardTap { onOpen(row.obligationId) })
                 }
             }

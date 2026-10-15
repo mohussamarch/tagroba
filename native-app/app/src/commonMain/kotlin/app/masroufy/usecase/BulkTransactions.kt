@@ -51,6 +51,11 @@ data class BulkTransactionsDeps(
     /** كل اللي بيربط عملية بحاجة تانية (`TransactionLinkRepos.linked`). `null` ⇒ مفيش مسح خالص (مش هنمسح وإحنا مش عارفين). */
     val linked: (suspend (List<Id>) -> Set<Id>)? = null,
     val spaceLegs: SpaceTransferLegs? = null,
+    /**
+     * «امسح» للعملية الواحدة (قايمة المالك §6.5 بند 12). موجود ⇒ مسح الدفعة بيعدّي **من نفس الطريق** عملية عملية (نفس القواعد ·
+     * علامة المصدر · رجوع ميعاد الاشتراك · «تراجع» بـ`restore`) — واللي `DeleteTransaction` بيمنعها بتتساب وتتعدّ. `null` ⇒ المسح المجمّع القديم.
+     */
+    val erase: DeleteTransaction? = null,
 )
 
 /** اللي بيظهر وإنت بتحدد: العدد · المجموع لكل عملة · كام واحدة منهم ينفع تتمسح. */
@@ -68,6 +73,8 @@ data class BulkUndo(
     val createdTagLinkIds: List<Id> = emptyList(),
     val createdTagId: Id? = null,
     val deletedTagLinks: List<TransactionTag> = emptyList(),
+    /** اللي اتمسح من طريق `DeleteTransaction` — «تراجع» بيرجّع كل واحدة بـ`restore`. */
+    val removals: List<TransactionRemoval> = emptyList(),
 )
 
 /** [changed] اتغيّرت فعلًا · [skipped] اتسابت (ما ينفعش، أو كانت كده أصلًا) · [undo] `null` = مفيش حاجة اتكتبت. */
@@ -164,6 +171,7 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
     suspend fun delete(ids: List<Id>): BulkResult {
         val gone = deletableAmong(load(ids))
         if (gone.isEmpty()) return result(ids, 0, null)
+        deps.erase?.let { erase -> return deleteThrough(erase, ids, gone) }
         val goneIds = gone.map { it.id }
         val tagLinks = deps.transactionTags.listByTransactionIds(goneIds)
         deps.uow.run {
@@ -173,8 +181,33 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
         return result(ids, gone.size, BulkUndo(BulkAction.DELETE, before = gone, deletedTagLinks = tagLinks))
     }
 
+    /**
+     * نفس طريق «امسح» للعملية الواحدة: كل عملية بوحدة عملها (`DeleteTransaction.delete`). اللي بيتمنع هناك بيتساب ويتعدّ.
+     * لو واحدة وقعت في النص، اللي اتمسح قبلها بيفضل له «تراجع» (مفيش مسح نصّه ضايع).
+     */
+    private suspend fun deleteThrough(erase: DeleteTransaction, ids: List<Id>, gone: List<Transaction>): BulkResult {
+        val removals = mutableListOf<TransactionRemoval>()
+        for (txn in gone) {
+            if (!erase.preview(txn.id).allowed) continue
+            val done = try {
+                erase.delete(txn.id)
+            } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (removals.isEmpty()) throw e else break
+            }
+            removals += done
+        }
+        return result(ids, removals.size, if (removals.isEmpty()) null else BulkUndo(BulkAction.DELETE, removals = removals))
+    }
+
     /** بيرجّع الدفعة كلها زي ما كانت. الوسم اللي اتعمل جديد بيتشال بس لو مفيش عملية تانية عليه. */
     suspend fun undo(u: BulkUndo) {
+        if (u.removals.isNotEmpty()) {
+            val erase = deps.erase ?: throw IllegalStateException("erase path missing for undo")
+            for (r in u.removals) erase.restore(r)
+            return
+        }
         deps.uow.run {
             if (u.before.isNotEmpty()) deps.txns.saveMany(u.before)
             if (u.deletedTagLinks.isNotEmpty()) deps.transactionTags.saveMany(u.deletedTagLinks)

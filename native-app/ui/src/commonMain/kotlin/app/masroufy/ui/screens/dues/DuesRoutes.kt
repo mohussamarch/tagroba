@@ -48,6 +48,9 @@ interface DuesDeps {
 
     /** الفترة المالية اللي فيها [today] (من يوم الراتب في الملف — 28 لو مش متسجل). */
     suspend fun period(today: IsoDate): Period
+
+    /** «امسح» لدين اتسجل غلط (§6.5 بند 12) — `preview` · `delete` · `restore`. `null` ⇒ البند ما بيظهرش في القايمة السريعة. */
+    val deleteDebt: app.masroufy.usecase.DeleteDebt? get() = null
 }
 
 /** «لك» أو «عليك» أو الاتنين — فلتر شاشة الديون (الكارت المضغوط بيصفّي، والضغط تاني يرجّع الكل). */

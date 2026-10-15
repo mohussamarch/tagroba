@@ -48,6 +48,10 @@ class DuesGraph(private val c: AreaContext) : DuesDeps {
 
     override val recurring = ManageRecurring(ManageRecurringDeps(r.recurring, r.transactions, r.categories, env.ids))
 
+    override val deleteDebt = app.masroufy.usecase.DeleteDebt(
+        app.masroufy.usecase.DeleteDebtDeps(r.obligations, r.settlements, r.allocations, r.uow, terms = r.debtTerms),
+    )
+
     /** يوم الراتب من الملف (`ManageProfile.load` — 28 لو مش متسجل) ⇒ الفترة اللي فيها [today]. */
     override suspend fun period(today: IsoDate): Period = periodForDate(today, c.shell.profile.load().payday)
 }

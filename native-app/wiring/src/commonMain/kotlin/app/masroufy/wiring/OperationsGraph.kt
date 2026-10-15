@@ -93,6 +93,17 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
         app.masroufy.usecase.BulkTransactionsDeps(
             r.transactions, r.categories, r.projects, r.projectLinks, r.tags, r.transactionTags, r.sourceRecords, r.uow, ids, clock,
             linked = txnLinks::linked, spaceLegs = legs,
+            // «امسح» في وضع التحديد = نفس طريق مسح العملية الواحدة (§6.5 بند 12 — `DeleteTransaction` + «تراجع» بـ`restore`)
+            erase = app.masroufy.usecase.DeleteTransaction(
+                app.masroufy.usecase.DeleteTransactionDeps(
+                    r.transactions, r.sourceRecords, r.settlements, r.allocations, r.obligations,
+                    app.masroufy.usecase.RevertLinkDeps(
+                        r.projectLinks, r.eventLinks, r.transactionTags, r.roscaEntries, r.installmentPayments, r.installmentPlans,
+                        r.zakatPayments, r.assetLots, r.assetSales, spaceLegs = legs,
+                    ),
+                    r.uow, clock, recurring = r.recurring,
+                ),
+            ),
         ),
     )
 
