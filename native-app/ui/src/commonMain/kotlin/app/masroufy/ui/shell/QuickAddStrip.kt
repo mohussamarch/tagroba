@@ -114,7 +114,7 @@ fun QuickAddStrip(
         BasicText(t(UiKey.QUICK_SHEET_BODY), style = Type.of(13).copy(color = Ink.muted))
         TextInput(
             amountText, { amountText = it }, ltr = true, keyboard = KeyboardType.Decimal, height = 56.dp, textSize = 24, error = error,
-            trailing = { BasicText(currencySymbol(current.currency), Modifier.padding(end = 16.dp), style = Type.of(14).copy(color = Ink.muted)) },
+            unit = currencySymbol(current.currency),
         )
         BasicText(t(UiKey.QUICK_FROM), style = Type.of(13, FontWeight.Bold))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -142,7 +142,7 @@ internal fun ItemsStep(d: InheritanceDraft, canBring: Boolean, onChange: (Inheri
                         TextInput(
                             row.value, { v -> onChange(d.copy(items = d.items.mapIndexed { j, r -> if (j == i) r.copy(value = v) else r })) },
                             Modifier.weight(1f), placeholder = t(UiKey.INHCALC_VALUE_UNKNOWN), ltr = true, keyboard = KeyboardType.Decimal, height = 44.dp,
-                            trailing = { BasicText(unit, Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
+                            unit = unit,
                         )
                         RemoveButton(t(UiKey.INHCALC_REMOVE, row.name.ifBlank { t(UiKey.INHCALC_THIS_THING) })) { onChange(d.copy(items = d.items.filterIndexed { j, _ -> j != i })) }
                     }

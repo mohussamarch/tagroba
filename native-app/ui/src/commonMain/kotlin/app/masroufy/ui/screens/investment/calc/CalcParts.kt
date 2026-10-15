@@ -70,7 +70,7 @@ fun CalcField(
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         TextInput(
             value, onChange, label = label, placeholder = placeholder, error = error, ltr = true, keyboard = keyboard, textSize = 18,
-            trailing = unit?.let { u -> { BasicText(u, Modifier.padding(end = 14.dp), style = Type.of(13).copy(color = Ink.muted)) } },
+            unit = unit,
         )
         if (error == null && !note.isNullOrEmpty()) BasicText(note, style = Type.caption().copy(color = Ink.muted))
     }

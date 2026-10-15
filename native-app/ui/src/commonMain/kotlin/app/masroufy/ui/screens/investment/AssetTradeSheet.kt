@@ -123,7 +123,7 @@ internal fun AssetTradeSheet(visible: Boolean, mode: TradeMode, asset: AssetDeta
             TradeMode.PRICE -> TextInput(
                 form.price, { form = form.copy(price = it); error = null }, label = t(UiKey.ASSET_TRADE_PRICE_LABEL, asset?.unit.orEmpty()),
                 placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, height = 56.dp, textSize = 22,
-                trailing = { FieldUnit(app.masroufy.core.currencySymbol(currency)) },
+                unit = app.masroufy.core.currencySymbol(currency),
             )
         }
         val note = when (mode) {
@@ -160,12 +160,12 @@ private fun TradeFields(form: TradeForm, ops: List<LinkableOp>, asset: AssetDeta
         }
     }
     TextInput(form.qty, { onChange(form.copy(qty = it)) }, label = t(UiKey.ASSET_TRADE_QTY), placeholder = "0", ltr = true,
-        keyboard = KeyboardType.Decimal, trailing = { FieldUnit(asset?.unit.orEmpty()) })
+        keyboard = KeyboardType.Decimal, unit = asset?.unit.orEmpty())
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         TextInput(form.amount, { onChange(form.copy(amount = it)) }, Modifier.weight(1f), label = t(if (buy) UiKey.ASSET_TRADE_PAID else UiKey.ASSET_TRADE_PROCEEDS),
-            placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, trailing = { FieldUnit(app.masroufy.core.currencySymbol(currency)) })
+            placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, unit = app.masroufy.core.currencySymbol(currency))
         TextInput(form.fee, { onChange(form.copy(fee = it)) }, Modifier.weight(1f), label = t(UiKey.ASSET_TRADE_FEES),
-            placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, trailing = { FieldUnit(app.masroufy.core.currencySymbol(currency)) })
+            placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, unit = app.masroufy.core.currencySymbol(currency))
     }
     BasicText(t(if (buy) UiKey.ASSET_TRADE_LINK_BUY else UiKey.ASSET_TRADE_LINK_SELL), style = Type.of(13, FontWeight.Bold))
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

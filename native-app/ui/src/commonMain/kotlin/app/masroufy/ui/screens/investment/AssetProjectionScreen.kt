@@ -248,5 +248,5 @@ private fun ResultCard(ui: ProjectionUi) {
 /** خانة رقم (من الشمال لليمين) بوحدتها على آخرها. */
 @Composable
 private fun NumberField(label: String?, value: String, unit: String, modifier: Modifier, onChange: (String) -> Unit) {
-    TextInput(value, onChange, modifier, label = label, placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, trailing = { FieldUnit(unit) })
+    TextInput(value, onChange, modifier, label = label, placeholder = "0", ltr = true, keyboard = KeyboardType.Decimal, unit = unit)
 }

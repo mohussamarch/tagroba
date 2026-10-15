@@ -79,7 +79,7 @@ fun BalanceUpdateSheet(visible: Boolean, walletId: Id?, walletName: String, isCa
         TextInput(
             amountText, { amountText = it; serverError = null }, label = t(UiKey.BAL_AMOUNT_LABEL), placeholder = "0.00", ltr = true,
             keyboard = KeyboardType.Decimal, error = if (amountBad || (tried && amount == null)) t(UiKey.BAL_ERR_AMOUNT) else null,
-            trailing = { BasicText(currencySymbol(currency), Modifier.padding(horizontal = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
+            unit = currencySymbol(currency),
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SelectChip(t(UiKey.BAL_WHEN_NOW), !past, onClick = { past = false; serverError = null }, modifier = Modifier.weight(1f), height = 44.dp)

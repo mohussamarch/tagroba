@@ -155,7 +155,7 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
         TextInput(
             amountText, { amountText = it }, label = t(if (edit != null) UiKey.WDET_OPENING else UiKey.WADD_AMOUNT), placeholder = "0.00", ltr = true,
             keyboard = KeyboardType.Decimal, error = if (amountBad) t(UiKey.WADD_ERR_AMOUNT) else null,
-            trailing = { BasicText(currencySymbol(currency), Modifier.padding(horizontal = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
+            unit = currencySymbol(currency),
         )
         TextInput(date, { date = it.trim() }, label = t(UiKey.WADD_DATE), placeholder = today, ltr = true, enabled = edit != null || amountText.isNotBlank(),
             error = if (amount != null && !dateOk) t(UiKey.WADD_ERR_DATE) else null)

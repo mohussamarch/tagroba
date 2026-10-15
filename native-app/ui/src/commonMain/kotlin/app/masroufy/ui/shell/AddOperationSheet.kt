@@ -126,7 +126,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         TextInput(
             amountText, { amountText = it; error = null }, label = t(UiKey.ADD_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
             imeAction = ImeAction.Done, height = 60.dp, textSize = 28, error = error,
-            trailing = { BasicText(o?.currency?.let(::currencySymbol).orEmpty(), Modifier.padding(end = 16.dp), style = Type.of(15).copy(color = Ink.muted)) },
+            unit = o?.currency?.let(::currencySymbol),
         )
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel(t(when (kind) { AddKind.OUT -> UiKey.ADD_CATEGORY; AddKind.IN -> UiKey.ADD_INCOME_KIND; AddKind.MOVE -> UiKey.ADD_TO }))

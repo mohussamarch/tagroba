@@ -121,7 +121,7 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
         TextInput(
             amountText, { amountText = it; error = null }, label = t(UiKey.LINK_PERSON_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
             height = 56.dp, textSize = 22,
-            trailing = { BasicText(currencySymbol(v.currency), Modifier.padding(end = 16.dp), style = Type.of(14).copy(color = Ink.muted)) },
+            unit = currencySymbol(v.currency),
         )
         EffectBox(personEffect(kind, who, amount, v.currency))
         error?.let { FieldError(it) }

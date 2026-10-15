@@ -129,7 +129,7 @@ fun ReserveAmountSheet(target: UpcomingUi?, onDismiss: () -> Unit, onSave: suspe
             error = error,
             ltr = true,
             keyboard = KeyboardType.Decimal,
-            trailing = { BasicText(currencySymbol(item.item.currency), Modifier.padding(end = 16.dp), style = Type.body().copy(color = Ink.muted)) },
+            unit = currencySymbol(item.item.currency),
         )
         PrimaryButton(t(UiKey.BUDGETS_RESERVE_SAVE), {
             val minor = tryParseMoney(text, item.item.currency)?.takeIf { it > 0 }

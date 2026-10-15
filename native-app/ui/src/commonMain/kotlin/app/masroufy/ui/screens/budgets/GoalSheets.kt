@@ -105,7 +105,7 @@ fun GoalDetailSheet(card: GoalCardUi?, deps: BudgetsDeps, today: String, onDismi
                 TextInput(
                     value = deposit, onChange = { deposit = it; error = null }, modifier = Modifier.weight(1f), placeholder = "0.00", ltr = true,
                     keyboard = KeyboardType.Decimal, textSize = 17,
-                    trailing = { BasicText(currencySymbol(shown.currency), Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
+                    unit = currencySymbol(shown.currency),
                 )
                 PrimaryButton(t(UiKey.GOAL_DETAIL_DEPOSIT), {
                     val minor = tryParseMoney(deposit, shown.currency)?.takeIf { it > 0 }

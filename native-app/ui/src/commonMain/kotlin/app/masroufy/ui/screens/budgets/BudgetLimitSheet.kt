@@ -96,7 +96,7 @@ fun BudgetLimitSheet(
             keyboard = KeyboardType.Decimal,
             height = 56.dp,
             textSize = 24,
-            trailing = { BasicText(currencySymbol(currency), Modifier.padding(end = 16.dp), style = Type.body().copy(color = Ink.muted)) },
+            unit = currencySymbol(currency),
         )
         if (averageMinor != null && averageMinor > 0) {
             TonalButton(t(UiKey.LIMIT_SHEET_USE_AVG, plain(averageMinor, currency)), { draft = draft.copy(limitText = inputText(averageMinor, currency)) }, height = 44.dp)

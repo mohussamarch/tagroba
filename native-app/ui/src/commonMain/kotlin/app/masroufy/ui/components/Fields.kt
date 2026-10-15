@@ -85,7 +85,16 @@ fun TextInput(
     height: Dp = 48.dp,
     textSize: Int = 16,
     draft: Boolean = true,
+    /**
+     * وحدة الرقم (العملة أو «شهر» أو «جرام»…). قاعدة المالك (OVERRIDES §91-12): **علامة الريال على شمال الرقم بمسافة** — جوه الخانة
+     * بترتيب من الشمال لليمين («⃁ 35.62») مهما كانت لغة الشاشة. أي وحدة تانية (الجنيه وغيره) على طرف الخانة زي الأول.
+     */
+    unit: String? = null,
 ) {
+    val riyal = unit != null && unit == app.masroufy.core.currencySymbol(app.masroufy.core.Currency.SAR)
+    val end: (@Composable () -> Unit)? = trailing ?: unit?.takeIf { !riyal }?.let { u ->
+        { BasicText(u, Modifier.padding(end = 14.dp), style = Type.of(13).copy(color = Ink.muted)) }
+    }
     // [draft] = `false` لخانة البحث: كلام البحث مش مسودة ⇒ اللوحة بتتقفل بالضغط برّه عادي حتى لو اتكتب فيها
     val shape = RoundedCornerShape(14.dp)
     // الكتابة بتعلّم على اللوحة اللي فيها الخانة ⇒ الضغط برّه اللوحة ما يضيّعش الكلام (`FormGuard` — HANDOVER §6.5 بند 11)
@@ -100,8 +109,8 @@ fun TextInput(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.weight(1f).padding(horizontal = 14.dp), contentAlignment = Alignment.CenterStart) {
-                val style = Type.of(textSize).copy(textAlign = if (ltr) TextAlign.Left else TextAlign.Start)
-                val field = @Composable { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                val style = Type.of(textSize).copy(textAlign = if (ltr || riyal) TextAlign.Left else TextAlign.Start)
+                val input = @Composable { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
                     // الخانة الإنجليزي (إيميل · أرقام) من الشمال لليمين بالكامل — حتى النص الباهت
                     if (value.isEmpty() && placeholder != null) BasicText(placeholder, style = style.copy(color = Color(0xFF8A9A95)), maxLines = 1)
                     BasicTextField(
@@ -119,9 +128,16 @@ fun TextInput(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 } }
-                if (ltr) CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) { field() } else field()
+                // الريال: العلامة ثم مسافة ثم الرقم، من الشمال لليمين
+                val field = @Composable {
+                    if (!riyal) input() else Row(verticalAlignment = Alignment.CenterVertically) {
+                        BasicText(unit.orEmpty() + " ", style = Type.of(textSize).copy(color = Ink.muted))
+                        input()
+                    }
+                }
+                if (ltr || riyal) CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) { field() } else field()
             }
-            trailing?.invoke()
+            end?.invoke()
         }
         if (error != null) FieldError(error)
     }

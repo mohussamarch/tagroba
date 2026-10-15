@@ -120,7 +120,7 @@ internal fun ZakatPaySection(pay: ZakatPayUi, currency: Currency, showTitle: Boo
                 if (how == PAY_CASH) {
                     BasicText(t(UiKey.ZAKAT_PAY_CASH_SUB), style = Type.caption().copy(color = Ink.muted))
                     TextInput(cash, { cash = it; error = null }, label = t(UiKey.ZAKAT_PAY_CASH_LABEL), placeholder = "0.00", ltr = true,
-                        keyboard = KeyboardType.Decimal, trailing = { FieldUnit(currencySymbol(currency)) })
+                        keyboard = KeyboardType.Decimal, unit = currencySymbol(currency))
                 }
                 BasicText(t(UiKey.ZAKAT_PAY_NOTE), style = Type.caption().copy(color = Ink.muted))
                 error?.let { FieldError(it) }

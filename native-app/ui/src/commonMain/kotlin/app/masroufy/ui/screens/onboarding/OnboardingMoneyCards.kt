@@ -43,7 +43,7 @@ private fun MoneyField(value: String, onChange: (String) -> Unit, label: String,
     TextInput(
         value, onChange, label = label, placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal,
         error = if (bad) t(UiKey.WADD_ERR_AMOUNT) else null,
-        trailing = { BasicText(currencySymbol(currency), Modifier.padding(horizontal = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
+        unit = currencySymbol(currency),
     )
 }
 

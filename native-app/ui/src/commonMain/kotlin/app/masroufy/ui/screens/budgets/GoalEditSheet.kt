@@ -83,7 +83,7 @@ fun GoalEditSheet(
             TextInput(
                 d.targetText, { d = d.copy(targetText = it); error = null }, label = t(UiKey.GOAL_EDIT_TARGET), placeholder = "0.00", ltr = true,
                 keyboard = KeyboardType.Decimal,
-                trailing = { BasicText(currencySymbol(card.currency), Modifier.padding(end = 12.dp), style = Type.caption().copy(color = Ink.muted)) },
+                unit = currencySymbol(card.currency),
             )
             FieldLabel(t(UiKey.GOAL_NEW_WHEN))
             // شبكة التاريخ مفتوحة ⇒ الضغط برّاها أو الرجوع بيقفلها والتاريخ زي ما هو (HANDOVER §6.5 بند 11)

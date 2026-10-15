@@ -201,7 +201,7 @@ internal fun MoneyField(value: String, onChange: (String) -> Unit, label: String
     TextInput(
         value, onChange, label = label, placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal, imeAction = ImeAction.Done, error = error,
         height = if (big) 60.dp else 52.dp, textSize = if (big) 24 else 16,
-        trailing = { BasicText(currencySymbol(currency), Modifier.padding(end = 16.dp), style = Type.of(15).copy(color = Ink.muted)) },
+        unit = currencySymbol(currency),
     )
 }
 

@@ -189,7 +189,7 @@ private fun FailedCard(f: FailedUi, currency: Currency, error: String?, actions:
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 TextInput(
                     amount, { amount = it }, Modifier.weight(1f), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal, imeAction = ImeAction.Done,
-                    error = error, trailing = { BasicText(currencySymbol(currency), Modifier.padding(end = 14.dp), style = Type.of(14).copy(color = Ink.muted)) },
+                    error = error, unit = currencySymbol(currency),
                 )
                 PrimaryButton(t(UiKey.SMS_WAITING_SAVE), { actions.recordByHand(f, amount) }, enabled = amount.isNotBlank())
             }
