@@ -61,7 +61,11 @@ class Component extends DCLogic {
     this.list = null; this.t = null;
     this.setList = (el) => { if (el && el !== this.list) { this.list = el; el.scrollTop = this.state.pos * ROW; } };
     // بنحدّث الشكل مع كل حركة، وبنبلّغ الاختيار لما الحركة تهدى
-    this.scroll = (e) => { const el = e && e.currentTarget; if (!el) return; const p = Math.max(0, Math.min(STEPS.length - 1, el.scrollTop / ROW)); this.setState({ pos: p }); clearTimeout(this.t); this.t = setTimeout(() => { const k = Math.round(p); if (typeof this.props.onPick === 'function') this.props.onPick(STEPS[k]); }, 120); };
+    // لما ينزل لخانة «اكتب السنة» تحت آخر البكرة، الاختيار بيفضل زي ما هو (مش بيبقى 40 سنة لوحده)
+    this.settled = this.state.pos;
+    this.scroll = (e) => { const el = e && e.currentTarget; if (!el) return; const raw = el.scrollTop / ROW; clearTimeout(this.t);
+      if (raw > STEPS.length - 0.75) { if (this.state.pos !== this.settled) this.setState({ pos: this.settled }); return; }
+      const p = Math.max(0, Math.min(STEPS.length - 1, raw)); this.setState({ pos: p }); this.t = setTimeout(() => { const k = Math.round(p); this.settled = k; if (typeof this.props.onPick === 'function') this.props.onPick(STEPS[k]); }, 120); };
   }
   componentWillUnmount() { clearTimeout(this.t); }
   digits(v) { return String(v || '').replace(/[٠-٩۰-۹]/g, (d) => '٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10).trim(); }
@@ -70,6 +74,7 @@ class Component extends DCLogic {
     const marks = Array.isArray(this.props.marks) ? this.props.marks : [];
     const name = (k) => (k === 1 ? 'سنة' : k === 2 ? T('سنتان', 'سنتين') : n(k) + (k <= 10 ? T(' سنوات', ' سنين') : ' سنة'));
     return {
+      setList: this.setList, scroll: this.scroll,
       title: T('بعد كم سنة؟', 'كمان كام سنة؟'), hint: T('اسحب لأعلى أو لأسفل', 'اسحب لفوق أو لتحت'), closeLabel: T('إغلاق', 'اقفل'), doneLabel: T('تم', 'تمام'),
       items: STEPS.map((k, i) => { const d = Math.abs(i - s.pos), on = Math.round(s.pos) === i; return {
         label: name(k), year: String(NOW + k), on: on ? 'true' : 'false',

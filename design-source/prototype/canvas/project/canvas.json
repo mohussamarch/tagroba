@@ -968,7 +968,7 @@
       "x": 470,
       "y": 25202,
       "w": 350,
-      "h": 1500
+      "h": 2000
     },
     "InvestChart.dc.html": {
       "is_interactive": true,
@@ -1054,6 +1054,22 @@
       "is_interactive": true,
       "title": "ابني شكلك (أول نسخة) · CharacterBuilder",
       "x": 720,
+      "y": 26902,
+      "w": 390,
+      "h": 844
+    },
+    "YearWheel.dc.html": {
+      "is_interactive": true,
+      "title": "بكرة السنين · YearWheel",
+      "x": 1160,
+      "y": 26902,
+      "w": 390,
+      "h": 844
+    },
+    "Faq.dc.html": {
+      "is_interactive": true,
+      "title": "الأسئلة الشائعة · Faq",
+      "x": 1600,
       "y": 26902,
       "w": 390,
       "h": 844
@@ -1346,7 +1362,9 @@
     "InvestIncomeRope.dc.html",
     "InvestReturns.dc.html",
     "CharacterArt.dc.html",
-    "CharacterBuilder.dc.html"
+    "CharacterBuilder.dc.html",
+    "YearWheel.dc.html",
+    "Faq.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

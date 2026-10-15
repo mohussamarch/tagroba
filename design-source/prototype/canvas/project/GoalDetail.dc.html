@@ -98,6 +98,8 @@ body{margin:0}
                   <button type="button" role="radio" aria-checked="{{co.on}}" class="q-press" onClick="{{co.pick}}" style="{{co.style}}">{{co.label}}</button>
                 </sc-for>
               </div>
+              <sc-if value="{{ch.hasDate}}" hint-placeholder-val="{{ false }}"><input type="date" aria-label="{{ch.label}}" min="2026-10-08" max="2100-12-31" value="{{ch.dateVal}}" onInput="{{ch.typeDate}}" onChange="{{ch.typeDate}}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; outline: none; background: rgba(25,61,51,0.05)"></sc-if>
+              <sc-if value="{{ch.hasHint}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #4F625C">{{ch.hint}}</span></sc-if>
             </div>
           </sc-for>
           <span style="font-size: 12px; color: #637570">{{newNote}}</span>
@@ -113,7 +115,7 @@ body{margin:0}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { dep: '', err: '', name: '', target: '', when: 'year', kind: 'manual', wallet: null };
+    this.state = { dep: '', err: '', name: '', target: '', when: 'year', date: '', kind: 'manual', wallet: null };
   }
   fmt(m) { const a = Math.abs(m), f = a % 100; return String((a - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + (f < 10 ? '0' : '') + f; }
   toMinor(t) {
@@ -137,18 +139,29 @@ class Component extends DCLogic {
     const bits = [];
     for (let i = 0; i < 16; i++) bits.push({ outer: 'position: absolute; top: 0; left: ' + (4 + i * 6) + '%; animation-delay: ' + ((i * 37) % 300) + 'ms', inner: 'display: block; width: 6px; height: 10px; border-radius: 2px; transform: rotate(' + ((i * 47) % 90 - 45) + 'deg); background: ' + BITS[i % 5] });
     const chip = (on) => 'min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
-    const WHEN = [['year', eg ? 'آخر السنة' : 'آخر السنة', '31 ديسمبر 2026', 85, 3], ['y1', eg ? 'بعد سنة' : 'بعد سنة', '7 أكتوبر 2027', 365, 12], ['y2', eg ? 'بعد سنتين' : 'بعد سنتين', '7 أكتوبر 2028', 731, 24]];
+    // «حتى متى» مرنة (طلب المالك 2026-10-15): مدد جاهزة + «تاريخ تاني» بتقويم + «بلا موعد» — والميعاد يتغير بعدين من «تعديل»
+    // الأيام والشهور من التاريخ نفسه (النهارده 7 أكتوبر 2026 في النموذج) — الشهور متقرّبة لفوق زي باقي الخطط
+    const TODAY = '2026-10-07', MON = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const span = (iso) => { if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '') || iso <= TODAY || iso > '2100-12-31') return null; const [y, m, d] = iso.split('-').map(Number), [y0, m0, d0] = TODAY.split('-').map(Number);
+      return { end: d + ' ' + MON[m - 1] + ' ' + y, total: Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y0, m0 - 1, d0)) / 86400000), months: (y - y0) * 12 + (m - m0) + (d > d0 ? 1 : 0) }; };
+    const WHEN = [['m3', eg ? 'بعد 3 شهور' : 'بعد 3 أشهر', '2027-01-07'], ['m6', eg ? 'بعد 6 شهور' : 'بعد 6 أشهر', '2027-04-07'], ['year', eg ? 'آخر السنة' : 'آخر السنة', '2026-12-31'], ['y1', eg ? 'بعد سنة' : 'بعد سنة', '2027-10-07'], ['y2', eg ? 'بعد سنتين' : 'بعد سنتين', '2028-10-07'],
+      ['pick', eg ? 'تاريخ تاني' : 'تاريخ آخر', null], ['none', eg ? 'من غير ميعاد' : 'بلا موعد', null]];
+    const wSel = WHEN.find((x) => x[0] === s.when) || WHEN[2], when = s.when === 'none' ? null : span(s.when === 'pick' ? s.date : wSel[2]);
+    const plural = (k) => (k === 1 ? 'شهر' : k === 2 ? (eg ? 'شهرين' : 'شهران') : k <= 10 ? k + (eg ? ' شهور' : ' أشهر') : k + ' شهرًا');
+    const whenHint = s.when === 'none' ? (eg ? 'حوّش براحتك، وهنوريك وصلت لفين.' : 'ادّخر براحتك، ونريك أين وصلت.') : when ? (eg ? 'لحد ' : 'حتى ') + when.end + ' · ' + plural(when.months) : s.when === 'pick' ? (eg ? 'اختار يوم بعد النهارده' : 'اختر يومًا بعد اليوم') : '';
     const WALLETS = eg ? [['ahly', 'البنك الأهلي المصري', '2204', 1640000], ['qnb', 'QNB مصر', '5520', 620000]] : [['rajhi', 'مصرف الراجحي', '3318', 412000], ['snb', 'البنك الأهلي السعودي', '9045', 183000], ['inma', 'مصرف الإنماء', '7731', 50000]];
-    const choices = [{ label: eg ? 'لحد إمتى؟' : 'حتى متى؟', opts: WHEN.map(([id, label]) => ({ label, on: s.when === id ? 'true' : 'false', style: chip(s.when === id), pick: () => this.setState({ when: id }) })) },
-      { label: eg ? 'بتحوّش إزاي؟' : 'كيف تدّخر؟', opts: [['manual', eg ? 'إيداعات بإيدي' : 'إيداعات يدوية'], ['linked', eg ? 'حساب مخصوص' : 'حساب مخصص']].map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', style: chip(s.kind === id), pick: () => this.setState({ kind: id, wallet: null }) })) }];
-    if (s.kind === 'linked') choices.push({ label: eg ? 'أنهي حساب؟' : 'أي حساب؟', opts: WALLETS.map(([id, label]) => ({ label, on: s.wallet === id ? 'true' : 'false', style: chip(s.wallet === id), pick: () => this.setState({ wallet: id }) })) });
+    const choices = [{ label: eg ? 'لحد إمتى؟' : 'حتى متى؟', opts: WHEN.map(([id, label]) => ({ label, on: s.when === id ? 'true' : 'false', style: chip(s.when === id), pick: () => this.setState({ when: id, err: '' }) })),
+        hasDate: s.when === 'pick', dateVal: s.date, typeDate: (e) => { if (e && e.target) this.setState({ date: e.target.value, err: '' }); }, hasHint: !!whenHint, hint: whenHint },
+      { label: eg ? 'بتحوّش إزاي؟' : 'كيف تدّخر؟', hasDate: false, hasHint: false, opts: [['manual', eg ? 'إيداعات بإيدي' : 'إيداعات يدوية'], ['linked', eg ? 'حساب مخصوص' : 'حساب مخصص']].map(([id, label]) => ({ label, on: s.kind === id ? 'true' : 'false', style: chip(s.kind === id), pick: () => this.setState({ kind: id, wallet: null }) })) }];
+    if (s.kind === 'linked') choices.push({ label: eg ? 'أنهي حساب؟' : 'أي حساب؟', hasDate: false, hasHint: false, opts: WALLETS.map(([id, label]) => ({ label, on: s.wallet === id ? 'true' : 'false', style: chip(s.wallet === id), pick: () => this.setState({ wallet: id }) })) });
     const create = () => {
       const name = s.name.trim(), target = this.toMinor(s.target);
       if (!name) { this.setState({ err: eg ? 'اكتب اسم الخطة' : 'اكتب اسم الخطة' }); return; }
       if (target == null || target <= 0) { this.setState({ err: eg ? 'مبلغ الخطة لازم يبقى أكبر من صفر' : 'مبلغ الخطة يجب أن يكون أكبر من صفر' }); return; }
       if (s.kind === 'linked' && !s.wallet) { this.setState({ err: eg ? 'اختار الحساب اللي هتحوّش فيه' : 'اختر الحساب الذي تدّخر فيه' }); return; }
-      const w = WHEN.find((x) => x[0] === s.when), wl = WALLETS.find((x) => x[0] === s.wallet);
-      this.call('onCreate', { name, target, end: w[2], total: w[3], months: w[4], wallet: wl ? { name: wl[1], last4: wl[2], balance: wl[3] } : null });
+      if (s.when !== 'none' && !when) { this.setState({ err: eg ? 'اختار ميعاد بعد النهارده' : 'اختر موعدًا بعد اليوم' }); return; }
+      const wl = WALLETS.find((x) => x[0] === s.wallet);
+      this.call('onCreate', { name, target, end: when ? when.end : null, total: when ? when.total : null, months: when ? when.months : null, wallet: wl ? { name: wl[1], last4: wl[2], balance: wl[3] } : null });
       this.setState({ name: '', target: '', err: '' });
     };
     const deposit = () => {

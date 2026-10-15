@@ -11,80 +11,92 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
 <style>
 body{margin:0}
-.f-scroll{scrollbar-width:none}.f-scroll::-webkit-scrollbar{display:none}
-.f-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.f-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
 .f-press:active{transform:scale(.97)}
 .f-rise{animation:f-rise 450ms cubic-bezier(.2,.7,.3,1) backwards}
 @keyframes f-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-input[type=range].f-range{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0}
-input[type=range].f-range::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:rgba(25,61,51,0.12)}
-input[type=range].f-range::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:14px;background:#FFFFFF;box-shadow:0 0 0 6px #B7791F inset,0 4px 10px rgba(16,45,53,0.22)}
 @media (prefers-reduced-motion: reduce){.f-press{transition:none}.f-press:active{transform:none}.f-rise{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
 <div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
-  <div class="f-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
-    <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px"><span style="font-size: 20px; font-weight: 700">{{heroTitle}}</span><span style="font-size: 12px; color: #DCEBD6">{{ageLine}}</span></span>
+  <div class="f-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
+    <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <span style="font-size: 20px; font-weight: 700">{{youIn}}</span>
+      <button type="button" class="f-press" onClick="{{openWheel}}" aria-haspopup="dialog" aria-label="{{wheelAria}}" style="height: 40px; padding: 0 10px 0 12px; border: 0; border-radius: 14px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 20px; font-weight: 700; color: #FFFFFF; cursor: pointer; background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28)">{{yearsLabel}}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"></path></svg></button>
+    </span>
+    <span style="font-size: 12px; color: #DCEBD6">{{yearLine}}</span>
     <sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
-      <span style="font-size: 13px; color: #DCEBD6">{{heroLabel}}</span>
-      <span dir="ltr" style="text-align: right; font-size: 34px; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums">{{heroText}}</span>
-      <span style="font-size: 12px; color: #DCEBD6">{{modeNote}}</span>
-      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.18)">
-        <sc-for list="{{ups}}" as="u" hint-placeholder-count="2"><span style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px"><span style="display: flex; align-items: center; gap: 6px; min-width: 0"><span style="{{u.key}}"></span>{{u.label}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">{{u.value}}</span></span></sc-for>
-        <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #DCEBD6"><span>{{nowLabel}}</span><span dir="ltr" style="font-variant-numeric: tabular-nums">{{nowText}}</span></span>
-      </div>
+      <span dir="ltr" style="text-align: right; font-size: 36px; font-weight: 700; line-height: 1.35; margin-top: 6px; font-variant-numeric: tabular-nums">{{heroText}}</span>
+      <span style="font-size: 14px">{{heroSentence}}</span>
+      <span style="display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.18); font-size: 12px; color: #DCEBD6"><span>{{nowLine}}</span><span dir="ltr" style="{{deltaStyle}}">{{deltaText}}</span></span>
     </sc-if>
     <sc-if value="{{na}}" hint-placeholder-val="{{ false }}"><span style="font-size: 30px; font-weight: 700">غير متاح</span><span style="font-size: 12px; color: #DCEBD6">{{naText}}</span></sc-if>
     <sc-if value="{{noAge}}" hint-placeholder-val="{{ false }}"><a href="RetirementCalculator.dc.html" class="f-press" style="align-self: flex-start; min-height: 32px; display: flex; align-items: center; font-size: 13px; font-weight: 700; color: #A6DEC1">{{ageLink}}</a></sc-if>
   </div>
-
-  <div class="f-scroll" role="radiogroup" aria-label="المدة" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px">
-    <sc-for list="{{chips}}" as="c" hint-placeholder-count="9"><button type="button" role="radio" aria-checked="{{c.on}}" class="f-press" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button></sc-for>
-  </div>
-  <div style="display: flex; gap: 8px; align-items: center">
-    <label style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(204,216,204,0.9)">
-      <span style="font-size: 13px; color: #637570; white-space: nowrap">{{yearLabel}}</span>
-      <input type="text" inputmode="numeric" dir="ltr" aria-label="السنة" value="{{yearInput}}" onInput="{{typeYear}}" placeholder="2030" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; outline: none; text-align: right">
-    </label>
-    <div role="radiogroup" aria-label="شكل الأرقام" style="display: flex; padding: 3px; border-radius: 16px; background: rgba(25,61,51,0.06)">
-      <sc-for list="{{modes}}" as="m" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{m.on}}" class="f-press" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button></sc-for>
-    </div>
-  </div>
-  <sc-if value="{{hasYearErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48; margin-top: -8px">{{yearErr}}</span></sc-if>
+  <sc-if value="{{withHold}}" hint-placeholder-val="{{ true }}"><dc-import name="InvestHoldings" state="{{holdState}}" space="{{spaceName}}" extra="{{holdExtra}}" on-add="{{onAdd}}" hint-size="350px,560px"></dc-import></sc-if>
 
   <sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 14px">
-      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-        <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{chartTitle}}</span><span style="font-size: 12px; color: #637570">{{modeNote}}</span></span>
-        <dc-import name="InvestChart" title="{{chartTitle}}" series="{{series}}" marks="{{marks}}" flags="{{flags}}" start="{{startYear}}" cur="{{cur}}" age-start="{{ageNow}}" hint-size="318px,330px"></dc-import>
+      <div style="border-radius: 22px; padding: 14px 12px 12px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <span style="display: flex; flex-direction: column; padding: 0 4px"><span style="font-size: 16px; font-weight: 700">{{pathsTitle}}</span><span style="font-size: 12px; color: #637570">{{pathsSub}}</span></span>
+        <div role="radiogroup" aria-label="{{pathsTitle}}" style="display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{paths}}" as="p" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{p.on}}" class="f-press" onClick="{{p.pick}}" style="{{p.style}}">
+              <span aria-hidden="true" style="{{p.key}}"></span>
+              <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: right"><span style="font-size: 15px; font-weight: 700">{{p.title}}</span><span style="font-size: 12px; color: #4F625C; line-height: 1.5">{{p.desc}}</span></span>
+              <span dir="ltr" style="flex-shrink: 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums">{{p.value}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <sc-if value="{{showStepper}}" hint-placeholder-val="{{ false }}">
+          <div style="margin: 0 4px; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: rgba(183,121,31,0.08)">
+            <span style="font-size: 12px; font-weight: 700; color: #4F625C">{{stepTitle}}</span>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <button type="button" class="f-press" onClick="{{plus}}" aria-label="{{plusLabel}}" style="width: 48px; height: 48px; border: 0; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #08634F; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <span dir="ltr" aria-live="polite" style="flex: 1 1 auto; text-align: center; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums">{{amountText}}</span>
+              <button type="button" class="f-press" onClick="{{minus}}" aria-label="{{minusLabel}}" style="width: 48px; height: 48px; border: 0; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #08634F; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+            </div>
+            <span style="font-size: 11px; color: #637570">{{amountHint}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{showMix}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 4px 4px 0">
+            <span style="font-size: 12px; font-weight: 700; color: #4F625C">{{mixTitle}}</span>
+            <div role="radiogroup" aria-label="{{mixTitle}}" style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{mixes}}" as="x" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{x.on}}" class="f-press" onClick="{{x.pick}}" style="{{x.style}}">{{x.label}}</button></sc-for></div>
+            <span style="font-size: 11px; color: #637570; line-height: 1.5">{{mixSource}}</span>
+          </div>
+        </sc-if>
       </div>
-      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
-        <span style="font-size: 14px; font-weight: 700">{{amountTitle}}</span>
-        <span dir="ltr" style="text-align: right; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums">{{amountText}}</span>
-        <input class="f-range" type="range" dir="ltr" min="0" max="{{amountMax}}" step="{{amountStep}}" value="{{amountMajor}}" onInput="{{slide}}" aria-label="{{amountTitle}}" aria-valuetext="{{amountText}}">
-        <span dir="ltr" style="display: flex; justify-content: space-between; font-size: 12px; color: #637570"><span>0</span><span>{{amountMaxText}}</span></span>
-        <span style="font-size: 12px; color: #637570">{{amountHint}}</span>
-        <span style="font-size: 13px; font-weight: 700; margin-top: 4px">{{mixTitle}}</span>
-        <div role="radiogroup" aria-label="{{mixTitle}}" style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{mixes}}" as="x" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{x.on}}" class="f-press" onClick="{{x.pick}}" style="{{x.style}}">{{x.label}}</button></sc-for></div>
-        <span style="font-size: 12px; color: #637570">{{mixSource}}</span>
+
+      <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+          <span style="font-size: 16px; font-weight: 700">{{chartTitle}}</span>
+          <div role="radiogroup" aria-label="شكل الأرقام" style="display: flex; padding: 3px; border-radius: 14px; background: rgba(25,61,51,0.06)"><sc-for list="{{modes}}" as="m" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{m.on}}" class="f-press" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button></sc-for></div>
+        </div>
+        <dc-import name="InvestChart" title="{{chartTitle}}" series="{{series}}" focus="{{focusKey}}" legend="{{false}}" marks="{{marks}}" flags="{{flags}}" pins="{{pins}}" start="{{startYear}}" cur="{{cur}}" age-start="{{ageNow}}" hint-size="318px,220px"></dc-import>
+        <span style="font-size: 12px; color: #637570">{{chartNote}}</span>
+        <sc-if value="{{hasPins}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 2px; padding-top: 8px; border-top: 1px solid rgba(204,216,204,0.7)">
+            <span style="font-size: 13px; font-weight: 700">{{pinsTitle}}</span>
+            <sc-for list="{{pinRows}}" as="pr" hint-placeholder-count="2"><span style="display: flex; justify-content: space-between; gap: 8px; min-height: 28px; align-items: center; font-size: 13px"><span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: #B7791F"></span>{{pr.year}}</span><span dir="ltr" style="font-weight: 700; font-variant-numeric: tabular-nums">{{pr.value}}</span></span></sc-for>
+          </div>
+        </sc-if>
       </div>
       <dc-import name="InvestFutureCards" space="{{spaceName}}" miles="{{mileRows}}" focus="{{focusLabel}}" passive="{{passive}}" countries="{{countries}}" hint-size="350px,640px"></dc-import>
     </div>
   </sc-if>
 
-  <div style="border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: rgba(25,61,51,0.05)">
-    <span style="font-size: 14px; font-weight: 700">{{assumeTitle}}</span>
-    <sc-for list="{{assume}}" as="a" hint-placeholder-count="3"><span style="{{a.style}}">{{a.text}}</span></sc-for>
-    <button type="button" class="f-press" onClick="{{toggleAssume}}" aria-expanded="{{assumeOpen}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{assumeLabel}}</button>
-  </div>
+  <sc-if value="{{wheelOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="YearWheel" space="{{spaceName}}" years="{{years}}" marks="{{markYears}}" on-pick="{{onPick}}" on-mark="{{onMark}}" on-unmark="{{onUnmark}}" on-close="{{closeWheel}}" hint-size="390px,844px"></dc-import></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","لسه ما بدأتش أحوّش","المتوسطات غير متاحة"],"default":"عادي","section":"الحالة"},"age":{"editor":"enum","options":["معروف","مش مكتوب"],"default":"معروف","section":"الحالة"},"income":{"editor":"enum","options":["معروف","مش معروف"],"default":"معروف","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":350,"height":1500}}'>
 // جزء «هتبقى معاك كام» في أول شاشة الاستثمار (§87 + §89 عند جلسة كوتلن: جوه الشاشة العادية، من غير اسم «مستقبلي»)
-// كل فلوسك = الحسابات والكاش + الأصول − الديون. حاجات الاستخدام الشخصي (العربية، الجوال) والمتأرشف (§82-21) برّه الحساب
-// 3 خطوط: لو كمّلت (تحويشك كاش من غير أرباح) · لو استثمرت تحويشي (بمتوسط النوع اللي تختاره) · لو زوّدت (بالشريط). في «لسه ما بدأتش»: التاني بيختفي والتالت = «لو بدأت»
-// أعداد صحيحة بس (BigInt) زي GrowthMath.kt: المعدل الشهري المكافئ بجزء من 10^8 · البيانات مخترعة ومطابقة لباقي اللوحات (الأصول = الاستثمار القديمة، الدخل = مصادر الدخل)
+// ترتيب المالك 2026-10-15: «إنت كمان (10 سنين)» فوق، والضغط على «10 سنين» بيفتح بكرة السنين (YearWheel)، وفي آخرها سنة تتكتب وتتسجل علامة على التشارت
+// «حاجاتي» (InvestHoldings) بتيجي على طول تحت الرقم الكبير لو الشاشة بعتت holdings-state (طلب المالك 2026-10-15: «ارفع ممتلكاتي لفوق»)
+// «الحساب مبني على إيه؟» اتنقل للأسئلة الشائعة في الإعدادات (Faq) بطلب المالك
+// «اختار طريقك»: 3 طرق بكلام بسيط (زي ما إنت · استثمر تحويشك · استثمر أكتر)، والمختار هو الرقم الكبير والخط العريض — من غير مفتاح مكرر ولا جدول (طلب المالك)
+// كل فلوسك = الحسابات والكاش + الأصول − الديون · الشخصي والمتأرشف (§82-21) برّه · أعداد صحيحة بس (BigInt) زي GrowthMath.kt · البيانات مخترعة
 const NOW = 2026, MONTH = 10, CH = [1, 2, 5, 10, 15, 20, 25, 30, 40], S = 100000000n, E12 = 1000000000000n;
 const C = {
   sa: { cur: 'ر.س', cash: 735000, re: 57600000, gold: 5256000, stk: 8900000, debts: [[3480000, 145000], [100000, 25000], [245000, 0]], save: 180000, low: -45000, income: 1596667, unknownStart: 50000, passive: 0, cpi: 174, rg: 1488, rs: 795, step: 50, miles: [[10000000, '100 ألف'], [50000000, 'نص مليون'], [100000000, 'أول مليون']],
@@ -94,7 +106,7 @@ const C = {
 };
 const GOALS = [['السفر', 2 / 12], ['جوال جديد', 2 / 12], ['الطوارئ', 8 / 12]];
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { years: 10, yearInput: '', today: true, amount: null, mix: 'mine', assume: false }; this.mo = {}; }
+  constructor(props) { super(props); let marks = []; try { marks = JSON.parse(window.sessionStorage.getItem('masroufy-year-marks') || '[]'); } catch (e) {} this.state = { years: 10, today: true, amount: null, mix: 'mine', path: null, wheel: false, marks: Array.isArray(marks) ? marks : [] }; this.mo = {}; }
   mulDiv(a, n, d) { const neg = (a < 0n) !== (n < 0n) && a !== 0n && n !== 0n; const x = (a < 0n ? -a : a) * (n < 0n ? -n : n); const q = (x * 2n + d) / (d * 2n); return neg ? -q : q; }
   pow12(m) { let x = S; for (let i = 0; i < 12; i++) x = (x * (S + m) + S / 2n) / S; return x; }
   monthly(bp) { if (!bp) return 0n; if (this.mo[bp] != null) return this.mo[bp]; const t = S + BigInt(bp) * 10000n; let lo = -60000000n, hi = 25000000n; while (lo < hi) { const mid = lo + (hi - lo) / 2n; if (this.pow12(mid) >= t) hi = mid; else lo = mid + 1n; } const b = lo - 1n; return (this.mo[bp] = t - this.pow12(b) < this.pow12(lo) - t ? b : lo); }
@@ -128,82 +140,80 @@ class Component extends DCLogic {
     const na = st === 'المتوسطات غير متاحة', low = st === 'لسه ما بدأتش أحوّش';
     const c = eg ? C.eg : C.sa, other = eg ? C.sa : C.eg;
     const save = low ? c.low : c.save, incomeKnown = this.props.income !== 'مش معروف';
-    const tenth = incomeKnown ? (c.income - (c.income % 1000)) / 10 : c.unknownStart;
-    const startAmt = low ? tenth : save + tenth;
+    const tenth = incomeKnown ? (c.income - (c.income % 1000)) / 10 : c.unknownStart, stepAmt = eg ? 50000 : 10000;
+    const startAmt = Math.max(stepAmt, Math.round((low ? tenth : save + tenth) / stepAmt) * stepAmt);
     const amt = s.amount != null ? s.amount : startAmt, years = s.years, Y = NOW + years, today = s.today;
-    const mix = this.mixBp(c, s.mix);
+    const mix = this.mixBp(c, s.mix), marks0 = Array.isArray(s.marks) ? s.marks : [];
     let birth = null; try { birth = window.sessionStorage.getItem('masroufy-birth'); } catch (e) {}
     if (!birth && this.props.age !== 'مش مكتوب') birth = eg ? '1994-06-20' : '1990-04-12';
     const ageNow = birth && /^\d{4}-\d{2}/.test(birth) ? NOW - Number(birth.slice(0, 4)) - (Number(birth.slice(5, 7)) > MONTH ? 1 : 0) : null;
     const pr = na ? null : this.project(c, save, low ? 0 : save, amt, mix, today);
-    const cut = (a) => a.slice(0, years + 1), mk = (v) => '≈ ' + this.fmt(v) + ' ' + c.cur;
-    const L1 = { key: 'l1', label: T('لو استمررت كما أنت', 'لو كمّلت زي ما إنت'), color: '#3866A7' };
-    const L2 = { key: 'l2', label: T('لو استثمرت ادخارك', 'لو استثمرت تحويشي'), color: '#0E8A6E', main: true };
-    const L3 = { key: 'l3', label: low ? T('لو بدأت تدّخر ', 'لو بدأت تحوّش ') + this.fmt(amt) + T(' شهريًا', ' في الشهر') : T('لو زدت المبلغ', 'لو زوّدت المبلغ'), color: '#B7791F', main: low };
-    const series = pr ? [Object.assign({ values: cut(pr.l1) }, L1)].concat(low ? [] : [Object.assign({ values: cut(pr.l2) }, L2)]).concat([Object.assign({ values: cut(pr.l3) }, L3)]) : [];
-    const focus = low ? 'l3' : 'l2', fv = pr ? pr[focus] : [];
-    const marks = [], mileRows = [];
+    const cut = (a) => a.slice(0, years + 1), mk = (v) => '≈ ' + this.fmt(v) + ' ' + c.cur, mo = T(' شهريًا', ' في الشهر');
+    const name = (k) => (k === 1 ? 'سنة' : k === 2 ? T('سنتان', 'سنتين') : n(k) + (k <= 10 ? T(' سنوات', ' سنين') : ' سنة'));
+    // الطرق التلاتة بكلام بسيط — والمختار هو الرقم الكبير والخط العريض والمحطات والدخل من غير شغل
+    const P = [
+      { id: 'keep', key: 'l1', color: '#3866A7', title: T('كما أنت', 'زي ما إنت'), sentence: T('لو استمررت كما أنت', 'لو كمّلت زي ما إنت'),
+        desc: low ? T('تصرف أكثر من دخلك بـ', 'بتصرف أكتر من دخلك بـ') + this.fmt(-save) + mo : T('تدّخر ', 'بتحوّش ') + this.fmt(save) + mo + T(' وتتركها في البنك', ' وبتسيبهم في البنك') },
+      low ? null : { id: 'invest', key: 'l2', color: '#0E8A6E', title: T('استثمر ادخارك', 'استثمر تحويشك'), desc: T('نفس الـ', 'نفس الـ') + this.fmt(save) + T('، لكن تستثمرها', '، بس تستثمرهم'), sentence: T('لو استثمرت ادخارك (', 'لو استثمرت تحويشك (') + this.fmt(save) + mo + ')' },
+      { id: 'more', key: 'l3', color: '#B7791F', title: low ? T('ابدأ تدّخر', 'ابدأ تحوّش') : T('استثمر أكثر', 'استثمر أكتر'), desc: T('تستثمر ', 'تستثمر ') + this.fmt(amt) + mo, sentence: (low ? T('لو بدأت تدّخر وتستثمر ', 'لو بدأت تحوّش وتستثمر ') : T('لو استثمرت ', 'لو استثمرت ')) + this.fmt(amt) + mo }
+    ].filter(Boolean);
+    const sel = P.find((p) => p.id === s.path) || P.find((p) => p.id === (low ? 'more' : 'invest'));
+    const series = pr ? P.map((p) => ({ key: p.key, label: p.title, color: p.color, main: p === sel, values: cut(pr[p.key]) })) : [];
+    const fv = pr ? pr[sel.key] : [], marks = [], mileRows = [];
     if (pr) c.miles.forEach(([th, label]) => {
       if (fv[0] >= th) { mileRows.push({ label, when: T('تجاوزته', 'عدّيته'), done: true }); return; }
       const i = fv.findIndex((v) => v >= th);
       if (i < 0) { mileRows.push({ label, when: T('ليس خلال 40 سنة', 'مش خلال 40 سنة'), done: false }); return; }
-      if (i <= years) marks.push({ key: focus, i, label });
-      mileRows.push({ label, when: T('سنة ', 'سنة ') + (NOW + i) + ' (' + T('بعد ', 'بعد ') + n(i) + (i <= 10 ? T(' سنوات)', ' سنين)') : ' سنة)'), done: false });
+      if (i <= years) marks.push({ key: sel.key, i, label });
+      mileRows.push({ label, when: 'سنة ' + (NOW + i) + ' (' + T('بعد ', 'بعد ') + name(i) + ')', done: false });
     });
-    GOALS.forEach(([g]) => mileRows.push({ label: T('هدف «', 'هدف «') + g + '»', when: g === 'الطوارئ' ? T('يونيو 2027', 'يونيو 2027') : T('ديسمبر 2026', 'ديسمبر 2026'), done: false, goal: true }));
-    // الدخل من غير شغل: النهارده، ووقتها لو كمّلت، ووقتها لو استثمرت — وبالرقم الاسمي لو اختار «زي ما هيكون»
+    GOALS.forEach(([g]) => mileRows.push({ label: 'هدف «' + g + '»', when: g === 'الطوارئ' ? 'يونيو 2027' : 'ديسمبر 2026', done: false, goal: true }));
+    // الدخل من غير شغل للطريق المختار: النهارده ووقتها (وبالرقم الاسمي لو اختار «زي ما هيكون»)
     const nom = (v) => (today ? v : Number(this.mulDiv(BigInt(v), E12, pr.F[years])));
-    const potY = pr ? pr.inv[years][low ? 'p3' : 'p2'] : 0;
-    const passive = pr ? { now: this.fmt(this.passiveAt(c, pr, 0, 0, mix)) + ' ' + c.cur, year: Y, l1: this.fmt(nom(this.passiveAt(c, pr, years, 0, mix))) + ' ' + c.cur, l2: this.fmt(nom(this.passiveAt(c, pr, years, potY, mix))) + ' ' + c.cur, l2Label: low ? L3.label : L2.label, l1Label: L1.label,
+    const potY = pr && sel.id !== 'keep' ? pr.inv[years][sel.key === 'l2' ? 'p2' : 'p3'] : 0;
+    const passive = pr ? { now: this.fmt(this.passiveAt(c, pr, 0, 0, mix)) + ' ' + c.cur, year: Y, value: this.fmt(nom(this.passiveAt(c, pr, years, potY, mix))) + ' ' + c.cur, label: sel.title,
       note: T('الربح فوق الغلاء فقط دون أن تمس الأصل: الذهب ', 'الربح فوق الغلاء بس من غير ما تلمس الأصل: الدهب ') + this.pct(Math.max(0, c.rg - c.cpi)) + T(' · الأسهم ', ' · الأسهم ') + this.pct(Math.max(0, c.rs - c.cpi)) + T(' سنويًا', ' في السنة') + (c.passive ? T(' + الإيجار وعائد الشهادة ', ' + الإيجار وعائد الشهادة ') + this.fmt(c.passive) + ' ' + c.cur : '') } : null;
-    // البلدين: «لو كمّلت» لكل بلد بعملته، والمجمّع بسعر صرف النهارده (1 ر.س = 13.9330 ج.م)
+    // البلدين: «زي ما إنت» لكل بلد بعملته، والمجمّع بسعر صرف النهارده (1 ر.س = 13.9330 ج.م)
     const op = na ? null : this.project(other, other.save, other.save, other.save, this.mixBp(other, 'mine'), today);
     const FX = 139330n, mine = pr ? pr.l1[years] : null, theirs = op ? op.l1[years] : null;
     const conv = theirs == null ? 0 : Number(eg ? this.mulDiv(BigInt(theirs), FX, 10000n) : this.mulDiv(BigInt(theirs), 10000n, FX));
     const countries = pr ? { rows: [[eg ? 'مصر' : 'السعودية', mk(mine)], [eg ? 'السعودية' : 'مصر', '≈ ' + this.fmt(theirs) + ' ' + other.cur]], total: mk(mine + conv), year: Y,
-      fx: T('بسعر صرف اليوم: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)', 'بسعر صرف النهارده: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)'),
+      fx: T('لو استمر كل شيء كما هو · بسعر صرف اليوم: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)', 'لو كل حاجة فضلت زي ما هي · بسعر صرف النهارده: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)'),
       warn: today ? '' : T('الرقم المجمّع بسعر صرف اليوم، والجنيه يتحرك كثيرًا — تقريبي جدًا.', 'الرقم المجمّع بسعر صرف النهارده، والجنيه بيتحرك كتير — تقريبي جدًا.') } : null;
     const debtNow = c.debts.reduce((x, d) => x + d[0], 0), assetsNow = c.re + c.gold + c.stk, netNow = c.cash + assetsNow - debtNow;
-    const assume = [
-      T('صافي مالك اليوم: الحسابات والكاش ', 'صافي فلوسك النهارده: الحسابات والكاش ') + this.fmt(c.cash) + T(' + الأصول ', ' + الأصول ') + this.fmt(assetsNow) + T(' − الديون ', ' − الديون ') + this.fmt(debtNow) + ' = ' + this.fmt(netNow) + ' ' + c.cur,
-      T('ادخارك الفعلي: ', 'تحويشك الفعلي: ') + this.fmt(save) + ' ' + c.cur + T(' شهريًا (متوسط آخر 3 أشهر: دخلك − صرفك)', ' في الشهر (متوسط آخر 3 شهور: دخلك − صرفك)'),
-      c.src.gold, c.src.stk,
-      T('العقار يزيد مثل الغلاء: ', 'العقار بيزيد زي الغلاء: ') + c.src.cpi,
-      T('«بقيمة اليوم» = نخصم التضخم الرسمي ', '«بفلوس النهارده» = بنخصم التضخم الرسمي ') + this.pct(c.cpi) + T(' سنويًا', ' في السنة'),
-      T('«لو استمررت»: ادخارك يبقى كاشًا دون أرباح، والأقساط تنتهي في مواعيدها', '«لو كمّلت»: تحويشك بيفضل كاش من غير أرباح، والأقساط بتخلص في مواعيدها'),
-      T('العربية والجوال وحاجات الاستخدام الشخصي والأصول المؤرشفة ليست داخل الحساب', 'العربية والجوال وحاجات الاستخدام الشخصي والأصول المتأرشفة مش داخلة في الحساب'),
-      T('هذا متوسط ما مضى، وليس وعدًا بما سيأتي.', 'ده متوسط اللي فات، مش وعد باللي جاي.')
-    ];
-    const shown = s.assume ? assume : assume.slice(0, 3);
-    const chipStyle = (on) => 'flex-shrink: 0; height: 40px; min-width: 48px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.25)' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 6px 14px rgba(29,54,53,0.06)');
-    const typed = this.digits(s.yearInput), yearBad = typed.length === 4 && !(Number(typed) > NOW && Number(typed) <= NOW + 40);
-    const key = (col) => 'width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; background: ' + col;
-    const amtMax = Math.max(c.income / 2, save * 3, amt) / 100, maxMajor = amtMax - (amtMax % c.step);
+    const chipStyle = (on) => 'height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
+    const end = pr ? pr[sel.key][years] : 0, delta = end - netNow;
+    const maxAmt = Math.max(startAmt * 4, incomeKnown ? c.income : 0);
     return {
+      withHold: this.props.holdingsState != null, holdState: this.props.holdingsState || 'عادي', holdExtra: Array.isArray(this.props.extra) ? this.props.extra : [],
+      onAdd: () => { if (typeof this.props.onAdd === 'function') this.props.onAdd(); },
       ok: !!pr, na, naText: T('غير متاح: ملف المتوسطات لم يصل بعد، فلا نستطيع حساب الأرباح.', 'غير متاح: ملف المتوسطات لسه ما وصلش، فمش هنقدر نحسب الأرباح.'),
-      spaceName: eg ? 'مصر' : 'السعودية', cur: c.cur, startYear: NOW, series, marks, flags: GOALS.map(([g, x]) => ({ x, label: 'هدف «' + g + '»' })), ageNow: ageNow || 0,
-      chips: CH.map((k) => ({ label: k === 1 ? 'سنة' : k === 2 ? T('سنتان', 'سنتين') : n(k) + (k <= 10 ? T(' سنوات', ' سنين') : ' سنة'), on: !s.yearInput && s.years === k ? 'true' : 'false', style: chipStyle(!s.yearInput && s.years === k), pick: () => this.setState({ years: k, yearInput: '' }) })),
-      yearLabel: T('أو اكتب السنة', 'أو اكتب السنة'), yearInput: s.yearInput, hasYearErr: yearBad, yearErr: T('اكتب سنة من ', 'اكتب سنة من ') + (NOW + 1) + T(' إلى ', ' لـ') + (NOW + 40),
-      typeYear: (e) => { const v = e && e.target ? e.target.value : ''; const t = this.digits(v), y = Number(t); this.setState(t.length === 4 && y > NOW && y <= NOW + 40 ? { yearInput: v, years: y - NOW } : { yearInput: v }); },
-      modes: [[true, T('بقيمة اليوم', 'بفلوس النهارده')], [false, T('وقتها', 'زي ما هيكون')]].map(([v, label]) => ({ label, on: s.today === v ? 'true' : 'false', pick: () => this.setState({ today: v }), style: 'height: 42px; padding: 0 10px; border: 0; border-radius: 13px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; ' + (s.today === v ? 'color: #08634F; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent') })),
-      modeNote: today ? T('بقيمة المال اليوم (بعد خصم التضخم)', 'بفلوس النهارده (بعد خصم الغلاء)') : T('الرقم كما سيكون سنة ', 'الرقم زي ما هيكون سنة ') + Y,
-      heroTitle: T('أنت سنة ', 'إنت سنة ') + Y, ageLine: ageNow ? T('عمرك وقتها ', 'هتبقى ') + n(ageNow + years) + T(' سنة', ' سنة') : '', noAge: !ageNow, ageLink: T('اكتب عمرك في حاسبة التقاعد ←', 'اكتب سنك في حاسبة التقاعد ←'),
-      heroLabel: L1.label, heroText: pr ? mk(pr.l1[years]) : '',
-      ups: pr ? (low ? [] : [{ key: key('#A6DEC1'), label: L2.label, value: mk(pr.l2[years]) }]).concat([{ key: key('#F3C96B'), label: L3.label + (low ? '' : ' (' + this.fmt(amt) + ')'), value: mk(pr.l3[years]) }]) : [],
-      nowLabel: T('كل مالك اليوم', 'كل فلوسك النهارده'), nowText: mk(netNow),
-      chartTitle: T('كم سيصبح معك', 'هيبقى معاك كام'),
-      amountTitle: low ? T('لو بدأت تدّخر شهريًا', 'لو بدأت تحوّش في الشهر') : T('لو زدت ما تستثمره شهريًا', 'لو زوّدت اللي بتستثمره في الشهر'),
-      amountText: this.fmt(amt) + ' ' + c.cur, amountMajor: String(amt / 100), amountMax: String(maxMajor), amountStep: String(c.step), amountMaxText: this.fmt(maxMajor * 100),
-      slide: (e) => { const v = Math.max(0, Math.round(Number(e && e.target ? e.target.value : 0) || 0)); this.setState({ amount: v * 100 }); },
-      amountHint: low ? (incomeKnown ? T('بدأنا بـ10% من دخلك (ادفع لنفسك أولًا)، وحرّكه كما تريد.', 'بدأنا بـ10% من دخلك (ادفع لنفسك الأول)، وحرّكه زي ما تحب.') : T('دخلك غير معروف، فبدأنا بـ', 'دخلك مش معروف، فبدأنا بـ') + this.fmt(c.unknownStart) + ' ' + c.cur) : T('ادخارك الحالي ', 'تحويشك دلوقتي ') + this.fmt(save) + T('، وبدأنا بزيادة 10% من دخلك.', '، وبدأنا بزيادة 10% من دخلك.'),
-      mixTitle: T('تستثمره في', 'بتستثمره في'),
+      spaceName: eg ? 'مصر' : 'السعودية', cur: c.cur, startYear: NOW, series, marks, flags: GOALS.map(([g, x]) => ({ x, label: 'هدف «' + g + '»' })), ageNow: ageNow || 0, focusKey: sel.key, focusLabel: sel.title,
+      youIn: T('أنت بعد', 'إنت كمان'), yearsLabel: name(years), years, wheelAria: T('غيّر المدة، الآن ', 'غيّر المدة، دلوقتي ') + name(years),
+      yearLine: 'سنة ' + Y + (ageNow ? T(' · عمرك وقتها ', ' · هتبقى ') + n(ageNow + years) + ' سنة' : ''), noAge: !ageNow, ageLink: T('اكتب عمرك في حاسبة التقاعد ←', 'اكتب سنك في حاسبة التقاعد ←'),
+      heroText: pr ? mk(end) : '', heroSentence: sel.sentence + (today ? '' : T(' — بالرقم كما سيكون وقتها', ' — بالرقم زي ما هيكون وقتها')),
+      nowLine: T('اليوم ', 'النهارده ') + mk(netNow), deltaText: pr ? (delta >= 0 ? '+' : '') + this.fmt(delta) : '', deltaStyle: 'font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (delta >= 0 ? '#A6DEC1' : '#FFA8AC'),
+      openWheel: () => this.setState({ wheel: true }), closeWheel: () => this.setState({ wheel: false }), wheelOpen: !!s.wheel, markYears: marks0,
+      onPick: (k) => { if (CH.indexOf(k) >= 0) this.setState({ years: k }); },
+      onMark: (y) => { const list = marks0.filter((x) => x !== y).concat([y]).sort((a, b) => a - b); try { window.sessionStorage.setItem('masroufy-year-marks', JSON.stringify(list)); } catch (e) {} this.setState({ marks: list, years: y - NOW > s.years ? CH.find((k) => k >= y - NOW) || 40 : s.years }); },
+      onUnmark: (y) => { const list = marks0.filter((x) => x !== y); try { window.sessionStorage.setItem('masroufy-year-marks', JSON.stringify(list)); } catch (e) {} this.setState({ marks: list }); },
+      pathsTitle: T('اختر طريقك', 'اختار طريقك'), pathsSub: T('الرقم في الأعلى والخط العريض يتغيران معه', 'الرقم اللي فوق والخط العريض بيتغيّروا معاه'),
+      paths: P.map((p) => { const on = p === sel; return { title: p.title, desc: p.desc, value: pr ? mk(pr[p.key][years]) : '', on: on ? 'true' : 'false', pick: () => this.setState({ path: p.id }),
+        key: 'width: 4px; align-self: stretch; border-radius: 2px; flex-shrink: 0; background: ' + p.color,
+        style: 'width: 100%; border: 0; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : 'rgba(25,61,51,0.035)') + '; box-shadow: ' + (on ? 'inset 0 0 0 1.5px #08634F' : 'none') }; }),
+      showStepper: sel.id === 'more', stepTitle: T('كم تستثمر شهريًا؟', 'هتستثمر كام في الشهر؟'), amountText: this.fmt(amt) + ' ' + c.cur,
+      plus: () => this.setState({ amount: Math.min(maxAmt, amt + stepAmt) }), minus: () => this.setState({ amount: Math.max(stepAmt, amt - stepAmt) }),
+      plusLabel: T('زد ', 'زوّد ') + this.fmt(stepAmt), minusLabel: T('قلّل ', 'قلّل ') + this.fmt(stepAmt),
+      amountHint: low ? (incomeKnown ? T('بدأنا بنحو 10% من دخلك (ادفع لنفسك أولًا)', 'بدأنا بحوالي 10% من دخلك (ادفع لنفسك الأول)') : T('دخلك غير معروف، فبدأنا بـ', 'دخلك مش معروف، فبدأنا بـ') + this.fmt(c.unknownStart) + ' ' + c.cur) : T('ادخارك الحالي ', 'تحويشك دلوقتي ') + this.fmt(save) + T(' + نحو 10% من دخلك', ' + حوالي 10% من دخلك'),
+      showMix: sel.id !== 'keep', mixTitle: T('تستثمرها في', 'بتستثمرها في'),
       mixes: [['mine', T('مثل أملاكك', 'زي أملاكك')], ['stk', 'أسهم'], ['gold', T('ذهب', 'دهب')], ['re', 'عقار']].map(([k, label]) => ({ label, on: s.mix === k ? 'true' : 'false', pick: () => this.setState({ mix: k }), style: chipStyle(s.mix === k) })),
       mixSource: T('بمتوسط ', 'بمتوسط ') + this.pct(mix) + T(' سنويًا', ' في السنة') + (s.mix === 'mine' ? T(' (متوسط أملاكك بحسب قيمة كل نوع)', ' (متوسط أملاكك حسب قيمة كل نوع)') : ' — ' + (s.mix === 'stk' ? c.src.stk : s.mix === 'gold' ? c.src.gold : c.src.cpi)),
-      mileRows, passive, countries, focusLabel: low ? L3.label : L2.label,
-      assumeTitle: T('على ماذا بُني الحساب؟', 'الحساب مبني على إيه؟'),
-      assume: shown.map((t, i) => ({ text: t, style: 'font-size: 12px; line-height: 1.6; color: ' + (i === shown.length - 1 && s.assume ? '#193D33; font-weight: 700' : '#4F625C') })),
-      assumeOpen: s.assume ? 'true' : 'false', assumeLabel: s.assume ? 'أقل' : T('كل الافتراضات (', 'كل الافتراضات (') + n(assume.length) + ')',
-      toggleAssume: () => this.setState({ assume: !s.assume })
+      chartTitle: T('كم سيصبح معك', 'هيبقى معاك كام'),
+      modes: [[true, T('بقيمة اليوم', 'بفلوس النهارده')], [false, T('وقتها', 'زي ما هيكون')]].map(([v, label]) => ({ label, on: s.today === v ? 'true' : 'false', pick: () => this.setState({ today: v }), style: 'height: 34px; padding: 0 10px; border: 0; border-radius: 11px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; ' + (s.today === v ? 'color: #08634F; background: #FFFFFF; box-shadow: 0 2px 8px rgba(29,54,53,0.10)' : 'color: #637570; background: transparent') })),
+      chartNote: T('الخط العريض طريقك المختار · مرّر إصبعك على التشارت لترى أي سنة', 'الخط العريض هو طريقك · حرّك صباعك على التشارت تشوف أي سنة'),
+      pins: marks0.map((y) => ({ i: y - NOW, label: String(y) })), hasPins: marks0.length > 0 && !!pr, pinsTitle: T('علاماتك', 'علاماتك'),
+      pinRows: pr ? marks0.map((y) => ({ year: String(y), value: mk(pr[sel.key][y - NOW]) })) : [],
+      mileRows, passive, countries
     };
   }
 }

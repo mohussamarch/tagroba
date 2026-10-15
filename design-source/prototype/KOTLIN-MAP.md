@@ -35,6 +35,11 @@
   - `UpcomingStrip`.
   - `QuickAddStrip`.
   - `CalendarGrid`.
+  - `CharacterArt`: رسم الكاركتر طبقات (راس · راس وكتاف · **الجسم كله** 200×440). بيتستعمل في `MeAvatar` و`PeopleOrbit` (الجسم كله) و`CharacterBuilder`.
+  - `InvestChart`: تشارت السنين (خطوط + المختار عريض `focus` + علامات المالك `pins` + محطات). الكلام كله فوق التشارت مش جوه الرسم.
+- **أجزاء شاشة `Investment`** (من فوق لتحت — 2026-10-15):
+  - `InvestFuture`: «إنت كمان (10 سنين)» + الرقم الكبير، وتحته على طول `InvestHoldings` (حاجاتي)، وبعدين «اختار طريقك» والتشارت و`InvestFutureCards` (المحطات · الدخل من غير شغل · البلدين).
+  - `InvestTipCard` · `InvestIncomeRope` (حبل مصادر دخلك) · `InvestReturns` (اللي رجعلك).
 - **لوحات منبثقة جوه شاشات:**
 
   | اللوحة | جوه أنهي شاشة |
@@ -49,6 +54,8 @@
   | `WalletAddSheet` | المحافظ، وتفاصيل المحفظة لرصيد البداية |
   | `ProfileDebtSheet` | سؤال الملف |
   | `PeopleRowPick` | الأشخاص («+» في وضع تعديل الصف) |
+  | `YearWheel` | الاستثمار (بكرة السنين فوق ضباب + «اكتب السنة» و«سجّلها علامة») |
+  | `AssetAddSheet` | الاستثمار و`AssetCategory` (إضافة حاجة: النوع ثم تفاصيله) |
 - **شاشات:**
   - `OwedToYou` و`YouOwe`: «لك» و«عليك» بالكامل.
   - `SmsWaiting`.
@@ -56,6 +63,10 @@
   - `InheritanceBefore`، `InheritanceHeirs`، `InheritanceResult`، `InheritanceSplit`: خطوات `InheritanceCalculator`.
   - `RetirementSaudi` و`RetirementEgypt`: `RetirementCalculator` لكل بلد.
   - `SavingsGrowth`.
+  - `AssetCategory`: صفحة نوع من «حاجاتي» (معادن · عقار · …): تشارت وتحته اللي معاك وخطتك.
+  - `InvestTips`: كل النصايح متقسمة.
+  - `CharacterBuilder`: «ابني شكلك» (من ملفك).
+  - `Faq`: الأسئلة الشائعة في الإعدادات (من «المزيد») — أول سؤال: الحساب في الاستثمار مبني على إيه.
 
 ## ٢. أولويات أول نسخة على الجوال («الاستخدام اليومي»)
 

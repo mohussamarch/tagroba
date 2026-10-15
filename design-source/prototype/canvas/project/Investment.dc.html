@@ -54,11 +54,13 @@ a{color:#08634F}a:hover{color:#064B40}
     </sc-if>
 
     <sc-if value="{{showFuture}}" hint-placeholder-val="{{ true }}">
-      <dc-import name="InvestFuture" state="{{futureState}}" age="{{age}}" income="{{income}}" space="{{spaceName}}" hint-size="350px,1500px"></dc-import>
+      <dc-import name="InvestFuture" state="{{futureState}}" age="{{age}}" income="{{income}}" space="{{spaceName}}" holdings-state="{{holdState}}" extra="{{added}}" on-add="{{openAdd}}" hint-size="350px,2000px"></dc-import>
       <dc-import name="InvestTipCard" situation="{{situation}}" space="{{spaceName}}" hint-size="350px,200px"></dc-import>
     </sc-if>
-    <sc-if value="{{showHoldings}}" hint-placeholder-val="{{ true }}">
-      <dc-import name="InvestHoldings" state="{{holdState}}" space="{{spaceName}}" extra="{{added}}" on-add="{{openAdd}}" hint-size="350px,760px"></dc-import>
+    <sc-if value="{{onlyHoldings}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="InvestHoldings" state="{{holdState}}" space="{{spaceName}}" extra="{{added}}" on-add="{{openAdd}}" hint-size="350px,560px"></dc-import>
+    </sc-if>
+    <sc-if value="{{showContent}}" hint-placeholder-val="{{ true }}">
       <dc-import name="InvestIncomeRope" space="{{spaceName}}" hint-size="350px,420px"></dc-import>
     </sc-if>
     <sc-if value="{{showContent}}" hint-placeholder-val="{{ true }}">
@@ -96,7 +98,7 @@ a{color:#08634F}a:hover{color:#064B40}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"navStyle":{"editor":"enum","options":["زرار في النص","اسحب لفوق","زرار جنب الشريط","بدون زرار"],"default":"زرار في النص","section":"زرار الإضافة"},"state":{"editor":"enum","options":["عادي","لسه ما بدأتش أحوّش","فاضي","بيحمّل","خطأ","غير متاح","المتوسطات غير متاحة"],"default":"عادي","section":"الحالة"},"age":{"editor":"enum","options":["معروف","مش مكتوب"],"default":"معروف","section":"الحالة"},"income":{"editor":"enum","options":["معروف","مش معروف"],"default":"معروف","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 // شاشة الاستثمار (§87 + §89 + فكرة المالك 13 عند جلسة كوتلن، واختياراته 2026-10-15): كله جوه الشاشة دي، من غير قسم ولا اسم «مستقبلي»
-// من فوق لتحت: هتبقى معاك كام (InvestFuture) · نصيحة واحدة (InvestTipCard) · حاجاتي (InvestHoldings) · حبل مصادر دخلك · اللي رجعلك · الأدوات والحاسبات
+// من فوق لتحت: الرقم الكبير ثم حاجاتي على طول (جوه InvestFuture، طلب المالك 2026-10-15) ثم الطرق والتشارت · نصيحة واحدة · حبل مصادر دخلك · اللي رجعلك · الأدوات والحاسبات
 // «غير متاح» = سعر الدهب النهارده مش موجود (الدهب برّه الإجمالي) · «المتوسطات غير متاحة» = مفيش حساب أرباح خالص
 class Component extends DCLogic {
   constructor(props) {
@@ -121,7 +123,7 @@ class Component extends DCLogic {
       navStyle: this.props.navStyle ?? 'زرار في النص',
       spaceName: eg ? 'مصر' : 'السعودية',
       isLoading: st === 'بيحمّل', isError: st === 'خطأ',
-      showFuture: normal, showHoldings: normal || st === 'فاضي', showContent: normal,
+      showFuture: normal, onlyHoldings: st === 'فاضي', showContent: normal,
       futureState: low ? 'لسه ما بدأتش أحوّش' : st === 'المتوسطات غير متاحة' ? 'المتوسطات غير متاحة' : 'عادي',
       holdState: st === 'فاضي' ? 'فاضي' : st === 'غير متاح' ? 'سعر الدهب غير متاح' : 'عادي',
       situation: low ? 'لسه ما بدأتش' : 'كله في نوع واحد',

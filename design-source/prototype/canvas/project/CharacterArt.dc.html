@@ -10,7 +10,7 @@
 <helmet><style>body{margin:0}</style></helmet>
 <span role="img" aria-label="{{label}}" style="{{box}}"></span>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["راس","راس وكتاف"],"default":"راس وكتاف","section":"الحالة"},"size":{"editor":"number","default":200,"section":"الحالة"},"sample":{"editor":"enum","options":["المحفوظ","1","2","3","4"],"default":"المحفوظ","section":"الحالة"},"$preview":{"width":200,"height":200}}'>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["راس","راس وكتاف","الجسم كله"],"default":"راس وكتاف","section":"الحالة"},"size":{"editor":"number","default":200,"section":"الحالة"},"sample":{"editor":"enum","options":["المحفوظ","1","2","3","4"],"default":"المحفوظ","section":"الحالة"},"$preview":{"width":200,"height":200}}'>
 // رسم الكاركتر (أول نسخة بدائية بطلب المالك 2026-10-15 — «يكون كويس مش بايظ وسريع حاليا وبعدين هنطوره»)
 // طبقات ثابتة في مساحة 200×200: الشعر الورّاني ← غطا الراس الورّاني ← اللبس ← الرقبة ← الودان ← الوش ← الدقن ← العيون ← الحواجب ← المناخير ← البق ← الشنب ← الشعر القدّاني ← النضارة ← غطا الراس القدّاني
 // الألوان متغيرات (البشرة والشعر والحجاب واللبس) مش محروقة في الأجزاء · الأسلوب هادي ووقور: راس متناسبة مع الكتاف، وملامح صغيرة، من غير ضحكة مبالغ فيها
@@ -94,13 +94,26 @@ function outfit(k, col) {
   if (k === 2) return base + '<path d="M84 144 L100 176 L116 144" fill="#F4F3EE"/><path d="M84 144 L96 186 M116 144 L104 186" stroke="rgba(0,0,0,0.25)" stroke-width="2.2"/>';
   return base + '<path d="M86 143 Q100 156 114 143" stroke="rgba(0,0,0,0.14)" stroke-width="2" fill="none"/>';
 }
+// الجسم كله (طلب المالك 2026-10-15: «الكاركتر للجسم كله»): مساحة 200×440، والراس نفسها متصغّرة 0.8 فوق الكتاف — حوالي 6 روس طول، هادي ووقور
+// 0 ثوب لحد الكعب وصندل · 1 قميص وبنطلون وحزام · 2 بدلة (الجاكيت والبنطلون نفس اللون) · 3 بلوزة وجيبة طويلة · الإيدين جنب الجسم ودايرة ضل تحت الرجلين
+function body(k, col, sk) {
+  const ln = 'rgba(0,0,0,0.14)', edge = '" stroke="rgba(0,0,0,0.10)" stroke-width="1.5"', shoe = '#2A2320';
+  const arms = ['M62 124 C52 144 46 194 45 248', 'M138 124 C148 144 154 194 155 248'].map((d) => '<path d="' + d + '" stroke="rgba(0,0,0,0.12)" stroke-width="22" stroke-linecap="round" fill="none"/><path d="' + d + '" stroke="' + col + '" stroke-width="19" stroke-linecap="round" fill="none"/>').join('') + '<circle cx="45" cy="259" r="8.5" fill="' + sk + '"/><circle cx="155" cy="259" r="8.5" fill="' + sk + '"/>';
+  const ground = '<ellipse cx="100" cy="426" rx="62" ry="7" fill="rgba(0,0,0,0.14)"/>';
+  const top = (yb) => '<path d="M70 108 Q100 102 130 108 Q146 112 148 128 L144 ' + yb + ' Q100 ' + (yb + 6) + ' 56 ' + yb + ' L52 128 Q54 112 70 108 Z" fill="' + col + edge + '/>';
+  const legs = (c) => '<path d="M64 232 L98 232 L95 414 L73 414 Z M102 232 L136 232 L127 414 L105 414 Z" fill="' + c + '"/><ellipse cx="83" cy="418" rx="15" ry="6.5" fill="' + shoe + '"/><ellipse cx="117" cy="418" rx="15" ry="6.5" fill="' + shoe + '"/>';
+  const feet = (c) => '<ellipse cx="85" cy="422" rx="13" ry="5" fill="' + c + '"/><ellipse cx="115" cy="422" rx="13" ry="5" fill="' + c + '"/>';
+  if (k === 1) return ground + legs('#2F3B37') + top(236) + '<rect x="56" y="230" width="88" height="6" rx="2" fill="' + shoe + '"/><path d="M86 108 L100 124 L114 108 L108 105 L100 114 L92 105 Z" fill="#FFFFFF" opacity="0.9"/><path d="M100 124 L100 228" stroke="rgba(0,0,0,0.10)" stroke-width="2"/>' + arms;
+  if (k === 2) return ground + legs(col) + top(252) + '<path d="M86 108 L100 152 L114 108 Z" fill="#F4F3EE"/><path d="M86 108 L97 162 M114 108 L103 162" stroke="rgba(0,0,0,0.25)" stroke-width="2.2"/><circle cx="100" cy="196" r="2.6" fill="rgba(0,0,0,0.25)"/>' + arms;
+  if (k === 3) return ground + feet(shoe) + '<path d="M60 226 L140 226 L160 418 Q100 426 40 418 Z" fill="' + col + edge + '/><path d="M60 226 L140 226 L160 418 Q100 426 40 418 Z" fill="rgba(0,0,0,0.16)"/>' + top(236) + '<path d="M88 109 Q100 120 112 109" stroke="' + ln + '" stroke-width="2" fill="none"/>' + arms;
+  return ground + feet('#5A4030') + '<path d="M70 108 Q100 102 130 108 Q146 112 150 128 L157 418 Q100 426 43 418 L50 128 Q54 112 70 108 Z" fill="' + col + edge + '/><path d="M92 109 Q100 117 108 109" stroke="' + ln + '" stroke-width="2" fill="none"/><path d="M100 116 L100 176" stroke="rgba(0,0,0,0.10)" stroke-width="2"/>' + arms;
+}
 function render(look, mode) {
   const c = Object.assign({}, DEFAULT, look || {}), [sk, skd] = pick(SKIN, c.skin), hc = pick(HAIRC, c.hairColor), wr = pick(WRAP, c.wrap), oc = pick(OUTC, c.outfitColor);
   const [rx, ry] = faceGeo(Number(c.face) || 0), cover = Number(c.head) === 1 || Number(c.head) === 2 || Number(c.head) === 4;
   const defs = '<defs><pattern id="shm" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#FBFAF6"/><path d="M0 0H5V5H0zM5 5H10V10H5z" fill="#B8323A" opacity="0.72"/></pattern></defs>';
+  const back = cover ? '' : hairBack(Number(c.hair), hc);
   const parts = [
-    cover ? '' : hairBack(Number(c.hair), hc),
-    mode === 'head' ? '<path d="M30 200 C34 160 64 146 100 146 C136 146 166 160 170 200 Z" fill="' + oc + '"/>' : outfit(Number(c.outfit), oc),
     Number(c.head) === 4 ? '' : '<path d="M89 110 L89 146 Q100 152 111 146 L111 110 Z" fill="' + skd + '"/>',
     headBack(Number(c.head), wr),
     cover ? '' : '<ellipse cx="' + (100 - rx) + '" cy="88" rx="5" ry="8" fill="' + skd + '"/><ellipse cx="' + (100 + rx) + '" cy="88" rx="5" ry="8" fill="' + skd + '"/>',
@@ -109,8 +122,10 @@ function render(look, mode) {
     Number(c.beard) >= 2 ? mouth(Number(c.mouth)).replace(/7E4337/g, 'F2E6E0').replace('stroke-width="1.8"', 'stroke-width="1.2"') : '',
     cover ? '' : hairFront(Number(c.hair), hc, rx), glasses(Number(c.glasses)), headFront(Number(c.head), wr)
   ];
-  const vb = mode === 'head' ? '46 24 108 108' : '0 0 200 200';
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '">' + defs + parts.join('') + '</svg>';
+  const svg = (vb, x) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '">' + defs + x + '</svg>';
+  if (mode === 'full') { const g = (x) => '<g transform="translate(20 -8) scale(0.8)">' + x + '</g>'; return svg('0 0 200 440', g(back) + body(Number(c.outfit), oc, sk) + g(parts.join(''))); }
+  const shoulders = mode === 'head' ? '<path d="M30 200 C34 160 64 146 100 146 C136 146 166 160 170 200 Z" fill="' + oc + '"/>' : outfit(Number(c.outfit), oc);
+  return svg(mode === 'head' ? '46 24 108 108' : '0 0 200 200', back + shoulders + parts.join(''));
 }
 class Component extends DCLogic {
   look() {
@@ -123,9 +138,11 @@ class Component extends DCLogic {
     return DEFAULT;
   }
   renderVals() {
-    const size = Math.max(24, Number(this.props.size) || 200), mode = this.props.mode === 'راس' || this.props.mode === 'head' ? 'head' : 'bust';
+    const m = this.props.mode, mode = m === 'راس' || m === 'head' ? 'head' : m === 'الجسم كله' || m === 'full' ? 'full' : 'bust';
+    // في «الجسم كله» المقاس = الطول، والعرض بنسبة 200:440
+    const size = Math.max(24, Number(this.props.size) || 200), w = mode === 'full' ? Math.round((size * 200) / 440) : size;
     const uri = "url('data:image/svg+xml," + encodeURIComponent(render(this.look(), mode)) + "')";
-    return { label: this.props.label || 'شكلك', box: 'display: block; width: ' + size + 'px; height: ' + size + 'px; background: ' + uri + ' center / contain no-repeat' };
+    return { label: this.props.label || 'شكلك', box: 'display: block; width: ' + w + 'px; height: ' + size + 'px; background: ' + uri + ' center / contain no-repeat' };
   }
 }
 </script>

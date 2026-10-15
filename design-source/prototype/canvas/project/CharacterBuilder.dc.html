@@ -28,8 +28,9 @@ body{margin:0}
     </div>
 
     <div style="display: flex; gap: 12px; align-items: stretch">
-      <div class="cb-swap" style="flex: 1 1 auto; min-width: 0; border-radius: 26px; display: flex; align-items: flex-end; justify-content: center; padding-top: 8px; overflow: hidden; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 14px 32px rgba(29,54,53,0.10)">
-        <dc-import name="CharacterArt" look="{{look}}" size="{{176}}" label="{{title}}" hint-size="176px,176px"></dc-import>
+      <div class="cb-swap" style="position: relative; flex: 1 1 auto; min-width: 0; height: 216px; border-radius: 26px; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80)); box-shadow: inset 1px 1px 2px #FFFFFF, inset -1px -2px 3px rgba(8,99,79,0.18), 0 14px 32px rgba(29,54,53,0.10)">
+        <dc-import name="CharacterArt" look="{{look}}" mode="{{bigMode}}" size="{{bigSize}}" label="{{title}}" hint-size="176px,176px"></dc-import>
+        <div role="radiogroup" aria-label="{{viewLabel}}" style="position: absolute; top: 8px; right: 8px; display: flex; padding: 3px; border-radius: 13px; background: rgba(255,255,255,0.8)"><sc-for list="{{views}}" as="v" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{v.on}}" class="cb-press" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button></sc-for></div>
       </div>
       <div style="width: 112px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px">
         <div style="flex: 1 1 0; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: rgba(255,255,255,0.7)">
@@ -37,7 +38,7 @@ body{margin:0}
           <span style="font-size: 11px; color: #637570">{{inHome}}</span>
         </div>
         <div style="flex: 1 1 0; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; overflow: hidden; background: linear-gradient(125deg, #064B40 0%, #08705A 100%)">
-          <dc-import name="CharacterArt" look="{{look}}" size="{{78}}" hint-size="78px,78px"></dc-import>
+          <span style="padding-top: 6px"><dc-import name="CharacterArt" look="{{look}}" mode="الجسم كله" size="{{82}}" hint-size="37px,82px"></dc-import></span>
           <span style="font-size: 11px; color: #DCEBD6; padding-bottom: 4px">{{inPeople}}</span>
         </div>
       </div>
@@ -102,7 +103,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     let saved = null; try { saved = JSON.parse(window.sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
-    this.state = { look: Object.assign({}, START, saved && typeof saved === 'object' ? saved : {}), tab: TAB_IDX[props.tab] || 0, fresh: !saved };
+    this.state = { look: Object.assign({}, START, saved && typeof saved === 'object' ? saved : {}), tab: TAB_IDX[props.tab] || 0, fresh: !saved, view: null };
     this.root = null;
   }
   set(k, v) { this.setState({ look: Object.assign({}, this.state.look, { [k]: v }) }); }
@@ -113,16 +114,19 @@ class Component extends DCLogic {
     // الحجاب والشماغ والغترة بيخبّوا الشعر، فتبويب الشعر بيقول كده بدل ما يبان إن الاختيار مش شغال
     const hidden = key === 'hair' && [1, 2, 4].indexOf(Number(look.head)) >= 0;
     const showCol = col && (key !== 'head' || Number(look.head) === 4);
+    // المعاينة الكبيرة: «قريب» (الراس والكتاف) أو «الجسم كله» — لوحدها بتبقى الجسم كله في تبويب اللبس، والزرار بيثبّت اختيارك
+    const full = s.view ? s.view === 'full' : key === 'outfit';
     return {
       title: T('ابنِ شكلك', 'ابني شكلك'), sub: T('اختر كل جزء، والمعاينة تتغير فورًا', 'اختار كل جزء، والمعاينة بتتغير على طول'),
       inHome: T('في الرئيسية', 'في الرئيسية'), inPeople: T('في الأشخاص', 'في الأشخاص'), partsLabel: T('الأجزاء', 'الأجزاء'), look,
       tabs: TABS.map((t, i) => ({ label: L(t[1]), on: i === ti ? 'true' : 'false', style: chip(i === ti), pick: () => this.setState({ tab: i }) })),
-      tabLabel: L(tname),
+      tabLabel: L(tname), bigMode: full ? 'الجسم كله' : 'راس وكتاف', bigSize: full ? 170 : 196, viewLabel: T('شكل المعاينة', 'شكل المعاينة'),
+      views: [['bust', T('قريب', 'قريب')], ['full', T('الجسم كله', 'الجسم كله')]].map(([v, label]) => { const on = (v === 'full') === full; return { label, on: on ? 'true' : 'false', pick: () => this.setState({ view: v }), style: 'height: 30px; padding: 0 10px; border: 0; border-radius: 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: #08634F' : 'color: #4F625C; background: transparent') }; }),
       opts: (opts || []).map((o, i) => {
         const on = Number(look[key]) === i;
-        return { label: L(o), on: on ? 'true' : 'false', look: Object.assign({}, look, { [key]: i }), mode: key === 'outfit' ? 'راس وكتاف' : 'راس', pick: () => this.set(key, i),
+        return { label: L(o), on: on ? 'true' : 'false', look: Object.assign({}, look, { [key]: i }), mode: key === 'outfit' ? 'الجسم كله' : 'راس', pick: () => this.set(key, i),
           style: 'border: 0; padding: 6px 2px 8px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : 'rgba(255,255,255,0.75)') + '; box-shadow: ' + (on ? 'inset 0 0 0 2px #08634F' : 'inset 0 0 0 1px rgba(204,216,204,0.7)'),
-          thumbBox: 'width: 60px; height: 60px; border-radius: 30px; overflow: hidden; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80))' };
+          thumbBox: 'width: 60px; height: 60px; border-radius: ' + (key === 'outfit' ? 16 : 30) + 'px; overflow: hidden; display: flex; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80))' };
       }),
       hasColors: !!showCol, colorLabel: showCol ? L(col[2]) : '',
       colors: showCol ? col[1].map((hex, i) => { const on = Number(look[col[0]]) === i; return { label: L(col[2]) + ' ' + (i + 1), on: on ? 'true' : 'false', pick: () => this.set(col[0], i), style: 'width: 44px; height: 44px; border: 0; border-radius: 22px; cursor: pointer; background: ' + hex + '; box-shadow: ' + (on ? '0 0 0 3px #FFFFFF, 0 0 0 5px #08634F' : 'inset 0 0 0 1px rgba(25,61,51,0.15)') }; }) : [],
