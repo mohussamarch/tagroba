@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,17 +72,19 @@ internal fun QuestionCard(q: RoscaQuestion, s: RoscaSetupState, i: WizardInputs,
                 BasicText(text, style = Type.of(20, FontWeight.Bold))
                 if (hint != null) BasicText(hint, style = Type.of(13).copy(color = Ink.muted))
             }
-            when (q) {
-                RoscaQuestion.NAME -> TextInput(i.name, { onInputs(i.copy(name = it)) }, placeholder = t(TextKey.ROSCA_Q_NAME_HINT), height = 52.dp)
-                RoscaQuestion.TURNS_COUNT -> Stepper(i.count, { onInputs(i.copy(count = stepCount(i.count, it))) })
-                RoscaQuestion.SHARE_AMOUNT -> MoneyField(i.amount, { onInputs(i.copy(amount = it)) }, null, currency, big = true)
-                RoscaQuestion.PAYOUT -> MoneyField(i.payout, { onInputs(i.copy(payout = it)) }, null, currency, big = true)
-                RoscaQuestion.FREQUENCY -> for (f in RoscaFrequency.entries) {
-                    RadioCard(t(f.labelKey), if (f == RoscaFrequency.MONTHLY) t(UiKey.RW_FREQ_COMMON) else null, i.frequency == f) { onInputs(i.copy(frequency = f)) }
+            key(q) { // كل سؤال في مجموعة بمفتاحه (نفس سبب وقعة «تحويل» في لوحة «+»)
+                when (q) {
+                    RoscaQuestion.NAME -> TextInput(i.name, { onInputs(i.copy(name = it)) }, placeholder = t(TextKey.ROSCA_Q_NAME_HINT), height = 52.dp)
+                    RoscaQuestion.TURNS_COUNT -> Stepper(i.count, { onInputs(i.copy(count = stepCount(i.count, it))) })
+                    RoscaQuestion.SHARE_AMOUNT -> MoneyField(i.amount, { onInputs(i.copy(amount = it)) }, null, currency, big = true)
+                    RoscaQuestion.PAYOUT -> MoneyField(i.payout, { onInputs(i.copy(payout = it)) }, null, currency, big = true)
+                    RoscaQuestion.FREQUENCY -> for (f in RoscaFrequency.entries) key(f) {
+                        RadioCard(t(f.labelKey), if (f == RoscaFrequency.MONTHLY) t(UiKey.RW_FREQ_COMMON) else null, i.frequency == f) { onInputs(i.copy(frequency = f)) }
+                    }
+                    RoscaQuestion.SHARE -> for (sh in RoscaShare.entries) key(sh) { RadioCard(t(sh.labelKey), null, i.share == sh) { onInputs(i.copy(share = sh)) } }
+                    RoscaQuestion.FIRST_DATE -> DayPicker(i.first, today, { onInputs(i.copy(first = it)) })
+                    RoscaQuestion.MY_TURN -> TurnPicker(s, i, today, onInputs)
                 }
-                RoscaQuestion.SHARE -> for (sh in RoscaShare.entries) RadioCard(t(sh.labelKey), null, i.share == sh) { onInputs(i.copy(share = sh)) }
-                RoscaQuestion.FIRST_DATE -> DayPicker(i.first, today, { onInputs(i.copy(first = it)) })
-                RoscaQuestion.MY_TURN -> TurnPicker(s, i, today, onInputs)
             }
             error?.let { FieldError(it) }
         }

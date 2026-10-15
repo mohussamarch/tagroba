@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import app.masroufy.ui.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -188,7 +189,7 @@ private fun CategoryPicker(ui: RulesUi, group: String?, selected: String?, onGro
     }
     val cats = ui.picker.firstOrNull { it.key == group }?.categories.orEmpty()
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        cats.forEach { c -> SelectChip(c.name, selected = c.id == selected, onClick = { onPick(c.id) }, height = 44.dp, dot = parseHexColor(c.colorHex)) }
+        cats.forEach { c -> key(c.id) { SelectChip(c.name, selected = c.id == selected, onClick = { onPick(c.id) }, height = 44.dp, dot = parseHexColor(c.colorHex)) } }
     }
 }
 

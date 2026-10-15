@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -130,16 +131,22 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel(t(when (kind) { AddKind.OUT -> UiKey.ADD_CATEGORY; AddKind.IN -> UiKey.ADD_INCOME_KIND; AddKind.MOVE -> UiKey.ADD_TO }))
             FlowRow(Modifier.fillMaxWidth().heightIn(min = 88.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                when (kind) {
-                    AddKind.OUT -> for (c in o?.categories.orEmpty()) SelectChip(c.name, category?.id == c.id, { category = c }, dot = parseHex(c.lightColor))
-                    AddKind.IN -> for (k in o?.incomeKinds.orEmpty()) SelectChip(ruleFor(k).label, income == k, { income = k })
-                    AddKind.MOVE -> for (w in o?.wallets.orEmpty().filter { it.id != from }) SelectChip(w.name, to == w.id, { to = w.id })
+                // كل نوع في مجموعة بمفتاحه وكل شريحة بمفتاحها: من غيرهم تبديل «صرف/دخل/تحويل» كان بيقرا خانة «remember» غلط
+                // جوه «SelectChip» ⇒ ClassCastException والبرنامج يقع لما تدوس «تحويل» (إصدار 0.4)
+                key(kind) {
+                    when (kind) {
+                        AddKind.OUT -> for (c in o?.categories.orEmpty()) key(c.id) {
+                            SelectChip(c.name, category?.id == c.id, { category = c }, dot = parseHex(c.lightColor))
+                        }
+                        AddKind.IN -> for (k in o?.incomeKinds.orEmpty()) key(k) { SelectChip(ruleFor(k).label, income == k, { income = k }) }
+                        AddKind.MOVE -> for (w in o?.wallets.orEmpty().filter { it.id != from }) key(w.id) { SelectChip(w.name, to == w.id, { to = w.id }) }
+                    }
                 }
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             FieldLabel(if (hadMain) t(fromLabelKey(true)) else askPrompt ?: t(fromLabelKey(false)), Modifier.weight(1f))
-            for (w in o?.wallets.orEmpty().take(3)) SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null })
+            for (w in o?.wallets.orEmpty().take(3)) key(w.id) { SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null }) }
         }
         if (o != null && o.wallets.isEmpty()) FieldError(t(UiKey.ADD_NO_WALLET))
         PrimaryButton(

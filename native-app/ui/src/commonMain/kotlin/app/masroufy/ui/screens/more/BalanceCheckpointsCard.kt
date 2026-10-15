@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import app.masroufy.ui.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -140,8 +141,10 @@ private fun SplitSheet(effect: CheckpointEffect?, walletId: Id, onClose: () -> U
         TextInput(amountText, { amountText = it; error = null }, label = t(UiKey.BAL_SPLIT_AMOUNT), placeholder = "0.00", ltr = true, keyboard = KeyboardType.Decimal)
         BasicText(t(if (less) UiKey.BAL_SPLIT_CATEGORY else UiKey.BAL_SPLIT_PICK), style = Type.of(13, FontWeight.Bold))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (less) for (c in categories) SelectChip(c.name, category == c.id, onClick = { category = c.id }, height = 40.dp)
-            else for ((k, label) in INCOME_KINDS) SelectChip(t(label), kind == k, onClick = { kind = k }, height = 40.dp)
+            key(less) { // نفس سبب وقعة «تحويل» في لوحة «+»: كل قائمة في مجموعة بمفتاحها
+                if (less) for (c in categories) key(c.id) { SelectChip(c.name, category == c.id, onClick = { category = c.id }, height = 40.dp) }
+                else for ((k, label) in INCOME_KINDS) key(k) { SelectChip(t(label), kind == k, onClick = { kind = k }, height = 40.dp) }
+            }
         }
         error?.let { FieldError(it) }
         PrimaryButton(
