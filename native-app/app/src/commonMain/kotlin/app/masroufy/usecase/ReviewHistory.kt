@@ -35,8 +35,8 @@ data class HistoryPreview(
 )
 
 /**
- * [wallets] (مراجعة 0.3 بند 9): «كل السجل» بيبدأ من أقدم رصيد بداية محفظة (ويكمّل لورا طول ما السنة لسه فيها عمليات — أقدم عملية)،
- * مش من 1970 (56 استعلام على الفاضي). null ⇒ السلوك القديم من [ALL_HISTORY_FLOOR].
+ * [wallets] (مراجعة 0.3 بند 9): «كل السجل» سنة سنة لحد أقدم رصيد بداية محفظة، وبعده استعلام واحد للأقدم (أقدم عملية — §82-16 «كل حاجة»)،
+ * مش سنة سنة لحد 1970 (56 استعلام على الفاضي). null ⇒ السلوك القديم.
  */
 class ReviewHistory(private val deps: CategorizeTransactionsDeps, private val wallets: WalletRepository? = null) {
     private val categorize = CategorizeTransactions(deps)
@@ -73,11 +73,13 @@ class ReviewHistory(private val deps: CategorizeTransactionsDeps, private val wa
         var end = to
         while (end >= ALL_HISTORY_FLOOR) {
             val start = maxOf(ALL_HISTORY_FLOOR, dayNumberToIso(toDayNumber(parseIsoDate(end)) - 365))
-            val chunk = deps.txns.listByDateRange(start, end)
-            for (t in chunk) rows[t.id] = t
-            // عدّينا أقدم رصيد بداية والسنة دي فاضية ⇒ مفيش أقدم (أقدم عملية اتقرت خلاص)
-            if (opening != null && start <= opening && chunk.isEmpty()) break
+            for (t in deps.txns.listByDateRange(start, end)) rows[t.id] = t
             end = dayNumberToIso(toDayNumber(parseIsoDate(start)) - 1)
+            // عدّينا أقدم رصيد بداية ⇒ استعلام واحد للي أقدم منه (أقدم عملية — عادةً قليل أو مفيش) بدل سنة سنة لحد 1970
+            if (opening != null && start <= opening) {
+                if (end >= ALL_HISTORY_FLOOR) for (t in deps.txns.listByDateRange(ALL_HISTORY_FLOOR, end)) rows[t.id] = t
+                break
+            }
         }
         return previewOf(rows.values.sortedWith(compareBy<Transaction> { it.occurredAt }.thenBy { it.sourceOrder }))
     }

@@ -97,7 +97,7 @@ class Review03FixesTest {
         val wallets = MemoryWalletRepository(listOf(HISTORY_BANK.copy(openingAt = "2025-01-01")))
         val preview = ReviewHistory(deps, wallets).previewAll("2026-10-15")
         assertEquals(setOf("t-new", "t-mid", "t-old"), preview.rows.map { it.id }.toSet())
-        assertTrue(txns.ranges <= 3, "سنة سنة لحد أول سنة فاضية قبل رصيد البداية — مش 57 سنة: ${txns.ranges}")
+        assertTrue(txns.ranges <= 3, "سنة سنة لحد رصيد البداية + استعلام واحد للأقدم — مش 57 سنة: ${txns.ranges}")
     }
 
     // ── بند 10: الزيادة اللي اتسجلت سلفة جديدة أو أمانة مش «سداد»
