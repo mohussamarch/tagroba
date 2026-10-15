@@ -196,9 +196,9 @@ private fun AssetsCard(ui: InvestmentUi, quick: QuickMenu, setArchived: (Id, Boo
         ui.others.forEachIndexed { i, line ->
             if (i > 0) RowGap()
             QuickTarget(quick, line.name, { assetQuickItems(line.archived, { onOpen(line.assetId) }, { setArchived(line.assetId, it) }) }, subtitle = line.subtitle) { long ->
-                ToolRow(line.name, line.subtitle, onClick = quick.guardTap { onOpen(line.assetId) }, leading = { KindTile(line.kind) }, onLongClick = long) {
+                ToolRow(line.name, line.subtitle, onClick = quick.guardTap { onOpen(line.assetId) }, leading = { KindTile(line.kind) }, trailing = {
                     AmountText(line.valueMinor, ui.currency, showCurrency = false, color = if (line.valueMinor == null || line.archived) Ink.muted else null)
-                }
+                }, onLongClick = long)
             }
         }
     }
