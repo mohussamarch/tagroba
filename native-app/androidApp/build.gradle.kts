@@ -129,6 +129,8 @@ val keepFastMapping = tasks.register<Copy>("keepFastMapping") {
     from(layout.buildDirectory.file("outputs/mapping/fast/mapping.txt"))
     into(layout.buildDirectory.dir("outputs/mapping-archive"))
     rename { fastMappingName }
+    // إضافة Compose بتكتب فوق نفس الملف بعد R8 ⇒ النسخ يستناها (وإلا Gradle بيوقف البناء: implicit dependency)
+    mustRunAfter(tasks.matching { it.name == "mergeFastComposeMapping" })
 }
 tasks.matching { it.name == "minifyFastWithR8" }.configureEach { finalizedBy(keepFastMapping) }
 
