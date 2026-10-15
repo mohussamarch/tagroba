@@ -4,6 +4,8 @@ import app.masroufy.core.Id
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.SmsRow
 import app.masroufy.core.Wallet
+import app.masroufy.core.smsLegRows
+import app.masroufy.core.smsLegVerdict
 import app.masroufy.port.WalletRepository
 import app.masroufy.port.smsSenderKey
 
@@ -60,6 +62,18 @@ internal fun accountWallet(row: SmsRow, senderKey: String, all: List<Wallet>, ma
     return wallet.takeIf { currencyOk }
 }
 
+/** sms-fix (HANDOVER §6.5-3): آخر 4 أرقام كل محافظ البلد. */
+internal fun ownDigits(all: List<Wallet>): Set<String> = all.mapNotNull { walletLast4(it.accountLast4) }.toSet()
+
+/** sms-fix: صفوف الرسالة بعد قاعدة «من:/الى:» (`SmsAccountLegs.kt`) — اتجاه ومحفظة كل رِجل من أرقام الرسالة نفسها. */
+internal fun legRowsOf(row: SmsRow, all: List<Wallet>): List<SmsRow> = smsLegRows(row, smsLegVerdict(row, ownDigits(all)))
+
+/** sms-fix: محفظة رِجل في التسجيل التلقائي — نفس قاعدة [routeSender]. */
+internal fun legWallet(leg: SmsRow, senderKey: String, all: List<Wallet>, mapping: Map<String, String>): Wallet? {
+    val base = senderWallet(all, senderKey, mapping)
+    return accountWallet(leg, senderKey, all, mapping, base) ?: base
+}
+
 /** كل رسايل [senderKey] المفهومة في [items] ⇒ محفظتها (§75-11). */
 internal fun routeSender(
     all: List<Wallet>, senderKey: String, mapping: Map<String, String>, items: List<InboxItem>, movesCash: Boolean,
@@ -70,8 +84,9 @@ internal fun routeSender(
     for (item in items) {
         val row = (item.parsed as? SmsParseResult.Ok)?.row ?: continue
         if (smsSenderKey(item.sender) != senderKey) continue
-        val wallet = accountWallet(row, senderKey, all, mapping, base) ?: base
-        if (wallet == null) unrouted++ else grouped.getOrPut(wallet.id) { linkedSetOf() } += item.id
+        // sms-fix: كل رِجل من رجلين التحويل (أو الصف نفسه) بتروح محفظة أرقامها
+        val wallets = legRowsOf(row, all).mapNotNull { leg -> accountWallet(leg, senderKey, all, mapping, base) ?: base }
+        if (wallets.isEmpty()) unrouted++ else wallets.forEach { grouped.getOrPut(it.id) { linkedSetOf() } += item.id }
     }
     val routes = grouped.map { (walletId, ids) -> SmsRoute(targetOf(all.first { it.id == walletId }, all, movesCash), ids) }
     return SmsSenderRoutes(routes, unrouted)

@@ -1,6 +1,8 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.CROSS_SOURCE_WIDE_WINDOW_DAYS
 import app.masroufy.core.CrossSourceExisting
+import app.masroufy.core.lateCardPosting
 import app.masroufy.core.CrossSourceRow
 import app.masroufy.core.CrossSourceVerdict
 import app.masroufy.core.DedupeCandidate
@@ -120,6 +122,8 @@ private suspend fun loadCrossSource(deps: ImportStatementDeps, request: ImportRe
             fromSms = own.any { sms(it) }, fromStatement = own.any { !sms(it) },
             // بصمات سجلات الكشف بس (مراجعة S4): نص الرسالة عمره ما بيحكم إن رسالة تانية «متسجلة خلاص»
             references = own.mapNotNull { trimmedRef(it.sourceReference) }.toSet(), hashes = own.filter { !sms(it) }.map { it.sourceHash },
+            // sms-fix: شراء دولي/أونلاين — الكشف بيسجّله متأخر
+            wide = own.any { lateCardPosting(it.rawLine) },
         )
     }
 }
@@ -140,14 +144,18 @@ internal suspend fun applyCrossSource(
 ): List<ImportPreviewLine> {
     if (lines.isEmpty()) return lines
     val fromSms = request.sourceType == ImportSourceType.SMS
-    val existing = loadCrossSource(deps, request, lines, ledger, window)
+    // sms-fix: التحميل بالنافذة الواسعة، وكل زوج بيتحكم بنافذته (`CrossSourceMatch.windowFor`)
+    val existing = loadCrossSource(deps, request, lines, ledger, maxOf(window, CROSS_SOURCE_WIDE_WINDOW_DAYS))
     if (existing.isEmpty()) return lines
     // النص بالحرف بيحكم بس لسطر كشف CSV من غير مرجع ولا رصيد (المرجع والرصيد بيحسموا من غيره)
     fun hashOf(line: ImportPreviewLine): String? =
         if (!fromSms && textLines && trimmedRef(line.row.reference) == null && line.row.statedBalanceMinor == null) hashContent(line.row.raw) else null
     val rows = lines.map {
         val amount = rowAmounts(request, it).firstOrNull { a -> existing.any { e -> e.amountMinor == a && e.direction == it.row.direction } } ?: it.row.amountMinor
-        CrossSourceRow(it.row.lineNumber, it.row.date, amount, it.row.direction, fromSms, it.row.reference, it.state, it.matchedTransactionId, hashOf(it), it.row.statedBalanceMinor)
+        CrossSourceRow(
+            it.row.lineNumber, it.row.date, amount, it.row.direction, fromSms, it.row.reference, it.state, it.matchedTransactionId, hashOf(it), it.row.statedBalanceMinor,
+            wide = lateCardPosting(it.row.raw, request.smsRows?.get(it.row.lineNumber)?.foreignCurrency != null),
+        )
     }
     val verdicts = matchCrossSource(rows, existing, window)
     if (verdicts.isEmpty()) return lines

@@ -84,6 +84,20 @@ class ManageWallets(
         return updated
     }
 
+    /**
+     * sms-fix (HANDOVER §6.5-3): آخر 4 أرقام حساب محفظة **موجودة** (اختياري — CLAUDE.md #11: الأربعة بس). رسايل البنك بتتوزع بيها وتعرف
+     * اتجاه «حوالة بين حساباتك». فاضي ⇒ يشيلها. الكاش من غيرها · نفس الأرقام لمحفظة بنك تانية ⇒ خطأ (ما بنفرّقش بيهم).
+     */
+    suspend fun setLast4(walletId: Id, last4: String?): Wallet {
+        val wallet = wallets.findById(walletId) ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
+        val digits = last4?.let { normalizeDigits(jsTrim(it)) }?.ifEmpty { null }
+        if (digits != null && (wallet.kind == "cash" || digits.length != 4 || !digits.all { it in '0'..'9' })) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
+        if (digits != null && wallets.listAll().any { it.id != walletId && walletLast4(it.accountLast4) == digits }) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
+        val updated = wallet.copy(accountLast4 = digits)
+        wallets.save(updated)
+        return updated
+    }
+
     private fun checkOpening(amount: Halalas, at: IsoDate, today: IsoDate) {
         if (amount < 0 || amount > MAX_SAFE_HALALAS) throw WalletError(uiText(UiKey.WADD_ERR_AMOUNT))
         if (!isValidIsoDate(at) || at > today) throw WalletError(uiText(UiKey.WADD_ERR_DATE))

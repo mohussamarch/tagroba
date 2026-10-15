@@ -30,6 +30,12 @@ const val SMS_REFERENCE_PREFIX = "SMS:"
 /** النافذة اللي المالك قررها (§75-10): «يومين بالكتير». */
 const val CROSS_SOURCE_WINDOW_DAYS = 2
 
+/**
+ * sms-fix (HANDOVER §6.5-3): الشراء الدولي/أونلاين بالكارت الكشف بيسجّله بعد 3–4 أيام ⇒ نافذته أوسع (لو ناحية منهم معلّمة [CrossSourceRow.wide]
+ * أو [CrossSourceExisting.wide]) — الخارج بس، والباقي يومين زي ما هو.
+ */
+const val CROSS_SOURCE_WIDE_WINDOW_DAYS = 5
+
 fun isSmsReference(reference: String?): Boolean = reference?.startsWith(SMS_REFERENCE_PREFIX) == true
 
 /**
@@ -46,6 +52,8 @@ data class CrossSourceExisting(
     val references: Set<String> = emptySet(),
     /** بصمات نص سجلات **الكشف** بتاعتها (`SourceRecord.sourceHash` — مش الرسايل) — بالتكرار (سطرين متطابقين بالحرف = بصمتين). */
     val hashes: List<String> = emptyList(),
+    /** sms-fix: شراء دولي/أونلاين بالكارت (نافذة [CROSS_SOURCE_WIDE_WINDOW_DAYS]). */
+    val wide: Boolean = false,
 ) {
     /** ليها المصدرين خلاص (اتدمجت قبل كده). */
     val merged: Boolean get() = fromSms && fromStatement
@@ -68,6 +76,8 @@ data class CrossSourceRow(
     val hash: String? = null,
     /** الرصيد المعلن في السطر (null = مفيش) — سطر الكشف اللي ليه رصيد بيتعرف بيه في منع التكرار العادي، فمش محتاج تخمين. */
     val statedBalanceMinor: Halalas? = null,
+    /** sms-fix: شراء دولي/أونلاين بالكارت (نافذة [CROSS_SOURCE_WIDE_WINDOW_DAYS]). */
+    val wide: Boolean = false,
 )
 
 sealed interface CrossSourceVerdict {
@@ -104,7 +114,18 @@ private fun nearestFirst(row: CrossSourceRow): Comparator<CrossSourceExisting> =
 
 /** نفس المبلغ (زي ما ورد) ونفس الاتجاه وجوه النافذة. */
 private fun sameMovement(row: CrossSourceRow, e: CrossSourceExisting, windowDays: Int): Boolean =
-    e.direction == row.direction && e.amountMinor == row.amountMinor && abs(daysBetween(row.date, e.date)) <= windowDays
+    e.direction == row.direction && e.amountMinor == row.amountMinor && abs(daysBetween(row.date, e.date)) <= windowFor(row, e, windowDays)
+
+private fun windowFor(row: CrossSourceRow, e: CrossSourceExisting, windowDays: Int): Int =
+    if ((row.wide || e.wide) && row.direction == Direction.OUT) maxOf(windowDays, CROSS_SOURCE_WIDE_WINDOW_DAYS) else windowDays
+
+/**
+ * sms-fix: شراء بالكارت الكشف بيسجّله متأخر — دولي (عملة أجنبية أو محل برّه البلد) أو أونلاين («انترنت» · «المتجر الالكتروني» · «التفويض» ·
+ * «international» · «online»). من نص الرسالة أو سطر الكشف.
+ */
+fun lateCardPosting(text: String, foreign: Boolean = false): Boolean = foreign || LATE_POSTING.containsMatchIn(text)
+
+private val LATE_POSTING = Regex("دولي|انترنت|إنترنت|الالكتروني|الإلكتروني|التفويض|international|online|e-?commerce|internet", RegexOption.IGNORE_CASE)
 
 /**
  * سطر كشف من غير مرجع نصه بالحرف نص سطر كشف اتدمج قبل كده ⇒ العملية المدموجة دي (وبتتشال من الطابور: كل بصمة بتبلع سطر واحد بس).

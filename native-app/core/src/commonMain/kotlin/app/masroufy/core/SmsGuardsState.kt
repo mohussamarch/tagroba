@@ -108,6 +108,8 @@ private val NOT_TRANSACTION_ANYWHERE = Regex(
         // ── الجولة السابعة: فلوس لسه هتتضاف أو هتتنفذ («To be credited/cleared/executed/released/posted/sent/reflected …» · «من المتوقع إيداع» ·
         // «من المقرر تنفيذ» · «عند تحصيل الشيك» · «الى حين استكمال التحقق» · «حدّث بياناتك» · «update your ID» · «compliance check») ──
         "|${B}to$S+be$S+(?:credited|cleared|executed|released|posted|sent|reflected|added|deposited|transferred|processed|completed|refunded|returned)$B" +
+        // sms-fix (HANDOVER §6.5-3): حجز مؤقت للكارت («TEMP» · «عملية مؤقتة») مش شراء — الخصم الحقيقي بييجي في رسالة تانية
+        "|${B}TEMP$B|$NA(?:عملية|حركة|خصم)$S*مؤقت[ةه]?$NZ" +
         "|$NA(?:من$S*)?(?:ال)?(?:متوقع|مقرر)$S*(?:ان$S*)?(?:إيداع|ايداع|إضافة|اضافة|إضافت|اضافت|ظهور|وصول|تحويل|خصم|تنفيذ|صرف)" +
         "|${NA}عند$S*(?:ال)?(?:تحصيل|اكتمال|استكمال|اتمام|إتمام)|$NA(?:الى|إلى|الي)$S*حين$NZ|(?:فضلك|يرجى|يرجي|برجاء|الرجاء)$S*(?:حد[ّ]?ث|تحديث)" +
         "|${B}update$S+your$S+(?:id|iqama|kyc|details|data|information|info)$B|${B}compliance$S+(?:check|review)$B",

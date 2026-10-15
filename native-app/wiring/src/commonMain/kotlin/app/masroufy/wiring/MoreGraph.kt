@@ -98,6 +98,8 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
             manage.setOpening(walletId, openingMinor, openingAt)
         }
 
+        override suspend fun setLast4(walletId: Id, last4: String?): String? = attempt { manage.setLast4(walletId, last4) }
+
         private suspend fun attempt(block: suspend () -> Unit): String? = try {
             block()
             null

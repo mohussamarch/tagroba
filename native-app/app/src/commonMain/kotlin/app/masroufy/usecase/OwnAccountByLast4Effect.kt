@@ -8,6 +8,7 @@ import app.masroufy.core.ReviewState
 import app.masroufy.core.SmsKind
 import app.masroufy.core.Transaction
 import app.masroufy.core.TransferPartyRef
+import app.masroufy.core.smsLegsOf
 import app.masroufy.core.transferPartyOf
 import app.masroufy.port.AskSource
 import app.masroufy.port.SourceRecordRepository
@@ -38,6 +39,8 @@ class OwnAccountByLast4Effect(private val wallets: WalletRepository) : RecordEff
             val candidates = buildSet {
                 party?.last4?.let(::add)
                 if (betweenYourAccounts) MASKED_ACCOUNT.findAll(sms.raw).forEach { add(it.groupValues[1]) }
+                // sms-fix: «من:/الى:» من غير نجوم (الرِّجل التانية من محافظك = تحويل داخلي)
+                if (betweenYourAccounts) smsLegsOf(sms.raw).let { addAll(listOfNotNull(it.fromLast4, it.toLast4)) }
             } - setOfNotNull(sms.ownLast4)
             if (candidates.none { it in own }) continue
             if (!betweenYourAccounts && party != null && party.named) continue // بيتسأل مرة (`OwnAccountAskSource`)

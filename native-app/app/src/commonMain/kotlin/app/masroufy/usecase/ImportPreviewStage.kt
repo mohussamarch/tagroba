@@ -153,7 +153,8 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
     }
     // §75-10 (S4): الكشف والرسالة نفس الحركة ⇒ دمج. null = من غير دمج (ملفات المرجع بالحرف). نص السطر = سطر الملف في الـCSV بس
     val textLines = request.parsedRows == null && (outcome.schema == SchemaId.PREVIEW || outcome.schema == SchemaId.LEGACY)
-    val crossed = if (window != null) applyCrossSource(deps, request, scanned, ledger, window, textLines) else scanned
+    // sms-fix: رسالة يومها جوه آخر كشف اتستورد للمحفظة دي ما بتعملش عملية جديدة (`StatementCovered.kt`)
+    val crossed = if (window != null) markStatementCovered(deps, request, applyCrossSource(deps, request, scanned, ledger, window, textLines), ledger) else scanned
     // §82-10 · §88: رسالة رسوم بعد تحويلها ⇒ بتنضم لرسوم التحويل (`SmsFeeJoin.kt`)
     val lines = joinFeeMessages(deps, request, crossed)
 

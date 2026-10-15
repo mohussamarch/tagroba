@@ -60,3 +60,17 @@ internal fun ownAccountLast4Of(body: String, direction: Direction): String? =
     (if (direction == Direction.OUT) OUT_ACCOUNT else IN_ACCOUNT).findAll(body).firstNotNullOfOrNull { lastFourOf(it.groupValues[1]) }
         ?: EG_ACCOUNT.find(body)?.groupValues?.get(1)
         ?: WALLET.find(body)?.groupValues?.get(1)
+
+private val FROM_LINE = accountLine(OUT_ONLY)
+private val TO_LINE = accountLine(IN_ONLY)
+
+/**
+ * sms-fix (HANDOVER §6.5-3): آخر 4 أرقام سطر «من:» وسطر «الى:/لـ/To:» في الرسالة **زي ما هما** — من غير ما نفترض اتجاه الشكل. «حوالة بين
+ * حساباتك» كانت بتتقري صادر دايمًا فـ«من:» كانت بتتاخد حسابك حتى لو الفلوس داخلة المحفظة دي (القرار في `SmsAccountLegs.kt`).
+ */
+data class SmsLegs(val fromLast4: String?, val toLast4: String?)
+
+fun smsLegsOf(body: String): SmsLegs = SmsLegs(
+    FROM_LINE.findAll(body).firstNotNullOfOrNull { lastFourOf(it.groupValues[1]) },
+    TO_LINE.findAll(body).firstNotNullOfOrNull { lastFourOf(it.groupValues[1]) },
+)
