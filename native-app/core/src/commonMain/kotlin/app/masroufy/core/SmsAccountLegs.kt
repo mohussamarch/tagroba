@@ -38,6 +38,8 @@ fun smsLegVerdict(row: SmsRow, own: Set<String>): SmsLegVerdict {
     return when {
         // مراجعة r04 (الشكوى ٥): «الى:» فيها اسم ⇒ مش رِجلين — الطرف ممكن يكون شخص تاني أرقامه زي محفظتك بالصدفة، فبيتسأل (`OwnAccountAskSource`)
         fromOwn && toOwn && from != to && !legs.toNamed -> SmsLegVerdict.Between(from!!, to!!)
+        // نفس الشكوى ٥ للصادر: «الى:» باسم شخص وأرقامه زي محفظتك ⇒ مش «داخل» في محفظتك — بيفضل صادر من محفظة البنك وبيتسأل
+        toOwn && !fromOwn && legs.toNamed && row.direction == Direction.OUT -> SmsLegVerdict.Keep
         toOwn && !fromOwn -> SmsLegVerdict.Into(to!!)
         fromOwn && !toOwn -> SmsLegVerdict.OutOf(from!!)
         fromOwn -> SmsLegVerdict.Keep // نفس الأرقام في الناحيتين — ما بنخمّنش

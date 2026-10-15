@@ -157,7 +157,8 @@ class RepairOldSms(
     }
 
     private fun parse(body: String, date: IsoDate): SmsRow? =
-        readers.firstNotNullOfOrNull { (it.parse(BankSmsMessage("", date + "T12:00:00", body), 1) as? SmsParseResult.Ok)?.row }
+        // لحظة كاملة بـ«Z» (12:00 جرينتش = نفس اليوم في السعودية ومصر): من غيرها القارئ بيرفض الرسالة «التاريخ مش واضح» والمعاينة كانت فاضية دايمًا
+        readers.firstNotNullOfOrNull { (it.parse(BankSmsMessage("", date + "T12:00:00Z", body), 1) as? SmsParseResult.Ok)?.row }
 
     private fun smsKindOf(records: List<SourceRecord>): SmsKind? = records.firstNotNullOfOrNull { r -> parse(r.rawLine, "2000-01-01")?.kind }
 

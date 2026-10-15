@@ -55,9 +55,11 @@ class SmsAccountLegsTest {
 
     @Test
     fun cardHoldIsNotAPurchase() {
+        // وقت الوصول لحظة كاملة بـ«Z» زي الجوال (من غيرها التاريخ «مش واضح» والاتنين كانوا بيترفضوا لنفس السبب الغلط)
         val purchase = "شراء\nبطاقة:4321;مدى\nمبلغ:SAR 25.00\nلدى:SAMPLE SHOP\nفي:26-03-03 10:00"
-        assertTrue(parseBankSms(BankSmsMessage("AlRajhiBank", "2026-03-03T10:00:00", purchase), 1) is SmsParseResult.Ok)
-        val hold = parseBankSms(BankSmsMessage("AlRajhiBank", "2026-03-03T10:00:00", "شراء TEMP\nبطاقة:4321;مدى\nمبلغ:SAR 25.00\nلدى:SAMPLE SHOP\nفي:26-03-03 10:00"), 1)
+        val plain = parseBankSms(BankSmsMessage("AlRajhiBank", "2026-03-03T07:00:30Z", purchase), 1)
+        assertTrue(plain is SmsParseResult.Ok, "plain purchase must parse: $plain")
+        val hold = parseBankSms(BankSmsMessage("AlRajhiBank", "2026-03-03T07:00:30Z", "شراء TEMP\nبطاقة:4321;مدى\nمبلغ:SAR 25.00\nلدى:SAMPLE SHOP\nفي:26-03-03 10:00"), 1)
         assertTrue(hold is SmsParseResult.Rejected, "TEMP hold must not be a purchase: $hold")
     }
 
