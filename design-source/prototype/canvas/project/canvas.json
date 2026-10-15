@@ -1105,6 +1105,14 @@
       "y": 27852,
       "w": 24,
       "h": 24
+    },
+    "CharacterRewards.dc.html": {
+      "is_interactive": true,
+      "title": "مكافآت الكاركتر · CharacterRewards",
+      "x": 1820,
+      "y": 27852,
+      "w": 350,
+      "h": 520
     }
   },
   "createdOnFiles": {
@@ -1400,7 +1408,8 @@
     "OpsSelect.dc.html",
     "OpsQuickMenu.dc.html",
     "LinkedOps.dc.html",
-    "OpIcon.dc.html"
+    "OpIcon.dc.html",
+    "CharacterRewards.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"

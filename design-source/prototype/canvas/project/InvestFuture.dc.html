@@ -8,6 +8,7 @@
 <body>
 <x-dc>
 <helmet>
+<style>@font-face{font-family:SAR;src:url(data:font/otf;base64,T1RUTwAJAIAAAwAQQ0ZGIJDA82YAAAP4AAABIk9TLzKKOITzAAABAAAAAGBjbWFwQZLfewAAA6QAAAA0aGVhZC//fFYAAACcAAAANmhoZWEDhgHVAAAA1AAAACRobXR4BPIAAAAABRwAAAAIbWF4cAACUAAAAAD4AAAABm5hbWV3HHPFAAABYAAAAkNwb3N0AAMAAAAAA9gAAAAgAAEAAAABAADOkKIyXw889QADA+gAAAAA5vYcXQAAAADm9hxdAEUAAAK4ArwAAAADAAIAAAAAAAAAAQAAA4T+1AAAAv4AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAIAAFAAAAIAAAADAv4B9AAFAAACigK7AAAAjAKKArsAAAHfADEBAgAAAAAAAAAAAAAAAAAAAAEAAAACAAAAAAAAAABYWFhYAEAgwSDBA4T+1AAAArwAAAAAAAEAAAAAAcICvAAAAAAAAAAAACIBngABAAAAAAAAAAEAIQABAAAAAAABAAMAAAABAAAAAAACAAcACQABAAAAAAADAA0AfgABAAAAAAAEAAsAHgABAAAAAAAFAAsAXQABAAAAAAAGAAoAPwABAAAAAAAHAAEAIQABAAAAAAAIAAEAIQABAAAAAAAJAAEAIQABAAAAAAAKAAEAIQABAAAAAAALAAEAIQABAAAAAAAMAAEAIQABAAAAAAANAAEAIQABAAAAAAAOAAEAIQABAAAAAAAQAAMAAAABAAAAAAARAAcACQADAAEECQAAAAIALwADAAEECQABAAYAAwADAAEECQACAA4AEAADAAEECQADABoAiwADAAEECQAEABYAKQADAAEECQAFABYAaAADAAEECQAGABQASQADAAEECQAHAAIALwADAAEECQAIAAIALwADAAEECQAJAAIALwADAAEECQAKAAIALwADAAEECQALAAIALwADAAEECQAMAAIALwADAAEECQANAAIALwADAAEECQAOAAIALwADAAEECQAQAAYAAwADAAEECQARAA4AEFNBUgBTAEEAUlJlZ3VsYXIAUgBlAGcAdQBsAGEAclNBUiBSZWd1bGFyAFMAQQBSACAAUgBlAGcAdQBsAGEAclNBUlJlZ3VsYXIAUwBBAFIAUgBlAGcAdQBsAGEAclZlcnNpb24gMC4xAFYAZQByAHMAaQBvAG4AIAAwAC4AMSA6U0FSIFJlZ3VsYXIAIAA6AFMAQQBSACAAUgBlAGcAdQBsAGEAcgAAAAABAAMAAQAAAAwABAAoAAAABgAEAAEAAgAAIMH//wAAAAAgwf//AADfQAABAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAQBAAEBAQtTQVJSZWd1bGFyAAEBASf4GwD4HAL4HQP4HgSLi/oY+ZIFHQAAAHAPHQAAAHMRix0AAAEiEgAFAQEMFxohKFZlcnNpb24gMC4xU0FSIFJlZ3VsYXJTQVJSZWd1bGFydW5pMjBDMQAAAAGLAAIBAQSq+IgO+ZL4YNsVi4sFgHKEcIhvCPeBvQWWpJKmjqcI+4BZBfdr9w0VlqSSpo6nCPtMZAWL1gX3N64FlqOSpo6nCPtMZAWL96MFb3tydndyCIv7dAVCewWL9+cFbntydndyCIv7uQX7OWgFgHKEcIhvCPdOswWLLAX7XGEFgHKEcIhvCPdltwWcj5qVlZkIscMFi4sFj5GNkouTCIvfBdSaBYv7KgX3gb0FDgAAAfQAAAL+AAA=) format("opentype");unicode-range:U+20C1;font-weight:100 900}</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
 <style>
 body{margin:0}
@@ -19,7 +20,7 @@ body{margin:0}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
-<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+<div dir="rtl" style="width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
   <div class="f-rise" style="border-radius: 28px; padding: 18px 20px; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
     <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
       <span style="font-size: 20px; font-weight: 700">{{youIn}}</span>
@@ -99,12 +100,13 @@ body{margin:0}
 // كل فلوسك = الحسابات والكاش + الأصول − الديون · الشخصي والمتأرشف (§82-21) برّه · أعداد صحيحة بس (BigInt) زي GrowthMath.kt · البيانات مخترعة
 const NOW = 2026, MONTH = 10, CH = [1, 2, 5, 10, 15, 20, 25, 30, 40], S = 100000000n, E12 = 1000000000000n;
 const C = {
-  sa: { cur: 'ر.س', cash: 735000, re: 57600000, gold: 5256000, stk: 8900000, debts: [[3480000, 145000], [100000, 25000], [245000, 0]], save: 180000, low: -45000, income: 1596667, unknownStart: 50000, passive: 0, cpi: 174, rg: 1488, rs: 795, step: 50, miles: [[10000000, '100 ألف'], [50000000, 'نص مليون'], [100000000, 'أول مليون']],
+  sa: { cur: '\u20C1', cash: 735000, re: 57600000, gold: 5256000, stk: 8900000, debts: [[3480000, 145000], [100000, 25000], [245000, 0]], save: 180000, low: -45000, income: 1596667, unknownStart: 50000, passive: 0, cpi: 174, rg: 1488, rs: 795, step: 50, miles: [[10000000, '100 ألف'], [50000000, 'نص مليون'], [100000000, 'أول مليون']],
     src: { cpi: 'التضخم 1.74% — الهيئة العامة للإحصاء عبر البنك الدولي (2016–2025)، رسمي', gold: 'الذهب 14.88% — متوسط سعره الشهري، البنك الدولي (ديسمبر 2015–ديسمبر 2025)، رسمي', stk: 'الأسهم 7.95% — مؤشر السوق السعودية مع التوزيعات من مزوّد مؤشرات خاص (10 سنوات لنهاية 2024)، مش رسمي' } },
   eg: { cur: 'ج.م', cash: 2530000, re: 384000000, gold: 42000000, stk: 66000000, debts: [[735000, 0]], save: 600000, low: -150000, income: 1125000, unknownStart: 200000, passive: 1125000, cpi: 1633, rg: 3422, rs: 1942, step: 250, miles: [[100000000, 'أول مليون'], [500000000, '5 مليون'], [1000000000, '10 مليون']],
     src: { cpi: 'التضخم 16.33% — الجهاز المركزي للتعبئة العامة والإحصاء عبر البنك الدولي (2016–2025)، رسمي', gold: 'الدهب 34.22% — البنك الدولي بسعر الصرف الرسمي للجنيه (2015–2025)، رسمي — أغلبه نزول الجنيه', stk: 'الأسهم 19.42% — مؤشر البورصة المصرية الرئيسي من غير التوزيعات (2015–2025)، مش رسمي' } }
 };
 const GOALS = [['السفر', 2 / 12], ['جوال جديد', 2 / 12], ['الطوارئ', 8 / 12]];
+const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة (البنك المركزي السعودي) — الجنيه بعد الرقم زي ما هو
 class Component extends DCLogic {
   constructor(props) { super(props); let marks = []; try { marks = JSON.parse(window.sessionStorage.getItem('masroufy-year-marks') || '[]'); } catch (e) {} this.state = { years: 10, today: true, amount: null, mix: 'mine', path: null, wheel: false, marks: Array.isArray(marks) ? marks : [] }; this.mo = {}; }
   mulDiv(a, n, d) { const neg = (a < 0n) !== (n < 0n) && a !== 0n && n !== 0n; const x = (a < 0n ? -a : a) * (n < 0n ? -n : n); const q = (x * 2n + d) / (d * 2n); return neg ? -q : q; }
@@ -148,7 +150,7 @@ class Component extends DCLogic {
     if (!birth && this.props.age !== 'مش مكتوب') birth = eg ? '1994-06-20' : '1990-04-12';
     const ageNow = birth && /^\d{4}-\d{2}/.test(birth) ? NOW - Number(birth.slice(0, 4)) - (Number(birth.slice(5, 7)) > MONTH ? 1 : 0) : null;
     const pr = na ? null : this.project(c, save, low ? 0 : save, amt, mix, today);
-    const cut = (a) => a.slice(0, years + 1), mk = (v) => '≈ ' + this.fmt(v) + ' ' + c.cur, mo = T(' شهريًا', ' في الشهر');
+    const cut = (a) => a.slice(0, years + 1), mk = (v) => '≈ ' + withCur(this.fmt(v), c.cur), mo = T(' شهريًا', ' في الشهر');
     const name = (k) => (k === 1 ? 'سنة' : k === 2 ? T('سنتان', 'سنتين') : n(k) + (k <= 10 ? T(' سنوات', ' سنين') : ' سنة'));
     // الطرق التلاتة بكلام بسيط — والمختار هو الرقم الكبير والخط العريض والمحطات والدخل من غير شغل
     const P = [
@@ -171,14 +173,14 @@ class Component extends DCLogic {
     // الدخل من غير شغل للطريق المختار: النهارده ووقتها (وبالرقم الاسمي لو اختار «زي ما هيكون»)
     const nom = (v) => (today ? v : Number(this.mulDiv(BigInt(v), E12, pr.F[years])));
     const potY = pr && sel.id !== 'keep' ? pr.inv[years][sel.key === 'l2' ? 'p2' : 'p3'] : 0;
-    const passive = pr ? { now: this.fmt(this.passiveAt(c, pr, 0, 0, mix)) + ' ' + c.cur, year: Y, value: this.fmt(nom(this.passiveAt(c, pr, years, potY, mix))) + ' ' + c.cur, label: sel.title,
-      note: T('الربح فوق الغلاء فقط دون أن تمس الأصل: الذهب ', 'الربح فوق الغلاء بس من غير ما تلمس الأصل: الدهب ') + this.pct(Math.max(0, c.rg - c.cpi)) + T(' · الأسهم ', ' · الأسهم ') + this.pct(Math.max(0, c.rs - c.cpi)) + T(' سنويًا', ' في السنة') + (c.passive ? T(' + الإيجار وعائد الشهادة ', ' + الإيجار وعائد الشهادة ') + this.fmt(c.passive) + ' ' + c.cur : '') } : null;
-    // البلدين: «زي ما إنت» لكل بلد بعملته، والمجمّع بسعر صرف النهارده (1 ر.س = 13.9330 ج.م)
+    const passive = pr ? { now: withCur(this.fmt(this.passiveAt(c, pr, 0, 0, mix)), c.cur), year: Y, value: withCur(this.fmt(nom(this.passiveAt(c, pr, years, potY, mix))), c.cur), label: sel.title,
+      note: T('الربح فوق الغلاء فقط دون أن تمس الأصل: الذهب ', 'الربح فوق الغلاء بس من غير ما تلمس الأصل: الدهب ') + this.pct(Math.max(0, c.rg - c.cpi)) + T(' · الأسهم ', ' · الأسهم ') + this.pct(Math.max(0, c.rs - c.cpi)) + T(' سنويًا', ' في السنة') + (c.passive ? T(' + الإيجار وعائد الشهادة ', ' + الإيجار وعائد الشهادة ') + withCur(this.fmt(c.passive), c.cur) : '') } : null;
+    // البلدين: «زي ما إنت» لكل بلد بعملته، والمجمّع بسعر صرف النهارده (⁦⃁ 1⁩ = 13.9330 ج.م)
     const op = na ? null : this.project(other, other.save, other.save, other.save, this.mixBp(other, 'mine'), today);
     const FX = 139330n, mine = pr ? pr.l1[years] : null, theirs = op ? op.l1[years] : null;
     const conv = theirs == null ? 0 : Number(eg ? this.mulDiv(BigInt(theirs), FX, 10000n) : this.mulDiv(BigInt(theirs), 10000n, FX));
-    const countries = pr ? { rows: [[eg ? 'مصر' : 'السعودية', mk(mine)], [eg ? 'السعودية' : 'مصر', '≈ ' + this.fmt(theirs) + ' ' + other.cur]], total: mk(mine + conv), year: Y,
-      fx: T('لو استمر كل شيء كما هو · بسعر صرف اليوم: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)', 'لو كل حاجة فضلت زي ما هي · بسعر صرف النهارده: 1 ر.س = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)'),
+    const countries = pr ? { rows: [[eg ? 'مصر' : 'السعودية', mk(mine)], [eg ? 'السعودية' : 'مصر', '≈ ' + withCur(this.fmt(theirs), other.cur)]], total: mk(mine + conv), year: Y,
+      fx: T('لو استمر كل شيء كما هو · بسعر صرف اليوم: ⁦⃁ 1⁩ = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)', 'لو كل حاجة فضلت زي ما هي · بسعر صرف النهارده: ⁦⃁ 1⁩ = 13.93 ج.م — من سعر الدولار بالريال وبالجنيه (ياهو فاينانس، 10 أكتوبر 2026)'),
       warn: today ? '' : T('الرقم المجمّع بسعر صرف اليوم، والجنيه يتحرك كثيرًا — تقريبي جدًا.', 'الرقم المجمّع بسعر صرف النهارده، والجنيه بيتحرك كتير — تقريبي جدًا.') } : null;
     const debtNow = c.debts.reduce((x, d) => x + d[0], 0), assetsNow = c.re + c.gold + c.stk, netNow = c.cash + assetsNow - debtNow;
     const chipStyle = (on) => 'height: 36px; padding: 0 12px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.06)');
@@ -201,10 +203,10 @@ class Component extends DCLogic {
       paths: P.map((p) => { const on = p === sel; return { title: p.title, desc: p.desc, value: pr ? mk(pr[p.key][years]) : '', on: on ? 'true' : 'false', pick: () => this.setState({ path: p.id }),
         key: 'width: 4px; align-self: stretch; border-radius: 2px; flex-shrink: 0; background: ' + p.color,
         style: 'width: 100%; border: 0; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : 'rgba(25,61,51,0.035)') + '; box-shadow: ' + (on ? 'inset 0 0 0 1.5px #08634F' : 'none') }; }),
-      showStepper: sel.id === 'more', stepTitle: T('كم تستثمر شهريًا؟', 'هتستثمر كام في الشهر؟'), amountText: this.fmt(amt) + ' ' + c.cur,
+      showStepper: sel.id === 'more', stepTitle: T('كم تستثمر شهريًا؟', 'هتستثمر كام في الشهر؟'), amountText: withCur(this.fmt(amt), c.cur),
       plus: () => this.setState({ amount: Math.min(maxAmt, amt + stepAmt) }), minus: () => this.setState({ amount: Math.max(stepAmt, amt - stepAmt) }),
       plusLabel: T('زد ', 'زوّد ') + this.fmt(stepAmt), minusLabel: T('قلّل ', 'قلّل ') + this.fmt(stepAmt),
-      amountHint: low ? (incomeKnown ? T('بدأنا بنحو 10% من دخلك (ادفع لنفسك أولًا)', 'بدأنا بحوالي 10% من دخلك (ادفع لنفسك الأول)') : T('دخلك غير معروف، فبدأنا بـ', 'دخلك مش معروف، فبدأنا بـ') + this.fmt(c.unknownStart) + ' ' + c.cur) : T('ادخارك الحالي ', 'تحويشك دلوقتي ') + this.fmt(save) + T(' + نحو 10% من دخلك', ' + حوالي 10% من دخلك'),
+      amountHint: low ? (incomeKnown ? T('بدأنا بنحو 10% من دخلك (ادفع لنفسك أولًا)', 'بدأنا بحوالي 10% من دخلك (ادفع لنفسك الأول)') : T('دخلك غير معروف، فبدأنا بـ', 'دخلك مش معروف، فبدأنا بـ') + withCur(this.fmt(c.unknownStart), c.cur)) : T('ادخارك الحالي ', 'تحويشك دلوقتي ') + this.fmt(save) + T(' + نحو 10% من دخلك', ' + حوالي 10% من دخلك'),
       showMix: sel.id !== 'keep', mixTitle: T('تستثمرها في', 'بتستثمرها في'),
       mixes: [['mine', T('مثل أملاكك', 'زي أملاكك')], ['stk', 'أسهم'], ['gold', T('ذهب', 'دهب')], ['re', 'عقار']].map(([k, label]) => ({ label, on: s.mix === k ? 'true' : 'false', pick: () => this.setState({ mix: k }), style: chipStyle(s.mix === k) })),
       mixSource: T('بمتوسط ', 'بمتوسط ') + this.pct(mix) + T(' سنويًا', ' في السنة') + (s.mix === 'mine' ? T(' (متوسط أملاكك بحسب قيمة كل نوع)', ' (متوسط أملاكك حسب قيمة كل نوع)') : ' — ' + (s.mix === 'stk' ? c.src.stk : s.mix === 'gold' ? c.src.gold : c.src.cpi)),

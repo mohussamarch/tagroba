@@ -8,6 +8,7 @@
 <body>
 <x-dc>
 <helmet>
+<style>@font-face{font-family:SAR;src:url(data:font/otf;base64,T1RUTwAJAIAAAwAQQ0ZGIJDA82YAAAP4AAABIk9TLzKKOITzAAABAAAAAGBjbWFwQZLfewAAA6QAAAA0aGVhZC//fFYAAACcAAAANmhoZWEDhgHVAAAA1AAAACRobXR4BPIAAAAABRwAAAAIbWF4cAACUAAAAAD4AAAABm5hbWV3HHPFAAABYAAAAkNwb3N0AAMAAAAAA9gAAAAgAAEAAAABAADOkKIyXw889QADA+gAAAAA5vYcXQAAAADm9hxdAEUAAAK4ArwAAAADAAIAAAAAAAAAAQAAA4T+1AAAAv4AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAIAAFAAAAIAAAADAv4B9AAFAAACigK7AAAAjAKKArsAAAHfADEBAgAAAAAAAAAAAAAAAAAAAAEAAAACAAAAAAAAAABYWFhYAEAgwSDBA4T+1AAAArwAAAAAAAEAAAAAAcICvAAAAAAAAAAAACIBngABAAAAAAAAAAEAIQABAAAAAAABAAMAAAABAAAAAAACAAcACQABAAAAAAADAA0AfgABAAAAAAAEAAsAHgABAAAAAAAFAAsAXQABAAAAAAAGAAoAPwABAAAAAAAHAAEAIQABAAAAAAAIAAEAIQABAAAAAAAJAAEAIQABAAAAAAAKAAEAIQABAAAAAAALAAEAIQABAAAAAAAMAAEAIQABAAAAAAANAAEAIQABAAAAAAAOAAEAIQABAAAAAAAQAAMAAAABAAAAAAARAAcACQADAAEECQAAAAIALwADAAEECQABAAYAAwADAAEECQACAA4AEAADAAEECQADABoAiwADAAEECQAEABYAKQADAAEECQAFABYAaAADAAEECQAGABQASQADAAEECQAHAAIALwADAAEECQAIAAIALwADAAEECQAJAAIALwADAAEECQAKAAIALwADAAEECQALAAIALwADAAEECQAMAAIALwADAAEECQANAAIALwADAAEECQAOAAIALwADAAEECQAQAAYAAwADAAEECQARAA4AEFNBUgBTAEEAUlJlZ3VsYXIAUgBlAGcAdQBsAGEAclNBUiBSZWd1bGFyAFMAQQBSACAAUgBlAGcAdQBsAGEAclNBUlJlZ3VsYXIAUwBBAFIAUgBlAGcAdQBsAGEAclZlcnNpb24gMC4xAFYAZQByAHMAaQBvAG4AIAAwAC4AMSA6U0FSIFJlZ3VsYXIAIAA6AFMAQQBSACAAUgBlAGcAdQBsAGEAcgAAAAABAAMAAQAAAAwABAAoAAAABgAEAAEAAgAAIMH//wAAAAAgwf//AADfQAABAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAQBAAEBAQtTQVJSZWd1bGFyAAEBASf4GwD4HAL4HQP4HgSLi/oY+ZIFHQAAAHAPHQAAAHMRix0AAAEiEgAFAQEMFxohKFZlcnNpb24gMC4xU0FSIFJlZ3VsYXJTQVJSZWd1bGFydW5pMjBDMQAAAAGLAAIBAQSq+IgO+ZL4YNsVi4sFgHKEcIhvCPeBvQWWpJKmjqcI+4BZBfdr9w0VlqSSpo6nCPtMZAWL1gX3N64FlqOSpo6nCPtMZAWL96MFb3tydndyCIv7dAVCewWL9+cFbntydndyCIv7uQX7OWgFgHKEcIhvCPdOswWLLAX7XGEFgHKEcIhvCPdltwWcj5qVlZkIscMFi4sFj5GNkouTCIvfBdSaBYv7KgX3gb0FDgAAAfQAAAL+AAA=) format("opentype");unicode-range:U+20C1;font-weight:100 900}</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
 <style>
 body{margin:0}
@@ -23,7 +24,7 @@ body{margin:0}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
-<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 10px; font-family: 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
+<div dir="rtl" style="width: 100%; min-width: 350px; display: flex; flex-direction: column; gap: 10px; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; color: #193D33">
   <span style="display: flex; align-items: center; gap: 8px"><h2 style="margin: 0; font-size: 15px; font-weight: 700">{{title}}</h2><span style="{{countStyle}}">{{countText}}</span></span>
 
   <sc-if value="{{allDone}}" hint-placeholder-val="{{ false }}">
@@ -122,7 +123,7 @@ class Component extends DCLogic {
   record(rows, msg) { if (typeof this.props.onRecord === 'function') this.props.onRecord(rows, msg); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
-    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : 'ر.س';
+    const k = eg ? 3 : 1, cur = eg ? 'ج.م' : '\u20C1';
     // مخترعة: مرسل مش في قايمة البنوك المعروفة ⇒ بيظهر زي ما جه في الرسالة (§74) · المبالغ بالوحدة الصغرى
     const bankName = '⁨ALWAHA⁩';
     const msgs = [

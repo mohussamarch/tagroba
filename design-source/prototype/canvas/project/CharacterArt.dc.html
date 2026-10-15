@@ -74,7 +74,8 @@ function beard(k, col, rx, ry) {
   return '';
 }
 function mustache(col) { return '<path d="M90 103 Q95 99 100 101.5 Q105 99 110 103 Q100 105 90 103 Z" fill="' + col + '"/>'; }
-function glasses(k) { const c = k === 3 ? '#7A7A74' : '#2B2B2B', w = k === 3 ? 1.2 : 1.7; if (!k) return ''; const lens = (x) => (k === 1 ? '<circle cx="' + x + '" cy="86" r="7.5" stroke="' + c + '" stroke-width="' + w + '" fill="rgba(255,255,255,0.12)"/>' : '<rect x="' + (x - 8.5) + '" y="80" width="17" height="12" rx="' + (k === 2 ? 3 : 5) + '" stroke="' + c + '" stroke-width="' + w + '" fill="rgba(255,255,255,0.12)"/>'); return lens(88) + lens(112) + '<path d="M95.5 85 Q100 83 104.5 85" stroke="' + c + '" stroke-width="' + w + '" fill="none"/>'; }
+function glasses(k) { if (k === 4) return [88, 112].map((x) => '<rect x="' + (x - 9.5) + '" y="79.5" width="19" height="12.5" rx="4.5" fill="#1E1E1E" stroke="#D4A53A" stroke-width="1.8"/><path d="M' + (x - 6) + ' 83 L' + (x - 2) + ' 82" stroke="rgba(255,255,255,0.45)" stroke-width="1.4" stroke-linecap="round"/>').join('') + '<path d="M97.5 84.5 Q100 82.5 102.5 84.5" stroke="#D4A53A" stroke-width="1.8" fill="none"/>';
+  const c = k === 3 ? '#7A7A74' : '#2B2B2B', w = k === 3 ? 1.2 : 1.7; if (!k) return ''; const lens = (x) => (k === 1 ? '<circle cx="' + x + '" cy="86" r="7.5" stroke="' + c + '" stroke-width="' + w + '" fill="rgba(255,255,255,0.12)"/>' : '<rect x="' + (x - 8.5) + '" y="80" width="17" height="12" rx="' + (k === 2 ? 3 : 5) + '" stroke="' + c + '" stroke-width="' + w + '" fill="rgba(255,255,255,0.12)"/>'); return lens(88) + lens(112) + '<path d="M95.5 85 Q100 83 104.5 85" stroke="' + c + '" stroke-width="' + w + '" fill="none"/>'; }
 // غطا الراس: 1 شماغ أحمر · 2 غترة بيضا · 3 طاقية · 4 حجاب — الشماغ والغترة والحجاب بيخبّوا الشعر والودان
 function headBack(k, wrap) {
   if (k === 1 || k === 2) return '<path d="M62 84 C58 44 80 32 100 32 C120 32 142 44 138 84 L150 150 C130 160 70 160 50 150 Z" fill="' + (k === 1 ? 'url(#shm)' : '#F6F5EF') + '"/>';
@@ -92,6 +93,7 @@ function outfit(k, col) {
   if (k === 0) return base + '<path d="M90 142 L100 156 L110 142" stroke="rgba(0,0,0,0.14)" stroke-width="2" fill="none"/><path d="M100 156 L100 190" stroke="rgba(0,0,0,0.10)" stroke-width="2"/>';
   if (k === 1) return base + '<path d="M86 142 L100 162 L114 142 L108 140 L100 150 L92 140 Z" fill="#FFFFFF"/>';
   if (k === 2) return base + '<path d="M84 144 L100 176 L116 144" fill="#F4F3EE"/><path d="M84 144 L96 186 M116 144 L104 186" stroke="rgba(0,0,0,0.25)" stroke-width="2.2"/>';
+  if (k === 4) { const cc = cloakColor(col); return '<path d="M18 200 C22 160 60 142 100 142 C140 142 178 160 182 200 Z" fill="#F4F3EE"/><path d="M90 142 L100 156 L110 142" stroke="rgba(0,0,0,0.14)" stroke-width="2" fill="none"/><path d="M18 200 C22 162 56 144 88 142 L94 200 Z M182 200 C178 162 144 144 112 142 L106 200 Z" fill="' + cc + '"/><path d="M88 142 L94 200 M112 142 L106 200" stroke="#D4A53A" stroke-width="3"/>'; }
   return base + '<path d="M86 143 Q100 156 114 143" stroke="rgba(0,0,0,0.14)" stroke-width="2" fill="none"/>';
 }
 // الجسم كله (طلب المالك 2026-10-15: «الكاركتر للجسم كله»): مساحة 200×440، والراس نفسها متصغّرة 0.8 فوق الكتاف — حوالي 6 روس طول، هادي ووقور
@@ -106,26 +108,33 @@ function body(k, col, sk) {
   if (k === 1) return ground + legs('#2F3B37') + top(236) + '<rect x="56" y="230" width="88" height="6" rx="2" fill="' + shoe + '"/><path d="M86 108 L100 124 L114 108 L108 105 L100 114 L92 105 Z" fill="#FFFFFF" opacity="0.9"/><path d="M100 124 L100 228" stroke="rgba(0,0,0,0.10)" stroke-width="2"/>' + arms;
   if (k === 2) return ground + legs(col) + top(252) + '<path d="M86 108 L100 152 L114 108 Z" fill="#F4F3EE"/><path d="M86 108 L97 162 M114 108 L103 162" stroke="rgba(0,0,0,0.25)" stroke-width="2.2"/><circle cx="100" cy="196" r="2.6" fill="rgba(0,0,0,0.25)"/>' + arms;
   if (k === 3) return ground + feet(shoe) + '<path d="M60 226 L140 226 L160 418 Q100 426 40 418 Z" fill="' + col + edge + '/><path d="M60 226 L140 226 L160 418 Q100 426 40 418 Z" fill="rgba(0,0,0,0.16)"/>' + top(236) + '<path d="M88 109 Q100 120 112 109" stroke="' + ln + '" stroke-width="2" fill="none"/>' + arms;
+  if (k === 4) { const cc = cloakColor(col), th = '<path d="M70 108 Q100 102 130 108 Q146 112 150 128 L157 418 Q100 426 43 418 L50 128 Q54 112 70 108 Z" fill="#F4F3EE' + edge + '/>', armsB = arms.split(col).join(cc);
+    return ground + feet('#5A4030') + th + '<path d="M100 116 L100 176" stroke="rgba(0,0,0,0.10)" stroke-width="2"/><path d="M70 106 Q50 112 44 130 L30 420 Q58 426 84 422 L90 118 Z M130 106 Q150 112 156 130 L170 420 Q142 426 116 422 L110 118 Z" fill="' + cc + '"/><path d="M70 106 Q80 110 90 118 L84 422 M130 106 Q120 110 110 118 L116 422" stroke="#D4A53A" stroke-width="3" fill="none"/>' + armsB; }
   return ground + feet('#5A4030') + '<path d="M70 108 Q100 102 130 108 Q146 112 150 128 L157 418 Q100 426 43 418 L50 128 Q54 112 70 108 Z" fill="' + col + edge + '/><path d="M92 109 Q100 117 108 109" stroke="' + ln + '" stroke-width="2" fill="none"/><path d="M100 116 L100 176" stroke="rgba(0,0,0,0.10)" stroke-width="2"/>' + arms;
 }
+// مكافآت (طلب المالك 2026-10-16: «حجات معينة في اللبس يقدر يحطها بس لو معاها فلوس معينة او لو نجح في استثمار معين» — «زي طاقية لونها اخضر كبيرة عليها علامة الدولار»)
+function dollar(cx, cy, r, col, w) { return '<path d="M' + (cx + r * 0.42) + ' ' + (cy - r * 0.5) + ' C' + (cx + r * 0.2) + ' ' + (cy - r * 0.78) + ' ' + (cx - r * 0.5) + ' ' + (cy - r * 0.7) + ' ' + (cx - r * 0.42) + ' ' + (cy - r * 0.22) + ' C' + (cx - r * 0.34) + ' ' + (cy + r * 0.1) + ' ' + (cx + r * 0.42) + ' ' + (cy - r * 0.04) + ' ' + (cx + r * 0.42) + ' ' + (cy + r * 0.3) + ' C' + (cx + r * 0.42) + ' ' + (cy + r * 0.74) + ' ' + (cx - r * 0.3) + ' ' + (cy + r * 0.74) + ' ' + (cx - r * 0.46) + ' ' + (cy + r * 0.46) + '" stroke="' + col + '" stroke-width="' + w + '" fill="none" stroke-linecap="round"/><path d="M' + cx + ' ' + (cy - r * 0.92) + 'V' + (cy + r * 0.92) + '" stroke="' + col + '" stroke-width="' + (w * 0.9) + '" stroke-linecap="round"/>'; }
+function richCap() { return '<path d="M56 66 C54 22 146 22 144 66 Z" fill="#1F8A4D"/><path d="M100 26 V64 M74 62 C74 40 86 30 100 28 M126 62 C126 40 114 30 100 28" stroke="rgba(0,0,0,0.12)" stroke-width="1.6" fill="none"/><circle cx="100" cy="26" r="3.4" fill="#17703E"/><circle cx="100" cy="47" r="13" fill="#F3C96B" stroke="#C99A2E" stroke-width="1.6"/>' + dollar(100, 47, 10, '#1F6B3A', 2.6) + '<path d="M46 68 Q100 50 154 68 Q100 86 46 68 Z" fill="#17703E"/><path d="M54 69 Q100 56 146 69" stroke="rgba(255,255,255,0.18)" stroke-width="1.6" fill="none"/>'; }
+function chain(full) { const y = full ? 106 : 144, d = full ? 34 : 34, py = y + d - 4; return '<path d="M' + 88 + ' ' + y + ' Q100 ' + (y + d + 4) + ' 112 ' + y + '" stroke="#E2B53E" stroke-width="' + (full ? 2.4 : 3) + '" stroke-dasharray="' + (full ? '3 1.2' : '4 1.4') + '" fill="none"/><circle cx="100" cy="' + py + '" r="' + (full ? 6 : 7.5) + '" fill="#E2B53E" stroke="#B8902A" stroke-width="1"/>' + dollar(100, py, full ? 4.4 : 5.6, '#7A5A12', 1.3); }
+function cloakColor(col) { return col === '#F4F3EE' ? '#2A2320' : col; }
 function render(look, mode) {
   const c = Object.assign({}, DEFAULT, look || {}), [sk, skd] = pick(SKIN, c.skin), hc = pick(HAIRC, c.hairColor), wr = pick(WRAP, c.wrap), oc = pick(OUTC, c.outfitColor);
-  const [rx, ry] = faceGeo(Number(c.face) || 0), cover = Number(c.head) === 1 || Number(c.head) === 2 || Number(c.head) === 4;
+  const hat = Number(c.hat) === 1, headK = hat ? 0 : Number(c.head), [rx, ry] = faceGeo(Number(c.face) || 0), cover = headK === 1 || headK === 2 || headK === 4;
   const defs = '<defs><pattern id="shm" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#FBFAF6"/><path d="M0 0H5V5H0zM5 5H10V10H5z" fill="#B8323A" opacity="0.72"/></pattern></defs>';
   const back = cover ? '' : hairBack(Number(c.hair), hc);
   const parts = [
-    Number(c.head) === 4 ? '' : '<path d="M89 110 L89 146 Q100 152 111 146 L111 110 Z" fill="' + skd + '"/>',
-    headBack(Number(c.head), wr),
+    headK === 4 ? '' : '<path d="M89 110 L89 146 Q100 152 111 146 L111 110 Z" fill="' + skd + '"/>',
+    headBack(headK, wr),
     cover ? '' : '<ellipse cx="' + (100 - rx) + '" cy="88" rx="5" ry="8" fill="' + skd + '"/><ellipse cx="' + (100 + rx) + '" cy="88" rx="5" ry="8" fill="' + skd + '"/>',
     faceShape(Number(c.face) || 0, rx, ry, sk),
-    beard(Number(c.beard), hc, rx, ry), eyes(Number(c.eyes)), brows(Number(c.brows), Number(c.head) === 4 ? '#3A2A1F' : hc), nose(Number(c.nose), skd), Number(c.beard) >= 2 ? '' : mouth(Number(c.mouth)),
+    beard(Number(c.beard), hc, rx, ry), eyes(Number(c.eyes)), brows(Number(c.brows), headK === 4 ? '#3A2A1F' : hc), nose(Number(c.nose), skd), Number(c.beard) >= 2 ? '' : mouth(Number(c.mouth)),
     Number(c.beard) >= 2 ? mouth(Number(c.mouth)).replace(/7E4337/g, 'F2E6E0').replace('stroke-width="1.8"', 'stroke-width="1.2"') : '',
-    cover ? '' : hairFront(Number(c.hair), hc, rx), glasses(Number(c.glasses)), headFront(Number(c.head), wr)
+    cover ? '' : hairFront(Number(c.hair), hc, rx), glasses(Number(c.glasses)), headFront(headK, wr), hat ? richCap() : ''
   ];
   const svg = (vb, x) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '">' + defs + x + '</svg>';
-  if (mode === 'full') { const g = (x) => '<g transform="translate(20 -8) scale(0.8)">' + x + '</g>'; return svg('0 0 200 440', g(back) + body(Number(c.outfit), oc, sk) + g(parts.join(''))); }
+  if (mode === 'full') { const g = (x) => '<g transform="translate(20 -8) scale(0.8)">' + x + '</g>'; return svg('0 0 200 440', g(back) + body(Number(c.outfit), oc, sk) + (Number(c.bling) === 1 ? chain(true) : '') + g(parts.join(''))); }
   const shoulders = mode === 'head' ? '<path d="M30 200 C34 160 64 146 100 146 C136 146 166 160 170 200 Z" fill="' + oc + '"/>' : outfit(Number(c.outfit), oc);
-  return svg(mode === 'head' ? '46 24 108 108' : '0 0 200 200', back + shoulders + parts.join(''));
+  return svg(mode === 'head' ? '46 24 108 108' : '0 0 200 200', back + shoulders + (Number(c.bling) === 1 && mode !== 'head' ? chain(false) : '') + parts.join(''));
 }
 class Component extends DCLogic {
   look() {
