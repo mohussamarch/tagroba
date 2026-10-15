@@ -145,6 +145,18 @@ export ANDROID_HOME="C:/Users/atgs0/Documents/Codex/android-build-tools/sdk"
 
 ## 7. آخر خطوة (حدّثها بعد كل خطوة)
 
+**2026-10-15 — علامة الريال الرسمية بدل «ر.س» (فرع `r04-riyal` · OVERRIDES §91).**
+- **اتعمل إيه:**
+  - `core/FormatMoney.kt`: `RIYAL_SIGN` (U+20C1) و`withCurrency` (المكان الوحيد اللي بيرتّب الرقم والعملة: الريال «⁦⃁ X⁩» شمال بمسافة جوه عزل LTR، وغيره «X ج.م») و`outgoingText` (للنص الطالع برا: يرجّع «X ر.س»/«X SAR»). `formatMoney` ماشي عليهم. `CURRENCY_SAR` = U+20C1 في الجداول الثلاثة، ومفتاح جديد `CURRENCY_SAR_PLAIN` للنص الطالع بس. `isLockSafe` بيرفض العلامة و«ر.س».
+  - `ui/text/RiyalText.kt`: **مساعد واحد** `withRiyalSign` بيدّي خط العلامة لحرف U+20C1 بس، و`BasicText` بنفس الاسم والمعاملات بيستعمله — كل ملفات `ui/` (170 ملف) بقت بتستورد `app.masroufy.ui.text.BasicText` بدل بتاع Compose. **أي `BasicText` جديد لازم يستورد من هنا.** الخط `res/font/riyal_sign.otf` على أندرويد بس (سطح المكتب والآيفون `null` ⇒ النص زي ما هو).
+  - `amountLabel` (الصفوف) ماشي على `withCurrency` · `HeroAmount` كان أصلًا بيحط العملة شمال · الإشعار بيعدّي على `outgoingText`.
+- **اختبارات اتعدلت عن قصد** (كانت مستنية «X ر.س» في العرض): `AdvisorMoreRulesTest` · `AdvisorRulesTest` · `ArabicVariantsTest` (الإنجليزي) · `DateTextsTest` · `WesternDigitsTest` · `TextsTest` (الفصحى + لقطة المصري: `CURRENCY_SAR` المفتاح الوحيد اللي اتغير، و`CURRENCY_SAR_PLAIN` مكانه معروف) · `AdvisorMoreFlowTest` · `AdvisorOvercommitFlowTest` · `AdvisorPaceFlowTest` · `CalculatorsFlowTest` · `AdvisorSyncTest` · `CalendarModelTest` · `HomeModelTest` · `InheritanceResultPresenterTest` · `SavingsGrowthPresenterTest` · `SavingsPresenterTest` · `LinkModelsTest` · `SpaceTransferModelTest` · `PersonPresenterTest` · `InvestmentScreensTest`. **مقارنة التطبيق القديم (golden):** `support/Golden.kt` بيرجّع «⁦⃁ X⁩» في **الناتج** لـ«X ر.س» قبل المقارنة (نص رسالة البنك الخام ما بيتلمسش).
+- **اختبارات جديدة:** `RiyalSignTest` (4: الريال والجنيه × فصحى/مصري/إنجليزي · العزل · المخفي · النص الطالع · ماسح لكل جداول النصوص) و`RiyalSpanTest` (3: العلامة بس هي اللي بتاخد الخط · التنسيق القديم بيفضل · مفيش «ر.س» مكتوبة بالإيد في كود `ui/`).
+- **اتفحص إزاي:** `jvmTest :core:compileKotlinMetadata :device:compileKotlinMetadata :androidApp:assembleDebug` ⇒ نجح · من ملفات JUnit الجديدة: 2025 اختبار، 0 فشل، 0 متخطّي (366 مجموعة). الملف `riyal_sign.otf` موجود جوه البرنامج (`res/font/riyal_sign.otf`).
+- **ما اتجربش:** شكل العلامة على جوال أو محاكي فعلًا (مفيش لقطة شاشة) · العلامة بالعريض (الخط فيه وزن عادي بس، والعريض بيتعمل صناعي) · حقول الكتابة (`BasicTextField`) ما بتمرّش على المساعد.
+- **لسه:** سطر سعر التحويل بين البلدين («12.8200 ج.م لكل 1 ⃁») العلامة فيه **يمين** الـ1 لأن القالب «{0} {1} لكل {2} {3}» — محتاج تعديل القالب في الثلاث لغات · وحدة الحقول (`currencySymbol` جنب خانة الرقم) بتعرض العلامة لوحدها، والجمل اللي بتحط `currencySymbol` بعد رقم بإيدها (لو فيه) ما اتراجعتش كلها.
+- **أسئلة مستنية المالك:** (1) الإشعارات والنص اللي بيطلع برا التطبيق بيفضل «ر.س» لأن خطوط الجوال ما فيهاش العلامة — موافق؟ (دلوقتي الإشعارات أصلًا من غير مبالغ، وCSV من غير عملة) · (2) OVERRIDES سطر «(غ) رمز الريال الجديد ⃁ في رسايل البنك» لسه سؤال مفتوح — ما اتحسمش هنا.
+
 **2026-10-11 — قسم الاستثمار: قرارات §87 جوه الشاشة الموجودة (مفيش قسم «مستقبلي» — §89). ميعاد الخميس اتلغى: مستنيين أفكار المالك الزيادة الأول (§87).**
 - القرارات الـ12 + ردود النافذتين في OVERRIDES §87. اليوتيوبر اتعرف: «علي الحامد». فكرة 13 «حاجاتي» اتضافت.
 - جلسة التصميم: المالك وقّف الرسم لحد بعد الخميس (OVERRIDES §87). المسودة محفوظة عندها ومش يتبنى عليها.
