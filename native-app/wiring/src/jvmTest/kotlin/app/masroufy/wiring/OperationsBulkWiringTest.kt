@@ -53,11 +53,12 @@ class OperationsBulkWiringTest {
 
         val project = ops.projects.create("مشروع وهمي")
         assertEquals(1, bulk.addToProject(listOf(a), project.id).changed)
-        assertEquals(1, bulk.summary(listOf(a, b)).deletable, "المتربطة بمشروع ما تتمسحش")
+        // إجابة المالك 2026-10-15 (OVERRIDES §91-6): المسح الجماعي بقواعد الفردي — ربط المشروع بيتشال مع المسح ويرجع مع «تراجع»
+        assertEquals(2, bulk.summary(listOf(a, b)).deletable, "a project link does not block, like single delete")
 
         val gone = bulk.delete(listOf(a, b))
-        assertEquals(1, gone.changed)
-        assertTrue(repos.transactions.findByIds(listOf(b)).isEmpty())
+        assertEquals(2, gone.changed)
+        assertTrue(repos.transactions.findByIds(listOf(a, b)).isEmpty())
         bulk.undo(assertNotNull(gone.undo))
         assertEquals(listOf(a, b).sorted(), repos.transactions.findByIds(listOf(a, b)).map { it.id }.sorted())
     }

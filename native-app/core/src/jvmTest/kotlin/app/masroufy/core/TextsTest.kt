@@ -35,6 +35,9 @@ class TextsTest {
             // الأرقام بس اتوحدت لـ0-9 (قرار المالك §79 — L5)
             // علامة الريال الرسمية بدل «ر.س» (قرار المالك 2026-10-15) — المفتاح الوحيد اللي اتغير عن قصد
             if (key == TextKey.CURRENCY_SAR) { assertEquals("ر.س", old); assertEquals("\u20C1", EGYPTIAN_TEXTS[key]); continue }
+            // أسامي أنواع الدخل (إجابة المالك 2026-10-15 مساءً — OVERRIDES §91-7): العرض بس اتغير عن قصد
+            if (key == TextKey.KIND_FREELANCE) { assertEquals("فري لانس", old); assertEquals("عمل إضافي", EGYPTIAN_TEXTS[key]); continue }
+            if (key == TextKey.KIND_PERSONAL_SALE) { assertEquals("بيع شخصي", old); assertEquals("بيعة", EGYPTIAN_TEXTS[key]); continue }
             assertEquals(westernized(expected), EGYPTIAN_TEXTS[key], "المصري اتغير في $name")
         }
         // أي مفتاح بعد اللقطة لازم يكون في جدول معروف من بعدها: الرسايل اللي اتنقلت من الكود (ملفات المرجع بتتأكد من نصها) · شاشة الأشخاص (جلسة 16) · المساعد المالي (§68) · حاسبة الورث (§69) · هتوصل لكام (§69.6) · رسايل البنك لوحدها (§72)
@@ -51,6 +54,8 @@ class TextsTest {
             EGYPTIAN_ASK_TEXTS.keys +
             // إصلاح رسايل البنك (r04-sms-fix): جدول لوحده (`TextsSmsFix`)
             EGYPTIAN_SMS_FIX_TEXTS.keys +
+            // إجابات المالك 2026-10-15 مساءً (`TextsOwner1015.kt`)
+            EGYPTIAN_OWNER_1015_TEXTS.keys +
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)
             setOf(TextKey.SPACE_COUNTRY_ARCHIVED).filter { it in EGYPTIAN_SPACE_TEXTS } +
             // «ر.س» للنص الطالع برا التطبيق بس (علامة الريال الرسمية — قرار المالك 2026-10-15)

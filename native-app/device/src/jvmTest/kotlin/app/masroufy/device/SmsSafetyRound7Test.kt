@@ -122,11 +122,17 @@ class SmsSafetyRound7Test {
             val r = parseBankSms(BankSmsMessage("TESTBANK", received, stored), 1)
             assertTrue(r !is SmsParseResult.Ok || r.row.direction.wire != "out" || !r.row.shape.clear, "refund booked as spending: $body")
         }
-        // رمز الريال الجديد و«﷼» و«S.R»: بتتحفظ وبتستنى (القارئ لسه ما بيقراهاش ريال — سؤال للمالك)، عمرها ما بتتسجل لوحدها
-        for (body in mustStore.filter { '⃁' in it || '﷼' in it || "S.R" in it }) {
+        // «﷼» و«S.R»: بتتحفظ وبتستنى (القارئ ما بيقراهاش ريال)، عمرها ما بتتسجل لوحدها
+        for (body in mustStore.filter { '﷼' in it || "S.R" in it }) {
             val stored = assertNotNull(SmsSafety.sanitize(body))
             val r = parseBankSms(BankSmsMessage("TESTBANK", received, stored), 1)
             assertTrue(r !is SmsParseResult.Ok || !r.row.shape.clear, "recorded: $body")
+        }
+        // إجابة المالك 2026-10-15 (OVERRIDES §91-9): العلامة الجديدة (U+20C1) = ريال سعودي ⇒ بتتحفظ، ولو اتقرت فمبلغها بالريال بالظبط
+        for (body in mustStore.filter { '⃁' in it }) {
+            val stored = assertNotNull(SmsSafety.sanitize(body))
+            val r = parseBankSms(BankSmsMessage("TESTBANK", received, stored), 1)
+            assertTrue(r !is SmsParseResult.Ok || r.row.amountMinor == 4_860L, "read as SAR 48.60: $body")
         }
         val recharge = assertNotNull(SmsSafety.sanitize(mustStore.last()))
         val row = assertIs<SmsParseResult.Ok>(parseEgyptBankSms(BankSmsMessage("VF-CASH", received, recharge), 1)).row
