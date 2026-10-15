@@ -269,7 +269,9 @@ class AnswerTransferAsks(private val deps: AnswerTransferAsksDeps) {
     private suspend fun confirmKind(t: Transaction, kind: EconomicKind): Transaction {
         // §82-13: الإجابة لازم تبان «بعد القرار» حتى لو ساعة الجوال متأخرة — وإلا «دعم» اللي المالك أكّده يرجع يتسأل (`legacySupportAsk`)
         val now = maxOf(deps.clock.nowIso(), LEGACY_AUTO_SUPPORT_UNTIL)
-        deps.txns.update(t.id, TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now))
-        return t.copy(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now)
+        // مراجعة 0.3: الإجابة بس هي اللي بتقفل علامة السؤال المفتوح (العملية اللي مالهاش علامة ما بيتكتبلهاش حقل جديد)
+        val answered = if (t.supportAskPending == true) false else null
+        deps.txns.update(t.id, TransactionPatch(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now, supportAskPending = answered))
+        return t.copy(economicKind = kind, economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, updatedAt = now, supportAskPending = answered ?: t.supportAskPending)
     }
 }

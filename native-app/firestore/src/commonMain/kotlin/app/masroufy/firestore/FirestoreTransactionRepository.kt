@@ -62,6 +62,7 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         if (patch.clearReversalOfId) fields["reversalOfId"] = FieldValue.delete else patch.reversalOfId?.let { fields["reversalOfId"] = it }
         if (patch.clearReversedById) fields["reversedById"] = FieldValue.delete else patch.reversedById?.let { fields["reversedById"] = it }
         if (patch.clearKindBeforeReversal) fields["kindBeforeReversal"] = FieldValue.delete else patch.kindBeforeReversal?.let { fields["kindBeforeReversal"] = it.wire }
+        patch.supportAskPending?.let { fields["supportAskPending"] = it }
         if (fields.isEmpty()) return
         val safe = storeForm(codec.group, fields)
         space.updateDoc(codec.group, id, safe)

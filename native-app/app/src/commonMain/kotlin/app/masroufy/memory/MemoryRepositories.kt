@@ -66,6 +66,7 @@ class MemoryTransactionRepository(seed: List<Transaction> = emptyList()) : Trans
             reversalOfId = if (patch.clearReversalOfId) null else patch.reversalOfId ?: old.reversalOfId,
             reversedById = if (patch.clearReversedById) null else patch.reversedById ?: old.reversedById,
             kindBeforeReversal = if (patch.clearKindBeforeReversal) null else patch.kindBeforeReversal ?: old.kindBeforeReversal,
+            supportAskPending = patch.supportAskPending ?: old.supportAskPending,
         )
     }
 

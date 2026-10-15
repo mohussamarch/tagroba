@@ -30,6 +30,7 @@ import app.masroufy.memory.MemoryTransferPartyRepository
 import app.masroufy.memory.MemoryUnitOfWork
 import app.masroufy.memory.SequentialIdGenerator
 import kotlinx.coroutines.runBlocking
+import app.masroufy.port.TransactionPatch
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -83,7 +84,7 @@ class LegacySupportAskTest {
         assertEquals(AskKind.LOAN_OR_SUPPORT to uiText(TextKey.ASK_LOAN_OR_SUPPORT), q.kind to q.title)
         assertEquals(uiText(UiKey.ASK_LEGACY_SUPPORT_BODY, formatMoney(30_000, Currency.SAR), "شخص وهمي"), q.body)
         // ولا حاجة اتغيّرت لوحدها
-        assertEquals(listOf(auto, autoToo), w.txns.findByIds(listOf("t-auto", "t-auto2")))
+        assertEquals(listOf(auto, autoToo).map { it.copy(supportAskPending = true) }, w.txns.findByIds(listOf("t-auto", "t-auto2")), "only the open-question marker")
 
         // «دعم» ⇒ بيفضل دعم ومؤكد، والسؤال ما بيرجعش
         val kept = w.answers.answerLoanOrSupport("t-auto2", LoanOrSupport.SUPPORT)
@@ -111,5 +112,21 @@ class LegacySupportAskTest {
         val count = CountNeedsConfirmation(listOf(w.source)).load("2026-10-11", periodForDate("2026-10-11", 28))
         assertEquals(2, count.byKind[AskKind.LOAN_OR_SUPPORT])
         assertEquals(setOf("t-auto", "t-auto2"), count.asks.mapNotNull { it.transactionId }.toSet())
+    }
+
+    /** مراجعة 0.3: «طبّق القواعد على كل السجل» (أو أي تعديل) بعد ما السؤال اتلاقى ما يشيلوش — العلامة الصريحة بتفضل لحد إجابة المالك. */
+    @Test fun aRulesRunOnAllHistoryDoesNotDropTheQuestion() = runBlocking<Unit> {
+        val w = World("2026-10-11T09:00:00.000Z")
+        val both = listOf(AskKind.LOAN_OR_SUPPORT to "t-auto", AskKind.LOAN_OR_SUPPORT to "t-auto2")
+        assertEquals(both, w.asks())
+        // نفس كتابة «طبّق القواعد على كل السجل» (`ReviewHistory.applyCategories`): تصنيف مؤكد وآخر تعديل دلوقتي (بعد الحد)
+        for (id in listOf("t-auto", "t-auto2")) w.txns.update(id, TransactionPatch(categoryId = "c-test", categoryConfirmed = true, updatedAt = "2026-10-12T10:00:00.000Z"))
+        assertEquals(both, w.asks(), "the question survives the rules run")
+        assertEquals(AskKind.LOAN_OR_SUPPORT, w.answers.question("t-auto")?.kind)
+        w.answers.answerLoanOrSupport("t-auto", LoanOrSupport.SUPPORT)
+        assertEquals(listOf(AskKind.LOAN_OR_SUPPORT to "t-auto2"), w.asks(), "answered ⇒ closed for good")
+        assertEquals(false, w.txns.findByIds(listOf("t-auto")).single().supportAskPending)
+        // «دعم» اتأكد بعد القرار ومالوش علامة ⇒ الحد بآخر تعديل زي الأول، ومفيش حقل جديد اتكتب عليه
+        assertEquals(null, w.txns.findByIds(listOf("t-new")).single().supportAskPending)
     }
 }

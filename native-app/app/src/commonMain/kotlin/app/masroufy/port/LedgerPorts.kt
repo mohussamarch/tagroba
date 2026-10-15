@@ -78,6 +78,8 @@ data class TransactionPatch(
     /** النوع اللي المالك كان أكده على الأصلية قبل ما تتلغي (§77-D) — `clear…` لما الزوج يتفك. */
     val kindBeforeReversal: app.masroufy.core.EconomicKind? = null,
     val clearKindBeforeReversal: Boolean = false,
+    /** §82-13 (مراجعة 0.3): علامة سؤال «سلفة ولا دعم؟» على «دعم» قديم — null = ما تتغيرش. */
+    val supportAskPending: Boolean? = null,
 )
 
 interface SourceRecordRepository {
