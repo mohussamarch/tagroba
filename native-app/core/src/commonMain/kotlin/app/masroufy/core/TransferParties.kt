@@ -34,8 +34,11 @@ data class TransferParty(
     val decidedAt: String = "",
 )
 
-/** الطرف زي ما اتقري من وصف العملية. */
-data class TransferPartyRef(val key: String, val label: String, val last4: String?)
+/**
+ * الطرف زي ما اتقري من وصف العملية. [label] = الاسم كامل زي ما جه (`PartyNames.kt` — المفتاح من غير تغيير). [cut] = البنك نفسه قص
+ * الاسم أو حجب جزء منه (رسالة ولا كشف) ⇒ الشاشة بتقول «الاسم ناقص» والمالك يكمّله بربطه بشخص.
+ */
+data class TransferPartyRef(val key: String, val label: String, val last4: String?, val cut: NameCut? = null)
 
 /** قرار المالك §39 (ب): الشك بعد 5 تحويلات مع نفس الطرف في شهر واحد. */
 const val SUSPICIOUS_TRANSFERS_PER_MONTH = 5
@@ -72,6 +75,9 @@ private val DIRECTION_MARK = Regex("^(?:FR|TO)(?=[A-Z]|$)")
  */
 private val QNB_IPN = Regex("IPN(?!\\s*TRANSFER)([A-Za-z?_.*][A-Za-z?_.*]{0,11})[0-9a-f*•]*(?:ACC|CAR|WAL)")
 private val HEX_TAIL = Regex("[a-f]+$")
+
+/** خانة الاسم في ملف QNB 12 حرف — الاسم اللي ماليها كلها ممكن يكون البنك قصّه ([NameCut.STATEMENT]). */
+private const val QNB_NAME_FIELD = 12
 
 /** الاسم بحروف كبيرة لازق فيه أول حرف من البصمة («MOHAMED_EIDc») ⇒ يتشال. الاسم اللي فيه حروف صغيرة أصلًا بيفضل زي ما هو. */
 private fun qnbName(raw: String): String {
@@ -117,12 +123,25 @@ private fun lastFour(run: String): String? = run.filter { it in '0'..'9' }.takeL
 internal fun partyRef(label: String, last4: String?): TransferPartyRef? = ref(label, last4)
 
 private fun ref(label: String, last4: String?): TransferPartyRef? {
-    val clean = JsText.trim(JsText.collapseWhitespace(label.replace('_', ' ').trim('-', '/', ' '))).take(60)
+    val full = JsText.trim(JsText.collapseWhitespace(label.replace('_', ' ').trim('-', '/', ' ')))
+    // المفتاح من أول 60 حرف زي ما كان (القرارات المحفوظة بيه) — والاسم المعروض كامل لحد [PARTY_LABEL_MAX] (§6.5 بند 8)
+    val clean = full.take(60)
     val compact = normalizeCompact(clean)
     if (compact.isEmpty() && last4 == null) return null
     // اسم كله «؟» (عربي ضاع من ملف البنك) ⇒ مش اسم
     if (compact.isEmpty() && clean.isNotEmpty()) return last4?.let { TransferPartyRef("#$it", "••••$it", it) }
-    return TransferPartyRef(compact + (last4?.let { "#$it" } ?: ""), clean.ifEmpty { "••••$last4" }, last4)
+    return TransferPartyRef(compact + (last4?.let { "#$it" } ?: ""), full.take(PARTY_LABEL_MAX).ifEmpty { "••••$last4" }, last4)
+}
+
+/**
+ * الاسم كامل قبل «W-/FRACCT/» (§6.5 بند 8): نفس النمط على النص بعد قلب الجملة **كلها** مرة واحدة، والاسم بيتمد لورا على «-» و«.»
+ * (`PartyNames.kt`). null لو مفيش.
+ */
+private fun alrajhiFullName(raw: String): String? {
+    val joined = nfkc(logicalArabicJoined(latinizeDigits(raw)))
+    val g = ACCOUNT.find(joined)?.groups?.get(1) ?: return null
+    if (g.value.isBlank()) return null
+    return extendNameBackward(joined, g.range.first, g.range.last + 1) ?: g.value
 }
 
 /*
@@ -134,15 +153,20 @@ private fun ref(label: String, last4: String?): TransferPartyRef? {
 fun transferPartyOf(t: Transaction): TransferPartyRef? {
     if (!isTransferLike(t)) return null
     val text = nfkc(logicalArabic(latinizeDigits(t.rawDescription.orEmpty())))
-    if (looksLikeSms(text)) return smsPartyOf(text, t.observedDirection)
+    if (looksLikeSms(text)) return smsPartyOf(text, t.observedDirection)?.let { withFullName(it, egyptRegisteredFullName(text), NameCut.SMS) }
     val op = t.sourceOperationType?.let { nfkc(logicalArabic(it)) }.orEmpty()
     if (WALLET_TOPUP.containsMatchIn(op)) return ref("محفظة دراهم", null)
     ACCOUNT.find(text)?.let { m ->
         val latin = m.groupValues[3].replace(DIRECTION_MARK, "")
         if (normalizeCompact(latin) == "DRAHIM") return ref("محفظة دراهم", null)
-        return ref(m.groupValues[1].ifBlank { latin }, lastFour(m.groupValues[2]))
+        val legacy = ref(m.groupValues[1].ifBlank { latin }, lastFour(m.groupValues[2])) ?: return null
+        val full = if (m.groupValues[1].isBlank()) null else alrajhiFullName(t.rawDescription.orEmpty())
+        return withFullName(legacy, full, NameCut.STATEMENT)
     }
-    QNB_IPN.find(text)?.let { return ref(qnbName(it.groupValues[1]), null) }
+    QNB_IPN.find(text)?.let { m ->
+        val name = qnbName(m.groupValues[1])
+        return ref(name, null)?.let { withFullName(it, null, NameCut.STATEMENT, qnbFull = name.length >= QNB_NAME_FIELD) }
+    }
     SARIE.find(text)?.let { return ref(it.groupValues[1], null) }
     LOCAL_IN.find(text)?.let { return ref(it.groupValues[1], null) }
     VISA_DIRECT.find(text)?.let { return ref(it.groupValues[1], null) }

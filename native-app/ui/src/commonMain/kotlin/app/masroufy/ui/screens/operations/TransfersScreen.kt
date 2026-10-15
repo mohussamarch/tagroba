@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import app.masroufy.core.Person
 import app.masroufy.core.TextKey
 import app.masroufy.core.TransferPartyRef
+import app.masroufy.core.nameCutText
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.AmountTone
@@ -131,6 +132,7 @@ private fun PartyCard(r: PartyRowView, open: Boolean, onToggle: () -> Unit, acti
                     BasicText(r.ref.label, style = Type.of(15, FontWeight.Bold))
                     r.last4?.let { BasicText(t(UiKey.TRANSFERS_LAST4, it), style = Type.of(12).copy(color = Ink.muted)) }
                 }
+                nameCutText(r.ref.cut)?.let { BasicText(it, style = Type.caption().copy(color = Ink.focus)) }
                 BasicText(r.meta, style = Type.caption().copy(color = Ink.muted))
                 StatusChip(r.chip.text, r.chip.ink, r.chip.background)
             }

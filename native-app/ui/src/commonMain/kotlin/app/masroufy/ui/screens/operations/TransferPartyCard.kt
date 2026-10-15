@@ -33,6 +33,8 @@ import app.masroufy.core.Person
 import app.masroufy.core.PersonCircle
 import app.masroufy.core.TextKey
 import app.masroufy.core.TransferPartyRef
+import app.masroufy.core.nameCutText
+import app.masroufy.core.suggestedPersonName
 import app.masroufy.core.ruleFor
 import app.masroufy.core.sentenceDigits
 import app.masroufy.ui.app.LocalSpace
@@ -103,6 +105,11 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             BasicText(t(UiKey.TRANSFER_PARTY_ASK), style = Type.of(13, FontWeight.Bold).copy(color = Ink.focus))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 BasicText(t(UiKey.TRANSFER_PARTY_NAME, party.label), style = Type.of(16, FontWeight.Bold))
+                // §6.5 بند 8: البنك نفسه قص الاسم ⇒ نقول كده ونطلب يكمّله مرة واحدة بربطه بشخص (القرار بيتفتكر بمفتاح الطرف)
+                nameCutText(party.cut)?.let { cut ->
+                    BasicText(cut, style = Type.of(12, FontWeight.Bold).copy(color = Ink.focus))
+                    BasicText(t(UiKey.NAME_CUT_FIX), style = Type.of(12).copy(color = PartyInk.brown))
+                }
                 party.last4?.let { BasicText(partyAccount(party), style = Type.of(12).copy(color = PartyInk.brown)) }
             }
             PrimaryButton(t(UiKey.TRANSFER_PARTY_PERSON), onClick = { sheet = true; error = null }, modifier = Modifier.fillMaxWidth())
@@ -147,7 +154,7 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
 }
 
 /** الشخص الجديد: الاسم المكتوب، ولو فاضي اسم الطرف زي ما جه. */
-fun partyNewName(party: TransferPartyRef, typed: String): String = typed.trim().ifEmpty { party.label }
+fun partyNewName(party: TransferPartyRef, typed: String): String = typed.trim().ifEmpty { suggestedPersonName(party) }
 
 /** اختيار «شخص جديد»: الاسم والدايرة. */
 data class NewPersonDraft(val name: String, val circle: PersonCircle?)
@@ -181,7 +188,7 @@ private fun PartySheet(
     var people by remember { mutableStateOf<List<Person>>(emptyList()) }
     var picked by remember { mutableStateOf<Person?>(null) }
     var isNew by remember { mutableStateOf(false) }
-    var name by remember(party.key) { mutableStateOf(party.label) }
+    var name by remember(party.key) { mutableStateOf(suggestedPersonName(party)) }
     var circle by remember { mutableStateOf<PersonCircle?>(null) }
     var kind by remember { mutableStateOf<EconomicKind?>(null) }
     LaunchedEffect(visible) {
