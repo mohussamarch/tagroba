@@ -21,8 +21,11 @@ enum class SmsStatus {
     /** القراءة شغالة والإذن موجود. */
     READING,
 
-    /** المالك وقّف القراءة. */
+    /** المالك وقّف القراءة بإيده (المرسلين متسجلين والقراءة متوقفة). */
     OFF,
+
+    /** القراءة عمرها ما اشتغلت (مفيش مرسلين) ⇒ سطر محايد يطلب الإذن — **مش** «أوقفتَ القراءة» (OVERRIDES §91). */
+    SETUP,
 
     /** الإذن اتسحب من إعدادات الجوال. */
     PERMISSION,
@@ -93,6 +96,7 @@ fun bankSmsUi(overview: SmsOverview?, recordedToday: List<Transaction>, fresh: S
     if (overview == null) return BankSmsUi(SmsStatus.UNAVAILABLE)
     val inbox = overview.inbox
     val status = when {
+        !inbox.enabled && inbox.senders.isEmpty() -> SmsStatus.SETUP
         !inbox.enabled -> SmsStatus.OFF
         !inbox.permission -> SmsStatus.PERMISSION
         else -> SmsStatus.READING

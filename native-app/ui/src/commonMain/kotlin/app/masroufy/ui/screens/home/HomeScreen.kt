@@ -27,6 +27,8 @@ import app.masroufy.core.weekdayDayMonth
 import app.masroufy.ui.app.LocalBell
 import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
+import app.masroufy.ui.screens.imports.SmsAllowCard
+import app.masroufy.ui.screens.imports.smsAllowCardShown
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.app.SpaceDeps
 import app.masroufy.ui.components.EmptyState
@@ -71,7 +73,10 @@ fun HomeScreen() {
             load = loadHome(deps)
         }
     }
+    // اختار «رسائل البنك» في أول تشغيل والإذن اترفض (أو الشرح اتقفل) ⇒ كارت هادي «اسمح لاحقًا» (OVERRIDES §91)
+    val smsCard = smsAllowCardShown()
     TabScaffold(t(UiKey.TAB_HOME), header = { HomeHeader(me, bell.state, bell.refresh) }) {
+        if (smsCard) item(key = "smsAllow") { SmsAllowCard() }
         when (val s = load) {
             HomeLoad.Loading -> item(key = "loading") { HomeSkeleton() }
             HomeLoad.Failed -> item(key = "failed") { HomeErrorBanner { load = HomeLoad.Loading; tick++ } }

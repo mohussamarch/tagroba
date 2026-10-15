@@ -41,6 +41,7 @@ import app.masroufy.ui.overlay.OverlayHost
 import app.masroufy.ui.overlay.OverlayLayer
 import app.masroufy.ui.screens.home.Dismissals
 import app.masroufy.ui.screens.home.without
+import app.masroufy.ui.screens.imports.SmsHandoffHost
 import app.masroufy.ui.screens.onboarding.OnboardingRoute
 import app.masroufy.ui.shell.AddOperationSheet
 import app.masroufy.ui.shell.BottomBars
@@ -134,6 +135,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
             }
             // «بصوتك» في «+» ⇒ المساعد بيتفتح ويسمعك هناك (رد المالك §82-2 — زي ميكروفون الشريط)
             AddOperationSheet(adding, onClose = { adding = false }, onVoice = { adding = false; ask = true })
+            // «رسائل البنك» من أول تشغيل ⇒ الشرح ثم إذن النظام بعد ما الرحلة تخلص (OVERRIDES §91)
+            SmsHandoffHost()
             // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`). القفل ⇒ «البيانات اتغيرت»: المساعد ممكن يكون
             // سجّل عملية أو قفل كارت ⇒ الرئيسية والجرس يقروا تاني (اتلقطت في تجربة المحاكي: «معك الآن» فضل زي ما هو)
             AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null; shell.changes.changed() }) { target ->

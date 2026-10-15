@@ -45,6 +45,7 @@ import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import app.masroufy.usecase.knownBankSenders
 
 /** لوحة المرسل: تعديل محفظة بنك موجود أو إضافة مرسل جديد. */
 sealed interface SenderSheet {
@@ -124,8 +125,16 @@ fun BankSmsSettingsScreen() {
             }
         }
         item(key = "auto") { AutoCard(u, onStop = { act(UiKey.SMS_SETTINGS_STOPPED) { sms?.disable() } }, onStart = {
-            if (u.senders.isEmpty()) sheet = SenderSheet.Add
-            else withPermission { sms?.enable(u.senders.map { it.sender }); toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true) }
+            // بنك البرنامج عارف مرسلينه (المحفظة اللي اتعملت في أول تشغيل مثلًا) ⇒ بيتسجّل لوحده — ما حدش يكتب اسم مرسل (OVERRIDES §91)
+            val known = knownBankSenders(wallets, country)
+            when {
+                u.senders.isEmpty() && known.isNotEmpty() -> withPermission {
+                    if (sms != null) connectKnownBanks(sms, wallets, country, emptyList())
+                    toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true)
+                }
+                u.senders.isEmpty() -> sheet = SenderSheet.Add
+                else -> withPermission { sms?.enable(u.senders.map { it.sender }); toaster.show(t(UiKey.SMS_SETTINGS_STARTED), dark = true) }
+            }
         }) }
         item(key = "senders") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -200,6 +209,7 @@ private fun AutoCard(u: SmsSettingsUi, onStop: () -> Unit, onStart: () -> Unit) 
             val body = when {
                 u.permissionLost -> UiKey.SMS_SETTINGS_BODY_PERM
                 u.enabled -> UiKey.SMS_SETTINGS_BODY_ON
+                u.senders.isEmpty() -> UiKey.BANK_SMS_STATUS_SETUP_BODY
                 else -> UiKey.SMS_SETTINGS_BODY_OFF
             }
             BasicText(t(body), style = Type.of(13, lineHeight = 1.7).copy(color = Ink.muted))

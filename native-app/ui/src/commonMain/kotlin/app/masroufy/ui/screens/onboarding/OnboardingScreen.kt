@@ -46,7 +46,7 @@ import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
-import app.masroufy.ui.screens.imports.BankSmsRoute
+import app.masroufy.ui.screens.imports.SmsHandoff
 import app.masroufy.ui.screens.more.DayGrid
 import app.masroufy.ui.screens.more.AccountLookRoute
 import app.masroufy.ui.screens.more.WalletsRoute
@@ -63,7 +63,7 @@ import kotlinx.coroutines.launch
  * من `OnboardAccount.start`) · خطأ (القراية أو الحفظ ⇒ «أعد المحاولة») · غير متاح (رسايل البنك على الآيفون · مصر لو إنشاء البلد مش متاح ·
  * الإذن). «محتاج نت» بتاع كارت الدخول في `SignInFlow` (الكتابة هنا بتستنى في نسخة الجهاز لو النت قاطع).
  * «افتح الرئيسية» أو «كمّل بروفايلك» ⇒ `OnboardAccount.finish` (يوم الراتب + للحساب الجديد الكاش والبنك من كارتين §81 — من غير ديون) ⇒ البلد المختارة ⇒
- * رسايل البنك لو اختارها.
+ * لو اختار رسايل البنك: شرح الإذن ثم نافذة النظام فوق الرئيسية (`SmsHandoff`).
  */
 @Composable
 fun OnboardingScreen() {
@@ -115,7 +115,8 @@ fun OnboardingScreen() {
                     }
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
                     nav.pop()
-                    if (s.answers.source == OnbSource.SMS) nav.push(BankSmsRoute)
+                    // «رسائل البنك» ⇒ الرئيسية (أو «حسابك») والشرح ثم إذن النظام فوقها (`SmsHandoff`) — مش شاشة «رسائل البنك» من غير إذن
+                    if (s.answers.source == OnbSource.SMS && bankSmsReadable()) SmsHandoff.start()
                     // حساب جديد خالص من غير كارتين الفلوس (بلد تانية من غير طريق للفلوس — المعاينة) ⇒ «المحافظ» عشان يضيف محافظه هناك
                     if (st.freshAccount && !money(s)) nav.push(WalletsRoute)
                     // «كمّل بروفايلك» ⇒ «حسابك» ولوحة الشكل مفتوحة (الرجوع منها ⇒ الرئيسية)

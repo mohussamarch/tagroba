@@ -52,12 +52,14 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
     val (title, body) = when (status) {
         SmsStatus.READING -> UiKey.BANK_SMS_STATUS_OK to UiKey.BANK_SMS_STATUS_OK_BODY
         SmsStatus.OFF -> UiKey.BANK_SMS_STATUS_STOPPED to UiKey.BANK_SMS_STATUS_OFF_BODY
+        SmsStatus.SETUP -> UiKey.BANK_SMS_STATUS_SETUP to UiKey.BANK_SMS_STATUS_SETUP_BODY
         SmsStatus.PERMISSION -> UiKey.BANK_SMS_STATUS_STOPPED to UiKey.BANK_SMS_STATUS_PERM_BODY
         SmsStatus.UNAVAILABLE -> UiKey.BANK_SMS_STATUS_IOS to UiKey.BANK_SMS_STATUS_IOS_BODY
     }
     val (ink, bg) = when (status) {
         SmsStatus.READING -> Ink.primary to Ink.selected
         SmsStatus.OFF, SmsStatus.PERMISSION -> Ink.focus to Ink.alertBg
+        SmsStatus.SETUP -> Ink.muted to Ink.text.copy(alpha = 0.06f)
         SmsStatus.UNAVAILABLE -> Ink.muted to Ink.text.copy(alpha = 0.06f)
     }
     Row(
@@ -72,7 +74,7 @@ fun SmsStatusBanner(status: SmsStatus?, onSettings: () -> Unit, onPaste: () -> U
         }
         val button = when (status) {
             SmsStatus.READING -> null
-            SmsStatus.OFF -> UiKey.BANK_SMS_OPEN_SETTINGS to onSettings
+            SmsStatus.OFF, SmsStatus.SETUP -> UiKey.BANK_SMS_OPEN_SETTINGS to onSettings
             SmsStatus.PERMISSION -> UiKey.BANK_SMS_REGRANT to onSettings
             SmsStatus.UNAVAILABLE -> UiKey.BANK_SMS_PASTE to onPaste
         }
