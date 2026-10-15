@@ -46,10 +46,6 @@ body{margin:0}
       </div>
     </div>
 
-    <div role="radiogroup" aria-label="{{genderLabel}}" style="display: flex; padding: 4px; gap: 4px; border-radius: 18px; background: rgba(25,61,51,0.07)">
-      <sc-for list="{{genders}}" as="gd" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{gd.on}}" class="cb-press" onClick="{{gd.pick}}" style="{{gd.style}}">{{gd.label}}</button></sc-for>
-    </div>
-
     <sc-for list="{{before}}" as="s" hint-placeholder-count="0">
       <button type="button" aria-expanded="false" class="cb-press" onClick="{{s.open}}" style="{{s.style}}">
         <span style="{{s.iconBox}}"><sc-if value="{{s.i.wear}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg></sc-if><sc-if value="{{s.i.body}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg></sc-if><sc-if value="{{s.i.face}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></sc-if></span>
@@ -108,7 +104,8 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tab":{"editor":"enum","options":["اللبس","غطا الراس","النضارة","المكافآت","هيئة الجسم","البشرة","الشعر","الدقن","الوش","العينين","الحواجب","المناخير","البق"],"default":"اللبس","section":"الحالة"},"gender":{"editor":"enum","options":["المحفوظ","راجل","ست"],"default":"المحفوظ","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 // «ابني/عدّل شخصيتك» (النسخة التانية — طلب المالك 2026-10-15): «عايز فرق واضح بين السكاشن» + «لو انا راجل اكيد ميظهرليش لبس بنات و العكس» + هيئة الجسم + الاسم «شخصيتك»
-// التكوين: معاينة ⇐ راجل/ست (مفتاح عام فوق) ⇐ 3 أقسام قفل وفتح (واحد مفتوح بس): «اللبس» ثم «الجسم والشعر» ثم «ملامح الوش»
+// النوع مش بيتسأل هنا (المالك: «هو بالفعل عارف»): جاي من خطوة «بماذا نناديك؟» في أول مرة أو من «النوع» في ملفك (masroufy-profile)
+// التكوين: معاينة ⇐ 3 أقسام قفل وفتح (واحد مفتوح بس): «اللبس» ثم «الجسم والشعر» ثم «ملامح الوش»
 // جوه القسم المفتوح: أجزاء بخط تحت (مش حبّات) ⇐ اختيارات بصور ⇐ الألوان بعد خط فاصل — 3 أشكال مختلفة عشان العين تفرق بين المستويات
 // «احفظ» الفعل الأساسي الوحيد + «إلغاء» · بيتحفظ في masroufy-character (النموذج) — في التطبيق مع الحساب ويتزامن · الرسم نفسه في CharacterArt
 const START = { v: 2, gender: 0, build: 1, face: 0, skin: 2, hair: 1, hairColor: 0, eyes: 0, brows: 0, nose: 0, mouth: 1, beard: 0, glasses: 0, head: 0, wrap: 0, outfit: 0, outfitColor: 0 };
@@ -141,7 +138,9 @@ class Component extends DCLogic {
     super(props);
     let saved = null; try { saved = JSON.parse(window.sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
     const look = Object.assign({}, START, saved && typeof saved === 'object' ? saved : {});
-    if (props.gender === 'راجل' || props.gender === 'ست') Object.assign(look, this.fit(look, props.gender === 'ست' ? 1 : 0));
+    let prof = null; try { prof = JSON.parse(window.sessionStorage.getItem('masroufy-profile') || 'null'); } catch (e) {}
+    const pg = props.gender === 'راجل' ? 0 : props.gender === 'ست' ? 1 : prof && prof.gender === 'female' ? 1 : prof && prof.gender === 'male' ? 0 : null;
+    if (pg !== null) Object.assign(look, this.fit(look, pg));
     const at = [0, 0, 0]; let sec = 0;
     SECS.forEach((s, i) => { const j = s[2].findIndex((k) => P[k].n[1] === props.tab); if (j >= 0) { sec = i; at[i] = j; } });
     this.state = { look, sec, at, view: null, had: !!saved };
@@ -179,8 +178,6 @@ class Component extends DCLogic {
       inHome: T('في الرئيسية', 'في الرئيسية'), inPeople: T('في الأشخاص', 'في الأشخاص'), look,
       bigMode: full ? 'الجسم كله' : 'راس وكتاف', bigSize: full ? 170 : 196, viewLabel: T('شكل المعاينة', 'شكل المعاينة'),
       views: [['bust', T('قريب', 'قريب')], ['full', T('الجسم كله', 'الجسم كله')]].map(([v, lb]) => { const on = (v === 'full') === full; return { label: lb, on: on ? 'true' : 'false', pick: () => this.setState({ view: v }), style: 'height: 30px; padding: 0 10px; border: 0; border-radius: 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: #08634F' : 'color: #4F625C; background: transparent') }; }),
-      genderLabel: T('النوع', 'النوع'),
-      genders: [[0, T('رجل', 'راجل')], [1, T('امرأة', 'ست')]].map(([g, lb]) => { const on = Number(look.gender) === g; return { label: lb, on: on ? 'true' : 'false', pick: () => { if (!on) this.setState({ look: this.fit(look, g) }); }, style: 'flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #08634F; background: #FFFFFF; box-shadow: 0 1px 2px rgba(29,54,53,0.08), 0 6px 14px rgba(29,54,53,0.10)' : 'color: #4F625C; background: transparent') }; }),
       before: [0, 1, 2].filter((i) => i < s.sec).map(secCard), after: [0, 1, 2].filter((i) => i > s.sec).map(secCard),
       cur: { title: L(SECS[s.sec][1]), i: { wear: s.sec === 0, body: s.sec === 1, face: s.sec === 2 }, iconBox: iconBox(true) },
       parts: keys.map((k, j) => { const on = j === pi; return { label: L(P[k].n), on: on ? 'true' : 'false', pick: () => { const at = s.at.slice(); at[s.sec] = j; this.setState({ at }); },

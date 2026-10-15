@@ -152,12 +152,18 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     // مخترعة. null = ما اتجاوبش (مش «لأ» — قاعدة 10). الملف واحد للحساب كله في البلدين (§41).
-    this.state = { p: { name: 'محمد', gender: null, deps: null, salary: null, payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '', look: null };
+    let prof = null; try { prof = JSON.parse(window.sessionStorage.getItem('masroufy-profile') || 'null'); } catch (e) {}
+    this.state = { p: { name: (prof && prof.name) || 'محمد', gender: (prof && prof.gender) || null, deps: null, salary: null, payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '', look: null };
     this.timers = [];
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
-  put(patch, msg) { this.setState({ p: Object.assign({}, this.state.p, patch), sheet: null, draft: null }); if (msg) this.say(msg); }
+  put(patch, msg) {
+    const p = Object.assign({}, this.state.p, patch);
+    // الاسم والنوع بيتحفظوا مع خطوة «بماذا نناديك؟» (masroufy-profile): الرئيسية بتنادي بالاسم، و«عدّل شخصيتك» بياخد النوع
+    if ('name' in patch || 'gender' in patch) { try { window.sessionStorage.setItem('masroufy-profile', JSON.stringify({ name: p.name, gender: p.gender })); } catch (e) {} }
+    this.setState({ p, sheet: null, draft: null }); if (msg) this.say(msg);
+  }
   renderVals() {
     const st = this.props.state ?? 'عادي';
     const eg = (this.props.space ?? 'السعودية') === 'مصر';

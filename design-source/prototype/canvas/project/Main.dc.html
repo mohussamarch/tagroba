@@ -238,7 +238,7 @@ class Component extends DCLogic {
       cashMinor: String(this.cash()),
       gearLabel: 'المزيد والإعدادات',
       profilePct: 60, meLabel: (eg ? 'ملفك — مكتمل ' : 'ملفك — مكتمل ') + (60).toLocaleString('en-US') + '%',
-      greeting: eg ? 'مساء الخير يا محمد' : 'مساء الخير، محمد',
+      greeting: (() => { let nm = 'محمد'; try { nm = (JSON.parse(window.sessionStorage.getItem('masroufy-profile') || 'null') || {}).name || nm; } catch (e) {} return eg ? 'مساء الخير يا ' + nm : 'مساء الخير، ' + nm; })(),
       currency: d.currency,
       isError: st === 'خطأ', isLoading: st === 'بيحمّل', isEmpty: st === 'فاضي', isNA: st === 'غير متاح',
       hasAmount: content && st !== 'غير متاح',
