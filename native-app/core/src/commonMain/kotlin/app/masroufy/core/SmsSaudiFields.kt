@@ -12,7 +12,8 @@ private val I = setOf(RegexOption.IGNORE_CASE)
 private val IM = setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
 
 // «ريال سعودى 87.50» (الإنماء — العملة بالكلام قبل الرقم). «ريال قطري» مش ريال سعودي (الجولة التانية من المراجعة)
-private val CURRENCY = "(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ر\\.$S?س\\.?|ريال(?!$S*(?:$OTHER_RIYAL_TAIL))(?:$S+سعود[يى])?)"
+// إجابة المالك 2026-10-15 (OVERRIDES §91-9): علامة الريال الجديدة (U+20C1) قبل الرقم أو بعده، بمسافة أو من غيرها = ريال سعودي
+private val CURRENCY = "(?:(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|⃁|ر\\.$S?س\\.?|ريال(?!$S*(?:$OTHER_RIYAL_TAIL))(?:$S+سعود[يى])?)"
 private val CURRENCY_TOKEN = Regex(CURRENCY, I)
 
 /** الريال لدليل العملة الأجنبية (`SmsForeignEvidence.kt`). */
@@ -186,7 +187,7 @@ internal fun foreignAmountOf(body: String, local: LocalCurrency): SmsForeignAmou
 internal fun hasSaudiCurrency(body: String): Boolean = CURRENCY_TOKEN.containsMatchIn(body)
 
 /** الريال السعودي مكتوب صريح (مش «ريال» لوحدها — ممكن تبقى ريال بلد تاني في رسالة مصرية). */
-private val EXPLICIT_SAR = Regex("(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|ر\\.$S?س|ريال$S+سعود[يى]", I)
+private val EXPLICIT_SAR = Regex("(?<![A-Za-z])(?:SAR|SR)(?![A-Za-z])|⃁|ر\\.$S?س|ريال$S+سعود[يى]", I)
 
 /** مبلغ العملية بالريال لو واحد وواضح — لقارئ مصر لما كارت مصري يتخصم بالريال (عملة أجنبية هناك — §75-12). */
 internal fun riyalAmountAsForeign(body: String): SmsForeignAmount? =

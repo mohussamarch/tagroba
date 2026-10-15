@@ -18,7 +18,8 @@ package app.masroufy.core
 
 private const val NUM = "(?:\\d{1,3}(?:[,٬]\\d{3})+|\\d+)(?:[.٫]\\d{1,2})?"
 private const val RATE = "\\d+(?:[.٫]\\d+)?"
-private const val CUR = "(?:sar|sr|ريال(?: سعودي)?|ر\\.? ?س\\.?)"
+// إجابة المالك 2026-10-15 (OVERRIDES §91-9): علامة الريال الجديدة (U+20C1) = ريال سعودي زي «ر.س»/SAR
+private const val CUR = "(?:sar|sr|⃁|ريال(?: سعودي)?|ر\\.? ?س\\.?)"
 private const val MONEY = "(?:$CUR ?$NUM|$NUM ?$CUR)"
 private const val MONEY_OR_NUM = "(?:$MONEY|$NUM)"
 private const val DATE = "\\d{1,4}[-/.\\\\]\\d{1,2}[-/.\\\\]\\d{1,4}"
