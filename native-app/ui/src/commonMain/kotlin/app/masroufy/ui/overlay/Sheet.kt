@@ -50,7 +50,6 @@ import app.masroufy.ui.theme.Radius
 import app.masroufy.ui.theme.Springs
 import app.masroufy.ui.theme.motion
 import kotlinx.coroutines.launch
-import kotlin.math.exp
 import kotlin.math.min
 
 /**
@@ -170,7 +169,7 @@ private fun SheetFrame(
                                 stretch.snapTo(0f)
                             } else {
                                 down.snapTo(0f)
-                                stretch.snapTo(stretchMax * (1f - exp(total / stretchScale)))
+                                stretch.snapTo(rubberStretch(total, stretchMax, stretchScale))
                             }
                         }
                     },
@@ -184,7 +183,7 @@ private fun SheetFrame(
                 .navigationBarsPadding()
                 .imePadding()
                 .padding(contentPadding)
-                .padding(bottom = with(density) { stretch.value.toDp() })
+                .sheetStretchPadding(stretch.value, density)
                 .heightIn(min = minHeight),
             verticalArrangement = Arrangement.spacedBy(spacing),
         ) {
