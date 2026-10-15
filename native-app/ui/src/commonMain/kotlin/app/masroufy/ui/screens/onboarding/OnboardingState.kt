@@ -6,6 +6,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Halalas
 import app.masroufy.core.Space
 import app.masroufy.core.TextKey
+import app.masroufy.core.Texts
 import app.masroufy.core.UserProfile
 import app.masroufy.core.bankByKey
 import app.masroufy.core.bankLabel
@@ -119,6 +120,14 @@ fun skip(s: OnbState): OnbState = when (s.step) {
 }
 
 fun answer(s: OnbState, answers: OnbAnswers, reply: OnbReply): OnbState = s.copy(answers = answers, reply = reply)
+
+/**
+ * نسخة العربي بتتبع البلد اللي اختارها **لحظة الاختيار** (قرار المالك 2026-10-15 مساءً): مصر ⇒ باقي الكروت (الكاش · البنك · يوم الراتب ·
+ * المصدر · جاهز) بالمصري على طول، مش بعد ما الرحلة تخلص. ما اختارش لسه ⇒ زي ما هي. الإنجليزي ما بيتأثرش (`Texts.followCountry`).
+ */
+fun followChosenCountry(answers: OnbAnswers) {
+    answers.countryCode?.let(Texts::followCountry)
+}
 
 fun pickCountry(s: OnbState, code: String) =
     answer(s, s.answers.copy(countryCode = code), if (code.equals("EG", true)) OnbReply.COUNTRY_EG else OnbReply.COUNTRY_SA)

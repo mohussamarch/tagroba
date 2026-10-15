@@ -46,6 +46,21 @@ class OnboardingStateTest {
     }
 
     @Test
+    fun pickingEgyptSwitchesTheRestOfTheJourneyToEgyptianRightAway() {
+        Texts.language = Language.AR
+        Texts.arabicVariant = ArabicVariant.MSA
+        val msaCash = t(UiKey.ONB_CASH_TITLE)
+        followChosenCountry(pickCountry(OnbState(OnbStep.COUNTRY), "EG").answers)
+        assertEquals(ArabicVariant.EGYPTIAN, Texts.arabicVariant)
+        assertEquals("معاك كام كاش؟", t(UiKey.ONB_CASH_TITLE), "الكارت اللي بعد البلد بالمصري")
+        followChosenCountry(pickCountry(OnbState(OnbStep.COUNTRY), "SA").answers)
+        assertEquals(ArabicVariant.MSA, Texts.arabicVariant)
+        assertEquals(msaCash, t(UiKey.ONB_CASH_TITLE))
+        followChosenCountry(OnbAnswers())
+        assertEquals(ArabicVariant.MSA, Texts.arabicVariant, "ما اختارش ⇒ زي ما هي")
+    }
+
+    @Test
     fun savedStateFromOldBuildsComesBackSafely() {
         // النسخ القديمة كانت بتحفظ الترتيب: 0 = «اختر شكلك» ⇒ البلد · 1 = البلد · 4 = يوم الراتب
         assertEquals(OnbStep.COUNTRY, restoreStep(0))

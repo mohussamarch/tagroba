@@ -77,6 +77,8 @@ fun OnboardingScreen() {
     var loadFailed by remember(deps) { mutableStateOf(false) }
     var open by remember(deps) { mutableStateOf(listOf(deps.space)) }
     var s by rememberSaveable(stateSaver = OnbStateSaver) { mutableStateOf(OnbState(OnbStep.COUNTRY)) }
+    // اختار مصر ⇒ الكروت اللي بعدها بالمصري على طول (قبل ما أي نص تحت يتكتب — والحالة المحفوظة بترجّعها كمان)
+    remember(s.answers.countryCode) { followChosenCountry(s.answers); s.answers.countryCode }
     var saving by remember { mutableStateOf<OnbExit?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(deps, reload) {
