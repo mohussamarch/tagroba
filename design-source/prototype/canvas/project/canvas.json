@@ -1036,7 +1036,7 @@
     },
     "CharacterArt.dc.html": {
       "is_interactive": true,
-      "title": "رسم الكاركتر بالطبقات (أول نسخة) · CharacterArt (قطعة)",
+      "title": "رسم شخصيتك (راجل وست · هيئة الجسم · الأغطية) · CharacterArt (قطعة)",
       "x": 470,
       "y": 26902,
       "w": 200,
@@ -1044,7 +1044,7 @@
     },
     "CharacterBuilder.dc.html": {
       "is_interactive": true,
-      "title": "ابني شكلك (أول نسخة) · CharacterBuilder",
+      "title": "ابني / عدّل شخصيتك · CharacterBuilder",
       "x": 720,
       "y": 26902,
       "w": 390,

@@ -17,7 +17,7 @@ body{margin:0}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"size":{"editor":"number","default":48,"section":"الحالة"},"pct":{"editor":"number","default":60,"section":"الحالة"},"$preview":{"width":72,"height":72}}'>
 // دايرة صاحب الحساب (طلب المالك 2026-10-08): جواها الكاركتر بتاعه، وحواليها شريط بنسبة اكتمال ملفه — والشريط بيختفي لما الملف يكمل 100%
-// لو صاحب الحساب بنى الكاركتر من «ابني شكلك» (masroufy-character) بيظهر هنا (CharacterArt)، ولو لسه: شكل واحد محايد
+// لو صاحب الحساب بنى الكاركتر من «ابني شخصيتك» (masroufy-character) بيظهر هنا (CharacterArt)، ولو لسه: شكل واحد محايد
 // الأشكال الستة المؤقتة («اختر شكلك») اتشالت (المالك 2026-10-15: «ده ايه لازمته»)
 class Component extends DCLogic {
   char() {
@@ -38,7 +38,7 @@ class Component extends DCLogic {
     const cut = 'radial-gradient(farthest-side, transparent calc(100% - ' + T + 'px), #000 calc(100% - ' + T + 'px))';
     return {
       size, hasChar: !!ch, charLook: ch || {},
-      label: 'شكلك' + (done ? '' : ' — ملفك مكتمل ' + pct.toLocaleString('en-US') + '%'),
+      label: 'شخصيتك' + (done ? '' : ' — ملفك مكتمل ' + pct.toLocaleString('en-US') + '%'),
       outer: 'position: relative; width: ' + size + 'px; height: ' + size + 'px; flex-shrink: 0; display: flex',
       ring: done ? 'display: none' : 'position: absolute; inset: -' + (T + G) + 'px; border-radius: 50%; pointer-events: none; background: conic-gradient(#13764D 0 ' + pct + '%, rgba(25,61,51,0.12) ' + pct + '% 100%); mask-image: ' + cut + '; -webkit-mask-image: ' + cut,
       inner: 'flex: 1 1 auto; border-radius: 50%; overflow: hidden; '

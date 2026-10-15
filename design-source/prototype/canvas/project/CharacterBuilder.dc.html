@@ -2,22 +2,23 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>ابني شكلك — مصروفي</title>
+<title>شخصيتك — مصروفي</title>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<style>@font-face{font-family:SAR;src:url(data:font/otf;base64,T1RUTwAJAIAAAwAQQ0ZGIJDA82YAAAP4AAABIk9TLzKKOITzAAABAAAAAGBjbWFwQZLfewAAA6QAAAA0aGVhZC//fFYAAACcAAAANmhoZWEDhgHVAAAA1AAAACRobXR4BPIAAAAABRwAAAAIbWF4cAACUAAAAAD4AAAABm5hbWV3HHPFAAABYAAAAkNwb3N0AAMAAAAAA9gAAAAgAAEAAAABAADOkKIyXw889QADA+gAAAAA5vYcXQAAAADm9hxdAEUAAAK4ArwAAAADAAIAAAAAAAAAAQAAA4T+1AAAAv4AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAIAAFAAAAIAAAADAv4B9AAFAAACigK7AAAAjAKKArsAAAHfADEBAgAAAAAAAAAAAAAAAAAAAAEAAAACAAAAAAAAAABYWFhYAEAgwSDBA4T+1AAAArwAAAAAAAEAAAAAAcICvAAAAAAAAAAAACIBngABAAAAAAAAAAEAIQABAAAAAAABAAMAAAABAAAAAAACAAcACQABAAAAAAADAA0AfgABAAAAAAAEAAsAHgABAAAAAAAFAAsAXQABAAAAAAAGAAoAPwABAAAAAAAHAAEAIQABAAAAAAAIAAEAIQABAAAAAAAJAAEAIQABAAAAAAAKAAEAIQABAAAAAAALAAEAIQABAAAAAAAMAAEAIQABAAAAAAANAAEAIQABAAAAAAAOAAEAIQABAAAAAAAQAAMAAAABAAAAAAARAAcACQADAAEECQAAAAIALwADAAEECQABAAYAAwADAAEECQACAA4AEAADAAEECQADABoAiwADAAEECQAEABYAKQADAAEECQAFABYAaAADAAEECQAGABQASQADAAEECQAHAAIALwADAAEECQAIAAIALwADAAEECQAJAAIALwADAAEECQAKAAIALwADAAEECQALAAIALwADAAEECQAMAAIALwADAAEECQANAAIALwADAAEECQAOAAIALwADAAEECQAQAAYAAwADAAEECQARAA4AEFNBUgBTAEEAUlJlZ3VsYXIAUgBlAGcAdQBsAGEAclNBUiBSZWd1bGFyAFMAQQBSACAAUgBlAGcAdQBsAGEAclNBUlJlZ3VsYXIAUwBBAFIAUgBlAGcAdQBsAGEAclZlcnNpb24gMC4xAFYAZQByAHMAaQBvAG4AIAAwAC4AMSA6U0FSIFJlZ3VsYXIAIAA6AFMAQQBSACAAUgBlAGcAdQBsAGEAcgAAAAABAAMAAQAAAAwABAAoAAAABgAEAAEAAgAAIMH//wAAAAAgwf//AADfQAABAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAQBAAEBAQtTQVJSZWd1bGFyAAEBASf4GwD4HAL4HQP4HgSLi/oY+ZIFHQAAAHAPHQAAAHMRix0AAAEiEgAFAQEMFxohKFZlcnNpb24gMC4xU0FSIFJlZ3VsYXJTQVJSZWd1bGFydW5pMjBDMQAAAAGLAAIBAQSq+IgO+ZL4YNsVi4sFgHKEcIhvCPeBvQWWpJKmjqcI+4BZBfdr9w0VlqSSpo6nCPtMZAWL1gX3N64FlqOSpo6nCPtMZAWL96MFb3tydndyCIv7dAVCewWL9+cFbntydndyCIv7uQX7OWgFgHKEcIhvCPdOswWLLAX7XGEFgHKEcIhvCPdltwWcj5qVlZkIscMFi4sFj5GNkouTCIvfBdSaBYv7KgX3gb0FDgAAAfQAAAL+AAA=) format("opentype");unicode-range:U+20C1;font-weight:100 900}</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap">
 <style>
 body{margin:0}
 .cb-scroll{scrollbar-width:none}.cb-scroll::-webkit-scrollbar{display:none}.cb-col>*{flex-shrink:0}
-.cb-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1)}
-.cb-press:active{transform:scale(.95)}
+.cb-press{transition:transform 220ms cubic-bezier(.2,.7,.3,1),box-shadow 220ms cubic-bezier(.2,.7,.3,1),background 220ms cubic-bezier(.2,.7,.3,1)}
+.cb-press:active{transform:scale(.97)}
 .cb-swap{animation:cb-swap 450ms cubic-bezier(.2,.7,.3,1)}
+.cb-open{animation:cb-open 320ms cubic-bezier(.2,.7,.3,1)}
 @keyframes cb-swap{from{opacity:.4;transform:scale(.97)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.cb-press{transition:none}.cb-press:active{transform:none}.cb-swap{animation:none}}
+@keyframes cb-open{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.cb-press{transition:none}.cb-press:active{transform:none}.cb-swap,.cb-open{animation:none}}
 :focus-visible{outline:none;box-shadow:0 0 0 3px #956000}
 </style>
 </helmet>
@@ -45,29 +46,57 @@ body{margin:0}
       </div>
     </div>
 
-    <div role="tablist" aria-label="{{partsLabel}}" style="display: flex; flex-wrap: wrap; gap: 8px">
-      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="6"><button type="button" role="tab" aria-selected="{{t.on}}" class="cb-press" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+    <div role="radiogroup" aria-label="{{genderLabel}}" style="display: flex; padding: 4px; gap: 4px; border-radius: 18px; background: rgba(25,61,51,0.07)">
+      <sc-for list="{{genders}}" as="gd" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{gd.on}}" class="cb-press" onClick="{{gd.pick}}" style="{{gd.style}}">{{gd.label}}</button></sc-for>
     </div>
 
-    <div role="radiogroup" aria-label="{{tabLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
-      <sc-for list="{{opts}}" as="o" hint-placeholder-count="6">
-        <button type="button" role="radio" aria-checked="{{o.on}}" aria-label="{{o.label}}" class="cb-press" onClick="{{o.pick}}" style="{{o.style}}">
-          <span style="{{o.thumbBox}}"><dc-import name="CharacterArt" look="{{o.look}}" mode="{{o.mode}}" size="{{60}}" hint-size="60px,60px"></dc-import></span>
-          <span style="font-size: 11px; font-weight: 700; line-height: 1.3">{{o.label}}</span>
-        </button>
-      </sc-for>
-    </div>
+    <sc-for list="{{before}}" as="s" hint-placeholder-count="0">
+      <button type="button" aria-expanded="false" class="cb-press" onClick="{{s.open}}" style="{{s.style}}">
+        <span style="{{s.iconBox}}"><sc-if value="{{s.i.wear}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg></sc-if><sc-if value="{{s.i.body}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg></sc-if><sc-if value="{{s.i.face}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></sc-if></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: right"><span style="font-size: 15px; font-weight: 700">{{s.title}}</span><span style="font-size: 12px; color: #637570; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{s.sum}}</span></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+    </sc-for>
 
-    <sc-if value="{{showRewards}}" hint-placeholder-val="{{ false }}"><dc-import name="CharacterRewards" space="{{spaceName}}" look="{{look}}" on-set="{{onReward}}" hint-size="350px,520px"></dc-import></sc-if>
-    <sc-if value="{{hasColors}}" hint-placeholder-val="{{ true }}">
-      <div style="display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; font-weight: 700">{{colorLabel}}</span>
-        <div role="radiogroup" aria-label="{{colorLabel}}" style="display: flex; flex-wrap: wrap; gap: 10px">
-          <sc-for list="{{colors}}" as="c" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{c.on}}" aria-label="{{c.label}}" class="cb-press" onClick="{{c.pick}}" style="{{c.style}}"></button></sc-for>
-        </div>
+    <section aria-label="{{cur.title}}" style="border-radius: 26px; background: #FFFFFF; box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 18px 40px rgba(29,54,53,0.12); overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px 6px">
+        <span style="{{cur.iconBox}}"><sc-if value="{{cur.i.wear}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg></sc-if><sc-if value="{{cur.i.body}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg></sc-if><sc-if value="{{cur.i.face}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></sc-if></span>
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700">{{cur.title}}</h2>
       </div>
-    </sc-if>
-    <span style="font-size: 12px; line-height: 1.6; color: #637570">{{note}}</span>
+      <div role="tablist" aria-label="{{cur.title}}" style="display: flex; gap: 2px; padding: 0 10px; box-shadow: inset 0 -1px 0 rgba(25,61,51,0.08)">
+        <sc-for list="{{parts}}" as="t" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{t.on}}" class="cb-press" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}<span aria-hidden="true" style="{{t.bar}}"></span></button></sc-for>
+      </div>
+      <div class="cb-open" style="display: flex; flex-direction: column; gap: 14px; padding: 16px">
+        <sc-if value="{{hasOpts}}" hint-placeholder-val="{{ true }}">
+          <div role="radiogroup" aria-label="{{partLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+              <button type="button" role="radio" aria-checked="{{o.on}}" aria-label="{{o.label}}" class="cb-press" onClick="{{o.pick}}" style="{{o.style}}">
+                <span style="{{o.thumbBox}}"><dc-import name="CharacterArt" look="{{o.look}}" mode="{{o.mode}}" size="{{o.size}}" hint-size="60px,60px"></dc-import></span>
+                <span style="font-size: 11px; font-weight: 700; line-height: 1.3; text-align: center">{{o.label}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{showRewards}}" hint-placeholder-val="{{ false }}"><dc-import name="CharacterRewards" space="{{spaceName}}" look="{{look}}" on-set="{{onReward}}" hint-size="318px,520px"></dc-import></sc-if>
+        <sc-if value="{{hasColors}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 14px; box-shadow: inset 0 1px 0 rgba(25,61,51,0.08)">
+            <span style="font-size: 13px; font-weight: 700">{{colorLabel}}</span>
+            <div role="radiogroup" aria-label="{{colorLabel}}" style="display: flex; flex-wrap: wrap; gap: 10px">
+              <sc-for list="{{colors}}" as="c" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{c.on}}" aria-label="{{c.label}}" class="cb-press" onClick="{{c.pick}}" style="{{c.style}}"></button></sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.6; color: #637570">{{note}}</span></sc-if>
+      </div>
+    </section>
+
+    <sc-for list="{{after}}" as="s" hint-placeholder-count="2">
+      <button type="button" aria-expanded="false" class="cb-press" onClick="{{s.open}}" style="{{s.style}}">
+        <span style="{{s.iconBox}}"><sc-if value="{{s.i.wear}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg></sc-if><sc-if value="{{s.i.body}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg></sc-if><sc-if value="{{s.i.face}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></sc-if></span>
+        <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: right"><span style="font-size: 15px; font-weight: 700">{{s.title}}</span><span style="font-size: 12px; color: #637570; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{s.sum}}</span></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+    </sc-for>
   </div>
 
   <div style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 14px 20px 26px; display: flex; gap: 10px; align-items: center; background: linear-gradient(180deg, rgba(239,243,237,0), rgba(239,243,237,0.96) 30%)">
@@ -77,64 +106,94 @@ body{margin:0}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tab":{"editor":"enum","options":["اللبس","غطا الراس","المكافآت","الشعر","الدقن","النضارة","البشرة","الوش","العينين","الحواجب","المناخير","البق"],"default":"اللبس","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
-// «ابني شكلك» (أول نسخة بدائية بطلب المالك 2026-10-15): تبويب لكل جزء، والاختيار بيبان لحظيًا في الكبير وفي دايرتك 46 بالشريط وفي كارت الأشخاص البترولي
+<script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"tab":{"editor":"enum","options":["اللبس","غطا الراس","النضارة","المكافآت","هيئة الجسم","البشرة","الشعر","الدقن","الوش","العينين","الحواجب","المناخير","البق"],"default":"اللبس","section":"الحالة"},"gender":{"editor":"enum","options":["المحفوظ","راجل","ست"],"default":"المحفوظ","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+// «ابني/عدّل شخصيتك» (النسخة التانية — طلب المالك 2026-10-15): «عايز فرق واضح بين السكاشن» + «لو انا راجل اكيد ميظهرليش لبس بنات و العكس» + هيئة الجسم + الاسم «شخصيتك»
+// التكوين: معاينة ⇐ راجل/ست (مفتاح عام فوق) ⇐ 3 أقسام قفل وفتح (واحد مفتوح بس): «اللبس» ثم «الجسم والشعر» ثم «ملامح الوش»
+// جوه القسم المفتوح: أجزاء بخط تحت (مش حبّات) ⇐ اختيارات بصور ⇐ الألوان بعد خط فاصل — 3 أشكال مختلفة عشان العين تفرق بين المستويات
 // «احفظ» الفعل الأساسي الوحيد + «إلغاء» · بيتحفظ في masroufy-character (النموذج) — في التطبيق مع الحساب ويتزامن · الرسم نفسه في CharacterArt
-const START = { v: 1, face: 0, skin: 2, hair: 1, hairColor: 0, eyes: 0, brows: 0, nose: 0, mouth: 1, beard: 0, glasses: 0, head: 0, wrap: 0, outfit: 0, outfitColor: 0 };
+const START = { v: 2, gender: 0, build: 1, face: 0, skin: 2, hair: 1, hairColor: 0, eyes: 0, brows: 0, nose: 0, mouth: 1, beard: 0, glasses: 0, head: 0, wrap: 0, outfit: 0, outfitColor: 0 };
 const SKIN = ['#F3D5C0', '#E8BE9C', '#D4A07A', '#B57E58', '#8C5A3C', '#5E3C28'];
 const HAIRC = ['#1E1916', '#3A2A1F', '#6A4A2F', '#A47A4E', '#C8A46C', '#9B9A95'];
-const WRAP = ['#26364A', '#5E4634', '#1E1E1E', '#7E8C88', '#8E4A57'];
+const WRAP = ['#26364A', '#5E4634', '#1E1E1E', '#7E8C88', '#8E4A57', '#E9E2D6'];
 const OUTC = ['#F4F3EE', '#2E5E8C', '#3D4A45', '#8A6A4A', '#0E6B57', '#7A4655'];
-// [المفتاح، اسم التبويب سعودي/مصري، الاختيارات سعودي/مصري، الألوان]
-// الترتيب (طلب المالك 2026-10-15: «ايه حجات مش مهمة قد ما فين تغيير اللبس»): اللبس وغطا الراس والمكافآت الأول، بعدهم الشعر والدقن والنضارة، وتفاصيل الوش في الآخر
-const TABS = [
-  ['outfit', ['الملابس', 'اللبس'], [['ثوب', 'جلابية/ثوب'], ['قميص', 'قميص'], ['جاكيت', 'جاكيت'], ['بلوزة', 'بلوزة']], ['outfitColor', OUTC, ['لون الملابس', 'لون اللبس']]],
-  ['head', ['غطاء الرأس', 'غطا الراس'], [['بلا غطاء', 'من غير'], ['شماغ', 'شماغ'], ['غترة', 'غترة'], ['طاقية', 'طاقية'], ['حجاب', 'حجاب']], ['wrap', WRAP, ['لون الحجاب', 'لون الحجاب']]],
-  ['rewards', ['المكافآت', 'المكافآت'], null], // حاجات بتتفتح بالفلوس أو بنجاح استثمار (CharacterRewards)
-  ['hair', ['الشعر', 'الشعر'], [['بلا شعر', 'من غير'], ['قصير', 'قصير'], ['مفروق', 'مفروق'], ['طويل', 'طويل'], ['مجعّد', 'مجعّد'], ['خفيف', 'خفيف']], ['hairColor', HAIRC, ['لون الشعر', 'لون الشعر']]],
-  ['beard', ['اللحية', 'الدقن'], [['بلا لحية', 'من غير'], ['خفيفة', 'خفيفة'], ['قصيرة', 'قصيرة'], ['كاملة', 'كاملة'], ['سكسوكة', 'سكسوكة'], ['شارب فقط', 'شنب بس']], ['hairColor', HAIRC, ['اللون (نفس الشعر)', 'اللون (نفس الشعر)']]],
-  ['glasses', ['النظارة', 'النضارة'], [['بلا نظارة', 'من غير'], ['مستديرة', 'مدوّرة'], ['مربعة', 'مربعة'], ['رفيعة', 'رفيعة']]],
-  ['skin', ['البشرة', 'البشرة'], null, ['skin', SKIN, ['لون البشرة', 'لون البشرة']]],
-  ['face', ['الوجه', 'الوش'], [['بيضاوي', 'بيضاوي'], ['مستدير', 'مدوّر'], ['طويل', 'طويل'], ['مربع', 'مربع']]],
-  ['eyes', ['العينان', 'العينين'], [['نقطتان', 'نقط'], ['لوزية', 'لوز'], ['هادئة', 'هادية'], ['واسعة', 'واسعة']]],
-  ['brows', ['الحاجبان', 'الحواجب'], [['مستقيمة', 'مستقيمة'], ['مقوّسة', 'مقوّسة'], ['عريضة', 'عريضة'], ['رفيعة', 'رفيعة']]],
-  ['nose', ['الأنف', 'المناخير'], [['صغير', 'صغيرة'], ['مستقيم', 'مستقيمة'], ['عريض', 'عريضة']]],
-  ['mouth', ['الفم', 'البق'], [['عادي', 'عادي'], ['ابتسامة خفيفة', 'ابتسامة خفيفة'], ['ابتسامة', 'ابتسامة'], ['صغير', 'صغير']]]
-];
-const TAB_IDX = Object.fromEntries(TABS.map((t, i) => [t[1][1], i]));
+const ABAYA = ['#1C1C1E', '#2B3140', '#4A3B32', '#585D5A', '#5E2F3B', '#D8CBB6'];
+// كل جزء: الاسم سعودي/مصري · شكل الصورة الصغيرة · الاختيارات [الرقم، سعودي، مصري] للرجالة (m) والستات (w) أو للكل (a) · مفتاح اللون
+const P = {
+  outfit: { n: ['الملابس', 'اللبس'], mode: 'full', m: [[0, 'ثوب', 'جلابية/ثوب'], [1, 'قميص وبنطلون', 'قميص وبنطلون'], [2, 'بدلة', 'بدلة']], w: [[5, 'عباية', 'عباية'], [3, 'فستان', 'فستان'], [6, 'تونيك وبنطلون', 'تونيك وبنطلون']], col: 'outfitColor' },
+  head: { n: ['غطاء الرأس', 'غطا الراس'], mode: 'bust', m: [[0, 'بلا غطاء', 'من غير'], [1, 'شماغ', 'شماغ'], [2, 'غترة', 'غترة'], [3, 'طاقية', 'طاقية'], [7, 'كاب', 'كاب']], w: [[0, 'بلا غطاء', 'من غير'], [4, 'حجاب', 'حجاب'], [5, 'خمار', 'خمار'], [6, 'نقاب', 'نقاب']], col: 'wrap' },
+  glasses: { n: ['النظارة', 'النضارة'], mode: 'head', a: [[0, 'بلا نظارة', 'من غير'], [1, 'مستديرة', 'مدوّرة'], [2, 'مربعة', 'مربعة'], [3, 'رفيعة', 'رفيعة']] },
+  rewards: { n: ['المكافآت', 'المكافآت'] },
+  build: { n: ['هيئة الجسم', 'هيئة الجسم'], mode: 'full', a: [[0, 'نحيف', 'رفيع'], [1, 'متوسط', 'متوسط'], [2, 'ممتلئ', 'مليان']] },
+  skin: { n: ['البشرة', 'البشرة'], col: 'skin' },
+  hair: { n: ['الشعر', 'الشعر'], mode: 'bust', m: [[0, 'بلا شعر', 'من غير'], [1, 'قصير', 'قصير'], [2, 'مفروق', 'مفروق'], [3, 'طويل', 'طويل'], [4, 'مجعّد', 'مجعّد'], [5, 'خفيف', 'خفيف']], w: [[6, 'طويل ناعم', 'طويل ناعم'], [7, 'ذيل حصان', 'ديل حصان'], [8, 'مجعّد', 'كيرلي'], [9, 'قصير', 'قصير'], [10, 'كعكة', 'كحكة']], col: 'hairColor' },
+  beard: { n: ['اللحية', 'الدقن'], mode: 'head', m: [[0, 'بلا لحية', 'من غير'], [1, 'خفيفة', 'خفيفة'], [2, 'قصيرة', 'قصيرة'], [3, 'كاملة', 'كاملة'], [4, 'سكسوكة', 'سكسوكة'], [5, 'شارب فقط', 'شنب بس']], col: 'hairColor' },
+  face: { n: ['الوجه', 'الوش'], mode: 'head', a: [[0, 'بيضاوي', 'بيضاوي'], [1, 'مستدير', 'مدوّر'], [2, 'طويل', 'طويل'], [3, 'مربع', 'مربع']] },
+  eyes: { n: ['العينان', 'العينين'], mode: 'head', a: [[0, 'نقطتان', 'نقط'], [1, 'لوزية', 'لوز'], [2, 'هادئة', 'هادية'], [3, 'واسعة', 'واسعة']] },
+  brows: { n: ['الحاجبان', 'الحواجب'], mode: 'head', a: [[0, 'مستقيمة', 'مستقيمة'], [1, 'مقوّسة', 'مقوّسة'], [2, 'عريضة', 'عريضة'], [3, 'رفيعة', 'رفيعة']] },
+  nose: { n: ['الأنف', 'المناخير'], mode: 'head', a: [[0, 'صغير', 'صغيرة'], [1, 'مستقيم', 'مستقيمة'], [2, 'عريض', 'عريضة']] },
+  mouth: { n: ['الفم', 'البق'], mode: 'head', a: [[0, 'عادي', 'عادي'], [1, 'ابتسامة خفيفة', 'ابتسامة خفيفة'], [2, 'ابتسامة', 'ابتسامة'], [3, 'صغير', 'صغير']] }
+};
+const SECS = [['wear', ['الملابس', 'اللبس'], ['outfit', 'head', 'glasses', 'rewards']], ['body', ['الجسم والشعر', 'الجسم والشعر'], ['build', 'skin', 'hair', 'beard']], ['face', ['ملامح الوجه', 'ملامح الوش'], ['face', 'eyes', 'brows', 'nose', 'mouth']]];
 const KEY = 'masroufy-character';
+const list = (p, fem) => p.a || (fem ? p.w : p.m) || [];
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     let saved = null; try { saved = JSON.parse(window.sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
-    this.state = { look: Object.assign({}, START, saved && typeof saved === 'object' ? saved : {}), tab: TAB_IDX[props.tab] || 0, fresh: !saved, view: null };
-    this.root = null;
+    const look = Object.assign({}, START, saved && typeof saved === 'object' ? saved : {});
+    if (props.gender === 'راجل' || props.gender === 'ست') Object.assign(look, this.fit(look, props.gender === 'ست' ? 1 : 0));
+    const at = [0, 0, 0]; let sec = 0;
+    SECS.forEach((s, i) => { const j = s[2].findIndex((k) => P[k].n[1] === props.tab); if (j >= 0) { sec = i; at[i] = j; } });
+    this.state = { look, sec, at, view: null, had: !!saved };
   }
-  set(k, v) { this.setState({ look: Object.assign({}, this.state.look, { [k]: v }) }); }
+  // راجل/ست: أي اختيار مش من نفس النوع بيرجع لأول اختيار مناسب، والدقن بتتشال للستات
+  fit(look, g) {
+    const l = Object.assign({}, look, { gender: g }), ok = (k) => list(P[k], g === 1).some(([id]) => id === Number(l[k]));
+    if (!ok('hair')) l.hair = g ? 6 : 1;
+    if (!ok('head')) l.head = 0;
+    if (!ok('outfit') && Number(l.outfit) !== 4) { l.outfit = g ? 5 : 0; l.outfitColor = 0; }
+    if (g) l.beard = 0;
+    return l;
+  }
+  set(k, v) { const patch = { [k]: v }; if (k === 'head' && v === 6) patch.wrap = 2; if (k === 'outfit') patch.outfitColor = 0; this.setState({ look: Object.assign({}, this.state.look, patch) }); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر', T = (a, b) => (eg ? b : a), L = (p) => (eg ? p[1] : p[0]);
-    const s = this.state, look = s.look, ti = Math.max(0, Math.min(TABS.length - 1, s.tab)), [key, tname, opts, col] = TABS[ti];
-    const chip = (on) => 'flex-shrink: 0; height: 40px; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%); box-shadow: 0 6px 14px rgba(8,99,79,0.25)' : 'color: #193D33; background: #FFFFFF; box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 6px 14px rgba(29,54,53,0.06)');
-    // الحجاب والشماغ والغترة بيخبّوا الشعر، فتبويب الشعر بيقول كده بدل ما يبان إن الاختيار مش شغال
-    const hidden = key === 'hair' && [1, 2, 4].indexOf(Number(look.head)) >= 0;
-    const showCol = col && (key !== 'head' || Number(look.head) === 4);
-    // المعاينة الكبيرة: «قريب» (الراس والكتاف) أو «الجسم كله» — لوحدها بتبقى الجسم كله في تبويب اللبس، والزرار بيثبّت اختيارك
-    const full = s.view ? s.view === 'full' : key === 'outfit';
+    const s = this.state, look = s.look, fem = Number(look.gender) === 1;
+    const partsOf = (i) => SECS[i][2].filter((k) => !(k === 'beard' && fem));
+    const keys = partsOf(s.sec), pi = Math.max(0, Math.min(keys.length - 1, s.at[s.sec])), key = keys[pi], part = P[key], opts = list(part, fem);
+    const label = (k) => { const o = list(P[k], fem).find(([id]) => id === Number(look[k])); return o ? (eg ? o[2] : o[1]) : ''; };
+    const sums = [[label('outfit'), label('head'), Number(look.glasses) ? label('glasses') : ''], [label('build'), label('hair'), fem ? '' : label('beard')], [label('face'), label('eyes'), label('mouth')]];
+    const iconBox = (on) => 'width: 40px; height: 40px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: ' + (on ? '#FFFFFF' : '#08634F') + '; background: ' + (on ? 'linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'rgba(8,99,79,0.09)');
+    const secCard = (i) => ({ title: L(SECS[i][1]), sum: sums[i].filter(Boolean).join(' · '), i: { wear: i === 0, body: i === 1, face: i === 2 }, iconBox: iconBox(false),
+      open: () => this.setState({ sec: i }), style: 'width: 100%; min-height: 68px; box-sizing: border-box; padding: 12px 16px; border: 0; border-radius: 22px; font: inherit; color: #193D33; cursor: pointer; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 8px 20px rgba(29,54,53,0.06)' });
+    // الغطا اللي بيخبّي الشعر بيقول كده في تبويب الشعر بدل ما يبان إن الاختيار مش شغال
+    const hides = [1, 2, 4, 5, 6].indexOf(Number(look.head)) >= 0 && Number(look.hat) !== 1;
+    const colKey = part.col, showCol = !!colKey && !(key === 'head' && [4, 5, 6, 7].indexOf(Number(look.head)) < 0) && !(key === 'hair' && hides);
+    const palette = colKey === 'skin' ? SKIN : colKey === 'hairColor' ? HAIRC : colKey === 'wrap' ? WRAP : Number(look.outfit) === 5 ? ABAYA : OUTC;
+    const wrapName = { 4: ['لون الحجاب', 'لون الحجاب'], 5: ['لون الخمار', 'لون الخمار'], 6: ['لون النقاب', 'لون النقاب'], 7: ['لون الكاب', 'لون الكاب'] }[Number(look.head)] || ['اللون', 'اللون'];
+    const colorLabel = colKey === 'skin' ? T('لون البشرة', 'لون البشرة') : colKey === 'wrap' ? L(wrapName) : colKey === 'hairColor' ? (key === 'beard' ? T('اللون (نفس الشعر)', 'اللون (نفس الشعر)') : T('لون الشعر', 'لون الشعر')) : Number(look.outfit) === 5 ? T('لون العباية', 'لون العباية') : T('لون الملابس', 'لون اللبس');
+    const full = s.view ? s.view === 'full' : s.sec === 0 && key === 'outfit' || key === 'build';
+    const thumb = (mode) => 'width: 60px; height: ' + (mode === 'full' ? 96 : 60) + 'px; border-radius: ' + (mode === 'head' ? 30 : 16) + 'px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80))';
     return {
-      title: T('ابنِ شكلك', 'ابني شكلك'), sub: T('اختر كل جزء، والمعاينة تتغير فورًا', 'اختار كل جزء، والمعاينة بتتغير على طول'),
-      inHome: T('في الرئيسية', 'في الرئيسية'), inPeople: T('في الأشخاص', 'في الأشخاص'), partsLabel: T('الأجزاء', 'الأجزاء'), look,
-      tabs: TABS.map((t, i) => ({ label: L(t[1]), on: i === ti ? 'true' : 'false', style: chip(i === ti), pick: () => this.setState({ tab: i }) })),
-      tabLabel: L(tname), showRewards: key === 'rewards', spaceName: eg ? 'مصر' : 'السعودية', onReward: (r) => { if (r && r.key) this.set(r.key, r.value); }, bigMode: full ? 'الجسم كله' : 'راس وكتاف', bigSize: full ? 170 : 196, viewLabel: T('شكل المعاينة', 'شكل المعاينة'),
-      views: [['bust', T('قريب', 'قريب')], ['full', T('الجسم كله', 'الجسم كله')]].map(([v, label]) => { const on = (v === 'full') === full; return { label, on: on ? 'true' : 'false', pick: () => this.setState({ view: v }), style: 'height: 30px; padding: 0 10px; border: 0; border-radius: 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: #08634F' : 'color: #4F625C; background: transparent') }; }),
-      opts: (opts || []).map((o, i) => {
-        const on = Number(look[key]) === i;
-        return { label: L(o), on: on ? 'true' : 'false', look: Object.assign({}, look, { [key]: i }), mode: key === 'outfit' ? 'الجسم كله' : 'راس', pick: () => this.set(key, i),
-          style: 'border: 0; padding: 6px 2px 8px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : 'rgba(255,255,255,0.75)') + '; box-shadow: ' + (on ? 'inset 0 0 0 2px #08634F' : 'inset 0 0 0 1px rgba(204,216,204,0.7)'),
-          thumbBox: 'width: 60px; height: 60px; border-radius: ' + (key === 'outfit' ? 16 : 30) + 'px; overflow: hidden; display: flex; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(227,239,230,0.70) 55%, rgba(201,230,212,0.80))' };
-      }),
-      hasColors: !!showCol, colorLabel: showCol ? L(col[2]) : '',
-      colors: showCol ? col[1].map((hex, i) => { const on = Number(look[col[0]]) === i; return { label: L(col[2]) + ' ' + (i + 1), on: on ? 'true' : 'false', pick: () => this.set(col[0], i), style: 'width: 44px; height: 44px; border: 0; border-radius: 22px; cursor: pointer; background: ' + hex + '; box-shadow: ' + (on ? '0 0 0 3px #FFFFFF, 0 0 0 5px #08634F' : 'inset 0 0 0 1px rgba(25,61,51,0.15)') }; }) : [],
-      note: hidden ? T('الشعر مخفي تحت غطاء الرأس. اختر «بلا غطاء» لتراه.', 'الشعر مستخبي تحت غطا الراس. اختار «من غير» عشان تشوفه.') : T('أول نسخة من الكاركتر، وسنطوّرها لاحقًا.', 'دي أول نسخة من الكاركتر، وهنطوّرها بعدين.'),
+      title: s.had ? T('عدّل شخصيتك', 'عدّل شخصيتك') : T('ابنِ شخصيتك', 'ابني شخصيتك'), sub: T('اختر كل جزء، والمعاينة تتغير فورًا', 'اختار كل حتة، والمعاينة بتتغير على طول'),
+      inHome: T('في الرئيسية', 'في الرئيسية'), inPeople: T('في الأشخاص', 'في الأشخاص'), look,
+      bigMode: full ? 'الجسم كله' : 'راس وكتاف', bigSize: full ? 170 : 196, viewLabel: T('شكل المعاينة', 'شكل المعاينة'),
+      views: [['bust', T('قريب', 'قريب')], ['full', T('الجسم كله', 'الجسم كله')]].map(([v, lb]) => { const on = (v === 'full') === full; return { label: lb, on: on ? 'true' : 'false', pick: () => this.setState({ view: v }), style: 'height: 30px; padding: 0 10px; border: 0; border-radius: 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #FFFFFF; background: #08634F' : 'color: #4F625C; background: transparent') }; }),
+      genderLabel: T('النوع', 'النوع'),
+      genders: [[0, T('رجل', 'راجل')], [1, T('امرأة', 'ست')]].map(([g, lb]) => { const on = Number(look.gender) === g; return { label: lb, on: on ? 'true' : 'false', pick: () => { if (!on) this.setState({ look: this.fit(look, g) }); }, style: 'flex: 1 1 0; height: 44px; border: 0; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (on ? 'color: #08634F; background: #FFFFFF; box-shadow: 0 1px 2px rgba(29,54,53,0.08), 0 6px 14px rgba(29,54,53,0.10)' : 'color: #4F625C; background: transparent') }; }),
+      before: [0, 1, 2].filter((i) => i < s.sec).map(secCard), after: [0, 1, 2].filter((i) => i > s.sec).map(secCard),
+      cur: { title: L(SECS[s.sec][1]), i: { wear: s.sec === 0, body: s.sec === 1, face: s.sec === 2 }, iconBox: iconBox(true) },
+      parts: keys.map((k, j) => { const on = j === pi; return { label: L(P[k].n), on: on ? 'true' : 'false', pick: () => { const at = s.at.slice(); at[s.sec] = j; this.setState({ at }); },
+        style: 'position: relative; flex: 1 1 auto; height: 46px; padding: 0 6px; border: 0; font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; background: transparent; color: ' + (on ? '#08634F' : '#637570'),
+        bar: 'position: absolute; left: 8px; right: 8px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: ' + (on ? '#08634F' : 'transparent') }; }),
+      partLabel: L(part.n), hasOpts: opts.length > 0,
+      opts: opts.map(([id, sa, egn]) => { const on = Number(look[key]) === id, mode = part.mode, extra = key === 'head' && id === 6 ? { wrap: 2 } : {};
+        return { label: eg ? egn : sa, on: on ? 'true' : 'false', look: Object.assign({}, look, { [key]: id }, extra, key === 'hair' ? { head: 0, hat: 0 } : {}), mode: mode === 'full' ? 'الجسم كله' : mode === 'bust' ? 'راس وكتاف' : 'راس', size: mode === 'full' ? 96 : 60, pick: () => this.set(key, id), thumbBox: thumb(mode),
+          style: 'border: 0; padding: 6px 2px 8px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : '#F6F8F4') + '; box-shadow: ' + (on ? 'inset 0 0 0 2px #08634F' : 'inset 0 0 0 1px rgba(204,216,204,0.7)') }; }),
+      showRewards: key === 'rewards', spaceName: eg ? 'مصر' : 'السعودية', onReward: (r) => { if (r && r.key) this.set(r.key, r.value); },
+      hasColors: showCol, colorLabel,
+      colors: showCol ? palette.map((hex, i) => { const on = Number(look[colKey]) === i; return { label: colorLabel + ' ' + (i + 1), on: on ? 'true' : 'false', pick: () => this.set(colKey, i), style: 'width: 44px; height: 44px; border: 0; border-radius: 22px; cursor: pointer; background: ' + hex + '; box-shadow: ' + (on ? '0 0 0 3px #FFFFFF, 0 0 0 5px #08634F' : 'inset 0 0 0 1px rgba(25,61,51,0.15)') }; }) : [],
+      hasNote: key === 'hair' && hides, note: T('الشعر مخفي تحت غطاء الرأس. اختر «بلا غطاء» لتراه.', 'الشعر مستخبي تحت غطا الراس. اختار «من غير» عشان تشوفه.'),
       saveLabel: T('احفظ', 'احفظ'), cancelLabel: T('إلغاء', 'إلغاء'),
       save: (e) => {
         try { window.sessionStorage.setItem(KEY, JSON.stringify(look)); } catch (err) {}

@@ -69,8 +69,9 @@ class Component extends DCLogic {
       intro: T('حاجات تُفتح حين تصل لرقم معيّن أو ينجح استثمار — المفتوحة تلبسها بضغطة.', 'حاجات بتتفتح لما توصل لرقم معيّن أو استثمار ينجح — المفتوحة تلبسها بدوسة.'),
       items: R.map(([key, val, name, kind, tg, mode]) => {
         const target = eg ? tg[1] : tg[0], have = kind === 'gain' ? N.gain : N[kind], pct = Math.min(100, Math.floor((have * 100) / target)), open = have >= target, on = Number(look[key]) === val;
-        return { name: T(name[0], name[1]), locked: !open, on: on ? 'true' : 'false', mode, look: Object.assign({}, look, { [key]: val }),
-          aria: T(name[0], name[1]) + ' — ' + (open ? (on ? T('تلبسها الآن', 'لابسها') : T('مفتوحة', 'مفتوحة')) : T('مقفلة ', 'مقفولة ') + pct + '%'),
+        const nm = key === 'outfit' && Number(look.gender) === 1 ? ['عباية مطرزة بالذهب', 'عباية مطرزة دهب'] : name;
+        return { name: T(nm[0], nm[1]), locked: !open, on: on ? 'true' : 'false', mode, look: Object.assign({}, look, { [key]: val }),
+          aria: T(nm[0], nm[1]) + ' — ' + (open ? (on ? T('تلبسها الآن', 'لابسها') : T('مفتوحة', 'مفتوحة')) : T('مقفلة ', 'مقفولة ') + pct + '%'),
           state: open ? (on ? T('تلبسها الآن ✓', 'لابسها ✓') : T('مفتوحة · البسها', 'مفتوحة · البسها')) : T('مقفلة · ', 'مقفولة · ') + pct + '%',
           pick: () => { if (!open) { this.setState({ info: this.state.info === key + val ? null : key + val }); return; } this.setState({ info: null }); if (typeof this.props.onSet === 'function') this.props.onSet({ key, value: on ? 0 : val }); },
           style: 'border: 0; padding: 10px 8px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 5px; font: inherit; color: #193D33; cursor: pointer; background: ' + (on ? '#DCEBD6' : 'rgba(255,255,255,0.8)') + '; box-shadow: ' + (on ? 'inset 0 0 0 2px #08634F' : 'inset 0 0 0 1px rgba(204,216,204,0.7)'),

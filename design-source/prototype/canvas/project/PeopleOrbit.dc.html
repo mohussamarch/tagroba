@@ -27,6 +27,8 @@ body{margin:0}
 </helmet>
 <div ref="{{setRoot}}" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerCancel="{{cancel}}" onClick="{{tapCard}}" style="position: relative; width: 350px; height: 360px; border-radius: 28px; overflow: hidden; touch-action: {{touch}}; font-family: SAR, 'Noto Sans Arabic', Tahoma, sans-serif; background: radial-gradient(90% 70% at 88% 0%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(70% 60% at 0% 100%, rgba(150,243,204,0.18), transparent 60%), linear-gradient(125deg, #064B40 0%, #08705A 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 20px 44px rgba(6,75,64,0.30), 0 4px 10px rgba(6,75,64,0.18)">
   <a href="PersonProfile.dc.html" ref="{{setLink}}" tabindex="-1" aria-hidden="true" style="display: none"></a>
+  <a href="CharacterBuilder.dc.html" ref="{{setMeLink}}" tabindex="-1" aria-hidden="true" style="display: none"></a>
+  <button type="button" data-me="1" aria-label="{{meLabel}}" onPointerDown="{{meDown}}" onPointerMove="{{meMove}}" onPointerUp="{{meUp}}" onPointerLeave="{{meUp}}" onPointerCancel="{{meUp}}" onKeyDown="{{meKey}}" onContextMenu="{{meMenu}}" style="position: absolute; left: 110px; right: 110px; top: 120px; bottom: 0; z-index: 1; border: 0; padding: 0; background: transparent; cursor: pointer; touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none"></button>
   <svg width="350" height="360" viewBox="0 0 350 360" aria-hidden="true" style="position: absolute; left: 0; top: 0" fill="none" stroke-linecap="round">
     <sc-for list="{{threads}}" as="t" hint-placeholder-count="5">
       <path class="o-thread" d="{{t.d}}" stroke="rgba(220,235,214,0.55)" stroke-width="1.5" style="{{t.dash}}"></path>
@@ -60,7 +62,7 @@ body{margin:0}
   </sc-if>
 
   <sc-if value="{{hasChar}}" hint-placeholder-val="{{ false }}">
-    <div aria-label="أنت" style="position: absolute; left: 0; right: 0; top: 115px; bottom: 0; overflow: hidden; display: flex; justify-content: center; pointer-events: none"><dc-import name="CharacterArt" mode="الجسم كله" look="{{charLook}}" size="{{594}}" label="شكلك" hint-size="270px,594px"></dc-import></div>
+    <div aria-label="أنت" style="position: absolute; left: 0; right: 0; top: 115px; bottom: 0; overflow: hidden; display: flex; justify-content: center; pointer-events: none"><dc-import name="CharacterArt" mode="الجسم كله" look="{{charLook}}" size="{{594}}" label="شخصيتك" hint-size="270px,594px"></dc-import></div>
   </sc-if>
   <sc-if value="{{noChar}}" hint-placeholder-val="{{ true }}">
   <div aria-label="أنت" style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none">
@@ -69,7 +71,7 @@ body{margin:0}
       <span style="font-size: 34px; font-weight: 700; color: #FFFFFF">م</span>
     </div>
     <div style="margin-top: -8px; width: 220px; height: 96px; border-radius: 110px 110px 0 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.05) 75%); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 1px 2px 2px rgba(200,255,235,0.40), inset -1px 0 3px rgba(0,47,48,0.20)">
-      <span style="font-size: 11px; color: #DCEBD6; padding: 2px 10px; border-radius: 12px; background: rgba(0,47,48,0.28)">مكان الكاركتر بتاعك</span>
+      <span style="font-size: 11px; color: #DCEBD6; padding: 2px 10px; border-radius: 12px; background: rgba(0,47,48,0.28)">مكان شخصيتك · اضغط مطوّل</span>
     </div>
   </div>
   </sc-if>
@@ -89,11 +91,14 @@ class Component extends DCLogic {
     this.state = { edit: false, order: null, draft: null, drag: null };
     this.setRoot = (el) => { this.root = el; };
     this.setLink = (el) => { this.link = el; };
+    this.setMeLink = (el) => { this.meLink = el; };
     this.move = (e) => this.onMove(e);
     this.up = (e) => this.onUp(e, false);
     this.cancel = (e) => this.onUp(e, true);
   }
   open() { if (this.link && typeof this.link.click === 'function') this.link.click(); }
+  openMe() { if (this.meLink && typeof this.meLink.click === 'function') this.meLink.click(); }
+  meCancel() { if (this.meLp) { clearTimeout(this.meLp.t); this.meLp = null; } }
   componentWillUnmount() { if (this.lp && this.lp.t) clearTimeout(this.lp.t); }
   ctl() { return typeof this.props.onEdit === 'function'; }
   people() {
@@ -177,7 +182,7 @@ class Component extends DCLogic {
         key: (e) => { if (e.key === 'Enter' && !editing) this.open(); }
       };
     });
-    // الكاركتر اللي اتبنى من «ابني شكلك» مكان الحرف، ولو لسه ما اتبناش يفضل الحرف وجملة «مكان الكاركتر بتاعك»
+    // الكاركتر اللي اتبنى من «ابني شخصيتك» مكان الحرف، ولو لسه ما اتبناش يفضل الحرف وجملة «مكان الكاركتر بتاعك»
     // (طلب المالك 2026-10-15: «مكانه غلط» + «امسح اللي تحتيه»): الراس فوق في نص الدواير والخيوط طالعة منها، الكتاف لحد تحت، ومن غير القبة
     let me = null; try { me = JSON.parse(window.sessionStorage.getItem('masroufy-character') || 'null'); } catch (e) {}
     const H = me ? CHAR_HEAD : HEAD;
@@ -193,7 +198,13 @@ class Component extends DCLogic {
     const canAdd = this.ctl() ? this.props.canAdd !== false : true;
     return {
       hasChar: !!me, noChar: !me, charLook: me || {},
-      setRoot: this.setRoot, setLink: this.setLink, move: this.move, up: this.up, cancel: this.cancel,
+      setRoot: this.setRoot, setLink: this.setLink, setMeLink: this.setMeLink, move: this.move, up: this.up, cancel: this.cancel,
+      // ضغطة طويلة (نص ثانية تقريبًا) على شخصيتك بتفتح «عدّل شخصيتك»، وأي سحب بيلغيها · في وضع ترتيب الأشخاص شخصيتك ثابتة فمش بتفتح
+      meLabel: me ? 'شخصيتك — اضغط مطوّلًا لتعديلها' : 'مكان شخصيتك — اضغط مطوّلًا لبنائها',
+      meDown: (e) => { if (editing) return; e.stopPropagation(); this.meCancel(); const [x, y] = this.local(e); this.meLp = { x, y, t: setTimeout(() => { this.meLp = null; this.openMe(); }, 480) }; },
+      meMove: (e) => { if (!this.meLp) return; const [x, y] = this.local(e); if (Math.hypot(x - this.meLp.x, y - this.meLp.y) > 9) this.meCancel(); },
+      meUp: () => this.meCancel(), meMenu: (e) => { if (e && e.preventDefault) e.preventDefault(); },
+      meKey: (e) => { if (!editing && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); this.openMe(); } },
       editing, showRule: !editing && !(this.props.custom === true || this.props.custom === 'true'), touch: editing ? 'none' : 'pan-y', items, threads,
       done: (e) => { e.stopPropagation(); this.setEdit(false); },
       tapCard: (e) => { if (!editing || Date.now() - (this.justDragged || 0) < 300) return; if (e.target.closest && e.target.closest('[data-item],[data-x],[data-plus],[data-done]')) return; this.setEdit(false); },
