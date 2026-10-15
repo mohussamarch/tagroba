@@ -98,6 +98,7 @@ fun OperationsScreen() {
     var sel by remember(deps) { mutableStateOf(OpsSelection()) }
     var bulkOpen by remember { mutableStateOf<app.masroufy.usecase.BulkAction?>(null) }
     var done by remember { mutableStateOf<BulkDone?>(null) }
+    var erasing by remember { mutableStateOf<app.masroufy.core.Id?>(null) } // «امسح» من قايمة العملية (OVERRIDES §91-11)
     val toaster = app.masroufy.ui.shell.LocalToaster.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val changes = app.masroufy.ui.app.LocalDataChanges.current
@@ -176,6 +177,7 @@ fun OperationsScreen() {
                                         onDetail = { nav.push(OperationDetailRoute(it.id)) },
                                         onPerson = { nav.push(OperationDetailRoute(it.id, openPerson = true)) },
                                         onSelect = if (deps.bulk == null) null else { row -> sel = sel.start(row.id) },
+                                        onErase = if (deps.erase == null || deps.bulk == null) null else { row -> erasing = row.id },
                                     ),
                                 )
                             }
@@ -188,6 +190,7 @@ fun OperationsScreen() {
         PullRefreshIndicator(pull, t(UiKey.OPERATIONS_REFRESHING), Modifier.align(Alignment.TopCenter))
     }
     QuickMenuHost(quick)
+    OperationEraseSheet(erasing, deps.erase, onDismiss = { erasing = null }) { e -> erasing = null; reload++; done = e.asBulk() }
     BulkSheets(bulkOpen, deps, sel.ids, summary?.deletable ?: 0, onDismiss = { bulkOpen = null }) { d ->
         bulkOpen = null
         sel = sel.cancel()

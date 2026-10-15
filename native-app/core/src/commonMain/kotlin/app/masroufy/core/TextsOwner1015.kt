@@ -2,7 +2,7 @@ package app.masroufy.core
 
 /**
  * نصوص إجابات المالك 2026-10-15 مساءً (OVERRIDES §91): «الحساب ده بتاعك؟» بزرارين · علامة «مش في الكشف» · سطر «أمانة» في ملخص الفلوس ·
- * «امسح» في قايمة العملية الواحدة وتفاصيلها. فصحى مختصرة للسعودية · مصري لمصر · إنجليزي.
+ * («امسح» للعملية الواحدة بيستخدم نصوص `TextsErase.kt` الموجودة). فصحى مختصرة للسعودية · مصري لمصر · إنجليزي.
  */
 internal val MSA_OWNER_1015_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SMS_ACCOUNT_ASK to "هل الحساب المنتهي بـ{0} حسابك؟",
@@ -15,10 +15,6 @@ internal val MSA_OWNER_1015_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.TXN_NOT_IN_STATEMENT to "ليست في الكشف",
     UiKey.TXN_NOT_IN_STATEMENT_NOTE to "رسالة البنك في يوم يغطيه كشف الحساب المستورد، ومبلغها ليس في الكشف — سُجّلت عملية وعليها هذه العلامة.",
     UiKey.SUMMARY_HELD to "أمانة",
-    UiKey.OPS_DELETE to "حذف",
-    UiKey.OPS_DELETE_ASK to "حذف هذه العملية؟",
-    UiKey.OPS_DELETE_BODY to "تُحذف من السجل ومن الرصيد. يمكنك التراجع خلال ثوانٍ.",
-    UiKey.OPS_DELETE_DONE to "حُذفت العملية",
 )
 
 internal val EGYPTIAN_OWNER_1015_TEXTS: Map<UiKey, String> = mapOf(
@@ -32,10 +28,6 @@ internal val EGYPTIAN_OWNER_1015_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.TXN_NOT_IN_STATEMENT to "مش في الكشف",
     UiKey.TXN_NOT_IN_STATEMENT_NOTE to "رسالة البنك في يوم الكشف اللي استوردته مغطّيه، ومبلغها مش في الكشف — اتسجلت عملية وعليها العلامة دي.",
     UiKey.SUMMARY_HELD to "أمانة",
-    UiKey.OPS_DELETE to "امسح",
-    UiKey.OPS_DELETE_ASK to "تمسح العملية دي؟",
-    UiKey.OPS_DELETE_BODY to "هتتشال من السجل ومن الرصيد. تقدر ترجّعها في ثواني.",
-    UiKey.OPS_DELETE_DONE to "العملية اتمسحت",
 )
 
 internal val ENGLISH_OWNER_1015_TEXTS: Map<UiKey, String> = mapOf(
@@ -49,8 +41,4 @@ internal val ENGLISH_OWNER_1015_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.TXN_NOT_IN_STATEMENT to "Not in statement",
     UiKey.TXN_NOT_IN_STATEMENT_NOTE to "The bank message is on a day your imported statement covers, but its amount isn't in the statement — it was recorded with this mark.",
     UiKey.SUMMARY_HELD to "Held for you",
-    UiKey.OPS_DELETE to "Delete",
-    UiKey.OPS_DELETE_ASK to "Delete this transaction?",
-    UiKey.OPS_DELETE_BODY to "It is removed from the history and the balance. You can undo for a few seconds.",
-    UiKey.OPS_DELETE_DONE to "Transaction deleted",
 )

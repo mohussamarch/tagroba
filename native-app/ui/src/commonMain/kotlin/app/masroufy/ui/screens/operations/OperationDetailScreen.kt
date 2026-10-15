@@ -71,6 +71,11 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     var state by remember(deps) { mutableStateOf<DetailState>(DetailState.Loading) }
+    // «امسح» (OVERRIDES §91-11): تأكيد جوه الصفحة ⇒ شريط «تراجع» 8 ثواني هنا ⇒ رجوع للقايمة
+    var erasing by remember { mutableStateOf(false) }
+    var erased by remember { mutableStateOf<TxnErased?>(null) }
+    val nav = app.masroufy.ui.nav.LocalNavigator.current
+    LaunchedEffect(erased) { if (erased != null) kotlinx.coroutines.delay(8_000).also { if (erased != null) nav.pop() } }
     var reload by remember { mutableIntStateOf(0) }
     var picking by remember { mutableStateOf(false) }
     // كارت «مَن هذا؟» بيفضل بعد القرار (بحالة «تم» و«تراجع») حتى لو التحميل الجديد شال السؤال
@@ -101,6 +106,14 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
             }
             is DetailState.Ready -> {
                 val v = s.view
+                erased?.let { e ->
+                    item(key = "erase-undo") {
+                        UndoStrip(e.text) {
+                            erased = null
+                            scope.launch { toaster.show(failureOf { deps.erase?.restore(e.removal) } ?: t(UiKey.OPS_BULK_UNDONE)); reload++ }
+                        }
+                    }
+                }
                 item(key = "hero") { DetailHero(v) }
                 if (v.unrecorded && v.category?.status == CategoryStatus.NONE) item(key = "cash") { CashDifferenceBox { picking = true } }
                 val party = v.askParty ?: partyShown
@@ -125,9 +138,13 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                         LinkProjectEventCard(v, s.locked)
                     }
                 }
+                if (deps.erase != null && erased == null) item(key = "erase") {
+                    app.masroufy.ui.components.TonalButton(t(UiKey.ERASE_TXN_ACTION), { erasing = true }, Modifier.fillMaxWidth(), muted = true)
+                }
             }
         }
     }
+    OperationEraseSheet(if (erasing) transactionId else null, deps.erase, onDismiss = { erasing = false }) { e -> erasing = false; erased = e }
     CategoryPicker(
         visible = picking && ready != null,
         title = ready?.view?.let { if (it.unrecorded) t(UiKey.CATEGORY_PICKER_CASH_TITLE) else t(UiKey.CATEGORY_PICKER_TITLE, it.title) }.orEmpty(),

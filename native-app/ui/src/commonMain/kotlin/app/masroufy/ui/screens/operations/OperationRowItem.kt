@@ -90,11 +90,14 @@ internal fun operationMenuRequest(
     onPerson: (OpRow) -> Unit,
     /** «تحديد» (قايمة المالك §6.5 بند 15): بيدخل وضع التحديد والصف ده متحدد. `null` ⇒ البند ما بيظهرش. */
     onSelect: ((OpRow) -> Unit)? = null,
+    /** «امسح» (OVERRIDES §91-11): تأكيد جوه الصفحة و«تراجع» 8 ثواني. `null` ⇒ البند ما بيظهرش. */
+    onErase: ((OpRow) -> Unit)? = null,
 ): QuickMenuRequest {
     val items = buildList {
         add(MenuItem(t(UiKey.OPERATION_MENU_DETAIL)) { onDetail(row) })
         if (row.tone == app.masroufy.ui.components.AmountTone.EXPENSE) add(MenuItem(t(UiKey.OPERATION_MENU_PERSON)) { onPerson(row) })
         if (onSelect != null) add(MenuItem(t(UiKey.OPS_SELECT)) { onSelect(row) })
+        if (onErase != null) add(MenuItem(t(UiKey.ERASE_TXN_ACTION)) { onErase(row) })
         add(MenuItem(t(UiKey.OPERATION_MENU_ALL), highlight = true) { onDetail(row) })
     }
     return QuickMenuRequest(anchor, t(UiKey.OPERATION_MENU_TITLE), items) {
