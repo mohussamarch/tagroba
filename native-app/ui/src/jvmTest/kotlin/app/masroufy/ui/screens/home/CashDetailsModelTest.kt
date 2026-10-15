@@ -15,7 +15,8 @@ import kotlin.test.assertNull
 
 /**
  * لوحة الكاش (`CashDetails` جوه `Main`): من `LoadCashSummary` لحالة اللوحة — مفيش محفظة كاش ⇒ «غير متاح» مش صفر · الأرقام زي ما جت بالهللة ·
- * الصفوف الأحدث بطول ثابت · لون الصف من اتجاه الحركة (داخل الكاش أخضر، خارج منه أحمر) · اسم الصف التاجر ⇒ الملاحظة ⇒ نوعها.
+ * الصفوف الأحدث بطول ثابت · لون الصف من اتجاه الحركة (داخل الكاش أخضر، خارج منه أحمر — والتحويل بين محافظك محايد بـ«من/إلى») ·
+ * اسم الصف التاجر ⇒ الملاحظة ⇒ نوعها.
  */
 class CashDetailsModelTest {
     @AfterTest fun reset() {
@@ -51,8 +52,11 @@ class CashDetailsModelTest {
         val v = cashViewOf(summary(rows = 8))!!
         assertEquals(CASH_ROWS, v.rows.size, "اللوحة طولها ثابت ⇒ أحدث 5 بس")
         assertEquals(listOf("atm", "cafe"), v.rows.take(2).map { it.id })
-        assertEquals(AmountTone.INCOME, v.rows[0].tone, "سحب من البنك للكاش = داخل الكاش")
+        assertEquals(AmountTone.TRANSFER, v.rows[0].tone, "سحب من البنك للكاش = تحويل بين محافظك ⇒ محايد من غير علامة (§6.5-10)")
+        assertEquals("من حسابك الآخر", v.rows[0].moveNote, "من غير أسامي المحافظ ⇒ «حسابك الآخر»")
+        assertEquals("من بنك وهمي", cashViewOf(summary(), mapOf(bank.id to bank.name))!!.rows[0].moveNote, "الاتجاه بالكلمة مش باللون")
         assertEquals(AmountTone.EXPENSE, v.rows[1].tone, "دفع كاش = خارج منه")
+        assertNull(v.rows[1].moveNote, "الصرف مالوش «من/إلى»")
         assertEquals("سحب من الصراف", v.rows[0].title, "مفيش تاجر ⇒ الملاحظة")
         assertEquals("مقهى وهمي", v.rows[1].title)
     }

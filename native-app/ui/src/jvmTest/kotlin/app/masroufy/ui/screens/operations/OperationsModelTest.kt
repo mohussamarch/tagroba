@@ -63,8 +63,9 @@ class OperationsModelTest {
         assertEquals("راتب", income.title, "من غير تاجر ولا وصف ⇒ اسم النوع")
 
         val move = opRow(Fx.tx("mv", kind = EconomicKind.INTERNAL_TRANSFER, category = null, merchant = null, toWallet = Fx.cash.id), ctx)
-        assertEquals(AmountTone.TRANSFER, move.tone, "بين محافظك أزرق من غير علامة")
-        assertEquals("تحويل داخلي، حساب الراتب ← الكاش", move.subtitle)
+        assertEquals(AmountTone.TRANSFER, move.tone, "بين محافظك محايد من غير علامة")
+        assertEquals("من حساب الراتب ← إلى الكاش", move.subtitle)
+        assertEquals(app.masroufy.ui.components.MOVE_SWAP, move.icon, "رمز «منه فيه» (§6.5-10)")
 
         val unknown = opRow(Fx.tx("u", kind = EconomicKind.UNCLASSIFIED, category = null, merchant = "محل"), ctx)
         assertEquals("بلا تصنيف", unknown.subtitle)

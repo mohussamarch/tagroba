@@ -136,6 +136,12 @@ class WalletsStateTest {
         val cashMoves = walletMoves(data, "w-cash")
         assertEquals(listOf("c"), cashMoves.map { it.id })
         assertTrue(cashMoves[0].title.startsWith(t(UiKey.WDET_MOVE_IN_PREFIX, "").trimEnd()), "طرف التحويل الداخل بيتقال إنه وارد")
+        assertEquals(AmountTone.TRANSFER, cashMoves[0].tone, "الرجل الداخلة كمان محايدة")
+        assertEquals("إلى حسابك الآخر", bankMoves[0].moveNote, "من غير أسامي المحافظ ⇒ «حسابك الآخر»")
+        assertEquals("من حسابك الآخر", cashMoves[0].moveNote)
+        assertEquals(null, bankMoves[1].moveNote, "الدخل مالوش «من/إلى»")
+        val named = walletMoves(data, "w-bank", walletNames = mapOf("w-cash" to "الكاش", "w-bank" to "البنك"))
+        assertEquals("إلى الكاش", named[0].moveNote, "الاتجاه بالكلمة جوه سجل المحفظة")
         assertEquals(1, walletMoves(data, "w-bank", limit = 1).size)
         assertTrue(walletMoves(data, "w-none").isEmpty())
     }

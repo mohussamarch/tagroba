@@ -94,7 +94,7 @@ class ReviewQueueModelTest {
         ) + (1..6).map { tx("x$it", "2026-10-0$it", 100, wallet = cash.id) }
         val view = cashViewOf(CashSummary(cash, 68_400, 50_000, 1_600, 1_600, rows))!!
         assertEquals(CASH_ROWS, view.rows.size, "اللوحة طولها ثابت")
-        assertEquals(AmountTone.INCOME, view.rows[0].tone, "داخل للكاش أخضر")
+        assertEquals(AmountTone.TRANSFER, view.rows[0].tone, "سحب من البنك للكاش = بين محافظك ⇒ محايد مش أخضر (HANDOVER §6.5-10)")
         assertEquals("سحب", view.rows[0].title)
         assertEquals(AmountTone.EXPENSE, view.rows[1].tone)
         assertEquals("شاي", view.rows[1].title)

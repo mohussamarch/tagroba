@@ -147,7 +147,7 @@ private fun TxnCardView(messageId: String, d: TxnDraft, state: CardState, today:
         CardType.EXPENSE -> Lucide.RECEIPT
         CardType.INCOME -> Lucide.BANKNOTE
         CardType.LENT, CardType.BORROWED -> Lucide.HAND_COINS
-        CardType.MOVE -> Lucide.ARROW_LEFT_RIGHT
+        CardType.MOVE -> app.masroufy.ui.components.MOVE_SWAP // رمز «منه فيه» زي صف العمليات (HANDOVER §6.5-10)
     }
     val day = if (today.isNotEmpty()) assistDate(d.occurredOn, today) else d.occurredOn
     val sub = when (type) {

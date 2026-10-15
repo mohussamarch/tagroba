@@ -24,6 +24,8 @@ import app.masroufy.core.normalizeText
 import app.masroufy.core.ruleFor
 import app.masroufy.core.transferPartyOf
 import app.masroufy.ui.components.AmountTone
+import app.masroufy.ui.components.isOwnMove
+import app.masroufy.ui.components.moveLineOf
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.text.t
 
@@ -102,7 +104,9 @@ fun detailView(
     val ctx = RowContext(categories, known?.let { mapOf(tx.id to listOf(it.displayName)) }.orEmpty(), wallets, country)
     val flow = linkFlowOf(tx)
     val rule = ruleFor(tx.economicKind)
-    val direction = t(if (tx.observedDirection == Direction.IN) UiKey.OPERATION_DETAIL_IN else UiKey.OPERATION_DETAIL_OUT)
+    // التحويل بين محافظك: «من البنك ← إلى الكاش» مكان «صرف/دخل» (مش صرف — HANDOVER §6.5-10)
+    val direction = if (isOwnMove(tx)) moveLineOf(tx) { ctx.wallet(it)?.name } ?: rule.label
+    else t(if (tx.observedDirection == Direction.IN) UiKey.OPERATION_DETAIL_IN else UiKey.OPERATION_DETAIL_OUT)
     val wallet = ctx.wallet(tx.walletId)
     val walletName = wallet?.name ?: t(TextKey.NOT_AVAILABLE)
     val walletLogo = wallet?.takeIf { it.kind != "cash" }?.let { FieldLogo(bankForWallet(it, country), it.name) }

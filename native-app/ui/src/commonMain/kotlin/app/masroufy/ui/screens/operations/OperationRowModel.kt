@@ -10,7 +10,6 @@ import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.IsoDate
-import app.masroufy.core.Liquidity
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
@@ -25,6 +24,10 @@ import app.masroufy.core.sentenceNumber
 import app.masroufy.core.toDayNumber
 import app.masroufy.core.transferPartyOf
 import app.masroufy.ui.components.AmountTone
+import app.masroufy.ui.components.MOVE_SWAP
+import app.masroufy.ui.components.isOwnMove
+import app.masroufy.ui.components.moneyToneOf
+import app.masroufy.ui.components.moveLineOf
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -68,26 +71,21 @@ class RowContext(
     fun merchant(id: Id): String? = merchantNames[id]?.firstOrNull()
 }
 
-/** نبرة المبلغ: التحويل الداخلي أزرق من غير علامة · الداخل أخضر «+» · الطالع أحمر «−» (DESIGN-SYSTEM). */
-fun toneOf(tx: Transaction): AmountTone = when {
-    ruleFor(tx.economicKind).liquidity == Liquidity.INTERNAL -> AmountTone.TRANSFER
-    tx.observedDirection == Direction.IN -> AmountTone.INCOME
-    else -> AmountTone.EXPENSE
-}
+/** نبرة المبلغ: التحويل بين محافظك محايد من غير علامة · الداخل أخضر «+» · الطالع أحمر «−» (DESIGN-SYSTEM · `MoveLook.kt`). */
+fun toneOf(tx: Transaction): AmountTone = moneyToneOf(tx)
 
 /** اسم العملية: التاجر المعروف ⇒ الاسم من المصدر ⇒ ملاحظتك ⇒ الوصف ⇒ اسم النوع. */
 fun titleOf(tx: Transaction, ctx: RowContext): String =
     ctx.merchant(tx.id) ?: tx.rawMerchantName?.takeIf { it.isNotBlank() } ?: tx.note?.takeIf { it.isNotBlank() }
         ?: tx.rawDescription?.trim()?.takeIf { it.isNotEmpty() } ?: ruleFor(tx.economicKind).label
 
-/** السطر التاني: التصنيف · أو النوع · أو الطرف · أو «بلا تصنيف». التحويل الداخلي: «تحويل داخلي، البنك ← الكاش». */
+/**
+ * السطر التاني: التصنيف · أو النوع · أو الطرف · أو «بلا تصنيف». التحويل بين محافظك: «من البنك ← إلى الكاش» (الطرف اللي مش محفظة هنا ⇒
+ * «حسابك الآخر» — HANDOVER §6.5-10)، والعملية ورجوعها (§77-D) اسم نوعها زي ما هو.
+ */
 fun subtitleOf(tx: Transaction, ctx: RowContext): String {
     val kind = ruleFor(tx.economicKind)
-    if (kind.liquidity == Liquidity.INTERNAL) {
-        val from = ctx.wallet(tx.walletId)?.name
-        val to = ctx.wallet(tx.transferToWalletId)?.name
-        return if (from != null && to != null) t(UiKey.OPERATIONS_ROW_MOVE, kind.label, from, to) else kind.label
-    }
+    if (isOwnMove(tx)) return moveLineOf(tx) { ctx.wallet(it)?.name } ?: kind.label
     ctx.category(tx.categoryId)?.let { return it.name }
     transferPartyOf(tx)?.let { party ->
         val who = party.label.ifBlank { party.last4?.let { t(UiKey.OPERATIONS_ROW_ACCOUNT, sentenceDigitsOf(it)) }.orEmpty() }
@@ -99,21 +97,21 @@ fun subtitleOf(tx: Transaction, ctx: RowContext): String {
 
 private fun sentenceDigitsOf(digits: String): String = app.masroufy.core.sentenceDigits(digits)
 
-/** أيقونة الصف: رمز التصنيف، وإلا بالنوع (تحويل · دخل · كاش)، وإلا وسم. */
+/** أيقونة الصف: التحويل بين محافظك ⇒ رمز «منه فيه» دايمًا (§6.5-10) · رمز التصنيف، وإلا بالنوع (دخل · كاش)، وإلا وسم. */
 fun iconOf(tx: Transaction, ctx: RowContext): Lucide {
+    if (isOwnMove(tx)) return MOVE_SWAP
     ctx.category(tx.categoryId)?.let { return categoryIcon(it.iconKey) }
     return when {
-        ruleFor(tx.economicKind).liquidity == Liquidity.INTERNAL -> OperationsIcons.MOVE
         tx.observedDirection == Direction.IN -> OperationsIcons.INCOME
         tx.isCashTagged || ctx.wallet(tx.walletId)?.kind == "cash" -> Lucide.BANKNOTE
         else -> Lucide.TAG
     }
 }
 
-/** لون الأيقونة: لون التصنيف، وإلا بالنوع. **المبلغ ما بيورثش اللون ده.** */
+/** لون الأيقونة: التحويل بين محافظك ⇒ لون التحويل المحايد · لون التصنيف، وإلا بالنوع. **المبلغ ما بيورثش لون التصنيف.** */
 fun colorOf(tx: Transaction, ctx: RowContext): Color {
+    if (isOwnMove(tx)) return Ink.transfer
     val fallback = when {
-        ruleFor(tx.economicKind).liquidity == Liquidity.INTERNAL -> Ink.transfer
         tx.observedDirection == Direction.IN -> Ink.income
         else -> Ink.muted
     }

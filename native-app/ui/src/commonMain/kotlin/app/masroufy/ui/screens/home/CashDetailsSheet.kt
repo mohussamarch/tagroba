@@ -31,6 +31,7 @@ import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.ListRow
 import app.masroufy.ui.components.Skeleton
+import app.masroufy.ui.components.withMoveNote
 import app.masroufy.ui.overlay.Sheet
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -58,7 +59,9 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
         load = runCatching {
             val today = deps.shell.today()
             val payday = runCatching { deps.home.profile.load().payday }.getOrDefault(DEFAULT_PAYDAY)
-            CashLoad.Ready(cashViewOf(deps.home.cash.load(periodForDate(today, payday), today)))
+            // أسامي المحافظ للطرف التاني في التحويل بين محافظك («من الراجحي») — لو فشلت ⇒ «حسابك الآخر» (اللوحة ما بتقعش)
+            val names = runCatching { deps.shell.withYouNow().wallets.associate { it.wallet.id to it.wallet.name } }.getOrDefault(emptyMap())
+            CashLoad.Ready(cashViewOf(deps.home.cash.load(periodForDate(today, payday), today), names))
         }.getOrElse { CashLoad.Failed }
     }
     Sheet(visible, onDismiss, t(UiKey.CASH_DETAILS_TITLE), minHeight = 420.dp, closeLabel = t(UiKey.SHELL_CLOSE)) {
@@ -105,7 +108,7 @@ private fun CashBody(v: CashView) {
     v.rows.forEachIndexed { i, r ->
         ListRow(
             title = r.title,
-            subtitle = dayMonth(r.date),
+            subtitle = withMoveNote(dayMonth(r.date), r.moveNote),
             trailing = { AmountText(r.amountMinor, v.currency, tone = r.tone, showCurrency = false) },
             chevron = false,
         )
