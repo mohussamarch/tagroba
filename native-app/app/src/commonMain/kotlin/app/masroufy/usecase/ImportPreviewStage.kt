@@ -94,6 +94,7 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
     val window = deps.crossSourceWindowDays
     val ledger = loadLedger(deps, request.accountIdentity)
     val index = buildDedupeIndex(existingRecordsOf(ledger, preferStatement = window != null))
+    val erased = ownerErasedReferences(deps, request, outcome.rows, ledger)
     val catDeps = buildCategorizeDeps(deps)
 
     val scanned = mutableListOf<ImportPreviewLine>()
@@ -113,6 +114,8 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
         if (ref != null && recordedElsewhere != null && (verdict.state == MatchingState.NEW || verdict.state == MatchingState.SIMILAR)) {
             verdict = DedupeVerdict(MatchingState.DUPLICATE, uiText(TextKey.DEDUPE_SAME_REFERENCE, ref), matchedTransactionId = recordedElsewhere)
         }
+        // §6.5 بند 12: المالك مسح عملية المرجع ده بإيده ⇒ ما ترجعش (`ErasedSources.kt`)
+        verdict = erasedVerdict(verdict, ref, erased)
         if (verdict.state == MatchingState.NEW && !ref.isNullOrEmpty()) {
             val key = "${request.accountIdentity}|$ref"
             val priorLine = seenInBatch[key]

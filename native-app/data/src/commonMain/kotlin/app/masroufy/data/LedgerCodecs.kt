@@ -120,6 +120,8 @@ object LedgerCodecs {
                         }
                     },
                 )
+                // HANDOVER §6.5 بند 12: علامة «المالك مسح العملية» — ما بتتكتبش غير لما تبقى موجودة
+                opt("ownerDeletedAt", s.ownerDeletedAt)
             }
         },
         { r ->
@@ -133,6 +135,7 @@ object LedgerCodecs {
                 } else {
                     null
                 },
+                ownerDeletedAt = r.strOrNull("ownerDeletedAt"),
             )
         },
     )
