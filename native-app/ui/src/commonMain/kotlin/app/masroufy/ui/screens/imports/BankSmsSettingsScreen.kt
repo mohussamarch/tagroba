@@ -124,7 +124,7 @@ fun BankSmsSettingsScreen() {
                 }
             }
         }
-        item(key = "auto") { AutoCard(u, onStop = { act(UiKey.SMS_SETTINGS_STOPPED) { sms?.disable() } }, onStart = {
+        item(key = "auto") { AutoCard(u, permissions.hasSms(), onStop = { act(UiKey.SMS_SETTINGS_STOPPED) { sms?.disable() } }, onStart = {
             // بنك البرنامج عارف مرسلينه (المحفظة اللي اتعملت في أول تشغيل مثلًا) ⇒ بيتسجّل لوحده — ما حدش يكتب اسم مرسل (OVERRIDES §91)
             val known = knownBankSenders(wallets, country)
             when {
@@ -199,7 +199,7 @@ fun BankSmsSettingsScreen() {
 }
 
 @Composable
-private fun AutoCard(u: SmsSettingsUi, onStop: () -> Unit, onStart: () -> Unit) {
+private fun AutoCard(u: SmsSettingsUi, granted: Boolean, onStop: () -> Unit, onStart: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -216,8 +216,9 @@ private fun AutoCard(u: SmsSettingsUi, onStop: () -> Unit, onStart: () -> Unit) 
             if (u.enabled && !u.permissionLost) QuietButton(t(UiKey.SMS_SETTINGS_STOP), onStop, Modifier.fillMaxWidth(), danger = true)
             if (!u.enabled) PrimaryButton(t(UiKey.SMS_SETTINGS_START), onStart, Modifier.fillMaxWidth())
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                StatusDot(if (u.permissionLost) Ink.focus else Ink.income, 8.dp)
-                BasicText(t(if (u.permissionLost) UiKey.SMS_SETTINGS_PERM_LINE_OFF else UiKey.SMS_SETTINGS_PERM_LINE_ON), style = Type.caption().copy(color = Ink.muted))
+                // حالة النظام الحقيقية: «ممنوح» عمره ما يظهر والإذن مرفوض
+                StatusDot(if (granted) Ink.income else Ink.focus, 8.dp)
+                BasicText(t(permissionLine(granted)), style = Type.caption().copy(color = Ink.muted))
             }
         }
     }

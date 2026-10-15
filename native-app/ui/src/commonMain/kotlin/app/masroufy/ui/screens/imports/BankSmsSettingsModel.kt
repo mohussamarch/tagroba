@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.imports
 
 import app.masroufy.core.Id
+import app.masroufy.core.UiKey
 import app.masroufy.core.Wallet
 import app.masroufy.core.Bank
 import app.masroufy.core.bankForSender
@@ -38,6 +39,12 @@ fun smsSettingsUi(overview: SmsOverview?, wallets: List<Wallet>, country: String
     }
     return SmsSettingsUi(available = true, enabled = overview.inbox.enabled, permission = overview.inbox.permission, senders = senders)
 }
+
+/**
+ * سطر «إذن الرسائل» في «إعداد القراءة»: حالة النظام الحقيقية ([granted] = `Permissions.hasSms` وقت العرض) — «ممنوح» بس لو الإذن موجود فعلًا.
+ * قبل كده كان بيبص على «سُحب الإذن» بس ⇒ بيقول «ممنوح» والإذن مرفوض لو القراءة متوقفة (اتشاف في رحلة أول تشغيل 2026-10-15).
+ */
+fun permissionLine(granted: Boolean): UiKey = if (granted) UiKey.SMS_SETTINGS_PERM_LINE_ON else UiKey.SMS_SETTINGS_PERM_LINE_OFF
 
 /** المرسلين بعد إضافة واحد (من غير تكرار بحالة الحروف) — اللي بيتبعت لـ`enable`. */
 fun sendersWith(current: List<String>, added: String): List<String> {

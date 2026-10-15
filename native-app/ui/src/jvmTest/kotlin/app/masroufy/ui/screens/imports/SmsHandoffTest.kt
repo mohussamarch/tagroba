@@ -31,6 +31,11 @@ class SmsHandoffTest {
         assertEquals(HandoffState(), SmsHandoff.state)
     }
 
+    @Test fun permissionLineShowsTheRealSystemState() {
+        assertEquals(app.masroufy.core.UiKey.SMS_SETTINGS_PERM_LINE_ON, permissionLine(granted = true))
+        assertEquals(app.masroufy.core.UiKey.SMS_SETTINGS_PERM_LINE_OFF, permissionLine(granted = false), "«ممنوح» عمره ما يظهر والإذن مرفوض")
+    }
+
     @Test fun stoppedOnlyWhenTheOwnerReallyTurnedReadingOff() {
         assertEquals(SmsStatus.SETUP, bankSmsUi(overview(false, false, emptyList()), emptyList(), emptySet()).status, "عمرها ما اشتغلت ⇒ سطر محايد")
         assertEquals(SmsStatus.SETUP, bankSmsUi(overview(false, true, emptyList()), emptyList(), emptySet()).status)
