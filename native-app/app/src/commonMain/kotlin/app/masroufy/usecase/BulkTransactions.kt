@@ -224,8 +224,11 @@ class BulkTransactions(private val deps: BulkTransactionsDeps) {
     }
 
     private suspend fun deletableAmong(found: List<Transaction>): List<Transaction> {
-        val linked = deps.linked ?: return emptyList()
         if (found.isEmpty()) return emptyList()
+        // إجابة المالك 2026-10-15 (OVERRIDES §91-6): المسح الجماعي = قواعد المسح الفردي **بالظبط** — المستوردة (رسالة أو كشف) بتتمسح وعليها
+        // `ownerDeletedAt` فإعادة القراية ما ترجّعهاش، والمربوطة زي الفردي (`DeleteTransaction.preview`)
+        deps.erase?.let { erase -> return found.filter { erase.preview(it.id).allowed } }
+        val linked = deps.linked ?: return emptyList()
         val ids = found.map { it.id }
         val blocked = deps.sources.listByTransactionIds(ids).mapNotNull { it.transactionId }.toSet() +
             linked(ids) + deps.spaceLegs?.legsAmong(ids).orEmpty()

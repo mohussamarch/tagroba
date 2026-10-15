@@ -28,6 +28,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -176,11 +177,17 @@ class BulkTransactionsTest {
     }
 
     /** «امسح» في وضع التحديد بيعدّي من نفس طريق مسح العملية الواحدة (`DeleteTransaction` — §6.5 بند 12) و«تراجع» بـ`restore`. */
-    @Test fun deleteGoesThroughTheSingleDeletePathWhenGivenAndUndoRestoresExactly() = runBlocking {
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-6): المسح الجماعي = قواعد الفردي بالظبط — المستوردة بتتمسح وعليها علامة المالك (إعادة القراية
+     * ما ترجّعهاش)، والمربوطة بتسوية بتتساب زي الفردي، والملخّص بيعدّ بنفس القواعد.
+     */
+    @Test fun deleteFollowsExactlyTheSingleDeleteRulesAndUndoRestoresExactly() = runBlocking {
         val uow = MemoryUnitOfWork(listOf(txns, links, tagLinks, sources))
+        val settlements = app.masroufy.memory.MemorySettlementRepository()
+        settlements.saveMany(listOf(app.masroufy.core.Settlement("set-1", "t-debt", "obl-x", 500)))
         val erase = DeleteTransaction(
             DeleteTransactionDeps(
-                txns, sources, app.masroufy.memory.MemorySettlementRepository(), app.masroufy.memory.MemoryAllocationRepository(),
+                txns, sources, settlements, app.masroufy.memory.MemoryAllocationRepository(),
                 app.masroufy.memory.MemoryObligationRepository(),
                 RevertLinkDeps(
                     links, app.masroufy.memory.MemoryEventLinkRepository(), tagLinks, app.masroufy.memory.MemoryRoscaEntryRepository(),
@@ -198,16 +205,21 @@ class BulkTransactionsTest {
             ),
         )
         val before = snapshot()
-        val r = through.delete(listOf("t-1", "t-2", "t-imported", "t-debt"))
-        assertEquals(2, r.changed)
-        assertEquals(2, r.skipped)
-        assertEquals(2, r.undo!!.removals.size)
-        assertTrue(txns.findByIds(listOf("t-1", "t-2")).isEmpty())
+        val picked = listOf("t-1", "t-2", "t-imported", "t-debt")
+        assertEquals(3, through.summary(picked).deletable, "the summary counts with the single-delete rules")
+        val r = through.delete(picked)
+        assertEquals(3, r.changed)
+        assertEquals(1, r.skipped)
+        assertEquals(3, r.undo!!.removals.size)
+        assertTrue(txns.findByIds(listOf("t-1", "t-2", "t-imported")).isEmpty())
         assertTrue(tagLinks.listByTransactionIds(listOf("t-1")).isEmpty())
         assertTrue(links.listByTransaction("t-2").isEmpty())
-        assertEquals(2, txns.findByIds(listOf("t-imported", "t-debt")).size)
+        assertEquals(listOf("t-debt"), txns.findByIds(listOf("t-debt")).map { it.id }, "linked to a settlement ⇒ stays, like single delete")
+        // المستوردة: سجل مصدرها باقي وعليه علامة المالك ⇒ إعادة القراية ما ترجّعهاش
+        assertNotNull(sources.all().single { it.id == "s-1" }.ownerDeletedAt)
         through.undo(r.undo!!)
         assertEquals(before, snapshot())
+        assertNull(sources.all().single { it.id == "s-1" }.ownerDeletedAt)
     }
 }
 
