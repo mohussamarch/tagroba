@@ -82,6 +82,17 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     )
     override val transfers = ManageTransfers(ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock))
 
+    // تحديد كذا عملية (§6.5 بند 15): المسح بيرفض أي عملية متربطة بحاجة — نفس فحص رجول «التحويل لنفسك»
+    private val txnLinks = app.masroufy.usecase.TransactionLinkRepos(
+        r.roscaEntries, r.installmentPayments, r.installmentPlans, r.zakatPayments, r.eventLinks, r.projectLinks, r.allocations, r.obligations, r.settlements,
+    )
+    override val bulk = app.masroufy.usecase.BulkTransactions(
+        app.masroufy.usecase.BulkTransactionsDeps(
+            r.transactions, r.categories, r.projects, r.projectLinks, r.tags, r.transactionTags, r.sourceRecords, r.uow, ids, clock,
+            linked = txnLinks::linked, spaceLegs = legs,
+        ),
+    )
+
     override suspend fun payday(): Int = c.shell.profile.load().payday
 
     override suspend fun wallets(): List<Wallet> = LoadWithYouNow(r.wallets, r.transactions, c.space.currency).load(c.env.today()).wallets.map { it.wallet }

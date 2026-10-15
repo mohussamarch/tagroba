@@ -83,10 +83,18 @@ internal fun RowTile(row: OpRow, size: Int = 36) {
  * ونفسها في كل الشاشات — قايمة المالك §6.5-13). البنود من النموذج: «عرض التفاصيل» ·
  * «تخصيص مبلغ لشخص» (للمصروف بس — بيفتح التفاصيل ولوحة الشخص) · «كل الإجراءات ←».
  */
-internal fun operationMenuRequest(row: OpRow, anchor: Anchor, onDetail: (OpRow) -> Unit, onPerson: (OpRow) -> Unit): QuickMenuRequest {
+internal fun operationMenuRequest(
+    row: OpRow,
+    anchor: Anchor,
+    onDetail: (OpRow) -> Unit,
+    onPerson: (OpRow) -> Unit,
+    /** «تحديد» (قايمة المالك §6.5 بند 15): بيدخل وضع التحديد والصف ده متحدد. `null` ⇒ البند ما بيظهرش. */
+    onSelect: ((OpRow) -> Unit)? = null,
+): QuickMenuRequest {
     val items = buildList {
         add(MenuItem(t(UiKey.OPERATION_MENU_DETAIL)) { onDetail(row) })
         if (row.tone == app.masroufy.ui.components.AmountTone.EXPENSE) add(MenuItem(t(UiKey.OPERATION_MENU_PERSON)) { onPerson(row) })
+        if (onSelect != null) add(MenuItem(t(UiKey.OPS_SELECT)) { onSelect(row) })
         add(MenuItem(t(UiKey.OPERATION_MENU_ALL), highlight = true) { onDetail(row) })
     }
     return QuickMenuRequest(anchor, t(UiKey.OPERATION_MENU_TITLE), items) {
