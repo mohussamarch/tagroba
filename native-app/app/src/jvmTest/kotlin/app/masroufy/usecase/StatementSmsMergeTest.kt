@@ -132,6 +132,26 @@ class StatementSmsMergeTest {
         assertEquals(MatchingState.DUPLICATE, w.review.load(w.target).duplicates.single().state)
     }
 
+    /** مراجعة r04: آخر يوم الكشف ناقص (اتصدّر في نصّه) — شراء يومها مش في الكشف بيتسجل، مش «الكشف غطّاها». */
+    @Test fun anSmsOnTheStatementsLastDayThatIsNotInItIsRecorded() = runBlocking<Unit> {
+        val w = MatchingWorld()
+        w.import(w.statement(cafe, mart))
+        w.receive(matchingPurchaseSms("77", "26/10/03", shop = "TEST BAKERY"), at = "2026-10-03T20:00:00Z")
+        w.review.load(w.target)
+        assertEquals(1, w.review.recordAll(emptyMap(), emptyList()))
+        assertEquals(3, w.all().size, "عملية جديدة")
+    }
+
+    /** مراجعة r04: الكشف بيغطي أيامه بس — رسالة قبل أول يوم فيه بتتسجل. */
+    @Test fun anSmsBeforeTheStatementsFirstDayIsRecorded() = runBlocking<Unit> {
+        val w = MatchingWorld()
+        w.import(w.statement(mart, salary))
+        w.receive(matchingPurchaseSms("77", "26/09/20"))
+        w.review.load(w.target)
+        assertEquals(1, w.review.recordAll(emptyMap(), emptyList()))
+        assertEquals(3, w.all().size, "عملية جديدة")
+    }
+
     @Test fun aRenamedWalletStillMergesByWallet() = runBlocking<Unit> {
         val w = MatchingWorld()
         w.receive(matchingPurchaseSms("100", "26/10/01"))

@@ -24,17 +24,22 @@ internal suspend fun markStatementCovered(
     ledger: ExistingLedger,
 ): List<ImportPreviewLine> {
     if (request.sourceType != ImportSourceType.SMS || lines.isEmpty()) return lines
-    val lastDay = lastStatementDay(deps.batches, ledger) ?: return lines
+    val (firstDay, lastDay) = statementDays(deps.batches, ledger) ?: return lines
     return lines.map { line ->
-        if (line.state != MatchingState.NEW || line.mergeInto != null || line.row.date > lastDay) line
+        // مراجعة r04: آخر يوم في الكشف غالبًا ناقص (الكشف اتصدّر في نصّه) ⇒ الشراء اللي بعد التصدير لازم يتسجل · وقبل أول يوم الكشف ما يعرفش حاجة
+        val covered = line.row.date >= firstDay && line.row.date < lastDay
+        if (line.state != MatchingState.NEW || line.mergeInto != null || !covered) line
         else line.copy(state = MatchingState.DUPLICATE, selectedByDefault = false, reason = uiText(TextKey.SMS_COVERED_BY_STATEMENT, lastDay))
     }
 }
 
 /** آخر يوم فيه عملية من **كشف** (مش رسالة) في دفاتر الحساب ده — دفعات مقفولة بس (المعلّقة والمتراجع عنها ما بتغطيش حاجة). */
-internal suspend fun lastStatementDay(batches: ImportBatchRepository, ledger: ExistingLedger): IsoDate? {
-    val statement = statementRecords(batches, ledger.records)
-    return statement.mapNotNull { r -> r.transactionId?.let { ledger.byId[it]?.occurredAt } }.maxOrNull()
+internal suspend fun lastStatementDay(batches: ImportBatchRepository, ledger: ExistingLedger): IsoDate? = statementDays(batches, ledger)?.second
+
+/** أول وآخر يوم فيهم عملية من **كشف** في دفاتر الحساب ده (نفس سجلات [lastStatementDay])، أو null. */
+internal suspend fun statementDays(batches: ImportBatchRepository, ledger: ExistingLedger): Pair<IsoDate, IsoDate>? {
+    val days = statementRecords(batches, ledger.records).mapNotNull { r -> r.transactionId?.let { ledger.byId[it]?.occurredAt?.take(10) } }
+    return if (days.isEmpty()) null else days.min() to days.max()
 }
 
 /** سجلات الكشف بس من [records] — نوع الدفعة بيحكم، ولو الدفعة مش موجودة (بيانات قديمة) شكل المرجع. */
