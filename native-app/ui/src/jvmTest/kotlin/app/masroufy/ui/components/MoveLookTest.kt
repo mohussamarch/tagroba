@@ -63,7 +63,7 @@ class MoveLookTest {
             val label = amountLabel(row.amountMinor, row.currency, row.tone)
             assertFalse(label.contains("−") || label.contains("-") || label.contains("+"), "${tx.id}: من غير علامة — $label")
         }
-        assertEquals("1,500.00 ر.س", amountLabel(moveOut.amountMinor, Currency.SAR, AmountTone.TRANSFER))
+        assertEquals("\u2066\u20C1 1,500.00\u2069", amountLabel(moveOut.amountMinor, Currency.SAR, AmountTone.TRANSFER))
     }
 
     @Test fun ownMoveLinesSayFromAndToInBothArabicVariantsAndEnglish() {
@@ -123,16 +123,16 @@ class MoveLookTest {
             assertEquals(AmountTone.EXPENSE, row.tone, "${tx.id}: أحمر زي ما هو")
             assertNotEquals(MOVE_SWAP, row.icon)
             assertFalse(row.subtitle.contains("←"), row.subtitle)
-            assertTrue(amountLabel(row.amountMinor, row.currency, row.tone).startsWith("−"), "علامة الطرح الحقيقية")
+            assertTrue(amountLabel(row.amountMinor, row.currency, row.tone).let { Regex("−\\d").containsMatchIn(it) && !it.contains("-") }, "علامة الطرح الحقيقية جنب الرقم (الريال شمالها — §91)")
         }
         val e = opRow(expense, ctx)
         assertEquals(AmountTone.EXPENSE, e.tone)
         assertEquals("مطاعم وقهوة", e.subtitle)
-        assertEquals("−42.00 ر.س", amountLabel(e.amountMinor, e.currency, e.tone))
+        assertEquals("\u2066\u20C1 −42.00\u2069", amountLabel(e.amountMinor, e.currency, e.tone))
         val i = opRow(income, ctx)
         assertEquals(AmountTone.INCOME, i.tone)
         assertEquals(Ink.income, i.tone.color)
-        assertEquals("+9,000.00 ر.س", amountLabel(i.amountMinor, i.currency, i.tone))
+        assertEquals("\u2066\u20C1 +9,000.00\u2069", amountLabel(i.amountMinor, i.currency, i.tone))
         assertNull(moveLineOf(expense, ::name))
         assertNull(moveLineOf(income, ::name))
     }
