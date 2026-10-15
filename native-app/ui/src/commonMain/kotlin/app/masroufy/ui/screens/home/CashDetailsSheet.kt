@@ -30,9 +30,11 @@ import app.masroufy.ui.components.AmountText
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.EmptyState
 import app.masroufy.ui.components.ListRow
+import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.withMoveNote
 import app.masroufy.ui.overlay.Sheet
+import app.masroufy.ui.screens.more.BalanceUpdateSheet
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -53,6 +55,8 @@ private sealed interface CashLoad {
 internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
     val deps = LocalSpace.current
     var load by remember(deps) { mutableStateOf<CashLoad>(CashLoad.Loading) }
+    var updating by remember { mutableStateOf(false) }
+    var target by remember { mutableStateOf<CashView?>(null) }
     LaunchedEffect(deps, visible) {
         if (!visible) return@LaunchedEffect
         load = CashLoad.Loading
@@ -75,10 +79,12 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
             is CashLoad.Ready -> {
                 val v = s.view
                 if (v == null) EmptyState(t(UiKey.CASH_DETAILS_NO_WALLET_TITLE), t(UiKey.CASH_DETAILS_NO_WALLET_BODY))
-                else CashBody(v)
+                else CashBody(v, onUpdate = if (deps.more.updateBalance != null) ({ target = v; updating = true; onDismiss() }) else null)
             }
         }
     }
+    // «حدّث الكاش» من لوحة الكاش (قايمة المالك البند 5): اللوحة دي بتقفل واللوحة التانية بتفتح
+    BalanceUpdateSheet(updating, target?.walletId, target?.walletName.orEmpty(), isCash = true, onClose = { updating = false }, onSaved = {})
 }
 
 /**
@@ -86,7 +92,9 @@ internal fun CashDetailsSheet(visible: Boolean, onDismiss: () -> Unit) {
  * الكاش الآن» — منطقهم مش متبني، فمش ظاهرين) عمليات الكاش في الشهر من نفس القراية ⇒ سطر إن «صرفت هذا الشهر» فيه الكاش.
  */
 @Composable
-private fun CashBody(v: CashView) {
+private fun CashBody(v: CashView, onUpdate: (() -> Unit)?) {
+    // أول فعل في اللوحة: «حدّث الكاش» (معايا كذا دلوقتي)
+    if (onUpdate != null) PrimaryButton(t(UiKey.BAL_UPDATE_CASH), onClick = onUpdate, modifier = Modifier.fillMaxWidth(), height = 48.dp)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
         Column(Modifier.weight(1f)) {
             BasicText(t(UiKey.CASH_DETAILS_TITLE), style = Type.section())

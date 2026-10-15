@@ -1,7 +1,11 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.CheckpointEffect
 import app.masroufy.core.Direction
 import app.masroufy.core.Id
+import app.masroufy.core.LedgerStep
+import app.masroufy.core.UiKey
+import app.masroufy.core.withCheckpointSteps
 import app.masroufy.core.LedgerMovement
 import app.masroufy.core.ReconcileResult
 import app.masroufy.core.TextKey
@@ -78,7 +82,12 @@ class ReconcileBalance(private val deps: ReconcileDeps) {
         val all = (collected.map { it to false } + incomingLegs.map { it to true })
             .sortedWith(compareBy({ it.first.occurredAt }, { it.first.sourceOrder }))
 
-        val movements = all.map { (txn, incoming) ->
+        // «حدّث الرصيد» (`BalanceCheckpoint.kt`): فرق كل نقطة حركة في مكانها من غير رصيد معلن — فالسلسلة بعدها بتبدأ من اللي المالك كتبه
+        val steps = withCheckpointSteps(wallet, all.map { it.first })
+        val movements = steps.map { step ->
+            if (step is LedgerStep.Checkpoint) return@map checkpointMovement(step.effect)
+            val txn = (step as LedgerStep.Txn).transaction
+            val incoming = txn.transferToWalletId == wallet.id
             LedgerMovement(
                 date = txn.occurredAt,
                 sourceOrder = txn.sourceOrder,
@@ -100,12 +109,21 @@ class ReconcileBalance(private val deps: ReconcileDeps) {
         return ReconcileOutcome(
             wallet = wallet,
             result = reconcileBalance(wallet.openingBalanceMinor, wallet.openingAt, movements),
-            withoutStatedBalance = movements.count { it.statedBalanceMinor == null },
+            withoutStatedBalance = steps.withIndex().count { (i, s) -> s is LedgerStep.Txn && movements[i].statedBalanceMinor == null },
             unassignedCount = unassignedCount,
             periodsRead = periodsRead,
         )
     }
 }
+
+/** نقطة «حدّث الرصيد» كحركة في المطابقة: الفرق الموجب دائن والسالب مدين، من غير رصيد معلن. */
+private fun checkpointMovement(e: CheckpointEffect): LedgerMovement = LedgerMovement(
+    date = e.checkpoint.day,
+    sourceOrder = 0,
+    debitMinor = if (e.adjustmentMinor < 0) -e.adjustmentMinor else 0,
+    creditMinor = if (e.adjustmentMinor > 0) e.adjustmentMinor else 0,
+    label = uiText(UiKey.BAL_UNKNOWN_DIFF),
+)
 
 /** كام فترة بين تاريخين — لتقدير تكلفة القراية قبل تشغيلها. */
 fun estimatePeriodsBetween(from: String, to: String): Int =

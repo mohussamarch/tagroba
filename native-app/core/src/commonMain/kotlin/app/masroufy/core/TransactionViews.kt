@@ -16,6 +16,11 @@ data class Wallet(
     val accountLast4: String? = null,
     /** البنك من دليل البنوك (`Bank.key` — «sa-al-rajhi-bank») لو اتختار من «اختار بنكك» (OVERRIDES §81). null = محفظة قديمة أو بنك مش في الدليل. */
     val bankId: String? = null,
+    /**
+     * «حدّث الرصيد» (البنود 4 و5 — `BalanceCheckpoint.kt`): الأرصدة اللي المالك كتبها بإيده. بتتخزن جوه مستند المحفظة (`balanceCheckpoints`)
+     * **لو فيه نقط بس** ⇒ المحفظة القديمة ونسختها هي هي بالحرف. التطبيق القديم بيتجاهل الحقل (وبيمسحه لو حفظ المحفظة — هو متجمّد).
+     */
+    val checkpoints: List<BalanceCheckpoint> = emptyList(),
 )
 
 data class CashSummary(
@@ -28,6 +33,8 @@ data class CashSummary(
     val spentInPeriodMinor: Halalas,
     /** عمليات الكاش في الفترة — الأحدث الأول. */
     val periodTransactions: List<Transaction>,
+    /** «حدّثت الكاش» (`BalanceCheckpoint`): أثر كل نقطة على الرصيد بالترتيب — فرقها داخل في [balanceMinor] ومش في [spentInPeriodMinor]. */
+    val checkpoints: List<CheckpointEffect> = emptyList(),
 )
 
 /** العملية كاش؟ على محفظة الكاش، أو المستخدم علّم إنها اتدفعت كاش. */
@@ -55,7 +62,10 @@ fun summarizeCash(wallet: Wallet, transactions: List<Transaction>, allocations: 
         }
     }
     val sorted = inPeriod.sortedWith { a, b -> if (a.occurredAt == b.occurredAt) b.sourceOrder - a.sourceOrder else if (a.occurredAt < b.occurredAt) 1 else -1 }
-    return CashSummary(wallet, subtractMoney(addMoney(wallet.openingBalanceMinor, inMinor), outMinor), inMinor, outMinor, spent, sorted)
+    // «حدّثت الكاش»: فرق كل نقطة داخل في الرصيد بس — مش مصروف ولا دخل (برّه [spent] و«الداخل/الخارج من البداية»)
+    val effects = checkpointEffects(wallet, transactions)
+    val balance = addMoney(subtractMoney(addMoney(wallet.openingBalanceMinor, inMinor), outMinor), sumMoney(effects.map { it.adjustmentMinor }))
+    return CashSummary(wallet, balance, inMinor, outMinor, spent, sorted, effects)
 }
 
 data class DayGroup(
