@@ -26,21 +26,25 @@ class OnboardingMoneyStateTest {
         displayName = null, salaryMinor = null, payday = 28, gender = null, supportsDependents = null,
         dependentKinds = null, hasCar = null, renter = null, domesticWorker = null, business = null, onboardedAt = null,
     )
-    private val fresh = OnbState(OnbStep.LOOK, fresh = true, home = "SA")
+    private val fresh = OnbState(OnbStep.COUNTRY, fresh = true, home = "SA")
 
     @Test fun onlyANewAccountGetsTheTwoCardsRightAfterTheCountry() {
-        assertEquals(listOf(OnbStep.LOOK, OnbStep.COUNTRY, OnbStep.CASH, OnbStep.BANK, OnbStep.PAYDAY, OnbStep.SOURCE, OnbStep.READY), steps(fresh))
-        assertTrue(OnbStep.CASH !in steps(OnbState(OnbStep.LOOK)), "حساب قديم ما بيتسألش")
-        val country = pickCountry(next(fresh), "SA")
+        assertEquals(listOf(OnbStep.COUNTRY, OnbStep.CASH, OnbStep.BANK, OnbStep.PAYDAY, OnbStep.SOURCE, OnbStep.READY), steps(fresh))
+        assertTrue(OnbStep.CASH !in steps(OnbState(OnbStep.COUNTRY)), "حساب قديم ما بيتسألش")
+        val country = pickCountry(fresh, "SA")
         assertEquals(OnbStep.CASH, next(country).step, "بعد البلد على طول: الكاش")
         assertEquals(OnbStep.BANK, next(addCash(next(country), 10_000)).step, "وبعد الكاش: البنك")
-        assertEquals(8, segmentCount(fresh), "الدخول + 7 كروت")
-        assertEquals(8, filledSegments(fresh.copy(step = OnbStep.READY)))
-        assertEquals(4, stepNumber(fresh.copy(step = OnbStep.CASH)))
+        // قرار المالك 2026-10-15 مساءً: «اختر شكلك» خرج من الرحلة والعدّاد بيبدأ من 1 («1 من 6» — مش «2 من 8»)
+        assertEquals(6, segmentCount(fresh), "6 كروت — الدخول مش جزء")
+        assertEquals(1, stepNumber(fresh), "أول كارت = 1")
+        assertEquals(0, filledSegments(fresh))
+        assertEquals(6, filledSegments(fresh.copy(step = OnbStep.READY)))
+        assertEquals(2, stepNumber(fresh.copy(step = OnbStep.CASH)))
+        assertEquals(6, stepNumber(fresh.copy(step = OnbStep.READY)), "جاهز = 6 من 6")
     }
 
     @Test fun anotherCountryHidesTheCards() {
-        val egypt = pickCountry(next(fresh), "EG")
+        val egypt = pickCountry(fresh, "EG")
         assertFalse(money(egypt))
         assertEquals(OnbStep.PAYDAY, next(egypt).step)
         assertTrue(money(pickCountry(egypt, "SA")), "رجع لبلد الحساب ⇒ الكارتين رجعوا")
@@ -49,7 +53,7 @@ class OnboardingMoneyStateTest {
     /** جولة 0.3: §81 رحلة الحساب الجديد لأي بلد — مصر بنفس الكارتين (بالجنيه وبنوك مصر) لما الفلوس تقدر تتكتب في محافظها. */
     @Test fun egyptGetsTheSameTwoCardsWhenItsMoneyCanGoThere() = runBlocking<Unit> {
         val start = fresh.copy(otherCountryMoney = true)
-        val egypt = pickCountry(next(start), "EG")
+        val egypt = pickCountry(start, "EG")
         assertTrue(money(egypt) && moneyElsewhere(egypt))
         assertEquals(OnbStep.CASH, next(egypt).step, "بعد البلد: الكاش — مش «المحافظ»")
         assertEquals("EG", moneyCountry(egypt, "SA"), "عملة وبنوك مصر")

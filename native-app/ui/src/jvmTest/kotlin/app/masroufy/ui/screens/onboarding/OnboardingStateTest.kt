@@ -34,22 +34,42 @@ class OnboardingStateTest {
     )
 
     @Test
-    fun progressCountsTheSignInAsDoneAndFillsWhenAnswered() {
-        val look = OnbState(OnbStep.LOOK)
-        assertEquals(1, filledSegments(look))
-        assertEquals(2, filledSegments(pickLook(look, 3)))
+    fun progressStartsAtOneOnTheCountryAndFillsWhenAnswered() {
+        val country = OnbState(OnbStep.COUNTRY)
+        assertEquals(OnbStep.COUNTRY, steps(country).first(), "أول كارت = البلد (الشكل خرج من الرحلة)")
+        assertEquals(1, stepNumber(country))
+        assertEquals(ONB_SEGMENTS, segmentCount(country))
+        assertEquals(0, filledSegments(country))
+        assertEquals(1, filledSegments(pickCountry(country, "SA")))
         assertEquals(ONB_SEGMENTS, filledSegments(OnbState(OnbStep.READY)))
+        assertEquals(ONB_SEGMENTS, stepNumber(OnbState(OnbStep.READY)))
+    }
+
+    @Test
+    fun savedStateFromOldBuildsComesBackSafely() {
+        // النسخ القديمة كانت بتحفظ الترتيب: 0 = «اختر شكلك» ⇒ البلد · 1 = البلد · 4 = يوم الراتب
+        assertEquals(OnbStep.COUNTRY, restoreStep(0))
+        assertEquals(OnbStep.COUNTRY, restoreStep("LOOK"))
+        assertEquals(OnbStep.COUNTRY, restoreStep(1))
+        assertEquals(OnbStep.PAYDAY, restoreStep(4))
+        assertEquals(OnbStep.READY, restoreStep("READY"))
+        assertEquals(OnbStep.COUNTRY, restoreStep(null))
+        assertEquals(OnbStep.COUNTRY, restoreStep(99))
+        assertNull(restoreReply(0), "رد الشكل القديم ⇒ مفيش رد")
+        assertEquals(OnbReply.COUNTRY_EG, restoreReply(2))
+        assertEquals(OnbReply.SMS, restoreReply("SMS"))
+        assertEquals(OnbSource.FILE, restoreSource(1))
+        assertEquals(OnbSource.LATER, restoreSource("LATER"))
+        assertNull(restoreSource(null))
     }
 
     @Test
     fun backAndSkipOnlyWhereThePrototypeAllowsThem() {
-        assertFalse(canBack(OnbState(OnbStep.LOOK)))
         assertFalse(canBack(OnbState(OnbStep.COUNTRY)))
         assertTrue(canBack(OnbState(OnbStep.PAYDAY)))
         assertFalse(canSkip(OnbState(OnbStep.COUNTRY)))
-        assertTrue(canSkip(OnbState(OnbStep.LOOK)))
+        assertTrue(canSkip(OnbState(OnbStep.PAYDAY)))
         assertFalse(canSkip(pickDay(OnbState(OnbStep.PAYDAY), 27)))
-        assertEquals(OnbStep.COUNTRY, skip(OnbState(OnbStep.LOOK)).step)
         assertEquals(OnbStep.PAYDAY, back(OnbState(OnbStep.SOURCE)).step)
         assertEquals(OnbStep.READY, next(OnbState(OnbStep.READY)).step)
     }

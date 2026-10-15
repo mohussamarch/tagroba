@@ -3,7 +3,6 @@ package app.masroufy.ui.screens.onboarding
 import app.masroufy.core.Halalas
 import app.masroufy.ui.nav.Route
 import app.masroufy.ui.nav.RouteRegistry
-import app.masroufy.ui.screens.more.LookSetting
 import app.masroufy.ui.screens.more.SpacesAdmin
 import app.masroufy.usecase.ManageProfile
 import app.masroufy.usecase.AddWalletInput
@@ -13,7 +12,7 @@ import app.masroufy.usecase.OnboardingResult
 /**
  * منطقة «أول تشغيل» (`SCREENS.md` §2.9 — Onboarding · SignInEmail · ProfileQuestion · Lock). الملف ده بتاع المنطقة بس.
  * **الدخول نفسه** (قبل ما الحساب يجهز) مش هنا: `screens/auth/` (`SignInFlow` — الترحيب · جوجل · الإيميل · نسيت كلمة المرور) —
- * وكروت أول تشغيل بعد الدخول (الشكل · البلد · يوم الراتب · مصدر العمليات · جاهز) هنا: [OnboardingRoute].
+ * وكروت أول تشغيل بعد الدخول (البلد · الكاش والبنك · يوم الراتب · مصدر العمليات · جاهز — الشكل اتنقل لـ«كمّل بروفايلك») هنا: [OnboardingRoute].
  *
  * مين يفتح [OnboardingRoute]؟ **الهيكل** (`AppShell`) لما `OnboardAccount.shouldStart()` = true — حساب جديد خالص بس (الأسئلة ما خلصتش
  * ومفيش ولا محفظة في البلد الأساسية)؛ حساب فيه بيانات ما بيتفتحلوش. `ProfileQuestionRoute` بتسجّله منطقة الرئيسية (فرع `screens-home`) —
@@ -25,9 +24,6 @@ interface OnboardingDeps {
 
     /** أسئلة البداية: `start` (الموجود) · `finish` (التأكد قبل أي كتابة، وتسجيل الانتهاء آخر حاجة). */
     val onboard: OnboardAccount
-
-    /** «اختر شكلك» — نفس نقطة ربط «المزيد» (null لحد ما `UserProfile` يبقى فيه حقل الشكل) ⇒ «غير متاح بعد» والتخطي شغال. */
-    val look: LookSetting? get() = null
 
     /**
      * إنشاء بلد غير السعودية — **نفس كائن «البلدان»** (`ManageSpaces` متجمّع من الجلسة — `OnboardingGraph`، رد المالك §88-8): مصر بتتعمل

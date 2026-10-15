@@ -48,9 +48,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.imports.BankSmsRoute
 import app.masroufy.ui.screens.more.DayGrid
-import app.masroufy.ui.screens.more.LookGrid
 import app.masroufy.ui.screens.more.WalletsRoute
-import app.masroufy.ui.screens.more.NotYetLine
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Space as Gaps
@@ -60,9 +58,9 @@ import app.masroufy.usecase.OnboardingStart
 import kotlinx.coroutines.launch
 
 /**
- * «أول تشغيل» بعد الدخول (`Onboarding` الخطوات 1 و3–6): كارت = سؤال، والرد الأخضر تحت بعد كل إجابة. الحالات: بيحمّل (القيم الموجودة
+ * «أول تشغيل» بعد الدخول (`Onboarding`): كارت = سؤال، والرد الأخضر تحت بعد كل إجابة. الحالات: بيحمّل (القيم الموجودة
  * من `OnboardAccount.start`) · خطأ (القراية أو الحفظ ⇒ «أعد المحاولة») · غير متاح (رسايل البنك على الآيفون · مصر لو إنشاء البلد مش متاح ·
- * حفظ الشكل). «محتاج نت» بتاع كارت الدخول في `SignInFlow` (الكتابة هنا بتستنى في نسخة الجهاز لو النت قاطع).
+ * الإذن). «محتاج نت» بتاع كارت الدخول في `SignInFlow` (الكتابة هنا بتستنى في نسخة الجهاز لو النت قاطع).
  * «ادخل التطبيق» ⇒ `OnboardAccount.finish` (يوم الراتب + للحساب الجديد الكاش والبنك من كارتين §81 — من غير ديون) ⇒ البلد المختارة ⇒
  * رسايل البنك لو اختارها.
  */
@@ -77,7 +75,7 @@ fun OnboardingScreen() {
     var start by remember(deps) { mutableStateOf<OnboardingStart?>(null) }
     var loadFailed by remember(deps) { mutableStateOf(false) }
     var open by remember(deps) { mutableStateOf(listOf(deps.space)) }
-    var s by rememberSaveable(stateSaver = OnbStateSaver) { mutableStateOf(OnbState(OnbStep.LOOK)) }
+    var s by rememberSaveable(stateSaver = OnbStateSaver) { mutableStateOf(OnbState(OnbStep.COUNTRY)) }
     var saving by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(deps, reload) {
@@ -174,13 +172,6 @@ private fun StepBody(s: OnbState, open: List<Space>, onChange: (OnbState) -> Uni
     val onb = LocalSpace.current.onboarding
     val scope = rememberCoroutineScope()
     when (s.step) {
-        OnbStep.LOOK -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            val hook = onb.look
-            // من غير مكان يتحفظ فيه الشكل ⇒ الاختيار ما بيتعملش «حُفظ» مزيّف — «تخطَّ» فوق بيكمّل
-            LookGrid(s.answers.look) { k -> if (hook != null) scope.launch { if (runCatching { hook.choose(k) }.isSuccess) onChange(pickLook(s, k)) } }
-            BasicText(t(UiKey.LOOK_NOTE), Modifier.fillMaxWidth(), style = Type.of(12).copy(color = Ink.muted, textAlign = TextAlign.Center))
-            if (hook == null) NotYetLine(t(UiKey.LOOK_NOT_YET))
-        }
         OnbStep.COUNTRY -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (o in countryOptions(open, onb.spacesAdmin != null)) {
                 OnbOptionRow(o, s.answers.countryCode == o.id, null) { onChange(pickCountry(s, o.id)) }
@@ -231,17 +222,17 @@ private fun LoadFailed(onRetry: () -> Unit) {
 private val OnbStateSaver = listSaver<OnbState, Any?>(
     save = { st ->
         val a = st.answers
-        listOf(st.step.ordinal, a.look, a.countryCode, a.day, a.dayLater, a.source?.ordinal, st.reply?.ordinal, st.fresh, st.home, a.cashMinor,
+        listOf(st.step.name, null, a.countryCode, a.day, a.dayLater, a.source?.name, st.reply?.name, st.fresh, st.home, a.cashMinor,
             a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor, st.otherCountryMoney)
     },
     restore = { v ->
         OnbState(
-            OnbStep.entries[v[0] as Int],
+            restoreStep(v[0]),
             OnbAnswers(
-                v[1] as Int?, v[2] as String?, v[3] as Int?, v[4] as Boolean, (v[5] as Int?)?.let { OnbSource.entries[it] }, v[9] as Long?,
+                v[2] as String?, v[3] as Int?, v[4] as Boolean, restoreSource(v[5]), v[9] as Long?,
                 (v[10] as String?)?.let { OnbBank(it, v[11] as String?, v[12] as Long?) },
             ),
-            (v[6] as Int?)?.let { OnbReply.entries[it] },
+            restoreReply(v[6]),
             fresh = v[7] as Boolean,
             home = v[8] as String?,
             otherCountryMoney = v.getOrNull(13) as Boolean? ?: false,

@@ -94,7 +94,6 @@ private fun Segment(on: Boolean, modifier: Modifier) {
 @Composable
 internal fun OnbIllustration(step: OnbStep) {
     val icon = when (step) {
-        OnbStep.LOOK -> Lucide.USER
         OnbStep.COUNTRY -> Lucide.GLOBE
         OnbStep.CASH -> Lucide.BANKNOTE
         OnbStep.BANK -> Lucide.BUILDING_2
