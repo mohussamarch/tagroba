@@ -20,6 +20,8 @@ import app.masroufy.core.givenAwayShareOf
 import app.masroufy.core.ruleFor
 import app.masroufy.core.subtractMoney
 import app.masroufy.core.Transaction
+import app.masroufy.core.UiKey
+import app.masroufy.core.uiText
 import app.masroufy.core.withEstimatedKinds
 import app.masroufy.port.AllocationRepository
 import app.masroufy.port.CategoryRepository
@@ -61,7 +63,17 @@ data class MoneySummary(
     val countedInNextPeriodMinor: Map<Currency, Halalas> = emptyMap(),
     val countedFromEarlier: List<Transaction> = emptyList(),
     val countedFromEarlierMinor: Map<Currency, Halalas> = emptyMap(),
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-10): زيادة السداد اللي اتسجلت **أمانة ليك عنده** (`Obligation.custodyHeld`) — سطر لوحده «أمانة»
+     * ([UiKey.SUMMARY_HELD])، مش جوه «سداد» ولا «سلفة لحد». «خرج ومش مصروف» كله = مجموع [outflowNotExpense] + ده (ما اتغيرش).
+     */
+    val outflowHeldMinor: Halalas = 0,
 )
+
+/** سطور «خرج ومش مصروف» للعرض: كل نوع باسمه، و«أمانة» سطر لوحدها لو فيه (OVERRIDES §91-10). */
+fun MoneySummary.outflowNotExpenseLines(): List<Pair<String, Halalas>> =
+    outflowNotExpense.map { (kind, minor) -> ruleFor(kind).label to minor } +
+        listOfNotNull(outflowHeldMinor.takeIf { it > 0 }?.let { uiText(UiKey.SUMMARY_HELD) to it })
 
 /** مجموع كل عملة لوحدها. */
 private fun byCurrency(rows: List<Transaction>): Map<Currency, Halalas> {
@@ -103,6 +115,7 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
         val surplus = overpaySurplus(rows)
         val notIncome = LinkedHashMap<EconomicKind, Halalas>()
         val notExpense = LinkedHashMap<EconomicKind, Halalas>()
+        var held: Halalas = 0
         for (t in rows) {
             if (ruleFor(t.economicKind).liquidity == Liquidity.INTERNAL) continue
             val bucket = when {
@@ -112,11 +125,14 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             } ?: continue
             // §88: «الدعم» جوه سداد دين عليك اتحسب مصروف ⇒ مش هنا كمان
             val notCounted = subtractMoney(t.amountMinor, givenAwayShareOf(t, shares))
-            // الزيادة اللي بقت دين ليك (سلفة جديدة أو أمانة عنده) ⇒ «سلفة لحد»، والباقي بس «سداد»
-            val lent = if (bucket === notExpense) minOf(surplus[t.id] ?: 0, notCounted) else 0
-            val own = subtractMoney(notCounted, lent)
+            // الزيادة اللي بقت دين ليك: سلفة جديدة ⇒ «سلفة لحد» · أمانة عنده ⇒ «أمانة» لوحدها (OVERRIDES §91-10) · والباقي بس «سداد»
+            val extra = surplus[t.id]
+            val lent = if (bucket === notExpense) minOf(extra?.first ?: 0, notCounted) else 0
+            val kept = if (bucket === notExpense) minOf(extra?.second ?: 0, subtractMoney(notCounted, lent)) else 0
+            val own = subtractMoney(subtractMoney(notCounted, lent), kept)
             if (own > 0) bucket[t.economicKind] = addMoney(bucket[t.economicKind] ?: 0, own)
             if (lent > 0) bucket[EconomicKind.LOAN_GRANTED] = addMoney(bucket[EconomicKind.LOAN_GRANTED] ?: 0, lent)
+            if (kept > 0) held = addMoney(held, kept)
         }
         // §58: اللي دخل وخرج فعلًا في المدى **بتاريخه** — نقل الراتب للشهر الجديد (§75-3) بيخص الدخل بس. بالأنواع التقديرية زي الأول:
         // التحويل بين محافظك (زي السحب من الصرّاف اللي لسه ما اتأكدش) مش حركة
@@ -131,19 +147,24 @@ class LoadMoneySummary(private val deps: LoadMoneySummaryDeps) {
             countedInNextPeriodMinor = byCurrency(range.countedInNextPeriod),
             countedFromEarlier = range.countedFromEarlier,
             countedFromEarlierMinor = byCurrency(range.countedFromEarlier),
+            outflowHeldMinor = held,
         )
     }
 
-    /** لكل «سداد» طالع: الدين اللي ليك وأصله العملية دي = الزيادة اللي اتسجلت سلفة أو أمانة (`AnswerTransferAsks.answerOverpay` · `SettleOverpay`). */
-    private suspend fun overpaySurplus(rows: List<Transaction>): Map<Id, Halalas> {
+    /**
+     * لكل «سداد» طالع: الدين اللي ليك وأصله العملية دي = الزيادة اللي اتسجلت (سلفة · أمانة) — `AnswerTransferAsks.answerOverpay` ·
+     * `SettleOverpay`. الأولى = سلفة جديدة، التانية = أمانة عنده (`Obligation.custodyHeld`).
+     */
+    private suspend fun overpaySurplus(rows: List<Transaction>): Map<Id, Pair<Halalas, Halalas>> {
         val repo = deps.obligations ?: return emptyMap()
         val ids = rows.filter { it.economicKind == EconomicKind.DEBT_REPAID && it.observedDirection == Direction.OUT }.map { it.id }
         if (ids.isEmpty()) return emptyMap()
-        val out = LinkedHashMap<Id, Halalas>()
+        val out = LinkedHashMap<Id, Pair<Halalas, Halalas>>()
         for (o in repo.listByTransactionIds(ids)) {
             val origin = o.originTransactionId ?: continue
             if (o.kind != ObligationKind.RECEIVABLE || origin !in ids) continue
-            out[origin] = addMoney(out[origin] ?: 0, o.originalMinor)
+            val (lent, kept) = out[origin] ?: (0L to 0L)
+            out[origin] = if (o.custodyHeld) lent to addMoney(kept, o.originalMinor) else addMoney(lent, o.originalMinor) to kept
         }
         return out
     }

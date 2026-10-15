@@ -8,6 +8,8 @@ import app.masroufy.core.Obligation
 import app.masroufy.core.ObligationKind
 import app.masroufy.core.ReviewState
 import app.masroufy.core.Transaction
+import app.masroufy.core.UiKey
+import app.masroufy.core.uiText
 import app.masroufy.memory.FixedClock
 import app.masroufy.memory.MemoryAllocationRepository
 import app.masroufy.memory.MemoryCategoryRepository
@@ -117,7 +119,12 @@ class Review03FixesTest {
         )
         val withSurplus = LoadMoneySummary(LoadMoneySummaryDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository(), obligations))
             .load("2026-01-01", "2026-12-31")
-        assertEquals(mapOf(EconomicKind.DEBT_REPAID to 430_000L, EconomicKind.LOAN_GRANTED to 70_000L), withSurplus.outflowNotExpense)
+        // OVERRIDES §91-10: السلفة الجديدة «سلفة لحد» · الأمانة عنده سطر لوحده «أمانة» · الباقي «سداد» — والمجموع زي ما هو
+        assertEquals(mapOf(EconomicKind.DEBT_REPAID to 430_000L, EconomicKind.LOAN_GRANTED to 50_000L), withSurplus.outflowNotExpense)
+        assertEquals(20_000L, withSurplus.outflowHeldMinor)
+        assertEquals(500_000L, withSurplus.outflowNotExpense.values.sum() + withSurplus.outflowHeldMinor)
+        assertEquals(uiText(UiKey.SUMMARY_HELD) to 20_000L, withSurplus.outflowNotExpenseLines().last())
+        assertEquals(3, withSurplus.outflowNotExpenseLines().size)
         // من غير مستودع الديون ⇒ زي الأول (المجموع نفسه ما اتغيرش)
         val old = LoadMoneySummary(LoadMoneySummaryDeps(txns, MemoryCategoryRepository(), MemoryAllocationRepository())).load("2026-01-01", "2026-12-31")
         assertEquals(mapOf(EconomicKind.DEBT_REPAID to 500_000L), old.outflowNotExpense)
