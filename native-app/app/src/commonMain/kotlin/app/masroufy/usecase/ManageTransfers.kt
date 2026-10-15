@@ -24,6 +24,7 @@ import app.masroufy.port.PersonRepository
 import app.masroufy.port.TransactionRepository
 import app.masroufy.port.TransferPartyRepository
 import app.masroufy.port.UnitOfWork
+import app.masroufy.port.WalletRepository
 
 /**
  * «زون التحويلات» (OVERRIDES §39 · §39.1 · §42 · §60): التحويلات متجمعة بالطرف التاني، والأسئلة عن الأطراف اللي التحويلات
@@ -40,6 +41,11 @@ data class ManageTransfersDeps(
      * فمفيش حد مديون بيها). **التشغيل الحقيقي لازم يدّيه**؛ null = سلوك ما قبل الإصلاح (الدين بيفضل).
      */
     val ledger: PersonLedgerRepos? = null,
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-5): «أيوه، ده حسابي» على طرف آخر 4 أرقامه = محفظة من محافظك ⇒ تحويل بين محافظك **برجلين**: العملية
+     * اللي اتسجلت + رِجل المحفظة التانية ([OWN_LEG_SUFFIX]). null = رِجل واحدة زي الأول (الاختبارات القديمة).
+     */
+    val wallets: WalletRepository? = null,
 )
 
 /** سطر في الزون: طرف بعملة واحدة (المبالغ ما بتتجمعش بين عملتين). */
@@ -127,11 +133,18 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
             TransferVerdict.PERSON, TransferVerdict.DISMISSED -> null
         }
         val now = deps.clock.nowIso()
-        val reverted = everything().filter { t -> setKind != null && t.economicKind == setKind && transferPartyOf(t)?.key == key }
+        val all = everything()
+        val withParty = all.filter { t -> transferPartyOf(t)?.key == key && !t.id.endsWith(OWN_LEG_SUFFIX) }
+        // الرِّجل التانية طرفها بيتقري من الناحية التانية ⇒ بتتعرف بمعرّف العملية الأصلية
+        val baseIds = withParty.map { it.id }.toSet()
+        val legs = if (setKind == null) emptyList() else all.filter { it.id.endsWith(OWN_LEG_SUFFIX) && it.id.removeSuffix(OWN_LEG_SUFFIX) in baseIds }
+        val reverted = withParty.filter { setKind != null && it.economicKind == setKind }
             .map { it.copy(economicKind = EconomicKind.UNCLASSIFIED, economicKindConfirmed = false, reviewState = ReviewState.NEEDS_REVIEW, updatedAt = now) }
         deps.uow.run {
             deps.parties.remove(key)
             if (reverted.isNotEmpty()) deps.txns.saveMany(reverted)
+            // OVERRIDES §91-5: رِجل المحفظة التانية اللي «أيوه» عملها بتتشال مع الفك
+            if (legs.isNotEmpty()) deps.txns.deleteMany(legs.map { it.id })
         }
         return reverted.size
     }
@@ -145,12 +158,36 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         val ledger = deps.ledger?.takeIf { verdict == TransferVerdict.OWN_ACCOUNT }
         val stale = ledger?.let { it.askWrites(it.linksOf(mine.map { t -> t.id }).values, withLoans = true) }
         if (stale != null && stale.blocking.isNotEmpty()) throw TransferZoneError(uiText(TextKey.ASK_LOAN_HAS_REPAYMENT))
+        val legs = if (verdict == TransferVerdict.OWN_ACCOUNT) otherLegs(party, mine, now) else emptyList()
         deps.uow.run {
             deps.parties.save(decision)
-            if (changed.isNotEmpty()) deps.txns.saveMany(changed)
+            if (changed.isNotEmpty() || legs.isNotEmpty()) deps.txns.saveMany(changed + legs)
             if (stale != null) ledger?.remove(stale)
         }
-        return changed.size
+        return changed.size + legs.size
+    }
+
+    /**
+     * OVERRIDES §91-5: رِجل المحفظة اللي أرقامها = أرقام الطرف لكل تحويل معاه من محفظة تانية (الخارج ⇒ داخل فيها · الداخل ⇒ خارج منها)، بنفس
+     * المبلغ واليوم ونوعها «تحويل داخلي» مؤكد. ما بتتعملش لو موجودة (نفس المعرّف) أو المحفظة دي فيها عملية بنفس الاتجاه والمبلغ في نفس اليوم
+     * (رسالتها أو كشفها سجّلها قبل كده) — عشان الفلوس ما تتعدّش مرتين.
+     */
+    private suspend fun otherLegs(party: TransferPartyRef, mine: List<Transaction>, now: String): List<Transaction> {
+        val last4 = party.last4 ?: return emptyList()
+        val target = deps.wallets?.listAll()?.firstOrNull { walletLast4(it.accountLast4) == last4 } ?: return emptyList()
+        val all = everything()
+        val ids = all.map { it.id }.toSet()
+        return mine.filter { it.walletId != null && it.walletId != target.id && it.currency == target.currency && !it.id.endsWith(OWN_LEG_SUFFIX) }
+            .mapNotNull { t ->
+                val direction = if (t.observedDirection == Direction.OUT) Direction.IN else Direction.OUT
+                val there = all.any { o -> o.walletId == target.id && o.observedDirection == direction && o.amountMinor == t.amountMinor && o.occurredAt.take(10) == t.occurredAt.take(10) }
+                if (t.id + OWN_LEG_SUFFIX in ids || there) return@mapNotNull null
+                t.copy(
+                    id = t.id + OWN_LEG_SUFFIX, walletId = target.id, observedDirection = direction, economicKind = EconomicKind.INTERNAL_TRANSFER,
+                    economicKindConfirmed = true, reviewState = ReviewState.CONFIRMED, categoryId = null, categoryConfirmed = false,
+                    statedBalanceMinor = null, linkedExpenseId = null, linkedInflowMinor = null, supportAskPending = null, createdAt = now, updatedAt = now,
+                )
+            }
     }
 
     private companion object {
@@ -158,3 +195,6 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         const val LATEST = "9999-12-31"
     }
 }
+
+/** OVERRIDES §91-5: آخر معرّف رِجل المحفظة التانية في تحويل «أيوه، ده حسابي». */
+const val OWN_LEG_SUFFIX = "#own-leg"
