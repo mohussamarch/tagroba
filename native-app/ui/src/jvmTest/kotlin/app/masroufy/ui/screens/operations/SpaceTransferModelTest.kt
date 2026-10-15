@@ -36,7 +36,7 @@ class SpaceTransferModelTest {
         assertEquals(listOf(200_000L, 2_564_000L), v.legs.map { it.amountMinor })
         assertEquals(listOf(Currency.SAR, Currency.EGP), v.legs.map { it.currency }, "كل رجل بعملتها — مفيش تحويل عملة")
         assertEquals(listOf("س", "م"), v.legs.map { it.mark })
-        assertEquals("12.8200 ج.م لكل 1 \u20C1", v.rate, "نص السعر من الدومين (للعرض بس)")
+        assertEquals("12.8200 ج.م لكل \u2066\u20C1 1\u2069", v.rate, "نص السعر من الدومين (للعرض بس) — العلامة شمال الرقم (قاعدة المالك)")
         assertEquals("ملاحظتك: مصروف البيت", v.note)
     }
 
@@ -52,7 +52,11 @@ class SpaceTransferModelTest {
     @Test fun rateNeedsBothAmounts() {
         assertNull(rateLine(null, Currency.SAR, 100, Currency.EGP))
         assertNull(rateLine(0, Currency.SAR, 100, Currency.EGP))
-        assertEquals("12.8200 ج.م لكل 1 \u20C1", rateLine(10_000, Currency.SAR, 128_200, Currency.EGP))
+        assertEquals("12.8200 ج.م لكل \u2066\u20C1 1\u2069", rateLine(10_000, Currency.SAR, 128_200, Currency.EGP))
+        // الاتجاه التاني: الريال في المبلغ نفسه وبرضه شمال الرقم · والمصري بنفس الترتيب (تغيير مقصود — كان «لكل 1 ⃁»)
+        assertEquals("\u2066\u20C1 0.0780\u2069 لكل 1 ج.م", rateLine(128_200, Currency.EGP, 10_000, Currency.SAR))
+        Texts.arabicVariant = ArabicVariant.EGYPTIAN
+        assertEquals("12.8200 ج.م لكل \u2066\u20C1 1\u2069", rateLine(10_000, Currency.SAR, 128_200, Currency.EGP))
     }
 
     @Test fun statesFollowThePrototype() {

@@ -70,7 +70,7 @@ internal val EGYPTIAN_OPERATIONS_TRANSFER_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SPACE_TRANSFER_SCREEN_LEFT to "طلعت من {0}",
     UiKey.SPACE_TRANSFER_SCREEN_ARRIVED to "وصلت في {0}",
     UiKey.SPACE_TRANSFER_SCREEN_RATE to "السعر اللي اتاخد (للعرض بس)",
-    UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE to "{0} {1} لكل {2} {3}",
+    UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE to "{0} لكل {1}",
     UiKey.SPACE_TRANSFER_SCREEN_NOTE_LINE to "ملاحظتك: {0}",
     UiKey.SPACE_TRANSFER_SCREEN_UNLINK to "فك الربط",
     UiKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE to "كل رجل مقفولة على نوعها: لو عايز تغيّر نوعها أو تربطها بحاجة تانية فك الربط الأول. والسعر بيتحسب من المبلغين ومش بيحوّل أي رقم تاني.",

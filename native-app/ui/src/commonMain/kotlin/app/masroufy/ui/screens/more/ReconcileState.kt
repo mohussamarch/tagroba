@@ -2,7 +2,6 @@ package app.masroufy.ui.screens.more
 
 import app.masroufy.core.UiKey
 import app.masroufy.core.TextKey
-import app.masroufy.core.currencySymbol
 import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.components.amountLabel
 import app.masroufy.ui.text.t
@@ -42,8 +41,7 @@ fun reconcileLines(o: ReconcileOutcome): List<RecLine> {
                 UiKey.WDET_GAP_AMOUNTS,
                 amountLabel(first.computedMinor, currency, showCurrency = false),
                 amountLabel(first.statedMinor, currency, showCurrency = false),
-                amountLabel(first.differenceMinor, currency, showCurrency = false),
-                currencySymbol(currency),
+                amountLabel(first.differenceMinor, currency), // العملة من «withCurrency» — العلامة شمال الرقم (قاعدة المالك)
             ),
         )
     }

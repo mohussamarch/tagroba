@@ -8,7 +8,7 @@ import app.masroufy.core.Space
 import app.masroufy.core.SpaceTransfer
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
-import app.masroufy.core.currencySymbol
+import app.masroufy.core.withCurrency
 import app.masroufy.core.dayMonth
 import app.masroufy.core.sentenceNumber
 import app.masroufy.core.spaceTransferRateText
@@ -38,13 +38,14 @@ fun routeName(from: Space?, to: Space?): String = t(UiKey.SPACE_TRANSFER_SCREEN_
 
 /**
  * السعر للعرض بس من المبلغين (`spaceTransferRateText` من `core` — نص العرض اللي الدومين نفسه بيطلّعه: أعداد صحيحة و4 أرقام والتقريب نص لفوق)
- * ⇒ «12.8200 ج.م لكل 1 ر.س». مش بيتخزن ومش بيحوّل أي رقم تاني. مبلغ صفر أو ناقص ⇒ `null`.
+ * ⇒ «12.8200 ج.م لكل ⃁ 1». مش بيتخزن ومش بيحوّل أي رقم تاني. مبلغ صفر أو ناقص ⇒ `null`.
  */
 fun rateLine(fromMinor: Halalas?, fromCurrency: Currency, toMinor: Halalas?, toCurrency: Currency): String? {
     if (fromMinor == null || toMinor == null || fromMinor <= 0 || toMinor <= 0) return null
     val text = spaceTransferRateText(SpaceTransfer("", "", "", fromMinor, fromCurrency, "", "", toMinor, toCurrency, ""))
     val number = text.substringAfter("= ").substringBefore(' ')
-    return t(UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE, number, currencySymbol(toCurrency), sentenceNumber(1), currencySymbol(fromCurrency))
+    // قاعدة المالك: علامة الريال دايمًا شمال الرقم بمسافة ⇒ كل مبلغ+عملة من `withCurrency` («لكل ⃁ 1» مش «لكل 1 ⃁»)
+    return t(UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE, withCurrency(number, toCurrency), withCurrency(sentenceNumber(1), fromCurrency))
 }
 
 /**

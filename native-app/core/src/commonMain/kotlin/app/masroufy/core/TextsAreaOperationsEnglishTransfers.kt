@@ -70,7 +70,7 @@ internal val ENGLISH_OPERATIONS_TRANSFER_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SPACE_TRANSFER_SCREEN_LEFT to "Left {0}",
     UiKey.SPACE_TRANSFER_SCREEN_ARRIVED to "Arrived in {0}",
     UiKey.SPACE_TRANSFER_SCREEN_RATE to "Actual rate (display only)",
-    UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE to "{0} {1} per {2} {3}",
+    UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE to "{0} per {1}",
     UiKey.SPACE_TRANSFER_SCREEN_NOTE_LINE to "Your note: {0}",
     UiKey.SPACE_TRANSFER_SCREEN_UNLINK to "Unlink",
     UiKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE to "Each side is locked to its type: to change its type or link it to something else, unlink first. The rate comes from the two amounts and converts nothing else.",

@@ -70,7 +70,7 @@ internal val MSA_OPERATIONS_TRANSFER_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.SPACE_TRANSFER_SCREEN_LEFT to "خرجت من {0}",
     UiKey.SPACE_TRANSFER_SCREEN_ARRIVED to "وصلت في {0}",
     UiKey.SPACE_TRANSFER_SCREEN_RATE to "السعر الفعلي (للعرض فقط)",
-    UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE to "{0} {1} لكل {2} {3}",
+    UiKey.SPACE_TRANSFER_SCREEN_RATE_LINE to "{0} لكل {1}",
     UiKey.SPACE_TRANSFER_SCREEN_NOTE_LINE to "ملاحظتك: {0}",
     UiKey.SPACE_TRANSFER_SCREEN_UNLINK to "فك الربط",
     UiKey.SPACE_TRANSFER_SCREEN_LOCK_NOTE to "كل طرف مقفل على نوعه: لتغيير نوعه أو ربطه بشيء آخر فُكّ الربط أولًا. والسعر يُحسب من المبلغين ولا يحوّل أي رقم آخر.",
