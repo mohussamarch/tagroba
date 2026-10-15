@@ -45,6 +45,8 @@ data class ImportPreviewLine(
      * فاضية = مفيش سؤال دمج على السطر.
      */
     val mergeCandidates: List<Id> = emptyList(),
+    /** OVERRIDES §91-2: رسالة بنك في يوم الكشف مغطّيه ومبلغها مش في الكشف ⇒ بتتسجل وعليها «مش في الكشف» (`Transaction.notInStatement`). */
+    val notInStatement: Boolean = false,
 )
 
 data class ImportCountsPreview(

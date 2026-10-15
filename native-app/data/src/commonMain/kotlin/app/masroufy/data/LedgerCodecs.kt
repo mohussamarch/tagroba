@@ -42,6 +42,8 @@ object LedgerCodecs {
                 opt("supportAskPending", t.supportAskPending)
                 // «حدّث الرصيد» (`BalanceCheckpoint.kt`): الجزء اللي اتفصل من «فرق مش معروف» — لو موجود بس
                 opt("explainsCheckpointId", t.explainsCheckpointId)
+                // OVERRIDES §91-2: علامة «مش في الكشف» — لو موجودة بس
+                opt("notInStatement", t.notInStatement)
             }
         },
         { r ->
@@ -64,6 +66,7 @@ object LedgerCodecs {
                 linkedExpenseId = r.strOrNull("linkedExpenseId"), linkedInflowMinor = r.longOrNull("linkedInflowMinor"),
                 supportAskPending = r.boolOrNull("supportAskPending"),
                 explainsCheckpointId = r.strOrNull("explainsCheckpointId"),
+                notInStatement = r.boolOrNull("notInStatement"),
             )
         },
     )

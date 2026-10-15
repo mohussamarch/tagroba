@@ -57,6 +57,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             walletId = request.walletId,
             sourceCategory = line.row.sourceCategory,
             sourceOperationType = line.row.sourceOperationType,
+            notInStatement = true.takeIf { line.notInStatement },
         )
     }
 

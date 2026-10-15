@@ -120,7 +120,9 @@ fun colorOf(tx: Transaction, ctx: RowContext): Color {
 
 fun opRow(tx: Transaction, ctx: RowContext): OpRow =
     OpRow(
-        tx.id, titleOf(tx, ctx), subtitleOf(tx, ctx), iconOf(tx, ctx), colorOf(tx, ctx), tx.amountMinor, tx.currency, toneOf(tx),
+        // OVERRIDES §91-2: علامة «مش في الكشف» جنب السطر التاني
+        tx.id, titleOf(tx, ctx), subtitleOf(tx, ctx).let { if (tx.notInStatement == true) it + " · " + t(UiKey.TXN_NOT_IN_STATEMENT) else it },
+        iconOf(tx, ctx), colorOf(tx, ctx), tx.amountMinor, tx.currency, toneOf(tx),
         bank = ctx.wallet(tx.walletId)?.let { bankForWallet(it, ctx.country) },
     )
 

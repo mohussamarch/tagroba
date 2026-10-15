@@ -142,6 +142,25 @@ class StatementSmsMergeTest {
         assertEquals(3, w.all().size, "عملية جديدة")
     }
 
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-2): رسالة في يوم جوه أيام الكشف ومبلغها **مش في الكشف** ⇒ بتتسجل وعليها «مش في الكشف»
+     * (محفوظة على العملية) · ومبلغها **في الكشف** ⇒ بتندمج زي الأول (ولا عملية جديدة).
+     */
+    @Test fun anSmsInsideTheStatementDaysThatIsNotInItIsRecordedWithTheMark() = runBlocking<Unit> {
+        val w = MatchingWorld()
+        w.import(w.statement(cafe, mart))
+        w.receive(matchingPurchaseSms("77", "26/10/02", shop = "TEST BAKERY"))
+        w.receive(matchingPurchaseSms("100", "26/10/01"), at = "2026-10-01T09:00:00Z")
+        w.review.load(w.target)
+        assertEquals(2, w.review.recordAll(emptyMap(), emptyList()))
+        val all = w.all()
+        assertEquals(3, all.size, "the statement amount merged · the other one recorded")
+        val marked = all.single { it.amountMinor == 7_700L }
+        assertEquals(true, marked.notInStatement)
+        assertEquals(setOf(null), all.filter { it.id != marked.id }.map { it.notInStatement }.toSet())
+        assertEquals(marked, w.txns.findByIds(listOf(marked.id)).single(), "stored on the transaction")
+    }
+
     /** مراجعة r04: الكشف بيغطي أيامه بس — رسالة قبل أول يوم فيه بتتسجل. */
     @Test fun anSmsBeforeTheStatementsFirstDayIsRecorded() = runBlocking<Unit> {
         val w = MatchingWorld()

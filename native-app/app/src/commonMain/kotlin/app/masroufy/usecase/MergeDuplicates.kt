@@ -194,7 +194,7 @@ private fun txnDoc(t: Transaction): Map<String, Any?> = linkedMapOf(
     "createdAt" to t.createdAt, "updatedAt" to t.updatedAt, "suggestedKind" to t.suggestedKind?.wire, "reversalOfId" to t.reversalOfId,
     "reversedById" to t.reversedById, "foreignAmountMinor" to t.foreignAmountMinor, "foreignCurrency" to t.foreignCurrency,
     "kindBeforeReversal" to t.kindBeforeReversal?.wire, "linkedExpenseId" to t.linkedExpenseId, "linkedInflowMinor" to t.linkedInflowMinor,
-    "supportAskPending" to t.supportAskPending, "explainsCheckpointId" to t.explainsCheckpointId,
+    "supportAskPending" to t.supportAskPending, "explainsCheckpointId" to t.explainsCheckpointId, "notInStatement" to t.notInStatement,
 )
 
 private fun recordDoc(r: SourceRecord): Map<String, Any?> = linkedMapOf(

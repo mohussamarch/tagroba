@@ -90,6 +90,11 @@ data class Transaction(
      * النقطة لو اتمسحت ⇒ الحقل بيتشال والعملية بتفضل عادية.
      */
     val explainsCheckpointId: Id? = null,
+    /**
+     * إجابة المالك 2026-10-15 (OVERRIDES §91-2): رسالة بنك يومها جوه أيام كشف اتستورد للمحفظة، ومبلغها **مش في الكشف** ⇒ بتتسجل وعليها العلامة
+     * دي «مش في الكشف» (`markStatementCovered`). true بس — بتتكتب لو موجودة بس ⇒ المستندات والنسخ القديمة زي ما هي.
+     */
+    val notInStatement: Boolean? = null,
 )
 
 enum class AllocationKind(val wire: String) {

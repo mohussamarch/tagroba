@@ -129,7 +129,12 @@ fun detailView(
         merchant = known,
         unrecorded = false,
         category = categoryFieldOf(tx, categories),
-        fields = listOf(DetailField(t(UiKey.OPERATION_DETAIL_WALLET), walletName, logo = walletLogo), kindField),
+        fields = listOfNotNull(
+            DetailField(t(UiKey.OPERATION_DETAIL_WALLET), walletName, logo = walletLogo),
+            kindField,
+            // OVERRIDES §91-2: «مش في الكشف» وشرحها
+            if (tx.notInStatement == true) DetailField(t(UiKey.TXN_NOT_IN_STATEMENT), t(UiKey.TXN_NOT_IN_STATEMENT_NOTE)) else null,
+        ),
         flow = flow,
         askParty = party?.takeIf { tx.economicKind == EconomicKind.UNCLASSIFIED || !tx.economicKindConfirmed },
         transaction = tx,
