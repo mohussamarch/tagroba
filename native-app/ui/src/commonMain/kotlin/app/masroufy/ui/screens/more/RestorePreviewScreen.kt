@@ -1,6 +1,8 @@
 package app.masroufy.ui.screens.more
 
 import app.masroufy.core.UiKey
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -74,7 +76,8 @@ fun RestorePreviewScreen(fileName: String, text: String) {
     var open by remember { mutableStateOf(setOf(0)) }
     LaunchedEffect(deps, text) {
         phase = if (backup == null) Phase.Error(t(UiKey.BAK_NOT_WIRED))
-        else runCatching { backup.plan(text) }.fold({ Phase.Plan(it) }, { Phase.Error(it.message ?: t(UiKey.RST_BAD_FILE)) })
+        else runCatching { backup.plan(text) }.onFailure { Problems.report(ProblemCode.BACKUP_FILE_UNREADABLE, it) }
+            .fold({ Phase.Plan(it) }, { Phase.Error(it.message ?: t(UiKey.RST_BAD_FILE)) })
     }
     InnerScaffold(t(UiKey.RST_TITLE)) {
         item(key = "file") {
@@ -139,7 +142,7 @@ fun RestorePreviewScreen(fileName: String, text: String) {
                                 val b = backup ?: return@PrimaryButton
                                 phase = Phase.Applying(plan)
                                 scope.launch {
-                                    phase = runCatching { b.apply(plan.file) }.fold({ Phase.Done(plan, it.totalAdded) }, { Phase.Error(it.message ?: t(UiKey.RST_APPLY_FAILED)) })
+                                    phase = runCatching { b.apply(plan.file) }.onFailure { Problems.report(ProblemCode.BACKUP_RESTORE_FAILED, it) }.fold({ Phase.Done(plan, it.totalAdded) }, { Phase.Error(it.message ?: t(UiKey.RST_APPLY_FAILED)) })
                                 }
                             },
                             enabled = p is Phase.Plan, loading = p is Phase.Applying, modifier = Modifier.fillMaxWidth(),

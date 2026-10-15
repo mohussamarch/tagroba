@@ -68,6 +68,44 @@ class NoSecretsInLogsTest {
         assertEquals(false, leaks("""PerfTrace.log("read src=fs docs=${'$'}{docs.size} ms=${'$'}{start.elapsedNow().inWholeMilliseconds}")"""))
     }
 
+    /**
+     * تقارير الأعطال (OVERRIDES §90 · §80): أي نداء لـCrashlytics — `log` ممنوع خالص (ممكن نص من البيانات) · `recordException` بخطأ متنضف
+     * بس (`CrashSanitizer.sanitize`) · `setCustomKey` بالمفاتيح التلاتة بس (الشاشة · النسخة · البلد) · `setUserId` برقم فايربيز (`uid`) بس.
+     */
+    private val crashCall = Regex("""\.(log|recordException|setCustomKey|setUserId|setCustomKeys)\(""")
+    private val allowedKeys = setOf("KEY_SCREEN", "KEY_VERSION", "KEY_COUNTRY")
+
+    internal fun crashLeaks(line: String): Boolean = crashCall.findAll(line).any { m ->
+        val args = argsAt(line, m.range.last + 1).trim()
+        when (m.groupValues[1]) {
+            "recordException" -> !args.startsWith("CrashSanitizer.sanitize(")
+            "setCustomKey" -> args.substringBefore(',').trim() !in allowedKeys || secret.containsMatchIn(args)
+            "setUserId" -> !(args == "uid.orEmpty()" || args == "uid")
+            else -> true
+        }
+    }
+
+    @Test fun theCrashReportCheckCatchesWhatItShould() {
+        assertTrue(crashLeaks("""crashlytics?.log("sms: ${'$'}body")"""))
+        assertTrue(crashLeaks("""c.recordException(error)"""))
+        assertTrue(crashLeaks("""c.setCustomKey("merchant", name)"""))
+        assertTrue(crashLeaks("""c.setCustomKey(KEY_SCREEN, e.message)"""))
+        assertTrue(crashLeaks("""c.setUserId(user.email)"""))
+        assertEquals(false, crashLeaks("""crashlytics?.recordException(CrashSanitizer.sanitize(error, code.name))"""))
+        assertEquals(false, crashLeaks("""c.setCustomKey(KEY_COUNTRY, country.orEmpty().take(2))"""))
+        assertEquals(false, crashLeaks("""c.setUserId(uid.orEmpty())"""))
+    }
+
+    @Test fun crashReportsCarryNoMessagesNamesOrAmounts() {
+        val root = root()
+        val users = mainSources(root).filter { f -> f.extension == "kt" && f.readText().contains("FirebaseCrashlytics") }
+        assertEquals(listOf("CrashReports.kt"), users.map { it.name }, "Crashlytics من مكان واحد بس (`CrashReports.kt`)")
+        val bad = users.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line -> if (crashLeaks(line)) "${f.relativeTo(root).invariantSeparatorsPath}:${i + 1}: ${line.trim()}" else null }
+        }
+        assertTrue(bad.isEmpty(), "نداء لتقارير الأعطال ممكن يبعت بيانات:\n" + bad.joinToString("\n"))
+    }
+
     @Test fun noLogLineCarriesATokenOrAFullExceptionMessage() {
         val root = root()
         val files = mainSources(root)

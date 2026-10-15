@@ -1,5 +1,8 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.core.ProblemDetail
+import app.masroufy.problems.Problems
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
@@ -92,20 +95,26 @@ object MasroufyBackground {
 
 class MasroufyCycleWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
+        // «سجل المشاكل» (§90): الكود + رقم المحاولة بس
+        val attempt = mapOf(ProblemDetail.ATTEMPT to runAttemptCount.toLong())
         val cycle = try {
             MasroufyBackground.graph()?.cycle()
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Problems.report(ProblemCode.BACKGROUND_FAILED, e, attempt)
             null
         } ?: return Result.success()
         val result = try {
             cycle.run(MasroufyBackground.localNow())
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Problems.report(ProblemCode.BACKGROUND_FAILED, e, attempt)
             null
         }
+        if (result?.smsFailed == true) Problems.report(ProblemCode.SMS_AUTO_RECORD_FAILED, null, attempt)
+        if (result?.alertsFailed == true) Problems.report(ProblemCode.ALERTS_FAILED, null, attempt)
         val failed = result == null || result.smsFailed || result.alertsFailed
         // الرسايل لسه في الصندوق لو فشل ⇒ نعيد كام مرة، وبعدها الدورية بتكمّل
         return if (failed && runAttemptCount + 1 < MasroufyBackground.MAX_ATTEMPTS) Result.retry() else Result.success()

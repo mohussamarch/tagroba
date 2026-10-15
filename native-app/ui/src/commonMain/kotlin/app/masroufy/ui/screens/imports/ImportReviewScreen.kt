@@ -1,6 +1,8 @@
 package app.masroufy.ui.screens.imports
 
 import app.masroufy.core.UiKey
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -72,6 +74,7 @@ fun ImportReviewScreen(draftId: Long) {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            Problems.report(ProblemCode.IMPORT_PREVIEW_FAILED, e)
             error = e.message ?: t(UiKey.IMPORTS_LOAD_FAILED)
         }
     }
@@ -90,6 +93,7 @@ fun ImportReviewScreen(draftId: Long) {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                Problems.report(ProblemCode.IMPORT_SAVE_FAILED, e)
                 error = e.message ?: t(UiKey.IMPORTS_LOAD_FAILED)
             }
             saving = false

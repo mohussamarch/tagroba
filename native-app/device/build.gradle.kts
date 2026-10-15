@@ -30,6 +30,9 @@ kotlin {
         commonMain.dependencies {
             api(project(":app"))
         }
+        // «سجل المشاكل» في ملف + تنضيف الخطأ قبل تقارير الأعطال (OVERRIDES §90): `java.io` بس ⇒ نفس الكود لأندرويد والكمبيوتر
+        // (عشان يتختبر على الكمبيوتر) — زي `src/sharedTest` للاختبارات
+        jvmMain { kotlin.srcDir("src/jvmShared/kotlin") }
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
@@ -47,6 +50,7 @@ kotlin {
             iosTest { kotlin.srcDir("src/sharedTest/kotlin") }
         }
         if (withAndroid) {
+            getByName("androidMain").kotlin.srcDir("src/jvmShared/kotlin")
             getByName("androidMain").dependencies {
                 // قارئ PDF على أندرويد (Apache 2.0) — ARCHITECTURE §31.7
                 implementation("com.tom-roush:pdfbox-android:2.0.27.0")

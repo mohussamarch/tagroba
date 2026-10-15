@@ -62,7 +62,7 @@ import java.util.Calendar
  * ⇒ `SpaceGraph` (`:wiring` — حالات الاستخدام لكل منطقة) ⇒ الشاشات (`AppSession.Ready.deps`). الخلفية (§72) بتاخد نفس المستودعات.
  * الشاشة اللي ظاهرة ([activity]) بتتحط هنا للنوافذ اللي محتاجاها (البصمة · دخول جوجل).
  */
-class AppContainer(private val context: Context) {
+class AppContainer(private val context: Context, private val problems: ProblemLogSetup) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val nowMillis: () -> Long = System::currentTimeMillis
     private val clock = SystemClock(nowMillis)
@@ -92,7 +92,7 @@ class AppContainer(private val context: Context) {
     @OptIn(ExperimentalCoroutinesApi::class)
     val appSession: StateFlow<AppSession> = (session?.state ?: flowOf(AccountSession.State.SignedOut)).flatMapLatest { st ->
         when (st) {
-            AccountSession.State.SignedOut -> flowOf(AppSession.SignedOut)
+            AccountSession.State.SignedOut -> flowOf(AppSession.SignedOut).also { problems.session(null, null) }
             is AccountSession.State.Opening -> combine(st.sync.syncedGroups, st.accountSync.syncedGroups) { a, b ->
                 AppSession.Opening(a.size + b.size, st.sync.total + st.accountSync.total)
             }
@@ -114,6 +114,7 @@ class AppContainer(private val context: Context) {
         override val emulator = this@AppContainer.emulator
         override val online = this@AppContainer.online
         override val remoteChanges = this@AppContainer.remoteChanges
+        override val problems = this@AppContainer.problems.deps
     }
 
     /** تغييرات السيرفر في البلد الشغالة والحساب (`FirestoreSync.remoteChanges`) — من غير القيمة الأولى (مش تغيير). */
@@ -138,6 +139,8 @@ class AppContainer(private val context: Context) {
         PerfTrace.log("session ready spaces=${st.spaces.size}")
         // الفصحى/المصري من بلد الحساب الشغال قبل أول رسم (الجلسة بتعملها هي كمان — هنا عشان الترتيب يبقى مضمون)
         Texts.followCountry(st.active.space.countryCode)
+        // «سجل المشاكل» وتقارير الأعطال (§90): رقم فايربيز بس + البلد الشغالة
+        problems.session(st.user.uid, st.active.space.countryCode)
         val graph = SpaceGraph(st.active.space, st.repos.toRepositories(), envFor(st.user.uid, st.active.space), links(st), feeds)
         return AppSession.Ready(st.user.uid, graph)
     }

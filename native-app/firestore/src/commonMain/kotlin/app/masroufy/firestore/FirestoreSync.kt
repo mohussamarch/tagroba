@@ -1,6 +1,8 @@
 package app.masroufy.firestore
 
+import app.masroufy.core.ProblemCode
 import app.masroufy.perf.PerfTrace
+import app.masroufy.problems.Problems
 import dev.gitlive.firebase.firestore.ChangeType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -92,6 +94,8 @@ class FirestoreSync(private val space: FirestoreSpace, private val groups: List<
                 } catch (e: Throwable) {
                     mirror.markStale(group)
                     failures.tryEmit(e)
+                    // «سجل المشاكل» (§90): نوع الخطأ بس — مش اسم المجموعة ولا الرسالة
+                    Problems.report(ProblemCode.SYNC_LISTEN_FAILED, e)
                 }
             }
         }

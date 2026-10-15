@@ -6,7 +6,9 @@ import app.masroufy.data.Doc
 import app.masroufy.data.DocCodec
 import app.masroufy.data.omittedFields
 import app.masroufy.data.toStore
+import app.masroufy.core.ProblemCode
 import app.masroufy.perf.PerfTrace
+import app.masroufy.problems.Problems
 import dev.gitlive.firebase.firestore.CollectionReference
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.FirebaseFirestore
@@ -57,6 +59,7 @@ class FirestoreSpace(val db: FirebaseFirestore, val root: String) {
                 throw e
             } catch (e: Throwable) {
                 failures.tryEmit(e)
+                Problems.report(ProblemCode.SYNC_WRITE_FAILED, e)
             }
         }
     }

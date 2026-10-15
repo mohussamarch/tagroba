@@ -1,5 +1,7 @@
 package app.masroufy.device
 
+import app.masroufy.core.ProblemCode
+import app.masroufy.problems.Problems
 import android.content.Context
 import app.masroufy.core.TextKey
 import app.masroufy.core.uiText
@@ -27,6 +29,7 @@ class AndroidRepairBackup(private val context: Context) : RepairBackupPort {
                 out.fd.sync()
             }
         } catch (e: Exception) {
+            Problems.report(ProblemCode.BACKUP_DEVICE_COPY_FAILED, e)
             throw IllegalStateException(uiText(TextKey.BACKUP_DEVICE_SAVE_FAILED), e)
         }
         SavedBackup(file.absolutePath, if (file.isFile) file.length() else 0)

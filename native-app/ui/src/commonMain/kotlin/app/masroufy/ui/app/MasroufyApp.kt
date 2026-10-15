@@ -47,6 +47,9 @@ import app.masroufy.ui.theme.MasroufyTheme
 import app.masroufy.ui.theme.Type
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.compose.runtime.snapshotFlow
 
 /** تغييرات السيرفر بتوصل دفعات (مستمع لكل مجموعة) ⇒ قراية واحدة بعد ما تهدى. */
 private const val REMOTE_SETTLE_MS = 400L
@@ -62,6 +65,15 @@ fun MasroufyApp(app: AppDeps, shell: ShellState, lock: LockGate, reduceMotion: B
     LaunchedEffect(session is AppSession.Ready) { if (session !is AppSession.Ready) shell.navigator.reset() }
     // تغيير من السيرفر ⇒ اللي بيعرض أرقام يقرا تاني — بعد ما الدفعة تهدى (المستمعين بيسلّموا ورا بعض في نفس اللحظة)
     LaunchedEffect(app) { app.remoteChanges.collectLatest { delay(REMOTE_SETTLE_MS); shell.changes.changed() } }
+    // تقارير الأعطال (§90): اسم الشاشة الظاهرة بس (`Route.name` — اسم ثابت من الكود، مش بيانات) — من غير ما الهيكل يترسم تاني
+    LaunchedEffect(app) {
+        val crash = app.problems?.crashReports ?: return@LaunchedEffect
+        val nav = shell.navigator
+        snapshotFlow { nav.sheets.lastOrNull()?.route?.name ?: nav.top?.route?.name ?: nav.tab.boardName }
+            .combine(app.session) { screen, s -> if (s is AppSession.Ready) screen else s::class.simpleName.orEmpty() }
+            .distinctUntilChanged()
+            .collect { crash.screenShown(it) }
+    }
     MasroufyTheme(reduceMotion) {
         CompositionLocalProvider(LocalApp provides app, LocalPermissions provides app.permissions) {
             val root = rememberBackdrop()
