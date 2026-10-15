@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.transferAskRequestId
 import app.masroufy.core.Currency
 import app.masroufy.core.DebtTerms
 import app.masroufy.core.Direction
@@ -101,10 +102,13 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
         return plans.map { InstallmentView(it, dueProgress(installmentSchedule(it), paidOf(it.id), today), it.receivedTransactionId?.let(received::get)) }
     }
 
-    suspend fun save(input: InstallmentInput): InstallmentPlan {
+    suspend fun save(input: InstallmentInput): InstallmentPlan = save(input, newId = null)
+
+    /** [newId] = معرّف الخطة الجديدة لو ثابت (`saveCounted` بعملية أول قسط)، وإلا معرّف جديد. */
+    private suspend fun save(input: InstallmentInput, newId: Id?): InstallmentPlan {
         val existing = input.id?.let { find(it) }
         val draft = InstallmentPlan(
-            id = existing?.id ?: deps.ids.next("installment"),
+            id = existing?.id ?: newId ?: deps.ids.next("installment"),
             name = input.name,
             provider = input.provider.trim(),
             kind = input.kind,
@@ -159,11 +163,23 @@ class ManageInstallments(private val deps: ManageInstallmentsDeps) {
     suspend fun saveCounted(input: InstallmentInput, count: Int, firstPaymentTxnId: Id? = null): InstallmentPlan {
         val total = totalFromCount(input.installmentMinor, count)
         val principal = if (input.kind == InstallmentKind.PURCHASE_PLAN && input.principalMinor <= 0) total else input.principalMinor
-        if (firstPaymentTxnId != null) links.check(firstPaymentTxnId, Direction.OUT, input.currency, input.name, input.installmentMinor)
-        val plan = save(input.copy(totalMinor = total, principalMinor = principal))
-        if (firstPaymentTxnId != null) link(plan.id, firstPaymentTxnId, input.installmentMinor)
-        return plan
+        val counted = input.copy(totalMinor = total, principalMinor = principal)
+        if (firstPaymentTxnId == null) return save(counted)
+        // مراجعة 0.3: الخطة وربط أول قسط وحدة واحدة (لو الربط وقع ما تفضلش خطة لوحدها)، ومعرّف الخطة ثابت من العملية ⇒ الإعادة بعد انقطاع
+        // بتكمّل نفس الخطة ومش بتعمل خطة تانية ولا قسط مكرر
+        val fixed = input.id ?: firstPaymentPlanId(firstPaymentTxnId)
+        val retry = input.id == null && deps.plans.listAll().any { it.id == fixed }
+        val done = retry && deps.payments.listByTransactionIds(listOf(firstPaymentTxnId)).any { it.planId == fixed }
+        if (!done) links.check(firstPaymentTxnId, Direction.OUT, input.currency, input.name, input.installmentMinor)
+        return deps.uow.run {
+            val plan = save(if (retry) counted.copy(id = fixed) else counted, newId = fixed)
+            if (!done) link(plan.id, firstPaymentTxnId, input.installmentMinor)
+            plan
+        }
     }
+
+    /** معرّف الخطة من عملية أول قسط (آمن من قص الأرقام زي `transferAskRequestId`). */
+    private fun firstPaymentPlanId(txnId: Id): Id = "installment-" + transferAskRequestId(txnId).removePrefix("ask-")
 
     /**
      * عمليات ممكن تكون أول قسط («ادفع بعدين»): صادرة بنفس العملة وبالقسط بالظبط، ±[DUE_LINK_DAYS] من يوم الشراء، مش مربوطة بحاجة — الأقرب

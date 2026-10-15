@@ -78,6 +78,12 @@ data class Transaction(
     val linkedExpenseId: Id? = null,
     /** §6.5-14: على المصروف — مجموع العمليات التابعة ليه (بيتحسب من جديد مع كل ربط وفك) ⇒ المصروف = المبلغ − ده (`netAfterLinks`). */
     val linkedInflowMinor: Halalas? = null,
+    /**
+     * §82-13 (مراجعة 0.3): علامة صريحة لسؤال «سلفة ولا دعم؟» على «دعم» قديم — true = السؤال مفتوح (بتتكتب أول ما يتلاقي) · false = المالك
+     * جاوب · null = لسه ما اتفحصش (الحد بآخر تعديل [LEGACY_AUTO_SUPPORT_UNTIL]). بتتكتب لو موجودة بس ⇒ المستندات والنسخ القديمة زي ما هي.
+     * من غيرها أي تعديل بعد كده (زي «طبّق القواعد على كل السجل») كان بيحرّك آخر تعديل فالسؤال يختفي.
+     */
+    val supportAskPending: Boolean? = null,
 )
 
 enum class AllocationKind(val wire: String) {

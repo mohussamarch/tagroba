@@ -79,7 +79,10 @@ fun countryLabel(countryCode: String): String = when (countryCode.uppercase()) {
 /** مساحة السعودية = بيانات التطبيق الحالي في `users/{uid}`. بتتبني هنا ومش بتتخزن في السجل. */
 fun defaultSpace(): Space = Space(DEFAULT_SPACE_ID, countryLabel(SAUDI_PACK.code), SAUDI_PACK.code, SAUDI_PACK.currency, createdAt = "", archived = false)
 
-class SpaceError(message: String) : IllegalArgumentException(message)
+open class SpaceError(message: String) : IllegalArgumentException(message)
+
+/** مراجعة 0.3: البلد اللي المالك عايز يضيفها **في الأرشيف** ⇒ الرسالة بتعرض «رجّعها من الأرشيف» ([space]) بدل «عندك حساب … قبل كده». */
+class SpaceArchived(val space: Space) : SpaceError(uiText(TextKey.SPACE_COUNTRY_ARCHIVED, countryLabel(space.countryCode)))
 
 /**
  * مساحة جديدة لبلد: البلد لازم تبقى معروفة، والعملة من حزمتها، و**بلد واحدة = مساحة واحدة** — حتى لو المساحة القديمة مؤرشفة

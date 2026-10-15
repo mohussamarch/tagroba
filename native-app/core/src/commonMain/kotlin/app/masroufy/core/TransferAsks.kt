@@ -129,11 +129,14 @@ fun legacySupportAsk(t: Transaction, party: TransferParty?, settlements: List<Se
     return AskKind.LOAN_OR_SUPPORT
 }
 
-/** «دعم» صادر لشخص، مؤكد، وآخر تعديل عليه قبل [LEGACY_AUTO_SUPPORT_UNTIL] — من غير الدفتر. null = طرفه مش شخص مربوط. */
+/**
+ * «دعم» صادر لشخص، مؤكد، وعليه علامة السؤال المفتوح (`Transaction.supportAskPending`) — أو مالوش علامة لسه وآخر تعديل عليه قبل
+ * [LEGACY_AUTO_SUPPORT_UNTIL]. من غير الدفتر. null = طرفه مش شخص مربوط.
+ */
 fun isLegacySupportBefore(t: Transaction, party: TransferParty?): Boolean? {
     if (party?.personId == null || party.verdict != TransferVerdict.PERSON) return null
     return t.observedDirection == Direction.OUT && t.economicKind == EconomicKind.SUPPORT_GIFT && t.economicKindConfirmed &&
-        t.updatedAt < LEGACY_AUTO_SUPPORT_UNTIL
+        (t.supportAskPending ?: (t.updatedAt < LEGACY_AUTO_SUPPORT_UNTIL))
 }
 
 /** خطة «أيوه، ده سداد»: التسويات بالترتيب، أو الرفض بسببه. */

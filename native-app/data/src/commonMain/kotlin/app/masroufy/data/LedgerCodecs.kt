@@ -39,6 +39,7 @@ object LedgerCodecs {
                 opt("foreignAmountMinor", t.foreignAmountMinor); opt("foreignCurrency", t.foreignCurrency); opt("kindBeforeReversal", t.kindBeforeReversal?.wire)
                 // §6.5-14 «عمليات تابعة» — اختيارية زي الشريحة S3
                 opt("linkedExpenseId", t.linkedExpenseId); opt("linkedInflowMinor", t.linkedInflowMinor)
+                opt("supportAskPending", t.supportAskPending)
             }
         },
         { r ->
@@ -59,6 +60,7 @@ object LedgerCodecs {
                 foreignAmountMinor = r.longOrNull("foreignAmountMinor"), foreignCurrency = r.strOrNull("foreignCurrency"),
                 kindBeforeReversal = if (r.has("kindBeforeReversal")) r.wire("kindBeforeReversal", EconomicKind::fromWire) else null,
                 linkedExpenseId = r.strOrNull("linkedExpenseId"), linkedInflowMinor = r.longOrNull("linkedInflowMinor"),
+                supportAskPending = r.boolOrNull("supportAskPending"),
             )
         },
     )

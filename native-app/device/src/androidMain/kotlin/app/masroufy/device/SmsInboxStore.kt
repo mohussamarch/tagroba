@@ -159,9 +159,9 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
      * الصندوق: **أحدث** 200 رسالة لسه مستنية، بالترتيب من الأقدم (§83 — بعد قراية التاريخ كله ممكن يبقى فيه آلاف، واللي مستني من التاريخ
      * القديم ما يوقفش رسايل النهارده؛ كانت أقدم 200) + العدد كله + وقت أقدم رسالة لسه فيه.
      */
-    fun snapshot(uid: String, permission: Boolean, more: Boolean): SmsInboxState {
+    fun snapshot(uid: String, permission: Boolean, more: Boolean, skip: Int = 0): SmsInboxState {
         val items = mutableListOf<QueuedSms>()
-        readableDatabase.query("messages", arrayOf("id", "sender", "body", "received"), "owner=? AND done=0", arrayOf(uid), null, null, "received DESC,id DESC", "200").use { c ->
+        readableDatabase.query("messages", arrayOf("id", "sender", "body", "received"), "owner=? AND done=0", arrayOf(uid), null, null, "received DESC,id DESC", if (skip > 0) "$skip,200" else "200").use { c ->
             while (c.moveToNext()) items += QueuedSms(c.getString(0), c.getString(1), Instant.ofEpochMilli(c.getLong(3)).toString(), c.getString(2))
         }
         items.reverse()

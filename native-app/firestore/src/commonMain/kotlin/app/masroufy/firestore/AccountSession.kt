@@ -12,7 +12,6 @@ import app.masroufy.port.ActiveSpaceStore
 import app.masroufy.port.AuthPort
 import app.masroufy.port.AuthUser
 import dev.gitlive.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -114,22 +113,20 @@ class AccountSession(
             val ready = current.value as? State.Ready ?: return
             val registry = FirestoreSpaceRegistry(ready.account).listAll()
             val changes = spaceChanges(ready.spaces.keys, registry)
-            val added = changes.open.map { openSpace(ready.user.uid, it, ready.account) }
-            try {
-                added.forEach { it.sync.awaitComplete() }
-            } catch (e: CancellationException) {
-                // المهلة خلصت أو الشاشة اتقفلت ⇒ ما نسيبش مستمعين شغالين لبلد مش في الجلسة
-                added.forEach { it.sync.stop() }
-                throw e
+            // مراجعة 0.3: أي خطأ (مش المهلة بس) أو تغيير في النص ⇒ مستمعين البلاد اللي اتفتحت دلوقتي بيقفوا (`openThenCommit`)
+            val kept = openThenCommit(changes.open, { openSpace(ready.user.uid, it, ready.account) }, { it.sync.awaitComplete() }, { it.sync.stop() }) { added ->
+                val spaces = ready.spaces.filterKeys { it !in changes.close } + added.associateBy { it.space.id }
+                // البلد المفتوحة اللي القراية الناقصة ما جابتهاش بتفضل معروفة (ما تتحولش للسعودية بسبب قراية ناقصة)
+                val known = registry.filter { it.id in spaces } + spaces.values.map { it.space }.filter { s -> registry.none { it.id == s.id } }
+                val active = activeSpaceOf(activeStore(ready.user.uid).read(), known)
+                current.compareAndSet(ready, ready.copy(spaces = spaces, activeSpaceId = active.id)).also { ok ->
+                    if (ok) {
+                        changes.close.forEach { id -> ready.spaces[id]?.sync?.stop() }
+                        Texts.followCountry(active.countryCode)
+                    }
+                }
             }
-            val spaces = ready.spaces.filterKeys { it !in changes.close } + added.associateBy { it.space.id }
-            val active = activeSpaceOf(activeStore(ready.user.uid).read(), registry.filter { it.id in spaces })
-            if (current.compareAndSet(ready, ready.copy(spaces = spaces, activeSpaceId = active.id))) {
-                changes.close.forEach { id -> ready.spaces[id]?.sync?.stop() }
-                Texts.followCountry(active.countryCode)
-                return
-            }
-            added.forEach { it.sync.stop() }
+            if (kept) return
         }
     }
 
@@ -238,12 +235,37 @@ internal data class SpaceChanges(val open: List<Space>, val close: Set<String>)
 
 /**
  * [opened] = البلاد المفتوحة في الجلسة دلوقتي · [registry] = السجل. اللي في السجل ومش مؤرشفة ومش مفتوحة ⇒ تتفتح؛ المفتوحة اللي
- * اتأرشفت أو مش في السجل ⇒ تتقفل. **السعودية ([DEFAULT_SPACE_ID]) دايمًا مفتوحة** (مش في السجل وما بتتأرشفش).
+ * السجل بيقول صراحة إنها **اتأرشفت** ⇒ تتقفل. مراجعة 0.3: البلد اللي مش في السجل (قراية ناقصة من غير نت مثلًا) **ما بتتقفلش**.
+ * **السعودية ([DEFAULT_SPACE_ID]) دايمًا مفتوحة** (مش في السجل وما بتتأرشفش).
  */
 internal fun spaceChanges(opened: Set<String>, registry: List<Space>): SpaceChanges {
     val live = registry.filter { !it.archived && it.id != DEFAULT_SPACE_ID }
     val liveIds = live.map { it.id }.toSet()
-    return SpaceChanges(live.filter { it.id !in opened }, opened.filter { it != DEFAULT_SPACE_ID && it !in liveIds }.toSet())
+    val archived = registry.filter { it.archived && it.id !in liveIds }.map { it.id }.toSet()
+    return SpaceChanges(live.filter { it.id !in opened }, opened.filter { it != DEFAULT_SPACE_ID && it in archived }.toSet())
+}
+
+/**
+ * مراجعة 0.3: يفتح [toOpen] ويستنى تنزيلها الأول وبعدين [commit] — لو أي حاجة وقعت (مهلة · خطأ · فتح نص البلاد) أو [commit] رفض (الحالة
+ * اتغيرت في النص)، مستمعين اللي اتفتح بيقفوا كلهم. بيرجّع نتيجة [commit].
+ */
+internal suspend fun <S> openThenCommit(
+    toOpen: List<Space>,
+    open: suspend (Space) -> S,
+    await: suspend (S) -> Unit,
+    stop: (S) -> Unit,
+    commit: suspend (List<S>) -> Boolean,
+): Boolean {
+    val added = mutableListOf<S>()
+    var kept = false
+    try {
+        for (space in toOpen) added += open(space)
+        for (session in added) await(session)
+        kept = commit(added)
+        return kept
+    } finally {
+        if (!kept) added.forEach(stop)
+    }
 }
 
 /** «الجهاز ده خلّص تنزيل أول كامل للحساب ده» — على الجهاز بس (أندرويد: `AndroidFirstSyncMarks` في `:androidApp`). */

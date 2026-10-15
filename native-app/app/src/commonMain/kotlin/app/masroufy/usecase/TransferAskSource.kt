@@ -16,6 +16,7 @@ import app.masroufy.port.AllocationRepository
 import app.masroufy.port.AskSource
 import app.masroufy.port.ObligationRepository
 import app.masroufy.port.SettlementRepository
+import app.masroufy.port.TransactionPatch
 import app.masroufy.port.TransactionRepository
 import app.masroufy.port.TransferPartyRepository
 
@@ -47,6 +48,8 @@ class TransferAskSource(private val deps: TransferAskSourceDeps) : AskSource {
         val legacy = deps.txns.listByDateRange(EARLIEST, LEGACY_AUTO_SUPPORT_UNTIL.take(10)).mapNotNull { t ->
             transferPartyOf(t)?.let { people[it.key] }?.takeIf { isLegacySupportBefore(t, it) == true }?.let { t to it }
         }
+        // مراجعة 0.3: أول ما «دعم» قديم يتلاقي بتتكتب عليه علامة صريحة (من غير ما آخر تعديل يتحرك) — أي تعديل بعد كده ما يشيلش السؤال
+        for ((t, _) in legacy) if (t.supportAskPending == null) deps.txns.update(t.id, TransactionPatch(supportAskPending = true))
         if (candidates.isEmpty() && legacy.isEmpty()) return emptyList()
         val debtsOf = PersonLedger(deps.obligations, deps.settlements, deps.txns)
         val links = PersonLedgerRepos(deps.obligations, deps.settlements, deps.allocations).linksOf((candidates + legacy).map { it.first.id }.distinct())

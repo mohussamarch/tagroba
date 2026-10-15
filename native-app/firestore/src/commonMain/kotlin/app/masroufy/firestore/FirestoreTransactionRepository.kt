@@ -64,6 +64,7 @@ class FirestoreTransactionRepository(private val space: FirestoreSpace) : Transa
         if (patch.clearKindBeforeReversal) fields["kindBeforeReversal"] = FieldValue.delete else patch.kindBeforeReversal?.let { fields["kindBeforeReversal"] = it.wire }
         if (patch.clearLinkedExpenseId) fields["linkedExpenseId"] = FieldValue.delete else patch.linkedExpenseId?.let { fields["linkedExpenseId"] = it }
         if (patch.clearLinkedInflowMinor) fields["linkedInflowMinor"] = FieldValue.delete else patch.linkedInflowMinor?.let { fields["linkedInflowMinor"] = it }
+        patch.supportAskPending?.let { fields["supportAskPending"] = it }
         if (fields.isEmpty()) return
         val safe = storeForm(codec.group, fields)
         space.updateDoc(codec.group, id, safe)

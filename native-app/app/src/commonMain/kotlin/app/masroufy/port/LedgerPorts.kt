@@ -83,6 +83,8 @@ data class TransactionPatch(
     val clearLinkedExpenseId: Boolean = false,
     val linkedInflowMinor: Long? = null,
     val clearLinkedInflowMinor: Boolean = false,
+    /** §82-13 (مراجعة 0.3): علامة سؤال «سلفة ولا دعم؟» على «دعم» قديم — null = ما تتغيرش. */
+    val supportAskPending: Boolean? = null,
 )
 
 interface SourceRecordRepository {

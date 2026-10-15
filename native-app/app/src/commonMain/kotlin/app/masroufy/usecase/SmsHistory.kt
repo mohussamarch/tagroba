@@ -55,7 +55,8 @@ data class SmsShapeGroup(
 
 /**
  * [recorded] · [duplicates] = اللي اتسجل (أو اتدمج في عملية كشف) واللي اتشال مكرر في النداء ده. [shapes] = قايمة التأكيد (شكل واحد في السطر).
- * [waiting] = كل اللي مستني تأكيد المالك في الجزء المعروض من الصندوق · [queued] = كل اللي في الصندوق.
+ * [waiting] = كل اللي مستني تأكيد المالك في الجزء المعروض من الصندوق · [queued] = كل اللي في الصندوق · [unread] (مراجعة 0.3) = اللي في
+ * الصندوق ورا الجزء المعروض (المالك لسه ما شافهاش — بتظهر لما يخلّص اللي قدامه).
  */
 data class SmsHistoryReport(
     val recorded: Int,
@@ -63,6 +64,7 @@ data class SmsHistoryReport(
     val shapes: List<SmsShapeGroup>,
     val waiting: Int,
     val queued: Int,
+    val unread: Int = 0,
 ) {
     /** الرسايل اللي هتتسجل لوحدها بعد «أكّد الأشكال» (غير الرسالة اللي في السطر). */
     val sameShape: Int get() = shapes.sumOf { it.count - 1 }
@@ -165,7 +167,8 @@ class SmsHistory(private val deps: SmsHistoryDeps) {
             val (item, row) = list.maxWith(compareBy({ millisOf(it.first.receivedAt) }, { it.first.id }))
             SmsShapeGroup(key.first, item.sender, item.id, row.date, row.amountMinor, row.direction, row.merchantName, list.size)
         }
-        return SmsHistoryReport(recorded, duplicates, shapes, waiting.messageIds.size, inbox.sync().count)
+        val box = inbox.sync()
+        return SmsHistoryReport(recorded, duplicates, shapes, waiting.messageIds.size, box.count, (box.count - box.messages.size).coerceAtLeast(0))
     }
 
     private companion object {
