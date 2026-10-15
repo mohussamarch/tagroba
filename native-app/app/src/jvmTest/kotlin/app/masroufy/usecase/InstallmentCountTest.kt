@@ -11,7 +11,9 @@ import app.masroufy.core.computePeriodTotals
 import app.masroufy.core.installmentDueItems
 import app.masroufy.core.installmentSchedule
 import app.masroufy.core.dueProgress
+import app.masroufy.core.InstallmentPayment
 import app.masroufy.memory.FixedClock
+import app.masroufy.port.InstallmentPaymentRepository
 import app.masroufy.memory.MemoryCategoryRepository
 import app.masroufy.memory.MemoryDebtTermsRepository
 import app.masroufy.memory.MemoryInstallmentPaymentRepository
@@ -98,5 +100,32 @@ class InstallmentCountTest {
         val w = World(listOf(out("t-small", 10_000, "2026-10-10")))
         assertFailsWith<DueLinkError> { w.installments.saveCounted(mattress(), 4, firstPaymentTxnId = "t-small") }
         assertEquals(emptyList(), w.plans.listAll(), "الفحص قبل الحفظ ⇒ ولا خطة")
+    }
+
+    /** مراجعة 0.3: الخطة وربط أول قسط وحدة واحدة — الربط وقع ⇒ مفيش خطة لوحدها · الإعادة ⇒ خطة واحدة وقسط واحد (حتى لو اتعادت تاني). */
+    @Test fun aFailedFirstPaymentLinkLeavesNoPlanAndARetryDoesNotDuplicate() = runBlocking<Unit> {
+        val txns = MemoryTransactionRepository(listOf(out("t-first", 25_000, "2026-10-10")))
+        val real = MemoryInstallmentPaymentRepository()
+        var cut = true
+        val payments = object : InstallmentPaymentRepository by real {
+            override suspend fun saveMany(payments: List<InstallmentPayment>) {
+                if (cut) { cut = false; throw IllegalStateException("connection cut") }
+                real.saveMany(payments)
+            }
+        }
+        val plans = MemoryInstallmentPlanRepository()
+        val installments = ManageInstallments(
+            ManageInstallmentsDeps(
+                plans, payments, MemoryRoscaEntryRepository(), MemoryDebtTermsRepository(), MemoryObligationRepository(), txns,
+                MemoryUnitOfWork(listOf(plans, real, txns)), SequentialIdGenerator(), FixedClock("2026-10-10T09:00:00.000Z"), MemoryCategoryRepository(),
+            ),
+        )
+        assertFailsWith<IllegalStateException> { installments.saveCounted(mattress(), 4, firstPaymentTxnId = "t-first") }
+        assertEquals(emptyList(), plans.listAll(), "the plan is not left alone without its first payment")
+        val plan = installments.saveCounted(mattress(), 4, firstPaymentTxnId = "t-first")
+        val again = installments.saveCounted(mattress(), 4, firstPaymentTxnId = "t-first")
+        assertEquals(plan.id, again.id)
+        assertEquals(listOf(plan.id), plans.listAll().map { it.id }, "one plan")
+        assertEquals(listOf(25_000L), real.listByPlan(plan.id).map { it.amountMinor }, "one first payment")
     }
 }
