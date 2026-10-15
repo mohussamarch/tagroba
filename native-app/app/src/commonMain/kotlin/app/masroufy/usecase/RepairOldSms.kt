@@ -59,6 +59,7 @@ class RepairOldSms(
     private val readers: List<BankSmsReader>,
     private val backup: RepairBackupPort,
     private val clock: Clock,
+    private val uow: app.masroufy.port.UnitOfWork,
 ) {
     private class Recorded(val transaction: Transaction, val records: List<SourceRecord>, val row: SmsRow?)
 
@@ -83,7 +84,9 @@ class RepairOldSms(
         val byId = txns.findByIds(lines.map { it.transactionId }).associateBy { it.id }
         val records = sources.listByTransactionIds(lines.map { it.transactionId })
         val all = wallets.listAll()
-        val saved = saveVerifiedBackup(backup, clock, "sms-repair", lines.mapNotNull { byId[it.transactionId]?.let(::backupDoc) })
+        val saved = saveVerifiedBackup(
+            backup, clock, "sms-repair", lines.mapNotNull { line -> byId[line.transactionId]?.let { t -> backupDoc(t, records.filter { it.transactionId == t.id }) } },
+        )
         val now = clock.nowIso()
         val fixed = lines.mapNotNull { line ->
             val t = byId[line.transactionId] ?: return@mapNotNull null
@@ -99,15 +102,20 @@ class RepairOldSms(
             val name = all.firstOrNull { it.id == moved[r.transactionId] }?.name ?: return@mapNotNull null
             r.copy(accountIdentity = name)
         }
-        txns.saveMany(fixed)
-        if (movedRecords.isNotEmpty()) sources.saveMany(movedRecords)
+        // مراجعة r04: العملية وسجلاتها في وحدة عمل واحدة — ما ينفعش العملية تتنقل وسجلاتها تفضل على الحساب القديم
+        uow.run {
+            txns.saveMany(fixed)
+            if (movedRecords.isNotEmpty()) sources.saveMany(movedRecords)
+        }
         return SmsRepairResult(saved, SmsRepairUndo(fixed.mapNotNull { byId[it.id] }, records.filter { it.transactionId in moved }))
     }
 
     /** «تراجع» الدفعة كلها. */
     suspend fun undo(undo: SmsRepairUndo) {
-        txns.saveMany(undo.transactions)
-        if (undo.records.isNotEmpty()) sources.saveMany(undo.records)
+        uow.run {
+            txns.saveMany(undo.transactions)
+            if (undo.records.isNotEmpty()) sources.saveMany(undo.records)
+        }
     }
 
     /**
@@ -137,9 +145,12 @@ class RepairOldSms(
             .flatMap { b -> sources.listByBatch(b.id).map { it to (b.sourceType == ImportSourceType.SMS || isSmsReference(it.sourceReference)) } }
 
     private suspend fun recorded(): List<Recorded> {
-        val sms = recordsWithBatches().filter { it.second && it.first.transactionId != null }.map { it.first }
+        val all = recordsWithBatches()
+        // مراجعة r04: اللي اندمجت مع سطر كشف ما بتتلمسش (الكشف هو المرجع وسلسلة رصيده بالهللة) · ولا طرف في «عمليات تابعة» (قلب اتجاهه يبوّظ الربط)
+        val fromStatement = all.filter { !it.second }.mapNotNull { it.first.transactionId }.toSet()
+        val sms = all.filter { it.second && it.first.transactionId != null && it.first.transactionId !in fromStatement }.map { it.first }
         val byTxn = sms.groupBy { it.transactionId!! }
-        return txns.findByIds(byTxn.keys.toList()).map { t ->
+        return txns.findByIds(byTxn.keys.toList()).filter { it.linkedExpenseId == null && it.linkedInflowMinor == null }.map { t ->
             val recs = byTxn.getValue(t.id)
             Recorded(t, recs, recs.firstNotNullOfOrNull { parse(it.rawLine, t.occurredAt) })
         }
@@ -150,9 +161,11 @@ class RepairOldSms(
 
     private fun smsKindOf(records: List<SourceRecord>): SmsKind? = records.firstNotNullOfOrNull { r -> parse(r.rawLine, "2000-01-01")?.kind }
 
-    private fun backupDoc(t: Transaction): Map<String, Any?> = linkedMapOf(
+    private fun backupDoc(t: Transaction, records: List<SourceRecord>): Map<String, Any?> = linkedMapOf(
         "id" to t.id, "walletId" to t.walletId, "observedDirection" to t.observedDirection.name, "occurredAt" to t.occurredAt,
         "amountMinor" to t.amountMinor, "economicKind" to t.economicKind.name, "economicKindConfirmed" to t.economicKindConfirmed,
+        // مراجعة r04: الحساب القديم لكل سجل — النقل بيغيّره، و«تراجع» في الذاكرة بس
+        "sourceRecords" to records.map { linkedMapOf("id" to it.id, "accountIdentity" to it.accountIdentity) },
     )
 }
 

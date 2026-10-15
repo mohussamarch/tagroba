@@ -81,7 +81,7 @@ class SmsFixRepairTest {
         val sources = MemorySourceRecordRepository(listOf(record))
         val repair = RepairOldSms(
             txns, sources, MemoryImportBatchRepository(listOf(batch)), MemoryWalletRepository(listOf(a)),
-            listOf(SaudiBankSmsReader), MemoryRepairBackup(), FixedClock("2026-10-15T00:00:00Z"),
+            listOf(SaudiBankSmsReader), MemoryRepairBackup(), FixedClock("2026-10-15T00:00:00Z"), app.masroufy.memory.PassthroughUnitOfWork(),
         )
         val preview = repair.preview()
         assertEquals(listOf(SmsRepairLine("t1", "2026-03-03", 50_000, "wA", "wA", Direction.OUT, Direction.IN)), preview)

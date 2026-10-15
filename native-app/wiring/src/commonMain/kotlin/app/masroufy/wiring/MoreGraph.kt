@@ -96,7 +96,7 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
         val reader = countryPack(c.space.countryCode).smsReader
         val backup = c.env.repairBackup
         if (reader == null || backup == null) null
-        else app.masroufy.usecase.RepairOldSms(r.transactions, r.sourceRecords, r.importBatches, r.wallets, listOf(reader), backup, c.env.clock)
+        else app.masroufy.usecase.RepairOldSms(r.transactions, r.sourceRecords, r.importBatches, r.wallets, listOf(reader), backup, c.env.clock, r.uow)
     }
     private val rematch: (suspend () -> List<app.masroufy.core.SmsStatementPair>)? = smsRepair?.let { s -> { s.duplicates() } }
 
