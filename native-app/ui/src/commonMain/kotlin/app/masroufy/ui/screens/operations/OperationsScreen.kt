@@ -2,9 +2,11 @@ package app.masroufy.ui.screens.operations
 
 import app.masroufy.core.UiKey
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -46,8 +48,11 @@ import app.masroufy.ui.nav.Slots
 import app.masroufy.ui.overlay.Anchor
 import app.masroufy.ui.overlay.QuickMenuHost
 import app.masroufy.ui.overlay.rememberQuickMenu
+import app.masroufy.ui.screens.common.PullRefreshIndicator
 import app.masroufy.ui.screens.common.TabHeader
 import app.masroufy.ui.screens.common.TabScaffold
+import app.masroufy.ui.screens.common.pullRefresh
+import app.masroufy.ui.screens.common.rememberPullRefresh
 import app.masroufy.ui.screens.home.PeriodChoice
 import app.masroufy.ui.screens.home.PeriodPickerRoute
 import app.masroufy.ui.screens.imports.BankSmsRoute
@@ -71,6 +76,7 @@ fun OperationsScreen() {
     var tab by rememberSaveable { mutableStateOf(OpsTab.OPERATIONS) }
     var ui by remember(deps) { mutableStateOf(OpsUi()) }
     var reload by remember { mutableIntStateOf(0) }
+    var refreshing by remember { mutableStateOf(false) }
     val quick = rememberQuickMenu()
     // قراية المختار في الرسم نفسه ⇒ الرجوع من «اختر الشهر» بيعيد القراية بالشهر الجديد
     val chosenKey = PeriodChoice.of(space.space.id)
@@ -85,6 +91,7 @@ fun OperationsScreen() {
             }
             ui = ui.loaded(view, attempt { app.masroufy.perf.PerfTrace.span("ops:zone") { deps.transfers.zone().questions.size } })
         }
+        refreshing = false // دايرة «اسحب لتحت» بتفضل ظاهرة لحد ما القراية دي تخلص
     }
     // وضع «تحديد» والأفعال الجماعية (قايمة المالك §6.5 بند 15) — الحالة في [OpsSelection]، والمجموع والكتابة من `BulkTransactions`
     var sel by remember(deps) { mutableStateOf(OpsSelection()) }
@@ -92,6 +99,20 @@ fun OperationsScreen() {
     var done by remember { mutableStateOf<BulkDone?>(null) }
     val toaster = app.masroufy.ui.shell.LocalToaster.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val changes = app.masroufy.ui.app.LocalDataChanges.current
+    // «اسحب لتحت عشان تحدّث» (قايمة المالك بند 9): نفس تسجيل رسايل البنك بتاع تشغيلة الخلفية ⇒ رسالة لو فشل ⇒ قراية من جديد
+    val pull = rememberPullRefresh(refreshing) {
+        if (!refreshing) {
+            refreshing = true
+            scope.launch {
+                val sms = space.imports.sms
+                val seen = if (sms == null) null else attempt { sms.overview(record = true) }
+                if (sms != null && seen == null) toaster.show(t(UiKey.OPERATIONS_REFRESH_FAILED))
+                if (seen?.fresh?.isNotEmpty() == true) changes.changed()
+                reload++
+            }
+        }
+    }
     val visibleIds = ui.view?.days?.flatMap { d -> d.rows.map { it.id } }.orEmpty()
     val summary by androidx.compose.runtime.produceState<app.masroufy.usecase.SelectionSummary?>(null, sel.ids, reload) {
         value = attempt { deps.bulk?.summary(sel.ids) }
@@ -108,59 +129,62 @@ fun OperationsScreen() {
         }
     }
     val title = t(UiKey.TAB_OPERATIONS)
-    TabScaffold(title, header = {
-        TabHeader(title, actions = {
-            if (deps.bulk != null && tab == OpsTab.OPERATIONS && !sel.active) {
-                SurfaceIconButton(Lucide.CHECK, t(UiKey.OPS_SELECT), onClick = { sel = sel.start() }, iconSize = 20.dp)
-            }
-            SurfaceIconButton(Lucide.FILTER, t(UiKey.OPERATIONS_FILTER), onClick = { nav.push(OperationFiltersRoute) }, iconSize = 20.dp)
-            MonthButton(ui.view?.periodLabel ?: t(UiKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
-        })
-    }) {
-        item(key = "tabs") {
-            SegmentedTabs(
-                listOf(OpsTab.OPERATIONS to t(UiKey.OPERATIONS_TAB_OPS), OpsTab.BUDGETS to t(UiKey.OPERATIONS_TAB_BUDGETS), OpsTab.DUES to t(UiKey.OPERATIONS_TAB_DUES)),
-                tab, {
-                    tab = it
-                    sel = sel.cancel()
-                }, Modifier.fillMaxWidth(),
-            )
-        }
-        when (tab) {
-            OpsTab.BUDGETS -> item(key = "budgets") { LocalRegistry.current.Slot(Slots.BUDGETS) }
-            OpsTab.DUES -> item(key = "dues") { LocalRegistry.current.Slot(Slots.DUES) }
-            OpsTab.OPERATIONS -> {
-                if (sel.active) stickyHeader(key = "select-bar") {
-                    SelectionBar(sel, summary, visibleIds, onToggleAll = { sel = sel.toggleAll(visibleIds) }, onCancel = { sel = sel.cancel() }) { action ->
-                        when {
-                            sel.count == 0 -> toaster.show(t(UiKey.OPS_BULK_PICK_FIRST))
-                            action == app.masroufy.usecase.BulkAction.DELETE && (summary?.deletable ?: 0) == 0 -> toaster.show(t(UiKey.OPS_BULK_DELETE_NONE))
-                            else -> bulkOpen = action
-                        }
-                    }
+    Box(Modifier.fillMaxSize()) {
+        TabScaffold(title, Modifier.pullRefresh(pull), header = {
+            TabHeader(title, actions = {
+                if (deps.bulk != null && tab == OpsTab.OPERATIONS && !sel.active) {
+                    SurfaceIconButton(Lucide.CHECK, t(UiKey.OPS_SELECT), onClick = { sel = sel.start() }, iconSize = 20.dp)
                 }
-                done?.let { d -> stickyHeader(key = "bulk-undo") { UndoStrip(d.text) { undo(d) } } }
-                operationsTab(
-                    ui, onRetry = { ui = ui.retrying(); reload++ },
-                    onOpen = { r -> if (sel.active) sel = sel.toggle(r.id) else quick.guardTap { nav.push(OperationDetailRoute(r.id)) }() },
-                    onMenu = { r, a ->
-                        if (sel.active) {
-                            sel = sel.toggle(r.id)
-                        } else {
-                            quick.show(
-                                operationMenuRequest(
-                                    r, a,
-                                    onDetail = { nav.push(OperationDetailRoute(it.id)) },
-                                    onPerson = { nav.push(OperationDetailRoute(it.id, openPerson = true)) },
-                                    onSelect = if (deps.bulk == null) null else { row -> sel = sel.start(row.id) },
-                                ),
-                            )
-                        }
-                    },
-                    selection = sel,
+                SurfaceIconButton(Lucide.FILTER, t(UiKey.OPERATIONS_FILTER), onClick = { nav.push(OperationFiltersRoute) }, iconSize = 20.dp)
+                MonthButton(ui.view?.periodLabel ?: t(UiKey.OPERATIONS_PERIOD)) { nav.push(PeriodPickerRoute) }
+            })
+        }) {
+            item(key = "tabs") {
+                SegmentedTabs(
+                    listOf(OpsTab.OPERATIONS to t(UiKey.OPERATIONS_TAB_OPS), OpsTab.BUDGETS to t(UiKey.OPERATIONS_TAB_BUDGETS), OpsTab.DUES to t(UiKey.OPERATIONS_TAB_DUES)),
+                    tab, {
+                        tab = it
+                        sel = sel.cancel()
+                    }, Modifier.fillMaxWidth(),
                 )
             }
+            when (tab) {
+                OpsTab.BUDGETS -> item(key = "budgets") { LocalRegistry.current.Slot(Slots.BUDGETS) }
+                OpsTab.DUES -> item(key = "dues") { LocalRegistry.current.Slot(Slots.DUES) }
+                OpsTab.OPERATIONS -> {
+                    if (sel.active) stickyHeader(key = "select-bar") {
+                        SelectionBar(sel, summary, visibleIds, onToggleAll = { sel = sel.toggleAll(visibleIds) }, onCancel = { sel = sel.cancel() }) { action ->
+                            when {
+                                sel.count == 0 -> toaster.show(t(UiKey.OPS_BULK_PICK_FIRST))
+                                action == app.masroufy.usecase.BulkAction.DELETE && (summary?.deletable ?: 0) == 0 -> toaster.show(t(UiKey.OPS_BULK_DELETE_NONE))
+                                else -> bulkOpen = action
+                            }
+                        }
+                    }
+                    done?.let { d -> stickyHeader(key = "bulk-undo") { UndoStrip(d.text) { undo(d) } } }
+                    operationsTab(
+                        ui, onRetry = { ui = ui.retrying(); reload++ },
+                        onOpen = { r -> if (sel.active) sel = sel.toggle(r.id) else quick.guardTap { nav.push(OperationDetailRoute(r.id)) }() },
+                        onMenu = { r, a ->
+                            if (sel.active) {
+                                sel = sel.toggle(r.id)
+                            } else {
+                                quick.show(
+                                    operationMenuRequest(
+                                        r, a,
+                                        onDetail = { nav.push(OperationDetailRoute(it.id)) },
+                                        onPerson = { nav.push(OperationDetailRoute(it.id, openPerson = true)) },
+                                        onSelect = if (deps.bulk == null) null else { row -> sel = sel.start(row.id) },
+                                    ),
+                                )
+                            }
+                        },
+                        selection = sel,
+                    )
+                }
+            }
         }
+        PullRefreshIndicator(pull, t(UiKey.OPERATIONS_REFRESHING), Modifier.align(Alignment.TopCenter))
     }
     QuickMenuHost(quick)
     BulkSheets(bulkOpen, deps, sel.ids, summary?.deletable ?: 0, onDismiss = { bulkOpen = null }) { d ->

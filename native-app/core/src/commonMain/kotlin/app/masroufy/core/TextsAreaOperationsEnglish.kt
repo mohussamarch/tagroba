@@ -9,6 +9,8 @@ internal val ENGLISH_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATIONS_TAB_DUES to "Dues",
     UiKey.OPERATIONS_ERROR_TITLE to "Couldn't load operations",
     UiKey.OPERATIONS_ERROR_BODY to "Check your connection and try again.",
+    UiKey.OPERATIONS_REFRESHING to "Refreshing…",
+    UiKey.OPERATIONS_REFRESH_FAILED to "Couldn't refresh. Pull down to try again.",
     UiKey.OPERATIONS_EMPTY_TITLE to "No operations in {0}",
     UiKey.OPERATIONS_EMPTY_BODY to "Add an operation or import your statement.",
     UiKey.OPERATIONS_INCOME to "Income this month",

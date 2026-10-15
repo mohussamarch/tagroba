@@ -12,6 +12,8 @@ internal val MSA_OPERATIONS_LIST_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.OPERATIONS_TAB_DUES to "المستحقات",
     UiKey.OPERATIONS_ERROR_TITLE to "تعذّر تحميل العمليات",
     UiKey.OPERATIONS_ERROR_BODY to "تحقق من الاتصال ثم أعد المحاولة.",
+    UiKey.OPERATIONS_REFRESHING to "جارٍ التحديث…",
+    UiKey.OPERATIONS_REFRESH_FAILED to "تعذّر التحديث. اسحب للأسفل مرة أخرى",
     UiKey.OPERATIONS_EMPTY_TITLE to "لا توجد عمليات في {0}",
     UiKey.OPERATIONS_EMPTY_BODY to "أضف عملية أو استورد كشف حسابك.",
     UiKey.OPERATIONS_INCOME to "دخل الشهر",
