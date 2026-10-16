@@ -63,7 +63,7 @@ object AssistantCodecs {
                     is UserSetting.InvestTips -> { req("type", "investTips"); req("closed", s.closed) }
                     is UserSetting.InvestDaily -> {
                         req("type", "investDaily"); req("spaceId", s.spaceId); req("date", s.date); req("ids", s.ids); req("values", s.values)
-                        opt("prevDate", s.prevDate); req("prevIds", s.prevIds); req("prevValues", s.prevValues)
+                        opt("prevDate", s.prevDate); req("prevIds", s.prevIds); req("prevValues", s.prevValues); req("units", s.units); req("prevUnits", s.prevUnits)
                     }
                 }
             }
@@ -85,6 +85,7 @@ object AssistantCodecs {
                 "investDaily" -> UserSetting.InvestDaily(
                     d.str("spaceId"), d.str("date"), d.strings("ids").orEmpty(), d.longs("values"), d.strOrNull("prevDate"),
                     d.strings("prevIds").orEmpty(), d.longs("prevValues"), d.str("updatedAt"),
+                    d.longs("units"), d.longs("prevUnits"),
                 )
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }

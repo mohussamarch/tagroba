@@ -118,6 +118,9 @@ sealed interface UserSetting {
         val prevIds: List<Id>,
         val prevValues: List<Halalas>,
         override val updatedAt: String,
+        /** الكمية (× 10^8) جنب كل قيمة، أو `MANUAL_UNITS` لو القيمة يدوي — عشان الشراء والبيع ما يتحسبوش حركة سعر (`core/InvestToday.kt`). */
+        val units: List<Long> = emptyList(),
+        val prevUnits: List<Long> = emptyList(),
     ) : UserSetting {
         override val key: String get() = investDailyKey(spaceId)
     }

@@ -128,7 +128,7 @@ class InvestInsightsMathTest {
     }
 
     private fun snap(date: String, now: Map<String, Long>, prevDate: String?, prev: Map<String, Long>) = UserSetting.InvestDaily(
-        "sa", date, now.keys.toList(), now.values.toList(), prevDate, prev.keys.toList(), prev.values.toList(), "x",
+        "sa", date, now.keys.toList(), now.values.toList(), prevDate, prev.keys.toList(), prev.values.toList(), "x", now.map { 1L }, prev.map { 1L },
     )
 
     @Test
@@ -145,16 +145,47 @@ class InvestInsightsMathTest {
 
     @Test
     fun snapshotShiftsOnANewDayOnly() {
-        val first = shiftSnapshot(null, "sa", "2026-10-15", mapOf("a" to 1_000), "t1")
+        val first = shiftSnapshot(null, "sa", "2026-10-15", mapOf("a" to DailyValue(1_000, Q)), "t1")
         assertNull(first.prevDate)
-        val sameDay = shiftSnapshot(first, "sa", "2026-10-15", mapOf("a" to 1_050), "t2")
+        val sameDay = shiftSnapshot(first, "sa", "2026-10-15", mapOf("a" to DailyValue(1_050, Q)), "t2")
         assertNull(sameDay.prevDate)
         assertEquals(listOf(1_050L), sameDay.values)
-        val next = shiftSnapshot(sameDay, "sa", "2026-10-16", mapOf("a" to 1_100), "t3")
+        val next = shiftSnapshot(sameDay, "sa", "2026-10-16", mapOf("a" to DailyValue(1_100, Q)), "t3")
         assertEquals("2026-10-15", next.prevDate)
         assertEquals(listOf(1_050L), next.prevValues)
         assertEquals(476, todayChange(next)!!.pctBp) // 50 ÷ 1050 = 4.76%
         assertEquals("investDaily.sa", next.key)
+    }
+
+    private val Q = 50 * QUANTITY_SCALE
+
+    private fun day(prev: Map<String, DailyValue>, now: Map<String, DailyValue>): InvestTodayChange? =
+        todayChange(shiftSnapshot(shiftSnapshot(null, "sa", "2026-10-15", prev, "t1"), "sa", "2026-10-16", now, "t2"))
+
+    @Test
+    fun buyingSellingAndEditingThePropertyAreNotAPriceMove() {
+        // 50 جرام بـ20,000 ⇒ اشترى 50 كمان والسعر ما اتحركش ⇒ صفر (مش +100%)
+        val bought = assertNotNull(day(mapOf("g" to DailyValue(2_000_000, Q)), mapOf("g" to DailyValue(4_000_000, 2 * Q))))
+        assertEquals(0, bought.gainMinor)
+        assertEquals(0, bought.pctBp)
+        // اشترى 50 والسعر زاد 1% ⇒ المكسب على الـ100 جرام بسعر امبارح (40,000) = 400
+        val boughtUp = assertNotNull(day(mapOf("g" to DailyValue(2_000_000, Q)), mapOf("g" to DailyValue(4_040_000, 2 * Q))))
+        assertEquals(40_000, boughtUp.gainMinor)
+        assertEquals(100, boughtUp.pctBp)
+        // باع نص الكمية والسعر ثابت ⇒ صفر (مش -50%)
+        assertEquals(0, assertNotNull(day(mapOf("g" to DailyValue(2_000_000, Q)), mapOf("g" to DailyValue(1_000_000, Q / 2)))).gainMinor)
+        // عقار اتعدلت قيمته 500,000 ⇒ 600,000 ⇒ أساس جديد (برّه) · العقار نفس القيمة ⇒ يدخل الأساس بمكسب صفر
+        assertNull(day(mapOf("p" to DailyValue(50_000_000, MANUAL_UNITS)), mapOf("p" to DailyValue(60_000_000, MANUAL_UNITS))))
+        val mixed = assertNotNull(day(
+            mapOf("p" to DailyValue(50_000_000, MANUAL_UNITS), "g" to DailyValue(2_000_000, Q)),
+            mapOf("p" to DailyValue(50_000_000, MANUAL_UNITS), "g" to DailyValue(2_100_000, Q)),
+        ))
+        assertEquals(100_000, mixed.gainMinor)
+        assertEquals(19, mixed.pctBp) // 100,000 ÷ 52,000,000
+        // لقطة قديمة من غير كميات ⇒ «غير متاح» يوم (مش مكسب متألّف)
+        val old = UserSetting.InvestDaily("sa", "2026-10-16", listOf("g"), listOf(4_000_000), "2026-10-15", listOf("g"), listOf(2_000_000), "x", listOf(2 * Q))
+        assertNull(todayChange(old))
+        assertEquals(3, scaleByQuantity(5, 1, 2)) // 2.5 ⇒ لبعيد عن الصفر
     }
 
     private fun avg(key: String, bp: Int) = AverageEntry(key, bp, "2015", "2024", true, false, "src", null, "m")
