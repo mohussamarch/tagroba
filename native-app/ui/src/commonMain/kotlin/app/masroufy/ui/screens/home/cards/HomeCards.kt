@@ -92,7 +92,7 @@ fun HomeCards() {
 private fun HomeCard(kind: HomeCardKind, data: HomeCardsData) {
     when (kind) {
         HomeCardKind.DAILY -> DailyCard(data.daily)
-        HomeCardKind.BUDDY -> BuddyCard(data.month)
+        HomeCardKind.BUDDY -> BuddyCard(data.month, data.character)
         HomeCardKind.UPCOMING -> UpcomingSection()
         HomeCardKind.TOP -> TopCard(data.month)
         HomeCardKind.GOALS -> GoalsCard(data.goals)

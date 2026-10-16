@@ -30,9 +30,13 @@ import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Tab
 import app.masroufy.ui.screens.home.ReadState
 import app.masroufy.ui.screens.home.transactionTitle
-import app.masroufy.ui.screens.more.AccountLookRoute
+import app.masroufy.ui.screens.more.AccountCharacterRoute
 import app.masroufy.ui.screens.operations.ReviewQueueRoute
-import app.masroufy.ui.shell.MeAvatar
+import app.masroufy.ui.character.CharacterArt
+import app.masroufy.ui.character.NeutralFigure
+import app.masroufy.core.CharacterLayer
+import app.masroufy.core.CharacterLook
+import androidx.compose.foundation.layout.size
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -50,18 +54,19 @@ private const val RECENT_ON_HOME = 3
 private val bubble = Color(0xFFEAF3EC)
 
 /**
- * «شخصيتك بتكلمك»: ⚠️ `MeAvatar` مكان مؤقت — رسمة «شخصيتك» الحقيقية (`CharacterArt`) جاية من مسار الشخصية وبتتوصل وقت الدمج.
+ * «شخصيتك بتكلمك»: راس «شخصيتك» (`CharacterArt` · `CharacterLayer.HEAD`) من الملف — ولو لسه ما اتبنتش الشكل المحايد (`NeutralFigure`).
+ * الضغط ⇒ «ملفك» و«ابنِ شخصيتك» فوقها (`AccountCharacterRoute`).
  * الجملة = توقع صرف الشهر (`HomeScreenData.forecast` — نفس الرئيسية)، ولو البيانات ما تكفيش «لسه بدري».
  */
 @Composable
-internal fun BuddyCard(state: ReadState<HomeScreenData>) {
+internal fun BuddyCard(state: ReadState<HomeScreenData>, character: CharacterLook?) {
     val nav = LocalNavigator.current
     val currency = LocalSpace.current.space.currency
     val say = (state as? ReadState.Ready)?.value?.forecast?.projectedMinor?.let { t(UiKey.HOME_BUDDY_FORECAST, amountLabel(it, currency)) }
         ?: t(UiKey.HOME_BUDDY_EARLY)
-    FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.push(AccountLookRoute) }, clickLabel = t(UiKey.HOME_BUDDY_OPEN)) {
+    FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.push(AccountCharacterRoute) }, clickLabel = t(UiKey.HOME_BUDDY_OPEN)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            MeAvatar(64.dp, null)
+            if (character != null) CharacterArt(character, CharacterLayer.HEAD, Modifier.size(64.dp)) else NeutralFigure(Modifier.size(64.dp))
             Box(Modifier.weight(1f).clip(RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)).background(bubble).padding(horizontal = 12.dp, vertical = 10.dp)) {
                 BasicText(say, style = Type.of(13, lineHeight = 1.6).copy(color = Ink.text))
             }

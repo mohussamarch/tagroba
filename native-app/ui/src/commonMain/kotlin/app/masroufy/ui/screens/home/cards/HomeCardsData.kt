@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import app.masroufy.core.CharacterLook
 import app.masroufy.core.DEFAULT_PAYDAY
 import app.masroufy.core.HomeCardKind
 import app.masroufy.core.PeopleTotal
@@ -29,6 +30,8 @@ internal data class HomeCardsData(
     val goals: ReadState<List<GoalRow>> = ReadState.Loading,
     /** null = مفيش ديون في البلد دي (صفر محسوب: «ليك 0 · عليك 0»). */
     val people: ReadState<PeopleTotal?> = ReadState.Loading,
+    /** «شخصيتك» المحفوظة على الملف (راس «شخصيتك بتكلمك») — null = لسه ما اتبنتش أو الملف ما اتقراش ⇒ الشكل المحايد. */
+    val character: CharacterLook? = null,
 )
 
 private val NEEDS_MONTH = setOf(HomeCardKind.BUDDY, HomeCardKind.TOP, HomeCardKind.REVIEW, HomeCardKind.RECENT)
@@ -43,7 +46,9 @@ internal fun rememberHomeCardsData(visible: List<HomeCardKind>?): HomeCardsData 
         if (want == null) return@LaunchedEffect
         val today = deps.shell.today()
         val cards = deps.home.cards
-        val payday = runCatching { deps.home.profile.load().payday }.getOrNull() ?: DEFAULT_PAYDAY
+        val profile = runCatching { deps.home.profile.load() }.getOrNull()
+        val payday = profile?.payday ?: DEFAULT_PAYDAY
+        data = data.copy(character = profile?.character)
         if (HomeCardKind.DAILY in want) data = data.copy(daily = readState { cards.daily.load(today) })
         if (want.any { it in NEEDS_MONTH }) {
             data = data.copy(month = readState { deps.home.homeScreen.load(LoadHomeScreenRequest(periodForDate(today, payday), today, payday, includeHistory = false)) })
