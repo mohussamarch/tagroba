@@ -199,6 +199,9 @@ fun SmsHandoffHost() {
                 answer { s ->
                     val r = s.historyStart(q.senders, day)
                     if (r != null) toaster.show(t(UiKey.SMS_HISTORY_COUNTS, sentenceNumber(r.recorded), sentenceNumber(r.duplicates), sentenceNumber(r.waiting)), dark = true)
+                    // r041b P3 (ج): رسايل مستنية «أكّد الأشكال» ⇒ «رسائل البنك» على طول (قبل كده كانت بتستنى لحد ما يلاقيها في «المزيد»).
+                    // «كمّل بروفايلك» (لو اختاره) بيتفتح فوقها بعد التسليم ([SmsHandoff.next]) — ولما يقفله بيلاقيها
+                    if (openConfirmAfterHistory(r)) nav.push(BankSmsRoute)
                 }
             },
         )

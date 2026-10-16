@@ -31,6 +31,9 @@ class OnboardingGraph(c: AreaContext) : OnboardingDeps {
     /** مصر في كارت البلد (رد المالك §88-8): نفس طريق «البلدان» — بتتعمل وتتفتح في نفس الجلسة وبعدين التبديل لها. */
     override val spacesAdmin = c.shell.spacesAdmin
 
+    /** r041b P2: مسودة الإجابات على الجهاز (رجوع الجهاز أو قفل التطبيق في النص ⇒ الفتح الجاي بيكمّل من نفس الكارت). */
+    override val draft = c.env.onboardingDraft
+
     override val onboard: OnboardAccount by lazy {
         val people = ManagePeople(
             ManagePeopleDeps(r.people, r.obligations, r.settlements, r.settlementWriter, r.allocations, r.transactions, r.uow, c.env.ids, c.env.clock),

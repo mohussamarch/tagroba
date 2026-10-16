@@ -26,7 +26,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,6 +47,7 @@ import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.TonalButton
 import app.masroufy.ui.components.screenBackground
 import app.masroufy.ui.icons.Lucide
+import app.masroufy.ui.nav.HoldBack
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.imports.SmsHandoff
 import app.masroufy.ui.screens.more.DayGrid
@@ -84,8 +84,14 @@ fun OnboardingScreen() {
     remember(s.answers.countryCode) { followChosenCountry(s.answers); s.answers.countryCode }
     var saving by remember { mutableStateOf<OnbExit?>(null) }
     var failure by remember { mutableStateOf<String?>(null) }
+    // r041b P2: المسودة على الجهاز اتقرت؟ (قبلها ما بنكتبش — عشان الحالة الفاضية ما تمسحهاش)
+    var draftRead by remember(deps) { mutableStateOf(false) }
     LaunchedEffect(deps, reload) {
         loadFailed = false
+        if (!draftRead) {
+            s = resumeFrom(s, decodeDraft(runCatching { onb.draft?.read() }.getOrNull()))
+            draftRead = true
+        }
         val r = runCatching { onb.onboard.start() }
         // حساب قديم فيه اسم ونوع ⇒ «بماذا نناديك؟» بيبدأ بيهم (قبل ما الكارت يترسم)
         r.getOrNull()?.profile?.let { p -> s = prefillName(s, p.displayName, p.gender) }
@@ -94,6 +100,12 @@ fun OnboardingScreen() {
         if (start?.freshAccount == true && !s.fresh) s = s.copy(fresh = true, home = deps.space.countryCode, otherCountryMoney = onb.countryMoney != null)
         loadFailed = r.isFailure
         open = runCatching { deps.shell.spaces().map { it.space } }.getOrNull()?.takeIf { it.isNotEmpty() } ?: listOf(deps.space)
+    }
+    // r041b P2: كل تغيير في الإجابات أو الكارت بيتكتب على الجهاز (الفتح الجاي بيكمّل من هنا)
+    LaunchedEffect(s, draftRead) { if (draftRead) runCatching { onb.draft?.write(encodeDraft(s)) } }
+    // r041b P2: رجوع الجهاز = الكارت اللي قبله (والحفظ شغال ⇒ ولا حاجة) · أول كارت ⇒ التطبيق يتقفل — عمره ما يفتح رئيسية نص مبنية
+    HoldBack(OnboardingRoute) {
+        if (saving != null) true else systemBack(s)?.let { s = it; true } ?: false
     }
 
     /** «افتح الرئيسية» / «كمّل بروفايلك» — نفس الانتهاء بالظبط، والفرق بس الشاشة اللي بعده. */
@@ -121,6 +133,9 @@ fun OnboardingScreen() {
                         return@launch
                     }
                     if (target != null) runCatching { deps.shell.switchSpace(target) }
+                    // r041b P2: الرحلة خلصت ⇒ المسودة تتمسح (والشاشة بتتشال قبل ما تكتبها تاني)
+                    draftRead = false
+                    runCatching { onb.draft?.write(null) }
                     nav.pop()
                     // «رسائل البنك» ⇒ الرئيسية (أو «حسابك») والشرح ثم إذن النظام فوقها (`SmsHandoff`) — مش شاشة «رسائل البنك» من غير إذن
                     if (s.answers.source == OnbSource.SMS && bankSmsReadable()) SmsHandoff.start()
@@ -265,26 +280,3 @@ private fun LoadFailed(onRetry: () -> Unit) {
         TonalButton(t(UiKey.SHELL_RETRY), onClick = onRetry, height = 44.dp, modifier = Modifier.fillMaxWidth())
     }
 }
-
-/** الكارت اللي كان عليه يفضل لو الشاشة اتبنت من جديد (لفّ الجوال · رجوع من الخلفية) — «لو قفل في النص بيرجع لنفس الكارت». */
-private val OnbStateSaver = listSaver<OnbState, Any?>(
-    save = { st ->
-        val a = st.answers
-        listOf(st.step.name, null, a.countryCode, a.day, a.dayLater, a.source?.name, st.reply?.name, st.fresh, st.home, a.cashMinor,
-            a.bank?.bankKey, a.bank?.last4, a.bank?.openingMinor, st.otherCountryMoney, a.name, a.gender)
-    },
-    restore = { v ->
-        OnbState(
-            restoreStep(v[0]),
-            OnbAnswers(
-                v[2] as String?, v[3] as Int?, v[4] as Boolean, restoreSource(v[5]), v[9] as Long?,
-                (v[10] as String?)?.let { OnbBank(it, v[11] as String?, v[12] as Long?) },
-                name = v.getOrNull(14) as String?, gender = v.getOrNull(15) as String?,
-            ),
-            restoreReply(v[6]),
-            fresh = v[7] as Boolean,
-            home = v[8] as String?,
-            otherCountryMoney = v.getOrNull(13) as Boolean? ?: false,
-        )
-    },
-)

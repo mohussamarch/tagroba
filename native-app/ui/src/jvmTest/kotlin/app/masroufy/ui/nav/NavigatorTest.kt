@@ -136,4 +136,23 @@ class NavigatorTest {
         )
         assertEquals(listOf("Main", "Operations", "People", "Investment"), Tab.entries.map { it.boardName })
     }
+
+    /** r041b P2: شاشة ماسكة الرجوع (أول تشغيل) ⇒ رجوع الجهاز عمره ما يشيلها ويفتح الرئيسية؛ اللوحة فوقها بتتقفل الأول. */
+    @Test fun heldBackNeverPopsTheScreen() {
+        val nav = Navigator()
+        nav.push(Detail)
+        var card = 3
+        nav.holdBack(Detail) { if (card > 1) { card--; true } else false }
+        nav.push(Picker)
+        assertTrue(nav.back())
+        assertEquals(1, nav.sheets.size + nav.stack.size, "the sheet closes first, the screen stays")
+        assertTrue(nav.back())
+        assertTrue(nav.back())
+        assertEquals(1, card)
+        assertFalse(nav.back(), "first card ⇒ let the device leave the app")
+        assertEquals(Detail, nav.top?.route, "the held screen is never popped")
+        nav.holdBack(Detail, null)
+        assertTrue(nav.back())
+        assertNull(nav.top)
+    }
 }

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -203,7 +202,8 @@ private fun SheetFrame(
                 )
                 .semantics { dialog(); paneTitle = title }
                 .navigationBarsPadding()
-                .imePadding()
+                // r041b P7: مكان الكيبورد الأخير مرة واحدة (مش فريم بفريم) ⇒ الشرايح ثابتة لما الكيبورد يتقفل وأول ضغطة ما تضيعش
+                .sheetImePadding()
                 .padding(contentPadding)
                 .sheetStretchPadding(stretch.value, density)
                 .heightIn(min = minHeight),

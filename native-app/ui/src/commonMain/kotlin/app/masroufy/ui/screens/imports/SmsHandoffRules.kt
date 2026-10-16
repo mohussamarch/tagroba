@@ -56,3 +56,12 @@ fun homeEmptyBodyKey(readable: Boolean, readingOn: Boolean): UiKey = when {
     readingOn -> UiKey.HOME_EMPTY_BODY_READING
     else -> UiKey.HOME_EMPTY_BODY
 }
+
+/**
+ * r041b P3: رسايل البنك المستنية «أكّد الأشكال» مرة واحدة (كل رسايل الأشكال الجديدة، مش سطر لكل شكل) — للكارت في الرئيسية
+ * «عندك N رسالة من البنك مستنية تأكيدك». مفيش تقرير (الجهاز ما بيقراش · القراية فشلت) ⇒ 0 والكارت ما بيظهرش.
+ */
+fun smsShapeWaiting(report: app.masroufy.usecase.SmsHistoryReport?): Int = report?.shapes?.sumOf { it.count } ?: 0
+
+/** r041b P3 (ج): بعد «أيوه، اقرأها» في آخر أول تشغيل ⇒ «رسائل البنك» (قايمة «أكّد الأشكال») على طول لو فيه رسايل مستنياها. */
+fun openConfirmAfterHistory(report: app.masroufy.usecase.SmsHistoryReport?): Boolean = smsShapeWaiting(report) > 0
