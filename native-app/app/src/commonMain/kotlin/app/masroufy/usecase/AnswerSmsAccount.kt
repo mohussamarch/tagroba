@@ -47,10 +47,12 @@ class AnswerSmsAccount(private val wallets: WalletRepository) {
      * r041 A3: الرد على الرسالة [messageId] نفسها = تأكيد صريح من المالك ليها ⇒ بتتسجل على طول وشكلها بيتعلّم بنفس طريق «سجّل عملية
      * واحدة» (`AutoRecordSms.confirm` — §77-A)، وبعدين التشغيلة العادية للباقي. قبل كده الرد كان بيتحفظ والرسالة ترجع تستنى «أول رسالة
      * بهذا الشكل» فالمالك يدوس تاني. رسايل تانية بشكل تاني بتمشي على قاعدة التعلّم العادية.
+     * مراجعة r041 A3-1: السطور **الجديدة** بس. الرد عن أرقام الحساب مش اختيار لسطر «شبيه» بعملية موجودة (مثلًا «أيوه» نقل السطر لمحفظة فيها
+     * إدخال يدوي بنفس المبلغ واليوم والاتجاه) ⇒ الشبيه بيفضل مستني اختيار المالك الصريح، وعمره ما بيتسجل من الرد ده (كان بيتسجل مرتين).
      */
     suspend fun answerAndRecord(auto: AutoRecordSms, walletId: Id, last4: String, mine: Boolean, messageId: String?): AutoRecordResult {
         if (mine) mine(walletId, last4) else notMine(walletId, last4)
-        val confirmed = if (messageId.isNullOrBlank()) 0 else auto.confirm(listOf(messageId))
+        val confirmed = if (messageId.isNullOrBlank()) 0 else auto.confirm(listOf(messageId), similarToo = false)
         val result = auto.run()
         return result.copy(recorded = result.recorded + confirmed)
     }
