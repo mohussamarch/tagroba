@@ -115,6 +115,28 @@ class CoveredSmsRepairFixesTest {
         assertTrue(World(listOf(skipped("r1", "SMS:one", dateless)), importedAt = "2026-03-15T12:00:00Z").repair.previewAll().unrecorded.isEmpty())
     }
 
+    /**
+     * B-2: رسالة رسوم لوحدها اتسجلت قبل كده (عملية F) والتحويل بنفس الرسوم «الكشف غطّاه» ⇒ التسجيل بيكتب «#fee» على F (رسوم واحدة).
+     * «تراجع» لازم يشيله — كان بيفضل، والتطبيق التاني كان بيشوف F «محسوبة» ويعمل رسوم تانية (الرسوم مرتين).
+     */
+    @Test
+    fun undoRemovesTheFeeClaimSoReapplyingKeepsOneFee() = runBlocking {
+        val fee = txn("F", "2026-03-10", 575).copy(economicKind = EconomicKind.FEE, sourceOperationType = BankFeeCategory.NAME)
+        val transfer = "حوالة محلية صادرة\nمصرف:ANB\nمن:2222\nمبلغ:SAR 1000\nالى:TEST PERSON\nالرسوم:SAR 5.75\n26/03/10 09:10"
+        val w = World(listOf(skipped("r1", "SMS:t1", transfer)), extraTxns = listOf(fee), fees = true)
+        assertEquals(listOf("r1"), w.repair.previewAll().unrecorded.map { it.recordId })
+        val result = assertNotNull(w.repair.applyAll(emptySet(), setOf("r1")))
+        suspend fun claims() = w.sourceStore.listByTransactionIds(listOf("F")).filter { it.sourceReference?.endsWith("#fee") == true }
+        suspend fun fees() = w.all().filter { it.economicKind == EconomicKind.FEE }
+        assertEquals(1, claims().size, "رسوم التحويل اتحسبت على F")
+        assertEquals(listOf("F"), fees().map { it.id })
+        w.repair.undo(result.undo)
+        assertEquals(emptyList(), claims(), "«تراجع» رجّع كل حاجة بالحرف")
+        assertEquals((statement + fee).map { it.id }.toSet(), w.all().map { it.id }.toSet())
+        assertNotNull(w.repair.applyAll(emptySet(), setOf("r1")))
+        assertEquals(listOf("F"), fees().map { it.id }, "رسوم واحدة بعد التطبيق التاني")
+    }
+
     private fun txn(id: String, day: String, amount: Long) = Transaction(
         id = id, occurredAt = day, datePrecision = "day", sourceOrder = 1, economicKind = EconomicKind.UNCLASSIFIED,
         economicKindConfirmed = false, observedDirection = Direction.OUT, amountMinor = amount, currency = Currency.SAR, categoryConfirmed = false,

@@ -19,6 +19,8 @@ class RecordedLine(val line: ImportPreviewLine, val sms: SmsRow?, var transactio
 /**
  * اللي الأثر بيشوفه: الطلب · الدفعة · الوقت · [byOwner] (المالك هو اللي سجّل — مش التسجيل التلقائي) · التصنيفات اللي اختارها ·
  * السطور اللي اتسجلت · [extra] = عمليات زيادة الأثر بيضيفها (زي «رسوم بنكية» §77-B) **ومعاها سجل مصدرها** — بتتحفظ مع الدفعة.
+ * [claimed] = سجلات مصدر بيكتبها الأثر على عملية **موجودة** من غير عملية جديدة (علامة «#fee» — `SmsFeeTwins`) — بتتحفظ مع سجلات الدفعة،
+ * و«صلّح رسايل البنك القديمة» بيعدّها في اللي «تراجع» بيمسحه (مراجعة r041 B-2 — كانت بتتكتب على طول وتفضل بعد «تراجع»).
  */
 class RecordContext(
     val request: ImportRequest,
@@ -29,6 +31,7 @@ class RecordContext(
     val lines: MutableList<RecordedLine>,
     val extra: MutableList<Pair<Transaction, SourceRecord>>,
     val ids: IdGenerator,
+    val claimed: MutableList<SourceRecord> = mutableListOf(),
 )
 
 /**

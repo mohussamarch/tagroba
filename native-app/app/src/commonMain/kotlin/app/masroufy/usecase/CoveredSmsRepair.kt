@@ -126,11 +126,13 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
     /**
      * التسجيل — **جوه وحدة العمل** ([RepairOldSms.applyAll]): عملية لكل سطر بنفس بنّا التسجيل وعليها «مش في الكشف»، وسجل المصدر بيشاور عليها
      * (نفس الحالة اللي التسجيل بيكتبها لسطر جديد)، وعداد الدفعة. سجل الأول وبعده العملية (بروتوكول `ImportStatement`).
+     * مراجعة r041 B-2: علامات «#fee» اللي اتكتبت على رسوم موجودة ([RecordContext.claimed]) جوه اللي «تراجع» بيمسحه.
      */
     internal suspend fun record(chosen: List<Candidate>, now: String): CoveredWrite {
         val catDeps = buildCategorizeDeps(deps)
         val lineTxns = mutableListOf<Transaction>()
         val extra = mutableListOf<Pair<Transaction, SourceRecord>>()
+        val claimed = mutableListOf<SourceRecord>()
         val updated = mutableListOf<SourceRecord>()
         val batchesAfter = mutableListOf<ImportBatch>()
         for (group in chosen.groupBy { it.batch.id }.values) {
@@ -160,13 +162,14 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
                 }
                 lineTxns += prepared.lineTransactions.map { it.copy(notInStatement = true) }
                 extra += prepared.extra
+                claimed += prepared.context?.claimed.orEmpty()
                 written += prepared.lineTransactions.size + prepared.extra.size
             }
             val b = group.first().batch
             batchesAfter += b.copy(counts = b.counts.copy(imported = b.counts.imported + written, duplicates = (b.counts.duplicates - group.size).coerceAtLeast(0)))
         }
         val created = lineTxns + extra.map { it.first }
-        val createdRecords = extra.map { it.second }
+        val createdRecords = extra.map { it.second } + claimed
         deps.sources.saveMany(updated + createdRecords)
         deps.txns.saveMany(created)
         for (b in batchesAfter) deps.batches.save(b)

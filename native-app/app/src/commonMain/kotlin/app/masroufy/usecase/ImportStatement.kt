@@ -101,7 +101,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
             transactions += prepared.lineTransactions + prepared.extra.map { it.first }
             // عقد C0: الزيادة بتتحفظ مع الدفعة
             if (prepared.context != null) {
-                records += prepared.extra.map { it.second }
+                records += prepared.extra.map { it.second } + prepared.context.claimed
                 context = prepared.context
                 // مراجعة S2: عدد الدفعة = كل اللي اتكتب فيها (ومعاه زيادة الآثار زي «رسوم بنكية») — نفس اللي التراجع بيمسحه والسجل بيعرضه
                 batch = batch.copy(counts = batch.counts.copy(imported = transactions.size))

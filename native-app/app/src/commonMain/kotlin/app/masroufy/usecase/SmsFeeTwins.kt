@@ -44,15 +44,14 @@ internal class SmsFeeTwins(
         // نفس الدفعة الأول: سطر رسالة رسوم بنفس المبلغ والمحفظة واليوم — وبعدين اللي اتسجل قبل كده
         val twin = feeLines.map { it.transaction }.filter { twinOf(it, main, feeMinor) && it.id !in claimed }.nearest(day) ?: earlier(day, main, feeMinor) ?: return null
         claimed += twin.id
-        sources?.saveMany(
-            listOf(
-                SourceRecord(
-                    id = ctx.ids.next("src"), batchId = ctx.batchId, accountIdentity = ctx.request.accountIdentity, sourceReference = feeReference,
-                    sourceHash = hashContent(line.line.row.raw), originalRowIndex = line.line.row.lineNumber, rawLine = line.line.row.raw,
-                    transactionId = twin.id, matchingState = MatchingState.DUPLICATE, reason = uiText(UiKey.SMS_FEE_TWIN_REASON),
-                ),
-            ),
-        )
+        // مراجعة r041 B-2: بيتحفظ مع سجلات الدفعة ([RecordContext.claimed]) مش على طول — عشان «تراجع» التصليح يلاقيه ويمسحه
+        if (sources != null) {
+            ctx.claimed += SourceRecord(
+                id = ctx.ids.next("src"), batchId = ctx.batchId, accountIdentity = ctx.request.accountIdentity, sourceReference = feeReference,
+                sourceHash = hashContent(line.line.row.raw), originalRowIndex = line.line.row.lineNumber, rawLine = line.line.row.raw,
+                transactionId = twin.id, matchingState = MatchingState.DUPLICATE, reason = uiText(UiKey.SMS_FEE_TWIN_REASON),
+            )
+        }
         return twin.id
     }
 
