@@ -34,7 +34,7 @@ val HOLDING_GROUP_ORDER: List<HoldingGroup> = HoldingGroup.entries
 /** [filter] = الغرض اللي اتضغط عليه (null = الكل): المربعات بتعرض الحاجات اللي عليها الغرض ده بس، والشريط والإجمالي ثابتين. */
 fun holdingsView(snapshot: HoldingsSnapshot, filter: HoldingPurpose?): HoldingsViewModel {
     val items = snapshot.items
-    fun counted(item: HoldingValue) = snapshot.includePersonal || item.purpose != HoldingPurpose.PERSONAL
+    fun counted(item: HoldingValue) = snapshot.includePersonal || !item.personalLike
     val byPurpose = LinkedHashMap<HoldingPurpose, Halalas>()
     var total = 0L
     var investableKnown = 0
@@ -68,7 +68,7 @@ fun holdingsView(snapshot: HoldingsSnapshot, filter: HoldingPurpose?): HoldingsV
     val totalOrNull = if (investableKnown == 0 && unknown > 0) null else total
     return HoldingsViewModel(
         totalOrNull, strip, tiles, snapshot.goldPriceMissing, items.isEmpty(), unknown,
-        hasPersonal = items.any { it.purpose == HoldingPurpose.PERSONAL }, includePersonal = snapshot.includePersonal,
+        hasPersonal = items.any { it.personalLike }, includePersonal = snapshot.includePersonal,
     )
 }
 

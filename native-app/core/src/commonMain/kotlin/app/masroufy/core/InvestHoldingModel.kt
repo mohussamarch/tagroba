@@ -60,6 +60,9 @@ enum class HoldingType(val wire: String, val group: HoldingGroup, val defaultPur
     val metal: Boolean get() = group == HoldingGroup.METAL
     val property: Boolean get() = group == HoldingGroup.PROPERTY
 
+    /** بتخسر قيمتها (العربية · الجوال · الأجهزة) ⇒ زي الشخصي بالظبط مهما كان غرضها (رد المالك 2026-10-16 Q13). */
+    val losesValue: Boolean get() = group == HoldingGroup.PERSONAL
+
     companion object {
         fun fromWire(wire: String?): HoldingType? = entries.firstOrNull { it.wire == wire }
     }
@@ -104,6 +107,9 @@ data class HoldingValue(
     val jewellery: Boolean = false,
 ) {
     val group: HoldingGroup get() = type.group
+
+    /** تحت سؤال «تدخل الحاجات الشخصية في المجموع؟»: غرضها شخصي، أو بتخسر قيمتها (Q13) حتى لو غرضها اتغيّر. */
+    val personalLike: Boolean get() = purpose == HoldingPurpose.PERSONAL || type.losesValue
 }
 
 /** كل الحاجات غير المؤرشفة لبلد بعملتها. [goldPriceMissing] = فيه دهب من غير سعر النهارده ⇒ ملاحظة «حاجاتي» والدهب برّه الإجمالي. */
@@ -132,7 +138,7 @@ fun investableSplit(items: List<HoldingValue>, includePersonal: Boolean = false)
     var flat = 0L
     var unknown = 0
     for (item in items) {
-        if (item.purpose == HoldingPurpose.PERSONAL && !includePersonal) continue
+        if (item.personalLike && !includePersonal) continue
         val v = item.valueMinor
         if (v == null) { unknown++; continue }
         when (item.type.bucket()) {

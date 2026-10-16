@@ -2,6 +2,7 @@ package app.masroufy.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -33,6 +34,19 @@ class HoldingsViewTest {
 
         assertEquals(listOf(86, 7, 7), v.strip.map { it.percent })
         assertEquals(0, v.unknownCount) // الساعة شخصية ⇒ مش محسوبة في «غير المعروف» اللي برّه الإجمالي
+    }
+
+    @Test fun thingsThatLoseValueFollowThePersonalChoiceWhateverTheirPurpose() {
+        // رد المالك Q13: العربية والجوال زي الشخصي — حتى لو غرضها اتغيّر لـ«استثمار» بإيده
+        val phone = item("p", HoldingType.PHONE, HoldingPurpose.INVEST, 300_000)
+        val s = snapshot.copy(items = snapshot.items + phone)
+        assertEquals(13_000_000L, holdingsView(s, null).totalMinor)
+        assertEquals(14_300_000L, holdingsView(s.copy(includePersonal = true), null).totalMinor)
+        assertEquals(0L, investableSplit(s.items).noGrowthMinor)
+        assertEquals(1_300_000L, investableSplit(s.items, includePersonal = true).noGrowthMinor)
+        // من غير أي حاجة شخصية ولا بتخسر قيمتها ⇒ السؤال مش ظاهر
+        assertTrue(holdingsView(s.copy(items = listOf(phone)), null).hasPersonal)
+        assertFalse(holdingsView(s.copy(items = snapshot.items.take(3)), null).hasPersonal)
     }
 
     @Test fun ownerChoiceCanCountPersonalThings() {
