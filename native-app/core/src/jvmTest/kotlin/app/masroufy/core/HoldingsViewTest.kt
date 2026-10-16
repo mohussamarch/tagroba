@@ -1,0 +1,121 @@
+package app.masroufy.core
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+/** «حاجاتي» (مواصفة r05 §2.6) — بيانات مخترعة بالكامل. */
+class HoldingsViewTest {
+    private fun asset(id: String, kind: String = "other", holdingType: String? = null, purpose: String? = null, realEstate: Boolean = false) =
+        Asset(id, "حاجة $id", kind, "وحدة", Currency.SAR, archived = false, realEstate = realEstate, holdingType = holdingType, purpose = purpose)
+
+    private fun item(id: String, type: HoldingType, purpose: HoldingPurpose, value: Long?) =
+        HoldingValue(asset(id, holdingType = type.wire, purpose = purpose.wire), type, purpose, value, QUANTITY_SCALE)
+
+    private val snapshot = HoldingsSnapshot(
+        Currency.SAR,
+        listOf(
+            item("g", HoldingType.GOLD, HoldingPurpose.RESERVE, 1_000_000),
+            item("f", HoldingType.FLAT, HoldingPurpose.INVEST, 10_000_000),
+            item("s", HoldingType.STK, HoldingPurpose.INVEST, 2_000_000),
+            item("c", HoldingType.CAR, HoldingPurpose.PERSONAL, 1_000_000),
+            item("w", HoldingType.WATCH, HoldingPurpose.PERSONAL, null),
+        ),
+        goldPriceMissing = false,
+    )
+
+    @Test fun personalIsInTheStripButOutOfTheTotal() {
+        val v = holdingsView(snapshot, null)
+        assertEquals(13_000_000L, v.totalMinor)
+        assertEquals(listOf(HoldingPurpose.INVEST, HoldingPurpose.RESERVE, HoldingPurpose.PERSONAL), v.strip.map { it.purpose })
+        assertEquals(100, v.strip.sumOf { it.percent })
+
+        assertEquals(listOf(86, 7, 7), v.strip.map { it.percent })
+        assertEquals(0, v.unknownCount) // الساعة شخصية ⇒ مش محسوبة في «غير المعروف» اللي برّه الإجمالي
+    }
+
+    @Test fun tilesFollowTheFixedOrderAndUnknownIsNotZero() {
+        val v = holdingsView(snapshot, null)
+        assertEquals(
+            listOf(HoldingGroup.METAL, HoldingGroup.PROPERTY, HoldingGroup.SHARES, HoldingGroup.PERSONAL, HoldingGroup.COLLECTIBLES),
+            v.tiles.map { it.group },
+        )
+        assertNull(v.tiles.last().valueMinor) // المقتنيات كلها «غير متاح»
+        assertEquals(1, v.tiles.last().count)
+    }
+
+    @Test fun filterKeepsOnlyThatPurposeInTilesButNotInTheStrip() {
+        val v = holdingsView(snapshot, HoldingPurpose.INVEST)
+        assertEquals(listOf(HoldingGroup.PROPERTY, HoldingGroup.SHARES), v.tiles.map { it.group })
+        assertEquals(3, v.strip.size)
+        assertEquals(13_000_000L, v.totalMinor)
+    }
+
+    @Test fun allInvestableUnknownGivesNoTotalInsteadOfZero() {
+        val s = HoldingsSnapshot(Currency.SAR, listOf(item("g", HoldingType.GOLD, HoldingPurpose.INVEST, null)), goldPriceMissing = true)
+        val v = holdingsView(s, null)
+        assertNull(v.totalMinor)
+        assertTrue(v.goldPriceMissing)
+        assertEquals(1, v.unknownCount)
+        assertTrue(v.strip.isEmpty())
+    }
+
+    @Test fun emptySnapshot() {
+        val v = holdingsView(HoldingsSnapshot(Currency.EGP, emptyList(), false), null)
+        assertTrue(v.empty)
+        assertEquals(0L, v.totalMinor)
+        assertTrue(v.tiles.isEmpty())
+    }
+
+    @Test fun largestRemainderAlwaysSumsTo100() {
+        assertEquals(listOf(34, 33, 33), purposePercents(listOf(1, 1, 1)))
+        assertEquals(listOf(100), purposePercents(listOf(7)))
+        assertEquals(listOf(0, 0), purposePercents(listOf(0, 0)))
+        assertEquals(listOf(67, 33), purposePercents(listOf(2, 1)))
+        val odd = purposePercents(listOf(1_234_567, 7_654_321, 99, 3))
+        assertEquals(100, odd.sum())
+    }
+
+    @Test fun legacyKindsMapToTypes() {
+        assertEquals(HoldingType.GOLD, holdingTypeOf(asset("1", kind = "gold")))
+        assertEquals(HoldingType.SILVER, holdingTypeOf(asset("2", kind = "silver")))
+        assertEquals(HoldingType.STK, holdingTypeOf(asset("3", kind = "fund")))
+        assertEquals(HoldingType.FLAT, holdingTypeOf(asset("4", kind = "other", realEstate = true)))
+        assertEquals(HoldingType.OTHER, holdingTypeOf(asset("5", kind = "digital")))
+        assertEquals(HoldingType.SHOP, holdingTypeOf(asset("6", kind = "other", holdingType = "shop", realEstate = true)))
+    }
+
+    @Test fun jewelleryDefaultsToPersonalUnlessWritten() {
+        assertEquals(HoldingPurpose.PERSONAL, purposeOf(asset("1", kind = "gold"), jewellery = true))
+        assertEquals(HoldingPurpose.INVEST, purposeOf(asset("1", kind = "gold"), jewellery = false))
+        assertEquals(HoldingPurpose.RESERVE, purposeOf(asset("1", kind = "gold", purpose = "reserve"), jewellery = true))
+        assertEquals(HoldingPurpose.TRADE, purposeOf(asset("1", kind = "other", holdingType = "shop", realEstate = true), jewellery = false))
+    }
+
+    @Test fun investableSplitAndMixAreIntegerAndSkipPersonal() {
+        val split = investableSplit(snapshot.items + item("x", HoldingType.OTHER, HoldingPurpose.INVEST, 500_000) + item("y", HoldingType.CO, HoldingPurpose.TRADE, null))
+        assertEquals(InvestableSplit(10_000_000, 1_000_000, 2_000_000, 500_000, 1), split)
+        val e = AverageEntry("K", 0, "2015", "2024", true, false, "مصدر رسمي مخترع", null, "cagr")
+        val rates = InvestRates(cpiBp = 200, goldBp = 1000, sharesBp = 701, cpi = e, gold = e, shares = e)
+        // (10M·200 + 1M·1000 + 2M·701) ÷ 13M = 4_402_000_000 ÷ 13_000_000 = 338.6 ⇒ 338 (لتحت)
+        assertEquals(338, holdingsMixBp(split, rates))
+        assertNull(holdingsMixBp(InvestableSplit(0, 0, 0, 500_000, 0), rates))
+    }
+
+    @Test fun groupGrowthWithZeroRatesIsExactlyLinear() {
+        val g = growHoldingGroup(startMinor = 1_000_000, addMinor = 50_000, rateBp = 0, cpiBp = 0, years = 2)
+        assertEquals(listOf(1_000_000L, 1_000_000L, 1_000_000L), g.leave)
+        assertEquals(listOf(1_000_000L, 1_600_000L, 2_200_000L), g.plan)
+    }
+
+    @Test fun groupGrowthAtInflationRateStaysFlatInTodaysMoneyAndDeflatesAdditions() {
+        // العقار بيزيد زي الغلاء ⇒ بفلوس النهارده ثابت تقريبًا (فرق هللات من التقريب الشهري بس)
+        val g = growHoldingGroup(startMinor = 100_000_000, addMinor = 0, rateBp = 400, cpiBp = 400, years = 10)
+        assertEquals(11, g.leave.size)
+        for (v in g.leave) assertTrue(kotlin.math.abs(v - 100_000_000L) <= 200, "flat in today's money: $v")
+        val plan = growHoldingGroup(startMinor = 0, addMinor = 10_000, rateBp = 0, cpiBp = 1000, years = 1).plan
+        // 12 × 100 ر.س بعد سنة ÷ 1.10 = 1,090.91
+        assertEquals(listOf(0L, 109_091L), plan)
+    }
+}
