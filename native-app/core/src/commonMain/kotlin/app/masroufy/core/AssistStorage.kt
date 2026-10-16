@@ -63,6 +63,14 @@ sealed interface UserSetting {
     data class PeopleRow(val personIds: List<Id>, override val updatedAt: String) : UserSetting {
         override val key: String get() = PEOPLE_ROW_KEY
     }
+
+    /**
+     * كروت الرئيسية بترتيبك (اختيار المالك 2026-10-15 — `core/HomeCards.kt`): مستند واحد للحساب. [order] أسماء الكروت (`HomeCardKind.wire`)
+     * بالترتيب و[hidden] المخفيين. مفيش مستند = لسه ما رتبتش ⇒ الترتيب الأول.
+     */
+    data class HomeCards(val order: List<String>, val hidden: List<String>, override val updatedAt: String) : UserSetting {
+        override val key: String get() = HOME_CARDS_KEY
+    }
 }
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"

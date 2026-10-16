@@ -37,4 +37,7 @@ interface HomeDeps {
 
     /** أسماء التصنيفات في معاينة «طبّق قواعدك» (`list`). */
     val categories: ManageCategories
+
+    /** كروت الرئيسية بترتيبك (اختيار المالك 2026-10-15): الترتيب والمخفي · «تقدر تصرف النهارده» · «أكتر حاجة صرفت فيها» · «أهدافك». */
+    val cards: app.masroufy.ui.screens.home.cards.HomeCardsDeps
 }

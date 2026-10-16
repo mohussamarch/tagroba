@@ -44,4 +44,7 @@ class HomeGraph(c: AreaContext) : HomeDeps {
     override val history = ReviewHistory(CategorizeTransactionsDeps(r.transactions, r.merchants, r.categories, r.rules, r.uow, c.env.clock), r.wallets)
 
     override val categories = ManageCategories(ManageCategoriesDeps(r.categories, c.env.ids))
+
+    // كروت الرئيسية (اختيار المالك 2026-10-15) — «القادم» و«محتاجة مراجعة» و«آخر العمليات» من نفس التقويم وقراية الرئيسية اللي فوق
+    override val cards = HomeCardsGraph(c, calendar, homeScreen)
 }
