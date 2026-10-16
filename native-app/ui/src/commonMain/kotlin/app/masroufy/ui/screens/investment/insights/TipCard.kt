@@ -29,7 +29,6 @@ import app.masroufy.ui.components.rememberPress
 import app.masroufy.ui.components.tap
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
-import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -53,8 +52,7 @@ private val amberInk = Color(0xFF956000)
  * «كل النصايح ←» · «×» في الركن (بيتقفل وعمره ما يرجع).
  */
 @Composable
-internal fun TipCard(tip: TipView, onClose: () -> Unit) {
-    val nav = LocalNavigator.current
+internal fun TipCard(tip: TipView, onClose: () -> Unit, onAll: () -> Unit) {
     val shape = RoundedCornerShape(Radius.card)
     Box(
         Modifier.fillMaxWidth()
@@ -68,9 +66,11 @@ internal fun TipCard(tip: TipView, onClose: () -> Unit) {
                 LucideIcon(InsightIcons.BULB, size = 18.dp, tint = amberInk)
                 BasicText(tip.why, style = Type.of(13, FontWeight.Bold).copy(color = amberInk))
             }
-            BasicText(tip.text, style = Type.of(15, FontWeight.Bold, 1.6).copy(color = Ink.text))
+            BasicText(tip.title, style = Type.of(15, FontWeight.Bold, 1.6).copy(color = Ink.text))
+            // نص النصيحة من البنك الموثّق (النموذج كان سطر واحد — البنك فيه عنوان ونص: Claude choice ❓)
+            BasicText(tip.text, style = Type.of(13, lineHeight = 1.6).copy(color = Ink.soft))
             BasicText(tip.source, style = Type.of(12).copy(color = Ink.muted))
-            LinkText(t(InvestInsightKey.TIP_ALL)) { nav.push(InvestTipsRoute) }
+            LinkText(t(InvestInsightKey.TIP_ALL), onAll)
         }
         val press = rememberPress()
         Box(

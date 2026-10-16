@@ -1,51 +1,61 @@
 package app.masroufy.core
 
 /**
- * بنك نصايح «الاستثمار» (§87-12 · مواصفة النقل §1.7 · §2.7): كل نصيحة بمجموعتها وحالتها (لو ليها) ومصدرها الرسمي — اليوتيوبرز أفكار
- * بس وما بيظهروش هنا. كارت واحد في المرة: نصايح حالتك الأول بالترتيب، وبعدها العامة، من غير المقفولة (عمرها ما ترجع).
+ * نصايح «الاستثمار» (§87-12 · مواصفة النقل §1.7 · §1.8 · §2.7 · إجابة المالك 2026-10-16): **الموثّقة بس** من [VERIFIED_TIPS] — نصايح
+ * النموذج التمانية اتشالت لأن مصادرها لسه 🔎. كارت واحد في المرة: نصايح حالتك الأول بالترتيب، وبعدها الباقي بترتيب البنك، من غير
+ * المقفولة (عمرها ما ترجع) ومن غير نصايح البلد التانية.
  */
 enum class TipGroup(val title: InvestInsightKey) {
     START(InvestInsightKey.TIPS_GROUP_START),
     SPREAD(InvestInsightKey.TIPS_GROUP_SPREAD),
+    DEBT(InvestInsightKey.TIPS_GROUP_DEBT),
     PROTECT(InvestInsightKey.TIPS_GROUP_PROTECT),
     HALAL(InvestInsightKey.TIPS_GROUP_HALAL),
 }
 
 /** حالتك اللي بتختار النصيحة (Claude choice ❓ للترتيب والحدود — Q10). الترتيب هنا = ترتيب الأولوية. */
-enum class TipSituation { EMERGENCY, CONCENTRATED, SAVES_NOT_INVESTING, HAS_RETURNS }
-
-/** نصيحة واحدة. [why] = سطر «ليه دي» فوق النص (العامة: «نصيحة»). المصدر حسب البلد ([sourceFor]) — التحذيرات من هيئة البلد نفسها. */
-data class InvestTip(
-    val id: String,
-    val group: TipGroup,
-    val situation: TipSituation?,
-    val why: InvestInsightKey,
-    val text: InvestInsightKey,
-    private val source: InvestInsightKey,
-    private val sourceEgypt: InvestInsightKey = source,
-) {
-    fun sourceFor(countryCode: String?): InvestInsightKey = if (countryCode.equals(EGYPT_CODE, ignoreCase = true)) sourceEgypt else source
+enum class TipSituation(val why: InvestInsightKey) {
+    EMERGENCY(InvestInsightKey.TIP_WHY_EMERGENCY),
+    CONCENTRATED(InvestInsightKey.TIP_WHY_SPREAD),
+    SAVES_NOT_INVESTING(InvestInsightKey.TIP_WHY_MONTHLY),
+    HAS_RETURNS(InvestInsightKey.TIP_WHY_COMPOUND),
 }
 
-private const val EGYPT_CODE = "EG"
+/** عنوان ونص و«ليه مهمة» بنسخة واحدة (فصحى أو مصري). */
+data class TipWords(val title: String, val text: String, val why: String)
 
-/** البنك بترتيب صفحة «النصايح» (النموذج `InvestTipCard.dc.html` — TIPS). */
-val INVEST_TIPS: List<InvestTip> = listOf(
-    InvestTip("emergency", TipGroup.START, TipSituation.EMERGENCY, InvestInsightKey.TIP_WHY_EMERGENCY, InvestInsightKey.TIP_EMERGENCY, InvestInsightKey.SRC_EMERGENCY),
-    InvestTip("monthly", TipGroup.START, TipSituation.SAVES_NOT_INVESTING, InvestInsightKey.TIP_WHY_MONTHLY, InvestInsightKey.TIP_MONTHLY, InvestInsightKey.SRC_MONTHLY),
-    InvestTip("compound", TipGroup.START, TipSituation.HAS_RETURNS, InvestInsightKey.TIP_WHY_COMPOUND, InvestInsightKey.TIP_COMPOUND, InvestInsightKey.SRC_COMPOUND),
-    InvestTip("spread", TipGroup.SPREAD, TipSituation.CONCENTRATED, InvestInsightKey.TIP_WHY_SPREAD, InvestInsightKey.TIP_SPREAD, InvestInsightKey.SRC_SPREAD),
-    InvestTip("daytrade", TipGroup.PROTECT, null, InvestInsightKey.TIP_WHY_GENERAL, InvestInsightKey.TIP_DAYTRADE, InvestInsightKey.SRC_DAYTRADE),
-    InvestTip("influencer", TipGroup.PROTECT, null, InvestInsightKey.TIP_WHY_GENERAL, InvestInsightKey.TIP_INFLUENCER, InvestInsightKey.SRC_INFLUENCER),
-    InvestTip("fraud", TipGroup.PROTECT, null, InvestInsightKey.TIP_WHY_GENERAL, InvestInsightKey.TIP_FRAUD, InvestInsightKey.SRC_FRAUD_SA, InvestInsightKey.SRC_FRAUD_EG),
-    InvestTip("halal", TipGroup.HALAL, null, InvestInsightKey.TIP_WHY_GENERAL, InvestInsightKey.TIP_HALAL, InvestInsightKey.SRC_HALAL),
+/** المصدر الرسمي: الاسم · الرابط · يوم التأكد منه. */
+data class TipSource(val name: String, val url: String, val checkedAt: IsoDate)
+
+/** نصيحة من البنك الموثّق. [country] = "both" · "sa" · "eg". */
+data class BankTip(val id: String, val country: String, val risk: String, val group: TipGroup, val sa: TipWords, val eg: TipWords, val source: TipSource) {
+    fun fitsCountry(countryCode: String?): Boolean = country == "both" || country.equals(countryCode, ignoreCase = true)
+
+    /** المصري لمساحة مصر بالمصري، وإلا الفصحى (الإنجليزي كمان — مفيش نسخة إنجليزي في البنك، سؤال مفتوح). */
+    fun words(variant: ArabicVariant, language: Language): TipWords = if (language == Language.AR && variant == ArabicVariant.EGYPTIAN) eg else sa
+}
+
+/**
+ * نصايح كل حالة (Claude choice ❓ — من البنك الموثّق بس؛ حالة مالهاش نصيحة موثّقة ⇒ ما بتغيّرش الترتيب):
+ * طوارئ ⇒ صندوق الطوارئ · كله في نوع ⇒ «لا استثمار مضمون، فوزّع» · بيحوّش ومش بيستثمر ⇒ «اربط كل استثمار بهدف» و«النقد المعطّل» ·
+ * فيه أرباح بترجع ⇒ مفيش نصيحة موثّقة عن إعادة الاستثمار لسه.
+ */
+val SITUATION_TIPS: Map<TipSituation, List<String>> = mapOf(
+    TipSituation.EMERGENCY to listOf("emergency-fund-first"),
+    TipSituation.CONCENTRATED to listOf("no-guarantee-diversify"),
+    TipSituation.SAVES_NOT_INVESTING to listOf("match-money-to-goal-horizon", "idle-cash-loses-value"),
+    TipSituation.HAS_RETURNS to emptyList(),
 )
 
-/** الطابور: نصايح كل حالة متحققة بالترتيب ⇒ العامة ⇒ من غير المقفولة. أول واحدة = الكارت. فاضي ⇒ الكارت ما بيترسمش. */
-fun tipQueue(situations: List<TipSituation>, closed: Set<String>): List<InvestTip> {
-    val matched = situations.distinct().flatMap { s -> INVEST_TIPS.filter { it.situation == s } }
-    val general = INVEST_TIPS.filter { it.situation == null }
-    return (matched + general).filter { it.id !in closed }
+/** نصيحة في الطابور + الحالة اللي جابتها (null = عامة ⇒ «نصيحة»). */
+data class QueuedTip(val tip: BankTip, val situation: TipSituation?)
+
+/** الطابور: نصايح كل حالة متحققة بالترتيب ⇒ باقي البنك بترتيبه ⇒ من غير المقفولة ونصايح البلد التانية. فاضي ⇒ الكارت ما بيترسمش. */
+fun tipQueue(situations: List<TipSituation>, closed: Set<String>, countryCode: String?, bank: List<BankTip> = VERIFIED_TIPS): List<QueuedTip> {
+    val byId = bank.associateBy { it.id }
+    val matched = situations.distinct().flatMap { s -> SITUATION_TIPS[s].orEmpty().mapNotNull { id -> byId[id]?.let { QueuedTip(it, s) } } }
+    val rest = bank.filter { t -> matched.none { it.tip.id == t.id } }.map { QueuedTip(it, null) }
+    return (matched.distinctBy { it.tip.id } + rest).filter { it.tip.id !in closed && it.tip.fitsCountry(countryCode) }
 }
 
 /** المقفولة بعد «×»: القديمة + الجديدة من غير تكرار (بالترتيب). */

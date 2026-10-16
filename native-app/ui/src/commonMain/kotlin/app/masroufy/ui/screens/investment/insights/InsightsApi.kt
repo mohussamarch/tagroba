@@ -23,7 +23,9 @@ import app.masroufy.core.InvestRatesState
 import app.masroufy.core.Space
 import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
+import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.screens.home.ReadState
+import app.masroufy.ui.screens.more.IncomeSourcesRoute
 import app.masroufy.ui.theme.Radius
 import app.masroufy.usecase.ReturnsView
 import app.masroufy.usecase.TipView
@@ -73,7 +75,9 @@ fun rememberInsights(deps: InvestInsightsDeps, holdings: HoldingsSnapshot?, rate
 fun LazyListScope.investTipItem(state: InsightsState) {
     when (val s = state.tip) {
         ReadState.Loading -> item(key = "tip") { SectionSkeleton(112) }
-        is ReadState.Ready -> s.value?.let { tip -> item(key = "tip") { TipCard(tip, onClose = { state.closeTip(tip.id) }) } }
+        is ReadState.Ready -> s.value?.let { tip ->
+            item(key = "tip") { val nav = LocalNavigator.current; TipCard(tip, onClose = { state.closeTip(tip.id) }, onAll = { nav.push(InvestTipsRoute) }) }
+        }
         ReadState.Failed -> Unit
     }
 }
@@ -83,7 +87,7 @@ fun LazyListScope.incomeRopeItem(state: InsightsState) {
     item(key = "rope") {
         when (val s = state.rope) {
             ReadState.Loading -> SectionSkeleton(210)
-            is ReadState.Ready -> IncomeRopeCard(s.value)
+            is ReadState.Ready -> { val nav = LocalNavigator.current; IncomeRopeCard(s.value) { nav.push(IncomeSourcesRoute) } }
             ReadState.Failed -> FailedSection(app.masroufy.core.InvestInsightKey.ROPE_TITLE)
         }
     }

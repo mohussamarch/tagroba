@@ -46,7 +46,8 @@ private fun TipGroupBlock(g: TipGroupView) {
         for (tip in g.tips) {
             FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BasicText(tip.text, style = Type.of(14, FontWeight.Bold, 1.6).copy(color = Ink.text))
+                    BasicText(tip.title, style = Type.of(14, FontWeight.Bold, 1.6).copy(color = Ink.text))
+                    BasicText(tip.text, style = Type.of(13, lineHeight = 1.6).copy(color = Ink.soft))
                     BasicText(tip.source, style = Type.of(12).copy(color = Ink.muted))
                 }
             }

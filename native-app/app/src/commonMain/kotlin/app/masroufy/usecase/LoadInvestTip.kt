@@ -6,7 +6,9 @@ import app.masroufy.core.DEFAULT_PAYDAY
 import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.HoldingsSnapshot
-import app.masroufy.core.INVEST_TIPS
+import app.masroufy.core.BankTip
+import app.masroufy.core.Texts
+import app.masroufy.core.VERIFIED_TIPS
 import app.masroufy.core.InvestInsightKey
 import app.masroufy.core.IsoDate
 import app.masroufy.core.Space
@@ -33,10 +35,10 @@ import app.masroufy.port.ProfileRepository
 import app.masroufy.port.TransactionRepository
 import app.masroufy.port.UserSettingsStore
 
-/** كارت النصيحة: [why] سطر «ليه دي» · [text] النصيحة · [source] «المصدر: …» جاهزة للعرض. */
-data class TipView(val id: String, val why: String, val text: String, val source: String)
+/** كارت النصيحة: [why] سطر «ليه دي» (حالتك أو «نصيحة») · [title] و[text] من البنك الموثّق · [source] «المصدر: …» جاهزة للعرض. */
+data class TipView(val id: String, val why: String, val title: String, val text: String, val source: String)
 
-data class TipLine(val id: String, val text: String, val source: String)
+data class TipLine(val id: String, val title: String, val text: String, val source: String)
 
 data class TipGroupView(val title: String, val tips: List<TipLine>)
 
@@ -59,19 +61,25 @@ data class LoadInvestTipDeps(
 class LoadInvestTip(private val deps: LoadInvestTipDeps) {
     suspend fun current(today: IsoDate, holdings: HoldingsSnapshot?): TipView? {
         val closed = closedIds().toSet()
-        val queue = tipQueue(situationsOf(facts(today, holdings)), closed)
-        val tip = queue.firstOrNull() ?: return null
-        return TipView(tip.id, uiText(tip.why), uiText(tip.text), uiText(InvestInsightKey.TIP_SOURCE, uiText(tip.sourceFor(deps.countryCode))))
+        val queued = tipQueue(situationsOf(facts(today, holdings)), closed, deps.countryCode).firstOrNull() ?: return null
+        val w = queued.tip.words(Texts.arabicVariant, Texts.language)
+        return TipView(queued.tip.id, uiText(queued.situation?.why ?: InvestInsightKey.TIP_WHY_GENERAL), w.title, w.text, sourceLine(queued.tip))
     }
 
     suspend fun close(tipId: String) {
-        if (INVEST_TIPS.none { it.id == tipId }) return
+        if (VERIFIED_TIPS.none { it.id == tipId }) return
         deps.settings.save(UserSetting.InvestTips(closeTip(closedIds(), tipId), deps.clock.nowIso()))
     }
 
+    /** صفحة «النصايح»: نصايح البلد دي بس (والمشتركة)، مجموعة فاضية ما بتظهرش. */
     fun all(space: Space): List<TipGroupView> = TipGroup.entries.map { g ->
-        TipGroupView(uiText(g.title), INVEST_TIPS.filter { it.group == g }.map { TipLine(it.id, uiText(it.text), uiText(it.sourceFor(space.countryCode))) })
-    }
+        TipGroupView(uiText(g.title), VERIFIED_TIPS.filter { it.group == g && it.fitsCountry(space.countryCode) }.map {
+            val w = it.words(Texts.arabicVariant, Texts.language)
+            TipLine(it.id, w.title, w.text, sourceLine(it))
+        })
+    }.filter { it.tips.isNotEmpty() }
+
+    private fun sourceLine(tip: BankTip) = uiText(InvestInsightKey.TIP_SOURCE, tip.source.name)
 
     private suspend fun closedIds(): List<String> =
         deps.settings.listAll().filterIsInstance<UserSetting.InvestTips>().firstOrNull()?.closed.orEmpty()

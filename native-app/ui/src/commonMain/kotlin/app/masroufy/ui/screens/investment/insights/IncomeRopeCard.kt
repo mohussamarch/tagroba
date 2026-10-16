@@ -31,8 +31,6 @@ import app.masroufy.core.parseIsoDate
 import app.masroufy.core.sentenceNumber
 import app.masroufy.core.shiftMonths
 import app.masroufy.ui.components.FloatingCard
-import app.masroufy.ui.nav.LocalNavigator
-import app.masroufy.ui.screens.more.IncomeSourcesRoute
 import app.masroufy.ui.text.BasicText
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
@@ -115,8 +113,7 @@ internal fun ropeUi(rope: IncomeRope): RopeUi {
 
 /** «حبل مصادر دخلك» (`InvestIncomeRope.dc.html`): العدد · الحبل · المفتاح · سطر الخلاصة · «مصادر الدخل ←» (دايمًا). */
 @Composable
-internal fun IncomeRopeCard(rope: IncomeRope?) {
-    val nav = LocalNavigator.current
+internal fun IncomeRopeCard(rope: IncomeRope?, onLink: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(InvestInsightKey.ROPE_TITLE), style = Type.of(16, FontWeight.Bold).copy(color = Ink.text))
@@ -133,7 +130,7 @@ internal fun IncomeRopeCard(rope: IncomeRope?) {
                 for (g in ui.legend) LegendRow(g)
                 BasicText(ui.line, style = Type.of(12, lineHeight = 1.6).copy(color = Ink.soft))
             }
-            LinkText(t(InvestInsightKey.ROPE_LINK)) { nav.push(IncomeSourcesRoute) }
+            LinkText(t(InvestInsightKey.ROPE_LINK), onLink)
         }
     }
 }
