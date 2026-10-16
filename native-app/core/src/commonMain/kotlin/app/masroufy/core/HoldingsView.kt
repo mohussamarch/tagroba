@@ -117,10 +117,12 @@ fun growHoldingGroup(startMinor: Halalas, addMinor: Halalas, rateBp: Int, cpiBp:
     var b = startMinor
     val leave = ArrayList<Halalas>(years + 1)
     val plan = ArrayList<Halalas>(years + 1)
+    // بيزيد زي الغلاء بالظبط (العقار) ⇒ بفلوس النهارده البداية هي هي — من غير فرق تقريب الشهور (سموك r05: أرض 300,000 كانت «≈ 299,999»)
+    val flat = rateBp == cpiBp
     for (t in 0..years * 12) {
         if (t % 12 == 0) {
-            leave += deflate(a, t, cpiBp)
-            plan += deflate(b, t, cpiBp)
+            leave += if (flat) startMinor else deflate(a, t, cpiBp)
+            plan += if (flat) addMoney(startMinor, deflate(subtractMoney(b, a), t, cpiBp)) else deflate(b, t, cpiBp)
         }
         if (t == years * 12) break
         a = addMoney(a, mulDivWide(a, m, MONTHLY_RATE_SCALE))

@@ -134,10 +134,14 @@ class HoldingsViewTest {
     }
 
     @Test fun groupGrowthAtInflationRateStaysFlatInTodaysMoneyAndDeflatesAdditions() {
-        // العقار بيزيد زي الغلاء ⇒ بفلوس النهارده ثابت تقريبًا (فرق هللات من التقريب الشهري بس)
+        // العقار بيزيد زي الغلاء ⇒ بفلوس النهارده ثابت بالظبط (مش «≈ 299,999» لأرض 300,000)
         val g = growHoldingGroup(startMinor = 100_000_000, addMinor = 0, rateBp = 400, cpiBp = 400, years = 10)
         assertEquals(11, g.leave.size)
-        for (v in g.leave) assertTrue(kotlin.math.abs(v - 100_000_000L) <= 200, "flat in today's money: $v")
+        assertEquals(List(11) { 100_000_000L }, g.leave)
+        assertEquals(List(11) { 30_000_000L }, growHoldingGroup(30_000_000, 0, 174, 174, 10).leave)
+        val added = growHoldingGroup(startMinor = 30_000_000, addMinor = 50_000, rateBp = 174, cpiBp = 174, years = 3).plan
+        assertEquals(30_000_000L, added[0])
+        assertTrue(added[3] > 30_000_000L + 50_000L * 34 && added[3] <= 30_000_000L + 50_000L * 36) // الإضافات بفلوس النهارده
         val plan = growHoldingGroup(startMinor = 0, addMinor = 10_000, rateBp = 0, cpiBp = 1000, years = 1).plan
         // 12 × 100 ر.س بعد سنة ÷ 1.10 = 1,090.91
         assertEquals(listOf(0L, 109_091L), plan)
