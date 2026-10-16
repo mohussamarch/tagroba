@@ -175,10 +175,12 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, openLook: B
                     if (email != null) BasicText(email, style = Type.of(13).copy(color = Ink.muted, textAlign = TextAlign.End, textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
                 }
             }
-            // نسبة «ملفك %» مالهاش حسبة في كوتلن لسه (OVERRIDES §76 «ناقص») ⇒ من غير شريط ولا رقم
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            // نسبة «ملفك %» مالهاش حسبة في كوتلن لسه (OVERRIDES §76 «ناقص») ⇒ r041 A7 / §91 «قرارات المالك عن البداية»-2: السطر كله
+            // بيستخبى لحد ما يبقى فيه رقم (سطر «غير متاح» من غير قيمة في الملف = زحمة)
+            val percent = me?.profilePercent
+            if (percent != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
-                if (me?.profilePercent == null) NotYetBadge() else BasicText(app.masroufy.core.sentenceNumber(me.profilePercent) + "%", style = Type.of(13, FontWeight.Bold))
+                BasicText(app.masroufy.core.sentenceNumber(percent) + "%", style = Type.of(13, FontWeight.Bold))
             }
             LookButton(me?.lookIndex ?: 1, openLook)
         }
