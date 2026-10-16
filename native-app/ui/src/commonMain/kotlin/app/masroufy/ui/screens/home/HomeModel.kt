@@ -43,7 +43,9 @@ sealed interface HomeLoad {
 data class AdvisorCard(val threadKey: String, val title: String, val body: String)
 
 fun homeMonthOf(data: HomeScreenData, nextPayday: IsoDate?): HomeMonth =
-    HomeMonth(data.expenseMinor, data.partial, data.transactionCount, nextPayday)
+    // سموك r05: راتب نزل قبل يوم الشهر بيتحسب للشهر الجاي (مش في [HomeScreenData.transactionCount]) بس بيظهر في «آخر العمليات» ⇒
+    // الشهر مش «فاضي» (مكانش ينفع «لا توجد عمليات هذا الشهر» والعملية قدامك)
+    HomeMonth(data.expenseMinor, data.partial, data.transactionCount + data.countedInNextPeriod.size, nextPayday)
 
 /** أحدث تنبيه من المساعد مش مقفول — الصفحة مرتبة الأحدث الأول (`RunAlertEngine.inbox`)، و[gone] = اللي اتمسح بـ«×». */
 fun advisorCardOf(inbox: List<AlertInboxView>, gone: Set<String> = emptySet()): AdvisorCard? =
