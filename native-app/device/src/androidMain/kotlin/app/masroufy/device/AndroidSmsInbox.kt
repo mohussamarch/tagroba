@@ -75,6 +75,10 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
     override suspend fun setSalaryAnswer(spaceId: String, sender: String, answer: Boolean?) =
         withStore { it.setSalaryAnswer(uid, spaceId, smsSenderKey(sender), answer) }
 
+    override suspend fun handoffCard(): String? = withStore { it.handoffCard(uid) }
+
+    override suspend fun setHandoffCard(value: String?) = withStore { it.setHandoffCard(uid, value) }
+
     // ── §83 «يقرا كل التاريخ ويكمّل الناقص لوحده» ──
 
     override suspend fun oldestMessageAt(senders: List<String>): String? = withContext(Dispatchers.IO) {

@@ -74,7 +74,8 @@ data class BalanceExplanation(
     val review: BalanceReview,
 )
 
-private fun titleOf(t: Transaction): String = (t.rawMerchantName ?: t.rawDescription ?: t.note ?: "").trim()
+// r041 A4: نفس اسم الصف والتفاصيل (`displayTitleOf`) — كان الوصف كله بسطوره قبل الملاحظة
+private fun titleOf(t: Transaction): String = displayTitleOf(t)
 
 private fun itemOf(t: Transaction, direction: Direction, source: BalanceSource) =
     BalanceItem(t.id, t.occurredAt, t.amountMinor, direction, titleOf(t), t.currency, source)

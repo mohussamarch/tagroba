@@ -5,7 +5,7 @@ package app.masroufy.core
  * فصحى مختصرة للسعودية (من غير كلام مصري — §66/§88-7) · مصري لمصر · إنجليزي.
  */
 internal val MSA_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
-    TextKey.SMS_WAIT_UNKNOWN_ACCOUNT to "رقم الحساب في الرسالة لا يطابق أي محفظة لديك. هل هذا الحساب لك؟ أضفه محفظة أو اكتب آخر 4 أرقام منه في محفظته، وإن كان حساب شخص آخر فتجاهل الرسالة",
+    TextKey.SMS_WAIT_UNKNOWN_ACCOUNT to "رقم الحساب في الرسالة لا يطابق أي محفظة لديك. إن كان حسابك فاختر «نعم» وحدّد محفظته. وإن كان حساب شخص آخر فاختر «لا»: نسجّلها مالًا له أو منه، ولن نسألك عن هذا الرقم مرة أخرى.",
     TextKey.SMS_COVERED_BY_STATEMENT to "كشف الحساب المستورد يغطي هذا اليوم (حتى {0})؛ لذلك لم تُضف الرسالة عملية جديدة",
     TextKey.SMS_REPAIR_ENTRY to "تصحيح رسائل البنك القديمة",
     TextKey.SMS_REPAIR_TITLE to "تصحيح رسائل البنك القديمة",
@@ -21,7 +21,7 @@ internal val MSA_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
 )
 
 internal val EGYPTIAN_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
-    TextKey.SMS_WAIT_UNKNOWN_ACCOUNT to "رقم الحساب في الرسالة مش لأي محفظة عندك. الحساب ده بتاعك؟ ضيفه محفظة أو اكتب آخر 4 أرقام منه في محفظته، ولو حساب حد تاني تجاهل الرسالة",
+    TextKey.SMS_WAIT_UNKNOWN_ACCOUNT to "رقم الحساب في الرسالة مش لأي محفظة عندك. لو حسابك اختار «أيوه» وحدّد محفظته. ولو حساب حد تاني اختار «لأ»: هنسجّلها فلوس ليه أو منه، ومش هنسألك عن الرقم ده تاني.",
     TextKey.SMS_COVERED_BY_STATEMENT to "كشف الحساب اللي استوردته مغطّي اليوم ده (لحد {0})؛ عشان كده الرسالة ما اتضافتش عملية جديدة",
     TextKey.SMS_REPAIR_ENTRY to "صلّح رسايل البنك القديمة",
     TextKey.SMS_REPAIR_TITLE to "صلّح رسايل البنك القديمة",
@@ -37,7 +37,7 @@ internal val EGYPTIAN_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
 )
 
 internal val ENGLISH_SMS_FIX_TEXTS: Map<TextKey, String> = mapOf(
-    TextKey.SMS_WAIT_UNKNOWN_ACCOUNT to "The account number in this message doesn't match any of your wallets. Is this account yours? Add it as a wallet or type its last 4 digits in its wallet; if it's someone else's account, ignore the message",
+    TextKey.SMS_WAIT_UNKNOWN_ACCOUNT to "The account number in this message doesn't match any of your wallets. If it's yours, choose \"Yes\" and pick its wallet. If it's someone else's, choose \"No\": we record it as money to or from them, and won't ask about this number again.",
     TextKey.SMS_COVERED_BY_STATEMENT to "Your imported statement already covers this day (up to {0}), so the message wasn't added as a new transaction",
     TextKey.SMS_REPAIR_ENTRY to "Fix old bank messages",
     TextKey.SMS_REPAIR_TITLE to "Fix old bank messages",

@@ -82,8 +82,17 @@ interface SmsDeps {
     /**
      * OVERRIDES §91-1 — «الحساب ده بتاعك؟» ([WaitLineUi.askLast4]): [mine] ⇒ الأرقام على المحفظة [walletId] اللي اختارها · لأ ⇒ «مش بتاعي» على محفظة
      * الرسالة. وبعدها تشغيلة بتسجّل المستني. الافتراضي: مفيش.
+     * r041 A3: [messageId] = الرسالة اللي المالك رد عليها — بتتسجل على طول وشكلها بيتعلّم (الرد تأكيد صريح ليها).
      */
-    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean): AutoRecordResult? = null
+    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String? = null): AutoRecordResult? = null
+
+    /** r041 A10: كارت «اسمح بقراءة رسائل البنك» على الجهاز ده (`SmsInboxPort.handoffCard`). الافتراضي: مفيش. */
+    suspend fun handoffCard(): String? = null
+
+    suspend fun setHandoffCard(value: String?) {}
+
+    /** r041 A8: القراءة شغالة على الجهاز ده (مفعّلة والإذن موجود) — للرئيسية الفاضية. الافتراضي: لأ. */
+    suspend fun readingOn(): Boolean = false
 
     /** تفعيل القراية بالمرسلين دول (الإذن قبلها من `LocalPermissions`). */
     suspend fun enable(senders: List<String>): InboxView

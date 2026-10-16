@@ -53,6 +53,9 @@ sealed interface LinkedInflowsView {
     data object None : LinkedInflowsView
 }
 
+/** r041 A11 — اللي اتفك ([inflowId] كانت تابعة لـ[expenseId]) عشان «تراجع» يرجّعه. */
+data class UnlinkUndo(val inflowId: Id, val expenseId: Id)
+
 /**
  * §6.5-14 «عمليات تابعة» — الربط والفك. **الرصيد ما بيتغيرش**: النوع والمبلغ والمحفظة ما بيتلمسوش، حقلين اختياريين بس
  * (`linkedExpenseId` على الداخلة · `linkedInflowMinor` على المصروف = مجموع التابعة، بيتحسب من جديد من النافذة مع كل كتابة).
@@ -96,16 +99,25 @@ class LinkInflows(private val deps: LinkInflowsDeps) {
     }
 
     /** يفك الداخلة [inflowId] من مصروفها — false = مش تابعة لحاجة. المصروف (لو موجود) بيرجع بمجموع الباقي. */
-    suspend fun unlink(inflowId: Id): Boolean = deps.uow.run {
+    suspend fun unlink(inflowId: Id): Boolean = unlinkWithUndo(inflowId) != null
+
+    /**
+     * r041 A11 — نفس [unlink] بس بيرجّع اللي يلزم لـ«تراجع» (8 ثواني في الشاشة): null = مش تابعة لحاجة (ولا حاجة اتكتبت).
+     * التراجع = [relink] (نفس فحوص [link] — لو المصروف اتمسح أو الحد اتغير بيرجع سبب الرفض).
+     */
+    suspend fun unlinkWithUndo(inflowId: Id): UnlinkUndo? = deps.uow.run {
         val inflow = fresh(inflowId)
-        val expenseId = inflow?.linkedExpenseId ?: return@run false
+        val expenseId = inflow?.linkedExpenseId ?: return@run null
         val expense = fresh(expenseId)
         val rest = expense?.let { e -> windowOf(e).filter { it.linkedExpenseId == e.id && it.observedDirection == Direction.IN && it.id != inflowId } }
         val now = deps.clock.nowIso()
         deps.txns.update(inflowId, TransactionPatch(clearLinkedExpenseId = true, updatedAt = now))
         if (expense != null && rest != null) resum(expense, rest, now)
-        true
+        UnlinkUndo(inflowId, expenseId)
     }
+
+    /** «تراجع» بعد «فك الربط»: يربطها تاني بنفس المصروف — آمن التكرار (مربوطة فعلًا ⇒ ولا كتابة). null = رجعت · غير كده سبب الرفض. */
+    suspend fun relink(undo: UnlinkUndo): LinkRefusal? = link(undo.expenseId, listOf(undo.inflowId))
 
     private suspend fun fresh(id: Id): Transaction? = deps.txns.findByIds(listOf(id)).singleOrNull()
 

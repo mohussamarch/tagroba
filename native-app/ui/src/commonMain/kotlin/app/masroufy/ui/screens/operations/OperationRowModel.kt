@@ -17,6 +17,8 @@ import app.masroufy.core.Bank
 import app.masroufy.core.bankForWallet
 import app.masroufy.core.dayMonth
 import app.masroufy.core.dayNumberToIso
+import app.masroufy.core.displayTitleOf
+import app.masroufy.core.titleIsPartyOf
 import app.masroufy.core.groupByDay
 import app.masroufy.core.parseIsoDate
 import app.masroufy.core.ruleFor
@@ -74,10 +76,8 @@ class RowContext(
 /** نبرة المبلغ: التحويل بين محافظك محايد من غير علامة · الداخل أخضر «+» · الطالع أحمر «−» (DESIGN-SYSTEM · `MoveLook.kt`). */
 fun toneOf(tx: Transaction): AmountTone = moneyToneOf(tx)
 
-/** اسم العملية: التاجر المعروف ⇒ الاسم من المصدر ⇒ ملاحظتك ⇒ الوصف ⇒ اسم النوع. */
-fun titleOf(tx: Transaction, ctx: RowContext): String =
-    ctx.merchant(tx.id) ?: tx.rawMerchantName?.takeIf { it.isNotBlank() } ?: tx.note?.takeIf { it.isNotBlank() }
-        ?: tx.rawDescription?.trim()?.takeIf { it.isNotEmpty() } ?: ruleFor(tx.economicKind).label
+/** اسم العملية (r041 A4 — `displayTitleOf`): التاجر المعروف ⇒ الاسم من المصدر ⇒ ملاحظتك ⇒ طرف التحويل ⇒ أول سطر من الوصف ⇒ اسم النوع. */
+fun titleOf(tx: Transaction, ctx: RowContext): String = displayTitleOf(tx, ctx.merchant(tx.id))
 
 /**
  * السطر التاني: التصنيف · أو النوع · أو الطرف · أو «بلا تصنيف». التحويل بين محافظك: «من البنك ← إلى الكاش» (الطرف اللي مش محفظة هنا ⇒
@@ -87,7 +87,8 @@ fun subtitleOf(tx: Transaction, ctx: RowContext): String {
     val kind = ruleFor(tx.economicKind)
     if (isOwnMove(tx)) return moveLineOf(tx) { ctx.wallet(it)?.name } ?: kind.label
     ctx.category(tx.categoryId)?.let { return it.name }
-    transferPartyOf(tx)?.let { party ->
+    // r041 A4: العنوان هو الطرف نفسه ⇒ ما نكررهوش («TEST FRIEND / إلى TEST FRIEND») — النوع أو «بلا تصنيف»
+    if (!titleIsPartyOf(tx, ctx.merchant(tx.id))) transferPartyOf(tx)?.let { party ->
         val who = party.label.ifBlank { party.last4?.let { t(UiKey.OPERATIONS_ROW_ACCOUNT, sentenceDigitsOf(it)) }.orEmpty() }
         if (who.isNotBlank()) return t(if (tx.observedDirection == Direction.IN) UiKey.OPERATIONS_ROW_FROM else UiKey.OPERATIONS_ROW_TO, who)
     }

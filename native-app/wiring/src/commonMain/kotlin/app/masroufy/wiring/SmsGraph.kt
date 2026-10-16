@@ -106,11 +106,14 @@ internal class SmsGraph(
         return auto.run()
     }
 
-    override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean): AutoRecordResult {
-        val answer = AnswerSmsAccount(c.repos.wallets)
-        if (mine) answer.mine(walletId, last4) else answer.notMine(walletId, last4)
-        return auto().run()
-    }
+    override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String?): AutoRecordResult =
+        AnswerSmsAccount(c.repos.wallets).answerAndRecord(auto(), walletId, last4, mine, messageId)
+
+    override suspend fun handoffCard(): String? = inbox.handoffCard()
+
+    override suspend fun setHandoffCard(value: String?) = inbox.setHandoffCard(value)
+
+    override suspend fun readingOn(): Boolean = manage.refresh().let { it.enabled && it.permission }
 
     override suspend fun enable(senders: List<String>): InboxView = manage.enable(senders)
 

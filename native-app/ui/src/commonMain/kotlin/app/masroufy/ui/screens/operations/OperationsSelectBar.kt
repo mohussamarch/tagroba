@@ -122,10 +122,13 @@ private val BULK_ACTION_LABELS = listOf(
     BulkAction.DELETE to UiKey.OPS_BULK_DELETE,
 )
 
-/** بعد أي فعل جماعي: الجملة («تم تعديل 3») + «تراجع» واحد للدفعة كلها. بيختفي لوحده بعد شوية (الشاشة بتحدد). */
+/**
+ * بعد أي فعل جماعي: الجملة («تم تعديل 3») + «تراجع» واحد للدفعة كلها. بيختفي لوحده بعد 8 ثواني ([undoWindowFor] في الشاشة) — والوقت
+ * واقف وإيد المالك على الشريط ([window]، r041 A5).
+ */
 @Composable
-internal fun UndoStrip(text: String, onUndo: () -> Unit) {
-    FloatingCard(Modifier.fillMaxWidth()) {
+internal fun UndoStrip(text: String, window: UndoWindow? = null, onUndo: () -> Unit) {
+    FloatingCard(Modifier.fillMaxWidth().holdsUndo(window)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(text, style = Type.of(14), modifier = Modifier.weight(1f))
             TonalButton(t(UiKey.OPS_BULK_UNDO), onUndo, height = 36.dp)

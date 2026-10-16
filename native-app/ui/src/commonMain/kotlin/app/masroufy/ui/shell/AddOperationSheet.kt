@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.masroufy.ui.text.BasicText
@@ -62,7 +64,7 @@ import kotlinx.coroutines.launch
 
 /**
  * لوحة «+» ⇒ «عملية جديدة» (`AddSheet`/`AddOperation` جوه `BottomBar` في النموذج): صرف · دخل · تحويل، المبلغ بلون النوع، التصنيف (أو نوع الدخل،
- * أو «إلى أين؟» للتحويل) **في مكان محجوز على صفين (88) عشان طول اللوحة ما يتغيرش**، و«من أين؟» (المحفظة الأساسية مختارة لوحدها — ولو لسه
+ * أو «إلى أين؟» للتحويل) **في مكان ثابت الطول (3 صفوف — [ADD_CHIP_AREA]) والزيادة بتتمرر جواه، عشان طول اللوحة ما يتغيرش بين التبويبات**، و«من أين؟» (المحفظة الأساسية مختارة لوحدها — ولو لسه
  * مفيش أساسية: فاضية و«من أين تصرف عادةً؟»، `MainWallet.kt`)، و«احفظ» (معطّل لحد ما الأساسي يكمل — والمحفظة منه).
  * الحفظ ⇒ `QuickAddOperation` (`AddTransaction`) ⇒ اللوحة تقفل ورسالة «سُجّلت: …» و**الشاشة اللي تحتها تقرا تاني** (`DataChanges` — الرئيسية
  * بتفضل ظاهرة تحت اللوحة، فمن غيرها «معك الآن» و«صرفت هذا الشهر» كانوا بيفضلوا قدام لحد ما تسيب التبويب). الخطأ جنب المبلغ.
@@ -110,7 +112,7 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         AddKind.MOVE -> to != null && to != from
     }
     Sheet(visible, onClose, title = t(UiKey.ADD_TITLE), veil = Veil.MENU, closeLabel = t(UiKey.SHELL_CLOSE)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.ADD_TITLE), style = Type.section())
             VoiceButton(onVoice)
         }
@@ -130,7 +132,11 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
         )
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel(t(when (kind) { AddKind.OUT -> UiKey.ADD_CATEGORY; AddKind.IN -> UiKey.ADD_INCOME_KIND; AddKind.MOVE -> UiKey.ADD_TO }))
-            FlowRow(Modifier.fillMaxWidth().heightIn(min = 88.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // r041 A1: ارتفاع **ثابت** في كل التبويبات (مش حد أدنى) والزيادة بتتمرر جواه — من غيره اللوحة كانت بتطول وتقصر مع التبويب
+            // وصف التبويبات و«بصوتك» بيتنقلوا، فالضغطة على مكان التبويب القديم كانت بتفتح المساعد
+            val chipScroll = rememberScrollState()
+            LaunchedEffect(kind) { chipScroll.scrollTo(0) }
+            FlowRow(Modifier.fillMaxWidth().height(ADD_CHIP_AREA).verticalScroll(chipScroll), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // كل نوع في مجموعة بمفتاحه وكل شريحة بمفتاحها: من غيرهم تبديل «صرف/دخل/تحويل» كان بيقرا خانة «remember» غلط
                 // جوه «SelectChip» ⇒ ClassCastException والبرنامج يقع لما تدوس «تحويل» (إصدار 0.4)
                 key(kind) {
@@ -197,3 +203,12 @@ fun parseHex(hex: String): Color? {
     if (h.length != 6) return null
     return h.toLongOrNull(16)?.let { Color(0xFF000000 or it) }
 }
+
+/** r041 A1: صفوف مكان الشرايح الثابت في لوحة «+» (التصنيفات الأكتر بتتمرر جواه). */
+internal const val ADD_CHIP_ROWS = 3
+
+/** طول [rows] صفوف شرايح (40) بينهم فواصل (8) — نفس الطول في صرف ودخل وتحويل. */
+internal fun chipAreaHeight(rows: Int, chip: Dp = 40.dp, gap: Dp = 8.dp): Dp = chip * rows + gap * (rows - 1)
+
+/** مكان الشرايح في لوحة «+»: ثابت (مش حد أدنى) عشان وصف التبويبات و«بصوتك» ما يتنقلوش مع التبويب. */
+internal val ADD_CHIP_AREA: Dp = chipAreaHeight(ADD_CHIP_ROWS)

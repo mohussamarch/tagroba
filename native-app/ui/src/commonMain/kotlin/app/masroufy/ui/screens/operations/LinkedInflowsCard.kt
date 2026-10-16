@@ -29,6 +29,8 @@ import app.masroufy.ui.components.AmountTone
 import app.masroufy.ui.components.Divider
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.SelectChip
+import app.masroufy.ui.components.rememberPress
+import app.masroufy.ui.components.tap
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.overlay.Sheet
@@ -52,38 +54,20 @@ internal fun linkRefusalKey(r: LinkRefusal): UiKey = when (r) {
 internal fun linkedLine(t: Transaction): String = transactionTitle(t) + "، " + dayMonth(t.occurredAt.take(10))
 
 /**
- * «عمليات تابعة» (§6.5-14) في تفاصيل العملية: على **المصروف** ⇒ الأصل والصافي وشارة «فيه عملية تابعة» + التابعة (بـ«فك الربط») + «اختار»
- * بيفتح لوحة الفلوس اللي دخلت (تحديد أكتر من واحدة). على **الداخلة التابعة** ⇒ شارة بترجّع للمصروف + «فك الربط».
+ * «عمليات تابعة» (§6.5-14) في تفاصيل **المصروف**: الأصل والصافي وشارة «فيه عملية تابعة» + التابعة (كل سطر بيفتح الداخلة، و«فك الربط»
+ * بتأكيد جوه الصفحة ثم «تراجع» 8 ثواني — r041 A11) + «اختار» بيفتح لوحة الفلوس اللي دخلت (تحديد أكتر من واحدة). الداخلة التابعة نفسها
+ * بقى ليها شريط «مربوطة بـ» فوق ([LinkedParentBanner]) بدل الكارت ده. [view] بيتحمّل مرة للصفحة ([rememberLinkedView]).
  * كل الحساب والفحص في `LinkInflows` — الشاشة بتعرض وبتنادي وبس. أي عملية تانية ⇒ ولا حاجة.
  */
 @Composable
-fun LinkedInflowsCard(transactionId: Id, reloadKey: Int, onChanged: () -> Unit) {
+internal fun LinkedInflowsCard(view: LinkedInflowsView, unlinks: UnlinkFlow, onConfirmUnlink: () -> Unit, onChanged: () -> Unit) {
     val links = LocalSpace.current.operations.linkedInflows ?: return
     val toaster = LocalToaster.current
     val nav = LocalNavigator.current
     val scope = rememberCoroutineScope()
-    var view by remember(transactionId) { mutableStateOf<LinkedInflowsView>(LinkedInflowsView.None) }
     var picking by remember { mutableStateOf(false) }
-    LaunchedEffect(transactionId, reloadKey) { view = attempt { links.load(transactionId) } ?: LinkedInflowsView.None }
-    fun unlink(inflowId: Id) = scope.launch {
-        val err = failureOf { links.unlink(inflowId) }
-        toaster.show(err ?: t(UiKey.LINKED_UNLINKED))
-        onChanged()
-    }
     when (val v = view) {
-        LinkedInflowsView.None -> Unit
-        is LinkedInflowsView.Inflow -> {
-            val expense = v.expense
-            LinkCard(
-                Lucide.RECEIPT, t(UiKey.LINKED_INFLOW_TITLE), t(if (expense == null) UiKey.LINKED_INFLOW_GONE else UiKey.LINKED_INFLOW_SUB),
-                t(UiKey.LINKED_UNLINK), enabled = true, onOpen = { unlink(v.inflow.id) },
-            ) {
-                if (expense != null) {
-                    Divider()
-                    LineRow(expense, AmountTone.EXPENSE) { SmallAction(t(UiKey.LINKED_INFLOW_OPEN)) { nav.push(OperationDetailRoute(expense.id)) } }
-                }
-            }
-        }
+        LinkedInflowsView.None, is LinkedInflowsView.Inflow -> Unit
         is LinkedInflowsView.Expense -> {
             val e = v.expense
             val sub = if (v.linked.isEmpty()) t(UiKey.LINKED_CARD_SUB) else t(UiKey.LINKED_BADGE)
@@ -101,7 +85,10 @@ fun LinkedInflowsCard(transactionId: Id, reloadKey: Int, onChanged: () -> Unit) 
                     }
                     for (l in v.linked) {
                         Divider()
-                        LineRow(l, AmountTone.INCOME) { SmallAction(t(UiKey.LINKED_UNLINK)) { unlink(l.id) } }
+                        LineRow(l, AmountTone.INCOME, onOpen = { nav.push(OperationDetailRoute(l.id)) }) {
+                            if (unlinks.undo == null && unlinks.asking?.id != l.id) SmallAction(t(UiKey.LINKED_UNLINK)) { unlinks.asking = l }
+                        }
+                        if (unlinks.asking?.id == l.id) UnlinkAsk(l, unlinks, onConfirmUnlink)
                     }
                 }
             }
@@ -119,8 +106,10 @@ fun LinkedInflowsCard(transactionId: Id, reloadKey: Int, onChanged: () -> Unit) 
 }
 
 @Composable
-private fun LineRow(tx: Transaction, tone: AmountTone, action: @Composable () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun LineRow(tx: Transaction, tone: AmountTone, onOpen: (() -> Unit)? = null, action: @Composable () -> Unit) {
+    val press = rememberPress()
+    val open = if (onOpen != null) Modifier.tap(press, label = t(UiKey.LINKED_INFLOW_OPEN), onClick = onOpen) else Modifier
+    Row(Modifier.fillMaxWidth().then(open).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         BasicText(linkedLine(tx), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
         AmountText(tx.amountMinor, tx.currency, tone = tone, size = 14)
         action()

@@ -60,9 +60,6 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
     val toaster = LocalToaster.current
     var question by remember(sms) { mutableStateOf<SmsHistoryQuestion?>(null) }
     var report by remember(sms) { mutableStateOf<SmsHistoryReport?>(null) }
-    var choosing by remember(sms) { mutableStateOf(false) }
-    var from by remember(sms) { mutableStateOf(HistoryFrom.OPENING) }
-    var other by remember(sms) { mutableStateOf<IsoDate?>(null) }
     var readFrom by remember(sms) { mutableStateOf<IsoDate?>(null) }
     var busy by remember(sms) { mutableStateOf(false) }
 
@@ -77,7 +74,6 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
             try {
                 report = block()
                 question = null
-                choosing = false
                 onChanged()
             } catch (e: CancellationException) {
                 throw e
@@ -89,19 +85,41 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
     }
 
     val q = question
-    // «من إمتى؟» مفتوح ⇒ الضغط برّه اللوحة أو الرجوع بيرجّع السؤال الأولاني ويلغي اللي اتختار من غير «ابدأ» (HANDOVER §6.5 بند 11)
-    val choice = rememberChoice(q != null && choosing && !busy, onClose = { choosing = false; from = HistoryFrom.OPENING; other = null })
     if (q != null) {
+        HistoryQuestionPanel(
+            q, today, busy,
+            onNo = { act { sms.historyDecline(q.senders); null } },
+            onStart = { day -> readFrom = day ?: q.oldestDay; act { sms.historyStart(q.senders, day) } },
+        )
+        return
+    }
+    val r = report ?: return
+    HistoryReportPanel(r, readFrom, currency, busy) { act { sms.confirmShapes(r.shapeMessageIds) } }
+}
+
+/**
+ * سؤال «اقرأ اللي فات؟» نفسه (و«من إمتى؟» لو فيه رسايل قبل رصيد البداية) — في «رسائل البنك» وفي لوحة التسليم بعد أول إذن (r041 A8).
+ * [onStart] بيوصله يوم البداية (null = من أقدم رسالة).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun HistoryQuestionPanel(q: SmsHistoryQuestion, today: IsoDate, busy: Boolean, onNo: () -> Unit, onStart: (IsoDate?) -> Unit) {
+    var choosing by remember(q) { mutableStateOf(false) }
+    var from by remember(q) { mutableStateOf(HistoryFrom.OPENING) }
+    var other by remember(q) { mutableStateOf<IsoDate?>(null) }
+    // «من إمتى؟» مفتوح ⇒ الضغط برّه اللوحة أو الرجوع بيرجّع السؤال الأولاني ويلغي اللي اتختار من غير «ابدأ» (HANDOVER §6.5 بند 11)
+    val choice = rememberChoice(choosing && !busy, onClose = { choosing = false; from = HistoryFrom.OPENING; other = null })
+    run {
         TintedPanel(PanelTone.MINT, Modifier.choiceArea(choice)) {
             PanelTitle(t(if (choosing) UiKey.SMS_HISTORY_FROM_TITLE else UiKey.SMS_HISTORY_TITLE), PanelTone.MINT)
             val opening = q.opening
             if (!choosing || opening == null) {
                 BasicText(t(UiKey.SMS_HISTORY_BODY, dayMonthYear(q.oldestDay)), style = Type.of(13, lineHeight = 1.7))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    QuietButton(t(UiKey.SMS_HISTORY_NO), { act { sms.historyDecline(q.senders); null } }, Modifier.weight(1f), enabled = !busy, onTint = true)
+                    QuietButton(t(UiKey.SMS_HISTORY_NO), onNo, Modifier.weight(1f), enabled = !busy, onTint = true)
                     PrimaryButton(
                         t(UiKey.SMS_HISTORY_YES),
-                        { if (q.askStart) choosing = true else { readFrom = q.oldestDay; act { sms.historyStart(q.senders, null) } } },
+                        { if (q.askStart) choosing = true else onStart(null) },
                         Modifier.weight(1f), loading = busy,
                     )
                 }
@@ -120,16 +138,18 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
                 }
                 PrimaryButton(
                     if (day == null) t(UiKey.SMS_HISTORY_YES) else t(UiKey.SMS_HISTORY_START, dayMonthYear(day)),
-                    { day?.let { d -> readFrom = d; act { sms.historyStart(q.senders, d) } } },
+                    { day?.let { d -> onStart(d) } },
                     Modifier.fillMaxWidth(), enabled = day != null, loading = busy,
                 )
             }
             if (busy) BasicText(t(UiKey.SMS_HISTORY_READING), style = Type.caption().copy(color = Ink.muted))
         }
-        return
     }
-    val r = report ?: return
-    val started = readFrom
+}
+
+/** بعد القراية: العدّ و«قايمة واحدة» فيها رسالة من كل شكل جديد و«أكّد الأشكال» (§77-A). [started] = يوم البداية لو المالك لسه قاري. */
+@Composable
+private fun HistoryReportPanel(r: SmsHistoryReport, started: IsoDate?, currency: Currency, busy: Boolean, onConfirm: () -> Unit) {
     if (started == null && r.shapes.isEmpty()) return
     TintedPanel(PanelTone.MINT) {
         if (started != null) {
@@ -152,7 +172,7 @@ internal fun SmsHistorySection(sms: SmsDeps, currency: Currency, today: IsoDate,
                     }
                 }
             }
-            PrimaryButton(t(UiKey.SMS_HISTORY_CONFIRM), { act { sms.confirmShapes(r.shapeMessageIds) } }, Modifier.fillMaxWidth(), loading = busy)
+            PrimaryButton(t(UiKey.SMS_HISTORY_CONFIRM), onConfirm, Modifier.fillMaxWidth(), loading = busy)
         } else if (r.waiting > 0) {
             BasicText(t(UiKey.SMS_HISTORY_LEFT, msgsCount(r.waiting)), style = Type.of(13).copy(color = Ink.muted))
         }

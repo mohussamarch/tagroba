@@ -102,7 +102,7 @@ fun walletMoves(data: TransactionsScreenData, walletId: Id, limit: Int = 8, wall
         val tone = moneyToneOf(tx)
         val name = data.merchantNamesByTransaction[tx.id]?.firstOrNull()
             ?: tx.rawMerchantName?.takeIf { it.isNotBlank() }
-            ?: tx.rawDescription?.takeIf { it.isNotBlank() }
+            ?: app.masroufy.core.displayTitleOrNull(tx)
             ?: data.categories.firstOrNull { it.id == tx.categoryId }?.name
             ?: t(UiKey.WDET_MOVE_UNNAMED)
         val note = moveSideLineOf(tx, walletId) { id -> id?.let(walletNames::get) }
