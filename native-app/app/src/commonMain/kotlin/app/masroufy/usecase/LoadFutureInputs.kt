@@ -103,7 +103,7 @@ class LoadFutureInputs(private val deps: LoadFutureInputsDeps) {
         val now = s.withYouNow.load(today)
         val known = now.wallets.mapNotNull { it.balanceMinor }
         val unknownWallets = now.wallets.count { it.balanceMinor == null }
-        val split = investableSplit(holdings.items)
+        val split = investableSplit(holdings.items, holdings.includePersonal)
         // الإيجار والعائد المتوقع (مصادر شغالة بعملة البلد وفيها مبلغ متوقع شهري) — اللي من غير مبلغ مش داخل (مش صفر مؤكد)
         val passive = s.incomeSources.listAll().filter {
             it.currency == s.currency && it.kind in PASSIVE_KINDS && it.startedAt <= today && (it.endedAt == null || it.endedAt!! > today) &&

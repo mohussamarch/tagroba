@@ -84,6 +84,14 @@ class LoadFutureInputsTest {
         assertNull(i.ageNow, "تاريخ الميلاد مش مكتوب")
     }
 
+    @Test fun personalThingsCountOnlyWhenTheUserChoseSo() = runBlocking<Unit> {
+        val with = loader(space(save = 2_000)).load(today, snapshot.copy(includePersonal = true), InvestRatesState.Unavailable(emptyList()))
+        assertEquals(900_000L, with.split.noGrowthMinor, "رد المالك 2a: السيارة داخلة ثابتة من غير نمو")
+        assertEquals(100_000L + 100_000 + 900_000 - 30_000, with.netNowMinor)
+        val without = loader(space(save = 2_000)).load(today, snapshot, InvestRatesState.Unavailable(emptyList()))
+        assertEquals(0L, without.split.noGrowthMinor, "الافتراضي من غيرها")
+    }
+
     @Test fun savingNullMeansUnknownAndAgeComesFromBirthDate() = runBlocking<Unit> {
         ManageBirthDate(settings, clock).save("1990-10-17")
         val i = loader(space(save = null)).load(today, snapshot, InvestRatesState.Unavailable(emptyList()))

@@ -40,7 +40,11 @@ data class HoldingValue(
 )
 
 /** كل حاجات البلد الشغالة (غير المؤرشفة) بعملتها. [goldPriceMissing] ⇒ سعر الذهب النهارده مش متاح والذهب قيمته null. */
-data class HoldingsSnapshot(val currency: Currency, val items: List<HoldingValue>, val goldPriceMissing: Boolean)
+/**
+ * [includePersonal] = اختيار المستخدم «تدخل الحاجات الشخصية في المجموع؟» (رد المالك 2026-10-16 ‎2a: الافتراضي **من غيرها**، والاختيار
+ * محفوظ للمستخدم ومفتاحه في «حاجاتي» — حزمة HOLDINGS). بيدخل المجموع والتوقع «إنت كمان» مع بعض.
+ */
+data class HoldingsSnapshot(val currency: Currency, val items: List<HoldingValue>, val goldPriceMissing: Boolean, val includePersonal: Boolean = false)
 
 /** اللي بيدخل التوقع من الحاجات (من غير الشخصي): مقسوم على المتوسطات. [unknownCount] = حاجات قيمتها مش معروفة (برّه الحساب). */
 data class InvestableSplit(
@@ -57,15 +61,15 @@ data class InvestableSplit(
     }
 }
 
-/** التقسيم من الحاجات: الشخصي برّه، والقيمة المجهولة برّه ومعدودة. */
-fun investableSplit(items: List<HoldingValue>): InvestableSplit {
+/** التقسيم من الحاجات: الشخصي برّه (إلا لو [includePersonal] — ثابت بالاسم من غير نمو)، والقيمة المجهولة برّه ومعدودة. */
+fun investableSplit(items: List<HoldingValue>, includePersonal: Boolean = false): InvestableSplit {
     var re = 0L
     var gold = 0L
     var stk = 0L
     var flat = 0L
     var unknown = 0
     for (h in items) {
-        if (h.purpose == HoldingPurpose.PERSONAL) continue
+        if (h.purpose == HoldingPurpose.PERSONAL && !includePersonal) continue
         val v = h.valueMinor
         if (v == null) {
             unknown++
