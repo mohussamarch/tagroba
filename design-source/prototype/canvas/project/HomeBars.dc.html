@@ -53,7 +53,7 @@ class Component extends DCLogic {
       : TOP.map(([n, v]) => ({ name: L(n), val: withCur(this.fmt(v * x), cur), bar: bar(Math.round((v * x * 100) / max), '#2E7D5B') }));
     const title = goals ? T('أهدافك', 'أهدافك') : T('أكثر ما صرفت عليه', 'أكتر حاجة صرفت فيها');
     return {
-      isTop: !goals, isGoals: goals, href: goals ? 'SavingsGoals.dc.html' : 'Categories.dc.html', rows, title,
+      isTop: !goals, isGoals: goals, href: goals ? 'SavingsGoals.dc.html' : 'TopSpending.dc.html', rows, title,
       sub: goals ? T('ادخارك نحو أهدافك', 'فلوسك رايحة لأهدافك') : T('هذا الشهر', 'الشهر ده'),
       iconBox: 'width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; ' + (goals ? 'color: #13764D; background: #E3F1E6' : 'color: #3E5C9A; background: #E7EDF8'),
       aria: title + ': ' + rows.map((r) => r.name).join('، ')

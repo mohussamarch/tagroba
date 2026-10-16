@@ -73,9 +73,11 @@
   | `HomeBars` | الرئيسية — «أكتر حاجة صرفت فيها» (`TopCategories`) و«أهدافك» (`GoalsProgress`) |
   | `HomeQuick` | الرئيسية — «محتاجة مراجعة» · «آخر العمليات» · «ليك وعليك» · «استثماراتك النهارده» |
   | `BalanceFix` | جوه `BalanceWhy` — «صلّح رصيدي» (4 خطوات) و«حدّث الرصيد» (آخر خطوتين) — `RepairOldSms` · `MergeDuplicates` · `BalanceCheckpoint` |
+  | `BnplSheet` | لوحة بتطلع لوحدها مع أول خصم من مزوّد تقسيط (تابي · تمارا …) أو خصم مبلغه مختلف — وفي النموذج من «الأقساط» |
 - **شاشات:**
   - `OwedToYou` و`YouOwe`: «لك» و«عليك» بالكامل.
   - `SmsWaiting`.
+  - `TopSpending`: «أكتر ما صرفت عليه» كاملة جوه العمليات (من كارت `HomeBars`) — `TopCategories`.
   - `BalanceWhy`: «افهم رصيدك» من جديد (`BalanceWhyScreen` في كوتلن — `explainWalletBalance` + `withRematchPairs`)، بتتفتح من `WalletDetail`.
   - `StatementColumns`: تحديد أعمدة الكشف يدويًا.
   - `InheritanceBefore`، `InheritanceHeirs`، `InheritanceResult`، `InheritanceSplit`: خطوات `InheritanceCalculator`.

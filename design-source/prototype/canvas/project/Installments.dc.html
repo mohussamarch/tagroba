@@ -47,13 +47,31 @@ body{margin:0}
         </sc-if>
       </a>
     </sc-for>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px"><span style="display: flex; flex-direction: column"><h2 style="margin: 0; font-size: 16px; font-weight: 700">{{bnplTitle}}</h2><span style="font-size: 12px; color: #637570">{{bnplSub}}</span></span><button type="button" class="m-press" onClick="{{openBnpl}}" style="flex-shrink: 0; height: 40px; border: 0; padding: 0 14px; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{bnplAdd}}</button></div>
+    <sc-for list="{{bnpl}}" as="b" hint-placeholder-count="2">
+      <div style="border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+        <div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="{{b.badge}}">{{b.prov}}</span><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 700">{{b.name}}</span><span style="font-size: 12px; color: #637570">{{b.kind}}</span></span><span style="flex-shrink: 0; font-size: 16px; font-weight: 700; color: #BE3D48; font-variant-numeric: tabular-nums">{{b.inst}}</span></div>
+        <div aria-hidden="true" style="display: flex; gap: 6px"><sc-for list="{{b.dots}}" as="d" hint-placeholder-count="4"><span style="{{d.style}}"></span></sc-for></div>
+        <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #637570"><span>{{b.progress}}</span><span>{{b.next}}</span></span>
+        <sc-if value="{{b.open}}" hint-placeholder-val="{{ false }}"><div style="border-radius: 16px; padding: 4px 12px; background: rgba(25,61,51,0.04)"><sc-for list="{{b.steps}}" as="st" hint-placeholder-count="4"><span style="display: flex; align-items: center; gap: 10px; min-height: 40px"><span style="flex: 1 1 auto; min-width: 0; font-size: 13px">{{st.label}}</span><span style="{{st.tagStyle}}">{{st.tag}}</span><span style="flex-shrink: 0; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums">{{st.amount}}</span></span></sc-for></div></sc-if>
+        <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #13764D"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>{{b.remind}}</span><button type="button" class="m-press" onClick="{{b.toggle}}" aria-expanded="{{b.openA}}" style="flex-shrink: 0; height: 36px; border: 0; padding: 0 12px; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 700; color: #08634F; cursor: pointer; background: rgba(8,99,79,0.08)">{{b.toggleLabel}}</button></span>
+      </div>
+    </sc-for>
     <span style="font-size: 12px; color: #637570">{{note}}</span>
   </div>
+  <sc-if value="{{bnplOpen}}" hint-placeholder-val="{{ false }}"><dc-import name="BnplSheet" space="{{spaceName}}" mode="أول خصم" provider="تابي" on-done="{{bnplDone}}" on-close="{{bnplClose}}" hint-size="390px,844px"></dc-import></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
 const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة (البنك المركزي السعودي) — الجنيه بعد الرقم زي ما هو
+// تقسيط المشتريات (تابي وتمارا — طلب المالك 2026-10-16): خطة بتتعمل من أول خصم (BnplSheet)، والخصومات الجاية بنفس المبلغ بتتعلّم «اتدفعت» لوحدها
+const MON = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+const BNPL = [
+  { key: 'b1', prov: 'تابي', name: 'سماعة لاسلكية', cat: 'إلكترونيات وأجهزة', inst: 25000, total: 4, done: 2, every: 'month', start: [2026, 8, 7], remind: true },
+  { key: 'b2', prov: 'تمارا', name: 'ساعة رياضية', cat: 'التسوق', inst: 40000, total: 4, done: 1, every: 'month', start: [2026, 9, 1], remind: true }
+];
 class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { added: [], open: {}, sheet: false }; }
   fmt(minor) { const a = Math.abs(minor); return String((a - (a % 100)) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   renderVals() {
     const eg = (this.props.space ?? 'السعودية') === 'مصر';
@@ -79,15 +97,31 @@ class Component extends DCLogic {
         profit: d.profit == null ? '' : (eg ? 'أرباح التمويل ' : 'أرباح التمويل ') + withCur(this.fmt(d.profit * k), cur) + (eg ? ' — معلومة بس' : ' — للعلم فقط')
       };
     });
-    const left = defs.reduce((s, d) => s + (d.total - d.done) * d.inst * k, 0);
+    const st = this.state, CAT = { shop: 'التسوق', tech: 'إلكترونيات وأجهزة', clothes: eg ? 'لبس' : 'ملابس', home: eg ? 'البيت' : 'المنزل', travel: 'سفر', other: eg ? 'تصنيف تاني' : 'تصنيف آخر' };
+    const all = BNPL.concat(st.added);
+    const dateAt = (b, i) => { const d = new Date(Date.UTC(b.start[0], b.start[1], b.start[2])); if (b.every === 'month') d.setUTCMonth(d.getUTCMonth() + i); else d.setUTCDate(d.getUTCDate() + 14 * i); return d.getUTCDate() + ' ' + MON[d.getUTCMonth()] + (d.getUTCFullYear() !== 2026 ? ' ' + d.getUTCFullYear() : ''); };
+    const bnpl = all.map((b) => { const open = !!st.open[b.key];
+      return { prov: b.prov, name: b.name, inst: withCur(this.fmt(b.inst * k), cur), kind: b.prov + ' · ' + b.cat + ' · ' + (b.every === 'month' ? 'كل شهر' : (eg ? 'كل أسبوعين' : 'كل أسبوعين')),
+        badge: 'min-width: 44px; height: 44px; padding: 0 6px; box-sizing: border-box; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; ' + (b.prov === 'تابي' ? 'color: #0B3B2E; background: #3BFFC1' : 'color: #FFFFFF; background: #1F1F3A'),
+        dots: Array.from({ length: b.total }, (x, i) => ({ style: 'flex: 1 1 0; height: 8px; border-radius: 4px; background: ' + (i < b.done ? '#08634F' : i === b.done ? '#F3C96B' : 'rgba(25,61,51,0.10)') })),
+        progress: (eg ? 'دفعت ' : 'دفعت ') + n(b.done) + ' من ' + n(b.total) + (eg ? ' · الباقي ' : ' · المتبقي ') + withCur(this.fmt((b.total - b.done) * b.inst * k), cur),
+        next: b.done < b.total ? (eg ? 'الجاية ' : 'القادمة ') + dateAt(b, b.done) : (eg ? 'خلصت' : 'اكتملت'),
+        remind: b.remind ? (eg ? 'بنفكّرك قبل كل دفعة بيوم' : 'نذكّرك قبل كل دفعة بيوم') : (eg ? 'من غير تذكير' : 'بلا تذكير'),
+        open, openA: open ? 'true' : 'false', toggleLabel: open ? (eg ? 'اخفي المواعيد' : 'إخفاء المواعيد') : (eg ? 'المواعيد' : 'المواعيد'), toggle: () => this.setState({ open: Object.assign({}, st.open, { [b.key]: !open }) }),
+        steps: Array.from({ length: b.total }, (x, i) => ({ label: (eg ? 'الدفعة ' : 'الدفعة ') + n(i + 1) + ' · ' + dateAt(b, i), amount: withCur(this.fmt(b.inst * k), cur), tag: i < b.done ? (eg ? 'اتدفعت' : 'دُفعت') : i === b.done ? (eg ? 'الجاية' : 'القادمة') : '',
+          tagStyle: 'flex-shrink: 0; font-size: 11px; font-weight: 700; ' + (i < b.done ? 'padding: 1px 8px; border-radius: 10px; color: #13764D; background: #DCEBD6' : i === b.done ? 'padding: 1px 8px; border-radius: 10px; color: #6B4600; background: #FBF0DD' : 'display: none') })) }; });
+    const left = defs.reduce((s, d) => s + (d.total - d.done) * d.inst * k, 0) + all.reduce((s, b) => s + (b.total - b.done) * b.inst * k, 0);
     const month = defs.reduce((s, d) => s + d.inst * k, 0);
     return {
       newKeep: JSON.stringify({ 'masroufy-plan': 'new' }), newLabel: '+ خطة جديدة',
       title: 'الأقساط',
       leftLabel: eg ? 'الباقي عليك في الأقساط' : 'المتبقي عليك في الأقساط',
       leftText: withCur(this.fmt(left), cur),
-      monthLine: (eg ? 'كل شهر ' : 'شهريًا ') + withCur(this.fmt(month), cur) + '، ' + n(defs.length) + (eg ? ' خطط' : ' خطط'),
-      plans,
+      monthLine: (eg ? 'كل شهر ' : 'شهريًا ') + withCur(this.fmt(month), cur) + (eg ? ' للتمويل، و' : ' للتمويل، و') + n(all.length) + (eg ? ' مشتريات بالتقسيط' : ' مشتريات بالتقسيط'),
+      plans, bnpl, spaceName: eg ? 'مصر' : 'السعودية',
+      bnplTitle: eg ? 'مشتريات بالتقسيط' : 'مشتريات بالتقسيط', bnplSub: eg ? 'تابي وتمارا وزيهم — الخطة بتتعمل من أول خصم' : 'تابي وتمارا وأمثالهما — تُعمل الخطة من أول خصم', bnplAdd: eg ? '+ جرّب أول خصم' : '+ جرّب أول خصم',
+      bnplOpen: st.sheet, openBnpl: () => this.setState({ sheet: true }), bnplClose: () => this.setState({ sheet: false }),
+      bnplDone: (r) => { if (!r || !r.split) { this.setState({ sheet: false }); return; } this.setState({ sheet: false, added: st.added.concat([{ key: 'n' + st.added.length, prov: 'تابي', name: r.what, cat: CAT[r.cat] || CAT.other, inst: 25000, total: r.split, done: 1, every: r.every, start: [2026, 9, 7], remind: r.remind }]) }); },
       receivedLabel: eg ? 'المبلغ اللي استلمته' : 'المبلغ المستلم',
       note: eg ? 'القسط كله بيتحسب مصروف وقت ما بيتدفع.' : 'يُحسب القسط كاملًا مصروفًا عند دفعه.'
     };

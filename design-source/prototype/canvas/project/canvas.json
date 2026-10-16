@@ -1161,6 +1161,22 @@
       "y": 30500,
       "w": 390,
       "h": 844
+    },
+    "TopSpending.dc.html": {
+      "is_interactive": true,
+      "title": "أكتر ما صرفت عليه · TopSpending (من كارت الرئيسية — جوه العمليات)",
+      "x": 880,
+      "y": 30500,
+      "w": 390,
+      "h": 844
+    },
+    "BnplSheet.dc.html": {
+      "is_interactive": true,
+      "title": "تقسيط المشتريات · BnplSheet (أول خصم من تابي/تمارا · «ده قسط من أنهي مشترى؟»)",
+      "x": 1320,
+      "y": 30500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1463,7 +1479,9 @@
     "HomeBars.dc.html",
     "HomeQuick.dc.html",
     "BalanceWhy.dc.html",
-    "BalanceFix.dc.html"
+    "BalanceFix.dc.html",
+    "TopSpending.dc.html",
+    "BnplSheet.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
