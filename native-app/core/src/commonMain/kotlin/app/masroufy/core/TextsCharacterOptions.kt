@@ -1,0 +1,77 @@
+package app.masroufy.core
+
+/**
+ * «شخصيتك» (r041): أسماء الأقسام والأجزاء والاختيارات في شاشة البناء — حرفيًا من `CharacterBuilder.dc.html` @2df8134d (العمود الأول
+ * فصحى للسعودية، والتاني مصري)، والإنجليزي من مواصفة النقل. نصوص الشاشة نفسها (العنوان والألوان والحفظ) في جدول الشاشة.
+ */
+internal val MSA_CHARACTER_OPTION_TEXTS: Map<UiKey, String> = mapOf(
+    UiKey.CHAR_SEC_FACE to "ملامح الوجه", UiKey.CHAR_SEC_BODY to "الجسم والشعر", UiKey.CHAR_SEC_WEAR to "الملابس",
+    UiKey.CHAR_PART_FACE to "الوجه", UiKey.CHAR_PART_EYES to "العينان", UiKey.CHAR_PART_BROWS to "الحاجبان", UiKey.CHAR_PART_NOSE to "الأنف",
+    UiKey.CHAR_PART_MOUTH to "الفم", UiKey.CHAR_PART_BUILD to "هيئة الجسم", UiKey.CHAR_PART_SKIN to "البشرة", UiKey.CHAR_PART_HAIR to "الشعر",
+    UiKey.CHAR_PART_BEARD to "اللحية", UiKey.CHAR_PART_OUTFIT to "الملابس", UiKey.CHAR_PART_HEAD to "غطاء الرأس", UiKey.CHAR_PART_GLASSES to "النظارة",
+    UiKey.CHAR_FACE_OVAL to "بيضاوي", UiKey.CHAR_FACE_ROUND to "مستدير", UiKey.CHAR_FACE_LONG to "طويل", UiKey.CHAR_FACE_SQUARE to "مربع",
+    UiKey.CHAR_EYES_DOTS to "نقطتان", UiKey.CHAR_EYES_ALMOND to "لوزية", UiKey.CHAR_EYES_CALM to "هادئة", UiKey.CHAR_EYES_WIDE to "واسعة",
+    UiKey.CHAR_BROWS_STRAIGHT to "مستقيمة", UiKey.CHAR_BROWS_ARCHED to "مقوّسة", UiKey.CHAR_BROWS_THICK to "عريضة", UiKey.CHAR_BROWS_THIN to "رفيعة",
+    UiKey.CHAR_NOSE_SMALL to "صغير", UiKey.CHAR_NOSE_STRAIGHT to "مستقيم", UiKey.CHAR_NOSE_WIDE to "عريض",
+    UiKey.CHAR_MOUTH_NEUTRAL to "عادي", UiKey.CHAR_MOUTH_SLIGHT to "ابتسامة خفيفة", UiKey.CHAR_MOUTH_SMILE to "ابتسامة", UiKey.CHAR_MOUTH_SMALL to "صغير",
+    UiKey.CHAR_BUILD_SLIM to "نحيف", UiKey.CHAR_BUILD_MEDIUM to "متوسط", UiKey.CHAR_BUILD_FULL to "ممتلئ",
+    UiKey.CHAR_HAIR_NONE to "بلا شعر", UiKey.CHAR_HAIR_SHORT to "قصير", UiKey.CHAR_HAIR_SIDE to "مفروق", UiKey.CHAR_HAIR_LONG to "طويل",
+    UiKey.CHAR_HAIR_CURLY to "مجعّد", UiKey.CHAR_HAIR_THIN to "خفيف",
+    UiKey.CHAR_HAIR_W_LONG to "طويل ناعم", UiKey.CHAR_HAIR_W_PONY to "ذيل حصان", UiKey.CHAR_HAIR_W_CURLY to "مجعّد", UiKey.CHAR_HAIR_W_SHORT to "قصير",
+    UiKey.CHAR_HAIR_W_BUN to "كعكة",
+    UiKey.CHAR_BEARD_NONE to "بلا لحية", UiKey.CHAR_BEARD_STUBBLE to "خفيفة", UiKey.CHAR_BEARD_SHORT to "قصيرة", UiKey.CHAR_BEARD_FULL to "كاملة",
+    UiKey.CHAR_BEARD_GOATEE to "سكسوكة", UiKey.CHAR_BEARD_MOUSTACHE to "شارب فقط",
+    UiKey.CHAR_OUTFIT_THOBE to "ثوب", UiKey.CHAR_OUTFIT_SHIRT to "قميص وبنطلون", UiKey.CHAR_OUTFIT_SUIT to "بدلة", UiKey.CHAR_OUTFIT_ABAYA to "عباية",
+    UiKey.CHAR_OUTFIT_DRESS to "فستان", UiKey.CHAR_OUTFIT_TUNIC to "تونيك وبنطلون",
+    UiKey.CHAR_HEAD_NONE to "بلا غطاء", UiKey.CHAR_HEAD_SHEMAGH to "شماغ", UiKey.CHAR_HEAD_GHUTRA to "غترة", UiKey.CHAR_HEAD_TAQIYAH to "طاقية",
+    UiKey.CHAR_HEAD_CAP to "كاب", UiKey.CHAR_HEAD_HIJAB to "حجاب", UiKey.CHAR_HEAD_KHIMAR to "خمار", UiKey.CHAR_HEAD_NIQAB to "نقاب",
+    UiKey.CHAR_GLASSES_NONE to "بلا نظارة", UiKey.CHAR_GLASSES_ROUND to "مستديرة", UiKey.CHAR_GLASSES_SQUARE to "مربعة", UiKey.CHAR_GLASSES_THIN to "رفيعة",
+)
+
+internal val EGYPTIAN_CHARACTER_OPTION_TEXTS: Map<UiKey, String> = mapOf(
+    UiKey.CHAR_SEC_FACE to "ملامح الوش", UiKey.CHAR_SEC_BODY to "الجسم والشعر", UiKey.CHAR_SEC_WEAR to "اللبس",
+    UiKey.CHAR_PART_FACE to "الوش", UiKey.CHAR_PART_EYES to "العينين", UiKey.CHAR_PART_BROWS to "الحواجب", UiKey.CHAR_PART_NOSE to "المناخير",
+    UiKey.CHAR_PART_MOUTH to "البق", UiKey.CHAR_PART_BUILD to "هيئة الجسم", UiKey.CHAR_PART_SKIN to "البشرة", UiKey.CHAR_PART_HAIR to "الشعر",
+    UiKey.CHAR_PART_BEARD to "الدقن", UiKey.CHAR_PART_OUTFIT to "اللبس", UiKey.CHAR_PART_HEAD to "غطا الراس", UiKey.CHAR_PART_GLASSES to "النضارة",
+    UiKey.CHAR_FACE_OVAL to "بيضاوي", UiKey.CHAR_FACE_ROUND to "مدوّر", UiKey.CHAR_FACE_LONG to "طويل", UiKey.CHAR_FACE_SQUARE to "مربع",
+    UiKey.CHAR_EYES_DOTS to "نقط", UiKey.CHAR_EYES_ALMOND to "لوز", UiKey.CHAR_EYES_CALM to "هادية", UiKey.CHAR_EYES_WIDE to "واسعة",
+    UiKey.CHAR_BROWS_STRAIGHT to "مستقيمة", UiKey.CHAR_BROWS_ARCHED to "مقوّسة", UiKey.CHAR_BROWS_THICK to "عريضة", UiKey.CHAR_BROWS_THIN to "رفيعة",
+    UiKey.CHAR_NOSE_SMALL to "صغيرة", UiKey.CHAR_NOSE_STRAIGHT to "مستقيمة", UiKey.CHAR_NOSE_WIDE to "عريضة",
+    UiKey.CHAR_MOUTH_NEUTRAL to "عادي", UiKey.CHAR_MOUTH_SLIGHT to "ابتسامة خفيفة", UiKey.CHAR_MOUTH_SMILE to "ابتسامة", UiKey.CHAR_MOUTH_SMALL to "صغير",
+    UiKey.CHAR_BUILD_SLIM to "رفيع", UiKey.CHAR_BUILD_MEDIUM to "متوسط", UiKey.CHAR_BUILD_FULL to "مليان",
+    UiKey.CHAR_HAIR_NONE to "من غير", UiKey.CHAR_HAIR_SHORT to "قصير", UiKey.CHAR_HAIR_SIDE to "مفروق", UiKey.CHAR_HAIR_LONG to "طويل",
+    UiKey.CHAR_HAIR_CURLY to "مجعّد", UiKey.CHAR_HAIR_THIN to "خفيف",
+    UiKey.CHAR_HAIR_W_LONG to "طويل ناعم", UiKey.CHAR_HAIR_W_PONY to "ديل حصان", UiKey.CHAR_HAIR_W_CURLY to "كيرلي", UiKey.CHAR_HAIR_W_SHORT to "قصير",
+    UiKey.CHAR_HAIR_W_BUN to "كحكة",
+    UiKey.CHAR_BEARD_NONE to "من غير", UiKey.CHAR_BEARD_STUBBLE to "خفيفة", UiKey.CHAR_BEARD_SHORT to "قصيرة", UiKey.CHAR_BEARD_FULL to "كاملة",
+    UiKey.CHAR_BEARD_GOATEE to "سكسوكة", UiKey.CHAR_BEARD_MOUSTACHE to "شنب بس",
+    UiKey.CHAR_OUTFIT_THOBE to "جلابية/ثوب", UiKey.CHAR_OUTFIT_SHIRT to "قميص وبنطلون", UiKey.CHAR_OUTFIT_SUIT to "بدلة", UiKey.CHAR_OUTFIT_ABAYA to "عباية",
+    UiKey.CHAR_OUTFIT_DRESS to "فستان", UiKey.CHAR_OUTFIT_TUNIC to "تونيك وبنطلون",
+    UiKey.CHAR_HEAD_NONE to "من غير", UiKey.CHAR_HEAD_SHEMAGH to "شماغ", UiKey.CHAR_HEAD_GHUTRA to "غترة", UiKey.CHAR_HEAD_TAQIYAH to "طاقية",
+    UiKey.CHAR_HEAD_CAP to "كاب", UiKey.CHAR_HEAD_HIJAB to "حجاب", UiKey.CHAR_HEAD_KHIMAR to "خمار", UiKey.CHAR_HEAD_NIQAB to "نقاب",
+    UiKey.CHAR_GLASSES_NONE to "من غير", UiKey.CHAR_GLASSES_ROUND to "مدوّرة", UiKey.CHAR_GLASSES_SQUARE to "مربعة", UiKey.CHAR_GLASSES_THIN to "رفيعة",
+)
+
+internal val ENGLISH_CHARACTER_OPTION_TEXTS: Map<UiKey, String> = mapOf(
+    UiKey.CHAR_SEC_FACE to "Face features", UiKey.CHAR_SEC_BODY to "Body and hair", UiKey.CHAR_SEC_WEAR to "Clothes",
+    UiKey.CHAR_PART_FACE to "Face", UiKey.CHAR_PART_EYES to "Eyes", UiKey.CHAR_PART_BROWS to "Brows", UiKey.CHAR_PART_NOSE to "Nose",
+    UiKey.CHAR_PART_MOUTH to "Mouth", UiKey.CHAR_PART_BUILD to "Body", UiKey.CHAR_PART_SKIN to "Skin", UiKey.CHAR_PART_HAIR to "Hair",
+    UiKey.CHAR_PART_BEARD to "Beard", UiKey.CHAR_PART_OUTFIT to "Clothes", UiKey.CHAR_PART_HEAD to "Head cover", UiKey.CHAR_PART_GLASSES to "Glasses",
+    UiKey.CHAR_FACE_OVAL to "Oval", UiKey.CHAR_FACE_ROUND to "Round", UiKey.CHAR_FACE_LONG to "Long", UiKey.CHAR_FACE_SQUARE to "Square",
+    UiKey.CHAR_EYES_DOTS to "Dots", UiKey.CHAR_EYES_ALMOND to "Almond", UiKey.CHAR_EYES_CALM to "Calm", UiKey.CHAR_EYES_WIDE to "Wide",
+    UiKey.CHAR_BROWS_STRAIGHT to "Straight", UiKey.CHAR_BROWS_ARCHED to "Arched", UiKey.CHAR_BROWS_THICK to "Thick", UiKey.CHAR_BROWS_THIN to "Thin",
+    UiKey.CHAR_NOSE_SMALL to "Small", UiKey.CHAR_NOSE_STRAIGHT to "Straight", UiKey.CHAR_NOSE_WIDE to "Wide",
+    UiKey.CHAR_MOUTH_NEUTRAL to "Neutral", UiKey.CHAR_MOUTH_SLIGHT to "Slight smile", UiKey.CHAR_MOUTH_SMILE to "Smile", UiKey.CHAR_MOUTH_SMALL to "Small",
+    UiKey.CHAR_BUILD_SLIM to "Slim", UiKey.CHAR_BUILD_MEDIUM to "Medium", UiKey.CHAR_BUILD_FULL to "Full",
+    UiKey.CHAR_HAIR_NONE to "None", UiKey.CHAR_HAIR_SHORT to "Short", UiKey.CHAR_HAIR_SIDE to "Side part", UiKey.CHAR_HAIR_LONG to "Long",
+    UiKey.CHAR_HAIR_CURLY to "Curly", UiKey.CHAR_HAIR_THIN to "Thin",
+    UiKey.CHAR_HAIR_W_LONG to "Long straight", UiKey.CHAR_HAIR_W_PONY to "Ponytail", UiKey.CHAR_HAIR_W_CURLY to "Curly", UiKey.CHAR_HAIR_W_SHORT to "Short",
+    UiKey.CHAR_HAIR_W_BUN to "Bun",
+    UiKey.CHAR_BEARD_NONE to "None", UiKey.CHAR_BEARD_STUBBLE to "Stubble", UiKey.CHAR_BEARD_SHORT to "Short", UiKey.CHAR_BEARD_FULL to "Full",
+    UiKey.CHAR_BEARD_GOATEE to "Goatee", UiKey.CHAR_BEARD_MOUSTACHE to "Moustache only",
+    UiKey.CHAR_OUTFIT_THOBE to "Thobe", UiKey.CHAR_OUTFIT_SHIRT to "Shirt and trousers", UiKey.CHAR_OUTFIT_SUIT to "Suit", UiKey.CHAR_OUTFIT_ABAYA to "Abaya",
+    UiKey.CHAR_OUTFIT_DRESS to "Dress", UiKey.CHAR_OUTFIT_TUNIC to "Tunic and trousers",
+    UiKey.CHAR_HEAD_NONE to "None", UiKey.CHAR_HEAD_SHEMAGH to "Shemagh", UiKey.CHAR_HEAD_GHUTRA to "Ghutra", UiKey.CHAR_HEAD_TAQIYAH to "Taqiyah",
+    UiKey.CHAR_HEAD_CAP to "Cap", UiKey.CHAR_HEAD_HIJAB to "Hijab", UiKey.CHAR_HEAD_KHIMAR to "Khimar", UiKey.CHAR_HEAD_NIQAB to "Niqab",
+    UiKey.CHAR_GLASSES_NONE to "None", UiKey.CHAR_GLASSES_ROUND to "Round", UiKey.CHAR_GLASSES_SQUARE to "Square", UiKey.CHAR_GLASSES_THIN to "Thin",
+)

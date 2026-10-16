@@ -184,6 +184,7 @@ fun checkBackupProfile(profile: Any?) {
         val look = numberOf(row["lookIndex"])
         if (look == null || look % 1.0 != 0.0 || look < 1 || look > LOOK_COUNT) bad("lookIndex")
     }
+    if (has("character") && row["character"] !is Map<*, *>) bad("character") // «شخصيتك»: خريطة بس — حقولها بتتقصّ وقت القراية
 }
 
 /** الميزانية القديمة بمعرّف عشوائي بتاخد مفتاح فترتها (في النسخة بس)، وسقوف التصنيفات بتتحوّل معاها. */

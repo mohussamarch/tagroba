@@ -1,0 +1,212 @@
+// Verbatim CharacterArt.dc.html lines 21-230, design branch claude/design-system-v0-4-90a69a @2df8134d (2026-10-16 08:41).
+// Reference for the r041 fidelity sheets (sheet.html). Do not edit.
+const SKIN = [['#F3D5C0', '#D9AE93'], ['#E8BE9C', '#C99773'], ['#D4A07A', '#B27E58'], ['#B57E58', '#93603E'], ['#8C5A3C', '#6E432A'], ['#5E3C28', '#47291A']];
+const HAIRC = ['#1E1916', '#3A2A1F', '#6A4A2F', '#A47A4E', '#C8A46C', '#9B9A95'];
+const WRAP = ['#26364A', '#5E4634', '#1E1E1E', '#7E8C88', '#8E4A57', '#E9E2D6'];
+const OUTC = ['#F4F3EE', '#2E5E8C', '#3D4A45', '#8A6A4A', '#0E6B57', '#7A4655'];
+const ABAYA = ['#1C1C1E', '#2B3140', '#4A3B32', '#585D5A', '#5E2F3B', '#D8CBB6'];
+const SAMPLES = [
+  { v: 2, gender: 0, build: 1, face: 0, skin: 2, hair: 1, hairColor: 0, eyes: 0, brows: 0, nose: 0, mouth: 1, beard: 2, glasses: 0, head: 1, wrap: 0, outfit: 0, outfitColor: 0 },
+  { v: 2, gender: 1, build: 1, face: 0, skin: 1, hair: 6, hairColor: 1, eyes: 1, brows: 1, nose: 0, mouth: 1, beard: 0, glasses: 0, head: 4, wrap: 0, outfit: 5, outfitColor: 0 },
+  { v: 2, gender: 0, build: 2, face: 3, skin: 3, hair: 0, hairColor: 0, eyes: 0, brows: 2, nose: 1, mouth: 0, beard: 3, glasses: 1, head: 2, wrap: 0, outfit: 0, outfitColor: 0 },
+  { v: 2, gender: 1, build: 0, face: 1, skin: 0, hair: 9, hairColor: 3, eyes: 2, brows: 3, nose: 0, mouth: 2, beard: 0, glasses: 2, head: 0, wrap: 0, outfit: 3, outfitColor: 1 }
+];
+const DEFAULT = Object.assign({}, SAMPLES[0], { head: 0 });
+const pick = (arr, i) => arr[Math.max(0, Math.min(arr.length - 1, Number(i) || 0))];
+const r1 = (v) => Math.round(v * 10) / 10;
+const M = (p) => 'M' + r1(p[0]) + ' ' + r1(p[1]);
+const L = (p) => ' L' + r1(p[0]) + ' ' + r1(p[1]);
+const mir = ([x, y]) => [200 - x, y];
+const shade = (hex, f) => '#' + [1, 3, 5].map((i) => Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(i, i + 2), 16) * f))).toString(16).padStart(2, '0')).join('');
+const light = (hex) => { const n = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)); return n[0] * 0.3 + n[1] * 0.59 + n[2] * 0.11 > 150; };
+// ===== الهندسة: حافة الوش =====
+// rx/ry نص العرض والطول · n: 2 بيضاوي، 3 مربع (شكل بين الدايرة والمربع) · tp: قد إيه الدقن أضيق من الخدود
+const CY = 84;
+const FACES = [{ rx: 30, ry: 37, n: 2, tp: 0.13 }, { rx: 32, ry: 35, n: 2, tp: 0.06 }, { rx: 28, ry: 39, n: 2, tp: 0.12 }, { rx: 31, ry: 37, n: 3.2, tp: 0.1 }];
+function geo(k) { const f = FACES[k] || FACES[0]; return Object.assign({ top: CY - f.ry, bot: CY + f.ry }, f); }
+// نقطة على الحافة منفوخة p عند الزاوية t (t = 3π/2 فوق الراس)
+function P(g, p, t) {
+  const c = Math.cos(t), s = Math.sin(t), e = 2 / g.n, sx = Math.sign(c) * Math.pow(Math.abs(c), e), sy = Math.sign(s) * Math.pow(Math.abs(s), e), k = s > 0 ? 1 - g.tp * s * s : 1;
+  return [100 + (g.rx + p) * sx * k, CY + (g.ry + p) * sy];
+}
+function tY(g, p, y) { const q = Math.max(-1, Math.min(1, (y - CY) / (g.ry + p))); return Math.asin(Math.sign(q) * Math.pow(Math.abs(q), g.n / 2)); }
+// الحافة من الشمال (عند yl) فوق الراس لليمين (عند yr)
+function arc(g, p, yl, yr, m) { const a0 = Math.PI - tY(g, p, yl), a1 = 2 * Math.PI + tY(g, p, yr), o = []; for (let i = 0; i <= m; i++) o.push(P(g, p, a0 + ((a1 - a0) * i) / m)); return o; }
+function ring(g, p, m) { const o = []; for (let i = 0; i < m; i++) o.push(P(g, p, (2 * Math.PI * i) / m)); return o; }
+const hw = (g, p, y) => 100 - P(g, p, Math.PI - tY(g, p, y))[0];
+// منحنى ناعم بيعدّي على النقط (Catmull-Rom)
+function cr(pts, closed) {
+  const n = pts.length, at = (i) => pts[closed ? (i + n) % n : Math.max(0, Math.min(n - 1, i))]; let d = '';
+  for (let i = 0; i < (closed ? n : n - 1); i++) { const a = at(i - 1), b = at(i), c = at(i + 1), e = at(i + 2); d += ' C' + r1(b[0] + (c[0] - a[0]) / 6) + ' ' + r1(b[1] + (c[1] - a[1]) / 6) + ' ' + r1(c[0] - (e[0] - b[0]) / 6) + ' ' + r1(c[1] - (e[1] - b[1]) / 6) + ' ' + r1(c[0]) + ' ' + r1(c[1]); }
+  return d;
+}
+const shape = (pts) => M(pts[0]) + cr(pts, true) + 'Z';
+const path = (d, fill, extra) => '<path d="' + d + '" fill="' + fill + '"' + (extra || '') + '/>';
+const line = (d, col, w) => '<path d="' + d + '" stroke="' + col + '" stroke-width="' + w + '" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+// ===== الشعر =====
+// قَصّة: حافة برّه منفوخة p من الصدغ للصدغ فوق الراس، وخط منبت الشعر (من اليمين للشمال) جوه على الجبهة
+function cut(g, p, yb, ln) { const o = arc(g, p, yb, yb, 18), x = hw(g, 0, yb) - 1.5; return M(o[0]) + cr(o, false) + L([100 + x, yb]) + cr([[100 + x, yb]].concat(ln, [[100 - x, yb]]), false) + 'Z'; }
+function sym(W, side, mid) { const r = side.map(([f, y]) => [100 + f * W, y]); return r.concat([[100, mid]], r.slice().reverse().map(mir)); }
+function bumps(g, p, y0, r, col, above) { return arc(g, p, y0, y0, 12).filter(([, y]) => !(above && y < above)).map(([x, y]) => '<circle cx="' + r1(x) + '" cy="' + r1(y) + '" r="' + r + '" fill="' + col + '"/>').join(''); }
+function hairBack(k, col, g, capped) {
+  const W = g.rx, T = g.top;
+  if (k === 3) return path(shape(arc(g, 6, 100, 100, 16).concat([[100 + W + 9, 116], [100 + W + 8, 128], [100, 132], [100 - W - 8, 128], [100 - W - 9, 116]])), col);
+  if (k === 6) return path(shape(arc(g, 7, 104, 104, 18).concat([[100 + W + 10, 124], [100 + W + 11, 146], [100 + W + 6, 154], [100, 156], [100 - W - 6, 154], [100 - W - 11, 146], [100 - W - 10, 124]])), col);
+  if (k === 7) return path('M' + (100 + W * 0.5) + ' ' + (T + 4) + ' C' + (100 + W + 22) + ' ' + (T + 2) + ' ' + (100 + W + 22) + ' ' + (T + 40) + ' ' + (100 + W + 16) + ' 120 C' + (100 + W + 13) + ' 132 ' + (100 + W + 8) + ' 140 ' + (100 + W + 4) + ' 144 C' + (100 + W + 6) + ' 128 ' + (100 + W + 6) + ' 112 ' + (100 + W + 2) + ' ' + (T + 34) + ' Z', col) + '<ellipse cx="' + (100 + W + 10) + '" cy="' + (T + 16) + '" rx="4" ry="5.5" fill="' + shade(col, 0.6) + '"/>';
+  if (k === 8) { const pts = arc(g, 9, 104, 104, 14).concat([[100 + W + 13, 120], [100 + W + 11, 136], [100 + W - 2, 144], [100 - W + 2, 144], [100 - W - 11, 136], [100 - W - 13, 120]]); return path(shape(pts), col) + pts.filter(([, y]) => !(capped && y < T + 14)).map(([x, y]) => '<circle cx="' + r1(x) + '" cy="' + r1(y) + '" r="9" fill="' + col + '"/>').join(''); }
+  if (k === 9) return path(shape(arc(g, 8, 100, 100, 18).concat([[100 + W + 10, 112], [100 + W + 7, 120], [100, 121], [100 - W - 7, 120], [100 - W - 10, 112]])), col);
+  if (k === 10 && !capped) return '<circle cx="100" cy="' + (T - 7) + '" r="13" fill="' + col + '"/><path d="M' + 88 + ' ' + (T + 1) + ' Q100 ' + (T + 6) + ' 112 ' + (T + 1) + '" stroke="' + shade(col, 0.6) + '" stroke-width="3" fill="none"/>';
+  return '';
+}
+function hairFront(k, col, g, capAt) {
+  const W = g.rx, T = g.top, hi = 'rgba(255,255,255,0.10)';
+  if (k === 1 || k === 3) return path(cut(g, k === 3 ? 5 : 3, k === 3 ? 100 : 86, sym(W, [[0.86, 72], [0.6, T + 15]], T + 12)), col);
+  if (k === 2) return path(cut(g, 5, 86, [[100 + 0.86 * W, 72], [100 + 0.62 * W, T + 16], [100 + 0.05 * W, T + 13], [100 - 0.32 * W, T + 6], [100 - 0.52 * W, T + 13], [100 - 0.86 * W, 72]]), col) + line('M' + (100 - 0.32 * W) + ' ' + (T + 6) + ' Q' + (100 - 0.36 * W) + ' ' + T + ' ' + (100 - 0.42 * W) + ' ' + (T - 4), shade(col, 0.55), 1.4);
+  if (k === 4) return path(cut(g, 4, 86, sym(W, [[0.86, 74], [0.6, T + 15]], T + 13)), col) + bumps(g, 4, 84, 7, col, capAt);
+  if (k === 5) { const band = (sg) => { const o = [], i = []; for (let j = 0; j <= 8; j++) { const y = 86 - ((86 - (T + 24)) * j) / 8, po = P(g, 3, Math.PI - tY(g, 3, y)), pi = P(g, -3, Math.PI - tY(g, -3, y)); o.push(sg ? mir(po) : po); i.push(sg ? mir(pi) : pi); } return M(o[0]) + cr(o, false) + L(i[8]) + cr(i.reverse(), false) + 'Z'; }; return path(band(0) + band(1), col); }
+  if (k === 6) { const o = arc(g, 5, 108, 108, 18), x = hw(g, 0, 108) - 1.5, ln = sym(W, [[0.9, 90], [0.62, T + 14], [0.2, T + 8]], T + 5), lf = [[100 - W - 9, 152], [100 - W - 7.5, 130], o[0]], rt = [o[o.length - 1], [100 + W + 7.5, 130], [100 + W + 9, 152]];
+    return path(M(lf[0]) + cr(lf, false) + cr(o, false) + cr(rt, false) + L([100 + W - 1, 152]) + cr([[100 + W - 1, 152], [100 + W - 2.5, 124], [100 + x, 108]], false) + cr([[100 + x, 108]].concat(ln, [[100 - x, 108]]), false) + cr([[100 - x, 108], [100 - W + 2.5, 124], [100 - W + 1, 152]], false) + 'Z', col) + line('M100 ' + (T + 5) + ' L100 ' + (T - 4), shade(col, 0.55), 1.3); }
+  if (k === 7 || k === 10) return path(cut(g, 3.2, 86, sym(W, [[0.86, 72], [0.58, T + 14]], T + 11.5)), col) + line('M' + (100 - W * 0.3) + ' ' + (T + 10) + ' Q' + (100 - W * 0.2) + ' ' + (T - 1) + ' ' + (100 + W * 0.1) + ' ' + (T - 2), hi, 1.2) + line('M' + (100 + W * 0.35) + ' ' + (T + 11) + ' Q' + (100 + W * 0.4) + ' ' + T + ' ' + (100 + W * 0.6) + ' ' + (T + 1), hi, 1.2);
+  if (k === 8) { let s = ''; for (let y = 100; y <= 140; y += 10) s += '<circle cx="' + (100 - W - 7) + '" cy="' + y + '" r="7" fill="' + col + '"/><circle cx="' + (100 + W + 7) + '" cy="' + y + '" r="7" fill="' + col + '"/>'; return path(cut(g, 5, 98, sym(W, [[0.9, 84], [0.6, T + 17]], T + 15)), col) + bumps(g, 5, 96, 6.5, col, capAt) + s; }
+  if (k === 9) return path(cut(g, 6, 114, [[100 + W - 1, 104], [100 + 0.92 * W, 88], [100 + 0.4 * W, T + 12], [100 - 0.35 * W, T + 19], [100 - 0.85 * W, T + 27], [100 - 0.98 * W, 92], [100 - W + 1, 104]]), col);
+  return '';
+}
+// ===== الوش =====
+function eyes(k, fem) {
+  const d = '#2A211C'; let s = '';
+  [[88, -1], [112, 1]].forEach(([x, o]) => {
+    if (k === 0) s += '<circle cx="' + x + '" cy="86" r="2.6" fill="' + d + '"/>';
+    else if (k === 1) s += '<ellipse cx="' + x + '" cy="86" rx="3.8" ry="2.5" fill="' + d + '"/>' + line('M' + (x - 5) + ' 84 Q' + x + ' 80.5 ' + (x + 5) + ' 84', d, 1.3);
+    else if (k === 2) s += line('M' + (x - 4.5) + ' 87 Q' + x + ' 83 ' + (x + 4.5) + ' 87', d, 2);
+    else s += '<circle cx="' + x + '" cy="86" r="3.3" fill="' + d + '"/><circle cx="' + (x + 1) + '" cy="85" r="1" fill="#FFFFFF"/>';
+    if (fem) s += line('M' + (x + o * 3.6) + ' 84.6 l' + o * 2.4 + ' -1.8 M' + (x + o * 2) + ' 83.4 l' + o * 1.4 + ' -2', d, 1.1);
+  });
+  return s;
+}
+function brows(k, col) { const w = [1.8, 1.8, 3.2, 1.3][k] || 1.8; return [[88, -1], [112, 1]].map(([x, dir]) => (k === 1 ? line('M' + (x - 6) + ' 78 Q' + x + ' 73.5 ' + (x + 6) + ' 78', col, w) : line('M' + (x - 6) + ' ' + (dir < 0 ? 77 : 76) + ' L' + (x + 6) + ' ' + (dir < 0 ? 76 : 77), col, w))).join(''); }
+function nose(k, dark) { return [line('M100 90 Q97 98 101 100', dark, 1.6), line('M100 88 L98 99 L102.5 99', dark, 1.5), line('M95 98.5 Q100 102 105 98.5', dark, 1.6)][k] || ''; }
+function mouth(k, m) { return [line('M93 107 L107 107', m, 1.8), line('M92 106 Q100 111 108 106', m, 1.8), path('M91.5 105 Q100 113 108.5 105 Z', m), line('M96 107 Q100 109 104 107', m, 1.8)][k] || ''; }
+function beard(k, col, rx, ry) {
+  const Lx = 100 - rx, R = 100 + rx, B = 84 + ry, mus = path('M90 103 Q95 99 100 101.5 Q105 99 110 103 Q100 105 90 103 Z', col);
+  const jaw = 'M' + Lx + ' 88 C' + Lx + ' ' + (B - 6) + ' 86 ' + (B + 2) + ' 100 ' + (B + 2) + ' C114 ' + (B + 2) + ' ' + R + ' ' + (B - 6) + ' ' + R + ' 88';
+  if (k === 1) return path(jaw + ' C' + (R - 6) + ' 100 112 112 100 112 C88 112 ' + (Lx + 6) + ' 100 ' + Lx + ' 88 Z', col, ' opacity="0.28"');
+  if (k === 2) return path(jaw + ' C' + (R - 4) + ' 104 112 104 100 104 C88 104 ' + (Lx + 4) + ' 104 ' + Lx + ' 88 Z M93 109.5 Q100 112 107 109.5 Q100 111 93 109.5', col, ' fill-rule="evenodd"') + mus;
+  if (k === 3) return path('M' + (Lx - 1) + ' 86 C' + (Lx - 2) + ' ' + (B + 4) + ' 84 ' + (B + 12) + ' 100 ' + (B + 12) + ' C116 ' + (B + 12) + ' ' + (R + 2) + ' ' + (B + 4) + ' ' + (R + 1) + ' 86 C' + (R - 4) + ' 102 112 103 100 103 C88 103 ' + (Lx + 4) + ' 102 ' + (Lx - 1) + ' 86 Z', col) + mus;
+  if (k === 4) return path('M92 111 Q100 ' + (B + 8) + ' 108 111 Q100 115 92 111 Z', col) + mus;
+  return k === 5 ? mus : '';
+}
+function glasses(k) {
+  if (k === 4) return [88, 112].map((x) => '<rect x="' + (x - 9.5) + '" y="79.5" width="19" height="12.5" rx="4.5" fill="#1E1E1E" stroke="#D4A53A" stroke-width="1.8"/>' + line('M' + (x - 6) + ' 83 L' + (x - 2) + ' 82', 'rgba(255,255,255,0.45)', 1.4)).join('') + line('M97.5 84.5 Q100 82.5 102.5 84.5', '#D4A53A', 1.8);
+  if (!k) return ''; const c = k === 3 ? '#7A7A74' : '#2B2B2B', w = k === 3 ? 1.2 : 1.7, lens = (x) => (k === 1 ? '<circle cx="' + x + '" cy="86" r="7.5" stroke="' + c + '" stroke-width="' + w + '" fill="rgba(255,255,255,0.12)"/>' : '<rect x="' + (x - 8.5) + '" y="80" width="17" height="12" rx="' + (k === 2 ? 3 : 5) + '" stroke="' + c + '" stroke-width="' + w + '" fill="rgba(255,255,255,0.12)"/>');
+  return lens(88) + lens(112) + line('M95.5 85 Q100 83 104.5 85', c, w);
+}
+// ===== أغطية الراس =====
+// الشماغ والغترة — على صور المالك المرجعية (2026-10-15: «بص من ده تقدر تفهم»): عقال واحد تقيل فوق الراس، والقماش لازق على الوش من الجنبين،
+// ونازل يوسع فوق الكتاف ويفتح على الصدر · النقشة نقط بيضا على أحمر (أبسط) · الجزء الورّاني من غير نقشة وأغمق · من غير شراشيب ولا خطوط تحت
+const SLIT = 'M76 86.3 C76 81.4 82 80 100 80 C118 80 124 81.4 124 86.3 C124 91.2 118 92.6 100 92.6 C82 92.6 76 91.2 76 86.3 Z';
+function shm(g) {
+  const W = g.rx, T = g.top, oL = [[100 - W - 44, 198], [100 - W - 30, 160], [100 - W - 14, 124], [100 - W - 11, 100], [100 - W - 11, 80], [100 - W - 10, T + 6], [100 - W + 2, T - 5], [100 - 14, T - 9.5], [100, T - 10.5]], oR = oL.slice().reverse().map(mir);
+  const iR = [[100 + W + 8, 199], [100 + W, 150], [100 + W - 3, 116], [100 + W - 1.5, 94], [100 + W - 3, T + 22], [100 + W * 0.55, T + 13], [100, T + 11]], inn = iR.concat(iR.slice(0, -1).reverse().map(mir));
+  return { sil: M(oL[0]) + cr(oL, false) + cr(oR, false) + 'Z', front: M(oL[0]) + cr(oL, false) + cr(oR, false) + L(inn[0]) + cr(inn, false) + 'Z', inner: M(inn[0]) + cr(inn, false), aw: W + 9.5, T };
+}
+function clothBack(k, g, wr) {
+  if (k === 1 || k === 2) return path(shm(g).sil, k === 1 ? '#B0303A' : '#E2E0D8');
+  return '';
+}
+function clothFront(k, g, wr) {
+  const W = g.rx, T = g.top;
+  if (k === 1 || k === 2) {
+    const s = shm(g), aw = s.aw, fold = 'rgba(0,0,0,' + (k === 1 ? 0.14 : 0.08) + ')';
+    let x = path(s.front, k === 1 ? 'url(#shm)' : '#FDFDFA') + line(s.inner, 'rgba(0,0,0,0.16)', 2.2);
+    [-1, 1].forEach((o) => { x += line('M' + r1(100 + o * (W + 4)) + ' 128 Q' + r1(100 + o * (W + 10)) + ' 166 ' + r1(100 + o * (W + 22)) + ' 196', fold, 1.5); });
+    // العقال: حزام أسود واحد تقيل (حبلين لازقين) على عرض القماش، وتحته على طول حافة القماش فوق الجبهة
+    return x + path('M' + r1(100 - aw) + ' ' + (T + 3) + ' Q100 ' + (T + 9) + ' ' + r1(100 + aw) + ' ' + (T + 3) + ' L' + r1(100 + aw) + ' ' + (T + 10) + ' Q100 ' + (T + 16) + ' ' + r1(100 - aw) + ' ' + (T + 10) + ' Z', '#1A1A1A', ' stroke="#1A1A1A" stroke-width="1" stroke-linejoin="round"') + line('M' + r1(100 - aw + 3) + ' ' + (T + 6.4) + ' Q100 ' + (T + 12.4) + ' ' + r1(100 + aw - 3) + ' ' + (T + 6.4), 'rgba(255,255,255,0.2)', 1);
+  }
+  if (k === 3) { const yb = T + 17, c = arc(g, 6.5, yb, yb, 18), d = M(c[0]) + cr(c, false) + ' Q100 ' + (yb + 2.5) + ' ' + r1(c[0][0]) + ' ' + r1(c[0][1]) + 'Z'; return path(d, '#FAF9F4') + path(d, 'url(#tq)') + line(M(c[0]) + ' Q100 ' + (yb + 2.5) + ' ' + r1(c[18][0]) + ' ' + r1(c[18][1]), '#DCD9CF', 2); }
+  if (k === 7) return ballCap(g, wr, false);
+  if (k < 4 || k > 6) return '';
+  // الحجاب والخمار والنقاب: فتحة الوش محسوبة من حافة الوش نفسها، فبتلف حوالين أي شكل وش وتحت الدقن
+  const lowR = k === 4 ? [[100 + W + 8.5, 114], [100 + W + 6, 128], [100 + W + 20, 146], [100 + W + 40, 164], [100 + W + 30, 175], [100, 180]] : [[100 + W + 8.5, 114], [100 + W + 9, 128], [100 + W + 20, 140], [100 + W + 37, 150], [100 + W + 50, 164], [100 + W + 56, 184], [100 + W + 57, 206], [100, 212]];
+  const outer = shape(arc(g, 7, 98, 98, 18).concat(lowR, lowR.slice(0, -1).reverse().map(mir)));
+  const hole = k === 6 ? SLIT : shape(ring(g, -1.5, 36).map(([x, y]) => [x, Math.max(y, T + 10 + 5 * Math.pow((x - 100) / W, 2))]));
+  const lt = light(wr), fold = lt ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.08)', edge = lt ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.14)';
+  let x = path(outer + hole, wr, ' fill-rule="evenodd"') + line(hole, edge, 1.2) + line(M(arc(g, 4, 84, 84, 18)[3]) + cr(arc(g, 4, 84, 84, 18).slice(3, 9), false), lt ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.07)', 3) + line('M' + (100 - 9) + ' ' + (g.bot + 5) + ' Q' + (100 - W - 6) + ' ' + (g.bot + 16) + ' ' + (100 - W - 22) + ' 150', fold, 1.5) + line('M' + (100 + 9) + ' ' + (g.bot + 5) + ' Q' + (100 + W + 6) + ' ' + (g.bot + 16) + ' ' + (100 + W + 22) + ' 150', fold, 1.5);
+  // النقاب: خمار من غير فتحة وش + فتحة عيون ضيقة بخيط في النص + رباط على الجبهة + الطرحة نازلة على الصدر
+  if (k === 6) x += path('M' + (100 - W - 4) + ' 80 Q100 78.6 ' + (100 + W + 4) + ' 80 L' + (100 + W + 4) + ' 73.5 Q100 72 ' + (100 - W - 4) + ' 73.5 Z', wr) + line('M' + (100 - W - 3) + ' 73.6 Q100 72.1 ' + (100 + W + 3) + ' 73.6', edge, 0.9)
+    + ((v) => path(v, wr) + line(v, edge, 0.9))('M' + (100 - W - 3) + ' 93 L' + (100 + W + 3) + ' 93 C' + (100 + W + 5) + ' 118 ' + (100 + W + 2) + ' 150 100 170 C' + (100 - W - 2) + ' 150 ' + (100 - W - 5) + ' 118 ' + (100 - W - 3) + ' 93 Z') + line('M' + (100 - W - 2) + ' 93.4 L' + (100 + W + 2) + ' 93.4', edge, 1) + line('M91 100 Q89 130 87 158 M109 100 Q111 130 113 158', fold, 1.3)
+    + '<rect x="98.8" y="79" width="2.4" height="14.2" rx="1.2" fill="' + wr + '"/>' + line(SLIT, 'rgba(0,0,0,0.32)', 1);
+  return x;
+}
+function capeFull(col) { const lt = light(col); return path('M70 96 C52 100 34 118 30 150 C26 190 28 228 32 252 Q100 264 168 252 C172 228 174 190 170 150 C166 118 148 100 130 96 Z', col) + line('M78 150 Q72 200 70 250 M122 150 Q128 200 130 250', lt ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.07)', 1.6); }
+function dollar(cx, cy, r, col, w) { return '<path d="M' + (cx + r * 0.42) + ' ' + (cy - r * 0.5) + ' C' + (cx + r * 0.2) + ' ' + (cy - r * 0.78) + ' ' + (cx - r * 0.5) + ' ' + (cy - r * 0.7) + ' ' + (cx - r * 0.42) + ' ' + (cy - r * 0.22) + ' C' + (cx - r * 0.34) + ' ' + (cy + r * 0.1) + ' ' + (cx + r * 0.42) + ' ' + (cy - r * 0.04) + ' ' + (cx + r * 0.42) + ' ' + (cy + r * 0.3) + ' C' + (cx + r * 0.42) + ' ' + (cy + r * 0.74) + ' ' + (cx - r * 0.3) + ' ' + (cy + r * 0.74) + ' ' + (cx - r * 0.46) + ' ' + (cy + r * 0.46) + '" stroke="' + col + '" stroke-width="' + w + '" fill="none" stroke-linecap="round"/>' + line('M' + cx + ' ' + (cy - r * 0.92) + 'V' + (cy + r * 0.92), col, w * 0.9); }
+// الكاب (اختيار) وطاقية الغني (مكافأة): حتة واحدة لازقة في الراس (طلب المالك 2026-10-16: «مش متقطع … ملامس لجسمه»)
+// القبة = حافة الراس منفوخة 5 بس (بتغطي الشعر وما تطيرش)، نازلة على الجناب لحد فوق الودان · البوز راكب على حافة القبة من غير فراغ
+// طاقية الغني نفس الشكل بقبة أعلى عشان العملة
+function ballCap(g, col, rich) {
+  const W = g.rx, T = g.top, ys = 80, yb = T + 15, lift = rich ? 9 : 3, top = T - 5 - lift, vis = shade(col, 0.78), seam = 'rgba(0,0,0,0.14)';
+  const c = arc(g, 5, ys, ys, 20).map(([x, y]) => [x, y - lift * Math.pow(Math.max(0, (ys - y) / (ys - T + 5)), 1.6)]);
+  const crown = M(c[0]) + cr(c, false) + cr([c[c.length - 1], [100 + W * 0.8, yb + 6], [100, yb + 6], [100 - W * 0.8, yb + 6], c[0]], false) + 'Z';
+  let x = path(crown, col) + line('M100 ' + (top + 2) + ' Q' + r1(100 - W * 0.62) + ' ' + (top + 9) + ' ' + r1(100 - W * 0.7) + ' ' + (yb + 2) + ' M100 ' + (top + 2) + ' Q' + r1(100 + W * 0.62) + ' ' + (top + 9) + ' ' + r1(100 + W * 0.7) + ' ' + (yb + 2), seam, 1.2) + '<circle cx="100" cy="' + (top + 0.5) + '" r="3" fill="' + vis + '"/>';
+  x += rich ? '<circle cx="100" cy="' + (yb - 12) + '" r="10" fill="#F3C96B" stroke="#C99A2E" stroke-width="1.5"/>' + dollar(100, yb - 12, 7.6, '#1F6B3A', 2.2) : line('M100 ' + (top + 3) + ' L100 ' + yb, seam, 1.4);
+  const xL = 100 - W - 4, xR = 100 + W + 4;
+  return x + '<ellipse cx="100" cy="' + (yb + 14) + '" rx="' + (W - 8) + '" ry="2.6" fill="rgba(0,0,0,0.13)"/>'
+    + path('M' + xL + ' ' + (yb + 8) + ' Q100 ' + (yb - 6) + ' ' + xR + ' ' + (yb + 8) + ' C' + (xR - 4) + ' ' + (yb + 12) + ' ' + (100 + 20) + ' ' + (yb + 13) + ' 100 ' + (yb + 13) + ' C' + (100 - 20) + ' ' + (yb + 13) + ' ' + (xL + 4) + ' ' + (yb + 12) + ' ' + xL + ' ' + (yb + 8) + ' Z', vis)
+    + line('M' + (xL + 6) + ' ' + (yb + 9) + ' Q100 ' + (yb - 2) + ' ' + (xR - 6) + ' ' + (yb + 9), 'rgba(0,0,0,0.16)', 1);
+}
+function chain(full) { const y = full ? 106 : 136, py = y + 30; return line('M88 ' + y + ' Q100 ' + (y + 38) + ' 112 ' + y, '#E2B53E', full ? 2.4 : 3).replace('/>', ' stroke-dasharray="' + (full ? '3 1.2' : '4 1.4') + '"/>') + '<circle cx="100" cy="' + py + '" r="' + (full ? 6 : 7.5) + '" fill="#E2B53E" stroke="#B8902A" stroke-width="1"/>' + dollar(100, py, full ? 4.4 : 5.6, '#7A5A12', 1.3); }
+// ===== الجسم واللبس (200×440) — كله جوه مجموعة بتتمط بالعرض حسب هيئة الجسم، والإيدين برّه عشان ما تتمطش =====
+const BUILD = [0.84, 1, 1.22];
+function outCol(c) { const k = Number(c.outfit); return k === 5 ? pick(ABAYA, c.outfitColor) : k === 4 && Number(c.gender) === 1 ? '#1C1C1E' : pick(OUTC, c.outfitColor); }
+function body(k, col, fem) {
+  const ln = light(col) ? 'rgba(0,0,0,0.14)' : 'rgba(255,255,255,0.12)', edge = ' stroke="rgba(0,0,0,0.10)" stroke-width="1.5"', shoe = '#2A2320', gold = '#D4A53A';
+  const arms = (c, w) => ['M62 124 C52 144 46 194 45 248', 'M138 124 C148 144 154 194 155 248'].map((d) => line(d, 'rgba(0,0,0,0.12)', w + 3) + line(d, c, w)).join('');
+  const ground = '<ellipse cx="100" cy="426" rx="62" ry="7" fill="rgba(0,0,0,0.14)"/>';
+  const top = (yb) => path('M70 108 Q100 102 130 108 Q146 112 148 128 L144 ' + yb + ' Q100 ' + (yb + 6) + ' 56 ' + yb + ' L52 128 Q54 112 70 108 Z', col, edge);
+  const legs = (c) => path('M64 232 L98 232 L95 414 L73 414 Z M102 232 L136 232 L127 414 L105 414 Z', c) + '<ellipse cx="83" cy="418" rx="15" ry="6.5" fill="' + shoe + '"/><ellipse cx="117" cy="418" rx="15" ry="6.5" fill="' + shoe + '"/>';
+  const feet = (c) => '<ellipse cx="85" cy="422" rx="13" ry="5" fill="' + c + '"/><ellipse cx="115" cy="422" rx="13" ry="5" fill="' + c + '"/>';
+  const robe = (c) => path('M70 108 Q100 102 130 108 Q146 112 150 128 L157 418 Q100 426 43 418 L50 128 Q54 112 70 108 Z', c, edge);
+  if (k === 1) return ground + legs('#2F3B37') + top(236) + '<rect x="56" y="230" width="88" height="6" rx="2" fill="' + shoe + '"/>' + path('M86 108 L100 124 L114 108 L108 105 L100 114 L92 105 Z', '#FFFFFF', ' opacity="0.9"') + line('M100 124 L100 228', 'rgba(0,0,0,0.10)', 2) + arms(col, 19);
+  if (k === 2) return ground + legs(col) + top(252) + path('M86 108 L100 152 L114 108 Z', '#F4F3EE') + line('M86 108 L97 162 M114 108 L103 162', 'rgba(0,0,0,0.25)', 2.2) + '<circle cx="100" cy="196" r="2.6" fill="rgba(0,0,0,0.25)"/>' + arms(col, 19);
+  // فستان: لون واحد من الكتف للكعب، وسط خفيف وجيبة واسعة (كان اسمه «بلوزة» غلط)
+  if (k === 3) return ground + feet(shoe) + path('M58 198 L142 198 L162 414 Q100 424 38 414 Z', col, edge) + top(206) + line('M57 202 Q100 208 143 202', ln, 1.6) + line('M86 214 Q80 320 72 410 M114 214 Q120 320 128 410', ln, 1.2) + line('M88 109 Q100 121 112 109', ln, 1.8) + arms(col, 18);
+  if (k === 4 && !fem) { const cc = col === '#F4F3EE' ? '#2A2320' : col; return ground + feet('#5A4030') + robe('#F4F3EE') + line('M100 116 L100 176', 'rgba(0,0,0,0.10)', 2) + path('M70 106 Q50 112 44 130 L30 420 Q58 426 84 422 L90 118 Z M130 106 Q150 112 156 130 L170 420 Q142 426 116 422 L110 118 Z', cc) + line('M70 106 Q80 110 90 118 L84 422 M130 106 Q120 110 110 118 L116 422', gold, 3) + arms(cc, 19); }
+  // عباية: واسعة لحد الأرض، مفتوحة من قدام بشريطين، وأكمام واسعة — والمكافأة نفس العباية بتطريز دهب
+  if (k === 5 || k === 4) { const tr = k === 4 ? gold : ln, w = k === 4 ? 2.4 : 1.3; return ground + feet(shoe) + path('M70 106 Q100 100 130 106 Q148 110 152 128 L160 418 Q100 426 40 418 L48 128 Q52 110 70 106 Z', col, edge) + line('M97 110 L95 420 M103 110 L105 420', tr, w) + line('M86 108 Q100 118 114 108', tr, w) + arms(col, 24) + (k === 4 ? line('M42 414 Q100 422 158 414', gold, 2.4) + line('M37 238 L53 242 M163 238 L147 242', gold, 3) : ''); }
+  // تونيك لحد الركبة بفتحات جنب + بنطلون
+  if (k === 6) return ground + legs('#2F3B37') + path('M70 108 Q100 102 130 108 Q146 112 149 128 L152 300 Q100 306 48 300 L51 128 Q54 112 70 108 Z', col, edge) + line('M52 272 L50 300 M148 272 L150 300', 'rgba(0,0,0,0.16)', 1.6) + line('M90 109 L100 122 L110 109', ln, 1.6) + [130, 140, 150].map((y) => '<circle cx="100" cy="' + y + '" r="1.6" fill="' + ln + '"/>').join('') + arms(col, 19);
+  return ground + feet('#5A4030') + robe(col) + line('M92 109 Q100 117 108 109', ln, 2) + line('M100 116 L100 176', 'rgba(0,0,0,0.10)', 2) + arms(col, 19);
+}
+function bust(k, col, fem) {
+  const ln = light(col) ? 'rgba(0,0,0,0.14)' : 'rgba(255,255,255,0.12)', sh = 'M18 200 C22 160 60 142 100 142 C140 142 178 160 182 200 Z', base = path(sh, col), gold = '#D4A53A';
+  if (k === 0) return base + line('M90 142 L100 156 L110 142', 'rgba(0,0,0,0.14)', 2) + line('M100 156 L100 190', 'rgba(0,0,0,0.10)', 2);
+  if (k === 1) return base + path('M86 142 L100 162 L114 142 L108 140 L100 150 L92 140 Z', '#FFFFFF');
+  if (k === 2) return base + path('M84 144 L100 176 L116 144', '#F4F3EE') + line('M84 144 L96 186 M116 144 L104 186', 'rgba(0,0,0,0.25)', 2.2);
+  if (k === 4 && !fem) { const cc = col === '#F4F3EE' ? '#2A2320' : col; return path(sh, '#F4F3EE') + line('M90 142 L100 156 L110 142', 'rgba(0,0,0,0.14)', 2) + path('M18 200 C22 162 56 144 88 142 L94 200 Z M182 200 C178 162 144 144 112 142 L106 200 Z', cc) + line('M88 142 L94 200 M112 142 L106 200', gold, 3); }
+  if (k === 5 || k === 4) { const tr = k === 4 ? gold : ln, w = k === 4 ? 3 : 1.6; return base + line('M97 150 L96 200 M103 150 L104 200', tr, w) + line('M86 143 Q100 156 114 143', tr, w); }
+  if (k === 6) return base + line('M90 143 L100 158 L110 143', ln, 2) + [168, 180, 192].map((y) => '<circle cx="100" cy="' + y + '" r="2" fill="' + ln + '"/>').join('');
+  return base + line('M84 143 Q100 162 116 143', ln, 2);
+}
+function render(look, mode) {
+  const c = Object.assign({}, DEFAULT, look || {}), fem = Number(c.gender) === 1, [sk, skd] = pick(SKIN, c.skin), hc = pick(HAIRC, c.hairColor), wr = pick(WRAP, c.wrap), oc = outCol(c);
+  const g = geo(Number(c.face) || 0), hat = Number(c.hat) === 1, hk = hat ? 0 : Number(c.head) || 0, hair = Number(c.hair) || 0, out = Number(c.outfit) || 0, bd = fem ? 0 : Number(c.beard) || 0;
+  const hides = [1, 2, 4, 5, 6].indexOf(hk) >= 0, capAt = hat || hk === 7 ? 82 : hk === 3 ? g.top + 17 : 0;
+  const sx = Math.round(pick(BUILD, c.build) * (fem ? 0.95 : 1) * 100) / 100, stretch = (x) => '<g transform="translate(100 0) scale(' + sx + ' 1) translate(-100 0)">' + x + '</g>';
+  const defs = '<defs><pattern id="shm" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#D2363C"/><circle cx="3" cy="3" r="1.15" fill="#FBEFEC"/></pattern><pattern id="tq" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.7" fill="rgba(0,0,0,0.10)"/></pattern></defs>';
+  const back = (hides ? '' : hairBack(hair, hc, g, !!capAt)) + clothBack(hk, g, wr);
+  const parts = [
+    path('M89 110 L89 146 Q100 152 111 146 L111 110 Z', skd),
+    hides ? '' : '<ellipse cx="' + (100 - g.rx) + '" cy="88" rx="5" ry="8" fill="' + skd + '"/><ellipse cx="' + (100 + g.rx) + '" cy="88" rx="5" ry="8" fill="' + skd + '"/>',
+    path(shape(ring(g, 0, 36)), sk),
+    fem ? '<ellipse cx="87" cy="97" rx="5" ry="3" fill="#E8826F" opacity="0.2"/><ellipse cx="113" cy="97" rx="5" ry="3" fill="#E8826F" opacity="0.2"/>' : '',
+    beard(bd, hc, g.rx, g.ry), eyes(Number(c.eyes), fem), brows(Number(c.brows), hk >= 4 && hk <= 6 ? '#3A2A1F' : hc), nose(Number(c.nose), skd),
+    bd >= 2 ? mouth(Number(c.mouth), '#F2E6E0').replace('stroke-width="1.8"', 'stroke-width="1.2"') : mouth(Number(c.mouth), fem ? '#A9505A' : '#7E4337'),
+    hides ? '' : hairFront(hair, hc, g, capAt), glasses(Number(c.glasses)), clothFront(hk, g, wr), hat ? ballCap(g, '#1F8A4D', true) : ''
+  ].join('');
+  const svg = (vb, x) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '">' + defs + x + '</svg>';
+  if (mode === 'full') {
+    const gh = (x) => '<g transform="translate(20 -2) scale(0.8)">' + x + '</g>', hx = r1(100 - 55 * sx);
+    return svg('0 0 200 440', gh(back) + stretch(body(out, oc, fem)) + '<circle cx="' + hx + '" cy="259" r="8.5" fill="' + sk + '"/><circle cx="' + r1(200 - hx) + '" cy="259" r="8.5" fill="' + sk + '"/>' + (Number(c.bling) === 1 ? chain(true) : '') + (hk === 5 || hk === 6 ? stretch(capeFull(wr)) : '') + gh(parts));
+  }
+  const shoulders = mode === 'head' ? path('M30 200 C34 160 64 146 100 146 C136 146 166 160 170 200 Z', oc) : bust(out, oc, fem);
+  return svg(mode === 'head' ? '46 24 108 108' : '0 0 200 200', back + '<g transform="translate(0 134) scale(1 1.138) translate(0 -142)">' + stretch(shoulders) + '</g>' + (Number(c.bling) === 1 && mode !== 'head' ? chain(false) : '') + parts);
+}

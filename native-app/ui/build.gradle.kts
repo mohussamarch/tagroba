@@ -46,6 +46,11 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
+        jvmTest.dependencies {
+            // اختبار بس (r041 — ARCHITECTURE §31.40): skiko الأصلية لويندوز (نفس نسخة Compose 1.11.1) عشان `ImageComposeScene` يرسم «شخصيتك»
+            // لصور PNG ونقارنها بالنموذج. اختبار الصور بيشتغل بس لو `CHARACTER_PNG_DIR` متظبط، والمكتبة مش داخلة التطبيق خالص.
+            implementation("org.jetbrains.skiko:skiko-awt-runtime-windows-x64:0.144.6")
+        }
         if (withAndroid) {
             getByName("androidMain").dependencies {
                 // خط Noto Sans Arabic من خدمة خطوط جوجل على الجهاز (من غير ملف خط في المستودع) — ARCHITECTURE §31.31
