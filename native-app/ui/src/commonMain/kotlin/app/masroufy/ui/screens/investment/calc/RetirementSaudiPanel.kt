@@ -76,6 +76,7 @@ fun RetirementSaudiPanel() {
             )
         }
         RetirementSection(t(UiKey.RETSA_SEC_WAGE)) {
+            retirementSalaryLine(d, currency)?.let { NoteBox(it) }
             val basic = d?.suggestedBasicMinor
             CalcField(
                 t(UiKey.RETSA_BASIC), f[SaudiFields.BASIC], { f[SaudiFields.BASIC] = it }, unit = unit,

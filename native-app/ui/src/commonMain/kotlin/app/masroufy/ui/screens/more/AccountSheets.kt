@@ -114,15 +114,17 @@ private fun sheetTitle(e: AccountEdit, currency: Currency): String = when (e) {
 data class SalaryLink(
     val state: SalaryState?,
     val editable: Boolean,
-    val save: (Halalas) -> Unit,
+    val save: (Map<String, Halalas>) -> Unit,
     val decline: () -> Unit,
 )
 
 @Composable
 private fun SalaryBody(e: AccountEdit.Field, link: SalaryLink, currency: Currency, onDraft: (AccountEdit) -> Unit) {
     BasicText(t(UiKey.ACC_SALARY_BODY), style = Type.of(13).copy(color = Ink.muted))
+    // المسودة خريطة: خانة لكل جهة شغل شغالة (أو خانة الملف) ⇒ النص المكتوب
+    val texts = (e.draft as? Map<*, *>)?.entries?.associate { (k, v) -> k.toString() to v.toString() }.orEmpty()
     SalaryInput(
-        text = e.draft as? String ?: "", onText = { onDraft(e.copy(draft = it, error = null)) }, currency = currency,
+        texts = texts, onText = { key, text -> onDraft(e.copy(draft = texts + (key to text), error = null)) }, currency = currency,
         salary = link.state, error = e.error, enabled = link.editable, onSave = link.save, onDecline = link.decline,
     )
     if (!link.editable) NotYetLine(t(UiKey.MORE_NOT_YET))

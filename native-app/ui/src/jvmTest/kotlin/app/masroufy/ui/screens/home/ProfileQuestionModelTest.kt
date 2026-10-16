@@ -25,7 +25,7 @@ class ProfileQuestionModelTest {
 
     @Test fun salaryIsAskedAfterFamilyUntilTypedOrSkipped() {
         val p = emptyProfile().copy(hasCar = true, supportsDependents = false)
-        val open = app.masroufy.core.SalaryState(null, app.masroufy.core.Currency.SAR, declined = false, wasRange = true, employer = null)
+        val open = app.masroufy.core.SalaryState(null, app.masroufy.core.Currency.SAR, declined = false, wasRange = true, employers = emptyList())
         assertEquals(ProfileCard.SALARY, nextProfileCard(p, open), "النطاق القديم = ما اتجاوبش ⇒ بيتسأل يكتب المبلغ")
         assertEquals(ProfileCard.HOME, nextProfileCard(p, open.copy(amountMinor = 900_000)))
         assertEquals(ProfileCard.HOME, nextProfileCard(p, open.copy(declined = true)))

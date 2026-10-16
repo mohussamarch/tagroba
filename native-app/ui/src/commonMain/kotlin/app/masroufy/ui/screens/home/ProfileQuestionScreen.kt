@@ -79,19 +79,19 @@ fun ProfileQuestionScreen() {
     var carToWork by remember { mutableStateOf(false) }
     // المرتب مبلغ بالظبط (قرار المالك 2026-10-16) — حالته من `ProfileSalary` (على جهة الشغل الرئيسية أو الملف)
     var salary by remember(deps) { mutableStateOf<SalaryState?>(null) }
-    var salaryText by remember { mutableStateOf("") }
+    var salaryTexts by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     LaunchedEffect(deps) {
         salary = runCatching { deps.home.salary?.current() }.getOrNull()
-        salaryText = salaryDraft(salary)
+        salaryTexts = salaryDraft(salary)
         runCatching { deps.home.profile.load() }.onSuccess { profile = it; card = nextProfileCard(it, salary) }.onFailure { failed = true }
     }
-    fun salaryAnswer(declined: Boolean, amount: Halalas?) {
+    fun salaryAnswer(declined: Boolean, amounts: Map<String, Halalas>?) {
         val use = deps.home.salary ?: return
         if (saving) return
         saving = true
         error = null
         scope.launch {
-            when (val r = runCatching { if (declined) use.decline() else use.save(amount) }.getOrNull()) {
+            when (val r = runCatching { if (declined) use.decline() else use.saveAll(amounts.orEmpty()) }.getOrNull()) {
                 is SalarySaved.Ok -> {
                     salary = r.state
                     // «التوقع والمتاح يوميًا بقوا أدق — مرتبك ⃁ 12,000.» — المبلغ اللي اتحفظ نفسه (من حالة الاستخدام، مش من الخانة)
@@ -148,8 +148,8 @@ fun ProfileQuestionScreen() {
                 item(key = "card-${c.name}") { QuestionCard(c, picked, enabled = reply == null && !saving) { answer(c, it) } }
                 if (c == ProfileCard.SALARY && reply == null) item(key = "salary") {
                     SalaryInput(
-                        salaryText, { salaryText = it; error = null }, deps.space.currency, salary, error, enabled = !saving,
-                        onSave = { salaryAnswer(declined = false, amount = it) }, onDecline = { salaryAnswer(declined = true, amount = null) },
+                        salaryTexts, { key, text -> salaryTexts = salaryTexts + (key to text); error = null }, deps.space.currency, salary, error, enabled = !saving,
+                        onSave = { salaryAnswer(declined = false, amounts = it) }, onDecline = { salaryAnswer(declined = true, amounts = null) },
                         hint = t(UiKey.PROFILE_QUESTION_SALARY_SUB),
                     )
                 } else error?.let { msg -> item(key = "error") { FieldError(msg) } }

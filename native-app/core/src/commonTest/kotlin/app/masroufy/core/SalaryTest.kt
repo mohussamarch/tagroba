@@ -7,13 +7,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** المرتب مبلغ بالظبط (قرار المالك 2026-10-16) — مكانه · النطاق القديم · العملة · «أفضّل ما أقولش». أسماء ومبالغ مخترعة. */
+/** المرتب مبلغ بالظبط (قرار المالك 2026-10-16 وردوده 18:15) — مكانه · مجموع الوظايف · النطاق القديم · العملة · التخطي · النسبة. أسماء ومبالغ مخترعة. */
 class SalaryTest {
     private val today = "2026-10-16"
     private val blank = emptyProfile()
 
-    private fun job(id: String, kind: IncomeSourceKind = IncomeSourceKind.JOB, currency: Currency = Currency.SAR, end: IsoDate? = null, expected: Halalas? = null) =
-        IncomeSource(id, "جهة وهمية $id", "جهه وهميه $id", kind, currency, "2025-01-01", end, expectedMinor = expected)
+    private fun job(id: String, kind: IncomeSourceKind = IncomeSourceKind.JOB, currency: Currency = Currency.SAR, end: IsoDate? = null, expected: Halalas? = null, start: IsoDate = "2025-01-01") =
+        IncomeSource(id, "جهة وهمية $id", "جهه وهميه $id", kind, currency, start, end, expectedMinor = expected)
 
     @Test fun anExactAmountOnTheProfileIsReadBackInItsCurrencyOnly() {
         val p = profileAfterSalary(blank, 1_234_567, Currency.SAR, onEmployer = false)
@@ -50,24 +50,38 @@ class SalaryTest {
         assertEquals(Currency.EGP, reparsed.salaryCurrency)
     }
 
-    @Test fun theMainEmployerHoldsTheAmountAndTheProfileCopyIsCleared() {
+    @Test fun theEmployerHoldsTheAmountAndTheProfileAmountIsUsedOnlyWithoutEmployers() {
         val sources = listOf(job("a", expected = 1_500_000), job("old", end = "2025-12-31", expected = 900_000))
         val s = salaryState(blank, sources, Currency.SAR, today)
-        assertEquals("a", s.employer?.id)
+        assertEquals(listOf("a"), s.employers.map { it.id })
         assertEquals(1_500_000L, s.amountMinor)
         val p = profileAfterSalary(blank.copy(salaryMinor = 700_000, salaryCurrency = Currency.SAR), 1_600_000, Currency.SAR, onEmployer = true)
         assertNull(p.salaryMinor, "الرقم على الجهة بس — ما يفضلش رقمين")
-        // الجهة لسه مالهاش مبلغ ⇒ مبلغ الملف بيتعرض لحد ما يتكتب من جديد
-        assertEquals(700_000L, salaryState(blank.copy(salaryMinor = 700_000, salaryCurrency = Currency.SAR), listOf(job("b")), Currency.SAR, today).amountMinor)
+        val withProfile = blank.copy(salaryMinor = 700_000, salaryCurrency = Currency.SAR)
+        assertNull(salaryState(withProfile, listOf(job("b")), Currency.SAR, today).amountMinor, "فيه جهة ⇒ مبلغ الملف ما بيتستعملش (رد المالك)")
+        assertEquals(700_000L, salaryState(withProfile, listOf(job("e", currency = Currency.EGP)), Currency.SAR, today).amountMinor, "جهة بعملة تانية مش جهة هنا")
     }
 
-    @Test fun noMainEmployerWhenItIsAmbiguousOrInAnotherCurrency() {
-        assertEquals("j", salaryEmployer(listOf(job("j"), job("p", IncomeSourceKind.PART_TIME)), Currency.SAR, today)?.id, "الوظيفة قبل البارت تايم")
-        assertNull(salaryEmployer(listOf(job("x"), job("y")), Currency.SAR, today), "وظيفتين ⇒ ما بنختارش")
-        assertNull(salaryEmployer(listOf(job("e", currency = Currency.EGP)), Currency.SAR, today))
+    @Test fun twoCurrentJobsShowTheSumOnlyWhenEveryJobHasAnAmount() {
+        val both = listOf(job("y", expected = 1_000_050, start = "2026-02-01"), job("x", IncomeSourceKind.PART_TIME, expected = 300_000))
+        val s = salaryState(blank, both, Currency.SAR, today)
+        assertEquals(listOf("x", "y"), s.employers.map { it.id }, "الأقدم الأول")
+        assertEquals(1_300_050L, s.amountMinor, "المجموع بالهللة")
+        val partial = salaryState(blank.copy(salaryMinor = 9_999), listOf(job("x", expected = 300_000), job("y")), Currency.SAR, today)
+        assertNull(partial.amountMinor, "جهة من غير مبلغ ⇒ المجموع مش معروف (مش مجموع ناقص ولا مبلغ الملف)")
+        assertFalse(partial.answered)
+        assertNull(partial.employer, "أكتر من جهة ⇒ مفيش جهة لوحدها")
         assertFalse(validSalaryAmount(0))
         assertFalse(validSalaryAmount(-5))
         assertTrue(validSalaryAmount(1))
+    }
+
+    @Test fun profileCompletionCountsTwelveForAnAmountOrForDeclining() {
+        assertEquals(12, salaryProfilePoints(salaryState(blank.copy(salaryMinor = 100), emptyList(), Currency.SAR, today)))
+        assertEquals(12, salaryProfilePoints(salaryState(blank.copy(salaryDeclined = true), emptyList(), Currency.SAR, today)), "«مش عايز أقول» بتتحسب")
+        assertEquals(0, salaryProfilePoints(salaryState(blank.copy(salaryRangeLegacy = "R2"), emptyList(), Currency.SAR, today)), "النطاق القديم ما بيتحسبش")
+        assertEquals(0, salaryProfilePoints(salaryState(blank, emptyList(), Currency.SAR, today)))
+        assertEquals(0, salaryProfilePoints(null))
     }
 
     @Test fun oldBackupsWithARangeStillPassTheProfileCheck() {

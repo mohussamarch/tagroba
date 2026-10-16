@@ -174,8 +174,8 @@ fun AccountScreen(openBuilder: Boolean = false) {
 
     AccountSheet(
         edit = editing,
-        salary = SalaryLink(salary, editable = more.salary != null && salary != null, save = { amount ->
-            scope.launch { onSalarySaved(runCatching { more.salary?.save(amount) }.getOrNull(), t(UiKey.ACC_SALARY_SAVED)) }
+        salary = SalaryLink(salary, editable = more.salary != null && salary != null, save = { amounts ->
+            scope.launch { onSalarySaved(runCatching { more.salary?.saveAll(amounts) }.getOrNull(), t(UiKey.ACC_SALARY_SAVED)) }
         }, decline = { scope.launch { onSalarySaved(runCatching { more.salary?.decline() }.getOrNull(), null) } }),
         onDraft = { editing = it }, onClose = { editing = null },
         onSave = { field, draft -> profile?.let { p -> applyAnswer(p, field, draft)?.let { save(it, paydayToast(p, it)) } } },
@@ -260,7 +260,7 @@ private fun AnswerRow(r: AccountRow, last: Boolean, onClick: () -> Unit) {
         ) {
             Column(Modifier.weight(1f)) {
                 BasicText(t(r.label), style = Type.of(15, FontWeight.Medium))
-                if (r.hint != null) BasicText(t(r.hint), style = Type.caption().copy(color = Ink.muted))
+                if (r.hint != null) BasicText(if (r.hintArg != null) t(r.hint, r.hintArg) else t(r.hint), style = Type.caption().copy(color = Ink.muted))
             }
             if (r.value != null) BasicText(r.value, Modifier.widthIn(max = 150.dp), style = Type.of(14, FontWeight.Bold).copy(textAlign = TextAlign.End))
             else Box(Modifier.clip(RoundedCornerShape(12.dp)).background(Ink.alertBg).padding(horizontal = 10.dp, vertical = 3.dp)) {

@@ -3,51 +3,58 @@ package app.masroufy.core
 /**
  * المرتب الشهري — **مبلغ بالظبط بيتكتب** (قرار المالك 2026-10-16، نصه: «انا محتاج اكتبه ونخلي الناس تكتبه») بدل النطاقات (§63 القديم).
  *
- * **مصدر واحد للرقم:** لو فيه **جهة شغل رئيسية** شغالة النهارده في البلد دي ([salaryEmployer]) ⇒ المرتب هو «المرتب المتوقع» بتاعها
- * (`IncomeSource.expectedMinor` — نفس الرقم اللي في «مصادر الدخل» و«جهات الشغل»)، والكتابة بتروح عليها. مفيش جهة ⇒ المبلغ على الملف
- * ([UserProfile.salaryMinor] + [UserProfile.salaryCurrency]). القراية والكتابة بنفس القاعدة دي بالظبط.
- * الجهة لسه مالهاش مبلغ والملف عليه مبلغ بنفس العملة (اتكتب قبل ما الجهة تتضاف) ⇒ بيتعرض مبلغ الملف لحد ما يتكتب من جديد (بيروح للجهة
- * وبيتمسح من الملف — ما يفضلش رقمين).
+ * **مكان الرقم (ردود المالك 2026-10-16 18:15 — OVERRIDES §63):**
+ * - فيه **جهات شغل شغالة النهارده** في البلد دي بعملتها ([salaryEmployers]) ⇒ **مبلغ لكل جهة** = «المرتب المتوقع» بتاعها
+ *   (`IncomeSource.expectedMinor` — نفس الرقم في «مصادر الدخل» و«جهات الشغل»)، والكتابة بتروح عليها. «ملفك» بيعرض **المجموع**
+ *   ومعاه «مجموع مرتبات N وظايف» لو أكتر من واحدة. جهة من غيرهم مالهاش مبلغ ⇒ المجموع **مش معروف** (القاعدة 10 — مش مجموع ناقص).
+ * - **مفيش جهة** ⇒ المبلغ على الملف ([UserProfile.salaryMinor] + [UserProfile.salaryCurrency]) — **ده بس** اللي بيستعمل مبلغ الملف.
  *
- * المجهول مجهول (القاعدة 10): نطاق قديم ⇒ **مش رقم** ([SalaryState.wasRange]) · عملة تانية ⇒ مش متاح · «أفضّل ما أقولش» ⇒ [SalaryState.declined].
+ * المجهول مجهول: نطاق قديم ⇒ **مش رقم** ([SalaryState.wasRange]) · عملة تانية ⇒ مش متاح · «مش عايز أقول» ⇒ [SalaryState.declined].
  */
 data class SalaryState(
-    /** المبلغ بالهللة بعملة البلد، أو `null` = مش معروف. */
+    /** المرتب بالهللة بعملة البلد (مجموع الجهات لو كلها معروفة، أو مبلغ الملف لو مفيش جهات)، أو `null` = مش معروف. */
     val amountMinor: Halalas?,
     val currency: Currency,
-    /** اختار «أفضّل ما أقولش» ومفيش مبلغ. */
+    /** اختار «مش عايز أقول» ومفيش مبلغ. */
     val declined: Boolean,
-    /** كان متخزن نطاق قديم ومفيش مبلغ ⇒ «كنت مختار نطاق — اكتب المبلغ بالظبط». */
+    /** كان متخزن نطاق قديم ومفيش مبلغ ⇒ «إجابتك القديمة كانت نطاق — اكتب المبلغ بالظبط». */
     val wasRange: Boolean,
-    /** الجهة اللي المبلغ بيتحفظ عليها، أو `null` = على الملف. */
-    val employer: IncomeSource?,
+    /** جهات الشغل الشغالة (المبلغ بيتحفظ على كل واحدة). فاضية = المبلغ على الملف. */
+    val employers: List<IncomeSource>,
 ) {
-    /** السؤال اتجاوب (مبلغ أو «أفضّل ما أقولش») ⇒ كارت «كمّل ملفك» ما بيسألوش. */
+    /** السؤال اتجاوب (مبلغ أو «مش عايز أقول») ⇒ كارت «كمّل ملفك» ما بيسألوش. */
     val answered: Boolean get() = amountMinor != null || declined
+
+    /** الجهة لوحدها لو واحدة بس (سطر «هيتحفظ مرتب متوقع لـ…»). */
+    val employer: IncomeSource? get() = employers.singleOrNull()
 }
 
-/**
- * جهة الشغل الرئيسية في البلد دي النهارده: الجهات الشغالة (وظيفة أو بارت تايم) بعملة البلد ⇒ «وظيفة» واحدة بس، وإلا جهة واحدة بس.
- * أكتر من واحدة من غير ما تبان الرئيسية ⇒ `null` (ما بنختارش من عندنا — زي حاسبة المعاش) والمبلغ بيفضل على الملف.
- */
-fun salaryEmployer(sources: List<IncomeSource>, currency: Currency, today: IsoDate): IncomeSource? {
-    val current = sourcesActiveOn(sources, today).filter { isEmployer(it) && it.currency == currency }
-    return current.filter { it.kind == IncomeSourceKind.JOB }.singleOrNull() ?: current.singleOrNull()
-}
+/** مفتاح خانة الملف في الفورم (مفيش جهات) — غير كده المفتاح معرّف الجهة. */
+const val PROFILE_SALARY_KEY = ""
+
+/** وزن المرتب في نسبة «ملفك» (§63): **12** — بتتحسب لو كتب مبلغ **أو** اختار «مش عايز أقول» (رد المالك 2026-10-16). */
+const val SALARY_PROFILE_POINTS = 12
+
+fun salaryProfilePoints(state: SalaryState?): Int = if (state?.answered == true) SALARY_PROFILE_POINTS else 0
+
+/** جهات الشغل الشغالة النهارده (وظيفة أو بارت تايم) بعملة البلد، بترتيب ثابت (الأقدم الأول). */
+fun salaryEmployers(sources: List<IncomeSource>, currency: Currency, today: IsoDate): List<IncomeSource> =
+    sourcesActiveOn(sources, today).filter { isEmployer(it) && it.currency == currency }.sortedWith(compareBy<IncomeSource> { it.startedAt }.thenBy { it.id })
 
 /** مبلغ الملف لو بعملة البلد (أو مبلغ قديم من غير عملة — بيتعرض زي ما كان). */
 fun profileSalaryIn(profile: UserProfile?, currency: Currency): Halalas? =
     profile?.salaryMinor?.takeIf { profile.salaryCurrency == null || profile.salaryCurrency == currency }
 
 fun salaryState(profile: UserProfile?, sources: List<IncomeSource>, currency: Currency, today: IsoDate): SalaryState {
-    val employer = salaryEmployer(sources, currency, today)
-    val amount = employer?.expectedMinor ?: profileSalaryIn(profile, currency)
+    val employers = salaryEmployers(sources, currency, today)
+    val amount = if (employers.isEmpty()) profileSalaryIn(profile, currency)
+    else employers.map { it.expectedMinor }.takeIf { all -> all.all { it != null } }?.let { known -> addMoney(*known.filterNotNull().toLongArray()) }
     val declined = amount == null && profile?.salaryDeclined == true
     val wasRange = amount == null && !declined && profile?.salaryRangeLegacy != null
-    return SalaryState(amount, currency, declined, wasRange, employer)
+    return SalaryState(amount, currency, declined, wasRange, employers)
 }
 
-/** الملف بعد كتابة المبلغ: على الملف لو مفيش جهة، وإلا مبلغ الملف بنفس العملة بيتمسح (الرقم على الجهة). النطاق القديم و«أفضّل ما أقولش» بيتمسحوا. */
+/** الملف بعد كتابة المبلغ: على الملف لو مفيش جهة، وإلا مبلغ الملف بنفس العملة بيتمسح (الأرقام على الجهات). النطاق القديم و«مش عايز أقول» بيتمسحوا. */
 fun profileAfterSalary(profile: UserProfile, amountMinor: Halalas, currency: Currency, onEmployer: Boolean): UserProfile {
     val cleared = profile.copy(salaryDeclined = null, salaryRangeLegacy = null)
     return when {
@@ -57,7 +64,7 @@ fun profileAfterSalary(profile: UserProfile, amountMinor: Halalas, currency: Cur
     }
 }
 
-/** «أفضّل ما أقولش»: المبلغ بعملة البلد بيتمسح من الملف (والجهة بيتمسح مبلغها في حالة الاستخدام) والنطاق القديم كمان. */
+/** «مش عايز أقول»: المبلغ بعملة البلد بيتمسح من الملف (والجهات بيتمسح مبلغها في حالة الاستخدام) والنطاق القديم كمان. */
 fun profileAfterDecline(profile: UserProfile, currency: Currency): UserProfile {
     val base = profile.copy(salaryDeclined = true, salaryRangeLegacy = null)
     return if (profileSalaryIn(profile, currency) != null) base.copy(salaryMinor = null, salaryCurrency = null) else base

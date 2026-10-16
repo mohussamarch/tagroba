@@ -19,7 +19,8 @@ import app.masroufy.ui.text.t
  */
 enum class AccountField { NAME, GENDER, DEPENDENTS, SALARY, PAYDAY, CAR, RENTER, MAID, BUSINESS }
 
-data class AccountRow(val field: AccountField, val label: TextRef, val value: String?, val hint: TextRef? = null)
+/** [hintArg] = قيمة `{0}` في [hint] (مثلًا عدد الوظايف في «مجموع مرتبات N وظايف»). */
+data class AccountRow(val field: AccountField, val label: TextRef, val value: String?, val hint: TextRef? = null, val hintArg: String? = null)
 
 data class AccountGroup(val title: TextRef, val note: TextRef?, val rows: List<AccountRow>)
 
@@ -67,8 +68,19 @@ fun salaryValue(p: UserProfile, currency: Currency, salary: SalaryState?): Strin
     else -> null
 }
 
-/** تحت سطر المرتب: «كنت مختار نطاق — اكتب المبلغ بالظبط» لو كان متخزن نطاق قديم، وإلا الجملة العادية. */
-fun salaryHint(salary: SalaryState?): TextRef = if (salary?.wasRange == true) UiKey.ACC_SALARY_WAS_RANGE else UiKey.ACC_SALARY_HINT
+/**
+ * تحت سطر المرتب: نطاق قديم ⇒ «إجابتك القديمة كانت نطاق — اكتب المبلغ بالظبط» · أكتر من جهة شغالة ⇒ «مجموع مرتبات N وظايف» (لو المجموع
+ * معروف) أو «اكتب مرتب كل شغلانة لوحدها» (رد المالك 2026-10-16) · غير كده الجملة العادية.
+ */
+fun salaryHint(salary: SalaryState?): TextRef = when {
+    salary?.wasRange == true -> UiKey.ACC_SALARY_WAS_RANGE
+    (salary?.employers?.size ?: 0) > 1 -> if (salary?.amountMinor != null) UiKey.ACC_SALARY_TOTAL_OF else UiKey.ACC_SALARY_EACH_JOB
+    else -> UiKey.ACC_SALARY_HINT
+}
+
+/** عدد الوظايف لـ«مجموع مرتبات N وظايف»، وإلا null. */
+fun salaryHintArg(salary: SalaryState?): String? =
+    salary?.takeIf { salaryHint(it) == UiKey.ACC_SALARY_TOTAL_OF }?.let { sentenceNumber(it.employers.size) }
 
 fun accountGroups(p: UserProfile, currency: Currency, salary: SalaryState? = null): List<AccountGroup> = listOf(
     AccountGroup(
@@ -82,7 +94,7 @@ fun accountGroups(p: UserProfile, currency: Currency, salary: SalaryState? = nul
     AccountGroup(
         UiKey.ACC_GROUP_INCOME, null,
         listOf(
-            AccountRow(AccountField.SALARY, UiKey.ACC_SALARY, salaryValue(p, currency, salary), salaryHint(salary)),
+            AccountRow(AccountField.SALARY, UiKey.ACC_SALARY, salaryValue(p, currency, salary), salaryHint(salary), salaryHintArg(salary)),
             AccountRow(AccountField.PAYDAY, UiKey.ACC_PAYDAY, t(UiKey.ACC_DAY_N, sentenceNumber(p.payday)), UiKey.ACC_PAYDAY_HINT),
         ),
     ),
