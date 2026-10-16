@@ -57,6 +57,8 @@ class InvestmentGraph(private val c: AreaContext) : InvestmentDeps {
     )
     override val alerts = c.shell.engine
     override val calculators = CalculatorsGraph(c, defaultRates) // الحاسبات (ملف لوحده — CalculatorsGraph.kt)
+    override val investRates = app.masroufy.usecase.LoadInvestRates(c.feeds, defaultRates)
+    override val future = InvestFutureGraph(c) // «هتبقى معاك كام» (ملف لوحده — InvestFutureGraph.kt)
 
     private val operations = LoadTransactionsScreen(
         LoadTransactionsScreenDeps(r.transactions, r.categories, r.allocations, r.merchants, r.tags, r.transactionTags),

@@ -69,6 +69,12 @@ interface InvestmentDeps {
 
     /** الحاسبات (الادخار · التقاعد · الورث) — ملفاتها في `investment/calc/` (`CalcRoutes.kt`). */
     val calculators: CalculatorsDeps
+
+    /** المتوسطات التلاتة للبلد (التضخم · الذهب · الأسهم) بمصادرها — الشاشة بتحمّلها **مرة** وبتديها للأقسام (مواصفة الاستثمار §1.0). */
+    val investRates: app.masroufy.usecase.LoadInvestRates
+
+    /** «هتبقى معاك كام» (حزمة FUTURE — `investment/future/`). */
+    val future: app.masroufy.ui.screens.investment.future.InvestFutureDeps
 }
 
 /** تفاصيل أصل (من «الاستثمار»). */
