@@ -125,7 +125,10 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
 
     /**
      * التسجيل — **جوه وحدة العمل** ([RepairOldSms.applyAll]): عملية لكل سطر بنفس بنّا التسجيل وعليها «مش في الكشف»، وسجل المصدر بيشاور عليها
-     * (نفس الحالة اللي التسجيل بيكتبها لسطر جديد)، وعداد الدفعة. سجل الأول وبعده العملية (بروتوكول `ImportStatement`).
+     * (نفس الحالة اللي التسجيل بيكتبها لسطر جديد)، وعداد الدفعة.
+     * مراجعة r041 B-3: **العملية الأول وبعدها السجل** — وحدة العمل في فايرستور مالهاش رجوع ومفيش هنا «دفعة متجهزة» ترجع تكمل. البرنامج لو اتقفل
+     * بينهم: السجل بيفضل «مكرر» من غير عملية وحارس التسجيل مرتين ([alreadyRecorded]) بيخفيه ⇒ المبلغ ما بيضيعش ولا بيتكرر (العكس كان بيسيب
+     * سجل بيشاور على عملية مش موجودة — المبلغ يضيع من القايمة والرصيد).
      * مراجعة r041 B-2: علامات «#fee» اللي اتكتبت على رسوم موجودة ([RecordContext.claimed]) جوه اللي «تراجع» بيمسحه.
      */
     internal suspend fun record(chosen: List<Candidate>, now: String): CoveredWrite {
@@ -170,8 +173,8 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
         }
         val created = lineTxns + extra.map { it.first }
         val createdRecords = extra.map { it.second } + claimed
-        deps.sources.saveMany(updated + createdRecords)
         deps.txns.saveMany(created)
+        deps.sources.saveMany(updated + createdRecords)
         for (b in batchesAfter) deps.batches.save(b)
         return CoveredWrite(
             chosen.size, created.map { it.id }, createdRecords.map { it.id },

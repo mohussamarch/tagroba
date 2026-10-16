@@ -137,6 +137,20 @@ class CoveredSmsRepairFixesTest {
         assertEquals(listOf("F"), fees().map { it.id }, "رسوم واحدة بعد التطبيق التاني")
     }
 
+    /**
+     * B-3: فايرستور مالوش رجوع ⇒ لو البرنامج اتقفل بين الكتابتين: العملية الأول وبعدها السجل. السجل بيفضل «مكرر» من غير عملية وحارس
+     * التسجيل مرتين بيخفيه ⇒ الـ250 ما بتضيعش ولا بتتكرر. (كان السجل الأول ⇒ سجل بيشاور على عملية مش موجودة والمبلغ ضاع من الاتنين.)
+     */
+    @Test
+    fun aCrashBetweenTheTwoWritesNeverLosesTheAmount() = runBlocking {
+        val w = World(listOf(skipped("r1", "SMS:one", purchase("250.00", "26-03-10"))), passthrough = true)
+        w.crash.crashAt = 2
+        assertTrue(runCatching { w.repair.applyAll(emptySet(), setOf("r1")) }.isFailure)
+        assertEquals(1, w.all().count { it.amountMinor == 25_000L && it.occurredAt == "2026-03-10" }, "الـ250 اتسجلت مرة واحدة")
+        w.crash.crashAt = 0
+        assertTrue(w.repair.previewAll().unrecorded.isEmpty(), "ومش بتتعرض تاني")
+    }
+
     private fun txn(id: String, day: String, amount: Long) = Transaction(
         id = id, occurredAt = day, datePrecision = "day", sourceOrder = 1, economicKind = EconomicKind.UNCLASSIFIED,
         economicKindConfirmed = false, observedDirection = Direction.OUT, amountMinor = amount, currency = Currency.SAR, categoryConfirmed = false,

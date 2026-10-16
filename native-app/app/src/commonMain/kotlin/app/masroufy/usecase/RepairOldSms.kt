@@ -124,10 +124,12 @@ class RepairOldSms(
             r.copy(accountIdentity = name)
         }
         // مراجعة r04: العملية وسجلاتها في وحدة عمل واحدة — ما ينفعش العملية تتنقل وسجلاتها تفضل على الحساب القديم
+        // مراجعة r041 B-3: «الكشف غطّاها» الأول (هو اللي ممكن يرفض) — وحدة العمل في فايرستور مالهاش رجوع، فلو رفض ما يبقاش النقل اتكتب من غير «تراجع»
         val write = uow.run {
+            val coveredWrite = if (fresh.isEmpty()) null else covered?.record(fresh, now)
             if (fixed.isNotEmpty()) txns.saveMany(fixed)
             if (movedRecords.isNotEmpty()) sources.saveMany(movedRecords)
-            if (fresh.isEmpty()) null else covered?.record(fresh, now)
+            coveredWrite
         }
         return SmsRepairResult(saved, SmsRepairUndo(fixed.mapNotNull { byId[it.id] }, records.filter { it.transactionId in moved }, write))
     }
