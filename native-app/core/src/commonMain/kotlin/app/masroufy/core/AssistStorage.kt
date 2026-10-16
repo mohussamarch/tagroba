@@ -76,7 +76,26 @@ sealed interface UserSetting {
     data class HomeTips(val advisorKey: String?, val profileKey: String?, val profileClosedOn: String?, override val updatedAt: String) : UserSetting {
         override val key: String get() = HOME_TIPS_KEY
     }
+
+    /**
+     * «هتبقى معاك كام» لكل بلد (مواصفة الاستثمار §3.2): علامات السنين ([marks] سنين تقويمية — بتفضل لحد ما تتشال بـ«×») والطريق والمبلغ
+     * و«بتستثمرها في» (حفظهم سؤال Q8). المدة و«بفلوس النهارده» مش بيتحفظوا (بيفتح دايمًا على 10 سنين بفلوس النهارده — §87-5).
+     */
+    data class InvestView(
+        val spaceId: String, val marks: List<Int>, val path: String?, val amountMinor: Halalas?, val mix: String?, override val updatedAt: String,
+    ) : UserSetting {
+        override val key: String get() = investViewKey(spaceId)
+    }
+
+    /** تاريخ الميلاد (مستوى الحساب — شخص واحد): بيتكتب من حاسبة التقاعد (§87-8) وبيطلع منه «عمرك وقتها». */
+    data class BirthDate(val date: IsoDate, override val updatedAt: String) : UserSetting {
+        override val key: String get() = BIRTH_DATE_KEY
+    }
 }
+
+fun investViewKey(spaceId: String) = "investView.$spaceId"
+
+const val BIRTH_DATE_KEY = "birthDate"
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"
 
