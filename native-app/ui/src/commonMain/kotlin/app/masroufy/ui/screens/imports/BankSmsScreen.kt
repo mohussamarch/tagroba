@@ -129,7 +129,7 @@ fun BankSmsScreen() {
             val walletId = line.walletId
             if (mine) accountLine = line
             else if (last4 != null && walletId != null) act {
-                val r = deps.sms?.answerAccount(walletId, last4, mine = false)
+                val r = deps.sms?.answerAccount(walletId, last4, mine = false, messageId = line.messageId)
                 toaster.show(t(UiKey.SMS_ACCOUNT_NOT_MINE_SAVED, last4, opsCount(r?.recorded ?: 0)), dark = true)
             }
         },
@@ -224,8 +224,9 @@ fun BankSmsScreen() {
         onSave = { _, wallet ->
             accountLine = null
             val last4 = asked?.askLast4
+            val messageId = asked?.messageId
             if (last4 != null) act {
-                val r = deps.sms?.answerAccount(wallet.id, last4, mine = true)
+                val r = deps.sms?.answerAccount(wallet.id, last4, mine = true, messageId = messageId)
                 toaster.show(t(UiKey.SMS_ACCOUNT_MINE_SAVED, last4, wallet.name, opsCount(r?.recorded ?: 0)), dark = true)
             }
         },

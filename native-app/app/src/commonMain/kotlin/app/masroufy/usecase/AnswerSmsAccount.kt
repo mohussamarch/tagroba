@@ -43,6 +43,18 @@ class AnswerSmsAccount(private val wallets: WalletRepository) {
         return updated
     }
 
+    /**
+     * r041 A3: الرد على الرسالة [messageId] نفسها = تأكيد صريح من المالك ليها ⇒ بتتسجل على طول وشكلها بيتعلّم بنفس طريق «سجّل عملية
+     * واحدة» (`AutoRecordSms.confirm` — §77-A)، وبعدين التشغيلة العادية للباقي. قبل كده الرد كان بيتحفظ والرسالة ترجع تستنى «أول رسالة
+     * بهذا الشكل» فالمالك يدوس تاني. رسايل تانية بشكل تاني بتمشي على قاعدة التعلّم العادية.
+     */
+    suspend fun answerAndRecord(auto: AutoRecordSms, walletId: Id, last4: String, mine: Boolean, messageId: String?): AutoRecordResult {
+        if (mine) mine(walletId, last4) else notMine(walletId, last4)
+        val confirmed = if (messageId.isNullOrBlank()) 0 else auto.confirm(listOf(messageId))
+        val result = auto.run()
+        return result.copy(recorded = result.recorded + confirmed)
+    }
+
     private fun digitsOf(text: String): String {
         val digits = normalizeDigits(text).filter { it in '0'..'9' }
         return digits.takeIf { it.length == 4 } ?: throw WalletError(uiText(UiKey.WADD_ERR_LAST4))

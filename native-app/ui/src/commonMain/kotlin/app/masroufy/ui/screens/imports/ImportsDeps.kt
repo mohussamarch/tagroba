@@ -82,8 +82,9 @@ interface SmsDeps {
     /**
      * OVERRIDES §91-1 — «الحساب ده بتاعك؟» ([WaitLineUi.askLast4]): [mine] ⇒ الأرقام على المحفظة [walletId] اللي اختارها · لأ ⇒ «مش بتاعي» على محفظة
      * الرسالة. وبعدها تشغيلة بتسجّل المستني. الافتراضي: مفيش.
+     * r041 A3: [messageId] = الرسالة اللي المالك رد عليها — بتتسجل على طول وشكلها بيتعلّم (الرد تأكيد صريح ليها).
      */
-    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean): AutoRecordResult? = null
+    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String? = null): AutoRecordResult? = null
 
     /** تفعيل القراية بالمرسلين دول (الإذن قبلها من `LocalPermissions`). */
     suspend fun enable(senders: List<String>): InboxView
