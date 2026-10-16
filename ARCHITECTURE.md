@@ -1673,3 +1673,11 @@ Legacy v1 restoration remains a separate compatibility path; its coverage is exp
 - **الخيوط:** `LoadHoldings` و`LoadInvestRates` مرة واحدة لكل فتحة، والحساب على `Dispatchers.Default` (نفس قاعدة §31.42) — الشاشة ما بتختارش خيط.
 - **البناء:** البناء الكامل وقع مرة بـ`StackOverflowError` جوه مترجم Compose (لما الترجمة بتبدأ من الأول) ⇒ اشتغل بـ`"-Dorg.gradle.jvmargs=-Xmx3g -Xss16m -Dfile.encoding=UTF-8"` على أمر gradle. `gradle.properties` ما اتغيرش.
 - **النسخة:** `versionCode 6` · `kotlin-0.5` (و`kotlin-0.5-fast` للسريعة).
+
+### 31.44 «أكتر ما صرفت عليه» بتصميم المالك (0.5.1، فرع `r051-topspend2` — OVERRIDES §102)
+
+- `app/usecase/TopSpend.kt`: `rankSpendOver(months, previous, current)` — الترتيب على شهر أو أكتر + الفرق عن الشهر اللي فات (`SpendRankRow.changePercent`، null = مش معروف) + شريط الحصص (`TopSpendView.shares` · `restTenthPercent`). `rankSpend(data)` (كارت الرئيسية) = نفس الدالة على شهر واحد.
+- `LoadTopCategories.loadAll(today, payday, monthsBack, months)` في `LoadHomeCardData.kt`.
+- `ui/screens/operations/`: `TopSpendScreen.kt` (الحالة والقراية والمحفوظ لكل فترة) · `TopSpendParts.kt` (الشرايح · كارت المجموع · كارت السطور) · `TopSpendModel.kt` (الفترات · المدى · الملخص · نص الفرق).
+- `ScreenHeader`/`InnerScaffold` خدوا `subtitle` اختياري (سطر باهت تحت العنوان).
+- اختبارات: `TopSpendPeriodsTest` (app) · `TopSpendModelTest` و`TopSpendPngTest` (ui — الصور بس لو `TOPSPEND_PNG_DIR` متظبط).
