@@ -37,13 +37,14 @@ data class BankTip(val id: String, val country: String, val risk: String, val gr
 
 /**
  * نصايح كل حالة (Claude choice ❓ — من البنك الموثّق بس؛ حالة مالهاش نصيحة موثّقة ⇒ ما بتغيّرش الترتيب):
- * طوارئ ⇒ صندوق الطوارئ · كله في نوع ⇒ «لا استثمار مضمون، فوزّع» · بيحوّش ومش بيستثمر ⇒ «اربط كل استثمار بهدف» و«النقد المعطّل» ·
+ * طوارئ ⇒ صندوق الطوارئ (كوّنه · ابدأه صغير) · كله في نوع ⇒ «لا تضع كل مدخراتك في سلة واحدة» · بيحوّش ومش بيستثمر ⇒
+ * «المبالغ الصغيرة المنتظمة» و«وائم مكان المال مع موعد الهدف» و«النقد المعطّل» ·
  * فيه أرباح بترجع ⇒ مفيش نصيحة موثّقة عن إعادة الاستثمار لسه.
  */
 val SITUATION_TIPS: Map<TipSituation, List<String>> = mapOf(
-    TipSituation.EMERGENCY to listOf("emergency-fund-first"),
-    TipSituation.CONCENTRATED to listOf("no-guarantee-diversify"),
-    TipSituation.SAVES_NOT_INVESTING to listOf("match-money-to-goal-horizon", "idle-cash-loses-value"),
+    TipSituation.EMERGENCY to listOf("emergency-fund-first", "emergency-fund-habit"),
+    TipSituation.CONCENTRATED to listOf("diversify-savings"),
+    TipSituation.SAVES_NOT_INVESTING to listOf("small-regular-amounts-over-time", "match-money-to-horizon", "idle-cash-loses-value"),
     TipSituation.HAS_RETURNS to emptyList(),
 )
 

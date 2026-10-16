@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.investment.insights
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.masroufy.core.InvestInsightKey
 import app.masroufy.core.formatBp
 import app.masroufy.ui.components.AmountText
@@ -83,6 +86,10 @@ private fun ReturnBox(label: String, value: String, bg: Color, labelInk: Color, 
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         BasicText(label, style = Type.of(12).copy(color = labelInk))
-        BasicText(value, style = Type.of(size, FontWeight.Bold, 1.3).copy(color = Ink.text))
+        // سطر واحد بيصغر لحد 12 لو الرقم طويل (بالهللة) — النموذج كان بيقرّب للريال، بس المنسّق الموجود بيعرض الهللة (§0)
+        BasicText(
+            AnnotatedString(value), style = Type.of(size, FontWeight.Bold, 1.3).copy(color = Ink.text), maxLines = 1, softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = size.sp, stepSize = 1.sp),
+        )
     }
 }

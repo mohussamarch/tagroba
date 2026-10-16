@@ -39,11 +39,15 @@ class InvestInsightsMathTest {
         assertTrue(SITUATION_TIPS.values.flatten().all { id -> VERIFIED_TIPS.any { it.id == id } })
         val q = tipQueue(listOf(TipSituation.HAS_RETURNS, TipSituation.SAVES_NOT_INVESTING, TipSituation.EMERGENCY), emptySet(), "SA")
         // «فيه أرباح» مالهاش نصيحة موثّقة ⇒ اللي بعدها بالترتيب اللي اتقال
-        assertEquals(listOf("match-money-to-goal-horizon", "idle-cash-loses-value", "emergency-fund-first"), q.take(3).map { it.tip.id })
+        assertEquals(
+            listOf("small-regular-amounts-over-time", "match-money-to-horizon", "idle-cash-loses-value", "emergency-fund-first", "emergency-fund-habit"),
+            q.take(5).map { it.tip.id },
+        )
         assertEquals(TipSituation.SAVES_NOT_INVESTING, q.first().situation)
-        assertNull(q[3].situation) // الباقي عام ⇒ «نصيحة»
+        assertEquals(TipSituation.EMERGENCY, q[4].situation)
+        assertNull(q[5].situation) // الباقي عام ⇒ «نصيحة»
         assertEquals(q.size, q.map { it.tip.id }.toSet().size) // نصيحة الحالة ما بتتكررش في الباقي
-        assertEquals("idle-cash-loses-value", tipQueue(listOf(TipSituation.SAVES_NOT_INVESTING), setOf("match-money-to-goal-horizon"), "SA").first().tip.id)
+        assertEquals("match-money-to-horizon", tipQueue(listOf(TipSituation.SAVES_NOT_INVESTING), setOf("small-regular-amounts-over-time"), "SA").first().tip.id)
         // نصايح السعودية بس ما بتظهرش في مصر والعكس
         assertTrue(tipQueue(emptyList(), emptySet(), "EG").none { it.tip.country == "sa" })
         assertTrue(tipQueue(emptyList(), emptySet(), "SA").none { it.tip.country == "eg" })

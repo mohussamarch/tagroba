@@ -33,7 +33,8 @@ internal fun InvestTipsScreen() {
 
 internal fun androidx.compose.foundation.lazy.LazyListScope.tipsPage(groups: List<TipGroupView>) {
     item(key = "intro") { BasicText(t(InvestInsightKey.TIPS_INTRO), style = Type.of(13).copy(color = Ink.muted)) }
-    groups.forEachIndexed { i, g ->
+    // مجموعة مالهاش نصيحة موثّقة في بلد المساحة (زي «الحلال» لسه) ⇒ ما يترسمش عنوانها فاضي
+    groups.filter { it.tips.isNotEmpty() }.forEachIndexed { i, g ->
         item(key = "group-$i") { TipGroupBlock(g) }
     }
     item(key = "footer") { BasicText(t(InvestInsightKey.TIPS_FOOTER), style = Type.of(12, lineHeight = 1.6).copy(color = Ink.soft)) }

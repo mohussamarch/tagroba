@@ -66,9 +66,8 @@ internal fun TipCard(tip: TipView, onClose: () -> Unit, onAll: () -> Unit) {
                 LucideIcon(InsightIcons.BULB, size = 18.dp, tint = amberInk)
                 BasicText(tip.why, style = Type.of(13, FontWeight.Bold).copy(color = amberInk))
             }
-            BasicText(tip.title, style = Type.of(15, FontWeight.Bold, 1.6).copy(color = Ink.text))
-            // نص النصيحة من البنك الموثّق (النموذج كان سطر واحد — البنك فيه عنوان ونص: Claude choice ❓)
-            BasicText(tip.text, style = Type.of(13, lineHeight = 1.6).copy(color = Ink.soft))
+            BasicText(tip.title, style = Type.of(14, FontWeight.Bold, 1.6).copy(color = Ink.text))
+            // الكارت سطر النصيحة بس زي النموذج؛ الشرح الكامل («النص» و«ليه مهمة») في صفحة النصايح (Claude choice ❓)
             BasicText(tip.source, style = Type.of(12).copy(color = Ink.muted))
             LinkText(t(InvestInsightKey.TIP_ALL), onAll)
         }

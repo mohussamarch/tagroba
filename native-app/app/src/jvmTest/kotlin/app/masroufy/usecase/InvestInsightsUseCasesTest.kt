@@ -62,15 +62,15 @@ class InvestInsightsUseCasesTest {
         val settings = MemoryUserSettingsStore()
         val txns = MemoryTransactionRepository(months())
         val first = assertNotNull(tips(settings, txns).current(today, null))
-        assertEquals("match-money-to-goal-horizon", first.id) // بيحوّش 7,000 في الشهر ومفيش شراء أصل
+        assertEquals("small-regular-amounts-over-time", first.id) // بيحوّش 7,000 في الشهر ومفيش شراء أصل
         assertEquals("تدّخر كل شهر ولا تستثمر", first.why)
         assertTrue(first.source.startsWith("المصدر: "))
-        tips(settings, txns).close("match-money-to-goal-horizon")
-        assertEquals("idle-cash-loses-value", tips(settings, txns).current(today, null)!!.id) // جوال تاني: نفس المقفول
-        assertEquals(listOf("match-money-to-goal-horizon"), settings.listAll().filterIsInstance<UserSetting.InvestTips>().single().closed)
+        tips(settings, txns).close("small-regular-amounts-over-time")
+        assertEquals("match-money-to-horizon", tips(settings, txns).current(today, null)!!.id) // جوال تاني: نفس المقفول
+        assertEquals(listOf("small-regular-amounts-over-time"), settings.listAll().filterIsInstance<UserSetting.InvestTips>().single().closed)
         // اشترى أصل الشهر ده ⇒ مش «مش بيستثمر» (ولو ما اتقفلتش)
         val bought = MemoryTransactionRepository(months() + txn("2026-10-02", 50_000, EconomicKind.ASSET_BUY, Direction.OUT))
-        assertEquals("budget-track-spending", tips(MemoryUserSettingsStore(), bought).current(today, null)!!.id) // أول العامة
+        assertEquals("track-spending-first", tips(MemoryUserSettingsStore(), bought).current(today, null)!!.id) // أول العامة
         // صفحة النصايح: كلها (المقفولة كمان) بمصدرها
         val all = tips(settings, txns).all(Space("sa", "x", "SA", Currency.SAR, "x"))
         assertEquals(VERIFIED_TIPS.count { it.country != "eg" }, all.sumOf { it.tips.size }) // نصايح مصر بس مش هنا

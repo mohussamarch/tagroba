@@ -149,17 +149,23 @@ internal fun InvestCard() {
             if (v == null) {
                 if (view != ReadState.Loading) BasicText(t(UiKey.HOME_INVEST_NA), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
             } else {
-                val ink = if (v.gainMinor < 0) Ink.expense else Ink.income
-                val sign = if (v.gainMinor > 0) "+" else ""
-                val amount = sign + amountLabel(v.gainMinor, v.currency, AmountTone.PLAIN, true)
-                val since = v.sinceDate?.let { t(app.masroufy.core.InvestInsightKey.HOME_SINCE_DATE, amount, app.masroufy.core.dayMonth(it)) }
-                    ?: t(app.masroufy.core.InvestInsightKey.HOME_SINCE_YESTERDAY, amount)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) { // `HomeQuick` kind=invest: 28 عريض + 13
-                    BasicText("⁦" + pctTenths(v.pctBp) + "⁩", style = Type.of(28, FontWeight.Bold, 1.2).copy(color = ink))
-                    BasicText(since, Modifier.padding(bottom = 5.dp), style = Type.of(13).copy(color = Ink.soft))
-                }
+                InvestTodayLine(v)
             }
         }
+    }
+}
+
+/** سطر «+1.2%  +M من امبارح» (`HomeQuick` kind=invest) — منفصل عشان اختبار الرسم. */
+@Composable
+internal fun InvestTodayLine(v: app.masroufy.usecase.InvestTodayView) {
+    val ink = if (v.gainMinor < 0) Ink.expense else Ink.income
+    val sign = if (v.gainMinor > 0) "+" else ""
+    val amount = sign + amountLabel(v.gainMinor, v.currency, AmountTone.PLAIN, true)
+    val since = v.sinceDate?.let { t(app.masroufy.core.InvestInsightKey.HOME_SINCE_DATE, amount, app.masroufy.core.dayMonth(it)) }
+        ?: t(app.masroufy.core.InvestInsightKey.HOME_SINCE_YESTERDAY, amount)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) { // `HomeQuick` kind=invest: 28 عريض + 13
+        BasicText("⁦" + pctTenths(v.pctBp) + "⁩", style = Type.of(28, FontWeight.Bold, 1.2).copy(color = ink))
+        BasicText(since, Modifier.padding(bottom = 5.dp), style = Type.of(13).copy(color = Ink.soft))
     }
 }
 

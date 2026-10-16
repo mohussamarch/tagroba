@@ -1,5 +1,12 @@
 package app.masroufy.ui.screens.investment.insights
 
+import app.masroufy.core.UiKey
+import app.masroufy.ui.theme.Ink
+import app.masroufy.ui.icons.Lucide
+import app.masroufy.ui.components.FloatingCard
+import app.masroufy.usecase.InvestTodayView
+import app.masroufy.ui.screens.home.cards.CardHead
+import app.masroufy.ui.screens.home.cards.InvestTodayLine
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -97,21 +104,31 @@ class InsightsRenderTest {
         for (variant in ArabicVariant.entries) {
             Texts.arabicVariant = variant
             val v = variant.name.lowercase()
-            val spread = VERIFIED_TIPS.single { it.id == "no-guarantee-diversify" }
+            val spread = VERIFIED_TIPS.single { it.id == "diversify-savings" }
             val w = spread.words(Texts.arabicVariant, Texts.language)
             val tip = TipView(spread.id, t(InvestInsightKey.TIP_WHY_SPREAD), w.title, w.text, t(InvestInsightKey.TIP_SOURCE, spread.source.name))
-            render(out, "tip-$v", 330) { TipCard(tip, {}, {}) }
+            render(out, "tip-$v", 230) { TipCard(tip, {}, {}) }
             render(out, "rope-$v", 470) { IncomeRopeCard(rope()) {} }
             render(out, "rope-none-$v", 160) { IncomeRopeCard(null) {} }
             render(out, "returns-$v", 380) { ReturnsCard(returns(true)) }
             render(out, "returns-na-$v", 380) { ReturnsCard(returns(false)) }
             render(out, "returns-none-$v", 140) { ReturnsCard(null) }
             render(out, "faq-$v", 640) { Column { FaqCard(faqItems("SA")) } }
+            render(out, "home-invest-$v", 150) { HomeInvest(InvestTodayView(120, 170_000, Currency.SAR, null)) }
+            render(out, "home-invest-old-$v", 150) { HomeInvest(InvestTodayView(-45, -2_350, Currency.EGP, "2026-10-12")) }
             render(out, "tips-$v", 3600) {
                 LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) { tipsPage(tipsGroups()) }
             }
         }
         Texts.arabicVariant = ArabicVariant.MSA
         assertTrue(File(out, "tip-msa.png").isFile)
+    }
+
+    @Composable
+    private fun HomeInvest(v: InvestTodayView) = FloatingCard(Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            CardHead(Lucide.TRENDING_UP, Ink.income, t(UiKey.HOME_CARD_INVEST), t(UiKey.HOME_INVEST_SUB))
+            InvestTodayLine(v)
+        }
     }
 }
