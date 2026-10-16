@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -137,17 +138,22 @@ fun OnboardingScreen() {
 
     val pad = WindowInsets.safeDrawing.asPaddingValues()
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    // r041 A9: الكيبورد اتقفل ⇒ الصفحة ترجع لأولها (قبل كده كانت بتفضل متمررة بعد «أضف البنك»)
+    val scroll = rememberScrollState()
+    val imeOpen = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+    var imeWasOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(imeOpen) {
+        if (scrollBackOnImeClose(imeWasOpen, imeOpen)) scroll.animateScrollTo(0)
+        imeWasOpen = imeOpen
+    }
     Box(Modifier.fillMaxSize().screenBackground()) {
         // الكيبورد بيصغّر مساحة التمرير نفسها (`imePadding`) ⇒ «أضف البنك» يقدر يطلع فوقه (`BankCard` بيجيبه قدام العين)
-        Column(
-            Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(
-                start = Gaps.gutter, end = Gaps.gutter, top = pad.calculateTopPadding() + 20.dp,
-                bottom = navBottom + if (s.reply != null) 230.dp else 48.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            OnbTopBar(s, onBack = { s = back(s) }, onSkip = { s = skip(s) })
+        Column(Modifier.fillMaxSize().imePadding()) {
+            // r041 A9: الشريط (رجوع · التقدّم · «تخطَّ») **ثابت برّه التمرير** وتحت شريط الحالة — عمره ما يستخبى تحته
+            Box(Modifier.fillMaxWidth().padding(start = Gaps.gutter, end = Gaps.gutter, top = pad.calculateTopPadding() + 20.dp, bottom = 14.dp)) {
+                OnbTopBar(s, onBack = { s = back(s) }, onSkip = { s = skip(s) })
+            }
+            OnbScrollBody(scroll, bottom = navBottom + if (s.reply != null) 230.dp else 48.dp) {
             if (s.step == OnbStep.READY) OnbRing() else OnbIllustration(s.step)
             FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), contentPadding = PaddingValues(horizontal = 18.dp, vertical = 20.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -158,6 +164,7 @@ fun OnboardingScreen() {
                         else -> StepBody(s, open, onChange = { s = it }, saving = saving, failure = failure, onFinish = ::finish)
                     }
                 }
+            }
             }
         }
         val reply = s.reply
@@ -170,6 +177,24 @@ fun OnboardingScreen() {
         }
     }
 }
+
+/** r041 A9 — الجزء اللي بيتمرر تحت الشريط الثابت (الرسمة والكارت). */
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.OnbScrollBody(
+    scroll: androidx.compose.foundation.ScrollState,
+    bottom: androidx.compose.ui.unit.Dp,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    Column(
+        Modifier.fillMaxWidth().weight(1f).verticalScroll(scroll).padding(start = Gaps.gutter, end = Gaps.gutter, bottom = bottom),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        content = content,
+    )
+}
+
+/** r041 A9 — الكيبورد كان مفتوح واتقفل ⇒ ارجع لأول الصفحة. */
+internal fun scrollBackOnImeClose(wasOpen: Boolean, open: Boolean): Boolean = wasOpen && !open
 
 @Composable
 private fun StepHead(step: OnbStep) {
