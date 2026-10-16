@@ -118,6 +118,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     private val transferAsks = app.masroufy.usecase.AnswerTransferAsks(
         app.masroufy.usecase.AnswerTransferAsksDeps(r.transactions, r.transferParties, r.obligations, r.settlements, r.allocations, r.people, people, r.uow, clock),
     )
+    override val recentCategories = app.masroufy.usecase.RecentCategories(r.transactions, r.categories, clock)
     override val partyAnswers = app.masroufy.usecase.TransferPartyAnswers(
         app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock),
     )

@@ -39,8 +39,6 @@ internal val MSA_R05_TEXTS: Map<TextRef, String> = mapOf(
     UiKey.PURCHASE_ASK_TITLE to "ما الصنف؟",
     UiKey.PURCHASE_ASK_BODY to "اخترت «شراء» — حدّد الصنف ليدخل ميزانيته.",
     UiKey.PURCHASE_ASK_RECENT to "آخر ما استخدمته",
-    UiKey.PURCHASE_ASK_MERCHANT to "اسم المتجر (اختياري)",
-    UiKey.PURCHASE_ASK_MERCHANT_SAVE to "احفظ الاسم",
     UiKey.PURCHASE_ASK_SKIP to "تخطَّ",
     UiKey.PURCHASE_ASK_DONE to "صُنّفت «{0}»",
 )
@@ -79,8 +77,6 @@ internal val EGYPTIAN_R05_TEXTS: Map<TextRef, String> = mapOf(
     UiKey.PURCHASE_ASK_TITLE to "إيه الصنف؟",
     UiKey.PURCHASE_ASK_BODY to "اخترت «شراء» — حدّد الصنف عشان يدخل ميزانيته.",
     UiKey.PURCHASE_ASK_RECENT to "آخر اللي استخدمته",
-    UiKey.PURCHASE_ASK_MERCHANT to "اسم المحل (اختياري)",
-    UiKey.PURCHASE_ASK_MERCHANT_SAVE to "احفظ الاسم",
     UiKey.PURCHASE_ASK_SKIP to "تخطّي",
     UiKey.PURCHASE_ASK_DONE to "اتصنّفت «{0}»",
 )
@@ -119,8 +115,6 @@ internal val ENGLISH_R05_TEXTS: Map<TextRef, String> = mapOf(
     UiKey.PURCHASE_ASK_TITLE to "Which category?",
     UiKey.PURCHASE_ASK_BODY to "You picked “Purchase” — set the category so it counts in its budget.",
     UiKey.PURCHASE_ASK_RECENT to "Recently used",
-    UiKey.PURCHASE_ASK_MERCHANT to "Shop name (optional)",
-    UiKey.PURCHASE_ASK_MERCHANT_SAVE to "Save name",
     UiKey.PURCHASE_ASK_SKIP to "Skip",
     UiKey.PURCHASE_ASK_DONE to "Categorised “{0}”",
 )
