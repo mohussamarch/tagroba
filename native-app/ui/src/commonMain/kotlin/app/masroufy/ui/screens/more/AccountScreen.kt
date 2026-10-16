@@ -36,7 +36,7 @@ import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.app.MeInfo
 import app.masroufy.ui.components.FloatingCard
 import app.masroufy.ui.components.Skeleton
-import app.masroufy.ui.components.TonalButton
+import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.mirrorInLtr
 import app.masroufy.ui.components.pressScale
 import app.masroufy.ui.components.rememberPress
@@ -48,6 +48,22 @@ import app.masroufy.ui.screens.auth.ResetPasswordSheet
 import app.masroufy.ui.screens.common.InnerScaffold
 import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.shell.MeAvatar
+import app.masroufy.core.CharacterLayer
+import app.masroufy.ui.character.CharacterArt
+import app.masroufy.ui.glass.Glass
+import app.masroufy.ui.nav.LocalNavigator
+import app.masroufy.ui.app.LocalPermissions
+import app.masroufy.ui.screens.character.CharacterBuilderRoute
+import app.masroufy.ui.screens.character.builderTitle
+import app.masroufy.ui.screens.imports.HandoffView
+import app.masroufy.ui.screens.imports.SmsHandoff
+import app.masroufy.ui.screens.imports.handoffView
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.flow.first
 import app.masroufy.ui.text.t
 import app.masroufy.ui.theme.Ink
 import app.masroufy.ui.theme.Type
@@ -59,10 +75,20 @@ import kotlinx.coroutines.launch
  * كل تعديل بيعدّي على `ManageProfile.saveWithQuestions` («هل تذهب بها للدوام؟» بيطلع منه هو — §64).
  */
 @Composable
-fun AccountScreen(openLook: Boolean = false) {
+fun AccountScreen(openBuilder: Boolean = false) {
     val deps = LocalSpace.current
     val more = deps.more
+    val nav = LocalNavigator.current
     val toaster = LocalToaster.current
+    // «كمّل بروفايلك» (آخر أول تشغيل): البنّاء فوق «ملفك» مرة واحدة — بعد شرح رسايل البنك وإذنها لو اختارها (character-spec §4.5)
+    var builderOpened by rememberSaveable { mutableStateOf(false) }
+    val permissions = LocalPermissions.current
+    val smsReadable = deps.imports.sms != null
+    if (openBuilder && !builderOpened) LaunchedEffect(Unit) {
+        snapshotFlow { handoffView(SmsHandoff.state, permissions.hasSms(), smsReadable) }.first { it != HandoffView.EXPLAIN }
+        builderOpened = true
+        nav.push(CharacterBuilderRoute)
+    }
     val scope = rememberCoroutineScope()
     var profile by remember(deps) { mutableStateOf<UserProfile?>(null) }
     var me by remember(deps) { mutableStateOf<MeInfo?>(null) }
@@ -104,7 +130,7 @@ fun AccountScreen(openLook: Boolean = false) {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(220.dp)) }
             return@InnerScaffold
         }
-        item(key = "head") { AccountHead(p, me, more.profile.email(), openLook) }
+        item(key = "head") { AccountHead(p, me, more.profile.email()) { nav.push(CharacterBuilderRoute) } }
         for (g in accountGroups(p, deps.space.currency, range)) item(key = g.title.name) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 GroupTitle(t(g.title))
@@ -165,11 +191,13 @@ private fun draftOf(p: UserProfile, field: AccountField, range: SalaryRange?): A
 }
 
 @Composable
-private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, openLook: Boolean) {
+private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, onBuild: () -> Unit) {
     FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), contentPadding = PaddingValues(16.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // «شخصيتك» بالجسم كله — المكان الوحيد اللي بيعرضها كاملة (character-spec §4.2)
+            me?.character?.let { look -> CharacterHero(look) }
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                MeAvatar(64.dp, me?.profilePercent, look = me?.lookIndex ?: 1)
+                MeAvatar(64.dp, me?.profilePercent, character = me?.character)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     BasicText(p.displayName?.takeIf { it.isNotBlank() } ?: t(UiKey.ACC_NO_NAME), style = Type.of(18, FontWeight.Bold))
                     if (email != null) BasicText(email, style = Type.of(13).copy(color = Ink.muted, textAlign = TextAlign.End, textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
@@ -182,8 +210,22 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, openLook: B
                 BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
                 BasicText(app.masroufy.core.sentenceNumber(percent) + "%", style = Type.of(13, FontWeight.Bold))
             }
-            LookButton(me?.lookIndex ?: 1, openLook)
+            // «ابنِ شخصيتك» قبل أول حفظ ⇒ «عدّل شخصيتك» بعده
+            PrimaryButton(builderTitle(me?.character != null), onClick = onBuild, height = 48.dp, modifier = Modifier.fillMaxWidth())
+            BasicText(t(UiKey.CHAR_FIRST_VERSION), style = Type.caption().copy(color = Ink.muted))
         }
+    }
+}
+
+/** الكارت الأخضر (252 · زاوية 22) والشخصية بالجسم كله بطول 240 لازقة تحت في النص. */
+@Composable
+private fun CharacterHero(look: app.masroufy.core.CharacterLook) {
+    Box(
+        Modifier.fillMaxWidth().height(252.dp).clip(RoundedCornerShape(22.dp)).background(Glass.heroBase)
+            .background(Brush.radialGradient(listOf(Color(0x2EFFFFFF), Color.Transparent), center = Offset(Float.POSITIVE_INFINITY, 0f), radius = 420f)),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        CharacterArt(look, CharacterLayer.FULL, Modifier.size(width = (240 * 200 / 440).dp, height = 240.dp), label = t(UiKey.CHAR_FULL_LABEL))
     }
 }
 
@@ -233,12 +275,4 @@ private fun AccountActions(email: String?, onSignOut: () -> Unit) {
             ) { BasicText(t(UiKey.ACC_SIGN_OUT), style = Type.of(15, FontWeight.Bold).copy(color = Ink.expense)) }
         }
     }
-}
-
-/** «غيّر شكلك» + لوحته (`LookSheet`). [startOpen] = جاي من «كمّل بروفايلك» (آخر أول تشغيل) ⇒ اللوحة مفتوحة من الأول. */
-@Composable
-private fun LookButton(current: Int, startOpen: Boolean) {
-    var open by rememberSaveable { mutableStateOf(startOpen) }
-    TonalButton(t(UiKey.LOOK_OPEN), onClick = { open = true }, modifier = Modifier.fillMaxWidth(), height = 44.dp)
-    LookSheet(open, current) { open = false }
 }

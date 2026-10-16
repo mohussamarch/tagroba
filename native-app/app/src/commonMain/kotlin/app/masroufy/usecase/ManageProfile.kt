@@ -2,9 +2,6 @@ package app.masroufy.usecase
 
 import app.masroufy.core.CharacterLook
 import app.masroufy.core.IncomeFollowUp
-import app.masroufy.core.LOOK_COUNT
-import app.masroufy.core.TextKey
-import app.masroufy.core.uiText
 import app.masroufy.core.ProfileCheck
 import app.masroufy.core.UserProfile
 import app.masroufy.core.checkProfile
@@ -52,18 +49,6 @@ class ManageProfile(private val deps: ManageProfileDeps) {
 
     /** الرد على «هتروح بيها الشغل؟» — بيتسجل على الملف (`carToWork`). من غير عربية الرد بيتمسح (`checkProfile`). */
     suspend fun answerCarToWork(yes: Boolean): ProfileCheck = save(load().copy(carToWork = yes))
-
-    /**
-     * «اختر شكلك» (قرار المالك 2026-10-15 مساءً — من «حسابك» و«كمّل بروفايلك»): الشكل [look] (1..[LOOK_COUNT]) بيتحفظ على ملفك
-     * والدواير كلها بتقراه من هناك (`MeInfo.lookIndex`). رقم برّه الستة ⇒ مفيش كتابة.
-     */
-    suspend fun chooseLook(look: Int): ProfileCheck {
-        if (look !in 1..LOOK_COUNT) return ProfileCheck.Invalid("lookIndex", uiText(TextKey.NOT_AVAILABLE))
-        return save(load().copy(lookIndex = look))
-    }
-
-    /** الشكل المحفوظ (1..[LOOK_COUNT]) — ما اختارش ⇒ الأول. */
-    suspend fun look(): Int = load().lookIndex ?: 1
 
     /** «شخصيتك» المحفوظة على الملف — `null` = لسه ما اتبنتش (r041). */
     suspend fun character(): CharacterLook? = load().character

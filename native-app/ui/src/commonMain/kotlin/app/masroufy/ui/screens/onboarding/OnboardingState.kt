@@ -27,10 +27,10 @@ import app.masroufy.usecase.OnboardingResult
  * بس ([OnbState.fresh]) وبعد البلد (العملة والبنوك بتاعة البلد المختارة — مصر كمان، [moneyElsewhere]).
  * مفيش ولا رقم بيتحسب هنا: المبالغ اللي اتكتبت بتروح زي ما هي لـ`OnboardAccount.finish` (التأكد قبل أي كتابة وتسجيل الانتهاء آخر حاجة).
  */
-enum class OnbStep { COUNTRY, CASH, BANK, PAYDAY, SOURCE, READY }
+enum class OnbStep { NAME, COUNTRY, CASH, BANK, PAYDAY, SOURCE, READY }
 
-/** عدد الأجزاء من غير كارتين الفلوس (الحساب القديم · بلد تانية من غير `countryMoney`) — 4 كروت. */
-const val ONB_SEGMENTS = 4
+/** عدد الأجزاء من غير كارتين الفلوس (الحساب القديم · بلد تانية من غير `countryMoney`) — 5 كروت (الاسم أولهم — r041). */
+const val ONB_SEGMENTS = 5
 
 /** مصدر العمليات (الخطوة 5) — ما بيتخزنش: بيحدد بس الشاشة اللي بعد «ادخل التطبيق» (رسايل البنك ⇒ شاشتها والإذن هناك). */
 enum class OnbSource { SMS, FILE, LATER }
@@ -39,7 +39,7 @@ enum class OnbSource { SMS, FILE, LATER }
 enum class OnbExit { HOME, PROFILE }
 
 /** الرد الأخضر تحت الكارت بعد كل إجابة (عنوان + سطر). */
-enum class OnbReply { COUNTRY_SA, COUNTRY_EG, DAY, DAY_LATER, SMS, FILE, LATER, CASH, CASH_SKIP, BANK, BANK_SKIP }
+enum class OnbReply { NAMED, COUNTRY_SA, COUNTRY_EG, DAY, DAY_LATER, SMS, FILE, LATER, CASH, CASH_SKIP, BANK, BANK_SKIP }
 
 /** البنك من «عندك حساب بنكي؟»: مفتاحه في الدليل · آخر 4 (أو null) · رصيده دلوقتي بالهللة (null = ما كتبش ⇒ صفر من النهارده). */
 data class OnbBank(val bankKey: String, val last4: String?, val openingMinor: Halalas?)
@@ -54,6 +54,9 @@ data class OnbAnswers(
     val cashMinor: Halalas? = null,
     /** «عندك حساب بنكي؟» — null = اتخطى (أو لسه). */
     val bank: OnbBank? = null,
+    /** «بماذا نناديك؟» (r041): الاسم والنوع ("male"/"female") — من ملف الحساب القديم لو موجودين، والكتابة في الآخر بس. */
+    val name: String? = null,
+    val gender: String? = null,
 )
 
 /**
@@ -94,11 +97,11 @@ fun stepNumber(s: OnbState): Int = steps(s).indexOf(s.step).coerceAtLeast(0) + 1
 /** الأجزاء المليانة: اللي خلص قبل الكارت ده + الكارت نفسه لو اتجاوب (و«جاهز» = كله). */
 fun filledSegments(s: OnbState): Int = if (s.step == OnbStep.READY) segmentCount(s) else stepNumber(s) - 1 + if (s.reply != null) 1 else 0
 
-/** الرجوع: من البنك ويوم الراتب ومصدر العمليات بس (النموذج: بعد الحساب ما يتعمل مفيش رجوع للدخول، والبلد ما بيرجعش). */
-fun canBack(s: OnbState): Boolean = s.step == OnbStep.BANK || s.step == OnbStep.PAYDAY || s.step == OnbStep.SOURCE
+/** الرجوع: من البلد (للاسم — r041) والبنك ويوم الراتب ومصدر العمليات (النموذج: بعد الحساب ما يتعمل مفيش رجوع للدخول). */
+fun canBack(s: OnbState): Boolean = s.step == OnbStep.COUNTRY || s.step == OnbStep.BANK || s.step == OnbStep.PAYDAY || s.step == OnbStep.SOURCE
 
-/** التخطي في كله ما عدا الدخول والبلد (ملف الهاندأوف §7) — ومش وقت ما الرد ظاهر. */
-fun canSkip(s: OnbState): Boolean = s.reply == null && s.step != OnbStep.COUNTRY && s.step != OnbStep.READY
+/** التخطي في كله ما عدا الاسم والبلد (ملف الهاندأوف §7) — ومش وقت ما الرد ظاهر. */
+fun canSkip(s: OnbState): Boolean = s.reply == null && s.step != OnbStep.NAME && s.step != OnbStep.COUNTRY && s.step != OnbStep.READY
 
 private fun move(s: OnbState, by: Int): OnbState {
     val list = steps(s)
@@ -108,7 +111,8 @@ private fun move(s: OnbState, by: Int): OnbState {
 
 fun next(s: OnbState): OnbState = move(s, 1)
 
-fun back(s: OnbState): OnbState = move(s, -1)
+/** الرجوع للاسم والاسم والنوع موجودين ⇒ رد «أهلًا …» و«متابعة» ظاهرين على طول. */
+fun back(s: OnbState): OnbState = move(s, -1).let { if (it.step == OnbStep.NAME) named(it, it.answers) else it }
 
 /** «تخطَّ»: الكاش والبنك ⇒ من غير · يوم الراتب ⇒ «ليس ثابتًا» · المصدر ⇒ «لاحقًا». */
 fun skip(s: OnbState): OnbState = when (s.step) {
@@ -154,6 +158,7 @@ fun bankLine(b: OnbBank): String = (bankByKey(b.bankKey)?.let(::bankLabel) ?: b.
 
 /** عنوان الرد وسطره — [payday] = اليوم اللي هيفضل لو قال «ليس ثابتًا» (المحفوظ في ملفه، مش «أول الشهر») · [currency] لمبلغ الكاش. */
 fun replyText(r: OnbReply, answers: OnbAnswers, payday: Int, currency: Currency = Currency.SAR): Pair<String, String> = when (r) {
+    OnbReply.NAMED -> t(UiKey.ONB_R_NAME_T, answers.name.orEmpty().trim()) to t(UiKey.ONB_R_NAME_L)
     OnbReply.COUNTRY_SA -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_SA_L)
     OnbReply.COUNTRY_EG -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_EG_L)
     OnbReply.CASH -> t(UiKey.ONB_OK) to t(UiKey.ONB_R_CASH_L, amountLabel(answers.cashMinor ?: 0, currency))
@@ -170,6 +175,7 @@ fun replyText(r: OnbReply, answers: OnbAnswers, payday: Int, currency: Currency 
 fun nextLabel(s: OnbState): String = t(if (s.step == OnbStep.SOURCE) UiKey.ONB_DONE_NEXT else UiKey.ONB_NEXT)
 
 fun stepTitle(step: OnbStep): TextRef = when (step) {
+    OnbStep.NAME -> UiKey.ONB_NAME_TITLE
     OnbStep.COUNTRY -> UiKey.ONB_COUNTRY_TITLE
     OnbStep.CASH -> UiKey.ONB_CASH_TITLE
     OnbStep.BANK -> UiKey.ONB_BANK_TITLE
@@ -179,6 +185,7 @@ fun stepTitle(step: OnbStep): TextRef = when (step) {
 }
 
 fun stepSub(step: OnbStep): String = when (step) {
+    OnbStep.NAME -> t(UiKey.ONB_NAME_SUB)
     OnbStep.COUNTRY -> t(UiKey.ONB_COUNTRY_SUB)
     OnbStep.CASH -> t(UiKey.ONB_CASH_SUB)
     OnbStep.BANK -> t(UiKey.ONB_BANK_SUB)
@@ -217,7 +224,9 @@ fun finishInput(profile: UserProfile, answers: OnbAnswers, withMoney: Boolean = 
     val bank = answers.bank?.takeIf { withMoney }?.let { b ->
         bankByKey(b.bankKey)?.let { AddWalletInput(it.walletKind, bankLabel(it), b.last4, b.openingMinor, null, it.key) }
     }
-    return OnboardingInput(profile.copy(payday = answers.day ?: profile.payday), cashMinor = answers.cashMinor?.takeIf { withMoney }, debts = emptyList(), bank = bank)
+    // الاسم والنوع من «بماذا نناديك؟» (r041) — ما اتكتبوش ⇒ اللي في الملف زي ما هو
+    val named = profile.copy(displayName = answers.name?.trim()?.ifEmpty { null } ?: profile.displayName, gender = answers.gender ?: profile.gender)
+    return OnboardingInput(named.copy(payday = answers.day ?: profile.payday), cashMinor = answers.cashMinor?.takeIf { withMoney }, debts = emptyList(), bank = bank)
 }
 
 /**
@@ -255,12 +264,12 @@ private val LEGACY_STEPS = listOf("LOOK", "COUNTRY", "CASH", "BANK", "PAYDAY", "
 private val LEGACY_REPLIES = listOf("LOOK", "COUNTRY_SA", "COUNTRY_EG", "DAY", "DAY_LATER", "SMS", "FILE", "LATER", "CASH", "CASH_SKIP", "BANK", "BANK_SKIP")
 
 /**
- * الخطوة المحفوظة ⇒ خطوة النسخة دي: بالاسم (الجديد) أو بالترتيب القديم (رقم). «اختر شكلك» (LOOK) اتشال من الرحلة ⇒ البلد.
- * أي حاجة مش مفهومة ⇒ البلد (أول كارت) بدل ما الشاشة توقع.
+ * الخطوة المحفوظة ⇒ خطوة النسخة دي: بالاسم (الجديد) أو بالترتيب القديم (رقم). «اختر شكلك» (LOOK) القديم وأي حاجة مش مفهومة ⇒
+ * أول كارت («بماذا نناديك؟» — r041) بدل ما الشاشة توقع. حالة قديمة على كارت بعده بتكمّل مكانها، والاسم بيفضل اللي في الملف.
  */
 fun restoreStep(raw: Any?): OnbStep {
     val name = (raw as? String) ?: (raw as? Int)?.let(LEGACY_STEPS::getOrNull)
-    return OnbStep.entries.firstOrNull { it.name == name } ?: OnbStep.COUNTRY
+    return OnbStep.entries.firstOrNull { it.name == name } ?: OnbStep.NAME
 }
 
 /** الرد المحفوظ (بالاسم أو بالترتيب القديم). رد «اختر شكلك» القديم أو أي حاجة مش مفهومة ⇒ مفيش رد. */

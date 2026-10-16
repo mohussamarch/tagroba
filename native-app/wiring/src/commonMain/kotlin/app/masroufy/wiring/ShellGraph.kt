@@ -56,7 +56,7 @@ class ShellGraph(
     override fun hourNow() = env.hourNow()
 
     // نسبة «ملفك ٪» لسه مالهاش حسبة في كوتلن (OVERRIDES §76 «ناقص») ⇒ null ⇒ الدايرة من غير شريط
-    override suspend fun me(): MeInfo = profile.load().let { MeInfo(it.displayName, profilePercent = null, lookIndex = it.lookIndex ?: 1) }
+    override suspend fun me(): MeInfo = profile.load().let { MeInfo(it.displayName, profilePercent = null, character = it.character) }
 
     override suspend fun withYouNow(): WithYouNow = withYou.load(env.today())
 

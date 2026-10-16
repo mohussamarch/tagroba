@@ -140,7 +140,7 @@ private fun HomeHeader(me: MeInfo?, bell: app.masroufy.ui.app.BellState?, refres
         Box(
             Modifier.size(48.dp).pressScale(press).tap(press, label = t(UiKey.ME_PROFILE), onClick = { nav.push(AccountRoute) }),
             contentAlignment = Alignment.Center,
-        ) { MeAvatar(46.dp, me?.profilePercent, look = avatarLook(me?.lookIndex)) }
+        ) { MeAvatar(46.dp, me?.profilePercent, character = me?.character) }
         Column(Modifier.weight(1f).heightIn(min = 48.dp), verticalArrangement = Arrangement.Center) {
             BasicText(greeting, style = Type.of(18, FontWeight.Bold, 1.4), maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
