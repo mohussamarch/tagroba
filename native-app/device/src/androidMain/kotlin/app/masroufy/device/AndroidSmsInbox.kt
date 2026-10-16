@@ -117,24 +117,41 @@ class AndroidSmsInbox(private val context: Context, private val uid: String) : S
         store.snapshot(uid, granted(), more, skip)
     }
 
-    /** الرسايل اللي وصلت والتطبيق مقفول (أو الاستقبال فاتها) — من آخر مؤشر، بالترتيب. */
+    /**
+     * الرسايل اللي وصلت والتطبيق مقفول (أو الاستقبال فاتها) — من آخر مؤشر، بالترتيب.
+     * r041c: الدفعة كلها في معاملة واحدة والمؤشر بيتحفظ مرة بعدها (كان حفظ إعدادات وكتابة على القرص لكل رسالة — آلاف في قراية التاريخ).
+     * المؤشر لسه بيتحرك **بعد** الحفظ بس: المعاملة وقعت ⇒ المؤشر مكانه والدفعة بتتقري تاني (المكرر بيتجاهل).
+     */
     private fun catchUp(store: SmsInboxStore): Boolean {
         val senders = store.senders()
         if (senders.isEmpty()) return false
         val args = arrayOf(store.cursorDate().toString(), store.cursorDate().toString(), store.cursorId().toString()) + senders
         val selection = "(date > ? OR (date = ? AND _id > ?)) AND (" + senders.joinToString(" OR ") { "address = ? COLLATE NOCASE" } + ")"
         val projection = arrayOf("_id", "address", "body", "date", "date_sent")
-        context.contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI, projection, selection, args, "date ASC, _id ASC")?.use { rows ->
-            var processed = 0
-            while (rows.moveToNext()) {
-                if (processed++ >= 500) return true
-                val date = rows.getLong(3)
-                val sent = rows.getLong(4)
-                store.enqueue(uid, rows.getString(1), if (sent > 0) sent else date, rows.getString(2) ?: "")
-                // المؤشر بيتحرك بعد الحفظ (أو الاستبعاد المقصود) بس
-                store.checkpoint(date, rows.getLong(0))
+        var more = false
+        var last: Pair<Long, Long>? = null
+        val db = store.writableDatabase
+        db.beginTransaction()
+        try {
+            context.contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI, projection, selection, args, "date ASC, _id ASC")?.use { rows ->
+                var processed = 0
+                while (rows.moveToNext()) {
+                    if (processed++ >= 500) {
+                        more = true
+                        break
+                    }
+                    val date = rows.getLong(3)
+                    val sent = rows.getLong(4)
+                    store.enqueue(uid, rows.getString(1), if (sent > 0) sent else date, rows.getString(2) ?: "")
+                    last = date to rows.getLong(0)
+                }
             }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
         }
-        return false
+        // المؤشر بيتحرك بعد الحفظ (أو الاستبعاد المقصود) بس
+        last?.let { (date, id) -> store.checkpoint(date, id) }
+        return more
     }
 }
