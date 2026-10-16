@@ -41,6 +41,8 @@ data class IncomeAnswersDeps(
     val uow: UnitOfWork,
     val clock: Clock,
     val spaceLegs: SpaceTransferLegs? = null,
+    /** R4/N4: المربوطة بشخص نوعها بيتغير بعد «فك الربط» بس. null ⇒ مفيش فحص. */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 /** تراجع عن رد واحد: العملية قبل الرد + الحساب اللي الرد ده ربطه (لو ربط). */
@@ -107,6 +109,9 @@ class IncomeAnswers(private val deps: IncomeAnswersDeps) {
         val t = load(transactionId)
         if (t.observedDirection != Direction.IN || ruleFor(kind).liquidity != Liquidity.IN) throw IncomeSourceError(uiText(UiKey.EMPLOYER_ERR_NOT_IN))
         if (kind != t.economicKind && deps.spaceLegs?.isLeg(transactionId) == true) throw IncomeSourceError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
+        if (kind != t.economicKind && deps.personLinks?.listByTransactionIds(listOf(transactionId))?.isNotEmpty() == true) {
+            throw IncomeSourceError(uiText(UiKey.PLINK_ERR_UNLINK_FIRST))
+        }
         return t
     }
 

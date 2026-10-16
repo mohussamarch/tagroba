@@ -60,6 +60,8 @@ data class PersonLinksDeps(
     val add: AddTransaction? = null,
     /** مواعيد الديون (F2: «فك الربط» بيشيل ميعاد دين الربط معاه) — null (اختبارات قديمة) ⇒ مفيش مواعيد. */
     val terms: DebtTermsRepository? = null,
+    /** حقايق الزكاة (R3: «فك الربط» بيشيل حقيقة دين الربط معاه) — null (اختبارات قديمة) ⇒ مفيش. */
+    val zakatFacts: app.masroufy.port.ZakatFactRepository? = null,
 )
 
 class PersonLinkError(message: String) : IllegalStateException(message)
@@ -96,6 +98,8 @@ class ManagePersonLinks(private val deps: PersonLinksDeps) {
     private suspend fun linkLocked(transactionId: Id, personId: Id, meaning: PersonMeaning, auto: Boolean, amountMinor: Halalas?): LinkOutcome {
         val t = deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: throw PersonLinkError(uiText(TextKey.TXN_NOT_FOUND))
         if (deps.spaceLegs?.isLeg(transactionId) == true) throw PersonLinkError(uiText(TextKey.SPACE_TRANSFER_LEG_LOCKED))
+        // N3 · R3: تحويل بين محافظك أو نص زوج «رجعت» ⇒ أي معنى مع شخص كان هيعدّ نفس الفلوس مرتين
+        if (ownMoneyMove(t, deps.txns.findByIds(listOf(t.id + OWN_LEG_SUFFIX)).isNotEmpty())) throw PersonLinkError(uiText(UiKey.PLINK_ERR_OWN_MONEY))
         val people = deps.people.listAll()
         val person = people.firstOrNull { it.id == personId } ?: throw PersonLinkError(uiText(TextKey.PERSON_NOT_FOUND))
         if (meaning.direction != null && meaning.direction != t.observedDirection) throw PersonLinkError(uiText(UiKey.PLINK_ERR_DIRECTION))
@@ -154,6 +158,7 @@ class ManagePersonLinks(private val deps: PersonLinksDeps) {
             deps.links.deleteMany(listOf(transactionId))
             link.obligationId?.let { id ->
                 deps.terms?.let { terms -> if (terms.listAll().any { it.obligationId == id }) terms.remove(id) }
+                deps.zakatFacts?.let { z -> if (z.listAll().any { it.subjectId == id }) z.remove(id) }
                 deps.obligations.deleteMany(listOf(id))
             }
             link.allocationId?.let { deps.allocations.deleteMany(listOf(it)) }

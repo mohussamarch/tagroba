@@ -113,7 +113,7 @@ internal fun personLinksOf(r: SpaceRepositories, ids: app.masroufy.port.IdGenera
         app.masroufy.usecase.PersonLinksDeps(
             r.personLinks, r.people, r.obligations, r.settlements, r.allocations, r.transactions, r.categories, r.transferParties, r.uow, ids, clock,
             legs, r.wallets, app.masroufy.usecase.AddTransaction(app.masroufy.usecase.AddTransactionDeps(r.transactions, r.wallets, ids, clock)),
-            terms = r.debtTerms,
+            terms = r.debtTerms, zakatFacts = r.zakatFacts,
         ),
     )
 

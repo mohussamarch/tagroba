@@ -208,6 +208,8 @@ fun autoLinkTargets(parties: List<TransferParty>, txns: List<Transaction>, linke
     if (autos.isEmpty()) return emptyList()
     return txns.mapNotNull { t ->
         if (t.id in linked) return@mapNotNull null
+        // A2/F3: المالك فك ربطها أو مسح دينها أو أكد نوعها بإيده (المراجعة · التغيير المجمّع · لوحة النوع) ⇒ القاعدة ما تكتبش فوق اختياره
+        if (t.personRulesOff == true || t.economicKindConfirmed) return@mapNotNull null
         val ref = transferPartyOf(t) ?: return@mapNotNull null
         val party = autos.firstOrNull { partyMatches(it, ref) && t.occurredAt.take(10) >= it.autoSince.orEmpty().take(10) } ?: return@mapNotNull null
         // A2/F3: المالك فك ربطها أو غيّر معناها ⇒ القاعدة عمرها ما ترجع عليها

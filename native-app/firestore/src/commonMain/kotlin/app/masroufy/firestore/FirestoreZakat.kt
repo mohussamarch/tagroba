@@ -16,6 +16,8 @@ class FirestoreZakatFactRepository(private val space: FirestoreSpace) : ZakatFac
     override suspend fun listAll(): List<ZakatFact> = space.select(codec)
 
     override suspend fun save(fact: ZakatFact) = space.saveAll(codec, listOf(fact))
+
+    override suspend fun remove(subjectId: Id) = space.deleteAll(codec.group, listOf(subjectId))
 }
 
 class FirestoreZakatYearRepository(private val space: FirestoreSpace) : ZakatYearRepository {

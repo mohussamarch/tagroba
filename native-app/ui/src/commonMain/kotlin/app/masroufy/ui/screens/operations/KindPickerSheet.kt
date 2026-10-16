@@ -41,8 +41,8 @@ import kotlinx.coroutines.launch
 fun kindChoicesFor(direction: Direction): List<EconomicKind> = BULK_KINDS.filter { isConsistentWithObservedDirection(it, direction) }
 
 /** النوع يتغير من هنا: مش رجل «تحويل لنفسك» ولا تحويل بين محافظك ولا نص زوج «رجعت» (نفس استثناءات `setKind`). */
-fun kindEditable(t: Transaction, locked: Boolean): Boolean =
-    !locked && t.transferToWalletId == null && t.reversalOfId == null && t.reversedById == null
+fun kindEditable(t: Transaction, locked: Boolean, personLinked: Boolean = false): Boolean =
+    !locked && !personLinked && t.transferToWalletId == null && t.reversalOfId == null && t.reversedById == null
 
 /** اللي اتغير — للشريط بتاع «تراجع». */
 data class KindChange(val label: String, val undo: BulkUndo)

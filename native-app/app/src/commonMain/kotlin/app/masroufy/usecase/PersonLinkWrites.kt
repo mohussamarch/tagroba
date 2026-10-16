@@ -1,6 +1,7 @@
 package app.masroufy.usecase
 
 import app.masroufy.core.AllocationKind
+import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
 import app.masroufy.core.Id
 import app.masroufy.core.Obligation
@@ -14,6 +15,7 @@ import app.masroufy.core.Transaction
 import app.masroufy.core.TransferVerdict
 import app.masroufy.core.addMoney
 import app.masroufy.core.formatMoney
+import app.masroufy.core.kindForMeaning
 import app.masroufy.core.partyMatches
 import app.masroufy.core.remainingOfObligation
 import app.masroufy.core.subtractMoney
@@ -70,9 +72,14 @@ internal suspend fun settleOldestOf(deps: PersonLinksDeps, personId: Id, t: Tran
     return out to left
 }
 
-/** النوع اللي الربط غيّره بيرجع زي ما كان («فك الربط» · «تراجع» · مسح الدين — F1). */
+/**
+ * النوع اللي الربط غيّره بيرجع زي ما كان («فك الربط» · «تراجع» · مسح الدين — F1) — **بس لو العملية لسه بالنوع اللي الربط حطّه** (R5):
+ * لو النوع اتغير بعد الربط، اللي اتختار بعده هو اللي بيفضل.
+ */
 internal suspend fun revertLinkKind(txns: TransactionRepository, link: PersonLink, now: String?) {
     val kind = link.kindBefore ?: return
+    val t = txns.findByIds(listOf(link.transactionId)).firstOrNull() ?: return
+    if (t.economicKind != kindForMeaning(link.meaning, true) && t.economicKind != kindForMeaning(link.meaning, false)) return
     txns.update(
         link.transactionId,
         TransactionPatch(
@@ -87,6 +94,7 @@ internal suspend fun revertLinkKind(txns: TransactionRepository, link: PersonLin
  * بتتمنع عليها للأبد ([app.masroufy.core.TransferParty.autoSkip]).
  */
 internal suspend fun rememberSkip(deps: PersonLinksDeps, transactionId: Id) {
+    markRulesOff(deps.txns, transactionId, deps.clock.nowIso())
     val t = deps.txns.findByIds(listOf(transactionId)).firstOrNull() ?: return
     val ref = transferPartyOf(t) ?: return
     val ruled = deps.parties.listAll().filter {
@@ -94,3 +102,23 @@ internal suspend fun rememberSkip(deps: PersonLinksDeps, transactionId: Id) {
     }
     for (p in ruled) deps.parties.save(p.copy(autoSkip = p.autoSkip + transactionId))
 }
+
+/**
+ * A2/F3 (R5 · N2): العلامة على العملية نفسها (Transaction.personRulesOff) — ما بتضيعش لو الحساب ما كانش عليه قاعدة وقت الفك، ولا لو قراره
+ * اتنسى أو اتعاد بعدين (القرار الجديد بيتبني من غير autoSkip).
+ */
+internal suspend fun markRulesOff(txns: TransactionRepository, transactionId: Id, now: String?) {
+    val t = txns.findByIds(listOf(transactionId)).firstOrNull() ?: return
+    if (t.personRulesOff != true) txns.update(transactionId, TransactionPatch(personRulesOff = true, updatedAt = now))
+}
+
+/**
+ * N3 · R3: حركة بين فلوسك — تحويل بين محافظك (سحب كاش · «ده حسابي» ورِجله · تحويل داخلي مؤكد) أو نص زوج «رجعت» — أي معنى مع شخص عليها
+ * كان هيعدّ نفس الفلوس مرتين (الرِجل التانية لسه بتزوّد المحفظة التانية). [hasOwnLeg] = العملية ليها رِجل في محفظة تانية.
+ */
+internal fun ownMoneyMove(t: Transaction, hasOwnLeg: Boolean): Boolean =
+    hasOwnLeg || t.id.endsWith(OWN_LEG_SUFFIX) || t.transferToWalletId != null || t.reversalOfId != null || t.reversedById != null ||
+        (t.economicKind == EconomicKind.INTERNAL_TRANSFER && t.economicKindConfirmed)
+
+/** أصول رِجل «ده حسابي» في [all] (الرِجل معرّفها = الأصل + OWN_LEG_SUFFIX). */
+internal fun ownLegBases(all: List<Transaction>): Set<Id> = all.filter { it.id.endsWith(OWN_LEG_SUFFIX) }.map { it.id.removeSuffix(OWN_LEG_SUFFIX) }.toSet()

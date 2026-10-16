@@ -49,7 +49,7 @@ class DuesGraph(private val c: AreaContext) : DuesDeps {
     override val recurring = ManageRecurring(ManageRecurringDeps(r.recurring, r.transactions, r.categories, env.ids))
 
     override val deleteDebt = app.masroufy.usecase.DeleteDebt(
-        app.masroufy.usecase.DeleteDebtDeps(r.obligations, r.settlements, r.allocations, r.uow, terms = r.debtTerms, links = r.personLinks, txns = r.transactions, clock = env.clock),
+        app.masroufy.usecase.DeleteDebtDeps(r.obligations, r.settlements, r.allocations, r.uow, terms = r.debtTerms, links = r.personLinks, txns = r.transactions, clock = env.clock, zakatFacts = r.zakatFacts),
     )
 
     /** يوم الراتب من الملف (`ManageProfile.load` — 28 لو مش متسجل) ⇒ الفترة اللي فيها [today]. */

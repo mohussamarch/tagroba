@@ -44,6 +44,8 @@ data class TransferPartyAnswersDeps(
      * null (اختبارات قديمة) ⇒ نفس طريق «ده سداد؟» القديم.
      */
     val rules: PersonRules? = null,
+    /** R4/N4: «حاجة تانية» ما بتغيّرش نوع عملية مربوطة بشخص (المفتوحة ⇒ «فك الربط الأول»). null ⇒ مفيش فحص. */
+    val personLinks: app.masroufy.port.PersonLinkRepository? = null,
 )
 
 /** تراجع عن رد واحد: القرار قبله (null = ما كانش فيه) · العمليات قبله · العمليات اللي اتسجل عليها سداد. */
@@ -86,8 +88,10 @@ class TransferPartyAnswers(private val deps: TransferPartyAnswersDeps) {
         val now = deps.clock.nowIso()
         val d = decision(party, TransferVerdict.LABEL, now, kind = kind, note = text)
         val mine = everything().filter { transferPartyOf(it)?.key == party.key || it.id == transactionId }
+        val personLinked = deps.personLinks?.listByTransactionIds(mine.map { it.id })?.map { it.transactionId }?.toSet().orEmpty()
+        if (transactionId in personLinked) throw TransferPartyAnswerError(uiText(UiKey.PLINK_ERR_UNLINK_FIRST))
         // المبلغ اللي المالك فاتحه بياخد الاسم حتى لو نوعه كان متأكد (هو اللي اختار دلوقتي)
-        val changed = mine.mapNotNull { t ->
+        val changed = mine.filter { it.id !in personLinked }.mapNotNull { t ->
             val base = if (t.id == transactionId) t.copy(economicKindConfirmed = false) else t
             applyTransferVerdict(base, d, now).takeIf { it != base && it != t }
         }

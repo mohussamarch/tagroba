@@ -85,7 +85,7 @@ private val ENUMS: Map<String, Map<String, List<String>>> = mapOf(
     "roscas" to mapOf("unit" to listOf("week", "month")),
     "roscaEntries" to mapOf("kind" to listOf("contribution", "payout")),
     "installmentPlans" to mapOf("kind" to listOf("purchase_plan", "financing")),
-    "transferParties" to mapOf("verdict" to listOf("own_account", "person", "dismissed")),
+    "transferParties" to mapOf("verdict" to TransferVerdict.entries.map { it.wire }),
     PERSON_LINKS_GROUP to mapOf("meaning" to PersonMeaning.entries.map { it.wire }),
     "zakatFacts" to mapOf("subject" to listOf("asset", "obligation")),
     "lifeEvents" to mapOf("kind" to LifeEventKind.entries.map { it.wire }),

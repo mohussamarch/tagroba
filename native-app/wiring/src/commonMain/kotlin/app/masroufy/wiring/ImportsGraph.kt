@@ -52,7 +52,7 @@ class ImportsGraph(private val c: AreaContext) : ImportsDeps {
             r.transactions, r.sourceRecords, r.importBatches, r.settlements, r.allocations, r.obligations, r.uow,
             RevertLinkDeps(
                 r.projectLinks, r.eventLinks, r.transactionTags, r.roscaEntries, r.installmentPayments, r.installmentPlans,
-                r.zakatPayments, r.assetLots, r.assetSales,
+                r.zakatPayments, r.assetLots, r.assetSales, personLinks = r.personLinks,
             ),
         ),
     )

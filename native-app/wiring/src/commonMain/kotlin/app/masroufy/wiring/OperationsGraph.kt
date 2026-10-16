@@ -62,7 +62,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
             allocations = r.allocations, settlements = r.settlements, spaceLegs = legs,
         ),
     )
-    override val kinds = SetEconomicKind(SetEconomicKindDeps(r.transactions, r.categories, r.uow, clock, legs))
+    override val kinds = SetEconomicKind(SetEconomicKindDeps(r.transactions, r.categories, r.uow, clock, legs, personLinks = r.personLinks))
     override val categories = ManageCategories(ManageCategoriesDeps(r.categories, ids))
     override val merchants = ManageRules(ManageRulesDeps(r.rules, r.merchants, r.categories, ids))
     override val people = ManagePeople(
@@ -85,7 +85,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val linkedInflows = app.masroufy.usecase.LinkInflows(
         app.masroufy.usecase.LinkInflowsDeps(r.transactions, r.allocations, r.settlements, r.obligations, r.uow, clock),
     )
-    override val transfers = ManageTransfers(ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock, wallets = r.wallets))
+    override val transfers = ManageTransfers(ManageTransfersDeps(r.transactions, r.transferParties, r.people, r.uow, clock, wallets = r.wallets, personLinks = r.personLinks))
 
     // تحديد كذا عملية (§6.5 بند 15): المسح بيرفض أي عملية متربطة بحاجة — نفس فحص رجول «التحويل لنفسك»
     private val txnLinks = app.masroufy.usecase.TransactionLinkRepos(
@@ -105,7 +105,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val bulk = app.masroufy.usecase.BulkTransactions(
         app.masroufy.usecase.BulkTransactionsDeps(
             r.transactions, r.categories, r.projects, r.projectLinks, r.tags, r.transactionTags, r.sourceRecords, r.uow, ids, clock,
-            linked = txnLinks::linked, spaceLegs = legs, erase = erase,
+            linked = txnLinks::linked, spaceLegs = legs, erase = erase, personLinks = r.personLinks,
         ),
     )
 
@@ -123,7 +123,7 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val recentCategories = app.masroufy.usecase.RecentCategories(r.transactions, r.categories, clock)
     override val quickLinks = app.masroufy.usecase.QuickLinks(app.masroufy.usecase.QuickLinksDeps(r.transactions, linkedInflows, r.incomeSources, incomeAnswers))
     override val partyAnswers = app.masroufy.usecase.TransferPartyAnswers(
-        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock, rules = personLinks.rules),
+        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock, rules = personLinks.rules, personLinks = r.personLinks),
     )
 
     override suspend fun payday(): Int = c.shell.profile.load().payday

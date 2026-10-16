@@ -43,6 +43,8 @@ data class DebtRemoval(
     val links: List<PersonLink> = emptyList(),
     /** العمليات اللي نوعها رجع لما ربطها اتشال — زي ما كانت قبل المسح. */
     val transactionsBefore: List<Transaction> = emptyList(),
+    /** حقيقة الزكاة اللي على الدين (R3 — بتتشال معاه وبترجع مع «تراجع»). */
+    val zakatFact: app.masroufy.core.ZakatFact? = null,
 ) {
     /** مجموع التسويات اللي هتتشال مع الدين (للتأكيد). */
     val settledMinor: Halalas get() = sumMoney(settlements.map { it.amountMinor })
@@ -62,6 +64,8 @@ data class DeleteDebtDeps(
     val links: PersonLinkRepository? = null,
     val txns: TransactionRepository? = null,
     val clock: Clock? = null,
+    /** حقايق الزكاة (R3) — null (اختبارات قديمة) ⇒ مفيش. */
+    val zakatFacts: app.masroufy.port.ZakatFactRepository? = null,
 )
 
 class DeleteDebt(private val deps: DeleteDebtDeps) {
@@ -76,9 +80,11 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
         // النصيب اللي ربط الشراء كتبه مع الدين بيتشال معاه حتى لو معرّفه مش متزاوج
         val linkAllocations = links.filter { it.obligationId == obligation.id }.mapNotNull { it.allocationId }.filter { id -> paired.none { it.id == id } }
         val allocations = paired + if (linkAllocations.isEmpty()) emptyList() else deps.allocations.listByTransactionIds(links.map { it.transactionId }).filter { it.id in linkAllocations }
-        val reverted = links.filter { owns(it, obligation, allocations) && it.kindBefore != null }.map { it.transactionId }
-        val before = if (reverted.isEmpty()) emptyList() else deps.txns?.findByIds(reverted).orEmpty()
-        return DebtRemoval(obligation, settlements, allocations, terms, links, before)
+        // العمليات اللي الدين اتعمل منها أو ربطها اتشال: نوعها بيرجع وبتتعلّم إن القواعد ما ترجعش عليها (N2) ⇒ بتتحفظ زي ما هي لـ«تراجع»
+        val touched = (links.filter { owns(it, obligation, allocations) }.map { it.transactionId } + listOfNotNull(obligation.originTransactionId)).distinct()
+        val before = if (touched.isEmpty()) emptyList() else deps.txns?.findByIds(touched).orEmpty()
+        val fact = deps.zakatFacts?.listAll()?.firstOrNull { it.subjectId == obligation.id }
+        return DebtRemoval(obligation, settlements, allocations, terms, links, before, fact)
     }
 
     /** بيمسح الدين واللي معاه ذرّيًا (نفس وحدة العمل) وبيرجّع اللي اتشال عشان «تراجع». */
@@ -88,6 +94,7 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
             if (removal.settlements.isNotEmpty()) deps.settlements.deleteMany(removal.settlements.map { it.id })
             if (removal.allocations.isNotEmpty()) deps.allocations.deleteMany(removal.allocations.map { it.id })
             if (removal.terms != null) deps.terms?.remove(removal.obligation.id)
+            if (removal.zakatFact != null) deps.zakatFacts?.remove(removal.obligation.id)
             deps.obligations.deleteMany(listOf(removal.obligation.id))
             val gone = removal.settlements.map { it.id }.toSet()
             for (l in removal.links) {
@@ -96,6 +103,8 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
                     deps.txns?.let { revertLinkKind(it, l, deps.clock?.nowIso()) }
                 } else deps.links?.saveMany(listOf(l.copy(settlementIds = l.settlementIds.filter { it !in gone })))
             }
+            // N2: المالك مسح الدين ⇒ «سجّل تحويلاته لوحده» ما ترجعش تعمله تاني من نفس العملية (لما التفاصيل تتفتح أو القاعدة تتشغل)
+            deps.txns?.let { txns -> for (t in removal.transactionsBefore) markRulesOff(txns, t.id, deps.clock?.nowIso()) }
         }
         return removal
     }
@@ -107,6 +116,7 @@ class DeleteDebt(private val deps: DeleteDebtDeps) {
             if (removal.allocations.isNotEmpty()) deps.allocations.saveMany(removal.allocations)
             if (removal.settlements.isNotEmpty()) deps.settlements.saveMany(removal.settlements)
             removal.terms?.let { deps.terms?.save(it) }
+            removal.zakatFact?.let { deps.zakatFacts?.save(it) }
             if (removal.links.isNotEmpty()) deps.links?.saveMany(removal.links)
             if (removal.transactionsBefore.isNotEmpty()) deps.txns?.saveMany(removal.transactionsBefore)
         }

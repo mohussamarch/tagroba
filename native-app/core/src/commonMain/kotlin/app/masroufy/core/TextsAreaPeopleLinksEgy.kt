@@ -22,6 +22,8 @@ internal val EGYPTIAN_PEOPLE_LINK_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PLINK_ERR_ALREADY to "العملية دي مربوطة بـ{0} بالفعل. فك الربط الأول.",
     UiKey.PLINK_ERR_HAS_PAYMENTS to "الدين ده اتسدد منه حاجة. شيل السداد الأول من صفحة الدين.",
     UiKey.PLINK_ERR_HAS_DEBT to "العملية دي عليها دين أو سداد من شاشة الديون. عدّله من هناك.",
+    UiKey.PLINK_ERR_OWN_MONEY to "دي حركة بين فلوسك (تحويل بين محافظك أو عملية رجعت)، فما بتتربطش بشخص.",
+    UiKey.PLINK_ERR_UNLINK_FIRST to "العملية دي مربوطة بشخص. فك الربط الأول وبعدين غيّر نوعها.",
     UiKey.PLINK_ERR_WITH_NEEDS_KIND to "اختار سلفة أو سداد أو هدية عشان نعرف اتجاه الفلوس.",
     UiKey.PLINK_ERR_AMOUNT to "اكتب المبلغ.",
     UiKey.PLINK_ERR_WALLET to "اختار المحفظة.",

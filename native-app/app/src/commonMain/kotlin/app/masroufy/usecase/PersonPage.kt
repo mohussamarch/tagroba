@@ -77,7 +77,9 @@ class LoadPersonPage internal constructor(private val deps: PersonLinksDeps, pri
         val obligations = deps.obligations.listByPerson(personId)
         val settlements = deps.settlements.listByObligations(obligations.map { it.id })
         val open = obligations.map { remainingOfObligation(it, settlements) }.filter { it > 0L }.toSet()
-        val all = owner.everything().filter { !it.id.endsWith(OWN_LEG_SUFFIX) }
+        val everything = owner.everything()
+        val bases = ownLegBases(everything)
+        val all = everything.filter { !ownMoneyMove(it, it.id in bases) } // N3: حركات بين فلوسك ما بتتقترحش
         val found = personSuggestions(person.name, owner.accounts.of(personId), open, all, limit = 200)
         val linked = owner.linkedAmong(found.map { it.transaction.id })
         return found.filter { it.transaction.id !in linked }.take(20)
@@ -85,7 +87,9 @@ class LoadPersonPage internal constructor(private val deps: PersonLinksDeps, pri
 
     /** البحث في أي عملية مش مربوطة بشخص (بالاسم أو المبلغ). */
     suspend fun search(query: String): List<Transaction> {
-        val hits = searchOperations(query, owner.everything().filter { !it.id.endsWith(OWN_LEG_SUFFIX) }, limit = 80)
+        val everything = owner.everything()
+        val bases = ownLegBases(everything)
+        val hits = searchOperations(query, everything.filter { !ownMoneyMove(it, it.id in bases) }, limit = 80)
         val linked = owner.linkedAmong(hits.map { it.id })
         return hits.filter { it.id !in linked }.take(30)
     }

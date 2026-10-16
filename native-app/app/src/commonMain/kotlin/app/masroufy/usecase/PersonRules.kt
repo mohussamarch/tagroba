@@ -37,6 +37,7 @@ class PersonRules internal constructor(private val deps: PersonLinksDeps, privat
 
     /** «مستحقات دايمًا» على عملية واحدة (تفاصيل العملية · زون التحويلات · رد «مستحقات دايمًا» نفسه). true لو اتسجلت سداد. */
     suspend fun dues(t: Transaction): Boolean {
+        if (t.personRulesOff == true) return false
         val ref = transferPartyOf(t) ?: return false
         val party = ruledParties().firstOrNull { it.dues && partyMatches(it, ref) } ?: return false
         if (party.skips(t.id) || owner.linkedAmong(listOf(t.id)).isNotEmpty()) return false
@@ -60,6 +61,8 @@ class PersonRules internal constructor(private val deps: PersonLinksDeps, privat
         deps.parties.listAll().filter { it.verdict == TransferVerdict.PERSON && it.personId != null && (it.dues || it.autoMeaning != null) }
 
     private suspend fun applyOne(t: Transaction, ruled: List<TransferParty>): Boolean {
+        // A2/F3 (R5): المالك فك ربطها أو مسح دينها قبل كده — حتى لو الحساب ما كانش عليه قاعدة ساعتها
+        if (t.personRulesOff == true) return false
         val ref = transferPartyOf(t) ?: return false
         val mine = ruled.filter { partyMatches(it, ref) }
         if (mine.isEmpty() || mine.any { it.skips(t.id) }) return false

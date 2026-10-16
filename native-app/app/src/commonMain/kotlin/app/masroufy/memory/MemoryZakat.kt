@@ -17,6 +17,10 @@ class MemoryZakatFactRepository(seed: List<ZakatFact> = emptyList()) : ZakatFact
     override suspend fun save(fact: ZakatFact) {
         items[fact.subjectId] = fact
     }
+
+    override suspend fun remove(subjectId: Id) {
+        items.remove(subjectId)
+    }
 }
 
 class MemoryZakatYearRepository(seed: List<ZakatYear> = emptyList()) : ZakatYearRepository, Snapshotable {

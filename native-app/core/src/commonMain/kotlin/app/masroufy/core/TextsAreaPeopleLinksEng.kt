@@ -22,6 +22,8 @@ internal val ENGLISH_PEOPLE_LINK_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PLINK_ERR_ALREADY to "This operation is already linked to {0}. Unlink it first.",
     UiKey.PLINK_ERR_HAS_PAYMENTS to "Part of this debt was paid. Remove the payment first from the debt page.",
     UiKey.PLINK_ERR_HAS_DEBT to "This operation already has a debt or payment from the debts screen. Change it there.",
+    UiKey.PLINK_ERR_OWN_MONEY to "This is a move between your own money (between your wallets, or a returned operation), so it can't be linked to a person.",
+    UiKey.PLINK_ERR_UNLINK_FIRST to "This operation is linked to a person. Unlink it first, then change its kind.",
     UiKey.PLINK_ERR_WITH_NEEDS_KIND to "Pick a loan, repayment or gift so we know which way the money went.",
     UiKey.PLINK_ERR_AMOUNT to "Enter the amount.",
     UiKey.PLINK_ERR_WALLET to "Pick the wallet.",

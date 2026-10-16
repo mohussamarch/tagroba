@@ -26,7 +26,7 @@ internal class EmployerUseCases(c: AreaContext, legs: SpaceTransferLegs? = null)
 
     val retro = EmployerRetroApply(EmployerRetroDeps(r.incomeSources, r.transactions, r.uow, c.env.clock, c.env.repairBackup, spaceLegs))
 
-    val answers = IncomeAnswers(IncomeAnswersDeps(r.transactions, r.categories, employers, retro, r.uow, c.env.clock, spaceLegs))
+    val answers = IncomeAnswers(IncomeAnswersDeps(r.transactions, r.categories, employers, retro, r.uow, c.env.clock, spaceLegs, personLinks = r.personLinks))
 }
 
 /** رجول «التحويل لنفسك» في البلد دي — قراية بس (الفك شغل «العمليات»، ومن هنا بيرفض). */

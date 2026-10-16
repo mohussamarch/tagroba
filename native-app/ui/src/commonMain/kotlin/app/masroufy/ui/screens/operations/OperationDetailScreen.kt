@@ -149,7 +149,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 val party = v.askParty ?: partyShown
                 if (party != null) item(key = "party") { TransferPartyCard(party, v.id, onChanged = { reload++ }) }
                 // تغيير نوع تحويل داخل اتقرر (البند 6) — مش على رجل «التحويل لنفسك»
-                else if (v.flow == LinkFlow.TRANSFER_IN && !s.locked && deps.incomeAnswers != null) item(key = "income") { IncomeKindCard(v.id, onChanged = { reload++ }) }
+                else if (v.flow == LinkFlow.TRANSFER_IN && !s.locked && person.status?.link == null && deps.incomeAnswers != null) item(key = "income") { IncomeKindCard(v.id, onChanged = { reload++ }) }
                 // r05 (البند 9): «راتب من أي جهة؟» على الراتب الداخل
                 if (v.transaction.economicKind == app.masroufy.core.EconomicKind.SALARY && v.flow == LinkFlow.TRANSFER_IN) item(key = "salary-employer") { SalaryEmployerCard(v.id, reload) { reload++ } }
                 item(key = "fields") {
@@ -159,7 +159,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                             toaster.show(err ?: t(UiKey.OPERATION_DETAIL_CONFIRMED))
                             reload++
                         }
-                    }, onTagsChanged = { reload++ }, onKind = if (deps.bulk != null && kindEditable(v.transaction, s.locked)) ({ kindTx = v.transaction }) else null)
+                    }, onTagsChanged = { reload++ }, onKind = if (deps.bulk != null && kindEditable(v.transaction, s.locked, person.status?.link != null)) ({ kindTx = v.transaction }) else null)
                 }
                 // §6.5-14 «عمليات تابعة»: على المصروف (اختار الفلوس اللي دخلت) وعلى الداخلة التابعة (علامة بترجّع للمصروف)
                 item(key = "linked") {

@@ -40,6 +40,7 @@ object LedgerCodecs {
                 // §6.5-14 «عمليات تابعة» — اختيارية زي الشريحة S3
                 opt("linkedExpenseId", t.linkedExpenseId); opt("linkedInflowMinor", t.linkedInflowMinor)
                 opt("supportAskPending", t.supportAskPending)
+                opt("personRulesOff", t.personRulesOff?.takeIf { it })
                 // «حدّث الرصيد» (`BalanceCheckpoint.kt`): الجزء اللي اتفصل من «فرق مش معروف» — لو موجود بس
                 opt("explainsCheckpointId", t.explainsCheckpointId)
                 // OVERRIDES §91-2: علامة «مش في الكشف» — لو موجودة بس
@@ -65,6 +66,7 @@ object LedgerCodecs {
                 kindBeforeReversal = if (r.has("kindBeforeReversal")) r.wire("kindBeforeReversal", EconomicKind::fromWire) else null,
                 linkedExpenseId = r.strOrNull("linkedExpenseId"), linkedInflowMinor = r.longOrNull("linkedInflowMinor"),
                 supportAskPending = r.boolOrNull("supportAskPending"),
+                personRulesOff = r.boolOrNull("personRulesOff"),
                 explainsCheckpointId = r.strOrNull("explainsCheckpointId"),
                 notInStatement = r.boolOrNull("notInStatement"),
             )

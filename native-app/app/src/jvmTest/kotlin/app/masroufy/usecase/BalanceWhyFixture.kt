@@ -103,6 +103,7 @@ internal fun mergerOf(
     allocations: MemoryAllocationRepository = MemoryAllocationRepository(),
     tags: MemoryTransactionTagRepository = MemoryTransactionTagRepository(),
     rematch: (suspend () -> List<app.masroufy.core.SmsStatementPair>)? = null,
+    personLinks: app.masroufy.port.PersonLinkRepository? = null,
 ) = MergeDuplicates(
     MergeDuplicatesDeps(
         txns, sources, batches, MemoryUnitOfWork(listOfNotNull(txns as? app.masroufy.memory.Snapshotable, sources as? app.masroufy.memory.Snapshotable)), TickingClock(),
@@ -110,6 +111,7 @@ internal fun mergerOf(
         RevertLinkDeps(
             MemoryProjectLinkRepository(), MemoryEventLinkRepository(), tags, MemoryRoscaEntryRepository(), MemoryInstallmentPaymentRepository(),
             MemoryInstallmentPlanRepository(), MemoryZakatPaymentRepository(), MemoryAssetLotRepository(), MemoryAssetSaleRepository(),
+            personLinks = personLinks,
         ),
         rematch = rematch,
     ),

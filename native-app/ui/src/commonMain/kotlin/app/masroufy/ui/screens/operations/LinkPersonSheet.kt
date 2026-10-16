@@ -61,8 +61,20 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean, flow:
     // F7: الشراء كمان بيعدّي من «مع مين؟» (نفس `ManagePersonLinks`) — اللوحة القديمة بس لو الربط مش متوصل
     val meaningFlow = flow != null && deps.personLinks != null
     val linked = flow?.status?.link
-    val blocked = locked || (v.flow != LinkFlow.PURCHASE && !meaningFlow) || (meaningFlow && (linked != null || flow?.status?.ledgerLinked == true))
+    val taken = linked != null || flow?.status?.ledgerLinked == true
+    // N7: الشراء اللي اتربط بشخص (أو اتقسم قبل كده) ⇒ «حد تاني» بيفتح لوحة التقسيم (نصيب لكل شخص — OVERRIDES §98-3)؛ غيره رابط واحد بس
+    val card = personCardState(locked, v.flow == LinkFlow.PURCHASE, meaningFlow, taken)
+    val purchaseMore = card.purchaseMore
+    val blocked = card.blocked
     var open by remember { mutableStateOf(openInitially && !blocked && v.flow == LinkFlow.PURCHASE && !meaningFlow) }
+    // N6: «تخصيص مبلغ لشخص» من قايمة العمليات ⇒ اللوحة بتتفتح أول ما حالة العملية تتقري (مرة واحدة)
+    var openedInitially by remember(v.id) { mutableStateOf(false) }
+    LaunchedEffect(flow?.status, blocked) {
+        val first = initialPersonAction(openInitially && !openedInitially, meaningFlow, flow?.status != null, card)
+        if (first == InitialPersonAction.NONE) return@LaunchedEffect
+        openedInitially = true
+        if (first == InitialPersonAction.SPLIT) open = true else flow?.ask(v)
+    }
     var rows by remember(v.id) { mutableStateOf<List<PersonRow>>(emptyList()) }
     var added by remember(v.id) { mutableStateOf<List<PersonLinkLine>>(emptyList()) }
     var reload by remember { mutableStateOf(0) }
@@ -70,13 +82,14 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean, flow:
     val links = existingPersonLinks(rows, v.id, skipObligation = linked?.obligationId) + added
     val sub = when {
         locked -> t(UiKey.LINK_PERSON_LOCKED)
+        purchaseMore -> t(UiKey.LINK_PERSON_SUB_MORE)
         meaningFlow -> t(UiKey.PLINK_CARD_SUB_TRANSFER)
         v.flow != LinkFlow.PURCHASE -> t(UiKey.LINK_PERSON_TRANSFER_SOON)
         links.isEmpty() && linked == null -> t(UiKey.LINK_PERSON_SUB)
         else -> t(UiKey.LINK_PERSON_SUB_MORE)
     }
     val action = if (links.isEmpty() && linked == null) t(UiKey.LINK_PERSON_OPEN) else t(UiKey.LINK_PERSON_ANOTHER)
-    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, action, enabled = !blocked, onOpen = { if (meaningFlow) flow?.ask(v) else open = true }) {
+    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, action, enabled = !blocked, onOpen = { if (meaningFlow && !purchaseMore) flow?.ask(v) else open = true }) {
         if (linked != null) {
             Divider()
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -158,6 +171,23 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean, flow:
             }
         })
     }
+}
+
+/** حالة كارت «شخص» (N7): [purchaseMore] = شراء اتربط بشخص أو اتقسم قبل كده ⇒ «حد تاني» بيفتح لوحة التقسيم بدل ما الكارت يتقفل. */
+internal data class PersonCardState(val blocked: Boolean, val purchaseMore: Boolean)
+
+internal fun personCardState(locked: Boolean, purchase: Boolean, meaningFlow: Boolean, taken: Boolean): PersonCardState {
+    val more = meaningFlow && purchase && taken
+    return PersonCardState(locked || (!purchase && !meaningFlow) || (meaningFlow && taken && !more), more)
+}
+
+internal enum class InitialPersonAction { NONE, ASK, SPLIT }
+
+/** N6: «تخصيص مبلغ لشخص» من قايمة العمليات ⇒ أول ما حالة العملية تتقري: «مع مين؟» — أو لوحة التقسيم لو الشراء اتربط بحد قبل كده. */
+internal fun initialPersonAction(wanted: Boolean, meaningFlow: Boolean, statusLoaded: Boolean, card: PersonCardState): InitialPersonAction = when {
+    !wanted || !meaningFlow || !statusLoaded || card.blocked -> InitialPersonAction.NONE
+    card.purchaseMore -> InitialPersonAction.SPLIT
+    else -> InitialPersonAction.ASK
 }
 
 /** صندوق «الأثر على أرقامك» (أخضر خفيف). */

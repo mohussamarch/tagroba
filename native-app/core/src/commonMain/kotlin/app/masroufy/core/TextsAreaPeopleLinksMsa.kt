@@ -22,6 +22,8 @@ internal val MSA_PEOPLE_LINK_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.PLINK_ERR_ALREADY to "هذه العملية مربوطة بـ{0} مسبقًا. فك الربط أولًا.",
     UiKey.PLINK_ERR_HAS_PAYMENTS to "سُدد جزء من هذا الدين. احذف السداد أولًا من صفحة الدين.",
     UiKey.PLINK_ERR_HAS_DEBT to "على هذه العملية دين أو سداد من شاشة الديون. عدّله من هناك.",
+    UiKey.PLINK_ERR_OWN_MONEY to "هذه حركة بين أموالك (تحويل بين محافظك أو عملية مُرتجعة)، فلا تُربط بشخص.",
+    UiKey.PLINK_ERR_UNLINK_FIRST to "هذه العملية مربوطة بشخص. فُكّ الربط أولًا ثم غيّر نوعها.",
     UiKey.PLINK_ERR_WITH_NEEDS_KIND to "اختر سلفة أو سدادًا أو هدية لنعرف اتجاه المال.",
     UiKey.PLINK_ERR_AMOUNT to "اكتب المبلغ.",
     UiKey.PLINK_ERR_WALLET to "اختر المحفظة.",
