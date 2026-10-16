@@ -23,7 +23,7 @@ import kotlinx.coroutines.delay
  */
 @Stable
 class Toaster {
-    internal class Message(val id: Long, val text: String, val dark: Boolean)
+    internal class Message(val id: Long, val text: String, val dark: Boolean, val action: String? = null, val onAction: (() -> Unit)? = null)
 
     internal var current by mutableStateOf<Message?>(null)
     private var next = 0L
@@ -31,7 +31,15 @@ class Toaster {
     fun show(text: String, dark: Boolean = false) {
         current = Message(next++, text, dark)
     }
+
+    /** r051: رسالة بزرار واحد («تراجع» بعد الربط اللي لوحده) — بتفضل [TOAST_ACTION_MS] عشان تلحق تدوس. */
+    fun show(text: String, action: String, dark: Boolean = true, onAction: () -> Unit) {
+        current = Message(next++, text, dark, action, onAction)
+    }
 }
+
+/** مدة رسالة فيها زرار (زي «تراجع» في رسايل البنك — 8 ثواني). */
+const val TOAST_ACTION_MS = 8_000L
 
 val LocalToaster = staticCompositionLocalOf { Toaster() }
 
@@ -43,7 +51,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
     val inSpec = motion<Float>(Springs.SNAPPY)
     LaunchedEffect(msg.id) {
         shown.animateTo(1f, inSpec)
-        delay(2600)
+        delay(if (msg.action != null) TOAST_ACTION_MS else 2600)
         shown.animateTo(0f, inSpec)
         if (toaster.current?.id == msg.id) toaster.current = null
     }
@@ -54,5 +62,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
             translationY = (1f - shown.value) * 8.dp.toPx()
         },
         dark = msg.dark,
+        action = msg.action,
+        onAction = msg.onAction?.let { run -> { if (toaster.current?.id == msg.id) toaster.current = null; run() } },
     )
 }

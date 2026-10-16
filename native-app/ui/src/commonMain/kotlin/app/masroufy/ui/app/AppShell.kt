@@ -137,6 +137,8 @@ fun AppShell(shell: ShellState, registry: RouteRegistry, deps: SpaceDeps) {
             AddOperationSheet(adding, onClose = { adding = false }, onVoice = { adding = false; ask = true })
             // «رسائل البنك» من أول تشغيل ⇒ الشرح ثم إذن النظام بعد ما الرحلة تخلص (OVERRIDES §91)
             SmsHandoffHost()
+            // r051: خصم من تابي أو تمارا أو زيهم اتسجل ⇒ لوحة «ادفع بعدين» بتطلع لوحدها (OVERRIDES §102)
+            app.masroufy.ui.screens.dues.BnplHost()
             // زراير الشاشات في ردود المساعد بتقفل الشات وتنقل (رابط المحرك ⇒ `targetOf`). القفل ⇒ «البيانات اتغيرت»: المساعد ممكن يكون
             // سجّل عملية أو قفل كارت ⇒ الرئيسية والجرس يقروا تاني (اتلقطت في تجربة المحاكي: «معك الآن» فضل زي ما هو)
             AssistantChat(ask != null, ask == true, nav.tab, shell.ask, onClose = { ask = null; shell.changes.changed() }) { target ->

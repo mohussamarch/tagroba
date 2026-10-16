@@ -6,9 +6,7 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.Transaction
 import app.masroufy.core.Wallet
 import app.masroufy.usecase.AddOperationResult
-import app.masroufy.usecase.BnplAnswer
-import app.masroufy.usecase.BnplAsk
-import app.masroufy.usecase.BnplDone
+
 import app.masroufy.usecase.AutoRecordResult
 import app.masroufy.usecase.EditTransaction
 import app.masroufy.usecase.ImportStatement
@@ -158,11 +156,6 @@ interface SmsDeps {
      */
     suspend fun confirmMessages(ids: List<String>, categories: Map<String, Id> = emptyMap(), isSalary: Boolean? = null): SmsConfirmed =
         SmsConfirmed(0, 0, emptyList())
-
-    /** خصومات «اشتري دلوقتي وادفع بعدين» المستنية رد المالك (والقسط الجاي اللي يتربط لوحده بيتربط هنا). */
-    suspend fun bnplAsks(): List<BnplAsk> = emptyList()
-
-    suspend fun bnplAnswer(answer: BnplAnswer): BnplDone? = null
 }
 
 /** r05: [recorded] = اللي المالك أكّده · [sameShape] = اللي اتسجل معاه بنفس الشكل · [transactionIds] = عمليات المؤكَّد. */

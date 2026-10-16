@@ -48,6 +48,16 @@ class DuesGraph(private val c: AreaContext) : DuesDeps {
 
     override val recurring = ManageRecurring(ManageRecurringDeps(r.recurring, r.transactions, r.categories, env.ids))
 
+    /** r051 — لوحة «ادفع بعدين» (الهيكل `BnplHost`) بنفس `installments` اللي فوق، واسم المحفظة والتصنيف. */
+    override val bnpl = app.masroufy.usecase.BnplCharges(
+        app.masroufy.usecase.BnplChargesDeps(
+            r.transactions, r.installmentPlans, r.installmentPayments, installments, env.clock, env.today, wallets = r.wallets, categories = r.categories,
+        ),
+    )
+
+    /** r051 — قسم «مشتريات بالتقسيط» في «الأقساط». */
+    override val bnplPlans = app.masroufy.usecase.LoadBnplPlans(r.installmentPlans, r.installmentPayments, r.categories)
+
     override val deleteDebt = app.masroufy.usecase.DeleteDebt(
         app.masroufy.usecase.DeleteDebtDeps(r.obligations, r.settlements, r.allocations, r.uow, terms = r.debtTerms),
     )

@@ -30,6 +30,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -112,7 +115,7 @@ fun Modifier.mintSheen(play: Boolean): Modifier {
  * رسالة صغيرة فوق الشريطين («سُجّلت: −42.00 ر.س · مطاعم وقهوة») — زجاج فاتح بعلامة صح. بتختفي لوحدها (اللي بيعرضها بيشيلها بعد 2.6 ثانية).
  */
 @Composable
-fun Toast(text: String, modifier: Modifier = Modifier, dark: Boolean = false) {
+fun Toast(text: String, modifier: Modifier = Modifier, dark: Boolean = false, action: String? = null, onAction: (() -> Unit)? = null) {
     val shape = RoundedCornerShape(if (dark) 18.dp else 22.dp)
     val surface = if (dark) Modifier.clip(shape).background(Color(0xEB193D33))
     else Modifier.layeredShadow(shape, Shadows.toast).clip(shape).background(Color(0xEBFFFFFF)).innerSheen(shape, Shadows.toast)
@@ -122,7 +125,15 @@ fun Toast(text: String, modifier: Modifier = Modifier, dark: Boolean = false) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (!dark) LucideIcon(Lucide.CHECK, size = 18.dp, tint = Ink.primary)
-        BasicText(text, style = Type.of(13, FontWeight.Bold).copy(color = if (dark) Color.White else Ink.text), maxLines = 2)
+        BasicText(text, Modifier.weight(1f, fill = false), style = Type.of(13, FontWeight.Bold).copy(color = if (dark) Color.White else Ink.text), maxLines = 2)
+        if (action != null && onAction != null) {
+            BasicText(
+                action,
+                Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onAction).semantics { role = Role.Button }
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                style = Type.of(13, FontWeight.Bold).copy(color = if (dark) Color(0xFF8CE0C4) else Ink.primary),
+            )
+        }
     }
 }
 
