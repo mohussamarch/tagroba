@@ -15,7 +15,6 @@ import app.masroufy.core.duesItemsUntil
 import app.masroufy.core.goalPercent
 import app.masroufy.core.parseIsoDate
 import app.masroufy.core.periodForDate
-import app.masroufy.core.sharesOfLargest
 import app.masroufy.core.sumMoney
 import app.masroufy.core.toDayNumber
 import app.masroufy.core.unpricedDuesUntil
@@ -88,7 +87,10 @@ data class TopCategoryRow(val categoryId: Id?, val name: String?, val amountMino
 
 data class TopCategoriesView(val rows: List<TopCategoryRow>, val period: Period)
 
-/** «أكتر حاجة صرفت فيها»: أكبر [TOP_CATEGORIES_COUNT] تصنيفات في الشهر المالي من `LoadHomeScreen.distribution` (نفس أرقام الرئيسية). */
+/**
+ * «أكتر حاجة صرفت فيها»: أول [TOP_CATEGORIES_COUNT] بالكتير من نفس الترتيب ([rankSpend]) اللي شاشة «أكثر ما صرفت عليه» بتعرضه كله
+ * (طلب المالك 2026-10-16 — OVERRIDES §92). الكارت دايمًا تلاتة بالكتير.
+ */
 const val TOP_CATEGORIES_COUNT = 3
 
 class LoadTopCategories(private val homeScreen: LoadHomeScreen) {
@@ -96,11 +98,17 @@ class LoadTopCategories(private val homeScreen: LoadHomeScreen) {
         of(homeScreen.load(LoadHomeScreenRequest(periodForDate(today, payday), today, payday, includeHistory = false)))
 
     /** من بيانات الرئيسية اللي اتقرت (الكروت بتقرا مرة واحدة للتلات كروت: أكتر حاجة · مراجعة · آخر العمليات). */
-    fun of(data: HomeScreenData): TopCategoriesView {
-        val names = data.categories.associate { it.id to it.name }
-        val top = data.distribution.filter { it.amountMinor > 0L }.sortedByDescending { it.amountMinor }.take(TOP_CATEGORIES_COUNT)
-        val bars = sharesOfLargest(top.map { it.amountMinor })
-        return TopCategoriesView(top.mapIndexed { i, s -> TopCategoryRow(s.categoryId, s.categoryId?.let { names[it] }, s.amountMinor, bars[i]) }, data.period)
+    fun of(data: HomeScreenData): TopCategoriesView =
+        TopCategoriesView(rankSpend(data).rows.take(TOP_CATEGORIES_COUNT).map { TopCategoryRow(it.categoryId, it.name, it.amountMinor, it.barPercent) }, data.period)
+
+    /**
+     * الترتيب كامل لشاشة «أكثر ما صرفت عليه»: الشهر المالي اللي فيه [today] (من يوم الراتب [payday]) أو اللي قبله بـ[monthsBack] —
+     * قراية واحدة للفترة بنفس `LoadHomeScreen` اللي الكارت بيقرا منه (من غير آخر ست فترات).
+     */
+    suspend fun loadAll(today: IsoDate, payday: Int, monthsBack: Int = 0): TopSpendView {
+        val current = periodForDate(today, payday)
+        val period = if (monthsBack == 0) current else shiftPeriod(current, -monthsBack, payday)
+        return rankSpend(homeScreen.load(LoadHomeScreenRequest(period, today, payday, includeHistory = false)))
     }
 }
 
