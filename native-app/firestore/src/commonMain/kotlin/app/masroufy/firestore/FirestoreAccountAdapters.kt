@@ -45,7 +45,6 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             profile.islamicContentVisible?.let { put("islamicContentVisible", it) }
             profile.carToWork?.let { put("carToWork", it) }
             profile.lookIndex?.let { put("lookIndex", it.toLong()) }
-            // «شخصيتك» v2 (character-spec §1.2): خريطة بـ`v` جوه نفس المستند — مفيش تعديل في القواعد
             profile.character?.let { put("character", it.toStored()) }
         }
         space.write { ref().set(doc) }

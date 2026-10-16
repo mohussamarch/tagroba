@@ -40,8 +40,8 @@ data class UserProfile(
      */
     val lookIndex: Int? = null,
     /**
-     * «شخصيتك» v2 (character-spec §1.2) — خريطة `character` جوه نفس المستند (`users/{uid}/profile/main`)، فالنسخة الشاملة والمزامنة
-     * بتشيلها من غير كود زيادة ومن غير تعديل في قواعد فايربيز. `null` = لسه ما اتبنتش. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
+     * «شخصيتك» (r041 — نموذج v2): خريطة `character` جوه نفس الملف (`users/{uid}/profile/main`) عشان أي حفظ للملف ما يمسحهاش،
+     * وبتتنسخ في النسخة الاحتياطية مع الملف من غير كود زيادة. `null` = لسه ما اتبنتش. حقل التطبيق الجديد بس (ما بيتكتبش لو `null`).
      */
     val character: CharacterLook? = null,
 )
@@ -111,7 +111,7 @@ fun checkProfile(input: UserProfile): ProfileCheck {
     val carToWork = if (input.hasCar == true) input.carToWork else null
     // شكل برّه الستة ⇒ ما بيتحفظش (بيرجع «ما اختارش» ⇒ الأول)
     val look = input.lookIndex?.takeIf { it in 1..LOOK_COUNT }
-    // الشخصية بتمشي مع النوع اللي في ملفك (لو النوع اتغير من «ملفك» اللبس والشعر بيتظبطوا — اختيار Claude، سؤال مفتوح للمالك)
+    // الشخصية: كل حقل في مداه، ومظبوطة على نوع الملف (لو النوع اتغير في «ملفك» الشخصية المحفوظة بتفضل مناسبة له)
     val character = input.character?.normalized()?.fitGender(genderIndex(input.gender))
     return ProfileCheck.Ok(
         input.copy(displayName = name?.ifEmpty { null }, dependentKinds = kinds, carToWork = carToWork, lookIndex = look, character = character),

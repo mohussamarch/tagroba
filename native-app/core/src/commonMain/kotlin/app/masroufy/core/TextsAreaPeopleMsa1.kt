@@ -63,7 +63,7 @@ internal val MSA_PEOPLE_AREA_1: Map<UiKey, String> = mapOf(
     UiKey.PEOPLE_ADD_PERSON to "إضافة شخص",
     UiKey.PEOPLE_ALL to "الكل ({0})",
     UiKey.PEOPLE_BACK to "رجوع",
-    UiKey.PEOPLE_CHARACTER_SLOT to "مكان شخصيتك المرسومة",
+    UiKey.PEOPLE_CHARACTER_SLOT to "مكان شخصيتك · اضغط مطوّل",
     UiKey.PEOPLE_CHIP_OWE to "عليك {0}",
     UiKey.PEOPLE_CHIP_OWED to "لك {0}",
     UiKey.PEOPLE_EMPTY_TITLE to "لم تُضف أحدًا بعد",

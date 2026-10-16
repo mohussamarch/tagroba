@@ -50,13 +50,10 @@ class ManageProfile(private val deps: ManageProfileDeps) {
     /** الرد على «هتروح بيها الشغل؟» — بيتسجل على الملف (`carToWork`). من غير عربية الرد بيتمسح (`checkProfile`). */
     suspend fun answerCarToWork(yes: Boolean): ProfileCheck = save(load().copy(carToWork = yes))
 
-    /** «شخصيتك» المحفوظة (character-spec §1.2) — `null` = لسه ما اتبنتش (الدواير بتعرض الشكل المحايد). */
+    /** «شخصيتك» المحفوظة على الملف — `null` = لسه ما اتبنتش (r041). */
     suspend fun character(): CharacterLook? = load().character
 
-    /**
-     * «احفظ» في «ابنِ شخصيتك» / «عدّل شخصيتك»: الشخصية على ملفك، والنوع بييجي من الملف نفسه (`checkProfile` بيظبط اللبس والشعر عليه).
-     * القيم برّه مداها بترجع للافتراضي. حفظ الملف الباقي (الاسم ويوم الراتب …) زي ما هو.
-     */
+    /** حفظ «شخصيتك» على الملف (من «احفظ» في شاشة البناء بس). الظبط على النوع والمدى بيحصل في `checkProfile`. */
     suspend fun saveCharacter(look: CharacterLook): ProfileCheck = save(load().copy(character = look))
 
     /** بيسجل وقت انتهاء أسئلة البداية؛ الحقول الاختيارية ممكن تفضل فاضية. */

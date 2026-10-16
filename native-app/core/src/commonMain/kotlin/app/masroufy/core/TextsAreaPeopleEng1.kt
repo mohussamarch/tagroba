@@ -63,7 +63,7 @@ internal val ENGLISH_PEOPLE_AREA_1: Map<UiKey, String> = mapOf(
     UiKey.PEOPLE_ADD_PERSON to "Add person",
     UiKey.PEOPLE_ALL to "All ({0})",
     UiKey.PEOPLE_BACK to "Back",
-    UiKey.PEOPLE_CHARACTER_SLOT to "Your character goes here",
+    UiKey.PEOPLE_CHARACTER_SLOT to "Your character's place · long-press",
     UiKey.PEOPLE_CHIP_OWE to "You owe {0}",
     UiKey.PEOPLE_CHIP_OWED to "Owes you {0}",
     UiKey.PEOPLE_EMPTY_TITLE to "No one added yet",
