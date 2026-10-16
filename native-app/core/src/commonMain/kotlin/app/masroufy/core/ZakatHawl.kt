@@ -28,13 +28,17 @@ private fun walletEvents(wallets: List<Wallet>, transactions: List<Transaction>)
     return events
 }
 
-/** رصيد كل محفظة آخر يوم [date] — null لو المحفظة لسه ما اتفتحتش في التطبيق يومها. */
+/**
+ * رصيد كل محفظة آخر يوم [date] — null لو المحفظة لسه ما اتفتحتش في التطبيق يومها، أو (r041b P4) رصيد بدايتها مش معروف ولسه مفيش
+ * «حدّث الرصيد» لحد اليوم ده (`balanceKnownFrom`): الحركات من صفر شكلي مش رصيد (CLAUDE.md #10).
+ */
 fun walletBalancesOn(wallets: List<Wallet>, transactions: List<Transaction>, date: IsoDate): Map<Id, Halalas?> {
     val totals = LinkedHashMap<Id, Halalas?>().apply { wallets.forEach { put(it.id, if (it.openingAt <= date) 0L else null) } }
     for ((id, day, delta) in walletEvents(wallets, transactions)) {
         if (day > date) continue
         totals[id] = addMoney(totals[id] ?: continue, delta)
     }
+    for (w in wallets) if (w.openingUnknown && balanceKnownFrom(w).let { it == null || it > date }) totals[w.id] = null
     return totals
 }
 

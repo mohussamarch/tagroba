@@ -377,6 +377,9 @@ enum class TextKey : TextRef {
     /** الشاشة الرئيسية: التوقع مش متاح لحد ما الأنواع تتحدد */
     FORECAST_NEEDS_KINDS,
 
+    /** r041b P4: ولا عملية في الفترة ⇒ مفيش أساس للتوقع (القيم في `TextsR041b.kt`) */
+    FORECAST_NO_DATA,
+
     // «المستحقات»: الجمعيات والأقساط ومواعيد الديون — OVERRIDES §50 (القيم في `TextsDues.kt`)
     KIND_ROSCA_CONTRIBUTION, KIND_INSTALLMENT_PAID, KIND_FINANCING_RECEIVED,
     DUE_BAD_FIRST_DATE, DUE_BAD_CYCLE, DUE_INSTALLMENT_POSITIVE, DUE_TOTAL_POSITIVE, DUE_TOO_MANY,

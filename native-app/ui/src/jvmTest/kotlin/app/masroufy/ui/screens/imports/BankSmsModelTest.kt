@@ -99,6 +99,18 @@ class BankSmsModelTest {
         assertEquals(31840L, ui.recorded[1].amountMinor)
     }
 
+    @Test fun aTransferToAPersonShowsTheNameAndIsNotANewShop() {
+        // r041b P6 + P9: نفس عنوان «العمليات» (طرف التحويل) — مش فاضي ومش «متجر جديد»
+        val sms = "حوالة داخلية صادرة\nمن:1111\nإلى:TEST PERSON\nبـSR 65\n26/10/07 09:35"
+        val toPerson = Fx.txn("t5", null, 6500).copy(rawMerchantName = null, rawDescription = sms)
+        val shop = Fx.txn("t6", "TEST SHOP", 4550)
+        val ui = bankSmsUi(overview(), listOf(toPerson, shop), emptySet())
+        assertEquals("TEST PERSON", ui.recorded[0].title)
+        assertTrue(ui.recorded[0].party)
+        assertEquals("TEST SHOP", ui.recorded[1].title)
+        assertFalse(ui.recorded[1].party)
+    }
+
     @Test fun hiddenCategoriesAreNotPickable() {
         val all = listOf(Fx.category("a", "مطاعم"), Fx.category("b", "قديم", active = false))
         assertEquals(listOf("a"), pickableCategories(all).map { it.id })

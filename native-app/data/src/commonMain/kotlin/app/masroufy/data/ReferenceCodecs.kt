@@ -27,6 +27,8 @@ object ReferenceCodecs {
                 opt("balanceCheckpoints", w.checkpoints.takeIf { it.isNotEmpty() }?.map(::checkpointDoc))
                 // OVERRIDES §91-1: «لأ، مش بتاعي» — لو فيه أرقام بس
                 opt("notMineLast4", w.notMineLast4.takeIf { it.isNotEmpty() })
+                // r041b P4: رصيد بداية مش معروف — بيتكتب لو true بس ⇒ المحفظة القديمة هي هي بالحرف
+                opt("openingUnknown", true.takeIf { w.openingUnknown })
             }
         },
         { r ->
@@ -35,6 +37,7 @@ object ReferenceCodecs {
                 r.str("openingAt"), r.strOrNull("accountLast4"), r.strOrNull("bankId"),
                 r.maps("balanceCheckpoints").map(::checkpointOf),
                 r.strings("notMineLast4").orEmpty(),
+                openingUnknown = r.boolOrNull("openingUnknown") == true,
             )
         },
     )

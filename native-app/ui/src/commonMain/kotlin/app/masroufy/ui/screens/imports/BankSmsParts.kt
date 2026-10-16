@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.masroufy.core.Category
+import app.masroufy.core.Direction
 import app.masroufy.core.TextKey
 import app.masroufy.core.Wallet
 import app.masroufy.ui.components.AmountText
@@ -114,11 +115,16 @@ private fun RecordedRow(row: RecordedUi, category: Category?, onConfirm: (Record
     ) {
         IconTile(color) { LucideIcon(Lucide.TAG, size = 18.dp, tint = color) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            BasicText(row.merchant, style = Type.bodyBold(), maxLines = 1)
+            BasicText(row.title, style = Type.bodyBold(), maxLines = 1)
             BasicText(category?.name ?: t(UiKey.IMPORTS_UNCATEGORIZED), style = Type.caption().copy(color = Ink.muted), maxLines = 1)
             if (row.need != RecordedNeed.NONE) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    if (row.need == RecordedNeed.CONFIRM) Tag(t(UiKey.BANK_SMS_SUGGESTED), TagTone.AMBER) else Tag(t(UiKey.BANK_SMS_NEW_SHOP), TagTone.MUTED)
+                    when {
+                        row.need == RecordedNeed.CONFIRM -> Tag(t(UiKey.BANK_SMS_SUGGESTED), TagTone.AMBER)
+                        // r041b P9: تحويل لشخص/من شخص مش «متجر جديد»
+                        row.party -> Tag(t(if (row.direction == Direction.IN) UiKey.BANK_SMS_PARTY_FROM else UiKey.BANK_SMS_PARTY_TO), TagTone.MUTED)
+                        else -> Tag(t(UiKey.BANK_SMS_NEW_SHOP), TagTone.MUTED)
+                    }
                     SmallAction(t(if (row.need == RecordedNeed.CONFIRM) UiKey.BANK_SMS_CONFIRM else UiKey.BANK_SMS_CATEGORIZE)) {
                         if (row.need == RecordedNeed.CONFIRM) onConfirm(row) else onCategorize(row)
                     }

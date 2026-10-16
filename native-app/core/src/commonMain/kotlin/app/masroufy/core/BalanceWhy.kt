@@ -62,7 +62,8 @@ data class BalanceReview(
 data class BalanceExplanation(
     val walletId: Id,
     val currency: Currency,
-    val openingMinor: Halalas,
+    /** null = رصيد البداية مش معروف (`Wallet.openingUnknown`) ⇒ «غير متاح». */
+    val openingMinor: Halalas?,
     val openingAt: IsoDate,
     val asOf: IsoDate,
     /** المصادر اللي فيها حركة بس، بترتيب [BalanceSource]. */
@@ -158,9 +159,11 @@ fun explainWalletBalance(
     }
     val review = BalanceReview(findLikelyDuplicates(counted, sources, windowDays, isAdjustment), before, other, foreign, reversals, oneSided, unassigned)
     val lines = BalanceSource.entries.mapNotNull { s -> totals[s]?.let { (n, i, o) -> SourceTotal(s, n, i, o) } }
-    val computed = if (open) addMoney(wallet.openingBalanceMinor, inMinor, -outMinor) else null
+    // r041b P4: رصيد بداية مش معروف ولسه مفيش «حدّث الرصيد» ⇒ المحسوب «غير متاح» (نفس `walletBalancesOn`) — الحركات بتفضل ظاهرة
+    val balanceKnown = balanceKnownFrom(wallet)?.let { it <= asOf } == true
+    val computed = if (open && balanceKnown)addMoney(wallet.openingBalanceMinor, inMinor, -outMinor) else null
     return BalanceExplanation(
-        wallet.id, wallet.currency, wallet.openingBalanceMinor, wallet.openingAt, asOf, lines,
+        wallet.id, wallet.currency, wallet.openingBalanceMinor.takeUnless { wallet.openingUnknown }, wallet.openingAt, asOf, lines,
         if (open) inMinor else null, if (open) outMinor else null, computed, review,
     )
 }

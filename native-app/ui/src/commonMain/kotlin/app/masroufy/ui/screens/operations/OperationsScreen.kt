@@ -81,7 +81,9 @@ fun OperationsScreen() {
     val quick = rememberQuickMenu()
     // قراية المختار في الرسم نفسه ⇒ الرجوع من «اختر الشهر» بيعيد القراية بالشهر الجديد
     val chosenKey = PeriodChoice.of(space.space.id)
-    LaunchedEffect(deps, reload, chosenKey) {
+    // r041b P5: الحفظ من «+» فوق «العمليات» (أو أي كتابة من لوحة فوقها) بيزوّد `DataChanges.version` ⇒ القايمة والمجاميع بتتقري تاني
+    val changes = app.masroufy.ui.app.LocalDataChanges.current
+    LaunchedEffect(deps, reload, chosenKey, changes.version) {
         app.masroufy.perf.PerfTrace.span("screen:operations") {
             val today = space.shell.today()
             val view = attempt {
@@ -101,7 +103,6 @@ fun OperationsScreen() {
     var erasing by remember { mutableStateOf<app.masroufy.core.Id?>(null) } // «امسح» من قايمة العملية (OVERRIDES §91-11)
     val toaster = app.masroufy.ui.shell.LocalToaster.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    val changes = app.masroufy.ui.app.LocalDataChanges.current
     // «اسحب لتحت عشان تحدّث» (قايمة المالك بند 9): نفس تسجيل رسايل البنك بتاع تشغيلة الخلفية ⇒ رسالة لو فشل ⇒ قراية من جديد
     val pull = rememberPullRefresh(refreshing) {
         if (!refreshing) {

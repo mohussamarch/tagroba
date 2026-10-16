@@ -60,7 +60,7 @@ class BalanceWhyLongTest {
         val why = world.explain().explain(HISTORY_BANK.id, asOf)!!
         val shown = world.shown(asOf)!!
         assertEquals(shown, why.computedMinor, "the explanation is the shown balance to the halala")
-        assertEquals(why.openingMinor + why.totals.sumOf { it.inMinor } - why.totals.sumOf { it.outMinor }, shown)
+        assertEquals(why.openingMinor!! + why.totals.sumOf { it.inMinor } - why.totals.sumOf { it.outMinor }, shown)
         assertEquals(500_000L, why.openingMinor)
         assertEquals("2025-01-01", why.openingAt)
 

@@ -105,7 +105,11 @@ fun dailySpend(onHandMinor: Halalas?, duesMinor: Halalas, daysLeft: Int?): Daily
  * والسطر بعملة تانية ما بيتحوّلش.
  */
 fun duesUntil(items: List<CalendarItem>, today: IsoDate, lastDay: IsoDate, currency: Currency): Halalas =
-    sumMoney(items.filter { it.flow == DueFlow.PAY && it.amountMinor != null && it.currency == currency && it.date >= today && it.date <= lastDay }.map { it.amountMinor!! })
+    sumMoney(duesItemsUntil(items, today, lastDay, currency).map { it.amountMinor!! })
+
+/** سطور [duesUntil] نفسها — فاضية ⇒ «مفيش التزامات متسجلة قبل المرتب» بدل «0.00» (r041b P4 — CLAUDE.md #10). */
+fun duesItemsUntil(items: List<CalendarItem>, today: IsoDate, lastDay: IsoDate, currency: Currency): List<CalendarItem> =
+    items.filter { it.flow == DueFlow.PAY && it.amountMinor != null && it.currency == currency && it.date >= today && it.date <= lastDay }
 
 /** عرض الشريط لكل صف من أكبر واحد (0–100، صحيح) — «أكتر حاجة صرفت فيها». الأكبر = 100، والصفر أو السالب = 0. */
 fun sharesOfLargest(amounts: List<Halalas>): List<Int> {

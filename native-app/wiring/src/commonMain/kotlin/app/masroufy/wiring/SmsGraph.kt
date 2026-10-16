@@ -31,6 +31,7 @@ import app.masroufy.usecase.EditTransaction
 import app.masroufy.usecase.ImportStatement
 import app.masroufy.usecase.InboxView
 import app.masroufy.usecase.ManageSmsInbox
+import app.masroufy.usecase.ManageWallets
 import app.masroufy.usecase.ReviewSmsInbox
 import app.masroufy.usecase.ReviewSmsInboxDeps
 import app.masroufy.usecase.RevertImportBatch
@@ -106,8 +107,17 @@ internal class SmsGraph(
         return auto.run()
     }
 
-    override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String?): AutoRecordResult =
-        AnswerSmsAccount(c.repos.wallets).answerAndRecord(auto(), walletId, last4, mine, messageId)
+    override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String?, replace: Boolean): AutoRecordResult =
+        answering().answerAndRecord(auto(), walletId, last4, mine, messageId, replace)
+
+    override suspend fun accountNewWallet(fromWalletId: Id, last4: String, messageId: String?): Pair<Wallet, AutoRecordResult> =
+        answering().newWalletAndRecord(auto(), fromWalletId, last4, messageId)
+
+    /** r041b P10: «محفظة جديدة لهذا الحساب» بتتعمل من نفس طريق «أضف محفظة» (`ManageWallets` — عملة البلد ويومها). */
+    private fun answering() = AnswerSmsAccount(
+        c.repos.wallets,
+        ManageWallets(c.repos.wallets, c.env.ids, c.env.clock, space.currency, countryPack(space.countryCode).timeZone),
+    )
 
     override suspend fun handoffCard(): String? = inbox.handoffCard()
 

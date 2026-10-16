@@ -190,6 +190,9 @@ class LoadHomeScreen(private val deps: LoadHomeScreenDeps) {
             // التوقع للصرف بس ⇒ الداخل المستني ما بيسكّتهوش
             forecast = if (allUnknown || partial) {
                 forecast.copy(projectedMinor = null, caveat = uiText(TextKey.FORECAST_NEEDS_KINDS))
+            } else if (transactions.isEmpty() && forecast.projectedMinor != null) {
+                // r041b P4 (CLAUDE.md #10): ولا عملية في الفترة ⇒ مفيش أساس للتوقع — مش «هتصرف حوالي 0.00»
+                forecast.copy(projectedMinor = null, caveat = uiText(TextKey.FORECAST_NO_DATA))
             } else {
                 forecast
             },
