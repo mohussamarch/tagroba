@@ -110,7 +110,7 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
             }
             val kindStats = stats[c.kind] ?: KindStats()
             val decision = decideAlert(c, kindStats, hours, now)
-            val entry = AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, decision, nowIso, spaceLabel = c.spaceLabel)
+            val entry = AlertInboxEntry(c.threadKey, c.eventKey, c.kind, c.flow, c.title, c.body, decision, nowIso, spaceLabel = c.spaceLabel, soonDays = c.soonDays)
             deps.inbox.save(entry)
             receipts += NotificationReceipt(c.eventKey, null, now.date, nowIso)
             stats[c.kind] = kindStats.copy(shown = kindStats.shown + 1)
@@ -133,7 +133,7 @@ class RunAlertEngine(private val deps: AlertEngineDeps) {
     suspend fun inbox(): List<AlertInboxView> {
         val off = deps.settings.disabledGroups()
         return deps.inbox.listAll().sortedWith(compareByDescending<AlertInboxEntry> { it.createdAt }.thenBy { it.threadKey })
-            .map { AlertInboxView(it, alertReasonText(it.decision), alertGroupLabel(it.kind.group), it.decision.muted || it.kind.group in off) }
+            .map { AlertInboxView(it, alertReasonText(it.decision, it.soonDays), alertGroupLabel(it.kind.group), it.decision.muted || it.kind.group in off) }
     }
 
     /** المستخدم فتح التنبيه (من الشريط أو الصفحة) ⇒ النوع ده «بيتفتح» — مرة واحدة لكل سطر. */

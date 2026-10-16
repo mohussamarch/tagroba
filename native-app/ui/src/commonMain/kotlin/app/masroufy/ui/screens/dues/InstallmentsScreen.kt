@@ -50,8 +50,9 @@ fun InstallmentsScreen() {
             val totals = deps.loadDues.load(today, deps.period(today), space.space.currency, null).totals
             val bnpl = deps.bnplPlans?.load(today).orEmpty()
             val ids = bnpl.map { it.plan.id }.toSet()
-            val all = installmentsUi(deps.installments.list(today), totals, today, space.space.currency)
-            InstallmentsLoaded(all.copy(cards = all.cards.filter { it.planId !in ids }), bnpl, today)
+            // السطر تحت المبلغ بيعدّ الكروت اللي فوق بس، وخطط «ادفع بعدين» لوحدها («و 2 مشتريات بالتقسيط» — `Installments.dc.html`)
+            val plans = deps.installments.list(today).filter { it.plan.id !in ids }
+            InstallmentsLoaded(installmentsUi(plans, totals, today, space.space.currency, bnplCount = bnpl.size), bnpl, today)
         }
     }
     DuesScaffold(t(UiKey.INSTALLMENTS_TITLE), actions = { TonalButton(t(UiKey.INSTALLMENTS_NEW), { nav.push(InstallmentEditRoute()) }, height = 44.dp) }) {
@@ -85,7 +86,11 @@ fun InstallmentsScreen() {
                 }
                 if (bnpl.isNotEmpty()) {
                     item(key = "bnpl-title") { BnplSectionTitle() }
-                    for (v in bnpl) item(key = "bnpl-" + v.plan.id) { BnplPlanCard(v, s.value.today) }
+                    for (v in bnpl) item(key = "bnpl-" + v.plan.id) {
+                        QuickTarget(quick, v.plan.name, { planQuickItems(v.plan.id, nav) }, subtitle = bnplName(v.provider)) { long ->
+                            BnplPlanCard(v, s.value.today, onClick = quick.guardTap { nav.push(InstallmentDetailRoute(v.plan.id)) }, onLongClick = long)
+                        }
+                    }
                 }
                 item(key = "note") { BasicText(t(UiKey.INSTALLMENTS_NOTE), style = Type.caption().copy(color = Ink.muted)) }
             }

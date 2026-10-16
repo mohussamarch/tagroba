@@ -64,8 +64,9 @@ fun systemNoticeFor(kind: AlertKind, flow: DueFlow = DueFlow.PAY): SystemNotice 
 /** نص الشريط للملخص — من غير عدد («كذا تنبيه») عشان العدد كمان ما يبانش. */
 fun digestNotice(): SystemNotice = lockNotice(TextKey.ALERT_LOCK_DIGEST)
 
-private fun whyKey(kind: AlertKind): Pair<TextKey, List<String>> = when (kind) {
-    AlertKind.DUE_SOON -> TextKey.ALERT_WHY_DUE_SOON to listOf(DUE_SOON_DAYS.toString())
+private fun whyKey(kind: AlertKind, soonDays: Int?): Pair<TextKey, List<String>> = when (kind) {
+    // r051: الخطة اللي «فكّرني قبل كل دفعة بيوم» شغال فيها بتنبّه قبلها بيوم ⇒ «ميعاده بكرة» مش «خلال 3 أيام»
+    AlertKind.DUE_SOON -> if (soonDays == 1) TextKey.ALERT_WHY_DUE_TOMORROW to emptyList() else TextKey.ALERT_WHY_DUE_SOON to listOf((soonDays ?: DUE_SOON_DAYS).toString())
     AlertKind.DUE_TODAY -> TextKey.ALERT_WHY_DUE_TODAY to emptyList()
     AlertKind.DUE_OVERDUE -> TextKey.ALERT_WHY_DUE_OVERDUE to emptyList()
     AlertKind.BUDGET_THRESHOLD -> TextKey.ALERT_WHY_BUDGET_THRESHOLD to emptyList()
@@ -111,8 +112,8 @@ private fun factorText(f: AlertFactor, decision: AlertDecision): String = when (
 }
 
 /** «ليه اتبعت دلوقتي» — جوه التطبيق بس (§61): السبب الأساسي من النوع، وبعده كل عامل غيّر القرار بالترتيب. */
-fun alertReasonText(decision: AlertDecision): String {
-    val (key, args) = whyKey(decision.kind)
+fun alertReasonText(decision: AlertDecision, soonDays: Int? = null): String {
+    val (key, args) = whyKey(decision.kind, soonDays)
     val parts = listOf(uiText(key, *args.toTypedArray())) + decision.factors.map { factorText(it, decision) }
     return parts.joinToString(" · ")
 }

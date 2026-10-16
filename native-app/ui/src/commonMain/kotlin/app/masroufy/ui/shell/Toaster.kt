@@ -32,6 +32,9 @@ class Toaster {
         current = Message(next++, text, dark)
     }
 
+    /** فيه رسالة بزرار ظاهرة دلوقتي — اللوحات اللي بتطلع لوحدها (`BnplHost`) بتستناها عشان الزرار ما يتدفنش ورا الستارة. */
+    val holdsAction: Boolean get() = current?.action != null
+
     /** r051: رسالة بزرار واحد («تراجع» بعد الربط اللي لوحده) — بتفضل [TOAST_ACTION_MS] عشان تلحق تدوس. */
     fun show(text: String, action: String, dark: Boolean = true, onAction: () -> Unit) {
         current = Message(next++, text, dark, action, onAction)

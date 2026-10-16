@@ -25,6 +25,7 @@ fun dueAlertCandidates(items: List<DueItem>, today: IsoDate, monthScale: (Curren
             flow = item.flow,
             amountMinor = item.amountMinor,
             monthScaleMinor = monthScale(item.currency),
+            soonDays = item.alertDays.takeIf { stage == AlertStage.SOON },
         )
     }
 

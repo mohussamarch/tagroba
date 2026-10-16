@@ -55,12 +55,20 @@ internal fun nextLine(v: InstallmentView, today: IsoDate, withNumber: Boolean): 
     return (if (withNumber && n != null) t(UiKey.INST_NEXT_N, dateText(next, today), sentenceNumber(n)) else t(UiKey.INST_NEXT, dateText(next, today))) to false
 }
 
-fun installmentsUi(views: List<InstallmentView>, totals: DuesTotals, today: IsoDate, currency: Currency): InstallmentsUi = InstallmentsUi(
+/** [views] = الخطط اللي ليها كروت فوق · [bnplCount] = خطط «ادفع بعدين» في قسمها ⇒ «N خطط، و M مشتريات بالتقسيط». */
+fun installmentsUi(views: List<InstallmentView>, totals: DuesTotals, today: IsoDate, currency: Currency, bnplCount: Int = 0): InstallmentsUi = InstallmentsUi(
     leftMinor = totals.installmentsLeftMinor,
     currency = currency,
-    plansCount = countText(views.size, UiKey.INST_PLANS_ONE, UiKey.INST_PLANS_TWO, UiKey.INST_PLANS_FEW, UiKey.INST_PLANS_MANY),
+    plansCount = plansLine(views.size, bnplCount),
     cards = views.map { planCard(it, today) },
 )
+
+/** «خطتين» · «خطتين، و2 مشتريات بالتقسيط» · «2 مشتريات بالتقسيط» (مفيش كروت تانية). */
+internal fun plansLine(plans: Int, bnpl: Int): String {
+    if (bnpl <= 0) return countText(plans, UiKey.INST_PLANS_ONE, UiKey.INST_PLANS_TWO, UiKey.INST_PLANS_FEW, UiKey.INST_PLANS_MANY)
+    if (plans <= 0) return t(UiKey.BNPL2_HERO_ONLY, sentenceNumber(bnpl))
+    return t(UiKey.BNPL2_HERO_AND, countText(plans, UiKey.INST_PLANS_ONE, UiKey.INST_PLANS_TWO, UiKey.INST_PLANS_FEW, UiKey.INST_PLANS_MANY), sentenceNumber(bnpl))
+}
 
 internal fun planCard(v: InstallmentView, today: IsoDate): PlanCardUi {
     val p = v.plan

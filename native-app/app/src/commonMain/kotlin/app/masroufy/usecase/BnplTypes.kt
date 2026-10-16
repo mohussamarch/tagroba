@@ -4,7 +4,9 @@ import app.masroufy.core.BnplCycle
 import app.masroufy.core.BnplMatch
 import app.masroufy.core.BnplProvider
 import app.masroufy.core.Currency
+import app.masroufy.core.EconomicKind
 import app.masroufy.core.Halalas
+import app.masroufy.core.ReviewState
 import app.masroufy.core.Id
 import app.masroufy.core.InstallmentPlan
 import app.masroufy.core.IsoDate
@@ -44,8 +46,26 @@ data class BnplAsk(
     val walletName: String? = null,
 )
 
-/** خصم اتربط لوحده بالدفعة رقم [number] من [count] في خطة [planName] — «تراجع» بيفكّه (`BnplCharges.undoAutoLink`). */
-data class BnplLinked(val transactionId: Id, val planId: Id, val planName: String, val number: Int, val count: Int)
+/**
+ * العملية زي ما كانت قبل الربط اللي لوحده (النوع والتصنيف وتأكيدهم والمراجعة والنوع المقترح) — «تراجع» بيرجّعها كده بالظبط بدل ما
+ * يمسح تصنيف المالك ويرجّعها «محتاجة مراجعة».
+ */
+data class BnplBefore(
+    val kind: EconomicKind,
+    val kindConfirmed: Boolean,
+    val categoryId: Id?,
+    val categoryConfirmed: Boolean,
+    val reviewState: ReviewState,
+    val suggestedKind: EconomicKind?,
+)
+
+internal fun Transaction.bnplBefore() = BnplBefore(economicKind, economicKindConfirmed, categoryId, categoryConfirmed, reviewState, suggestedKind)
+
+/**
+ * خصم اتربط لوحده بالدفعة رقم [number] من [count] في خطة [planName] — «تراجع» بيفكّه ويرجّع العملية لحالتها [before]
+ * (`BnplCharges.undoAutoLink`).
+ */
+data class BnplLinked(val transactionId: Id, val planId: Id, val planName: String, val number: Int, val count: Int, val before: BnplBefore? = null)
 
 /** [linked] = الخصومات اللي اتربطت لوحدها (عملية ⇒ خطة) · [autoLinked] = نفسها بالتفاصيل · [asks] = اللي مستني المالك، الأقدم الأول. */
 data class BnplSettle(val linked: Map<Id, Id>, val asks: List<BnplAsk>, val autoLinked: List<BnplLinked> = emptyList())
@@ -84,12 +104,9 @@ sealed interface BnplAnswer {
 
     data class Of(override val transactionId: Id, val planId: Id) : BnplAnswer
 
-    /** «تخطّي» في «أول خصم» ⇒ قسط عادي تحت «المستحقات ← تقسيط مشتريات». */
-    data class Skip(override val transactionId: Id) : BnplAnswer
-
     /** r051 «مش قسط — عملية عادية» ⇒ العملية زي ما هي (تصنيفها بيتسأل زي أي عملية) وما بتتسألش تاني. */
     data class NotInstallment(override val transactionId: Id) : BnplAnswer
 }
 
-/** بعد الرد: اسم الخطة والباقي عليها (محسوب هنا — الشاشة بتعرضه بس). «تخطّي» و«مش قسط» ⇒ الاتنين null. */
+/** بعد الرد: اسم الخطة والباقي عليها (محسوب هنا — الشاشة بتعرضه بس). «مش قسط» ⇒ الاتنين null. */
 data class BnplDone(val planName: String?, val remainingMinor: Halalas?, val currency: Currency?)

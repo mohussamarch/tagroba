@@ -120,8 +120,9 @@ internal fun ColumnScope.BnplSheetContent(
     Row(Modifier.fillMaxWidth().padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         val off = !s.setup && s.pick == null
         PrimaryButton(t(if (s.setup) UiKey.BNPL2_MAKE_PLAN else UiKey.BNPL2_CONFIRM), { s.answer(name)?.let(onAnswer) }, Modifier.weight(2f), enabled = !off, height = 52.dp)
+        // النموذج: «تخطّي» و«بعدين» الاتنين بيقفلوا اللوحة بس — مفيش حاجة بتتكتب على العملية
         val later = if (s.setup) t(UiKey.BNPL2_SKIP) else t(UiKey.BNPL2_LATER)
-        BnplQuietButton(later, { if (s.setup) onAnswer(BnplAnswer.Skip(t0.id)) else onLater() }, Modifier.weight(1f))
+        BnplQuietButton(later, onLater, Modifier.weight(1f))
     }
 }
 
@@ -142,7 +143,8 @@ private fun BnplSetupBody(s: BnplSheetState, name: String, today: IsoDate, chips
         BnplChip(t(UiKey.BNPL2_MONTHLY), s.cycle == BnplCycle.MONTHLY, { s.cycle = BnplCycle.MONTHLY }, Modifier.weight(1f))
         BnplChip(t(UiKey.BNPL2_TWO_WEEKS), s.cycle == BnplCycle.TWO_WEEKS, { s.cycle = BnplCycle.TWO_WEEKS }, Modifier.weight(1f))
     }
-    val plan = remember(s.split, s.cycle) { preview(s.split, s.cycle) }
+    // مفتاحها الخصم نفسه كمان ([s]): اللوحة بتفضل مفتوحة وهي بتنقل للسؤال الجاي ⇒ من غيره «خطتك» كانت بتفضل بأرقام الخصم اللي فات
+    val plan = remember(s, s.split, s.cycle) { preview(s.split, s.cycle) }
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0x0A193D33)).padding(horizontal = 14.dp, vertical = 12.dp)) {
         Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText(t(UiKey.BNPL2_PLAN_TITLE), Modifier.weight(1f), style = Type.of(14, FontWeight.Bold))

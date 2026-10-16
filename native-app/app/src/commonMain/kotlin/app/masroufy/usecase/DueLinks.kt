@@ -75,6 +75,23 @@ internal class DueLinks(
     }
 
     /**
+     * العمليات من [ids] اللي مربوطة بحاجة فعلًا (جمعية · قسط · مبلغ تمويل مستلم · دفعة زكاة · نقطة في حدث · رجل تحويل لنفسك) — نفس
+     * شروط [check] بالجملة، عشان اللي بيلف على عمليات كتير («ادفع بعدين») ما يحاولش يربط واحدة مربوطة ويقع.
+     */
+    suspend fun taken(ids: List<Id>): Set<Id> {
+        if (ids.isEmpty()) return emptySet()
+        val wanted = ids.toSet()
+        val out = HashSet<Id>()
+        roscaEntries.listByTransactionIds(ids).mapTo(out) { it.transactionId }
+        payments.listByTransactionIds(ids).mapTo(out) { it.transactionId }
+        plans.listAll().mapNotNullTo(out) { p -> p.receivedTransactionId?.takeIf { it in wanted } }
+        zakatPayments?.listByTransactionIds(ids).orEmpty().mapNotNullTo(out) { it.transactionId }
+        eventLinks?.listByTransactionIds(ids).orEmpty().filter { it.role.isGift }.mapTo(out) { it.transactionId }
+        spaceLegs?.legsAmong(ids)?.let { out += it }
+        return out
+    }
+
+    /**
      * النوع والتصنيف بيتأكدوا عشان محدش يرجع يسأل عليهم، والعملية بتخرج من «محتاجة مراجعة».
      * التصنيف = فرع «المستحقات» بتاعها (قرار المالك §56) — والتصنيفات دي بتتعمل لو مش موجودة بس (اللي المستخدم غيّره ما يتكتبش فوقه).
      */

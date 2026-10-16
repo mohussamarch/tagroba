@@ -69,10 +69,14 @@ internal fun bnplRemindText(v: BnplPlanView): String = t(
  * الجاية أصفر · الباقي رمادي) · «دفعت 2 من 4 · الباقي X» و«الجاية …» · التذكير بالجرس · «المواعيد» بتفتح الجدول بوسوم «اتدفعت/الجاية».
  */
 @Composable
-internal fun BnplPlanCard(v: BnplPlanView, today: IsoDate, startOpen: Boolean = false) {
+internal fun BnplPlanCard(v: BnplPlanView, today: IsoDate, startOpen: Boolean = false, onClick: (() -> Unit)? = null, onLongClick: (() -> Unit)? = null) {
     var open by rememberSaveable(v.plan.id) { mutableStateOf(startOpen) }
     val p = v.plan
-    FloatingCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), contentPadding = PaddingValues(16.dp)) {
+    // الضغط ⇒ «تفاصيل الخطة» (تعديل · حذف · الدفعات) زي باقي الخطط، والضغط المطوّل ⇒ نفس القايمة السريعة
+    FloatingCard(
+        Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), contentPadding = PaddingValues(16.dp),
+        onClick = onClick, onLongClick = onLongClick, clickLabel = p.name,
+    ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 BnplBadge(v.provider, size = 44.dp, fontSize = 13)

@@ -132,7 +132,7 @@ internal fun BnplSwitch(on: Boolean, label: String, onToggle: () -> Unit) {
     val press = rememberPress()
     Box(
         Modifier.size(56.dp, 48.dp).tap(press, onClick = onToggle)
-            .semantics { role = Role.Switch; contentDescription = label; stateDescription = if (on) "1" else "0" },
+            .semantics { role = Role.Switch; contentDescription = label; stateDescription = bnplSwitchState(on) },
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.size(44.dp, 26.dp).clip(RoundedCornerShape(13.dp)).then(if (on) Modifier.background(BnplGreen) else Modifier.background(Color(0x29193D33)))) {
@@ -141,6 +141,9 @@ internal fun BnplSwitch(on: Boolean, label: String, onToggle: () -> Unit) {
         }
     }
 }
+
+/** حالة المفتاح لقارئ الشاشة بلغة الجوال («شغّال» · «مقفول») — مش رقم. */
+internal fun bnplSwitchState(on: Boolean): String = t(if (on) UiKey.PPL_SWITCH_ON else UiKey.PPL_SWITCH_OFF)
 
 /** الزرار التاني اللازق تحت («تخطّي» · «بعدين»): رمادي فاتح 7% بنص غامق عريض — ارتفاع 52 وحواف 18. */
 @Composable

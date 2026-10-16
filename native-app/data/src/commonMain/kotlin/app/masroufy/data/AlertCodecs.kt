@@ -50,7 +50,7 @@ object AlertCodecs {
                 req("title", sanitizeAccountNumbers(e.title)); req("body", sanitizeAccountNumbers(e.body))
                 req("delivery", e.decision.delivery.wire); opt("deliverAtDate", e.decision.deliverAt?.date); opt("deliverAtHour", e.decision.deliverAt?.hour)
                 req("inAppWindow", e.decision.inAppWindow); req("factors", e.decision.factors.map { it.name.lowercase() })
-                req("createdAt", e.createdAt); opt("openedAt", e.openedAt); opt("spaceLabel", e.spaceLabel)
+                req("createdAt", e.createdAt); opt("openedAt", e.openedAt); opt("spaceLabel", e.spaceLabel); opt("soonDays", e.soonDays)
             }
         },
         { d ->
@@ -64,7 +64,7 @@ object AlertCodecs {
             AlertInboxEntry(
                 d.str("threadKey"), d.str("eventKey"), kind, d.wire("flow") { w -> DueFlow.entries.first { it.wire == w } }, d.str("title"), d.str("body"),
                 AlertDecision(kind, d.wire("delivery") { w -> AlertDelivery.entries.first { it.wire == w } }, at, d.bool("inAppWindow"), factors),
-                d.str("createdAt"), d.strOrNull("openedAt"), d.strOrNull("spaceLabel"),
+                d.str("createdAt"), d.strOrNull("openedAt"), d.strOrNull("spaceLabel"), d.intOrNull("soonDays"),
             )
         },
     )
