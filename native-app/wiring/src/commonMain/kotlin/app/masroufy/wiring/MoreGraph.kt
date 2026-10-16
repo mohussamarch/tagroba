@@ -142,6 +142,9 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     /** «حدّث الرصيد» لأي محفظة — بيوم البلد (مش يوم الجوال) عشان «مش في المستقبل». */
     override val updateBalance = UpdateBalance(r.wallets, r.transactions, r.categories, c.env.ids, c.env.clock, countryPack(c.space.countryCode).timeZone)
 
+    // «صلّح رصيدي» (2026-10-16): نفس الأدوات اللي فوق بالترتيب
+    override val fixBalance = app.masroufy.usecase.FixMyBalance(app.masroufy.usecase.FixMyBalanceDeps(smsRepair, mergeDuplicates, balanceWhy, updateBalance, r.wallets))
+
     /** «أضف محفظة» و«رصيد البداية» (`ManageWallets` — الغلط رسالة بترجع للوحة بدل ما توقع). */
     override val walletEditor: WalletEditor = object : WalletEditor {
         private val manage = ManageWallets(r.wallets, c.env.ids, c.env.clock, c.space.currency, countryPack(c.space.countryCode).timeZone)
