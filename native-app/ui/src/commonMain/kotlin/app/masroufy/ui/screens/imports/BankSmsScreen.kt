@@ -190,7 +190,7 @@ fun BankSmsScreen() {
     val pick = picking
     val title = when (pick) {
         is PickFor.Line -> pick.line.merchant.ifBlank { pick.line.sender }
-        is PickFor.Row -> pick.row.merchant
+        is PickFor.Row -> pick.row.title
         null -> ""
     }
     CategoryPickerSheet(
@@ -208,32 +208,34 @@ fun BankSmsScreen() {
                 }
                 is PickFor.Row -> act {
                     deps.transactions.setCategory(pick.row.id, cat.id)
-                    sms?.remember(pick.row.merchant, cat.id, pick.row.direction)
+                    // r041b P9: اسم شخص عمره ما يدخل ذاكرة التجار (CLAUDE.md الأمان 7)
+                    if (!pick.row.party) sms?.remember(pick.row.merchant, cat.id, pick.row.direction)
                 }
                 null -> Unit
             }
-            if (title.isNotBlank()) toaster.show(t(UiKey.BANK_SMS_REMEMBERED, title, cat.name), dark = true)
+            if (title.isNotBlank() && (pick as? PickFor.Row)?.row?.party != true) toaster.show(t(UiKey.BANK_SMS_REMEMBERED, title, cat.name), dark = true)
         },
         onDismiss = { picking = null },
     )
     val asked = accountLine
-    BankWalletSheet(
-        bank = asked?.let { BankWaitingUi(it.sender, 1, emptyList()) },
-        wallets = wallets,
-        onDismiss = { accountLine = null },
-        onSave = { _, wallet ->
-            accountLine = null
-            val last4 = asked?.askLast4
-            val messageId = asked?.messageId
-            if (last4 != null) act {
-                val r = deps.sms?.answerAccount(wallet.id, last4, mine = true, messageId = messageId)
-                toaster.show(t(UiKey.SMS_ACCOUNT_MINE_SAVED, last4, wallet.name, opsCount(r?.recorded ?: 0)), dark = true)
+    // r041b P10: «محفظة جديدة لهذا الحساب» + كل محافظ البنك (نقل الأرقام بملاحظة صريحة) — مفيش لوحة فاضية من غير مخرج
+    AccountWalletSheet(asked?.askLast4, wallets, onDismiss = { accountLine = null }) { choice ->
+        accountLine = null
+        val last4 = asked?.askLast4
+        val messageId = asked?.messageId
+        val from = asked?.walletId
+        if (last4 != null) act {
+            when (choice) {
+                is AccountPick.Existing -> {
+                    val r = deps.sms?.answerAccount(choice.wallet.id, last4, mine = true, messageId = messageId, replace = choice.replaces != null)
+                    toaster.show(t(UiKey.SMS_ACCOUNT_MINE_SAVED, last4, choice.wallet.name, opsCount(r?.recorded ?: 0)), dark = true)
+                }
+                AccountPick.NewWallet -> if (from != null) deps.sms?.accountNewWallet(from, last4, messageId)?.let { (w, r) ->
+                    toaster.show(t(UiKey.SMS_ACCOUNT_NEW_SAVED, w.name, last4, opsCount(r.recorded)), dark = true)
+                }
             }
-        },
-        titleText = asked?.askLast4?.let { t(UiKey.SMS_ACCOUNT_SHEET_TITLE, it) },
-        bodyText = t(UiKey.SMS_ACCOUNT_SHEET_BODY),
-        choices = { it.accountLast4.isNullOrBlank() },
-    )
+        }
+    }
     BankWalletSheet(
         bank = bankSheet,
         wallets = wallets,

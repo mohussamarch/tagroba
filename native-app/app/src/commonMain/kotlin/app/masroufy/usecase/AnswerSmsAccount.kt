@@ -15,14 +15,17 @@ import app.masroufy.port.WalletRepository
  * - «لأ» ([notMine]): الأرقام بتتحفظ «مش بتاعي» على محفظة الرسالة ⇒ بتتسجل فلوس لشخص تاني أو منه بالاتجاه اللي الرسالة بتقوله.
  * الأربعة أرقام بس (CLAUDE.md #11).
  */
-class AnswerSmsAccount(private val wallets: WalletRepository) {
-    /** «أيوه، ده حسابي»: المحفظة مش كاش ومالهاش أرقام تانية، والأرقام مش لمحفظة تانية — وإلا خطأ (ما بنكتبش فوق أرقام موجودة). */
-    suspend fun mine(walletId: Id, last4: String): Wallet {
+class AnswerSmsAccount(private val wallets: WalletRepository, private val manage: ManageWallets? = null) {
+    /**
+     * «أيوه، ده حسابي»: المحفظة مش كاش، والأرقام مش لمحفظة تانية — وإلا خطأ. عليها أرقام تانية ⇒ خطأ (ما بنكتبش فوق أرقام موجودة)
+     * إلا لو المالك اختار **نقل** الأرقام ([replace] — r041b P10: اللوحة بتقوله صراحة إن الأرقام القديمة هتتشال ورسايلها هترجع تسأل).
+     */
+    suspend fun mine(walletId: Id, last4: String, replace: Boolean = false): Wallet {
         val digits = digitsOf(last4)
         val all = wallets.listAll()
         val wallet = all.firstOrNull { it.id == walletId } ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
         val current = walletLast4(wallet.accountLast4)
-        if (wallet.kind == "cash" || (current != null && current != digits)) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
+        if (wallet.kind == "cash" || (current != null && current != digits && !replace)) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
         if (all.any { it.id != walletId && walletLast4(it.accountLast4) == digits }) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
         // لو كان قال «لأ» قبل كده على نفس الأرقام ⇒ الرد الجديد هو اللي بيحكم
         for (other in all) if (other.id != walletId && digits in other.notMineLast4) wallets.save(other.copy(notMineLast4 = other.notMineLast4 - digits))
@@ -50,8 +53,42 @@ class AnswerSmsAccount(private val wallets: WalletRepository) {
      * مراجعة r041 A3-1: السطور **الجديدة** بس. الرد عن أرقام الحساب مش اختيار لسطر «شبيه» بعملية موجودة (مثلًا «أيوه» نقل السطر لمحفظة فيها
      * إدخال يدوي بنفس المبلغ واليوم والاتجاه) ⇒ الشبيه بيفضل مستني اختيار المالك الصريح، وعمره ما بيتسجل من الرد ده (كان بيتسجل مرتين).
      */
-    suspend fun answerAndRecord(auto: AutoRecordSms, walletId: Id, last4: String, mine: Boolean, messageId: String?): AutoRecordResult {
-        if (mine) mine(walletId, last4) else notMine(walletId, last4)
+    suspend fun answerAndRecord(
+        auto: AutoRecordSms,
+        walletId: Id,
+        last4: String,
+        mine: Boolean,
+        messageId: String?,
+        replace: Boolean = false,
+    ): AutoRecordResult {
+        if (mine) mine(walletId, last4, replace) else notMine(walletId, last4)
+        return record(auto, messageId)
+    }
+
+    /**
+     * r041b P10 — «محفظة جديدة لهذا الحساب»: كل محافظ البنك عليها أرقام فاللوحة كانت فاضية ومفيش مخرج. محفظة جديدة بنوع وبنك محفظة الرسالة
+     * [fromWalletId] (والعملة عملة البلد — `ManageWallets`)، اسمها «<اسم محفظة الرسالة> <الأرقام>»، عليها الأرقام دي، ورصيدها «غير متاح»
+     * (من غير رصيد بداية — `Wallet.openingUnknown`). الأرقام لمحفظة تانية ⇒ خطأ. «لأ» قديم على نفس الأرقام بيتشال (الرد الجديد بيحكم).
+     */
+    suspend fun mineNewWallet(fromWalletId: Id, last4: String): Wallet {
+        val manage = manage ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
+        val digits = digitsOf(last4)
+        val all = wallets.listAll()
+        val from = all.firstOrNull { it.id == fromWalletId } ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
+        if (all.any { walletLast4(it.accountLast4) == digits }) throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
+        val kind = if (from.kind == "cash") "bank" else from.kind
+        val created = manage.add(AddWalletInput(kind, "${from.name.take(NEW_WALLET_BASE_NAME)} $digits", digits, null, null, from.bankId))
+        for (other in all) if (digits in other.notMineLast4) wallets.save(other.copy(notMineLast4 = other.notMineLast4 - digits))
+        return created
+    }
+
+    /** [mineNewWallet] وبعدها نفس تسجيل [answerAndRecord]. */
+    suspend fun newWalletAndRecord(auto: AutoRecordSms, fromWalletId: Id, last4: String, messageId: String?): Pair<Wallet, AutoRecordResult> {
+        val created = mineNewWallet(fromWalletId, last4)
+        return created to record(auto, messageId)
+    }
+
+    private suspend fun record(auto: AutoRecordSms, messageId: String?): AutoRecordResult {
         val confirmed = if (messageId.isNullOrBlank()) 0 else auto.confirm(listOf(messageId), similarToo = false)
         val result = auto.run()
         return result.copy(recorded = result.recorded + confirmed)
@@ -62,3 +99,6 @@ class AnswerSmsAccount(private val wallets: WalletRepository) {
         return digits.takeIf { it.length == 4 } ?: throw WalletError(uiText(UiKey.WADD_ERR_LAST4))
     }
 }
+
+/** أول كام حرف من اسم محفظة الرسالة في اسم المحفظة الجديدة — عشان «<الاسم> <الأرقام>» يفضل جوه حد اسم المحفظة. */
+private const val NEW_WALLET_BASE_NAME = 24

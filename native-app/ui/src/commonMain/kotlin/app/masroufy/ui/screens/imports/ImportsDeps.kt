@@ -84,7 +84,10 @@ interface SmsDeps {
      * الرسالة. وبعدها تشغيلة بتسجّل المستني. الافتراضي: مفيش.
      * r041 A3: [messageId] = الرسالة اللي المالك رد عليها — بتتسجل على طول وشكلها بيتعلّم (الرد تأكيد صريح ليها).
      */
-    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String? = null): AutoRecordResult? = null
+    suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String? = null, replace: Boolean = false): AutoRecordResult? = null
+
+    /** r041b P10 — «محفظة جديدة لهذا الحساب»: بنك محفظة الرسالة [fromWalletId] بالأرقام دي ورصيدها «غير متاح»، وبعدها نفس التسجيل. */
+    suspend fun accountNewWallet(fromWalletId: Id, last4: String, messageId: String? = null): Pair<app.masroufy.core.Wallet, AutoRecordResult>? = null
 
     /** r041 A10: كارت «اسمح بقراءة رسائل البنك» على الجهاز ده (`SmsInboxPort.handoffCard`). الافتراضي: مفيش. */
     suspend fun handoffCard(): String? = null
