@@ -9,7 +9,9 @@ import app.masroufy.core.IsoDate
 import app.masroufy.core.MatchingState
 import app.masroufy.core.SmsParseResult
 import app.masroufy.core.Transaction
+import app.masroufy.core.displayTitleOf
 import app.masroufy.core.jsTrim
+import app.masroufy.core.transferPartyOf
 import app.masroufy.port.smsSenderKey
 import app.masroufy.usecase.SmsReviewLine
 
@@ -63,7 +65,12 @@ enum class RecordedNeed { NONE, CONFIRM, CATEGORIZE }
 
 data class RecordedUi(
     val id: Id,
+    /** اسم التاجر من المصدر — للتعلّم («افتكر التصنيف») بس، مش للعرض. */
     val merchant: String,
+    /** r041b P6: اسم العرض من نفس مصدر «العمليات» (`displayTitleOf` — التاجر ⇒ … ⇒ طرف التحويل). */
+    val title: String = merchant,
+    /** r041b P9: طرف التحويل شخص («الى:/من:» باسم) ⇒ مش «متجر جديد»، وما بيتحفظش في ذاكرة التجار (أسامي ناس — CLAUDE.md الأمان 7). */
+    val party: Boolean = false,
     val categoryId: Id?,
     val amountMinor: Halalas,
     val currency: Currency,
@@ -123,6 +130,8 @@ private fun SmsReviewLine.toUi(sender: String, reason: String?, conflict: Boolea
 private fun Transaction.toRecorded(sheen: Boolean) = RecordedUi(
     id = id,
     merchant = jsTrim(rawMerchantName ?: rawDescription ?: ""),
+    title = displayTitleOf(this),
+    party = transferToWalletId == null && rawMerchantName.isNullOrBlank() && transferPartyOf(this) != null,
     categoryId = categoryId,
     amountMinor = amountMinor,
     currency = currency,
