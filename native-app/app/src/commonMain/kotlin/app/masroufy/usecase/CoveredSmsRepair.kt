@@ -99,9 +99,9 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
             // اتسجلت بعدين بطريقة تانية · أو المالك مسحها بإيده (§91-12) ⇒ مش هنا
             if (sameRef[ref].orEmpty().any { it.transactionId != null || it.ownerDeletedAt != null }) continue
             val wallet = all.filter { it.name == record.accountIdentity }.singleOrNull() ?: continue
-            val row = rowOf(record, batch, wallet, own, notMine)
-                ?.takeIf { it.kind != SmsKind.RETURNED && waitReasonOf(it, targetOf(wallet, all, movesCash = false)) == null } ?: continue
             val cover = covers.getOrPut(record.accountIdentity) { coverOf(record.accountIdentity) } ?: continue
+            val row = rowOf(record, arrivalAnchors(batch.importedAt, cover.days.first), wallet, own, notMine)
+                ?.takeIf { it.kind != SmsKind.RETURNED && waitReasonOf(it, targetOf(wallet, all, movesCash = false)) == null } ?: continue
             // المبلغ **في** الكشف ⇒ ما بتظهرش أبدًا (قاعدة المالك — بتفضل مدموجة/مغطّاة)
             if (!inCoveredDays(row.date, cover.days) || amountInStatement(cover.statement, row.date, row.amountMinor, row.direction)) continue
             if (alreadyRecorded(wallet.id, row)) continue
@@ -165,25 +165,25 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
             val b = group.first().batch
             batchesAfter += b.copy(counts = b.counts.copy(imported = b.counts.imported + written, duplicates = (b.counts.duplicates - group.size).coerceAtLeast(0)))
         }
-        deps.sources.saveMany(updated + extra.map { it.second })
-        deps.txns.saveMany(lineTxns + extra.map { it.first })
-        for (b in batchesAfter) deps.batches.save(b)
         val created = lineTxns + extra.map { it.first }
+        val createdRecords = extra.map { it.second }
+        deps.sources.saveMany(updated + createdRecords)
+        deps.txns.saveMany(created)
+        for (b in batchesAfter) deps.batches.save(b)
         return CoveredWrite(
-            chosen.size, created.map { it.id }, extra.map { it.second.id },
+            chosen.size, created.map { it.id }, createdRecords.map { it.id },
             chosen.map { it.record }, chosen.map { it.batch }.distinctBy { it.id }, created.associate { it.id to it.updatedAt },
         )
     }
 
     /**
-     * صف الرسالة على محفظة سجلها. **اليوم من نص الرسالة بس**: نفس القراية بوقت وصول بعده بيوم لازم تدّي نفس اليوم — الرسالة اللي مالهاش تاريخ
-     * يومها من وقت وصولها، وده مش محفوظ في السجل ⇒ ما تتعرضش (القاعدة 10). نفس قاعدة الرِّجل في التسجيل: حساب مش معروف ⇒ مكانها «بانتظار
-     * تأكيدك» مش هنا · رِجلين بين محفظتين ⇒ مش هنا.
+     * صف الرسالة على محفظة سجلها. **اليوم من نص الرسالة بس**: القراية بكل وقت وصول ممكن ([arrivalAnchors]) لازم تدّي نفس اليوم — الرسالة اللي
+     * مالهاش تاريخ يومها من وقت وصولها، وده مش محفوظ في السجل ⇒ ما تتعرضش (القاعدة 10). نفس قاعدة الرِّجل في التسجيل: حساب مش معروف ⇒ مكانها
+     * «بانتظار تأكيدك» مش هنا · رِجلين بين محفظتين ⇒ مش هنا.
      */
-    private fun rowOf(record: SourceRecord, batch: ImportBatch, wallet: Wallet, own: Set<String>, notMine: Set<String>): SmsRow? {
-        // الرسالة وصلت قبل ما دفعتها تتكتب ⇒ ظهر يوم الدفعة حدّ معقول لوقت الوصول (التاريخ بسنة ناقصة بيتقري جنبه)
-        val row = parse(record.rawLine, dayNoon(batch.importedAt, 0) ?: return null) ?: return null
-        if (parse(record.rawLine, dayNoon(batch.importedAt, 1) ?: return null)?.date != row.date) return null
+    private fun rowOf(record: SourceRecord, anchors: List<String>, wallet: Wallet, own: Set<String>, notMine: Set<String>): SmsRow? {
+        val reads = anchors.mapNotNull { parse(record.rawLine, it) }
+        val row = reads.firstOrNull()?.takeIf { first -> reads.all { it.date == first.date } } ?: return null
         val leg = when (val verdict = smsLegVerdict(row, own, notMine)) {
             is SmsLegVerdict.Keep -> row
             is SmsLegVerdict.Into, is SmsLegVerdict.OutOf -> smsLegRows(row, verdict).single().takeIf { it.ownLast4 == walletLast4(wallet.accountLast4) }
@@ -208,7 +208,19 @@ class CoveredSmsRepair(deps: ImportStatementDeps, private val wallets: WalletRep
         }
 }
 
-/** الساعة 12 جرينتش في يوم [iso] + [days] (نفس اليوم في السعودية ومصر)، أو null لو التاريخ مش مفهوم. */
-private fun dayNoon(iso: String, days: Int): String? = runCatching { dayNumberToIso(toDayNumber(parseIsoDate(iso.take(10))) + days) + "T12:00:00Z" }.getOrNull()
+/**
+ * مراجعة r041 B-1: أوقات الوصول الممكنة لرسالة سجلها مالوش وقت وصول. دفعة «اقرأ اللي فات» يومها يوم القراية (بعد الرسالة بشهور)، والقارئ
+ * بيقبل التاريخ بسنتين أرقام («في:26-03-10») بس لو من 60 يوم قبل الوصول لحد يوم بعده — فيوم الدفعة لوحده كان بيرفض أغلب الرسايل القديمة
+ * وكانت بتختفي من غير ما تتعد. دلوقتي: من أول يوم في الكشف [firstDay] كل 30 يوم لحد يوم الدفعة (أي يوم مغطّى ليه وقتين على الأقل جوه
+ * نافذته) + يوم الدفعة واللي بعده (الرسالة وصلت قبل ما دفعتها تتكتب). الساعة 12 جرينتش = نفس اليوم في السعودية ومصر. يوم مش مفهوم ⇒ فاضية.
+ */
+internal fun arrivalAnchors(importedAt: String, firstDay: IsoDate): List<String> {
+    val end = runCatching { toDayNumber(parseIsoDate(importedAt.take(10))) }.getOrNull() ?: return emptyList()
+    val start = runCatching { toDayNumber(parseIsoDate(firstDay)) }.getOrNull() ?: end
+    return ((start until end step ANCHOR_STEP_DAYS) + end + (end + 1)).map { dayNumberToIso(it) + "T12:00:00Z" }
+}
+
+/** أقل من نص نافذة القارئ (62 يوم) ⇒ كل تاريخ جوه الأيام ليه وقتين وصول بيقبلوه — اتنين بيتفقوا والرسالة اللي مالهاش تاريخ بيختلفوا. */
+private const val ANCHOR_STEP_DAYS = 30
 
 private const val ALL_SMS_BATCHES = 100_000
