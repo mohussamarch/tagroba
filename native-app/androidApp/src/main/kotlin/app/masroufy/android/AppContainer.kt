@@ -175,6 +175,7 @@ class AppContainer(private val context: Context, private val problems: ProblemLo
         pdfPages = space?.let { PdfBoxPages(context) },
         repairBackup = app.masroufy.device.AndroidRepairBackup(context),
         onboardingDraft = AndroidOnboardingDraft(context, uid),
+        characterDraft = AndroidCharacterDraft(context, uid),
     )
 
     /**

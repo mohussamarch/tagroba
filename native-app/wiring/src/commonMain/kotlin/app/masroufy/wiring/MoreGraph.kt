@@ -91,6 +91,8 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
 
         override suspend fun profileGender(): String? = c.shell.profile.load().gender
 
+        override val draft = c.env.characterDraft
+
         override suspend fun save(look: CharacterLook) {
             val r = c.shell.profile.saveCharacter(look)
             if (r is app.masroufy.core.ProfileCheck.Invalid) throw IllegalArgumentException(r.message)
