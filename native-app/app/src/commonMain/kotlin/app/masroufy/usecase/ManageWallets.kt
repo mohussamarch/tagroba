@@ -73,13 +73,16 @@ class ManageWallets(
         checkOpening(opening, at, today)
         val bankId = if (input.kind == "cash") null else input.bankId?.takeIf { it.isNotBlank() }
         if (bankId != null && bankByKey(bankId) == null) throw WalletError(uiText(UiKey.WADD_ERR_BANK))
-        return Wallet(ids.next("wallet"), name, currency, input.kind, opening, at, last4, bankId)
+        // r041b P4 (CLAUDE.md #10): بنك/محفظة من غير رصيد بداية ⇒ رصيدها «غير متاح» (زي ما اللوحة بتقول) — مش صفر معروف.
+        // الكاش زي ما هو (صفر من النهارده) لحد قرار المالك
+        val unknown = input.openingMinor == null && input.kind != "cash"
+        return Wallet(ids.next("wallet"), name, currency, input.kind, opening, at, last4, bankId, openingUnknown = unknown)
     }
 
     suspend fun setOpening(walletId: Id, openingMinor: Halalas, openingAt: IsoDate): Wallet {
         val wallet = wallets.findById(walletId) ?: throw WalletError(uiText(TextKey.NOT_AVAILABLE))
         checkOpening(openingMinor, openingAt, today())
-        val updated = wallet.copy(openingBalanceMinor = openingMinor, openingAt = openingAt)
+        val updated = wallet.copy(openingBalanceMinor = openingMinor, openingAt = openingAt, openingUnknown = false)
         wallets.save(updated)
         return updated
     }

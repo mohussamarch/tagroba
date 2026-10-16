@@ -11,7 +11,7 @@ import app.masroufy.core.Period
 import app.masroufy.core.dailySpend
 import app.masroufy.core.dayNumberToIso
 import app.masroufy.core.daysBetween
-import app.masroufy.core.duesUntil
+import app.masroufy.core.duesItemsUntil
 import app.masroufy.core.goalPercent
 import app.masroufy.core.parseIsoDate
 import app.masroufy.core.periodForDate
@@ -32,7 +32,15 @@ import app.masroufy.port.WalletRepository
  * «تقدر تصرف النهارده» + شريط الشهر (فات كام يوم من كام). [period] = الشهر المالي بيوم الراتب · [payday] = يوم المرتب الجاي (null = مفيش
  * ملف حساب ⇒ الشهر المالي بيوم 28 الافتراضي والسطر «حتى نهاية الشهر»).
  */
-data class DailyAllowanceView(val spend: DailySpend, val currency: Currency, val period: Period, val passedDays: Int, val payday: IsoDate?)
+data class DailyAllowanceView(
+    val spend: DailySpend,
+    val currency: Currency,
+    val period: Period,
+    val passedDays: Int,
+    val payday: IsoDate?,
+    /** r041b P4: مفيش ولا سطر التزام بمبلغ قبل المرتب ⇒ الشرح بجملة «مفيش التزامات متسجلة» مش «ناقص 0.00» (CLAUDE.md #10). */
+    val noDuesListed: Boolean = false,
+)
 
 /**
  * «تقدر تصرف النهارده» (رد المالك 2026-10-16): اللي معاك دلوقتي (أرصدة محافظ البلد النهارده — نفس `walletBalancesOn`) − الالتزامات اللي
@@ -49,10 +57,11 @@ class LoadDailyAllowance(
     suspend fun load(today: IsoDate): DailyAllowanceView {
         val payday = profile.load()?.payday
         val period = periodForDate(today, payday ?: DEFAULT_PAYDAY)
-        val dues = duesUntil(calendar.items(today, period.end, today), today, period.end, currency)
+        val listed = duesItemsUntil(calendar.items(today, period.end, today), today, period.end, currency)
+        val dues = sumMoney(listed.map { it.amountMinor!! })
         val spend = dailySpend(onHand(today), dues, daysBetween(today, period.end) + 1)
         val next = payday?.let { dayNumberToIso(toDayNumber(parseIsoDate(period.end)) + 1) }
-        return DailyAllowanceView(spend, currency, period, daysBetween(period.start, today).coerceIn(0, period.days), next)
+        return DailyAllowanceView(spend, currency, period, daysBetween(period.start, today).coerceIn(0, period.days), next, noDuesListed = listed.isEmpty())
     }
 
     private suspend fun onHand(today: IsoDate): Halalas? {

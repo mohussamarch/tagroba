@@ -36,7 +36,8 @@ data class WalletRowView(
     val isMain: Boolean,
     /** الكاش «تقريبي» (الكاش اللي اتصرف ومااتسجلش مش باين — §32). */
     val approx: Boolean,
-    val openingMinor: Halalas,
+    /** null = اتضافت من غير رصيد بداية (`Wallet.openingUnknown`) ⇒ «غير متاح» — مش صفر (r041b P4). */
+    val openingMinor: Halalas?,
     val openingAt: IsoDate,
     /** البنك من دليل البنوك (للوجو — §81): المحفوظ في المحفظة أو من اسمها. null = كاش · بنك مش في الدليل ⇒ الحرف. */
     val bank: Bank? = null,
@@ -63,7 +64,7 @@ private fun groupOf(kind: String) = when (kind) {
 fun walletRow(w: WalletNow, mainId: Id?, country: String? = null): WalletRowView = WalletRowView(
     id = w.wallet.id, name = w.wallet.name, kindLabel = kindLabel(w.wallet.kind), last4 = w.wallet.accountLast4?.let(::sentenceDigits),
     balanceMinor = w.balanceMinor, isCash = w.wallet.kind == "cash", isMain = mainId != null && mainId == w.wallet.id,
-    approx = w.wallet.kind == "cash" && w.balanceMinor != null, openingMinor = w.wallet.openingBalanceMinor, openingAt = w.wallet.openingAt,
+    approx = w.wallet.kind == "cash" && w.balanceMinor != null, openingMinor = w.wallet.openingBalanceMinor.takeUnless { w.wallet.openingUnknown }, openingAt = w.wallet.openingAt,
     bank = bankForWallet(w.wallet, country),
 )
 

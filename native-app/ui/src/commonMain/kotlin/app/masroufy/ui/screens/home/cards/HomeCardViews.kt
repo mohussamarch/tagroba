@@ -102,6 +102,8 @@ internal fun DailyCard(state: ReadState<DailyAllowanceView>) {
         val basis = when {
             s.perDayMinor == null -> t(UiKey.HOME_DAILY_NA)
             s.short -> t(UiKey.HOME_DAILY_SHORT)
+            // r041b P4: مفيش التزامات متسجلة ⇒ جملة، مش «ناقص 0.00» كأنها معروفة
+            v.noDuesListed -> t(UiKey.HOME_DAILY_BASIS_NO_DUES, amountLabel(s.onHandMinor, v.currency))
             else -> t(UiKey.HOME_DAILY_BASIS, amountLabel(s.onHandMinor, v.currency), amountLabel(s.duesMinor, v.currency))
         }
         BasicText(basis, style = Type.caption().copy(color = Ink.muted))

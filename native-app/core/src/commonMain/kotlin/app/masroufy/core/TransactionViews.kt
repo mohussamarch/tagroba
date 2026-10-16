@@ -26,7 +26,16 @@ data class Wallet(
      * المحفظة دي ⇒ رسايلها بتتسجل فلوس لشخص تاني أو منه (`smsLegVerdict`). الأربعة بس (CLAUDE.md #11) · بتتكتب لو فيه أرقام بس.
      */
     val notMineLast4: List<String> = emptyList(),
+    /**
+     * r041b P4 (CLAUDE.md #10): المحفظة (غير الكاش) اتضافت **من غير رصيد بداية** ⇒ [openingBalanceMinor] صفر شكلي مش رقم معروف، والرصيد
+     * «غير متاح» لحد أول «حدّث الرصيد» (`balanceKnownFrom`) أو لحد ما رصيد البداية يتكتب. بيتخزن لو `true` بس.
+     */
+    val openingUnknown: Boolean = false,
 )
+
+/** أول يوم رصيد [w] معروف فيه: يوم البداية لو رصيدها معروف، وإلا يوم أول «حدّث الرصيد» من يوم البداية — null = لسه مش معروف خالص. */
+fun balanceKnownFrom(w: Wallet): IsoDate? =
+    if (!w.openingUnknown) w.openingAt else w.checkpoints.map { it.day }.filter { it >= w.openingAt }.minOrNull()
 
 data class CashSummary(
     val wallet: Wallet,

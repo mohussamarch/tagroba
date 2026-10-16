@@ -86,7 +86,8 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
     LaunchedEffect(visible) {
         if (!visible) return@LaunchedEffect
         kind = "bank"; bank = null; other = false; changing = false; name = ""; last4 = ""; cut = false; tried = false; serverError = null
-        amountText = edit?.let { amountLabel(it.wallet.openingBalanceMinor, currency, showCurrency = false) } ?: ""
+        // r041b P4: رصيد بداية مش معروف ⇒ الخانة فاضية (مش «0.00»)
+        amountText = edit?.takeUnless { it.wallet.openingUnknown }?.let { amountLabel(it.wallet.openingBalanceMinor, currency, showCurrency = false) } ?: ""
         date = edit?.wallet?.openingAt ?: today
     }
     val isCash = kind == "cash"
@@ -106,7 +107,7 @@ fun WalletAddSheet(visible: Boolean, mode: WalletSheetMode, existing: List<Walle
         if (edit != null && amountText.isBlank()) t(UiKey.WADD_ERR_AMOUNT_REQUIRED) else null,
         if (amount != null && !dateOk) t(UiKey.WADD_ERR_DATE) else null,
     )
-    val changed = edit == null || amount != edit.wallet.openingBalanceMinor || date != edit.wallet.openingAt
+    val changed = edit == null || edit.wallet.openingUnknown || amount != edit.wallet.openingBalanceMinor || date != edit.wallet.openingAt
     val valid = errors.isEmpty() && changed && editor != null
     val title = if (edit != null) t(UiKey.WADD_EDIT_TITLE) else t(UiKey.WADD_TITLE)
 
