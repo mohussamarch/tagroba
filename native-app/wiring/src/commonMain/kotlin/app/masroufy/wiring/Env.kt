@@ -52,6 +52,8 @@ class DeviceEnv(
      * الواجهة** — كان على خيط الواجهة فالبرنامج كله بيعلّق ٤–٥ ثواني في «اسحب لتحت». الاختبار بيدّي سياقه (`EmptyCoroutineContext`).
      */
     val work: kotlin.coroutines.CoroutineContext = kotlinx.coroutines.Dispatchers.Default,
+    /** 2026-10-16: مسودة «ابنِ/عدّل شخصيتك» على الجهاز (لكل حساب) — لو البرنامج اتقفل قبل الحفظ. null ⇒ من غير مسودة. */
+    val characterDraft: app.masroufy.ui.screens.character.CharacterDraftStore? = null,
 )
 
 /**

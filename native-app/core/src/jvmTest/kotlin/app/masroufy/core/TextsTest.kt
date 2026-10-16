@@ -62,6 +62,8 @@ class TextsTest {
             EGYPTIAN_R041_TEXTS.keys +
             // جولة r041b — أول تشغيل والفلوس ورسايل البنك (`TextsR041b.kt`)
             EGYPTIAN_R041B_TEXTS.keys +
+            // جولة r05-asks — طلبات المالك 2026-10-16 (`TextsR05.kt` · `TextsR05b.kt`)
+            EGYPTIAN_R05_TEXTS.keys + EGYPTIAN_R05B_TEXTS.keys +
             // «شخصيتك» (r041): أسماء الأقسام والأجزاء والاختيارات (`TextsCharacterOptions.kt`)
             EGYPTIAN_CHARACTER_OPTION_TEXTS.keys +
             // مراجعة 0.3: «حساب البلد في الأرشيف» (`TextsSpaces.kt`)

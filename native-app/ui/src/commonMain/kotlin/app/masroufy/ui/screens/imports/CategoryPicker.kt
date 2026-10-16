@@ -34,10 +34,28 @@ import app.masroufy.ui.theme.Type
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CategoryPickerSheet(visible: Boolean, title: String, categories: List<Category>, selectedId: String?, onPick: (Category) -> Unit, onDismiss: () -> Unit) {
+fun CategoryPickerSheet(
+    visible: Boolean,
+    title: String,
+    categories: List<Category>,
+    selectedId: String?,
+    onPick: (Category) -> Unit,
+    onDismiss: () -> Unit,
+    // «إيه الصنف؟» بعد «شراء» (2026-10-16): سطر شرح · «آخر اللي استخدمته» · زرار «تخطّي» واضح
+    body: String? = null,
+    recent: List<Category> = emptyList(),
+    skipLabel: String? = null,
+) {
     var query by remember(visible) { mutableStateOf("") }
     Sheet(visible, onDismiss, title, closeLabel = t(UiKey.SHELL_CLOSE)) {
         BasicText(title, style = Type.of(17, androidx.compose.ui.text.font.FontWeight.Bold))
+        if (body != null) BasicText(body, style = Type.of(13).copy(color = Ink.muted))
+        if (recent.isNotEmpty() && query.isBlank()) {
+            BasicText(t(UiKey.PURCHASE_ASK_RECENT), style = Type.captionBold().copy(color = Ink.muted))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (c in recent) SelectChip(c.name, c.id == selectedId, { onPick(c) }, dot = parseHex(c.lightColor), height = 44.dp)
+            }
+        }
         TextInput(query, { query = it }, placeholder = t(UiKey.SMS_CATPICK_SEARCH), draft = false)
         val groups = categoryGroups(pickableCategories(categories), query)
         Column(Modifier.fillMaxWidth().heightIn(max = 380.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -49,6 +67,7 @@ fun CategoryPickerSheet(visible: Boolean, title: String, categories: List<Catego
                 }
             }
         }
+        if (skipLabel != null) app.masroufy.ui.components.TonalButton(skipLabel, onDismiss, height = 48.dp, modifier = Modifier.fillMaxWidth())
     }
 }
 

@@ -32,6 +32,18 @@ class AndroidOnboardingDraft(context: Context, uid: String) : app.masroufy.ui.sc
     }
 }
 
+/** 2026-10-16: مسودة «ابنِ/عدّل شخصيتك» على الجهاز ده (لكل حساب مفتاح لوحده) — بعد كل تغيير، وبتتمسح بعد الحفظ أو «اخرج من غير حفظ». */
+class AndroidCharacterDraft(context: Context, uid: String) : app.masroufy.ui.screens.character.CharacterDraftStore {
+    private val prefs = context.getSharedPreferences("character-draft", Context.MODE_PRIVATE)
+    private val key = "draft|$uid"
+
+    override fun read(): String? = runCatching { prefs.getString(key, null) }.getOrNull()
+
+    override fun write(value: String?) {
+        runCatching { prefs.edit().apply { if (value == null) remove(key) else putString(key, value) }.apply() }
+    }
+}
+
 /**
  * «الجهاز ده خلّص تنزيل أول كامل للحساب» (`AccountSession` — الفتح الجاي من نسخة الجهاز لو مفيش نت، §54). علامة لكل حساب، مش بيانات.
  * بتتمسح مع بيانات التطبيق (إلغاء التثبيت) ⇒ الجهاز بيرجع يستنى التنزيل كله.

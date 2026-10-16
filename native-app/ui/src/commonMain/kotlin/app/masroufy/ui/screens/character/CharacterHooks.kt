@@ -15,4 +15,7 @@ interface CharacterSetting {
 
     /** «احفظ» — بيرمي لو الحفظ ما نفعش (الشاشة بتفضل مفتوحة برسالة). */
     suspend fun save(look: CharacterLook)
+
+    /** المسودة على الجهاز (2026-10-16) — null = من غير مسودة (الاختبار · المعاينة). */
+    val draft: CharacterDraftStore? get() = null
 }

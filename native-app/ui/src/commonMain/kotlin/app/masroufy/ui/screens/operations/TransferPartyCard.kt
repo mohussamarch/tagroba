@@ -71,6 +71,7 @@ fun decisionTexts(d: PartyDecision, party: TransferPartyRef): Pair<String, Strin
         ((if (d.added) t(UiKey.TRANSFER_PARTY_ADDED, d.name) + " " else "") + t(UiKey.TRANSFER_PARTY_DONE_PERSON_BODY, partyAccount(party)))
     is PartyDecision.OwnAccount -> t(UiKey.TRANSFER_PARTY_DONE_OWN) to t(UiKey.TRANSFER_PARTY_DONE_OWN_BODY, operationsCount(d.changed))
     PartyDecision.NotThis -> t(UiKey.TRANSFER_PARTY_DONE_NOT) to t(UiKey.TRANSFER_PARTY_DONE_NOT_BODY)
+    is NewPartyDecision -> newDecisionTexts(d, party)
 }
 
 /**
@@ -85,7 +86,13 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
     val scope = rememberCoroutineScope()
     var decision by remember(party.key) { mutableStateOf<PartyDecision?>(null) }
     var sheet by remember { mutableStateOf(false) }
+    // 2026-10-16: لوحات الردود الجديدة — «مستحقات دايمًا» بنفس لوحة الشخص من غير خطوة النوع
+    var dues by remember { mutableStateOf(false) }
+    var company by remember { mutableStateOf(false) }
+    var labeling by remember { mutableStateOf(false) }
+    var salary by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    val answers = deps.partyAnswers
     // «راتب الدوام» · «عمل إضافي» · «بيعة» (البند 6) — نتيجتها بكارتها و«تراجع» بتاعها
     var income by remember(party.key) { mutableStateOf<IncomeDone?>(null) }
     fun act(block: suspend () -> PartyDecision?) = scope.launch {
@@ -94,10 +101,20 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
         error = err
         if (err == null && d != null) {
             decision = d
-            sheet = false
+            sheet = false; dues = false; company = false; labeling = false
             onChanged()
         }
     }
+    // «تجاهل الحساب ده»: «تراجع» 8 ثواني (OVERRIDES §91-11) وبعدها الكارت بيقول يرجع منين — ما بيختفيش
+    fun undoNew(n: NewPartyDecision) = scope.launch {
+        val err = failureOf { answers?.undo(n.undo) }
+        if (err == null) {
+            decision = null
+            onChanged()
+        } else error = err
+    }
+    val ignored = decision as? NewPartyDecision.Ignored
+    val ignoreWindow = undoWindowFor(ignored) { decision = ignored?.let { PartyDecision.NotThis } }
     val done = income
     if (done != null) {
         IncomeDoneBox(done, onUndone = { income = null; onChanged() }, onChanged = onChanged)
@@ -122,19 +139,33 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
             PrimaryButton(t(UiKey.TRANSFER_PARTY_PERSON), onClick = { sheet = true; error = null }, modifier = Modifier.fillMaxWidth())
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PartyButton(t(UiKey.TRANSFER_PARTY_OWN), Modifier.weight(1f)) { act { PartyDecision.OwnAccount(deps.transfers.markOwnAccount(party)) } }
-                PartyButton(t(UiKey.TRANSFER_PARTY_NOT), Modifier.weight(1f)) { act { deps.transfers.dismiss(party); PartyDecision.NotThis } }
+                if (deps.incomeAnswers != null) PartyButton(t(UiKey.TRANSFER_PARTY_SALARY), Modifier.weight(1f)) { salary = true; error = null }
+            }
+            if (answers != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PartyButton(t(UiKey.TRANSFER_PARTY_COMPANY), Modifier.weight(1f)) { company = true; error = null }
+                    PartyButton(t(UiKey.TRANSFER_PARTY_DUES), Modifier.weight(1f)) { dues = true; error = null }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (answers != null) PartyButton(t(UiKey.TRANSFER_PARTY_LABEL), Modifier.weight(1f)) { labeling = true; error = null }
+                PartyButton(t(UiKey.TRANSFER_PARTY_NOT), Modifier.weight(1f)) {
+                    act { answers?.let { NewPartyDecision.Ignored(it.ignore(party)) } ?: run { deps.transfers.dismiss(party); PartyDecision.NotThis } }
+                }
             }
             if (deps.incomeAnswers != null) {
                 BasicText(t(UiKey.INCOME_ANS_OR), style = Type.of(12, FontWeight.Bold).copy(color = PartyInk.brown))
-                IncomeAnswerChips(transactionId, withOther = false) { income = it; error = null; onChanged() }
+                IncomeAnswerChips(transactionId, withOther = false, withSalary = false) { income = it; error = null; onChanged() }
             }
             error?.let { FieldError(it) }
         }
+    } else if (ignored != null) {
+        UndoStrip(t(UiKey.TRANSFER_PARTY_IGNORED_STRIP, partyAccount(party)), ignoreWindow) { undoNew(ignored) }
     } else {
         val (bg, ink) = when (d) {
-            is PartyDecision.AsPerson -> ChipInk.greenBg to ChipInk.green
-            is PartyDecision.OwnAccount -> ChipInk.blueBg to ChipInk.blue
-            PartyDecision.NotThis -> ChipInk.greyBg to ChipInk.grey
+            is PartyDecision.AsPerson, is NewPartyDecision.Dues, is NewPartyDecision.Label -> ChipInk.greenBg to ChipInk.green
+            is PartyDecision.OwnAccount, is NewPartyDecision.Company -> ChipInk.blueBg to ChipInk.blue
+            PartyDecision.NotThis, is NewPartyDecision.Ignored -> ChipInk.greyBg to ChipInk.grey
         }
         val (title, body) = decisionTexts(d, party)
         Column(
@@ -143,8 +174,13 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
         ) {
             BasicText(title, style = Type.of(13, FontWeight.Bold).copy(color = ink))
             BasicText(body, style = Type.of(13))
-            TonalButton(t(UiKey.TRANSFER_PARTY_UNDO), {
-                scope.launch {
+            val dd = d as? NewPartyDecision.Dues
+            dd?.choices?.let { choices ->
+                DuesKindChips(choices) { k -> act { answers?.answerDuesKind(transactionId, k); dd.copy(choices = null) } }
+            }
+            // «تجاهل» بعد الـ8 ثواني: من غير «تراجع» هنا — بيرجع من «حسابات متجاهَلة»
+            if (d != PartyDecision.NotThis) TonalButton(t(UiKey.TRANSFER_PARTY_UNDO), {
+                if (d is NewPartyDecision) undoNew(d) else scope.launch {
                     val err = failureOf { deps.transfers.forget(party.key) }
                     if (err == null) {
                         decision = null
@@ -152,17 +188,28 @@ fun TransferPartyCard(party: TransferPartyRef, transactionId: Id, onChanged: () 
                     } else error = err
                 }
             }, height = 40.dp)
+            error?.let { FieldError(it) }
         }
     }
-    PartySheet(sheet, party, error, onDismiss = { sheet = false }) { who, draft, kind ->
+    PartySheet(sheet || dues, party, error, duesOnly = dues, onDismiss = { sheet = false; dues = false }) { who, draft, kind ->
         act {
             val person = who ?: deps.people.addPerson(partyNewName(party, draft.name)).also { p -> draft.circle?.let { deps.circles.setProfile(p.id, it, null) } }
+            if (kind == null) {
+                val start = answers?.markDues(party, transactionId, person.id) ?: return@act null
+                return@act NewPartyDecision.Dues(person.name, start.settledCount, start.choices, start.undo)
+            }
             deps.transfers.markPerson(party, person.id)
             deps.kinds.setOne(transactionId, kind)
             PartyDecision.AsPerson(person.name, kind, added = who == null)
         }
     }
+    CompanyKindSheet(company, party, error, onDismiss = { company = false }) { k -> act { answers?.let { NewPartyDecision.Company(k, it.markCompany(party, transactionId, k)) } } }
+    LabelSheet(labeling, party, error, onDismiss = { labeling = false }) { text, k ->
+        act { answers?.let { NewPartyDecision.Label(text.trim(), it.markLabel(party, transactionId, text, k)) } }
+    }
+    EmployerPickSheet(salary, transactionId, onDismiss = { salary = false }) { salary = false; income = it; error = null; onChanged() }
 }
+
 
 /** الشخص الجديد: الاسم المكتوب، ولو فاضي اسم الطرف زي ما جه. */
 fun partyNewName(party: TransferPartyRef, typed: String): String = typed.trim().ifEmpty { suggestedPersonName(party) }
@@ -191,8 +238,9 @@ private fun PartySheet(
     visible: Boolean,
     party: TransferPartyRef,
     error: String?,
+    duesOnly: Boolean = false,
     onDismiss: () -> Unit,
-    onSave: (who: Person?, draft: NewPersonDraft, kind: EconomicKind) -> Unit,
+    onSave: (who: Person?, draft: NewPersonDraft, kind: EconomicKind?) -> Unit,
 ) {
     val deps = LocalSpace.current.operations
     var step by remember { mutableStateOf(0) }
@@ -208,14 +256,22 @@ private fun PartySheet(
         people = attempt { deps.people.listWithBalances().filter { !it.person.archived }.map { it.person } }.orEmpty()
     }
     val chosenName = if (isNew) partyNewName(party, name) else picked?.name.orEmpty()
-    val title = if (step == 0) t(UiKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(party)) else t(UiKey.TRANSFER_PARTY_KIND_TITLE, chosenName)
+    val title = when {
+        duesOnly -> t(UiKey.TRANSFER_PARTY_DUES_TITLE, partyAccount(party))
+        step == 0 -> t(UiKey.TRANSFER_PARTY_WHO_TITLE, partyAccount(party))
+        else -> t(UiKey.TRANSFER_PARTY_KIND_TITLE, chosenName)
+    }
     Sheet(visible, onDismiss, title = title, closeLabel = t(UiKey.SHELL_CLOSE), spacing = 12.dp) {
         BasicText(title, style = Type.of(17, FontWeight.Bold))
         if (step == 0) {
             NewPersonBox(name, isNew, circle, onName = { name = it; isNew = true; picked = null }, onCircle = { circle = if (circle == it) null else it; isNew = true; picked = null })
             BasicText(t(UiKey.TRANSFER_PARTY_OR), style = Type.of(12, FontWeight.Bold).copy(color = Ink.muted))
             PeopleList(people.take(8), picked) { picked = it; isNew = false }
-            PrimaryButton(t(UiKey.TRANSFER_PARTY_NEXT), onClick = { step = 1 }, enabled = picked != null || (isNew && chosenName.isNotBlank()), modifier = Modifier.fillMaxWidth())
+            val ready = picked != null || (isNew && chosenName.isNotBlank())
+            if (duesOnly) {
+                error?.let { FieldError(it) }
+                PrimaryButton(t(UiKey.TRANSFER_PARTY_DUES_SAVE), onClick = { onSave(if (isNew) null else picked, NewPersonDraft(name, circle), null) }, enabled = ready, modifier = Modifier.fillMaxWidth())
+            } else PrimaryButton(t(UiKey.TRANSFER_PARTY_NEXT), onClick = { step = 1 }, enabled = ready, modifier = Modifier.fillMaxWidth())
         } else {
             BasicText(t(UiKey.TRANSFER_PARTY_KIND_Q), style = Type.of(14).copy(color = Ink.muted))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

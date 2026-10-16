@@ -22,6 +22,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,10 +82,25 @@ fun CharacterBuilderScreen() {
     val scope = rememberCoroutineScope()
     var s by remember(deps) { mutableStateOf<BuilderState?>(null) }
     var saving by remember { mutableStateOf(false) }
+    // 2026-10-16: اللي البنّاء بدأ بيه (للمقارنة) · مسودة من مرة قبل كده · تأكيد الخروج
+    var baseline by remember(deps) { mutableStateOf<CharacterLook?>(null) }
+    var offer by remember(deps) { mutableStateOf<CharacterLook?>(null) }
+    var confirm by remember { mutableStateOf(false) }
+    val drafts = hook?.draft
     LaunchedEffect(deps) {
         val saved = runCatching { hook?.current() }.getOrNull()
         val gender = runCatching { hook?.profileGender() }.getOrNull()
-        s = startBuilder(saved, gender)
+        val start = startBuilder(saved, gender)
+        baseline = start.look
+        offer = draftToOffer(decodeDraft(runCatching { drafts?.read() }.getOrNull()), start.look)
+        if (offer == null) runCatching { drafts?.write(null) }
+        s = start
+    }
+    // المسودة بعد كل تغيير (مش وعرض «كمّل من آخر تعديل» لسه مستني رد — عشان ما تتمسحش قبل ما المالك يختار)
+    LaunchedEffect(s?.look, offer) {
+        val look = s?.look ?: return@LaunchedEffect
+        val b = baseline ?: return@LaunchedEffect
+        if (offer == null) runCatching { drafts?.write(if (isDirty(look, b)) encodeDraft(look) else null) }
     }
 
     fun save() {
@@ -93,8 +110,28 @@ fun CharacterBuilderScreen() {
         scope.launch {
             val ok = runCatching { hook.save(st.look) }.isSuccess
             saving = false
-            if (ok) { changes.changed(); nav.pop() } else toaster.show(t(UiKey.MORE_SAVE_FAILED), dark = true)
+            if (ok) { runCatching { drafts?.write(null) }; confirm = false; changes.changed(); nav.pop() } else toaster.show(t(UiKey.MORE_SAVE_FAILED), dark = true)
         }
+    }
+
+    // أي خروج (رجوع الجهاز · السهم · «إلغاء») بتعديلات ⇒ التأكيد جوه الصفحة
+    fun requestExit() {
+        val st = s
+        val b = baseline
+        val dirty = st != null && b != null && isDirty(st.look, b)
+        if (exitStep(dirty) == ExitStep.LEAVE) { runCatching { drafts?.write(null) }; nav.pop() } else confirm = true
+    }
+    fun choose(choice: ExitChoice) {
+        when (choice) {
+            ExitChoice.SAVE -> save()
+            ExitChoice.LEAVE -> { if (clearsDraft(choice)) runCatching { drafts?.write(null) }; confirm = false; nav.pop() }
+            ExitChoice.STAY -> confirm = false
+        }
+    }
+    val onBack by rememberUpdatedState { if (confirm) confirm = false else requestExit() }
+    DisposableEffect(nav) {
+        nav.holdBack(CharacterBuilderRoute) { onBack(); true }
+        onDispose { nav.holdBack(CharacterBuilderRoute, null) }
     }
 
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -106,7 +143,7 @@ fun CharacterBuilderScreen() {
         ) {
             val st = s
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                ScreenHeader(builderTitle(st?.built == true), onBack = { nav.pop() })
+                ScreenHeader(builderTitle(st?.built == true), onBack = { requestExit() })
                 BasicText(t(UiKey.CHAR_SUB), Modifier.padding(horizontal = 4.dp), style = Type.of(12).copy(color = Ink.muted))
             }
             if (st == null) {
@@ -114,12 +151,19 @@ fun CharacterBuilderScreen() {
                 Skeleton(Modifier.fillMaxWidth().height(300.dp), radius = 26.dp)
                 return@Column
             }
+            offer?.let { draft ->
+                DraftOffer(
+                    onResume = { s = st.copy(look = draft); offer = null },
+                    onDiscard = { runCatching { drafts?.write(null) }; offer = null },
+                )
+            }
             PreviewRow(st) { s = it }
             for (sec in sectionsBefore(st)) SectionCard(sec, summary(st, sec)) { s = openSection(st, sec) }
             OpenSection(st) { s = it }
             for (sec in sectionsAfter(st)) SectionCard(sec, summary(st, sec)) { s = openSection(st, sec) }
         }
-        Footer(bottom, saving, onSave = ::save, onCancel = { nav.pop() }, Modifier.align(Alignment.BottomCenter))
+        Footer(bottom, saving, onSave = ::save, onCancel = { requestExit() }, Modifier.align(Alignment.BottomCenter))
+        if (confirm) ExitConfirm(saving, ::choose)
     }
 }
 

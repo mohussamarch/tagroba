@@ -1,5 +1,6 @@
 package app.masroufy.data
 
+import app.masroufy.core.EconomicKind
 import app.masroufy.core.TRANSFER_PARTIES_GROUP
 import app.masroufy.core.TransferParty
 import app.masroufy.core.TransferVerdict
@@ -15,8 +16,15 @@ object TransferCodecs {
             doc {
                 req("key", p.key); req("label", p.label); opt("accountLast4", p.last4); req("verdict", p.verdict.wire)
                 opt("personId", p.personId); req("decidedAt", p.decidedAt)
+                // 2026-10-16: «شركة أو جهة» · «حاجة تانية» · «مستحقات دايمًا» — بتتكتب بس لو ليها قيمة (المستند القديم زي ما هو)
+                opt("kind", p.kind?.wire); opt("note", p.note); opt("dues", p.dues.takeIf { it })
             }
         },
-        { d -> TransferParty(d.str("key"), d.str("label"), d.strOrNull("accountLast4"), d.wire("verdict", TransferVerdict::fromWire), d.strOrNull("personId"), d.str("decidedAt")) },
+        { d ->
+            TransferParty(
+                d.str("key"), d.str("label"), d.strOrNull("accountLast4"), d.wire("verdict", TransferVerdict::fromWire), d.strOrNull("personId"), d.str("decidedAt"),
+                kind = d.strOrNull("kind")?.let(EconomicKind::fromWire), note = d.strOrNull("note"), dues = d.boolOrNull("dues") ?: false,
+            )
+        },
     )
 }

@@ -156,6 +156,7 @@ fun BankSmsSettingsScreen() {
                 BasicText(t(UiKey.SMS_SETTINGS_RULES), style = Type.of(12, lineHeight = 1.7).copy(color = Ink.muted))
             }
         }
+        item(key = "ignored") { app.masroufy.ui.screens.operations.IgnoredAccountsCard() }
         item(key = "notif") { LinkRow(t(UiKey.SMS_SETTINGS_NOTIF_LINK), { nav.push(NotificationSettingsRoute) }) }
     }
 

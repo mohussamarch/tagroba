@@ -134,7 +134,7 @@ class ManageTransfers(private val deps: ManageTransfersDeps) {
         val party = deps.parties.listAll().firstOrNull { it.key == key } ?: return 0
         val setKind = when (party.verdict) {
             TransferVerdict.OWN_ACCOUNT -> EconomicKind.INTERNAL_TRANSFER
-            TransferVerdict.PERSON, TransferVerdict.DISMISSED -> null
+            TransferVerdict.PERSON, TransferVerdict.DISMISSED, TransferVerdict.COMPANY, TransferVerdict.LABEL -> null
         }
         val now = deps.clock.nowIso()
         val all = everything()
