@@ -72,17 +72,12 @@ body{margin:0}
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 8px">
-        <h2 style="margin: 0; font-size: 16px; font-weight: 700">{{srcTitle}}</h2>
-        <sc-for list="{{sources}}" as="s" hint-placeholder-count="6">
-          <button type="button" class="m-press" onClick="{{s.open}}" style="{{s.cardStyle}}">
-            <span style="display: flex; align-items: center; gap: 10px"><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700">{{s.name}}</span><span style="font-size: 12px; color: #637570">{{s.count}}</span></span><sc-if value="{{s.flag}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 10px; color: #6B4600; background: #FBF0DD">{{s.flagText}}</span></sc-if><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"></path></svg></span>
-            <span style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px">
-              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #637570">{{inLabel}}</span><span style="font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">{{s.inV}}</span></span>
-              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #637570">{{outLabel}}</span><span style="font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">{{s.outV}}</span></span>
-              <span style="display: flex; flex-direction: column; gap: 2px; border-radius: 10px; padding: 0 6px; background: rgba(25,61,51,0.04)"><span style="font-size: 11px; color: #637570">{{netLabel}}</span><span style="{{s.netStyle}}">{{s.netV}}</span></span>
-            </span>
-          </button>
-        </sc-for>
+        <span style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 16px; font-weight: 700">{{srcTitle}}</h2><span style="font-size: 12px; color: #637570">{{srcSub}}</span></span>
+        <div style="border-radius: 22px; padding: 4px 8px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)">
+          <sc-for list="{{sources}}" as="s" hint-placeholder-count="6">
+            <button type="button" class="m-press" onClick="{{s.open}}" style="{{s.rowStyle}}"><span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{s.name}}</span><span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span style="font-size: 12px; color: #637570">{{s.count}}</span><sc-if value="{{s.flag}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; color: #6B4600; background: #FBF0DD">{{s.flagText}}</span></sc-if></span></span><span style="{{s.netStyle}}">{{s.netV}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#637570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 6l-6 6 6 6"></path></svg></button>
+          </sc-for>
+        </div>
       </div>
     </sc-if>
 
@@ -201,9 +196,10 @@ class Component extends DCLogic {
       .concat(src.map((x, i) => ({ label: x.name, amount: M(x.net, true), bar: barOf(pts[i], pts[i + 1], x.net >= 0 ? '#3E9B74' : '#D9737B'), flag: !!x.flag, open: openSrc(x.id), strong: false })))
       .concat([{ label: T('الرصيد المحسوب', 'الرصيد المحسوب'), amount: M(computed), bar: barOf(0, computed, '#08634F'), flag: false, open: () => this.say(T('هذا الرقم نفسه «معك الآن» في المحفظة.', 'ده نفس رقم «معاك دلوقتي» في المحفظة.')), strong: true, total: computed }])
       .map((x) => Object.assign(x, { zero, aria: x.label + ' ' + x.amount, labelStyle: 'font-size: ' + (x.strong ? 14 : 13) + 'px; font-weight: ' + (x.strong ? 700 : 500), amtStyle: amt(x.total ?? 1, x.strong) }));
-    const card = 'box-sizing: border-box; width: 100%; border: 0; padding: 14px 16px; border-radius: 22px; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(165deg, #FFFFFF 0%, #FBFAF4 100%); box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 2px rgba(29,54,53,0.05), 0 14px 32px rgba(29,54,53,0.09)';
-    const netStyle = (m) => 'font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: ' + (m < 0 ? '#BE3D48' : m > 0 ? '#13764D' : '#193D33');
-    const sources = src.map((x) => ({ name: x.name, count: n(x.cnt) + T(' عملية', ' عملية'), inV: M(x.inM), outV: M(x.outM), netV: M(x.net, true), netStyle: netStyle(x.net), flag: !!x.flag, flagText: x.flag || '', open: openSrc(x.id), cardStyle: card + (x.flag ? '; box-shadow: inset 0 0 0 1.5px rgba(243,201,107,0.9), 0 14px 32px rgba(29,54,53,0.09)' : '') }));
+    const netStyle = (m) => 'flex-shrink: 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: ' + (m < 0 ? '#BE3D48' : m > 0 ? '#13764D' : '#193D33');
+    // كل مصدر سطر صغير بصافيه (اختيار المالك 2026-10-16: «خلّي السلّم وصغّر الكروت») — الداخل والخارج وعملياته في اللوحة اللي بتتفتح
+    const sources = src.map((x, i) => ({ name: x.name, count: n(x.cnt) + T(' عملية', ' عملية'), netV: M(x.net, true), netStyle: netStyle(x.net), flag: !!x.flag, flagText: x.flag || '', open: openSrc(x.id),
+      rowStyle: 'box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; color: #193D33; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px; border-radius: 16px;' + (i < src.length - 1 ? ' box-shadow: 0 1px 0 rgba(204,216,204,0.55);' : '') }));
     return Object.assign({
       title: 'افهم رصيدك', walletLine: (eg ? 'البنك الأهلي المصري' : 'البنك الأهلي السعودي') + ' ⁦·· ' + (eg ? '7214' : '9126') + '⁩',
       heroLabel: open ? T('الرصيد المحسوب حتى اليوم', 'الرصيد المحسوب لحد النهارده') : T('الرصيد المحسوب', 'الرصيد المحسوب'),
@@ -213,7 +209,7 @@ class Component extends DCLogic {
         .map(([label, sub, value], i) => ({ label, sub, hasSub: !!sub, value, style: 'display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px;' + (i < 2 ? ' box-shadow: 0 1px 0 rgba(255,255,255,0.12)' : '') })),
       ladderTitle: T('من البداية حتى اليوم', 'من البداية لحد النهارده'), ladderSub: T('كل سطر يكمل من الذي قبله. اضغط أي مصدر لترى عملياته.', 'كل سطر بيكمّل من اللي قبله. دوس على أي مصدر تشوف عملياته.'),
       lgBal: 'رصيد', lgUp: T('دخل أكثر', 'دخل أكتر'), lgDown: T('خرج أكثر', 'خرج أكتر'), steps,
-      srcTitle: T('من أين جاءت الحركة', 'الحركة جت منين'), inLabel: T('دخل', 'دخل'), outLabel: T('خرج', 'خرج'), netLabel: T('الصافي', 'الصافي'), sources,
+      srcTitle: T('من أين جاءت الحركة', 'الحركة جت منين'), srcSub: T('اضغط أي مصدر لترى ما دخل وما خرج وعملياته.', 'دوس على أي مصدر تشوف اللي دخل واللي خرج وعملياته.'), inLabel: T('دخل', 'دخل'), outLabel: T('خرج', 'خرج'), netLabel: T('الصافي', 'الصافي'), sources,
       spaceName: eg ? 'مصر' : 'السعودية', fixOpen: s.fixOpen, fixMode: s.fixMode, fixStart: s.fixStart, fixBefore: String(computed * k),
       closeFix: () => this.setState({ fixOpen: false }),
       // نتيجة «طبّق» بتتجمع على اللي اتطبّق قبلها («حدّث الرصيد» بيزوّد الفرق بس). المبالغ جاية مضروبة في عملة البلد ⇒ بنرجّعها للأساس
