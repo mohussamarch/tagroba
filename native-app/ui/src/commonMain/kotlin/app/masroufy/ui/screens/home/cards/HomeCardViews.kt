@@ -25,7 +25,7 @@ import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
 import app.masroufy.ui.nav.Tab
-import app.masroufy.ui.screens.budgets.CategoriesRoute
+import app.masroufy.ui.screens.operations.TopSpendRoute
 import app.masroufy.ui.screens.budgets.ProgressBar
 import app.masroufy.ui.screens.budgets.SavingsGoalsRoute
 import app.masroufy.ui.screens.home.ReadState
@@ -119,7 +119,11 @@ internal fun TopCard(state: ReadState<HomeScreenData>) {
     val deps = LocalSpace.current
     val top = deps.home.cards.top
     val view = remember(state) { (state as? ReadState.Ready)?.value?.let { top.of(it) } }
-    CardShell(state, Lucide.SHOPPING_BAG, Ink.transfer, t(UiKey.HOME_CARD_TOP), t(UiKey.HOME_TOP_SUB), onClick = { nav.push(CategoriesRoute) }) { _ ->
+    CardShell(state, Lucide.SHOPPING_BAG, Ink.transfer, t(UiKey.HOME_CARD_TOP), t(UiKey.HOME_TOP_SUB), onClick = {
+        // §100: الكارت ⇒ «أكثر ما صرفت عليه» جوه تبويب العمليات (مش إدارة التصنيفات)
+        nav.switchTab(Tab.OPERATIONS)
+        nav.push(TopSpendRoute)
+    }) { _ ->
         val rows = view?.rows.orEmpty()
         if (rows.isEmpty()) BasicText(t(UiKey.HOME_TOP_EMPTY), style = Type.caption().copy(color = Ink.muted))
         rows.forEach { r ->

@@ -53,6 +53,14 @@ internal val MSA_AREA_HOME_CARDS_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.HOME_PEOPLE_OWE to "عليك",
     UiKey.HOME_INVEST_SUB to "التفاصيل في الاستثمار",
     UiKey.HOME_INVEST_NA to "تغيّر اليوم غير متاح بعد.",
+    UiKey.TOP_SPEND_TITLE to "أكثر ما صرفت عليه",
+    UiKey.TOP_SPEND_TOTAL to "مصروفك في الفترة",
+    UiKey.TOP_SPEND_COUNT to "العمليات: {0}",
+    UiKey.TOP_SPEND_PARTIAL to "الأرقام حتى الآن، فبعض العمليات لم يُحدَّد نوعها بعد.",
+    UiKey.TOP_SPEND_UNKNOWN to "المصروف غير معروف لأن أنواع العمليات لم تُحدَّد بعد.",
+    UiKey.TOP_SPEND_EMPTY to "لا مصروف في هذه الفترة.",
+    UiKey.TOP_SPEND_EMPTY_BODY to "ستظهر هنا تصنيفاتك مرتبة من الأكبر إلى الأصغر.",
+    UiKey.TOP_SPEND_FAILED to "تعذّر تحميل المصروف. حاول مرة أخرى.",
 )
 
 internal val EGYPTIAN_AREA_HOME_CARDS_TEXTS: Map<UiKey, String> = mapOf(
@@ -102,6 +110,14 @@ internal val EGYPTIAN_AREA_HOME_CARDS_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.HOME_PEOPLE_OWE to "عليك",
     UiKey.HOME_INVEST_SUB to "التفاصيل في الاستثمار",
     UiKey.HOME_INVEST_NA to "تغيّر النهارده لسه مش متاح.",
+    UiKey.TOP_SPEND_TITLE to "أكتر حاجة صرفت فيها",
+    UiKey.TOP_SPEND_TOTAL to "صرفك في الفترة",
+    UiKey.TOP_SPEND_COUNT to "العمليات: {0}",
+    UiKey.TOP_SPEND_PARTIAL to "الأرقام لحد دلوقتي، فيه عمليات لسه نوعها ما اتحددش.",
+    UiKey.TOP_SPEND_UNKNOWN to "الصرف مش معروف لأن أنواع العمليات لسه ما اتحددتش.",
+    UiKey.TOP_SPEND_EMPTY to "مفيش صرف في الفترة دي.",
+    UiKey.TOP_SPEND_EMPTY_BODY to "هتظهر هنا تصنيفاتك مترتبة من الأكبر للأصغر.",
+    UiKey.TOP_SPEND_FAILED to "ما قدرناش نحمّل الصرف. جرّب تاني.",
 )
 
 internal val ENGLISH_AREA_HOME_CARDS_TEXTS: Map<UiKey, String> = mapOf(
@@ -151,4 +167,12 @@ internal val ENGLISH_AREA_HOME_CARDS_TEXTS: Map<UiKey, String> = mapOf(
     UiKey.HOME_PEOPLE_OWE to "You owe",
     UiKey.HOME_INVEST_SUB to "Details in Investment",
     UiKey.HOME_INVEST_NA to "Today's change isn't available yet.",
+    UiKey.TOP_SPEND_TITLE to "Top spending",
+    UiKey.TOP_SPEND_TOTAL to "Spent in this period",
+    UiKey.TOP_SPEND_COUNT to "Operations: {0}",
+    UiKey.TOP_SPEND_PARTIAL to "Figures so far; some operations have no type yet.",
+    UiKey.TOP_SPEND_UNKNOWN to "Spending is unknown because operation types aren't set yet.",
+    UiKey.TOP_SPEND_EMPTY to "No spending in this period.",
+    UiKey.TOP_SPEND_EMPTY_BODY to "Your categories will show here, largest first.",
+    UiKey.TOP_SPEND_FAILED to "Couldn't load spending. Try again.",
 )
