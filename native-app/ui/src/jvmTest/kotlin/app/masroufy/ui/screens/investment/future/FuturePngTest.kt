@@ -70,9 +70,9 @@ class FuturePngTest {
     private val snapshot = HoldingsSnapshot(
         Currency.SAR,
         listOf(
-            HoldingValue("flat", "شقة", HoldingGroup.PROPERTY, HoldingPurpose.INVEST, GrowthBucket.PROPERTY, 57_600_000),
-            HoldingValue("gold", "سبائك", HoldingGroup.METAL, HoldingPurpose.INVEST, GrowthBucket.GOLD, 5_256_000),
-            HoldingValue("stk", "أسهم", HoldingGroup.SHARES, HoldingPurpose.INVEST, GrowthBucket.SHARES, 8_900_000),
+            testHolding("flat", "شقة", app.masroufy.core.HoldingType.FLAT, HoldingPurpose.INVEST, 57_600_000),
+            testHolding("gold", "سبائك", app.masroufy.core.HoldingType.GOLD, HoldingPurpose.INVEST, 5_256_000),
+            testHolding("stk", "أسهم", app.masroufy.core.HoldingType.STK, HoldingPurpose.INVEST, 8_900_000),
         ),
         goldPriceMissing = false,
     )
@@ -93,7 +93,7 @@ class FuturePngTest {
                 "eg", "EG", Currency.EGP,
                 LoadWithYouNow(MemoryWalletRepository(listOf(Wallet("egb", "بنك", Currency.EGP, "bank", 30_000_000, "2026-01-01"))), MemoryTransactionRepository(), Currency.EGP),
                 saving = { 600_000 }, income = { null }, debts = { emptyList() }, incomeSources = MemoryIncomeSourceRepository(), goals = { emptyList() },
-                holdings = { HoldingsSnapshot(Currency.EGP, listOf(HoldingValue("egf", "شقة", HoldingGroup.PROPERTY, HoldingPurpose.INVEST, GrowthBucket.PROPERTY, 250_000_000)), false) },
+                holdings = { HoldingsSnapshot(Currency.EGP, listOf(testHolding("egf", "شقة", app.masroufy.core.HoldingType.FLAT, HoldingPurpose.INVEST, 250_000_000)), false) },
                 rates = { InvestRatesState.Ready(InvestRates(1_500, 2_000, 1_800, entry("CPI_EG", 1_500), entry("GOLD_EGP", 2_000), entry("STOCKS_EG", 1_800))) },
             ),
         )
@@ -173,3 +173,9 @@ class FuturePngTest {
         png("future-countries-then", 350, 1000) { Column(Modifier.padding(16.dp)) { FutureCards(both) } }
     }
 }
+
+/** r05-int: نسخة HOLDINGS من [app.masroufy.core.HoldingValue] (أصل + نوع) — نفس الأرقام اللي كانت هنا. */
+private fun testHolding(id: String, name: String, type: app.masroufy.core.HoldingType, purpose: app.masroufy.core.HoldingPurpose, value: Long?) =
+    app.masroufy.core.HoldingValue(
+        app.masroufy.core.Asset(id, name, "other", "وحدة", app.masroufy.core.Currency.SAR, false, holdingType = type.wire), type, purpose, value, app.masroufy.core.QUANTITY_SCALE,
+    )

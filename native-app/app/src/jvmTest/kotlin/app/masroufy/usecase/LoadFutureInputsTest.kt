@@ -60,10 +60,10 @@ class LoadFutureInputsTest {
     private val snapshot = HoldingsSnapshot(
         Currency.SAR,
         listOf(
-            HoldingValue("g", "سبيكة", HoldingGroup.METAL, HoldingPurpose.INVEST, GrowthBucket.GOLD, 40_000),
-            HoldingValue("car", "سيارة", HoldingGroup.PERSONAL, HoldingPurpose.PERSONAL, GrowthBucket.NONE, 900_000),
-            HoldingValue("s", "أسهم", HoldingGroup.SHARES, HoldingPurpose.INVEST, GrowthBucket.SHARES, null),
-            HoldingValue("land", "أرض", HoldingGroup.PROPERTY, HoldingPurpose.RESERVE, GrowthBucket.PROPERTY, 60_000),
+            testHolding("g", "سبيكة", app.masroufy.core.HoldingType.GOLD, HoldingPurpose.INVEST, 40_000),
+            testHolding("car", "سيارة", app.masroufy.core.HoldingType.CAR, HoldingPurpose.PERSONAL, 900_000),
+            testHolding("s", "أسهم", app.masroufy.core.HoldingType.STK, HoldingPurpose.INVEST, null),
+            testHolding("land", "أرض", app.masroufy.core.HoldingType.FLAT, HoldingPurpose.RESERVE, 60_000),
         ),
         goldPriceMissing = false,
     )
@@ -134,3 +134,9 @@ class LoadFutureInputsTest {
         assertEquals(FutureChoice(), view.load("eg"), "كل بلد لوحده")
     }
 }
+
+/** r05-int: نسخة HOLDINGS من [app.masroufy.core.HoldingValue] (أصل + نوع) — نفس الأرقام اللي كانت هنا. */
+private fun testHolding(id: String, name: String, type: app.masroufy.core.HoldingType, purpose: app.masroufy.core.HoldingPurpose, value: Long?) =
+    app.masroufy.core.HoldingValue(
+        app.masroufy.core.Asset(id, name, "other", "وحدة", app.masroufy.core.Currency.SAR, false, holdingType = type.wire), type, purpose, value, app.masroufy.core.QUANTITY_SCALE,
+    )

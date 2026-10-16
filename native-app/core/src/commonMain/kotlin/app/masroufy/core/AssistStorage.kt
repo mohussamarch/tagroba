@@ -91,11 +91,21 @@ sealed interface UserSetting {
     data class BirthDate(val date: IsoDate, override val updatedAt: String) : UserSetting {
         override val key: String get() = BIRTH_DATE_KEY
     }
+
+    /**
+     * «حاجاتي» (رد المالك 2026-10-16 ٢أ): الحاجات الشخصية (العربية · الدهب الملبوس) **تدخل في المجموع وفي «هيبقى معاك كام»؟** — اختيار
+     * المستخدم، والافتراضي **من غيرها**. مستند واحد على الحساب (`holdingsPrefs`). الحاجات الشخصية بتظهر في «حاجاتي» في الحالتين.
+     */
+    data class HoldingsPrefs(val includePersonal: Boolean, override val updatedAt: String) : UserSetting {
+        override val key: String get() = HOLDINGS_PREFS_KEY
+    }
 }
 
 fun investViewKey(spaceId: String) = "investView.$spaceId"
 
 const val BIRTH_DATE_KEY = "birthDate"
+
+const val HOLDINGS_PREFS_KEY = "holdingsPrefs"
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"
 

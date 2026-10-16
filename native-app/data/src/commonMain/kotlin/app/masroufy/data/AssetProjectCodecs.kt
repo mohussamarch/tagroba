@@ -33,6 +33,9 @@ object AssetProjectCodecs {
                 opt("realEstate", a.realEstate.takeIf { it })
                 // علامة الفضة — بتتكتب لو true بس ⇒ مستند أي أصل تاني هو هو بالحرف
                 opt(SILVER_MARKER_FIELD, silver.takeIf { it })
+                // «حاجاتي» (r05 §3.1) — بتتكتب لو موجودة بس
+                opt("holdingType", a.holdingType); opt("purpose", a.purpose); opt("origin", a.origin); opt("costKnown", a.costKnown)
+                opt("place", a.place); opt("sharePercentBp", a.sharePercentBp)
             }
         },
         { r ->
@@ -49,6 +52,12 @@ object AssetProjectCodecs {
                 vacantMonthsPerYear = r.intOrNull("vacantMonthsPerYear"),
                 expectedRateBp = r.intOrNull("expectedRateBp"),
                 realEstate = r.boolOrNull("realEstate") ?: false,
+                holdingType = r.strOrNull("holdingType"),
+                purpose = r.strOrNull("purpose"),
+                origin = r.strOrNull("origin"),
+                costKnown = r.boolOrNull("costKnown"),
+                place = r.strOrNull("place"),
+                sharePercentBp = r.intOrNull("sharePercentBp"),
             )
         },
     )

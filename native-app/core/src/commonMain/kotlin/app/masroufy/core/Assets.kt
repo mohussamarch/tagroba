@@ -34,6 +34,17 @@ data class Asset(
     val expectedRateBp: Int? = null,
     /** علامة «عقار» المتخزنة (§69.7) — النوع المتخزن معاها "other". بتتكتب لو true بس. استخدم [isRealEstate] مش الحقل ده. */
     val realEstate: Boolean = false,
+    /**
+     * «حاجاتي» (مواصفة r05 §3.1) — حقول كوتلن بس، بتتكتب لو موجودة بس (التطبيق الحالي بيحتفظ بيها بـ`{...asset}`): [holdingType] =
+     * `HoldingType.wire` · [purpose] = `HoldingPurpose.wire` (null ⇒ من النوع) · [origin] "buy" | "inherit" | "gift" (null ⇒ شراء) ·
+     * [costKnown] false ⇒ التكلفة مش معروفة (المكسب «غير متاح») · [place] المكان (≤ 80 حرف) · [sharePercentBp] نسبتك في الشركة.
+     */
+    val holdingType: String? = null,
+    val purpose: String? = null,
+    val origin: String? = null,
+    val costKnown: Boolean? = null,
+    val place: String? = null,
+    val sharePercentBp: Int? = null,
 )
 
 /**

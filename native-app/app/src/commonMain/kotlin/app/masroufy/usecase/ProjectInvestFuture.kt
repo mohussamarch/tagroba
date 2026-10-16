@@ -42,21 +42,6 @@ class ProjectInvestFuture {
     }
 }
 
-/**
- * المتوسطات التلاتة للبلد (الخطوة 0 — مواصفة §4.0-4): التضخم الرسمي (`CPI_SA` / `CPI_EG`) · الذهب (نفس سطر «هتوصل لكام؟» —
- * `LoadDefaultRates`) · الأسهم (`STOCKS_SA` / `STOCKS_EG`). أي واحد ناقص ⇒ [InvestRatesState.Unavailable] بالمفاتيح الناقصة.
- */
-class LoadInvestRates(private val feeds: LoadOnlineFeeds, private val defaults: LoadDefaultRates = LoadDefaultRates()) {
-    suspend fun load(space: Space, today: IsoDate): InvestRatesState {
-        val feed = (feeds.averages() as? FeedState.Ready)?.feed
-        val saudi = space.countryCode.uppercase() != "EG"
-        val cpi = inflationEntry(feed, space.countryCode)
-        val gold = defaults.load(feed, space.countryCode, today).of(GrowthClass.GOLD).takeIf { it.rateBp != null }?.source
-        val shares = feed?.entries?.get(if (saudi) AverageKeys.STOCKS_SA else AverageKeys.STOCKS_EG)
-        return ratesState(cpi, gold, shares, saudi)
-    }
-}
-
 /** التلاتة موجودين ⇒ جاهز؛ غير كده ⇒ المفاتيح الناقصة (للسبب). */
 fun ratesState(cpi: AverageEntry?, gold: AverageEntry?, shares: AverageEntry?, saudi: Boolean): InvestRatesState {
     if (cpi != null && gold != null && shares != null) return InvestRatesState.Ready(InvestRates(cpi.valueBp, gold.valueBp, shares.valueBp, cpi, gold, shares))
