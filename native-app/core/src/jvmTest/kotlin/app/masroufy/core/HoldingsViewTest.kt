@@ -35,6 +35,16 @@ class HoldingsViewTest {
         assertEquals(0, v.unknownCount) // الساعة شخصية ⇒ مش محسوبة في «غير المعروف» اللي برّه الإجمالي
     }
 
+    @Test fun ownerChoiceCanCountPersonalThings() {
+        // رد المالك ٢أ: الافتراضي من غير الشخصي، والمستخدم يقدر يدخّله في المجموع والتوقّع
+        val v = holdingsView(snapshot.copy(includePersonal = true), null)
+        assertEquals(14_000_000L, v.totalMinor)
+        assertEquals(1, v.unknownCount) // الساعة الشخصية من غير قيمة بقت محسوبة في «غير المعروف»
+        assertTrue(v.hasPersonal && v.includePersonal)
+        assertEquals(1_000_000L, investableSplit(snapshot.items, includePersonal = true).noGrowthMinor) // العربية ثابتة من غير زيادة
+        assertEquals(0L, investableSplit(snapshot.items).noGrowthMinor)
+    }
+
     @Test fun tilesFollowTheFixedOrderAndUnknownIsNotZero() {
         val v = holdingsView(snapshot, null)
         assertEquals(

@@ -157,6 +157,20 @@ class AddHoldingTest {
         assertEquals(HoldingPurpose.INVEST, w.load.load(today).items.single().purpose)
     }
 
+    @Test fun personalChoiceIsSavedPerUserAndDefaultsToOff() = runBlocking {
+        val w = World()
+        val store = app.masroufy.memory.MemoryUserSettingsStore()
+        val load = LoadHoldings(LoadHoldingsDeps(w.assets, w.facts, Currency.SAR, store))
+        val prefs = ManageHoldingsPrefs(store, w.clock)
+        assertEquals(false, load.load(today).includePersonal)
+        assertEquals(false, prefs.includePersonal())
+        prefs.setIncludePersonal(true)
+        assertEquals(true, load.load(today).includePersonal)
+        prefs.setIncludePersonal(false)
+        assertEquals(false, prefs.includePersonal())
+        assertEquals(1, store.listAll().size) // مستند واحد على الحساب
+    }
+
     @Test fun previewUsesTheKaratRowAndIsNullWithoutIt() = runBlocking {
         val preview = PreviewHoldingValue { symbol, _ -> if (symbol == "GOLD_24K_GRAM") gram(symbol, 50_000) else null }
         assertEquals(500_000L, preview.metalToday(HoldingType.GOLD, 24, 10 * QUANTITY_SCALE, Currency.SAR))

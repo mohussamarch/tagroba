@@ -11,6 +11,7 @@ internal val ENGLISH_INVEST_HOLD_TEXTS: Map<TextRef, String> = mapOf(
     HOLD_PURPOSE_INVEST to "Investment", HOLD_PURPOSE_RESERVE to "Reserve", HOLD_PURPOSE_PERSONAL to "Personal", HOLD_PURPOSE_TRADE to "Trade",
     HOLD_GROUP_METAL to "Metals", HOLD_GROUP_PROPERTY to "Property and land", HOLD_GROUP_SHARES to "Shares and companies",
     HOLD_GROUP_PERSONAL to "Personal things", HOLD_GROUP_COLLECTIBLES to "Collectibles", HOLD_GROUP_OTHER to "Other",
+    HOLD_INCLUDE_PERSONAL to "Count personal things in the total?", HOLD_NOTE_WITH_PERSONAL to "At today's prices · personal things are in the total",
     HOLD_COUNT_1 to "1 thing", HOLD_COUNT_2 to "2 things", HOLD_COUNT_N to "{0} things", HOLD_ADD to "Add something",
     HOLD_TOAST_ADDED to "“{0}” added to your things",
     HOLD_CAT_METAL to "Metals", HOLD_CAT_PROPERTY to "Property and land", HOLD_CAT_SHARES to "Shares and companies",

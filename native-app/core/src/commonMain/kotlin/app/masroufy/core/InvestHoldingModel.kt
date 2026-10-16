@@ -107,7 +107,13 @@ data class HoldingValue(
 }
 
 /** كل الحاجات غير المؤرشفة لبلد بعملتها. [goldPriceMissing] = فيه دهب من غير سعر النهارده ⇒ ملاحظة «حاجاتي» والدهب برّه الإجمالي. */
-data class HoldingsSnapshot(val currency: Currency, val items: List<HoldingValue>, val goldPriceMissing: Boolean)
+data class HoldingsSnapshot(
+    val currency: Currency,
+    val items: List<HoldingValue>,
+    val goldPriceMissing: Boolean,
+    /** رد المالك 2026-10-16 ٢أ: الشخصي داخل المجموع وفي التوقّع؟ (الافتراضي لأ — `UserSetting.HoldingsPrefs`). */
+    val includePersonal: Boolean = false,
+)
 
 /** اللي بيدخل «هيبقى معاك كام»: غير الشخصي بقيمة معروفة، مقسوم على نوع الزيادة. [unknownCount] غير الشخصي من غير قيمة. */
 data class InvestableSplit(
@@ -118,14 +124,15 @@ data class InvestableSplit(
     val unknownCount: Int,
 )
 
-fun investableSplit(items: List<HoldingValue>): InvestableSplit {
+/** [includePersonal] = اختيار المستخدم (`HoldingsSnapshot.includePersonal`) — FUTURE لازم يبعته. */
+fun investableSplit(items: List<HoldingValue>, includePersonal: Boolean = false): InvestableSplit {
     var property = 0L
     var gold = 0L
     var shares = 0L
     var flat = 0L
     var unknown = 0
     for (item in items) {
-        if (item.purpose == HoldingPurpose.PERSONAL) continue
+        if (item.purpose == HoldingPurpose.PERSONAL && !includePersonal) continue
         val v = item.valueMinor
         if (v == null) { unknown++; continue }
         when (item.type.bucket()) {

@@ -97,7 +97,7 @@ private fun TypeGroups(only: HoldingGroup?, onPick: (HoldingType) -> Unit) {
 private fun TypeButton(type: HoldingType, modifier: Modifier, onClick: () -> Unit) {
     val label = t(typeKey(type))
     Column(
-        modifier.heightIn(min = 84.dp).clip(RoundedCornerShape(18.dp)).background(CHIP_FILL).holdTap(label, onClick).padding(8.dp),
+        modifier.heightIn(min = 84.dp).clip(RoundedCornerShape(18.dp)).background(CHIP_FILL).holdTap(label, onClick).padding(horizontal = 2.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
     ) {
         Box(

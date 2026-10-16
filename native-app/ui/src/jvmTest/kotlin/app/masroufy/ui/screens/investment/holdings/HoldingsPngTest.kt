@@ -84,6 +84,9 @@ class HoldingsPngTest {
         png(out, "InvestHoldings-filter-invest", 350, 560) {
             HoldingsBlock(holdingsView(snapshot, HoldingPurpose.INVEST), Currency.SAR, HoldingPurpose.INVEST, {}, {}, {})
         }
+        png(out, "InvestHoldings-with-personal", 350, 620) {
+            HoldingsBlock(holdingsView(snapshot.copy(includePersonal = true), null), Currency.SAR, null, {}, {}, {})
+        }
         png(out, "InvestHoldings-empty", 350, 300) {
             HoldingsBlock(holdingsView(HoldingsSnapshot(Currency.SAR, emptyList(), false), null), Currency.SAR, null, {}, {}, {})
         }

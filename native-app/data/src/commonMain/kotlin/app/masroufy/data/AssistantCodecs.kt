@@ -52,6 +52,7 @@ object AssistantCodecs {
                     // كروت الرئيسية بترتيبك — القايمتين بيتكتبوا حتى لو فاضيين
                     is UserSetting.HomeCards -> { req("type", "homeCards"); req("order", s.order); req("hidden", s.hidden) }
                     // كارت النصيحة و«ملفك» المقفولين بـ«×» — بصمات بس
+                    is UserSetting.HoldingsPrefs -> { req("type", "holdingsPrefs"); req("includePersonal", s.includePersonal) }
                     is UserSetting.HomeTips -> { req("type", "homeTips"); opt("advisorKey", s.advisorKey); opt("profileKey", s.profileKey); opt("profileClosedOn", s.profileClosedOn) }
                 }
             }
@@ -63,6 +64,7 @@ object AssistantCodecs {
                 "smsRead" -> UserSetting.SmsReadPoint(d.str("spaceId"), d.str("point"), d.strings("asked").orEmpty(), d.str("updatedAt"))
                 "peopleRow" -> UserSetting.PeopleRow(d.strings("personIds") ?: emptyList(), d.str("updatedAt"))
                 "homeCards" -> UserSetting.HomeCards(d.strings("order").orEmpty(), d.strings("hidden").orEmpty(), d.str("updatedAt"))
+                "holdingsPrefs" -> UserSetting.HoldingsPrefs(d.boolOrNull("includePersonal") ?: false, d.str("updatedAt"))
                 "homeTips" -> UserSetting.HomeTips(d.strOrNull("advisorKey"), d.strOrNull("profileKey"), d.strOrNull("profileClosedOn"), d.str("updatedAt"))
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }

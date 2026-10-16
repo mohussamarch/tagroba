@@ -23,6 +23,9 @@ data class HoldingsViewModel(
     val goldPriceMissing: Boolean,
     val empty: Boolean,
     val unknownCount: Int,
+    /** فيه حاجات شخصية ⇒ سؤال «تدخل الحاجات الشخصية في المجموع؟» بيظهر. */
+    val hasPersonal: Boolean = false,
+    val includePersonal: Boolean = false,
 )
 
 /** ترتيب المربعات الثابت (النموذج): معادن · عقار · أسهم · شخصي · مقتنيات · أخرى. */
@@ -31,6 +34,7 @@ val HOLDING_GROUP_ORDER: List<HoldingGroup> = HoldingGroup.entries
 /** [filter] = الغرض اللي اتضغط عليه (null = الكل): المربعات بتعرض الحاجات اللي عليها الغرض ده بس، والشريط والإجمالي ثابتين. */
 fun holdingsView(snapshot: HoldingsSnapshot, filter: HoldingPurpose?): HoldingsViewModel {
     val items = snapshot.items
+    fun counted(item: HoldingValue) = snapshot.includePersonal || item.purpose != HoldingPurpose.PERSONAL
     val byPurpose = LinkedHashMap<HoldingPurpose, Halalas>()
     var total = 0L
     var investableKnown = 0
@@ -38,11 +42,11 @@ fun holdingsView(snapshot: HoldingsSnapshot, filter: HoldingPurpose?): HoldingsV
     for (item in items) {
         val v = item.valueMinor
         if (v == null) {
-            if (item.purpose != HoldingPurpose.PERSONAL) unknown++
+            if (counted(item)) unknown++
             continue
         }
         byPurpose[item.purpose] = addMoney(byPurpose[item.purpose] ?: 0L, v)
-        if (item.purpose != HoldingPurpose.PERSONAL) { total = addMoney(total, v); investableKnown++ }
+        if (counted(item)) { total = addMoney(total, v); investableKnown++ }
     }
     // الشريط بترتيب الأغراض الثابت، واللي قيمته صفر ما بيظهرش (زي النموذج)
     val present = HoldingPurpose.entries.filter { (byPurpose[it] ?: 0L) > 0L }
@@ -62,7 +66,10 @@ fun holdingsView(snapshot: HoldingsSnapshot, filter: HoldingPurpose?): HoldingsV
         )
     }
     val totalOrNull = if (investableKnown == 0 && unknown > 0) null else total
-    return HoldingsViewModel(totalOrNull, strip, tiles, snapshot.goldPriceMissing, items.isEmpty(), unknown)
+    return HoldingsViewModel(
+        totalOrNull, strip, tiles, snapshot.goldPriceMissing, items.isEmpty(), unknown,
+        hasPersonal = items.any { it.purpose == HoldingPurpose.PERSONAL }, includePersonal = snapshot.includePersonal,
+    )
 }
 
 /**

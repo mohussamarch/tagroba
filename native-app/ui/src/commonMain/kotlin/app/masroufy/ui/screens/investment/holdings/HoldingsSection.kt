@@ -55,6 +55,7 @@ internal fun HoldingsBlock(
     onOpen: (HoldingGroup) -> Unit,
     onAdd: () -> Unit,
     modifier: Modifier = Modifier,
+    onIncludePersonal: (Boolean) -> Unit = {},
 ) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
@@ -67,17 +68,18 @@ internal fun HoldingsBlock(
         val note = when {
             view.empty -> InvestHoldKey.HOLD_NOTE_EMPTY
             view.goldPriceMissing -> InvestHoldKey.HOLD_NOTE_GOLD_NA
+            view.includePersonal -> InvestHoldKey.HOLD_NOTE_WITH_PERSONAL
             else -> InvestHoldKey.HOLD_NOTE_NORMAL
         }
         BasicText(t(note), Modifier.offset(y = (-8).dp), style = Type.of(12).copy(color = Ink.muted))
-        if (!view.empty && view.strip.isNotEmpty()) PurposeCard(view, filter, onFilter)
+        if (!view.empty && view.strip.isNotEmpty()) PurposeCard(view, filter, onFilter, onIncludePersonal)
         TilesGrid(view.tiles, onOpen, onAdd)
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PurposeCard(view: HoldingsViewModel, filter: HoldingPurpose?, onFilter: (HoldingPurpose?) -> Unit) {
+private fun PurposeCard(view: HoldingsViewModel, filter: HoldingPurpose?, onFilter: (HoldingPurpose?) -> Unit, onIncludePersonal: (Boolean) -> Unit) {
     FloatingCard(
         Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp),
     ) {
@@ -109,6 +111,11 @@ private fun PurposeCard(view: HoldingsViewModel, filter: HoldingPurpose?, onFilt
                     onFilter(if (filter == share.purpose) null else share.purpose)
                 }
             }
+        }
+        // رد المالك 2026-10-16 ٢أ: المستخدم بيختار، والافتراضي من غير الشخصي (بيتحفظ على الحساب)
+        if (view.hasPersonal) {
+            Spacer(Modifier.height(10.dp))
+            app.masroufy.ui.screens.budgets.Switch(view.includePersonal, t(InvestHoldKey.HOLD_INCLUDE_PERSONAL), { onIncludePersonal(!view.includePersonal) })
         }
     }
 }

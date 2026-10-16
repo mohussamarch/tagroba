@@ -23,5 +23,8 @@ interface InvestHoldingsDeps {
     /** «الغرض» في «تفاصيل الأصل». */
     val purpose: SetHoldingPurpose
 
+    /** «تدخل الحاجات الشخصية في المجموع؟» (رد المالك 2026-10-16 ٢أ — إضافة على توقيع المواصفة). */
+    val prefs: app.masroufy.usecase.ManageHoldingsPrefs
+
     fun today(): IsoDate
 }

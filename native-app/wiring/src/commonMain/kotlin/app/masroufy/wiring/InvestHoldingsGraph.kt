@@ -35,5 +35,6 @@ class InvestHoldingsGraph(c: AreaContext, assets: ManageAssets, growth: ManageAs
     override val preview = PreviewHoldingValue(lookup)
     override val group = ProjectHoldingGroup()
     override val purpose = SetHoldingPurpose(c.repos.assets)
+    override val prefs = app.masroufy.usecase.ManageHoldingsPrefs(c.repos.assistant.settings, env.clock)
     override fun today() = env.today()
 }

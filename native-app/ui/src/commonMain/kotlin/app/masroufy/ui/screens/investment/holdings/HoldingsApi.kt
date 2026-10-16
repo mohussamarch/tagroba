@@ -7,7 +7,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import app.masroufy.core.HoldingGroup
 import app.masroufy.core.HoldingPurpose
 import app.masroufy.core.HoldingsSnapshot
@@ -59,13 +61,23 @@ fun rememberHoldings(deps: InvestHoldingsDeps, snapshot: HoldingsSnapshot?, onCh
 
 /** «حاجاتي» في القايمة (مفتاح "holdings"). لسه بتحمّل (الصورة null) ⇒ مفيش عنصر (الشاشة عندها هياكل التحميل). */
 fun LazyListScope.holdingsSection(state: HoldingsState) {
-    val snapshot = state.snapshot ?: return
+    if (state.snapshot == null) return
     item(key = "holdings") {
+        val snapshot = state.snapshot ?: return@item
         val nav = LocalNavigator.current
+        val scope = rememberCoroutineScope()
         val view = remember(snapshot, state.filter) { holdingsView(snapshot, state.filter) }
         HoldingsBlock(
             view = view, currency = snapshot.currency, filter = state.filter, onFilter = { state.filter = it },
             onOpen = { nav.push(AssetCategoryRoute(it.wire)) }, onAdd = { state.openAdd() },
+            onIncludePersonal = { on ->
+                // الإجمالي بيتغيّر على طول، والحفظ في الخلفية ⇒ الشاشة تحمّل تاني (التوقّع بيقرا نفس الاختيار)
+                state.snapshot = snapshot.copy(includePersonal = on)
+                scope.launch {
+                    runCatching { state.deps.prefs.setIncludePersonal(on) }
+                    state.onChanged()
+                }
+            },
         )
     }
 }

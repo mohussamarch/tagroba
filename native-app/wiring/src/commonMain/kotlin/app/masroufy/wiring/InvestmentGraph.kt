@@ -59,7 +59,7 @@ class InvestmentGraph(private val c: AreaContext) : InvestmentDeps {
     override val calculators = CalculatorsGraph(c, defaultRates) // الحاسبات (ملف لوحده — CalculatorsGraph.kt)
 
     // «حاجاتي» (مواصفة r05 §4.0 بند 6 · §4.2) — الصورة والمعدلات بيتحمّلوا مرة في الشاشة؛ القسم نفسه في InvestHoldingsGraph.kt
-    override val holdingsSnapshot = app.masroufy.usecase.LoadHoldings(app.masroufy.usecase.LoadHoldingsDeps(assets, r.zakatFacts, c.space.currency))
+    override val holdingsSnapshot = app.masroufy.usecase.LoadHoldings(app.masroufy.usecase.LoadHoldingsDeps(assets, r.zakatFacts, c.space.currency, r.assistant.settings))
     override val investRates = app.masroufy.usecase.LoadInvestRates(c.feeds, defaultRates)
     override val holdings = InvestHoldingsGraph(c, assets, growth, zakat)
 
