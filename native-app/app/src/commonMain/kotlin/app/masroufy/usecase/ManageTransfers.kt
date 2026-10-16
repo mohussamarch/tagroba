@@ -46,6 +46,8 @@ data class ManageTransfersDeps(
      * اللي اتسجلت + رِجل المحفظة التانية ([OWN_LEG_SUFFIX]). null = رِجل واحدة زي الأول (الاختبارات القديمة).
      */
     val wallets: WalletRepository? = null,
+    /** r041c: [ManageTransfers.zone] بيلف على **كل** العمليات — برّه خيط الواجهة. الاختبار بيدّي سياقه. */
+    val work: kotlin.coroutines.CoroutineContext = kotlinx.coroutines.Dispatchers.Default,
 )
 
 /** سطر في الزون: طرف بعملة واحدة (المبالغ ما بتتجمعش بين عملتين). */
@@ -75,7 +77,9 @@ class TransferZoneError(message: String) : IllegalArgumentException(message)
 class ManageTransfers(private val deps: ManageTransfersDeps) {
     private suspend fun everything(): List<Transaction> = deps.txns.listByDateRange(EARLIEST, LATEST)
 
-    suspend fun zone(): TransferZone {
+    suspend fun zone(): TransferZone = kotlinx.coroutines.withContext(deps.work) { zoneNow() }
+
+    private suspend fun zoneNow(): TransferZone {
         val all = everything()
         val decided = deps.parties.listAll().associateBy { it.key }
         val groups = LinkedHashMap<Pair<String, Currency>, MutableList<Pair<TransferPartyRef, Transaction>>>()

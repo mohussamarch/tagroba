@@ -65,6 +65,8 @@ data class LoadTransactionsScreenDeps(
     val merchants: MerchantRepository? = null,
     val tags: TagRepository? = null,
     val transactionTags: TransactionTagRepository? = null,
+    /** r041c: القراية والتجميع برّه خيط الواجهة (آلاف العمليات كانت بتعلّق «العمليات» بعد كل «اسحب لتحت»). الاختبار بيدّي سياقه. */
+    val work: kotlin.coroutines.CoroutineContext = kotlinx.coroutines.Dispatchers.Default,
 )
 
 /**
@@ -78,7 +80,9 @@ data class LoadTransactionsScreenRequest(
 )
 
 class LoadTransactionsScreen(private val deps: LoadTransactionsScreenDeps) {
-    suspend fun load(request: LoadTransactionsScreenRequest): TransactionsScreenData {
+    suspend fun load(request: LoadTransactionsScreenRequest): TransactionsScreenData = kotlinx.coroutines.withContext(deps.work) { loadNow(request) }
+
+    private suspend fun loadNow(request: LoadTransactionsScreenRequest): TransactionsScreenData {
         val period = request.period
             ?: request.today?.let { if (request.payday != null) periodForDate(it, request.payday) else periodForDate(it) }
             ?: throw IllegalArgumentException("لازم فترة أو تاريخ اليوم — مفيش ساعة جوه المنطق")

@@ -32,19 +32,24 @@ class ManageSmsInbox(
 ) {
     val available: Boolean get() = port.available
 
-    private fun prepare(state: SmsInboxState) = InboxView(
+    /** [ids] (r041c) = الرسايل دي بس اللي بتتفهم وتبقى في [InboxView.items] — بنفس رقم سطرها في الصفحة؛ null = كلها. */
+    private fun prepare(state: SmsInboxState, ids: Set<String>? = null) = InboxView(
         enabled = state.enabled,
         permission = state.permission,
         more = state.more,
         count = state.count,
         senders = state.senders,
         messages = state.messages,
-        items = state.messages.mapIndexed { index, message ->
+        items = state.messages.mapIndexedNotNull { index, message ->
+            if (ids != null && message.id !in ids) return@mapIndexedNotNull null
             InboxItem(message.id, message.sender, message.receivedAt, parse(message.message(), index + 1))
         },
     )
 
     suspend fun refresh(): InboxView = prepare(port.sync())
+
+    /** r041c: نفس [refresh] بس بيفهم الرسايل [ids] بس (null = كلها) — التسجيل لوحده بيقرا الجديد من غير ما يعيد فهم الصفحة كلها. */
+    suspend fun refresh(ids: Set<String>?): InboxView = prepare(port.sync(), ids)
 
     suspend fun enable(senders: List<String>): InboxView {
         val clean = senders.map(::jsTrim).filter { it.isNotEmpty() }.distinct()

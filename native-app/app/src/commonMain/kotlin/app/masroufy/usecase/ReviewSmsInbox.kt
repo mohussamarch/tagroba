@@ -105,11 +105,11 @@ class ReviewSmsInbox internal constructor(private val deps: ReviewSmsInboxDeps) 
     suspend fun load(target: SmsReviewTarget): SmsReview = build(deps.inbox.refresh(), target)
 
     /** رسايل [target] بس ([only] — مرسل واحد، ولكل محفظة رسايلها بآخر 4 أرقام §75-11) — التسجيل التلقائي بيوزّع بنفسه. */
-    internal suspend fun loadFor(target: SmsReviewTarget, only: (InboxItem) -> Boolean): SmsReview =
-        build(deps.inbox.refresh(), target, only, route = false)
+    internal suspend fun loadFor(target: SmsReviewTarget, ids: Set<String>? = null, only: (InboxItem) -> Boolean): SmsReview =
+        build(deps.inbox.refresh(ids), target, only, route = false)
 
-    /** الصندوق بقارئ البلد دي (من غير بناء معاينة). */
-    internal suspend fun inboxView(): InboxView = deps.inbox.refresh()
+    /** الصندوق بقارئ البلد دي (من غير بناء معاينة). [ids] (r041c) = الرسايل اللي بتتفهم بس (null = كلها). */
+    internal suspend fun inboxView(ids: Set<String>? = null): InboxView = deps.inbox.refresh(ids)
 
     suspend fun enable(senders: List<String>, target: SmsReviewTarget): SmsReview = build(deps.inbox.enable(senders), target)
 
