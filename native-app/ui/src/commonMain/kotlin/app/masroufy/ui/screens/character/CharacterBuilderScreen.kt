@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -44,6 +42,7 @@ import app.masroufy.core.UiKey
 import app.masroufy.ui.app.LocalDataChanges
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.character.CharacterArt
+import app.masroufy.ui.character.CharacterFromTop
 import app.masroufy.ui.components.PrimaryButton
 import app.masroufy.ui.components.Skeleton
 import app.masroufy.ui.components.TonalButton
@@ -126,7 +125,7 @@ fun CharacterBuilderScreen() {
 
 /** المعاينة الكبيرة (216 · زاوية 26) + عمود 112: دايرتك في الرئيسية · مكانك في الأشخاص. */
 @Composable
-private fun PreviewRow(s: BuilderState, onChange: (BuilderState) -> Unit) {
+internal fun PreviewRow(s: BuilderState, onChange: (BuilderState) -> Unit) {
     val layer = previewLayer(s)
     Row(Modifier.fillMaxWidth().height(216.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(26.dp)).background(Glass.lensOnLight)) {
@@ -145,14 +144,13 @@ private fun PreviewRow(s: BuilderState, onChange: (BuilderState) -> Unit) {
                 BasicText(t(UiKey.CHAR_ON_HOME), style = Type.of(11).copy(color = Ink.muted, textAlign = TextAlign.Center))
             }
             Column(
-                Modifier.weight(1f).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Glass.heroBase).padding(top = 4.dp, bottom = 6.dp),
-                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
+                Modifier.weight(1f).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Glass.heroBase),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom,
             ) {
-                // الجسم كله بطول 188 ومقصوص على 82 (الراس والكتاف) — زي ما بيبان في كارت «الأشخاص»
-                Box(Modifier.fillMaxWidth().height(82.dp).clipToBounds(), contentAlignment = Alignment.TopCenter) {
-                    CharacterArt(s.look, CharacterLayer.FULL, Modifier.requiredSize(width = (188 * 200 / 440).dp, height = 188.dp))
-                }
-                BasicText(t(UiKey.CHAR_IN_PEOPLE), style = Type.of(11).copy(color = Color(0xFFDCEBD6), textAlign = TextAlign.Center))
+                // الجسم كله بطول 188 من فوق ومقصوص (الراس والكتاف ≈ 82) — زي كارت «الأشخاص». الكلمة بتتقاس الأول بمقاسها كامل
+                // والرسمة تاخد الباقي (`weight`) — قبل كده الكلمة كانت بتتعصر لـ9 وبيبان منها نقط بس (r041b)
+                CharacterFromTop(s.look, (188 * 200 / 440).dp, 188.dp, Modifier.fillMaxWidth().weight(1f).padding(top = 4.dp))
+                BasicText(t(UiKey.CHAR_IN_PEOPLE), Modifier.padding(bottom = 4.dp), style = Type.of(11).copy(color = Color(0xFFDCEBD6), textAlign = TextAlign.Center))
             }
         }
     }

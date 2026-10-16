@@ -40,11 +40,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import app.masroufy.core.TextKey
-import app.masroufy.core.CharacterLayer
 import app.masroufy.core.CharacterLook
-import app.masroufy.ui.character.CharacterArt
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.ui.draw.clipToBounds
+import app.masroufy.ui.character.CharacterFromTop
 import app.masroufy.ui.components.HeroCard
 import app.masroufy.ui.components.LensOnHero
 import app.masroufy.ui.components.pressScale
@@ -118,10 +115,7 @@ internal fun PeopleStage(
                     if (canAdd && editor.shown.size < SPOTS.size) RowAddSpot(editor.shown.size, w.value, rtl) { editor.picking = true }
                 }
                 if (character != null) {
-                    // من تحت الصف لآخر الكارت: الجسم كله 270×594 من فوق ⇒ الراس لحد فوق البطن، من غير قوس ولا حرف
-                    Box(Modifier.fillMaxWidth().padding(top = 107.dp).fillMaxSize().clipToBounds(), contentAlignment = Alignment.TopCenter) {
-                        CharacterArt(character, CharacterLayer.FULL, Modifier.requiredSize(width = 270.dp, height = 594.dp))
-                    }
+                    StageCharacter(character)
                 } else {
                     You(meName, Modifier.align(Alignment.BottomCenter))
                 }
@@ -136,6 +130,15 @@ internal fun PeopleStage(
             }
         }
     }
+}
+
+/**
+ * «شخصيتك» على المسرح: من تحت الصف (107) لآخر الكارت، الجسم كله 270×594 **متثبّت من فوق** ⇒ الراس والكتاف لحد فوق البطن، من غير قوس
+ * ولا حرف (`PeopleOrbit.dc.html` سطر 65). الخيوط من (175,180) = عند الرقبة.
+ */
+@Composable
+internal fun StageCharacter(character: CharacterLook) {
+    CharacterFromTop(character, 270.dp, 594.dp, Modifier.fillMaxSize().padding(top = 107.dp))
 }
 
 /** «أنت»: عدسة 96 بأول حرف من اسمك + القوس تحته فيه مكان الكاركتر. */
