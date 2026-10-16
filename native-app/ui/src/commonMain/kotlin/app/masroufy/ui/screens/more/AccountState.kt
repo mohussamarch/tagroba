@@ -5,7 +5,9 @@ import app.masroufy.core.UiKey
 import app.masroufy.core.Currency
 import app.masroufy.core.DEPENDENT_KINDS
 import app.masroufy.core.MAX_NAME_LENGTH
+import app.masroufy.core.SalaryState
 import app.masroufy.core.TextKey
+import app.masroufy.core.profileSalaryIn
 import app.masroufy.core.UserProfile
 import app.masroufy.core.sentenceNumber
 import app.masroufy.ui.components.amountLabel
@@ -17,7 +19,8 @@ import app.masroufy.ui.text.t
  */
 enum class AccountField { NAME, GENDER, DEPENDENTS, SALARY, PAYDAY, CAR, RENTER, MAID, BUSINESS }
 
-data class AccountRow(val field: AccountField, val label: TextRef, val value: String?, val hint: TextRef? = null)
+/** [hintArg] = قيمة `{0}` في [hint] (مثلًا عدد الوظايف في «مجموع مرتبات N وظايف»). */
+data class AccountRow(val field: AccountField, val label: TextRef, val value: String?, val hint: TextRef? = null, val hintArg: String? = null)
 
 data class AccountGroup(val title: TextRef, val note: TextRef?, val rows: List<AccountRow>)
 
@@ -54,19 +57,32 @@ fun carValue(p: UserProfile): String? {
     return t(UiKey.ACC_CAR_WITH_WORK, base, t(if (p.carToWork == true) UiKey.ACC_CAR_TO_WORK else UiKey.ACC_CAR_NOT_WORK))
 }
 
-/** الراتب المحفوظ بالهللة (لو موجود) — بيتعرض زي ما هو؛ النطاقات (§63) نقطة ربط ([SalaryRangeSetting]). */
-fun salaryValue(p: UserProfile, currency: Currency, range: SalaryRange?): String? =
-    range?.let { salaryRangeLabel(it, currency) } ?: p.salaryMinor?.let { amountLabel(it, currency) }
-
-fun salaryRangeLabel(range: SalaryRange, currency: Currency): String = when (range) {
-    SalaryRange.R1 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R1 else UiKey.ACC_SAL_SA_R1)
-    SalaryRange.R2 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R2 else UiKey.ACC_SAL_SA_R2)
-    SalaryRange.R3 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R3 else UiKey.ACC_SAL_SA_R3)
-    SalaryRange.R4 -> t(if (currency == Currency.EGP) UiKey.ACC_SAL_EG_R4 else UiKey.ACC_SAL_SA_R4)
-    SalaryRange.SKIP -> t(UiKey.ACC_SAL_SKIP)
+/**
+ * المرتب (قرار المالك 2026-10-16: **مبلغ بالظبط**): المبلغ بعملة البلد · «أفضّل ألا أقول» · ما اتجاوبش ⇒ null (والنطاق القديم كمان null —
+ * عمره ما بيتحول لرقم). [salary] = null ⇒ حالة الاستخدام مش متوصلة (المعاينة) ⇒ مبلغ الملف بعملة البلد بس لو موجود.
+ */
+fun salaryValue(p: UserProfile, currency: Currency, salary: SalaryState?): String? = when {
+    salary == null -> profileSalaryIn(p, currency)?.let { amountLabel(it, currency) }
+    salary.amountMinor != null -> amountLabel(salary.amountMinor, salary.currency)
+    salary.declined -> t(UiKey.ACC_SAL_SKIP)
+    else -> null
 }
 
-fun accountGroups(p: UserProfile, currency: Currency, range: SalaryRange? = null): List<AccountGroup> = listOf(
+/**
+ * تحت سطر المرتب: نطاق قديم ⇒ «إجابتك القديمة كانت نطاق — اكتب المبلغ بالظبط» · أكتر من جهة شغالة ⇒ «مجموع مرتبات N وظايف» (لو المجموع
+ * معروف) أو «اكتب مرتب كل شغلانة لوحدها» (رد المالك 2026-10-16) · غير كده الجملة العادية.
+ */
+fun salaryHint(salary: SalaryState?): TextRef = when {
+    salary?.wasRange == true -> UiKey.ACC_SALARY_WAS_RANGE
+    (salary?.employers?.size ?: 0) > 1 -> if (salary?.amountMinor != null) UiKey.ACC_SALARY_TOTAL_OF else UiKey.ACC_SALARY_EACH_JOB
+    else -> UiKey.ACC_SALARY_HINT
+}
+
+/** عدد الوظايف لـ«مجموع مرتبات N وظايف»، وإلا null. */
+fun salaryHintArg(salary: SalaryState?): String? =
+    salary?.takeIf { salaryHint(it) == UiKey.ACC_SALARY_TOTAL_OF }?.let { sentenceNumber(it.employers.size) }
+
+fun accountGroups(p: UserProfile, currency: Currency, salary: SalaryState? = null): List<AccountGroup> = listOf(
     AccountGroup(
         UiKey.ACC_GROUP_ABOUT, null,
         listOf(
@@ -78,7 +94,7 @@ fun accountGroups(p: UserProfile, currency: Currency, range: SalaryRange? = null
     AccountGroup(
         UiKey.ACC_GROUP_INCOME, null,
         listOf(
-            AccountRow(AccountField.SALARY, UiKey.ACC_SALARY, salaryValue(p, currency, range), UiKey.ACC_SALARY_HINT),
+            AccountRow(AccountField.SALARY, UiKey.ACC_SALARY, salaryValue(p, currency, salary), salaryHint(salary), salaryHintArg(salary)),
             AccountRow(AccountField.PAYDAY, UiKey.ACC_PAYDAY, t(UiKey.ACC_DAY_N, sentenceNumber(p.payday)), UiKey.ACC_PAYDAY_HINT),
         ),
     ),

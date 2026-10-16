@@ -26,6 +26,9 @@ interface HomeDeps {
     /** يوم الراتب (بداية الشهر المالي) وأسئلة «كمّل ملفك» (`saveWithQuestions` · `answerCarToWork`). نفس نسخة الهيكل. */
     val profile: ManageProfile
 
+    /** سؤال المرتب في «كمّل ملفك» — **مبلغ بالظبط** (قرار المالك 2026-10-16). null (المعاينة) ⇒ الكارت ما بيسألوش. */
+    val salary: app.masroufy.usecase.ProfileSalary? get() = null
+
     /** صفحة الإشعارات (`inbox` · `opened`) وكارت المساعد في الرئيسية (آخر سطر من مجموعة المساعد). نفس محرك الهيكل. */
     val alerts: RunAlertEngine
 

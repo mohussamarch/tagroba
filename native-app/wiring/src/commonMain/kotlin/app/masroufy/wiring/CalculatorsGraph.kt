@@ -45,7 +45,8 @@ class CalculatorsGraph(private val c: AreaContext, private val rates: LoadDefaul
 
     override suspend fun averages(): FeedState<AveragesFeed> = c.feeds.averages()
 
-    override val retirement = RetirementCalculator(RetirementCalculatorDeps(r.incomeSources))
+    // مرتب البروفايل لما مفيش جهة عليها مبلغ (رد المالك 2026-10-16 — «من البروفايل»)
+    override val retirement = RetirementCalculator(RetirementCalculatorDeps(r.incomeSources, r.profile))
 
     private val holdings = EstateHoldingsDeps(r.wallets, r.transactions, r.assets, r.assetLots, r.assetSales, r.assetPrices)
 

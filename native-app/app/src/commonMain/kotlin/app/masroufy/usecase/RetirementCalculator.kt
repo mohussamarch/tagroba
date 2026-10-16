@@ -18,6 +18,7 @@ import app.masroufy.core.TextKey
 import app.masroufy.core.countryPack
 import app.masroufy.core.egyptLatestContributionWageLimits
 import app.masroufy.core.egyptPensionEstimate
+import app.masroufy.core.profileSalaryIn
 import app.masroufy.core.retirementGap
 import app.masroufy.core.saudiEndOfService
 import app.masroufy.core.saudiPensionEstimate
@@ -56,6 +57,8 @@ data class RetirementDefaults(
      * (`CALC_EGYPT_FLOOR_UNKNOWN` · `CALC_EGYPT_MAX_CAP_UNKNOWN`)، **مش** بيتحط لوحده: رقم سنة معينة، مش رقم يوم التقاعد.
      */
     val egyptLatestLimits: EgyptContributionWageLimits? = null,
+    /** [salaryMinor] جه منين — «من البروفايل» لما مفيش جهة عليها مبلغ، و«غير متاح» لو ولا ده ولا ده. */
+    val salaryFrom: RetirementSalaryFrom = RetirementSalaryFrom.NONE,
 )
 
 data class RetirementRequest(
@@ -95,17 +98,34 @@ data class RetirementOutcome(
     val gap: GapOutcome?,
 )
 
-data class RetirementCalculatorDeps(val incomeSources: IncomeSourceRepository)
+/** [profile] = ملف الحساب (مرتب البروفايل لما مفيش جهة عليها مبلغ — رد المالك 2026-10-16). null ⇒ من مصادر الدخل بس. */
+data class RetirementCalculatorDeps(val incomeSources: IncomeSourceRepository, val profile: app.masroufy.port.ProfileRepository? = null)
+
+/** مصدر المرتب المقترح في الحاسبة: جهة الشغل · «من البروفايل» · «غير متاح». */
+enum class RetirementSalaryFrom { EMPLOYER, PROFILE, NONE }
 
 class RetirementCalculator(private val deps: RetirementCalculatorDeps) {
-    /** الراتب وبداية الشغل من مصادر الدخل (الوظيفة الشغالة النهارده بعملة البلد). */
+    /**
+     * الراتب وبداية الشغل من مصادر الدخل (الوظيفة الشغالة الوحيدة النهارده بعملة البلد). **ولا جهة شغالة عليها مبلغ** ⇒ مرتب الملف بعملة البلد
+     * ومصدره «من البروفايل» · ولا ده ولا ده ⇒ «غير متاح» (رد المالك 2026-10-16 18:15 — OVERRIDES §63).
+     */
     suspend fun defaults(countryCode: String, today: IsoDate): RetirementDefaults {
         val currency = countryPack(countryCode).currency
         val jobs = deps.incomeSources.listAll().filter { isActiveJob(it, currency, today) }
         val only = jobs.singleOrNull()
-        val salary = only?.expectedMinor
+        val fromJob = only?.expectedMinor
+        val fromProfile = if (jobs.none { it.expectedMinor != null }) profileSalaryIn(deps.profile?.load(), currency) else null
+        val salary = fromJob ?: fromProfile
+        val from = when {
+            fromJob != null -> RetirementSalaryFrom.EMPLOYER
+            fromProfile != null -> RetirementSalaryFrom.PROFILE
+            else -> RetirementSalaryFrom.NONE
+        }
         val egyptLimits = if (countryPack(countryCode).code == "EG") egyptLatestContributionWageLimits() else null
-        return RetirementDefaults(salary, suggestedBasicMinor = salary, suggestedHousingMinor = null, sourceId = only?.id, jobStartedAt = only?.startedAt, activeJobs = jobs.size, egyptLatestLimits = egyptLimits)
+        return RetirementDefaults(
+            salary, suggestedBasicMinor = salary, suggestedHousingMinor = null, sourceId = only?.id, jobStartedAt = only?.startedAt,
+            activeJobs = jobs.size, egyptLatestLimits = egyptLimits, salaryFrom = from,
+        )
     }
 
     suspend fun calculate(request: RetirementRequest, today: IsoDate): RetirementOutcome {

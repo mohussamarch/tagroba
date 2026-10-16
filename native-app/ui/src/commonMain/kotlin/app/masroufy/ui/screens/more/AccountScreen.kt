@@ -1,6 +1,7 @@
 package app.masroufy.ui.screens.more
 
 import app.masroufy.core.UiKey
+import app.masroufy.usecase.SalarySaved
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,7 +93,7 @@ fun AccountScreen(openBuilder: Boolean = false) {
     val scope = rememberCoroutineScope()
     var profile by remember(deps) { mutableStateOf<UserProfile?>(null) }
     var me by remember(deps) { mutableStateOf<MeInfo?>(null) }
-    var range by remember(deps) { mutableStateOf<SalaryRange?>(null) }
+    var salary by remember(deps) { mutableStateOf<app.masroufy.core.SalaryState?>(null) }
     var failed by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<AccountEdit?>(null) }
     val changes = LocalDataChanges.current
@@ -100,7 +101,7 @@ fun AccountScreen(openBuilder: Boolean = false) {
     LaunchedEffect(deps, changes.version) {
         profile = runCatching { more.profile.load() }.getOrNull()
         me = runCatching { deps.shell.me() }.getOrNull()
-        range = runCatching { more.salaryRange?.current() }.getOrNull()
+        salary = runCatching { more.salary?.current() }.getOrNull()
     }
 
     /** حفظ ⇒ الملف الجديد على الشاشة + «هل تذهب بها للدوام؟» لو طلع. */
@@ -123,6 +124,20 @@ fun AccountScreen(openBuilder: Boolean = false) {
         }
     }
 
+    /** المرتب اتحفظ (أو «أفضّل ألا أقول») ⇒ السطر والملف بيتقروا تاني · مرفوض ⇒ الجملة جنب الخانة · فشل ⇒ تحذير. */
+    suspend fun onSalarySaved(result: SalarySaved?, done: String?) {
+        when (result) {
+            is SalarySaved.Ok -> {
+                salary = result.state
+                profile = runCatching { more.profile.load() }.getOrNull() ?: profile
+                editing = null
+                if (done != null) toaster.show(done, dark = true)
+            }
+            is SalarySaved.Invalid -> editing = editing?.withError(result.message)
+            null -> { failed = true; editing = null }
+        }
+    }
+
     InnerScaffold(t(UiKey.ACC_TITLE)) {
         if (failed) item(key = "err") { WarnBox(t(UiKey.ACC_ERR_TITLE), t(UiKey.ACC_ERR_BODY)) }
         val p = profile
@@ -131,12 +146,12 @@ fun AccountScreen(openBuilder: Boolean = false) {
             return@InnerScaffold
         }
         item(key = "head") { AccountHead(p, me, more.profile.email()) { nav.push(CharacterBuilderRoute) } }
-        for (g in accountGroups(p, deps.space.currency, range)) item(key = g.title.name) {
+        for (g in accountGroups(p, deps.space.currency, salary)) item(key = g.title.name) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 GroupTitle(t(g.title))
                 if (g.note != null) BasicText(t(g.note), Modifier.padding(horizontal = 4.dp), style = Type.caption().copy(color = Ink.muted))
                 GroupCard {
-                    g.rows.forEachIndexed { i, r -> AnswerRow(r, last = i == g.rows.lastIndex) { editing = AccountEdit.Field(r.field, draftOf(p, r.field, range)) } }
+                    g.rows.forEachIndexed { i, r -> AnswerRow(r, last = i == g.rows.lastIndex) { editing = AccountEdit.Field(r.field, draftOf(p, r.field, salary)) } }
                 }
             }
         }
@@ -158,10 +173,12 @@ fun AccountScreen(openBuilder: Boolean = false) {
     }
 
     AccountSheet(
-        edit = editing, rangeEditable = more.salaryRange != null,
+        edit = editing,
+        salary = SalaryLink(salary, editable = more.salary != null && salary != null, save = { amounts ->
+            scope.launch { onSalarySaved(runCatching { more.salary?.saveAll(amounts) }.getOrNull(), t(UiKey.ACC_SALARY_SAVED)) }
+        }, decline = { scope.launch { onSalarySaved(runCatching { more.salary?.decline() }.getOrNull(), null) } }),
         onDraft = { editing = it }, onClose = { editing = null },
         onSave = { field, draft -> profile?.let { p -> applyAnswer(p, field, draft)?.let { save(it, paydayToast(p, it)) } } },
-        onRange = { r -> scope.launch { runCatching { more.salaryRange?.choose(r) }; range = r; editing = null } },
         onCarToWork = { yes ->
             scope.launch {
                 when (val check = runCatching { more.profile.answerCarToWork(yes) }.getOrNull()) {
@@ -178,11 +195,11 @@ fun AccountScreen(openBuilder: Boolean = false) {
 private fun paydayToast(before: UserProfile, after: UserProfile): String? =
     if (before.payday != after.payday) t(UiKey.ACC_PAYDAY_SAVED, app.masroufy.core.sentenceNumber(after.payday)) else null
 
-private fun draftOf(p: UserProfile, field: AccountField, range: SalaryRange?): Any? = when (field) {
+private fun draftOf(p: UserProfile, field: AccountField, salary: app.masroufy.core.SalaryState?): Any? = when (field) {
     AccountField.NAME -> p.displayName.orEmpty()
     AccountField.GENDER -> p.gender
     AccountField.DEPENDENTS -> p.dependentKinds.orEmpty()
-    AccountField.SALARY -> range
+    AccountField.SALARY -> salaryDraft(salary)
     AccountField.PAYDAY -> p.payday
     AccountField.CAR -> p.hasCar
     AccountField.RENTER -> p.renter
@@ -208,7 +225,8 @@ private fun AccountHead(p: UserProfile, me: MeInfo?, email: String?, onBuild: ()
             val percent = me?.profilePercent
             if (percent != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BasicText(t(UiKey.ACC_PERCENT_LABEL), style = Type.of(13, FontWeight.Bold))
-                BasicText(app.masroufy.core.sentenceNumber(percent) + "%", style = Type.of(13, FontWeight.Bold))
+                // عزل من الشمال لليمين (U+2066…U+2069) عشان «60%» ما تتقلبش «%60» جوه سطر عربي
+                BasicText("⁦" + app.masroufy.core.sentenceNumber(percent) + "%⁩",style = Type.of(13, FontWeight.Bold))
             }
             // «ابنِ شخصيتك» قبل أول حفظ ⇒ «عدّل شخصيتك» بعده
             PrimaryButton(builderTitle(me?.character != null), onClick = onBuild, height = 48.dp, modifier = Modifier.fillMaxWidth())
@@ -242,7 +260,7 @@ private fun AnswerRow(r: AccountRow, last: Boolean, onClick: () -> Unit) {
         ) {
             Column(Modifier.weight(1f)) {
                 BasicText(t(r.label), style = Type.of(15, FontWeight.Medium))
-                if (r.hint != null) BasicText(t(r.hint), style = Type.caption().copy(color = Ink.muted))
+                if (r.hint != null) BasicText(if (r.hintArg != null) t(r.hint, r.hintArg) else t(r.hint), style = Type.caption().copy(color = Ink.muted))
             }
             if (r.value != null) BasicText(r.value, Modifier.widthIn(max = 150.dp), style = Type.of(14, FontWeight.Bold).copy(textAlign = TextAlign.End))
             else Box(Modifier.clip(RoundedCornerShape(12.dp)).background(Ink.alertBg).padding(horizontal = 10.dp, vertical = 3.dp)) {

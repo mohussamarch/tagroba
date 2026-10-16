@@ -1,5 +1,6 @@
 package app.masroufy.ui.screens.home
 
+import app.masroufy.core.SalaryState
 import app.masroufy.core.TextRef
 import app.masroufy.core.UiKey
 import app.masroufy.core.TextKey
@@ -10,7 +11,7 @@ import app.masroufy.ui.icons.Lucide
  * «كمّل ملفك» (`ProfileQuestion` — §63): **سؤال واحد بس كل مرة**. البطاقات اللي ليها حقل في `UserProfile` وحالة استخدام بتحفظها
  * (`ManageProfile.saveWithQuestions`) بس: السيارة · العائلة · السكن · العمل الخاص.
  * ⚠️ **ناقص في المنطق** (مش متبني في كوتلن — مش بنخترعه): نسبة «ملفك X%» وأوزانها · مين بيختار البطاقة (محرك الإشعارات §61 في النموذج) ·
- * بطاقة الراتب (نطاق مش رقم — مفيش حقل) · بطاقة الكاش (رصيد بداية جديد بعد أول تشغيل — `OnboardAccount.finish` بيشتغل مرة واحدة بس) ·
+ * بطاقة الكاش (رصيد بداية جديد بعد أول تشغيل — `OnboardAccount.finish` بيشتغل مرة واحدة بس) ·
  * بطاقة الديون القديمة (مفيش علامة «اتجاوبت» ولا خطوة واحدة لشخص + دين). الترتيب هنا ترتيب بطاقات النموذج.
  */
 enum class ProfileCard(val title: TextRef, val sub: TextRef?, val icon: Lucide) {
@@ -21,17 +22,27 @@ enum class ProfileCard(val title: TextRef, val sub: TextRef?, val icon: Lucide) 
 
     /** «هل تذهب بها إلى العمل؟» — بيطلع بعد «عندي سيارة» لو عنده شغل شغال (`IncomeFollowUp.CarToWork` — §64). */
     CAR_TO_WORK(UiKey.PROFILE_QUESTION_CAR_WORK, null, Lucide.CAR),
+
+    /**
+     * «مرتبك في الشهر كام؟» — **مبلغ بالظبط بيتكتب** (قرار المالك 2026-10-16، بدل النطاقات) أو «أفضّل ما أقولش» (`ProfileSalary`).
+     * مالوش اختيارات ([optionsOf] فاضية) — الشاشة بترسم خانة المبلغ وتحتها «ممكن تغيّره بعدين من ملفك» (`PROFILE_QUESTION_SALARY_SUB`).
+     */
+    SALARY(UiKey.PROFILE_QUESTION_SALARY, null, Lucide.BANKNOTE),
 }
 
 /** اختيار في البطاقة: [reply] الجملة اللي بتطلع بعد الحفظ (بتقول اللي اتغير فعلًا — التصنيفات المشروطة من `presentCategories`). */
 data class ProfileOption(val id: String, val label: TextRef, val reply: TextRef)
 
-/** أول سؤال لسه ما اتجاوبش (null = مفيش أسئلة ليها حفظ دلوقتي ⇒ كارت «ملفك» في الرئيسية بيختفي). */
-fun nextProfileCard(profile: UserProfile?): ProfileCard? {
+/**
+ * أول سؤال لسه ما اتجاوبش (null = مفيش أسئلة ليها حفظ دلوقتي ⇒ كارت «ملفك» في الرئيسية بيختفي). المرتب بعد العيلة (ترتيب النموذج)،
+ * و[salary] null = حالة استخدام المرتب مش متوصلة ⇒ ما بيتسألش. النطاق القديم = «ما اتجاوبش» ⇒ بيتسأل يكتب المبلغ بالظبط.
+ */
+fun nextProfileCard(profile: UserProfile?, salary: SalaryState? = null): ProfileCard? {
     val p = profile ?: return ProfileCard.CAR
     return when {
         p.hasCar == null -> ProfileCard.CAR
         p.supportsDependents == null -> ProfileCard.FAMILY
+        salary != null && !salary.answered -> ProfileCard.SALARY
         p.renter == null -> ProfileCard.HOME
         p.business == null -> ProfileCard.BIZ
         else -> null
@@ -61,6 +72,7 @@ fun optionsOf(card: ProfileCard): List<ProfileOption> = when (card) {
         ProfileOption("yes", UiKey.PROFILE_QUESTION_YES, UiKey.PROFILE_QUESTION_SAVED),
         ProfileOption("no", UiKey.PROFILE_QUESTION_NO, UiKey.PROFILE_QUESTION_SAVED),
     )
+    ProfileCard.SALARY -> emptyList()
 }
 
 /**
@@ -76,5 +88,5 @@ fun applyAnswer(profile: UserProfile, card: ProfileCard, optionId: String): User
     }
     ProfileCard.HOME -> profile.copy(renter = optionId == "rent")
     ProfileCard.BIZ -> profile.copy(business = optionId == "yes")
-    ProfileCard.CAR_TO_WORK -> profile
+    ProfileCard.CAR_TO_WORK, ProfileCard.SALARY -> profile
 }

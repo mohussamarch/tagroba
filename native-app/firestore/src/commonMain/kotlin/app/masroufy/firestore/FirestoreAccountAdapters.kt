@@ -46,6 +46,10 @@ class FirestoreProfileRepository(private val space: FirestoreSpace) : ProfileRep
             profile.carToWork?.let { put("carToWork", it) }
             profile.lookIndex?.let { put("lookIndex", it.toLong()) }
             profile.character?.let { put("character", it.toStored()) }
+            // المرتب مبلغ بالظبط (قرار المالك 2026-10-16): عملته · «أفضّل ما أقولش» · النطاق القديم بيتكتب زي ما هو لحد ما يتكتب المبلغ
+            profile.salaryCurrency?.let { put("salaryCurrency", it.name) }
+            profile.salaryDeclined?.let { put("salaryDeclined", it) }
+            profile.salaryRangeLegacy?.let { put("salaryRange", it) }
         }
         space.write { ref().set(doc) }
         // القراية الجاية من الذاكرة لازم تشوف الحفظ ده لحظتها (المستمع بيأكده بعدها)

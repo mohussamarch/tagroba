@@ -80,11 +80,57 @@ class AccountStateTest {
     }
 
     @Test
-    fun salaryRangeWinsOverTheStoredAmountAndFollowsTheCountry() {
-        assertEquals(t(UiKey.ACC_SAL_SA_R2), salaryValue(blank.copy(salaryMinor = 500_000), Currency.SAR, SalaryRange.R2))
-        assertEquals(t(UiKey.ACC_SAL_EG_R2), salaryValue(blank, Currency.EGP, SalaryRange.R2))
-        assertEquals(t(UiKey.ACC_SAL_SKIP), salaryValue(blank, Currency.EGP, SalaryRange.SKIP))
+    fun twoJobsShowTheTotalWithTheJobCountAndAFieldEach() {
+        fun job(id: String, expected: Long?) = app.masroufy.core.IncomeSource(
+            id, "جهة وهمية $id", "جهه وهميه $id", app.masroufy.core.IncomeSourceKind.JOB, Currency.SAR, "2025-01-01", expectedMinor = expected,
+        )
+        val total = app.masroufy.core.SalaryState(1_150_050, Currency.SAR, declined = false, wasRange = false, employers = listOf(job("a", 900_000), job("b", 250_050)))
+        assertEquals(amountLabel(1_150_050, Currency.SAR), salaryValue(blank, Currency.SAR, total))
+        assertEquals(UiKey.ACC_SALARY_TOTAL_OF, salaryHint(total))
+        assertEquals(sentenceNumber(2), salaryHintArg(total))
+        val row = accountGroups(blank, Currency.SAR, total)[1].rows[0]
+        assertEquals(t(UiKey.ACC_SALARY_TOTAL_OF, sentenceNumber(2)), t(row.hint!!, row.hintArg!!))
+        assertEquals(listOf("a", "b"), salaryKeys(total))
+        val draft = salaryDraft(total)
+        assertEquals(mapOf("a" to 900_000L, "b" to 250_050L), readSalaryForm(draft, total, Currency.SAR))
+        assertNull(readSalaryForm(draft + ("b" to ""), total, Currency.SAR), "خانة فاضية ⇒ «احفظ» مقفول")
+        val missing = total.copy(amountMinor = null, employers = listOf(job("a", 900_000), job("b", null)))
+        assertNull(salaryValue(blank, Currency.SAR, missing), "جهة من غير مبلغ ⇒ «لم تُجب بعد»")
+        assertEquals(UiKey.ACC_SALARY_EACH_JOB, salaryHint(missing))
+        assertNull(salaryHintArg(missing))
+    }
+
+    @Test
+    fun retirementShowsWhereTheSalaryCameFrom() {
+        fun d(salary: Long?, from: app.masroufy.usecase.RetirementSalaryFrom) =
+            app.masroufy.usecase.RetirementDefaults(salary, salary, null, null, null, 0, salaryFrom = from)
+        val profile = app.masroufy.ui.screens.investment.calc.retirementSalaryLine(d(800_000, app.masroufy.usecase.RetirementSalaryFrom.PROFILE), Currency.SAR)
+        assertEquals(t(UiKey.RETCALC_SALARY_FROM_PROFILE, amountLabel(800_000, Currency.SAR)), profile)
+        val job = app.masroufy.ui.screens.investment.calc.retirementSalaryLine(d(900_000, app.masroufy.usecase.RetirementSalaryFrom.EMPLOYER), Currency.SAR)
+        assertEquals(t(UiKey.RETCALC_SALARY_FROM_JOB, amountLabel(900_000, Currency.SAR)), job)
+        assertEquals(t(UiKey.RETCALC_SALARY_NONE), app.masroufy.ui.screens.investment.calc.retirementSalaryLine(d(null, app.masroufy.usecase.RetirementSalaryFrom.NONE), Currency.SAR))
+        assertNull(app.masroufy.ui.screens.investment.calc.retirementSalaryLine(null, Currency.SAR), "لسه بيتحمّل")
+    }
+
+    @Test
+    fun salaryIsTheExactTypedAmountAndAnOldRangeAsksToTypeIt() {
+        val sar = app.masroufy.core.SalaryState(1_250_050, Currency.SAR, declined = false, wasRange = false, employers = emptyList())
+        assertEquals(amountLabel(1_250_050, Currency.SAR), salaryValue(blank, Currency.SAR, sar))
+        val skip = sar.copy(amountMinor = null, declined = true)
+        assertEquals(t(UiKey.ACC_SAL_SKIP), salaryValue(blank, Currency.EGP, skip))
+        val range = sar.copy(amountMinor = null, wasRange = true)
+        assertNull(salaryValue(blank, Currency.SAR, range), "النطاق القديم مش رقم ⇒ «لم تُجب بعد»")
+        assertEquals(UiKey.ACC_SALARY_WAS_RANGE, salaryHint(range))
+        assertEquals(UiKey.ACC_SALARY_HINT, salaryHint(sar))
         assertNull(salaryValue(blank, Currency.SAR, null))
+        assertNull(salaryValue(blank.copy(salaryMinor = 500_000, salaryCurrency = Currency.SAR), Currency.EGP, null), "ريال ما يتعرضش بالجنيه")
+        assertEquals(1_250_050L, readSalaryText(salaryDraft(sar).getValue(app.masroufy.core.PROFILE_SALARY_KEY), Currency.SAR).minor, "المسودة بتتقري هي هي")
+        assertEquals(SalaryText(1_250_050, null), readSalaryText(" 12500.50 ", Currency.SAR))
+        assertEquals(SalaryText(850_050, null), readSalaryText("٨٥٠٠٫٥٠", Currency.SAR), "الأرقام العربية مقبولة")
+        assertEquals(SalaryText(null, UiKey.ACC_SALARY_BAD), readSalaryText("0", Currency.SAR))
+        assertEquals(SalaryText(null, UiKey.ACC_SALARY_NOT_NUMBER), readSalaryText("ثمانية آلاف", Currency.SAR))
+        assertEquals(SalaryText(null, UiKey.ACC_SALARY_NOT_NUMBER), readSalaryText("8500.505", Currency.SAR), "خانتين عشريتين بالكتير")
+        assertEquals(SalaryText(null, null), readSalaryText("  ", Currency.SAR))
     }
 
     @Test

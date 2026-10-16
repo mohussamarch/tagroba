@@ -11,6 +11,7 @@ import app.masroufy.core.IncomeSource
 import app.masroufy.core.IncomeSourceKind
 import app.masroufy.core.daysBetween
 import app.masroufy.core.nextPayDate
+import app.masroufy.core.salaryState
 import app.masroufy.core.sourcesActiveOn
 
 /**
@@ -40,10 +41,14 @@ internal suspend fun AnswerKit.nextSalary(): AssistReply {
     return b.build()
 }
 
-/** المبلغ المتوقع المتخزن (مصدر الراتب أو الملف) — **عمره ما بيتحسب متوسط من الإيداعات**. */
+/**
+ * المبلغ المتوقع المتخزن — **عمره ما بيتحسب متوسط من الإيداعات**. الأول نفس رقم «ملفك» (`salaryState`: جهة الشغل الرئيسية أو الملف بعملة
+ * البلد — قرار المالك 2026-10-16)، وبعده مبلغ أي مصدر مرتب شغال (المعاش · أكتر من جهة). النطاق القديم مش رقم ⇒ «مش متاح».
+ */
 internal suspend fun AnswerKit.salaryAmount(): AssistReply {
     val sources = s.incomeSources?.list().orEmpty()
-    val stored = sourcesActiveOn(sources, ctx.today).firstOrNull(::isWage)?.expectedMinor ?: profile?.salaryMinor
+    val stored = salaryState(profile, sources, ctx.currency, ctx.today).amountMinor
+        ?: sourcesActiveOn(sources, ctx.today).firstOrNull(::isWage)?.expectedMinor
     val b = rb()
     if (stored == null) b.line(TextKey.ASSIST_SALARY_NA) else b.line(TextKey.ASSIST_SALARY_AMOUNT, b.money(stored))
     b.link(ScreenLink.of(AssistScreen.INCOME_SOURCES))
