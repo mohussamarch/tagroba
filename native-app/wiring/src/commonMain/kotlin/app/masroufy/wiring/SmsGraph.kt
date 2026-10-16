@@ -71,10 +71,14 @@ internal class SmsGraph(
 
     private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
 
-    private val extras = SmsScreenExtras(c, { auto() }, io)
+    /** r05 (4b): الصفحة اللي الشاشة عارضاها دلوقتي — التأكيد من صفحة أقدم بيدوّر هناك. */
+    private var shownSkip = 0
+
+    private val extras = SmsScreenExtras(c, { auto() }, io, inbox) { shownSkip }
 
     /** r05 (4b): صفحة أقدم من الصندوق، وبعدها الصندوق بيرجع لأحدث صفحة (الخلفية بتقرا من هناك). */
     override suspend fun overviewPage(record: Boolean, skip: Int): SmsOverview = withContext(io) {
+        shownSkip = skip.coerceAtLeast(0)
         if (skip <= 0) return@withContext overview(record)
         val fresh = if (record) auto().run().recordedTransactionIds else emptyList()
         inbox.page(skip)
