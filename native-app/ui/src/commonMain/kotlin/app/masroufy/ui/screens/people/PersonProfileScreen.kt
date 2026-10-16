@@ -148,6 +148,8 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(
             val links = app.masroufy.ui.app.LocalSpace.current.people.links
             if (links != null) PersonAccountsCard(ui.id, ui.name, ledger.second.accounts, links, section)
         }
+        // العمليات اللي اتعلّمت بتصنيف «فلوس مع شخص» ومش مربوطة ⇒ ضغطة ⇒ «معناها إيه؟» على الشخص ده
+        item(key = "needs-person") { NeedsPersonCard(section, personId = ui.id) }
         item(key = "link-ops") {
             val links = app.masroufy.ui.app.LocalSpace.current.people.links
             if (links != null) PersonLinkOpsCard(ui.id, ui.name, links, today, section)

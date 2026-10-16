@@ -43,7 +43,7 @@ internal const val NEEDS_PERSON_SHOWN = 5
  * «الديون» و«لك/عليك» — ضغطة على أي واحدة ⇒ «مع مين؟» ⇒ ربط بـ«تراجع». مفيش ⇒ الكارت ما بيظهرش.
  */
 @Composable
-internal fun NeedsPersonCard(modifier: Modifier = Modifier) {
+internal fun NeedsPersonCard(modifier: Modifier = Modifier, personId: String? = null) {
     val space = LocalSpace.current
     val links = space.people.links ?: return
     val scope = rememberCoroutineScope()
@@ -74,7 +74,7 @@ internal fun NeedsPersonCard(modifier: Modifier = Modifier) {
             BasicText(t(UiKey.PLINK_NEEDS_LIST_BODY), Modifier.padding(vertical = 4.dp), style = Type.caption().copy(color = Ink.muted))
             val shown = rows.take(NEEDS_PERSON_SHOWN)
             shown.forEachIndexed { i, r ->
-                OpRow(r.transaction, r.categoryName, today, i == shown.lastIndex && rows.size <= NEEDS_PERSON_SHOWN) { target = targetOf(r.transaction, null) }
+                OpRow(r.transaction, r.categoryName, today, i == shown.lastIndex && rows.size <= NEEDS_PERSON_SHOWN) { target = targetOf(r.transaction, personId) }
             }
             if (rows.size > NEEDS_PERSON_SHOWN) {
                 BasicText(t(UiKey.PLINK_NEEDS_MORE, sentenceNumber(rows.size - NEEDS_PERSON_SHOWN)), Modifier.padding(vertical = 10.dp), style = Type.caption().copy(color = Ink.muted))
