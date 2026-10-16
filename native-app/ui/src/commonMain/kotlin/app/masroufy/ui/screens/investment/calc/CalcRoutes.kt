@@ -32,6 +32,9 @@ interface CalculatorsDeps {
     /** النهارده بتوقيت الجوال. */
     fun today(): IsoDate
 
+    /** تاريخ الميلاد على الحساب (§87-8): حاسبة التقاعد بتملاه لو فاضي وبتحفظه بعد الحسبة، و«هتبقى معاك كام» بتقرا منه العمر. */
+    val birth: app.masroufy.usecase.ManageBirthDate
+
     /** حاسبة الادخار: الاتجاهين + المقارنة باللي بتحوّشه فعلًا + «حوّلها لخطة ادخار». */
     val savings: SavingsCalculator
 

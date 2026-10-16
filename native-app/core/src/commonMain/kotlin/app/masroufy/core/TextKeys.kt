@@ -6,7 +6,7 @@ sealed interface TextRef {
 }
 
 /** كل المفاتيح بالأنواع التلاتة (اختبارات الاكتمال و`isUiText`). */
-val ALL_TEXT_KEYS: List<TextRef> by lazy { TextKey.entries + UiKey.entries + AskKey.entries }
+val ALL_TEXT_KEYS: List<TextRef> by lazy { TextKey.entries + UiKey.entries + AskKey.entries + InvestFutureKey.entries }
 
 /** المفتاح باسمه (للاختبارات ولقطة الأسماء) — مش موجود ⇒ استثناء زي `valueOf`. */
 fun textKeyNamed(name: String): TextRef = ALL_TEXT_KEYS.firstOrNull { it.name == name } ?: throw IllegalArgumentException(name)

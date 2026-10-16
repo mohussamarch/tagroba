@@ -53,6 +53,11 @@ object AssistantCodecs {
                     is UserSetting.HomeCards -> { req("type", "homeCards"); req("order", s.order); req("hidden", s.hidden) }
                     // كارت النصيحة و«ملفك» المقفولين بـ«×» — بصمات بس
                     is UserSetting.HomeTips -> { req("type", "homeTips"); opt("advisorKey", s.advisorKey); opt("profileKey", s.profileKey); opt("profileClosedOn", s.profileClosedOn) }
+                    // «هتبقى معاك كام»: العلامات والطريق والمبلغ والخلطة لكل بلد (سنين وأرقام بس)
+                    is UserSetting.InvestView -> {
+                        req("type", "investView"); req("spaceId", s.spaceId); req("marks", s.marks); opt("path", s.path); opt("amountMinor", s.amountMinor); opt("mix", s.mix)
+                    }
+                    is UserSetting.BirthDate -> { req("type", "birthDate"); req("date", s.date) }
                 }
             }
         },
@@ -64,6 +69,10 @@ object AssistantCodecs {
                 "peopleRow" -> UserSetting.PeopleRow(d.strings("personIds") ?: emptyList(), d.str("updatedAt"))
                 "homeCards" -> UserSetting.HomeCards(d.strings("order").orEmpty(), d.strings("hidden").orEmpty(), d.str("updatedAt"))
                 "homeTips" -> UserSetting.HomeTips(d.strOrNull("advisorKey"), d.strOrNull("profileKey"), d.strOrNull("profileClosedOn"), d.str("updatedAt"))
+                "investView" -> UserSetting.InvestView(
+                    d.str("spaceId"), d.ints("marks"), d.strOrNull("path"), d.longOrNull("amountMinor"), d.strOrNull("mix"), d.str("updatedAt"),
+                )
+                "birthDate" -> UserSetting.BirthDate(d.str("date"), d.str("updatedAt"))
                 else -> throw DocumentError(uiText(TextKey.DOC_FIELD_VALUE, USER_SETTINGS_GROUP, "type", type))
             }
         },
