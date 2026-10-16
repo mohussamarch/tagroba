@@ -1145,6 +1145,22 @@
       "y": 28816,
       "w": 350,
       "h": 200
+    },
+    "BalanceWhy.dc.html": {
+      "is_interactive": true,
+      "title": "افهم رصيدك · BalanceWhy (من تفاصيل المحفظة — تصميم جديد 2026-10-16)",
+      "x": 0,
+      "y": 30500,
+      "w": 390,
+      "h": 844
+    },
+    "BalanceFix.dc.html": {
+      "is_interactive": true,
+      "title": "صلّح رصيدي / حدّث الرصيد · BalanceFix (جوه افهم رصيدك)",
+      "x": 440,
+      "y": 30500,
+      "w": 390,
+      "h": 844
     }
   },
   "createdOnFiles": {
@@ -1445,7 +1461,9 @@
     "HomeDaily.dc.html",
     "HomeBuddy.dc.html",
     "HomeBars.dc.html",
-    "HomeQuick.dc.html"
+    "HomeQuick.dc.html",
+    "BalanceWhy.dc.html",
+    "BalanceFix.dc.html"
   ],
   "pages": [],
   "title": "مصروفي — النموذج التفاعلي"
