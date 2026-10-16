@@ -11,12 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import app.masroufy.core.TextKey
+import app.masroufy.core.advisorTipKey
+import app.masroufy.core.profileTipKey
+import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.FloatingCard
+import app.masroufy.ui.screens.home.cards.rememberHomeTips
 import app.masroufy.ui.components.IconButton44
 import app.masroufy.ui.components.IconTile
 import app.masroufy.ui.components.Skeleton
-import app.masroufy.ui.components.mirrorInLtr
 import app.masroufy.ui.icons.Lucide
 import app.masroufy.ui.icons.LucideIcon
 import app.masroufy.ui.nav.LocalNavigator
@@ -30,10 +35,14 @@ import app.masroufy.ui.theme.Type
 /**
  * كارت المساعد (النموذج: «القهوة هذا الشهر 640 ر.س» بكوب كهرماني) = آخر تنبيه من مجموعة المساعد بعنوانه وتفاصيله.
  * الضغط ⇒ الاستثمار (صفحة المساعد `Advisor` جوه منطقة الاستثمار — ⚠️ المسار نفسه بيتوصل وقت الدمج).
+ * ثابت فوق برّه «عدّل الكروت» وعليه «×» (رد المالك 2026-10-16) — بيرجع لما تظهر نصيحة جديدة (`core/HomeTips.kt`).
  */
 @Composable
 internal fun AdvisorCardView(card: AdvisorCard) {
     val nav = LocalNavigator.current
+    val tips = rememberHomeTips()
+    val key = advisorTipKey(card.title, card.body)
+    if (!tips.advisorShown(key)) return
     FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.switchTab(Tab.INVESTMENT) }, clickLabel = t(UiKey.HOME_ADVISOR_OPEN)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
             IconTile(Ink.focus, size = 40.dp) { LucideIcon(Lucide.COFFEE, size = 20.dp, tint = Ink.focus) }
@@ -42,6 +51,7 @@ internal fun AdvisorCardView(card: AdvisorCard) {
                 BasicText(card.body, style = Type.of(13).copy(color = Ink.muted))
                 BasicText(t(UiKey.HOME_ADVISOR_OPEN), style = Type.of(13, androidx.compose.ui.text.font.FontWeight.Bold).copy(color = Ink.primary))
             }
+            IconButton44(Lucide.X, t(UiKey.HOME_TIP_CLOSE_ADVISOR), onClick = { tips.closeAdvisor(key) })
         }
     }
 }
@@ -71,12 +81,18 @@ internal fun UpcomingSection() {
 }
 
 /**
- * «كمّل ملفك» تحت «القادم» ⇒ `ProfileQuestion`. بيظهر بس لو فيه سؤال ليه حفظ (`nextProfileCard`).
+ * «كمّل ملفك» ⇒ `ProfileQuestion`. بيظهر بس لو فيه سؤال ليه حفظ (`nextProfileCard`).
+ * ثابت فوق برّه «عدّل الكروت» وعليه «×» (رد المالك 2026-10-16) — بيرجع لما السؤال الجاي يتغير أو بعد 7 أيام (`core/HomeTips.kt`).
  * ⚠️ النسبة «ملفك 60%» ودايرتها مالهاش حسبة في كوتلن لسه (`MeInfo.profilePercent = null`) ⇒ العنوان من غير رقم ورمز بدل الدايرة.
  */
 @Composable
 internal fun ProfileCardView() {
     val nav = LocalNavigator.current
+    val deps = LocalSpace.current
+    val tips = rememberHomeTips()
+    val next by produceState<ProfileCard?>(null, deps) { value = runCatching { nextProfileCard(deps.home.profile.load()) }.getOrNull() }
+    val key = next?.let { profileTipKey(it.name) } ?: return
+    if (!tips.profileShown(key)) return
     FloatingCard(Modifier.fillMaxWidth(), onClick = { nav.push(ProfileQuestionRoute) }) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             IconTile(Ink.primary, size = 44.dp, radius = 22.dp) { LucideIcon(Lucide.USER, size = 22.dp, tint = Ink.primary) }
@@ -84,7 +100,7 @@ internal fun ProfileCardView() {
                 BasicText(t(UiKey.HOME_PROFILE_TITLE), style = Type.bodyBold())
                 BasicText(t(UiKey.HOME_PROFILE_BODY), style = Type.caption().copy(color = Ink.muted))
             }
-            LucideIcon(Lucide.CHEVRON_LEFT, size = 18.dp, tint = Ink.muted, modifier = Modifier.mirrorInLtr())
+            IconButton44(Lucide.X, t(UiKey.HOME_TIP_CLOSE_PROFILE), onClick = { tips.closeProfile(key) })
         }
     }
 }

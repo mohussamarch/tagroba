@@ -47,6 +47,23 @@ class HomeCardsUseCasesTest {
         assertTrue(settings.listAll().none { it is UserSetting.HomeCards })
     }
 
+    @Test
+    fun closedTipsAreSavedOnTheAccountTogether() = runBlocking {
+        val settings = MemoryUserSettingsStore()
+        val cards = ManageHomeCards(settings, clock)
+        assertNull(cards.tipsClosed().advisorKey)
+        cards.closeAdvisor("advisor-key")
+        cards.closeProfile("profile:CAR", "2026-10-07")
+        val again = ManageHomeCards(settings, clock).tipsClosed()
+        assertEquals("advisor-key", again.advisorKey)
+        assertEquals("profile:CAR", again.profileKey)
+        assertEquals("2026-10-07", again.profileClosedOn)
+        assertEquals(1, settings.listAll().filterIsInstance<UserSetting.HomeTips>().size)
+        // «الترتيب الأصلي» ما بيرجّعش الكروت المقفولة
+        cards.reset()
+        assertEquals("advisor-key", cards.tipsClosed().advisorKey)
+    }
+
     private var seq = 0
 
     private fun txn(date: String, amount: Long, category: String?) = Transaction(

@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.masroufy.core.DAILY_SPEND_BASIS
-import app.masroufy.core.DailySpendBasis
 import app.masroufy.core.UiKey
 import app.masroufy.ui.app.LocalSpace
 import app.masroufy.ui.components.AmountText
@@ -104,11 +102,9 @@ internal fun DailyCard(state: ReadState<DailyAllowanceView>) {
         val basis = when {
             s.perDayMinor == null -> t(UiKey.HOME_DAILY_NA)
             s.short -> t(UiKey.HOME_DAILY_SHORT)
-            DAILY_SPEND_BASIS == DailySpendBasis.ON_HAND_UNTIL_PAYDAY -> t(UiKey.HOME_DAILY_BASIS_ON_HAND, amountLabel(s.onHandMinor, v.currency))
-            else -> t(UiKey.HOME_DAILY_BASIS, amountLabel(s.onHandMinor, v.currency), amountLabel(s.upcomingMinor, v.currency))
+            else -> t(UiKey.HOME_DAILY_BASIS, amountLabel(s.onHandMinor, v.currency), amountLabel(s.duesMinor, v.currency))
         }
         BasicText(basis, style = Type.caption().copy(color = Ink.muted))
-        if (s.approximate) BasicText(t(UiKey.HOME_DAILY_APPROX), style = Type.caption().copy(color = Ink.focus))
     }
 }
 

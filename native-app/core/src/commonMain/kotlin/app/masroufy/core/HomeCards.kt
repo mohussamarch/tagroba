@@ -3,10 +3,11 @@ package app.masroufy.core
 /**
  * كروت الرئيسية (اختيار المالك 2026-10-15 من نافذة اختيار — HANDOVER جلسة 31 الخطوة 29 · لوحات `HomeCards`/`HomeDaily`/`HomeBars`/`HomeQuick`):
  * «خلي الكروت دي موجودة وهو يقدر يعدلها او يغير ترتيبها في الصفحة الرئيسية».
- * - ظاهرين أول مرة: تقدر تصرف النهارده · شخصيتك بتكلمك · القادم · أكتر حاجة صرفت فيها · أهدافك · محتاجة مراجعة · آخر العمليات.
+ * - الترتيب الأول (رد المالك 2026-10-16 — اختار التاني مش المقترح): القادم ⇐ محتاجة مراجعة ⇐ تقدر تصرف النهارده ⇐ شخصيتك بتكلمك ⇐
+ *   أكتر حاجة صرفت فيها ⇐ أهدافك ⇐ آخر العمليات.
  * - مستخبيين أول مرة (ما اتختاروش بس موجودين): ليك وعليك · استثماراتك.
  * - الترتيب والمخفي بيتحفظوا في الحساب (`userSettings/homeCards` — [UserSetting.HomeCards]) زي صف «أهم 5».
- * ❓ الترتيب الأول اختيار Claude مستني المالك (OVERRIDES — كروت الرئيسية). دوال نقية بس — التخزين في حالة الاستخدام `ManageHomeCards`.
+ * دوال نقية بس — التخزين في حالة الاستخدام `ManageHomeCards`.
  */
 enum class HomeCardKind(val wire: String) {
     DAILY("daily"),
@@ -28,8 +29,11 @@ enum class HomeCardKind(val wire: String) {
 /** معرّف مستند الكروت في `userSettings`. */
 const val HOME_CARDS_KEY = "homeCards"
 
-/** الترتيب الأول (❓ اختيار Claude مستني المالك). */
-val HOME_CARDS_DEFAULT_ORDER: List<HomeCardKind> = HomeCardKind.entries.toList()
+/** الترتيب الأول (رد المالك 2026-10-16). */
+val HOME_CARDS_DEFAULT_ORDER: List<HomeCardKind> = listOf(
+    HomeCardKind.UPCOMING, HomeCardKind.REVIEW, HomeCardKind.DAILY, HomeCardKind.BUDDY, HomeCardKind.TOP, HomeCardKind.GOALS, HomeCardKind.RECENT,
+    HomeCardKind.PEOPLE, HomeCardKind.INVEST,
+)
 
 /** المستخبيين أول مرة: «ليك وعليك» و«استثماراتك» (ما اتختاروش في النافذة). */
 val HOME_CARDS_DEFAULT_HIDDEN: Set<HomeCardKind> = setOf(HomeCardKind.PEOPLE, HomeCardKind.INVEST)
@@ -69,52 +73,39 @@ fun moveHomeCard(layout: HomeCardsLayout, kind: HomeCardKind, delta: Int): HomeC
 fun toggleHomeCard(layout: HomeCardsLayout, kind: HomeCardKind): HomeCardsLayout =
     layout.copy(hidden = if (kind in layout.hidden) layout.hidden - kind else layout.hidden + kind, custom = true)
 
-// ─── «تقدر تصرف النهارده» ───
+// ─── «تقدر تصرف النهارده» (رد المالك 2026-10-16) ───
 
 /**
- * طريقة حساب «تقدر تصرف النهارده» — ❓ مستنية المالك (OVERRIDES — كروت الرئيسية). **التغيير بسطر واحد:** [DAILY_SPEND_BASIS].
- * - [LEFTOVER_UNTIL_PAYDAY]: اللي معاك ناقص المحسوب الجاي لحد المرتب (`LoadLeftover` — نفس «فاضلك تقريبًا» في الميزانيات) ÷ الأيام لحد المرتب.
- * - [ON_HAND_UNTIL_PAYDAY]: اللي معاك بس ÷ الأيام لحد المرتب (من غير ما نطرح الجاي).
- */
-enum class DailySpendBasis { LEFTOVER_UNTIL_PAYDAY, ON_HAND_UNTIL_PAYDAY }
-
-/** ❓ اختيار Claude لحد رد المالك (زي النموذج: اللي معاك ناقص الالتزامات الجاية لحد المرتب، على الأيام الفاضلة). */
-val DAILY_SPEND_BASIS = DailySpendBasis.LEFTOVER_UNTIL_PAYDAY
-
-/**
- * «تقدر تصرف النهارده»: [perDayMinor] بالهللة ومقرّب **لتحت** لأقرب وحدة كاملة (ريال/جنيه) — ما نقولش رقم أكبر من الحقيقة.
- * null = «غير متاح» (رصيد مش معروف · مفيش ميعاد مرتب) — مش صفر. اللي جاي أكبر من اللي معاك ⇒ صفر في اليوم و[short] = true.
+ * «تقدر تصرف النهارده» = اللي معاك دلوقتي − الالتزامات اللي ميعادها قبل يوم المرتب، ÷ الأيام الفاضلة، **مقرّب لتحت** لأقرب وحدة كاملة.
+ * مثال المالك: معاك 3,000 وعليك قسط واشتراكات بـ1,000 قبل المرتب وفاضل 10 أيام ⇒ 200 في اليوم.
+ * [perDayMinor] null = «غير متاح» (رصيد مش معروف · يوم المرتب مش معروف) — مش صفر. الالتزامات أكبر من اللي معاك ⇒ صفر و[short] = true.
  */
 data class DailySpend(
     val perDayMinor: Halalas?,
-    /** اللي اتقسم: اللي معاك (أو اللي معاك ناقص الجاي) — null = مش معروف. */
-    val baseMinor: Halalas?,
     val onHandMinor: Halalas?,
-    val upcomingMinor: Halalas,
-    /** الأيام لحد المرتب (شامل النهارده) — null = مفيش ميعاد مرتب. */
+    val duesMinor: Halalas,
+    /** الأيام لحد المرتب (شامل النهارده) — null = مش معروف. */
     val daysLeft: Int?,
     val short: Boolean,
-    val approximate: Boolean,
 )
 
-/** [onHandMinor] اللي معاك · [upcomingMinor] المحسوب الجاي · [daysLeft] الأيام لحد المرتب شامل النهارده (≤ 0 أو null ⇒ «غير متاح»). */
-fun dailySpend(
-    onHandMinor: Halalas?,
-    upcomingMinor: Halalas,
-    daysLeft: Int?,
-    approximate: Boolean,
-    basis: DailySpendBasis = DAILY_SPEND_BASIS,
-): DailySpend {
-    val base = when (basis) {
-        DailySpendBasis.LEFTOVER_UNTIL_PAYDAY -> onHandMinor?.let { subtractMoney(it, upcomingMinor) }
-        DailySpendBasis.ON_HAND_UNTIL_PAYDAY -> onHandMinor
-    }
+/** [onHandMinor] اللي معاك · [duesMinor] الالتزامات لحد المرتب · [daysLeft] الأيام شامل النهارده (≤ 0 أو null ⇒ «غير متاح»). */
+fun dailySpend(onHandMinor: Halalas?, duesMinor: Halalas, daysLeft: Int?): DailySpend {
     val days = daysLeft?.takeIf { it > 0 }
-    if (base == null || days == null) return DailySpend(null, base, onHandMinor, upcomingMinor, days, short = false, approximate = approximate)
-    if (base <= 0L) return DailySpend(0L, base, onHandMinor, upcomingMinor, days, short = base < 0L, approximate = approximate)
+    if (onHandMinor == null || days == null) return DailySpend(null, onHandMinor, duesMinor, days, short = false)
+    val base = subtractMoney(onHandMinor, duesMinor)
+    if (base <= 0L) return DailySpend(0L, onHandMinor, duesMinor, days, short = base < 0L)
     val raw = base / days
-    return DailySpend(raw - raw % 100, base, onHandMinor, upcomingMinor, days, short = false, approximate = approximate)
+    return DailySpend(raw - raw % 100, onHandMinor, duesMinor, days, short = false)
 }
+
+/**
+ * الالتزامات اللي بتتطرح: سطور التقويم اللي **بتدفعها** (`DueFlow.PAY`: أقساط · اشتراكات · فواتير · ديون · جمعيات · أحداث بمبلغ مخطط · زكاة)
+ * من النهارده لحد [lastDay] (اليوم اللي قبل المرتب) بعملة المساحة. اختيار Claude: السطر اللي مالوش مبلغ (مناسبة من غير مبلغ) ما بيدخلش،
+ * والسطر بعملة تانية ما بيتحوّلش.
+ */
+fun duesUntil(items: List<CalendarItem>, today: IsoDate, lastDay: IsoDate, currency: Currency): Halalas =
+    sumMoney(items.filter { it.flow == DueFlow.PAY && it.amountMinor != null && it.currency == currency && it.date >= today && it.date <= lastDay }.map { it.amountMinor!! })
 
 /** عرض الشريط لكل صف من أكبر واحد (0–100، صحيح) — «أكتر حاجة صرفت فيها». الأكبر = 100، والصفر أو السالب = 0. */
 fun sharesOfLargest(amounts: List<Halalas>): List<Int> {

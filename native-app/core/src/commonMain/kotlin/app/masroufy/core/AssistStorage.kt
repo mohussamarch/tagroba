@@ -71,6 +71,11 @@ sealed interface UserSetting {
     data class HomeCards(val order: List<String>, val hidden: List<String>, override val updatedAt: String) : UserSetting {
         override val key: String get() = HOME_CARDS_KEY
     }
+
+    /** كارت النصيحة وكارت «ملفك» اللي اتقفلوا بـ«×» (رد المالك 2026-10-16 — `core/HomeTips.kt`): بصمات بس، مش نص ولا أرقام. */
+    data class HomeTips(val advisorKey: String?, val profileKey: String?, val profileClosedOn: String?, override val updatedAt: String) : UserSetting {
+        override val key: String get() = HOME_TIPS_KEY
+    }
 }
 
 const val ASSISTANT_SETTINGS_KEY = "assistant"
