@@ -42,31 +42,31 @@ data class CharacterOption(val id: Int, val label: UiKey)
 
 private fun opts(vararg pairs: Pair<Int, UiKey>) = pairs.map { (id, key) -> CharacterOption(id, key) }
 
-private val FACE_OPTIONS = opts(0 to UiKey.CHAR_OPT_FACE_0, 1 to UiKey.CHAR_OPT_FACE_1, 2 to UiKey.CHAR_OPT_FACE_2, 3 to UiKey.CHAR_OPT_FACE_3)
-private val EYES_OPTIONS = opts(0 to UiKey.CHAR_OPT_EYES_0, 1 to UiKey.CHAR_OPT_EYES_1, 2 to UiKey.CHAR_OPT_EYES_2, 3 to UiKey.CHAR_OPT_EYES_3)
-private val BROWS_OPTIONS = opts(0 to UiKey.CHAR_OPT_BROWS_0, 1 to UiKey.CHAR_OPT_BROWS_1, 2 to UiKey.CHAR_OPT_BROWS_2, 3 to UiKey.CHAR_OPT_BROWS_3)
-private val NOSE_OPTIONS = opts(0 to UiKey.CHAR_OPT_NOSE_0, 1 to UiKey.CHAR_OPT_NOSE_1, 2 to UiKey.CHAR_OPT_NOSE_2)
-private val MOUTH_OPTIONS = opts(0 to UiKey.CHAR_OPT_MOUTH_0, 1 to UiKey.CHAR_OPT_MOUTH_1, 2 to UiKey.CHAR_OPT_MOUTH_2, 3 to UiKey.CHAR_OPT_MOUTH_3)
-private val BUILD_OPTIONS = opts(0 to UiKey.CHAR_OPT_BUILD_0, 1 to UiKey.CHAR_OPT_BUILD_1, 2 to UiKey.CHAR_OPT_BUILD_2)
+private val FACE_OPTIONS = opts(0 to UiKey.CHAR_FACE_OVAL, 1 to UiKey.CHAR_FACE_ROUND, 2 to UiKey.CHAR_FACE_LONG, 3 to UiKey.CHAR_FACE_SQUARE)
+private val EYES_OPTIONS = opts(0 to UiKey.CHAR_EYES_DOTS, 1 to UiKey.CHAR_EYES_ALMOND, 2 to UiKey.CHAR_EYES_CALM, 3 to UiKey.CHAR_EYES_WIDE)
+private val BROWS_OPTIONS = opts(0 to UiKey.CHAR_BROWS_STRAIGHT, 1 to UiKey.CHAR_BROWS_ARCHED, 2 to UiKey.CHAR_BROWS_THICK, 3 to UiKey.CHAR_BROWS_THIN)
+private val NOSE_OPTIONS = opts(0 to UiKey.CHAR_NOSE_SMALL, 1 to UiKey.CHAR_NOSE_STRAIGHT, 2 to UiKey.CHAR_NOSE_WIDE)
+private val MOUTH_OPTIONS = opts(0 to UiKey.CHAR_MOUTH_NEUTRAL, 1 to UiKey.CHAR_MOUTH_SLIGHT, 2 to UiKey.CHAR_MOUTH_SMILE, 3 to UiKey.CHAR_MOUTH_SMALL)
+private val BUILD_OPTIONS = opts(0 to UiKey.CHAR_BUILD_SLIM, 1 to UiKey.CHAR_BUILD_MEDIUM, 2 to UiKey.CHAR_BUILD_FULL)
 private val MEN_HAIR_OPTIONS = opts(
-    0 to UiKey.CHAR_OPT_HAIR_0, 1 to UiKey.CHAR_OPT_HAIR_1, 2 to UiKey.CHAR_OPT_HAIR_2, 3 to UiKey.CHAR_OPT_HAIR_3, 4 to UiKey.CHAR_OPT_HAIR_4,
-    5 to UiKey.CHAR_OPT_HAIR_5,
+    0 to UiKey.CHAR_HAIR_NONE, 1 to UiKey.CHAR_HAIR_SHORT, 2 to UiKey.CHAR_HAIR_SIDE, 3 to UiKey.CHAR_HAIR_LONG, 4 to UiKey.CHAR_HAIR_CURLY,
+    5 to UiKey.CHAR_HAIR_THIN,
 )
 private val WOMEN_HAIR_OPTIONS = opts(
-    6 to UiKey.CHAR_OPT_HAIR_6, 7 to UiKey.CHAR_OPT_HAIR_7, 8 to UiKey.CHAR_OPT_HAIR_8, 9 to UiKey.CHAR_OPT_HAIR_9, 10 to UiKey.CHAR_OPT_HAIR_10,
+    6 to UiKey.CHAR_HAIR_W_LONG, 7 to UiKey.CHAR_HAIR_W_PONY, 8 to UiKey.CHAR_HAIR_W_CURLY, 9 to UiKey.CHAR_HAIR_W_SHORT, 10 to UiKey.CHAR_HAIR_W_BUN,
 )
 private val BEARD_OPTIONS = opts(
-    0 to UiKey.CHAR_OPT_BEARD_0, 1 to UiKey.CHAR_OPT_BEARD_1, 2 to UiKey.CHAR_OPT_BEARD_2, 3 to UiKey.CHAR_OPT_BEARD_3, 4 to UiKey.CHAR_OPT_BEARD_4,
-    5 to UiKey.CHAR_OPT_BEARD_5,
+    0 to UiKey.CHAR_BEARD_NONE, 1 to UiKey.CHAR_BEARD_STUBBLE, 2 to UiKey.CHAR_BEARD_SHORT, 3 to UiKey.CHAR_BEARD_FULL, 4 to UiKey.CHAR_BEARD_GOATEE,
+    5 to UiKey.CHAR_BEARD_MOUSTACHE,
 )
-private val MEN_OUTFIT_OPTIONS = opts(0 to UiKey.CHAR_OPT_OUTFIT_0, 1 to UiKey.CHAR_OPT_OUTFIT_1, 2 to UiKey.CHAR_OPT_OUTFIT_2)
-private val WOMEN_OUTFIT_OPTIONS = opts(5 to UiKey.CHAR_OPT_OUTFIT_5, 3 to UiKey.CHAR_OPT_OUTFIT_3, 6 to UiKey.CHAR_OPT_OUTFIT_6)
+private val MEN_OUTFIT_OPTIONS = opts(0 to UiKey.CHAR_OUTFIT_THOBE, 1 to UiKey.CHAR_OUTFIT_SHIRT, 2 to UiKey.CHAR_OUTFIT_SUIT)
+private val WOMEN_OUTFIT_OPTIONS = opts(5 to UiKey.CHAR_OUTFIT_ABAYA, 3 to UiKey.CHAR_OUTFIT_DRESS, 6 to UiKey.CHAR_OUTFIT_TUNIC)
 private val MEN_HEAD_OPTIONS = opts(
-    0 to UiKey.CHAR_OPT_HEAD_0, 1 to UiKey.CHAR_OPT_HEAD_1, 2 to UiKey.CHAR_OPT_HEAD_2, 3 to UiKey.CHAR_OPT_HEAD_3, 7 to UiKey.CHAR_OPT_HEAD_7,
+    0 to UiKey.CHAR_HEAD_NONE, 1 to UiKey.CHAR_HEAD_SHEMAGH, 2 to UiKey.CHAR_HEAD_GHUTRA, 3 to UiKey.CHAR_HEAD_TAQIYAH, 7 to UiKey.CHAR_HEAD_CAP,
 )
-private val WOMEN_HEAD_OPTIONS = opts(0 to UiKey.CHAR_OPT_HEAD_0, 4 to UiKey.CHAR_OPT_HEAD_4, 5 to UiKey.CHAR_OPT_HEAD_5, 6 to UiKey.CHAR_OPT_HEAD_6)
+private val WOMEN_HEAD_OPTIONS = opts(0 to UiKey.CHAR_HEAD_NONE, 4 to UiKey.CHAR_HEAD_HIJAB, 5 to UiKey.CHAR_HEAD_KHIMAR, 6 to UiKey.CHAR_HEAD_NIQAB)
 private val GLASSES_OPTIONS = opts(
-    0 to UiKey.CHAR_OPT_GLASSES_0, 1 to UiKey.CHAR_OPT_GLASSES_1, 2 to UiKey.CHAR_OPT_GLASSES_2, 3 to UiKey.CHAR_OPT_GLASSES_3,
+    0 to UiKey.CHAR_GLASSES_NONE, 1 to UiKey.CHAR_GLASSES_ROUND, 2 to UiKey.CHAR_GLASSES_SQUARE, 3 to UiKey.CHAR_GLASSES_THIN,
 )
 
 /** اختيارات الجزء للنوع ده بترتيب العرض — من غير أي رقم مكافأة. البشرة ألوان بس ⇒ قايمة فاضية. الدقن للست ⇒ فاضية. */
