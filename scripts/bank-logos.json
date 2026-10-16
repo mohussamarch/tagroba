@@ -318,6 +318,12 @@
   "source": "https://bsf.sa/images/revampLogo.svg",
   "size": "192x60"
  },
+ "SA:barq": {
+  "logo": "sa_barq",
+  "from": "SA-barq-icon.svg",
+  "source": "https://www.barq.com/assets/favicon.svg?v=4",
+  "size": "144x144"
+ },
  "SA:bnp-paribas": {
   "logo": "sa_bnp_paribas",
   "from": "SA-bnp-paribas-logo.svg",
@@ -487,6 +493,12 @@
   "from": "SA-trade-bank-of-iraq-logo.png",
   "source": "https://tbi.com.iq/wp-content/uploads/2021/10/logo_white.png",
   "size": "192x63"
+ },
+ "SA:tweeq": {
+  "logo": "sa_tweeq",
+  "from": "SA-tweeq-icon.svg",
+  "source": "https://tweeq.sa/assets/images/t9XEk2gtWs5MglBDvn8ZL9SE.svg",
+  "size": "144x144"
  },
  "SA:urpay": {
   "logo": "sa_urpay",
