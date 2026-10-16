@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,7 +68,8 @@ internal fun AssetAddContent(
     onChange: (HoldingFormText) -> Unit,
     onSave: () -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    // سموك r05: والكيبورد مفتوح اللوحة بتقصر و«حفظ» كان بيستخبى تحته ⇒ المحتوى بيتمرر جوه المساحة اللي فاضلة
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (form != null) Box(Modifier.mirrorInLtr()) { SurfaceIconButton(Lucide.CHEVRON_RIGHT, t(K.HOLD_FORM_BACK), onBack) }
             BasicText(t(if (form == null) K.HOLD_SHEET_SUB else K.HOLD_FORM_SUB), style = Type.of(12).copy(color = Ink.muted))
