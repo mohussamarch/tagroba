@@ -114,8 +114,12 @@ private fun PurposeCard(view: HoldingsViewModel, filter: HoldingPurpose?, onFilt
         }
         // رد المالك 2026-10-16 ٢أ: المستخدم بيختار، والافتراضي من غير الشخصي (بيتحفظ على الحساب)
         if (view.hasPersonal) {
-            Spacer(Modifier.height(10.dp))
-            app.masroufy.ui.screens.budgets.Switch(view.includePersonal, t(InvestHoldKey.HOLD_INCLUDE_PERSONAL), { onIncludePersonal(!view.includePersonal) })
+            val question = t(InvestHoldKey.HOLD_INCLUDE_PERSONAL)
+            Spacer(Modifier.height(6.dp))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                BasicText(question, Modifier.weight(1f), style = Type.of(13, FontWeight.SemiBold, 1.4).copy(color = Ink.soft))
+                app.masroufy.ui.screens.budgets.Switch(view.includePersonal, question, { onIncludePersonal(!view.includePersonal) })
+            }
         }
     }
 }

@@ -67,6 +67,10 @@ class AssistantStorageTest {
         roundTrip(AssistantCodecs.userSettings, UserSetting.PeopleRow(listOf("p-2", "p-5", "p-1"), "2026-10-10T09:00:00.000Z"))
         roundTrip(AssistantCodecs.userSettings, UserSetting.PeopleRow(emptyList(), "2026-10-10T09:00:00.000Z"))
         assertEquals("peopleRow", AssistantCodecs.userSettings.toStore(UserSetting.PeopleRow(listOf("p-1"), "x"))["id"])
+        // «تدخل الحاجات الشخصية في المجموع؟» (r05 · رد المالك ٢أ) — مستند واحد على الحساب
+        roundTrip(AssistantCodecs.userSettings, UserSetting.HoldingsPrefs(true, "2026-10-10T09:00:00.000Z"))
+        roundTrip(AssistantCodecs.userSettings, UserSetting.HoldingsPrefs(false, "2026-10-10T09:00:00.000Z"))
+        assertEquals("holdingsPrefs", AssistantCodecs.userSettings.toStore(UserSetting.HoldingsPrefs(true, "x"))["id"])
         roundTrip(AssistantCodecs.conversations, AssistConversation("conv-1", "default", "2026-10-10T09:00:00.000Z", "2026-10-10T09:01:00.000Z", "كم صرفت؟", "صرفت 85 ر.س", 2))
         roundTrip(AssistantCodecs.messages, message)
         roundTrip(AssistantCodecs.messages, message.copy(card = null, split = null, options = emptyList(), links = emptyList(), payload = emptyMap(), state = null, choice = null))

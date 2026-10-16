@@ -128,4 +128,14 @@ class HoldingsViewTest {
         // 12 × 100 ر.س بعد سنة ÷ 1.10 = 1,090.91
         assertEquals(listOf(0L, 109_091L), plan)
     }
+
+    @Test fun groupGrowthAboveInflationCompoundsByTheYearlyRate() {
+        // 10% في السنة من غير غلاء ⇒ بعد سنة ≈ 11,000 وبعد سنتين ≈ 12,100 (هللات من التقريب الشهري بس) — أعداد صحيحة
+        val g = growHoldingGroup(startMinor = 1_000_000, addMinor = 0, rateBp = 1000, cpiBp = 0, years = 2)
+        assertTrue(kotlin.math.abs(g.leave[1] - 1_100_000L) <= 200, "year 1: ${g.leave[1]}")
+        assertTrue(kotlin.math.abs(g.leave[2] - 1_210_000L) <= 400, "year 2: ${g.leave[2]}")
+        assertEquals(g.leave, g.plan) // من غير زيادة شهرية الخطين واحد
+        val withAdd = growHoldingGroup(startMinor = 1_000_000, addMinor = 10_000, rateBp = 1000, cpiBp = 0, years = 1)
+        assertTrue(withAdd.plan[1] > withAdd.leave[1] + 12 * 10_000L, "additions also grow: ${withAdd.plan[1]}")
+    }
 }
