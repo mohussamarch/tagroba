@@ -1006,5 +1006,23 @@
   "format": "png",
   "bytes": 17666,
   "source": "https://www.ziraatbank.com.tr/SiteAssets/images/logo.png"
+ },
+ {
+  "file": "SA-barq-icon.svg",
+  "country": "SA",
+  "id": "barq",
+  "kind": "icon",
+  "format": "svg",
+  "bytes": 996,
+  "source": "https://www.barq.com/assets/favicon.svg?v=4"
+ },
+ {
+  "file": "SA-tweeq-icon.svg",
+  "country": "SA",
+  "id": "tweeq",
+  "kind": "icon",
+  "format": "svg",
+  "bytes": 777,
+  "source": "https://tweeq.sa/assets/images/t9XEk2gtWs5MglBDvn8ZL9SE.svg"
  }
 ]

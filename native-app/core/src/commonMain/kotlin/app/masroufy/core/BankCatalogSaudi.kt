@@ -45,10 +45,10 @@ internal val SAUDI_BANKS: List<Bank> = listOf(
     Bank("sa-urpay", "SA", "يور باي", "urpay", BankKind.WALLET, true, emptyList(), listOf("urpay"), "sa_urpay"),
     Bank("sa-tiqmo", "SA", "تكمو", "tiqmo", BankKind.WALLET, true, emptyList(), listOf("شركة المدفوعات الرقمية الذكية"), "sa_tiqmo"),
     Bank("sa-hala", "SA", "هلا", "HALA Payments", BankKind.WALLET, false, emptyList(), listOf("شركة هلا للمدفوعات"), "sa_hala"),
-    Bank("sa-barq", "SA", "برق", "barq", BankKind.WALLET, true, emptyList(), listOf("شركة براق المالية"), null),
+    Bank("sa-barq", "SA", "برق", "barq", BankKind.WALLET, true, emptyList(), listOf("شركة براق المالية"), "sa_barq"),
     Bank("sa-mobily-pay", "SA", "موبايلي باي", "Mobily Pay", BankKind.WALLET, true, emptyList(), listOf("شركة اتحاد الرقمية المالية"), "sa_mobily_pay"),
     Bank("sa-alinmapay", "SA", "الإنماء باي", "AlinmaPay", BankKind.WALLET, true, emptyList(), listOf("شركة التقنية المالية السعودية", "AlinmaPay"), "sa_alinmapay"),
-    Bank("sa-tweeq", "SA", "تويك", "Tweeq", BankKind.WALLET, true, emptyList(), listOf("Tweeq"), null),
+    Bank("sa-tweeq", "SA", "تويك", "Tweeq", BankKind.WALLET, true, emptyList(), listOf("Tweeq"), "sa_tweeq"),
     Bank("sa-enjaz", "SA", "إنجاز", "Enjaz", BankKind.REMITTANCE, false, emptyList(), emptyList(), "sa_enjaz"),
     Bank("sa-friendi-pay", "SA", "فريندي باي", "FRiENDi PAY", BankKind.REMITTANCE, true, emptyList(), listOf("FRiENDi PAY"), "sa_friendi_pay"),
 )

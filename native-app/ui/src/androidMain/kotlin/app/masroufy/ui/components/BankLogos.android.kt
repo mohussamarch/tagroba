@@ -3,7 +3,7 @@ package app.masroufy.ui.components
 
 import app.masroufy.ui.R
 
-/** لوجوهات البنوك (80 صورة WebP في drawable-nodpi — OVERRIDES §76): مفتاح `Bank.logo` ⇒ الصورة. [onDark] = لوجو أبيض معمول لخلفية غامقة. */
+/** لوجوهات البنوك (82 صورة WebP في drawable-nodpi — OVERRIDES §76): مفتاح `Bank.logo` ⇒ الصورة. [onDark] = لوجو أبيض معمول لخلفية غامقة. */
 internal data class BankLogoImage(val res: Int, val onDark: Boolean = false)
 
 internal val BANK_LOGO_IMAGES: Map<String, BankLogoImage> = mapOf(
@@ -58,6 +58,7 @@ internal val BANK_LOGO_IMAGES: Map<String, BankLogoImage> = mapOf(
     "sa_bank_of_jordan" to BankLogoImage(R.drawable.bank_sa_bank_of_jordan),
     "sa_banque_misr" to BankLogoImage(R.drawable.bank_sa_banque_misr),
     "sa_banque_saudi_fransi" to BankLogoImage(R.drawable.bank_sa_banque_saudi_fransi),
+    "sa_barq" to BankLogoImage(R.drawable.bank_sa_barq),
     "sa_bnp_paribas" to BankLogoImage(R.drawable.bank_sa_bnp_paribas),
     "sa_d360_bank" to BankLogoImage(R.drawable.bank_sa_d360_bank),
     "sa_deutsche_bank" to BankLogoImage(R.drawable.bank_sa_deutsche_bank),
@@ -84,6 +85,7 @@ internal val BANK_LOGO_IMAGES: Map<String, BankLogoImage> = mapOf(
     "sa_stc_bank" to BankLogoImage(R.drawable.bank_sa_stc_bank, onDark = true),
     "sa_tiqmo" to BankLogoImage(R.drawable.bank_sa_tiqmo),
     "sa_trade_bank_of_iraq" to BankLogoImage(R.drawable.bank_sa_trade_bank_of_iraq),
+    "sa_tweeq" to BankLogoImage(R.drawable.bank_sa_tweeq),
     "sa_urpay" to BankLogoImage(R.drawable.bank_sa_urpay),
     "sa_vision_bank" to BankLogoImage(R.drawable.bank_sa_vision_bank),
     "sa_ziraat_bank" to BankLogoImage(R.drawable.bank_sa_ziraat_bank),
