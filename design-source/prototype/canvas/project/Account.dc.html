@@ -22,6 +22,7 @@ body{margin:0}
 .a-veil{animation:a-fade 220ms cubic-bezier(.2,.7,.3,1) both}
 .a-up{animation:a-up 420ms cubic-bezier(.18,.9,.28,1.04) both}
 .a-toast{animation:a-toast 2600ms cubic-bezier(.2,.7,.3,1) both}
+.a-box:focus-within{box-shadow:0 0 0 3px #956000 !important}.a-box input:focus-visible{box-shadow:none}
 @keyframes a-fade{from{opacity:0}to{opacity:1}}
 @keyframes a-up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes a-toast{0%{opacity:0;transform:translateY(10px)}12%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
@@ -112,6 +113,20 @@ body{margin:0}
             <sc-if value="{{hasNameErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{nameErr}}</span></sc-if>
           </div>
         </sc-if>
+        <sc-if value="{{sAmt}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <sc-if value="{{hasOldLine}}" hint-placeholder-val="{{ false }}"><span role="note" style="padding: 10px 12px; border-radius: 14px; font-size: 13px; color: #6B4600; background: #FBF0DD">{{oldLine}}</span></sc-if>
+            <span class="a-box" style="{{amtBox}}">
+              <input type="text" inputmode="decimal" dir="ltr" autocomplete="off" aria-label="{{sheetTitle}}" aria-invalid="{{amtBad}}" value="{{draftAmt}}" onInput="{{typeAmt}}" placeholder="0.00" style="flex: 1 1 auto; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; font: inherit; font-size: 18px; font-weight: 700; color: #193D33; text-align: right; font-variant-numeric: tabular-nums; outline: none">
+              <span style="font-size: 14px; color: #637570">{{currency}}</span>
+            </span>
+            <sc-if value="{{hasAmtErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; font-weight: 700; color: #BE3D48">{{amtErr}}</span></sc-if>
+            <div style="display: flex; gap: 8px">
+              <button type="button" class="m-press" onClick="{{save}}" disabled="{{saveOff}}" style="{{amtSaveStyle}}">{{saveLabel}}</button>
+              <button type="button" class="m-press" onClick="{{skipSalary}}" style="flex: 1 1 0; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 15px; font-weight: 700; color: #193D33; cursor: pointer; background: rgba(25,61,51,0.06)">{{skipLabel}}</button>
+            </div>
+          </div>
+        </sc-if>
         <sc-if value="{{sChips}}" hint-placeholder-val="{{ true }}">
           <div role="{{chipsRole}}" aria-label="{{sheetTitle}}" style="display: flex; flex-wrap: wrap; gap: 8px">
             <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
@@ -147,16 +162,27 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["عادي","خطأ","محتاج نت"],"default":"عادي","section":"الحالة"},"space":{"editor":"enum","options":["السعودية","مصر"],"default":"السعودية","section":"الحالة"},"salary":{"editor":"enum","options":["ما اتجاوبش","مبلغ","أفضّل ما أقولش","نطاق قديم"],"default":"ما اتجاوبش","section":"الحالة"},"$preview":{"width":390,"height":844}}'>
+const withCur = (v, c) => (c === '\u20C1' ? '\u2066\u20C1\u00A0' + v + '\u2069' : v + ' ' + c); // رمز الريال الرسمي على شمال الرقم بمسافة — الجنيه بعد الرقم زي ما هو
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     // مخترعة. null = ما اتجاوبش (مش «لأ» — قاعدة 10). الملف واحد للحساب كله في البلدين (§41).
     let prof = null; try { prof = JSON.parse(window.sessionStorage.getItem('masroufy-profile') || 'null'); } catch (e) {}
-    this.state = { p: { name: (prof && prof.name) || 'محمد', gender: (prof && prof.gender) || null, deps: null, salary: null, payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '', look: null };
+    this.state = { p: { name: (prof && prof.name) || 'محمد', gender: (prof && prof.gender) || null, deps: null, salary: this.salaryOf(props), payday: 28, car: null, carToWork: null, renter: null, maid: null, biz: null, dues: null }, sheet: null, draft: null, toast: '', look: null };
     this.timers = [];
   }
   componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  // المرتب (قرار المالك 2026-10-16 — بيلغي نطاقات §63): رقم بالهللة/القرش · 'skip' = «أفضّل ما أقولش» · نص تاني = إجابة نطاق قديمة ⇒ ما اتجاوبش
+  salaryOf(pr) { const eg = (pr.space ?? 'السعودية') === 'مصر'; const v = pr.salary ?? 'ما اتجاوبش'; return v === 'مبلغ' ? (eg ? 2550000 : 850000) : v === 'أفضّل ما أقولش' ? 'skip' : v === 'نطاق قديم' ? 'r2' : null; }
+  componentDidUpdate(prev) { if (prev.salary !== this.props.salary || prev.space !== this.props.space) this.setState({ p: Object.assign({}, this.state.p, { salary: this.salaryOf(this.props) }), sheet: null, draft: null }); }
+  toMinor(t) {
+    const s = String(t == null ? '' : t).replace(/[٠-٩۰-۹]/g, (x) => String('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(x) % 10)).replace(/٫/g, '.').replace(/[,٬\s]/g, '');
+    if (!/\d/.test(s) || !/^\d*\.?\d{0,2}$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    return parseInt(w || '0', 10) * 100 + parseInt((f + '00').slice(0, 2), 10);
+  }
+  amt(m, commas) { const f = m % 100, w = String((m - f) / 100); return (commas ? w.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : w) + (f ? '.' + (f < 10 ? '0' : '') + f : ''); }
   say(msg) { this.timers.push(setTimeout(() => this.setState({ toast: '' }), 2700)); this.setState({ toast: msg }); }
   put(patch, msg) {
     const p = Object.assign({}, this.state.p, patch);
@@ -175,12 +201,12 @@ class Component extends DCLogic {
     const YES = eg ? 'أيوه' : 'نعم', NO = eg ? 'لأ' : 'لا';
     const GENDER = { male: 'ذكر', female: 'أنثى' };
     const DEPS = [['spouse', eg ? 'الزوج أو الزوجة' : 'الزوج أو الزوجة'], ['children', eg ? 'العيال' : 'الأولاد'], ['parents', 'الأهل']];
-    // §63: المرتب نطاقات مش رقم، ومعاه «مش عايز أقول». الحدود مخترعة (مصر ≈ ×3)
-    const SAL = eg ? [['r1', 'أقل من 15 ألف'], ['r2', '15–30 ألف'], ['r3', '30–60 ألف'], ['r4', 'أكتر من 60 ألف'], ['skip', 'مش عايز أقول']]
-      : [['r1', 'أقل من 5 آلاف'], ['r2', '5–10 آلاف'], ['r3', '10–20 ألفًا'], ['r4', 'أكثر من 20 ألفًا'], ['skip', 'أفضّل ألا أقول']];
+    // المرتب بالمبلغ بالظبط (قرار المالك 2026-10-16): خانة مبلغ + «أفضّل ما أقولش». إجابة النطاق القديمة بتتعرض «ما اتجاوبش» ومعاها سطر يطلب المبلغ
+    const salNum = typeof p.salary === 'number', salOld = typeof p.salary === 'string' && p.salary !== 'skip';
+    const SKIP = eg ? 'أفضّل ما أقولش' : 'أفضّل ألا أقول';
     const label = (list, id) => (list.find((x) => x[0] === id) || [id, ''])[1];
-    // أوزان «ملفك X%» من §63 (اختيار Claude): الدخول والبلد ويوم المرتب ومصدر الفلوس والكاش والديون اتجاوبوا = 60
-    const pct = 60 + (p.salary ? 12 : 0) + (p.deps ? 7 : 0) + (p.car !== null ? 7 : 0) + (p.renter !== null ? 7 : 0) + (p.biz !== null ? 7 : 0);
+    // أوزان «ملفك X%» من §63 (اختيار Claude): الدخول والبلد ويوم المرتب ومصدر الفلوس والكاش والديون اتجاوبوا = 60. المرتب بيتعد بالمبلغ بس (زي «كمّل ملفك»)
+    const pct = 60 + (salNum ? 12 : 0) + (p.deps ? 7 : 0) + (p.car !== null ? 7 : 0) + (p.renter !== null ? 7 : 0) + (p.biz !== null ? 7 : 0);
     const notYet = eg ? 'لسه ما جاوبتش' : 'لم تُجب بعد';
     const yn = (v) => (v === true ? YES : v === false ? NO : null);
     const open = (sheet, draft) => () => this.setState({ sheet, draft });
@@ -190,7 +216,8 @@ class Component extends DCLogic {
     const carVal = p.car === true && p.carToWork !== null ? YES + (p.carToWork ? (eg ? ' · بروح بيها الشغل' : ' · أذهب بها للدوام') : (eg ? ' · مش للشغل' : ' · ليست للدوام')) : yn(p.car);
     const groups = [
       { title: 'عنك', rows: [row('الاسم', p.name, 'name', p.name), row('النوع', GENDER[p.gender], 'gender', p.gender), row(eg ? 'بتعول مين' : 'من تعول', p.deps ? (p.deps.length ? p.deps.map((d) => label(DEPS, d)).join('، ') : (eg ? 'محدش' : 'لا أحد')) : null, 'deps', p.deps ? p.deps.slice() : [])] },
-      { title: 'الدخل', rows: [row(eg ? 'المرتب' : 'الراتب', p.salary ? label(SAL, p.salary) + (p.salary === 'skip' ? '' : ' ' + cur) : null, 'salary', p.salary, eg ? 'نطاق تقريبي كفاية' : 'نطاق تقريبي يكفي'),
+      { title: 'الدخل', rows: [row(eg ? 'المرتب' : 'الراتب', salNum ? withCur(this.amt(p.salary, true), cur) : p.salary === 'skip' ? SKIP : null, 'salary', salNum ? this.amt(p.salary, false) : '',
+          salOld ? (eg ? 'إجابتك القديمة كانت نطاق — اكتب المبلغ بالظبط' : 'إجابتك السابقة كانت نطاقًا — اكتب المبلغ بالضبط') : (eg ? 'بالظبط، عشان التوقع يبقى أدق' : 'بالضبط، ليكون التوقع أدق')),
         row(eg ? 'يوم المرتب' : 'يوم الراتب', 'يوم ' + n(p.payday), 'payday', p.payday, eg ? 'واحد للحساب كله، ومنه بيبدأ شهرك المالي' : 'واحد للحساب كله، ومنه يبدأ شهرك المالي')] },
       { title: eg ? 'حياتك' : 'حياتك', note: eg ? 'على أساسها بتظهرلك التصنيفات اللي تخصك بس.' : 'بناءً عليها تظهر لك التصنيفات التي تخصك فقط.',
         rows: [row(eg ? 'عندك عربية؟' : 'هل لديك سيارة؟', carVal, 'car', p.car), row(eg ? 'ساكن بإيجار؟' : 'هل تسكن بالإيجار؟', yn(p.renter), 'renter', p.renter),
@@ -202,11 +229,13 @@ class Component extends DCLogic {
     const yesNo = (key) => [[true, YES], [false, NO]].map(([v, lbl]) => ({ label: lbl, role: 'radio', on: d === v ? 'true' : 'false', style: chip(d === v), pick: () => this.setState({ draft: v }) }));
     const depsChips = DEPS.map(([id, lbl]) => { const on = Array.isArray(d) && d.indexOf(id) >= 0; return { label: lbl, role: 'checkbox', on: on ? 'true' : 'false', style: chip(on), pick: () => { const cur2 = Array.isArray(d) ? d.slice() : []; const i = cur2.indexOf(id); if (i >= 0) cur2.splice(i, 1); else cur2.push(id); this.setState({ draft: cur2 }); } }; });
     const nameTooLong = s.sheet === 'name' && String(d || '').trim().length > 60;
+    const amtText = s.sheet === 'salary' ? String(d == null ? '' : d) : '', amtMinor = this.toMinor(amtText), amtOk = amtMinor != null && amtMinor > 0;
+    const amtErr = !amtText.trim() ? '' : amtMinor == null ? (eg ? 'اكتب المرتب بالأرقام، مثلًا 8500' : 'اكتب الراتب بالأرقام، مثل 8500') : amtMinor === 0 ? (eg ? 'المرتب لازم يكون أكبر من صفر' : 'يجب أن يكون الراتب أكبر من صفر') : '';
     const SH = {
       name: { t: 'الاسم', b: eg ? 'اختياري. بيظهر في التحية بس.' : 'اختياري. يظهر في التحية فقط.', save: () => { if (nameTooLong) return; this.put({ name: String(d || '').trim() || null }); } },
       gender: { t: 'النوع', b: eg ? 'اختار ذكر أو أنثى، أو سيبها فاضية' : 'اختر ذكرًا أو أنثى، أو اتركه فارغًا', chips: one([['male', 'ذكر'], ['female', 'أنثى']]), save: () => this.put({ gender: d || null }) },
       deps: { t: eg ? 'بتعول مين؟' : 'من تعول؟', b: eg ? 'اختار اللي ينطبق، أو «محدش».' : 'اختر ما ينطبق، أو «لا أحد».', chips: depsChips, role: 'group', save: () => this.put({ deps: Array.isArray(d) ? d : [] }), saveLabel: Array.isArray(d) && !d.length ? (eg ? 'محدش' : 'لا أحد') : null },
-      salary: { t: (eg ? 'المرتب في الشهر (' : 'الراتب الشهري (') + cur + ')', b: eg ? 'نطاق تقريبي كفاية، ومش هنطلب رقم.' : 'يكفي نطاق تقريبي، ولن نطلب رقمًا.', chips: one(SAL), save: () => { if (d) this.put({ salary: d }); }, need: true },
+      salary: { t: eg ? 'المرتب في الشهر' : 'الراتب الشهري', b: eg ? 'اكتبه بالظبط — بيخلّي التوقع والمتاح يوميًا أدق.' : 'اكتبه بالضبط — يجعل التوقع والمتاح يوميًا أدق.', amt: true, save: () => { if (amtOk) this.put({ salary: amtMinor }); } },
       payday: { t: eg ? 'المرتب بينزل يوم كام؟' : 'في أي يوم ينزل الراتب؟', b: eg ? 'شهرك المالي بيبدأ من اليوم ده في البلدين.' : 'يبدأ شهرك المالي من هذا اليوم في البلدين.', save: () => this.put({ payday: d }, d === p.payday ? '' : (eg ? 'شهرك المالي بقى يبدأ يوم ' : 'أصبح شهرك المالي يبدأ يوم ') + n(d)) },
       car: { t: eg ? 'عندك عربية؟' : 'هل لديك سيارة؟', chips: yesNo(), need: true, save: () => { if (d === null) return; if (d === true && p.car !== true) this.setState({ p: Object.assign({}, p, { car: true, carToWork: null }), sheet: 'carToWork', draft: null }); else this.put({ car: d, carToWork: d ? p.carToWork : null }); } },
       renter: { t: eg ? 'ساكن بإيجار؟' : 'هل تسكن بالإيجار؟', chips: yesNo(), need: true, save: () => { if (d !== null) this.put({ renter: d }); } },
@@ -217,7 +246,7 @@ class Component extends DCLogic {
       signout: { t: eg ? 'تخرج من الحساب؟' : 'تسجيل الخروج؟', b: eg ? 'بياناتك محفوظة في حسابك وبترجع كاملة لما تدخل تاني. النسخة اللي على الجوال ده هتتمسح.' : 'بياناتك محفوظة في حسابك وتعود كاملة عند الدخول مجددًا. تُمسح النسخة التي على هذا الجوال.', two: [eg ? 'اخرج' : 'خروج', () => this.put({}, eg ? 'تجربة: في التطبيق بتروح لشاشة الدخول' : 'تجربة: في التطبيق تنتقل إلى شاشة الدخول'), eg ? 'خليني' : 'إلغاء', () => this.setState({ sheet: null })], danger: true }
     };
     const sh = s.sheet ? SH[s.sheet] : null;
-    const saveOk = sh && !sh.two && !(sh.need && (d === null || d === undefined)) && !nameTooLong;
+    const saveOk = sh && !sh.two && !(sh.need && (d === null || d === undefined)) && !nameTooLong && !(sh.amt && !amtOk);
     const days = [];
     for (let i = 1; i <= 31; i++) days.push({ label: n(i), on: d === i ? 'true' : 'false', pick: () => this.setState({ draft: i }), style: 'height: 44px; border: 0; border-radius: 12px; font: inherit; font-size: 14px; cursor: pointer; ' + (d === i ? 'font-weight: 700; color: #FFFFFF; background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%)' : 'color: #193D33; background: rgba(25,61,51,0.05)') });
     const on = p.dues !== false;
@@ -228,7 +257,7 @@ class Component extends DCLogic {
       isError: st === 'خطأ', errTitle: eg ? 'ما اتحفظش آخر تعديل' : 'تعذّر حفظ آخر تعديل', errBody: eg ? 'هنجرّب تاني لوحدنا أول ما النت يرجع.' : 'سنعيد المحاولة تلقائيًا عند عودة الاتصال.',
       isOffline: offline, offline, offlineBody: eg ? 'مفيش نت. تعديلاتك بتتحفظ على الجوال وبتتبعت لما النت يرجع.' : 'لا اتصال. تُحفظ تعديلاتك على الجوال وتُرسل عند عودة الاتصال.',
       nameShown: p.name || (eg ? 'من غير اسم' : 'بلا اسم'), email: 'mohamed@example.com',
-      pct: String(pct), pctLabel: (eg ? 'ملفك ' : 'ملفك ') + n(pct) + '%',
+      pct: String(pct), pctLabel: 'ملفك \u2066' + n(pct) + '%\u2069',
       pctHint: pct >= 100 ? (eg ? 'كامل' : 'مكتمل') : (eg ? 'كل إجابة بتخلي الأرقام أدق' : 'كل إجابة تجعل الأرقام أدق'),
       barStyle: 'display: block; height: 8px; border-radius: 4px; background: #27785B; width: ' + pct + '%',
       hasChar: !!charLook, charLook: charLook || {}, charLabel: eg ? 'شخصيتك بالجسم كله' : 'شخصيتك كاملة',
@@ -249,7 +278,12 @@ class Component extends DCLogic {
       nameInput: 'height: 48px; box-sizing: border-box; padding: 0 14px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #193D33; background: #FFFFFF; outline: none; box-shadow: inset 0 0 0 ' + (nameTooLong ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
       sChips: !!(sh && sh.chips), chips: sh && sh.chips ? sh.chips : [], chipsRole: sh && sh.role ? sh.role : 'radiogroup',
       sDays: s.sheet === 'payday', days, daysNote: eg ? 'الأيام 29–31 بتتحسب آخر يوم في الشهر القصير.' : 'الأيام 29–31 تُحسب آخر يوم في الشهر القصير.',
-      hasSave: !!(sh && !sh.two), saveOff: !saveOk, saveLabel: sh && sh.saveLabel ? (eg ? 'احفظ: ' : 'حفظ: ') + sh.saveLabel : (eg ? 'احفظ' : 'حفظ'),
+      sAmt: !!(sh && sh.amt), hasOldLine: !!(sh && sh.amt && salOld), oldLine: eg ? 'إجابتك القديمة كانت نطاق تقريبي، ودلوقتي محتاجين المبلغ بالظبط.' : 'كانت إجابتك السابقة نطاقًا تقريبيًا، ونحتاج الآن المبلغ بالضبط.',
+      amtBox: 'height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 16px; display: flex; align-items: center; gap: 8px; background: #FFFFFF; box-shadow: inset 0 0 0 ' + (amtErr ? '1.5px #BE3D48' : '1px rgba(204,216,204,0.9)'),
+      draftAmt: amtText, typeAmt: (e) => this.setState({ draft: e.target.value }), amtBad: amtErr ? 'true' : 'false', hasAmtErr: !!amtErr, amtErr, currency: cur,
+      skipLabel: SKIP, skipSalary: () => this.put({ salary: 'skip' }, eg ? 'مش هنسألك عن المرتب تاني' : 'لن نسألك عن الراتب مرة أخرى'),
+      amtSaveStyle: 'flex: 1 1 0; ' + primary + 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (saveOk ? '' : ' opacity: 0.45; cursor: default'),
+      hasSave: !!(sh && !sh.two && !sh.amt), saveOff: !saveOk, saveLabel: sh && sh.saveLabel ? (eg ? 'احفظ: ' : 'حفظ: ') + sh.saveLabel : (eg ? 'احفظ' : 'حفظ'),
       saveStyle: primary + 'background: linear-gradient(160deg, #0A7A62 0%, #08634F 100%);' + (saveOk ? '' : ' opacity: 0.45; cursor: default'),
       save: () => { if (sh && sh.save && saveOk) sh.save(); },
       sTwo: !!(sh && sh.two), act1Label: sh && sh.two ? sh.two[0] : '', act1: () => { if (sh && sh.two) sh.two[1](); }, act2Label: sh && sh.two ? sh.two[2] : '', act2: () => { if (sh && sh.two) sh.two[3](); },
