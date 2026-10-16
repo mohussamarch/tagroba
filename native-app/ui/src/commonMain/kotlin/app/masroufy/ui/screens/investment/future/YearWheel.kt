@@ -83,8 +83,11 @@ internal fun YearWheel(state: InvestFutureState) {
         if (scroll.isScrollInProgress) return@LaunchedEffect
         delay(120)
         if (scroll.value <= last * rowPx + rowPx / 2) {
-            scroll.animateScrollTo((pos * rowPx).roundToInt())
+            // الاختيار قبل التسنيم: التسنيم بيقلب `isScrollInProgress` فبيلغي الأثر ده ويبدأه من الأول — لو الاختيار بعده عمره ما بيتنفذ
+            // (سموك r05: البكرة بتقف على 5 والهيرو فاضل «10 سنين»)
             if (steps[pos] != state.choice.years) state.pickYears(steps[pos])
+            val target = (pos * rowPx).roundToInt()
+            if (scroll.value != target) scroll.animateScrollTo(target)
         }
     }
     val veilPress = rememberPress()
