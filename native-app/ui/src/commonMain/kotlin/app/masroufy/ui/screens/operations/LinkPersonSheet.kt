@@ -54,11 +54,14 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
+fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean, flow: DetailPersonFlow? = null, onUnlink: () -> Unit = {}) {
     val deps = LocalSpace.current.operations
     val scope = rememberCoroutineScope()
-    val blocked = locked || v.flow != LinkFlow.PURCHASE
-    var open by remember { mutableStateOf(openInitially && !blocked) }
+    // r05: الحوالة والاسترداد ورسايل البنك بتتربط بـ«مع مين؟» (`ManagePersonLinks`) — الشراء بيفضل يتقسم هنا
+    val meaningFlow = v.flow != LinkFlow.PURCHASE && flow != null && deps.personLinks != null
+    val linked = flow?.status?.link
+    val blocked = locked || (v.flow != LinkFlow.PURCHASE && !meaningFlow) || (meaningFlow && linked != null)
+    var open by remember { mutableStateOf(openInitially && !blocked && v.flow == LinkFlow.PURCHASE) }
     var rows by remember(v.id) { mutableStateOf<List<PersonRow>>(emptyList()) }
     var added by remember(v.id) { mutableStateOf<List<PersonLinkLine>>(emptyList()) }
     var reload by remember { mutableStateOf(0) }
@@ -66,11 +69,21 @@ fun LinkPersonCard(v: DetailView, locked: Boolean, openInitially: Boolean) {
     val links = existingPersonLinks(rows, v.id) + added
     val sub = when {
         locked -> t(UiKey.LINK_PERSON_LOCKED)
+        meaningFlow -> t(UiKey.PLINK_CARD_SUB_TRANSFER)
         v.flow != LinkFlow.PURCHASE -> t(UiKey.LINK_PERSON_TRANSFER_SOON)
-        links.isEmpty() -> t(UiKey.LINK_PERSON_SUB)
+        links.isEmpty() && linked == null -> t(UiKey.LINK_PERSON_SUB)
         else -> t(UiKey.LINK_PERSON_SUB_MORE)
     }
-    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, if (links.isEmpty()) t(UiKey.LINK_PERSON_OPEN) else t(UiKey.LINK_PERSON_ANOTHER), enabled = !blocked, onOpen = { open = true }) {
+    val action = if (links.isEmpty() && linked == null) t(UiKey.LINK_PERSON_OPEN) else t(UiKey.LINK_PERSON_ANOTHER)
+    LinkCard(Lucide.USERS, t(UiKey.LINK_PERSON_CARD), sub, action, enabled = !blocked, onOpen = { if (meaningFlow) flow?.ask(v) else open = true }) {
+        if (linked != null) {
+            Divider()
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                BasicText(t(UiKey.LINK_PERSON_LINE, flow?.status?.personName.orEmpty(), meaningLabel(linked.meaning)), Modifier.weight(1f), style = Type.of(13, FontWeight.Bold))
+                AmountText(linked.amountMinor, v.currency, tone = v.tone, size = 14)
+                SmallAction(t(UiKey.PLINK_UNLINK), onClick = onUnlink)
+            }
+        }
         for (l in links) {
             Divider()
             Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {

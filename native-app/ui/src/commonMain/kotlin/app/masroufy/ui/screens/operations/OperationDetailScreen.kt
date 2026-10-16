@@ -86,6 +86,14 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
         reload++
     }
     var picking by remember { mutableStateOf(false) }
+    // r05: «مع مين؟» (أي نوع · بعد تصنيف فلوس مع شخص) + «تراجع» 8 ثواني
+    val person = rememberDetailPersonFlow(transactionId, reload)
+    val personWindow = undoWindowFor(person.undo) { person.undo = null }
+    fun unlinkPerson(id: Id, done: String) = scope.launch {
+        toaster.show(failureOf { deps.personLinks?.unlink(id) } ?: done)
+        person.undo = null
+        reload++
+    }
     // كارت «مَن هذا؟» بيفضل بعد القرار (بحالة «تم» و«تراجع») حتى لو التحميل الجديد شال السؤال
     var partyShown by remember { mutableStateOf<app.masroufy.core.TransferPartyRef?>(null) }
     LaunchedEffect(deps, reload) {
@@ -125,6 +133,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 if (unlinks.undo != null) item(key = "unlink-undo") {
                     UndoStrip(t(UiKey.LINKED_UNLINK_DONE), unlinkWindow) { linkStep { l, show -> revert(l, show) } }
                 }
+                personFlowItems(person, v, personWindow) { u -> unlinkPerson(u.transactionId, t(UiKey.PLINK_UNDONE)) }
                 item(key = "hero") { DetailHero(v) }
                 (linkedView as? app.masroufy.usecase.LinkedInflowsView.Inflow)?.let { li ->
                     item(key = "linked-parent") { LinkedParentBanner(li, unlinks) { linkStep { l, show -> confirm(l, show) } } }
@@ -134,6 +143,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 if (party != null) item(key = "party") { TransferPartyCard(party, v.id, onChanged = { reload++ }) }
                 // تغيير نوع تحويل داخل اتقرر (البند 6) — مش على رجل «التحويل لنفسك»
                 else if (v.flow == LinkFlow.TRANSFER_IN && !s.locked && deps.incomeAnswers != null) item(key = "income") { IncomeKindCard(v.id, onChanged = { reload++ }) }
+                // r05 (البند 9): «راتب من أي جهة؟» على الراتب الداخل
+                if (v.transaction.economicKind == app.masroufy.core.EconomicKind.SALARY && v.flow == LinkFlow.TRANSFER_IN) item(key = "salary-employer") { SalaryEmployerCard(v.id, reload) { reload++ } }
                 item(key = "fields") {
                     FieldsCard(v, s.tags, onPick = { picking = true }, onConfirm = { id ->
                         scope.launch {
@@ -150,7 +161,7 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 if (v.flow != LinkFlow.NONE) item(key = "links") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         BasicText(t(UiKey.OPERATION_DETAIL_LINK_TITLE), style = Type.of(13, FontWeight.Bold).copy(color = Ink.muted))
-                        LinkPersonCard(v, s.locked, openInitially = openPerson)
+                        LinkPersonCard(v, s.locked, openInitially = openPerson, person) { unlinkPerson(v.id, t(UiKey.PLINK_UNDONE)) }
                         LinkProjectEventCard(v, s.locked)
                     }
                 }
@@ -180,10 +191,17 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
                 val merchant = v.merchant
                 val remembered = merchant != null && failureOf { deps.merchants.setMerchantCategory(merchant.id, cat.id) } == null
                 toaster.show(categoryToast(remembered, v.title, cat.name))
+                // r05 (طريق المالك نفسه): تصنيف معناه فلوس مع شخص ⇒ «مع مين؟» قبل ما يفضل من غير ربط
+                person.afterCategory(deps.personLinks, v)
                 reload++
             }
         },
     )
+    PersonMeaningSheet(person.target, deps.personLinks, deps.people, onDismiss = { person.target = null }) { linked ->
+        person.target = null
+        person.undo = linked
+        reload++
+    }
 }
 
 /** الكارت الكبير في النص (زاوية 26 · حشوة 18). */

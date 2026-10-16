@@ -109,6 +109,8 @@ fun DuesDebtsScreen(initialSide: DebtSide) {
                     }
                     return@DuesScaffold
                 }
+                // r05: العمليات اللي تصنيفها فلوس مع شخص ومش مربوطة بحد — ضغطة ⇒ «مع مين؟»
+                item(key = "needs-person") { app.masroufy.ui.screens.people.NeedsPersonCard() }
                 item(key = "sides") {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         for (sd in ui.sides) SideFilter(Modifier.weight(1f), sd, side == sd.side, ui.currency) { side = if (side == sd.side) DebtSide.ALL else sd.side }

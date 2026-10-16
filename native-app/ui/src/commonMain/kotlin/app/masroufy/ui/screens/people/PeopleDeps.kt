@@ -23,6 +23,9 @@ import app.masroufy.usecase.ManageProjects
  * التنفيذ: `:wiring` → `PeopleGraph` (بنفس اعتماداتها في اختبارات `:app`). الشاشة: `val deps = LocalSpace.current.people`.
  */
 interface PeopleDeps {
+    /** صفحة الشخص (r05): «السجل بينا» · الحسابات المربوطة · اربط عمليات · أضف عملية · «محتاجة تربطها بشخص». null ⇒ الأقسام دي ما بتظهرش. */
+    val links: app.masroufy.usecase.ManagePersonLinks? get() = null
+
     /** الدواير والقايمة بالأرصدة — `forSpace(النهارده، البلد الشغالة)` (سطر لكل بلد وعملة، من غير جمع). */
     val overview: LoadPeopleOverview
 
