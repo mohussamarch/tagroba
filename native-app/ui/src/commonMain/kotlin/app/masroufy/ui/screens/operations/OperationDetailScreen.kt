@@ -90,6 +90,8 @@ fun OperationDetailScreen(transactionId: Id, openPerson: Boolean = false) {
     var partyShown by remember { mutableStateOf<app.masroufy.core.TransferPartyRef?>(null) }
     LaunchedEffect(deps, reload) {
         state = app.masroufy.perf.PerfTrace.span("screen:detail") { attempt {
+            // 2026-10-16: «بيحوّلي مستحقات دايمًا» — الوارد من الحساب ده بيتسجل سداد أول ما يتفتح (نفس طريق «ده سداد؟»)
+            attempt { deps.partyAnswers?.applyDues(transactionId) }
             val detail = deps.edit.load(transactionId)
             val categories = deps.categories.list()
             val merchants = attempt { deps.merchants.listMerchants().map { it.merchant } }.orEmpty()

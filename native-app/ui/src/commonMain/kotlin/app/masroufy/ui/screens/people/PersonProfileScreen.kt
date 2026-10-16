@@ -125,6 +125,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.personBody(ui: Person
     }
     item(key = "together") { Together(ui, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
     item(key = "history") { History(ui, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
+    item(key = "dues-rules") { app.masroufy.ui.screens.operations.DuesRulesCard(ui.id, Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter)) }
     if (ui.badges.isNotEmpty()) item(key = "badges") {
         Column(Modifier.offset(y = (-66).dp).padding(horizontal = Space.gutter), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicText(t(UiKey.PERSON_PAGE_BADGES), style = Type.section())

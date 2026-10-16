@@ -62,6 +62,8 @@ fun transfersView(zone: TransferZone, personNames: Map<Id, String>): TransfersVi
             TransferVerdict.OWN_ACCOUNT -> FieldChip(t(UiKey.TRANSFER_PARTY_OWN), ChipInk.blue, ChipInk.blueBg)
             TransferVerdict.PERSON -> FieldChip(t(UiKey.TRANSFERS_PERSON_CHIP, d.personId?.let(personNames::get) ?: t(TextKey.NOT_AVAILABLE)), ChipInk.green, ChipInk.greenBg)
             TransferVerdict.DISMISSED -> FieldChip(t(UiKey.TRANSFER_PARTY_NOT), ChipInk.grey, ChipInk.greyBg)
+            TransferVerdict.COMPANY -> FieldChip(t(UiKey.TRANSFER_PARTY_COMPANY), ChipInk.blue, ChipInk.blueBg)
+            TransferVerdict.LABEL -> FieldChip(d.note ?: t(UiKey.TRANSFER_PARTY_LABEL), ChipInk.green, ChipInk.greenBg)
         }
         val hint = when (d?.verdict) {
             null -> t(UiKey.TRANSFERS_HINT_ASK)

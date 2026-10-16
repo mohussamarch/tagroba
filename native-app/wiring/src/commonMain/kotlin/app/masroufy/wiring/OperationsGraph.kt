@@ -113,6 +113,15 @@ class OperationsGraph(private val c: AreaContext) : OperationsDeps {
     override val employers = employerCases.employers
     override val employerRetro = employerCases.retro
 
+    // ردود «مَن هذا؟» الجديدة (طلبات المالك 2026-10-16): «مستحقات دايمًا» بنفس طريق «ده سداد؟» (`AnswerTransferAsks`)
+    private val personLedger = app.masroufy.usecase.PersonLedgerRepos(r.obligations, r.settlements, r.allocations)
+    private val transferAsks = app.masroufy.usecase.AnswerTransferAsks(
+        app.masroufy.usecase.AnswerTransferAsksDeps(r.transactions, r.transferParties, r.obligations, r.settlements, r.allocations, r.people, people, r.uow, clock),
+    )
+    override val partyAnswers = app.masroufy.usecase.TransferPartyAnswers(
+        app.masroufy.usecase.TransferPartyAnswersDeps(r.transactions, r.transferParties, transfers, transferAsks, kinds, personLedger, r.uow, clock),
+    )
+
     override suspend fun payday(): Int = c.shell.profile.load().payday
 
     override suspend fun wallets(): List<Wallet> = LoadWithYouNow(r.wallets, r.transactions, c.space.currency).load(c.env.today()).wallets.map { it.wallet }

@@ -67,7 +67,7 @@ fun salaryDone(a: SalaryAnswer): IncomeDone {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun IncomeAnswerChips(transactionId: Id, withOther: Boolean, onDone: (IncomeDone) -> Unit) {
+fun IncomeAnswerChips(transactionId: Id, withOther: Boolean, withSalary: Boolean = true, onDone: (IncomeDone) -> Unit) {
     val answers = LocalSpace.current.operations.incomeAnswers ?: return
     val scope = rememberCoroutineScope()
     var picking by remember { mutableStateOf(false) }
@@ -79,7 +79,7 @@ fun IncomeAnswerChips(transactionId: Id, withOther: Boolean, onDone: (IncomeDone
         undo?.let { onDone(IncomeDone(t(UiKey.INCOME_ANS_DONE_INCOME, ruleFor(kind).label), t(UiKey.INCOME_ANS_DONE_INCOME_BODY), it)) }
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SelectChip(t(UiKey.INCOME_ANS_SALARY), false, { picking = true; error = null })
+        if (withSalary) SelectChip(t(UiKey.INCOME_ANS_SALARY), false, { picking = true; error = null })
         SelectChip(t(UiKey.INCOME_ANS_SIDE_JOB), false, { mark(EconomicKind.FREELANCE) })
         SelectChip(t(UiKey.INCOME_ANS_SALE), false, { mark(EconomicKind.PERSONAL_SALE) })
         if (withOther) SelectChip(t(UiKey.INCOME_ANS_OTHER), other, { other = !other })
@@ -142,7 +142,7 @@ fun IncomeKindCard(transactionId: Id, onChanged: () -> Unit) {
 /** «راتب من أي جهة؟»: جهة موجودة أو «جهة جديدة» (الاسم · من · إلى) ⇒ `markSalary` (الحساب المحوِّل بيتربط بيها في نفس الخطوة). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EmployerPickSheet(visible: Boolean, transactionId: Id, onDismiss: () -> Unit, onDone: (IncomeDone) -> Unit) {
+internal fun EmployerPickSheet(visible: Boolean, transactionId: Id, onDismiss: () -> Unit, onDone: (IncomeDone) -> Unit) {
     val deps = LocalSpace.current.operations
     val answers = deps.incomeAnswers ?: return
     val scope = rememberCoroutineScope()

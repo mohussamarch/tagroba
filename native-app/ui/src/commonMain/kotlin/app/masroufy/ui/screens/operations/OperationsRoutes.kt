@@ -77,6 +77,9 @@ interface OperationsDeps {
      */
     val incomeAnswers: app.masroufy.usecase.IncomeAnswers? get() = null
 
+    /** ردود «مَن هذا؟» الجديدة (2026-10-16): شركة · مستحقات دايمًا · حاجة تانية · تجاهل بتراجع — وكمان «حسابات متجاهَلة» وقاعدة المستحقات في صفحة الشخص. null ⇒ مخفية. */
+    val partyAnswers: app.masroufy.usecase.TransferPartyAnswers? get() = null
+
     /** «جهات الشغل» (البند 7) — اختيار الجهة في «راتب الدوام». */
     val employers: app.masroufy.usecase.ManageEmployers? get() = null
 
