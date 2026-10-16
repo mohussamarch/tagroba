@@ -27,6 +27,9 @@ private fun salariedActiveOn(sources: List<IncomeSource>, day: IsoDate, currency
 fun attributedSourceId(t: Transaction, sources: List<IncomeSource>): Id? {
     if (t.observedDirection != Direction.IN || t.economicKind in NOT_IN_INCOME_AVERAGES) return null
     if (t.economicKindConfirmed && !countsAsIncome(t.economicKind)) return null
+    // مراجعة r051: الراتب اللي من غير حساب والمالك اختار جهته بإيده ([salaryTxnKey]) منسوب لها
+    val tagged = salaryTxnKey(t.id)
+    sources.firstOrNull { tagged in it.payerKeys && it.currency == t.currency }?.let { return it.id }
     val key = transferPartyOf(t)?.key ?: return null
     return sourcesActiveOn(sources, t.occurredAt).firstOrNull { key in it.payerKeys && it.currency == t.currency }?.id
 }
@@ -66,7 +69,8 @@ fun payerQuestionText(q: PayerQuestion): String = uiText(TextKey.INCOME_Q_PAYER,
  */
 fun applyKnownPayerSalary(t: Transaction, sources: List<IncomeSource>, nowIso: String): Transaction {
     if (t.observedDirection != Direction.IN || t.economicKindConfirmed) return t
-    if (employerOf(t, sources) == null) return t
+    // مراجعة r051: الحساب المعروف أو اختيار المالك بس — «الجهة الوحيدة» تخمين ما بيأكدش نوع (رد «ده راتبك؟» هو اللي بيقرر — §75-2)
+    if (employerByPayer(t, sources) == null) return t
     return asConfirmedSalary(t, nowIso)
 }
 
@@ -110,7 +114,8 @@ fun lastWeeklyDueWithGracePassed(weekday: Int, today: IsoDate): IsoDate {
  */
 fun lateIncomeCandidates(sources: List<IncomeSource>, transactions: List<Transaction>, today: IsoDate): List<AlertCandidate> =
     sourcesActiveOn(sources, today).mapNotNull { s ->
-        if (s.payerKeys.isEmpty()) return@mapNotNull null
+        // مراجعة r051: اختيار جهة لعملية من غير حساب ([salaryTxnKey]) مش «معروف مين بيحوّل»
+        if (partyPayerKeys(s).isEmpty()) return@mapNotNull null
         // الأسبوعي (رد المالك §64): يومين مهلة، والإيداع اللي قبل اليوم بـ3 أيام بيتحسب لنفس الأسبوع
         val (due, early) = when (s.payFrequency) {
             PayFrequency.MONTHLY -> lastDueWithGracePassed(s.expectedDayOfMonth ?: return@mapNotNull null, today) to INCOME_EARLY_WINDOW_DAYS

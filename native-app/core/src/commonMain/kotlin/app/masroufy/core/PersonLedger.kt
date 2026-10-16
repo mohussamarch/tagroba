@@ -79,7 +79,8 @@ fun personLedger(
     accountTxns: List<Transaction> = emptyList(),
 ): PersonLedger {
     val byObligation = obligations.associateBy { it.id }
-    val linkedTxns = links.map { it.transactionId }.toSet()
+    // مراجعة r051: الدين اللي الرابط نفسه عمله بس بيتعد جوه سطر الرابط — دين تاني من نفس العملية (نصيب «حد تاني» · سؤال) ليه سطره
+    val linkObligations = links.mapNotNull { it.obligationId }.toSet()
     val linkSettlements = links.flatMap { it.settlementIds }.toSet()
     fun settleEffect(s: Settlement): Halalas = byObligation[s.obligationId]?.let { -signOf(it.kind) * s.amountMinor } ?: 0L
     val raw = mutableListOf<PersonEntry>()
@@ -93,8 +94,8 @@ fun personLedger(
         )
     }
     for (o in obligations) {
+        if (o.id in linkObligations) continue
         val origin = o.originTransactionId
-        if (origin != null && origin in linkedTxns) continue
         val t = origin?.let(txns::get)
         raw += PersonEntry(
             if (origin == null) PersonEntryType.OPENING_DEBT else PersonEntryType.DEBT, origin, o.id, t?.occurredAt?.take(10).orEmpty(),

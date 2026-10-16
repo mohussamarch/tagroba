@@ -118,8 +118,9 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
                 val box = if (deps.inbox.available) deps.inbox.sync() else null
                 if (box == null || !box.enabled) null else if (memo != null) smsMarkOf(deps.inbox, deps.lanes, box) else ""
             } ?: return@withContext null
-            val walked = walk(memo, newOnly = false, progress = progress, deadline = deadline)
-            if (memo != null) locked { memo.mark = mark }
+            val (walked, cut) = walk(memo, newOnly = false, progress = progress, deadline = deadline)
+            // مراجعة r051: اللفة اللي حد الوقت قطعها مش كاملة ⇒ من غير علامة، فأول فتح للشاشة أو «اسحب لتحت» بيكمّل الصفحات اللي ما اتلفتش
+            if (memo != null) locked { memo.mark = if (cut) null else mark }
             walked
         }
 
@@ -136,7 +137,7 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
             val box = if (deps.inbox.available) deps.inbox.sync() else null
             if (box == null || !box.enabled) null else smsMarkOf(deps.inbox, deps.lanes, box)
         } ?: return@withContext AutoRecordResult(AutoRecordStatus.OFF)
-        val walked = walk(memo, newOnly = mark == memo.mark)
+        val (walked, _) = walk(memo, newOnly = mark == memo.mark)
         locked { memo.mark = mark }
         walked
     }
@@ -153,10 +154,12 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
      * تسجيل الصفحات. r051: بالمؤشر (`SmsInboxPort.window`) من الأحدث للأقدم — كل رسالة بتتعاين مرة في التشغيلة، والصفحة اللي اتسجل منها
      * حاجة ما بتتعاينش تاني (كانت بتتعاين وتتكتب بعد كل رسالة بتتسجل ⇒ دقايق وآلاف الكتابات). القفل لكل صفحة (معاينة + حفظ + شيل).
      * [memo] ≠ null ⇒ بيفتكر اللي اتعاين · [newOnly] ⇒ الجديد بس، ويقف أول ما صفحة ما يبقاش فيها جديد.
+     * التاني في النتيجة = [deadline] قطع اللفة قبل آخر صفحة.
      */
     private suspend fun walk(
         memo: SmsRunMemo?, newOnly: Boolean, progress: ((SmsRunProgress) -> Unit)? = null, deadline: TimeMark? = null,
-    ): AutoRecordResult {
+    ): Pair<AutoRecordResult, Boolean> {
+        var cut = false
         var recorded = 0
         var duplicates = 0
         val ids = mutableListOf<Id>()
@@ -185,10 +188,13 @@ class AutoRecordSms(private val deps: AutoRecordSmsDeps) {
             val (box, queued, oldest) = step
             progress?.invoke(SmsRunProgress(recorded, duplicates, queued))
             if (box.messages.size >= box.count || oldest == null) break
-            if (deadline != null && deadline.hasPassedNow()) break
+            if (deadline != null && deadline.hasPassedNow()) {
+                cut = true
+                break
+            }
             before = oldest
         }
-        return AutoRecordResult(AutoRecordStatus.RAN, recorded, duplicates, recordedTransactionIds = ids)
+        return AutoRecordResult(AutoRecordStatus.RAN, recorded, duplicates, recordedTransactionIds = ids) to cut
     }
 
     /**

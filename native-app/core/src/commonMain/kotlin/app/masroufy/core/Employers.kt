@@ -19,7 +19,7 @@ fun last4OfPartyKey(key: String): String? =
  * حسابات الجهة للعرض: الاسم من آخر عملية جت من الحساب ده ([seen] — من [incomingSenders])، ولو مفيش عملية ⇒ «•••• آخر 4» أو المفتاح.
  * بالترتيب اللي اتضافت بيه.
  */
-fun payerAccountsOf(source: IncomeSource, seen: Map<String, TransferPartyRef>): List<PayerAccount> = source.payerKeys.map { key ->
+fun payerAccountsOf(source: IncomeSource, seen: Map<String, TransferPartyRef>): List<PayerAccount> = partyPayerKeys(source).map { key ->
     val ref = seen[key]
     val last4 = ref?.last4 ?: last4OfPartyKey(key)
     PayerAccount(key, ref?.label ?: last4?.let { "••••$it" } ?: key, last4)
@@ -47,18 +47,40 @@ fun isEmployer(source: IncomeSource): Boolean = source.kind in SALARIED_KINDS
  * الجهة اللي الإيداع ده راتبها: داخل، من حساب من حسابات الجهة، **ويومه جوه فترتها** (شاملة الطرفين). جهتين بنفس الحساب في نفس اليوم ⇒
  * الأحدث بداية. برّه أي فترة ⇒ null (ما بنخمّنش — يتسأل).
  */
-fun employerOf(t: Transaction, sources: List<IncomeSource>): IncomeSource? {
+fun employerOf(t: Transaction, sources: List<IncomeSource>): IncomeSource? = employerByPayer(t, sources) ?: soleEmployerFor(t, sources)
+
+/**
+ * الجهة من **حساب مُحوِّل معروف** أو من **اختيار المالك للعملية دي بالذات** بس — من غير تخمين «الجهة الوحيدة» ([soleEmployerFor]).
+ * ده اللي بيأكد «راتب» لوحده ([applyKnownPayerSalary]): التخمين للعرض والسؤال بس، ونوع رسالة الراتب اللي من غير حساب بيقرره رد
+ * «ده راتبك؟» (§75-2 — `SmsSalaryEffect`) أو المالك بإيده (مراجعة r051 — التخمين كان بيكتب «راتب» مؤكد فوق رد «لأ»).
+ */
+fun employerByPayer(t: Transaction, sources: List<IncomeSource>): IncomeSource? {
     if (t.observedDirection != Direction.IN) return null
     // r05 (البند 9): الراتب اللي اختار المالك جهته بإيده (مفتاح العملية نفسها) أولًا
     sources.firstOrNull { isEmployer(it) && salaryTxnKey(t.id) in it.payerKeys }?.let { return it }
-    val key = transferPartyOf(t)?.key ?: return soleEmployerFor(t, sources)
+    val key = transferPartyOf(t)?.key ?: return null
     return sourcesActiveOn(sources, t.occurredAt).filter { key in it.payerKeys }.maxByOrNull { it.startedAt }
 }
 
-/** مفتاح «الراتب ده من الجهة دي» على عملية من غير حساب مُحوِّل (رسالة «حوالة واردة راتب») — جوه `payerKeys` (أو `declinedPayerKeys` لـ«مش دي»). */
-fun salaryTxnKey(transactionId: Id): String = "txn:$transactionId"
+private const val SALARY_TXN_PREFIX = "txn:"
 
-private val SALARY_TEXT = Regex("راتب|رواتب|مرتب|SALARY|PAYROLL", RegexOption.IGNORE_CASE)
+/** مفتاح «الراتب ده من الجهة دي» على عملية من غير حساب مُحوِّل (رسالة «حوالة واردة راتب») — جوه `payerKeys` (أو `declinedPayerKeys` لـ«مش دي»). */
+fun salaryTxnKey(transactionId: Id): String = "$SALARY_TXN_PREFIX$transactionId"
+
+/** المفتاح ده اختيار جهة لعملية بعينها ([salaryTxnKey]) — مش حساب بيحوّل. */
+fun isSalaryTxnKey(key: String): Boolean = key.startsWith(SALARY_TXN_PREFIX)
+
+/** معرّف العملية من [salaryTxnKey]، أو null لو المفتاح حساب. */
+fun salaryTxnIdOf(key: String): Id? = if (isSalaryTxnKey(key)) key.removePrefix(SALARY_TXN_PREFIX) else null
+
+/**
+ * حسابات الجهة **الحقيقية** (من غير اختيارات العمليات [salaryTxnKey]) — هي اللي بتقول «معروف مين بيحوّل» (تنبيه المرتب المتأخر · قايمة
+ * الحسابات · شاشة المصدر). مراجعة r051: الاختيار على عملية من غير حساب كان بيتعد حساب معروف ⇒ «المرتب اتأخر» كل شهر وهو واصل.
+ */
+fun partyPayerKeys(source: IncomeSource): List<String> = source.payerKeys.filterNot(::isSalaryTxnKey)
+
+// مراجعة r051: «مرتبط/مرتبطة» و«مرتبة» و«مراتب» مش راتب (كانت بتتمسك من غير حدود للكلمة)
+private val SALARY_TEXT = Regex("(?<!م)راتب|رواتب|مرتب(?![طة])|SALARY|PAYROLL", RegexOption.IGNORE_CASE)
 
 /** راتب من غير حساب مُحوِّل: داخل، مالوش طرف، ونوعه راتب أو رسالته بتقول راتب. */
 fun isPartylessSalary(t: Transaction): Boolean =

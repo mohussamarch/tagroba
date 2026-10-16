@@ -52,13 +52,17 @@ internal suspend fun allocationOf(deps: PersonLinksDeps, t: Transaction, personI
 /**
  * «سداد» على ديونه المفتوحة بنفس العملة، الأقدم الأول (الدين القديم من غير عملية أقدم حاجة). [receivable] = اللي ليك عنده؛ غيره = **سلفة
  * عليك له بس** ([ObligationKind.LOAN_PAYABLE] — F12: الأمانة اللي عندك له مش دين بيتسدد بـ«سددتله»). بيرجّع السدادات واللي فضل.
+ * مراجعة r051: من غير الديون اللي اتعملت **بعد** العملية (نفس شرط `openDebtsFor` في السؤال والقاعدة) — فلوس يناير ما بتسددش سلفة مارس.
  */
 internal suspend fun settleOldestOf(deps: PersonLinksDeps, personId: Id, t: Transaction, receivable: Boolean): Pair<List<Settlement>, Halalas> {
     val wanted = if (receivable) ObligationKind.RECEIVABLE else ObligationKind.LOAN_PAYABLE
-    val obligations = deps.obligations.listByPerson(personId).filter { it.currency == t.currency && it.kind == wanted }
+    val all = deps.obligations.listByPerson(personId).filter { it.currency == t.currency && it.kind == wanted }
+    if (all.isEmpty()) return emptyList<Settlement>() to t.amountMinor
+    val dates = deps.txns.findByIds(all.mapNotNull { it.originTransactionId }).associate { it.id to it.occurredAt }
+    val day = t.occurredAt.take(10)
+    val obligations = all.filter { o -> o.originTransactionId?.let(dates::get)?.let { it.take(10) <= day } ?: true }
     if (obligations.isEmpty()) return emptyList<Settlement>() to t.amountMinor
     val rows = deps.settlements.listByObligations(obligations.map { it.id })
-    val dates = deps.txns.findByIds(obligations.mapNotNull { it.originTransactionId }).associate { it.id to it.occurredAt }
     var left = t.amountMinor
     val out = mutableListOf<Settlement>()
     for (o in obligations.sortedWith(compareBy<Obligation>({ o -> o.originTransactionId?.let(dates::get).orEmpty() }, { it.id }))) {

@@ -177,6 +177,8 @@ internal fun keptAfter(keep: Transaction, drop: Transaction, statementWins: Bool
     if (!keep.categoryConfirmed && drop.categoryConfirmed && drop.categoryId != null) t = t.copy(categoryId = drop.categoryId, categoryConfirmed = true)
     if (!keep.economicKindConfirmed && drop.economicKindConfirmed) t = t.copy(economicKind = drop.economicKind, economicKindConfirmed = true)
     if (keep.note == null && drop.note != null) t = t.copy(note = drop.note)
+    // مراجعة r051 (A2/F3): «فكّيت ربطها» على اللي اتشالت بيفضل على اللي فاضلة — وإلا قواعد الحساب كانت بترجع تربط نفس العملية
+    if (keep.personRulesOff != true && drop.personRulesOff == true) t = t.copy(personRulesOff = true)
     return if (t == keep) keep else t.copy(updatedAt = now)
 }
 

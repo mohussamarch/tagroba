@@ -86,7 +86,8 @@ internal suspend fun prepareRecordedLines(
         }
     }
     // بعد قرارات زون التحويلات («حسابي التاني» بيأكد النوع ⇒ ما بيتلمسش هنا)
-    val payers = deps.incomeSources?.listAll().orEmpty().filter { it.payerKeys.isNotEmpty() }
+    // مراجعة r051: حسابات حقيقية بس (اختيار الجهة لعملية قديمة ما بيطابقش عملية جديدة)
+    val payers = deps.incomeSources?.listAll().orEmpty().filter { app.masroufy.core.partyPayerKeys(it).isNotEmpty() }
     if (payers.isNotEmpty()) {
         for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now)
     }

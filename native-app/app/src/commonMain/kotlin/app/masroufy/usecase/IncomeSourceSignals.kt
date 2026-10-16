@@ -118,7 +118,7 @@ class IncomeSourceSignals(private val deps: IncomeSignalsDeps) {
     /** المرتب المتأخر النهارده (مهلة 3 أيام) — بيختفي لوحده لما الإيداع يوصل. */
     suspend fun alertCandidates(today: IsoDate): List<AlertCandidate> {
         val sources = deps.sources.listAll()
-        if (sources.none { it.expectedDayOfMonth != null && it.payerKeys.isNotEmpty() }) return emptyList()
+        if (sources.none { it.expectedDayOfMonth != null && app.masroufy.core.partyPayerKeys(it).isNotEmpty() }) return emptyList()
         // آخر يوم متوقع عدّت مهلته بيبقى جوه آخر شهرين، والإيداع البدري قبله بـ15 يوم
         val txns = deps.txns.listByDateRange(dayNumberToIso(toDayNumber(parseIsoDate(today)) - LOOKBACK_DAYS), today)
         return lateIncomeCandidates(sources, txns, today)

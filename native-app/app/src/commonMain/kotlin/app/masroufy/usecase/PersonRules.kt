@@ -26,13 +26,41 @@ import kotlinx.coroutines.sync.withLock
  * «مستحقات دايمًا» = سداد اللي الشخص عليه بس لو سؤال «ده سداد؟» قايم والمبلغ مش أكبر من المفتوح (نفس شرط زون التحويلات — ما بنخترعش دين).
  */
 class PersonRules internal constructor(private val deps: PersonLinksDeps, private val owner: ManagePersonLinks) {
-    /** بعد ما [ids] اتسجلت: كل عملية بقاعدة حسابها (المستحقات الأول). بيرجّع عدد اللي اتربط. */
+    /** بعد ما [ids] اتسجلت: كل عملية بقاعدة حسابها (المستحقات الأول)، الأقدم الأول. بيرجّع عدد اللي اتربط منها. */
     suspend fun onRecorded(ids: List<Id>): Int {
         if (ids.isEmpty()) return 0
         val ruled = ruledParties()
         if (ruled.isEmpty()) return 0
-        val txns = deps.txns.findByIds(ids.distinct()).filter { !it.id.endsWith(OWN_LEG_SUFFIX) }
-        return txns.sortedWith(compareBy({ it.occurredAt }, { it.id })).count { t -> applyOne(t, ruled) }
+        val recorded = deps.txns.findByIds(ids.distinct()).filter { !it.id.endsWith(OWN_LEG_SUFFIX) }
+        val reopened = reopenNewerDues(recorded, ruled)
+        // اللي اتفك بيتقري من جديد (نوعه رجع زي ما كان)، ويتطبق بالترتيب مع الجديد
+        val txns = if (reopened.isEmpty()) recorded else deps.txns.findByIds((recorded.map { it.id } + reopened).distinct())
+        val mine = recorded.map { it.id }.toSet()
+        return txns.sortedWith(OLDEST_FIRST).count { t -> applyOne(t, ruled) && t.id in mine }
+    }
+
+    /**
+     * مراجعة r051: «مستحقات دايمًا» الأقدم الأول حتى لو الأحدث اتسجل قبله (صفحة الصندوق الأحدث بتتسجل الأول · كل محفظة دفعة لوحدها ·
+     * «اقرأ اللي فات»): السداد اللي القاعدة سجلته لوحدها على تحويل **أحدث** من تحويل لسه متسجل من نفس الشخص بيتفك (من غير منع — مش
+     * المالك اللي فك) ويرجع يتطبق بالترتيب مع الجديد — زي رد «مستحقات دايمًا» (`TransferPartyAnswers.settleAll`). بيرجّع معرّفات اللي اتفك.
+     */
+    private suspend fun reopenNewerDues(recorded: List<Transaction>, ruled: List<TransferParty>): List<Id> {
+        val ids = recorded.map { it.id }.toSet()
+        val out = mutableListOf<Id>()
+        for ((personId, parties) in ruled.filter { it.dues }.groupBy { it.personId }) {
+            if (personId == null) continue
+            val oldest = recorded.filter { t ->
+                t.observedDirection == Direction.IN && t.personRulesOff != true &&
+                    transferPartyOf(t)?.let { ref -> parties.any { partyMatches(it, ref) && !it.skips(t.id) } } == true
+            }.minWithOrNull(OLDEST_FIRST) ?: continue
+            val autos = deps.links.listByPerson(personId).filter { it.auto && it.meaning == PersonMeaning.COLLECTED && it.transactionId !in ids }
+            if (autos.isEmpty()) continue
+            val newer = deps.txns.findByIds(autos.map { it.transactionId }).filter { t ->
+                OLDEST_FIRST.compare(t, oldest) > 0 && transferPartyOf(t)?.let { ref -> ruled.any { partyMatches(it, ref) } } == true
+            }
+            for (t in newer) if (runCatching { owner.unlink(t.id, remember = false) }.getOrDefault(false)) out += t.id
+        }
+        return out
     }
 
     /** «مستحقات دايمًا» على عملية واحدة (تفاصيل العملية · زون التحويلات · رد «مستحقات دايمًا» نفسه). true لو اتسجلت سداد. */
@@ -85,6 +113,8 @@ class PersonRules internal constructor(private val deps: PersonLinksDeps, privat
         return runCatching { owner.link(t.id, personId, PersonMeaning.COLLECTED, auto = true) }.isSuccess
     }
 }
+
+private val OLDEST_FIRST: Comparator<Transaction> = compareBy({ it.occurredAt }, { it.id })
 
 /** أثر وقت التسجيل لرسايل البنك (A2): بعد ما الدفعة تتقفل ⇒ قواعد الحسابات المربوطة على اللي اتسجل. فشلها ما بيوقفش التسجيل. */
 class PersonRulesEffect(private val rules: PersonRules) : RecordEffect {

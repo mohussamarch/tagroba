@@ -30,6 +30,7 @@ import app.masroufy.core.Currency
 import app.masroufy.core.Id
 import app.masroufy.core.IncomeSource
 import app.masroufy.core.SALARIED_KINDS
+import app.masroufy.core.partyPayerKeys
 import app.masroufy.core.SourceStartComparison
 import app.masroufy.core.TextKey
 import app.masroufy.ui.app.LocalSpace
@@ -84,7 +85,7 @@ fun IncomeSourceDetailScreen(sourceId: Id) {
             GroupCard(horizontal = 16.dp) {
                 FactRow(t(UiKey.INCSRC_PAY_DAY), payText(s), last = false)
                 FactRow(t(UiKey.INCSRC_EXPECTED), s.expectedMinor?.let { amountLabel(it, s.currency) } ?: t(UiKey.INCSRC_EXPECTED_NONE), last = false, muted = s.expectedMinor == null)
-                FactRow(t(UiKey.INCSRC_PAYER), t(payerKey(s)), last = true, muted = s.kind !in SALARIED_KINDS || s.payerKeys.isEmpty())
+                FactRow(t(UiKey.INCSRC_PAYER), t(payerKey(s)), last = true, muted = s.kind !in SALARIED_KINDS || partyPayerKeys(s).isEmpty())
             }
         }
         item(key = "tx") {
@@ -110,7 +111,7 @@ fun IncomeSourceDetailScreen(sourceId: Id) {
 
 private fun payerKey(s: IncomeSource): TextRef = when {
     s.kind !in SALARIED_KINDS -> UiKey.INCSRC_PAYER_NOT_ASKED
-    s.payerKeys.isEmpty() -> UiKey.INCSRC_PAYER_UNKNOWN
+    partyPayerKeys(s).isEmpty() -> UiKey.INCSRC_PAYER_UNKNOWN
     else -> UiKey.INCSRC_PAYER_KNOWN
 }
 
