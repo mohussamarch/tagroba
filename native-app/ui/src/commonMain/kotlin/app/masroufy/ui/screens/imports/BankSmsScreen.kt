@@ -39,6 +39,8 @@ import app.masroufy.ui.screens.operations.EmployerPickSheet
 import app.masroufy.ui.screens.operations.TransferPartyCard
 import androidx.compose.runtime.DisposableEffect
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 
 /** اللي بيتصنّف من اللوحة: رسالة لسه مستنية (التصنيف بيتحفظ مع «سجّل الكل») أو عملية اتسجلت. */
@@ -62,6 +64,7 @@ fun BankSmsScreen() {
     val scope = rememberCoroutineScope()
     var ui by remember(deps) { mutableStateOf<BankSmsUi?>(null) }
     var categories by remember(deps) { mutableStateOf<List<Category>>(emptyList()) }
+    val categoryById = remember(categories) { categories.associateBy { it.id } }
     var wallets by remember(deps) { mutableStateOf<List<Wallet>>(emptyList()) }
     var reload by remember(deps) { mutableStateOf(0) }
     var failure by remember(deps) { mutableStateOf<String?>(null) }
@@ -83,12 +86,19 @@ fun BankSmsScreen() {
         val sms = deps.sms ?: run { ui = bankSmsUi(null, emptyList(), emptySet()); return@LaunchedEffect }
         try {
             // r05 (4b · 4d): الصفحة المختارة من الصندوق، والشغل بره خيط الشاشة (`SmsScreenExtras`) — الهيكل بيظهر الأول
-            val overview = sms.overviewPage(record = true, skip = r05.skip)
+            // r051: الصفحة بتظهر الأول من غير تسجيل، وبعدين التسجيل لوحده للجديد بس (`recordNew`) — كانت الشاشة مستنية لفة كاملة على الصندوق
+            val overview = sms.overviewPage(record = false, skip = r05.skip)
             if (r05.skip > 0 && r05.skip >= overview.inbox.count) { r05.skip = 0; reload++; return@LaunchedEffect }
             val today = runCatching { sms.recordedToday() }.getOrDefault(emptyList())
-            ui = bankSmsUi(overview, today, overview.fresh.toSet())
-            r05.bnplAsks = runCatching { sms.bnplAsks() }.getOrDefault(emptyList())
+            ui = withContext(Dispatchers.Default) { bankSmsUi(overview, today, emptySet()) }
             failure = null
+            r05.bnplAsks = runCatching { sms.bnplAsks() }.getOrDefault(emptyList())
+            val fresh = if (r05.skip > 0) emptyList() else runCatching { sms.recordNew() }.getOrDefault(emptyList())
+            if (fresh.isNotEmpty()) {
+                val again = sms.overviewPage(record = false, skip = r05.skip)
+                val todayAgain = runCatching { sms.recordedToday() }.getOrDefault(today)
+                ui = withContext(Dispatchers.Default) { bankSmsUi(again, todayAgain, fresh.toSet()) }
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -191,7 +201,7 @@ fun BankSmsScreen() {
         }
         for ((party, id, outgoing) in r05.parties) item(key = "party-$id") { TransferPartyCard(party, id, onChanged = { reload++ }, outgoing = outgoing) }
         if (u.status != SmsStatus.UNAVAILABLE && (u.live || u.trueWaiting > 0)) {
-            item(key = "waiting") { SmsWaitingSection(u, currency, categories, chosen, included, busy, handError, actions, r05.skip, r05.picks.ids) }
+            smsWaitingItems(u, currency, categoryById, chosen, included, busy, handError, actions, r05.skip, r05.picks.ids)
         }
         if (u.live && u.isEmpty) {
             item(key = "empty") { EmptyState(t(UiKey.BANK_SMS_EMPTY_TITLE), t(UiKey.BANK_SMS_EMPTY_BODY)) }
