@@ -151,7 +151,13 @@ fun AddOperationSheet(visible: Boolean, onClose: () -> Unit, onVoice: () -> Unit
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            FieldLabel(if (hadMain) t(fromLabelKey(true)) else askPrompt ?: t(fromLabelKey(false)), Modifier.weight(1f))
+            // الدخل بيدخل محفظة ⇒ «إلى أين؟» — مش سؤال الصرف «من أين تصرف عادةً؟» (سموك r05)
+            val walletLabel = when {
+                kind == AddKind.IN -> t(UiKey.ADD_TO)
+                hadMain -> t(fromLabelKey(true))
+                else -> askPrompt ?: t(fromLabelKey(false))
+            }
+            FieldLabel(walletLabel, Modifier.weight(1f))
             for (w in o?.wallets.orEmpty().take(3)) key(w.id) { SelectChip(w.name, from == w.id, { from = w.id; if (to == w.id) to = null }) }
         }
         if (o != null && o.wallets.isEmpty()) FieldError(t(UiKey.ADD_NO_WALLET))
