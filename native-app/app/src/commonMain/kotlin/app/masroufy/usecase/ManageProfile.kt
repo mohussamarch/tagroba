@@ -1,5 +1,6 @@
 package app.masroufy.usecase
 
+import app.masroufy.core.CharacterLook
 import app.masroufy.core.IncomeFollowUp
 import app.masroufy.core.LOOK_COUNT
 import app.masroufy.core.TextKey
@@ -63,6 +64,12 @@ class ManageProfile(private val deps: ManageProfileDeps) {
 
     /** الشكل المحفوظ (1..[LOOK_COUNT]) — ما اختارش ⇒ الأول. */
     suspend fun look(): Int = load().lookIndex ?: 1
+
+    /** «شخصيتك» المحفوظة على الملف — `null` = لسه ما اتبنتش (r041). */
+    suspend fun character(): CharacterLook? = load().character
+
+    /** حفظ «شخصيتك» على الملف (من «احفظ» في شاشة البناء بس). الظبط على النوع والمدى بيحصل في `checkProfile`. */
+    suspend fun saveCharacter(look: CharacterLook): ProfileCheck = save(load().copy(character = look))
 
     /** بيسجل وقت انتهاء أسئلة البداية؛ الحقول الاختيارية ممكن تفضل فاضية. */
     suspend fun completeOnboarding(input: UserProfile): ProfileCheck =
