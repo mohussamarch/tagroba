@@ -70,6 +70,21 @@ interface SmsDeps {
      */
     suspend fun overview(record: Boolean): SmsOverview
 
+    /**
+     * r041c — «اسحب لتحت» في «العمليات»: التسجيل لوحده على الرسايل **الجديدة بس** (من غير مراجعة كل بنك اللي `overview` بيبنيها) ⇒
+     * العمليات اللي اتسجلت دلوقتي (للمعة). برّه خيط الواجهة.
+     */
+    suspend fun recordNew(): List<Id> = overview(record = true).fresh
+
+    /**
+     * r041c — «إعداد القراءة»: الصندوق والمرسلين ومحفظة كل بنك وعدد المستني محفظة **بس** ([SmsOverview.reviews] فاضية) — من غير معاينة
+     * ولا استنا تشغيلة الخلفية. برّه خيط الواجهة.
+     */
+    suspend fun settings(): SmsOverview = overview(record = false)
+
+    /** r041c: آخر [settings] اتحسبت (في الذاكرة) — الصفحة بتعرضها على طول وهي بتجيب الجديدة. null = لسه. */
+    fun cachedSettings(): SmsOverview? = null
+
     /** «سجّل الكل»: الجاهز في كل بنك + الشبيه اللي المالك اختاره ([includeSimilar] بمعرّف الرسالة) بالتصنيف اللي اختاره ([categories]). */
     suspend fun record(categories: Map<String, Id>, includeSimilar: Set<String>): Int
 

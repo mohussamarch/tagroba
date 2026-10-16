@@ -75,9 +75,14 @@ fun BankSmsSettingsScreen() {
     var denied by remember { mutableStateOf(false) }
     var afterGrant by remember { mutableStateOf<(suspend () -> Unit)?>(null) }
 
+    // r041c: الإطار بيترسم على طول («بيحمّل» أو آخر صورة) والقراية الخفيفة برّه خيط الواجهة (`smsSettingsStates`)
     LaunchedEffect(deps, reload, country) {
-        wallets = runCatching { deps.wallets() }.getOrDefault(wallets)
-        ui = smsSettingsUi(sms?.let { runCatching { it.overview(record = false) }.getOrNull() }, wallets, country)
+        smsSettingsStates(sms, country, wallets) { deps.wallets() }.collect { s ->
+            if (s is SmsSettingsState.Ready) {
+                wallets = s.wallets
+                ui = s.ui
+            }
+        }
     }
 
     fun act(done: TextRef?, vararg args: String, block: suspend () -> Unit) {

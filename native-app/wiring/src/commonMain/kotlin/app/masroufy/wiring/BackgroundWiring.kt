@@ -62,7 +62,7 @@ fun backgroundCycle(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInbo
 fun smsHistory(spaces: List<Pair<Space, SpaceRepositories>>, inbox: SmsInboxPort, env: DeviceEnv): SmsHistory? {
     val (_, first) = spaces.firstOrNull() ?: return null
     val lanes = spaces.mapNotNull { (space, r) -> smsLaneOf(space, r, env, inbox) }
-    return SmsHistory(SmsHistoryDeps(AutoRecordSmsDeps(inbox, lanes), first.assistant.settings, env.clock))
+    return SmsHistory(SmsHistoryDeps(AutoRecordSmsDeps(inbox, lanes), first.assistant.settings, env.clock, work = env.work))
 }
 
 /** حارة رسايل البلد [space]: قارئها **ومنطقة وقتها** من حزمتها (§88 — حدود اليوم بتوقيت كل بلد)، أو null لو البلد مالهاش قارئ. */

@@ -6,6 +6,38 @@ import app.masroufy.core.Wallet
 import app.masroufy.core.Bank
 import app.masroufy.core.bankForSender
 import app.masroufy.port.smsSenderKey
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+
+/** r041c — «إعداد القراءة» وهي بتتحمّل: [Loading] الأول على طول (الصفحة بترسم إطارها) ثم [Ready] (مرة من المحفوظ ومرة من الجديد). */
+sealed interface SmsSettingsState {
+    data object Loading : SmsSettingsState
+
+    /** [wallets] = محافظ البلد اللي اتعرضت بيها (لو قرايتها وقعت ⇒ اللي كانت عند الشاشة). */
+    data class Ready(val ui: SmsSettingsUi, val wallets: List<Wallet>) : SmsSettingsState
+}
+
+/**
+ * r041c — اللي «إعداد القراءة» بتعرضه بالترتيب: «بيحمّل» على طول ⇒ آخر صورة اتحسبت لو فيه (`SmsDeps.cachedSettings`) ⇒ الصورة الجديدة
+ * (`SmsDeps.settings` — خفيفة وبرّه خيط الواجهة). كانت بتستنى `overview` كامل (معاينة كل بنك) على خيط الواجهة فالصفحة تفضل بيضا.
+ * [previous] = المحافظ اللي عند الشاشة (لو قراية المحافظ وقعت). [sms] = null أو القراية وقعت ⇒ «الجهاز ما بيقراش رسايل» زي الأول.
+ */
+fun smsSettingsStates(sms: SmsDeps?, country: String?, previous: List<Wallet>, wallets: suspend () -> List<Wallet>): Flow<SmsSettingsState> = flow {
+    emit(SmsSettingsState.Loading)
+    val shown = quietly { wallets() } ?: previous
+    sms?.cachedSettings()?.let { emit(SmsSettingsState.Ready(smsSettingsUi(it, shown, country), shown)) }
+    val fresh = sms?.let { s -> quietly { s.settings() } }
+    emit(SmsSettingsState.Ready(smsSettingsUi(fresh, shown, country), shown))
+}
+
+private suspend fun <T> quietly(block: suspend () -> T): T? = try {
+    block()
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    null
+}
 
 /**
  * بنك (مرسل) في «إعداد القراءة»: محفظته (null = مستني تختار) وعدد رسايله المستنية المحفظة. [bank] = البنك المقترح من اسم المرسل
