@@ -29,7 +29,6 @@ import app.masroufy.usecase.BnplAnswer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
-import app.masroufy.usecase.AutoRecordStatus
 import app.masroufy.usecase.EditTransaction
 import app.masroufy.usecase.InboxView
 import app.masroufy.usecase.ManageSmsInbox
@@ -39,6 +38,7 @@ import app.masroufy.usecase.RevertImportBatch
 import app.masroufy.usecase.SmsLane
 import app.masroufy.usecase.SmsReviewTarget
 import app.masroufy.usecase.SmsRunMemo
+import app.masroufy.usecase.SmsRunProgress
 import kotlinx.coroutines.withContext
 
 /**
@@ -80,16 +80,15 @@ internal class SmsGraph(
 
     private fun auto(): AutoRecordSms = autoRecordSms(c, inbox)
 
-    /** r05 (4b): الصفحة اللي الشاشة عارضاها دلوقتي — التأكيد من صفحة أقدم بيدوّر هناك. */
-    private var shownSkip = 0
+    private val extras = SmsScreenExtras(c, { auto() }, io, memo)
 
-    private val extras = SmsScreenExtras(c, { auto() }, io, inbox) { shownSkip }
-
-    /** r05 (4b): صفحة أقدم من الصندوق، وبعدها الصندوق بيرجع لأحدث صفحة (الخلفية بتقرا من هناك). */
+    /**
+     * r05 (4b): صفحة أقدم من الصندوق، وبعدها الصندوق بيرجع لأحدث صفحة. r051: التشغيلة ما بتقراش صفحة الشاشة (بتمشي بالمؤشر)، و[record]
+     * بيسجّل **الجديد بس** (`runNew`) — مش لفة كاملة ماسكة القفل مع كل فتح وتحميل (كانت 28 ثانية على 3,600 رسالة والضغطات مستنياها).
+     */
     override suspend fun overviewPage(record: Boolean, skip: Int): SmsOverview = withContext(io) {
-        shownSkip = skip.coerceAtLeast(0)
         if (skip <= 0) return@withContext overview(record)
-        val fresh = if (record) auto().run().recordedTransactionIds else emptyList()
+        val fresh = if (record) auto().runNew(memo).recordedTransactionIds else emptyList()
         inbox.page(skip)
         try {
             overview(record = false).copy(fresh = fresh)
@@ -106,9 +105,10 @@ internal class SmsGraph(
 
     override suspend fun overview(record: Boolean): SmsOverview = work {
         val auto = auto()
-        val result = if (record) auto.run() else null
+        // r051: الجديد بس (أو لفة كاملة صفحة صفحة لو حاجة اتغيرت من آخر مرة) · البنوك اللي مالهاش محفظة من غير معاينة ولا قفل
+        val result = if (record) auto.runNew(memo) else null
         val view = manage.refresh()
-        val unmapped = (result?.takeIf { it.status == AutoRecordStatus.RAN }?.unmappedSenders ?: auto.unmappedSenders()).filter { it.spaceId == space.id }
+        val unmapped = auto.unmappedQuick().filter { it.spaceId == space.id }
         val wallets = c.shell.addOptions().wallets
         val senderWallets = view.senders.associateWith { sender -> runCatching { auto.walletOf(space.id, sender) }.getOrNull() }
         val reviews = mutableListOf<Pair<SenderReview, ReviewSmsInbox>>()
@@ -155,7 +155,7 @@ internal class SmsGraph(
     override suspend fun chooseWallet(sender: String, walletId: Id?): AutoRecordResult = work {
         val auto = auto()
         auto.chooseWallet(space.id, sender, walletId)
-        auto.run()
+        auto.run(memo = memo)
     }
 
     override suspend fun answerAccount(walletId: Id, last4: String, mine: Boolean, messageId: String?, replace: Boolean): AutoRecordResult =
@@ -212,11 +212,13 @@ internal class SmsGraph(
         work { history()?.decline(space.id, senders) }
     }
 
-    override suspend fun historyStart(senders: List<String>, from: IsoDate?) = work { history()?.start(space.id, senders, from) }
+    override suspend fun historyStart(senders: List<String>, from: IsoDate?, progress: (SmsRunProgress) -> Unit) =
+        work { history()?.start(space.id, senders, from, progress, memo) }
 
     override suspend fun historyReport() = work { history()?.report() }
 
-    override suspend fun confirmShapes(messageIds: List<String>) = work { history()?.confirmShapes(messageIds) }
+    override suspend fun confirmShapes(messageIds: List<String>, progress: (SmsRunProgress) -> Unit) =
+        work { history()?.confirmShapes(messageIds, progress, memo) }
 
     override suspend fun recordByHand(messageId: String, sender: String, amountText: String): AddOperationResult = work {
         val walletId = runCatching { auto().walletOf(space.id, sender) }.getOrNull()

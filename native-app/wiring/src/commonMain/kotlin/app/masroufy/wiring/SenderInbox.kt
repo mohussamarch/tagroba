@@ -17,6 +17,8 @@ internal class SenderInbox(private val inbox: SmsInboxPort, private val key: Str
 
     override suspend fun page(skip: Int) = inbox.page(skip)
 
+    override suspend fun window(before: app.masroufy.port.QueuedSms?) = only(inbox.window(before))
+
     override suspend fun enable(senders: List<String>) = only(inbox.enable(senders))
 
     override suspend fun disable() = only(inbox.disable())

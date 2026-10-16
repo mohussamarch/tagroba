@@ -177,9 +177,13 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
      * الصندوق: **أحدث** 200 رسالة لسه مستنية، بالترتيب من الأقدم (§83 — بعد قراية التاريخ كله ممكن يبقى فيه آلاف، واللي مستني من التاريخ
      * القديم ما يوقفش رسايل النهارده؛ كانت أقدم 200) + العدد كله + وقت أقدم رسالة لسه فيه.
      */
-    fun snapshot(uid: String, permission: Boolean, more: Boolean, skip: Int = 0): SmsInboxState {
+    fun snapshot(uid: String, permission: Boolean, more: Boolean, skip: Int = 0, before: Pair<Long, String>? = null): SmsInboxState {
         val items = mutableListOf<QueuedSms>()
-        readableDatabase.query("messages", arrayOf("id", "sender", "body", "received"), "owner=? AND done=0", arrayOf(uid), null, null, "received DESC,id DESC", if (skip > 0) "$skip,200" else "200").use { c ->
+        // r051 (`SmsInboxPort.window`): [before] = (وقت الوصول · المعرّف) — الصفحة اللي أقدم منه بس، بالمؤشر مش بالتخطي
+        val where = if (before == null) "owner=? AND done=0" else "owner=? AND done=0 AND (received<? OR (received=? AND id<?))"
+        val args = if (before == null) arrayOf(uid) else arrayOf(uid, before.first.toString(), before.first.toString(), before.second)
+        val limit = if (skip > 0 && before == null) "$skip,200" else "200"
+        readableDatabase.query("messages", arrayOf("id", "sender", "body", "received"), where, args, null, null, "received DESC,id DESC", limit).use { c ->
             while (c.moveToNext()) items += QueuedSms(c.getString(0), c.getString(1), Instant.ofEpochMilli(c.getLong(3)).toString(), c.getString(2))
         }
         items.reverse()
@@ -208,5 +212,11 @@ internal class SmsInboxStore(context: Context) : SQLiteOpenHelper(context, "sms-
     companion object {
         /** الاستقبال في الخلفية والشاشة بيكتبوا بالدور. */
         val LOCK = Any()
+
+        @Volatile private var instance: SmsInboxStore? = null
+
+        /** r051: نسخة واحدة مفتوحة للبرنامج كله (`AndroidSmsInbox`) — من غير فتح وقفل للقاعدة في كل قراية. */
+        fun shared(context: Context): SmsInboxStore =
+            instance ?: synchronized(LOCK) { instance ?: SmsInboxStore(context.applicationContext).also { instance = it } }
     }
 }
