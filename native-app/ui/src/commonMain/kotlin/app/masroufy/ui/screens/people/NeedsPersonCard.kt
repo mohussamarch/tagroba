@@ -38,6 +38,9 @@ import kotlinx.coroutines.launch
 /** كام سطر بيتعرض في الكارت قبل «و{العدد} كمان». */
 internal const val NEEDS_PERSON_SHOWN = 5
 
+/** F8: السطور الظاهرة — أول [NEEDS_PERSON_SHOWN]، و«و{N} كمان» بيفتح الكل. */
+internal fun <T> needsShown(rows: List<T>, expanded: Boolean): List<T> = if (expanded) rows else rows.take(NEEDS_PERSON_SHOWN)
+
 /**
  * «محتاجة تربطها بشخص» (جولة r05 — طريق المالك نفسه: علّم العمليات بتصنيف معناه فلوس مع شخص ومحدش اتربط): العمليات دي كلها في كارت واحد على
  * «الديون» و«لك/عليك» — ضغطة على أي واحدة ⇒ «مع مين؟» ⇒ ربط بـ«تراجع». مفيش ⇒ الكارت ما بيظهرش.
@@ -80,7 +83,7 @@ internal fun NeedsPersonCard(modifier: Modifier = Modifier, personId: String? = 
                 Pill(sentenceNumber(rows.size), Ink.focus, Ink.alertBg)
             }
             BasicText(t(UiKey.PLINK_NEEDS_LIST_BODY), Modifier.padding(vertical = 4.dp), style = Type.caption().copy(color = Ink.muted))
-            val shown = if (expanded) rows else rows.take(NEEDS_PERSON_SHOWN)
+            val shown = needsShown(rows, expanded)
             shown.forEachIndexed { i, r ->
                 OpRow(r.transaction, r.categoryName, today, i == shown.lastIndex && shown.size == rows.size) { target = targetOf(r.transaction, personId) }
             }

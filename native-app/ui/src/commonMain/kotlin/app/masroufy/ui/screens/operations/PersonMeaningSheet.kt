@@ -92,6 +92,13 @@ fun linkedText(out: LinkOutcome, currency: Currency): String {
     return if (out.unmatchedMinor > 0L) "$done. ${t(UiKey.PLINK_DONE_UNMATCHED, amountLabel(out.unmatchedMinor, currency))}" else done
 }
 
+/**
+ * F10: الشخص الجديد بيتضاف **مرة واحدة** ([remember] بيشيله في اللوحة أول ما يتعمل) — لو الربط بعده فشل، المحاولة الجاية بتستعمله بدل ما
+ * تضيفه تاني وتقع في «الاسم موجود».
+ */
+internal suspend fun <P, T> withPersonOnce(chosen: P?, create: suspend () -> P, remember: (P) -> Unit, link: suspend (P) -> T): T =
+    link(chosen ?: create().also(remember))
+
 /** خطأ قبل الحفظ (الشخص · المعنى) — null = جاهز. */
 fun meaningError(hasPerson: Boolean, meaning: PersonMeaning?): String? = when {
     !hasPerson -> t(UiKey.PLINK_ERR_PERSON)
@@ -164,8 +171,10 @@ internal fun PersonMeaningSheet(
                     val err = failureOf {
                         if (tg.purchase && share == null) throw IllegalArgumentException(t(UiKey.PLINK_ERR_AMOUNT))
                         // F10: الشخص الجديد بيتضاف مرة واحدة — لو الربط فشل، المحاولة الجاية بتستعمله (مش «الاسم موجود»)
-                        val p = person ?: people.addPerson(newName.orEmpty()).also { created -> person = created; newName = null; all = all + created }
-                        text = linkedText(links.link(tg.transactionId, p.id, m, amountMinor = share), tg.currency)
+                        val out = withPersonOnce(person, { people.addPerson(newName.orEmpty()) }, { created -> person = created; newName = null; all = all + created }) { p ->
+                            links.link(tg.transactionId, p.id, m, amountMinor = share)
+                        }
+                        text = linkedText(out, tg.currency)
                     }
                     saving = false
                     if (err != null) error = err else onLinked(PersonLinked(tg.transactionId, text))
