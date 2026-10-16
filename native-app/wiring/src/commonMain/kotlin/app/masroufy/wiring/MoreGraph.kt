@@ -106,8 +106,12 @@ class MoreGraph(private val c: AreaContext) : MoreDeps {
     override val smsRepair: app.masroufy.usecase.RepairOldSms? = run {
         val reader = countryPack(c.space.countryCode).smsReader
         val backup = c.env.repairBackup
+        // r041-B: «الكشف غطّاها» بنفس اعتمادات وآثار خط رسايل البلد (`smsImportDeps`) — من غير صندوق رسايل السطور دي ما بتظهرش
+        val covered = c.env.smsInbox?.let { inbox ->
+            app.masroufy.usecase.CoveredSmsRepair(smsImportDeps(c.space.id, r, c.env, inbox), r.wallets, listOf(reader ?: return@let null))
+        }
         if (reader == null || backup == null) null
-        else app.masroufy.usecase.RepairOldSms(r.transactions, r.sourceRecords, r.importBatches, r.wallets, listOf(reader), backup, c.env.clock, r.uow)
+        else app.masroufy.usecase.RepairOldSms(r.transactions, r.sourceRecords, r.importBatches, r.wallets, listOf(reader), backup, c.env.clock, r.uow, covered)
     }
     private val rematch: (suspend () -> List<app.masroufy.core.SmsStatementPair>)? = smsRepair?.let { s -> { s.duplicates() } }
 

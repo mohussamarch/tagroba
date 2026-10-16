@@ -587,6 +587,8 @@ enum class TextKey : TextRef {
     // sms-fix (HANDOVER §6.5-3): حساب مش لأي محفظة · رسالة الكشف غطّاها · «صلّح رسايل البنك القديمة» — القيم في `TextsSmsFix.kt`
     SMS_WAIT_UNKNOWN_ACCOUNT, SMS_COVERED_BY_STATEMENT, SMS_REPAIR_ENTRY, SMS_REPAIR_TITLE, SMS_REPAIR_INTRO, SMS_REPAIR_EMPTY,
     SMS_REPAIR_DIR_IN, SMS_REPAIR_DIR_OUT, SMS_REPAIR_APPLY, SMS_REPAIR_DONE, SMS_REPAIR_UNDO, SMS_REPAIR_DUPES, SMS_REPAIR_WALLET_DIGITS,
+    // r041-B: «الكشف غطّاها» في «صلّح رسايل البنك القديمة» — القيم في `TextsSmsFix.kt`
+    SMS_REPAIR_UNRECORDED_TITLE, SMS_REPAIR_UNRECORDED_NOTE, SMS_REPAIR_UNRECORDED_COUNT,
     // الجولة السابعة: الاسترداد (§75-6) والسحب من الصرّاف (§75-4) بيستنوا التأكيد · رسالة فيها علامة قلب اتجاه بتترفض — القيم في `TextsSmsAuto.kt`
     SMS_WAIT_REFUND, SMS_WAIT_CASH_WITHDRAWAL, SMS_HIDDEN_TEXT, SMS_OTHER_COUNTRY,
     // الجولة التامنة: فلوس داخلة على كارت ائتمان · إيداع كاش · شراء ومعاه كاش بيستنوا التأكيد — القيم في `TextsSmsAuto.kt`

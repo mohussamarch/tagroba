@@ -16,10 +16,12 @@ import app.masroufy.core.SmsRow
 import app.masroufy.core.SmsStatementPair
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.Transaction
+import app.masroufy.core.UiKey
 import app.masroufy.core.isSmsReference
 import app.masroufy.core.lateCardPosting
 import app.masroufy.core.smsRepairTarget
 import app.masroufy.core.smsStatementDuplicates
+import app.masroufy.core.uiText
 import app.masroufy.port.Clock
 import app.masroufy.port.ImportBatchRepository
 import app.masroufy.port.RepairBackupPort
@@ -38,9 +40,13 @@ data class SmsRepairLine(
     val newDirection: Direction,
 )
 
-/** «تراجع» واحد للدفعة كلها: العمليات والسجلات زي ما كانت قبل التصليح. */
-class SmsRepairUndo internal constructor(internal val transactions: List<Transaction>, internal val records: List<SourceRecord>) {
-    val count: Int get() = transactions.size
+/** «تراجع» واحد للدفعة كلها: العمليات والسجلات زي ما كانت قبل التصليح — ومعاها اللي «الكشف غطّاها» سجّله ([covered]). */
+class SmsRepairUndo internal constructor(
+    internal val transactions: List<Transaction>,
+    internal val records: List<SourceRecord>,
+    internal val covered: CoveredWrite? = null,
+) {
+    val count: Int get() = transactions.size + (covered?.lineCount ?: 0)
 }
 
 class SmsRepairResult(val backup: VerifiedBackup, val undo: SmsRepairUndo)
@@ -60,6 +66,8 @@ class RepairOldSms(
     private val backup: RepairBackupPort,
     private val clock: Clock,
     private val uow: app.masroufy.port.UnitOfWork,
+    /** r041-B: «الكشف غطّاها» — null = من غير صندوق رسايل (السطور دي ما بتظهرش). */
+    private val covered: CoveredSmsRepair? = null,
 ) {
     private class Recorded(val transaction: Transaction, val records: List<SourceRecord>, val row: SmsRow?)
 
@@ -77,15 +85,28 @@ class RepairOldSms(
         }.sortedWith(compareBy({ it.date }, { it.transactionId }))
     }
 
+    /** الشاشة كلها: النقل و«الكشف غطّاها» (r041-B). قراية بس. */
+    suspend fun previewAll(): SmsRepairPreview = SmsRepairPreview(preview(), covered?.preview().orEmpty())
+
     /** بيطبّق [chosen] من [preview] (اللي لسه زي ما هو بس) — null لو مفيش حاجة تتغير. */
-    suspend fun apply(chosen: Set<Id>): SmsRepairResult? {
-        val lines = preview().filter { it.transactionId in chosen }
-        if (lines.isEmpty()) return null
+    suspend fun apply(chosen: Set<Id>): SmsRepairResult? = applyAll(chosen, emptySet())
+
+    /**
+     * r041-B: النوعين مع بعض — **نسخة متأكدة واحدة · وحدة عمل واحدة · «تراجع» واحد**. [moves] = معرّفات العمليات من [SmsRepairPreview.moves] ·
+     * [unrecorded] = معرّفات السجلات من [SmsRepairPreview.unrecorded]. المعاينة بتتعمل تاني: السطر اللي اتغير من ساعتها بيخرج.
+     */
+    suspend fun applyAll(moves: Set<Id>, unrecorded: Set<Id>): SmsRepairResult? {
+        val lines = if (moves.isEmpty()) emptyList() else preview().filter { it.transactionId in moves }
+        val fresh = if (unrecorded.isEmpty() || covered == null) emptyList() else covered.candidates().filter { it.line.recordId in unrecorded }
+        if (lines.isEmpty() && fresh.isEmpty()) return null
         val byId = txns.findByIds(lines.map { it.transactionId }).associateBy { it.id }
-        val records = sources.listByTransactionIds(lines.map { it.transactionId })
+        val records = if (lines.isEmpty()) emptyList() else sources.listByTransactionIds(lines.map { it.transactionId })
         val all = wallets.listAll()
+        // النسخة الأول — لو ما اتأكدتش بيطلع خطأ ومفيش ولا كتابة
         val saved = saveVerifiedBackup(
-            backup, clock, "sms-repair", lines.mapNotNull { line -> byId[line.transactionId]?.let { t -> backupDoc(t, records.filter { it.transactionId == t.id }) } },
+            backup, clock, "sms-repair",
+            lines.mapNotNull { line -> byId[line.transactionId]?.let { t -> backupDoc(t, records.filter { it.transactionId == t.id }) } } +
+                covered?.backupDocs(fresh).orEmpty(),
         )
         val now = clock.nowIso()
         val fixed = lines.mapNotNull { line ->
@@ -103,18 +124,32 @@ class RepairOldSms(
             r.copy(accountIdentity = name)
         }
         // مراجعة r04: العملية وسجلاتها في وحدة عمل واحدة — ما ينفعش العملية تتنقل وسجلاتها تفضل على الحساب القديم
-        uow.run {
-            txns.saveMany(fixed)
+        val write = uow.run {
+            if (fixed.isNotEmpty()) txns.saveMany(fixed)
             if (movedRecords.isNotEmpty()) sources.saveMany(movedRecords)
+            if (fresh.isEmpty()) null else covered?.record(fresh, now)
         }
-        return SmsRepairResult(saved, SmsRepairUndo(fixed.mapNotNull { byId[it.id] }, records.filter { it.transactionId in moved }))
+        return SmsRepairResult(saved, SmsRepairUndo(fixed.mapNotNull { byId[it.id] }, records.filter { it.transactionId in moved }, write))
     }
 
-    /** «تراجع» الدفعة كلها. */
+    /**
+     * «تراجع» الدفعة كلها في وحدة عمل واحدة. اللي «الكشف غطّاها» سجّله بيتمسح **من غير علامة مسح المالك** (عشان يتعرض تاني) والسجلات والدفعات
+     * بترجع بالحرف. عملية منهم اتربطت بعدها (مصروف تابع · مبلغ داخل مربوط) ⇒ رفض زي المسح.
+     */
     suspend fun undo(undo: SmsRepairUndo) {
+        val c = undo.covered
+        if (c != null && txns.findByIds(c.createdTransactionIds).any { it.linkedExpenseId != null || it.linkedInflowMinor != null }) {
+            throw IllegalStateException(uiText(UiKey.ERASE_TXN_BLOCKED_TITLE))
+        }
         uow.run {
-            txns.saveMany(undo.transactions)
+            if (undo.transactions.isNotEmpty()) txns.saveMany(undo.transactions)
             if (undo.records.isNotEmpty()) sources.saveMany(undo.records)
+            if (c != null) {
+                if (c.createdRecordIds.isNotEmpty()) sources.deleteMany(c.createdRecordIds)
+                sources.saveMany(c.recordsBefore)
+                txns.deleteMany(c.createdTransactionIds)
+                for (b in c.batchesBefore) batches.save(b)
+            }
         }
     }
 

@@ -1,19 +1,13 @@
 package app.masroufy.usecase
 
-import app.masroufy.core.Currency
-import app.masroufy.core.EconomicKind
 import app.masroufy.core.Id
 import app.masroufy.core.ImportBatch
 import app.masroufy.core.ImportBatchState
 import app.masroufy.core.ImportCounts
 import app.masroufy.core.MatchingState
-import app.masroufy.core.ReviewState
 import app.masroufy.core.SourceRecord
 import app.masroufy.core.TextKey
 import app.masroufy.core.Transaction
-import app.masroufy.core.applyKnownPayerSalary
-import app.masroufy.core.applyTransferVerdict
-import app.masroufy.core.transferPartyOf
 import app.masroufy.core.hashContent
 import app.masroufy.core.importFingerprint
 import app.masroufy.core.uiText
@@ -24,42 +18,6 @@ import app.masroufy.core.uiText
  */
 class ImportStatement(private val deps: ImportStatementDeps) {
     suspend fun preview(request: ImportRequest): ImportPreview = runPreview(deps, request)
-
-    private fun buildTransaction(id: Id, line: ImportPreviewLine, now: String, request: ImportRequest, chosenCategoryId: Id?): Transaction {
-        // تصنيف اختاره المستخدم بنفسه وقت المراجعة = مؤكد، زي `categorizeTransactions.confirm`
-        val categoryId = chosenCategoryId ?: line.categoryId
-        return Transaction(
-            id = id,
-            occurredAt = line.row.date,
-            datePrecision = "day",
-            sourceOrder = line.row.lineNumber,
-            // ⚠️ النوع الاقتصادي **ما بيستنتجش من اتجاه السيولة** (spec/02) — بيبدأ غير محدد
-            economicKind = EconomicKind.UNCLASSIFIED,
-            economicKindConfirmed = false,
-            observedDirection = line.row.direction,
-            amountMinor = line.row.amountMinor,
-            currency = request.currency,
-            categoryConfirmed = chosenCategoryId != null,
-            excludedFromBudget = false,
-            reviewState = when {
-                chosenCategoryId != null -> ReviewState.CONFIRMED
-                line.categoryId != null -> ReviewState.SUGGESTED
-                else -> ReviewState.NEEDS_REVIEW
-            },
-            isCashTagged = false,
-            rawDescription = line.row.description,
-            rawMerchantName = line.row.merchantName,
-            createdAt = now,
-            updatedAt = now,
-            categoryId = categoryId,
-            // الرصيد المعلن بيتحفظ زي ما ورد — هو مرجع المطابقة (OVERRIDES §7-ب)
-            statedBalanceMinor = line.row.statedBalanceMinor,
-            walletId = request.walletId,
-            sourceCategory = line.row.sourceCategory,
-            sourceOperationType = line.row.sourceOperationType,
-            notInStatement = true.takeIf { line.notInStatement },
-        )
-    }
 
     /** المرحلة التانية: الالتزام الذري. `selectedLineNumbers` بتسمح بضم متشابه أو استبعاد جديد **بقرار صريح**. */
     private suspend fun commitPrepared(
@@ -94,7 +52,7 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 if (included && line.mergeInto != null) continue
                 val txnId = if (included) deps.ids.next("txn") else null
                 if (txnId != null) {
-                    transactions += buildTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
+                    transactions += importLineTransaction(txnId, line, now, request, chosenCategories?.get(line.row.lineNumber))
                     includedLines += line
                 }
 
@@ -137,28 +95,14 @@ class ImportStatement(private val deps: ImportStatementDeps) {
                 ),
             )
 
-            val decided = deps.transferParties?.listAll()?.associateBy { it.key }.orEmpty()
-            if (decided.isNotEmpty()) {
-                for (i in transactions.indices) {
-                    val party = transferPartyOf(transactions[i])?.let { decided[it.key] } ?: continue
-                    transactions[i] = applyTransferVerdict(transactions[i], party, now)
-                }
-            }
-            // بعد قرارات زون التحويلات («حسابي التاني» بيأكد النوع ⇒ ما بيتلمسش هنا)
-            val payers = deps.incomeSources?.listAll().orEmpty().filter { it.payerKeys.isNotEmpty() }
-            if (payers.isNotEmpty()) {
-                for (i in transactions.indices) transactions[i] = applyKnownPayerSalary(transactions[i], payers, now)
-            }
-
-            // عقد C0: آثار وقت التسجيل بالترتيب (`RecordEffects.kt`) على العمليات **بعد** القرارين اللي فوق — والزيادة بتتحفظ مع الدفعة
-            if (deps.effects.isNotEmpty()) {
-                val lines = includedLines.indices.map { i -> RecordedLine(includedLines[i], request.smsRows[includedLines[i].row.lineNumber], transactions[i]) }
-                val ctx = RecordContext(request, batchId, now, request.byOwner, chosenCategories.orEmpty(), lines.toMutableList(), mutableListOf(), deps.ids)
-                for (effect in deps.effects) effect.prepare(ctx)
-                transactions.clear()
-                transactions += ctx.lines.map { it.transaction } + ctx.extra.map { it.first }
-                records += ctx.extra.map { it.second }
-                context = ctx
+            // قرارات زون التحويلات ⇒ الدخل المعروف ⇒ آثار وقت التسجيل (`RecordLines.kt` — نفس الطريق اللي «صلّح رسايل البنك القديمة» بيمشيه)
+            val prepared = prepareRecordedLines(deps, request, batchId, now, includedLines, transactions.toList(), chosenCategories)
+            transactions.clear()
+            transactions += prepared.lineTransactions + prepared.extra.map { it.first }
+            // عقد C0: الزيادة بتتحفظ مع الدفعة
+            if (prepared.context != null) {
+                records += prepared.extra.map { it.second }
+                context = prepared.context
                 // مراجعة S2: عدد الدفعة = كل اللي اتكتب فيها (ومعاه زيادة الآثار زي «رسوم بنكية») — نفس اللي التراجع بيمسحه والسجل بيعرضه
                 batch = batch.copy(counts = batch.counts.copy(imported = transactions.size))
             }

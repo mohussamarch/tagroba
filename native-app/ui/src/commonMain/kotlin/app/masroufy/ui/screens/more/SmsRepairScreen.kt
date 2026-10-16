@@ -30,6 +30,7 @@ import app.masroufy.ui.shell.LocalToaster
 import app.masroufy.ui.text.t
 import app.masroufy.usecase.SmsRepairLine
 import app.masroufy.usecase.SmsRepairUndo
+import app.masroufy.usecase.SmsUnrecordedLine
 import kotlinx.coroutines.launch
 
 /** «صلّح رسايل البنك القديمة» (r04-sms-fix) — من «تفاصيل المحفظة». */
@@ -48,10 +49,18 @@ private fun lineLabel(l: SmsRepairLine, names: Map<Id, String>): String {
     return "$day · $dir · $from ⇒ ${names[l.newWalletId] ?: l.newWalletId}"
 }
 
+/** r041-B: «اليوم · الاتجاه · التاجر أو الطرف · المحفظة» لسطر «الكشف غطّاها». */
+private fun unrecordedLabel(l: SmsUnrecordedLine, names: Map<Id, String>): String {
+    val day = fullDate(l.date) ?: l.date
+    val title = l.title.ifBlank { null }?.let { " · $it" }.orEmpty()
+    return "$day · ${dirText(l.direction)}$title · ${names[l.walletId] ?: l.walletId}"
+}
+
 /**
- * كل رسالة قديمة هتتغير على المحفظة دي (قبل ⇒ بعد) — كل اتجاه ومبلغ من `RepairOldSms.preview` (مفيش حساب هنا، CLAUDE.md #4). المالك يشيل
- * اللي مش عايزه بلمسة، و«صحّح» بيكتب **بعد نسخة متأكدة** (`RepairOldSms.apply`)، و«تراجع» واحد للدفعة. عدد المكرر بين الرسايل والكشف بيوديه
- * لـ«راجع المكرر» في «افهم رصيدك». مش متوصل ⇒ «غير متاح» (القاعدة 10).
+ * كل رسالة قديمة هتتغير على المحفظة دي (قبل ⇒ بعد) — كل اتجاه ومبلغ من `RepairOldSms.previewAll` (مفيش حساب هنا، CLAUDE.md #4). المالك يشيل
+ * اللي مش عايزه بلمسة، و«صحّح» بيكتب **بعد نسخة متأكدة** (`RepairOldSms.applyAll`)، و«تراجع» واحد للدفعة. r041-B: قسم تاني للرسايل اللي «الكشف
+ * غطّاها» ومبلغها مش فيه — بتتسجل بعلامة «مش في الكشف» في نفس النسخة ووحدة العمل و«تراجع». عدد المكرر بين الرسايل والكشف بيوديه لـ«راجع المكرر»
+ * في «افهم رصيدك». مش متوصل ⇒ «غير متاح» (القاعدة 10).
  */
 @Composable
 fun SmsRepairScreen(walletId: Id) {
@@ -62,29 +71,34 @@ fun SmsRepairScreen(walletId: Id) {
     val scope = rememberCoroutineScope()
     var loaded by remember(deps) { mutableStateOf(false) }
     var lines by remember(deps) { mutableStateOf<List<SmsRepairLine>?>(null) }
+    var fresh by remember(deps) { mutableStateOf<List<SmsUnrecordedLine>>(emptyList()) }
     var dupes by remember(deps) { mutableIntStateOf(0) }
     var names by remember(deps) { mutableStateOf<Map<Id, String>>(emptyMap()) }
     var currency by remember(deps) { mutableStateOf<Currency?>(null) }
     var skipped by remember { mutableStateOf<Set<Id>>(emptySet()) }
+    var skippedNew by remember { mutableStateOf<Set<Id>>(emptySet()) }
     var busy by remember { mutableStateOf(false) }
     var lastUndo by remember { mutableStateOf<SmsRepairUndo?>(null) }
     var tick by remember { mutableIntStateOf(0) }
     LaunchedEffect(deps, tick) {
-        lines = runCatching { repair?.preview() }.getOrNull()?.filter { it.oldWalletId == walletId || it.newWalletId == walletId }
+        val preview = runCatching { repair?.previewAll() }.getOrNull()
+        lines = preview?.moves?.filter { it.oldWalletId == walletId || it.newWalletId == walletId }
+        fresh = preview?.unrecorded.orEmpty().filter { it.walletId == walletId }
         dupes = runCatching { repair?.duplicates() }.getOrNull().orEmpty().size
         val rows = runCatching { more.wallets.load(deps.shell.today()) }.getOrNull()?.wallets.orEmpty()
         names = rows.associate { it.wallet.id to it.wallet.name }
         currency = rows.firstOrNull { it.wallet.id == walletId }?.wallet?.currency
         loaded = true
     }
-    fun apply(chosen: Set<Id>) {
+    fun apply(moves: Set<Id>, unrecorded: Set<Id>) {
         val r = repair ?: return
         busy = true
         scope.launch {
-            val res = runCatching { r.apply(chosen) }.getOrNull()
+            val res = runCatching { r.applyAll(moves, unrecorded) }.getOrNull()
             if (res != null) {
                 lastUndo = res.undo
                 skipped = emptySet()
+                skippedNew = emptySet()
                 toaster.show(t(TextKey.SMS_REPAIR_DONE, res.undo.count.toString()), dark = true)
             } else {
                 toaster.show(t(UiKey.BWHY_REFUSED))
@@ -110,6 +124,7 @@ fun SmsRepairScreen(walletId: Id) {
     InnerScaffold(t(TextKey.SMS_REPAIR_TITLE)) {
         val list = lines
         val cur = currency
+        val news = fresh
         if (!loaded) {
             item(key = "sk") { Skeleton(Modifier.fillMaxWidth().height(160.dp), radius = 26.dp, strong = true) }
             return@InnerScaffold
@@ -119,9 +134,10 @@ fun SmsRepairScreen(walletId: Id) {
             return@InnerScaffold
         }
         item(key = "intro") { NoteBox(t(TextKey.SMS_REPAIR_INTRO)) }
-        if (list.isEmpty()) {
+        if (list.isEmpty() && news.isEmpty()) {
             item(key = "empty") { EmptyState(t(TextKey.SMS_REPAIR_EMPTY)) }
-        } else {
+        }
+        if (list.isNotEmpty()) {
             item(key = "lines") {
                 GroupCard {
                     list.forEachIndexed { i, l ->
@@ -132,11 +148,29 @@ fun SmsRepairScreen(walletId: Id) {
                     }
                 }
             }
+        }
+        if (news.isNotEmpty()) {
+            item(key = "newTitle") { GroupTitle(t(TextKey.SMS_REPAIR_UNRECORDED_TITLE)) }
+            item(key = "newNote") { NoteBox(t(TextKey.SMS_REPAIR_UNRECORDED_NOTE), title = t(TextKey.SMS_REPAIR_UNRECORDED_COUNT, news.size.toString())) }
+            item(key = "newLines") {
+                GroupCard {
+                    news.forEachIndexed { i, l ->
+                        val off = l.recordId in skippedNew
+                        Box(Modifier.fillMaxWidth().clickable(enabled = !busy) { skippedNew = if (off) skippedNew - l.recordId else skippedNew + l.recordId }) {
+                            FactRow(unrecordedLabel(l, names), amountLabel(l.amountMinor, l.currency), last = i == news.lastIndex, muted = off)
+                        }
+                    }
+                }
+            }
+        }
+        if (list.isNotEmpty() || news.isNotEmpty()) {
+            // «طبّق» واحد للنوعين: نسخة واحدة · وحدة عمل واحدة · «تراجع» واحد
             val chosen = list.map { it.transactionId }.filter { it !in skipped }.toSet()
+            val chosenNew = news.map { it.recordId }.filter { it !in skippedNew }.toSet()
             item(key = "apply") {
                 TonalButton(
-                    t(TextKey.SMS_REPAIR_APPLY, chosen.size.toString()), onClick = { apply(chosen) },
-                    modifier = Modifier.fillMaxWidth(), enabled = !busy && chosen.isNotEmpty(), height = 48.dp,
+                    t(TextKey.SMS_REPAIR_APPLY, (chosen.size + chosenNew.size).toString()), onClick = { apply(chosen, chosenNew) },
+                    modifier = Modifier.fillMaxWidth(), enabled = !busy && (chosen.isNotEmpty() || chosenNew.isNotEmpty()), height = 48.dp,
                 )
             }
         }

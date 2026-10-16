@@ -41,6 +41,12 @@ internal suspend fun buildCategorizeDeps(deps: ImportStatementDeps): CategorizeD
     )
 }
 
+/** r041-B: تصنيف سطر وارد — نفس النداء في المعاينة وفي «صلّح رسايل البنك القديمة» (`CoveredSmsRepair`). */
+internal fun categorizeRow(row: ParsedRow, catDeps: CategorizeDeps) = categorize(
+    CategorizationInput(currentConfirmed = false, merchantName = row.merchantName, description = row.description, sourceCategory = row.sourceCategory),
+    catDeps,
+)
+
 private fun toCandidate(row: ParsedRow, accountIdentity: String) = DedupeCandidate(
     accountIdentity = accountIdentity,
     sourceReference = row.reference,
@@ -132,15 +138,7 @@ internal suspend fun runPreview(deps: ImportStatementDeps, request: ImportReques
             }
         }
 
-        val categorization = categorize(
-            CategorizationInput(
-                currentConfirmed = false,
-                merchantName = row.merchantName,
-                description = row.description,
-                sourceCategory = row.sourceCategory,
-            ),
-            catDeps,
-        )
+        val categorization = categorizeRow(row, catDeps)
 
         scanned += ImportPreviewLine(
             row = row,
