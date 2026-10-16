@@ -17,7 +17,10 @@ enum class BalanceSource { STATEMENT, SMS, BOTH, MANUAL, TRANSFER, ADJUSTMENT }
 /** العملية اتسجلت من كشف و/أو رسالة بنك (من سجلات مصدرها). مفيش سجلات ⇒ يدوي. */
 data class TxnSources(val statement: Boolean, val sms: Boolean)
 
-data class SourceTotal(val source: BalanceSource, val count: Int, val inMinor: Halalas, val outMinor: Halalas)
+data class SourceTotal(val source: BalanceSource, val count: Int, val inMinor: Halalas, val outMinor: Halalas) {
+    /** الصافي (الداخل − الخارج) — بيتعرض جنب اسم المصدر. */
+    val netMinor: Halalas get() = subtractMoney(inMinor, outMinor)
+}
 
 /** سطر للعرض: الاتجاه **على المحفظة دي** (الطرف الداخل للتحويل = داخل). */
 data class BalanceItem(

@@ -122,10 +122,10 @@ fun BalanceWhyScreen(walletId: Id) {
             GroupCard {
                 FactRow(t(UiKey.BWHY_OPENING, fullDate(w.openingAt) ?: w.openingAt), amountLabel(w.openingMinor, w.currency), last = false)
                 w.totals.forEach { s ->
-                    FactRow(
+                    SourceRow(
                         t(SOURCE_LABEL.getValue(s.source)),
+                        amountLabel(s.netMinor, w.currency),
                         t(UiKey.BWHY_SRC_LINE, s.count.toString(), amountLabel(s.inMinor, w.currency), amountLabel(s.outMinor, w.currency)),
-                        last = false,
                     )
                 }
                 val computed = w.computedMinor
@@ -182,4 +182,20 @@ private fun Side(head: String, item: BalanceItem, modifier: Modifier) {
         BasicText(amountLabel(item.amountMinor, item.currency), style = Type.of(15, FontWeight.Bold).copy(color = Ink.text))
         if (item.title.isNotBlank()) BasicText(item.title, style = Type.of(12).copy(color = Ink.muted), maxLines = 2)
     }
+}
+
+/**
+ * طلب المالك ٤ (r05 — حل مؤقت لحد تصميم جلسة التصميم): اسم المصدر كان بيتكسر حرف حرف («من كش/ف/البن/ك») لأن سطر الأرقام واخد العرض كله.
+ * دلوقتي الاسم سطر كامل والصافي جنبه، و«N عملية · دخل X · خرج Y» سطر تاني بيلف.
+ */
+@Composable
+private fun SourceRow(label: String, net: String, detail: String) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            BasicText(label, Modifier.weight(1f), style = Type.of(13).copy(color = Ink.muted))
+            BasicText(net, style = Type.of(14, FontWeight.Bold).copy(color = Ink.text))
+        }
+        BasicText(detail, Modifier.fillMaxWidth(), style = Type.of(12).copy(color = Ink.muted))
+    }
+    RowRule()
 }
