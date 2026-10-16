@@ -89,7 +89,7 @@ data class TopCategoriesView(val rows: List<TopCategoryRow>, val period: Period)
 
 /**
  * «أكتر حاجة صرفت فيها»: أول [TOP_CATEGORIES_COUNT] بالكتير من نفس الترتيب ([rankSpend]) اللي شاشة «أكثر ما صرفت عليه» بتعرضه كله
- * (طلب المالك 2026-10-16 — OVERRIDES §92). الكارت دايمًا تلاتة بالكتير.
+ * (طلب المالك 2026-10-16 — OVERRIDES §98). الكارت دايمًا تلاتة بالكتير.
  */
 const val TOP_CATEGORIES_COUNT = 3
 

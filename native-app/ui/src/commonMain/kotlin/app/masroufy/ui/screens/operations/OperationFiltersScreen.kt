@@ -66,16 +66,17 @@ import app.masroufy.usecase.TransactionsScreenData
  * تصفية العمليات (`OperationFilters`): بحث · المبلغ و«قريب منه ±5%» · الفترة · النوع · التصنيف · المحفظة · المراجعة ⇒ «اعرض N» بالعدد الحقيقي
  * ⇒ النتايج بشرايح بتتشال. القراية من `LoadTransactionsScreen` لكل شهر في الفترة، والاختيار بدوال `core` (`searchTransactions` …).
  * ⚠️ «المصدر» (رسالة · كشف · يدوي) و«الشخص» ومجموع النتايج مالهمش حالة استخدام لسه ⇒ مش معروضين.
+ * [preset] = تصفية جاهزة (سطر من «أكثر ما صرفت عليه» — §98: التصنيف والفترة) ⇒ الشاشة بتفتح على النتايج على طول، والشرايح بتتشال عادي.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun OperationFiltersScreen() {
+fun OperationFiltersScreen(preset: Filters? = null) {
     val space = LocalSpace.current
     val deps = space.operations
     val nav = LocalNavigator.current
     val currency = space.space.currency
-    var filters by rememberSaveable(stateSaver = FiltersSaver) { mutableStateOf(Filters()) }
-    var results by rememberSaveable { mutableStateOf(false) }
+    var filters by rememberSaveable(stateSaver = FiltersSaver) { mutableStateOf(preset ?: Filters()) }
+    var results by rememberSaveable { mutableStateOf(preset != null) }
     var data by remember(deps) { mutableStateOf<List<TransactionsScreenData>?>(null) }
     var wallets by remember(deps) { mutableStateOf<List<Wallet>>(emptyList()) }
     LaunchedEffect(deps, filters.period) {

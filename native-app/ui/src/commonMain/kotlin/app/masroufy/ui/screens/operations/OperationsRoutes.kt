@@ -132,10 +132,22 @@ object ReviewQueueRoute : Route {
     override val name = "ReviewQueue"
 }
 
+/** «أكثر ما صرفت عليه» (§98) — من كارت الرئيسية، جوه تبويب العمليات. */
+object TopSpendRoute : Route {
+    override val name = "TopSpend"
+}
+
+/** عمليات تصنيف في فترة (سطر من «أكثر ما صرفت عليه») — نفس شاشة التصفية مفتوحة على النتايج. [categoryKey] = المعرّف أو [NO_CATEGORY]. */
+data class CategoryOperationsRoute(val categoryKey: String, val period: FilterPeriod) : Route {
+    override val name = "OperationFilters"
+}
+
 fun RouteRegistry.registerOperations() {
     tabRoot(Tab.OPERATIONS) { OperationsScreen() }
     screen<OperationDetailRoute> { r -> OperationDetailScreen(r.transactionId, r.openPerson) }
     screen<OperationFiltersRoute> { OperationFiltersScreen() }
+    screen<TopSpendRoute> { TopSpendScreen() }
+    screen<CategoryOperationsRoute> { r -> OperationFiltersScreen(r.filters()) }
     screen<MerchantProfileRoute> { r -> MerchantProfileScreen(r.merchantName) }
     screen<TransfersRoute> { TransfersScreen() }
     screen<SpaceTransferRoute> { SpaceTransferScreen() }
