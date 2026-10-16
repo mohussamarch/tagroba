@@ -2,6 +2,7 @@ package app.masroufy.wiring
 
 import app.masroufy.core.Direction
 import app.masroufy.core.Id
+import app.masroufy.core.ImportBatch
 import app.masroufy.core.ImportBatchState
 import app.masroufy.core.ImportSourceType
 import app.masroufy.core.IsoDate
@@ -192,15 +193,14 @@ internal class SmsGraph(
         val recent = batches.history(30).filter { b ->
             b.sourceType == ImportSourceType.SMS && b.state == ImportBatchState.COMMITTED && b.importedAt.take(10) >= yesterday
         }
-        val out = LinkedHashMap<Id, Transaction>()
+        // r051: العمليات بقراية واحدة (`findByIds`) — كانت `load` لكل عملية (تفاصيل ووسوم) ⇒ بعد تأكيد 2,500 رسالة الشاشة فضلت هيكل ثواني
+        val batchOf = LinkedHashMap<Id, ImportBatch>()
         for (b in recent) {
             val plan = runCatching { batches.plan(b.id) }.getOrNull() ?: continue
-            for (o in plan.outcomes) {
-                val t = runCatching { transactions.load(o.transactionId).transaction }.getOrNull() ?: continue
-                if (t.occurredAt == today || b.importedAt.take(10) == today) out[t.id] = t
-            }
+            for (o in plan.outcomes) batchOf.getOrPut(o.transactionId) { b }
         }
-        out.values.sortedByDescending { it.createdAt }
+        val found = runCatching { c.repos.transactions.findByIds(batchOf.keys.toList()) }.getOrDefault(emptyList())
+        found.filter { t -> t.occurredAt == today || batchOf[t.id]?.importedAt?.take(10) == today }.sortedByDescending { it.createdAt }
     }
 
     // §83 «اقرأ اللي فات؟» — بنفس صندوق وحارات التسجيل لوحده (كل البلاد). `SmsHistory` نفسه بيشتغل على `DeviceEnv.work`.
